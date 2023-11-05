@@ -17,7 +17,6 @@ struct _n_TaoShell {
 - solve - the application-provided solver routine
 
   Calling sequence of `solve`:
-$   PetscErrorCode solve(Tao tao)
 . tao - the optimizer, get the application context with `TaoShellGetContext()`
 
   Level: advanced

@@ -2694,9 +2694,6 @@ PetscErrorCode PetscDSGetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode 
 - ctx  - solution context or `NULL`
 
   Calling sequence of `sol`:
-.vb
-  PetscErrorCode sol(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx)
-.ve
 + dim - the spatial dimension
 . t   - current time
 . x   - coordinates of the current point
@@ -2778,9 +2775,6 @@ PetscErrorCode PetscDSGetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, P
 - ctx  - time derivative of the solution context or `NULL`
 
   Calling sequence of `sol`:
-.vb
-  PetscErrorCode sol(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx)
-.ve
 + dim - the spatial dimension
 . t   - current time
 . x   - coordinates of the current point

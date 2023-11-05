@@ -216,28 +216,43 @@ PetscErrorCode TSComputeIJacobianP(TS ts, PetscReal t, Vec U, Vec Udot, PetscRea
 . numcost      - number of gradients to be computed, this is the number of cost functions
 . costintegral - vector that stores the integral values
 . rf           - routine for evaluating the integrand function
-. drduf        - function that computes the gradients of the r's with respect to u
-. drdpf        - function that computes the gradients of the r's with respect to p, can be `NULL` if parametric sensitivity is not desired (`mu` = `NULL`)
+. drduf        - function that computes the gradients of the r with respect to u
+. drdpf        - function that computes the gradients of the r with respect to p, can be `NULL` if parametric sensitivity is not desired (`mu` = `NULL`)
 . fwd          - flag indicating whether to evaluate cost integral in the forward run or the adjoint run
 - ctx          - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
   Calling sequence of `rf`:
-$   PetscErrorCode rf(TS ts, PetscReal t, Vec U, Vec F, oid *ctx)
++ ts  - the integrator
+. t   - the time
+. U   - the solution
+. F   - the computed value of the function
+- ctx - the user context
 
   Calling sequence of `drduf`:
-$   PetscErroCode drduf(TS ts, PetscReal t, Vec U, Vec *dRdU, void *ctx)
++ ts   - the integrator
+. t    - the time
+. U    - the solution
+. dRdU - the computed gradients of the r with respect to u
+- ctx  - the user context
 
   Calling sequence of `drdpf`:
-$   PetscErroCode drdpf(TS ts, PetscReal t, Vec U, Vec *dRdP, void *ctx)
++ ts   - the integrator
+. t    - the time
+. U    - the solution
+. dRdP - the computed gradients of the r with respect to p
+- ctx  - the user context
 
   Level: deprecated
 
-  Note:
+  Notes:
   For optimization there is usually a single cost function (numcost = 1). For sensitivities there may be multiple cost functions
 
-.seealso: [](ch_ts), `TS`, `TSSetRHSJacobianP()`, `TSGetCostGradients()`, `TSSetCostGradients()`
+  Use `TSCreateQuadratureTS()` and `TSForwardSetSensitivities()` instead
+
+.seealso: [](ch_ts), `TS`, `TSSetRHSJacobianP()`, `TSGetCostGradients()`, `TSSetCostGradients()`,
+          `TSCreateQuadratureTS()`, `TSForwardSetSensitivities()`
 @*/
-PetscErrorCode TSSetCostIntegrand(TS ts, PetscInt numcost, Vec costintegral, PetscErrorCode (*rf)(TS, PetscReal, Vec, Vec, void *), PetscErrorCode (*drduf)(TS, PetscReal, Vec, Vec *, void *), PetscErrorCode (*drdpf)(TS, PetscReal, Vec, Vec *, void *), PetscBool fwd, void *ctx)
+PetscErrorCode TSSetCostIntegrand(TS ts, PetscInt numcost, Vec costintegral, PetscErrorCode (*rf)(TS ts, PetscReal t, Vec U, Vec F, void *ctx), PetscErrorCode (*drduf)(TS ts, PetscReal t, Vec U, Vec *dRdU, void *ctx), PetscErrorCode (*drdpf)(TS ts, PetscReal t, Vec U, Vec *dRdP, void *ctx), PetscBool fwd, void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
