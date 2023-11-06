@@ -215,7 +215,7 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   Logically Collective
 
   Input Parameters:
-+ da    - initial distributed array
++ dm    - initial distributed array
 - ctype - the vector type, for example `VECSTANDARD`, `VECCUDA`, or `VECVIENNACL`
 
   Options Database Key:
@@ -226,12 +226,16 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
 .seealso: [](ch_dmbase), `DM`, `DMCreate()`, `DMDestroy()`, `DMDAInterpolationType`, `VecType`, `DMGetVecType()`, `DMSetMatType()`, `DMGetMatType()`,
           `VECSTANDARD`, `VECCUDA`, `VECVIENNACL`, `DMCreateLocalVector()`, `DMCreateGlobalVector()`
 @*/
-PetscErrorCode DMSetVecType(DM da, VecType ctype)
+PetscErrorCode DMSetVecType(DM dm, VecType ctype)
 {
+  char *tmp;
+
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da, DM_CLASSID, 1);
-  PetscCall(PetscFree(da->vectype));
-  PetscCall(PetscStrallocpy(ctype, (char **)&da->vectype));
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscAssertPointer(ctype, 2);
+  tmp = (char *)dm->vectype;
+  PetscCall(PetscStrallocpy(ctype, (char **)&dm->vectype));
+  PetscCall(PetscFree(tmp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -382,10 +386,14 @@ PetscErrorCode DMGetISColoringType(DM dm, ISColoringType *ctype)
 @*/
 PetscErrorCode DMSetMatType(DM dm, MatType ctype)
 {
+  char *tmp;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(PetscFree(dm->mattype));
+  PetscAssertPointer(ctype, 2);
+  tmp = (char *)dm->mattype;
   PetscCall(PetscStrallocpy(ctype, (char **)&dm->mattype));
+  PetscCall(PetscFree(tmp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
