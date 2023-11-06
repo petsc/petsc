@@ -50,6 +50,8 @@ Changes: Development
 
 .. rubric:: Mat:
 
+- Reset ``MATLMVM`` history vecs if size is changed
+
 .. rubric:: MatCoarsen:
 
 - Add ``MatCoarsenSetMaximumIterations()`` with corresponding option ``-mat_coarsen_max_it <4>``. The number of iteration of the coarsening method. Used for the HEM coarsener
