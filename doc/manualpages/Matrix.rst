@@ -6,5 +6,5 @@ Matrices and Matrix Operations
    :maxdepth: 1
 
    Mat/index
-   MatOrderings/index
+   MatGraphOperations/index
    MatFD/index

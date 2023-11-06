@@ -2,7 +2,7 @@
 
 #include <petscsection.h>
 
-/* SUBMANSEC = MatOrderings */
+/* SUBMANSEC = MatGraphOperations */
 
 /*S
   PetscPartitioner - PETSc object that manages a graph partitioner
