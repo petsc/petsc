@@ -16,10 +16,16 @@ static PetscErrorCode DMInitialize_Plex(DM dm);
 PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, PetscBool copyOverlap, DM dmout)
 {
   const PetscReal         *maxCell, *Lstart, *L;
+  VecType                  vecType;
+  MatType                  matType;
   PetscBool                dist, useCeed;
   DMPlexReorderDefaultFlag reorder;
 
   PetscFunctionBegin;
+  PetscCall(DMGetVecType(dmin, &vecType));
+  PetscCall(DMSetVecType(dmout, vecType));
+  PetscCall(DMGetMatType(dmin, &matType));
+  PetscCall(DMSetMatType(dmout, matType));
   if (copyPeriodicity) {
     PetscCall(DMGetPeriodicity(dmin, &maxCell, &Lstart, &L));
     PetscCall(DMSetPeriodicity(dmout, maxCell, Lstart, L));

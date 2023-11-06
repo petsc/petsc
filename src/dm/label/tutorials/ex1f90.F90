@@ -68,7 +68,7 @@ end program ex1F90
 !
 !  test:
 !    suffix: 0
-!    args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -exodusii_check_reserved 0 -interpolate
+!    args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -interpolate
 !    requires: exodusii
 !
 !TEST*/

@@ -1499,7 +1499,6 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   Vec          coordinates;
   PetscScalar *coords;
   PetscInt     coordSize, v;
-  PetscBool    checkReserved = PETSC_TRUE;
   /* Read from ex_get_init() */
   char title[PETSC_MAX_PATH_LEN + 1];
   int  dim = 0, dimEmbed = 0, numVertices = 0, numCells = 0;
@@ -1524,7 +1523,6 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   PetscCall(DMPlexSetChart(*dm, 0, numCells + numVertices));
   /*   We do not want this label automatically computed, instead we compute it here */
   PetscCall(DMCreateLabel(*dm, "celltype"));
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "-exodusii_check_reserved", &checkReserved, NULL));
 
   /* Read cell sets information */
   if (rank == 0) {
@@ -1710,8 +1708,6 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
         const PetscInt *faces    = NULL;
         PetscInt        faceSize = fs_vertex_count_list[f], numFaces;
         PetscInt        faceVertices[4], v;
-
-        if (checkReserved) PetscCheck(fs_side_list[f] != 1 && fs_side_list[f] != 2, comm, PETSC_ERR_ARG_WRONG, "Side set %s marker cannot be %d since this is reserved by ExodusII", fs_name, fs_side_list[f]);
 
         PetscCheck(faceSize <= 4, comm, PETSC_ERR_ARG_WRONG, "ExodusII side cannot have %" PetscInt_FMT " > 4 vertices", faceSize);
         for (v = 0; v < faceSize; ++v, ++voff) faceVertices[v] = fs_vertex_list[voff] + numCells - 1;
