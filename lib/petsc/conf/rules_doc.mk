@@ -56,7 +56,7 @@ tree_src: ${ACTION}
 #  this indicates the makefile is missing a MANSEC definition or the include file is missing a SUBMANSEC definition
 #  Cannot run in parallel because of writes to ${LOC}/manualpages/manualpages.cit
 manualpages:
-	-@doctext_common_def="${PETSC_DIR}/doc/classic/doctext/doctextcommon.txt"; \
+	-@doctext_common_def="${PETSC_DIR}/doc/manualpages/doctext/doctextcommon.txt"; \
         petsc_dir=$$(realpath ${PETSC_DIR}); LOCDIR=$$(pwd | sed s"?$${petsc_dir}/??"g)/; \
         if [ "${MANSEC}" = "" ] ; then \
           for f in ${SOURCED}; do \
@@ -71,8 +71,8 @@ manualpages:
             if [ ! -d "${LOC}/manualpages/$${LMANSEC}" ]; then \
               ${MKDIR} ${LOC}/manualpages/$${LMANSEC}; \
             fi; \
-            DOCTEXT_PATH=${PETSC_DIR}/doc/classic/doctext \
-            ${DOCTEXT} -myst -mpath ${LOC}/manualpages/$${LMANSEC} -heading PETSc -defn ${PETSC_DIR}/doc/classic/doctext/myst.def \
+            DOCTEXT_PATH=${PETSC_DIR}/doc/manualpages/doctext \
+            ${DOCTEXT} -myst -mpath ${LOC}/manualpages/$${LMANSEC} -heading PETSc -defn ${PETSC_DIR}/doc/manualpages/doctext/myst.def \
                 -indexdir ../$${LMANSEC} -index ${LOC}/manualpages/manualpages.cit -locdir $${LOCDIR} -Wargdesc $${doctext_common_def} $${f} 2>&1 | tee -a ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err; \
             if [ -f "${LOC}/manualpages/$${LMANSEC}" ]; then chmod g+w "${LOC}"/manualpages/$${LMANSEC}/*; fi; \
           done; \
@@ -81,8 +81,8 @@ manualpages:
           if [ ! -d "${LOC}/manualpages/$${LMANSEC}" ]; then \
             ${MKDIR} ${LOC}/manualpages/$${LMANSEC}; \
           fi; \
-          DOCTEXT_PATH=${PETSC_DIR}/doc/classic/doctext  \
-          ${DOCTEXT} -myst -mpath ${LOC}/manualpages/$${LMANSEC} -heading PETSc -defn ${PETSC_DIR}/doc/classic/doctext/myst.def \
+          DOCTEXT_PATH=${PETSC_DIR}/doc/manualpages/doctext  \
+          ${DOCTEXT} -myst -mpath ${LOC}/manualpages/$${LMANSEC} -heading PETSc -defn ${PETSC_DIR}/doc/manualpages/doctext/myst.def \
               -indexdir ../$${LMANSEC} -index ${LOC}/manualpages/manualpages.cit -locdir $${LOCDIR} -Wargdesc $${doctext_common_def} ${SOURCED} 2>&1 | tee -a ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err; \
           if [ -f "${LOC}/manualpages/$${LMANSEC}" ]; then chmod g+w "${LOC}"/manualpages/$${LMANSEC}/*; fi; \
         fi;
@@ -93,7 +93,7 @@ html:
 	-@export htmlmap_tmp=$$(mktemp) ;\
           petsc_dir=$$(realpath ${PETSC_DIR}); LOCDIR=$$(pwd | sed s"?$${petsc_dir}/??"g)/; \
           sed -e s?man+manualpages/?man+HTML_ROOT/manualpages/? ${HTMLMAP} > $$htmlmap_tmp ;\
-          cat ${PETSC_DIR}/doc/classic/mpi.www.index >> $$htmlmap_tmp ;\
+          cat ${PETSC_DIR}/doc/manualpages/mpi.www.index >> $$htmlmap_tmp ;\
           ROOT=`echo $${LOCDIR} | sed -e s?/[-a-z_0-9]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \
           ${MKDIR} -p $${loc} ;\
@@ -121,7 +121,11 @@ html:
             fi; \
           done ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`; ${RM} $${loc}/index.html; \
-          cat ${PETSC_DIR}/doc/classic/manualpages-sec/header_${MANSEC} | sed -e "s?<A HREF=\"PETSC_DIR[a-z/]*\">Examples</A>?<A HREF=\"$${ROOT}/manualpages/${MANSEC}\">Manual pages</A>?g" -e "s?PETSC_DIR?$${ROOT}/?g"> $${loc}/index.html; \
+          if [ -f ${PETSC_DIR}/doc/manualpages/MANSECHeaders/${MANSEC} ] ; then \
+            cat ${PETSC_DIR}/doc/manualpages/MANSECHeaders/${MANSEC} | sed -e "s?<A HREF=\"PETSC_DIR[a-z/]*\">Examples</A>?<A HREF=\"$${ROOT}/manualpages/${MANSEC}\">Manual pages</A>?g" -e "s?PETSC_DIR?$${ROOT}/?g"> $${loc}/index.html; \
+          else \
+            touch $${loc}/index.html; \
+          fi; \
           echo "<p>" >> $${loc}/index.html ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;\
           if [ "${EXAMPLESC}" != "" ] ; then \

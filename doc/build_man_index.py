@@ -146,7 +146,6 @@ def createtable(dirname,levels,secname,editbranch):
       mdfiles = [os.path.join(dirname,f) for f in listdir if f.endswith('.md')]
       mdfiles.sort()
       if mdfiles == []:
-            print('Cannot create table for empty directory:',dirname)
             return None
 
       table = []
@@ -206,7 +205,7 @@ def getallmandirs(dirs):
 
 
 def main(PETSC_DIR,LOC):
-      HEADERDIR = 'doc/classic/manualpages-sec'
+      HEADERDIR = 'doc/manualpages/MANSECHeaders'
       dirs      = glob.glob(LOC + '/manualpages/*')
       mandirs   = getallmandirs(dirs)
 
@@ -230,7 +229,7 @@ def main(PETSC_DIR,LOC):
       for dirname in mandirs:
             outfilename  = dirname + '/index.md'
             dname,secname  = posixpath.split(dirname)
-            headfilename = PETSC_DIR + '/' + HEADERDIR + '/header_' + secname
+            headfilename = PETSC_DIR + '/' + HEADERDIR + '/' + secname
             table        = createtable(dirname,levels,secname,edit_branch)
             if not table: continue
             singlelist   = addtolist(dirname,singlelist)

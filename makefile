@@ -451,7 +451,7 @@ allmanpages: chk_loc deletemanualpages
 	-@${RM} ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err
 	-${OMAKE_SELF} ACTION=manualpages tree_src LOC=${LOC}
 	-@sed -e s%man+../%man+manualpages/% ${LOC}/manualpages/manualpages.cit > ${LOC}/manualpages/htmlmap
-	-@cat ${PETSC_DIR}/doc/classic/mpi.www.index >> ${LOC}/manualpages/htmlmap
+	-@cat ${PETSC_DIR}/doc/manualpages/mpi.www.index >> ${LOC}/manualpages/htmlmap
 	@cat ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err
 	@a=`cat ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err | wc -l`; test ! $$a -gt 0
 
