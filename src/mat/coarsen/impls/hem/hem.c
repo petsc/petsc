@@ -1058,7 +1058,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
       PetscCall(MatDestroy(&cMat));
       cMat = tMat;
       PetscCall(MatCreateVecs(cMat, &diag, NULL));
-      PetscCall(MatGetDiagonal(cMat, diag)); /* effectively PCJACOBI */
+      PetscCall(MatGetDiagonal(cMat, diag));
       PetscCall(VecReciprocal(diag));
       PetscCall(VecSqrtAbs(diag));
       PetscCall(MatDiagonalScale(cMat, diag, diag));

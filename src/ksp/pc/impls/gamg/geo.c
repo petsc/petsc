@@ -522,7 +522,7 @@ static PetscErrorCode PCGAMGCreateGraph_GEO(PC pc, Mat Amat, Mat *a_Gmat)
   const PetscReal vfilter = pc_gamg->threshold[0];
 
   PetscFunctionBegin;
-  PetscCall(MatCreateGraph(Amat, PETSC_TRUE, PETSC_TRUE, vfilter, a_Gmat));
+  PetscCall(MatCreateGraph(Amat, PETSC_TRUE, PETSC_TRUE, vfilter, 0, NULL, a_Gmat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

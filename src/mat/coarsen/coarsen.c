@@ -167,6 +167,7 @@ PetscErrorCode MatCoarsenDestroy(MatCoarsen *agg)
   if ((*agg)->agg_lists) PetscCall(PetscCDDestroy((*agg)->agg_lists));
   PetscCall(PetscObjectComposeFunction((PetscObject)(*agg), "MatCoarsenSetMaximumIterations_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)(*agg), "MatCoarsenSetThreshold_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)(*agg), "MatCoarsenSetStrengthIndex_C", NULL));
 
   PetscCall(PetscHeaderDestroy(agg));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -241,6 +242,8 @@ PetscErrorCode MatCoarsenView(MatCoarsen agg, PetscViewer viewer)
     PetscUseTypeMethod(agg, view, viewer);
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
+  if (agg->strength_index_size > 0) PetscCall(PetscViewerASCIIPrintf(viewer, " Using scalar strength-of-connection index index[%d] = {%d, ..}\n", (int)agg->strength_index_size, (int)agg->strength_index[0]));
+
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -343,7 +346,7 @@ PetscErrorCode MatCoarsenGetData(MatCoarsen coarser, PetscCoarsenData **llist)
 . coarser - the coarsen context.
 
   Options Database Key:
-. -mat_coarsen_type  <type> - (for instance, mis), use -help for a list of available methods
+. -mat_coarsen_type  <type> - mis, misk, hem
 
   Level: advanced
 
@@ -370,7 +373,8 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
 
   PetscCall(PetscOptionsInt("-mat_coarsen_max_it", "Number of iterations (for HEM)", "MatCoarsenSetMaximumIterations", coarser->max_it, &coarser->max_it, NULL));
   PetscCall(PetscOptionsInt("-mat_coarsen_threshold", "Threshold (for HEM)", "MatCoarsenSetThreshold", coarser->max_it, &coarser->max_it, NULL));
-
+  coarser->strength_index_size = MAT_COARSEN_STRENGTH_INDEX_SIZE;
+  PetscCall(PetscOptionsIntArray("-mat_coarsen_strength_index", "Array of indices to use strength of connection measure (default is all indices)", "MatCoarsenSetStrengthIndex", coarser->strength_index, &coarser->strength_index_size, NULL));
   /*
    Set the type if it was never set.
    */
@@ -389,7 +393,7 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
 
   Input Parameters:
 + coarse - the coarsen context
-- b      - number of HEM iterations
+- n      - number of HEM iterations
 
   Options Database Key:
 . -mat_coarsen_max_it <default=4> - Max HEM iterations
@@ -398,12 +402,13 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
 
 .seealso: `MatCoarsen`, `MatCoarsenType`, `MatCoarsenApply()`, `MatCoarsenCreate()`, `MatCoarsenSetType()`
 @*/
-PetscErrorCode MatCoarsenSetMaximumIterations(MatCoarsen coarse, PetscInt b)
+PetscErrorCode MatCoarsenSetMaximumIterations(MatCoarsen coarse, PetscInt n)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarse, MAT_COARSEN_CLASSID, 1);
-  PetscValidLogicalCollectiveInt(coarse, b, 2);
-  PetscTryMethod(coarse, "MatCoarsenSetMaximumIterations_C", (MatCoarsen, PetscInt), (coarse, b));
+  PetscValidLogicalCollectiveInt(coarse, n, 2);
+  PetscTryMethod(coarse, "MatCoarsenSetMaximumIterations_C", (MatCoarsen, PetscInt), (coarse, n));
+
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -411,6 +416,40 @@ static PetscErrorCode MatCoarsenSetMaximumIterations_MATCOARSEN(MatCoarsen coars
 {
   PetscFunctionBegin;
   coarse->max_it = b;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  MatCoarsenSetStrengthIndex -  Index to use for index to use for strength of connection
+
+  Logically Collective
+
+  Input Parameters:
++ coarse - the coarsen context
+. n      - number of indices
+- idx    - array of indices
+
+  Options Database Key:
+. -mat_coarsen_strength_index - array of subset of variables per vertex to use for strength norm, -1 for using all (default)
+
+  Level: intermediate
+
+.seealso: `MatCoarsen`, `MatCoarsenType`, `MatCoarsenApply()`, `MatCoarsenCreate()`, `MatCoarsenSetType()`
+@*/
+PetscErrorCode MatCoarsenSetStrengthIndex(MatCoarsen coarse, PetscInt n, PetscInt idx[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(coarse, MAT_COARSEN_CLASSID, 1);
+  PetscValidLogicalCollectiveInt(coarse, n, 2);
+  PetscTryMethod(coarse, "MatCoarsenSetStrengthIndex_C", (MatCoarsen, PetscInt, PetscInt[]), (coarse, n, idx));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatCoarsenSetStrengthIndex_MATCOARSEN(MatCoarsen coarse, PetscInt n, PetscInt idx[])
+{
+  PetscFunctionBegin;
+  coarse->strength_index_size = n;
+  for (int iii = 0; iii < n; iii++) coarse->strength_index[iii] = idx[iii];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -436,6 +475,7 @@ PetscErrorCode MatCoarsenSetThreshold(MatCoarsen coarse, PetscReal b)
   PetscValidHeaderSpecific(coarse, MAT_COARSEN_CLASSID, 1);
   PetscValidLogicalCollectiveReal(coarse, b, 2);
   PetscTryMethod(coarse, "MatCoarsenSetThreshold_C", (MatCoarsen, PetscReal), (coarse, b));
+
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -474,6 +514,9 @@ PetscErrorCode MatCoarsenCreate(MPI_Comm comm, MatCoarsen *newcrs)
   PetscCall(PetscHeaderCreate(agg, MAT_COARSEN_CLASSID, "MatCoarsen", "Matrix/graph coarsen", "MatCoarsen", comm, MatCoarsenDestroy, MatCoarsenView));
   PetscCall(PetscObjectComposeFunction((PetscObject)agg, "MatCoarsenSetMaximumIterations_C", MatCoarsenSetMaximumIterations_MATCOARSEN));
   PetscCall(PetscObjectComposeFunction((PetscObject)agg, "MatCoarsenSetThreshold_C", MatCoarsenSetThreshold_MATCOARSEN));
+  PetscCall(PetscObjectComposeFunction((PetscObject)agg, "MatCoarsenSetStrengthIndex_C", MatCoarsenSetStrengthIndex_MATCOARSEN));
+
+  agg->strength_index_size = 0;
 
   *newcrs = agg;
   PetscFunctionReturn(PETSC_SUCCESS);

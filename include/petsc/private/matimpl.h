@@ -212,7 +212,7 @@ struct _MatOps {
   PetscErrorCode (*destroysubmatrices)(PetscInt, Mat *[]);
   PetscErrorCode (*mattransposesolve)(Mat, Mat, Mat);
   PetscErrorCode (*getvalueslocal)(Mat, PetscInt, const PetscInt[], PetscInt, const PetscInt[], PetscScalar[]);
-  PetscErrorCode (*creategraph)(Mat, PetscBool, PetscBool, PetscReal, Mat *);
+  PetscErrorCode (*creategraph)(Mat, PetscBool, PetscBool, PetscReal, PetscInt, PetscInt[], Mat *);
   PetscErrorCode (*dummy)(Mat);
   /*150*/
   PetscErrorCode (*transposesymbolic)(Mat, Mat *);
@@ -269,7 +269,7 @@ PETSC_INTERN PetscErrorCode MatProductCreate_Private(Mat, Mat, Mat, Mat);
 PETSC_INTERN PetscErrorCode MatProductSymbolic_ABC_Basic(Mat);
 
 /* CreateGraph is common to AIJ seq and mpi */
-PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat, PetscBool, PetscBool, PetscReal, Mat *);
+PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat, PetscBool, PetscBool, PetscReal, PetscInt, PetscInt[], Mat *);
 
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 template <typename Tm>
@@ -562,6 +562,7 @@ struct _MatCoarsenOps {
   PetscErrorCode (*view)(MatCoarsen, PetscViewer);
 };
 
+#define MAT_COARSEN_STRENGTH_INDEX_SIZE 3
 struct _p_MatCoarsen {
   PETSCHEADER(struct _MatCoarsenOps);
   Mat   graph;
@@ -572,6 +573,8 @@ struct _p_MatCoarsen {
   PetscCoarsenData *agg_lists;
   PetscInt          max_it;    /* number of iterations in HEM */
   PetscReal         threshold; /* HEM can filter interim graphs */
+  PetscInt          strength_index_size;
+  PetscInt          strength_index[MAT_COARSEN_STRENGTH_INDEX_SIZE];
 };
 
 PETSC_EXTERN PetscErrorCode MatCoarsenMISKSetDistance(MatCoarsen, PetscInt);

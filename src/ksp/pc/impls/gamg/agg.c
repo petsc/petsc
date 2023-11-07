@@ -604,6 +604,11 @@ static PetscErrorCode PCGAMGCreateGraph_AGG(PC pc, Mat Amat, Mat *a_Gmat)
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)pc, &prefix));
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)pc_gamg_agg->crs, prefix));
   PetscCall(MatCoarsenSetFromOptions(pc_gamg_agg->crs));
+  PetscCall(MatGetBlockSize(Amat, &bs));
+  // check for valid indices wrt bs
+  for (int ii = 0; ii < pc_gamg_agg->crs->strength_index_size; ii++) {
+    PetscCheck(pc_gamg_agg->crs->strength_index[ii] >= 0 && pc_gamg_agg->crs->strength_index[ii] < bs, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Indices (%d) must be non-negative and < block size (%d)", (int)pc_gamg_agg->crs->strength_index[ii], (int)bs);
+  }
   PetscCall(PetscObjectTypeCompare((PetscObject)pc_gamg_agg->crs, MATCOARSENHEM, &ishem));
   if (ishem) {
     if (pc_gamg_agg->aggressive_coarsening_levels) PetscCall(PetscInfo(pc, "HEM and aggressive coarsening ignored: HEM using %d iterations\n", (int)pc_gamg_agg->crs->max_it));
@@ -622,10 +627,10 @@ static PetscErrorCode PCGAMGCreateGraph_AGG(PC pc, Mat Amat, Mat *a_Gmat)
   PetscCall(MatGetInfo(Amat, MAT_LOCAL, &info0)); /* global reduction */
 
   if (ishem || pc_gamg_agg->use_low_mem_filter) {
-    PetscCall(MatCreateGraph(Amat, PETSC_TRUE, (vfilter >= 0 || ishem) ? PETSC_TRUE : PETSC_FALSE, vfilter, a_Gmat));
+    PetscCall(MatCreateGraph(Amat, PETSC_TRUE, (vfilter >= 0 || ishem) ? PETSC_TRUE : PETSC_FALSE, vfilter, pc_gamg_agg->crs->strength_index_size, pc_gamg_agg->crs->strength_index, a_Gmat));
   } else {
     // make scalar graph, symetrize if not know to be symetric, scale, but do not filter (expensive)
-    PetscCall(MatCreateGraph(Amat, PETSC_TRUE, PETSC_TRUE, -1, a_Gmat));
+    PetscCall(MatCreateGraph(Amat, PETSC_TRUE, PETSC_TRUE, -1, pc_gamg_agg->crs->strength_index_size, pc_gamg_agg->crs->strength_index, a_Gmat));
     if (vfilter >= 0) {
       PetscInt           Istart, Iend, ncols, nnz0, nnz1, NN, MM, nloc;
       Mat                tGmat, Gmat = *a_Gmat;
@@ -715,7 +720,6 @@ static PetscErrorCode PCGAMGCreateGraph_AGG(PC pc, Mat Amat, Mat *a_Gmat)
   }
 
   PetscCall(MatGetInfo(*a_Gmat, MAT_LOCAL, &info1)); /* global reduction */
-  PetscCall(MatGetBlockSize(Amat, &bs));
   if (info0.nz_used > 0) PetscCall(PetscInfo(pc, "Filtering left %g %% edges in graph (%e %e)\n", 100.0 * info1.nz_used * (double)(bs * bs) / info0.nz_used, info0.nz_used, info1.nz_used));
   PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_GRAPH], 0, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
