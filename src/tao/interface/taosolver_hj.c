@@ -14,7 +14,7 @@
          Hessian evaluation routine (may be `NULL`)
 
   Calling sequence of `func`:
-+ tao  - the Tao  context
++ tao  - the `Tao`  context
 . x    - input vector
 . H    - Hessian matrix
 . Hpre - matrix used to construct the preconditioner, usually the same as `H`
@@ -66,7 +66,7 @@ PetscErrorCode TaoSetHessian(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Ta
 - ctx  - user-defined context for private data for the Hessian evaluation routine
 
   Calling sequence of `func`:
-+ tao  - the Tao  context
++ tao  - the `Tao`  context
 . x    - input vector
 . H    - Hessian matrix
 . Hpre - matrix used to construct the preconditioner, usually the same as `H`

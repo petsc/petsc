@@ -27,7 +27,7 @@
   to provide the bounds and you need not use this function.
 
 .seealso: [](sec_vi), `SNES`, `SNESVISetVariableBounds()`, `DMSetVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`,
-          `'SNESSetType()`
+          `'SNESSetType()`, `PETSC_NINFINITY`, `PETSC_INFINITY`
 @*/
 PetscErrorCode SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*compute)(SNES snes, Vec lower, Vec higher))
 {
@@ -410,7 +410,7 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
   `SNESVISetComputeVariableBounds()` can be used to provide a function that computes the bounds. This should be used if you are using, for example, grid
   sequencing and need bounds set for a variety of vectors
 
-.seealso: [](sec_vi), `SNES`, `SNESVIGetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`, `'SNESSetType()`
+.seealso: [](sec_vi), `SNES`, `SNESVIGetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`, `'SNESSetType()`, `PETSC_NINFINITY`, `PETSC_INFINITY`
 @*/
 PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
 {
@@ -461,7 +461,7 @@ PetscErrorCode SNESVISetVariableBounds_VI(SNES snes, Vec xl, Vec xu)
 }
 
 /*@
-  SNESVIGetVariableBounds - Gets the lower and upper bounds for the solution vector. xl <= x <= xu. This allows solving
+  SNESVIGetVariableBounds - Gets the lower and upper bounds for the solution vector. xl <= x <= xu. These are used in solving
   (differential) variable inequalities.
 
   Input Parameters:
@@ -474,7 +474,7 @@ PetscErrorCode SNESVISetVariableBounds_VI(SNES snes, Vec xl, Vec xu)
   Notes:
   These vectors are owned by the `SNESVI` and should not be destroyed by the caller
 
-.seealso: [](sec_vi), `SNES`, `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`, `'SNESSetType()`
+.seealso: [](sec_vi), `SNES`, `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`, `'SNESSetType()`, `PETSC_NINFINITY`, `PETSC_INFINITY`
 @*/
 PetscErrorCode SNESVIGetVariableBounds(SNES snes, Vec *xl, Vec *xu)
 {
