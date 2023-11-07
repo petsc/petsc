@@ -95,3 +95,4 @@ PETSC_EXTERN PetscErrorCode MatCoarsenMISKSetDistance(MatCoarsen, PetscInt);
 PETSC_EXTERN PetscErrorCode MatCoarsenMISKGetDistance(MatCoarsen, PetscInt *);
 PETSC_EXTERN PetscErrorCode MatCoarsenSetMaximumIterations(MatCoarsen, PetscInt);
 PETSC_EXTERN PetscErrorCode MatCoarsenSetThreshold(MatCoarsen, PetscReal);
+PETSC_EXTERN PetscErrorCode MatCoarsenSetStrengthIndex(MatCoarsen, PetscInt, PetscInt[]);

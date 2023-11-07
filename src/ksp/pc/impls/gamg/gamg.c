@@ -550,9 +550,9 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
           }
           if (reuse == MAT_INITIAL_MATRIX) PetscCall(MatDestroy(&mglevels[level]->A));
           if (reuse == MAT_REUSE_MATRIX) {
-            PetscCall(PetscInfo(pc, "%s: RAP after first solve, reuse matrix level %" PetscInt_FMT "\n", ((PetscObject)pc)->prefix, level));
+            PetscCall(PetscInfo(pc, "%s: RAP after initial setup, reuse matrix level %" PetscInt_FMT "\n", ((PetscObject)pc)->prefix, level));
           } else {
-            PetscCall(PetscInfo(pc, "%s: RAP after first solve, new matrix level %" PetscInt_FMT "\n", ((PetscObject)pc)->prefix, level));
+            PetscCall(PetscInfo(pc, "%s: RAP after initial setup, with repartitioning (new matrix) level %" PetscInt_FMT "\n", ((PetscObject)pc)->prefix, level));
           }
           PetscCall(PetscLogEventBegin(petsc_gamg_setup_matmat_events[gl][1], 0, 0, 0, 0));
           PetscCall(MatPtAP(dB, mglevels[level + 1]->interpolate, reuse, PETSC_DEFAULT, &B));
