@@ -36,6 +36,7 @@ PetscErrorCode VecDestroy_MPI(Vec v)
   if (x->localrep) {
     PetscCall(VecDestroy(&x->localrep));
     PetscCall(VecScatterDestroy(&x->localupdate));
+    PetscCall(ISDestroy(&x->ghost));
   }
   PetscCall(VecAssemblyReset_MPI(v));
 

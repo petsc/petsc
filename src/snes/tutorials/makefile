@@ -2,7 +2,6 @@
 
 MANSEC           = SNES
 EXAMPLESMATLAB   = ex5m.m ex29view.m
-DIRS		 = ex10d network
 CLEANFILES       = ex5f90t
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

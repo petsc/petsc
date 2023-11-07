@@ -17,7 +17,7 @@ static PetscErrorCode DMPlexCreateCellTypeOrder_Internal(PetscInt dim, PetscInt 
   PetscCall(PetscCalloc2(DM_NUM_POLYTOPES + 1, &ctO, DM_NUM_POLYTOPES + 1, &ctOInv));
   for (d = 3; d >= dim; --d) {
     for (c = 0; c <= DM_NUM_POLYTOPES; ++c) {
-      if (DMPolytopeTypeGetDim((DMPolytopeType)c) != d) continue;
+      if (DMPolytopeTypeGetDim((DMPolytopeType)c) != d || c == DM_POLYTOPE_UNKNOWN_CELL || c == DM_POLYTOPE_UNKNOWN_FACE) continue;
       ctO[off++] = c;
     }
   }
@@ -29,12 +29,12 @@ static PetscErrorCode DMPlexCreateCellTypeOrder_Internal(PetscInt dim, PetscInt 
   }
   for (d = dim - 1; d > 0; --d) {
     for (c = 0; c <= DM_NUM_POLYTOPES; ++c) {
-      if (DMPolytopeTypeGetDim((DMPolytopeType)c) != d) continue;
+      if (DMPolytopeTypeGetDim((DMPolytopeType)c) != d || c == DM_POLYTOPE_UNKNOWN_CELL || c == DM_POLYTOPE_UNKNOWN_FACE) continue;
       ctO[off++] = c;
     }
   }
   for (c = 0; c <= DM_NUM_POLYTOPES; ++c) {
-    if (DMPolytopeTypeGetDim((DMPolytopeType)c) >= 0) continue;
+    if (DMPolytopeTypeGetDim((DMPolytopeType)c) >= 0 && c != DM_POLYTOPE_UNKNOWN_CELL && c != DM_POLYTOPE_UNKNOWN_FACE) continue;
     ctO[off++] = c;
   }
   PetscCheck(off == DM_NUM_POLYTOPES + 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid offset %" PetscInt_FMT " for cell type order", off);
@@ -382,7 +382,7 @@ PetscErrorCode DMPlexTransformDestroy(DMPlexTransform *tr)
       DMPolytopeType *rct;
       PetscInt       *rsize, *rcone, *rornt, Nct, n, r;
 
-      if (DMPolytopeTypeGetDim((DMPolytopeType)c) > 0) {
+      if (DMPolytopeTypeGetDim((DMPolytopeType)c) > 0 && c != DM_POLYTOPE_UNKNOWN_CELL && c != DM_POLYTOPE_UNKNOWN_FACE) {
         PetscCall(DMPlexTransformCellTransform((*tr), (DMPolytopeType)c, 0, NULL, &Nct, &rct, &rsize, &rcone, &rornt));
         for (n = 0; n < Nct; ++n) {
           if (rct[n] == DM_POLYTOPE_POINT) continue;
@@ -488,7 +488,7 @@ static PetscErrorCode DMPlexTransformCreateOffset_Internal(DMPlexTransform tr, P
         PetscInt            *rsize, *cone, *ornt;
         PetscInt             Nct, n, i;
 
-        if (DMPolytopeTypeGetDim(ct) < 0 || DMPolytopeTypeGetDim(ctNew) < 0) {
+        if (DMPolytopeTypeGetDim(ct) < 0 || ct == DM_POLYTOPE_UNKNOWN_CELL || ct == DM_POLYTOPE_UNKNOWN_FACE || DMPolytopeTypeGetDim(ctNew) < 0 || ctNew == DM_POLYTOPE_UNKNOWN_CELL || ctNew == DM_POLYTOPE_UNKNOWN_FACE) {
           off[ct * DM_NUM_POLYTOPES + ctNew] = -1;
           continue;
         }
@@ -557,7 +557,7 @@ PetscErrorCode DMPlexTransformSetUp(DMPlexTransform tr)
     PetscInt        Nct, n;
 
     PetscCall(DMPlexGetCellType(dm, p, &ct));
-    PetscCheck(ct != DM_POLYTOPE_UNKNOWN, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No cell type for point %" PetscInt_FMT, p);
+    PetscCheck(ct != DM_POLYTOPE_UNKNOWN && ct != DM_POLYTOPE_UNKNOWN_CELL && ct != DM_POLYTOPE_UNKNOWN_FACE, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No cell type for point %" PetscInt_FMT, p);
     PetscCall(DMPlexTransformCellTransform(tr, ct, p, NULL, &Nct, &rct, &rsize, &cone, &ornt));
     for (n = 0; n < Nct; ++n) celldim = PetscMax(celldim, DMPolytopeTypeGetDim(rct[n]));
   }
@@ -575,7 +575,7 @@ PetscErrorCode DMPlexTransformSetUp(DMPlexTransform tr)
       PetscInt        Nct, n;
 
       PetscCall(DMPlexGetCellType(dm, p, &ct));
-      PetscCheck(ct != DM_POLYTOPE_UNKNOWN, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No cell type for point %" PetscInt_FMT, p);
+      PetscCheck(ct != DM_POLYTOPE_UNKNOWN && ct != DM_POLYTOPE_UNKNOWN_CELL && ct != DM_POLYTOPE_UNKNOWN_FACE, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No cell type for point %" PetscInt_FMT, p);
       ++ctC[ct];
       PetscCall(DMPlexTransformCellTransform(tr, ct, p, NULL, &Nct, &rct, &rsize, &cone, &ornt));
       for (n = 0; n < Nct; ++n) ctCN[rct[n]] += rsize[n];
@@ -1444,7 +1444,7 @@ static PetscErrorCode DMPlexTransformCreateCellVertices_Internal(DMPlexTransform
     const char          *typeName;
 
     /* Since points are 0-dimensional, coordinates make no sense */
-    if (DMPolytopeTypeGetDim(ct) <= 0) continue;
+    if (DMPolytopeTypeGetDim(ct) <= 0 || ct == DM_POLYTOPE_UNKNOWN_CELL || ct == DM_POLYTOPE_UNKNOWN_FACE) continue;
     PetscCall(DMPlexCreateReferenceCell(PETSC_COMM_SELF, ct, &refdm));
     PetscCall(DMPlexTransformCreate(PETSC_COMM_SELF, &reftr));
     PetscCall(DMPlexTransformSetDM(reftr, refdm));

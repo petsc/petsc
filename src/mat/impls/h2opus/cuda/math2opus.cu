@@ -1117,7 +1117,7 @@ static PetscErrorCode MatView_H2OPUS(Mat A, PetscViewer view)
       if (!h2opus->kernel) {
         PetscCall(PetscViewerASCIIPrintf(view, "  Sampling parameters: max_rank %" PetscInt_FMT ", samples %" PetscInt_FMT ", tolerance %g\n", h2opus->max_rank, h2opus->bs, (double)h2opus->rtol));
       } else {
-        PetscCall(PetscViewerASCIIPrintf(view, "  Offdiagonal blocks approximation order %" PetscInt_FMT "\n", h2opus->basisord));
+        PetscCall(PetscViewerASCIIPrintf(view, "  Off-diagonal blocks approximation order %" PetscInt_FMT "\n", h2opus->basisord));
       }
       PetscCall(PetscViewerASCIIPrintf(view, "  Number of samples for norms %" PetscInt_FMT "\n", h2opus->norm_max_samples));
       if (size == 1) {

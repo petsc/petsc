@@ -25,8 +25,8 @@ static PetscErrorCode SNESLineSearchApply_Basic(SNESLineSearch linesearch)
 
   /* postcheck */
   PetscCall(SNESLineSearchPostCheck(linesearch, X, Y, W, &changed_y, &changed_w));
-  if (changed_y && !changed_w) {
-    PetscCall(VecWAXPY(W, -lambda, Y, X));
+  if (changed_y) {
+    if (!changed_w) PetscCall(VecWAXPY(W, -lambda, Y, X));
     if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));
   }
   if (linesearch->norms || snes->iter < snes->max_its - 1) {
@@ -37,7 +37,6 @@ static PetscErrorCode SNESLineSearchApply_Basic(SNESLineSearch linesearch)
       PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
-
   if (linesearch->norms) {
     if (!linesearch->ops->vinorm) PetscCall(VecNormBegin(F, NORM_2, &linesearch->fnorm));
     PetscCall(VecNormBegin(Y, NORM_2, &linesearch->ynorm));

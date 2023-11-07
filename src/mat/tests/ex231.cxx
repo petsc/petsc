@@ -107,7 +107,7 @@ int main(int argc, char **argv)
     }
   }
 
-  // Debugging: print number of on/off diagonal nonzeros
+  // Debugging: print number of on/off-diagonal nonzeros
   // for (unsigned int i=0; i<n_nz.size(); ++i)
   //   std::cout << n_nz[i] << " ";
   // std::cout << std::endl;

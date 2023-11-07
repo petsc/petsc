@@ -1,7 +1,5 @@
 #include <../src/vec/is/sf/impls/basic/allgatherv/sfallgatherv.h>
 
-PETSC_INTERN PetscErrorCode PetscSFBcastBegin_Gatherv(PetscSF, MPI_Datatype, PetscMemType, const void *, PetscMemType, void *, MPI_Op);
-
 /* PetscSFGetGraph is non-collective. An implementation should not have collective calls */
 PETSC_INTERN PetscErrorCode PetscSFGetGraph_Allgatherv(PetscSF sf, PetscInt *nroots, PetscInt *nleaves, const PetscInt **ilocal, const PetscSFNode **iremote)
 {
@@ -107,7 +105,7 @@ static PetscErrorCode PetscSFBcastBegin_Allgatherv(PetscSF sf, MPI_Datatype unit
   PetscMPIInt         sendcount, rank;
   MPI_Comm            comm;
   void               *rootbuf = NULL, *leafbuf = NULL;
-  MPI_Request        *req;
+  MPI_Request        *req = NULL;
   PetscSF_Allgatherv *dat = (PetscSF_Allgatherv *)sf->data;
 
   PetscFunctionBegin;
@@ -135,7 +133,7 @@ static PetscErrorCode PetscSFReduceBegin_Allgatherv(PetscSF sf, MPI_Datatype uni
   PetscMPIInt         rank, count, recvcount;
   MPI_Comm            comm;
   void               *rootbuf = NULL, *leafbuf = NULL;
-  MPI_Request        *req;
+  MPI_Request        *req = NULL;
 
   PetscFunctionBegin;
   PetscCall(PetscSFLinkCreate(sf, unit, rootmtype, rootdata, leafmtype, leafdata, op, PETSCSF_REDUCE, &link));
@@ -196,11 +194,24 @@ PETSC_INTERN PetscErrorCode PetscSFReduceEnd_Allgatherv(PetscSF sf, MPI_Datatype
 
 static PetscErrorCode PetscSFBcastToZero_Allgatherv(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata)
 {
-  PetscSFLink link;
-  PetscMPIInt rank;
+  PetscSFLink         link;
+  PetscMPIInt         rank;
+  PetscMPIInt         sendcount;
+  MPI_Comm            comm;
+  PetscSF_Allgatherv *dat     = (PetscSF_Allgatherv *)sf->data;
+  void               *rootbuf = NULL, *leafbuf = NULL; /* buffer seen by MPI */
+  MPI_Request        *req = NULL;
 
   PetscFunctionBegin;
-  PetscCall(PetscSFBcastBegin_Gatherv(sf, unit, rootmtype, rootdata, leafmtype, leafdata, MPI_REPLACE));
+  PetscCall(PetscSFLinkCreate(sf, unit, rootmtype, rootdata, leafmtype, leafdata, MPI_REPLACE, PETSCSF_BCAST, &link));
+  PetscCall(PetscSFLinkPackRootData(sf, link, PETSCSF_REMOTE, rootdata));
+  PetscCall(PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(sf, link, PETSC_TRUE /* device2host before sending */));
+  PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
+  PetscCall(PetscMPIIntCast(sf->nroots, &sendcount));
+  PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, PETSCSF_ROOT2LEAF, &rootbuf, &leafbuf, &req, NULL));
+  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, PETSCSF_ROOT2LEAF));
+  PetscCallMPI(MPIU_Igatherv(rootbuf, sendcount, unit, leafbuf, dat->recvcounts, dat->displs, unit, 0 /*rank 0*/, comm, req));
+
   PetscCall(PetscSFLinkGetInUse(sf, unit, rootdata, leafdata, PETSC_OWN_POINTER, &link));
   PetscCall(PetscSFLinkFinishCommunication(sf, link, PETSCSF_ROOT2LEAF));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)sf), &rank));
@@ -418,6 +429,8 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Allgatherv(PetscSF sf)
   sf->ops->FetchAndOpEnd   = PetscSFFetchAndOpEnd_Allgatherv;
   sf->ops->CreateLocalSF   = PetscSFCreateLocalSF_Allgatherv;
   sf->ops->BcastToZero     = PetscSFBcastToZero_Allgatherv;
+
+  sf->collective = PETSC_TRUE;
 
   PetscCall(PetscNew(&dat));
   dat->bcast_root = -1;

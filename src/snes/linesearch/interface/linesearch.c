@@ -350,14 +350,14 @@ PetscErrorCode SNESLineSearchGetPreCheck(SNESLineSearch linesearch, PetscErrorCo
 
   Input Parameters:
 + linesearch - the `SNESLineSearch` context
-. func       - [optional] function evaluation routine,   for the calling sequence see `SNESLineSearchPostCheck`
+. func       - [optional] function evaluation routine, for the calling sequence see `SNESLineSearchPostCheck`
 - ctx        - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
   Level: intermediate
 
   Notes:
-  Use `SNESLineSearchSetPreCheck()` to change the step before the line search.
-  search is complete.
+  Use `SNESLineSearchSetPreCheck()` to change the step before the line search is completed.
+  The calling sequence of the callback does not contain the current scaling factor. To access the value, use `SNESLineSearchGetLambda()`.
 
   Use `SNESVISetVariableBounds()` and `SNESVISetComputeVariableBounds()` to cause `SNES` to automatically control the ranges of variables allowed.
 
@@ -437,16 +437,16 @@ PetscErrorCode SNESLineSearchPreCheck(SNESLineSearch linesearch, Vec X, Vec Y, P
 + linesearch - The linesearch context
 . X          - The last solution
 . Y          - The step direction
-- W          - The updated solution, W = X + lambda*Y for some lambda
+- W          - The updated solution, `W = X - lambda * Y` for some lambda
 
   Output Parameters:
-+ changed_Y - Indicator if the direction Y has been changed.
++ changed_Y - Indicator if the direction `Y` has been changed.
 - changed_W - Indicator if the new candidate solution W has been changed.
 
   Level: developer
 
   Note:
-  This calls any function provided with `SNESLineSearchSetPreCheck()`
+  This calls any function provided with `SNESLineSearchSetPostCheck()`.
 
 .seealso: `SNESGetLineSearch()`, `SNESLineSearchPreCheck()`, `SNESLineSearchSetPostCheck()`, `SNESLineSearchGetPostCheck()`, `SNESLineSearchSetPrecheck()`, `SNESLineSearchGetPrecheck()`
 @*/
@@ -550,14 +550,14 @@ PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch linesearch, Vec X, Ve
 
   Collective
 
-  Input Parameters:
-+ linesearch - The linesearch context
-- Y          - The search direction
+  Input Parameter:
+. linesearch - The linesearch context
 
   Input/Output Parameters:
 + X     - The current solution, on output the new solution
 . F     - The current function, on output the new function
-- fnorm - The current norm, on output the new function norm
+. fnorm - The current norm, on output the new function norm
+- Y     - The current search direction, on output the direction determined by the linesearch, i.e. Xnew = Xold - lambda*Y
 
   Options Database Keys:
 + -snes_linesearch_type                - basic (or equivalently none), bt, l2, cp, nleqerr, shell
@@ -577,7 +577,7 @@ PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch linesearch, Vec X, Ve
   application of the line search may invoke `SNESComputeFunction()` several times, and
   therefore may be fairly expensive.
 
-.seealso: `SNESLineSearch`, `SNESGetLineSearch()`, `SNESLineSearchCreate()`, `SNESLineSearchPreCheck()`, `SNESLineSearchPostCheck()`, `SNESSolve()`, `SNESComputeFunction()`, `SNESLineSearchSetComputeNorms()`,
+.seealso: `SNESLineSearch`, `SNESGetLineSearch()`, `SNESLineSearchCreate()`, `SNESLineSearchGetLambda()`, `SNESLineSearchPreCheck()`, `SNESLineSearchPostCheck()`, `SNESSolve()`, `SNESComputeFunction()`, `SNESLineSearchSetComputeNorms()`,
           `SNESLineSearchType`, `SNESLineSearchSetType()`
 @*/
 PetscErrorCode SNESLineSearchApply(SNESLineSearch linesearch, Vec X, Vec F, PetscReal *fnorm, Vec Y)
@@ -1276,7 +1276,7 @@ PetscErrorCode SNESLineSearchSetOrder(SNESLineSearch linesearch, PetscInt order)
   Output Parameters:
 + xnorm - The norm of the current solution
 . fnorm - The norm of the current function, this is the `norm(function(X))` where `X` is the current solution.
-- ynorm - The norm of the current update
+- ynorm - The norm of the current update (after scaling by the linesearch computed lambda)
 
   Level: developer
 
@@ -1299,7 +1299,7 @@ PetscErrorCode SNESLineSearchGetNorms(SNESLineSearch linesearch, PetscReal *xnor
 }
 
 /*@
-  SNESLineSearchSetNorms - Gets the computed norms for for X, Y, and F.
+  SNESLineSearchSetNorms - Sets the computed norms for X, Y, and F.
 
   Collective
 
@@ -1307,7 +1307,7 @@ PetscErrorCode SNESLineSearchGetNorms(SNESLineSearch linesearch, PetscReal *xnor
 + linesearch - linesearch context
 . xnorm      - The norm of the current solution
 . fnorm      - The norm of the current function, this is the `norm(function(X))` where `X` is the current solution
-- ynorm      - The norm of the current update
+- ynorm      - The norm of the current update (after scaling by the linesearch computed lambda)
 
   Level: developer
 
@@ -1386,7 +1386,7 @@ PetscErrorCode SNESLineSearchSetComputeNorms(SNESLineSearch linesearch, PetscBoo
 /*@
   SNESLineSearchGetVecs - Gets the vectors from the `SNESLineSearch` context
 
-  Not Collective on but the vectors are parallel
+  Not Collective but the vectors are parallel
 
   Input Parameter:
 . linesearch - linesearch context

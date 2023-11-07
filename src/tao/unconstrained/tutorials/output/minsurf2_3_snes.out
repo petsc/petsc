@@ -1,0 +1,39 @@
+
+---- Minimum Surface Area Problem -----
+mx: 10     my: 10   
+
+iter =   0, Function value 1.46076, Residual: 0.207785 
+iter =   1, Function value 1.43303, Residual: 0.142433 
+iter =   2, Function value 1.42248, Residual: 0.0949213 
+iter =   3, Function value 1.41916, Residual: 0.0515863 
+iter =   4, Function value 1.41852, Residual: 0.00926326 
+iter =   5, Function value 1.41849, Residual: 0.0054879 
+iter =   6, Function value 1.41848, Residual: 0.00562929 
+iter =   7, Function value 1.41847, Residual: 0.0036166 
+iter =   8, Function value 1.41847, Residual: 0.00233449 
+iter =   9, Function value 1.41847, Residual: 0.00120418 
+iter =  10, Function value 1.41847, Residual: 0.000549776 
+iter =  11, Function value 1.41847, Residual: 0.000182137 
+iter =  12, Function value 1.41847, Residual: 0.000102854 
+iter =  13, Function value 1.41847, Residual: 9.49423e-05 
+Tao Object: 3 MPI processes
+  type: snes
+  SNES Object: 3 MPI processes
+    type: ncg
+      type: FR
+    maximum iterations=10000, maximum function evaluations=30000
+    tolerances: relative=1e-08, absolute=0.0001, solution=1e-20
+    total number of function evaluations=27
+    norm schedule ALWAYS
+    SNESLineSearch Object: 3 MPI processes
+      type: cp
+      maxstep=1.000000e+08, minlambda=1.000000e-12
+      tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+      maximum iterations=1
+  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=9.49423e-05
+  Objective value=1.41847
+  total number of iterations=13,                          (max: 2000)
+  total number of function evaluations=14,                  max: 4000
+  total number of function/gradient evaluations=27,      (max: 4000)
+  Solution converged:    User Terminated

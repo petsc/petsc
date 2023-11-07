@@ -589,7 +589,7 @@ class Linter:
       # :/NAME means match NAME from the project root directory, i.e. PETSC_DIR
       ':/src',
       ':/include',
-      # exclude all fortran wrappers
+      # exclude all Fortran wrappers
       ':!**/ftn-*/**',
       ':!**/f90-*/**',
       # exclude docs, we don't want to match changelog mentions

@@ -295,7 +295,7 @@ PetscErrorCode PetscDrawViewPortsCreateRect(PetscDraw draw, PetscInt nx, PetscIn
 /*@C
   PetscDrawViewPortsDestroy - frees a `PetscDrawViewPorts` object
 
-  Collective on the PetscDraw inside ports
+  Collective on the `PetscDraw` inside `ports`
 
   Input Parameter:
 . ports - the `PetscDrawViewPorts` object
@@ -320,7 +320,7 @@ PetscErrorCode PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
 /*@C
   PetscDrawViewPortsSet - sets a draw object to use a particular subport
 
-  Logically Collective on the `PetscDraw` inside ports
+  Logically Collective on the `PetscDraw` inside `ports`
 
   Input Parameters:
 + ports - the `PetscDrawViewPorts` object

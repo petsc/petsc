@@ -129,22 +129,21 @@ static PetscErrorCode SNESLineSearchApply_L2(SNESLineSearch linesearch)
   if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));
 
   /* postcheck */
+  PetscCall(SNESLineSearchSetLambda(linesearch, lambda));
   PetscCall(SNESLineSearchPostCheck(linesearch, X, Y, W, &changed_y, &changed_w));
-  if (changed_y && !changed_w) {
-    PetscCall(VecAXPY(X, -lambda, Y));
-    if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, X));
-  } else {
-    PetscCall(VecCopy(W, X));
+  if (changed_y) {
+    if (!changed_w) PetscCall(VecWAXPY(W, -lambda, Y, X));
+    if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));
   }
+  PetscCall(VecCopy(W, X));
   PetscCall((*linesearch->ops->snesfunc)(snes, X, F));
 
-  PetscCall(SNESLineSearchSetLambda(linesearch, lambda));
   PetscCall(SNESLineSearchComputeNorms(linesearch));
-  PetscCall(SNESLineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm));
 
   if (monitor) {
+    PetscCall(SNESLineSearchGetNorms(linesearch, NULL, &gnorm, NULL));
     PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
-    PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search terminated: lambda = %g, fnorms = %g\n", (double)lambda, (double)gnorm));
+    PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search terminated: lambda = %g, fnorm = %g\n", (double)lambda, (double)gnorm));
     PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
   }
   if (lambda <= steptol) PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT));

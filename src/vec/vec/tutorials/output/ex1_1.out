@@ -11,4 +11,5 @@ VecSwap  0.
 VecWAXPY 0.
 VecPointwiseMult 0.
 VecPointwiseDivide 0.
+VecPointwiseDivide -1.01913
 VecMAXPY 0. 0. 0. 

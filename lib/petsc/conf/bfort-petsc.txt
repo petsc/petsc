@@ -239,6 +239,7 @@ native    PetscLogDouble
 
 nativeptr PetscMatlabEngine
 nativeptr PetscRandom
+nativeptr PetscBench
 native    PetscBinarySeekType
 
 native    PetscBuildTwoSidedType
@@ -288,4 +289,3 @@ nativeptr PetscViewerAndFormat
 nativeptr PetscViewers
 native    PetscFileMode
 native    PetscViewerFormat
-

@@ -2386,9 +2386,9 @@ PETSC_EXTERN const char *const MatCUSPARSEStorageFormats[];
     matrices whose operation should use a particular storage format.
 
     Values:
-+   `MAT_CUSPARSE_MULT_DIAG` - sets the storage format for the diagonal matrix in the parallel MatMult
-.   `MAT_CUSPARSE_MULT_OFFDIAG` - sets the storage format for the offdiagonal matrix in the parallel MatMult
-.   `MAT_CUSPARSE_MULT` - sets the storage format for the entire matrix in the serial (single GPU) MatMult
++   `MAT_CUSPARSE_MULT_DIAG` - sets the storage format for the diagonal matrix in the parallel `MatMult()`
+.   `MAT_CUSPARSE_MULT_OFFDIAG` - sets the storage format for the off-diagonal matrix in the parallel `MatMult()`
+.   `MAT_CUSPARSE_MULT` - sets the storage format for the entire matrix in the serial (single GPU) `MatMult()`
 -   `MAT_CUSPARSE_ALL` - sets the storage format for all `MATAIJCUSPARSE` (GPU) matrices
 
     Level: intermediate
@@ -2462,7 +2462,7 @@ PETSC_EXTERN const char *const MatHIPSPARSEStorageFormats[];
 
     Values:
 +   `MAT_HIPSPARSE_MULT_DIAG` - sets the storage format for the diagonal matrix in the parallel `MatMult()`
-.   `MAT_HIPSPARSE_MULT_OFFDIAG` - sets the storage format for the offdiagonal matrix in the parallel `MatMult()`
+.   `MAT_HIPSPARSE_MULT_OFFDIAG` - sets the storage format for the off-diagonal matrix in the parallel `MatMult()`
 .   `MAT_HIPSPARSE_MULT` - sets the storage format for the entire matrix in the serial (single GPU) `MatMult()`
 -   `MAT_HIPSPARSE_ALL` - sets the storage format for all HIPSPARSE (GPU) matrices
 
@@ -2552,7 +2552,10 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat, Mat *);
 
 PETSC_EXTERN PetscErrorCode MatSeqAIJGetCSRAndMemType(Mat, const PetscInt **, const PetscInt **, PetscScalar **, PetscMemType *);
 
-PETSC_EXTERN PetscErrorCode MatCreateGraph(Mat, PetscBool, PetscBool, PetscReal, Mat *);
+PETSC_EXTERN PetscErrorCode MatCreateGraph(Mat, PetscBool, PetscBool, PetscReal, PetscInt, PetscInt[], Mat *);
 PETSC_EXTERN PetscErrorCode MatEliminateZeros(Mat, PetscBool);
 
 PETSC_EXTERN PetscErrorCode MatCreateDenseFromVecType(MPI_Comm, VecType, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, PetscScalar *, Mat *);
+
+PETSC_EXTERN PetscErrorCode MatSetHPL(Mat, int);
+#define PETSCBMHPL "hpl"

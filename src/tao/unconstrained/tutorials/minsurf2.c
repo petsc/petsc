@@ -8,8 +8,8 @@
 #include <petscdmda.h>
 
 static char help[] = "This example demonstrates use of the TAO package to \n\
-solve an unconstrained minimization problem.  This example is based on a \n\
-problem from the MINPACK-2 test suite.  Given a rectangular 2-D domain and \n\
+solve an unconstrained minimization problem. This example is based on a \n\
+problem from the MINPACK-2 test suite. Given a rectangular 2-D domain and \n\
 boundary values along the edges of the domain, the objective is to find the\n\
 surface with the minimal area that satisfies the boundary conditions.\n\
 The command line options are:\n\
@@ -20,8 +20,8 @@ The command line options are:\n\
 
 /*
    User-defined application context - contains data needed by the
-   application-provided call-back routines, FormFunctionGradient()
-   and FormHessian().
+   application-provided call-back routines, FormFunction(),
+   FormFunctionGradient(), and FormHessian().
 */
 typedef struct {
   PetscInt   mx, my;                      /* discretization in x, y directions */
@@ -34,11 +34,12 @@ typedef struct {
 
 static PetscErrorCode MSA_BoundaryConditions(AppCtx *);
 static PetscErrorCode MSA_InitialPoint(AppCtx *, Vec);
-PetscErrorCode        QuadraticH(AppCtx *, Vec, Mat);
-PetscErrorCode        FormFunctionGradient(Tao, Vec, PetscReal *, Vec, void *);
-PetscErrorCode        FormGradient(Tao, Vec, Vec, void *);
-PetscErrorCode        FormHessian(Tao, Vec, Mat, Mat, void *);
-PetscErrorCode        My_Monitor(Tao, void *);
+static PetscErrorCode QuadraticH(AppCtx *, Vec, Mat);
+static PetscErrorCode FormFunction(Tao, Vec, PetscReal *, void *);
+static PetscErrorCode FormFunctionGradient(Tao, Vec, PetscReal *, Vec, void *);
+static PetscErrorCode FormGradient(Tao, Vec, Vec, void *);
+static PetscErrorCode FormHessian(Tao, Vec, Mat, Mat, void *);
+static PetscErrorCode My_Monitor(Tao, void *);
 
 int main(int argc, char **argv)
 {
@@ -74,6 +75,7 @@ int main(int argc, char **argv)
   PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, user.mx, user.my, Nx, Ny, 1, 1, NULL, NULL, &user.dm));
   PetscCall(DMSetFromOptions(user.dm));
   PetscCall(DMSetUp(user.dm));
+  PetscCall(DMDASetUniformCoordinates(user.dm, -0.5, 0.5, -0.5, 0.5, PETSC_DECIDE, PETSC_DECIDE));
 
   /* Create TAO solver and set desired solution method.*/
   PetscCall(TaoCreate(PETSC_COMM_WORLD, &tao));
@@ -93,6 +95,7 @@ int main(int argc, char **argv)
      Initialize the Application context for use in function evaluations  --  application specific, see below.
      Set routines for function and gradient evaluation
   */
+  PetscCall(TaoSetObjective(tao, FormFunction, (void *)&user));
   PetscCall(TaoSetObjectiveAndGradient(tao, NULL, FormFunctionGradient, (void *)&user));
 
   /*
@@ -155,26 +158,153 @@ int main(int argc, char **argv)
   return 0;
 }
 
-PetscErrorCode FormGradient(Tao tao, Vec X, Vec G, void *userCtx)
+/* -------------------------------------------------------------------- */
+/*
+    FormFunction - Evaluates the objective function.
+
+    Input Parameters:
+.   tao     - the Tao context
+.   X       - input vector
+.   userCtx - optional user-defined context, as set by TaoSetObjective()
+
+    Output Parameters:
+.   fcn     - the newly evaluated function
+*/
+PetscErrorCode FormFunction(Tao tao, Vec X, PetscReal *fcn, void *userCtx)
 {
-  PetscReal fcn;
+  AppCtx     *user = (AppCtx *)userCtx;
+  PetscInt    i, j;
+  PetscInt    mx = user->mx, my = user->my;
+  PetscInt    xs, xm, gxs, gxm, ys, ym, gys, gym;
+  PetscReal   ft = 0.0;
+  PetscReal   hx = 1.0 / (mx + 1), hy = 1.0 / (my + 1), area = 0.5 * hx * hy;
+  PetscReal   rhx = mx + 1, rhy = my + 1;
+  PetscReal   f2, f4, d1, d2, d3, d4, xc, xl, xr, xt, xb;
+  PetscReal **x;
+  Vec         localX;
 
   PetscFunctionBegin;
-  PetscCall(FormFunctionGradient(tao, X, &fcn, G, userCtx));
+  /* Get local mesh boundaries */
+  PetscCall(DMGetLocalVector(user->dm, &localX));
+  PetscCall(DMDAGetCorners(user->dm, &xs, &ys, NULL, &xm, &ym, NULL));
+  PetscCall(DMDAGetGhostCorners(user->dm, &gxs, &gys, NULL, &gxm, &gym, NULL));
+
+  /* Scatter ghost points to local vector */
+  PetscCall(DMGlobalToLocalBegin(user->dm, X, INSERT_VALUES, localX));
+  PetscCall(DMGlobalToLocalEnd(user->dm, X, INSERT_VALUES, localX));
+
+  /* Get pointers to vector data */
+  PetscCall(DMDAVecGetArray(user->dm, localX, (void **)&x));
+
+  /* Compute function and gradient over the locally owned part of the mesh */
+  for (j = ys; j < ys + ym; j++) {
+    for (i = xs; i < xs + xm; i++) {
+      xc = x[j][i];
+
+      if (i == 0) { /* left side */
+        xl = user->left[j - ys + 1];
+      } else {
+        xl = x[j][i - 1];
+      }
+
+      if (j == 0) { /* bottom side */
+        xb = user->bottom[i - xs + 1];
+      } else {
+        xb = x[j - 1][i];
+      }
+
+      if (i + 1 == gxs + gxm) { /* right side */
+        xr = user->right[j - ys + 1];
+      } else {
+        xr = x[j][i + 1];
+      }
+
+      if (j + 1 == gys + gym) { /* top side */
+        xt = user->top[i - xs + 1];
+      } else {
+        xt = x[j + 1][i];
+      }
+
+      d1 = (xc - xl);
+      d2 = (xc - xr);
+      d3 = (xc - xt);
+      d4 = (xc - xb);
+
+      d1 *= rhx;
+      d2 *= rhx;
+      d3 *= rhy;
+      d4 *= rhy;
+
+      f2 = PetscSqrtReal(1.0 + d1 * d1 + d4 * d4);
+      f4 = PetscSqrtReal(1.0 + d3 * d3 + d2 * d2);
+
+      ft = ft + (f2 + f4);
+    }
+  }
+
+  /* Compute triangular areas along the border of the domain. */
+  if (xs == 0) { /* left side */
+    for (j = ys; j < ys + ym; j++) {
+      d3 = (user->left[j - ys + 1] - user->left[j - ys + 2]) * rhy;
+      d2 = (user->left[j - ys + 1] - x[j][0]) * rhx;
+      ft = ft + PetscSqrtReal(1.0 + d3 * d3 + d2 * d2);
+    }
+  }
+  if (ys == 0) { /* bottom side */
+    for (i = xs; i < xs + xm; i++) {
+      d2 = (user->bottom[i + 1 - xs] - user->bottom[i - xs + 2]) * rhx;
+      d3 = (user->bottom[i - xs + 1] - x[0][i]) * rhy;
+      ft = ft + PetscSqrtReal(1.0 + d3 * d3 + d2 * d2);
+    }
+  }
+
+  if (xs + xm == mx) { /* right side */
+    for (j = ys; j < ys + ym; j++) {
+      d1 = (x[j][mx - 1] - user->right[j - ys + 1]) * rhx;
+      d4 = (user->right[j - ys] - user->right[j - ys + 1]) * rhy;
+      ft = ft + PetscSqrtReal(1.0 + d1 * d1 + d4 * d4);
+    }
+  }
+  if (ys + ym == my) { /* top side */
+    for (i = xs; i < xs + xm; i++) {
+      d1 = (x[my - 1][i] - user->top[i - xs + 1]) * rhy;
+      d4 = (user->top[i - xs + 1] - user->top[i - xs]) * rhx;
+      ft = ft + PetscSqrtReal(1.0 + d1 * d1 + d4 * d4);
+    }
+  }
+
+  if (ys == 0 && xs == 0) {
+    d1 = (user->left[0] - user->left[1]) / hy;
+    d2 = (user->bottom[0] - user->bottom[1]) * rhx;
+    ft += PetscSqrtReal(1.0 + d1 * d1 + d2 * d2);
+  }
+  if (ys + ym == my && xs + xm == mx) {
+    d1 = (user->right[ym + 1] - user->right[ym]) * rhy;
+    d2 = (user->top[xm + 1] - user->top[xm]) * rhx;
+    ft += PetscSqrtReal(1.0 + d1 * d1 + d2 * d2);
+  }
+
+  ft = ft * area;
+  PetscCall(MPIU_Allreduce(&ft, fcn, 1, MPIU_REAL, MPIU_SUM, MPI_COMM_WORLD));
+
+  /* Restore vectors */
+  PetscCall(DMDAVecRestoreArray(user->dm, localX, (void **)&x));
+  PetscCall(DMRestoreLocalVector(user->dm, &localX));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* -------------------------------------------------------------------- */
-/*  FormFunctionGradient - Evaluates the function and corresponding gradient.
+/*
+    FormFunctionGradient - Evaluates the function and corresponding gradient.
 
     Input Parameters:
 .   tao     - the Tao context
-.   XX      - input vector
+.   X      - input vector
 .   userCtx - optional user-defined context, as set by TaoSetObjectiveAndGradient()
 
     Output Parameters:
 .   fcn     - the newly evaluated function
-.   GG       - vector containing the newly evaluated gradient
+.   G       - vector containing the newly evaluated gradient
 */
 PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void *userCtx)
 {
@@ -334,10 +464,17 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void 
   /* Restore vectors */
   PetscCall(DMDAVecRestoreArray(user->dm, localX, (void **)&x));
   PetscCall(DMDAVecRestoreArray(user->dm, G, (void **)&g));
-
-  /* Scatter values to global vector */
   PetscCall(DMRestoreLocalVector(user->dm, &localX));
   PetscCall(PetscLogFlops(67.0 * xm * ym));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode FormGradient(Tao tao, Vec X, Vec G, void *userCtx)
+{
+  PetscReal fcn;
+
+  PetscFunctionBegin;
+  PetscCall(FormFunctionGradient(tao, X, &fcn, G, userCtx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -412,7 +549,6 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
   PetscCall(MatSetOption(Hessian, MAT_IGNORE_OFF_PROC_ENTRIES, PETSC_TRUE));
 
   /* Compute Hessian over the locally owned part of the mesh */
-
   for (j = ys; j < ys + ym; j++) {
     for (i = xs; i < xs + xm; i++) {
       xc  = x[j][i];
@@ -692,9 +828,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx *user, Vec X)
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-random", &start2, &flg2));
 
   if (flg1) { /* The zero vector is reasonable */
-
     PetscCall(VecSet(X, start1));
-
   } else if (flg2 && start2 > 0) { /* Try a random start between -0.5 and 0.5 */
     PetscRandom rctx;
     PetscReal   np5 = -0.5;
@@ -703,7 +837,6 @@ static PetscErrorCode MSA_InitialPoint(AppCtx *user, Vec X)
     PetscCall(VecSetRandom(X, rctx));
     PetscCall(PetscRandomDestroy(&rctx));
     PetscCall(VecShift(X, np5));
-
   } else { /* Take an average of the boundary conditions */
     PetscInt    xs, xm, ys, ym;
     PetscInt    mx = user->mx, my = user->my;
@@ -753,9 +886,27 @@ PetscErrorCode My_Monitor(Tao tao, void *ctx)
       requires: !single
 
    test:
+      suffix: 2_snes
+      nsize: 2
+      args: -tao_smonitor -tao_type snes -ksp_converged_maxits -ksp_max_it 15 -snes_atol 1.e-4
+      filter: grep -v "nls ksp"
+      requires: !single
+
+   test:
       suffix: 3
       nsize: 3
       args: -tao_smonitor -tao_type cg -tao_cg_type fr -mx 10 -my 10 -tao_gatol 1.e-3
+      requires: !single
+
+   test:
+      suffix: 3_snes
+      nsize: 3
+      args: -tao_smonitor -tao_type snes -snes_type ncg -snes_ncg_type fr -mx 10 -my 10 -snes_atol 1.e-4
+      requires: !single
+
+   test:
+      suffix: 4_snes_ngmres
+      args: -tao_type snes -snes_type ngmres -npc_snes_type ncg -mx 10 -my 10 -snes_atol 1.e-4 -npc_snes_ncg_type fr  -snes_converged_reason -snes_monitor ::ascii_info_detail -snes_ngmres_monitor -snes_ngmres_select_type {{linesearch difference}separate output}
       requires: !single
 
    test:

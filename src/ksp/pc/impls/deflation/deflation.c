@@ -1,4 +1,4 @@
-#include <../src/ksp/pc/impls/deflation/deflation.h> /*I "petscksp.h" I*/ /* includes for fortran wrappers */
+#include <../src/ksp/pc/impls/deflation/deflation.h> /*I "petscksp.h" I*/ /* header file for Fortran wrappers */
 
 const char *const PCDeflationSpaceTypes[] = {"haar", "db2", "db4", "db8", "db16", "biorth22", "meyer", "aggregation", "user", "PCDeflationSpaceType", "PC_DEFLATION_SPACE_", NULL};
 

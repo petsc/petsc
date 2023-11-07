@@ -62,7 +62,7 @@ The GPU based vectors allow
 one to set values on either the CPU or GPU but do their computations on the GPU.
 
 We emphasize that all processes in ``comm`` *must* call the vector
-creation routines, since these routines are collective over all
+creation routines, since these routines are collective on all
 processes in the communicator. If you are not familiar with MPI
 communicators, see the discussion in :any:`sec_writing` on
 page . In addition, if a sequence of creation routines is

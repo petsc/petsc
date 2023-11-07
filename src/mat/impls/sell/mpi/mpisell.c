@@ -1586,7 +1586,7 @@ PetscErrorCode MatCreateSELL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, 
 
   Output Parameters:
 + Ad     - The diagonal portion of `A`
-. Ao     - The off diagonal portion of `A`
+. Ao     - The off-diagonal portion of `A`
 - colmap - An array mapping local column numbers of `Ao` to global column numbers of the parallel matrix
 
   Level: advanced

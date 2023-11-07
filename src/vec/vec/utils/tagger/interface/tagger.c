@@ -350,7 +350,7 @@ PetscErrorCode VecTaggerView(VecTagger tagger, PetscViewer viewer)
   VecTaggerComputeBoxes - If the tagged index set can be summarized as a list of boxes of values, returns that list, otherwise returns
   in listed `PETSC_FALSE`
 
-  Collective on VecTagger
+  Collective
 
   Input Parameters:
 + tagger - the `VecTagger` context

@@ -550,9 +550,9 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
           }
           if (reuse == MAT_INITIAL_MATRIX) PetscCall(MatDestroy(&mglevels[level]->A));
           if (reuse == MAT_REUSE_MATRIX) {
-            PetscCall(PetscInfo(pc, "%s: RAP after first solve, reuse matrix level %" PetscInt_FMT "\n", ((PetscObject)pc)->prefix, level));
+            PetscCall(PetscInfo(pc, "%s: RAP after initial setup, reuse matrix level %" PetscInt_FMT "\n", ((PetscObject)pc)->prefix, level));
           } else {
-            PetscCall(PetscInfo(pc, "%s: RAP after first solve, new matrix level %" PetscInt_FMT "\n", ((PetscObject)pc)->prefix, level));
+            PetscCall(PetscInfo(pc, "%s: RAP after initial setup, with repartitioning (new matrix) level %" PetscInt_FMT "\n", ((PetscObject)pc)->prefix, level));
           }
           PetscCall(PetscLogEventBegin(petsc_gamg_setup_matmat_events[gl][1], 0, 0, 0, 0));
           PetscCall(MatPtAP(dB, mglevels[level + 1]->interpolate, reuse, PETSC_DEFAULT, &B));
@@ -625,7 +625,7 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
   /* Get A_i and R_i */
   for (level = 0, Aarr[0] = Pmat, nactivepe = size; level < (pc_gamg->Nlevels - 1) && (!level || M > pc_gamg->coarse_eq_limit); level++) {
     pc_gamg->current_level = level;
-    PetscCheck(level < PETSC_MG_MAXLEVELS, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Too many levels %" PetscInt_FMT, level);
+    PetscCheck(level < PETSC_MG_MAXLEVELS - 2, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Too many levels %" PetscInt_FMT, level + 1);
     level1 = level + 1;
 #if defined(GAMG_STAGES)
     if (!gamg_stages[level]) {
@@ -641,7 +641,7 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
       Mat               Prol11;
 
       PetscCall(PCGAMGCreateGraph(pc, Aarr[level], &Gmat));
-      PetscCall(pc_gamg->ops->coarsen(pc, &Gmat, &agg_lists));
+      PetscCall(pc_gamg->ops->coarsen(pc, &Gmat, &agg_lists)); // Gmat may have ghosts for QR aggregates not in matrix
       PetscCall(pc_gamg->ops->prolongator(pc, Aarr[level], Gmat, agg_lists, &Prol11));
 
       /* could have failed to create new level */
@@ -658,9 +658,11 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
         }
 
         if (pc_gamg->use_aggs_in_asm) {
-          PetscInt bs;
+          PetscInt bs, Istart;
           PetscCall(MatGetBlockSizes(Prol11, &bs, NULL)); // not timed directly, ugly, could remove, but good ASM method
-          PetscCall(PetscCDGetASMBlocks(agg_lists, bs, Gmat, &nASMBlocksArr[level], &ASMLocalIDsArr[level]));
+          PetscCall(MatGetOwnershipRange(Prol11, &Istart, NULL));
+          PetscCall(PetscCDGetASMBlocks(agg_lists, bs, &nASMBlocksArr[level], &ASMLocalIDsArr[level]));
+          PetscCall(PetscInfo(pc, "%d: %" PetscInt_FMT " ASM local domains,  bs = %d\n", (int)level, nASMBlocksArr[level], (int)bs));
         }
 
         PetscCall(PCGetOptionsPrefix(pc, &prefix));
@@ -1579,6 +1581,8 @@ static PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems *PetscOption
       pc_gamg->threshold[i] = pc_gamg->threshold[i - 1] * pc_gamg->threshold_scale;
     } while (++i < PETSC_MG_MAXLEVELS);
   }
+  PetscCall(PetscOptionsInt("-pc_mg_levels", "Set number of MG levels (should get from base class)", "PCGAMGSetNlevels", pc_gamg->Nlevels, &pc_gamg->Nlevels, NULL));
+  PetscCheck(pc_gamg->Nlevels <= PETSC_MG_MAXLEVELS, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_INCOMP, "-pc_mg_levels (%d) >= PETSC_MG_MAXLEVELS (%d)", (int)pc_gamg->Nlevels, (int)PETSC_MG_MAXLEVELS);
   n = PETSC_MG_MAXLEVELS;
   PetscCall(PetscOptionsIntArray("-pc_gamg_rank_reduction_factors", "Manual schedule of coarse grid reduction factors that overrides internal heuristics (0 for first reduction puts one process/device)", "PCGAMGSetRankReductionFactors", pc_gamg->level_reduction_factors, &n, &flag));
   if (!flag) i = 0;
@@ -1586,7 +1590,6 @@ static PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems *PetscOption
   do {
     pc_gamg->level_reduction_factors[i] = -1;
   } while (++i < PETSC_MG_MAXLEVELS);
-  PetscCall(PetscOptionsInt("-pc_mg_levels", "Set number of MG levels", "PCGAMGSetNlevels", pc_gamg->Nlevels, &pc_gamg->Nlevels, NULL));
   {
     PetscReal eminmax[2] = {0., 0.};
     n                    = 2;
@@ -1596,6 +1599,7 @@ static PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems *PetscOption
       PetscCall(PCGAMGSetEigenvalues(pc, eminmax[1], eminmax[0]));
     }
   }
+
   /* set options for subtype */
   PetscCall((*pc_gamg->ops->setfromoptions)(pc, PetscOptionsObject));
 

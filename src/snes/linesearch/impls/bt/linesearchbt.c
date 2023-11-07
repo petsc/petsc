@@ -106,7 +106,7 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
       PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: Scaling step by %14.12e old ynorm %14.12e\n", (double)(maxstep / ynorm), (double)ynorm));
       PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
     }
-    PetscCall(VecScale(Y, maxstep / (ynorm)));
+    PetscCall(VecScale(Y, maxstep / ynorm));
     ynorm = maxstep;
   }
 
@@ -327,11 +327,10 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
   }
 
   /* postcheck */
-  /* update Y to lambda*Y so that W is consistent with  X - lambda*Y */
-  PetscCall(VecScale(Y, lambda));
+  PetscCall(SNESLineSearchSetLambda(linesearch, lambda));
   PetscCall(SNESLineSearchPostCheck(linesearch, X, Y, W, &changed_y, &changed_w));
   if (changed_y) {
-    PetscCall(VecWAXPY(W, -1.0, Y, X));
+    if (!changed_w) PetscCall(VecWAXPY(W, -lambda, Y, X));
     if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));
   }
   if (changed_y || changed_w || objective) { /* recompute the function norm if the step has changed or the objective isn't the norm */
@@ -354,7 +353,6 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
   PetscCall(VecCopy(W, X));
   PetscCall(VecCopy(G, F));
   PetscCall(VecNorm(X, NORM_2, &xnorm));
-  PetscCall(SNESLineSearchSetLambda(linesearch, lambda));
   PetscCall(SNESLineSearchSetNorms(linesearch, xnorm, gnorm, ynorm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

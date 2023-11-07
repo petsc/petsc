@@ -2,7 +2,7 @@
 #
 #    Contains rules that are shared between SLEPc and PETSc
 #
-#    This file is not included by rules, or rules.doc. In PETSc it is only included by the toplevel makefile
+#    This file is not included by rules, or rules_doc.mk. In PETSc it is only included by the toplevel makefile
 
 # ********* Rules for printing PETSc library properties useful for building applications  ***********************************************************
 
@@ -93,6 +93,8 @@ checkbadSource:
 	-@${RM} -f doublelinecheck.out
 	-@echo "------Tabs in file -------------------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P '\t' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "------Tabs in makefiles---------------------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P '[ ]*[#A-Za-z0-9][ :=_A-Za-z0-9]*\t' -- makefile  >> checkbadSource.out;true
 	-@echo "------White space at end of line -----------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P ' $$' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "------Two ;; -------------------------------------------------------" >> checkbadSource.out
@@ -131,7 +133,7 @@ checkbadSource:
 	-@git --no-pager grep -n -P 'PetscCall\(PetscInfo\(' -- ${GITSRC} | grep -v '\\n' >> checkbadSource.out;true
 	-@echo "------First blank line ---------------------------------------------" >> checkbadSource.out
 	@git --no-pager grep -n -P \^\$$ -- ${GITSRC} | grep ':1:' >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 21` ;\
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 22` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\

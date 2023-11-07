@@ -525,6 +525,8 @@ static inline PetscErrorCode DMGetGlobalFieldOffset_Private(DM dm, PetscInt poin
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PETSC_EXTERN PetscErrorCode DMGetCoordinateDegree_Internal(DM, PetscInt *);
+
 PETSC_EXTERN PetscErrorCode DMGetBasisTransformDM_Internal(DM, DM *);
 PETSC_EXTERN PetscErrorCode DMGetBasisTransformVec_Internal(DM, Vec *);
 PETSC_INTERN PetscErrorCode DMConstructBasisTransform_Internal(DM);

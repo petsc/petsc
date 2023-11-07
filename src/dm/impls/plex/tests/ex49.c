@@ -42,9 +42,13 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFunctionBeginUser;
   PetscCall(DMGetDimension(dm, &dim));
   if (user->useFE) {
-    PetscFE fe;
+    PetscFE        fe;
+    DMPolytopeType ct;
+    PetscInt       cStart;
 
-    PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, PETSC_FALSE, NULL, -1, &fe));
+    PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, NULL));
+    PetscCall(DMPlexGetCellType(dm, cStart, &ct));
+    PetscCall(PetscFECreateByCell(PETSC_COMM_SELF, dim, 1, ct, NULL, -1, &fe));
     PetscCall(PetscObjectSetName((PetscObject)fe, "scalar"));
     PetscCall(DMSetField(dm, 0, NULL, (PetscObject)fe));
     PetscCall(DMSetField(dm, 1, NULL, (PetscObject)fe));
@@ -60,7 +64,6 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
     PetscCall(PetscFVSetUp(fv));
     PetscCall(PetscObjectSetName((PetscObject)fv, "vector"));
     PetscCall(DMSetField(dm, 0, NULL, (PetscObject)fv));
-    PetscCall(DMSetField(dm, 1, NULL, (PetscObject)fv));
     PetscCall(PetscFVDestroy(&fv));
   }
   PetscCall(DMCreateDS(dm));
@@ -105,14 +108,15 @@ static PetscErrorCode CheckOffsets(DM dm, AppCtx *user, const char *domain_name,
       PetscCall(ISDestroy(&offIS));
     } else if (id == PETSCFV_CLASSID) {
       IS        offIS;
-      PetscInt *offsets, *offsetsNeg, *offsetsPos, Nface, Nc, n;
+      PetscInt *offsets, *offsetsNeg, *offsetsPos, Nface, Nc, n, i = 0;
 
       PetscCall(DMPlexGetLocalOffsetsSupport(dm, domain_label, label_value, &Nface, &Nc, &n, &offsetsNeg, &offsetsPos));
       PetscCall(PetscMalloc1(Nface * Nc * 2, &offsets));
-      for (PetscInt f = 0, i = 0; f < Nface; ++f) {
+      for (PetscInt f = 0; f < Nface; ++f) {
         for (PetscInt c = 0; c < Nc; ++c) offsets[i++] = offsetsNeg[f * Nc + c];
         for (PetscInt c = 0; c < Nc; ++c) offsets[i++] = offsetsPos[f * Nc + c];
       }
+      PetscCheck(i == Nface * Nc * 2, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Total offsets %" PetscInt_FMT " != %" PetscInt_FMT, i, Nface * Nc * 2);
       PetscCall(PetscFree(offsetsNeg));
       PetscCall(PetscFree(offsetsPos));
       PetscCall(ISCreateGeneral(PETSC_COMM_SELF, Nface * Nc * 2, offsets, PETSC_OWN_POINTER, &offIS));

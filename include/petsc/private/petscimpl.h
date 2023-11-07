@@ -858,7 +858,7 @@ M*/
   The Microsoft compiler option -Zc:preprocessor available in recent versions of the compiler
   sets  _MSVC_TRADITIONAL to zero so this code path is not used.
 
-  It appears the Intel Windows compiler icl does not have an equaivalent of  -Zc:preprocessor
+  It appears the Intel Microsoft Windows compiler icl does not have an equivalent of -Zc:preprocessor
 
   These macros use the trick that Windows compilers remove the , before the __VA_ARGS__ if __VA_ARGS__ does not exist
 

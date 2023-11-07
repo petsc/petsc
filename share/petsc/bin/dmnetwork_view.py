@@ -70,7 +70,7 @@ class ColorParser:
 			if normMinVal >= 0:
 				normMinVal = None
 			if normMaxVal <= 0:
-				normMaxVal = None			
+				normMaxVal = None	
 
 			class BiasNorm(matplotlib.colors.Normalize):
 				def __init__(self, vmin, vmax, minbias = 0, maxbias = 0):

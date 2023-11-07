@@ -166,7 +166,7 @@ PETSC_EXTERN PetscErrorCode DMGetCoordinateField(DM, DMField *);
 PETSC_EXTERN PetscErrorCode DMSetCoordinateField(DM, DMField);
 PETSC_EXTERN PetscErrorCode DMGetLocalBoundingBox(DM, PetscReal[], PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMGetBoundingBox(DM, PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode DMProjectCoordinates(DM, PetscFE);
+PETSC_EXTERN PetscErrorCode DMSetCoordinateDisc(DM, PetscFE, PetscBool);
 PETSC_EXTERN PetscErrorCode DMLocatePoints(DM, Vec, DMPointLocationType, PetscSF *);
 
 /* Periodicity support */
@@ -228,6 +228,7 @@ typedef struct NLF_DAAD *NLF;
 /* FEM support */
 PETSC_EXTERN PetscErrorCode DMPrintCellIndices(PetscInt, const char[], PetscInt, const PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMPrintCellVector(PetscInt, const char[], PetscInt, const PetscScalar[]);
+PETSC_EXTERN PetscErrorCode DMPrintCellVectorReal(PetscInt, const char[], PetscInt, const PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMPrintCellMatrix(PetscInt, const char[], PetscInt, PetscInt, const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode DMPrintLocalVec(DM, const char[], PetscReal, Vec);
 
@@ -446,6 +447,7 @@ static inline PetscInt DMPolytopeTypeGetDim(DMPolytopeType ct)
   case DM_POLYTOPE_TRIANGLE:
   case DM_POLYTOPE_QUADRILATERAL:
   case DM_POLYTOPE_SEG_PRISM_TENSOR:
+  case DM_POLYTOPE_UNKNOWN_FACE:
     return 2;
   case DM_POLYTOPE_TETRAHEDRON:
   case DM_POLYTOPE_HEXAHEDRON:
@@ -453,6 +455,7 @@ static inline PetscInt DMPolytopeTypeGetDim(DMPolytopeType ct)
   case DM_POLYTOPE_TRI_PRISM_TENSOR:
   case DM_POLYTOPE_QUAD_PRISM_TENSOR:
   case DM_POLYTOPE_PYRAMID:
+  case DM_POLYTOPE_UNKNOWN_CELL:
     return 3;
   default:
     return -1;

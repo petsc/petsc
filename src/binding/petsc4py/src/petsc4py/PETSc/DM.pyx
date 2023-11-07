@@ -42,6 +42,8 @@ class DMPolytopeType(object):
     FV_GHOST           = DM_POLYTOPE_FV_GHOST
     INTERIOR_GHOST     = DM_POLYTOPE_INTERIOR_GHOST
     UNKNOWN            = DM_POLYTOPE_UNKNOWN
+    UNKNOWN_CELL       = DM_POLYTOPE_UNKNOWN_CELL
+    UNKNOWN_FACE       = DM_POLYTOPE_UNKNOWN_FACE
 
 # --------------------------------------------------------------------
 
@@ -1073,7 +1075,7 @@ cdef class DM(Object):
         CHKERR( PetscINCREF(c.obj) )
         return c
 
-    def projectCoordinates(self, FE disc) -> Self:
+    def setCoordinateDisc(self, FE disc, project: bool) -> Self:
         """Project coordinates to a different space.
 
         Parameters
@@ -1083,10 +1085,11 @@ cdef class DM(Object):
 
         See Also
         --------
-        petsc.DMProjectCoordinates
+        petsc.DMSetCoordinateDisc
 
         """
-        CHKERR( DMProjectCoordinates(self.dm, disc.fe))
+        cdef PetscBool pr = project
+        CHKERR( DMSetCoordinateDisc(self.dm, disc.fe, pr))
         return self
 
     def getBoundingBox(self) -> tuple[tuple[float, float], ...]:

@@ -118,6 +118,101 @@ PetscErrorCode DMPlexGetSimplexOrBoxCells(DM dm, PetscInt height, PetscInt *cSta
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode DMPlexGetFieldTypes_Internal(DM dm, PetscSection section, PetscInt field, PetscInt *types, PetscInt **ssStart, PetscInt **ssEnd, PetscViewerVTKFieldType **sft)
+{
+  PetscInt                 cdim, pStart, pEnd, vStart, vEnd, cStart, cEnd, c, depth, cellHeight, t;
+  PetscInt                *sStart, *sEnd;
+  PetscViewerVTKFieldType *ft;
+  PetscInt                 vcdof[DM_NUM_POLYTOPES + 1], globalvcdof[DM_NUM_POLYTOPES + 1];
+  DMLabel                  depthLabel, ctLabel;
+
+  PetscFunctionBegin;
+
+  /* the vcdof and globalvcdof are sized to allow every polytope type and simple vertex at DM_NUM_POLYTOPES */
+  PetscCall(PetscArrayzero(vcdof, DM_NUM_POLYTOPES + 1));
+  PetscCall(DMGetCoordinateDim(dm, &cdim));
+  PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+  PetscCall(PetscSectionGetChart(section, &pStart, &pEnd));
+  if (field >= 0) {
+    if ((vStart >= pStart) && (vStart < pEnd)) PetscCall(PetscSectionGetFieldDof(section, vStart, field, &vcdof[DM_NUM_POLYTOPES]));
+  } else {
+    if ((vStart >= pStart) && (vStart < pEnd)) PetscCall(PetscSectionGetDof(section, vStart, &vcdof[DM_NUM_POLYTOPES]));
+  }
+
+  PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
+  PetscCall(DMPlexGetDepth(dm, &depth));
+  PetscCall(DMPlexGetDepthLabel(dm, &depthLabel));
+  PetscCall(DMPlexGetCellTypeLabel(dm, &ctLabel));
+  for (c = 0; c < DM_NUM_POLYTOPES; ++c) {
+    const DMPolytopeType ict = (DMPolytopeType)c;
+    PetscInt             dep;
+
+    if (ict == DM_POLYTOPE_FV_GHOST) continue;
+    PetscCall(DMLabelGetStratumBounds(ctLabel, ict, &cStart, &cEnd));
+    if (pStart >= 0) {
+      PetscCall(DMLabelGetValue(depthLabel, cStart, &dep));
+      if (dep != depth - cellHeight) continue;
+    }
+    if (field >= 0) {
+      if ((cStart >= pStart) && (cStart < pEnd)) PetscCall(PetscSectionGetFieldDof(section, cStart, field, &vcdof[c]));
+    } else {
+      if ((cStart >= pStart) && (cStart < pEnd)) PetscCall(PetscSectionGetDof(section, cStart, &vcdof[c]));
+    }
+    PetscCall(MPIU_Allreduce(vcdof, globalvcdof, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+  }
+
+  PetscCall(MPIU_Allreduce(vcdof, globalvcdof, DM_NUM_POLYTOPES + 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+  *types = 0;
+
+  for (c = 0; c < DM_NUM_POLYTOPES + 1; ++c) {
+    if (globalvcdof[c]) ++(*types);
+  }
+
+  PetscCall(PetscMalloc3(*types, &sStart, *types, &sEnd, *types, &ft));
+  t = 0;
+  if (globalvcdof[DM_NUM_POLYTOPES]) {
+    sStart[t] = vStart;
+    sEnd[t]   = vEnd;
+    ft[t]     = (globalvcdof[t] == cdim) ? PETSC_VTK_POINT_VECTOR_FIELD : PETSC_VTK_POINT_FIELD;
+    ++t;
+  }
+
+  for (c = 0; c < DM_NUM_POLYTOPES; ++c) {
+    if (globalvcdof[c]) {
+      const DMPolytopeType ict = (DMPolytopeType)c;
+
+      PetscCall(DMLabelGetStratumBounds(ctLabel, ict, &cStart, &cEnd));
+      sStart[t] = cStart;
+      sEnd[t]   = cEnd;
+      ft[t]     = (globalvcdof[c] == cdim) ? PETSC_VTK_CELL_VECTOR_FIELD : PETSC_VTK_CELL_FIELD;
+      ++t;
+    }
+  }
+
+  if (!(*types)) {
+    if (field >= 0) {
+      const char *fieldname;
+
+      PetscCall(PetscSectionGetFieldName(section, field, &fieldname));
+      PetscCall(PetscInfo((PetscObject)dm, "Could not classify VTK output type of section field %" PetscInt_FMT " \"%s\"\n", field, fieldname));
+    } else {
+      PetscCall(PetscInfo((PetscObject)dm, "Could not classify VTK output type of section\n"));
+    }
+  }
+
+  *ssStart = sStart;
+  *ssEnd   = sEnd;
+  *sft     = ft;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode DMPlexRestoreFieldTypes_Internal(DM dm, PetscSection section, PetscInt field, PetscInt *types, PetscInt **sStart, PetscInt **sEnd, PetscViewerVTKFieldType **ft)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscFree3(*sStart, *sEnd, *ft));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt field, PetscInt *sStart, PetscInt *sEnd, PetscViewerVTKFieldType *ft)
 {
   PetscInt cdim, pStart, pEnd, vStart, vEnd, cStart, cEnd;
@@ -1753,6 +1848,52 @@ static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode DMPlexCreateHighOrderSurrogate_Internal(DM dm, DM *hdm)
+{
+  DM           odm = dm, rdm = dm, cdm;
+  PetscFE      fe;
+  PetscSpace   sp;
+  PetscClassId id;
+  PetscInt     degree;
+  PetscBool    hoView = PETSC_TRUE;
+
+  PetscFunctionBegin;
+  PetscObjectOptionsBegin((PetscObject)dm);
+  PetscCall(PetscOptionsBool("-dm_plex_high_order_view", "Subsample to view meshes with high order coordinates", "DMPlexCreateHighOrderSurrogate_Internal", hoView, &hoView, NULL));
+  PetscOptionsEnd();
+  PetscCall(PetscObjectReference((PetscObject)dm));
+  *hdm = dm;
+  if (!hoView) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(DMGetCoordinateDM(dm, &cdm));
+  PetscCall(DMGetField(cdm, 0, NULL, (PetscObject *)&fe));
+  PetscCall(PetscObjectGetClassId((PetscObject)fe, &id));
+  if (id != PETSCFE_CLASSID) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscFEGetBasisSpace(fe, &sp));
+  PetscCall(PetscSpaceGetDegree(sp, &degree, NULL));
+  for (PetscInt r = 0, rd = PetscCeilReal(((PetscReal)degree) / 2.); r < (PetscInt)PetscCeilReal(PetscLog2Real(degree)); ++r, rd = PetscCeilReal(((PetscReal)rd) / 2.)) {
+    DM  cdm, rcdm;
+    Mat In;
+    Vec cl, rcl;
+
+    PetscCall(DMRefine(odm, PetscObjectComm((PetscObject)odm), &rdm));
+    if (rd > 1) PetscCall(DMPlexCreateCoordinateSpace(rdm, rd, PETSC_FALSE, NULL));
+    PetscCall(PetscObjectSetName((PetscObject)rdm, "Refined Mesh with Linear Coordinates"));
+    PetscCall(DMGetCoordinateDM(odm, &cdm));
+    PetscCall(DMGetCoordinateDM(rdm, &rcdm));
+    PetscCall(DMGetCoordinatesLocal(odm, &cl));
+    PetscCall(DMGetCoordinatesLocal(rdm, &rcl));
+    PetscCall(DMSetCoarseDM(rcdm, cdm));
+    PetscCall(DMCreateInterpolation(cdm, rcdm, &In, NULL));
+    PetscCall(MatMult(In, cl, rcl));
+    PetscCall(MatDestroy(&In));
+    PetscCall(DMSetCoordinatesLocal(rdm, rcl));
+    PetscCall(DMDestroy(&odm));
+    odm = rdm;
+  }
+  *hdm = rdm;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 #if defined(PETSC_HAVE_EXODUSII)
   #include <exodusII.h>
   #include <petscviewerexodusii.h>
@@ -1787,7 +1928,11 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
   } else if (isvtk) {
     PetscCall(DMPlexVTKWriteAll((PetscObject)dm, viewer));
   } else if (isdraw) {
-    PetscCall(DMPlexView_Draw(dm, viewer));
+    DM hdm;
+
+    PetscCall(DMPlexCreateHighOrderSurrogate_Internal(dm, &hdm));
+    PetscCall(DMPlexView_Draw(hdm, viewer));
+    PetscCall(DMDestroy(&hdm));
   } else if (isglvis) {
     PetscCall(DMPlexView_GLVis(dm, viewer));
 #if defined(PETSC_HAVE_EXODUSII)
@@ -3673,7 +3818,7 @@ static PetscErrorCode DMPlexGetTransitiveClosure_Depth1_Private(DM dm, PetscInt 
   PetscFunctionBeginHot;
   if (ornt) {
     PetscCall(DMPlexGetCellType(dm, p, &ct));
-    if (ct == DM_POLYTOPE_FV_GHOST || ct == DM_POLYTOPE_INTERIOR_GHOST || ct == DM_POLYTOPE_UNKNOWN) ct = DM_POLYTOPE_UNKNOWN;
+    if (ct == DM_POLYTOPE_FV_GHOST || ct == DM_POLYTOPE_INTERIOR_GHOST || ct == DM_POLYTOPE_UNKNOWN || ct == DM_POLYTOPE_UNKNOWN_CELL || ct == DM_POLYTOPE_UNKNOWN_FACE) ct = DM_POLYTOPE_UNKNOWN;
   }
   if (*points) {
     closure = *points;
@@ -3795,7 +3940,7 @@ PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt o
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(DMPlexGetCellType(dm, p, &ct));
-  if (ct == DM_POLYTOPE_FV_GHOST || ct == DM_POLYTOPE_INTERIOR_GHOST || ct == DM_POLYTOPE_UNKNOWN) ct = DM_POLYTOPE_UNKNOWN;
+  if (ct == DM_POLYTOPE_FV_GHOST || ct == DM_POLYTOPE_INTERIOR_GHOST || ct == DM_POLYTOPE_UNKNOWN || ct == DM_POLYTOPE_UNKNOWN_CELL || ct == DM_POLYTOPE_UNKNOWN_FACE) ct = DM_POLYTOPE_UNKNOWN;
   if (ct == DM_POLYTOPE_SEG_PRISM_TENSOR || ct == DM_POLYTOPE_TRI_PRISM_TENSOR || ct == DM_POLYTOPE_QUAD_PRISM_TENSOR) {
     PetscCall(DMPlexTransitiveClosure_Tensor_Internal(dm, p, ct, ornt, useCone, numPoints, points));
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -4387,7 +4532,7 @@ PetscErrorCode DMPlexComputeCellTypes(DM dm)
 
     PetscCall(DMPlexGetPointDepth(dm, p, &pdepth));
     PetscCall(DMPlexComputeCellType_Internal(dm, p, pdepth, &ct));
-    PetscCheck(ct != DM_POLYTOPE_UNKNOWN, PETSC_COMM_SELF, PETSC_ERR_SUP, "Point %" PetscInt_FMT " is screwed up", p);
+    PetscCheck(ct != DM_POLYTOPE_UNKNOWN && ct != DM_POLYTOPE_UNKNOWN_CELL && ct != DM_POLYTOPE_UNKNOWN_FACE, PETSC_COMM_SELF, PETSC_ERR_SUP, "Point %" PetscInt_FMT " is screwed up", p);
     PetscCall(DMLabelSetValue(ctLabel, p, ct));
     mesh->cellTypes[p - pStart].value_as_uint8 = ct;
   }
@@ -5453,23 +5598,46 @@ PetscErrorCode DMPlexGetAllCells_Internal(DM plex, IS *cellIS)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode DMPlexGetAllFaces_Internal(DM plex, IS *faceIS)
+{
+  PetscInt depth;
+
+  PetscFunctionBegin;
+  PetscCall(DMPlexGetDepth(plex, &depth));
+  PetscCall(DMGetStratumIS(plex, "dim", depth - 1, faceIS));
+  if (!*faceIS) PetscCall(DMGetStratumIS(plex, "depth", depth - 1, faceIS));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
  Returns number of components and tensor degree for the field.  For interpolated meshes, line should be a point
  representing a line in the section.
 */
-static PetscErrorCode PetscSectionFieldGetTensorDegree_Private(PetscSection section, PetscInt field, PetscInt line, PetscBool vertexchart, PetscInt *Nc, PetscInt *k)
+static PetscErrorCode PetscSectionFieldGetTensorDegree_Private(DM dm, PetscSection section, PetscInt field, PetscInt line, PetscInt *Nc, PetscInt *k, PetscBool *continuous)
 {
+  PetscObject  obj;
+  PetscClassId id;
+  PetscFE      fe = NULL;
+
   PetscFunctionBeginHot;
   PetscCall(PetscSectionGetFieldComponents(section, field, Nc));
-  if (line < 0) {
-    *k  = 0;
-    *Nc = 0;
-  } else if (vertexchart) { /* If we only have a vertex chart, we must have degree k=1 */
-    *k = 1;
-  } else { /* Assume the full interpolated mesh is in the chart; lines in particular */
+  PetscCall(DMGetField(dm, field, NULL, &obj));
+  PetscCall(PetscObjectGetClassId(obj, &id));
+  if (id == PETSCFE_CLASSID) fe = (PetscFE)obj;
+
+  if (!fe) {
+    /* Assume the full interpolated mesh is in the chart; lines in particular */
     /* An order k SEM disc has k-1 dofs on an edge */
     PetscCall(PetscSectionGetFieldDof(section, line, field, k));
     *k = *k / *Nc + 1;
+  } else {
+    PetscInt       dual_space_size, dim;
+    PetscDualSpace dual_space;
+    PetscCall(DMGetDimension(dm, &dim));
+    PetscCall(PetscFEGetDualSpace(fe, &dual_space));
+    PetscCall(PetscDualSpaceGetDimension(dual_space, &dual_space_size));
+    *k = (PetscInt)PetscCeilReal(PetscPowReal(dual_space_size / *Nc, 1.0 / dim)) - 1;
+    PetscCall(PetscDualSpaceLagrangeGetContinuity(dual_space, continuous));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -5538,7 +5706,7 @@ PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSec
 {
   DMLabel   label;
   PetscInt  dim, depth = -1, eStart = -1, Nf;
-  PetscBool vertexchart;
+  PetscBool continuous = PETSC_TRUE;
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
@@ -5565,48 +5733,46 @@ PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSec
       eStart = cone2[0];
     } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT " of depth %" PetscInt_FMT " cannot be used to bootstrap spectral ordering for dim %" PetscInt_FMT, point, depth, dim);
   } else PetscCheck(depth < 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT " of depth %" PetscInt_FMT " cannot be used to bootstrap spectral ordering for dim %" PetscInt_FMT, point, depth, dim);
-  { /* Determine whether the chart covers all points or just vertices. */
-    PetscInt pStart, pEnd, cStart, cEnd;
-    PetscCall(DMPlexGetDepthStratum(dm, 0, &pStart, &pEnd));
-    PetscCall(PetscSectionGetChart(section, &cStart, &cEnd));
-    if (pStart == cStart && pEnd == cEnd) vertexchart = PETSC_TRUE;      /* Only vertices are in the chart */
-    else if (cStart <= point && point < cEnd) vertexchart = PETSC_FALSE; /* Some interpolated points exist in the chart */
-    else vertexchart = PETSC_TRUE;                                       /* Some interpolated points are not in chart; assume dofs only at cells and vertices */
-  }
+
   PetscCall(PetscSectionGetNumFields(section, &Nf));
   for (PetscInt d = 1; d <= dim; d++) {
     PetscInt  k, f, Nc, c, i, j, size = 0, offset = 0, foffset = 0;
     PetscInt *perm;
 
     for (f = 0; f < Nf; ++f) {
-      PetscCall(PetscSectionFieldGetTensorDegree_Private(section, f, eStart, vertexchart, &Nc, &k));
+      PetscCall(PetscSectionFieldGetTensorDegree_Private(dm, section, f, eStart, &Nc, &k, &continuous));
       size += PetscPowInt(k + 1, d) * Nc;
     }
     PetscCall(PetscMalloc1(size, &perm));
     for (f = 0; f < Nf; ++f) {
       switch (d) {
       case 1:
-        PetscCall(PetscSectionFieldGetTensorDegree_Private(section, f, eStart, vertexchart, &Nc, &k));
+        PetscCall(PetscSectionFieldGetTensorDegree_Private(dm, section, f, eStart, &Nc, &k, &continuous));
         /*
          Original ordering is [ edge of length k-1; vtx0; vtx1 ]
          We want              [ vtx0; edge of length k-1; vtx1 ]
          */
-        for (c = 0; c < Nc; c++, offset++) perm[offset] = (k - 1) * Nc + c + foffset;
-        for (i = 0; i < k - 1; i++)
-          for (c = 0; c < Nc; c++, offset++) perm[offset] = i * Nc + c + foffset;
-        for (c = 0; c < Nc; c++, offset++) perm[offset] = k * Nc + c + foffset;
-        foffset = offset;
+        if (continuous) {
+          for (c = 0; c < Nc; c++, offset++) perm[offset] = (k - 1) * Nc + c + foffset;
+          for (i = 0; i < k - 1; i++)
+            for (c = 0; c < Nc; c++, offset++) perm[offset] = i * Nc + c + foffset;
+          for (c = 0; c < Nc; c++, offset++) perm[offset] = k * Nc + c + foffset;
+          foffset = offset;
+        } else {
+          for (i = offset; i < size; i++) perm[i] = i - offset + foffset;
+          foffset = offset = size;
+        }
         break;
       case 2:
         /* The original quad closure is oriented clockwise, {f, e_b, e_r, e_t, e_l, v_lb, v_rb, v_tr, v_tl} */
-        PetscCall(PetscSectionFieldGetTensorDegree_Private(section, f, eStart, vertexchart, &Nc, &k));
+        PetscCall(PetscSectionFieldGetTensorDegree_Private(dm, section, f, eStart, &Nc, &k, &continuous));
         /* The SEM order is
 
          v_lb, {e_b}, v_rb,
          e^{(k-1)-i}_l, {f^{i*(k-1)}}, e^i_r,
          v_lt, reverse {e_t}, v_rt
          */
-        {
+        if (continuous) {
           const PetscInt of   = 0;
           const PetscInt oeb  = of + PetscSqr(k - 1);
           const PetscInt oer  = oeb + (k - 1);
@@ -5636,6 +5802,9 @@ PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSec
             for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o * Nc + c + foffset;
           for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovrt * Nc + c + foffset;
           foffset = offset;
+        } else {
+          for (i = offset; i < size; i++) perm[i] = i - offset + foffset;
+          foffset = offset = size;
         }
         break;
       case 3:
@@ -5646,7 +5815,7 @@ PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSec
          e_bl, e_bb, e_br, e_bf,  e_tf, e_tr, e_tb, e_tl,  e_rf, e_lf, e_lb, e_rb,
          v_blf, v_blb, v_brb, v_brf, v_tlf, v_trf, v_trb, v_tlb}
          */
-        PetscCall(PetscSectionFieldGetTensorDegree_Private(section, f, eStart, vertexchart, &Nc, &k));
+        PetscCall(PetscSectionFieldGetTensorDegree_Private(dm, section, f, eStart, &Nc, &k, &continuous));
         /* The SEM order is
          Bottom Slice
          v_blf, {e^{(k-1)-n}_bf}, v_brf,
@@ -5663,7 +5832,7 @@ PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSec
          e^{(k-1)-i}_tl, {f^{i*(k-1)}_t}, e^{i}_tr,
          v_tlb, {e^{(k-1)-n}_tb}, v_trb,
          */
-        {
+        if (continuous) {
           const PetscInt oc    = 0;
           const PetscInt ofb   = oc + PetscSqr(k - 1) * (k - 1);
           const PetscInt oft   = ofb + PetscSqr(k - 1);
@@ -5755,6 +5924,9 @@ PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSec
           for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovtrb * Nc + c + foffset;
 
           foffset = offset;
+        } else {
+          for (i = offset; i < size; i++) perm[i] = i - offset + foffset;
+          foffset = offset = size;
         }
         break;
       default:

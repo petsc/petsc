@@ -113,7 +113,7 @@ PetscErrorCode PetscMatlabEngineDestroy(PetscMatlabEngine *v)
   if (--((PetscObject)(*v))->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscInfo(0, "Stopping MATLAB engine\n"));
   err = engClose((*v)->ep);
-  PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error closing Matlab engine");
+  PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error closing MATLAB engine");
   PetscCall(PetscInfo(0, "MATLAB engine stopped\n"));
   PetscCall(PetscHeaderDestroy(v));
   PetscFunctionReturn(PETSC_SUCCESS);

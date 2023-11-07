@@ -12,7 +12,7 @@
 # Doc2lt single line entry
 end_par          %n<P>%n
 linebreak        <BR>
-blank	         \ 
+blank            \ 
 s_verbatim       <PRE>%n
 e_verbatim       </PRE>%n
 #

@@ -1037,7 +1037,7 @@ PetscErrorCode PCSetUp(PC pc)
   PetscCall(PetscObjectStateGet((PetscObject)pc->pmat, &matstate));
   PetscCall(MatGetNonzeroState(pc->pmat, &matnonzerostate));
   if (!pc->setupcalled) {
-    PetscCall(PetscInfo(pc, "Setting up PC for first time\n"));
+    //PetscCall(PetscInfo(pc, "Setting up PC for first time\n"));
     pc->flag = DIFFERENT_NONZERO_PATTERN;
   } else if (matstate == pc->matstate) PetscFunctionReturn(PETSC_SUCCESS);
   else {
@@ -1045,7 +1045,7 @@ PetscErrorCode PCSetUp(PC pc)
       PetscCall(PetscInfo(pc, "Setting up PC with different nonzero pattern\n"));
       pc->flag = DIFFERENT_NONZERO_PATTERN;
     } else {
-      PetscCall(PetscInfo(pc, "Setting up PC with same nonzero pattern\n"));
+      //PetscCall(PetscInfo(pc, "Setting up PC with same nonzero pattern\n"));
       pc->flag = SAME_NONZERO_PATTERN;
     }
   }

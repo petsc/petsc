@@ -51,7 +51,7 @@ class Configure(config.package.Package):
     help.addArgument('BLAS/LAPACK', '-with-64-bit-blas-indices', nargs.ArgBool(None, 0, 'Try to use 64-bit integers for BLAS/LAPACK; will error if not available'))
     help.addArgument('BLAS/LAPACK', '-known-64-bit-blas-indices=<bool>', nargs.ArgBool(None, None, 'Indicate if using 64-bit integer BLAS'))
     help.addArgument('BLAS/LAPACK', '-known-snrm2-returns-double=<bool>', nargs.ArgBool(None, None, 'Indicate if BLAS snrm2() returns a double'))
-    help.addArgument('BLAS/LAPACK', '-known-sdot-returns-double=<bool>', nargs.ArgBool(None, None, 'Indicate if BLAS sdot() returns a double'))        
+    help.addArgument('BLAS/LAPACK', '-known-sdot-returns-double=<bool>', nargs.ArgBool(None, None, 'Indicate if BLAS sdot() returns a double'))
     return
 
   def getPrefix(self):
@@ -588,10 +588,17 @@ class Configure(config.package.Package):
       self.addDefine('HAVE_MKL_INTEL_ILP64',1)
     if self.argDB['with-64-bit-blas-indices'] and not self.has64bitindices:
       raise RuntimeError('You requested 64-bit integer BLAS/LAPACK using --with-64-bit-blas-indices but they are not available given your other BLAS/LAPACK options')
+    if self.libraries.check(self.dlib, 'bli_thread_set_num_threads') and not self.libraries.check(self.dlib, 'flexiblas_avail'):
+      self.addDefine('HAVE_BLI_THREAD_SET_NUM_THREADS',1)
+    if self.libraries.check(self.dlib, 'openblas_set_num_threads') and not self.libraries.check(self.dlib, 'flexiblas_avail'):
+      self.addDefine('HAVE_OPENBLAS_SET_NUM_THREADS',1)
+    if self.libraries.check(self.dlib, 'APL_dgemm') and not self.libraries.check(self.dlib, 'flexiblas_avail'):
+      self.addDefine('HAVE_APPLE_ACCELERATE',1)
 
   def checkMKL(self):
     '''Check for Intel MKL library'''
     self.libraries.saveLog()
+    self.include = []
     if self.libraries.check(self.dlib, 'mkl_set_num_threads') and not self.libraries.check(self.dlib, 'flexiblas_avail'):
       self.mkl = 1
       self.addDefine('HAVE_MKL_LIBS',1)
@@ -623,6 +630,7 @@ class Configure(config.package.Package):
             break
 
         if not self.mkl_spblas_h:
+          self.include = []
           self.logPrint('Unable to find MKL include directory!')
         else:
           self.logPrint('MKL include path set to ' + str(self.include))
@@ -634,8 +642,9 @@ class Configure(config.package.Package):
       else:
         self.dinclude = self.include
       self.checkVersion()
-      if self.foundversion:
+      if self.include:
         self.addDefine('HAVE_MKL_INCLUDES',1)
+        self.addDefine('HAVE_MKL_SET_NUM_THREADS',1)
     self.logWrite(self.libraries.restoreLog())
     return
 

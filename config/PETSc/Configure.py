@@ -44,7 +44,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc','-with-single-library=<bool>',                  nargs.ArgBool(None, 1,'Put all PETSc code into the single -lpetsc library'))
     help.addArgument('PETSc','-with-fortran-bindings=<bool>',                nargs.ArgBool(None, 1,'Build PETSc fortran bindings in the library and corresponding module files'))
     help.addArgument('PETSc', '-with-ios=<bool>',                            nargs.ArgBool(None, 0, 'Build an iPhone/iPad version of PETSc library'))
-    help.addArgument('PETSc', '-with-display=<x11display>',                  nargs.Arg(None, '', 'Specifiy DISPLAY env variable for use with matlab test)'))
+    help.addArgument('PETSc', '-with-display=<x11display>',                  nargs.Arg(None, '', 'Specifiy DISPLAY environmental variable for use with MATLAB test)'))
     help.addArgument('PETSc', '-with-package-scripts=<pyscripts>',           nargs.ArgFileList(None,None,'Specify configure package scripts for user provided packages'))
     help.addArgument('PETSc', '-with-coverage=<bool>',                       nargs.ArgFuzzyBool(None, value=0, help='Enable or disable code-coverage collection'))
     help.addArgument('PETSc', '-with-coverage-exec=<executable>',            nargs.ArgExecutable(None, value='default-auto', mustExist=0, help='Name of executable to use for post-processing coverage data, e.g. \'gcov\' or \'llvm-cov\'. Pass \'auto\' to let configure infer from compiler'))

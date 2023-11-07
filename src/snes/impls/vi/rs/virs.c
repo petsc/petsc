@@ -630,9 +630,9 @@ PetscErrorCode SNESVIRedundancyCheck_Matlab(SNES snes, IS is_act, IS *is_redact,
   PetscCheckSameComm(snes, 1, is_act, 2);
 
   /* Create IS for reduced active set of size 0, its size and indices will
-   bet set by the Matlab function */
+   bet set by the MATLAB function */
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)snes), 0, indices, PETSC_OWN_POINTER, is_redact));
-  /* call Matlab function in ctx */
+  /* call MATLAB function in ctx */
   PetscCall(PetscArraycpy(&ls, &snes, 1));
   PetscCall(PetscArraycpy(&l1, &is_act, 1));
   PetscCall(PetscArraycpy(&l2, is_redact, 1));

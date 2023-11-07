@@ -111,9 +111,11 @@ static inline PetscMPIInt MPIU_Reduce_local(const void *inbuf, void *inoutbuf, P
 
 /* These APIs use arrays of MPI_Count/MPI_Aint */
 #if defined(PETSC_HAVE_MPI_LARGE_COUNT) && defined(PETSC_USE_64BIT_INDICES)
-  #define MPIU_Neighbor_alltoallv(a, b, c, d, e, f, g, h, i)     MPI_Neighbor_alltoallv_c(a, b, c, d, e, f, g, h, i)
-  #define MPIU_Ineighbor_alltoallv(a, b, c, d, e, f, g, h, i, j) MPI_Ineighbor_alltoallv_c(a, b, c, d, e, f, g, h, i, j)
+  #define MPIU_Neighbor_alltoallv(a, b, c, d, e, f, g, h, i)            MPI_Neighbor_alltoallv_c(a, b, c, d, e, f, g, h, i)
+  #define MPIU_Neighbor_alltoallv_init(a, b, c, d, e, f, g, h, i, j, k) MPI_Neighbor_alltoallv_init_c(a, b, c, d, e, f, g, h, i, j, k)
+  #define MPIU_Ineighbor_alltoallv(a, b, c, d, e, f, g, h, i, j)        MPI_Ineighbor_alltoallv_c(a, b, c, d, e, f, g, h, i, j)
 #else
-  #define MPIU_Neighbor_alltoallv(a, b, c, d, e, f, g, h, i)     MPI_Neighbor_alltoallv(a, b, c, d, e, f, g, h, i)
-  #define MPIU_Ineighbor_alltoallv(a, b, c, d, e, f, g, h, i, j) MPI_Ineighbor_alltoallv(a, b, c, d, e, f, g, h, i, j)
+  #define MPIU_Neighbor_alltoallv(a, b, c, d, e, f, g, h, i)            MPI_Neighbor_alltoallv(a, b, c, d, e, f, g, h, i)
+  #define MPIU_Neighbor_alltoallv_init(a, b, c, d, e, f, g, h, i, j, k) MPI_Neighbor_alltoallv_init(a, b, c, d, e, f, g, h, i, j, k)
+  #define MPIU_Ineighbor_alltoallv(a, b, c, d, e, f, g, h, i, j)        MPI_Ineighbor_alltoallv(a, b, c, d, e, f, g, h, i, j)
 #endif

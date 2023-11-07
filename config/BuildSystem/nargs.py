@@ -493,6 +493,9 @@ class ArgDownload(Arg):
         value = str(value)
     except:
       raise TypeError('Invalid download value: '+str(value)+' for key '+str(self.key))
+    if isinstance(value, str) and value.startswith('git@'):
+      # git@github.com:xrq-phys/blis_apple.git -> git://https://github.com/xrq-phys/blis_apple.git
+      value = 'git://https://'+(value[len('git@'):].replace(':','/'))
     if isinstance(value, str):
       from urllib import parse as urlparse_local
       if not urlparse_local.urlparse(value)[0] and not os.path.exists(value):

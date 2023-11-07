@@ -892,7 +892,7 @@ static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
   hypre_CSRMatrixSetRownnz(hdiag);
   hypre_CSRMatrixSetDataOwner(hdiag, 0);
 
-  /* set offdiagonal part */
+  /* set off-diagonal part */
   hoffd = hypre_ParCSRMatrixOffd(tA);
   if (offd) {
     if (!sameint) { /* malloc CSR pointers */
@@ -1941,7 +1941,7 @@ static PetscErrorCode MatScale_HYPRE(Mat A, PetscScalar s)
     ii   = hypre_CSRMatrixI(ha);
     for (i = 0; i < ii[size]; i++) a[i] *= hs;
   }
-  /* offdiagonal part */
+  /* off-diagonal part */
   ha = hypre_ParCSRMatrixOffd(parcsr);
   if (ha) {
     PetscInt       size, i;

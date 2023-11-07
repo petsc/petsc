@@ -1683,7 +1683,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
     /* Read from ex_get_side_set_param() */
     int num_side_in_set;
     /* Read from ex_get_side_set_node_list() */
-    int *fs_vertex_count_list, *fs_vertex_list;
+    int *fs_vertex_count_list, *fs_vertex_list, *fs_side_list;
     /* Read side set labels */
     char   fs_name[MAX_STR_LENGTH + 1];
     size_t fs_name_len;
@@ -1694,15 +1694,16 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
     // Ids 1 and 2 are reserved by ExodusII for indicating things in 3D
     for (fs = 0; fs < num_fs; ++fs) {
       PetscCallExternal(ex_get_set_param, exoid, EX_SIDE_SET, fs_id[fs], &num_side_in_set, NULL);
-      PetscCall(PetscMalloc2(num_side_in_set, &fs_vertex_count_list, num_side_in_set * 4, &fs_vertex_list));
+      PetscCall(PetscMalloc3(num_side_in_set, &fs_vertex_count_list, num_side_in_set * 4, &fs_vertex_list, num_side_in_set, &fs_side_list));
       PetscCallExternal(ex_get_side_set_node_list, exoid, fs_id[fs], fs_vertex_count_list, fs_vertex_list);
+      PetscCallExternal(ex_get_set, exoid, EX_SIDE_SET, fs_id[fs], NULL, fs_side_list);
+
       /* Get the specific name associated with this side set ID. */
       int fs_name_err = ex_get_name(exoid, EX_SIDE_SET, fs_id[fs], fs_name);
       if (!fs_name_err) {
         PetscCall(PetscStrlen(fs_name, &fs_name_len));
         if (fs_name_len == 0) PetscCall(PetscStrncpy(fs_name, "Face Sets", MAX_STR_LENGTH));
       }
-      PetscCheck(fs_id[fs] != 1 && fs_id[fs] != 2, comm, PETSC_ERR_ARG_WRONG, "Side set %s marker cannot be %d since this is reserved by ExodusII", fs_name, fs_id[fs]);
       for (f = 0, voff = 0; f < num_side_in_set; ++f) {
         const PetscInt *faces    = NULL;
         PetscInt        faceSize = fs_vertex_count_list[f], numFaces;
@@ -1717,7 +1718,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
         if (!fs_name_err) PetscCall(DMSetLabelValue(*dm, fs_name, faces[0], fs_id[fs]));
         PetscCall(DMPlexRestoreJoin(*dm, faceSize, faceVertices, &numFaces, &faces));
       }
-      PetscCall(PetscFree2(fs_vertex_count_list, fs_vertex_list));
+      PetscCall(PetscFree3(fs_vertex_count_list, fs_vertex_list, fs_side_list));
     }
     PetscCall(PetscFree(fs_id));
   }

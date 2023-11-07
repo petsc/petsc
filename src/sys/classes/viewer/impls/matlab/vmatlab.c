@@ -196,7 +196,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer)
 }
 
 /*@C
-  PetscViewerMatlabOpen - Opens a Matlab .mat file for output
+  PetscViewerMatlabOpen - Opens a MATLAB .mat file for output
 
   Collective
 
@@ -247,13 +247,13 @@ static PetscMPIInt Petsc_Viewer_Matlab_keyval = MPI_KEYVAL_INVALID;
      Collective
 
      Input Parameter:
-.    comm - the MPI communicator to share the Matlab `PetscViewer`
+.    comm - the MPI communicator to share the MATLAB `PetscViewer`
 
    Options Database Key:
-.    -viewer_matlab_filename <name> - name of the Matlab file
+.    -viewer_matlab_filename <name> - name of the MATLAB file
 
    Environmental variable:
-.   `PETSC_VIEWER_MATLAB_FILENAME` - name of the Matlab file
+.   `PETSC_VIEWER_MATLAB_FILENAME` - name of the MATLAB file
 
      Level: intermediate
 
@@ -261,7 +261,7 @@ static PetscMPIInt Petsc_Viewer_Matlab_keyval = MPI_KEYVAL_INVALID;
      This object is destroyed in `PetscFinalize()`, `PetscViewerDestroy()` should never be called on it
 
      Unlike almost all other PETSc routines, `PETSC_VIEWER_MATLAB_()` does not return
-     an error code.  The matlab PetscViewer is usually used in the form
+     an error code.  The MATLAB `PetscViewer` is usually used in the form
 $       XXXView(XXX object, PETSC_VIEWER_MATLAB_(comm));
 
      Use `PETSC_VIEWER_SOCKET_()` or `PetscViewerSocketOpen()` to communicator with an interactive MATLAB session.

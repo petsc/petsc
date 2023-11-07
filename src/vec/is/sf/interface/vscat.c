@@ -1128,7 +1128,7 @@ functionend:
 .ve
 
   Notes:
-  `vout` may be `NULL` [`PETSC_NULL_VEC` from fortran] if you do not
+  `vout` may be `NULL` [`PETSC_NULL_VEC` from Fortran] if you do not
   need to have it created
 
   Do NOT create a vector and then pass it in as the final argument `vout`! `vout` is created by this routine
@@ -1201,7 +1201,7 @@ PetscErrorCode VecScatterCreateToAll(Vec vin, VecScatter *ctx, Vec *vout)
 .ve
 
   Notes:
-  vout may be `NULL` [`PETSC_NULL_VEC` from fortran] if you do not
+  vout may be `NULL` [`PETSC_NULL_VEC` from Fortran] if you do not
   need to have it created
 
   Do NOT create a vector and then pass it in as the final argument `vout`! `vout` is created by this routine

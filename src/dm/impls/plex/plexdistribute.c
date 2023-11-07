@@ -198,15 +198,25 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
     }
   }
   if (!*adj) {
-    PetscInt depth, coneSeries, supportSeries, maxC, maxS, pStart, pEnd;
+    PetscInt depth, maxC, maxS, maxP, pStart, pEnd;
 
     PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
     PetscCall(DMPlexGetDepth(dm, &depth));
     depth = PetscMax(depth, -depth);
     PetscCall(DMPlexGetMaxSizes(dm, &maxC, &maxS));
-    coneSeries    = (maxC > 1) ? ((PetscPowInt(maxC, depth + 1) - 1) / (maxC - 1)) : depth + 1;
-    supportSeries = (maxS > 1) ? ((PetscPowInt(maxS, depth + 1) - 1) / (maxS - 1)) : depth + 1;
-    asiz          = PetscMax(PetscPowInt(maxS, depth) * coneSeries, PetscPowInt(maxC, depth) * supportSeries);
+    maxP = maxS * maxC;
+    /* Adjacency can be as large as supp(cl(cell)) or cl(supp(vertex)),
+           supp(cell) + supp(maxC faces) + supp(maxC^2 edges) + supp(maxC^3 vertices)
+         = 0 + maxS*maxC + maxS^2*maxC^2 + maxS^3*maxC^3
+         = \sum^d_{i=0} (maxS*maxC)^i - 1
+         = (maxS*maxC)^{d+1} - 1 / (maxS*maxC - 1) - 1
+      We could improve this by getting the max by strata:
+           supp[d](cell) + supp[d-1](maxC[d] faces) + supp[1](maxC[d]*maxC[d-1] edges) + supp[0](maxC[d]*maxC[d-1]*maxC[d-2] vertices)
+         = 0 + maxS[d-1]*maxC[d] + maxS[1]*maxC[d]*maxC[d-1] + maxS[0]*maxC[d]*maxC[d-1]*maxC[d-2]
+      and the same with S and C reversed
+    */
+    if ((depth == 3 && maxP > 200) || (depth == 2 && maxP > 580)) asiz = pEnd - pStart;
+    else asiz = (maxP > 1) ? ((PetscPowInt(maxP, depth + 1) - 1) / (maxP - 1)) : depth + 1;
     asiz *= maxAnchors;
     asiz = PetscMin(asiz, pEnd - pStart);
     PetscCall(PetscMalloc1(asiz, adj));
@@ -903,7 +913,7 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
     PetscInt depths[4], dims[4], shift = 0, i, c;
 
     /* Cells (depth), Vertices (0), Faces (depth-1), Edges (1)
-         Consider DM_POLYTOPE_FV_GHOST and DM_POLYTOPE_INTERIOR_GHOST as cells
+         Consider DM_POLYTOPE_FV_GHOST, DM_POLYTOPE_INTERIOR_GHOST and DM_POLYTOPE_UNKNOWN_CELL as cells
      */
     depths[0] = depth;
     depths[1] = 0;
@@ -918,7 +928,7 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
       const PetscInt dim = dims[i];
 
       for (c = 0; c < DM_NUM_POLYTOPES; ++c) {
-        if (DMPolytopeTypeGetDim((DMPolytopeType)c) != dim && !(i == 0 && (c == DM_POLYTOPE_FV_GHOST || c == DM_POLYTOPE_INTERIOR_GHOST))) continue;
+        if (DMPolytopeTypeGetDim((DMPolytopeType)c) != dim && !(i == 0 && (c == DM_POLYTOPE_FV_GHOST || c == DM_POLYTOPE_INTERIOR_GHOST || c == DM_POLYTOPE_UNKNOWN_CELL))) continue;
         ctShift[c] = shift;
         shift += ctRecv[c];
       }
@@ -928,7 +938,7 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
     for (c = 0; c < DM_NUM_POLYTOPES; ++c) {
       const PetscInt ctDim = DMPolytopeTypeGetDim((DMPolytopeType)c);
 
-      if ((ctDim < 0 || ctDim > dim) && (c != DM_POLYTOPE_FV_GHOST && c != DM_POLYTOPE_INTERIOR_GHOST)) {
+      if ((ctDim < 0 || ctDim > dim) && (c != DM_POLYTOPE_FV_GHOST && c != DM_POLYTOPE_INTERIOR_GHOST && c != DM_POLYTOPE_UNKNOWN_CELL)) {
         ctShift[c] = shift;
         shift += ctRecv[c];
       }
@@ -1666,6 +1676,49 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexRemapMigrationSF - Rewrite the distribution SF to account for overlap
+
+  Collective
+
+  Input Parameters:
++ sfOverlap   - The `PetscSF` object just for the overlap
+- sfMigration - The original distribution `PetscSF` object
+
+  Output Parameters:
+. sfMigrationNew - A rewritten `PetscSF` object that incorporates the overlap
+
+  Level: developer
+
+.seealso: `DMPLEX`, `DM`, `DMPlexDistribute()`, `DMPlexDistributeOverlap()`, `DMPlexGetOverlap()`
+@*/
+PetscErrorCode DMPlexRemapMigrationSF(PetscSF sfOverlap, PetscSF sfMigration, PetscSF *sfMigrationNew)
+{
+  PetscSFNode       *newRemote, *permRemote;
+  const PetscInt    *oldLeaves;
+  const PetscSFNode *oldRemote;
+  PetscInt           nroots, nleaves, noldleaves;
+
+  PetscFunctionBegin;
+  PetscCall(PetscSFGetGraph(sfMigration, &nroots, &noldleaves, &oldLeaves, &oldRemote));
+  PetscCall(PetscSFGetGraph(sfOverlap, NULL, &nleaves, NULL, NULL));
+  PetscCall(PetscMalloc1(nleaves, &newRemote));
+  /* oldRemote: original root point mapping to original leaf point
+     newRemote: original leaf point mapping to overlapped leaf point */
+  if (oldLeaves) {
+    /* After stratification, the migration remotes may not be in root (canonical) order, so we reorder using the leaf numbering */
+    PetscCall(PetscMalloc1(noldleaves, &permRemote));
+    for (PetscInt l = 0; l < noldleaves; ++l) permRemote[oldLeaves[l]] = oldRemote[l];
+    oldRemote = permRemote;
+  }
+  PetscCall(PetscSFBcastBegin(sfOverlap, MPIU_2INT, oldRemote, newRemote, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sfOverlap, MPIU_2INT, oldRemote, newRemote, MPI_REPLACE));
+  if (oldLeaves) PetscCall(PetscFree(oldRemote));
+  PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)sfOverlap), sfMigrationNew));
+  PetscCall(PetscSFSetGraph(*sfMigrationNew, nroots, nleaves, NULL, PETSC_OWN_POINTER, newRemote, PETSC_OWN_POINTER));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@C
   DMPlexDistribute - Distributes the mesh and any associated sections.
 
@@ -1788,12 +1841,8 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   if (flg) PetscCall(PetscSFView(sfPoint, NULL));
 
   if (overlap > 0) {
-    DM                 dmOverlap;
-    PetscInt           nroots, nleaves, noldleaves, l;
-    const PetscInt    *oldLeaves;
-    PetscSFNode       *newRemote, *permRemote;
-    const PetscSFNode *oldRemote;
-    PetscSF            sfOverlap, sfOverlapPoint;
+    DM      dmOverlap;
+    PetscSF sfOverlap, sfOverlapPoint;
 
     /* Add the partition overlap to the distributed DM */
     PetscCall(DMPlexDistributeOverlap(*dmParallel, overlap, &sfOverlap, &dmOverlap));
@@ -1805,22 +1854,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
     }
 
     /* Re-map the migration SF to establish the full migration pattern */
-    PetscCall(PetscSFGetGraph(sfMigration, &nroots, &noldleaves, &oldLeaves, &oldRemote));
-    PetscCall(PetscSFGetGraph(sfOverlap, NULL, &nleaves, NULL, NULL));
-    PetscCall(PetscMalloc1(nleaves, &newRemote));
-    /* oldRemote: original root point mapping to original leaf point
-       newRemote: original leaf point mapping to overlapped leaf point */
-    if (oldLeaves) {
-      /* After stratification, the migration remotes may not be in root (canonical) order, so we reorder using the leaf numbering */
-      PetscCall(PetscMalloc1(noldleaves, &permRemote));
-      for (l = 0; l < noldleaves; ++l) permRemote[oldLeaves[l]] = oldRemote[l];
-      oldRemote = permRemote;
-    }
-    PetscCall(PetscSFBcastBegin(sfOverlap, MPIU_2INT, oldRemote, newRemote, MPI_REPLACE));
-    PetscCall(PetscSFBcastEnd(sfOverlap, MPIU_2INT, oldRemote, newRemote, MPI_REPLACE));
-    if (oldLeaves) PetscCall(PetscFree(oldRemote));
-    PetscCall(PetscSFCreate(comm, &sfOverlapPoint));
-    PetscCall(PetscSFSetGraph(sfOverlapPoint, nroots, nleaves, NULL, PETSC_OWN_POINTER, newRemote, PETSC_OWN_POINTER));
+    PetscCall(DMPlexRemapMigrationSF(sfOverlap, sfMigration, &sfOverlapPoint));
     PetscCall(PetscSFDestroy(&sfOverlap));
     PetscCall(PetscSFDestroy(&sfMigration));
     sfMigration = sfOverlapPoint;
@@ -1830,9 +1864,9 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   PetscCall(DMLabelDestroy(&lblMigration));
   PetscCall(PetscSectionDestroy(&cellPartSection));
   PetscCall(ISDestroy(&cellPart));
-  /* Copy discretization */
+  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_FALSE, *dmParallel));
+  // Create sfNatural, need discretization information
   PetscCall(DMCopyDisc(dm, *dmParallel));
-  /* Create sfNatural */
   if (dm->useNatural) {
     PetscSection section;
 
@@ -1860,7 +1894,6 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
       sfMigration = naturalPointSF;
     }
   }
-  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_FALSE, *dmParallel));
   /* Cleanup */
   if (sf) {
     *sf = sfMigration;
@@ -1974,6 +2007,8 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
   PetscCall(DMGetCellCoordinateDM(*dmOverlap, &dmCoord));
   if (dmCoord) PetscCall(DMSetPointSF(dmCoord, sfPoint));
   PetscCall(PetscSFDestroy(&sfPoint));
+  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_FALSE, *dmOverlap));
+  PetscCall(DMCopyDisc(dm, *dmOverlap));
   /* Cleanup overlap partition */
   PetscCall(DMLabelDestroy(&lblOverlap));
   if (sf) *sf = sfOverlap;

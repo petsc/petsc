@@ -251,6 +251,7 @@ typedef struct {
   /* Debugging */
   PetscBool printSetValues;
   PetscInt  printFEM;
+  PetscInt  printFVM;
   PetscInt  printL2;
   PetscInt  printLocate;
   PetscReal printTol;
@@ -266,6 +267,8 @@ PETSC_EXTERN PetscErrorCode VecView_Plex(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecLoad_Plex_Local(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecLoad_Plex_Native(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecLoad_Plex(Vec, PetscViewer);
+PETSC_INTERN PetscErrorCode DMPlexGetFieldTypes_Internal(DM, PetscSection, PetscInt, PetscInt *, PetscInt **, PetscInt **, PetscViewerVTKFieldType **);
+PETSC_INTERN PetscErrorCode DMPlexRestoreFieldTypes_Internal(DM, PetscSection, PetscInt, PetscInt *, PetscInt **, PetscInt **, PetscViewerVTKFieldType **);
 PETSC_INTERN PetscErrorCode DMPlexGetFieldType_Internal(DM, PetscSection, PetscInt, PetscInt *, PetscInt *, PetscViewerVTKFieldType *);
 PETSC_INTERN PetscErrorCode DMPlexView_GLVis(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject, PetscViewer);
@@ -800,6 +803,7 @@ PETSC_INTERN PetscErrorCode DMPlexVecGetOrientedClosure_Internal(DM, PetscSectio
 PETSC_INTERN PetscErrorCode DMPlexMatSetClosure_Internal(DM, PetscSection, PetscSection, PetscBool, Mat, PetscInt, const PetscScalar[], InsertMode);
 
 PETSC_EXTERN PetscErrorCode DMPlexGetAllCells_Internal(DM, IS *);
+PETSC_EXTERN PetscErrorCode DMPlexGetAllFaces_Internal(DM, IS *);
 PETSC_EXTERN PetscErrorCode DMSNESGetFEGeom(DMField, IS, PetscQuadrature, PetscBool, PetscFEGeom **);
 PETSC_EXTERN PetscErrorCode DMSNESRestoreFEGeom(DMField, IS, PetscQuadrature, PetscBool, PetscFEGeom **);
 PETSC_EXTERN PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM, PetscSection, IS, PetscReal, Vec, Vec, Vec, void *);

@@ -249,10 +249,13 @@ shared libraries and run with --known-mpi-shared-libraries=1')
       # Support for spaces and () in executable names; also needs to handle optional arguments at the end
       # TODO: This support for spaces and () should be moved to core BuildSystem
       self.mpiexec = self.mpiexec.replace(' ', r'\\ ').replace('(', r'\\(').replace(')', r'\\)').replace(r'\ -',' -')
-      if (hasattr(self, 'ompi_major_version') and int(self.ompi_major_version) >= 3):
-        (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -help all', checkCommand = noCheck, timeout = 60, log = self.log, threads = 1)
-        if out.find('--oversubscribe') >=0:
-          mpiexecargs += ' --oversubscribe'
+      if hasattr(self, 'ompi_major_version'):
+        if int(self.ompi_major_version) >= 5:
+          mpiexecargs += ' --oversubscribe' # alias to --map-by :OVERSUBSCRIBE
+        elif int(self.ompi_major_version) >= 3:
+          (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -help all', checkCommand = noCheck, timeout = 60, log = self.log, threads = 1)
+          if out.find('--oversubscribe') >=0:
+            mpiexecargs += ' --oversubscribe'
 
     self.getExecutable(self.mpiexec, getFullPath=1, resultName='mpiexecExecutable',setMakeMacro=0)
 
@@ -540,6 +543,14 @@ Unable to run hostname to check the network')
       if (MPI_Ineighbor_alltoallv_c(0,0,0,MPI_INT,0,0,0,MPI_INT,MPI_COMM_WORLD,&req)) return 1;
     ''' + ('if (MPI_Reduce_local_c(0,0,0,MPI_INT,MPI_SUM)) return 1;\n' if self.haveReduceLocal == 1 else '')):
       self.addDefine('HAVE_MPI_LARGE_COUNT', 1)
+
+    if self.checkLink('#include <mpi.h>\n',
+    '''
+      MPI_Request req;
+      MPI_Info    info;
+      if (MPI_Neighbor_alltoallv_init(0,0,0,MPI_INT,0,0,0,MPI_INT,MPI_COMM_WORLD,info,&req)) return 1;
+    '''):
+      self.addDefine('HAVE_MPI_PERSISTENT_NEIGHBORHOOD_COLLECTIVES', 1)
 
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs

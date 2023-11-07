@@ -1,6 +1,25 @@
 #include <../src/snes/impls/ngmres/snesngmres.h> /*I "petscsnes.h" I*/
 #include <petscblaslapack.h>
 
+PetscErrorCode SNESNGMRESGetAdditiveLineSearch_Private(SNES snes, SNESLineSearch *linesearch)
+{
+  SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
+
+  PetscFunctionBegin;
+  if (!ngmres->additive_linesearch) {
+    const char *optionsprefix;
+    PetscCall(SNESGetOptionsPrefix(snes, &optionsprefix));
+    PetscCall(SNESLineSearchCreate(PetscObjectComm((PetscObject)snes), &ngmres->additive_linesearch));
+    PetscCall(SNESLineSearchSetSNES(ngmres->additive_linesearch, snes));
+    PetscCall(SNESLineSearchSetType(ngmres->additive_linesearch, SNESLINESEARCHL2));
+    PetscCall(SNESLineSearchAppendOptionsPrefix(ngmres->additive_linesearch, "snes_ngmres_additive_"));
+    PetscCall(SNESLineSearchAppendOptionsPrefix(ngmres->additive_linesearch, optionsprefix));
+    PetscCall(PetscObjectIncrementTabLevel((PetscObject)ngmres->additive_linesearch, (PetscObject)snes, 1));
+  }
+  *linesearch = ngmres->additive_linesearch;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode SNESNGMRESUpdateSubspace_Private(SNES snes, PetscInt ivec, PetscInt l, Vec F, PetscReal fnorm, Vec X)
 {
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
@@ -148,7 +167,7 @@ PetscErrorCode SNESNGMRESNorms_Private(SNES snes, PetscInt l, Vec X, Vec F, Vec 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESNGMRESSelect_Private(SNES snes, PetscInt k_restart, Vec XM, Vec FM, PetscReal xMnorm, PetscReal fMnorm, PetscReal yMnorm, Vec XA, Vec FA, PetscReal xAnorm, PetscReal fAnorm, PetscReal yAnorm, PetscReal dnorm, PetscReal fminnorm, PetscReal dminnorm, Vec X, Vec F, Vec Y, PetscReal *xnorm, PetscReal *fnorm, PetscReal *ynorm)
+PetscErrorCode SNESNGMRESSelect_Private(SNES snes, PetscInt k_restart, Vec XM, Vec FM, PetscReal xMnorm, PetscReal fMnorm, PetscReal yMnorm, PetscReal objM, Vec XA, Vec FA, PetscReal xAnorm, PetscReal fAnorm, PetscReal yAnorm, PetscReal objA, PetscReal dnorm, PetscReal objmin, PetscReal dminnorm, Vec X, Vec F, Vec Y, PetscReal *xnorm, PetscReal *fnorm, PetscReal *ynorm)
 {
   SNES_NGMRES         *ngmres = (SNES_NGMRES *)snes->data;
   SNESLineSearchReason lssucceed;
@@ -157,34 +176,50 @@ PetscErrorCode SNESNGMRESSelect_Private(SNES snes, PetscInt k_restart, Vec XM, V
   PetscFunctionBegin;
   if (ngmres->select_type == SNES_NGMRES_SELECT_LINESEARCH) {
     /* X = X + \lambda(XA - X) */
-    if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "||F_A||_2 = %e, ||F_M||_2 = %e\n", (double)fAnorm, (double)fMnorm));
+    if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "obj(X_A) = %e, ||F_A||_2 = %e, obj(X_M) = %e, ||F_M||_2 = %e\n", (double)objA, (double)fAnorm, (double)objM, (double)fMnorm));
+    /* Test if is XA - XM is a descent direction: we want < F(XM), XA - XM > not positive
+       If positive, GMRES will be restarted see https://epubs.siam.org/doi/pdf/10.1137/110835530 */
     PetscCall(VecCopy(FM, F));
     PetscCall(VecCopy(XM, X));
-    PetscCall(VecCopy(XA, Y));
-    PetscCall(VecAYPX(Y, -1.0, X));
+    PetscCall(VecWAXPY(Y, -1.0, XA, X));                        /* minus sign since linesearch expects to find Xnew = X - lambda * Y */
+    PetscCall(VecDotRealPart(FM, Y, &ngmres->descent_ls_test)); /* this is actually < F(XM), XM - XA > */
     *fnorm = fMnorm;
-    PetscCall(SNESLineSearchApply(ngmres->additive_linesearch, X, F, fnorm, Y));
-    PetscCall(SNESLineSearchGetReason(ngmres->additive_linesearch, &lssucceed));
-    PetscCall(SNESLineSearchGetNorms(ngmres->additive_linesearch, xnorm, fnorm, ynorm));
-    if (lssucceed) {
-      if (++snes->numFailures >= snes->maxFailures) {
-        snes->reason = SNES_DIVERGED_LINE_SEARCH;
-        PetscFunctionReturn(PETSC_SUCCESS);
+    if (ngmres->descent_ls_test < 0) { /* XA - XM is not a descent direction, select XM */
+      *xnorm = xMnorm;
+      *fnorm = fMnorm;
+      *ynorm = yMnorm;
+      PetscCall(VecWAXPY(Y, -1.0, X, XM));
+      PetscCall(VecCopy(FM, F));
+      PetscCall(VecCopy(XM, X));
+    } else {
+      PetscCall(SNESNGMRESGetAdditiveLineSearch_Private(snes, &ngmres->additive_linesearch));
+      PetscCall(SNESLineSearchApply(ngmres->additive_linesearch, X, F, fnorm, Y));
+      PetscCall(SNESLineSearchGetReason(ngmres->additive_linesearch, &lssucceed));
+      PetscCall(SNESLineSearchGetNorms(ngmres->additive_linesearch, xnorm, fnorm, ynorm));
+      if (lssucceed) {
+        if (++snes->numFailures >= snes->maxFailures) {
+          snes->reason = SNES_DIVERGED_LINE_SEARCH;
+          PetscFunctionReturn(PETSC_SUCCESS);
+        }
       }
     }
-    if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "Additive solution: ||F||_2 = %e\n", (double)*fnorm));
-  } else if (ngmres->select_type == SNES_NGMRES_SELECT_DIFFERENCE) {
-    selectA = PETSC_TRUE;
-    /* Conditions for choosing the accelerated answer */
-    /* Criterion A -- the norm of the function isn't increased above the minimum by too much */
-    if (fAnorm >= ngmres->gammaA * fminnorm) selectA = PETSC_FALSE;
+    if (ngmres->monitor) {
+      PetscReal objT = *fnorm;
+      PetscErrorCode (*objective)(SNES, Vec, PetscReal *, void *);
 
-    /* Criterion B -- the choice of x^A isn't too close to some other choice */
-    if (ngmres->epsilonB * dnorm < dminnorm || PetscSqrtReal(*fnorm) < ngmres->deltaB * PetscSqrtReal(fminnorm)) {
-    } else selectA = PETSC_FALSE;
+      PetscCall(SNESGetObjective(snes, &objective, NULL));
+      if (objective) PetscCall(SNESComputeObjective(snes, X, &objT));
+      PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "Additive solution: objective = %e\n", (double)objT));
+    }
+  } else if (ngmres->select_type == SNES_NGMRES_SELECT_DIFFERENCE) {
+    /* Conditions for choosing the accelerated answer:
+          Criterion A -- the objective function isn't increased above the minimum by too much
+          Criterion B -- the choice of x^A isn't too close to some other choice
+    */
+    selectA = (PetscBool)(/* A */ (objA < ngmres->gammaA * objmin) && /* B */ (ngmres->epsilonB * dnorm < dminnorm || objA < ngmres->deltaB * objmin));
 
     if (selectA) {
-      if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "picked X_A, ||F_A||_2 = %e, ||F_M||_2 = %e\n", (double)fAnorm, (double)fMnorm));
+      if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "picked X_A, obj(X_A) = %e, ||F_A||_2 = %e, obj(X_M) = %e, ||F_M||_2 = %e\n", (double)objA, (double)fAnorm, (double)objM, (double)fMnorm));
       /* copy it over */
       *xnorm = xAnorm;
       *fnorm = fAnorm;
@@ -192,12 +227,11 @@ PetscErrorCode SNESNGMRESSelect_Private(SNES snes, PetscInt k_restart, Vec XM, V
       PetscCall(VecCopy(FA, F));
       PetscCall(VecCopy(XA, X));
     } else {
-      if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "picked X_M, ||F_A||_2 = %e, ||F_M||_2 = %e\n", (double)fAnorm, (double)fMnorm));
+      if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "picked X_M, obj(X_A) = %e, ||F_A||_2 = %e, obj(X_M) = %e, ||F_M||_2 = %e\n", (double)objA, (double)fAnorm, (double)objM, (double)fMnorm));
       *xnorm = xMnorm;
       *fnorm = fMnorm;
       *ynorm = yMnorm;
-      PetscCall(VecCopy(XM, Y));
-      PetscCall(VecAXPY(Y, -1.0, X));
+      PetscCall(VecWAXPY(Y, -1.0, X, XM));
       PetscCall(VecCopy(FM, F));
       PetscCall(VecCopy(XM, X));
     }
@@ -211,28 +245,34 @@ PetscErrorCode SNESNGMRESSelect_Private(SNES snes, PetscInt k_restart, Vec XM, V
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESNGMRESSelectRestart_Private(SNES snes, PetscInt l, PetscReal fMnorm, PetscReal fAnorm, PetscReal dnorm, PetscReal fminnorm, PetscReal dminnorm, PetscBool *selectRestart)
+PetscErrorCode SNESNGMRESSelectRestart_Private(SNES snes, PetscInt l, PetscReal obj, PetscReal objM, PetscReal objA, PetscReal dnorm, PetscReal objmin, PetscReal dminnorm, PetscBool *selectRestart)
 {
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
 
   PetscFunctionBegin;
   *selectRestart = PETSC_FALSE;
-  /* difference stagnation restart */
-  if ((ngmres->epsilonB * dnorm > dminnorm) && (PetscSqrtReal(fAnorm) > ngmres->deltaB * PetscSqrtReal(fminnorm)) && l > 0) {
-    if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "difference restart: %e > %e\n", (double)(ngmres->epsilonB * dnorm), (double)dminnorm));
-    *selectRestart = PETSC_TRUE;
-  }
-  /* residual stagnation restart */
-  if (PetscSqrtReal(fAnorm) > ngmres->gammaC * PetscSqrtReal(fminnorm)) {
-    if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "residual restart: %e > %e\n", (double)PetscSqrtReal(fAnorm), (double)(ngmres->gammaC * PetscSqrtReal(fminnorm))));
-    *selectRestart = PETSC_TRUE;
-  }
+  if (ngmres->select_type == SNES_NGMRES_SELECT_LINESEARCH) {
+    if (ngmres->descent_ls_test < 0) { /* XA - XM is not a descent direction */
+      if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "ascent restart: %e > 0\n", (double)-ngmres->descent_ls_test));
+      *selectRestart = PETSC_TRUE;
+    }
+  } else if (ngmres->select_type == SNES_NGMRES_SELECT_DIFFERENCE) {
+    /* difference stagnation restart */
+    if (ngmres->epsilonB * dnorm > dminnorm && objA > ngmres->deltaB * objmin && l > 0) {
+      if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "difference restart: %e > %e\n", (double)(ngmres->epsilonB * dnorm), (double)dminnorm));
+      *selectRestart = PETSC_TRUE;
+    }
+    /* residual stagnation restart */
+    if (objA > ngmres->gammaC * objmin) {
+      if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "residual restart: %e > %e\n", (double)objA, (double)(ngmres->gammaC * objmin)));
+      *selectRestart = PETSC_TRUE;
+    }
 
-  /* F_M stagnation restart */
-  if (ngmres->restart_fm_rise && fMnorm > snes->norm) {
-    if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "F_M rise restart: %e > %e\n", (double)fMnorm, (double)snes->norm));
-    *selectRestart = PETSC_TRUE;
+    /* F_M stagnation restart */
+    if (ngmres->restart_fm_rise && objM > obj) {
+      if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "F_M rise restart: %e > %e\n", (double)objM, (double)obj));
+      *selectRestart = PETSC_TRUE;
+    }
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }

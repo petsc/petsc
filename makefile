@@ -17,13 +17,12 @@
 #
 # This makefile does not require GNUmake
 ALL: all
-DIRS = src include interfaces share/petsc/matlab
 
 # next line defines PETSC_DIR and PETSC_ARCH if they are not set
 include ././${PETSC_ARCH}/lib/petsc/conf/petscvariables
 include ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscrules
-include ${PETSC_DIR}/lib/petsc/conf/rules.doc
-include ${PETSC_DIR}/lib/petsc/conf/rules.utils
+include ${PETSC_DIR}/lib/petsc/conf/rules_doc.mk
+include ${PETSC_DIR}/lib/petsc/conf/rules_util.mk
 
 # This makefile contains a lot of PHONY targets with improperly specified prerequisites
 # where correct execution instead depends on the targets being processed in the correct
@@ -413,7 +412,7 @@ alletags:
 allgtags:
 	-@find ${PETSC_DIR}/include ${PETSC_DIR}/src -regex '\(.*makefile\|.*\.\(cc\|hh\|cpp\|cxx\|C\|hpp\|c\|h\|cu\|m\)$$\)' | grep -v ftn-auto  | gtags -f -
 
-# ********* Rules for building "classic" documentation; uses rules also in lib/petsc/conf/rules.doc **************************************************
+# ********* Rules for building "classic" documentation; uses rules also in lib/petsc/conf/rules_doc.mk **************************************************
 
 docs:
 	cd doc; time ${OMAKE_SELF} sphinxhtml

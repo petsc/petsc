@@ -13,7 +13,12 @@ Changes: Development
 
 .. rubric:: Configure/Build:
 
+- Add ``--download-blis-use-openmp=0`` to force ``download-blis`` to not build with OpenMP when ``with-openmp`` is provided
+- Add ```PetscBLASSetNumThreads()`` and ``PetscBLASGetNumThreads()`` for controlling how many threads the BLAS routines use
+
 .. rubric:: Sys:
+
+- Add ``PetscBench`` an object class for managing benchmarks in PETSc
 
 .. rubric:: Event Logging:
 
@@ -27,9 +32,13 @@ Changes: Development
 
 .. rubric:: VecScatter / PetscSF:
 
+- Add MPI-4.0 persistent neighborhood collectives support. Use -sf_neighbor_persistent along with -sf_type neighbor to enable it
+
 .. rubric:: PF:
 
 .. rubric:: Vec:
+
+- Add ``VecGhostGetGhostIS()`` to get the ghost indices of a ghosted vector
 
 .. rubric:: PetscSection:
 
@@ -38,6 +47,10 @@ Changes: Development
 .. rubric:: Mat:
 
 .. rubric:: MatCoarsen:
+
+- Add ``MatCoarsenSetMaximumIterations()`` with corresponding option ``-mat_coarsen_max_it <4>``. The number of iteration of the coarsening method. Used for the HEM coarsener
+- Add ``MatCoarsenSetThreshold()`` with corresponding option ``-mat_coarsen_threshold <-1>``. Threshold for filtering graph for HEM. Like GAMG < 0 means no filtering
+- Change API for several PetscCD methods used internally in ``PCGAMG`` and ``MatCoarsen`` (eg, change ``PetscCDSetChuckSize()`` to ``PetscCDSetChunckSize()``), remove ``Mat`` argument from``PetscCDGetASMBlocks()``
 
 .. rubric:: PC:
 
@@ -61,6 +74,9 @@ Changes: Development
 .. rubric:: DMSwarm:
 
 .. rubric:: DMPlex:
+
+- Replace ``DMProjectCoordinates()`` with ``DMSetCoordinateDisc()``
+- Add argument to ``DMPlexCreateCoordinateSpace()``
 
 .. rubric:: FE/FV:
 

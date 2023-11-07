@@ -1,5 +1,5 @@
 function x = dfoxs(n,nprob,factor)
-%     This is a Matlab version of the subroutine dfoxs.f
+%     This is a MATLAB version of the subroutine dfoxs.f
 %     This subroutine specifies the standard starting points for the
 %     functions defined by subroutine dfovec as used in:
 %

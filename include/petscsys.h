@@ -285,7 +285,7 @@ M*/
    Level: beginner
 
    Notes:
-   By default `PETSC_MPI_THREAD_REQUIRED` equals `MPI_THREAD_FUNNELED`.
+   By default `PETSC_MPI_THREAD_REQUIRED` equals `MPI_THREAD_FUNNELED` when the MPI implementation provides MPI_Init_thread(), otherwise it equals `MPI_THREAD_SINGLE`
 
 .seealso: `PetscInitialize()`
 M*/
@@ -2335,3 +2335,6 @@ PETSC_EXTERN PetscErrorCode PCMPICommsDestroy(void);
 PETSC_EXTERN PetscBool      PCMPIServerActive;
 
 #define PETSC_HAVE_FORTRAN PETSC_DEPRECATED_MACRO(3, 20, 0, "PETSC_USE_FORTRAN_BINDINGS", ) PETSC_USE_FORTRAN_BINDINGS
+
+PETSC_EXTERN PetscErrorCode PetscBLASSetNumThreads(PetscInt);
+PETSC_EXTERN PetscErrorCode PetscBLASGetNumThreads(PetscInt *);

@@ -43,7 +43,7 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
 /*MC
    PETSCRAND - access to the basic Unix random number generator
 
-   Options Database Keys:
+   Options Database Key:
 . -random_type <rand,rand48,sprng> - set the random number generator from the options database
 
   Level: beginner

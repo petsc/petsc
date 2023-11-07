@@ -625,7 +625,7 @@ PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat_Symbolic(Mat mat, const Pet
 {
   Mat_MPIAIJ *aij    = (Mat_MPIAIJ *)mat->data;
   Mat         A      = aij->A; /* diagonal part of the matrix */
-  Mat         B      = aij->B; /* offdiagonal part of the matrix */
+  Mat         B      = aij->B; /* off-diagonal part of the matrix */
   Mat_SeqAIJ *a      = (Mat_SeqAIJ *)A->data;
   Mat_SeqAIJ *b      = (Mat_SeqAIJ *)B->data;
   PetscInt    cstart = mat->cmap->rstart, cend = mat->cmap->rend, col;
@@ -667,7 +667,7 @@ PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat(Mat mat, const PetscInt mat
 {
   Mat_MPIAIJ  *aij  = (Mat_MPIAIJ *)mat->data;
   Mat          A    = aij->A; /* diagonal part of the matrix */
-  Mat          B    = aij->B; /* offdiagonal part of the matrix */
+  Mat          B    = aij->B; /* off-diagonal part of the matrix */
   Mat_SeqAIJ  *aijd = (Mat_SeqAIJ *)(aij->A)->data, *aijo = (Mat_SeqAIJ *)(aij->B)->data;
   Mat_SeqAIJ  *a      = (Mat_SeqAIJ *)A->data;
   Mat_SeqAIJ  *b      = (Mat_SeqAIJ *)B->data;
@@ -957,7 +957,7 @@ static PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A, PetscInt N, const PetscIn
     if (lrows[r] >= 0) lrows[len++] = r;
   /* zero diagonal part of matrix */
   PetscCall(MatZeroRowsColumns(l->A, len, lrows, diag, x, b));
-  /* handle off diagonal part of matrix */
+  /* handle off-diagonal part of matrix */
   PetscCall(MatCreateVecs(A, &xmask, NULL));
   PetscCall(VecDuplicate(l->lvec, &lmask));
   PetscCall(VecGetArray(xmask, &bb));
@@ -977,7 +977,7 @@ static PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A, PetscInt N, const PetscIn
     PetscCall(VecGetArray(b, &bb));
   }
   PetscCall(VecGetArray(lmask, &mask));
-  /* remove zeroed rows of off diagonal matrix */
+  /* remove zeroed rows of off-diagonal matrix */
   PetscCall(MatSeqAIJGetArray(l->B, &aij_a));
   ii = aij->i;
   for (i = 0; i < len; i++) PetscCall(PetscArrayzero(aij_a + ii[lrows[i]], ii[lrows[i] + 1] - ii[lrows[i]]));
@@ -1946,7 +1946,7 @@ static PetscErrorCode MatTranspose_MPIAIJ(Mat A, MatReuse reuse, Mat *matout)
   /* Set ilen for diagonal of B */
   for (i = 0; i < A_diag_ncol; i++) B_diag_ilen[i] = B_diag_i[i + 1] - B_diag_i[i];
 
-  /* Transpose the diagonal part of the matrix. In contrast to the offdiagonal part, this can be done
+  /* Transpose the diagonal part of the matrix. In contrast to the off-diagonal part, this can be done
   very quickly (=without using MatSetValues), because all writes are local. */
   PetscCall(MatTransposeSetPrecursor(A_diag, *B_diag));
   PetscCall(MatTranspose(A_diag, MAT_REUSE_MATRIX, B_diag));
@@ -4526,7 +4526,7 @@ PetscErrorCode MatCreateAIJ(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, P
 
     Output Parameters:
 +   Ad - the diagonal portion of the matrix
-.   Ao - the off diagonal portion of the matrix
+.   Ao - the off-diagonal portion of the matrix
 .   colmap - An array mapping local column numbers of `Ao` to global column numbers of the parallel matrix
 -   ierr - error code
 
@@ -4549,7 +4549,7 @@ M*/
     Input Parameters:
 +   A - the `MATMPIAIJ` matrix
 .   Ad - the diagonal portion of the matrix
-.   Ao - the off diagonal portion of the matrix
+.   Ao - the off-diagonal portion of the matrix
 .   colmap - An array mapping local column numbers of `Ao` to global column numbers of the parallel matrix
 -   ierr - error code
 
@@ -5255,7 +5255,7 @@ PetscErrorCode MatMPIAIJGetLocalMat(Mat A, MatReuse scall, Mat *A_loc)
 
 /*@
   MatMPIAIJGetLocalMatMerge - Creates a `MATSEQAIJ` from a `MATMPIAIJ` matrix by taking all its local rows and putting them into a sequential matrix with
-  mlocal rows and n columns. Where n is the sum of the number of columns of the diagonal and offdiagonal part
+  mlocal rows and n columns. Where n is the sum of the number of columns of the diagonal and off-diagonal part
 
   Not Collective
 
@@ -5271,7 +5271,7 @@ PetscErrorCode MatMPIAIJGetLocalMat(Mat A, MatReuse scall, Mat *A_loc)
 
   Note:
   This is different from `MatMPIAIJGetLocalMat()` since the first columns in the returning matrix are those associated with the diagonal
-  part, then those associated with the off diagonal part (in its local ordering)
+  part, then those associated with the off-diagonal part (in its local ordering)
 
 .seealso: [](ch_matrices), `Mat`, `MATMPIAIJ`, `MatGetOwnershipRange()`, `MatMPIAIJGetLocalMat()`, `MatMPIAIJGetLocalMatCondensed()`
 @*/
@@ -5484,7 +5484,7 @@ static PetscErrorCode MatCreateSeqSubMatrixWithRows_Private(Mat P, IS rows, Mat 
   }
   /* Create SF to communicate how many nonzero columns for each row */
   PetscCall(PetscSFCreate(comm, &sf));
-  /* SF will figure out the number of nonzero colunms for each row, and their
+  /* SF will figure out the number of nonzero columns for each row, and their
    * offsets
    * */
   PetscCall(PetscSFSetGraph(sf, plocalsize, nrows, NULL, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER));
@@ -5497,9 +5497,9 @@ static PetscErrorCode MatCreateSeqSubMatrixWithRows_Private(Mat P, IS rows, Mat 
   roffsets[0] = 0;
   roffsets[1] = 0;
   for (i = 0; i < plocalsize; i++) {
-    /* diag */
+    /* diagonal */
     nrcols[i * 2 + 0] = pd->i[i + 1] - pd->i[i];
-    /* off diag */
+    /* off-diagonal */
     nrcols[i * 2 + 1] = po->i[i + 1] - po->i[i];
     /* compute offsets so that we relative location for each row */
     roffsets[(i + 1) * 2 + 0] = roffsets[i * 2 + 0] + nrcols[i * 2 + 0];
@@ -5521,9 +5521,9 @@ static PetscErrorCode MatCreateSeqSubMatrixWithRows_Private(Mat P, IS rows, Mat 
   for (i = 0; i < nrows; i++) {
     pnnz[i] = nlcols[i * 2 + 0] + nlcols[i * 2 + 1];
     ncol    = PetscMax(pnnz[i], ncol);
-    /* diag */
+    /* diagonal */
     dntotalcols += nlcols[i * 2 + 0];
-    /* off diag */
+    /* off-diagonal */
     ontotalcols += nlcols[i * 2 + 1];
   }
   /* We do not need to figure the right number of columns
@@ -5533,13 +5533,13 @@ static PetscErrorCode MatCreateSeqSubMatrixWithRows_Private(Mat P, IS rows, Mat 
   PetscCall(MatSetUp(*P_oth));
   PetscCall(PetscFree(pnnz));
   p_oth = (Mat_SeqAIJ *)(*P_oth)->data;
-  /* diag */
+  /* diagonal */
   PetscCall(PetscCalloc1(dntotalcols, &iremote));
-  /* off diag */
+  /* off-diagonal */
   PetscCall(PetscCalloc1(ontotalcols, &oiremote));
-  /* diag */
+  /* diagonal */
   PetscCall(PetscCalloc1(dntotalcols, &ilocal));
-  /* off diag */
+  /* off-diagonal */
   PetscCall(PetscCalloc1(ontotalcols, &oilocal));
   dntotalcols = 0;
   ontotalcols = 0;
@@ -5554,7 +5554,7 @@ static PetscErrorCode MatCreateSeqSubMatrixWithRows_Private(Mat P, IS rows, Mat 
       /* P_oth is seqAIJ so that ilocal need to point to the first part of memory */
       ilocal[dntotalcols++] = ntotalcols++;
     }
-    /* off diag */
+    /* off-diagonal */
     for (j = 0; j < nlcols[i * 2 + 1]; j++) {
       oiremote[ontotalcols].index = loffsets[i * 2 + 1] + j;
       oiremote[ontotalcols].rank  = owner;
@@ -5573,13 +5573,13 @@ static PetscErrorCode MatCreateSeqSubMatrixWithRows_Private(Mat P, IS rows, Mat 
   PetscCall(PetscSFSetUp(sf));
 
   PetscCall(PetscSFCreate(comm, &osf));
-  /* Off diag */
+  /* off-diagonal */
   PetscCall(PetscSFSetGraph(osf, po->i[plocalsize], ontotalcols, oilocal, PETSC_OWN_POINTER, oiremote, PETSC_OWN_POINTER));
   PetscCall(PetscSFSetFromOptions(osf));
   PetscCall(PetscSFSetUp(osf));
   PetscCall(MatSeqAIJGetArrayRead(p->A, &pd_a));
   PetscCall(MatSeqAIJGetArrayRead(p->B, &po_a));
-  /* We operate on the matrix internal data for saving memory */
+  /* operate on the matrix internal data to save memory */
   PetscCall(PetscSFBcastBegin(sf, MPIU_SCALAR, pd_a, p_oth->a, MPI_REPLACE));
   PetscCall(PetscSFBcastBegin(osf, MPIU_SCALAR, po_a, p_oth->a, MPI_REPLACE));
   PetscCall(MatGetOwnershipRangeColumn(P, &pcstart, NULL));
@@ -7710,7 +7710,7 @@ static inline PetscErrorCode MatCollapseRows(Mat Amat, PetscInt start, PetscInt 
  . a_Gmat - output scalar graph >= 0
 
 */
-PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmetrize, PetscBool scale, PetscReal filter, Mat *a_Gmat)
+PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmetrize, PetscBool scale, PetscReal filter, PetscInt index_size, PetscInt index[], Mat *a_Gmat)
 {
   PetscInt  Istart, Iend, Ii, jj, kk, ncols, nloc, NN, MM, bs;
   MPI_Comm  comm;
@@ -7793,10 +7793,21 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmet
         for (int k = 0; k < n; k += bs) {        // block columns
           AJ[k / bs] = aj[k] / bs + Istart / bs; // diag starts at (Istart,Istart)
           val        = 0;
-          for (int ii = 0; ii < bs; ii++) { // rows in block
-            aa = aseq->a + ai[brow + ii] + k;
-            for (int jj = 0; jj < bs; jj++) {         // columns in block
-              val += PetscAbs(PetscRealPart(aa[jj])); // a sort of norm
+          if (index_size == 0) {
+            for (int ii = 0; ii < bs; ii++) { // rows in block
+              aa = aseq->a + ai[brow + ii] + k;
+              for (int jj = 0; jj < bs; jj++) {         // columns in block
+                val += PetscAbs(PetscRealPart(aa[jj])); // a sort of norm
+              }
+            }
+          } else {                                       // use (index,index) value if provided
+            for (int iii = 0; iii < index_size; iii++) { // rows in block
+              int ii = index[iii];
+              aa     = aseq->a + ai[brow + ii] + k;
+              for (int jjj = 0; jjj < index_size; jjj++) { // columns in block
+                int jj = index[jjj];
+                val    = PetscAbs(PetscRealPart(aa[jj]));
+              }
             }
           }
           PetscAssert(k / bs < nmax, comm, PETSC_ERR_USER, "k / bs (%d) >= nmax (%d)", (int)(k / bs), (int)nmax);
@@ -7820,15 +7831,29 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmet
           }
           nc = ncols / bs;
           PetscCall(MatRestoreRow(b, brow, &ncols, &cols, NULL));
-          for (int ii = 0; ii < bs; ii++) { // rows in block
-            PetscCall(MatGetRow(b, brow + ii, &ncols, &cols, &vals));
-            for (int k = 0; k < ncols; k += bs) {
-              for (int jj = 0; jj < bs; jj++) { // cols in block
-                PetscAssert(k / bs < nmax, comm, PETSC_ERR_USER, "k / bs (%d) >= nmax (%d)", (int)(k / bs), (int)nmax);
-                AA[k / bs] += PetscAbs(PetscRealPart(vals[k + jj]));
+          if (index_size == 0) {
+            for (int ii = 0; ii < bs; ii++) { // rows in block
+              PetscCall(MatGetRow(b, brow + ii, &ncols, &cols, &vals));
+              for (int k = 0; k < ncols; k += bs) {
+                for (int jj = 0; jj < bs; jj++) { // cols in block
+                  PetscAssert(k / bs < nmax, comm, PETSC_ERR_USER, "k / bs (%d) >= nmax (%d)", (int)(k / bs), (int)nmax);
+                  AA[k / bs] += PetscAbs(PetscRealPart(vals[k + jj]));
+                }
               }
+              PetscCall(MatRestoreRow(b, brow + ii, &ncols, &cols, &vals));
             }
-            PetscCall(MatRestoreRow(b, brow + ii, &ncols, &cols, &vals));
+          } else {                                       // use (index,index) value if provided
+            for (int iii = 0; iii < index_size; iii++) { // rows in block
+              int ii = index[iii];
+              PetscCall(MatGetRow(b, brow + ii, &ncols, &cols, &vals));
+              for (int k = 0; k < ncols; k += bs) {
+                for (int jjj = 0; jjj < index_size; jjj++) { // cols in block
+                  int jj = index[jjj];
+                  AA[k / bs] += PetscAbs(PetscRealPart(vals[k + jj]));
+                }
+              }
+              PetscCall(MatRestoreRow(b, brow + ii, &ncols, &cols, &vals));
+            }
           }
           grow = Istart / bs + brow / bs;
           PetscCall(MatSetValues(Gmat, 1, &grow, nc, AJ, AA, INSERT_VALUES));

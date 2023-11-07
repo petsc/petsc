@@ -40,7 +40,7 @@ WRecBRGN = reshape(xRecBRGN, WSz);
 WAll = {WGT, WRecBRGN};
 titleAll = {'Ground Truth', sprintf('Reconstruction-Tao-brgn-nonnegative,psnr=%.2fdB', psnr(WRecBRGN, WGT))};
   
-% May add the Matlab reconstruction using TwIST to comparison
+% May add the MATLAB reconstruction using TwIST to comparison
 isDemoMatLabReconstruction = 1; % 1/0
 if isDemoMatLabReconstruction  
     % Reconstruction with solver from XH, with L1/TV regularizer.

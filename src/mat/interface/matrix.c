@@ -1006,11 +1006,11 @@ PetscErrorCode MatViewFromOptions(Mat A, PetscObject obj, const char name[])
 + -mat_view ::ascii_info           - Prints info on matrix at conclusion of `MatAssemblyEnd()`
 . -mat_view ::ascii_info_detail    - Prints more detailed info
 . -mat_view                        - Prints matrix in ASCII format
-. -mat_view ::ascii_matlab         - Prints matrix in Matlab format
+. -mat_view ::ascii_matlab         - Prints matrix in MATLAB format
 . -mat_view draw                   - PetscDraws nonzero structure of matrix, using `MatView()` and `PetscDrawOpenX()`.
 . -display <name>                  - Sets display name (default is host)
 . -draw_pause <sec>                - Sets number of seconds to pause after display
-. -mat_view socket                 - Sends matrix to socket, can be accessed from Matlab (see Users-Manual: ch_matlab for details)
+. -mat_view socket                 - Sends matrix to socket, can be accessed from MATLAB (see Users-Manual: ch_matlab for details)
 . -viewer_socket_machine <machine> - -
 . -viewer_socket_port <port>       - -
 . -mat_view binary                 - save matrix to file in binary format
@@ -1039,7 +1039,7 @@ PetscErrorCode MatViewFromOptions(Mat A, PetscObject obj, const char name[])
   format of ASCII printed objects (when using `PETSC_VIEWER_STDOUT_SELF`,
   `PETSC_VIEWER_STDOUT_WORLD` and `PetscViewerASCIIOpen()`).  Available formats include
 +    `PETSC_VIEWER_DEFAULT` - default, prints matrix contents
-.    `PETSC_VIEWER_ASCII_MATLAB` - prints matrix contents in Matlab format
+.    `PETSC_VIEWER_ASCII_MATLAB` - prints matrix contents in MATLAB format
 .    `PETSC_VIEWER_ASCII_DENSE` - prints entire matrix including zeros
 .    `PETSC_VIEWER_ASCII_COMMON` - prints matrix contents, using a sparse
   format common among all matrix types
@@ -1058,7 +1058,7 @@ PetscErrorCode MatViewFromOptions(Mat A, PetscObject obj, const char name[])
   See the manual page for `MatLoad()` for the exact format of the binary file when the binary
   viewer is used.
 
-  See share/petsc/matlab/PetscBinaryRead.m for a Matlab code that can read in the binary file when the binary
+  See share/petsc/matlab/PetscBinaryRead.m for a MATLAB code that can read in the binary file when the binary
   viewer is used and lib/petsc/bin/PetscBinaryIO.py for loading them into Python.
 
   One can use '-mat_view draw -draw_pause -1' to pause the graphical display of matrix nonzero structure,
@@ -4325,7 +4325,10 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype, MatReuse reuse, Mat *M)
   PetscCall(PetscObjectTypeCompare((PetscObject)mat, newtype, &sametype));
   PetscCall(PetscStrcmp(newtype, "same", &issame));
   PetscCheck(!(reuse == MAT_INPLACE_MATRIX) || !(mat != *M), PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "MAT_INPLACE_MATRIX requires same input and output matrix");
-  PetscCheck(!(reuse == MAT_REUSE_MATRIX) || !(mat == *M), PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "MAT_REUSE_MATRIX means reuse matrix in final argument, perhaps you mean MAT_INPLACE_MATRIX");
+  if (reuse == MAT_REUSE_MATRIX) {
+    PetscValidHeaderSpecific(*M, MAT_CLASSID, 4);
+    PetscCheck(mat != *M, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "MAT_REUSE_MATRIX means reuse matrix in final argument, perhaps you mean MAT_INPLACE_MATRIX");
+  }
 
   if ((reuse == MAT_INPLACE_MATRIX) && (issame || sametype)) {
     PetscCall(PetscInfo(mat, "Early return for inplace %s %d %d\n", ((PetscObject)mat)->type_name, sametype, issame));
@@ -5344,7 +5347,7 @@ PetscErrorCode MatTransposeCheckNonzeroState_Private(Mat A, Mat B)
   Only available for `MATAIJ` matrices.
 
   The sequential algorithm has a running time of the order of the number of nonzeros; the parallel
-  test involves parallel copies of the block-offdiagonal parts of the matrix.
+  test involves parallel copies of the block off-diagonal parts of the matrix.
 
 .seealso: [](ch_matrices), `Mat`, `MatTranspose()`, `MatIsSymmetric()`, `MatIsHermitian()`
 @*/
@@ -5417,7 +5420,7 @@ PetscErrorCode MatHermitianTranspose(Mat mat, MatReuse reuse, Mat *B)
 
   The sequential algorithm
   has a running time of the order of the number of nonzeros; the parallel
-  test involves parallel copies of the block-offdiagonal parts of the matrix.
+  test involves parallel copies of the block off-diagonal parts of the matrix.
 
 .seealso: [](ch_matrices), `Mat`, `MatTranspose()`, `MatIsSymmetric()`, `MatIsHermitian()`, `MatIsTranspose()`
 @*/
@@ -5732,11 +5735,11 @@ PetscErrorCode MatAssembled(Mat mat, PetscBool *assembled)
 + -mat_view ::ascii_info             - Prints info on matrix at conclusion of `MatAssemblyEnd()`
 . -mat_view ::ascii_info_detail      - Prints more detailed info
 . -mat_view                          - Prints matrix in ASCII format
-. -mat_view ::ascii_matlab           - Prints matrix in Matlab format
+. -mat_view ::ascii_matlab           - Prints matrix in MATLAB format
 . -mat_view draw                     - draws nonzero structure of matrix, using `MatView()` and `PetscDrawOpenX()`.
 . -display <name>                    - Sets display name (default is host)
 . -draw_pause <sec>                  - Sets number of seconds to pause after display
-. -mat_view socket                   - Sends matrix to socket, can be accessed from Matlab (See [Using MATLAB with PETSc](ch_matlab))
+. -mat_view socket                   - Sends matrix to socket, can be accessed from MATLAB (See [Using MATLAB with PETSc](ch_matlab))
 . -viewer_socket_machine <machine>   - Machine to use for socket
 . -viewer_socket_port <port>         - Port number to use for socket
 - -mat_view binary:filename[:append] - Save matrix to file in binary format
@@ -11167,10 +11170,12 @@ PetscErrorCode MatSetInf(Mat A)
   Collective
 
   Input Parameters:
-+ A      - the matrix
-. sym    - `PETSC_TRUE` indicates that the graph should be symmetrized
-. scale  - `PETSC_TRUE` indicates that the graph edge weights should be symmetrically scaled with the diagonal entry
-- filter - filter value - < 0: does nothing; == 0: removes only 0.0 entries; otherwise: removes entries with abs(entries) <= value
++ A       - the matrix
+. sym     - `PETSC_TRUE` indicates that the graph should be symmetrized
+. scale   - `PETSC_TRUE` indicates that the graph edge weights should be symmetrically scaled with the diagonal entry
+. filter  - filter value - < 0: does nothing; == 0: removes only 0.0 entries; otherwise: removes entries with abs(entries) <= value
+. num_idx - size of 'index' array
+- index   - array of block indices to use for graph strength of connection weight
 
   Output Parameter:
 . graph - the resulting graph
@@ -11179,14 +11184,14 @@ PetscErrorCode MatSetInf(Mat A)
 
 .seealso: [](ch_matrices), `Mat`, `MatCreate()`, `PCGAMG`
 @*/
-PetscErrorCode MatCreateGraph(Mat A, PetscBool sym, PetscBool scale, PetscReal filter, Mat *graph)
+PetscErrorCode MatCreateGraph(Mat A, PetscBool sym, PetscBool scale, PetscReal filter, PetscInt num_idx, PetscInt index[], Mat *graph)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
   PetscValidLogicalCollectiveBool(A, scale, 3);
-  PetscAssertPointer(graph, 5);
-  PetscUseTypeMethod(A, creategraph, sym, scale, filter, graph);
+  PetscAssertPointer(graph, 7);
+  PetscUseTypeMethod(A, creategraph, sym, scale, filter, num_idx, index, graph);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -207,7 +207,7 @@ static PetscErrorCode PetscLogGetHandler(PetscLogHandlerType type, PetscLogHandl
   Output Parameter:
 . state - The `PetscLogState` changed by registrations (such as
           `PetscLogEventRegister()`) and actions (such as `PetscLogEventBegin()` or
-          `PetscLogStagePush()`), or NULL if logging is not active
+          `PetscLogStagePush()`), or `NULL` if logging is not active
 
   Level: developer
 
@@ -244,7 +244,6 @@ static PetscErrorCode PetscLogHandlerCopyToHot(PetscLogHandler h, PetscLogHandle
   Level: developer
 
   Notes:
-
   Users should only need this if they create their own log handlers: handlers that are started
   from the command line (such as `-log_view` and `-log_trace`) or from a function like
   `PetscLogNestedBegin()` will automatically be started.
@@ -256,9 +255,9 @@ static PetscErrorCode PetscLogHandlerCopyToHot(PetscLogHandler h, PetscLogHandle
   When a log handler is started, stages that have already been pushed with `PetscLogStagePush()`,
   will be pushed for the new log handler, but it will not be informed of any events that are
   in progress.  It is recommended to start any user-defined log handlers immediately following
-  before any user-defined stages are pushed.
+  `PetscInitialize()`  before any user-defined stages are pushed.
 
-.seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogState`, `PetscLogHandlerStop()`
+.seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogState`, `PetscLogHandlerStop()`, `PetscInitialize()`
 @*/
 PetscErrorCode PetscLogHandlerStart(PetscLogHandler h)
 {
@@ -435,7 +434,7 @@ PETSC_INTERN PetscErrorCode PetscLogTypeBegin(PetscLogHandlerType type)
   rates and object creation and should not slow programs down too much.
   This routine may be called more than once.
 
-  Logically Collective over `PETSC_COMM_WORLD`
+  Logically Collective on `PETSC_COMM_WORLD`
 
   Options Database Key:
 . -log_view [viewertype:filename:viewerformat] - Prints summary of flop and timing information to the
@@ -507,7 +506,7 @@ PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_Nested(MPI_Comm, PetscLogHandl
   PetscLogNestedBegin - Turns on nested logging of objects and events. This logs flop
   rates and object creation and should not slow programs down too much.
 
-  Logically Collective over `PETSC_COMM_WORLD`
+  Logically Collective on `PETSC_COMM_WORLD`
 
   Options Database Keys:
 . -log_view :filename.xml:ascii_xml - Prints an XML summary of flop and timing information to the file
@@ -537,7 +536,7 @@ PetscErrorCode PetscLogNestedBegin(void)
   matching the now deprecated function pointers `PetscLogPLB`, `PetscLogPLE`,
   `PetscLogPHC`, `PetscLogPHD`.
 
-  Logically Collective over `PETSC_COMM_WORLD`
+  Logically Collective on `PETSC_COMM_WORLD`
 
   Input Parameters:
 + PetscLogPLB - A callback that will be executed by `PetscLogEventBegin()` (or `NULL`)
@@ -598,7 +597,7 @@ static PetscBool PetscBeganMPE = PETSC_FALSE;
   PetscLogMPEBegin - Turns on MPE logging of events. This creates large log files and slows the
   program down.
 
-  Collective over `PETSC_COMM_WORLD`
+  Collective on `PETSC_COMM_WORLD`
 
   Options Database Key:
 . -log_mpe - Prints extensive log information
@@ -640,7 +639,7 @@ PetscErrorCode PetscLogMPEBegin(void)
 /*@C
   PetscLogPerfstubsBegin - Turns on logging of events using the perfstubs interface.
 
-  Collective over `PETSC_COMM_WORLD`
+  Collective on `PETSC_COMM_WORLD`
 
   Options Database Key:
 . -log_perfstubs - use an external log handler through the perfstubs interface
@@ -1926,7 +1925,7 @@ PetscErrorCode PetscLogDump(const char sname[])
 /*@C
   PetscLogMPEDump - Dumps the MPE logging info to file for later use with Jumpshot.
 
-  Collective over `PETSC_COMM_WORLD`
+  Collective on `PETSC_COMM_WORLD`
 
   Input Parameter:
 . sname - filename for the MPE logfile
@@ -1961,7 +1960,7 @@ PetscErrorCode PetscLogMPEDump(const char sname[])
 /*@C
   PetscLogView - Prints a summary of the logging.
 
-  Collective over MPI_Comm
+  Collective
 
   Input Parameter:
 . viewer - an ASCII viewer
@@ -2077,7 +2076,7 @@ PETSC_INTERN PetscErrorCode PetscLogHandlerNestedSetThreshold(PetscLogHandler, P
   PetscLogSetThreshold - Set the threshold time for logging the events; this is a percentage out of 100, so 1. means any event
   that takes 1 or more percent of the time.
 
-  Logically Collective over `PETSC_COMM_WORLD`
+  Logically Collective on `PETSC_COMM_WORLD`
 
   Input Parameter:
 . newThresh - the threshold to use
@@ -2271,7 +2270,7 @@ M*/
   Level: intermediate
 
   Note:
-  Only works in C/C++ not fortran
+  Only works in C/C++ not Fortran
 
 .seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadStage()`
 M*/
@@ -2297,7 +2296,7 @@ M*/
   Level: intermediate
 
   Note:
-  Only works in C/C++ not fortran
+  Only works in C/C++ not Fortran
 
 .seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadEnd()`
 M*/
@@ -2414,7 +2413,7 @@ PetscErrorCode PetscLogGpuTimeEnd(void)
 
 #endif /* PETSC_USE_LOG*/
 
-/* -- Utility functions for logging from fortran -- */
+/* -- Utility functions for logging from Fortran -- */
 
 PETSC_EXTERN PetscErrorCode PetscASend(int count, int datatype)
 {

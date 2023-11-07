@@ -1,0 +1,76 @@
+
+---- Minimum Surface Area Problem -----
+mx: 10     my: 10   
+
+    0 SNES Function norm 2.077854860018e-01, Update norm 0.000000000000e+00, Objective 1.460759596221e+00
+obj(X_A) = 1.435992e+00, ||F_A||_2 = 1.245460e-01, obj(X_M) = 1.433029e+00, ||F_M||_2 = 1.424325e-01
+Additive solution: objective = 1.433029e+00
+ascent restart: 8.129529e-04 > 0
+    1 SNES Function norm 1.424325120223e-01, Update norm 6.746710553575e-01, Objective 1.433028669885e+00
+obj(X_A) = 1.424728e+00, ||F_A||_2 = 7.724544e-02, obj(X_M) = 1.424965e+00, ||F_M||_2 = 9.497575e-02
+Additive solution: objective = 1.424628e+00
+    2 SNES Function norm 8.018616674139e-02, Update norm 8.070144431101e-01, Objective 1.424628063107e+00
+obj(X_A) = 1.419733e+00, ||F_A||_2 = 4.321160e-02, obj(X_M) = 1.421733e+00, ||F_M||_2 = 7.773464e-02
+Additive solution: objective = 1.419617e+00
+    3 SNES Function norm 4.506729663070e-02, Update norm 9.044906600162e-01, Objective 1.419617282362e+00
+obj(X_A) = 1.418489e+00, ||F_A||_2 = 8.788632e-03, obj(X_M) = 1.418862e+00, ||F_M||_2 = 2.415554e-02
+Additive solution: objective = 1.418487e+00
+    4 SNES Function norm 8.684199946455e-03, Update norm 9.650243605852e-01, Objective 1.418486514679e+00
+obj(X_A) = 1.418471e+00, ||F_A||_2 = 2.239240e-03, obj(X_M) = 1.418472e+00, ||F_M||_2 = 3.124671e-03
+Additive solution: objective = 1.418471e+00
+    5 SNES Function norm 2.238469243721e-03, Update norm 9.675744911498e-01, Objective 1.418470553331e+00
+obj(X_A) = 1.418470e+00, ||F_A||_2 = 7.847430e-04, obj(X_M) = 1.418470e+00, ||F_M||_2 = 1.050398e-03
+Additive solution: objective = 1.418470e+00
+    6 SNES Function norm 7.857032428969e-04, Update norm 9.679407431281e-01, Objective 1.418469604481e+00
+obj(X_A) = 1.418469e+00, ||F_A||_2 = 3.313608e-04, obj(X_M) = 1.418469e+00, ||F_M||_2 = 4.767483e-04
+Additive solution: objective = 1.418469e+00
+    7 SNES Function norm 3.335677833347e-04, Update norm 9.679577164150e-01, Objective 1.418469466913e+00
+obj(X_A) = 1.418469e+00, ||F_A||_2 = 1.765042e-04, obj(X_M) = 1.418469e+00, ||F_M||_2 = 2.637385e-04
+Additive solution: objective = 1.418469e+00
+    8 SNES Function norm 1.791882023233e-04, Update norm 9.679611518929e-01, Objective 1.418469440571e+00
+obj(X_A) = 1.418469e+00, ||F_A||_2 = 1.071697e-04, obj(X_M) = 1.418469e+00, ||F_M||_2 = 1.880503e-04
+Additive solution: objective = 1.418469e+00
+    9 SNES Function norm 1.098335510171e-04, Update norm 9.679606702938e-01, Objective 1.418469428791e+00
+obj(X_A) = 1.418469e+00, ||F_A||_2 = 4.550106e-05, obj(X_M) = 1.418469e+00, ||F_M||_2 = 1.040912e-04
+Additive solution: objective = 1.418469e+00
+   10 SNES Function norm 4.801724433088e-05, Update norm 9.679601056211e-01, Objective 1.418469423223e+00
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 10
+Tao Object: 1 MPI process
+  type: snes
+  SNES Object: 1 MPI process
+    type: ngmres
+      Number of stored past updates: 30
+      Additive line-search details:
+    SNESLineSearch Object: (snes_ngmres_additive_) 1 MPI process
+      type: l2
+      maxstep=1.000000e+08, minlambda=1.000000e-12
+      tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+      maximum iterations=1
+    maximum iterations=10000, maximum function evaluations=30000
+    tolerances: relative=1e-08, absolute=0.0001, solution=1e-08
+    total number of function evaluations=20
+    norm schedule ALWAYS
+    SNESLineSearch Object: 1 MPI process
+      type: basic
+      maxstep=1.000000e+08, minlambda=1.000000e-12
+      tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+      maximum iterations=1
+    SNES Object: (npc_) 1 MPI process
+      type: ncg
+        type: FR
+      maximum iterations=1, maximum function evaluations=30000
+      tolerances: relative=0., absolute=0., solution=0.
+      total number of function evaluations=20
+      norm schedule FINALONLY
+      SNESLineSearch Object: (npc_) 1 MPI process
+        type: cp
+        maxstep=1.000000e+08, minlambda=1.000000e-12
+        tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+        maximum iterations=1
+  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=4.80172e-05
+  Objective value=1.41847
+  total number of iterations=10,                          (max: 2000)
+  total number of function evaluations=90,                  max: 4000
+  total number of function/gradient evaluations=40,      (max: 4000)
+  Solution converged:    User Terminated

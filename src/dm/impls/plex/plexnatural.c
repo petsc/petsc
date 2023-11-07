@@ -19,8 +19,11 @@
 PetscErrorCode DMPlexSetMigrationSF(DM dm, PetscSF migrationSF)
 {
   PetscFunctionBegin;
-  dm->sfMigration = migrationSF;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (migrationSF) PetscValidHeaderSpecific(migrationSF, PETSCSF_CLASSID, 2);
   PetscCall(PetscObjectReference((PetscObject)migrationSF));
+  PetscCall(PetscSFDestroy(&dm->sfMigration));
+  dm->sfMigration = migrationSF;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -62,7 +65,7 @@ PetscErrorCode DMPlexSetGlobalToNaturalSF(DM dm, PetscSF naturalSF)
   PetscFunctionBegin;
   dm->sfNatural = naturalSF;
   PetscCall(PetscObjectReference((PetscObject)naturalSF));
-  dm->useNatural = PETSC_TRUE;
+  dm->useNatural = naturalSF ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

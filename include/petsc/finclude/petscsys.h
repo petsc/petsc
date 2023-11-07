@@ -212,6 +212,8 @@
 
 #define PetscOptions type(tPetscOptions)
 
+#define PetscBench type(tPetscBench)
+
 #define PetscFunctionList PetscFortranAddr
 
 #define PetscInfoCommFlag PetscEnum

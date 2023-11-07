@@ -5,14 +5,14 @@
     Linear solve converged due to CONVERGED_RTOL iterations 8
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
   Linear solve converged due to CONVERGED_RTOL iterations 8
-  Linear solve converged due to CONVERGED_RTOL iterations 7
+  Linear solve converged due to CONVERGED_RTOL iterations 8
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 SNES Object: 2 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=15
-  total number of function evaluations=684
+  total number of linear solver iterations=16
+  total number of function evaluations=729
   norm schedule ALWAYS
   total number of grid sequence refinements=2
   SNESLineSearch Object: 2 MPI processes
@@ -50,7 +50,7 @@ SNES Object: 2 MPI processes
           type: mffd
           rows=21, cols=21
             Matrix-free approximation:
-              err=1.49012e-08 (relative error in function evaluation)
+              err=1.38778e-17 (relative error in function evaluation)
               Using wp compute h routine
                   Does not compute normU
     Down solver (pre-smoother) on level 1 -------------------------------
@@ -69,7 +69,7 @@ SNES Object: 2 MPI processes
           type: mffd
           rows=39, cols=39
             Matrix-free approximation:
-              err=1.49012e-08 (relative error in function evaluation)
+              err=1.38778e-17 (relative error in function evaluation)
               Using wp compute h routine
                   Does not compute normU
     Up solver (post-smoother) same as down solver (pre-smoother)
@@ -89,7 +89,7 @@ SNES Object: 2 MPI processes
           type: mffd
           rows=75, cols=75
             Matrix-free approximation:
-              err=1.49012e-08 (relative error in function evaluation)
+              err=1.38778e-17 (relative error in function evaluation)
               Using wp compute h routine
                   Does not compute normU
     Up solver (post-smoother) same as down solver (pre-smoother)
@@ -98,6 +98,6 @@ SNES Object: 2 MPI processes
       type: mffd
       rows=75, cols=75
         Matrix-free approximation:
-          err=1.49012e-08 (relative error in function evaluation)
+          err=1.38778e-17 (relative error in function evaluation)
           Using wp compute h routine
               Does not compute normU

@@ -154,7 +154,7 @@ static PetscErrorCode DMCreateCoordinateDisc(DM dm)
   PetscCall(DMPlexGetCellType(dm, cStart, &ct));
   simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct) + 1 ? PETSC_TRUE : PETSC_FALSE;
   PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, dE, simplex, "dm_coord_", -1, &fe));
-  PetscCall(DMProjectCoordinates(dm, fe));
+  PetscCall(DMSetCoordinateDisc(dm, fe, PETSC_TRUE));
   PetscCall(PetscFEDestroy(&fe));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -46,7 +46,7 @@
   #undef getarg_
   #define iargc_  NARGS
   #define getarg_ GETARG
-#elif defined(PETSC_HAVE_PXFGETARG_NEW) /* cray x1 */
+#elif defined(PETSC_HAVE_PXFGETARG_NEW) /* Cray X1 */
   #undef iargc_
   #undef getarg_
   #define iargc_  ipxfargc_
@@ -257,7 +257,7 @@ PETSC_EXTERN void petscinitializef_(char *filename, char *help, PetscBool *reada
     if (*ierr) return;
   }
 
-  /* check if PETSC_COMM_WORLD is initialized by the user in fortran */
+  /* check if PETSC_COMM_WORLD is initialized by the user in Fortran */
   petscgetcomm_(&f_petsc_comm_world);
   MPI_Initialized(&flag);
   if (!flag) {

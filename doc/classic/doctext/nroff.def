@@ -27,7 +27,7 @@ e_synopsis %n.fi%n
 em_dash    \-  
 eop
 bop
-em	   %n.B 
+em         %n.B 
 s_arg      %n.PD 0%n.TP%n.B 
 s_defn     %n- 
 e_defn     %n.PD 1%n

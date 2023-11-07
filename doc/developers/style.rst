@@ -655,7 +655,7 @@ Spelling and Capitalization
 
 #. Company names and product names should be capitalized.
 
-#. Company names and terms that are traditionally all capitalized, for example, NVIDIA and CUDA, should be all capitalized.
+#. Company names and terms that are traditionally all capitalized, for example, MATLAB, NVIDIA, and CUDA, should be all capitalized.
 
 #. Unix should not be all capitalized.
 

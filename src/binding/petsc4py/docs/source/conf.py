@@ -398,6 +398,10 @@ def setup(app):
 # a list of builtin themes.
 html_theme = 'pydata_sphinx_theme'
 
+html_theme_options = {
+    "navigation_with_keys":True
+}
+
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.

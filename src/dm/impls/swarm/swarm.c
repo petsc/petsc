@@ -591,7 +591,7 @@ static PetscErrorCode DMSwarmComputeMassMatrixSquare_Private(DM dmc, DM dmf, Mat
         PetscCallBLAS("BLASgemm", BLASgemm_("T", "N", &blasn, &blasn, &blask, &one, elemMat, &blask, elemMat, &blask, &zero, elemMatSq, &blasn));
       }
       PetscCall(MatSetValues(mass, numCIndices, rowIDXs, numCIndices, rowIDXs, elemMatSq, ADD_VALUES));
-      /* TODO Off-diagonal */
+      /* TODO off-diagonal */
       PetscCall(PetscFree(cindices));
       PetscCall(DMPlexRestoreClosureIndices(dmf, fsection, globalFSection, cell, PETSC_FALSE, &numFIndices, &findices, NULL, NULL));
     }

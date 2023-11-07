@@ -1706,7 +1706,7 @@ static PetscErrorCode MatZeroRowsColumns_MPIBAIJ(Mat A, PetscInt N, const PetscI
     if (lrows[r] >= 0) lrows[len++] = r;
   /* zero diagonal part of matrix */
   PetscCall(MatZeroRowsColumns(l->A, len, lrows, diag, x, b));
-  /* handle off diagonal part of matrix */
+  /* handle off-diagonal part of matrix */
   PetscCall(MatCreateVecs(A, &xmask, NULL));
   PetscCall(VecDuplicate(l->lvec, &lmask));
   PetscCall(VecGetArray(xmask, &bb));
@@ -1722,7 +1722,7 @@ static PetscErrorCode MatZeroRowsColumns_MPIBAIJ(Mat A, PetscInt N, const PetscI
     PetscCall(VecGetArray(b, &bb));
   }
   PetscCall(VecGetArray(lmask, &mask));
-  /* remove zeroed rows of off diagonal matrix */
+  /* remove zeroed rows of off-diagonal matrix */
   for (i = 0; i < len; ++i) {
     row   = lrows[i];
     count = (baij->i[row / bs + 1] - baij->i[row / bs]) * bs;

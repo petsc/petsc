@@ -51,12 +51,12 @@ endif
 # PETSC_[C,F]CPPFLAGS    -  preprocessor flags for *.c, *.F preprocessing
 # PETSC_[C,F]SH_LIB_PATH - linker_add_sh_lib_path:sh_lib_path pairs for all the shared library locations
 #
-PETSC_LIB_DIR	     = ${PETSC_DIR}/${PETSC_ARCH}/lib
+PETSC_LIB_DIR        = ${PETSC_DIR}/${PETSC_ARCH}/lib
 PETSCCONF_H          = ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h
 
 PETSC_CCPPFLAGS     = ${PETSC_CC_INCLUDES} ${PETSCFLAGS} ${${CLANGUAGE}PP_FLAGS} ${${CLANGUAGE}PPFLAGS}
 PETSC_CXXCPPFLAGS   = ${PETSC_CC_INCLUDES} ${PETSCFLAGS} ${CXXPP_FLAGS} ${CXXPPFLAGS}
-PETSC_FCPPFLAGS	    = ${PETSC_FC_INCLUDES} ${PETSCFLAGS} ${FPP_FLAGS} ${FPPFLAGS}
+PETSC_FCPPFLAGS     = ${PETSC_FC_INCLUDES} ${PETSCFLAGS} ${FPP_FLAGS} ${FPPFLAGS}
 PETSC_CUDACPPFLAGS  = ${CUDAPP_FLAGS} ${CUDAPPFLAGS}
 PETSC_C_SH_LIB_PATH = ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR}
 PETSC_F_SH_LIB_PATH = ${FC_LINKER_SLFLAG}${PETSC_LIB_DIR}
@@ -67,13 +67,13 @@ PETSC_F_SH_LIB_PATH = ${FC_LINKER_SLFLAG}${PETSC_LIB_DIR}
 # [C,F]CPPFLAGS     - preprocessor flags for *.c, *.F preprocessing
 # [C,F]_SH_LIB_PATH - linker_add_sh_lib_path:sh_lib_path pairs for all the shared library locations
 #
-INSTALL_LIB_DIR	= ${PETSC_LIB_DIR}
-CCPPFLAGS	= ${PETSC_CCPPFLAGS}
-CXXCPPFLAGS	= ${PETSC_CXXCPPFLAGS}
-FCPPFLAGS	= ${PETSC_FCPPFLAGS}
+INSTALL_LIB_DIR = ${PETSC_LIB_DIR}
+CCPPFLAGS       = ${PETSC_CCPPFLAGS}
+CXXCPPFLAGS     = ${PETSC_CXXCPPFLAGS}
+FCPPFLAGS       = ${PETSC_FCPPFLAGS}
 CUDACPPFLAGS 	= ${PETSC_CUDACPPFLAGS}
-C_SH_LIB_PATH	= ${PETSC_C_SH_LIB_PATH}
-F_SH_LIB_PATH	= ${PETSC_F_SH_LIB_PATH}
+C_SH_LIB_PATH   = ${PETSC_C_SH_LIB_PATH}
+F_SH_LIB_PATH   = ${PETSC_F_SH_LIB_PATH}
 # The user interface at configure and make is to accept CXXPPFLAGS as option, and saves it as
 # CXXPP_FLAGS in petscvariables. Then lib/petsc/conf/variables sets up CXXCPPFLAGS to include
 # both CXXPPFLAGS and CXXPP_FLAGS. Users are able to use 'make CXXPPFLAGS=val' to add additional

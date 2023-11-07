@@ -4643,7 +4643,7 @@ struct Shift {
   __host__ __device__ inline int operator()(const int &c) { return c + _shift; }
 };
 
-/* merges two SeqAIJCUSPARSE matrices A, B by concatenating their rows. [A';B']' operation in matlab notation */
+/* merges two SeqAIJCUSPARSE matrices A, B by concatenating their rows. [A';B']' operation in MATLAB notation */
 PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A, Mat B, MatReuse reuse, Mat *C)
 {
   Mat_SeqAIJ                   *a = (Mat_SeqAIJ *)A->data, *b = (Mat_SeqAIJ *)B->data, *c;

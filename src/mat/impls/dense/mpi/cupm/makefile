@@ -1,9 +1,8 @@
 -include ../../../../../../petscdir.mk
 #requirespackage   'PETSC_HAVE_CUPM'
 
-DIRS    = cuda hip
 LIBBASE = libpetscmat
 MANSEC  = Mat
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
-include ${PETSC_DIR}/lib/petsc/conf/rules.doc
+include ${PETSC_DIR}/lib/petsc/conf/rules_doc.mk

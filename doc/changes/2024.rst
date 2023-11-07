@@ -178,7 +178,7 @@ Changes
 
 .. rubric:: Viewers:
 
--  Changed the names associated with the Matlab viewer to Socket
+-  Changed the names associated with the MATLAB viewer to Socket
    viewer; this reflects our plan to support additional graphics
    engines with PETSc.
 -  Changed ``ViewerFileOpenASCII()`` to ``ViewerASCIIOpen().``

@@ -1,6 +1,6 @@
 function ex29view(v)
 %
-%   Matlab script that plots solution from ex29.c
+%   MATLAB script that plots solution from ex29.c
 %
 [m,n] = size(v);
 n     = sqrt(m/4);
