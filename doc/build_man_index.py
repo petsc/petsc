@@ -204,9 +204,9 @@ def getallmandirs(dirs):
       return mandirs
 
 
-def main(PETSC_DIR,LOC):
+def main(PETSC_DIR):
       HEADERDIR = 'doc/manualpages/MANSECHeaders'
-      dirs      = glob.glob(LOC + '/manualpages/*')
+      dirs      = glob.glob(os.path.join(PETSC_DIR,'doc','manualpages','*'))
       mandirs   = getallmandirs(dirs)
 
       levels = ['beginner','intermediate','advanced','developer','deprecated','none']
@@ -236,8 +236,8 @@ def main(PETSC_DIR,LOC):
             printindex(outfilename,headfilename,levels,titles,table)
 
       alphabet_dict = createdict(singlelist)
-      outfilename   = LOC + '/manualpages/singleindex.md'
+      outfilename   = os.path.join(PETSC_DIR,'doc','manualpages','singleindex.md')
       printsingleindex (outfilename,alphabet_dict)
 
 if __name__ == '__main__':
-      main(os.path.abspath(os.environ['PETSC_DIR']),os.path.abspath(os.environ['LOC']))
+      main(os.path.abspath(os.environ['PETSC_DIR']))
