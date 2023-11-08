@@ -1,6 +1,7 @@
 #include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
+#include <petscdm.h>
 
 /* linked list methods
  *
@@ -457,7 +458,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
     Vec                locMaxEdge, ghostMaxEdge, ghostMaxPE, locMaxPE;
     PetscInt          *lghost_gid, nEdges, nEdges0, num_ghosts = 0;
     Edge              *Edges;
-    const int          n_sub_its = 2500; // in case of a bug, stop at some point
+    const int          n_sub_its = 1000; // in case of a bug, stop at some point
     /* get submatrices of cMat */
     for (int kk = 0; kk < nloc; kk++) lid_cprowID[kk] = -1;
     if (isMPI) {
@@ -653,7 +654,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
     PetscCheck(nEdges == nEdges0, PETSC_COMM_SELF, PETSC_ERR_SUP, "nEdges != nEdges0: %d %d", (int)nEdges0, (int)nEdges);
     qsort(Edges, nEdges, sizeof(Edge), gamg_hem_compare);
 
-    PetscCall(PetscInfo(info_is, "[%d] start HEM iteration %d with number edges=%d\n", rank, iter, (int)nEdges));
+    PetscCall(PetscInfo(info_is, "[%d] start HEM iteration %d with %d edges\n", rank, iter, (int)nEdges));
 
     /* projection matrix */
     PetscCall(MatCreate(comm, &P));
@@ -663,7 +664,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
     PetscCall(MatSeqAIJSetPreallocation(P, 1, NULL));
     PetscCall(MatSetUp(P));
     /* process - communicate - process */
-    for (int sub_it = 0; /* sub_it < n_sub_its */; /* sub_it++ */) {
+    for (int sub_it = 0, old_num_edge = 0; /* sub_it < n_sub_its */; /* sub_it++ */) {
       PetscInt    nactive_edges = 0, n_act_n[3], gn_act_n[3];
       PetscMPIInt tag1, tag2;
       PetscCall(VecGetArrayRead(locMaxEdge, &lid_max_ew));
@@ -677,17 +678,17 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
         const Edge    *e    = &Edges[kk];
         const PetscInt lid0 = e->lid0, gid1 = e->gid1, ghost1_idx = e->ghost1_idx, gid0 = lid0 + my0, lid1 = gid1 - my0;
         PetscBool      isOK = PETSC_TRUE, print = PETSC_FALSE;
-        if (print) PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "\t[%d] edge (%d %d), %d %d %d\n", rank, (int)gid0, (int)gid1, lid_matched[lid0], (ghost1_idx != -1 && lghost_matched[ghost1_idx]), (ghost1_idx == -1 && lid_matched[lid1])));
+        if (print) PetscCall(PetscSynchronizedPrintf(comm, "\t[%d] edge (%d %d), %d %d %d\n", rank, (int)gid0, (int)gid1, lid_matched[lid0], (ghost1_idx != -1 && lghost_matched[ghost1_idx]), (ghost1_idx == -1 && lid_matched[lid1])));
         /* skip if either vertex is matched already */
         if (lid_matched[lid0] || (ghost1_idx != -1 && lghost_matched[ghost1_idx]) || (ghost1_idx == -1 && lid_matched[lid1])) continue;
 
         nactive_edges++;
         PetscCheck(PetscRealPart(lid_max_ew[lid0]) >= e->weight - MY_MEPS, PETSC_COMM_SELF, PETSC_ERR_SUP, "edge weight %e > max %e", (double)e->weight, (double)PetscRealPart(lid_max_ew[lid0]));
-        if (print) PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "\t[%d] active edge (%d %d), diff0 = %10.4e\n", rank, (int)gid0, (int)gid1, (double)(PetscRealPart(lid_max_ew[lid0]) - (double)e->weight)));
+        if (print) PetscCall(PetscSynchronizedPrintf(comm, "\t[%d] active edge (%d %d), diff0 = %10.4e\n", rank, (int)gid0, (int)gid1, (double)(PetscRealPart(lid_max_ew[lid0]) - (double)e->weight)));
         // smaller edge, lid_max_ew get updated - e0
         if (PetscRealPart(lid_max_ew[lid0]) > e->weight + MY_MEPS) {
           if (print)
-            PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "\t\t[%d] 1) e0 SKIPPING small edge %20.14e edge (%d %d), diff = %10.4e to proc %d. max = %20.14e, w = %20.14e\n", rank, (double)e->weight, (int)gid0, (int)gid1, (double)(PetscRealPart(lid_max_ew[lid0]) - e->weight), ghost1_idx != -1 ? (int)lghost_pe[ghost1_idx] : rank, (double)PetscRealPart(lid_max_ew[lid0]),
+            PetscCall(PetscSynchronizedPrintf(comm, "\t\t[%d] 1) e0 SKIPPING small edge %20.14e edge (%d %d), diff = %10.4e to proc %d. max = %20.14e, w = %20.14e\n", rank, (double)e->weight, (int)gid0, (int)gid1, (double)(PetscRealPart(lid_max_ew[lid0]) - e->weight), ghost1_idx != -1 ? (int)lghost_pe[ghost1_idx] : rank, (double)PetscRealPart(lid_max_ew[lid0]),
                                               (double)e->weight));
           continue; // we are basically filter edges here
         }
@@ -695,27 +696,27 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
         if (ghost1_idx == -1) {
           if (PetscRealPart(lid_max_ew[lid1]) > e->weight + MY_MEPS) {
             if (print)
-              PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "\t\t%c[%d] 2) e1 SKIPPING small local edge %20.14e edge (%d %d), diff = %10.4e\n", ghost1_idx != -1 ? '\t' : ' ', rank, (double)e->weight, (int)gid0, (int)gid1, (double)(PetscRealPart(lid_max_ew[lid1]) - e->weight)));
+              PetscCall(PetscSynchronizedPrintf(comm, "\t\t%c[%d] 2) e1 SKIPPING small local edge %20.14e edge (%d %d), diff = %10.4e\n", ghost1_idx != -1 ? '\t' : ' ', rank, (double)e->weight, (int)gid0, (int)gid1, (double)(PetscRealPart(lid_max_ew[lid1]) - e->weight)));
             continue; // we are basically filter edges here
           }
         } else { // e1 - ghost
           /* see if edge might get matched on other proc */
           PetscReal g_max_e1 = PetscRealPart(lghost_max_ew[ghost1_idx]);
           if (print)
-            PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "\t\t\t[%d] CHECK GHOST e1, edge (%d %d), E0 MAX EDGE WEIGHT = %10.4e, EDGE WEIGHT = %10.4e, diff1 = %10.4e, ghost proc %d with max pe %d on e0 and %d on e1\n", rank, (int)gid0, (int)gid1, (double)PetscRealPart(lid_max_ew[lid0]),
+            PetscCall(PetscSynchronizedPrintf(comm, "\t\t\t[%d] CHECK GHOST e1, edge (%d %d), E0 MAX EDGE WEIGHT = %10.4e, EDGE WEIGHT = %10.4e, diff1 = %10.4e, ghost proc %d with max pe %d on e0 and %d on e1\n", rank, (int)gid0, (int)gid1, (double)PetscRealPart(lid_max_ew[lid0]),
                                               (double)e->weight, (double)(PetscRealPart(lghost_max_ew[ghost1_idx]) - e->weight), (int)lghost_pe[ghost1_idx], lid_max_pe[lid0], lghost_max_pe[ghost1_idx]));
           if (g_max_e1 > e->weight + MY_MEPS) {
-            /* PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\t\t\t\t[%d] 3) ghost e1 SKIPPING small edge (%d %d), diff = %10.4e from proc %d with max pe %d. max = %20.14e, w = %20.14e\n", rank, (int)gid0, (int)gid1, g_max_e1 - e->weight, (int)lghost_pe[ghost1_idx], lghost_max_pe[ghost1_idx], g_max_e1, e->weight )); */
+            /* PetscCall(PetscSynchronizedPrintf(comm,"\t\t\t\t[%d] 3) ghost e1 SKIPPING small edge (%d %d), diff = %10.4e from proc %d with max pe %d. max = %20.14e, w = %20.14e\n", rank, (int)gid0, (int)gid1, g_max_e1 - e->weight, (int)lghost_pe[ghost1_idx], lghost_max_pe[ghost1_idx], g_max_e1, e->weight )); */
             continue;
-          } else if (g_max_e1 >= e->weight - MY_MEPS && lghost_max_pe[ghost1_idx] > rank) {
+          } else if (g_max_e1 >= e->weight - MY_MEPS && lghost_pe[ghost1_idx] > rank) { // is 'lghost_max_pe[ghost1_idx] > rank' needed?
             /* check for max_ea == to this edge and larger processor that will deal with this */
             if (print)
-              PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "\t\t\t[%d] ghost e1 SKIPPING EQUAL (%d %d), diff = %10.4e from larger proc %d with max pe %d. max = %20.14e, w = %20.14e\n", rank, (int)gid0, (int)gid1,
+              PetscCall(PetscSynchronizedPrintf(comm, "\t\t\t[%d] ghost e1 SKIPPING EQUAL (%d %d), diff = %10.4e from larger proc %d with max pe %d. max = %20.14e, w = %20.14e\n", rank, (int)gid0, (int)gid1,
                                                 (double)(PetscRealPart(lid_max_ew[lid0]) - (double)e->weight), (int)lghost_pe[ghost1_idx], (int)lghost_max_pe[ghost1_idx], (double)g_max_e1, (double)e->weight));
             isOK = PETSC_FALSE; // this guy could delete me
             continue;
           } else {
-            /* PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\t[%d] Edge (%d %d) passes gid0 tests, diff = %10.4e from proc %d with max pe %d. max = %20.14e, w = %20.14e\n", rank, (int)gid0, (int)gid1, g_max_e1 - e->weight, (int)lghost_pe[ghost1_idx], lghost_max_pe[ghost1_idx], g_max_e1, e->weight )); */
+            /* PetscCall(PetscSynchronizedPrintf(comm,"\t[%d] Edge (%d %d) passes gid0 tests, diff = %10.4e from proc %d with max pe %d. max = %20.14e, w = %20.14e\n", rank, (int)gid0, (int)gid1, g_max_e1 - e->weight, (int)lghost_pe[ghost1_idx], lghost_max_pe[ghost1_idx], g_max_e1, e->weight )); */
           }
         }
         /* check ghost for v0 */
@@ -734,12 +735,12 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
               if (ew <= threshold) continue;
               max_e = PetscRealPart(lghost_max_ew[lidj]);
               /* check for max_e == to this edge and larger processor that will deal with this */
-              if (ew >= PetscRealPart(lid_max_ew[lid0]) - MY_MEPS && lghost_pe[lidj] > rank) isOK = PETSC_FALSE;
+              if (ew >= PetscRealPart(lid_max_ew[lid0]) - MY_MEPS && lghost_max_pe[lidj] > rank) isOK = PETSC_FALSE;
               PetscCheck(ew <= max_e + MY_MEPS, PETSC_COMM_SELF, PETSC_ERR_SUP, "edge weight %e > max %e", (double)PetscRealPart(ew), (double)PetscRealPart(max_e));
               if (print)
-                PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "\t\t\t\t[%d] e0: looked at ghost adj (%d %d), diff = %10.4e, ghost on proc %d (max %d). isOK = %d, %d %d %d; ew = %e, lid0 max ew = %e, diff = %e, eps = %e\n", rank, (int)gid0, (int)lghost_gid[lidj], (double)(max_e - ew), lghost_pe[lidj], lghost_max_pe[lidj], isOK, (double)(ew) >= (double)(max_e - MY_MEPS), ew >= PetscRealPart(lid_max_ew[lid0]) - MY_MEPS, lghost_pe[lidj] > rank, (double)ew, (double)PetscRealPart(lid_max_ew[lid0]), (double)(ew - PetscRealPart(lid_max_ew[lid0])), (double)MY_MEPS));
+                PetscCall(PetscSynchronizedPrintf(comm, "\t\t\t\t[%d] e0: looked at ghost adj (%d %d), diff = %10.4e, ghost on proc %d (max %d). isOK = %d, %d %d %d; ew = %e, lid0 max ew = %e, diff = %e, eps = %e\n", rank, (int)gid0, (int)lghost_gid[lidj], (double)(max_e - ew), lghost_pe[lidj], lghost_max_pe[lidj], isOK, (double)(ew) >= (double)(max_e - MY_MEPS), ew >= PetscRealPart(lid_max_ew[lid0]) - MY_MEPS, lghost_pe[lidj] > rank, (double)ew, (double)PetscRealPart(lid_max_ew[lid0]), (double)(ew - PetscRealPart(lid_max_ew[lid0])), (double)MY_MEPS));
             }
-            if (!isOK && print) PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "\t\t[%d] skip edge (%d %d) from ghost inspection\n", rank, (int)gid0, (int)gid1));
+            if (!isOK && print) PetscCall(PetscSynchronizedPrintf(comm, "\t\t[%d] skip edge (%d %d) from ghost inspection\n", rank, (int)gid0, (int)gid1));
           }
           /* check local v1 */
           if (ghost1_idx == -1) {
@@ -756,18 +757,18 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
                 if (ew <= threshold) continue;
                 max_e = PetscRealPart(lghost_max_ew[lidj]);
                 /* check for max_e == to this edge and larger processor that will deal with this */
-                if (ew >= PetscRealPart(lid_max_ew[lid1]) - MY_MEPS && lghost_pe[lidj] > rank) isOK = PETSC_FALSE;
+                if (ew >= PetscRealPart(lid_max_ew[lid1]) - MY_MEPS && lghost_max_pe[lidj] > rank) isOK = PETSC_FALSE;
                 PetscCheck(ew <= max_e + MY_MEPS, PETSC_COMM_SELF, PETSC_ERR_SUP, "edge weight %e > max %e", (double)PetscRealPart(ew), (double)PetscRealPart(max_e));
                 if (print)
-                  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "\t\t\t\t\t[%d] e1: looked at ghost adj (%d %d), diff = %10.4e, ghost on proc %d (max %d)\n", rank, (int)gid0, (int)lghost_gid[lidj], (double)(max_e - ew), lghost_pe[lidj], lghost_max_pe[lidj]));
+                  PetscCall(PetscSynchronizedPrintf(comm, "\t\t\t\t\t[%d] e1: looked at ghost adj (%d %d), diff = %10.4e, ghost on proc %d (max %d)\n", rank, (int)gid0, (int)lghost_gid[lidj], (double)(max_e - ew), lghost_pe[lidj], lghost_max_pe[lidj]));
               }
             }
-            if (!isOK && print) PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "\t\t[%d] skip edge (%d %d) from ghost inspection\n", rank, (int)gid0, (int)gid1));
+            if (!isOK && print) PetscCall(PetscSynchronizedPrintf(comm, "\t\t[%d] skip edge (%d %d) from ghost inspection\n", rank, (int)gid0, (int)gid1));
           }
         }
         PetscReal e1_max_w = (ghost1_idx == -1 ? PetscRealPart(lid_max_ew[lid0]) : PetscRealPart(lghost_max_ew[ghost1_idx]));
         if (print)
-          PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "\t[%d] MATCHING (%d %d) e1 max weight = %e, e1 wight diff %e, %s. isOK = %d\n", rank, (int)gid0, (int)gid1, (double)e1_max_w, (double)(e1_max_w - e->weight), ghost1_idx == -1 ? "local" : "ghost", isOK));
+          PetscCall(PetscSynchronizedPrintf(comm, "\t[%d] MATCHING (%d %d) e1 max weight = %e, e1 wight diff %e, %s. isOK = %d\n", rank, (int)gid0, (int)gid1, (double)e1_max_w, (double)(e1_max_w - e->weight), ghost1_idx == -1 ? "local" : "ghost", isOK));
         /* do it */
         if (isOK) {
           if (ghost1_idx == -1) {
@@ -786,10 +787,10 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
           /* set projection */
           PetscCall(MatSetValues(P, 1, &gid0, 1, &gid0, &one, INSERT_VALUES));
           PetscCall(MatSetValues(P, 1, &gid1, 1, &gid0, &one, INSERT_VALUES));
-          //PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\t %d.%d) match active EDGE %d : (%d %d)\n",iter,sub_it, (int)nactive_edges, (int)gid0, (int)gid1));
+          //PetscCall(PetscPrintf(comm,"\t %d.%d) match active EDGE %d : (%d %d)\n",iter,sub_it, (int)nactive_edges, (int)gid0, (int)gid1));
         } /* matched */
       }   /* edge loop */
-      PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));
+      PetscCall(PetscSynchronizedFlush(comm, PETSC_STDOUT));
       if (isMPI) PetscCall(VecRestoreArrayRead(ghostMaxEdge, &lghost_max_ew));
       PetscCall(VecRestoreArrayRead(locMaxEdge, &lid_max_ew));
       // count active for test, latter, update deleted ghosts
@@ -1018,8 +1019,10 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
       // if no active edges, stop
       if (gn_act_n[0] < 1) break;
       // inc and check (self stopping iteration
+      PetscCheck(old_num_edge != gn_act_n[0], PETSC_COMM_SELF, PETSC_ERR_SUP, "HEM stalled step %d/%d", sub_it + 1, n_sub_its);
       sub_it++;
       PetscCheck(sub_it < n_sub_its, PETSC_COMM_SELF, PETSC_ERR_SUP, "failed to finish HEM step %d/%d", sub_it + 1, n_sub_its);
+      old_num_edge = gn_act_n[0];
     } /* sub_it loop */
     /* clean up iteration */
     PetscCall(PetscFree(Edges));
@@ -1122,7 +1125,6 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
   PetscCall(PetscFree(lid_max_pe));
   PetscCall(PetscFree(lid_matched));
   PetscCall(ISDestroy(&info_is));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
