@@ -1,3 +1,15 @@
+PC Object: 1 MPI process
+  type: mat
+  PCApply() == MatSolve()
+  linear system matrix = precond matrix:
+  Mat Object: 1 MPI process
+    type: lmvmsr1
+    rows=4, cols=4
+      Max. storage: 5
+      Used storage: 0
+      Number of updates: 0
+      Number of rejects: 0
+      Number of resets: 0
 Mat Object: 1 MPI process
   type: lmvmsr1
   Max. storage: 5

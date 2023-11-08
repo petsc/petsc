@@ -4821,8 +4821,10 @@ PetscErrorCode MatGetFactorAvailable(Mat mat, MatSolverType type, MatFactorType 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidType(mat, 1);
   PetscAssertPointer(flg, 4);
+
+  *flg = PETSC_FALSE;
+  if (!((PetscObject)mat)->type_name) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCheck(!mat->factortype, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
   MatCheckPreallocated(mat, 1);
