@@ -440,7 +440,7 @@ chk_c2html:
 # the ACTION=manualpages cannot run in parallel because they all write to the same manualpages.cit file
 hloc=include/petsc/private
 allmanpages: chk_loc deletemanualpages
-	-@echo " /* SUBMANSEC = PetscH */ " > ${hloc}/generated_khash.h
+	-@echo " /* SUBMAN__CHANGESEC = PetscH */ " > ${hloc}/generated_khash.h
 	-@sed -e 's?<T>?I?g' -e 's?<t>?i?g' -e 's?<KeyType>?PetscInt?g' ${hloc}/hashset.txt >> ${hloc}/generated_khash.h
 	-@sed -e 's?<T>?IJ?g' -e 's?<t>?ij?g' -e 's?<KeyType>?struct {PetscInt i, j;}?g' ${hloc}/hashset.txt >> ${hloc}/generated_khash.h
 	-@sed -e 's?<T>?I?g' -e 's?<t>?i?g' -e 's?<KeyType>?PetscInt?g'  -e 's?<ValType>?PetscInt?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h

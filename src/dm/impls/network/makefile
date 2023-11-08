@@ -1,8 +1,8 @@
 -include ../../../../petscdir.mk
 
-LIBBASE  = libpetscdm
-MANSEC   = DM
-SUBMANSEC= DMNetwork
+LIBBASE   = libpetscdm
+MANSEC    = DM
+SUBMANSEC = DMNetwork
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules_doc.mk
