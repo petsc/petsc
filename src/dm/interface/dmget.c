@@ -24,12 +24,12 @@
   For vectors that you intend to keep around (for example in a C struct) or pass around large parts of your
   code you should use `DMCreateLocalVector()`.
 
-  VecStride*() operations can be useful when using DM with dof > 1
+  VecStride*() operations can be useful when using `DM` with dof > 1
 
 .seealso: `DM`, `DMCreateGlobalVector()`, `VecDuplicate()`, `VecDuplicateVecs()`,
           `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMGlobalToLocalBegin()`,
           `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMCreateLocalVector()`, `DMRestoreLocalVector()`,
-          `VecStrideMax()`, `VecStrideMin()`, `VecStrideNorm()`
+          `VecStrideMax()`, `VecStrideMin()`, `VecStrideNorm()`, `DMClearLocalVectors()`, `DMGetNamedGlobalVector()`, `DMGetNamedLocalVector()`
 @*/
 PetscErrorCode DMGetLocalVector(DM dm, Vec *g)
 {
@@ -76,7 +76,7 @@ alldone:
 
 .seealso: `DM`, `DMCreateGlobalVector()`, `VecDuplicate()`, `VecDuplicateVecs()`,
           `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMGlobalToLocalBegin()`,
-          `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMCreateLocalVector()`, `DMGetLocalVector()`
+          `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMCreateLocalVector()`, `DMGetLocalVector()`, `DMClearLocalVectors()`
 @*/
 PetscErrorCode DMRestoreLocalVector(DM dm, Vec *g)
 {
@@ -136,7 +136,7 @@ alldone:
 .seealso: `DM`, `DMCreateGlobalVector()`, `VecDuplicate()`, `VecDuplicateVecs()`,
           `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMGlobalToLocalBegin()`,
           `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMCreateLocalVector()`, `DMRestoreLocalVector()`
-          `VecStrideMax()`, `VecStrideMin()`, `VecStrideNorm()`
+          `VecStrideMax()`, `VecStrideMin()`, `VecStrideNorm()`, `DMClearGlobalVectors()`, `DMGetNamedGlobalVector()`, `DMGetNamedLocalVector()`
 @*/
 PetscErrorCode DMGetGlobalVector(DM dm, Vec *g)
 {
@@ -171,7 +171,7 @@ alldone:
 }
 
 /*@
-  DMClearGlobalVectors - Destroys all the global vectors that have been stashed in this `DM`
+  DMClearGlobalVectors - Destroys all the global vectors that have been created for `DMGetGlobalVector()` calls in this `DM`
 
   Collective
 
@@ -183,7 +183,7 @@ alldone:
 .seealso: `DM`, `DMCreateGlobalVector()`, `VecDuplicate()`, `VecDuplicateVecs()`,
           `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMGlobalToLocalBegin()`,
           `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMCreateLocalVector()`, `DMRestoreLocalVector()`
-          `VecStrideMax()`, `VecStrideMin()`, `VecStrideNorm()`
+          `VecStrideMax()`, `VecStrideMin()`, `VecStrideNorm()`, `DMClearLocalVectors()`
 @*/
 PetscErrorCode DMClearGlobalVectors(DM dm)
 {
@@ -209,7 +209,7 @@ PetscErrorCode DMClearGlobalVectors(DM dm)
 }
 
 /*@
-  DMClearLocalVectors - Destroys all the local vectors that have been stashed in this `DM`
+  DMClearLocalVectors - Destroys all the local vectors that have been created for `DMGetLocalVector()` calls in this `DM`
 
   Collective
 
@@ -221,7 +221,7 @@ PetscErrorCode DMClearGlobalVectors(DM dm)
 .seealso: `DM`, `DMCreateLocalVector()`, `VecDuplicate()`, `VecDuplicateVecs()`,
           `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMLocalToLocalBegin()`,
           `DMLocalToLocalEnd()`, `DMRestoreLocalVector()`
-          `VecStrideMax()`, `VecStrideMin()`, `VecStrideNorm()`
+          `VecStrideMax()`, `VecStrideMin()`, `VecStrideNorm()`, `DMClearGlobalVectors()`
 @*/
 PetscErrorCode DMClearLocalVectors(DM dm)
 {
@@ -261,7 +261,7 @@ PetscErrorCode DMClearLocalVectors(DM dm)
 
 .seealso: `DM`, `DMCreateGlobalVector()`, `VecDuplicate()`, `VecDuplicateVecs()`,
           `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMGlobalToGlobalBegin()`,
-          `DMGlobalToGlobalEnd()`, `DMGlobalToGlobal()`, `DMCreateLocalVector()`, `DMGetGlobalVector()`
+          `DMGlobalToGlobalEnd()`, `DMGlobalToGlobal()`, `DMCreateLocalVector()`, `DMGetGlobalVector()`, `DMClearGlobalVectors()`
 @*/
 PetscErrorCode DMRestoreGlobalVector(DM dm, Vec *g)
 {
@@ -294,7 +294,7 @@ alldone:
 }
 
 /*@
-  DMClearNamedGlobalVectors - Destroys all the named global vectors that have been stashed in this `DM`
+  DMClearNamedGlobalVectors - Destroys all the named global vectors that have been created with `DMGetNamedGlobalVector()` in this `DM`
 
   Collective
 
@@ -324,7 +324,7 @@ PetscErrorCode DMClearNamedGlobalVectors(DM dm)
 }
 
 /*@
-  DMClearNamedLocalVectors - Destroys all the named local vectors that have been stashed in this `DM`
+  DMClearNamedLocalVectors - Destroys all the named local vectors that have been created with `DMGetNamedLocalVector()` in this `DM`
 
   Collective
 
@@ -354,7 +354,7 @@ PetscErrorCode DMClearNamedLocalVectors(DM dm)
 }
 
 /*@C
-  DMHasNamedGlobalVector - check for a named, persistent global vector
+  DMHasNamedGlobalVector - check for a named, persistent global vector created with `DMGetNamedGlobalVector()`
 
   Not Collective
 
@@ -367,7 +367,7 @@ PetscErrorCode DMClearNamedLocalVectors(DM dm)
 
   Level: developer
 
-.seealso: `DM`, `DMGetNamedGlobalVector()`, `DMRestoreNamedLocalVector()`
+.seealso: `DM`, `DMGetNamedGlobalVector()`, `DMRestoreNamedLocalVector()`, `DMClearNamedGlobalVectors()`
 @*/
 PetscErrorCode DMHasNamedGlobalVector(DM dm, const char *name, PetscBool *exists)
 {
@@ -396,7 +396,7 @@ PetscErrorCode DMHasNamedGlobalVector(DM dm, const char *name, PetscBool *exists
 
   Input Parameters:
 + dm   - `DM` to hold named vectors
-- name - unique name for `Vec`
+- name - unique name for `X`
 
   Output Parameter:
 . X - named `Vec`
@@ -406,7 +406,7 @@ PetscErrorCode DMHasNamedGlobalVector(DM dm, const char *name, PetscBool *exists
   Note:
   If a `Vec` with the given name does not exist, it is created.
 
-.seealso: `DM`, `DMRestoreNamedGlobalVector()`
+.seealso: `DM`, `DMRestoreNamedGlobalVector()`, `DMHasNamedGlobalVector()`, `DMClearNamedGlobalVectors()`, `DMGetGlobalVector()`, `DMGetLocalVector()`
 @*/
 PetscErrorCode DMGetNamedGlobalVector(DM dm, const char *name, Vec *X)
 {
@@ -450,13 +450,13 @@ found:
   Collective
 
   Input Parameters:
-+ dm   - `DM` on which the vector was gotten
-. name - name under which the vector was gotten
++ dm   - `DM` on which `X` was gotten
+. name - name under which `X` was gotten
 - X    - `Vec` to restore
 
   Level: developer
 
-.seealso: `DM`, `DMGetNamedGlobalVector()`
+.seealso: `DM`, `DMGetNamedGlobalVector()`, `DMClearNamedGlobalVectors()`
 @*/
 PetscErrorCode DMRestoreNamedGlobalVector(DM dm, const char *name, Vec *X)
 {
@@ -489,7 +489,7 @@ PetscErrorCode DMRestoreNamedGlobalVector(DM dm, const char *name, Vec *X)
 }
 
 /*@C
-  DMHasNamedLocalVector - check for a named, persistent local vector
+  DMHasNamedLocalVector - check for a named, persistent local vector created with `DMGetNamedLocalVector()`
 
   Not Collective
 
@@ -505,7 +505,7 @@ PetscErrorCode DMRestoreNamedGlobalVector(DM dm, const char *name, Vec *X)
   Note:
   If a `Vec` with the given name does not exist, it is created.
 
-.seealso: `DM`, `DMGetNamedGlobalVector()`, `DMRestoreNamedLocalVector()`
+.seealso: `DM`, `DMGetNamedGlobalVector()`, `DMRestoreNamedLocalVector()`, `DMClearNamedLocalVectors()`
 @*/
 PetscErrorCode DMHasNamedLocalVector(DM dm, const char *name, PetscBool *exists)
 {
@@ -534,7 +534,7 @@ PetscErrorCode DMHasNamedLocalVector(DM dm, const char *name, PetscBool *exists)
 
   Input Parameters:
 + dm   - `DM` to hold named vectors
-- name - unique name for `Vec`
+- name - unique name for `X`
 
   Output Parameter:
 . X - named `Vec`
@@ -544,7 +544,7 @@ PetscErrorCode DMHasNamedLocalVector(DM dm, const char *name, PetscBool *exists)
   Note:
   If a `Vec` with the given name does not exist, it is created.
 
-.seealso: `DM`, `DMGetNamedGlobalVector()`, `DMRestoreNamedLocalVector()`
+.seealso: `DM`, `DMGetNamedGlobalVector()`, `DMRestoreNamedLocalVector()`, `DMHasNamedLocalVector()`, `DMClearNamedLocalVectors()`, `DMGetGlobalVector()`, `DMGetLocalVector()`
 @*/
 PetscErrorCode DMGetNamedLocalVector(DM dm, const char *name, Vec *X)
 {
@@ -583,18 +583,18 @@ found:
 }
 
 /*@C
-  DMRestoreNamedLocalVector - restore access to a named, persistent local vector
+  DMRestoreNamedLocalVector - restore access to a named, persistent local vector obtained with `DMGetNamedLocalVector()`
 
   Not Collective
 
   Input Parameters:
-+ dm   - `DM` on which the vector was gotten
-. name - name under which the vector was gotten
++ dm   - `DM` on which `X` was gotten
+. name - name under which `X` was gotten
 - X    - `Vec` to restore
 
   Level: developer
 
-.seealso: `DM`, `DMRestoreNamedGlobalVector()`, `DMGetNamedLocalVector()`
+.seealso: `DM`, `DMRestoreNamedGlobalVector()`, `DMGetNamedLocalVector()`, `DMClearNamedLocalVectors()`
 @*/
 PetscErrorCode DMRestoreNamedLocalVector(DM dm, const char *name, Vec *X)
 {
