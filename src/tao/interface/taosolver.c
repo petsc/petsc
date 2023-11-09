@@ -1382,7 +1382,6 @@ PetscErrorCode TaoResetStatistics(Tao tao)
 - func - The function
 
   Calling sequence of `func`:
-$   PetscErrorCode func(Tao tao, PetscInt step);
 + tao - the optimizer context
 - ctx - The current step of the iteration
 
@@ -1413,7 +1412,6 @@ PetscErrorCode TaoSetUpdate(Tao tao, PetscErrorCode (*func)(Tao, PetscInt, void 
         (may be `NULL`)
 
   Calling sequence of `conv`:
-$   PetscErrorCode conv(Tao tao, void *ctx)
 + tao - the `Tao` object
 - ctx - [optional] convergence context
 
@@ -1447,12 +1445,10 @@ PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao, void *
 - dest - [optional] function to destroy the context when the `Tao` is destroyed
 
   Calling sequence of `func`:
-$     PetscErrorCode func(Tao tao, void *ctx)
 + tao - the `Tao` solver context
 - ctx - [optional] monitoring context
 
   Calling sequence of `dest`:
-$     PetscErrorCode dest(void *ctx)
 . ctx - monitoring context
 
   Options Database Keys:

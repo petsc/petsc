@@ -658,8 +658,8 @@ call PETSc routines from inside the parallel regions.
 PETSc's MPI based linear solvers may be accessed from a sequential or non-MPI OpenMP program, see :any:`sec_pcmpi`.
 
 
-There is an OpenMP thread-safe subset of PETSc that may be configured for using ``--with-threadsafety [--with-openmp or
---download-concurrencykit]``. `KSP Tutorial ex61f <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex61f.F90.html>`__ demonstrates
+There is an OpenMP thread-safe subset of PETSc that may be configured for using ``--with-threadsafety`` (often used along with ``--with-openmp`` or
+``--download-concurrencykit``). `KSP Tutorial ex61f <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex61f.F90.html>`__ demonstrates
 how this may be used with OpenMP. In this mode one may have individual OpenMP threads that each manage their own
 (sequential) PETSc objects (each thread can interact only with its own objects). This
 is useful when one has many small systems (or sets of ODEs) that must be integrated in an

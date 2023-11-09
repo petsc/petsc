@@ -5,9 +5,253 @@ static PetscErrorCode ensure_df_space(PetscInt, TAO_DF *);
 static PetscErrorCode destroy_df_solver(TAO_DF *);
 static PetscReal      phi(PetscReal *, PetscInt, PetscReal, PetscReal *, PetscReal, PetscReal *, PetscReal *, PetscReal *);
 static PetscInt       project(PetscInt, PetscReal *, PetscReal, PetscReal *, PetscReal *, PetscReal *, PetscReal *, PetscReal *, TAO_DF *);
-static PetscErrorCode solve(TAO_DF *);
 
-/*------------------------------------------------------------*/
+static PetscErrorCode solve(TAO_DF *df)
+{
+  PetscInt    i, j, innerIter, it, it2, luv, info;
+  PetscReal   gd, max, ak, bk, akold, bkold, lamnew, alpha, kktlam = 0.0, lam_ext;
+  PetscReal   DELTAsv, ProdDELTAsv;
+  PetscReal   c, *tempQ;
+  PetscReal  *x = df->x, *a = df->a, b = df->b, *l = df->l, *u = df->u, tol = df->tol;
+  PetscReal  *tempv = df->tempv, *y = df->y, *g = df->g, *d = df->d, *Qd = df->Qd;
+  PetscReal  *xplus = df->xplus, *tplus = df->tplus, *sk = df->sk, *yk = df->yk;
+  PetscReal **Q = df->Q, *f = df->f, *t = df->t;
+  PetscInt    dim = df->dim, *ipt = df->ipt, *ipt2 = df->ipt2, *uv = df->uv;
+
+  /* variables for the adaptive nonmonotone linesearch */
+  PetscInt  L, llast;
+  PetscReal fr, fbest, fv, fc, fv0;
+
+  c = BMRM_INFTY;
+
+  DELTAsv = EPS_SV;
+  if (tol <= 1.0e-5 || dim <= 20) ProdDELTAsv = 0.0F;
+  else ProdDELTAsv = EPS_SV;
+
+  for (i = 0; i < dim; i++) tempv[i] = -x[i];
+
+  lam_ext = 0.0;
+
+  /* Project the initial solution */
+  project(dim, a, b, tempv, l, u, x, &lam_ext, df);
+
+  /* Compute gradient
+     g = Q*x + f; */
+
+  it = 0;
+  for (i = 0; i < dim; i++) {
+    if (PetscAbsReal(x[i]) > ProdDELTAsv) ipt[it++] = i;
+  }
+
+  PetscCall(PetscArrayzero(t, dim));
+  for (i = 0; i < it; i++) {
+    tempQ = Q[ipt[i]];
+    for (j = 0; j < dim; j++) t[j] += (tempQ[j] * x[ipt[i]]);
+  }
+  for (i = 0; i < dim; i++) g[i] = t[i] + f[i];
+
+  /* y = -(x_{k} - g_{k}) */
+  for (i = 0; i < dim; i++) y[i] = g[i] - x[i];
+
+  /* Project x_{k} - g_{k} */
+  project(dim, a, b, y, l, u, tempv, &lam_ext, df);
+
+  /* y = P(x_{k} - g_{k}) - x_{k} */
+  max = ALPHA_MIN;
+  for (i = 0; i < dim; i++) {
+    y[i] = tempv[i] - x[i];
+    if (PetscAbsReal(y[i]) > max) max = PetscAbsReal(y[i]);
+  }
+
+  if (max < tol * 1e-3) return PETSC_SUCCESS;
+
+  alpha = 1.0 / max;
+
+  /* fv0 = f(x_{0}). Recall t = Q x_{k}  */
+  fv0 = 0.0;
+  for (i = 0; i < dim; i++) fv0 += x[i] * (0.5 * t[i] + f[i]);
+
+  /* adaptive nonmonotone linesearch */
+  L     = 2;
+  fr    = ALPHA_MAX;
+  fbest = fv0;
+  fc    = fv0;
+  llast = 0;
+  akold = bkold = 0.0;
+
+  /*     Iterator begins     */
+  for (innerIter = 1; innerIter <= df->maxPGMIter; innerIter++) {
+    /* tempv = -(x_{k} - alpha*g_{k}) */
+    for (i = 0; i < dim; i++) tempv[i] = alpha * g[i] - x[i];
+
+    /* Project x_{k} - alpha*g_{k} */
+    project(dim, a, b, tempv, l, u, y, &lam_ext, df);
+
+    /* gd = \inner{d_{k}}{g_{k}}
+        d = P(x_{k} - alpha*g_{k}) - x_{k}
+    */
+    gd = 0.0;
+    for (i = 0; i < dim; i++) {
+      d[i] = y[i] - x[i];
+      gd += d[i] * g[i];
+    }
+
+    /* Gradient computation  */
+
+    /* compute Qd = Q*d  or  Qd = Q*y - t depending on their sparsity */
+
+    it = it2 = 0;
+    for (i = 0; i < dim; i++) {
+      if (PetscAbsReal(d[i]) > (ProdDELTAsv * 1.0e-2)) ipt[it++] = i;
+    }
+    for (i = 0; i < dim; i++) {
+      if (PetscAbsReal(y[i]) > ProdDELTAsv) ipt2[it2++] = i;
+    }
+
+    PetscCall(PetscArrayzero(Qd, dim));
+    /* compute Qd = Q*d */
+    if (it < it2) {
+      for (i = 0; i < it; i++) {
+        tempQ = Q[ipt[i]];
+        for (j = 0; j < dim; j++) Qd[j] += (tempQ[j] * d[ipt[i]]);
+      }
+    } else { /* compute Qd = Q*y-t */
+      for (i = 0; i < it2; i++) {
+        tempQ = Q[ipt2[i]];
+        for (j = 0; j < dim; j++) Qd[j] += (tempQ[j] * y[ipt2[i]]);
+      }
+      for (j = 0; j < dim; j++) Qd[j] -= t[j];
+    }
+
+    /* ak = inner{d_{k}}{d_{k}} */
+    ak = 0.0;
+    for (i = 0; i < dim; i++) ak += d[i] * d[i];
+
+    bk = 0.0;
+    for (i = 0; i < dim; i++) bk += d[i] * Qd[i];
+
+    if (bk > EPS * ak && gd < 0.0) lamnew = -gd / bk;
+    else lamnew = 1.0;
+
+    /* fv is computing f(x_{k} + d_{k}) */
+    fv = 0.0;
+    for (i = 0; i < dim; i++) {
+      xplus[i] = x[i] + d[i];
+      tplus[i] = t[i] + Qd[i];
+      fv += xplus[i] * (0.5 * tplus[i] + f[i]);
+    }
+
+    /* fr is fref */
+    if ((innerIter == 1 && fv >= fv0) || (innerIter > 1 && fv >= fr)) {
+      fv = 0.0;
+      for (i = 0; i < dim; i++) {
+        xplus[i] = x[i] + lamnew * d[i];
+        tplus[i] = t[i] + lamnew * Qd[i];
+        fv += xplus[i] * (0.5 * tplus[i] + f[i]);
+      }
+    }
+
+    for (i = 0; i < dim; i++) {
+      sk[i] = xplus[i] - x[i];
+      yk[i] = tplus[i] - t[i];
+      x[i]  = xplus[i];
+      t[i]  = tplus[i];
+      g[i]  = t[i] + f[i];
+    }
+
+    /* update the line search control parameters */
+    if (fv < fbest) {
+      fbest = fv;
+      fc    = fv;
+      llast = 0;
+    } else {
+      fc = (fc > fv ? fc : fv);
+      llast++;
+      if (llast == L) {
+        fr    = fc;
+        fc    = fv;
+        llast = 0;
+      }
+    }
+
+    ak = bk = 0.0;
+    for (i = 0; i < dim; i++) {
+      ak += sk[i] * sk[i];
+      bk += sk[i] * yk[i];
+    }
+
+    if (bk <= EPS * ak) alpha = ALPHA_MAX;
+    else {
+      if (bkold < EPS * akold) alpha = ak / bk;
+      else alpha = (akold + ak) / (bkold + bk);
+
+      if (alpha > ALPHA_MAX) alpha = ALPHA_MAX;
+      else if (alpha < ALPHA_MIN) alpha = ALPHA_MIN;
+    }
+
+    akold = ak;
+    bkold = bk;
+
+    /* stopping criterion based on KKT conditions */
+    /* at optimal, gradient of lagrangian w.r.t. x is zero */
+
+    bk = 0.0;
+    for (i = 0; i < dim; i++) bk += x[i] * x[i];
+
+    if (PetscSqrtReal(ak) < tol * 10 * PetscSqrtReal(bk)) {
+      it     = 0;
+      luv    = 0;
+      kktlam = 0.0;
+      for (i = 0; i < dim; i++) {
+        /* x[i] is active hence lagrange multipliers for box constraints
+                are zero. The lagrange multiplier for ineq. const. is then
+                defined as below
+        */
+        if ((x[i] > DELTAsv) && (x[i] < c - DELTAsv)) {
+          ipt[it++] = i;
+          kktlam    = kktlam - a[i] * g[i];
+        } else uv[luv++] = i;
+      }
+
+      if (it == 0 && PetscSqrtReal(ak) < tol * 0.5 * PetscSqrtReal(bk)) return PETSC_SUCCESS;
+      else {
+        kktlam = kktlam / it;
+        info   = 1;
+        for (i = 0; i < it; i++) {
+          if (PetscAbsReal(a[ipt[i]] * g[ipt[i]] + kktlam) > tol) {
+            info = 0;
+            break;
+          }
+        }
+        if (info == 1) {
+          for (i = 0; i < luv; i++) {
+            if (x[uv[i]] <= DELTAsv) {
+              /* x[i] == lower bound, hence, lagrange multiplier (say, beta) for lower bound may
+                     not be zero. So, the gradient without beta is > 0
+              */
+              if (g[uv[i]] + kktlam * a[uv[i]] < -tol) {
+                info = 0;
+                break;
+              }
+            } else {
+              /* x[i] == upper bound, hence, lagrange multiplier (say, eta) for upper bound may
+                     not be zero. So, the gradient without eta is < 0
+              */
+              if (g[uv[i]] + kktlam * a[uv[i]] > tol) {
+                info = 0;
+                break;
+              }
+            }
+          }
+        }
+
+        if (info == 1) return PETSC_SUCCESS;
+      }
+    }
+  }
+  return PETSC_SUCCESS;
+}
+
 /* The main solver function
 
    f = Remp(W)          This is what the user provides us from the application layer
@@ -571,250 +815,4 @@ static PetscInt project(PetscInt n, PetscReal *a, PetscReal b, PetscReal *c, Pet
   *lam_ext = lambda;
   if (innerIter >= df->maxProjIter) PetscCall(PetscInfo(NULL, "WARNING: DaiFletcher max iterations\n"));
   return innerIter;
-}
-
-PetscErrorCode solve(TAO_DF *df)
-{
-  PetscInt    i, j, innerIter, it, it2, luv, info;
-  PetscReal   gd, max, ak, bk, akold, bkold, lamnew, alpha, kktlam = 0.0, lam_ext;
-  PetscReal   DELTAsv, ProdDELTAsv;
-  PetscReal   c, *tempQ;
-  PetscReal  *x = df->x, *a = df->a, b = df->b, *l = df->l, *u = df->u, tol = df->tol;
-  PetscReal  *tempv = df->tempv, *y = df->y, *g = df->g, *d = df->d, *Qd = df->Qd;
-  PetscReal  *xplus = df->xplus, *tplus = df->tplus, *sk = df->sk, *yk = df->yk;
-  PetscReal **Q = df->Q, *f = df->f, *t = df->t;
-  PetscInt    dim = df->dim, *ipt = df->ipt, *ipt2 = df->ipt2, *uv = df->uv;
-
-  /* variables for the adaptive nonmonotone linesearch */
-  PetscInt  L, llast;
-  PetscReal fr, fbest, fv, fc, fv0;
-
-  c = BMRM_INFTY;
-
-  DELTAsv = EPS_SV;
-  if (tol <= 1.0e-5 || dim <= 20) ProdDELTAsv = 0.0F;
-  else ProdDELTAsv = EPS_SV;
-
-  for (i = 0; i < dim; i++) tempv[i] = -x[i];
-
-  lam_ext = 0.0;
-
-  /* Project the initial solution */
-  project(dim, a, b, tempv, l, u, x, &lam_ext, df);
-
-  /* Compute gradient
-     g = Q*x + f; */
-
-  it = 0;
-  for (i = 0; i < dim; i++) {
-    if (PetscAbsReal(x[i]) > ProdDELTAsv) ipt[it++] = i;
-  }
-
-  PetscCall(PetscArrayzero(t, dim));
-  for (i = 0; i < it; i++) {
-    tempQ = Q[ipt[i]];
-    for (j = 0; j < dim; j++) t[j] += (tempQ[j] * x[ipt[i]]);
-  }
-  for (i = 0; i < dim; i++) g[i] = t[i] + f[i];
-
-  /* y = -(x_{k} - g_{k}) */
-  for (i = 0; i < dim; i++) y[i] = g[i] - x[i];
-
-  /* Project x_{k} - g_{k} */
-  project(dim, a, b, y, l, u, tempv, &lam_ext, df);
-
-  /* y = P(x_{k} - g_{k}) - x_{k} */
-  max = ALPHA_MIN;
-  for (i = 0; i < dim; i++) {
-    y[i] = tempv[i] - x[i];
-    if (PetscAbsReal(y[i]) > max) max = PetscAbsReal(y[i]);
-  }
-
-  if (max < tol * 1e-3) return PETSC_SUCCESS;
-
-  alpha = 1.0 / max;
-
-  /* fv0 = f(x_{0}). Recall t = Q x_{k}  */
-  fv0 = 0.0;
-  for (i = 0; i < dim; i++) fv0 += x[i] * (0.5 * t[i] + f[i]);
-
-  /* adaptive nonmonotone linesearch */
-  L     = 2;
-  fr    = ALPHA_MAX;
-  fbest = fv0;
-  fc    = fv0;
-  llast = 0;
-  akold = bkold = 0.0;
-
-  /*     Iterator begins     */
-  for (innerIter = 1; innerIter <= df->maxPGMIter; innerIter++) {
-    /* tempv = -(x_{k} - alpha*g_{k}) */
-    for (i = 0; i < dim; i++) tempv[i] = alpha * g[i] - x[i];
-
-    /* Project x_{k} - alpha*g_{k} */
-    project(dim, a, b, tempv, l, u, y, &lam_ext, df);
-
-    /* gd = \inner{d_{k}}{g_{k}}
-        d = P(x_{k} - alpha*g_{k}) - x_{k}
-    */
-    gd = 0.0;
-    for (i = 0; i < dim; i++) {
-      d[i] = y[i] - x[i];
-      gd += d[i] * g[i];
-    }
-
-    /* Gradient computation  */
-
-    /* compute Qd = Q*d  or  Qd = Q*y - t depending on their sparsity */
-
-    it = it2 = 0;
-    for (i = 0; i < dim; i++) {
-      if (PetscAbsReal(d[i]) > (ProdDELTAsv * 1.0e-2)) ipt[it++] = i;
-    }
-    for (i = 0; i < dim; i++) {
-      if (PetscAbsReal(y[i]) > ProdDELTAsv) ipt2[it2++] = i;
-    }
-
-    PetscCall(PetscArrayzero(Qd, dim));
-    /* compute Qd = Q*d */
-    if (it < it2) {
-      for (i = 0; i < it; i++) {
-        tempQ = Q[ipt[i]];
-        for (j = 0; j < dim; j++) Qd[j] += (tempQ[j] * d[ipt[i]]);
-      }
-    } else { /* compute Qd = Q*y-t */
-      for (i = 0; i < it2; i++) {
-        tempQ = Q[ipt2[i]];
-        for (j = 0; j < dim; j++) Qd[j] += (tempQ[j] * y[ipt2[i]]);
-      }
-      for (j = 0; j < dim; j++) Qd[j] -= t[j];
-    }
-
-    /* ak = inner{d_{k}}{d_{k}} */
-    ak = 0.0;
-    for (i = 0; i < dim; i++) ak += d[i] * d[i];
-
-    bk = 0.0;
-    for (i = 0; i < dim; i++) bk += d[i] * Qd[i];
-
-    if (bk > EPS * ak && gd < 0.0) lamnew = -gd / bk;
-    else lamnew = 1.0;
-
-    /* fv is computing f(x_{k} + d_{k}) */
-    fv = 0.0;
-    for (i = 0; i < dim; i++) {
-      xplus[i] = x[i] + d[i];
-      tplus[i] = t[i] + Qd[i];
-      fv += xplus[i] * (0.5 * tplus[i] + f[i]);
-    }
-
-    /* fr is fref */
-    if ((innerIter == 1 && fv >= fv0) || (innerIter > 1 && fv >= fr)) {
-      fv = 0.0;
-      for (i = 0; i < dim; i++) {
-        xplus[i] = x[i] + lamnew * d[i];
-        tplus[i] = t[i] + lamnew * Qd[i];
-        fv += xplus[i] * (0.5 * tplus[i] + f[i]);
-      }
-    }
-
-    for (i = 0; i < dim; i++) {
-      sk[i] = xplus[i] - x[i];
-      yk[i] = tplus[i] - t[i];
-      x[i]  = xplus[i];
-      t[i]  = tplus[i];
-      g[i]  = t[i] + f[i];
-    }
-
-    /* update the line search control parameters */
-    if (fv < fbest) {
-      fbest = fv;
-      fc    = fv;
-      llast = 0;
-    } else {
-      fc = (fc > fv ? fc : fv);
-      llast++;
-      if (llast == L) {
-        fr    = fc;
-        fc    = fv;
-        llast = 0;
-      }
-    }
-
-    ak = bk = 0.0;
-    for (i = 0; i < dim; i++) {
-      ak += sk[i] * sk[i];
-      bk += sk[i] * yk[i];
-    }
-
-    if (bk <= EPS * ak) alpha = ALPHA_MAX;
-    else {
-      if (bkold < EPS * akold) alpha = ak / bk;
-      else alpha = (akold + ak) / (bkold + bk);
-
-      if (alpha > ALPHA_MAX) alpha = ALPHA_MAX;
-      else if (alpha < ALPHA_MIN) alpha = ALPHA_MIN;
-    }
-
-    akold = ak;
-    bkold = bk;
-
-    /* stopping criterion based on KKT conditions */
-    /* at optimal, gradient of lagrangian w.r.t. x is zero */
-
-    bk = 0.0;
-    for (i = 0; i < dim; i++) bk += x[i] * x[i];
-
-    if (PetscSqrtReal(ak) < tol * 10 * PetscSqrtReal(bk)) {
-      it     = 0;
-      luv    = 0;
-      kktlam = 0.0;
-      for (i = 0; i < dim; i++) {
-        /* x[i] is active hence lagrange multipliers for box constraints
-                are zero. The lagrange multiplier for ineq. const. is then
-                defined as below
-        */
-        if ((x[i] > DELTAsv) && (x[i] < c - DELTAsv)) {
-          ipt[it++] = i;
-          kktlam    = kktlam - a[i] * g[i];
-        } else uv[luv++] = i;
-      }
-
-      if (it == 0 && PetscSqrtReal(ak) < tol * 0.5 * PetscSqrtReal(bk)) return PETSC_SUCCESS;
-      else {
-        kktlam = kktlam / it;
-        info   = 1;
-        for (i = 0; i < it; i++) {
-          if (PetscAbsReal(a[ipt[i]] * g[ipt[i]] + kktlam) > tol) {
-            info = 0;
-            break;
-          }
-        }
-        if (info == 1) {
-          for (i = 0; i < luv; i++) {
-            if (x[uv[i]] <= DELTAsv) {
-              /* x[i] == lower bound, hence, lagrange multiplier (say, beta) for lower bound may
-                     not be zero. So, the gradient without beta is > 0
-              */
-              if (g[uv[i]] + kktlam * a[uv[i]] < -tol) {
-                info = 0;
-                break;
-              }
-            } else {
-              /* x[i] == upper bound, hence, lagrange multiplier (say, eta) for upper bound may
-                     not be zero. So, the gradient without eta is < 0
-              */
-              if (g[uv[i]] + kktlam * a[uv[i]] > tol) {
-                info = 0;
-                break;
-              }
-            }
-          }
-        }
-
-        if (info == 1) return PETSC_SUCCESS;
-      }
-    }
-  }
-  return PETSC_SUCCESS;
 }

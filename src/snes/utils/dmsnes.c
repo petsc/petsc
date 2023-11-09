@@ -364,7 +364,6 @@ PetscErrorCode DMSNESUnsetFunctionContext_Internal(DM dm)
 - ctx  - optional function context
 
   Calling sequence of `func`:
-$ PetscErrorCode func(SNES snes, Vec x, Vec f, void *ctx);
 + snes - the solver object
 . x    - the input vector
 . f    - the output vector

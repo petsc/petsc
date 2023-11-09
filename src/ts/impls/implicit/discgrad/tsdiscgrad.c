@@ -457,19 +457,31 @@ PETSC_EXTERN PetscErrorCode TSCreate_DiscGrad(TS ts)
 - ctx   - the user context
 
   Calling sequence of `Sfunc`:
-$ PetscErrorCode Sfunc(TS ts, PetscReal time, Vec u, Mat S, void *ctx)
++ ts   - the integrator
+. time - the current time
+. u    - the solution
+. S    - the S-matrix from the formulation
+- ctx  - the user context
 
   Calling sequence of `Ffunc`:
-$ PetscErrorCode Ffunc(TS ts, PetscReal time, Vec u, PetscScalar *F, void *ctx)
++ ts   - the integrator
+. time - the current time
+. u    - the solution
+. F    - the computed function from the formulation
+- ctx  - the user context
 
   Calling sequence of `Gfunc`:
-$ PetscErrorCode Gfunc(TS ts, PetscReal time, Vec u, Vec G, void *ctx)
++ ts   - the integrator
+. time - the current time
+. u    - the solution
+. G    - the gradient of the computed function from the formulation
+- ctx  - the user context
 
   Level: intermediate
 
 .seealso: [](ch_ts), `TS`, `TSDISCGRAD`, `TSDiscGradSetFormulation()`
 @*/
-PetscErrorCode TSDiscGradGetFormulation(TS ts, PetscErrorCode (**Sfunc)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode (**Ffunc)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode (**Gfunc)(TS, PetscReal, Vec, Vec, void *), void *ctx)
+PetscErrorCode TSDiscGradGetFormulation(TS ts, PetscErrorCode (**Sfunc)(TS ts, PetscReal time, Vec u, Mat S, void *ctx), PetscErrorCode (**Ffunc)(TS ts, PetscReal time, Vec u, PetscScalar *F, void *ctx), PetscErrorCode (**Gfunc)(TS ts, PetscReal time, Vec u, Vec G, void *ctx), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -494,19 +506,31 @@ PetscErrorCode TSDiscGradGetFormulation(TS ts, PetscErrorCode (**Sfunc)(TS, Pets
 - ctx   - optional context for the functions
 
   Calling sequence of `Sfunc`:
-$ PetscErrorCode Sfunc(TS ts, PetscReal time, Vec u, Mat S, void *ctx)
++ ts   - the integrator
+. time - the current time
+. u    - the solution
+. S    - the S-matrix from the formulation
+- ctx  - the user context
 
   Calling sequence of `Ffunc`:
-$ PetscErrorCode Ffunc(TS ts, PetscReal time, Vec u, PetscScalar *F, void *ctx)
++ ts   - the integrator
+. time - the current time
+. u    - the solution
+. F    - the computed function from the formulation
+- ctx  - the user context
 
   Calling sequence of `Gfunc`:
-$ PetscErrorCode Gfunc(TS ts, PetscReal time, Vec u, Vec G, void *ctx)
++ ts   - the integrator
+. time - the current time
+. u    - the solution
+. G    - the gradient of the computed function from the formulation
+- ctx  - the user context
 
   Level: intermediate
 
 .seealso: [](ch_ts), `TSDISCGRAD`, `TSDiscGradGetFormulation()`
 @*/
-PetscErrorCode TSDiscGradSetFormulation(TS ts, PetscErrorCode (*Sfunc)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode (*Ffunc)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode (*Gfunc)(TS, PetscReal, Vec, Vec, void *), void *ctx)
+PetscErrorCode TSDiscGradSetFormulation(TS ts, PetscErrorCode (*Sfunc)(TS ts, PetscReal time, Vec u, Mat S, void *ctx), PetscErrorCode (*Ffunc)(TS ts, PetscReal time, Vec u, PetscScalar *F, void *ctx), PetscErrorCode (*Gfunc)(TS ts, PetscReal time, Vec u, Vec G, void *ctx), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);

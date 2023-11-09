@@ -476,7 +476,7 @@ class Linter:
       #
       # I think this is a bug in libclang. clx.CursorKind.TRANSLATION_UNIT is 350, I
       # think it used to be 300, and they haven't updated the python bindings?
-      if 'unknown template argument kind 300' not in str(ve).casefold():
+      if 'unknown template argument kind 300' not in str(ve).casefold() and 'unknown template argument kind 350' not in str(ve).casefold():
         raise
       lex_parent_kind = clx.CursorKind.TRANSLATION_UNIT
     if lex_parent_kind == clx.CursorKind.CLASS_DECL:
