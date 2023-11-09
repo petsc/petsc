@@ -1,7 +1,10 @@
 -include ../../../../../../petscdir.mk
-#requiresdefine   'PETSC_USE_FORTRAN_BINDINGS'
+#requirespackage 'PETSC_HAVE_PARTY'
 
-LIBBASE  = libpetscsys
+CPPFLAGS  = ${PARTY_INCLUDE}
+LIBBASE   = libpetscmat
+MANSEC    = Mat
+SUBMANSEC = MatGraphOperations
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules_doc.mk
