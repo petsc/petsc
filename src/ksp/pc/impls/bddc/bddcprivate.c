@@ -1066,7 +1066,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
       for (k = ii[ee]; k < ii[ee + 1]; k++) {
         PetscInt vv = jj[k];
         if (PetscBTLookup(btv, vv) && !PetscBTLookupSet(btvc, vv)) {
-          PetscCheck(found != 2, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Found more then two corners for edge %" PetscInt_FMT, i);
+          PetscCheck(found != 2, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Found more than two corners for edge %" PetscInt_FMT, i);
           corners[i * 2 + found++] = vv;
         }
       }

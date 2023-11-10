@@ -5,7 +5,7 @@
      MatDumpSPAI - Dumps a PETSc matrix to a file in an ASCII format
   suitable for the SPAI code of Stephen Barnard to solve. This routine
   is simply here to allow testing of matrices directly with the SPAI
-  code, rather then through the PETSc interface.
+  code, rather than through the PETSc interface.
 
 */
 PetscErrorCode MatDumpSPAI(Mat A, FILE *file)
