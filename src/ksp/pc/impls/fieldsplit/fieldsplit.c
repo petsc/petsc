@@ -666,8 +666,11 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       } else {
         const char *prefix;
         PetscCall(MatCreateSubMatrix(pc->pmat, ilink->is, ilink->is_col, MAT_INITIAL_MATRIX, &jac->pmat[i]));
-        PetscCall(KSPGetOptionsPrefix(ilink->ksp, &prefix));
-        PetscCall(MatSetOptionsPrefix(jac->pmat[i], prefix));
+        PetscCall(MatGetOptionsPrefix(jac->pmat[i], &prefix));
+        if (!prefix) {
+          PetscCall(KSPGetOptionsPrefix(ilink->ksp, &prefix));
+          PetscCall(MatSetOptionsPrefix(jac->pmat[i], prefix));
+        }
         PetscCall(MatSetFromOptions(jac->pmat[i]));
         PetscCall(MatViewFromOptions(jac->pmat[i], NULL, "-mat_view"));
       }
