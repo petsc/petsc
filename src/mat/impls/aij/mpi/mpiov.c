@@ -955,7 +955,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local(Mat C, PetscInt imax, Pets
 
   For better efficiency perhaps we should malloc separately each xdata[i],
 then if a remalloc is required we need only copy the data for that one row
-rather then all previous rows as it is now where a single large chunk of
+rather than all previous rows as it is now where a single large chunk of
 memory is used.
 
 */

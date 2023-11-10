@@ -25,7 +25,7 @@ PetscErrorCode DMLocalToLocalCreate_DA(DM da)
   /*
      We simply remap the values in the from part of
      global to local to read from an array with the ghost values
-     rather then from the plain array.
+     rather than from the plain array.
   */
   PetscCall(VecScatterCopy(dd->gtol, &dd->ltol));
   if (dim == 1) {

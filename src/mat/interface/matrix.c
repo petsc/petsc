@@ -6824,7 +6824,7 @@ PetscErrorCode MatGetOwnershipRanges(Mat mat, const PetscInt **ranges)
 . mat - the matrix
 
   Output Parameter:
-. ranges - start of each processors portion plus one more then the total length at the end
+. ranges - start of each processors portion plus one more than the total length at the end
 
   Level: beginner
 

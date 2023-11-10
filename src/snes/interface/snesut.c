@@ -496,7 +496,7 @@ PetscErrorCode SNESMonitorRange_Private(SNES snes, PetscInt it, PetscReal *per)
 }
 
 /*@C
-  SNESMonitorRange - Prints the percentage of residual elements that are more then 10 percent of the maximum entry in the residual
+  SNESMonitorRange - Prints the percentage of residual elements that are more than 10 percent of the maximum entry in the residual
 
   Collective
 

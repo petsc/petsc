@@ -68,7 +68,7 @@ PETSC_ERROR_CODE_TYPEDEF enum PETSC_ERROR_CODE_NODISCARD {
   PETSC_SUCCESS                   = 0,
   PETSC_ERR_BOOLEAN_MACRO_FAILURE = 1, /* do not use */
 
-  PETSC_ERR_MIN_VALUE = 54, /* should always be one less then the smallest value */
+  PETSC_ERR_MIN_VALUE = 54, /* should always be one less than the smallest value */
 
   PETSC_ERR_MEM            = 55, /* unable to allocate requested memory */
   PETSC_ERR_SUP            = 56, /* no support for requested operation */
@@ -844,7 +844,7 @@ typedef struct _p_PetscRandom *PetscRandom;
 /*
    In binary files variables are stored using the following lengths,
   regardless of how they are stored in memory on any one particular
-  machine. Use these rather then sizeof() in computing sizes for
+  machine. Use these rather than sizeof() in computing sizes for
   PetscBinarySeek().
 */
 #define PETSC_BINARY_INT_SIZE    (32 / 8)

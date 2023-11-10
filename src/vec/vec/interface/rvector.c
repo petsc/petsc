@@ -3884,7 +3884,7 @@ PetscErrorCode VecRestoreArray4dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, 
 . x - the vector
 
   Output Parameter:
-. state - greater than zero indicates the vector is locked for read; less then zero indicates the vector is
+. state - greater than zero indicates the vector is locked for read; less than zero indicates the vector is
            locked for write; equal to zero means the vector is unlocked, that is, it is free to read or write.
 
   Level: advanced
