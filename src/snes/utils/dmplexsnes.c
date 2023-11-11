@@ -520,104 +520,87 @@ PetscErrorCode DMInterpolationRestoreVector(DMInterpolationInfo ctx, Vec *v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static inline PetscErrorCode DMInterpolate_Segment_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
+static inline PetscErrorCode DMInterpolate_Segment_Private(DMInterpolationInfo ctx, DM dm, PetscInt p, Vec xLocal, Vec v)
 {
-  PetscReal          v0, J, invJ, detJ;
+  const PetscInt     c   = ctx->cells[p];
   const PetscInt     dof = ctx->dof;
+  PetscScalar       *x   = NULL;
   const PetscScalar *coords;
   PetscScalar       *a;
-  PetscInt           p;
+  PetscReal          v0, J, invJ, detJ, xir[1];
+  PetscInt           xSize, comp;
 
   PetscFunctionBegin;
   PetscCall(VecGetArrayRead(ctx->coords, &coords));
   PetscCall(VecGetArray(v, &a));
-  for (p = 0; p < ctx->n; ++p) {
-    PetscInt     c = ctx->cells[p];
-    PetscScalar *x = NULL;
-    PetscReal    xir[1];
-    PetscInt     xSize, comp;
-
-    PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, &v0, &J, &invJ, &detJ));
-    PetscCheck(detJ > 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %" PetscInt_FMT, (double)detJ, c);
-    xir[0] = invJ * PetscRealPart(coords[p] - v0);
-    PetscCall(DMPlexVecGetClosure(dm, NULL, xLocal, c, &xSize, &x));
-    if (2 * dof == xSize) {
-      for (comp = 0; comp < dof; ++comp) a[p * dof + comp] = x[0 * dof + comp] * (1 - xir[0]) + x[1 * dof + comp] * xir[0];
-    } else if (dof == xSize) {
-      for (comp = 0; comp < dof; ++comp) a[p * dof + comp] = x[0 * dof + comp];
-    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Input closure size %" PetscInt_FMT " must be either %" PetscInt_FMT " or %" PetscInt_FMT, xSize, 2 * dof, dof);
-    PetscCall(DMPlexVecRestoreClosure(dm, NULL, xLocal, c, &xSize, &x));
-  }
+  PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, &v0, &J, &invJ, &detJ));
+  PetscCheck(detJ > 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %" PetscInt_FMT, (double)detJ, c);
+  xir[0] = invJ * PetscRealPart(coords[p] - v0);
+  PetscCall(DMPlexVecGetClosure(dm, NULL, xLocal, c, &xSize, &x));
+  if (2 * dof == xSize) {
+    for (comp = 0; comp < dof; ++comp) a[p * dof + comp] = x[0 * dof + comp] * (1 - xir[0]) + x[1 * dof + comp] * xir[0];
+  } else if (dof == xSize) {
+    for (comp = 0; comp < dof; ++comp) a[p * dof + comp] = x[0 * dof + comp];
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Input closure size %" PetscInt_FMT " must be either %" PetscInt_FMT " or %" PetscInt_FMT, xSize, 2 * dof, dof);
+  PetscCall(DMPlexVecRestoreClosure(dm, NULL, xLocal, c, &xSize, &x));
   PetscCall(VecRestoreArray(v, &a));
   PetscCall(VecRestoreArrayRead(ctx->coords, &coords));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static inline PetscErrorCode DMInterpolate_Triangle_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
+static inline PetscErrorCode DMInterpolate_Triangle_Private(DMInterpolationInfo ctx, DM dm, PetscInt p, Vec xLocal, Vec v)
 {
-  PetscReal         *v0, *J, *invJ, detJ;
+  const PetscInt     c = ctx->cells[p];
+  PetscScalar       *x = NULL;
   const PetscScalar *coords;
   PetscScalar       *a;
-  PetscInt           p;
+  PetscReal         *v0, *J, *invJ, detJ;
+  PetscReal          xi[4];
 
   PetscFunctionBegin;
   PetscCall(PetscMalloc3(ctx->dim, &v0, ctx->dim * ctx->dim, &J, ctx->dim * ctx->dim, &invJ));
   PetscCall(VecGetArrayRead(ctx->coords, &coords));
   PetscCall(VecGetArray(v, &a));
-  for (p = 0; p < ctx->n; ++p) {
-    PetscInt     c = ctx->cells[p];
-    PetscScalar *x = NULL;
-    PetscReal    xi[4];
-    PetscInt     d, f, comp;
-
-    PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ));
-    PetscCheck(detJ > 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %" PetscInt_FMT, (double)detJ, c);
-    PetscCall(DMPlexVecGetClosure(dm, NULL, xLocal, c, NULL, &x));
-    for (comp = 0; comp < ctx->dof; ++comp) a[p * ctx->dof + comp] = x[0 * ctx->dof + comp];
-
-    for (d = 0; d < ctx->dim; ++d) {
-      xi[d] = 0.0;
-      for (f = 0; f < ctx->dim; ++f) xi[d] += invJ[d * ctx->dim + f] * 0.5 * PetscRealPart(coords[p * ctx->dim + f] - v0[f]);
-      for (comp = 0; comp < ctx->dof; ++comp) a[p * ctx->dof + comp] += PetscRealPart(x[(d + 1) * ctx->dof + comp] - x[0 * ctx->dof + comp]) * xi[d];
-    }
-    PetscCall(DMPlexVecRestoreClosure(dm, NULL, xLocal, c, NULL, &x));
+  PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ));
+  PetscCheck(detJ > 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %" PetscInt_FMT, (double)detJ, c);
+  PetscCall(DMPlexVecGetClosure(dm, NULL, xLocal, c, NULL, &x));
+  for (PetscInt comp = 0; comp < ctx->dof; ++comp) a[p * ctx->dof + comp] = x[0 * ctx->dof + comp];
+  for (PetscInt d = 0; d < ctx->dim; ++d) {
+    xi[d] = 0.0;
+    for (PetscInt f = 0; f < ctx->dim; ++f) xi[d] += invJ[d * ctx->dim + f] * 0.5 * PetscRealPart(coords[p * ctx->dim + f] - v0[f]);
+    for (PetscInt comp = 0; comp < ctx->dof; ++comp) a[p * ctx->dof + comp] += PetscRealPart(x[(d + 1) * ctx->dof + comp] - x[0 * ctx->dof + comp]) * xi[d];
   }
+  PetscCall(DMPlexVecRestoreClosure(dm, NULL, xLocal, c, NULL, &x));
   PetscCall(VecRestoreArray(v, &a));
   PetscCall(VecRestoreArrayRead(ctx->coords, &coords));
   PetscCall(PetscFree3(v0, J, invJ));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static inline PetscErrorCode DMInterpolate_Tetrahedron_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
+static inline PetscErrorCode DMInterpolate_Tetrahedron_Private(DMInterpolationInfo ctx, DM dm, PetscInt p, Vec xLocal, Vec v)
 {
+  const PetscInt     c        = ctx->cells[p];
+  const PetscInt     order[3] = {2, 1, 3};
+  PetscScalar       *x        = NULL;
   PetscReal         *v0, *J, *invJ, detJ;
   const PetscScalar *coords;
   PetscScalar       *a;
-  PetscInt           p;
+  PetscReal          xi[4];
 
   PetscFunctionBegin;
   PetscCall(PetscMalloc3(ctx->dim, &v0, ctx->dim * ctx->dim, &J, ctx->dim * ctx->dim, &invJ));
   PetscCall(VecGetArrayRead(ctx->coords, &coords));
   PetscCall(VecGetArray(v, &a));
-  for (p = 0; p < ctx->n; ++p) {
-    PetscInt       c        = ctx->cells[p];
-    const PetscInt order[3] = {2, 1, 3};
-    PetscScalar   *x        = NULL;
-    PetscReal      xi[4];
-    PetscInt       d, f, comp;
-
-    PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ));
-    PetscCheck(detJ > 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %" PetscInt_FMT, (double)detJ, c);
-    PetscCall(DMPlexVecGetClosure(dm, NULL, xLocal, c, NULL, &x));
-    for (comp = 0; comp < ctx->dof; ++comp) a[p * ctx->dof + comp] = x[0 * ctx->dof + comp];
-
-    for (d = 0; d < ctx->dim; ++d) {
-      xi[d] = 0.0;
-      for (f = 0; f < ctx->dim; ++f) xi[d] += invJ[d * ctx->dim + f] * 0.5 * PetscRealPart(coords[p * ctx->dim + f] - v0[f]);
-      for (comp = 0; comp < ctx->dof; ++comp) a[p * ctx->dof + comp] += PetscRealPart(x[order[d] * ctx->dof + comp] - x[0 * ctx->dof + comp]) * xi[d];
-    }
-    PetscCall(DMPlexVecRestoreClosure(dm, NULL, xLocal, c, NULL, &x));
+  PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ));
+  PetscCheck(detJ > 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %" PetscInt_FMT, (double)detJ, c);
+  PetscCall(DMPlexVecGetClosure(dm, NULL, xLocal, c, NULL, &x));
+  for (PetscInt comp = 0; comp < ctx->dof; ++comp) a[p * ctx->dof + comp] = x[0 * ctx->dof + comp];
+  for (PetscInt d = 0; d < ctx->dim; ++d) {
+    xi[d] = 0.0;
+    for (PetscInt f = 0; f < ctx->dim; ++f) xi[d] += invJ[d * ctx->dim + f] * 0.5 * PetscRealPart(coords[p * ctx->dim + f] - v0[f]);
+    for (PetscInt comp = 0; comp < ctx->dof; ++comp) a[p * ctx->dof + comp] += PetscRealPart(x[order[d] * ctx->dof + comp] - x[0 * ctx->dof + comp]) * xi[d];
   }
+  PetscCall(DMPlexVecRestoreClosure(dm, NULL, xLocal, c, NULL, &x));
   PetscCall(VecRestoreArray(v, &a));
   PetscCall(VecRestoreArrayRead(ctx->coords, &coords));
   PetscCall(PetscFree3(v0, J, invJ));
@@ -697,10 +680,11 @@ static inline PetscErrorCode QuadJacobian_Private(SNES snes, Vec Xref, Mat J, Ma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static inline PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
+static inline PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx, DM dm, PetscInt p, Vec xLocal, Vec v)
 {
-  DM                 dmCoord;
+  const PetscInt     c   = ctx->cells[p];
   PetscFE            fem = NULL;
+  DM                 dmCoord;
   SNES               snes;
   KSP                ksp;
   PC                 pc;
@@ -710,8 +694,11 @@ static inline PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx,
   const PetscScalar *coords;
   PetscScalar       *a;
   PetscReal          xir[2] = {0., 0.};
-  PetscInt           Nf, p;
+  PetscInt           Nf;
   const PetscInt     dof = ctx->dof;
+  PetscScalar       *x = NULL, *vertices = NULL;
+  PetscScalar       *xi;
+  PetscInt           coordSize, xSize;
 
   PetscFunctionBegin;
   PetscCall(DMGetNumFields(dm, &Nf));
@@ -748,45 +735,36 @@ static inline PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx,
 
   PetscCall(VecGetArrayRead(ctx->coords, &coords));
   PetscCall(VecGetArray(v, &a));
-  for (p = 0; p < ctx->n; ++p) {
-    PetscScalar *x = NULL, *vertices = NULL;
-    PetscScalar *xi;
-    PetscInt     c = ctx->cells[p], comp, coordSize, xSize;
-
-    /* Can make this do all points at once */
-    PetscCall(DMPlexVecGetClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices));
-    PetscCheck(4 * 2 == coordSize, ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid closure size %" PetscInt_FMT " should be %d", coordSize, 4 * 2);
-    PetscCall(DMPlexVecGetClosure(dm, NULL, xLocal, c, &xSize, &x));
-    PetscCall(SNESSetFunction(snes, NULL, NULL, vertices));
-    PetscCall(SNESSetJacobian(snes, NULL, NULL, NULL, vertices));
-    PetscCall(VecGetArray(real, &xi));
-    xi[0] = coords[p * ctx->dim + 0];
-    xi[1] = coords[p * ctx->dim + 1];
-    PetscCall(VecRestoreArray(real, &xi));
-    PetscCall(SNESSolve(snes, real, ref));
-    PetscCall(VecGetArray(ref, &xi));
-    xir[0] = PetscRealPart(xi[0]);
-    xir[1] = PetscRealPart(xi[1]);
-    if (4 * dof == xSize) {
-      for (comp = 0; comp < dof; ++comp) a[p * dof + comp] = x[0 * dof + comp] * (1 - xir[0]) * (1 - xir[1]) + x[1 * dof + comp] * xir[0] * (1 - xir[1]) + x[2 * dof + comp] * xir[0] * xir[1] + x[3 * dof + comp] * (1 - xir[0]) * xir[1];
-    } else if (dof == xSize) {
-      for (comp = 0; comp < dof; ++comp) a[p * dof + comp] = x[0 * dof + comp];
-    } else {
-      PetscInt d;
-
-      PetscCheck(fem, ctx->comm, PETSC_ERR_ARG_WRONG, "Cannot have a higher order interpolant if the discretization is not PetscFE");
-      xir[0] = 2.0 * xir[0] - 1.0;
-      xir[1] = 2.0 * xir[1] - 1.0;
-      PetscCall(PetscFEComputeTabulation(fem, 1, xir, 0, T));
-      for (comp = 0; comp < dof; ++comp) {
-        a[p * dof + comp] = 0.0;
-        for (d = 0; d < xSize / dof; ++d) a[p * dof + comp] += x[d * dof + comp] * T->T[0][d * dof + comp];
-      }
+  PetscCall(DMPlexVecGetClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices));
+  PetscCheck(4 * 2 == coordSize, ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid closure size %" PetscInt_FMT " should be %d", coordSize, 4 * 2);
+  PetscCall(DMPlexVecGetClosure(dm, NULL, xLocal, c, &xSize, &x));
+  PetscCall(SNESSetFunction(snes, NULL, NULL, vertices));
+  PetscCall(SNESSetJacobian(snes, NULL, NULL, NULL, vertices));
+  PetscCall(VecGetArray(real, &xi));
+  xi[0] = coords[p * ctx->dim + 0];
+  xi[1] = coords[p * ctx->dim + 1];
+  PetscCall(VecRestoreArray(real, &xi));
+  PetscCall(SNESSolve(snes, real, ref));
+  PetscCall(VecGetArray(ref, &xi));
+  xir[0] = PetscRealPart(xi[0]);
+  xir[1] = PetscRealPart(xi[1]);
+  if (4 * dof == xSize) {
+    for (PetscInt comp = 0; comp < dof; ++comp) a[p * dof + comp] = x[0 * dof + comp] * (1 - xir[0]) * (1 - xir[1]) + x[1 * dof + comp] * xir[0] * (1 - xir[1]) + x[2 * dof + comp] * xir[0] * xir[1] + x[3 * dof + comp] * (1 - xir[0]) * xir[1];
+  } else if (dof == xSize) {
+    for (PetscInt comp = 0; comp < dof; ++comp) a[p * dof + comp] = x[0 * dof + comp];
+  } else {
+    PetscCheck(fem, ctx->comm, PETSC_ERR_ARG_WRONG, "Cannot have a higher order interpolant if the discretization is not PetscFE");
+    xir[0] = 2.0 * xir[0] - 1.0;
+    xir[1] = 2.0 * xir[1] - 1.0;
+    PetscCall(PetscFEComputeTabulation(fem, 1, xir, 0, T));
+    for (PetscInt comp = 0; comp < dof; ++comp) {
+      a[p * dof + comp] = 0.0;
+      for (PetscInt d = 0; d < xSize / dof; ++d) a[p * dof + comp] += x[d * dof + comp] * T->T[0][d * dof + comp];
     }
-    PetscCall(VecRestoreArray(ref, &xi));
-    PetscCall(DMPlexVecRestoreClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices));
-    PetscCall(DMPlexVecRestoreClosure(dm, NULL, xLocal, c, &xSize, &x));
   }
+  PetscCall(VecRestoreArray(ref, &xi));
+  PetscCall(DMPlexVecRestoreClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices));
+  PetscCall(DMPlexVecRestoreClosure(dm, NULL, xLocal, c, &xSize, &x));
   PetscCall(PetscTabulationDestroy(&T));
   PetscCall(VecRestoreArray(v, &a));
   PetscCall(VecRestoreArrayRead(ctx->coords, &coords));
@@ -937,8 +915,9 @@ static inline PetscErrorCode HexJacobian_Private(SNES snes, Vec Xref, Mat J, Mat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static inline PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
+static inline PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, DM dm, PetscInt p, Vec xLocal, Vec v)
 {
+  const PetscInt     c = ctx->cells[p];
   DM                 dmCoord;
   SNES               snes;
   KSP                ksp;
@@ -947,7 +926,10 @@ static inline PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, 
   Mat                J;
   const PetscScalar *coords;
   PetscScalar       *a;
-  PetscInt           p;
+  PetscScalar       *x = NULL, *vertices = NULL;
+  PetscScalar       *xi;
+  PetscReal          xir[3];
+  PetscInt           coordSize, xSize;
 
   PetscFunctionBegin;
   PetscCall(DMGetCoordinatesLocal(dm, &coordsLocal));
@@ -972,41 +954,33 @@ static inline PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, 
 
   PetscCall(VecGetArrayRead(ctx->coords, &coords));
   PetscCall(VecGetArray(v, &a));
-  for (p = 0; p < ctx->n; ++p) {
-    PetscScalar *x = NULL, *vertices = NULL;
-    PetscScalar *xi;
-    PetscReal    xir[3];
-    PetscInt     c = ctx->cells[p], comp, coordSize, xSize;
-
-    /* Can make this do all points at once */
-    PetscCall(DMPlexVecGetClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices));
-    PetscCheck(8 * 3 == coordSize, ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid coordinate closure size %" PetscInt_FMT " should be %d", coordSize, 8 * 3);
-    PetscCall(DMPlexVecGetClosure(dm, NULL, xLocal, c, &xSize, &x));
-    PetscCheck((8 * ctx->dof == xSize) || (ctx->dof == xSize), ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid input closure size %" PetscInt_FMT " should be %" PetscInt_FMT " or %" PetscInt_FMT, xSize, 8 * ctx->dof, ctx->dof);
-    PetscCall(SNESSetFunction(snes, NULL, NULL, vertices));
-    PetscCall(SNESSetJacobian(snes, NULL, NULL, NULL, vertices));
-    PetscCall(VecGetArray(real, &xi));
-    xi[0] = coords[p * ctx->dim + 0];
-    xi[1] = coords[p * ctx->dim + 1];
-    xi[2] = coords[p * ctx->dim + 2];
-    PetscCall(VecRestoreArray(real, &xi));
-    PetscCall(SNESSolve(snes, real, ref));
-    PetscCall(VecGetArray(ref, &xi));
-    xir[0] = PetscRealPart(xi[0]);
-    xir[1] = PetscRealPart(xi[1]);
-    xir[2] = PetscRealPart(xi[2]);
-    if (8 * ctx->dof == xSize) {
-      for (comp = 0; comp < ctx->dof; ++comp) {
-        a[p * ctx->dof + comp] = x[0 * ctx->dof + comp] * (1 - xir[0]) * (1 - xir[1]) * (1 - xir[2]) + x[3 * ctx->dof + comp] * xir[0] * (1 - xir[1]) * (1 - xir[2]) + x[2 * ctx->dof + comp] * xir[0] * xir[1] * (1 - xir[2]) + x[1 * ctx->dof + comp] * (1 - xir[0]) * xir[1] * (1 - xir[2]) +
-                                 x[4 * ctx->dof + comp] * (1 - xir[0]) * (1 - xir[1]) * xir[2] + x[5 * ctx->dof + comp] * xir[0] * (1 - xir[1]) * xir[2] + x[6 * ctx->dof + comp] * xir[0] * xir[1] * xir[2] + x[7 * ctx->dof + comp] * (1 - xir[0]) * xir[1] * xir[2];
-      }
-    } else {
-      for (comp = 0; comp < ctx->dof; ++comp) a[p * ctx->dof + comp] = x[0 * ctx->dof + comp];
+  PetscCall(DMPlexVecGetClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices));
+  PetscCheck(8 * 3 == coordSize, ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid coordinate closure size %" PetscInt_FMT " should be %d", coordSize, 8 * 3);
+  PetscCall(DMPlexVecGetClosure(dm, NULL, xLocal, c, &xSize, &x));
+  PetscCheck((8 * ctx->dof == xSize) || (ctx->dof == xSize), ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid input closure size %" PetscInt_FMT " should be %" PetscInt_FMT " or %" PetscInt_FMT, xSize, 8 * ctx->dof, ctx->dof);
+  PetscCall(SNESSetFunction(snes, NULL, NULL, vertices));
+  PetscCall(SNESSetJacobian(snes, NULL, NULL, NULL, vertices));
+  PetscCall(VecGetArray(real, &xi));
+  xi[0] = coords[p * ctx->dim + 0];
+  xi[1] = coords[p * ctx->dim + 1];
+  xi[2] = coords[p * ctx->dim + 2];
+  PetscCall(VecRestoreArray(real, &xi));
+  PetscCall(SNESSolve(snes, real, ref));
+  PetscCall(VecGetArray(ref, &xi));
+  xir[0] = PetscRealPart(xi[0]);
+  xir[1] = PetscRealPart(xi[1]);
+  xir[2] = PetscRealPart(xi[2]);
+  if (8 * ctx->dof == xSize) {
+    for (PetscInt comp = 0; comp < ctx->dof; ++comp) {
+      a[p * ctx->dof + comp] = x[0 * ctx->dof + comp] * (1 - xir[0]) * (1 - xir[1]) * (1 - xir[2]) + x[3 * ctx->dof + comp] * xir[0] * (1 - xir[1]) * (1 - xir[2]) + x[2 * ctx->dof + comp] * xir[0] * xir[1] * (1 - xir[2]) + x[1 * ctx->dof + comp] * (1 - xir[0]) * xir[1] * (1 - xir[2]) +
+                               x[4 * ctx->dof + comp] * (1 - xir[0]) * (1 - xir[1]) * xir[2] + x[5 * ctx->dof + comp] * xir[0] * (1 - xir[1]) * xir[2] + x[6 * ctx->dof + comp] * xir[0] * xir[1] * xir[2] + x[7 * ctx->dof + comp] * (1 - xir[0]) * xir[1] * xir[2];
     }
-    PetscCall(VecRestoreArray(ref, &xi));
-    PetscCall(DMPlexVecRestoreClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices));
-    PetscCall(DMPlexVecRestoreClosure(dm, NULL, xLocal, c, &xSize, &x));
+  } else {
+    for (PetscInt comp = 0; comp < ctx->dof; ++comp) a[p * ctx->dof + comp] = x[0 * ctx->dof + comp];
   }
+  PetscCall(VecRestoreArray(ref, &xi));
+  PetscCall(DMPlexVecRestoreClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices));
+  PetscCall(DMPlexVecRestoreClosure(dm, NULL, xLocal, c, &xSize, &x));
   PetscCall(VecRestoreArray(v, &a));
   PetscCall(VecRestoreArrayRead(ctx->coords, &coords));
 
@@ -1110,28 +1084,30 @@ PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo ctx, DM dm, Vec x, Ve
     PetscCall(VecRestoreArrayRead(ctx->coords, &coords));
     PetscCall(VecRestoreArrayWrite(v, &interpolant));
   } else {
-    DMPolytopeType ct;
+    for (PetscInt p = 0; p < ctx->n; ++p) {
+      const PetscInt cell = ctx->cells[p];
+      DMPolytopeType ct;
 
-    /* TODO Check each cell individually */
-    PetscCall(DMPlexGetCellType(dm, ctx->cells[0], &ct));
-    switch (ct) {
-    case DM_POLYTOPE_SEGMENT:
-      PetscCall(DMInterpolate_Segment_Private(ctx, dm, x, v));
-      break;
-    case DM_POLYTOPE_TRIANGLE:
-      PetscCall(DMInterpolate_Triangle_Private(ctx, dm, x, v));
-      break;
-    case DM_POLYTOPE_QUADRILATERAL:
-      PetscCall(DMInterpolate_Quad_Private(ctx, dm, x, v));
-      break;
-    case DM_POLYTOPE_TETRAHEDRON:
-      PetscCall(DMInterpolate_Tetrahedron_Private(ctx, dm, x, v));
-      break;
-    case DM_POLYTOPE_HEXAHEDRON:
-      PetscCall(DMInterpolate_Hex_Private(ctx, dm, x, v));
-      break;
-    default:
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for cell type %s", DMPolytopeTypes[PetscMax(0, PetscMin(ct, DM_NUM_POLYTOPES))]);
+      PetscCall(DMPlexGetCellType(dm, cell, &ct));
+      switch (ct) {
+      case DM_POLYTOPE_SEGMENT:
+        PetscCall(DMInterpolate_Segment_Private(ctx, dm, p, x, v));
+        break;
+      case DM_POLYTOPE_TRIANGLE:
+        PetscCall(DMInterpolate_Triangle_Private(ctx, dm, p, x, v));
+        break;
+      case DM_POLYTOPE_QUADRILATERAL:
+        PetscCall(DMInterpolate_Quad_Private(ctx, dm, p, x, v));
+        break;
+      case DM_POLYTOPE_TETRAHEDRON:
+        PetscCall(DMInterpolate_Tetrahedron_Private(ctx, dm, p, x, v));
+        break;
+      case DM_POLYTOPE_HEXAHEDRON:
+        PetscCall(DMInterpolate_Hex_Private(ctx, dm, cell, x, v));
+        break;
+      default:
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for cell type %s", DMPolytopeTypes[PetscMax(0, PetscMin(ct, DM_NUM_POLYTOPES))]);
+      }
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
