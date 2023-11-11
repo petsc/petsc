@@ -4499,7 +4499,7 @@ PetscErrorCode MatSeqAIJInvalidateDiagonal_Inode(Mat A)
 /*
      This is really ugly. if inodes are used this replaces the
   permutations with ones that correspond to rows/cols of the matrix
-  rather then inode blocks
+  rather than inode blocks
 */
 PetscErrorCode MatInodeAdjustForInodes(Mat A, IS *rperm, IS *cperm)
 {

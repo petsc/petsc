@@ -105,7 +105,7 @@ PC Object: (fc_) 1 MPI process
                 total: nonzeros=81520, allocated nonzeros=81520
                     block size is 1
         linear system matrix = precond matrix:
-        Mat Object: (fc_fieldsplit_velocity_) 1 MPI process
+        Mat Object: (a11_) 1 MPI process
           type: seqaij
           rows=2046, cols=2046, bs=2
           total: nonzeros=34952, allocated nonzeros=34952
@@ -158,7 +158,7 @@ PC Object: (fc_) 1 MPI process
             has attached null space
             Schur complement A11 - A10 inv(A00) A01
             A11
-              Mat Object: (fc_fieldsplit_pressure_) 1 MPI process
+              Mat Object: (a22_) 1 MPI process
                 type: seqaij
                 rows=1024, cols=1024
                 total: nonzeros=1024, allocated nonzeros=1024
@@ -179,7 +179,7 @@ PC Object: (fc_) 1 MPI process
                 total: nonzeros=7936, allocated nonzeros=7936
                 total number of mallocs used during MatSetValues calls=0
                   using I-node routines: found 1085 nodes, limit used is 5
-        Mat Object: (fc_fieldsplit_pressure_) 1 MPI process
+        Mat Object: (a22_) 1 MPI process
           type: seqaij
           rows=1024, cols=1024
           total: nonzeros=1024, allocated nonzeros=1024
@@ -192,10 +192,10 @@ PC Object: (fc_) 1 MPI process
       Matrix object:
         type=nest, rows=2, cols=2
         MatNest structure:
-        (0,0) : prefix="fc_fieldsplit_velocity_", type=seqaij, rows=2046, cols=2046
+        (0,0) : prefix="a11_", type=seqaij, rows=2046, cols=2046
         (0,1) : type=seqaij, rows=2046, cols=1024
         (1,0) : type=seqaij, rows=1024, cols=2046
-        (1,1) : prefix="fc_fieldsplit_pressure_", type=seqaij, rows=1024, cols=1024
+        (1,1) : prefix="a22_", type=seqaij, rows=1024, cols=1024
 -- vector vector values --
   Min(u)  = -0.017280 [loc=2035]
   Max(u)  = 0.018577 [loc=2024]
@@ -284,7 +284,7 @@ PC Object: (fc_) 1 MPI process
                 total: nonzeros=81520, allocated nonzeros=81520
                     block size is 1
         linear system matrix = precond matrix:
-        Mat Object: (fc_fieldsplit_velocity_) 1 MPI process
+        Mat Object: (a11_) 1 MPI process
           type: seqaij
           rows=2046, cols=2046, bs=2
           total: nonzeros=34952, allocated nonzeros=34952
@@ -337,7 +337,7 @@ PC Object: (fc_) 1 MPI process
             has attached null space
             Schur complement A11 - A10 inv(A00) A01
             A11
-              Mat Object: (fc_fieldsplit_pressure_) 1 MPI process
+              Mat Object: (a22_) 1 MPI process
                 type: seqaij
                 rows=1024, cols=1024
                 total: nonzeros=1024, allocated nonzeros=1024
@@ -358,7 +358,7 @@ PC Object: (fc_) 1 MPI process
                 total: nonzeros=7936, allocated nonzeros=7936
                 total number of mallocs used during MatSetValues calls=0
                   using I-node routines: found 1085 nodes, limit used is 5
-        Mat Object: (fc_fieldsplit_pressure_) 1 MPI process
+        Mat Object: (a22_) 1 MPI process
           type: seqaij
           rows=1024, cols=1024
           total: nonzeros=1024, allocated nonzeros=1024
@@ -371,7 +371,7 @@ PC Object: (fc_) 1 MPI process
       Matrix object:
         type=nest, rows=2, cols=2
         MatNest structure:
-        (0,0) : prefix="fc_fieldsplit_velocity_", type=seqaij, rows=2046, cols=2046
+        (0,0) : prefix="a11_", type=seqaij, rows=2046, cols=2046
         (0,1) : type=seqaij, rows=2046, cols=1024
         (1,0) : type=seqaij, rows=1024, cols=2046
-        (1,1) : prefix="fc_fieldsplit_pressure_", type=seqaij, rows=1024, cols=1024
+        (1,1) : prefix="a22_", type=seqaij, rows=1024, cols=1024

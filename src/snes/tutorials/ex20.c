@@ -16,7 +16,7 @@ and solver adaptivity.\n\n\n";
   - Show CR convergence rate
   - Show CR solution to show non-convergence
   - Refine coarse grid around non-converged dofs
-    - Maybe use Barry's "more then Z% above the average" monitor to label bad dofs
+    - Maybe use Barry's "more than Z% above the average" monitor to label bad dofs
     - Mark coarse cells that contain bad dofs
     - Run SBR on coarse grid
 

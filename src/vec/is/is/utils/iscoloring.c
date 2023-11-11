@@ -361,7 +361,7 @@ PetscErrorCode ISColoringCreate(MPI_Comm comm, PetscInt ncolors, PetscInt n, con
   }
   ncwork++;
   PetscCall(MPIU_Allreduce(&ncwork, &nc, 1, MPIU_INT, MPI_MAX, comm));
-  PetscCheck(nc <= ncolors, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Number of colors passed in %" PetscInt_FMT " is less then the actual number of colors in array %" PetscInt_FMT, ncolors, nc);
+  PetscCheck(nc <= ncolors, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Number of colors passed in %" PetscInt_FMT " is less than the actual number of colors in array %" PetscInt_FMT, ncolors, nc);
   (*iscoloring)->n     = nc;
   (*iscoloring)->is    = NULL;
   (*iscoloring)->N     = n;
