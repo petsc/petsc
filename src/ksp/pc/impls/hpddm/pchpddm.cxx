@@ -1966,7 +1966,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               PetscCall(PetscNew(&h));
               h->ksp = nullptr;
               PetscCall(PetscCalloc1(2, &h->A));
-              PetscCall(PetscOptionsHasName(nullptr, pcpre, "-svd_nsv", &flg));
+              PetscCall(PetscOptionsHasName(nullptr, prefix, "-svd_nsv", &flg));
               if (!flg) PetscCall(PetscOptionsHasName(nullptr, prefix, "-svd_relative_threshold", &flg));
               PetscCall(ISSort(ov[0]));
               if (!flg) PetscCall(ISSort(ov[1]));
