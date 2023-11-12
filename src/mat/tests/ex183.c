@@ -151,27 +151,31 @@ int main(int argc, char **args)
   /*
     Now view the matrices.  To avoid deadlock when viewing a list of objects on different subcomms,
     we need to obtain the global numbers of our local objects and wait for the corresponding global
-    number to be viewed.
+    number to be viewed. Also all MPI processes need to call PetscViewerGetSubViewer() the same number of times
   */
   PetscCall(PetscViewerASCIIPrintf(viewer, "Submatrices (repetition 1):\n"));
   for (s = 0; s < nsubdomains; ++s) gsubdomainperm[s] = s;
   PetscCall(PetscObjectsListGetGlobalNumbering(PETSC_COMM_WORLD, 1, (PetscObject *)submats, &gnsubdomains, gsubdomainnums));
   PetscCall(PetscSortIntWithPermutation(nsubdomains, gsubdomainnums, gsubdomainperm));
   for (gs = 0, s = 0; gs < gnsubdomains; ++gs) {
+    PetscViewer subviewer = NULL;
     if (s < nsubdomains) {
       PetscInt ss;
       ss = gsubdomainperm[s];
       if (gs == gsubdomainnums[ss]) { /* Global subdomain gs being viewed is my subdomain with local number ss. */
-        PetscViewer subviewer = NULL;
         PetscCall(PetscViewerGetSubViewer(viewer, PetscObjectComm((PetscObject)submats[ss]), &subviewer));
         PetscCall(MatView(submats[ss], subviewer));
         PetscCall(PetscViewerRestoreSubViewer(viewer, PetscObjectComm((PetscObject)submats[ss]), &subviewer));
         ++s;
+      } else {
+        PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &subviewer));
+        PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &subviewer));
       }
+    } else {
+      PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &subviewer));
+      PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &subviewer));
     }
-    PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
   }
-  PetscCall(PetscViewerFlush(viewer));
   if (rep == 1) goto cleanup;
   nsubdomains = 1;
   PetscCall(MatCreateSubMatricesMPI(A, nsubdomains, rowis, colis, MAT_REUSE_MATRIX, &submats));
@@ -185,20 +189,24 @@ int main(int argc, char **args)
   PetscCall(PetscObjectsListGetGlobalNumbering(PETSC_COMM_WORLD, 1, (PetscObject *)submats, &gnsubdomains, gsubdomainnums));
   PetscCall(PetscSortIntWithPermutation(nsubdomains, gsubdomainnums, gsubdomainperm));
   for (gs = 0, s = 0; gs < gnsubdomains; ++gs) {
+    PetscViewer subviewer = NULL;
     if (s < nsubdomains) {
       PetscInt ss;
       ss = gsubdomainperm[s];
       if (gs == gsubdomainnums[ss]) { /* Global subdomain gs being viewed is my subdomain with local number ss. */
-        PetscViewer subviewer = NULL;
         PetscCall(PetscViewerGetSubViewer(viewer, PetscObjectComm((PetscObject)submats[ss]), &subviewer));
         PetscCall(MatView(submats[ss], subviewer));
         PetscCall(PetscViewerRestoreSubViewer(viewer, PetscObjectComm((PetscObject)submats[ss]), &subviewer));
         ++s;
+      } else {
+        PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &subviewer));
+        PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &subviewer));
       }
+    } else {
+      PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &subviewer));
+      PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &subviewer));
     }
-    PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
   }
-  PetscCall(PetscViewerFlush(viewer));
 cleanup:
   for (k = 0; k < nsubdomains; ++k) PetscCall(MatDestroy(submats + k));
   PetscCall(PetscFree(submats));
