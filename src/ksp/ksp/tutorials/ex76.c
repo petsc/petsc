@@ -339,10 +339,15 @@ int main(int argc, char **args)
         filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations [12][0-3]/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
         args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_relative_threshold 1e+1 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_eps_mat_type shell
       test:
+        suffix: harmonic_overlap_2_relative_threshold
+        output_file: output/ex76_geneo_share.out
+        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 9/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
+        args: -pc_hpddm_harmonic_overlap 2 -pc_hpddm_levels_1_svd_nsv 15 -pc_hpddm_levels_1_svd_relative_threshold 1e-1 -pc_hpddm_levels_1_st_share_sub_ksp -mat_type sbaij
+      test:
         suffix: harmonic_overlap_2
         output_file: output/ex76_geneo_share.out
-        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 8/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
-        args: -pc_hpddm_harmonic_overlap 2 -pc_hpddm_levels_1_svd_nsv 30 -pc_hpddm_levels_1_svd_relative_threshold 1e-1 -pc_hpddm_levels_1_st_share_sub_ksp -mat_type sbaij
+        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 9/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
+        args: -pc_hpddm_harmonic_overlap 2 -pc_hpddm_levels_1_svd_nsv 12 -pc_hpddm_levels_1_st_share_sub_ksp -mat_type sbaij
 
    testset:
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
@@ -415,7 +420,7 @@ int main(int argc, char **args)
       test:
         suffix: geneo_mumps_use_omp_threads_2
         output_file: output/ex76_geneo_mumps_use_omp_threads.out
-        args: -pc_hpddm_coarse_mat_type aij -pc_hpddm_levels_1_eps_threshold 0.3 -pc_hpddm_coarse_pc_type cholesky -pc_hpddm_coarse_mat_filter 1e-12
+        args: -pc_hpddm_coarse_mat_type aij -pc_hpddm_levels_1_eps_threshold 0.4 -pc_hpddm_coarse_pc_type cholesky -pc_hpddm_coarse_mat_filter 1e-12
 
    testset: # converge really poorly because of a tiny -pc_hpddm_levels_1_eps_threshold, but needed for proper code coverage where some subdomains don't call EPSSolve()
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
