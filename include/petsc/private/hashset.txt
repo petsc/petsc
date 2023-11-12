@@ -1,9 +1,10 @@
+/* SUBMANSEC = PetscH */
 
-This file is processed by make allmanpages in $PETSC_DIR/makefile to create manual pages
-for the types and macros created by PETSC_HASH_SET(). For example, PetscHSetIJ.
+This file is processed by doc/build_man_pages.py to create manual pages
+for the types and macros created by PETSC_HASH_SET(). For example, PetscHHashIJ.
 
 /*S
-  PetscHSet<T> - Hash set with a key of <Type>
+  PetscHSet<T> - Hash set with a key of <KeyType>
 
   Level: developer
 
