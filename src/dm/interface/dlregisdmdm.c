@@ -11,8 +11,8 @@
 
 static PetscBool DMPackageInitialized = PETSC_FALSE;
 /*@C
-  DMFinalizePackage - This function finalizes everything in the DM package. It is called
-  from PetscFinalize().
+  DMFinalizePackage - This function finalizes everything in the `DM` package. It is called
+  from `PetscFinalize()`.
 
   Level: developer
 
@@ -33,9 +33,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRESStruct(Mat);
 #endif
 
 /*@C
-  DMInitializePackage - This function initializes everything in the DM package. It is called
-  from PetscDLLibraryRegister_petscdm() when using dynamic libraries, and on the first call to AOCreate()
-  or DMDACreate() when using shared or static libraries.
+  DMInitializePackage - This function initializes everything in the `DM` package. It is called
+  from `PetscDLLibraryRegister_petscdm()` when using dynamic libraries, and on the first call to `DMCreate()`
+  or `DMDACreate()` when using shared or static libraries.
 
   Level: developer
 
@@ -187,8 +187,8 @@ PetscErrorCode DMInitializePackage(void)
 static PetscBool PetscFEPackageInitialized = PETSC_FALSE;
 
 /*@C
-  PetscFEFinalizePackage - This function finalizes everything in the PetscFE package. It is called
-  from PetscFinalize().
+  PetscFEFinalizePackage - This function finalizes everything in the `PetscFE` package. It is called
+  from `PetscFinalize()`.
 
   Level: developer
 
@@ -208,8 +208,8 @@ PetscErrorCode PetscFEFinalizePackage(void)
 }
 
 /*@C
-  PetscFEInitializePackage - This function initializes everything in the FE package. It is called
-  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PetscSpaceCreate()
+  PetscFEInitializePackage - This function initializes everything in the `PetscFE` package. It is called
+  from `PetscDLLibraryRegister()` when using dynamic libraries, and on the first call to `PetscSpaceCreate()`
   when using static libraries.
 
   Level: developer
@@ -262,8 +262,8 @@ PetscErrorCode PetscFEInitializePackage(void)
 static PetscBool PetscFVPackageInitialized = PETSC_FALSE;
 
 /*@C
-  PetscFVFinalizePackage - This function finalizes everything in the PetscFV package. It is called
-  from PetscFinalize().
+  PetscFVFinalizePackage - This function finalizes everything in the `PetscFV` package. It is called
+  from `PetscFinalize()`.
 
   Level: developer
 
@@ -281,8 +281,8 @@ PetscErrorCode PetscFVFinalizePackage(void)
 }
 
 /*@C
-  PetscFVInitializePackage - This function initializes everything in the FV package. It is called
-  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PetscFVCreate()
+  PetscFVInitializePackage - This function initializes everything in the `PetscFV` package. It is called
+  from `PetscDLLibraryRegister()` when using dynamic libraries, and on the first call to `PetscFVCreate()`
   when using static libraries.
 
   Level: developer
@@ -347,8 +347,8 @@ PetscErrorCode PetscDSFinalizePackage(void)
 }
 
 /*@C
-  PetscDSInitializePackage - This function initializes everything in the DS package. It is called
-  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PetscDSCreate()
+  PetscDSInitializePackage - This function initializes everything in the `PetscDS` package. It is called
+  from `PetscDLLibraryRegister()` when using dynamic libraries, and on the first call to `PetscDSCreate()`
   when using static libraries.
 
   Level: developer

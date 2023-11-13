@@ -84,7 +84,7 @@ PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscRea
 - endpoint - Include the endpoint L_i
 
   Output Parameter:
-. out - The localized coordinate point
+. out - The localized coordinate point (dim numbers)
 
   Level: developer
 
@@ -124,7 +124,7 @@ PetscErrorCode DMLocalizeCoordinate(DM dm, const PetscScalar in[], PetscBool end
 - in     - The input coordinate point (dim numbers)
 
   Output Parameter:
-. out - The localized coordinate point
+. out - The localized coordinate point (dim numbers)
 
   Level: developer
 
@@ -187,7 +187,7 @@ PetscErrorCode DMLocalizeCoordinateReal_Internal(DM dm, PetscInt dim, const Pets
   Level: developer
 
   Note:
-  This is meant to get a set of coordinates close to each other, as in a cell. The anchor is usually the one of the vertices on a containing cell
+  This is meant to get a set of coordinates close to each other, as in a cell. The anchor is usually one of the vertices on a containing cell
 
 .seealso: `DM`, `DMLocalizeCoordinates()`, `DMLocalizeCoordinate()`
 */
