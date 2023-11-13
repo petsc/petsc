@@ -385,11 +385,22 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A, PetscInt bs, const PetscInt dnnz[]
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-        Merges some information from Cs header to A; the C object is then destroyed
+/*@C
+  MatHeaderMerge - Merges some information from the header of `C` to `A`; the `C` object is then destroyed
 
-        This is somewhat different from MatHeaderReplace() it would be nice to merge the code
-*/
+  Collective, No Fortran Support
+
+  Input Parameters:
++ A - a `Mat` being merged into
+- C - the `Mat` providing the merge information
+
+  Level: developer
+
+  Developer Note:
+  This is somewhat different from `MatHeaderReplace()`, it would be nice to merge the code
+
+.seealso: `Mat`, `MatHeaderReplace()`
+ @*/
 PetscErrorCode MatHeaderMerge(Mat A, Mat *C)
 {
   PetscInt         refct;
@@ -457,16 +468,34 @@ PetscErrorCode MatHeaderMerge(Mat A, Mat *C)
   PetscCall(PetscHeaderDestroy(C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/*
-        Replace A's header with that of C; the C object is then destroyed
 
-        This is essentially code moved from MatDestroy()
+/*@
+  MatHeaderReplace - Replaces the internal data of matrix `A` by the internal data of matrix `C` while deleting the outer wrapper of `C`
 
-        This is somewhat different from MatHeaderMerge() it would be nice to merge the code
+  Input Parameters:
++ A - a `Mat` whose internal data is to be replaced
+- C - the `Mat` providing new internal data for `A`
 
-        Used in DM hence is declared PETSC_EXTERN
-*/
-PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A, Mat *C)
+  Level: advanced
+
+  Example Usage\:
+.vb
+  Mat C;
+  MatCreateSeqAIJWithArrays(..., &C);
+  MatHeaderReplace(A, &C);
+  // C has been destroyed and A contains the matrix entries of C
+.ve
+
+  Note:
+  This can be used inside a function provided to `SNESSetJacobian()`, `TSSetRHSJacobian()`, or `TSSetIJacobian()` in cases where the user code computes an entirely new sparse matrix
+  (generally with a different nonzero pattern) for each Newton update. It is usually better to reuse the matrix structure of `A` instead of constructing an entirely new one.
+
+  Developer Note:
+  This is somewhat different from `MatHeaderMerge()` it would be nice to merge the code
+
+.seealso: `Mat`, `MatHeaderMerge()`
+ @*/
+PetscErrorCode MatHeaderReplace(Mat A, Mat *C)
 {
   PetscInt         refct;
   PetscObjectState state;
