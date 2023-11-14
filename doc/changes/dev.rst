@@ -68,6 +68,9 @@ Changes: Development
 
 .. rubric:: SNES:
 
+- Add support for Quasi-Newton models in ``SNESNEWTONTR`` via ``SNESNewtonTRSetQNType``
+- Add support for trust region norm customization in ``SNESNEWTONTR`` via ``SNESNewtonTRSetNormType``
+
 .. rubric:: SNESLineSearch:
 
 .. rubric:: TS:

@@ -38,16 +38,18 @@
       PetscErrorCode ierr
       PetscInt       ctx
       PetscScalar    mone
+      MPI_Comm       comm
 
+      character(len=PETSC_MAX_PATH_LEN) :: outputString
+
+      PetscCallA(PetscObjectGetComm(snes,comm,ierr))
       PetscCallA(VecDuplicate(x,tmp,ierr))
       mone = -1.0
       PetscCallA(VecWAXPY(tmp,mone,x,w,ierr))
       PetscCallA(VecNorm(tmp,NORM_2,norm,ierr))
       PetscCallA(VecDestroy(tmp,ierr))
-      print*, 'Norm of search step ',norm
-      changed_y = PETSC_FALSE
-      changed_w = PETSC_FALSE
-      return
+      write(outputString,*) norm
+      PetscCallA(PetscPrintf(comm,'Norm of search step '//trim(outputString)//'\n',ierr))
       end
 
       program main
@@ -102,6 +104,8 @@
       ISColoring         iscoloring
       PetscBool          pc
       external           postcheck
+
+      character(len=PETSC_MAX_PATH_LEN) :: outputString
 
       PetscScalar,pointer :: lx_v(:)
 
@@ -258,10 +262,8 @@
       PetscCallA(FormInitialGuess(x,ierr))
       PetscCallA(SNESSolve(snes,PETSC_NULL_VEC,x,ierr))
       PetscCallA(SNESGetIterationNumber(snes,its,ierr))
-      if (rank .eq. 0) then
-         write(6,100) its
-      endif
-  100 format('Number of SNES iterations = ',i1)
+      write(outputString,*) its
+      PetscCallA(PetscPrintf(PETSC_COMM_WORLD,'Number of SNES iterations = '//trim(outputString)//'\n',ierr))
 
 !  PetscDraw contour plot of solution
 
