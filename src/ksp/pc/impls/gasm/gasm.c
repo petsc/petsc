@@ -59,57 +59,59 @@ static PetscErrorCode PCGASMSubdomainView_Private(PC pc, PetscInt i, PetscViewer
   char           *cidx;
 
   PetscFunctionBegin;
-  PetscCheck(i >= 0 && i < osm->n, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONG, "Invalid subdomain %" PetscInt_FMT ": must nonnegative and less than %" PetscInt_FMT, i, osm->n);
+  PetscCheck(i >= -1 && i < osm->n, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONG, "Invalid subdomain %" PetscInt_FMT ": must nonnegative and less than %" PetscInt_FMT, i, osm->n);
+
   /* Inner subdomains. */
-  PetscCall(ISGetLocalSize(osm->iis[i], &nidx));
   /*
    No more than 15 characters per index plus a space.
    PetscViewerStringSPrintf requires a string of size at least 2, so use (nidx+1) instead of nidx,
    in case nidx == 0. That will take care of the space for the trailing '\0' as well.
    For nidx == 0, the whole string 16 '\0'.
    */
-#define len 16 * (nidx + 1) + 1
-  PetscCall(PetscMalloc1(len, &cidx));
-  PetscCall(PetscViewerStringOpen(PETSC_COMM_SELF, cidx, len, &sviewer));
-#undef len
-  PetscCall(ISGetIndices(osm->iis[i], &idx));
-  for (j = 0; j < nidx; ++j) PetscCall(PetscViewerStringSPrintf(sviewer, "%" PetscInt_FMT " ", idx[j]));
-  PetscCall(ISRestoreIndices(osm->iis[i], &idx));
-  PetscCall(PetscViewerDestroy(&sviewer));
   PetscCall(PetscViewerASCIIPrintf(viewer, "Inner subdomain:\n"));
   PetscCall(PetscViewerFlush(viewer));
   PetscCall(PetscViewerASCIIPushSynchronized(viewer));
-  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%s", cidx));
+  if (i > -1) {
+    PetscCall(ISGetLocalSize(osm->iis[i], &nidx));
+    PetscCall(PetscMalloc1(16 * (nidx + 1) + 1, &cidx));
+    PetscCall(PetscViewerStringOpen(PETSC_COMM_SELF, cidx, 16 * (nidx + 1) + 1, &sviewer));
+    PetscCall(ISGetIndices(osm->iis[i], &idx));
+    for (j = 0; j < nidx; ++j) PetscCall(PetscViewerStringSPrintf(sviewer, "%" PetscInt_FMT " ", idx[j]));
+    PetscCall(ISRestoreIndices(osm->iis[i], &idx));
+    PetscCall(PetscViewerDestroy(&sviewer));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%s", cidx));
+    PetscCall(PetscFree(cidx));
+  }
   PetscCall(PetscViewerFlush(viewer));
   PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
   PetscCall(PetscViewerFlush(viewer));
-  PetscCall(PetscFree(cidx));
+
   /* Outer subdomains. */
-  PetscCall(ISGetLocalSize(osm->ois[i], &nidx));
   /*
    No more than 15 characters per index plus a space.
    PetscViewerStringSPrintf requires a string of size at least 2, so use (nidx+1) instead of nidx,
    in case nidx == 0. That will take care of the space for the trailing '\0' as well.
    For nidx == 0, the whole string 16 '\0'.
    */
-#define len 16 * (nidx + 1) + 1
-  PetscCall(PetscMalloc1(len, &cidx));
-  PetscCall(PetscViewerStringOpen(PETSC_COMM_SELF, cidx, len, &sviewer));
-#undef len
-  PetscCall(ISGetIndices(osm->ois[i], &idx));
-  for (j = 0; j < nidx; ++j) PetscCall(PetscViewerStringSPrintf(sviewer, "%" PetscInt_FMT " ", idx[j]));
-  PetscCall(PetscViewerDestroy(&sviewer));
-  PetscCall(ISRestoreIndices(osm->ois[i], &idx));
   PetscCall(PetscViewerASCIIPrintf(viewer, "Outer subdomain:\n"));
   PetscCall(PetscViewerFlush(viewer));
   PetscCall(PetscViewerASCIIPushSynchronized(viewer));
-  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%s", cidx));
+  if (i > -1) {
+    PetscCall(ISGetLocalSize(osm->ois[i], &nidx));
+    PetscCall(PetscMalloc1(16 * (nidx + 1) + 1, &cidx));
+    PetscCall(PetscViewerStringOpen(PETSC_COMM_SELF, cidx, 16 * (nidx + 1) + 1, &sviewer));
+    PetscCall(ISGetIndices(osm->ois[i], &idx));
+    for (j = 0; j < nidx; ++j) PetscCall(PetscViewerStringSPrintf(sviewer, "%" PetscInt_FMT " ", idx[j]));
+    PetscCall(PetscViewerDestroy(&sviewer));
+    PetscCall(ISRestoreIndices(osm->ois[i], &idx));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%s", cidx));
+    PetscCall(PetscFree(cidx));
+  }
   PetscCall(PetscViewerFlush(viewer));
   PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
   PetscCall(PetscViewerFlush(viewer));
-  PetscCall(PetscFree(cidx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -120,7 +122,7 @@ static PetscErrorCode PCGASMPrintSubdomains(PC pc)
   char        fname[PETSC_MAX_PATH_LEN + 1];
   PetscInt    l, d, count;
   PetscBool   found;
-  PetscViewer viewer, sviewer = NULL;
+  PetscViewer viewer;
   PetscInt   *numbering, *permutation; /* global numbering of locally-supported subdomains and the permutation from the local ordering */
 
   PetscFunctionBegin;
@@ -141,14 +143,10 @@ static PetscErrorCode PCGASMPrintSubdomains(PC pc)
     /* Now let subdomains go one at a time in the global numbering order and print their subdomain/solver info. */
     if (l < osm->n) {
       d = permutation[l]; /* d is the local number of the l-th smallest (in the global ordering) among the locally supported subdomains */
-      if (numbering[d] == count) {
-        PetscCall(PetscViewerGetSubViewer(viewer, ((PetscObject)osm->ois[d])->comm, &sviewer));
-        PetscCall(PCGASMSubdomainView_Private(pc, d, sviewer));
-        PetscCall(PetscViewerRestoreSubViewer(viewer, ((PetscObject)osm->ois[d])->comm, &sviewer));
-        ++l;
-      }
-    }
-    PetscCallMPI(MPI_Barrier(PetscObjectComm((PetscObject)pc)));
+      if (numbering[d] == count) l++;
+      else d = -1;
+    } else d = -1;
+    PetscCall(PCGASMSubdomainView_Private(pc, d, viewer));
   }
   PetscCall(PetscFree2(numbering, permutation));
   PetscCall(PetscViewerDestroy(&viewer));

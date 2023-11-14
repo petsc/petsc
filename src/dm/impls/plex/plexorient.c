@@ -332,7 +332,6 @@ PetscErrorCode DMPlexOrient(DM dm)
     totNeighbors += numNeighbors[comp];
   }
   PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &selfviewer));
-  PetscCall(PetscViewerFlush(viewer));
   if (flg2) PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   PetscCall(PetscMalloc2(totNeighbors, &nrankComp, totNeighbors, &match));
   for (comp = 0, off = 0; comp < numComponents; ++comp) {

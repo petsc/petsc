@@ -140,7 +140,6 @@ PetscErrorCode Device<T>::DeviceInternal::view(PetscViewer viewer) const noexcep
     PetscCall(PetscViewerASCIIPrintf(sviewer, "Can execute multiple kernels concurrently: %s\n", dprop_.concurrentKernels ? "PETSC_TRUE" : "PETSC_FALSE"));
     PetscCall(PetscViewerASCIIPopTab(sviewer));
     PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
-    PetscCall(PetscViewerFlush(viewer));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -24,6 +24,8 @@ Changes: Development
 
 .. rubric:: PetscViewer:
 
+- Change ``PetscViewerRestoreSubViewer()`` to no longer need a call to ``PetscViewerFlush()`` after it
+
 .. rubric:: PetscDraw:
 
 .. rubric:: AO:

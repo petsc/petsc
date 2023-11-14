@@ -27,21 +27,28 @@
   parallel object. For example `PCView()` on a `PCBJACOBI` could use this to obtain a
   `PetscViewer` that is used with the sequential `KSP` on one block of the preconditioner.
 
-  Between the calls to `PetscViewerGetSubViewer()` and `PetscViewerRestoreSubViewer()` the original
-  viewer should not be used
+  `PetscViewerFlush()` is run automatically with `PetscViewerRestoreSubViewer()`
 
   `PETSCVIEWERDRAW` and `PETSCVIEWERBINARY` only support returning a singleton viewer on MPI rank 0,
   all other ranks will return a `NULL` viewer
+
+  For `PETSCVIEWERASCII` the viewers behavior is as follows\:
+.vb
+  Recursive calls are allowed
+  A call to `PetscViewerASCIIPrintf()` on a subviewer results in output for the first MPI process in the `outviewer` only
+  Calls to  `PetscViewerASCIIPrintf()` and `PetscViewerASCIISynchronizedPrintf()` are immediately passed up through all
+  the parent viewers to the higher most parent with `PetscViewerASCIISynchronizedPrintf()` where they are immediately
+  printed on the first MPI process or stashed on the other processes.
+  At the higher most `PetscViewerRestoreSubViewer()` the viewer is automatically flushed with `PetscViewerFlush()`
+.ve
 
   Developer Notes:
   There is currently incomplete error checking to ensure the user does not use the original viewer between the
   the calls to `PetscViewerGetSubViewer()` and `PetscViewerRestoreSubViewer()`. If the user does there
   could be errors in the viewing that go undetected or crash the code.
 
-  It would be nice if the call to `PetscViewerFlush()` was not required and was handled by
-  `PetscViewerRestoreSubViewer()`
-
-.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`, `PetscViewerRestoreSubViewer()`
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`,
+          `PetscViewerFlush()`, `PetscViewerRestoreSubViewer()`
 @*/
 PetscErrorCode PetscViewerGetSubViewer(PetscViewer viewer, MPI_Comm comm, PetscViewer *outviewer)
 {
@@ -64,7 +71,11 @@ PetscErrorCode PetscViewerGetSubViewer(PetscViewer viewer, MPI_Comm comm, PetscV
 
   Level: advanced
 
-.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`, `PetscViewerGetSubViewer()`
+  Note:
+  Automatically runs `PetscViewerFlush()` on the outter viewer
+
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`, `PetscViewerGetSubViewer()`,
+          `PetscViewerFlush()`
 @*/
 PetscErrorCode PetscViewerRestoreSubViewer(PetscViewer viewer, MPI_Comm comm, PetscViewer *outviewer)
 {

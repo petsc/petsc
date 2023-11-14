@@ -46,7 +46,6 @@ int main(int argc, char **argv)
     PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &sviewer));
     PetscCall(MatView(submat, sviewer));
     PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &sviewer));
-    PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
 
     PetscCall(ISDestroy(&irow));
     PetscCall(ISDestroy(&icol));
@@ -71,7 +70,6 @@ int main(int argc, char **argv)
   PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &sviewer));
   PetscCall(MatView(submat, sviewer));
   PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &sviewer));
-  PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(PetscObjectReference((PetscObject)submat));
   PetscCall(MatDestroySubMatrices(1, &submatrices));
   PetscCall(MatDestroy(&submat));
@@ -87,7 +85,6 @@ int main(int argc, char **argv)
   PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &sviewer));
   PetscCall(MatView(submat, sviewer));
   PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &sviewer));
-  PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
 
   /* Test MatDuplicate */
   PetscCall(MatDuplicate(submat, MAT_COPY_VALUES, &submat1));

@@ -2289,7 +2289,6 @@ static PetscErrorCode MatView_IS(Mat A, PetscViewer viewer)
   PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
   PetscCall(MatView(a->A, sviewer));
   PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
-  PetscCall(PetscViewerFlush(viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

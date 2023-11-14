@@ -204,7 +204,6 @@ static PetscErrorCode PCView_BJacobi(PC pc, PetscViewer viewer)
         }
         PetscCall(PetscViewerFlush(sviewer));
         PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
-        PetscCall(PetscViewerFlush(viewer));
         /*  extra call needed because of the two calls to PetscViewerASCIIPushSynchronized() in PetscViewerGetSubViewer() */
         PetscCall(PetscViewerASCIIPopSynchronized(viewer));
       } else if (mpjac && jac->ksp && mpjac->psubcomm) {
@@ -216,7 +215,6 @@ static PetscErrorCode PCView_BJacobi(PC pc, PetscViewer viewer)
         }
         PetscCall(PetscViewerFlush(sviewer));
         PetscCall(PetscViewerRestoreSubViewer(viewer, mpjac->psubcomm->child, &sviewer));
-        PetscCall(PetscViewerFlush(viewer));
         /*  extra call needed because of the two calls to PetscViewerASCIIPushSynchronized() in PetscViewerGetSubViewer() */
         PetscCall(PetscViewerASCIIPopSynchronized(viewer));
       } else {

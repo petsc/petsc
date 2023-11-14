@@ -1034,7 +1034,6 @@ PetscErrorCode PetscDeviceContextView(PetscDeviceContext dctx, PetscViewer viewe
     }
     PetscCall(PetscViewerASCIIPopTab(sub));
     PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sub));
-    PetscCall(PetscViewerFlush(viewer));
     PetscCall(PetscViewerASCIIPushTab(viewer));
   }
   if (const auto device = dctx->device) PetscCall(PetscDeviceView(device, viewer));

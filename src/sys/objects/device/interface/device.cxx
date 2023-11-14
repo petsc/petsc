@@ -251,7 +251,6 @@ PetscErrorCode PetscDeviceView(PetscDevice device, PetscViewer viewer)
     // undo the ASCII specific stuff
     PetscCall(PetscViewerASCIIPopTab(sub));
     PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sub));
-    PetscCall(PetscViewerFlush(viewer));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

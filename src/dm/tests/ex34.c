@@ -36,8 +36,6 @@ int main(int argc, char *argv[])
   PetscCall(PetscIntView(n, ly, vw));
   if (dim > 2) PetscCall(PetscIntView(n, lz, vw));
   PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &vw));
-  PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
-
   PetscCall(DMDestroy(&da));
   PetscCall(PetscFinalize());
   return 0;

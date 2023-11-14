@@ -136,6 +136,32 @@ SNES Object: 7 MPI processes
       PC Object: (pc_bddc_coarse_) 7 MPI processes
         type: redundant
           First (color=0) of 7 PCs follows
+          KSP Object: (pc_bddc_coarse_redundant_) 1 MPI process
+            type: preonly
+            maximum iterations=10000, initial guess is zero
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+            left preconditioning
+            using NONE norm type for convergence test
+          PC Object: (pc_bddc_coarse_redundant_) 1 MPI process
+            type: lu
+              out-of-place factorization
+              tolerance for zero pivot 2.22045e-14
+              matrix ordering: nd
+              factor fill ratio given 5., needed 1.35955
+                Factored matrix follows:
+                  Mat Object: (pc_bddc_coarse_redundant_) 1 MPI process
+                    type: seqaij
+                    rows=21, cols=21
+                    package used to perform factorization: petsc
+                    total: nonzeros=363, allocated nonzeros=363
+                      using I-node routines: found 10 nodes, limit used is 5
+            linear system matrix = precond matrix:
+            Mat Object: 1 MPI process
+              type: seqaij
+              rows=21, cols=21
+              total: nonzeros=267, allocated nonzeros=267
+              total number of mallocs used during MatSetValues calls=0
+                using I-node routines: found 16 nodes, limit used is 5
         linear system matrix = precond matrix:
         Mat Object: (pc_bddc_coarse_) 7 MPI processes
           type: mpiaij
@@ -143,32 +169,6 @@ SNES Object: 7 MPI processes
           total: nonzeros=267, allocated nonzeros=319
           total number of mallocs used during MatSetValues calls=0
             using I-node (on process 0) routines: found 1 nodes, limit used is 5
-              KSP Object: (pc_bddc_coarse_redundant_) 1 MPI process
-                type: preonly
-                maximum iterations=10000, initial guess is zero
-                tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-                left preconditioning
-                using NONE norm type for convergence test
-              PC Object: (pc_bddc_coarse_redundant_) 1 MPI process
-                type: lu
-                  out-of-place factorization
-                  tolerance for zero pivot 2.22045e-14
-                  matrix ordering: nd
-                  factor fill ratio given 5., needed 1.35955
-                    Factored matrix follows:
-                      Mat Object: (pc_bddc_coarse_redundant_) 1 MPI process
-                        type: seqaij
-                        rows=21, cols=21
-                        package used to perform factorization: petsc
-                        total: nonzeros=363, allocated nonzeros=363
-                          using I-node routines: found 10 nodes, limit used is 5
-                linear system matrix = precond matrix:
-                Mat Object: 1 MPI process
-                  type: seqaij
-                  rows=21, cols=21
-                  total: nonzeros=267, allocated nonzeros=267
-                  total number of mallocs used during MatSetValues calls=0
-                    using I-node routines: found 16 nodes, limit used is 5
     linear system matrix = precond matrix:
     Mat Object: 7 MPI processes
       type: is

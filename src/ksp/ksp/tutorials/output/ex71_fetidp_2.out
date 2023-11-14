@@ -159,6 +159,23 @@ KSP Object: 8 MPI processes
         PC Object: (fetidp_bddc_pc_bddc_coarse_) 8 MPI processes
           type: redundant
             First (color=0) of 8 PCs follows
+            KSP Object: (fetidp_bddc_pc_bddc_coarse_redundant_) 1 MPI process
+              type: preonly
+              maximum iterations=10000, initial guess is zero
+              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              left preconditioning
+              using NONE norm type for convergence test
+            PC Object: (fetidp_bddc_pc_bddc_coarse_redundant_) 1 MPI process
+              type: svd
+                All singular values smaller than 1e-12 treated as zero
+                Provided essential rank of the matrix 0 (all other eigenvalues are zeroed)
+              linear system matrix = precond matrix:
+              Mat Object: 1 MPI process
+                type: seqaij
+                rows=25, cols=25
+                total: nonzeros=421, allocated nonzeros=421
+                total number of mallocs used during MatSetValues calls=0
+                  not using I-node routines
           linear system matrix = precond matrix:
           Mat Object: (fetidp_bddc_pc_bddc_coarse_) 8 MPI processes
             type: mpiaij
@@ -166,23 +183,6 @@ KSP Object: 8 MPI processes
             total: nonzeros=421, allocated nonzeros=540
             total number of mallocs used during MatSetValues calls=0
               using I-node (on process 0) routines: found 1 nodes, limit used is 5
-                  KSP Object: (fetidp_bddc_pc_bddc_coarse_redundant_) 1 MPI process
-                    type: preonly
-                    maximum iterations=10000, initial guess is zero
-                    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-                    left preconditioning
-                    using NONE norm type for convergence test
-                  PC Object: (fetidp_bddc_pc_bddc_coarse_redundant_) 1 MPI process
-                    type: svd
-                      All singular values smaller than 1e-12 treated as zero
-                      Provided essential rank of the matrix 0 (all other eigenvalues are zeroed)
-                    linear system matrix = precond matrix:
-                    Mat Object: 1 MPI process
-                      type: seqaij
-                      rows=25, cols=25
-                      total: nonzeros=421, allocated nonzeros=421
-                      total number of mallocs used during MatSetValues calls=0
-                        not using I-node routines
       linear system matrix = precond matrix:
       Mat Object: 8 MPI processes
         type: is
