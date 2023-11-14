@@ -130,6 +130,7 @@ static PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   Vec                  Y, X, F;
   SNESLineSearch       linesearch;
   SNESConvergedReason  reason;
+  PC                   pc;
 #if defined(PETSC_USE_INFO)
   PetscReal gnorm;
 #endif
@@ -180,6 +181,10 @@ static PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   PetscCall(SNESConverged(snes, 0, 0.0, 0.0, fnorm));
   PetscCall(SNESMonitor(snes, 0, fnorm));
   if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
+
+  /* hook state vector to BFGS preconditioner */
+  PetscCall(KSPGetPC(snes->ksp, &pc));
+  PetscCall(PCLMVMSetUpdateVec(pc, X));
 
   for (i = 0; i < maxits; i++) {
     /* Call general purpose update function */

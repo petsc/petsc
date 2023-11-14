@@ -320,7 +320,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   PetscReal                 rho, fnorm, gnorm = 0.0, xnorm = 0.0, delta, ynorm;
   PetscReal                 deltaM, fk, fkp1, deltaqm, gTy, yTHy;
   PetscReal                 auk, gfnorm, ycnorm, gTBg, objmin = 0.0;
-  KSP                       ksp;
+  PC                        pc;
   PetscBool                 already_done = PETSC_FALSE;
   PetscBool                 clear_converged_test, rho_satisfied, has_objective;
   SNES_TR_KSPConverged_Ctx *ctx;
@@ -349,14 +349,14 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
 
   /* Set the linear stopping criteria to use the More' trick if needed */
   clear_converged_test = PETSC_FALSE;
-  PetscCall(SNESGetKSP(snes, &ksp));
-  PetscCall(KSPGetConvergenceTest(ksp, &convtest, &convctx, &convdestroy));
+  PetscCall(SNESGetKSP(snes, &snes->ksp));
+  PetscCall(KSPGetConvergenceTest(snes->ksp, &convtest, &convctx, &convdestroy));
   if (convtest != SNESTR_KSPConverged_Private) {
     clear_converged_test = PETSC_TRUE;
     PetscCall(PetscNew(&ctx));
     ctx->snes = snes;
-    PetscCall(KSPGetAndClearConvergenceTest(ksp, &ctx->convtest, &ctx->convctx, &ctx->convdestroy));
-    PetscCall(KSPSetConvergenceTest(ksp, SNESTR_KSPConverged_Private, ctx, SNESTR_KSPConverged_Destroy));
+    PetscCall(KSPGetAndClearConvergenceTest(snes->ksp, &ctx->convtest, &ctx->convctx, &ctx->convdestroy));
+    PetscCall(KSPSetConvergenceTest(snes->ksp, SNESTR_KSPConverged_Private, ctx, SNESTR_KSPConverged_Destroy));
     PetscCall(PetscInfo(snes, "Using Krylov convergence test SNESTR_KSPConverged_Private\n"));
   }
 
@@ -384,6 +384,10 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
 
   if (has_objective) PetscCall(SNESComputeObjective(snes, X, &fk));
   else fk = 0.5 * PetscSqr(fnorm); /* obj(x) = 0.5 * ||F(x)||^2 */
+
+  /* hook state vector to BFGS preconditioner */
+  PetscCall(KSPGetPC(snes->ksp, &pc));
+  PetscCall(PCLMVMSetUpdateVec(pc, X));
 
   while (snes->iter < maxits) {
     PetscBool changed_y;
@@ -587,9 +591,9 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   }
 
   if (clear_converged_test) {
-    PetscCall(KSPGetAndClearConvergenceTest(ksp, &ctx->convtest, &ctx->convctx, &ctx->convdestroy));
+    PetscCall(KSPGetAndClearConvergenceTest(snes->ksp, &ctx->convtest, &ctx->convctx, &ctx->convdestroy));
     PetscCall(PetscFree(ctx));
-    PetscCall(KSPSetConvergenceTest(ksp, convtest, convctx, convdestroy));
+    PetscCall(KSPSetConvergenceTest(snes->ksp, convtest, convctx, convdestroy));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
