@@ -92,6 +92,9 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
   l         = 0;
   ivec      = 0;
   for (k = 1; k < snes->max_its + 1; k++) {
+    /* Call general purpose update function */
+    PetscTryTypeMethod(snes, update, snes->iter);
+
     /* select which vector of the stored subspace will be updated */
     if (snes->npc && snes->npcside == PC_RIGHT) {
       PetscCall(VecCopy(X, XM));
