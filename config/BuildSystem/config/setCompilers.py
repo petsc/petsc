@@ -901,6 +901,7 @@ class Configure(config.base.Configure):
         #include <any>
         #include <optional>
         #include <variant>
+        #include <tuple>
 
         [[nodiscard]] int nodiscardFunc() { return 0; }
         struct S2
@@ -915,6 +916,10 @@ class Configure(config.base.Configure):
           // since c++17: OK: captures the enclosing S2 by copy
           auto lmbd = [=, *this] { std::cout << i << " " << this->var << std::endl; };
           lmbd();
+        }
+        std::tuple<double, int, char> foobar()
+        {
+          return {3.8, 0, 'x'};
         }
         """
       )))
@@ -935,6 +940,8 @@ class Configure(config.base.Configure):
         // static_assert with no message since c++17
         static_assert(std::is_same_v<squareShape,squareShape>);
         auto val = nodiscardFunc();ignore(val);
+        // structured binding
+        const auto [ab, cd, ef] = foobar();
         """
       )))
 
