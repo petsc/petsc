@@ -71,7 +71,7 @@ PetscErrorCode MatCoarsenGetType(MatCoarsen coarsen, MatCoarsenType *type)
 . coarser - the coarsen
 
   Options Database Keys:
-+ -mat_coarsen_type mis|hem|misk - set the coarsening type
++ -mat_coarsen_type mis|hem|misk - mis: maximal independent set based; misk: distance k MIS; hem: heavy edge matching
 - -mat_coarsen_view              - view the coarsening object
 
   Level: advanced
@@ -257,7 +257,7 @@ PetscErrorCode MatCoarsenView(MatCoarsen agg, PetscViewer viewer)
 - type    - a known coarsening method
 
   Options Database Key:
-. -mat_coarsen_type  <type> - (for instance, misk), use -help for a list of available methods
+. -mat_coarsen_type  <type> - maximal independent set based; distance k MIS; heavy edge matching
 
   Level: advanced
 
@@ -346,7 +346,7 @@ PetscErrorCode MatCoarsenGetData(MatCoarsen coarser, PetscCoarsenData **llist)
 . coarser - the coarsen context.
 
   Options Database Key:
-. -mat_coarsen_type  <type> - mis, misk, hem
+. -mat_coarsen_type  <type> - mis: maximal independent set based; misk: distance k MIS; hem: heavy edge matching
 
   Level: advanced
 
