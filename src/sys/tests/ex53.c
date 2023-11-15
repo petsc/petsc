@@ -1,10 +1,10 @@
-static char help[] = "Test resource recycling and MPI_Comm and keyval creation in mpi or mpiuni\n";
+static char help[] = "Test resource recycling and MPI_Comm and keyval creation in mpi or mpiuni, no PETSc\n";
 
 #include <petscsys.h>
 
-#define CHKMPIERR(ierr) \
+#define CHKMPIERR(err) \
   do { \
-    if (ierr) MPI_Abort(MPI_COMM_WORLD, ierr); \
+    if (err) MPI_Abort(MPI_COMM_WORLD, err); \
   } while (0)
 
 int main(int argc, char **argv)
