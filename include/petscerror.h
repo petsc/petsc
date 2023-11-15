@@ -174,7 +174,7 @@ M*/
   Calls `SETERRQ()` if the assertion fails, so can only be called from functions returning a
   `PetscErrorCode` (or equivalent type after conversion).
 
- .seealso: `PetscAssert()`, `SETERRQ()`, `PetscError()`, `PetscCall()`, `PetscCheckAbort()`
+.seealso: `PetscAssert()`, `SETERRQ()`, `PetscError()`, `PetscCall()`, `PetscCheckAbort()`
 M*/
 #define PetscCheck(cond, comm, ierr, ...) \
   do { \

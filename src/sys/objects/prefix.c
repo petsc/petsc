@@ -171,7 +171,7 @@ PetscErrorCode PetscObjectGetOptionsPrefix(PetscObject obj, const char *prefix[]
   The first character of all runtime options is AUTOMATICALLY the
   hyphen.
 
-  .seealso: `PetscOptionsCreate()`, `PetscOptionsDestroy()`, `PetscObjectSetOptionsPrefix()`, `PetscObjectAppendOptionsPrefix()`,
+.seealso: `PetscOptionsCreate()`, `PetscOptionsDestroy()`, `PetscObjectSetOptionsPrefix()`, `PetscObjectAppendOptionsPrefix()`,
           `PetscObjectGetOptionsPrefix()`
 @*/
 PetscErrorCode PetscObjectPrependOptionsPrefix(PetscObject obj, const char prefix[])
