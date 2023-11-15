@@ -4,14 +4,14 @@ import os
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.versionname      = 'XORG_VERSION_MAJOR.XORG_VERSION_MINOR.XORG_VERSION_PATCH.XORG_VERSION_SNAP'
-    self.versioninclude   = ['xorg/xorg-server.h','xorg/xorgVersion.h']
-    self.functions        = ['XSetWMName']
-    self.includes         = ['X11/Xlib.h']
-    self.liblist          = [['libX11.a']]
-    self.lookforbydefault = 1
-    self.pkgname          = 'x11'
-    self.testoptions      = '-nox -nox_warning'
+    self.versionname              = 'XORG_VERSION_MAJOR.XORG_VERSION_MINOR.XORG_VERSION_PATCH.XORG_VERSION_SNAP'
+    self.versioninclude           = ['xorg/xorg-server.h','xorg/xorgVersion.h']
+    self.functions                = ['XSetWMName']
+    self.includes                 = ['X11/Xlib.h']
+    self.liblist                  = [['libX11.a']]
+    self.lookforbydefault         = 1
+    self.pkgname                  = 'x11'
+    self.testoptions_whennotfound = '-nox_warning'
     return
 
   def versionToStandardForm(self,ver):
