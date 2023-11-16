@@ -3,49 +3,19 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <petsc/private/hashmapi.h>
 
-#if defined(PETSC_USE_CTABLE)
-  #define PETSCTABLE PetscHMapI
-#else
-  #define PETSCTABLE PetscInt *
-#endif
-
 #define MPIBAIJHEADER \
-  PetscInt   *rangebs;                            /* rmap->range/bs */ \
-  PetscInt    rstartbs, rendbs, cstartbs, cendbs; /* map values / bs  */ \
-  Mat         A, B;                               /* local submatrices: A (diag part), B (off-diag part) */ \
-  PetscMPIInt size;                               /* size of communicator */ \
-  PetscMPIInt rank;                               /* rank of proc in communicator */ \
-  PetscInt    bs2;                                /* block size, bs2 = bs*bs */ \
-  PetscInt    Mbs, Nbs;                           /* number block rows/cols in matrix; M/bs, N/bs */ \
-  PetscInt    mbs, nbs;                           /* number block rows/cols on processor; m/bs, n/bs */ \
+  MPIAIJHEADER; \
+  PetscInt *rangebs;                            /* rmap->range/bs */ \
+  PetscInt  rstartbs, rendbs, cstartbs, cendbs; /* map values / bs  */ \
+  PetscInt  bs2;                                /* block size, bs2 = bs*bs */ \
+  PetscInt  Mbs, Nbs;                           /* number block rows/cols in matrix; M/bs, N/bs */ \
+  PetscInt  mbs, nbs;                           /* number block rows/cols on processor; m/bs, n/bs */ \
 \
   /* The following variables are used for matrix assembly */ \
-\
-  PetscBool    donotstash;              /* if 1, off processor entries dropped */ \
-  PetscBool    subset_off_proc_entries; /* PETSC_TRUE if assembly will always communicate a subset of the entries communicated the first time */ \
-  MPI_Request *send_waits;              /* array of send requests */ \
-  MPI_Request *recv_waits;              /* array of receive requests */ \
-  PetscInt     nsends, nrecvs;          /* numbers of sends and receives */ \
-  MatScalar   *svalues, *rvalues;       /* sending and receiving data */ \
-  PetscInt     rmax;                    /* maximum message length */ \
-  PETSCTABLE   colmap;                  /* local col number of off-diag col */ \
-\
-  PetscInt *garray; /* work array */ \
+  PetscBool subset_off_proc_entries; /* PETSC_TRUE if assembly will always communicate a subset of the entries communicated the first time */ \
 \
   /* The following variable is used by blocked matrix assembly */ \
   MatScalar *barray; /* Block array of size bs2 */ \
-\
-  /* The following variables are used for matrix-vector products */ \
-\
-  Vec        lvec;        /* local vector */ \
-  VecScatter Mvctx;       /* scatter context for vector */ \
-  PetscBool  roworiented; /* if true, row-oriented input, default true */ \
-\
-  /* The following variables are for MatGetRow() */ \
-\
-  PetscInt    *rowindices;   /* column indices for row */ \
-  PetscScalar *rowvalues;    /* nonzero values in row */ \
-  PetscBool    getrowactive; /* indicates MatGetRow(), not restored */ \
 \
   /* Some variables to make MatSetValues and others more efficient */ \
   PetscInt    rstart_bs, rend_bs; \

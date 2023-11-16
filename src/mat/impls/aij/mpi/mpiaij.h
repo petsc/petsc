@@ -30,37 +30,41 @@ typedef struct {                                /* used by MatPtAPXXX_MPIAIJ_MPI
   Mat_Merge_SeqsToMPI *merge;
 } Mat_APMPI;
 
-typedef struct {
-  Mat         A, B; /* local submatrices: A (diag part),
-                                           B (off-diag part) */
-  PetscMPIInt size; /* size of communicator */
-  PetscMPIInt rank; /* rank of proc in communicator */
-
-  /* The following variables are used for matrix assembly */
-  PetscBool    donotstash;        /* PETSC_TRUE if off processor entries dropped */
-  MPI_Request *send_waits;        /* array of send requests */
-  MPI_Request *recv_waits;        /* array of receive requests */
-  PetscInt     nsends, nrecvs;    /* numbers of sends and receives */
-  PetscScalar *svalues, *rvalues; /* sending and receiving data */
-  PetscInt     rmax;              /* maximum message length */
 #if defined(PETSC_USE_CTABLE)
-  PetscHMapI colmap;
+  #define PETSCTABLE PetscHMapI
 #else
-  PetscInt *colmap; /* local col number of off-diag col */
+  #define PETSCTABLE PetscInt *
 #endif
-  PetscInt *garray; /* global index of all off-processor columns */
 
-  /* The following variables are used for matrix-vector products */
-  Vec        lvec; /* local vector */
-  Vec        diag;
-  VecScatter Mvctx;       /* scatter context for vector */
-  PetscBool  roworiented; /* if true, row-oriented input, default true */
+// Shared by MPIAIJ, MPIBAIJ, MPISBAIJ so that we can access common fields in the same way.
+#define MPIAIJHEADER \
+  Mat         A, B; /* local submatrices: A (diag part), B (off-diag part) */ \
+  PetscMPIInt size; /* size of communicator */ \
+  PetscMPIInt rank; /* rank of proc in communicator */ \
+\
+  /* The following variables are used for matrix assembly */ \
+  PetscBool    donotstash;        /* if 1, off processor entries dropped */ \
+  MPI_Request *send_waits;        /* array of send requests */ \
+  MPI_Request *recv_waits;        /* array of receive requests */ \
+  PetscInt     nsends, nrecvs;    /* numbers of sends and receives */ \
+  MatScalar   *svalues, *rvalues; /* sending and receiving data */ \
+  PetscInt     rmax;              /* maximum message length */ \
+  PETSCTABLE   colmap;            /* local col number of off-diag col */ \
+  PetscInt    *garray;            /* work array */ \
+\
+  /* The following variables are used for matrix-vector products */ \
+  Vec        lvec;        /* local vector */ \
+  VecScatter Mvctx;       /* scatter context for vector */ \
+  PetscBool  roworiented; /* if true, row-oriented input, default true */ \
+\
+  /* The following variables are for MatGetRow() */ \
+  PetscInt    *rowindices; /* column indices for row */ \
+  PetscScalar *rowvalues;  /* nonzero values in row */ \
+  PetscBool    getrowactive
 
-  /* The following variables are for MatGetRow() */
-  PetscInt    *rowindices;   /* column indices for row */
-  PetscScalar *rowvalues;    /* nonzero values in row */
-  PetscBool    getrowactive; /* indicates MatGetRow(), not restored */
-
+typedef struct {
+  MPIAIJHEADER;
+  Vec       diag;
   PetscInt *ld; /* number of entries per row left of diagonal block */
 
   /* Used by device classes */
