@@ -6,16 +6,18 @@ int main(int argc, char **args)
   Mat            A, B, C;
   PetscInt       k;
   const PetscInt M = 18, N = 18;
-  PetscBool      equal;
+  PetscBool      equal, isHypre;
   PetscScalar   *vals;
-  PetscBool      flg = PETSC_FALSE, freecoo = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE, freecoo = PETSC_FALSE, missing_diagonal = PETSC_FALSE;
   PetscInt       ncoos = 1;
 
   // clang-format off
   /* Construct 18 x 18 matrices, which are big enough to have complex communication patterns but still small enough for debugging */
+  // i0/j0[] has a dense diagonal
   PetscInt i0[] = {7, 7, 8, 8,  9, 16, 17,  9, 10, 1, 1, -2, 2, 3, 3, 14, 4, 5, 10, 13,  9,  9, 10, 1, 0, 0, 5,  5,  6, 6, 13, 13, 14, -14, 4, 4, 5, 11, 11, 12, 15, 15, 16};
-  PetscInt j0[] = {1, 6, 2, 4, 10, 15, 13, 16, 11, 2, 7,  3, 8, 4, 9, 13, 5, 2, 15, 14, 10, 16, 11, 2, 0, 1, 5, -11, 0, 7, 15, 17, 11,  13, 4, 8, 2, 12, 17, 13,  3, 16,  9};
+  PetscInt j0[] = {7, 6, 8, 4, 9, 16, 17, 16, 10, 2, 1,  3, 2, 4, 3, 14, 4, 5, 15, 13, 10, 16, 11, 2, 0, 1, 5, -11, 0, 6, 15, 17, 11,  13, 4, 8, 2, 11, 17, 12,  3, 15,  9};
 
+  // i0/j0[] miss some diagonals
   PetscInt i1[] = {8, 5, 15, 16, 6, 13, 4, 17, 8,  9, 9,  10, -6, 12, 7, 3, -4, 1, 1, 2, 5,  5, 6, 14, 17, 8,  9,  9, 10, 4,  5, 10, 11, 1, 2};
   PetscInt j1[] = {2, 3, 16,  9, 5, 17, 1, 13, 4, 10, 16, 11, -5, 12, 1, 7, -1, 2, 7, 3, 6, 11, 0, 11, 13, 4, 10, 16, 11, 8, -2, 15, 12, 7, 3};
 
@@ -38,6 +40,7 @@ int main(int argc, char **args)
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-ignore_remote", &flg, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-ncoos", &ncoos, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-missing_diagonal", &missing_diagonal, NULL));
 
   mycoo.n = 0;
   if (ncoos > 1) {
@@ -58,6 +61,8 @@ int main(int argc, char **args)
     }
     PetscCall(PetscLayoutDestroy(&map));
   } else if (ncoos == 1 && PetscGlobalRank < 3) mycoo = coos[PetscGlobalRank];
+
+  if (missing_diagonal && PetscGlobalRank == 0) mycoo = coos[1];
 
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, M, N));
@@ -91,15 +96,24 @@ int main(int argc, char **args)
 
   /* Test with MatDuplicate on a zeroed matrix */
   PetscCall(MatDuplicate(B, MAT_DO_NOT_COPY_VALUES, &C));
-  PetscCall(MatDestroy(&B));
   PetscCall(MatSetValuesCOO(C, vals, ADD_VALUES));
   PetscCall(MatMultEqual(A, C, 10, &equal));
   if (!equal) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatSetValuesCOO() on duplicated matrix failed\n"));
   PetscCall(MatViewFromOptions(C, NULL, "-c_view"));
 
+  /* Test aij->diag on COO matrix are correctly set up */
+  PetscCall(PetscObjectTypeCompare((PetscObject)B, MATHYPRE, &isHypre));
+  if (!isHypre) { // TODO: MATHYPRE currently does not support MatSetValues
+    PetscCall(MatShift(A, 2.0));
+    PetscCall(MatShift(B, 2.0));
+    PetscCall(MatMultEqual(A, B, 10, &equal));
+    if (!equal) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatShift() on a duplicated COO matrix failed\n"));
+  }
+
   PetscCall(PetscFree(vals));
   if (freecoo) PetscCall(PetscFree2(mycoo.i, mycoo.j));
   PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&B));
   PetscCall(MatDestroy(&C));
 
   PetscCall(PetscFinalize());
@@ -111,7 +125,7 @@ int main(int argc, char **args)
   testset:
     output_file: output/ex254_1.out
     nsize: {{1 2 3}}
-    args: -ignore_remote {{0 1}}
+    args: -ignore_remote {{0 1}} -missing_diagonal {{0 1}}
     filter: grep -v type | grep -v "Mat Object"
 
     test:
