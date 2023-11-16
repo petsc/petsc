@@ -46,16 +46,16 @@ getautoconfargs:
 	-@echo CC='"${CC}"' CXX='"${CXX}"'  FC='"${FC}"' CFLAGS='"${CC_FLAGS}"' CXXFLAGS='"${CXX_FLAGS}"' FCFLAGS='"${FC_FLAGS}"' LIBS='"${C_SH_LIB_PATH} ${PETSC_TS_LIB}"'
 
 #********* Rules for checking the PETSc source code, and comments do not violate PETSc standards. And for properly formatting source code and manual pages
-
+PETSCCLANGFORMAT ?= clang-format
 # Check the version of clang-format matches PETSc requirement
 checkclangformatversion:
-	@version=`clang-format --version | cut -d" " -f3 | cut -d"." -f 1` ;\
-         if [ "$$version" == "version" ]; then version=`clang-format --version | cut -d" " -f4 | cut -d"." -f 1`; fi;\
-         if [ $$version != 16 ]; then echo "Require clang-format version 16! Currently used clang-format version is $$version" ;false ; fi
+	@version=`${PETSCCLANGFORMAT} --version | cut -d" " -f3 | cut -d"." -f 1` ;\
+         if [ "$$version" == "version" ]; then version=`${PETSCCLANGFORMAT} --version | cut -d" " -f4 | cut -d"." -f 1`; fi;\
+         if [ $$version != 16 ]; then echo "Require clang-format version 16! Currently used ${PETSCCLANGFORMAT} version is $$version" ;false ; fi
 
 # Format all the source code in the given directory and down according to the file $PETSC_DIR/.clang_format
 clangformat: checkclangformatversion
-	-@git --no-pager ls-files -z ${GITCFSRC} | xargs -0 -P $(MAKE_NP) -L 10 clang-format -i
+	-@git --no-pager ls-files -z ${GITCFSRC} | xargs -0 -P $(MAKE_NP) -L 10 ${PETSCCLANGFORMAT} -i
 
 GITSRC = '*.[chF]' '*.F90' '*.hpp' '*.cpp' '*.cxx' '*.cu' ${GITSRCEXCL}
 GITSRCEXCL = \
