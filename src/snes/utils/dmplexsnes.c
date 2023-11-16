@@ -1033,7 +1033,7 @@ PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo ctx, DM dm, Vec x, Ve
 
       PetscCall(PetscDSGetDiscretization(ds, field, &obj));
       PetscCall(PetscObjectGetClassId(obj, &id));
-      if (id != PETSCFE_CLASSID) {
+      if (id != PETSCFE_CLASSID && id != PETSCFV_CLASSID) {
         useDS = PETSC_FALSE;
         break;
       }
@@ -1058,28 +1058,42 @@ PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo ctx, DM dm, Vec x, Ve
       PetscCall(DMPlexVecGetClosure(dm, NULL, x, ctx->cells[p], &clSize, &xa));
       for (field = 0; field < Nf; ++field) {
         PetscTabulation T;
-        PetscFE         fe;
+        PetscObject     obj;
+        PetscClassId    id;
 
-        PetscCall(PetscDSGetDiscretization(ds, field, (PetscObject *)&fe));
-        PetscCall(PetscFECreateTabulation(fe, 1, 1, xi, 0, &T));
-        {
-          const PetscReal *basis = T->T[0];
-          const PetscInt   Nb    = T->Nb;
-          const PetscInt   Nc    = T->Nc;
-          PetscInt         f, fc;
+        PetscCall(PetscDSGetDiscretization(ds, field, &obj));
+        PetscCall(PetscObjectGetClassId(obj, &id));
+        if (id == PETSCFE_CLASSID) {
+          PetscFE fe = (PetscFE)obj;
 
-          for (fc = 0; fc < Nc; ++fc) {
-            interpolant[p * ctx->dof + coff + fc] = 0.0;
-            for (f = 0; f < Nb; ++f) interpolant[p * ctx->dof + coff + fc] += xa[foff + f] * basis[(0 * Nb + f) * Nc + fc];
+          PetscCall(PetscFECreateTabulation(fe, 1, 1, xi, 0, &T));
+          {
+            const PetscReal *basis = T->T[0];
+            const PetscInt   Nb    = T->Nb;
+            const PetscInt   Nc    = T->Nc;
+
+            for (PetscInt fc = 0; fc < Nc; ++fc) {
+              interpolant[p * ctx->dof + coff + fc] = 0.0;
+              for (PetscInt f = 0; f < Nb; ++f) interpolant[p * ctx->dof + coff + fc] += xa[foff + f] * basis[(0 * Nb + f) * Nc + fc];
+            }
+            coff += Nc;
+            foff += Nb;
           }
+          PetscCall(PetscTabulationDestroy(&T));
+        } else if (id == PETSCFV_CLASSID) {
+          PetscFV  fv = (PetscFV)obj;
+          PetscInt Nc;
+
+          // TODO Could use reconstruction if available
+          PetscCall(PetscFVGetNumComponents(fv, &Nc));
+          for (PetscInt fc = 0; fc < Nc; ++fc) interpolant[p * ctx->dof + coff + fc] = xa[foff + fc];
           coff += Nc;
-          foff += Nb;
+          foff += Nc;
         }
-        PetscCall(PetscTabulationDestroy(&T));
       }
       PetscCall(DMPlexVecRestoreClosure(dm, NULL, x, ctx->cells[p], &clSize, &xa));
       PetscCheck(coff == ctx->dof, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Total components %" PetscInt_FMT " != %" PetscInt_FMT " dof specified for interpolation", coff, ctx->dof);
-      PetscCheck(foff == clSize, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Total FE space size %" PetscInt_FMT " != %" PetscInt_FMT " closure size", foff, clSize);
+      PetscCheck(foff == clSize, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Total FE/FV space size %" PetscInt_FMT " != %" PetscInt_FMT " closure size", foff, clSize);
     }
     PetscCall(VecRestoreArrayRead(ctx->coords, &coords));
     PetscCall(VecRestoreArrayWrite(v, &interpolant));
