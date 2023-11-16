@@ -1107,7 +1107,7 @@ static PetscErrorCode PCBJKOKKOSSetKSP_BJKOKKOS(PC pc, KSP ksp)
 
   If the `PC` is not `PCBJKOKKOS` this function returns without doing anything
 
-  .seealso: `PCBJKOKKOSGetKSP()`, `PCBJKOKKOS`
+.seealso: `PCBJKOKKOSGetKSP()`, `PCBJKOKKOS`
 @*/
 PetscErrorCode PCBJKOKKOSSetKSP(PC pc, KSP ksp)
 {

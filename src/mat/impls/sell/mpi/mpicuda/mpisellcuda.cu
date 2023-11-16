@@ -226,5 +226,5 @@ PetscErrorCode MatCreateSELLCUDA(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt
 
   Level: beginner
 
- .seealso: `MatCreateSELLCUDA()`, `MATSEQSELLCUDA`, `MatCreateSeqSELLCUDA()`, `MatCUDAFormatOperation()`
+.seealso: `MatCreateSELLCUDA()`, `MATSEQSELLCUDA`, `MatCreateSeqSELLCUDA()`, `MatCUDAFormatOperation()`
 M*/

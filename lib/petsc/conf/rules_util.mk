@@ -121,6 +121,8 @@ checkbadSource:
 	-@git --no-pager grep -n -P -E ' if +\(PetscUnlikelyDebug.*\) *SETERRQ' -- ${GITSRC} | grep -v petscerror.h >> checkbadSource.out;true
 	-@echo "------Using PetscFunctionReturn(ierr) ------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'PetscFunctionReturn(ierr)' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "------.seealso with leading white spaces ---------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P -E '^[ ]+.seealso:' -- ${GITSRC} ':!src/sys/tests/linter/*' >> checkbadSource.out;true
 	-@echo "------Defining a returning macro without PetscMacroReturns() -------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'define .*\w+;\s+do' -- ${GITSRC} | grep -E -v '(PetscMacroReturns|PetscDrawCollectiveBegin|MatPreallocateBegin|PetscOptionsBegin|PetscObjectOptionsBegin|PetscOptionsHeadEnd)' >> checkbadSource.out;true
 	-@echo "------Defining an error checking macro using CHKERR style ----------" >> checkbadSource.out
@@ -133,7 +135,7 @@ checkbadSource:
 	-@git --no-pager grep -n -P 'PetscCall\(PetscInfo\(' -- ${GITSRC} | grep -v '\\n' >> checkbadSource.out;true
 	-@echo "------First blank line ---------------------------------------------" >> checkbadSource.out
 	@git --no-pager grep -n -P \^\$$ -- ${GITSRC} | grep ':1:' >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 22` ;\
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 23` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\

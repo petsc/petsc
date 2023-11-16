@@ -99,15 +99,15 @@ PetscErrorCode PetscBLASSetNumThreads(PetscInt nt)
   PetscNumBLASThreads = nt;
 #if defined(PETSC_HAVE_BLI_THREAD_SET_NUM_THREADS)
   bli_thread_set_num_threads(nt);
-  PetscCall(PetscInfo(NULL, "Setting number of theads used for BLIS provided BLAS %" PetscInt_FMT "\n", PetscNumBLASThreads));
+  PetscCall(PetscInfo(NULL, "Setting number of threads used for BLIS provided BLAS %" PetscInt_FMT "\n", PetscNumBLASThreads));
 #elif defined(PETSC_HAVE_MKL_SET_NUM_THREADS)
   mkl_set_num_threads((int)nt);
-  PetscCall(PetscInfo(NULL, "Setting number of theads used for MKL provided BLAS %" PetscInt_FMT "\n", PetscNumBLASThreads));
+  PetscCall(PetscInfo(NULL, "Setting number of threads used for MKL provided BLAS %" PetscInt_FMT "\n", PetscNumBLASThreads));
 #elif defined(PETSC_HAVE_OPENBLAS_SET_NUM_THREADS)
   openblas_set_num_threads((int)nt);
-  PetscCall(PetscInfo(NULL, "Setting number of theads used for OpenBLAS provided BLAS %" PetscInt_FMT "\n", PetscNumBLASThreads));
+  PetscCall(PetscInfo(NULL, "Setting number of threads used for OpenBLAS provided BLAS %" PetscInt_FMT "\n", PetscNumBLASThreads));
 #else
-  PetscCall(PetscInfo(NULL, "Cannot set number of theads used for BLAS %" PetscInt_FMT ", will be ignored\n", PetscNumBLASThreads));
+  PetscCall(PetscInfo(NULL, "Cannot set number of threads used for BLAS %" PetscInt_FMT ", will be ignored\n", PetscNumBLASThreads));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
