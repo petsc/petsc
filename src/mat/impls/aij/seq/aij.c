@@ -1741,9 +1741,13 @@ static PetscErrorCode MatShift_SeqAIJ(Mat A, PetscScalar v)
   if (!cnt) {
     PetscCall(MatShift_Basic(A, v));
   } else {
-    PetscScalar *olda = a->a; /* preserve pointers to current matrix nonzeros structure and values */
-    PetscInt    *oldj = a->j, *oldi = a->i;
-    PetscBool    singlemalloc = a->singlemalloc, free_a = a->free_a, free_ij = a->free_ij;
+    PetscScalar       *olda = a->a; /* preserve pointers to current matrix nonzeros structure and values */
+    PetscInt          *oldj = a->j, *oldi = a->i;
+    PetscBool          singlemalloc = a->singlemalloc, free_a = a->free_a, free_ij = a->free_ij;
+    const PetscScalar *Aa;
+
+    PetscCall(MatSeqAIJGetArrayRead(A, &Aa)); // sync the host
+    PetscCall(MatSeqAIJRestoreArrayRead(A, &Aa));
 
     a->a = NULL;
     a->j = NULL;
