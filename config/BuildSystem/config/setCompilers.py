@@ -901,6 +901,7 @@ class Configure(config.base.Configure):
         #include <any>
         #include <optional>
         #include <variant>
+        #include <tuple>
 
         [[nodiscard]] int nodiscardFunc() { return 0; }
         struct S2
@@ -915,6 +916,10 @@ class Configure(config.base.Configure):
           // since c++17: OK: captures the enclosing S2 by copy
           auto lmbd = [=, *this] { std::cout << i << " " << this->var << std::endl; };
           lmbd();
+        }
+        std::tuple<double, int, char> foobar()
+        {
+          return {3.8, 0, 'x'};
         }
         """
       )))
@@ -935,6 +940,8 @@ class Configure(config.base.Configure):
         // static_assert with no message since c++17
         static_assert(std::is_same_v<squareShape,squareShape>);
         auto val = nodiscardFunc();ignore(val);
+        // structured binding
+        const auto [ab, cd, ef] = foobar();
         """
       )))
 
@@ -1444,7 +1451,7 @@ class Configure(config.base.Configure):
       if self.isDarwin(self.log) and self.isARM(self.log) and output.find('x86_64-apple-darwin') > -1:
         raise RuntimeError('Running on a macOS arm system but your compilers are configured for Intel processors\n' + output + '\n')
 
-    (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -v | head -n 20', log = self.log)
+    (output, error, status) = config.base.Configure.executeShellCommand(self.CC+' -v | head -n 20', log = self.log)
     output = output + error
     if '(gcc version 4.8.5 compatibility)' in output or re.match('^Selected GCC installation:.*4.8.5$', output):
        self.logPrintWarning('Intel compiler being used with gcc 4.8.5 compatibility, failures may occur. Recommend having a newer gcc version in your path.')
