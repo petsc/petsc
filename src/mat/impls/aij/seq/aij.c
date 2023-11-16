@@ -3980,7 +3980,7 @@ PetscErrorCode MatSeqAIJSetPreallocation_SeqAIJ(Mat B, PetscInt nz, const PetscI
       else if (nz < 0) nz = 1;
       nz = PetscMin(nz, B->cmap->n);
       for (i = 0; i < B->rmap->n; i++) b->imax[i] = nz;
-      nz = nz * B->rmap->n;
+      PetscCall(PetscIntMultError(nz, B->rmap->n, &nz));
     } else {
       PetscInt64 nz64 = 0;
       for (i = 0; i < B->rmap->n; i++) {
