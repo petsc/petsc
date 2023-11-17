@@ -75,44 +75,44 @@ PetscErrorCode DMPlexIsSimplex(DM dm, PetscBool *simplex)
   Level: developer
 
   Note:
-  This just gives the first range of cells found. If the mesh has several cell types, it will only give the first.
+  This function requires that tensor cells are ordered last.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexConstructGhostCells()`, `DMPlexGetCellTypeStratum()`
 @*/
 PetscErrorCode DMPlexGetSimplexOrBoxCells(DM dm, PetscInt height, PetscInt *cStart, PetscInt *cEnd)
 {
-  DMPolytopeType ct = DM_POLYTOPE_UNKNOWN;
-  PetscInt       cS, cE, c;
+  DMLabel         ctLabel;
+  IS              valueIS;
+  const PetscInt *ctypes;
+  PetscInt        Nct, cS = PETSC_MAX_INT, cE = 0;
 
   PetscFunctionBegin;
-  PetscCall(DMPlexGetHeightStratum(dm, PetscMax(height, 0), &cS, &cE));
-  for (c = cS; c < cE; ++c) {
-    DMPolytopeType cct;
+  PetscCall(DMPlexGetCellTypeLabel(dm, &ctLabel));
+  PetscCall(DMLabelGetValueIS(ctLabel, &valueIS));
+  PetscCall(ISGetLocalSize(valueIS, &Nct));
+  PetscCall(ISGetIndices(valueIS, &ctypes));
+  if (!Nct) cS = cE = 0;
+  for (PetscInt t = 0; t < Nct; ++t) {
+    const PetscInt ct = ctypes[t];
+    PetscInt       ctS, ctE, ht;
 
-    PetscCall(DMPlexGetCellType(dm, c, &cct));
-    if ((PetscInt)cct < 0) break;
-    switch (cct) {
-    case DM_POLYTOPE_POINT:
-    case DM_POLYTOPE_SEGMENT:
-    case DM_POLYTOPE_TRIANGLE:
-    case DM_POLYTOPE_QUADRILATERAL:
-    case DM_POLYTOPE_TETRAHEDRON:
-    case DM_POLYTOPE_HEXAHEDRON:
-      ct = cct;
-      break;
-    default:
+    if (ct == DM_POLYTOPE_UNKNOWN) {
+      // If any cells are not typed, just use all cells
+      PetscCall(DMPlexGetHeightStratum(dm, PetscMax(height, 0), cStart, cEnd));
       break;
     }
-    if (ct != DM_POLYTOPE_UNKNOWN) break;
+    if (ct == DM_POLYTOPE_FV_GHOST || ct == DM_POLYTOPE_POINT_PRISM_TENSOR || ct == DM_POLYTOPE_SEG_PRISM_TENSOR || ct == DM_POLYTOPE_TRI_PRISM_TENSOR || ct == DM_POLYTOPE_QUAD_PRISM_TENSOR) continue;
+    PetscCall(DMLabelGetStratumBounds(ctLabel, ct, &ctS, &ctE));
+    if (ctS >= ctE) continue;
+    // Check that a point has the right height
+    PetscCall(DMPlexGetPointHeight(dm, ctS, &ht));
+    if (ht != height) continue;
+    cS = PetscMin(cS, ctS);
+    cE = PetscMax(cE, ctE);
   }
-  if (ct != DM_POLYTOPE_UNKNOWN) {
-    DMLabel ctLabel;
-
-    PetscCall(DMPlexGetCellTypeLabel(dm, &ctLabel));
-    PetscCall(DMLabelGetStratumBounds(ctLabel, ct, &cS, &cE));
-    // Reset label for fast lookup
-    PetscCall(DMLabelMakeAllInvalid_Internal(ctLabel));
-  }
+  PetscCall(ISDestroy(&valueIS));
+  // Reset label for fast lookup
+  PetscCall(DMLabelMakeAllInvalid_Internal(ctLabel));
   if (cStart) *cStart = cS;
   if (cEnd) *cEnd = cE;
   PetscFunctionReturn(PETSC_SUCCESS);
