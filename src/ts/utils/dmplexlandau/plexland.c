@@ -304,8 +304,8 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
 #endif
             }
           } // q
-        }   // grid
-      }     // grid*batch
+        } // grid
+      } // grid*batch
       PetscCall(PetscLogEventEnd(ctx->events[8], 0, 0, 0, 0));
 #if defined(PETSC_HAVE_THREADSAFETY)
       endtime = MPI_Wtime();
@@ -401,7 +401,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
                   }
 #endif
                 } // qi
-              }   // ei_r
+              } // ei_r
               IPf_idx += nip_loc_r * Nfloc_r;
             } /* grid_r - IPs */
             PetscCheck(IPf_idx == IPf_sz_glb, PETSC_COMM_SELF, PETSC_ERR_PLIB, "IPf_idx != IPf_sz %" PetscInt_FMT " %" PetscInt_FMT, IPf_idx, IPf_sz_glb);
@@ -463,7 +463,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
               }
             }
           }
-        }                   /* qj loop */
+        } /* qj loop */
         if (shift == 0.0) { // Jacobian
           PetscCall(PetscLogEventEnd(ctx->events[4], 0, 0, 0, 0));
         } else {
@@ -546,8 +546,8 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
           exit(12);
         }
         PetscCall(PetscFree(elemMat));
-      }                 /* grid */
-    }                   /* outer element & batch loop */
+      } /* grid */
+    } /* outer element & batch loop */
     if (shift == 0.0) { // mass
       PetscCall(PetscFree4(ff, dudx, dudy, dudz));
     }
@@ -1529,7 +1529,7 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
             } else PetscCheck(coo_elem_fullNb[glb_elem_idx] == fullNb, PETSC_COMM_SELF, PETSC_ERR_PLIB, "full element size change with species %d %d", coo_elem_fullNb[glb_elem_idx], fullNb);
           }
         } // field
-      }   // cell
+      } // cell
       // allocate and copy point data maps[grid].gIdx[eidx][field][q]
       PetscCall(PetscMalloc(maps[grid].num_reduced * sizeof(*maps[grid].c_maps), &maps[grid].c_maps));
       for (int ej = 0; ej < maps[grid].num_reduced; ++ej) {
@@ -1614,8 +1614,8 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
               }
             }
           } // cell
-        }   // grid
-      }     // batch
+        } // grid
+      } // batch
       PetscCall(MatSetPreallocationCOO(ctx->J, ctx->SData_d.coo_size, oor, ooc));
       PetscCall(PetscFree2(oor, ooc));
     }

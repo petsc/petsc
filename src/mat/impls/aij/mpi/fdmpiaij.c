@@ -318,7 +318,7 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
           PetscScalar *tmp = Jentry[nz].valaddr;
           *tmp             = dy[row] * vscale_array[Jentry[nz].col];
 #else
-          *Jentry[nz].valaddr  = dy[row] * vscale_array[Jentry[nz].col];
+          *Jentry[nz].valaddr = dy[row] * vscale_array[Jentry[nz].col];
 #endif
           nz++;
         }
@@ -383,7 +383,7 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
           PetscScalar *tmp = Jentry[nz].valaddr;
           *tmp             = y[row] * vscale_array[Jentry[nz].col];
 #else
-          *Jentry[nz].valaddr  = y[row] * vscale_array[Jentry[nz].col];
+          *Jentry[nz].valaddr = y[row] * vscale_array[Jentry[nz].col];
 #endif
           nz++;
         }
@@ -417,7 +417,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDC
 #if defined(PETSC_USE_CTABLE)
   PetscHMapI colmap = NULL;
 #else
-  PetscInt *colmap = NULL;      /* local col number of off-diag col */
+  PetscInt *colmap = NULL; /* local col number of off-diag col */
 #endif
 
   PetscFunctionBegin;

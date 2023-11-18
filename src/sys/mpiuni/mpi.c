@@ -45,7 +45,7 @@ static int             num_attr             = 1; /* Maximal number of keyvals/at
 static int             MaxComm              = 2; /* Maximal number of communicators ever created, including comm_self(1), comm_world(2), but not comm_null(0) */
 static void           *MPIUNIF_mpi_in_place = 0;
 
-#define CommIdx(comm) ((comm)-1) /* the communicator's internal index used in attr[idx][] and comm_active[idx]. comm_null does not occupy slots in attr[][] */
+#define CommIdx(comm) ((comm) - 1) /* the communicator's internal index used in attr[idx][] and comm_active[idx]. comm_null does not occupy slots in attr[][] */
 
 #if defined(__cplusplus)
 extern "C" {

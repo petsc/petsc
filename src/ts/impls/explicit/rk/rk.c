@@ -1177,8 +1177,7 @@ static PetscErrorCode TSSetFromOptions_RK(TS ts, PetscOptionItems *PetscOptionsO
     PetscBool     flg, use_multirate = PETSC_FALSE;
     const char  **namelist;
 
-    for (link = RKTableauList, count = 0; link; link = link->next, count++)
-      ;
+    for (link = RKTableauList, count = 0; link; link = link->next, count++);
     PetscCall(PetscMalloc1(count, (char ***)&namelist));
     for (link = RKTableauList, count = 0; link; link = link->next, count++) namelist[count] = link->tab.name;
     PetscCall(PetscOptionsBool("-ts_rk_multirate", "Use interpolation-based multirate RK method", "TSRKSetMultirate", rk->use_multirate, &use_multirate, &flg));

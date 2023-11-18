@@ -134,7 +134,7 @@ static PetscErrorCode TSStep_EIMEX(TS ts)
         /*update ts solution */
         PetscCall(TSEvaluateStep(ts, ext->nstages, ts->vec_sol, NULL));
       } /*end if !accept*/
-    }   /*end while*/
+    } /*end while*/
 
     if (ext->nstages == ext->max_rows) PetscCall(PetscInfo(ts, "Max number of rows has been used\n"));
   } /*end if ext->ord_adapt*/

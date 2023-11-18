@@ -1585,7 +1585,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
         row--;
         PetscCheck(row >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "row not found in table");
 #else
-        row = rmap[sbuf1_i[ct1]];      /* the row index in submat */
+        row = rmap[sbuf1_i[ct1]]; /* the row index in submat */
 #endif
         /* Now, store row index of submat in sbuf1_i[ct1] */
         sbuf1_i[ct1] = row;

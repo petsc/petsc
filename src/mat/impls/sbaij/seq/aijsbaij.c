@@ -30,7 +30,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype, M
         aj++;
         diagcnt++;
         nz--;
-      }                          /* skip diagonal */
+      } /* skip diagonal */
       for (j = 0; j < nz; j++) { /* no. of lower triangular blocks */
         rowlengths[(*aj) * bs]++;
         aj++;

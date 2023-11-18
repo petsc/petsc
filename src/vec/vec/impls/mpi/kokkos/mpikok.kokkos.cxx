@@ -169,8 +169,7 @@ static PetscErrorCode VecSetValuesCOO_MPIKokkos(Vec x, const PetscScalar v[], In
   }
 
   /* Pack entries to be sent to remote */
-  Kokkos::parallel_for(
-    vecmpi->sendlen, KOKKOS_LAMBDA(const PetscCount i) { sendbuf(i) = vv(Cperm(i)); });
+  Kokkos::parallel_for(vecmpi->sendlen, KOKKOS_LAMBDA(const PetscCount i) { sendbuf(i) = vv(Cperm(i)); });
   PetscCall(PetscSFReduceWithMemTypeBegin(vecmpi->coo_sf, MPIU_SCALAR, PETSC_MEMTYPE_KOKKOS, sendbuf.data(), PETSC_MEMTYPE_KOKKOS, recvbuf.data(), MPI_REPLACE));
 
   if (imode == INSERT_VALUES) PetscCall(VecGetKokkosViewWrite(x, &xv)); /* write vector */

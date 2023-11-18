@@ -300,7 +300,7 @@ PetscErrorCode gridToParticles_private(DM grid_dm[], DM globSwarmArray[], const 
         }
       }
     } // thread batch
-  }   // batch
+  } // batch
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -599,9 +599,9 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt num_vertices, const PetscInt a_Np
                 } else moments_0[4] -= w;
               }
             } // grid
-          }   // target
-        }     // active
-      }       // threads
+          } // target
+        } // active
+      } // threads
       /* Create particle swarm */
       for (int tid = 0; tid < numthreads; tid++) {
         const PetscInt v_id = v_id_0 + tid, glb_v_id = global_vertex_id_0 + v_id;
@@ -622,7 +622,7 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt num_vertices, const PetscInt a_Np
             if (ierr_t) ierr = ierr_t;
           }
         } // active
-      }   // threads
+      } // threads
       PetscCheck(ierr != 9999, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Only support one species per grid");
       PetscCheck(!ierr, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Error in OMP loop. ierr = %d", (int)ierr);
       // make globMpArray
@@ -683,8 +683,8 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt num_vertices, const PetscInt a_Np
             PetscCall(PetscFree4(xx_t[grid][tid], yy_t[grid][tid], wp_t[grid][tid], zz_t[grid][tid]));
           }
         } // active
-      }   // threads
-    }     // (fake) particle loop
+      } // threads
+    } // (fake) particle loop
     // standard view of initial conditions
     if (v_target >= global_vertex_id_0 && v_target < global_vertex_id_0 + ctx->batch_sz) {
       PetscCall(DMSetOutputSequenceNumber(ctx->plex[g_target], 0, 0.0));

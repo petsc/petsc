@@ -112,8 +112,7 @@ PetscErrorCode PetscPClose(MPI_Comm comm, FILE *fd)
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) {
     char buf[1024];
-    while (fgets(buf, 1024, fd))
-      ; /* wait till it prints everything */
+    while (fgets(buf, 1024, fd)); /* wait till it prints everything */
     (void)pclose(fd);
   }
   PetscFunctionReturn(PETSC_SUCCESS);

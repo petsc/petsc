@@ -349,8 +349,7 @@ static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part
     edloloctab = part->use_edge_weights ? adj->values : NULL;
 
     /* detect whether all vertices are located at the same process in original graph */
-    for (p = 0; !mat->rmap->range[p + 1] && p < nparts; ++p)
-      ;
+    for (p = 0; !mat->rmap->range[p + 1] && p < nparts; ++p);
     distributed = (mat->rmap->range[p + 1] == mat->rmap->N) ? PETSC_FALSE : PETSC_TRUE;
     if (distributed) {
       SCOTCH_Arch     archdat;

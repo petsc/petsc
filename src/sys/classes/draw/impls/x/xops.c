@@ -464,8 +464,7 @@ static PetscErrorCode PetscDrawGetMouseButton_X(PetscDraw draw, PetscDrawButton 
   XDefineCursor(win->disp, win->win, cursor);
   /* wait for mouse button events */
   XSelectInput(win->disp, win->win, ButtonPressMask | ButtonReleaseMask);
-  while (XCheckTypedEvent(win->disp, ButtonPress, &report))
-    ;
+  while (XCheckTypedEvent(win->disp, ButtonPress, &report));
   XMaskEvent(win->disp, ButtonReleaseMask, &report);
   /* get mouse pointer coordinates */
   XQueryPointer(win->disp, report.xmotion.window, &root, &child, &root_x, &root_y, &px, &py, &keys_button);

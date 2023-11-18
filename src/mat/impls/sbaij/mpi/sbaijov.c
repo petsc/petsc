@@ -562,7 +562,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Local(Mat C, PetscInt *data, P
       nidx_i += isz; /* ptr to output is[i+1] array */
     }
     nidx[1 + i] = isz; /* size of new is[i] */
-  }                    /* for each is */
+  } /* for each is */
   PetscCall(PetscBTDestroy(&table0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

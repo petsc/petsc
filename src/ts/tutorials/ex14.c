@@ -225,7 +225,7 @@ typedef struct {
 
 #define FieldSize(ntype)             ((PetscInt)(sizeof(ntype) / sizeof(PetscScalar)))
 #define FieldOffset(ntype, member)   ((PetscInt)(offsetof(ntype, member) / sizeof(PetscScalar)))
-#define FieldIndex(ntype, i, member) ((PetscInt)((i)*FieldSize(ntype) + FieldOffset(ntype, member)))
+#define FieldIndex(ntype, i, member) ((PetscInt)((i) * FieldSize(ntype) + FieldOffset(ntype, member)))
 #define NODE_SIZE                    FieldSize(Node)
 #define PRMNODE_SIZE                 FieldSize(PrmNode)
 

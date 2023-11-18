@@ -1753,7 +1753,7 @@ PetscErrorCode PCGASMCreateSubdomains2D(PC pc, PetscInt M, PetscInt N, PetscInt 
           PetscCall(ISCreateGeneral(subcomm, nidx, idx, PETSC_OWN_POINTER, (*xis) + s));
           if (split) PetscCallMPI(MPI_Comm_free(&subcomm));
         } /* if (n[0]) */
-      }   /* for (q = 0; q < 2; ++q) */
+      } /* for (q = 0; q < 2; ++q) */
       if (n[0]) ++s;
       xstart += maxwidth;
     } /* for (i = 0; i < Mdomains; ++i) */

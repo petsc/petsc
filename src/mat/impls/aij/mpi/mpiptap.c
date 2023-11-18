@@ -772,8 +772,8 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(Mat A, Mat P, PetscInt do
         }
         PetscCall(PetscLogFlops(voff));
       } /* End jj */
-    }   /* End j */
-  }     /* End i */
+    } /* End j */
+  } /* End i */
 
   PetscCall(PetscFree4(apindices, apvalues, apvaluestmp, c_rmtc));
   PetscCall(PetscHMapIVDestroy(&hmap));
@@ -943,7 +943,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A, Mat P, Pets
       PetscCall(PetscLogFlops(voff));
       PetscCall(MatSetValues(C, 1, &row, voff, apindices, apvaluestmp, ADD_VALUES));
     } /* End j */
-  }   /* End i */
+  } /* End i */
 
   PetscCall(ISRestoreIndices(map, &mappingindices));
   PetscCall(PetscFree4(apindices, apvalues, apvaluestmp, c_rmtc));

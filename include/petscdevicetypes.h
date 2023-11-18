@@ -60,11 +60,11 @@ typedef enum {
   #define PETSC_MEMTYPE_KOKKOS PETSC_MEMTYPE_HOST
 #endif
 
-#define PetscMemTypeHost(m)    (((m)&0x1) == PETSC_MEMTYPE_HOST)
-#define PetscMemTypeDevice(m)  (((m)&0x1) == PETSC_MEMTYPE_DEVICE)
-#define PetscMemTypeCUDA(m)    (((m)&0xF) == PETSC_MEMTYPE_CUDA)
-#define PetscMemTypeHIP(m)     (((m)&0xF) == PETSC_MEMTYPE_HIP)
-#define PetscMemTypeSYCL(m)    (((m)&0xF) == PETSC_MEMTYPE_SYCL)
+#define PetscMemTypeHost(m)    (((m) & 0x1) == PETSC_MEMTYPE_HOST)
+#define PetscMemTypeDevice(m)  (((m) & 0x1) == PETSC_MEMTYPE_DEVICE)
+#define PetscMemTypeCUDA(m)    (((m) & 0xF) == PETSC_MEMTYPE_CUDA)
+#define PetscMemTypeHIP(m)     (((m) & 0xF) == PETSC_MEMTYPE_HIP)
+#define PetscMemTypeSYCL(m)    (((m) & 0xF) == PETSC_MEMTYPE_SYCL)
 #define PetscMemTypeNVSHMEM(m) ((m) == PETSC_MEMTYPE_NVSHMEM)
 
 #if defined(__cplusplus)
@@ -145,8 +145,8 @@ typedef enum {
 } PetscOffloadMask;
 
 #define PetscOffloadUnallocated(m) ((m) == PETSC_OFFLOAD_UNALLOCATED)
-#define PetscOffloadHost(m)        (((m)&PETSC_OFFLOAD_CPU) == PETSC_OFFLOAD_CPU)
-#define PetscOffloadDevice(m)      (((m)&PETSC_OFFLOAD_GPU) == PETSC_OFFLOAD_GPU)
+#define PetscOffloadHost(m)        (((m) & PETSC_OFFLOAD_CPU) == PETSC_OFFLOAD_CPU)
+#define PetscOffloadDevice(m)      (((m) & PETSC_OFFLOAD_GPU) == PETSC_OFFLOAD_GPU)
 #define PetscOffloadBoth(m)        ((m) == PETSC_OFFLOAD_BOTH)
 
 #if defined(__cplusplus)
@@ -443,8 +443,8 @@ typedef enum {
   PETSC_MEMORY_ACCESS_READ_WRITE = 0x3, // 11
 } PetscMemoryAccessMode;
 
-#define PetscMemoryAccessRead(m)  (((m)&PETSC_MEMORY_ACCESS_READ) == PETSC_MEMORY_ACCESS_READ)
-#define PetscMemoryAccessWrite(m) (((m)&PETSC_MEMORY_ACCESS_WRITE) == PETSC_MEMORY_ACCESS_WRITE)
+#define PetscMemoryAccessRead(m)  (((m) & PETSC_MEMORY_ACCESS_READ) == PETSC_MEMORY_ACCESS_READ)
+#define PetscMemoryAccessWrite(m) (((m) & PETSC_MEMORY_ACCESS_WRITE) == PETSC_MEMORY_ACCESS_WRITE)
 
 #if defined(__cplusplus)
   #if PETSC_SHOULD_SILENCE_GCC_TAUTOLOGICAL_COMPARE_WARNING

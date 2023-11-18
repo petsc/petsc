@@ -150,7 +150,7 @@ PETSC_EXTERN PetscErrorCode PetscFEOpenCLGetRealType(PetscFE, PetscDataType *);
 
 #ifdef PETSC_HAVE_LIBCEED
 
-  // clang-format off
+// clang-format off
   #ifndef PLEXFE_QFUNCTION
     #define PLEXFE_QFUNCTION(fname, f0_name, f1_name) \
       CEED_QFUNCTION(PlexQFunction##fname)(void *ctx, const CeedInt Q, const CeedScalar *const *in, CeedScalar *const *out) \

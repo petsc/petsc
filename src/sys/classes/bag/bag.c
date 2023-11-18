@@ -57,8 +57,7 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag bag, void *addr, const char *const 
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
   PetscCall(PetscOptionsHasHelp(NULL, &printhelp));
   if (printhelp) {
-    while (list[i++])
-      ;
+    while (list[i++]);
     PetscCall((*PetscHelpPrintf)(bag->bagcomm, "  -%s%s <%s>: (%s) %s (choose one of) ", bag->bagprefix ? bag->bagprefix : "", name, list[mdefault], list[i - 3], help));
     for (i = 0; list[i + 2]; i++) PetscCall((*PetscHelpPrintf)(bag->bagcomm, " %s", list[i]));
     PetscCall((*PetscHelpPrintf)(bag->bagcomm, "\n"));
@@ -610,8 +609,7 @@ PetscErrorCode PetscBagSetFromOptions(PetscBag bag)
     } else if (nitem->dtype == PETSC_ENUM) {
       PetscEnum *value = (PetscEnum *)(((char *)bag) + nitem->offset);
       PetscInt   i     = 0;
-      while (nitem->list[i++])
-        ;
+      while (nitem->list[i++]);
       PetscCall(PetscOptionsEnum(name, nitem->help, nitem->list[i - 3], (const char *const *)nitem->list, *value, value, NULL));
     } else if (nitem->dtype == PETSC_BOOL) {
       PetscBool *value = (PetscBool *)(((char *)bag) + nitem->offset);
@@ -707,8 +705,7 @@ PetscErrorCode PetscBagView(PetscBag bag, PetscViewer view)
       } else if (nitem->dtype == PETSC_ENUM) {
         PetscEnum value = *(PetscEnum *)(((char *)bag) + nitem->offset);
         PetscInt  i     = 0;
-        while (nitem->list[i++])
-          ;
+        while (nitem->list[i++]);
         PetscCall(PetscViewerASCIIPrintf(view, "  %s = %s; (%s) %s\n", nitem->name, nitem->list[value], nitem->list[i - 3], nitem->help));
       }
       nitem = nitem->next;

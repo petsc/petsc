@@ -6685,8 +6685,7 @@ PetscErrorCode DMCreateLabelAtIndex(DM dm, PetscInt l, const char name[])
     orig->next = dm->labels;
     dm->labels = orig;
   } else {
-    for (m = 0, prev = dm->labels; m < l - 1; ++m, prev = prev->next)
-      ;
+    for (m = 0, prev = dm->labels; m < l - 1; ++m, prev = prev->next);
     orig->next = prev->next;
     prev->next = orig;
   }

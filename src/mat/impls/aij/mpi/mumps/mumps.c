@@ -141,12 +141,12 @@ static inline PetscErrorCode PetscOptionsMUMPSInt_Private(PetscOptionItems *Pets
 #endif
 
 /* macros s.t. indices match MUMPS documentation */
-#define ICNTL(I)  icntl[(I)-1]
-#define CNTL(I)   cntl[(I)-1]
-#define INFOG(I)  infog[(I)-1]
-#define INFO(I)   info[(I)-1]
-#define RINFOG(I) rinfog[(I)-1]
-#define RINFO(I)  rinfo[(I)-1]
+#define ICNTL(I)  icntl[(I) - 1]
+#define CNTL(I)   cntl[(I) - 1]
+#define INFOG(I)  infog[(I) - 1]
+#define INFO(I)   info[(I) - 1]
+#define RINFOG(I) rinfog[(I) - 1]
+#define RINFO(I)  rinfo[(I) - 1]
 
 typedef struct Mat_MUMPS Mat_MUMPS;
 struct Mat_MUMPS {
@@ -2226,7 +2226,7 @@ static PetscErrorCode MatSetFromOptions_MUMPS(Mat F, Mat A)
 #if PETSC_PKG_MUMPS_VERSION_GE(5, 6, 2) && defined(PETSC_HAVE_MUMPS_AVOID_MPI_IN_PLACE)
   mumps->ICNTL20 = 10;
 #elif PETSC_PKG_MUMPS_VERSION_LT(5, 3, 0) || (defined(PETSC_HAVE_MPICH_NUMVERSION) && (PETSC_HAVE_MPICH_NUMVERSION < 40000101))
-  mumps->ICNTL20     = 0; /* Centralized dense RHS*/
+  mumps->ICNTL20 = 0; /* Centralized dense RHS*/
 #else
   mumps->ICNTL20 = 10; /* Distributed dense RHS*/
 #endif

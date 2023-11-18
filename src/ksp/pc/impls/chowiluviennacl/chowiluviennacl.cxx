@@ -97,7 +97,7 @@ static PetscErrorCode PCApply_CHOWILUVIENNACL(PC pc, Vec x, Vec y)
 #if defined(PETSC_USE_COMPLEX)
 
 #else
-    *yarray                              = *xarray;
+    *yarray = *xarray;
     ilu->CHOWILUVIENNACL->apply(*yarray);
 #endif
   } catch (char *ex) {

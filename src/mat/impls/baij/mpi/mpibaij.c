@@ -480,7 +480,7 @@ static PetscErrorCode MatSetValuesBlocked_MPIBAIJ(Mat mat, PetscInt m, const Pet
 }
 
 #define HASH_KEY             0.6180339887
-#define HASH(size, key, tmp) (tmp = (key)*HASH_KEY, (PetscInt)((size) * (tmp - (PetscInt)tmp)))
+#define HASH(size, key, tmp) (tmp = (key) * HASH_KEY, (PetscInt)((size) * (tmp - (PetscInt)tmp)))
 /* #define HASH(size,key) ((PetscInt)((size)*fmod(((key)*HASH_KEY),1))) */
 /* #define HASH(size,key,tmp) ((PetscInt)((size)*fmod(((key)*HASH_KEY),1))) */
 static PetscErrorCode MatSetValues_MPIBAIJ_HT(Mat mat, PetscInt m, const PetscInt im[], PetscInt n, const PetscInt in[], const PetscScalar v[], InsertMode addv)
@@ -516,20 +516,16 @@ static PetscErrorCode MatSetValues_MPIBAIJ_HT(Mat mat, PetscInt m, const PetscIn
           insert_ct++;
           total_ct++;
           if (HT[idx] != key) {
-            for (idx = h1; (idx < size) && (HT[idx] != key); idx++, total_ct++)
-              ;
+            for (idx = h1; (idx < size) && (HT[idx] != key); idx++, total_ct++);
             if (idx == size) {
-              for (idx = 0; (idx < h1) && (HT[idx] != key); idx++, total_ct++)
-                ;
+              for (idx = 0; (idx < h1) && (HT[idx] != key); idx++, total_ct++);
               PetscCheck(idx != h1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "(%" PetscInt_FMT ",%" PetscInt_FMT ") has no entry in the hash table", row, col);
             }
           }
         } else if (HT[idx] != key) {
-          for (idx = h1; (idx < size) && (HT[idx] != key); idx++)
-            ;
+          for (idx = h1; (idx < size) && (HT[idx] != key); idx++);
           if (idx == size) {
-            for (idx = 0; (idx < h1) && (HT[idx] != key); idx++)
-              ;
+            for (idx = 0; (idx < h1) && (HT[idx] != key); idx++);
             PetscCheck(idx != h1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "(%" PetscInt_FMT ",%" PetscInt_FMT ") has no entry in the hash table", row, col);
           }
         }
@@ -589,20 +585,16 @@ static PetscErrorCode MatSetValuesBlocked_MPIBAIJ_HT(Mat mat, PetscInt m, const 
           total_ct++;
           insert_ct++;
           if (HT[idx] != key) {
-            for (idx = h1; (idx < size) && (HT[idx] != key); idx++, total_ct++)
-              ;
+            for (idx = h1; (idx < size) && (HT[idx] != key); idx++, total_ct++);
             if (idx == size) {
-              for (idx = 0; (idx < h1) && (HT[idx] != key); idx++, total_ct++)
-                ;
+              for (idx = 0; (idx < h1) && (HT[idx] != key); idx++, total_ct++);
               PetscCheck(idx != h1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "(%" PetscInt_FMT ",%" PetscInt_FMT ") has no entry in the hash table", row, col);
             }
           }
         } else if (HT[idx] != key) {
-          for (idx = h1; (idx < size) && (HT[idx] != key); idx++)
-            ;
+          for (idx = h1; (idx < size) && (HT[idx] != key); idx++);
           if (idx == size) {
-            for (idx = 0; (idx < h1) && (HT[idx] != key); idx++)
-              ;
+            for (idx = 0; (idx < h1) && (HT[idx] != key); idx++);
             PetscCheck(idx != h1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "(%" PetscInt_FMT ",%" PetscInt_FMT ") has no entry in the hash table", row, col);
           }
         }

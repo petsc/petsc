@@ -753,7 +753,7 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
       if (mat == Gmat) PetscCall(PetscCDClearMat(agg_lists)); // take the Mat away from the list (yuck)
       PetscCall(MatDestroy(&Gmat));
       PetscCall(PetscCDDestroy(agg_lists));
-    }                               /* construct prolongator scope */
+    } /* construct prolongator scope */
     if (level == 0) Aarr[0] = Pmat; /* use Pmat for finest level setup */
     if (!Parr[level1]) {            /* failed to coarsen */
       PetscCall(PetscInfo(pc, "%s: Stop gridding, level %" PetscInt_FMT "\n", ((PetscObject)pc)->prefix, level));

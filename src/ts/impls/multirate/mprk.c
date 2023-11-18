@@ -1065,8 +1065,7 @@ static PetscErrorCode TSSetFromOptions_MPRK(TS ts, PetscOptionItems *PetscOption
     PetscInt        count, choice;
     PetscBool       flg;
     const char    **namelist;
-    for (link = MPRKTableauList, count = 0; link; link = link->next, count++)
-      ;
+    for (link = MPRKTableauList, count = 0; link; link = link->next, count++);
     PetscCall(PetscMalloc1(count, (char ***)&namelist));
     for (link = MPRKTableauList, count = 0; link; link = link->next, count++) namelist[count] = link->tab.name;
     PetscCall(PetscOptionsEList("-ts_mprk_type", "Family of MPRK method", "TSMPRKSetType", (const char *const *)namelist, count, mprk->tableau->name, &choice, &flg));

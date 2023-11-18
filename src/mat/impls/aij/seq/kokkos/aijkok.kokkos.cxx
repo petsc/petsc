@@ -285,16 +285,14 @@ PETSC_INTERN PetscErrorCode MatSeqAIJKokkosGenerateTranspose_Private(Mat A, Kokk
         const auto &perm = akok->transpose_perm; // get the permutation array
         auto       &Ta   = T.values;
 
-        PetscCallCXX(Kokkos::parallel_for(
-          nz, KOKKOS_LAMBDA(const PetscInt i) { Ta(i) = Aa(perm(i)); }));
+        PetscCallCXX(Kokkos::parallel_for(nz, KOKKOS_LAMBDA(const PetscInt i) { Ta(i) = Aa(perm(i)); }));
       }
     } else { // Generate T of size n x m for the first time
       MatRowMapKokkosView perm;
 
       PetscCall(MatSeqAIJKokkosGenerateTransposeStructure(A, perm, T));
       akok->transpose_perm = perm; // cache the perm in this matrix for reuse
-      PetscCallCXX(Kokkos::parallel_for(
-        nz, KOKKOS_LAMBDA(const PetscInt i) { T.values(i) = Aa(perm(i)); }));
+      PetscCallCXX(Kokkos::parallel_for(nz, KOKKOS_LAMBDA(const PetscInt i) { T.values(i) = Aa(perm(i)); }));
     }
     akok->transpose_updated = PETSC_TRUE;
     *csrmatT                = akok->csrmatT;
@@ -325,16 +323,14 @@ static PetscErrorCode MatSeqAIJKokkosGenerateHermitian_Private(Mat A, KokkosCsrM
         const auto &perm = akok->transpose_perm; // get the permutation array
         auto       &Ta   = T.values;
 
-        PetscCallCXX(Kokkos::parallel_for(
-          nz, KOKKOS_LAMBDA(const PetscInt i) { Ta(i) = PetscConj(Aa(perm(i))); }));
+        PetscCallCXX(Kokkos::parallel_for(nz, KOKKOS_LAMBDA(const PetscInt i) { Ta(i) = PetscConj(Aa(perm(i))); }));
       }
     } else { // Generate T of size n x m for the first time
       MatRowMapKokkosView perm;
 
       PetscCall(MatSeqAIJKokkosGenerateTransposeStructure(A, perm, T));
       akok->transpose_perm = perm; // cache the perm in this matrix for reuse
-      PetscCallCXX(Kokkos::parallel_for(
-        nz, KOKKOS_LAMBDA(const PetscInt i) { T.values(i) = PetscConj(Aa(perm(i))); }));
+      PetscCallCXX(Kokkos::parallel_for(nz, KOKKOS_LAMBDA(const PetscInt i) { T.values(i) = PetscConj(Aa(perm(i))); }));
     }
     akok->hermitian_updated = PETSC_TRUE;
     *csrmatH                = akok->csrmatH;
@@ -1008,8 +1004,7 @@ static PetscErrorCode MatShift_SeqAIJKokkos(Mat A, PetscScalar a)
     const auto  aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
     const auto &Aa     = aijkok->a_dual.view_device();
     const auto &Adiag  = aijkok->diag_dual.view_device();
-    PetscCallCXX(Kokkos::parallel_for(
-      n, KOKKOS_LAMBDA(const PetscInt i) { Aa(Adiag(i)) += a; }));
+    PetscCallCXX(Kokkos::parallel_for(n, KOKKOS_LAMBDA(const PetscInt i) { Aa(Adiag(i)) += a; }));
     PetscCall(MatSeqAIJKokkosModifyDevice(A));
     PetscCall(PetscLogGpuFlops(n));
     PetscCall(PetscLogGpuTimeEnd());
@@ -1465,7 +1460,7 @@ PETSC_INTERN PetscErrorCode MatInvertVariableBlockDiagonal_SeqAIJKokkos(Mat A, c
 #if defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_HOST)
   auto ts = Kokkos::AUTO();
 #else
-  auto ts         = 16; // improved performance 30% over Kokkos::AUTO() with CUDA, but failed with "Kokkos::abort: Requested Team Size is too large!" on CPUs
+  auto ts = 16; // improved performance 30% over Kokkos::AUTO() with CUDA, but failed with "Kokkos::abort: Requested Team Size is too large!" on CPUs
 #endif
   PetscCallCXX(Kokkos::parallel_for(
     Kokkos::TeamPolicy<>(nblocks, ts), KOKKOS_LAMBDA(const KokkosTeamMemberType &teamMember) {

@@ -97,7 +97,7 @@ static PetscErrorCode PCApply_ROWSCALINGVIENNACL(PC pc, Vec x, Vec y)
 #if defined(PETSC_USE_COMPLEX)
 
 #else
-    *yarray                               = *xarray;
+    *yarray = *xarray;
     ilu->ROWSCALINGVIENNACL->apply(*yarray);
 #endif
   } catch (char *ex) {

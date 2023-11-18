@@ -187,8 +187,8 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
               }
             }
           } /* selected */
-        }   /* not done vertex */
-      }     /* vertex loop */
+        } /* not done vertex */
+      } /* vertex loop */
 
       /* update ghost states and count todos */
       if (mpimat) {
@@ -220,7 +220,7 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
         PetscCall(MPIU_Allreduce(&t1, &t2, 1, MPIU_INT, MPI_SUM, comm)); /* synchronous version */
         if (!t2) break;
       } else break; /* no mpi - all done */
-    }               /* outer parallel MIS loop */
+    } /* outer parallel MIS loop */
     if (!iterIdx) PetscCall(ISRestoreIndices(perm, &perm_ix));
     PetscCall(PetscInfo(Gmat, "\t removed %" PetscInt_FMT " of %" PetscInt_FMT " vertices.  %" PetscInt_FMT " selected.\n", nremoved, nloc_inner, nselected));
 

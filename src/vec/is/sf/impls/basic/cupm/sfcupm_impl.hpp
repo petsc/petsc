@@ -463,9 +463,7 @@ struct SfInterface<T>::PackInit_IntegerType_Atomic {
 template <device::cupm::DeviceType T>
 template <typename Type, PetscInt BS, PetscInt EQ>
 struct SfInterface<T>::PackInit_IntegerType_Atomic<Type, BS, EQ, 1> {
-  static inline void Init(PetscSFLink)
-  { /* Nothing to leave function pointers NULL */
-  }
+  static inline void Init(PetscSFLink) { /* Nothing to leave function pointers NULL */ }
 };
 
 template <device::cupm::DeviceType T>

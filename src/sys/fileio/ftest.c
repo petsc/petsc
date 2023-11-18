@@ -56,7 +56,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
   int    wbit = S_IWOTH;
   int    ebit = S_IXOTH;
   #if !defined(PETSC_MISSING_GETGROUPS)
-  int    err;
+  int err;
   #endif
 
   PetscFunctionBegin;

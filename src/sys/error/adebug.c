@@ -390,7 +390,7 @@ PetscErrorCode PetscAttachDebugger(void)
         args[j++] = NULL;
       }
       if (isdbx) {
-        j         = jj;
+        j = jj;
   #if defined(PETSC_USE_P_FOR_DEBUGGER)
         args[j++] = "-p";
         args[j++] = pid;

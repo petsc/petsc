@@ -274,8 +274,8 @@ static PetscErrorCode Compute_Lagrange_Basis_2D_Internal(const PetscInt nverts, 
             if (dphidx) dphidx[i + offset] += dNi_dxi[i] * ijacobian[k * 2 + 0];
             if (dphidy) dphidy[i + offset] += dNi_deta[i] * ijacobian[k * 2 + 1];
           } /* for k=[0..2) */
-        }   /* for i=[0..nverts) */
-      }     /* if (dphidx) */
+        } /* for i=[0..nverts) */
+      } /* if (dphidx) */
     }
   } else if (nverts == 3) { /* Linear triangle */
     const PetscReal x2 = coords[2 * 3 + 0], y2 = coords[2 * 3 + 1];

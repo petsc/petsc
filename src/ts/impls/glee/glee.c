@@ -782,8 +782,7 @@ static PetscErrorCode TSSetFromOptions_GLEE(TS ts, PetscOptionItems *PetscOption
     const char    **namelist;
 
     PetscCall(PetscStrncpy(gleetype, TSGLEEDefaultType, sizeof(gleetype)));
-    for (link = GLEETableauList, count = 0; link; link = link->next, count++)
-      ;
+    for (link = GLEETableauList, count = 0; link; link = link->next, count++);
     PetscCall(PetscMalloc1(count, (char ***)&namelist));
     for (link = GLEETableauList, count = 0; link; link = link->next, count++) namelist[count] = link->tab.name;
     PetscCall(PetscOptionsEList("-ts_glee_type", "Family of GLEE method", "TSGLEESetType", (const char *const *)namelist, count, gleetype, &choice, &flg));

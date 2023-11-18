@@ -568,13 +568,13 @@ static PetscErrorCode PetscInitialize_MKL_CPARDISO(Mat A, Mat_MKL_CPARDISO *mat_
 #if defined(PETSC_USE_COMPLEX)
   mat_mkl_cpardiso->mtype = 13;
 #else
-  mat_mkl_cpardiso->mtype         = 11;
+  mat_mkl_cpardiso->mtype = 11;
 #endif
 
 #if defined(PETSC_USE_REAL_SINGLE)
   mat_mkl_cpardiso->iparm[27] = 1;
 #else
-  mat_mkl_cpardiso->iparm[27]     = 0;
+  mat_mkl_cpardiso->iparm[27] = 0;
 #endif
 
   mat_mkl_cpardiso->iparm[0]  = 1;  /* Solver default parameters overridden with provided by iparm */

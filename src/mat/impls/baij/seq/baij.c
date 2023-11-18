@@ -2399,7 +2399,7 @@ PetscErrorCode MatZeroRows_SeqBAIJ(Mat A, PetscInt is_n, const PetscInt is_idx[]
         for (k = 0; k < bs; k++) PetscUseTypeMethod(A, setvalues, 1, rows + j + k, 1, rows + j + k, &diag, INSERT_VALUES);
       } else { /* (diag == 0.0) */
         baij->ilen[row / bs] = 0;
-      }      /* end (diag == 0.0) */
+      } /* end (diag == 0.0) */
     } else { /* (sizes[i] != bs) */
       PetscAssert(sizes[i] == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Internal Error. Value should be 1");
       for (k = 0; k < count; k++) {

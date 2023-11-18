@@ -791,7 +791,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
           PetscCall(MatSetValues(P, 1, &gid1, 1, &gid0, &one, INSERT_VALUES));
           //PetscCall(PetscPrintf(comm,"\t %d.%d) match active EDGE %d : (%d %d)\n",iter,sub_it, (int)nactive_edges, (int)gid0, (int)gid1));
         } /* matched */
-      }   /* edge loop */
+      } /* edge loop */
       PetscCall(PetscSynchronizedFlush(comm, PETSC_STDOUT));
       if (isMPI) PetscCall(VecRestoreArrayRead(ghostMaxEdge, &lghost_max_ew));
       PetscCall(VecRestoreArrayRead(locMaxEdge, &lid_max_ew));

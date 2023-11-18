@@ -50,8 +50,8 @@ PETSCCLANGFORMAT ?= clang-format
 # Check the version of clang-format matches PETSc requirement
 checkclangformatversion:
 	@version=`${PETSCCLANGFORMAT} --version | cut -d" " -f3 | cut -d"." -f 1` ;\
-         if [ "$$version" == "version" ]; then version=`${PETSCCLANGFORMAT} --version | cut -d" " -f4 | cut -d"." -f 1`; fi;\
-         if [ $$version != 16 ]; then echo "Require clang-format version 16! Currently used ${PETSCCLANGFORMAT} version is $$version" ;false ; fi
+         if [ "$$version" = "version" ]; then version=`${PETSCCLANGFORMAT} --version | cut -d" " -f4 | cut -d"." -f 1`; fi;\
+         if [ $$version -lt 18 ]; then echo "Require clang-format version 18 at least! Currently used ${PETSCCLANGFORMAT} version is $$version" ;false ; fi
 
 # Format all the source code in the given directory and down according to the file $PETSC_DIR/.clang_format
 clangformat: checkclangformatversion

@@ -391,7 +391,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
         } /* aggregates iterations */
         clid++;
       } /* a coarse agg */
-    }   /* for all fine nodes */
+    } /* for all fine nodes */
 
     PetscCall(ISRestoreIndices(selected_2, &selected_idx_2));
     PetscCall(MatAssemblyBegin(a_Prol, MAT_FINAL_ASSEMBLY));

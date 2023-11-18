@@ -186,8 +186,8 @@ static inline PetscScalar BLASdotu_(const PetscBLASInt *n, const PetscScalar *x,
 }
 #else
   #if defined(PETSC_USE_REAL_SINGLE) && defined(PETSC_BLASLAPACK_SDOT_RETURNS_DOUBLE)
-BLAS_EXTERN double    BLASdot_(const PetscBLASInt *, const PetscScalar *, const PetscBLASInt *, const PetscScalar *, const PetscBLASInt *);
-BLAS_EXTERN double    BLASdotu_(const PetscBLASInt *, const PetscScalar *, const PetscBLASInt *, const PetscScalar *, const PetscBLASInt *);
+BLAS_EXTERN double BLASdot_(const PetscBLASInt *, const PetscScalar *, const PetscBLASInt *, const PetscScalar *, const PetscBLASInt *);
+BLAS_EXTERN double BLASdotu_(const PetscBLASInt *, const PetscScalar *, const PetscBLASInt *, const PetscScalar *, const PetscBLASInt *);
   #else
 BLAS_EXTERN PetscScalar BLASdot_(const PetscBLASInt *, const PetscScalar *, const PetscBLASInt *, const PetscScalar *, const PetscBLASInt *);
   #endif

@@ -1160,8 +1160,8 @@ static PetscErrorCode MatTensorAltV(Mat trace, Mat fiber, PetscInt dimTrace, Pet
 #endif
           }
           for (l = 0; l < Nk; l++) PetscCall(MatSetValue(prod, i, col * Nk + l, vals[l], INSERT_VALUES)); /* Nk */
-        }                                                                                                 /* jT */
-      }                                                                                                   /* jF */
+        } /* jT */
+      } /* jF */
       PetscCall(MatRestoreRow(trace, iT, &ncolsT, &colsT, &valsT));
     } /* iT */
     PetscCall(MatRestoreRow(fiber, iF, &ncolsF, &colsF, &valsF));

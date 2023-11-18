@@ -1187,7 +1187,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
     fft->n = fft->N;
 #else
     PetscCall(MatSetSizes(A, tot_dim, tot_dim, tot_dim, tot_dim));
-    fft->n       = tot_dim;
+    fft->n = tot_dim;
 #endif
 #if !PetscDefined(HAVE_MPIUNI)
   } else {

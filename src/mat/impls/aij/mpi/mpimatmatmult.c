@@ -2123,7 +2123,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AB(Mat C)
     "seqmpi",
     "backend",
   };
-  PetscInt    nalg        = 4;
+  PetscInt nalg = 4;
 #endif
   PetscInt  alg = 1; /* set nonscalable algorithm as default */
   PetscBool flg;

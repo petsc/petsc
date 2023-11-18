@@ -68,8 +68,7 @@ static PetscErrorCode MarkedObjectMapView(PetscViewer vwr, std::size_t nkeys, co
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_ATTRIBUTE_FORMAT(10, 11)
-static PetscErrorCode CheckMarkedObjectMap_Private(PetscBool cond, const char cond_str[], MPI_Comm comm, PetscDeviceContext dctx, std::size_t nkeys, const PetscObjectId *keys, const PetscMemoryAccessMode *modes, const std::size_t *ndeps, const PetscEvent **dependencies, const char *format, ...)
+PETSC_ATTRIBUTE_FORMAT(10, 11) static PetscErrorCode CheckMarkedObjectMap_Private(PetscBool cond, const char cond_str[], MPI_Comm comm, PetscDeviceContext dctx, std::size_t nkeys, const PetscObjectId *keys, const PetscMemoryAccessMode *modes, const std::size_t *ndeps, const PetscEvent **dependencies, const char *format, ...)
 {
   PetscFunctionBegin;
   if (PetscUnlikely(!cond)) {

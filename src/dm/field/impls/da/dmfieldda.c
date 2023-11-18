@@ -60,7 +60,7 @@ static PetscErrorCode DMFieldView_DA(DMField field, PetscViewer viewer)
     PetscInt _k, _l; \
     for (_k = 0; _k < (c); _k++) (y)[_k] = 0.; \
     for (_l = 0; _l < (m); _l++) { \
-      for (_k = 0; _k < (c); _k++) (y)[_k] += cast((A)[(c)*_l + _k]) * (x)[_l]; \
+      for (_k = 0; _k < (c); _k++) (y)[_k] += cast((A)[(c) * _l + _k]) * (x)[_l]; \
     } \
   } while (0)
 

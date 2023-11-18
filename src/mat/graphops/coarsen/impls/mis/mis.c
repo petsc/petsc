@@ -118,7 +118,7 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
               break;
             }
           }
-        }           /* parallel test */
+        } /* parallel test */
         if (isOK) { /* select or remove this vertex */
           nDone++;
           /* check for singleton */
@@ -172,8 +172,8 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
             }
           }
         } /* selected */
-      }   /* not done vertex */
-    }     /* vertex loop */
+      } /* not done vertex */
+    } /* vertex loop */
 
     /* update ghost states and count todos */
     if (mpimat) {
@@ -211,7 +211,7 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
       PetscCall(MPIU_Allreduce(&t1, &t2, 1, MPIU_INT, MPI_SUM, comm)); /* synchronous version */
       if (!t2) break;
     } else break; /* all done */
-  }               /* outer parallel MIS loop */
+  } /* outer parallel MIS loop */
   PetscCall(ISRestoreIndices(perm, &perm_ix));
   PetscCall(PetscInfo(info_is, "\t removed %" PetscInt_FMT " of %" PetscInt_FMT " vertices.  %" PetscInt_FMT " selected.\n", nremoved, nloc, nselected));
 

@@ -1170,8 +1170,7 @@ PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer viewer, const char 
   PetscFunctionBegin;
   PetscCall(PetscViewerSetUp(viewer));
   /* count number of strings */
-  while (data[n++])
-    ;
+  while (data[n++]);
   n--;
   PetscCall(PetscMalloc1(n + 1, &sizes));
   sizes[0] = n;
