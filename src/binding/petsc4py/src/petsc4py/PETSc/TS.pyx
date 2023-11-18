@@ -1981,7 +1981,7 @@ cdef class TS(Object):
         self,
         direction: Sequence[int],
         terminate: Sequence[bool],
-        eventhandler: TSEventHandlerFunction,
+        indicator: TSEventIndicatorFunction,
         postevent: TSPostEventFunction=None,
         args: tuple[Any, ...] | None = None,
         kargs: dict[str, Any] | None = None) -> None:
@@ -1995,14 +1995,14 @@ cdef class TS(Object):
             Direction of zero crossing to be detected {-1,0,+1}.
         terminate
             Flags for each event to indicate stepping should be terminated.
-        eventhandler
+        indicator
             Function for detecting the event
         postevent
             Function to execute after the event
         args
-            Additional positional arguments for ``eventhandler``.
+            Additional positional arguments for ``indicator``.
         kargs
-            Additional keyword arguments for ``eventhandler``.
+            Additional keyword arguments for ``indicator``.
 
         See Also
         --------
@@ -2019,16 +2019,16 @@ cdef class TS(Object):
         assert nterm == ndirs
 
         cdef PetscInt nevents = ndirs
-        if eventhandler is not None:
+        if indicator is not None:
             if args  is None: args  = ()
             if kargs is None: kargs = {}
-            self.set_attr('__eventhandler__', (eventhandler, args, kargs))
+            self.set_attr('__indicator__', (indicator, args, kargs))
             if postevent is not None:
                 self.set_attr('__postevent__', (postevent, args, kargs))
-                CHKERR( TSSetEventHandler(self.ts, nevents, idirs, iterm, TS_EventHandler, TS_PostEvent, <void*>NULL) )
+                CHKERR( TSSetEventHandler(self.ts, nevents, idirs, iterm, TS_EventIndicator, TS_PostEvent, <void*>NULL) )
             else:
                 self.set_attr('__postevent__', None)
-                CHKERR( TSSetEventHandler(self.ts, nevents, idirs, iterm, TS_EventHandler, NULL, <void*>NULL) )
+                CHKERR( TSSetEventHandler(self.ts, nevents, idirs, iterm, TS_EventIndicator, NULL, <void*>NULL) )
         else:
             CHKERR( TSSetEventHandler(self.ts, nevents, idirs, iterm, NULL, NULL, <void*>NULL) )
 

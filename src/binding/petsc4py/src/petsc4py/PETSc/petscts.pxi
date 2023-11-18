@@ -213,10 +213,10 @@ cdef extern from * nogil:
     PetscErrorCode TSMonitorCancel(PetscTS)
     PetscErrorCode TSMonitor(PetscTS,PetscInt,PetscReal,PetscVec)
 
-    ctypedef PetscErrorCode (*PetscTSEventHandler)(PetscTS,PetscReal,PetscVec,PetscScalar[],void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode (*PetscTSEventIndicator)(PetscTS,PetscReal,PetscVec,PetscScalar[],void*) except PETSC_ERR_PYTHON
     ctypedef PetscErrorCode (*PetscTSPostEvent)(PetscTS,PetscInt,PetscInt[],PetscReal,PetscVec, PetscBool, void*) except PETSC_ERR_PYTHON
 
-    PetscErrorCode TSSetEventHandler(PetscTS, PetscInt, PetscInt[], PetscBool[], PetscTSEventHandler, PetscTSPostEvent, void*)
+    PetscErrorCode TSSetEventHandler(PetscTS, PetscInt, PetscInt[], PetscBool[], PetscTSEventIndicator, PetscTSPostEvent, void*)
     PetscErrorCode TSSetEventTolerances(PetscTS, PetscReal, PetscReal[])
     PetscErrorCode TSGetNumEvents(PetscTS, PetscInt*)
 
@@ -539,7 +539,7 @@ cdef PetscErrorCode TS_Monitor(
 
 # -----------------------------------------------------------------------------
 
-cdef PetscErrorCode TS_EventHandler(
+cdef PetscErrorCode TS_EventIndicator(
     PetscTS     ts,
     PetscReal   time,
     PetscVec    u,
@@ -548,14 +548,14 @@ cdef PetscErrorCode TS_EventHandler(
     ) except PETSC_ERR_PYTHON with gil:
     cdef TS  Ts = ref_TS(ts)
     cdef Vec Vu = ref_Vec(u)
-    cdef object context = Ts.get_attr('__eventhandler__')
+    cdef object context = Ts.get_attr('__indicator__')
     if context is None: return PETSC_SUCCESS
-    (eventhandler, args, kargs) = context
+    (indicator, args, kargs) = context
     cdef PetscInt nevents = 0
     CHKERR( TSGetNumEvents(ts, &nevents) )
     cdef npy_intp s = <npy_intp> nevents
     fvalue_array = PyArray_SimpleNewFromData(1, &s, NPY_PETSC_SCALAR, fvalue)
-    eventhandler(Ts, toReal(time), Vu, fvalue_array, *args, **kargs)
+    indicator(Ts, toReal(time), Vu, fvalue_array, *args, **kargs)
     return PETSC_SUCCESS
 
 cdef PetscErrorCode TS_PostEvent(

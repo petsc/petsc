@@ -455,7 +455,7 @@ struct _n_TSEvent {
   PetscReal    timestep_postevent;                                                          /* time step immediately after the event */
   PetscReal    timestep_min;                                                                /* Minimum time step */
   PetscBool   *zerocrossing;                                                                /* Flag to signal zero crossing detection */
-  PetscErrorCode (*eventhandler)(TS, PetscReal, Vec, PetscScalar *, void *);                /* User event handler function */
+  PetscErrorCode (*indicator)(TS, PetscReal, Vec, PetscScalar *, void *);                   /* User function whose sign changes indicate events */
   PetscErrorCode (*postevent)(TS, PetscInt, PetscInt[], PetscReal, Vec, PetscBool, void *); /* User post event function */
   void         *ctx;                                                                        /* User context for event handler and post even functions */
   PetscInt     *direction;                                                                  /* Zero crossing direction: 1 -> Going positive, -1 -> Going negative, 0 -> Any */
