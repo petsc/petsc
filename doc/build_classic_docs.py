@@ -39,6 +39,9 @@ def main(stage,outdir):
       if 'PETSCBUIDTARBALL' in os.environ:
         command.append('--download-c2html')
         command.append('--download-sowing')
+        c2html = None
+        doctext = None
+        mapnames = None
       else:
         command.append('--with-fc=0')
         import shutil
@@ -58,20 +61,19 @@ def main(stage,outdir):
       print('==================================================================')
       if not c2html:
         with open(os.path.join(petsc_dir,petsc_arch,'lib','petsc','conf','petscvariables')) as f:
-          c2html = [line for line in f if line.find('C2HTML') > -1]
+          c2html = [line for line in f if line.find('C2HTML ') > -1]
           c2html = re.sub('[ ]*C2HTML[ ]*=[ ]*','',c2html[0]).strip('\n').strip()
       if not doctext:
         with open(os.path.join(petsc_dir,petsc_arch,'lib','petsc','conf','petscvariables')) as f:
-          doctext = [line for line in f if line.find('DOCTEXT') > -1]
+          doctext = [line for line in f if line.find('DOCTEXT ') > -1]
           doctext = re.sub('[ ]*DOCTEXT[ ]*=[ ]*','',doctext[0]).strip('\n').strip()
-          #print('build_class_docs: Using doctext from petscvariables file '+doctext)
-      else:
-        #print('build_class_docs: Using doctext from PATH '+doctext)
-        pass
       if not mapnames:
         with open(os.path.join(petsc_dir,petsc_arch,'lib','petsc','conf','petscvariables')) as f:
-          mapnames = [line for line in f if line.find('MAPNAMES') > -1]
-          mapnames = re.sub('[ ]*C2HTML[ ]*=[ ]*','',mapnames[0]).strip('\n').strip()
+          mapnames = [line for line in f if line.find('MAPNAMES ') > -1]
+          mapnames = re.sub('[ ]*MAPNAMES[ ]*=[ ]*','',mapnames[0]).strip('\n').strip()
+      print('Using C2HTML:', c2html)
+      print('Using DOCTEXT:', doctext)
+      print('Using MAPNAMES:', mapnames)
 
       import build_man_pages
       x = time.clock_gettime(time.CLOCK_REALTIME)
