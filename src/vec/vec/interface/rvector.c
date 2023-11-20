@@ -205,8 +205,14 @@ PetscErrorCode VecNorm(Vec x, NormType type, PetscReal *val)
   PetscValidLogicalCollectiveEnum(x, type, 2);
   PetscAssertPointer(val, 3);
 
-  /* Cached data? */
   PetscCall(VecNormAvailable(x, type, &flg, val));
+  // check that all MPI processes call this routine together and have same availability
+  if (PetscDefined(USE_DEBUG)) {
+    PetscBool minflg;
+
+    PetscCall(MPIU_Allreduce(&flg, &minflg, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)x)));
+    PetscCheck(flg == minflg, PetscObjectComm((PetscObject)(x)), PETSC_ERR_ARG_WRONGSTATE, "Some MPI processes have cached norm, others do not. This may happen when some MPI processes call VecGetArray() and some others do not.");
+  }
   if (flg) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(VecLockReadPush(x));
@@ -2403,7 +2409,7 @@ PetscErrorCode VecRestoreArrayReadAndMemType(Vec x, const PetscScalar **a)
   VecGetArrayWriteAndMemType - Like `VecGetArrayWrite()`, but if this is a device vector it will always return
   a device pointer to the device memory that contains this processor's portion of the vector data.
 
-  Not Collective; No Fortran Support
+  Logically Collective; No Fortran Support
 
   Input Parameter:
 . x - the vector
@@ -2443,7 +2449,7 @@ PetscErrorCode VecGetArrayWriteAndMemType(Vec x, PetscScalar **a, PetscMemType *
 /*@C
   VecRestoreArrayWriteAndMemType - Restore array obtained with `VecGetArrayWriteAndMemType()`
 
-  Not Collective; No Fortran Support
+  Logically Collective; No Fortran Support
 
   Input Parameters:
 + x - the vector
@@ -2478,7 +2484,7 @@ PetscErrorCode VecRestoreArrayWriteAndMemType(Vec x, PetscScalar **a)
   array provided by the user. This is useful to avoid copying an array
   into a vector.
 
-  Not Collective; No Fortran Support
+  Logically Collective; No Fortran Support
 
   Input Parameters:
 + vec   - the vector
@@ -2514,7 +2520,7 @@ PetscErrorCode VecPlaceArray(Vec vec, const PetscScalar array[])
   array provided by the user. This is useful to avoid copying an array
   into a vector.
 
-  Not Collective; No Fortran Support
+  Logically Collective; No Fortran Support
 
   Input Parameters:
 + vec   - the vector

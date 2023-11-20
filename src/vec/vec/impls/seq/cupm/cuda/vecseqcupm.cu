@@ -154,7 +154,7 @@ PetscErrorCode VecCreateSeqCUDAWithArray(MPI_Comm comm, PetscInt bs, PetscInt n,
 /*@C
   VecCUDAGetArray - Provides access to the device buffer inside a vector
 
-  Not Collective; Asynchronous; No Fortran Support
+  Logically Collective; Asynchronous; No Fortran Support
 
   Input Parameter:
 . v - the vector
@@ -283,7 +283,7 @@ PetscErrorCode VecCUDARestoreArrayRead(Vec v, const PetscScalar **a)
 /*@C
   VecCUDAGetArrayWrite - Provides write access to the CUDA buffer inside a vector.
 
-   Not Collective; Asynchronous; No Fortran Support
+   Logically Collective; Asynchronous; No Fortran Support
 
   Input Parameter:
 . v - the vector
@@ -318,7 +318,7 @@ PetscErrorCode VecCUDAGetArrayWrite(Vec v, PetscScalar **a)
   VecCUDARestoreArrayWrite - Restore a CUDA device pointer previously acquired with
   `VecCUDAGetArrayWrite()`.
 
-   Not Collective; Asynchronous; No Fortran Support
+   Logically Collective; Asynchronous; No Fortran Support
 
   Input Parameters:
 + v - the vector
@@ -345,7 +345,7 @@ PetscErrorCode VecCUDARestoreArrayWrite(Vec v, PetscScalar **a)
   VecCUDAPlaceArray - Allows one to replace the GPU array in a vector with a GPU array provided
   by the user.
 
-  Not Collective; Asynchronous; No Fortran Support
+  Logically Collective; Asynchronous; No Fortran Support
 
   Input Parameters:
 + vec - the vector
@@ -380,7 +380,7 @@ PetscErrorCode VecCUDAPlaceArray(Vec vin, const PetscScalar a[])
   VecCUDAReplaceArray - Permanently replace the GPU array in a vector with a GPU array provided
   by the user.
 
-  Not Collective; No Fortran Support
+  Logically Collective; No Fortran Support
 
   Input Parameters:
 + vec   - the vector
@@ -409,7 +409,7 @@ PetscErrorCode VecCUDAReplaceArray(Vec vin, const PetscScalar a[])
 /*@C
   VecCUDAResetArray - Resets a vector to use its default memory.
 
-  Not Collective; No Fortran Support
+  Logically Collective; No Fortran Support
 
   Input Parameters:
 . vec - the vector
