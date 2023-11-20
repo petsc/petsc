@@ -148,7 +148,7 @@ Changes: Development
 - Add ``DMPlexCoordMap`` and some default maps
 - Add Boolean argument to ``DMPlexPartitionLabelCreateSF()`` to sort ranks
 - Add ``DMClearAuxiliaryVec()`` to clear the auxiliary data
-- Add ownershipTransferSF as an output argument to ``DMPlexFilter()``
+- Add ignoreLabelHalo and ownershipTransferSF arguments to ``DMPlexFilter()``
 
 .. rubric:: FE/FV:
 

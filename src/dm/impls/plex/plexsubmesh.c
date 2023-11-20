@@ -3338,7 +3338,7 @@ static PetscErrorCode DMPlexFilterLabels_Internal(DM dm, const PetscInt numSubPo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel label, PetscInt value, PetscBool markedFaces, PetscBool isCohesive, PetscInt cellHeight, PetscSF *ownershipTransferSF, DM subdm)
+static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel label, PetscInt value, PetscBool markedFaces, PetscBool isCohesive, PetscInt cellHeight, PetscBool ignoreLabelHalo, PetscSF *ownershipTransferSF, DM subdm)
 {
   MPI_Comm         comm;
   DMLabel          subpointMap;
@@ -3361,7 +3361,8 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
     DMLabel         depth;
     IS              pointIS;
     const PetscInt *points;
-    PetscInt        numPoints = 0;
+    PetscInt        numPoints = 0, pStart = 0;
+    PetscBool      *isGhost = NULL;
 
     PetscCall(DMPlexGetDepthLabel(dm, &depth));
     PetscCall(DMLabelGetStratumIS(label, value, &pointIS));
@@ -3369,10 +3370,23 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
       PetscCall(ISGetIndices(pointIS, &points));
       PetscCall(ISGetLocalSize(pointIS, &numPoints));
     }
+    if (ignoreLabelHalo) {
+      PetscSF         pointSF;
+      PetscInt        nleaves, pEnd;
+      const PetscInt *ilocal = NULL;
+
+      PetscCall(DMGetPointSF(dm, &pointSF));
+      PetscCall(PetscSFGetGraph(pointSF, NULL, &nleaves, &ilocal, NULL));
+      PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+      PetscCall(PetscMalloc1(pEnd - pStart, &isGhost));
+      for (p = 0; p < pEnd - pStart; ++p) isGhost[p] = PETSC_FALSE;
+      for (p = 0; p < nleaves; ++p) isGhost[(ilocal ? ilocal[p] : p) - pStart] = PETSC_TRUE;
+    }
     for (p = 0; p < numPoints; ++p) {
       PetscInt *closure = NULL;
       PetscInt  closureSize, c, pdim;
 
+      if (ignoreLabelHalo && isGhost[points[p] - pStart]) continue;
       PetscCall(DMPlexGetTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure));
       for (c = 0; c < closureSize * 2; c += 2) {
         PetscCall(DMLabelGetValue(depth, closure[c], &pdim));
@@ -3380,6 +3394,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
       }
       PetscCall(DMPlexRestoreTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure));
     }
+    PetscCall(PetscFree(isGhost));
     if (pointIS) PetscCall(ISRestoreIndices(pointIS, &points));
     PetscCall(ISDestroy(&pointIS));
   }
@@ -3698,7 +3713,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
 static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, DMLabel vertexLabel, PetscInt value, PetscBool markedFaces, DM subdm)
 {
   PetscFunctionBegin;
-  PetscCall(DMPlexCreateSubmeshGeneric_Interpolated(dm, vertexLabel, value, markedFaces, PETSC_FALSE, 1, NULL, subdm));
+  PetscCall(DMPlexCreateSubmeshGeneric_Interpolated(dm, vertexLabel, value, markedFaces, PETSC_FALSE, 1, PETSC_FALSE, NULL, subdm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3958,7 +3973,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
 
   PetscFunctionBegin;
   if (labelname) PetscCall(DMGetLabel(dm, labelname, &label));
-  PetscCall(DMPlexCreateSubmeshGeneric_Interpolated(dm, label, value, PETSC_FALSE, PETSC_TRUE, 1, NULL, subdm));
+  PetscCall(DMPlexCreateSubmeshGeneric_Interpolated(dm, label, value, PETSC_FALSE, PETSC_TRUE, 1, PETSC_FALSE, NULL, subdm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -4061,9 +4076,10 @@ PetscErrorCode DMPlexReorderCohesiveSupports(DM dm)
   DMPlexFilter - Extract a subset of mesh cells defined by a label as a separate mesh
 
   Input Parameters:
-+ dm        - The original mesh
-. cellLabel - The `DMLabel` marking cells contained in the new mesh
-- value     - The label value to use
++ dm              - The original mesh
+. cellLabel       - The `DMLabel` marking cells contained in the new mesh
+. value           - The label value to use
+- ignoreLabelHalo - The flag indicating if labeled points that are in the halo are ignored
 
   Output Parameter:
 + ownershipTransferSF - The `PetscSF` representing the ownership transfers between parent local meshes due to submeshing.
@@ -4079,19 +4095,19 @@ PetscErrorCode DMPlexReorderCohesiveSupports(DM dm)
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetSubpointMap()`, `DMGetLabel()`, `DMLabelSetValue()`, `DMPlexCreateSubmesh()`
 @*/
-PetscErrorCode DMPlexFilter(DM dm, DMLabel cellLabel, PetscInt value, PetscSF *ownershipTransferSF, DM *subdm)
+PetscErrorCode DMPlexFilter(DM dm, DMLabel cellLabel, PetscInt value, PetscBool ignoreLabelHalo, PetscSF *ownershipTransferSF, DM *subdm)
 {
   PetscInt dim, overlap;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (ownershipTransferSF) PetscAssertPointer(ownershipTransferSF, 4);
-  PetscAssertPointer(subdm, 5);
+  if (ownershipTransferSF) PetscAssertPointer(ownershipTransferSF, 5);
+  PetscAssertPointer(subdm, 6);
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), subdm));
   PetscCall(DMSetType(*subdm, DMPLEX));
   /* Extract submesh in place, could be empty on some procs, could have inconsistency if procs do not both extract a shared cell */
-  PetscCall(DMPlexCreateSubmeshGeneric_Interpolated(dm, cellLabel, value, PETSC_FALSE, PETSC_FALSE, 0, ownershipTransferSF, *subdm));
+  PetscCall(DMPlexCreateSubmeshGeneric_Interpolated(dm, cellLabel, value, PETSC_FALSE, PETSC_FALSE, 0, ignoreLabelHalo, ownershipTransferSF, *subdm));
   PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, *subdm));
   // It is possible to obtain a surface mesh where some faces are in SF
   //   We should either mark the mesh as having an overlap, or delete these from the SF
