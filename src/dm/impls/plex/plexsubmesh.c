@@ -3338,7 +3338,7 @@ static PetscErrorCode DMPlexFilterLabels_Internal(DM dm, const PetscInt numSubPo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel label, PetscInt value, PetscBool markedFaces, PetscBool isCohesive, PetscInt cellHeight, PetscBool ignoreLabelHalo, PetscSF *ownershipTransferSF, DM subdm)
+static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel label, PetscInt value, PetscBool markedFaces, PetscBool isCohesive, PetscInt cellHeight, PetscBool ignoreLabelHalo, PetscBool sanitizeSubmesh, PetscSF *ownershipTransferSF, DM subdm)
 {
   MPI_Comm         comm;
   DMLabel          subpointMap;
@@ -3613,26 +3613,67 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
         newLocalPoints[p].rank  = -2;
         newLocalPoints[p].index = -2;
       }
-      /* Set subleaves */
-      for (l = 0; l < numLeaves; ++l) {
-        const PetscInt point    = localPoints[l];
-        const PetscInt subpoint = DMPlexFilterPointPerm_Internal(point, 0, numSubpoints, sortedPoints ? sortedPoints : subpoints, sortedIndices);
-
-        if (subpoint < 0) continue;
-        newLocalPoints[point - pStart].rank  = rank;
-        newLocalPoints[point - pStart].index = subpoint;
-        ++numSubleaves;
-      }
-      /* Must put in owned subpoints */
       for (p = pStart; p < pEnd; ++p) {
         newOwners[p - pStart].rank  = -3;
         newOwners[p - pStart].index = -3;
       }
-      for (p = 0; p < numSubpoints; ++p) {
-        /* Hold on to currently owned points */
-        if (rootdegree[subpoints[p] - pStart]) newOwners[subpoints[p] - pStart].rank = rank + size;
-        else newOwners[subpoints[p] - pStart].rank = rank;
-        newOwners[subpoints[p] - pStart].index = p;
+      if (sanitizeSubmesh) {
+        /* A subpoint is forced to be owned by a rank that owns */
+        /* a subcell that contains the subpoint in its closure. */
+        PetscInt  cStart, cEnd, c, clSize, cl;
+        PetscInt *ownedCells, *closure = NULL;
+
+        /* claim ownership */
+        for (p = 0; p < numSubpoints; ++p) {
+          const PetscInt point = subpoints[p];
+
+          newLocalPoints[point - pStart].rank  = rank;
+          newLocalPoints[point - pStart].index = p;
+        }
+        PetscCall(DMGetDimension(subdm, &sdim));
+        PetscCall(DMPlexGetDepthStratum(dm, sdim, &cStart, &cEnd));
+        PetscCall(PetscMalloc1(cEnd - cStart, &ownedCells));
+        for (c = cStart; c < cEnd; ++c) ownedCells[c - cStart] = 0;
+        for (p = 0; p < numSubpoints; ++p) {
+          c = subpoints[p];
+          if (c >= cStart && c < cEnd) ownedCells[c - cStart] = 1;
+        }
+        for (l = 0; l < numLeaves; ++l) {
+          c = localPoints ? localPoints[l] : l;
+          if (c >= cStart && c < cEnd) ownedCells[c - cStart] = 0;
+        }
+        for (c = cStart; c < cEnd; ++c) {
+          if (ownedCells[c - cStart] == 0) continue;
+          PetscCall(DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &clSize, &closure));
+          for (cl = 0; cl < clSize * 2; cl += 2) {
+            p = closure[cl];
+            if (newLocalPoints[p - pStart].rank < size) newLocalPoints[p - pStart].rank += size;
+          }
+          PetscCall(DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &clSize, &closure));
+        }
+        PetscCall(PetscFree(ownedCells));
+        for (p = 0; p < numRoots; ++p) {
+          newOwners[p].rank  = newLocalPoints[p].rank;
+          newOwners[p].index = newLocalPoints[p].index;
+        }
+      } else {
+        /* Set subleaves */
+        for (l = 0; l < numLeaves; ++l) {
+          const PetscInt point    = localPoints[l];
+          const PetscInt subpoint = DMPlexFilterPointPerm_Internal(point, 0, numSubpoints, sortedPoints ? sortedPoints : subpoints, sortedIndices);
+
+          if (subpoint < 0) continue;
+          newLocalPoints[point - pStart].rank  = rank;
+          newLocalPoints[point - pStart].index = subpoint;
+          ++numSubleaves;
+        }
+        /* Must put in owned subpoints */
+        for (p = 0; p < numSubpoints; ++p) {
+          /* Hold on to currently owned points */
+          if (rootdegree[subpoints[p] - pStart]) newOwners[subpoints[p] - pStart].rank = rank + size;
+          else newOwners[subpoints[p] - pStart].rank = rank;
+          newOwners[subpoints[p] - pStart].index = p;
+        }
       }
       PetscCall(PetscSFReduceBegin(sfPoint, MPIU_2INT, newLocalPoints, newOwners, MPI_MAXLOC));
       PetscCall(PetscSFReduceEnd(sfPoint, MPIU_2INT, newLocalPoints, newOwners, MPI_MAXLOC));
@@ -3672,27 +3713,55 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
         PetscCall(PetscSFSetFromOptions(*ownershipTransferSF));
         PetscCall(PetscSFSetGraph(*ownershipTransferSF, pEnd - pStart, nleaves1, ilocal1, PETSC_OWN_POINTER, iremote1, PETSC_OWN_POINTER));
       }
+      if (sanitizeSubmesh) {
+        for (p = pStart; p < pEnd; ++p) {
+          newLocalPoints[p - pStart].rank  = newOwners[p - pStart].rank;
+          newLocalPoints[p - pStart].index = newOwners[p - pStart].index;
+        }
+      }
       PetscCall(PetscSFBcastBegin(sfPoint, MPIU_2INT, newOwners, newLocalPoints, MPI_REPLACE));
       PetscCall(PetscSFBcastEnd(sfPoint, MPIU_2INT, newOwners, newLocalPoints, MPI_REPLACE));
-      PetscCall(PetscMalloc1(numSubleaves, &slocalPoints));
-      PetscCall(PetscMalloc1(numSubleaves, &sremotePoints));
-      for (l = 0; l < numLeaves; ++l) {
-        const PetscInt point    = localPoints[l];
-        const PetscInt subpoint = DMPlexFilterPointPerm_Internal(point, 0, numSubpoints, sortedPoints ? sortedPoints : subpoints, sortedIndices);
+      if (sanitizeSubmesh) {
+        for (p = 0; p < numSubpoints; ++p) {
+          const PetscInt point = subpoints[p];
 
-        if (subpoint < 0) continue;
-        if (newLocalPoints[point].rank == rank) {
-          ++ll;
-          continue;
+          if (newLocalPoints[point - pStart].rank >= 0 && newLocalPoints[point - pStart].rank != rank) ++sl;
         }
-        slocalPoints[sl]        = subpoint;
-        sremotePoints[sl].rank  = newLocalPoints[point].rank;
-        sremotePoints[sl].index = newLocalPoints[point].index;
-        PetscCheck(sremotePoints[sl].rank >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid remote rank for local point %" PetscInt_FMT, point);
-        PetscCheck(sremotePoints[sl].index >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid remote subpoint for local point %" PetscInt_FMT, point);
-        ++sl;
+        PetscCall(PetscMalloc1(sl, &slocalPoints));
+        PetscCall(PetscMalloc1(sl, &sremotePoints));
+        for (p = 0, sl = 0; p < numSubpoints; ++p) {
+          const PetscInt point = subpoints[p];
+
+          if (newLocalPoints[point - pStart].rank >= 0 && newLocalPoints[point - pStart].rank != rank) {
+            slocalPoints[sl]        = p;
+            sremotePoints[sl].rank  = newLocalPoints[point - pStart].rank;
+            sremotePoints[sl].index = newLocalPoints[point - pStart].index;
+            PetscCheck(sremotePoints[sl].rank >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid remote rank");
+            PetscCheck(sremotePoints[sl].index >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid remote subpoint");
+            ++sl;
+          }
+        }
+      } else {
+        PetscCall(PetscMalloc1(numSubleaves, &slocalPoints));
+        PetscCall(PetscMalloc1(numSubleaves, &sremotePoints));
+        for (l = 0; l < numLeaves; ++l) {
+          const PetscInt point    = localPoints[l];
+          const PetscInt subpoint = DMPlexFilterPointPerm_Internal(point, 0, numSubpoints, sortedPoints ? sortedPoints : subpoints, sortedIndices);
+
+          if (subpoint < 0) continue;
+          if (newLocalPoints[point].rank == rank) {
+            ++ll;
+            continue;
+          }
+          slocalPoints[sl]        = subpoint;
+          sremotePoints[sl].rank  = newLocalPoints[point].rank;
+          sremotePoints[sl].index = newLocalPoints[point].index;
+          PetscCheck(sremotePoints[sl].rank >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid remote rank for local point %" PetscInt_FMT, point);
+          PetscCheck(sremotePoints[sl].index >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid remote subpoint for local point %" PetscInt_FMT, point);
+          ++sl;
+        }
+        PetscCheck(sl + ll == numSubleaves, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatch in number of subleaves %" PetscInt_FMT " + %" PetscInt_FMT " != %" PetscInt_FMT, sl, ll, numSubleaves);
       }
-      PetscCheck(sl + ll == numSubleaves, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatch in number of subleaves %" PetscInt_FMT " + %" PetscInt_FMT " != %" PetscInt_FMT, sl, ll, numSubleaves);
       PetscCall(PetscFree2(newLocalPoints, newOwners));
       PetscCall(PetscSFSetGraph(sfPointSub, numSubroots, sl, slocalPoints, PETSC_OWN_POINTER, sremotePoints, PETSC_OWN_POINTER));
     }
@@ -3713,7 +3782,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
 static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, DMLabel vertexLabel, PetscInt value, PetscBool markedFaces, DM subdm)
 {
   PetscFunctionBegin;
-  PetscCall(DMPlexCreateSubmeshGeneric_Interpolated(dm, vertexLabel, value, markedFaces, PETSC_FALSE, 1, PETSC_FALSE, NULL, subdm));
+  PetscCall(DMPlexCreateSubmeshGeneric_Interpolated(dm, vertexLabel, value, markedFaces, PETSC_FALSE, 1, PETSC_FALSE, PETSC_FALSE, NULL, subdm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3973,7 +4042,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
 
   PetscFunctionBegin;
   if (labelname) PetscCall(DMGetLabel(dm, labelname, &label));
-  PetscCall(DMPlexCreateSubmeshGeneric_Interpolated(dm, label, value, PETSC_FALSE, PETSC_TRUE, 1, PETSC_FALSE, NULL, subdm));
+  PetscCall(DMPlexCreateSubmeshGeneric_Interpolated(dm, label, value, PETSC_FALSE, PETSC_TRUE, 1, PETSC_FALSE, PETSC_FALSE, NULL, subdm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -4079,7 +4148,8 @@ PetscErrorCode DMPlexReorderCohesiveSupports(DM dm)
 + dm              - The original mesh
 . cellLabel       - The `DMLabel` marking cells contained in the new mesh
 . value           - The label value to use
-- ignoreLabelHalo - The flag indicating if labeled points that are in the halo are ignored
+. ignoreLabelHalo - The flag indicating if labeled points that are in the halo are ignored
+- sanitizeSubmesh - The flag indicating if a subpoint is forced to be owned by a rank that owns a subcell that contains that point in its closure
 
   Output Parameter:
 + ownershipTransferSF - The `PetscSF` representing the ownership transfers between parent local meshes due to submeshing.
@@ -4095,19 +4165,19 @@ PetscErrorCode DMPlexReorderCohesiveSupports(DM dm)
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetSubpointMap()`, `DMGetLabel()`, `DMLabelSetValue()`, `DMPlexCreateSubmesh()`
 @*/
-PetscErrorCode DMPlexFilter(DM dm, DMLabel cellLabel, PetscInt value, PetscBool ignoreLabelHalo, PetscSF *ownershipTransferSF, DM *subdm)
+PetscErrorCode DMPlexFilter(DM dm, DMLabel cellLabel, PetscInt value, PetscBool ignoreLabelHalo, PetscBool sanitizeSubmesh, PetscSF *ownershipTransferSF, DM *subdm)
 {
   PetscInt dim, overlap;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (ownershipTransferSF) PetscAssertPointer(ownershipTransferSF, 5);
-  PetscAssertPointer(subdm, 6);
+  if (ownershipTransferSF) PetscAssertPointer(ownershipTransferSF, 6);
+  PetscAssertPointer(subdm, 7);
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), subdm));
   PetscCall(DMSetType(*subdm, DMPLEX));
   /* Extract submesh in place, could be empty on some procs, could have inconsistency if procs do not both extract a shared cell */
-  PetscCall(DMPlexCreateSubmeshGeneric_Interpolated(dm, cellLabel, value, PETSC_FALSE, PETSC_FALSE, 0, ignoreLabelHalo, ownershipTransferSF, *subdm));
+  PetscCall(DMPlexCreateSubmeshGeneric_Interpolated(dm, cellLabel, value, PETSC_FALSE, PETSC_FALSE, 0, ignoreLabelHalo, sanitizeSubmesh, ownershipTransferSF, *subdm));
   PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, *subdm));
   // It is possible to obtain a surface mesh where some faces are in SF
   //   We should either mark the mesh as having an overlap, or delete these from the SF
