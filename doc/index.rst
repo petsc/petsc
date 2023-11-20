@@ -63,7 +63,7 @@ Toolkits/libraries that use PETSc
    in curvilinear coordinate systems
 -  `Chaste <https://www.cs.ox.ac.uk/chaste/>`__ Cancer, Heart and
    Soft Tissue Environment
--  `code_aster <https://www.code-aster.org/V2/spip.php?rubrique2​>`__
+-  `code_aster <https://www.code-aster.org/V2/spip.php?rubrique2>`__
    open source general purpose finite element code for solid and
    structural mechanics
 -  `COOLFluiD <https://github.com/andrealani/COOLFluiD>`__ CFD,
