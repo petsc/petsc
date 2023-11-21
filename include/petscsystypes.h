@@ -391,7 +391,7 @@ enum {
    Level: intermediate
 
    Notes:
-   As of this writing `PetscHipBLASInt` is always the system `int`.
+   `PetscHipBLASInt` is always the system `int`.
 
    `PetscErrorCode` `PetscHipBLASIntCast`(a,&b) checks if the given `PetscInt` a will fit in a `PetscHipBLASInt`, if not it
    generates a `PETSC_ERR_ARG_OUTOFRANGE` error
@@ -583,8 +583,6 @@ typedef PetscReal PetscScalar;
 /*E
     PetscCopyMode  - Determines how an array or `PetscObject` passed to certain functions is copied or retained by the aggregate `PetscObject`
 
-   Level: beginner
-
    Values for array input:
 +   `PETSC_COPY_VALUES` - the array values are copied into new space, the user is free to reuse or delete the passed in array
 .   `PETSC_OWN_POINTER` - the array values are NOT copied, the object takes ownership of the array and will free it later, the user cannot change or
@@ -597,6 +595,8 @@ typedef PetscReal PetscScalar;
 .   `PETSC_OWN_POINTER` - the input `PetscObject` is referenced by pointer (with reference count), thus should not be modified by the user.
                           increases its reference count).
 -   `PETSC_USE_POINTER` - invalid for `PetscObject` inputs.
+
+   Level: beginner
 
 .seealso: `PetscInsertMode`
 E*/
@@ -749,7 +749,7 @@ typedef PetscInt64 PetscObjectId;
 
     Level: developer
 
-    Notes:
+    Note:
     Object state is always-increasing and (for objects that track state) can be used to determine if an object has
     changed since the last time you interacted with it.  It is 64-bit so that it will not overflow for a very long time.
 

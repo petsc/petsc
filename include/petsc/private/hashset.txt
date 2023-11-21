@@ -3,12 +3,12 @@ This file is processed by make allmanpages in $PETSC_DIR/makefile to create manu
 for the types and macros created by PETSC_HASH_SET(). For example, PetscHSetIJ.
 
 /*S
-  PetscHSet<T> - Hash set with a key of <Type>
+  PetscHSet<T> - Hash set with a key of <KeyType>
 
   Level: developer
 
 .seealso: `PETSC_HASH_SET()`, `PetscHSet<T>Create()`, `PetscHSet<T>Destroy()`, `PetscHSet<T>QueryAdd()`, `PetscHSet<T>Del()`,
-          `PetscHSet<T>Add()`, PetscHSet<T>Reset()`
+          `PetscHSet<T>Add()`, `PetscHSet<T>Reset()`, `PETSC_HASH_MAP()`, `PetscHMap<T>Create()`,  `PetscHSet<T>`
 S*/
 typedef struct _PetscHash<T> PetscHSet<T>;
 
@@ -260,7 +260,7 @@ M*/
   Input Parameters:
 + ht    - The hash set
 . off   - Input offset in array (usually zero)
-- array - Array where to put hash set entries into
+- array - Array to put hash set entries in
 
   Output Parameters:
 + off   - Output offset in array (output offset = input offset + hash set size)

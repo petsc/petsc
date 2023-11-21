@@ -126,6 +126,8 @@ void assert_never_put_petsc_headers_inside_an_extern_c(double);
   Input Parameter:
 . name - The name of the attribute to test
 
+  Level: intermediate
+
   Notes:
   name should be identical to what you might pass to the __attribute__ declaration itself --
   plain, unbroken text.
@@ -157,8 +159,6 @@ void assert_never_put_petsc_headers_inside_an_extern_c(double);
   }
 .ve
 
-  Level: intermediate
-
 .seealso: `PetscHasBuiltin()`, `PetscDefined()`, `PetscLikely()`, `PetscUnlikely()`,
 `PETSC_ATTRIBUTE_FORMAT`, `PETSC_ATTRIBUTE_MAY_ALIAS`
 M*/
@@ -176,6 +176,8 @@ M*/
 
   Input Parameter:
 . name - the name of the builtin routine
+
+  Level: intermediate
 
   Notes:
   Evaluates to `1` if the builtin is supported and `0` otherwise. Note the term "evaluates"
@@ -204,8 +206,6 @@ M*/
     bar();
   }
 .ve
-
-  Level: intermediate
 
 .seealso: `PetscHasAttribute()`, `PetscAssume()`
 M*/

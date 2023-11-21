@@ -15,7 +15,7 @@
      Level: beginner
 
      Note:
-     Determines what ghost point values are brought over to each process; in this case the "corner" values are not
+     Determines what ghost point values are brought over to each process in `DMGlobalToLocalBegin()`/ `DMGlobalToLocalEnd()`; in this case the "corner" values are not
      brought over and hence should not be accessed locally
 
 .seealso: `DMDA_STENCIL_BOX`, `DMDAStencilType`, `DMDASetStencilType()`
@@ -26,6 +26,9 @@ M*/
                       be in the stencil.
 
      Level: beginner
+
+     Note:
+     Determines what ghost point values are brought over to each process in `DMGlobalToLocalBegin()`/ `DMGlobalToLocalEnd()`
 
 .seealso: `DMDA_STENCIL_STAR`, `DMDAStencilType`, `DMDASetStencilType()`
 M*/

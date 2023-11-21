@@ -144,20 +144,22 @@ PETSC_EXTERN const char *const TaoALMMTypes[];
 /*E
      TaoBNCGType - Determine the conjugate gradient update formula used in the TAOBNCG algorithm.
 
-$  TAO_BNCG_GD         - basic gradient descent, no CG update
-$  TAO_BNCG_PCGD       - preconditioned/scaled gradient descent
-$  TAO_BNCG_HS         - Hestenes-Stiefel
-$  TAO_BNCG_FR         - Fletcher-Reeves
-$  TAO_BNCG_PRP        - Polak-Ribiere-Polyak (PRP)
-$  TAO_BNCG_PRP_PLUS   - Polak-Ribiere-Polyak "plus" (PRP+)
-$  TAO_BNCG_DY         - Dai-Yuan
-$  TAO_BNCG_HZ         - Hager-Zhang (CG_DESCENT 5.3)
-$  TAO_BNCG_DK         - Dai-Kou (2013)
-$  TAO_BNCG_KD         - Kou-Dai (2015)
-$  TAO_BNCG_SSML_BFGS  - Self-Scaling Memoryless BFGS (Perry-Shanno)
-$  TAO_BNCG_SSML_DFP   - Self-Scaling Memoryless DFP
-$  TAO_BNCG_SSML_BRDN  - Self-Scaling Memoryless (Symmetric) Broyden
-
+  Values:
+.vb
+  TAO_BNCG_GD         - basic gradient descent, no CG update
+  TAO_BNCG_PCGD       - preconditioned/scaled gradient descent
+  TAO_BNCG_HS         - Hestenes-Stiefel
+  TAO_BNCG_FR         - Fletcher-Reeves
+  TAO_BNCG_PRP        - Polak-Ribiere-Polyak (PRP)
+  TAO_BNCG_PRP_PLUS   - Polak-Ribiere-Polyak "plus" (PRP+)
+  TAO_BNCG_DY         - Dai-Yuan
+  TAO_BNCG_HZ         - Hager-Zhang (CG_DESCENT 5.3)
+  TAO_BNCG_DK         - Dai-Kou (2013)
+  TAO_BNCG_KD         - Kou-Dai (2015)
+  TAO_BNCG_SSML_BFGS  - Self-Scaling Memoryless BFGS (Perry-Shanno)
+  TAO_BNCG_SSML_DFP   - Self-Scaling Memoryless DFP
+  TAO_BNCG_SSML_BRDN  - Self-Scaling Memoryless (Symmetric) Broyden
+.ve
   Level: advanced
 
 .seealso: `Tao`, `TAOBNCG`, `TaoBNCGSetType()`, `TaoBNCGGetType()`

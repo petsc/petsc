@@ -134,6 +134,8 @@ PETSC_EXTERN PetscErrorCode PetscDeviceMemset(PetscDeviceContext, void *PETSC_RE
   Output Parameter:
 . ptr - The pointer to store the result in
 
+  Level: beginner
+
   Notes:
   Memory allocated with this function must be freed with `PetscDeviceFree()`.
 
@@ -178,8 +180,6 @@ PETSC_EXTERN PetscErrorCode PetscDeviceMemset(PetscDeviceContext, void *PETSC_RE
                          \- ptr ->
 .ve
 
-  Level: beginner
-
 .N ASYNC_API
 
 .seealso: `PetscDeviceFree()`, `PetscDeviceCalloc()`, `PetscDeviceArrayCopy()`,
@@ -204,6 +204,8 @@ M*/
   Output Parameter:
 . ptr - The pointer to store the result in
 
+  Level: beginner
+
   Notes:
   Has identical usage to `PetscDeviceMalloc()` except that the memory is zeroed before it is
   returned. See `PetscDeviceMalloc()` for further discussion.
@@ -211,8 +213,6 @@ M*/
   This routine falls back to using `PetscCalloc1()` if PETSc was not configured with device
   support. The user should note that `mtype` is ignored in this case, as `PetscCalloc1()`
   allocates only host memory.
-
-  Level: beginner
 
 .N ASYNC_API
 
@@ -234,6 +234,8 @@ M*/
 + dctx - The `PetscDeviceContext` used to free the memory
 - ptr  - The pointer to free
 
+  Level: beginner
+
   Notes:
   `ptr` may be `NULL`, and is set to `PETSC_NULLPTR` on successful deallocation.
 
@@ -249,8 +251,6 @@ M*/
   -> dctx -/- |= CALL =| - dctx ->
   -> ptr -/
 .ve
-
-  Level: beginner
 
 .N ASYNC_API
 
@@ -316,6 +316,8 @@ M*/
 . ptr   - The pointer to the memory
 - n     - The amount (in elements) to zero
 
+  Level: beginner
+
   Notes:
   `ptr` must have been allocated using `PetscDeviceMalloc()` or `PetscDeviceCalloc()`.
 
@@ -333,8 +335,6 @@ M*/
 .ve
 
   See `PetscDeviceMemset()` for further discussion.
-
-  Level: beginner
 
 .N ASYNC_API
 

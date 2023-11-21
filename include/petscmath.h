@@ -434,10 +434,10 @@ PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128 MPIU___COMPLEX128_ATTR_TAG;
   /*MC
    MPIU_COMPLEX - Portable MPI datatype corresponding to `PetscComplex` independent of the precision of `PetscComplex`
 
-   Notes:
-   In MPI calls that require an MPI datatype that matches a `PetscComplex` or array of `PetscComplex` values, pass this value.
-
    Level: beginner
+
+   Note:
+   In MPI calls that require an MPI datatype that matches a `PetscComplex` or array of `PetscComplex` values, pass this value.
 
 .seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`, `MPIU_INT`, `PETSC_i`
 M*/
@@ -460,10 +460,10 @@ M*/
   /*MC
    MPIU_SCALAR - Portable MPI datatype corresponding to `PetscScalar` independent of the precision of `PetscScalar`
 
-   Notes:
-   In MPI calls that require an MPI datatype that matches a `PetscScalar` or array of `PetscScalar` values, pass this value.
-
    Level: beginner
+
+   Note:
+   In MPI calls that require an MPI datatype that matches a `PetscScalar` or array of `PetscScalar` values, pass this value.
 
 .seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_REAL`, `MPIU_COMPLEX`, `MPIU_INT`
 M*/
@@ -501,7 +501,7 @@ M*/
 
    Level: beginner
 
-   Notes:
+   Note:
        If PETSc was configured for real numbers then this always returns the value 0
 
 .seealso: `PetscScalar`, `PetscRealPart()`, `PetscMax()`, `PetscClipInterval()`, `PetscAbsInt()`, `PetscAbsReal()`, `PetscSqr()`
