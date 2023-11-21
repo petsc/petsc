@@ -106,9 +106,6 @@ typedef enum {
 
    Level: advanced
 
-   Developer Note:
-  This must match `include/petsc/finclude/petscpc.h` and the `KSPConvergedReason` values in `include/petscksp.h
-
 .seealso: [](sec_pc), `PCRICHARDSON`, `PC`, `PCApplyRichardson()`
 E*/
 typedef enum {
@@ -527,9 +524,6 @@ typedef enum {
 
     Level: beginner
 
-    Developer Note:
-    Any additions/changes here MUST also be made in `include/petsc/finclude/petscpc.h`
-
 .seealso: [](sec_pc), `PC`
 E*/
 typedef enum {
@@ -547,9 +541,6 @@ typedef enum {
     PCGAMGLayoutType - Layout for reduced grids
 
     Level: intermediate
-
-    Developer Note:
-    Any additions/changes here MUST also be made in `include/petsc/finclude/petscpc.h`
 
 .seealso: [](sec_pc), `PCGAMG`, `PC`, `PCGAMGSetCoarseGridLayoutType()`
 E*/

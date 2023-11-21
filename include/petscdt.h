@@ -217,7 +217,7 @@ static inline PetscErrorCode PetscDTFactorial(PetscInt n, PetscReal *factorial)
    Level: beginner
 
    Note:
-   This is limited to n such that n! can be represented by `PetscInt`, which is 12 if `PetscInt` is a signed 32-bit integer and 20 if `PetscInt` is a signed 64-bit integer.
+   This is limited to `n` such that n! can be represented by `PetscInt`, which is 12 if `PetscInt` is a signed 32-bit integer and 20 if `PetscInt` is a signed 64-bit integer.
 
 .seealso: `PetscDTFactorial()`, `PetscDTBinomialInt()`, `PetscDTBinomial()`
 M*/
@@ -241,14 +241,14 @@ static inline PetscErrorCode PetscDTFactorialInt(PetscInt n, PetscInt *factorial
 }
 
 /*MC
-   PetscDTBinomial - Approximate the binomial coefficient "n choose k"
+   PetscDTBinomial - Approximate the binomial coefficient `n` choose `k`
 
    Input Parameters:
 +  n - a non-negative integer
--  k - an integer between 0 and n, inclusive
+-  k - an integer between 0 and `n`, inclusive
 
    Output Parameter:
-.  binomial - approximation of the binomial coefficient n choose k
+.  binomial - approximation of the binomial coefficient `n` choose `k`
 
    Level: beginner
 
@@ -279,14 +279,14 @@ static inline PetscErrorCode PetscDTBinomial(PetscInt n, PetscInt k, PetscReal *
 }
 
 /*MC
-   PetscDTBinomialInt - Compute the binomial coefficient "n choose k"
+   PetscDTBinomialInt - Compute the binomial coefficient `n` choose `k`
 
    Input Parameters:
 +  n - a non-negative integer
--  k - an integer between 0 and n, inclusive
+-  k - an integer between 0 and `n`, inclusive
 
    Output Parameter:
-.  binomial - the binomial coefficient n choose k
+.  binomial - the binomial coefficient `n` choose `k`
 
    Level: beginner
 

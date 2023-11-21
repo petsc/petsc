@@ -72,12 +72,12 @@ typedef enum {
 /*E
    TSEquationType - type of `TS` problem that is solved
 
-   Level: beginner
-
    Values:
 +  `TS_EQ_UNSPECIFIED` - (default)
 .  `TS_EQ_EXPLICIT` - {ODE and DAE index 1, 2, 3, HI} F(t,U,U_t) := M(t) U_t - G(U,t) = 0
 -  `TS_EQ_IMPLICIT` - {ODE and DAE index 1, 2, 3, HI} F(t,U,U_t) = 0
+
+   Level: beginner
 
 .seealso: [](ch_ts), `TS`, `TSGetEquationType()`, `TSSetEquationType()`
 E*/

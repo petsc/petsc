@@ -39,6 +39,8 @@
 + ptr  - The pointer to the start of the region
 - size - The size (in bytes) of the region to poison
 
+  Level: developer
+
   Notes:
   `ptr` must not be `NULL`. It is OK to poison the same memory region repeatedly (it is a
   no-op).
@@ -85,8 +87,6 @@
   stack_array[0] = 10;
 .ve
 
-  Level: developer
-
 .seealso: `PetscUnpoisonMemoryRegion()`, `PetscIsRegionPoisoned()`
 @*/
 static inline PetscErrorCode PetscPoisonMemoryRegion(const void *ptr, size_t size)
@@ -113,13 +113,13 @@ static inline PetscErrorCode PetscPoisonMemoryRegion(const void *ptr, size_t siz
 + ptr  - The pointer to the start of the region
 - size - The size (in bytes) of the region to unpoison
 
+  Level: developer
+
   Notes:
   Removes poisoning from a previously poisoned region. `ptr` may not be `NULL`. It is OK to
   unpoison an unpoisoned region.
 
   See `PetscPoisonMemoryRegion()` for example usage and further discussion.
-
-  Level: developer
 
 .seealso: `PetscPoisonMemoryRegion()`, `PetscIsRegionPoisoned()`
 @*/
@@ -149,6 +149,8 @@ static inline PetscErrorCode PetscUnpoisonMemoryRegion(const void *ptr, size_t s
   Output Parameter:
 . poisoned - Whether the region is known to be poisoned
 
+  Level: developer
+
   Notes:
   Sets `poisoned` to `PETSC_BOOL3_TRUE` if at least 1 byte in the range [`ptr`, `ptr + size`) is
   poisoned. Therefore a region must be entirely unpoisoned for `poisoned` to be `PETSC_BOOL3_FALSE`.
@@ -157,8 +159,6 @@ static inline PetscErrorCode PetscUnpoisonMemoryRegion(const void *ptr, size_t s
 
   If it is not possible to query the poisoned status of a region, then `poisoned` is set to
   `PETSC_BOOL3_UNKNOWN`.
-
-  Level: developer
 
 .seealso: `PetscPoisonMemoryRegion()`, `PetscUnpoisonMemoryRegion()`
 @*/

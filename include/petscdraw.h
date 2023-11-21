@@ -240,7 +240,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawGetMouseButton(PetscDraw, PetscDrawButton *
 PETSC_EXTERN PetscErrorCode PetscDrawZoom(PetscDraw, PetscErrorCode (*)(PetscDraw, void *), void *);
 
 /*S
-     PetscDrawViewPorts - Subwindows in a `PetscDraw` object
+     PetscDrawViewPorts - Object representing subwindows in a `PetscDraw` object
 
    Level: intermediate
 

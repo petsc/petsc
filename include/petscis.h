@@ -55,12 +55,8 @@ PETSC_EXTERN PetscErrorCode ISContiguousLocal(IS, PetscInt, PetscInt, PetscInt *
 
     Level: intermediate
 
-   Developer Notes:
+   Developer Note:
    Entries that are negative need not be called collectively by all processes.
-
-   Any additions/changes here MUST also be made in include/petsc/finclude/petscis.h
-
-   Any additions/changes here must also be made in src/vec/vec/interface/dlregisvec.c in ISInfos[]
 
 .seealso: `IS`, `ISType`, `ISSetInfo()`
 E*/
@@ -286,7 +282,7 @@ struct _n_PetscLayout {
 };
 
 /*@C
-     PetscLayoutFindOwner - Find the owning rank for a global index
+     PetscLayoutFindOwner - Find the owning MPI process for a global index
 
     Not Collective; No Fortran Support
 
@@ -322,7 +318,7 @@ static inline PetscErrorCode PetscLayoutFindOwner(PetscLayout map, PetscInt idx,
 }
 
 /*@C
-     PetscLayoutFindOwnerIndex - Find the owning MPI rank and the local index on that rank for a global index
+     PetscLayoutFindOwnerIndex - Find the owning MPI process and the local index on that process for a global index
 
     Not Collective; No Fortran Support
 
