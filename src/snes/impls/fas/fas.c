@@ -233,7 +233,7 @@ static PetscErrorCode SNESSetFromOptions_FAS(SNES snes, PetscOptionItems *PetscO
       if (monflg) {
         PetscViewerAndFormat *vf;
         PetscCall(PetscViewerAndFormatCreate(viewer, format, &vf));
-        PetscCall(PetscObjectDereference((PetscObject)viewer));
+        PetscCall(PetscOptionsRestoreViewer(&viewer));
         PetscCall(SNESFASSetMonitor(snes, vf, PETSC_TRUE));
       }
     }

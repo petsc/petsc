@@ -381,7 +381,7 @@ PetscErrorCode MatColoringApply(MatColoring mc, ISColoring *coloring)
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Number of total columns %" PetscInt_FMT "\n", nc));
     if (nc <= 1000) PetscCall(ISColoringView(*coloring, viewer));
     PetscCall(PetscViewerPopFormat(viewer));
-    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(PetscOptionsRestoreViewer(&viewer));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

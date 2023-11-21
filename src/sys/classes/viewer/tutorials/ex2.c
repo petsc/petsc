@@ -13,7 +13,7 @@ int main(int argc, char **args)
   PetscCall(PetscViewerPushFormat(viewer, format));
   PetscCall(PetscViewerView(viewer, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(PetscViewerPopFormat(viewer));
-  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(PetscOptionsRestoreViewer(&viewer));
   PetscCall(PetscFinalize());
   return 0;
 }

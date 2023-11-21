@@ -99,7 +99,7 @@ int main(int argc, char **argv)
 
   if (viewer) {
     PetscCall(PetscViewerPopFormat(viewer));
-    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(PetscOptionsRestoreViewer(&viewer));
   }
   PetscCall(ISLocalToGlobalMappingDestroy(&l2g0));
   PetscCall(ISLocalToGlobalMappingDestroy(&l2g1));

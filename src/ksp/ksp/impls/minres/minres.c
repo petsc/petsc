@@ -668,7 +668,7 @@ static PetscErrorCode KSPDestroy_MINRES(KSP ksp)
 
   PetscFunctionBegin;
   PetscCall(PetscFree4(minres->e, minres->d, minres->ee, minres->dd));
-  PetscCall(PetscViewerDestroy(&minres->viewer));
+  PetscCall(PetscOptionsRestoreViewer(&minres->viewer));
   PetscCall(PetscFree(ksp->data));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPMINRESSetRadius_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPMINRESSetUseQLP_C", NULL));

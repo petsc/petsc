@@ -1116,7 +1116,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
     PetscCall(PetscOptionsGetViewer(PETSC_COMM_WORLD, NULL, NULL, "-process_view", &viewer, NULL, &flg));
     if (flg) {
       PetscCall(PetscProcessPlacementView(viewer));
-      PetscCall(PetscViewerDestroy(&viewer));
+      PetscCall(PetscOptionsRestoreViewer(&viewer));
     }
   }
 #endif

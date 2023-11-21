@@ -2936,7 +2936,11 @@ static PetscErrorCode PCReset_PATCH(PC pc)
   patch->nsubspaces  = 0;
   PetscCall(ISDestroy(&patch->iterationSet));
 
-  PetscCall(PetscViewerDestroy(&patch->viewerSection));
+  PetscCall(PetscOptionsRestoreViewer(&patch->viewerCells));
+  PetscCall(PetscOptionsRestoreViewer(&patch->viewerIntFacets));
+  PetscCall(PetscOptionsRestoreViewer(&patch->viewerPoints));
+  PetscCall(PetscOptionsRestoreViewer(&patch->viewerSection));
+  PetscCall(PetscOptionsRestoreViewer(&patch->viewerMatrix));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

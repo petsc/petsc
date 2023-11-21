@@ -124,7 +124,7 @@ PetscErrorCode ISColoringViewFromOptions(ISColoring obj, PetscObject bobj, const
     PetscCall(PetscViewerPushFormat(viewer, format));
     PetscCall(ISColoringView(obj, viewer));
     PetscCall(PetscViewerPopFormat(viewer));
-    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(PetscOptionsRestoreViewer(&viewer));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

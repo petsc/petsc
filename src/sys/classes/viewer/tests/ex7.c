@@ -16,7 +16,7 @@ int main(int argc, char **argv)
     PetscCall(PetscViewerPushFormat(viewers[i], formats[i]));
     PetscCall(PetscViewerASCIIPrintf(viewers[i], "This is viewer %d\n", (int)i));
     PetscCall(PetscViewerPopFormat(viewers[i]));
-    PetscCall(PetscViewerDestroy(&viewers[i]));
+    PetscCall(PetscOptionsRestoreViewer(&viewers[i]));
   }
   PetscCall(PetscFinalize());
   return 0;

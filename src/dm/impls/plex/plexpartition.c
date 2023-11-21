@@ -1954,7 +1954,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
     } else PetscCall(PetscFree(part));
     if (viewer) {
       PetscCall(PetscViewerPopFormat(viewer));
-      PetscCall(PetscViewerDestroy(&viewer));
+      PetscCall(PetscOptionsRestoreViewer(&viewer));
     }
     PetscCall(PetscLogEventEnd(DMPLEX_RebalanceSharedPoints, dm, 0, 0, 0));
     PetscFunctionReturn(PETSC_SUCCESS);

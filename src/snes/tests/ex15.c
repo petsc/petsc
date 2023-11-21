@@ -410,7 +410,7 @@ static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
       PetscCall(PetscBagView(bag, viewer));
       PetscCall(PetscViewerFlush(viewer));
       PetscCall(PetscViewerPopFormat(viewer));
-      PetscCall(PetscViewerDestroy(&viewer));
+      PetscCall(PetscOptionsRestoreViewer(&viewer));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);

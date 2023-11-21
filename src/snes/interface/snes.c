@@ -863,7 +863,7 @@ PetscErrorCode SNESMonitorSetFromOptions(SNES snes, const char name[], const cha
   if (flg) {
     PetscViewerAndFormat *vf;
     PetscCall(PetscViewerAndFormatCreate(viewer, format, &vf));
-    PetscCall(PetscObjectDereference((PetscObject)viewer));
+    PetscCall(PetscOptionsRestoreViewer(&viewer));
     if (monitorsetup) PetscCall((*monitorsetup)(snes, vf));
     PetscCall(SNESMonitorSet(snes, (PetscErrorCode(*)(SNES, PetscInt, PetscReal, void *))monitor, vf, (PetscErrorCode(*)(void **))PetscViewerAndFormatDestroy));
   }
@@ -2688,7 +2688,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   }
   PetscCall(VecDestroy(&x));
   if (complete_print) PetscCall(PetscViewerPopFormat(mviewer));
-  if (mviewer) PetscCall(PetscViewerDestroy(&mviewer));
+  if (mviewer) PetscCall(PetscOptionsRestoreViewer(&mviewer));
   PetscCall(PetscViewerASCIISetTab(viewer, tabs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4503,7 +4503,7 @@ PetscErrorCode SNESConvergedReasonViewFromOptions(SNES snes)
     PetscCall(PetscViewerPushFormat(viewer, format));
     PetscCall(SNESConvergedReasonView(snes, viewer));
     PetscCall(PetscViewerPopFormat(viewer));
-    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(PetscOptionsRestoreViewer(&viewer));
   }
   incall = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -4574,7 +4574,7 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x)
         PetscCall(PetscViewerPushFormat(viewer, format));
         PetscCall(PetscConvEstRateView(conv, alpha, viewer));
         PetscCall(PetscViewerPopFormat(viewer));
-        PetscCall(PetscViewerDestroy(&viewer));
+        PetscCall(PetscOptionsRestoreViewer(&viewer));
         PetscCall(PetscConvEstDestroy(&conv));
         PetscCall(PetscFree(alpha));
         incall = PETSC_FALSE;
