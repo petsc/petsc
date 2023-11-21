@@ -101,6 +101,7 @@ Toolkits/libraries that use PETSc
 -  `OpenCarp <https://opencarp.org/>`__ Cardiac Electrophysiology Simulator
 -  `OpenFOAM <https://develop.openfoam.com/modules/external-solver>`__
    Available as an extension for linear solvers for OpenFOAM
+-  `OpenFPM <http://http://openfpm.mpi-cbg.de/>`__ framework for particles and mesh simulation
 -  `OpenFVM <http://openfvm.sourceforge.net/>`__ finite volume
    based CFD solver
 -  `PermonSVM <http://permon.vsb.cz/permonsvm.htm>`__ support
