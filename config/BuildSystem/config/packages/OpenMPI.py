@@ -72,6 +72,8 @@ class Configure(config.package.GNUPackage):
     return
 
   def preInstall(self):
+    if not self.getExecutable('perl'):
+      raise RuntimeError('Cannot find perl required by --download-openmpi, install perl (possibly with a package manager) and run ./configure again') 
     self.Bootstrap('AUTOMAKE_JOBS=%d ./autogen.pl' % self.make.make_np)
 
   def checkDownload(self):
