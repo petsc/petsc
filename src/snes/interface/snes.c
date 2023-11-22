@@ -5563,8 +5563,12 @@ PetscErrorCode SNESGetNPC(SNES snes, SNES *pc)
     PetscCall(SNESGetOptionsPrefix(snes, &optionsprefix));
     PetscCall(SNESSetOptionsPrefix(snes->npc, optionsprefix));
     PetscCall(SNESAppendOptionsPrefix(snes->npc, "npc_"));
-    PetscCall(SNESGetApplicationContext(snes, &ctx));
-    PetscCall(SNESSetApplicationContext(snes->npc, ctx));
+    if (snes->ops->usercompute) {
+      PetscCall(SNESSetComputeApplicationContext(snes, snes->ops->usercompute, snes->ops->userdestroy));
+    } else {
+      PetscCall(SNESGetApplicationContext(snes, &ctx));
+      PetscCall(SNESSetApplicationContext(snes->npc, ctx));
+    }
     PetscCall(SNESSetCountersReset(snes->npc, PETSC_FALSE));
   }
   *pc = snes->npc;
