@@ -83,7 +83,7 @@ PetscErrorCode DMPlexRefineRegularGetAffineFaceTransforms(DMPlexTransform tr, DM
    invJ[Nf][dc][df]: 4 x 2 x 1
    detJ[Nf]:         4
    */
-  static PetscReal quad_v0[]   = {0.0, -1.0, 1.0, 0.0, 0.0, 1.0 - 1.0, 0.0};
+  static PetscReal quad_v0[]   = {0.0, -1.0, 1.0, 0.0, 0.0, 1.0, -1.0, 0.0};
   static PetscReal quad_J[]    = {1.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, -1.0};
   static PetscReal quad_invJ[] = {1.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, -1.0};
   static PetscReal quad_detJ[] = {1.0, 1.0, 1.0, 1.0};

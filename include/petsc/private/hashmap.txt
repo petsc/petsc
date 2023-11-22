@@ -4,14 +4,14 @@ This file is processed by make allmanpages in $PETSC_DIR/makefile to create manu
 for the types and macros created by PETSC_HASH_MAP(). For example, PetscHMAPIJ.
 
 /*S
-  PetscHMap<T> - Hash table map
+  PetscHMap<T> - Hash table map with a key of <KeyType>
 
   Synopsis:
   typedef khash_t(HMap<T>) *PetscHMap<T>;
 
   Level: developer
 
-.seealso: `PETSC_HASH_MAP()`, `PetscHMap<T>Create()`
+.seealso: `PETSC_HASH_MAP()`, `PetscHMap<T>Create()`, `PETSC_HASH_SET()`, `PetscHSet<T>Create()`
 S*/
 typedef struct _PetscHash<T> PetscHMap<T>;
 
@@ -273,7 +273,7 @@ M*/
                    current entry, otherwise (`key`, `value`) is inserted into `ht` as-if-by
                    `INSERT_VALUES`.
 
-   All other `InsertMode`s will raise an error if used.
+   All other `InsertMode` values raise an error.
 
    Since this routine relies on `+`, `<`, and `>` being well-formed for a particular type
    it is not available by default for all PETSc hash table instantiations. If a particular
@@ -443,7 +443,7 @@ M*/
   Input Parameters:
 + ht    - The hash table
 . off   - Input offset in array (usually zero)
-- array - Array where to put hash table keys into
+- array - Array to put hash table keys in
 
   Output Parameters:
 + off   - Output offset in array (output offset = input offset + hash table size)
@@ -464,7 +464,7 @@ M*/
   Input Parameters:
 + ht    - The hash table
 . off   - Input offset in array (usually zero)
-- array - Array where to put hash table values into
+- array - Array to put hash table values in
 
   Output Parameters:
 + off   - Output offset in array (output offset = input offset + hash table size)
@@ -485,8 +485,8 @@ M*/
   Input Parameters:
 + ht    - The hash table
 . off   - Input offset in array (usually zero)
-. karray - Array where to put hash table keys into
-- varray - Array where to put hash table values into
+. karray - Array to put hash table keys in
+- varray - Array to put hash table values in
 
   Output Parameters:
 + off   - Output offset in array (output offset = input offset + hash table size)

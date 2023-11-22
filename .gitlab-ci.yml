@@ -18,6 +18,7 @@ variables:
   GIT_STRATEGY: fetch
   GIT_CLEAN_FLAGS: -ffdxq
   TIMEOUT: 450
+  EXTRA_OPTIONS: -nox -nox_warning -malloc_dump
 
 #
 # The most basic template that most tests will expand upon
@@ -399,7 +400,7 @@ osx-arm:
     - os:macos-arm
   variables:
     TEST_ARCH: arch-ci-osx-arm
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout
     INIT_SCRIPT: .zprofile
 
 freebsd-cxx-cmplx-64idx-dbg:
@@ -954,7 +955,7 @@ mswin-uni:
   tags:
     - mswin-stage3
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout
     TEST_ARCH: arch-ci-mswin-uni
 
 mswin-gnu:

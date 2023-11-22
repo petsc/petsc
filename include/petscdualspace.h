@@ -38,14 +38,14 @@ PETSC_EXTERN const char *const PetscDualSpaceReferenceCells[];
 /*MC
   PetscDualSpaceTransformType - The type of function transform
 
-  Level: intermediate
-
   Values:
 +  `IDENTITY_TRANSFORM` - make no changes in the function
 .  `COVARIANT_PIOLA_TRANSFORM` - Covariant Piola: $\sigma^*(F) = J^{-T} F \circ \phi^{-1)$
 -  `CONTRAVARIANT_PIOLA_TRANSFORM` - Contravariant Piola: $\sigma^*(F) = 1/|J| J F \circ \phi^{-1)$
 
-  Notes:
+  Level: intermediate
+
+  Note:
   These transforms, and their inverses, are used to move functions and functionals between the reference element and real space.
   Suppose that we have a mapping $\phi$ which maps the reference cell to real space, and its Jacobian $J$. If we want to transform function $F$ on the reference element,
   so that it acts on real space, we use the pushforward transform $\sigma^*$. The pullback $\sigma_*$ is the inverse transform.

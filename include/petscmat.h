@@ -222,7 +222,7 @@ PETSC_DEPRECATED_FUNCTION(3, 9, 0, "MatSolverTypeGet()", ) static inline PetscEr
 }
 
 /*E
-    MatProductType - indicates what type of matrix product is requested
+    MatProductType - indicates what type of matrix product to compute
 
     Values:
 +  `MATPRODUCT_AB` - product of two matrices
@@ -329,11 +329,11 @@ typedef enum {
     MatCreateSubMatrixOption - Indicates if matrices obtained from a call to `MatCreateSubMatrices()`
      include the matrix values. Currently it is only used by `MatGetSeqNonzeroStructure()`.
 
-    Level: developer
-
     Values:
 +  `MAT_DO_NOT_GET_VALUES` - do not copy the matrix values
 -  `MAT_GET_VALUES` - copy the matrix values
+
+    Level: developer
 
     Developer Note:
     Why is not just a boolean used for this information?
@@ -927,9 +927,6 @@ PETSC_EXTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm, Mat, Pets
 /*@C
    MatSetValue - Set a single entry into a matrix.
 
-   This value may be cached, so `MatAssemblyBegin()` and `MatAssemblyEnd()`
-   MUST be called after all calls to `MatSetValue()` have been completed.
-
    Not Collective
 
    Input Parameters:
@@ -941,7 +938,10 @@ PETSC_EXTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm, Mat, Pets
 
    Level: beginner
 
-   Note:
+   Notes:
+   This value may be cached, so `MatAssemblyBegin()` and `MatAssemblyEnd()`
+   MUST be called after all calls to `MatSetValue()` have been completed.
+
    For efficiency one should use `MatSetValues()` and set several values simultaneously.
 
 .seealso: [](ch_matrices), `Mat`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `InsertMode`, `MatGetValue()`, `MatSetValues()`,

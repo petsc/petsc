@@ -32,7 +32,7 @@
    Collective
 
    Input Parameters:
-+  comm - A communicator, use `PETSC_COMM_SELF` unless you know all ranks of another communicator will detect the error
++  comm - An MPI communicator, use `PETSC_COMM_SELF` unless you know all ranks of another communicator will detect the error
 .  ierr - nonzero error code, see the list of standard error codes in include/petscerror.h
 -  message - error message
 
@@ -77,13 +77,13 @@ PETSC_EXTERN PetscMPIInt PETSC_MPI_ERROR_CODE;
    Collective
 
    Input Parameters:
-+  comm - A communicator, use `PETSC_COMM_SELF` unless you know all ranks of another communicator will detect the error
++  comm - An MPI communicator, use `PETSC_COMM_SELF` unless you know all ranks of another communicator will detect the error
 .  ierr - nonzero error code, see the list of standard error codes in include/petscerror.h
 -  message - error message
 
   Level: developer
 
-   Notes:
+   Note:
     This macro is FOR USE IN MPI CALLBACK FUNCTIONS ONLY, such as those passed to `MPI_Comm_create_keyval()`. It always returns the error code `PETSC_MPI_ERROR_CODE`
     which is registered with `MPI_Add_error_code()` when PETSc is initialized.
 
@@ -101,7 +101,7 @@ M*/
    Collective
 
    Input Parameters:
-+  comm - A communicator, so that the error can be collective
++  comm - An MPI communicator, so that the error can be collective
 .  ierr - nonzero error code, see the list of standard error codes in include/petscerror.h
 -  message - error message in the printf format
 
@@ -126,7 +126,7 @@ M*/
    Collective
 
    Input Parameters:
-+  comm - A communicator, so that the error can be collective
++  comm - An MPI communicator, so that the error can be collective
 .  ierr - nonzero error code, see the list of standard error codes in include/petscerror.h
 -  message - error message in the printf format
 
@@ -260,7 +260,7 @@ M*/
 
   Level: beginner
 
-  Notes:
+  Note:
   Enabled only in debug builds. See `PetscCheckAbort()` for usage.
 
 .seealso: `PetscCheckAbort()`, `PetscAssert()`, `PetscCheck()`, `SETERRABORT()`, `PetscError()`
@@ -785,7 +785,7 @@ PETSC_EXTERN PetscBool petscabortmpifinalize;
    Collective; No Fortran Support
 
    Input Parameters:
-+  comm - A communicator, so that the error can be collective
++  comm - An MPI communicator, so that the error can be collective
 -  ierr - nonzero error code, see the list of standard error codes in include/petscerror.h
 
    Level: advanced
@@ -1163,8 +1163,7 @@ PETSC_DEPRECATED_FUNCTION(3, 13, 0, "PetscSignalSegvCheckPointerOrMpi()", ) stat
    Notes:
     Use
 .vb
-     PetscErrorPrintf = PetscErrorPrintfNone; to turn off all printing of error messages (does not change the way the
-                        error is handled.) and
+     PetscErrorPrintf = PetscErrorPrintfNone; to turn off all printing of error messages (does not change the way the error is handled) and
      PetscErrorPrintf = PetscErrorPrintfDefault; to turn it back on or you can use your own function
 .ve
      Use
@@ -1347,7 +1346,7 @@ M*/
    occurred, for example, when a signal is received. It is recommended to use the debugger if extensive information is needed to
    help debug the problem.
 
-   The default stack is a global variable called petscstack.
+   The default stack is a global variable called `petscstack`.
 
    This is used by `PetscCall()` and is otherwise not like to be needed
 
@@ -1418,7 +1417,7 @@ M*/
    occurred, for example, when a signal is received. It is recommended to use the debugger if extensive information is needed to
    help debug the problem.
 
-   The default stack is a global variable called petscstack.
+   The default stack is a global variable called `petscstack`.
 
    Developer Note:
    `PetscStackPopNoCheck()` takes a function argument while  `PetscStackPop` does not, this difference is likely just historical.
@@ -1559,7 +1558,7 @@ M*/
    occurred, for example, when a signal is received. It is recommended to use the debugger if extensive information is needed to
    help debug the problem.
 
-   The default stack is a global variable called petscstack.
+   The default stack is a global variable called `petscstack`.
 
 .seealso: `PetscAttachDebugger()`, `PetscStackCopy()`, `PetscStackView()`, `PetscStackPopNoCheck()`, `PetscCall()`, `PetscFunctionBegin()`,
           `PetscFunctionReturn()`, `PetscFunctionBeginHot()`, `PetscFunctionBeginUser()`, `PetscStackPushNoCheck()`, `PetscStackPop`
@@ -1587,7 +1586,7 @@ M*/
    occurred, for example, when a signal is received. It is recommended to use the debugger if extensive information is needed to
    help debug the problem.
 
-   The default stack is a global variable called petscstack.
+   The default stack is a global variable called `petscstack`.
 
 .seealso: `PetscAttachDebugger()`, `PetscStackCopy()`, `PetscStackView()`, `PetscStackPushNoCheck()`, `PetscStackPopNoCheck()`, `PetscStackPush()`
 M*/
@@ -1720,12 +1719,12 @@ void PetscCallExternal(F, Args...);
 
    Level: developer
 
-   Note:
+   Notes:
    Often one should use `PetscCallExternal()` instead. This routine is intended for external library routines that DO NOT return error codes
 
    In debug mode this also checks the memory for corruption at the end of the function call.
 
-   Certain external packages, such as BLAS/LAPACK may have their own macros for managing the call, error checking, etc.
+   Certain external packages, such as BLAS/LAPACK may have their own macros, `PetscCallBLAS()` for managing the call, error checking, etc.
 
    Developer Note:
    This is so that when a user or external library routine results in a crash or corrupts memory, they get blamed instead of PETSc.

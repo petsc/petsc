@@ -96,9 +96,6 @@ PETSC_EXTERN const char *const DMPlexInterpolatedFlags[];
    Note:
    An interpolated `DMPLEX` means that edges (and faces for 3d meshes) are present in the `DMPLEX` data structures.
 
-   Developer Note:
-   Any additions/changes here MUST also be made in include/petsc/finclude/petscdmplex.h and src/dm/f90-mod/petscdmplex.h
-
 .seealso: `DMPLEX`, `DMPlexIsInterpolated()`, `DMPlexIsInterpolatedCollective()`, `DMPlexInterpolate()`, `DMPlexUninterpolate()`
 E*/
 typedef enum {
@@ -156,9 +153,6 @@ PETSC_EXTERN PetscErrorCode DMPlexRestoreCompressedClosure(DM, PetscSection, Pet
 -  `DMPLEX_TPS_GYROID`    - Gyroid surface, defined by the equation sin(x)cos(y) + sin(y)cos(z) + sin(z)cos(x) = 0
 
    Level: intermediate
-
-   Developer Note:
-   Any additions/changes here MUST also be made in include/petsc/finclude/petscdmplex.h and src/dm/f90-mod/petscdmplex.h
 
 .seealso: `DMPLEX`, `DMPlexCreateTPSMesh()`
 E*/
@@ -271,8 +265,6 @@ PETSC_EXTERN PetscErrorCode DMPlexDistributionGetName(DM, const char *[]);
    Level: intermediate
 
    Developer Note:
-   Any additions/changes here MUST also be made in include/petsc/finclude/petscdmplex.h and src/dm/f90-mod/petscdmplex.h
-
    Could be replaced with `PETSC_BOOL3`
 
 .seealso: `DMPlexReorderSetDefault()`, `DMPlexReorderGetDefault()`, `DMPlexGetOrdering()`, `DMPlexPermute()`

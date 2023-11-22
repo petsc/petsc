@@ -151,7 +151,7 @@ PETSC_EXTERN MPI_Datatype MPIU_FORTRANADDR;
    In MPI calls that require an MPI datatype that matches a `PetscCount` or array of `PetscCount` values, pass this value.
 
   Developer Note:
-  It seems MPI_AINT is unsigned so this may be the wrong choice here since `PetscCount` is signed
+  It seems `MPI_AINT` is unsigned so this may be the wrong choice here since `PetscCount` is signed
 
 .seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_INT`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`
 M*/
@@ -271,7 +271,7 @@ PETSC_EXTERN MPI_Comm PETSC_COMM_WORLD;
 
    Level: beginner
 
-   Notes:
+   Note:
    Do not USE/access or set this variable before `PetscInitialize()` has been called.
 
 .seealso: `PETSC_COMM_WORLD`
@@ -284,7 +284,7 @@ M*/
 
    Level: beginner
 
-   Notes:
+   Note:
    By default `PETSC_MPI_THREAD_REQUIRED` equals `MPI_THREAD_FUNNELED` when the MPI implementation provides MPI_Init_thread(), otherwise it equals `MPI_THREAD_SINGLE`
 
 .seealso: `PetscInitialize()`
@@ -363,7 +363,7 @@ M*/
 
    Level: developer
 
-   Notes:
+   Note:
    Memory is always allocated at least double aligned
 
 .seealso: `PetscMalloc()`, `PetscFree()`, `PetscNew()`
@@ -467,7 +467,7 @@ M*/
 
    Level: beginner
 
-   Notes:
+   Note:
    See `PetsMalloc1()` for more details on usage.
 
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscMalloc1()`, `PetscCalloc2()`
@@ -854,7 +854,7 @@ M*/
 
    Level: beginner
 
-   Note:
+   Notes:
    Do not free memory obtained with `PetscMalloc2()`, `PetscCalloc2()` etc, they must be freed with `PetscFree2()` etc.
 
    It is safe to call `PetscFree()` on a `NULL` pointer.
@@ -1331,7 +1331,7 @@ M*/
 
    Level: developer
 
-   Note:
+   Notes:
      You can change how help messages are printed by replacing the function pointer with a function that does not simply write to stdout.
 
       To use, write your own function, for example,
@@ -1573,7 +1573,7 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_at_all(MPI_File, MPI_Offset, void *, 
 
    Level: advanced
 
-   Notes:
+   Note:
    If integers needed for the applications are too large to fit in 32-bit ints you can ./configure using `--with-64-bit-indices` to make `PetscInt` use 64-bit integers
 
 .seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscMPIIntCast()`, `PetscBLASIntCast()`, `PetscIntMultError()`, `PetscIntSumError()`
@@ -1828,7 +1828,7 @@ static inline PetscInt PetscIntMultTruncate(PetscInt a, PetscInt b)
 
    Use `PetscIntMultError()` to compute the product of two `PetscInt` if you wish to generate an error if the result will not fit in a `PetscInt`
 
-   Developers Notes:
+   Developers Note:
    This is used where we compute approximate sizes for workspace and need to insure the workspace is index-able.
 
 .seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscInt64Mult()`, `PetscIntMultError()`

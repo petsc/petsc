@@ -10,7 +10,7 @@
 
    Level: beginner
 
-.seealso: `DMDA`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDACreate()`, `DMDASetStencilType()`
+.seealso: `DMDA`, `DMDA_STENCIL_BOX`, `DMDA_STENCIL_STAR`,`DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDACreate()`, `DMDASetStencilType()`
 E*/
 typedef enum {
   DMDA_STENCIL_STAR,

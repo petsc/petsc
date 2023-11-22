@@ -17,7 +17,9 @@
 . result_if_true - Result of macro expansion if cond expands to 1
 - __VA_ARGS__    - Result of macro expansion if cond expands to 0
 
-  Notes:
+  Level: intermediate
+
+  Note:
   cond must be defined and expand (not evaluate!) to either integer literal 0 or 1. Must have
   at least 1 argument for __VA_ARGS__, but it may expand empty.
 
@@ -33,8 +35,6 @@
   PetscIf(MY_VAR,myFunction,PetscExpandToNothing)(1,"hello") -> *nothing*
 .ve
 
-  Level: intermediate
-
 .seealso: `PetscIfPetscDefined()`, `PetscConcat()`, `PetscExpandToNothing()`, `PetscCompl()`
 */
 #define PetscIf(cond, result_if_true, ...) PetscConcat_(PETSC_IF_INTERNAL_, cond)(result_if_true, __VA_ARGS__)
@@ -49,7 +49,9 @@
 . result_if_true - Result of macro expansion if PetscDefined(cond) expands to 1
 - __VA_ARGS__    - Result of macro expansion if PetscDefined(cond) expands to 0
 
-  Notes:
+  Level: intermediate
+
+  Note:
   cond must satisfy all conditions for PetscDefined(). Must have at least 1 argument for
   __VA_ARGS__, but it may expand empty.
 
@@ -61,8 +63,6 @@
   #undef PETSC_HAVE_FOO
   PetscIfPetscDefined(HAVE_FOO,foo,bar,baz,bop) -> bar,baz,bop
 .ve
-
-  Level: intermediate
 
 .seealso: `PetscIf()`, `PetscDefined()`, `PetscConcat()`, `PetscExpand()`, `PetscCompl()`
 */

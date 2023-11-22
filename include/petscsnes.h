@@ -592,8 +592,6 @@ typedef struct _p_LineSearch *SNESLineSearch;
 /*J
     SNESLineSearchType - String with the name of a PETSc line search method `SNESLineSearch`
 
-   Level: beginner
-
    Values:
 +  `SNESLINESEARCHBASIC` - (or equivalently `SNESLINESEARCHNONE`) Simple damping line search, defaults to using the full Newton step
 .  `SNESLINESEARCHBT` - Backtracking line search over the L2 norm of the function
@@ -601,6 +599,8 @@ typedef struct _p_LineSearch *SNESLineSearch;
 .  `SNESLINESEARCHCP` - Critical point secant line search assuming F(x) = grad G(x) for some unknown G(x)
 .  `SNESLINESEARCHNLEQERR` - Affine-covariant error-oriented linesearch
 -  `SNESLINESEARCHSHELL` - User provided `SNESLineSearch` implementation
+
+   Level: beginner
 
 .seealso: [](ch_snes), `SNESLineSearch`, `SNESLineSearchSetType()`, `SNES`
 J*/
@@ -854,8 +854,6 @@ PETSC_EXTERN PetscErrorCode SNESMSRegisterDestroy(void);
 /*MC
    SNESNGMRESRestartType - the restart approach used by `SNESNGMRES`
 
-   Level: intermediate
-
   Values:
 +   `SNES_NGMRES_RESTART_NONE` - never restart
 .   `SNES_NGMRES_RESTART_DIFFERENCE` - restart based upon difference criteria
@@ -864,6 +862,8 @@ PETSC_EXTERN PetscErrorCode SNESMSRegisterDestroy(void);
   Options Database Keys:
 + -snes_ngmres_restart_type<difference,periodic,none> - set the restart type
 - -snes_ngmres_restart[30]                            - sets the number of iterations before restart for periodic
+
+   Level: intermediate
 
 .seealso: `SNES, `SNESNGMRES`, `SNESNGMRESSetSelectType()`, `SNESNGMRESGetSelectType()`, `SNESNGMRESSetRestartType()`,
           `SNESNGMRESGetRestartType()`, `SNESNGMRESSelectType`
@@ -879,8 +879,6 @@ PETSC_EXTERN const char *const SNESNGMRESRestartTypes[];
    SNESNGMRESSelectType - the approach used by `SNESNGMRES` to determine how the candidate solution and
   combined solution are used to create the next iterate.
 
-   Level: intermediate
-
    Values:
 +   `SNES_NGMRES_SELECT_NONE` - choose the combined solution all the time
 .   `SNES_NGMRES_SELECT_DIFFERENCE` - choose based upon the selection criteria
@@ -888,6 +886,8 @@ PETSC_EXTERN const char *const SNESNGMRESRestartTypes[];
 
   Options Database Key:
 . -snes_ngmres_select_type<difference,none,linesearch> - select type
+
+   Level: intermediate
 
 .seealso: `SNES, `SNESNGMRES`, `SNESNGMRESSetSelectType()`, `SNESNGMRESGetSelectType()`, `SNESNGMRESSetRestartType()`,
           `SNESNGMRESGetRestartType()`, `SNESNGMRESRestartType`
@@ -907,8 +907,6 @@ PETSC_EXTERN PetscErrorCode SNESNGMRESGetRestartFmRise(SNES, PetscBool *);
 /*MC
    SNESNCGType - the conjugate update approach for `SNESNCG`
 
-   Level: intermediate
-
    Values:
 +   `SNES_NCG_FR` - Fletcher-Reeves update
 .   `SNES_NCG_PRP` - Polak-Ribiere-Polyak update, the default and the only one that tolerates generalized search directions
@@ -918,6 +916,8 @@ PETSC_EXTERN PetscErrorCode SNESNGMRESGetRestartFmRise(SNES, PetscBool *);
 
   Options Database Key:
 . -snes_ncg_type<fr,prp,hs,dy,cd> - select type
+
+   Level: intermediate
 
 .seealso: `SNES, `SNESNCG`, `SNESNCGSetType()`
 M*/
@@ -935,8 +935,6 @@ PETSC_EXTERN PetscErrorCode SNESNCGSetType(SNES, SNESNCGType);
 /*MC
    SNESQNScaleType - the scaling type used by `SNESQN`
 
-   Level: intermediate
-
    Values:
 +   `SNES_QN_SCALE_NONE` - don't scale the problem
 .   `SNES_QN_SCALE_SCALAR` - use Shanno scaling
@@ -946,6 +944,8 @@ PETSC_EXTERN PetscErrorCode SNESNCGSetType(SNES, SNESNCGType);
 
     Options Database Key:
 . -snes_qn_scale_type <diagonal,none,scalar,jacobian> - Scaling type
+
+   Level: intermediate
 
 .seealso: `SNES, `SNESQN`, `SNESQNSetScaleType()`, `SNESQNType`, `SNESQNSetType()`, `SNESQNSetRestartType()`, `SNESQNRestartType`
 M*/
@@ -961,8 +961,6 @@ PETSC_EXTERN const char *const SNESQNScaleTypes[];
 /*MC
    SNESQNRestartType - the restart approached used by `SNESQN`
 
-   Level: intermediate
-
    Values:
 +   `SNES_QN_RESTART_NONE` - never restart
 .   `SNES_QN_RESTART_POWELL` - restart based upon descent criteria
@@ -971,6 +969,8 @@ PETSC_EXTERN const char *const SNESQNScaleTypes[];
   Options Database Keys:
 + -snes_qn_restart_type <powell,periodic,none> - set the restart type
 - -snes_qn_m <m>                               - sets the number of stored updates and the restart period for periodic
+
+   Level: intermediate
 
 .seealso: `SNES, `SNESQN`, `SNESQNSetScaleType()`, `SNESQNType`, `SNESQNSetType()`, `SNESQNSetRestartType()`, `SNESQNScaleType`
 M*/
@@ -985,8 +985,6 @@ PETSC_EXTERN const char *const SNESQNRestartTypes[];
 /*MC
    SNESQNType - the type used by `SNESQN`
 
-   Level: intermediate
-
   Values:
 +   `SNES_QN_LBFGS` - LBFGS variant
 .   `SNES_QN_BROYDEN` - Broyden variant
@@ -994,6 +992,8 @@ PETSC_EXTERN const char *const SNESQNRestartTypes[];
 
   Options Database Key:
 . -snes_qn_type <lbfgs,broyden,badbroyden> - quasi-Newton type
+
+   Level: intermediate
 
 .seealso: `SNES, `SNESQN`, `SNESQNSetScaleType()`, `SNESQNSetType()`, `SNESQNScaleType`, `SNESQNRestartType`, `SNESQNSetRestartType()`
 M*/

@@ -807,9 +807,9 @@ extern void PetscCheckSorted(PetscInt, T);
    Level: developer
 
    Notes:
-   This does not return an error code, it is a macro that returns with an error code on error.
+   This does not return an error code, it is a macro that returns from the subroutine with an error code on error.
 
-   Use `PetscUseTypeMethod()` or `PetscTryTypeMethod()` to call functions that are included in the objects function table, the `ops` array
+   Use `PetscUseTypeMethod()` or `PetscTryTypeMethod()` to call functions that are included in the object's function table, the `ops` array
    in the object.
 
 .seealso: `PetscUseMethod()`, `PetscCall()`, `PetscUseTypeMethod()`, `PetscTryTypeMethod()`, `PetscCheck()`, `PetscObject`
@@ -837,9 +837,9 @@ M*/
    Level: developer
 
    Notes:
-   This does not return an error code, it is a macro that returns with an error code on error.
+   This does not return an error code, it is a macro that returns from the subroutine with an error code on error.
 
-   Use `PetscUseTypeMethod()` or `PetscTryTypeMethod()` to call functions that are included in the objects function table, the `ops` array
+   Use `PetscUseTypeMethod()` or `PetscTryTypeMethod()` to call functions that are included in the object's function table, the `ops` array
    in the object.
 
 .seealso: `PetscTryMethod()`, `PetscCall()`, `PetscUseTypeMethod()`, `PetscTryTypeMethod()`, `PetscCheck()`, `PetscObject`
@@ -902,7 +902,7 @@ M*/
    Level: developer
 
    Note:
-   This does not return an error code, it is a macro that returns with an error code on error.
+   This does not return an error code, it is a macro that returns from the subroutine with an error code on error.
 
    Use `PetscUseMethod()` or `PetscTryMethod()` to call functions that have been composed to an object with `PetscObjectComposeFunction()`
 
@@ -930,7 +930,7 @@ M*/
    Level: developer
 
    Note:
-   This does not return an error code, it is a macro that returns with an error code on error.
+   This does not return an error code, it is a macro that returns from the subroutine with an error code on error.
 
    Use `PetscUseMethod()` or `PetscTryMethod()` to call functions that have been composed to an object with `PetscObjectComposeFunction()`
 

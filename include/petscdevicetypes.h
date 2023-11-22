@@ -17,14 +17,13 @@
 
   Level: intermediate
 
-  Notes:
+  Note:
   `PETSC_MEMTYPE_KOKKOS` depends on the Kokkos backend configuration
 
   Developer Notes:
   This enum uses a function (`PetscMemTypeToString()`) to convert to string representation so
   cannot be used in `PetscOptionsEnum()`.
 
-  Developer Note:
   Encoding of the bitmask in binary: xxxxyyyz
 .vb
  z = 0                - Host memory
@@ -130,7 +129,7 @@ PETSC_NODISCARD static inline PETSC_CONSTEXPR_14 const char *PetscMemTypeToStrin
 
   Level: developer
 
-  Developer Notes:
+  Developer Note:
   This enum uses a function (`PetscOffloadMaskToString()`) to convert to string representation so
   cannot be used in `PetscOptionsEnum()`.
 
@@ -221,7 +220,7 @@ PETSC_NODISCARD static inline PETSC_CONSTEXPR_14 PetscMemType PetscOffloadMaskTo
 
   Level: beginner
 
-  Notes:
+  Note:
   `PETSC_DEVICE_INIT_NONE` implies that any initialization of `PetscDevice` is disallowed and
   doing so results in an error. Useful to ensure that no accelerator is used in a program.
 
@@ -247,7 +246,7 @@ PETSC_EXTERN const char *const PetscDeviceInitTypes[];
 
   Level: beginner
 
-  Notes:
+  Note:
   One can also use the `PETSC_DEVICE_DEFAULT()` routine to get the current default `PetscDeviceType`.
 
 .seealso: `PetscDevice`, `PetscDeviceInitType`, `PetscDeviceCreate()`, `PETSC_DEVICE_DEFAULT()`
