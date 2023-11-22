@@ -30,6 +30,7 @@ typedef struct _UserCtx {
   Vec         workRight[NWORKRIGHT]; /* Workspace for temporary vec */
   NormType    p;
   PetscRandom rctx;
+  PetscBool   soft;
   PetscBool   taylor;   /* Flag to determine whether to run Taylor test or not */
   PetscBool   use_admm; /* Flag to determine whether to run Taylor test or not */
 } *UserCtx;
@@ -124,6 +125,7 @@ static PetscErrorCode ConfigureContext(UserCtx ctx)
   ctx->matops   = 0;
   ctx->iter     = 10;
   ctx->p        = NORM_2;
+  ctx->soft     = PETSC_FALSE;
   ctx->taylor   = PETSC_TRUE;
   ctx->use_admm = PETSC_FALSE;
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Configure separable objection example", "ex4.c");
@@ -140,6 +142,7 @@ static PetscErrorCode ConfigureContext(UserCtx ctx)
   PetscCall(PetscOptionsReal("-abstol", "Absolute stopping criterion for ADMM", "ex4.c", ctx->abstol, &(ctx->abstol), NULL));
   PetscCall(PetscOptionsReal("-reltol", "Relative stopping criterion for ADMM", "ex4.c", ctx->reltol, &(ctx->reltol), NULL));
   PetscCall(PetscOptionsBool("-taylor", "Flag for Taylor test. Default is true.", "ex4.c", ctx->taylor, &(ctx->taylor), NULL));
+  PetscCall(PetscOptionsBool("-soft", "Flag for testing soft threshold no-op case. Default is false.", "ex4.c", ctx->soft, &(ctx->soft), NULL));
   PetscCall(PetscOptionsBool("-use_admm", "Use the ADMM solver in this example.", "ex4.c", ctx->use_admm, &(ctx->use_admm), NULL));
   PetscCall(PetscOptionsEnum("-p", "Norm type.", "ex4.c", NormTypes, (PetscEnum)ctx->p, (PetscEnum *)&(ctx->p), NULL));
   PetscOptionsEnd();
@@ -626,6 +629,7 @@ int main(int argc, char **argv)
     PetscReal rate;
     PetscCall(TaylorTest(ctx, tao, x, &rate));
   }
+  if (ctx->soft) { PetscCall(TaoSoftThreshold(x, 0., 0., x)); }
   PetscCall(MatDestroy(&H));
   PetscCall(TaoDestroy(&tao));
   PetscCall(VecDestroy(&x));
@@ -698,5 +702,9 @@ int main(int argc, char **argv)
   test:
     suffix: lmvm_admm_2
     args: -matrix_format 1 -m 100 -n 100 -tao_monitor -p 2 -use_admm -reg_tao_type lmvm -misfit_tao_type lmvm
+
+  test:
+    suffix: soft
+    args: -taylor 0 -soft 1
 
 TEST*/

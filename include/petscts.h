@@ -72,12 +72,12 @@ typedef enum {
 /*E
    TSEquationType - type of `TS` problem that is solved
 
-   Level: beginner
-
    Values:
 +  `TS_EQ_UNSPECIFIED` - (default)
 .  `TS_EQ_EXPLICIT` - {ODE and DAE index 1, 2, 3, HI} F(t,U,U_t) := M(t) U_t - G(U,t) = 0
 -  `TS_EQ_IMPLICIT` - {ODE and DAE index 1, 2, 3, HI} F(t,U,U_t) = 0
+
+   Level: beginner
 
 .seealso: [](ch_ts), `TS`, `TSGetEquationType()`, `TSSetEquationType()`
 E*/
@@ -1376,16 +1376,16 @@ PETSC_EXTERN PetscErrorCode TSAlpha2GetParams(TS, PetscReal *, PetscReal *, Pets
   a second-order generalized-alpha time integrator.
 
   Calling Sequence:
-  + ts   - the `TS` context obtained from `TSCreate()`
-  . X0   - the previous time step's state vector
-  . V0   - the previous time step's first derivative of the state vector
-  . A0   - the previous time step's second derivative of the state vector
-  . X1   - the vector into which the initial guess for the current time step will be written
-  - ctx  - [optional] user-defined context for the predictor evaluation routine (may be `NULL`)
++ ts   - the `TS` context obtained from `TSCreate()`
+. X0   - the previous time step's state vector
+. V0   - the previous time step's first derivative of the state vector
+. A0   - the previous time step's second derivative of the state vector
+. X1   - the vector into which the initial guess for the current time step will be written
+- ctx  - [optional] user-defined context for the predictor evaluation routine (may be `NULL`)
 
   Level: intermediate
 
-  .seealso: [](ch_ts), `TS`, `TSAlpha2SetPredictor()`
+.seealso: [](ch_ts), `TS`, `TSAlpha2SetPredictor()`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSAlpha2Predictor)(TS ts, Vec X0, Vec V0, Vec A0, Vec X1, void *ctx);
 PETSC_EXTERN PetscErrorCode TSAlpha2SetPredictor(TS, TSAlpha2Predictor, void *ctx);

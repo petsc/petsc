@@ -71,7 +71,6 @@ public:
       PetscCall(PetscViewerASCIIPopTab(sviewer));
       PetscCall(PetscViewerFlush(sviewer));
       PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
-      PetscCall(PetscViewerFlush(viewer));
     }
     PetscFunctionReturn(PETSC_SUCCESS);
   }

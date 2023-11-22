@@ -1099,7 +1099,7 @@ int main(int argc, char **argv)
     test:
       suffix: p1p1
       requires: !complex !single
-      args: -velocity_petscspace_degree 1 -porosity_petscspace_degree 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_factor_shift_type nonzero -ts_monitor -snes_error_if_not_converged -ksp_error_if_not_converged -dmts_check
+      args: -velocity_petscspace_degree 1 -porosity_petscspace_degree 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type ilu -pc_factor_shift_type nonzero -ts_monitor -snes_error_if_not_converged -ksp_error_if_not_converged -dmts_check
     test:
       suffix: p1p1_xper
       requires: !complex !single

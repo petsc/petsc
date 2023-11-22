@@ -95,7 +95,7 @@ static inline PetscErrorCode PetscStrtoupper(char a[])
 
   Level: intermediate
 
-  Notes:
+  Note:
   This routine is analogous to `strlen()`. `NULL` string returns a length of zero.
 
 .seealso: `PetscStrallocpy()`
@@ -236,7 +236,7 @@ static inline PetscErrorCode PetscStrcmp(const char a[], const char b[], PetscBo
   copied and the final location of `s` is set to `NULL`. This is different then the behavior of
   `strncpy()` which leaves `s` non-terminated if there is not room for the entire string.
 
-  Developers Notes:
+  Developers Note:
   Should this be `PetscStrlcpy()` to reflect its behavior which is like `strlcpy()` not
   `strncpy()`?
 
@@ -274,7 +274,7 @@ static inline PetscErrorCode PetscStrncpy(char s[], const char t[], size_t n)
 
   Level: intermediate
 
-  Notes:
+  Note:
   Unlike the system call `strncat()`, the length passed in is the length of the
   original allocated space, not the length of the left-over space. This is
   similar to the BSD system call `strlcat()`.
@@ -424,7 +424,7 @@ static inline PetscErrorCode PetscStrstr(const char haystack[], const char needl
 
   Level: intermediate
 
-  Notes:
+  Note:
   `NULL` arguments are OK, a `NULL` string is considered smaller than all others. If both `a`
   and `b` are `NULL` then `t` is set to `PETSC_FALSE`.
 
@@ -525,7 +525,7 @@ static inline PetscErrorCode PetscStrrchr(const char a[], char b, char *c[])
 
   Level: intermediate
 
-  Notes:
+  Note:
   Both `a` and `b` may be `NULL` (in which case `flg` is set to `PETSC_FALSE`) bot not either.
 
 .seealso: `PetscStrendswithwhich()`, `PetscStrbeginswith()`, `PetscStrtoupper`,
@@ -727,7 +727,7 @@ static inline PetscErrorCode PetscMemcpy(void *a, const void *b, size_t n)
    `PETSC_PREFER_BZERO` - on certain machines (the IBM RS6000) the bzero() routine happens
   to be faster than the memset() routine. This flag causes the bzero() routine to be used.
 
-   Notes:
+   Note:
    Prefer `PetscArrayzero()`
 
 .seealso: `PetscMemcpy()`, `PetscMemcmp()`, `PetscArrayzero()`, `PetscArraycmp()`, `PetscArraycpy()`, `PetscMemmove()`, `PetscStrallocpy()`
@@ -858,7 +858,7 @@ M*/
 
    Level: intermediate
 
-   Notes:
+   Note:
    This routine is a preferred replacement to `PetscMemzero()`
 
 .seealso: `PetscMemcpy()`, `PetscMemcmp()`, `PetscMemzero()`, `PetscArraycmp()`, `PetscArraycpy()`, `PetscMemmove()`, `PetscStrallocpy()`, `PetscArraymove()`

@@ -487,11 +487,12 @@ PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC, PetscBool *);
    Level: developer
 
    Developer Notes:
-   Used to manage returning from `KSP` solvers whose preconditioners have failed, possibly only a subset of MPI ranks, in some way
+   Used to manage returning from `KSP` solvers collectively whose preconditioners have failed, possibly only a subset of MPI processes, in some way
 
    It uses the fact that `KSP` piggy-backs the collectivity of certain error conditions on the results of norms and inner products.
 
-.seealso: `PCFailedReason`, `KSPConvergedReason`, `PCGetFailedReasonRank()`, `KSP`, `KSPCreate()`, `KSPSetType()`, `KSP`, `KSPCheckNorm()`, `KSPCheckSolve()`
+.seealso: `PCFailedReason`, `KSPConvergedReason`, `PCGetFailedReasonRank()`, `KSP`, `KSPCreate()`, `KSPSetType()`, `KSP`, `KSPCheckNorm()`, `KSPCheckSolve()`,
+          `KSPSetErrorIfNotConverged()`
 M*/
 #define KSPCheckDot(ksp, beta) \
   do { \
@@ -527,11 +528,12 @@ M*/
    Level: developer
 
    Developer Notes:
-   Used to manage returning from `KSP` solvers whose preconditioners have failed, possibly only a subset of MPI ranks, in some way.
+   Used to manage returning from `KSP` solvers collectively whose preconditioners have failed, possibly only a subset of MPI processes, in some way.
 
    It uses the fact that `KSP` piggy-backs the collectivity of certain error conditions on the results of norms and inner products.
 
-.seealso: `PCFailedReason`, `KSPConvergedReason`, `PCGetFailedReasonRank()`, `KSP`, `KSPCreate()`, `KSPSetType()`, `KSP`, `KSPCheckDot()`, `KSPCheckSolve()`
+.seealso: `PCFailedReason`, `KSPConvergedReason`, `PCGetFailedReasonRank()`, `KSP`, `KSPCreate()`, `KSPSetType()`, `KSP`, `KSPCheckDot()`, `KSPCheckSolve()`,
+          `KSPSetErrorIfNotConverged()`
 M*/
 #define KSPCheckNorm(ksp, beta) \
   do { \

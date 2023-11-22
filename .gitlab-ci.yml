@@ -18,6 +18,7 @@ variables:
   GIT_STRATEGY: fetch
   GIT_CLEAN_FLAGS: -ffdxq
   TIMEOUT: 450
+  EXTRA_OPTIONS: -nox -nox_warning -malloc_dump
 
 #
 # The most basic template that most tests will expand upon
@@ -399,7 +400,7 @@ osx-arm:
     - os:macos-arm
   variables:
     TEST_ARCH: arch-ci-osx-arm
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout
     INIT_SCRIPT: .zprofile
 
 freebsd-cxx-cmplx-64idx-dbg:
@@ -954,7 +955,7 @@ mswin-uni:
   tags:
     - mswin-stage3
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout
     TEST_ARCH: arch-ci-mswin-uni
 
 mswin-gnu:
@@ -1187,9 +1188,9 @@ pages:  # this job name has special meaning to GitLab
   interruptible: true
   script:
     - mkdir -p ../public/ && cp public/* ../public/
-    - (git checkout origin/main && pip install -r requirements.txt && make website-deploy SPHINXOPTS="-j 1" BUILDDIR="../public/main" && make latexpdf && mkdir -p ../public/main/docs/manual && cp _build/latex/manual.pdf ../public/main/manual/) || (printf "Sphinx build failed (warnings count as errors)\n" && false)
+    - (git checkout origin/main && pip install -r requirements.txt && make website-deploy SPHINXOPTS="-j 1" BUILDDIR="../public/main" && make latexpdf && mkdir -p ../public/main/manual && cp _build/latex/manual.pdf ../public/main/manual/) || (printf "Sphinx build failed (warnings count as errors)\n" && false)
     - git clean -fdxq && rm -rf images ../arch-classic-docs
-    - (git checkout origin/release && pip install -r requirements.txt && make website-deploy SPHINXOPTS="-j 1"  BUILDDIR="../public/release" && make latexpdf && mkdir -p ../public/release/docs/manual && cp _build/latex/manual.pdf ../public/release/docs/manual/) || (printf "Sphinx build failed (warnings count as errors)\n" && false)
+    - (git checkout origin/release && pip install -r requirements.txt && make website-deploy SPHINXOPTS="-j 1"  BUILDDIR="../public/release" && make latexpdf && mkdir -p ../public/release/manual && cp _build/latex/manual.pdf ../public/release/manual/) || (printf "Sphinx build failed (warnings count as errors)\n" && false)
     - rm -rf ../public/*/.doctrees
   only:
     variables:

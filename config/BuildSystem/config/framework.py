@@ -909,6 +909,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     for child in self.childGraph.vertices:
         if hasattr(child,'found') and child.found and hasattr(child,'testoptions') and child.testoptions:
           testoptions += ' '+child.testoptions
+        if (not hasattr(child,'found') or not child.found) and hasattr(child,'testoptions_whennotfound'):
+          testoptions += ' '+child.testoptions_whennotfound
     f.write('PETSC_TEST_OPTIONS = '+testoptions+'\n')
     if not hasattr(name, 'close'):
       f.close()

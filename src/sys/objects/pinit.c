@@ -1052,7 +1052,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
     PetscCall(PetscOptionsName("-omp_view", "Display OpenMP number of threads", NULL, &omp_view_flag));
     PetscOptionsEnd();
     if (flg) {
-      PetscCall(PetscInfo(NULL, "Number of OpenMP theads %" PetscInt_FMT " (given by -omp_num_threads)\n", PetscNumOMPThreads));
+      PetscCall(PetscInfo(NULL, "Number of OpenMP threads %" PetscInt_FMT " (given by -omp_num_threads)\n", PetscNumOMPThreads));
       omp_set_num_threads((int)PetscNumOMPThreads);
     }
     if (omp_view_flag) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "OpenMP: number of threads %" PetscInt_FMT "\n", PetscNumOMPThreads));

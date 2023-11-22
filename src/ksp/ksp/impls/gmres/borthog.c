@@ -15,7 +15,7 @@
 
   Input Parameters:
 + ksp - KSP object, must be associated with `KSPGMRES`, `KSPFGMRES`, or `KSPLGMRES` Krylov method
-- it  - one less then the current GMRES restart iteration, i.e. the size of the Krylov space
+- it  - one less than the current GMRES restart iteration, i.e. the size of the Krylov space
 
   Options Database Keys:
 . -ksp_gmres_modifiedgramschmidt - Activates `KSPGMRESModifiedGramSchmidtOrthogonalization()`

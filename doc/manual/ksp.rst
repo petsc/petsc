@@ -2295,7 +2295,7 @@ To use these solvers, one may:
    * - MatType
      - PCType
      - MatSolverType
-     - Package (``-pc_factor_mat_solver_type``)
+     - Package
    * - ``seqaij``
      - ``lu``
      - ``MATSOLVERESSL``

@@ -30,7 +30,7 @@
 /* SUBMANSEC = Sys */
 
 /*MC
-    PetscCallBLAS - Calls a BLAS or LAPACK routine and catches exceptions
+    PetscCallBLAS - Calls a BLAS or LAPACK routine so that the stack trace returned from any signal received includes the name of the BLAS/LAPACK routine
 
     Synopsis:
    #include <petscsys.h>
@@ -44,8 +44,16 @@
 
    Level: developer
 
-   Developer Note:
-   This is so that when a BLAS/LAPACK routine results in a crash or corrupts memory, they get blamed instead of PETSc.
+   Developer Notes:
+   This does not check error codes returned from the BLAS/LAPACK routine or ever return from the current subroutine. It merely pushes onto the PETSc
+   stack the name of the BLAS/LAPACK routine before calling the routine and removes it after a successful call.
+
+   LAPACK routines that return info codes should be followed by
+.vb
+   PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, ...)
+.ve
+
+   This macro exists so that when a BLAS/LAPACK routine results in a crash or corrupts memory, they get blamed instead of PETSc.
 
 .seealso: `PetscCall()`, `PetscStackPushNoCheck()`, `PetscStackPush()`, `PetscCallExternal()`, `PetscStackCallExternalVoid()`
 M*/

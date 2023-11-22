@@ -10,7 +10,7 @@
    Level: intermediate
 
    Notes:
-   An application ordering is usually mapping between an application-centric
+   An application ordering is usually a mapping between an application-centric
    numbering (the ordering that is "natural" for the application) and
    the parallel numbering that PETSc uses.
 

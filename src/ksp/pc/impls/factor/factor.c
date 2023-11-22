@@ -503,7 +503,7 @@ PetscErrorCode PCFactorSetFill(PC pc, PetscReal fill)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscCheck(fill >= 1.0, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Fill factor cannot be less then 1.0");
+  PetscCheck(fill >= 1.0, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Fill factor cannot be less than 1.0");
   PetscTryMethod(pc, "PCFactorSetFill_C", (PC, PetscReal), (pc, fill));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

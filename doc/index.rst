@@ -63,7 +63,7 @@ Toolkits/libraries that use PETSc
    in curvilinear coordinate systems
 -  `Chaste <https://www.cs.ox.ac.uk/chaste/>`__ Cancer, Heart and
    Soft Tissue Environment
--  `code_aster <https://www.code-aster.org/V2/spip.php?rubrique2​>`__
+-  `code_aster <https://www.code-aster.org/V2/spip.php?rubrique2>`__
    open source general purpose finite element code for solid and
    structural mechanics
 -  `COOLFluiD <https://github.com/andrealani/COOLFluiD>`__ CFD,
@@ -101,6 +101,7 @@ Toolkits/libraries that use PETSc
 -  `OpenCarp <https://opencarp.org/>`__ Cardiac Electrophysiology Simulator
 -  `OpenFOAM <https://develop.openfoam.com/modules/external-solver>`__
    Available as an extension for linear solvers for OpenFOAM
+-  `OpenFPM <http://http://openfpm.mpi-cbg.de/>`__ framework for particles and mesh simulation
 -  `OpenFVM <http://openfvm.sourceforge.net/>`__ finite volume
    based CFD solver
 -  `PermonSVM <http://permon.vsb.cz/permonsvm.htm>`__ support

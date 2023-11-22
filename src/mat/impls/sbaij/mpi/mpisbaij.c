@@ -1011,7 +1011,6 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat, PetscViewer 
       PetscCall(MatView_SeqSBAIJ(((Mat_MPISBAIJ *)(A->data))->A, sviewer));
     }
     PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
-    PetscCall(PetscViewerFlush(viewer));
     PetscCall(MatDestroy(&A));
   }
   PetscFunctionReturn(PETSC_SUCCESS);

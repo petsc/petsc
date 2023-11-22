@@ -65,7 +65,6 @@ static PetscErrorCode PCView_ASM(PC pc, PetscViewer viewer)
       }
       PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
       PetscCall(PetscViewerASCIIPopTab(viewer));
-      PetscCall(PetscViewerFlush(viewer));
       PetscCall(PetscViewerASCIIPopSynchronized(viewer));
     }
   } else if (isstring) {

@@ -910,7 +910,6 @@ static PetscErrorCode TestExpandPoints(DM dm, AppCtx *user)
     }
   }
   PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
-  PetscCall(PetscViewerFlush(viewer));
   PetscCall(DMPlexRestoreConeRecursive(dm, is, &depth, &iss, &sects));
   PetscCall(ISDestroy(&is));
   PetscFunctionReturn(PETSC_SUCCESS);

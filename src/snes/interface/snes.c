@@ -2111,7 +2111,6 @@ PetscErrorCode SNESGetFunctionType(SNES snes, SNESFunctionType *type)
             smoother evaluation routine (may be `NULL`)
 
   Calling sequence of `f`:
-$ PetscErrorCode f(SNES snes, Vec X, Vec B, void *ctx);
 + snes - the `SNES` context
 . X    - the current solution
 . B    - the right hand side vector (which may be `NULL`)
@@ -2299,7 +2298,6 @@ PetscErrorCode SNESGetPicard(SNES snes, Vec *r, PetscErrorCode (**f)(SNES, Vec, 
          function evaluation routine (may be `NULL`)
 
   Calling sequence of `func`:
-$    PetscErrorCode func(SNES snes, Vec x, void *ctx);
 + snes - the `SNES` solver
 . x    - vector to put initial guess
 - ctx  - optional user-defined function context
@@ -4300,7 +4298,6 @@ PetscErrorCode SNESGetConvergenceHistory(SNES snes, PetscReal *a[], PetscInt *it
 - func - The function
 
   Calling sequence of `func`:
-$ PetscErrorCode func(SNES snes, PetscInt step);
 + snes - the nonlinear solver context
 - step - The current step of the iteration
 

@@ -1099,7 +1099,7 @@ PetscErrorCode TSSetSolutionFunction(TS ts, TSSolutionFunction f, void *ctx)
   create closed-form solutions with a non-physical forcing term. It allows you to use the Method of Manufactored Solution without directly editing the
   definition of the problem you are solving and hence possibly introducing bugs.
 
-  This replaces the ODE F(u,u_t,t) = 0 the TS is solving with F(u,u_t,t) - func(t) = 0
+  This replaces the ODE F(u,u_t,t) = 0 the `TS` is solving with F(u,u_t,t) - func(t) = 0
 
   This forcing function does not depend on the solution to the equations, it can only depend on spatial location, time, and possibly parameters, the
   parameters can be passed in the ctx variable.
@@ -3640,7 +3640,7 @@ PetscErrorCode TSComputeExactError(TS ts, Vec u, Vec e)
 - ctx      - [optional] The user-defined context
 
   Calling sequence of `setup`:
-+ ts     - the TS context
++ ts     - the `TS` context
 . step   - the current step
 . time   - the current time
 . state  - the current vector of state
@@ -3648,7 +3648,7 @@ PetscErrorCode TSComputeExactError(TS ts, Vec u, Vec e)
 - ctx    - user defined context
 
   Calling sequence of `transfer`:
-+ ts      - the TS context
++ ts      - the `TS` context
 . nv      - the number of vectors to be transferred
 . vecsin  - array of vectors to be transferred
 . vecsout - array of transferred vectors
@@ -5348,7 +5348,7 @@ PetscErrorCode TSComputeIJacobianDefaultColor(TS ts, PetscReal t, Vec U, Vec Udo
 - func - function called within `TSFunctionDomainError()`
 
   Calling sequence of `func`:
-+ ts     - the TS context
++ ts     - the `TS` context
 . time   - the current time (of the stage)
 . state  - the state to check if it is valid
 - reject - (output parameter) `PETSC_FALSE` if the state is acceptable, `PETSC_TRUE` if not acceptable

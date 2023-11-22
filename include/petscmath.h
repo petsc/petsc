@@ -1,11 +1,9 @@
 /*
-
     PETSc mathematics include file. Defines certain basic mathematical
     constants and functions for working with single, double, and quad precision
     floating point numbers as well as complex single and double.
 
     This file is included by petscsys.h and should not be used directly.
-
 */
 #pragma once
 
@@ -16,11 +14,9 @@
 /* SUBMANSEC = Sys */
 
 /*
-
    Defines operations that are different for complex and real numbers.
    All PETSc objects in one program are built around the object
    PetscScalar which is either always a real or a complex.
-
 */
 
 /*
@@ -378,9 +374,13 @@ static inline PetscComplex PetscAtanhComplex(PetscComplex z)
     #endif /* PETSC_USE_REAL_* */
   #endif   /* (__cplusplus) */
 
-/*
-   PETSC_i is the imaginary number, i
-*/
+/*MC
+    PETSC_i - the pure imaginary complex number i
+
+   Level: intermediate
+
+.seealso: `PetscComplex`, `PetscScalar`
+M*/
 PETSC_EXTERN PetscComplex PETSC_i;
 
 /*
@@ -434,10 +434,10 @@ PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128 MPIU___COMPLEX128_ATTR_TAG;
   /*MC
    MPIU_COMPLEX - Portable MPI datatype corresponding to `PetscComplex` independent of the precision of `PetscComplex`
 
-   Notes:
-   In MPI calls that require an MPI datatype that matches a `PetscComplex` or array of `PetscComplex` values, pass this value.
-
    Level: beginner
+
+   Note:
+   In MPI calls that require an MPI datatype that matches a `PetscComplex` or array of `PetscComplex` values, pass this value.
 
 .seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`, `MPIU_INT`, `PETSC_i`
 M*/
@@ -460,10 +460,10 @@ M*/
   /*MC
    MPIU_SCALAR - Portable MPI datatype corresponding to `PetscScalar` independent of the precision of `PetscScalar`
 
-   Notes:
-   In MPI calls that require an MPI datatype that matches a `PetscScalar` or array of `PetscScalar` values, pass this value.
-
    Level: beginner
+
+   Note:
+   In MPI calls that require an MPI datatype that matches a `PetscScalar` or array of `PetscScalar` values, pass this value.
 
 .seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_REAL`, `MPIU_COMPLEX`, `MPIU_INT`
 M*/
@@ -501,7 +501,7 @@ M*/
 
    Level: beginner
 
-   Notes:
+   Note:
        If PETSc was configured for real numbers then this always returns the value 0
 
 .seealso: `PetscScalar`, `PetscRealPart()`, `PetscMax()`, `PetscClipInterval()`, `PetscAbsInt()`, `PetscAbsReal()`, `PetscSqr()`
@@ -587,7 +587,7 @@ M*/
 #define PetscAbs(a) (((a) >= 0) ? (a) : (-(a)))
 
 /*MC
-   PetscSign - Returns the sign of a number as an integer
+   PetscSign - Returns the sign of a number as an integer of value -1, 0, or 1
 
    Synopsis:
    #include <petscmath.h>
@@ -623,7 +623,7 @@ M*/
    Level: beginner
 
    Note:
-   The type can be integer or floating point value
+   The type can be integer or floating point value, but cannot be complex
 
 .seealso: `PetscMax()`, `PetscClipInterval()`, `PetscAbsInt()`, `PetscAbsReal()`, `PetscSqr()`
 M*/
@@ -669,6 +669,12 @@ M*/
 
    Note:
    The type can be integer or floating point value
+
+   Example\:
+.vb
+  PetscInt c = PetscClipInterval(5, 2, 3); // the value of c is 3
+  PetscInt c = PetscClipInterval(5, 2, 6); // the value of c is 5
+.ve
 
 .seealso: `PetscMin()`, `PetscMax()`, `PetscAbsInt()`, `PetscAbsReal()`, `PetscSqr()`
 M*/
@@ -729,7 +735,7 @@ M*/
    Level: beginner
 
    Note:
-   The type can be integer or floating point value
+   The type can be integer, floating point, or complex floating point
 
 .seealso: `PetscMax()`, `PetscMin()`, `PetscAbsInt()`, `PetscAbsReal()`
 M*/
@@ -782,7 +788,28 @@ M*/
   #define PETSC_SMALL                5.e-3F
 #endif
 
-#define PETSC_INFINITY  (PETSC_MAX_REAL / 4)
+/*MC
+    PETSC_INFINITY - a finite number that represents infinity for setting certain bounds in `Tao`
+
+   Level: intermediate
+
+  Note:
+  This is not the IEEE infinity value
+
+.seealso: `PETSC_NINFINITY`, `SNESVIGetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESVISetVariableBounds()`
+M*/
+#define PETSC_INFINITY (PETSC_MAX_REAL / 4)
+
+/*MC
+    PETSC_NINFINITY - a finite number that represents negative infinity for setting certain bounds in `Tao`
+
+   Level: intermediate
+
+  Note:
+  This is not the negative IEEE infinity value
+
+.seealso: `PETSC_INFINITY`, `SNESVIGetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESVISetVariableBounds()`
+M*/
 #define PETSC_NINFINITY (-PETSC_INFINITY)
 
 PETSC_EXTERN PetscBool  PetscIsInfReal(PetscReal);
@@ -967,6 +994,12 @@ static inline PetscScalar PetscPowScalarReal(PetscScalar base, PetscReal power)
      This is used in several examples for setting initial conditions based on coordinate values that are computed with i*h that produces inexact
      floating point results.
 
+  Example\:
+.vb
+  PetscReal x;
+  if (PetscApproximateLTE(x, 3.2)) { // replaces if (x <= 3.2) {
+.ve
+
 .seealso: `PetscMax()`, `PetscMin()`, `PetscAbsInt()`, `PetscAbsReal()`, `PetscApproximateGTE()`
 M*/
 #define PetscApproximateLTE(x, b) ((x) <= (PetscRealConstant(b) + PETSC_SMALL))
@@ -994,6 +1027,12 @@ M*/
      This is used in several examples for setting initial conditions based on coordinate values that are computed with i*h that produces inexact
      floating point results.
 
+  Example\:
+.vb
+  PetscReal x;
+  if (PetscApproximateGTE(x, 3.2)) {  // replaces if (x >= 3.2) {
+.ve
+
 .seealso: `PetscMax()`, `PetscMin()`, `PetscAbsInt()`, `PetscAbsReal()`, `PetscApproximateLTE()`
 M*/
 #define PetscApproximateGTE(x, b) ((x) >= (PetscRealConstant(b) - PETSC_SMALL))
@@ -1012,6 +1051,11 @@ M*/
 -   y - the denominator
 
    Level: advanced
+
+  Example\:
+.vb
+  PetscInt n = PetscCeilInt(10, 3); // n has the value of 4
+.ve
 
 .seealso: `PetscMax()`, `PetscMin()`, `PetscAbsInt()`, `PetscAbsReal()`, `PetscApproximateLTE()`
 M*/

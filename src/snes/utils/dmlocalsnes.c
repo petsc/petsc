@@ -204,7 +204,6 @@ PetscErrorCode DMSNESSetFunctionLocal(DM dm, PetscErrorCode (*func)(DM, Vec, Vec
 - ctx  - optional context for local boundary value evaluation
 
   Calling sequence of `func`:
-$  PetscErrorCode func(DM dm, Vec X, void *ctx)
 + dm  - the `DM` context
 . X   - ghosted solution vector, appropriate locations (such as essential boundary condition nodes) should be filled
 - ctx - a user provided context
@@ -240,7 +239,6 @@ PetscErrorCode DMSNESSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM dm, Vec X
 - ctx  - optional context for local Jacobian evaluation
 
   Calling sequence of `func`:
-$  PetscErrorCode func(DM dm, Vec X, void *ctx)
 + dm  - the `DM` context
 . X   - current solution vector (ghosted or not?)
 . J   - the Jacobian

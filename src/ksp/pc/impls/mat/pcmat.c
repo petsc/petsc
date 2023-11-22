@@ -1,6 +1,7 @@
 #include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/
 
 typedef enum {
+  PCMATOP_UNSPECIFIED,
   PCMATOP_MULT,
   PCMATOP_MULT_TRANSPOSE,
   PCMATOP_MULT_HERMITIAN_TRANSPOSE,
@@ -8,7 +9,7 @@ typedef enum {
   PCMATOP_SOLVE_TRANSPOSE,
 } PCMatOperation;
 
-const char *const PCMatOpTypes[] = {"Mult", "MultTranspose", "MultHermitianTranspose", "Solve", "SolveTranspose", NULL};
+const char *const PCMatOpTypes[] = {"Unspecified", "Mult", "MultTranspose", "MultHermitianTranspose", "Solve", "SolveTranspose", NULL};
 
 typedef struct _PCMAT {
   PCMatOperation apply;
@@ -35,6 +36,22 @@ static PetscErrorCode PCApply_Mat(PC pc, Vec x, Vec y)
   case PCMATOP_MULT_HERMITIAN_TRANSPOSE:
     PetscCall(MatMultHermitianTranspose(pc->pmat, x, y));
     break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_INCOMP, "Unsupported %s case", PCMatOpTypes[pcmat->apply]);
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PCSetUp_Mat(PC pc)
+{
+  PC_Mat *pcmat = (PC_Mat *)pc->data;
+
+  PetscFunctionBegin;
+  if (pcmat->apply == PCMATOP_UNSPECIFIED) {
+    PetscBool hassolve;
+    PetscCall(MatHasOperation(pc->pmat, MATOP_SOLVE, &hassolve));
+    if (hassolve) pcmat->apply = PCMATOP_SOLVE;
+    else pcmat->apply = PCMATOP_MULT;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -42,6 +59,7 @@ static PetscErrorCode PCApply_Mat(PC pc, Vec x, Vec y)
 static PetscErrorCode PCMatApply_Mat(PC pc, Mat X, Mat Y)
 {
   PC_Mat *pcmat = (PC_Mat *)pc->data;
+  Mat     W;
 
   PetscFunctionBegin;
   switch (pcmat->apply) {
@@ -57,16 +75,15 @@ static PetscErrorCode PCMatApply_Mat(PC pc, Mat X, Mat Y)
   case PCMATOP_SOLVE_TRANSPOSE:
     PetscCall(MatMatSolveTranspose(pc->pmat, X, Y));
     break;
-  case PCMATOP_MULT_HERMITIAN_TRANSPOSE: {
-    Mat W;
-
+  case PCMATOP_MULT_HERMITIAN_TRANSPOSE:
     PetscCall(MatDuplicate(X, MAT_COPY_VALUES, &W));
     PetscCall(MatConjugate(W));
     PetscCall(MatTransposeMatMult(pc->pmat, W, MAT_REUSE_MATRIX, PETSC_DEFAULT, &Y));
     PetscCall(MatConjugate(Y));
     PetscCall(MatDestroy(&W));
     break;
-  }
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_INCOMP, "Unsupported %s case", PCMatOpTypes[pcmat->apply]);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -74,6 +91,7 @@ static PetscErrorCode PCMatApply_Mat(PC pc, Mat X, Mat Y)
 static PetscErrorCode PCApplyTranspose_Mat(PC pc, Vec x, Vec y)
 {
   PC_Mat *pcmat = (PC_Mat *)pc->data;
+  Vec     w;
 
   PetscFunctionBegin;
   switch (pcmat->apply) {
@@ -89,9 +107,7 @@ static PetscErrorCode PCApplyTranspose_Mat(PC pc, Vec x, Vec y)
   case PCMATOP_SOLVE_TRANSPOSE:
     PetscCall(MatSolve(pc->pmat, x, y));
     break;
-  case PCMATOP_MULT_HERMITIAN_TRANSPOSE: {
-    Vec w;
-
+  case PCMATOP_MULT_HERMITIAN_TRANSPOSE:
     PetscCall(VecDuplicate(x, &w));
     PetscCall(VecCopy(x, w));
     PetscCall(VecConjugate(w));
@@ -99,7 +115,8 @@ static PetscErrorCode PCApplyTranspose_Mat(PC pc, Vec x, Vec y)
     PetscCall(VecConjugate(y));
     PetscCall(VecDestroy(&w));
     break;
-  }
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_INCOMP, "Unsupported %s case", PCMatOpTypes[pcmat->apply]);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -193,8 +210,9 @@ static PetscErrorCode PCMatGetApplyOperation_Mat(PC pc, MatOperation *matop_p)
   MatOperation matop = MATOP_MULT;
 
   PetscFunctionBegin;
+  if (!pc->setupcalled) PetscCall(PCSetUp(pc));
 
-  // clang-format off
+    // clang-format off
 #define PCMATOP_TO_MATOP_CASE(var, OP) case PCMATOP_##OP: (var) = MATOP_##OP; break
   switch (pcmat->apply) {
   PCMATOP_TO_MATOP_CASE(matop, MULT);
@@ -202,6 +220,8 @@ static PetscErrorCode PCMatGetApplyOperation_Mat(PC pc, MatOperation *matop_p)
   PCMATOP_TO_MATOP_CASE(matop, MULT_HERMITIAN_TRANSPOSE);
   PCMATOP_TO_MATOP_CASE(matop, SOLVE);
   PCMATOP_TO_MATOP_CASE(matop, SOLVE_TRANSPOSE);
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_INCOMP, "Unsupported %s case", PCMatOpTypes[pcmat->apply]);
   }
 #undef PCMATOP_TO_MATOP_CASE
   // clang-format on
@@ -241,12 +261,11 @@ PETSC_EXTERN PetscErrorCode PCCreate_Mat(PC pc)
   PetscCall(PetscNew(&data));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCMatSetApplyOperation_C", PCMatSetApplyOperation_Mat));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCMatGetApplyOperation_C", PCMatGetApplyOperation_Mat));
-  data->apply                  = PCMATOP_MULT;
   pc->data                     = data;
   pc->ops->apply               = PCApply_Mat;
   pc->ops->matapply            = PCMatApply_Mat;
   pc->ops->applytranspose      = PCApplyTranspose_Mat;
-  pc->ops->setup               = NULL;
+  pc->ops->setup               = PCSetUp_Mat;
   pc->ops->destroy             = PCDestroy_Mat;
   pc->ops->setfromoptions      = NULL;
   pc->ops->view                = PCView_Mat;

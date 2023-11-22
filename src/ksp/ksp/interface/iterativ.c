@@ -312,7 +312,7 @@ PetscErrorCode KSPMonitorRange_Private(KSP ksp, PetscInt it, PetscReal *per)
 }
 
 /*@C
-  KSPMonitorResidualRange - Prints the percentage of residual elements that are more then 10 percent of the maximum value.
+  KSPMonitorResidualRange - Prints the percentage of residual elements that are more than 10 percent of the maximum value.
 
   Collective
 

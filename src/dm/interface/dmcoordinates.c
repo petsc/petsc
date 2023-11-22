@@ -126,7 +126,7 @@ PetscErrorCode DMSetCoordinateDM(DM dm, DM cdm)
 . dm - the `DM`
 
   Output Parameter:
-. cdm - cellwise coordinate `DM`, or NULL if they are not defined
+. cdm - cellwise coordinate `DM`, or `NULL` if they are not defined
 
   Level: intermediate
 
@@ -180,7 +180,7 @@ PetscErrorCode DMSetCellCoordinateDM(DM dm, DM cdm)
 }
 
 /*@
-  DMGetCoordinateDim - Retrieve the dimension of embedding space for coordinate values. For example a mesh on the surface of a sphere would have a 3 dimensional embedding space
+  DMGetCoordinateDim - Retrieve the dimension of the embedding space for coordinate values. For example a mesh on the surface of a sphere would have a 3 dimensional embedding space
 
   Not Collective
 
@@ -236,7 +236,7 @@ PetscErrorCode DMSetCoordinateDim(DM dm, PetscInt dim)
 }
 
 /*@
-  DMGetCoordinateSection - Retrieve the layout of coordinate values over the mesh.
+  DMGetCoordinateSection - Retrieve the `PetscSection` of coordinate values over the mesh.
 
   Collective
 
@@ -255,7 +255,7 @@ PetscErrorCode DMSetCoordinateDim(DM dm, PetscInt dim)
   DMGetLocalSection(cdm, &section);
 .ve
 
-.seealso: `DMGetCoordinateDM()`, `DMGetLocalSection()`, `DMSetLocalSection()`
+.seealso: `DM`, `DMGetCoordinateDM()`, `DMGetLocalSection()`, `DMSetLocalSection()`
 @*/
 PetscErrorCode DMGetCoordinateSection(DM dm, PetscSection *section)
 {
@@ -270,7 +270,7 @@ PetscErrorCode DMGetCoordinateSection(DM dm, PetscSection *section)
 }
 
 /*@
-  DMSetCoordinateSection - Set the layout of coordinate values over the mesh.
+  DMSetCoordinateSection - Set the `PetscSection` of coordinate values over the mesh.
 
   Not Collective
 
@@ -313,7 +313,7 @@ PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section)
 }
 
 /*@
-  DMGetCellCoordinateSection - Retrieve the layout of cellwise coordinate values over the mesh.
+  DMGetCellCoordinateSection - Retrieve the `PetscSection` of cellwise coordinate values over the mesh.
 
   Collective
 
@@ -348,7 +348,7 @@ PetscErrorCode DMGetCellCoordinateSection(DM dm, PetscSection *section)
 }
 
 /*@
-  DMSetCellCoordinateSection - Set the layout of cellwise coordinate values over the mesh.
+  DMSetCellCoordinateSection - Set the `PetscSection` of cellwise coordinate values over the mesh.
 
   Not Collective
 
@@ -406,7 +406,7 @@ PetscErrorCode DMSetCellCoordinateSection(DM dm, PetscInt dim, PetscSection sect
 
   Notes:
   This is a borrowed reference, so the user should NOT destroy this vector. When the `DM` is
-  destroyed the array will no longer be valid.
+  destroyed `c` will no longer be valid.
 
   Each process has only the locally-owned portion of the global coordinates (does NOT have the ghost coordinates).
 
@@ -480,7 +480,7 @@ PetscErrorCode DMSetCoordinates(DM dm, Vec c)
 
   Notes:
   This is a borrowed reference, so the user should NOT destroy this vector. When the `DM` is
-  destroyed the array will no longer be valid.
+  destroyed `c` will no longer be valid.
 
   Each process has only the locally-owned portion of the global coordinates (does NOT have the ghost coordinates).
 
@@ -580,7 +580,7 @@ PetscErrorCode DMGetCoordinatesLocalSetUp(DM dm)
   Level: intermediate
 
   Notes:
-  This is a borrowed reference, so the user should NOT destroy this vector
+  This is a borrowed reference, so the user should NOT destroy `c`
 
   Each process has the local and ghost coordinates
 
@@ -637,8 +637,8 @@ PetscErrorCode DMGetCoordinatesLocalNoncollective(DM dm, Vec *c)
 - p  - the `IS` of points whose coordinates will be returned
 
   Output Parameters:
-+ pCoordSection - the `PetscSection` describing the layout of pCoord, i.e. each point corresponds to one point in p, and DOFs correspond to coordinates
-- pCoord        - the `Vec` with coordinates of points in p
++ pCoordSection - the `PetscSection` describing the layout of pCoord, i.e. each point corresponds to one point in `p`, and DOFs correspond to coordinates
+- pCoord        - the `Vec` with coordinates of points in `p`
 
   Level: advanced
 
@@ -706,7 +706,7 @@ PetscErrorCode DMGetCoordinatesLocalTuple(DM dm, IS p, PetscSection *pCoordSecti
   followed by `DMGetCoordinatesLocal()`. This is intended to enable the
   setting of ghost coordinates outside of the domain.
 
-  The vector c should be destroyed by the caller.
+  The vector `c` should be destroyed by the caller.
 
 .seealso: `DM`, `DMGetCoordinatesLocal()`, `DMSetCoordinates()`, `DMGetCoordinates()`, `DMGetCoordinateDM()`
 @*/
@@ -821,7 +821,7 @@ PetscErrorCode DMGetCellCoordinatesLocalNoncollective(DM dm, Vec *c)
   followed by `DMGetCoordinatesLocal()`. This is intended to enable the
   setting of ghost coordinates outside of the domain.
 
-  The vector c should be destroyed by the caller.
+  The vector `c` should be destroyed by the caller.
 
 .seealso: `DM`, `DMGetCellCoordinatesLocal()`, `DMSetCellCoordinates()`, `DMGetCellCoordinates()`, `DMGetCellCoordinateDM()`
 @*/
@@ -1015,7 +1015,7 @@ PetscErrorCode DMGetCoordinateDegree_Internal(DM dm, PetscInt *degree)
 
   Input Parameters:
 + dm      - The `DM` object
-. disc    - The new coordinate discretization or NULL to ensure a coordinate discretization exists
+. disc    - The new coordinate discretization or `NULL` to ensure a coordinate discretization exists
 - project - Project coordinates to new discretization
 
   Level: intermediate
@@ -1026,7 +1026,7 @@ PetscErrorCode DMGetCoordinateDegree_Internal(DM dm, PetscInt *degree)
   This function takes the current mesh coordinates, which are discretized using some `PetscFE` space, and projects this function into a new `PetscFE` space.
   The coordinate projection is done on the continuous coordinates, but the discontinuous coordinates are not updated.
 
-  Developer Notes:
+  Developer Note:
   With more effort, we could directly project the discontinuous coordinates also.
 
 .seealso: `DM`, `PetscFE`, `DMGetCoordinateField()`
@@ -1111,7 +1111,7 @@ PetscErrorCode DMSetCoordinateDisc(DM dm, PetscFE disc, PetscBool project)
 }
 
 /*@
-  DMLocatePoints - Locate the points in v in the mesh and return a `PetscSF` of the containing cells
+  DMLocatePoints - Locate the points in `v` in the mesh and return a `PetscSF` of the containing cells
 
   Collective
 
@@ -1122,13 +1122,13 @@ PetscErrorCode DMSetCoordinateDisc(DM dm, PetscFE disc, PetscBool project)
   Input/Output Parameters:
 + v      - The `Vec` of points, on output contains the nearest mesh points to the given points if `DM_POINTLOCATION_NEAREST` is used
 - cellSF - Points to either `NULL`, or a `PetscSF` with guesses for which cells contain each point;
-           on output, the `PetscSF` containing the ranks and local indices of the containing points
+           on output, the `PetscSF` containing the MPI ranks and local indices of the containing points
 
   Level: developer
 
   Notes:
-  To do a search of the local cells of the mesh, v should have `PETSC_COMM_SELF` as its communicator.
-  To do a search of all the cells in the distributed mesh, `v` should have the same communicator as `dm`.
+  To do a search of the local cells of the mesh, `v` should have `PETSC_COMM_SELF` as its communicator.
+  To do a search of all the cells in the distributed mesh, `v` should have the same MPI communicator as `dm`.
 
   Points will only be located in owned cells, not overlap cells arising from `DMPlexDistribute()` or other overlapping distributions.
 
@@ -1144,8 +1144,8 @@ PetscErrorCode DMSetCoordinateDisc(DM dm, PetscFE disc, PetscBool project)
     PetscSFGetGraph(cellSF,NULL,&nFound,&found,&cells);
 .ve
 
-  Where cells[i].rank is the rank of the process owning the cell containing point found[i] (or i if found == NULL), and cells[i].index is
-  the index of the cell in its rank's local numbering. This rank is in the communicator for `v`, so if `v` is on `PETSC_COMM_SELF` then the rank will always be 0.
+  Where cells[i].rank is the MPI rank of the process owning the cell containing point found[i] (or i if found == NULL), and cells[i].index is
+  the index of the cell in its MPI process' local numbering. This rank is in the communicator for `v`, so if `v` is on `PETSC_COMM_SELF` then the rank will always be 0.
 
 .seealso: `DM`, `DMSetCoordinates()`, `DMSetCoordinatesLocal()`, `DMGetCoordinates()`, `DMGetCoordinatesLocal()`, `DMPointLocationType`
 @*/

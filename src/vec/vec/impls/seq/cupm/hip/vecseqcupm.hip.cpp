@@ -154,7 +154,7 @@ PetscErrorCode VecCreateSeqHIPWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, 
 /*@C
   VecHIPGetArray - Provides access to the device buffer inside a vector
 
-  Not Collective; Asynchronous; No Fortran Support
+  Logically Collective; Asynchronous; No Fortran Support
 
   Input Parameter:
 . v - the vector
@@ -194,7 +194,7 @@ PetscErrorCode VecHIPGetArray(Vec v, PetscScalar **a)
 /*@C
   VecHIPRestoreArray - Restore a device buffer previously acquired with `VecHIPGetArray()`.
 
-  Not Collective; Asynchronous; No Fortran Support
+  Logically Collective; Asynchronous; No Fortran Support
 
   Input Parameters:
 + v - the vector
@@ -283,7 +283,7 @@ PetscErrorCode VecHIPRestoreArrayRead(Vec v, const PetscScalar **a)
 /*@C
   VecHIPGetArrayWrite - Provides write access to the HIP buffer inside a vector.
 
-   Not Collective; Asynchronous; No Fortran Support
+   Logically Collective; Asynchronous; No Fortran Support
 
   Input Parameter:
 . v - the vector
@@ -318,7 +318,7 @@ PetscErrorCode VecHIPGetArrayWrite(Vec v, PetscScalar **a)
   VecHIPRestoreArrayWrite - Restore a HIP device pointer previously acquired with
   `VecHIPGetArrayWrite()`.
 
-  Not Collective; Asynchronous; No Fortran Support
+  Logically Collective; Asynchronous; No Fortran Support
 
   Input Parameters:
 + v - the vector
@@ -345,7 +345,7 @@ PetscErrorCode VecHIPRestoreArrayWrite(Vec v, PetscScalar **a)
   VecHIPPlaceArray - Allows one to replace the GPU array in a vector with a GPU array provided
   by the user.
 
-  Not Collective; Asynchronous; No Fortran Support
+  Logically Collective; Asynchronous; No Fortran Support
 
   Input Parameters:
 + vec - the vector
@@ -380,7 +380,7 @@ PetscErrorCode VecHIPPlaceArray(Vec vin, const PetscScalar a[])
   VecHIPReplaceArray - Permanently replace the GPU array in a vector with a GPU array provided
   by the user.
 
-  Not Collective; No Fortran Support
+  Logically Collective; No Fortran Support
 
   Input Parameters:
 + vec   - the vector
@@ -409,7 +409,7 @@ PetscErrorCode VecHIPReplaceArray(Vec vin, const PetscScalar a[])
 /*@C
   VecHIPResetArray - Resets a vector to use its default memory.
 
-  Not Collective; No Fortran Support
+  Logically Collective; No Fortran Support
 
   Input Parameters:
 . vec - the vector

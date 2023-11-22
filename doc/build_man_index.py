@@ -146,7 +146,6 @@ def createtable(dirname,levels,secname,editbranch):
       mdfiles = [os.path.join(dirname,f) for f in listdir if f.endswith('.md')]
       mdfiles.sort()
       if mdfiles == []:
-            print('Cannot create table for empty directory:',dirname)
             return None
 
       table = []
@@ -205,9 +204,9 @@ def getallmandirs(dirs):
       return mandirs
 
 
-def main(PETSC_DIR,LOC):
-      HEADERDIR = 'doc/classic/manualpages-sec'
-      dirs      = glob.glob(LOC + '/manualpages/*')
+def main(PETSC_DIR):
+      HEADERDIR = 'doc/manualpages/MANSECHeaders'
+      dirs      = glob.glob(os.path.join(PETSC_DIR,'doc','manualpages','*'))
       mandirs   = getallmandirs(dirs)
 
       levels = ['beginner','intermediate','advanced','developer','deprecated','none']
@@ -230,15 +229,15 @@ def main(PETSC_DIR,LOC):
       for dirname in mandirs:
             outfilename  = dirname + '/index.md'
             dname,secname  = posixpath.split(dirname)
-            headfilename = PETSC_DIR + '/' + HEADERDIR + '/header_' + secname
+            headfilename = PETSC_DIR + '/' + HEADERDIR + '/' + secname
             table        = createtable(dirname,levels,secname,edit_branch)
             if not table: continue
             singlelist   = addtolist(dirname,singlelist)
             printindex(outfilename,headfilename,levels,titles,table)
 
       alphabet_dict = createdict(singlelist)
-      outfilename   = LOC + '/manualpages/singleindex.md'
+      outfilename   = os.path.join(PETSC_DIR,'doc','manualpages','singleindex.md')
       printsingleindex (outfilename,alphabet_dict)
 
 if __name__ == '__main__':
-      main(os.path.abspath(os.environ['PETSC_DIR']),os.path.abspath(os.environ['LOC']))
+      main(os.path.abspath(os.environ['PETSC_DIR']))

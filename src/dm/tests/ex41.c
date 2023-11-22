@@ -43,7 +43,6 @@ int main(int argc, char **argv)
   PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &sview));
   PetscCall(VecView(local, sview));
   PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &sview));
-  PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
 
   PetscCall(DMDestroy(&da));
   PetscCall(VecDestroy(&local));

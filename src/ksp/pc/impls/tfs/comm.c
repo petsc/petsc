@@ -36,7 +36,7 @@ PetscErrorCode PCTFS_comm_init(void)
   PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD, &PCTFS_num_nodes));
   PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &PCTFS_my_id));
 
-  PetscCheck(PCTFS_num_nodes <= (INT_MAX >> 1), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Can't have more then MAX_INT/2 nodes!!!");
+  PetscCheck(PCTFS_num_nodes <= (INT_MAX >> 1), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Can't have more than MAX_INT/2 nodes!!!");
 
   PetscCall(PCTFS_ivec_zero((PetscInt *)edge_node, sizeof(PetscInt) * 32));
 

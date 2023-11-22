@@ -254,7 +254,6 @@ int main(int argc, char **argv)
   PetscCall(PetscViewerASCIIPrintf(selfviewer, "[%d]solution\n", rank));
   PetscCall(VecView(lu, selfviewer));
   PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &selfviewer));
-  PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD));
   /* Check interpolant */
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, interpolator->n * Nc, &fieldVals));

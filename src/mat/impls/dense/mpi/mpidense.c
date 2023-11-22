@@ -743,7 +743,6 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat, PetscViewer 
       PetscCall(MatView_SeqDense(((Mat_MPIDense *)(A->data))->A, sviewer));
     }
     PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
-    PetscCall(PetscViewerFlush(viewer));
     PetscCall(MatDestroy(&A));
   }
   PetscFunctionReturn(PETSC_SUCCESS);

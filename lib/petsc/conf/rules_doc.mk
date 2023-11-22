@@ -42,58 +42,13 @@ tree: ${ACTION}
            fi; \
 	 done
 
-# Performs the specified action on all source/include directories except tutorial, test, and output; used by allmanualpages
-tree_src: ${ACTION}
-	-@for dir in `ls -d */ 2> /dev/null` foo ;  do \
-            if [[ $${dir} != "tests/" && $${dir} != "tutorials/" && $${dir} != "doc/" && $${dir} != "output/" ]]; then \
-              if [[ -f $${dir}makefile ]]; then \
-	        (cd $$dir ; ${OMAKE} ACTION=${ACTION} PETSC_ARCH=${PETSC_ARCH}  LOC=${LOC} tree_src) ; \
-              fi; \
-           fi; \
-	 done
-
-#  If this produces an error such as Could not open output file /Users/barrysmith/Src/petsc/manualpages/MissingSUBMANSEC/*
-#  this indicates the makefile is missing a MANSEC definition or the include file is missing a SUBMANSEC definition
-#  Cannot run in parallel because of writes to ${LOC}/manualpages/manualpages.cit
-manualpages:
-	-@doctext_common_def="${PETSC_DIR}/doc/classic/doctext/doctextcommon.txt"; \
-        petsc_dir=$$(realpath ${PETSC_DIR}); LOCDIR=$$(pwd | sed s"?$${petsc_dir}/??"g)/; \
-        if [ "${MANSEC}" = "" ] ; then \
-          for f in ${SOURCED}; do \
-            LMANSEC=`grep SUBMANSEC $${f} | sed s'?[ ]*/\*[ ]*SUBMANSEC[ ]*=[ ]*\([a-zA-Z]*\)[ ]*\*/?\1?'g`; \
-            if [ "$${LMANSEC}" = "" ] ; then \
-              LMANSEC="MissingSUBMANSEC"; \
-              pwd | grep -e ftn-custom -e petsc/finclude -e petsc/private > /dev/null; fnd=$?; \
-              if [ "$${fnd}" == "1" ]; then \
-                echo "Missing MANSEC or SUBMANSEC definition in " `pwd`/$${f} ; \
-              fi; \
-            fi; \
-            if [ ! -d "${LOC}/manualpages/$${LMANSEC}" ]; then \
-              ${MKDIR} ${LOC}/manualpages/$${LMANSEC}; \
-            fi; \
-            DOCTEXT_PATH=${PETSC_DIR}/doc/classic/doctext \
-            ${DOCTEXT} -myst -mpath ${LOC}/manualpages/$${LMANSEC} -heading PETSc -defn ${PETSC_DIR}/doc/classic/doctext/myst.def \
-                -indexdir ../$${LMANSEC} -index ${LOC}/manualpages/manualpages.cit -locdir $${LOCDIR} -Wargdesc $${doctext_common_def} $${f} 2>&1 | tee -a ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err; \
-            if [ -f "${LOC}/manualpages/$${LMANSEC}" ]; then chmod g+w "${LOC}"/manualpages/$${LMANSEC}/*; fi; \
-          done; \
-        else \
-          if [ "${SUBMANSEC}" = "" ] ; then LMANSEC=${MANSEC}; else LMANSEC=${SUBMANSEC}; fi; \
-          if [ ! -d "${LOC}/manualpages/$${LMANSEC}" ]; then \
-            ${MKDIR} ${LOC}/manualpages/$${LMANSEC}; \
-          fi; \
-          DOCTEXT_PATH=${PETSC_DIR}/doc/classic/doctext  \
-          ${DOCTEXT} -myst -mpath ${LOC}/manualpages/$${LMANSEC} -heading PETSc -defn ${PETSC_DIR}/doc/classic/doctext/myst.def \
-              -indexdir ../$${LMANSEC} -index ${LOC}/manualpages/manualpages.cit -locdir $${LOCDIR} -Wargdesc $${doctext_common_def} ${SOURCED} 2>&1 | tee -a ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err; \
-          if [ -f "${LOC}/manualpages/$${LMANSEC}" ]; then chmod g+w "${LOC}"/manualpages/$${LMANSEC}/*; fi; \
-        fi;
-
 #   Rule for generating html code from C and Fortran
 #   Can run (and is) in parallel
 html:
 	-@export htmlmap_tmp=$$(mktemp) ;\
           petsc_dir=$$(realpath ${PETSC_DIR}); LOCDIR=$$(pwd | sed s"?$${petsc_dir}/??"g)/; \
           sed -e s?man+manualpages/?man+HTML_ROOT/manualpages/? ${HTMLMAP} > $$htmlmap_tmp ;\
-          cat ${PETSC_DIR}/doc/classic/mpi.www.index >> $$htmlmap_tmp ;\
+          cat ${PETSC_DIR}/doc/manualpages/mpi.www.index >> $$htmlmap_tmp ;\
           ROOT=`echo $${LOCDIR} | sed -e s?/[-a-z_0-9]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \
           ${MKDIR} -p $${loc} ;\
@@ -121,7 +76,11 @@ html:
             fi; \
           done ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`; ${RM} $${loc}/index.html; \
-          cat ${PETSC_DIR}/doc/classic/manualpages-sec/header_${MANSEC} | sed -e "s?<A HREF=\"PETSC_DIR[a-z/]*\">Examples</A>?<A HREF=\"$${ROOT}/manualpages/${MANSEC}\">Manual pages</A>?g" -e "s?PETSC_DIR?$${ROOT}/?g"> $${loc}/index.html; \
+          if [ -f ${PETSC_DIR}/doc/manualpages/MANSECHeaders/${MANSEC} ] ; then \
+            cat ${PETSC_DIR}/doc/manualpages/MANSECHeaders/${MANSEC} | sed -e "s?<A HREF=\"PETSC_DIR[a-z/]*\">Examples</A>?<A HREF=\"$${ROOT}/manualpages/${MANSEC}\">Manual pages</A>?g" -e "s?PETSC_DIR?$${ROOT}/?g"> $${loc}/index.html; \
+          else \
+            touch $${loc}/index.html; \
+          fi; \
           echo "<p>" >> $${loc}/index.html ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;\
           if [ "${EXAMPLESC}" != "" ] ; then \

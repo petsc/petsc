@@ -198,7 +198,7 @@ PETSC_EXTERN PetscErrorCode KSPBuildSolution(KSP, Vec, Vec *);
 PETSC_EXTERN PetscErrorCode KSPBuildResidual(KSP, Vec, Vec, Vec *);
 
 /*E
-  KSPChebyshevKind - Which kind of Chebyshev polynomial to use
+  KSPChebyshevKind - Which kind of Chebyshev polynomial to use with `KSPCHEBYSHEV`
 
   Values:
 + `KSP_CHEBYSHEV_FIRST`      - "classic" first-kind Chebyshev polynomial
@@ -376,7 +376,7 @@ PETSC_EXTERN PetscErrorCode KSPHPDDMGetType(KSP, KSPHPDDMType *);
 
    Level: advanced
 
-.seealso: [](ch_ksp), `KSP`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetOrthogonalization()`,
+.seealso: [](ch_ksp), `KSP`, `KSPGMRES`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetOrthogonalization()`,
           `KSPGMRESGetOrthogonalization()`,
           `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`
 E*/
@@ -395,7 +395,7 @@ PETSC_EXTERN const char *const KSPGMRESCGSRefinementTypes[];
    Note:
    Possibly unstable, but the fastest to compute
 
-.seealso: [](ch_ksp), `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetOrthogonalization()`,
+.seealso: [](ch_ksp), `KSPGMRES`, `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetOrthogonalization()`,
           `KSP`, `KSPGMRESGetOrthogonalization()`,
           `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSP_GMRES_CGS_REFINE_IFNEEDED`, `KSP_GMRES_CGS_REFINE_ALWAYS`,
           `KSPGMRESModifiedGramSchmidtOrthogonalization()`
@@ -412,7 +412,7 @@ M*/
    This is slower than `KSP_GMRES_CGS_REFINE_NEVER` because it requires an extra norm computation to
    estimate the orthogonality but is more stable.
 
-.seealso: [](ch_ksp), `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetOrthogonalization()`,
+.seealso: [](ch_ksp), `KSPGMRES`, `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetOrthogonalization()`,
           `KSP`, `KSPGMRESGetOrthogonalization()`,
           `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSP_GMRES_CGS_REFINE_NEVER`, `KSP_GMRES_CGS_REFINE_ALWAYS`,
           `KSPGMRESModifiedGramSchmidtOrthogonalization()`
@@ -429,7 +429,7 @@ M*/
 
    You should only use this if you absolutely know that the iterative refinement is needed.
 
-.seealso: [](ch_ksp), `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetOrthogonalization()`,
+.seealso: [](ch_ksp), `KSPGMRES`, `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetOrthogonalization()`,
           `KSP`, `KSPGMRESGetOrthogonalization()`,
           `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSP_GMRES_CGS_REFINE_IFNEEDED`, `KSP_GMRES_CGS_REFINE_ALWAYS`,
           `KSPGMRESModifiedGramSchmidtOrthogonalization()`
@@ -563,11 +563,8 @@ PETSC_EXTERN PetscErrorCode PCTelescopeGetKSP(PC, KSP *);
    Each solver only supports a subset of these and some may support different ones
    depending on whether left or right preconditioning is used, see `KSPSetPCSide()`
 
-   Developer Note:
-   This must match the values in petsc/finclude/petscksp.h
-
 .seealso: [](ch_ksp), `KSP`, `PCSide`, `KSPSolve()`, `KSPGetConvergedReason()`, `KSPSetNormType()`,
-          `KSPSetConvergenceTest()`, `KSPSetPCSide()`
+          `KSPSetConvergenceTest()`, `KSPSetPCSide()`, `KSP_NORM_DEFAULT`, `KSP_NORM_NONE`, `KSP_NORM_PRECONDITIONED`, `KSP_NORM_UNPRECONDITIONED`, `KSP_NORM_NATURAL`
 E*/
 typedef enum {
   KSP_NORM_DEFAULT          = -1,
@@ -657,9 +654,7 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP, PetscBool);
    The values `KSP_CONVERGED_NEG_CURVE`, and `KSP_CONVERGED_STEP_LENGTH` are returned only by `KSPCG`, `KSPMINRES` and by
    the special `KSPNASH`, `KSPSTCG`, and `KSPGLTR` solvers which are used by the `SNESNEWTONTR` (trust region) solver.
 
-   Developer Notes:
-   This must match the values in petsc/finclude/petscksp.h
-
+   Developer Note:
    The string versions of these are `KSPConvergedReasons`; if you change
    any of the values here also change them that array of names.
 
@@ -698,6 +693,7 @@ PETSC_EXTERN const char *const *KSPConvergedReasons;
 
    Level: beginner
 
+   Notes:
    See `KSPNormType` and `KSPSetNormType()` for possible norms that may be used. By default
    for left preconditioning it is the 2-norm of the preconditioned residual, and the
    2-norm of the residual for right preconditioning
@@ -712,6 +708,7 @@ M*/
 
    Level: beginner
 
+   Notes:
    See `KSPNormType` and `KSPSetNormType()` for possible norms that may be used. By default
        for left preconditioning it is the 2-norm of the preconditioned residual, and the
        2-norm of the residual for right preconditioning
@@ -726,11 +723,10 @@ M*/
 
    Level: beginner
 
+   Note:
    See `KSPNormType` and `KSPSetNormType()` for possible norms that may be used. By default
        for left preconditioning it is the 2-norm of the preconditioned residual, and the
        2-norm of the residual for right preconditioning
-
-   Level: beginner
 
 .seealso: [](ch_ksp), `KSPNormType`, `KSP_CONVERGED_ATOL`, `KSP_DIVERGED_RTOL`, `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
 M*/

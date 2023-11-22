@@ -24,6 +24,8 @@ Changes: Development
 
 .. rubric:: PetscViewer:
 
+- Change ``PetscViewerRestoreSubViewer()`` to no longer need a call to ``PetscViewerFlush()`` after it
+
 .. rubric:: PetscDraw:
 
 .. rubric:: AO:
@@ -55,6 +57,7 @@ Changes: Development
 .. rubric:: PC:
 
 - Add ``PCGAMGSetLowMemoryFilter()`` with corresponding option ``-pc_gamg_low_memory_threshold_filter``. Use the system ``MatFilter`` graph/matrix filter, without a temporary copy of the graph, otherwise use method that can be faster
+- ``PCMAT`` use ``MatSolve()`` if implemented by the matrix type 
 
 .. rubric:: KSP:
 
