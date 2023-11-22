@@ -82,6 +82,8 @@ Changes: Development
 
 .. rubric:: DM/DA:
 
+- Add MPI reduction inside ``SNESComputeObjective_DMDA()``. No need to call reduction into local callback
+
 .. rubric:: DMSwarm:
 
 .. rubric:: DMPlex:
