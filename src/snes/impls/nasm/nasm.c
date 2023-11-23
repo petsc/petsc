@@ -132,6 +132,14 @@ static PetscErrorCode SNESSetUp_NASM(SNES snes)
           PetscCall(KSPSetType(ksp, KSPPREONLY));
           PetscCall(PCSetType(pc, PCLU));
         }
+        if (snes->ops->usercompute) {
+          PetscCall(SNESSetComputeApplicationContext(nasm->subsnes[i], snes->ops->usercompute, snes->ops->userdestroy));
+        } else {
+          void *ctx;
+
+          PetscCall(SNESGetApplicationContext(snes, &ctx));
+          PetscCall(SNESSetApplicationContext(nasm->subsnes[i], ctx));
+        }
         PetscCall(SNESSetFromOptions(nasm->subsnes[i]));
         PetscCall(DMDestroy(&subdms[i]));
       }
