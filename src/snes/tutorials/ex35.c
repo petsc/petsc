@@ -1,7 +1,6 @@
 static const char help[] = "-Laplacian u = b as a nonlinear problem.\n\n";
 
 /*
-
     The linear and nonlinear versions of these should give almost identical results on this problem
 
     Richardson
@@ -40,7 +39,6 @@ static const char help[] = "-Laplacian u = b as a nonlinear problem.\n\n";
 
           n levels:
             -da_refine n  -fas_coarse_snes_type newtonls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly
-
 */
 
 /*

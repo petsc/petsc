@@ -187,7 +187,8 @@ static PetscErrorCode SNESSolve_NRichardson(SNES snes)
 
    Only supports left non-linear preconditioning.
 
-.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`, `SNESNGMRES`, `SNESQN`, `SNESNCG`
+.seealso: [](ch_snes), `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`, `SNESNGMRES`, `SNESQN`, `SNESNCG`,
+          `SNESLineSearchSetDamping()`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES snes)
 {

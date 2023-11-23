@@ -67,14 +67,14 @@ static PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch)
    This line search uses the length "as if" the problem is linear (that is what is computed by the linear CG method) using the Jacobian of the function.
    alpha = (r, r) / (p, Ap) = (f, f) / (y, Jy) where r (f) is the current residual (function value), p (y) is the current search direction.
 
+   Level: advanced
+
    Notes:
    This requires a Jacobian-vector product but does not require the solution of a linear system with the Jacobian
 
    This is a "odd-ball" line search, we don't know if it is in the literature or used in practice by anyone.
 
-   Level: advanced
-
-.seealso: `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
+.seealso: [](ch_snes), `SNES`, `SNESNCG` `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch linesearch)
@@ -147,10 +147,7 @@ static PetscErrorCode SNESView_NCG(SNES snes, PetscViewer viewer)
   It is not clear what "generalized search directions" means, does it mean use with a nonlinear preconditioner,
   that is using -npc_snes_type <type>, `SNESSetNPC()`, or `SNESGetNPC()`?
 
-  Developer Notes:
-  There should be a `SNESNCGSetType()`
-
-.seealso: `SNESNCG`, `SNESNCGType`, `SNES_NCG_FR`, `SNES_NCG_PRP`, `SNES_NCG_HS`, `SNES_NCG_DY`, `SNES_NCG_CD`
+.seealso: [](ch_snes), `SNES`, `SNESNCG`, `SNESNCGType`, `SNES_NCG_FR`, `SNES_NCG_PRP`, `SNES_NCG_HS`, `SNES_NCG_DY`, `SNES_NCG_CD`
 @*/
 PetscErrorCode SNESNCGSetType(SNES snes, SNESNCGType btype)
 {
@@ -387,7 +384,7 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
 .  * -  Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu,"Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
 
-.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`, `SNESNGMRES`, `SNESQN`, `SNESLINESEARCHNCGLINEAR`, `SNESNCGSetType()`, `SNESLineSearchSetType()`
+.seealso: [](ch_snes), `SNES`, `SNESNCG`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`, `SNESNGMRES`, `SNESQN`, `SNESLINESEARCHNCGLINEAR`, `SNESNCGSetType()`, `SNESLineSearchSetType()`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_NCG(SNES snes)
 {

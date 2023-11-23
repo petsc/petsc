@@ -1,7 +1,7 @@
 #include <petsc/private/snesimpl.h> /*I "petscsnes.h"  I*/
 
 /*@
-  SNESApplyNPC - Calls `SNESSolve()` on preconditioner for the `SNES`
+  SNESApplyNPC - Calls `SNESSolve()` on the preconditioner for the `SNES`
 
   Collective
 
@@ -19,7 +19,7 @@
   `SNESComputeFunction()` should be called on `x` before `SNESApplyNPC()` is called, as it is
   with `SNESComuteJacobian()`.
 
-.seealso: `SNESGetNPC()`, `SNESSetNPC()`, `SNESComputeFunction()`
+.seealso: [](ch_snes), `SNES`, `SNESGetNPC()`, `SNESSetNPC()`, `SNESComputeFunction()`
 @*/
 PetscErrorCode SNESApplyNPC(SNES snes, Vec x, Vec f, Vec y)
 {
@@ -71,7 +71,7 @@ PetscErrorCode SNESComputeFunctionDefaultNPC(SNES snes, Vec X, Vec F)
 
   Level: developer
 
-.seealso: `SNESGetNPC()`, `SNESSetNPC()`, `SNESComputeFunction()`, `SNESApplyNPC()`, `SNESSolve()`
+.seealso: [](ch_snes), `SNES`, `SNESGetNPC()`, `SNESSetNPC()`, `SNESComputeFunction()`, `SNESApplyNPC()`, `SNESSolve()`
 @*/
 PetscErrorCode SNESGetNPCFunction(SNES snes, Vec F, PetscReal *fnorm)
 {

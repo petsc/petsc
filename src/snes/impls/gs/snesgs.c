@@ -20,7 +20,7 @@
 
   Level: intermediate
 
-.seealso: `SNESNCG`, `SNESSetTrustRegionTolerance()`
+.seealso: [](ch_snes), `SNES`, `SNESNCG`, `SNESSetTrustRegionTolerance()`
 @*/
 PetscErrorCode SNESNGSSetTolerances(SNES snes, PetscReal abstol, PetscReal rtol, PetscReal stol, PetscInt maxit)
 {
@@ -64,9 +64,9 @@ PetscErrorCode SNESNGSSetTolerances(SNES snes, PetscReal abstol, PetscReal rtol,
   Level: intermediate
 
   Note:
-  The user can specify NULL for any parameter that is not needed.
+  The user can specify `NULL` for any parameter that is not needed.
 
-.seealso: `SNESNCG`, `SNESSetTolerances()`
+.seealso: [](ch_snes), `SNES`, `SNESNCG`, `SNESSetTolerances()`
 @*/
 PetscErrorCode SNESNGSGetTolerances(SNES snes, PetscReal *atol, PetscReal *rtol, PetscReal *stol, PetscInt *maxit)
 {
@@ -84,6 +84,8 @@ PetscErrorCode SNESNGSGetTolerances(SNES snes, PetscReal *atol, PetscReal *rtol,
 /*@
   SNESNGSSetSweeps - Sets the number of sweeps of nonlinear GS to use in `SNESNCG`
 
+  Logically Collective
+
   Input Parameters:
 + snes   - the `SNES` context
 - sweeps - the number of sweeps of nonlinear GS to perform.
@@ -93,7 +95,7 @@ PetscErrorCode SNESNGSGetTolerances(SNES snes, PetscReal *atol, PetscReal *rtol,
 
   Level: intermediate
 
-.seealso: `SNESNCG`, `SNESSetNGS()`, `SNESGetNGS()`, `SNESSetNPC()`, `SNESNGSGetSweeps()`
+.seealso: [](ch_snes), `SNES`, `SNESNCG`, `SNESSetNGS()`, `SNESGetNGS()`, `SNESSetNPC()`, `SNESNGSGetSweeps()`
 @*/
 PetscErrorCode SNESNGSSetSweeps(SNES snes, PetscInt sweeps)
 {
@@ -116,7 +118,7 @@ PetscErrorCode SNESNGSSetSweeps(SNES snes, PetscInt sweeps)
 
   Level: intermediate
 
-.seealso: `SNESNCG`, `SNESSetNGS()`, `SNESGetNGS()`, `SNESSetNPC()`, `SNESNGSSetSweeps()`
+.seealso: [](ch_snes), `SNES`, `SNESNCG`, `SNESSetNGS()`, `SNESGetNGS()`, `SNESSetNPC()`, `SNESNGSSetSweeps()`
 @*/
 PetscErrorCode SNESNGSGetSweeps(SNES snes, PetscInt *sweeps)
 {
@@ -276,7 +278,7 @@ static PetscErrorCode SNESSolve_NGS(SNES snes)
 }
 
 /*MC
-  SNESNGS - Either calls the user-provided solution routine provided with `SNESSetNGS()` or does a finite difference secant approximation
+  SNESNGS - Either calls the user-provided Gauss-Seidel solution routine provided with `SNESSetNGS()` or does a finite difference secant approximation
             using coloring.
 
    Level: advanced
@@ -305,8 +307,8 @@ static PetscErrorCode SNESSolve_NGS(SNES snes)
 .  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
 
-.seealso: `SNESNCG`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESSetNGS()`, `SNESType`, `SNESNGSSetSweeps()`, `SNESNGSSetTolerances()`,
-          `SNESSetNormSchedule()`
+.seealso: [](ch_snes), `SNESNCG`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESSetNGS()`, `SNESType`, `SNESNGSSetSweeps()`, `SNESNGSSetTolerances()`,
+          `SNESSetNormSchedule()`, `SNESNGSGetTolerances()`, `SNESNGSSetSweeps()`
 M*/
 
 PETSC_EXTERN PetscErrorCode SNESCreate_NGS(SNES snes)
