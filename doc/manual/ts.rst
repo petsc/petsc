@@ -1032,7 +1032,7 @@ through the event monitoring routine
 
 .. code-block::
 
-   TSSetEventHandler(TS ts,PetscInt nevents,PetscInt *direction,PetscBool *terminate,PetscErrorCode (*eventhandler)(TS,PetscReal,Vec,PetscScalar*,void* eventP),PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void* eventP),void *eventP);
+   TSSetEventHandler(TS ts,PetscInt nevents,PetscInt *direction,PetscBool *terminate,PetscErrorCode (*indicator)(TS,PetscReal,Vec,PetscScalar*,void* eventP),PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void* eventP),void *eventP);
 
 Here, ``nevents`` denotes the number of events, ``direction`` sets the
 type of zero crossing to be detected for an event (+1 for positive
@@ -1042,7 +1042,7 @@ when an event is located, ``eventmonitor`` is a user- defined routine
 that specifies the event description, ``postevent`` is an optional
 user-defined routine to take specific actions following an event.
 
-The arguments to ``eventhandler()`` are the timestep context, current
+The arguments to ``indicator()`` are the timestep context, current
 time, input state :math:`u`, array of event function value, and the
 (optional) user-provided context ``eventP``.
 
