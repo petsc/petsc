@@ -2225,6 +2225,46 @@ cdef class DMPlex(DM):
         CHKERR( PetscCLEAR(self.obj) ); self.dm = dmGhosted
         return toInt(numGhostCells)
 
+    def getSubpointIS(self) -> IS:
+        """Return an `IS` covering the entire subdm chart.
+
+        Not collective.
+
+        Returns
+        -------
+        iset : IS
+            The `IS` containing subdm's parent's points.
+
+        See Also
+        --------
+        DM, DMPlex, petsc.DMPlexGetSubpointIS
+
+        """
+        cdef IS iset = IS()
+        CHKERR( DMPlexGetSubpointIS(self.dm, &iset.iset) )
+        PetscINCREF(iset.obj)
+        return iset
+
+    def getSubpointMap(self) -> DMLabel:
+        """Return a `DMLabel` with point dimension as values.
+
+        Not collective.
+
+        Returns
+        -------
+        label : DMLabel
+            The `DMLabel` whose values are subdm's point dimensions.
+
+        See Also
+        --------
+        DM, DMPlex, petsc.DMPlexGetSubpointMap
+
+        """
+        cdef DMLabel label = DMLabel()
+        CHKERR( DMPlexGetSubpointMap(self.dm, &label.dmlabel) )
+        PetscINCREF(label.obj)
+        return label
+
     # Metric
 
     def metricSetFromOptions(self) -> None:
