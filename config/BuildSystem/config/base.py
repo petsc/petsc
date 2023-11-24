@@ -229,7 +229,7 @@ class Configure(script.Script):
   def getExecutable(self, names, path = [], getFullPath = 0, useDefaultPath = 0, resultName = '', setMakeMacro = 1):
     '''Search for an executable in the list names
        - Each name in the list is tried for each entry in the path until a name is located, then it stops
-       - If found, the path is stored in the variable "name", or "resultName" if given
+       - If found, the path is attached to self as an attribute named "name", or "resultName" if given
        - By default, a make macro "resultName" will hold the path'''
     found = 0
     if isinstance(names,str) and names.startswith('/'):
