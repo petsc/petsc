@@ -56,6 +56,14 @@ int main(int argc, char **argv)
       args: -n 6
       args: -first -2
       args: -step 1
-      args: -start {{-2 4}separate output} -end {{2 6}separate output}
+      args: -start -2 -end 2
 
-TEST*/
+    test:
+      suffix: 2
+      nsize: 4
+      args: -n 6
+      args: -first -2
+      args: -step 1
+      args: -start 4 -end 6
+
+ TEST*/

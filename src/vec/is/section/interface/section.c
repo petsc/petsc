@@ -646,6 +646,7 @@ PetscErrorCode PetscSectionSetChart(PetscSection s, PetscInt pStart, PetscInt pE
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
+  PetscCheck(pEnd >= pStart, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Chart pEnd %" PetscInt_FMT " cannot be smaller than chart pStart %" PetscInt_FMT, pEnd, pStart);
   if (pStart == s->pStart && pEnd == s->pEnd) PetscFunctionReturn(PETSC_SUCCESS);
   /* Cannot Reset() because it destroys field information */
   s->setup = PETSC_FALSE;
@@ -913,6 +914,7 @@ PetscErrorCode PetscSectionAddDof(PetscSection s, PetscInt point, PetscInt numDo
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscAssert(point >= s->pStart && point < s->pEnd, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, s->pStart, s->pEnd);
+  PetscCheck(numDof >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "numDof %" PetscInt_FMT " should not be negative", numDof);
   s->atlasDof[point - s->pStart] += numDof;
   PetscCall(PetscSectionInvalidateMaxDof_Internal(s));
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -70,7 +70,7 @@ PetscErrorCode DMPlexIsSimplex(DM dm, PetscBool *simplex)
 
   Output Parameters:
 + cStart - The first "normal" cell
-- cEnd   - The upper bound on "normal"" cells
+- cEnd   - The upper bound on "normal" cells
 
   Level: developer
 

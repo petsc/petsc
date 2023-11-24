@@ -923,6 +923,7 @@ PetscErrorCode ISContiguousLocal(IS is, PetscInt gstart, PetscInt gend, PetscInt
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscAssertPointer(start, 4);
   PetscAssertPointer(contig, 5);
+  PetscCheck(gstart <= gend, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "gstart %" PetscInt_FMT " must be less than or equal to gend %" PetscInt_FMT, gstart, gend);
   *start  = -1;
   *contig = PETSC_FALSE;
   PetscTryTypeMethod(is, contiguous, gstart, gend, start, contig);
