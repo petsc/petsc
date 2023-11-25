@@ -859,7 +859,7 @@ PetscErrorCode PetscSectionGetDof(PetscSection s, PetscInt point, PetscInt *numD
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscAssertPointer(numDof, 3);
-  if (PetscDefined(USE_DEBUG)) PetscCheck(point >= s->pStart && point < s->pEnd, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, s->pStart, s->pEnd);
+  PetscAssert(point >= s->pStart && point < s->pEnd, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, s->pStart, s->pEnd);
   *numDof = s->atlasDof[point - s->pStart];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -912,7 +912,7 @@ PetscErrorCode PetscSectionAddDof(PetscSection s, PetscInt point, PetscInt numDo
 {
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  if (PetscDefined(USE_DEBUG)) PetscCheck(point >= s->pStart && point < s->pEnd, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, s->pStart, s->pEnd);
+  PetscAssert(point >= s->pStart && point < s->pEnd, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, s->pStart, s->pEnd);
   s->atlasDof[point - s->pStart] += numDof;
   PetscCall(PetscSectionInvalidateMaxDof_Internal(s));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1734,7 +1734,7 @@ PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *o
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscAssertPointer(offset, 3);
-  if (PetscDefined(USE_DEBUG)) PetscCheck(!(point < s->pStart) && !(point >= s->pEnd), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, s->pStart, s->pEnd);
+  PetscAssert(!(point < s->pStart) && !(point >= s->pEnd), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, s->pStart, s->pEnd);
   *offset = s->atlasOff[point - s->pStart];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
