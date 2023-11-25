@@ -146,16 +146,15 @@ def _mangle_petsc_intersphinx():
     This function downloads their object inventory and strips the leading path
     elements so that references to PETSc names actually resolve."""
 
+    website = intersphinx_mapping['petsc'][0].partition('/release/')[0]
+    branch = get_doc_branch()
+    doc_url = f"{website}/{branch}/"
     if 'LOC' in os.environ and os.path.isfile(os.path.join(os.environ['LOC'],'objects.inv')):
-      base_doc_url = os.environ['LOC']
-      url=f"file://" + os.path.join(base_doc_url,'objects.inv')
+      inventory_url=f"file://" + os.path.join(os.environ['LOC'],'objects.inv')
     else:
-      website = intersphinx_mapping['petsc'][0].partition('/release/')[0]
-      branch = get_doc_branch()
-      base_doc_url = f"{website}/{branch}/"
-      url=f"{base_doc_url}objects.inv"
-    print("Using PETSC inventory from "+url)
-    inventory = sphobjinv.Inventory(url=url)
+      inventory_url=f"{doc_url}objects.inv"
+    print("Using PETSC inventory from "+inventory_url)
+    inventory = sphobjinv.Inventory(url=inventory_url)
     print(inventory)
 
     for obj in inventory.objects:
@@ -169,7 +168,7 @@ def _mangle_petsc_intersphinx():
         new_inventory_filename,
         sphobjinv.compress(inventory.data_file(contract=True))
     )
-    intersphinx_mapping['petsc'] = (base_doc_url, new_inventory_filename)
+    intersphinx_mapping['petsc'] = (doc_url, new_inventory_filename)
 
 
 _mangle_petsc_intersphinx()
