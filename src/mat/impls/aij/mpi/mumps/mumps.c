@@ -1575,7 +1575,6 @@ static PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X)
     }
     /* handle condensation step of Schur complement (if any) */
     if (mumps->id.size_schur > 0) {
-      PetscCheck(mumps->petsc_size <= 1, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Parallel Schur complements not yet supported from PETSc");
       if (mumps->id.ICNTL(26) < 0 || mumps->id.ICNTL(26) > 2) {
         second_solve = PETSC_TRUE;
         PetscCall(MatMumpsHandleSchur_Private(A, PETSC_FALSE));
@@ -1611,7 +1610,7 @@ static PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X)
   }
 
   /* parallel case: MUMPS requires rhs B to be centralized on the host! */
-  PetscCheck(mumps->petsc_size <= 1 || !mumps->id.ICNTL(19), PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Parallel Schur complements not yet supported from PETSc");
+  PetscCheck(!mumps->id.ICNTL(19), PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Parallel Schur complements not yet supported from PETSc");
 
   /* create msol_loc to hold mumps local solution */
   isol_loc_save = mumps->id.isol_loc; /* save it for MatSolve() */
