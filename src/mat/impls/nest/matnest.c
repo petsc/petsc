@@ -997,7 +997,7 @@ static PetscErrorCode MatAXPY_Nest(Mat Y, PetscScalar a, Mat X, MatStructure str
       } else if (bX->m[i][j]) {
         Mat M;
 
-        PetscCheck(str == DIFFERENT_NONZERO_PATTERN, PetscObjectComm((PetscObject)Y), PETSC_ERR_ARG_INCOMP, "Matrix block does not exist at %" PetscInt_FMT ",%" PetscInt_FMT ". Use DIFFERENT_NONZERO_PATTERN", i, j);
+        PetscCheck(str == DIFFERENT_NONZERO_PATTERN || str == UNKNOWN_NONZERO_PATTERN, PetscObjectComm((PetscObject)Y), PETSC_ERR_ARG_INCOMP, "Matrix block does not exist at %" PetscInt_FMT ",%" PetscInt_FMT ". Use DIFFERENT_NONZERO_PATTERN or UNKNOWN_NONZERO_PATTERN", i, j);
         PetscCall(MatDuplicate(bX->m[i][j], MAT_COPY_VALUES, &M));
         PetscCall(MatNestSetSubMat(Y, i, j, M));
         PetscCall(MatDestroy(&M));
