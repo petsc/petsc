@@ -463,11 +463,6 @@ static PetscErrorCode MatZeroRows_MPIDense(Mat A, PetscInt n, const PetscInt row
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode MatMult_SeqDense(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatMultAdd_SeqDense(Mat, Vec, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatMultTranspose_SeqDense(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatMultTransposeAdd_SeqDense(Mat, Vec, Vec, Vec);
-
 static PetscErrorCode MatMult_MPIDense(Mat mat, Vec xx, Vec yy)
 {
   Mat_MPIDense      *mdn = (Mat_MPIDense *)mat->data;
@@ -663,8 +658,6 @@ static PetscErrorCode MatDestroy_MPIDense(Mat mat)
   PetscCall(PetscObjectCompose((PetscObject)mat, "DiagonalBlock", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-PETSC_INTERN PetscErrorCode MatView_SeqDense(Mat, PetscViewer);
 
 #include <petscdraw.h>
 static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat, PetscViewer viewer)
@@ -2320,8 +2313,8 @@ static PetscErrorCode MatProductSetFromOptions_MPIDense_AtB(Mat C)
   Mat          A = product->A, B = product->B;
 
   PetscFunctionBegin;
-  if (A->rmap->rstart != B->rmap->rstart || A->rmap->rend != B->rmap->rend)
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Matrix local dimensions are incompatible, (%" PetscInt_FMT ", %" PetscInt_FMT ") != (%" PetscInt_FMT ",%" PetscInt_FMT ")", A->rmap->rstart, A->rmap->rend, B->rmap->rstart, B->rmap->rend);
+  PetscCheck(A->rmap->rstart == B->rmap->rstart && A->rmap->rend == B->rmap->rend, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Matrix local dimensions are incompatible, (%" PetscInt_FMT ", %" PetscInt_FMT ") != (%" PetscInt_FMT ",%" PetscInt_FMT ")",
+             A->rmap->rstart, A->rmap->rend, B->rmap->rstart, B->rmap->rend);
   C->ops->transposematmultsymbolic = MatTransposeMatMultSymbolic_MPIDense_MPIDense;
   C->ops->productsymbolic          = MatProductSymbolic_AtB;
   PetscFunctionReturn(PETSC_SUCCESS);
