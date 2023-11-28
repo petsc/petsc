@@ -1,5 +1,8 @@
 #include <petsc/private/matimpl.h> /*I "petscmat.h"  I*/
 
+#include <../src/mat/impls/aij/seq/aij.h>
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
+
 PETSC_INTERN PetscErrorCode MatSetBlockSizes_Default(Mat mat, PetscInt rbs, PetscInt cbs)
 {
   PetscFunctionBegin;
@@ -11,13 +14,34 @@ PETSC_INTERN PetscErrorCode MatSetBlockSizes_Default(Mat mat, PetscInt rbs, Pets
 
 PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y, PetscScalar a)
 {
-  PetscInt    i, start, end;
+  PetscInt    i, start, end, oldValA = 0, oldValB = 0;
   PetscScalar alpha = a;
   PetscBool   prevoption;
+  PetscBool   isSeqAIJDerived, isMPIAIJDerived; // all classes sharing SEQAIJHEADER or MPIAIJHEADER
+  Mat         A = NULL, B = NULL;
 
   PetscFunctionBegin;
   PetscCall(MatGetOption(Y, MAT_NO_OFF_PROC_ENTRIES, &prevoption));
   PetscCall(MatSetOption(Y, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
+  PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)Y, &isSeqAIJDerived, MATSEQAIJ, MATSEQBAIJ, MATSEQSBAIJ, ""));
+  PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)Y, &isMPIAIJDerived, MATMPIAIJ, MATMPIBAIJ, MATMPISBAIJ, ""));
+
+  if (isSeqAIJDerived) A = Y;
+  else if (isMPIAIJDerived) {
+    Mat_MPIAIJ *mpiaij = (Mat_MPIAIJ *)Y->data;
+    A                  = mpiaij->A;
+    B                  = mpiaij->B;
+  }
+
+  if (A) {
+    oldValA                          = ((Mat_SeqAIJ *)(A->data))->nonew;
+    ((Mat_SeqAIJ *)(A->data))->nonew = 0; // so that new nonzero locations are allowed
+  }
+  if (B) {
+    oldValB                          = ((Mat_SeqAIJ *)(B->data))->nonew;
+    ((Mat_SeqAIJ *)(B->data))->nonew = 0;
+  }
+
   PetscCall(MatGetOwnershipRange(Y, &start, &end));
   for (i = start; i < end; i++) {
     if (i < Y->cmap->N) PetscCall(MatSetValues(Y, 1, &i, 1, &i, &alpha, ADD_VALUES));
@@ -25,6 +49,8 @@ PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y, PetscScalar a)
   PetscCall(MatAssemblyBegin(Y, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(Y, MAT_FINAL_ASSEMBLY));
   PetscCall(MatSetOption(Y, MAT_NO_OFF_PROC_ENTRIES, prevoption));
+  if (A) ((Mat_SeqAIJ *)(A->data))->nonew = oldValA;
+  if (B) ((Mat_SeqAIJ *)(B->data))->nonew = oldValB;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
