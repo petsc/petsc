@@ -9,8 +9,17 @@
   #define matgetvaluesnn1_             MATGETVALUESnn1
   #define matgetvaluesnnnn_            MATGETVALUESnnnn
   #define matgetvalues11_              MATGETVALUES11
-  #define matgetvalues1n_              MATGETVALUES1n
-  #define matgetvaluesn1_              MATGETVALUESn1
+  #define matgetvalues11a_             MATGETVALUES11A
+  #define matgetvalues1n_              MATGETVALUES1N
+  #define matgetvaluesn1_              MATGETVALUESN1
+  #define matgetvalueslocal_           MATGETVALUESLOCAL
+  #define matgetvalueslocal0_          MATGETVALUESLOCAL0
+  #define matgetvalueslocalnn1_        MATGETVALUESLOCALNN1
+  #define matgetvalueslocalnnnn_       MATGETVALUESLOCALNNNN
+  #define matgetvalueslocal11_         MATGETVALUESLOCAL11
+  #define matgetvalueslocal11a_        MATGETVALUESLOCAL11A
+  #define matgetvalueslocal1n_         MATGETVALUESLOCAL1N
+  #define matgetvalueslocaln1_         MATGETVALUESLOCALN1
   #define matsetvalues_                MATSETVALUES
   #define matsetvaluesnnnn_            MATSETVALUESNNNN
   #define matsetvalues0_               MATSETVALUES0
@@ -199,8 +208,16 @@
   #define matgetvaluesnn1_             matgetvaluesnn1
   #define matgetvaluesnnnn_            matgetvaluesnnnn
   #define matgetvalues11_              matgetvalues11
+  #define matgetvalues11a_             matgetvalues11a
   #define matgetvalues1n_              matgetvalues1n
   #define matgetvaluesn1_              matgetvaluesn1
+  #define matgetvalueslocal_           matgetvalueslocal
+  #define matgetvalueslocal0_          matgetvalueslocal0
+  #define matgetvalueslocalnn1_        matgetvalueslocalnn1
+  #define matgetvalueslocalnnnn_       matgetvalueslocalnnnn
+  #define matgetvalueslocal11_         matgetvalueslocal11
+  #define matgetvalueslocal1n_         matgetvalueslocal1n
+  #define matgetvalueslocaln1_         matgetvalueslocaln1
   #define matsetnullspace_             matsetnullspace
   #define matgetownershiprange_        matgetownershiprange
   #define matgetownershiprange00_      matgetownershiprange00
@@ -248,6 +265,11 @@ PETSC_EXTERN void matgetvalues11_(Mat *mat, PetscInt *m, PetscInt idxm[], PetscI
   matgetvalues_(mat, m, idxm, n, idxn, v, ierr);
 }
 
+PETSC_EXTERN void matgetvalues11a_(Mat *mat, PetscInt *m, PetscInt idxm[], PetscInt *n, PetscInt idxn[], PetscScalar v[], int *ierr)
+{
+  matgetvalues_(mat, m, idxm, n, idxn, v, ierr);
+}
+
 PETSC_EXTERN void matgetvalues1n_(Mat *mat, PetscInt *m, PetscInt idxm[], PetscInt *n, PetscInt idxn[], PetscScalar v[], int *ierr)
 {
   matgetvalues_(mat, m, idxm, n, idxn, v, ierr);
@@ -256,6 +278,46 @@ PETSC_EXTERN void matgetvalues1n_(Mat *mat, PetscInt *m, PetscInt idxm[], PetscI
 PETSC_EXTERN void matgetvaluesn1_(Mat *mat, PetscInt *m, PetscInt idxm[], PetscInt *n, PetscInt idxn[], PetscScalar v[], int *ierr)
 {
   matgetvalues_(mat, m, idxm, n, idxn, v, ierr);
+}
+
+PETSC_EXTERN void matgetvalueslocal_(Mat *mat, PetscInt *m, PetscInt idxm[], PetscInt *n, PetscInt idxn[], PetscScalar v[], int *ierr)
+{
+  *ierr = MatGetValuesLocal(*mat, *m, idxm, *n, idxn, v);
+}
+
+PETSC_EXTERN void matgetvalueslocal0_(Mat *mat, PetscInt *m, PetscInt idxm[], PetscInt *n, PetscInt idxn[], PetscScalar v[], int *ierr)
+{
+  matgetvalueslocal_(mat, m, idxm, n, idxn, v, ierr);
+}
+
+PETSC_EXTERN void matgetvalueslocalnn1_(Mat *mat, PetscInt *m, PetscInt idxm[], PetscInt *n, PetscInt idxn[], PetscScalar v[], int *ierr)
+{
+  matgetvalueslocal_(mat, m, idxm, n, idxn, v, ierr);
+}
+
+PETSC_EXTERN void matgetvalueslocalnnnn_(Mat *mat, PetscInt *m, PetscInt idxm[], PetscInt *n, PetscInt idxn[], PetscScalar v[], int *ierr)
+{
+  matgetvalueslocal_(mat, m, idxm, n, idxn, v, ierr);
+}
+
+PETSC_EXTERN void matgetvalueslocal11_(Mat *mat, PetscInt *m, PetscInt idxm[], PetscInt *n, PetscInt idxn[], PetscScalar v[], int *ierr)
+{
+  matgetvalueslocal_(mat, m, idxm, n, idxn, v, ierr);
+}
+
+PETSC_EXTERN void matgetvalueslocal11a_(Mat *mat, PetscInt *m, PetscInt idxm[], PetscInt *n, PetscInt idxn[], PetscScalar v[], int *ierr)
+{
+  matgetvalueslocal_(mat, m, idxm, n, idxn, v, ierr);
+}
+
+PETSC_EXTERN void matgetvalueslocal1n_(Mat *mat, PetscInt *m, PetscInt idxm[], PetscInt *n, PetscInt idxn[], PetscScalar v[], int *ierr)
+{
+  matgetvalueslocal_(mat, m, idxm, n, idxn, v, ierr);
+}
+
+PETSC_EXTERN void matgetvalueslocaln1_(Mat *mat, PetscInt *m, PetscInt idxm[], PetscInt *n, PetscInt idxn[], PetscScalar v[], int *ierr)
+{
+  matgetvalueslocal_(mat, m, idxm, n, idxn, v, ierr);
 }
 
 PETSC_EXTERN void matgetownershiprange_(Mat *mat, PetscInt *m, PetscInt *n, int *ierr)
