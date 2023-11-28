@@ -145,6 +145,7 @@ PETSC_INTERN PetscErrorCode MatProductNumeric_Nest_Dense(Mat C)
   PetscCall(MatDenseRestoreArray(C, &carray));
   PetscCall(MatDenseRestoreArrayRead(B, &barray));
 
+  PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);

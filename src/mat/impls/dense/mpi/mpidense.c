@@ -1973,6 +1973,7 @@ static PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A, Mat B,
   PetscCall(MatDenseGetArrayWrite(c->A, &carray));
   PetscCallMPI(MPI_Reduce_scatter(sendbuf, carray, recvcounts, MPIU_SCALAR, MPIU_SUM, comm));
   PetscCall(MatDenseRestoreArrayWrite(c->A, &carray));
+  PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2150,6 +2151,7 @@ static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense_Cyclic(Mat A,
   PetscCall(MatDenseRestoreArrayRead(a->A, &av));
   PetscCall(MatDenseRestoreArrayRead(b->A, &bv));
   PetscCall(MatDenseRestoreArrayWrite(c->A, &cv));
+  PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2197,6 +2199,7 @@ static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense_Allgatherv(Ma
   PetscCall(MatDenseRestoreArrayRead(a->A, &av));
   PetscCall(MatDenseRestoreArrayRead(b->A, &bv));
   PetscCall(MatDenseRestoreArrayWrite(c->A, &cv));
+  PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);

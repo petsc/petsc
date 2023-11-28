@@ -331,6 +331,7 @@ static PetscErrorCode MatProductNumeric_X_Dense(Mat C)
     PetscCall(MatDenseRestoreColumnVecRead(B, k, &x));
     PetscCall(MatDenseRestoreColumnVecWrite(C, k, &y));
   }
+  PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
   if (PetscDefined(HAVE_CUDA)) {
