@@ -811,7 +811,7 @@ int main(int argc, char **argv)
     PetscCall(MatSetNullSpace(A, nullSpace));
   }
 
-  PetscCall(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));
+  PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, &user));
   PetscCall(SNESSetJacobian(snes, A, J, NULL, NULL));
 
   PetscCall(SNESSetFromOptions(snes));

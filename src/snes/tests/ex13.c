@@ -155,7 +155,7 @@ int main(int argc, char **argv)
   }
   PetscCall(SNESSetFromOptions(snes));
   PetscCall(PetscObjectSetName((PetscObject)u, "potential"));
-  PetscCall(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));
+  PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, &user));
   PetscCall(DMSNESCheckFromOptions(snes, u));
   PetscCall(PetscTime(&time));
   PetscCall(SNESSetUp(snes));

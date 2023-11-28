@@ -463,6 +463,7 @@ PETSC_EXTERN PetscInt       DMPolytopeConvertNewOrientation_Internal(DMPolytopeT
 PETSC_EXTERN PetscInt       DMPolytopeConvertOldOrientation_Internal(DMPolytopeType, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexConvertOldOrientations_Internal(DM);
 
+PETSC_EXTERN PetscErrorCode DMPlexComputeIntegral_Internal(DM, Vec, PetscInt, PetscInt, PetscScalar *, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeResidual_Internal(DM, PetscFormKey, IS, PetscReal, Vec, Vec, PetscReal, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM, PetscFormKey[], IS, PetscReal, Vec, Vec, PetscReal, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeJacobian_Internal(DM, PetscFormKey, IS, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);

@@ -237,7 +237,7 @@ int main(int argc, char **argv)
   PetscCall(DMCreateGlobalVector(dm, &u));
   PetscCall(VecSet(u, 0.0));
   PetscCall(PetscObjectSetName((PetscObject)u, "solution"));
-  PetscCall(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));
+  PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, &user));
   PetscCall(SNESSetFromOptions(snes));
   PetscCall(DMSNESCheckFromOptions(snes, u));
   PetscCall(SNESSolve(snes, NULL, u));
@@ -248,7 +248,7 @@ int main(int argc, char **argv)
   PetscCall(DMCreateGlobalVector(dm_sum, &u_sum));
   PetscCall(VecSet(u_sum, 0.0));
   PetscCall(PetscObjectSetName((PetscObject)u_sum, "solution_sum"));
-  PetscCall(DMPlexSetSNESLocalFEM(dm_sum, &user, &user, &user));
+  PetscCall(DMPlexSetSNESLocalFEM(dm_sum, PETSC_FALSE, &user));
   PetscCall(SNESSetFromOptions(snes_sum));
   PetscCall(DMSNESCheckFromOptions(snes_sum, u_sum));
   PetscCall(SNESSolve(snes_sum, NULL, u_sum));

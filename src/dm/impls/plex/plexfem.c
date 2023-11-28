@@ -2168,12 +2168,12 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec X, PetscInt cStart, PetscInt cEnd, PetscScalar *cintegral, void *user)
+PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec locX, PetscInt cStart, PetscInt cEnd, PetscScalar *cintegral, void *user)
 {
   DM           dmAux = NULL;
   PetscDS      prob, probAux = NULL;
   PetscSection section, sectionAux;
-  Vec          locX, locA;
+  Vec          locA;
   PetscInt     dim, numCells = cEnd - cStart, c, f;
   PetscBool    useFVM = PETSC_FALSE;
   /* DS */
@@ -2206,11 +2206,6 @@ static PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec X, PetscInt cSta
     PetscCall(PetscObjectGetClassId(obj, &id));
     if (id == PETSCFV_CLASSID) useFVM = PETSC_TRUE;
   }
-  /* Get local solution with boundary values */
-  PetscCall(DMGetLocalVector(dm, &locX));
-  PetscCall(DMPlexInsertBoundaryValues(dm, PETSC_TRUE, locX, 0.0, NULL, NULL, NULL));
-  PetscCall(DMGlobalToLocalBegin(dm, X, INSERT_VALUES, locX));
-  PetscCall(DMGlobalToLocalEnd(dm, X, INSERT_VALUES, locX));
   /* Read DS information */
   PetscCall(PetscDSGetTotalDimension(prob, &totDim));
   PetscCall(PetscDSGetComponentOffsets(prob, &uOff));
@@ -2352,7 +2347,6 @@ static PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec X, PetscInt cSta
   if (affineQuad) PetscCall(PetscFEGeomDestroy(&cgeomFEM));
   PetscCall(PetscQuadratureDestroy(&affineQuad));
   PetscCall(ISDestroy(&cellIS));
-  PetscCall(DMRestoreLocalVector(dm, &locX));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2376,6 +2370,7 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscScalar *integral, voi
   DM_Plex     *mesh = (DM_Plex *)dm->data;
   PetscScalar *cintegral, *lintegral;
   PetscInt     Nf, f, cellHeight, cStart, cEnd, cell;
+  Vec          locX;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -2387,7 +2382,13 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscScalar *integral, voi
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, cellHeight, &cStart, &cEnd));
   /* TODO Introduce a loop over large chunks (right now this is a single chunk) */
   PetscCall(PetscCalloc2(Nf, &lintegral, (cEnd - cStart) * Nf, &cintegral));
-  PetscCall(DMPlexComputeIntegral_Internal(dm, X, cStart, cEnd, cintegral, user));
+  /* Get local solution with boundary values */
+  PetscCall(DMGetLocalVector(dm, &locX));
+  PetscCall(DMPlexInsertBoundaryValues(dm, PETSC_TRUE, locX, 0.0, NULL, NULL, NULL));
+  PetscCall(DMGlobalToLocalBegin(dm, X, INSERT_VALUES, locX));
+  PetscCall(DMGlobalToLocalEnd(dm, X, INSERT_VALUES, locX));
+  PetscCall(DMPlexComputeIntegral_Internal(dm, locX, cStart, cEnd, cintegral, user));
+  PetscCall(DMRestoreLocalVector(dm, &locX));
   /* Sum up values */
   for (cell = cStart; cell < cEnd; ++cell) {
     const PetscInt c = cell - cStart;
@@ -2428,6 +2429,7 @@ PetscErrorCode DMPlexComputeCellwiseIntegralFEM(DM dm, Vec X, Vec F, void *user)
   PetscSection sectionF;
   PetscScalar *cintegral, *af;
   PetscInt     Nf, f, cellHeight, cStart, cEnd, cell;
+  Vec          locX;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -2439,8 +2441,14 @@ PetscErrorCode DMPlexComputeCellwiseIntegralFEM(DM dm, Vec X, Vec F, void *user)
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, cellHeight, &cStart, &cEnd));
   /* TODO Introduce a loop over large chunks (right now this is a single chunk) */
   PetscCall(PetscCalloc1((cEnd - cStart) * Nf, &cintegral));
-  PetscCall(DMPlexComputeIntegral_Internal(dm, X, cStart, cEnd, cintegral, user));
-  /* Put values in F*/
+  /* Get local solution with boundary values */
+  PetscCall(DMGetLocalVector(dm, &locX));
+  PetscCall(DMPlexInsertBoundaryValues(dm, PETSC_TRUE, locX, 0.0, NULL, NULL, NULL));
+  PetscCall(DMGlobalToLocalBegin(dm, X, INSERT_VALUES, locX));
+  PetscCall(DMGlobalToLocalEnd(dm, X, INSERT_VALUES, locX));
+  PetscCall(DMPlexComputeIntegral_Internal(dm, locX, cStart, cEnd, cintegral, user));
+  PetscCall(DMRestoreLocalVector(dm, &locX));
+  /* Put values in F */
   PetscCall(VecGetDM(F, &dmF));
   PetscCall(DMGetLocalSection(dmF, &sectionF));
   PetscCall(VecGetArray(F, &af));

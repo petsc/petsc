@@ -1213,7 +1213,43 @@ PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/********************* Residual Computation **************************/
+/********************* SNES callbacks **************************/
+
+/*@
+  DMPlexSNESComputeObjectiveFEM - Sums the local objectives from the local input X using pointwise functions specified by the user
+
+  Input Parameters:
++ dm   - The mesh
+. X    - Local solution
+- user - The user context
+
+  Output Parameter:
+. obj - Local objective value
+
+  Level: developer
+
+.seealso: `DM`, `DMPlexSNESComputeResidualFEM()`
+@*/
+PetscErrorCode DMPlexSNESComputeObjectiveFEM(DM dm, Vec X, PetscReal *obj, void *user)
+{
+  PetscInt     Nf, cellHeight, cStart, cEnd;
+  PetscScalar *cintegral;
+
+  PetscFunctionBegin;
+  PetscCall(DMGetNumFields(dm, &Nf));
+  PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
+  PetscCall(DMPlexGetSimplexOrBoxCells(dm, cellHeight, &cStart, &cEnd));
+  PetscCall(PetscCalloc1((cEnd - cStart) * Nf, &cintegral));
+  PetscCall(PetscLogEventBegin(DMPLEX_IntegralFEM, dm, 0, 0, 0));
+  PetscCall(DMPlexComputeIntegral_Internal(dm, X, cStart, cEnd, cintegral, user));
+  /* Sum up values */
+  *obj = 0;
+  for (PetscInt c = cStart; c < cEnd; ++c)
+    for (PetscInt f = 0; f < Nf; ++f) *obj += PetscRealPart(cintegral[(c - cStart) * Nf + f]);
+  PetscCall(PetscLogEventBegin(DMPLEX_IntegralFEM, dm, 0, 0, 0));
+  PetscCall(PetscFree(cintegral));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 /*@
   DMPlexSNESComputeResidualFEM - Sums the local residual into vector `F` from the local input `X` using pointwise functions specified by the user
@@ -1231,7 +1267,7 @@ PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, Pets
   Note:
   The residual is summed into `F`; the caller is responsible for using `VecZeroEntries()` or otherwise ensuring that any data in `F` is intentional.
 
-.seealso: [](ch_snes), `DM`, `DMPLEX`, `DMPlexComputeJacobianAction()`
+.seealso: [](ch_snes), `DM`, `DMPLEX`, `DMSNESComputeJacobianAction()`
 @*/
 PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
 {
@@ -1706,33 +1742,33 @@ static PetscErrorCode MatComputeNeumannOverlap_Plex(Mat J, PetscReal t, Vec X, V
 }
 
 /*@
-  DMPlexSetSNESLocalFEM - Use `DMPLEX`'s internal FEM routines to compute `SNES` boundary values, residual, and Jacobian.
+  DMPlexSetSNESLocalFEM - Use `DMPLEX`'s internal FEM routines to compute `SNES` boundary values, objective, residual, and Jacobian.
 
   Input Parameters:
-+ dm          - The `DM` object
-. boundaryctx - the user context that will be passed to pointwise evaluation of boundary values (see `PetscDSAddBoundary()`)
-. residualctx - the user context that will be passed to pointwise evaluation of finite element residual computations (see `PetscDSSetResidual()`)
-- jacobianctx - the user context that will be passed to pointwise evaluation of finite element Jacobian construction (see `PetscDSSetJacobian()`)
++ dm      - The `DM` object
+. use_obj - Use the objective function callback
+- ctx     - The user context that will be passed to pointwise evaluation routines
 
   Level: developer
 
-.seealso: [](ch_snes), `DMPLEX`, `SNES`
+.seealso: [](ch_snes),`DMPLEX`, `SNES`, `PetscDSAddBoundary()`, `PetscDSSetObjective()`, `PetscDSSetResidual()`, `PetscDSSetJacobian()`
 @*/
-PetscErrorCode DMPlexSetSNESLocalFEM(DM dm, void *boundaryctx, void *residualctx, void *jacobianctx)
+PetscErrorCode DMPlexSetSNESLocalFEM(DM dm, PetscBool use_obj, void *ctx)
 {
   PetscBool useCeed;
 
   PetscFunctionBegin;
   PetscCall(DMPlexGetUseCeed(dm, &useCeed));
-  PetscCall(DMSNESSetBoundaryLocal(dm, DMPlexSNESComputeBoundaryFEM, boundaryctx));
+  PetscCall(DMSNESSetBoundaryLocal(dm, DMPlexSNESComputeBoundaryFEM, ctx));
+  if (use_obj) PetscCall(DMSNESSetObjectiveLocal(dm, DMPlexSNESComputeObjectiveFEM, ctx));
   if (useCeed) {
 #ifdef PETSC_HAVE_LIBCEED
-    PetscCall(DMSNESSetFunctionLocal(dm, DMPlexSNESComputeResidualCEED, residualctx));
+    PetscCall(DMSNESSetFunctionLocal(dm, DMPlexSNESComputeResidualCEED, ctx));
 #else
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Cannot use CEED traversals without LibCEED. Rerun configure with --download-ceed");
 #endif
-  } else PetscCall(DMSNESSetFunctionLocal(dm, DMPlexSNESComputeResidualFEM, residualctx));
-  PetscCall(DMSNESSetJacobianLocal(dm, DMPlexSNESComputeJacobianFEM, jacobianctx));
+  } else PetscCall(DMSNESSetFunctionLocal(dm, DMPlexSNESComputeResidualFEM, ctx));
+  PetscCall(DMSNESSetJacobianLocal(dm, DMPlexSNESComputeJacobianFEM, ctx));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "MatComputeNeumannOverlap_C", MatComputeNeumannOverlap_Plex));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

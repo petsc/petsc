@@ -448,7 +448,7 @@ int main(int argc, char **argv)
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &mesh));
   PetscCall(SNESSetDM(snes, mesh));
   PetscCall(SetupDiscretization(mesh, SetupProblem, &user));
-  PetscCall(DMPlexSetSNESLocalFEM(mesh, &user, &user, &user));
+  PetscCall(DMPlexSetSNESLocalFEM(mesh, PETSC_FALSE, &user));
   PetscCall(SNESSetFromOptions(snes));
 
   /* Grab field IS so that we can view the solution by field */

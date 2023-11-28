@@ -3313,7 +3313,7 @@ int main(int argc, char **argv)
   PetscCall(DMCreateGlobalVector(dm, &u));
   PetscCall(VecDuplicate(u, &r));
 
-  PetscCall(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));
+  PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, &user));
   PetscCall(CreatePressureNullSpace(dm, 1, 1, &nullSpace));
 
   { /* set tolerances */

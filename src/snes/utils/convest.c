@@ -353,7 +353,7 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
     /* Setup solver */
     PetscCall(SNESReset(snes));
     PetscCall(SNESSetDM(snes, dm[r]));
-    PetscCall(DMPlexSetSNESLocalFEM(dm[r], ctx, ctx, ctx));
+    PetscCall(DMPlexSetSNESLocalFEM(dm[r], PETSC_FALSE, ctx));
     PetscCall(SNESSetFromOptions(snes));
     /* Set nullspace for Jacobian */
     PetscCall(PetscConvEstSetJacobianNullSpace_Private(ce, snes));
@@ -417,7 +417,7 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
     PetscCall(DMSetRefineLevel(ce->idm, oldlevel)); /* The damn DMCoarsen() calls in PCMG can reset this */
   }
   PetscCall(SNESSetDM(snes, ce->idm));
-  PetscCall(DMPlexSetSNESLocalFEM(ce->idm, ctx, ctx, ctx));
+  PetscCall(DMPlexSetSNESLocalFEM(ce->idm, PETSC_FALSE, ctx));
   PetscCall(SNESSetFromOptions(snes));
   PetscCall(PetscConvEstSetJacobianNullSpace_Private(ce, snes));
   PetscFunctionReturn(PETSC_SUCCESS);
