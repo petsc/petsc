@@ -1103,6 +1103,7 @@ static PetscErrorCode MatTransposeMatMultSymbolic_MPIDense_MPIDense(Mat, Mat, Pe
 static PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat, Mat, Mat);
 static PetscErrorCode MatEqual_MPIDense(Mat, Mat, PetscBool *);
 static PetscErrorCode MatLoad_MPIDense(Mat, PetscViewer);
+static PetscErrorCode MatProductSetFromOptions_MPIDense(Mat);
 
 static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
                                        MatGetRow_MPIDense,
@@ -2224,7 +2225,6 @@ static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense(Mat A, Mat B,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_ELEMENTAL)
 static PetscErrorCode MatDestroy_MatMatMult_MPIDense_MPIDense(void *data)
 {
   Mat_MatMultDense *ab = (Mat_MatMultDense *)data;
@@ -2237,78 +2237,128 @@ static PetscErrorCode MatDestroy_MatMatMult_MPIDense_MPIDense(void *data)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMatMultNumeric_MPIDense_MPIDense(Mat A, Mat B, Mat C)
+static PetscErrorCode MatMatMultNumeric_MPIDense_MPIDense(Mat A, Mat B, Mat C)
 {
   Mat_MatMultDense *ab;
+  Mat_MPIDense     *mdn = (Mat_MPIDense *)A->data;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 3);
   PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Missing product data");
   ab = (Mat_MatMultDense *)C->product->data;
-  PetscCall(MatConvert_MPIDense_Elemental(A, MATELEMENTAL, MAT_REUSE_MATRIX, &ab->Ae));
-  PetscCall(MatConvert_MPIDense_Elemental(B, MATELEMENTAL, MAT_REUSE_MATRIX, &ab->Be));
-  PetscCall(MatMatMultNumeric_Elemental(ab->Ae, ab->Be, ab->Ce));
-  PetscCall(MatConvert(ab->Ce, MATMPIDENSE, MAT_REUSE_MATRIX, &C));
+  if (ab->Ae && ab->Ce) {
+#if PetscDefined(HAVE_ELEMENTAL)
+    PetscCall(MatConvert_MPIDense_Elemental(A, MATELEMENTAL, MAT_REUSE_MATRIX, &ab->Ae));
+    PetscCall(MatConvert_MPIDense_Elemental(B, MATELEMENTAL, MAT_REUSE_MATRIX, &ab->Be));
+    PetscCall(MatMatMultNumeric_Elemental(ab->Ae, ab->Be, ab->Ce));
+    PetscCall(MatConvert(ab->Ce, MATMPIDENSE, MAT_REUSE_MATRIX, &C));
+#else
+    SETERRQ(PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "PETSC_HAVE_ELEMENTAL not defined");
+#endif
+  } else {
+    const PetscScalar *read;
+    PetscScalar       *write;
+    PetscInt           lda;
+
+    PetscCall(MatDenseGetLDA(B, &lda));
+    PetscCall(MatDenseGetArrayRead(B, &read));
+    PetscCall(MatDenseGetArrayWrite(ab->Be, &write));
+    if (!mdn->Mvctx) PetscCall(MatSetUpMultiply_MPIDense(A)); /* cannot be done during the symbolic phase because of possible calls to MatProductReplaceMats() */
+    for (PetscInt i = 0; i < C->cmap->N; ++i) {
+      PetscCall(PetscSFBcastBegin(mdn->Mvctx, MPIU_SCALAR, read + i * lda, write + i * ab->Be->rmap->n, MPI_REPLACE));
+      PetscCall(PetscSFBcastEnd(mdn->Mvctx, MPIU_SCALAR, read + i * lda, write + i * ab->Be->rmap->n, MPI_REPLACE));
+    }
+    PetscCall(MatDenseRestoreArrayWrite(ab->Be, &write));
+    PetscCall(MatDenseRestoreArrayRead(B, &read));
+    PetscCall(MatMatMultNumeric_SeqDense_SeqDense(((Mat_MPIDense *)(A->data))->A, ab->Be, ((Mat_MPIDense *)(C->data))->A));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A, Mat B, PetscReal fill, Mat C)
 {
-  Mat               Ae, Be, Ce;
+  Mat_Product      *product = C->product;
+  PetscInt          alg;
   Mat_MatMultDense *ab;
+  PetscBool         flg;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 4);
   PetscCheck(!C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data not empty");
   /* check local size of A and B */
-  if (A->cmap->rstart != B->rmap->rstart || A->cmap->rend != B->rmap->rend) {
-    SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_SIZ, "Matrix local dimensions are incompatible, A (%" PetscInt_FMT ", %" PetscInt_FMT ") != B (%" PetscInt_FMT ",%" PetscInt_FMT ")", A->rmap->rstart, A->rmap->rend, B->rmap->rstart, B->rmap->rend);
-  }
+  PetscCheck(A->cmap->rstart == B->rmap->rstart && A->cmap->rend == B->rmap->rend, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_SIZ, "Matrix local dimensions are incompatible, A (%" PetscInt_FMT ", %" PetscInt_FMT ") != B (%" PetscInt_FMT ", %" PetscInt_FMT ")",
+             A->rmap->rstart, A->rmap->rend, B->rmap->rstart, B->rmap->rend);
 
-  /* create elemental matrices Ae and Be */
-  PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &Ae));
-  PetscCall(MatSetSizes(Ae, PETSC_DECIDE, PETSC_DECIDE, A->rmap->N, A->cmap->N));
-  PetscCall(MatSetType(Ae, MATELEMENTAL));
-  PetscCall(MatSetUp(Ae));
-  PetscCall(MatSetOption(Ae, MAT_ROW_ORIENTED, PETSC_FALSE));
-
-  PetscCall(MatCreate(PetscObjectComm((PetscObject)B), &Be));
-  PetscCall(MatSetSizes(Be, PETSC_DECIDE, PETSC_DECIDE, B->rmap->N, B->cmap->N));
-  PetscCall(MatSetType(Be, MATELEMENTAL));
-  PetscCall(MatSetUp(Be));
-  PetscCall(MatSetOption(Be, MAT_ROW_ORIENTED, PETSC_FALSE));
-
-  /* compute symbolic Ce = Ae*Be */
-  PetscCall(MatCreate(PetscObjectComm((PetscObject)C), &Ce));
-  PetscCall(MatMatMultSymbolic_Elemental(Ae, Be, fill, Ce));
+  PetscCall(PetscStrcmp(product->alg, "petsc", &flg));
+  alg = flg ? 0 : 1;
 
   /* setup C */
-  PetscCall(MatSetSizes(C, A->rmap->n, B->cmap->n, PETSC_DECIDE, PETSC_DECIDE));
-  PetscCall(MatSetType(C, MATDENSE));
+  PetscCall(MatSetSizes(C, A->rmap->n, B->cmap->n, A->rmap->N, B->cmap->N));
+  PetscCall(MatSetType(C, MATMPIDENSE));
   PetscCall(MatSetUp(C));
 
   /* create data structure for reuse Cdense */
   PetscCall(PetscNew(&ab));
-  ab->Ae = Ae;
-  ab->Be = Be;
-  ab->Ce = Ce;
+
+  switch (alg) {
+  case 1: /* alg: "elemental" */
+#if PetscDefined(HAVE_ELEMENTAL)
+    /* create elemental matrices Ae and Be */
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &ab->Ae));
+    PetscCall(MatSetSizes(ab->Ae, PETSC_DECIDE, PETSC_DECIDE, A->rmap->N, A->cmap->N));
+    PetscCall(MatSetType(ab->Ae, MATELEMENTAL));
+    PetscCall(MatSetUp(ab->Ae));
+    PetscCall(MatSetOption(ab->Ae, MAT_ROW_ORIENTED, PETSC_FALSE));
+
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)B), &ab->Be));
+    PetscCall(MatSetSizes(ab->Be, PETSC_DECIDE, PETSC_DECIDE, B->rmap->N, B->cmap->N));
+    PetscCall(MatSetType(ab->Be, MATELEMENTAL));
+    PetscCall(MatSetUp(ab->Be));
+    PetscCall(MatSetOption(ab->Be, MAT_ROW_ORIENTED, PETSC_FALSE));
+
+    /* compute symbolic Ce = Ae*Be */
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)C), &ab->Ce));
+    PetscCall(MatMatMultSymbolic_Elemental(ab->Ae, ab->Be, fill, ab->Ce));
+#else
+    SETERRQ(PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "PETSC_HAVE_ELEMENTAL not defined");
+#endif
+    break;
+  default: /* alg: "petsc" */
+    ab->Ae = NULL;
+    PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, A->cmap->N, B->cmap->N, NULL, &ab->Be));
+    ab->Ce = NULL;
+    break;
+  }
 
   C->product->data       = ab;
   C->product->destroy    = MatDestroy_MatMatMult_MPIDense_MPIDense;
   C->ops->matmultnumeric = MatMatMultNumeric_MPIDense_MPIDense;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-#endif
 
-#if defined(PETSC_HAVE_ELEMENTAL)
 static PetscErrorCode MatProductSetFromOptions_MPIDense_AB(Mat C)
 {
+  Mat_Product *product     = C->product;
+  const char  *algTypes[2] = {"petsc", "elemental"};
+  PetscInt     alg, nalg = PetscDefined(HAVE_ELEMENTAL) ? 2 : 1;
+  PetscBool    flg = PETSC_FALSE;
   PetscFunctionBegin;
+
+  /* Set default algorithm */
+  alg = 0; /* default is petsc */
+  PetscCall(PetscStrcmp(product->alg, "default", &flg));
+  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
+
+  /* Get runtime option */
+  PetscOptionsBegin(PetscObjectComm((PetscObject)C), ((PetscObject)C)->prefix, "MatProduct_AB", "Mat");
+  PetscCall(PetscOptionsEList("-mat_product_algorithm", "Algorithmic approach", "MatProduct_AB", algTypes, nalg, algTypes[alg], &alg, &flg));
+  PetscOptionsEnd();
+  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
+
   C->ops->matmultsymbolic = MatMatMultSymbolic_MPIDense_MPIDense;
   C->ops->productsymbolic = MatProductSymbolic_AB;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-#endif
 
 static PetscErrorCode MatProductSetFromOptions_MPIDense_AtB(Mat C)
 {
@@ -2353,17 +2403,15 @@ static PetscErrorCode MatProductSetFromOptions_MPIDense_ABt(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIDense(Mat C)
+static PetscErrorCode MatProductSetFromOptions_MPIDense(Mat C)
 {
   Mat_Product *product = C->product;
 
   PetscFunctionBegin;
   switch (product->type) {
-#if defined(PETSC_HAVE_ELEMENTAL)
   case MATPRODUCT_AB:
     PetscCall(MatProductSetFromOptions_MPIDense_AB(C));
     break;
-#endif
   case MATPRODUCT_AtB:
     PetscCall(MatProductSetFromOptions_MPIDense_AtB(C));
     break;
