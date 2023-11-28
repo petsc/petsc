@@ -4579,11 +4579,12 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->computel2gradientdiff     = DMComputeL2GradientDiff_Plex;
   dm->ops->computel2fielddiff        = DMComputeL2FieldDiff_Plex;
   dm->ops->getneighbors              = DMGetNeighbors_Plex;
+  dm->ops->createdomaindecomposition = DMCreateDomainDecomposition_Plex;
+  dm->ops->createddscatters          = DMCreateDomainDecompositionScatters_Plex;
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexInsertBoundaryValues_C", DMPlexInsertBoundaryValues_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexInsertTimeDerivativeBoundaryValues_C", DMPlexInsertTimeDerivativeBoundaryValues_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMSetUpGLVisViewer_C", DMSetUpGLVisViewer_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMCreateNeumannOverlap_C", DMCreateNeumannOverlap_Plex));
-  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexGetOverlap_C", DMPlexGetOverlap_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexDistributeGetDefault_C", DMPlexDistributeGetDefault_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexDistributeSetDefault_C", DMPlexDistributeSetDefault_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexReorderGetDefault_C", DMPlexReorderGetDefault_Plex));

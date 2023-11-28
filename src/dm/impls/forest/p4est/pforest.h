@@ -5068,6 +5068,28 @@ static PetscErrorCode DMCreateNeumannOverlap_pforest(DM dm, IS *ovl, Mat *J, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+  #define DMCreateDomainDecomposition_pforest _append_pforest(DMCreateDomainDecomposition)
+static PetscErrorCode DMCreateDomainDecomposition_pforest(DM dm, PetscInt *nsub, char ***names, IS **innerises, IS **outerises, DM **dms)
+{
+  DM plex;
+
+  PetscFunctionBegin;
+  PetscCall(DMPforestGetPlex(dm, &plex));
+  PetscCall(DMCreateDomainDecomposition(plex, nsub, names, innerises, outerises, dms));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+  #define DMCreateDomainDecompositionScatters_pforest _append_pforest(DMCreateDomainDecompositionScatters)
+static PetscErrorCode DMCreateDomainDecompositionScatters_pforest(DM dm, PetscInt n, DM *subdms, VecScatter **iscat, VecScatter **oscat, VecScatter **lscat)
+{
+  DM plex;
+
+  PetscFunctionBegin;
+  PetscCall(DMPforestGetPlex(dm, &plex));
+  PetscCall(DMCreateDomainDecompositionScatters(plex, n, subdms, iscat, oscat, lscat));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode DMInitialize_pforest(DM dm)
 {
   PetscFunctionBegin;
@@ -5089,6 +5111,8 @@ static PetscErrorCode DMInitialize_pforest(DM dm)
   dm->ops->computel2diff             = DMComputeL2Diff_pforest;
   dm->ops->computel2fielddiff        = DMComputeL2FieldDiff_pforest;
   dm->ops->getdimpoints              = DMGetDimPoints_pforest;
+  dm->ops->createdomaindecomposition = DMCreateDomainDecomposition_pforest;
+  dm->ops->createddscatters          = DMCreateDomainDecompositionScatters_pforest;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, PetscStringize(DMConvert_plex_pforest) "_C", DMConvert_plex_pforest));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, PetscStringize(DMConvert_pforest_plex) "_C", DMConvert_pforest_plex));

@@ -1681,20 +1681,6 @@ PetscErrorCode DMSNESCreateJacobianMF(DM dm, Vec X, void *user, Mat *J)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-     MatComputeNeumannOverlap - Computes an unassembled (Neumann) local overlapping Mat in nonlinear context.
-
-   Input Parameters:
-+     X - `SNES` linearization point
-.     ovl - index set of overlapping subdomains
-
-   Output Parameter:
-.     J - unassembled (Neumann) local matrix
-
-   Level: intermediate
-
-.seealso: [](ch_snes), `DMCreateNeumannOverlap()`, `MATIS`, `PCHPDDMSetAuxiliaryMat()`
-*/
 static PetscErrorCode MatComputeNeumannOverlap_Plex(Mat J, PetscReal t, Vec X, Vec X_t, PetscReal s, IS ovl, void *ctx)
 {
   SNES   snes;

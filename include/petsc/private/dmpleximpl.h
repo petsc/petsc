@@ -816,6 +816,7 @@ PETSC_INTERN PetscErrorCode DMPlexBasisTransformApplyReal_Internal(DM, const Pet
 PETSC_INTERN PetscErrorCode DMPlexBasisTransformApply_Internal(DM, const PetscReal[], PetscBool, PetscInt, const PetscScalar *, PetscScalar *, void *);
 PETSC_INTERN PetscErrorCode DMCreateNeumannOverlap_Plex(DM, IS *, Mat *, PetscErrorCode (**)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void *), void **);
 PETSC_INTERN PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM, PetscInt, PetscInt, DMLabel, PetscBool);
+PETSC_INTERN PetscErrorCode DMPlexDistributeOverlap_Internal(DM, PetscInt, MPI_Comm, const char *, PetscSF *, DM *);
 
 PETSC_INTERN PetscErrorCode DMPeriodicCoordinateSetUp_Internal(DM);
 
@@ -836,3 +837,5 @@ PETSC_INTERN PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer);
 PETSC_INTERN PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer);
 PETSC_INTERN PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm);
 PETSC_INTERN PetscErrorCode DMCreateSuperDM_Plex(DM dms[], PetscInt len, IS **is, DM *superdm);
+PETSC_INTERN PetscErrorCode DMCreateDomainDecompositionScatters_Plex(DM, PetscInt, DM *, VecScatter **, VecScatter **, VecScatter **);
+PETSC_INTERN PetscErrorCode DMCreateDomainDecomposition_Plex(DM, PetscInt *, char ***, IS **, IS **, DM **);
