@@ -586,9 +586,7 @@ static PetscErrorCode GetEdgelist_Coupling(DM dm, PetscInt *edges, PetscInt *nme
       }
     }
   }
-#if defined(PETSC_USE_DEBUG)
-  PetscCheck(i == network->cloneshared->nVertices, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "%" PetscInt_FMT " != %" PetscInt_FMT " nVertices", i, network->cloneshared->nVertices);
-#endif
+  PetscAssert(i == network->cloneshared->nVertices, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "%" PetscInt_FMT " != %" PetscInt_FMT " nVertices", i, network->cloneshared->nVertices);
 
   /* (2.3) Shared vertices in the subnetworks are merged, update global NVertices: np = sum(local nmerged) */
   PetscCall(MPIU_Allreduce(&nmerged, &np, 1, MPIU_INT, MPI_SUM, comm));
