@@ -32,7 +32,6 @@ configure_options = [
   #'--download-mumps=1', #'make check gives error
   '--download-parms=1',
   '--download-hdf5=1',
-  '--download-med=1',
   '--download-sundials2=1',
   '--download-hypre=1',
   '--download-amrex=1',

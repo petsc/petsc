@@ -6,7 +6,7 @@
 
   Input Parameters:
 + comm        - The MPI communicator
-. filename    - Name of the .med file
+. filename    - Name of the .ply file
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
@@ -17,7 +17,7 @@
 
   Level: beginner
 
-.seealso: `DMPlexCreateFromFile()`, `DMPlexCreateMedFromFile()`, `DMPlexCreateGmsh()`, `DMPlexCreate()`
+.seealso: `DMPlexCreateFromFile()`, `DMPlexCreateGmsh()`, `DMPlexCreate()`
 @*/
 PetscErrorCode DMPlexCreatePLYFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {

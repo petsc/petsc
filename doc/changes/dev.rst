@@ -78,6 +78,7 @@ Changes: Development
 
 .. rubric:: DMPlex:
 
+- Drop support for MED, i.e. remove ``DMPlexCreateMedFromFile()`` and ``--with-med``
 - Replace ``DMProjectCoordinates()`` with ``DMSetCoordinateDisc()``
 - Add argument to ``DMPlexCreateCoordinateSpace()``
 
