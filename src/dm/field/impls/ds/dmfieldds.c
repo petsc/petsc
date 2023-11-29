@@ -849,6 +849,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     PetscInt        coneSize;
     PetscInt      **counts;
     PetscInt        f, i, o, q, s;
+    PetscBool       found = PETSC_FALSE;
     const PetscInt *coneK;
     PetscInt        eStart, minOrient, maxOrient, numOrient;
     PetscInt       *orients;
@@ -891,6 +892,13 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
         const PetscInt *cone, *orient;
 
         PetscCall(DMPlexGetConeSize(dm, cell, &numCone));
+        // When we extract submeshes, we hang cells from the side that are not fully realized. We ignore these
+        if (numCone == 1) {
+          co[p][s][0] = -1;
+          co[p][s][1] = -1;
+          co[p][s][2] = -1;
+          continue;
+        }
         PetscCheck(numCone == coneSize, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Support point does not match reference element");
         PetscCall(DMPlexGetCone(dm, cell, &cone));
         PetscCall(DMPlexGetConeOrientation(dm, cell, &orient));
@@ -902,6 +910,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
         co[p][s][2] = cell;
         minOrient   = PetscMin(minOrient, orient[f]);
         maxOrient   = PetscMax(maxOrient, orient[f]);
+        found       = PETSC_TRUE;
       }
       for (; s < 2; s++) {
         co[p][s][0] = -1;
@@ -909,7 +918,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
         co[p][s][2] = -1;
       }
     }
-    numOrient = maxOrient + 1 - minOrient;
+    numOrient = found ? maxOrient + 1 - minOrient : 0;
     PetscCall(DMPlexGetCone(K, 0, &coneK));
     /* count all (face,orientation) doubles that appear */
     PetscCall(PetscCalloc2(numOrient, &orients, numOrient, &orientPoints));
