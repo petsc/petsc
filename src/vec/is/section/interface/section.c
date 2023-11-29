@@ -2554,7 +2554,7 @@ static PetscErrorCode VecIntSetValuesSection_Private(PetscInt *baseArray, PetscS
       PetscInt       i;
 
       if (mode == INSERT_VALUES) {
-        for (i = 0; i < dim; ++i) array[i] = values[i];
+        for (i = 0; i < dim; ++i) array[i] = values ? values[i] : i;
       } else {
         for (i = 0; i < dim; ++i) array[i] += values[i];
       }
@@ -2565,7 +2565,7 @@ static PetscErrorCode VecIntSetValuesSection_Private(PetscInt *baseArray, PetscS
       for (field = 0; field < s->numFields; ++field) {
         const PetscInt dim = s->field[field]->atlasDof[p];
 
-        for (i = dim - 1; i >= 0; --i) array[++j] = values[i + offset];
+        for (i = dim - 1; i >= 0; --i) array[++j] = values ? values[i + offset] : i + offset;
         offset += dim;
       }
     }
@@ -2582,7 +2582,7 @@ static PetscErrorCode VecIntSetValuesSection_Private(PetscInt *baseArray, PetscS
             ++cInd;
             continue;
           }
-          array[i] = values[i];
+          array[i] = values ? values[i] : i;
         }
       } else {
         for (i = 0; i < dim; ++i) {
@@ -2611,7 +2611,7 @@ static PetscErrorCode VecIntSetValuesSection_Private(PetscInt *baseArray, PetscS
             ++cInd;
             continue;
           }
-          array[j] = values[k];
+          array[j] = values ? values[k] : k;
         }
         offset += dim;
         cOffset += dim - tDim;
@@ -2700,7 +2700,8 @@ PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, 
     const PetscInt cdof = s->bc->atlasDof[point];
     PetscInt       d;
 
-    for (d = 0; d < cdof; ++d) PetscCheck(indices[d] < dof, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " dof %" PetscInt_FMT ", invalid constraint index[%" PetscInt_FMT "]: %" PetscInt_FMT, point, dof, d, indices[d]);
+    if (indices)
+      for (d = 0; d < cdof; ++d) PetscCheck(indices[d] < dof, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " dof %" PetscInt_FMT ", invalid constraint index[%" PetscInt_FMT "]: %" PetscInt_FMT, point, dof, d, indices[d]);
     PetscCall(VecIntSetValuesSection_Private(s->bcIndices, s->bc, point, indices, INSERT_VALUES));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2761,12 +2762,6 @@ PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt po
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  if (PetscDefined(USE_DEBUG)) {
-    PetscInt nfdof;
-
-    PetscCall(PetscSectionGetFieldConstraintDof(s, point, field, &nfdof));
-    if (nfdof) PetscAssertPointer(indices, 4);
-  }
   PetscSectionCheckValidField(field, s->numFields);
   PetscCall(PetscSectionSetConstraintIndices(s->field[field], point, indices));
   PetscFunctionReturn(PETSC_SUCCESS);
