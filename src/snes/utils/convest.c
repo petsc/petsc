@@ -12,7 +12,7 @@ static PetscErrorCode zero_private(PetscInt dim, PetscReal time, const PetscReal
 }
 
 /*@
-  PetscConvEstDestroy - Destroys a PetscConvEst object
+  PetscConvEstDestroy - Destroys a PETSc convergence estimator `PetscConvEst` object
 
   Collective
 
@@ -39,7 +39,7 @@ PetscErrorCode PetscConvEstDestroy(PetscConvEst *ce)
 }
 
 /*@
-  PetscConvEstSetFromOptions - Sets a `PetscConvEst` object based on values in the options database
+  PetscConvEstSetFromOptions - Sets a convergence estimator `PetscConvEst` object based on values in the options database
 
   Collective
 
@@ -69,7 +69,7 @@ PetscErrorCode PetscConvEstSetFromOptions(PetscConvEst ce)
 
   Input Parameters:
 + ce     - The `PetscConvEst` object
-- viewer - The `PetscViewer` object
+- viewer - The `PetscViewer`
 
   Level: beginner
 
@@ -114,12 +114,9 @@ PetscErrorCode PetscConvEstGetSolver(PetscConvEst ce, PetscObject *solver)
 
   Input Parameters:
 + ce     - The `PetscConvEst` object
-- solver - The solver
+- solver - The solver, must be a `KSP`, `SNES`, or `TS` object with an attached `DM`/`DS`, that can compute an exact solution
 
   Level: intermediate
-
-  Note:
-  The solver MUST have an attached `DM`/`DS`, so that we know the exact solution
 
 .seealso: `PetscConvEst`, `PetscConvEstGetSNES()`, `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`
 @*/
@@ -134,7 +131,7 @@ PetscErrorCode PetscConvEstSetSolver(PetscConvEst ce, PetscObject solver)
 }
 
 /*@
-  PetscConvEstSetUp - After the solver is specified, create structures for estimating convergence
+  PetscConvEstSetUp - After the solver is specified, create data structures needed for estimating convergence
 
   Collective
 
@@ -206,7 +203,7 @@ PetscErrorCode PetscConvEstComputeError(PetscConvEst ce, PetscInt r, DM dm, Vec 
 + ce - The `PetscConvEst` object
 - r  - The refinement level
 
-  Options Database Keys:
+  Options Database Key:
 . -convest_monitor - Activate the monitor
 
   Level: intermediate
@@ -466,7 +463,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
 }
 
 /*@
-  PetscConvEstRateView - Displays the convergence rate to a viewer
+  PetscConvEstRateView - Displays the convergence rate obtained from `PetscConvEstGetConvRate()` using a `PetscViewer`
 
   Collective
 
@@ -480,7 +477,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
 
   Level: developer
 
-.seealso: `PetscConvEst`, `PetscConvEstGetRate()`
+.seealso: `PetscConvEst`, `PetscConvEstGetConvRate()`
 @*/
 PetscErrorCode PetscConvEstRateView(PetscConvEst ce, const PetscReal alpha[], PetscViewer viewer)
 {
@@ -518,7 +515,7 @@ PetscErrorCode PetscConvEstRateView(PetscConvEst ce, const PetscReal alpha[], Pe
 
   Level: beginner
 
-.seealso: `PetscConvEst`, `PetscConvEstDestroy()`, `PetscConvEstGetConvRate()`
+.seealso: `PetscConvEst`, `PetscConvEstDestroy()`, `PetscConvEstGetConvRate()`, `DMAdaptorCreate()`, `DMAdaptor`
 @*/
 PetscErrorCode PetscConvEstCreate(MPI_Comm comm, PetscConvEst *ce)
 {

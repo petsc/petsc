@@ -169,11 +169,17 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes, Vec X, Mat A, Mat B
 . func - local residual evaluation
 - ctx  - optional context for local residual evaluation
 
+  Calling sequence of `func`:
++ dm  - `DM` for the function
+. x   - vector to state at which to evaluate residual
+. f   - vector to hold the function evaluation
+- ctx - optional context passed above
+
   Level: advanced
 
-.seealso: `DMSNESSetFunction()`, `DMDASNESSetJacobianLocal()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
+.seealso: [](ch_snes), `DMSNESSetFunction()`, `DMDASNESSetJacobianLocal()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
-PetscErrorCode DMSNESSetFunctionLocal(DM dm, PetscErrorCode (*func)(DM, Vec, Vec, void *), void *ctx)
+PetscErrorCode DMSNESSetFunctionLocal(DM dm, PetscErrorCode (*func)(DM dm, Vec x, Vec f, void *ctx), void *ctx)
 {
   DMSNES        sdm;
   DMSNES_Local *dmlocalsnes;
@@ -206,11 +212,11 @@ PetscErrorCode DMSNESSetFunctionLocal(DM dm, PetscErrorCode (*func)(DM, Vec, Vec
   Calling sequence of `func`:
 + dm  - the `DM` context
 . X   - ghosted solution vector, appropriate locations (such as essential boundary condition nodes) should be filled
-- ctx - a user provided context
+- ctx - option context passed in `DMSNESSetBoundaryLocal()`
 
   Level: advanced
 
-.seealso: `DMSNESSetFunctionLocal()`, `DMDASNESSetJacobianLocal()`
+.seealso: [](ch_snes), `DMSNESSetFunctionLocal()`, `DMDASNESSetJacobianLocal()`
 @*/
 PetscErrorCode DMSNESSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM dm, Vec X, void *ctx), void *ctx)
 {
@@ -234,7 +240,7 @@ PetscErrorCode DMSNESSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM dm, Vec X
   Logically Collective
 
   Input Parameters:
-+ dm   - DM to associate callback with
++ dm   - `DM` to associate callback with
 . func - local Jacobian evaluation
 - ctx  - optional context for local Jacobian evaluation
 
@@ -247,7 +253,7 @@ PetscErrorCode DMSNESSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM dm, Vec X
 
   Level: advanced
 
-.seealso: `DMSNESSetJacobian()`, `DMDASNESSetJacobian()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
+.seealso: [](ch_snes), `DMSNESSetJacobian()`, `DMDASNESSetJacobian()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
 PetscErrorCode DMSNESSetJacobianLocal(DM dm, PetscErrorCode (*func)(DM dm, Vec X, Mat J, Mat Jp, void *ctx), void *ctx)
 {
@@ -280,7 +286,7 @@ PetscErrorCode DMSNESSetJacobianLocal(DM dm, PetscErrorCode (*func)(DM dm, Vec X
 
   Level: beginner
 
-.seealso: `DMSNESSetFunction()`, `DMSNESSetFunctionLocal()`, `DMDASNESSetJacobianLocal()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
+.seealso: [](ch_snes), `DMSNESSetFunction()`, `DMSNESSetFunctionLocal()`, `DMDASNESSetJacobianLocal()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
 PetscErrorCode DMSNESGetFunctionLocal(DM dm, PetscErrorCode (**func)(DM, Vec, Vec, void *), void **ctx)
 {
@@ -310,7 +316,7 @@ PetscErrorCode DMSNESGetFunctionLocal(DM dm, PetscErrorCode (**func)(DM, Vec, Ve
 
   Level: intermediate
 
-.seealso: `DMSNESSetFunctionLocal()`, `DMSNESSetBoundaryLocal()`, `DMDASNESSetJacobianLocal()`
+.seealso: [](ch_snes), `DMSNESSetFunctionLocal()`, `DMSNESSetBoundaryLocal()`, `DMDASNESSetJacobianLocal()`
 @*/
 PetscErrorCode DMSNESGetBoundaryLocal(DM dm, PetscErrorCode (**func)(DM, Vec, void *), void **ctx)
 {
@@ -340,7 +346,7 @@ PetscErrorCode DMSNESGetBoundaryLocal(DM dm, PetscErrorCode (**func)(DM, Vec, vo
 
   Level: beginner
 
-.seealso: `DMSNESSetJacobianLocal()`, `DMDASNESSetJacobian()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
+.seealso: [](ch_snes), `DMSNESSetJacobianLocal()`, `DMDASNESSetJacobian()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
 PetscErrorCode DMSNESGetJacobianLocal(DM dm, PetscErrorCode (**func)(DM, Vec, Mat, Mat, void *), void **ctx)
 {

@@ -140,7 +140,7 @@ static PetscErrorCode DMInterpolateHook_DMSNES(DM dm, Mat Interp, DM dmf, void *
 
   Level: developer
 
-.seealso: `DMSNES`, `DMSNESCreate()`, `DMSNESDestroy()`
+.seealso: [](ch_snes), `DMSNES`, `DMSNESCreate()`, `DMSNESDestroy()`
 */
 static PetscErrorCode DMSNESCopy(DMSNES kdm, DMSNES nkdm)
 {
@@ -192,7 +192,7 @@ static PetscErrorCode DMSNESCopy(DMSNES kdm, DMSNES nkdm)
   Note:
   Use `DMGetDMSNESWrite()` if write access is needed. The DMSNESSetXXX API should be used wherever possible.
 
-.seealso: `DMGetDMSNESWrite()`
+.seealso: [](ch_snes), `DMSNES`, `DMGetDMSNESWrite()`
 @*/
 PetscErrorCode DMGetDMSNES(DM dm, DMSNES *snesdm)
 {
@@ -225,7 +225,7 @@ PetscErrorCode DMGetDMSNES(DM dm, DMSNES *snesdm)
 
   Level: developer
 
-.seealso: `DMGetDMSNES()`
+.seealso: [](ch_snes), `DMSNES`, `DMGetDMSNES()`
 @*/
 PetscErrorCode DMGetDMSNESWrite(DM dm, DMSNES *snesdm)
 {
@@ -262,7 +262,7 @@ PetscErrorCode DMGetDMSNESWrite(DM dm, DMSNES *snesdm)
   Note:
   The context is copied by reference. This function does not ensure that a context exists.
 
-.seealso: `DMGetDMSNES()`, `SNESSetDM()`
+.seealso: [](ch_snes), `DMSNES`, `DMGetDMSNES()`, `SNESSetDM()`
 @*/
 PetscErrorCode DMCopyDMSNES(DM dmsrc, DM dmdest)
 {
@@ -294,10 +294,10 @@ PetscErrorCode DMCopyDMSNES(DM dmsrc, DM dmdest)
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not.
 
-  Developer Notes:
+  Developer Note:
   If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
 
-.seealso: `DMSNESSetContext()`, `SNESSetFunction()`, `DMSNESSetJacobian()`, `SNESFunction`
+.seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `SNESSetFunction()`, `DMSNESSetJacobian()`, `SNESFunction`
 @*/
 PetscErrorCode DMSNESSetFunction(DM dm, PetscErrorCode (*f)(SNES, Vec, Vec, void *), void *ctx)
 {
@@ -329,7 +329,7 @@ PetscErrorCode DMSNESSetFunction(DM dm, PetscErrorCode (*f)(SNES, Vec, Vec, void
 
   Level: advanced
 
-.seealso: `DMSNESSetFunction()`, `SNESSetFunction()`
+.seealso: [](ch_snes), `DMSNES`, `DMSNESSetFunction()`, `SNESSetFunction()`
 @*/
 PetscErrorCode DMSNESSetFunctionContextDestroy(DM dm, PetscErrorCode (*f)(void *))
 {
@@ -371,7 +371,7 @@ PetscErrorCode DMSNESUnsetFunctionContext_Internal(DM dm)
 
   Level: advanced
 
-.seealso: `DMSNESSetContext()`, `SNESSetFunction()`, `DMSNESSetJacobian()`, `SNESFunction`, `DMSNESSetFunction()`
+.seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `SNESSetFunction()`, `DMSNESSetJacobian()`, `SNESFunction`, `DMSNESSetFunction()`
 @*/
 PetscErrorCode DMSNESSetMFFunction(DM dm, PetscErrorCode (*func)(SNES snes, Vec x, Vec f, void *ctx), void *ctx)
 {
@@ -403,7 +403,7 @@ PetscErrorCode DMSNESSetMFFunction(DM dm, PetscErrorCode (*func)(SNES snes, Vec 
   `SNESGetFunction()` is normally used, but it calls this function internally because the user context is actually
   associated with the `DM`.
 
-.seealso: `DMSNESSetContext()`, `DMSNESSetFunction()`, `SNESSetFunction()`, `SNESFunction`
+.seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `DMSNESSetFunction()`, `SNESSetFunction()`, `SNESFunction`
 @*/
 PetscErrorCode DMSNESGetFunction(DM dm, PetscErrorCode (**f)(SNES, Vec, Vec, void *), void **ctx)
 {
@@ -432,7 +432,7 @@ PetscErrorCode DMSNESGetFunction(DM dm, PetscErrorCode (**f)(SNES, Vec, Vec, voi
 
   Level: advanced
 
-.seealso: `DMSNESSetContext()`, `SNESGetObjective()`, `DMSNESSetFunction()`
+.seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `SNESGetObjective()`, `DMSNESSetFunction()`
 @*/
 PetscErrorCode DMSNESSetObjective(DM dm, PetscErrorCode (*obj)(SNES, Vec, PetscReal *, void *), void *ctx)
 {
@@ -464,7 +464,7 @@ PetscErrorCode DMSNESSetObjective(DM dm, PetscErrorCode (*obj)(SNES, Vec, PetscR
   `SNESGetFunction()` is normally used, but it calls this function internally because the user context is actually
   associated with the `DM`.
 
-.seealso: `DMSNESSetContext()`, `DMSNESSetObjective()`, `SNESSetFunction()`
+.seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `DMSNESSetObjective()`, `SNESSetFunction()`
 @*/
 PetscErrorCode DMSNESGetObjective(DM dm, PetscErrorCode (**obj)(SNES, Vec, PetscReal *, void *), void **ctx)
 {
@@ -495,10 +495,10 @@ PetscErrorCode DMSNESGetObjective(DM dm, PetscErrorCode (**obj)(SNES, Vec, Petsc
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not.
 
-  Developer Notes:
+  Developer Note:
   If `DM` took a more central role at some later date, this could become the primary method of supplying the smoother
 
-.seealso: `DMSNESSetContext()`, `SNESSetFunction()`, `DMSNESSetJacobian()`, `DMSNESSetFunction()`, `SNESGSFunction`
+.seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `SNESSetFunction()`, `DMSNESSetJacobian()`, `DMSNESSetFunction()`, `SNESGSFunction`
 @*/
 PetscErrorCode DMSNESSetNGS(DM dm, PetscErrorCode (*f)(SNES, Vec, Vec, void *), void *ctx)
 {
@@ -530,11 +530,11 @@ PetscErrorCode DMSNESSetNGS(DM dm, PetscErrorCode (*f)(SNES, Vec, Vec, void *), 
   `SNESGetNGS()` is normally used, but it calls this function internally because the user context is actually
   associated with the `DM`.
 
-  Developer Notes:
+  Developer Note:
   This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not. If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
 
-.seealso: `DMSNESSetContext()`, `SNESGetNGS()`, `DMSNESGetJacobian()`, `DMSNESGetFunction()`
+.seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `SNESGetNGS()`, `DMSNESGetJacobian()`, `DMSNESGetFunction()`
 @*/
 PetscErrorCode DMSNESGetNGS(DM dm, PetscErrorCode (**f)(SNES, Vec, Vec, void *), void **ctx)
 {
@@ -564,11 +564,11 @@ PetscErrorCode DMSNESGetNGS(DM dm, PetscErrorCode (**f)(SNES, Vec, Vec, void *),
   `SNESSetJacobian()` is normally used, but it calls this function internally because the user context is actually
   associated with the `DM`.
 
-  Developer Notes:
+  Developer Note:
   This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not. If `DM` took a more central role at some later date, this could become the primary method of setting the Jacobian.
 
-.seealso: `DMSNESSetContext()`, `SNESSetFunction()`, `DMSNESGetJacobian()`, `SNESSetJacobian()`, `SNESJacobianFunction`
+.seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `SNESSetFunction()`, `DMSNESGetJacobian()`, `SNESSetJacobian()`, `SNESJacobianFunction`
 @*/
 PetscErrorCode DMSNESSetJacobian(DM dm, PetscErrorCode (*J)(SNES, Vec, Mat, Mat, void *), void *ctx)
 {
@@ -600,7 +600,7 @@ PetscErrorCode DMSNESSetJacobian(DM dm, PetscErrorCode (*J)(SNES, Vec, Mat, Mat,
 
   Level: advanced
 
-.seealso: `DMSNESSetJacobian()`
+.seealso: [](ch_snes), `DMSNES`, `DMSNESSetJacobian()`
 @*/
 PetscErrorCode DMSNESSetJacobianContextDestroy(DM dm, PetscErrorCode (*f)(void *))
 {
@@ -643,10 +643,10 @@ PetscErrorCode DMSNESUnsetJacobianContext_Internal(DM dm)
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not.
 
-  Developer Notes:
+  Developer Note:
   If `DM` took a more central role at some later date, this could become the primary method of setting the Jacobian.
 
-.seealso: `DMSNESSetContext()`, `SNESSetFunction()`, `DMSNESSetJacobian()`, `SNESJacobianFunction`
+.seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `SNESSetFunction()`, `DMSNESSetJacobian()`, `SNESJacobianFunction`
 @*/
 PetscErrorCode DMSNESGetJacobian(DM dm, PetscErrorCode (**J)(SNES, Vec, Mat, Mat, void *), void **ctx)
 {
@@ -670,13 +670,13 @@ PetscErrorCode DMSNESGetJacobian(DM dm, PetscErrorCode (**J)(SNES, Vec, Mat, Mat
 
   Input Parameters:
 + dm  - `DM` to be used with `SNES`
-. b   - RHS evaluation function
-. J   - Picard matrix evaluation function
-- ctx - context for residual evaluation
+. b   - RHS evaluation function; see `SNESFunction` for calling sequence
+. J   - Picard matrix evaluation function; see `SNESJacobianFunction` for calling sequence
+- ctx - context for residual and matrix evaluation
 
   Level: advanced
 
-.seealso: `SNESSetPicard()`, `DMSNESSetFunction()`, `DMSNESSetJacobian()`
+.seealso: [](ch_snes), `DMSNES`, `SNESSetPicard()`, `DMSNESSetFunction()`, `DMSNESSetJacobian()`
 @*/
 PetscErrorCode DMSNESSetPicard(DM dm, PetscErrorCode (*b)(SNES, Vec, Vec, void *), PetscErrorCode (*J)(SNES, Vec, Mat, Mat, void *), void *ctx)
 {
@@ -700,13 +700,13 @@ PetscErrorCode DMSNESSetPicard(DM dm, PetscErrorCode (*b)(SNES, Vec, Vec, void *
 . dm - `DM` to be used with `SNES`
 
   Output Parameters:
-+ b   - RHS evaluation function; see `SNESFunction` for details
-. J   - RHS evaluation function; see `SNESJacobianFunction` for detailsa
-- ctx - context for residual evaluation
++ b   - RHS evaluation function; see `SNESFunction` for calling sequence
+. J   - Jacobian evaluation function; see `SNESJacobianFunction` for calling sequence
+- ctx - context for residual and matrix evaluation
 
   Level: advanced
 
-.seealso: `DMSNESSetContext()`, `SNESSetFunction()`, `DMSNESSetJacobian()`
+.seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `SNESSetFunction()`, `DMSNESSetJacobian()`
 @*/
 PetscErrorCode DMSNESGetPicard(DM dm, PetscErrorCode (**b)(SNES, Vec, Vec, void *), PetscErrorCode (**J)(SNES, Vec, Mat, Mat, void *), void **ctx)
 {

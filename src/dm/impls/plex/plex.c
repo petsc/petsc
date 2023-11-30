@@ -2114,9 +2114,9 @@ PetscErrorCode DMPlexLabelsView(DM dm, PetscViewer viewer)
   Level: advanced
 
   Notes:
-  This function is a wrapper around `PetscSectionView()`; in addition to the raw section, it saves information that associates the section points to the topology (dm) points. When the topology (dm) and the section are later loaded with `DMPlexTopologyLoad()` and `DMPlexSectionLoad()`, respectively, this information is used to match section points with topology points.
+  This function is a wrapper around `PetscSectionView()`; in addition to the raw section, it saves information that associates the section points to the topology (`dm`) points. When the topology (`dm`) and the section are later loaded with `DMPlexTopologyLoad()` and `DMPlexSectionLoad()`, respectively, this information is used to match section points with topology points.
 
-  In general dm and sectiondm are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
+  In general `dm` and `sectiondm` are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMView()`, `DMPlexTopologyView()`, `DMPlexCoordinatesView()`, `DMPlexLabelsView()`, `DMPlexGlobalVectorView()`, `DMPlexLocalVectorView()`, `PetscSectionView()`, `DMPlexSectionLoad()`, `PetscViewer`
 @*/
@@ -2155,7 +2155,7 @@ PetscErrorCode DMPlexSectionView(DM dm, PetscViewer viewer, DM sectiondm)
   Level: advanced
 
   Notes:
-  In general dm and sectiondm are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
+  In general `dm` and `sectiondm` are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
 
   Calling sequence:
 .vb

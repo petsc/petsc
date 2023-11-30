@@ -213,7 +213,7 @@ typedef enum {
 
    Level: beginner
 
-.seealso: [](sec_pc), `PCCOMPOSITE`, `PCFIELDSPLIT`, `PC`, `PCCompositeSetType()`
+.seealso: [](sec_pc), `PCCOMPOSITE`, `PCFIELDSPLIT`, `PC`, `PCCompositeSetType()`, `SNESCompositeType`
 E*/
 typedef enum {
   PC_COMPOSITE_ADDITIVE,

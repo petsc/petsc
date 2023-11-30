@@ -331,7 +331,7 @@ static PetscErrorCode SNESSolve_Patch(SNES snes)
    References:
 .  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers", SIAM Review, 57(4), 2015
 
-.seealso: `SNESFAS`, `SNESCreate()`, `SNESSetType()`, `SNESType`, `SNES`, `PCPATCH`
+.seealso: [](ch_snes), `SNESFAS`, `SNESCreate()`, `SNESSetType()`, `SNESType`, `SNES`, `PCPATCH`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES snes)
 {

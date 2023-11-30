@@ -37,7 +37,7 @@ const char *const *const SNESFunctionTypes           = SNESFunctionTypes_Shifted
 
   Level: advanced
 
-.seealso: `SNES`, `SNESRegisterDestroy()`
+.seealso: [](ch_snes), `SNES`, `SNESRegisterDestroy()`
 @*/
 PetscErrorCode SNESRegisterAll(void)
 {
