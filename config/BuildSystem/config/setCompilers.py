@@ -2212,7 +2212,7 @@ class Configure(config.base.Configure):
         error = error.splitlines()
         error = [s for s in error if not (s.find('unsupported GNU_PROPERTY_TYPE') >= 0 and s.find('warning:') >= 0)]
         error = [s for s in error if s.find("xiar: executing 'ar'") < 0]
-        if error: '\n'.join(error)
+        if error: error = '\n'.join(error)
         else: error = ''
       if error or status:
         self.logError('archiver', status, output, error)
