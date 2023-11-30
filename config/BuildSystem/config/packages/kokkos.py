@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = '4.1.00'
+    self.gitcommit        = '4.2.00'
     self.minversion       = '3.7.01'
     self.versionname      = 'KOKKOS_VERSION'
     self.download         = ['git://https://github.com/kokkos/kokkos.git','https://github.com/kokkos/kokkos/archive/'+self.gitcommit+'.tar.gz']
@@ -78,6 +78,8 @@ class Configure(config.package.CMakePackage):
   def formCMakeConfigureArgs(self):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DUSE_XSDK_DEFAULTS=YES')
+    # Whether code deprecated in major release 4 is available
+    args.append('-DKokkos_ENABLE_DEPRECATED_CODE_4=OFF')
 
     # always use C/C++'s alignment (i.e., sizeof(RealType)) for complex,
     # instead of Kokkos's default "alignas(2 * sizeof(RealType))"
