@@ -40,7 +40,10 @@
 
   This function can be provided to `SNESSetJacobian()` along with a dense matrix to hold the Jacobian
 
-.seealso: `SNES`, `SNESSetJacobian()`, `SNESComputeJacobianDefaultColor()`, `MatCreateSNESMF()`
+  Developer Note:
+  The function has a poorly chosen name since it does not mention the use of finite differences
+
+.seealso: [](ch_snes), `SNES`, `SNESSetJacobian()`, `SNESComputeJacobianDefaultColor()`, `MatCreateSNESMF()`
 @*/
 PetscErrorCode SNESComputeJacobianDefault(SNES snes, Vec x1, Mat J, Mat B, void *ctx)
 {

@@ -6,7 +6,7 @@ typedef struct {
 } SNESLineSearch_BT;
 
 /*@
-  SNESLineSearchBTSetAlpha - Sets the descent parameter, alpha, in the `SNESLINESEARCHBT` variant.
+  SNESLineSearchBTSetAlpha - Sets the descent parameter, `alpha`, in the `SNESLINESEARCHBT` `SNESLineSearch` variant.
 
   Input Parameters:
 + linesearch - linesearch context
@@ -14,7 +14,7 @@ typedef struct {
 
   Level: intermediate
 
-.seealso: `SNESLineSearch`, `SNESLineSearchSetLambda()`, `SNESLineSearchGetTolerances()`, `SNESLINESEARCHBT`, `SNESLineSearchBTGetAlpha()`
+.seealso: [](ch_snes), `SNESLineSearch`, `SNESLineSearchSetLambda()`, `SNESLineSearchGetTolerances()`, `SNESLINESEARCHBT`, `SNESLineSearchBTGetAlpha()`
 @*/
 PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch linesearch, PetscReal alpha)
 {
@@ -27,7 +27,7 @@ PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch linesearch, PetscReal alp
 }
 
 /*@
-  SNESLineSearchBTGetAlpha - Gets the descent parameter, alpha, in the `SNESLINESEARCHBT` variant.
+  SNESLineSearchBTGetAlpha - Gets the descent parameter, `alpha`, in the `SNESLINESEARCHBT` variant that was set with `SNESLineSearchBTSetAlpha()`
 
   Input Parameter:
 . linesearch - linesearch context
@@ -37,7 +37,7 @@ PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch linesearch, PetscReal alp
 
   Level: intermediate
 
-.seealso: `SNESLineSearchGetLambda()`, `SNESLineSearchGetTolerances()` `SNESLINESEARCHBT`
+.seealso: [](ch_snes), `SNESLineSearch`, `SNESLineSearchGetLambda()`, `SNESLineSearchGetTolerances()` `SNESLINESEARCHBT`, `SNESLineSearchBTSetAlpha()`
 @*/
 PetscErrorCode SNESLineSearchBTGetAlpha(SNESLineSearch linesearch, PetscReal *alpha)
 {
@@ -420,7 +420,7 @@ static PetscErrorCode SNESLineSearchSetFromOptions_BT(SNESLineSearch linesearch,
    Reference:
 .  - * - "Numerical Methods for Unconstrained Optimization and Nonlinear Equations" by Dennis and Schnabel, page 325.
 
-.seealso: `SNESLineSearch`, `SNESLineSearchType`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
+.seealso: [](ch_snes), `SNESLineSearch`, `SNESLineSearchType`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
 M*/
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_BT(SNESLineSearch linesearch)
 {

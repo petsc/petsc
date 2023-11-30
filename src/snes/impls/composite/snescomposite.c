@@ -553,14 +553,15 @@ static PetscErrorCode SNESCompositeGetSNES_Composite(SNES snes, PetscInt n, SNES
 
   Input Parameters:
 + snes - the preconditioner context
-- type - `SNES_COMPOSITE_ADDITIVE` (default), `SNES_COMPOSITE_MULTIPLICATIVE`
+- type - `SNES_COMPOSITE_ADDITIVE` (default), `SNES_COMPOSITE_MULTIPLICATIVE`, or `SNES_COMPOSITE_ADDITIVEOPTIMAL`
 
   Options Database Key:
-. -snes_composite_type <type: one of multiplicative, additive, special> - Sets composite preconditioner type
+. -snes_composite_type <type: one of multiplicative, additive, additiveoptimal> - Sets composite preconditioner type
 
   Level: developer
 
-.seealso: `SNES_COMPOSITE_ADDITIVE`, `SNES_COMPOSITE_MULTIPLICATIVE`, `SNESCompositeType`, `SNESCOMPOSITE`
+.seealso: [](ch_snes), `SNES_COMPOSITE_ADDITIVE`, `SNES_COMPOSITE_MULTIPLICATIVE`, `SNESCompositeType`, `SNESCOMPOSITE`, `SNES_COMPOSITE_ADDITIVEOPTIMAL`,
+          `PCCompositeType`
 @*/
 PetscErrorCode SNESCompositeSetType(SNES snes, SNESCompositeType type)
 {
@@ -577,12 +578,12 @@ PetscErrorCode SNESCompositeSetType(SNES snes, SNESCompositeType type)
   Collective
 
   Input Parameters:
-+ snes - the snes context of type `SNESCOMPOSITE`
-- type - the type of the new solver
++ snes - the `SNES` context of type `SNESCOMPOSITE`
+- type - the `SNESType` of the new solver
 
   Level: developer
 
-.seealso: `SNES`, `SNESCOMPOSITE`, `SNESCompositeGetSNES()`
+.seealso: [](ch_snes), `SNES`, `SNESCOMPOSITE`, `SNESCompositeGetSNES()`
 @*/
 PetscErrorCode SNESCompositeAddSNES(SNES snes, SNESType type)
 {
@@ -593,20 +594,20 @@ PetscErrorCode SNESCompositeAddSNES(SNES snes, SNESType type)
 }
 
 /*@
-  SNESCompositeGetSNES - Gets one of the `SNES` objects in the composite  `SNESCOMPOSITE`
+  SNESCompositeGetSNES - Gets one of the `SNES` objects in the `SNES` of `SNESType` `SNESCOMPOSITE`
 
   Not Collective
 
   Input Parameters:
-+ snes - the snes context
-- n    - the number of the composed snes requested
++ snes - the `SNES` context
+- n    - the number of the composed `SNES` requested
 
   Output Parameter:
 . subsnes - the `SNES` requested
 
   Level: developer
 
-.seealso: `SNES`, `SNESCOMPOSITE`, `SNESCompositeAddSNES()`
+.seealso: [](ch_snes), `SNES`, `SNESCOMPOSITE`, `SNESCompositeAddSNES()`, `SNESCompositeGetNumber()`
 @*/
 PetscErrorCode SNESCompositeGetSNES(SNES snes, PetscInt n, SNES *subsnes)
 {
@@ -623,14 +624,14 @@ PetscErrorCode SNESCompositeGetSNES(SNES snes, PetscInt n, SNES *subsnes)
   Logically Collective
 
   Input Parameter:
-. snes - the snes context
+. snes - the `SNES` context
 
   Output Parameter:
 . n - the number of subsolvers
 
   Level: developer
 
-.seealso: `SNES`, `SNESCOMPOSITE`, `SNESCompositeAddSNES()`, `SNESCompositeGetSNES()`
+.seealso: [](ch_snes), `SNES`, `SNESCOMPOSITE`, `SNESCompositeAddSNES()`, `SNESCompositeGetSNES()`
 @*/
 PetscErrorCode SNESCompositeGetNumber(SNES snes, PetscInt *n)
 {
@@ -667,18 +668,18 @@ static PetscErrorCode SNESCompositeSetDamping_Composite(SNES snes, PetscInt n, P
 }
 
 /*@
-  SNESCompositeSetDamping - Sets the damping of a subsolver when using `SNES_COMPOSITE_ADDITIVE` `SNESCOMPOSITE`
+  SNESCompositeSetDamping - Sets the damping of a subsolver when using `SNES_COMPOSITE_ADDITIVE` with a `SNES` of `SNESType` `SNESCOMPOSITE`
 
   Not Collective
 
   Input Parameters:
-+ snes - the snes context
++ snes - the `SNES` context
 . n    - the number of the sub-`SNES` object requested
 - dmp  - the damping
 
   Level: intermediate
 
-.seealso: `SNES`, `SNESCOMPOSITE`, `SNESCompositeAddSNES()`, `SNESCompositeGetSNES()`,
+.seealso: [](ch_snes), `SNES`, `SNESCOMPOSITE`, `SNESCompositeAddSNES()`, `SNESCompositeGetSNES()`,
           `SNES_COMPOSITE_ADDITIVE`, `SNES_COMPOSITE_MULTIPLICATIVE`, `SNESCompositeType`, `SNESCompositeSetType()`
 @*/
 PetscErrorCode SNESCompositeSetDamping(SNES snes, PetscInt n, PetscReal dmp)
@@ -799,10 +800,10 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
 }
 
 /*MC
-     SNESCOMPOSITE - Build a preconditioner by composing together several nonlinear solvers
+     SNESCOMPOSITE - Builds a nonlinear solver/preconditioner by composing together several `SNES` nonlinear solvers
 
    Options Database Keys:
-+  -snes_composite_type <type: one of multiplicative, additive, symmetric_multiplicative, special> - Sets composite preconditioner type
++  -snes_composite_type <type: one of multiplicative, additive, additiveoptimal> - Sets composite preconditioner type
 -  -snes_composite_sneses - <snes0,snes1,...> list of `SNES` to compose
 
    Level: intermediate
@@ -811,9 +812,9 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
 .  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
 
-.seealso: `SNES`, `SNESCOMPOSITE`, `SNESCompositeAddSNES()`, `SNESCompositeGetSNES()`,
-          `SNES_COMPOSITE_ADDITIVE`, `SNES_COMPOSITE_MULTIPLICATIVE`, `SNESCompositeType`, `SNESCompositeSetType()`,
-          `SNESCompositeSetDamping()`
+.seealso: [](ch_snes), `SNES`, `SNESCOMPOSITE`, `SNESCompositeAddSNES()`, `SNESCompositeGetSNES()`,
+          `SNES_COMPOSITE_ADDITIVE`, `SNES_COMPOSITE_ADDITIVEOPTIMAL`, `SNES_COMPOSITE_MULTIPLICATIVE`, `SNESCompositeType`,
+          `SNESCompositeSetType()`, `SNESCompositeSetDamping()`, `SNESCompositeGetNumber()`, `PCCompositeType`
 M*/
 
 PETSC_EXTERN PetscErrorCode SNESCreate_Composite(SNES snes)

@@ -390,7 +390,7 @@ static PetscErrorCode SNESView_QN(SNES snes, PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: `SNESQN`, `SNESQNRestartType`, `SNES_QN_RESTART_NONE`, `SNES_QN_RESTART_POWELL`, `SNES_QN_RESTART_PERIODIC`,
+.seealso: [](ch_snes), `SNES`, `SNESQN`, `SNESQNRestartType`, `SNES_QN_RESTART_NONE`, `SNES_QN_RESTART_POWELL`, `SNES_QN_RESTART_PERIODIC`,
           `SNESQNType`, `SNESQNScaleType`
 @*/
 PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype)
@@ -415,7 +415,7 @@ PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype)
 
   Level: intermediate
 
-.seealso: `SNES`, `SNESQN`, `SNESLineSearch`, `SNESQNScaleType`, `SNESSetJacobian()`, `SNESQNType`, `SNESQNRestartType`
+.seealso: [](ch_snes), `SNES`, `SNESQN`, `SNESLineSearch`, `SNESQNScaleType`, `SNESSetJacobian()`, `SNESQNType`, `SNESQNRestartType`
 @*/
 PetscErrorCode SNESQNSetScaleType(SNES snes, SNESQNScaleType stype)
 {
@@ -458,7 +458,7 @@ static PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype
 
   Level: intermediate
 
-.seealso: `SNESQN`, `SNES_QN_LBFGS`, `SNES_QN_BROYDEN`, `SNES_QN_BADBROYDEN`, `SNESQNType`,  `SNESQNScaleType`, `TAOLMVM`, `TAOBLMVM`
+.seealso: [](ch_snes), `SNESQN`, `SNES_QN_LBFGS`, `SNES_QN_BROYDEN`, `SNES_QN_BADBROYDEN`, `SNESQNType`,  `SNESQNScaleType`, `TAOLMVM`, `TAOBLMVM`
 @*/
 PetscErrorCode SNESQNSetType(SNES snes, SNESQNType qtype)
 {
@@ -490,20 +490,6 @@ static PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
 .     -snes_linesearch_type <cp, l2, basic> - Type of line search.
 -     -snes_qn_monitor - Monitors the quasi-newton Jacobian.
 
-      References:
-+   * -   Kelley, C.T., Iterative Methods for Linear and Nonlinear Equations, Chapter 8, SIAM, 1995.
-.   * -   R. Byrd, J. Nocedal, R. Schnabel, Representations of Quasi Newton Matrices and their use in Limited Memory Methods,
-      Technical Report, Northwestern University, June 1992.
-.   * -   Peter N. Brown, Alan C. Hindmarsh, Homer F. Walker, Experiments with Quasi-Newton Methods in Solving Stiff ODE
-      Systems, SIAM J. Sci. Stat. Comput. Vol 6(2), April 1985.
-.   * -   Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
-       SIAM Review, 57(4), 2015
-.   * -   Griewank, Andreas. "Broyden updating, the good and the bad!." Doc. Math (2012): 301-315.
-.   * -   Gilbert, Jean Charles, and Claude Lemar{\'e}chal. "Some numerical experiments with variable-storage quasi-Newton algorithms."
-      Mathematical programming 45.1-3 (1989): 407-435.
--   * -   Dener A., Munson T. "Accelerating Limited-Memory Quasi-Newton Convergence for Large-Scale Optimization"
-      Computational Science - ICCS 2019. ICCS 2019. Lecture Notes in Computer Science, vol 11538. Springer, Cham
-
       Level: beginner
 
       Notes:
@@ -518,8 +504,22 @@ static PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
 
       Uses left nonlinear preconditioning by default.
 
-.seealso: `SNESQNRestartType`, `SNESQNSetRestartType()`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`,
-          `SNESQNScaleType`, `SNESQNSetScaleType()`, `SNESQNSetType`, `SNESQNSetType()`
+      References:
++   * -   Kelley, C.T., Iterative Methods for Linear and Nonlinear Equations, Chapter 8, SIAM, 1995.
+.   * -   R. Byrd, J. Nocedal, R. Schnabel, Representations of Quasi Newton Matrices and their use in Limited Memory Methods,
+      Technical Report, Northwestern University, June 1992.
+.   * -   Peter N. Brown, Alan C. Hindmarsh, Homer F. Walker, Experiments with Quasi-Newton Methods in Solving Stiff ODE
+      Systems, SIAM J. Sci. Stat. Comput. Vol 6(2), April 1985.
+.   * -   Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
+       SIAM Review, 57(4), 2015
+.   * -   Griewank, Andreas. "Broyden updating, the good and the bad!." Doc. Math (2012): 301-315.
+.   * -   Gilbert, Jean Charles, and Claude Lemar{\'e}chal. "Some numerical experiments with variable-storage quasi-Newton algorithms."
+      Mathematical programming 45.1-3 (1989): 407-435.
+-   * -   Dener A., Munson T. "Accelerating Limited-Memory Quasi-Newton Convergence for Large-Scale Optimization"
+      Computational Science - ICCS 2019. ICCS 2019. Lecture Notes in Computer Science, vol 11538. Springer, Cham
+
+.seealso: [](ch_snes), `SNESQNRestartType`, `SNESQNSetRestartType()`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`,
+          `SNESQNScaleType`, `SNESQNSetScaleType()`, `SNESQNType`, `SNESQNSetType()`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_QN(SNES snes)
 {

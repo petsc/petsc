@@ -240,7 +240,7 @@ PetscErrorCode SNESVIProjectOntoBounds(SNES snes, Vec X)
 
   Level: developer
 
-.seealso: `SNES`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`
+.seealso: [](ch_snes), `SNES`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`
 @*/
 PetscErrorCode SNESVIGetActiveSetIS(SNES snes, Vec X, Vec F, IS *ISact)
 {
@@ -389,7 +389,7 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
 }
 
 /*@
-  SNESVISetVariableBounds - Sets the lower and upper bounds for the solution vector. xl <= x <= xu. This allows solving
+  SNESVISetVariableBounds - Sets the lower and upper bounds for the solution vector. `xl` <= x <= `xu`. This allows solving
   (differential) variable inequalities.
 
   Input Parameters:
@@ -403,7 +403,7 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
   If this routine is not called then the lower and upper bounds are set to
   `PETSC_NINFINITY` and `PETSC_INFINITY` respectively during `SNESSetUp()`.
 
-  Problems with bound constraints can be solved with the reduced space, `SNESVINEWTONRSLS`, and semi-smooth `SNESVINEWTONSSLS` solvers.
+  Problems with bound constraints can be solved with the reduced space, `SNESVINEWTONRSLS` or semi-smooth `SNESVINEWTONSSLS` solvers.
 
   For particular components that have no bounds you can use `PETSC_NINFINITY` or `PETSC_INFINITY`
 
@@ -461,7 +461,7 @@ PetscErrorCode SNESVISetVariableBounds_VI(SNES snes, Vec xl, Vec xu)
 }
 
 /*@
-  SNESVIGetVariableBounds - Gets the lower and upper bounds for the solution vector. xl <= x <= xu. These are used in solving
+  SNESVIGetVariableBounds - Gets the lower and upper bounds for the solution vector. `xl` <= x <= `xu`. These are used in solving
   (differential) variable inequalities.
 
   Input Parameters:
@@ -471,7 +471,7 @@ PetscErrorCode SNESVISetVariableBounds_VI(SNES snes, Vec xl, Vec xu)
 
   Level: advanced
 
-  Notes:
+  Note:
   These vectors are owned by the `SNESVI` and should not be destroyed by the caller
 
 .seealso: [](sec_vi), `SNES`, `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`, `'SNESSetType()`, `PETSC_NINFINITY`, `PETSC_INFINITY`

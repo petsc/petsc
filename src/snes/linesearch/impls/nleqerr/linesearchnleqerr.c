@@ -277,10 +277,10 @@ static PetscErrorCode SNESLineSearchDestroy_NLEQERR(SNESLineSearch linesearch)
 }
 
 /*MC
-   SNESLINESEARCHNLEQERR - Error-oriented affine-covariant globalised Newton algorithm of Deuflhard (2011).
+   SNESLINESEARCHNLEQERR - Error-oriented affine-covariant globalised Newton algorithm of Deuflhard {cite}`deuflhard2011`
 
    This linesearch is intended for Newton-type methods which are affine covariant. Affine covariance
-   means that Newton's method will give the same iterations for F(x) = 0 and AF(x) = 0 for a nonsingular
+   means that Newton's method will give the same iterations for F(x) = 0 and AF(x) = 0 for any nonsingular
    matrix A. This is a fundamental property; the philosophy of this linesearch is that globalisations
    of Newton's method should carefully preserve it.
 
@@ -293,10 +293,7 @@ static PetscErrorCode SNESLineSearchDestroy_NLEQERR(SNESLineSearch linesearch)
    Note:
    Contributed by Patrick Farrell <patrick.farrell@maths.ox.ac.uk>
 
-   Reference:
-.  - * - Newton Methods for Nonlinear Problems, Deuflhard, P. 2011, Springer-Verlag, page 148
-
-.seealso: `SNESLineSearch`, `SNES`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
+.seealso: [](ch_snes), `SNESLineSearch`, `SNES`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
 M*/
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NLEQERR(SNESLineSearch linesearch)
 {

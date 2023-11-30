@@ -338,7 +338,7 @@ static PetscErrorCode SNESSolve_NGMRES(SNES snes)
 
   This option must be used with the `SNESNGMRES` `SNESNGMRESRestartType` of `SNES_NGMRES_RESTART_DIFFERENCE`
 
-.seealso: `SNES_NGMRES_RESTART_DIFFERENCE`, `SNESNGMRES`, `SNESNGMRESRestartType`, `SNESNGMRESSetRestartType()`
+.seealso: [](ch_snes), `SNES`, `SNES_NGMRES_RESTART_DIFFERENCE`, `SNESNGMRES`, `SNESNGMRESRestartType`, `SNESNGMRESSetRestartType()`
   @*/
 PetscErrorCode SNESNGMRESSetRestartFmRise(SNES snes, PetscBool flg)
 {
@@ -389,11 +389,12 @@ static PetscErrorCode SNESNGMRESGetRestartFmRise_NGMRES(SNES snes, PetscBool *fl
 
   Options Database Keys:
 + -snes_ngmres_restart_type<difference,periodic,none> - set the restart type
-- -snes_ngmres_restart[30]                            - sets the number of iterations before restart for periodic
+- -snes_ngmres_restart <30>                           - sets the number of iterations before restart for periodic
 
   Level: intermediate
 
-.seealso: `SNES_NGMRES_RESTART_DIFFERENCE`, `SNESNGMRES`, `SNESNGMRESRestartType`, `SNESNGMRESSetRestartFmRise()`
+.seealso: [](ch_snes), `SNES`, `SNES_NGMRES_RESTART_DIFFERENCE`, `SNESNGMRES`, `SNESNGMRESRestartType`, `SNESNGMRESSetRestartFmRise()`,
+          `SNESNGMRESSetSelectType()`
 @*/
 PetscErrorCode SNESNGMRESSetRestartType(SNES snes, SNESNGMRESRestartType rtype)
 {
@@ -421,7 +422,8 @@ PetscErrorCode SNESNGMRESSetRestartType(SNES snes, SNESNGMRESRestartType rtype)
   Note:
   The default line search used is the `SNESLINESEARCHL2` line search and it requires two additional function evaluations.
 
-.seealso: `SNESNGMRESSelectType`, `SNES_NGMRES_SELECT_NONE`, `SNES_NGMRES_SELECT_DIFFERENCE`, `SNES_NGMRES_SELECT_LINESEARCH`
+.seealso: [](ch_snes), `SNES`, `SNESNGMRES`, `SNESNGMRESSelectType`, `SNES_NGMRES_SELECT_NONE`, `SNES_NGMRES_SELECT_DIFFERENCE`, `SNES_NGMRES_SELECT_LINESEARCH`,
+          `SNESNGMRESSetRestartType()`
 @*/
 PetscErrorCode SNESNGMRESSetSelectType(SNES snes, SNESNGMRESSelectType stype)
 {
@@ -481,7 +483,7 @@ static PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes, SNESNGMRESResta
 -  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
 
-.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`, `SNESANDERSON`, `SNESNGMRESSetSelectType()`, `SNESNGMRESSetRestartType()`,
+.seealso: [](ch_snes), `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`, `SNESANDERSON`, `SNESNGMRESSetSelectType()`, `SNESNGMRESSetRestartType()`,
           `SNESNGMRESSetRestartFmRise()`, `SNESNGMRESSelectType`, ``SNESNGMRESRestartType`
 M*/
 

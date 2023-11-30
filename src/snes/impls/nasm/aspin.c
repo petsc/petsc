@@ -65,6 +65,8 @@ static PetscErrorCode SNESDestroy_ASPIN(SNES snes)
 .  -npc_sub_ksp_ - options prefix of the subdomain Krylov solver
 -  -npc_sub_pc_ - options prefix of the subdomain preconditioner
 
+     Level: intermediate
+
     Notes:
     This solver transform the given nonlinear problem to a new form and then runs matrix-free Newton-Krylov with no
     preconditioner on that transformed problem.
@@ -88,15 +90,12 @@ static PetscErrorCode SNESDestroy_ASPIN(SNES snes)
     Note that the original `SNES` and nonlinear preconditioner preconditioner (see `SNESGetNPC()`), in this case `SNESNASM`, share
     the same Jacobian matrices. `SNESNASM` computes the needed Jacobian in `SNESNASMComputeFinalJacobian_Private()`.
 
-   Level: intermediate
-
    References:
 +  * - X. C. Cai and D. E. Keyes, "Nonlinearly preconditioned inexact Newton algorithms",  SIAM J. Sci. Comput., 24, 2002.
 -  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
 
-.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNASM`, `SNESGetNPC()`, `SNESGetNPCSide()`
-
+.seealso: [](ch_snes), `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNASM`, `SNESGetNPC()`, `SNESGetNPCSide()`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_ASPIN(SNES snes)
 {

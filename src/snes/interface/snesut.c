@@ -4,7 +4,7 @@
 #include <petscblaslapack.h>
 
 /*@C
-  SNESMonitorSolution - Monitors progress of the `SNES` solvers by calling
+  SNESMonitorSolution - Monitors progress of a `SNES` `SNESSolve()` by calling
   `VecView()` for the approximate solution at each iteration.
 
   Collective
@@ -41,7 +41,7 @@ PetscErrorCode SNESMonitorSolution(SNES snes, PetscInt its, PetscReal fgnorm, Pe
 }
 
 /*@C
-  SNESMonitorResidual - Monitors progress of the `SNES` solvers by calling
+  SNESMonitorResidual - Monitors progress of a `SNESSolve()` by calling
   `VecView()` for the residual at each iteration.
 
   Collective
@@ -77,7 +77,7 @@ PetscErrorCode SNESMonitorResidual(SNES snes, PetscInt its, PetscReal fgnorm, Pe
 }
 
 /*@C
-  SNESMonitorSolutionUpdate - Monitors progress of the `SNES` solvers by calling
+  SNESMonitorSolutionUpdate - Monitors progress of a `SNESSolve()` by calling
   `VecView()` for the UPDATE to the solution at each iteration.
 
   Collective
@@ -116,7 +116,7 @@ PetscErrorCode SNESMonitorSolutionUpdate(SNES snes, PetscInt its, PetscReal fgno
 #include <petscdraw.h>
 
 /*@C
-  KSPMonitorSNESResidual - Prints the `SNES` residual norm, as well as the `KSP` residual norm, at each iteration of an iterative solver.
+  KSPMonitorSNESResidual - Prints the `SNES` residual norm, as well as the `KSP` residual norm, at each iteration of a `KSPSolve()` called within a `SNESSolve()`.
 
   Collective
 
@@ -135,7 +135,7 @@ PetscErrorCode SNESMonitorSolutionUpdate(SNES snes, PetscInt its, PetscReal fgno
   This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
   to be used during the `KSP` solve.
 
-.seealso: [](ch_snes), `KSPMonitorSet()`, `KSPMonitorResidual()`, `KSPMonitorTrueResidualMaxNorm()`, `KSPMonitor()`, `SNESMonitor()`
+.seealso: [](ch_snes), `SNES`, `KSPMonitorSet()`, `KSPMonitorResidual()`, `KSPMonitorTrueResidualMaxNorm()`, `KSPMonitor()`, `SNESMonitor()`, `PetscViewerAndFormat()`
 @*/
 PetscErrorCode KSPMonitorSNESResidual(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
@@ -171,7 +171,7 @@ PetscErrorCode KSPMonitorSNESResidual(KSP ksp, PetscInt n, PetscReal rnorm, Pets
 }
 
 /*@C
-  KSPMonitorSNESResidualDrawLG - Plots the linear `KSP` residual norm and the `SNES` residual norm at each iteration of an iterative solver.
+  KSPMonitorSNESResidualDrawLG - Plots the linear `KSP` residual norm and the `SNES` residual norm of a `KSPSolve()` called within a `SNESSolve()`.
 
   Collective
 
@@ -270,7 +270,7 @@ PetscErrorCode SNESMonitorDefaultSetUp(SNES snes, PetscViewerAndFormat *vf)
 }
 
 /*@C
-  SNESMonitorDefault - Monitors progress of the `SNES` solvers (default).
+  SNESMonitorDefault - Monitors progress of a `SNESSolve()` (default).
 
   Collective
 
@@ -286,7 +286,7 @@ PetscErrorCode SNESMonitorDefaultSetUp(SNES snes, PetscViewerAndFormat *vf)
   Level: intermediate
 
   Notes:
-  This routine prints the residual norm at each iteration.
+  Prints the residual norm at each iteration.
 
   This is not called directly by users, rather one calls `SNESMonitorSet()`, with this function as an argument, to cause the monitor
   to be used during the `SNES` solve.
@@ -352,7 +352,7 @@ PetscErrorCode SNESMonitorDefault(SNES snes, PetscInt its, PetscReal fgnorm, Pet
 }
 
 /*@C
-  SNESMonitorScaling - Monitors the largest value in each row of the Jacobian.
+  SNESMonitorScaling - Monitors the largest value in each row of the Jacobian of a `SNESSolve()`
 
   Collective
 
@@ -397,7 +397,7 @@ PetscErrorCode SNESMonitorScaling(SNES snes, PetscInt its, PetscReal fgnorm, Pet
 }
 
 /*@C
-  SNESMonitorJacUpdateSpectrum - Monitors the spectrun of the change in the Jacobian from the last Jacobian evaluation
+  SNESMonitorJacUpdateSpectrum - Monitors the spectrun of the change in the Jacobian from the last Jacobian evaluation of a `SNESSolve()`
 
   Collective
 
@@ -496,12 +496,12 @@ PetscErrorCode SNESMonitorRange_Private(SNES snes, PetscInt it, PetscReal *per)
 }
 
 /*@C
-  SNESMonitorRange - Prints the percentage of residual elements that are more than 10 percent of the maximum entry in the residual
+  SNESMonitorRange - Prints the percentage of residual elements that are more than 10 percent of the maximum entry in the residual in each iteration of a `SNESSolve()`
 
   Collective
 
   Input Parameters:
-+ snes  - iterative context
++ snes  - `SNES` iterative context
 . it    - iteration number
 . rnorm - 2-norm (preconditioned) residual value (may be estimated).
 - vf    - unused monitor context
@@ -540,8 +540,7 @@ PetscErrorCode SNESMonitorRange(SNES snes, PetscInt it, PetscReal rnorm, PetscVi
 }
 
 /*@C
-  SNESMonitorRatio - Monitors progress of the `SNES` solvers by printing the ratio
-  of residual norm at each iteration to the previous.
+  SNESMonitorRatio - Monitors progress of a `SNESSolve()` by printing the ratio of residual norm at each iteration to the previous.
 
   Collective
 
@@ -592,7 +591,7 @@ PetscErrorCode SNESMonitorRatio(SNES snes, PetscInt its, PetscReal fgnorm, Petsc
 
   Input Parameters:
 + snes - the `SNES` context
-- vf   - the `PetscViewer` object (ignored)
+- vf   - `PetscViewerAndFormat` (ignored)
 
   Level: intermediate
 
@@ -638,7 +637,7 @@ PetscErrorCode SNESMonitorDefaultShort(SNES snes, PetscInt its, PetscReal fgnorm
 }
 
 /*@C
-  SNESMonitorDefaultField - Monitors progress of the `SNES` solvers, separated into fields.
+  SNESMonitorDefaultField - Monitors progress of a `SNESSolve()`, separated into fields.
 
   Collective
 
@@ -700,7 +699,7 @@ PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm
 }
 
 /*@C
-  SNESConvergedDefault - Default convergence test `SNESSolve()`.
+  SNESConvergedDefault - Default convergence test for `SNESSolve()`.
 
   Collective
 
@@ -726,6 +725,11 @@ PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm
 - -snes_max_linear_solve_fail         - number of linear solver failures before `SNESSolve()` stops
 
   Level: developer
+
+  Notes:
+  This routine is not generally called directly. It is set with `SNESSetConvergenceTest()` automatically before the `SNESSolve()`.
+
+  It can be called within a custom convergence test that should also apply the standard convergence tests
 
 .seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESSetConvergenceTest()`, `SNESConvergedSkip()`, `SNESSetTolerances()`, `SNESSetDivergenceTolerance()`,
           `SNESConvergedReason`
@@ -810,13 +814,16 @@ PetscErrorCode SNESConvergedSkip(SNES snes, PetscInt it, PetscReal xnorm, PetscR
 }
 
 /*@C
-  SNESSetWorkVecs - Gets a number of work vectors to be used internally by `SNES` solvers
+  SNESSetWorkVecs - Allocates a number of work vectors to be used internally by `SNES` solvers
 
   Input Parameters:
 + snes - the `SNES` context
 - nw   - number of work vectors to allocate
 
   Level: developer
+
+  Note:
+  Each `SNESType` calls this with the number of work vectors that particular type needs.
 
 .seealso: [](ch_snes), `SNES`
 @*/

@@ -131,14 +131,14 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
 .  -snes_linesearch_damping <damping> - initial trial step length is scaled by this factor, default is 1.0
 -  -snes_linesearch_max_it <max_it> - the maximum number of secant steps performed.
 
+   Level: advanced
+
    Notes:
    This method does NOT use the objective function if it is provided with `SNESSetObjective()`.
 
    This method is the preferred line search for `SNESQN` and `SNESNCG`.
 
-   Level: advanced
-
-.seealso: `SNESLineSearch`, `SNESLineSearchType`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
+.seealso: [](ch_snes), `SNESLineSearch`, `SNESLineSearchType`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
 M*/
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_CP(SNESLineSearch linesearch)
 {

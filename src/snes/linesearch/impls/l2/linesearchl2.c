@@ -172,7 +172,7 @@ static PetscErrorCode SNESLineSearchApply_L2(SNESLineSearch linesearch)
    Developer Note:
     A better name for this method might be `SNESLINESEARCHSECANT`, L2 is not descriptive
 
-.seealso: `SNESLINESEARCHBT`, `SNESLINESEARCHCP`, `SNESLineSearch`, `SNESLineSearchType`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
+.seealso: [](ch_snes), `SNESLINESEARCHBT`, `SNESLINESEARCHCP`, `SNESLineSearch`, `SNESLineSearchType`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
 M*/
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_L2(SNESLineSearch linesearch)
 {
