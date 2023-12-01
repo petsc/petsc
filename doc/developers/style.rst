@@ -418,7 +418,8 @@ Usage of PETSc Functions and Macros
 
 #. Do not include ``assert.h`` in PETSc source code. Do not use
    ``assert()``, it doesn’t play well in the parallel MPI world.
-   You may use ``PetscAssert()`` where appropriate.
+   You may use ``PetscAssert()`` where appropriate. See ``PetscCall()`` documentation
+   for guidance of when to use ``PetscCheck()``` vs. ``PetscAssert()``.
 
 #. Make error messages short but informative. The user should be able to reasonably
    diagnose the greater problem from your error message.

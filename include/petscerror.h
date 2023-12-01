@@ -171,6 +171,11 @@ M*/
   Notes:
   Enabled in both optimized and debug builds.
 
+  As a general rule, `PetscCheck()` is used to check "usage error" (for example, passing an incorrect value as a function argument),
+  `PetscAssert()` is used to "check for bugs in PETSc" (for example, is a value in a PETSc data structure nonsensical).
+  However, for functions that are called in a "hot spot", for example, thousands of times in a loop, `PetscAssert()` should be used instead
+  of `PetscCheck()` since the former is compiled out in PETSc's optimization code.
+
   Calls `SETERRQ()` if the assertion fails, so can only be called from functions returning a
   `PetscErrorCode` (or equivalent type after conversion).
 
