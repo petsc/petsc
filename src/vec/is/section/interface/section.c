@@ -627,7 +627,7 @@ PetscErrorCode PetscSectionGetChart(PetscSection s, PetscInt *pStart, PetscInt *
   Input Parameters:
 + s      - the `PetscSection`
 . pStart - the first point
-- pEnd   - one past the last point
+- pEnd   - one past the last point, `pStart` $ \le $ `pEnd`
 
   Level: intermediate
 
@@ -872,7 +872,7 @@ PetscErrorCode PetscSectionGetDof(PetscSection s, PetscInt point, PetscInt *numD
   Input Parameters:
 + s      - the `PetscSection`
 . point  - the point
-- numDof - the number of dof
+- numDof - the number of dof, these values may be negative -(dof+1) to indicate they are off process
 
   Level: intermediate
 
@@ -954,7 +954,7 @@ PetscErrorCode PetscSectionGetFieldDof(PetscSection s, PetscInt point, PetscInt 
 + s      - the `PetscSection`
 . point  - the point
 . field  - the field
-- numDof - the number of dof
+- numDof - the number of dof, these values may be negative -(dof+1) to indicate they are off process
 
   Level: intermediate
 
@@ -1721,7 +1721,7 @@ PetscErrorCode PetscSectionGetValueLayout(MPI_Comm comm, PetscSection s, PetscLa
   Level: intermediate
 
   Notes:
-  In a global section, this offset will be negative for points not owned by this process.
+  In a global section, `offset` will be negative for points not owned by this process.
 
   This is for the unnamed default field in the `PetscSection` not the named fields
 
@@ -1747,7 +1747,7 @@ PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *o
   Input Parameters:
 + s      - the `PetscSection`
 . point  - the point
-- offset - the offset
+- offset - the offset, these values may be negative indicating the values are off process
 
   Level: developer
 
@@ -1781,7 +1781,7 @@ PetscErrorCode PetscSectionSetOffset(PetscSection s, PetscInt point, PetscInt of
   Level: intermediate
 
   Notes:
-  In a global section, this offset will be negative for points not owned by this process.
+  In a global section, `offset` will be negative for points not owned by this process.
 
   The `offset` values are different depending on a value set with `PetscSectionSetPointMajor()`
 
@@ -1806,7 +1806,7 @@ PetscErrorCode PetscSectionGetFieldOffset(PetscSection s, PetscInt point, PetscI
 + s      - the `PetscSection`
 . point  - the point
 . field  - the field
-- offset - the offset
+- offset - the offset, these values may be negative indicating the values are off process
 
   Level: developer
 
