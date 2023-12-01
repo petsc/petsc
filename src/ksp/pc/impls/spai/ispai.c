@@ -247,7 +247,7 @@ static PetscErrorCode PCSPAISetSp_SPAI(PC pc, PetscInt sp)
 
   Level: intermediate
 
-.seealso: `PCSPAI`, `PCSetType()`
+.seealso: [](ch_ksp), `PCSPAI`, `PCSetType()`
   @*/
 PetscErrorCode PCSPAISetEpsilon(PC pc, PetscReal epsilon1)
 {
@@ -274,7 +274,7 @@ PetscErrorCode PCSPAISetEpsilon(PC pc, PetscReal epsilon1)
 
   Level: intermediate
 
-.seealso: `PCSPAI`, `PCSetType()`, `PCSPAISetMaxNew()`
+.seealso: [](ch_ksp), `PCSPAI`, `PCSetType()`, `PCSPAISetMaxNew()`
 @*/
 PetscErrorCode PCSPAISetNBSteps(PC pc, PetscInt nbsteps1)
 {
@@ -294,7 +294,7 @@ PetscErrorCode PCSPAISetNBSteps(PC pc, PetscInt nbsteps1)
 
   Level: intermediate
 
-.seealso: `PCSPAI`, `PCSetType()`
+.seealso: [](ch_ksp), `PCSPAI`, `PCSetType()`
 @*/
 PetscErrorCode PCSPAISetMax(PC pc, PetscInt max1)
 {
@@ -313,7 +313,7 @@ PetscErrorCode PCSPAISetMax(PC pc, PetscInt max1)
 
   Level: intermediate
 
-.seealso: `PCSPAI`, `PCSetType()`, `PCSPAISetNBSteps()`
+.seealso: [](ch_ksp), `PCSPAI`, `PCSetType()`, `PCSPAISetNBSteps()`
 @*/
 PetscErrorCode PCSPAISetMaxNew(PC pc, PetscInt maxnew1)
 {
@@ -349,7 +349,7 @@ PetscErrorCode PCSPAISetMaxNew(PC pc, PetscInt maxnew1)
 
   Level: intermediate
 
-.seealso: `PCSPAI`, `PCSetType()`
+.seealso: [](ch_ksp), `PCSPAI`, `PCSetType()`
 @*/
 PetscErrorCode PCSPAISetBlockSize(PC pc, PetscInt block_size1)
 {
@@ -373,7 +373,7 @@ PetscErrorCode PCSPAISetBlockSize(PC pc, PetscInt block_size1)
 
   Level: intermediate
 
-.seealso: `PCSPAI`, `PCSetType()`
+.seealso: [](ch_ksp), `PCSPAI`, `PCSetType()`
 @*/
 PetscErrorCode PCSPAISetCacheSize(PC pc, PetscInt cache_size)
 {
@@ -394,7 +394,7 @@ PetscErrorCode PCSPAISetCacheSize(PC pc, PetscInt cache_size)
 
   Level: intermediate
 
-.seealso: `PCSPAI`, `PCSetType()`
+.seealso: [](ch_ksp), `PCSPAI`, `PCSetType()`
 @*/
 PetscErrorCode PCSPAISetVerbose(PC pc, PetscInt verbose)
 {
@@ -420,7 +420,7 @@ PetscErrorCode PCSPAISetVerbose(PC pc, PetscInt verbose)
 
   Level: intermediate
 
-.seealso: `PCSPAI`, `PCSetType()`
+.seealso: [](ch_ksp), `PCSPAI`, `PCSetType()`
 @*/
 PetscErrorCode PCSPAISetSp(PC pc, PetscInt sp)
 {
@@ -480,7 +480,7 @@ static PetscErrorCode PCSetFromOptions_SPAI(PC pc, PetscOptionItems *PetscOption
    References:
  . * -  Grote and Barnard (SIAM J. Sci. Comput.; vol 18, nr 3)
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
           `PCSPAISetEpsilon()`, `PCSPAISetMax()`, `PCSPAISetMaxNew()`, `PCSPAISetBlockSize()`,
           `PCSPAISetVerbose()`, `PCSPAISetSp()`, `PCSPAISetNBSteps()`, `PCSPAISetCacheSize()`
 M*/

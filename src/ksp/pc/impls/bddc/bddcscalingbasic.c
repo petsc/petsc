@@ -77,7 +77,7 @@ static PetscErrorCode PCBDDCScalingExtension_Deluxe(PC pc, Vec x, Vec y)
     PetscCall(VecRestoreArrayRead(pcis->D, &array_D));
     PetscCall(VecRestoreArrayRead(x, &array_x));
   }
-  /* sequential part : all problems and Schur applications collapsed into a single matrix vector multiplication or a matvec and a solve */
+  /* sequential part : all problems and Schur applications collapsed into a single matrix-vector multiplication or a matvec and a solve */
   if (deluxe_ctx->seq_mat) {
     PetscInt i;
     for (i = 0; i < deluxe_ctx->seq_n; i++) {
@@ -170,7 +170,7 @@ static PetscErrorCode PCBDDCScalingRestriction_Deluxe(PC pc, Vec x, Vec y)
     PetscCall(VecRestoreArrayRead(pcis->D, &array_D));
     PetscCall(VecRestoreArray(y, &array_y));
   }
-  /* sequential part : all problems and Schur applications collapsed into a single matrix vector multiplication or a matvec and a solve */
+  /* sequential part : all problems and Schur applications collapsed into a single matrix-vector multiplication or a matvec and a solve */
   if (deluxe_ctx->seq_mat) {
     PetscInt i;
     for (i = 0; i < deluxe_ctx->seq_n; i++) {

@@ -275,7 +275,7 @@ static PetscErrorCode PCApplySymmetricRight_ILU(PC pc, Vec x, Vec y)
       Algorithms, edited by D. Keyes, A. Semah, V. Venkatakrishnan, ICASE/LaRC Interdisciplinary Series in
       Science and Engineering, Kluwer.
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCSOR`, `MatOrderingType`, `PCLU`, `PCICC`, `PCCHOLESKY`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCSOR`, `MatOrderingType`, `PCLU`, `PCICC`, `PCCHOLESKY`,
           `PCFactorSetZeroPivot()`, `PCFactorSetShiftSetType()`, `PCFactorSetAmount()`,
           `PCFactorSetDropTolerance()`, `PCFactorSetFill()`, `PCFactorSetMatOrderingType()`, `PCFactorSetReuseOrdering()`,
           `PCFactorSetLevels()`, `PCFactorSetUseInPlace()`, `PCFactorSetAllowDiagonalFill()`, `PCFactorSetPivotInBlocks()`,

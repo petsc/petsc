@@ -160,7 +160,7 @@ static PetscErrorCode PCGalerkinSetComputeSubmatrix_Galerkin(PC pc, PetscErrorCo
   Note:
   Either this or `PCGalerkinSetInterpolation()` or both must be called
 
-.seealso: `PC`, `PCCreate()`, `PCSetType()`, `PCType`, `PCGALERKIN`,
+.seealso: [](ch_ksp), `PC`, `PCCreate()`, `PCSetType()`, `PCType`, `PCGALERKIN`,
           `PCGalerkinSetInterpolation()`, `PCGalerkinGetKSP()`
 @*/
 PetscErrorCode PCGalerkinSetRestriction(PC pc, Mat R)
@@ -185,7 +185,7 @@ PetscErrorCode PCGalerkinSetRestriction(PC pc, Mat R)
   Note:
   Either this or `PCGalerkinSetRestriction()` or both must be called
 
-.seealso: `PC`, `PCCreate()`, `PCSetType()`, `PCType`, `PCGALERKIN`,
+.seealso: [](ch_ksp), `PC`, `PCCreate()`, `PCSetType()`, `PCType`, `PCGALERKIN`,
           `PCGalerkinSetRestriction()`, `PCGalerkinGetKSP()`
 @*/
 PetscErrorCode PCGalerkinSetInterpolation(PC pc, Mat P)
@@ -226,7 +226,7 @@ PetscErrorCode PCGalerkinSetInterpolation(PC pc, Mat P)
   If the user does not call this routine nor call `PCGalerkinGetKSP()` and `KSPSetOperators()` then `PCGALERKIN`
   could automatically compute the submatrix via calls to `MatGalerkin()` or `MatRARt()`
 
-.seealso: `PC`, `PCCreate()`, `PCSetType()`, `PCType`, `PCGALERKIN`,
+.seealso: [](ch_ksp), `PC`, `PCCreate()`, `PCSetType()`, `PCType`, `PCGALERKIN`,
           `PCGalerkinSetRestriction()`, `PCGalerkinSetInterpolation()`, `PCGalerkinGetKSP()`
 @*/
 PetscErrorCode PCGalerkinSetComputeSubmatrix(PC pc, PetscErrorCode (*computeAsub)(PC pc, Mat A, Mat Ap, Mat *cAp, void *ctx), void *ctx)
@@ -254,7 +254,7 @@ PetscErrorCode PCGalerkinSetComputeSubmatrix(PC pc, PetscErrorCode (*computeAsub
   Once you have called this routine you can call `KSPSetOperators()` on the resulting `KSP` to provide the operator for the Galerkin problem,
   an alternative is to use `PCGalerkinSetComputeSubmatrix()` to provide a routine that computes the submatrix as needed.
 
-.seealso: `PC`, `PCCreate()`, `PCSetType()`, `PCType`, `PCGALERKIN`,
+.seealso: [](ch_ksp), `PC`, `PCCreate()`, `PCSetType()`, `PCType`, `PCGALERKIN`,
           `PCGalerkinSetRestriction()`, `PCGalerkinSetInterpolation()`, `PCGalerkinSetComputeSubmatrix()`
 @*/
 PetscErrorCode PCGalerkinGetKSP(PC pc, KSP *ksp)
@@ -309,7 +309,7 @@ static PetscErrorCode PCSetFromOptions_Galerkin(PC pc, PetscOptionItems *PetscOp
 
     There is no `KSPSetFromOptions_Galerkin()` that calls `KSPSetFromOptions()` on the inner `KSP`
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
           `PCSHELL`, `PCKSP`, `PCGalerkinSetRestriction()`, `PCGalerkinSetInterpolation()`, `PCGalerkinGetKSP()`
 M*/
 

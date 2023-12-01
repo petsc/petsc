@@ -1104,7 +1104,7 @@ static PetscErrorCode PCSetFromOptions_ML(PC pc, PetscOptionItems *PetscOptionsO
    operators are computed by ML, with the matrices converted to PETSc matrices in `MATAIJ` format
    and the restriction/interpolation operators wrapped as PETSc shell matrices.
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCMGType`, `PCMG`, `PCHYPRE`, `PCGAMG`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCMGType`, `PCMG`, `PCHYPRE`, `PCGAMG`,
           `PCMGSetLevels()`, `PCMGGetLevels()`, `PCMGSetType()`, `MPSetCycles()`, `PCMGSetDistinctSmoothUp()`,
           `PCMGGetCoarseSolve()`, `PCMGSetResidual()`, `PCMGSetInterpolation()`,
           `PCMGSetRestriction()`, `PCMGGetSmoother()`, `PCMGGetSmootherUp()`, `PCMGGetSmootherDown()`,

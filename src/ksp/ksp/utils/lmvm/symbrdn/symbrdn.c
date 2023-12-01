@@ -591,7 +591,7 @@ PetscErrorCode MatCreate_LMVMSymBrdn(Mat B)
 
   Level: intermediate
 
-.seealso: `MATLMVMSYMBROYDEN`
+.seealso: [](ch_ksp), `MATLMVMSYMBROYDEN`
 @*/
 PetscErrorCode MatLMVMSymBroydenSetDelta(Mat B, PetscScalar delta)
 {

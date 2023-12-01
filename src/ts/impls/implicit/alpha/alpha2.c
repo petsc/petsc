@@ -566,9 +566,12 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha2(TS ts)
   The algorithmic parameters $\alpha_m$ and $\alpha_f$ of the generalized-$\alpha$ method can
   be computed in terms of a specified spectral radius $\rho$ in `[0, 1]` for infinite time step
   in order to control high-frequency numerical damping\:
+
   $$
-  \alpha_m = (2-\rho)/(1+\rho)
+  \begin{align*}
+  \alpha_m = (2-\rho)/(1+\rho) \\
   \alpha_f = 1/(1+\rho)
+  \end{align*}
   $$
 
 .seealso: [](ch_ts), `TS`, `TSALPHA2`, `TSAlpha2SetParams()`, `TSAlpha2GetParams()`
@@ -605,14 +608,17 @@ PetscErrorCode TSAlpha2SetRadius(TS ts, PetscReal radius)
 
   Notes:
   Second-order accuracy can be obtained so long as\:
+
   $$
-  \gamma = 1/2 + alpha_m - alpha_f
-  \beta  = 1/4 (1 + alpha_m - alpha_f)^2
+  \begin{align*}
+  \gamma = 1/2 + \alpha_m - \alpha_f \\
+  \beta  = 1/4 (1 + \alpha_m - \alpha_f)^2.
+  \end{align*}
   $$
 
   Unconditional stability requires\:
   $$
-  \alpha_m >= \alpha_f >= 1/2
+  \alpha_m >= \alpha_f >= 1/2.
   $$
 
   Use of this function is normally only required to hack `TSALPHA2` to use a modified

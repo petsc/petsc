@@ -152,7 +152,7 @@ static PetscErrorCode PCDestroy_NN(PC pc)
 
    Contributed by Paulo Goldfeld
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MATIS`, `PCBDDC`
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MATIS`, `PCBDDC`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_NN(PC pc)

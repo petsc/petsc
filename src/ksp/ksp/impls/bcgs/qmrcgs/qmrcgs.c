@@ -208,7 +208,7 @@ static PetscErrorCode KSPSolve_QMRCGS(KSP ksp)
 }
 
 /*MC
-     KSPQMRCGS - Implements the QMRCGStab method.
+   KSPQMRCGS - Implements the QMRCGStab method.
 
    Level: beginner
 

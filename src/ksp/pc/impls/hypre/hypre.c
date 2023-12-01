@@ -1476,7 +1476,7 @@ static PetscErrorCode PCHYPRESetDiscreteGradient_HYPRE(PC pc, Mat G)
   Developer Notes:
   This automatically converts the matrix to `MATHYPRE` if it is not already of that type
 
-.seealso: `PCHYPRE`, `PCHYPRESetDiscreteCurl()`
+.seealso: [](ch_ksp), `PCHYPRE`, `PCHYPRESetDiscreteCurl()`
 @*/
 PetscErrorCode PCHYPRESetDiscreteGradient(PC pc, Mat G)
 {
@@ -1527,7 +1527,7 @@ static PetscErrorCode PCHYPRESetDiscreteCurl_HYPRE(PC pc, Mat C)
 
   If this is only for  `PCHYPRE` type of ads it should be called `PCHYPREADSSetDiscreteCurl()`
 
-.seealso: `PCHYPRE`, `PCHYPRESetDiscreteGradient()`
+.seealso: [](ch_ksp), `PCHYPRE`, `PCHYPRESetDiscreteGradient()`
 @*/
 PetscErrorCode PCHYPRESetDiscreteCurl(PC pc, Mat C)
 {
@@ -1625,7 +1625,7 @@ static PetscErrorCode PCHYPRESetInterpolations_HYPRE(PC pc, PetscInt dim, Mat RT
   Developer Notes:
   This automatically converts the matrix to `MATHYPRE` if it is not already of that type
 
-.seealso: `PCHYPRE`
+.seealso: [](ch_ksp), `PCHYPRE`
 @*/
 PetscErrorCode PCHYPRESetInterpolations(PC pc, PetscInt dim, Mat RT_PiFull, Mat RT_Pi[], Mat ND_PiFull, Mat ND_Pi[])
 {
@@ -1720,7 +1720,7 @@ static PetscErrorCode PCHYPRESetPoissonMatrix_HYPRE(PC pc, Mat A, PetscBool isal
 
   If this is only for  `PCHYPRE` type of ams it should be called `PCHYPREAMSSetAlphaPoissonMatrix()`
 
-.seealso: `PCHYPRE`, `PCHYPRESetDiscreteGradient()`, `PCHYPRESetDiscreteCurl()`, `PCHYPRESetBetaPoissonMatrix()`
+.seealso: [](ch_ksp), `PCHYPRE`, `PCHYPRESetDiscreteGradient()`, `PCHYPRESetDiscreteCurl()`, `PCHYPRESetBetaPoissonMatrix()`
 @*/
 PetscErrorCode PCHYPRESetAlphaPoissonMatrix(PC pc, Mat A)
 {
@@ -1751,7 +1751,7 @@ PetscErrorCode PCHYPRESetAlphaPoissonMatrix(PC pc, Mat A)
 
   If this is only for  `PCHYPRE` type of ams it should be called `PCHYPREAMSPCHYPRESetBetaPoissonMatrix()`
 
-.seealso: `PCHYPRE`, `PCHYPRESetDiscreteGradient()`, `PCHYPRESetDiscreteCurl()`, `PCHYPRESetAlphaPoissonMatrix()`
+.seealso: [](ch_ksp), `PCHYPRE`, `PCHYPRESetDiscreteGradient()`, `PCHYPRESetDiscreteCurl()`, `PCHYPRESetAlphaPoissonMatrix()`
 @*/
 PetscErrorCode PCHYPRESetBetaPoissonMatrix(PC pc, Mat A)
 {
@@ -1803,7 +1803,7 @@ static PetscErrorCode PCHYPRESetEdgeConstantVectors_HYPRE(PC pc, Vec ozz, Vec zo
   Developer Notes:
   If this is only for  `PCHYPRE` type of ams it should be called `PCHYPREAMSSetEdgeConstantVectors()`
 
-.seealso: `PCHYPRE`, `PCHYPRESetDiscreteGradient()`, `PCHYPRESetDiscreteCurl()`, `PCHYPRESetAlphaPoissonMatrix()`
+.seealso: [](ch_ksp), `PCHYPRE`, `PCHYPRESetDiscreteGradient()`, `PCHYPRESetDiscreteCurl()`, `PCHYPRESetAlphaPoissonMatrix()`
 @*/
 PetscErrorCode PCHYPRESetEdgeConstantVectors(PC pc, Vec ozz, Vec zoz, Vec zzo)
 {
@@ -1848,7 +1848,7 @@ static PetscErrorCode PCHYPREAMSSetInteriorNodes_HYPRE(PC pc, Vec interior)
   Developer Notes:
   If this is only for  `PCHYPRE` type of ams it should be called `PCHYPREAMSSetInteriorNodes()`
 
-.seealso: `PCHYPRE`, `PCHYPRESetDiscreteGradient()`, `PCHYPRESetDiscreteCurl()`, `PCHYPRESetAlphaPoissonMatrix()`
+.seealso: [](ch_ksp), `PCHYPRE`, `PCHYPRESetDiscreteGradient()`, `PCHYPRESetDiscreteCurl()`, `PCHYPRESetAlphaPoissonMatrix()`
 @*/
 PetscErrorCode PCHYPREAMSSetInteriorNodes(PC pc, Vec interior)
 {
@@ -2234,7 +2234,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE(PC pc, PetscOptionItems *PetscOptio
 
   Level: intermediate
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCHYPRE`
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCHYPRE`
 @*/
 PetscErrorCode PCHYPRESetType(PC pc, const char name[])
 {
@@ -2256,7 +2256,7 @@ PetscErrorCode PCHYPRESetType(PC pc, const char name[])
 
   Level: intermediate
 
-.seealso: `PCCreate()`, `PCHYPRESetType()`, `PCType`, `PC`, `PCHYPRE`
+.seealso: [](ch_ksp), `PCCreate()`, `PCHYPRESetType()`, `PCType`, `PC`, `PCHYPRE`
 @*/
 PetscErrorCode PCHYPREGetType(PC pc, const char *name[])
 {
@@ -2284,7 +2284,7 @@ PetscErrorCode PCHYPREGetType(PC pc, const char *name[])
   Developer Notes:
   How the name starts with `PCMG`, should it not be `PCHYPREBoomerAMG`?
 
-.seealso: `PCHYPRE`, `PCMGGalerkinGetMatProductAlgorithm()`
+.seealso: [](ch_ksp), `PCHYPRE`, `PCMGGalerkinGetMatProductAlgorithm()`
 @*/
 PetscErrorCode PCMGGalerkinSetMatProductAlgorithm(PC pc, const char name[])
 {
@@ -2307,7 +2307,7 @@ PetscErrorCode PCMGGalerkinSetMatProductAlgorithm(PC pc, const char name[])
 
   Level: intermediate
 
-.seealso: `PCHYPRE`, ``PCMGGalerkinSetMatProductAlgorithm()`
+.seealso: [](ch_ksp), `PCHYPRE`, ``PCMGGalerkinSetMatProductAlgorithm()`
 @*/
 PetscErrorCode PCMGGalerkinGetMatProductAlgorithm(PC pc, const char *name[])
 {
@@ -2367,7 +2367,7 @@ PetscErrorCode PCMGGalerkinGetMatProductAlgorithm(PC pc, const char *name[])
      To configure hypre BoomerAMG so that it can utilize AMD GPUs run ./configure --download-hypre --with-hip
      Then pass `VECHIP` vectors to the solvers and PETSc will automatically utilize hypre's GPU solvers.
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCHYPRESetType()`, `PCPFMG`, `PCGAMG`, `PCSYSPFMG`, `PCSMG`, `PCHYPRESetDiscreteGradient()`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCHYPRESetType()`, `PCPFMG`, `PCGAMG`, `PCSYSPFMG`, `PCSMG`, `PCHYPRESetDiscreteGradient()`,
           `PCHYPRESetDiscreteCurl()`, `PCHYPRESetInterpolations()`, `PCHYPRESetAlphaPoissonMatrix()`, `PCHYPRESetBetaPoissonMatrix()`, `PCHYPRESetEdgeConstantVectors()`,
           PCHYPREAMSSetInteriorNodes()
 M*/
@@ -2602,7 +2602,7 @@ static PetscErrorCode PCSetUp_PFMG(PC pc)
 
    This provides only some of the functionality of PFMG, it supports only one block per process defined by a PETSc `DMDA`.
 
-.seealso: `PCMG`, `MATHYPRESTRUCT`, `PCHYPRE`, `PCGAMG`, `PCSYSPFMG`, `PCSMG`
+.seealso: [](ch_ksp), `PCMG`, `MATHYPRESTRUCT`, `PCHYPRE`, `PCGAMG`, `PCSYSPFMG`, `PCSMG`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_PFMG(PC pc)
@@ -2839,7 +2839,7 @@ static PetscErrorCode PCSetUp_SysPFMG(PC pc)
 
    This does not give access to all the functionality of hypres SysPFMG, it supports only one part, and one block per process defined by a PETSc `DMDA`.
 
-.seealso: `PCMG`, `MATHYPRESSTRUCT`, `PCPFMG`, `PCHYPRE`, `PCGAMG`, `PCSMG`
+.seealso: [](ch_ksp), `PCMG`, `MATHYPRESSTRUCT`, `PCPFMG`, `PCHYPRE`, `PCGAMG`, `PCSMG`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_SysPFMG(PC pc)

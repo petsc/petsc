@@ -480,12 +480,12 @@ PetscErrorCode KSPPIPEGCRGetUnrollW(KSP ksp, PetscBool *unroll_w)
 - mmax - the maximum number of previous directions to orthogonalize against
 
   Options Database Key:
-. -ksp_pipegcr_mmax <N> - maximum number of previous directions
+. -ksp_pipegcr_mmax <mmax> - maximum number of previous directions
 
   Level: intermediate
 
   Note:
-  mmax + 1 directions are stored (mmax previous ones along with a current one)
+  `mmax` + 1 directions are stored (`mmax` previous ones along with a current one)
   and whether all are used in each iteration also depends on the truncation strategy
   (see `KSPPIPEGCRSetTruncationType`)
 
@@ -597,7 +597,7 @@ PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp, PetscInt *nprealloc)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `KSPPIPEGCR`, `KSPPIPEGCRTruncationType`, `KSPFCDTruncationType`
+.seealso: [](ch_ksp), `KSPPIPEGCR`, `KSPPIPEGCRTruncationType`, `KSPFCDTruncationType`, `KSP_FCD_TRUNC_TYPE_STANDARD`, `KSP_FCD_TRUNC_TYPE_NOTAY`
 @*/
 PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp, KSPFCDTruncationType truncstrat)
 {
@@ -625,12 +625,9 @@ PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp, KSPFCDTruncationType truncst
   KSP_FCD_TRUNC_TYPE_NOTAY uses the last max(1,mod(i,mmax)) directions at iteration i=0,1,..
 .ve
 
-  Options Database Key:
-. -ksp_pipegcr_truncation_type <standard,notay> - which stored basis vectors to orthogonalize against
-
   Level: intermediate
 
-.seealso: [](ch_ksp), `KSPPIPEGCR`, `KSPPIPEGCRSetTruncationType`, `KSPPIPEGCRTruncationType`, `KSPFCDTruncationType`
+.seealso: [](ch_ksp), `KSPPIPEGCR`, `KSPPIPEGCRSetTruncationType`, `KSPPIPEGCRTruncationType`, `KSPFCDTruncationType`, `KSP_FCD_TRUNC_TYPE_STANDARD`, `KSP_FCD_TRUNC_TYPE_NOTAY`
 @*/
 PetscErrorCode KSPPIPEGCRGetTruncationType(KSP ksp, KSPFCDTruncationType *truncstrat)
 {
@@ -682,14 +679,14 @@ static PetscErrorCode KSPPIPEGCRSetModifyPC_PIPEGCR(KSP ksp, KSPPIPEGCRModifyPCF
   Logically Collective
 
   Input Parameters:
-+ ksp      - iterative context obtained from KSPCreate()
++ ksp      - iterative context obtained from `KSPCreate()`
 . function - user defined function to modify the preconditioner
 . ctx      - user provided context for the modify preconditioner function
 - destroy  - the function to use to destroy the user provided application context.
 
   Calling sequence of `function`:
 + ksp   - iterative context
-. n     - the total number of PIPEGCR iterations that have occurred
+. n     - the total number of `KSPPIPEGCR` iterations that have occurred
 . rnorm - 2-norm residual value
 - ctx   - the user provided application context
 
@@ -698,7 +695,7 @@ static PetscErrorCode KSPPIPEGCRSetModifyPC_PIPEGCR(KSP ksp, KSPPIPEGCRModifyPCF
 
   Level: intermediate
 
-  Notes:
+  Note:
   The default modifypc routine is `KSPPIPEGCRModifyPCNoChange()`
 
 .seealso: [](ch_ksp), `KSPPIPEGCR`, `KSPPIPEGCRModifyPCNoChange()`
@@ -711,7 +708,7 @@ PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP ksp
 }
 
 /*MC
-     KSPPIPEGCR - Implements a Pipelined Generalized Conjugate Residual method. [](sec_flexibleksp). [](sec_pipelineksp)
+  KSPPIPEGCR - Implements a Pipelined Generalized Conjugate Residual method. [](sec_flexibleksp). [](sec_pipelineksp)
 
   Options Database Keys:
 +   -ksp_pipegcr_mmax <N>  - the max number of Krylov directions to orthogonalize against
@@ -722,21 +719,23 @@ PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP ksp
   Level: intermediate
 
   Notes:
-    The `KSPPIPEGCR` Krylov method supports non-symmetric matrices and permits the use of a preconditioner
-    which may vary from one iteration to the next. Users can can define a method to vary the
-    preconditioner between iterates via `KSPPIPEGCRSetModifyPC()`.
-    Restarts are solves with x0 not equal to zero. When a restart occurs, the initial starting
-    solution is given by the current estimate for x which was obtained by the last restart
-    iterations of the PIPEGCR algorithm.
-    The method implemented requires at most the storage of 4 x mmax + 5 vectors, roughly twice as much as GCR.
+  Compare to `KSPGCR`
 
-    Only supports left preconditioning.
+  The `KSPPIPEGCR` Krylov method supports non-symmetric matrices and permits the use of a preconditioner
+  which may vary from one iteration to the next. Users can can define a method to vary the
+  preconditioner between iterates via `KSPPIPEGCRSetModifyPC()`.
+  Restarts are solves with x0 not equal to zero. When a restart occurs, the initial starting
+  solution is given by the current estimate for x which was obtained by the last restart
+  iterations of the `KSPPIPEGCR` algorithm.
+  The method implemented requires at most the storage of 4 x mmax + 5 vectors, roughly twice as much as `KSPGCR`.
 
-    The natural "norm" for this method is (u,Au), where u is the preconditioned residual. This norm is available at no additional computational cost, as with standard CG.
-    Choosing preconditioned or unpreconditioned norm types involves a blocking reduction which prevents any benefit from pipelining.
+  Only supports left preconditioning.
 
-   MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
-   See [](doc_faq_pipelined)
+  The natural "norm" for this method is $(u,Au)$, where $u$ is the preconditioned residual. This norm is available at no additional computational cost, as with standard
+  `KSPCG`.  Choosing preconditioned or unpreconditioned norm types involves a blocking reduction which prevents any benefit from pipelining.
+
+  MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
+  See [](doc_faq_pipelined)
 
   Contributed by:
   Sascha M. Schnepp and Patrick Sanan
@@ -746,7 +745,8 @@ PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP ksp
     SIAM Journal on Scientific Computing 2016 38:5, C441-C470, DOI: 10.1137/15M1049130
 
 .seealso: [](ch_ksp), [](sec_flexibleksp), [](sec_pipelineksp), [](doc_faq_pipelined), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
-          `KSPPIPEFGMRES`, `KSPPIPECG`, `KSPPIPECR`, `KSPPIPEFCG`, `KSPPIPEGCRSetTruncationType()`, `KSPPIPEGCRSetNprealloc()`, `KSPPIPEGCRSetUnrollW()`, `KSPPIPEGCRSetMmax()`
+          `KSPPIPEFGMRES`, `KSPPIPECG`, `KSPPIPECR`, `KSPPIPEFCG`, `KSPPIPEGCRSetTruncationType()`, `KSPPIPEGCRSetNprealloc()`, `KSPPIPEGCRSetUnrollW()`, `KSPPIPEGCRSetMmax()`,
+          `KSPPIPEGCRGetTruncationType()`, `KSPPIPEGCRGetNprealloc()`, `KSPPIPEGCRGetMmax()`, `KSPGCR`, `KSPPIPEGCRGetUnrollW()
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEGCR(KSP ksp)
 {

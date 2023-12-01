@@ -30,7 +30,7 @@ typedef struct {
 
   Level: intermediate
 
-.seealso: `PCMG`, `PCGAMG`
+.seealso: [](ch_ksp), `PCMG`, `PCGAMG`
 @*/
 PetscErrorCode PCGAMGSetNSmooths(PC pc, PetscInt n)
 {
@@ -66,7 +66,7 @@ static PetscErrorCode PCGAMGSetNSmooths_AGG(PC pc, PetscInt n)
 
   Level: intermediate
 
-.seealso: `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGMISkSetAggressive()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGMISkSetMinDegreeOrdering()`
+.seealso: [](ch_ksp), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGMISkSetAggressive()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGMISkSetMinDegreeOrdering()`
 @*/
 PetscErrorCode PCGAMGSetAggressiveLevels(PC pc, PetscInt n)
 {
@@ -91,7 +91,7 @@ PetscErrorCode PCGAMGSetAggressiveLevels(PC pc, PetscInt n)
 
   Level: intermediate
 
-.seealso: `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGMISkSetMinDegreeOrdering()`
+.seealso: [](ch_ksp), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGMISkSetMinDegreeOrdering()`
 @*/
 PetscErrorCode PCGAMGMISkSetAggressive(PC pc, PetscInt n)
 {
@@ -116,7 +116,7 @@ PetscErrorCode PCGAMGMISkSetAggressive(PC pc, PetscInt n)
 
   Level: intermediate
 
-.seealso: `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGMISkSetAggressive()`, `PCGAMGMISkSetMinDegreeOrdering()`
+.seealso: [](ch_ksp), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGMISkSetAggressive()`, `PCGAMGMISkSetMinDegreeOrdering()`
 @*/
 PetscErrorCode PCGAMGSetAggressiveSquareGraph(PC pc, PetscBool b)
 {
@@ -141,7 +141,7 @@ PetscErrorCode PCGAMGSetAggressiveSquareGraph(PC pc, PetscBool b)
 
   Level: intermediate
 
-.seealso: `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGMISkSetAggressive()`, `PCGAMGSetAggressiveSquareGraph()`
+.seealso: [](ch_ksp), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGMISkSetAggressive()`, `PCGAMGSetAggressiveSquareGraph()`
 @*/
 PetscErrorCode PCGAMGMISkSetMinDegreeOrdering(PC pc, PetscBool b)
 {

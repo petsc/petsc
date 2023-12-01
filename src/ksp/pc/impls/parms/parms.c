@@ -349,7 +349,7 @@ static PetscErrorCode PCPARMSSetGlobal_PARMS(PC pc, PCPARMSGlobalType type)
   Note:
   See the pARMS function `parms_PCSetType()` for more information.
 
-.seealso: `PCPARMS`, `PCPARMSSetLocal()`
+.seealso: [](ch_ksp), `PCPARMS`, `PCPARMSSetLocal()`
 @*/
 PetscErrorCode PCPARMSSetGlobal(PC pc, PCPARMSGlobalType type)
 {
@@ -398,7 +398,7 @@ static PetscErrorCode PCPARMSSetLocal_PARMS(PC pc, PCPARMSLocalType type)
 
   See the pARMS function `parms_PCILUSetType()` for more information.
 
-.seealso: `PCPARMS`, `PCPARMSSetGlobal()`, `PCPARMSSetNonsymPerm()`
+.seealso: [](ch_ksp), `PCPARMS`, `PCPARMSSetGlobal()`, `PCPARMSSetNonsymPerm()`
 
 @*/
 PetscErrorCode PCPARMSSetLocal(PC pc, PCPARMSLocalType type)
@@ -446,7 +446,7 @@ static PetscErrorCode PCPARMSSetSolveTolerances_PARMS(PC pc, PetscReal tol, Pets
   Note:
   See the pARMS functions `parms_PCSetInnerEps()` and `parms_PCSetInnerMaxits()` for more information.
 
-.seealso: `PCPARMS`, `PCPARMSSetSolveRestart()`
+.seealso: [](ch_ksp), `PCPARMS`, `PCPARMSSetSolveRestart()`
 @*/
 PetscErrorCode PCPARMSSetSolveTolerances(PC pc, PetscReal tol, PetscInt maxits)
 {
@@ -486,7 +486,7 @@ static PetscErrorCode PCPARMSSetSolveRestart_PARMS(PC pc, PetscInt restart)
   Note:
   See the pARMS function parms_PCSetInnerKSize for more information.
 
-.seealso: `PCPARMS`, `PCPARMSSetSolveTolerances()`
+.seealso: [](ch_ksp), `PCPARMS`, `PCPARMSSetSolveTolerances()`
 @*/
 PetscErrorCode PCPARMSSetSolveRestart(PC pc, PetscInt restart)
 {
@@ -527,7 +527,7 @@ static PetscErrorCode PCPARMSSetNonsymPerm_PARMS(PC pc, PetscBool nonsym)
   Note:
   See the pARMS function `parms_PCSetPermType()` for more information.
 
-.seealso: `PCPARMS`
+.seealso: [](ch_ksp), `PCPARMS`
 @*/
 PetscErrorCode PCPARMSSetNonsymPerm(PC pc, PetscBool nonsym)
 {
@@ -580,7 +580,7 @@ static PetscErrorCode PCPARMSSetFill_PARMS(PC pc, PetscInt lfil0, PetscInt lfil1
   Note:
   See the pARMS function `parms_PCSetFill()` for more information.
 
-.seealso: `PCPARMS`
+.seealso: [](ch_ksp), `PCPARMS`
 @*/
 PetscErrorCode PCPARMSSetFill(PC pc, PetscInt lfil0, PetscInt lfil1, PetscInt lfil2)
 {
@@ -626,7 +626,7 @@ PetscErrorCode PCPARMSSetFill(PC pc, PetscInt lfil0, PetscInt lfil1, PetscInt lf
 
    Level: intermediate
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCMG`, `PCGAMG`, `PCHYPRE`, `PCPARMSSetGlobal()`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCMG`, `PCGAMG`, `PCHYPRE`, `PCPARMSSetGlobal()`,
           `PCPARMSSetLocal()`, `PCPARMSSetSolveTolerances()`, `PCPARMSSetSolveRestart()`, `PCPARMSSetNonsymPerm()`,
           `PCPARMSSetFill()`
 M*/

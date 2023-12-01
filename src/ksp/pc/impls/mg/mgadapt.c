@@ -145,7 +145,7 @@ static PetscErrorCode PCMGCreateCoarseSpace_Harmonic(PC pc, PetscInt level, DM d
 
   Note: This space is normally used to adapt the interpolator. If Nc is negative, an adaptive choice can be made.
 
-.seealso: `PCMGAdaptInterpolator_Private()`
+.seealso: [](ch_ksp), `PCMGAdaptInterpolator_Private()`
 */
 PetscErrorCode PCMGComputeCoarseSpace_Internal(PC pc, PetscInt l, PCMGCoarseSpaceType cstype, PetscInt Nc, Mat cspace, Mat *space)
 {
@@ -203,7 +203,7 @@ PetscErrorCode PCMGComputeCoarseSpace_Internal(PC pc, PetscInt l, PCMGCoarseSpac
 
   Note: This routine resets the interpolation and restriction for level l.
 
-.seealso: `PCMGComputeCoarseSpace_Private()`
+.seealso: [](ch_ksp), `PCMGComputeCoarseSpace_Private()`
 */
 PetscErrorCode PCMGAdaptInterpolator_Internal(PC pc, PetscInt l, KSP csmooth, KSP fsmooth, Mat cspace, Mat fspace)
 {

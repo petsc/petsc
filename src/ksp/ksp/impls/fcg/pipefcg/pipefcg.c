@@ -402,10 +402,10 @@ static PetscErrorCode KSPView_PIPEFCG(KSP ksp, PetscViewer viewer)
   Level: intermediate
 
   Note:
-  mmax + 1 directions are stored (mmax previous ones along with the current one)
+  `mmax` + 1 directions are stored (`mmax` previous ones along with the current one)
   and whether all are used in each iteration also depends on the truncation strategy, see `KSPPIPEFCGSetTruncationType()`
 
-.seealso: [](ch_ksp), `KSPPIPEFCG`, `KSPPIPEFCGSetTruncationType()`, `KSPPIPEFCGSetNprealloc()`
+.seealso: [](ch_ksp), `KSPPIPEFCG`, `KSPPIPEFCGSetTruncationType()`, `KSPPIPEFCGSetNprealloc()`, `KSPFCGSetMmax()`, `KSPFCGGetMmax()`
 @*/
 PetscErrorCode KSPPIPEFCGSetMmax(KSP ksp, PetscInt mmax)
 {
@@ -429,12 +429,9 @@ PetscErrorCode KSPPIPEFCGSetMmax(KSP ksp, PetscInt mmax)
   Output Parameter:
 . mmax - the maximum number of previous directions allowed for orthogonalization
 
-  Options Database Key:
-. -ksp_pipefcg_mmax <N> - maximum number of previous directions
-
   Level: intermediate
 
-.seealso: [](ch_ksp), `KSPPIPEFCG`, `KSPPIPEFCGGetTruncationType()`, `KSPPIPEFCGGetNprealloc()`, `KSPPIPEFCGSetMmax()`
+.seealso: [](ch_ksp), `KSPPIPEFCG`, `KSPPIPEFCGGetTruncationType()`, `KSPPIPEFCGGetNprealloc()`, `KSPPIPEFCGSetMmax()`, `KSPFCGGetMmax()`, `KSPFCGSetMmax()`
 @*/
 PetscErrorCode KSPPIPEFCGGetMmax(KSP ksp, PetscInt *mmax)
 {
@@ -516,7 +513,7 @@ PetscErrorCode KSPPIPEFCGGetNprealloc(KSP ksp, PetscInt *nprealloc)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `KSPPIPEFCG`, `KSPPIPEFCGGetTruncationType`, `KSPFCDTruncationType`
+.seealso: [](ch_ksp), `KSPPIPEFCG`, `KSPPIPEFCGGetTruncationType`, `KSPFCDTruncationType`, `KSP_FCD_TRUNC_TYPE_STANDARD`, `KSP_FCD_TRUNC_TYPE_NOTAY`
 @*/
 PetscErrorCode KSPPIPEFCGSetTruncationType(KSP ksp, KSPFCDTruncationType truncstrat)
 {
@@ -540,12 +537,9 @@ PetscErrorCode KSPPIPEFCGSetTruncationType(KSP ksp, KSPFCDTruncationType truncst
   Output Parameter:
 . truncstrat - the strategy type
 
-  Options Database Key:
-. -ksp_pipefcg_truncation_type <standard,notay> - which stored basis vectors to orthogonalize against
-
   Level: intermediate
 
-.seealso: [](ch_ksp), `KSPPIPEFCG`, `KSPPIPEFCGSetTruncationType`, `KSPFCDTruncationType`
+.seealso: [](ch_ksp), `KSPPIPEFCG`, `KSPPIPEFCGSetTruncationType`, `KSPFCDTruncationType`, `KSP_FCD_TRUNC_TYPE_STANDARD`, `KSP_FCD_TRUNC_TYPE_NOTAY`
 @*/
 PetscErrorCode KSPPIPEFCGGetTruncationType(KSP ksp, KSPFCDTruncationType *truncstrat)
 {
@@ -583,14 +577,18 @@ static PetscErrorCode KSPSetFromOptions_PIPEFCG(KSP ksp, PetscOptionItems *Petsc
 .   -ksp_pipefcg_nprealloc <N> - The number of previous search directions to preallocate
 -   -ksp_pipefcg_truncation_type <standard,notay> - which stored search directions to orthogonalize against
 
+  Level: intermediate
+
   Notes:
-   Supports left preconditioning only.
+  Compare to `KSPFCG`
 
-   The natural "norm" for this method is (u,Au), where u is the preconditioned residual. As with standard `KSPCG`, this norm is available at no additional computational cost.
-   Choosing preconditioned or unpreconditioned norms involve an extra blocking global reduction, thus removing any benefit from pipelining.
+  Supports left preconditioning only.
 
-   MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
-   See [](doc_faq_pipelined)
+  The natural "norm" for this method is $(u,Au)$, where $u$ is the preconditioned residual. As with standard `KSPCG`, this norm is available at no additional computational cost.
+  Choosing preconditioned or unpreconditioned norms involve an extra blocking global reduction, thus removing any benefit from pipelining.
+
+  MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
+  See [](doc_faq_pipelined)
 
   Contributed by:
   Patrick Sanan and Sascha M. Schnepp
@@ -599,9 +597,8 @@ static PetscErrorCode KSPSetFromOptions_PIPEFCG(KSP ksp, PetscOptionItems *Petsc
 . * - P. Sanan, S.M. Schnepp, and D.A. May, "Pipelined, Flexible Krylov Subspace Methods", SIAM Journal on Scientific Computing 2016 38:5, C441-C470,
     DOI: 10.1137/15M1049130
 
-  Level: intermediate
-
-.seealso: [](ch_ksp), [](doc_faq_pipelined), [](sec_pipelineksp), [](sec_flexibleksp), `KSPFCG`, `KSPPIPECG`, `KSPPIPECR`, `KSPGCR`, `KSPPIPEGCR`, `KSPFGMRES`, `KSPCG`, `KSPPIPEFCGSetMmax()`, `KSPPIPEFCGGetMmax()`, `KSPPIPEFCGSetNprealloc()`,
+.seealso: [](ch_ksp), [](doc_faq_pipelined), [](sec_pipelineksp), [](sec_flexibleksp), `KSPFCG`, `KSPPIPECG`, `KSPPIPECR`, `KSPGCR`, `KSPPIPEGCR`, `KSPFGMRES`,
+          `KSPCG`, `KSPPIPEFCGSetMmax()`, `KSPPIPEFCGGetMmax()`, `KSPPIPEFCGSetNprealloc()`,
           `KSPPIPEFCGGetNprealloc()`, `KSPPIPEFCGSetTruncationType()`, `KSPPIPEFCGGetTruncationType()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFCG(KSP ksp)

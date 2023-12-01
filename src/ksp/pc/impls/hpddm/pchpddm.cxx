@@ -239,7 +239,7 @@ static PetscErrorCode PCSetUp_KSP(PC pc)
   Fortran Notes:
   Only `PETSC_NULL_FUNCTION` is supported for `setup` and `ctx` is never accessed
 
-.seealso: `PCHPDDM`, `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCHPDDMSetRHSMat()`, `MATIS`
+.seealso: [](ch_ksp), `PCHPDDM`, `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCHPDDMSetRHSMat()`, `MATIS`
 @*/
 PetscErrorCode PCHPDDMSetAuxiliaryMat(PC pc, IS is, Mat A, PetscErrorCode (*setup)(Mat J, PetscReal t, Vec X, Vec X_t, PetscReal s, IS ovl, void *ctx), void *ctx)
 {
@@ -275,7 +275,7 @@ static PetscErrorCode PCHPDDMHasNeumannMat_HPDDM(PC pc, PetscBool has)
 
   If a `DMCreateNeumannOverlap()` implementation is available in the `DM` attached to the Pmat, or the Amat, or the `PC`, the flag is internally set to `PETSC_TRUE`. Its default value is otherwise `PETSC_FALSE`.
 
-.seealso: `PCHPDDM`, `PCHPDDMSetAuxiliaryMat()`
+.seealso: [](ch_ksp), `PCHPDDM`, `PCHPDDMSetAuxiliaryMat()`
 @*/
 PetscErrorCode PCHPDDMHasNeumannMat(PC pc, PetscBool has)
 {
@@ -309,7 +309,7 @@ static PetscErrorCode PCHPDDMSetRHSMat_HPDDM(PC pc, Mat B)
   Must be used in conjunction with `PCHPDDMSetAuxiliaryMat`(N), so that Nv = lambda Bv is solved using `EPSSetOperators`(N, B).
   It is assumed that N and `B` are provided using the same numbering. This provides a means to try more advanced methods such as GenEO-II or H-GenEO.
 
-.seealso: `PCHPDDMSetAuxiliaryMat()`, `PCHPDDM`
+.seealso: [](ch_ksp), `PCHPDDMSetAuxiliaryMat()`, `PCHPDDM`
 @*/
 PetscErrorCode PCHPDDMSetRHSMat(PC pc, Mat B)
 {
@@ -465,7 +465,7 @@ static PetscErrorCode PCMatApply_HPDDM(PC pc, Mat X, Mat Y)
 
    Level: advanced
 
-.seealso: `PCMGGetGridComplexity()`, `PCHPDDM`, `PCHYPRE`, `PCGAMG`
+.seealso: [](ch_ksp), `PCMGGetGridComplexity()`, `PCHPDDM`, `PCHYPRE`, `PCGAMG`
 @*/
 static PetscErrorCode PCHPDDMGetComplexities(PC pc, PetscReal *gc, PetscReal *oc)
 {
@@ -730,7 +730,7 @@ static inline PetscErrorCode PCHPDDMDeflate_Private(PC pc, Type X, Type Y)
    Since this is not an actual manual page the material below should be moved to an appropriate manual page with the appropriate context, i.e. explaining when it is used and how
    to trigger it. Likely the manual page is `PCHPDDM`
 
-.seealso: `PCHPDDM`, `PCHPDDMCoarseCorrectionType`
+.seealso: [](ch_ksp), `PCHPDDM`, `PCHPDDMCoarseCorrectionType`
 */
 static PetscErrorCode PCApply_HPDDMShell(PC pc, Vec x, Vec y)
 {
@@ -778,7 +778,7 @@ static PetscErrorCode PCApply_HPDDMShell(PC pc, Vec x, Vec y)
 
    Level: advanced
 
-.seealso: `PCHPDDM`, `PCApply_HPDDMShell()`, `PCHPDDMCoarseCorrectionType`
+.seealso: [](ch_ksp), `PCHPDDM`, `PCApply_HPDDMShell()`, `PCHPDDMCoarseCorrectionType`
 */
 static PetscErrorCode PCMatApply_HPDDMShell(PC pc, Mat X, Mat Y)
 {
@@ -2550,7 +2550,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
 
   Level: intermediate
 
-.seealso: `PCHPDDMGetCoarseCorrectionType()`, `PCHPDDM`, `PCHPDDMCoarseCorrectionType`
+.seealso: [](ch_ksp), `PCHPDDMGetCoarseCorrectionType()`, `PCHPDDM`, `PCHPDDMCoarseCorrectionType`
 @*/
 PetscErrorCode PCHPDDMSetCoarseCorrectionType(PC pc, PCHPDDMCoarseCorrectionType type)
 {
@@ -2572,7 +2572,7 @@ PetscErrorCode PCHPDDMSetCoarseCorrectionType(PC pc, PCHPDDMCoarseCorrectionType
 
   Level: intermediate
 
-.seealso: `PCHPDDMSetCoarseCorrectionType()`, `PCHPDDM`, `PCHPDDMCoarseCorrectionType`
+.seealso: [](ch_ksp), `PCHPDDMSetCoarseCorrectionType()`, `PCHPDDM`, `PCHPDDMCoarseCorrectionType`
 @*/
 PetscErrorCode PCHPDDMGetCoarseCorrectionType(PC pc, PCHPDDMCoarseCorrectionType *type)
 {
@@ -2617,7 +2617,7 @@ static PetscErrorCode PCHPDDMGetCoarseCorrectionType_HPDDM(PC pc, PCHPDDMCoarseC
 
   Level: advanced
 
-.seealso: `PCHPDDM`, `PCHPDDMGetSTShareSubKSP()`
+.seealso: [](ch_ksp), `PCHPDDM`, `PCHPDDMGetSTShareSubKSP()`
 @*/
 PetscErrorCode PCHPDDMSetSTShareSubKSP(PC pc, PetscBool share)
 {
@@ -2642,7 +2642,7 @@ PetscErrorCode PCHPDDMSetSTShareSubKSP(PC pc, PetscBool share)
 
   Level: advanced
 
-.seealso: `PCHPDDM`, `PCHPDDMSetSTShareSubKSP()`
+.seealso: [](ch_ksp), `PCHPDDM`, `PCHPDDMSetSTShareSubKSP()`
 @*/
 PetscErrorCode PCHPDDMGetSTShareSubKSP(PC pc, PetscBool *share)
 {
@@ -2683,7 +2683,7 @@ static PetscErrorCode PCHPDDMGetSTShareSubKSP_HPDDM(PC pc, PetscBool *share)
 
   Level: advanced
 
-.seealso: `PCHPDDM`, `PCDeflationSetSpace()`, `PCMGSetRestriction()`
+.seealso: [](ch_ksp), `PCHPDDM`, `PCDeflationSetSpace()`, `PCMGSetRestriction()`
 @*/
 PetscErrorCode PCHPDDMSetDeflationMat(PC pc, IS is, Mat U)
 {
@@ -2803,7 +2803,7 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
 
    Level: intermediate
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCHPDDMSetAuxiliaryMat()`, `MATIS`, `PCBDDC`, `PCDEFLATION`, `PCTELESCOPE`, `PCASM`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCHPDDMSetAuxiliaryMat()`, `MATIS`, `PCBDDC`, `PCDEFLATION`, `PCTELESCOPE`, `PCASM`,
           `PCHPDDMSetCoarseCorrectionType()`, `PCHPDDMHasNeumannMat()`, `PCHPDDMSetRHSMat()`, `PCHPDDMSetDeflationMat()`, `PCHPDDMSetSTShareSubKSP()`,
           `PCHPDDMGetSTShareSubKSP()`, `PCHPDDMGetCoarseCorrectionType()`, `PCHPDDMGetComplexities()`
 M*/
@@ -2846,7 +2846,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc)
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: [](ch_ksp), `PetscInitialize()`
 @*/
 PetscErrorCode PCHPDDMInitializePackage(void)
 {
@@ -2889,7 +2889,7 @@ PetscErrorCode PCHPDDMInitializePackage(void)
 
   Level: developer
 
-.seealso: `PetscFinalize()`
+.seealso: [](ch_ksp), `PetscFinalize()`
 @*/
 PetscErrorCode PCHPDDMFinalizePackage(void)
 {

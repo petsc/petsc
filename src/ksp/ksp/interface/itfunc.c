@@ -1084,7 +1084,7 @@ PetscErrorCode KSPSolve(KSP ksp, Vec b, Vec x)
 }
 
 /*@
-  KSPSolveTranspose - Solves a linear system with the transposed matrix.
+  KSPSolveTranspose - Solves a linear system with the transpose of the matrix, $ A^T x = b$.
 
   Collective
 

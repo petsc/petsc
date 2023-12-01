@@ -530,12 +530,14 @@ PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp)
 +   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
 .   -ksp_gmres_haptol <tol> - sets the tolerance for "happy ending" (exact convergence)
 .   -ksp_gmres_preallocate - preallocate all the Krylov search directions initially (otherwise groups of vectors are allocated as needed)
-.   -ksp_pipefgmres_shift - the shift to use (defaults to 1. See KSPPIPEFGMRESSetShift()
+.   -ksp_pipefgmres_shift - the shift to use (defaults to 1. See `KSPPIPEFGMRESSetShift()`
 -   -ksp_gmres_krylov_monitor - plot the Krylov space generated
 
    Level: intermediate
 
    Notes:
+   Compare to `KSPPGMRES` and `KSPFGMRES`
+
    This variant is not "explicitly normalized" like `KSPPGMRES`, and requires a shift parameter.
 
    A heuristic for choosing the shift parameter is the largest eigenvalue of the preconditioned operator.

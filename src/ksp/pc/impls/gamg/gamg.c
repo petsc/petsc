@@ -899,7 +899,7 @@ PetscErrorCode PCDestroy_GAMG(PC pc)
   `PCGAMG` will reduce the number of MPI processes used directly on the coarse grids so that there are around <limit> equations on each process
   that has degrees of freedom
 
-.seealso: `PCGAMG`, `PCGAMGSetCoarseEqLim()`, `PCGAMGSetRankReductionFactors()`, `PCGAMGSetRepartition()`
+.seealso: [](ch_ksp), `PCGAMG`, `PCGAMGSetCoarseEqLim()`, `PCGAMGSetRankReductionFactors()`, `PCGAMGSetRepartition()`
 @*/
 PetscErrorCode PCGAMGSetProcEqLim(PC pc, PetscInt n)
 {
@@ -937,7 +937,7 @@ static PetscErrorCode PCGAMGSetProcEqLim_GAMG(PC pc, PetscInt n)
   For example -pc_gamg_coarse_eq_limit 1000 will stop coarsening once the coarse grid
   has less than 1000 unknowns.
 
-.seealso: `PCGAMG`, `PCGAMGSetProcEqLim()`, `PCGAMGSetRankReductionFactors()`, `PCGAMGSetRepartition()`
+.seealso: [](ch_ksp), `PCGAMG`, `PCGAMGSetProcEqLim()`, `PCGAMGSetRankReductionFactors()`, `PCGAMGSetRepartition()`
 @*/
 PetscErrorCode PCGAMGSetCoarseEqLim(PC pc, PetscInt n)
 {
@@ -974,7 +974,7 @@ static PetscErrorCode PCGAMGSetCoarseEqLim_GAMG(PC pc, PetscInt n)
   Note:
   This will generally improve the loading balancing of the work on each level
 
-.seealso: `PCGAMG`, `PCGAMGSetProcEqLim()`, `PCGAMGSetRankReductionFactors()`
+.seealso: [](ch_ksp), `PCGAMG`, `PCGAMGSetProcEqLim()`, `PCGAMGSetRankReductionFactors()`
 @*/
 PetscErrorCode PCGAMGSetRepartition(PC pc, PetscBool n)
 {
@@ -1015,7 +1015,7 @@ static PetscErrorCode PCGAMGSetRepartition_GAMG(PC pc, PetscBool n)
   This option is only used when the smoother uses Jacobi, and should be turned off if a different `PCJacobiType` is used.
   It became default in PETSc 3.17.
 
-.seealso: `PCGAMG`, `KSPChebyshevSetEigenvalues()`, `KSPChebyshevEstEigSet()`, `PCGAMGSetRecomputeEstEig()`
+.seealso: [](ch_ksp), `PCGAMG`, `KSPChebyshevSetEigenvalues()`, `KSPChebyshevEstEigSet()`, `PCGAMGSetRecomputeEstEig()`
 @*/
 PetscErrorCode PCGAMGSetUseSAEstEig(PC pc, PetscBool b)
 {
@@ -1049,7 +1049,7 @@ static PetscErrorCode PCGAMGSetUseSAEstEig_GAMG(PC pc, PetscBool b)
 
   Level: advanced
 
-.seealso: `PCGAMG`, `KSPChebyshevSetEigenvalues()`, `KSPChebyshevEstEigSet()`
+.seealso: [](ch_ksp), `PCGAMG`, `KSPChebyshevSetEigenvalues()`, `KSPChebyshevEstEigSet()`
 @*/
 PetscErrorCode PCGAMGSetRecomputeEstEig(PC pc, PetscBool b)
 {
@@ -1084,7 +1084,7 @@ static PetscErrorCode PCGAMGSetRecomputeEstEig_GAMG(PC pc, PetscBool b)
 
   Level: intermediate
 
-.seealso: `PCGAMG`, `PCGAMGSetUseSAEstEig()`
+.seealso: [](ch_ksp), `PCGAMG`, `PCGAMGSetUseSAEstEig()`
 @*/
 PetscErrorCode PCGAMGSetEigenvalues(PC pc, PetscReal emax, PetscReal emin)
 {
@@ -1125,7 +1125,7 @@ static PetscErrorCode PCGAMGSetEigenvalues_GAMG(PC pc, PetscReal emax, PetscReal
   May negatively affect the convergence rate of the method on new matrices if the matrix entries change a great deal, but allows
   rebuilding the preconditioner quicker.
 
-.seealso: `PCGAMG`
+.seealso: [](ch_ksp), `PCGAMG`
 @*/
 PetscErrorCode PCGAMGSetReuseInterpolation(PC pc, PetscBool n)
 {
@@ -1160,7 +1160,7 @@ static PetscErrorCode PCGAMGSetReuseInterpolation_GAMG(PC pc, PetscBool n)
 
   Level: intermediate
 
-.seealso: `PCGAMG`, `PCASM`, `PCSetType`
+.seealso: [](ch_ksp), `PCGAMG`, `PCASM`, `PCSetType`
 @*/
 PetscErrorCode PCGAMGASMSetUseAggs(PC pc, PetscBool flg)
 {
@@ -1194,7 +1194,7 @@ static PetscErrorCode PCGAMGASMSetUseAggs_GAMG(PC pc, PetscBool flg)
 
   Level: intermediate
 
-.seealso: `PCGAMG`, `PCGAMGSetCoarseGridLayoutType()`, `PCGAMGSetCpuPinCoarseGrids()`
+.seealso: [](ch_ksp), `PCGAMG`, `PCGAMGSetCoarseGridLayoutType()`, `PCGAMGSetCpuPinCoarseGrids()`
 @*/
 PetscErrorCode PCGAMGSetParallelCoarseGridSolve(PC pc, PetscBool flg)
 {
@@ -1228,7 +1228,7 @@ static PetscErrorCode PCGAMGSetParallelCoarseGridSolve_GAMG(PC pc, PetscBool flg
 
   Level: intermediate
 
-.seealso: `PCGAMG`, `PCGAMGSetCoarseGridLayoutType()`, `PCGAMGSetParallelCoarseGridSolve()`
+.seealso: [](ch_ksp), `PCGAMG`, `PCGAMGSetCoarseGridLayoutType()`, `PCGAMGSetParallelCoarseGridSolve()`
 @*/
 PetscErrorCode PCGAMGSetCpuPinCoarseGrids(PC pc, PetscBool flg)
 {
@@ -1262,7 +1262,7 @@ static PetscErrorCode PCGAMGSetCpuPinCoarseGrids_GAMG(PC pc, PetscBool flg)
 
   Level: intermediate
 
-.seealso: `PCGAMG`, `PCGAMGSetParallelCoarseGridSolve()`, `PCGAMGSetCpuPinCoarseGrids()`, `PCGAMGLayoutType`, `PCGAMG_LAYOUT_COMPACT`, `PCGAMG_LAYOUT_SPREAD`
+.seealso: [](ch_ksp), `PCGAMG`, `PCGAMGSetParallelCoarseGridSolve()`, `PCGAMGSetCpuPinCoarseGrids()`, `PCGAMGLayoutType`, `PCGAMG_LAYOUT_COMPACT`, `PCGAMG_LAYOUT_SPREAD`
 @*/
 PetscErrorCode PCGAMGSetCoarseGridLayoutType(PC pc, PCGAMGLayoutType flg)
 {
@@ -1299,7 +1299,7 @@ static PetscErrorCode PCGAMGSetCoarseGridLayoutType_GAMG(PC pc, PCGAMGLayoutType
   Developer Notes:
   Should be called `PCGAMGSetMaximumNumberlevels()` and possible be shared with `PCMG`
 
-.seealso: `PCGAMG`
+.seealso: [](ch_ksp), `PCGAMG`
 @*/
 PetscErrorCode PCGAMGSetNlevels(PC pc, PetscInt n)
 {
@@ -1342,7 +1342,7 @@ static PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
   In this case, `PCGAMGSetThresholdScale()` must be called before `PCGAMGSetThreshold()`.
   If `n` is greater than the total number of levels, the excess entries in threshold will not be used.
 
-.seealso: `PCGAMG`, `PCGAMGSetAggressiveLevels()`, `PCGAMGMISkSetAggressive()`, `PCGAMGSetMinDegreeOrderingMISk()`, `PCGAMGSetThresholdScale()`
+.seealso: [](ch_ksp), `PCGAMG`, `PCGAMGSetAggressiveLevels()`, `PCGAMGMISkSetAggressive()`, `PCGAMGSetMinDegreeOrderingMISk()`, `PCGAMGSetThresholdScale()`
 @*/
 PetscErrorCode PCGAMGSetThreshold(PC pc, PetscReal v[], PetscInt n)
 {
@@ -1379,7 +1379,7 @@ static PetscErrorCode PCGAMGSetThreshold_GAMG(PC pc, PetscReal v[], PetscInt n)
 
   Level: intermediate
 
-.seealso: `PCGAMG`, `PCGAMGSetProcEqLim()`, `PCGAMGSetCoarseEqLim()`
+.seealso: [](ch_ksp), `PCGAMG`, `PCGAMGSetProcEqLim()`, `PCGAMGSetCoarseEqLim()`
 @*/
 PetscErrorCode PCGAMGSetRankReductionFactors(PC pc, PetscInt v[], PetscInt n)
 {
@@ -1419,7 +1419,7 @@ static PetscErrorCode PCGAMGSetRankReductionFactors_GAMG(PC pc, PetscInt v[], Pe
   The initial threshold (for an arbitrary number of levels starting from the finest) can be set with `PCGAMGSetThreshold()`.
   This scaling is used for each subsequent coarsening, but must be called before `PCGAMGSetThreshold()`.
 
-.seealso: `PCGAMG`, `PCGAMGSetThreshold()`
+.seealso: [](ch_ksp), `PCGAMG`, `PCGAMGSetThreshold()`
 @*/
 PetscErrorCode PCGAMGSetThresholdScale(PC pc, PetscReal v)
 {
@@ -1452,7 +1452,7 @@ static PetscErrorCode PCGAMGSetThresholdScale_GAMG(PC pc, PetscReal v)
 
   Level: intermediate
 
-.seealso: `PCGAMGGetType()`, `PCGAMG`, `PCGAMGType`
+.seealso: [](ch_ksp), `PCGAMGGetType()`, `PCGAMG`, `PCGAMGType`
 @*/
 PetscErrorCode PCGAMGSetType(PC pc, PCGAMGType type)
 {
@@ -1475,7 +1475,7 @@ PetscErrorCode PCGAMGSetType(PC pc, PCGAMGType type)
 
   Level: intermediate
 
-.seealso: `PCGAMG`, `PCGAMGSetType()`, `PCGAMGType`
+.seealso: [](ch_ksp), `PCGAMG`, `PCGAMGSetType()`, `PCGAMGType`
 @*/
 PetscErrorCode PCGAMGGetType(PC pc, PCGAMGType *type)
 {
@@ -1643,7 +1643,7 @@ static PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems *PetscOption
 
   See [the Users Manual section on PCGAMG](sec_amg) and [the Users Manual section on PCMG](sec_mg)for more details.
 
-.seealso: `PCCreate()`, `PCSetType()`, `MatSetBlockSize()`, `PCMGType`, `PCSetCoordinates()`, `MatSetNearNullSpace()`, `PCGAMGSetType()`, `PCGAMGAGG`, `PCGAMGGEO`, `PCGAMGCLASSICAL`, `PCGAMGSetProcEqLim()`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `MatSetBlockSize()`, `PCMGType`, `PCSetCoordinates()`, `MatSetNearNullSpace()`, `PCGAMGSetType()`, `PCGAMGAGG`, `PCGAMGGEO`, `PCGAMGCLASSICAL`, `PCGAMGSetProcEqLim()`,
           `PCGAMGSetCoarseEqLim()`, `PCGAMGSetRepartition()`, `PCGAMGRegister()`, `PCGAMGSetReuseInterpolation()`, `PCGAMGASMSetUseAggs()`, `PCGAMGSetParallelCoarseGridSolve()`, `PCGAMGSetNlevels()`, `PCGAMGSetThreshold()`, `PCGAMGGetType()`, `PCGAMGSetUseSAEstEig()`
 M*/
 PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
@@ -1725,7 +1725,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: [](ch_ksp), `PetscInitialize()`
 @*/
 PetscErrorCode PCGAMGInitializePackage(void)
 {
@@ -1782,7 +1782,7 @@ PetscErrorCode PCGAMGInitializePackage(void)
 
   Level: developer
 
-.seealso: `PetscFinalize()`
+.seealso: [](ch_ksp), `PetscFinalize()`
 @*/
 PetscErrorCode PCGAMGFinalizePackage(void)
 {
@@ -1801,7 +1801,7 @@ PetscErrorCode PCGAMGFinalizePackage(void)
 
   Level: developer
 
-.seealso: `PCGAMGType`, `PCGAMG`, `PCGAMGSetType()`
+.seealso: [](ch_ksp), `PCGAMGType`, `PCGAMG`, `PCGAMGSetType()`
 @*/
 PetscErrorCode PCGAMGRegister(PCGAMGType type, PetscErrorCode (*create)(PC))
 {
@@ -1823,7 +1823,7 @@ PetscErrorCode PCGAMGRegister(PCGAMGType type, PetscErrorCode (*create)(PC))
 
   Level: advanced
 
-.seealso: `PCGAMGType`, `PCGAMG`, `PCGAMGSetType()`
+.seealso: [](ch_ksp), `PCGAMGType`, `PCGAMG`, `PCGAMGSetType()`
 @*/
 PetscErrorCode PCGAMGCreateGraph(PC pc, Mat A, Mat *G)
 {

@@ -439,16 +439,6 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
 .   -ksp_pipelcg_lmax - approximation to the largest eigenvalue of the preconditioned operator (default: 0.0)
 -   -ksp_pipelcg_monitor - output where/why the method restarts when a sqrt breakdown occurs
 
-    Level: advanced
-
-    Notes:
-    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for
-    performance of pipelined methods. See [](doc_faq_pipelined)
-
-    Contributed by:
-    Siegfried Cools, University of Antwerp, Dept. Mathematics and Computer Science,
-    funded by Flemish Research Foundation (FWO) grant number 12H4617N.
-
     Example usage:
 .vb
     KSP tutorials ex2, no preconditioner, pipel = 2, lmin = 0.0, lmax = 8.0 :
@@ -458,6 +448,16 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
         $mpiexec -n 14 ./ex48 -M 150 -P 100 -ksp_type pipelcg -pc_type bjacobi -ksp_rtol 1e-10 -ksp_pipelcg_pipel 3
            -ksp_pipelcg_lmin 0.0 -ksp_pipelcg_lmax 2.0 -ksp_pipelcg_monitor -log_view
 .ve
+
+    Level: advanced
+
+    Notes:
+    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for
+    performance of pipelined methods. See [](doc_faq_pipelined)
+
+    Contributed by:
+    Siegfried Cools, University of Antwerp, Dept. Mathematics and Computer Science,
+    funded by Flemish Research Foundation (FWO) grant number 12H4617N.
 
     References:
 +   * - J. Cornelis, S. Cools and W. Vanroose,

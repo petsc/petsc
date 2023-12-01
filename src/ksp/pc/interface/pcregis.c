@@ -78,7 +78,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_MPI(PC);
 
   Level: advanced
 
-.seealso: `PCRegister()`
+.seealso: [](ch_ksp), `PCRegister()`
 @*/
 PetscErrorCode PCRegisterAll(void)
 {

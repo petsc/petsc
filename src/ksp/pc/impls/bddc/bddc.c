@@ -317,7 +317,7 @@ static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt orde
   In the latter case, it should hold gid[i] < gid[j] iff geid[i] < geid[j], with gid the global orderding for all the dofs
   and geid the one for the Nedelec field.
 
-.seealso: `PCBDDC`, `PCBDDCSetDofsSplitting()`, `PCBDDCSetDofsSplittingLocal()`, `MATAIJ`, `PCBDDCSetDivergenceMat()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetDofsSplitting()`, `PCBDDCSetDofsSplittingLocal()`, `MATAIJ`, `PCBDDCSetDivergenceMat()`
 @*/
 PetscErrorCode PCBDDCSetDiscreteGradient(PC pc, Mat G, PetscInt order, PetscInt field, PetscBool global, PetscBool conforming)
 {
@@ -370,7 +370,7 @@ static PetscErrorCode PCBDDCSetDivergenceMat_BDDC(PC pc, Mat divudotp, PetscBool
 
   If `vl2l` is `NULL`, the local ordering for velocities in `divudotp` should match that of the preconditioning matrix
 
-.seealso: `PCBDDC`, `PCBDDCSetDiscreteGradient()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetDiscreteGradient()`
 @*/
 PetscErrorCode PCBDDCSetDivergenceMat(PC pc, Mat divudotp, PetscBool trans, IS vl2l)
 {
@@ -412,7 +412,7 @@ static PetscErrorCode PCBDDCSetChangeOfBasisMat_BDDC(PC pc, Mat change, PetscBoo
 
   Level: intermediate
 
-.seealso: `PCBDDC`
+.seealso: [](ch_ksp), `PCBDDC`
 @*/
 PetscErrorCode PCBDDCSetChangeOfBasisMat(PC pc, Mat change, PetscBool interior)
 {
@@ -464,7 +464,7 @@ static PetscErrorCode PCBDDCSetPrimalVerticesIS_BDDC(PC pc, IS PrimalVertices)
   Note:
   Any process can list any global node
 
-.seealso: `PCBDDC`, `PCBDDCGetPrimalVerticesIS()`, `PCBDDCSetPrimalVerticesLocalIS()`, `PCBDDCGetPrimalVerticesLocalIS()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCGetPrimalVerticesIS()`, `PCBDDCSetPrimalVerticesLocalIS()`, `PCBDDCGetPrimalVerticesLocalIS()`
 @*/
 PetscErrorCode PCBDDCSetPrimalVerticesIS(PC pc, IS PrimalVertices)
 {
@@ -498,7 +498,7 @@ static PetscErrorCode PCBDDCGetPrimalVerticesIS_BDDC(PC pc, IS *is)
 
   Level: intermediate
 
-.seealso: `PCBDDC`, `PCBDDCSetPrimalVerticesIS()`, `PCBDDCSetPrimalVerticesLocalIS()`, `PCBDDCGetPrimalVerticesLocalIS()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetPrimalVerticesIS()`, `PCBDDCSetPrimalVerticesLocalIS()`, `PCBDDCGetPrimalVerticesLocalIS()`
 @*/
 PetscErrorCode PCBDDCGetPrimalVerticesIS(PC pc, IS *is)
 {
@@ -535,7 +535,7 @@ static PetscErrorCode PCBDDCSetPrimalVerticesLocalIS_BDDC(PC pc, IS PrimalVertic
 
   Level: intermediate
 
-.seealso: `PCBDDC`, `PCBDDCSetPrimalVerticesIS()`, `PCBDDCGetPrimalVerticesIS()`, `PCBDDCGetPrimalVerticesLocalIS()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetPrimalVerticesIS()`, `PCBDDCGetPrimalVerticesIS()`, `PCBDDCGetPrimalVerticesLocalIS()`
 @*/
 PetscErrorCode PCBDDCSetPrimalVerticesLocalIS(PC pc, IS PrimalVertices)
 {
@@ -569,7 +569,7 @@ static PetscErrorCode PCBDDCGetPrimalVerticesLocalIS_BDDC(PC pc, IS *is)
 
   Level: intermediate
 
-.seealso: `PCBDDC`, `PCBDDCSetPrimalVerticesIS()`, `PCBDDCGetPrimalVerticesIS()`, `PCBDDCSetPrimalVerticesLocalIS()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetPrimalVerticesIS()`, `PCBDDCGetPrimalVerticesIS()`, `PCBDDCSetPrimalVerticesLocalIS()`
 @*/
 PetscErrorCode PCBDDCGetPrimalVerticesLocalIS(PC pc, IS *is)
 {
@@ -606,7 +606,7 @@ static PetscErrorCode PCBDDCSetCoarseningRatio_BDDC(PC pc, PetscInt k)
   Note:
   Approximately `k` subdomains at the finer level will be aggregated into a single subdomain at the coarser level
 
-.seealso: `PCBDDC`, `PCBDDCSetLevels()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetLevels()`
 @*/
 PetscErrorCode PCBDDCSetCoarseningRatio(PC pc, PetscInt k)
 {
@@ -681,7 +681,7 @@ static PetscErrorCode PCBDDCSetLevels_BDDC(PC pc, PetscInt levels)
   Note:
   The default value is 0, that gives the classical two-levels BDDC algorithm
 
-.seealso: `PCBDDC`, `PCBDDCSetCoarseningRatio()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetCoarseningRatio()`
 @*/
 PetscErrorCode PCBDDCSetLevels(PC pc, PetscInt levels)
 {
@@ -722,7 +722,7 @@ static PetscErrorCode PCBDDCSetDirichletBoundaries_BDDC(PC pc, IS DirichletBound
   Note:
   Provide the information if you used `MatZeroRows()` or `MatZeroRowsColumns()`. Any process can list any global node
 
-.seealso: `PCBDDC`, `PCBDDCSetDirichletBoundariesLocal()`, `MatZeroRows()`, `MatZeroRowsColumns()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetDirichletBoundariesLocal()`, `MatZeroRows()`, `MatZeroRowsColumns()`
 @*/
 PetscErrorCode PCBDDCSetDirichletBoundaries(PC pc, IS DirichletBoundaries)
 {
@@ -761,7 +761,7 @@ static PetscErrorCode PCBDDCSetDirichletBoundariesLocal_BDDC(PC pc, IS Dirichlet
 
   Level: intermediate
 
-.seealso: `PCBDDC`, `PCBDDCSetDirichletBoundaries()`, `MatZeroRows()`, `MatZeroRowsColumns()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetDirichletBoundaries()`, `MatZeroRows()`, `MatZeroRowsColumns()`
 @*/
 PetscErrorCode PCBDDCSetDirichletBoundariesLocal(PC pc, IS DirichletBoundaries)
 {
@@ -803,7 +803,7 @@ static PetscErrorCode PCBDDCSetNeumannBoundaries_BDDC(PC pc, IS NeumannBoundarie
   Note:
   Any process can list any global node
 
-.seealso: `PCBDDC`, `PCBDDCSetNeumannBoundariesLocal()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetNeumannBoundariesLocal()`
 @*/
 PetscErrorCode PCBDDCSetNeumannBoundaries(PC pc, IS NeumannBoundaries)
 {
@@ -842,7 +842,7 @@ static PetscErrorCode PCBDDCSetNeumannBoundariesLocal_BDDC(PC pc, IS NeumannBoun
 
   Level: intermediate
 
-.seealso: `PCBDDC`, `PCBDDCSetNeumannBoundaries()`, `PCBDDCGetDirichletBoundaries()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetNeumannBoundaries()`, `PCBDDCGetDirichletBoundaries()`
 @*/
 PetscErrorCode PCBDDCSetNeumannBoundariesLocal(PC pc, IS NeumannBoundaries)
 {
@@ -879,7 +879,7 @@ static PetscErrorCode PCBDDCGetDirichletBoundaries_BDDC(PC pc, IS *DirichletBoun
   Note:
   The `IS` returned (if any) is the same passed in earlier by the user with `PCBDDCSetDirichletBoundaries()`
 
-.seealso: `PCBDDC`, `PCBDDCSetDirichletBoundaries()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetDirichletBoundaries()`
 @*/
 PetscErrorCode PCBDDCGetDirichletBoundaries(PC pc, IS *DirichletBoundaries)
 {
@@ -916,7 +916,7 @@ static PetscErrorCode PCBDDCGetDirichletBoundariesLocal_BDDC(PC pc, IS *Dirichle
   or a global-to-local map of the global `IS` (if provided with `PCBDDCSetDirichletBoundaries()`).
   In the latter case, the `IS` will be available only after `PCSetUp()`.
 
-.seealso: `PCBDDC`, `PCBDDCGetDirichletBoundaries()`, `PCBDDCSetDirichletBoundaries()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCGetDirichletBoundaries()`, `PCBDDCSetDirichletBoundaries()`
 @*/
 PetscErrorCode PCBDDCGetDirichletBoundariesLocal(PC pc, IS *DirichletBoundaries)
 {
@@ -951,7 +951,7 @@ static PetscErrorCode PCBDDCGetNeumannBoundaries_BDDC(PC pc, IS *NeumannBoundari
   Note:
   The `IS` returned (if any) is the same passed in earlier by the user with `PCBDDCSetNeumannBoundaries()`
 
-.seealso: `PCBDDC`, `PCBDDCSetNeumannBoundaries()`, `PCBDDCGetDirichletBoundaries()`, `PCBDDCSetDirichletBoundaries()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetNeumannBoundaries()`, `PCBDDCGetDirichletBoundaries()`, `PCBDDCSetDirichletBoundaries()`
 @*/
 PetscErrorCode PCBDDCGetNeumannBoundaries(PC pc, IS *NeumannBoundaries)
 {
@@ -988,7 +988,7 @@ static PetscErrorCode PCBDDCGetNeumannBoundariesLocal_BDDC(PC pc, IS *NeumannBou
   or a global-to-local map of the global `IS` (if provided with `PCBDDCSetNeumannBoundaries()`).
   In the latter case, the `IS` will be available after `PCSetUp()`.
 
-.seealso: `PCBDDC`, `PCBDDCSetNeumannBoundaries()`, `PCBDDCSetNeumannBoundariesLocal)`, `PCBDDCGetNeumannBoundaries()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetNeumannBoundaries()`, `PCBDDCSetNeumannBoundariesLocal)`, `PCBDDCGetNeumannBoundaries()`
 @*/
 PetscErrorCode PCBDDCGetNeumannBoundariesLocal(PC pc, IS *NeumannBoundaries)
 {
@@ -1062,7 +1062,7 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs, c
   Note:
   A dof is considered connected with all local dofs if xadj[dof+1]-xadj[dof] == 1 and adjncy[xadj[dof]] is negative.
 
-.seealso: `PCBDDC`, `PetscCopyMode`
+.seealso: [](ch_ksp), `PCBDDC`, `PetscCopyMode`
 @*/
 PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC pc, PetscInt nvtxs, const PetscInt xadj[], const PetscInt adjncy[], PetscCopyMode copymode)
 {
@@ -1131,7 +1131,7 @@ static PetscErrorCode PCBDDCSetDofsSplittingLocal_BDDC(PC pc, PetscInt n_is, IS 
   Note:
   Not all nodes need to be listed, unlisted nodes will belong to the complement field.
 
-.seealso: `PCBDDC`, `PCBDDCSetDofsSplitting()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetDofsSplitting()`
 @*/
 PetscErrorCode PCBDDCSetDofsSplittingLocal(PC pc, PetscInt n_is, IS ISForDofs[])
 {
@@ -1195,7 +1195,7 @@ static PetscErrorCode PCBDDCSetDofsSplitting_BDDC(PC pc, PetscInt n_is, IS ISFor
   Note:
   Any process can list any global node. Not all nodes need to be listed: unlisted nodes will belong to the complement field.
 
-.seealso: `PCBDDC`, `PCBDDCSetDofsSplittingLocal()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetDofsSplittingLocal()`
 @*/
 PetscErrorCode PCBDDCSetDofsSplitting(PC pc, PetscInt n_is, IS ISForDofs[])
 {
@@ -2274,7 +2274,7 @@ static PetscErrorCode PCBDDCMatFETIDPGetRHS_BDDC(Mat fetidp_mat, Vec standard_rh
 
   Level: developer
 
-.seealso: `PCBDDC`, `PCBDDCCreateFETIDPOperators()`, `PCBDDCMatFETIDPGetSolution()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCCreateFETIDPOperators()`, `PCBDDCMatFETIDPGetSolution()`
 @*/
 PetscErrorCode PCBDDCMatFETIDPGetRHS(Mat fetidp_mat, Vec standard_rhs, Vec fetidp_flux_rhs)
 {
@@ -2456,7 +2456,7 @@ static PetscErrorCode PCDestroy_BDDCIPC(PC pc)
 
   Level: developer
 
-.seealso: `PCBDDC`, `PCBDDCCreateFETIDPOperators()`, `PCBDDCMatFETIDPGetRHS()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCCreateFETIDPOperators()`, `PCBDDCMatFETIDPGetRHS()`
 @*/
 PetscErrorCode PCBDDCMatFETIDPGetSolution(Mat fetidp_mat, Vec fetidp_flux_sol, Vec standard_sol)
 {
@@ -2720,7 +2720,7 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
   Note:
   Currently the only operations provided for FETI-DP matrix are `MatMult()` and `MatMultTranspose()`
 
-.seealso: `PCBDDC`, `PCBDDCMatFETIDPGetRHS()`, `PCBDDCMatFETIDPGetSolution()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCMatFETIDPGetRHS()`, `PCBDDCMatFETIDPGetSolution()`
 @*/
 PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, const char *prefix, Mat *fetidp_mat, PC *fetidp_pc)
 {
@@ -2812,7 +2812,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
 
    Contributed by Stefano Zampini
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MATIS`, `PCLU`, `PCGAMG`, `PC`, `PCBDDCSetLocalAdjacencyGraph()`, `PCBDDCSetDofsSplitting()`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MATIS`, `PCLU`, `PCGAMG`, `PC`, `PCBDDCSetLocalAdjacencyGraph()`, `PCBDDCSetDofsSplitting()`,
           `PCBDDCSetDirichletBoundaries()`, `PCBDDCSetNeumannBoundaries()`, `PCBDDCSetPrimalVerticesIS()`, `MatNullSpace`, `MatSetNearNullSpace()`,
           `PCBDDCSetChangeOfBasisMat()`, `PCBDDCCreateFETIDPOperators()`, `PCNN`
 M*/
@@ -2901,7 +2901,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
 
   Level: developer
 
-.seealso: `PetscInitialize()`, `PCBDDCFinalizePackage()`
+.seealso: [](ch_ksp), `PetscInitialize()`, `PCBDDCFinalizePackage()`
 @*/
 PetscErrorCode PCBDDCInitializePackage(void)
 {
@@ -2968,7 +2968,7 @@ PetscErrorCode PCBDDCInitializePackage(void)
 
   Level: developer
 
-.seealso: `PetscFinalize()`, `PCBDDCInitializePackage()`
+.seealso: [](ch_ksp), `PetscFinalize()`, `PCBDDCInitializePackage()`
 @*/
 PetscErrorCode PCBDDCFinalizePackage(void)
 {

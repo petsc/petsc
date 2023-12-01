@@ -182,7 +182,7 @@ static PetscErrorCode KSPSolve_SYMMLQ(KSP ksp)
 }
 
 /*MC
-     KSPSYMMLQ -  This code implements the SYMMLQ method.
+   KSPSYMMLQ -  This code implements the SYMMLQ method.
 
    Level: beginner
 

@@ -326,7 +326,7 @@ static PetscErrorCode PCRedundantSetNumber_Redundant(PC pc, PetscInt nreds)
 
   Level: advanced
 
-.seealso: `PCREDUNDANT`
+.seealso: [](ch_ksp), `PCREDUNDANT`
 @*/
 PetscErrorCode PCRedundantSetNumber(PC pc, PetscInt nredundant)
 {
@@ -367,7 +367,7 @@ static PetscErrorCode PCRedundantSetScatter_Redundant(PC pc, VecScatter in, VecS
 
   Level: advanced
 
-.seealso: `PCREDUNDANT`
+.seealso: [](ch_ksp), `PCREDUNDANT`
 @*/
 PetscErrorCode PCRedundantSetScatter(PC pc, VecScatter in, VecScatter out)
 {
@@ -438,7 +438,7 @@ static PetscErrorCode PCRedundantGetKSP_Redundant(PC pc, KSP *innerksp)
 
   Level: advanced
 
-.seealso: `PCREDUNDANT`
+.seealso: [](ch_ksp), `PCREDUNDANT`
 @*/
 PetscErrorCode PCRedundantGetKSP(PC pc, KSP *innerksp)
 {
@@ -473,7 +473,7 @@ static PetscErrorCode PCRedundantGetOperators_Redundant(PC pc, Mat *mat, Mat *pm
 
   Level: advanced
 
-.seealso: `PCREDUNDANT`
+.seealso: [](ch_ksp), `PCREDUNDANT`
 @*/
 PetscErrorCode PCRedundantGetOperators(PC pc, Mat *mat, Mat *pmat)
 {
@@ -504,7 +504,7 @@ PetscErrorCode PCRedundantGetOperators(PC pc, Mat *mat, Mat *pmat)
    Developer Note:
    `PCSetInitialGuessNonzero()` is not used by this class but likely should be.
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PCRedundantSetScatter()`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PCRedundantSetScatter()`,
           `PCRedundantGetKSP()`, `PCRedundantGetOperators()`, `PCRedundantSetNumber()`, `PCREDISTRIBUTE`
 M*/
 

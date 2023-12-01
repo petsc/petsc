@@ -41,7 +41,7 @@ PetscFunctionList PCList = NULL;
   `PCRegister()` is used to add preconditioner types to `PCList` from which they
   are accessed by `PCSetType()`.
 
-.seealso: `KSPSetType()`, `PCType`, `PCRegister()`, `PCCreate()`, `KSPGetPC()`
+.seealso: [](ch_ksp), `KSPSetType()`, `PCType`, `PCRegister()`, `PCCreate()`, `KSPGetPC()`
 @*/
 PetscErrorCode PCSetType(PC pc, PCType type)
 {
@@ -90,7 +90,7 @@ PetscErrorCode PCSetType(PC pc, PCType type)
 
   Level: intermediate
 
-.seealso: `PC`, `PCType`, `PCSetType()`
+.seealso: [](ch_ksp), `PC`, `PCType`, `PCSetType()`
 @*/
 PetscErrorCode PCGetType(PC pc, PCType *type)
 {
@@ -122,7 +122,7 @@ extern PetscErrorCode PCGetDefaultType_Private(PC, const char *[]);
 
   This is called from `KSPSetFromOptions()` so rarely needs to be called directly
 
-.seealso: `PC`, `PCSetType()`, `PCType`, `KSPSetFromOptions()`
+.seealso: [](ch_ksp), `PC`, `PCSetType()`, `PCType`, `KSPSetFromOptions()`
 @*/
 PetscErrorCode PCSetFromOptions(PC pc)
 {
@@ -181,7 +181,7 @@ skipoptions:
   The routines KSP/SNES/TSSetDM() require `dm` to be non-`NULL`, but this one can be `NULL` since all it does is
   replace the current `DM`
 
-.seealso: `PC`, `DM`, `PCGetDM()`, `KSPSetDM()`, `KSPGetDM()`, `SNESSetDM()`, `TSSetDM()`
+.seealso: [](ch_ksp), `PC`, `DM`, `PCGetDM()`, `KSPSetDM()`, `KSPGetDM()`, `SNESSetDM()`, `TSSetDM()`
 @*/
 PetscErrorCode PCSetDM(PC pc, DM dm)
 {
@@ -206,7 +206,7 @@ PetscErrorCode PCSetDM(PC pc, DM dm)
 
   Level: intermediate
 
-.seealso: `PC`, `DM`, `PCSetDM()`, `KSPSetDM()`, `KSPGetDM()`
+.seealso: [](ch_ksp), `PC`, `DM`, `PCSetDM()`, `KSPSetDM()`, `KSPGetDM()`
 @*/
 PetscErrorCode PCGetDM(PC pc, DM *dm)
 {
@@ -227,7 +227,7 @@ PetscErrorCode PCGetDM(PC pc, DM *dm)
 
   Level: advanced
 
-.seealso: `PC`, `PCGetApplicationContext()`, `KSPSetApplicationContext()`, `KSPGetApplicationContext()`, `PetscObjectCompose()`
+.seealso: [](ch_ksp), `PC`, `PCGetApplicationContext()`, `KSPSetApplicationContext()`, `KSPGetApplicationContext()`, `PetscObjectCompose()`
 @*/
 PetscErrorCode PCSetApplicationContext(PC pc, void *usrP)
 {
@@ -250,7 +250,7 @@ PetscErrorCode PCSetApplicationContext(PC pc, void *usrP)
 
   Level: intermediate
 
-.seealso: `PC`, `PCSetApplicationContext()`, `KSPSetApplicationContext()`, `KSPGetApplicationContext()`
+.seealso: [](ch_ksp), `PC`, `PCSetApplicationContext()`, `KSPSetApplicationContext()`, `KSPGetApplicationContext()`
 @*/
 PetscErrorCode PCGetApplicationContext(PC pc, void *usrP)
 {

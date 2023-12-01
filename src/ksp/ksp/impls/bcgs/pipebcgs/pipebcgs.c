@@ -204,7 +204,7 @@ static PetscErrorCode KSPSolve_PIPEBCGS(KSP ksp)
     Level: intermediate
 
     Notes:
-    This method has only two non-blocking reductions per iteration, compared to 3 blocking for standard FBCGS.  The
+    This method has only two non-blocking reductions per iteration, compared to 3 blocking for standard `KSPFBCGS`.  The
     non-blocking reductions are overlapped by matrix-vector products and preconditioner applications.
 
     Periodic residual replacement may be used to increase robustness and maximal attainable accuracy.

@@ -576,12 +576,16 @@ static PetscErrorCode KSPSetFromOptions_AGMRES(KSP ksp, PetscOptionItems *PetscO
 }
 
 /*MC
- KSPAGMRES - Newton basis GMRES implementation with adaptive augmented eigenvectors
+  KSPAGMRES - Newton basis GMRES implementation with adaptive augmented eigenvectors
 
-The techniques used are best described in [1]. The contribution of this work is that it combines many of the previous work to reduce the amount of MPI messages and improve the robustness of the global approach by using deflation techniques. It has been successfully applied to a class of real and industrial problems. Please see [1] for numerical experiments and [2] for a description of these problems.
-There are  many ongoing work that aim at avoiding (or minimizing) the communication in Krylov subspace methods. This code can be used as an experimental framework to combine several techniques in the particular case of GMRES. For instance, the computation of the shifts can be improved with techniques described in [3]. The orthogonalization technique can be replaced by TSQR [4]. The generation of the basis can be done using s-steps approaches[5].
+  The techniques used are best described in [1]. The contribution of this work is that it combines many of the previous work to reduce the amount
+  of MPI messages and improve the robustness of the global approach by using deflation techniques. Please see [1] for numerical experiments and [2]
+  for a description of these problems. There are  many ongoing work that aim at avoiding (or minimizing) the communication in Krylov subspace methods.
+  This code can be used as an experimental framework to combine several techniques in the particular case of GMRES.
+  For instance, the computation of the shifts can be improved with techniques described in [3]. The orthogonalization technique can be replaced by TSQR [4].
+  The generation of the basis can be done using s-steps approaches[5].
 
- Options Database Keys:
+  Options Database Keys:
 +   -ksp_gmres_restart <restart> -  the number of Krylov directions
 .   -ksp_gmres_krylov_monitor - plot the Krylov space generated
 .   -ksp_agmres_eigen <neig> - Number of eigenvalues to deflate (Number of vectors to augment)
@@ -591,16 +595,16 @@ There are  many ongoing work that aim at avoiding (or minimizing) the communicat
 .   -ksp_agmres_DeflPrecond - Apply deflation as a preconditioner, this is similar to `KSPDGMRES` but it rather builds a Newton basis.
 -   -ksp_dgmres_force <0, 1> - Force the deflation at each restart.
 
- Level: intermediate
+  Level: intermediate
 
- Note:
- Left and right preconditioning are supported, but not symmetric preconditioning. Complex arithmetic is not supported
+  Note:
+  Left and right preconditioning are supported, but not symmetric preconditioning. Complex arithmetic is not supported
 
- Developer Note:
- This object is subclassed off of `KSPDGMRES`, see the source code in src/ksp/ksp/impls/gmres for comments on the structure of the code
+  Developer Note:
+  This object is subclassed off of `KSPDGMRES`, see the source code in src/ksp/ksp/impls/gmres for comments on the structure of the code
 
- Contributed by:
- Desire NUENTSA WAKAM, INRIA <desire.nuentsa_wakam@inria.fr> with inputs from Guy Atenekeng <atenekeng@yahoo.com> and R.B. Sidje <roger.b.sidje@ua.edu>
+  Contributed by:
+  Desire NUENTSA WAKAM, INRIA <desire.nuentsa_wakam@inria.fr> with inputs from Guy Atenekeng <atenekeng@yahoo.com> and R.B. Sidje <roger.b.sidje@ua.edu>
 
  References:
 +   [1] - D. Nuentsa Wakam and J. Erhel, Parallelism and robustness in GMRES with the Newton basis and the deflated restarting. Research report INRIA RR-7787, November 2011,https://hal.inria.fr/inria-00638247/en,  in revision for ETNA.

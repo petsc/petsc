@@ -145,12 +145,12 @@ static PetscErrorCode KSPSolve_FBCGS(KSP ksp)
 }
 
 /*MC
-     KSPFBCGS - Implements the flexible BiCGStab method. [](sec_flexibleksp)
+   KSPFBCGS - Implements the flexible BiCGStab method. [](sec_flexibleksp)
 
    Level: beginner
 
    Notes:
-   Flexible BiCGStab, unlike most Krylov methods allows the preconditioner to be nonlinear, that is the action of the preconditioner to a vector need not be linear
+   Flexible BiCGStab, unlike most Krylov methods, allows the preconditioner to be nonlinear, that is the action of the preconditioner to a vector need not be linear
    in the vector entries.
 
    `KSPFBCGSR` provides another variant of this algorithm that requires fewer `MPI_Allreduce()` calls and my converge faster

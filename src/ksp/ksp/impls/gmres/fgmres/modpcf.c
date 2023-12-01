@@ -28,7 +28,7 @@
   Level: intermediate
 
   Note:
-  Several `fcn` routines are predefined, including  `KSPFGMRESModifyPCNoChange()`, and  `KSPFGMRESModifyPCKSP()`
+  Several `fcn` routines are predefined, including `KSPFGMRESModifyPCNoChange()`, and  `KSPFGMRESModifyPCKSP()`
 
 .seealso: [](ch_ksp), [](sec_flexibleksp), `KSPFGMRES`, `KSPFGMRESModifyPCNoChange()`, `KSPFGMRESModifyPCKSP()`
 @*/

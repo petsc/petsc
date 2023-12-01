@@ -975,7 +975,7 @@ static PetscErrorCode KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
 }
 
 /*MC
-     KSPDGMRES - Implements the deflated GMRES as defined in [1,2].
+   KSPDGMRES - Implements the deflated GMRES as defined in [1,2].
 
    Options Database Keys:
    GMRES Options (inherited):
@@ -1004,20 +1004,20 @@ static PetscErrorCode KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
                                                    preconditioned operator, so this option can aid in understanding
                                                    the performance of a preconditioner.
 
- Level: beginner
+   Level: beginner
 
- Notes:
- Left and right preconditioning are supported, but not symmetric preconditioning. Complex arithmetic is not supported
+   Notes:
+   Left and right preconditioning are supported, but not symmetric preconditioning. Complex arithmetic is not supported
 
- In this implementation, the adaptive strategy allows switching to deflated GMRES when the stagnation occurs.
+   In this implementation, the adaptive strategy allows switching to deflated GMRES when the stagnation occurs.
 
- References:
+   Contributed by:
+   Desire NUENTSA WAKAM, INRIA
+
+   References:
 + [1] - J. Erhel, K. Burrage and B. Pohl,  Restarted GMRES preconditioned by deflation,J. Computational and Applied Mathematics, 69(1996).
 - [2] - D. NUENTSA WAKAM and F. PACULL, Memory Efficient Hybrid Algebraic Solvers for Linear Systems Arising from Compressible Flows, Computers and Fluids,
    In Press, http://dx.doi.org/10.1016/j.compfluid.2012.03.023
-
- Contributed by:
-  Desire NUENTSA WAKAM, INRIA
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPLGMRES`,
            `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,

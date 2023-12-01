@@ -5,7 +5,7 @@ static PetscErrorCode KSPLGMRESUpdateHessenberg(KSP, PetscInt, PetscBool, PetscR
 static PetscErrorCode KSPLGMRESBuildSoln(PetscScalar *, Vec, Vec, KSP, PetscInt);
 
 /*@
-  KSPLGMRESSetAugDim - Set the number of error approximations to include in the approximation space (default is 2)
+  KSPLGMRESSetAugDim - Set the number of error approximations to include in the approximation space (default is 2) for `KSPLGMRES`
 
   Collective
 
@@ -607,8 +607,7 @@ static PetscErrorCode KSPLGMRESSetAugDim_LGMRES(KSP ksp, PetscInt aug_dim)
 }
 
 /*MC
-    KSPLGMRES - Augments the standard GMRES approximation space with approximations to
-                the error from previous restart cycles.
+  KSPLGMRES - Augments the standard GMRES approximation space with approximations to the error from previous restart cycles.
 
   Options Database Keys:
 +   -ksp_gmres_restart <restart> - total approximation space size (Krylov directions + error approximations)
@@ -646,7 +645,7 @@ static PetscErrorCode KSPLGMRESSetAugDim_LGMRES(KSP ksp, PetscInt aug_dim)
   Contributed by:
   Allison Baker
 
-   References:
+  References:
 .  [1] - A. H. Baker, E.R. Jessup, and T.A. Manteuffel. A technique for accelerating the convergence of restarted GMRES. SIAM Journal on Matrix Analysis and Applications, 26 (2005).
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPGMRES`,
