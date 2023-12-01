@@ -579,7 +579,7 @@ class Linter:
       '-P', # use Perl regex, which is -- for whatever reason -- over 6x faster
       '-e', func_name_and_type, '--',
       # The reason for all of this exclusion nonsense is because without it, this search
-      # is __slooooow__. Running the test-lint job, even a naive search (seach only
+      # is __slooooow__. Running the test-lint job, even a naive search (search only
       # src and include) takes ~30s to complete. Adding these exclusions drops that to
       # just under 7s. Not great, but manageable.
 

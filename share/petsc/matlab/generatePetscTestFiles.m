@@ -28,7 +28,7 @@ if max(max(max(abs(At-A))),max(abs(bt-b))) ~= 0
  '%s','Error in PetscBinaryWrite or/and PetscBinaryRead for spd-real-int64-float64'); 
 end
 
-% MATLAB does not yet support single-presision sparce matrices
+% MATLAB does not yet support single-presision sparse matrices
 % but all the entries in A, b, and x are actually integers 
 PetscBinaryWrite('spd-real-int32-float32',A,b, 'indices','int32','precision','float32');
 [At,bt] = PetscBinaryRead('spd-real-int32-float32', 'indices','int32','precision','float32');

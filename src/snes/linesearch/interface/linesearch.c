@@ -319,7 +319,7 @@ PetscErrorCode SNESLineSearchSetFunction(SNESLineSearch linesearch, PetscErrorCo
   Calling sequence of `func`:
 + ls        - the `SNESLineSearch` context
 . x         - the current solution
-. d         - the current seach direction
+. d         - the current search direction
 . changed_d - indicates if the search direction has been changed
 - ctx       - the context passed to `SNESLineSearchSetPreCheck()`
 
@@ -380,8 +380,8 @@ PetscErrorCode SNESLineSearchGetPreCheck(SNESLineSearch linesearch, PetscErrorCo
   Calling sequence of `func`:
 + ls        - the `SNESLineSearch` context
 . x         - the current solution
-. d         - the current seach direction
-. w         - $ w = x + lamba*d $ for some lambda
+. d         - the current search direction
+. w         - $ w = x + lambda*d $ for some lambda
 . changed_d - indicates if the search direction `d` has been changed
 . changed_w - indicates `w` has been changed
 - ctx       - the context passed to `SNESLineSearchSetPreCheck()`

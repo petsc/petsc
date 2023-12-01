@@ -182,7 +182,7 @@ PetscErrorCode VecStashExpand_Private(VecStash *stash, PetscInt incr)
   if (!stash->oldnmax && !stash->nmax) { /* new stash */
     if (stash->umax) newnmax = stash->umax / bs;
     else newnmax = DEFAULT_STASH_SIZE / bs;
-  } else if (!stash->nmax) { /* resuing stash */
+  } else if (!stash->nmax) { /* reusing stash */
     if (stash->umax > stash->oldnmax) newnmax = stash->umax / bs;
     else newnmax = stash->oldnmax / bs;
   } else newnmax = stash->nmax * 2;
