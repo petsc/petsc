@@ -1963,7 +1963,7 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, const char *prefi
   PetscCall(PetscStrcmp(sub_schurs->mat_solver_type, MATSOLVERMKL_PARDISO, &ispardiso));
   sub_schurs->schur_explicit = (PetscBool)(ispardiso || ismumps);
 
-  /* for reals, symmetric and hermitian are synonims */
+  /* for reals, symmetric and Hermitian are synonyms */
 #if !defined(PETSC_USE_COMPLEX)
   sub_schurs->is_symmetric = (PetscBool)(sub_schurs->is_symmetric && sub_schurs->is_hermitian);
   sub_schurs->is_hermitian = sub_schurs->is_symmetric;
