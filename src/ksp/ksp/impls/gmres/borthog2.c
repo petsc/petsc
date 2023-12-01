@@ -14,7 +14,7 @@
   Collective
 
   Input Parameters:
-+ ksp - KSP object, must be associated with `KSPGMRES`, `KSPFGMRES`, or `KSPLGMRES` Krylov method
++ ksp - `KSP` object, must be associated with `KSPGMRES`, `KSPFGMRES`, or `KSPLGMRES` Krylov method
 - it  - one less than the current GMRES restart iteration, i.e. the size of the Krylov space
 
   Options Database Keys:
@@ -24,7 +24,7 @@
 
   Level: intermediate
 
-  Notes:
+  Note:
   Use `KSPGMRESSetCGSRefinementType()` to determine if iterative refinement is to be used.
   This is much faster than `KSPGMRESModifiedGramSchmidtOrthogonalization()` but has the small possibility of stability issues
   that can usually be handled by using a a single step of iterative refinement with `KSPGMRESSetCGSRefinementType()`
@@ -67,7 +67,7 @@ PetscErrorCode KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp, PetscInt i
   }
 
   /*
-         This is really a matrix vector product:
+         This is really a matrix-vector product:
          [h[0],h[1],...]*[ v[0]; v[1]; ...] subtracted from v[it+1].
   */
   PetscCall(VecMAXPY(VEC_VV(it + 1), it + 1, lhh, &VEC_VV(0)));

@@ -152,7 +152,7 @@ static PetscErrorCode PCSetFromOptions_ROWSCALINGVIENNACL(PC pc, PetscOptionItem
 
   Level: advanced
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`
 M*/
 PETSC_EXTERN PetscErrorCode PCCreate_ROWSCALINGVIENNACL(PC pc)
 {

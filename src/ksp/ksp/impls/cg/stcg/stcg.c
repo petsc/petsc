@@ -588,44 +588,45 @@ static PetscErrorCode KSPCGSetFromOptions_STCG(KSP ksp, PetscOptionItems *PetscO
 }
 
 /*MC
-     KSPSTCG -   Code to run conjugate gradient method subject to a constraint on the solution norm.
+     KSPSTCG -   Code to run conjugate gradient method subject to a constraint on the solution norm for use in a trust region method
 
-   Options Database Keys:
+   Options Database Key:
 .      -ksp_cg_radius <r> - Trust Region Radius
+
+   Level: developer
 
    Notes:
     This is rarely used directly, it is used in Trust Region methods for nonlinear equations, `SNESNEWTONTR`
 
-  Use preconditioned conjugate gradient to compute
-  an approximate minimizer of the quadratic function
+   Use preconditioned conjugate gradient to compute an approximate minimizer of the quadratic function
 
-            q(s) = g^T * s + 0.5 * s^T * H * s
+   $$
+   q(s) = g^T * s + 0.5 * s^T * H * s
+   $$
 
    subject to the trust region constraint
 
-            || s || <= delta,
+   $$
+            || s || le delta,
+   $$
 
    where
-
+.vb
      delta is the trust region radius,
      g is the gradient vector,
      H is the Hessian approximation, and
      M is the positive definite preconditioner matrix.
-
-   `KSPConvergedReason` may be
-.vb
-   KSP_CONVERGED_NEG_CURVE if convergence is reached along a negative curvature direction,
-   KSP_CONVERGED_STEP_LENGTH if convergence is reached along a constrained step,
 .ve
-   other `KSP` converged/diverged reasons
+
+   `KSPConvergedReason` may include
++  `KSP_CONVERGED_NEG_CURVE` - if convergence is reached along a negative curvature direction,
+-  `KSP_CONVERGED_STEP_LENGTH` - if convergence is reached along a constrained step,
 
   The preconditioner supplied should be symmetric and positive definite.
 
    References:
 +  * - Steihaug, T. (1983): The conjugate gradient method and trust regions in large scale optimization. SIAM J. Numer. Anal. 20, 626--637
 -  * - Toint, Ph.L. (1981): Towards an efficient sparsity exploiting Newton method for minimization. In: Duff, I., ed., Sparse Matrices and Their Uses, pp. 57--88. Academic Press
-
-   Level: developer
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPCGSetType()`, `KSPType`, `KSP`, `KSPCGSetRadius()`, `KSPCGGetNormD()`, `KSPCGGetObjFcn()`, `KSPNASH`, `KSPGLTR`, `KSPQCG`
 M*/

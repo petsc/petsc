@@ -210,7 +210,7 @@ static PetscErrorCode PCSORGetIterations_SOR(PC pc, PetscInt *its, PetscInt *lit
 
   Level: intermediate
 
-.seealso: `PCSOR`, `PCEisenstatSetOmega()`, `PCSORSetIterations()`, `PCSORSetOmega()`, `PCSORSetSymmetric()`
+.seealso: [](ch_ksp), `PCSOR`, `PCEisenstatSetOmega()`, `PCSORSetIterations()`, `PCSORSetOmega()`, `PCSORSetSymmetric()`
 @*/
 PetscErrorCode PCSORGetSymmetric(PC pc, MatSORType *flag)
 {
@@ -237,7 +237,7 @@ PetscErrorCode PCSORGetSymmetric(PC pc, MatSORType *flag)
 
   Level: intermediate
 
-.seealso: `PCSOR`, `PCSORSetSymmetric()`, `PCSORSetIterations()`, `PCEisenstatSetOmega()`, `PCSORSetOmega()`
+.seealso: [](ch_ksp), `PCSOR`, `PCSORSetSymmetric()`, `PCSORSetIterations()`, `PCEisenstatSetOmega()`, `PCSORSetOmega()`
 @*/
 PetscErrorCode PCSORGetOmega(PC pc, PetscReal *omega)
 {
@@ -269,7 +269,7 @@ PetscErrorCode PCSORGetOmega(PC pc, PetscReal *omega)
   Note:
   When run on one processor the number of smoothings is lits*its
 
-.seealso: `PCSOR`, `PCSORSetOmega()`, `PCSORSetSymmetric()`, `PCSORSetIterations()`
+.seealso: [](ch_ksp), `PCSOR`, `PCSORSetOmega()`, `PCSORSetSymmetric()`, `PCSORSetIterations()`
 @*/
 PetscErrorCode PCSORGetIterations(PC pc, PetscInt *its, PetscInt *lits)
 {
@@ -312,7 +312,7 @@ PetscErrorCode PCSORGetIterations(PC pc, PetscInt *its, PetscInt *lits)
 
   Level: intermediate
 
-.seealso: `PCSOR`, `PCEisenstatSetOmega()`, `PCSORSetIterations()`, `PCSORSetOmega()`
+.seealso: [](ch_ksp), `PCSOR`, `PCEisenstatSetOmega()`, `PCSORSetIterations()`, `PCSORSetOmega()`
 @*/
 PetscErrorCode PCSORSetSymmetric(PC pc, MatSORType flag)
 {
@@ -341,7 +341,7 @@ PetscErrorCode PCSORSetSymmetric(PC pc, MatSORType flag)
   Note:
   If omega != 1, you will need to set the `MAT_USE_INODE`S option to `PETSC_FALSE` on the matrix.
 
-.seealso: `PCSOR`, `PCSORSetSymmetric()`, `PCSORSetIterations()`, `PCEisenstatSetOmega()`, `MatSetOption()`
+.seealso: [](ch_ksp), `PCSOR`, `PCSORSetSymmetric()`, `PCSORSetIterations()`, `PCEisenstatSetOmega()`, `MatSetOption()`
 @*/
 PetscErrorCode PCSORSetOmega(PC pc, PetscReal omega)
 {
@@ -372,7 +372,7 @@ PetscErrorCode PCSORSetOmega(PC pc, PetscReal omega)
   Note:
   When run on one processor the number of smoothings is lits*its
 
-.seealso: `PCSOR`, `PCSORSetOmega()`, `PCSORSetSymmetric()`
+.seealso: [](ch_ksp), `PCSOR`, `PCSORSetOmega()`, `PCSORSetSymmetric()`
 @*/
 PetscErrorCode PCSORSetIterations(PC pc, PetscInt its, PetscInt lits)
 {
@@ -421,7 +421,7 @@ PetscErrorCode PCSORSetIterations(PC pc, PetscInt its, PetscInt lits)
 
           If omega != 1, you will need to set the `MAT_USE_INODES` option to `PETSC_FALSE` on the matrix.
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCJACOBI`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCJACOBI`,
           `PCSORSetIterations()`, `PCSORSetSymmetric()`, `PCSORSetOmega()`, `PCEISENSTAT`, `MatSetOption()`
 M*/
 

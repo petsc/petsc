@@ -210,14 +210,14 @@ static PetscErrorCode KSPGCRSetModifyPC_GCR(KSP ksp, KSPGCRModifyPCFunction func
   Logically Collective
 
   Input Parameters:
-+ ksp      - iterative context obtained from KSPCreate()
++ ksp      - iterative context obtained from `KSPCreate()`
 . function - user defined function to modify the preconditioner
 . ctx      - user provided context for the modify preconditioner function
 - destroy  - the function to use to destroy the user provided application context.
 
   Calling sequence of `function`:
 + ksp   - iterative context
-. n     - the total number of GCR iterations that have occurred
+. n     - the total number of `PCGCR` iterations that have occurred
 . rnorm - 2-norm residual value
 - ctx   - the user provided application context
 
@@ -229,7 +229,7 @@ static PetscErrorCode KSPGCRSetModifyPC_GCR(KSP ksp, KSPGCRModifyPCFunction func
   Note:
   The default modifypc routine is `KSPGCRModifyPCNoChange()`
 
-  Developer Notes:
+  Developer Note:
   The API should make uniform for all flexible types, [](sec_flexibleksp), and not have separate function calls for each type.
 
 .seealso: [](ch_ksp), `KSP`, `KSPGCR`, `KSPGCRModifyPCNoChange()`, [](sec_flexibleksp)
@@ -279,7 +279,7 @@ static PetscErrorCode KSPGCRGetRestart_GCR(KSP ksp, PetscInt *restart)
   The default value is 30.
 
   Developer Note:
-  The API could be made uniform for all `KSP` methods have have a restart.
+  The API could be made uniform for all `KSP` methods that have have a restart.
 
 .seealso: [](ch_ksp), `KSPGCR`, `KSPSetTolerances()`, `KSPGCRGetRestart()`, `KSPGMRESSetRestart()`
 @*/
@@ -355,22 +355,22 @@ static PetscErrorCode KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
     which may vary from one iteration to the next.
 
     Users can can define a method to vary the
-           preconditioner between iterates via `KSPGCRSetModifyPC()`.
+    preconditioner between iterates via `KSPGCRSetModifyPC()`.
 
-           Restarts are solves with x0 not equal to zero. When a restart occurs, the initial starting
-           solution is given by the current estimate for x which was obtained by the last restart
-           iterations of the GCR algorithm.
+    Restarts are solves with x0 not equal to zero. When a restart occurs, the initial starting
+    solution is given by the current estimate for x which was obtained by the last restart
+    iterations of the GCR algorithm.
 
-           Unlike `KSPGMRES` and `KSPFGMRES`, when using GCR, the solution and residual vector can be directly accessed at any iterate,
-           with zero computational cost, via a call to `KSPBuildSolution()` and `KSPBuildResidual()` respectively.
+    Unlike `KSPGMRES` and `KSPFGMRES`, when using GCR, the solution and residual vector can be directly accessed at any iterate,
+    with zero computational cost, via a call to `KSPBuildSolution()` and `KSPBuildResidual()` respectively.
 
-           This implementation of GCR will only apply the stopping condition test whenever ksp->its > ksp->chknorm,
-           where ksp->chknorm is specified via the command line argument -ksp_check_norm_iteration or via
-           the function `KSPSetCheckNormIteration()`. Hence the residual norm reported by the monitor and stored
-           in the residual history will be listed as 0.0 before this iteration. It is actually not 0.0; just not calculated.
+    This implementation of GCR will only apply the stopping condition test whenever ksp->its > ksp->chknorm,
+    where ksp->chknorm is specified via the command line argument -ksp_check_norm_iteration or via
+    the function `KSPSetCheckNormIteration()`. Hence the residual norm reported by the monitor and stored
+    in the residual history will be listed as 0.0 before this iteration. It is actually not 0.0; just not calculated.
 
-           The method implemented requires the storage of 2 x restart + 1 vectors, twice as much as `KSPGMRES`.
-           Support only for right preconditioning.
+    The method implemented requires the storage of 2 x restart + 1 vectors, twice as much as `KSPGMRES`.
+    Support only for right preconditioning.
 
     Contributed by:
     Dave May

@@ -333,7 +333,7 @@ static PetscErrorCode PCView_PBJacobi(PC pc, PetscViewer viewer)
 
    Level: beginner
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCJACOBI`, `PCVPBJACOBI`, `PCBJACOBI`
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCJACOBI`, `PCVPBJACOBI`, `PCBJACOBI`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_PBJacobi(PC pc)

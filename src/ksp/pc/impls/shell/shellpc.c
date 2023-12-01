@@ -44,7 +44,7 @@ typedef struct {
   To use this from Fortran you must write a Fortran interface definition for this
   function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
-.seealso: `PC`, `PCSHELL`, `PCShellSetContext()`, `PCShellSetApply()`, `PCShellSetDestroy()`
+.seealso: [](ch_ksp), `PC`, `PCSHELL`, `PCShellSetContext()`, `PCShellSetApply()`, `PCShellSetDestroy()`
 @*/
 PetscErrorCode PCShellGetContext(PC pc, void *ctx)
 {
@@ -79,7 +79,7 @@ PetscErrorCode PCShellGetContext(PC pc, void *ctx)
   To use this from Fortran you must write a Fortran interface definition for this
   function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
-.seealso: `PC`, `PCShellGetContext()`, `PCSHELL`, `PCShellSetApply()`, `PCShellSetDestroy()`
+.seealso: [](ch_ksp), `PC`, `PCShellGetContext()`, `PCSHELL`, `PCShellSetApply()`, `PCShellSetDestroy()`
 @*/
 PetscErrorCode PCShellSetContext(PC pc, void *ctx)
 {
@@ -430,7 +430,7 @@ static PetscErrorCode PCShellGetName_Shell(PC pc, const char *name[])
 
   Level: intermediate
 
-.seealso: `PCSHELL`, `PCShellSetApply()`, `PCShellSetContext()`, `PCShellGetContext()`
+.seealso: [](ch_ksp), `PCSHELL`, `PCShellSetApply()`, `PCShellSetContext()`, `PCShellGetContext()`
 @*/
 PetscErrorCode PCShellSetDestroy(PC pc, PetscErrorCode (*destroy)(PC pc))
 {
@@ -458,7 +458,7 @@ PetscErrorCode PCShellSetDestroy(PC pc, PetscErrorCode (*destroy)(PC pc))
   Note:
   You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `setup`.
 
-.seealso: `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetApply()`, `PCShellSetContext()`, , `PCShellGetContext()`
+.seealso: [](ch_ksp), `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetApply()`, `PCShellSetContext()`, , `PCShellGetContext()`
 @*/
 PetscErrorCode PCShellSetSetUp(PC pc, PetscErrorCode (*setup)(PC pc))
 {
@@ -486,7 +486,7 @@ PetscErrorCode PCShellSetSetUp(PC pc, PetscErrorCode (*setup)(PC pc))
   Note:
   You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `view`.
 
-.seealso: `PC`, `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetContext()`, `PCShellGetContext()`
+.seealso: [](ch_ksp), `PC`, `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetContext()`, `PCShellGetContext()`
 @*/
 PetscErrorCode PCShellSetView(PC pc, PetscErrorCode (*view)(PC pc, PetscViewer v))
 {
@@ -515,7 +515,7 @@ PetscErrorCode PCShellSetView(PC pc, PetscErrorCode (*view)(PC pc, PetscViewer v
   Note:
   You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `apply`.
 
-.seealso: `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetContext()`, `PCShellSetApplyBA()`, `PCShellSetApplySymmetricRight()`, `PCShellSetApplySymmetricLeft()`, `PCShellGetContext()`
+.seealso: [](ch_ksp), `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetContext()`, `PCShellSetApplyBA()`, `PCShellSetApplySymmetricRight()`, `PCShellSetApplySymmetricLeft()`, `PCShellGetContext()`
 @*/
 PetscErrorCode PCShellSetApply(PC pc, PetscErrorCode (*apply)(PC pc, Vec xin, Vec xout))
 {
@@ -544,7 +544,7 @@ PetscErrorCode PCShellSetApply(PC pc, PetscErrorCode (*apply)(PC pc, Vec xin, Ve
   Note:
   You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `matapply`.
 
-.seealso: `PCSHELL`, `PCShellSetApply()`, `PCShellSetContext()`, `PCShellGetContext()`
+.seealso: [](ch_ksp), `PCSHELL`, `PCShellSetApply()`, `PCShellSetContext()`, `PCShellGetContext()`
 @*/
 PetscErrorCode PCShellSetMatApply(PC pc, PetscErrorCode (*matapply)(PC pc, Mat Xin, Mat Xout))
 {
@@ -573,7 +573,7 @@ PetscErrorCode PCShellSetMatApply(PC pc, PetscErrorCode (*matapply)(PC pc, Mat X
   Note:
   You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `apply`.
 
-.seealso: `PCSHELL`, `PCShellSetApply()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetContext()`
+.seealso: [](ch_ksp), `PCSHELL`, `PCShellSetApply()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetContext()`
 @*/
 PetscErrorCode PCShellSetApplySymmetricLeft(PC pc, PetscErrorCode (*apply)(PC pc, Vec xin, Vec xout))
 {
@@ -602,7 +602,7 @@ PetscErrorCode PCShellSetApplySymmetricLeft(PC pc, PetscErrorCode (*apply)(PC pc
   Note:
   You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `apply`.
 
-.seealso: `PCSHELL`, `PCShellSetApply()`, `PCShellSetApplySymmetricLeft()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetContext()`, `PCShellGetContext()`
+.seealso: [](ch_ksp), `PCSHELL`, `PCShellSetApply()`, `PCShellSetApplySymmetricLeft()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetContext()`, `PCShellGetContext()`
 @*/
 PetscErrorCode PCShellSetApplySymmetricRight(PC pc, PetscErrorCode (*apply)(PC pc, Vec xin, Vec xout))
 {
@@ -633,7 +633,7 @@ PetscErrorCode PCShellSetApplySymmetricRight(PC pc, PetscErrorCode (*apply)(PC p
   Note:
   You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `applyBA`.
 
-.seealso: `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetContext()`, `PCShellSetApply()`, `PCShellGetContext()`, `PCSide`
+.seealso: [](ch_ksp), `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetContext()`, `PCShellSetApply()`, `PCShellGetContext()`, `PCSide`
 @*/
 PetscErrorCode PCShellSetApplyBA(PC pc, PetscErrorCode (*applyBA)(PC pc, PCSide side, Vec xin, Vec xout, Vec w))
 {
@@ -662,7 +662,7 @@ PetscErrorCode PCShellSetApplyBA(PC pc, PetscErrorCode (*applyBA)(PC pc, PCSide 
   Note:
   You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `applytranspose`.
 
-.seealso: `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApply()`, `PCSetContext()`, `PCShellSetApplyBA()`, `PCGetContext()`
+.seealso: [](ch_ksp), `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApply()`, `PCSetContext()`, `PCShellSetApplyBA()`, `PCGetContext()`
 @*/
 PetscErrorCode PCShellSetApplyTranspose(PC pc, PetscErrorCode (*applytranspose)(PC pc, Vec xin, Vec xout))
 {
@@ -694,7 +694,7 @@ PetscErrorCode PCShellSetApplyTranspose(PC pc, PetscErrorCode (*applytranspose)(
   Note:
   You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `presolve`.
 
-.seealso: `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetPostSolve()`, `PCShellSetContext()`, `PCGetContext()`
+.seealso: [](ch_ksp), `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetPostSolve()`, `PCShellSetContext()`, `PCGetContext()`
 @*/
 PetscErrorCode PCShellSetPreSolve(PC pc, PetscErrorCode (*presolve)(PC pc, KSP ksp, Vec xin, Vec xout))
 {
@@ -726,7 +726,7 @@ PetscErrorCode PCShellSetPreSolve(PC pc, PetscErrorCode (*presolve)(PC pc, KSP k
   Note:
   You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `postsolve`.
 
-.seealso: `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetPreSolve()`, `PCShellSetContext()`, `PCGetContext()`
+.seealso: [](ch_ksp), `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetPreSolve()`, `PCShellSetContext()`, `PCGetContext()`
 @*/
 PetscErrorCode PCShellSetPostSolve(PC pc, PetscErrorCode (*postsolve)(PC pc, KSP ksp, Vec xin, Vec xout))
 {
@@ -751,7 +751,7 @@ PetscErrorCode PCShellSetPostSolve(PC pc, PetscErrorCode (*postsolve)(PC pc, KSP
   Note:
   This is separate from the name you can provide with `PetscObjectSetName()`
 
-.seealso: `PCSHELL`, `PCShellGetName()`, `PetscObjectSetName()`, `PetscObjectGetName()`
+.seealso: [](ch_ksp), `PCSHELL`, `PCShellGetName()`, `PetscObjectSetName()`, `PetscObjectGetName()`
 @*/
 PetscErrorCode PCShellSetName(PC pc, const char name[])
 {
@@ -775,7 +775,7 @@ PetscErrorCode PCShellSetName(PC pc, const char name[])
 
   Level: intermediate
 
-.seealso: `PCSHELL`, `PCShellSetName()`, `PetscObjectSetName()`, `PetscObjectGetName()`
+.seealso: [](ch_ksp), `PCSHELL`, `PCShellSetName()`, `PetscObjectSetName()`, `PetscObjectGetName()`
 @*/
 PetscErrorCode PCShellGetName(PC pc, const char *name[])
 {
@@ -814,7 +814,7 @@ PetscErrorCode PCShellGetName(PC pc, const char *name[])
   Note:
   You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `apply`.
 
-.seealso: `PCSHELL`, `PCShellSetApply()`, `PCShellSetContext()`, `PCRichardsonConvergedReason()`, `PCShellGetContext()`
+.seealso: [](ch_ksp), `PCSHELL`, `PCShellSetApply()`, `PCShellSetContext()`, `PCRichardsonConvergedReason()`, `PCShellGetContext()`
 @*/
 PetscErrorCode PCShellSetApplyRichardson(PC pc, PetscErrorCode (*apply)(PC pc, Vec b, Vec x, Vec r, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt maxits, PetscBool zeroinitialguess, PetscInt *its, PCRichardsonConvergedReason *reason))
 {
@@ -852,7 +852,7 @@ PetscErrorCode PCShellSetApplyRichardson(PC pc, PetscErrorCode (*apply)(PC pc, V
    Information required for the preconditioner and its internal datastructures can be set with `PCShellSetContext()` and then accessed
    with `PCShellGetContext()` inside the routines provided above
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
           `MATSHELL`, `PCShellSetSetUp()`, `PCShellSetApply()`, `PCShellSetView()`, `PCShellSetDestroy()`, `PCShellSetPostSolve()`,
           `PCShellSetApplyTranspose()`, `PCShellSetName()`, `PCShellSetApplyRichardson()`, `PCShellSetPreSolve()`, `PCShellSetView()`,
           `PCShellGetName()`, `PCShellSetContext()`, `PCShellGetContext()`, `PCShellSetApplyBA()`, `MATSHELL`, `PCShellSetMatApply()`,

@@ -427,7 +427,7 @@ static PetscErrorCode PCSetFromOptions_Redistribute(PC pc, PetscOptionItems *Pet
 
   Level: advanced
 
-.seealso: `KSP`, `PCREDISTRIBUTE`
+.seealso: [](ch_ksp), `KSP`, `PCREDISTRIBUTE`
 @*/
 PetscErrorCode PCRedistributeGetKSP(PC pc, KSP *innerksp)
 {
@@ -463,7 +463,7 @@ PetscErrorCode PCRedistributeGetKSP(PC pc, KSP *innerksp)
      Developer Note:
      Should add an option to this preconditioner to use a partitioner to redistribute the rows to lower communication.
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PCRedistributeGetKSP()`, `MatZeroRows()`, `PCFieldSplitSetIS()`, `PCFIELDSPLIT`
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PCRedistributeGetKSP()`, `MatZeroRows()`, `PCFieldSplitSetIS()`, `PCFIELDSPLIT`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC pc)

@@ -399,7 +399,7 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
 
   Input Parameters:
 + ksp - iterative context
-- U   - deflation space to be used during KSPSolve()
+- U   - deflation space to be used during `KSPSolve()`
 
   Level: intermediate
 
@@ -626,10 +626,10 @@ static PetscErrorCode KSPHPDDMGetType_HPDDM(KSP ksp, KSPHPDDMType *type)
 }
 
 /*MC
-     KSPHPDDM - Interface with the HPDDM library. This `KSP` may be used to further select methods that are currently not implemented natively in PETSc, e.g.,
-     GCRODR [2006], a recycled Krylov method which is similar to `KSPLGMRES`, see [2016] for a comparison. ex75.c shows how to reproduce the results
-     from the aforementioned paper [2006]. A chronological bibliography of relevant publications linked with `KSP` available in HPDDM through `KSPHPDDM`,
-     and not available directly in PETSc, may be found below. The interface is explained in details in [2021].
+   KSPHPDDM - Interface with the HPDDM library. This `KSP` may be used to further select methods that are currently not implemented natively in PETSc, e.g.,
+   GCRODR [2006], a recycled Krylov method which is similar to `KSPLGMRES`, see [2016] for a comparison. ex75.c shows how to reproduce the results
+   from the aforementioned paper [2006]. A chronological bibliography of relevant publications linked with `KSP` available in HPDDM through `KSPHPDDM`,
+   and not available directly in PETSc, may be found below. The interface is explained in details in [2021].
 
    Options Database Keys:
 +   -ksp_gmres_restart <restart, default=30> - see `KSPGMRES`

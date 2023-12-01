@@ -200,7 +200,7 @@ static PetscErrorCode KSPSolve_FBCGSR(KSP ksp)
 }
 
 /*MC
-     KSPFBCGSR - Implements a mathematically equivalent variant of flexible bi-CG-stab, `KSPFBCGS`. [](sec_flexibleksp)
+   KSPFBCGSR - Implements a mathematically equivalent variant of flexible bi-CG-stab, `KSPFBCGS`. [](sec_flexibleksp)
 
    Level: beginner
 

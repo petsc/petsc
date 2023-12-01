@@ -333,7 +333,7 @@ static PetscErrorCode KSPReset_PGMRES(KSP ksp)
 }
 
 /*MC
-     KSPPGMRES - Implements the Pipelined Generalized Minimal Residual method. [](sec_pipelineksp)
+   KSPPGMRES - Implements the Pipelined Generalized Minimal Residual method. [](sec_pipelineksp)
 
    Options Database Keys:
 +   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
@@ -351,11 +351,11 @@ static PetscErrorCode KSPReset_PGMRES(KSP ksp)
    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
    See [](doc_faq_pipelined)
 
-   References:
-.  * - Ghysels, Ashby, Meerbergen, Vanroose, Hiding global communication latencies in the GMRES algorithm on massively parallel machines, 2012.
-
    Developer Note:
    This object is subclassed off of `KSPGMRES`, see the source code in src/ksp/ksp/impls/gmres for comments on the structure of the code
+
+   References:
+.  * - Ghysels, Ashby, Meerbergen, Vanroose, Hiding global communication latencies in the GMRES algorithm on massively parallel machines, 2012.
 
 .seealso: [](ch_ksp), [](sec_pipelineksp), [](doc_faq_pipelined), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPGMRES`, `KSPLGMRES`, `KSPPIPECG`, `KSPPIPECR`,
           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,

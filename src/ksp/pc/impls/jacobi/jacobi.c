@@ -488,7 +488,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)
 
   Level: intermediate
 
-.seealso: `PCJACOBI`, `PCJacobiaSetType()`, `PCJacobiGetUseAbs()`
+.seealso: [](ch_ksp), `PCJACOBI`, `PCJacobiaSetType()`, `PCJacobiGetUseAbs()`
 @*/
 PetscErrorCode PCJacobiSetUseAbs(PC pc, PetscBool flg)
 {
@@ -512,7 +512,7 @@ PetscErrorCode PCJacobiSetUseAbs(PC pc, PetscBool flg)
 
   Level: intermediate
 
-.seealso: `PCJACOBI`, `PCJacobiaSetType()`, `PCJacobiSetUseAbs()`, `PCJacobiGetType()`
+.seealso: [](ch_ksp), `PCJACOBI`, `PCJacobiaSetType()`, `PCJacobiSetUseAbs()`, `PCJacobiGetType()`
 @*/
 PetscErrorCode PCJacobiGetUseAbs(PC pc, PetscBool *flg)
 {
@@ -539,7 +539,7 @@ PetscErrorCode PCJacobiGetUseAbs(PC pc, PetscBool *flg)
 
   Level: intermediate
 
-.seealso: `PCJACOBI`, `PCJacobiSetType()`, `PCJacobiGetFixDiagonal()`, `PCJacobiSetUseAbs()`
+.seealso: [](ch_ksp), `PCJACOBI`, `PCJacobiSetType()`, `PCJacobiGetFixDiagonal()`, `PCJacobiSetUseAbs()`
 @*/
 PetscErrorCode PCJacobiSetFixDiagonal(PC pc, PetscBool flg)
 {
@@ -565,7 +565,7 @@ PetscErrorCode PCJacobiSetFixDiagonal(PC pc, PetscBool flg)
 
   Level: intermediate
 
-.seealso: `PCJACOBI`, `PCJacobiSetType()`, `PCJacobiSetFixDiagonal()`
+.seealso: [](ch_ksp), `PCJACOBI`, `PCJacobiSetType()`, `PCJacobiSetFixDiagonal()`
 @*/
 PetscErrorCode PCJacobiGetFixDiagonal(PC pc, PetscBool *flg)
 {
@@ -593,7 +593,7 @@ PetscErrorCode PCJacobiGetFixDiagonal(PC pc, PetscBool *flg)
   Developer Notes:
   Why is there a separate function for using the absolute value?
 
-.seealso: `PCJACOBI`, `PCJacobiSetUseAbs()`, `PCJacobiGetType()`
+.seealso: [](ch_ksp), `PCJACOBI`, `PCJacobiSetUseAbs()`, `PCJacobiGetType()`
 @*/
 PetscErrorCode PCJacobiSetType(PC pc, PCJacobiType type)
 {
@@ -616,7 +616,7 @@ PetscErrorCode PCJacobiSetType(PC pc, PCJacobiType type)
 
   Level: intermediate
 
-.seealso: `PCJACOBI`, `PCJacobiaUseAbs()`, `PCJacobiSetType()`
+.seealso: [](ch_ksp), `PCJACOBI`, `PCJacobiaUseAbs()`, `PCJacobiSetType()`
 @*/
 PetscErrorCode PCJacobiGetType(PC pc, PCJacobiType *type)
 {

@@ -133,10 +133,10 @@ static PetscErrorCode KSPSolve_PIPECR(KSP ksp)
    Level: intermediate
 
    Notes:
-   This method has only a single non-blocking reduction per iteration, compared to 2 blocking for standard `KSPCR`.  The
+   This method has only a single non-blocking reduction per iteration, compared to 2 for standard `KSPCR`.  The
    non-blocking reduction is overlapped by the matrix-vector product, but not the preconditioner application.
 
-   See also `KSPPIPECG`, where the reduction is only overlapped with the matrix-vector product.
+   See also `KSPPIPECG`, where the reduction is overlapped with the matrix-vector product.
 
    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
    See [](doc_faq_pipelined)

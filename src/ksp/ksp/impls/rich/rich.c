@@ -221,7 +221,7 @@ static PetscErrorCode KSPBuildResidual_Richardson(KSP ksp, Vec t, Vec v, Vec *V)
 }
 
 /*MC
-     KSPRICHARDSON - The preconditioned Richardson iterative method
+    KSPRICHARDSON - The preconditioned Richardson iterative method
 
    Options Database Key:
 .   -ksp_richardson_scale - damping factor on the correction (defaults to 1.0)
@@ -229,35 +229,35 @@ static PetscErrorCode KSPBuildResidual_Richardson(KSP ksp, Vec t, Vec v, Vec *V)
    Level: beginner
 
    Notes:
-    x^{n+1} = x^{n} + scale*B(b - A x^{n})
+   $ x^{n+1} = x^{n} + scale*B(b - A x^{n})$
 
-          Here B is the application of the preconditioner
+   Here B is the application of the preconditioner
 
-          This method often (usually) will not converge unless scale is very small.
+   This method often (usually) will not converge unless scale is very small.
 
-    For some preconditioners, currently `PCSOR`, the convergence test is skipped to improve speed,
-    thus it always iterates the maximum number of iterations you've selected. When -ksp_monitor
-    (or any other monitor) is turned on, the norm is computed at each iteration and so the convergence test is run unless
-    you specifically call `KSPSetNormType`(ksp,`KSP_NORM_NONE`);
+   For some preconditioners, currently `PCSOR`, the convergence test is skipped to improve speed,
+   thus it always iterates the maximum number of iterations you've selected. When -ksp_monitor
+   (or any other monitor) is turned on, the norm is computed at each iteration and so the convergence test is run unless
+   you specifically call `KSPSetNormType`(ksp,`KSP_NORM_NONE`);
 
-         For some preconditioners, currently `PCMG` and `PCHYPRE` with BoomerAMG if -ksp_monitor (and also
-    any other monitor) is not turned on then the convergence test is done by the preconditioner itself and
-    so the solver may run more or fewer iterations then if -ksp_monitor is selected.
+   For some preconditioners, currently `PCMG` and `PCHYPRE` with BoomerAMG if -ksp_monitor (and also
+   any other monitor) is not turned on then the convergence test is done by the preconditioner itself and
+   so the solver may run more or fewer iterations then if -ksp_monitor is selected.
 
-    Supports only left preconditioning
+   Supports only left preconditioning
 
-    If using direct solvers such as `PCLU` and `PCCHOLESKY` one generally uses `KSPPREONLY` which uses exactly one iteration
+   If using direct solvers such as `PCLU` and `PCCHOLESKY` one generally uses `KSPPREONLY` instead of this which uses exactly one iteration
 
-    `-ksp_type richardson -pc_type jacobi` gives one classical Jacobi preconditioning
+   `-ksp_type richardson -pc_type jacobi` gives one classical Jacobi preconditioning
 
-  Reference:
-. * - L. F. Richardson, "The Approximate Arithmetical Solution by Finite Differences of Physical Problems Involving
+   Reference:
+.  * - L. F. Richardson, "The Approximate Arithmetical Solution by Finite Differences of Physical Problems Involving
    Differential Equations, with an Application to the Stresses in a Masonry Dam",
-  Philosophical Transactions of the Royal Society of London. Series A,
-  Containing Papers of a Mathematical or Physical Character, Vol. 210, 1911 (1911).
+   Philosophical Transactions of the Royal Society of London. Series A,
+   Containing Papers of a Mathematical or Physical Character, Vol. 210, 1911 (1911).
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
-          `KSPRichardsonSetScale()`, `KSPPREONLY`
+          `KSPRichardsonSetScale()`, `KSPPREONLY`, `KSPRichardsonSetSelfScale()`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_Richardson(KSP ksp)

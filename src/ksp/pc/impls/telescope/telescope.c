@@ -845,7 +845,7 @@ static PetscErrorCode PCTelescopeGetDM_Telescope(PC pc, DM *dm)
 
   Level: advanced
 
-.seealso: `PC`, `KSP`, `PCTELESCOPE`
+.seealso: [](ch_ksp), `PC`, `KSP`, `PCTELESCOPE`
 @*/
 PetscErrorCode PCTelescopeGetKSP(PC pc, KSP *subksp)
 {
@@ -868,7 +868,7 @@ PetscErrorCode PCTelescopeGetKSP(PC pc, KSP *subksp)
 
   Level: advanced
 
-.seealso: `PC`, `PCTELESCOPE`, `PCTelescopeSetReductionFactor()`
+.seealso: [](ch_ksp), `PC`, `PCTELESCOPE`, `PCTelescopeSetReductionFactor()`
 @*/
 PetscErrorCode PCTelescopeGetReductionFactor(PC pc, PetscInt *fact)
 {
@@ -890,7 +890,7 @@ PetscErrorCode PCTelescopeGetReductionFactor(PC pc, PetscInt *fact)
 
   Level: advanced
 
-.seealso: `PCTELESCOPE`, `PCTelescopeGetReductionFactor()`
+.seealso: [](ch_ksp), `PCTELESCOPE`, `PCTelescopeGetReductionFactor()`
 @*/
 PetscErrorCode PCTelescopeSetReductionFactor(PC pc, PetscInt fact)
 {
@@ -913,7 +913,7 @@ PetscErrorCode PCTelescopeSetReductionFactor(PC pc, PetscInt fact)
 
   Level: advanced
 
-.seealso: `DM`, `PCTELESCOPE`, `PCTelescopeSetIgnoreDM()`
+.seealso: [](ch_ksp), `DM`, `PCTELESCOPE`, `PCTelescopeSetIgnoreDM()`
 @*/
 PetscErrorCode PCTelescopeGetIgnoreDM(PC pc, PetscBool *v)
 {
@@ -936,7 +936,7 @@ PetscErrorCode PCTelescopeGetIgnoreDM(PC pc, PetscBool *v)
 
   Level: advanced
 
-.seealso: `DM`, `PCTELESCOPE`, `PCTelescopeGetIgnoreDM()`
+.seealso: [](ch_ksp), `DM`, `PCTELESCOPE`, `PCTelescopeGetIgnoreDM()`
 @*/
 PetscErrorCode PCTelescopeSetIgnoreDM(PC pc, PetscBool v)
 {
@@ -959,7 +959,7 @@ PetscErrorCode PCTelescopeSetIgnoreDM(PC pc, PetscBool v)
 
   Level: advanced
 
-.seealso: `DM`, `PCTELESCOPE`, `PCTelescopeSetIgnoreDM()`, `PCTelescopeSetUseCoarseDM()`
+.seealso: [](ch_ksp), `DM`, `PCTELESCOPE`, `PCTelescopeSetIgnoreDM()`, `PCTelescopeSetUseCoarseDM()`
 @*/
 PetscErrorCode PCTelescopeGetUseCoarseDM(PC pc, PetscBool *v)
 {
@@ -1084,7 +1084,7 @@ PetscErrorCode PCTelescopeGetUseCoarseDM(PC pc, PetscBool *v)
    PetscErrorCode your_coarse_context_getter(DM dm_coarse,void **your_kspcontext);
 .ve
 
-.seealso: `DM`, `PCTELESCOPE`, `PCTelescopeSetIgnoreDM()`
+.seealso: [](ch_ksp), `DM`, `PCTELESCOPE`, `PCTelescopeSetIgnoreDM()`
 @*/
 PetscErrorCode PCTelescopeSetUseCoarseDM(PC pc, PetscBool v)
 {
@@ -1107,7 +1107,7 @@ PetscErrorCode PCTelescopeSetUseCoarseDM(PC pc, PetscBool v)
 
   Level: advanced
 
-.seealso: `PCTELESCOPE`, `PCTelescopeSetIgnoreDM()`, `PCTelescopeSetUseCoarseDM()`, `PCTelescopeSetIgnoreKSPComputeOperators()`
+.seealso: [](ch_ksp), `PCTELESCOPE`, `PCTelescopeSetIgnoreDM()`, `PCTelescopeSetUseCoarseDM()`, `PCTelescopeSetIgnoreKSPComputeOperators()`
 @*/
 PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators(PC pc, PetscBool *v)
 {
@@ -1130,7 +1130,7 @@ PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators(PC pc, PetscBool *v)
 
   Level: advanced
 
-.seealso: `PCTELESCOPE`, `PCTelescopeSetIgnoreDM()`, `PCTelescopeSetUseCoarseDM()`, `PCTelescopeGetIgnoreKSPComputeOperators()`
+.seealso: [](ch_ksp), `PCTELESCOPE`, `PCTelescopeSetIgnoreDM()`, `PCTelescopeSetUseCoarseDM()`, `PCTelescopeGetIgnoreKSPComputeOperators()`
 @*/
 PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators(PC pc, PetscBool v)
 {
@@ -1152,7 +1152,7 @@ PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators(PC pc, PetscBool v)
 
   Level: advanced
 
-.seealso: `DM`, `PCTELESCOPE`, `PCTelescopeSetIgnoreDM()`, `PCTelescopeSetUseCoarseDM()`, `PCTelescopeGetIgnoreKSPComputeOperators()`
+.seealso: [](ch_ksp), `DM`, `PCTELESCOPE`, `PCTelescopeSetIgnoreDM()`, `PCTelescopeSetUseCoarseDM()`, `PCTelescopeGetIgnoreKSPComputeOperators()`
 @*/
 PetscErrorCode PCTelescopeGetDM(PC pc, DM *subdm)
 {
@@ -1172,7 +1172,7 @@ PetscErrorCode PCTelescopeGetDM(PC pc, DM *subdm)
 
   Level: advanced
 
-.seealso: `PetscSubcommType`, `PetscSubcomm`, `PCTELESCOPE`, `PCTelescopeGetSubcommType()`
+.seealso: [](ch_ksp), `PetscSubcommType`, `PetscSubcomm`, `PCTELESCOPE`, `PCTelescopeGetSubcommType()`
 @*/
 PetscErrorCode PCTelescopeSetSubcommType(PC pc, PetscSubcommType subcommtype)
 {
@@ -1194,7 +1194,7 @@ PetscErrorCode PCTelescopeSetSubcommType(PC pc, PetscSubcommType subcommtype)
 
   Level: advanced
 
-.seealso: `PetscSubcomm`, `PetscSubcommType`, `PCTELESCOPE`, `PCTelescopeSetSubcommType()`
+.seealso: [](ch_ksp), `PetscSubcomm`, `PetscSubcommType`, `PCTELESCOPE`, `PCTelescopeSetSubcommType()`
 @*/
 PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
 {
@@ -1341,7 +1341,7 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
   Reference:
   Dave A. May, Patrick Sanan, Karl Rupp, Matthew G. Knepley, and Barry F. Smith, "Extreme-Scale Multigrid Components within PETSc". 2016. In Proceedings of the Platform for Advanced Scientific Computing Conference (PASC '16). DOI: 10.1145/2929908.2929913
 
-.seealso: `PCTelescopeGetKSP()`, `PCTelescopeGetDM()`, `PCTelescopeGetReductionFactor()`, `PCTelescopeSetReductionFactor()`, `PCTelescopeGetIgnoreDM()`, `PCTelescopeSetIgnoreDM()`, `PCREDUNDANT`
+.seealso: [](ch_ksp), `PCTelescopeGetKSP()`, `PCTelescopeGetDM()`, `PCTelescopeGetReductionFactor()`, `PCTelescopeSetReductionFactor()`, `PCTelescopeGetIgnoreDM()`, `PCTelescopeSetIgnoreDM()`, `PCREDUNDANT`
 M*/
 PETSC_EXTERN PetscErrorCode PCCreate_Telescope(PC pc)
 {

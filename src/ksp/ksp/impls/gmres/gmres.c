@@ -657,7 +657,7 @@ PetscErrorCode KSPGMRESGetCGSRefinementType_GMRES(KSP ksp, KSPGMRESCGSRefinement
 
 /*@
   KSPGMRESSetCGSRefinementType - Sets the type of iterative refinement to use
-  in the classical Gram Schmidt orthogonalization.
+  in the classical Gram-Schmidt orthogonalization.
 
   Logically Collective
 
@@ -698,9 +698,6 @@ PetscErrorCode KSPGMRESSetCGSRefinementType(KSP ksp, KSPGMRESCGSRefinementType t
 
   Output Parameter:
 . type - the type of refinement
-
-  Options Database Key:
-. -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always> - type of refinement
 
   Level: intermediate
 
@@ -838,7 +835,7 @@ PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP ksp, PetscReal tol)
    Level: beginner
 
    Note:
-    Left and right preconditioning are supported, but not symmetric preconditioning.
+   Left and right preconditioning are supported, but not symmetric preconditioning.
 
    Reference:
 .  [1] - YOUCEF SAAD AND MARTIN H. SCHULTZ, GMRES: A GENERALIZED MINIMAL RESIDUAL ALGORITHM FOR SOLVING NONSYMMETRIC LINEAR SYSTEMS.

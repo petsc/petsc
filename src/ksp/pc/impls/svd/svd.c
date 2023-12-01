@@ -352,7 +352,7 @@ static PetscErrorCode PCView_SVD(PC pc, PetscViewer viewer)
    matrix on each process and uses a sequential SVD solve. Why does it do this instead
    of using the composable `PCREDUNDANT` object?
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCREDUNDANT`
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCREDUNDANT`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC pc)

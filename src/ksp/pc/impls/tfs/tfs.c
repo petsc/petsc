@@ -137,7 +137,7 @@ static PetscErrorCode PCView_TFS(PC pc, PetscViewer viewer)
 /*MC
      PCTFS - A parallel direct solver intended for problems with very few unknowns (like the
          coarse grid in multigrid). Performs a Cholesky or LU factorization of a matrix defined by
-         its local matrix vector product.
+         its local matrix-vector product.
 
    Level: beginner
 
@@ -150,7 +150,7 @@ static PetscErrorCode PCView_TFS(PC pc, PetscViewer viewer)
 
    Implemented by  Henry M. Tufo III and Paul Fischer originally for Nek5000 and called XXT or XYT
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`
 M*/
 PETSC_EXTERN PetscErrorCode PCCreate_TFS(PC pc)
 {

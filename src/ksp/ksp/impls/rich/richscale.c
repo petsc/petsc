@@ -1,8 +1,7 @@
 #include <../src/ksp/ksp/impls/rich/richardsonimpl.h> /*I "petscksp.h" I*/
 
 /*@
-  KSPRichardsonSetScale - Set the damping factor; if this routine is not called, the factor
-  defaults to 1.0.
+  KSPRichardsonSetScale - Set the damping factor; if this routine is not called, the factor defaults to 1.0.
 
   Logically Collective
 
@@ -44,7 +43,7 @@ PetscErrorCode KSPRichardsonSetScale(KSP ksp, PetscReal scale)
   Note:
   Requires two extra work vectors. Uses an extra `VecAXPY()` and `VecDotNorm2()` per iteration.
 
-  Developer Notes:
+  Developer Note:
   Could also minimize the 2-norm of the true residual with one less work vector
 
 .seealso: [](ch_ksp), `KSPRICHARDSON`, `KSPRichardsonSetScale()`

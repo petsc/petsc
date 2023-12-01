@@ -24,7 +24,7 @@ typedef struct {
 
   Level: intermediate
 
-.seealso: `PCGAMG`, `PCGAMGClassicalType`, `PCGAMGClassicalGetType()`
+.seealso: [](ch_ksp), `PCGAMG`, `PCGAMGClassicalType`, `PCGAMGClassicalGetType()`
 @*/
 PetscErrorCode PCGAMGClassicalSetType(PC pc, PCGAMGClassicalType type)
 {
@@ -47,7 +47,7 @@ PetscErrorCode PCGAMGClassicalSetType(PC pc, PCGAMGClassicalType type)
 
   Level: intermediate
 
-.seealso: `PCGAMG`, `PCGAMGClassicalType`, `PCGAMGClassicalSetType()`
+.seealso: [](ch_ksp), `PCGAMG`, `PCGAMGClassicalType`, `PCGAMGClassicalSetType()`
 @*/
 PetscErrorCode PCGAMGClassicalGetType(PC pc, PCGAMGClassicalType *type)
 {

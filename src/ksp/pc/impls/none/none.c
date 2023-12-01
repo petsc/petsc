@@ -27,7 +27,7 @@ static PetscErrorCode PCMatApply_None(PC pc, Mat X, Mat Y)
   This is implemented by a `VecCopy()`. It would be nice if the `KSP` implementations could be organized to avoid this copy without making them
   more complex.
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_None(PC pc)

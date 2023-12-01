@@ -14,7 +14,7 @@
 
    Level: intermediate
 
-.seealso: `PC`, `PCSHELL`, `PCCreate()`, `PCSetType()`, `PCPYTHON`, `PetscPythonInitialize()`
+.seealso: [](ch_ksp), `PC`, `PCSHELL`, `PCCreate()`, `PCSetType()`, `PCPYTHON`, `PetscPythonInitialize()`
 @*/
 PetscErrorCode PCPythonSetType(PC pc, const char pyname[])
 {
@@ -38,7 +38,7 @@ PetscErrorCode PCPythonSetType(PC pc, const char pyname[])
 
    Level: intermediate
 
-.seealso: `PC`, `PCSHELL`, `PCCreate()`, `PCSetType()`, `PCPYTHON`, `PetscPythonInitialize()`, `PCPythonSetType()`
+.seealso: [](ch_ksp), `PC`, `PCSHELL`, `PCCreate()`, `PCSetType()`, `PCPYTHON`, `PetscPythonInitialize()`, `PCPythonSetType()`
 @*/
 PetscErrorCode PCPythonGetType(PC pc, const char *pyname[])
 {

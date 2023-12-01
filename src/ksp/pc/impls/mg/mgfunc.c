@@ -15,7 +15,7 @@
 
   Level: developer
 
-.seealso: `PCMG`, `PCMGSetResidual()`, `PCMGSetMatResidual()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGSetResidual()`, `PCMGSetMatResidual()`
 @*/
 PetscErrorCode PCMGResidualDefault(Mat mat, Vec b, Vec x, Vec r)
 {
@@ -39,7 +39,7 @@ PetscErrorCode PCMGResidualDefault(Mat mat, Vec b, Vec x, Vec r)
 
   Level: developer
 
-.seealso: `PCMG`, `PCMGSetResidualTranspose()`, `PCMGMatResidualTransposeDefault()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGSetResidualTranspose()`, `PCMGMatResidualTransposeDefault()`
 @*/
 PetscErrorCode PCMGResidualTransposeDefault(Mat mat, Vec b, Vec x, Vec r)
 {
@@ -64,7 +64,7 @@ PetscErrorCode PCMGResidualTransposeDefault(Mat mat, Vec b, Vec x, Vec r)
 
   Level: developer
 
-.seealso: `PCMG`, `PCMGSetMatResidual()`, `PCMGResidualDefault()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGSetMatResidual()`, `PCMGResidualDefault()`
 @*/
 PetscErrorCode PCMGMatResidualDefault(Mat mat, Mat b, Mat x, Mat r)
 {
@@ -89,7 +89,7 @@ PetscErrorCode PCMGMatResidualDefault(Mat mat, Mat b, Mat x, Mat r)
 
   Level: developer
 
-.seealso: `PCMG`, `PCMGSetMatResidualTranspose()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGSetMatResidualTranspose()`
 @*/
 PetscErrorCode PCMGMatResidualTransposeDefault(Mat mat, Mat b, Mat x, Mat r)
 {
@@ -111,7 +111,7 @@ PetscErrorCode PCMGMatResidualTransposeDefault(Mat mat, Mat b, Mat x, Mat r)
 
   Level: advanced
 
-.seealso: `PCMG`, `PCMGGetSmootherUp()`, `PCMGGetSmootherDown()`, `PCMGGetSmoother()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGGetSmootherUp()`, `PCMGGetSmootherDown()`, `PCMGGetSmoother()`
 @*/
 PetscErrorCode PCMGGetCoarseSolve(PC pc, KSP *ksp)
 {
@@ -138,7 +138,7 @@ PetscErrorCode PCMGGetCoarseSolve(PC pc, KSP *ksp)
 
   Level: advanced
 
-.seealso: `PCMG`, `PCMGResidualDefault()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGResidualDefault()`
 @*/
 PetscErrorCode PCMGSetResidual(PC pc, PetscInt l, PetscErrorCode (*residual)(Mat, Vec, Vec, Vec), Mat mat)
 {
@@ -172,7 +172,7 @@ PetscErrorCode PCMGSetResidual(PC pc, PetscInt l, PetscErrorCode (*residual)(Mat
 
   Level: advanced
 
-.seealso: `PCMG`, `PCMGResidualTransposeDefault()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGResidualTransposeDefault()`
 @*/
 PetscErrorCode PCMGSetResidualTranspose(PC pc, PetscInt l, PetscErrorCode (*residualt)(Mat, Vec, Vec, Vec), Mat mat)
 {
@@ -211,7 +211,7 @@ PetscErrorCode PCMGSetResidualTranspose(PC pc, PetscInt l, PetscErrorCode (*resi
   One can pass in the interpolation matrix or its transpose; PETSc figures
   out from the matrix size which one it is.
 
-.seealso: `PCMG`, `PCMGSetRestriction()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGSetRestriction()`
 @*/
 PetscErrorCode PCMGSetInterpolation(PC pc, PetscInt l, Mat mat)
 {
@@ -242,7 +242,7 @@ PetscErrorCode PCMGSetInterpolation(PC pc, PetscInt l, Mat mat)
 
   Level: advanced
 
-.seealso: `PCMG`, `PCMGSetGalerkin()`, `PCMGSetRestriction()`, `PCMGSetInterpolation()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGSetGalerkin()`, `PCMGSetRestriction()`, `PCMGSetInterpolation()`
 @*/
 PetscErrorCode PCMGSetOperators(PC pc, PetscInt l, Mat Amat, Mat Pmat)
 {
@@ -273,7 +273,7 @@ PetscErrorCode PCMGSetOperators(PC pc, PetscInt l, Mat Amat, Mat Pmat)
 
   Level: advanced
 
-.seealso: `PCMG`, `PCMGGetRestriction()`, `PCMGSetInterpolation()`, `PCMGGetRScale()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGGetRestriction()`, `PCMGSetInterpolation()`, `PCMGGetRScale()`
 @*/
 PetscErrorCode PCMGGetInterpolation(PC pc, PetscInt l, Mat *mat)
 {
@@ -313,7 +313,7 @@ PetscErrorCode PCMGGetInterpolation(PC pc, PetscInt l, Mat *mat)
   If you do not set this, the transpose of the `Mat` set with `PCMGSetInterpolation()`
   is used.
 
-.seealso: `PCMG`, `PCMGSetInterpolation()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGSetInterpolation()`
 @*/
 PetscErrorCode PCMGSetRestriction(PC pc, PetscInt l, Mat mat)
 {
@@ -347,7 +347,7 @@ PetscErrorCode PCMGSetRestriction(PC pc, PetscInt l, Mat mat)
 
   Level: advanced
 
-.seealso: `PCMG`, `PCMGGetInterpolation()`, `PCMGSetRestriction()`, `PCMGGetRScale()`, `PCMGGetInjection()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGGetInterpolation()`, `PCMGSetRestriction()`, `PCMGGetRScale()`, `PCMGGetInjection()`
 @*/
 PetscErrorCode PCMGGetRestriction(PC pc, PetscInt l, Mat *mat)
 {
@@ -380,7 +380,7 @@ PetscErrorCode PCMGGetRestriction(PC pc, PetscInt l, Mat *mat)
   When evaluating a function on a coarse level one does not want to do F(R * x) one does F(rscale * R * x) where rscale is 1 over the row sums of R.
   It is preferable to use `PCMGSetInjection()` to control moving primal vectors.
 
-.seealso: `PCMG`, `PCMGSetInterpolation()`, `PCMGSetRestriction()`, `PCMGGetRScale()`, `PCMGSetInjection()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGSetInterpolation()`, `PCMGSetRestriction()`, `PCMGGetRScale()`, `PCMGSetInjection()`
 @*/
 PetscErrorCode PCMGSetRScale(PC pc, PetscInt l, Vec rscale)
 {
@@ -414,7 +414,7 @@ PetscErrorCode PCMGSetRScale(PC pc, PetscInt l, Vec rscale)
   When evaluating a function on a coarse level one does not want to do F(R * x) one does F(rscale * R * x) where rscale is 1 over the row sums of R.
   It is preferable to use `PCMGGetInjection()` to control moving primal vectors.
 
-.seealso: `PCMG`, `PCMGSetInterpolation()`, `PCMGGetRestriction()`, `PCMGGetInjection()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGSetInterpolation()`, `PCMGGetRestriction()`, `PCMGGetInjection()`
 @*/
 PetscErrorCode PCMGGetRScale(PC pc, PetscInt l, Vec *rscale)
 {
@@ -464,7 +464,7 @@ PetscErrorCode PCMGGetRScale(PC pc, PetscInt l, Vec *rscale)
 
   Level: advanced
 
-.seealso: `PCMG`, `PCMGSetRestriction()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGSetRestriction()`
 @*/
 PetscErrorCode PCMGSetInjection(PC pc, PetscInt l, Mat mat)
 {
@@ -498,7 +498,7 @@ PetscErrorCode PCMGSetInjection(PC pc, PetscInt l, Mat mat)
 
   Level: advanced
 
-.seealso: `PCMG`, `PCMGSetInjection()`, `PCMGetGetRestriction()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGSetInjection()`, `PCMGetGetRestriction()`
 @*/
 PetscErrorCode PCMGGetInjection(PC pc, PetscInt l, Mat *mat)
 {
@@ -536,7 +536,7 @@ PetscErrorCode PCMGGetInjection(PC pc, PetscInt l, Mat *mat)
 
   Level: advanced
 
-.seealso: `PCMG`, ``PCMGGetSmootherUp()`, `PCMGGetSmootherDown()`, `PCMGGetCoarseSolve()`
+.seealso: [](ch_ksp), `PCMG`, ``PCMGGetSmootherUp()`, `PCMGGetSmootherDown()`, `PCMGGetCoarseSolve()`
 @*/
 PetscErrorCode PCMGGetSmoother(PC pc, PetscInt l, KSP *ksp)
 {
@@ -567,7 +567,7 @@ PetscErrorCode PCMGGetSmoother(PC pc, PetscInt l, KSP *ksp)
   Note:
   Calling this will result in a different pre and post smoother so you may need to set options on the pre smoother also
 
-.seealso: `PCMG`, `PCMGGetSmootherDown()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGGetSmootherDown()`
 @*/
 PetscErrorCode PCMGGetSmootherUp(PC pc, PetscInt l, KSP *ksp)
 {
@@ -635,7 +635,7 @@ PetscErrorCode PCMGGetSmootherUp(PC pc, PetscInt l, KSP *ksp)
   Calling this will result in a different pre and post smoother so you may need to
   set options on the post smoother also
 
-.seealso: `PCMG`, `PCMGGetSmootherUp()`, `PCMGGetSmoother()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGGetSmootherUp()`, `PCMGGetSmoother()`
 @*/
 PetscErrorCode PCMGGetSmootherDown(PC pc, PetscInt l, KSP *ksp)
 {
@@ -662,7 +662,7 @@ PetscErrorCode PCMGGetSmootherDown(PC pc, PetscInt l, KSP *ksp)
 
   Level: advanced
 
-.seealso: `PCMG`, `PCMGCycleType`, `PCMGSetCycleType()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGCycleType`, `PCMGSetCycleType()`
 @*/
 PetscErrorCode PCMGSetCycleTypeOnLevel(PC pc, PetscInt l, PCMGCycleType c)
 {
@@ -693,7 +693,7 @@ PetscErrorCode PCMGSetCycleTypeOnLevel(PC pc, PetscInt l, PCMGCycleType c)
   Note:
   If this is not provided PETSc will automatically generate one. You do not need to keep a reference to this vector if you do not need it. `PCDestroy()` will properly free it.
 
-.seealso: `PCMG`, `PCMGSetX()`, `PCMGSetR()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGSetX()`, `PCMGSetR()`
 @*/
 PetscErrorCode PCMGSetRhs(PC pc, PetscInt l, Vec c)
 {
@@ -726,7 +726,7 @@ PetscErrorCode PCMGSetRhs(PC pc, PetscInt l, Vec c)
   Note:
   If this is not provided PETSc will automatically generate one. You do not need to keep a reference to this vector if you do not need it. `PCDestroy()` will properly free it.
 
-.seealso: `PCMG`, `PCMGSetRhs()`, `PCMGSetR()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGSetRhs()`, `PCMGSetR()`
 @*/
 PetscErrorCode PCMGSetX(PC pc, PetscInt l, Vec c)
 {
@@ -759,7 +759,7 @@ PetscErrorCode PCMGSetX(PC pc, PetscInt l, Vec c)
   Note:
   If this is not provided PETSc will automatically generate one. You do not need to keep a reference to this vector if you do not need it. `PCDestroy()` will properly free it.
 
-.seealso: `PCMG`, `PCMGSetRhs()`, `PCMGSetX()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGSetRhs()`, `PCMGSetX()`
 @*/
 PetscErrorCode PCMGSetR(PC pc, PetscInt l, Vec c)
 {

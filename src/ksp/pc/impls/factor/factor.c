@@ -96,7 +96,7 @@ static PetscErrorCode PCFactorGetUseInPlace_Factor(PC pc, PetscBool *flg)
 
   Level: intermediate
 
-.seealso: `PCCHOLESKY`, `PCLU`, `PCFactorSetMatSolverType()`, `PCFactorGetMatrix()`
+.seealso: [](ch_ksp), `PCCHOLESKY`, `PCLU`, `PCFactorSetMatSolverType()`, `PCFactorGetMatrix()`
 @*/
 PetscErrorCode PCFactorSetUpMatSolverType(PC pc)
 {
@@ -120,7 +120,7 @@ PetscErrorCode PCFactorSetUpMatSolverType(PC pc)
 
   Level: intermediate
 
-.seealso: `PCCHOLESKY`, `PCLU`, `PCFactorSetShiftType()`, `PCFactorSetShiftAmount()`
+.seealso: [](ch_ksp), `PCCHOLESKY`, `PCLU`, `PCFactorSetShiftType()`, `PCFactorSetShiftAmount()`
 @*/
 PetscErrorCode PCFactorSetZeroPivot(PC pc, PetscReal zero)
 {
@@ -146,7 +146,7 @@ PetscErrorCode PCFactorSetZeroPivot(PC pc, PetscReal zero)
 
   Level: intermediate
 
-.seealso: `PCCHOLESKY`, `PCLU`, `PCFactorSetZeroPivot()`, `PCFactorSetShiftAmount()`
+.seealso: [](ch_ksp), `PCCHOLESKY`, `PCLU`, `PCFactorSetZeroPivot()`, `PCFactorSetShiftAmount()`
 @*/
 PetscErrorCode PCFactorSetShiftType(PC pc, MatFactorShiftType shifttype)
 {
@@ -172,7 +172,7 @@ PetscErrorCode PCFactorSetShiftType(PC pc, MatFactorShiftType shifttype)
 
   Level: intermediate
 
-.seealso: `PCCHOLESKY`, `PCLU`, ``PCFactorSetZeroPivot()`, `PCFactorSetShiftType()`
+.seealso: [](ch_ksp), `PCCHOLESKY`, `PCLU`, ``PCFactorSetZeroPivot()`, `PCFactorSetShiftType()`
 @*/
 PetscErrorCode PCFactorSetShiftAmount(PC pc, PetscReal shiftamount)
 {
@@ -205,7 +205,7 @@ PetscErrorCode PCFactorSetShiftAmount(PC pc, PetscReal shiftamount)
   There are NO default values for the 3 parameters, you must set them with reasonable values for your
   matrix. We don't know how to compute reasonable values.
 
-.seealso: `PCILU`
+.seealso: [](ch_ksp), `PCILU`
 @*/
 PetscErrorCode PCFactorSetDropTolerance(PC pc, PetscReal dt, PetscReal dtcol, PetscInt maxrowcount)
 {
@@ -230,7 +230,7 @@ PetscErrorCode PCFactorSetDropTolerance(PC pc, PetscReal dt, PetscReal dtcol, Pe
 
   Level: intermediate
 
-.seealso: `PCLU`, `PCCHOLESKY`, `PCFactorSetZeroPivot()`
+.seealso: [](ch_ksp), `PCLU`, `PCCHOLESKY`, `PCFactorSetZeroPivot()`
 @*/
 PetscErrorCode PCFactorGetZeroPivot(PC pc, PetscReal *pivot)
 {
@@ -253,7 +253,7 @@ PetscErrorCode PCFactorGetZeroPivot(PC pc, PetscReal *pivot)
 
   Level: intermediate
 
-.seealso: `PCLU`, `PCCHOLESKY`, `PCFactorSetShiftAmount()`, `PCFactorSetShiftType()`, `PCFactorGetShiftType()`
+.seealso: [](ch_ksp), `PCLU`, `PCCHOLESKY`, `PCFactorSetShiftAmount()`, `PCFactorSetShiftType()`, `PCFactorGetShiftType()`
 @*/
 PetscErrorCode PCFactorGetShiftAmount(PC pc, PetscReal *shift)
 {
@@ -276,7 +276,7 @@ PetscErrorCode PCFactorGetShiftAmount(PC pc, PetscReal *shift)
 
   Level: intermediate
 
-.seealso: `PCLU`, `PCCHOLESKY`, `PCFactorSetShiftType()`, `MatFactorShiftType`, `PCFactorSetShiftAmount()`, `PCFactorGetShiftAmount()`
+.seealso: [](ch_ksp), `PCLU`, `PCCHOLESKY`, `PCFactorSetShiftType()`, `MatFactorShiftType`, `PCFactorSetShiftAmount()`, `PCFactorGetShiftAmount()`
 @*/
 PetscErrorCode PCFactorGetShiftType(PC pc, MatFactorShiftType *type)
 {
@@ -299,7 +299,7 @@ PetscErrorCode PCFactorGetShiftType(PC pc, MatFactorShiftType *type)
 
   Level: intermediate
 
-.seealso: `PCILU`, `PCICC`, `PCFactorSetLevels()`
+.seealso: [](ch_ksp), `PCILU`, `PCICC`, `PCFactorSetLevels()`
 @*/
 PetscErrorCode PCFactorGetLevels(PC pc, PetscInt *levels)
 {
@@ -323,7 +323,7 @@ PetscErrorCode PCFactorGetLevels(PC pc, PetscInt *levels)
 
   Level: intermediate
 
-.seealso: `PCILU`, `PCICC`, `PCFactorGetLevels()`
+.seealso: [](ch_ksp), `PCILU`, `PCICC`, `PCFactorGetLevels()`
 @*/
 PetscErrorCode PCFactorSetLevels(PC pc, PetscInt levels)
 {
@@ -353,7 +353,7 @@ PetscErrorCode PCFactorSetLevels(PC pc, PetscInt levels)
 
   Level: intermediate
 
-.seealso: `PCILU`, `PCICC`, `PCFactorGetAllowDiagonalFill()`
+.seealso: [](ch_ksp), `PCILU`, `PCICC`, `PCFactorGetAllowDiagonalFill()`
 @*/
 PetscErrorCode PCFactorSetAllowDiagonalFill(PC pc, PetscBool flg)
 {
@@ -380,7 +380,7 @@ PetscErrorCode PCFactorSetAllowDiagonalFill(PC pc, PetscBool flg)
 
   Level: intermediate
 
-.seealso: `PCILU`, `PCICC`, `PCFactorSetAllowDiagonalFill()`
+.seealso: [](ch_ksp), `PCILU`, `PCICC`, `PCFactorSetAllowDiagonalFill()`
 @*/
 PetscErrorCode PCFactorGetAllowDiagonalFill(PC pc, PetscBool *flg)
 {
@@ -404,7 +404,7 @@ PetscErrorCode PCFactorGetAllowDiagonalFill(PC pc, PetscBool *flg)
 
   Level: intermediate
 
-.seealso: `PCILU`, `PCICC`, `PCFactorSetFill()`, `PCFactorSetShiftNonzero()`, `PCFactorSetZeroPivot()`, `MatReorderForNonzeroDiagonal()`
+.seealso: [](ch_ksp), `PCILU`, `PCICC`, `PCFactorSetFill()`, `PCFactorSetShiftNonzero()`, `PCFactorSetZeroPivot()`, `MatReorderForNonzeroDiagonal()`
 @*/
 PetscErrorCode PCFactorReorderForNonzeroDiagonal(PC pc, PetscReal rtol)
 {
@@ -432,7 +432,7 @@ PetscErrorCode PCFactorReorderForNonzeroDiagonal(PC pc, PetscReal rtol)
   Note:
   By default this will use the PETSc factorization if it exists
 
-.seealso: `PCLU`, `PCCHOLESKY`, `MatGetFactor()`, `MatSolverType`, `PCFactorGetMatSolverType()`,
+.seealso: [](ch_ksp), `PCLU`, `PCCHOLESKY`, `MatGetFactor()`, `MatSolverType`, `PCFactorGetMatSolverType()`,
           `MATSOLVERSUPERLU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`
 @*/
 PetscErrorCode PCFactorSetMatSolverType(PC pc, MatSolverType stype)
@@ -456,7 +456,7 @@ PetscErrorCode PCFactorSetMatSolverType(PC pc, MatSolverType stype)
 
   Level: intermediate
 
-.seealso: `PCLU`, `PCCHOLESKY`, `MatGetFactor()`, `MatSolverType`, `MATSOLVERSUPERLU`,
+.seealso: [](ch_ksp), `PCLU`, `PCCHOLESKY`, `MatGetFactor()`, `MatSolverType`, `MATSOLVERSUPERLU`,
 `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`
 @*/
 PetscErrorCode PCFactorGetMatSolverType(PC pc, MatSolverType *stype)
@@ -497,7 +497,7 @@ PetscErrorCode PCFactorGetMatSolverType(PC pc, MatSolverType *stype)
 
   This parameter has NOTHING to do with the levels-of-fill of ILU(). That is set with `PCFactorSetLevels()` or -pc_factor_levels.
 
-.seealso: `PCLU`, `PCCHOLESKY`, `PCILU`, `PCICC`, `PCFactorSetReuseFill()`
+.seealso: [](ch_ksp), `PCLU`, `PCCHOLESKY`, `PCILU`, `PCICC`, `PCFactorSetReuseFill()`
 @*/
 PetscErrorCode PCFactorSetFill(PC pc, PetscReal fill)
 {
@@ -536,7 +536,7 @@ PetscErrorCode PCFactorSetFill(PC pc, PetscReal fill)
 
   Level: intermediate
 
-.seealso: `PC`, `Mat`, `PCLU`, `PCCHOLESKY`, `PCILU`, `PCICC`, `PCFactorGetUseInPlace()`
+.seealso: [](ch_ksp), `PC`, `Mat`, `PCLU`, `PCCHOLESKY`, `PCILU`, `PCICC`, `PCFactorGetUseInPlace()`
 @*/
 PetscErrorCode PCFactorSetUseInPlace(PC pc, PetscBool flg)
 {
@@ -559,7 +559,7 @@ PetscErrorCode PCFactorSetUseInPlace(PC pc, PetscBool flg)
 
   Level: intermediate
 
-.seealso: `PCLU`, `PCCHOLESKY`, `PCILU`, `PCICC`, `PCFactorSetUseInPlace()`
+.seealso: [](ch_ksp), `PCLU`, `PCCHOLESKY`, `PCILU`, `PCICC`, `PCFactorSetUseInPlace()`
 @*/
 PetscErrorCode PCFactorGetUseInPlace(PC pc, PetscBool *flg)
 {
@@ -594,7 +594,7 @@ PetscErrorCode PCFactorGetUseInPlace(PC pc, PetscBool *flg)
 
   `MATORDERINGEXTERNAL` means PETSc will not compute an ordering and the package will use its own ordering, usable with `MATSOLVERCHOLMOD`, `MATSOLVERUMFPACK`, and others.
 
-.seealso: `PCLU`, `PCCHOLESKY`, `PCILU`, `PCICC`, `MatOrderingType`, `MATORDERINGEXTERNAL`, `MATORDERINGND`, `MATORDERINGRCM`
+.seealso: [](ch_ksp), `PCLU`, `PCCHOLESKY`, `PCILU`, `PCICC`, `MatOrderingType`, `MATORDERINGEXTERNAL`, `MATORDERINGND`, `MATORDERINGRCM`
 @*/
 PetscErrorCode PCFactorSetMatOrderingType(PC pc, MatOrderingType ordering)
 {
@@ -620,7 +620,7 @@ PetscErrorCode PCFactorSetMatOrderingType(PC pc, MatOrderingType ordering)
 
   Level: intermediate
 
-.seealso: `PCLU`, `PCCHOLESKY`, `PCILU`, `PCICC`, `PCILUSetMatOrdering()`, `PCFactorSetPivotInBlocks()`
+.seealso: [](ch_ksp), `PCLU`, `PCCHOLESKY`, `PCILU`, `PCICC`, `PCILUSetMatOrdering()`, `PCFactorSetPivotInBlocks()`
 @*/
 PetscErrorCode PCFactorSetColumnPivot(PC pc, PetscReal dtcol)
 {
@@ -646,7 +646,7 @@ PetscErrorCode PCFactorSetColumnPivot(PC pc, PetscReal dtcol)
 
   Level: intermediate
 
-.seealso: `PCLU`, `PCCHOLESKY`, `PCILU`, `PCICC`, `PCILUSetMatOrdering()`, `PCFactorSetColumnPivot()`
+.seealso: [](ch_ksp), `PCLU`, `PCCHOLESKY`, `PCILU`, `PCICC`, `PCILUSetMatOrdering()`, `PCFactorSetColumnPivot()`
 @*/
 PetscErrorCode PCFactorSetPivotInBlocks(PC pc, PetscBool pivot)
 {
@@ -672,7 +672,7 @@ PetscErrorCode PCFactorSetPivotInBlocks(PC pc, PetscBool pivot)
 
   Level: intermediate
 
-.seealso: `PCLU`, `PCCHOLESKY`, `PCILU`, `PCICC`, `PCFactorSetReuseOrdering()`, `PCFactorSetFill()`
+.seealso: [](ch_ksp), `PCLU`, `PCCHOLESKY`, `PCILU`, `PCICC`, `PCFactorSetReuseOrdering()`, `PCFactorSetFill()`
 @*/
 PetscErrorCode PCFactorSetReuseFill(PC pc, PetscBool flag)
 {

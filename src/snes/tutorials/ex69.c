@@ -165,19 +165,22 @@ static void stokes_identity_J_cx(PetscInt dim, PetscInt Nf, PetscInt NfAux, cons
 - mu    - The viscosity at (x,z), or NULL
 
   Note:
-$  The domain is the square 0 <= x,z <= 1. We solve the Stokes equation for incompressible flow with free-slip boundary
-$  conditions everywhere. The forcing term f is given by
-$
-$    fx = 0
-$    fz = sigma*sin(km*z)*cos(kn*x)
-$
-$  where
-$
-$    km = m*Pi (m may be non-integral)
-$    kn = n*Pi
-$
-$  meaning that the density rho is -sigma*sin(km*z)*cos(kn*x). Here we set sigma = 1.
-$  The viscosity eta is exp(2*B*x).
+.vb
+  The domain is the square 0 <= x,z <= 1. We solve the Stokes equation for incompressible flow with free-slip boundary
+  conditions everywhere. The forcing term f is given by
+
+    fx = 0
+    fz = sigma*sin(km*z)*cos(kn*x)
+
+  where
+
+    km = m*Pi (m may be non-integral)
+    kn = n*Pi
+
+  meaning that the density rho is -sigma*sin(km*z)*cos(kn*x). Here we set sigma = 1.
+  The viscosity eta is exp(2*B*x).
+.ve
+
 */
 static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt n, PetscReal B, PetscScalar vel[], PetscScalar *p, PetscScalar s[], PetscScalar gamma[], PetscScalar *mu)
 {
@@ -691,19 +694,21 @@ static PetscErrorCode SolKxSolutionPressure(PetscInt dim, PetscReal time, const 
 - mu    - The viscosity at (x,z), or NULL
 
   Note:
-$  The domain is the square 0 <= x,z <= 1. We solve the Stokes equation for incompressible flow with free-slip boundary
-$  conditions everywhere. The forcing term f is given by
-$
-$    fx = 0
-$    fz = sigma*sin(km*z)*cos(kn*x)
-$
-$  where
-$
-$    km = m*Pi (m may be non-integral)
-$    kn = n*Pi
-$
-$  meaning that the density rho is -sigma*sin(km*z)*cos(kn*x). Here we set sigma = 1.
-$  The viscosity eta jumps from etaA to etaB at x = xc.
+.vb
+  The domain is the square 0 <= x,z <= 1. We solve the Stokes equation for incompressible flow with free-slip boundary
+  conditions everywhere. The forcing term f is given by
+
+    fx = 0
+    fz = sigma*sin(km*z)*cos(kn*x)
+
+  where
+
+    km = m*Pi (m may be non-integral)
+    kn = n*Pi
+
+  meaning that the density rho is -sigma*sin(km*z)*cos(kn*x). Here we set sigma = 1.
+  The viscosity eta jumps from etaA to etaB at x = xc.
+.ve
 */
 static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt n, PetscReal xc, PetscReal etaA, PetscReal etaB, PetscScalar vel[], PetscScalar *p, PetscScalar s[], PetscScalar gamma[], PetscScalar *mu)
 {

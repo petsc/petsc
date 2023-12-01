@@ -77,7 +77,7 @@ static PetscErrorCode KSPMatSolve_PREONLY(KSP ksp, Mat B, Mat X)
 }
 
 /*MC
-     KSPNONE - An alias for `KSPPREONLY`
+   KSPNONE - An alias for `KSPPREONLY`
 
    Options Database Key:
 .   -ksp_type none - use a single application of the preconditioner only
@@ -88,15 +88,16 @@ static PetscErrorCode KSPMatSolve_PREONLY(KSP ksp, Mat B, Mat X)
    See `KSPPREONLY` for more details
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSPPREONLY`, `KSP`, `KSPRICHARDSON`, `KSPCHEBYSHEV`, `KSPGetPC()`, `KSPSetInitialGuessNonzero()`,
-          `PCREDISTRIBUTE`, `PCRedistributeGetKSP()`
+          `PCREDISTRIBUTE`, `PCRedistributeGetKSP()`, `KSPPREONLY`
 M*/
 
 /*MC
-     KSPPREONLY - This implements a method that applies ONLY the preconditioner exactly once.
-                  This may be used in inner iterations, where it is desired to
-                  allow multiple iterations as well as the "0-iteration" case. It is
-                  commonly used with the direct solver preconditioners like `PCLU` and `PCCHOLESKY`.
-                  There is an alias of this with the name `KSPNONE`.
+   KSPPREONLY - This implements a method that applies ONLY the preconditioner exactly once.
+
+   This may be used in inner iterations, where it is desired to
+   allow multiple iterations as well as the "0-iteration" case. It is
+   commonly used with the direct solver preconditioners like `PCLU` and `PCCHOLESKY`.
+   There is an alias of this with the name `KSPNONE`.
 
    Options Database Key:
 .   -ksp_type preonly - use a single application of the preconditioner only
@@ -120,7 +121,7 @@ M*/
    This is so the users does not have to change `KSPNormType` options when they switch from other `KSP` methods to this one.
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPRICHARDSON`, `KSPCHEBYSHEV`, `KSPGetPC()`, `KSPSetInitialGuessNonzero()`,
-          `PCREDISTRIBUTE`, `PCRedistributeGetKSP()`
+          `PCREDISTRIBUTE`, `PCRedistributeGetKSP()`, `KSPNONE`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_PREONLY(KSP ksp)
