@@ -63,7 +63,7 @@ int main(int argc, char **argv)
   PetscCall(PetscRandomDestroy(&rdm2));
 
   if (vwr) PetscCall(PetscIntView(n, order ? XSO : XR, vwr));
-  PetscCall(PetscViewerDestroy(&vwr));
+  PetscCall(PetscOptionsRestoreViewer(&vwr));
   PetscCall(VecCreate(PETSC_COMM_WORLD, &x));
   PetscCall(VecSetSizes(x, PETSC_DECIDE, vsize));
   PetscCall(VecSetFromOptions(x));

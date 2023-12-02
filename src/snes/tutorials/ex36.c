@@ -250,7 +250,7 @@ static PetscErrorCode CompareView(Vec u)
     PetscCall(DMPlexVecView1D(dm, 2, lv, viewer));
     for (i = 0; i < 2; ++i) PetscCall(DMRestoreLocalVector(dm, &lv[i]));
     PetscCall(DMRestoreGlobalVector(dm, &exact));
-    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(PetscOptionsRestoreViewer(&viewer));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -530,7 +530,7 @@ PetscErrorCode PCMPIServerEnd(void)
           }
         }
       }
-      PetscCall(PetscViewerDestroy(&viewer));
+      PetscCall(PetscOptionsRestoreViewer(&viewer));
     }
   }
   PetscCall(PCMPICommsDestroy());

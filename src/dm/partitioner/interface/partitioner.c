@@ -183,8 +183,8 @@ PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
   if (flg) PetscCall(PetscPartitionerSetType(part, name));
   PetscCall(PetscOptionsBool("-petscpartitioner_use_vertex_weights", "Use vertex weights", "", part->usevwgt, &part->usevwgt, NULL));
   PetscTryTypeMethod(part, setfromoptions, PetscOptionsObject);
-  PetscCall(PetscViewerDestroy(&part->viewer));
-  PetscCall(PetscViewerDestroy(&part->viewerGraph));
+  PetscCall(PetscOptionsRestoreViewer(&part->viewer));
+  PetscCall(PetscOptionsRestoreViewer(&part->viewerGraph));
   PetscCall(PetscOptionsGetViewer(((PetscObject)part)->comm, ((PetscObject)part)->options, ((PetscObject)part)->prefix, "-petscpartitioner_view", &part->viewer, NULL, NULL));
   PetscCall(PetscOptionsGetViewer(((PetscObject)part)->comm, ((PetscObject)part)->options, ((PetscObject)part)->prefix, "-petscpartitioner_view_graph", &part->viewerGraph, NULL, &part->viewGraph));
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
@@ -259,8 +259,8 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
 
   PetscCall(PetscPartitionerReset(*part));
 
-  PetscCall(PetscViewerDestroy(&(*part)->viewer));
-  PetscCall(PetscViewerDestroy(&(*part)->viewerGraph));
+  PetscCall(PetscOptionsRestoreViewer(&(*part)->viewer));
+  PetscCall(PetscOptionsRestoreViewer(&(*part)->viewerGraph));
   PetscTryTypeMethod((*part), destroy);
   PetscCall(PetscHeaderDestroy(part));
   PetscFunctionReturn(PETSC_SUCCESS);

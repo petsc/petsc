@@ -17,7 +17,7 @@ int main(int argc, char **args)
     PetscCall(PetscViewerPushFormat(viewer, format));
     PetscCall(PetscViewerASCIIPrintf(viewer, "Testing PetscViewerASCIIPrintf %d\n", 0));
     PetscCall(PetscViewerPopFormat(viewer));
-    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(PetscOptionsRestoreViewer(&viewer));
     PetscCall(PetscOptionsPushGetViewerOff(PETSC_TRUE));
     PetscCall(PetscOptionsGetViewer(PETSC_COMM_WORLD, NULL, NULL, "-myviewer", &viewer, &format, &flg));
     PetscCheck(!flg, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Pushed viewer off, but viewer was set");
@@ -32,7 +32,7 @@ int main(int argc, char **args)
     PetscCall(PetscViewerASCIIPrintf(viewer, "Testing PetscViewerASCIIPrintf %d\n", 2));
     PetscCall(PetscViewerPopFormat(viewer));
   }
-  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(PetscOptionsRestoreViewer(&viewer));
   PetscCall(PetscFinalize());
   return 0;
 }

@@ -9686,7 +9686,7 @@ PetscErrorCode DMPlexComputeOrthogonalQuality(DM dm, PetscFV fv, PetscReal atol,
     if (vwr) PetscCall(DMLabelView(*OrthQualLabel, vwr));
   }
   PetscCall(PetscFree5(idx, oqVals, ci, fi, Ai));
-  PetscCall(PetscViewerDestroy(&vwr));
+  PetscCall(PetscOptionsRestoreViewer(&vwr));
   PetscCall(VecViewFromOptions(*OrthQual, NULL, "-dm_plex_orthogonal_quality_vec_view"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

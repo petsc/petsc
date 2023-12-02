@@ -4287,7 +4287,7 @@ PetscErrorCode DMGetLocalSection(DM dm, PetscSection *section)
       if (flg) {
         PetscCall(PetscViewerFlush(viewer));
         PetscCall(PetscViewerPopFormat(viewer));
-        PetscCall(PetscViewerDestroy(&viewer));
+        PetscCall(PetscOptionsRestoreViewer(&viewer));
       }
     }
     PetscUseTypeMethod(dm, createlocalsection);
@@ -8859,7 +8859,7 @@ PetscErrorCode DMMonitorSetFromOptions(DM dm, const char name[], const char help
     PetscViewerAndFormat *vf;
 
     PetscCall(PetscViewerAndFormatCreate(viewer, format, &vf));
-    PetscCall(PetscObjectDereference((PetscObject)viewer));
+    PetscCall(PetscOptionsRestoreViewer(&viewer));
     if (monitorsetup) PetscCall((*monitorsetup)(dm, vf));
     PetscCall(DMMonitorSet(dm, (PetscErrorCode(*)(DM, void *))monitor, vf, (PetscErrorCode(*)(void **))PetscViewerAndFormatDestroy));
   }

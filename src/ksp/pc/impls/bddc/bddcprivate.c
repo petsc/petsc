@@ -1787,7 +1787,7 @@ boundary:
       PetscCall(PetscFree2(funcs, ctxs));
       if (flg) {
         PetscCall(PetscViewerPopFormat(viewer));
-        PetscCall(PetscViewerDestroy(&viewer));
+        PetscCall(PetscOptionsRestoreViewer(&viewer));
       }
     }
   }
@@ -4697,7 +4697,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     PetscCall(ISView(pcis->is_B_local,viewer));
     PetscCall(PetscObjectSetName((PetscObject)pcbddc->is_R_local,"R"));
     PetscCall(ISView(pcbddc->is_R_local,viewer));
-    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(PetscOptionsRestoreViewer(&viewer));
   }
 #endif
     PetscCall(MatAXPY(TM1, m_one, coarse_sub_mat, DIFFERENT_NONZERO_PATTERN));

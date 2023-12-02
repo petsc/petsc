@@ -3985,7 +3985,7 @@ PetscErrorCode TSSolve(TS ts, Vec u)
         PetscCall(PetscViewerPushFormat(viewer, format));
         PetscCall(PetscConvEstRateView(conv, alpha, viewer));
         PetscCall(PetscViewerPopFormat(viewer));
-        PetscCall(PetscViewerDestroy(&viewer));
+        PetscCall(PetscOptionsRestoreViewer(&viewer));
         PetscCall(PetscConvEstDestroy(&conv));
         PetscCall(PetscFree(alpha));
         incall = PETSC_FALSE;

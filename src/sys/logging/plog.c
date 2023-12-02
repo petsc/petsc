@@ -2065,7 +2065,7 @@ PetscErrorCode PetscLogViewFromOptions(void)
     PetscCall(PetscViewerPushFormat(viewers[i], formats[i]));
     PetscCall(PetscLogView(viewers[i]));
     PetscCall(PetscViewerPopFormat(viewers[i]));
-    PetscCall(PetscViewerDestroy(&(viewers[i])));
+    PetscCall(PetscOptionsRestoreViewer(&(viewers[i])));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

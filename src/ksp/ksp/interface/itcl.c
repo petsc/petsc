@@ -272,7 +272,7 @@ PetscErrorCode KSPMonitorSetFromOptions(KSP ksp, const char opt[], const char na
   if (!dfunc) dfunc = PetscViewerAndFormatDestroy;
 
   PetscCall((*cfunc)(viewer, format, ctx, &vf));
-  PetscCall(PetscObjectDereference((PetscObject)viewer));
+  PetscCall(PetscOptionsRestoreViewer(&viewer));
   PetscCall(KSPMonitorSet(ksp, mfunc, vf, (PetscErrorCode(*)(void **))dfunc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

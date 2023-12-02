@@ -407,7 +407,7 @@ int main(int argc, char **args)
         PetscCall(VecView(bb, viewer));
         PetscCall(PetscViewerPopFormat(viewer));
       }
-      PetscCall(PetscViewerDestroy(&viewer));
+      PetscCall(PetscOptionsRestoreViewer(&viewer));
     }
     /* Free work space */
     PetscCall(SNESDestroy(&snes));

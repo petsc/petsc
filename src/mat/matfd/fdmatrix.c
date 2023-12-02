@@ -419,7 +419,7 @@ static PetscErrorCode MatFDColoringViewFromOptions(MatFDColoring fd, const char 
     PetscCall(PetscViewerPushFormat(viewer, format));
     PetscCall(MatFDColoringView(fd, viewer));
     PetscCall(PetscViewerPopFormat(viewer));
-    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(PetscOptionsRestoreViewer(&viewer));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

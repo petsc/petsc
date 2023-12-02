@@ -58,7 +58,7 @@ int main(int argc, char **argv)
 
   PetscCall(PetscSubcommDestroy(&psubsubcomm));
   PetscCall(PetscSubcommDestroy(&psubcomm));
-  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(PetscOptionsRestoreViewer(&viewer));
   PetscCall(PetscFinalize());
   return 0;
 }

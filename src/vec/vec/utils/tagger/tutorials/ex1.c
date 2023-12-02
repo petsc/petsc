@@ -113,7 +113,7 @@ int main(int argc, char **argv)
         PetscCall(PetscViewerASCIIPopTab(viewer));
       }
     }
-    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(PetscOptionsRestoreViewer(&viewer));
     PetscCall(PetscFree(boxes));
   }
 
