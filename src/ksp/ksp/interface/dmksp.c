@@ -285,7 +285,7 @@ PetscErrorCode DMKSPSetComputeRHS(DM dm, PetscErrorCode (*func)(KSP, Vec, void *
 
   Input Parameters:
 + dm   - `DM` to be used with `KSP`
-. func - initial guess evaluation function,  for calling sequence see `KSPSetComputeInitialGuess()`
+. func - initial guess evaluation function, for calling sequence see `KSPSetComputeInitialGuess()`
 - ctx  - context for right hand side evaluation
 
   Level: developer
@@ -345,7 +345,7 @@ PetscErrorCode DMKSPGetComputeRHS(DM dm, PetscErrorCode (**func)(KSP, Vec, void 
 . dm - `DM` used with a `KSP`
 
   Output Parameters:
-+ func - initial guess evaluation function,  for calling sequence see `KSPSetComputeInitialGuess()`
++ func - initial guess evaluation function, for calling sequence see `KSPSetComputeInitialGuess()`
 - ctx  - context for right hand side evaluation
 
   Level: advanced

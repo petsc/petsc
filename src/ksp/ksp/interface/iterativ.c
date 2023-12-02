@@ -1226,7 +1226,7 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp, PetscInt its, PetscReal fnorm
   Note:
   This is not called directly but is passed to `KSPMonitorSet()` along with `KSPMonitorDynamicTolerance()`
 
-.seealso: `KSP`, `KSPMonitorDynamicTolerance()`, `KSPMonitorSet()`, `KSPMonitorDynamicToleranceCreate()`
+.seealso: [](ch_ksp), `KSP`, `KSPMonitorDynamicTolerance()`, `KSPMonitorSet()`, `KSPMonitorDynamicToleranceCreate()`
 @*/
 PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **ctx)
 {

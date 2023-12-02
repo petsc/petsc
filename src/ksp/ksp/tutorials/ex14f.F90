@@ -19,7 +19,7 @@
 !  -my <yg>, where <yg> = number of grid points in the y-direction
 !  -Nx <npx>, where <npx> = number of processors in the x-direction
 !  -Ny <npy>, where <npy> = number of processors in the y-direction
-!  -mf use matrix-free for matrix vector product
+!  -mf use matrix-free for matrix-vector product
 !
 
 !  ------------------------------------------------------------------------
@@ -144,7 +144,7 @@
       PetscCallA(MatCreateFromOptions(comm,PETSC_NULL_CHARACTER,one,m,m,N,N,B,ierr))
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!     if usemf is on then matrix vector product is done via matrix-free
+!     if usemf is on then matrix-vector product is done via matrix-free
 !     approach. Note this is just an example, and not realistic because
 !     we still use the actual formed matrix, but in reality one would
 !     provide their own subroutine that would directly do the matrix
@@ -547,7 +547,7 @@
       PetscErrorCode ierr
 !
 !       Here we use the actual formed matrix B; users would
-!     instead write their own matrix vector product routine
+!     instead write their own matrix-vector product routine
 !
       PetscCall(MatMult(B,X,F,ierr))
       return

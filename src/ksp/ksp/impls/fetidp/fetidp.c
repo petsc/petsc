@@ -84,8 +84,12 @@ static PetscErrorCode KSPFETIDPSetPressureOperator_FETIDP(KSP ksp, Mat P)
   Level: advanced
 
   Notes:
-  The operator can be either passed in a) monolithic global ordering, b) pressure-only global ordering
-  or c) interface pressure ordering (if `-ksp_fetidp_pressure_all false`).
+  The operator can be either passed in
+.vb
+  a) monolithic global ordering,
+  b) pressure-only global ordering, or
+  c) interface pressure ordering (if `-ksp_fetidp_pressure_all false`).
+.ve
   In cases b) and c), the pressure ordering of dofs needs to satisfy
   pid_1 < pid_2  iff  gid_1 < gid_2
   where pid_1 and pid_2 are two different pressure dof numbers and gid_1 and gid_2 the corresponding
@@ -114,9 +118,11 @@ static PetscErrorCode KSPFETIDPGetInnerKSP_FETIDP(KSP ksp, KSP *innerksp)
 /*@
   KSPFETIDPGetInnerKSP - Gets the `KSP` object for the Lagrange multipliers from inside a `KSPFETIDP`
 
-  Input Parameters:
-+ ksp      - the `KSPFETIDP`
-- innerksp - the `KSP` for the multipliers
+  Input Parameter:
+. ksp - the `KSPFETIDP`
+
+  Output Parameter:
+. innerksp - the `KSP` for the multipliers
 
   Level: advanced
 
@@ -143,13 +149,15 @@ static PetscErrorCode KSPFETIDPGetInnerBDDC_FETIDP(KSP ksp, PC *pc)
 /*@
   KSPFETIDPGetInnerBDDC - Gets the `PCBDDC` preconditioner used to set up the `KSPFETIDP` matrix for the Lagrange multipliers
 
-  Input Parameters:
-+ ksp - the `KSPFETIDP` Krylov solver
-- pc  - the `PCBDDC` preconditioner
+  Input Parameter:
+. ksp - the `KSPFETIDP` Krylov solver
+
+  Output Parameter:
+. pc - the `PCBDDC` preconditioner
 
   Level: advanced
 
-.seealso: [](ch_ksp), `MATIS`, `PCBDDC`, `KSPFETIDPSetInnerBDDC()`, `KSPFETIDPGetInnerKSP()`
+.seealso: [](ch_ksp), `MATIS`, `PCBDDC`, `KSPFETIDP`, `KSPFETIDPSetInnerBDDC()`, `KSPFETIDPGetInnerKSP()`
 @*/
 PetscErrorCode KSPFETIDPGetInnerBDDC(KSP ksp, PC *pc)
 {
@@ -184,7 +192,7 @@ static PetscErrorCode KSPFETIDPSetInnerBDDC_FETIDP(KSP ksp, PC pc)
   Level: advanced
 
   Note:
-  A `PC` is automatically created for the `KSPFETIDP` and can be accessed to change options with  `KSPFETIDPGetInnerBDDC()` hence this routine is rarely needed
+  A `PC` is automatically created for the `KSPFETIDP` and can be accessed to change options with `KSPFETIDPGetInnerBDDC()` hence this routine is rarely needed
 
 .seealso: [](ch_ksp), `MATIS`, `PCBDDC`, `KSPFETIDPGetInnerBDDC()`, `KSPFETIDPGetInnerKSP()`
 @*/
@@ -1263,15 +1271,9 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(KSP ksp, PetscOptionItems *PetscO
    Options Database Keys:
 +   -ksp_fetidp_fullyredundant <false>   - use a fully redundant set of Lagrange multipliers
 .   -ksp_fetidp_saddlepoint <false>      - activates support for saddle point problems, see [2]
-.   -ksp_fetidp_saddlepoint_flip <false> - usually, an incompressible Stokes problem is written as
-                                           | A B^T | | v | = | f |
-                                           | B 0   | | p | = | g |
-                                           with B representing -\int_\Omega \nabla \cdot u q.
-                                           If -ksp_fetidp_saddlepoint_flip is true, the code assumes that the user provides it as
-                                           | A B^T | | v | = | f |
-                                           |-B 0   | | p | = |-g |
+.   -ksp_fetidp_saddlepoint_flip <false> - see note below
 .   -ksp_fetidp_pressure_field <-1>      - activates support for saddle point problems, and identifies the pressure field id.
-                                           If this information is not provided, the pressure field is detected by using MatFindZeroDiagonals().
+                                           If this information is not provided, the pressure field is detected by using `MatFindZeroDiagonals()`.
 -   -ksp_fetidp_pressure_all <false>     - if false, uses the interface pressures, as described in [2]. If true, uses the entire pressure field.
 
    Level: Advanced
@@ -1279,11 +1281,22 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(KSP ksp, PetscOptionItems *PetscO
    Notes:
    The matrix for the `KSP` must be of type `MATIS`.
 
+   Usually, an incompressible Stokes problem is written as
+.vb
+   | A B^T | | v | = | f |
+   | B 0   | | p | = | g |
+.ve
+   with B representing $ -\int_\Omega \nabla \cdot u q $. If -ksp_fetidp_saddlepoint_flip is true, the code assumes that the user provides it as
+.vb
+   | A B^T | | v | = | f |
+   |-B 0   | | p | = |-g |
+.ve
+
    The FETI-DP linear system (automatically generated constructing an internal `PCBDDC` object) is solved using an internal `KSP` object.
 
-    Options for the inner `KSP` and for the customization of the `PCBDDC` object can be specified at command line by using the prefixes `-fetidp_` and `-fetidp_bddc_`. E.g.,
+   Options for the inner `KSP` and for the customization of the `PCBDDC` object can be specified at command line by using the prefixes `-fetidp_` and `-fetidp_bddc_`. E.g.,
 .vb
-      -fetidp_ksp_type gmres -fetidp_bddc_pc_bddc_symmetric false
+   -fetidp_ksp_type gmres -fetidp_bddc_pc_bddc_symmetric false
 .ve
    will use `KSPGMRES` for the solution of the linear system on the Lagrange multipliers, generated using a non-symmetric `PCBDDC`.
 
@@ -1292,12 +1305,12 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(KSP ksp, PetscOptionItems *PetscO
    If none of the above, an identity matrix will be created; the user then needs to scale it through a Richardson solver.
    Options for the pressure solver can be prefixed with `-fetidp_fielsplit_p_`, E.g.
 .vb
-      -fetidp_fielsplit_p_ksp_type preonly -fetidp_fielsplit_p_pc_type lu -fetidp_fielsplit_p_pc_factor_mat_solver_type mumps
+   -fetidp_fielsplit_p_ksp_type preonly -fetidp_fielsplit_p_pc_type lu -fetidp_fielsplit_p_pc_factor_mat_solver_type mumps
 .ve
    In order to use the deluxe version of FETI-DP, you must customize the inner `PCBDDC` operator with -fetidp_bddc_pc_bddc_use_deluxe_scaling -fetidp_bddc_pc_bddc_deluxe_singlemat and use
    non-redundant multipliers, i.e. `-ksp_fetidp_fullyredundant false`. Options for the scaling solver are prefixed by `-fetidp_bddelta_`, E.g.
 .vb
-      -fetidp_bddelta_pc_factor_mat_solver_type mumps -fetidp_bddelta_pc_type lu
+   -fetidp_bddelta_pc_factor_mat_solver_type mumps -fetidp_bddelta_pc_type lu
 .ve
 
    Some of the basic options such as the maximum number of iterations and tolerances are automatically passed from this `KSP` to the inner `KSP` that actually performs the iterations.

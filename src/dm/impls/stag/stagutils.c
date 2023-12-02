@@ -1317,7 +1317,7 @@ PetscErrorCode DMStagSetOwnershipRanges(DM dm, PetscInt const *lx, PetscInt cons
   Level: advanced
 
   Notes:
-  `DMSTAG` supports 2 different types of coordinate DM: `DMSTAG` and `DMPRODUCT`.
+  `DMSTAG` supports 2 different types of coordinate `DM`: `DMSTAG` and `DMPRODUCT`.
   Arguments corresponding to higher dimensions are ignored for 1D and 2D grids.
 
   Local coordinates are populated (using `DMSetCoordinatesLocal()`), linearly

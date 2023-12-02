@@ -23,7 +23,7 @@ typedef struct {
 
   Level: intermediate
 
-.seealso: `PCLMVM`, `MATLDFP`, `MATLBFGS`, `MATLSR1`, `MATLBRDN`, `MATLMBRDN`, `MATLSBRDN`, `PCLMVMGetMatLMVM()`
+.seealso: [](ch_ksp), `PCLMVM`, `MATLDFP`, `MATLBFGS`, `MATLSR1`, `MATLBRDN`, `MATLMBRDN`, `MATLSBRDN`, `PCLMVMGetMatLMVM()`
 @*/
 PetscErrorCode PCLMVMSetMatLMVM(PC pc, Mat B)
 {
@@ -54,7 +54,7 @@ PetscErrorCode PCLMVMSetMatLMVM(PC pc, Mat B)
 
   Level: intermediate
 
-.seealso: `PCLMVM`, `MATLMVM`, `MATLDFP`, `MATLBFGS`, `MATLSR1`, `MATLBRDN`, `MATLMBRDN`, `MATLSBRDN`, `PCLMVMSetMatLMVM()`
+.seealso: [](ch_ksp), `PCLMVM`, `MATLMVM`, `MATLDFP`, `MATLBFGS`, `MATLSR1`, `MATLBRDN`, `MATLMBRDN`, `MATLSBRDN`, `PCLMVMSetMatLMVM()`
 @*/
 PetscErrorCode PCLMVMGetMatLMVM(PC pc, Mat *B)
 {
@@ -81,7 +81,7 @@ PetscErrorCode PCLMVMGetMatLMVM(PC pc, Mat *B)
   Developer Notes:
   Need to explain the purpose of this `IS`
 
-.seealso: `PCLMVM`, `MatLMVMUpdate()`
+.seealso: [](ch_ksp), `PCLMVM`, `MatLMVMUpdate()`
 @*/
 PetscErrorCode PCLMVMSetIS(PC pc, IS inactive)
 {
@@ -107,7 +107,7 @@ PetscErrorCode PCLMVMSetIS(PC pc, IS inactive)
 
   Level: intermediate
 
-.seealso: `PCLMVM`, `MatLMVMUpdate()`
+.seealso: [](ch_ksp), `PCLMVM`, `MatLMVMUpdate()`
 @*/
 PetscErrorCode PCLMVMClearIS(PC pc)
 {
@@ -231,7 +231,7 @@ static PetscErrorCode PCDestroy_LMVM(PC pc)
 
    Level: intermediate
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PCLMVM`, `MATLDFP`, `MATLBFGS`, `MATLSR1`, `MATLBRDN`, `MATLMBRDN`, `MATLSBRDN`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PCLMVM`, `MATLDFP`, `MATLBFGS`, `MATLSR1`, `MATLBRDN`, `MATLMBRDN`, `MATLSBRDN`,
           `PC`, `MATLMVM`, `PCLMVMUpdate()`, `PCLMVMSetMatLMVM()`, `PCLMVMGetMatLMVM()`
 M*/
 PETSC_EXTERN PetscErrorCode PCCreate_LMVM(PC pc)

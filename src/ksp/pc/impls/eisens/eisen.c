@@ -270,7 +270,7 @@ static PetscErrorCode PCEisenstatGetNoDiagonalScaling_Eisenstat(PC pc, PetscBool
   To use SSOR without the Eisenstat trick, employ the `PCSOR` preconditioner,
   which can be chosen with the database options `-pc_type sor -pc_sor_symmetric`
 
-.seealso: `PCSORSetOmega()`, `PCEISENSTAT`
+.seealso: [](ch_ksp), `PCSORSetOmega()`, `PCEISENSTAT`
 @*/
 PetscErrorCode PCEisenstatSetOmega(PC pc, PetscReal omega)
 {
@@ -301,7 +301,7 @@ PetscErrorCode PCEisenstatSetOmega(PC pc, PetscReal omega)
   If you use the `KSPSetDiagonalScaling()` or -ksp_diagonal_scale option then you will
   likely want to use this routine since it will save you some unneeded flops.
 
-.seealso: `PCEisenstatSetOmega()`, `PCEISENSTAT`
+.seealso: [](ch_ksp), `PCEisenstatSetOmega()`, `PCEISENSTAT`
 @*/
 PetscErrorCode PCEisenstatSetNoDiagonalScaling(PC pc, PetscBool flg)
 {
@@ -337,7 +337,7 @@ PetscErrorCode PCEisenstatSetNoDiagonalScaling(PC pc, PetscBool flg)
 
   Level: intermediate
 
-.seealso: `PCEISENSTAT`, `PCSORGetOmega()`, `PCEisenstatSetOmega()`
+.seealso: [](ch_ksp), `PCEISENSTAT`, `PCSORGetOmega()`, `PCEisenstatSetOmega()`
 @*/
 PetscErrorCode PCEisenstatGetOmega(PC pc, PetscReal *omega)
 {
@@ -405,7 +405,7 @@ static PetscErrorCode PCPreSolveChangeRHS_Eisenstat(PC pc, PetscBool *change)
    Since this algorithm runs the Krylov method on a transformed linear system the implementation provides `PCPreSolve()` and `PCPostSolve()`
    routines that `KSP` uses to set up the transformed linear system.
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCEisenstatGetOmega()`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCEisenstatGetOmega()`,
           `PCEisenstatSetNoDiagonalScaling()`, `PCEisenstatSetOmega()`, `PCSOR`
 M*/
 

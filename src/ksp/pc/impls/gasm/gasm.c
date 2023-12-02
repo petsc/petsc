@@ -894,7 +894,7 @@ static PetscErrorCode PCSetFromOptions_GASM(PC pc, PetscOptionItems *PetscOption
 
   Level: beginner
 
-.seealso: `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMSetOverlap()`
+.seealso: [](ch_ksp), `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMSetOverlap()`
           `PCGASMCreateSubdomains2D()`
 @*/
 PetscErrorCode PCGASMSetTotalSubdomains(PC pc, PetscInt N)
@@ -1072,7 +1072,7 @@ static PetscErrorCode PCGASMGetSubKSP_GASM(PC pc, PetscInt *n, PetscInt *first, 
 
   The `iis` and `ois` arrays may be freed after this call using `PCGASMDestroySubdomains()`
 
-.seealso: `PCGASM`, `PCGASMSetOverlap()`, `PCGASMGetSubKSP()`, `PCGASMDestroySubdomains()`,
+.seealso: [](ch_ksp), `PCGASM`, `PCGASMSetOverlap()`, `PCGASMGetSubKSP()`, `PCGASMDestroySubdomains()`,
           `PCGASMCreateSubdomains2D()`, `PCGASMGetSubdomains()`
 @*/
 PetscErrorCode PCGASMSetSubdomains(PC pc, PetscInt n, IS iis[], IS ois[])
@@ -1118,7 +1118,7 @@ PetscErrorCode PCGASMSetSubdomains(PC pc, PetscInt n, IS iis[], IS ois[])
   `PCGASMSetSubdomains()`; the routine `PCGASMSetOverlap()` merely allows
   PETSc to extend that overlap further, if desired.
 
-.seealso: `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMGetSubKSP()`,
+.seealso: [](ch_ksp), `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMGetSubKSP()`,
           `PCGASMCreateSubdomains2D()`, `PCGASMGetSubdomains()`
 @*/
 PetscErrorCode PCGASMSetOverlap(PC pc, PetscInt ovl)
@@ -1154,7 +1154,7 @@ PetscErrorCode PCGASMSetOverlap(PC pc, PetscInt ovl)
 
   Level: intermediate
 
-.seealso: `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMGetSubKSP()`,
+.seealso: [](ch_ksp), `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMGetSubKSP()`,
           `PCGASMCreateSubdomains2D()`, `PCASM`, `PCASMSetType()`
 @*/
 PetscErrorCode PCGASMSetType(PC pc, PCGASMType type)
@@ -1177,7 +1177,7 @@ PetscErrorCode PCGASMSetType(PC pc, PCGASMType type)
 
   Level: intermediate
 
-.seealso: `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMGetSubKSP()`,
+.seealso: [](ch_ksp), `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMGetSubKSP()`,
           `PCGASMCreateSubdomains2D()`
 @*/
 PetscErrorCode PCGASMSetSortIndices(PC pc, PetscBool doSort)
@@ -1214,7 +1214,7 @@ PetscErrorCode PCGASMSetSortIndices(PC pc, PetscBool doSort)
 
   You must call `KSPSetUp()` before calling `PCGASMGetSubKSP()`.
 
-.seealso: `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMSetOverlap()`,
+.seealso: [](ch_ksp), `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMSetOverlap()`,
           `PCGASMCreateSubdomains2D()`,
 @*/
 PetscErrorCode PCGASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, KSP *ksp[])
@@ -1252,7 +1252,7 @@ PetscErrorCode PCGASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, 
 -   * - Barry Smith, Petter Bjorstad, and William Gropp, Domain Decompositions: Parallel Multilevel Methods for Elliptic Partial Differential Equations,
     Cambridge University Press.
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCASM`, `PCGASMType`, `PCGASMSetType()`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCASM`, `PCGASMType`, `PCGASMSetType()`,
           `PCBJACOBI`, `PCGASMGetSubKSP()`, `PCGASMSetSubdomains()`,
           `PCSetModifySubMatrices()`, `PCGASMSetOverlap()`, `PCGASMSetType()`
 M*/
@@ -1483,7 +1483,7 @@ PETSC_INTERN PetscErrorCode PCGASMCreateStraddlingSubdomains(Mat A, PetscInt N, 
 
   Use `PCGASMDestroySubdomains()` to free the array and the list of index sets.
 
-.seealso: `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMDestroySubdomains()`
+.seealso: [](ch_ksp), `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMDestroySubdomains()`
 @*/
 PetscErrorCode PCGASMCreateSubdomains(Mat A, PetscInt N, PetscInt *n, IS *iis[])
 {
@@ -1523,7 +1523,7 @@ PetscErrorCode PCGASMCreateSubdomains(Mat A, PetscInt N, PetscInt *n, IS *iis[])
   destroys each `IS` on the list, and then frees the list. At the end the
   list pointers are set to `NULL`.
 
-.seealso: `PCGASM`, `PCGASMCreateSubdomains()`, `PCGASMSetSubdomains()`
+.seealso: [](ch_ksp), `PCGASM`, `PCGASMCreateSubdomains()`, `PCGASMSetSubdomains()`
 @*/
 PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS **iis, IS **ois)
 {
@@ -1606,7 +1606,7 @@ PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS **iis, IS **ois)
   Fortran Notes:
   The `IS` must be declared as an array of length long enough to hold `Nsub` entries
 
-.seealso: `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMGetSubKSP()`, `PCGASMSetOverlap()`, `PCASMCreateSubdomains2D()`,
+.seealso: [](ch_ksp), `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMGetSubKSP()`, `PCGASMSetOverlap()`, `PCASMCreateSubdomains2D()`,
           `PCGASMDestroySubdomains()`
 @*/
 PetscErrorCode PCGASMCreateSubdomains2D(PC pc, PetscInt M, PetscInt N, PetscInt Mdomains, PetscInt Ndomains, PetscInt dof, PetscInt overlap, PetscInt *nsub, IS **iis, IS **ois)
@@ -1783,7 +1783,7 @@ PetscErrorCode PCGASMCreateSubdomains2D(PC pc, PetscInt M, PetscInt N, PetscInt 
 
   The `IS` numbering is in the parallel, global numbering of the vector.
 
-.seealso: `PCGASM`, `PCGASMSetOverlap()`, `PCGASMGetSubKSP()`, `PCGASMCreateSubdomains2D()`,
+.seealso: [](ch_ksp), `PCGASM`, `PCGASMSetOverlap()`, `PCGASMGetSubKSP()`, `PCGASMCreateSubdomains2D()`,
           `PCGASMSetSubdomains()`, `PCGASMGetSubmatrices()`, `PCGASMDestroySubdomains()`
 @*/
 PetscErrorCode PCGASMGetSubdomains(PC pc, PetscInt *n, IS *iis[], IS *ois[])
@@ -1828,7 +1828,7 @@ PetscErrorCode PCGASMGetSubdomains(PC pc, PetscInt *n, IS *iis[], IS *ois[])
   Matrices returned by this routine have the same communicators as the index sets (`IS`)
   used to define subdomains in `PCGASMSetSubdomains()`
 
-.seealso: `PCGASM`, `PCGASMSetOverlap()`, `PCGASMGetSubKSP()`,
+.seealso: [](ch_ksp), `PCGASM`, `PCGASMSetOverlap()`, `PCGASMGetSubKSP()`,
           `PCGASMCreateSubdomains2D()`, `PCGASMSetSubdomains()`, `PCGASMGetSubdomains()`
 @*/
 PetscErrorCode PCGASMGetSubmatrices(PC pc, PetscInt *n, Mat *mat[])
@@ -1870,7 +1870,7 @@ PetscErrorCode PCGASMGetSubmatrices(PC pc, PetscInt *n, Mat *mat[])
   so setting `PCGASMSetSubdomains()` with nontrivial subdomain ISs or any of `PCGASMSetTotalSubdomains()` and `PCGASMSetOverlap()`
   automatically turns the latter off.
 
-.seealso: `PCGASM`, `PCGASMGetUseDMSubdomains()`, `PCGASMSetSubdomains()`, `PCGASMSetOverlap()`
+.seealso: [](ch_ksp), `PCGASM`, `PCGASMGetUseDMSubdomains()`, `PCGASMSetSubdomains()`, `PCGASMSetOverlap()`
           `PCGASMCreateSubdomains2D()`
 @*/
 PetscErrorCode PCGASMSetUseDMSubdomains(PC pc, PetscBool flg)
@@ -1902,7 +1902,7 @@ PetscErrorCode PCGASMSetUseDMSubdomains(PC pc, PetscBool flg)
 
   Level: intermediate
 
-.seealso: `PCGASM`, `PCGASMSetUseDMSubdomains()`, `PCGASMSetOverlap()`
+.seealso: [](ch_ksp), `PCGASM`, `PCGASMSetUseDMSubdomains()`, `PCGASMSetOverlap()`
           `PCGASMCreateSubdomains2D()`
 @*/
 PetscErrorCode PCGASMGetUseDMSubdomains(PC pc, PetscBool *flg)

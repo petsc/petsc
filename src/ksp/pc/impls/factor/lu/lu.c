@@ -226,7 +226,7 @@ static PetscErrorCode PCApplyTranspose_LU(PC pc, Vec x, Vec y)
    not need a Krylov method (i.e. you can use -ksp_type preonly, or
    `KSPSetType`(ksp,`KSPPREONLY`) for the Krylov method
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MatSolverType`, `MatGetFactor()`, `PCQR`, `PCSVD`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MatSolverType`, `MatGetFactor()`, `PCQR`, `PCSVD`,
           `PCILU`, `PCCHOLESKY`, `PCICC`, `PCFactorSetReuseOrdering()`, `PCFactorSetReuseFill()`, `PCFactorGetMatrix()`,
           `PCFactorSetFill()`, `PCFactorSetUseInPlace()`, `PCFactorSetMatOrderingType()`, `PCFactorSetColumnPivot()`,
           `PCFactorSetPivotInBlocks()`, `PCFactorSetShiftType()`, `PCFactorSetShiftAmount()`

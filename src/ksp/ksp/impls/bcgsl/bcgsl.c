@@ -295,7 +295,7 @@ static PetscErrorCode KSPSolve_BCGSL(KSP ksp)
 
 /*@
   KSPBCGSLSetXRes - Sets the parameter governing when
-  exact residuals will be used instead of computed residuals.
+  exact residuals will be used instead of computed residuals for `KSPCBGSL`.
 
   Logically Collective
 
@@ -329,16 +329,16 @@ PetscErrorCode KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
 }
 
 /*@
-  KSPBCGSLSetUsePseudoinverse - Use pseudoinverse (via SVD) to solve polynomial part of update in `KSPCBGSL` solver
+  KSPBCGSLSetUsePseudoinverse - Use pseudoinverse (via SVD) to solve polynomial part of the update in `KSPCBGSL` solver
 
   Logically Collective
 
   Input Parameters:
 + ksp      - iterative context of type `KSPCBGSL`
-- use_pinv - set to PETSC_TRUE when using pseudoinverse
+- use_pinv - set to `PETSC_TRUE` when using pseudoinverse
 
   Options Database Key:
-. -ksp_bcgsl_pinv - use pseudoinverse
+. -ksp_bcgsl_pinv <true,false> - use pseudoinverse
 
   Level: intermediate
 
@@ -355,13 +355,13 @@ PetscErrorCode KSPBCGSLSetUsePseudoinverse(KSP ksp, PetscBool use_pinv)
 
 /*@
   KSPBCGSLSetPol - Sets the type of polynomial part that will
-  be used in the  `KSPCBGSL` solver.
+  be used in the `KSPCBGSL` `KSPSolve()`
 
   Logically Collective
 
   Input Parameters:
 + ksp   - iterative context of type `KSPCBGSL`
-- uMROR - set to PETSC_TRUE when the polynomial is a convex combination of an MR and an OR step.
+- uMROR - set to `PETSC_TRUE` when the polynomial is a convex combination of an MR and an OR step.
 
   Options Database Keys:
 + -ksp_bcgsl_cxpoly - use enhanced polynomial
@@ -394,7 +394,7 @@ PetscErrorCode KSPBCGSLSetPol(KSP ksp, PetscBool uMROR)
 }
 
 /*@
-  KSPBCGSLSetEll - Sets the number of search directions in `KSPCBGSL` solver
+  KSPBCGSLSetEll - Sets the number of search directions to use in the `KSPCBGSL` solver
 
   Logically Collective
 
@@ -408,7 +408,7 @@ PetscErrorCode KSPBCGSLSetPol(KSP ksp, PetscBool uMROR)
   Level: intermediate
 
   Notes:
-  For large ell it is common for the polynomial update problem to become singular (due to happy breakdown for smallish
+  For large `ell` it is common for the polynomial update problem to become singular (due to happy breakdown for smallish
   test problems, but also for larger problems). Consequently, by default, the system is solved by pseudoinverse, which
   allows the iteration to complete successfully. See `KSPBCGSLSetUsePseudoinverse()` to switch to a conventional solve.
 
@@ -519,7 +519,7 @@ static PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
 }
 
 /*MC
-     KSPBCGSL - Implements a slight variant of the Enhanced
+    KSPBCGSL - Implements a slight variant of the Enhanced
                 BiCGStab(L) algorithm in (3) and (2).  The variation
                 concerns cases when either kappa0**2 or kappa1**2 is
                 negative due to round-off. Kappa0 has also been pulled
@@ -534,25 +534,25 @@ static PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
 
    Level: intermediate
 
-    References:
-+   * - G.L.G. Sleijpen, H.A. van der Vorst, "An overview of
-         approaches for the stable computation of hybrid BiCG
-         methods", Applied Numerical Mathematics: Transactions
-         f IMACS, 19(3), 1996.
-.   * - G.L.G. Sleijpen, H.A. van der Vorst, D.R. Fokkema,
-         "BiCGStab(L) and other hybrid BiCG methods",
-          Numerical Algorithms, 7, 1994.
--   * - D.R. Fokkema, "Enhanced implementation of BiCGStab(L)
-         for solving linear systems of equations", preprint
-         from www.citeseer.com.
-
    Contributed by:
    Joel M. Malard, email jm.malard@pnl.gov
 
    Developer Notes:
-    This has not been completely cleaned up into PETSc style.
+   This has not been completely cleaned up into PETSc style.
 
-    All the BLAS and LAPACK calls in the source should be removed and replaced with loops and the macros for block solvers converted from LINPACK.
+   All the BLAS and LAPACK calls in the source should be removed and replaced with loops and the macros for block solvers converted from LINPACK.
+
+   References:
++  * - G.L.G. Sleijpen, H.A. van der Vorst, "An overview of
+         approaches for the stable computation of hybrid BiCG
+         methods", Applied Numerical Mathematics: Transactions
+         f IMACS, 19(3), 1996.
+.  * - G.L.G. Sleijpen, H.A. van der Vorst, D.R. Fokkema,
+         "BiCGStab(L) and other hybrid BiCG methods",
+          Numerical Algorithms, 7, 1994.
+-  * - D.R. Fokkema, "Enhanced implementation of BiCGStab(L)
+         for solving linear systems of equations", preprint
+         from www.citeseer.com.
 
 .seealso: [](ch_ksp), `KSPFBCGS`, `KSPFBCGSR`, `KSPBCGS`, `KSPPIPEBCGS`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPBCGS`, `KSPSetPCSide()`,
           `KSPBCGSLSetEll()`, `KSPBCGSLSetXRes()`, `KSPBCGSLSetUsePseudoinverse()`, `KSPBCGSLSetPol()`

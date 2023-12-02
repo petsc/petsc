@@ -20,7 +20,7 @@ static const char *DType_Table[64] = {"preconditioned", "unpreconditioned"};
 
   Level: advanced
 
-.seealso: [](ch_ksp), `KSPGLTR`, `KSPGLTRGetLambda()`
+.seealso: [](ch_ksp), `KSP`, `KSPGLTR`, `KSPGLTRGetLambda()`
 @*/
 PetscErrorCode KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
 {
@@ -32,7 +32,7 @@ PetscErrorCode KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
 
 /*@
   KSPGLTRGetLambda - Get the multiplier on the trust-region constraint when using `KSPGLTR`
-  t
+
   Not Collective
 
   Input Parameter:
@@ -43,7 +43,7 @@ PetscErrorCode KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
 
   Level: advanced
 
-.seealso: [](ch_ksp), `KSPGLTR`, `KSPGLTRGetMinEig()`
+.seealso: [](ch_ksp), `KSP`, `KSPGLTR`, `KSPGLTRGetMinEig()`
 @*/
 PetscErrorCode KSPGLTRGetLambda(KSP ksp, PetscReal *lambda)
 {
@@ -1197,26 +1197,13 @@ static PetscErrorCode KSPCGDestroy_GLTR(KSP ksp)
   KSPCG_GLTR *cg = (KSPCG_GLTR *)ksp->data;
 
   PetscFunctionBegin;
-  /***************************************************************************/
-  /* Free memory allocated for the data.                                     */
-  /***************************************************************************/
-
   PetscCall(PetscFree5(cg->diag, cg->offd, cg->alpha, cg->beta, cg->norm_r));
   if (cg->alloced) PetscCall(PetscFree2(cg->rwork, cg->iwork));
-
-  /***************************************************************************/
-  /* Clear composed functions                                                */
-  /***************************************************************************/
-
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetRadius_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetNormD_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetObjFcn_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGLTRGetMinEig_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGLTRGetLambda_C", NULL));
-
-  /***************************************************************************/
-  /* Destroy KSP object.                                                     */
-  /***************************************************************************/
   PetscCall(KSPDestroyDefault(ksp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1289,36 +1276,37 @@ static PetscErrorCode KSPCGSetFromOptions_GLTR(KSP ksp, PetscOptionItems *PetscO
 }
 
 /*MC
-     KSPGLTR -   Code to run conjugate gradient method subject to a constraint
-         on the solution norm.
+   KSPGLTR -   Code to run conjugate gradient method subject to a constraint on the solution norm, used within trust region methods
 
-   Options Database Keys:
-.      -ksp_cg_radius <r> - Trust Region Radius
+   Options Database Key:
+.  -ksp_cg_radius <r> - Trust Region Radius
 
    Level: developer
 
-  Notes:
-  Uses preconditioned conjugate gradient to compute
-  an approximate minimizer of the quadratic function
+   Notes:
+   Uses preconditioned conjugate gradient to compute  an approximate minimizer of the quadratic function
 
-            q(s) = g^T * s + .5 * s^T * H * s
+   $$
+   q(s) = g^T * s + .5 * s^T * H * s
+   $$
 
    subject to the trust region constraint
 
-            || s || <= delta,
+   $$
+   || s || \le delta,
+   $$
 
    where
-
+.vb
      delta is the trust region radius,
      g is the gradient vector,
      H is the Hessian approximation,
      M is the positive definite preconditioner matrix.
+.ve
 
    `KSPConvergedReason` may have the additional values
-.vb
-   KSP_CONVERGED_NEG_CURVE if convergence is reached along a negative curvature direction,
-   KSP_CONVERGED_STEP_LENGTH if convergence is reached along a constrained step.
-.ve
++  `KSP_CONVERGED_NEG_CURVE` - if convergence is reached along a negative curvature direction,
+-  `KSP_CONVERGED_STEP_LENGTH` - if convergence is reached along a constrained step.
 
   The operator and the preconditioner supplied must be symmetric and positive definite.
 

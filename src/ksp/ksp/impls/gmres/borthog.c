@@ -14,15 +14,15 @@
   Collective
 
   Input Parameters:
-+ ksp - KSP object, must be associated with `KSPGMRES`, `KSPFGMRES`, or `KSPLGMRES` Krylov method
++ ksp - `KSP` object, must be associated with `KSPGMRES`, `KSPFGMRES`, or `KSPLGMRES` Krylov method
 - it  - one less than the current GMRES restart iteration, i.e. the size of the Krylov space
 
-  Options Database Keys:
+  Options Database Key:
 . -ksp_gmres_modifiedgramschmidt - Activates `KSPGMRESModifiedGramSchmidtOrthogonalization()`
 
   Level: intermediate
 
-  Notes:
+  Note:
   In general this is much slower than `KSPGMRESClassicalGramSchmidtOrthogonalization()` but has better stability properties.
 
 .seealso: [](ch_ksp), `KSPGMRESSetOrthogonalization()`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESGetOrthogonalization()`

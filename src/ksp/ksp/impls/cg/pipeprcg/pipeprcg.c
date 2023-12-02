@@ -180,7 +180,7 @@ static PetscErrorCode KSPSolve_PIPEPRCG(KSP ksp)
    KSPPIPEPRCG - Pipelined predict-and-recompute conjugate gradient method. [](sec_pipelineksp)
 
    Options Database Key:
-.  -ksp_pipeprcg_recompute_w - recompute the w_k with Ar_k, default is true
+.  -ksp_pipeprcg_recompute_w - recompute the $w_k$ with $Ar_k$, default is true
 
    Level: intermediate
 

@@ -38,7 +38,7 @@ PetscBool         KSPMonitorRegisterAllCalled = PETSC_FALSE;
   Note:
   The type is determined by the data in the file, any type set into the `KSP` before this call is ignored.
 
-.seealso: `KSP`, `PetscViewerBinaryOpen()`, `KSPView()`, `MatLoad()`, `VecLoad()`
+.seealso: [](ch_ksp), `KSP`, `PetscViewerBinaryOpen()`, `KSPView()`, `MatLoad()`, `VecLoad()`
 @*/
 PetscErrorCode KSPLoad(KSP newdm, PetscViewer viewer)
 {
@@ -98,7 +98,7 @@ PetscErrorCode KSPLoad(KSP newdm, PetscViewer viewer)
 
   In the debugger you can do call `KSPView(ksp,0)` to display the `KSP`. (The same holds for any PETSc object viewer).
 
-.seealso: `KSP`, `PetscViewer`, `PCView()`, `PetscViewerASCIIOpen()`
+.seealso: [](ch_ksp), `KSP`, `PetscViewer`, `PCView()`, `PetscViewerASCIIOpen()`
 @*/
 PetscErrorCode KSPView(KSP ksp, PetscViewer viewer)
 {
@@ -224,7 +224,7 @@ PetscErrorCode KSPView(KSP ksp, PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: `KSP`, `KSPView`, `PetscObjectViewFromOptions()`, `KSPCreate()`
+.seealso: [](ch_ksp), `KSP`, `KSPView`, `PetscObjectViewFromOptions()`, `KSPCreate()`
 @*/
 PetscErrorCode KSPViewFromOptions(KSP A, PetscObject obj, const char name[])
 {
@@ -268,7 +268,7 @@ PetscErrorCode KSPViewFromOptions(KSP A, PetscObject obj, const char name[])
   Developer Notes:
   Supported combinations of norm and preconditioner side are set using `KSPSetSupportedNorm()`.
 
-.seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSPConvergedSkip()`, `KSPSetCheckNormIteration()`, `KSPSetPCSide()`, `KSPGetPCSide()`, `KSPNormType`
+.seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSPConvergedSkip()`, `KSPSetCheckNormIteration()`, `KSPSetPCSide()`, `KSPGetPCSide()`, `KSPNormType`
 @*/
 PetscErrorCode KSPSetNormType(KSP ksp, KSPNormType normtype)
 {
@@ -299,7 +299,7 @@ PetscErrorCode KSPSetNormType(KSP ksp, KSPNormType normtype)
 
   Level: advanced
 
-.seealso: `KSP`, `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSPConvergedSkip()`, `KSPSetNormType()`
+.seealso: [](ch_ksp), `KSP`, `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSPConvergedSkip()`, `KSPSetNormType()`
 @*/
 PetscErrorCode KSPSetCheckNormIteration(KSP ksp, PetscInt it)
 {
@@ -333,7 +333,7 @@ PetscErrorCode KSPSetCheckNormIteration(KSP ksp, PetscInt it)
 
   If you lag the norm and run with, for example, -ksp_monitor, the residual norm reported will be the lagged one.
 
-.seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSPConvergedSkip()`, `KSPSetNormType()`, `KSPSetCheckNormIteration()`
+.seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSPConvergedSkip()`, `KSPSetNormType()`, `KSPSetCheckNormIteration()`
 @*/
 PetscErrorCode KSPSetLagNorm(KSP ksp, PetscBool flg)
 {
@@ -362,7 +362,7 @@ PetscErrorCode KSPSetLagNorm(KSP ksp, PetscBool flg)
   which norms and preconditioner sides are supported. Users should not need to call this
   function.
 
-.seealso: `KSP`, `KSPNormType`, `PCSide`, `KSPSetNormType()`, `KSPSetPCSide()`
+.seealso: [](ch_ksp), `KSP`, `KSPNormType`, `PCSide`, `KSPSetNormType()`, `KSPSetPCSide()`
 @*/
 PetscErrorCode KSPSetSupportedNorm(KSP ksp, KSPNormType normtype, PCSide pcside, PetscInt priority)
 {
@@ -420,7 +420,7 @@ PetscErrorCode KSPSetUpNorms_Private(KSP ksp, PetscBool errorifnotsupported, KSP
 
   Level: advanced
 
-.seealso: `KSPNormType`, `KSPSetNormType()`, `KSPConvergedSkip()`
+.seealso: [](ch_ksp), `KSPNormType`, `KSPSetNormType()`, `KSPConvergedSkip()`
 @*/
 PetscErrorCode KSPGetNormType(KSP ksp, KSPNormType *normtype)
 {
@@ -501,7 +501,7 @@ PetscErrorCode KSPGetNormType(KSP ksp, KSPNormType *normtype)
   Thus, why should YOU have to create the `Mat` and attach it to the `SNES`/`KSP`/`PC`, when
   it can be created for you?
 
-.seealso: `KSP`, `Mat`, `KSPSolve()`, `KSPGetPC()`, `PCGetOperators()`, `PCSetOperators()`, `KSPGetOperators()`, `KSPSetComputeOperators()`, `KSPSetComputeInitialGuess()`, `KSPSetComputeRHS()`
+.seealso: [](ch_ksp), `KSP`, `Mat`, `KSPSolve()`, `KSPGetPC()`, `PCGetOperators()`, `PCSetOperators()`, `KSPGetOperators()`, `KSPSetComputeOperators()`, `KSPSetComputeInitialGuess()`, `KSPSetComputeRHS()`
 @*/
 PetscErrorCode KSPSetOperators(KSP ksp, Mat Amat, Mat Pmat)
 {
@@ -535,7 +535,7 @@ PetscErrorCode KSPSetOperators(KSP ksp, Mat Amat, Mat Pmat)
   Note:
   DOES NOT increase the reference counts of the matrix, so you should NOT destroy them.
 
-.seealso: `KSP`, `KSPSolve()`, `KSPGetPC()`, `PCGetOperators()`, `PCSetOperators()`, `KSPSetOperators()`, `KSPGetOperatorsSet()`
+.seealso: [](ch_ksp), `KSP`, `KSPSolve()`, `KSPGetPC()`, `PCGetOperators()`, `PCSetOperators()`, `KSPSetOperators()`, `KSPGetOperatorsSet()`
 @*/
 PetscErrorCode KSPGetOperators(KSP ksp, Mat *Amat, Mat *Pmat)
 {
@@ -565,7 +565,7 @@ PetscErrorCode KSPGetOperators(KSP ksp, Mat *Amat, Mat *Pmat)
   This routine exists because if you call `KSPGetOperators()` on a `KSP` that does not yet have operators they are
   automatically created in the call.
 
-.seealso: `KSP`, `PCSetOperators()`, `KSPGetOperators()`, `KSPSetOperators()`, `PCGetOperators()`, `PCGetOperatorsSet()`
+.seealso: [](ch_ksp), `KSP`, `PCSetOperators()`, `KSPGetOperators()`, `KSPSetOperators()`, `PCGetOperators()`, `PCGetOperatorsSet()`
 @*/
 PetscErrorCode KSPGetOperatorsSet(KSP ksp, PetscBool *mat, PetscBool *pmat)
 {
@@ -594,7 +594,7 @@ PetscErrorCode KSPGetOperatorsSet(KSP ksp, PetscBool *mat, PetscBool *pmat)
 
   Level: developer
 
-.seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPostSolve()`, `PCEISENSTAT`
+.seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPostSolve()`, `PCEISENSTAT`
 @*/
 PetscErrorCode KSPSetPreSolve(KSP ksp, PetscErrorCode (*presolve)(KSP ksp, Vec rhs, Vec x, void *ctx), void *ctx)
 {
@@ -623,7 +623,7 @@ PetscErrorCode KSPSetPreSolve(KSP ksp, PetscErrorCode (*presolve)(KSP ksp, Vec r
 
   Level: developer
 
-.seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPreSolve()`, `PCEISENSTAT`
+.seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPreSolve()`, `PCEISENSTAT`
 @*/
 PetscErrorCode KSPSetPostSolve(KSP ksp, PetscErrorCode (*postsolve)(KSP ksp, Vec rhs, Vec x, void *ctx), void *ctx)
 {

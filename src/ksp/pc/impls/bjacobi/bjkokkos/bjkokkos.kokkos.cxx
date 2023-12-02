@@ -1107,7 +1107,7 @@ static PetscErrorCode PCBJKOKKOSSetKSP_BJKOKKOS(PC pc, KSP ksp)
 
   If the `PC` is not `PCBJKOKKOS` this function returns without doing anything
 
-.seealso: `PCBJKOKKOSGetKSP()`, `PCBJKOKKOS`
+.seealso: [](ch_ksp), `PCBJKOKKOSGetKSP()`, `PCBJKOKKOS`
 @*/
 PetscErrorCode PCBJKOKKOSSetKSP(PC pc, KSP ksp)
 {
@@ -1147,7 +1147,7 @@ static PetscErrorCode PCBJKOKKOSGetKSP_BJKOKKOS(PC pc, KSP *ksp)
 
   If the `PC` is not a `PCBJKOKKOS` object it raises an error
 
-.seealso: `PCBJKOKKOS`, `PCBJKOKKOSSetKSP()`
+.seealso: [](ch_ksp), `PCBJKOKKOS`, `PCBJKOKKOSSetKSP()`
 @*/
 PetscErrorCode PCBJKOKKOSGetKSP(PC pc, KSP *ksp)
 {
@@ -1174,7 +1174,7 @@ PetscErrorCode PCBJKOKKOSGetKSP(PC pc, KSP *ksp)
 
    Why does it have its own `KSP`? Where is the `KSP` run if used with -ksp_type preonly?
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCBJACOBI`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCBJACOBI`,
           `PCSHELL`, `PCCOMPOSITE`, `PCSetUseAmat()`, `PCBJKOKKOSGetKSP()`
 M*/
 

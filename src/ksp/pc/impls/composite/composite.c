@@ -417,7 +417,7 @@ static PetscErrorCode PCCompositeGetPC_Composite(PC pc, PetscInt n, PC *subpc)
 
   Level: advanced
 
-.seealso: `PCCOMPOSITE`, `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE`, `PC_COMPOSITE_SPECIAL`, `PCCompositeType`,
+.seealso: [](ch_ksp), `PCCOMPOSITE`, `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE`, `PC_COMPOSITE_SPECIAL`, `PCCompositeType`,
           `PCCompositeGetType()`
 @*/
 PetscErrorCode PCCompositeSetType(PC pc, PCCompositeType type)
@@ -442,7 +442,7 @@ PetscErrorCode PCCompositeSetType(PC pc, PCCompositeType type)
 
   Level: advanced
 
-.seealso: `PCCOMPOSITE`, `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE`, `PC_COMPOSITE_SPECIAL`, `PCCompositeType`,
+.seealso: [](ch_ksp), `PCCOMPOSITE`, `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE`, `PC_COMPOSITE_SPECIAL`, `PCCompositeType`,
           `PCCompositeSetType()`
 @*/
 PetscErrorCode PCCompositeGetType(PC pc, PCCompositeType *type)
@@ -465,7 +465,7 @@ PetscErrorCode PCCompositeGetType(PC pc, PCCompositeType *type)
 
   Level: developer
 
-.seealso: `PCCOMPOSITE`, `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE`, `PC_COMPOSITE_SPECIAL`, `PCCompositeType`,
+.seealso: [](ch_ksp), `PCCOMPOSITE`, `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE`, `PC_COMPOSITE_SPECIAL`, `PCCompositeType`,
           `PCCompositeSetType()`, `PCCompositeGetType()`
 @*/
 PetscErrorCode PCCompositeSpecialSetAlpha(PC pc, PetscScalar alpha)
@@ -488,7 +488,7 @@ PetscErrorCode PCCompositeSpecialSetAlpha(PC pc, PetscScalar alpha)
 
   Level: intermediate
 
-.seealso: `PCCOMPOSITE`, `PCCompositeAddPC()`, `PCCompositeGetNumberPC()`
+.seealso: [](ch_ksp), `PCCOMPOSITE`, `PCCompositeAddPC()`, `PCCompositeGetNumberPC()`
 @*/
 PetscErrorCode PCCompositeAddPCType(PC pc, PCType type)
 {
@@ -509,7 +509,7 @@ PetscErrorCode PCCompositeAddPCType(PC pc, PCType type)
 
   Level: intermediate
 
-.seealso: `PCCOMPOSITE`, `PCCompositeAddPCType()`, `PCCompositeGetNumberPC()`
+.seealso: [](ch_ksp), `PCCOMPOSITE`, `PCCompositeAddPCType()`, `PCCompositeGetNumberPC()`
 @*/
 PetscErrorCode PCCompositeAddPC(PC pc, PC subpc)
 {
@@ -533,7 +533,7 @@ PetscErrorCode PCCompositeAddPC(PC pc, PC subpc)
 
   Level: developer
 
-.seealso: `PCCOMPOSITE`, `PCCompositeGetPC()`, `PCCompositeAddPC()`, `PCCompositeAddPCType()`
+.seealso: [](ch_ksp), `PCCOMPOSITE`, `PCCompositeGetPC()`, `PCCompositeAddPC()`, `PCCompositeAddPCType()`
 @*/
 PetscErrorCode PCCompositeGetNumberPC(PC pc, PetscInt *num)
 {
@@ -562,7 +562,7 @@ PetscErrorCode PCCompositeGetNumberPC(PC pc, PetscInt *num)
   To use a different operator to construct one of the inner preconditioners first call `PCCompositeGetPC()`, then
   call `PCSetOperators()` on that `PC`.
 
-.seealso: `PCCOMPOSITE`, `PCCompositeAddPCType()`, `PCCompositeGetNumberPC()`, `PCSetOperators()`
+.seealso: [](ch_ksp), `PCCOMPOSITE`, `PCCompositeAddPCType()`, `PCCompositeGetNumberPC()`, `PCSetOperators()`
 @*/
 PetscErrorCode PCCompositeGetPC(PC pc, PetscInt n, PC *subpc)
 {
@@ -591,7 +591,7 @@ PetscErrorCode PCCompositeGetPC(PC pc, PetscInt n, PC *subpc)
    To use a different operator to construct one of the inner preconditioners first call `PCCompositeGetPC()`, then
    call `PCSetOperators()` on that `PC`.
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
           `PCSHELL`, `PCKSP`, `PCCompositeSetType()`, `PCCompositeSpecialSetAlpha()`, `PCCompositeAddPCType()`,
           `PCCompositeGetPC()`, `PCSetUseAmat()`, `PCCompositeAddPC()`, `PCCompositeGetNumberPC()`
 M*/

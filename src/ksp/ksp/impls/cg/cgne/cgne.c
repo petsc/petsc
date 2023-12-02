@@ -179,33 +179,30 @@ static PetscErrorCode KSPSolve_CGNE(KSP ksp)
 */
 
 /*MC
-     KSPCGNE - Applies the preconditioned conjugate gradient method to the normal equations
-          without explicitly forming A^t*A
+   KSPCGNE - Applies the preconditioned conjugate gradient method to the normal equations
+          without explicitly forming $A^T*A$
 
-   Options Database Keys:
+   Options Database Key:
 .   -ksp_cg_type <Hermitian or symmetric - (for complex matrices only) indicates the matrix is Hermitian or symmetric
 
    Level: beginner
 
    Notes:
    Eigenvalue computation routines including `KSPSetComputeEigenvalues()` and `KSPComputeEigenvalues()` will return information about the
-    spectrum of A^t*A, rather than A.
+   spectrum of $A^T*A$, rather than $A$.
 
    `KSPCGNE` is a general-purpose non-symmetric method. It works well when the singular values are much better behaved than
    eigenvalues. A unitary matrix is a classic example where `KSPCGNE` converges in one iteration, but `KSPGMRES` and `KSPCGS` need N
-   iterations, see [1]. If you intend to solve least squares problems, use `KSPLSQR`.
+   iterations, see {cite}`nachtigal90`. If you intend to solve least squares problems, use `KSPLSQR`.
 
    This is NOT a different algorithm than used with `KSPCG`, it merely uses that algorithm with the
-   matrix defined by A^t*A and preconditioner defined by B^t*B where B is the preconditioner for A.
+   matrix defined by $A^T*A$ and preconditioner defined by $B^T*B$ where $B$ is the preconditioner for $A$.
 
    This method requires that one be able to apply the transpose of the preconditioner and operator
    as well as the operator and preconditioner. If the transpose of the preconditioner is not available then
-   the preconditioner is used in its place so one ends up preconditioning A'A with B B. Seems odd?
+   the preconditioner is used in its place so one ends up preconditioning $A^T*A$ with $B*B$. Seems odd?
 
    This only supports left preconditioning.
-
-   Reference:
-.   [1] -  Nachtigal, Reddy, and Trefethen, "How fast are nonsymmetric matrix iterations", 1992
 
    Developer Note:
    This object is subclassed off of `KSPCG`, see the source code in src/ksp/ksp/impls/cg for comments on the structure of the code

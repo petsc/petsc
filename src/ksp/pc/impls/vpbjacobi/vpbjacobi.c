@@ -316,7 +316,7 @@ PETSC_INTERN PetscErrorCode PCDestroy_VPBJacobi(PC pc)
      Perhaps should provide an option that allows generation of a valid preconditioner
      even if a block is singular as the `PCJACOBI` does.
 
-.seealso: `MatSetVariableBlockSizes()`, `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCJACOBI`, `PCPBJACOBI`, `PCBJACOBI`
+.seealso: [](ch_ksp), `MatSetVariableBlockSizes()`, `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCJACOBI`, `PCPBJACOBI`, `PCBJACOBI`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_VPBJacobi(PC pc)

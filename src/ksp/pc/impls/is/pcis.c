@@ -21,7 +21,7 @@ static PetscErrorCode PCISSetUseStiffnessScaling_IS(PC pc, PetscBool use)
 
   Level: intermediate
 
-.seealso: `PCBDDC`, `PCNN`, `PCISSetSubdomainDiagonalScaling()`, `PCISScatterArrayNToVecB()`,
+.seealso: [](ch_ksp), `PCBDDC`, `PCNN`, `PCISSetSubdomainDiagonalScaling()`, `PCISScatterArrayNToVecB()`,
           `PCISSetSubdomainScalingFactor()`,
           `PCISReset()`, `PCISInitialize()`, `PCISApplyInvSchur()`, `PCISApplySchur()`
 @*/
@@ -71,7 +71,7 @@ static PetscErrorCode PCISSetSubdomainDiagonalScaling_IS(PC pc, Vec scaling_fact
   Note:
   Intended for use with jumping coefficients cases.
 
-.seealso: `PCBDDC`, `PCNN`, `PCISScatterArrayNToVecB()`,
+.seealso: [](ch_ksp), `PCBDDC`, `PCNN`, `PCISScatterArrayNToVecB()`,
           `PCISSetSubdomainScalingFactor()`, `PCISSetUseStiffnessScaling()`,
           `PCISReset()`, `PCISInitialize()`, `PCISApplyInvSchur()`, `PCISApplySchur()`
 @*/
@@ -108,7 +108,7 @@ static PetscErrorCode PCISSetSubdomainScalingFactor_IS(PC pc, PetscScalar scal)
   Note:
   Intended for use with the jumping coefficients cases.
 
-.seealso: `PCBDDC`, `PCNN`, `PCISScatterArrayNToVecB()`,
+.seealso: [](ch_ksp), `PCBDDC`, `PCNN`, `PCISScatterArrayNToVecB()`,
           `PCISSetSubdomainDiagonalScaling()`, `PCISSetUseStiffnessScaling()`,
           `PCISReset()`, `PCISInitialize()`, `PCISApplyInvSchur()`, `PCISApplySchur()`
 @*/
@@ -130,7 +130,7 @@ PetscErrorCode PCISSetSubdomainScalingFactor(PC pc, PetscScalar scal)
 
   Level: advanced
 
-.seealso: `PCBDDC`, `PCNN`, `PCISSetUseStiffnessScaling()`, `PCISSetSubdomainDiagonalScaling()`, `PCISScatterArrayNToVecB()`,
+.seealso: [](ch_ksp), `PCBDDC`, `PCNN`, `PCISSetUseStiffnessScaling()`, `PCISSetSubdomainDiagonalScaling()`, `PCISScatterArrayNToVecB()`,
           `PCISSetSubdomainScalingFactor()`,
           `PCISReset()`, `PCISApplySchur()`, `PCISApplyInvSchur()`
 @*/
@@ -415,7 +415,7 @@ PetscErrorCode PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesolv
 
   Level: advanced
 
-.seealso: `PCISSetUseStiffnessScaling()`, `PCISSetSubdomainDiagonalScaling()`, `PCISScatterArrayNToVecB()`, `PCISSetSubdomainScalingFactor()`,
+.seealso: [](ch_ksp), `PCISSetUseStiffnessScaling()`, `PCISSetSubdomainDiagonalScaling()`, `PCISScatterArrayNToVecB()`, `PCISSetSubdomainScalingFactor()`,
           `PCISInitialize()`, `PCISApplySchur()`, `PCISApplyInvSchur()`
 @*/
 PetscErrorCode PCISReset(PC pc)
@@ -474,7 +474,7 @@ PetscErrorCode PCISReset(PC pc)
   Note:
   There is no preconditioner the `PCIS` prefixed routines provide functionality needed by `PCNN` or `PCBDDC`
 
-.seealso: `PCBDDC`, `PCNN`, `PCISSetUseStiffnessScaling()`, `PCISSetSubdomainDiagonalScaling()`, `PCISScatterArrayNToVecB()`,
+.seealso: [](ch_ksp), `PCBDDC`, `PCNN`, `PCISSetUseStiffnessScaling()`, `PCISSetSubdomainDiagonalScaling()`, `PCISScatterArrayNToVecB()`,
           `PCISSetSubdomainScalingFactor()`,
           `PCISReset()`, `PCISApplySchur()`, `PCISApplyInvSchur()`
 @*/
@@ -509,7 +509,7 @@ PetscErrorCode PCISInitialize(PC pc)
 
   Level: advanced
 
-.seealso: `PCBDDC`, `PCNN`, `PCISSetUseStiffnessScaling()`, `PCISSetSubdomainDiagonalScaling()`, `PCISScatterArrayNToVecB()`,
+.seealso: [](ch_ksp), `PCBDDC`, `PCNN`, `PCISSetUseStiffnessScaling()`, `PCISSetSubdomainDiagonalScaling()`, `PCISScatterArrayNToVecB()`,
           `PCISSetSubdomainScalingFactor()`, `PCISApplyInvSchur()`,
           `PCISReset()`, `PCISInitialize()`
 @*/
@@ -546,7 +546,7 @@ PetscErrorCode PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, 
   Note:
   The entries in the array that do not correspond to interface nodes remain unaltered.
 
-.seealso: `PCBDDC`, `PCNN`, `PCISSetUseStiffnessScaling()`, `PCISSetSubdomainDiagonalScaling()`,
+.seealso: [](ch_ksp), `PCBDDC`, `PCNN`, `PCISSetUseStiffnessScaling()`, `PCISSetSubdomainDiagonalScaling()`,
           `PCISSetSubdomainScalingFactor()`, `PCISApplySchur()`, `PCISApplyInvSchur()`,
           `PCISReset()`, `PCISInitialize()`, `InsertMode`
 @*/
@@ -599,7 +599,7 @@ PetscErrorCode PCISScatterArrayNToVecB(PC pc, PetscScalar *array_N, Vec v_B, Ins
   [ A_BI  A_BB ] [ x ]   [ b ]
 .ve
 
-.seealso: `PCBDDC`, `PCNN`, `PCISSetUseStiffnessScaling()`, `PCISSetSubdomainDiagonalScaling()`, `PCISScatterArrayNToVecB()`,
+.seealso: [](ch_ksp), `PCBDDC`, `PCNN`, `PCISSetUseStiffnessScaling()`, `PCISSetSubdomainDiagonalScaling()`, `PCISScatterArrayNToVecB()`,
           `PCISSetSubdomainScalingFactor()`,
           `PCISReset()`, `PCISInitialize()`
 @*/

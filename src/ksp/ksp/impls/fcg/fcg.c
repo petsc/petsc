@@ -319,9 +319,8 @@ static PetscErrorCode KSPView_FCG(KSP ksp, PetscViewer viewer)
   Level: intermediate
 
   Note:
-  mmax + 1 directions are stored (mmax previous ones along with a current one)
-  and whether all are used in each iteration also depends on the truncation strategy
-  (see KSPFCGSetTruncationType())
+  `mmax` + 1 directions are stored (`mmax` previous ones along with a current one)
+  and whether all are used in each iteration also depends on the truncation strategy, see `KSPFCGSetTruncationType()`
 
 .seealso: [](ch_ksp), `KSPFCG`, `KSPFCGGetTruncationType()`, `KSPFCGGetNprealloc()`, `KSPFCGetMmax()`
 @*/
@@ -350,7 +349,7 @@ PetscErrorCode KSPFCGSetMmax(KSP ksp, PetscInt mmax)
   Level: intermediate
 
   Note:
-  FCG stores mmax+1 directions at most (mmax previous ones, and one current one)
+  `KSPFCG` stores `mmax`+1 directions at most (`mmax` previous ones, and one current one)
 
 .seealso: [](ch_ksp), `KSPFCG`, `KSPFCGGetTruncationType()`, `KSPFCGGetNprealloc()`, `KSPFCGSetMmax()`
 @*/
@@ -435,7 +434,8 @@ PetscErrorCode KSPFCGGetNprealloc(KSP ksp, PetscInt *nprealloc)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `KSPFCDTruncationType`, `KSPFCGGetTruncationType`, `KSPFCGSetNprealloc()`, `KSPFCGSetMmax()`, `KSPFCGGetMmax()`
+.seealso: [](ch_ksp), `KSPFCDTruncationType`, `KSPFCGGetTruncationType()`, `KSPFCGSetNprealloc()`, `KSPFCGSetMmax()`, `KSPFCGGetMmax()`,
+          `KSP_FCD_TRUNC_TYPE_STANDARD`, `KSP_FCD_TRUNC_TYPE_NOTAY`
 @*/
 PetscErrorCode KSPFCGSetTruncationType(KSP ksp, KSPFCDTruncationType truncstrat)
 {
@@ -461,7 +461,7 @@ PetscErrorCode KSPFCGSetTruncationType(KSP ksp, KSPFCDTruncationType truncstrat)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `KSPFCG`, `KSPFCGSetTruncationType`, `KSPFCDTruncationType`, `KSPFCGSetTruncationType()`
+.seealso: [](ch_ksp), `KSPFCG`, `KSPFCGSetTruncationType()`, `KSPFCDTruncationType`, `KSP_FCD_TRUNC_TYPE_STANDARD`, `KSP_FCD_TRUNC_TYPE_NOTAY`
 @*/
 PetscErrorCode KSPFCGGetTruncationType(KSP ksp, KSPFCDTruncationType *truncstrat)
 {
@@ -491,7 +491,7 @@ static PetscErrorCode KSPSetFromOptions_FCG(KSP ksp, PetscOptionItems *PetscOpti
 }
 
 /*MC
-      KSPFCG - Implements the Flexible Conjugate Gradient method (FCG). Unlike most `KSP` methods this allows the preconditioner to be nonlinear. [](sec_flexibleksp)
+  KSPFCG - Implements the Flexible Conjugate Gradient method (FCG). Unlike most `KSP` methods this allows the preconditioner to be nonlinear. [](sec_flexibleksp)
 
   Options Database Keys:
 +   -ksp_fcg_mmax <N>  - maximum number of search directions
@@ -500,8 +500,10 @@ static PetscErrorCode KSPSetFromOptions_FCG(KSP ksp, PetscOptionItems *PetscOpti
 
   Level: beginner
 
-   Note:
-   Supports left preconditioning only.
+  Note:
+  Compare to `KSPFCG`
+
+  Supports left preconditioning only.
 
   Contributed by:
   Patrick Sanan

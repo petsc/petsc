@@ -153,7 +153,7 @@ static PetscErrorCode PCSetFromOptions_SAVIENNACL(PC pc, PetscOptionItems *Petsc
   Developer Notes:
   This `PCType` does not appear to be registered
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_SAVIENNACL(PC pc)

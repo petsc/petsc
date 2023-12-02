@@ -469,7 +469,7 @@ PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms)
   Use comms = `PETSC_NULL_MPI_COMM` as the equivalent of `NULL` in the C interface. Note `PETSC_NULL_MPI_COMM`
   is not `MPI_COMM_NULL`. It is more like `PETSC_NULL_INTEGER`, `PETSC_NULL_REAL` etc.
 
-.seealso: `PCMGSetType()`, `PCMGGetLevels()`
+.seealso: [](ch_ksp), `PCMGSetType()`, `PCMGGetLevels()`
 @*/
 PetscErrorCode PCMGSetLevels(PC pc, PetscInt levels, MPI_Comm *comms)
 {
@@ -1234,7 +1234,7 @@ PetscErrorCode PCMGGetLevels_MG(PC pc, PetscInt *levels)
 
   Level: advanced
 
-.seealso: `PCMG`, `PCMGSetLevels()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGSetLevels()`
 @*/
 PetscErrorCode PCMGGetLevels(PC pc, PetscInt *levels)
 {
@@ -1261,7 +1261,7 @@ PetscErrorCode PCMGGetLevels(PC pc, PetscInt *levels)
   Note:
   This is often call the operator complexity in multigrid literature
 
-.seealso: `PCMG`, `PCMGGetLevels()`, `PCMGSetLevels()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGGetLevels()`, `PCMGSetLevels()`
 @*/
 PetscErrorCode PCMGGetGridComplexity(PC pc, PetscReal *gc, PetscReal *oc)
 {
@@ -1314,7 +1314,7 @@ PetscErrorCode PCMGGetGridComplexity(PC pc, PetscReal *gc, PetscReal *oc)
 
   Level: advanced
 
-.seealso: `PCMGType`, `PCMG`, `PCMGGetLevels()`, `PCMGSetLevels()`, `PCMGGetType()`, `PCMGCycleType`
+.seealso: [](ch_ksp), `PCMGType`, `PCMG`, `PCMGGetLevels()`, `PCMGSetLevels()`, `PCMGGetType()`, `PCMGCycleType`
 @*/
 PetscErrorCode PCMGSetType(PC pc, PCMGType form)
 {
@@ -1342,7 +1342,7 @@ PetscErrorCode PCMGSetType(PC pc, PCMGType form)
 
   Level: advanced
 
-.seealso: `PCMGType`, `PCMG`, `PCMGGetLevels()`, `PCMGSetLevels()`, `PCMGSetType()`
+.seealso: [](ch_ksp), `PCMGType`, `PCMG`, `PCMGGetLevels()`, `PCMGSetLevels()`, `PCMGSetType()`
 @*/
 PetscErrorCode PCMGGetType(PC pc, PCMGType *type)
 {
@@ -1369,7 +1369,7 @@ PetscErrorCode PCMGGetType(PC pc, PCMGType *type)
 
   Level: advanced
 
-.seealso: `PCMG`, `PCMGSetCycleTypeOnLevel()`, `PCMGType`, `PCMGCycleType`
+.seealso: [](ch_ksp), `PCMG`, `PCMGSetCycleTypeOnLevel()`, `PCMGType`, `PCMGCycleType`
 @*/
 PetscErrorCode PCMGSetCycleType(PC pc, PCMGCycleType n)
 {
@@ -1404,7 +1404,7 @@ PetscErrorCode PCMGSetCycleType(PC pc, PCMGCycleType n)
   Note:
   This is not associated with setting a v or w cycle, that is set with `PCMGSetCycleType()`
 
-.seealso: `PCMGSetCycleTypeOnLevel()`, `PCMGSetCycleType()`, `PCMGCycleType`, `PCMGType`
+.seealso: [](ch_ksp), `PCMGSetCycleTypeOnLevel()`, `PCMGSetCycleType()`, `PCMGCycleType`, `PCMGType`
 @*/
 PetscErrorCode PCMGMultiplicativeSetCycles(PC pc, PetscInt n)
 {
@@ -1445,7 +1445,7 @@ static PetscErrorCode PCMGSetGalerkin_MG(PC pc, PCMGGalerkinType use)
   Some codes that use `PCMG` such as `PCGAMG` use Galerkin internally while constructing the hierarchy and thus do not
   use the `PCMG` construction of the coarser grids.
 
-.seealso: `PCMG`, `PCMGGetGalerkin()`, `PCMGGalerkinType`
+.seealso: [](ch_ksp), `PCMG`, `PCMGGetGalerkin()`, `PCMGGalerkinType`
 @*/
 PetscErrorCode PCMGSetGalerkin(PC pc, PCMGGalerkinType use)
 {
@@ -1468,7 +1468,7 @@ PetscErrorCode PCMGSetGalerkin(PC pc, PCMGGalerkinType use)
 
   Level: intermediate
 
-.seealso: `PCMG`, `PCMGSetGalerkin()`, `PCMGGalerkinType`
+.seealso: [](ch_ksp), `PCMG`, `PCMGSetGalerkin()`, `PCMGGalerkinType`
 @*/
 PetscErrorCode PCMGGetGalerkin(PC pc, PCMGGalerkinType *galerkin)
 {
@@ -1552,7 +1552,7 @@ static PetscErrorCode PCMGGetAdaptCR_MG(PC pc, PetscBool *cr)
 
   Level: intermediate
 
-.seealso: `PCMG`, `PCMGCoarseSpaceType`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetGalerkin()`, `PCMGSetAdaptInterpolation()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGCoarseSpaceType`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetGalerkin()`, `PCMGSetAdaptInterpolation()`
 @*/
 PetscErrorCode PCMGSetAdaptCoarseSpaceType(PC pc, PCMGCoarseSpaceType ctype)
 {
@@ -1576,7 +1576,7 @@ PetscErrorCode PCMGSetAdaptCoarseSpaceType(PC pc, PCMGCoarseSpaceType ctype)
 
   Level: intermediate
 
-.seealso: `PCMG`, `PCMGCoarseSpaceType`, `PCMGSetAdaptCoarseSpaceType()`, `PCMGSetGalerkin()`, `PCMGSetAdaptInterpolation()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGCoarseSpaceType`, `PCMGSetAdaptCoarseSpaceType()`, `PCMGSetGalerkin()`, `PCMGSetAdaptInterpolation()`
 @*/
 PetscErrorCode PCMGGetAdaptCoarseSpaceType(PC pc, PCMGCoarseSpaceType *ctype)
 {
@@ -1604,7 +1604,7 @@ PetscErrorCode PCMGGetAdaptCoarseSpaceType(PC pc, PCMGCoarseSpaceType *ctype)
 
   Level: intermediate
 
-.seealso: `PCMG`, `PCMGGetAdaptInterpolation()`, `PCMGSetGalerkin()`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetAdaptCoarseSpaceType()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGGetAdaptInterpolation()`, `PCMGSetGalerkin()`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetAdaptCoarseSpaceType()`
 @*/
 PetscErrorCode PCMGSetAdaptInterpolation(PC pc, PetscBool adapt)
 {
@@ -1628,7 +1628,7 @@ PetscErrorCode PCMGSetAdaptInterpolation(PC pc, PetscBool adapt)
 
   Level: intermediate
 
-.seealso: `PCMG`, `PCMGSetAdaptInterpolation()`, `PCMGSetGalerkin()`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetAdaptCoarseSpaceType()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGSetAdaptInterpolation()`, `PCMGSetGalerkin()`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetAdaptCoarseSpaceType()`
 @*/
 PetscErrorCode PCMGGetAdaptInterpolation(PC pc, PetscBool *adapt)
 {
@@ -1653,7 +1653,7 @@ PetscErrorCode PCMGGetAdaptInterpolation(PC pc, PetscBool *adapt)
 
   Level: intermediate
 
-.seealso: `PCMG`, `PCMGGetAdaptCR()`, `PCMGSetAdaptInterpolation()`, `PCMGSetGalerkin()`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetAdaptCoarseSpaceType()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGGetAdaptCR()`, `PCMGSetAdaptInterpolation()`, `PCMGSetGalerkin()`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetAdaptCoarseSpaceType()`
 @*/
 PetscErrorCode PCMGSetAdaptCR(PC pc, PetscBool cr)
 {
@@ -1676,7 +1676,7 @@ PetscErrorCode PCMGSetAdaptCR(PC pc, PetscBool cr)
 
   Level: intermediate
 
-.seealso: `PCMGSetAdaptCR()`, `PCMGGetAdaptInterpolation()`, `PCMGSetGalerkin()`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetAdaptCoarseSpaceType()`
+.seealso: [](ch_ksp), `PCMGSetAdaptCR()`, `PCMGGetAdaptInterpolation()`, `PCMGSetGalerkin()`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetAdaptCoarseSpaceType()`
 @*/
 PetscErrorCode PCMGGetAdaptCR(PC pc, PetscBool *cr)
 {
@@ -1706,7 +1706,7 @@ PetscErrorCode PCMGGetAdaptCR(PC pc, PetscBool *cr)
   Note:
   This does not set a value on the coarsest grid, since we assume that there is no separate smooth up on the coarsest grid.
 
-.seealso: `PCMG`, `PCMGSetDistinctSmoothUp()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGSetDistinctSmoothUp()`
 @*/
 PetscErrorCode PCMGSetNumberSmooth(PC pc, PetscInt n)
 {
@@ -1746,7 +1746,7 @@ PetscErrorCode PCMGSetNumberSmooth(PC pc, PetscInt n)
   Note:
   This does not set a value on the coarsest grid, since we assume that there is no separate smooth up on the coarsest grid.
 
-.seealso: `PCMG`, `PCMGSetNumberSmooth()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGSetNumberSmooth()`
 @*/
 PetscErrorCode PCMGSetDistinctSmoothUp(PC pc)
 {
@@ -1834,7 +1834,7 @@ static PetscErrorCode PCGetCoarseOperators_MG(PC pc, PetscInt *num_levels, Mat *
   Developer Notes:
   How come this is not used by `PCGAMG`?
 
-.seealso: `PCMG`, `PCMGGetCoarseSpaceConstructor()`, `PCRegister()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGGetCoarseSpaceConstructor()`, `PCRegister()`
 @*/
 PetscErrorCode PCMGRegisterCoarseSpaceConstructor(const char name[], PetscErrorCode (*function)(PC pc, PetscInt l, DM dm, KSP smooth, PetscInt Nc, Mat initGuess, Mat *coarseSp))
 {
@@ -1857,7 +1857,7 @@ PetscErrorCode PCMGRegisterCoarseSpaceConstructor(const char name[], PetscErrorC
 
   Level: advanced
 
-.seealso: `PCMG`, `PCMGRegisterCoarseSpaceConstructor()`, `PCRegister()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGRegisterCoarseSpaceConstructor()`, `PCRegister()`
 @*/
 PetscErrorCode PCMGGetCoarseSpaceConstructor(const char name[], PetscErrorCode (**function)(PC, PetscInt, DM, KSP, PetscInt, Mat, Mat *))
 {

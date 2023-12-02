@@ -672,7 +672,7 @@ static PetscErrorCode DMSwarmProjectFields_DA_Internal(DM swarm, DM celldm, Pets
 
   For averaging projection, nly swarm fields registered with data type of `PETSC_REAL` can be projected onto the cell `DM`, and only swarm fields of block size = 1 can currently be projected.
 
-.seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
+.seealso: [](ch_ksp), `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
 PetscErrorCode DMSwarmProjectFields(DM dm, PetscInt nfields, const char *fieldnames[], Vec fields[], ScatterMode mode)
 {

@@ -672,7 +672,7 @@ static PetscErrorCode ISGeneralFilter_General(IS is, PetscInt start, PetscInt en
   Input Parameters:
 + is    - the index set
 . start - the lowest index kept
-- end   - one more than the highest index kept
+- end   - one more than the highest index kept, `start` $\le$ `end`
 
   Level: beginner
 

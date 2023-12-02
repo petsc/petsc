@@ -163,7 +163,7 @@ PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP, Vec, Vec, Vec *);
    Level: intermediate
 
    Notes:
-   This method has only a single non-blocking reduction per iteration, compared to 2 blocking for standard CG.  The
+   This method has only a single non-blocking reduction per iteration, compared to 2 blocking for standard `KSPPCG`.  The
    non-blocking reduction is overlapped by the matrix-vector product and preconditioner application.
 
    See also `KSPPIPECR`, where the reduction is only overlapped with the matrix-vector product and `KSPGROPPCG`

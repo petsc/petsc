@@ -156,7 +156,7 @@ static PetscErrorCode PCSetFromOptions_CP(PC pc, PetscOptionItems *PetscOptionsO
 
   Level: intermediate
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PCJACOBI`, `PCSOR`
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PCJACOBI`, `PCSOR`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_CP(PC pc)

@@ -89,7 +89,7 @@ typedef struct {
   PetscInt    *dm, *dn, k; /* displacements and number of submatrices */
 } Nest_Dense;
 
-PETSC_INTERN PetscErrorCode MatProductNumeric_Nest_Dense(Mat C)
+static PetscErrorCode MatProductNumeric_Nest_Dense(Mat C)
 {
   Mat_Nest          *bA;
   Nest_Dense        *contents;
@@ -164,7 +164,7 @@ static PetscErrorCode MatNest_DenseDestroy(void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode MatProductSymbolic_Nest_Dense(Mat C)
+static PetscErrorCode MatProductSymbolic_Nest_Dense(Mat C)
 {
   Mat_Nest          *bA;
   Mat                viewB, workC;
@@ -255,7 +255,7 @@ static PetscErrorCode MatProductSetFromOptions_Nest_Dense_AB(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Nest_Dense(Mat C)
+static PetscErrorCode MatProductSetFromOptions_Nest_Dense(Mat C)
 {
   Mat_Product *product = C->product;
 

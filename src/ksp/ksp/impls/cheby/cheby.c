@@ -199,7 +199,8 @@ PetscErrorCode KSPChebyshevSetEigenvalues(KSP ksp, PetscReal emax, PetscReal emi
 
   The default transform is (0,0.1; 0,1.1) which targets the "upper" part of the spectrum, as desirable for use with multigrid.
 
-  The eigenvalues are estimated using the Lanczo (`KSPCG`) or Arnoldi (`KSPGMRES`) process
+  The eigenvalues are estimated using the Lanczo (`KSPCG`) or Arnoldi (`KSPGMRES`) process depending on if the operator is
+  symmetric definite or not.
 
   Level: intermediate
 
@@ -218,7 +219,7 @@ PetscErrorCode KSPChebyshevEstEigSet(KSP ksp, PetscReal a, PetscReal b, PetscRea
 }
 
 /*@
-  KSPChebyshevEstEigSetUseNoisy - use a noisy right hand side in order to do the estimate instead of the given right hand side
+  KSPChebyshevEstEigSetUseNoisy - use a noisy right hand side in order to do the estimate of the extreme eigenvalues instead of the given right hand side
 
   Logically Collective
 
@@ -229,10 +230,10 @@ PetscErrorCode KSPChebyshevEstEigSet(KSP ksp, PetscReal a, PetscReal b, PetscRea
   Options Database Key:
 . -ksp_chebyshev_esteig_noisy <true,false> - Use noisy right hand side for estimate
 
+  Level: intermediate
+
   Note:
   This allegedly works better for multigrid smoothers
-
-  Level: intermediate
 
 .seealso: [](ch_ksp), `KSPCHEBYSHEV`, `KSPChebyshevEstEigSet()`, `KSPChebyshevEstEigGetKSP()`
 @*/
@@ -246,7 +247,7 @@ PetscErrorCode KSPChebyshevEstEigSetUseNoisy(KSP ksp, PetscBool use)
 }
 
 /*@
-  KSPChebyshevEstEigGetKSP - Get the Krylov method context used to estimate eigenvalues for the Chebyshev method.
+  KSPChebyshevEstEigGetKSP - Get the Krylov method context used to estimate the eigenvalues for the Chebyshev method.
 
   Input Parameter:
 . ksp - the Krylov space context
@@ -279,7 +280,7 @@ PetscErrorCode KSPChebyshevEstEigGetKSP(KSP ksp, KSP *kspest)
 
   Input Parameters:
 + ksp  - Linear solver context
-- kind - The kind of Chebyshev polynomial to use, see `KSPChebyshevKind`
+- kind - The kind of Chebyshev polynomial to use, see `KSPChebyshevKind`, one of `KSP_CHEBYSHEV_FIRST`, `KSP_CHEBYSHEV_FOURTH`, or `KSP_CHEBYSHEV_OPT_FOURTH`
 
   Options Database Key:
 . -ksp_chebyshev_kind <kind> - which kind of Chebyshev polynomial to use
@@ -298,7 +299,7 @@ PetscErrorCode KSPChebyshevEstEigGetKSP(KSP ksp, KSP *kspest)
 +  * - Malachi Phillips and Paul Fischer, Optimal Chebyshev Smoothers and One-sided V-cycles, https://arxiv.org/abs/2210.03179.
 -  * - James Lottes, Optimal Polynomial Smoothers for Multigrid V-cycles, https://arxiv.org/abs/2202.08830.
 
-.seealso: [](ch_ksp), `KSPCHEBYSHEV` `KSPChebyshevKind`, `KSPChebyshevGetKind()`
+.seealso: [](ch_ksp), `KSPCHEBYSHEV` `KSPChebyshevKind`, `KSPChebyshevGetKind()`, `KSP_CHEBYSHEV_FIRST`, `KSP_CHEBYSHEV_FOURTH`, `KSP_CHEBYSHEV_OPT_FOURTH`
 @*/
 PetscErrorCode KSPChebyshevSetKind(KSP ksp, KSPChebyshevKind kind)
 {
@@ -320,7 +321,7 @@ PetscErrorCode KSPChebyshevSetKind(KSP ksp, KSPChebyshevKind kind)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `KSPCHEBYSHEV` `KSPChebyshevKind`, `KSPChebyshevSetKind()`
+.seealso: [](ch_ksp), `KSPCHEBYSHEV` `KSPChebyshevKind`, `KSPChebyshevSetKind()`, `KSP_CHEBYSHEV_FIRST`, `KSP_CHEBYSHEV_FOURTH`, `KSP_CHEBYSHEV_OPT_FOURTH`
 @*/
 PetscErrorCode KSPChebyshevGetKind(KSP ksp, KSPChebyshevKind *kind)
 {

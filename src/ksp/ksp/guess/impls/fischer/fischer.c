@@ -371,7 +371,7 @@ static PetscErrorCode KSPGuessView_Fischer(KSPGuess guess, PetscViewer viewer)
 }
 
 /*@
-  KSPGuessFischerSetModel - Use the Paul Fischer algorithm or its variants to compute the initial guess
+  KSPGuessFischerSetModel - Set the Paul Fischer algorithm or its variants to compute the initial guess for a `KSPSolve()`
 
   Logically Collective
 
@@ -434,15 +434,15 @@ static PetscErrorCode KSPGuessFischerSetModel_Fischer(KSPGuess guess, PetscInt m
 
     Level: intermediate
 
-   Notes:
-    the algorithm is different from Fischer's paper because we do not CHANGE the right hand side of the new
+    Notes:
+    The algorithm is different from Fischer's paper because we do not CHANGE the right hand side of the new
     problem and solve the problem with an initial guess of zero, rather we solve the original problem
     with a nonzero initial guess (this is done so that the linear solver convergence tests are based on
-    the original RHS). We use the xtilde = x - xguess as the new direction so that it is not
+    the original RHS). We use the $xtilde = x - xguess$ as the new direction so that it is not
     mostly orthogonal to the previous solutions.
 
-    These are not intended to be used directly, they are called by `KSP` automatically with the command line options `-ksp_guess_type fischer`
-    `-ksp_guess_fischer_model <int,int>` or programmatically with
+    These are not intended to be used directly, they are called by `KSPSolve()` automatically with the command
+    line options `-ksp_guess_type fischer` `-ksp_guess_fischer_model <int,int>` or programmatically with
 .vb
     KSPGetGuess(ksp,&guess);
     KSPGuessSetType(guess,KSPGUESSFISCHER);
@@ -460,12 +460,12 @@ static PetscErrorCode KSPGuessFischerSetModel_Fischer(KSPGuess guess, PetscInt m
     less effective initial guess for large (about 10) numbers of stored vectors.
 
     Developer Note:
-      The option `-ksp_fischer_guess <int,int>` is still available for backward compatibility
+    The option `-ksp_fischer_guess <int,int>` is still available for backward compatibility
 
   References:
-. * - https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19940020363_1994020363.pdf
+. * - Fischer, Projection techniques for iterative solution of Ax=b with successive right-hand sides, 1993, https://ntrs.nasa.gov/api/citations/19940020363/downloads/19940020363.pdf
 
-.seealso: `KSPGuess`, `KSPGuessType`, `KSP`
+.seealso: [](ch_ksp), `KSPGuess`, `KSPGuessType`, `KSP`
 M*/
 
 PetscErrorCode KSPGuessCreate_Fischer(KSPGuess guess)
