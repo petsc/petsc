@@ -9,7 +9,7 @@ static PetscErrorCode RHSJacobian(TS, PetscReal, Vec, Mat, Mat, void *);
 static PetscErrorCode PreStep(TS);
 static PetscErrorCode PostStep(TS);
 static PetscErrorCode Monitor(TS, PetscInt, PetscReal, Vec, void *);
-static PetscErrorCode Event(TS, PetscReal, Vec, PetscScalar *, void *);
+static PetscErrorCode Event(TS, PetscReal, Vec, PetscReal *, void *);
 static PetscErrorCode PostEvent(TS, PetscInt, PetscInt[], PetscReal, Vec, PetscBool, void *);
 static PetscErrorCode TransferSetUp(TS, PetscInt, PetscReal, Vec, PetscBool *, void *);
 static PetscErrorCode Transfer(TS, PetscInt, Vec[], Vec[], void *);
@@ -196,7 +196,7 @@ PetscErrorCode Monitor(TS ts, PetscInt n, PetscReal t, Vec x, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode Event(TS ts, PetscReal t, Vec x, PetscScalar *fvalue, void *ctx)
+PetscErrorCode Event(TS ts, PetscReal t, Vec x, PetscReal *fvalue, void *ctx)
 {
   PetscFunctionBeginUser;
   fvalue[0] = t - 5;

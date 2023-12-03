@@ -64,7 +64,7 @@ PetscErrorCode InitialConditions(Vec U, DM da, AppCtx *app)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscScalar *fvalue, void *ctx)
+PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscReal *fvalue, void *ctx)
 {
   AppCtx            *app = (AppCtx *)ctx;
   const PetscScalar *u;
@@ -73,7 +73,7 @@ PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscScalar *fvalue, voi
   PetscFunctionBeginUser;
   PetscCall(VecGetLocalSize(U, &lsize));
   PetscCall(VecGetArrayRead(U, &u));
-  for (i = 0; i < lsize; i++) fvalue[i] = u[i] - app->uc;
+  for (i = 0; i < lsize; i++) fvalue[i] = PetscRealPart(u[i]) - app->uc;
   PetscCall(VecRestoreArrayRead(U, &u));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
