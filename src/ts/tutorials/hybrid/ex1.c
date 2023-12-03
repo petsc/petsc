@@ -214,11 +214,11 @@ int main(int argc, char **argv)
    build:
       requires: !complex
    test:
-      args: -ts_monitor -ts_event_post_event_step 0
+      args: -ts_monitor
 
    test:
       suffix: 2
-      args: -ts_monitor_lg_solution -1 -ts_event_post_event_step 0
+      args: -ts_monitor_lg_solution -1
       requires: x
 
 TEST*/

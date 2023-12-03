@@ -334,10 +334,10 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec P, PetscReal *f, Vec G, void *c
       requires: !complex !single
 
    test:
-      args: -viewer_binary_skip_info -ts_type cn -pc_type lu -tao_monitor -ts_event_post_event_step 0
+      args: -viewer_binary_skip_info -ts_type cn -pc_type lu -tao_monitor
 
    test:
       suffix: 2
       output_file: output/ex3opt_1.out
-      args: -sa_method tlm -ts_type cn -pc_type lu -tao_monitor -ts_event_post_event_step 0
+      args: -sa_method tlm -ts_type cn -pc_type lu -tao_monitor
 TEST*/

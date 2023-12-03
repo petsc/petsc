@@ -67,81 +67,141 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@
-  TSSetPostEventStep - Set the time step to use immediately following the event
+  TSSetPostEventStep - Set the first time step to use after the event
 
   Logically Collective
 
   Input Parameters:
-+ ts - time integration context
-- dt - post event step
++ ts  - time integration context
+- dt1 - first post event step
 
   Options Database Key:
-. -ts_event_post_event_step <dt> - time step after the event; zero value - to keep using previous time steps
+. -ts_event_post_event_step <dt1> - first time step after the event
 
   Level: advanced
 
   Notes:
-  `TSSetPostEventStep()` allows one to set a time step that is used immediately following an event.
-  If a positive real number is specified, it will be applied as is.
-  However, if `TSAdapt` is allowed to interfere, a large 'dt' may get truncated, resulting in a smaller actual post-event step.
+  `TSSetPostEventStep()` allows one to set a time step to use immediately following an event.
+  Note, if `TSAdapt` is allowed to interfere and reject steps, a large 'dt1' set by `TSSetPostEventStep()` may get truncated,
+  resulting in a smaller actual post-event step. See also the warning below regarding the `TSAdapt`.
 
-  The post-event time step should be selected based on the post-event dynamics.
+  The post-event time steps should be selected based on the post-event dynamics.
   If the dynamics are stiff, or a significant jump in the equations or the state vector has taken place at the event,
-  a conservative (small) step should be employed. If not, then a larger time step may be appropriate.
+  conservative (small) steps should be employed. If not, then larger time steps may be appropriate.
 
-  In the latter case, instead of explicitly setting the post-event time step,
-  the user may also choose a special option of keeping the time steps used before the event, which is a sort of 'petsc-decide'
-  strategy. For this, use special value 0. It will signal the TS to directly step to the time point it planned to visit
-  prior to the event interval detection. E.g. if a step t0 -> t1 was planned originally, and an event 'te' occurred, t0 < te < t1,
-  then after the event the TS will step: te -> t1.
-  Moreover, in this situation the originally planned subsequent step t1 -> t2 will also be preserved.
+  This function accepts either a numerical value for `dt1`, or `PETSC_DECIDE`. The special value `PETSC_DECIDE` signals the event handler to follow
+  the originally planned trajectory, and is assumed by default.
+
+  To describe the way `PETSC_DECIDE` affects the post-event steps, consider a trajectory of time points t1 -> t2 -> t3 -> t4.
+  Suppose the TS has reached and calculated the solution at point t3, and has planned the next move: t3 -> t4.
+  At this moment, an event between t2 and t3 is detected, and after a few iterations it is resolved at point `te`, t2 < te < t3.
+  After event `te`, two post-event steps can be specified: the first one dt1 (`TSSetPostEventStep()`),
+  and the second one dt2 (`TSSetPostEventSecondStep()`). Both post-event steps can be either `PETSC_DECIDE`, or a number.
+  Four different combinations are possible\:
+
+  1. dt1 = `PETSC_DECIDE`, dt2 = `PETSC_DECIDE`. Then, after `te` TS goes to t3, and then to t4. This is the all-default behaviour.
+
+  2. dt1 = `PETSC_DECIDE`, dt2 = x2 (numerical). Then, after `te` TS goes to t3, and then to t3+x2.
+
+  3. dt1 = x1 (numerical), dt2 = x2 (numerical). Then, after `te` TS goes to te+x1, and then to te+x1+x2.
+
+  4. dt1 = x1 (numerical), dt2 = `PETSC_DECIDE`. Then, after `te` TS goes to te+x1, and event handler does not interfere to the subsequent steps.
+
+  In the special case when `te` == t3 with a good precision, the post-event step te -> t3 is not performed, so behaviour of (1) and (2) becomes\:
+
+  1a. After `te` TS goes to t4, and event handler does not interfere to the subsequent steps.
+
+  2a. After `te` TS goes to t4, and then to t4+x2.
+
+  Warning! When the second post-event step (either PETSC_DECIDE or a numerical value) is managed by the event handler, i.e. in cases 1, 2, 3 and 2a,
+  `TSAdapt` will never analyse (and never do a reasonable rejection of) the first post-event step. The first post-event step will always be accepted.
+  In this situation, it is the user's responsibility to make sure the step size is appropriate!
+  In cases 4 and 1a, however, `TSAdapt` will analyse the first post-event step, and is allowed to reject it.
 
   This function can be called not only in the initial setup, but also inside the `postevent()` callback set with `TSSetEventHandler()`,
-  affecting the post-event step for the current event, and the subsequent ones.
-  So, the strategy of the post-event time step definition can be adjusted on the fly.
-  Even if several events have been triggered in the given time point, only a single postevent handler is invoked,
+  affecting the post-event steps for the current event, and the subsequent ones.
+  Thus, the strategy of the post-event time step definition can be adjusted on the fly.
+  In case several events are triggered in the given time point, only a single postevent handler is invoked,
   and the user is to determine what post-event time step is more appropriate in this situation.
 
-  By default (on `TSSetEventHandler()` call), the post-event time step is set equal to the (initial) `TS` time step.
+  The default value is `PETSC_DECIDE`.
 
-.seealso: [](ch_ts), `TS`, `TSEvent`, `TSSetEventHandler()`
+  Developer Notes:
+  Event processing starts after visiting point t3, which means ts->adapt->dt_span_cached has been set to whatever value is required
+  when planning the step t3 -> t4.
+
+.seealso: [](ch_ts), `TS`, `TSEvent`, `TSSetEventHandler()`, `TSSetPostEventSecondStep()`
 @*/
-PetscErrorCode TSSetPostEventStep(TS ts, PetscReal dt)
+PetscErrorCode TSSetPostEventStep(TS ts, PetscReal dt1)
 {
   PetscFunctionBegin;
-  ts->event->timestep_postevent = dt;
+  ts->event->timestep_postevent = dt1;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// PetscClangLinter pragma disable: -fdoc-section-header-unknown
 /*@
-  TSSetPostEventIntervalStep - Set the time-step used immediately following an event interval
+  TSSetPostEventSecondStep - Set the second time step to use after the event
 
   Logically Collective
 
   Input Parameters:
-+ ts - time integration context
-- dt - post-event interval step
++ ts  - time integration context
+- dt2 - second post event step
 
   Options Database Key:
-. -ts_event_post_eventinterval_step <dt> - time-step after event interval
+. -ts_event_post_event_second_step <dt2> - second time step after the event
 
   Level: advanced
 
   Notes:
-  This function is deprecated, and its invocation will throw a runtime error. Use `TSSetPostEventStep()`.
+  `TSSetPostEventSecondStep()` allows one to set the second time step after the event.
 
-.seealso: [](ch_ts), `TS`, `TSEvent`, `TSSetEventHandler()`
+  The post-event time steps should be selected based on the post-event dynamics.
+  If the dynamics are stiff, or a significant jump in the equations or the state vector has taken place at the event,
+  conservative (small) steps should be employed. If not, then larger time steps may be appropriate.
+
+  This function accepts either a numerical value for `dt2`, or `PETSC_DECIDE` (default).
+
+  To describe the way `PETSC_DECIDE` affects the post-event steps, consider a trajectory of time points t1 -> t2 -> t3 -> t4.
+  Suppose the TS has reached and calculated the solution at point t3, and has planned the next move: t3 -> t4.
+  At this moment, an event between t2 and t3 is detected, and after a few iterations it is resolved at point `te`, t2 < te < t3.
+  After event `te`, two post-event steps can be specified: the first one dt1 (`TSSetPostEventStep()`),
+  and the second one dt2 (`TSSetPostEventSecondStep()`). Both post-event steps can be either `PETSC_DECIDE`, or a number.
+  Four different combinations are possible\:
+
+  1. dt1 = `PETSC_DECIDE`, dt2 = `PETSC_DECIDE`. Then, after `te` TS goes to t3, and then to t4. This is the all-default behaviour.
+
+  2. dt1 = `PETSC_DECIDE`, dt2 = x2 (numerical). Then, after `te` TS goes to t3, and then to t3+x2.
+
+  3. dt1 = x1 (numerical), dt2 = x2 (numerical). Then, after `te` TS goes to te+x1, and then to te+x1+x2.
+
+  4. dt1 = x1 (numerical), dt2 = `PETSC_DECIDE`. Then, after `te` TS goes to te+x1, and event handler does not interfere to the subsequent steps.
+
+  In the special case when `te` == t3 with a good precision, the post-event step te -> t3 is not performed, so behaviour of (1) and (2) becomes\:
+
+  1a. After `te` TS goes to t4, and event handler does not interfere to the subsequent steps.
+
+  2a. After `te` TS goes to t4, and then to t4+x2.
+
+  Warning! When the second post-event step (either PETSC_DECIDE or a numerical value) is managed by the event handler, i.e. in cases 1, 2, 3 and 2a,
+  `TSAdapt` will never analyse (and never do a reasonable rejection of) the first post-event step. The first post-event step will always be accepted.
+  In this situation, it is the user's responsibility to make sure the step size is appropriate!
+  In cases 4 and 1a, however, `TSAdapt` will analyse the first post-event step, and is allowed to reject it.
+
+  This function can be called not only in the initial setup, but also inside the `postevent()` callback set with `TSSetEventHandler()`,
+  affecting the post-event steps for the current event, and the subsequent ones.
+
+  The default value is `PETSC_DECIDE`.
+
+.seealso: [](ch_ts), `TS`, `TSEvent`, `TSSetEventHandler()`, `TSSetPostEventStep()`
 @*/
-PetscErrorCode TSSetPostEventIntervalStep(TS ts, PetscReal dt)
+PetscErrorCode TSSetPostEventSecondStep(TS ts, PetscReal dt2)
 {
   PetscFunctionBegin;
-  //ts->event->timestep_posteventinterval = dt;
-  /*
-     This deprecated function is set to always throw a runtime error. Attempting to reproduce its original behaviour,
-     i.e. setting the second (not the first) step after event, would break the logic of the TSEventHandler new code.
-  */
-  PetscCheck(PETSC_FALSE, PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "TSSetPostEventIntervalStep() is deprecated --> TSSetPostEventStep() should be used instead");
+  ts->event->timestep_2nd_postevent = dt2;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -196,18 +256,18 @@ PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[])
   Logically Collective
 
   Input Parameters:
-+ ts            - the `TS` context obtained from `TSCreate()`
-. nevents       - number of local events (i.e. managed by the given MPI process)
-. direction     - direction of zero crossing to be detected (one for each local event).
-                  `-1` => zero crossing in negative direction,
-                  `+1` => zero crossing in positive direction, `0` => both ways
-. terminate     - flag to indicate whether time stepping should be terminated after
-                  an event is detected (one for each local event)
-. indicator     - callback defininig the user indicator functions whose sign changes (see `direction`) mark presence of the events
-. postevent     - [optional] user post-event callback; it can change the solution, ODE etc at the time of the event
-- ctx           - [optional] user-defined context for private data for the
-                  `indicator()` and `postevent()` routines (use `NULL` if no
-                  context is desired)
++ ts        - the `TS` context obtained from `TSCreate()`
+. nevents   - number of local events (i.e. managed by the given MPI process)
+. direction - direction of zero crossing to be detected (one for each local event).
+              `-1` => zero crossing in negative direction,
+              `+1` => zero crossing in positive direction, `0` => both ways
+. terminate - flag to indicate whether time stepping should be terminated after
+              an event is detected (one for each local event)
+. indicator - callback defininig the user indicator functions whose sign changes (see `direction`) mark presence of the events
+. postevent - [optional] user post-event callback; it can change the solution, ODE etc at the time of the event
+- ctx       - [optional] user-defined context for private data for the
+              `indicator()` and `postevent()` routines (use `NULL` if no
+              context is desired)
 
   Calling sequence of `indicator`:
 + ts     - the `TS` context
@@ -229,7 +289,8 @@ PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[])
 + -ts_event_tol <tol>                       - tolerance for zero crossing check of indicator functions
 . -ts_event_monitor                         - print choices made by event handler
 . -ts_event_recorder_initial_size <recsize> - initial size of event recorder
-. -ts_event_post_event_step <dt>            - time step after event
+. -ts_event_post_event_step <dt1>           - first time step after event
+. -ts_event_post_event_second_step <dt2>    - second time step after event
 - -ts_event_dt_min <dt>                     - minimum time step considered for TSEvent
 
   Level: intermediate
@@ -286,14 +347,15 @@ PetscErrorCode TSSetEventHandler(TS ts, PetscInt nevents, PetscInt direction[], 
     event->side[i]           = 2;
     event->side_prev[i]      = 0;
   }
-  event->iterctr            = 0;
-  event->processing         = PETSC_FALSE;
-  event->revisit_right      = PETSC_FALSE;
-  event->nevents            = nevents;
-  event->indicator          = indicator;
-  event->postevent          = postevent;
-  event->ctx                = ctx;
-  event->timestep_postevent = ts->time_step;
+  event->iterctr                = 0;
+  event->processing             = PETSC_FALSE;
+  event->revisit_right          = PETSC_FALSE;
+  event->nevents                = nevents;
+  event->indicator              = indicator;
+  event->postevent              = postevent;
+  event->ctx                    = ctx;
+  event->timestep_postevent     = PETSC_DECIDE;
+  event->timestep_2nd_postevent = PETSC_DECIDE;
   PetscCall(TSGetAdapt(ts, &adapt));
   PetscCall(TSAdaptGetStepLimits(adapt, &hmin, NULL));
   event->timestep_min = hmin;
@@ -304,8 +366,9 @@ PetscErrorCode TSSetEventHandler(TS ts, PetscInt nevents, PetscInt direction[], 
     PetscCall(PetscOptionsReal("-ts_event_tol", "Tolerance for zero crossing check of indicator functions", "TSSetEventTolerances", tol, &tol, NULL));
     PetscCall(PetscOptionsName("-ts_event_monitor", "Print choices made by event handler", "", &flg));
     PetscCall(PetscOptionsInt("-ts_event_recorder_initial_size", "Initial size of event recorder", "", event->recsize, &event->recsize, NULL));
-    PetscCall(PetscOptionsReal("-ts_event_post_event_step", "Time step after event", "", event->timestep_postevent, &event->timestep_postevent, NULL));
-    PetscCall(PetscOptionsDeprecated("-ts_event_post_eventinterval_step", NULL, "3.20", "Use -ts_event_post_event_step"));
+    PetscCall(PetscOptionsDeprecated("-ts_event_post_eventinterval_step", "-ts_event_post_event_second_step", "3.21", NULL));
+    PetscCall(PetscOptionsReal("-ts_event_post_event_step", "First time step after event", "", event->timestep_postevent, &event->timestep_postevent, NULL));
+    PetscCall(PetscOptionsReal("-ts_event_post_event_second_step", "Second time step after event", "", event->timestep_2nd_postevent, &event->timestep_2nd_postevent, NULL));
     PetscCall(PetscOptionsReal("-ts_event_dt_min", "Minimum time step considered for TSEvent", "", event->timestep_min, &event->timestep_min, NULL));
   }
   PetscOptionsEnd();
@@ -613,6 +676,11 @@ static inline PetscReal TSEvent_update_from_right(TSEvent event)
   return event->ptime_right;
 }
 
+static inline PetscBool Not_PETSC_DECIDE(PetscReal dt)
+{
+  return (dt == PETSC_DECIDE ? PETSC_FALSE : PETSC_TRUE);
+}
+
 // PetscClangLinter pragma disable: -fdoc-section-spacing
 // PetscClangLinter pragma disable: -fdoc-section-header-unknown
 // PetscClangLinter pragma disable: -fdoc-section-header-spelling
@@ -625,14 +693,19 @@ static inline PetscReal TSEvent_update_from_right(TSEvent event)
   TSEventHandler - the main function to perform a single iteration of event detection.
 
   Developer notes:
-  a) The 'event->iterctr > 0' is used as an indicator that Anderson-Bjorck refinement has started.
-  b) If event->iterctr == 0, then justrefined_AB[i] is always false.
-  c) The right-end quantities: ptime_right, fvalue_right[i] and fsign_right[i] are only guaranteed to be valid
+  A) The 'event->iterctr > 0' is used as an indicator that Anderson-Bjorck refinement has started.
+  B) If event->iterctr == 0, then justrefined_AB[i] is always false.
+  C) The right-end quantities: ptime_right, fvalue_right[i] and fsign_right[i] are only guaranteed to be valid
   for event->iterctr > 0.
-  d) If event->iterctr > 0, then event->processing is PETSC_TRUE; the opposite may not hold.
-  e) event->side[i] may take values: 0 <=> point t is a zero-crossing for indicator function i (via vtol/dt_min criterion);
+  D) If event->iterctr > 0, then event->processing is PETSC_TRUE; the opposite may not hold.
+  E) When event->processing == PETSC_TRUE and event->iterctr == 0, the event handler iterations are complete, but
+  the event handler continues managing the 1st and 2nd post-event steps. In this case the 1st post-event step
+  proposed by the event handler is not checked by TSAdapt, and is always accepted (beware!).
+  However, if the 2nd post-event step is not managed by the event handler (e.g. 1st = numerical, 2nd = PETSC_DECIDE),
+  condition "E" does not hold, and TSAdapt may reject/adjust the 1st post-event step.
+  F) event->side[i] may take values: 0 <=> point t is a zero-crossing for indicator function i (via vtol/dt_min criterion);
   -1/+1 <=> detected a bracket to the left/right of t for indicator function i; +2 <=> no brackets/zero-crossings.
-  f) The signs event->fsign[i] (with values 0/-1/+1) are calculated for each new point. Zero sign is set if the function value is
+  G) The signs event->fsign[i] (with values 0/-1/+1) are calculated for each new point. Zero sign is set if the function value is
   smaller than the tolerance. Besides, zero sign is enforced after marking a zero-crossing due to small bracket size criterion.
 
   The intervals with the indicator function sign change (i.e. containing the potential zero-crossings) are called 'brackets'.
@@ -724,6 +797,10 @@ PetscErrorCode TSEventHandler(TS ts)
     PetscCall(TSGetTimeStep(ts, &dt));
     event->ptime_cache    = t;
     event->timestep_cache = dt; // the next TS move is planned to be: t -> t+dt
+  }
+  if (event->processing && event->iterctr == 0 && Not_PETSC_DECIDE(event->timestep_2nd_postevent)) { // update the caches while processing the post-event steps
+    event->ptime_cache    = t;
+    event->timestep_cache = event->timestep_2nd_postevent;
   }
 
   PetscCall(TSGetSolution(ts, &U)); // if revisiting, this will be the updated U* (see discussion on "Revisiting" in the Developer notes above)
@@ -818,7 +895,12 @@ PetscErrorCode TSEventHandler(TS ts)
   } else { // minsideout == 2: no brackets, no zero-crossings
     // [----------------------]
     PetscCheck(event->iterctr == 0, PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Unexpected state (event->iterctr != 0) in TSEventHandler()");
-    if (event->processing) PetscCall(TSSetTimeStep(ts, TSEvent_dt_cap(ts, t, event->timestep_cache, PETSC_FALSE)));
+    if (event->processing) {
+      PetscReal dt2;
+      if (event->timestep_2nd_postevent == PETSC_DECIDE) dt2 = event->timestep_cache;                            // (1)
+      else dt2 = event->timestep_2nd_postevent;                                                                  // (2), (2a), (3)
+      PetscCall(TSSetTimeStep(ts, TSEvent_dt_cap(ts, t, dt2, Not_PETSC_DECIDE(event->timestep_2nd_postevent)))); // set the second post-event step
+    }
     event->processing = PETSC_FALSE;
   }
 
@@ -828,21 +910,20 @@ PetscErrorCode TSEventHandler(TS ts)
   if (finished) { // finished handling the current event
     PetscCall(TSPostEvent(ts, t, U));
 
-    PetscReal dt;
-    PetscBool user_dt = PETSC_FALSE;
-    if (event->timestep_postevent > 0) {
-      dt                = event->timestep_postevent; // user-provided post-event dt
-      event->processing = PETSC_FALSE;
-      user_dt           = PETSC_TRUE;
-    } else {
-      dt                = event->ptime_cache - t; // 'petsc-decide' the post-event dt
+    PetscReal dt1;
+    if (event->timestep_postevent == PETSC_DECIDE) { // (1), (2)
+      dt1               = event->ptime_cache - t;
       event->processing = PETSC_TRUE;
-      if (PetscAbsReal(dt) < PETSC_SMALL) {
-        dt                = event->timestep_cache; // we hit the event, continue with the cached time step
-        event->processing = PETSC_FALSE;
+      if (PetscAbsReal(dt1) < PETSC_SMALL) { // (1a), (2a): the cached post-event point == event point
+        dt1               = event->timestep_cache;
+        event->processing = Not_PETSC_DECIDE(event->timestep_2nd_postevent);
       }
+    } else {                                         // (3), (4)
+      dt1               = event->timestep_postevent; // 1st post-event dt = user-provided value
+      event->processing = Not_PETSC_DECIDE(event->timestep_2nd_postevent);
     }
-    PetscCall(TSSetTimeStep(ts, TSEvent_dt_cap(ts, t, dt, user_dt)));
+
+    PetscCall(TSSetTimeStep(ts, TSEvent_dt_cap(ts, t, dt1, Not_PETSC_DECIDE(event->timestep_postevent)))); // set the first post-event step
     event->iterctr = 0;
   } // if-finished
 

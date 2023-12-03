@@ -119,16 +119,17 @@
 105 TS dt 6.26924e-07 time 9.05
 106 TS dt 0.06 time 9.05
 CONVERGED REASON: 4 (TS_CONVERGED_EVENT == 4)
-0	1	1.
-0	1	1.05
-0	1	2.
-0	1	3.
-0	1	4.
-0	1	5.
-0	1	6.
-0	1	7.
-0	1	8.
-0	1	9.
-0	1	9.05
+0	1.	2.77556e-15	pass
+0	1.05	8.65974e-15	pass
+0	2.	5.87754e-09	pass
+0	3.	0.	pass
+0	4.	0.	pass
+0	5.	0.	pass
+0	6.	0.	pass
+0	7.	9.76996e-15	pass
+0	8.	5.87753e-09	pass
+0	9.	5.87754e-09	pass
+0	9.05	1.07386e-10	pass
+Final time = 9.05, max time = 9.8, pass
 Adapt = none
 Last dt = 0.06

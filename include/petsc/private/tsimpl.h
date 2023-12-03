@@ -448,7 +448,8 @@ struct _n_TSEvent {
   PetscReal  timestep_cache;                                                                /* time step considered by the TS before the event interval was detected; cached - to reuse if necessary */
   PetscInt  *side;                                                                          /* upon bracket subdivision, indicates which sub-bracket is taken further, -1 -> left one, +1 -> right one, +2 -> neither, 0 -> zero-crossing located */
   PetscInt  *side_prev;                                                                     /* counts the repeating previous side's (with values: -n <=> '-1'*n; +n <=> '+1'*n); used in the Anderson-Bjorck iteration */
-  PetscReal  timestep_postevent;                                                            /* time step to take immediately after the event */
+  PetscReal  timestep_postevent;                                                            /* first time step after the event; can be PETSC_DECIDE */
+  PetscReal  timestep_2nd_postevent;                                                        /* second time step after the event; can be PETSC_DECIDE */
   PetscReal  timestep_min;                                                                  /* minimum time step */
   PetscBool *justrefined_AB;                                                                /* this flag shows if the given indicator function i = [0..nevents) participated in Anderson-Bjorck process in the last iteration of TSEventHandler() */
   PetscReal *gamma_AB;                                                                      /* cumulative scaling factor for the Anderson-Bjorck iteration */

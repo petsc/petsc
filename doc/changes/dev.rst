@@ -78,10 +78,9 @@ Changes: Development
 - Add support for custom predictor callbacks in the second-order generalized-alpha method using ``TSAlpha2SetPredictor()``
 - Allow adaptivity to change time step size in first step of second-order generalized-alpha method.
 - Add ``TSSetPostEventStep()`` to control the first step after event
-- Option ``-ts_event_post_event_step`` can now accept special value 0 to keep the previous time steps after event
-- Deprecate ``TSSetPostEventIntervalStep()``
-- Deprecate option ``-ts_event_post_eventinterval_step``
-- Change the (event) indicator functions type from ``PetscScalar[]`` to ``PetscReal[]`` in the user indicator() callback set by ``TSSetEventHandler()``
+- Rename ``TSSetPostEventIntervalStep()`` to ``TSSetPostEventSecondStep()``, controlling the second step after event
+- Rename option ``-ts_event_post_eventinterval_step`` to ``-ts_event_post_event_second_step``
+- Change the (event) indicator functions type from ``PetscScalar[]`` to ``PetscReal[]`` in the user ``indicator()`` callback set by ``TSSetEventHandler()``
 
 .. rubric:: TAO:
 

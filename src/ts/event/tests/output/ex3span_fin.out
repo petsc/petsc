@@ -1,0 +1,13 @@
+CONVERGED REASON: 1 (TS_CONVERGED_EVENT == 4)
+0	1.05	4.11981e-10	pass
+1	1.	9.06129e-08	pass
+1	2.	6.03043e-09	pass
+1	3.	0.	pass
+1	4.	0.	pass
+1	5.	0.	pass
+1	6.	0.	pass
+1	7.	2.51416e-07	pass
+1	8.	0.	pass
+Final time = 8., max time = 8., pass
+Adapt = none
+Last dt = 0.

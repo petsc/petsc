@@ -874,10 +874,26 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_s
   PetscAssertPointer(accept, 6);
   if (next_sc) *next_sc = 0;
 
-  /* Do not mess with adaptivity while handling events*/
+  /* Do not mess with adaptivity while handling events */
   if (ts->event && ts->event->processing) {
     *next_h = h;
     *accept = PETSC_TRUE;
+    if (adapt->monitor) {
+      PetscCall(PetscViewerASCIIAddTab(adapt->monitor, ((PetscObject)adapt)->tablevel));
+
+      if (ts->event->iterctr == 0) {
+        /*
+          An event has been found, now finalising the event processing: performing the 1st and 2nd post-event steps.
+          Entering this if-branch means both these steps (set to either PETSC_DECIDE or numerical value) are managed
+          by the event handler. In this case the 1st post-event step is always accepted, without interference of TSAdapt.
+          Note: if the 2nd post-event step is not managed by the event handler (e.g. given 1st = numerical, 2nd = PETSC_DECIDE),
+          this if-branch is not entered, and TSAdapt may reject/adjust the proposed 1st post-event step.
+        */
+        PetscCall(PetscViewerASCIIPrintf(adapt->monitor, "    TSAdapt does not interfere, step %3" PetscInt_FMT " accepted. Processing post-event steps: 1-st accepted just now, 2-nd yet to come\n", ts->steps));
+      } else PetscCall(PetscViewerASCIIPrintf(adapt->monitor, "    TSAdapt does not interfere, step %3" PetscInt_FMT " accepted. Event handling in progress\n", ts->steps));
+
+      PetscCall(PetscViewerASCIISubtractTab(adapt->monitor, ((PetscObject)adapt)->tablevel));
+    }
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -893,6 +909,21 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_s
     PetscReal b   = adapt->matchstepfac[1];
     PetscReal eps = 10 * PETSC_MACHINE_EPSILON;
 
+    /*
+      Logic in using 'dt_span_cached':
+      1. It always overrides *next_h, except (any of):
+         a) the current step was rejected,
+         b) the adaptor proposed to decrease the next step,
+         c) the adaptor proposed *next_h > dt_span_cached.
+      2. If *next_h was adjusted by tspan points (or the final point):
+           -- when dt_span_cached is filled (>0), it keeps its value,
+           -- when dt_span_cached is clear (==0), it gets the unadjusted version of *next_h.
+      3. If *next_h was not adjusted as in (2), dt_span_cached is cleared.
+      Note, if a combination (1.b || 1.c) && (3) takes place, this means that
+      dt_span_cached remains unused at the moment of clearing.
+      If (1.a) takes place, dt_span_cached keeps its value.
+      Also, dt_span_cached can be updated by the event handler, see tsevent.c.
+    */
     if (h <= *next_h && *next_h <= adapt->dt_span_cached) *next_h = adapt->dt_span_cached; /* try employing the cache */
     h1   = *next_h;
     tend = t + h1;

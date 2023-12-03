@@ -1,18 +1,20 @@
 #include <petscts.h>
 #include <stdio.h>
 
-#define NEW_VERSION // Applicable for the new features; avoid this for the old (current) TSEvent code
+#define NEW_VERSION // Applicable for the new features; avoid this for the older PETSc versions (without TSSetPostEventStep())
 
 static char help[] = "Simple linear problem with events\n"
                      "x_dot =  0.2*y\n"
                      "y_dot = -0.2*x\n"
                      "Using one or several event functions (on rank-0)\n"
-                     "This program is mostly intended to test the Anderson-Bjorck iteration\n"
+                     "This program is mostly intended to test the Anderson-Bjorck iteration with challenging event-functions\n"
                      "Options:\n"
                      "-dir    d : zero-crossing direction for events\n"
                      "-flg      : additional output in Postevent\n"
+                     "-errtol e : error tolerance, for printing 'pass/fail' for located events (1e-5 by default)\n"
                      "-restart  : flag for TSRestartStep() in PostEvent\n"
-                     "-dtpost x : if x > 0, then on even PostEvent calls dt_postevent = x is set, on odd PostEvent calls dt_postevent = 0 is set,\n"
+                     "-dtpost x : if x > 0, then on even PostEvent calls 1st-post-event-step = x is set,\n"
+                     "                            on odd PostEvent calls 1st-post-event-step = PETSC_DECIDE is set,\n"
                      "            if x == 0, nothing happens\n"
                      "-func   F : selects the event function [0, ..., 11], if F == -1 (default) is set, all event functions are taken\n";
 
@@ -24,9 +26,11 @@ typedef struct {
   PetscReal   pi;
   PetscReal   fvals[MAX_NFUNC]; // helper array for reporting the residuals
   PetscReal   evres[MAX_NEV];   // times of found zero-crossings
-  PetscInt    evnum[MAX_NEV];   // number of zero-crossings at each time
+  PetscReal   ref[MAX_NEV];     // reference times of zero-crossings, for checking
   PetscInt    cnt;              // counter
+  PetscInt    cntref;           // actual length of 'ref' on the given rank
   PetscBool   flg;              // flag for additional print in PostEvent
+  PetscReal   errtol;           // error tolerance, for printing 'pass/fail' for located events (1e-5 by default)
   PetscBool   restart;          // flag for TSRestartStep() in PostEvent
   PetscReal   dtpost;           // post-event step
   PetscInt    postcnt;          // counter for PostEvent calls
@@ -45,6 +49,7 @@ int main(int argc, char **argv)
   PetscInt     n, dir0, m = 0;
   PetscInt     dir[MAX_NFUNC], inds[2];
   PetscBool    term[MAX_NFUNC];
+  PetscBool    pass = PETSC_TRUE;
   PetscScalar *x, vals[4];
   AppCtx       ctx;
 
@@ -55,7 +60,9 @@ int main(int argc, char **argv)
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &ctx.size));
   ctx.pi      = PetscAcosReal(-1.0);
   ctx.cnt     = 0;
+  ctx.cntref  = 0;
   ctx.flg     = PETSC_FALSE;
+  ctx.errtol  = 1e-5;
   ctx.restart = PETSC_FALSE;
   ctx.dtpost  = 0;
   ctx.postcnt = 0;
@@ -102,6 +109,7 @@ int main(int argc, char **argv)
   dir0 = 0;
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-dir", &dir0, NULL));             // desired zero-crossing direction
   PetscCall(PetscOptionsHasName(NULL, NULL, "-flg", &ctx.flg));               // flag for additional output
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-errtol", &ctx.errtol, NULL));   // error tolerance for located events
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-restart", &ctx.restart, NULL)); // flag for TSRestartStep()
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-dtpost", &ctx.dtpost, NULL));   // post-event step
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-F", &ctx.F, NULL));              // event-function index
@@ -118,15 +126,54 @@ int main(int argc, char **argv)
       dir[n]    = dir0;
       term[n++] = PETSC_FALSE;
     }
+
+    // set the reference values
+    if (ctx.F == 0 || ctx.F == -1) {
+      if (dir0 >= 0) ctx.ref[ctx.cntref++] = 2.0;
+      if (dir0 >= 0) ctx.ref[ctx.cntref++] = 4.0;
+      if (dir0 <= 0) ctx.ref[ctx.cntref++] = 1.0;
+      if (dir0 <= 0) ctx.ref[ctx.cntref++] = 3.0;
+    }
+    if (ctx.F == 1 || ctx.F == -1)
+      if (dir0 >= 0) ctx.ref[ctx.cntref++] = 1.0;
+    if (ctx.F == 2 || ctx.F == -1)
+      if (dir0 >= 0) ctx.ref[ctx.cntref++] = 1.0;
+    if (ctx.F == 3 || ctx.F == -1)
+      if (dir0 >= 0) ctx.ref[ctx.cntref++] = 1.696812386809752;
+    if (ctx.F == 4 || ctx.F == -1)
+      if (dir0 >= 0) ctx.ref[ctx.cntref++] = 0.1;
+    if (ctx.F == 5 || ctx.F == -1)
+      if (dir0 >= 0) ctx.ref[ctx.cntref++] = 1.02;
+    if (ctx.F == 6 || ctx.F == -1)
+      if (dir0 <= 0) ctx.ref[ctx.cntref++] = 0.90478821787302;
+    if (ctx.F == 7 || ctx.F == -1)
+      if (dir0 >= 0) ctx.ref[ctx.cntref++] = 0.05;
+    if (ctx.F == 8 || ctx.F == -1)
+      if (dir0 >= 0) ctx.ref[ctx.cntref++] = 0.552704666678489;
+    if (ctx.F == 9 || ctx.F == -1)
+      if (dir0 >= 0) ctx.ref[ctx.cntref++] = 0.399422291710969;
+    if (ctx.F == 10 || ctx.F == -1) {
+      if (dir0 >= 0) ctx.ref[ctx.cntref++] = 0.874511220376091;
+      if (dir0 <= 0) ctx.ref[ctx.cntref++] = 2.388359335869107;
+    }
+    if (ctx.F == 11 || ctx.F == -1)
+      if (dir0 >= 0) ctx.ref[ctx.cntref++] = 2.5;
   }
+  if (ctx.cntref > 0) PetscCall(PetscSortReal(ctx.cntref, ctx.ref));
   PetscCall(TSSetEventHandler(ts, n, dir, term, EventFunction, Postevent, &ctx));
 
   // Solution
   PetscCall(TSSolve(ts, sol));
 
-  // The 3 columns printed are: [RANK] [num. of events at the given time] [time of event]
-  for (PetscInt j = 0; j < ctx.cnt; j++) PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d\t%" PetscInt_FMT "\t%.5g\n", ctx.rank, ctx.evnum[j], (double)ctx.evres[j]));
+  // The 4 columns printed are: [RANK] [time of event] [error w.r.t. reference] ["pass"/"fail"]
+  for (PetscInt j = 0; j < ctx.cnt; j++) {
+    PetscReal err = 10.0;
+    if (j < ctx.cntref) err = PetscAbsReal(ctx.evres[j] - ctx.ref[j]);
+    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d\t%g\t%g\t%s\n", ctx.rank, (double)ctx.evres[j], (double)err, err < ctx.errtol ? "pass" : "fail"));
+    pass = (pass && err < ctx.errtol ? PETSC_TRUE : PETSC_FALSE);
+  }
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "This test: %s\n", pass ? "PASSED" : "FAILED"));
 
   PetscCall(MatDestroy(&A));
   PetscCall(TSDestroy(&ts));
@@ -159,7 +206,7 @@ PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscReal gval[], void *
     if (Ctx->F == 5 || Ctx->F == -1) gval[n++] = PetscLogReal(t - 0.02) * PetscLogReal(t - 0.02) * PetscSignReal(t - 1.02) * 1e7;                // FUNC-7, root 1.02
     if (Ctx->F == 6 || Ctx->F == -1) gval[n++] = 4 * PetscCosReal(t) - PetscExpReal(t);                                                          // FUNC-14, root 0.904788
     if (Ctx->F == 7 || Ctx->F == -1) gval[n++] = (20.0 * t - 1) / (19.0 * t) / 10;                                                               // FUNC-15, root 0.05
-    if (Ctx->F == 8 || Ctx->F == -1) gval[n++] = ((t - 1) * PetscExpReal(-20 * t) + PetscPowReal(t, 20)) * 1e4;                                  // FUNC-16, root 0.552
+    if (Ctx->F == 8 || Ctx->F == -1) gval[n++] = ((t - 1) * PetscExpReal(-20 * t) + PetscPowReal(t, 20)) * 1e4;                                  // FUNC-16, root 0.5527
     if (Ctx->F == 9 || Ctx->F == -1) gval[n++] = (t * t * (t * t / 3.0 + PetscSqrtReal(2.0) * PetscSinReal(t)) - PetscSqrtReal(3.0) / 18) * 10;  // FUNC-17, root 0.399
     if (Ctx->F == 10 || Ctx->F == -1) gval[n++] = ((t * t + 1) * PetscSinReal(t) - PetscExpReal(PetscSqrtReal(t)) * (t - 1) * (t * t - 5)) / 10; // FUNC-18, roots 0.87, 2.388
     if (Ctx->F == 11 || Ctx->F == -1) gval[n++] = 2 * t - 5;                                                                                     // FUNC-21, root 2.5
@@ -183,18 +230,14 @@ PetscErrorCode Postevent(TS ts, PetscInt nev_zero, PetscInt evs_zero[], PetscRea
     PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));
   }
 
-  if (Ctx->cnt + nev_zero < MAX_NEV) {
-    for (PetscInt i = 0; i < nev_zero; i++) { // save the repeating zeros separately for easier/unified testing
-      Ctx->evres[Ctx->cnt]   = t;
-      Ctx->evnum[Ctx->cnt++] = 1;
-    }
-  }
+  if (Ctx->cnt + nev_zero < MAX_NEV)
+    for (PetscInt i = 0; i < nev_zero; i++) Ctx->evres[Ctx->cnt++] = t; // save the repeating zeros separately for easier/unified testing
 
 #ifdef NEW_VERSION
   Ctx->postcnt++; // sync
   if (Ctx->dtpost > 0) {
     if (Ctx->postcnt % 2 == 0) PetscCall(TSSetPostEventStep(ts, Ctx->dtpost));
-    else PetscCall(TSSetPostEventStep(ts, 0));
+    else PetscCall(TSSetPostEventStep(ts, PETSC_DECIDE));
   }
 #endif
 
@@ -202,20 +245,45 @@ PetscErrorCode Postevent(TS ts, PetscInt nev_zero, PetscInt evs_zero[], PetscRea
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*---------------------------------------------------------------------------------------------*/
+/*
+  Note, in the tests below, -ts_event_post_event_step is occasionally set to -1,
+  which corresponds to PETSC_DECIDE in the API. It is not a very good practice to
+  explicitly specify -1 in this option. Rather, if PETSC_DECIDE behaviour is needed,
+  simply remove this option altogether. This will result in using the defaults
+  (which is PETSC_DECIDE).
+*/
 /*TEST
   test:
     suffix: 0
+    requires: !single
     output_file: output/ex4_0.out
     args: -dir 0
-    args: -ts_adapt_dt_min 1e-10 -ts_event_dt_min 1e-6
-    args: -ts_dt 0.4
-    args: -restart 1
+    args: -ts_adapt_dt_min 1e-10 -ts_event_dt_min 1e-10
+    args: -ts_dt 0.25
+    args: -restart 0
     args: -ts_event_tol {{1e-8 1e-15}}
+    args: -errtol 1e-7
     args: -ts_adapt_type {{none basic}}
-    args: -dtpost {{0 0.25}}
-    args: -ts_event_post_event_step {{0 0.35}}
-    args: -ts_type {{beuler rk}}
-    nsize: {{1 4}}
+    args: -dtpost 0
+    args: -ts_event_post_event_step -1
+    args: -ts_type rk
+    nsize: 2
+    filter: sort
+    filter_output: sort
+
+  test:
+    suffix: 0single
+    requires: single
+    output_file: output/ex4_0single.out
+    args: -dir 0
+    args: -ts_adapt_dt_min 1e-6 -ts_event_dt_min 1e-6
+    args: -ts_dt 0.3
+    args: -ts_event_tol {{1e-7 1e-10}}
+    args: -ts_adapt_type {{none basic}}
+    args: -dtpost 0.23
+    args: -ts_event_post_event_step -1
+    args: -ts_type beuler
+    nsize: 3
     filter: sort
     filter_output: sort
 
@@ -228,13 +296,49 @@ PetscErrorCode Postevent(TS ts, PetscInt nev_zero, PetscInt evs_zero[], PetscRea
     args: -F 7
     args: -ts_event_tol {{1e-8 1e-15}}
     args: -ts_adapt_type {{none basic}}
-    args: -ts_type {{beuler rk}}
+    args: -ts_type rk
     nsize: 1
 
   test:
     suffix: F7revisit
     output_file: output/ex4_F7revisit.out
-    args: -ts_event_monitor -F 7 -ts_dt 0.04 -ts_event_dt_min 0.016
+    args: -ts_event_monitor -F 7 -ts_dt 0.04 -ts_event_dt_min 0.016 -errtol 0.005
+    nsize: 1
+
+  test:
+    suffix: 2all
+    output_file: output/ex4_2.out
+    args: -dir 0
+    args: -F {{-1 0 1 2 3 4 5 6 7 8 9 10 11}}
+    args: -ts_event_dt_min 1e-6 -ts_dt 0.4 -ts_event_tol 1e-8
+    args: -ts_adapt_type {{none basic}}
+    args: -dtpost 0.35
+    args: -ts_type rk
+    filter: grep "This test"
+    nsize: 1
+
+  test:
+    suffix: 2pos
+    output_file: output/ex4_2.out
+    args: -dir 1
+    args: -F {{-1 0 1 2 3 4 5 7 8 9 10 11}}
+    args: -ts_event_dt_min 1e-6 -ts_dt 0.4 -ts_event_tol 1e-8
+    args: -ts_adapt_type none
+    args: -dtpost 0.34
+    args: -ts_type beuler
+    filter: grep "This test"
+    nsize: 1
+
+  test:
+    suffix: 2neg
+    output_file: output/ex4_2.out
+    args: -dir -1
+    args: -F {{-1 0 6 10}}
+    args: -ts_event_dt_min 1e-6 -ts_dt 0.4 -ts_event_tol 1e-8
+    args: -ts_adapt_type {{none basic}}
+    args: -dtpost 0.33
+    args: -ts_type rk
+    filter: grep "This test"
     nsize: 1
 
   test:
@@ -246,12 +350,10 @@ PetscErrorCode Postevent(TS ts, PetscInt nev_zero, PetscInt evs_zero[], PetscRea
     args: -restart 0
     args: -ts_event_tol {{1e-8 1e-15}}
     args: -ts_adapt_type {{none basic}}
-    args: -dtpost {{0 0.25}}
-    args: -ts_event_post_event_step {{0 0.35}}
+    args: -dtpost 0.25
+    args: -ts_event_post_event_step -1
     args: -ts_type {{beuler rk}}
-    nsize: {{1 4}}
-    filter: sort
-    filter_output: sort
+    nsize: 1
 
   test:
     suffix: neg
@@ -262,10 +364,10 @@ PetscErrorCode Postevent(TS ts, PetscInt nev_zero, PetscInt evs_zero[], PetscRea
     args: -restart 1
     args: -ts_event_tol {{1e-8 1e-15}}
     args: -ts_adapt_type {{none basic}}
-    args: -dtpost {{0 0.25}}
-    args: -ts_event_post_event_step {{0 0.35}}
-    args: -ts_type {{beuler rk}}
-    nsize: {{1 4}}
+    args: -dtpost 0.25
+    args: -ts_event_post_event_step 0.35
+    args: -ts_type rk
+    nsize: 2
     filter: sort
     filter_output: sort
 TEST*/
