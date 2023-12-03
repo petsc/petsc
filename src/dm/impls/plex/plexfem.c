@@ -1299,7 +1299,7 @@ PetscErrorCode DMPlexInsertTimeDerivativeBoundaryValues(DM dm, PetscBool insertE
   if (faceGeomFVM) PetscValidHeaderSpecific(faceGeomFVM, VEC_CLASSID, 5);
   if (cellGeomFVM) PetscValidHeaderSpecific(cellGeomFVM, VEC_CLASSID, 6);
   if (gradFVM) PetscValidHeaderSpecific(gradFVM, VEC_CLASSID, 7);
-  PetscTryMethod(dm, "DMPlexInsertTimeDerviativeBoundaryValues_C", (DM, PetscBool, Vec, PetscReal, Vec, Vec, Vec), (dm, insertEssential, locX_t, time, faceGeomFVM, cellGeomFVM, gradFVM));
+  PetscTryMethod(dm, "DMPlexInsertTimeDerivativeBoundaryValues_C", (DM, PetscBool, Vec, PetscReal, Vec, Vec, Vec), (dm, insertEssential, locX_t, time, faceGeomFVM, cellGeomFVM, gradFVM));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
