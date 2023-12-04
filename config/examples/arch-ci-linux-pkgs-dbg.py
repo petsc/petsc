@@ -31,7 +31,6 @@ configure_options = [
   '--download-netcdf',
   '--download-hdf5',
   '--with-zlib=1',
-  '--download-med=1',
   '--download-exodusii',
   '--download-pnetcdf',
   '--download-party',

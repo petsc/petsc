@@ -29,6 +29,7 @@ class Configure(config.package.CMakePackage):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DDOWNLOAD_MMG=OFF')
     args.append('-DDOWNLOAD_METIS=OFF')
+    args.append('-DUSE_HDF5=OFF')
     args.append('-DUSE_VTK=OFF')
     args.append('-DSCOTCH_DIR:STRING="'+self.ptscotch.directory+'"')
     args.append('-DMETIS_DIR:STRING="'+self.metis.directory+'"')
