@@ -271,7 +271,7 @@ PETSC_INTERN PetscErrorCode MatQRFactorSymbolic_SPQR(Mat F, Mat A, IS perm, cons
    Level: beginner
 
    Note:
-   SPQR is part of SuiteSparse http://faculty.cse.tamu.edu/davis/suitesparse.html
+   SPQR is part of SuiteSparse <http://faculty.cse.tamu.edu/davis/suitesparse.html>
 
 .seealso: [](ch_matrices), `Mat`, `PCQR`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/

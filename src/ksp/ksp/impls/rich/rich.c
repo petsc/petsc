@@ -221,7 +221,7 @@ static PetscErrorCode KSPBuildResidual_Richardson(KSP ksp, Vec t, Vec v, Vec *V)
 }
 
 /*MC
-    KSPRICHARDSON - The preconditioned Richardson iterative method
+    KSPRICHARDSON - The preconditioned Richardson iterative method {cite}`richarson1911`
 
    Options Database Key:
 .   -ksp_richardson_scale - damping factor on the correction (defaults to 1.0)
@@ -249,12 +249,6 @@ static PetscErrorCode KSPBuildResidual_Richardson(KSP ksp, Vec t, Vec v, Vec *V)
    If using direct solvers such as `PCLU` and `PCCHOLESKY` one generally uses `KSPPREONLY` instead of this which uses exactly one iteration
 
    `-ksp_type richardson -pc_type jacobi` gives one classical Jacobi preconditioning
-
-   Reference:
-.  * - L. F. Richardson, "The Approximate Arithmetical Solution by Finite Differences of Physical Problems Involving
-   Differential Equations, with an Application to the Stresses in a Masonry Dam",
-   Philosophical Transactions of the Royal Society of London. Series A,
-   Containing Papers of a Mathematical or Physical Character, Vol. 210, 1911 (1911).
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
           `KSPRichardsonSetScale()`, `KSPPREONLY`, `KSPRichardsonSetSelfScale()`

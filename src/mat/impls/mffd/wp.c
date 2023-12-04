@@ -1,8 +1,10 @@
 /*MC
-     MATMFFD_WP - Implements an approach for computing the differencing parameter
-        h used with the finite difference based matrix-free Jacobian.
+   MATMFFD_WP - Implements an approach for computing the differencing parameter
+   h used with the finite difference based matrix-free Jacobian. From Walker-Pernice {cite}`pw98`
 
-      h = error_rel * sqrt(1 + ||U||) / ||a||
+   $$
+   h = error_rel * sqrt(1 + ||u||) / ||a||
+   $$
 
    Options Database Key:
 .   -mat_mffd_compute_normu -Compute the norm of u every time see `MatMFFDWPSetComputeNormU()`
@@ -10,18 +12,10 @@
    Level: intermediate
 
    Notes:
-   || U || does not change between linear iterations so is reused
+   $ || U || $ does not change between linear iterations so is reused
 
-   In `KSPGMRES` || a || == 1 and so does not need to ever be computed except at restart
+   In `KSPGMRES` $ || a || == 1 $ and so does not need to ever be computed except at restart
     when it is recomputed.  Thus requires no global collectives when used with `KSPGMRES`
-
-   Formula used:
-     F'(u)*a = [F(u+h*a) - F(u)]/h where
-
-   Reference:
-.  * -  M. Pernice and H. F. Walker, "NITSOL: A Newton Iterative
-      Solver for Nonlinear Systems", SIAM J. Sci. Stat. Comput.", 1998,
-      vol 19, pp. 302--318.
 
 .seealso: `MATMFFD`, `MATMFFD_DS`, `MatCreateMFFD()`, `MatCreateSNESMF()`, `MATMFFD_DS`
 M*/
@@ -52,7 +46,6 @@ typedef struct {
 
   Output Parameter:
 .   h - the scale computed
-
 */
 static PetscErrorCode MatMFFDCompute_WP(MatMFFD ctx, Vec U, Vec a, PetscScalar *h, PetscBool *zeroa)
 {
@@ -144,17 +137,17 @@ static PetscErrorCode MatMFFDWPSetComputeNormU_P(Mat mat, PetscBool flag)
 }
 
 /*@
-  MatMFFDWPSetComputeNormU - Sets whether it computes the ||U|| used by the Walker-Pernice
+  MatMFFDWPSetComputeNormU - Sets whether it computes the ||U|| used by the Walker-Pernice {cite}`pw98`
   PETSc routine for computing h. With any Krylov solver this need only
   be computed during the first iteration and kept for later.
 
   Input Parameters:
 + A    - the `MATMFFD` matrix
-- flag - `PETSC_TRUE` causes it to compute ||U||, `PETSC_FALSE` uses the previous value
+- flag - `PETSC_TRUE` causes it to compute $||U||$, `PETSC_FALSE` uses the previous value
 
   Options Database Key:
 . -mat_mffd_compute_normu <true,false> - true by default, false can save calculations but you
-              must be sure that ||U|| has not changed in the mean time.
+              must be sure that $||U||$ has not changed in the mean time.
 
   Level: advanced
 

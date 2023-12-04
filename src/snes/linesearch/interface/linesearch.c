@@ -502,7 +502,7 @@ PetscErrorCode SNESLineSearchPostCheck(SNESLineSearch linesearch, Vec X, Vec Y, 
 }
 
 /*@C
-  SNESLineSearchPreCheckPicard - Implements a correction that is sometimes useful to improve the convergence rate of Picard iteration
+  SNESLineSearchPreCheckPicard - Implements a correction that is sometimes useful to improve the convergence rate of Picard iteration {cite}`hindmarsh1996time`
 
   Logically Collective
 
@@ -527,11 +527,8 @@ PetscErrorCode SNESLineSearchPostCheck(SNESLineSearch linesearch, Vec X, Vec Y, 
   This function should be passed to `SNESLineSearchSetPreCheck()`
 
   The justification for this method involves the linear convergence of a Picard iteration
-  so the Picard linearization should be provided in place of the "Jacobian". This correction
+  so the Picard linearization should be provided in place of the "Jacobian"  {cite}`hindmarsh1996time`. This correction
   is generally not useful when using a Newton linearization.
-
-  References:
-  . - * - Hindmarsh and Payne (1996) Time step limits for stable solutions of the ice sheet equation, Annals of Glaciology.
 
   Developer Note:
   The use of `PetscObjectGetState()` would eliminate the need for the `changed` argument to be provided

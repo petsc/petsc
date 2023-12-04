@@ -29,7 +29,8 @@ static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt n
 
 /*@C
   DMMoabOutput - Output the solution vectors that are stored in the DMMoab object as tags
-  along with the complete mesh data structure in the native H5M or VTK format.
+  along with the complete mesh data structure in the native H5M or VTK format
+  <http://ftp.mcs.anl.gov/pub/fathom/moab-docs/contents.html#fivetwo>.
 
   Collective
 
@@ -46,9 +47,6 @@ static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt n
 
   This routine can also be used for check-pointing purposes to store a complete history of the
   solution along with any other necessary data to restart computations.
-
-  References:
-. * - Parallel Mesh Initialization: http://ftp.mcs.anl.gov/pub/fathom/moab-docs/contents.html#fivetwo
 
 .seealso: `DMMoabLoadFromFile()`, `DMMoabSetGlobalFieldVector()`
 @*/

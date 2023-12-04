@@ -68,7 +68,7 @@ M*/
 .seealso: [](ch_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
-     TSRK3BS - Third order RK scheme of Bogacki-Shampine with 2nd order embedded method.
+     TSRK3BS - Third order RK scheme of Bogacki-Shampine with 2nd order embedded method <https://doi.org/10.1016/0893-9659(89)90079-7>
 
      This method has four stages with the First Same As Last (FSAL) property.
 
@@ -76,9 +76,6 @@ M*/
 .     -ts_rk_type 3bs - use type 3bs
 
      Level: advanced
-
-     References:
-. * - https://doi.org/10.1016/0893-9659(89)90079-7
 
 .seealso: [](ch_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
@@ -107,7 +104,7 @@ M*/
 .seealso: [](ch_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
-     TSRK5DP - Fifth order Dormand-Prince RK scheme with the 4th order embedded method.
+     TSRK5DP - Fifth order Dormand-Prince RK scheme with the 4th order embedded method <https://doi.org/10.1016/0771-050X(80)90013-3>
 
      This method has seven stages with the First Same As Last (FSAL) property.
 
@@ -116,13 +113,10 @@ M*/
 
      Level: advanced
 
-     References:
-. * - https://doi.org/10.1016/0771-050X(80)90013-3
-
 .seealso: [](ch_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
-     TSRK5BS - Fifth order Bogacki-Shampine RK scheme with 4th order embedded method.
+     TSRK5BS - Fifth order Bogacki-Shampine RK scheme with 4th order embedded method <https://doi.org/10.1016/0898-1221(96)00141-1>
 
      This method has eight stages with the First Same As Last (FSAL) property.
 
@@ -131,13 +125,11 @@ M*/
 
      Level: advanced
 
-     References:
-. * - https://doi.org/10.1016/0898-1221(96)00141-1
-
 .seealso: [](ch_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK6VR - Sixth order robust Verner RK scheme with fifth order embedded method.
+     <http://people.math.sfu.ca/~jverner/RKV65.IIIXb.Robust.00010102836.081204.CoeffsOnlyRAT>
 
      This method has nine stages with the First Same As Last (FSAL) property.
 
@@ -146,13 +138,11 @@ M*/
 
      Level: advanced
 
-     References:
-. * - http://people.math.sfu.ca/~jverner/RKV65.IIIXb.Robust.00010102836.081204.CoeffsOnlyRAT
-
 .seealso: [](ch_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK7VR - Seventh order robust Verner RK scheme with sixth order embedded method.
+     <http://people.math.sfu.ca/~jverner/RKV65.IIIXb.Robust.00010102836.081204.CoeffsOnlyRAT>
 
      This method has ten stages.
 
@@ -161,13 +151,11 @@ M*/
 
      Level: advanced
 
-     References:
-. * - http://people.math.sfu.ca/~jverner/RKV76.IIa.Robust.000027015646.081206.CoeffsOnlyRAT
-
 .seealso: [](ch_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK8VR - Eighth order robust Verner RK scheme with seventh order embedded method.
+     <http://people.math.sfu.ca/~jverner/RKV87.IIa.Robust.00000754677.081208.CoeffsOnlyRATandFLOAT>
 
      This method has thirteen stages.
 
@@ -175,9 +163,6 @@ M*/
 .     -ts_rk_type 8vr - use type 8vr
 
      Level: advanced
-
-     References:
-. * - http://people.math.sfu.ca/~jverner/RKV87.IIa.Robust.00000754677.081208.CoeffsOnlyRATandFLOAT
 
 .seealso: [](ch_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/

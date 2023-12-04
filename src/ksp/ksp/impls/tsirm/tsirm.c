@@ -156,17 +156,17 @@ static PetscErrorCode KSPDestroy_TSIRM(KSP ksp)
 }
 
 /*MC
-   KSPTSIRM - Implements the two-stage iteration with least-squares residual minimization method.
+   KSPTSIRM - Implements the two-stage iteration with least-squares residual minimization method {cite}`couturier2016tsirm`
 
    Options Database Keys:
-+  -ksp_ksp_type <solver> -         the type of the inner solver (GMRES or any of its variants for instance)
++  -ksp_ksp_type <solver>        - the type of the inner solver (GMRES or any of its variants for instance)
 .  -ksp_pc_type <preconditioner> - the type of the preconditioner applied to the inner solver
-.  -ksp_ksp_max_it <maxits> -      the maximum number of inner iterations (iterations of the inner solver)
-.  -ksp_ksp_rtol <tol> -           sets the relative convergence tolerance of the inner solver
-.  -ksp_tsirm_cgls <number> -      if 1 use CGLS solver in the minimization step, otherwise use LSQR solver
+.  -ksp_ksp_max_it <maxits>      - the maximum number of inner iterations (iterations of the inner solver)
+.  -ksp_ksp_rtol <tol>           - sets the relative convergence tolerance of the inner solver
+.  -ksp_tsirm_cgls <number>      - if 1 use CGLS solver in the minimization step, otherwise use LSQR solver
 .  -ksp_tsirm_max_it_ls <maxits> - the maximum number of iterations for the least-squares minimization solver
-.  -ksp_tsirm_tol_ls <tol> -       sets the convergence tolerance of the least-squares minimization solver
--  -ksp_tsirm_size_ls <size> -     the number of residuals for the least-squares minimization step
+.  -ksp_tsirm_tol_ls <tol>       - sets the convergence tolerance of the least-squares minimization solver
+-  -ksp_tsirm_size_ls <size>     - the number of residuals for the least-squares minimization step
 
    Level: advanced
 
@@ -179,10 +179,6 @@ static PetscErrorCode KSPDestroy_TSIRM(KSP ksp)
    The minimization step consists in solving the least-squares problem $\min||b-ASa||$ to find 'a' which minimizes the
    residuals $(b-AS)$. The minimization step is performed using two solvers of linear least-squares problems: `KSPCGLS` or `KSPLSQR`. A new solution x with
    a minimal residual is computed with $x=Sa$.
-
-   References:
-.  * - R. Couturier, L. Ziane Khodja, and C. Guyeux. TSIRM: A Two-Stage Iteration with least-squares Residual Minimization algorithm to solve large sparse linear systems.
-   In PDSEC 2015, 16th IEEE Int. Workshop on Parallel and Distributed Scientific and Engineering Computing (in conjunction with IPDPS 2015), Hyderabad, India, 2015.
 
    Contributed by:
    Lilia Ziane Khodja

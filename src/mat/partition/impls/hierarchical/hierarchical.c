@@ -505,7 +505,7 @@ static PetscErrorCode MatPartitioningImprove_Hierarchical(MatPartitioning part, 
    into a large number of subgraphs (often more than 10K) since partitions obtained with existing partitioners
    such as ParMETIS and PTScotch are far from ideal. The hierarchical partitioning also tries to avoid off-node
    communication as much as possible for multi-core processor. Another user case for the hierarchical partitioning
-   is to improve `PCGASM` convergence by generating multi-rank connected subdomain.
+   is to improve `PCGASM` convergence by generating multi-process connected subdomain.
 
    Collective
 
@@ -514,18 +514,14 @@ static PetscErrorCode MatPartitioningImprove_Hierarchical(MatPartitioning part, 
 
    Options Database Keys:
 +     -mat_partitioning_hierarchical_coarseparttype - partitioner type at the first level and parmetis is used by default
-.     -mat_partitioning_hierarchical_fineparttype - partitioner type at the second level and parmetis is used by default
-.     -mat_partitioning_hierarchical_ncoarseparts - number of subgraphs is required at the first level, which is often the number of compute nodes
--     -mat_partitioning_hierarchical_nfineparts - number of smaller subgraphs for each subgraph, which is often the number of cores per compute node
+.     -mat_partitioning_hierarchical_fineparttype   - partitioner type at the second level and parmetis is used by default
+.     -mat_partitioning_hierarchical_ncoarseparts   - number of subgraphs is required at the first level, which is often the number of compute nodes
+-     -mat_partitioning_hierarchical_nfineparts     - number of smaller subgraphs for each subgraph, which is often the number of cores per compute node
 
    Level: beginner
 
-   References:
-+  * - Fande Kong, Xiao-Chuan Cai, A highly scalable multilevel Schwarz method with boundary geometry preserving coarse spaces for 3D elasticity
-      problems on domains with complex geometry,   SIAM Journal on Scientific Computing 38 (2), C73-C95, 2016
--  * - Fande Kong, Roy H. Stogner, Derek Gaston, John W. Peterson, Cody J. Permann, Andrew E. Slaughter, and Richard C. Martineau,
-      A general-purpose hierarchical mesh partitioning method with node balancing strategies for large-scale numerical simulations,
-      arXiv preprint arXiv:1809.02666CoRR, 2018.
+   Note:
+   See {cite}`kong2016highly` and {cite}`kongstognergastonpetersonpermannslaughtermartineau2018`.
 
 .seealso: `MatPartitioningSetType()`, `MatPartitioningType`, `MATPARTITIONINGMETIS`, `MATPARTITIONINGPARMETIS`,
 M*/

@@ -112,7 +112,8 @@ static PetscErrorCode DMDASetBlockFills_Private2(DM_DA *dd)
   `DMDASetGetMatrix()` allows you to provide general code for those more complicated nonzero patterns then
   can be represented in the dfill, ofill format
 
-  Contributed by Glenn Hammond
+  Contributed by\:
+  Glenn Hammond
 
 .seealso: `DM`, `DMDA`, `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`
 @*/
@@ -165,7 +166,8 @@ PetscErrorCode DMDASetBlockFills(DM da, const PetscInt *dfill, const PetscInt *o
   `DMDASetGetMatrix()` allows you to provide general code for those more complicated nonzero patterns then
   can be represented in the `dfill`, `ofill` format
 
-  Contributed by Philip C. Roth
+  Contributed by\:
+  Philip C. Roth
 
 .seealso: `DM`, `DMDA`, `DMDASetBlockFills()`, `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`
 @*/

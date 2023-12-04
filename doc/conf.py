@@ -86,6 +86,9 @@ myst_enable_extensions = ["fieldlist", "dollarmath", "amsmath", "deflist"]
 
 remove_from_toctrees = ['manualpages/*/[A-Z]*','changes/2*','changes/3*']
 
+# prevents incorrect WARNING: duplicate citation for key "xxxx" warnings
+suppress_warnings = ['bibtex.duplicate_citation']
+
 # -- Options for HTML output ---------------------------------------------------
 
 html_theme = 'pydata_sphinx_theme'

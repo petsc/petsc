@@ -1266,11 +1266,11 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(KSP ksp, PetscOptionItems *PetscO
 }
 
 /*MC
-     KSPFETIDP - The FETI-DP method [1]
+     KSPFETIDP - The FETI-DP method {cite}`farhat2001feti`
 
    Options Database Keys:
 +   -ksp_fetidp_fullyredundant <false>   - use a fully redundant set of Lagrange multipliers
-.   -ksp_fetidp_saddlepoint <false>      - activates support for saddle point problems, see [2]
+.   -ksp_fetidp_saddlepoint <false>      - activates support for saddle point problems, see {cite}`tu2015feti`
 .   -ksp_fetidp_saddlepoint_flip <false> - see note below
 .   -ksp_fetidp_pressure_field <-1>      - activates support for saddle point problems, and identifies the pressure field id.
                                            If this information is not provided, the pressure field is detected by using `MatFindZeroDiagonals()`.
@@ -1320,10 +1320,6 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(KSP ksp, PetscOptionItems *PetscO
    Developer Note:
    Even though this method does not directly use any norms, the user is allowed to set the `KSPNormType` to any value.
    This is so users do not have to change `KSPNormType` options when they switch from other `KSP` methods to this one.
-
-   References:
-+  [1] - C. Farhat, M. Lesoinne, P. LeTallec, K. Pierson, and D. Rixen, FETI-DP: a dual-primal unified FETI method. I. A faster alternative to the two-level FETI method, Internat. J. Numer. Methods Engrg., 50 (2001), pp. 1523--1544
--  [2] - X. Tu, J. Li, A FETI-DP type domain decomposition algorithm for three-dimensional incompressible Stokes equations, SIAM J. Numer. Anal., 53 (2015), pp. 720-742
 
 .seealso: [](ch_ksp), `MATIS`, `PCBDDC`, `KSPFETIDPSetInnerBDDC()`, `KSPFETIDPGetInnerBDDC()`, `KSPFETIDPGetInnerKSP()`
 M*/

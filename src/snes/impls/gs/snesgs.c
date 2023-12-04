@@ -279,21 +279,22 @@ static PetscErrorCode SNESSolve_NGS(SNES snes)
 
 /*MC
   SNESNGS - Either calls the user-provided Gauss-Seidel solution routine provided with `SNESSetNGS()` or does a finite difference secant approximation
-            using coloring.
+            using coloring {cite}`bruneknepleysmithtu15`.
 
    Level: advanced
 
   Options Database Keys:
-+   -snes_ngs_sweeps <n> - Number of sweeps of nonlinear GS to apply
-.    -snes_ngs_atol <atol> - Absolute residual tolerance for nonlinear GS iteration
-.    -snes_ngs_rtol <rtol> - Relative residual tolerance for nonlinear GS iteration
-.    -snes_ngs_stol <stol> - Absolute update tolerance for nonlinear GS iteration
-.    -snes_ngs_max_it <maxit> - Maximum number of sweeps of nonlinea GS to apply
-.    -snes_ngs_secant - Use pointwise secant local Jacobian approximation with coloring instead of user provided Gauss-Seidel routine, this is
-                        used by default if no user provided Gauss-Seidel routine is available. Requires either that a `DM` that can compute a coloring
-                        is available or a Jacobian sparse matrix is provided (from which to get the coloring).
-.    -snes_ngs_secant_h <h> - Differencing parameter for secant approximation
-.    -snes_ngs_secant_mat_coloring - Use the graph coloring of the Jacobian for the secant GS even if a DM is available.
++   -snes_ngs_sweeps <n>                                                          - Number of sweeps of nonlinear GS to apply
+.    -snes_ngs_atol <atol>                                                        - Absolute residual tolerance for nonlinear GS iteration
+.    -snes_ngs_rtol <rtol>                                                        - Relative residual tolerance for nonlinear GS iteration
+.    -snes_ngs_stol <stol>                                                        - Absolute update tolerance for nonlinear GS iteration
+.    -snes_ngs_max_it <maxit>                                                     - Maximum number of sweeps of nonlinea GS to apply
+.    -snes_ngs_secant                                                             - Use pointwise secant local Jacobian approximation with coloring instead of user provided Gauss-Seidel routine,
+                                                                                    this is used by default if no user provided Gauss-Seidel routine is available.
+                                                                                    Requires either that a `DM` that can compute a coloring
+                                                                                    is available or a Jacobian sparse matrix is provided (from which to get the coloring).
+.    -snes_ngs_secant_h <h>                                                       - Differencing parameter for secant approximation
+.    -snes_ngs_secant_mat_coloring                                                - Use the graph coloring of the Jacobian for the secant GS even if a `DM` is available.
 -    -snes_norm_schedule <none, always, initialonly, finalonly, initialfinalonly> - how often the residual norms are computed
 
   Notes:
@@ -302,10 +303,6 @@ static PetscErrorCode SNESSolve_NGS(SNES snes)
 
   By default this routine computes the solution norm at each iteration, this can be time consuming, you can turn this off with `SNESSetNormSchedule()`
   or -snes_norm_schedule none
-
-   References:
-.  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
-   SIAM Review, 57(4), 2015
 
 .seealso: [](ch_snes), `SNESNCG`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESSetNGS()`, `SNESType`, `SNESNGSSetSweeps()`, `SNESNGSSetTolerances()`,
           `SNESSetNormSchedule()`, `SNESNGSGetTolerances()`, `SNESNGSSetSweeps()`

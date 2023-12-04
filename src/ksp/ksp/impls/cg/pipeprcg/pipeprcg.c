@@ -177,7 +177,7 @@ static PetscErrorCode KSPSolve_PIPEPRCG(KSP ksp)
 }
 
 /*MC
-   KSPPIPEPRCG - Pipelined predict-and-recompute conjugate gradient method. [](sec_pipelineksp)
+   KSPPIPEPRCG - Pipelined predict-and-recompute conjugate gradient method {cite}`chen2020predict`. [](sec_pipelineksp)
 
    Options Database Key:
 .  -ksp_pipeprcg_recompute_w - recompute the $w_k$ with $Ar_k$, default is true
@@ -193,9 +193,6 @@ static PetscErrorCode KSPSolve_PIPEPRCG(KSP ksp)
 
    Contributed by:
    Tyler Chen, University of Washington, Applied Mathematics Department
-
-   Reference:
-   Tyler Chen and Erin Carson. "Predict-and-recompute conjugate gradient variants." SIAM Journal on Scientific Computing 42.5 (2020): A3084-A3108.
 
    Acknowledgments:
    This material is based upon work supported by the National Science Foundation Graduate Research Fellowship Program under Grant No. DGE-1762114.

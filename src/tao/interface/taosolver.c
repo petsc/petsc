@@ -292,7 +292,7 @@ PetscErrorCode TaoDestroy(Tao *tao)
 }
 
 /*@
-  TaoKSPSetUseEW - Sets `SNES` use Eisenstat-Walker method for computing relative tolerance for linear solvers.
+  TaoKSPSetUseEW - Sets `SNES` to use Eisenstat-Walker method {cite}`ew96`for computing relative tolerance for linear solvers.
 
   Logically Collective
 
@@ -304,9 +304,6 @@ PetscErrorCode TaoDestroy(Tao *tao)
 
   Note:
   See `SNESKSPSetUseEW()` for customization details.
-
-  References:
-.  * - S. C. Eisenstat and H. F. Walker, "Choosing the forcing terms in an inexact Newton method", SISC 17 (1), pp.16-32, 1996.
 
 .seealso: [](ch_tao), `Tao`, `SNESKSPSetUseEW()`
 @*/

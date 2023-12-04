@@ -21,10 +21,10 @@ PetscClassId PETSC_DRAWBAR_CLASSID = 0;
   Notes:
   Call `PetscDrawBarSetData()` to provide the bins to be plotted and then `PetscDrawBarDraw()` to display the new plot
 
-  The difference between a bar chart, `PetscDrawBar`, and a histogram, `PetscDrawHG`, is explained here https://stattrek.com/statistics/charts/histogram.aspx?Tutorial=AP
+  The difference between a bar chart, `PetscDrawBar`, and a histogram, `PetscDrawHG`, is explained here <https://stattrek.com/statistics/charts/histogram.aspx?Tutorial=AP>
 
   The MPI communicator that owns the `PetscDraw` owns this `PetscDrawBar`, but the calls to set options and add data are ignored on all processes except the
-  zeroth MPI rank in the communicator. All MPI ranks in the communicator must call `PetscDrawBarDraw()` to display the updated graph.
+  zeroth MPI process in the communicator. All MPI processes in the communicator must call `PetscDrawBarDraw()` to display the updated graph.
 
   Level: intermediate
 

@@ -578,22 +578,22 @@ static PetscErrorCode KSPSetFromOptions_AGMRES(KSP ksp, PetscOptionItems *PetscO
 /*MC
   KSPAGMRES - Newton basis GMRES implementation with adaptive augmented eigenvectors
 
-  The techniques used are best described in [1]. The contribution of this work is that it combines many of the previous work to reduce the amount
-  of MPI messages and improve the robustness of the global approach by using deflation techniques. Please see [1] for numerical experiments and [2]
+  The techniques used are best described in {cite}`wakam2011parallelism`. The contribution of this work is that it combines many of the previous work to reduce the amount
+  of MPI messages and improve the robustness of the global approach by using deflation techniques. Please see {cite}`wakam2011parallelism` for numerical experiments and {cite}`wakam2013memory`
   for a description of these problems. There are  many ongoing work that aim at avoiding (or minimizing) the communication in Krylov subspace methods.
   This code can be used as an experimental framework to combine several techniques in the particular case of GMRES.
-  For instance, the computation of the shifts can be improved with techniques described in [3]. The orthogonalization technique can be replaced by TSQR [4].
-  The generation of the basis can be done using s-steps approaches[5].
+  For instance, the computation of the shifts can be improved with techniques described in {cite}`philippe2012generation`. The orthogonalization technique can be replaced by TSQR {cite}`demmel2012communication`.
+  The generation of the basis can be done using s-steps approaches{cite}`mohiyuddin2009minimizing`. See also {cite}`sidje1997alternatives` and {cite}`bai1994newton`.
 
   Options Database Keys:
-+   -ksp_gmres_restart <restart> -  the number of Krylov directions
-.   -ksp_gmres_krylov_monitor - plot the Krylov space generated
-.   -ksp_agmres_eigen <neig> - Number of eigenvalues to deflate (Number of vectors to augment)
++   -ksp_gmres_restart <restart>    -  the number of Krylov directions
+.   -ksp_gmres_krylov_monitor       - plot the Krylov space generated
+.   -ksp_agmres_eigen <neig>        - Number of eigenvalues to deflate (Number of vectors to augment)
 .   -ksp_agmres_maxeigen <max_neig> - Maximum number of eigenvalues to deflate
-.   -ksp_agmres_MinRatio <1> - Relaxation parameter in the adaptive strategy; smallest multiple of the remaining number of steps allowed
-.   -ksp_agmres_MaxRatio <1> - Relaxation parameter in the adaptive strategy; Largest multiple of the remaining number of steps allowed
-.   -ksp_agmres_DeflPrecond - Apply deflation as a preconditioner, this is similar to `KSPDGMRES` but it rather builds a Newton basis.
--   -ksp_dgmres_force <0, 1> - Force the deflation at each restart.
+.   -ksp_agmres_MinRatio <1>        - Relaxation parameter in the adaptive strategy; smallest multiple of the remaining number of steps allowed
+.   -ksp_agmres_MaxRatio <1>        - Relaxation parameter in the adaptive strategy; Largest multiple of the remaining number of steps allowed
+.   -ksp_agmres_DeflPrecond         - Apply deflation as a preconditioner, this is similar to `KSPDGMRES` but it rather builds a Newton basis.
+-   -ksp_dgmres_force <0, 1>        - Force the deflation at each restart.
 
   Level: intermediate
 
@@ -605,16 +605,6 @@ static PetscErrorCode KSPSetFromOptions_AGMRES(KSP ksp, PetscOptionItems *PetscO
 
   Contributed by:
   Desire NUENTSA WAKAM, INRIA <desire.nuentsa_wakam@inria.fr> with inputs from Guy Atenekeng <atenekeng@yahoo.com> and R.B. Sidje <roger.b.sidje@ua.edu>
-
- References:
-+   [1] - D. Nuentsa Wakam and J. Erhel, Parallelism and robustness in GMRES with the Newton basis and the deflated restarting. Research report INRIA RR-7787, November 2011,https://hal.inria.fr/inria-00638247/en,  in revision for ETNA.
-.  [2] - D. NUENTSA WAKAM and F. PACULL, Memory Efficient Hybrid Algebraic Solvers for Linear Systems Arising from Compressible Flows, Computers and Fluids, In Press, http://dx.doi.org/10.1016/j.compfluid.2012.03.023
-.  [3] - B. Philippe and L. Reichel, On the generation of Krylov subspace bases, Applied Numerical
-Mathematics, 62(9), pp. 1171-1186, 2012
-.  [4] - J. Demmel, L. Grigori, M. F. Hoemmen, and J. Langou, Communication-optimal parallel and sequential QR and LU factorizations, SIAM journal on Scientific Computing, 34(1), A206-A239, 2012
-.  [5] - M. Mohiyuddin, M. Hoemmen, J. Demmel, and K. Yelick, Minimizing communication in sparse matrix solvers, in SC '09: Proceedings of the Conference on High Performance Computing Networking, Storage and Analysis, New York, NY, USA, 2009, ACM, pp. 1154-1171.
-.  [6] - Sidje, Roger B. Alternatives for parallel Krylov subspace basis computation. Numer. Linear Algebra Appl. 4 (1997), no. 4, 305-331
--  [7] - Bai, Zhaojun and  Hu, D. and Reichel, L. A Newton basis GMRES implementation. IMA J. Numer. Anal. 14 (1994), no. 4, 563-581.
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPDGMRES`, `KSPPGMRES`,
            `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,

@@ -126,7 +126,7 @@ static PetscErrorCode KSPSolve_CGS(KSP ksp)
 }
 
 /*MC
-     KSPCGS - This code implements the CGS (Conjugate Gradient Squared) method.
+     KSPCGS - This code implements the CGS (Conjugate Gradient Squared) method {cite}`so:89`.
 
    Level: beginner
 
@@ -138,9 +138,6 @@ static PetscErrorCode KSPSolve_CGS(KSP ksp)
    Developer Note:
    Has this weird support for doing the convergence test with the natural norm, I assume this works only with
    no preconditioning and symmetric positive definite operator.
-
-   References:
-.  * - Sonneveld, 1989.
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBCGS`, `KSPSetPCSide()`
 M*/

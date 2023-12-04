@@ -12,11 +12,11 @@ const char *const DTProbDensityTypes[] = {"constant", "gaussian", "maxwell_boltz
   Not Collective
 
   Input Parameters:
-+ x     - Speed in [0, \infty]
++ x     - Speed in $[0, \infty]$
 - dummy - Unused
 
   Output Parameter:
-. p - The probability density at x
+. p - The probability density at `x`
 
   Level: beginner
 
@@ -34,11 +34,11 @@ PetscErrorCode PetscPDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal d
   Not Collective
 
   Input Parameters:
-+ x     - Speed in [0, \infty]
++ x     - Speed in $[0, \infty]$
 - dummy - Unused
 
   Output Parameter:
-. p - The probability density at x
+. p - The probability density at `x`
 
   Level: beginner
 
@@ -56,11 +56,11 @@ PetscErrorCode PetscCDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal d
   Not Collective
 
   Input Parameters:
-+ x     - Speed in [0, \infty]
++ x     - Speed in $[0, \infty]$
 - dummy - Unused
 
   Output Parameter:
-. p - The probability density at x
+. p - The probability density at `x`
 
   Level: beginner
 
@@ -78,11 +78,11 @@ PetscErrorCode PetscPDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal d
   Not Collective
 
   Input Parameters:
-+ x     - Speed in [0, \infty]
++ x     - Speed in $[0, \infty]$
 - dummy - Unused
 
   Output Parameter:
-. p - The probability density at x
+. p - The probability density at `x`
 
   Level: beginner
 
@@ -100,11 +100,11 @@ PetscErrorCode PetscCDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal d
   Not Collective
 
   Input Parameters:
-+ x     - Speed in [0, \infty]
++ x     - Speed in $[0, \infty]$
 - dummy - Unused
 
   Output Parameter:
-. p - The probability density at x
+. p - The probability density at `x`
 
   Level: beginner
 
@@ -122,11 +122,11 @@ PetscErrorCode PetscPDFMaxwellBoltzmann3D(const PetscReal x[], const PetscReal d
   Not Collective
 
   Input Parameters:
-+ x     - Speed in [0, \infty]
++ x     - Speed in $[0, \infty]$
 - dummy - Unused
 
   Output Parameter:
-. p - The probability density at x
+. p - The probability density at `x`
 
   Level: beginner
 
@@ -144,11 +144,11 @@ PetscErrorCode PetscCDFMaxwellBoltzmann3D(const PetscReal x[], const PetscReal d
   Not Collective
 
   Input Parameters:
-+ x     - Coordinate in [-\infty, \infty]
++ x     - Coordinate in $[-\infty, \infty]$
 - scale - Scaling value
 
   Output Parameter:
-. p - The probability density at x
+. p - The probability density at `x`
 
   Level: beginner
 
@@ -174,17 +174,17 @@ PetscErrorCode PetscCDFGaussian1D(const PetscReal x[], const PetscReal scale[], 
   Not Collective
 
   Input Parameters:
-+ p     - A uniform variable on [0, 1]
++ p     - A uniform variable on $[0, 1]$
 - dummy - ignored
 
   Output Parameter:
-. x - Coordinate in [-\infty, \infty]
+. x - Coordinate in $[-\infty, \infty]$
 
   Level: beginner
 
-  References:
-+ * - http://www.mimirgames.com/articles/programming/approximations-of-the-inverse-error-function/
-- * - https://stackoverflow.com/questions/27229371/inverse-error-function-in-c
+  Note:
+  See <http://www.mimirgames.com/articles/programming/approximations-of-the-inverse-error-function> and
+  <https://stackoverflow.com/questions/27229371/inverse-error-function-in-c>
 
 .seealso: `PetscPDFGaussian2D()`
 @*/
@@ -221,11 +221,11 @@ PetscErrorCode PetscPDFSampleGaussian1D(const PetscReal p[], const PetscReal dum
   Not Collective
 
   Input Parameters:
-+ x     - Coordinate in [-\infty, \infty]^2
++ x     - Coordinate in $[-\infty, \infty]^2$
 - dummy - ignored
 
   Output Parameter:
-. p - The probability density at x
+. p - The probability density at `x`
 
   Level: beginner
 
@@ -239,20 +239,18 @@ PetscErrorCode PetscPDFGaussian2D(const PetscReal x[], const PetscReal dummy[], 
 
 /*@
   PetscPDFSampleGaussian2D - Sample uniformly from a Gaussian distribution in 2D
+  <https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform>
 
   Not Collective
 
   Input Parameters:
-+ p     - A uniform variable on [0, 1]^2
++ p     - A uniform variable on $[0, 1]^2$
 - dummy - ignored
 
   Output Parameter:
-. x - Coordinate in [-\infty, \infty]^2
+. x - Coordinate in $[-\infty, \infty]^2 $
 
   Level: beginner
-
-  References:
-. * - https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
 
 .seealso: `PetscPDFGaussian2D()`, `PetscPDFMaxwellBoltzmann3D()`
 @*/
@@ -270,11 +268,11 @@ PetscErrorCode PetscPDFSampleGaussian2D(const PetscReal p[], const PetscReal dum
   Not Collective
 
   Input Parameters:
-+ x     - Coordinate in [-\infty, \infty]^3
++ x     - Coordinate in $[-\infty, \infty]^3$
 - dummy - ignored
 
   Output Parameter:
-. p - The probability density at x
+. p - The probability density at `x`
 
   Level: beginner
 
@@ -288,20 +286,18 @@ PetscErrorCode PetscPDFGaussian3D(const PetscReal x[], const PetscReal dummy[], 
 
 /*@
   PetscPDFSampleGaussian3D - Sample uniformly from a Gaussian distribution in 3D
+  <https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform>
 
   Not Collective
 
   Input Parameters:
-+ p     - A uniform variable on [0, 1]^3
++ p     - A uniform variable on $[0, 1]^3$
 - dummy - ignored
 
   Output Parameter:
-. x - Coordinate in [-\infty, \infty]^3
+. x - Coordinate in $[-\infty, \infty]^3$
 
   Level: beginner
-
-  References:
-  https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
 
 .seealso: `PetscPDFGaussian3D()`, `PetscPDFMaxwellBoltzmann3D()`
 @*/
@@ -318,11 +314,11 @@ PetscErrorCode PetscPDFSampleGaussian3D(const PetscReal p[], const PetscReal dum
   Not Collective
 
   Input Parameters:
-+ x     - Coordinate in [-1, 1]
++ x     - Coordinate in $[-1, 1]$
 - dummy - Unused
 
   Output Parameter:
-. p - The probability density at x
+. p - The probability density at `x`
 
   Level: beginner
 
@@ -340,11 +336,11 @@ PetscErrorCode PetscPDFConstant1D(const PetscReal x[], const PetscReal dummy[], 
   Not Collective
 
   Input Parameters:
-+ x     - Coordinate in [-1, 1]
++ x     - Coordinate in $[-1, 1]$
 - dummy - Unused
 
   Output Parameter:
-. p - The cumulative probability at x
+. p - The cumulative probability at `x`
 
   Level: beginner
 
@@ -362,11 +358,11 @@ PetscErrorCode PetscCDFConstant1D(const PetscReal x[], const PetscReal dummy[], 
   Not Collective
 
   Input Parameters:
-+ p     - A uniform variable on [0, 1]
++ p     - A uniform variable on $[0, 1]$
 - dummy - Unused
 
   Output Parameter:
-. x - Coordinate in [-1, 1]
+. x - Coordinate in $[-1, 1]$
 
   Level: beginner
 
@@ -384,11 +380,11 @@ PetscErrorCode PetscPDFSampleConstant1D(const PetscReal p[], const PetscReal dum
   Not Collective
 
   Input Parameters:
-+ x     - Coordinate in [-1, 1] x [-1, 1]
++ x     - Coordinate in $[-1, 1]^2$
 - dummy - Unused
 
   Output Parameter:
-. p - The probability density at x
+. p - The probability density at `x`
 
   Level: beginner
 
@@ -406,11 +402,11 @@ PetscErrorCode PetscPDFConstant2D(const PetscReal x[], const PetscReal dummy[], 
   Not Collective
 
   Input Parameters:
-+ x     - Coordinate in [-1, 1] x [-1, 1]
++ x     - Coordinate in $[-1, 1]^2$
 - dummy - Unused
 
   Output Parameter:
-. p - The cumulative probability at x
+. p - The cumulative probability at `x`
 
   Level: beginner
 
@@ -423,16 +419,16 @@ PetscErrorCode PetscCDFConstant2D(const PetscReal x[], const PetscReal dummy[], 
 }
 
 /*@
-  PetscPDFSampleConstant2D - Sample uniformly from a uniform distribution on [-1, 1] x [-1, 1] in 2D
+  PetscPDFSampleConstant2D - Sample uniformly from a uniform distribution on $[-1, 1]^2$ in 2D
 
   Not Collective
 
   Input Parameters:
-+ p     - Two uniform variables on [0, 1]
++ p     - Two uniform variables on $[0, 1]$
 - dummy - Unused
 
   Output Parameter:
-. x - Coordinate in [-1, 1] x [-1, 1]
+. x - Coordinate in $[-1, 1]^2$
 
   Level: beginner
 
@@ -451,11 +447,11 @@ PetscErrorCode PetscPDFSampleConstant2D(const PetscReal p[], const PetscReal dum
   Not Collective
 
   Input Parameters:
-+ x     - Coordinate in [-1, 1] x [-1, 1] x [-1, 1]
++ x     - Coordinate in $[-1, 1]^3$
 - dummy - Unused
 
   Output Parameter:
-. p - The probability density at x
+. p - The probability density at `x`
 
   Level: beginner
 
@@ -473,11 +469,11 @@ PetscErrorCode PetscPDFConstant3D(const PetscReal x[], const PetscReal dummy[], 
   Not Collective
 
   Input Parameters:
-+ x     - Coordinate in [-1, 1] x [-1, 1] x [-1, 1]
++ x     - Coordinate in $[-1, 1]^3$
 - dummy - Unused
 
   Output Parameter:
-. p - The cumulative probability at x
+. p - The cumulative probability at `x`
 
   Level: beginner
 
@@ -490,16 +486,16 @@ PetscErrorCode PetscCDFConstant3D(const PetscReal x[], const PetscReal dummy[], 
 }
 
 /*@
-  PetscPDFSampleConstant3D - Sample uniformly from a uniform distribution on [-1, 1] x [-1, 1] in 3D
+  PetscPDFSampleConstant3D - Sample uniformly from a uniform distribution on $[-1, 1]^3$ in 3D
 
   Not Collective
 
   Input Parameters:
-+ p     - Three uniform variables on [0, 1]
++ p     - Three uniform variables on $[0, 1]$
 - dummy - Unused
 
   Output Parameter:
-. x - Coordinate in [-1, 1] x [-1, 1] x [-1, 1]
+. x - Coordinate in $[-1, 1]^3$
 
   Level: beginner
 
@@ -520,7 +516,7 @@ PetscErrorCode PetscPDFSampleConstant3D(const PetscReal p[], const PetscReal dum
 
   Input Parameters:
 + dim    - The dimension of sample points
-. prefix - The options prefix, or NULL
+. prefix - The options prefix, or `NULL`
 - name   - The option name for the probability distribution type
 
   Output Parameters:
@@ -640,13 +636,16 @@ EXTERN_C_END
 
   Notes:
   The Kolmogorov-Smirnov statistic for a given cumulative distribution function $F(x)$ is
-.vb
-    D_n = \sup_x \left| F_n(x) - F(x) \right|
+
+  $$
+  D_n = \sup_x \left| F_n(x) - F(x) \right|
+  $$
 
   where $\sup_x$ is the supremum of the set of distances, and the empirical distribution function $F_n(x)$ is discrete, and given by
 
-    F_n =  # of samples <= x / n
-.ve
+  $$
+  F_n =  # of samples <= x / n
+  $$
 
   The empirical distribution function $F_n(x)$ is discrete, and thus had a ``stairstep''
   cumulative distribution, making $n$ the number of stairs. Intuitively, the statistic takes

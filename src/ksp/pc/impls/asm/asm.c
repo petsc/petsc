@@ -1225,13 +1225,13 @@ PetscErrorCode PCASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, K
 
 /*MC
    PCASM - Use the (restricted) additive Schwarz method, each block is (approximately) solved with
-           its own `KSP` object.
+           its own `KSP` object, {cite}`dryja1987additive` and {cite}`1sbg`
 
    Options Database Keys:
-+  -pc_asm_blocks <blks> - Sets total blocks. Defaults to one block per MPI rank.
-.  -pc_asm_overlap <ovl> - Sets overlap
++  -pc_asm_blocks <blks>                          - Sets total blocks. Defaults to one block per MPI process.
+.  -pc_asm_overlap <ovl>                          - Sets overlap
 .  -pc_asm_type [basic,restrict,interpolate,none] - Sets `PCASMType`, default is restrict. See `PCASMSetType()`
--  -pc_asm_local_type [additive, multiplicative] - Sets `PCCompositeType`, default is additive. See `PCASMSetLocalType()`
+-  -pc_asm_local_type [additive, multiplicative]  - Sets `PCCompositeType`, default is additive. See `PCASMSetLocalType()`
 
    Level: beginner
 
@@ -1248,12 +1248,6 @@ PetscErrorCode PCASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, K
 
    To set the options on the solvers separate for each block call `PCASMGetSubKSP()`
    and set the options directly on the resulting `KSP` object (you can access its `PC` with `KSPGetPC()`)
-
-    References:
-+   * - M Dryja, OB Widlund, An additive variant of the Schwarz alternating method for the case of many subregions
-     Courant Institute, New York University Technical report
--   * - Barry Smith, Petter Bjorstad, and William Gropp, Domain Decompositions: Parallel Multilevel Methods for Elliptic Partial Differential Equations,
-    Cambridge University Press.
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCASMType`, `PCCompositeType`,
           `PCBJACOBI`, `PCASMGetSubKSP()`, `PCASMSetLocalSubdomains()`, `PCASMType`, `PCASMGetType()`, `PCASMSetLocalType()`, `PCASMGetLocalType()`

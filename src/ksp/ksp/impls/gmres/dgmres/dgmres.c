@@ -975,25 +975,25 @@ static PetscErrorCode KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
 }
 
 /*MC
-   KSPDGMRES - Implements the deflated GMRES as defined in [1,2].
+   KSPDGMRES - Implements the deflated GMRES as defined in {cite}`erhel1996restarted` and {cite}`wakam2013memory`
 
    Options Database Keys:
    GMRES Options (inherited):
-+   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
-.   -ksp_gmres_haptol <tol> - sets the tolerance for "happy ending" (exact convergence)
-.   -ksp_gmres_preallocate - preallocate all the Krylov search directions initially (otherwise groups of
-                             vectors are allocated as needed)
-.   -ksp_gmres_classicalgramschmidt - use classical (unmodified) Gram-Schmidt to orthogonalize against the Krylov space (fast) (the default)
-.   -ksp_gmres_modifiedgramschmidt - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
++   -ksp_gmres_restart <restart>                                                - the number of Krylov directions to orthogonalize against
+.   -ksp_gmres_haptol <tol>                                                     - sets the tolerance for "happy ending" (exact convergence)
+.   -ksp_gmres_preallocate                                                      - preallocate all the Krylov search directions initially
+                                                                                (otherwise groups of vectors are allocated as needed)
+.   -ksp_gmres_classicalgramschmidt                                             - use classical (unmodified) Gram-Schmidt to orthogonalize against
+                                                                                the Krylov space (fast) (the default)
+.   -ksp_gmres_modifiedgramschmidt                                              - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
 .   -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always> - determine if iterative refinement is used to increase the
-                                   stability of the classical Gram-Schmidt  orthogonalization.
--   -ksp_gmres_krylov_monitor - plot the Krylov space generated
+                                                                                stability of the classical Gram-Schmidt orthogonalization.
+-   -ksp_gmres_krylov_monitor                                                   - plot the Krylov space generated
 
    DGMRES Options Database Keys:
-+   -ksp_dgmres_eigen <neig> - number of smallest eigenvalues to extract at each restart
-.   -ksp_dgmres_max_eigen <max_neig> - maximum number of eigenvalues that can be extracted during the iterative
-                                       process
-.   -ksp_dgmres_force - use the deflation at each restart; switch off the adaptive strategy.
++   -ksp_dgmres_eigen <neig>                     - number of smallest eigenvalues to extract at each restart
+.   -ksp_dgmres_max_eigen <max_neig>             - maximum number of eigenvalues that can be extracted during the iterative process
+.   -ksp_dgmres_force                            - use the deflation at each restart; switch off the adaptive strategy.
 -   -ksp_dgmres_view_deflation_vecs <viewerspec> - View the deflation vectors, where viewerspec is a key that can be
                                                    parsed by `PetscOptionsGetViewer()`.  If neig > 1, viewerspec should
                                                    end with ":append".  No vectors will be viewed if the adaptive
@@ -1013,11 +1013,6 @@ static PetscErrorCode KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
 
    Contributed by:
    Desire NUENTSA WAKAM, INRIA
-
-   References:
-+ [1] - J. Erhel, K. Burrage and B. Pohl,  Restarted GMRES preconditioned by deflation,J. Computational and Applied Mathematics, 69(1996).
-- [2] - D. NUENTSA WAKAM and F. PACULL, Memory Efficient Hybrid Algebraic Solvers for Linear Systems Arising from Compressible Flows, Computers and Fluids,
-   In Press, http://dx.doi.org/10.1016/j.compfluid.2012.03.023
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPLGMRES`,
            `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,

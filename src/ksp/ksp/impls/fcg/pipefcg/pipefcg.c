@@ -569,8 +569,7 @@ static PetscErrorCode KSPSetFromOptions_PIPEFCG(KSP ksp, PetscOptionItems *Petsc
 }
 
 /*MC
-
-  KSPPIPEFCG - Implements a Pipelined, Flexible Conjugate Gradient method. [](sec_pipelineksp). [](sec_flexibleksp)
+  KSPPIPEFCG - Implements a Pipelined, Flexible Conjugate Gradient method {cite}`sananschneppmay2016`. [](sec_pipelineksp). [](sec_flexibleksp)
 
   Options Database Keys:
 +   -ksp_pipefcg_mmax <N> - The number of previous search directions to store
@@ -592,10 +591,6 @@ static PetscErrorCode KSPSetFromOptions_PIPEFCG(KSP ksp, PetscOptionItems *Petsc
 
   Contributed by:
   Patrick Sanan and Sascha M. Schnepp
-
-  Reference:
-. * - P. Sanan, S.M. Schnepp, and D.A. May, "Pipelined, Flexible Krylov Subspace Methods", SIAM Journal on Scientific Computing 2016 38:5, C441-C470,
-    DOI: 10.1137/15M1049130
 
 .seealso: [](ch_ksp), [](doc_faq_pipelined), [](sec_pipelineksp), [](sec_flexibleksp), `KSPFCG`, `KSPPIPECG`, `KSPPIPECR`, `KSPGCR`, `KSPPIPEGCR`, `KSPFGMRES`,
           `KSPCG`, `KSPPIPEFCGSetMmax()`, `KSPPIPEFCGGetMmax()`, `KSPPIPEFCGSetNprealloc()`,

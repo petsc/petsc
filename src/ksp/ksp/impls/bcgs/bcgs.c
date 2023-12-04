@@ -180,7 +180,7 @@ PetscErrorCode KSPDestroy_BCGS(KSP ksp)
 }
 
 /*MC
-   KSPBCGS - Implements the BiCGStab (Stabilized version of Biconjugate Gradient) method.
+   KSPBCGS - Implements the BiCGStab (Stabilized version of Biconjugate Gradient) method {cite}`vorst92`
 
    Level: beginner
 
@@ -190,9 +190,6 @@ PetscErrorCode KSPDestroy_BCGS(KSP ksp)
    See `KSPBCGSL` for additional stabilization
 
    See `KSPFBCGS`, `KSPFBCGSR`, and `KSPPIPEBCGS` for flexible and pipelined versions of the algorithm
-
-   Reference:
-.  * - van der Vorst, SIAM J. Sci. Stat. Comput., 1992.
 
 .seealso: [](ch_ksp), `KSPFBCGS`, `KSPFBCGSR`, `KSPPIPEBCGS`, `KSPBCGSL`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPBCGSL`, `KSPFBICG`, `KSPQMRCGS`, `KSPSetPCSide()`
 M*/

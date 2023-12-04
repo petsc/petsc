@@ -585,7 +585,7 @@ PetscErrorCode SNESMSSetDamping(SNES snes, PetscReal damping)
       SNESMS - multi-stage smoothers
 
       Options Database Keys:
-+     -snes_ms_type - type of multi-stage smoother
++     -snes_ms_type    - type of multi-stage smoother
 -     -snes_ms_damping - damping for multi-stage method
 
       Level: advanced
@@ -598,11 +598,7 @@ PetscErrorCode SNESMSSetDamping(SNES snes, PetscReal damping)
 
       The methods are specified in low storage form (Ketcheson 2010). New methods can be registered with `SNESMSRegister()`.
 
-      References:
-+     * - Ketcheson (2010) Runge Kutta methods with minimum storage implementations (https://doi.org/10.1016/j.jcp.2009.11.006).
-.     * - Jameson (1983) Solution of the Euler equations for two dimensional transonic flow by a multigrid method (https://doi.org/10.1016/0096-3003(83)90019-X).
-.     * - Pierce and Giles (1997) Preconditioned multigrid methods for compressible flow calculations on stretched meshes (https://doi.org/10.1006/jcph.1997.5772).
--     * - Van Leer, Tai, and Powell (1989) Design of optimally smoothing multi-stage schemes for the Euler equations (https://doi.org/10.2514/6.1989-1933).
+      See {cite}`ketcheson2010runge`, {cite}`jameson1983`, {cite}`pierce1997preconditioned`, and {cite}`va1981design`
 
 .seealso: [](ch_snes), `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESMS`, `SNESFAS`, `KSPCHEBYSHEV`, `SNESMSSetDamping()`, `SNESMSGetDamping()`,
           `SNESMSSetType()`, `SNESMSGetType()`

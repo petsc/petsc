@@ -707,8 +707,8 @@ static PetscErrorCode SNESReset_VINEWTONRSLS(SNES snes)
       SNESVINEWTONRSLS - Reduced space active set solvers for variational inequalities based on Newton's method
 
    Options Database Keys:
-+   -snes_type <vinewtonssls,vinewtonrsls> - a semi-smooth solver, a reduced space active set method
--   -snes_vi_monitor - prints the number of active constraints at each iteration.
++   -snes_type <vinewtonssls,vinewtonrsls> - a semi-smooth solver or a reduced space active set method
+-   -snes_vi_monitor                       - prints the number of active constraints at each iteration.
 
    Level: beginner
 
@@ -718,9 +718,7 @@ static PetscErrorCode SNESReset_VINEWTONRSLS(SNES snes)
    and produces a step direction by solving the linear system arising from the Jacobian with the inactive variables removed. In other
    words on a reduced space of the solution space. Based on the Newton update it then adjusts the inactive set for the next iteration.
 
-   References:
-.  * - T. S. Munson, and S. Benson. Flexible Complementarity Solvers for Large Scale
-     Applications, Optimization Methods and Software, 21 (2006).
+   See {cite}`benson2006flexible`
 
 .seealso: [](ch_snes), `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESVINEWTONSSLS`, `SNESNEWTONTR`, `SNESLineSearchSetType()`, `SNESLineSearchSetPostCheck()`, `SNESLineSearchSetPreCheck()`, `SNESVIGetInactiveSet()`, `DMSetVI()`, `SNESVISetRedundancyCheck()`
 M*/

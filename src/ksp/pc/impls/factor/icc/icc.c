@@ -147,13 +147,13 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc, PetscOptionItems *PetscOptions
 extern PetscErrorCode PCFactorSetDropTolerance_ILU(PC, PetscReal, PetscReal, PetscInt);
 
 /*MC
-     PCICC - Incomplete Cholesky factorization preconditioners.
+     PCICC - Incomplete Cholesky factorization preconditioners {cite}`chan1997approximate`
 
    Options Database Keys:
-+  -pc_factor_levels <k> - number of levels of fill for ICC(k)
-.  -pc_factor_in_place - only for ICC(0) with natural ordering, reuses the space of the matrix for
-                      its factorization (overwrites original matrix)
-.  -pc_factor_fill <nfill> - expected amount of fill in factored matrix compared to original matrix, nfill > 1
++  -pc_factor_levels <k>                                 - number of levels of fill for ICC(k)
+.  -pc_factor_in_place                                   - only for ICC(0) with natural ordering, reuses the space of the matrix for
+                                                         its factorization (overwrites original matrix)
+.  -pc_factor_fill <nfill>                               - expected amount of fill in factored matrix compared to original matrix, nfill > 1
 -  -pc_factor_mat_ordering_type <natural,nd,1wd,rcm,qmd> - set the row/column ordering of the factored matrix
 
    Level: beginner
@@ -163,15 +163,8 @@ extern PetscErrorCode PCFactorSetDropTolerance_ILU(PC, PetscReal, PetscReal, Pet
 
    For `MATSEQBAIJ` matrices this implements a point block ICC.
 
-   By default, the Manteuffel is applied (for matrices with block size 1). Call `PCFactorSetShiftType`(pc,`MAT_SHIFT_POSITIVE_DEFINITE`);
+   By default, the Manteuffel shift {cite}`manteuffel1979shifted` is applied, for matrices with block size 1 only. Call `PCFactorSetShiftType`(pc,`MAT_SHIFT_POSITIVE_DEFINITE`);
    to turn off the shift.
-
-   The Manteuffel shift is only implemented for matrices with block size 1
-
-   References:
-.  * - TONY F. CHAN AND HENK A. VAN DER VORST, Review article: APPROXIMATE AND INCOMPLETE FACTORIZATIONS,
-      Chapter in Parallel Numerical Algorithms, edited by D. Keyes, A. Semah, V. Venkatakrishnan, ICASE/LaRC Interdisciplinary Series in
-      Science and Engineering, Kluwer.
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCSOR`, `MatOrderingType`, `PCILU`, `PCLU`, `PCCHOLESKY`,
           `PCFactorSetZeroPivot()`, `PCFactorSetShiftType()`, `PCFactorSetShiftAmount()`,

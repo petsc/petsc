@@ -210,14 +210,14 @@ PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options, const char in_
 . file    - name of file
 - require - if `PETSC_TRUE` will generate an error if the file does not exist
 
+  Level: intermediate
+
   Notes:
   PETSc will generate an error condition that stops the program if a YAML error
   is detected, hence the user should check that the YAML file is valid before
-  supplying it, for instance at http://www.yamllint.com/ .
+  supplying it, for instance at <http://www.yamllint.com> .
 
   Uses `PetscOptionsInsertStringYAML()`.
-
-  Level: intermediate
 
 .seealso: `PetscOptionsSetValue()`, `PetscOptionsView()`, `PetscOptionsHasName()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetReal()`, `PetscOptionsGetString()`, `PetscOptionsGetIntArray()`, `PetscOptionsBool()`,

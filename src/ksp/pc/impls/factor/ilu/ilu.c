@@ -237,21 +237,21 @@ static PetscErrorCode PCApplySymmetricRight_ILU(PC pc, Vec x, Vec y)
 }
 
 /*MC
-     PCILU - Incomplete factorization preconditioners.
+     PCILU - Incomplete factorization preconditioners {cite}`dupont1968approximate`, {cite}`oliphant1961implicit`, {cite}`chan1997approximate`
 
    Options Database Keys:
-+  -pc_factor_levels <k> - number of levels of fill for ILU(k)
-.  -pc_factor_in_place - only for ILU(0) with natural ordering, reuses the space of the matrix for
-                      its factorization (overwrites original matrix)
-.  -pc_factor_diagonal_fill - fill in a zero diagonal even if levels of fill indicate it wouldn't be fill
-.  -pc_factor_reuse_ordering - reuse ordering of factorized matrix from previous factorization
-.  -pc_factor_fill <nfill> - expected amount of fill in factored matrix compared to original matrix, nfill > 1
-.  -pc_factor_nonzeros_along_diagonal - reorder the matrix before factorization to remove zeros from the diagonal,
-                                   this decreases the chance of getting a zero pivot
++  -pc_factor_levels <k>                                 - number of levels of fill for ILU(k)
+.  -pc_factor_in_place                                   - only for ILU(0) with natural ordering, reuses the space of the matrix for
+                                                         its factorization (overwrites original matrix)
+.  -pc_factor_diagonal_fill                              - fill in a zero diagonal even if levels of fill indicate it wouldn't be fill
+.  -pc_factor_reuse_ordering                             - reuse ordering of factorized matrix from previous factorization
+.  -pc_factor_fill <nfill>                               - expected amount of fill in factored matrix compared to original matrix, nfill > 1
+.  -pc_factor_nonzeros_along_diagonal                    - reorder the matrix before factorization to remove zeros from the diagonal,
+                                                         this decreases the chance of getting a zero pivot
 .  -pc_factor_mat_ordering_type <natural,nd,1wd,rcm,qmd> - set the row/column ordering of the factored matrix
--  -pc_factor_pivot_in_blocks - for block ILU(k) factorization, i.e. with BAIJ matrices with block size larger
-                             than 1 the diagonal blocks are factored with partial pivoting (this increases the
-                             stability of the ILU factorization
+-  -pc_factor_pivot_in_blocks                            - for block ILU(k) factorization, i.e. with `MATBAIJ` matrices with block size larger
+                                                         than 1 the diagonal blocks are factored with partial pivoting (this increases the
+                                                         stability of the ILU factorization
 
    Level: beginner
 
@@ -265,15 +265,6 @@ static PetscErrorCode PCApplySymmetricRight_ILU(PC pc, Vec x, Vec y)
 
    If you are using `MATSEQAIJCUSPARSE` matrices (or `MATMPIAIJCUSPARSE` matrices with block Jacobi), factorization
    is never done on the GPU).
-
-   References:
-+  * - T. Dupont, R. Kendall, and H. Rachford. An approximate factorization procedure for solving
-   self adjoint elliptic difference equations. SIAM J. Numer. Anal., 5, 1968.
-.  * -  T.A. Oliphant. An implicit numerical method for solving two dimensional timedependent diffusion problems. Quart. Appl. Math., 19, 1961.
--  * -  TONY F. CHAN AND HENK A. VAN DER VORST, APPROXIMATE AND INCOMPLETE FACTORIZATIONS,
-      Chapter in Parallel Numerical
-      Algorithms, edited by D. Keyes, A. Semah, V. Venkatakrishnan, ICASE/LaRC Interdisciplinary Series in
-      Science and Engineering, Kluwer.
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCSOR`, `MatOrderingType`, `PCLU`, `PCICC`, `PCCHOLESKY`,
           `PCFactorSetZeroPivot()`, `PCFactorSetShiftSetType()`, `PCFactorSetAmount()`,

@@ -188,25 +188,10 @@ static PetscErrorCode KSPSetFromOptions_LCD(KSP ksp, PetscOptionItems *PetscOpti
 
    Level: beginner
 
-   Note:
+   Notes:
    Support only for left preconditioning
 
-   References:
-+  * - J.Y. Yuan, G.H.Golub, R.J. Plemmons, and W.A.G. Cecilio. Semiconjugate
-    direction methods for real positive definite system. BIT Numerical
-    Mathematics, 44(1),2004.
-.  * - Y. Dai and J.Y. Yuan. Study on semiconjugate direction methods for
-    nonsymmetric systems. International Journal for Numerical Methods in
-    Engineering, 60, 2004.
-.  * - L. Catabriga, A.L.G.A. Coutinho, and L.P.Franca. Evaluating the LCD
-    algorithm for solving linear systems of equations arising from implicit
-    SUPG formulation of compressible flows. International Journal for
-    Numerical Methods in Engineering, 60, 2004
--  * - L. Catabriga, A. M. P. Valli, B. Z. Melotti, L. M. Pessoa,
-    A. L. G. A. Coutinho, Performance of LCD iterative method in the finite
-    element and finite difference solution of convection diffusion
-    equations,  Communications in Numerical Methods in Engineering, (Early
-    View).
+   See {cite}`yuan2004semi`, {cite}`dai2004study`, {cite}`catabriga2004evaluating`, and {cite}`catabriga2006performance`
 
    Contributed by:
    Lucia Catabriga <luciac@ices.utexas.edu>

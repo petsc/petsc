@@ -588,7 +588,8 @@ static PetscErrorCode KSPCGSetFromOptions_STCG(KSP ksp, PetscOptionItems *PetscO
 }
 
 /*MC
-     KSPSTCG -   Code to run conjugate gradient method subject to a constraint on the solution norm for use in a trust region method
+   KSPSTCG -   Code to run conjugate gradient method subject to a constraint on the solution norm for use in a trust region method
+   {cite}`steihaug:83`, {cite}`toint1981towards`
 
    Options Database Key:
 .      -ksp_cg_radius <r> - Trust Region Radius
@@ -596,7 +597,7 @@ static PetscErrorCode KSPCGSetFromOptions_STCG(KSP ksp, PetscOptionItems *PetscO
    Level: developer
 
    Notes:
-    This is rarely used directly, it is used in Trust Region methods for nonlinear equations, `SNESNEWTONTR`
+   This is rarely used directly, it is used in Trust Region methods for nonlinear equations, `SNESNEWTONTR`
 
    Use preconditioned conjugate gradient to compute an approximate minimizer of the quadratic function
 
@@ -623,10 +624,6 @@ static PetscErrorCode KSPCGSetFromOptions_STCG(KSP ksp, PetscOptionItems *PetscO
 -  `KSP_CONVERGED_STEP_LENGTH` - if convergence is reached along a constrained step,
 
   The preconditioner supplied should be symmetric and positive definite.
-
-   References:
-+  * - Steihaug, T. (1983): The conjugate gradient method and trust regions in large scale optimization. SIAM J. Numer. Anal. 20, 626--637
--  * - Toint, Ph.L. (1981): Towards an efficient sparsity exploiting Newton method for minimization. In: Duff, I., ed., Sparse Matrices and Their Uses, pp. 57--88. Academic Press
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPCGSetType()`, `KSPType`, `KSP`, `KSPCGSetRadius()`, `KSPCGGetNormD()`, `KSPCGGetObjFcn()`, `KSPNASH`, `KSPGLTR`, `KSPQCG`
 M*/

@@ -520,7 +520,8 @@ static PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
 
 /*MC
     KSPBCGSL - Implements a slight variant of the Enhanced
-                BiCGStab(L) algorithm in (3) and (2).  The variation
+                BiCGStab(L) algorithm in {cite}`fokkema1996enhanced`
+                and {cite}`sleijpen1994bicgstab`, see also {cite}`sleijpen1995overview`. The variation
                 concerns cases when either kappa0**2 or kappa1**2 is
                 negative due to round-off. Kappa0 has also been pulled
                 out of the denominator in the formula for ghat.
@@ -541,18 +542,6 @@ static PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
    This has not been completely cleaned up into PETSc style.
 
    All the BLAS and LAPACK calls in the source should be removed and replaced with loops and the macros for block solvers converted from LINPACK.
-
-   References:
-+  * - G.L.G. Sleijpen, H.A. van der Vorst, "An overview of
-         approaches for the stable computation of hybrid BiCG
-         methods", Applied Numerical Mathematics: Transactions
-         f IMACS, 19(3), 1996.
-.  * - G.L.G. Sleijpen, H.A. van der Vorst, D.R. Fokkema,
-         "BiCGStab(L) and other hybrid BiCG methods",
-          Numerical Algorithms, 7, 1994.
--  * - D.R. Fokkema, "Enhanced implementation of BiCGStab(L)
-         for solving linear systems of equations", preprint
-         from www.citeseer.com.
 
 .seealso: [](ch_ksp), `KSPFBCGS`, `KSPFBCGSR`, `KSPBCGS`, `KSPPIPEBCGS`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPBCGS`, `KSPSetPCSide()`,
           `KSPBCGSLSetEll()`, `KSPBCGSLSetXRes()`, `KSPBCGSLSetUsePseudoinverse()`, `KSPBCGSLSetPol()`

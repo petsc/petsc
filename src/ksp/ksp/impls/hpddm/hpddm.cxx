@@ -627,37 +627,31 @@ static PetscErrorCode KSPHPDDMGetType_HPDDM(KSP ksp, KSPHPDDMType *type)
 
 /*MC
    KSPHPDDM - Interface with the HPDDM library. This `KSP` may be used to further select methods that are currently not implemented natively in PETSc, e.g.,
-   GCRODR [2006], a recycled Krylov method which is similar to `KSPLGMRES`, see [2016] for a comparison. ex75.c shows how to reproduce the results
-   from the aforementioned paper [2006]. A chronological bibliography of relevant publications linked with `KSP` available in HPDDM through `KSPHPDDM`,
-   and not available directly in PETSc, may be found below. The interface is explained in details in [2021].
+   GCRODR {cite}`parks2006recycling`, a recycled Krylov method which is similar to `KSPLGMRES`, see {cite}`jolivet2016block` for a comparison.
+   ex75.c shows how to reproduce the results
+   from the aforementioned paper {cite}`parks2006recycling`. A chronological bibliography of relevant publications linked with `KSP` available in HPDDM through `KSPHPDDM`,
+   and not available directly in PETSc, may be found below. The interface is explained in details in {cite}`jolivetromanzampini2020`.
+   See also {cite}`o1980block`, {cite}`ji2017breakdown` and {cite}`calandra2013modified`
 
    Options Database Keys:
-+   -ksp_gmres_restart <restart, default=30> - see `KSPGMRES`
-.   -ksp_hpddm_type <type, default=gmres> - any of gmres, bgmres, cg, bcg, gcrodr, bgcrodr, bfbcg, or preonly, see `KSPHPDDMType`
++   -ksp_gmres_restart <restart, default=30>                  - see `KSPGMRES`
+.   -ksp_hpddm_type <type, default=gmres>                     - any of gmres, bgmres, cg, bcg, gcrodr, bgcrodr, bfbcg, or preonly, see `KSPHPDDMType`
 .   -ksp_hpddm_precision <value, default=same as PetscScalar> - any of half, single, double or quadruple, see `KSPHPDDMPrecision`
-.   -ksp_hpddm_deflation_tol <eps, default=\-1.0> - tolerance when deflating right-hand sides inside block methods (no deflation by default, only relevant with block methods)
-.   -ksp_hpddm_enlarge_krylov_subspace <p, default=1> - split the initial right-hand side into multiple vectors (only relevant with nonblock methods)
-.   -ksp_hpddm_orthogonalization <type, default=cgs> - any of cgs or mgs, see KSPGMRES
-.   -ksp_hpddm_qr <type, default=cholqr> - distributed QR factorizations with any of cholqr, cgs, or mgs (only relevant with block methods)
-.   -ksp_hpddm_variant <type, default=left> - any of left, right, or flexible (this option is superseded by `KSPSetPCSide()`)
-.   -ksp_hpddm_recycle <n, default=0> - number of harmonic Ritz vectors to compute (only relevant with GCRODR or BGCRODR)
-.   -ksp_hpddm_recycle_target <type, default=SM> - criterion to select harmonic Ritz vectors using either SM, LM, SR, LR, SI, or LI (only relevant with GCRODR or BGCRODR).
-     For BGCRODR, if PETSc is compiled with SLEPc, this option is not relevant, since SLEPc is used instead. Options are set with the prefix -ksp_hpddm_recycle_eps_
-.   -ksp_hpddm_recycle_strategy <type, default=A> - generalized eigenvalue problem A or B to solve for recycling (only relevant with flexible GCRODR or BGCRODR)
--   -ksp_hpddm_recycle_symmetric <true, default=false> - symmetric generalized eigenproblems in BGCRODR, useful to switch to distributed solvers like EPSELEMENTAL or EPSSCALAPACK
-     (only relevant when PETSc is compiled with SLEPc)
+.   -ksp_hpddm_deflation_tol <eps, default=\-1.0>             - tolerance when deflating right-hand sides inside block methods (no deflation by default,
+                                                              only relevant with block methods)
+.   -ksp_hpddm_enlarge_krylov_subspace <p, default=1>         - split the initial right-hand side into multiple vectors (only relevant with nonblock methods)
+.   -ksp_hpddm_orthogonalization <type, default=cgs>          - any of cgs or mgs, see KSPGMRES
+.   -ksp_hpddm_qr <type, default=cholqr>                      - distributed QR factorizations with any of cholqr, cgs, or mgs (only relevant with block methods)
+.   -ksp_hpddm_variant <type, default=left>                   - any of left, right, or flexible (this option is superseded by `KSPSetPCSide()`)
+.   -ksp_hpddm_recycle <n, default=0>                         - number of harmonic Ritz vectors to compute (only relevant with GCRODR or BGCRODR)
+.   -ksp_hpddm_recycle_target <type, default=SM>              - criterion to select harmonic Ritz vectors using either SM, LM, SR, LR, SI, or LI
+                                                              (only relevant with GCRODR or BGCRODR). For BGCRODR, if PETSc is compiled with SLEPc,
+                                                              this option is not relevant, since SLEPc is used instead. Options are set with the prefix -ksp_hpddm_recycle_eps_
+.   -ksp_hpddm_recycle_strategy <type, default=A>             - generalized eigenvalue problem A or B to solve for recycling (only relevant with flexible GCRODR or BGCRODR)
+-   -ksp_hpddm_recycle_symmetric <true, default=false>        - symmetric generalized eigenproblems in BGCRODR, useful to switch to distributed solvers like
+                                                              `EPSELEMENTAL` or `EPSSCALAPACK` (only relevant when PETSc is compiled with SLEPc)
 
    Level: intermediate
-
-   References:
-+   1980 - The block conjugate gradient algorithm and related methods. O'Leary. Linear Algebra and its Applications.
-.   2006 - Recycling Krylov subspaces for sequences of linear systems. Parks, de Sturler, Mackey, Johnson, and Maiti. SIAM Journal on Scientific Computing
-.   2013 - A modified block flexible GMRES method with deflation at each iteration for the solution of non-Hermitian linear systems with multiple right-hand sides.
-           Calandra, Gratton, Lago, Vasseur, and Carvalho. SIAM Journal on Scientific Computing.
-.   2016 - Block iterative methods and recycling for improved scalability of linear solvers. Jolivet and Tournier. SC16.
-.   2017 - A breakdown-free block conjugate gradient method. Ji and Li. BIT Numerical Mathematics.
--   2021 - KSPHPDDM and PCHPDDM: extending PETSc with advanced Krylov methods and robust multilevel overlapping Schwarz preconditioners. Jolivet, Roman, and Zampini.
-           Computer & Mathematics with Applications.
 
 .seealso: [](ch_ksp), [](sec_flexibleksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPGMRES`, `KSPCG`, `KSPLGMRES`, `KSPDGMRES`
 M*/

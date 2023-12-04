@@ -634,15 +634,7 @@ where noted, add a newline after the section headings.
    particular algorithm was implemented.
 
 #. (If applicable) references should be indicated inline with \{cite\}\`Bibtex-key\` where
-   Bibtex-key is in the file `doc/petsc.bib`, as in the manual page for `PCFIELDSPLIT`.  Manual pages that have not been updated use ``References:``
-   followed by the list of references
-
-  .. code-block:: rst
-
-      References:
-      . * - Paper name, author, etc
-
-   and should be updated to the current system.
+   Bibtex-key is in the file `doc/petsc.bib`, as in the manual page for `PCFIELDSPLIT`.
 
 #. ``.seealso:`` (no newline, no spaces to the left of this text), followed by a list of related manual
    pages. These manual pages should usually also point back to this
