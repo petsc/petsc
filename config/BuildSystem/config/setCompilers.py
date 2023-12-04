@@ -1961,6 +1961,18 @@ class Configure(config.base.Configure):
     outlo = output.lower()
     return any(sub.lower() in outlo for sub in substrings)
 
+  def containsInvalidLinkerFlag(self, output):
+    '''If the output contains evidence that an invalid flag was used, return True'''
+    substrings = ('unknown argument', 'ignoring unsupported linker flag', 'unrecognized command line option','unrecognised command line option',
+                  'unrecognized option','unrecognised option','unknown option',
+                  'unknown flag',
+                  'not supported','is unsupported and will be skipped','illegal option',
+                  'invalid option','invalid suboption',
+                  'unbekannte option',
+                  'no se reconoce la opci','non reconnue','warning: unsupported linker arg:','ignoring unknown option')
+    outlo = output.lower()
+    return any(sub.lower() in outlo for sub in substrings)
+
   def checkCompilerFlag(self, flag, includes = '', body = '', compilerOnly = 0):
     '''Determine whether the compiler accepts the given flag'''
     flagsArg = self.getCompilerFlagsArg(compilerOnly)
@@ -2404,7 +2416,7 @@ class Configure(config.base.Configure):
         if hasattr(self,'sharedLinker'): del self.sharedLinker
     return
 
-  def checkLinkerFlag(self, flag, filterAlways = 0):
+  def checkLinkerFlag(self, flag):
     '''Determine whether the linker accepts the given flag'''
     flagsArg = self.getLinkerFlagsArg()
     oldFlags = getattr(self, flagsArg)
@@ -2414,8 +2426,7 @@ class Configure(config.base.Configure):
     if status:
       valid = 0
       self.logPrint('Rejecting linker flag '+flag+' due to nonzero status from link')
-    output = self.filterLinkOutput(output, filterAlways)
-    if self.containsInvalidFlag(output):
+    if self.containsInvalidLinkerFlag(output):
       valid = 0
       self.logPrint('Rejecting '+self.language[-1]+' linker flag '+flag+' due to \n'+output)
     if valid:
@@ -2443,7 +2454,7 @@ class Configure(config.base.Configure):
     for language in languages:
       self.pushLanguage(language)
       for testFlag in ['-Wl,-ld_classic', '-Wl,-bind_at_load', '-Wl,-commons,use_dylibs', '-Wl,-search_paths_first', '-Wl,-no_compact_unwind']:
-        if self.checkLinkerFlag(testFlag, filterAlways=1):
+        if self.checkLinkerFlag(testFlag):
           # expand to CC_LINKER_FLAGS or CXX_LINKER_FLAGS or FC_LINKER_FLAGS
           linker_flag_var = langMap[language]+'_LINKER_FLAGS'
           val = getattr(self,linker_flag_var)
