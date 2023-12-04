@@ -360,10 +360,15 @@ PetscErrorCode PetscVFPrintfDefault(FILE *fd, const char *format, va_list Argp)
   va_end(Argpcopy);
 #endif
   {
-    const int err = fprintf(fd, "%s", buff);
+    int err;
+
+    // POSIX C sets errno but otherwise it may not be set for *printf() system calls
+    // https://pubs.opengroup.org/onlinepubs/9699919799/functions/fprintf.html
+    errno = 0;
+    err   = fprintf(fd, "%s", buff);
     // cannot use PetscCallExternal() for fprintf since the return value is "number of
     // characters transmitted to the output stream" on success
-    PetscCheck(err >= 0, PETSC_COMM_SELF, PETSC_ERR_FILE_WRITE, "fprintf() returned error code %d", err);
+    PetscCheck(err >= 0, PETSC_COMM_SELF, PETSC_ERR_FILE_WRITE, "fprintf() returned error code %d: %s", err, errno > 0 ? strerror(errno) : "unknown (errno not set)");
   }
   PetscCall(PetscFFlush(fd));
   if (buff != str) PetscCall(PetscFree(buff));

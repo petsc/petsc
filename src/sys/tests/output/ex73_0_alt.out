@@ -1,0 +1,10 @@
+[0]PETSC ERROR: --------------------- Error Message --------------------------------------------------------------
+[0]PETSC ERROR: Write to file failed
+[0]PETSC ERROR: Error in fflush() due to "Bad file descriptor"
+[0]PETSC ERROR: See https://petsc.org/release/faq/ for trouble shooting.
+[0]PETSC ERROR: #1 PetscFFlush() at mprint.c:0
+[0]PETSC ERROR: #2 PetscVFPrintfDefault() at mprint.c:0
+[0]PETSC ERROR: #3 PetscVFPrintf_Private() at mprint.c:0
+[0]PETSC ERROR: #4 PetscFPrintf() at mprint.c:0
+[0]PETSC ERROR: #5 main() at ex73.c:0
+[0]PETSC ERROR: ----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------

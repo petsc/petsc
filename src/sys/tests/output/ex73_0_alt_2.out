@@ -1,0 +1,9 @@
+[0]PETSC ERROR: ------------------------------------------------------------------------
+[0]PETSC ERROR: Caught signal number 11 SEGV: Segmentation Violation, probably memory access out of range
+[0]PETSC ERROR: Try option -start_in_debugger or -on_error_attach_debugger
+[0]PETSC ERROR: or see https://petsc.org/release/faq/#valgrind and https://petsc.org/release/faq/
+[0]PETSC ERROR: ---------------------  Stack Frames ------------------------------------
+[0]PETSC ERROR: The line numbers in the error traceback are not always exact.
+[0]PETSC ERROR: #1 PetscVFPrintfDefault() at mprint.c:0
+[0]PETSC ERROR: #2 PetscVFPrintf_Private() at mprint.c:0
+[0]PETSC ERROR: #3 PetscFPrintf() at mprint.c:0
