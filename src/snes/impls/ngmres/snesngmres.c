@@ -170,12 +170,12 @@ static PetscErrorCode SNESSolve_NGMRES(SNES snes)
   X            = snes->vec_sol;
   F            = snes->vec_func;
   B            = snes->vec_rhs;
-  XA           = snes->vec_sol_update;
+  XA           = snes->work[2];
   FA           = snes->work[0];
   D            = snes->work[1];
 
   /* work for the line search */
-  Y  = snes->work[2];
+  Y  = snes->vec_sol_update;
   XM = snes->work[3];
   FM = snes->work[4];
 

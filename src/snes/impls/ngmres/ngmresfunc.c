@@ -26,7 +26,7 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes, PetscInt ivec, 
   PetscScalar *xi         = ngmres->xi;
   PetscScalar  alph_total = 0.;
   PetscReal    nu;
-  Vec          Y = snes->work[2];
+  Vec          Y = snes->vec_sol_update;
   PetscBool    changed_y, changed_w;
 
   PetscFunctionBegin;
