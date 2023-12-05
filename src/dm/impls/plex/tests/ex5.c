@@ -394,6 +394,7 @@ typedef struct {
   PetscInt  dim;            /* The topological mesh dimension */
   PetscBool cellSimplex;    /* Use simplices or hexes */
   PetscBool testPartition;  /* Use a fixed partitioning for testing */
+  PetscBool testAssembly;   // Flag for assembly test
   PetscInt  testNum;        /* The particular mesh to test */
   PetscInt  cohesiveFields; /* The number of cohesive fields */
 } AppCtx;
@@ -405,6 +406,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->dim            = 2;
   options->cellSimplex    = PETSC_TRUE;
   options->testPartition  = PETSC_TRUE;
+  options->testAssembly   = PETSC_TRUE;
   options->testNum        = 0;
   options->cohesiveFields = 1;
 
@@ -413,6 +415,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex5.c", options->dim, &options->dim, NULL, 1, 3));
   PetscCall(PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex5.c", options->cellSimplex, &options->cellSimplex, NULL));
   PetscCall(PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex5.c", options->testPartition, &options->testPartition, NULL));
+  PetscCall(PetscOptionsBool("-test_assembly", "Run the assembly test", "ex5.c", options->testAssembly, &options->testAssembly, NULL));
   PetscCall(PetscOptionsBoundedInt("-test_num", "The particular mesh to test", "ex5.c", options->testNum, &options->testNum, NULL, 0));
   PetscCall(PetscOptionsBoundedInt("-cohesive_fields", "The number of cohesive fields", "ex5.c", options->cohesiveFields, &options->cohesiveFields, NULL, 0));
   PetscOptionsEnd();
@@ -824,8 +827,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*dm, "orig_"));
   PetscCall(DMPlexDistributeSetDefault(*dm, PETSC_FALSE));
   PetscCall(DMSetFromOptions(*dm));
-  PetscCall(DMGetLabel(*dm, "material", &matLabel));
-  if (matLabel) PetscCall(DMPlexLabelComplete(*dm, matLabel));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscCall(DMHasLabel(*dm, "fault", &hasFault));
   if (hasFault) {
@@ -972,6 +973,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscCall(PetscPartitionerShellSetPartition(part, size, sizes, points));
     PetscCall(PetscFree2(sizes, points));
   }
+  PetscCall(DMGetLabel(*dm, "material", &matLabel));
+  if (matLabel) PetscCall(DMPlexLabelComplete(*dm, matLabel));
   {
     DM pdm = NULL;
 
@@ -1059,6 +1062,20 @@ static PetscErrorCode phi(PetscInt dim, PetscReal time, const PetscReal x[], Pet
   return PETSC_SUCCESS;
 }
 
+static void add_fields(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[])
+{
+  PetscInt       d;
+  const PetscInt offN = 0;
+  const PetscInt offP = dim;
+  for (d = 0; d < dim; ++d) f[d] = u[offN + d] + u[offP + d];
+}
+
+static void normal_field(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[])
+{
+  PetscInt d;
+  for (d = 0; d < dim; ++d) f[d] = n[d];
+}
+
 /* \lambda \cdot (\psi_u^- - \psi_u^+) */
 static void f0_bd_u_neg(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
@@ -1107,10 +1124,12 @@ static void g0_bd_lu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt u
 static PetscErrorCode TestAssembly(DM dm, AppCtx *user)
 {
   Mat           J;
-  Vec           locX, locF;
+  Vec           locX, locF, locW;
   PetscDS       probh;
   DMLabel       fault, material;
+  DM            dmFault;
   IS            cohesiveCells;
+  PetscFE       fe;
   PetscWeakForm wf;
   PetscFormKey  keys[3];
   PetscErrorCode (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx);
@@ -1118,6 +1137,7 @@ static PetscErrorCode TestAssembly(DM dm, AppCtx *user)
   PetscMPIInt rank;
 
   PetscFunctionBegin;
+  if (!user->testAssembly) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, NULL, &cMax));
@@ -1146,6 +1166,36 @@ static PetscErrorCode TestAssembly(DM dm, AppCtx *user)
   initialGuess[1] = phi;
   PetscCall(DMProjectFunctionLabelLocal(dm, 0.0, fault, 1, &id, PETSC_DETERMINE, NULL, initialGuess, NULL, INSERT_VALUES, locX));
   PetscCall(VecViewFromOptions(locX, NULL, "-local_solution_view"));
+
+  /* Test projection to fault mesh */
+  PetscCall(DMPlexCreateCohesiveSubmesh(dm, PETSC_FALSE, NULL, 0, &dmFault));
+  PetscCall(DMViewFromOptions(dmFault, NULL, "-fault_view"));
+  PetscCall(DMPlexOrient(dmFault));
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim - 1, dim, user->cellSimplex, "fault_field_", PETSC_DETERMINE, &fe));
+  PetscCall(PetscFESetName(fe, "fault_field"));
+  PetscCall(DMAddField(dmFault, NULL, (PetscObject)fe));
+  PetscCall(PetscFEDestroy(&fe));
+  PetscCall(DMCreateDS(dmFault));
+  PetscCall(DMGetLocalVector(dmFault, &locW));
+  PetscCall(DMViewFromOptions(dmFault, NULL, "-cohesive_view"));
+  void (*faultFuncs[1])(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]);
+
+  DMLabel  depthLabel;
+  PetscInt depth;
+  PetscCall(DMPlexGetDepthLabel(dmFault, &depthLabel));
+  PetscCall(DMPlexGetDepth(dmFault, &depth));
+  id = depth - 1;
+  /* w = r + rp1 */
+  faultFuncs[0] = add_fields;
+  PetscCall(DMProjectBdFieldLabelLocal(dmFault, 0.0, depthLabel, 1, &id, PETSC_DETERMINE, NULL, locX, faultFuncs, INSERT_VALUES, locW));
+  PetscCall(VecViewFromOptions(locW, NULL, "-local_projection_view"));
+
+  /* w = fault_normal */
+  faultFuncs[0] = normal_field;
+  PetscCall(DMProjectBdFieldLabelLocal(dmFault, 0.0, depthLabel, 1, &id, PETSC_DETERMINE, NULL, locX, faultFuncs, INSERT_VALUES, locW));
+  PetscCall(VecViewFromOptions(locW, NULL, "-local_projection_view"));
+  PetscCall(DMRestoreLocalVector(dmFault, &locW));
+  PetscCall(DMDestroy(&dmFault));
 
   PetscCall(DMGetCellDS(dm, cMax, &probh, NULL));
   PetscCall(PetscDSGetWeakForm(probh, &wf));
@@ -1297,9 +1347,10 @@ int main(int argc, char **argv)
       args: -dim 2 -cell_simplex 0
       filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
 
+    # Caanot run the assembly test because we cannot orient a fault mesh in a T-shape
     test:
       suffix: quad_t1_0
-      args: -dim 2 -cell_simplex 0 -test_num 1 -faulted_dm_plex_check_all
+      args: -dim 2 -cell_simplex 0 -test_num 1 -faulted_dm_plex_check_all -test_assembly 0
       filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
 
     test:
