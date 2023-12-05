@@ -92,6 +92,12 @@ PetscErrorCode SNESGetObjective(SNES snes, PetscErrorCode (**obj)(SNES, Vec, Pet
 
   Level: developer
 
+  Notes:
+  `SNESComputeObjective()` is typically used within line-search routines,
+  so users would not generally call this routine themselves.
+
+  When solving for $F(x) = b$, this routine computes $objective(x) - x^T b$ where $objective(x)$ is the function provided with `SNESSetObjective()`
+
 .seealso: [](ch_snes), `SNESLineSearch`, `SNES`, `SNESSetObjective()`, `SNESGetSolution()`
 @*/
 PetscErrorCode SNESComputeObjective(SNES snes, Vec X, PetscReal *ob)
@@ -109,6 +115,12 @@ PetscErrorCode SNESComputeObjective(SNES snes, Vec X, PetscReal *ob)
   PetscCall(PetscLogEventBegin(SNES_ObjectiveEval, snes, X, 0, 0));
   PetscCall((sdm->ops->computeobjective)(snes, X, ob, sdm->objectivectx));
   PetscCall(PetscLogEventEnd(SNES_ObjectiveEval, snes, X, 0, 0));
+  if (snes->vec_rhs) {
+    PetscScalar dot;
+
+    PetscCall(VecDot(snes->vec_rhs, X, &dot));
+    *ob -= PetscRealPart(dot);
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
