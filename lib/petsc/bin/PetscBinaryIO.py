@@ -500,9 +500,13 @@ class PetscBinaryIO(object):
 
 def _convert(infile, outfile, args):
     ext = os.path.splitext(infile)[1]
-    if ext == '.mtx':
-        import scipy.io
-        mat = scipy.io.mmread(infile)
+    if ext in ('.mtx', '.npz'):
+        if ext == '.mtx':
+            import scipy.io
+            mat = scipy.io.mmread(infile)
+        else:
+            import scipy.sparse
+            mat = scipy.sparse.load_npz(infile)
         if args.symmetrize:
             mat = (mat + mat.T)/2
         with open(outfile, 'wb') as fd:
