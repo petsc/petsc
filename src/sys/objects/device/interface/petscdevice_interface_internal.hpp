@@ -166,7 +166,7 @@ inline bool CxxData::has_marked(PetscObjectId id) const noexcept
 namespace
 {
 
-PETSC_NODISCARD inline constexpr CxxData *CxxDataCast(PetscDeviceContext dctx) noexcept
+PETSC_NODISCARD inline CxxData *CxxDataCast(PetscDeviceContext dctx) noexcept
 {
   return static_cast<CxxData *>(PetscObjectCast(dctx)->cpp);
 }
