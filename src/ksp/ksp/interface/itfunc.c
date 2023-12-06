@@ -1024,6 +1024,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
 . -ksp_converged_reason                      - print reason for converged or diverged, also prints number of iterations
 . -ksp_view_final_residual                   - print 2-norm of true linear system residual at the end of the solution process
 . -ksp_error_if_not_converged                - stop the program as soon as an error is detected in a `KSPSolve()`
+. -ksp_view_pre                              - print the ksp data structure before the system solution
 - -ksp_view                                  - print the ksp data structure at the end of the system solution
 
   Level: beginner
