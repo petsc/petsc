@@ -310,8 +310,93 @@
           PetscScalar f (*) ! PetscScalar
           PetscErrorCode z
         end subroutine
-      End Interface MatGetValues
+         subroutine MatGetValues11a(a,b,c,d,e,f,z)
+          import tMat
+          Mat a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e ! PetscInt
+          PetscScalar f (*) ! PetscScalar
+          PetscErrorCode z
+        end subroutine
+        End Interface MatGetValues
 
+
+        Interface MatGetValuesLocal
+        ! picky Fortran requires separate prototypes if args
+        ! are arrays or scalars
+        subroutine MatGetValuesLocal0(a,b,c,d,e,f,z)
+          import tMat
+          Mat a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e (*) ! PetscInt
+          PetscScalar f (*) ! PetscScalar
+          PetscErrorCode z
+        end subroutine
+        subroutine MatGetValuesLocalnn1(a,b,c,d,e,f,z)
+          import tMat
+          Mat a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e (*) ! PetscInt
+          PetscScalar f  ! PetscScalar
+          PetscErrorCode z
+        end subroutine
+        subroutine MatGetValuesLocalnnnn(a,b,c,d,e,f,z)
+          import tMat
+          Mat a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e (*) ! PetscInt
+          PetscScalar f(1,1)  ! PetscScalar
+          PetscErrorCode z
+        end subroutine
+        subroutine MatGetValuesLocal11(a,b,c,d,e,f,z)
+          import tMat
+          Mat a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e ! PetscInt
+          PetscScalar f  ! PetscScalar
+          PetscErrorCode z
+        end subroutine
+        subroutine MatGetValuesLocal11a(a,b,c,d,e,f,z)
+          import tMat
+          Mat a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e ! PetscInt
+          PetscScalar f(*)  ! PetscScalar
+          PetscErrorCode z
+        end subroutine
+        subroutine MatGetValuesLocal1n(a,b,c,d,e,f,z)
+          import tMat
+          Mat a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e (*) ! PetscInt
+          PetscScalar f (*)  ! PetscScalar
+          PetscErrorCode z
+        end subroutine
+        subroutine MatGetValuesLocaln1(a,b,c,d,e,f,z)
+          import tMat
+          Mat a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e ! PetscInt
+          PetscScalar f (*) ! PetscScalar
+          PetscErrorCode z
+        end subroutine
+      End Interface MatGetValuesLocal
 
         Interface MatSetValues
         ! picky Fortran requires separate prototypes if args

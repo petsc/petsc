@@ -316,8 +316,10 @@ static PetscErrorCode SNESSolve_NGMRES(SNES snes)
     }
 
     PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
-    snes->iter = k;
-    snes->norm = fnorm;
+    snes->iter  = k;
+    snes->norm  = fnorm;
+    snes->ynorm = ynorm;
+    snes->xnorm = xnorm;
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
     PetscCall(SNESLogConvergenceHistory(snes, snes->norm, snes->iter));
     PetscCall(SNESConverged(snes, snes->iter, 0, 0, fnorm));

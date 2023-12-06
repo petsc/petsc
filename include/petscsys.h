@@ -878,8 +878,10 @@ M*/
 
    Level: developer
 
-   Note:
+   Notes:
     Memory must have been obtained with `PetscMalloc2()`
+
+    The arguments need to be in the same order as they were in the call to `PetscMalloc2()`
 
 .seealso: `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscFree()`
 M*/
@@ -901,8 +903,10 @@ M*/
 
    Level: developer
 
-   Note:
+   Notes:
     Memory must have been obtained with `PetscMalloc3()`
+
+    The arguments need to be in the same order as they were in the call to `PetscMalloc3()`
 
 .seealso: `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscFree()`, `PetscMalloc3()`
 M*/
@@ -925,8 +929,10 @@ M*/
 
    Level: developer
 
-   Note:
+   Notes:
     Memory must have been obtained with `PetscMalloc4()`
+
+    The arguments need to be in the same order as they were in the call to `PetscMalloc4()`
 
 .seealso: `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscFree()`, `PetscMalloc3()`, `PetscMalloc4()`
 M*/
@@ -950,8 +956,10 @@ M*/
 
    Level: developer
 
-   Note:
+   Notes:
     Memory must have been obtained with `PetscMalloc5()`
+
+    The arguments need to be in the same order as they were in the call to `PetscMalloc5()`
 
 .seealso: `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscFree()`, `PetscMalloc3()`, `PetscMalloc4()`, `PetscMalloc5()`
 M*/
@@ -976,8 +984,10 @@ M*/
 
    Level: developer
 
-   Note:
+   Notes:
     Memory must have been obtained with `PetscMalloc6()`
+
+    The arguments need to be in the same order as they were in the call to `PetscMalloc6()`
 
 .seealso: `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscFree()`, `PetscMalloc3()`, `PetscMalloc4()`, `PetscMalloc5()`, `PetscMalloc6()`
 M*/
@@ -1003,8 +1013,10 @@ M*/
 
    Level: developer
 
-   Note:
+   Notes:
     Memory must have been obtained with `PetscMalloc7()`
+
+    The arguments need to be in the same order as they were in the call to `PetscMalloc7()`
 
 .seealso: `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscFree()`, `PetscMalloc3()`, `PetscMalloc4()`, `PetscMalloc5()`, `PetscMalloc6()`,
           `PetscMalloc7()`

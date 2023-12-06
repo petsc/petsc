@@ -1,12 +1,15 @@
 program newnonzero
+#include <petsc/finclude/petscis.h>
 #include <petsc/finclude/petscmat.h>
  use petscmat
  implicit none
 
  Mat :: A
  PetscInt :: n,m,idxm(1),idxn(1),nl1,nl2,zero,one,i
- PetscScalar :: v(1)
+ PetscScalar :: v(1),value,values(2)
  PetscErrorCode :: ierr
+ IS :: is
+ ISLocalToGlobalMapping :: ismap
 
  PetscCallA(PetscInitialize(ierr))
  zero = 0
@@ -41,6 +44,17 @@ program newnonzero
    PetscCallA(MatGetValues(A,one,idxn,one,idxm, v,ierr))
    write(6,*) PetscRealPart(v)
  end if
+
+ PetscCallA(ISCreateStride(PETSC_COMM_WORLD,nl2-nl1,nl1,one,is,ierr))
+ PetscCallA(ISLocalToGlobalMappingCreateIS(is,ismap,ierr))
+ PetscCallA(MatSetLocalToGlobalMapping(A,ismap,ismap,ierr))
+ PetscCallA(ISLocalToGlobalMappingDestroy(ismap,ierr))
+ PetscCallA(ISDestroy(is,ierr))
+ PetscCallA(MatGetValuesLocal(A,one,zero,one,zero,value,ierr))
+ PetscCallA(MatGetValuesLocal(A,one,zero,one,zero,values,ierr))
+ idxn(1) = 0
+ PetscCallA(MatGetValuesLocal(A,one,idxn,one,zero,values,ierr))
+ PetscCallA(MatGetValuesLocal(A,one,idxn,one,idxn,values,ierr))
 
  PetscCallA(MatDestroy(A,ierr))
  PetscCallA(PetscFinalize(ierr))
