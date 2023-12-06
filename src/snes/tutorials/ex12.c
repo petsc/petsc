@@ -1798,4 +1798,12 @@ int main(int argc, char **argv)
           -snes_max_it 1 -ksp_converged_reason \
           -ksp_rtol 1e-8 -pc_type mg -pc_mg_galerkin -pc_mg_adapt_interp_coarse_space gdsw -pc_mg_levels 2 -mg_levels_pc_type asm -dm_mat_type is -mg_levels_gdsw_tolerance 0.1 -mg_levels_gdsw_pseudo_pc_type qr
 
+  test:
+    suffix: p4est_2d_asm
+    requires: p4est
+    nsize: 4
+    args: -run_type test -run_test_check_ksp -quiet -petscspace_degree 1 -petscpartitioner_type simple -bc_type none -dm_plex_simplex 0 \
+          -pc_type asm -ksp_converged_reason -dm_plex_convert_type p4est -dm_forest_minimum_refinement 1 -dm_forest_initial_refinement 3 -dm_forest_maximum_refinement 5 \
+          -pc_asm_dm_subdomains -dm_p4est_refine_pattern hash -dm_plex_dd_overlap 1 -sub_pc_type lu
+
 TEST*/
