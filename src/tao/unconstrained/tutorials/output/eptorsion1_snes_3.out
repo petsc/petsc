@@ -1,0 +1,7 @@
+
+---- Elastic-Plastic Torsion Problem -----
+mx: 10     my: 10   
+
+    0 SNES Function norm 7.289612254942e-01, Update norm 0.000000000000e+00, Objective -3.305785123967e-01
+    1 SNES Function norm 3.862092655363e-01, Update norm 1.663728687496e-01, Objective -3.912181973763e-01
+    2 SNES Function norm 2.711114325130e-06, Update norm 2.431376732617e-01, Objective -4.277449739425e-01

@@ -1,7 +1,8 @@
 #include <petsc/private/taoimpl.h> /*I "petsctao.h" I*/
 
 typedef struct {
-  SNES snes;
+  SNES      snes;
+  PetscBool setfromoptionscalled;
 } Tao_SNES;
 
 static PetscErrorCode TaoSolve_SNES(Tao tao)
@@ -72,17 +73,21 @@ static PetscErrorCode TAOSNESMonitor(SNES snes, PetscInt its, PetscReal fnorm, v
 
 static PetscErrorCode TaoSetUp_SNES(Tao tao)
 {
-  Tao_SNES *taosnes = (Tao_SNES *)tao->data;
-  Mat       A, P;
+  Tao_SNES   *taosnes = (Tao_SNES *)tao->data;
+  Mat         A, P;
+  const char *prefix;
 
   PetscFunctionBegin;
+  PetscCall(TaoGetOptionsPrefix(tao, &prefix));
+  PetscCall(SNESSetOptionsPrefix(taosnes->snes, prefix));
   PetscCall(SNESSetSolution(taosnes->snes, tao->solution));
   PetscCall(SNESSetObjective(taosnes->snes, TAOSNESObj, tao));
   PetscCall(SNESSetFunction(taosnes->snes, NULL, TAOSNESFunc, tao));
   PetscCall(SNESMonitorSet(taosnes->snes, TAOSNESMonitor, tao, NULL));
   PetscCall(TaoGetHessian(tao, &A, &P, NULL, NULL));
   if (A) PetscCall(SNESSetJacobian(taosnes->snes, A, P, TAOSNESJac, tao));
-  /* TODO TYPES */
+  if (taosnes->setfromoptionscalled) PetscCall(SNESSetFromOptions(taosnes->snes));
+  taosnes->setfromoptionscalled = PETSC_FALSE;
   PetscCall(SNESSetUp(taosnes->snes));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -92,7 +97,7 @@ static PetscErrorCode TaoSetFromOptions_SNES(Tao tao, PetscOptionItems *PetscOpt
   Tao_SNES *taosnes = (Tao_SNES *)tao->data;
 
   PetscFunctionBegin;
-  PetscCall(SNESSetFromOptions(taosnes->snes));
+  taosnes->setfromoptionscalled = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

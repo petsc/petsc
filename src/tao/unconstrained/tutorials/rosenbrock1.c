@@ -367,7 +367,11 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *ptr)
 
    test:
      suffix: snes_tr_cgnegcurve_kmdc
-     args: -snes_monitor ::ascii_info_detail -tao_type snes -snes_type newtontr -snes_atol 1.e-4 -pc_type none  -ksp_type cg -snes_tr_kmdc 0.01 -ksp_converged_neg_curve -ksp_converged_reason
+     args: -snes_monitor ::ascii_info_detail -tao_type snes -snes_type newtontr -snes_atol 1.e-4 -pc_type none  -ksp_type cg -snes_tr_kmdc 0.9 -ksp_converged_neg_curve -ksp_converged_reason
      requires: !single
+
+   test:
+     suffix: snes_ls_lmvm
+     args: -snes_monitor ::ascii_info_detail -tao_type snes -snes_type newtonls -snes_atol 1.e-4 -pc_type lmvm -tao_mf_hessian
 
 TEST*/
