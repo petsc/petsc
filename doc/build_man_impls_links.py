@@ -50,7 +50,7 @@ def loadstructfunctions(petsc_dir):
   subimplsClassAll = subprocess.check_output(['git', 'grep', '-E', '} [A-Z][A-Za-z]*_[A-Za-z]*;', '--', '*.c', '*.cpp', '*.cu', '*.c', '*.h', '*.cxx'], cwd = petsc_dir).strip().decode('utf-8')
   subimplsClassAll = list(filter(lambda x: not (x.find('/tests/') > -1 or x.find('/tutorials') > -1), subimplsClassAll.split('\n')))
 
-  implsFuncAll = subprocess.check_output(['git', 'grep', '-nE', '^(static )?(PETSC_EXTERN )?(PETSC_INTERN )?(extern )?PetscErrorCode +[^_ ]+_[^_ ]+\(', '--', '*/impls/*.c', '*/impls/*.cpp', '*/impls/*.cu', '*/impls/*.c', '*/impls/*.h', '*/impls/*.cxx'], cwd = petsc_dir).strip().decode('utf-8')
+  implsFuncAll = subprocess.check_output(['git', 'grep', '-nE', '^(static )?(PETSC_EXTERN )?(PETSC_INTERN )?(extern )?PetscErrorCode +[^_ ]+_([^_ ]+|SuperLU_DIST|MKL_[C]{0,1}PARDISO)\(', '--', '*/impls/*.c', '*/impls/*.cpp', '*/impls/*.cu', '*/impls/*.c', '*/impls/*.h', '*/impls/*.cxx'], cwd = petsc_dir).strip().decode('utf-8')
   implsFuncAll = list(filter(lambda x: not (x.find('_Private') > -1 or x.find('_private') > -1 or x.find(';') > -1), implsFuncAll.split('\n')))
   return (implsClassAll,subimplsClassAll,implsFuncAll)
 
