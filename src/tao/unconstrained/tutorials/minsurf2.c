@@ -13,8 +13,8 @@ problem from the MINPACK-2 test suite. Given a rectangular 2-D domain and \n\
 boundary values along the edges of the domain, the objective is to find the\n\
 surface with the minimal area that satisfies the boundary conditions.\n\
 The command line options are:\n\
-  -mx <xg>, where <xg> = number of grid points in the 1st coordinate direction\n\
-  -my <yg>, where <yg> = number of grid points in the 2nd coordinate direction\n\
+  -da_grid_x <xg>, where <xg> = number of grid points in the 1st coordinate direction\n\
+  -da_grid_y <yg>, where <yg> = number of grid points in the 2nd coordinate direction\n\
   -start <st>, where <st> =0 for zero vector, <st> >0 for random start, and <st> <0 \n\
                for an average of the boundary conditions\n\n";
 
@@ -43,9 +43,8 @@ static PetscErrorCode My_Monitor(Tao, void *);
 
 int main(int argc, char **argv)
 {
-  PetscInt      Nx, Ny;                /* number of processors in x- and y- directions */
   Vec           x;                     /* solution, gradient vectors */
-  PetscBool     flg, viewmat;          /* flags */
+  PetscBool     viewmat;               /* flags */
   PetscBool     fddefault, fdcoloring; /* flags */
   Tao           tao;                   /* TAO solver context */
   AppCtx        user;                  /* user-defined work context */
@@ -56,26 +55,15 @@ int main(int argc, char **argv)
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
 
-  /* Specify dimension of the problem */
-  user.mx = 10;
-  user.my = 10;
-
-  /* Check for any command line arguments that override defaults */
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-mx", &user.mx, &flg));
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-my", &user.my, &flg));
-
-  PetscCall(PetscPrintf(MPI_COMM_WORLD, "\n---- Minimum Surface Area Problem -----\n"));
-  PetscCall(PetscPrintf(MPI_COMM_WORLD, "mx: %" PetscInt_FMT "     my: %" PetscInt_FMT "   \n\n", user.mx, user.my));
-
-  /* Let PETSc determine the vector distribution */
-  Nx = PETSC_DECIDE;
-  Ny = PETSC_DECIDE;
-
   /* Create distributed array (DM) to manage parallel grid and vectors  */
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, user.mx, user.my, Nx, Ny, 1, 1, NULL, NULL, &user.dm));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 10, 10, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &user.dm));
   PetscCall(DMSetFromOptions(user.dm));
   PetscCall(DMSetUp(user.dm));
   PetscCall(DMDASetUniformCoordinates(user.dm, -0.5, 0.5, -0.5, 0.5, PETSC_DECIDE, PETSC_DECIDE));
+  PetscCall(DMDAGetInfo(user.dm, PETSC_IGNORE, &user.mx, &user.my, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
+
+  PetscCall(PetscPrintf(MPI_COMM_WORLD, "\n---- Minimum Surface Area Problem -----\n"));
+  PetscCall(PetscPrintf(MPI_COMM_WORLD, "mx: %" PetscInt_FMT "     my: %" PetscInt_FMT "   \n\n", user.mx, user.my));
 
   /* Create TAO solver and set desired solution method.*/
   PetscCall(TaoCreate(PETSC_COMM_WORLD, &tao));
@@ -257,7 +245,6 @@ PetscErrorCode FormFunction(Tao tao, Vec X, PetscReal *fcn, void *userCtx)
       ft = ft + PetscSqrtReal(1.0 + d3 * d3 + d2 * d2);
     }
   }
-
   if (xs + xm == mx) { /* right side */
     for (j = ys; j < ys + ym; j++) {
       d1 = (x[j][mx - 1] - user->right[j - ys + 1]) * rhx;
@@ -272,7 +259,6 @@ PetscErrorCode FormFunction(Tao tao, Vec X, PetscReal *fcn, void *userCtx)
       ft = ft + PetscSqrtReal(1.0 + d1 * d1 + d4 * d4);
     }
   }
-
   if (ys == 0 && xs == 0) {
     d1 = (user->left[0] - user->left[1]) / hy;
     d2 = (user->bottom[0] - user->bottom[1]) * rhx;
@@ -875,7 +861,7 @@ PetscErrorCode My_Monitor(Tao tao, void *ctx)
       requires: !complex
 
    test:
-      args: -tao_smonitor -tao_type lmvm -mx 10 -my 8 -tao_gatol 1.e-3
+      args: -tao_smonitor -tao_type lmvm -da_grid_x 10 -da_grid_y 8 -tao_gatol 1.e-3
       requires: !single
 
    test:
@@ -895,24 +881,24 @@ PetscErrorCode My_Monitor(Tao tao, void *ctx)
    test:
       suffix: 3
       nsize: 3
-      args: -tao_smonitor -tao_type cg -tao_cg_type fr -mx 10 -my 10 -tao_gatol 1.e-3
+      args: -tao_smonitor -tao_type cg -tao_cg_type fr -da_grid_x 10 -da_grid_y 10 -tao_gatol 1.e-3
       requires: !single
 
    test:
       suffix: 3_snes
       nsize: 3
-      args: -tao_smonitor -tao_type snes -snes_type ncg -snes_ncg_type fr -mx 10 -my 10 -snes_atol 1.e-4
+      args: -tao_smonitor -tao_type snes -snes_type ncg -snes_ncg_type fr -da_grid_x 10 -da_grid_y 10 -snes_atol 1.e-4
       requires: !single
 
    test:
       suffix: 4_snes_ngmres
-      args: -tao_type snes -snes_type ngmres -npc_snes_type ncg -mx 10 -my 10 -snes_atol 1.e-4 -npc_snes_ncg_type fr  -snes_converged_reason -snes_monitor ::ascii_info_detail -snes_ngmres_monitor -snes_ngmres_select_type {{linesearch difference}separate output}
+      args: -tao_type snes -snes_type ngmres -npc_snes_type ncg -da_grid_x 10 -da_grid_y 10 -snes_atol 1.e-4 -npc_snes_ncg_type fr  -snes_converged_reason -snes_monitor ::ascii_info_detail -snes_ngmres_monitor -snes_ngmres_select_type {{linesearch difference}separate output}
       requires: !single
 
    test:
       suffix: 5
       nsize: 2
-      args: -tao_smonitor -tao_type bmrm -mx 10 -my 8 -tao_gatol 1.e-3
+      args: -tao_smonitor -tao_type bmrm -da_grid_x 10 -da_grid_y 8 -tao_gatol 1.e-3
       requires: !single
 
 TEST*/

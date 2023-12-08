@@ -1904,12 +1904,14 @@ PetscErrorCode DMSNESCheckJacobian(SNES snes, DM dm, Vec u, PetscReal tol, Petsc
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
-  PetscValidHeaderSpecific(u, VEC_CLASSID, 3);
+  if (dm) PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
+  if (u) PetscValidHeaderSpecific(u, VEC_CLASSID, 3);
   if (isLinear) PetscAssertPointer(isLinear, 5);
   if (convRate) PetscAssertPointer(convRate, 6);
   PetscCall(PetscObjectGetComm((PetscObject)snes, &comm));
-  PetscCall(DMComputeExactSolution(dm, 0.0, u, NULL));
+  if (!dm) PetscCall(SNESGetDM(snes, &dm));
+  if (u) PetscCall(DMComputeExactSolution(dm, 0.0, u, NULL));
+  else PetscCall(SNESGetSolution(snes, &u));
   /* Create and view matrices */
   PetscCall(DMCreateMatrix(dm, &J));
   PetscCall(DMGetDS(dm, &ds));
