@@ -3074,7 +3074,6 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, DMLabel vertexLa
   /* Create subpointMap which marks the submesh */
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, "subpoint_map", &subpointMap));
   PetscCall(DMPlexSetSubpointMap(subdm, subpointMap));
-  PetscCall(DMLabelDestroy(&subpointMap));
   if (vertexLabel) PetscCall(DMPlexMarkSubmesh_Uninterpolated(dm, vertexLabel, value, subpointMap, &numSubFaces, &nFV, subdm));
   /* Setup chart */
   PetscCall(DMLabelGetStratumSize(subpointMap, 0, &numSubVertices));
@@ -3092,6 +3091,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, DMLabel vertexLa
   for (c = 0; c < numSubCells; ++c) PetscCall(DMPlexSetConeSize(subdm, c, 1));
   for (f = firstSubFace; f < firstSubFace + numSubFaces; ++f) PetscCall(DMPlexSetConeSize(subdm, f, nFV));
   PetscCall(DMSetUp(subdm));
+  PetscCall(DMLabelDestroy(&subpointMap));
   /* Create face cones */
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   PetscCall(DMPlexGetMaxSizes(dm, &maxConeSize, NULL));
@@ -3652,7 +3652,6 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
   /* Create subpointMap which marks the submesh */
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, "subpoint_map", &subpointMap));
   PetscCall(DMPlexSetSubpointMap(subdm, subpointMap));
-  PetscCall(DMLabelDestroy(&subpointMap));
   PetscCall(DMPlexMarkCohesiveSubmesh_Uninterpolated(dm, hasLagrange, label, value, subpointMap, &numSubFaces, &nFV, &subCells, subdm));
   /* Setup chart */
   PetscCall(DMLabelGetStratumSize(subpointMap, 0, &numSubVertices));
@@ -3668,6 +3667,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
   for (c = 0; c < numSubCells; ++c) PetscCall(DMPlexSetConeSize(subdm, c, 1));
   for (f = firstSubFace; f < firstSubFace + numSubFaces; ++f) PetscCall(DMPlexSetConeSize(subdm, f, nFV));
   PetscCall(DMSetUp(subdm));
+  PetscCall(DMLabelDestroy(&subpointMap));
   /* Create face cones */
   PetscCall(DMPlexGetMaxSizes(dm, &maxConeSize, NULL));
   PetscCall(DMGetWorkArray(subdm, maxConeSize, MPIU_INT, (void **)&subface));
