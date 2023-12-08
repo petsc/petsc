@@ -74,11 +74,11 @@ static PetscErrorCode SNESTRDC_Converged_Private(SNES snes, PetscInt it, PetscRe
 . snes - the nonlinear solver object
 
   Output Parameter:
-. rho_flag - `PETSC_FALSE`
+. rho_flag - `PETSC_FALSE` or `PETSC_TRUE`
 
   Level: developer
 
-.seealso: `SNESNEWTONTRDC`, `SNESNewtonTRDCPreCheck()`, `SNESNewtonTRDCGetPreCheck()`, , `SNESNewtonTRDCSetPreCheck()`,
+.seealso: [](ch_snes), `SNES`, `SNESNEWTONTRDC`, `SNESNewtonTRDCPreCheck()`, `SNESNewtonTRDCGetPreCheck()`, `SNESNewtonTRDCSetPreCheck()`,
           `SNESNewtonTRDCSetPostCheck()`, `SNESNewtonTRDCGetPostCheck()`
 @*/
 PetscErrorCode SNESNewtonTRDCGetRhoFlag(SNES snes, PetscBool *rho_flag)
@@ -108,7 +108,7 @@ PetscErrorCode SNESNewtonTRDCGetRhoFlag(SNES snes, PetscBool *rho_flag)
   Note:
   This function is called BEFORE the function evaluation within the `SNESNEWTONTRDC` solver.
 
-.seealso: `SNESNEWTONTRDC`, `SNESNewtonTRDCPreCheck()`, `SNESNewtonTRDCGetPreCheck()`, `SNESNewtonTRDCSetPostCheck()`, `SNESNewtonTRDCGetPostCheck()`,
+.seealso: [](ch_snes), `SNES`, `SNESNEWTONTRDC`, `SNESNewtonTRDCPreCheck()`, `SNESNewtonTRDCGetPreCheck()`, `SNESNewtonTRDCSetPostCheck()`, `SNESNewtonTRDCGetPostCheck()`,
           `SNESNewtonTRDCGetRhoFlag()`
 @*/
 PetscErrorCode SNESNewtonTRDCSetPreCheck(SNES snes, PetscErrorCode (*func)(SNES, Vec, Vec, PetscBool *, void *), void *ctx)
@@ -123,7 +123,7 @@ PetscErrorCode SNESNewtonTRDCSetPreCheck(SNES snes, PetscErrorCode (*func)(SNES,
 }
 
 /*@C
-  SNESNewtonTRDCGetPreCheck - Gets the pre-check function
+  SNESNewtonTRDCGetPreCheck - Gets the pre-check function optionally set with `SNESNewtonTRDCSetPreCheck()`
 
   Not Collective
 
@@ -136,7 +136,7 @@ PetscErrorCode SNESNewtonTRDCSetPreCheck(SNES snes, PetscErrorCode (*func)(SNES,
 
   Level: intermediate
 
-.seealso: `SNESNEWTONTRDC`, `SNESNewtonTRDCSetPreCheck()`, `SNESNewtonTRDCPreCheck()`
+.seealso: [](ch_snes), `SNES`, `SNESNEWTONTRDC`, `SNESNewtonTRDCSetPreCheck()`, `SNESNewtonTRDCPreCheck()`
 @*/
 PetscErrorCode SNESNewtonTRDCGetPreCheck(SNES snes, PetscErrorCode (**func)(SNES, Vec, Vec, PetscBool *, void *), void **ctx)
 {
@@ -166,7 +166,7 @@ PetscErrorCode SNESNewtonTRDCGetPreCheck(SNES snes, PetscErrorCode (**func)(SNES
   This function is called BEFORE the function evaluation within the `SNESNEWTONTRDC` solver while the function set in
   `SNESLineSearchSetPostCheck()` is called AFTER the function evaluation.
 
-.seealso: `SNESNEWTONTRDC`, `SNESNewtonTRDCPostCheck()`, `SNESNewtonTRDCGetPostCheck()`, `SNESNewtonTRDCSetPreCheck()`, `SNESNewtonTRDCGetPreCheck()`
+.seealso: [](ch_snes), `SNES`, `SNESNEWTONTRDC`, `SNESNewtonTRDCPostCheck()`, `SNESNewtonTRDCGetPostCheck()`, `SNESNewtonTRDCSetPreCheck()`, `SNESNewtonTRDCGetPreCheck()`
 @*/
 PetscErrorCode SNESNewtonTRDCSetPostCheck(SNES snes, PetscErrorCode (*func)(SNES, Vec, Vec, Vec, PetscBool *, PetscBool *, void *), void *ctx)
 {
@@ -180,7 +180,7 @@ PetscErrorCode SNESNewtonTRDCSetPostCheck(SNES snes, PetscErrorCode (*func)(SNES
 }
 
 /*@C
-  SNESNewtonTRDCGetPostCheck - Gets the post-check function
+  SNESNewtonTRDCGetPostCheck - Gets the post-check function optionally set with `SNESNewtonTRDCSetPostCheck()`
 
   Not Collective
 
@@ -193,7 +193,7 @@ PetscErrorCode SNESNewtonTRDCSetPostCheck(SNES snes, PetscErrorCode (*func)(SNES
 
   Level: intermediate
 
-.seealso: `SNESNEWTONTRDC`, `SNESNewtonTRDCSetPostCheck()`, `SNESNewtonTRDCPostCheck()`
+.seealso: [](ch_snes), `SNES`, `SNESNEWTONTRDC`, `SNESNewtonTRDCSetPostCheck()`, `SNESNewtonTRDCPostCheck()`, `SNESNewtonTRDCSetPreCheck()`, `SNESNewtonTRDCGetPreCheck()`
 @*/
 PetscErrorCode SNESNewtonTRDCGetPostCheck(SNES snes, PetscErrorCode (**func)(SNES, Vec, Vec, Vec, PetscBool *, PetscBool *, void *), void **ctx)
 {
@@ -222,7 +222,7 @@ PetscErrorCode SNESNewtonTRDCGetPostCheck(SNES snes, PetscErrorCode (**func)(SNE
 
    Level: developer
 
-.seealso: `SNESNEWTONTRDC`, `SNESNewtonTRDCSetPreCheck()`, `SNESNewtonTRDCGetPreCheck()`, `SNESNewtonTRDCPostCheck()`
+.seealso: [](ch_snes), `SNES`, `SNESNEWTONTRDC`, `SNESNewtonTRDCSetPreCheck()`, `SNESNewtonTRDCGetPreCheck()`, `SNESNewtonTRDCPostCheck()`
 @*/
 static PetscErrorCode SNESNewtonTRDCPreCheck(SNES snes, Vec X, Vec Y, PetscBool *changed_Y)
 {
@@ -258,7 +258,7 @@ static PetscErrorCode SNESNewtonTRDCPreCheck(SNES snes, Vec X, Vec Y, PetscBool 
    Note:
      If `Y` is changed then `W` is recomputed as `X` - `Y`
 
-.seealso: `SNESNEWTONTRDC`, `SNESNEWTONTRDC`, `SNESNewtonTRDCSetPostCheck()`, `SNESNewtonTRDCGetPostCheck()`, `SNESNewtonTRDCPreCheck()
+.seealso: [](ch_snes), `SNES`, `SNESNEWTONTRDC`, `SNESNEWTONTRDC`, `SNESNewtonTRDCSetPostCheck()`, `SNESNewtonTRDCGetPostCheck()`, `SNESNewtonTRDCPreCheck()
 @*/
 static PetscErrorCode SNESNewtonTRDCPostCheck(SNES snes, Vec X, Vec Y, Vec W, PetscBool *changed_Y, PetscBool *changed_W)
 {
@@ -638,12 +638,12 @@ static PetscErrorCode SNESView_NEWTONTRDC(SNES snes, PetscViewer viewer)
 
    Level: intermediate
 
-    Reference:
+    References:
 .   - * "Linear and Nonlinear Solvers for Simulating Multiphase Flow
     within Large-Scale Engineered Subsurface Systems" by Heeho D. Park, Glenn E. Hammond,
     Albert J. Valocchi, Tara LaForce.
 
-.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESSetTrustRegionTolerance()`,
+.seealso: [](ch_snes), `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESSetTrustRegionTolerance()`,
           `SNESNewtonTRDCPreCheck()`, `SNESNewtonTRDCGetPreCheck()`, `SNESNewtonTRDCSetPostCheck()`, `SNESNewtonTRDCGetPostCheck()`,
           `SNESNewtonTRDCGetRhoFlag()`, `SNESNewtonTRDCSetPreCheck()`
 M*/

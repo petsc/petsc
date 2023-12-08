@@ -289,8 +289,8 @@ PetscErrorCode KSPLSQRSetComputeStandardErrorVec(KSP ksp, PetscBool flg)
   Level: intermediate
 
   Notes:
-  By default, flg = `PETSC_FALSE`. This is usually preferred to avoid possibly expensive computation of the norm.
-  For flg = `PETSC_TRUE`, we call `MatNorm`(Amat,`NORM_FROBENIUS`,&lsqr->anorm) which will work only for some types of explicitly assembled matrices.
+  By default, `flg` = `PETSC_FALSE`. This is usually preferred to avoid possibly expensive computation of the norm.
+  For `flg` = `PETSC_TRUE`, we call `MatNorm`(Amat,`NORM_FROBENIUS`,&lsqr->anorm) which will work only for some types of explicitly assembled matrices.
   This can affect convergence rate as `KSPLSQRConvergedDefault()` assumes different value of ||A|| used in normal equation stopping criterion.
 
 .seealso: [](ch_ksp), `KSPSolve()`, `KSPLSQR`, `KSPLSQRGetNorms()`, `KSPLSQRConvergedDefault()`
@@ -308,7 +308,7 @@ PetscErrorCode KSPLSQRSetExactMatNorm(KSP ksp, PetscBool flg)
   KSPLSQRGetStandardErrorVec - Get vector of standard error estimates.
   Only available if -ksp_lsqr_set_standard_error was set to true
   or `KSPLSQRSetComputeStandardErrorVec`(ksp, `PETSC_TRUE`) was called.
-  Otherwise returns NULL.
+  Otherwise returns `NULL`.
 
   Not Collective
 
@@ -343,8 +343,10 @@ PetscErrorCode KSPLSQRGetStandardErrorVec(KSP ksp, Vec *se)
 . ksp - iterative context
 
   Output Parameters:
-+ arnorm - good estimate of norm((A*inv(Pmat))'*r), where r = A*x - b, used in specific stopping criterion
-- anorm  - poor estimate of norm(A*inv(Pmat),'fro') used in specific stopping criterion
++ arnorm - good estimate of $\|(A*Pmat^{-T})*r\|$, where $r = A*x - b$, used in specific stopping criterion
+- anorm  - poor estimate of $\|A*Pmat^{-T}\|_{frobenius}$ used in specific stopping criterion
+
+  Level: intermediate
 
   Notes:
   Output parameters are meaningful only after `KSPSolve()`.
@@ -352,8 +354,6 @@ PetscErrorCode KSPLSQRGetStandardErrorVec(KSP ksp, Vec *se)
   These are the same quantities as normar and norma in MATLAB's `lsqr()`, whose output lsvec is a vector of normar / norma for all iterations.
 
   If -ksp_lsqr_exact_mat_norm is set or `KSPLSQRSetExactMatNorm`(ksp, `PETSC_TRUE`) called, then anorm is the exact Frobenius norm.
-
-  Level: intermediate
 
 .seealso: [](ch_ksp), `KSPSolve()`, `KSPLSQR`, `KSPLSQRSetExactMatNorm()`
 @*/
@@ -480,17 +480,17 @@ PetscErrorCode KSPLSQRMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
 }
 
 /*@C
-  KSPLSQRMonitorResidualDrawLGCreate - Creates the plotter for the `KSPLSQR` residual and normal equation residual norm
+  KSPLSQRMonitorResidualDrawLGCreate - Creates the line graph object for the `KSPLSQR` residual and normal equation residual norm
 
   Collective
 
   Input Parameters:
-+ viewer - The PetscViewer
++ viewer - The `PetscViewer`
 . format - The viewer format
 - ctx    - An optional user context
 
   Output Parameter:
-. vf - The viewer context
+. vf - The `PetscViewerAndFormat`
 
   Level: intermediate
 
@@ -558,19 +558,19 @@ static PetscErrorCode KSPView_LSQR(KSP ksp, PetscViewer viewer)
   Output Parameter:
 . reason - the convergence reason
 
-  Level: intermediate
+  Level: advanced
 
   Notes:
   This is not called directly but rather is passed to `KSPSetConvergenceTest()`. It is used automatically by `KSPLSQR`
 
-  `KSPConvergedDefault()` is called first to check for convergence in A*x=b.
+  `KSPConvergedDefault()` is called first to check for convergence in $A*x=b$.
   If that does not determine convergence then checks convergence for the least squares problem, i.e. in min{|b-A*x|}.
   Possible convergence for the least squares problem (which is based on the residual of the normal equations) are `KSP_CONVERGED_RTOL_NORMAL` norm
   and `KSP_CONVERGED_ATOL_NORMAL`.
 
-  `KSP_CONVERGED_RTOL_NORMAL` is returned if ||A'*r|| < rtol * ||A|| * ||r||.
-  Matrix norm ||A|| is iteratively refined estimate, see `KSPLSQRGetNorms()`.
-  This criterion is now largely compatible with that in MATLAB `lsqr()`.
+  `KSP_CONVERGED_RTOL_NORMAL` is returned if $||A^T*r|| < rtol * ||A|| * ||r||$.
+  Matrix norm $||A||$ is iteratively refined estimate, see `KSPLSQRGetNorms()`.
+  This criterion is largely compatible with that in MATLAB `lsqr()`.
 
 .seealso: [](ch_ksp), `KSPLSQR`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`,
           `KSPConvergedDefaultSetUIRNorm()`, `KSPConvergedDefaultSetUMIRNorm()`, `KSPConvergedDefaultCreate()`, `KSPConvergedDefaultDestroy()`, `KSPConvergedDefault()`, `KSPLSQRGetNorms()`, `KSPLSQRSetExactMatNorm()`
@@ -600,7 +600,7 @@ PetscErrorCode KSPLSQRConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSP
 }
 
 /*MC
-     KSPLSQR - Implements LSQR
+   KSPLSQR - Implements LSQR
 
    Options Database Keys:
 +   -ksp_lsqr_set_standard_error  - set standard error estimates of solution, see `KSPLSQRSetComputeStandardErrorVec()` and `KSPLSQRGetStandardErrorVec()`
@@ -610,25 +610,25 @@ PetscErrorCode KSPLSQRConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSP
    Level: beginner
 
    Notes:
-     Supports non-square (rectangular) matrices.
+   Supports non-square (rectangular) matrices.
 
-     This variant, when applied with no preconditioning is identical to the original algorithm in exact arithmetic; however, in practice, with no preconditioning
-     due to inexact arithmetic, it can converge differently. Hence when no preconditioner is used (`PCType` `PCNONE`) it automatically reverts to the original algorithm.
+   This variant, when applied with no preconditioning is identical to the original algorithm in exact arithmetic; however, in practice, with no preconditioning
+   due to inexact arithmetic, it can converge differently. Hence when no preconditioner is used (`PCType` `PCNONE`) it automatically reverts to the original algorithm.
 
-     With the PETSc built-in preconditioners, such as `PCICC`, one should call `KSPSetOperators`(ksp,A,A'*A)) since the preconditioner needs to work
-     for the normal equations A'*A.
+   With the PETSc built-in preconditioners, such as `PCICC`, one should call `KSPSetOperators`(ksp,A,A'*A)) since the preconditioner needs to work
+   for the normal equations A'*A.
 
-     Supports only left preconditioning.
+   Supports only left preconditioning.
 
-     For least squares problems with nonzero residual A*x - b, there are additional convergence tests for the residual of the normal equations, A'*(b - Ax), see `KSPLSQRConvergedDefault()`.
+   For least squares problems with nonzero residual $A*x - b$, there are additional convergence tests for the residual of the normal equations, $A^T*(b - Ax)$, see `KSPLSQRConvergedDefault()`.
 
-     In exact arithmetic the LSQR method (with no preconditioning) is identical to the `KSPCG` algorithm applied to the normal equations.
-     The preconditioned variant was implemented by Bas van't Hof and is essentially a left preconditioning for the Normal Equations.
-     It appears the implementation with preconditioning tracks the true norm of the residual and uses that in the convergence test.
+   In exact arithmetic the LSQR method (with no preconditioning) is identical to the `KSPCG` algorithm applied to the normal equations.
+   The preconditioned variant was implemented by Bas van't Hof and is essentially a left preconditioning for the Normal Equations.
+   It appears the implementation with preconditioning tracks the true norm of the residual and uses that in the convergence test.
 
    Developer Note:
-    How is this related to the `KSPCGNE` implementation? One difference is that `KSPCGNE` applies
-    the preconditioner transpose times the preconditioner,  so one does not need to pass A'*A as the third argument to `KSPSetOperators()`.
+   How is this related to the `KSPCGNE` implementation? One difference is that `KSPCGNE` applies
+   the preconditioner transpose times the preconditioner,  so one does not need to pass $A^T*A$ as the third argument to `KSPSetOperators()`.
 
    Reference:
 .  * - The original unpreconditioned algorithm can be found in Paige and Saunders, ACM Transactions on Mathematical Software, Vol 8, 1982.

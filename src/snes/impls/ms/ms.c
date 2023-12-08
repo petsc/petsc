@@ -34,7 +34,7 @@ typedef struct {
 
   Level: developer
 
-.seealso: `SNES`, `SNESMS`, `SNESMSRegisterDestroy()`
+.seealso: [](ch_snes), `SNES`, `SNESMS`, `SNESMSRegisterDestroy()`
 @*/
 PetscErrorCode SNESMSRegisterAll(void)
 {
@@ -93,11 +93,11 @@ PetscErrorCode SNESMSRegisterAll(void)
 /*@C
   SNESMSRegisterDestroy - Frees the list of schemes that were registered by `SNESMSRegister()`.
 
-  Not Collective
+  Logically Collective
 
   Level: developer
 
-.seealso: `SNESMSRegister()`, `SNESMSRegisterAll()`
+.seealso: [](ch_snes), `SNES`, `SNESMS`, `SNESMSRegister()`, `SNESMSRegisterAll()`
 @*/
 PetscErrorCode SNESMSRegisterDestroy(void)
 {
@@ -124,7 +124,7 @@ PetscErrorCode SNESMSRegisterDestroy(void)
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: [](ch_snes), `SNES`, `SNESMS`, `SNESMSRegister()`, `SNESMSRegisterAll()`, `PetscInitialize()`
 @*/
 PetscErrorCode SNESMSInitializePackage(void)
 {
@@ -143,7 +143,7 @@ PetscErrorCode SNESMSInitializePackage(void)
 
   Level: developer
 
-.seealso: `PetscFinalize()`
+.seealso: [](ch_snes), `SNES`, `SNESMS`, `SNESMSRegister()`, `SNESMSRegisterAll()`, `SNESMSInitializePackage()`, `PetscFinalize()`
 @*/
 PetscErrorCode SNESMSFinalizePackage(void)
 {
@@ -164,25 +164,31 @@ PetscErrorCode SNESMSFinalizePackage(void)
 . nstages    - number of stages
 . nregisters - number of registers used by low-storage implementation
 . stability  - scaled stability region
-. gamma      - coefficients, see Ketcheson's paper
-. delta      - coefficients, see Ketcheson's paper
+. gamma      - coefficients, see Ketcheson's paper {cite}`ketcheson2010runge`
+. delta      - coefficients, see Ketcheson's paper {cite}`ketcheson2010runge`
 - betasub    - subdiagonal of Shu-Osher form
 
   Level: advanced
 
   Notes:
-  The notation is described in Ketcheson (2010) Runge-Kutta methods with minimum storage implementations.
+  The notation is described in {cite}`ketcheson2010runge` Ketcheson (2010) Runge-Kutta methods with minimum storage implementations.
 
   Many multistage schemes are of the form
-   $ X_0 = X^{(n)}
-   $ X_k = X_0 + \alpha_k * F(X_{k-1}), k = 1,\ldots,s
-   $ X^{(n+1)} = X_s
+
+  $$
+  \begin{align*}
+  X_0 = X^{(n)} \\
+  X_k = X_0 + \alpha_k * F(X_{k-1}), k = 1,\ldots,s \\
+  X^{(n+1)} = X_s
+  \end{align*}
+  $$
+
   These methods can be registered with
 .vb
    SNESMSRegister("name",s,1,stability,NULL,NULL,alpha);
 .ve
 
-.seealso: `SNESMS`
+.seealso: [](ch_snes), `SNES`, `SNESMS`
 @*/
 PetscErrorCode SNESMSRegister(SNESMSType name, PetscInt nstages, PetscInt nregisters, PetscReal stability, const PetscReal gamma[], const PetscReal delta[], const PetscReal betasub[])
 {
@@ -478,7 +484,7 @@ static PetscErrorCode SNESMSSetType_MS(SNES snes, SNESMSType mstype)
 
   Level: advanced
 
-.seealso: `SNESMS`, `SNESMSSetType()`, `SNESMSType`
+.seealso: [](ch_snes), `SNESMS`, `SNESMSSetType()`, `SNESMSType`
 @*/
 PetscErrorCode SNESMSGetType(SNES snes, SNESMSType *mstype)
 {
@@ -500,7 +506,7 @@ PetscErrorCode SNESMSGetType(SNES snes, SNESMSType *mstype)
 
   Level: advanced
 
-.seealso: `SNESMS`, `SNESMSGetType()`, `SNESMSType`
+.seealso: [](ch_snes), `SNESMS`, `SNESMSGetType()`, `SNESMSType`
 @*/
 PetscErrorCode SNESMSSetType(SNES snes, SNESMSType mstype)
 {
@@ -542,7 +548,7 @@ static PetscErrorCode SNESMSSetDamping_MS(SNES snes, PetscReal damping)
 
   Level: advanced
 
-.seealso: `SNESMSSetDamping()`, `SNESMS`
+.seealso: [](ch_snes), `SNESMSSetDamping()`, `SNESMS`
 @*/
 PetscErrorCode SNESMSGetDamping(SNES snes, PetscReal *damping)
 {
@@ -564,7 +570,7 @@ PetscErrorCode SNESMSGetDamping(SNES snes, PetscReal *damping)
 
   Level: advanced
 
-.seealso: `SNESMSGetDamping()`, `SNESMS`
+.seealso: [](ch_snes), `SNESMSGetDamping()`, `SNESMS`
 @*/
 PetscErrorCode SNESMSSetDamping(SNES snes, PetscReal damping)
 {
@@ -582,6 +588,8 @@ PetscErrorCode SNESMSSetDamping(SNES snes, PetscReal damping)
 +     -snes_ms_type - type of multi-stage smoother
 -     -snes_ms_damping - damping for multi-stage method
 
+      Level: advanced
+
       Notes:
       These multistage methods are explicit Runge-Kutta methods that are often used as smoothers for
       FAS multigrid for transport problems. In the linear case, these are equivalent to polynomial smoothers (such as Chebyshev).
@@ -596,11 +604,10 @@ PetscErrorCode SNESMSSetDamping(SNES snes, PetscReal damping)
 .     * - Pierce and Giles (1997) Preconditioned multigrid methods for compressible flow calculations on stretched meshes (https://doi.org/10.1006/jcph.1997.5772).
 -     * - Van Leer, Tai, and Powell (1989) Design of optimally smoothing multi-stage schemes for the Euler equations (https://doi.org/10.2514/6.1989-1933).
 
-      Level: advanced
-
-.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESMS`, `SNESFAS`, `KSPCHEBYSHEV`
-
+.seealso: [](ch_snes), `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESMS`, `SNESFAS`, `KSPCHEBYSHEV`, `SNESMSSetDamping()`, `SNESMSGetDamping()`,
+          `SNESMSSetType()`, `SNESMSGetType()`
 M*/
+
 PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES snes)
 {
   SNES_MS *ms;

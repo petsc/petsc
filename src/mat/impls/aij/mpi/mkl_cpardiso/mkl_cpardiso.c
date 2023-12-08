@@ -99,7 +99,7 @@ typedef struct {
   /* Row permutaton vector*/
   INT_TYPE *perm;
 
-  /* Define is matrix preserve sparce structure. */
+  /* Define is matrix preserve sparse structure. */
   MatStructure matstruc;
 
   PetscErrorCode (*ConvertToTriples)(Mat, MatReuse, PetscInt *, PetscInt **, PetscInt **, PetscScalar **);

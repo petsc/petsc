@@ -169,7 +169,7 @@ static PetscErrorCode PCKSPSetKSP_KSP(PC pc, KSP ksp)
 
   This would rarely be used, the standard usage is to call `PCKSPGetKSP()` and then change options on that `KSP`
 
-.seealso: `PCKSP`, `PCKSPGetKSP()`
+.seealso: [](ch_ksp), `PCKSP`, `PCKSPGetKSP()`
 @*/
 PetscErrorCode PCKSPSetKSP(PC pc, KSP ksp)
 {
@@ -207,7 +207,7 @@ static PetscErrorCode PCKSPGetKSP_KSP(PC pc, KSP *ksp)
 
   Level: advanced
 
-.seealso: `PCKSP`, `PCKSPSetKSP()`
+.seealso: [](ch_ksp), `PCKSP`, `PCKSPSetKSP()`
 @*/
 PetscErrorCode PCKSPGetKSP(PC pc, KSP *ksp)
 {
@@ -255,7 +255,7 @@ static PetscErrorCode PCSetFromOptions_KSP(PC pc, PetscOptionItems *PetscOptions
     is not an efficient algorithm anyways and (2) implementing it for its > 1 would essentially require that we implement Richardson (reimplementing the
     Richardson code) inside the `PCApplyRichardson_PCKSP()` leading to duplicate code.
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
           `PCSHELL`, `PCCOMPOSITE`, `PCSetUseAmat()`, `PCKSPGetKSP()`, `KSPFGMRES`, `KSPGCR`, `KSPFCG`
 M*/
 

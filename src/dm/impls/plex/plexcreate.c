@@ -4580,7 +4580,7 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->computel2fielddiff        = DMComputeL2FieldDiff_Plex;
   dm->ops->getneighbors              = DMGetNeighbors_Plex;
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexInsertBoundaryValues_C", DMPlexInsertBoundaryValues_Plex));
-  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexInsertTimeDerviativeBoundaryValues_C", DMPlexInsertTimeDerivativeBoundaryValues_Plex));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexInsertTimeDerivativeBoundaryValues_C", DMPlexInsertTimeDerivativeBoundaryValues_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMSetUpGLVisViewer_C", DMSetUpGLVisViewer_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMCreateNeumannOverlap_C", DMCreateNeumannOverlap_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexGetOverlap_C", DMPlexGetOverlap_Plex));
@@ -5298,7 +5298,7 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
   Developer Note:
   Should use a `PetscViewer` not a filename
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromFile()`, `DMPlexCreateMedFromFile()`, `DMPlexCreateGmsh()`, `DMPlexCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromFile()`, `DMPlexCreateGmsh()`, `DMPlexCreate()`
 */
 static PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {
@@ -5500,7 +5500,6 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   const char  extFluent[]    = ".cas";
   const char  extHDF5[]      = ".h5";
   const char  extXDMFHDF5[]  = ".xdmf.h5";
-  const char  extMed[]       = ".med";
   const char  extPLY[]       = ".ply";
   const char  extEGADSLite[] = ".egadslite";
   const char  extEGADS[]     = ".egads";
@@ -5508,7 +5507,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   const char  extSTEP[]      = ".stp";
   const char  extCV[]        = ".dat";
   size_t      len;
-  PetscBool   isGmsh, isGmsh2, isGmsh4, isCGNS, isExodus, isGenesis, isFluent, isHDF5, isMed, isPLY, isEGADSLite, isEGADS, isIGES, isSTEP, isCV, isXDMFHDF5;
+  PetscBool   isGmsh, isGmsh2, isGmsh4, isCGNS, isExodus, isGenesis, isFluent, isHDF5, isPLY, isEGADSLite, isEGADS, isIGES, isSTEP, isCV, isXDMFHDF5;
   PetscMPIInt rank;
 
   PetscFunctionBegin;
@@ -5542,7 +5541,6 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   CheckExtension(extGenesis, isGenesis);
   CheckExtension(extFluent, isFluent);
   CheckExtension(extHDF5, isHDF5);
-  CheckExtension(extMed, isMed);
   CheckExtension(extPLY, isPLY);
   CheckExtension(extEGADSLite, isEGADSLite);
   CheckExtension(extEGADS, isEGADS);
@@ -5588,8 +5586,6 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
       PetscCall(DMDestroy(dm));
       *dm = idm;
     }
-  } else if (isMed) {
-    PetscCall(DMPlexCreateMedFromFile(comm, filename, interpolate, dm));
   } else if (isPLY) {
     PetscCall(DMPlexCreatePLYFromFile(comm, filename, interpolate, dm));
   } else if (isEGADSLite || isEGADS || isIGES || isSTEP) {

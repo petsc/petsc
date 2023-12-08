@@ -27,7 +27,7 @@ static PetscErrorCode PCDeflationSetInitOnly_Deflation(PC pc, PetscBool flg)
 
   Level: intermediate
 
-.seealso: `PCDEFLATION`
+.seealso: [](ch_ksp), `PCDEFLATION`
 @*/
 PetscErrorCode PCDeflationSetInitOnly(PC pc, PetscBool flg)
 {
@@ -62,7 +62,7 @@ static PetscErrorCode PCDeflationSetLevels_Deflation(PC pc, PetscInt current, Pe
 
   Level: intermediate
 
-.seealso: `PCDeflationSetSpaceToCompute()`, `PCDeflationSetSpace()`, `PCDEFLATION`
+.seealso: [](ch_ksp), `PCDeflationSetSpaceToCompute()`, `PCDeflationSetSpace()`, `PCDEFLATION`
 @*/
 PetscErrorCode PCDeflationSetLevels(PC pc, PetscInt max)
 {
@@ -99,7 +99,7 @@ static PetscErrorCode PCDeflationSetReductionFactor_Deflation(PC pc, PetscInt re
 
   Level: intermediate
 
-.seealso: `PCTELESCOPE`, `PCDEFLATION`, `PCDeflationSetLevels()`
+.seealso: [](ch_ksp), `PCTELESCOPE`, `PCDEFLATION`, `PCDeflationSetLevels()`
 @*/
 PetscErrorCode PCDeflationSetReductionFactor(PC pc, PetscInt red)
 {
@@ -141,7 +141,7 @@ static PetscErrorCode PCDeflationSetCorrectionFactor_Deflation(PC pc, PetscScala
 
   Level: intermediate
 
-.seealso: `PCDEFLATION`, `PCDeflationSetLevels()`, `PCDeflationSetReductionFactor()`
+.seealso: [](ch_ksp), `PCDEFLATION`, `PCDeflationSetLevels()`, `PCDeflationSetReductionFactor()`
 @*/
 PetscErrorCode PCDeflationSetCorrectionFactor(PC pc, PetscScalar fact)
 {
@@ -183,7 +183,7 @@ static PetscErrorCode PCDeflationSetSpaceToCompute_Deflation(PC pc, PCDeflationS
 
   Level: intermediate
 
-.seealso: `PCDeflationSetLevels()`, `PCDEFLATION`
+.seealso: [](ch_ksp), `PCDeflationSetLevels()`, `PCDEFLATION`
 @*/
 PetscErrorCode PCDeflationSetSpaceToCompute(PC pc, PCDeflationSpaceType type, PetscInt size)
 {
@@ -233,7 +233,7 @@ static PetscErrorCode PCDeflationSetSpace_Deflation(PC pc, Mat W, PetscBool tran
   If there are matrices left after reaching the maximum level,
   they are merged into a deflation matrix ...*W{n-1}*Wn.
 
-.seealso: `PCDeflationSetLevels()`, `PCDEFLATION`, `PCDeflationSetProjectionNullSpaceMat()`
+.seealso: [](ch_ksp), `PCDeflationSetLevels()`, `PCDEFLATION`, `PCDeflationSetProjectionNullSpaceMat()`
 @*/
 PetscErrorCode PCDeflationSetSpace(PC pc, Mat W, PetscBool transpose)
 {
@@ -267,7 +267,7 @@ static PetscErrorCode PCDeflationSetProjectionNullSpaceMat_Deflation(PC pc, Mat 
 
   Level: developer
 
-.seealso: `PCDEFLATION`, `PCDeflationSetSpace()`
+.seealso: [](ch_ksp), `PCDEFLATION`, `PCDeflationSetSpace()`
 @*/
 PetscErrorCode PCDeflationSetProjectionNullSpaceMat(PC pc, Mat mat)
 {
@@ -300,7 +300,7 @@ static PetscErrorCode PCDeflationSetCoarseMat_Deflation(PC pc, Mat mat)
 
   Level: developer
 
-.seealso: `PCDEFLATION`, `PCDeflationGetCoarseKSP()`
+.seealso: [](ch_ksp), `PCDEFLATION`, `PCDeflationGetCoarseKSP()`
 @*/
 PetscErrorCode PCDeflationSetCoarseMat(PC pc, Mat mat)
 {
@@ -333,7 +333,7 @@ static PetscErrorCode PCDeflationGetCoarseKSP_Deflation(PC pc, KSP *ksp)
 
   Level: advanced
 
-.seealso: `PCDEFLATION`, `PCDeflationSetCoarseMat()`
+.seealso: [](ch_ksp), `PCDEFLATION`, `PCDeflationSetCoarseMat()`
 @*/
 PetscErrorCode PCDeflationGetCoarseKSP(PC pc, KSP *ksp)
 {
@@ -366,7 +366,7 @@ static PetscErrorCode PCDeflationGetPC_Deflation(PC pc, PC *apc)
 
   Level: advanced
 
-.seealso: `PCDEFLATION`, `PCDeflationGetCoarseKSP()`
+.seealso: [](ch_ksp), `PCDEFLATION`, `PCDeflationGetCoarseKSP()`
 @*/
 PetscErrorCode PCDeflationGetPC(PC pc, PC *apc)
 {
@@ -826,7 +826,7 @@ static PetscErrorCode PCSetFromOptions_Deflation(PC pc, PetscOptionItems *PetscO
 
    Level: intermediate
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
           `PCDeflationSetInitOnly()`, `PCDeflationSetLevels()`, `PCDeflationSetReductionFactor()`,
           `PCDeflationSetCorrectionFactor()`, `PCDeflationSetSpaceToCompute()`,
           `PCDeflationSetSpace()`, `PCDeflationSpaceType`, `PCDeflationSetProjectionNullSpaceMat()`,

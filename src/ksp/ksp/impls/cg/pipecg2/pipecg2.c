@@ -721,11 +721,14 @@ static PetscErrorCode KSPSolve_PIPECG2(KSP ksp)
    Level: intermediate
 
    Notes:
-   This method has only a single non-blocking reduction per two iterations, compared to 2 blocking for standard CG.  The
+   This method has only a single non-blocking reduction per two iterations, compared to 2 blocking for standard `KSPCG`.  The
    non-blocking reduction is overlapped by two matrix-vector products and two preconditioner applications.
 
    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
    See [](doc_faq_pipelined)
+
+   Developer Note:
+   The implementation code contains a good amount of hand-tuned fusion of multiple inner products and similar computations on multiple vectors
 
    Contributed by:
    Manasi Tiwari, Computational and Data Sciences, Indian Institute of Science, Bangalore
@@ -733,9 +736,6 @@ static PetscErrorCode KSPSolve_PIPECG2(KSP ksp)
    Reference:
    Manasi Tiwari and Sathish Vadhiyar, "Pipelined Conjugate Gradient Methods for Distributed Memory Systems",
    Submitted to International Conference on High Performance Computing, Data and Analytics 2020.
-
-   Developer Note:
-   The implementation code contains a good amount of hand tuned fusion of multiple inner products and similar computations on multiple vectors
 
 .seealso: [](ch_ksp), [](doc_faq_pipelined), [](sec_pipelineksp), `KSPCreate()`, `KSPSetType()`, `KSPCG`, `KSPPIPECG`, `KSPGROPPCG`
 M*/

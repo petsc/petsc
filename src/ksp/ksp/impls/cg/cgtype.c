@@ -71,7 +71,7 @@ PetscErrorCode KSPCGUseSingleReduction(KSP ksp, PetscBool flg)
 }
 
 /*@
-  KSPCGSetRadius - Sets the radius of the trust region
+  KSPCGSetRadius - Sets the radius of the trust region used by the `KSPCG` when the solver is used inside `SNESNEWTONTR`
 
   Logically Collective
 
@@ -84,7 +84,7 @@ PetscErrorCode KSPCGUseSingleReduction(KSP ksp, PetscBool flg)
   Note:
   When radius is greater then 0, the Steihaugh-Toint trick is used
 
-.seealso: [](ch_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
+.seealso: [](ch_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`, `SNESNEWTONTR`
 @*/
 PetscErrorCode KSPCGSetRadius(KSP ksp, PetscReal radius)
 {
@@ -96,7 +96,7 @@ PetscErrorCode KSPCGSetRadius(KSP ksp, PetscReal radius)
 }
 
 /*@
-  KSPCGSetObjectiveTarget - Sets the target value for the quadratic model reduction
+  KSPCGSetObjectiveTarget - Sets the target value for the quadratic model reduction when the solver is used inside `SNESNEWTONTR`
 
   Logically Collective
 
@@ -107,11 +107,11 @@ PetscErrorCode KSPCGSetRadius(KSP ksp, PetscReal radius)
   Level: advanced
 
   Note:
-  The CG process will stop when the current objective function
-  1/2 x_k * A * x_k - b * x_k is smaller than obj if obj is negative.
+  The `KSPSolve()` will stop when the current objective function
+  $ 1/2 x_k * A * x_k - b * x_k $ is smaller than `obj` if `obj` is negative.
   Otherwise the test is ignored.
 
-.seealso: [](ch_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
+.seealso: [](ch_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`, `SNESNEWTONTR`
 @*/
 PetscErrorCode KSPCGSetObjectiveTarget(KSP ksp, PetscReal obj)
 {
@@ -133,7 +133,7 @@ PetscErrorCode KSPCGSetObjectiveTarget(KSP ksp, PetscReal obj)
 
   Level: advanced
 
-.seealso: [](ch_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
+.seealso: [](ch_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`, `SNESNEWTONTR`
 @*/
 PetscErrorCode KSPCGGetNormD(KSP ksp, PetscReal *norm_d)
 {
@@ -154,7 +154,7 @@ PetscErrorCode KSPCGGetNormD(KSP ksp, PetscReal *norm_d)
 
   Level: advanced
 
-.seealso: [](ch_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
+.seealso: [](ch_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`, `SNESNEWTONTR`
 @*/
 PetscErrorCode KSPCGGetObjFcn(KSP ksp, PetscReal *o_fcn)
 {

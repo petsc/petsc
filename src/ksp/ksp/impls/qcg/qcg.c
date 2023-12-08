@@ -51,7 +51,10 @@ static PetscErrorCode KSPQCGQuadraticRoots(Vec s, Vec p, PetscReal delta, PetscR
 
   Level: advanced
 
-.seealso: `KSPQCG`
+  Developer Note:
+  `KSPMINRESSetRadius()`, for example, does not have TrustRegion in the name
+
+.seealso: [](ch_ksp), `KSPQCG`, `KSPQCGGetTrialStepNorm()`
 @*/
 PetscErrorCode KSPQCGSetTrustRegionRadius(KSP ksp, PetscReal delta)
 {
@@ -76,7 +79,7 @@ PetscErrorCode KSPQCGSetTrustRegionRadius(KSP ksp, PetscReal delta)
 
   Level: advanced
 
-.seealso: `KSPQCG`
+.seealso: [](ch_ksp), `KSPQCG`, `KSPQCGSetTrustRegionRadius()`
 @*/
 PetscErrorCode KSPQCGGetTrialStepNorm(KSP ksp, PetscReal *tsnorm)
 {
@@ -100,10 +103,18 @@ PetscErrorCode KSPQCGGetTrialStepNorm(KSP ksp, PetscReal *tsnorm)
   Level: advanced
 
   Note:
-  $ q(s) = g^T * s + 0.5 * s^T * H * s $ which satisfies the Euclidean Norm trust region constraint
-.vb
-  || D * s || <= delta,
-.ve
+  The quadratic function is
+
+  $$
+  q(s) = g^T * s + 0.5 * s^T * H * s
+  $$
+
+  which satisfies the Euclidean Norm trust region constraint
+
+  $$
+  || D * s || \le delta,
+  $$
+
   where
 .vb
   delta is the trust region radius,
@@ -362,7 +373,7 @@ static PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems *PetscOpti
 }
 
 /*MC
-     KSPQCG -   Code to run conjugate gradient method subject to a constraint on the solution norm.
+   KSPQCG - Code to run conjugate gradient method subject to a constraint on the solution norm.
 
    Options Database Key:
 .      -ksp_qcg_trustregionradius <r> - Trust Region Radius
@@ -370,14 +381,11 @@ static PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems *PetscOpti
    Level: developer
 
    Notes:
-    This is rarely used directly, ir is used in Trust Region methods for nonlinear equations, `SNESNEWTONTR`
+   This is rarely used directly, ir is used in Trust Region methods for nonlinear equations, `SNESNEWTONTR`
 
-    Uses preconditioned conjugate gradient to compute
-      an approximate minimizer of the quadratic function $ q(s) = g^T * s + .5 * s^T * H * s $   subject to the Euclidean norm trust region constraint
-.vb
-            || D * s || <= delta,
-.ve
-   where
+   Uses preconditioned conjugate gradient to compute
+   an approximate minimizer of the quadratic function $ q(s) = g^T * s + .5 * s^T * H * s $   subject to the Euclidean norm trust region constraint
+   $ || D * s || \le delta$, where
 .vb
      delta is the trust region radius,
      g is the gradient vector, and
@@ -385,15 +393,12 @@ static PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems *PetscOpti
      D is a scaling matrix.
 .ve
 
-   `KSPConvergedReason` may be
-.vb
-   KSP_CONVERGED_NEG_CURVE if convergence is reached along a negative curvature direction,
-   KSP_CONVERGED_STEP_LENGTH if convergence is reached along a constrained step,
-.ve
-   and other `KSP` converged/diverged reasons
+   `KSPConvergedReason` may include
++  `KSP_CONVERGED_NEG_CURVE` - if convergence is reached along a negative curvature direction,
+-  `KSP_CONVERGED_STEP_LENGTH` - if convergence is reached along a constrained step,
 
-  Notes:
-  Currently we allow symmetric preconditioning with the following scaling matrices:
+  Note:
+  Allows symmetric preconditioning with the following scaling matrices:
 .vb
       `PCNONE`:   D = Identity matrix
       `PCJACOBI`: D = diag [d_1, d_2, ...., d_n], where d_i = sqrt(H[i,i])

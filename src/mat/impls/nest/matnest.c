@@ -89,7 +89,7 @@ typedef struct {
   PetscInt    *dm, *dn, k; /* displacements and number of submatrices */
 } Nest_Dense;
 
-PETSC_INTERN PetscErrorCode MatProductNumeric_Nest_Dense(Mat C)
+static PetscErrorCode MatProductNumeric_Nest_Dense(Mat C)
 {
   Mat_Nest          *bA;
   Nest_Dense        *contents;
@@ -145,6 +145,7 @@ PETSC_INTERN PetscErrorCode MatProductNumeric_Nest_Dense(Mat C)
   PetscCall(MatDenseRestoreArray(C, &carray));
   PetscCall(MatDenseRestoreArrayRead(B, &barray));
 
+  PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -163,7 +164,7 @@ static PetscErrorCode MatNest_DenseDestroy(void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode MatProductSymbolic_Nest_Dense(Mat C)
+static PetscErrorCode MatProductSymbolic_Nest_Dense(Mat C)
 {
   Mat_Nest          *bA;
   Mat                viewB, workC;
@@ -254,7 +255,7 @@ static PetscErrorCode MatProductSetFromOptions_Nest_Dense_AB(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Nest_Dense(Mat C)
+static PetscErrorCode MatProductSetFromOptions_Nest_Dense(Mat C)
 {
   Mat_Product *product = C->product;
 
@@ -997,7 +998,7 @@ static PetscErrorCode MatAXPY_Nest(Mat Y, PetscScalar a, Mat X, MatStructure str
       } else if (bX->m[i][j]) {
         Mat M;
 
-        PetscCheck(str == DIFFERENT_NONZERO_PATTERN, PetscObjectComm((PetscObject)Y), PETSC_ERR_ARG_INCOMP, "Matrix block does not exist at %" PetscInt_FMT ",%" PetscInt_FMT ". Use DIFFERENT_NONZERO_PATTERN", i, j);
+        PetscCheck(str == DIFFERENT_NONZERO_PATTERN || str == UNKNOWN_NONZERO_PATTERN, PetscObjectComm((PetscObject)Y), PETSC_ERR_ARG_INCOMP, "Matrix block does not exist at %" PetscInt_FMT ",%" PetscInt_FMT ". Use DIFFERENT_NONZERO_PATTERN or UNKNOWN_NONZERO_PATTERN", i, j);
         PetscCall(MatDuplicate(bX->m[i][j], MAT_COPY_VALUES, &M));
         PetscCall(MatNestSetSubMat(Y, i, j, M));
         PetscCall(MatDestroy(&M));

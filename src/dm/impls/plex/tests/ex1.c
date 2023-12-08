@@ -625,27 +625,6 @@ int main(int argc, char **argv)
     TODO: Fails on non-linux: fseek(), fileno() ? https://gitlab.com/petsc/petsc/merge_requests/2206#note_238166382
     args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets.cas -dm_view -final_diagnostics 0
 
-  # Med mesh reader tests, including parallel file reads
-  test:
-    suffix: med_0
-    requires: med
-    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.med -dm_view
-  test:
-    suffix: med_1
-    requires: med
-    nsize: 3
-    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.med -dist_dm_distribute -petscpartitioner_type simple -dm_view
-  test:
-    suffix: med_2
-    requires: med
-    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cylinder.med -dm_view
-  test:
-    suffix: med_3
-    requires: med
-    TODO: MED
-    nsize: 3
-    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cylinder.med -dist_dm_distribute -petscpartitioner_type simple -dm_view
-
   # Test shape quality
   test:
     suffix: test_shape

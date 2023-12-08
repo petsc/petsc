@@ -16,12 +16,8 @@ int main(int argc, char **argv)
   IS              isrows, iscols;
   const PetscInt *rows, *cols;
   PetscScalar    *v, rval;
-#if defined(PETSC_HAVE_ELEMENTAL)
-  PetscBool Test_MatMatMult = PETSC_TRUE;
-#else
-  PetscBool Test_MatMatMult = PETSC_FALSE;
-#endif
-  PetscMPIInt size;
+  PetscBool       Test_MatMatMult = PETSC_TRUE;
+  PetscMPIInt     size;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
@@ -87,9 +83,6 @@ int main(int argc, char **argv)
 
   /* Test MatMatMult() */
   if (Test_MatMatMult) {
-#if !defined(PETSC_HAVE_ELEMENTAL)
-    PetscCheck(size == 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "This test requires ELEMENTAL");
-#endif
     PetscCall(MatTranspose(A, MAT_INITIAL_MATRIX, &B));        /* B = A^T */
     PetscCall(MatMatMult(B, A, MAT_INITIAL_MATRIX, fill, &C)); /* C = B*A = A^T*A */
     PetscCall(MatMatMult(B, A, MAT_REUSE_MATRIX, fill, &C));
@@ -211,11 +204,15 @@ int main(int argc, char **argv)
       requires: elemental
       output_file: output/ex104.out
 
-    test:
-      suffix: 7
+    testset:
       nsize: 2
-      args: -mat_type elemental
-      requires: elemental
       output_file: output/ex104.out
+      requires: elemental
+      test:
+        suffix: 7_dense
+        args: -mat_type dense -mat_product_algorithm elemental
+      test:
+        suffix: 7_elemental
+        args: -mat_type elemental
 
 TEST*/

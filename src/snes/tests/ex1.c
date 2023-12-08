@@ -530,6 +530,10 @@ PetscErrorCode postcheck(SNES snes, Vec x, Vec y, Vec w, PetscBool *changed_y, P
       requires: defined(PETSC_USE_INFO)
 
    test:
+      suffix: 2c
+      args: -snes_converged_reason -snes_type newtontr -snes_tr_qn {{same different}separate output} -pc_type mat -snes_view -snes_tr_qn_mat_type lmvmdfp -snes_tr_norm_type infinity
+
+   test:
       suffix: 3
       args: -snes_monitor_short -mat_coloring_type sl -snes_fd_coloring -mx 8 -my 11 -ksp_gmres_cgs_refinement_type refine_always
 

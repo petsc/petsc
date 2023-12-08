@@ -571,7 +571,7 @@ static PetscErrorCode KSPCGSetFromOptions_NASH(KSP ksp, PetscOptionItems *PetscO
 }
 
 /*MC
-     KSPNASH -   Code to run conjugate gradient method subject to a constraint on the solution norm.
+   KSPNASH -   Code to run conjugate gradient method subject to a constraint on the solution norm in a trust region method
 
    Options Database Keys:
 .      -ksp_cg_radius <r> - Trust Region Radius
@@ -579,35 +579,37 @@ static PetscErrorCode KSPCGSetFromOptions_NASH(KSP ksp, PetscOptionItems *PetscO
    Level: developer
 
    Notes:
-    This is rarely used directly, it is used in Trust Region methods for nonlinear equations, `SNESNEWTONTR`
+   This is rarely used directly, it is used in Trust Region methods for nonlinear equations, `SNESNEWTONTR`
 
-  Uses preconditioned conjugate gradient to compute
-  an approximate minimizer of the quadratic function
+   Uses preconditioned conjugate gradient to compute
+   an approximate minimizer of the quadratic function
 
-            q(s) = g^T * s + 0.5 * s^T * H * s
+   $$
+   q(s) = g^T * s + 0.5 * s^T * H * s
+   $$
 
    subject to the trust region constraint
 
-            || s || <= delta,
+   $$
+   || s || \le delta,
+   $$
 
    where
-
+.vb
      delta is the trust region radius,
      g is the gradient vector,
      H is the Hessian approximation, and
      M is the positive definite preconditioner matrix.
-
-   `KSPConvergedReason` may be
-.vb
-  KSP_CONVERGED_NEG_CURVE if convergence is reached along a negative curvature direction,
-  KSP_CONVERGED_STEP_LENGTH if convergence is reached along a constrained step,
 .ve
-  other `KSP` converged/diverged reasons
 
-  The preconditioner supplied should be symmetric and positive definite.
+   `KSPConvergedReason` may include
++  `KSP_CONVERGED_NEG_CURVE` - if convergence is reached along a negative curvature direction,
+-  `KSP_CONVERGED_STEP_LENGTH` - if convergence is reached along a constrained step,
 
-  Reference:
-   Nash, Stephen G. Newton-type minimization via the Lanczos method. SIAM Journal on Numerical Analysis 21, no. 4 (1984): 770-788.
+   The preconditioner supplied should be symmetric and positive definite.
+
+   Reference:
+   * - Nash, Stephen G. Newton-type minimization via the Lanczos method. SIAM Journal on Numerical Analysis 21, no. 4 (1984): 770-788.
 
 .seealso: [](ch_ksp), `KSPQCG`, `KSPGLTR`, `KSPSTCG`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCGSetRadius()`, `KSPCGGetNormD()`, `KSPCGGetObjFcn()`
 M*/

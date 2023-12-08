@@ -20,7 +20,7 @@ typedef struct {
 
   Level: advanced
 
-.seealso: `SNESSHELL`, `SNESShellSetContext()`, `SNESShellGetContext()`
+.seealso: [](ch_snes), `SNES`, `SNESSHELL`, `SNESShellSetContext()`, `SNESShellGetContext()`
 @*/
 PetscErrorCode SNESShellSetSolve(SNES snes, PetscErrorCode (*solve)(SNES snes, Vec xout))
 {
@@ -76,7 +76,7 @@ static PetscErrorCode SNESView_Shell(SNES snes, PetscViewer viewer)
 
   Level: advanced
 
-.seealso: `SNESSHELL`, `SNESCreateShell()`, `SNESShellSetContext()`
+.seealso: [](ch_snes), `SNES`, `SNESSHELL`, `SNESCreateShell()`, `SNESShellSetContext()`
 @*/
 PetscErrorCode SNESShellGetContext(SNES snes, void *ctx)
 {
@@ -102,10 +102,10 @@ PetscErrorCode SNESShellGetContext(SNES snes, void *ctx)
 
   Level: advanced
 
-  Fortran Notes:
+  Fortran Note:
   The context can only be an integer or a `PetscObject` it cannot be a Fortran array or derived type.
 
-.seealso: `SNESSHELL`, `SNESCreateShell()`, `SNESShellGetContext()`
+.seealso: [](ch_snes), `SNES`, `SNESSHELL`, `SNESCreateShell()`, `SNESShellGetContext()`
 @*/
 PetscErrorCode SNESShellSetContext(SNES snes, void *ctx)
 {
@@ -144,7 +144,7 @@ static PetscErrorCode SNESShellSetSolve_Shell(SNES snes, PetscErrorCode (*solve)
 
    Level: advanced
 
-.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`, `SNESShellGetContext()`, `SNESShellSetContext()`, `SNESShellSetSolve()`
+.seealso: [](ch_snes), `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`, `SNESShellGetContext()`, `SNESShellSetContext()`, `SNESShellSetSolve()`
 M*/
 
 PETSC_EXTERN PetscErrorCode SNESCreate_Shell(SNES snes)

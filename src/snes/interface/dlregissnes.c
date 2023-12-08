@@ -4,12 +4,12 @@
 static PetscBool SNESPackageInitialized = PETSC_FALSE;
 
 /*@C
-  SNESFinalizePackage - This function destroys everything in the Petsc interface to the `SNES` package. It is
+  SNESFinalizePackage - This function destroys everything in the PETSc interface to the `SNES` package. It is
   called from `PetscFinalize()`.
 
   Level: developer
 
-.seealso: `SNES`, `PetscFinalize()`
+.seealso: [](ch_snes), `SNES`, `PetscFinalize()`
 @*/
 PetscErrorCode SNESFinalizePackage(void)
 {
@@ -29,7 +29,7 @@ PetscErrorCode SNESFinalizePackage(void)
 
   Level: developer
 
-.seealso: `SNES`, `PetscInitialize()`
+.seealso: [](ch_snes), `SNES`, `PetscInitialize()`
 @*/
 PetscErrorCode SNESInitializePackage(void)
 {

@@ -121,7 +121,7 @@ Vec Object: Local Solution 1 MPI process
 0.
 0.
 0.
-0.
+2.
 1.
 0.
 -1.
@@ -203,9 +203,9 @@ Vec Object: Local Residual 1 MPI process
 -0.333333
 0.
 0.
-0.666667
+-4.69235e-17
 0.
-1.33333
+-1.75121e-16
 Mat Object: Jacobian 1 MPI process
   type: seqaij
 row 0: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (6, 0.)  (7, 0.) 

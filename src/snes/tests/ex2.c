@@ -11,19 +11,31 @@ typedef enum {
   GRID_REPLICATED
 } PointType;
 
+typedef enum {
+  CONSTANT,
+  LINEAR
+} FuncType;
+
 typedef struct {
-  PointType pointType; /* Point generation mechanism */
+  PointType pointType; // Point generation mechanism
+  FuncType  funcType;  // Type of interpolated function
+  PetscBool useFV;     // Use finite volume, instead of finite element
 } AppCtx;
+
+static PetscErrorCode constant(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
+  PetscFunctionBeginUser;
+  for (PetscInt c = 0; c < Nc; ++c) u[c] = c + 1.;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
-  PetscInt d, c;
-
   PetscFunctionBeginUser;
   PetscCheck(Nc == 3, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Something is wrong: %" PetscInt_FMT, Nc);
-  for (c = 0; c < Nc; ++c) {
+  for (PetscInt c = 0; c < Nc; ++c) {
     u[c] = 0.0;
-    for (d = 0; d < dim; ++d) u[c] += x[d];
+    for (PetscInt d = 0; d < dim; ++d) u[c] += x[d];
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -31,14 +43,22 @@ static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char *pointTypes[3] = {"centroid", "grid", "grid_replicated"};
-  PetscInt    pt;
+  const char *funcTypes[2]  = {"constant", "linear"};
+  PetscInt    pt, fn;
 
   PetscFunctionBegin;
   options->pointType = CENTROID;
+  options->funcType  = LINEAR;
+  options->useFV     = PETSC_FALSE;
+
   PetscOptionsBegin(comm, "", "Interpolation Options", "DMPLEX");
   pt = options->pointType;
   PetscCall(PetscOptionsEList("-point_type", "The point type", "ex2.c", pointTypes, 3, pointTypes[options->pointType], &pt, NULL));
   options->pointType = (PointType)pt;
+  fn                 = options->funcType;
+  PetscCall(PetscOptionsEList("-func_type", "The function type", "ex2.c", funcTypes, 2, funcTypes[options->funcType], &fn, NULL));
+  options->funcType = (FuncType)fn;
+  PetscCall(PetscOptionsBool("-use_fv", "Use finite volumes, instead of finite elements", "ex2.c", options->useFV, &options->useFV, NULL));
   PetscOptionsEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -202,18 +222,49 @@ static PetscErrorCode CreatePoints(DM dm, PetscInt *Np, PetscReal **pcoords, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode CreateDiscretization(DM dm, PetscInt Nc, AppCtx *ctx)
+{
+  PetscFunctionBegin;
+  if (ctx->useFV) {
+    PetscFV  fv;
+    PetscInt cdim;
+
+    PetscCall(PetscFVCreate(PetscObjectComm((PetscObject)dm), &fv));
+    PetscCall(PetscObjectSetName((PetscObject)fv, "phi"));
+    PetscCall(PetscFVSetFromOptions(fv));
+    PetscCall(PetscFVSetNumComponents(fv, Nc));
+    PetscCall(DMGetCoordinateDim(dm, &cdim));
+    PetscCall(PetscFVSetSpatialDimension(fv, cdim));
+    PetscCall(DMSetField(dm, 0, NULL, (PetscObject)fv));
+    PetscCall(PetscFVDestroy(&fv));
+    PetscCall(DMCreateDS(dm));
+  } else {
+    PetscFE        fe;
+    DMPolytopeType ct;
+    PetscInt       dim, cStart;
+
+    PetscCall(DMGetDimension(dm, &dim));
+    PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, NULL));
+    PetscCall(DMPlexGetCellType(dm, cStart, &ct));
+    PetscCall(PetscFECreateByCell(PetscObjectComm((PetscObject)dm), dim, Nc, ct, NULL, -1, &fe));
+    PetscCall(DMSetField(dm, 0, NULL, (PetscObject)fe));
+    PetscCall(PetscFEDestroy(&fe));
+    PetscCall(DMCreateDS(dm));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char **argv)
 {
   AppCtx ctx;
   PetscErrorCode (**funcs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
   DM                  dm;
-  PetscFE             fe;
   DMInterpolationInfo interpolator;
   Vec                 lu, fieldVals;
   PetscScalar        *vals;
   const PetscScalar  *ivals, *vcoords;
   PetscReal          *pcoords;
-  PetscBool           simplex, pointsAllProcs = PETSC_TRUE;
+  PetscBool           pointsAllProcs = PETSC_TRUE;
   PetscInt            dim, spaceDim, Nc, c, Np, p;
   PetscMPIInt         rank, size;
   PetscViewer         selfviewer;
@@ -237,16 +288,20 @@ int main(int argc, char **argv)
   for (c = 0; c < interpolator->n; ++c) PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Point %" PetscInt_FMT " is in Cell %" PetscInt_FMT "\n", rank, c, interpolator->cells[c]));
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL));
   PetscCall(VecView(interpolator->coords, PETSC_VIEWER_STDOUT_WORLD));
-  /* Setup Discretization */
   Nc = dim;
-  PetscCall(DMPlexIsSimplex(dm, &simplex));
-  PetscCall(PetscFECreateDefault(PetscObjectComm((PetscObject)dm), dim, Nc, simplex, NULL, -1, &fe));
-  PetscCall(DMSetField(dm, 0, NULL, (PetscObject)fe));
-  PetscCall(DMCreateDS(dm));
-  PetscCall(PetscFEDestroy(&fe));
+  PetscCall(CreateDiscretization(dm, Nc, &ctx));
   /* Create function */
   PetscCall(PetscCalloc2(Nc, &funcs, Nc, &vals));
-  for (c = 0; c < Nc; ++c) funcs[c] = linear;
+  switch (ctx.funcType) {
+  case CONSTANT:
+    for (c = 0; c < Nc; ++c) funcs[c] = constant;
+    break;
+  case LINEAR:
+    for (c = 0; c < Nc; ++c) funcs[c] = linear;
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid function type: %d", (int)ctx.funcType);
+  }
   PetscCall(DMGetLocalVector(dm, &lu));
   PetscCall(DMProjectFunctionLocal(dm, 0.0, funcs, NULL, INSERT_ALL_VALUES, lu));
   PetscCall(PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD));
@@ -342,5 +397,10 @@ int main(int argc, char **argv)
       suffix: 11
       nsize: 2
       args: -dm_refine 2 -petscpartitioner_type simple -point_type grid_replicated
+
+  test:
+    suffix: fv_0
+    requires: triangle
+    args: -use_fv -func_type constant
 
 TEST*/

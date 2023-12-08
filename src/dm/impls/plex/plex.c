@@ -70,49 +70,49 @@ PetscErrorCode DMPlexIsSimplex(DM dm, PetscBool *simplex)
 
   Output Parameters:
 + cStart - The first "normal" cell
-- cEnd   - The upper bound on "normal"" cells
+- cEnd   - The upper bound on "normal" cells
 
   Level: developer
 
   Note:
-  This just gives the first range of cells found. If the mesh has several cell types, it will only give the first.
+  This function requires that tensor cells are ordered last.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexConstructGhostCells()`, `DMPlexGetCellTypeStratum()`
 @*/
 PetscErrorCode DMPlexGetSimplexOrBoxCells(DM dm, PetscInt height, PetscInt *cStart, PetscInt *cEnd)
 {
-  DMPolytopeType ct = DM_POLYTOPE_UNKNOWN;
-  PetscInt       cS, cE, c;
+  DMLabel         ctLabel;
+  IS              valueIS;
+  const PetscInt *ctypes;
+  PetscInt        Nct, cS = PETSC_MAX_INT, cE = 0;
 
   PetscFunctionBegin;
-  PetscCall(DMPlexGetHeightStratum(dm, PetscMax(height, 0), &cS, &cE));
-  for (c = cS; c < cE; ++c) {
-    DMPolytopeType cct;
+  PetscCall(DMPlexGetCellTypeLabel(dm, &ctLabel));
+  PetscCall(DMLabelGetValueIS(ctLabel, &valueIS));
+  PetscCall(ISGetLocalSize(valueIS, &Nct));
+  PetscCall(ISGetIndices(valueIS, &ctypes));
+  if (!Nct) cS = cE = 0;
+  for (PetscInt t = 0; t < Nct; ++t) {
+    const PetscInt ct = ctypes[t];
+    PetscInt       ctS, ctE, ht;
 
-    PetscCall(DMPlexGetCellType(dm, c, &cct));
-    if ((PetscInt)cct < 0) break;
-    switch (cct) {
-    case DM_POLYTOPE_POINT:
-    case DM_POLYTOPE_SEGMENT:
-    case DM_POLYTOPE_TRIANGLE:
-    case DM_POLYTOPE_QUADRILATERAL:
-    case DM_POLYTOPE_TETRAHEDRON:
-    case DM_POLYTOPE_HEXAHEDRON:
-      ct = cct;
-      break;
-    default:
+    if (ct == DM_POLYTOPE_UNKNOWN) {
+      // If any cells are not typed, just use all cells
+      PetscCall(DMPlexGetHeightStratum(dm, PetscMax(height, 0), cStart, cEnd));
       break;
     }
-    if (ct != DM_POLYTOPE_UNKNOWN) break;
+    if (ct == DM_POLYTOPE_FV_GHOST || ct == DM_POLYTOPE_POINT_PRISM_TENSOR || ct == DM_POLYTOPE_SEG_PRISM_TENSOR || ct == DM_POLYTOPE_TRI_PRISM_TENSOR || ct == DM_POLYTOPE_QUAD_PRISM_TENSOR) continue;
+    PetscCall(DMLabelGetStratumBounds(ctLabel, ct, &ctS, &ctE));
+    if (ctS >= ctE) continue;
+    // Check that a point has the right height
+    PetscCall(DMPlexGetPointHeight(dm, ctS, &ht));
+    if (ht != height) continue;
+    cS = PetscMin(cS, ctS);
+    cE = PetscMax(cE, ctE);
   }
-  if (ct != DM_POLYTOPE_UNKNOWN) {
-    DMLabel ctLabel;
-
-    PetscCall(DMPlexGetCellTypeLabel(dm, &ctLabel));
-    PetscCall(DMLabelGetStratumBounds(ctLabel, ct, &cS, &cE));
-    // Reset label for fast lookup
-    PetscCall(DMLabelMakeAllInvalid_Internal(ctLabel));
-  }
+  PetscCall(ISDestroy(&valueIS));
+  // Reset label for fast lookup
+  PetscCall(DMLabelMakeAllInvalid_Internal(ctLabel));
   if (cStart) *cStart = cS;
   if (cEnd) *cEnd = cE;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2114,9 +2114,9 @@ PetscErrorCode DMPlexLabelsView(DM dm, PetscViewer viewer)
   Level: advanced
 
   Notes:
-  This function is a wrapper around `PetscSectionView()`; in addition to the raw section, it saves information that associates the section points to the topology (dm) points. When the topology (dm) and the section are later loaded with `DMPlexTopologyLoad()` and `DMPlexSectionLoad()`, respectively, this information is used to match section points with topology points.
+  This function is a wrapper around `PetscSectionView()`; in addition to the raw section, it saves information that associates the section points to the topology (`dm`) points. When the topology (`dm`) and the section are later loaded with `DMPlexTopologyLoad()` and `DMPlexSectionLoad()`, respectively, this information is used to match section points with topology points.
 
-  In general dm and sectiondm are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
+  In general `dm` and `sectiondm` are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMView()`, `DMPlexTopologyView()`, `DMPlexCoordinatesView()`, `DMPlexLabelsView()`, `DMPlexGlobalVectorView()`, `DMPlexLocalVectorView()`, `PetscSectionView()`, `DMPlexSectionLoad()`, `PetscViewer`
 @*/
@@ -2155,7 +2155,7 @@ PetscErrorCode DMPlexSectionView(DM dm, PetscViewer viewer, DM sectiondm)
   Level: advanced
 
   Notes:
-  In general dm and sectiondm are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
+  In general `dm` and `sectiondm` are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
 
   Calling sequence:
 .vb
@@ -2674,7 +2674,7 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexInsertBoundaryValues_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMCreateNeumannOverlap_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMInterpolateSolution_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexInsertTimeDerviativeBoundaryValues_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexInsertTimeDerivativeBoundaryValues_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexGetOverlap_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexDistributeGetDefault_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexDistributeSetDefault_C", NULL));
@@ -9686,7 +9686,7 @@ PetscErrorCode DMPlexComputeOrthogonalQuality(DM dm, PetscFV fv, PetscReal atol,
     if (vwr) PetscCall(DMLabelView(*OrthQualLabel, vwr));
   }
   PetscCall(PetscFree5(idx, oqVals, ci, fi, Ai));
-  PetscCall(PetscViewerDestroy(&vwr));
+  PetscCall(PetscOptionsRestoreViewer(&vwr));
   PetscCall(VecViewFromOptions(*OrthQual, NULL, "-dm_plex_orthogonal_quality_vec_view"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

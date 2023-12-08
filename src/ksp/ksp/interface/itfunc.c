@@ -588,7 +588,7 @@ PetscErrorCode KSPConvergedReasonViewFromOptions(KSP ksp)
     PetscCall(PetscViewerPushFormat(viewer, format));
     PetscCall(KSPConvergedReasonView(ksp, viewer));
     PetscCall(PetscViewerPopFormat(viewer));
-    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(PetscOptionsRestoreViewer(&viewer));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1024,6 +1024,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
 . -ksp_converged_reason                      - print reason for converged or diverged, also prints number of iterations
 . -ksp_view_final_residual                   - print 2-norm of true linear system residual at the end of the solution process
 . -ksp_error_if_not_converged                - stop the program as soon as an error is detected in a `KSPSolve()`
+. -ksp_view_pre                              - print the ksp data structure before the system solution
 - -ksp_view                                  - print the ksp data structure at the end of the system solution
 
   Level: beginner
@@ -1084,7 +1085,7 @@ PetscErrorCode KSPSolve(KSP ksp, Vec b, Vec x)
 }
 
 /*@
-  KSPSolveTranspose - Solves a linear system with the transposed matrix.
+  KSPSolveTranspose - Solves a linear system with the transpose of the matrix, $ A^T x = b$.
 
   Collective
 
@@ -1370,20 +1371,20 @@ PetscErrorCode KSPResetViewers(KSP ksp)
   PetscFunctionBegin;
   if (ksp) PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (!ksp) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCall(PetscViewerDestroy(&ksp->viewer));
-  PetscCall(PetscViewerDestroy(&ksp->viewerPre));
-  PetscCall(PetscViewerDestroy(&ksp->viewerRate));
-  PetscCall(PetscViewerDestroy(&ksp->viewerMat));
-  PetscCall(PetscViewerDestroy(&ksp->viewerPMat));
-  PetscCall(PetscViewerDestroy(&ksp->viewerRhs));
-  PetscCall(PetscViewerDestroy(&ksp->viewerSol));
-  PetscCall(PetscViewerDestroy(&ksp->viewerMatExp));
-  PetscCall(PetscViewerDestroy(&ksp->viewerEV));
-  PetscCall(PetscViewerDestroy(&ksp->viewerSV));
-  PetscCall(PetscViewerDestroy(&ksp->viewerEVExp));
-  PetscCall(PetscViewerDestroy(&ksp->viewerFinalRes));
-  PetscCall(PetscViewerDestroy(&ksp->viewerPOpExp));
-  PetscCall(PetscViewerDestroy(&ksp->viewerDScale));
+  PetscCall(PetscOptionsRestoreViewer(&ksp->viewer));
+  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerPre));
+  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerRate));
+  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerMat));
+  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerPMat));
+  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerRhs));
+  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerSol));
+  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerMatExp));
+  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerEV));
+  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerSV));
+  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerEVExp));
+  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerFinalRes));
+  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerPOpExp));
+  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerDScale));
   ksp->view         = PETSC_FALSE;
   ksp->viewPre      = PETSC_FALSE;
   ksp->viewMat      = PETSC_FALSE;

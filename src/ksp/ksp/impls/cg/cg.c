@@ -629,7 +629,7 @@ PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP ksp, Vec t, Vec v, Vec *V)
 }
 
 /*MC
-     KSPCG - The Preconditioned Conjugate Gradient (PCG) iterative method
+   KSPCG - The Preconditioned Conjugate Gradient (PCG) iterative method
 
    Options Database Keys:
 +   -ksp_cg_type Hermitian - (for complex matrices only) indicates the matrix is Hermitian, see `KSPCGSetType()`
@@ -639,22 +639,24 @@ PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP ksp, Vec t, Vec v, Vec *V)
    Level: beginner
 
    Notes:
-    The PCG method requires both the matrix and preconditioner to be symmetric positive (or negative) (semi) definite.
+   The PCG method requires both the matrix and preconditioner to be symmetric positive (or negative) (semi) definite.
 
    Only left preconditioning is supported; there are several ways to motivate preconditioned CG, but they all produce the same algorithm.
    One can interpret preconditioning A with B to mean any of the following\:
-.n  (1) Solve a left-preconditioned system BAx = Bb, using inv(B) to define an inner product in the algorithm.
-.n  (2) Solve a right-preconditioned system ABy = b, x = By, using B to define an inner product in the algorithm.
-.n  (3) Solve a symmetrically-preconditioned system, E^TAEy = E^Tb, x = Ey, where B = EE^T.
-.n  (4) Solve Ax=b with CG, but use the inner product defined by B to define the method [2].
-.n  In all cases, the resulting algorithm only requires application of B to vectors.
+.vb
+   (1) Solve a left-preconditioned system BAx = Bb, using inv(B) to define an inner product in the algorithm.
+   (2) Solve a right-preconditioned system ABy = b, x = By, using B to define an inner product in the algorithm.
+   (3) Solve a symmetrically-preconditioned system, E^TAEy = E^Tb, x = Ey, where B = EE^T.
+   (4) Solve Ax=b with CG, but use the inner product defined by B to define the method [2].
+   In all cases, the resulting algorithm only requires application of B to vectors.
+.ve
 
    For complex numbers there are two different CG methods, one for Hermitian symmetric matrices and one for non-Hermitian symmetric matrices. Use
    `KSPCGSetType()` to indicate which type you are using.
 
    One can use `KSPSetComputeEigenvalues()` and `KSPComputeEigenvalues()` to compute the eigenvalues of the (preconditioned) operator
 
-   Developer Notes:
+   Developer Note:
     KSPSolve_CG() should actually query the matrix to determine if it is Hermitian symmetric or not and NOT require the user to
    indicate it to the `KSP` object.
 

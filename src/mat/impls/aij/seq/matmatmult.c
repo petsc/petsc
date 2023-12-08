@@ -71,6 +71,8 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJWithArrays_private(MPI_Comm comm, PetscI
   aij->free_a       = PETSC_FALSE;
   aij->free_ij      = PETSC_FALSE;
   PetscCall(MatCheckCompressedRow(mat, aij->nonzerorowcnt, &aij->compressedrow, aij->i, m, 0.6));
+  // Always build the diag info when i, j are set
+  PetscCall(MatMarkDiagonal_SeqAIJ(mat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

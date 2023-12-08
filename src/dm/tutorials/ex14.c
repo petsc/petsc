@@ -57,7 +57,7 @@ PetscErrorCode FillLocalSubdomain(DM da, Vec gvec)
 int main(int argc, char **argv)
 {
   DM            da, *subda;
-  PetscInt      i, dim = 3;
+  PetscInt      i, dim = 3, dof = 3;
   PetscInt      M = 25, N = 25, P = 25;
   PetscMPIInt   size, rank;
   Vec           v;
@@ -71,14 +71,15 @@ int main(int argc, char **argv)
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-dim", &dim, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-dof", &dof, NULL));
 
   /* Create distributed array and get vectors */
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   if (dim == 2) {
-    PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, M, N, PETSC_DECIDE, PETSC_DECIDE, 3, 1, NULL, NULL, &da));
+    PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, M, N, PETSC_DECIDE, PETSC_DECIDE, dof, 1, NULL, NULL, &da));
   } else if (dim == 3) {
-    PetscCall(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, M, N, P, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 3, 1, NULL, NULL, NULL, &da));
+    PetscCall(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, M, N, P, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, 1, NULL, NULL, NULL, &da));
   }
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
@@ -87,7 +88,8 @@ int main(int argc, char **argv)
   PetscCall(DMCreateDomainDecomposition(da, NULL, NULL, &iis, &ois, &subda));
   PetscCall(DMCreateDomainDecompositionScatters(da, 1, subda, &iscat, &oscat, &gscat));
 
-  {
+  /* TODO: broken for dim=2 */
+  if (dim == 3) {
     DMDALocalInfo subinfo;
     MatStencil    lower, upper;
     IS            patchis;

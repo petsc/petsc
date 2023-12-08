@@ -25,6 +25,8 @@ Changes: Development
 .. rubric:: PetscViewer:
 
 - Change ``PetscViewerRestoreSubViewer()`` to no longer need a call to ``PetscViewerFlush()`` after it
+- Introduce ``PetscOptionsRestoreViewer()`` that must be called after ``PetscOptionsGetViewer()`` and ``PetscOptionsGetViewers()``
+  to ensure thread safety
 
 .. rubric:: PetscDraw:
 
@@ -48,6 +50,8 @@ Changes: Development
 
 .. rubric:: Mat:
 
+- Reset ``MATLMVM`` history vecs if size is changed
+
 .. rubric:: MatCoarsen:
 
 - Add ``MatCoarsenSetMaximumIterations()`` with corresponding option ``-mat_coarsen_max_it <4>``. The number of iteration of the coarsening method. Used for the HEM coarsener
@@ -57,11 +61,15 @@ Changes: Development
 .. rubric:: PC:
 
 - Add ``PCGAMGSetLowMemoryFilter()`` with corresponding option ``-pc_gamg_low_memory_threshold_filter``. Use the system ``MatFilter`` graph/matrix filter, without a temporary copy of the graph, otherwise use method that can be faster
-- ``PCMAT`` use ``MatSolve()`` if implemented by the matrix type 
+- ``PCMAT`` use ``MatSolve()`` if implemented by the matrix type
+- Add ``PCLMVMSetUpdateVec()`` for the automatic update of the LMVM preconditioner inside a SNES solve
 
 .. rubric:: KSP:
 
 .. rubric:: SNES:
+
+- Add support for Quasi-Newton models in ``SNESNEWTONTR`` via ``SNESNewtonTRSetQNType``
+- Add support for trust region norm customization in ``SNESNEWTONTR`` via ``SNESNewtonTRSetNormType``
 
 .. rubric:: SNESLineSearch:
 
@@ -78,6 +86,7 @@ Changes: Development
 
 .. rubric:: DMPlex:
 
+- Drop support for MED, i.e. remove ``DMPlexCreateMedFromFile()`` and ``--with-med``
 - Replace ``DMProjectCoordinates()`` with ``DMSetCoordinateDisc()``
 - Add argument to ``DMPlexCreateCoordinateSpace()``
 

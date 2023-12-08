@@ -355,7 +355,7 @@ static PetscErrorCode PCBJacobiGetLocalBlocks_BJacobi(PC pc, PetscInt *blocks, c
 
   Level: advanced
 
-.seealso: `PCBJACOBI`, `PCASM`, `PCASMGetSubKSP()`
+.seealso: [](ch_ksp), `PCBJACOBI`, `PCASM`, `PCASMGetSubKSP()`
 @*/
 PetscErrorCode PCBJacobiGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, KSP *ksp[])
 {
@@ -385,7 +385,7 @@ PetscErrorCode PCBJacobiGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_loca
 
   Level: intermediate
 
-.seealso: `PCBJACOBI`, `PCSetUseAmat()`, `PCBJacobiSetLocalBlocks()`
+.seealso: [](ch_ksp), `PCBJACOBI`, `PCSetUseAmat()`, `PCBJacobiSetLocalBlocks()`
 @*/
 PetscErrorCode PCBJacobiSetTotalBlocks(PC pc, PetscInt blocks, const PetscInt lens[])
 {
@@ -411,7 +411,7 @@ PetscErrorCode PCBJacobiSetTotalBlocks(PC pc, PetscInt blocks, const PetscInt le
 
   Level: intermediate
 
-.seealso: `PCBJACOBI`, `PCSetUseAmat()`, `PCBJacobiGetLocalBlocks()`
+.seealso: [](ch_ksp), `PCBJACOBI`, `PCSetUseAmat()`, `PCBJacobiGetLocalBlocks()`
 @*/
 PetscErrorCode PCBJacobiGetTotalBlocks(PC pc, PetscInt *blocks, const PetscInt *lens[])
 {
@@ -441,7 +441,7 @@ PetscErrorCode PCBJacobiGetTotalBlocks(PC pc, PetscInt *blocks, const PetscInt *
 
   Level: intermediate
 
-.seealso: `PCBJACOBI`, `PCSetUseAmat()`, `PCBJacobiSetTotalBlocks()`
+.seealso: [](ch_ksp), `PCBJACOBI`, `PCSetUseAmat()`, `PCBJacobiSetTotalBlocks()`
 @*/
 PetscErrorCode PCBJacobiSetLocalBlocks(PC pc, PetscInt blocks, const PetscInt lens[])
 {
@@ -468,7 +468,7 @@ PetscErrorCode PCBJacobiSetLocalBlocks(PC pc, PetscInt blocks, const PetscInt le
 
   Level: intermediate
 
-.seealso: `PCBJACOBI`, `PCSetUseAmat()`, `PCBJacobiGetTotalBlocks()`
+.seealso: [](ch_ksp), `PCBJACOBI`, `PCSetUseAmat()`, `PCBJacobiGetTotalBlocks()`
 @*/
 PetscErrorCode PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt *lens[])
 {
@@ -507,7 +507,7 @@ PetscErrorCode PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt *
 
    Level: beginner
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCType`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCType`,
           `PCASM`, `PCSetUseAmat()`, `PCGetUseAmat()`, `PCBJacobiGetSubKSP()`, `PCBJacobiSetTotalBlocks()`,
           `PCBJacobiSetLocalBlocks()`, `PCSetModifySubMatrices()`, `PCJACOBI`, `PCVPBJACOBI`, `PCPBJACOBI`
 M*/

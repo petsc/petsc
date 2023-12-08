@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = '4.1.00'
+    self.gitcommit        = '4.2.00'
     self.minversion       = '3.7.01'
     self.versionname      = 'KOKKOS_VERSION'
     self.download         = ['git://https://github.com/kokkos/kokkos.git','https://github.com/kokkos/kokkos/archive/'+self.gitcommit+'.tar.gz']
@@ -78,6 +78,8 @@ class Configure(config.package.CMakePackage):
   def formCMakeConfigureArgs(self):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DUSE_XSDK_DEFAULTS=YES')
+    # Whether code deprecated in major release 4 is available
+    args.append('-DKokkos_ENABLE_DEPRECATED_CODE_4=OFF')
 
     # always use C/C++'s alignment (i.e., sizeof(RealType)) for complex,
     # instead of Kokkos's default "alignas(2 * sizeof(RealType))"
@@ -207,10 +209,12 @@ class Configure(config.package.CMakePackage):
     import os
     if self.cuda.found:
       self.buildLanguages = ['CUDA']
+      oldFlags = self.setCompilers.CUDAPPFLAGS
       if self.cuda.cudaclang:
         self.addMakeMacro('KOKKOS_USE_CUDACLANG_COMPILER',1) # use the clang compiler to compile PETSc Kokkos code
       else:
         self.addMakeMacro('KOKKOS_USE_CUDA_COMPILER',1) # use the CUDA compiler to compile PETSc Kokkos code
+        self.setCompilers.CUDAPPFLAGS += " -ccbin " + self.getCompiler('Cxx')
     elif self.hip.found:
       self.buildLanguages= ['HIP']
       self.addMakeMacro('KOKKOS_USE_HIP_COMPILER',1)  # use the HIP compiler to compile PETSc Kokkos code
@@ -232,13 +236,13 @@ class Configure(config.package.CMakePackage):
          #error "Kokkos is not configured with CUDA lambda"
          #endif
       '''
-      oldFlags = self.compilers.CUDAPPFLAGS
+
       self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.include)
       if self.checkPreprocess(cuda_lambda_test):
         self.logPrint('Kokkos is configured with CUDA lambda\n')
       else:
         raise RuntimeError('Kokkos is not configured with -DKokkos_ENABLE_CUDA_LAMBDA. PETSc usage requires Kokkos to be configured with that')
-      self.compilers.CUDAPPFLAGS = oldFlags
+      self.setCompilers.CUDAPPFLAGS = oldFlags
       self.popLanguage()
 
     if self.argDB['with-kokkos-init-warnings']: # usually one wants to enable warnings

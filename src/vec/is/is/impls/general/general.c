@@ -553,6 +553,7 @@ PetscErrorCode ISGeneralSetIndices(IS is, PetscInt n, const PetscInt idx[], Pets
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
+  PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "length < 0");
   if (n) PetscAssertPointer(idx, 3);
   PetscCall(ISClearInfoCache(is, PETSC_FALSE));
   PetscUseMethod(is, "ISGeneralSetIndices_C", (IS, PetscInt, const PetscInt[], PetscCopyMode), (is, n, idx, mode));
@@ -565,9 +566,6 @@ static PetscErrorCode ISGeneralSetIndices_General(IS is, PetscInt n, const Petsc
   IS_General *sub = (IS_General *)is->data;
 
   PetscFunctionBegin;
-  PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "length < 0");
-  if (n) PetscAssertPointer(idx, 3);
-
   PetscCall(PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)is), n, PETSC_DECIDE, is->map->bs, &map));
   PetscCall(PetscLayoutDestroy(&is->map));
   is->map = map;
@@ -623,6 +621,7 @@ PetscErrorCode ISGeneralSetIndicesFromMask(IS is, PetscInt rstart, PetscInt rend
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
+  PetscCheck(rstart <= rend, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "rstart %" PetscInt_FMT " must be less than or equal to rend %" PetscInt_FMT, rstart, rend);
   if (rend - rstart) PetscAssertPointer(mask, 4);
   PetscCall(ISClearInfoCache(is, PETSC_FALSE));
   PetscUseMethod(is, "ISGeneralSetIndicesFromMask_C", (IS, PetscInt, PetscInt, const PetscBool[]), (is, rstart, rend, mask));
@@ -673,7 +672,7 @@ static PetscErrorCode ISGeneralFilter_General(IS is, PetscInt start, PetscInt en
   Input Parameters:
 + is    - the index set
 . start - the lowest index kept
-- end   - one more than the highest index kept
+- end   - one more than the highest index kept, `start` $\le$ `end`
 
   Level: beginner
 
@@ -683,6 +682,7 @@ PetscErrorCode ISGeneralFilter(IS is, PetscInt start, PetscInt end)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
+  PetscCheck(start <= end, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "start %" PetscInt_FMT " must be less than or equal to end %" PetscInt_FMT, start, end);
   PetscCall(ISClearInfoCache(is, PETSC_FALSE));
   PetscUseMethod(is, "ISGeneralFilter_C", (IS, PetscInt, PetscInt), (is, start, end));
   PetscFunctionReturn(PETSC_SUCCESS);

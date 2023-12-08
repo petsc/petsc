@@ -33,6 +33,8 @@ def main(stage,outdir):
                  '--with-regexp=0',
                  '--with-mkl_sparse_optimize=0',
                  '--with-mkl_sparse=0',
+                 '--with-debugging=0',
+                 'COPTFLAS=-O0',
                  '--with-petsc4py',
                  'PETSC_ARCH=' + petsc_arch,
                 ]

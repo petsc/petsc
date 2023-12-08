@@ -18,7 +18,7 @@ static PetscErrorCode DMAdaptorTransferSolution_Exact_Private(DMAdaptor adaptor,
 }
 
 /*@
-  DMAdaptorCreate - Create a `DMAdaptor` object. Its purpose is to construct a adaptation `DMLabel` or metric Vec that can be used to modify the `DM`.
+  DMAdaptorCreate - Create a `DMAdaptor` object. Its purpose is to construct a adaptation `DMLabel` or metric `Vec` that can be used to modify the `DM`.
 
   Collective
 
@@ -30,7 +30,7 @@ static PetscErrorCode DMAdaptorTransferSolution_Exact_Private(DMAdaptor adaptor,
 
   Level: beginner
 
-.seealso: `DMAdaptor`, `DMAdaptorDestroy()`, `DMAdaptorAdapt()`
+.seealso: `DM`, `DMAdaptor`, `DMAdaptorDestroy()`, `DMAdaptorAdapt()`, `PetscConvEst`, `PetscConvEstCreate()`
 @*/
 PetscErrorCode DMAdaptorCreate(MPI_Comm comm, DMAdaptor *adaptor)
 {
@@ -70,7 +70,7 @@ PetscErrorCode DMAdaptorCreate(MPI_Comm comm, DMAdaptor *adaptor)
 
   Level: beginner
 
-.seealso: `DMAdaptor`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: `DM`, `DMAdaptor`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
 {
@@ -89,7 +89,7 @@ PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
 }
 
 /*@
-  DMAdaptorSetFromOptions - Sets properties of a `DMAdaptor` object from the options database
+  DMAdaptorSetFromOptions - Sets properties of a `DMAdaptor` object from values in the options database
 
   Collective
 
@@ -104,7 +104,7 @@ PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
 
   Level: beginner
 
-.seealso: `DMAdaptor`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: `DM`, `DMAdaptor`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorSetFromOptions(DMAdaptor adaptor)
 {
@@ -131,7 +131,7 @@ PetscErrorCode DMAdaptorSetFromOptions(DMAdaptor adaptor)
 
   Level: beginner
 
-.seealso: `DMAdaptor`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: `DM`, `DMAdaptor`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorView(DMAdaptor adaptor, PetscViewer viewer)
 {
@@ -157,7 +157,7 @@ PetscErrorCode DMAdaptorView(DMAdaptor adaptor, PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: `DMAdaptor`, `DMAdaptorSetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: `DM`, `DMAdaptor`, `DMAdaptorSetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorGetSolver(DMAdaptor adaptor, SNES *snes)
 {
@@ -175,12 +175,9 @@ PetscErrorCode DMAdaptorGetSolver(DMAdaptor adaptor, SNES *snes)
 
   Input Parameters:
 + adaptor - The `DMAdaptor` object
-- snes    - The solver
+- snes    - The solver, this MUST have an attached `DM`/`PetscDS`, so that the exact solution can be computed
 
   Level: intermediate
-
-  Note:
-  The solver MUST have an attached `DM`/`PetscDS`, so that we know the exact solution
 
 .seealso: `DMAdaptor`, `DMAdaptorGetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
@@ -240,7 +237,7 @@ PetscErrorCode DMAdaptorSetSequenceLength(DMAdaptor adaptor, PetscInt num)
 }
 
 /*@
-  DMAdaptorSetUp - After the solver is specified, we create structures for controlling adaptivity
+  DMAdaptorSetUp - After the solver is specified, creates data structures for controlling adaptivity
 
   Collective
 
@@ -249,7 +246,7 @@ PetscErrorCode DMAdaptorSetSequenceLength(DMAdaptor adaptor, PetscInt num)
 
   Level: beginner
 
-.seealso: `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: `DMAdaptor`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorSetUp(DMAdaptor adaptor)
 {
@@ -413,7 +410,7 @@ static PetscErrorCode DMAdaptorPostAdapt(DMAdaptor adaptor)
 }
 
 /*
-  DMAdaptorSimpleErrorIndicator - Use the integrated gradient as an error indicator
+  DMAdaptorSimpleErrorIndicator - Use the integrated gradient as an error indicator in the `DMAdaptor`
 
   Input Parameters:
 + adaptor  - The `DMAdaptor` object

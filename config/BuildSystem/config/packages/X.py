@@ -16,7 +16,7 @@ class Configure(config.package.Package):
 
   def versionToStandardForm(self,ver):
     '''Completes the arithmetic needed to compute the version number from the numerical strings'''
-    return '.'.join([str(eval(i)) for i in ver.split('.')])
+    return '.'.join([str(int(eval(i))) for i in ver.split('.')])
 
   def getSearchDirectories(self):
     '''Generate list of possible locations of X11'''

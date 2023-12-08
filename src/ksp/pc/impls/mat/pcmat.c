@@ -145,7 +145,7 @@ static PetscErrorCode PCDestroy_Mat(PC pc)
   If you have a matrix type that implements an exact inverse that isn't a factorization,
   you can use `PCMatSetApplyOperation(pc, MATOP_SOLVE)`.
 
-.seealso: `PCMAT`, `PCMatGetApplyOperation()`, `PCApply()`, `MatOperation`
+.seealso: [](ch_ksp), `PCMAT`, `PCMatGetApplyOperation()`, `PCApply()`, `MatOperation`
 @*/
 PetscErrorCode PCMatSetApplyOperation(PC pc, MatOperation matop)
 {
@@ -168,7 +168,7 @@ PetscErrorCode PCMatSetApplyOperation(PC pc, MatOperation matop)
 
   Level: intermediate
 
-.seealso: `PCMAT`, `PCMatSetApplyOperation()`, `PCApply()`, `MatOperation`
+.seealso: [](ch_ksp), `PCMAT`, `PCMatSetApplyOperation()`, `PCApply()`, `MatOperation`
 @*/
 PetscErrorCode PCMatGetApplyOperation(PC pc, MatOperation *matop)
 {
@@ -250,7 +250,7 @@ static PetscErrorCode PCView_Mat(PC pc, PetscViewer viewer)
 
    Level: intermediate
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCSHELL`, `MatOperation`, `PCMatSetApplyOperation()`, `PCMatGetApplyOperation()`
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCSHELL`, `MatOperation`, `PCMatSetApplyOperation()`, `PCMatGetApplyOperation()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Mat(PC pc)

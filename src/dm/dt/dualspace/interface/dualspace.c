@@ -1946,9 +1946,7 @@ PetscErrorCode PetscDualSpaceTransformGradient(PetscDualSpace dsp, PetscDualSpac
   PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
   PetscAssertPointer(fegeom, 4);
   PetscAssertPointer(vals, 7);
-#ifdef PETSC_USE_DEBUG
-  PetscCheck(dE > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid embedding dimension %" PetscInt_FMT, dE);
-#endif
+  PetscAssert(dE > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid embedding dimension %" PetscInt_FMT, dE);
   /* Transform gradient */
   if (dim == dE) {
     for (v = 0; v < Nv; ++v) {
@@ -2081,9 +2079,7 @@ PetscErrorCode PetscDualSpaceTransformHessian(PetscDualSpace dsp, PetscDualSpace
   PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
   PetscAssertPointer(fegeom, 4);
   PetscAssertPointer(vals, 7);
-#ifdef PETSC_USE_DEBUG
-  PetscCheck(dE > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid embedding dimension %" PetscInt_FMT, dE);
-#endif
+  PetscAssert(dE > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid embedding dimension %" PetscInt_FMT, dE);
   /* Transform Hessian: J^{-T}_{ik} J^{-T}_{jl} H(f)_{kl} = J^{-T}_{ik} H(f)_{kl} J^{-1}_{lj} */
   if (dim == dE) {
     for (v = 0; v < Nv; ++v) {

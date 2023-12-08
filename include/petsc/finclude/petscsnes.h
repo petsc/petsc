@@ -28,6 +28,7 @@
 #define SNESNGMRESRestartType PetscEnum
 #define SNESNGMRESSelectType PetscEnum
 #define SNESNewtonTRFallbackType PetscEnum
+#define SNESNewtonTRQNType PetscEnum
 
 !
 !  SNESType

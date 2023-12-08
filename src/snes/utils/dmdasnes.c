@@ -220,7 +220,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES snes, Vec X, Mat A, Ma
 
   Level: beginner
 
-.seealso: `DMDA`, `DMDASNESSetJacobianLocal()`, `DMSNESSetFunction()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
+.seealso: [](ch_snes), `DMDA`, `DMDASNESSetJacobianLocal()`, `DMSNESSetFunction()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
 PetscErrorCode DMDASNESSetFunctionLocal(DM dm, InsertMode imode, PetscErrorCode (*func)(DMDALocalInfo *info, void *x, void *f, void *ctx), void *ctx)
 {
@@ -262,7 +262,7 @@ PetscErrorCode DMDASNESSetFunctionLocal(DM dm, InsertMode imode, PetscErrorCode 
 
   Level: beginner
 
-.seealso: `DMDA`, `DMDASNESSetFunctionLocal()`, `DMDASNESSetJacobianLocalVec()`, `DMSNESSetFunction()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
+.seealso: [](ch_snes), `DMDA`, `DMDASNESSetFunctionLocal()`, `DMDASNESSetJacobianLocalVec()`, `DMSNESSetFunction()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
 PetscErrorCode DMDASNESSetFunctionLocalVec(DM dm, InsertMode imode, PetscErrorCode (*func)(DMDALocalInfo *info, Vec x, Vec f, void *ctx), void *ctx)
 {
@@ -304,7 +304,7 @@ PetscErrorCode DMDASNESSetFunctionLocalVec(DM dm, InsertMode imode, PetscErrorCo
 
   Level: beginner
 
-.seealso: `DMDA`, `DMDASNESSetFunctionLocal()`, `DMSNESSetJacobian()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
+.seealso: [](ch_snes), `DMDA`, `DMDASNESSetFunctionLocal()`, `DMSNESSetJacobian()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
 PetscErrorCode DMDASNESSetJacobianLocal(DM dm, PetscErrorCode (*func)(DMDALocalInfo *info, void *x, Mat J, Mat M, void *ctx), void *ctx)
 {
@@ -342,7 +342,7 @@ PetscErrorCode DMDASNESSetJacobianLocal(DM dm, PetscErrorCode (*func)(DMDALocalI
 
   Level: beginner
 
-.seealso: `DMDA`, `DMDASNESSetJacobianLocal()`, `DMDASNESSetFunctionLocalVec()`, `DMSNESSetJacobian()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
+.seealso: [](ch_snes), `DMDA`, `DMDASNESSetJacobianLocal()`, `DMDASNESSetFunctionLocalVec()`, `DMSNESSetJacobian()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
 PetscErrorCode DMDASNESSetJacobianLocalVec(DM dm, PetscErrorCode (*func)(DMDALocalInfo *info, Vec x, Mat J, Mat M, void *), void *ctx)
 {
@@ -369,19 +369,12 @@ PetscErrorCode DMDASNESSetJacobianLocalVec(DM dm, PetscErrorCode (*func)(DMDALoc
 
   Input Parameters:
 + dm   - `DM` to associate callback with
-. func - local objective evaluation
+. func - local objective evaluation, see `DMDASNESSetObjectiveLocal` for the calling sequence
 - ctx  - optional context for local residual evaluation
-
-  Calling sequence of `func`:
-$  PetscErrorCode func(DMDALocalInfo *info, void *x, PetscReal obj, void *ctx);
-+  info - defines the subdomain to evaluate the residual on
-.  x - dimensional pointer to state at which to evaluate residual
-.  obj - eventual objective value
-- ctx - optional context passed above
 
   Level: beginner
 
-.seealso: `DMDA`, `DMSNESSetFunction()`, `DMDASNESSetJacobianLocal()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
+.seealso: [](ch_snes), `DMDA`, `DMSNESSetFunction()`, `DMDASNESSetJacobianLocal()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDASNESObjective`
 @*/
 PetscErrorCode DMDASNESSetObjectiveLocal(DM dm, DMDASNESObjective func, void *ctx)
 {
@@ -408,19 +401,12 @@ PetscErrorCode DMDASNESSetObjectiveLocal(DM dm, DMDASNESObjective func, void *ct
 
   Input Parameters:
 + dm   - `DM` to associate callback with
-. func - local objective evaluation
+. func - local objective evaluation, see `DMDASNESSetObjectiveLocalVec` for the calling sequence
 - ctx  - optional context for local residual evaluation
-
-  Calling sequence of `func`:
-$  PetscErrorCode func(DMDALocalInfo *info, Vec x, PetscReal *ob, void *ctx);
-+  info - defines the subdomain to evaluate the residual on
-.  x - state vector at which to evaluate residual
-.  obj - eventual objective value
-- ctx - optional context passed above
 
   Level: beginner
 
-.seealso: `DMDA`, `DMDASNESSetObjectiveLocal()`, `DMSNESSetFunction()`, `DMDASNESSetJacobianLocalVec()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
+.seealso: [](ch_snes), `DMDA`, `DMDASNESSetObjectiveLocal()`, `DMSNESSetFunction()`, `DMDASNESSetJacobianLocalVec()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDASNESObjectiveVec`
 @*/
 PetscErrorCode DMDASNESSetObjectiveLocalVec(DM dm, DMDASNESObjectiveVec func, void *ctx)
 {
@@ -539,10 +525,10 @@ static PetscErrorCode SNESComputePicardJacobian_DMDA(SNES snes, Vec X, Mat A, Ma
   Level: beginner
 
   Note:
-  The user must use `SNESSetFunction`(snes,`NULL`,`SNESPicardComputeFunction`,&user));
+  The user must use `SNESSetFunction`(`snes`,`NULL`,`SNESPicardComputeFunction`,&user));
   in their code before calling this routine.
 
-.seealso: `DMDA`, `DMSNESSetFunction()`, `DMDASNESSetJacobian()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
+.seealso: [](ch_snes), `SNES`, `DMDA`, `DMSNESSetFunction()`, `DMDASNESSetJacobian()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
 PetscErrorCode DMDASNESSetPicardLocal(DM dm, InsertMode imode, PetscErrorCode (*func)(DMDALocalInfo *info, void *x, void *f, void *ctx), PetscErrorCode (*jac)(DMDALocalInfo *info, void *x, Mat jac, Mat Jp, void *ctx), void *ctx)
 {

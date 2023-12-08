@@ -1,0 +1,72 @@
+[0]Point 0 (0.166667, 0.166667)
+[0]Point 1 (0.166667, 0.666667)
+[0]Point 2 (0.333333, 0.333333)
+[0]Point 3 (0.833333, 0.333333)
+[0]Point 4 (0.666667, 0.166667)
+[0]Point 5 (0.833333, 0.833333)
+[0]Point 6 (0.666667, 0.666667)
+[0]Point 7 (0.333333, 0.833333)
+[0]Point 0 is in Cell 0
+[0]Point 1 is in Cell 1
+[0]Point 2 is in Cell 2
+[0]Point 3 is in Cell 3
+[0]Point 4 is in Cell 4
+[0]Point 5 is in Cell 5
+[0]Point 6 is in Cell 6
+[0]Point 7 is in Cell 7
+Vec Object: 1 MPI process
+  type: seq
+0.166667
+0.166667
+0.166667
+0.666667
+0.333333
+0.333333
+0.833333
+0.333333
+0.666667
+0.166667
+0.833333
+0.833333
+0.666667
+0.666667
+0.333333
+0.833333
+[0]solution
+Vec Object: 1 MPI process
+  type: seq
+1.
+2.
+1.
+2.
+1.
+2.
+1.
+2.
+1.
+2.
+1.
+2.
+1.
+2.
+1.
+2.
+[0]Field values
+Vec Object: 1 MPI process
+  type: seq
+1.
+2.
+1.
+2.
+1.
+2.
+1.
+2.
+1.
+2.
+1.
+2.
+1.
+2.
+1.
+2.

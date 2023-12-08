@@ -343,7 +343,7 @@ int main(int argc, char **argv)
   PetscCall(PetscSFDestroy(&sf));
   if (ctx->viewer) {
     PetscCall(PetscViewerPopFormat(ctx->viewer));
-    PetscCall(PetscViewerDestroy(&ctx->viewer));
+    PetscCall(PetscOptionsRestoreViewer(&ctx->viewer));
   }
   PetscCall(PetscFinalize());
   return 0;

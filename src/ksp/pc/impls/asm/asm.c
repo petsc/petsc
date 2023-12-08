@@ -931,7 +931,7 @@ static PetscErrorCode PCASMSetSubMatType_ASM(PC pc, MatType sub_mat_type)
   If the is_local is provided and `PCASMType` is `PC_ASM_INTERPOLATE` or `PC_ASM_NONE` then an error is generated since there is
   no code to handle that case.
 
-.seealso: `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
+.seealso: [](ch_ksp), `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
           `PCASMCreateSubdomains2D()`, `PCASMGetLocalSubdomains()`, `PCASMType`, `PCASMSetType()`, `PCGASM`
 @*/
 PetscErrorCode PCASMSetLocalSubdomains(PC pc, PetscInt n, IS is[], IS is_local[])
@@ -973,7 +973,7 @@ PetscErrorCode PCASMSetLocalSubdomains(PC pc, PetscInt n, IS is[], IS is_local[]
 
   The `IS` numbering is in the parallel, global numbering of the vector for both is and is_local
 
-.seealso: `PCASM`, `PCASMSetLocalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
+.seealso: [](ch_ksp), `PCASM`, `PCASMSetLocalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
           `PCASMCreateSubdomains2D()`, `PCGASM`
 @*/
 PetscErrorCode PCASMSetTotalSubdomains(PC pc, PetscInt N, IS is[], IS is_local[])
@@ -1020,7 +1020,7 @@ PetscErrorCode PCASMSetTotalSubdomains(PC pc, PetscInt N, IS is[], IS is_local[]
   `PCASMSetOverlap()` merely allows PETSc to extend that overlap further
   if desired.
 
-.seealso: `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetLocalSubdomains()`, `PCASMGetSubKSP()`,
+.seealso: [](ch_ksp), `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetLocalSubdomains()`, `PCASMGetSubKSP()`,
           `PCASMCreateSubdomains2D()`, `PCASMGetLocalSubdomains()`, `MatIncreaseOverlap()`, `PCGASM`
 @*/
 PetscErrorCode PCASMSetOverlap(PC pc, PetscInt ovl)
@@ -1057,7 +1057,7 @@ PetscErrorCode PCASMSetOverlap(PC pc, PetscInt ovl)
   if the is_local arguments are passed to `PCASMSetLocalSubdomains()` then they are used when `PC_ASM_RESTRICT` has been selected
   to limit the local processor interpolation
 
-.seealso: `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMGetSubKSP()`,
+.seealso: [](ch_ksp), `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMGetSubKSP()`,
           `PCASMCreateSubdomains2D()`, `PCASMType`, `PCASMSetLocalType()`, `PCASMGetLocalType()`, `PCGASM`
 @*/
 PetscErrorCode PCASMSetType(PC pc, PCASMType type)
@@ -1092,7 +1092,7 @@ PetscErrorCode PCASMSetType(PC pc, PCASMType type)
 
   Level: intermediate
 
-.seealso: `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMGetSubKSP()`, `PCGASM`,
+.seealso: [](ch_ksp), `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMGetSubKSP()`, `PCGASM`,
           `PCASMCreateSubdomains2D()`, `PCASMType`, `PCASMSetType()`, `PCASMSetLocalType()`, `PCASMGetLocalType()`
 @*/
 PetscErrorCode PCASMGetType(PC pc, PCASMType *type)
@@ -1121,7 +1121,7 @@ PetscErrorCode PCASMGetType(PC pc, PCASMType *type)
 
   Level: intermediate
 
-.seealso: `PCASM`, `PCASMSetType()`, `PCASMGetType()`, `PCASMGetLocalType()`, `PCASMType`, `PCCompositeType`
+.seealso: [](ch_ksp), `PCASM`, `PCASMSetType()`, `PCASMGetType()`, `PCASMGetLocalType()`, `PCASMType`, `PCCompositeType`
 @*/
 PetscErrorCode PCASMSetLocalType(PC pc, PCCompositeType type)
 {
@@ -1152,7 +1152,7 @@ PetscErrorCode PCASMSetLocalType(PC pc, PCCompositeType type)
 
   Level: intermediate
 
-.seealso: `PCASM`, `PCASMSetType()`, `PCASMGetType()`, `PCASMSetLocalType()`, `PCASMCreate()`, `PCASMType`, `PCCompositeType`
+.seealso: [](ch_ksp), `PCASM`, `PCASMSetType()`, `PCASMGetType()`, `PCASMSetLocalType()`, `PCASMCreate()`, `PCASMType`, `PCCompositeType`
 @*/
 PetscErrorCode PCASMGetLocalType(PC pc, PCCompositeType *type)
 {
@@ -1174,7 +1174,7 @@ PetscErrorCode PCASMGetLocalType(PC pc, PCCompositeType *type)
 
   Level: intermediate
 
-.seealso: `PCASM`, `PCASMSetLocalSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMGetSubKSP()`,
+.seealso: [](ch_ksp), `PCASM`, `PCASMSetLocalSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMGetSubKSP()`,
           `PCASMCreateSubdomains2D()`
 @*/
 PetscErrorCode PCASMSetSortIndices(PC pc, PetscBool doSort)
@@ -1211,7 +1211,7 @@ PetscErrorCode PCASMSetSortIndices(PC pc, PetscBool doSort)
   Fortran Notes:
   The output argument 'ksp' must be an array of sufficient length or `PETSC_NULL_KSP`. The latter can be used to learn the necessary length.
 
-.seealso: `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`,
+.seealso: [](ch_ksp), `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`,
           `PCASMCreateSubdomains2D()`,
 @*/
 PetscErrorCode PCASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, KSP *ksp[])
@@ -1254,7 +1254,7 @@ PetscErrorCode PCASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, K
 -   * - Barry Smith, Petter Bjorstad, and William Gropp, Domain Decompositions: Parallel Multilevel Methods for Elliptic Partial Differential Equations,
     Cambridge University Press.
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCASMType`, `PCCompositeType`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCASMType`, `PCCompositeType`,
           `PCBJACOBI`, `PCASMGetSubKSP()`, `PCASMSetLocalSubdomains()`, `PCASMType`, `PCASMGetType()`, `PCASMSetLocalType()`, `PCASMGetLocalType()`
           `PCASMSetTotalSubdomains()`, `PCSetModifySubMatrices()`, `PCASMSetOverlap()`, `PCASMSetType()`, `PCCompositeType`
 M*/
@@ -1334,7 +1334,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
   Fortran Notes:
   You must provide the array outis[] already allocated of length n.
 
-.seealso: `PCASM`, `PCASMSetLocalSubdomains()`, `PCASMDestroySubdomains()`
+.seealso: [](ch_ksp), `PCASM`, `PCASMSetLocalSubdomains()`, `PCASMDestroySubdomains()`
 @*/
 PetscErrorCode PCASMCreateSubdomains(Mat A, PetscInt n, IS *outis[])
 {
@@ -1496,7 +1496,7 @@ PetscErrorCode PCASMCreateSubdomains(Mat A, PetscInt n, IS *outis[])
 
   Level: advanced
 
-.seealso: `PCASM`, `PCASMCreateSubdomains()`, `PCASMSetLocalSubdomains()`
+.seealso: [](ch_ksp), `PCASM`, `PCASMCreateSubdomains()`, `PCASMSetLocalSubdomains()`
 @*/
 PetscErrorCode PCASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
 {
@@ -1546,7 +1546,7 @@ PetscErrorCode PCASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
   Fortran Notes:
   The `IS` must be declared as an array of length long enough to hold `Nsub` entries
 
-.seealso: `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetLocalSubdomains()`, `PCASMGetSubKSP()`,
+.seealso: [](ch_ksp), `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetLocalSubdomains()`, `PCASMGetSubKSP()`,
           `PCASMSetOverlap()`
 @*/
 PetscErrorCode PCASMCreateSubdomains2D(PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt dof, PetscInt overlap, PetscInt *Nsub, IS **is, IS **is_local)
@@ -1624,7 +1624,7 @@ PetscErrorCode PCASMCreateSubdomains2D(PetscInt m, PetscInt n, PetscInt M, Petsc
   Note:
   The `IS` numbering is in the parallel, global numbering of the vector.
 
-.seealso: `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
+.seealso: [](ch_ksp), `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
           `PCASMCreateSubdomains2D()`, `PCASMSetLocalSubdomains()`, `PCASMGetLocalSubmatrices()`
 @*/
 PetscErrorCode PCASMGetLocalSubdomains(PC pc, PetscInt *n, IS *is[], IS *is_local[])
@@ -1665,7 +1665,7 @@ PetscErrorCode PCASMGetLocalSubdomains(PC pc, PetscInt *n, IS *is[], IS *is_loca
 
   Usually one would use `PCSetModifySubMatrices()` to change the submatrices in building the preconditioner.
 
-.seealso: `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
+.seealso: [](ch_ksp), `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
           `PCASMCreateSubdomains2D()`, `PCASMSetLocalSubdomains()`, `PCASMGetLocalSubdomains()`, `PCSetModifySubMatrices()`
 @*/
 PetscErrorCode PCASMGetLocalSubmatrices(PC pc, PetscInt *n, Mat *mat[])
@@ -1708,7 +1708,7 @@ PetscErrorCode PCASMGetLocalSubmatrices(PC pc, PetscInt *n, Mat *mat[])
   `PCASMSetTotalSubdomains()` and `PCASMSetOverlap()` take precedence over `PCASMSetDMSubdomains()`,
   so setting either of the first two effectively turns the latter off.
 
-.seealso: `PCASM`, `PCASMGetDMSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`
+.seealso: [](ch_ksp), `PCASM`, `PCASMGetDMSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`
           `PCASMCreateSubdomains2D()`, `PCASMSetLocalSubdomains()`, `PCASMGetLocalSubdomains()`
 @*/
 PetscErrorCode PCASMSetDMSubdomains(PC pc, PetscBool flg)
@@ -1738,7 +1738,7 @@ PetscErrorCode PCASMSetDMSubdomains(PC pc, PetscBool flg)
 
   Level: intermediate
 
-.seealso: `PCASM`, `PCASMSetDMSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`
+.seealso: [](ch_ksp), `PCASM`, `PCASMSetDMSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`
           `PCASMCreateSubdomains2D()`, `PCASMSetLocalSubdomains()`, `PCASMGetLocalSubdomains()`
 @*/
 PetscErrorCode PCASMGetDMSubdomains(PC pc, PetscBool *flg)
@@ -1768,7 +1768,7 @@ PetscErrorCode PCASMGetDMSubdomains(PC pc, PetscBool *flg)
 
   Level: advanced
 
-.seealso: `PCASM`, `PCASMSetSubMatType()`, `PCSetType()`, `VecSetType()`, `MatType`, `Mat`
+.seealso: [](ch_ksp), `PCASM`, `PCASMSetSubMatType()`, `PCSetType()`, `VecSetType()`, `MatType`, `Mat`
 @*/
 PetscErrorCode PCASMGetSubMatType(PC pc, MatType *sub_mat_type)
 {
@@ -1796,7 +1796,7 @@ PetscErrorCode PCASMGetSubMatType(PC pc, MatType *sub_mat_type)
 
   Level: advanced
 
-.seealso: `PCASM`, `PCASMGetSubMatType()`, `PCSetType()`, `VecSetType()`, `MatType`, `Mat`
+.seealso: [](ch_ksp), `PCASM`, `PCASMGetSubMatType()`, `PCSetType()`, `VecSetType()`, `MatType`, `Mat`
 @*/
 PetscErrorCode PCASMSetSubMatType(PC pc, MatType sub_mat_type)
 {

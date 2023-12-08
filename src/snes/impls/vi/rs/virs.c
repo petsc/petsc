@@ -14,7 +14,7 @@
 
   Level: advanced
 
-.seealso: `SNESVINEWTONRSLS`
+.seealso: [](ch_snes), `SNES`, `SNESVINEWTONRSLS`
 @*/
 PetscErrorCode SNESVIGetInactiveSet(SNES snes, IS *inact)
 {
@@ -181,7 +181,7 @@ static PetscErrorCode DMDestroy_SNESVI(DM_SNESVI *dmsnesvi)
 }
 
 /*@
-  DMSetVI - Marks a DM as associated with a VI problem. This causes the interpolation/restriction operators to
+  DMSetVI - Marks a `DM` as associated with a VI problem. This causes the interpolation/restriction operators to
   be restricted to only those variables NOT associated with active constraints.
 
   Logically Collective
@@ -192,7 +192,7 @@ static PetscErrorCode DMDestroy_SNESVI(DM_SNESVI *dmsnesvi)
 
   Level: intermediate
 
-.seealso: `SNESVINEWTONRSLS`, `SNESVIGetInactiveSet()`
+.seealso: [](ch_snes), `SNES`, `SNESVINEWTONRSLS`, `SNESVIGetInactiveSet()`
 @*/
 PetscErrorCode DMSetVI(DM dm, IS inactive)
 {
@@ -591,10 +591,10 @@ static PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
   Level: advanced
 
   Note:
-  Sometimes the inactive set will result in a non-singular sub-Jacobian problem that needs to be solved, this allows the user,
+  Sometimes the inactive set will result in a singular sub-Jacobian problem that needs to be solved, this allows the user,
   when they know more about their specific problem to provide a function that removes the redundancy that results in the singular linear system
 
-.seealso: `SNESVINEWTONRSLS`, `SNESVIGetInactiveSet()`, `DMSetVI()`
+.seealso: [](ch_snes), `SNES`, `SNESVINEWTONRSLS`, `SNESVIGetInactiveSet()`, `DMSetVI()`
  @*/
 PetscErrorCode SNESVISetRedundancyCheck(SNES snes, PetscErrorCode (*func)(SNES, IS, IS *, void *), void *ctx)
 {
@@ -712,17 +712,17 @@ static PetscErrorCode SNESReset_VINEWTONRSLS(SNES snes)
 
    Level: beginner
 
-   References:
-.  * - T. S. Munson, and S. Benson. Flexible Complementarity Solvers for Large Scale
-     Applications, Optimization Methods and Software, 21 (2006).
-
    Note:
    At each set of this methods the algorithm produces an inactive set of variables that are constrained to their current values
    (because changing these values would result in those variables no longer satisfying the inequality constraints)
    and produces a step direction by solving the linear system arising from the Jacobian with the inactive variables removed. In other
-   words on a reduced space of the solution space. Based on the Newton update it then adjusts the inactive sep for the next iteration.
+   words on a reduced space of the solution space. Based on the Newton update it then adjusts the inactive set for the next iteration.
 
-.seealso: `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESVINEWTONSSLS`, `SNESNEWTONTR`, `SNESLineSearchSetType()`, `SNESLineSearchSetPostCheck()`, `SNESLineSearchSetPreCheck()`, `SNESVIGetInactiveSet()`, `DMSetVI()`, `SNESVISetRedundancyCheck()`
+   References:
+.  * - T. S. Munson, and S. Benson. Flexible Complementarity Solvers for Large Scale
+     Applications, Optimization Methods and Software, 21 (2006).
+
+.seealso: [](ch_snes), `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESVINEWTONSSLS`, `SNESNEWTONTR`, `SNESLineSearchSetType()`, `SNESLineSearchSetPostCheck()`, `SNESLineSearchSetPreCheck()`, `SNESVIGetInactiveSet()`, `DMSetVI()`, `SNESVISetRedundancyCheck()`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONRSLS(SNES snes)
 {

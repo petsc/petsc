@@ -178,10 +178,7 @@ static PetscErrorCode PetscOptionsGetViewers_Single(MPI_Comm comm, const char va
   PetscCall(PetscStrlen(value, &viewer_string_length));
   if (!viewer_string_length) {
     if (format) *format = PETSC_VIEWER_DEFAULT;
-    if (viewer) {
-      PetscCall(PetscViewerASCIIGetStdout(comm, viewer));
-      PetscCall(PetscObjectReference((PetscObject)*viewer));
-    }
+    if (viewer) PetscCall(PetscViewerASCIIGetStdout(comm, viewer));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -241,11 +238,9 @@ static PetscErrorCode PetscOptionsGetViewers_Single(MPI_Comm comm, const char va
       default:
         SETERRQ(comm, PETSC_ERR_SUP, "Unsupported viewer %s", loc0_vtype);
       }
-      PetscCall(PetscObjectReference((PetscObject)*viewer));
     } else {
       if (loc2_fmt && !*loc1_fname && (cnt == 0)) { /* ASCII format without file name */
         PetscCall(PetscViewerASCIIGetStdout(comm, viewer));
-        PetscCall(PetscObjectReference((PetscObject)*viewer));
       } else {
         PetscFileMode fmode;
         PetscBool     flag = PETSC_FALSE;
@@ -329,10 +324,7 @@ static PetscErrorCode PetscOptionsGetViewers_Internal(MPI_Comm comm, PetscOption
     if (!value) {
       PetscCheck(n_max > 0, comm, PETSC_ERR_ARG_SIZ, "More viewers (1) than max available (0)");
       if (format) *format = PETSC_VIEWER_DEFAULT;
-      if (viewer) {
-        PetscCall(PetscViewerASCIIGetStdout(comm, viewer));
-        PetscCall(PetscObjectReference((PetscObject)*viewer));
-      }
+      if (viewer) PetscCall(PetscViewerASCIIGetStdout(comm, viewer));
       *n_max_p = 1;
     } else {
       char  *loc0_viewer_string = NULL, *this_viewer_string = NULL;
@@ -380,7 +372,7 @@ static PetscErrorCode PetscOptionsGetViewers_Internal(MPI_Comm comm, PetscOption
 + comm    - the communicator to own the viewer
 . options - options database, use `NULL` for default global database
 . pre     - the string to prepend to the name or `NULL`
-- name    - the option one is seeking
+- name    - the options database name that will be checked for
 
   Output Parameters:
 + viewer - the viewer, pass `NULL` if not needed
@@ -399,7 +391,7 @@ static PetscErrorCode PetscOptionsGetViewers_Internal(MPI_Comm comm, PetscOption
 .       socket[:port]                           -  defaults to the standard output port
 -       saws[:communicatorname]                 -   publishes object to the Scientific Application Webserver (SAWs)
 
-  Use `PetscViewerDestroy()` after using the viewer, otherwise a memory leak will occur
+  Use `PetscOptionsRestoreViewer()` after using the viewer, do not use `PetscViewerDestroy()`
 
   You can control whether calls to this function create a viewer (or return early with *set of `PETSC_FALSE`) with
   `PetscOptionsPushGetViewerOff()`.  This is useful if calling many small subsolves, in which case XXXViewFromOptions can take
@@ -407,7 +399,10 @@ static PetscErrorCode PetscOptionsGetViewers_Internal(MPI_Comm comm, PetscOption
 
   If PETSc is configured with `--with-viewfromoptions=0` this function always returns with *set of `PETSC_FALSE`
 
-.seealso: [](sec_viewers), `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
+  This routine is thread-safe for accessing predefined `PetscViewer`s like `PETSC_VIEWER_STDOUT_SELF` but not for accessing
+  files by name.
+
+.seealso: [](sec_viewers), `PetscOptionsRestoreViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
           `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`,
           `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
@@ -431,15 +426,47 @@ PetscErrorCode PetscOptionsGetViewer(MPI_Comm comm, PetscOptions options, const 
 }
 
 /*@C
+  PetscOptionsRestoreViewer - restore a `PetscViewer` obtained from `PetscOptionsGetViewer()` or `PetscOptionsGetViewers()`
+
+  Collective
+
+  Input Parameter:
+. viewer - the viewer
+
+  Level: intermediate
+
+  Developer Note:
+  This function exists to handle persistent viewers such as `PETSC_VIEWER_STDOUT_SELF` that may be shared between threads where
+  changing the reference count would not be thread safe.
+
+.seealso: [](sec_viewers), `PetscOptionsGetViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
+          `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
+          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsPushGetViewerOff()`, `PetscOptionsPopGetViewerOff()`,
+          `PetscOptionsGetViewerOff()`
+@*/
+PetscErrorCode PetscOptionsRestoreViewer(PetscViewer *viewer)
+{
+  PetscFunctionBegin;
+  if (!*viewer) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!((PetscObject)*viewer)->persistent) PetscCall(PetscViewerDestroy(viewer));
+  else *viewer = NULL;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
   PetscOptionsGetViewers - Get multiple viewers from a comma-separated list in the options database
 
   Collective
 
   Input Parameters:
-+ comm    - the communicator to own the viewer
++ comm    - the communicator to own the viewers
 . options - options database, use `NULL` for default global database
 . pre     - the string to prepend to the name or `NULL`
-. name    - the option one is seeking
+. name    - the options database name that will be checked for
 - n_max   - on input: the maximum number of viewers; on output: the number of viewers in the comma-separated list
 
   Output Parameters:
@@ -452,7 +479,7 @@ PetscErrorCode PetscOptionsGetViewer(MPI_Comm comm, PetscOptions options, const 
   Level: intermediate
 
   Note:
-  See `PetscOptionsGetViewer()` for how the format strings for the viewers are interpreted.  Use `PetscViewerDestroy()` on each viewer, otherwise a memory leak will occur.
+  See `PetscOptionsGetViewer()` for how the format strings for the viewers are interpreted.  Use `PetscOptionsRestoreViewer()` on each viewer, otherwise a memory leak will occur.
 
   If PETSc is configured with `--with-viewfromoptions=0` this function always returns with `n_max` of 0 and `set` of `PETSC_FALSE`
 

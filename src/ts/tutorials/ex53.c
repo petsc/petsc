@@ -1687,7 +1687,7 @@ static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
       PetscCall(PetscBagView(bag, viewer));
       PetscCall(PetscViewerFlush(viewer));
       PetscCall(PetscViewerPopFormat(viewer));
-      PetscCall(PetscViewerDestroy(&viewer));
+      PetscCall(PetscOptionsRestoreViewer(&viewer));
       PetscCall(PetscPrintf(comm, "  Max displacement: %g %g\n", (double)PetscRealPart(p->P_0 * (ctx->xmax[1] - ctx->xmin[1]) * (1. - 2. * nu_u) / (2. * p->mu * (1. - nu_u))), (double)PetscRealPart(p->P_0 * (ctx->xmax[1] - ctx->xmin[1]) * (1. - 2. * nu) / (2. * p->mu * (1. - nu)))));
       PetscCall(PetscPrintf(comm, "  Relaxation time: %g\n", (double)ctx->t_r));
     }
@@ -2061,7 +2061,7 @@ static PetscErrorCode SolutionMonitor(TS ts, PetscInt steps, PetscReal time, Vec
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts), "]\n"));
     PetscCall(PetscFree3(exacts, ectxs, err));
   }
-  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(PetscOptionsRestoreViewer(&viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2078,7 +2078,7 @@ static PetscErrorCode SetupMonitor(TS ts, AppCtx *ctx)
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)ts, &prefix));
   PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)ts), options, prefix, "-monitor_solution", &viewer, &format, &flg));
   if (flg) PetscCall(TSMonitorSet(ts, SolutionMonitor, ctx, NULL));
-  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(PetscOptionsRestoreViewer(&viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

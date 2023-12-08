@@ -180,7 +180,7 @@ PetscErrorCode KSPDestroy_BCGS(KSP ksp)
 }
 
 /*MC
-     KSPBCGS - Implements the BiCGStab (Stabilized version of Biconjugate Gradient) method.
+   KSPBCGS - Implements the BiCGStab (Stabilized version of Biconjugate Gradient) method.
 
    Level: beginner
 

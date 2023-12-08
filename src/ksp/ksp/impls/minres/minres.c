@@ -668,7 +668,7 @@ static PetscErrorCode KSPDestroy_MINRES(KSP ksp)
 
   PetscFunctionBegin;
   PetscCall(PetscFree4(minres->e, minres->d, minres->ee, minres->dd));
-  PetscCall(PetscViewerDestroy(&minres->viewer));
+  PetscCall(PetscOptionsRestoreViewer(&minres->viewer));
   PetscCall(PetscFree(ksp->data));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPMINRESSetRadius_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPMINRESSetUseQLP_C", NULL));
@@ -725,7 +725,7 @@ static PetscErrorCode KSPSetFromOptions_MINRES(KSP ksp, PetscOptionItems *PetscO
 }
 
 /*@
-  KSPMINRESSetUseQLP - Use the QLP variant of the algorithm.
+  KSPMINRESSetUseQLP - Use the QLP variant of `KSPMINRES`
 
   Logically Collective
 
@@ -750,7 +750,7 @@ PetscErrorCode KSPMINRESSetUseQLP(KSP ksp, PetscBool qlp)
 }
 
 /*@
-  KSPMINRESSetRadius - Set the maximum solution norm allowed.
+  KSPMINRESSetRadius - Set the maximum solution norm allowed for use with trust region methods
 
   Logically Collective
 
@@ -762,6 +762,9 @@ PetscErrorCode KSPMINRESSetUseQLP(KSP ksp, PetscBool qlp)
 
   Options Database Key:
 . -ksp_minres_radius <real> - maximum allowed solution norm
+
+  Developer Note:
+  Perhaps the KSPXXXSetRadius() should be unified
 
 .seealso: [](ch_ksp), `KSP`, `KSPMINRES`, `KSPMINRESSetUseQLP()`
 @*/
@@ -775,7 +778,7 @@ PetscErrorCode KSPMINRESSetRadius(KSP ksp, PetscReal radius)
 }
 
 /*@
-  KSPMINRESGetUseQLP - Get the flag for the QLP variant.
+  KSPMINRESGetUseQLP - Get the flag that indicates if the QLP variant is being used
 
   Logically Collective
 
@@ -799,7 +802,7 @@ PetscErrorCode KSPMINRESGetUseQLP(KSP ksp, PetscBool *qlp)
 }
 
 /*MC
-     KSPMINRES - This code implements the MINRES (Minimum Residual) method and its QLP variant.
+   KSPMINRES - This code implements the MINRES (Minimum Residual) method and its QLP variant.
 
    Options Database Keys:
 +   -ksp_minres_qlp <bool> - activates QLP code
@@ -815,15 +818,17 @@ PetscErrorCode KSPMINRESGetUseQLP(KSP ksp, PetscBool *qlp)
 
    Supports only left preconditioning.
 
+   Contributed by:
+   Original MINRES code - Robert Scheichl: maprs@maths.bath.ac.uk
+   QLP variant adapted from: https://stanford.edu/group/SOL/software/minresqlp/minresqlp-matlab/CPS11.zip
+
    Reference:
 + * - Paige & Saunders, Solution of sparse indefinite systems of linear equations, SIAM J. Numer. Anal. 12, 1975.
 . * - S.-C. T. Choi, C. C. Paige and M. A. Saunders. MINRES-QLP: A Krylov subspace method for indefinite or singular symmetric systems, SIAM J. Sci. Comput. 33:4, 2011.
 - * - Y. Liu and F. Roosta. A Newton-MR algorithm with complexity guarantees for nonconvex smooth unconstrained optimization. https://arxiv.org/pdf/2208.07095.pdf
 
-   Original MINRES code contributed by: Robert Scheichl: maprs@maths.bath.ac.uk
-   QLP variant adapted from: https://stanford.edu/group/SOL/software/minresqlp/minresqlp-matlab/CPS11.zip
-
-.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCG`, `KSPCR`
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCG`, `KSPCR`, `KSPMINRESGetUseQLP()`, `KSPMINRESSetUseQLP()`, `KSPMINRESSetRadius()`
+          `KSPMINRESGetRadius()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp)
 {

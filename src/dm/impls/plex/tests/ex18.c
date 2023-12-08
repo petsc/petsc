@@ -994,7 +994,7 @@ static PetscErrorCode DMLabelViewFromOptionsOnComm_Private(DMLabel label, const 
     CHKERRQI(incall, PetscViewerPushFormat(viewer, format));
     CHKERRQI(incall, DMLabelView(label, viewer));
     CHKERRQI(incall, PetscViewerPopFormat(viewer));
-    CHKERRQI(incall, PetscViewerDestroy(&viewer));
+    CHKERRQI(incall, PetscOptionsRestoreViewer(&viewer));
   }
   incall = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);

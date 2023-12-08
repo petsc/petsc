@@ -645,4 +645,8 @@ PetscErrorCode HessianProduct(void *ptr, Vec svec, Vec y)
      suffix: snes_2
      args: -snes_monitor ::ascii_info_detail -tao_type snes -snes_type newtontr -snes_atol 5.e-4 -tao_mf_hessian -pc_type none -snes_tr_fallback_type cauchy
 
+   test:
+     suffix: snes_3
+     args: -snes_monitor ::ascii_info_detail -tao_type snes -snes_type newtontr -snes_atol 5.e-4 -tao_mf_hessian -pc_type lmvm -snes_tr_fallback_type cauchy
+
 TEST*/

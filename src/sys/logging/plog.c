@@ -1279,7 +1279,7 @@ PetscErrorCode PetscLogEventDeactivate(PetscLogEvent event)
 
   PETSc's default log handler (`PetscLogDefaultBegin()`) respects this function because it can make the output of `PetscLogView()` easier to interpret, but other handlers (such as the nested handler, `PetscLogNestedBegin()`) ignore it because suppressing events is not helpful in their output formats.
 
-.seealso: [](ch_profiling), `PetscLogEventActivate()`, `PetscLogEVentDeactivate()`, `PetscLogEventDeactivatePop()`
+.seealso: [](ch_profiling), `PetscLogEventActivate()`, `PetscLogEventDeactivate()`, `PetscLogEventDeactivatePop()`
 @*/
 PetscErrorCode PetscLogEventDeactivatePush(PetscLogEvent event)
 {
@@ -2065,7 +2065,7 @@ PetscErrorCode PetscLogViewFromOptions(void)
     PetscCall(PetscViewerPushFormat(viewers[i], formats[i]));
     PetscCall(PetscLogView(viewers[i]));
     PetscCall(PetscViewerPopFormat(viewers[i]));
-    PetscCall(PetscViewerDestroy(&(viewers[i])));
+    PetscCall(PetscOptionsRestoreViewer(&(viewers[i])));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2132,9 +2132,9 @@ PetscErrorCode PetscLogSetThreshold(PetscLogDouble newThresh, PetscLogDouble *ol
   `PetscLogFlops()` to increment this counter to include flops for the
   application code.
 
-  A separate counter `PetscLogGPUFlops()` logs the flops that occur on any GPU associated with this MPI rank
+  A separate counter `PetscLogGpuFlops()` logs the flops that occur on any GPU associated with this MPI rank
 
-.seealso: [](ch_profiling), `PetscLogGPUFlops()`, `PetscTime()`, `PetscLogFlops()`
+.seealso: [](ch_profiling), `PetscLogGpuFlops()`, `PetscTime()`, `PetscLogFlops()`
 @*/
 PetscErrorCode PetscGetFlops(PetscLogDouble *flops)
 {
@@ -2202,7 +2202,7 @@ PetscErrorCode PetscLogObjectState(PetscObject obj, const char format[], ...)
    A global counter logs all PETSc flop counts. The user can use PetscLogFlops() to increment
    this counter to include flops for the application code.
 
-.seealso: [](ch_profiling), `PetscLogGPUFlops()`, `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscGetFlops()`
+.seealso: [](ch_profiling), `PetscLogGpuFlops()`, `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscGetFlops()`
 M*/
 
 /*MC

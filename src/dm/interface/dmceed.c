@@ -139,7 +139,8 @@ static PetscErrorCode DMCeedCreateGeometry(DM dm, IS cellIS, PetscInt *Nqdata, C
   CeedQFunctionUser geom     = NULL;
   const char       *geomName = NULL;
   const PetscInt   *cells;
-  PetscInt          dim, cdim, cStart, cEnd, Ncell, Nq;
+  PetscInt          dim, cdim, cStart, cEnd, Ncell;
+  CeedInt           Nq;
 
   PetscFunctionBegin;
   PetscCall(PetscCalloc1(1, &sd));
@@ -198,7 +199,8 @@ PetscErrorCode DMCeedCreate_Internal(DM dm, IS cellIS, PetscBool createGeometry,
   PetscFE  fe;
   DMCeed   sd;
   Ceed     ceed;
-  PetscInt dim, Nc, Nq, Nqdata = 0;
+  PetscInt dim, Nc, Nqdata = 0;
+  CeedInt  Nq;
 
   PetscFunctionBegin;
   PetscCall(PetscCalloc1(1, &sd));
@@ -219,10 +221,11 @@ PetscErrorCode DMCeedCreate_Internal(DM dm, IS cellIS, PetscBool createGeometry,
   }
 
   if (sd->geom) {
-    PetscInt cdim, Nqx;
+    PetscInt cdim;
+    CeedInt  Nqx;
 
     PetscCallCEED(CeedBasisGetNumQuadraturePoints(sd->geom->basis, &Nqx));
-    PetscCheck(Nqx == Nq, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_INCOMP, "Number of qpoints for solution %" PetscInt_FMT " != %" PetscInt_FMT " Number of qpoints for coordinates", Nq, Nqx);
+    PetscCheck(Nqx == Nq, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_INCOMP, "Number of qpoints for solution %" CeedInt_FMT " != %" CeedInt_FMT " Number of qpoints for coordinates", Nq, Nqx);
     /* TODO Remove this limitation */
     PetscCall(DMGetCoordinateDim(dm, &cdim));
     PetscCheck(dim == cdim, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_INCOMP, "Topological dimension %" PetscInt_FMT " != %" PetscInt_FMT " embedding dimension", dim, cdim);

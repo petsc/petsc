@@ -244,7 +244,7 @@ static PetscErrorCode PCApplyTranspose_Cholesky(PC pc, Vec x, Vec y)
 
   Level: intermediate
 
-.seealso: `PCLU`, `PCCHOLESKY`, `PCFactorSetReuseFill()`
+.seealso: [](ch_ksp), `PCLU`, `PCCHOLESKY`, `PCFactorSetReuseFill()`
 @*/
 PetscErrorCode PCFactorSetReuseOrdering(PC pc, PetscBool flag)
 {
@@ -275,7 +275,7 @@ PetscErrorCode PCFactorSetReuseOrdering(PC pc, PetscBool flag)
    not need a Krylov method (i.e. you can use -ksp_type preonly, or
    `KSPSetType`(ksp,`KSPPREONLY`) for the Krylov method
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
           `PCILU`, `PCLU`, `PCICC`, `PCFactorSetReuseOrdering()`, `PCFactorSetReuseFill()`, `PCFactorGetMatrix()`,
           `PCFactorSetFill()`, `PCFactorSetShiftNonzero()`, `PCFactorSetShiftType()`, `PCFactorSetShiftAmount()`
           `PCFactorSetUseInPlace()`, `PCFactorGetUseInPlace()`, `PCFactorSetMatOrderingType()`, `PCFactorSetReuseOrdering()`

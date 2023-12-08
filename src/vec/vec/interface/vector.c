@@ -1836,7 +1836,7 @@ PetscErrorCode VecStashViewFromOptions(Vec obj, PetscObject bobj, const char opt
     PetscCall(PetscViewerPushFormat(viewer, format));
     PetscCall(VecStashView(obj, viewer));
     PetscCall(PetscViewerPopFormat(viewer));
-    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(PetscOptionsRestoreViewer(&viewer));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

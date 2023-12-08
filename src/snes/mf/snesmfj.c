@@ -5,16 +5,16 @@
 
 /*@C
   MatMFFDComputeJacobian - Tells the matrix-free Jacobian object the new location at which
-  Jacobian matrix vector products will be computed at, i.e. J(x) * a. The x is obtained
+  Jacobian matrix-vector products will be computed at, i.e. J(x) * a. The x is obtained
   from the `SNES` object (using `SNESGetSolution()`).
 
   Collective
 
   Input Parameters:
 + snes  - the nonlinear solver context
-. x     - the point at which the Jacobian vector products will be performed
+. x     - the point at which the Jacobian-vector products will be performed
 . jac   - the matrix-free Jacobian object of `MatType` `MATMFFD`, likely obtained with `MatCreateSNESMF()`
-. B     - either the same as jac or another matrix type (ignored)
+. B     - either the same as `jac` or another matrix type (ignored)
 - dummy - the user context (ignored)
 
   Options Database Key:
@@ -23,17 +23,17 @@
   Level: developer
 
   Notes:
-  If `MatMFFDSetBase()` is ever called on jac then this routine will NO longer get
-  the x from the `SNES` object and `MatMFFDSetBase()` must from that point on be used to
-  change the base vector x.
+  If `MatMFFDSetBase()` is ever called on `jac` then this routine will NO longer get
+  the `x` from the `SNES` object and `MatMFFDSetBase()` must from that point on be used to
+  change the base vector `x`.
 
   This can be passed into `SNESSetJacobian()` as the Jacobian evaluation function argument
   when using a completely matrix-free solver,
   that is the B matrix is also the same matrix operator. This is used when you select
   -snes_mf but rarely used directly by users. (All this routine does is call `MatAssemblyBegin/End()` on
-  the `Mat` jac.)
+  the `Mat` `jac`.)
 
-.seealso: `MatMFFDGetH()`, `MatCreateSNESMF()`, `MatMFFDSetBase()`, `MatCreateMFFD()`, `MATMFFD`,
+.seealso: [](ch_snes), `MatMFFDGetH()`, `MatCreateSNESMF()`, `MatMFFDSetBase()`, `MatCreateMFFD()`, `MATMFFD`,
           `MatMFFDSetHHistory()`, `MatMFFDSetFunctionError()`, `SNESSetJacobian()`
 @*/
 PetscErrorCode MatMFFDComputeJacobian(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
@@ -60,7 +60,7 @@ PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat, Vec, Vec);
 
   Level: advanced
 
-.seealso: `Mat`, `SNES`, `MatCreateSNESMF()`
+.seealso: [](ch_snes), `Mat`, `SNES`, `MatCreateSNESMF()`
 @*/
 PetscErrorCode MatSNESMFGetSNES(Mat J, SNES *snes)
 {
@@ -170,7 +170,7 @@ static PetscErrorCode MatSNESMFSetReuseBase_SNESMF(Mat J, PetscBool use)
   switching) to contacts while the function provided to `MatMFFDSetFunction()` cannot. Except for the possibility of changing the configuration
   both functions compute the same mathematical function so the differencing makes sense.
 
-.seealso: `MATMFFD`, `MatMFFDSetFunction()`, `SNESSetFunction()`, `MatCreateSNESMF()`, `MatSNESMFGetReuseBase()`
+.seealso: [](ch_snes), `SNES`, `MATMFFD`, `MatMFFDSetFunction()`, `SNESSetFunction()`, `MatCreateSNESMF()`, `MatSNESMFGetReuseBase()`
 @*/
 PetscErrorCode MatSNESMFSetReuseBase(Mat J, PetscBool use)
 {
@@ -206,7 +206,7 @@ static PetscErrorCode MatSNESMFGetReuseBase_SNESMF(Mat J, PetscBool *use)
   Note:
   See `MatSNESMFSetReuseBase()`
 
-.seealso: `MatSNESMFSetReuseBase()`, `MatCreateSNESMF()`
+.seealso: [](ch_snes), `Mat`, `SNES`, `MatSNESMFSetReuseBase()`, `MatCreateSNESMF()`
 @*/
 PetscErrorCode MatSNESMFGetReuseBase(Mat J, PetscBool *use)
 {
@@ -233,7 +233,7 @@ PetscErrorCode MatSNESMFGetReuseBase(Mat J, PetscBool *use)
   Level: advanced
 
   Notes:
-  You can call `SNESSetJacobian()` with `MatMFFDComputeJacobian()` if you are using matrix and not a different
+  You can call `SNESSetJacobian()` with `MatMFFDComputeJacobian()` if you are not using a different
   preconditioner matrix
 
   If you wish to provide a different function to do differencing on to compute the matrix-free operator than
@@ -243,13 +243,13 @@ PetscErrorCode MatSNESMFGetReuseBase(Mat J, PetscBool *use)
   automatically gets the current base vector from the `SNES` object and not from an
   explicit call to `MatMFFDSetBase()`.
 
-  If `MatMFFDSetBase()` is ever called on jac then this routine will NO longer get
+  If `MatMFFDSetBase()` is ever called on `jac` then this routine will NO longer get
   the x from the `SNES` object and `MatMFFDSetBase()` must from that point on be used to
-  change the base vector x.
+  change the base vector `x`.
 
   Using a different function for the differencing will not work if you are using non-linear left preconditioning.
 
-.seealso: `MATMFFD`, `MatDestroy()`, `MatMFFDSetFunction()`, `MatMFFDSetFunctionError()`, `MatMFFDDSSetUmin()`
+.seealso: [](ch_snes), `SNES`, `MATMFFD`, `MatDestroy()`, `MatMFFDSetFunction()`, `MatMFFDSetFunctionError()`, `MatMFFDDSSetUmin()`
           `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`, `MatCreateMFFD()`,
           `MatMFFDGetH()`, `MatMFFDRegister()`, `MatMFFDComputeJacobian()`, `MatSNESMFSetReuseBase()`, `MatSNESMFGetReuseBase()`
 @*/

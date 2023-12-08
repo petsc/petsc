@@ -1352,52 +1352,56 @@ PetscErrorCode TSGLLEFinalizePackage(void)
   B  |  V
 .ve
 
-  combined with a vector c of abscissa. "Diagonally implicit" means that A is lower
+  combined with a vector c of abscissa. "Diagonally implicit" means that $A$ is lower
   triangular. A step of the general method reads
 
   $$
-  [ Y ] = [A  U] [  Y'   ]
+  \begin{align*}
+  [ Y ] = [A  U] [  Y'   ] \\
   [X^k] = [B  V] [X^{k-1}]
+  \end{align*}
   $$
 
-  where Y is the multivector of stage values, Y' is the multivector of stage derivatives, X^k
-  is the Nordsieck vector of the solution at step k. The Nordsieck vector consists of the first
-  r moments of the solution, given by
+  where Y is the multivector of stage values, $Y'$ is the multivector of stage derivatives, $X^k$
+  is the Nordsieck vector of the solution at step $k$. The Nordsieck vector consists of the first
+  $r$ moments of the solution, given by
 
   $$
   X = [x_0,x_1,...,x_{r-1}] = [x, h x', h^2 x'', ..., h^{r-1} x^{(r-1)} ]
   $$
 
-  If A is lower triangular, we can solve the stages (Y, Y') sequentially
+  If $A$ is lower triangular, we can solve the stages $(Y, Y')$ sequentially
 
   $$
-  y_i = h sum_{j=0}^{s-1} (a_ij y'_j) + sum_{j=0}^{r-1} u_ij x_j,    i=0,...,{s-1}
+  y_i = h \sum_{j=0}^{s-1} (a_{ij} y'_j) + \sum_{j=0}^{r-1} u_{ij} x_j, \, \,   i=0,...,{s-1}
   $$
 
   and then construct the pieces to carry to the next step
 
   $$
-  xx_i = h sum_{j=0}^{s-1} b_ij y'_j  + sum_{j=0}^{r-1} v_ij x_j,    i=0,...,{r-1}
+  xx_i = h \sum_{j=0}^{s-1} b_{ij} y'_j  + \sum_{j=0}^{r-1} v_{ij} x_j,  \, \,  i=0,...,{r-1}
   $$
 
   Note that when the equations are cast in implicit form, we are using the stage equation to
-  define $y'_i$ in terms of $y_i$ and known stuff (y_j for j<i and x_j for all j).
+  define $y'_i$ in terms of $y_i$ and known stuff ($y_j$ for $j<i$ and $x_j$ for all $j$).
 
   Error estimation
 
   At present, the most attractive GL methods for stiff problems are singly diagonally implicit
-  schemes which posses Inherent Runge-Kutta Stability (`TSIRKS`).  These methods have r=s, the
+  schemes which posses Inherent Runge-Kutta Stability (`TSIRKS`).  These methods have $r=s$, the
   number of items passed between steps is equal to the number of stages.  The order and
   stage-order are one less than the number of stages.  We use the error estimates in the 2007
   paper which provide the following estimates
 
   $$
-  h^{p+1} X^{(p+1)}          = phi_0^T Y' + [0 psi_0^T] Xold
-  h^{p+2} X^{(p+2)}          = phi_1^T Y' + [0 psi_1^T] Xold
-  h^{p+2} (dx'/dx) X^{(p+1)} = phi_2^T Y' + [0 psi_2^T] Xold
+  \begin{align*}
+  h^{p+1} X^{(p+1)}          = \phi_0^T Y' + [0 \psi_0^T] Xold \\
+  h^{p+2} X^{(p+2)}          = \phi_1^T Y' + [0 \psi_1^T] Xold \\
+  h^{p+2} (dx'/dx) X^{(p+1)} = \phi_2^T Y' + [0 \psi_2^T] Xold
+  \end{align*}
   $$
 
-  These estimates are accurate to O(h^{p+3}).
+  These estimates are accurate to $ O(h^{p+3})$.
 
   Changing the step size
 

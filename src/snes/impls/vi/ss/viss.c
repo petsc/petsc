@@ -12,7 +12,7 @@
 
   Level: developer
 
-.seealso: `SNESVINEWTONSSLS`, `SNESVIComputeFunction()`
+.seealso: [](ch_snes), `SNES`, `SNESVINEWTONSSLS`, `SNESVIComputeFunction()`
 @*/
 PetscErrorCode SNESVIComputeMeritFunction(Vec phi, PetscReal *merit, PetscReal *phinorm)
 {
@@ -39,16 +39,16 @@ static inline PetscScalar DPhi(PetscScalar a, PetscScalar b)
   equations in semismooth form.
 
   Input Parameters:
-+ snes   - the SNES context
++ snes   - the `SNES` context
 . X      - current iterate
 - functx - user defined function context
 
   Output Parameter:
-. phi - the evaluation of Semismooth function at X
+. phi - the evaluation of semismooth function at `X`
 
   Level: developer
 
-.seealso: `SNESVINEWTONSSLS`, `SNESVIComputeMeritFunction()`
+.seealso: [](ch_snes), `SNES`, `SNESVINEWTONSSLS`, `SNESVIComputeMeritFunction()`
 @*/
 PetscErrorCode SNESVIComputeFunction(SNES snes, Vec X, Vec phi, void *functx)
 {
@@ -386,18 +386,18 @@ static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(SNES snes, PetscOptionItem
 
    Level: beginner
 
+   Notes:
+   This family of algorithms is much like an interior point method.
+
+   The reduced space active set solvers `SNESVINEWTONRSLS` provide an alternative approach that does not result in extremely ill-conditioned linear systems
+
    References:
 +  * -  T. S. Munson, F. Facchinei, M. C. Ferris, A. Fischer, and C. Kanzow. The semismooth
      algorithm for large scale complementarity problems. INFORMS Journal on Computing, 13 (2001).
 -  * -  T. S. Munson, and S. Benson. Flexible Complementarity Solvers for Large Scale
      Applications, Optimization Methods and Software, 21 (2006).
 
-   Notes:
-   This family of algorithm is much like an interior point method.
-
-   The reduced space active set solvers `SNESVINEWTONRSLS` provide an alternative approach that does not result in extremely ill-conditioned linear systems
-
-.seealso: `SNESVINEWTONRSLS`, `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESVINEWTONRSLS`, `SNESNEWTONTR`, `SNESLineSearchSetType()`, `SNESLineSearchSetPostCheck()`, `SNESLineSearchSetPreCheck()`
+.seealso: [](ch_snes), `SNESVINEWTONRSLS`, `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESVINEWTONRSLS`, `SNESNEWTONTR`, `SNESLineSearchSetType()`, `SNESLineSearchSetPostCheck()`, `SNESLineSearchSetPreCheck()`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONSSLS(SNES snes)
 {

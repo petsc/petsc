@@ -21,7 +21,7 @@ static void pressure_Private(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Pe
   Collective
 
   Input Parameters:
-+ snes      - The SNES
++ snes      - The `SNES`
 . pfield    - The field number for pressure
 . nullspace - The pressure nullspace
 . u         - The solution vector
@@ -32,10 +32,10 @@ static void pressure_Private(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Pe
 
   Level: developer
 
-  Notes:
+  Note:
   If int(u) = a and int(n) = b, then int(u - a/b n) = a - a/b b = 0. We assume that the nullspace is a single vector given explicitly.
 
-.seealso: `SNESConvergedCorrectPressure()`
+.seealso: [](ch_snes), `SNESConvergedCorrectPressure()`
 */
 static PetscErrorCode SNESCorrectDiscretePressure_Private(SNES snes, PetscInt pfield, MatNullSpace nullspace, Vec u, void *ctx)
 {
@@ -102,7 +102,7 @@ static PetscErrorCode SNESCorrectDiscretePressure_Private(SNES snes, PetscInt pf
   This is a total misuse of the `SNES` convergence test handling system. It should be removed. Perhaps a `SNESSetPostSolve()` could
   be constructed to handle this process.
 
-.seealso: `SNES`, `DM`, `SNESConvergedDefault()`, `SNESSetConvergenceTest()`, `DMSetNullSpaceConstructor()`
+.seealso: [](ch_snes), `SNES`, `DM`, `SNESConvergedDefault()`, `SNESSetConvergenceTest()`, `DMSetNullSpaceConstructor()`
 @*/
 PetscErrorCode SNESConvergedCorrectPressure(SNES snes, PetscInt it, PetscReal xnorm, PetscReal gnorm, PetscReal f, SNESConvergedReason *reason, void *ctx)
 {
@@ -178,7 +178,7 @@ static PetscErrorCode DMSNESConvertPlex(DM dm, DM *plex, PetscBool copy)
 
   Level: beginner
 
-.seealso: `DMInterpolationInfo`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationDestroy()`
+.seealso: [](ch_snes), `DM`, `DMInterpolationInfo`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationDestroy()`
 @*/
 PetscErrorCode DMInterpolationCreate(MPI_Comm comm, DMInterpolationInfo *ctx)
 {
@@ -207,7 +207,7 @@ PetscErrorCode DMInterpolationCreate(MPI_Comm comm, DMInterpolationInfo *ctx)
 
   Level: intermediate
 
-.seealso: `DMInterpolationInfo`, `DMInterpolationGetDim()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
+.seealso: [](ch_snes), `DM`, `DMInterpolationInfo`, `DMInterpolationGetDim()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
 @*/
 PetscErrorCode DMInterpolationSetDim(DMInterpolationInfo ctx, PetscInt dim)
 {
@@ -230,7 +230,7 @@ PetscErrorCode DMInterpolationSetDim(DMInterpolationInfo ctx, PetscInt dim)
 
   Level: intermediate
 
-.seealso: `DMInterpolationInfo`, `DMInterpolationSetDim()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
+.seealso: [](ch_snes), `DM`, `DMInterpolationInfo`, `DMInterpolationSetDim()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
 @*/
 PetscErrorCode DMInterpolationGetDim(DMInterpolationInfo ctx, PetscInt *dim)
 {
@@ -251,7 +251,7 @@ PetscErrorCode DMInterpolationGetDim(DMInterpolationInfo ctx, PetscInt *dim)
 
   Level: intermediate
 
-.seealso: `DMInterpolationInfo`, `DMInterpolationGetDof()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
+.seealso: [](ch_snes), `DM`, `DMInterpolationInfo`, `DMInterpolationGetDof()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
 @*/
 PetscErrorCode DMInterpolationSetDof(DMInterpolationInfo ctx, PetscInt dof)
 {
@@ -274,7 +274,7 @@ PetscErrorCode DMInterpolationSetDof(DMInterpolationInfo ctx, PetscInt dof)
 
   Level: intermediate
 
-.seealso: `DMInterpolationInfo`, `DMInterpolationSetDof()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
+.seealso: [](ch_snes), `DM`, `DMInterpolationInfo`, `DMInterpolationSetDof()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
 @*/
 PetscErrorCode DMInterpolationGetDof(DMInterpolationInfo ctx, PetscInt *dof)
 {
@@ -299,7 +299,7 @@ PetscErrorCode DMInterpolationGetDof(DMInterpolationInfo ctx, PetscInt *dof)
   Note:
   The coordinate information is copied.
 
-.seealso: `DMInterpolationInfo`, `DMInterpolationSetDim()`, `DMInterpolationEvaluate()`, `DMInterpolationCreate()`
+.seealso: [](ch_snes), `DM`, `DMInterpolationInfo`, `DMInterpolationSetDim()`, `DMInterpolationEvaluate()`, `DMInterpolationCreate()`
 @*/
 PetscErrorCode DMInterpolationAddPoints(DMInterpolationInfo ctx, PetscInt n, PetscReal points[])
 {
@@ -326,7 +326,7 @@ PetscErrorCode DMInterpolationAddPoints(DMInterpolationInfo ctx, PetscInt n, Pet
 
   Level: intermediate
 
-.seealso: `DMInterpolationInfo`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
+.seealso: [](ch_snes), `DM`, `DMInterpolationInfo`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
 @*/
 PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool redundantPoints, PetscBool ignoreOutsideDomain)
 {
@@ -457,7 +457,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   The local vector entries correspond to interpolation points lying on this process, according to the associated `DM`.
   This is a borrowed vector that the user should not destroy.
 
-.seealso: `DMInterpolationInfo`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
+.seealso: [](ch_snes), `DM`, `DMInterpolationInfo`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
 @*/
 PetscErrorCode DMInterpolationGetCoordinates(DMInterpolationInfo ctx, Vec *coordinates)
 {
@@ -484,7 +484,7 @@ PetscErrorCode DMInterpolationGetCoordinates(DMInterpolationInfo ctx, Vec *coord
   Note:
   This vector should be returned using `DMInterpolationRestoreVector()`.
 
-.seealso: `DMInterpolationInfo`, `DMInterpolationRestoreVector()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
+.seealso: [](ch_snes), `DM`, `DMInterpolationInfo`, `DMInterpolationRestoreVector()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
 @*/
 PetscErrorCode DMInterpolationGetVector(DMInterpolationInfo ctx, Vec *v)
 {
@@ -509,7 +509,7 @@ PetscErrorCode DMInterpolationGetVector(DMInterpolationInfo ctx, Vec *v)
 
   Level: intermediate
 
-.seealso: `DMInterpolationInfo`, `DMInterpolationGetVector()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
+.seealso: [](ch_snes), `DM`, `DMInterpolationInfo`, `DMInterpolationGetVector()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
 @*/
 PetscErrorCode DMInterpolationRestoreVector(DMInterpolationInfo ctx, Vec *v)
 {
@@ -520,104 +520,87 @@ PetscErrorCode DMInterpolationRestoreVector(DMInterpolationInfo ctx, Vec *v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static inline PetscErrorCode DMInterpolate_Segment_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
+static inline PetscErrorCode DMInterpolate_Segment_Private(DMInterpolationInfo ctx, DM dm, PetscInt p, Vec xLocal, Vec v)
 {
-  PetscReal          v0, J, invJ, detJ;
+  const PetscInt     c   = ctx->cells[p];
   const PetscInt     dof = ctx->dof;
+  PetscScalar       *x   = NULL;
   const PetscScalar *coords;
   PetscScalar       *a;
-  PetscInt           p;
+  PetscReal          v0, J, invJ, detJ, xir[1];
+  PetscInt           xSize, comp;
 
   PetscFunctionBegin;
   PetscCall(VecGetArrayRead(ctx->coords, &coords));
   PetscCall(VecGetArray(v, &a));
-  for (p = 0; p < ctx->n; ++p) {
-    PetscInt     c = ctx->cells[p];
-    PetscScalar *x = NULL;
-    PetscReal    xir[1];
-    PetscInt     xSize, comp;
-
-    PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, &v0, &J, &invJ, &detJ));
-    PetscCheck(detJ > 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %" PetscInt_FMT, (double)detJ, c);
-    xir[0] = invJ * PetscRealPart(coords[p] - v0);
-    PetscCall(DMPlexVecGetClosure(dm, NULL, xLocal, c, &xSize, &x));
-    if (2 * dof == xSize) {
-      for (comp = 0; comp < dof; ++comp) a[p * dof + comp] = x[0 * dof + comp] * (1 - xir[0]) + x[1 * dof + comp] * xir[0];
-    } else if (dof == xSize) {
-      for (comp = 0; comp < dof; ++comp) a[p * dof + comp] = x[0 * dof + comp];
-    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Input closure size %" PetscInt_FMT " must be either %" PetscInt_FMT " or %" PetscInt_FMT, xSize, 2 * dof, dof);
-    PetscCall(DMPlexVecRestoreClosure(dm, NULL, xLocal, c, &xSize, &x));
-  }
+  PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, &v0, &J, &invJ, &detJ));
+  PetscCheck(detJ > 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %" PetscInt_FMT, (double)detJ, c);
+  xir[0] = invJ * PetscRealPart(coords[p] - v0);
+  PetscCall(DMPlexVecGetClosure(dm, NULL, xLocal, c, &xSize, &x));
+  if (2 * dof == xSize) {
+    for (comp = 0; comp < dof; ++comp) a[p * dof + comp] = x[0 * dof + comp] * (1 - xir[0]) + x[1 * dof + comp] * xir[0];
+  } else if (dof == xSize) {
+    for (comp = 0; comp < dof; ++comp) a[p * dof + comp] = x[0 * dof + comp];
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Input closure size %" PetscInt_FMT " must be either %" PetscInt_FMT " or %" PetscInt_FMT, xSize, 2 * dof, dof);
+  PetscCall(DMPlexVecRestoreClosure(dm, NULL, xLocal, c, &xSize, &x));
   PetscCall(VecRestoreArray(v, &a));
   PetscCall(VecRestoreArrayRead(ctx->coords, &coords));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static inline PetscErrorCode DMInterpolate_Triangle_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
+static inline PetscErrorCode DMInterpolate_Triangle_Private(DMInterpolationInfo ctx, DM dm, PetscInt p, Vec xLocal, Vec v)
 {
-  PetscReal         *v0, *J, *invJ, detJ;
+  const PetscInt     c = ctx->cells[p];
+  PetscScalar       *x = NULL;
   const PetscScalar *coords;
   PetscScalar       *a;
-  PetscInt           p;
+  PetscReal         *v0, *J, *invJ, detJ;
+  PetscReal          xi[4];
 
   PetscFunctionBegin;
   PetscCall(PetscMalloc3(ctx->dim, &v0, ctx->dim * ctx->dim, &J, ctx->dim * ctx->dim, &invJ));
   PetscCall(VecGetArrayRead(ctx->coords, &coords));
   PetscCall(VecGetArray(v, &a));
-  for (p = 0; p < ctx->n; ++p) {
-    PetscInt     c = ctx->cells[p];
-    PetscScalar *x = NULL;
-    PetscReal    xi[4];
-    PetscInt     d, f, comp;
-
-    PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ));
-    PetscCheck(detJ > 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %" PetscInt_FMT, (double)detJ, c);
-    PetscCall(DMPlexVecGetClosure(dm, NULL, xLocal, c, NULL, &x));
-    for (comp = 0; comp < ctx->dof; ++comp) a[p * ctx->dof + comp] = x[0 * ctx->dof + comp];
-
-    for (d = 0; d < ctx->dim; ++d) {
-      xi[d] = 0.0;
-      for (f = 0; f < ctx->dim; ++f) xi[d] += invJ[d * ctx->dim + f] * 0.5 * PetscRealPart(coords[p * ctx->dim + f] - v0[f]);
-      for (comp = 0; comp < ctx->dof; ++comp) a[p * ctx->dof + comp] += PetscRealPart(x[(d + 1) * ctx->dof + comp] - x[0 * ctx->dof + comp]) * xi[d];
-    }
-    PetscCall(DMPlexVecRestoreClosure(dm, NULL, xLocal, c, NULL, &x));
+  PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ));
+  PetscCheck(detJ > 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %" PetscInt_FMT, (double)detJ, c);
+  PetscCall(DMPlexVecGetClosure(dm, NULL, xLocal, c, NULL, &x));
+  for (PetscInt comp = 0; comp < ctx->dof; ++comp) a[p * ctx->dof + comp] = x[0 * ctx->dof + comp];
+  for (PetscInt d = 0; d < ctx->dim; ++d) {
+    xi[d] = 0.0;
+    for (PetscInt f = 0; f < ctx->dim; ++f) xi[d] += invJ[d * ctx->dim + f] * 0.5 * PetscRealPart(coords[p * ctx->dim + f] - v0[f]);
+    for (PetscInt comp = 0; comp < ctx->dof; ++comp) a[p * ctx->dof + comp] += PetscRealPart(x[(d + 1) * ctx->dof + comp] - x[0 * ctx->dof + comp]) * xi[d];
   }
+  PetscCall(DMPlexVecRestoreClosure(dm, NULL, xLocal, c, NULL, &x));
   PetscCall(VecRestoreArray(v, &a));
   PetscCall(VecRestoreArrayRead(ctx->coords, &coords));
   PetscCall(PetscFree3(v0, J, invJ));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static inline PetscErrorCode DMInterpolate_Tetrahedron_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
+static inline PetscErrorCode DMInterpolate_Tetrahedron_Private(DMInterpolationInfo ctx, DM dm, PetscInt p, Vec xLocal, Vec v)
 {
+  const PetscInt     c        = ctx->cells[p];
+  const PetscInt     order[3] = {2, 1, 3};
+  PetscScalar       *x        = NULL;
   PetscReal         *v0, *J, *invJ, detJ;
   const PetscScalar *coords;
   PetscScalar       *a;
-  PetscInt           p;
+  PetscReal          xi[4];
 
   PetscFunctionBegin;
   PetscCall(PetscMalloc3(ctx->dim, &v0, ctx->dim * ctx->dim, &J, ctx->dim * ctx->dim, &invJ));
   PetscCall(VecGetArrayRead(ctx->coords, &coords));
   PetscCall(VecGetArray(v, &a));
-  for (p = 0; p < ctx->n; ++p) {
-    PetscInt       c        = ctx->cells[p];
-    const PetscInt order[3] = {2, 1, 3};
-    PetscScalar   *x        = NULL;
-    PetscReal      xi[4];
-    PetscInt       d, f, comp;
-
-    PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ));
-    PetscCheck(detJ > 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %" PetscInt_FMT, (double)detJ, c);
-    PetscCall(DMPlexVecGetClosure(dm, NULL, xLocal, c, NULL, &x));
-    for (comp = 0; comp < ctx->dof; ++comp) a[p * ctx->dof + comp] = x[0 * ctx->dof + comp];
-
-    for (d = 0; d < ctx->dim; ++d) {
-      xi[d] = 0.0;
-      for (f = 0; f < ctx->dim; ++f) xi[d] += invJ[d * ctx->dim + f] * 0.5 * PetscRealPart(coords[p * ctx->dim + f] - v0[f]);
-      for (comp = 0; comp < ctx->dof; ++comp) a[p * ctx->dof + comp] += PetscRealPart(x[order[d] * ctx->dof + comp] - x[0 * ctx->dof + comp]) * xi[d];
-    }
-    PetscCall(DMPlexVecRestoreClosure(dm, NULL, xLocal, c, NULL, &x));
+  PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ));
+  PetscCheck(detJ > 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %" PetscInt_FMT, (double)detJ, c);
+  PetscCall(DMPlexVecGetClosure(dm, NULL, xLocal, c, NULL, &x));
+  for (PetscInt comp = 0; comp < ctx->dof; ++comp) a[p * ctx->dof + comp] = x[0 * ctx->dof + comp];
+  for (PetscInt d = 0; d < ctx->dim; ++d) {
+    xi[d] = 0.0;
+    for (PetscInt f = 0; f < ctx->dim; ++f) xi[d] += invJ[d * ctx->dim + f] * 0.5 * PetscRealPart(coords[p * ctx->dim + f] - v0[f]);
+    for (PetscInt comp = 0; comp < ctx->dof; ++comp) a[p * ctx->dof + comp] += PetscRealPart(x[order[d] * ctx->dof + comp] - x[0 * ctx->dof + comp]) * xi[d];
   }
+  PetscCall(DMPlexVecRestoreClosure(dm, NULL, xLocal, c, NULL, &x));
   PetscCall(VecRestoreArray(v, &a));
   PetscCall(VecRestoreArrayRead(ctx->coords, &coords));
   PetscCall(PetscFree3(v0, J, invJ));
@@ -697,10 +680,11 @@ static inline PetscErrorCode QuadJacobian_Private(SNES snes, Vec Xref, Mat J, Ma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static inline PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
+static inline PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx, DM dm, PetscInt p, Vec xLocal, Vec v)
 {
-  DM                 dmCoord;
+  const PetscInt     c   = ctx->cells[p];
   PetscFE            fem = NULL;
+  DM                 dmCoord;
   SNES               snes;
   KSP                ksp;
   PC                 pc;
@@ -710,8 +694,11 @@ static inline PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx,
   const PetscScalar *coords;
   PetscScalar       *a;
   PetscReal          xir[2] = {0., 0.};
-  PetscInt           Nf, p;
+  PetscInt           Nf;
   const PetscInt     dof = ctx->dof;
+  PetscScalar       *x = NULL, *vertices = NULL;
+  PetscScalar       *xi;
+  PetscInt           coordSize, xSize;
 
   PetscFunctionBegin;
   PetscCall(DMGetNumFields(dm, &Nf));
@@ -748,45 +735,36 @@ static inline PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx,
 
   PetscCall(VecGetArrayRead(ctx->coords, &coords));
   PetscCall(VecGetArray(v, &a));
-  for (p = 0; p < ctx->n; ++p) {
-    PetscScalar *x = NULL, *vertices = NULL;
-    PetscScalar *xi;
-    PetscInt     c = ctx->cells[p], comp, coordSize, xSize;
-
-    /* Can make this do all points at once */
-    PetscCall(DMPlexVecGetClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices));
-    PetscCheck(4 * 2 == coordSize, ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid closure size %" PetscInt_FMT " should be %d", coordSize, 4 * 2);
-    PetscCall(DMPlexVecGetClosure(dm, NULL, xLocal, c, &xSize, &x));
-    PetscCall(SNESSetFunction(snes, NULL, NULL, vertices));
-    PetscCall(SNESSetJacobian(snes, NULL, NULL, NULL, vertices));
-    PetscCall(VecGetArray(real, &xi));
-    xi[0] = coords[p * ctx->dim + 0];
-    xi[1] = coords[p * ctx->dim + 1];
-    PetscCall(VecRestoreArray(real, &xi));
-    PetscCall(SNESSolve(snes, real, ref));
-    PetscCall(VecGetArray(ref, &xi));
-    xir[0] = PetscRealPart(xi[0]);
-    xir[1] = PetscRealPart(xi[1]);
-    if (4 * dof == xSize) {
-      for (comp = 0; comp < dof; ++comp) a[p * dof + comp] = x[0 * dof + comp] * (1 - xir[0]) * (1 - xir[1]) + x[1 * dof + comp] * xir[0] * (1 - xir[1]) + x[2 * dof + comp] * xir[0] * xir[1] + x[3 * dof + comp] * (1 - xir[0]) * xir[1];
-    } else if (dof == xSize) {
-      for (comp = 0; comp < dof; ++comp) a[p * dof + comp] = x[0 * dof + comp];
-    } else {
-      PetscInt d;
-
-      PetscCheck(fem, ctx->comm, PETSC_ERR_ARG_WRONG, "Cannot have a higher order interpolant if the discretization is not PetscFE");
-      xir[0] = 2.0 * xir[0] - 1.0;
-      xir[1] = 2.0 * xir[1] - 1.0;
-      PetscCall(PetscFEComputeTabulation(fem, 1, xir, 0, T));
-      for (comp = 0; comp < dof; ++comp) {
-        a[p * dof + comp] = 0.0;
-        for (d = 0; d < xSize / dof; ++d) a[p * dof + comp] += x[d * dof + comp] * T->T[0][d * dof + comp];
-      }
+  PetscCall(DMPlexVecGetClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices));
+  PetscCheck(4 * 2 == coordSize, ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid closure size %" PetscInt_FMT " should be %d", coordSize, 4 * 2);
+  PetscCall(DMPlexVecGetClosure(dm, NULL, xLocal, c, &xSize, &x));
+  PetscCall(SNESSetFunction(snes, NULL, NULL, vertices));
+  PetscCall(SNESSetJacobian(snes, NULL, NULL, NULL, vertices));
+  PetscCall(VecGetArray(real, &xi));
+  xi[0] = coords[p * ctx->dim + 0];
+  xi[1] = coords[p * ctx->dim + 1];
+  PetscCall(VecRestoreArray(real, &xi));
+  PetscCall(SNESSolve(snes, real, ref));
+  PetscCall(VecGetArray(ref, &xi));
+  xir[0] = PetscRealPart(xi[0]);
+  xir[1] = PetscRealPart(xi[1]);
+  if (4 * dof == xSize) {
+    for (PetscInt comp = 0; comp < dof; ++comp) a[p * dof + comp] = x[0 * dof + comp] * (1 - xir[0]) * (1 - xir[1]) + x[1 * dof + comp] * xir[0] * (1 - xir[1]) + x[2 * dof + comp] * xir[0] * xir[1] + x[3 * dof + comp] * (1 - xir[0]) * xir[1];
+  } else if (dof == xSize) {
+    for (PetscInt comp = 0; comp < dof; ++comp) a[p * dof + comp] = x[0 * dof + comp];
+  } else {
+    PetscCheck(fem, ctx->comm, PETSC_ERR_ARG_WRONG, "Cannot have a higher order interpolant if the discretization is not PetscFE");
+    xir[0] = 2.0 * xir[0] - 1.0;
+    xir[1] = 2.0 * xir[1] - 1.0;
+    PetscCall(PetscFEComputeTabulation(fem, 1, xir, 0, T));
+    for (PetscInt comp = 0; comp < dof; ++comp) {
+      a[p * dof + comp] = 0.0;
+      for (PetscInt d = 0; d < xSize / dof; ++d) a[p * dof + comp] += x[d * dof + comp] * T->T[0][d * dof + comp];
     }
-    PetscCall(VecRestoreArray(ref, &xi));
-    PetscCall(DMPlexVecRestoreClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices));
-    PetscCall(DMPlexVecRestoreClosure(dm, NULL, xLocal, c, &xSize, &x));
   }
+  PetscCall(VecRestoreArray(ref, &xi));
+  PetscCall(DMPlexVecRestoreClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices));
+  PetscCall(DMPlexVecRestoreClosure(dm, NULL, xLocal, c, &xSize, &x));
   PetscCall(PetscTabulationDestroy(&T));
   PetscCall(VecRestoreArray(v, &a));
   PetscCall(VecRestoreArrayRead(ctx->coords, &coords));
@@ -937,8 +915,9 @@ static inline PetscErrorCode HexJacobian_Private(SNES snes, Vec Xref, Mat J, Mat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static inline PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
+static inline PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, DM dm, PetscInt p, Vec xLocal, Vec v)
 {
+  const PetscInt     c = ctx->cells[p];
   DM                 dmCoord;
   SNES               snes;
   KSP                ksp;
@@ -947,7 +926,10 @@ static inline PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, 
   Mat                J;
   const PetscScalar *coords;
   PetscScalar       *a;
-  PetscInt           p;
+  PetscScalar       *x = NULL, *vertices = NULL;
+  PetscScalar       *xi;
+  PetscReal          xir[3];
+  PetscInt           coordSize, xSize;
 
   PetscFunctionBegin;
   PetscCall(DMGetCoordinatesLocal(dm, &coordsLocal));
@@ -972,41 +954,33 @@ static inline PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, 
 
   PetscCall(VecGetArrayRead(ctx->coords, &coords));
   PetscCall(VecGetArray(v, &a));
-  for (p = 0; p < ctx->n; ++p) {
-    PetscScalar *x = NULL, *vertices = NULL;
-    PetscScalar *xi;
-    PetscReal    xir[3];
-    PetscInt     c = ctx->cells[p], comp, coordSize, xSize;
-
-    /* Can make this do all points at once */
-    PetscCall(DMPlexVecGetClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices));
-    PetscCheck(8 * 3 == coordSize, ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid coordinate closure size %" PetscInt_FMT " should be %d", coordSize, 8 * 3);
-    PetscCall(DMPlexVecGetClosure(dm, NULL, xLocal, c, &xSize, &x));
-    PetscCheck((8 * ctx->dof == xSize) || (ctx->dof == xSize), ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid input closure size %" PetscInt_FMT " should be %" PetscInt_FMT " or %" PetscInt_FMT, xSize, 8 * ctx->dof, ctx->dof);
-    PetscCall(SNESSetFunction(snes, NULL, NULL, vertices));
-    PetscCall(SNESSetJacobian(snes, NULL, NULL, NULL, vertices));
-    PetscCall(VecGetArray(real, &xi));
-    xi[0] = coords[p * ctx->dim + 0];
-    xi[1] = coords[p * ctx->dim + 1];
-    xi[2] = coords[p * ctx->dim + 2];
-    PetscCall(VecRestoreArray(real, &xi));
-    PetscCall(SNESSolve(snes, real, ref));
-    PetscCall(VecGetArray(ref, &xi));
-    xir[0] = PetscRealPart(xi[0]);
-    xir[1] = PetscRealPart(xi[1]);
-    xir[2] = PetscRealPart(xi[2]);
-    if (8 * ctx->dof == xSize) {
-      for (comp = 0; comp < ctx->dof; ++comp) {
-        a[p * ctx->dof + comp] = x[0 * ctx->dof + comp] * (1 - xir[0]) * (1 - xir[1]) * (1 - xir[2]) + x[3 * ctx->dof + comp] * xir[0] * (1 - xir[1]) * (1 - xir[2]) + x[2 * ctx->dof + comp] * xir[0] * xir[1] * (1 - xir[2]) + x[1 * ctx->dof + comp] * (1 - xir[0]) * xir[1] * (1 - xir[2]) +
-                                 x[4 * ctx->dof + comp] * (1 - xir[0]) * (1 - xir[1]) * xir[2] + x[5 * ctx->dof + comp] * xir[0] * (1 - xir[1]) * xir[2] + x[6 * ctx->dof + comp] * xir[0] * xir[1] * xir[2] + x[7 * ctx->dof + comp] * (1 - xir[0]) * xir[1] * xir[2];
-      }
-    } else {
-      for (comp = 0; comp < ctx->dof; ++comp) a[p * ctx->dof + comp] = x[0 * ctx->dof + comp];
+  PetscCall(DMPlexVecGetClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices));
+  PetscCheck(8 * 3 == coordSize, ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid coordinate closure size %" PetscInt_FMT " should be %d", coordSize, 8 * 3);
+  PetscCall(DMPlexVecGetClosure(dm, NULL, xLocal, c, &xSize, &x));
+  PetscCheck((8 * ctx->dof == xSize) || (ctx->dof == xSize), ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid input closure size %" PetscInt_FMT " should be %" PetscInt_FMT " or %" PetscInt_FMT, xSize, 8 * ctx->dof, ctx->dof);
+  PetscCall(SNESSetFunction(snes, NULL, NULL, vertices));
+  PetscCall(SNESSetJacobian(snes, NULL, NULL, NULL, vertices));
+  PetscCall(VecGetArray(real, &xi));
+  xi[0] = coords[p * ctx->dim + 0];
+  xi[1] = coords[p * ctx->dim + 1];
+  xi[2] = coords[p * ctx->dim + 2];
+  PetscCall(VecRestoreArray(real, &xi));
+  PetscCall(SNESSolve(snes, real, ref));
+  PetscCall(VecGetArray(ref, &xi));
+  xir[0] = PetscRealPart(xi[0]);
+  xir[1] = PetscRealPart(xi[1]);
+  xir[2] = PetscRealPart(xi[2]);
+  if (8 * ctx->dof == xSize) {
+    for (PetscInt comp = 0; comp < ctx->dof; ++comp) {
+      a[p * ctx->dof + comp] = x[0 * ctx->dof + comp] * (1 - xir[0]) * (1 - xir[1]) * (1 - xir[2]) + x[3 * ctx->dof + comp] * xir[0] * (1 - xir[1]) * (1 - xir[2]) + x[2 * ctx->dof + comp] * xir[0] * xir[1] * (1 - xir[2]) + x[1 * ctx->dof + comp] * (1 - xir[0]) * xir[1] * (1 - xir[2]) +
+                               x[4 * ctx->dof + comp] * (1 - xir[0]) * (1 - xir[1]) * xir[2] + x[5 * ctx->dof + comp] * xir[0] * (1 - xir[1]) * xir[2] + x[6 * ctx->dof + comp] * xir[0] * xir[1] * xir[2] + x[7 * ctx->dof + comp] * (1 - xir[0]) * xir[1] * xir[2];
     }
-    PetscCall(VecRestoreArray(ref, &xi));
-    PetscCall(DMPlexVecRestoreClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices));
-    PetscCall(DMPlexVecRestoreClosure(dm, NULL, xLocal, c, &xSize, &x));
+  } else {
+    for (PetscInt comp = 0; comp < ctx->dof; ++comp) a[p * ctx->dof + comp] = x[0 * ctx->dof + comp];
   }
+  PetscCall(VecRestoreArray(ref, &xi));
+  PetscCall(DMPlexVecRestoreClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices));
+  PetscCall(DMPlexVecRestoreClosure(dm, NULL, xLocal, c, &xSize, &x));
   PetscCall(VecRestoreArray(v, &a));
   PetscCall(VecRestoreArrayRead(ctx->coords, &coords));
 
@@ -1034,7 +1008,7 @@ static inline PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, 
   Note:
   A suitable `v` can be obtained using `DMInterpolationGetVector()`.
 
-.seealso: `DMInterpolationInfo`, `DMInterpolationGetVector()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
+.seealso: [](ch_snes), `DM`, `DMInterpolationInfo`, `DMInterpolationGetVector()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
 @*/
 PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo ctx, DM dm, Vec x, Vec v)
 {
@@ -1059,7 +1033,7 @@ PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo ctx, DM dm, Vec x, Ve
 
       PetscCall(PetscDSGetDiscretization(ds, field, &obj));
       PetscCall(PetscObjectGetClassId(obj, &id));
-      if (id != PETSCFE_CLASSID) {
+      if (id != PETSCFE_CLASSID && id != PETSCFV_CLASSID) {
         useDS = PETSC_FALSE;
         break;
       }
@@ -1084,54 +1058,70 @@ PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo ctx, DM dm, Vec x, Ve
       PetscCall(DMPlexVecGetClosure(dm, NULL, x, ctx->cells[p], &clSize, &xa));
       for (field = 0; field < Nf; ++field) {
         PetscTabulation T;
-        PetscFE         fe;
+        PetscObject     obj;
+        PetscClassId    id;
 
-        PetscCall(PetscDSGetDiscretization(ds, field, (PetscObject *)&fe));
-        PetscCall(PetscFECreateTabulation(fe, 1, 1, xi, 0, &T));
-        {
-          const PetscReal *basis = T->T[0];
-          const PetscInt   Nb    = T->Nb;
-          const PetscInt   Nc    = T->Nc;
-          PetscInt         f, fc;
+        PetscCall(PetscDSGetDiscretization(ds, field, &obj));
+        PetscCall(PetscObjectGetClassId(obj, &id));
+        if (id == PETSCFE_CLASSID) {
+          PetscFE fe = (PetscFE)obj;
 
-          for (fc = 0; fc < Nc; ++fc) {
-            interpolant[p * ctx->dof + coff + fc] = 0.0;
-            for (f = 0; f < Nb; ++f) interpolant[p * ctx->dof + coff + fc] += xa[foff + f] * basis[(0 * Nb + f) * Nc + fc];
+          PetscCall(PetscFECreateTabulation(fe, 1, 1, xi, 0, &T));
+          {
+            const PetscReal *basis = T->T[0];
+            const PetscInt   Nb    = T->Nb;
+            const PetscInt   Nc    = T->Nc;
+
+            for (PetscInt fc = 0; fc < Nc; ++fc) {
+              interpolant[p * ctx->dof + coff + fc] = 0.0;
+              for (PetscInt f = 0; f < Nb; ++f) interpolant[p * ctx->dof + coff + fc] += xa[foff + f] * basis[(0 * Nb + f) * Nc + fc];
+            }
+            coff += Nc;
+            foff += Nb;
           }
+          PetscCall(PetscTabulationDestroy(&T));
+        } else if (id == PETSCFV_CLASSID) {
+          PetscFV  fv = (PetscFV)obj;
+          PetscInt Nc;
+
+          // TODO Could use reconstruction if available
+          PetscCall(PetscFVGetNumComponents(fv, &Nc));
+          for (PetscInt fc = 0; fc < Nc; ++fc) interpolant[p * ctx->dof + coff + fc] = xa[foff + fc];
           coff += Nc;
-          foff += Nb;
+          foff += Nc;
         }
-        PetscCall(PetscTabulationDestroy(&T));
       }
       PetscCall(DMPlexVecRestoreClosure(dm, NULL, x, ctx->cells[p], &clSize, &xa));
       PetscCheck(coff == ctx->dof, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Total components %" PetscInt_FMT " != %" PetscInt_FMT " dof specified for interpolation", coff, ctx->dof);
-      PetscCheck(foff == clSize, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Total FE space size %" PetscInt_FMT " != %" PetscInt_FMT " closure size", foff, clSize);
+      PetscCheck(foff == clSize, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Total FE/FV space size %" PetscInt_FMT " != %" PetscInt_FMT " closure size", foff, clSize);
     }
     PetscCall(VecRestoreArrayRead(ctx->coords, &coords));
     PetscCall(VecRestoreArrayWrite(v, &interpolant));
   } else {
-    DMPolytopeType ct;
+    for (PetscInt p = 0; p < ctx->n; ++p) {
+      const PetscInt cell = ctx->cells[p];
+      DMPolytopeType ct;
 
-    /* TODO Check each cell individually */
-    PetscCall(DMPlexGetCellType(dm, ctx->cells[0], &ct));
-    switch (ct) {
-    case DM_POLYTOPE_SEGMENT:
-      PetscCall(DMInterpolate_Segment_Private(ctx, dm, x, v));
-      break;
-    case DM_POLYTOPE_TRIANGLE:
-      PetscCall(DMInterpolate_Triangle_Private(ctx, dm, x, v));
-      break;
-    case DM_POLYTOPE_QUADRILATERAL:
-      PetscCall(DMInterpolate_Quad_Private(ctx, dm, x, v));
-      break;
-    case DM_POLYTOPE_TETRAHEDRON:
-      PetscCall(DMInterpolate_Tetrahedron_Private(ctx, dm, x, v));
-      break;
-    case DM_POLYTOPE_HEXAHEDRON:
-      PetscCall(DMInterpolate_Hex_Private(ctx, dm, x, v));
-      break;
-    default:
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for cell type %s", DMPolytopeTypes[PetscMax(0, PetscMin(ct, DM_NUM_POLYTOPES))]);
+      PetscCall(DMPlexGetCellType(dm, cell, &ct));
+      switch (ct) {
+      case DM_POLYTOPE_SEGMENT:
+        PetscCall(DMInterpolate_Segment_Private(ctx, dm, p, x, v));
+        break;
+      case DM_POLYTOPE_TRIANGLE:
+        PetscCall(DMInterpolate_Triangle_Private(ctx, dm, p, x, v));
+        break;
+      case DM_POLYTOPE_QUADRILATERAL:
+        PetscCall(DMInterpolate_Quad_Private(ctx, dm, p, x, v));
+        break;
+      case DM_POLYTOPE_TETRAHEDRON:
+        PetscCall(DMInterpolate_Tetrahedron_Private(ctx, dm, p, x, v));
+        break;
+      case DM_POLYTOPE_HEXAHEDRON:
+        PetscCall(DMInterpolate_Hex_Private(ctx, dm, cell, x, v));
+        break;
+      default:
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for cell type %s", DMPolytopeTypes[PetscMax(0, PetscMin(ct, DM_NUM_POLYTOPES))]);
+      }
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1147,7 +1137,7 @@ PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo ctx, DM dm, Vec x, Ve
 
   Level: beginner
 
-.seealso: `DMInterpolationInfo`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
+.seealso: [](ch_snes), `DM`, `DMInterpolationInfo`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
 @*/
 PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *ctx)
 {
@@ -1167,7 +1157,7 @@ PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *ctx)
   Collective
 
   Input Parameters:
-+ snes   - the `SNES` context
++ snes   - the `SNES` context, must have an attached `DM`
 . its    - iteration number
 . fgnorm - 2-norm of residual
 - vf     - `PetscViewerAndFormat` of `PetscViewerType` `PETSCVIEWERASCII`
@@ -1177,7 +1167,7 @@ PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *ctx)
   Note:
   This routine prints the residual norm at each iteration.
 
-.seealso: `SNES`, `SNESMonitorSet()`, `SNESMonitorDefault()`
+.seealso: [](ch_snes), `SNES`, `SNESMonitorSet()`, `SNESMonitorDefault()`
 @*/
 PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf)
 {
@@ -1226,7 +1216,7 @@ PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, Pets
 /********************* Residual Computation **************************/
 
 /*@
-  DMPlexSNESComputeResidualFEM - Sums the local residual into vector F from the local input X using pointwise functions specified by the user
+  DMPlexSNESComputeResidualFEM - Sums the local residual into vector `F` from the local input `X` using pointwise functions specified by the user
 
   Input Parameters:
 + dm   - The mesh
@@ -1239,9 +1229,9 @@ PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, Pets
   Level: developer
 
   Note:
-  The residual is summed into F; the caller is responsible for using `VecZeroEntries()` or otherwise ensuring that any data in F is intentional.
+  The residual is summed into `F`; the caller is responsible for using `VecZeroEntries()` or otherwise ensuring that any data in `F` is intentional.
 
-.seealso: `DM`, `DMPlexComputeJacobianAction()`
+.seealso: [](ch_snes), `DM`, `DMPLEX`, `DMPlexComputeJacobianAction()`
 @*/
 PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
 {
@@ -1282,7 +1272,7 @@ PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
 }
 
 /*@
-  DMPlexSNESComputeResidualDS - Sums the local residual into vector F from the local input X using all pointwise functions with unique keys in the DS
+  DMPlexSNESComputeResidualDS - Sums the local residual into vector `F` from the local input `X` using all pointwise functions with unique keys in the `PetscDS`
 
   Input Parameters:
 + dm   - The mesh
@@ -1295,9 +1285,9 @@ PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
   Level: developer
 
   Note:
-  The residual is summed into F; the caller is responsible for using `VecZeroEntries()` or otherwise ensuring that any data in F is intentional.
+  The residual is summed into `F`; the caller is responsible for using `VecZeroEntries()` or otherwise ensuring that any data in `F` is intentional.
 
-.seealso: `DM`, `DMPlexComputeJacobianAction()`
+.seealso: [](ch_snes), `DM`, `DMPLEX`, `DMPlexComputeJacobianAction()`
 @*/
 PetscErrorCode DMPlexSNESComputeResidualDS(DM dm, Vec X, Vec F, void *user)
 {
@@ -1409,7 +1399,7 @@ PetscErrorCode DMPlexSNESComputeResidualCEED(DM dm, Vec locX, Vec locF, void *us
 #endif
 
 /*@
-  DMPlexSNESComputeBoundaryFEM - Form the boundary values for the local input X
+  DMPlexSNESComputeBoundaryFEM - Form the boundary values for the local input `X`
 
   Input Parameters:
 + dm   - The mesh
@@ -1420,7 +1410,7 @@ PetscErrorCode DMPlexSNESComputeResidualCEED(DM dm, Vec locX, Vec locF, void *us
 
   Level: developer
 
-.seealso: `DMPLEX`, `DMPlexComputeJacobianAction()`
+.seealso: [](ch_snes), `DM`, `DMPLEX`, `DMPlexComputeJacobianAction()`
 @*/
 PetscErrorCode DMPlexSNESComputeBoundaryFEM(DM dm, Vec X, void *user)
 {
@@ -1450,7 +1440,7 @@ PetscErrorCode DMPlexSNESComputeBoundaryFEM(DM dm, Vec X, void *user)
   Notes:
   Users will typically use `DMSNESCreateJacobianMF()` followed by `MatMult()` instead of calling this routine directly.
 
-.seealso: `DM`, ``DMSNESCreateJacobianMF()`, `DMPlexSNESComputeResidualFEM()`
+.seealso: [](ch_snes), `DM`, ``DMSNESCreateJacobianMF()`, `DMPlexSNESComputeResidualFEM()`
 @*/
 PetscErrorCode DMSNESComputeJacobianAction(DM dm, Vec X, Vec Y, Vec F, void *user)
 {
@@ -1536,7 +1526,7 @@ PetscErrorCode DMSNESComputeJacobianAction(DM dm, Vec X, Vec Y, Vec F, void *use
   We form the residual one batch of elements at a time. This allows us to offload work onto an accelerator,
   like a GPU, or vectorize on a multicore machine.
 
-.seealso: `DMPLEX`, `Mat`
+.seealso: [](ch_snes), `DMPLEX`, `Mat`
 @*/
 PetscErrorCode DMPlexSNESComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, void *user)
 {
@@ -1630,7 +1620,7 @@ static PetscErrorCode DMSNESJacobianMF_Mult_Private(Mat A, Vec Y, Vec Z)
   Note:
   Vec `X` is kept in `J`, so updating `X` then updates the evaluation point.
 
-.seealso: `DM`, `DMSNESComputeJacobianAction()`
+.seealso: [](ch_snes), `DM`, `SNES`, `DMSNESComputeJacobianAction()`
 @*/
 PetscErrorCode DMSNESCreateJacobianMF(DM dm, Vec X, void *user, Mat *J)
 {
@@ -1667,7 +1657,7 @@ PetscErrorCode DMSNESCreateJacobianMF(DM dm, Vec X, void *user, Mat *J)
 
    Level: intermediate
 
-.seealso: `DMCreateNeumannOverlap()`, `MATIS`, `PCHPDDMSetAuxiliaryMat()`
+.seealso: [](ch_snes), `DMCreateNeumannOverlap()`, `MATIS`, `PCHPDDMSetAuxiliaryMat()`
 */
 static PetscErrorCode MatComputeNeumannOverlap_Plex(Mat J, PetscReal t, Vec X, Vec X_t, PetscReal s, IS ovl, void *ctx)
 {
@@ -1726,7 +1716,7 @@ static PetscErrorCode MatComputeNeumannOverlap_Plex(Mat J, PetscReal t, Vec X, V
 
   Level: developer
 
-.seealso: `DMPLEX`, `SNES`
+.seealso: [](ch_snes), `DMPLEX`, `SNES`
 @*/
 PetscErrorCode DMPlexSetSNESLocalFEM(DM dm, void *boundaryctx, void *residualctx, void *jacobianctx)
 {
@@ -1765,7 +1755,10 @@ PetscErrorCode DMPlexSetSNESLocalFEM(DM dm, void *boundaryctx, void *residualctx
   Note:
   The user must call `PetscDSSetExactSolution()` beforehand
 
-.seealso: `PetscDSSetExactSolution()`, `DNSNESCheckFromOptions()`, `DMSNESCheckResidual()`, `DMSNESCheckJacobian()`
+  Developer Note:
+  How is this related to `PetscConvEst`?
+
+.seealso: [](ch_snes), `PetscDSSetExactSolution()`, `DNSNESCheckFromOptions()`, `DMSNESCheckResidual()`, `DMSNESCheckJacobian()`
 @*/
 PetscErrorCode DMSNESCheckDiscretization(SNES snes, DM dm, PetscReal t, Vec u, PetscReal tol, PetscReal error[])
 {
@@ -1850,7 +1843,7 @@ PetscErrorCode DMSNESCheckDiscretization(SNES snes, DM dm, PetscReal t, Vec u, P
 
   Level: developer
 
-.seealso: `DNSNESCheckFromOptions()`, `DMSNESCheckDiscretization()`, `DMSNESCheckJacobian()`
+.seealso: [](ch_snes), `DNSNESCheckFromOptions()`, `DMSNESCheckDiscretization()`, `DMSNESCheckJacobian()`
 @*/
 PetscErrorCode DMSNESCheckResidual(SNES snes, DM dm, Vec u, PetscReal tol, PetscReal *residual)
 {
@@ -1898,7 +1891,7 @@ PetscErrorCode DMSNESCheckResidual(SNES snes, DM dm, Vec u, PetscReal tol, Petsc
 
   Level: developer
 
-.seealso: `DNSNESCheckFromOptions()`, `DMSNESCheckDiscretization()`, `DMSNESCheckResidual()`
+.seealso: [](ch_snes), `DNSNESCheckFromOptions()`, `DMSNESCheckDiscretization()`, `DMSNESCheckResidual()`
 @*/
 PetscErrorCode DMSNESCheckJacobian(SNES snes, DM dm, Vec u, PetscReal tol, PetscBool *isLinear, PetscReal *convRate)
 {
@@ -1911,12 +1904,14 @@ PetscErrorCode DMSNESCheckJacobian(SNES snes, DM dm, Vec u, PetscReal tol, Petsc
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
-  PetscValidHeaderSpecific(u, VEC_CLASSID, 3);
+  if (dm) PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
+  if (u) PetscValidHeaderSpecific(u, VEC_CLASSID, 3);
   if (isLinear) PetscAssertPointer(isLinear, 5);
   if (convRate) PetscAssertPointer(convRate, 6);
   PetscCall(PetscObjectGetComm((PetscObject)snes, &comm));
-  PetscCall(DMComputeExactSolution(dm, 0.0, u, NULL));
+  if (!dm) PetscCall(SNESGetDM(snes, &dm));
+  if (u) PetscCall(DMComputeExactSolution(dm, 0.0, u, NULL));
+  else PetscCall(SNESGetSolution(snes, &u));
   /* Create and view matrices */
   PetscCall(DMCreateMatrix(dm, &J));
   PetscCall(DMGetDS(dm, &ds));
@@ -2023,9 +2018,9 @@ PetscErrorCode DMSNESCheck_Internal(SNES snes, DM dm, Vec u)
   Level: developer
 
   Note:
-  The user must call `PetscDSSetExactSolution()` beforehand
+  The user must call `PetscDSSetExactSolution()` before this call
 
-.seealso: `SNES`, `DM`
+.seealso: [](ch_snes), `SNES`, `DM`
 @*/
 PetscErrorCode DMSNESCheckFromOptions(SNES snes, Vec u)
 {

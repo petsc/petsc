@@ -699,7 +699,7 @@ static PetscErrorCode PCView_H2OPUS(PC pc, PetscViewer viewer)
 
    Level: intermediate
 
-.seealso: `MATH2OPUS`, `MATHTOOL`, `MATDENSE`, `MatCreateH2OpusFromKernel()`, `MatCreateH2OpusFromMat()`
+.seealso: [](ch_ksp), `MATH2OPUS`, `MATHTOOL`, `MATDENSE`, `MatCreateH2OpusFromKernel()`, `MatCreateH2OpusFromMat()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_H2OPUS(PC pc)

@@ -29,8 +29,6 @@ static PetscErrorCode SNESComputeMFFunctionCtx(SNES snes, Vec x, Vec f, void *ct
 + J - Jacobian matrix (not altered in this routine)
 - B - newly computed Jacobian matrix to use with preconditioner (generally the same as `J`)
 
-  Level: intermediate
-
   Options Database Keys:
 + -snes_fd_color_use_mat       - use a matrix coloring from the explicit matrix nonzero pattern instead of from the `DM` providing the matrix
 . -snes_fd_color               - Activates `SNESComputeJacobianDefaultColor()` in `SNESSetFromOptions()`
@@ -41,6 +39,9 @@ static PetscErrorCode SNESComputeMFFunctionCtx(SNES snes, Vec x, Vec f, void *ct
 - -snes_mf                     - Use matrix-free Jacobian with no explicit Jacobian representation
 
   Notes:
+
+  Level: intermediate
+
   If the coloring is not provided through the context, this will first try to get the
   coloring from the `DM`.  If the `DM` has no coloring routine, then it will try to
   get the coloring from the matrix.  This requires that the matrix have its nonzero locations already provided.
@@ -51,7 +52,10 @@ static PetscErrorCode SNESComputeMFFunctionCtx(SNES snes, Vec x, Vec f, void *ct
 
   This function can be provided to `SNESSetJacobian()` along with an appropriate sparse matrix to hold the Jacobian
 
-.seealso: `SNES`, `SNESSetJacobian()`, `SNESTestJacobian()`, `SNESComputeJacobianDefault()`, `SNESSetUseMatrixFree()`,
+  Developer Note:
+  The function has a poorly chosen name since it does not mention the use of finite differences
+
+.seealso: [](ch_snes), `SNES`, `SNESSetJacobian()`, `SNESTestJacobian()`, `SNESComputeJacobianDefault()`, `SNESSetUseMatrixFree()`,
           `MatFDColoringCreate()`, `MatFDColoringSetFunction()`
 @*/
 PetscErrorCode SNESComputeJacobianDefaultColor(SNES snes, Vec x1, Mat J, Mat B, void *ctx)
@@ -113,7 +117,7 @@ PetscErrorCode SNESComputeJacobianDefaultColor(SNES snes, Vec x1, Mat J, Mat B, 
 }
 
 /*@C
-  SNESPruneJacobianColor - Remove nondiagonal zeros in the Jacobian matrix and update the `MatMFFD` coloring information.
+  SNESPruneJacobianColor - Remove nondiagonal zeros in the Jacobian matrix and update the `MatMFFD` coloring information based on the new nonzero structure
 
   Collective
 
@@ -134,7 +138,7 @@ PetscErrorCode SNESComputeJacobianDefaultColor(SNES snes, Vec x1, Mat J, Mat B, 
   usually call `SNESComputeJacobian()` with randomized input vectors to generate a dummy Jacobian.
   `SNESComputeJacobian()` should be called before `SNESSolve()` but after `SNESSetUp()`.
 
-.seealso: `SNESComputeJacobianDefaultColor()`, `MatEliminateZeros()`, `MatFDColoringCreate()`, `MatFDColoringSetFunction()`
+.seealso: [](ch_snes), `SNESComputeJacobianDefaultColor()`, `MatEliminateZeros()`, `MatFDColoringCreate()`, `MatFDColoringSetFunction()`
 @*/
 PetscErrorCode SNESPruneJacobianColor(SNES snes, Mat J, Mat B)
 {

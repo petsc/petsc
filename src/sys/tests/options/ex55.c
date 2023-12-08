@@ -31,7 +31,7 @@ int main(int argc, char **argv)
     PetscCall(PetscViewerPushFormat(viewer, format));
     PetscCall(PetscOptionsMonitorSet(PetscOptionsMonitorCustom, viewer, NULL));
     PetscCall(PetscViewerPopFormat(viewer));
-    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(PetscOptionsRestoreViewer(&viewer));
   }
   PetscCall(PetscOptionsInsertString(NULL, "-option4 value4 -option5"));
   PetscCall(PetscFinalize());

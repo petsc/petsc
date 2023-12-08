@@ -106,7 +106,7 @@ static PetscErrorCode PCView_Kaczmarz(PC pc, PetscViewer viewer)
 .  * - S. Kaczmarz, "Angenaherte Auflosing von Systemen Linearer Gleichungen",
    Bull. Internat. Acad. Polon. Sci. C1. A, 1937.
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCJACOBI`, `PCBJACOBI`
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCJACOBI`, `PCBJACOBI`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Kaczmarz(PC pc)

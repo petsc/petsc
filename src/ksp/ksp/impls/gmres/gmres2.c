@@ -9,7 +9,7 @@
 + ksp - iterative context obtained from `KSPCreate()`
 - fcn - orthogonalization function
 
-  Calling sequence of fcn:
+  Calling sequence of `fcn`:
 + ksp - the solver context
 - it  - the current iteration
 
@@ -20,7 +20,7 @@
   Level: intermediate
 
   Notes:
-  Two orthogonalization routines are predefined, including `KSPGMRESModifiedGramSchmidtOrthogonalization()` and the default
+  Two orthogonalization routines are predefined, `KSPGMRESModifiedGramSchmidtOrthogonalization()` and the default
   `KSPGMRESClassicalGramSchmidtOrthogonalization()`.
 
   Use `KSPGMRESSetCGSRefinementType()` to determine if iterative refinement is used to increase stability.
@@ -52,14 +52,10 @@ PetscErrorCode KSPGMRESSetOrthogonalization(KSP ksp, PetscErrorCode (*fcn)(KSP k
 + ksp - the solver context
 - it  - the current iteration
 
-  Options Database Keys:
-+ -ksp_gmres_classicalgramschmidt - Activates KSPGMRESClassicalGramSchmidtOrthogonalization() (default)
-- -ksp_gmres_modifiedgramschmidt  - Activates KSPGMRESModifiedGramSchmidtOrthogonalization()
-
   Level: intermediate
 
   Notes:
-  Two orthogonalization routines are predefined, including `KSPGMRESModifiedGramSchmidtOrthogonalization()`, and the default
+  Two orthogonalization routines are predefined,  `KSPGMRESModifiedGramSchmidtOrthogonalization()`, and the default
   `KSPGMRESClassicalGramSchmidtOrthogonalization()`
 
   Use `KSPGMRESSetCGSRefinementType()` to determine if iterative refinement is used to increase stability.

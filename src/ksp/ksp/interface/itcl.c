@@ -15,7 +15,7 @@
 + ksp    - the Krylov context
 - prefix - the prefix string to prepend to all `KSP` option requests
 
-  Level: advanced
+  Level: intermediate
 
   Notes:
   A hyphen (-) must NOT be given at the beginning of the prefix name.
@@ -74,7 +74,7 @@ PetscErrorCode KSPSetOptionsPrefix(KSP ksp, const char prefix[])
 + ksp    - the Krylov context
 - prefix - the prefix string to prepend to all `KSP` option requests
 
-  Level: advanced
+  Level: intermediate
 
   Note:
   A hyphen (-) must NOT be given at the beginning of the prefix name.
@@ -201,8 +201,8 @@ PetscErrorCode KSPGetGuess(KSP ksp, KSPGuess *guess)
 
   Level: advanced
 
-  Note:
-  From Fortran the user should pass in a string 'prefix' of
+  Fortran Note:
+  Pass in a string 'prefix' of
   sufficient length to hold the prefix.
 
 .seealso: [](ch_ksp), `KSP`, `KSPSetFromOptions()`, `KSPSetOptionsPrefix()`, `KSPAppendOptionsPrefix()`
@@ -232,7 +232,7 @@ static PetscErrorCode PetscViewerAndFormatCreate_Internal(PetscViewer viewer, Pe
 + ksp  - `KSP` object you wish to monitor
 . opt  - the command line option for this monitor
 . name - the monitor type one is seeking
-- ctx  - An optional user context for the monitor, or NULL
+- ctx  - An optional user context for the monitor, or `NULL`
 
   Level: developer
 
@@ -272,7 +272,7 @@ PetscErrorCode KSPMonitorSetFromOptions(KSP ksp, const char opt[], const char na
   if (!dfunc) dfunc = PetscViewerAndFormatDestroy;
 
   PetscCall((*cfunc)(viewer, format, ctx, &vf));
-  PetscCall(PetscObjectDereference((PetscObject)viewer));
+  PetscCall(PetscOptionsRestoreViewer(&viewer));
   PetscCall(KSPMonitorSet(ksp, mfunc, vf, (PetscErrorCode(*)(void **))dfunc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

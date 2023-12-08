@@ -2411,12 +2411,10 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
     const PetscReal *basisDer = T->T[1];
     PetscReal        detJt;
 
-#if defined(PETSC_USE_DEBUG)
-    PetscCheck(Nq == T->Np, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Np %" PetscInt_FMT " != %" PetscInt_FMT, Nq, T->Np);
-    PetscCheck(pdim == T->Nb, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nb %" PetscInt_FMT " != %" PetscInt_FMT, pdim, T->Nb);
-    PetscCheck(dim == T->Nc, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nc %" PetscInt_FMT " != %" PetscInt_FMT, dim, T->Nc);
-    PetscCheck(cdim == T->cdim, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "cdim %" PetscInt_FMT " != %" PetscInt_FMT, cdim, T->cdim);
-#endif
+    PetscAssert(Nq == T->Np, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Np %" PetscInt_FMT " != %" PetscInt_FMT, Nq, T->Np);
+    PetscAssert(pdim == T->Nb, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nb %" PetscInt_FMT " != %" PetscInt_FMT, pdim, T->Nb);
+    PetscAssert(dim == T->Nc, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nc %" PetscInt_FMT " != %" PetscInt_FMT, dim, T->Nc);
+    PetscAssert(cdim == T->cdim, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "cdim %" PetscInt_FMT " != %" PetscInt_FMT, cdim, T->cdim);
     if (v) {
       PetscCall(PetscArrayzero(v, Nq * cdim));
       for (q = 0; q < Nq; ++q) {

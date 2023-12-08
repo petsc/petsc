@@ -74,7 +74,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
   PetscCall(KSPGetDM(ksp, &da));
   PetscCall(DMDAGetInfo(da, 0, &mx, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
   PetscCall(DMGetApplicationContext(da, &x));
-  h = 2.0 * PETSC_PI / ((mx));
+  h = 2.0 * PETSC_PI / mx;
   PetscCall(VecCopy(x, b));
   PetscCall(VecScale(b, h));
   PetscFunctionReturn(PETSC_SUCCESS);

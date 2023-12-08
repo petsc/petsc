@@ -14,7 +14,7 @@
 
    Level: intermediate
 
-.seealso: `SNESCreate()`, `SNESSetType()`, `SNESPYTHON`, `PetscPythonInitialize()`, `SNESPythonGetType()`
+.seealso: [](ch_snes), `SNES`, `SNESCreate()`, `SNESSetType()`, `SNESPYTHON`, `PetscPythonInitialize()`, `SNESPythonGetType()`
 @*/
 PetscErrorCode SNESPythonSetType(SNES snes, const char pyname[])
 {
@@ -26,7 +26,7 @@ PetscErrorCode SNESPythonSetType(SNES snes, const char pyname[])
 }
 
 /*@C
-   SNESPythonGetType - Get the type of a `SNES` object implemented in Python.
+   SNESPythonGetType - Get the type of a `SNES` object implemented in Python set with `SNESPythonSetType()`
 
    Not Collective
 
@@ -38,7 +38,7 @@ PetscErrorCode SNESPythonSetType(SNES snes, const char pyname[])
 
    Level: intermediate
 
-.seealso: `SNESCreate()`, `SNESSetType()`, `SNESPYTHON`, `PetscPythonInitialize()`, `SNESPythonSetType()`
+.seealso: [](ch_snes), `SNES`, `SNESCreate()`, `SNESSetType()`, `SNESPYTHON`, `PetscPythonInitialize()`, `SNESPythonSetType()`
 @*/
 PetscErrorCode SNESPythonGetType(SNES snes, const char *pyname[])
 {

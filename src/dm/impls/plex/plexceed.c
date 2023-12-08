@@ -275,6 +275,28 @@ PetscErrorCode DMPlexGetLocalOffsetsSupport(DM dm, DMLabel domain_label, PetscIn
 #if defined(PETSC_HAVE_LIBCEED)
   #include <petscdmplexceed.h>
 
+// Consumes the input petsc_indices and provides the output ceed_indices; no-copy when the sizes match.
+static PetscErrorCode PetscIntArrayIntoCeedInt_Private(PetscInt length, PetscInt max_bound, const char *max_bound_name, PetscInt **petsc_indices, CeedInt **ceed_indices)
+{
+  PetscFunctionBegin;
+  if (length) PetscAssertPointer(petsc_indices, 3);
+  PetscAssertPointer(ceed_indices, 4);
+  #if defined(PETSC_USE_64BIT_INDICES)
+  PetscCheck(max_bound <= PETSC_INT32_MAX, PETSC_COMM_SELF, PETSC_ERR_SUP, "%s %" PetscInt_FMT " does not fit in int32_t", max_bound_name, max_bound);
+  {
+    CeedInt *ceed_ind;
+    PetscCall(PetscMalloc1(length, &ceed_ind));
+    for (PetscInt i = 0; i < length; i++) ceed_ind[i] = (*petsc_indices)[i];
+    *ceed_indices = ceed_ind;
+    PetscCall(PetscFree(*petsc_indices));
+  }
+  #else
+  *ceed_indices  = *petsc_indices;
+  *petsc_indices = NULL;
+  #endif
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@C
   DMPlexGetCeedRestriction - Define the libCEED map from the local vector (Lvector) to the cells (Evector)
 
@@ -304,8 +326,12 @@ PetscErrorCode DMPlexGetCeedRestriction(DM dm, DMLabel domain_label, PetscInt la
 
     PetscCall(DMPlexGetLocalOffsets(dm, domain_label, label_value, height, dm_field, &num_cells, &cell_size, &num_comp, &lvec_size, &restr_indices));
     PetscCall(DMGetCeed(dm, &ceed));
-    PetscCallCEED(CeedElemRestrictionCreate(ceed, num_cells, cell_size, num_comp, 1, lvec_size, CEED_MEM_HOST, CEED_COPY_VALUES, restr_indices, &elem_restr));
-    PetscCall(PetscFree(restr_indices));
+    {
+      CeedInt *ceed_indices;
+      PetscCall(PetscIntArrayIntoCeedInt_Private(num_cells * cell_size, lvec_size, "lvec_size", &restr_indices, &ceed_indices));
+      PetscCallCEED(CeedElemRestrictionCreate(ceed, num_cells, cell_size, num_comp, 1, lvec_size, CEED_MEM_HOST, CEED_COPY_VALUES, ceed_indices, &elem_restr));
+      PetscCall(PetscFree(ceed_indices));
+    }
     dm->ceedERestrict = elem_restr;
   }
   *ERestrict = dm->ceedERestrict;
@@ -324,10 +350,15 @@ PetscErrorCode DMPlexCreateCeedRestrictionFVM(DM dm, CeedElemRestriction *erL, C
   PetscAssertPointer(erR, 3);
   PetscCall(DMGetCeed(dm, &ceed));
   PetscCall(DMPlexGetLocalOffsetsSupport(dm, NULL, 0, &num_faces, &num_comp, &lvec_size, &offL, &offR));
-  PetscCallCEED(CeedElemRestrictionCreate(ceed, num_faces, 1, num_comp, 1, lvec_size, CEED_MEM_HOST, CEED_COPY_VALUES, offL, erL));
-  PetscCallCEED(CeedElemRestrictionCreate(ceed, num_faces, 1, num_comp, 1, lvec_size, CEED_MEM_HOST, CEED_COPY_VALUES, offR, erR));
-  PetscCall(PetscFree(offL));
-  PetscCall(PetscFree(offR));
+  {
+    CeedInt *ceed_off;
+    PetscCall(PetscIntArrayIntoCeedInt_Private(num_faces * 1, lvec_size, "lvec_size", &offL, &ceed_off));
+    PetscCallCEED(CeedElemRestrictionCreate(ceed, num_faces, 1, num_comp, 1, lvec_size, CEED_MEM_HOST, CEED_COPY_VALUES, ceed_off, erL));
+    PetscCall(PetscFree(ceed_off));
+    PetscCall(PetscIntArrayIntoCeedInt_Private(num_faces * 1, lvec_size, "lvec_size", &offR, &ceed_off));
+    PetscCallCEED(CeedElemRestrictionCreate(ceed, num_faces, 1, num_comp, 1, lvec_size, CEED_MEM_HOST, CEED_COPY_VALUES, ceed_off, erR));
+    PetscCall(PetscFree(ceed_off));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

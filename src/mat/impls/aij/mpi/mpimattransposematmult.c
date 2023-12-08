@@ -93,6 +93,7 @@ static PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, M
     for (i = 0; i < n; i++) Carray[j * ldc + i] = ctarray[i * BN + j];
   PetscCall(VecRestoreArrayRead(ct, &ctarray));
   PetscCall(MatDenseRestoreArray(C, &Carray));
+  PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);

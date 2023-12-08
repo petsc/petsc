@@ -418,7 +418,8 @@ Usage of PETSc Functions and Macros
 
 #. Do not include ``assert.h`` in PETSc source code. Do not use
    ``assert()``, it doesn’t play well in the parallel MPI world.
-   You may use ``PetscAssert()`` where appropriate.
+   You may use ``PetscAssert()`` where appropriate. See ``PetscCall()`` documentation
+   for guidance of when to use ``PetscCheck()``` vs. ``PetscAssert()``.
 
 #. Make error messages short but informative. The user should be able to reasonably
    diagnose the greater problem from your error message.
@@ -633,8 +634,15 @@ where noted, add a newline after the section headings.
    particular algorithm was implemented.
 
 #. (If applicable) references should be indicated inline with \{cite\}\`Bibtex-key\` where
-   Bibtex-key is in the file `doc/petsc.bib`.  Manual pages that have not been updated use ``References:``
-   followed by the list of references and should be updated to the current system.
+   Bibtex-key is in the file `doc/petsc.bib`, as in the manual page for `PCFIELDSPLIT`.  Manual pages that have not been updated use ``References:``
+   followed by the list of references
+
+  .. code-block:: rst
+
+      References:
+      . * - Paper name, author, etc
+
+   and should be updated to the current system.
 
 #. ``.seealso:`` (no newline, no spaces to the left of this text), followed by a list of related manual
    pages. These manual pages should usually also point back to this

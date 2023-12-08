@@ -673,7 +673,7 @@ PetscFunctionReturn(PETSC_SUCCESS);
 
   Level: intermediate
 
-.seealso: `PCEXOTIC`, `PCExoticType()`
+.seealso: [](ch_ksp), `PCEXOTIC`, `PCExoticType()`
 @*/
 PetscErrorCode PCExoticSetType(PC pc, PCExoticType type)
 {
@@ -834,7 +834,7 @@ static PetscErrorCode PCSetFromOptions_Exotic(PC pc, PetscOptionItems *PetscOpti
 
    The usual `PCMG` options are supported, such as -mg_levels_pc_type <type> -mg_coarse_pc_type <type> and  -pc_mg_type <type>
 
-.seealso: `PCMG`, `PCSetDM()`, `PCExoticType`, `PCExoticSetType()`
+.seealso: [](ch_ksp), `PCMG`, `PCSetDM()`, `PCExoticType`, `PCExoticSetType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Exotic(PC pc)

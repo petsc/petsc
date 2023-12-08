@@ -579,7 +579,7 @@ static PetscErrorCode PCPatchSetDiscretisationInfoCombined(PC pc, DM dm, PetscIn
   Note:
   The entries of `f` (the output residual vector) have been set to zero before the call.
 
-.seealso: `PCPatchSetComputeOperator()`, `PCPatchGetComputeOperator()`, `PCPatchSetDiscretisationInfo()`, `PCPatchSetComputeFunctionInteriorFacets()`
+.seealso: [](ch_ksp), `PCPatchSetComputeOperator()`, `PCPatchGetComputeOperator()`, `PCPatchSetDiscretisationInfo()`, `PCPatchSetComputeFunctionInteriorFacets()`
 @*/
 PetscErrorCode PCPatchSetComputeFunction(PC pc, PetscErrorCode (*func)(PC pc, PetscInt point, Vec x, Vec f, IS cellIS, PetscInt n, const PetscInt *dofsArray, const PetscInt *dofsArrayWithAll, void *ctx), void *ctx)
 {
@@ -617,7 +617,7 @@ PetscErrorCode PCPatchSetComputeFunction(PC pc, PetscErrorCode (*func)(PC pc, Pe
   Note:
   The entries of `f` (the output residual vector) have been set to zero before the call.
 
-.seealso: `PCPatchSetComputeOperator()`, `PCPatchGetComputeOperator()`, `PCPatchSetDiscretisationInfo()`, `PCPatchSetComputeFunction()`
+.seealso: [](ch_ksp), `PCPatchSetComputeOperator()`, `PCPatchGetComputeOperator()`, `PCPatchSetDiscretisationInfo()`, `PCPatchSetComputeFunction()`
 @*/
 PetscErrorCode PCPatchSetComputeFunctionInteriorFacets(PC pc, PetscErrorCode (*func)(PC pc, PetscInt point, Vec x, Vec f, IS facetIS, PetscInt n, const PetscInt *dofsArray, const PetscInt *dofsArrayWithAll, void *ctx), void *ctx)
 {
@@ -655,7 +655,7 @@ PetscErrorCode PCPatchSetComputeFunctionInteriorFacets(PC pc, PetscErrorCode (*f
   Note:
   The matrix entries have been set to zero before the call.
 
-.seealso: `PCPatchGetComputeOperator()`, `PCPatchSetComputeFunction()`, `PCPatchSetDiscretisationInfo()`
+.seealso: [](ch_ksp), `PCPatchGetComputeOperator()`, `PCPatchSetComputeFunction()`, `PCPatchSetDiscretisationInfo()`
 @*/
 PetscErrorCode PCPatchSetComputeOperator(PC pc, PetscErrorCode (*func)(PC pc, PetscInt point, Vec x, Mat mat, IS facetIS, PetscInt n, const PetscInt *dofsArray, const PetscInt *dofsArrayWithAll, void *ctx), void *ctx)
 {
@@ -694,7 +694,7 @@ PetscErrorCode PCPatchSetComputeOperator(PC pc, PetscErrorCode (*func)(PC pc, Pe
   Note:
   The matrix entries have been set to zero before the call.
 
-.seealso: `PCPatchGetComputeOperator()`, `PCPatchSetComputeFunction()`, `PCPatchSetDiscretisationInfo()`
+.seealso: [](ch_ksp), `PCPatchGetComputeOperator()`, `PCPatchSetComputeFunction()`, `PCPatchSetDiscretisationInfo()`
 @*/
 PetscErrorCode PCPatchSetComputeOperatorInteriorFacets(PC pc, PetscErrorCode (*func)(PC pc, PetscInt point, Vec x, Mat mat, IS facetIS, PetscInt n, const PetscInt *dofsArray, const PetscInt *dofsArrayWithAll, void *ctx), void *ctx)
 {
@@ -2936,7 +2936,11 @@ static PetscErrorCode PCReset_PATCH(PC pc)
   patch->nsubspaces  = 0;
   PetscCall(ISDestroy(&patch->iterationSet));
 
-  PetscCall(PetscViewerDestroy(&patch->viewerSection));
+  PetscCall(PetscOptionsRestoreViewer(&patch->viewerCells));
+  PetscCall(PetscOptionsRestoreViewer(&patch->viewerIntFacets));
+  PetscCall(PetscOptionsRestoreViewer(&patch->viewerPoints));
+  PetscCall(PetscOptionsRestoreViewer(&patch->viewerSection));
+  PetscCall(PetscOptionsRestoreViewer(&patch->viewerMatrix));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3152,7 +3156,7 @@ static PetscErrorCode PCView_PATCH(PC pc, PetscViewer viewer)
 
    Level: intermediate
 
-.seealso: `PCType`, `PCCreate()`, `PCSetType()`, `PCASM`, `PCJACOBI`, `PCPBJACOBI`, `PCVPBJACOBI`, `SNESPATCH`
+.seealso: [](ch_ksp), `PCType`, `PCCreate()`, `PCSetType()`, `PCASM`, `PCJACOBI`, `PCPBJACOBI`, `PCVPBJACOBI`, `SNESPATCH`
 M*/
 PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC pc)
 {

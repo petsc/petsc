@@ -3,9 +3,9 @@ import config.package
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit              = '1d86d5327a621c030fe61255ce0114116d60d74a' # master 2023-4-2
+    self.gitcommit              = 'v3.12.0'
     self.download               = ['git://https://github.com/Reference-LAPACK/lapack.git','https://github.com/Reference-LAPACK/lapack/archive/'+self.gitcommit+'.tar.gz']
-    self.downloaddirnames       = ['netlib-lapack']
+    self.downloaddirnames       = ['netlib-lapack','lapack']
     self.includes               = []
     self.liblist                = [['libnlapack.a','libnblas.a']]
     self.precisions             = ['single','double']

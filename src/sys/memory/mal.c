@@ -442,6 +442,8 @@ PetscErrorCode PetscMallocA(int n, PetscBool clear, int lineno, const char *func
 
   The pointers are zeroed to prevent users from accidentally reusing space that has been freed.
 
+  If the arguments were obtained via `PetscMallocA()`, `PetscMalloc2()`, `PetscMalloc3()`, etc., then the arguments must be passed in the same order to the corresponding `PetscFreeA()`, `PetscFree2()`, `PetscFree3()`, respectively.
+
 .seealso: `PetscMallocAlign()`, `PetscMallocSet()`, `PetscMallocA()`, `PetscFree1()`, `PetscFree2()`, `PetscFree3()`, `PetscFree4()`, `PetscFree5()`, `PetscFree6()`, `PetscFree7()`
 @*/
 PetscErrorCode PetscFreeA(int n, int lineno, const char *function, const char *filename, void *ptr0, ...)

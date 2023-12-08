@@ -7,6 +7,7 @@ static char help[] = "Check that a DM can accurately represent and interpolate f
 #include <petscds.h>
 #include <petscksp.h>
 #include <petscsnes.h>
+#include <petscsf.h>
 
 typedef struct {
   /* Domain and mesh definition */
@@ -569,6 +570,19 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   PetscCall(PetscFVSetSpatialDimension(fv, dim));
   PetscCall(PetscFVSetFromOptions(fv));
   PetscCall(PetscFVSetUp(fv));
+  {
+    PetscSF pointSF;
+    DMLabel label;
+
+    PetscCall(DMCreateLabel(dmRedist, "Face Sets"));
+    PetscCall(DMGetLabel(dmRedist, "Face Sets", &label));
+    PetscCall(DMGetPointSF(dmRedist, &pointSF));
+    PetscCall(PetscObjectReference((PetscObject)pointSF));
+    PetscCall(DMSetPointSF(dmRedist, NULL));
+    PetscCall(DMPlexMarkBoundaryFaces(dmRedist, 1, label));
+    PetscCall(DMSetPointSF(dmRedist, pointSF));
+    PetscCall(PetscSFDestroy(&pointSF));
+  }
   PetscCall(DMPlexConstructGhostCells(dmRedist, NULL, NULL, &dmfv));
   PetscCall(DMDestroy(&dmRedist));
   PetscCall(DMSetNumFields(dmfv, 1));

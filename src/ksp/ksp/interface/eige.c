@@ -102,7 +102,7 @@ PetscErrorCode KSPComputeOperator(KSP ksp, MatType mattype, Mat *mat)
   `KSPMonitorSingularValue()` (which can be set with option -ksp_monitor_singular_value)
   to print the singular values at each iteration of the linear solve.
 
-  The preconditioner operator, rhs vector, solution vectors should be
+  The preconditioner operator, rhs vector, and solution vectors should be
   set before this routine is called. i.e use `KSPSetOperators()`, `KSPSolve()`
 
 .seealso: [](ch_ksp), `KSP`, `KSPComputeEigenvalues()`, `KSPMonitorSingularValue()`, `KSPComputeExtremeSingularValues()`, `KSPSetOperators()`, `KSPSolve()`

@@ -627,7 +627,7 @@ PetscErrorCode PetscSectionGetChart(PetscSection s, PetscInt *pStart, PetscInt *
   Input Parameters:
 + s      - the `PetscSection`
 . pStart - the first point
-- pEnd   - one past the last point
+- pEnd   - one past the last point, `pStart` $ \le $ `pEnd`
 
   Level: intermediate
 
@@ -646,6 +646,7 @@ PetscErrorCode PetscSectionSetChart(PetscSection s, PetscInt pStart, PetscInt pE
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
+  PetscCheck(pEnd >= pStart, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Chart pEnd %" PetscInt_FMT " cannot be smaller than chart pStart %" PetscInt_FMT, pEnd, pStart);
   if (pStart == s->pStart && pEnd == s->pEnd) PetscFunctionReturn(PETSC_SUCCESS);
   /* Cannot Reset() because it destroys field information */
   s->setup = PETSC_FALSE;
@@ -859,7 +860,7 @@ PetscErrorCode PetscSectionGetDof(PetscSection s, PetscInt point, PetscInt *numD
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscAssertPointer(numDof, 3);
-  if (PetscDefined(USE_DEBUG)) PetscCheck(point >= s->pStart && point < s->pEnd, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, s->pStart, s->pEnd);
+  PetscAssert(point >= s->pStart && point < s->pEnd, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, s->pStart, s->pEnd);
   *numDof = s->atlasDof[point - s->pStart];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -872,7 +873,7 @@ PetscErrorCode PetscSectionGetDof(PetscSection s, PetscInt point, PetscInt *numD
   Input Parameters:
 + s      - the `PetscSection`
 . point  - the point
-- numDof - the number of dof
+- numDof - the number of dof, these values may be negative -(dof+1) to indicate they are off process
 
   Level: intermediate
 
@@ -912,7 +913,8 @@ PetscErrorCode PetscSectionAddDof(PetscSection s, PetscInt point, PetscInt numDo
 {
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  if (PetscDefined(USE_DEBUG)) PetscCheck(point >= s->pStart && point < s->pEnd, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, s->pStart, s->pEnd);
+  PetscAssert(point >= s->pStart && point < s->pEnd, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, s->pStart, s->pEnd);
+  PetscCheck(numDof >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "numDof %" PetscInt_FMT " should not be negative", numDof);
   s->atlasDof[point - s->pStart] += numDof;
   PetscCall(PetscSectionInvalidateMaxDof_Internal(s));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -954,7 +956,7 @@ PetscErrorCode PetscSectionGetFieldDof(PetscSection s, PetscInt point, PetscInt 
 + s      - the `PetscSection`
 . point  - the point
 . field  - the field
-- numDof - the number of dof
+- numDof - the number of dof, these values may be negative -(dof+1) to indicate they are off process
 
   Level: intermediate
 
@@ -1721,7 +1723,7 @@ PetscErrorCode PetscSectionGetValueLayout(MPI_Comm comm, PetscSection s, PetscLa
   Level: intermediate
 
   Notes:
-  In a global section, this offset will be negative for points not owned by this process.
+  In a global section, `offset` will be negative for points not owned by this process.
 
   This is for the unnamed default field in the `PetscSection` not the named fields
 
@@ -1734,7 +1736,7 @@ PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *o
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscAssertPointer(offset, 3);
-  if (PetscDefined(USE_DEBUG)) PetscCheck(!(point < s->pStart) && !(point >= s->pEnd), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, s->pStart, s->pEnd);
+  PetscAssert(!(point < s->pStart) && !(point >= s->pEnd), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, s->pStart, s->pEnd);
   *offset = s->atlasOff[point - s->pStart];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1747,7 +1749,7 @@ PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *o
   Input Parameters:
 + s      - the `PetscSection`
 . point  - the point
-- offset - the offset
+- offset - the offset, these values may be negative indicating the values are off process
 
   Level: developer
 
@@ -1781,7 +1783,7 @@ PetscErrorCode PetscSectionSetOffset(PetscSection s, PetscInt point, PetscInt of
   Level: intermediate
 
   Notes:
-  In a global section, this offset will be negative for points not owned by this process.
+  In a global section, `offset` will be negative for points not owned by this process.
 
   The `offset` values are different depending on a value set with `PetscSectionSetPointMajor()`
 
@@ -1806,7 +1808,7 @@ PetscErrorCode PetscSectionGetFieldOffset(PetscSection s, PetscInt point, PetscI
 + s      - the `PetscSection`
 . point  - the point
 . field  - the field
-- offset - the offset
+- offset - the offset, these values may be negative indicating the values are off process
 
   Level: developer
 

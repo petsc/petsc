@@ -49,33 +49,88 @@ static PetscErrorCode DMPlexGetTensorPrismBounds_Internal(DM dm, PetscInt dim, P
 
 static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, PetscInt cellHeight, DMLabel label)
 {
-  PetscSF         sf;
-  const PetscInt *rootdegree, *leaves;
-  PetscInt        overlap, Nr = -1, Nl, pStart, fStart, fEnd;
+  PetscInt           depth, pStart, pEnd, fStart, fEnd, f, supportSize, nroots = -1, nleaves = -1;
+  PetscSF            sf;
+  const PetscSFNode *iremote = NULL;
+  const PetscInt    *ilocal  = NULL;
+  PetscInt          *leafData;
 
   PetscFunctionBegin;
+  PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+  PetscCall(DMPlexGetDepth(dm, &depth));
+  if (depth >= cellHeight + 1) {
+    PetscCall(DMPlexGetHeightStratum(dm, cellHeight + 1, &fStart, &fEnd));
+  } else {
+    /* Note DMPlexGetHeightStratum() returns fStart, fEnd = pStart, pEnd */
+    /* if height > depth, which is not what we want here.                */
+    fStart = 0;
+    fEnd   = 0;
+  }
+  PetscCall(PetscCalloc1(pEnd - pStart, &leafData));
+  leafData -= pStart;
   PetscCall(DMGetPointSF(dm, &sf));
-  PetscCall(DMPlexGetOverlap(dm, &overlap));
-  if (sf && !overlap) PetscCall(PetscSFGetGraph(sf, &Nr, &Nl, &leaves, NULL));
-  if (Nr > 0) {
-    PetscCall(PetscSFComputeDegreeBegin(sf, &rootdegree));
-    PetscCall(PetscSFComputeDegreeEnd(sf, &rootdegree));
-  } else rootdegree = NULL;
-  PetscCall(DMPlexGetChart(dm, &pStart, NULL));
-  PetscCall(DMPlexGetHeightStratum(dm, cellHeight + 1, &fStart, &fEnd));
-  for (PetscInt f = fStart; f < fEnd; ++f) {
-    PetscInt supportSize, loc = -1;
+  if (sf) PetscCall(PetscSFGetGraph(sf, &nroots, &nleaves, &ilocal, &iremote));
+  if (sf && nroots >= 0) {
+    PetscInt        cStart, cEnd, c, i;
+    PetscInt       *rootData, *rootData1, *cellOwners, hasTwoSupportCells = -2;
+    const PetscInt *support;
+    PetscMPIInt     rank;
 
-    PetscCall(DMPlexGetSupportSize(dm, f, &supportSize));
-    if (supportSize == 1) {
-      /* Do not mark faces which are shared, meaning
-           they are  present in the pointSF, or
-           they have rootdegree > 0
-         since they presumably have cells on the other side */
-      if (Nr > 0) {
-        PetscCall(PetscFindInt(f, Nl, leaves, &loc));
-        if (rootdegree[f - pStart] || loc >= 0) continue;
+    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
+    PetscCall(DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd));
+    PetscCall(PetscCalloc3(pEnd - pStart, &rootData, pEnd - pStart, &rootData1, cEnd - cStart, &cellOwners));
+    rootData -= pStart;
+    rootData1 -= pStart;
+    for (c = cStart; c < cEnd; ++c) cellOwners[c - cStart] = (PetscInt)rank;
+    for (i = 0; i < nleaves; ++i) {
+      c = ilocal ? ilocal[i] : i;
+      if (c >= cStart && c < cEnd) cellOwners[c - cStart] = iremote[i].rank;
+    }
+    for (f = fStart; f < fEnd; ++f) {
+      PetscCall(DMPlexGetSupportSize(dm, f, &supportSize));
+      if (supportSize == 1) {
+        PetscCall(DMPlexGetSupport(dm, f, &support));
+        leafData[f] = cellOwners[support[0] - cStart];
+      } else {
+        /* TODO: When using DMForest, we could have a parent facet (a coarse facet)     */
+        /*       supportSize of which alone does not tell us if it is an interior       */
+        /*       facet or an exterior facet. Those facets can be identified by checking */
+        /*       if they are in the parent tree. We should probably skip those parent   */
+        /*       facets here, which will allow for including the following check, and   */
+        /*       see if they are exterior facets or not afterwards by checking if the   */
+        /*       children are exterior or not.                                          */
+        /* PetscCheck(supportSize == 2, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid facet support size (%" PetscInt_FMT ") on facet (%" PetscInt_FMT ")", supportSize, f); */
+        leafData[f] = hasTwoSupportCells; /* some negative PetscInt */
       }
+      rootData[f]  = leafData[f];
+      rootData1[f] = leafData[f];
+    }
+    PetscCall(PetscSFReduceBegin(sf, MPIU_INT, leafData, rootData, MPI_MIN));
+    PetscCall(PetscSFReduceBegin(sf, MPIU_INT, leafData, rootData1, MPI_MAX));
+    PetscCall(PetscSFReduceEnd(sf, MPIU_INT, leafData, rootData, MPI_MIN));
+    PetscCall(PetscSFReduceEnd(sf, MPIU_INT, leafData, rootData1, MPI_MAX));
+    for (f = fStart; f < fEnd; ++f) {
+      /* Store global support size of f.                                                    */
+      /* Facet f is an interior facet if and only if one of the following two is satisfied: */
+      /* 1. supportSize is 2 on some rank.                                                  */
+      /* 2. supportSize is 1 on any rank that can see f, but f is on a partition boundary;  */
+      /*    i.e., rootData[f] < rootData1[f].                                               */
+      rootData[f] = (rootData[f] == hasTwoSupportCells || (rootData[f] < rootData1[f])) ? 2 : 1;
+      leafData[f] = rootData[f];
+    }
+    PetscCall(PetscSFBcastBegin(sf, MPIU_INT, rootData, leafData, MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(sf, MPIU_INT, rootData, leafData, MPI_REPLACE));
+    rootData += pStart;
+    rootData1 += pStart;
+    PetscCall(PetscFree3(rootData, rootData1, cellOwners));
+  } else {
+    for (f = fStart; f < fEnd; ++f) {
+      PetscCall(DMPlexGetSupportSize(dm, f, &supportSize));
+      leafData[f] = supportSize;
+    }
+  }
+  for (f = fStart; f < fEnd; ++f) {
+    if (leafData[f] == 1) {
       if (val < 0) {
         PetscInt *closure = NULL;
         PetscInt  clSize, cl, cval;
@@ -92,15 +147,20 @@ static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, Pets
       } else {
         PetscCall(DMLabelSetValue(label, f, val));
       }
+    } else {
+      /* TODO: See the above comment on DMForest */
+      /* PetscCheck(leafData[f] == 2, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid facet support size (%" PetscInt_FMT ") on facet (%" PetscInt_FMT ")", leafData[f], f); */
     }
   }
+  leafData += pStart;
+  PetscCall(PetscFree(leafData));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
   DMPlexMarkBoundaryFaces - Mark all faces on the boundary
 
-  Not Collective
+  Collective
 
   Input Parameters:
 + dm  - The original `DM`
@@ -112,7 +172,9 @@ static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, Pets
   Level: developer
 
   Note:
-  This function will use the point `PetscSF` from the input `DM` to exclude points on the partition boundary from being marked, unless the partition overlap is greater than zero. If you also wish to mark the partition boundary, you can use `DMSetPointSF()` to temporarily set it to `NULL`, and then reset it to the original object after the call.
+  This function will use the point `PetscSF` from the input `DM` and the ownership of the support cells to exclude points on the partition boundary from being marked. If you also wish to mark the partition boundary, you can use `DMSetPointSF()` to temporarily set it to `NULL`, and then reset it to the original object after the call.
+
+  In DMForest there can be facets support sizes of which alone can not determine whether they are on the boundary. Currently, this function is not guaranteed to produce the correct result in such case.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMLabelCreate()`, `DMCreateLabel()`
 @*/
@@ -3074,7 +3136,6 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, DMLabel vertexLa
   /* Create subpointMap which marks the submesh */
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, "subpoint_map", &subpointMap));
   PetscCall(DMPlexSetSubpointMap(subdm, subpointMap));
-  PetscCall(DMLabelDestroy(&subpointMap));
   if (vertexLabel) PetscCall(DMPlexMarkSubmesh_Uninterpolated(dm, vertexLabel, value, subpointMap, &numSubFaces, &nFV, subdm));
   /* Setup chart */
   PetscCall(DMLabelGetStratumSize(subpointMap, 0, &numSubVertices));
@@ -3092,6 +3153,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, DMLabel vertexLa
   for (c = 0; c < numSubCells; ++c) PetscCall(DMPlexSetConeSize(subdm, c, 1));
   for (f = firstSubFace; f < firstSubFace + numSubFaces; ++f) PetscCall(DMPlexSetConeSize(subdm, f, nFV));
   PetscCall(DMSetUp(subdm));
+  PetscCall(DMLabelDestroy(&subpointMap));
   /* Create face cones */
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   PetscCall(DMPlexGetMaxSizes(dm, &maxConeSize, NULL));
@@ -3652,7 +3714,6 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
   /* Create subpointMap which marks the submesh */
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, "subpoint_map", &subpointMap));
   PetscCall(DMPlexSetSubpointMap(subdm, subpointMap));
-  PetscCall(DMLabelDestroy(&subpointMap));
   PetscCall(DMPlexMarkCohesiveSubmesh_Uninterpolated(dm, hasLagrange, label, value, subpointMap, &numSubFaces, &nFV, &subCells, subdm));
   /* Setup chart */
   PetscCall(DMLabelGetStratumSize(subpointMap, 0, &numSubVertices));
@@ -3668,6 +3729,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
   for (c = 0; c < numSubCells; ++c) PetscCall(DMPlexSetConeSize(subdm, c, 1));
   for (f = firstSubFace; f < firstSubFace + numSubFaces; ++f) PetscCall(DMPlexSetConeSize(subdm, f, nFV));
   PetscCall(DMSetUp(subdm));
+  PetscCall(DMLabelDestroy(&subpointMap));
   /* Create face cones */
   PetscCall(DMPlexGetMaxSizes(dm, &maxConeSize, NULL));
   PetscCall(DMGetWorkArray(subdm, maxConeSize, MPIU_INT, (void **)&subface));

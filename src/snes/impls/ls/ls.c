@@ -1,6 +1,43 @@
 #include <../src/snes/impls/ls/lsimpl.h>
 
 /*
+     This file implements a truncated Newton method with a line search,
+     for solving a system of nonlinear equations, using the KSP, Vec,
+     and Mat interfaces for linear solvers, vectors, and matrices,
+     respectively.
+
+     The following basic routines are required for each nonlinear solver:
+          SNESCreate_XXX()          - Creates a nonlinear solver context
+          SNESSetFromOptions_XXX()  - Sets runtime options
+          SNESSolve_XXX()           - Solves the nonlinear system
+          SNESDestroy_XXX()         - Destroys the nonlinear solver context
+     The suffix "_XXX" denotes a particular implementation, in this case
+     we use _NEWTONLS (e.g., SNESCreate_NEWTONLS, SNESSolve_NEWTONLS) for solving
+     systems of nonlinear equations with a line search (LS) method.
+     These routines are actually called via the common user interface
+     routines SNESCreate(), SNESSetFromOptions(), SNESSolve(), and
+     SNESDestroy(), so the application code interface remains identical
+     for all nonlinear solvers.
+
+     Another key routine is:
+          SNESSetUp_XXX()           - Prepares for the use of a nonlinear solver
+     by setting data structures and options.   The interface routine SNESSetUp()
+     is not usually called directly by the user, but instead is called by
+     SNESSolve() if necessary.
+
+     Additional basic routines are:
+          SNESView_XXX()            - Prints details of runtime options that
+                                      have actually been used.
+     These are called by application codes via the interface routines
+     SNESView().
+
+     The various types of solvers (preconditioners, Krylov subspace methods,
+     nonlinear solvers, timesteppers) are all organized similarly, so the
+     above description applies to these categories also.
+
+*/
+
+/*
      Checks if J^T F = 0 which implies we've found a local minimum of the norm of the function,
     || F(u) ||_2 but not a zero, F(u) = 0. In the case when one cannot compute J^T F we use the fact that
     0 = (J^T F)^T W = F^T J W iff W not in the null space of J. Thanks for Jorge More
@@ -76,43 +113,6 @@ static PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes, Mat A, Vec F,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-     This file implements a truncated Newton method with a line search,
-     for solving a system of nonlinear equations, using the KSP, Vec,
-     and Mat interfaces for linear solvers, vectors, and matrices,
-     respectively.
-
-     The following basic routines are required for each nonlinear solver:
-          SNESCreate_XXX()          - Creates a nonlinear solver context
-          SNESSetFromOptions_XXX()  - Sets runtime options
-          SNESSolve_XXX()           - Solves the nonlinear system
-          SNESDestroy_XXX()         - Destroys the nonlinear solver context
-     The suffix "_XXX" denotes a particular implementation, in this case
-     we use _NEWTONLS (e.g., SNESCreate_NEWTONLS, SNESSolve_NEWTONLS) for solving
-     systems of nonlinear equations with a line search (LS) method.
-     These routines are actually called via the common user interface
-     routines SNESCreate(), SNESSetFromOptions(), SNESSolve(), and
-     SNESDestroy(), so the application code interface remains identical
-     for all nonlinear solvers.
-
-     Another key routine is:
-          SNESSetUp_XXX()           - Prepares for the use of a nonlinear solver
-     by setting data structures and options.   The interface routine SNESSetUp()
-     is not usually called directly by the user, but instead is called by
-     SNESSolve() if necessary.
-
-     Additional basic routines are:
-          SNESView_XXX()            - Prints details of runtime options that
-                                      have actually been used.
-     These are called by application codes via the interface routines
-     SNESView().
-
-     The various types of solvers (preconditioners, Krylov subspace methods,
-     nonlinear solvers, timesteppers) are all organized similarly, so the
-     above description applies to these categories also.
-
-*/
-
 // PetscClangLinter pragma disable: -fdoc-sowing-chars
 /*
   SNESSolve_NEWTONLS - Solves a nonlinear system with a truncated Newton
@@ -130,6 +130,7 @@ static PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   Vec                  Y, X, F;
   SNESLineSearch       linesearch;
   SNESConvergedReason  reason;
+  PC                   pc;
 #if defined(PETSC_USE_INFO)
   PetscReal gnorm;
 #endif
@@ -180,6 +181,10 @@ static PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   PetscCall(SNESConverged(snes, 0, 0.0, 0.0, fnorm));
   PetscCall(SNESMonitor(snes, 0, fnorm));
   if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
+
+  /* hook state vector to BFGS preconditioner */
+  PetscCall(KSPGetPC(snes->ksp, &pc));
+  PetscCall(PCLMVMSetUpdateVec(pc, X));
 
   for (i = 0; i < maxits; i++) {
     /* Call general purpose update function */
@@ -343,7 +348,7 @@ static PetscErrorCode SNESSetFromOptions_NEWTONLS(SNES snes, PetscOptionItems *P
 }
 
 /*MC
-      SNESNEWTONLS - Newton based nonlinear solver that uses a line search
+   SNESNEWTONLS - Newton based nonlinear solver that uses a line search
 
    Options Database Keys:
 +   -snes_linesearch_type <bt> - bt,basic.  Select line search type
@@ -355,12 +360,12 @@ static PetscErrorCode SNESSetFromOptions_NEWTONLS(SNES snes, PetscOptionItems *P
 .   -snes_linesearch_monitor - print information about progress of line searches
 -   -snes_linesearch_damping - damping factor used for basic line search
 
-    Note:
-    This is the default nonlinear solver in `SNES`
-
    Level: beginner
 
-.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONTR`, `SNESQN`, `SNESLineSearchSetType()`, `SNESLineSearchSetOrder()`
+   Note:
+   This is the default nonlinear solver in `SNES`
+
+.seealso: [](ch_snes), `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONTR`, `SNESQN`, `SNESLineSearchSetType()`, `SNESLineSearchSetOrder()`
           `SNESLineSearchSetPostCheck()`, `SNESLineSearchSetPreCheck()` `SNESLineSearchSetComputeNorms()`, `SNESGetLineSearch()`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONLS(SNES snes)

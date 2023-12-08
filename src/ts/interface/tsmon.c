@@ -80,7 +80,7 @@ PetscErrorCode TSMonitorSetFromOptions(TS ts, const char name[], const char help
     PetscCall(PetscViewerAndFormatCreate(viewer, format, &vf));
     PetscCall(PetscSNPrintf(interval_key, sizeof interval_key, "%s_interval", name));
     PetscCall(PetscOptionsGetInt(((PetscObject)ts)->options, ((PetscObject)ts)->prefix, interval_key, &vf->view_interval, NULL));
-    PetscCall(PetscObjectDereference((PetscObject)viewer));
+    PetscCall(PetscOptionsRestoreViewer(&viewer));
     if (monitorsetup) PetscCall((*monitorsetup)(ts, vf));
     PetscCall(TSMonitorSet(ts, (PetscErrorCode(*)(TS, PetscInt, PetscReal, Vec, void *))monitor, vf, (PetscErrorCode(*)(void **))PetscViewerAndFormatDestroy));
   }

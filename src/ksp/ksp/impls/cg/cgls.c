@@ -97,7 +97,7 @@ static PetscErrorCode KSPDestroy_CGLS(KSP ksp)
 }
 
 /*MC
-     KSPCGLS - Conjugate Gradient method for Least-Squares problems. Supports non-square (rectangular) matrices.
+   KSPCGLS - Conjugate Gradient method for Least-Squares problems. Supports non-square (rectangular) matrices.
 
    Level: beginner
 

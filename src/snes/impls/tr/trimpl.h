@@ -28,6 +28,14 @@ typedef struct {
   PetscReal t1;
   PetscReal t2;
 
+  /* Use quasi-Newton models for J and (possibly different) Jp */
+  SNESNewtonTRQNType qn;
+  Mat                qnB;
+  Mat                qnB_pre;
+
+  /* The type of norm for the trust region */
+  NormType norm;
+
   SNESNewtonTRFallbackType fallback; /* enum to distinguish fallback in case Newton step is outside of the trust region */
 
   PetscErrorCode (*precheck)(SNES, Vec, Vec, PetscBool *, void *);

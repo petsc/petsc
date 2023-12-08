@@ -53,7 +53,7 @@ PETSC_INTERN PetscErrorCode PCGetDefaultType_Private(PC pc, const char *type[])
 }
 
 /*@
-  PCReset - Resets a PC context to the pcsetupcalled = 0 state and removes any allocated `Vec`s and `Mat`s
+  PCReset - Resets a `PC` context to the pcsetupcalled = 0 state and removes any allocated `Vec`s and `Mat`s
 
   Collective
 
@@ -63,9 +63,9 @@ PETSC_INTERN PetscErrorCode PCGetDefaultType_Private(PC pc, const char *type[])
   Level: developer
 
   Note:
-  This allows a `PC` to be reused for a different sized linear system but using the same options that have been previously set in the PC
+  This allows a `PC` to be reused for a different sized linear system but using the same options that have been previously set in `pc`
 
-.seealso: `PC`, `PCCreate()`, `PCSetUp()`
+.seealso: [](ch_ksp), `PC`, `PCCreate()`, `PCSetUp()`
 @*/
 PetscErrorCode PCReset(PC pc)
 {
@@ -91,7 +91,7 @@ PetscErrorCode PCReset(PC pc)
 
   Level: developer
 
-.seealso: `PC`, `PCCreate()`, `PCSetUp()`
+.seealso: [](ch_ksp), `PC`, `PCCreate()`, `PCSetUp()`
 @*/
 PetscErrorCode PCDestroy(PC *pc)
 {
@@ -128,13 +128,16 @@ PetscErrorCode PCDestroy(PC *pc)
   Level: developer
 
   Note:
-  If this returns `PETSC_TRUE` then the system solved via the Krylov method is
-.vb
-      D M A D^{-1} y = D M b  for left preconditioning or
-      D A M D^{-1} z = D b for right preconditioning
-.ve
+  If this returns `PETSC_TRUE` then the system solved via the Krylov method is, for left and right preconditioning,
 
-.seealso: `PC`, `PCCreate()`, `PCSetUp()`, `PCDiagonalScaleLeft()`, `PCDiagonalScaleRight()`, `PCSetDiagonalScale()`
+  $$
+  \begin{align*}
+  D M A D^{-1} y = D M b  \\
+  D A M D^{-1} z = D b.
+  \end{align*}
+  $$
+
+.seealso: [](ch_ksp), `PC`, `PCCreate()`, `PCSetUp()`, `PCDiagonalScaleLeft()`, `PCDiagonalScaleRight()`, `PCSetDiagonalScale()`
 @*/
 PetscErrorCode PCGetDiagonalScale(PC pc, PetscBool *flag)
 {
@@ -158,15 +161,17 @@ PetscErrorCode PCGetDiagonalScale(PC pc, PetscBool *flag)
   Level: intermediate
 
   Notes:
-  The system solved via the Krylov method is
-.vb
-           D M A D^{-1} y = D M b  for left preconditioning or
-           D A M D^{-1} z = D b for right preconditioning
-.ve
+  The system solved via the Krylov method is, for left and right preconditioning,
+  $$
+  \begin{align*}
+  D M A D^{-1} y = D M b \\
+  D A M D^{-1} z = D b.
+  \end{align*}
+  $$
 
-  `PCDiagonalScaleLeft()` scales a vector by D. `PCDiagonalScaleRight()` scales a vector by D^{-1}.
+  `PCDiagonalScaleLeft()` scales a vector by $D$. `PCDiagonalScaleRight()` scales a vector by $D^{-1}$.
 
-.seealso: `PCCreate()`, `PCSetUp()`, `PCDiagonalScaleLeft()`, `PCDiagonalScaleRight()`, `PCGetDiagonalScale()`
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetUp()`, `PCDiagonalScaleLeft()`, `PCDiagonalScaleRight()`, `PCGetDiagonalScale()`
 @*/
 PetscErrorCode PCSetDiagonalScale(PC pc, Vec s)
 {
@@ -199,17 +204,20 @@ PetscErrorCode PCSetDiagonalScale(PC pc, Vec s)
   Level: intermediate
 
   Notes:
-  The system solved via the Krylov method is
-.vb
-        D M A D^{-1} y = D M b  for left preconditioning or
-        D A M D^{-1} z = D b for right preconditioning
-.ve
+  The system solved via the Krylov method is, for left and right preconditioning,
 
-  `PCDiagonalScaleLeft()` scales a vector by D. `PCDiagonalScaleRight()` scales a vector by D^{-1}.
+  $$
+  \begin{align*}
+  D M A D^{-1} y = D M b  \\
+  D A M D^{-1} z = D b.
+  \end{align*}
+  $$
 
-  If diagonal scaling is turned off and in is not out then in is copied to out
+  `PCDiagonalScaleLeft()` scales a vector by $D$. `PCDiagonalScaleRight()` scales a vector by $D^{-1}$.
 
-.seealso: `PCCreate()`, `PCSetUp()`, `PCDiagonalScaleSet()`, `PCDiagonalScaleRight()`, `PCDiagonalScale()`
+  If diagonal scaling is turned off and `in` is not `out` then `in` is copied to `out`
+
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetUp()`, `PCSetDiagonalScale()`, `PCDiagonalScaleRight()`, `PCDiagonalScale()`
 @*/
 PetscErrorCode PCDiagonalScaleLeft(PC pc, Vec in, Vec out)
 {
@@ -238,17 +246,20 @@ PetscErrorCode PCDiagonalScaleLeft(PC pc, Vec in, Vec out)
   Level: intermediate
 
   Notes:
-  The system solved via the Krylov method is
-.vb
-        D M A D^{-1} y = D M b  for left preconditioning or
-        D A M D^{-1} z = D b for right preconditioning
-.ve
+  The system solved via the Krylov method is, for left and right preconditioning,
 
-  `PCDiagonalScaleLeft()` scales a vector by D. `PCDiagonalScaleRight()` scales a vector by D^{-1}.
+  $$
+  \begin{align*}
+  D M A D^{-1} y = D M b  \\
+  D A M D^{-1} z = D b.
+  \end{aligne*}
+  $$
 
-  If diagonal scaling is turned off and in is not out then in is copied to out
+  `PCDiagonalScaleLeft()` scales a vector by $D$. `PCDiagonalScaleRight()` scales a vector by $D^{-1}$.
 
-.seealso: `PCCreate()`, `PCSetUp()`, `PCDiagonalScaleLeft()`, `PCDiagonalScaleSet()`, `PCDiagonalScale()`
+  If diagonal scaling is turned off and `in` is not `out` then `in` is copied to `out`
+
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetUp()`, `PCDiagonalScaleLeft()`, `PCSetDiagonalScale()`, `PCDiagonalScale()`
 @*/
 PetscErrorCode PCDiagonalScaleRight(PC pc, Vec in, Vec out)
 {
@@ -276,15 +287,16 @@ PetscErrorCode PCDiagonalScaleRight(PC pc, Vec in, Vec out)
 - flg - `PETSC_TRUE` to use the Amat, `PETSC_FALSE` to use the Pmat (default is false)
 
   Options Database Key:
-. -pc_use_amat <true,false> - use the amat to apply the operator
+. -pc_use_amat <true,false> - use the amat argument to `KSPSetOperators()` or `PCSetOperators()` to apply the operator
 
   Level: intermediate
 
   Note:
   For the common case in which the linear system matrix and the matrix used to construct the
-  preconditioner are identical, this routine is does nothing.
+  preconditioner are identical, this routine has no affect.
 
-.seealso: `PC`, `PCGetUseAmat()`, `PCBJACOBI`, `PGMG`, `PCFIELDSPLIT`, `PCCOMPOSITE`
+.seealso: [](ch_ksp), `PC`, `PCGetUseAmat()`, `PCBJACOBI`, `PGMG`, `PCFIELDSPLIT`, `PCCOMPOSITE`,
+          `KSPSetOperators()`, `PCSetOperators()`
 @*/
 PetscErrorCode PCSetUseAmat(PC pc, PetscBool flg)
 {
@@ -295,12 +307,12 @@ PetscErrorCode PCSetUseAmat(PC pc, PetscBool flg)
 }
 
 /*@
-  PCSetErrorIfFailure - Causes `PC` to generate an error if a FPE, for example a zero pivot, is detected.
+  PCSetErrorIfFailure - Causes `PC` to generate an error if a floating point exception, for example a zero pivot, is detected.
 
   Logically Collective
 
   Input Parameters:
-+ pc  - iterative context obtained from PCCreate()
++ pc  - iterative context obtained from `PCCreate()`
 - flg - `PETSC_TRUE` indicates you want the error generated
 
   Level: advanced
@@ -310,9 +322,9 @@ PetscErrorCode PCSetUseAmat(PC pc, PetscBool flg)
   to determine if it has converged or failed. Or use -ksp_error_if_not_converged to cause the program to terminate as soon as lack of convergence is
   detected.
 
-  This is propagated into KSPs used by this PC, which then propagate it into PCs used by those KSPs
+  This is propagated into `KSP`s used by this `PC`, which then propagate it into `PC`s used by those `KSP`s
 
-.seealso: `PC`, `KSPSetErrorIfNotConverged()`, `PCGetInitialGuessNonzero()`, `PCSetInitialGuessKnoll()`, `PCGetInitialGuessKnoll()`
+.seealso: [](ch_ksp), `PC`, `KSPSetErrorIfNotConverged()`, `PCGetInitialGuessNonzero()`, `PCSetInitialGuessKnoll()`, `PCGetInitialGuessKnoll()`
 @*/
 PetscErrorCode PCSetErrorIfFailure(PC pc, PetscBool flg)
 {
@@ -342,7 +354,7 @@ PetscErrorCode PCSetErrorIfFailure(PC pc, PetscBool flg)
   For the common case in which the linear system matrix and the matrix used to construct the
   preconditioner are identical, this routine is does nothing.
 
-.seealso: `PC`, `PCSetUseAmat()`, `PCBJACOBI`, `PGMG`, `PCFIELDSPLIT`, `PCCOMPOSITE`
+.seealso: [](ch_ksp), `PC`, `PCSetUseAmat()`, `PCBJACOBI`, `PGMG`, `PCFIELDSPLIT`, `PCCOMPOSITE`
 @*/
 PetscErrorCode PCGetUseAmat(PC pc, PetscBool *flg)
 {
@@ -415,7 +427,7 @@ PetscErrorCode PCGetKSPNestLevel(PC pc, PetscInt *level)
   The default preconditioner for sparse matrices is `PCILU` or `PCICC` with 0 fill on one process and block Jacobi (`PCBJACOBI`) with `PCILU` or `PCICC`
   in parallel. For dense matrices it is always `PCNONE`.
 
-.seealso: `PC`, `PCSetUp()`, `PCApply()`, `PCDestroy()`
+.seealso: [](ch_ksp), `PC`, `PCSetUp()`, `PCApply()`, `PCDestroy()`
 @*/
 PetscErrorCode PCCreate(MPI_Comm comm, PC *newpc)
 {
@@ -458,7 +470,7 @@ PetscErrorCode PCCreate(MPI_Comm comm, PC *newpc)
 
   Level: developer
 
-.seealso: `PC`, `PCApplyTranspose()`, `PCApplyBAorAB()`
+.seealso: [](ch_ksp), `PC`, `PCApplyTranspose()`, `PCApplyBAorAB()`
 @*/
 PetscErrorCode PCApply(PC pc, Vec x, Vec y)
 {
@@ -490,7 +502,7 @@ PetscErrorCode PCApply(PC pc, Vec x, Vec y)
 }
 
 /*@
-  PCMatApply - Applies the preconditioner to multiple vectors stored as a `MATDENSE`. Like `PCApply()`, Y and X must be different matrices.
+  PCMatApply - Applies the preconditioner to multiple vectors stored as a `MATDENSE`. Like `PCApply()`, `Y` and `X` must be different matrices.
 
   Collective
 
@@ -503,7 +515,7 @@ PetscErrorCode PCApply(PC pc, Vec x, Vec y)
 
   Level: developer
 
-.seealso: `PC`, `PCApply()`, `KSPMatSolve()`
+.seealso: [](ch_ksp), `PC`, `PCApply()`, `KSPMatSolve()`
 @*/
 PetscErrorCode PCMatApply(PC pc, Mat X, Mat Y)
 {
@@ -568,7 +580,7 @@ PetscErrorCode PCMatApply(PC pc, Mat X, Mat Y)
   Note:
   Currently, this routine is implemented only for `PCICC` and `PCJACOBI` preconditioners.
 
-.seealso: `PC`, `PCApply()`, `PCApplySymmetricRight()`
+.seealso: [](ch_ksp), `PC`, `PCApply()`, `PCApplySymmetricRight()`
 @*/
 PetscErrorCode PCApplySymmetricLeft(PC pc, Vec x, Vec y)
 {
@@ -605,7 +617,7 @@ PetscErrorCode PCApplySymmetricLeft(PC pc, Vec x, Vec y)
   Note:
   Currently, this routine is implemented only for `PCICC` and `PCJACOBI` preconditioners.
 
-.seealso: `PC`, `PCApply()`, `PCApplySymmetricLeft()`
+.seealso: [](ch_ksp), `PC`, `PCApply()`, `PCApplySymmetricLeft()`
 @*/
 PetscErrorCode PCApplySymmetricRight(PC pc, Vec x, Vec y)
 {
@@ -642,10 +654,10 @@ PetscErrorCode PCApplySymmetricRight(PC pc, Vec x, Vec y)
   Note:
   For complex numbers this applies the non-Hermitian transpose.
 
-  Developer Notes:
+  Developer Note:
   We need to implement a `PCApplyHermitianTranspose()`
 
-.seealso: `PC`, `PCApply()`, `PCApplyBAorAB()`, `PCApplyBAorABTranspose()`, `PCApplyTransposeExists()`
+.seealso: [](ch_ksp), `PC`, `PCApply()`, `PCApplyBAorAB()`, `PCApplyBAorABTranspose()`, `PCApplyTransposeExists()`
 @*/
 PetscErrorCode PCApplyTranspose(PC pc, Vec x, Vec y)
 {
@@ -678,7 +690,7 @@ PetscErrorCode PCApplyTranspose(PC pc, Vec x, Vec y)
 
   Level: developer
 
-.seealso: `PC`, `PCApplyTranspose()`
+.seealso: [](ch_ksp), `PC`, `PCApplyTranspose()`
 @*/
 PetscErrorCode PCApplyTransposeExists(PC pc, PetscBool *flg)
 {
@@ -691,7 +703,7 @@ PetscErrorCode PCApplyTransposeExists(PC pc, PetscBool *flg)
 }
 
 /*@
-  PCApplyBAorAB - Applies the preconditioner and operator to a vector. y = B*A*x or y = A*B*x.
+  PCApplyBAorAB - Applies the preconditioner and operator to a vector. $y = B*A*x $ or $ y = A*B*x$.
 
   Collective
 
@@ -707,10 +719,10 @@ PetscErrorCode PCApplyTransposeExists(PC pc, PetscBool *flg)
   Level: developer
 
   Note:
-  If the `PC` has had `PCSetDiagonalScale()` set then D M A D^{-1} for left preconditioning or  D A M D^{-1} is actually applied. Note that the
-  specific `KSPSolve()` method must also be written to handle the post-solve "correction" for the diagonal scaling.
+  If the `PC` has had `PCSetDiagonalScale()` set then $ D M A D^{-1} $ for left preconditioning or $ D A M D^{-1} $ is actually applied.
+  The specific `KSPSolve()` method must also be written to handle the post-solve "correction" for the diagonal scaling.
 
-.seealso: `PC`, `PCApply()`, `PCApplyTranspose()`, `PCApplyBAorABTranspose()`
+.seealso: [](ch_ksp), `PC`, `PCApply()`, `PCApplyTranspose()`, `PCApplyBAorABTranspose()`
 @*/
 PetscErrorCode PCApplyBAorAB(PC pc, PCSide side, Vec x, Vec y, Vec work)
 {
@@ -771,8 +783,8 @@ PetscErrorCode PCApplyBAorAB(PC pc, PCSide side, Vec x, Vec y, Vec work)
 
 /*@
   PCApplyBAorABTranspose - Applies the transpose of the preconditioner
-  and operator to a vector. That is, applies tr(B) * tr(A) with left preconditioning,
-  NOT tr(B*A) = tr(A)*tr(B).
+  and operator to a vector. That is, applies $B^T * A^T$ with left preconditioning,
+  NOT $(B*A)^T = A^T*B^T$.
 
   Collective
 
@@ -788,10 +800,10 @@ PetscErrorCode PCApplyBAorAB(PC pc, PCSide side, Vec x, Vec y, Vec work)
   Level: developer
 
   Note:
-  This routine is used internally so that the same Krylov code can be used to solve A x = b and A' x = b, with a preconditioner
-  defined by B'. This is why this has the funny form that it computes tr(B) * tr(A)
+  This routine is used internally so that the same Krylov code can be used to solve $A x = b$ and $A^T x = b$, with a preconditioner
+  defined by $B^T$. This is why this has the funny form that it computes $B^T * A^T$
 
-.seealso: `PC`, `PCApply()`, `PCApplyTranspose()`, `PCApplyBAorAB()`
+.seealso: [](ch_ksp), `PC`, `PCApply()`, `PCApplyTranspose()`, `PCApplyBAorAB()`
 @*/
 PetscErrorCode PCApplyBAorABTranspose(PC pc, PCSide side, Vec x, Vec y, Vec work)
 {
@@ -836,7 +848,7 @@ PetscErrorCode PCApplyBAorABTranspose(PC pc, PCSide side, Vec x, Vec y, Vec work
 
   Level: developer
 
-.seealso: `PC`, `PCRICHARDSON`, `PCApplyRichardson()`
+.seealso: [](ch_ksp), `PC`, `PCRICHARDSON`, `PCApplyRichardson()`
 @*/
 PetscErrorCode PCApplyRichardsonExists(PC pc, PetscBool *exists)
 {
@@ -879,7 +891,7 @@ PetscErrorCode PCApplyRichardsonExists(PC pc, PetscBool *exists)
   Except for the `PCMG` this routine ignores the convergence tolerances
   and always runs for the number of iterations
 
-.seealso: `PC`, `PCApplyRichardsonExists()`
+.seealso: [](ch_ksp), `PC`, `PCApplyRichardsonExists()`
 @*/
 PetscErrorCode PCApplyRichardson(PC pc, Vec b, Vec y, Vec w, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt its, PetscBool guesszero, PetscInt *outits, PCRichardsonConvergedReason *reason)
 {
@@ -905,7 +917,7 @@ PetscErrorCode PCApplyRichardson(PC pc, Vec b, Vec y, Vec w, PetscReal rtol, Pet
 
   Level: advanced
 
-.seealso: `PC`, `PCCreate()`, `PCApply()`, `PCDestroy()`, `PCFailedReason`
+.seealso: [](ch_ksp), `PC`, `PCCreate()`, `PCApply()`, `PCDestroy()`, `PCFailedReason`
 @*/
 PetscErrorCode PCSetFailedReason(PC pc, PCFailedReason reason)
 {
@@ -933,7 +945,7 @@ PetscErrorCode PCSetFailedReason(PC pc, PCFailedReason reason)
   a call `KSPCheckDot()` or  `KSPCheckNorm()` inside a `KSPSolve()` or `PCReduceFailedReason()`.
   It is not valid immediately after a `PCSetUp()` or `PCApply()`, then use `PCGetFailedReasonRank()`
 
-.seealso: `PC`, ``PCCreate()`, `PCApply()`, `PCDestroy()`, `PCGetFailedReasonRank()`, `PCSetFailedReason()`
+.seealso: [](ch_ksp), `PC`, ``PCCreate()`, `PCApply()`, `PCDestroy()`, `PCGetFailedReasonRank()`, `PCSetFailedReason()`
 @*/
 PetscErrorCode PCGetFailedReason(PC pc, PCFailedReason *reason)
 {
@@ -958,9 +970,9 @@ PetscErrorCode PCGetFailedReason(PC pc, PCFailedReason *reason)
   Level: advanced
 
   Note:
-  Different ranks may have different reasons or no reason, see `PCGetFailedReason()`
+  Different processes may have different reasons or no reason, see `PCGetFailedReason()`
 
-.seealso: `PC`, `PCCreate()`, `PCApply()`, `PCDestroy()`, `PCGetFailedReason()`, `PCSetFailedReason()`, `PCReduceFailedReason()`
+.seealso: [](ch_ksp), `PC`, `PCCreate()`, `PCApply()`, `PCDestroy()`, `PCGetFailedReason()`, `PCSetFailedReason()`, `PCReduceFailedReason()`
 @*/
 PetscErrorCode PCGetFailedReasonRank(PC pc, PCFailedReason *reason)
 {
@@ -982,10 +994,10 @@ PetscErrorCode PCGetFailedReasonRank(PC pc, PCFailedReason *reason)
   Level: advanced
 
   Note:
-  Different MPI ranks may have different reasons or no reason, see `PCGetFailedReason()`. This routine
+  Different MPI processes may have different reasons or no reason, see `PCGetFailedReason()`. This routine
   makes them have a common value (failure if any MPI process had a failure).
 
-.seealso: `PC`, `PCCreate()`, `PCApply()`, `PCDestroy()`, `PCGetFailedReason()`, `PCSetFailedReason()`
+.seealso: [](ch_ksp), `PC`, `PCCreate()`, `PCApply()`, `PCDestroy()`, `PCGetFailedReason()`, `PCSetFailedReason()`
 @*/
 PetscErrorCode PCReduceFailedReason(PC pc)
 {
@@ -1017,7 +1029,7 @@ PetscErrorCode PCReduceFailedReason(PC pc)
 
   Level: developer
 
-.seealso: `PC`, `PCCreate()`, `PCApply()`, `PCDestroy()`
+.seealso: [](ch_ksp), `PC`, `PCCreate()`, `PCApply()`, `PCDestroy()`
 @*/
 PetscErrorCode PCSetUp(PC pc)
 {
@@ -1089,7 +1101,7 @@ PetscErrorCode PCSetUp(PC pc)
   For nested preconditioners such as `PCBJACOBI` `PCSetUp()` is not called on each sub-`KSP` when `PCSetUp()` is
   called on the outer `PC`, this routine ensures it is called.
 
-.seealso: `PC`, `PCSetUp()`, `PCCreate()`, `PCApply()`, `PCDestroy()`
+.seealso: [](ch_ksp), `PC`, `PCSetUp()`, `PCCreate()`, `PCApply()`, `PCDestroy()`
 @*/
 PetscErrorCode PCSetUpOnBlocks(PC pc)
 {
@@ -1138,7 +1150,7 @@ PetscErrorCode PCSetUpOnBlocks(PC pc)
   the block Jacobi (`PCBJACOBI`) and additive Schwarz (`PCASM`)
   preconditioners.  All other preconditioners ignore this routine.
 
-.seealso: `PC`, `PCBJACOBI`, `PCASM`, `PCModifySubMatrices()`
+.seealso: [](ch_ksp), `PC`, `PCBJACOBI`, `PCASM`, `PCModifySubMatrices()`
 @*/
 PetscErrorCode PCSetModifySubMatrices(PC pc, PetscErrorCode (*func)(PC pc, PetscInt nsub, const IS row[], const IS col[], Mat submat[], void *ctx), void *ctx)
 {
@@ -1164,7 +1176,7 @@ PetscErrorCode PCSetModifySubMatrices(PC pc, PetscErrorCode (*func)(PC pc, Petsc
          that comprise each local submatrix
 . submat - array of local submatrices
 - ctx    - optional user-defined context for private data for the
-         user-defined routine (may be null)
+         user-defined routine (may be `NULL`)
 
   Output Parameter:
 . submat - array of local submatrices (the entries of which may
@@ -1176,7 +1188,7 @@ PetscErrorCode PCSetModifySubMatrices(PC pc, PetscErrorCode (*func)(PC pc, Petsc
   The user should NOT generally call this routine, as it will
   automatically be called within certain preconditioners.
 
-.seealso: `PC`, `PCSetModifySubMatrices()`
+.seealso: [](ch_ksp), `PC`, `PCSetModifySubMatrices()`
 @*/
 PetscErrorCode PCModifySubMatrices(PC pc, PetscInt nsub, const IS row[], const IS col[], Mat submat[], void *ctx)
 {
@@ -1215,7 +1227,7 @@ PetscErrorCode PCModifySubMatrices(PC pc, PetscInt nsub, const IS row[], const I
   matrix assembly.  See the routine `MatZeroEntries()` if desiring to
   zero all elements of a matrix.
 
-.seealso: `PC`, `PCGetOperators()`, `MatZeroEntries()`
+.seealso: [](ch_ksp), `PC`, `PCGetOperators()`, `MatZeroEntries()`
  @*/
 PetscErrorCode PCSetOperators(PC pc, Mat Amat, Mat Pmat)
 {
@@ -1267,7 +1279,7 @@ PetscErrorCode PCSetOperators(PC pc, Mat Amat, Mat Pmat)
   Normally if a matrix inside a `PC` changes the `PC` automatically updates itself using information from the changed matrix. This option
   prevents this.
 
-.seealso: `PC`, `PCGetOperators()`, `MatZeroEntries()`, `PCGetReusePreconditioner()`, `KSPSetReusePreconditioner()`
+.seealso: [](ch_ksp), `PC`, `PCGetOperators()`, `MatZeroEntries()`, `PCGetReusePreconditioner()`, `KSPSetReusePreconditioner()`
  @*/
 PetscErrorCode PCSetReusePreconditioner(PC pc, PetscBool flag)
 {
@@ -1291,7 +1303,7 @@ PetscErrorCode PCSetReusePreconditioner(PC pc, PetscBool flag)
 
   Level: intermediate
 
-.seealso: `PC`, `PCGetOperators()`, `MatZeroEntries()`, `PCSetReusePreconditioner()`
+.seealso: [](ch_ksp), `PC`, `PCGetOperators()`, `MatZeroEntries()`, `PCSetReusePreconditioner()`
  @*/
 PetscErrorCode PCGetReusePreconditioner(PC pc, PetscBool *flag)
 {
@@ -1306,7 +1318,7 @@ PetscErrorCode PCGetReusePreconditioner(PC pc, PetscBool *flag)
   PCGetOperators - Gets the matrix associated with the linear system and
   possibly a different one associated with the preconditioner.
 
-  Not Collective, though parallel mats are returned if pc is parallel
+  Not Collective, though parallel `Mat`s are returned if `pc` is parallel
 
   Input Parameter:
 . pc - the preconditioner context
@@ -1361,7 +1373,7 @@ PetscErrorCode PCGetReusePreconditioner(PC pc, PetscBool *flag)
   Thus, why should YOU have to create the `Mat` and attach it to the `SNES`/`KSP`/`PC`, when
   it can be created for you?
 
-.seealso: `PC`, `PCSetOperators()`, `KSPGetOperators()`, `KSPSetOperators()`, `PCGetOperatorsSet()`
+.seealso: [](ch_ksp), `PC`, `PCSetOperators()`, `KSPGetOperators()`, `KSPSetOperators()`, `PCGetOperatorsSet()`
 @*/
 PetscErrorCode PCGetOperators(PC pc, Mat *Amat, Mat *Pmat)
 {
@@ -1415,7 +1427,7 @@ PetscErrorCode PCGetOperators(PC pc, Mat *Amat, Mat *Pmat)
 
   Level: intermediate
 
-.seealso: `PC`, `PCSetOperators()`, `KSPGetOperators()`, `KSPSetOperators()`, `PCGetOperators()`
+.seealso: [](ch_ksp), `PC`, `PCSetOperators()`, `KSPGetOperators()`, `KSPSetOperators()`, `PCGetOperators()`
 @*/
 PetscErrorCode PCGetOperatorsSet(PC pc, PetscBool *mat, PetscBool *pmat)
 {
@@ -1431,7 +1443,7 @@ PetscErrorCode PCGetOperatorsSet(PC pc, PetscBool *mat, PetscBool *pmat)
   preconditioner context.  This routine is valid only for the `PCLU`,
   `PCILU`, `PCCHOLESKY`, and `PCICC` methods.
 
-  Not Collective though mat is parallel if pc is parallel
+  Not Collective though `mat` is parallel if `pc` is parallel
 
   Input Parameter:
 . pc - the preconditioner context
@@ -1442,9 +1454,9 @@ PetscErrorCode PCGetOperatorsSet(PC pc, PetscBool *mat, PetscBool *pmat)
   Level: advanced
 
   Note:
-  Does not increase the reference count for the matrix so DO NOT destroy it
+  Does not increase the reference count for `mat` so DO NOT destroy it
 
-.seealso: `PC`, `PCLU`, `PCILU`, `PCCHOLESKY`, `PCICC`
+.seealso: [](ch_ksp), `PC`, `PCLU`, `PCILU`, `PCCHOLESKY`, `PCICC`
 @*/
 PetscErrorCode PCFactorGetMatrix(PC pc, Mat *mat)
 {
@@ -1473,7 +1485,7 @@ PetscErrorCode PCFactorGetMatrix(PC pc, Mat *mat)
 
   Level: advanced
 
-.seealso: `PC`, `PCSetFromOptions`, `PCAppendOptionsPrefix()`, `PCGetOptionsPrefix()`
+.seealso: [](ch_ksp), `PC`, `PCSetFromOptions`, `PCAppendOptionsPrefix()`, `PCGetOptionsPrefix()`
 @*/
 PetscErrorCode PCSetOptionsPrefix(PC pc, const char prefix[])
 {
@@ -1500,7 +1512,7 @@ PetscErrorCode PCSetOptionsPrefix(PC pc, const char prefix[])
 
   Level: advanced
 
-.seealso: `PC`, `PCSetFromOptions`, `PCSetOptionsPrefix()`, `PCGetOptionsPrefix()`
+.seealso: [](ch_ksp), `PC`, `PCSetFromOptions`, `PCSetOptionsPrefix()`, `PCGetOptionsPrefix()`
 @*/
 PetscErrorCode PCAppendOptionsPrefix(PC pc, const char prefix[])
 {
@@ -1522,13 +1534,13 @@ PetscErrorCode PCAppendOptionsPrefix(PC pc, const char prefix[])
   Output Parameter:
 . prefix - pointer to the prefix string used, is returned
 
-  Fortran Notes:
-  The user should pass in a string 'prefix' of
-  sufficient length to hold the prefix.
-
   Level: advanced
 
-.seealso: `PC`, `PCSetFromOptions`, `PCSetOptionsPrefix()`, `PCAppendOptionsPrefix()`
+  Fortran Note:
+  The user should pass in a string `prefix` of
+  sufficient length to hold the prefix.
+
+.seealso: [](ch_ksp), `PC`, `PCSetFromOptions`, `PCSetOptionsPrefix()`, `PCAppendOptionsPrefix()`
 @*/
 PetscErrorCode PCGetOptionsPrefix(PC pc, const char *prefix[])
 {
@@ -1579,7 +1591,7 @@ PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC pc, PetscBool *change)
 
   `KSPSolve()` calls this directly, so is rarely called by the user.
 
-.seealso: `PC`, `PCPostSolve()`
+.seealso: [](ch_ksp), `PC`, `PCPostSolve()`
 @*/
 PetscErrorCode PCPreSolve(PC pc, KSP ksp)
 {
@@ -1615,7 +1627,7 @@ PetscErrorCode PCPreSolve(PC pc, KSP ksp)
 
   Level: developer
 
-.seealso: `PC`, `PCSetUp()`, `PCPreSolve()`
+.seealso: [](ch_ksp), `PC`, `PCSetUp()`, `PCPreSolve()`
 @*/
 PetscErrorCode PCSetPreSolve(PC pc, PetscErrorCode (*presolve)(PC pc, KSP ksp))
 {
@@ -1643,12 +1655,12 @@ PetscErrorCode PCSetPreSolve(PC pc, PetscErrorCode (*presolve)(PC pc, KSP ksp))
     PCPostSolve(pc,ksp);
 .ve
 
+  Level: developer
+
   Note:
   `KSPSolve()` calls this routine directly, so it is rarely called by the user.
 
-  Level: developer
-
-.seealso: `PC`, `PCSetPostSolve()`, `PCSetPresolve()`, `PCPreSolve()`, `KSPSolve()`
+.seealso: [](ch_ksp), `PC`, `PCSetPostSolve()`, `PCSetPresolve()`, `PCPreSolve()`, `KSPSolve()`
 @*/
 PetscErrorCode PCPostSolve(PC pc, KSP ksp)
 {
@@ -1677,9 +1689,9 @@ PetscErrorCode PCPostSolve(PC pc, KSP ksp)
   Level: intermediate
 
   Note:
-  The type is determined by the data in the file, any type set into the PC before this call is ignored.
+  The type is determined by the data in the file, any `PCType` set into the `PC` before this call is ignored.
 
-.seealso: `PC`, `PetscViewerBinaryOpen()`, `PCView()`, `MatLoad()`, `VecLoad()`
+.seealso: [](ch_ksp), `PC`, `PetscViewerBinaryOpen()`, `PCView()`, `MatLoad()`, `VecLoad()`
 @*/
 PetscErrorCode PCLoad(PC newdm, PetscViewer viewer)
 {
@@ -1707,7 +1719,7 @@ PetscErrorCode PCLoad(PC newdm, PetscViewer viewer)
 #endif
 
 /*@C
-  PCViewFromOptions - View from the `PC` based on options in the database
+  PCViewFromOptions - View from the `PC` based on options in the options database
 
   Collective
 
@@ -1718,7 +1730,7 @@ PetscErrorCode PCLoad(PC newdm, PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: `PC`, `PCView`, `PetscObjectViewFromOptions()`, `PCCreate()`
+.seealso: [](ch_ksp), `PC`, `PCView`, `PetscObjectViewFromOptions()`, `PCCreate()`
 @*/
 PetscErrorCode PCViewFromOptions(PC A, PetscObject obj, const char name[])
 {
@@ -1750,7 +1762,7 @@ PetscErrorCode PCViewFromOptions(PC A, PetscObject obj, const char name[])
   The user can open an alternative visualization contexts with
   `PetscViewerASCIIOpen()` (output to a specified file).
 
-.seealso: `PC`, `PetscViewer`, `KSPView()`, `PetscViewerASCIIOpen()`
+.seealso: [](ch_ksp), `PC`, `PetscViewer`, `KSPView()`, `PetscViewerASCIIOpen()`
 @*/
 PetscErrorCode PCView(PC pc, PetscViewer viewer)
 {
@@ -1859,7 +1871,7 @@ PetscErrorCode PCView(PC pc, PetscViewer viewer)
 }
 
 /*@C
-  PCRegister -  Adds a method to the preconditioner package.
+  PCRegister -  Adds a method (`PCType`) to the preconditioner package.
 
   Not collective
 
@@ -1882,7 +1894,7 @@ $     -pc_type my_solver
   Note:
   `PCRegister()` may be called multiple times to add several user-defined preconditioners.
 
-.seealso: `PC`, `PCType`, `PCRegisterAll()`
+.seealso: [](ch_ksp), `PC`, `PCType`, `PCRegisterAll()`
 @*/
 PetscErrorCode PCRegister(const char sname[], PetscErrorCode (*function)(PC))
 {
@@ -1909,7 +1921,7 @@ static PetscErrorCode MatMult_PC(Mat A, Vec X, Vec Y)
 
   Input Parameters:
 + pc      - the preconditioner object
-- mattype - the matrix type to be used for the operator
+- mattype - the `MatType` to be used for the operator
 
   Output Parameter:
 . mat - the explicit preconditioned operator
@@ -1919,9 +1931,9 @@ static PetscErrorCode MatMult_PC(Mat A, Vec X, Vec Y)
   Note:
   This computation is done by applying the operators to columns of the identity matrix.
   This routine is costly in general, and is recommended for use only with relatively small systems.
-  Currently, this routine uses a dense matrix format when mattype == NULL
+  Currently, this routine uses a dense matrix format when `mattype` == `NULL`
 
-.seealso: `PC`, `KSPComputeOperator()`, `MatType`
+.seealso: [](ch_ksp), `PC`, `KSPComputeOperator()`, `MatType`
 @*/
 PetscErrorCode PCComputeOperator(PC pc, MatType mattype, Mat *mat)
 {
@@ -1964,7 +1976,7 @@ PetscErrorCode PCComputeOperator(PC pc, MatType mattype, Mat *mat)
   should be ordered for nodes 0 to N-1 like so: [ 0.x, 0.y, 0.z, 1.x,
   ... , N-1.z ].
 
-.seealso: `PC`, `MatSetNearNullSpace()`
+.seealso: [](ch_ksp), `PC`, `MatSetNearNullSpace()`
 @*/
 PetscErrorCode PCSetCoordinates(PC pc, PetscInt dim, PetscInt nloc, PetscReal coords[])
 {
@@ -1985,14 +1997,14 @@ PetscErrorCode PCSetCoordinates(PC pc, PetscInt dim, PetscInt nloc, PetscReal co
 
   Output Parameters:
 + num_levels     - the number of levels
-- interpolations - the interpolation matrices (size of num_levels-1)
+- interpolations - the interpolation matrices (size of `num_levels`-1)
 
   Level: advanced
 
-  Developer Notes:
+  Developer Note:
   Why is this here instead of in `PCMG` etc?
 
-.seealso: `PC`, `PCMG`, `PCMGGetRestriction()`, `PCMGSetInterpolation()`, `PCMGGetInterpolation()`, `PCGetCoarseOperators()`
+.seealso: [](ch_ksp), `PC`, `PCMG`, `PCMGGetRestriction()`, `PCMGSetInterpolation()`, `PCMGGetInterpolation()`, `PCGetCoarseOperators()`
 @*/
 PetscErrorCode PCGetInterpolations(PC pc, PetscInt *num_levels, Mat *interpolations[])
 {
@@ -2014,14 +2026,14 @@ PetscErrorCode PCGetInterpolations(PC pc, PetscInt *num_levels, Mat *interpolati
 
   Output Parameters:
 + num_levels      - the number of levels
-- coarseOperators - the coarse operator matrices (size of num_levels-1)
+- coarseOperators - the coarse operator matrices (size of `num_levels`-1)
 
   Level: advanced
 
-  Developer Notes:
+  Developer Note:
   Why is this here instead of in `PCMG` etc?
 
-.seealso: `PC`, `PCMG`, `PCMGGetRestriction()`, `PCMGSetInterpolation()`, `PCMGGetRScale()`, `PCMGGetInterpolation()`, `PCGetInterpolations()`
+.seealso: [](ch_ksp), `PC`, `PCMG`, `PCMGGetRestriction()`, `PCMGSetInterpolation()`, `PCMGGetRScale()`, `PCMGGetInterpolation()`, `PCGetInterpolations()`
 @*/
 PetscErrorCode PCGetCoarseOperators(PC pc, PetscInt *num_levels, Mat *coarseOperators[])
 {

@@ -9,13 +9,13 @@
 
      Input Parameters:
 +      snes - the `SNES` context
-.      X - solution
-.      obj - real to hold the objective value
--      ctx - optional user-defined objective context
+.      X    - solution
+.      obj  - real to hold the objective value
+-      ctx  - optional user-defined objective context
 
    Level: advanced
 
-.seealso: `SNES`, `SNESSetFunction()`, `SNESGetFunction()`, `SNESSetObjective()`, `SNESGetObjective()`, `SNESJacobianFunction`, `SNESFunction`
+.seealso: [](ch_snes), `SNES`, `SNESSetFunction()`, `SNESGetFunction()`, `SNESSetObjective()`, `SNESGetObjective()`, `SNESJacobianFunction`, `SNESFunction`
 M*/
 
 /*@C
@@ -34,11 +34,11 @@ M*/
   Note:
   Some of the `SNESLineSearch` methods attempt to minimize a given objective provided by this function to determine a step length.
 
-  If not provided then this defaults to the two norm of the function evaluation (set with `SNESSetFunction()`)
+  If not provided then this defaults to the two-norm of the function evaluation (set with `SNESSetFunction()`)
 
   This is not used in the `SNESLINESEARCHCP` line search.
 
-.seealso: `SNES`, `SNESLineSearch()`, `SNESGetObjective()`, `SNESComputeObjective()`, `SNESSetFunction()`, `SNESSetJacobian()`, `SNESObjectiveFunction`
+.seealso: [](ch_snes), `SNES`, `SNESLineSearch()`, `SNESGetObjective()`, `SNESComputeObjective()`, `SNESSetFunction()`, `SNESSetJacobian()`, `SNESObjectiveFunction`
 @*/
 PetscErrorCode SNESSetObjective(SNES snes, PetscErrorCode (*obj)(SNES, Vec, PetscReal *, void *), void *ctx)
 {
@@ -60,12 +60,12 @@ PetscErrorCode SNESSetObjective(SNES snes, PetscErrorCode (*obj)(SNES, Vec, Pets
 . snes - the `SNES` context
 
   Output Parameters:
-+ obj - objective evaluation routine (or `NULL`); see `SNESObjectFunction` for details
++ obj - objective evaluation routine (or `NULL`); see `SNESObjectiveFunction` for details
 - ctx - the function context (or `NULL`)
 
   Level: advanced
 
-.seealso: `SNES`, `SNESSetObjective()`, `SNESGetSolution()`
+.seealso: [](ch_snes), `SNES`, `SNESSetObjective()`, `SNESObjectiveFunction`, `SNESGetSolution()`
 @*/
 PetscErrorCode SNESGetObjective(SNES snes, PetscErrorCode (**obj)(SNES, Vec, PetscReal *, void *), void **ctx)
 {
@@ -92,7 +92,13 @@ PetscErrorCode SNESGetObjective(SNES snes, PetscErrorCode (**obj)(SNES, Vec, Pet
 
   Level: developer
 
-.seealso: `SNESLineSearch`, `SNES`, `SNESSetObjective()`, `SNESGetSolution()`
+  Notes:
+  `SNESComputeObjective()` is typically used within line-search routines,
+  so users would not generally call this routine themselves.
+
+  When solving for $F(x) = b$, this routine computes $objective(x) - x^T b$ where $objective(x)$ is the function provided with `SNESSetObjective()`
+
+.seealso: [](ch_snes), `SNESLineSearch`, `SNES`, `SNESSetObjective()`, `SNESGetSolution()`
 @*/
 PetscErrorCode SNESComputeObjective(SNES snes, Vec X, PetscReal *ob)
 {
@@ -109,6 +115,12 @@ PetscErrorCode SNESComputeObjective(SNES snes, Vec X, PetscReal *ob)
   PetscCall(PetscLogEventBegin(SNES_ObjectiveEval, snes, X, 0, 0));
   PetscCall((sdm->ops->computeobjective)(snes, X, ob, sdm->objectivectx));
   PetscCall(PetscLogEventEnd(SNES_ObjectiveEval, snes, X, 0, 0));
+  if (snes->vec_rhs) {
+    PetscScalar dot;
+
+    PetscCall(VecDot(snes->vec_rhs, X, &dot));
+    *ob -= PetscRealPart(dot);
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -139,9 +151,9 @@ PetscErrorCode SNESComputeObjective(SNES snes, Vec X, PetscReal *ob)
   noisy.  This is often necessary, but should be done with care, even when debugging
   small problems.
 
-  Note that this uses quadratic interpolation of the objective to form each value in the function.
+  This uses quadratic interpolation of the objective to form each value in the function.
 
-.seealso: `SNESSetObjective()`, `SNESSetFunction()`, `SNESComputeObjective()`, `SNESComputeJacobianDefault()`
+.seealso: [](ch_snes), `SNESSetObjective()`, `SNESSetFunction()`, `SNESComputeObjective()`, `SNESComputeJacobianDefault()`
 @*/
 PetscErrorCode SNESObjectiveComputeFunctionDefaultFD(SNES snes, Vec X, Vec F, void *ctx)
 {
@@ -209,7 +221,6 @@ PetscErrorCode SNESObjectiveComputeFunctionDefaultFD(SNES snes, Vec X, Vec F, vo
     }
   }
   PetscCall(VecDestroy(&Xh));
-
   PetscCall(VecAssemblyBegin(F));
   PetscCall(VecAssemblyEnd(F));
   PetscFunctionReturn(PETSC_SUCCESS);

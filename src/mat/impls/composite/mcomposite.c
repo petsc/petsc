@@ -509,6 +509,8 @@ static PetscErrorCode MatCompositeAddMat_Composite(Mat mat, Mat smat)
 {
   Mat_Composite    *shell = (Mat_Composite *)mat->data;
   Mat_CompositeLink ilink, next = shell->head;
+  VecType           vtype_mat, vtype_smat;
+  PetscBool         match;
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&ilink));
@@ -524,6 +526,16 @@ static PetscErrorCode MatCompositeAddMat_Composite(Mat mat, Mat smat)
   }
   shell->tail = ilink;
   shell->nmat += 1;
+
+  /* If all of the partial matrices have the same default vector type, then the composite matrix should also have this default type.
+     Otherwise, the default type should be "standard". */
+  PetscCall(MatGetVecType(smat, &vtype_smat));
+  if (shell->nmat == 1) PetscCall(MatSetVecType(mat, vtype_smat));
+  else {
+    PetscCall(MatGetVecType(mat, &vtype_mat));
+    PetscCall(PetscStrcmp(vtype_smat, vtype_mat, &match));
+    if (!match) PetscCall(MatSetVecType(mat, VECSTANDARD));
+  }
 
   /* Retain the old scalings (if any) and expand it with a 1.0 for the newly added matrix */
   if (shell->scalings) {

@@ -193,7 +193,7 @@ static PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat, Vec a, Vec y)
   The user should call `MatDestroy()` when finished with the matrix-free
   matrix context.
 
-.seealso: `SNESCreateMF()`, `MatCreateMFFD()`, `MatDestroy()`, `MatMFFDSetFunctionError()`
+.seealso: [](ch_snes), `SNESCreateMF()`, `MatCreateMFFD()`, `MatDestroy()`, `MatMFFDSetFunctionError()`
 @*/
 PetscErrorCode MatCreateSNESMFMore(SNES snes, Vec x, Mat *J)
 {
@@ -280,10 +280,10 @@ PetscErrorCode MatCreateSNESMFMore(SNES snes, Vec x, Mat *J)
   Level: advanced
 
   Note:
-  If the user sets the parameter h directly, then this value will be used
+  If the user sets the parameter `h` directly, then this value will be used
   instead of the default computation as discussed in `MatCreateSNESMFMore()`
 
-.seealso: `MatCreateSNESMF()`, `MatCreateSNESMFMore()`
+.seealso: [](ch_snes), `SNES`, `MatCreateSNESMF()`, `MatCreateSNESMFMore()`
 @*/
 PetscErrorCode MatSNESMFMoreSetParameters(Mat mat, PetscReal error, PetscReal umin, PetscReal h)
 {
