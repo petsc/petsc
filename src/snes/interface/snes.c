@@ -2387,9 +2387,11 @@ PetscErrorCode SNESGetRhs(SNES snes, Vec *rhs)
 
   Level: developer
 
-  Note:
+  Notes:
   `SNESComputeFunction()` is typically used within nonlinear solvers
   implementations, so users would not generally call this routine themselves.
+
+  When solving for $F(x) = b$, this routine computes $y = F(x) - b$.
 
 .seealso: [](ch_snes), `SNES`, `SNESSetFunction()`, `SNESGetFunction()`, `SNESComputeMFFunction()`
 @*/
@@ -3690,7 +3692,7 @@ PetscErrorCode SNESGetForceIteration(SNES snes, PetscBool *force)
 
   Level: intermediate
 
-.seealso: [](ch_snes), `SNESolve()`, `SNES`, `SNESSetTrustRegionTolerance()`, `SNESSetDivergenceTolerance()`, `SNESSetForceIteration()`
+.seealso: [](ch_snes), `SNESSolve()`, `SNES`, `SNESSetTrustRegionTolerance()`, `SNESSetDivergenceTolerance()`, `SNESSetForceIteration()`
 @*/
 PetscErrorCode SNESSetTolerances(SNES snes, PetscReal abstol, PetscReal rtol, PetscReal stol, PetscInt maxit, PetscInt maxf)
 {
