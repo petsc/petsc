@@ -189,7 +189,7 @@ static PetscErrorCode PetscLogHandlerView_Ex7(PetscLogHandler h, PetscViewer vie
     ctx = (HandlerCtx)h->data;
     PetscCall(PetscHMapIGetSize(ctx->running, &num_entries));
     PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " events were seen by the handler\n", num_entries));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " object(s) were created and %" PetscInt_FMT " object(s) were destroyed\n", ctx->num_objects_created, ctx->num_objects_created));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " object(s) were created and %" PetscInt_FMT " object(s) were destroyed\n", ctx->num_objects_created, ctx->num_objects_destroyed));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
