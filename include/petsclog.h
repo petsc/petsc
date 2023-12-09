@@ -689,17 +689,16 @@ static inline int PetscMPIParallelComm(MPI_Comm comm)
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-preload", &PetscPreLoading, NULL)); \
     PetscPreLoadMax     = (int)(PetscPreLoading); \
     PetscPreLoadingUsed = PetscPreLoading ? PETSC_TRUE : PetscPreLoadingUsed; \
-    for (PetscPreLoadIt = 0; PetscPreLoadIt <= PetscPreLoadMax; PetscPreLoadIt++) { \
-      PetscPreLoadingOn = PetscPreLoading; \
+    PetscCall(PetscLogStageGetId(name, &_stageNum)); \
+    for (PetscPreLoadIt = (_stageNum == -1) ? 0 : PetscPreLoadMax; PetscPreLoadIt <= PetscPreLoadMax; PetscPreLoadIt++) { \
+      PetscPreLoadingOn = (PetscBool)(PetscPreLoadIt < PetscPreLoadMax); \
       PetscCall(PetscBarrier(NULL)); \
-      if (PetscPreLoadIt > 0) PetscCall(PetscLogStageGetId(name, &_stageNum)); \
-      else PetscCall(PetscLogStageRegister(name, &_stageNum)); \
-      PetscCall(PetscLogStageSetActive(_stageNum, (PetscBool)(!PetscPreLoadMax || PetscPreLoadIt))); \
+      if (_stageNum == -1) PetscCall(PetscLogStageRegister(name, &_stageNum)); \
+      PetscCall(PetscLogStageSetActive(_stageNum, (PetscBool)(PetscPreLoadIt == PetscPreLoadMax))); \
       PetscCall(PetscLogStagePush(_stageNum))
 
 #define PetscPreLoadEnd() \
   PetscCall(PetscLogStagePop()); \
-  PetscPreLoading = PETSC_FALSE; \
   } \
   } \
   while (0)
@@ -707,8 +706,8 @@ static inline int PetscMPIParallelComm(MPI_Comm comm)
 #define PetscPreLoadStage(name) \
   do { \
     PetscCall(PetscLogStagePop()); \
-    if (PetscPreLoadIt > 0) PetscCall(PetscLogStageGetId(name, &_stageNum)); \
-    else PetscCall(PetscLogStageRegister(name, &_stageNum)); \
+    PetscCall(PetscLogStageGetId(name, &_stageNum)); \
+    if (_stageNum == -1) PetscCall(PetscLogStageRegister(name, &_stageNum)); \
     PetscCall(PetscLogStageSetActive(_stageNum, (PetscBool)(!PetscPreLoadMax || PetscPreLoadIt))); \
     PetscCall(PetscLogStagePush(_stageNum)); \
   } while (0)
