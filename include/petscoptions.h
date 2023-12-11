@@ -390,29 +390,904 @@ M*/
       if (PetscOptionsObject->count != 1) PetscFunctionReturn(PETSC_SUCCESS); \
     } while (0)
 
-  #define PetscOptionsTail(...) PETSC_DEPRECATED_MACRO(3, 18, 0, "PetscOptionsHeadEnd()", ) PetscOptionsHeadEnd(__VA_ARGS__)
+  #define PetscOptionsTail(...)                                                     PETSC_DEPRECATED_MACRO(3, 18, 0, "PetscOptionsHeadEnd()", ) PetscOptionsHeadEnd(__VA_ARGS__)
 
+/*MC
+  PetscOptionsEnum - Gets the enum value for a particular option in the database.
+
+  Synopsis:
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsEnum(const char opt[], const char text[], const char man[], const char *const *list, PetscEnum currentvalue, PetscEnum *value, PetscBool *set)
+
+  Logically Collective on the communicator passed in `PetscOptionsBegin()`
+
+  Input Parameters:
++ opt          - option name
+. text         - short string that describes the option
+. man          - manual page with additional information on option
+. list         - array containing the list of choices, followed by the enum name, followed by the enum prefix, followed by a null
+- currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
+.vb
+                 PetscOptionsEnum(..., obj->value,&object->value,...) or
+                 value = defaultvalue
+                 PetscOptionsEnum(..., value,&value,&flg);
+                 if (flg) {
+.ve
+
+  Output Parameters:
++ value - the  value to return
+- set   - `PETSC_TRUE` if found, else `PETSC_FALSE`
+
+  Level: beginner
+
+  Notes:
+  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+
+  list is usually something like `PCASMTypes` or some other predefined list of enum names
+
+  If the user does not supply the option at all `value` is NOT changed. Thus
+  you should ALWAYS initialize `value` if you access it without first checking if `set` is `PETSC_TRUE`.
+
+  The `currentvalue` passed into this routine does not get transferred to the output `value` variable automatically.
+
+.seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
+          `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`,
+          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
+M*/
   #define PetscOptionsEnum(opt, text, man, list, currentvalue, value, set)          PetscOptionsEnum_Private(PetscOptionsObject, opt, text, man, list, currentvalue, value, set)
+
+/*MC
+  PetscOptionsInt - Gets the integer value for a particular option in the database.
+
+  Synopsis:
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsInt(const char opt[], const char text[], const char man[], PetscInt currentvalue, PetscInt *value, PetscBool *set)
+
+  Logically Collective on the communicator passed in `PetscOptionsBegin()`
+
+  Input Parameters:
++ opt          - option name
+. text         - short string that describes the option
+. man          - manual page with additional information on option
+- currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
+.vb
+                 PetscOptionsInt(..., obj->value,&obj->value,...) or
+                 value = defaultvalue
+                 PetscOptionsInt(..., value,&value,&flg);
+                 if (flg) {
+.ve
+
+  Output Parameters:
++ value - the integer value to return
+- set   - `PETSC_TRUE` if found, else `PETSC_FALSE`
+
+  Level: beginner
+
+  Notes:
+  If the user does not supply the option at all `value` is NOT changed. Thus
+  you should ALWAYS initialize `value` if you access it without first checking if `flg` is `PETSC_TRUE`.
+
+  The `currentvalue` passed into this routine does not get transferred to the output `value` variable automatically.
+
+  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+
+.seealso: `PetscOptionsBoundedInt()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
+          `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`, `PetscOptionsRangeInt()`
+          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
+M*/
   #define PetscOptionsInt(opt, text, man, currentvalue, value, set)                 PetscOptionsInt_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, PETSC_MIN_INT, PETSC_MAX_INT)
+
+/*MC
+   PetscOptionsBoundedInt - Gets an integer value greater than or equal a given bound for a particular option in the database.
+
+   Synopsis:
+   #include <petscoptions.h>
+   PetscErrorCode  PetscOptionsBoundedInt(const char opt[], const char text[], const char man[], PetscInt currentvalue, PetscInt *value, PetscBool *flg, PetscInt bound)
+
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
+
+   Input Parameters:
++  opt - option name
+.  text - short string that describes the option
+.  man - manual page with additional information on option
+.  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
+.vb
+  PetscOptionsInt(..., obj->value,&obj->value,...)
+.ve
+or
+.vb
+  value = defaultvalue
+  PetscOptionsInt(..., value,&value,&flg);
+  if (flg) {
+.ve
+-  bound - the requested value should be greater than or equal this bound or an error is generated
+
+   Output Parameters:
++  value - the integer value to return
+-  flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
+
+   Level: beginner
+
+   Notes:
+    If the user does not supply the option at all `value` is NOT changed. Thus
+    you should ALWAYS initialize `value` if you access it without first checking if `flg` is `PETSC_TRUE`.
+
+    The `currentvalue` passed into this routine does not get transferred to the output `value` variable automatically.
+
+    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+
+.seealso: `PetscOptionsInt()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
+          `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`, `PetscOptionsRangeInt()`
+          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
+M*/
   #define PetscOptionsBoundedInt(opt, text, man, currentvalue, value, set, lb)      PetscOptionsInt_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, lb, PETSC_MAX_INT)
+
+/*MC
+   PetscOptionsRangeInt - Gets an integer value within a range of values for a particular option in the database.
+
+   Synopsis:
+   #include <petscoptions.h>
+   PetscErrorCode PetscOptionsRangeInt(const char opt[], const char text[], const char man[], PetscInt currentvalue, PetscInt *value, PetscBool *flg, PetscInt lb, PetscInt ub)
+
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`
+
+   Input Parameters:
++  opt - option name
+.  text - short string that describes the option
+.  man - manual page with additional information on option
+.  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
+.vb
+                 PetscOptionsInt(..., obj->value,&obj->value,...) or
+                 value = defaultvalue
+                 PetscOptionsInt(..., value,&value,&flg);
+                 if (flg) {
+.ve
+.  lb - the lower bound, provided value must be greater than or equal to this value or an error is generated
+-  ub - the upper bound, provided value must be less than or equal to this value or an error is generated
+
+   Output Parameters:
++  value - the integer value to return
+-  flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
+
+   Level: beginner
+
+   Notes:
+    If the user does not supply the option at all `value` is NOT changed. Thus
+    you should ALWAYS initialize `value` if you access it without first checking if `flg` is `PETSC_TRUE`.
+
+    The `currentvalue` passed into this routine does not get transferred to the output `value` variable automatically.
+
+    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+
+.seealso: `PetscOptionsInt()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
+          `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`, `PetscOptionsBoundedInt()`
+          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
+M*/
   #define PetscOptionsRangeInt(opt, text, man, currentvalue, value, set, lb, ub)    PetscOptionsInt_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, lb, ub)
+
+/*MC
+  PetscOptionsReal - Gets the `PetscReal` value for a particular option in the database.
+
+  Synopsis:
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsReal(const char opt[], const char text[], const char man[], PetscReal currentvalue, PetscReal *value, PetscBool *set)
+
+  Logically Collective on the communicator passed in `PetscOptionsBegin()`
+
+  Input Parameters:
++ opt          - option name
+. text         - short string that describes the option
+. man          - manual page with additional information on option
+- currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
+.vb
+                 PetscOptionsReal(..., obj->value,&obj->value,...) or
+                 value = defaultvalue
+                 PetscOptionsReal(..., value,&value,&flg);
+                 if (flg) {
+.ve
+
+  Output Parameters:
++ value - the value to return
+- set   - `PETSC_TRUE` if found, else `PETSC_FALSE`
+
+  Level: beginner
+
+  Notes:
+  If the user does not supply the option at all `value` is NOT changed. Thus
+  you should ALWAYS initialize `value` if you access it without first checking if `flg` is `PETSC_TRUE`.
+
+  The `currentvalue` passed into this routine does not get transferred to the output `value` variable automatically.
+
+  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+
+.seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
+          `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`,
+          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
+M*/
   #define PetscOptionsReal(opt, text, man, currentvalue, value, set)                PetscOptionsReal_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set)
+
+/*MC
+  PetscOptionsScalar - Gets the `PetscScalar` value for a particular option in the database.
+
+  Synopsis:
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsScalar(const char opt[], const char text[], const char man[], PetscScalar currentvalue, PetscScalar *value, PetscBool *set)
+
+  Logically Collective on the communicator passed in `PetscOptionsBegin()`
+
+  Input Parameters:
++ opt          - option name
+. text         - short string that describes the option
+. man          - manual page with additional information on option
+- currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
+.vb
+                 PetscOptionsScalar(..., obj->value,&obj->value,...) or
+                 value = defaultvalue
+                 PetscOptionsScalar(..., value,&value,&flg);
+                 if (flg) {
+.ve
+
+  Output Parameters:
++ value - the value to return
+- set   - `PETSC_TRUE` if found, else `PETSC_FALSE`
+
+  Level: beginner
+
+  Notes:
+  If the user does not supply the option at all `value` is NOT changed. Thus
+  you should ALWAYS initialize `value` if you access it without first checking if `flg` is `PETSC_TRUE`.
+
+  The `currentvalue` passed into this routine does not get transferred to the output `value` variable automatically.
+
+  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+
+.seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
+          `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`,
+          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
+M*/
   #define PetscOptionsScalar(opt, text, man, currentvalue, value, set)              PetscOptionsScalar_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set)
+
+/*MC
+  PetscOptionsName - Determines if a particular option has been set in the database. This returns true whether the option is a number, string or boolean, even
+  its value is set to false.
+
+  Synopsis:
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsName(const char opt[], const char text[], const char man[], PetscBool *flg)
+
+  Logically Collective on the communicator passed in `PetscOptionsBegin()`
+
+  Input Parameters:
++ opt  - option name
+. text - short string that describes the option
+- man  - manual page with additional information on option
+
+  Output Parameter:
+. flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
+
+  Level: beginner
+
+  Note:
+  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+
+.seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
+          `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`,
+          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
+M*/
   #define PetscOptionsName(opt, text, man, flg)                                     PetscOptionsName_Private(PetscOptionsObject, opt, text, man, flg)
+
+/*MC
+  PetscOptionsString - Gets the string value for a particular option in the database.
+
+  Synopsis:
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsString(const char opt[], const char text[], const char man[], const char currentvalue[], char value[], size_t len, PetscBool *set)
+
+  Logically Collective on the communicator passed in `PetscOptionsBegin()`
+
+  Input Parameters:
++ opt          - option name
+. text         - short string that describes the option
+. man          - manual page with additional information on option
+. currentvalue - the current value; caller is responsible for setting this value correctly. This is not used to set value
+- len          - length of the result string including null terminator
+
+  Output Parameters:
++ value - the value to return
+- set   - `PETSC_TRUE` if found, else `PETSC_FALSE`
+
+  Level: beginner
+
+  Notes:
+  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+
+  If the user provided no string (for example `-optionname` `-someotheroption`) `flg` is set to `PETSC_TRUE` (and the string is filled with nulls).
+
+  If the user does not supply the option at all `value` is NOT changed. Thus
+  you should ALWAYS initialize `value` if you access it without first checking if `flg` is `PETSC_TRUE`.
+
+  The `currentvalue` passed into this routine does not get transferred to the output `value` variable automatically.
+
+.seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
+          `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`,
+          `PetscOptionsInt()`, `PetscOptionsReal()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
+M*/
   #define PetscOptionsString(opt, text, man, currentvalue, value, len, set)         PetscOptionsString_Private(PetscOptionsObject, opt, text, man, currentvalue, value, len, set)
+
+/*MC
+  PetscOptionsBool - Determines if a particular option is in the database with a true or false
+
+  Synopsis:
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsBool(const char opt[], const char text[], const char man[], PetscBool currentvalue, PetscBool *flg, PetscBool *set)
+
+  Logically Collective on the communicator passed in `PetscOptionsBegin()`
+
+  Input Parameters:
++ opt          - option name
+. text         - short string that describes the option
+. man          - manual page with additional information on option
+- currentvalue - the current value
+
+  Output Parameters:
++ flg - `PETSC_TRUE` or `PETSC_FALSE`
+- set - `PETSC_TRUE` if found, else `PETSC_FALSE`
+
+  Level: beginner
+
+  Notes:
+  TRUE, true, YES, yes, nostring, and 1 all translate to `PETSC_TRUE`
+  FALSE, false, NO, no, and 0 all translate to `PETSC_FALSE`
+
+  If the option is given, but no value is provided, then flg and set are both given the value `PETSC_TRUE`. That is `-requested_bool`
+  is equivalent to `-requested_bool true`
+
+  If the user does not supply the option at all `flg` is NOT changed. Thus
+  you should ALWAYS initialize the `flg` variable if you access it without first checking if the `set` flag is `PETSC_TRUE`.
+
+  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+
+.seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
+          `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`,
+          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
+M*/
   #define PetscOptionsBool(opt, text, man, currentvalue, value, set)                PetscOptionsBool_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set)
+
+/*MC
+  PetscOptionsBoolGroupBegin - First in a series of logical queries on the options database for
+  which at most a single value can be true.
+
+  Synopsis:
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsBoolGroupBegin(const char opt[], const char text[], const char man[], PetscBool *flg)
+
+  Logically Collective on the communicator passed in `PetscOptionsBegin()`
+
+  Input Parameters:
++ opt  - option name
+. text - short string that describes the option
+- man  - manual page with additional information on option
+
+  Output Parameter:
+. flg - whether that option was set or not
+
+  Level: intermediate
+
+  Notes:
+  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+
+  Must be followed by 0 or more `PetscOptionsBoolGroup()`s and `PetscOptionsBoolGroupEnd()`
+
+.seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
+          `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
+M*/
   #define PetscOptionsBoolGroupBegin(opt, text, man, flg)                           PetscOptionsBoolGroupBegin_Private(PetscOptionsObject, opt, text, man, flg)
+
+/*MC
+  PetscOptionsBoolGroup - One in a series of logical queries on the options database for
+  which at most a single value can be true.
+
+  Synopsis:
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsBoolGroup(const char opt[], const char text[], const char man[], PetscBool *flg)
+
+  Logically Collective on the communicator passed in `PetscOptionsBegin()`
+
+  Input Parameters:
++ opt  - option name
+. text - short string that describes the option
+- man  - manual page with additional information on option
+
+  Output Parameter:
+. flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
+
+  Level: intermediate
+
+  Notes:
+  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+
+  Must follow a `PetscOptionsBoolGroupBegin()` and preceded a `PetscOptionsBoolGroupEnd()`
+
+.seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
+          `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
+M*/
   #define PetscOptionsBoolGroup(opt, text, man, flg)                                PetscOptionsBoolGroup_Private(PetscOptionsObject, opt, text, man, flg)
+
+/*MC
+  PetscOptionsBoolGroupEnd - Last in a series of logical queries on the options database for
+  which at most a single value can be true.
+
+  Synopsis:
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsBoolGroupEnd(const char opt[], const char text[], const char man[], PetscBool  *flg)
+
+  Logically Collective on the communicator passed in `PetscOptionsBegin()`
+
+  Input Parameters:
++ opt  - option name
+. text - short string that describes the option
+- man  - manual page with additional information on option
+
+  Output Parameter:
+. flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
+
+  Level: intermediate
+
+  Notes:
+  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+
+  Must follow a `PetscOptionsBoolGroupBegin()`
+
+.seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
+          `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
+M*/
   #define PetscOptionsBoolGroupEnd(opt, text, man, flg)                             PetscOptionsBoolGroupEnd_Private(PetscOptionsObject, opt, text, man, flg)
+
+/*MC
+  PetscOptionsFList - Puts a list of option values that a single one may be selected from
+
+  Synopsis:
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsFList(const char opt[], const char ltext[], const char man[], PetscFunctionList list, const char currentvalue[], char value[], size_t len, PetscBool *set)
+
+  Logically Collective on the communicator passed in `PetscOptionsBegin()`
+
+  Input Parameters:
++ opt          - option name
+. ltext        - short string that describes the option
+. man          - manual page with additional information on option
+. list         - the possible choices
+. currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with
+.vb
+                 PetscOptionsFlist(..., obj->value,value,len,&flg);
+                 if (flg) {
+.ve
+- len          - the length of the character array value
+
+  Output Parameters:
++ value - the value to return
+- set   - `PETSC_TRUE` if found, else `PETSC_FALSE`
+
+  Level: intermediate
+
+  Notes:
+  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+
+  If the user does not supply the option at all `value` is NOT changed. Thus
+  you should ALWAYS initialize `value` if you access it without first checking if the `set` flag is `PETSC_TRUE`.
+
+  The `currentvalue` passed into this routine does not get transferred to the output `value` variable automatically.
+
+  See `PetscOptionsEList()` for when the choices are given in a string array
+
+  To get a listing of all currently specified options,
+  see `PetscOptionsView()` or `PetscOptionsGetAll()`
+
+  Developer Notes:
+  This cannot check for invalid selection because of things like `MATAIJ` that are not included in the list
+
+.seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
+          `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsEnum()`
+M*/
   #define PetscOptionsFList(opt, ltext, man, list, currentvalue, value, len, set)   PetscOptionsFList_Private(PetscOptionsObject, opt, ltext, man, list, currentvalue, value, len, set)
+
+/*MC
+  PetscOptionsEList - Puts a list of option values that a single one may be selected from
+
+  Synopsis:
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsEList(const char opt[], const char ltext[], const char man[], const char *const *list, PetscInt ntext, const char currentvalue[], PetscInt *value, PetscBool *set)
+
+  Logically Collective on the communicator passed in `PetscOptionsBegin()`
+
+  Input Parameters:
++ opt          - option name
+. ltext        - short string that describes the option
+. man          - manual page with additional information on option
+. list         - the possible choices (one of these must be selected, anything else is invalid)
+. ntext        - number of choices
+- currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with
+.vb
+                 PetscOptionsEList(..., obj->value,&value,&flg);
+.ve                 if (flg) {
+
+  Output Parameters:
++ value - the index of the value to return
+- set   - `PETSC_TRUE` if found, else `PETSC_FALSE`
+
+  Level: intermediate
+
+  Notes:
+  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+
+  If the user does not supply the option at all `value` is NOT changed. Thus
+  you should ALWAYS initialize `value` if you access it without first checking if the `set` flag is `PETSC_TRUE`.
+
+  See `PetscOptionsFList()` for when the choices are given in a `PetscFunctionList()`
+
+.seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
+          `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEnum()`
+M*/
   #define PetscOptionsEList(opt, ltext, man, list, ntext, currentvalue, value, set) PetscOptionsEList_Private(PetscOptionsObject, opt, ltext, man, list, ntext, currentvalue, value, set)
+
+/*MC
+  PetscOptionsRealArray - Gets an array of double values for a particular
+  option in the database. The values must be separated with commas with
+  no intervening spaces.
+
+  Synopsis:
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsRealArray(const char opt[], const char text[], const char man[], PetscReal value[], PetscInt *n, PetscBool *set)
+
+  Logically Collective on the communicator passed in `PetscOptionsBegin()`
+
+  Input Parameters:
++ opt  - the option one is seeking
+. text - short string describing option
+. man  - manual page for option
+- n    - maximum number of values that value has room for
+
+  Output Parameters:
++ value - location to copy values
+. n     - actual number of values found
+- set   - `PETSC_TRUE` if found, else `PETSC_FALSE`
+
+  Level: beginner
+
+  Note:
+  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+
+.seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
+          `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
+M*/
   #define PetscOptionsRealArray(opt, text, man, currentvalue, value, set)           PetscOptionsRealArray_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set)
+
+/*MC
+  PetscOptionsScalarArray - Gets an array of `PetscScalar` values for a particular
+  option in the database. The values must be separated with commas with
+  no intervening spaces.
+
+  Synopsis:
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsScalarArray(const char opt[], const char text[], const char man[], PetscScalar value[], PetscInt *n, PetscBool *set)
+
+  Logically Collective on the communicator passed in `PetscOptionsBegin()`
+
+  Input Parameters:
++ opt  - the option one is seeking
+. text - short string describing option
+. man  - manual page for option
+- n    - maximum number of values allowed in the value array
+
+  Output Parameters:
++ value - location to copy values
+. n     - actual number of values found
+- set   - `PETSC_TRUE` if found, else `PETSC_FALSE`
+
+  Level: beginner
+
+  Note:
+  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+
+.seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
+          `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
+M*/
   #define PetscOptionsScalarArray(opt, text, man, currentvalue, value, set)         PetscOptionsScalarArray_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set)
+
+/*MC
+  PetscOptionsIntArray - Gets an array of integers for a particular
+  option in the database.
+
+  Synopsis:
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsIntArray(const char opt[], const char text[], const char man[], PetscInt value[], PetscInt *n, PetscBool *set)
+
+  Logically Collective on the communicator passed in `PetscOptionsBegin()`
+
+  Input Parameters:
++ opt  - the option one is seeking
+. text - short string describing option
+. man  - manual page for option
+- n    - maximum number of values
+
+  Output Parameters:
++ value - location to copy values
+. n     - actual number of values found
+- set   - `PETSC_TRUE` if found, else `PETSC_FALSE`
+
+  Level: beginner
+
+  Notes:
+  The array can be passed as
++   a comma separated list -                                  0,1,2,3,4,5,6,7
+.   a range (start\-end+1) -                                  0-8
+.   a range with given increment (start\-end+1:inc) -         0-7:2
+-   a combination of values and ranges separated by commas -  0,1-8,8-15:2
+
+  There must be no intervening spaces between the values.
+
+  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+
+.seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
+          `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
+M*/
   #define PetscOptionsIntArray(opt, text, man, currentvalue, value, set)            PetscOptionsIntArray_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set)
+
+/*MC
+  PetscOptionsStringArray - Gets an array of string values for a particular
+  option in the database. The values must be separated with commas with
+  no intervening spaces.
+
+  Synopsis:
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsStringArray(const char opt[], const char text[], const char man[], char *value[], PetscInt *nmax, PetscBool  *set)
+
+  Logically Collective on the communicator passed in `PetscOptionsBegin()`; No Fortran Support
+
+  Input Parameters:
++ opt  - the option one is seeking
+. text - short string describing option
+. man  - manual page for option
+- nmax - maximum number of strings
+
+  Output Parameters:
++ value - location to copy strings
+. nmax  - actual number of strings found
+- set   - `PETSC_TRUE` if found, else `PETSC_FALSE`
+
+  Level: beginner
+
+  Notes:
+  The user should pass in an array of pointers to char, to hold all the
+  strings returned by this function.
+
+  The user is responsible for deallocating the strings that are
+  returned.
+
+  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+
+.seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
+          `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
+M*/
   #define PetscOptionsStringArray(opt, text, man, currentvalue, value, set)         PetscOptionsStringArray_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set)
+
+/*MC
+  PetscOptionsBoolArray - Gets an array of logical values (true or false) for a particular
+  option in the database. The values must be separated with commas with
+  no intervening spaces.
+
+  Synopsis:
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsBoolArray(const char opt[], const char text[], const char man[], PetscBool value[], PetscInt *n, PetscBool *set)
+
+  Logically Collective on the communicator passed in `PetscOptionsBegin()`
+
+  Input Parameters:
++ opt  - the option one is seeking
+. text - short string describing option
+. man  - manual page for option
+- n    - maximum number of values allowed in the value array
+
+  Output Parameters:
++ value - location to copy values
+. n     - actual number of values found
+- set   - `PETSC_TRUE` if found, else `PETSC_FALSE`
+
+  Level: beginner
+
+  Notes:
+  The user should pass in an array of `PetscBool`
+
+  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+
+.seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
+          `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
+M*/
   #define PetscOptionsBoolArray(opt, text, man, currentvalue, value, set)           PetscOptionsBoolArray_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set)
+
+/*MC
+  PetscOptionsEnumArray - Gets an array of enum values for a particular
+  option in the database.
+
+  Synopsis:
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsEnumArray(const char opt[], const char text[], const char man[], const char *const *list, PetscEnum value[], PetscInt *n, PetscBool *set)
+
+  Logically Collective on the communicator passed in `PetscOptionsBegin()`
+
+  Input Parameters:
++ opt  - the option one is seeking
+. text - short string describing option
+. man  - manual page for option
+. list - array containing the list of choices, followed by the enum name, followed by the enum prefix, followed by a null
+- n    - maximum number of values allowed in the value array
+
+  Output Parameters:
++ value - location to copy values
+. n     - actual number of values found
+- set   - `PETSC_TRUE` if found, else `PETSC_FALSE`
+
+  Level: beginner
+
+  Notes:
+  The array must be passed as a comma separated list.
+
+  There must be no intervening spaces between the values.
+
+  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+
+.seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
+          `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
+M*/
   #define PetscOptionsEnumArray(opt, text, man, list, value, n, set)                PetscOptionsEnumArray_Private(PetscOptionsObject, opt, text, man, list, value, n, set)
+
+/*MC
+  PetscOptionsDeprecated - mark an option as deprecated, optionally replacing it with `newname`
+
+  Prints a deprecation warning, unless an option is supplied to suppress.
+
+  Logically Collective
+
+  Input Parameters:
++ oldname            - the old, deprecated option
+. newname            - the new option, or `NULL` if option is purely removed
+. version            - a string describing the version of first deprecation, e.g. "3.9"
+- info               - additional information string, or `NULL`.
+
+  Options Database Key:
+. -options_suppress_deprecated_warnings - do not print deprecation warnings
+
+  Level: developer
+
+  Notes:
+  If `newname` is provided then the options database will automatically check the database for `oldname`.
+
+  The old call `PetscOptionsXXX`(`oldname`) should be removed from the source code when both (1) the call to `PetscOptionsDeprecated()` occurs before the
+  new call to `PetscOptionsXXX`(`newname`) and (2) the argument handling of the new call to `PetscOptionsXXX`(`newname`) is identical to the previous call.
+  See `PTScotch_PartGraph_Seq()` for an example of when (1) fails and `SNESTestJacobian()` where an example of (2) fails.
+
+  Must be called between `PetscOptionsBegin()` (or `PetscObjectOptionsBegin()`) and `PetscOptionsEnd()`.
+  Only the process of rank zero that owns the `PetscOptionsItems` are argument (managed by `PetscOptionsBegin()` or `PetscObjectOptionsBegin()` prints the information
+  If newname is provided, the old option is replaced. Otherwise, it remains in the options database.
+  If an option is not replaced, the info argument should be used to advise the user on how to proceed.
+  There is a limit on the length of the warning printed, so very long strings provided as info may be truncated.
+
+.seealso: `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsScalar()`, `PetscOptionsBool()`, `PetscOptionsString()`, `PetscOptionsSetValue()`
+M*/
   #define PetscOptionsDeprecated(opt, text, man, info)                              PetscOptionsDeprecated_Private(PetscOptionsObject, opt, text, man, info)
+
+/*MC
+  PetscOptionsDeprecatedMoObject - mark an option as deprecated in the global PetscOptionsObject, optionally replacing it with `newname`
+
+  Prints a deprecation warning, unless an option is supplied to suppress.
+
+  Logically Collective
+
+  Input Parameters:
++ oldname            - the old, deprecated option
+. newname            - the new option, or `NULL` if option is purely removed
+. version            - a string describing the version of first deprecation, e.g. "3.9"
+- info               - additional information string, or `NULL`.
+
+  Options Database Key:
+. -options_suppress_deprecated_warnings - do not print deprecation warnings
+
+  Level: developer
+
+  Notes:
+  If `newname` is provided then the options database will automatically check the database for `oldname`.
+
+  The old call `PetscOptionsXXX`(`oldname`) should be removed from the source code when both (1) the call to `PetscOptionsDeprecated()` occurs before the
+  new call to `PetscOptionsXXX`(`newname`) and (2) the argument handling of the new call to `PetscOptionsXXX`(`newname`) is identical to the previous call.
+  See `PTScotch_PartGraph_Seq()` for an example of when (1) fails and `SNESTestJacobian()` where an example of (2) fails.
+
+  Only the process of rank zero that owns the `PetscOptionsItems` are argument (managed by `PetscOptionsBegin()` or `PetscObjectOptionsBegin()` prints the information
+  If newname is provided, the old option is replaced. Otherwise, it remains in the options database.
+  If an option is not replaced, the info argument should be used to advise the user on how to proceed.
+  There is a limit on the length of the warning printed, so very long strings provided as info may be truncated.
+
+.seealso: `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsScalar()`, `PetscOptionsBool()`, `PetscOptionsString()`, `PetscOptionsSetValue()`
+M*/
   #define PetscOptionsDeprecatedNoObject(opt, text, man, info)                      PetscOptionsDeprecated_Private(NULL, opt, text, man, info)
 #endif /* PETSC_CLANG_STATIC_ANALYZER */
 
