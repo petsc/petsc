@@ -9057,9 +9057,9 @@ PetscErrorCode DMSetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, PetscInt 
   key.part  = part;
   PetscCall(PetscHMapAuxGet(dm->auxData, key, &old));
   PetscCall(PetscObjectReference((PetscObject)aux));
-  PetscCall(PetscObjectDereference((PetscObject)old));
   if (!aux) PetscCall(PetscHMapAuxDel(dm->auxData, key));
   else PetscCall(PetscHMapAuxSet(dm->auxData, key, aux));
+  PetscCall(VecDestroy(&old));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -9127,8 +9127,27 @@ PetscErrorCode DMCopyAuxiliaryVec(DM dm, DM dmNew)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(PetscHMapAuxDestroy(&dmNew->auxData));
+  PetscValidHeaderSpecific(dmNew, DM_CLASSID, 2);
+  if (dm == dmNew) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscHMapAux oldData = dmNew->auxData;
   PetscCall(PetscHMapAuxDuplicate(dm->auxData, &dmNew->auxData));
+  {
+    Vec     *auxData;
+    PetscInt n, i, off = 0;
+
+    PetscCall(PetscHMapAuxGetSize(dmNew->auxData, &n));
+    PetscCall(PetscMalloc1(n, &auxData));
+    PetscCall(PetscHMapAuxGetVals(dmNew->auxData, &off, auxData));
+    for (i = 0; i < n; ++i) PetscCall(PetscObjectReference((PetscObject)auxData[i]));
+    PetscCall(PetscFree(auxData));
+    off = 0;
+    PetscCall(PetscHMapAuxGetSize(oldData, &n));
+    PetscCall(PetscMalloc1(n, &auxData));
+    PetscCall(PetscHMapAuxGetVals(oldData, &off, auxData));
+    for (i = 0; i < n; ++i) PetscCall(VecDestroy(&auxData[i]));
+    PetscCall(PetscFree(auxData));
+  }
+  PetscCall(PetscHMapAuxDestroy(&oldData));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
