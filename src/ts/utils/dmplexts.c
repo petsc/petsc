@@ -18,13 +18,13 @@ static PetscErrorCode DMTSConvertPlex(DM dm, DM *plex, PetscBool copy)
     if (!*plex) {
       PetscCall(DMConvert(dm, DMPLEX, plex));
       PetscCall(PetscObjectCompose((PetscObject)dm, "dm_plex", (PetscObject)*plex));
-      if (copy) {
-        PetscCall(DMCopyDMTS(dm, *plex));
-        PetscCall(DMCopyDMSNES(dm, *plex));
-        PetscCall(DMCopyAuxiliaryVec(dm, *plex));
-      }
     } else {
       PetscCall(PetscObjectReference((PetscObject)*plex));
+    }
+    if (copy) {
+      PetscCall(DMCopyDMTS(dm, *plex));
+      PetscCall(DMCopyDMSNES(dm, *plex));
+      PetscCall(DMCopyAuxiliaryVec(dm, *plex));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
