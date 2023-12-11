@@ -192,6 +192,14 @@ static PetscErrorCode DMDestroy_Forest(DM dm)
   DM_Forest *forest = (DM_Forest *)dm->data;
 
   PetscFunctionBegin;
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMConvert_plex_p4est_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMConvert_p4est_plex_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMConvert_plex_p8est_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMConvert_p8est_plex_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMSetUpGLVisViewer_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMCreateNeumannOverlap_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexGetOverlap_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "MatComputeNeumannOverlap_C", NULL));
   if (--forest->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
   if (forest->destroy) PetscCall((*forest->destroy)(dm));
   PetscCall(PetscSFDestroy(&forest->cellSF));
