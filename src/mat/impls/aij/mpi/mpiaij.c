@@ -2961,10 +2961,9 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin, MatDuplicateOption cpvalues, Mat *
   PetscCall(MatSetType(mat, ((PetscObject)matin)->type_name));
   a = (Mat_MPIAIJ *)mat->data;
 
-  mat->factortype   = matin->factortype;
-  mat->assembled    = matin->assembled;
-  mat->insertmode   = NOT_SET_VALUES;
-  mat->preallocated = matin->preallocated;
+  mat->factortype = matin->factortype;
+  mat->assembled  = matin->assembled;
+  mat->insertmode = NOT_SET_VALUES;
 
   a->size         = oldmat->size;
   a->rank         = oldmat->rank;
@@ -2976,29 +2975,33 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin, MatDuplicateOption cpvalues, Mat *
 
   PetscCall(PetscLayoutReference(matin->rmap, &mat->rmap));
   PetscCall(PetscLayoutReference(matin->cmap, &mat->cmap));
-
-  if (oldmat->colmap) {
+  if (matin->hash_active) {
+    PetscCall(MatSetUp(mat));
+  } else {
+    mat->preallocated = matin->preallocated;
+    if (oldmat->colmap) {
 #if defined(PETSC_USE_CTABLE)
-    PetscCall(PetscHMapIDuplicate(oldmat->colmap, &a->colmap));
+      PetscCall(PetscHMapIDuplicate(oldmat->colmap, &a->colmap));
 #else
-    PetscCall(PetscMalloc1(mat->cmap->N, &a->colmap));
-    PetscCall(PetscArraycpy(a->colmap, oldmat->colmap, mat->cmap->N));
+      PetscCall(PetscMalloc1(mat->cmap->N, &a->colmap));
+      PetscCall(PetscArraycpy(a->colmap, oldmat->colmap, mat->cmap->N));
 #endif
-  } else a->colmap = NULL;
-  if (oldmat->garray) {
-    PetscInt len;
-    len = oldmat->B->cmap->n;
-    PetscCall(PetscMalloc1(len + 1, &a->garray));
-    if (len) PetscCall(PetscArraycpy(a->garray, oldmat->garray, len));
-  } else a->garray = NULL;
+    } else a->colmap = NULL;
+    if (oldmat->garray) {
+      PetscInt len;
+      len = oldmat->B->cmap->n;
+      PetscCall(PetscMalloc1(len + 1, &a->garray));
+      if (len) PetscCall(PetscArraycpy(a->garray, oldmat->garray, len));
+    } else a->garray = NULL;
 
-  /* It may happen MatDuplicate is called with a non-assembled matrix
-     In fact, MatDuplicate only requires the matrix to be preallocated
-     This may happen inside a DMCreateMatrix_Shell */
-  if (oldmat->lvec) PetscCall(VecDuplicate(oldmat->lvec, &a->lvec));
-  if (oldmat->Mvctx) PetscCall(VecScatterCopy(oldmat->Mvctx, &a->Mvctx));
-  PetscCall(MatDuplicate(oldmat->A, cpvalues, &a->A));
-  PetscCall(MatDuplicate(oldmat->B, cpvalues, &a->B));
+    /* It may happen MatDuplicate is called with a non-assembled matrix
+      In fact, MatDuplicate only requires the matrix to be preallocated
+      This may happen inside a DMCreateMatrix_Shell */
+    if (oldmat->lvec) PetscCall(VecDuplicate(oldmat->lvec, &a->lvec));
+    if (oldmat->Mvctx) PetscCall(VecScatterCopy(oldmat->Mvctx, &a->Mvctx));
+    PetscCall(MatDuplicate(oldmat->A, cpvalues, &a->A));
+    PetscCall(MatDuplicate(oldmat->B, cpvalues, &a->B));
+  }
   PetscCall(PetscFunctionListDuplicate(((PetscObject)matin)->qlist, &((PetscObject)mat)->qlist));
   *newmat = mat;
   PetscFunctionReturn(PETSC_SUCCESS);

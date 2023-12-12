@@ -2467,77 +2467,81 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin, MatDuplicateOption cpvalu
   PetscCall(PetscLayoutReference(matin->rmap, &mat->rmap));
   PetscCall(PetscLayoutReference(matin->cmap, &mat->cmap));
 
-  mat->factortype   = matin->factortype;
-  mat->preallocated = PETSC_TRUE;
-  mat->assembled    = PETSC_TRUE;
-  mat->insertmode   = NOT_SET_VALUES;
+  if (matin->hash_active) {
+    PetscCall(MatSetUp(mat));
+  } else {
+    mat->factortype   = matin->factortype;
+    mat->preallocated = PETSC_TRUE;
+    mat->assembled    = PETSC_TRUE;
+    mat->insertmode   = NOT_SET_VALUES;
 
-  a      = (Mat_MPISBAIJ *)mat->data;
-  a->bs2 = oldmat->bs2;
-  a->mbs = oldmat->mbs;
-  a->nbs = oldmat->nbs;
-  a->Mbs = oldmat->Mbs;
-  a->Nbs = oldmat->Nbs;
+    a      = (Mat_MPISBAIJ *)mat->data;
+    a->bs2 = oldmat->bs2;
+    a->mbs = oldmat->mbs;
+    a->nbs = oldmat->nbs;
+    a->Mbs = oldmat->Mbs;
+    a->Nbs = oldmat->Nbs;
 
-  a->size         = oldmat->size;
-  a->rank         = oldmat->rank;
-  a->donotstash   = oldmat->donotstash;
-  a->roworiented  = oldmat->roworiented;
-  a->rowindices   = NULL;
-  a->rowvalues    = NULL;
-  a->getrowactive = PETSC_FALSE;
-  a->barray       = NULL;
-  a->rstartbs     = oldmat->rstartbs;
-  a->rendbs       = oldmat->rendbs;
-  a->cstartbs     = oldmat->cstartbs;
-  a->cendbs       = oldmat->cendbs;
+    a->size         = oldmat->size;
+    a->rank         = oldmat->rank;
+    a->donotstash   = oldmat->donotstash;
+    a->roworiented  = oldmat->roworiented;
+    a->rowindices   = NULL;
+    a->rowvalues    = NULL;
+    a->getrowactive = PETSC_FALSE;
+    a->barray       = NULL;
+    a->rstartbs     = oldmat->rstartbs;
+    a->rendbs       = oldmat->rendbs;
+    a->cstartbs     = oldmat->cstartbs;
+    a->cendbs       = oldmat->cendbs;
 
-  /* hash table stuff */
-  a->ht           = NULL;
-  a->hd           = NULL;
-  a->ht_size      = 0;
-  a->ht_flag      = oldmat->ht_flag;
-  a->ht_fact      = oldmat->ht_fact;
-  a->ht_total_ct  = 0;
-  a->ht_insert_ct = 0;
+    /* hash table stuff */
+    a->ht           = NULL;
+    a->hd           = NULL;
+    a->ht_size      = 0;
+    a->ht_flag      = oldmat->ht_flag;
+    a->ht_fact      = oldmat->ht_fact;
+    a->ht_total_ct  = 0;
+    a->ht_insert_ct = 0;
 
-  PetscCall(PetscArraycpy(a->rangebs, oldmat->rangebs, a->size + 2));
-  if (oldmat->colmap) {
+    PetscCall(PetscArraycpy(a->rangebs, oldmat->rangebs, a->size + 2));
+    if (oldmat->colmap) {
 #if defined(PETSC_USE_CTABLE)
-    PetscCall(PetscHMapIDuplicate(oldmat->colmap, &a->colmap));
+      PetscCall(PetscHMapIDuplicate(oldmat->colmap, &a->colmap));
 #else
-    PetscCall(PetscMalloc1(a->Nbs, &a->colmap));
-    PetscCall(PetscArraycpy(a->colmap, oldmat->colmap, a->Nbs));
+      PetscCall(PetscMalloc1(a->Nbs, &a->colmap));
+      PetscCall(PetscArraycpy(a->colmap, oldmat->colmap, a->Nbs));
 #endif
-  } else a->colmap = NULL;
+    } else a->colmap = NULL;
 
-  if (oldmat->garray && (len = ((Mat_SeqBAIJ *)(oldmat->B->data))->nbs)) {
-    PetscCall(PetscMalloc1(len, &a->garray));
-    PetscCall(PetscArraycpy(a->garray, oldmat->garray, len));
-  } else a->garray = NULL;
+    if (oldmat->garray && (len = ((Mat_SeqBAIJ *)(oldmat->B->data))->nbs)) {
+      PetscCall(PetscMalloc1(len, &a->garray));
+      PetscCall(PetscArraycpy(a->garray, oldmat->garray, len));
+    } else a->garray = NULL;
 
-  PetscCall(MatStashCreate_Private(PetscObjectComm((PetscObject)matin), matin->rmap->bs, &mat->bstash));
-  PetscCall(VecDuplicate(oldmat->lvec, &a->lvec));
-  PetscCall(VecScatterCopy(oldmat->Mvctx, &a->Mvctx));
+    PetscCall(MatStashCreate_Private(PetscObjectComm((PetscObject)matin), matin->rmap->bs, &mat->bstash));
+    PetscCall(VecDuplicate(oldmat->lvec, &a->lvec));
+    PetscCall(VecScatterCopy(oldmat->Mvctx, &a->Mvctx));
 
-  PetscCall(VecDuplicate(oldmat->slvec0, &a->slvec0));
-  PetscCall(VecDuplicate(oldmat->slvec1, &a->slvec1));
+    PetscCall(VecDuplicate(oldmat->slvec0, &a->slvec0));
+    PetscCall(VecDuplicate(oldmat->slvec1, &a->slvec1));
 
-  PetscCall(VecGetLocalSize(a->slvec1, &nt));
-  PetscCall(VecGetArray(a->slvec1, &array));
-  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, bs * mbs, array, &a->slvec1a));
-  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, nt - bs * mbs, array + bs * mbs, &a->slvec1b));
-  PetscCall(VecRestoreArray(a->slvec1, &array));
-  PetscCall(VecGetArray(a->slvec0, &array));
-  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, nt - bs * mbs, array + bs * mbs, &a->slvec0b));
-  PetscCall(VecRestoreArray(a->slvec0, &array));
+    PetscCall(VecGetLocalSize(a->slvec1, &nt));
+    PetscCall(VecGetArray(a->slvec1, &array));
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, bs * mbs, array, &a->slvec1a));
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, nt - bs * mbs, array + bs * mbs, &a->slvec1b));
+    PetscCall(VecRestoreArray(a->slvec1, &array));
+    PetscCall(VecGetArray(a->slvec0, &array));
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, nt - bs * mbs, array + bs * mbs, &a->slvec0b));
+    PetscCall(VecRestoreArray(a->slvec0, &array));
 
-  /* ierr =  VecScatterCopy(oldmat->sMvctx,&a->sMvctx); - not written yet, replaced by the lazy trick: */
-  PetscCall(PetscObjectReference((PetscObject)oldmat->sMvctx));
-  a->sMvctx = oldmat->sMvctx;
+    /* ierr =  VecScatterCopy(oldmat->sMvctx,&a->sMvctx); - not written yet, replaced by the lazy trick: */
+    PetscCall(PetscObjectReference((PetscObject)oldmat->sMvctx));
+    a->sMvctx = oldmat->sMvctx;
 
-  PetscCall(MatDuplicate(oldmat->A, cpvalues, &a->A));
-  PetscCall(MatDuplicate(oldmat->B, cpvalues, &a->B));
+    PetscCall(MatDuplicate(oldmat->A, cpvalues, &a->A));
+    PetscCall(MatDuplicate(oldmat->B, cpvalues, &a->B));
+  }
   PetscCall(PetscFunctionListDuplicate(((PetscObject)matin)->qlist, &((PetscObject)mat)->qlist));
   *newmat = mat;
   PetscFunctionReturn(PETSC_SUCCESS);
