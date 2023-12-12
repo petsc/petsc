@@ -873,6 +873,8 @@ static PetscErrorCode SNESView_NEWTONTR(SNES snes, PetscViewer viewer)
 .   -snes_tr_delta0 <delta0> - trust region parameter, initial size of trust region (default: 0.2)
 -   -snes_tr_fallback_type <newton,cauchy,dogleg> - Solution strategy to test reduction when step is outside of trust region. Can use scaled Newton direction, Cauchy point (Steepest Descent direction) or dogleg method.
 
+    Level: deprecated
+
     Reference:
 .   * - "Numerical Optimization" by Nocedal and Wright, chapter 4.
 
