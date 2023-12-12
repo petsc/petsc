@@ -8,7 +8,7 @@
 struct _PCGAMGOps {
   PetscErrorCode (*creategraph)(PC, Mat, Mat *);
   PetscErrorCode (*coarsen)(PC, Mat *, PetscCoarsenData **);
-  PetscErrorCode (*prolongator)(PC, Mat, Mat, PetscCoarsenData *, Mat *);
+  PetscErrorCode (*prolongator)(PC, Mat, PetscCoarsenData *, Mat *);
   PetscErrorCode (*optprolongator)(PC, Mat, Mat *);
   PetscErrorCode (*createlevel)(PC, Mat, PetscInt, Mat *, Mat *, PetscMPIInt *, IS *, PetscBool);
   PetscErrorCode (*createdefaultdata)(PC, Mat); /* for data methods that have a default (SA) */
@@ -27,6 +27,7 @@ typedef struct gamg_TAG {
   PCGAMGLayoutType layout_type;
   PetscBool        cpu_pin_coarse_grids;
   PetscInt         min_eq_proc;
+  PetscInt         asm_hem_aggs;
   PetscInt         coarse_eq_limit;
   PetscReal        threshold_scale;
   PetscReal        threshold[PETSC_MG_MAXLEVELS]; /* common quatity to many AMG methods so keep it up here */

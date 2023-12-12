@@ -1627,6 +1627,7 @@ PETSC_EXTERN PetscErrorCode PetscCDPrint(const PetscCoarsenData *, PetscInt, MPI
 PETSC_EXTERN PetscErrorCode PetscCDGetNonemptyIS(PetscCoarsenData *, IS *);
 PETSC_EXTERN PetscErrorCode PetscCDGetMat(PetscCoarsenData *, Mat *);
 PETSC_EXTERN PetscErrorCode PetscCDSetMat(PetscCoarsenData *, Mat);
+PETSC_EXTERN PetscErrorCode PetscCDClearMat(PetscCoarsenData *);
 PETSC_EXTERN PetscErrorCode PetscCDRemoveAllAt(PetscCoarsenData *, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscCDCount(const PetscCoarsenData *, PetscInt *_sz);
 
