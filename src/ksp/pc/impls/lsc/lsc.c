@@ -202,7 +202,8 @@ static PetscErrorCode PCView_LSC(PC pc, PetscViewer viewer)
      PCLSC - Preconditioning for Schur complements, based on Least Squares Commutators
 
    Options Database Key:
-.    -pc_lsc_scale_diag - Use the diagonal of A for scaling
++    -pc_lsc_commute    - Whether to commute the LSC preconditioner in the style of Olshanskii
+-    -pc_lsc_scale_diag - Whether to scale BBt products. Will use the inverse of the diagonal of Qscale or A if the former is not provided
 
    Level: intermediate
 
