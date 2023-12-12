@@ -417,6 +417,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   da->ops->createddscatters          = DMCreateDomainDecompositionScatters_DA;
   da->ops->getdimpoints              = DMGetDimPoints_DA;
   da->ops->getneighbors              = DMGetNeighbors_DA;
+  da->ops->getlocalboundingbox       = DMGetLocalBoundingBox_DA;
   da->ops->locatepoints              = DMLocatePoints_DA_Regular;
   da->ops->getcompatibility          = DMGetCompatibility_DA;
   PetscCall(PetscObjectComposeFunction((PetscObject)da, "DMSetUpGLVisViewer_C", DMSetUpGLVisViewer_DMDA));

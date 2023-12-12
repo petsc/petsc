@@ -30,7 +30,7 @@ PetscErrorCode DMDASetUniformCoordinates(DM da, PetscReal xmin, PetscReal xmax, 
   DMBoundaryType bx, by, bz;
   Vec            xcoor;
   PetscScalar   *coors;
-  PetscReal      hx, hy, hz_;
+  PetscReal      hx = 0., hy = 0., hz_ = 0.;
   PetscInt       i, j, k, M, N, P, istart, isize, jstart, jsize, kstart, ksize, dim, cnt;
 
   PetscFunctionBegin;
