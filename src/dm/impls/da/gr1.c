@@ -86,6 +86,14 @@ PetscErrorCode DMDASetUniformCoordinates(DM da, PetscReal xmin, PetscReal xmax, 
   } else SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Cannot create uniform coordinates for this dimension %" PetscInt_FMT, dim);
   PetscCall(DMSetCoordinates(da, xcoor));
   PetscCall(VecDestroy(&xcoor));
+  // Handle periodicity
+  if (bx == DM_BOUNDARY_PERIODIC || by == DM_BOUNDARY_PERIODIC || bz == DM_BOUNDARY_PERIODIC) {
+    PetscReal maxCell[3] = {hx, hy, hz_};
+    PetscReal Lstart[3]  = {xmin, ymin, zmin};
+    PetscReal L[3]       = {xmax - xmin, ymax - ymin, zmax - zmin};
+
+    PetscCall(DMSetPeriodicity(da, maxCell, Lstart, L));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
