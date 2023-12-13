@@ -34,9 +34,9 @@ PETSC_EXTERN void kspfgmressetmodifypc_(KSP *ksp, void (*fcn)(KSP *, PetscInt *,
 {
   CHKFORTRANNULLFUNCTION(d);
   if ((PetscVoidFunction)fcn == (PetscVoidFunction)kspfgmresmodifypcksp_) {
-    *ierr = KSPFGMRESSetModifyPC(*ksp, KSPFGMRESModifyPCKSP, 0, 0);
+    *ierr = KSPFGMRESSetModifyPC(*ksp, KSPFGMRESModifyPCKSP, NULL, NULL);
   } else if ((PetscVoidFunction)fcn == (PetscVoidFunction)kspfgmresmodifypcnochange_) {
-    *ierr = KSPFGMRESSetModifyPC(*ksp, KSPFGMRESModifyPCNoChange, 0, 0);
+    *ierr = KSPFGMRESSetModifyPC(*ksp, KSPFGMRESModifyPCNoChange, NULL, NULL);
   } else {
     *ierr = PetscObjectSetFortranCallback((PetscObject)*ksp, PETSC_FORTRAN_CALLBACK_SUBTYPE, &_cb.modify, (PetscVoidFunction)fcn, ctx);
     if (*ierr) return;

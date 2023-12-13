@@ -241,7 +241,7 @@ PETSC_EXTERN void tsgetijacobian_(TS *ts, Mat *J, Mat *M, int *func, void **ctx,
   CHKFORTRANNULLINTEGER(ctx);
   CHKFORTRANNULLOBJECT(J);
   CHKFORTRANNULLOBJECT(M);
-  *ierr = TSGetIJacobian(*ts, J, M, 0, ctx);
+  *ierr = TSGetIJacobian(*ts, J, M, NULL, ctx);
 }
 
 PETSC_EXTERN void tsmonitordefault_(TS *ts, PetscInt *its, PetscReal *fgnorm, Vec *u, PetscViewerAndFormat **dummy, PetscErrorCode *ierr)
@@ -269,7 +269,7 @@ PETSC_EXTERN void tsmonitorset_(TS *ts, void (*func)(TS *, PetscInt *, PetscReal
 /*  func is currently ignored from Fortran */
 PETSC_EXTERN void tsgetrhsjacobian_(TS *ts, Mat *J, Mat *M, int *func, void **ctx, PetscErrorCode *ierr)
 {
-  *ierr = TSGetRHSJacobian(*ts, J, M, 0, ctx);
+  *ierr = TSGetRHSJacobian(*ts, J, M, NULL, ctx);
 }
 
 PETSC_EXTERN void tsview_(TS *ts, PetscViewer *viewer, PetscErrorCode *ierr)

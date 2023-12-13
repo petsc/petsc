@@ -348,9 +348,9 @@ PETSC_EXTERN void snessetconvergencetest_(SNES *snes, void (*func)(SNES *, Petsc
   CHKFORTRANNULLFUNCTION(destroy);
 
   if ((PetscVoidFunction)func == (PetscVoidFunction)snesconvergeddefault_) {
-    *ierr = SNESSetConvergenceTest(*snes, SNESConvergedDefault, 0, 0);
+    *ierr = SNESSetConvergenceTest(*snes, SNESConvergedDefault, NULL, NULL);
   } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesconvergedskip_) {
-    *ierr = SNESSetConvergenceTest(*snes, SNESConvergedSkip, 0, 0);
+    *ierr = SNESSetConvergenceTest(*snes, SNESConvergedSkip, NULL, NULL);
   } else {
     *ierr = PetscObjectSetFortranCallback((PetscObject)*snes, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.test, (PetscVoidFunction)func, cctx);
     if (*ierr) return;
@@ -373,7 +373,7 @@ PETSC_EXTERN void snesgetjacobian_(SNES *snes, Mat *A, Mat *B, int *func, void *
   CHKFORTRANNULLINTEGER(ctx);
   CHKFORTRANNULLOBJECT(A);
   CHKFORTRANNULLOBJECT(B);
-  *ierr = SNESGetJacobian(*snes, A, B, 0, NULL);
+  *ierr = SNESGetJacobian(*snes, A, B, NULL, NULL);
   if (*ierr) return;
   *ierr = PetscObjectGetFortranCallback((PetscObject)*snes, PETSC_FORTRAN_CALLBACK_CLASS, _cb.jacobian, NULL, ctx);
 }
