@@ -1,13 +1,18 @@
 #!/bin/bash -e
 
+UNSHALLOW=''
+if $(git rev-parse --is-shallow-repository); then
+  UNSHALLOW='--unshallow'
+fi
+
 if [ ! -z "${CI_MERGE_REQUEST_TARGET_BRANCH_NAME+x}" -a "${CI_MERGE_REQUEST_EVENT_TYPE}" != "detached" ]; then
-  git fetch -q --unshallow --no-tags origin +${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}:remotes/origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}
+  git fetch -q ${UNSHALLOW} --no-tags origin +${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}:remotes/origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}
   echo origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}
   exit 0
 fi
 
 if [ ! -z "${CI_PIPELINE_ID+x}" ]; then
-  git fetch -q --unshallow --no-tags origin +release:remotes/origin/release +main:remotes/origin/main
+  git fetch -q ${UNSHALLOW} --no-tags origin +release:remotes/origin/release +main:remotes/origin/main
 else
   git fetch -q
 fi
