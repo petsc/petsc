@@ -1556,6 +1556,9 @@
   author        = {Albert Moll\'en and Mark F. Adams and Matthew G. Knepley and Robert Hager and C.
                   S. Chang},
   journal       = {Journal of Plasma Physics},
+  volume        = {87},
+  number        = {2},
+  pages         = {905870229},
   eprint        = {2012.11764},
   doi           = {10.1017/S0022377821000441},
   year          = {2021},
@@ -2005,12 +2008,12 @@
 @Article{         isaacknepley2017,
   title         = {Support for Non-conformal Meshes in {PETSc}'s {DMPlex} Interface},
   author        = {Tobin Isaac and Matthew G. Knepley},
-  journal       = {ACM Transaction on Mathematical Software},
+  journal       = {ArXiv e-prints},
   eprint        = {1508.02470},
-  note          = {In review},
   year          = {2017},
-  petsc_uses    = {KSP}
-}
+  note          = {\url{http://arxiv.org/abs/1508.02470}},
+  petsc_uses    = {DMPlex}
+}}
 
 @Article{         knepleylangegorman2017,
   title         = {Unstructured Overlapping Mesh Distribution in Parallel},
@@ -2018,6 +2021,7 @@
   journal       = {ArXiv e-prints},
   eprint        = {1506.06194},
   year          = {2017},
+  note          = {\url{http://arxiv.org/abs/1506.06194}},
   petsc_uses    = {DMPlex}
 }
 
@@ -8083,10 +8087,12 @@
 @Article{         klotzbardhanknepley2018,
   title         = {Efficient Evaluation of Ellipsoidal Harmonics for Potential Modeling},
   author        = {Thomas S. Klotz and Jaydeep Bardhan and Matthew G. Knepley},
-  journal       = {Communications in Applied Mathematics and Computational Science},
-  note          = {In review},
-  url           = {https://arxiv.org/abs/1708.06028},
+  journal       = {arXiv e-prints},
+  eprint        = {1708.06028},
+  archiveprefix = {arXiv},
+  primaryclass  = {math.na},
   year          = {2018},
+  note          = {\url{http://arxiv.org/abs/1708.06028}},
   petsc_uses    = {KSP}
 }
 
@@ -9210,6 +9216,26 @@
   petsc_uses    = {KSP}
 }
 
+@Article{         benzigolubliesen2005,
+  title         = {Numerical solution of saddle point problems},
+  author        = {Michele Benzi and Gene H. Golub and J\"org Liesen},
+  volume        = {14},
+  journal       = {Acta Numerica},
+  pages         = {1-–137},
+  doi           = {10.1017/S0962492904000212},
+  year          = {2005}
+}
+
+@Article{         mardal2011preconditioning,
+  title         = {Preconditioning discretizations of systems of partial differential equations},
+  author        = {Kent-Andre Mardal and Ragnar Winther},
+  journal       = {Numerical Linear Algebra with Applications},
+  volume        = {18},
+  number        = {1},
+  pages         = {1--40},
+  year          = {2011}
+}
+
 @TechReport{      k676,
   year          = {1994},
   type          = {Technical Report},
@@ -9761,10 +9787,10 @@
                   boundary equations},
   author        = {Amneet Pal Singh Bhalla and Boyce E. Griffith and Matthew G. Knepley and Mark F.
                   Adams and Robert D. Guy},
-  journal       = {Advances in Computational Mathematics},
+  journal       = {arXiv e-prints},
   eprint        = {1612.02208},
-  note          = {In review},
   year          = {2017},
+  note          = {\url{http://arxiv.org/abs/1612.02208}},
   petsc_uses    = {KSP}
 }
 
@@ -17471,7 +17497,7 @@
   journal       = {Eos},
   volume        = {102},
   doi           = {10.1029/2021EO159258},
-  month         = jun,
+  month         = {Jun},
   year          = {2021}
 }
 
@@ -17567,6 +17593,18 @@
   series        = {Lecture Notes in Computational Science and Engineering},
   volume        = {84},
   pages         = {163--169},
+  publisher     = {Springer-Verlag},
+  year          = {2012}
+}
+
+@InCollection{    mardalhaga12,
+  author        = {Kent-Andre Mardal and Joachim Berdal Haga},
+  title         = {Block preconditioning of systems of PDEs},
+  editors       = {A. Logg and K.A. Mardal and G. N. Wells},
+  booktitle     = {Automated solutions of differential equations by the finite element method},
+  series        = {Lecture Notes in Computational Science and Engineering},
+  volume        = {84},
+  pages         = {643--655},
   publisher     = {Springer-Verlag},
   year          = {2012}
 }
@@ -17851,6 +17889,8 @@
                   Model to Linearized {Poisson}-{Boltzmann} Solvent},
   author        = {Amirhossein Molavi Tabrizi and Spencer Goossens and Christopher D. Cooper and
                   Matthew G. Knepley and Jaydeep P. Bardhan},
+  number        = {6},
+  pages         = {2897--2914},
   journal       = {Journal of Chemical Theory and Computation},
   year          = {2017}
 }
@@ -21531,6 +21571,9 @@
                   porous media},
   author        = {Maurice S. Fabien and Matthew G. Knepley and B\'eatrice M. Rivier\'e},
   journal       = {International Journal for Numerical Methods in Engineering},
+  volume        = {116},
+  number        = {3},
+  pages         = {161--177},
   doi           = {10.1002/nme.5919},
   year          = {2018}
 }
@@ -21542,6 +21585,7 @@
   journal       = {Results in Applied Mathematics},
   url           = {https://arxiv.org/abs/1809.00747},
   volume        = {8},
+  pages         = {100089},
   doi           = {10.1016/j.rinam.2019.100089},
   year          = {2020}
 }
@@ -21551,6 +21595,9 @@
                   second order elliptic problems},
   author        = {Maurice S. Fabien and Matthew G. Knepley and B\'eatrice M. Rivi\`ere},
   journal       = {Journal of Numerical Mathematics},
+  volume        = {28},
+  number        = {3},
+  pages         = {161--174},
   doi           = {10.1515/jnma-2019-0027},
   year          = {2019}
 }
@@ -21594,6 +21641,9 @@
                   Resuscitation In The Small Intestine},
   author        = {Travis Thompson and B\'eatrice M. Rivi\`ere and Matthew G. Knepley},
   journal       = {Mathematical Medicine and Biology},
+  volume        = {36},
+  number        = {4},
+  pages         = {513--548},
   doi           = {10.1093/imammb/dqz00},
   year          = {2019}
 }
@@ -21629,6 +21679,17 @@
   pages         = {B984--B1007},
   year          = {2021},
   publisher     = {SIAM}
+}
+
+@Article{         walkerknepleyaagaardwilliams2023,
+  title         = {Multiphysics Modeling in {PyLith}: Poroelasticity},
+  author        = {Robert L. Walker and Matthew G. Knepley and Brad T. Aagaard and Charles A. Williams},
+  journal       = {Geophysical Journal International},
+  volume        = {235},
+  number        = {3},
+  pages         = {2442--2475},
+  doi           = {10.1093/gji/ggad370},
+  year          = {2023}
 }
 
 @InProceedings{   actorfuentesriviere2020b,
@@ -21908,9 +21969,10 @@
   title         = {An Algorithm for Computing {Lipschitz} Inner Functions in {Kolmogorov's
                   Superposition Theorem}},
   author        = {Jonas Actor and Matthew G. Knepley},
-  journal       = {SIAM Journal on Numerical Analysis},
-  note          = {In review},
-  url           = {},
+  eprint        = {1712.08286},
+  archiveprefix = {arXiv},
+  primaryclass  = {math.na},
+  note          = {\url{http://arxiv.org/abs/1712.08286}},
   year          = {2018}
 }
 
@@ -22167,11 +22229,32 @@
   note          = {available via \url{https://arxiv.org/abs/1702.08425}}
 }
 
+@Misc{            openfoam:website,
+  title         = {{OpenFOAM}},
+  author        = {OpenFOAM Team},
+  key           = {OpenFOAM},
+  howpublished  = {\url{https://openfoam.com}}
+}
+
+@Misc{            mfem:website,
+  title         = {{MFEM}},
+  author        = {Tzanio Kolev and MFEM Team},
+  key           = {MFEM},
+  howpublished  = {\url{https://mfem.org}}
+}
+
 @Misc{            deal.ii:website,
   title         = {{{deal.II}: An open-source finite element library}},
-  author        = {Wolfgang Bangerth and others},
+  author        = {Wolfgang Bangerth and Deal.II Team},
   howpublished  = {\url{http://www.dealii.org}},
   year          = {2018}
+}
+
+@Misc{            ibamr:website,
+  title         = {{{IBAMR}: Immersed Boundary Method Adaptive Mesh Refinement Software Infrastructure}},
+  author        = {Boyce Griffith and IBAMR Team},
+  howpublished  = {\url{https://ibamr.github.io/}},
+  year          = {2023}
 }
 
 @Misc{            fission-gas-scidac:website,
@@ -38036,7 +38119,7 @@
   author        = {Daniel S. Finn and Matthew G. Knepley and Joseph V. Pusztay and Mark F. Adams},
   url           = {https://arxiv.org/abs/2303.12620},
   journal       = {Communications in Applied Mathematics and Computational Science},
-  note          = {Submitted},
+  note          = {Accepted},
   year          = {2023}
 }
 
