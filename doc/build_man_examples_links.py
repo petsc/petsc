@@ -30,6 +30,8 @@ def loadmanualpagescit(petsc_dir):
   for line in  text.split():
     m = re.match(PATTERN, line)
     # print('Manual page '+m.group(1)+' location '+m.group(3))
+    if not m:
+      raise RuntimeError('Cannot find PATTERN '+str(PATTERN)+' in manualpages.cit line '+line)
     if re.match(EXCLUDE_PATTERN,m.group(1)): continue
     mdict[m.group(1)] = m.group(3)
   # sort to find enclosing names first

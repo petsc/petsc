@@ -297,6 +297,8 @@ PetscErrorCode MatDestroy_LMVM(Mat B)
 /*MC
    MATLMVM - MATLMVM = "lmvm" - A matrix type used for Limited-Memory Variable Metric (LMVM) matrices.
 
+   Level: intermediate
+
    Developer notes:
    Improve this manual page as well as many others in the MATLMVM family.
 
