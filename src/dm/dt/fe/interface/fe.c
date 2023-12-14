@@ -1586,6 +1586,7 @@ PetscErrorCode PetscFEIntegrateJacobian(PetscDS ds, PetscFEJacobianType jtype, P
   Input Parameters:
 + ds              - The `PetscDS` specifying the discretizations and continuum functions
 . wf              - The PetscWeakForm holding the pointwise functions
+. jtype           - The type of matrix pointwise functions that should be used
 . key             - The (label+value, fieldI*Nf + fieldJ) being integrated
 . Ne              - The number of elements in the chunk
 . fgeom           - The face geometry for each cell in the chunk
@@ -1615,7 +1616,7 @@ PetscErrorCode PetscFEIntegrateJacobian(PetscDS ds, PetscFEJacobianType jtype, P
 
 .seealso: `PetscFEIntegrateJacobian()`, `PetscFEIntegrateResidual()`
 @*/
-PetscErrorCode PetscFEIntegrateBdJacobian(PetscDS ds, PetscWeakForm wf, PetscFormKey key, PetscInt Ne, PetscFEGeom *fgeom, const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
+PetscErrorCode PetscFEIntegrateBdJacobian(PetscDS ds, PetscWeakForm wf, PetscFEJacobianType jtype, PetscFormKey key, PetscInt Ne, PetscFEGeom *fgeom, const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
 {
   PetscFE  fe;
   PetscInt Nf;
@@ -1624,7 +1625,7 @@ PetscErrorCode PetscFEIntegrateBdJacobian(PetscDS ds, PetscWeakForm wf, PetscFor
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscCall(PetscDSGetNumFields(ds, &Nf));
   PetscCall(PetscDSGetDiscretization(ds, key.field / Nf, (PetscObject *)&fe));
-  if (fe->ops->integratebdjacobian) PetscCall((*fe->ops->integratebdjacobian)(ds, wf, key, Ne, fgeom, coefficients, coefficients_t, probAux, coefficientsAux, t, u_tshift, elemMat));
+  if (fe->ops->integratebdjacobian) PetscCall((*fe->ops->integratebdjacobian)(ds, wf, jtype, key, Ne, fgeom, coefficients, coefficients_t, probAux, coefficientsAux, t, u_tshift, elemMat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
