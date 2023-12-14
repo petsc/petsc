@@ -127,6 +127,13 @@ mpich-cxx-py3:
     TEST_SEARCH: snes_tutorials-ex48%
     LOAD_MODULES: gcc/12.1.0 mpich/4.1-gcc-12.1.0
 
+mpich-cxx-mlib:
+  extends: .stage-1
+  variables:
+    CONFIG_OPTS: --with-clanguage=cxx --with-single-library=0 --with-log=0 --with-info=0 --with-ctable=0 --with-is-color-value-type=short CXXFLAGS=-std=c++14
+    TEST_SEARCH: snes_tutorials-ex48%
+    LOAD_MODULES: gcc/12.1.0 mpich/4.1-gcc-12.1.0
+
 uni-complex-float-int64:
   extends: .stage-1
   variables:
@@ -817,6 +824,21 @@ linux-xsdk-dbg:
     TEST_ARCH: arch-ci-linux-xsdk-dbg
     LOAD_MODULES: gcc/12.1.0
 
+check-each-commit:
+  extends:
+    - .stage-2
+    - .linux_test
+    - .coverage-disable
+  tags:
+    - gce-u22-stage2
+  script:
+    - export PATH=/nfs/gce/projects/petsc/soft/clang+llvm-16.0.0-x86_64-linux-gnu-ubuntu-18.04/bin:$PATH
+    - lib/petsc/bin/maint/check-each-commit.sh
+  except:
+    variables:
+      - $PETSC_CI_SCHEDULED =~ /yes/
+  allow_failure: true
+
 linux-analyzer:
   extends:
     - .stage-2
@@ -947,6 +969,7 @@ mswin-intel-cxx-cmplx:
     - mswin-stage3
   variables:
     TEST_ARCH: arch-ci-mswin-intel-cxx-cmplx
+    TIMEOUT: 150
 
 mswin-uni:
   extends:

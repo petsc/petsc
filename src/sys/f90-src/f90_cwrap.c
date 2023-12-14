@@ -118,16 +118,16 @@ PetscErrorCode F90Array1dAccess(F90Array1d *ptr, MPI_Datatype type, void **array
   PetscFunctionBegin;
   if (type == MPIU_SCALAR) {
     f90array1daccessscalar_(ptr, array PETSC_F90_2PTR_PARAM(ptrd));
-    if (*array == PETSC_NULL_SCALAR_Fortran) *array = 0;
+    if (*array == PETSC_NULL_SCALAR_Fortran) *array = NULL;
   } else if (type == MPIU_REAL) {
     f90array1daccessreal_(ptr, array PETSC_F90_2PTR_PARAM(ptrd));
-    if (*array == PETSC_NULL_REAL_Fortran) *array = 0;
+    if (*array == PETSC_NULL_REAL_Fortran) *array = NULL;
   } else if (type == MPIU_INT) {
     f90array1daccessint_(ptr, array PETSC_F90_2PTR_PARAM(ptrd));
-    if (*array == PETSC_NULL_INTEGER_Fortran) *array = 0;
+    if (*array == PETSC_NULL_INTEGER_Fortran) *array = NULL;
   } else if (type == MPI_INT) {
     f90array1daccessmpiint_(ptr, array PETSC_F90_2PTR_PARAM(ptrd));
-    if (*array == PETSC_NULL_INTEGER_Fortran) *array = 0;
+    if (*array == PETSC_NULL_INTEGER_Fortran) *array = NULL;
   } else if (type == MPIU_FORTRANADDR) {
     f90array1daccessfortranaddr_(ptr, array PETSC_F90_2PTR_PARAM(ptrd));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported MPI_Datatype");

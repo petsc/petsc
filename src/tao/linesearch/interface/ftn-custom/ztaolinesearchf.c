@@ -54,7 +54,7 @@ PETSC_EXTERN void taolinesearchsetobjectiveroutine_(TaoLineSearch *ls, void (*fu
 {
   PetscObjectAllocateFortranPointers(*ls, NFUNCS);
   if (!func) {
-    *ierr = TaoLineSearchSetObjectiveRoutine(*ls, 0, ctx);
+    *ierr = TaoLineSearchSetObjectiveRoutine(*ls, NULL, ctx);
   } else {
     ((PetscObject)*ls)->fortran_func_pointers[OBJ] = (PetscVoidFunction)func;
     *ierr                                          = TaoLineSearchSetObjectiveRoutine(*ls, ourtaolinesearchobjectiveroutine, ctx);
@@ -65,7 +65,7 @@ PETSC_EXTERN void taolinesearchsetgradientroutine_(TaoLineSearch *ls, void (*fun
 {
   PetscObjectAllocateFortranPointers(*ls, NFUNCS);
   if (!func) {
-    *ierr = TaoLineSearchSetGradientRoutine(*ls, 0, ctx);
+    *ierr = TaoLineSearchSetGradientRoutine(*ls, NULL, ctx);
   } else {
     ((PetscObject)*ls)->fortran_func_pointers[GRAD] = (PetscVoidFunction)func;
     *ierr                                           = TaoLineSearchSetGradientRoutine(*ls, ourtaolinesearchgradientroutine, ctx);
@@ -76,7 +76,7 @@ PETSC_EXTERN void taolinesearchsetobjectiveandgradientroutine_(TaoLineSearch *ls
 {
   PetscObjectAllocateFortranPointers(*ls, NFUNCS);
   if (!func) {
-    *ierr = TaoLineSearchSetObjectiveAndGradientRoutine(*ls, 0, ctx);
+    *ierr = TaoLineSearchSetObjectiveAndGradientRoutine(*ls, NULL, ctx);
   } else {
     ((PetscObject)*ls)->fortran_func_pointers[OBJGRAD] = (PetscVoidFunction)func;
     *ierr                                              = TaoLineSearchSetObjectiveAndGradientRoutine(*ls, ourtaolinesearchobjectiveandgradientroutine, ctx);
@@ -87,7 +87,7 @@ PETSC_EXTERN void taolinesearchsetobjectiveandgtsroutine_(TaoLineSearch *ls, voi
 {
   PetscObjectAllocateFortranPointers(*ls, NFUNCS);
   if (!func) {
-    *ierr = TaoLineSearchSetObjectiveAndGTSRoutine(*ls, 0, ctx);
+    *ierr = TaoLineSearchSetObjectiveAndGTSRoutine(*ls, NULL, ctx);
   } else {
     ((PetscObject)*ls)->fortran_func_pointers[OBJGTS] = (PetscVoidFunction)func;
     *ierr                                             = TaoLineSearchSetObjectiveAndGTSRoutine(*ls, ourtaolinesearchobjectiveandgtsroutine, ctx);
