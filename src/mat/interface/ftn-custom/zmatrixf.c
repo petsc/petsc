@@ -619,8 +619,8 @@ PETSC_EXTERN void matrestorerowij_(Mat *B, PetscInt *shift, PetscBool *sym, Pets
   at a time.
 */
 static int                matgetrowactive = 0;
-static const PetscInt    *my_ocols        = 0;
-static const PetscScalar *my_ovals        = 0;
+static const PetscInt    *my_ocols        = NULL;
+static const PetscScalar *my_ovals        = NULL;
 
 PETSC_EXTERN void matgetrow_(Mat *mat, PetscInt *row, PetscInt *ncols, PetscInt *cols, PetscScalar *vals, PetscErrorCode *ierr)
 {

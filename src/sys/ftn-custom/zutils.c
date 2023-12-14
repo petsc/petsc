@@ -24,16 +24,16 @@ M*/
     This is code for translating PETSc memory addresses to integer offsets
     for Fortran.
 */
-char *PETSC_NULL_CHARACTER_Fortran = 0;
-void *PETSC_NULL_INTEGER_Fortran   = 0;
-void *PETSC_NULL_SCALAR_Fortran    = 0;
-void *PETSC_NULL_DOUBLE_Fortran    = 0;
-void *PETSC_NULL_REAL_Fortran      = 0;
-void *PETSC_NULL_BOOL_Fortran      = 0;
+char *PETSC_NULL_CHARACTER_Fortran = NULL;
+void *PETSC_NULL_INTEGER_Fortran   = NULL;
+void *PETSC_NULL_SCALAR_Fortran    = NULL;
+void *PETSC_NULL_DOUBLE_Fortran    = NULL;
+void *PETSC_NULL_REAL_Fortran      = NULL;
+void *PETSC_NULL_BOOL_Fortran      = NULL;
 EXTERN_C_BEGIN
-void (*PETSC_NULL_FUNCTION_Fortran)(void) = 0;
+void (*PETSC_NULL_FUNCTION_Fortran)(void) = NULL;
 EXTERN_C_END
-void *PETSC_NULL_MPI_COMM_Fortran = 0;
+void *PETSC_NULL_MPI_COMM_Fortran = NULL;
 
 size_t PetscIntAddressToFortran(const PetscInt *base, const PetscInt *addr)
 {
@@ -190,7 +190,7 @@ PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj, PetscScalar *base,
 
     PetscCall(PetscFree(tlx));
     PetscCall(PetscContainerDestroy(&container));
-    PetscCall(PetscObjectCompose(obj, "GetArrayPtr", 0));
+    PetscCall(PetscObjectCompose(obj, "GetArrayPtr", NULL));
   } else {
     *lx = base + addr;
   }

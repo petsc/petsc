@@ -42,7 +42,7 @@ PETSC_EXTERN void petscmallocview_(PetscErrorCode *ierr)
 
 PETSC_EXTERN void petscmallocvalidate_(PetscErrorCode *ierr)
 {
-  *ierr = PetscMallocValidate(0, "Unknown Fortran", 0);
+  *ierr = PetscMallocValidate(0, "Unknown Fortran", NULL);
 }
 
 PETSC_EXTERN void petscmemoryview_(PetscViewer *vin, char *message, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)

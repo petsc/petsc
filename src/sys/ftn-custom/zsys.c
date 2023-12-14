@@ -35,7 +35,7 @@ static char FIXCHARSTRING[1024];
 #define FIXCHARNOMALLOC(a, n, b) \
   do { \
     if (a == PETSC_NULL_CHARACTER_Fortran) { \
-      b = a = 0; \
+      b = a = NULL; \
     } else { \
       while ((n > 0) && (a[n - 1] == ' ')) n--; \
       if (a[n] != 0) { \

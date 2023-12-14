@@ -79,7 +79,7 @@ PETSC_EXTERN void dmdavecgetarrayf901_(DM *da, Vec *v, F90Array1d *a, PetscError
   if (*ierr) return;
   *ierr = DMDAGetGhostCorners(*da, &gxs, &gys, &gzs, &gxm, &gym, &gzm);
   if (*ierr) return;
-  *ierr = DMDAGetInfo(*da, &dim, 0, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0);
+  *ierr = DMDAGetInfo(*da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL);
   if (*ierr) return;
 
   /* Handle case where user passes in global vector as opposed to local */
@@ -120,7 +120,7 @@ PETSC_EXTERN void dmdavecgetarrayf902_(DM *da, Vec *v, F90Array2d *a, PetscError
   if (*ierr) return;
   *ierr = DMDAGetGhostCorners(*da, &gxs, &gys, &gzs, &gxm, &gym, &gzm);
   if (*ierr) return;
-  *ierr = DMDAGetInfo(*da, &dim, 0, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0);
+  *ierr = DMDAGetInfo(*da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL);
   if (*ierr) return;
 
   /* Handle case where user passes in global vector as opposed to local */
@@ -167,7 +167,7 @@ PETSC_EXTERN void dmdavecgetarrayf903_(DM *da, Vec *v, F90Array3d *a, PetscError
   if (*ierr) return;
   *ierr = DMDAGetGhostCorners(*da, &gxs, &gys, &gzs, &gxm, &gym, &gzm);
   if (*ierr) return;
-  *ierr = DMDAGetInfo(*da, &dim, 0, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0);
+  *ierr = DMDAGetInfo(*da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL);
   if (*ierr) return;
 
   /* Handle case where user passes in global vector as opposed to local */
@@ -216,7 +216,7 @@ PETSC_EXTERN void dmdavecgetarrayf904_(DM *da, Vec *v, F90Array4d *a, PetscError
   if (*ierr) return;
   *ierr = DMDAGetGhostCorners(*da, &gxs, &gys, &gzs, &gxm, &gym, &gzm);
   if (*ierr) return;
-  *ierr = DMDAGetInfo(*da, &dim, 0, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0);
+  *ierr = DMDAGetInfo(*da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL);
   if (*ierr) return;
 
   /* Handle case where user passes in global vector as opposed to local */
@@ -260,7 +260,7 @@ PETSC_EXTERN void dmdavecgetarrayreadf901_(DM *da, Vec *v, F90Array1d *a, PetscE
   if (*ierr) return;
   *ierr = DMDAGetGhostCorners(*da, &gxs, &gys, &gzs, &gxm, &gym, &gzm);
   if (*ierr) return;
-  *ierr = DMDAGetInfo(*da, &dim, 0, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0);
+  *ierr = DMDAGetInfo(*da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL);
   if (*ierr) return;
 
   /* Handle case where user passes in global vector as opposed to local */
@@ -301,7 +301,7 @@ PETSC_EXTERN void dmdavecgetarrayreadf902_(DM *da, Vec *v, F90Array2d *a, PetscE
   if (*ierr) return;
   *ierr = DMDAGetGhostCorners(*da, &gxs, &gys, &gzs, &gxm, &gym, &gzm);
   if (*ierr) return;
-  *ierr = DMDAGetInfo(*da, &dim, 0, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0);
+  *ierr = DMDAGetInfo(*da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL);
   if (*ierr) return;
 
   /* Handle case where user passes in global vector as opposed to local */
@@ -348,7 +348,7 @@ PETSC_EXTERN void dmdavecgetarrayreadf903_(DM *da, Vec *v, F90Array3d *a, PetscE
   if (*ierr) return;
   *ierr = DMDAGetGhostCorners(*da, &gxs, &gys, &gzs, &gxm, &gym, &gzm);
   if (*ierr) return;
-  *ierr = DMDAGetInfo(*da, &dim, 0, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0);
+  *ierr = DMDAGetInfo(*da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL);
   if (*ierr) return;
 
   /* Handle case where user passes in global vector as opposed to local */
@@ -397,7 +397,7 @@ PETSC_EXTERN void dmdavecgetarrayreadf904_(DM *da, Vec *v, F90Array4d *a, PetscE
   if (*ierr) return;
   *ierr = DMDAGetGhostCorners(*da, &gxs, &gys, &gzs, &gxm, &gym, &gzm);
   if (*ierr) return;
-  *ierr = DMDAGetInfo(*da, &dim, 0, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0);
+  *ierr = DMDAGetInfo(*da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL);
   if (*ierr) return;
 
   /* Handle case where user passes in global vector as opposed to local */

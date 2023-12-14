@@ -33,7 +33,7 @@ PETSC_EXTERN void dmdagetownershipranges_(DM *da, PetscInt lx[], PetscInt ly[], 
   CHKFORTRANNULLINTEGER(lx);
   CHKFORTRANNULLINTEGER(ly);
   CHKFORTRANNULLINTEGER(lz);
-  *ierr = DMDAGetInfo(*da, 0, 0, 0, 0, &M, &N, &P, 0, 0, 0, 0, 0, 0);
+  *ierr = DMDAGetInfo(*da, NULL, NULL, NULL, NULL, &M, &N, &P, NULL, NULL, NULL, NULL, NULL, NULL);
   if (*ierr) return;
   *ierr = DMDAGetOwnershipRanges(*da, &gx, &gy, &gz);
   if (*ierr) return;

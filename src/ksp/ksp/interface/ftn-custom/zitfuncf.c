@@ -152,7 +152,7 @@ PETSC_EXTERN void kspsetconvergencetest_(KSP *ksp, void (*converge)(KSP *, Petsc
   if ((PetscVoidFunction)converge == (PetscVoidFunction)kspconvergeddefault_) {
     *ierr = KSPSetConvergenceTest(*ksp, KSPConvergedDefault, *cctx, KSPConvergedDefaultDestroy);
   } else if ((PetscVoidFunction)converge == (PetscVoidFunction)kspconvergedskip_) {
-    *ierr = KSPSetConvergenceTest(*ksp, KSPConvergedSkip, 0, 0);
+    *ierr = KSPSetConvergenceTest(*ksp, KSPConvergedSkip, NULL, NULL);
   } else {
     *ierr = PetscObjectSetFortranCallback((PetscObject)*ksp, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.test, (PetscVoidFunction)converge, cctx);
     if (*ierr) return;
