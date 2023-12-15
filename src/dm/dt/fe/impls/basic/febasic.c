@@ -831,7 +831,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscDS ds, PetscFEJacobianType jt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWeakForm wf, PetscFormKey key, PetscInt Ne, PetscFEGeom *fgeom, const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
+PETSC_INTERN PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWeakForm wf, PetscFEJacobianType jtype, PetscFormKey key, PetscInt Ne, PetscFEGeom *fgeom, const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
 {
   const PetscInt     debug = 0;
   PetscFE            feI, feJ;
@@ -867,7 +867,16 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWe
   PetscCall(PetscDSGetComponentDerivativeOffsets(ds, &uOff_x));
   PetscCall(PetscDSGetFieldOffset(ds, fieldI, &offsetI));
   PetscCall(PetscDSGetFieldOffset(ds, fieldJ, &offsetJ));
-  PetscCall(PetscWeakFormGetBdJacobian(wf, key.label, key.value, fieldI, fieldJ, key.part, &n0, &g0_func, &n1, &g1_func, &n2, &g2_func, &n3, &g3_func));
+  switch (jtype) {
+  case PETSCFE_JACOBIAN_PRE:
+    PetscCall(PetscWeakFormGetBdJacobianPreconditioner(wf, key.label, key.value, fieldI, fieldJ, key.part, &n0, &g0_func, &n1, &g1_func, &n2, &g2_func, &n3, &g3_func));
+    break;
+  case PETSCFE_JACOBIAN:
+    PetscCall(PetscWeakFormGetBdJacobian(wf, key.label, key.value, fieldI, fieldJ, key.part, &n0, &g0_func, &n1, &g1_func, &n2, &g2_func, &n3, &g3_func));
+    break;
+  case PETSCFE_JACOBIAN_DYN:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "PETSCFE_JACOBIAN_DYN is not supported for PetscFEIntegrateBdJacobian()");
+  }
   if (!n0 && !n1 && !n2 && !n3) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscDSGetEvaluationArrays(ds, &u, coefficients_t ? &u_t : NULL, &u_x));
   PetscCall(PetscDSGetWorkspace(ds, &x, &basisReal, &basisDerReal, &testReal, &testDerReal));
