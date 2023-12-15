@@ -58,13 +58,12 @@ PetscErrorCode PetscGetVersionNumber(PetscInt *major, PetscInt *minor, PetscInt 
   if (release) *release = PETSC_VERSION_RELEASE;
   return PETSC_SUCCESS;
 }
-#if defined(PETSC_HAVE_MKL_SET_NUM_THREADS)
+#if defined(PETSC_HAVE_BLI_THREAD_SET_NUM_THREADS)
+EXTERN_C_BEGIN
+void bli_thread_set_num_threads(int);
+EXTERN_C_END
+#elif defined(PETSC_HAVE_MKL_SET_NUM_THREADS)
   #include <mkl.h>
-#elif defined(PETSC_HAVE_BLI_THREAD_SET_NUM_THREADS)
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wunused-function"
-  #include <blis/blis.h>
-  #pragma GCC diagnostic pop
 #elif defined(PETSC_HAVE_OPENBLAS_SET_NUM_THREADS)
 EXTERN_C_BEGIN
 void openblas_set_num_threads(int);
