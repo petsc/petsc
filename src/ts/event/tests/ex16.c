@@ -11,7 +11,7 @@ static char help[] = "Solves the trivial ODE du/dt = 1, u(0) = 0. \n\n";
 static PetscErrorCode RHSFunction(TS, PetscReal, Vec, Vec, void *);
 static PetscErrorCode RHSJacobian(TS, PetscReal, Vec, Mat, Mat, void *);
 
-static PetscErrorCode Event(TS, PetscReal, Vec, PetscScalar *, void *);
+static PetscErrorCode Event(TS, PetscReal, Vec, PetscReal *, void *);
 static PetscErrorCode PostEvent(TS, PetscInt, PetscInt[], PetscReal, Vec, PetscBool, void *);
 
 int main(int argc, char **argv)
@@ -90,7 +90,7 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat B, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode Event(TS ts, PetscReal t, Vec x, PetscScalar *fvalue, void *ctx)
+PetscErrorCode Event(TS ts, PetscReal t, Vec x, PetscReal *fvalue, void *ctx)
 {
   PetscFunctionBeginUser;
   fvalue[0] = t - 1.1;

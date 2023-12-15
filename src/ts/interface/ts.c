@@ -3365,6 +3365,9 @@ PetscErrorCode TSStep(TS ts)
                                    &cite));
   PetscCall(TSSetUp(ts));
   PetscCall(TSTrajectorySetUp(ts->trajectory, ts));
+  if (ts->tspan)
+    ts->tspan->worktol = 0; /* In each step of TSSolve() 'tspan->worktol' will be meaningfully defined (later) only once:
+                                                   in TSAdaptChoose() or TSEvent_dt_cap(), and then reused till the end of the step */
 
   PetscCheck(ts->max_time < PETSC_MAX_REAL || ts->max_steps != PETSC_MAX_INT, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "You must call TSSetMaxTime() or TSSetMaxSteps(), or use -ts_max_time <time> or -ts_max_steps <steps>");
   PetscCheck(ts->exact_final_time != TS_EXACTFINALTIME_UNSPECIFIED, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSStep()");
@@ -3379,8 +3382,6 @@ PetscErrorCode TSStep(TS ts)
   PetscUseTypeMethod(ts, step);
   PetscCall(PetscLogEventEnd(TS_Step, ts, 0, 0, 0));
 
-  if (ts->tspan && PetscIsCloseAtTol(ts->ptime, ts->tspan->span_times[ts->tspan->spanctr], ts->tspan->reltol * ts->time_step + ts->tspan->abstol, 0) && ts->tspan->spanctr < ts->tspan->num_span_times)
-    PetscCall(VecCopy(ts->vec_sol, ts->tspan->vecs_sol[ts->tspan->spanctr++]));
   if (ts->reason >= 0) {
     ts->ptime_prev = ptime;
     ts->steps++;
@@ -4032,6 +4033,11 @@ PetscErrorCode TSSolve(TS ts, Vec u)
         PetscCall(TSTrajectorySet(ts->trajectory, ts, ts->steps, ts->ptime, ts->vec_sol));
         PetscCall(TSPostStep(ts));
         PetscCall(TSResize(ts));
+
+        if (ts->tspan && ts->tspan->spanctr < ts->tspan->num_span_times) {
+          PetscCheck(ts->tspan->worktol > 0, PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Unexpected state !(tspan->worktol > 0) in TSSolve()");
+          if (PetscIsCloseAtTol(ts->ptime, ts->tspan->span_times[ts->tspan->spanctr], ts->tspan->worktol, 0)) PetscCall(VecCopy(ts->vec_sol, ts->tspan->vecs_sol[ts->tspan->spanctr++]));
+        }
       }
     }
     PetscCall(TSMonitor(ts, ts->steps, ts->ptime, ts->vec_sol));
@@ -5690,9 +5696,10 @@ PetscErrorCode TSSetTimeSpan(TS ts, PetscInt n, PetscReal *span_times)
     TSTimeSpan tspan;
     PetscCall(PetscNew(&tspan));
     PetscCall(PetscMalloc1(n, &tspan->span_times));
-    tspan->reltol = 1e-6;
-    tspan->abstol = 10 * PETSC_MACHINE_EPSILON;
-    ts->tspan     = tspan;
+    tspan->reltol  = 1e-6;
+    tspan->abstol  = 10 * PETSC_MACHINE_EPSILON;
+    tspan->worktol = 0;
+    ts->tspan      = tspan;
   }
   ts->tspan->num_span_times = n;
   PetscCall(PetscArraycpy(ts->tspan->span_times, span_times, n));

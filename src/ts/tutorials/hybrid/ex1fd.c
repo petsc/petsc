@@ -25,7 +25,7 @@ typedef struct {
 
 PetscErrorCode FWDRun(TS, Vec, void *);
 
-PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscScalar *fvalue, void *ctx)
+PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscReal *fvalue, void *ctx)
 {
   AppCtx            *actx = (AppCtx *)ctx;
   const PetscScalar *u;
@@ -33,9 +33,9 @@ PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscScalar *fvalue, voi
   PetscFunctionBegin;
   PetscCall(VecGetArrayRead(U, &u));
   if (actx->mode == 1) {
-    fvalue[0] = u[1] - actx->lambda1 * u[0];
+    fvalue[0] = PetscRealPart(u[1] - actx->lambda1 * u[0]);
   } else if (actx->mode == 2) {
-    fvalue[0] = u[1] - actx->lambda2 * u[0];
+    fvalue[0] = PetscRealPart(u[1] - actx->lambda2 * u[0]);
   }
   PetscCall(VecRestoreArrayRead(U, &u));
   PetscFunctionReturn(PETSC_SUCCESS);

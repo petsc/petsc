@@ -926,8 +926,13 @@ PETSC_EXTERN PetscErrorCode       TSMonitorHGSwarmSolution(TS, PetscInt, PetscRe
 PETSC_EXTERN PetscErrorCode       TSMonitorHGCtxDestroy(TSMonitorHGCtx *);
 PETSC_EXTERN PetscErrorCode       TSMonitorHGSwarmSolution(TS, PetscInt, PetscReal, Vec, void *);
 
-PETSC_EXTERN PetscErrorCode TSSetEventHandler(TS, PetscInt, PetscInt[], PetscBool[], PetscErrorCode (*)(TS, PetscReal, Vec, PetscScalar[], void *), PetscErrorCode (*)(TS, PetscInt, PetscInt[], PetscReal, Vec, PetscBool, void *), void *);
-PETSC_EXTERN PetscErrorCode TSSetPostEventIntervalStep(TS, PetscReal);
+PETSC_EXTERN PetscErrorCode TSSetEventHandler(TS, PetscInt, PetscInt[], PetscBool[], PetscErrorCode (*)(TS, PetscReal, Vec, PetscReal[], void *), PetscErrorCode (*)(TS, PetscInt, PetscInt[], PetscReal, Vec, PetscBool, void *), void *);
+PETSC_EXTERN PetscErrorCode TSSetPostEventStep(TS, PetscReal);
+PETSC_EXTERN PetscErrorCode TSSetPostEventSecondStep(TS, PetscReal);
+PETSC_DEPRECATED_FUNCTION(3, 21, 0, "TSSetPostEventSecondStep()", ) static inline PetscErrorCode TSSetPostEventIntervalStep(TS ts, PetscReal dt)
+{
+  return TSSetPostEventSecondStep(ts, dt);
+}
 PETSC_EXTERN PetscErrorCode TSSetEventTolerances(TS, PetscReal, PetscReal[]);
 PETSC_EXTERN PetscErrorCode TSGetNumEvents(TS, PetscInt *);
 

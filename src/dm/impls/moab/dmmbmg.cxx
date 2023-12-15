@@ -3,6 +3,14 @@
 #include <MBTagConventions.hpp>
 #include <moab/NestedRefine.hpp>
 
+// A helper function to convert Real vector to Scalar vector (required by MatSetValues)
+static inline std::vector<PetscScalar> VecReal_to_VecScalar(const std::vector<PetscReal> &v)
+{
+  std::vector<PetscScalar> res(v.size());
+  for (size_t i = 0; i < res.size(); i++) res[i] = v[i];
+  return res;
+}
+
 /*@C
   DMMoabGenerateHierarchy - Generate a multi-level uniform refinement hierarchy
   by succesively refining a coarse mesh, already defined in the `DM` object
@@ -260,6 +268,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat *inte
   std::vector<moab::EntityHandle> children;
   std::vector<moab::EntityHandle> connp, connc;
   std::vector<PetscReal>          pcoords, ccoords, values_phi;
+  std::vector<PetscScalar>        values_phi_scalar;
 
   if (use_consistent_bases) {
     const moab::EntityHandle ehandle = dmbp->elocal->front();
@@ -298,6 +307,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat *inte
   PetscCall(MatSetOption(*interpl, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
 
   /* Loop through the remaining vertices. These vertices appear only on the current refined_level. */
+  values_phi_scalar = VecReal_to_VecScalar(values_phi);
   for (moab::Range::iterator iter = dmbp->elocal->begin(); iter != dmbp->elocal->end(); iter++) {
     const moab::EntityHandle ehandle = *iter;
 
@@ -338,7 +348,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat *inte
       /* Set values: For each DOF in coarse grid cell, set the contribution or PHI evaluated at each fine grid DOF point */
       for (unsigned tc = 0; tc < connc.size(); tc++) {
         /* TODO: Check if we should be using INSERT_VALUES instead */
-        PetscCall(MatSetValues(*interpl, 1, &dofsc[tc], connp.size(), &dofsp[0], &values_phi[connp.size() * tc], ADD_VALUES));
+        PetscCall(MatSetValues(*interpl, 1, &dofsc[tc], connp.size(), &dofsp[0], &values_phi_scalar[connp.size() * tc], ADD_VALUES));
       }
     } else {
       /* Compute the interpolation weights by determining distance of 1-ring
@@ -351,7 +361,8 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat *inte
       */
       values_phi.resize(connp.size());
       for (unsigned tc = 0; tc < connc.size(); tc++) {
-        PetscReal normsum = 0.0;
+        PetscReal                normsum = 0.0;
+        std::vector<PetscScalar> values_phi_scalar2;
         for (unsigned tp = 0; tp < connp.size(); tp++) {
           values_phi[tp] = 0.0;
           for (unsigned k = 0; k < 3; k++) values_phi[tp] += std::pow(pcoords[tp * 3 + k] - ccoords[k + tc * 3], dim);
@@ -367,11 +378,12 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat *inte
           if (values_phi[tp] > 1e11) values_phi[tp] = factor * 0.5 / connp.size();
           else values_phi[tp] = factor * values_phi[tp] * 0.5 / (connp.size() * normsum);
         }
-        PetscCall(MatSetValues(*interpl, 1, &dofsc[tc], connp.size(), &dofsp[0], &values_phi[0], ADD_VALUES));
+        values_phi_scalar2 = VecReal_to_VecScalar(values_phi);
+        PetscCall(MatSetValues(*interpl, 1, &dofsc[tc], connp.size(), &dofsp[0], &values_phi_scalar2[0], ADD_VALUES));
       }
     }
   }
-  if (vec) *vec = NULL;
+  if (vec) *vec = NULL; // TODO: <-- is it safe/appropriate?
   PetscCall(MatAssemblyBegin(*interpl, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*interpl, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);
