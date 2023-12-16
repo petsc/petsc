@@ -763,14 +763,14 @@ PetscErrorCode PetscSectionGetPointMajor(PetscSection s, PetscBool *pm)
 
   Point major order means the degrees of freedom are stored as follows
 .vb
-    all the degrees of freedom for each point are stored contiquously, one point after another (respecting a permutation set with `PetscSectionSetPermutation()`)
+    all the degrees of freedom for each point are stored contiguously, one point after another (respecting a permutation set with `PetscSectionSetPermutation()`)
     for each point
        the degrees of freedom for each field (starting with the unnamed default field) are listed in order by field
 .ve
 
   Field major order means the degrees of freedom are stored as follows
 .vb
-    all degrees of freedom for each field (including the unnamed default field) are stored contiquously, one field after another
+    all degrees of freedom for each field (including the unnamed default field) are stored contiguously, one field after another
     for each field (started with unnamed default field)
       the degrees of freedom for each point are listed in order by point (respecting a permutation set with `PetscSectionSetPermutation()`)
 .ve
