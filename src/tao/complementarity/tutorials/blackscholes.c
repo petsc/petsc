@@ -1,4 +1,4 @@
-/**********************************************************************
+/*
     American Put Options Pricing using the Black-Scholes Equation
 
    Background (European Options):
@@ -62,7 +62,7 @@
        Journal of Computational Finance, volume 2, number 3, 1998.
 - * - Wilmott, "Derivatives: The Theory and Practice of Financial Engineering,"
        John Wiley and Sons, New York, 1998.
-***************************************************************************/
+*/
 
 /*
   Include "petsctao.h" so we can use TAO solvers.

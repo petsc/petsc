@@ -128,7 +128,7 @@ static PetscErrorCode KSPSolve_PIPECR(KSP ksp)
 }
 
 /*MC
-   KSPPIPECR - Pipelined conjugate residual method. [](sec_pipelineksp)
+   KSPPIPECR - Pipelined conjugate residual method {cite}`ghyselsvanroose2014`. [](sec_pipelineksp)
 
    Level: intermediate
 
@@ -143,10 +143,6 @@ static PetscErrorCode KSPSolve_PIPECR(KSP ksp)
 
    Contributed by:
    Pieter Ghysels, Universiteit Antwerpen, Intel Exascience lab Flanders
-
-   Reference:
-   P. Ghysels and W. Vanroose, "Hiding global synchronization latency in the preconditioned Conjugate Gradient algorithm",
-   Submitted to Parallel Computing, 2012.
 
 .seealso: [](ch_ksp), [](sec_pipelineksp), [](doc_faq_pipelined), `KSPCreate()`, `KSPSetType()`, `KSPPIPECG`, `KSPGROPPCG`, `KSPPGMRES`, `KSPCG`, `KSPCGUseSingleReduction()`
 M*/

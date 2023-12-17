@@ -240,19 +240,15 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm, PetscMPII
 
   Options Database Key:
 . -build_twosided <allreduce|ibarrier|redscatter> - algorithm to set up two-sided communication. Default is allreduce for communicators with <= 1024 ranks,
-                   otherwise ibarrier.
+                                                    otherwise ibarrier.
 
   Level: developer
 
   Notes:
   This memory-scalable interface is an alternative to calling `PetscGatherNumberOfMessages()` and
-  `PetscGatherMessageLengths()`, possibly with a subsequent round of communication to send other constant-size data.
+  `PetscGatherMessageLengths()`, possibly with a subsequent round of communication to send other constant-size data, see {cite}`hoeflersiebretlumsdaine10`.
 
   Basic data types as well as contiguous types are supported, but non-contiguous (e.g., strided) types are not.
-
-  References:
-.  * - Hoefler, Siebert and Lumsdaine, The MPI_Ibarrier implementation uses the algorithm in
-  Scalable communication protocols for dynamic sparse data exchange, 2010.
 
 .seealso: `PetscGatherNumberOfMessages()`, `PetscGatherMessageLengths()`, `PetscCommBuildTwoSidedSetType()`, `PetscCommBuildTwoSidedType`
 @*/
@@ -435,13 +431,9 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm, PetscMP
 
   Notes:
   This memory-scalable interface is an alternative to calling `PetscGatherNumberOfMessages()` and
-  `PetscGatherMessageLengths()`, possibly with a subsequent round of communication to send other data.
+  `PetscGatherMessageLengths()`, possibly with a subsequent round of communication to send other data, {cite}`hoeflersiebretlumsdaine10`.
 
   Basic data types as well as contiguous types are supported, but non-contiguous (e.g., strided) types are not.
-
-  References:
-.  * - Hoefler, Siebert and Lumsdaine, The MPI_Ibarrier implementation uses the algorithm in
-  Scalable communication protocols for dynamic sparse data exchange, 2010.
 
 .seealso: `PetscCommBuildTwoSided()`, `PetscCommBuildTwoSidedFReq()`, `PetscGatherNumberOfMessages()`, `PetscGatherMessageLengths()`
 @*/
@@ -486,13 +478,9 @@ PetscErrorCode PetscCommBuildTwoSidedF(MPI_Comm comm, PetscMPIInt count, MPI_Dat
 
   Notes:
   This memory-scalable interface is an alternative to calling `PetscGatherNumberOfMessages()` and
-  `PetscGatherMessageLengths()`, possibly with a subsequent round of communication to send other data.
+  `PetscGatherMessageLengths()`, possibly with a subsequent round of communication to send other data, {cite}`hoeflersiebretlumsdaine10`.
 
   Basic data types as well as contiguous types are supported, but non-contiguous (e.g., strided) types are not.
-
-  References:
-.  * - Hoefler, Siebert and Lumsdaine, The MPI_Ibarrier implementation uses the algorithm in
-  Scalable communication protocols for dynamic sparse data exchange, 2010.
 
 .seealso: `PetscCommBuildTwoSided()`, `PetscCommBuildTwoSidedF()`, `PetscGatherNumberOfMessages()`, `PetscGatherMessageLengths()`
 @*/

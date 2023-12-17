@@ -2735,7 +2735,7 @@ static PetscErrorCode MatMumpsGetIcntl_MUMPS(Mat F, PetscInt icntl, PetscInt *iv
 }
 
 /*@
-  MatMumpsSetIcntl - Set MUMPS parameter ICNTL()
+  MatMumpsSetIcntl - Set MUMPS parameter ICNTL() <https://mumps-solver.org/index.php?page=doc>
 
   Logically Collective
 
@@ -2748,9 +2748,6 @@ static PetscErrorCode MatMumpsGetIcntl_MUMPS(Mat F, PetscInt icntl, PetscInt *iv
 . -mat_mumps_icntl_<icntl> <ival> - change the option numbered icntl to ival
 
   Level: beginner
-
-  References:
-.  * - MUMPS Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
 @*/
@@ -2767,7 +2764,7 @@ PetscErrorCode MatMumpsSetIcntl(Mat F, PetscInt icntl, PetscInt ival)
 }
 
 /*@
-  MatMumpsGetIcntl - Get MUMPS parameter ICNTL()
+  MatMumpsGetIcntl - Get MUMPS parameter ICNTL() <https://mumps-solver.org/index.php?page=doc>
 
   Logically Collective
 
@@ -2779,9 +2776,6 @@ PetscErrorCode MatMumpsSetIcntl(Mat F, PetscInt icntl, PetscInt ival)
 . ival - value of MUMPS ICNTL(icntl)
 
   Level: beginner
-
-  References:
-.  * - MUMPS Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
 @*/
@@ -2833,7 +2827,7 @@ static PetscErrorCode MatMumpsGetCntl_MUMPS(Mat F, PetscInt icntl, PetscReal *va
 }
 
 /*@
-  MatMumpsSetCntl - Set MUMPS parameter CNTL()
+  MatMumpsSetCntl - Set MUMPS parameter CNTL() <https://mumps-solver.org/index.php?page=doc>
 
   Logically Collective
 
@@ -2846,9 +2840,6 @@ static PetscErrorCode MatMumpsGetCntl_MUMPS(Mat F, PetscInt icntl, PetscReal *va
 . -mat_mumps_cntl_<icntl> <val> - change the option numbered icntl to ival
 
   Level: beginner
-
-  References:
-.  * - MUMPS Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
 @*/
@@ -2865,7 +2856,7 @@ PetscErrorCode MatMumpsSetCntl(Mat F, PetscInt icntl, PetscReal val)
 }
 
 /*@
-  MatMumpsGetCntl - Get MUMPS parameter CNTL()
+  MatMumpsGetCntl - Get MUMPS parameter CNTL() <https://mumps-solver.org/index.php?page=doc>
 
   Logically Collective
 
@@ -2877,9 +2868,6 @@ PetscErrorCode MatMumpsSetCntl(Mat F, PetscInt icntl, PetscReal val)
 . val - value of MUMPS CNTL(icntl)
 
   Level: beginner
-
-  References:
-.  * - MUMPS Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
 @*/
@@ -3005,7 +2993,7 @@ static PetscErrorCode MatMumpsGetInverse_MUMPS(Mat F, Mat spRHS)
 }
 
 /*@
-  MatMumpsGetInverse - Get user-specified set of entries in inverse of `A`
+  MatMumpsGetInverse - Get user-specified set of entries in inverse of `A` <https://mumps-solver.org/index.php?page=doc>
 
   Logically Collective
 
@@ -3016,9 +3004,6 @@ static PetscErrorCode MatMumpsGetInverse_MUMPS(Mat F, Mat spRHS)
 . spRHS - sequential sparse matrix in `MATTRANSPOSEVIRTUAL` format with requested entries of inverse of `A`
 
   Level: beginner
-
-  References:
-.  * - MUMPS Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatCreateTranspose()`
 @*/
@@ -3043,7 +3028,7 @@ static PetscErrorCode MatMumpsGetInverseTranspose_MUMPS(Mat F, Mat spRHST)
 }
 
 /*@
-  MatMumpsGetInverseTranspose - Get user-specified set of entries in inverse of matrix `A`^T
+  MatMumpsGetInverseTranspose - Get user-specified set of entries in inverse of matrix $A^T $ <https://mumps-solver.org/index.php?page=doc>
 
   Logically Collective
 
@@ -3054,9 +3039,6 @@ static PetscErrorCode MatMumpsGetInverseTranspose_MUMPS(Mat F, Mat spRHST)
 . spRHST - sequential sparse matrix in `MATAIJ` format containing the requested entries of inverse of `A`^T
 
   Level: beginner
-
-  References:
-.  * - MUMPS Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatCreateTranspose()`, `MatMumpsGetInverse()`
 @*/
@@ -3075,7 +3057,7 @@ PetscErrorCode MatMumpsGetInverseTranspose(Mat F, Mat spRHST)
 }
 
 /*@
-  MatMumpsGetInfo - Get MUMPS parameter INFO()
+  MatMumpsGetInfo - Get MUMPS parameter INFO() <https://mumps-solver.org/index.php?page=doc>
 
   Logically Collective
 
@@ -3087,9 +3069,6 @@ PetscErrorCode MatMumpsGetInverseTranspose(Mat F, Mat spRHST)
 . ival - value of MUMPS INFO(icntl)
 
   Level: beginner
-
-  References:
-.  * - MUMPS Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
 @*/
@@ -3104,7 +3083,7 @@ PetscErrorCode MatMumpsGetInfo(Mat F, PetscInt icntl, PetscInt *ival)
 }
 
 /*@
-  MatMumpsGetInfog - Get MUMPS parameter INFOG()
+  MatMumpsGetInfog - Get MUMPS parameter INFOG() <https://mumps-solver.org/index.php?page=doc>
 
   Logically Collective
 
@@ -3116,9 +3095,6 @@ PetscErrorCode MatMumpsGetInfo(Mat F, PetscInt icntl, PetscInt *ival)
 . ival - value of MUMPS INFOG(icntl)
 
   Level: beginner
-
-  References:
-.  * - MUMPS Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
 @*/
@@ -3133,7 +3109,7 @@ PetscErrorCode MatMumpsGetInfog(Mat F, PetscInt icntl, PetscInt *ival)
 }
 
 /*@
-  MatMumpsGetRinfo - Get MUMPS parameter RINFO()
+  MatMumpsGetRinfo - Get MUMPS parameter RINFO() <https://mumps-solver.org/index.php?page=doc>
 
   Logically Collective
 
@@ -3145,9 +3121,6 @@ PetscErrorCode MatMumpsGetInfog(Mat F, PetscInt icntl, PetscInt *ival)
 . val - value of MUMPS RINFO(icntl)
 
   Level: beginner
-
-  References:
-.  * - MUMPS Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfog()`
 @*/
@@ -3162,7 +3135,7 @@ PetscErrorCode MatMumpsGetRinfo(Mat F, PetscInt icntl, PetscReal *val)
 }
 
 /*@
-  MatMumpsGetRinfog - Get MUMPS parameter RINFOG()
+  MatMumpsGetRinfog - Get MUMPS parameter RINFOG() <https://mumps-solver.org/index.php?page=doc>
 
   Logically Collective
 
@@ -3174,9 +3147,6 @@ PetscErrorCode MatMumpsGetRinfo(Mat F, PetscInt icntl, PetscReal *val)
 . val - value of MUMPS RINFOG(icntl)
 
   Level: beginner
-
-  References:
-.  * - MUMPS Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`
 @*/
@@ -3191,7 +3161,7 @@ PetscErrorCode MatMumpsGetRinfog(Mat F, PetscInt icntl, PetscReal *val)
 }
 
 /*@
-  MatMumpsGetNullPivots - Get MUMPS parameter PIVNUL_LIST()
+  MatMumpsGetNullPivots - Get MUMPS parameter PIVNUL_LIST() <https://mumps-solver.org/index.php?page=doc>
 
   Logically Collective
 
@@ -3204,9 +3174,6 @@ PetscErrorCode MatMumpsGetRinfog(Mat F, PetscInt icntl, PetscReal *val)
            for freeing this array.
 
   Level: beginner
-
-  References:
-.  * - MUMPS Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`
 @*/
@@ -3223,7 +3190,7 @@ PetscErrorCode MatMumpsGetNullPivots(Mat F, PetscInt *size, PetscInt **array)
 
 /*MC
   MATSOLVERMUMPS -  A matrix type providing direct solvers (LU and Cholesky) for
-  distributed and sequential matrices via the external package MUMPS.
+  distributed and sequential matrices via the external package MUMPS <https://mumps-solver.org/index.php?page=doc>
 
   Works with `MATAIJ` and `MATSBAIJ` matrices
 
@@ -3235,14 +3202,14 @@ PetscErrorCode MatMumpsGetNullPivots(Mat F, PetscInt *size, PetscInt **array)
   Use `-pc_type cholesky` or `lu` `-pc_factor_mat_solver_type mumps` to use this direct solver
 
   Options Database Keys:
-+  -mat_mumps_icntl_1 - ICNTL(1): output stream for error messages
-.  -mat_mumps_icntl_2 - ICNTL(2): output stream for diagnostic printing, statistics, and warning
-.  -mat_mumps_icntl_3 -  ICNTL(3): output stream for global information, collected on the host
-.  -mat_mumps_icntl_4 -  ICNTL(4): level of printing (0 to 4)
-.  -mat_mumps_icntl_6 - ICNTL(6): permutes to a zero-free diagonal and/or scale the matrix (0 to 7)
-.  -mat_mumps_icntl_7 - ICNTL(7): computes a symmetric permutation in sequential analysis, 0=AMD, 2=AMF, 3=Scotch, 4=PORD, 5=Metis, 6=QAMD, and 7=auto
-                        Use -pc_factor_mat_ordering_type <type> to have PETSc perform the ordering (sequential only)
-.  -mat_mumps_icntl_8  - ICNTL(8): scaling strategy (-2 to 8 or 77)
++  -mat_mumps_icntl_1   - ICNTL(1): output stream for error messages
+.  -mat_mumps_icntl_2   - ICNTL(2): output stream for diagnostic printing, statistics, and warning
+.  -mat_mumps_icntl_3   -  ICNTL(3): output stream for global information, collected on the host
+.  -mat_mumps_icntl_4   -  ICNTL(4): level of printing (0 to 4)
+.  -mat_mumps_icntl_6   - ICNTL(6): permutes to a zero-free diagonal and/or scale the matrix (0 to 7)
+.  -mat_mumps_icntl_7   - ICNTL(7): computes a symmetric permutation in sequential analysis, 0=AMD, 2=AMF, 3=Scotch, 4=PORD, 5=Metis, 6=QAMD, and 7=auto
+                          Use -pc_factor_mat_ordering_type <type> to have PETSc perform the ordering (sequential only)
+.  -mat_mumps_icntl_8   - ICNTL(8): scaling strategy (-2 to 8 or 77)
 .  -mat_mumps_icntl_10  - ICNTL(10): max num of refinements
 .  -mat_mumps_icntl_11  - ICNTL(11): statistics related to an error analysis (via -ksp_view)
 .  -mat_mumps_icntl_12  - ICNTL(12): an ordering strategy for symmetric matrices (0 to 3)
@@ -3265,26 +3232,26 @@ PetscErrorCode MatMumpsGetNullPivots(Mat F, PetscInt *size, PetscInt **array)
 .  -mat_mumps_icntl_36 - ICNTL(36): controls the choice of BLR factorization variant
 .  -mat_mumps_icntl_38 - ICNTL(38): sets the estimated compression rate of LU factors with BLR
 .  -mat_mumps_icntl_58 - ICNTL(58): options for symbolic factorization
-.  -mat_mumps_cntl_1  - CNTL(1): relative pivoting threshold
-.  -mat_mumps_cntl_2  -  CNTL(2): stopping criterion of refinement
-.  -mat_mumps_cntl_3 - CNTL(3): absolute pivoting threshold
-.  -mat_mumps_cntl_4 - CNTL(4): value for static pivoting
-.  -mat_mumps_cntl_5 - CNTL(5): fixation for null pivots
-.  -mat_mumps_cntl_7 - CNTL(7): precision of the dropping parameter used during BLR factorization
+.  -mat_mumps_cntl_1   - CNTL(1): relative pivoting threshold
+.  -mat_mumps_cntl_2   -  CNTL(2): stopping criterion of refinement
+.  -mat_mumps_cntl_3   - CNTL(3): absolute pivoting threshold
+.  -mat_mumps_cntl_4   - CNTL(4): value for static pivoting
+.  -mat_mumps_cntl_5   - CNTL(5): fixation for null pivots
+.  -mat_mumps_cntl_7   - CNTL(7): precision of the dropping parameter used during BLR factorization
 -  -mat_mumps_use_omp_threads [m] - run MUMPS in MPI+OpenMP hybrid mode as if omp_set_num_threads(m) is called before calling MUMPS.
                                    Default might be the number of cores per CPU package (socket) as reported by hwloc and suggested by the MUMPS manual.
 
   Level: beginner
 
-    Notes:
-    MUMPS Cholesky does not handle (complex) Hermitian matrices (see User's Guide at https://mumps-solver.org/index.php?page=doc) so using it will
-    error if the matrix is Hermitian.
+  Notes:
+  MUMPS Cholesky does not handle (complex) Hermitian matrices (see User's Guide at <https://mumps-solver.org/index.php?page=doc>) so using it will
+  error if the matrix is Hermitian.
 
-    When used within a `KSP`/`PC` solve the options are prefixed with that of the `PC`. Otherwise one can set the options prefix by calling
-    `MatSetOptionsPrefixFactor()` on the matrix from which the factor was obtained or `MatSetOptionsPrefix()` on the factor matrix.
+  When used within a `KSP`/`PC` solve the options are prefixed with that of the `PC`. Otherwise one can set the options prefix by calling
+  `MatSetOptionsPrefixFactor()` on the matrix from which the factor was obtained or `MatSetOptionsPrefix()` on the factor matrix.
 
-    When a MUMPS factorization fails inside a KSP solve, for example with a `KSP_DIVERGED_PC_FAILED`, one can find the MUMPS information about
-    the failure with
+  When a MUMPS factorization fails inside a KSP solve, for example with a `KSP_DIVERGED_PC_FAILED`, one can find the MUMPS information about
+  the failure with
 .vb
           KSPGetPC(ksp,&pc);
           PCFactorGetMatrix(pc,&mat);
@@ -3293,16 +3260,16 @@ PetscErrorCode MatMumpsGetNullPivots(Mat F, PetscInt *size, PetscInt **array)
 .ve
     Or run with `-ksp_error_if_not_converged` and the program will be stopped and the information printed in the error message.
 
-    MUMPS provides 64-bit integer support in two build modes:
-      full 64-bit: here MUMPS is built with C preprocessing flag -DINTSIZE64 and Fortran compiler option -i8, -fdefault-integer-8 or equivalent, and
-      requires all dependent libraries MPI, ScaLAPACK, LAPACK and BLAS built the same way with 64-bit integers (for example ILP64 Intel MKL and MPI).
+  MUMPS provides 64-bit integer support in two build modes:
+  full 64-bit: here MUMPS is built with C preprocessing flag -DINTSIZE64 and Fortran compiler option -i8, -fdefault-integer-8 or equivalent, and
+  requires all dependent libraries MPI, ScaLAPACK, LAPACK and BLAS built the same way with 64-bit integers (for example ILP64 Intel MKL and MPI).
 
-      selective 64-bit: with the default MUMPS build, 64-bit integers have been introduced where needed. In compressed sparse row (CSR) storage of matrices,
-      MUMPS stores column indices in 32-bit, but row offsets in 64-bit, so you can have a huge number of non-zeros, but must have less than 2^31 rows and
-      columns. This can lead to significant memory and performance gains with respect to a full 64-bit integer MUMPS version. This requires a regular (32-bit
-      integer) build of all dependent libraries MPI, ScaLAPACK, LAPACK and BLAS.
+  selective 64-bit: with the default MUMPS build, 64-bit integers have been introduced where needed. In compressed sparse row (CSR) storage of matrices,
+  MUMPS stores column indices in 32-bit, but row offsets in 64-bit, so you can have a huge number of non-zeros, but must have less than 2^31 rows and
+  columns. This can lead to significant memory and performance gains with respect to a full 64-bit integer MUMPS version. This requires a regular (32-bit
+  integer) build of all dependent libraries MPI, ScaLAPACK, LAPACK and BLAS.
 
-    With --download-mumps=1, PETSc always build MUMPS in selective 64-bit mode, which can be used by both --with-64-bit-indices=0/1 variants of PETSc.
+  With --download-mumps=1, PETSc always build MUMPS in selective 64-bit mode, which can be used by both --with-64-bit-indices=0/1 variants of PETSc.
 
   Two modes to run MUMPS/PETSc with OpenMP
 .vb
@@ -3338,9 +3305,7 @@ PetscErrorCode MatMumpsGetNullPivots(Mat F, PetscInt *size, PetscInt **array)
    for example, export `OMP_PLACES`=threads and export `OMP_PROC_BIND`=spread. One does not need to export `OMP_NUM_THREADS`=m in job scripts as PETSc
    calls `omp_set_num_threads`(m) internally before calling MUMPS.
 
-   References:
-+  * - Heroux, Michael A., R. Brightwell, and Michael M. Wolf. "Bi-modal MPI and MPI+ threads computing on scalable multicore systems." IJHPCA (Submitted) (2011).
--  * - Gutierrez, Samuel K., et al. "Accommodating Thread-Level Heterogeneity in Coupled Parallel Applications." Parallel and Distributed Processing Symposium (IPDPS), 2017 IEEE International. IEEE, 2017.
+   See {cite}`heroux2011bi` and {cite}`gutierrez2017accommodating`
 
 .seealso: [](ch_matrices), `Mat`, `PCFactorSetMatSolverType()`, `MatSolverType`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`, `KSPGetPC()`, `PCFactorGetMatrix()`
 M*/

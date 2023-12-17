@@ -49,15 +49,11 @@ PetscErrorCode KSPCGSetType(KSP ksp, KSPCGType type)
   Level: intermediate
 
   Notes:
-  The algorithm used in this case is described as Method 1 in [1]. V. Eijkhout credits the algorithm initially to Chronopoulos and Gear.
+  The algorithm used in this case is described as Method 1 in {cite}`d1993conjugate`. V. Eijkhout credits the algorithm initially to Chronopoulos and Gear.
 
   It requires two extra work vectors than the conventional implementation in PETSc.
 
   See also `KSPPIPECG`, `KSPPIPECR`, and `KSPGROPPCG` that use non-blocking reductions. [](sec_pipelineksp),
-
-  References:
-.   [1] - Lapack Working Note 56, "Conjugate Gradient Algorithms with Reduced Synchronization Overhead
-  Distributed Memory Multiprocessors", by E. F. D'Azevedo, V. L. Eijkhout, and C. H. Romine, December 3, 1999.
 
 .seealso: [](ch_ksp), [](sec_pipelineksp), `KSP`, `KSPCG`, `KSPGMRES`, `KSPPIPECG`, `KSPPIPECR`, `and KSPGROPPCG`
 @*/

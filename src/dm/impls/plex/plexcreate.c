@@ -3512,21 +3512,20 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
 
   Notes:
   This meshes the surface of the Schwarz P or Gyroid surfaces.  Schwarz P is is the simplest member of the triply-periodic minimal surfaces.
-  https://en.wikipedia.org/wiki/Schwarz_minimal_surface#Schwarz_P_(%22Primitive%22) and can be cut with "clean" boundaries.
-  The Gyroid (https://en.wikipedia.org/wiki/Gyroid) is another triply-periodic minimal surface with applications in additive manufacturing; it is much more difficult to "cut" since there are no planes of symmetry.
+  <https://en.wikipedia.org/wiki/Schwarz_minimal_surface#Schwarz_P_(%22Primitive%22)> and can be cut with "clean" boundaries.
+  The Gyroid <https://en.wikipedia.org/wiki/Gyroid> is another triply-periodic minimal surface with applications in additive manufacturing; it is much more difficult to "cut" since there are no planes of symmetry.
   Our implementation creates a very coarse mesh of the surface and refines (by 4-way splitting) as many times as requested.
   On each refinement, all vertices are projected to their nearest point on the surface.
   This projection could readily be extended to related surfaces.
 
-  The face (edge) sets for the Schwarz P surface are numbered 1(-x), 2(+x), 3(-y), 4(+y), 5(-z), 6(+z).
-  When the mesh is refined, "Face Sets" contain the new vertices (created during refinement).  Use `DMPlexLabelComplete()` to propagate to coarse-level vertices.
+  See {cite}`maskery2018insights`
+
+  The face (edge) sets for the Schwarz P surface are numbered $1(-x), 2(+x), 3(-y), 4(+y), 5(-z), 6(+z)$.
+  When the mesh is refined, "Face Sets" contain the new vertices (created during refinement).
+  Use `DMPlexLabelComplete()` to propagate to coarse-level vertices.
 
   Developer Notes:
   The Gyroid mesh does not currently mark boundary sets.
-
-  References:
-. * - Maskery et al, Insights into the mechanical properties of several triply periodic minimal surface lattice structures made by polymer additive manufacturing, 2017.
-  https://doi.org/10.1016/j.polymer.2017.11.049
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateSphereMesh()`, `DMSetType()`, `DMCreate()`
 @*/

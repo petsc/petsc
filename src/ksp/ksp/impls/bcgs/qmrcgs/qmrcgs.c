@@ -1,8 +1,5 @@
 /*
     This file implements QMRCGS (QMRCGStab).
-
-    References:
-.   * - Chan, Gallopoulos, Simoncini, Szeto, and Tong (SISC 1994), Ghai, Lu, and Jiao (NLAA 2019)
 */
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h> /*I  "petscksp.h"  I*/
 
@@ -208,7 +205,7 @@ static PetscErrorCode KSPSolve_QMRCGS(KSP ksp)
 }
 
 /*MC
-   KSPQMRCGS - Implements the QMRCGStab method.
+   KSPQMRCGS - Implements the QMRCGStab method {cite}`chan1994qmrcgs` and Ghai, Lu, and Jiao (NLAA 2019).
 
    Level: beginner
 
@@ -217,10 +214,6 @@ static PetscErrorCode KSPSolve_QMRCGS(KSP ksp)
 
    Contributed by:
    Xiangmin Jiao (xiangmin.jiao@stonybrook.edu)
-
-   References:
-+ * - Chan, Gallopoulos, Simoncini, Szeto, and Tong (SISC 1994)
-- * - Ghai, Lu, and Jiao (NLAA 2019)
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBICGS`, `KSPBCGSL`, `KSPSetPCSide()`
 M*/

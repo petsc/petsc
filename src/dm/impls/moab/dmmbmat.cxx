@@ -219,7 +219,8 @@ static PetscErrorCode DMMoabSetBlockFills_Private(PetscInt w, const PetscInt *fi
   `DMDASetGetMatrix()` allows you to provide general code for those more complicated nonzero patterns then
   can be represented in the dfill, ofill format
 
-  Contributed by Glenn Hammond
+  Contributed by\:
+  Glenn Hammond
 
 .seealso: `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`
 @*/

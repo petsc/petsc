@@ -379,10 +379,10 @@ can be used by the options database command
   * - Enhanced BiCGSTAB(L)
     - ``KSPBCGSL``
     - ``bcgsl``
-  * - Minimal Residual Method :cite:`paigesaunders1975`
+  * - Minimal Residual Method :cite:`paige.saunders:solution`
     - ``KSPMINRES``
     - ``minres``
-  * - Generalized Minimal Residual :cite:`ss:86`
+  * - Generalized Minimal Residual :cite:`saad.schultz:gmres`
     - ``KSPGMRES``
     - ``gmres``
   * - Flexible Generalized Minimal Residual :cite:`saad1993`
@@ -427,7 +427,7 @@ can be used by the options database command
   * - Least Squares Method
     - ``KSPLSQR``
     - ``lsqr``
-  * - Symmetric LQ Method :cite:`paigesaunders1975`
+  * - Symmetric LQ Method :cite:`paige.saunders:solution`
     - ``KSPSYMMLQ``
     - ``symmlq``
   * - TSIRM
@@ -978,7 +978,7 @@ conjunction with a full interpolation, while ``PC_ASM_NONE`` (or
 ``-pc_asm_type`` ``none``) ignores off-process values for both
 restriction and interpolation. The ASM types with limited restriction or
 interpolation were suggested by Xiao-Chuan Cai and Marcus Sarkis
-:cite:`cs97a`. ``PC_ASM_RESTRICT`` is the PETSc default, as
+:cite:`cs99`. ``PC_ASM_RESTRICT`` is the PETSc default, as
 it saves substantial communication and for many problems has the added
 benefit of requiring fewer iterations for convergence than the standard
 additive Schwarz method.

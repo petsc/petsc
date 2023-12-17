@@ -66,7 +66,7 @@ typedef struct {
 } TS_ARKIMEX;
 
 /*MC
-     TSARKIMEXARS122 - Second order ARK IMEX scheme.
+     TSARKIMEXARS122 - Second order ARK IMEX scheme, {cite}`ascher_1997`
 
      This method has one explicit stage and one implicit stage.
 
@@ -74,9 +74,6 @@ typedef struct {
 .      -ts_arkimex_type ars122 - set arkimex type to ars122
 
      Level: advanced
-
-     References:
-.    * - U. Ascher, S. Ruuth, R. J. Spiteri, Implicit explicit Runge Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997).
 
 .seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
@@ -95,7 +92,7 @@ M*/
 M*/
 
 /*MC
-     TSARKIMEXL2 - Second order ARK IMEX scheme with L-stable implicit part.
+     TSARKIMEXL2 - Second order ARK IMEX scheme with L-stable implicit part, {cite}`pareschi_2005`
 
      This method has two implicit stages, and L-stable implicit scheme.
 
@@ -103,9 +100,6 @@ M*/
 .      -ts_arkimex_type l2 - set arkimex type to l2
 
      Level: advanced
-
-    References:
-.   * - L. Pareschi, G. Russo, Implicit Explicit Runge Kutta schemes and applications to hyperbolic systems with relaxations. Journal of Scientific Computing Volume: 25, Issue: 1, October, 2005.
 
 .seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
@@ -163,14 +157,11 @@ M*/
 M*/
 
 /*MC
-     TSARKIMEXPRSSP2 - Second order SSP ARK IMEX scheme.
+     TSARKIMEXPRSSP2 - Second order SSP ARK IMEX scheme, {cite}`pareschi_2005`
 
      This method has three implicit stages.
 
-     References:
-.    * - L. Pareschi, G. Russo, Implicit Explicit Runge Kutta schemes and applications to hyperbolic systems with relaxations. Journal of Scientific Computing Volume: 25, Issue: 1, October, 2005.
-
-     This method is referred to as SSP2-(3,3,2) in https://arxiv.org/abs/1110.4375
+     This method is referred to as SSP2-(3,3,2) in <https://arxiv.org/abs/1110.4375>
 
      Options Database Key:
 .      -ts_arkimex_type prssp2 - set arkimex type to prssp2
@@ -181,7 +172,7 @@ M*/
 M*/
 
 /*MC
-     TSARKIMEX3 - Third order ARK IMEX scheme with L-stable implicit part.
+     TSARKIMEX3 - Third order ARK IMEX scheme with L-stable implicit part, {cite}`kennedy_2003`
 
      This method has one explicit stage and three implicit stages.
 
@@ -190,14 +181,11 @@ M*/
 
      Level: advanced
 
-     References:
-.    * - Kennedy and Carpenter 2003.
-
 .seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 
 /*MC
-     TSARKIMEXARS443 - Third order ARK IMEX scheme.
+     TSARKIMEXARS443 - Third order ARK IMEX scheme, {cite}`ascher_1997`
 
      This method has one explicit stage and four implicit stages.
 
@@ -206,15 +194,14 @@ M*/
 
      Level: advanced
 
-     References:
-+    * - U. Ascher, S. Ruuth, R. J. Spiteri, Implicit explicit Runge Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997).
--    * - This method is referred to as ARS(4,4,3) in https://arxiv.org/abs/1110.4375
+     Notes:
+     This method is referred to as ARS(4,4,3) in <https://arxiv.org/abs/1110.4375>
 
 .seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 
 /*MC
-     TSARKIMEXBPR3 - Third order ARK IMEX scheme.
+     TSARKIMEXBPR3 - Third order ARK IMEX scheme. Referred to as ARK3 in <https://arxiv.org/abs/1110.4375>
 
      This method has one explicit stage and four implicit stages.
 
@@ -223,14 +210,11 @@ M*/
 
      Level: advanced
 
-     References:
-.    * - This method is referred to as ARK3 in https://arxiv.org/abs/1110.4375
-
 .seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 
 /*MC
-     TSARKIMEX4 - Fourth order ARK IMEX scheme with L-stable implicit part.
+     TSARKIMEX4 - Fourth order ARK IMEX scheme with L-stable implicit part, {cite}`kennedy_2003`.
 
      This method has one explicit stage and four implicit stages.
 
@@ -239,14 +223,11 @@ M*/
 
      Level: advanced
 
-     References:
-.    * - Kennedy and Carpenter 2003.
-
 .seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 
 /*MC
-     TSARKIMEX5 - Fifth order ARK IMEX scheme with L-stable implicit part.
+     TSARKIMEX5 - Fifth order ARK IMEX scheme with L-stable implicit part, {cite}`kennedy_2003`.
 
      This method has one explicit stage and five implicit stages.
 
@@ -254,9 +235,6 @@ M*/
 .      -ts_arkimex_type 5 - set arkimex type to 5
 
      Level: advanced
-
-     References:
-.    * - Kennedy and Carpenter 2003.
 
 .seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
@@ -279,7 +257,7 @@ M*/
 M*/
 
 /*MC
-     TSDIRKES122SAL - First order DIRK scheme.
+     TSDIRKES122SAL - First order DIRK scheme <https://arxiv.org/abs/1803.01613>
 
      Uses backward Euler as advancing method and trapezoidal rule as embedded method. See `TSDIRK` for additional details.
 
@@ -288,14 +266,11 @@ M*/
 
      Level: advanced
 
-     References:
-.    * - https://arxiv.org/abs/1803.01613
-
 .seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
 M*/
 
 /*MC
-     TSDIRKES213SAL - Second order DIRK scheme.
+     TSDIRKES213SAL - Second order DIRK scheme {cite}`kennedy2019diagonally`. Also known as TR-BDF2, see{cite}`hosea1996analysis`
 
      See `TSDIRK` for additional details.
 
@@ -307,15 +282,11 @@ M*/
      Note:
      This is the default DIRK scheme used in PETSc.
 
-     References:
-+    * - Kennedy and Carpenter, Diagonally Implicit Runge-Kutta methods for stiff ODEs (2016), https://ntrs.nasa.gov/api/citations/20160005923/downloads/20160005923.pdf
--    * - This method is also known as TR-BDF2, see M.E. Hosea and L.F. Shampine, Analysis and implementation of TR-BDF2, Appl. Numer. Math., 20(1) (1996) 21-37.
-
 .seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
 M*/
 
 /*MC
-     TSDIRKES324SAL - Third order DIRK scheme.
+     TSDIRKES324SAL - Third order DIRK scheme, {cite}`kennedy2019diagonally`
 
      See `TSDIRK` for additional details.
 
@@ -324,14 +295,11 @@ M*/
 
      Level: advanced
 
-     References:
-.    * - Kennedy and Carpenter, Diagonally Implicit Runge-Kutta methods for stiff ODEs (2016), https://ntrs.nasa.gov/api/citations/20160005923/downloads/20160005923.pdf
-
 .seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
 M*/
 
 /*MC
-     TSDIRKES325SAL - Third order DIRK scheme.
+     TSDIRKES325SAL - Third order DIRK scheme {cite}`kennedy2019diagonally`.
 
      See `TSDIRK` for additional details.
 
@@ -340,14 +308,11 @@ M*/
 
      Level: advanced
 
-     References:
-.    * - Kennedy and Carpenter, Diagonally Implicit Runge-Kutta methods for stiff ODEs (2016), https://ntrs.nasa.gov/api/citations/20160005923/downloads/20160005923.pdf
-
 .seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
 M*/
 
 /*MC
-     TSDIRK657A - Sixth order DIRK scheme.
+     TSDIRK657A - Sixth order DIRK scheme <https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs>
 
      See `TSDIRK` for additional details.
 
@@ -356,14 +321,11 @@ M*/
 
      Level: advanced
 
-     References:
-.    * - https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs
-
 .seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
 M*/
 
 /*MC
-     TSDIRKES648SA - Sixth order DIRK scheme.
+     TSDIRKES648SA - Sixth order DIRK scheme <https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs>
 
      See `TSDIRK` for additional details.
 
@@ -372,14 +334,11 @@ M*/
 
      Level: advanced
 
-     References:
-.    * - https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs
-
 .seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
 M*/
 
 /*MC
-     TSDIRK658A - Sixth order DIRK scheme.
+     TSDIRK658A - Sixth order DIRK scheme  <https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs>
 
      See `TSDIRK` for additional details.
 
@@ -388,14 +347,11 @@ M*/
 
      Level: advanced
 
-     References:
-.    * - https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs
-
 .seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
 M*/
 
 /*MC
-     TSDIRKS659A - Sixth order DIRK scheme.
+     TSDIRKS659A - Sixth order DIRK scheme  <https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs>
 
      See `TSDIRK` for additional details.
 
@@ -404,14 +360,11 @@ M*/
 
      Level: advanced
 
-     References:
-.    * - https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs
-
 .seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
 M*/
 
 /*MC
-     TSDIRK7510SAL - Seventh order DIRK scheme.
+     TSDIRK7510SAL - Seventh order DIRK scheme <https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs>
 
      See `TSDIRK` for additional details.
 
@@ -420,14 +373,11 @@ M*/
 
      Level: advanced
 
-     References:
-.    * - https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs
-
 .seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
 M*/
 
 /*MC
-     TSDIRKES7510SA - Seventh order DIRK scheme.
+     TSDIRKES7510SA - Seventh order DIRK scheme <https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs>
 
      See `TSDIRK` for additional details.
 
@@ -436,14 +386,11 @@ M*/
 
      Level: advanced
 
-     References:
-.    * - https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs
-
 .seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
 M*/
 
 /*MC
-     TSDIRK759A - Seventh order DIRK scheme.
+     TSDIRK759A - Seventh order DIRK scheme <https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs>
 
      See `TSDIRK` for additional details.
 
@@ -452,14 +399,11 @@ M*/
 
      Level: advanced
 
-     References:
-.    * - https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs
-
 .seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
 M*/
 
 /*MC
-     TSDIRKS7511SAL - Seventh order DIRK scheme.
+     TSDIRKS7511SAL - Seventh order DIRK scheme <https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs>
 
      See `TSDIRK` for additional details.
 
@@ -468,14 +412,11 @@ M*/
 
      Level: advanced
 
-     References:
-.    * - https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs
-
 .seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
 M*/
 
 /*MC
-     TSDIRK8614A - Eighth order DIRK scheme.
+     TSDIRK8614A - Eighth order DIRK scheme <https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs>
 
      See `TSDIRK` for additional details.
 
@@ -484,14 +425,11 @@ M*/
 
      Level: advanced
 
-     References:
-.    * - https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs
-
 .seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
 M*/
 
 /*MC
-     TSDIRK8616SAL - Eighth order DIRK scheme.
+     TSDIRK8616SAL - Eighth order DIRK scheme <https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs>
 
      See `TSDIRK` for additional details.
 
@@ -500,14 +438,11 @@ M*/
 
      Level: advanced
 
-     References:
-.    * - https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs
-
 .seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
 M*/
 
 /*MC
-     TSDIRKES8516SAL - Eighth order DIRK scheme.
+     TSDIRKES8516SAL - Eighth order DIRK scheme <https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs>
 
      See `TSDIRK` for additional details.
 
@@ -515,9 +450,6 @@ M*/
 .      -ts_dirk_type es8516sal - select this method.
 
      Level: advanced
-
-     References:
-.    * - https://github.com/yousefalamri55/High_Order_DIRK_Methods_Coeffs
 
 .seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
 M*/

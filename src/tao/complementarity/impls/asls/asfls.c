@@ -34,22 +34,8 @@
            local q-quadratic rate.
 
    The theory for the feasible version follows from the feasible descent
-   algorithm framework.
-
-   References:
-+  * - Billups, "Algorithms for Complementarity Problems and Generalized
-       Equations," Ph.D thesis, University of Wisconsin  Madison, 1995.
-.  * - De Luca, Facchinei, Kanzow, "A Semismooth Equation Approach to the
-       Solution of Nonlinear Complementarity Problems," Mathematical
-       Programming, 75, pages 407439, 1996.
-. * -  Ferris, Kanzow, Munson, "Feasible Descent Algorithms for Mixed
-       Complementarity Problems," Mathematical Programming, 86,
-       pages 475497, 1999.
-. * -  Fischer, "A Special Newton type Optimization Method," Optimization,
-       24, 1992
-- * -  Munson, Facchinei, Ferris, Fischer, Kanzow, "The Semismooth Algorithm
-       for Large Scale Complementarity Problems," Technical Report,
-       University of Wisconsin  Madison, 1999.
+   algorithm framework. See {cite}`billups:algorithms`, {cite}`deluca.facchinei.ea:semismooth`,
+   {cite}`ferris.kanzow.ea:feasible`, {cite}`fischer:special`, and {cite}`munson.facchinei.ea:semismooth`.
 */
 
 static PetscErrorCode TaoSetUp_ASFLS(Tao tao)
@@ -276,16 +262,20 @@ static PetscErrorCode TaoSolve_ASFLS(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ---------------------------------------------------------- */
 /*MC
-   TAOASFLS - Active-set feasible linesearch algorithm for solving
-       complementarity constraints
+   TAOASFLS - Active-set feasible linesearch algorithm for solving complementarity constraints
 
    Options Database Keys:
 + -tao_ssls_delta - descent test fraction
-- -tao_ssls_rho - descent test power
+- -tao_ssls_rho   - descent test power
 
    Level: beginner
+
+   Note:
+   See {cite}`billups:algorithms`, {cite}`deluca.facchinei.ea:semismooth`,
+   {cite}`ferris.kanzow.ea:feasible`, {cite}`fischer:special`, and {cite}`munson.facchinei.ea:semismooth`.
+
+.seealso: `Tao`, `TaoType`, `TAOASILS`
 M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_ASFLS(Tao tao)
 {

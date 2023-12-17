@@ -481,42 +481,31 @@ static PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
       SNESQN - Limited-Memory Quasi-Newton methods for the solution of nonlinear systems.
 
       Options Database Keys:
-+     -snes_qn_m <m> - Number of past states saved for the L-Broyden methods.
-.     -snes_qn_restart_type <powell,periodic,none> - set the restart type
-.     -snes_qn_powell_gamma - Angle condition for restart.
-.     -snes_qn_powell_descent - Descent condition for restart.
-.     -snes_qn_type <lbfgs,broyden,badbroyden> - QN type
++     -snes_qn_m <m>                                      - Number of past states saved for the L-Broyden methods.
+.     -snes_qn_restart_type <powell,periodic,none>        - set the restart type
+.     -snes_qn_powell_gamma                               - Angle condition for restart.
+.     -snes_qn_powell_descent                             - Descent condition for restart.
+.     -snes_qn_type <lbfgs,broyden,badbroyden>            - QN type
 .     -snes_qn_scale_type <diagonal,none,scalar,jacobian> - scaling performed on inner Jacobian
-.     -snes_linesearch_type <cp, l2, basic> - Type of line search.
--     -snes_qn_monitor - Monitors the quasi-newton Jacobian.
+.     -snes_linesearch_type <cp, l2, basic>               - Type of line search.
+-     -snes_qn_monitor                                    - Monitors the quasi-newton Jacobian.
 
       Level: beginner
 
       Notes:
-      This implements the L-BFGS, Broyden, and "Bad" Broyden algorithms for the solution of F(x) = b using
-      previous change in F(x) and x to form the approximate inverse Jacobian using a series of multiplicative rank-one
+      This implements the L-BFGS, Broyden, and "Bad" Broyden algorithms for the solution of $F(x) = b$ using
+      previous change in $F(x)$ and $x$ to form the approximate inverse Jacobian using a series of multiplicative rank-one
       updates.
 
       When using a nonlinear preconditioner, one has two options as to how the preconditioner is applied.  The first of
       these options, sequential, uses the preconditioner to generate a new solution and function and uses those at this
       iteration as the current iteration's values when constructing the approximate Jacobian.  The second, composed,
-      perturbs the problem the Jacobian represents to be P(x, b) - x = 0, where P(x, b) is the preconditioner.
+      perturbs the problem the Jacobian represents to be $P(x, b) - x = 0 $, where $P(x, b)$ is the preconditioner.
 
       Uses left nonlinear preconditioning by default.
 
-      References:
-+   * -   Kelley, C.T., Iterative Methods for Linear and Nonlinear Equations, Chapter 8, SIAM, 1995.
-.   * -   R. Byrd, J. Nocedal, R. Schnabel, Representations of Quasi Newton Matrices and their use in Limited Memory Methods,
-      Technical Report, Northwestern University, June 1992.
-.   * -   Peter N. Brown, Alan C. Hindmarsh, Homer F. Walker, Experiments with Quasi-Newton Methods in Solving Stiff ODE
-      Systems, SIAM J. Sci. Stat. Comput. Vol 6(2), April 1985.
-.   * -   Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
-       SIAM Review, 57(4), 2015
-.   * -   Griewank, Andreas. "Broyden updating, the good and the bad!." Doc. Math (2012): 301-315.
-.   * -   Gilbert, Jean Charles, and Claude Lemar{\'e}chal. "Some numerical experiments with variable-storage quasi-Newton algorithms."
-      Mathematical programming 45.1-3 (1989): 407-435.
--   * -   Dener A., Munson T. "Accelerating Limited-Memory Quasi-Newton Convergence for Large-Scale Optimization"
-      Computational Science - ICCS 2019. ICCS 2019. Lecture Notes in Computer Science, vol 11538. Springer, Cham
+      See {cite}`byrd1994representations`, {cite}`kelley95`, {cite}`brown1985experiments`, {cite}`griewank2012broyden`, {cite}`gilbert1989some`,
+      {cite}`dener2019accelerating`, and {cite}`bruneknepleysmithtu15`
 
 .seealso: [](ch_snes), `SNESQNRestartType`, `SNESQNSetRestartType()`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`,
           `SNESQNScaleType`, `SNESQNSetScaleType()`, `SNESQNType`, `SNESQNSetType()`

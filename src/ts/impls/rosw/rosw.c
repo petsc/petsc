@@ -104,7 +104,7 @@ M*/
 M*/
 
 /*MC
-     TSROSWRA3PW - Three stage third order Rosenbrock-W scheme for PDAE of index 1.
+     TSROSWRA3PW - Three stage third order Rosenbrock-W scheme for PDAE of index 1 {cite}`rang_2005`
 
      Only an approximate Jacobian is needed. By default, it is only recomputed once per step.
 
@@ -112,14 +112,11 @@ M*/
 
      Level: intermediate
 
-     References:
-.  * - Rang and Angermann, New Rosenbrock W methods of order 3 for partial differential algebraic equations of index 1, 2005.
-
 .seealso: [](ch_ts), `TSROSW`
 M*/
 
 /*MC
-     TSROSWRA34PW2 - Four stage third order L-stable Rosenbrock-W scheme for PDAE of index 1.
+     TSROSWRA34PW2 - Four stage third order L-stable Rosenbrock-W scheme for PDAE of index 1 {cite}`rang_2005`.
 
      Only an approximate Jacobian is needed. By default, it is only recomputed once per step.
 
@@ -127,14 +124,11 @@ M*/
 
      Level: intermediate
 
-     References:
-.  * - Rang and Angermann, New Rosenbrock W methods of order 3 for partial differential algebraic equations of index 1, 2005.
-
 .seealso: [](ch_ts), `TSROSW`
 M*/
 
 /*MC
-     TSROSWRODAS3 - Four stage third order L-stable Rosenbrock scheme
+     TSROSWRODAS3 - Four stage third order L-stable Rosenbrock scheme {cite}`sandu_1997`
 
      By default, the Jacobian is only recomputed once per step.
 
@@ -142,26 +136,20 @@ M*/
 
      Level: intermediate
 
-     References:
-.  * - Sandu et al, Benchmarking stiff ODE solvers for atmospheric chemistry problems II, Rosenbrock solvers, 1997.
-
 .seealso: [](ch_ts), `TSROSW`, `TSROSWSANDU3`
 M*/
 
 /*MC
-     TSROSWSANDU3 - Three stage third order L-stable Rosenbrock scheme
+     TSROSWSANDU3 - Three stage third order L-stable Rosenbrock scheme {cite}`sandu_1997`
 
      By default, the Jacobian is only recomputed once per step.
 
      The third order method is L-stable, but not stiffly accurate.
      The second order embedded method is strongly A-stable with R(infty) = 0.5.
      The internal stages are L-stable.
-     This method is called ROS3 in the paper.
+     This method is called ROS3 in {cite}`sandu_1997`.
 
      Level: intermediate
-
-     References:
-.  * - Sandu et al, Benchmarking stiff ODE solvers for atmospheric chemistry problems II, Rosenbrock solvers, 1997.
 
 .seealso: [](ch_ts), `TSROSW`, `TSROSWRODAS3`
 M*/
@@ -175,9 +163,6 @@ M*/
 
      Level: intermediate
 
-     References:
-. * - Emil Constantinescu
-
 .seealso: [](ch_ts), `TSROSW`, `TSROSWLASSP3P4S2C`, `TSROSWLLSSP3P4S2C`, `SSP`
 M*/
 
@@ -189,9 +174,6 @@ M*/
      L-stable (A-stable embedded) SPP explicit order 3, 4 stages, CFL 2 (eff = 1/2)
 
      Level: intermediate
-
-     References:
-. * - Emil Constantinescu
 
 .seealso: [](ch_ts), `TSROSW`, `TSROSWASSP3P3S1C`, `TSROSWLLSSP3P4S2C`, `TSSSP`
 M*/
@@ -205,14 +187,11 @@ M*/
 
      Level: intermediate
 
-     References:
-. * - Emil Constantinescu
-
 .seealso: [](ch_ts), `TSROSW`, `TSROSWASSP3P3S1C`, `TSROSWLASSP3P4S2C`, `TSSSP`
 M*/
 
 /*MC
-     TSROSWGRK4T - four stage, fourth order Rosenbrock (not W) method from Kaps and Rentrop
+     TSROSWGRK4T - four stage, fourth order Rosenbrock (not W) method from Kaps and Rentrop {cite}`kaps1979generalized`
 
      By default, the Jacobian is only recomputed once per step.
 
@@ -222,17 +201,14 @@ M*/
 
      Level: intermediate
 
-     References:
-+   * -  Kaps and Rentrop, Generalized Runge Kutta methods of order four with stepsize control for stiff ordinary differential equations, 1979.
--   * -  Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
-
-     Hairer's code ros4.f
+     Note:
+     See Section 4 Table 7.2 in {cite}`wanner1996solving`
 
 .seealso: [](ch_ts), `TSROSW`, `TSROSWSHAMP4`, `TSROSWVELDD4`, `TSROSW4L`
 M*/
 
 /*MC
-     TSROSWSHAMP4 - four stage, fourth order Rosenbrock (not W) method from Shampine
+     TSROSWSHAMP4 - four stage, fourth order Rosenbrock (not W) method from Shampine {cite}`shampine1982implementation`
 
      By default, the Jacobian is only recomputed once per step.
 
@@ -242,17 +218,14 @@ M*/
 
      Level: intermediate
 
-     References:
-+   * -  Shampine, Implementation of Rosenbrock methods, 1982.
--   * -  Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
-
-     Hairer's code ros4.f
+     Note:
+     See Section 4 Table 7.2 in in {cite}`wanner1996solving`
 
 .seealso: [](ch_ts), `TSROSW`, `TSROSWGRK4T`, `TSROSWVELDD4`, `TSROSW4L`
 M*/
 
 /*MC
-     TSROSWVELDD4 - four stage, fourth order Rosenbrock (not W) method from van Veldhuizen
+     TSROSWVELDD4 - four stage, fourth order Rosenbrock (not W) method from van Veldhuizen {cite}`veldhuizen1984d`
 
      By default, the Jacobian is only recomputed once per step.
 
@@ -262,11 +235,8 @@ M*/
 
      Level: intermediate
 
-     References:
-+   * -  van Veldhuizen, D stability and Kaps Rentrop methods, 1984.
--   * -  Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
-
-     Hairer's code ros4.f
+     Note:
+     See Section 4 Table 7.2 in {cite}`wanner1996solving`
 
 .seealso: [](ch_ts), `TSROSW`, `TSROSWGRK4T`, `TSROSWSHAMP4`, `TSROSW4L`
 M*/
@@ -282,10 +252,8 @@ M*/
 
      Level: intermediate
 
-     References:
-.  * -   Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
-
-     Hairer's code ros4.f
+     Note:
+     See Section 4 Table 7.2 in in {cite}`wanner1996solving`
 
 .seealso: [](ch_ts), `TSROSW`, `TSROSWGRK4T`, `TSROSWSHAMP4`, `TSROSW4L`
 M*/
@@ -293,7 +261,7 @@ M*/
 /*@C
   TSRosWRegisterAll - Registers all of the Rosenbrock-W methods in `TSROSW`
 
-  Not Collective, but should be called by all processes which will need the schemes to be registered
+  Not Collective, but should be called by all MPI processes which will need the schemes to be registered
 
   Level: advanced
 

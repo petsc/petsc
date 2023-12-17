@@ -1204,7 +1204,7 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
 }
 
 /*MC
-   PCTELESCOPE - Runs a `KSP` solver on a sub-communicator. MPI processes not in the sub-communicator are idle during the solve.
+   PCTELESCOPE - Runs a `KSP` solver on a sub-communicator {cite}`maysananruppknepleysmith2016`. MPI processes not in the sub-communicator are idle during the solve.
 
    Options Database Keys:
 +  -pc_telescope_reduction_factor <r> - factor to reduce the communicator size by. e.g. with 64 MPI ranks and r=4, the new sub-communicator will have 64/4 = 16 ranks.
@@ -1336,10 +1336,8 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
          1   [ 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0 ]
 .ve
 
-  Contributed by Dave May
-
-  Reference:
-  Dave A. May, Patrick Sanan, Karl Rupp, Matthew G. Knepley, and Barry F. Smith, "Extreme-Scale Multigrid Components within PETSc". 2016. In Proceedings of the Platform for Advanced Scientific Computing Conference (PASC '16). DOI: 10.1145/2929908.2929913
+  Contributed by:
+  Dave May
 
 .seealso: [](ch_ksp), `PCTelescopeGetKSP()`, `PCTelescopeGetDM()`, `PCTelescopeGetReductionFactor()`, `PCTelescopeSetReductionFactor()`, `PCTelescopeGetIgnoreDM()`, `PCTelescopeSetIgnoreDM()`, `PCREDUNDANT`
 M*/

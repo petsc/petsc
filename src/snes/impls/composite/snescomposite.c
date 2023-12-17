@@ -800,17 +800,13 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
 }
 
 /*MC
-     SNESCOMPOSITE - Builds a nonlinear solver/preconditioner by composing together several `SNES` nonlinear solvers
+     SNESCOMPOSITE - Builds a nonlinear solver/preconditioner by composing together several `SNES` nonlinear solvers {cite}`bruneknepleysmithtu15`
 
    Options Database Keys:
 +  -snes_composite_type <type: one of multiplicative, additive, additiveoptimal> - Sets composite preconditioner type
 -  -snes_composite_sneses - <snes0,snes1,...> list of `SNES` to compose
 
    Level: intermediate
-
-   References:
-.  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
-   SIAM Review, 57(4), 2015
 
 .seealso: [](ch_snes), `SNES`, `SNESCOMPOSITE`, `SNESCompositeAddSNES()`, `SNESCompositeGetSNES()`,
           `SNES_COMPOSITE_ADDITIVE`, `SNES_COMPOSITE_ADDITIVEOPTIMAL`, `SNES_COMPOSITE_MULTIPLICATIVE`, `SNESCompositeType`,

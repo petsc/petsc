@@ -306,7 +306,7 @@ static PetscErrorCode KSPSolve_IBCGS(KSP ksp)
 }
 
 /*MC
-   KSPIBCGS - Implements the IBiCGStab (Improved Stabilized version of BiConjugate Gradient) method
+   KSPIBCGS - Implements the IBiCGStab (Improved Stabilized version of BiConjugate Gradient) method {cite}`yang:brent:2002`
    in an alternative form to have only a single global reduction operation instead of the usual 3 (or 4)
 
    Level: beginner
@@ -325,11 +325,6 @@ static PetscErrorCode KSPSolve_IBCGS(KSP ksp)
    `KSPSetLagNorm()`.
 
    This is not supported for complex numbers.
-
-   Reference:
-.  * - The Improved BiCGStab Method for Large and Sparse Unsymmetric Linear Systems on Parallel Distributed Memory
-       Architectures. L. T. Yang and R. Brent, Proceedings of the Fifth International Conference on Algorithms and
-       Architectures for Parallel Processing, 2002, IEEE.
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPBCGSL`, `KSPIBCGS`, `KSPSetLagNorm()`
 M*/

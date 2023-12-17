@@ -716,7 +716,7 @@ static PetscErrorCode KSPSolve_PIPECG2(KSP ksp)
 }
 
 /*MC
-   KSPPIPECG2 - Pipelined conjugate gradient method with a single non-blocking reduction per two iterations. [](sec_pipelineksp)
+   KSPPIPECG2 - Pipelined conjugate gradient method with a single non-blocking reduction per two iterations {cite}`tiwari2020pipelined`. [](sec_pipelineksp)
 
    Level: intermediate
 
@@ -732,10 +732,6 @@ static PetscErrorCode KSPSolve_PIPECG2(KSP ksp)
 
    Contributed by:
    Manasi Tiwari, Computational and Data Sciences, Indian Institute of Science, Bangalore
-
-   Reference:
-   Manasi Tiwari and Sathish Vadhiyar, "Pipelined Conjugate Gradient Methods for Distributed Memory Systems",
-   Submitted to International Conference on High Performance Computing, Data and Analytics 2020.
 
 .seealso: [](ch_ksp), [](doc_faq_pipelined), [](sec_pipelineksp), `KSPCreate()`, `KSPSetType()`, `KSPCG`, `KSPPIPECG`, `KSPGROPPCG`
 M*/

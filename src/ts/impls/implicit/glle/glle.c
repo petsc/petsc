@@ -1317,7 +1317,7 @@ PetscErrorCode TSGLLEFinalizePackage(void)
 
 /* ------------------------------------------------------------ */
 /*MC
-  TSGLLE - DAE solver using implicit General Linear methods
+  TSGLLE - DAE solver using implicit General Linear methods {cite}`butcher_2007` {cite}`butcher2016numerical`
 
   Options Database Keys:
 +  -ts_gl_type <type> - the class of general linear method (irks)
@@ -1405,12 +1405,7 @@ PetscErrorCode TSGLLEFinalizePackage(void)
 
   Changing the step size
 
-  We use the generalized "rescale and modify" scheme, see equation (4.5) of the 2007 paper.
-
-  References:
-+ * - John Butcher and Z. Jackieweicz and W. Wright, On error propagation in general linear methods for
-  ordinary differential equations, Journal of Complexity, Vol 23, 2007.
-- * - John Butcher, Numerical methods for ordinary differential equations, second edition, Wiley, 2009.
+  Uses the generalized "rescale and modify" scheme, see equation (4.5) of {cite}`butcher_2007`.
 
 .seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSType`
 M*/

@@ -22,9 +22,9 @@ class Configure(config.package.Package):
     config.package.Package.consistencyChecks(self)
     if self.argDB['with-'+self.package]:
       if not self.blasLapack.mkl:
-        raise RuntimeError('MKL_Pardiso requires Intel MKL. Please rerun configure using --with-blaslapack-dir=LOCATION_OF_INTEL_MKL')
+        raise RuntimeError('MKL PARDISO requires Intel MKL. Please rerun configure using --with-blaslapack-dir=LOCATION_OF_INTEL_MKL')
       elif self.blasLapack.has64bitindices and not self.defaultIndexSize == 64:
-        raise RuntimeError('MKL_Pardiso cannot work with 32-bit integers but 64-bit BLAS/LAPACK integers')
+        raise RuntimeError('MKL PARDISO cannot work with 32-bit integers but 64-bit BLAS/LAPACK integers')
     return
 
   def configureLibrary(self):

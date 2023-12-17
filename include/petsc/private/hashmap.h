@@ -21,13 +21,13 @@
 
   Level: developer
 
-  Developer Note:
-    Each time this macro is used to create a new hash map type, the make rule for allmanpages in $PETSC_DIR/makefile should
-    be updated to cause the automatic generation of appropriate manual pages for that type. The manual pages
-    are generated from the templated version of the documentation in include/petsc/private/hashmap.txt.
+  Note:
+  This code uses the standalone and portable C language khash software <https://github.com/attractivechaos/klib>
 
-  References:
-    This code uses the standalone and portable C language khash software https://github.com/attractivechaos/klib
+  Developer Note:
+  Each time this macro is used to create a new hash map type, the make rule for allmanpages in $PETSC_DIR/makefile should
+  be updated to cause the automatic generation of appropriate manual pages for that type. The manual pages
+  are generated from the templated version of the documentation in include/petsc/private/hashmap.txt.
 
 .seealso: `PETSC_HASH_MAP_DECL()`, `PetscHMapI`, `PetscHMapICreate()`, `PetscHMapIJ`,
 `PetscHMapIJCreate()`, `PETSC_HASH_SET()`

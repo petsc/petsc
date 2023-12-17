@@ -535,12 +535,11 @@ static PetscErrorCode MatColoringSetFromOptions_Greedy(MatColoring mc, PetscOpti
 }
 
 /*MC
-  MATCOLORINGGREEDY - Greedy-with-conflict correction based matrix coloring for distance 1 and 2.
+  MATCOLORINGGREEDY - Greedy-with-conflict correction based matrix coloring for distance 1 and 2 {cite}`bozdaug2005parallel`
 
    Level: beginner
 
    Notes:
-
    These algorithms proceed in two phases -- local coloring and conflict resolution.  The local coloring
    tentatively colors all vertices at the distance required given what's known of the global coloring.  Then,
    the updated colors are transferred to different processors at distance one.  In the distance one case, each
@@ -551,10 +550,6 @@ static PetscErrorCode MatColoringSetFromOptions_Greedy(MatColoring mc, PetscOpti
    this is done until each column has received a valid color.
 
    Supports both distance one and distance two colorings.
-
-   References:
-.  * - Bozdag et al. "A Parallel Distance 2 Graph Coloring Algorithm for Distributed Memory Computers"
-   HPCC'05 Proceedings of the First international conference on High Performance Computing and Communications
 
 .seealso: `MatColoringType`, `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`, `MatColoringType`
 M*/

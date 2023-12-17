@@ -2,7 +2,7 @@
 #include <petsc/private/dmpleximpl.h> /*I   "petscdmplex.h"   I*/
 
 /*@C
-  DMPlexCreatePLYFromFile - Create a `DMPLEX` mesh from a PLY file.
+  DMPlexCreatePLYFromFile - Create a `DMPLEX` mesh from a PLY <https://en.wikipedia.org/wiki/PLY_(file_format)> file.
 
   Input Parameters:
 + comm        - The MPI communicator
@@ -10,10 +10,7 @@
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm - The DM object representing the mesh
-
-  References:
-. * - https://en.wikipedia.org/wiki/PLY_(file_format)
+. dm - The `DMPLEX` object representing the mesh
 
   Level: beginner
 

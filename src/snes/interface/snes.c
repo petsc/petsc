@@ -2227,7 +2227,7 @@ PetscErrorCode SNESPicardComputeJacobian(SNES snes, Vec x1, Mat J, Mat B, void *
 }
 
 /*@C
-  SNESSetPicard - Use `SNES` to solve the system A(x) x = bp(x) + b via a Picard type iteration (Picard linearization)
+  SNESSetPicard - Use `SNES` to solve the system $A(x) x = bp(x) + b $ via a Picard type iteration (Picard linearization)
 
   Logically Collective
 
@@ -2248,19 +2248,19 @@ PetscErrorCode SNESPicardComputeJacobian(SNES snes, Vec x1, Mat J, Mat B, void *
 
   One can call `SNESSetPicard()` or `SNESSetFunction()` (and possibly `SNESSetJacobian()`) but cannot call both
 
-  Solves the equation A(x) x = bp(x) - b via the defect correction algorithm A(x^{n}) (x^{n+1} - x^{n}) = bp(x^{n}) + b - A(x^{n})x^{n}.
-  When an exact solver is used this corresponds to the "classic" Picard A(x^{n}) x^{n+1} = bp(x^{n}) + b iteration.
+  Solves the equation $A(x) x = bp(x) - b$ via the defect correction algorithm $A(x^{n}) (x^{n+1} - x^{n}) = bp(x^{n}) + b - A(x^{n})x^{n}$.
+  When an exact solver is used this corresponds to the "classic" Picard $A(x^{n}) x^{n+1} = bp(x^{n}) + b$ iteration.
 
   Run with `-snes_mf_operator` to solve the system with Newton's method using A(x^{n}) to construct the preconditioner.
 
   We implement the defect correction form of the Picard iteration because it converges much more generally when inexact linear solvers are used then
-  the direct Picard iteration A(x^n) x^{n+1} = bp(x^n) + b
+  the direct Picard iteration $A(x^n) x^{n+1} = bp(x^n) + b$
 
   There is some controversity over the definition of a Picard iteration for nonlinear systems but almost everyone agrees that it involves a linear solve and some
-  believe it is the iteration  A(x^{n}) x^{n+1} = b(x^{n}) hence we use the name Picard. If anyone has an authoritative  reference that defines the Picard iteration
-  different please contact us at petsc-dev@mcs.anl.gov and we'll have an entirely new argument :-).
+  believe it is the iteration  $A(x^{n}) x^{n+1} = b(x^{n})$ hence we use the name Picard. If anyone has an authoritative  reference that defines the Picard iteration
+  different please contact us at petsc-dev@mcs.anl.gov and we'll have an entirely new argument \:-).
 
-  When used with `-snes_mf_operator` this will run matrix-free Newton's method where the matrix-vector product is of the true Jacobian of A(x)x - bp(x) -b and
+  When used with `-snes_mf_operator` this will run matrix-free Newton's method where the matrix-vector product is of the true Jacobian of $A(x)x - bp(x) - b$ and
   A(x^{n}) is used to build the preconditioner
 
   When used with `-snes_fd` this will compute the true Jacobian (very slowly one column at at time) and thus represent Newton's method.
@@ -5134,12 +5134,9 @@ PetscErrorCode SNESTestLocalMin(SNES snes)
   Note:
   The default is to use a constant relative tolerance for
   the inner linear solvers.  Alternatively, one can use the
-  Eisenstat-Walker method, where the relative convergence tolerance
+  Eisenstat-Walker method {cite}`ew96`, where the relative convergence tolerance
   is reset at each Newton iteration according progress of the nonlinear
   solver.
-
-  References:
-.  - * S. C. Eisenstat and H. F. Walker, "Choosing the forcing terms in an inexact Newton method", SISC 17 (1), pp.16-32, 1996.
 
 .seealso: [](ch_snes), `KSP`, `SNES`, `SNESKSPGetUseEW()`, `SNESKSPGetParametersEW()`, `SNESKSPSetParametersEW()`
 @*/

@@ -1302,7 +1302,7 @@ PetscErrorCode PetscDSSetJetDegree(PetscDS ds, PetscInt f, PetscInt k)
   Level: intermediate
 
   Note:
-  We are using a first order FEM model for the weak form:  \int_\Omega \phi obj(u, u_t, \nabla u, x, t)
+  We are using a first order FEM model for the weak form\: $  \int_\Omega \phi obj(u, u_t, \nabla u, x, t)$
 
 .seealso: `PetscDS`, `PetscDSSetObjective()`, `PetscDSGetResidual()`
 @*/
@@ -1353,7 +1353,7 @@ PetscErrorCode PetscDSGetObjective(PetscDS ds, PetscInt f, void (**obj)(PetscInt
   Level: intermediate
 
   Note:
-  We are using a first order FEM model for the weak form:  \int_\Omega \phi obj(u, u_t, \nabla u, x, t)
+  We are using a first order FEM model for the weak form\: $  \int_\Omega \phi obj(u, u_t, \nabla u, x, t)$
 
 .seealso: `PetscDS`, `PetscDSGetObjective()`, `PetscDSSetResidual()`
 @*/
@@ -1405,7 +1405,7 @@ PetscErrorCode PetscDSSetObjective(PetscDS ds, PetscInt f, void (*obj)(PetscInt 
   Note:
   `f1` has an identical form and is omitted for brevity.
 
-  We are using a first order FEM model for the weak form:  \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)
+  We are using a first order FEM model for the weak form\: $  \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)$
 
 .seealso: `PetscDS`, `PetscDSSetResidual()`
 @*/
@@ -1459,7 +1459,7 @@ PetscErrorCode PetscDSGetResidual(PetscDS ds, PetscInt f, void (**f0)(PetscInt d
   Note:
   `f1` has an identical form and is omitted for brevity.
 
-  We are using a first order FEM model for the weak form:  \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)
+  We are using a first order FEM model for the weak form\: $  \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)$
 
 .seealso: `PetscDS`, `PetscDSGetResidual()`
 @*/
@@ -1512,7 +1512,7 @@ PetscErrorCode PetscDSSetResidual(PetscDS ds, PetscInt f, void (*f0)(PetscInt di
   Note:
   `f1` has an identical form and is omitted for brevity.
 
-  We are using a first order FEM model for the weak form: \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)
+  We are using a first order FEM model for the weak form\: $ \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)$
 
 .seealso: `PetscDS`, `PetscDSSetRHSResidual()`
 @*/
@@ -1566,7 +1566,7 @@ PetscErrorCode PetscDSGetRHSResidual(PetscDS ds, PetscInt f, void (**f0)(PetscIn
   Note:
   `f1` has an identical form and is omitted for brevity.
 
-  We are using a first order FEM model for the weak form: \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)
+  We are using a first order FEM model for the weak form\: $ \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)$
 
 .seealso: `PetscDS`, `PetscDSGetResidual()`
 @*/
@@ -1647,7 +1647,10 @@ PetscErrorCode PetscDSHasJacobian(PetscDS ds, PetscBool *hasJac)
   `g1`, `g2`, and `g3` have identical calling sequences to `g0` and are omitted for brevity.
 
   We are using a first order FEM model for the weak form\:
+
+  $$
   \int_\Omega \phi g_0(u, u_t, \nabla u, x, t) \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
+  $$
 
 .seealso: `PetscDS`, `PetscDSSetJacobian()`
 @*/

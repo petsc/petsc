@@ -1604,7 +1604,7 @@ should be performed simultaneously when using this algorithm.
 
 Five variations are currently supported by the TAO implementation: the
 Fletcher-Reeves method, the Polak-Ribiére method, the Polak-Ribiére-Plus
-method :cite:`nw99`, the Hestenes-Stiefel method, and the
+method :cite:`nocedal2006numerical`, the Hestenes-Stiefel method, and the
 Dai-Yuan method. These conjugate gradient methods can be specified by
 using the command line argument ``-tao_cg_type <fr,pr,prp,hs,dy>``,
 respectively. The default value is ``prp``.

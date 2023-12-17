@@ -1153,7 +1153,7 @@ PetscErrorCode PetscFVDestroy(PetscFV *fvm)
 
   Level: beginner
 
-.seealso: `PetscFVSet`, `PetscFVSetType()`, `PETSCFVUPWIND`, `PetscFVDestroy()`
+.seealso: `PetscFVSetUp()`, `PetscFVSetType()`, `PETSCFVUPWIND`, `PetscFVDestroy()`
 @*/
 PetscErrorCode PetscFVCreate(MPI_Comm comm, PetscFV *fvm)
 {

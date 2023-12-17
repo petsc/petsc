@@ -272,20 +272,15 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
 }
 
 /*MC
-   TAOLINESEARCHMT - Line-search type with cubic interpolation that satisfies both the sufficient decrease and
-   curvature conditions. This method can take step lengths greater than 1.
+   TAOLINESEARCHMT - More-Thuente line-search type with cubic interpolation that satisfies both the sufficient decrease and
+   curvature conditions. This method can take step lengths greater than 1, {cite}`more:92`
 
-   More-Thuente line-search can be selected with "-tao_ls_type more-thuente".
-
-   References:
-.  * - JORGE J. MORE AND DAVID J. THUENTE, LINE SEARCH ALGORITHMS WITH GUARANTEED SUFFICIENT DECREASE.
-          ACM Trans. Math. Software 20, no. 3 (1994): 286-307.
+   Options Database Key:
+.  -tao_ls_type more-thuente - use this line search type
 
    Level: developer
 
 .seealso: `TaoLineSearchCreate()`, `TaoLineSearchSetType()`, `TaoLineSearchApply()`
-
-.keywords: Tao, linesearch
 M*/
 PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch ls)
 {

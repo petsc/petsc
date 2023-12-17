@@ -182,7 +182,7 @@ static PetscErrorCode KSPSolve_SYMMLQ(KSP ksp)
 }
 
 /*MC
-   KSPSYMMLQ -  This code implements the SYMMLQ method.
+   KSPSYMMLQ - Implements the SYMMLQ method {cite}`paige.saunders:solution`.
 
    Level: beginner
 
@@ -192,9 +192,6 @@ static PetscErrorCode KSPSolve_SYMMLQ(KSP ksp)
    The preconditioner must be POSITIVE-DEFINITE.
 
    Supports only left preconditioning.
-
-   Reference:
-. * - Paige & Saunders, Solution of sparse indefinite systems of linear equations, SIAM J. Numer. Anal. 12, 1975.
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`
 M*/

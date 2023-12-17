@@ -663,17 +663,14 @@ static PetscErrorCode MatPartitioningDestroy_Chaco(MatPartitioning part)
 }
 
 /*MC
-   MATPARTITIONINGCHACO - Creates a partitioning context that uses the external package Chaco.
+   MATPARTITIONINGCHACO - Creates a partitioning context that uses the external package Chaco {cite}`chaco95`
 
    Level: beginner
 
    Note:
    Does not use the `MatPartitioningSetUseEdgeWeights()` option
 
-   References:
-.   * -  http://www.cs.sandia.gov/CRF/chac.html
-
-.seealso: `MatPartitioningSetType()`, `MatPartitioningType`
+.seealso: `MatPartitioning`, `MatPartitioningSetType()`, `MatPartitioningType`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Chaco(MatPartitioning part)

@@ -2737,10 +2737,11 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
 }
 
 /*MC
-     PCHPDDM - Interface with the HPDDM library.
+   PCHPDDM - Interface with the HPDDM library.
 
-   This `PC` may be used to build multilevel spectral domain decomposition methods based on the GenEO framework [2011, 2019]. It may be viewed as an alternative to spectral
-   AMGe or `PCBDDC` with adaptive selection of constraints. The interface is explained in details in [2021] (see references below)
+   This `PC` may be used to build multilevel spectral domain decomposition methods based on the GenEO framework {cite}`spillane2011robust` {cite}`al2021multilevel`.
+   It may be viewed as an alternative to spectral
+   AMGe or `PCBDDC` with adaptive selection of constraints. The interface is explained in details in {cite}`jolivetromanzampini2020`
 
    The matrix to be preconditioned (Pmat) may be unassembled (`MATIS`), assembled (`MATAIJ`, `MATBAIJ`, or `MATSBAIJ`), hierarchical (`MATHTOOL`), or `MATNORMAL`.
 
@@ -2748,9 +2749,9 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
    `PCHPDDMSetAuxiliaryMat()`. Calling this routine is not needed when using a `MATIS` Pmat, assembly is done internally using `MatConvert()`.
 
    Options Database Keys:
-+   -pc_hpddm_define_subdomains <true, default=false> - on the finest level, calls `PCASMSetLocalSubdomains()` with the `IS` supplied in `PCHPDDMSetAuxiliaryMat()`
-    (not relevant with an unassembled Pmat)
-.   -pc_hpddm_has_neumann <true, default=false> - on the finest level, informs the `PC` that the local Neumann matrix is supplied in `PCHPDDMSetAuxiliaryMat()`
++   -pc_hpddm_define_subdomains <true, default=false>    - on the finest level, calls `PCASMSetLocalSubdomains()` with the `IS` supplied in `PCHPDDMSetAuxiliaryMat()`
+                                                         (not relevant with an unassembled Pmat)
+.   -pc_hpddm_has_neumann <true, default=false>          - on the finest level, informs the `PC` that the local Neumann matrix is supplied in `PCHPDDMSetAuxiliaryMat()`
 -   -pc_hpddm_coarse_correction <type, default=deflated> - determines the `PCHPDDMCoarseCorrectionType` when calling `PCApply()`
 
    Options for subdomain solvers, subdomain eigensolvers (for computing deflation vectors), and the coarse solver can be set using the following options database prefixes.
@@ -2773,8 +2774,14 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
 
    In order to activate a "level N+1" coarse correction, it is mandatory to call -pc_hpddm_levels_N_eps_nev <nu> or -pc_hpddm_levels_N_eps_threshold <val>. The default -pc_hpddm_coarse_p value is 1, meaning that the coarse operator is aggregated on a single process.
 
-   This preconditioner requires that you build PETSc with SLEPc (``--download-slepc``). By default, the underlying concurrent eigenproblems
-   are solved using SLEPc shift-and-invert spectral transformation. This is usually what gives the best performance for GenEO, cf. [2011, 2013]. As
+   Level: intermediate
+
+   Notes:
+   This preconditioner requires that PETSc is built with SLEPc (``--download-slepc``).
+
+   By default, the underlying concurrent eigenproblems
+   are solved using SLEPc shift-and-invert spectral transformation. This is usually what gives the best performance for GenEO, cf.
+   {cite}`spillane2011robust` {cite}`jolivet2013scalabledd`. As
    stated above, SLEPc options are available through -pc_hpddm_levels_%d_, e.g., -pc_hpddm_levels_1_eps_type arpack -pc_hpddm_levels_1_eps_nev 10
    -pc_hpddm_levels_1_st_type sinvert. There are furthermore three options related to the (subdomain-wise local) eigensolver that are not described in
    SLEPc documentation since they are specific to `PCHPDDM`.
@@ -2791,17 +2798,7 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
    correct value using the third option from the list, -pc_hpddm_levels_1_eps_use_inertia, see `MatGetInertia()`. In that case, there is no need
    to supply -pc_hpddm_levels_1_eps_nev. This last option also only applies to the fine-level (N = 1) eigensolver.
 
-   References:
-+   2011 - A robust two-level domain decomposition preconditioner for systems of PDEs. Spillane, Dolean, Hauret, Nataf, Pechstein, and Scheichl. Comptes Rendus Mathematique.
-.   2013 - Scalable domain decomposition preconditioners for heterogeneous elliptic problems. Jolivet, Hecht, Nataf, and Prud'homme. SC13.
-.   2015 - An introduction to domain decomposition methods: algorithms, theory, and parallel implementation. Dolean, Jolivet, and Nataf. SIAM.
-.   2019 - A multilevel Schwarz preconditioner based on a hierarchy of robust coarse spaces. Al Daas, Grigori, Jolivet, and Tournier. SIAM Journal on Scientific Computing.
-.   2021 - KSPHPDDM and PCHPDDM: extending PETSc with advanced Krylov methods and robust multilevel overlapping Schwarz preconditioners. Jolivet, Roman, and Zampini. Computer & Mathematics with Applications.
-.   2022a - A robust algebraic domain decomposition preconditioner for sparse normal equations. Al Daas, Jolivet, and Scott. SIAM Journal on Scientific Computing.
-.   2022b - A robust algebraic multilevel domain decomposition preconditioner for sparse symmetric positive definite matrices. Al Daas and Jolivet.
--   2023 - Recent advances in domain decomposition methods for large-scale saddle point problems. Nataf and Tournier. Comptes Rendus Mecanique.
-
-   Level: intermediate
+   See also {cite}`dolean2015introduction`, {cite}`al2022robust`, {cite}`al2022robustpd`, and {cite}`nataf2022recent`
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCHPDDMSetAuxiliaryMat()`, `MATIS`, `PCBDDC`, `PCDEFLATION`, `PCTELESCOPE`, `PCASM`,
           `PCHPDDMSetCoarseCorrectionType()`, `PCHPDDMHasNeumannMat()`, `PCHPDDMSetRHSMat()`, `PCHPDDMSetDeflationMat()`, `PCHPDDMSetSTShareSubKSP()`,

@@ -43,12 +43,12 @@ struct _p_PetscDrawHG {
   Level: intermediate
 
   Notes:
-  The difference between a bar chart, `PetscDrawBar`, and a histogram, `PetscDrawHG`, is explained here https://stattrek.com/statistics/charts/histogram.aspx?Tutorial=AP
+  The difference between a bar chart, `PetscDrawBar`, and a histogram, `PetscDrawHG`, is explained here <https://stattrek.com/statistics/charts/histogram.aspx?Tutorial=AP>
 
   The histogram is only displayed when `PetscDrawHGDraw()` is called.
 
   The MPI communicator that owns the `PetscDraw` owns this `PetscDrawHG`, but the calls to set options and add data are ignored on all processes except the
-  zeroth MPI process in the communicator. All MPI ranks in the communicator must call `PetscDrawHGDraw()` to display the updated graph.
+  zeroth MPI process in the communicator. All MPI processes in the communicator must call `PetscDrawHGDraw()` to display the updated graph.
 
 .seealso: `PetscDrawHGDestroy()`, `PetscDrawHG`, `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawLGCreate()`, `PetscDrawLG`, `PetscDrawSPCreate()`, `PetscDrawSP`,
           `PetscDrawHGSetNumberBins()`, `PetscDrawHGReset()`, `PetscDrawHGAddValue()`, `PetscDrawHGDraw()`, `PetscDrawHGSave()`, `PetscDrawHGView()`, `PetscDrawHGSetColor()`,
