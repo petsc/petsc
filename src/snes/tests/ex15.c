@@ -491,7 +491,7 @@ int main(int argc, char **argv)
   PetscCall(DMCreateGlobalVector(dm, &u));
   PetscCall(PetscObjectSetName((PetscObject)u, "solution"));
   PetscCall(SNESSetFromOptions(snes));
-  PetscCall(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));
+  PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, &user));
   PetscCall(DMSNESCheckFromOptions(snes, u));
   if (user.particleRHS) {
     DM       potential_dm;

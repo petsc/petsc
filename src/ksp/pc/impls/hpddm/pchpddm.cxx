@@ -273,7 +273,7 @@ static PetscErrorCode PCHPDDMHasNeumannMat_HPDDM(PC pc, PetscBool has)
   Notes:
   This may be used to bypass a call to `MatCreateSubMatrices()` and to `MatConvert()` for `MATSBAIJ` matrices.
 
-  If a `DMCreateNeumannOverlap()` implementation is available in the `DM` attached to the Pmat, or the Amat, or the `PC`, the flag is internally set to `PETSC_TRUE`. Its default value is otherwise `PETSC_FALSE`.
+  If a function is composed with DMCreateNeumannOverlap_C implementation is available in the `DM` attached to the Pmat, or the Amat, or the `PC`, the flag is internally set to `PETSC_TRUE`. Its default value is otherwise `PETSC_FALSE`.
 
 .seealso: [](ch_ksp), `PCHPDDM`, `PCHPDDMSetAuxiliaryMat()`
 @*/
@@ -1540,7 +1540,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
     PetscCall(MatGetDM(P, &dm));
     if (!dm) PetscCall(MatGetDM(A, &dm));
     if (!dm) PetscCall(PCGetDM(pc, &dm));
-    if (dm) { /* this is the hook for DMPLEX and DMDA for which the auxiliary Mat is the local Neumann matrix */
+    if (dm) { /* this is the hook for DMPLEX for which the auxiliary Mat is the local Neumann matrix */
       PetscCall(PetscObjectQueryFunction((PetscObject)dm, "DMCreateNeumannOverlap_C", &create));
       if (create) {
         PetscCall((*create)(dm, &uis, &uaux, &usetup, &uctx));

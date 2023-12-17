@@ -423,7 +423,7 @@ int main(int argc, char **argv)
   PetscCall(DMPlexCreateClosureIndex(dm, NULL));
 
   PetscCall(DMCreateGlobalVector(dm, &u));
-  PetscCall(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));
+  PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, &user));
   PetscCall(SNESSetFromOptions(snes));
   PetscCall(DMSNESCheckFromOptions(snes, u));
   PetscCall(PetscObjectSetName((PetscObject)u, "Solution"));

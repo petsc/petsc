@@ -70,6 +70,7 @@ Changes: Development
 
 - Add support for Quasi-Newton models in ``SNESNEWTONTR`` via ``SNESNewtonTRSetQNType``
 - Add support for trust region norm customization in ``SNESNEWTONTR`` via ``SNESNewtonTRSetNormType``
+- Remove default of ``KSPPREONLY`` and ``PCLU`` for ``SNESNASM`` subdomain solves: for ``SNESASPIN`` use ``-npc_sub_ksp_type preonly -npc_sub_pc_type lu``
 
 .. rubric:: SNESLineSearch:
 
@@ -86,11 +87,14 @@ Changes: Development
 
 .. rubric:: DM/DA:
 
+- Add MPI reduction inside ``SNESComputeObjective_DMDA()``. No need to call reduction into local callback
+
 .. rubric:: DMSwarm:
 
 .. rubric:: DMPlex:
 
 - Drop support for MED, i.e. remove ``DMPlexCreateMedFromFile()`` and ``--with-med``
+- Change protototype of ``DMPlexSetSNESLocalFEM()``. Now it accepts a single context and a Boolean indicating to use the objective function callback
 - Replace ``DMProjectCoordinates()`` with ``DMSetCoordinateDisc()``
 - Add argument to ``DMPlexCreateCoordinateSpace()``
 

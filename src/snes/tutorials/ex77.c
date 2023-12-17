@@ -460,7 +460,7 @@ int main(int argc, char **argv)
   PetscCall(DMCreateMatrix(dm, &J));
   A = J;
 
-  PetscCall(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));
+  PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, &user));
   PetscCall(SNESSetJacobian(snes, A, J, NULL, NULL));
 
   PetscCall(SNESSetFromOptions(snes));

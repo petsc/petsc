@@ -735,7 +735,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
       PetscCall(SNESReset(adaptor->snes));
       PetscCall(SNESSetDM(adaptor->snes, odm));
       PetscCall(DMAdaptorSetSolver(adaptor, adaptor->snes));
-      PetscCall(DMPlexSetSNESLocalFEM(odm, ctx, ctx, ctx));
+      PetscCall(DMPlexSetSNESLocalFEM(odm, PETSC_FALSE, ctx));
       PetscCall(SNESSetFromOptions(adaptor->snes));
       /* Transfer system */
       PetscCall(DMCopyDisc(dm, odm));

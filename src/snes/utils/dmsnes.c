@@ -427,7 +427,7 @@ PetscErrorCode DMSNESGetFunction(DM dm, PetscErrorCode (**f)(SNES, Vec, Vec, voi
 
   Input Parameters:
 + dm  - `DM` to be used with `SNES`
-. obj - objective evaluation function; see `SNESObjectiveFunction` for details
+. obj - objective evaluation function; see `SNESComputeObjective` for details
 - ctx - context for residual evaluation
 
   Level: advanced

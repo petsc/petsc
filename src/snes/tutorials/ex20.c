@@ -154,7 +154,7 @@ int main(int argc, char **argv)
   PetscCall(DMCreateGlobalVector(dm, &u));
   PetscCall(VecSet(u, 0.0));
   PetscCall(PetscObjectSetName((PetscObject)u, "potential"));
-  PetscCall(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));
+  PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, &user));
   PetscCall(SNESSetFromOptions(snes));
   PetscCall(SNESSolve(snes, NULL, u));
   PetscCall(SNESGetSolution(snes, &u));

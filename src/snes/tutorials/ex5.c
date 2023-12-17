@@ -359,7 +359,7 @@ static PetscErrorCode FormObjectiveLocal(DMDALocalInfo *info, PetscScalar **x, P
     }
   }
   PetscCall(PetscLogFlops(12.0 * info->ym * info->xm));
-  PetscCall(MPIU_Allreduce(&lobj, obj, 1, MPIU_REAL, MPIU_SUM, comm));
+  *obj = lobj;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -860,7 +860,7 @@ int main(int argc, char **argv)
    test:
      suffix: 5_aspin
      nsize: 4
-     args: -snes_monitor_short -ksp_monitor_short -snes_converged_reason -da_refine 4 -da_overlap 3 -snes_type aspin -snes_view
+     args: -snes_monitor_short -ksp_monitor_short -snes_converged_reason -da_refine 4 -da_overlap 3 -snes_type aspin -snes_view -npc_sub_pc_type lu -npc_sub_ksp_type preonly
 
    test:
      suffix: 5_broyden

@@ -47,9 +47,9 @@ static PetscErrorCode DMPlexGetTensorPrismBounds_Internal(DM dm, PetscInt dim, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, PetscInt cellHeight, DMLabel label)
+PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, PetscInt cellHeight, DMLabel label, PetscBool missing_only)
 {
-  PetscInt           depth, pStart, pEnd, fStart, fEnd, f, supportSize, nroots = -1, nleaves = -1;
+  PetscInt           depth, pStart, pEnd, fStart, fEnd, f, supportSize, nroots = -1, nleaves = -1, defval;
   PetscSF            sf;
   const PetscSFNode *iremote = NULL;
   const PetscInt    *ilocal  = NULL;
@@ -66,6 +66,7 @@ static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, Pets
     fStart = 0;
     fEnd   = 0;
   }
+  PetscCall(DMLabelGetDefaultValue(label, &defval));
   PetscCall(PetscCalloc1(pEnd - pStart, &leafData));
   leafData -= pStart;
   PetscCall(DMGetPointSF(dm, &sf));
@@ -135,6 +136,7 @@ static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, Pets
         PetscInt *closure = NULL;
         PetscInt  clSize, cl, cval;
 
+        PetscAssert(!missing_only, PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented");
         PetscCall(DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &clSize, &closure));
         for (cl = 0; cl < clSize * 2; cl += 2) {
           PetscCall(DMLabelGetValue(label, closure[cl], &cval));
@@ -145,7 +147,14 @@ static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, Pets
         if (cl == clSize * 2) PetscCall(DMLabelSetValue(label, f, 1));
         PetscCall(DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &clSize, &closure));
       } else {
-        PetscCall(DMLabelSetValue(label, f, val));
+        if (missing_only) {
+          PetscInt fval;
+          PetscCall(DMLabelGetValue(label, f, &fval));
+          if (fval != defval) PetscCall(DMLabelClearValue(label, f, fval));
+          else PetscCall(DMLabelSetValue(label, f, val));
+        } else {
+          PetscCall(DMLabelSetValue(label, f, val));
+        }
       }
     } else {
       /* TODO: See the above comment on DMForest */
@@ -186,7 +195,7 @@ PetscErrorCode DMPlexMarkBoundaryFaces(DM dm, PetscInt val, DMLabel label)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMPlexIsInterpolated(dm, &flg));
   PetscCheck(flg == DMPLEX_INTERPOLATED_FULL, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "DM is not fully interpolated on this rank");
-  PetscCall(DMPlexMarkBoundaryFaces_Internal(dm, val, 0, label));
+  PetscCall(DMPlexMarkBoundaryFaces_Internal(dm, val, 0, label, PETSC_FALSE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

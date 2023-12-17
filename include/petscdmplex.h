@@ -424,8 +424,9 @@ PETSC_EXTERN PetscErrorCode DMPlexComputeMassMatrixGeneral(DM, DM, Mat, void *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateRigidBody(DM, PetscInt, MatNullSpace *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateRigidBodies(DM, PetscInt, DMLabel, const PetscInt[], const PetscInt[], MatNullSpace *);
 
-PETSC_EXTERN PetscErrorCode DMPlexSetSNESLocalFEM(DM, void *, void *, void *);
+PETSC_EXTERN PetscErrorCode DMPlexSetSNESLocalFEM(DM, PetscBool, void *);
 PETSC_EXTERN PetscErrorCode DMPlexSNESComputeBoundaryFEM(DM, Vec, void *);
+PETSC_EXTERN PetscErrorCode DMPlexSNESComputeObjectiveFEM(DM, Vec, PetscReal *, void *);
 PETSC_EXTERN PetscErrorCode DMPlexSNESComputeResidualFEM(DM, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexSNESComputeResidualCEED(DM, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexSNESComputeResidualDS(DM, Vec, Vec, void *);

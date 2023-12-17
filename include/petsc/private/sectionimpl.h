@@ -76,6 +76,7 @@ struct _p_PetscSectionSym {
   SymWorkLink workout;
 };
 
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscSectionCopy_Internal(PetscSection, PetscSection, PetscBT);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscSectionSetClosurePermutation_Internal(PetscSection, PetscObject, PetscInt, PetscInt, PetscCopyMode, PetscInt *);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscSectionGetClosureInversePermutation_Internal(PetscSection, PetscObject, PetscInt, PetscInt, const PetscInt *[]);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode ISIntersect_Caching_Internal(IS, IS, IS *);

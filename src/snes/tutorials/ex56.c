@@ -369,7 +369,7 @@ int main(int argc, char **args)
       if (attach_nearnullspace) PetscCall(MatSetNearNullSpace(Amat, nearNullSpace));
       PetscCall(MatNullSpaceDestroy(&nearNullSpace)); /* created by DM and destroyed by Mat */
     }
-    PetscCall(DMPlexSetSNESLocalFEM(dm, NULL, NULL, NULL));
+    PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, NULL));
     PetscCall(SNESSetJacobian(snes, Amat, Amat, NULL, NULL));
     PetscCall(SNESSetFromOptions(snes));
     PetscCall(DMSetUp(dm));
