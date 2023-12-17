@@ -428,7 +428,8 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
 }
 
 /*MC
-    KSPPIPELCG - Deep pipelined (length l) Conjugate Gradient method. This method has only a single non-blocking global
+    KSPPIPELCG - Deep pipelined (length l) Conjugate Gradient method {cite}`cornelis2018communication` and {cite}`cools2019numerically`.
+    This method has only a single non-blocking global
     reduction per iteration, compared to 2 blocking reductions for standard `KSPCG`. The reduction is overlapped by the
     matrix-vector product and preconditioner application of the next l iterations. The pipeline length l is a parameter
     of the method. [](sec_pipelineksp)
@@ -458,14 +459,6 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
     Contributed by:
     Siegfried Cools, University of Antwerp, Dept. Mathematics and Computer Science,
     funded by Flemish Research Foundation (FWO) grant number 12H4617N.
-
-    References:
-+   * - J. Cornelis, S. Cools and W. Vanroose,
-        "The Communication-Hiding Conjugate Gradient Method with Deep Pipelines"
-        Submitted to SIAM Journal on Scientific Computing (SISC), 2018.
--   * - S. Cools, J. Cornelis and W. Vanroose,
-        "Numerically Stable Recurrence Relations for the Communication Hiding Pipelined Conjugate Gradient Method"
-        Submitted to IEEE Transactions on Parallel and Distributed Systems, 2019.
 
 .seealso: [](ch_ksp), [](sec_pipelineksp), [](doc_faq_pipelined), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSPCG`, `KSPPIPECG`, `KSPPIPECGRR`, `KSPPGMRES`,
           `KSPPIPEBCGS`, `KSPSetPCSide()`, `KSPGROPPCG`

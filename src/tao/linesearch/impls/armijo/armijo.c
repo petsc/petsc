@@ -261,8 +261,6 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
    Level: developer
 
 .seealso: `TaoLineSearchCreate()`, `TaoLineSearchSetType()`, `TaoLineSearchApply()`
-
-.keywords: Tao, linesearch
 M*/
 PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_Armijo(TaoLineSearch ls)
 {

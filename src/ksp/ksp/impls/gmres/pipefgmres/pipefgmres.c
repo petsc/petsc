@@ -524,7 +524,7 @@ PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp)
 }
 
 /*MC
-   KSPPIPEFGMRES - Implements the Pipelined (1-stage) Flexible Generalized Minimal Residual method. [](sec_pipelineksp). [](sec_flexibleksp)
+   KSPPIPEFGMRES - Implements the Pipelined (1-stage) Flexible Generalized Minimal Residual method {cite}`sananschneppmay2016`. [](sec_pipelineksp). [](sec_flexibleksp)
 
    Options Database Keys:
 +   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
@@ -552,10 +552,6 @@ PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp)
 
    Contributed by:
    P. Sanan and S.M. Schnepp
-
-   Reference:
-.  * -   P. Sanan, S.M. Schnepp, and D.A. May,  "Pipelined, Flexible Krylov Subspace Methods,"
-    SIAM Journal on Scientific Computing 2016 38:5, C441-C470,  DOI: 10.1137/15M1049130
 
 .seealso: [](ch_ksp), [](doc_faq_pipelined), [](sec_pipelineksp), [](sec_flexibleksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPLGMRES`, `KSPPIPECG`, `KSPPIPECR`, `KSPPGMRES`, `KSPFGMRES`
           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESMonitorKrylov()`, `KSPPIPEFGMRESSetShift()`

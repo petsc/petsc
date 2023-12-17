@@ -803,17 +803,17 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
 }
 
 /*MC
-  SNESNASM - Nonlinear Additive Schwarz solver
+  SNESNASM - Nonlinear Additive Schwarz solver {cite}`ck02`, {cite}`bruneknepleysmithtu15`
 
    Options Database Keys:
-+  -snes_nasm_log - enable logging events for the communication and solve stages
-.  -snes_nasm_type <basic,restrict> - type of subdomain update used
-.  -snes_nasm_damping <dmp> - the new solution is obtained as old solution plus dmp times (sum of the solutions on the subdomains)
-.  -snes_nasm_finaljacobian - compute the local and global jacobians of the final iterate
-.  -snes_nasm_finaljacobian_type <finalinner,finalouter,initial> - pick state the jacobian is calculated at
-.  -sub_snes_ - options prefix of the subdomain nonlinear solves
-.  -sub_ksp_ - options prefix of the subdomain Krylov solver
--  -sub_pc_ - options prefix of the subdomain preconditioner
++  -snes_nasm_log                                                - enable logging events for the communication and solve stages
+.  -snes_nasm_type <basic,restrict>                              - type of subdomain update used
+.  -snes_nasm_damping <dmp>                                      - the new solution is obtained as old solution plus dmp times (sum of the solutions on the subdomains)
+.  -snes_nasm_finaljacobian                                      - compute the local and global Jacobians of the final iterate
+.  -snes_nasm_finaljacobian_type <finalinner,finalouter,initial> - pick state the Jacobian is calculated at
+.  -sub_snes_                                                    - options prefix of the subdomain nonlinear solves
+.  -sub_ksp_                                                     - options prefix of the subdomain Krylov solver
+-  -sub_pc_                                                      - options prefix of the subdomain preconditioner
 
    Level: advanced
 
@@ -823,16 +823,12 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
 
    Developer Note:
    This is a non-Newton based nonlinear solver that does not directly require a Jacobian; hence the flag snes->usesksp is set to
-       false and `SNESView()` and -snes_view do not display a `KSP` object. However, if the flag nasm->finaljacobian is set (for example, if
-       `SNESNASM` is used as a nonlinear preconditioner for  `SNESASPIN`) then `SNESSetUpMatrices()` is called to generate the
-       Jacobian (needed by `SNESASPIN`)
-       and this utilizes the inner `KSP` object for storing the matrices, but the `KSP` is never used for solving a linear system. When `SNESNASM` is
-       used by `SNESASPIN` they share the same Jacobian matrices because `SNESSetUp()` (called on the outer `SNESASPIN`) causes the inner `SNES`
-       object (in this case `SNESNASM`) to inherit the outer Jacobian matrices.
-
-   References:
-.  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
-   SIAM Review, 57(4), 2015
+   false and `SNESView()` and -snes_view do not display a `KSP` object. However, if the flag nasm->finaljacobian is set (for example, if
+   `SNESNASM` is used as a nonlinear preconditioner for  `SNESASPIN`) then `SNESSetUpMatrices()` is called to generate the
+   Jacobian (needed by `SNESASPIN`)
+   and this utilizes the inner `KSP` object for storing the matrices, but the `KSP` is never used for solving a linear system. When `SNESNASM` is
+   used by `SNESASPIN` they share the same Jacobian matrices because `SNESSetUp()` (called on the outer `SNESASPIN`) causes the inner `SNES`
+   object (in this case `SNESNASM`) to inherit the outer Jacobian matrices.
 
 .seealso: [](ch_snes), `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`, `SNESNASMSetType()`, `SNESNASMGetType()`, `SNESNASMSetSubdomains()`, `SNESNASMGetSubdomains()`,
           `SNESNASMGetSubdomainVecs()`, `SNESNASMSetComputeFinalJacobian()`, `SNESNASMSetDamping()`, `SNESNASMGetDamping()`, `SNESNASMSetWeight()`,

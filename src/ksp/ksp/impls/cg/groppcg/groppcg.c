@@ -144,7 +144,7 @@ static PetscErrorCode KSPSolve_GROPPCG(KSP ksp)
 PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP, Vec, Vec, Vec *);
 
 /*MC
-   KSPGROPPCG - A pipelined conjugate gradient method developed by Bill Gropp. [](sec_pipelineksp)
+   KSPGROPPCG - A pipelined conjugate gradient method developed by Bill Gropp {cite}`eller2016scalable`. [](sec_pipelineksp)
 
    Level: intermediate
 
@@ -159,9 +159,6 @@ PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP, Vec, Vec, Vec *);
 
    Contributed by:
    Pieter Ghysels, Universiteit Antwerpen, Intel Exascience lab Flanders
-
-   Reference:
-   http://www.cs.uiuc.edu/~wgropp/bib/talks/tdata/2012/icerm.pdf
 
 .seealso: [](ch_ksp), [](sec_pipelineksp), [](doc_faq_pipelined), `KSPCreate()`, `KSPPIPECG2()`, `KSPSetType()`, `KSPPIPECG`, `KSPPIPECR`, `KSPPGMRES`, `KSPCG`, `KSPCGUseSingleReduction()`
 M*/

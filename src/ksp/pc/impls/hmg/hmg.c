@@ -437,23 +437,18 @@ PetscErrorCode PCHMGUseMatMAIJ(PC pc, PetscBool usematmaij)
 /*MC
    PCHMG - For multiple component PDE problems constructs a hierarchy of restriction operators to coarse grid problems using the submatrix of
    a single component with either `PCHYPRE` or `PCGAMG`. The same restriction operators are used for each of the components of the PDE with `PCMG`
-   resulting in a much more efficient to build and apply preconditioner than using `PCGAMG` on the entire system.
+   resulting in a much more efficient to build and apply preconditioner than using `PCGAMG` on the entire system {cite}`kong2020highly`.
 
    Options Database Keys:
-+  -pc_hmg_reuse_interpolation <true | false> - Whether or not to reuse the interpolations for new matrix values. It can potentially save compute time.
++  -pc_hmg_reuse_interpolation <true | false>      - Whether or not to reuse the interpolations for new matrix values. It can potentially save compute time.
 .  -pc_hmg_use_subspace_coarsening  <true | false> - Whether or not to use subspace coarsening (that is, coarsen a submatrix).
-.  -hmg_inner_pc_type <hypre, gamg, ...> - What method is used to coarsen matrix
--  -pc_hmg_use_matmaij <true | false> - Whether or not to use `MATMAIJ` for multicomponent problems for saving memory
+.  -hmg_inner_pc_type <hypre, gamg, ...>           - What method is used to solve the coarsen matrix
+-  -pc_hmg_use_matmaij <true | false>              - Whether or not to use `MATMAIJ` for multicomponent problems for saving memory
 
    Level: intermediate
 
    Note:
    `MatSetBlockSize()` must be called on the linear system matrix to set the number of components of the PDE.
-
-    References:
-.   * - Fande Kong, Yaqi Wang, Derek R Gaston, Cody J Permann, Andrew E Slaughter, Alexander D Lindsay, Richard C Martineau, A highly parallel multilevel
-    Newton-Krylov-Schwarz method with subspace-based coarsening and partition-based balancing for the multigroup neutron transport equations on
-    3D unstructured meshes, arXiv preprint arXiv:1903.03659, 2019
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCMG`, `PCHYPRE`, `PCHMG`, `PCGetCoarseOperators()`, `PCGetInterpolations()`,
           `PCHMGSetReuseInterpolation()`, `PCHMGSetUseSubspaceCoarsening()`, `PCHMGSetInnerPCType()`

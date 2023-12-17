@@ -220,7 +220,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
 }
 
 /*@C
-  DMPlexCreateFluent - Create a `DMPLEX` mesh from a Fluent mesh file.
+  DMPlexCreateFluent - Create a `DMPLEX` mesh from a Fluent mesh file <http://aerojet.engr.ucdavis.edu/fluenthelp/html/ug/node1490.htm>.
 
   Collective
 
@@ -231,9 +231,6 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
 
   Output Parameter:
 . dm - The `DM` object representing the mesh
-
-  Note:
-  http://aerojet.engr.ucdavis.edu/fluenthelp/html/ug/node1490.htm
 
   Level: beginner
 

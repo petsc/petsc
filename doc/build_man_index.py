@@ -76,7 +76,7 @@ def printsingleindex(outfilename, alphabet_dict):
       global numberErrors
       with open(outfilename, "w") as fd:
           fd.write("# Single Index of all PETSc Manual Pages\n\n")
-          fd.write(" Also see the [Manual page table of contents, by section](/manualpages/index.md).\n\n")
+          fd.write(" Also see the [Manual page table of contents, by section](/manualpages/index.rst).\n\n")
           for key in sorted(alphabet_dict.keys()):
                 fd.write("## %s\n\n" % key.upper())
                 fd.write("```{hlist}\n")
@@ -138,7 +138,7 @@ def modifylevel(filename,secname,edit_branch):
       tmpbuf = re.sub('.cxx#', '.cxx.html#', tmpbuf)
 
       # Add footer links
-      outbuf = tmpbuf + '\n[Index of all %s routines](index.md)  \n' % secname + '[Table of Contents for all manual pages](/manualpages/index.md)  \n' + '[Index of all manual pages](/manualpages/singleindex.md)  \n'
+      outbuf = tmpbuf + '\n[Index of all %s routines](index.md)  \n' % secname + '[Table of Contents for all manual pages](/manualpages/index.rst)  \n' + '[Index of all manual pages](/manualpages/singleindex.md)  \n'
 
       # write the modified manpage
       with open(filename, "w") as fd:

@@ -391,11 +391,7 @@ static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(SNES snes, PetscOptionItem
 
    The reduced space active set solvers `SNESVINEWTONRSLS` provide an alternative approach that does not result in extremely ill-conditioned linear systems
 
-   References:
-+  * -  T. S. Munson, F. Facchinei, M. C. Ferris, A. Fischer, and C. Kanzow. The semismooth
-     algorithm for large scale complementarity problems. INFORMS Journal on Computing, 13 (2001).
--  * -  T. S. Munson, and S. Benson. Flexible Complementarity Solvers for Large Scale
-     Applications, Optimization Methods and Software, 21 (2006).
+   See {cite}`munson.facchinei.ea:semismooth` and {cite}`benson2006flexible`
 
 .seealso: [](ch_snes), `SNESVINEWTONRSLS`, `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESVINEWTONRSLS`, `SNESNEWTONTR`, `SNESLineSearchSetType()`, `SNESLineSearchSetPostCheck()`, `SNESLineSearchSetPreCheck()`
 M*/

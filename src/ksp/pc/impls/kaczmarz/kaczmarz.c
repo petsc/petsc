@@ -91,20 +91,16 @@ static PetscErrorCode PCView_Kaczmarz(PC pc, PetscViewer viewer)
 }
 
 /*MC
-     PCKACZMARZ - Kaczmarz iteration
+     PCKACZMARZ - Kaczmarz iteration {cite}`kaczmarz1937angenaherte`
 
    Options Database Keys:
-+  -pc_kaczmarz_lambda <1.0> - Sets damping parameter lambda
--  -pc_kaczmarz_symmetric - Apply row projections symmetrically
++  -pc_kaczmarz_lambda <lambda> - Sets damping parameter defaults to 1.0
+-  -pc_kaczmarz_symmetric       - Apply the row projections symmetrically
 
    Level: beginner
 
    Note:
-    In parallel this is block-Jacobi with Kaczmarz inner solve.
-
-   References:
-.  * - S. Kaczmarz, "Angenaherte Auflosing von Systemen Linearer Gleichungen",
-   Bull. Internat. Acad. Polon. Sci. C1. A, 1937.
+   In parallel this is block-Jacobi with Kaczmarz inner solve on each processor.
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCJACOBI`, `PCBJACOBI`
 M*/

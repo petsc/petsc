@@ -293,11 +293,7 @@ PetscErrorCode KSPChebyshevEstEigGetKSP(KSP ksp, KSP *kspest)
   requires using higher degree Chebyhev polynomials and reducing the lower end of the target spectrum, at which point
   the whole target spectrum experiences about the same damping. Fourth kind Chebyshev polynomials (and the "optimized"
   fourth kind) avoid the ad-hoc choice of lower bound and extend smoothing to smaller eigenvalues while preferentially
-  smoothing higher modes faster as needed to minimize the energy norm of the error.
-
-  References:
-+  * - Malachi Phillips and Paul Fischer, Optimal Chebyshev Smoothers and One-sided V-cycles, https://arxiv.org/abs/2210.03179.
--  * - James Lottes, Optimal Polynomial Smoothers for Multigrid V-cycles, https://arxiv.org/abs/2202.08830.
+  smoothing higher modes faster as needed to minimize the energy norm of the error. {cite}`phillips2022optimal`, {cite}`lottes2023optimal`
 
 .seealso: [](ch_ksp), `KSPCHEBYSHEV` `KSPChebyshevKind`, `KSPChebyshevGetKind()`, `KSP_CHEBYSHEV_FIRST`, `KSP_CHEBYSHEV_FOURTH`, `KSP_CHEBYSHEV_OPT_FOURTH`
 @*/

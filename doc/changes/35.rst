@@ -168,7 +168,7 @@ Changes: 3.5
    ``--download-cholmod`` to download UMFPACK and CHOLMOD have been
    removed. Use ``--download-suitesparse`` to download these
    packages.
--  Added interface to Pardiso solver in Intel MKL. To use
+-  Added interface to PARDISO solver in Intel MKL. To use
    MKL_Pardiso, PETSc should be configured with
    ``--blas-lapack-dir=LOCATION_OF_INTEL_MKL           --with-mkl_pardiso-dir=LOCATION_OF_INTEL_MKL``
    and then run the code with

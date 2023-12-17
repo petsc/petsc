@@ -1494,12 +1494,12 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
 . -dm_plex_gmsh_multiple_tags - Allow multiple tags for default labels
 - -dm_plex_gmsh_spacedim <d>  - Embedding space dimension, if different from topological dimension
 
-  Note:
-  The Gmsh file format is described in http://gmsh.info/doc/texinfo/gmsh.html#MSH-file-format
+  Level: beginner
+
+  Notes:
+  The Gmsh file format is described in <http://gmsh.info/doc/texinfo/gmsh.html#MSH-file-format>
 
   By default, the "Cell Sets", "Face Sets", and "Vertex Sets" labels are created, and only insert the first tag on a point. By using -dm_plex_gmsh_multiple_tags, all tags can be inserted. Instead, -dm_plex_gmsh_use_regions creates labels based on the region names from the PhysicalNames section, and all tags are used.
-
-  Level: beginner
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMCreate()`
 @*/

@@ -600,7 +600,7 @@ PetscErrorCode KSPLSQRConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSP
 }
 
 /*MC
-   KSPLSQR - Implements LSQR
+   KSPLSQR - Implements LSQR  {cite}`paige.saunders:lsqr`
 
    Options Database Keys:
 +   -ksp_lsqr_set_standard_error  - set standard error estimates of solution, see `KSPLSQRSetComputeStandardErrorVec()` and `KSPLSQRGetStandardErrorVec()`
@@ -629,9 +629,6 @@ PetscErrorCode KSPLSQRConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSP
    Developer Note:
    How is this related to the `KSPCGNE` implementation? One difference is that `KSPCGNE` applies
    the preconditioner transpose times the preconditioner,  so one does not need to pass $A^T*A$ as the third argument to `KSPSetOperators()`.
-
-   Reference:
-.  * - The original unpreconditioned algorithm can be found in Paige and Saunders, ACM Transactions on Mathematical Software, Vol 8, 1982.
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPSolve()`, `KSPLSQRConvergedDefault()`, `KSPLSQRSetComputeStandardErrorVec()`, `KSPLSQRGetStandardErrorVec()`, `KSPLSQRSetExactMatNorm()`, `KSPLSQRMonitorResidualDrawLGCreate()`, `KSPLSQRMonitorResidualDrawLG()`, `KSPLSQRMonitorResidual()`
 M*/

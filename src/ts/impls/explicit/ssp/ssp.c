@@ -44,9 +44,7 @@ static PetscErrorCode TSSSPRestoreWorkVectors(TS ts, PetscInt n, Vec **work)
 }
 
 /*MC
-   TSSSPRKS2 - Optimal second order SSP Runge-Kutta method, low-storage, c_eff=(s-1)/s
-
-   Pseudocode 2 of Ketcheson 2008
+   TSSSPRKS2 - Optimal second order SSP Runge-Kutta method, low-storage, c_eff=(s-1)/s. Pseudocode 2 of {cite}`ketcheson_2008`
 
    Level: beginner
 
@@ -76,9 +74,9 @@ static PetscErrorCode TSSSPStep_RK_2(TS ts, PetscReal t0, PetscReal dt, Vec sol)
 }
 
 /*MC
-   TSSSPRKS3 - Optimal third order SSP Runge-Kutta, low-storage, c_eff=(PetscSqrtReal(s)-1)/PetscSqrtReal(s), where PetscSqrtReal(s) is an integer
+   TSSSPRKS3 - Optimal third order SSP Runge-Kutta, low-storage, $c_eff=(PetscSqrtReal(s)-1)/PetscSqrtReal(s)$, where `PetscSqrtReal`(s) is an integer
 
-   Pseudocode 2 of Ketcheson 2008
+   Pseudocode 2 of {cite}`ketcheson_2008`
 
    Level: beginner
 
@@ -137,7 +135,7 @@ static PetscErrorCode TSSSPStep_RK_3(TS ts, PetscReal t0, PetscReal dt, Vec sol)
 /*MC
    TSSSPRKS104 - Optimal fourth order SSP Runge-Kutta, low-storage (2N), c_eff=0.6
 
-   SSPRK(10,4), Pseudocode 3 of Ketcheson 2008
+   SSPRK(10,4), Pseudocode 3 of {cite}`ketcheson_2008`
 
    Level: beginner
 
@@ -421,7 +419,7 @@ static PetscErrorCode TSView_SSP(TS ts, PetscViewer viewer)
 /* ------------------------------------------------------------ */
 
 /*MC
-      TSSSP - Explicit strong stability preserving ODE solver
+      TSSSP - Explicit strong stability preserving ODE solver {cite}`ketcheson_2008` {cite}`gottliebketchesonshu2009`
 
   Most hyperbolic conservation laws have exact solutions that are total variation diminishing (TVD) or total variation
   bounded (TVB) although these solutions often contain discontinuities.  Spatial discretizations such as Godunov's
@@ -455,12 +453,7 @@ static PetscErrorCode TSView_SSP(TS ts, PetscViewer viewer)
 
   Level: beginner
 
-  References:
-+  * - Ketcheson, Highly efficient strong stability preserving Runge Kutta methods with low storage implementations, SISC, 2008.
--  * - Gottlieb, Ketcheson, and Shu, High order strong stability preserving time discretizations, J Scientific Computing, 2009.
-
 .seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`
-
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS ts)
 {

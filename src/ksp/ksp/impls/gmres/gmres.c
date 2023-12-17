@@ -819,7 +819,7 @@ PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP ksp, PetscReal tol)
 }
 
 /*MC
-     KSPGMRES - Implements the Generalized Minimal Residual method [1] with restart
+     KSPGMRES - Implements the Generalized Minimal Residual method {cite}`saad.schultz:gmres` with restart
 
    Options Database Keys:
 +   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
@@ -836,10 +836,6 @@ PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP ksp, PetscReal tol)
 
    Note:
    Left and right preconditioning are supported, but not symmetric preconditioning.
-
-   Reference:
-.  [1] - YOUCEF SAAD AND MARTIN H. SCHULTZ, GMRES: A GENERALIZED MINIMAL RESIDUAL ALGORITHM FOR SOLVING NONSYMMETRIC LINEAR SYSTEMS.
-          SIAM J. ScI. STAT. COMPUT. Vo|. 7, No. 3, July 1986.
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPLGMRES`,
           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,

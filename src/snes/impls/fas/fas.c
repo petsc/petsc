@@ -800,13 +800,15 @@ static PetscErrorCode SNESFASCycle_Kaskade(SNES snes, Vec X)
 }
 
 PetscBool  SNEScite       = PETSC_FALSE;
-const char SNESCitation[] = "@techreport{pbmkbsxt2012,\n"
-                            "  title = {Composing Scalable Nonlinear Algebraic Solvers},\n"
-                            "  author = {Peter Brune and Mathew Knepley and Barry Smith and Xuemin Tu},\n"
-                            "  year = 2013,\n"
-                            "  type = Preprint,\n"
-                            "  number = {ANL/MCS-P2010-0112},\n"
-                            "  institution = {Argonne National Laboratory}\n}\n";
+const char SNESCitation[] = "@Article{bruneknepleysmithtu15,"
+                            "  title         = {Composing Scalable Nonlinear Algebraic Solvers},"
+                            "  author        = {Peter R. Brune and Matthew G. Knepley and Barry F. Smith and Xuemin Tu},"
+                            "  journal       = {SIAM Review},"
+                            "  volume        = {57},"
+                            "  number        = {4},"
+                            "  pages         = {535--565},"
+                            "  doi           = {10.1137/130936725},"
+                            "  year          = {2015}\n";
 
 static PetscErrorCode SNESSolve_FAS(SNES snes)
 {
@@ -890,26 +892,26 @@ static PetscErrorCode SNESSolve_FAS(SNES snes)
 }
 
 /*MC
-   SNESFAS - Full Approximation Scheme nonlinear multigrid solver.
+   SNESFAS - Full Approximation Scheme nonlinear multigrid solver {cite}`bruneknepleysmithtu15`.
 
    The nonlinear problem is solved by correction using coarse versions
    of the nonlinear problem.  This problem is perturbed so that a projected
    solution of the fine problem elicits no correction from the coarse problem.
 
    Options Database Keys and Prefixes:
-+   -snes_fas_levels -  The number of levels
-.   -snes_fas_cycles<1> -  The number of cycles -- 1 for V, 2 for W
-.   -snes_fas_type<additive,multiplicative,full,kaskade>  -  Additive or multiplicative cycle
-.   -snes_fas_galerkin<`PETSC_FALSE`> -  Form coarse problems by projection back upon the fine problem
-.   -snes_fas_smoothup<1> -  The number of iterations of the post-smoother
-.   -snes_fas_smoothdown<1> -  The number of iterations of the pre-smoother
-.   -snes_fas_monitor -  Monitor progress of all of the levels
-.   -snes_fas_full_downsweep<`PETSC_FALSE`> - call the downsmooth on the initial downsweep of full FAS
-.   -fas_levels_snes_ -  `SNES` options for all smoothers
-.   -fas_levels_cycle_snes_ -  `SNES` options for all cycles
-.   -fas_levels_i_snes_ -  `SNES` options for the smoothers on level i
-.   -fas_levels_i_cycle_snes_ - `SNES` options for the cycle on level i
--   -fas_coarse_snes_ -  `SNES` options for the coarsest smoother
++   -snes_fas_levels <l>                                  - The number of levels
+.   -snes_fas_cycles <c>                                  - The number of cycles -- 1 for V, 2 for W
+.   -snes_fas_type<additive,multiplicative,full,kaskade>  - Additive or multiplicative cycle
+.   -snes_fas_galerkin <false,true>                       - Form coarse problems by projection back upon the fine problem
+.   -snes_fas_smoothup <u>                                - The number of iterations of the post-smoother
+.   -snes_fas_smoothdown <d>                              - The number of iterations of the pre-smoother
+.   -snes_fas_monitor                                     - Monitor progress of all of the levels
+.   -snes_fas_full_downsweep <false,true>                 - call the downsmooth on the initial downsweep of full FAS
+.   -fas_levels_snes_                                     - prefix for `SNES` options for all smoothers
+.   -fas_levels_cycle_snes_                               - prefix for `SNES` options for all cycles
+.   -fas_levels_i_snes_                                   - prefix `SNES` options for the smoothers on level i
+.   -fas_levels_i_cycle_snes_                             - prefix for `SNES` options for the cycle on level i
+-   -fas_coarse_snes_                                     - prefix for `SNES` options for the coarsest smoother
 
    Level: beginner
 
@@ -917,10 +919,6 @@ static PetscErrorCode SNESSolve_FAS(SNES snes)
    The organization of the FAS solver is slightly different from the organization of `PCMG`
    As each level has smoother `SNES` instances(down and potentially up) and a cycle `SNES` instance.
    The cycle `SNES` instance may be used for monitoring convergence on a particular level.
-
-   References:
-.  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
-   SIAM Review, 57(4), 2015
 
 .seealso: [](ch_snes), `PCMG`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`, `SNESFASSetRestriction()`, `SNESFASSetInjection()`,
           `SNESFASFullGetTotal()`, `SNESFASSetType()`, `SNESFASGetType()`, `SNESFASSetLevels()`, `SNESFASGetLevels()`, `SNESFASGetCycleSNES()`,

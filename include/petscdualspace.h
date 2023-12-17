@@ -49,9 +49,7 @@ PETSC_EXTERN const char *const PetscDualSpaceReferenceCells[];
   These transforms, and their inverses, are used to move functions and functionals between the reference element and real space.
   Suppose that we have a mapping $\phi$ which maps the reference cell to real space, and its Jacobian $J$. If we want to transform function $F$ on the reference element,
   so that it acts on real space, we use the pushforward transform $\sigma^*$. The pullback $\sigma_*$ is the inverse transform.
-
-  References:
-.    Rognes, Kirby, and Logg, Efficient Assembly of Hdiv and Hrot Conforming Finite Elements, SISC, 31(6), 4130-4151, arXiv 1205.3085, 2010
+  {cite}`rogneskirbylogg2009`
 
 .seealso: `PetscDualSpaceGetDeRahm()`
 M*/

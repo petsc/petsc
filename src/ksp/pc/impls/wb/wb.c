@@ -804,33 +804,13 @@ static PetscErrorCode PCSetFromOptions_Exotic(PC pc, PetscOptionItems *PetscOpti
 
    By default this uses `KSPGMRES` on the fine grid smoother so this should be used with `KSPFGMRES` or the smoother changed to not use `KSPGMRES`
 
-   References:
-+  * - These coarse grid spaces originate in the work of Bramble, Pasciak  and Schatz, "The Construction
-   of Preconditioners for Elliptic Problems by Substructing IV", Mathematics of Computation, volume 53, 1989.
-.  * - They were generalized slightly in "Domain Decomposition Method for Linear Elasticity", Ph. D. thesis, Barry Smith,
-   New York University, 1990.
-.  * - They were then explored in great detail in Dryja, Smith, Widlund, "Schwarz Analysis
-   of Iterative Substructuring Methods for Elliptic Problems in Three Dimensions, SIAM Journal on Numerical
-   Analysis, volume 31. 1994. These were developed in the context of iterative substructuring preconditioners.
-.  * - They were then ingeniously applied as coarse grid spaces for overlapping Schwarz methods by Dohrmann and Widlund.
-   They refer to them as GDSW (generalized Dryja, Smith, Widlund preconditioners). See, for example,
-   Clark R. Dohrmann, Axel Klawonn, and Olof B. Widlund. Extending theory for domain decomposition algorithms to irregular subdomains. In Ulrich Langer, Marco
-   Discacciati, David Keyes, Olof Widlund, and Walter Zulehner, editors, Proceedings
-   of the 17th International Conference on Domain Decomposition Methods in
-   Science and Engineering, held in Strobl, Austria, 2006, number 60 in
-   Springer Verlag, Lecture Notes in Computational Science and Engineering, 2007.
-.  * -  Clark R. Dohrmann, Axel Klawonn, and Olof B. Widlund. A family of energy minimizing coarse spaces for overlapping Schwarz preconditioners. In Ulrich Langer,
-   Marco Discacciati, David Keyes, Olof Widlund, and Walter Zulehner, editors, Proceedings
-   of the 17th International Conference on Domain Decomposition Methods
-   in Science and Engineering, held in Strobl, Austria, 2006, number 60 in
-   Springer Verlag, Lecture Notes in Computational Science and Engineering, 2007
-.  * - Clark R. Dohrmann, Axel Klawonn, and Olof B. Widlund. Domain decomposition
-   for less regular subdomains: Overlapping Schwarz in two dimensions. SIAM J.
-   Numer. Anal., 46(4), 2008.
--  * - Clark R. Dohrmann and Olof B. Widlund. An overlapping Schwarz
-   algorithm for almost incompressible elasticity. Technical Report
-   TR2008 912, Department of Computer Science, Courant Institute
-   of Mathematical Sciences, New York University, May 2008. URL:
+   These coarse grid spaces originate in the work of Bramble, Pasciak  and Schatz {cite}`bramble1989construction`.
+   They were generalized slightly in "Domain Decomposition Method for Linear Elasticity", Ph. D. thesis, Barry Smith, {cite}`smith1990domain`.
+   They were then explored in great detail in Dryja, Smith, Widlund {cite}`dryja1994schwarz`. These were developed in the context of iterative substructuring preconditioners.
+
+   They were then ingeniously applied as coarse grid spaces for overlapping Schwarz methods by Dohrmann and Widlund.
+   They refer to them as GDSW (generalized Dryja, Smith, Widlund preconditioners). See, for example, {cite}`dohrmann2008extending`, {cite}`dohrmann2008family`,
+   {cite}`dohrmann2008domain`, {cite}`dohrmann2009overlapping`.
 
    The usual `PCMG` options are supported, such as -mg_levels_pc_type <type> -mg_coarse_pc_type <type> and  -pc_mg_type <type>
 

@@ -1276,7 +1276,7 @@ static PetscErrorCode KSPCGSetFromOptions_GLTR(KSP ksp, PetscOptionItems *PetscO
 }
 
 /*MC
-   KSPGLTR -   Code to run conjugate gradient method subject to a constraint on the solution norm, used within trust region methods
+   KSPGLTR -   Code to run conjugate gradient method subject to a constraint on the solution norm, used within trust region methods {cite}`gould1999solving`
 
    Options Database Key:
 .  -ksp_cg_radius <r> - Trust Region Radius
@@ -1311,10 +1311,6 @@ static PetscErrorCode KSPCGSetFromOptions_GLTR(KSP ksp, PetscOptionItems *PetscO
   The operator and the preconditioner supplied must be symmetric and positive definite.
 
   This is rarely used directly, it is used in Trust Region methods for nonlinear equations, `SNESNEWTONTR`
-
-  Reference:
-. * -  Gould, N. and Lucidi, S. and Roma, M. and Toint, P., Solving the Trust-Region Subproblem using the Lanczos Method,
-   SIAM Journal on Optimization, volume 9, number 2, 1999, 504-525
 
 .seealso: [](ch_ksp), `KSPQCG`, `KSPNASH`, `KSPSTCG`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCGSetRadius()`, `KSPCGGetNormD()`, `KSPCGGetObjFcn()`, `KSPGLTRGetMinEig()`, `KSPGLTRGetLambda()`, `KSPCG`
 M*/

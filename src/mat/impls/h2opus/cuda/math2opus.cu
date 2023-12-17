@@ -1266,21 +1266,18 @@ static PetscErrorCode MatBindToCPU_H2OPUS(Mat A, PetscBool flg)
   #endif
 
 /*MC
-     MATH2OPUS = "h2opus" - A matrix type for hierarchical matrices using the H2Opus package.
+   MATH2OPUS = "h2opus" - A matrix type for hierarchical matrices using the H2Opus package {cite}`zampinibouakaramturkiyyahkniokeyes2022`.
 
    Options Database Key:
-.     -mat_type h2opus - matrix type to "h2opus"
+.  -mat_type h2opus - matrix type to "h2opus"
 
    Level: beginner
 
    Notes:
-     H2Opus implements hierarchical matrices in the H^2 flavour. It supports CPU or NVIDIA GPUs.
+   H2Opus implements hierarchical matrices in the $H^2$ flavour. It supports CPU or NVIDIA GPUs.
 
-     For CPU only builds, use `./configure --download-h2opus --download-thrust` to install PETSc to use H2Opus.
-     In order to run on NVIDIA GPUs, use `./configure --download-h2opus --download-magma --download-kblas`.
-
-   Reference:
-.  * -  "H2Opus: A distributed-memory multi-GPU software package for non-local operators", https://arxiv.org/abs/2109.05451
+   For CPU only builds, use `./configure --download-h2opus --download-thrust` to install PETSc to use H2Opus.
+   In order to run on NVIDIA GPUs, use `./configure --download-h2opus --download-magma --download-kblas`.
 
 .seealso: [](ch_matrices), `Mat`, `MATH2OPUS`, `MATHTOOL`, `MATDENSE`, `MatCreateH2OpusFromKernel()`, `MatCreateH2OpusFromMat()`
 M*/
@@ -1540,10 +1537,10 @@ PetscErrorCode MatH2OpusCompress(Mat A, PetscReal tol)
 . bs  - maximum number of samples to be taken concurrently
 - tol - relative tolerance for construction
 
+  Level: intermediate
+
   Notes:
   You need to call `MatAssemblyBegin()` and `MatAssemblyEnd()` to update the hierarchical matrix.
-
-  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`, `MatCreateH2OpusFromKernel()`, `MatH2OpusCompress()`, `MatH2OpusOrthogonalize()`
 @*/
@@ -1800,7 +1797,7 @@ PetscErrorCode MatH2OpusMapVec(Mat A, PetscBool nativetopetsc, Vec in, Vec *out)
 }
 
 /*@C
-  MatH2OpusLowRankUpdate - Perform a low-rank update of the form A = A + s * U * V^T
+  MatH2OpusLowRankUpdate - Perform a low-rank update of the form $ A = A + s * U * V^T $
 
   Input Parameters:
 + A - the hierarchical `MATH2OPUS` matrix
@@ -1809,7 +1806,7 @@ PetscErrorCode MatH2OpusMapVec(Mat A, PetscBool nativetopetsc, Vec in, Vec *out)
 - V - (optional) the dense low-rank update matrix (if `NULL`, then `V` = `U` is assumed)
 
   Note:
-  The `U` and `V` matrices must be in dense format
+  The `U` and `V` matrices must be in `MATDENSE` dense format
 
   Level: intermediate
 

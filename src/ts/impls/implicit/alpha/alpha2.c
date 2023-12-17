@@ -544,14 +544,9 @@ static PetscErrorCode TSAlpha2GetParams_Alpha(TS ts, PetscReal *alpha_m, PetscRe
 }
 
 /*MC
-  TSALPHA2 - ODE/DAE solver using the implicit Generalized-Alpha method for second-order systems
+  TSALPHA2 - ODE/DAE solver using the implicit Generalized-Alpha method for second-order systems {cite}`chung1993`
 
   Level: beginner
-
-  References:
-. * - J. Chung, G.M.Hubert. "A Time Integration Algorithm for Structural
-  Dynamics with Improved Numerical Dissipation: The Generalized-alpha
-  Method" ASME Journal of Applied Mechanics, 60, 371:375, 1993.
 
 .seealso: [](ch_ts), `TS`, `TSCreate()`, `TSSetType()`, `TSAlpha2SetRadius()`, `TSAlpha2SetParams()`
 M*/

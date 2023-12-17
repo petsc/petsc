@@ -1987,18 +1987,20 @@ PetscErrorCode PetscLogMPEDump(const char sname[])
 
   To view the nested XML format filename.xml first copy  ${PETSC_DIR}/share/petsc/xml/performance_xml2html.xsl to the current
   directory then open filename.xml with your browser. Specific notes for certain browsers
-$    Firefox and Internet explorer - simply open the file
-$    Google Chrome - you must start up Chrome with the option --allow-file-access-from-files
-$    Safari - see https://ccm.net/faq/36342-safari-how-to-enable-local-file-access
-  or one can use the package http://xmlsoft.org/XSLT/xsltproc2.html to translate the xml file to html and then open it with
+.vb
+    Firefox and Internet explorer - simply open the file
+    Google Chrome - you must start up Chrome with the option --allow-file-access-from-files
+    Safari - see https://ccm.net/faq/36342-safari-how-to-enable-local-file-access
+.ve
+  or one can use the package <http://xmlsoft.org/XSLT/xsltproc2.html> to translate the xml file to html and then open it with
   your browser.
   Alternatively, use the script ${PETSC_DIR}/lib/petsc/bin/petsc-performance-view to automatically open a new browser
   window and render the XML log file contents.
 
   The nested XML format was kindly donated by Koos Huijssen and Christiaan M. Klaij  MARITIME  RESEARCH  INSTITUTE  NETHERLANDS
 
-  The Flame Graph output can be visualised using either the original Flame Graph script (https://github.com/brendangregg/FlameGraph)
-  or using speedscope (https://www.speedscope.app).
+  The Flame Graph output can be visualised using either the original Flame Graph script <https://github.com/brendangregg/FlameGraph>
+  or using speedscope <https://www.speedscope.app>.
   Old XML profiles may be converted into this format using the script ${PETSC_DIR}/lib/petsc/bin/xml2flamegraph.py.
 
 .seealso: [](ch_profiling), `PetscLogDefaultBegin()`, `PetscLogDump()`

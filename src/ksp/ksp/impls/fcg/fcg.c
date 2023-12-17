@@ -491,7 +491,8 @@ static PetscErrorCode KSPSetFromOptions_FCG(KSP ksp, PetscOptionItems *PetscOpti
 }
 
 /*MC
-  KSPFCG - Implements the Flexible Conjugate Gradient method (FCG). Unlike most `KSP` methods this allows the preconditioner to be nonlinear. [](sec_flexibleksp)
+  KSPFCG - Implements the Flexible Conjugate Gradient method (FCG) {cite}`flexiblecg`, {cite}`generalizedcg`.
+  Unlike most `KSP` methods this allows the preconditioner to be nonlinear. [](sec_flexibleksp)
 
   Options Database Keys:
 +   -ksp_fcg_mmax <N>  - maximum number of search directions
@@ -500,18 +501,13 @@ static PetscErrorCode KSPSetFromOptions_FCG(KSP ksp, PetscOptionItems *PetscOpti
 
   Level: beginner
 
-  Note:
+  Notes:
   Compare to `KSPFCG`
 
   Supports left preconditioning only.
 
   Contributed by:
   Patrick Sanan
-
-  References:
-+ * - Notay, Y."Flexible Conjugate Gradients", SIAM J. Sci. Comput. 22:4, 2000
-- * - Axelsson, O. and Vassilevski, P. S. "A Black Box Generalized Conjugate Gradient Solver with Inner Iterations and Variable step Preconditioning",
-    SIAM J. Matrix Anal. Appl. 12:4, 1991
 
 .seealso: [](ch_ksp), [](sec_flexibleksp), `KSPGCR`, `KSPFGMRES`, `KSPCG`, `KSPFCGSetMmax()`, `KSPFCGGetMmax()`, `KSPFCGSetNprealloc()`, `KSPFCGGetNprealloc()`, `KSPFCGSetTruncationType()`, `KSPFCGGetTruncationType()`,
            `KSPFCGGetTruncationType`

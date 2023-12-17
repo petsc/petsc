@@ -16,7 +16,7 @@ class Configure(config.base.Configure):
 
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-64-bit-indices=<bool>',   nargs.ArgBool(None, 0, 'Use 64-bit integers (long long) for indexing in vectors and matrices'))
+    help.addArgument('PETSc', '-with-64-bit-indices=<bool>',   nargs.ArgBool(None, 0, 'Use 64-bit integers (long long) for indexing in vectors and matrices\n       This does not affect indexing for BLAS/LAPACK, see --with-64-bit-blas-indices'))
     return
 
   def setupDependencies(self, framework):

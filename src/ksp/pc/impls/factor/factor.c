@@ -430,10 +430,12 @@ PetscErrorCode PCFactorReorderForNonzeroDiagonal(PC pc, PetscReal rtol)
   Level: intermediate
 
   Note:
-  By default this will use the PETSc factorization if it exists
+  The default type is set by searching for available types based on the order of the calls to `MatSolverTypeRegister()` in `MatInitializePackage()`.
+  Since different PETSc configurations may have different external solvers, seemingly identical runs with different PETSc configurations may use a different solver.
+  For example if one configuration had --download-mumps while a different one had --download-superlu_dist.
 
-.seealso: [](ch_ksp), `PCLU`, `PCCHOLESKY`, `MatGetFactor()`, `MatSolverType`, `PCFactorGetMatSolverType()`,
-          `MATSOLVERSUPERLU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`
+.seealso: [](ch_ksp), `PCLU`, `PCCHOLESKY`, `MatGetFactor()`, `MatSolverType`, `PCFactorGetMatSolverType()`, `MatSolverTypeRegister()`,
+          `MatInitializePackage()`, `MATSOLVERSUPERLU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`, `MatSolverTypeGet()`
 @*/
 PetscErrorCode PCFactorSetMatSolverType(PC pc, MatSolverType stype)
 {

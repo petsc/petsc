@@ -394,7 +394,7 @@ static PetscErrorCode MatFactorGetSolverType_seqaij_umfpack(Mat A, MatSolverType
    Level: beginner
 
    Note:
-   UMFPACK is part of SuiteSparse http://faculty.cse.tamu.edu/davis/suitesparse.html
+   UMFPACK is part of SuiteSparse <http://faculty.cse.tamu.edu/davis/suitesparse.html>
 
 .seealso: [](ch_matrices), `Mat`, `PCLU`, `MATSOLVERSUPERLU`, `MATSOLVERMUMPS`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/

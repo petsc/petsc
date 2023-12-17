@@ -30,7 +30,7 @@ communication and computation.
   J. Roman, K. Rupp, P. Sanan, J Sarich, B. Smith,
   S. Zampini, H. Zhang, and H. Zhang, J. Zhang,
   *PETSc/TAO Users Manual*, ANL-21/39 - Revision 3.20, 2023.
-  http://dx.doi.org/10.2172/1968587,
+  http://dx.doi.org/10.2172/2205494,
   https://petsc.org/release/docs/manual/manual.pdf
 
 .. [petsc-efficient] Satish Balay, Victor Eijkhout, William D. Gropp,

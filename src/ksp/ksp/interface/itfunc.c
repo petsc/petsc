@@ -594,7 +594,7 @@ PetscErrorCode KSPConvergedReasonViewFromOptions(KSP ksp)
 }
 
 /*@C
-  KSPConvergedRateView - Displays the reason a `KSP` solve converged or diverged to a viewer
+  KSPConvergedRateView - Displays the convergence rate <https://en.wikipedia.org/wiki/Coefficient_of_determination> of `KSPSolve()` to a viewer
 
   Collective
 
@@ -612,9 +612,6 @@ PetscErrorCode KSPConvergedReasonViewFromOptions(KSP ksp)
 
   Suppose that the residual is reduced linearly, $r_k = c^k r_0$, which means $log r_k = log r_0 + k log c$. After linear regression,
   the slope is $\log c$. The coefficient of determination is given by $1 - \frac{\sum_i (y_i - f(x_i))^2}{\sum_i (y_i - \bar y)}$,
-
-  References:
-.  * -  `//en.wikipedia.org/wiki/Coefficient_of_determination`
 
 .seealso: [](ch_ksp), `KSPConvergedReasonView()`, `KSPGetConvergedRate()`, `KSPSetTolerances()`, `KSPConvergedDefault()`
 @*/
@@ -2487,27 +2484,24 @@ PetscErrorCode KSPGetErrorHistory(KSP ksp, const PetscReal *a[], PetscInt *na)
 }
 
 /*@
-  KSPComputeConvergenceRate - Compute the convergence rate for the iteration
+  KSPComputeConvergenceRate - Compute the convergence rate for the iteration <https:/en.wikipedia.org/wiki/Coefficient_of_determination>
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . ksp - The `KSP`
 
   Output Parameters:
 + cr   - The residual contraction rate
-. rRsq - The coefficient of determination, R^2, indicating the linearity of the data
+. rRsq - The coefficient of determination, $R^2$, indicating the linearity of the data
 . ce   - The error contraction rate
-- eRsq - The coefficient of determination, R^2, indicating the linearity of the data
+- eRsq - The coefficient of determination, $R^2$, indicating the linearity of the data
 
   Level: advanced
 
   Note:
   Suppose that the residual is reduced linearly, $r_k = c^k r_0$, which means $log r_k = log r_0 + k log c$. After linear regression,
   the slope is $\log c$. The coefficient of determination is given by $1 - \frac{\sum_i (y_i - f(x_i))^2}{\sum_i (y_i - \bar y)}$,
-
-  References:
-. * - `//en.wikipedia.org/wiki/Coefficient_of_determination`
 
 .seealso: [](ch_ksp), `KSP`, `KSPConvergedRateView()`
 @*/
