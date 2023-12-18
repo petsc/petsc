@@ -428,8 +428,8 @@ PETSc Packages
 --------------
 
 The PETSc source code is divided into the following library-level
-packages: ``sys``, ``Vec``, ``Mat``, ``DM``, ``KSP``, ``SNES``, ``TS``,
-``TAO``. Each of these has a directory under the ``src`` directory in
+packages: ``Sys``, ``Vec``, ``Mat``, ``DM``, ``KSP``, ``SNES``, ``TS``,
+``Tao``. Each of these has a directory under the ``src`` directory in
 the PETSc tree and, optionally, can be compiled into separate libraries.
 Each package defines one or more classes; for example, the ``KSP``
 package defines the ``KSP`` and ``PC`` classes, as well as several
