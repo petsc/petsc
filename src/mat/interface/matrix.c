@@ -8367,6 +8367,9 @@ M*/
 
   If `iscol` is `NULL` then all columns are obtained (not supported in Fortran).
 
+  If `isrow` and `iscol` have a nontrivial block-size then the resulting matrix has this block-size as well. This feature
+  is used by `PCFIELDSPLIT` to allow easy nesting of its use.
+
   Example usage:
   Consider the following 8x8 matrix with 34 non-zero values, that is
   assembled across 3 processors. Let's assume that proc0 owns 3 rows,
