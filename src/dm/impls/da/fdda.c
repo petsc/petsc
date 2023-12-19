@@ -677,19 +677,21 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
    specialized setting routines depend only on the particular preallocation
    details of the matrix, not the type itself.
   */
-  PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPIAIJSetPreallocation_C", &aij));
-  if (!aij) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqAIJSetPreallocation_C", &aij));
-  if (!aij) {
-    PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPIBAIJSetPreallocation_C", &baij));
-    if (!baij) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqBAIJSetPreallocation_C", &baij));
-    if (!baij) {
-      PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPISBAIJSetPreallocation_C", &sbaij));
-      if (!sbaij) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqSBAIJSetPreallocation_C", &sbaij));
-      if (!sbaij) {
-        PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPISELLSetPreallocation_C", &sell));
-        if (!sell) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqSELLSetPreallocation_C", &sell));
+  if (!da->prealloc_skip) { // Flag is likely set when user intends to use MatSetPreallocationCOO()
+    PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPIAIJSetPreallocation_C", &aij));
+    if (!aij) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqAIJSetPreallocation_C", &aij));
+    if (!aij) {
+      PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPIBAIJSetPreallocation_C", &baij));
+      if (!baij) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqBAIJSetPreallocation_C", &baij));
+      if (!baij) {
+        PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPISBAIJSetPreallocation_C", &sbaij));
+        if (!sbaij) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqSBAIJSetPreallocation_C", &sbaij));
+        if (!sbaij) {
+          PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPISELLSetPreallocation_C", &sell));
+          if (!sell) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqSELLSetPreallocation_C", &sell));
+        }
+        if (!sell) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatISSetPreallocation_C", &is));
       }
-      if (!sell) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatISSetPreallocation_C", &is));
     }
   }
   if (aij) {
@@ -740,7 +742,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
     } else SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Not implemented for %" PetscInt_FMT " dimension and Matrix Type: %s in %" PetscInt_FMT " dimension! Send mail to petsc-maint@mcs.anl.gov for code", dim, Atype, dim);
   } else if (is) {
     PetscCall(DMCreateMatrix_DA_IS(da, A));
-  } else {
+  } else { // unknown type or da->prealloc_skip so structural information may be needed, but no prealloc
     ISLocalToGlobalMapping ltog;
 
     PetscCall(MatSetBlockSize(A, dof));

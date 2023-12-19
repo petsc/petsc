@@ -2465,9 +2465,9 @@ a linear system when the application code, including the matrix generation, is r
 MPI rank (with or without OpenMP). The application code must be built with MPI and must call
 ``PetscInitialize()`` at the very beginning of the program and end with ``PetscFinalize()``. The
 application code may utilize OpenMP.
-The code may create multiple matrices and `KSP` objects and call `KSPSolve()`, similarly the
-code may utilize the `SNES` nonlinear solvers, the `TS` ODE integrators, and the `TAO` optimization algorithms
-which use `KSP`.
+The code may create multiple matrices and ``KSP`` objects and call ``KSPSolve()``, similarly the
+code may utilize the ``SNES`` nonlinear solvers, the ``TS`` ODE integrators, and the ``Tao`` optimization algorithms
+which use ``KSP``.
 
 The program must then be launched using the standard approaches for launching MPI programs with the additional
 PETSc option ``-mpi_linear_solver_server``.  The linear solves are controlled via the options database in the usual manner (using any options prefix

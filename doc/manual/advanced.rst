@@ -20,9 +20,9 @@ One can extract a (parallel) submatrix from a given (parallel) using
 This extracts the ``rows`` and ``cols`` of the matrix ``A`` into
 ``B``. If call is ``MAT_INITIAL_MATRIX`` it will create the matrix
 ``B``. If call is ``MAT_REUSE_MATRIX`` it will reuse the ``B`` created
-with a previous call.
+with a previous call. This function is used internally by ``PCFIELDSPLIT``.
 
-One can also extract one or more submatrices per MPI rank with
+One can also extract one or more submatrices per MPI process with
 
 .. code-block::
 
@@ -32,6 +32,7 @@ This extracts n (zero or more) matrices with the ``rows[k]`` and ``cols[k]`` of 
 sequential matrices ``B[k]`` on this process. If call is ``MAT_INITIAL_MATRIX`` it will create the array of matrices
 ``B``. If call is ``MAT_REUSE_MATRIX`` it will reuse the ``B`` created
 with a previous call. The ``IS`` arguments are sequential. The array of matrices should be destroyed with ``MatDestroySubMatrices()``.
+This function is used by ``PCBJACOBI`` and ``PCASM``.
 
 Each submatrix may be parallel, existing on a ``MPI_Comm`` associated with each pair of ``IS`` ``rows[k]`` and ``cols[k]``,
 using
@@ -46,7 +47,8 @@ Finally this version has a specialization
 
    MatGetMultiProcBlock(Mat A, MPI_Comm subComm, MatReuse scall,Mat *subMat);
 
-where collections of non-overlapping MPI ranks share a single parallel matrix on their sub-communicator.
+where collections of non-overlapping MPI processes share a single parallel matrix on their sub-communicator.
+This function is used by ``PCBJACOBI`` and ``PCASM``.
 
 The routine
 
@@ -63,7 +65,7 @@ The routine
 
    MatMPIAdjToSeq(Mat A,Mat *B);
 
-is a specialization that duplicates an entire ``MATMPIADJ`` matrix on each MPI rank.
+is a specialization that duplicates an entire ``MATMPIADJ`` matrix on each MPI process.
 
 .. _sec_matfactor:
 
