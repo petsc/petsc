@@ -277,11 +277,15 @@ int main(int argc, char **args)
       nsize: 4
       args: -ksp_rtol 1e-3 -ksp_converged_reason -pc_type {{bjacobi hpddm}shared output} -pc_hpddm_coarse_sub_pc_type lu -sub_pc_type lu -options_left no -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO
 
-   test:
+   testset:
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
       suffix: define_subdomains
       nsize: 4
-      args: -ksp_rtol 1e-3 -ksp_converged_reason -pc_type {{asm hpddm}shared output} -pc_hpddm_coarse_sub_pc_type lu -sub_pc_type lu -pc_hpddm_define_subdomains -options_left no -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -viewer
+      args: -ksp_rtol 1e-3 -ksp_converged_reason -pc_hpddm_define_subdomains -options_left no -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO
+      test:
+        args: -pc_type {{asm hpddm}shared output} -pc_hpddm_coarse_sub_pc_type lu -sub_pc_type lu -viewer
+      test:
+        args: -pc_type hpddm -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_levels_1_eps_nev 5 -pc_hpddm_coarse_sub_pc_type lu -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_coarse_correction none
 
    testset:
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
