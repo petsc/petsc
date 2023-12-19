@@ -7,8 +7,7 @@
   Not Collective
 
   Input Parameters:
-+ obj  - the PETSc object
-         Thus must be cast with a (`PetscObject`), for example,
++ obj  - the PETSc object. It must be cast with a (`PetscObject`), for example,
          `PetscObjectSetName`((`PetscObject`)mat,name);
 - name - the name to give obj
 
@@ -45,7 +44,7 @@ PetscErrorCode PetscObjectSetName(PetscObject obj, const char name[])
   `PETSC_VIEWER_ASCII_MATRIXMARKET` then don't print header information
   as these formats can't process it.
 
-  Developer Notes:
+  Developer Note:
   The flag `donotPetscObjectPrintClassNamePrefixType` is useful to prevent double printing of the information when recursion is used to actually print the object.
 
 .seealso: `PetscObjectSetName()`, `PetscObjectName()`
@@ -83,9 +82,7 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj, PetscViewer 
   Collective
 
   Input Parameter:
-. obj - the PETSc object
-         Thus must be cast with a (`PetscObject`), for example,
-         `PetscObjectName`((`PetscObject`)mat,name);
+. obj - the PETSc object. It must be cast with a (`PetscObject`), for example, `PetscObjectName`((`PetscObject`)mat,name);
 
   Level: developer
 
@@ -95,7 +92,7 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj, PetscViewer 
   Use `PetscObjectSetName()` to set the name of an object to what you want. The SAWs viewer requires that no two published objects
   share the same name.
 
-  Developer Notes:
+  Developer Note:
   This needs to generate the exact same string on all MPI processes that share `obj`. The current algorithm may not always work.
 
 .seealso: `PetscObjectGetName()`, `PetscObjectSetName()`
