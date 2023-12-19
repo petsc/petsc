@@ -52,9 +52,12 @@ from distutils.util import split_quoted
 from distutils.errors import DistutilsError
 
 try:
-    from setuptools import dep_util
+    from setuptools import modified
 except ImportError:
-    from distutils import dep_util
+  try:
+      from setuptools import dep_util as modified
+  except ImportError:
+      from distutils import dep_util as modified
 
 try:
     from packaging.version import Version
@@ -124,7 +127,7 @@ def cython_run(
         alldeps = [source]
         for dep in depends:
             alldeps += glob.glob(dep)
-        if not (force or dep_util.newer_group(alldeps, target)):
+        if not (force or modified.newer_group(alldeps, target)):
             log.debug("skipping '%s' -> '%s' (up-to-date)",
                       source, target)
             return
