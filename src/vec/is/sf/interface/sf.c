@@ -238,7 +238,7 @@ PetscErrorCode PetscSFDestroy(PetscSF *sf)
   PetscTryTypeMethod((*sf), Destroy);
   PetscCall(PetscSFDestroy(&(*sf)->vscat.lsf));
   if ((*sf)->vscat.bs > 1) PetscCallMPI(MPI_Type_free(&(*sf)->vscat.unit));
-#if defined(PETSC_HAVE_MPIX_STREAM)
+#if defined(PETSC_HAVE_CUDA) && defined(PETSC_HAVE_MPIX_STREAM)
   if ((*sf)->use_stream_aware_mpi) {
     PetscCallMPI(MPIX_Stream_free(&(*sf)->mpi_stream));
     PetscCallMPI(MPI_Comm_free(&(*sf)->stream_comm));
