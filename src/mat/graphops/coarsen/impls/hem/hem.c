@@ -391,10 +391,6 @@ static int gamg_hem_compare(const void *a, const void *b)
   PetscReal va = ((Edge *)a)->weight, vb = ((Edge *)b)->weight;
   return (va <= vb - MY_MEPS) ? 1 : (va > vb + MY_MEPS) ? -1 : 0; /* 0 for equal */
 }
-/* static int gamg_hem_compare3(const void *a, const void *b, void *ctx) */
-/* { */
-/*   return gamg_hem_compare(a, b); */
-/* } */
 
 /*
   MatCoarsenApply_HEM_private - parallel heavy edge matching
