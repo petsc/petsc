@@ -1,6 +1,6 @@
-#include <petsc/private/vecimpl_kokkos.hpp>
-#include <petsc/private/dmdaimpl.h>
 #include <petscdmda_kokkos.hpp>
+#include <petsc/private/dmdaimpl.h>
+#include <petsc/private/kokkosimpl.hpp>
 
 /* SUBMANSEC = DMDA */
 
