@@ -80,10 +80,14 @@ int main(int argc, char **args)
 
    build:
       requires: complex
-   test:
-
-   test:
-      suffix: 2
-      nsize: 2
+   testset:
+      test:
+         suffix: 1
+         args: -mat_type {{aij dense}}
+      test:
+         suffix: 2
+         args: -mat_type {{aij dense}}
+         diff_args: -j
+         nsize: 2
 
 TEST*/
