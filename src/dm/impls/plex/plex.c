@@ -8752,13 +8752,27 @@ PetscErrorCode DMPlexCreateNumbering_Plex(DM dm, PetscInt pStart, PetscInt pEnd,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMPlexCreateCellNumbering_Internal(DM dm, PetscBool includeHybrid, IS *globalCellNumbers)
+/*@
+  DMPlexCreateCellNumbering - Get a global cell numbering for all cells on this process
+
+  Input Parameter:
++ dm         - The `DMPLEX` object
+- includeAll - Whether to include all cells, or just the simplex and box cells
+
+  Output Parameter:
+. globalCellNumbers - Global cell numbers for all cells on this process
+
+  Level: developer
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetCellNumbering()`, `DMPlexGetVertexNumbering()`
+@*/
+PetscErrorCode DMPlexCreateCellNumbering(DM dm, PetscBool includeAll, IS *globalCellNumbers)
 {
   PetscInt cellHeight, cStart, cEnd;
 
   PetscFunctionBegin;
   PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
-  if (includeHybrid) PetscCall(DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd));
+  if (includeAll) PetscCall(DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd));
   else PetscCall(DMPlexGetSimplexOrBoxCells(dm, cellHeight, &cStart, &cEnd));
   PetscCall(DMPlexCreateNumbering_Plex(dm, cStart, cEnd, 0, NULL, dm->sf, globalCellNumbers));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -8775,7 +8789,7 @@ PetscErrorCode DMPlexCreateCellNumbering_Internal(DM dm, PetscBool includeHybrid
 
   Level: developer
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetVertexNumbering()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateCellNumbering()`, `DMPlexGetVertexNumbering()`
 @*/
 PetscErrorCode DMPlexGetCellNumbering(DM dm, IS *globalCellNumbers)
 {
@@ -8783,7 +8797,7 @@ PetscErrorCode DMPlexGetCellNumbering(DM dm, IS *globalCellNumbers)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (!mesh->globalCellNumbers) PetscCall(DMPlexCreateCellNumbering_Internal(dm, PETSC_FALSE, &mesh->globalCellNumbers));
+  if (!mesh->globalCellNumbers) PetscCall(DMPlexCreateCellNumbering(dm, PETSC_FALSE, &mesh->globalCellNumbers));
   *globalCellNumbers = mesh->globalCellNumbers;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -9840,7 +9854,7 @@ PetscErrorCode DMPlexComputeOrthogonalQuality(DM dm, PetscFV fv, PetscReal atol,
   }
   PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
   PetscCall(DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd));
-  PetscCall(DMPlexCreateCellNumbering_Internal(dm, PETSC_TRUE, &glob));
+  PetscCall(DMPlexCreateCellNumbering(dm, PETSC_TRUE, &glob));
   PetscCall(ISLocalToGlobalMappingCreateIS(glob, &ltog));
   PetscCall(ISLocalToGlobalMappingSetType(ltog, ISLOCALTOGLOBALMAPPINGHASH));
   PetscCall(VecCreate(comm, OrthQual));

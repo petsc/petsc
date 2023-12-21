@@ -500,9 +500,10 @@ int main(int argc, char **argv)
 
   IS lISCellWithOvl = 0;
   /* This is the buggy call with prisms since commit 5ae96e2b862 */
-  PetscCall(DMPlexGetCellNumbering(ddm_with_overlap, &lISCellWithOvl));
+  PetscCall(DMPlexCreateCellNumbering(ddm_with_overlap, PETSC_TRUE, &lISCellWithOvl));
   /* Here, we can see the elements in the overlap within the IS: they are the ones with negative indices */
   PetscCall(ISView(lISCellWithOvl, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(ISDestroy(&lISCellWithOvl));
 
   PetscCall(PetscSFDestroy(&lSFMigrationOvl));
   PetscCall(DMDestroy(&ddm_with_overlap));

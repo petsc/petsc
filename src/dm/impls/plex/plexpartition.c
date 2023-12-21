@@ -29,7 +29,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Overlap(DM dm, PetscInt heigh
     /* We do not handle the uninterpolated case here */
     PetscCall(DMPlexCreateNeighborCSR(dm, height, numVertices, offsets, adjacency));
     /* DMPlexCreateNeighborCSR does not make a numbering */
-    if (globalNumbering) PetscCall(DMPlexCreateCellNumbering_Internal(dm, PETSC_TRUE, globalNumbering));
+    if (globalNumbering) PetscCall(DMPlexCreateCellNumbering(dm, PETSC_TRUE, globalNumbering));
     /* Different behavior for empty graphs */
     if (!*numVertices) {
       PetscCall(PetscMalloc1(1, offsets));
@@ -131,7 +131,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Native(DM dm, PetscInt height
     /* We do not handle the uninterpolated case here */
     PetscCall(DMPlexCreateNeighborCSR(dm, height, numVertices, offsets, adjacency));
     /* DMPlexCreateNeighborCSR does not make a numbering */
-    if (globalNumbering) PetscCall(DMPlexCreateCellNumbering_Internal(dm, PETSC_TRUE, globalNumbering));
+    if (globalNumbering) PetscCall(DMPlexCreateCellNumbering(dm, PETSC_TRUE, globalNumbering));
     /* Different behavior for empty graphs */
     if (!*numVertices) {
       PetscCall(PetscMalloc1(1, offsets));
@@ -332,7 +332,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
     /* We do not handle the uninterpolated case here */
     PetscCall(DMPlexCreateNeighborCSR(dm, height, numVertices, offsets, adjacency));
     /* DMPlexCreateNeighborCSR does not make a numbering */
-    if (globalNumbering) PetscCall(DMPlexCreateCellNumbering_Internal(dm, PETSC_TRUE, globalNumbering));
+    if (globalNumbering) PetscCall(DMPlexCreateCellNumbering(dm, PETSC_TRUE, globalNumbering));
     /* Different behavior for empty graphs */
     if (!*numVertices) {
       PetscCall(PetscMalloc1(1, offsets));

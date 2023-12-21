@@ -100,6 +100,7 @@ Changes: Development
 - Add ``DMPlexComputeL2FluxDiffVec()`` and ``DMPlexComputeL2FluxDiffVecLocal()``
 - Add ``DMAdaptorSetType()``, ``DMAdaptorGetType()``, ``DMAdaptorRegister()``, ``DMAdaptorRegisterAll()``, ``DMAdaptorRegisterDestroy()``
 - Add ``DMAdaptorGetMixedSetupFunction()`` and ``DMAdaptorSetMixedSetupFunction()``
+- Add ``DMPlexCreateCellNumbering()``
 
 .. rubric:: FE/FV:
 
