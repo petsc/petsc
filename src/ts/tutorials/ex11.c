@@ -1793,6 +1793,13 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
           -ufv_vtk_interval 0 -ufv_vtk_basename ${wPETSC_DIR}/ex11 -monitor density,energy
 
     test:
+      suffix: euler_0
+      requires: exodusii !complex
+      args: -eu_riemann godunov -bc_wall 100,101 -ufv_cfl 5 -petsclimiter_type sin \
+            -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo \
+            -ts_max_time 1 -ts_ssp_type rks2 -ts_ssp_nstages 10
+
+    test:
       suffix: euler_ceed
       requires: exodusii libceed
       args: -eu_riemann godunov_ceed -bc_wall 100,101 -ufv_cfl 5 -petsclimiter_type sin \
