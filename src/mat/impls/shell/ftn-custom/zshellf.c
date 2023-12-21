@@ -35,7 +35,9 @@ enum FortranMatOperation {
   FORTRAN_MATOP_ASSEMBLY_BEGIN     = 19,
   FORTRAN_MATOP_ASSEMBLY_END       = 20,
   FORTRAN_MATOP_DUPLICATE          = 21,
-  FORTRAN_MATOP_SIZE               = 22
+  FORTRAN_MATOP_MULT_HT            = 22,
+  FORTRAN_MATOP_MULT_HT_ADD        = 23,
+  FORTRAN_MATOP_SIZE               = 24
 };
 
 /*
@@ -66,9 +68,21 @@ static PetscErrorCode ourmulttranspose(Mat mat, Vec x, Vec y)
   return PETSC_SUCCESS;
 }
 
+static PetscErrorCode ourmulthermitiantranspose(Mat mat, Vec x, Vec y)
+{
+  PetscCallFortranVoidFunction((*(void (*)(Mat *, Vec *, Vec *, PetscErrorCode *))(((PetscObject)mat)->fortran_func_pointers[FORTRAN_MATOP_MULT_HT]))(&mat, &x, &y, &ierr));
+  return PETSC_SUCCESS;
+}
+
 static PetscErrorCode ourmulttransposeadd(Mat mat, Vec x, Vec y, Vec z)
 {
   PetscCallFortranVoidFunction((*(void (*)(Mat *, Vec *, Vec *, Vec *, PetscErrorCode *))(((PetscObject)mat)->fortran_func_pointers[FORTRAN_MATOP_MULT_TRANSPOSE_ADD]))(&mat, &x, &y, &z, &ierr));
+  return PETSC_SUCCESS;
+}
+
+static PetscErrorCode ourmulthermitiantransposeadd(Mat mat, Vec x, Vec y, Vec z)
+{
+  PetscCallFortranVoidFunction((*(void (*)(Mat *, Vec *, Vec *, Vec *, PetscErrorCode *))(((PetscObject)mat)->fortran_func_pointers[FORTRAN_MATOP_MULT_HT_ADD]))(&mat, &x, &y, &z, &ierr));
   return PETSC_SUCCESS;
 }
 
@@ -214,9 +228,17 @@ PETSC_EXTERN void matshellsetoperation_(Mat *mat, MatOperation *op, PetscErrorCo
     *ierr                                                                    = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourmulttranspose);
     ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_MULT_TRANSPOSE] = (PetscVoidFunction)f;
     break;
+  case MATOP_MULT_HERMITIAN_TRANSPOSE:
+    *ierr                                                             = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourmulthermitiantranspose);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_MULT_HT] = (PetscVoidFunction)f;
+    break;
   case MATOP_MULT_TRANSPOSE_ADD:
     *ierr                                                                        = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourmulttransposeadd);
     ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_MULT_TRANSPOSE_ADD] = (PetscVoidFunction)f;
+    break;
+  case MATOP_MULT_HERMITIAN_TRANS_ADD:
+    *ierr                                                                 = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourmulthermitiantransposeadd);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_MULT_HT_ADD] = (PetscVoidFunction)f;
     break;
   case MATOP_SOR:
     *ierr                                                         = MatShellSetOperation(*mat, *op, (PetscVoidFunction)oursor);
