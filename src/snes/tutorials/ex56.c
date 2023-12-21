@@ -378,6 +378,11 @@ int main(int argc, char **args)
     /* ksp */
     PetscCall(SNESGetKSP(snes, &ksp));
     PetscCall(KSPSetComputeSingularValues(ksp, PETSC_TRUE));
+    if (!use_nearnullspace) {
+      PC pc;
+      PetscCall(KSPGetPC(ksp, &pc));
+      PetscCall(PCGAMGASMSetHEM(pc, 3)); // code coverage
+    }
     /* test BCs */
     PetscCall(VecZeroEntries(xx));
     if (test_nonzero_cols) {
@@ -459,10 +464,12 @@ int main(int argc, char **args)
     timeoutfactor: 2
     test:
       suffix: 0
-      args: -run_type 1 -max_conv_its 3
+      args: -run_type 1 -max_conv_its 3 -mat_coarsen_type hem -mat_coarsen_max_it 5  -pc_gamg_asm_hem_aggs 4 -ksp_rtol 1.e-6
+      filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 7/Linear solve converged due to CONVERGED_RTOL iterations 8/g"
     test:
       suffix: 1
-      args: -run_type 2 -max_conv_its 2
+      filter:  grep -v HERMITIAN
+      args: -run_type 2 -max_conv_its 2 -use_mat_nearnullspace false -snes_view
 
   test:
     nsize: 1

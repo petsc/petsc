@@ -1062,7 +1062,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc, Mat *a_Gmat1, PetscCoarsenData 
   PC_MG       *mg          = (PC_MG *)a_pc->data;
   PC_GAMG     *pc_gamg     = (PC_GAMG *)mg->innerctx;
   PC_GAMG_AGG *pc_gamg_agg = (PC_GAMG_AGG *)pc_gamg->subctx;
-  Mat          mat, Gmat2, Gmat1 = *a_Gmat1; /* aggressive graph */
+  Mat          Gmat2, Gmat1 = *a_Gmat1; /* aggressive graph */
   IS           perm;
   PetscInt     Istart, Iend, Ii, nloc, bs, nn;
   PetscInt    *permute, *degree;
@@ -1140,17 +1140,8 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc, Mat *a_Gmat1, PetscCoarsenData 
     PetscCoarsenData *llist = *agg_lists;
     PetscCall(fixAggregatesWithSquare(a_pc, Gmat2, Gmat1, *agg_lists));
     PetscCall(MatDestroy(&Gmat1));
-    *a_Gmat1 = Gmat2; /* output */
-    PetscCall(PetscCDGetMat(llist, &mat));
-    PetscCheck(!mat, comm, PETSC_ERR_ARG_WRONG, "Unexpected auxiliary matrix with squared graph");
-  } else {
-    PetscCoarsenData *llist = *agg_lists;
-    /* see if we have a matrix that takes precedence (returned from MatCoarsenApply) */
-    PetscCall(PetscCDGetMat(llist, &mat));
-    if (mat) {
-      PetscCall(MatDestroy(a_Gmat1));
-      *a_Gmat1 = mat; /* output */
-    }
+    *a_Gmat1 = Gmat2;                          /* output */
+    PetscCall(PetscCDSetMat(llist, *a_Gmat1)); /* Need a graph with ghosts here */
   }
   PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_COARSEN], 0, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1167,13 +1158,13 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc, Mat *a_Gmat1, PetscCoarsenData 
  Output Parameter:
  . a_P_out - prolongation operator to the next level
  */
-static PetscErrorCode PCGAMGProlongator_AGG(PC pc, Mat Amat, Mat Gmat, PetscCoarsenData *agg_lists, Mat *a_P_out)
+static PetscErrorCode PCGAMGProlongator_AGG(PC pc, Mat Amat, PetscCoarsenData *agg_lists, Mat *a_P_out)
 {
   PC_MG         *mg      = (PC_MG *)pc->data;
   PC_GAMG       *pc_gamg = (PC_GAMG *)mg->innerctx;
   const PetscInt col_bs  = pc_gamg->data_cell_cols;
   PetscInt       Istart, Iend, nloc, ii, jj, kk, my0, nLocalSelected, bs;
-  Mat            Prol;
+  Mat            Gmat, Prol;
   PetscMPIInt    size;
   MPI_Comm       comm;
   PetscReal     *data_w_ghost;
@@ -1190,6 +1181,7 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc, Mat Amat, Mat Gmat, PetscCoar
   nloc = (Iend - Istart) / bs;
   my0  = Istart / bs;
   PetscCheck((Iend - Istart) % bs == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "(Iend %" PetscInt_FMT " - Istart %" PetscInt_FMT ") not divisible by bs %" PetscInt_FMT, Iend, Istart, bs);
+  PetscCall(PetscCDGetMat(agg_lists, &Gmat)); // get auxilary matrix for ghost edges for size > 1
 
   /* get 'nLocalSelected' */
   for (ii = 0, nLocalSelected = 0; ii < nloc; ii++) {

@@ -341,6 +341,7 @@ PETSC_EXTERN PetscErrorCode PCGAMGCreateGraph(PC, Mat, Mat *);
 PETSC_EXTERN PetscErrorCode PCGAMGSetAggressiveSquareGraph(PC, PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGMISkSetMinDegreeOrdering(PC, PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGMISkSetAggressive(PC, PetscInt);
+PETSC_EXTERN PetscErrorCode PCGAMGASMSetHEM(PC, PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetLowMemoryFilter(PC, PetscBool);
 
 PETSC_EXTERN PetscErrorCode PCGAMGClassicalSetType(PC, PCGAMGClassicalType);
