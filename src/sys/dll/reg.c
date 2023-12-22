@@ -87,7 +87,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void)
     PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
   #else
     PetscCall(PetscLoadDynamicLibrary("sys", &found));
-    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc Sys dynamic library \n You cannot move the dynamic libraries!");
     PetscCall(PetscLoadDynamicLibrary("vec", &found));
     PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc Vec dynamic library \n You cannot move the dynamic libraries!");
     PetscCall(PetscLoadDynamicLibrary("mat", &found));
