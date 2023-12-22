@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-LIBBASE   = libpetscsnes
 MANSEC    = SNES
 SUBMANSEC = SNESFAS
 

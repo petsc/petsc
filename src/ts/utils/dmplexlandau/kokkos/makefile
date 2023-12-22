@@ -1,7 +1,6 @@
 #requirespackage 'PETSC_HAVE_KOKKOS'
 -include ../../../../../petscdir.mk
 
-LIBBASE   = libpetscts
 MANSEC    = TS
 SUBMANSEC = LANDAU
 

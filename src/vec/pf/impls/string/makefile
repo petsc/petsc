@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 #requiresdefine  'PETSC_HAVE_POPEN'
 
-LIBBASE  = libpetscvec
 MANSEC   = Vec
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

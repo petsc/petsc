@@ -10,14 +10,12 @@
 #
 # The following additional variables are used by PETSc documentation targets
 #
-# LIBNAME    - library name
 # SOURCE     - source files
 # SOURCEALL  - sources and includes
 # SOURCED    - sources/includes [but not Fortran - for doc parsing]
 #
 # Note that EXAMPLESALL is only used in the tutorial directories and SOURCED only in the non-tutorials and tests directories
 #
-LIBNAME     = ${INSTALL_LIB_DIR}/${LIBBASE}.${AR_LIB_SUFFIX}
 SOURCE      = `ls *.c *.cxx *.F *.F90 *.cu *.cpp           2> /dev/null`
 SOURCEALL   = `ls *.c *.cxx *.F *.F90 *.cu *.cpp *.h *.hpp 2> /dev/null`
 SOURCED     = `ls *.c *.cxx           *.cu *.cpp *.h *.hpp 2> /dev/null`

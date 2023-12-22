@@ -1,7 +1,6 @@
 #requirespackage 'PETSC_HAVE_KOKKOS_KERNELS'
 -include ../../../../../petscdir.mk
 
-LIBBASE   = libpetscdm
 MANSEC    = DM
 SUBMANSEC = DMDA
 

@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-LIBBASE   = libpetscsys
 MANSEC    = Sys
 SUBMANSEC = Draw
 

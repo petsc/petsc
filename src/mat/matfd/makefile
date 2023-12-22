@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-LIBBASE   = libpetscmat
 SUBMANSEC = MatFD
 MANSEC    = Mat
 

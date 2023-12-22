@@ -2,7 +2,6 @@
 #requirespackage   'PETSC_HAVE_SUITESPARSE'
 
 CFLAGS    = ${SUITESPARSE_INCLUDE}
-LIBBASE   = libpetscmat
 MANSEC    = Mat
 SUBMANSEC = MatGraphOperations
 

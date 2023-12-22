@@ -10,7 +10,6 @@
 # into the public domain. Thus it can be used for any purpose.
 # IT IS NOT THE VERSION OF SPARSEPACK THAT REQUIRES A LICENSE
 
-LIBBASE   = libpetscmat
 MANSEC    = Mat
 SUBMANSEC = MatGraphOperations
 

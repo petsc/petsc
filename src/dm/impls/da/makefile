@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 
 CFLAGS    = ${MATLAB_INCLUDE}
-LIBBASE   = libpetscdm
 MANSEC    = DM
 SUBMANSEC = DMDA
 

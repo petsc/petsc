@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 #requiresdefine   'PETSC_USE_FORTRAN_BINDINGS'
 
-LIBBASE  = libpetscdm
 
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

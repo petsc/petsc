@@ -1,6 +1,5 @@
 -include ../../../../../../petscdir.mk
 
-LIBBASE   = libpetscdm
 MANSEC    = DM
 SUBMANSEC = FE
 
