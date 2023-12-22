@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-MANSEC          = TS
 OBJECTS_FV      = finitevolume1d.o
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

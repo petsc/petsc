@@ -1,8 +1,6 @@
 -include ../../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_ATTRIBUTEALIGNED'
 
-MANSEC   = SNES
-
 OBJECTS_EX1 = ex1.o power/PFReadData.o power/pffunctions.o water/waterreaddata.o water/waterfunctions.o
 OBJECTS_EX2 = ex2.o power/PFReadData.o power/pffunctions.o water/waterreaddata.o water/waterfunctions.o
 
