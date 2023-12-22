@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 CXXFLAGS         = ${AMREX_INCLUDE}
-MANSEC           = KSP
 OBJECTS          = main.o MyTest.o initEB.o
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

@@ -1,6 +1,5 @@
 -include ../../../petscdir.mk
 
-MANSEC           = SNES
 EXAMPLESMATLAB   = ex5m.m ex29view.m
 CLEANFILES       = ex5f90t
 
