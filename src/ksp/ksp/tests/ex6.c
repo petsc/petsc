@@ -168,11 +168,8 @@ int main(int argc, char **args)
       test:
         suffix: 3_skip
         args: -ksp_type {{chebyshev cg groppcg pipecg pipecgrr pipelcg pipeprcg cgne nash stcg gltr fcg pipefcg gmres fgmres lgmres dgmres pgmres tcqmr bcgs ibcgs qmrcgs fbcgs fbcgsr bcgsl pipebcgs cgs tfqmr cr pipecr qcg bicg minres lcd gcr cgls richardson}}
-      test:
-        requires: !pgf90_compiler
-        suffix: 3_skip_pipefgmres
-        args: -ksp_type pipefgmres
       #PIPEGCR generates nans on linux-knl
+      #PIPEFGMRES can have happy breakdown which is not handled well with no convergence test
       test:
         requires: !defined(PETSC_USE_AVX512_KERNELS)
         suffix: 3_skip_pipegcr

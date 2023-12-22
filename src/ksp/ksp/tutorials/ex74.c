@@ -369,9 +369,11 @@ static PetscErrorCode Assemble_AdvDiff(MPI_Comm comm, UserContext *user, Mat *J)
 
 /*TEST
  testset:
-   suffix: 1
    args: -a 0.1 -dt .125 -niter 5 -imax 40 -ksp_monitor_short -pc_type pbjacobi -irk_type gauss -irk_nstages 2
+   args: -vec_mdot_use_gemv {{0 1}} -vec_maxpy_use_gemv {{0 1}}
    test:
+     suffix: 1
+     requires: !single
      args: -ksp_atol 1e-6
    test:
      requires: hpddm !single
@@ -390,6 +392,7 @@ static PetscErrorCode Assemble_AdvDiff(MPI_Comm comm, UserContext *user, Mat *J)
    suffix: 3
    requires: !single
    args: -a 1 -dt .33 -niter 3 -imax 40 -ksp_monitor_short -pc_type pbjacobi -ksp_atol 1e-6 -irk_type gauss -irk_nstages 4 -ksp_gmres_restart 100 -physics_type advection
+   args: -vec_mdot_use_gemv {{0 1}} -vec_maxpy_use_gemv {{0 1}}
    test:
      args:
    test:

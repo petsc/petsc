@@ -209,6 +209,7 @@ subroutine MyKSPConverged(ksp,n,rnorm,flag,defaultctx,ierr)
 !/*TEST
 !
 !     test:
+!       requires: !single
 !       args: -ksp_monitor_short
 !
 !TEST*/

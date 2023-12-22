@@ -1,7 +1,7 @@
 #pragma once
 
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>
-#include <petsc/private/vecimpl_kokkos.hpp>
+#include <petsc/private/kokkosimpl.hpp>
 
 #if defined(PETSC_USE_DEBUG)
   #define VecErrorIfNotKokkos(v) \
@@ -32,12 +32,16 @@ struct Vec_Kokkos {
   PetscCountKokkosView  Cperm_d;              /* [sendlen]: permutation array to fill sendbuf[]. 'C' for communication */
   PetscScalarKokkosView sendbuf_d, recvbuf_d; /* Buffers for remote values in VecSetValuesCOO() */
 
+  // (internal use only) stash the pointer when we allocate a raw device array for the vector's use and that should be freed when the vector is destroyed
+  PetscScalar *raw_array_d_allocated;
+
   /* Construct Vec_Kokkos with the given array(s). n is the length of the array.
     If n != 0, host array (array_h) must not be NULL.
     If device array (array_d) is NULL, then a proper device mirror will be allocated.
     Otherwise, the mirror will be created using the given array_d.
+    If both arrays are given, we assume they contain the same value (i.e., sync'ed)
   */
-  Vec_Kokkos(PetscInt n, PetscScalar *array_h, PetscScalar *array_d = NULL)
+  Vec_Kokkos(PetscInt n, PetscScalar *array_h, PetscScalar *array_d = NULL) : raw_array_d_allocated(nullptr)
   {
     PetscScalarKokkosViewHost v_h(array_h, n);
     PetscScalarKokkosView     v_d;
@@ -49,6 +53,11 @@ struct Vec_Kokkos {
     }
     v_dual = PetscScalarKokkosDualView(v_d, v_h);
     if (!array_d) v_dual.modify_host();
+  }
+
+  ~Vec_Kokkos()
+  {
+    if (raw_array_d_allocated) Kokkos::kokkos_free(raw_array_d_allocated);
   }
 
   /* SFINAE: Update the object with an array in the given memory space,
@@ -156,3 +165,12 @@ PETSC_INTERN PetscErrorCode VecRestoreArrayAndMemType_SeqKokkos(Vec, PetscScalar
 PETSC_INTERN PetscErrorCode VecGetArrayWriteAndMemType_SeqKokkos(Vec, PetscScalar **, PetscMemType *);
 PETSC_INTERN PetscErrorCode VecGetSubVector_Kokkos_Private(Vec, PetscBool, IS, Vec *);
 PETSC_INTERN PetscErrorCode VecRestoreSubVector_SeqKokkos(Vec, IS, Vec *);
+
+PETSC_INTERN PetscErrorCode VecDuplicateVecs_Kokkos_GEMV(Vec, PetscInt, Vec **);
+PETSC_INTERN PetscErrorCode VecMDot_SeqKokkos_GEMV(Vec, PetscInt, const Vec *, PetscScalar *);
+PETSC_INTERN PetscErrorCode VecMTDot_SeqKokkos_GEMV(Vec, PetscInt, const Vec *, PetscScalar *);
+PETSC_INTERN PetscErrorCode VecMAXPY_SeqKokkos_GEMV(Vec, PetscInt, const PetscScalar *, Vec *);
+
+PETSC_INTERN PetscErrorCode VecCreateMPIKokkosWithLayoutAndArrays_Private(PetscLayout map, const PetscScalar *, const PetscScalar *, Vec *);
+
+PETSC_INTERN PetscErrorCode VecSetOps_MPIKokkos(Vec);

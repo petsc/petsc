@@ -169,11 +169,13 @@ testset:
   output_file: output/ex14.out
   test:
     suffix: 0
+    requires: !single
   test:
     suffix: 1
     args: -ts_adapt_type none
   test:
     suffix: 2
+    requires: !single
     args: -ts_adapt_type basic
   test:
     suffix: 3

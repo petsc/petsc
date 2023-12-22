@@ -25,10 +25,24 @@ PetscErrorCode VecMDot_MPI(Vec xin, PetscInt nv, const Vec y[], PetscScalar *z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode VecMDot_MPI_GEMV(Vec xin, PetscInt nv, const Vec y[], PetscScalar *z)
+{
+  PetscFunctionBegin;
+  PetscCall(VecMXDot_MPI_Default(xin, nv, y, z, VecMDot_Seq_GEMV));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode VecMTDot_MPI(Vec xin, PetscInt nv, const Vec y[], PetscScalar *z)
 {
   PetscFunctionBegin;
   PetscCall(VecMXDot_MPI_Default(xin, nv, y, z, VecMTDot_Seq));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode VecMTDot_MPI_GEMV(Vec xin, PetscInt nv, const Vec y[], PetscScalar *z)
+{
+  PetscFunctionBegin;
+  PetscCall(VecMXDot_MPI_Default(xin, nv, y, z, VecMTDot_Seq_GEMV));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

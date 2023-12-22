@@ -1660,9 +1660,8 @@ PetscErrorCode PetscFinalize(void)
   PetscGlobalArgs = NULL;
 
 #if defined(PETSC_HAVE_KOKKOS)
-  if (PetscBeganKokkos) {
+  if (PetscKokkosInitialized) {
     PetscCall(PetscKokkosFinalize_Private());
-    PetscBeganKokkos       = PETSC_FALSE;
     PetscKokkosInitialized = PETSC_FALSE;
   }
 #endif
