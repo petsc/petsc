@@ -9,9 +9,8 @@
   Not Collective
 
   Input Parameter:
-. obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
-         Thus must be cast with a (`PetscObject`), for example,
-         `PetscObjectGetClassId`((`PetscObject`)mat,&classid);
+. obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`. It must be cast with a (`PetscObject`), for example,
+        `PetscObjectGetClassId`((`PetscObject`)mat,&classid);
 
   Output Parameter:
 . classid - the classid
@@ -35,9 +34,8 @@ PetscErrorCode PetscObjectGetClassId(PetscObject obj, PetscClassId *classid)
   Not Collective
 
   Input Parameter:
-. obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
-         Thus must be cast with a (`PetscObject`), for example,
-         `PetscObjectGetClassName`((`PetscObject`)mat,&classname);
+. obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`. It must be cast with a (`PetscObject`), for example,
+        `PetscObjectGetClassName`((`PetscObject`)mat,&classname);
 
   Output Parameter:
 . classname - the class name, for example "Vec"

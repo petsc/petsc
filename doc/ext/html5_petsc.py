@@ -166,6 +166,33 @@ class PETScHTMLTranslatorMixin:
         self.body.append(starttag + highlighted + '</div>\n')
         raise nodes.SkipNode
 
+    # This method consists mostly of code duplicated from Sphinx:
+    # overwritten to remove from CLASS literal that caused an ugly extra pre and post space
+    # in the manual pages for all PETSc links
+    def visit_literal(self, node: Element) -> None:
+        if 'kbd' in node['classes']:
+            self.body.append(self.starttag(node, 'kbd', '',
+                                           CLASS='docutils notranslate'))
+            return
+        lang = node.get("language", None)
+        if 'code' not in node['classes'] or not lang:
+            self.body.append(self.starttag(node, 'code', '',
+                                           CLASS='docutils notranslate'))
+            self.protect_literal_text += 1
+            return
+
+        opts = self.config.highlight_options.get(lang, {})
+        highlighted = self.highlighter.highlight_block(
+            node.astext(), lang, opts=opts, location=node, nowrap=True)
+        starttag = self.starttag(
+            node,
+            "code",
+            suffix="",
+            CLASS="docutils literal highlight highlight-%s" % lang,
+        )
+        self.body.append(starttag + highlighted.strip() + "</code>")
+        raise nodes.SkipNode
+
 def htmlmap_to_dict(htmlmap_filename: str) -> Dict[str,str]:
     """ Extract a dict from an htmlmap file, leaving URLs as they are."""
     with open(htmlmap_filename, 'r') as f:
