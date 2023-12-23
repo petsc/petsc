@@ -6,8 +6,7 @@
   Not Collective unless `obj` has not yet been named
 
   Input Parameters:
-+ obj  - the PETSc variable
-         Thus must be cast with a (`PetscObject`), for example,
++ obj  - the PETSc variable. It must be cast with a (`PetscObject`), for example,
          `PetscObjectGetName`((`PetscObject`)mat,&name);
 - name - the name associated with `obj`
 

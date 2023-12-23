@@ -34,9 +34,8 @@ PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
   Collective
 
   Input Parameter:
-. obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
-         This must be cast with a (`PetscObject`*), for example,
-         `PetscObjectDestroy`((`PetscObject`*)&mat);
+. obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`. It must be cast with a (`PetscObject`\*), for example,
+        `PetscObjectDestroy`((`PetscObject`\*)&mat);
 
   Level: beginner
 
@@ -53,14 +52,13 @@ PetscErrorCode PetscObjectDestroy(PetscObject *obj)
 }
 
 /*@C
-  PetscObjectView - Views a `PetscObject`, regardless of the type.
+  PetscObjectView - Views a `PetscObject` regardless of the type.
 
   Collective
 
   Input Parameters:
-+ obj    - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
-         This must be cast with a (`PetscObject`), for example,
-         `PetscObjectView`((`PetscObject`)mat,viewer);
++ obj    - any PETSc object, for example a `Vec`, `Mat` or `KSP`. It must be cast with a (`PetscObject`), for example,
+           `PetscObjectView`((`PetscObject`)mat,`viewer`);
 - viewer - any PETSc viewer
 
   Level: intermediate
@@ -142,9 +140,8 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj, PetscObject bobj, con
   Not Collective
 
   Input Parameters:
-+ obj       - a PETSc object, for example a `Vec`, `Mat` or `KSP`.
-         This must be cast with a (`PetscObject`), for example,
-         `PetscObjectTypeCompare`((`PetscObject`)mat);
++ obj       - a PETSc object, for example a `Vec`, `Mat` or `KSP`. It must be cast with a (`PetscObject`), for example,
+              `PetscObjectTypeCompare`((`PetscObject`)mat);
 - type_name - string containing a type name
 
   Output Parameter:
@@ -203,7 +200,7 @@ PetscErrorCode PetscObjectObjectTypeCompare(PetscObject obj1, PetscObject obj2, 
   Not Collective
 
   Input Parameters:
-+ obj       - the matrix
++ obj       - the object
 - type_name - string containing a type name
 
   Output Parameter:
@@ -235,9 +232,9 @@ PetscErrorCode PetscObjectBaseTypeCompare(PetscObject obj, const char type_name[
   Not Collective
 
   Input Parameters:
-+ obj       - a PETSc object, for example a `Vec`, `Mat` or `KSP`.
-         This must be cast with a (`PetscObject`), for example, `PetscObjectTypeCompareAny`((`PetscObject`)mat,...);
-- type_name - array of strings containing type names, pass the empty string "" to terminate the list
++ obj       - a PETSc object, for example a `Vec`, `Mat` or `KSP`. It must be cast with a (`PetscObject`),
+              for example, `PetscObjectTypeCompareAny`((`PetscObject`)mat,...);
+- type_name - one or more string arguments containing type names, pass the empty string "" as the last argument
 
   Output Parameter:
 . match - `PETSC_TRUE` if the type of `obj` matches any in the list, else `PETSC_FALSE`
@@ -274,9 +271,9 @@ PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj, PetscBool *match, cons
   Not Collective
 
   Input Parameters:
-+ obj       - a PETSc object, for example a `Vec`, `Mat` or `KSP`.
-         This must be cast with a (`PetscObject`), for example, `PetscObjectBaseTypeCompareAny`((`PetscObject`)mat,...);
-- type_name - array of strings containing type names, pass the empty string "" to terminate the list
++ obj       - a PETSc object, for example a `Vec`, `Mat` or `KSP`. It must be cast with a (`PetscObject`),
+              for example, `PetscObjectBaseTypeCompareAny`((`PetscObject`)mat,...);
+- type_name - one or more string arguments containing type names, pass the empty string "" as the last argument
 
   Output Parameter:
 . match - `PETSC_TRUE` if the type of `obj` matches any in the list, else `PETSC_FALSE`
@@ -400,9 +397,8 @@ static PetscErrorCode RegisterFinalizer(PetscFinalizerContainer container)
   Logically Collective
 
   Input Parameter:
-. obj - a PETSc object, for example a `Vec`, `Mat` or `KSP`.
-         This must be cast with a (`PetscObject`), for example,
-         `PetscObjectRegisterDestroy`((`PetscObject`)mat);
+. obj - a PETSc object, for example a `Vec`, `Mat` or `KSP`. It must be cast with a (`PetscObject`), for example,
+        `PetscObjectRegisterDestroy`((`PetscObject`)mat);
 
   Level: developer
 
