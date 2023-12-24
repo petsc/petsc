@@ -1238,7 +1238,7 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf, PetscSF *multi)
       for (i = 0; i < sf->nroots; i++) {
         PetscInt j;
         for (j = 0; j < indegree[i]; j++) tmpoffset[j] = j;
-        if (inranks) PetscCall(PetscSortIntWithArray(indegree[i], inranks + inoffset[i], tmpoffset));
+        PetscCall(PetscSortIntWithArray(indegree[i], PetscSafePointerPlusOffset(inranks, inoffset[i]), tmpoffset));
         for (j = 0; j < indegree[i]; j++) newoffset[inoffset[i] + tmpoffset[j]] = inoffset[i] + j;
       }
       PetscCall(PetscSFBcastBegin(sf->multi, MPIU_INT, newoffset, newoutoffset, MPI_REPLACE));
@@ -1311,7 +1311,7 @@ PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF sf, PetscInt nselected, const
     PetscCall(PetscSFGetLeafRange(sf, &minleaf, &maxleaf));
     maxlocal = maxleaf - minleaf + 1;
     PetscCall(PetscCalloc2(nroots, &rootdata, maxlocal, &leafmem));
-    leafdata = leafmem - minleaf;
+    leafdata = PetscSafePointerPlusOffset(leafmem, -minleaf);
     /* Tag selected roots and bcast to leaves */
     for (i = 0; i < nselected; i++) rootdata[selected[i]] = 1;
     PetscCall(PetscSFBcastBegin(sf, MPI_SIGNED_CHAR, rootdata, leafdata, MPI_REPLACE));
@@ -2032,8 +2032,8 @@ PetscErrorCode PetscSFCompose(PetscSF sfA, PetscSF sfB, PetscSF *sfBA)
     leafdataB[i].rank  = -1;
     leafdataB[i].index = -1;
   }
-  PetscCall(PetscSFBcastBegin(sfB, MPIU_2INT, remotePointsA, leafdataB - minleaf, MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(sfB, MPIU_2INT, remotePointsA, leafdataB - minleaf, MPI_REPLACE));
+  PetscCall(PetscSFBcastBegin(sfB, MPIU_2INT, remotePointsA, PetscSafePointerPlusOffset(leafdataB, -minleaf), MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sfB, MPIU_2INT, remotePointsA, PetscSafePointerPlusOffset(leafdataB, -minleaf), MPI_REPLACE));
   PetscCall(PetscFree(reorderedRemotePointsA));
 
   denseB = (PetscBool)!localPointsB;
@@ -2151,8 +2151,8 @@ PetscErrorCode PetscSFComposeInverse(PetscSF sfA, PetscSF sfB, PetscSF *sfBA)
     remotePointsBA[i].index = -1;
   }
 
-  PetscCall(PetscSFReduceBegin(sfB, MPIU_2INT, reorderedRemotePointsA - minleaf, remotePointsBA, op));
-  PetscCall(PetscSFReduceEnd(sfB, MPIU_2INT, reorderedRemotePointsA - minleaf, remotePointsBA, op));
+  PetscCall(PetscSFReduceBegin(sfB, MPIU_2INT, PetscSafePointerPlusOffset(reorderedRemotePointsA, -minleaf), remotePointsBA, op));
+  PetscCall(PetscSFReduceEnd(sfB, MPIU_2INT, PetscSafePointerPlusOffset(reorderedRemotePointsA, -minleaf), remotePointsBA, op));
   PetscCall(PetscFree(reorderedRemotePointsA));
   for (i = 0, numLeavesBA = 0; i < numRootsB; i++) {
     if (remotePointsBA[i].rank == -1) continue;
@@ -2499,7 +2499,7 @@ PetscErrorCode PetscSFConcatenate(MPI_Comm comm, PetscInt nsfs, PetscSF sfs[], P
     for (i = 0; i < nLeaves; i++) ilocal_new[i] = -1;
     for (s = 0; s < nsfs; s++) {
       const PetscInt *ilocal;
-      PetscInt       *ilocal_l = &ilocal_new[leafArrayOffsets[s]];
+      PetscInt       *ilocal_l = PetscSafePointerPlusOffset(ilocal_new, leafArrayOffsets[s]);
       PetscInt        i, nleaves_l;
 
       PetscCall(PetscSFGetGraph(sfs[s], NULL, &nleaves_l, &ilocal, NULL));
@@ -2521,7 +2521,7 @@ PetscErrorCode PetscSFConcatenate(MPI_Comm comm, PetscInt nsfs, PetscSF sfs[], P
       PetscSF            tmp_sf;
       const PetscSFNode *iremote;
       PetscSFNode       *tmp_rootdata;
-      PetscSFNode       *tmp_leafdata = &iremote_new[leafArrayOffsets[s]];
+      PetscSFNode       *tmp_leafdata = PetscSafePointerPlusOffset(iremote_new, leafArrayOffsets[s]);
 
       PetscCall(PetscSFGetGraph(sfs[s], &nr, &nl, NULL, &iremote));
       PetscCall(PetscSFCreate(comm, &tmp_sf));

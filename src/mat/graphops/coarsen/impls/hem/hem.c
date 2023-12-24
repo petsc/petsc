@@ -555,8 +555,8 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
       PetscInt    lid = kk, max_pe = rank, pe, n;
       ii = matA->i;
       n  = ii[lid + 1] - ii[lid];
-      aj = matA->j + ii[lid];
-      ap = matA->a + ii[lid];
+      aj = PetscSafePointerPlusOffset(matA->j, ii[lid]);
+      ap = PetscSafePointerPlusOffset(matA->a, ii[lid]);
       for (int jj = 0; jj < n; jj++) {
         PetscInt lidj = aj[jj];
         if ((tt = PetscRealPart(ap[jj])) > threshold && lidj != lid) {
@@ -624,8 +624,8 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
       PetscReal      tt;
       ii = matA->i;
       n  = ii[lid + 1] - ii[lid];
-      aj = matA->j + ii[lid];
-      ap = matA->a + ii[lid];
+      aj = PetscSafePointerPlusOffset(matA->j, ii[lid]);
+      ap = PetscSafePointerPlusOffset(matA->a, ii[lid]);
       for (int jj = 0; jj < n; jj++) {
         PetscInt lidj = aj[jj];
         if ((tt = PetscRealPart(ap[jj])) > threshold && lidj != lid) {
@@ -967,8 +967,8 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
         int            max_pe = rank, pe, n;
         ii                    = matA->i;
         n                     = ii[lid + 1] - ii[lid];
-        aj                    = matA->j + ii[lid];
-        ap                    = matA->a + ii[lid];
+        aj                    = PetscSafePointerPlusOffset(matA->j, ii[lid]);
+        ap                    = PetscSafePointerPlusOffset(matA->a, ii[lid]);
         for (int jj = 0; jj < n; jj++) {
           PetscInt lidj = aj[jj];
           if (lid_matched[lidj]) continue; /* this is new - can change local max */

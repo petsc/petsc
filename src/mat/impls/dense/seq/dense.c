@@ -249,9 +249,7 @@ PetscErrorCode MatAXPY_SeqDense(Mat Y, PetscScalar alpha, Mat X, MatStructure st
   PetscCall(PetscBLASIntCast(x->lda, &ldax));
   PetscCall(PetscBLASIntCast(y->lda, &lday));
   if (ldax > m || lday > m) {
-    PetscInt j;
-
-    for (j = 0; j < X->cmap->n; j++) PetscCallBLAS("BLASaxpy", BLASaxpy_(&m, &alpha, xv + j * ldax, &one, yv + j * lday, &one));
+    for (PetscInt j = 0; j < X->cmap->n; j++) PetscCallBLAS("BLASaxpy", BLASaxpy_(&m, &alpha, PetscSafePointerPlusOffset(xv, j * ldax), &one, PetscSafePointerPlusOffset(yv, j * lday), &one));
   } else {
     PetscCallBLAS("BLASaxpy", BLASaxpy_(&N, &alpha, xv, &one, yv, &one));
   }
@@ -380,7 +378,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqDense(Mat newi, Mat A, MatDuplicateOption
     PetscCall(MatDenseGetLDA(newi, &nlda));
     m = A->rmap->n;
     if (lda > m || nlda > m) {
-      for (j = 0; j < A->cmap->n; j++) PetscCall(PetscArraycpy(v + j * nlda, av + j * lda, m));
+      for (j = 0; j < A->cmap->n; j++) PetscCall(PetscArraycpy(PetscSafePointerPlusOffset(v, j * nlda), PetscSafePointerPlusOffset(av, j * lda), m));
     } else {
       PetscCall(PetscArraycpy(v, av, A->rmap->n * A->cmap->n));
     }
@@ -3471,7 +3469,7 @@ PetscErrorCode MatDenseGetColumnVecRead_SeqDense(Mat A, PetscInt col, Vec *v)
   if (!a->cvec) PetscCall(MatDenseCreateColumnVec_Private(A, &a->cvec));
   a->vecinuse = col + 1;
   PetscCall(MatDenseGetArrayRead(A, &a->ptrinuse));
-  PetscCall(VecPlaceArray(a->cvec, a->ptrinuse + (size_t)col * (size_t)a->lda));
+  PetscCall(VecPlaceArray(a->cvec, PetscSafePointerPlusOffset(a->ptrinuse, (size_t)col * (size_t)a->lda)));
   PetscCall(VecLockReadPush(a->cvec));
   *v = a->cvec;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -3502,7 +3500,7 @@ PetscErrorCode MatDenseGetColumnVecWrite_SeqDense(Mat A, PetscInt col, Vec *v)
   if (!a->cvec) PetscCall(MatDenseCreateColumnVec_Private(A, &a->cvec));
   a->vecinuse = col + 1;
   PetscCall(MatDenseGetArrayWrite(A, (PetscScalar **)&a->ptrinuse));
-  PetscCall(VecPlaceArray(a->cvec, a->ptrinuse + (size_t)col * (size_t)a->lda));
+  PetscCall(VecPlaceArray(a->cvec, PetscSafePointerPlusOffset(a->ptrinuse, (size_t)col * (size_t)a->lda)));
   *v = a->cvec;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3530,9 +3528,9 @@ PetscErrorCode MatDenseGetSubMatrix_SeqDense(Mat A, PetscInt rbegin, PetscInt re
   PetscCheck(!a->matinuse, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
   if (a->cmat && (cend - cbegin != a->cmat->cmap->N || rend - rbegin != a->cmat->rmap->N)) PetscCall(MatDestroy(&a->cmat));
   if (!a->cmat) {
-    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)A), rend - rbegin, PETSC_DECIDE, rend - rbegin, cend - cbegin, a->v ? a->v + rbegin + (size_t)cbegin * a->lda : NULL, &a->cmat));
+    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)A), rend - rbegin, PETSC_DECIDE, rend - rbegin, cend - cbegin, PetscSafePointerPlusOffset(a->v, rbegin + (size_t)cbegin * a->lda), &a->cmat));
   } else {
-    PetscCall(MatDensePlaceArray(a->cmat, a->v ? a->v + rbegin + (size_t)cbegin * a->lda : NULL));
+    PetscCall(MatDensePlaceArray(a->cmat, PetscSafePointerPlusOffset(a->v, rbegin + (size_t)cbegin * a->lda)));
   }
   PetscCall(MatDenseSetLDA(a->cmat, a->lda));
   a->matinuse = cbegin + 1;

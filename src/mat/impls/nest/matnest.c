@@ -121,12 +121,12 @@ static PetscErrorCode MatProductNumeric_Nest_Dense(Mat C)
   PetscCall(MatDenseGetArray(C, &carray));
   for (i = 0; i < nr; i++) {
     PetscCall(ISGetSize(bA->isglobal.row[i], &M));
-    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)A), contents->dm[i + 1] - contents->dm[i], PETSC_DECIDE, M, N, carray + contents->dm[i], &viewC));
+    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)A), contents->dm[i + 1] - contents->dm[i], PETSC_DECIDE, M, N, PetscSafePointerPlusOffset(carray, contents->dm[i]), &viewC));
     PetscCall(MatDenseSetLDA(viewC, ldc));
     for (j = 0; j < nc; j++) {
       if (!bA->m[i][j]) continue;
       PetscCall(ISGetSize(bA->isglobal.col[j], &M));
-      PetscCall(MatCreateDense(PetscObjectComm((PetscObject)A), contents->dn[j + 1] - contents->dn[j], PETSC_DECIDE, M, N, (PetscScalar *)(barray + contents->dn[j]), &viewB));
+      PetscCall(MatCreateDense(PetscObjectComm((PetscObject)A), contents->dn[j + 1] - contents->dn[j], PETSC_DECIDE, M, N, PetscSafePointerPlusOffset((PetscScalar *)barray, contents->dn[j]), &viewB));
       PetscCall(MatDenseSetLDA(viewB, ldb));
 
       /* MatMatMultNumeric(bA->m[i][j],viewB,contents->workC[i*nc + j]); */
@@ -222,7 +222,7 @@ static PetscErrorCode MatProductSymbolic_Nest_Dense(Mat C)
   /* loops are permuted compared to MatMatMultNumeric so that viewB is created only once per column of A */
   for (j = 0; j < nc; j++) {
     PetscCall(ISGetSize(bA->isglobal.col[j], &M));
-    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)A), contents->dn[j + 1] - contents->dn[j], PETSC_DECIDE, M, N, (PetscScalar *)(barray + contents->dn[j]), &viewB));
+    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)A), contents->dn[j + 1] - contents->dn[j], PETSC_DECIDE, M, N, PetscSafePointerPlusOffset((PetscScalar *)barray, contents->dn[j]), &viewB));
     PetscCall(MatDenseSetLDA(viewB, ldb));
     for (i = 0; i < nr; i++) {
       if (!bA->m[i][j]) continue;

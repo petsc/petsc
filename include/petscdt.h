@@ -534,7 +534,7 @@ M*/
 static inline PetscErrorCode PetscDTEnumSplit(PetscInt n, PetscInt k, PetscInt j, PetscInt *perm, PetscBool *isOdd)
 {
   PetscInt  i, l, m, Nk, odd = 0;
-  PetscInt *subcomp = perm + k;
+  PetscInt *subcomp = PetscSafePointerPlusOffset(perm, k);
 
   PetscFunctionBegin;
   if (isOdd) *isOdd = PETSC_FALSE;

@@ -1451,7 +1451,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
     p = Nl;
     PetscCall(PetscHMapIGetKeys(claimshash, &p, localPointsNew));
     /* We sort new points, and assume they are numbered after all existing points */
-    PetscCall(PetscSortInt(NlNew, &localPointsNew[Nl]));
+    PetscCall(PetscSortInt(NlNew, PetscSafePointerPlusOffset(localPointsNew, Nl)));
     for (p = Nl; p < Nl + NlNew; ++p) {
       PetscInt off;
       PetscCall(PetscHMapIGet(claimshash, localPointsNew[p], &off));

@@ -3009,7 +3009,7 @@ PetscErrorCode DMPlexGetCone(DM dm, PetscInt p, const PetscInt *cone[])
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(cone, 3);
   PetscCall(PetscSectionGetOffset(mesh->coneSection, p, &off));
-  *cone = &mesh->cones[off];
+  *cone = PetscSafePointerPlusOffset(mesh->cones, off);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3472,8 +3472,8 @@ PetscErrorCode DMPlexGetOrientedCone(DM dm, PetscInt p, const PetscInt *cone[], 
       }
     }
     PetscCall(PetscSectionGetOffset(mesh->coneSection, p, &off));
-    if (cone) *cone = mesh->cones ? mesh->cones + off : NULL; // NULL + 0 is UB
-    if (ornt) *ornt = mesh->coneOrientations ? mesh->coneOrientations + off : NULL;
+    if (cone) *cone = PetscSafePointerPlusOffset(mesh->cones, off);
+    if (ornt) *ornt = PetscSafePointerPlusOffset(mesh->coneOrientations, off);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3597,7 +3597,7 @@ PetscErrorCode DMPlexGetSupport(DM dm, PetscInt p, const PetscInt *support[])
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(support, 3);
   PetscCall(PetscSectionGetOffset(mesh->supportSection, p, &off));
-  *support = mesh->supports ? mesh->supports + off : NULL; //NULL + 0 is UB
+  *support = PetscSafePointerPlusOffset(mesh->supports, off);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -6090,7 +6090,7 @@ static inline PetscErrorCode DMPlexVecGetClosure_Depth1_Static(DM dm, PetscSecti
 
     PetscCall(PetscSectionGetDof(section, point, &dof));
     PetscCall(PetscSectionGetOffset(section, point, &off));
-    varr = &vArray[off];
+    varr = PetscSafePointerPlusOffset(vArray, off);
     for (d = 0; d < dof; ++d, ++offset) array[offset] = varr[d];
     size += dof;
   }
@@ -6103,7 +6103,7 @@ static inline PetscErrorCode DMPlexVecGetClosure_Depth1_Static(DM dm, PetscSecti
     if ((cp < pStart) || (cp >= pEnd)) continue;
     PetscCall(PetscSectionGetDof(section, cp, &dof));
     PetscCall(PetscSectionGetOffset(section, cp, &off));
-    varr = &vArray[off];
+    varr = PetscSafePointerPlusOffset(vArray, off);
     if (o >= 0) {
       for (d = 0; d < dof; ++d, ++offset) array[offset] = varr[d];
     } else {
@@ -6156,7 +6156,7 @@ PetscErrorCode DMPlexGetCompressedClosure(DM dm, PetscSection section, PetscInt 
     PetscCall(PetscSectionGetOffset(*clSec, point, &off));
     PetscCall(ISGetIndices(*clPoints, &cla));
     np  = dof / 2;
-    pts = (PetscInt *)&cla[off];
+    pts = PetscSafePointerPlusOffset((PetscInt *)cla, off);
   } else {
     PetscCall(DMPlexGetTransitiveClosure_Internal(dm, point, ornt, PETSC_TRUE, &np, &pts));
     PetscCall(CompressPoints_Private(section, &np, pts));
@@ -6201,7 +6201,7 @@ static inline PetscErrorCode DMPlexVecGetClosure_Static(DM dm, PetscSection sect
 
     PetscCall(PetscSectionGetDof(section, point, &dof));
     PetscCall(PetscSectionGetOffset(section, point, &off));
-    varr = &vArray[off];
+    varr = PetscSafePointerPlusOffset(vArray, off);
     if (clperm) {
       if (perm) {
         for (d = 0; d < dof; d++) array[clperm[offset + perm[d]]] = varr[d];

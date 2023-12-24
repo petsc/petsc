@@ -1610,7 +1610,7 @@ PetscErrorCode VecGetSubVector(Vec X, IS is, Vec *Y)
         PetscCall(VecSetType(Z, ((PetscObject)X)->type_name));
         PetscCall(VecSetSizes(Z, n, N));
         PetscCall(VecSetBlockSize(Z, bs));
-        PetscCall(VecPlaceArray(Z, x ? x + start : NULL));
+        PetscCall(VecPlaceArray(Z, PetscSafePointerPlusOffset(x, start)));
         PetscCall(VecRestoreArrayRead(X, &x));
       }
 
@@ -3139,7 +3139,7 @@ PetscErrorCode VecGetArray3d(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt
   b = (PetscScalar **)((*a) + m);
   for (i = 0; i < m; i++) (*a)[i] = b + i * n - nstart;
   for (i = 0; i < m; i++)
-    for (j = 0; j < n; j++) b[i * n + j] = aa + i * n * p + j * p - pstart;
+    for (j = 0; j < n; j++) b[i * n + j] = PetscSafePointerPlusOffset(aa, i * n * p + j * p - pstart);
   *a -= mstart;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3723,7 +3723,7 @@ PetscErrorCode VecGetArray3dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, Pets
   b = (PetscScalar **)((*a) + m);
   for (i = 0; i < m; i++) (*a)[i] = b + i * n - nstart;
   for (i = 0; i < m; i++)
-    for (j = 0; j < n; j++) b[i * n + j] = (PetscScalar *)aa + i * n * p + j * p - pstart;
+    for (j = 0; j < n; j++) b[i * n + j] = PetscSafePointerPlusOffset((PetscScalar *)aa, i * n * p + j * p - pstart);
   *a -= mstart;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

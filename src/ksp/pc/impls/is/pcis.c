@@ -183,8 +183,8 @@ PetscErrorCode PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesolv
     }
 
     /* Getting the global numbering */
-    idx_B_global = idx_I_local + n_I; /* Just avoiding allocating extra memory, since we have vacant space */
-    idx_I_global = idx_B_local + pcis->n_B;
+    idx_B_global = PetscSafePointerPlusOffset(idx_I_local, n_I); /* Just avoiding allocating extra memory, since we have vacant space */
+    idx_I_global = PetscSafePointerPlusOffset(idx_B_local, pcis->n_B);
     PetscCall(ISLocalToGlobalMappingApply(pcis->mapping, pcis->n_B, idx_B_local, idx_B_global));
     PetscCall(ISLocalToGlobalMappingApply(pcis->mapping, n_I, idx_I_local, idx_I_global));
 

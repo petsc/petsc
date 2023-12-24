@@ -165,7 +165,7 @@ static PetscErrorCode PetscSectionLoad_HDF5_SingleField_SetConstraintIndices(Pet
   PetscCall(PetscSectionSetUpBC(s));
   for (p = pStart, m = 0; p < pEnd; ++p) {
     PetscCall(PetscSectionGetConstraintDof(s, p, &cdof));
-    PetscCall(PetscSectionSetConstraintIndices(s, p, &cinds[m]));
+    PetscCall(PetscSectionSetConstraintIndices(s, p, PetscSafePointerPlusOffset(cinds, m)));
     m += cdof;
   }
   PetscCall(PetscFree(cinds));

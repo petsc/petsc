@@ -78,7 +78,7 @@ static PetscErrorCode VecDuplicateVecs_MPI_GEMV(Vec w, PetscInt m, Vec *V[])
     PetscCall(PetscCalloc1(m * lda, &array));
     for (PetscInt i = 0; i < m; i++) {
       Vec v;
-      PetscCall(VecCreateMPIWithLayoutAndArray_Private(w->map, &array[i * lda], &v));
+      PetscCall(VecCreateMPIWithLayoutAndArray_Private(w->map, PetscSafePointerPlusOffset(array, i * lda), &v));
       PetscCall(PetscObjectListDuplicate(((PetscObject)w)->olist, &((PetscObject)v)->olist));
       PetscCall(PetscFunctionListDuplicate(((PetscObject)w)->qlist, &((PetscObject)v)->qlist));
       v->ops->view          = w->ops->view;

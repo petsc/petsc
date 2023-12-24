@@ -387,8 +387,8 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
   PetscCall(ISRestoreIndices(selected, &indices));
   PetscCall(ISDestroy(&selected));
   PetscCall(PetscCalloc1(lpEnd - lpStart, remoteOffsets));
-  PetscCall(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart], MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart], MPI_REPLACE));
+  PetscCall(PetscSFBcastBegin(embedSF, MPIU_INT, PetscSafePointerPlusOffset(rootSection->atlasOff, -rpStart), PetscSafePointerPlusOffset(*remoteOffsets, -lpStart), MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(embedSF, MPIU_INT, PetscSafePointerPlusOffset(rootSection->atlasOff, -rpStart), PetscSafePointerPlusOffset(*remoteOffsets, -lpStart), MPI_REPLACE));
   PetscCall(PetscSFDestroy(&embedSF));
   PetscCall(PetscLogEventEnd(PETSCSF_RemoteOff, sf, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);

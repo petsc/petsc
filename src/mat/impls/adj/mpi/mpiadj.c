@@ -174,7 +174,7 @@ static PetscErrorCode MatCreateSubMatrices_MPIAdj_Private(Mat mat, PetscInt n, c
     PetscCall(PetscArraycpy(indices, irow_indices, irow_n));
     PetscCall(ISRestoreIndices(irow[i], &irow_indices));
     PetscCall(ISGetIndices(icol[i], &icol_indices));
-    PetscCall(PetscArraycpy(indices + irow_n, icol_indices, icol_n));
+    PetscCall(PetscArraycpy(PetscSafePointerPlusOffset(indices, irow_n), icol_indices, icol_n));
     PetscCall(ISRestoreIndices(icol[i], &icol_indices));
     nindx = irow_n + icol_n;
     PetscCall(PetscSortRemoveDupsInt(&nindx, indices));

@@ -151,8 +151,8 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
           /* copy over old data into new slots by two steps: one step for data before the current slice and the other for the rest */ \
           PetscCall(PetscArraycpy(new_val, a->val, a->sliidx[row / a->sliceheight + 1])); \
           PetscCall(PetscArraycpy(new_colidx, a->colidx, a->sliidx[row / a->sliceheight + 1])); \
-          PetscCall(PetscArraycpy(new_val + a->sliidx[row / a->sliceheight + 1] + a->sliceheight, a->val + a->sliidx[row / a->sliceheight + 1], a->sliidx[a->totalslices] - a->sliidx[row / a->sliceheight + 1])); \
-          PetscCall(PetscArraycpy(new_colidx + a->sliidx[row / a->sliceheight + 1] + a->sliceheight, a->colidx + a->sliidx[row / a->sliceheight + 1], a->sliidx[a->totalslices] - a->sliidx[row / a->sliceheight + 1])); \
+          PetscCall(PetscArraycpy(new_val + a->sliidx[row / a->sliceheight + 1] + a->sliceheight, PetscSafePointerPlusOffset(a->val, a->sliidx[row / a->sliceheight + 1]), a->sliidx[a->totalslices] - a->sliidx[row / a->sliceheight + 1])); \
+          PetscCall(PetscArraycpy(new_colidx + a->sliidx[row / a->sliceheight + 1] + a->sliceheight, PetscSafePointerPlusOffset(a->colidx, a->sliidx[row / a->sliceheight + 1]), a->sliidx[a->totalslices] - a->sliidx[row / a->sliceheight + 1])); \
           /* update pointers. Notice that they point to the FIRST position of the row */ \
           cp = new_colidx + a->sliidx[row / a->sliceheight] + (row % a->sliceheight); \
           vp = new_val + a->sliidx[row / a->sliceheight] + (row % a->sliceheight); \

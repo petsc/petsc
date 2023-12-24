@@ -62,8 +62,8 @@ static PetscErrorCode PetscSFGetDistComm_Neighbor(PetscSF sf, PetscSFDirection d
     PetscCall(PetscSFGetLeafInfo_Basic(sf, &nleafranks, &ndleafranks, &leafranks, NULL, NULL, NULL)); /* My leaves will access whose roots (I am a source) */
     indegree     = nrootranks - ndrootranks;
     outdegree    = nleafranks - ndleafranks;
-    sources      = rootranks + ndrootranks;
-    destinations = leafranks + ndleafranks;
+    sources      = PetscSafePointerPlusOffset(rootranks, ndrootranks);
+    destinations = PetscSafePointerPlusOffset(leafranks, ndleafranks);
     PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
     if (direction == PETSCSF_LEAF2ROOT) {
       PetscCallMPI(MPI_Dist_graph_create_adjacent(comm, indegree, sources, dat->rootweights, outdegree, destinations, dat->leafweights, MPI_INFO_NULL, 1 /*reorder*/, mycomm));

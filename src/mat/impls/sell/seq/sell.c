@@ -1450,8 +1450,8 @@ PetscErrorCode MatAssemblyEnd_SeqSELL(Mat A, MatAssemblyType mode)
   /* Set unused slots for column indices to last valid column index. Set unused slots for values to zero. This allows for a use of unmasked intrinsics -> higher performance */
   for (i = 0; i < a->totalslices; ++i) {
     shift = a->sliidx[i];                                                   /* starting index of the slice */
-    cp    = a->colidx + shift;                                              /* pointer to the column indices of the slice */
-    vp    = a->val + shift;                                                 /* pointer to the nonzero values of the slice */
+    cp    = PetscSafePointerPlusOffset(a->colidx, shift);                   /* pointer to the column indices of the slice */
+    vp    = PetscSafePointerPlusOffset(a->val, shift);                      /* pointer to the nonzero values of the slice */
     for (row_in_slice = 0; row_in_slice < a->sliceheight; ++row_in_slice) { /* loop over rows in the slice */
       row  = a->sliceheight * i + row_in_slice;
       nrow = a->rlen[row]; /* number of nonzeros in row */

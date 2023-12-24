@@ -513,7 +513,7 @@ PetscErrorCode PetscQuadraturePushForward(PetscQuadrature q, PetscInt imageDim, 
   PetscCall(PetscDTJacobianInverse_Internal(imageDim, dim, J, Jinv));
   PetscCall(PetscDTAltVPullbackMatrix(imageDim, dim, Jinv, formDegree, Jinvstar));
   for (pt = 0; pt < Npoints; pt++) {
-    const PetscReal *point      = &points[pt * dim];
+    const PetscReal *point      = PetscSafePointerPlusOffset(points, pt * dim);
     PetscReal       *imagePoint = &imagePoints[pt * imageDim];
 
     for (i = 0; i < imageDim; i++) {

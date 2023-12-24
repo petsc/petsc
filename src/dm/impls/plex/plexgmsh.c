@@ -1644,7 +1644,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
 
     {
       GmshElement *elemA = mesh->numCells > 0 ? mesh->elements : NULL;
-      GmshElement *elemB = elemA ? elemA + mesh->numCells - 1 : NULL;
+      GmshElement *elemB = PetscSafePointerPlusOffset(elemA, mesh->numCells - 1);
       int          ptA   = elemA ? GmshCellMap[elemA->cellType].polytope : -1;
       int          ptB   = elemB ? GmshCellMap[elemB->cellType].polytope : -1;
       isSimplex          = (ptA == GMSH_QUA || ptA == GMSH_HEX) ? PETSC_FALSE : PETSC_TRUE;
