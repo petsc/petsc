@@ -65,7 +65,7 @@ static PetscErrorCode DMGlobalToLocalSolve_project1(PetscInt dim, PetscReal time
   a least-squares solution.  It is also assumed that `DMLocalToGlobalBegin()`/`DMLocalToGlobalEnd()` with mode `ADD_VALUES` is the adjoint of the
   global-to-local map, so that the least-squares solution may be found by the normal equations.
 
-  If the `DM` is of type `DMPLEX`, then `y` is the solution of L' * D * L * y = L' * D * x, where D is a diagonal mask that is 1 for every point in
+  If the `DM` is of type `DMPLEX`, then `y` is the solution of $ L^T * D * L * y = L^T * D * x $, where $D$ is a diagonal mask that is 1 for every point in
   the union of the closures of the local cells and 0 otherwise.  This difference is only relevant if there are anchor points that are not in the
   closure of any local cell (see `DMPlexGetAnchors()`/`DMPlexSetAnchors()`).
 
@@ -73,7 +73,7 @@ static PetscErrorCode DMGlobalToLocalSolve_project1(PetscInt dim, PetscReal time
 
   If this solves for a global vector from a local vector why is not called `DMLocalToGlobalSolve()`?
 
-.seealso: [](ch_ksp), `DM`, `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMLocalToGlobalEnd()`, `DMPlexGetAnchors()`, `DMPlexSetAnchors()`
+.seealso: [](ch_dmbase), `DM`, `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMLocalToGlobalEnd()`, `DMPlexGetAnchors()`, `DMPlexSetAnchors()`
 @*/
 PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
 {
@@ -179,13 +179,13 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
 + dim          - The spatial dimension
 . Nf           - The number of input fields
 . NfAux        - The number of input auxiliary fields
-. uOff         - The offset of each field in u[]
-. uOff_x       - The offset of each field in u_x[]
+. uOff         - The offset of each field in `u`
+. uOff_x       - The offset of each field in `u_x`
 . u            - The field values at this point in space
 . u_t          - The field time derivative at this point in space (or `NULL`)
 . u_x          - The field derivatives at this point in space
-. aOff         - The offset of each auxiliary field in u[]
-. aOff_x       - The offset of each auxiliary field in u_x[]
+. aOff         - The offset of each auxiliary field in `u`
+. aOff_x       - The offset of each auxiliary field in `u_x`
 . a            - The auxiliary field values at this point in space
 . a_t          - The auxiliary field time derivative at this point in space (or `NULL`)
 . a_x          - The auxiliary field derivatives at this point in space
@@ -198,12 +198,12 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
   Level: advanced
 
   Note:
-  There are three different `DM`s that potentially interact in this function. The output `DM`, dm, specifies the layout of the values calculates by funcs.
-  The input `DM`, attached to U, may be different. For example, you can input the solution over the full domain, but output over a piece of the boundary, or
+  There are three different `DM`s that potentially interact in this function. The output `dm`, specifies the layout of the values calculates by the function.
+  The input `DM`, attached to `U`, may be different. For example, you can input the solution over the full domain, but output over a piece of the boundary, or
   a subdomain. You can also output a different number of fields than the input, with different discretizations. Last the auxiliary `DM`, attached to the
-  auxiliary field vector, which is attached to dm, can also be different. It can have a different topology, number of fields, and discretizations.
+  auxiliary field vector, which is attached to `dm`, can also be different. It can have a different topology, number of fields, and discretizations.
 
-.seealso: [](ch_ksp), `DM`, `DMProjectFieldLocal()`, `DMProjectFieldLabelLocal()`, `DMProjectFunction()`, `DMComputeL2Diff()`
+.seealso: [](ch_dmbase), `DM`, `DMProjectFieldLocal()`, `DMProjectFieldLabelLocal()`, `DMProjectFunction()`, `DMComputeL2Diff()`
 @*/
 PetscErrorCode DMProjectField(DM dm, PetscReal time, Vec U, void (**funcs)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]), InsertMode mode, Vec X)
 {
@@ -653,26 +653,29 @@ static PetscErrorCode DMSwarmProjectFields_DA_Internal(DM swarm, DM celldm, Pets
 + dm         - the `DMSWARM`
 . nfields    - the number of swarm fields to project
 . fieldnames - the textual names of the swarm fields to project
-. fields     - an array of Vec's of length nfields
-- mode       - if SCATTER_FORWARD then map particles to the continuum, and if SCATTER_REVERSE map the continuum to particles
+. fields     - an array of `Vec`'s of length nfields
+- mode       - if `SCATTER_FORWARD` then map particles to the continuum, and if `SCATTER_REVERSE` map the continuum to particles
 
   Level: beginner
 
   Notes:
-  Currently, there two available projection methods. The first is conservative projection, used for a `DMPLEX` cell `DM`. The second is the averaging described below, which is used for a `DMDA` cell `DM`
-.vb
-     phi_i = \sum_{p=0}^{np} N_i(x_p) phi_p dJ / \sum_{p=0}^{np} N_i(x_p) dJ
-   where phi_p is the swarm field at point p,
-     N_i() is the cell DM basis function at vertex i,
-     dJ is the determinant of the cell Jacobian and
-     phi_i is the projected vertex value of the field phi.
-.ve
+  Currently, there are two available projection methods. The first is conservative projection, used for a `DMPLEX` cell `DM`.
+  The second is the averaging which is used for a `DMDA` cell `DM`
 
-  The user is responsible for destroying both the array and the individual `Vec` objects. For the `DMPLEX` case, there is only a single vector, so the field layout in the `DMPLEX` must match the requested fields from the `DMSwarm`.
+  $$
+  \phi_i = \sum_{p=0}^{np} N_i(x_p) \phi_p dJ / \sum_{p=0}^{np} N_i(x_p) dJ
+  $$
+
+  where $\phi_p $ is the swarm field at point $p$, $N_i()$ is the cell `DM` basis function at vertex $i$, $dJ$ is the determinant of the cell Jacobian and
+  $\phi_i$ is the projected vertex value of the field $\phi$.
+
+  The user is responsible for destroying both the array and the individual `Vec` objects.
+
+  For the `DMPLEX` case, there is only a single vector, so the field layout in the `DMPLEX` must match the requested fields from the `DMSwarm`.
 
   For averaging projection, nly swarm fields registered with data type of `PETSC_REAL` can be projected onto the cell `DM`, and only swarm fields of block size = 1 can currently be projected.
 
-.seealso: [](ch_ksp), `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
+.seealso: [](ch_dmbase), `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
 PetscErrorCode DMSwarmProjectFields(DM dm, PetscInt nfields, const char *fieldnames[], Vec fields[], ScatterMode mode)
 {
