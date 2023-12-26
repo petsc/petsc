@@ -1434,7 +1434,7 @@ PetscErrorCode DMPlexSNESComputeBoundaryFEM(DM dm, Vec X, void *user)
 }
 
 /*@
-  DMSNESComputeJacobianAction - Compute the action of the Jacobian J(X) on Y
+  DMSNESComputeJacobianAction - Compute the action of the Jacobian J(`X`) on `Y`
 
   Input Parameters:
 + dm   - The `DM`
@@ -1447,8 +1447,13 @@ PetscErrorCode DMPlexSNESComputeBoundaryFEM(DM dm, Vec X, void *user)
 
   Level: developer
 
-  Notes:
+  Note:
   Users will typically use `DMSNESCreateJacobianMF()` followed by `MatMult()` instead of calling this routine directly.
+
+  This only works with `DMPLEX`
+
+  Developer Note:
+  This should be called `DMPlexSNESComputeJacobianAction()`
 
 .seealso: [](ch_snes), `DM`, ``DMSNESCreateJacobianMF()`, `DMPlexSNESComputeResidualFEM()`
 @*/
@@ -1627,8 +1632,10 @@ static PetscErrorCode DMSNESJacobianMF_Mult_Private(Mat A, Vec Y, Vec Z)
 
   Level: advanced
 
-  Note:
+  Notes:
   Vec `X` is kept in `J`, so updating `X` then updates the evaluation point.
+
+  This only works for `DMPLEX`
 
 .seealso: [](ch_snes), `DM`, `SNES`, `DMSNESComputeJacobianAction()`
 @*/
