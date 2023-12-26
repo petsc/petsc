@@ -65,7 +65,7 @@ PetscErrorCode DMCreateLocalVector_DA(DM da, Vec *g)
 }
 
 /*@
-  DMDAGetNumCells - Get the number of cells in the local piece of the `DMDA`. This includes ghost cells.
+  DMDAGetNumCells - Get the number of cells (or vertices) in the local piece of the `DMDA`. This includes ghost cells.
 
   Input Parameter:
 . dm - The `DMDA` object
@@ -78,7 +78,7 @@ PetscErrorCode DMCreateLocalVector_DA(DM da, Vec *g)
 
   Level: developer
 
-.seealso: `DM`, `DMDA`, `DMDAGetCellPoint()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetCellPoint()`
 @*/
 PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, PetscInt *numCellsZ, PetscInt *numCells)
 {
@@ -109,7 +109,7 @@ PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, 
 }
 
 /*@
-  DMDAGetCellPoint - Get the DM point corresponding to the tuple (i, j, k) in the `DMDA`
+  DMDAGetCellPoint - Get the `DM` point corresponding to the tuple (i, j, k) in the `DMDA`
 
   Input Parameters:
 + dm - The `DMDA` object
@@ -122,7 +122,7 @@ PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, 
 
   Level: developer
 
-.seealso: `DM`, `DMDA`, `DMDAGetNumCells()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetNumCells()`
 @*/
 PetscErrorCode DMDAGetCellPoint(DM dm, PetscInt i, PetscInt j, PetscInt k, PetscInt *point)
 {
@@ -331,7 +331,7 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
   DMDAGetArray - Gets a work array for a `DMDA`
 
   Input Parameters:
-+ da      - information about my local patch
++ da      - a `DMDA`
 - ghosted - do you want arrays for the ghosted or nonghosted patch
 
   Output Parameter:
@@ -339,11 +339,13 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
 
   Level: advanced
 
-  Note:
+  Notes:
   The vector values are NOT initialized and may have garbage in them, so you may need
   to zero them.
 
-.seealso: `DM`, `DMDA`, `DMDARestoreArray()`
+  Use `DMDARestoreArray()` to return the array
+
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDARestoreArray()`
 @*/
 PetscErrorCode DMDAGetArray(DM da, PetscBool ghosted, void *vptr)
 {
@@ -451,7 +453,7 @@ done:
 }
 
 /*@C
-  DMDARestoreArray - Restores an array of derivative types for a `DMDA`
+  DMDARestoreArray - Restores an array for a `DMDA` obtained with  `DMDAGetArray()`
 
   Input Parameters:
 + da      - information about my local patch
@@ -460,7 +462,7 @@ done:
 
   Level: advanced
 
-.seealso: `DM`, `DMDA`, `DMDAGetArray()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetArray()`
 @*/
 PetscErrorCode DMDARestoreArray(DM da, PetscBool ghosted, void *vptr)
 {

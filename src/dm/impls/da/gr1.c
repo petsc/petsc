@@ -20,7 +20,7 @@
 
   Level: beginner
 
-.seealso: `DM`, `DMDA`, `DMSetCoordinates()`, `DMGetCoordinates()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMStagSetUniformCoordinates()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMSetCoordinates()`, `DMGetCoordinates()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMStagSetUniformCoordinates()`
 @*/
 PetscErrorCode DMDASetUniformCoordinates(DM da, PetscReal xmin, PetscReal xmax, PetscReal ymin, PetscReal ymax, PetscReal zmin, PetscReal zmax)
 {

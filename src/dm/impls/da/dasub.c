@@ -28,7 +28,7 @@
   Note:
   All processors that share the `DMDA` must call this with the same coordinate value
 
-.seealso: `DM`, `DMDA`
+.seealso: [](sec_struct), `DM`, `DMDA`
 @*/
 PetscErrorCode DMDAGetLogicalCoordinate(DM da, PetscScalar x, PetscScalar y, PetscScalar z, PetscInt *II, PetscInt *JJ, PetscInt *KK, PetscScalar *X, PetscScalar *Y, PetscScalar *Z)
 {
@@ -90,15 +90,15 @@ PetscErrorCode DMDAGetLogicalCoordinate(DM da, PetscScalar x, PetscScalar y, Pet
 - gp  - global grid point number in this direction
 
   Output Parameters:
-+ newvec  - the new vector that can hold the values (size zero on all processes except rank 0)
-- scatter - the `VecScatter` that will map from the original vector to the slice
++ newvec  - the new vector that can hold the values (size zero on all processes except MPI rank 0)
+- scatter - the `VecScatter` that will map from the original vector to the ray
 
   Level: advanced
 
   Note:
-  All processors that share the `DMDA` must call this with the same gp value
+  All processors that share the `DMDA` must call this with the same `gp` value
 
-.seealso: `DM`, `DMDA`, `DMDirection`, `Vec`, `VecScatter`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDirection`, `Vec`, `VecScatter`
 @*/
 PetscErrorCode DMDAGetRay(DM da, DMDirection dir, PetscInt gp, Vec *newvec, VecScatter *scatter)
 {
@@ -186,15 +186,15 @@ PetscErrorCode DMDAGetRay(DM da, DMDirection dir, PetscInt gp, Vec *newvec, VecS
   Level: advanced
 
   Notes:
-  All processors that share the `DMDA` must call this with the same gp value
+  All processors that share the `DMDA` must call this with the same `gp` value
 
-  After use, comm should be freed with `MPI_Comm_free()`
+  After use, `comm` should be freed with `MPI_Comm_free()`
 
   This routine is particularly useful to compute boundary conditions
   or other application-specific calculations that require manipulating
   sets of data throughout a logical plane of grid points.
 
-.seealso: `DM`, `DMDA`, `DMDirection`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDirection`, `DM_X`, `DM_Y`, `DM_Z`, `DMDAGetProcessorSubsets()`
 @*/
 PetscErrorCode DMDAGetProcessorSubset(DM da, DMDirection dir, PetscInt gp, MPI_Comm *comm)
 {
@@ -261,9 +261,9 @@ PetscErrorCode DMDAGetProcessorSubset(DM da, DMDirection dir, PetscInt gp, MPI_C
   Notes:
   This routine is useful for distributing one-dimensional data in a tensor product grid.
 
-  After use, comm should be freed with `MPI_Comm_free()`
+  After use, `comm` should be freed with `MPI_Comm_free()`
 
-.seealso: `DM`, `DMDA`, `DMDirection`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDirection`, `DMDAGetProcessorSubset()`, `DM_X`, `DM_Y`, `DM_Z`
 @*/
 PetscErrorCode DMDAGetProcessorSubsets(DM da, DMDirection dir, MPI_Comm *subcomm)
 {

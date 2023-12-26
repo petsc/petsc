@@ -9,7 +9,7 @@
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
 /*@
-  DMDAGlobalToNaturalAllCreate - Creates a scatter context that maps from the
+  DMDAGlobalToNaturalAllCreate - Creates a scatter context that maps from a
   global vector the entire vector to each processor in natural numbering
 
   Collective
@@ -22,7 +22,7 @@
 
   Level: advanced
 
-.seealso: `DM`, `DMDA`, `DMDAGlobalToNaturalEnd()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDANaturalAllToGlobalCreate()`, `DMDAGlobalToNaturalEnd()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
           `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMDACreateNaturalVector()`
 @*/
 PetscErrorCode DMDAGlobalToNaturalAllCreate(DM da, VecScatter *scatter)
@@ -55,7 +55,7 @@ PetscErrorCode DMDAGlobalToNaturalAllCreate(DM da, VecScatter *scatter)
 
 /*@
   DMDANaturalAllToGlobalCreate - Creates a scatter context that maps from a copy
-  of the entire vector on each processor to its local part in the global vector.
+  of the entire vector on each processor (in the natural ordering) to its local part in the global vector.
 
   Collective
 
@@ -67,7 +67,7 @@ PetscErrorCode DMDAGlobalToNaturalAllCreate(DM da, VecScatter *scatter)
 
   Level: advanced
 
-.seealso: `DM`, `DMDA`, `DMDAGlobalToNaturalEnd()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGlobalToNaturalAllCreate()`, `DMDAGlobalToNaturalEnd()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
           `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMDACreateNaturalVector()`
 @*/
 PetscErrorCode DMDANaturalAllToGlobalCreate(DM da, VecScatter *scatter)

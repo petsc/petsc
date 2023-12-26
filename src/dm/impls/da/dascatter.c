@@ -6,7 +6,7 @@
 
 /*@C
   DMDAGetScatter - Gets the global-to-local, and
-  local-to-local vector scatter contexts for a distributed array.
+  local-to-local vector scatter contexts for a `DMDA` distributed array.
 
   Collective
 
@@ -23,7 +23,7 @@
   The output contexts are valid only as long as the input `da` is valid.
   If you delete the `da`, the scatter contexts will become invalid.
 
-.seealso: `DM`, `DMDA`, `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`
 @*/
 PetscErrorCode DMDAGetScatter(DM da, VecScatter *gtol, VecScatter *ltol)
 {

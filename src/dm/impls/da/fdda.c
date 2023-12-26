@@ -89,7 +89,7 @@ static PetscErrorCode DMDASetBlockFills_Private2(DM_DA *dd)
 
   Input Parameters:
 + da    - the distributed array
-. dfill - the fill pattern in the diagonal block (may be NULL, means use dense block)
+. dfill - the fill pattern in the diagonal block (may be `NULL`, means use dense block)
 - ofill - the fill pattern in the off-diagonal blocks
 
   Level: developer
@@ -98,7 +98,7 @@ static PetscErrorCode DMDASetBlockFills_Private2(DM_DA *dd)
   This only makes sense when you are doing multicomponent problems but using the
   `MATMPIAIJ` matrix format
 
-  The format for dfill and ofill is a 2 dimensional dof by dof matrix with 1 entries
+  The format for `dfill` and `ofill` is a 2 dimensional dof by dof matrix with 1 entries
   representing coupling and 0 entries for missing coupling. For example
 .vb
             dfill[9] = {1, 0, 0,
@@ -110,12 +110,12 @@ static PetscErrorCode DMDASetBlockFills_Private2(DM_DA *dd)
   diagonal block).
 
   `DMDASetGetMatrix()` allows you to provide general code for those more complicated nonzero patterns then
-  can be represented in the dfill, ofill format
+  can be represented in the `dfill`, `ofill` format
 
   Contributed by\:
   Glenn Hammond
 
-.seealso: `DM`, `DMDA`, `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`, `DMDASetBlockFillsSparse()`
 @*/
 PetscErrorCode DMDASetBlockFills(DM da, const PetscInt *dfill, const PetscInt *ofill)
 {
@@ -169,7 +169,7 @@ PetscErrorCode DMDASetBlockFills(DM da, const PetscInt *dfill, const PetscInt *o
   Contributed by\:
   Philip C. Roth
 
-.seealso: `DM`, `DMDA`, `DMDASetBlockFills()`, `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDASetBlockFills()`, `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`
 @*/
 PetscErrorCode DMDASetBlockFillsSparse(DM da, const PetscInt *dfillsparse, const PetscInt *ofillsparse)
 {
