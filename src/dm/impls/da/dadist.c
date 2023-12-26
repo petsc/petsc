@@ -53,17 +53,20 @@ PetscErrorCode DMCreateGlobalVector_DA(DM da, Vec *g)
   Output Parameter:
 . g - the distributed global vector
 
-  Level: developer
+  Level: advanced
 
   Notes:
-  The output parameter, g, is a regular PETSc vector that should be destroyed
+  The natural numbering is a number of grid nodes that starts with, in three dimensions, with (0,0,0), (1,0,0), (2,0,0), ..., (m-1,0,0) followed by
+  (0,1,0), (1,1,0), (2,1,0), ..., (m,1,0) etc up to (0,n-1,p-1), (1,n-1,p-1), (2,n-1,p-1), ..., (m-1,n-1,p-1).
+
+  The output parameter, `g`, is a regular `Vec` that should be destroyed
   with a call to `VecDestroy()` when usage is finished.
 
   The number of local entries in the vector on each process is the same
   as in a vector created with `DMCreateGlobalVector()`.
 
-.seealso: `DM`, `DMDA`, `DMCreateLocalVector()`, `VecDuplicate()`, `VecDuplicateVecs()`,
-          `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMGlobalToLocalBegin()`,
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGlobalToNaturalBegin()`, `DMDAGlobalToNaturalEnd()`, `DMDANaturalToGlobalBegin()`, `DMDANaturalToGlobalEnd()`,
+          `DMCreateLocalVector()`, `VecDuplicate()`, `VecDuplicateVecs()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMGlobalToLocalBegin()`,
           `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`
 @*/
 PetscErrorCode DMDACreateNaturalVector(DM da, Vec *g)
@@ -86,7 +89,6 @@ PetscErrorCode DMDACreateNaturalVector(DM da, Vec *g)
     PetscCall(VecSetBlockSize(*g, dd->w));
     PetscCall(VecSetType(*g, da->vectype));
     PetscCall(PetscObjectReference((PetscObject)*g));
-
     dd->natural = *g;
   }
   PetscFunctionReturn(PETSC_SUCCESS);

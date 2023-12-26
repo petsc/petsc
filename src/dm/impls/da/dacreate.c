@@ -307,14 +307,15 @@ static PetscErrorCode DMGetNeighbors_DA(DM dm, PetscInt *nranks, const PetscMPII
 /*MC
    DMDA = "da" - A `DM` object that is used to manage data for a structured grid in 1, 2, or 3 dimensions.
          In the global representation of the vector each process stores a non-overlapping rectangular (or slab in 3d) portion of the grid points.
-         In the local representation these rectangular regions (slabs) are extended in all directions by a stencil width.
+         In the local representation these rectangular regions (slabs) are extended in all directions by a stencil width set with `DMDASetStencilWidth()`.
 
          The vectors can be thought of as either cell centered or vertex centered on the mesh. But some variables cannot be cell centered and others
-         vertex centered; see the documentation for `DMSTAG`, a similar DM implementation which supports these staggered grids.
+         vertex centered; see the documentation for `DMSTAG`, a similar `DM` implementation which supports more general staggered grids.
 
   Level: intermediate
 
-.seealso: `DMType`, `DMCOMPOSITE`, `DMSTAG`, `DMDACreate()`, `DMCreate()`, `DMSetType()`
+.seealso: [](sec_struct), `DMType`, `DMCOMPOSITE`, `DMSTAG`, `DMDACreate()`, `DMCreate()`, `DMSetType()`, `DMDASetStencilWidth()`, `DMDASetStencilType()`,
+          `DMDAStencilType`
 M*/
 
 PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
@@ -423,22 +424,22 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
 }
 
 /*@
-  DMDACreate - Creates a DMDA object.
+  DMDACreate - Creates a `DMDA` object for managing structured grids.
 
   Collective
 
   Input Parameter:
-. comm - The communicator for the DMDA object
+. comm - The communicator for the `DMDA` object
 
   Output Parameter:
 . da - The DMDA object
 
   Level: advanced
 
-  Developer Notes:
+  Developer Note:
   Since there exists DMDACreate1/2/3d() should this routine even exist?
 
-.seealso: `DMDASetSizes()`, `DMClone()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
+.seealso: [](sec_struct), `DMDASetSizes()`, `DMClone()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
 PetscErrorCode DMDACreate(MPI_Comm comm, DM *da)
 {

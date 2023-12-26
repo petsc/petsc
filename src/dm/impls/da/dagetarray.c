@@ -1,14 +1,14 @@
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
 /*MC
-  DMDAVecGetArrayF90 - check Fortran Notes at `DMDAVecGetArray()`
+  DMDAVecGetArrayF90 - see Fortran Notes at `DMDAVecGetArray()`
 
   Level: intermediate
 M*/
 
 /*@C
   DMDAVecGetArray - Returns a multiple dimension array that shares data with
-  the underlying vector and is indexed using the global dimensions.
+  the underlying vector and is indexed using the global or local dimensions of a `DMDA`.
 
   Logically Collective
 
@@ -42,7 +42,7 @@ M*/
   `array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1)` where the values are obtained from
   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
-.seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecRestoreArrayDOF()`
+.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecRestoreArrayDOF()`
           `DMDAVecGetArrayDOF()`, `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`,
           `DMStagVecGetArray()`
 @*/
@@ -80,7 +80,7 @@ PetscErrorCode DMDAVecGetArray(DM da, Vec vec, void *array)
 }
 
 /*MC
-  DMDAVecRestoreArrayF90 - check Fortran Notes at `DMDAVecRestoreArray()`
+  DMDAVecRestoreArrayF90 - see Fortran Notes at `DMDAVecRestoreArray()`
 
   Level: intermediate
 M*/
@@ -93,14 +93,14 @@ M*/
   Input Parameters:
 + da    - the distributed array
 . vec   - a vector the same size as one obtained with `DMCreateGlobalVector()` or `DMCreateLocalVector()`
-- array - the `array` pointer is zeroed
+- array - the `array` pointer
 
   Level: intermediate
 
-  Fortran Notes:
+  Fortran Note:
   Use `DMDAVecRestoreArayF90()`
 
-.seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `DMDAVecRestoreArayF90()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`,
+.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `DMDAVecRestoreArayF90()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`,
           `DMDStagVecRestoreArray()`
 @*/
@@ -138,14 +138,14 @@ PetscErrorCode DMDAVecRestoreArray(DM da, Vec vec, void *array)
 }
 
 /*MC
-  DMDAVecGetArrayWriteF90 - check Fortran Notes at `DMDAVecGetArrayWrite()`
+  DMDAVecGetArrayWriteF90 - see Fortran Notes at `DMDAVecGetArrayWrite()`
 
   Level: intermediate
 M*/
 
 /*@C
   DMDAVecGetArrayWrite - Returns a multiple dimension array that shares data with
-  the underlying vector and is indexed using the global dimensions.
+  the underlying vector and is indexed using the global or local dimensions of a `DMDA`.
 
   Logically Collective
 
@@ -171,8 +171,7 @@ M*/
   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
   Fortran Notes:
-
-  From Fortran use `DMDAVecGetArrayWriteF90()` and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate
+  Use `DMDAVecGetArrayWriteF90()` and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate
   dimension. For a `DMDA` created with a dof of 1 use the dimension of the `DMDA`, for a `DMDA` created with a dof greater than 1 use one more than the
   dimension of the `DMDA`.
 
@@ -180,14 +179,10 @@ M*/
   `array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1)` where the values are obtained from
   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
-  The order of the indices is array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) (when dof is 1) otherwise
-  array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) where the values are obtained from
-  `DMDAGetCorners()` for a global array or `DMDAGetGhostCorners()` for a local array.
-
-  Developer Notes:
+  Developer Note:
   This has code duplication with `DMDAVecGetArray()` and `DMDAVecGetArrayRead()`
 
-.seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecRestoreArrayDOF()`
+.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecRestoreArrayDOF()`
           `DMDAVecGetArrayDOF()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
 @*/
 PetscErrorCode DMDAVecGetArrayWrite(DM da, Vec vec, void *array)
@@ -228,7 +223,7 @@ PetscErrorCode DMDAVecGetArrayWrite(DM da, Vec vec, void *array)
 }
 
 /*MC
-  DMDAVecRestoreArrayWriteF90 - check Fortran Notes at `DMDAVecRestoreArrayWrite()`
+  DMDAVecRestoreArrayWriteF90 - see Fortran Notes at `DMDAVecRestoreArrayWrite()`
 
   Level: intermediate
 M*/
@@ -241,14 +236,14 @@ M*/
   Input Parameters:
 + da    - the distributed array
 . vec   - a vector the same size as one obtained with `DMCreateGlobalVector()` or `DMCreateLocalVector()`
-- array - the `array` pointer is zeroed
+- array - the `array` pointer
 
   Level: intermediate
 
-  Fortran Notes:
+  Fortran Note:
   Use `DMDAVecRestoreArayWriteF90()`
 
-.seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArrayWrite()`,
+.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArrayWrite()`,
           `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
 @*/
 PetscErrorCode DMDAVecRestoreArrayWrite(DM da, Vec vec, void *array)
@@ -290,7 +285,7 @@ PetscErrorCode DMDAVecRestoreArrayWrite(DM da, Vec vec, void *array)
 
 /*@C
   DMDAVecGetArrayDOF - Returns a multiple dimension array that shares data with
-  the underlying vector and is indexed using the global dimensions.
+  the underlying vector and is indexed using the global or local dimensions of a `DMDA`
 
   Logically Collective
 
@@ -299,7 +294,7 @@ PetscErrorCode DMDAVecRestoreArrayWrite(DM da, Vec vec, void *array)
 - vec - a vector the same size as one obtained with `DMCreateGlobalVector()` or `DMCreateLocalVector()`
 
   Output Parameter:
-. array - the `array` pointer is zeroed
+. array - the `array` pointer
 
   Level: intermediate
 
@@ -320,7 +315,7 @@ PetscErrorCode DMDAVecRestoreArrayWrite(DM da, Vec vec, void *array)
   `array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1)` where the values are obtained from
   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
-.seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecRestoreArrayDOF()`,
+.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecRestoreArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`, `DMDAVecGetArrayDOFRead()`
 @*/
 PetscErrorCode DMDAVecGetArrayDOF(DM da, Vec vec, void *array)
@@ -361,14 +356,14 @@ PetscErrorCode DMDAVecGetArrayDOF(DM da, Vec vec, void *array)
   Input Parameters:
 + da    - the distributed array
 . vec   - vector the same size as one obtained with `DMCreateGlobalVector()` or `DMCreateLocalVector()`
-- array - the `array` point is zeroed
+- array - the `array` point
 
   Level: intermediate
 
-  Fortran Notes:
+  Fortran Note:
   Use `DMDAVecRestoreArayF90()`
 
-.seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`,
+.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
 @*/
 PetscErrorCode DMDAVecRestoreArrayDOF(DM da, Vec vec, void *array)
@@ -402,14 +397,14 @@ PetscErrorCode DMDAVecRestoreArrayDOF(DM da, Vec vec, void *array)
 }
 
 /*MC
-  DMDAVecGetArrayReadF90 - check Fortran Notes at `DMDAVecGetArrayRead()`
+  DMDAVecGetArrayReadF90 - see Fortran Notes at `DMDAVecGetArrayRead()`
 
   Level: intermediate
 M*/
 
 /*@C
   DMDAVecGetArrayRead - Returns a multiple dimension array that shares data with
-  the underlying vector and is indexed using the global dimensions.
+  the underlying vector and is indexed using the global or local dimensions of a `DMDA`.
 
   Not Collective
 
@@ -443,7 +438,7 @@ M*/
   `array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1)` where the values are obtained from
   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
-.seealso: `DM`, `DMDA`, `DMDAVecGetArrayReadF90()`, `DMDAGetGhostCorners()`,
+.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAVecGetArrayReadF90()`, `DMDAGetGhostCorners()`,
 `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArrayRead()`,
 `DMDAVecRestoreArrayDOF()`, `DMDAVecGetArrayDOF()`, `DMDAVecGetArray()`,
 `DMDAVecRestoreArray()`, `DMStagVecGetArrayRead()`
@@ -482,7 +477,7 @@ PetscErrorCode DMDAVecGetArrayRead(DM da, Vec vec, void *array)
 }
 
 /*MC
-  DMDAVecRestoreArrayReadF90 - check Fortran Notes at `DMDAVecRestoreArrayRead()`
+  DMDAVecRestoreArrayReadF90 - see Fortran Notes at `DMDAVecRestoreArrayRead()`
 
   Level: intermediate
 M*/
@@ -495,14 +490,14 @@ M*/
   Input Parameters:
 + da    - the distributed array
 . vec   - vector the same size as one obtained with `DMCreateGlobalVector()` or `DMCreateLocalVector()`
-- array - the `array` pointer is zeroed
+- array - the `array` pointer
 
   Level: intermediate
 
-  Fortran Notes:
+  Fortran Note:
   Use `DMDAVecRestoreArrayReadF90()`
 
-.seealso: `DM`, `DMDA`, `DMDAVecRestoreArrayReadF90()`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArrayRead()`,
+.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAVecRestoreArrayReadF90()`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArrayRead()`,
           `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`,
           `DMStagVecRestoreArrayRead()`
 @*/
@@ -541,7 +536,7 @@ PetscErrorCode DMDAVecRestoreArrayRead(DM da, Vec vec, void *array)
 
 /*@C
   DMDAVecGetArrayDOFRead - Returns a multiple dimension array that shares data with
-  the underlying vector and is indexed using the global dimensions.
+  the underlying vector and is indexed using the global or local dimensions of a `DMDA`
 
   Not Collective
 
@@ -571,7 +566,7 @@ PetscErrorCode DMDAVecRestoreArrayRead(DM da, Vec vec, void *array)
   `array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1)` where the values are obtained from
   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
-.seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`,
+.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
 @*/
 PetscErrorCode DMDAVecGetArrayDOFRead(DM da, Vec vec, void *array)
@@ -612,14 +607,14 @@ PetscErrorCode DMDAVecGetArrayDOFRead(DM da, Vec vec, void *array)
   Input Parameters:
 + da    - the distributed array
 . vec   - a vector the same size as one obtained with `DMCreateGlobalVector()` or `DMCreateLocalVector()`
-- array - the `array` pointer is zeroed
+- array - the `array` pointer
 
   Level: intermediate
 
-  Fortran Notes:
+  Fortran Note:
   Use `DMDAVecRestoreArrayReadF90()`
 
-.seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`, `DMDAVecRestoreArrayDOF()`,
+.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`, `DMDAVecRestoreArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
 @*/
 PetscErrorCode DMDAVecRestoreArrayDOFRead(DM da, Vec vec, void *array)
@@ -654,7 +649,7 @@ PetscErrorCode DMDAVecRestoreArrayDOFRead(DM da, Vec vec, void *array)
 
 /*@C
   DMDAVecGetArrayDOFWrite - Returns a multiple dimension array that shares data with
-  the underlying vector and is indexed using the global dimensions.
+  the underlying vector and is indexed using the global or local dimensions of a `DMDA`
 
   Not Collective
 
@@ -684,7 +679,7 @@ PetscErrorCode DMDAVecRestoreArrayDOFRead(DM da, Vec vec, void *array)
   `array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1)` where the values are obtained from
   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
-.seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `DMDAVecRestoreArrayWriteF90()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`,
+.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `DMDAVecRestoreArrayWriteF90()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`
 @*/
 PetscErrorCode DMDAVecGetArrayDOFWrite(DM da, Vec vec, void *array)
@@ -725,14 +720,14 @@ PetscErrorCode DMDAVecGetArrayDOFWrite(DM da, Vec vec, void *array)
   Input Parameters:
 + da    - the distributed array
 . vec   - a vector the same size as one obtained with `DMCreateGlobalVector()` or `DMCreateLocalVector()`
-- array - the `array` pointer is zeroed
+- array - the `array` pointer
 
   Level: intermediate
 
-  Fortran Notes:
+  Fortran Note:
   Use `DMDAVecRestoreArrayWriteF90()`
 
-.seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`, `DMDAVecRestoreArrayDOF()`,
+.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`, `DMDAVecRestoreArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`
 @*/
 PetscErrorCode DMDAVecRestoreArrayDOFWrite(DM da, Vec vec, void *array)

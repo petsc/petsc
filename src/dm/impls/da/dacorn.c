@@ -34,7 +34,7 @@ PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
   Note:
   It must be called after having called `DMSetUp()`.
 
-.seealso: `DM`, `DMDA`, `DMDAGetFieldName()`, `DMDASetCoordinateName()`, `DMDAGetCoordinateName()`, `DMDASetFieldNames()`, `DMSetUp()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetFieldName()`, `DMDASetCoordinateName()`, `DMDAGetCoordinateName()`, `DMDASetFieldNames()`, `DMSetUp()`
 @*/
 PetscErrorCode DMDASetFieldName(DM da, PetscInt nf, const char name[])
 {
@@ -62,10 +62,10 @@ PetscErrorCode DMDASetFieldName(DM da, PetscInt nf, const char name[])
 
   Level: intermediate
 
-  Fortran Notes:
+  Fortran Note:
   Use `DMDAGetFieldName()`
 
-.seealso: `DM`, `DMDA`, `DMDAGetFieldName()`, `DMDASetCoordinateName()`, `DMDAGetCoordinateName()`, `DMDASetFieldName()`, `DMDASetFieldNames()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetFieldName()`, `DMDASetCoordinateName()`, `DMDAGetCoordinateName()`, `DMDASetFieldName()`, `DMDASetFieldNames()`
 @*/
 PetscErrorCode DMDAGetFieldNames(DM da, const char *const **names)
 {
@@ -83,17 +83,17 @@ PetscErrorCode DMDAGetFieldNames(DM da, const char *const **names)
 
   Input Parameters:
 + da    - the `DMDA` object
-- names - the names of the components, final string must be NULL, must have the same number of entries as the dof used in creating the `DMDA`
+- names - the names of the components, final string must be `NULL`, must have the same number of entries as the dof used in creating the `DMDA`
 
   Level: intermediate
 
   Note:
   It must be called after having called `DMSetUp()`.
 
-  Fortran Notes:
+  Fortran Note:
   Use `DMDASetFieldName()`
 
-.seealso: `DM`, `DMDA`, `DMDAGetFieldName()`, `DMDASetCoordinateName()`, `DMDAGetCoordinateName()`, `DMDASetFieldName()`, `DMSetUp()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetFieldName()`, `DMDASetCoordinateName()`, `DMDAGetCoordinateName()`, `DMDASetFieldName()`, `DMSetUp()`
 @*/
 PetscErrorCode DMDASetFieldNames(DM da, const char *const *names)
 {
@@ -130,7 +130,7 @@ PetscErrorCode DMDASetFieldNames(DM da, const char *const *names)
   Note:
   It must be called after having called `DMSetUp()`.
 
-.seealso: `DM`, `DMDA`, `DMDASetFieldName()`, `DMDASetCoordinateName()`, `DMDAGetCoordinateName()`, `DMSetUp()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDASetFieldName()`, `DMDASetCoordinateName()`, `DMDAGetCoordinateName()`, `DMSetUp()`
 @*/
 PetscErrorCode DMDAGetFieldName(DM da, PetscInt nf, const char **name)
 {
@@ -152,7 +152,7 @@ PetscErrorCode DMDAGetFieldName(DM da, PetscInt nf, const char **name)
 
   Input Parameters:
 + dm   - the `DMDA`
-. nf   - coordinate number for the DMDA (0, 1, ... dim-1),
+. nf   - coordinate number for the `DMDA` (0, 1, ... dim-1),
 - name - the name of the coordinate
 
   Level: intermediate
@@ -160,7 +160,7 @@ PetscErrorCode DMDAGetFieldName(DM da, PetscInt nf, const char **name)
   Note:
   Must be called after having called `DMSetUp()`.
 
-.seealso: `DM`, `DMDA`, `DMDAGetCoordinateName()`, `DMDASetFieldName()`, `DMDAGetFieldName()`, `DMSetUp()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetCoordinateName()`, `DMDASetFieldName()`, `DMDAGetFieldName()`, `DMSetUp()`
 @*/
 PetscErrorCode DMDASetCoordinateName(DM dm, PetscInt nf, const char name[])
 {
@@ -192,7 +192,7 @@ PetscErrorCode DMDASetCoordinateName(DM dm, PetscInt nf, const char name[])
   Note:
   It must be called after having called `DMSetUp()`.
 
-.seealso: `DM`, `DMDA`, `DMDASetCoordinateName()`, `DMDASetFieldName()`, `DMDAGetFieldName()`, `DMSetUp()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDASetCoordinateName()`, `DMDASetFieldName()`, `DMDAGetFieldName()`, `DMSetUp()`
 @*/
 PetscErrorCode DMDAGetCoordinateName(DM dm, PetscInt nf, const char **name)
 {
@@ -208,7 +208,7 @@ PetscErrorCode DMDAGetCoordinateName(DM dm, PetscInt nf, const char **name)
 }
 
 /*@C
-  DMDAGetCorners - Returns the global (x,y,z) indices of the lower left
+  DMDAGetCorners - Returns the global (`x`,`y`,`z`) indices of the lower left
   corner and size of the local region, excluding ghost points.
 
   Not Collective
@@ -228,12 +228,12 @@ PetscErrorCode DMDAGetCoordinateName(DM dm, PetscInt nf, const char **name)
 
   Note:
   The corner information is independent of the number of degrees of
-  freedom per node set with the `DMDACreateXX()` routine. Thus the x, y, z, and
-  m, n, p can be thought of as coordinates on a logical grid, where each
+  freedom per node set with the `DMDACreateXX()` routine. Thus the `x`, `y`, `z`, and
+  `m`, `n`, `p` can be thought of as coordinates on a logical grid, where each
   grid point has (potentially) several degrees of freedom.
-  Any of y, z, n, and p can be passed in as NULL if not needed.
+  Any of `y`, `z`, `n`, and `p` can be passed in as `NULL` if not needed.
 
-.seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetOwnershipRanges()`, `DMStagGetCorners()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetOwnershipRanges()`, `DMStagGetCorners()`
 @*/
 PetscErrorCode DMDAGetCorners(DM da, PetscInt *x, PetscInt *y, PetscInt *z, PetscInt *m, PetscInt *n, PetscInt *p)
 {
@@ -297,7 +297,8 @@ PetscErrorCode DMDAGetReducedDMDA(DM da, PetscInt nfields, DM *nda)
 
   Level: intermediate
 
-.seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMSetCoordinates()`, `DMDASetUniformCoordinates()`, `DMGetCoordinates()`, `DMDAGetGhostedCoordinates()`, `DMStagCreateCompatibleDMStag()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMSetCoordinates()`, `DMDASetUniformCoordinates()`, `DMGetCoordinates()`, `DMDAGetGhostedCoordinates()`,
+          `DMStagCreateCompatibleDMStag()`
 @*/
 PetscErrorCode DMDACreateCompatibleDMDA(DM da, PetscInt nfields, DM *nda)
 {
@@ -363,7 +364,10 @@ PetscErrorCode DMDACreateCompatibleDMDA(DM da, PetscInt nfields, DM *nda)
 
   Level: intermediate
 
-.seealso: `DM`, `DMDA`, `DMDASetCoordinateName()`, `DMDASetFieldName()`, `DMDAGetFieldName()`, `DMDARestoreCoordinateArray()`
+  Note:
+  Use  `DMDARestoreCoordinateArray()` to return the array
+
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDASetCoordinateName()`, `DMDASetFieldName()`, `DMDAGetFieldName()`, `DMDARestoreCoordinateArray()`
 @*/
 PetscErrorCode DMDAGetCoordinateArray(DM dm, void *xc)
 {
@@ -379,7 +383,7 @@ PetscErrorCode DMDAGetCoordinateArray(DM dm, void *xc)
 }
 
 /*@C
-  DMDARestoreCoordinateArray - Sets an array containing the coordinates of the `DMDA`
+  DMDARestoreCoordinateArray - Returns an array containing the coordinates of the `DMDA` obtained with `DMDAGetCoordinateArray()`
 
   Not Collective; No Fortran Support
 
@@ -389,7 +393,7 @@ PetscErrorCode DMDAGetCoordinateArray(DM dm, void *xc)
 
   Level: intermediate
 
-.seealso: `DM`, `DMDA`, `DMDASetCoordinateName()`, `DMDASetFieldName()`, `DMDAGetFieldName()`, `DMDAGetCoordinateArray()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDASetCoordinateName()`, `DMDASetFieldName()`, `DMDAGetFieldName()`, `DMDAGetCoordinateArray()`
 @*/
 PetscErrorCode DMDARestoreCoordinateArray(DM dm, void *xc)
 {

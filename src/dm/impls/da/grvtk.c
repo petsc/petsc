@@ -494,14 +494,14 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
   Level: developer
 
   Notes:
-  This function is a callback used by the VTK viewer to actually write the file.
+  This function is a callback used by the `PETSCVIEWERVTK` viewer to actually write the file.
   The reason for this odd model is that the VTK file format does not provide any way to write one field at a time.
   Instead, metadata for the entire file needs to be available up-front before you can start writing the file.
 
-  If any fields have been named (see e.g. DMDASetFieldName()), then individual scalar
+  If any fields have been named (see e.g. `DMDASetFieldName()`), then individual scalar
   fields are written. Otherwise, a single multi-dof (vector) field is written.
 
-.seealso: `DMDA`, `DM`, `PETSCVIEWERVTK`
+.seealso: [](sec_struct), `DMDA`, `DM`, `PETSCVIEWERVTK`, `DMDASetFieldName()`
 @*/
 PetscErrorCode DMDAVTKWriteAll(PetscObject odm, PetscViewer viewer)
 {

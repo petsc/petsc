@@ -299,17 +299,20 @@ PetscErrorCode DMDASNESSetFunctionLocalVec(DM dm, InsertMode imode, PetscErrorCo
 
   Input Parameters:
 + dm   - `DM` to associate callback with
-. func - local Jacobian evaluation
+. func - local Jacobian evaluation function
 - ctx  - optional context for local Jacobian evaluation
 
   Calling sequence of `func`:
 + info - `DMDALocalInfo` defining the subdomain to evaluate the Jacobian at
 . x    - dimensional pointer to state at which to evaluate Jacobian (e.g. PetscScalar *x or **x or ***x)
-. J    - Mat object for the Jacobian
-. M    - Mat object for the Jacobian preconditioner matrix, often `J`
+. J    - `Mat` object for the Jacobian
+. M    - `Mat` object for the Jacobian preconditioner matrix, often `J`
 - ctx  - optional context passed above
 
   Level: beginner
+
+  Note:
+  The `J` and `M` matrices are created internally by `DMCreateMatrix()`
 
 .seealso: [](ch_snes), `DMDA`, `DMDASNESSetFunctionLocal()`, `DMSNESSetJacobian()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/

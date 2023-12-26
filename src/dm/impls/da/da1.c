@@ -315,21 +315,20 @@ PetscErrorCode DMSetUp_DA_1D(DM da)
 
 /*@C
   DMDACreate1d - Creates an object that will manage the communication of  one-dimensional
-  regular array data that is distributed across some processors.
+  regular array data that is distributed across one or mpre MPI processes.
 
   Collective
 
   Input Parameters:
 + comm - MPI communicator
 . bx   - type of ghost cells at the boundary the array should have, if any. Use
-          `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, or `DM_BOUNDARY_PERIODIC`.
+         `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, or `DM_BOUNDARY_PERIODIC`.
 . M    - global dimension of the array (that is the number of grid points)
-            from the command line with -da_grid_x <M>)
 . dof  - number of degrees of freedom per node
 . s    - stencil width
 - lx   - array containing number of nodes in the X direction on each processor,
-        or NULL. If non-null, must be of length as the number of processes in the MPI_Comm.
-        The sum of these entries must equal M
+         or `NULL`. If non-null, must be of length as the number of processes in the MPI_Comm.
+         The sum of these entries must equal `M`
 
   Output Parameter:
 . da - the resulting distributed array object
@@ -352,10 +351,10 @@ PetscErrorCode DMSetUp_DA_1D(DM da)
   If you wish to use the options database to change values in the `DMDA` call `DMSetFromOptions()` after this call
   but before `DMSetUp()`.
 
-.seealso: `DMDA`, `DM`, `DMDestroy()`, `DMView()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMGlobalToLocalBegin()`, `DMDASetRefinementFactor()`,
+.seealso: [](sec_struct), `DMDA`, `DM`, `DMDestroy()`, `DMView()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMGlobalToLocalBegin()`, `DMDASetRefinementFactor()`,
           `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMLocalToLocalBegin()`, `DMLocalToLocalEnd()`, `DMDAGetRefinementFactor()`,
           `DMDAGetInfo()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMDACreateNaturalVector()`, `DMLoad()`, `DMDAGetOwnershipRanges()`,
-          `DMStagCreate1d()`
+          `DMStagCreate1d()`, `DMBoundaryType`
 @*/
 PetscErrorCode DMDACreate1d(MPI_Comm comm, DMBoundaryType bx, PetscInt M, PetscInt dof, PetscInt s, const PetscInt lx[], DM *da)
 {
