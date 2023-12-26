@@ -180,7 +180,7 @@ static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5R
 }
 
 /*@C
-  PetscViewerHDF5Load - Read a raw array from the `PETSCVIEWERHDF5` dataset.
+  PetscViewerHDF5Load - Read a raw array from the `PETSCVIEWERHDF5` dataset in parallel
 
   Collective; No Fortran Support
 
@@ -206,7 +206,7 @@ static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5R
   This name is relative to the current group returned by `PetscViewerHDF5OpenGroup()`.
 
 .seealso: `PetscViewer`, `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5OpenGroup()`, `PetscViewerHDF5ReadSizes()`,
-          `VecLoad()`, `ISLoad()`
+          `VecLoad()`, `ISLoad()`, `PetscLayout`
 @*/
 PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLayout map, hid_t datatype, void **newarr)
 {
