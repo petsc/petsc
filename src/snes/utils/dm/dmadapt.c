@@ -30,7 +30,7 @@ static PetscErrorCode DMAdaptorTransferSolution_Exact_Private(DMAdaptor adaptor,
 
   Level: beginner
 
-.seealso: `DM`, `DMAdaptor`, `DMAdaptorDestroy()`, `DMAdaptorAdapt()`, `PetscConvEst`, `PetscConvEstCreate()`
+.seealso: [](ch_dmbase), `DM`, `DMAdaptor`, `DMAdaptorDestroy()`, `DMAdaptorAdapt()`, `PetscConvEst`, `PetscConvEstCreate()`
 @*/
 PetscErrorCode DMAdaptorCreate(MPI_Comm comm, DMAdaptor *adaptor)
 {
@@ -70,7 +70,7 @@ PetscErrorCode DMAdaptorCreate(MPI_Comm comm, DMAdaptor *adaptor)
 
   Level: beginner
 
-.seealso: `DM`, `DMAdaptor`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: [](ch_dmbase), `DM`, `DMAdaptor`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
 {
@@ -104,7 +104,7 @@ PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
 
   Level: beginner
 
-.seealso: `DM`, `DMAdaptor`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: [](ch_dmbase), `DM`, `DMAdaptor`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorSetFromOptions(DMAdaptor adaptor)
 {
@@ -131,7 +131,7 @@ PetscErrorCode DMAdaptorSetFromOptions(DMAdaptor adaptor)
 
   Level: beginner
 
-.seealso: `DM`, `DMAdaptor`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: [](ch_dmbase), `DM`, `DMAdaptor`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorView(DMAdaptor adaptor, PetscViewer viewer)
 {
@@ -157,7 +157,7 @@ PetscErrorCode DMAdaptorView(DMAdaptor adaptor, PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: `DM`, `DMAdaptor`, `DMAdaptorSetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: [](ch_dmbase), `DM`, `DMAdaptor`, `DMAdaptorSetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorGetSolver(DMAdaptor adaptor, SNES *snes)
 {
@@ -179,7 +179,7 @@ PetscErrorCode DMAdaptorGetSolver(DMAdaptor adaptor, SNES *snes)
 
   Level: intermediate
 
-.seealso: `DMAdaptor`, `DMAdaptorGetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: [](ch_dmbase), `DMAdaptor`, `DMAdaptorGetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorSetSolver(DMAdaptor adaptor, SNES snes)
 {
@@ -204,7 +204,7 @@ PetscErrorCode DMAdaptorSetSolver(DMAdaptor adaptor, SNES snes)
 
   Level: intermediate
 
-.seealso: `DMAdaptor`, `DMAdaptorSetSequenceLength()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: [](ch_dmbase), `DMAdaptor`, `DMAdaptorSetSequenceLength()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorGetSequenceLength(DMAdaptor adaptor, PetscInt *num)
 {
@@ -226,7 +226,7 @@ PetscErrorCode DMAdaptorGetSequenceLength(DMAdaptor adaptor, PetscInt *num)
 
   Level: intermediate
 
-.seealso: `DMAdaptorGetSequenceLength()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: [](ch_dmbase), `DMAdaptorGetSequenceLength()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorSetSequenceLength(DMAdaptor adaptor, PetscInt num)
 {
@@ -246,7 +246,7 @@ PetscErrorCode DMAdaptorSetSequenceLength(DMAdaptor adaptor, PetscInt num)
 
   Level: beginner
 
-.seealso: `DMAdaptor`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: [](ch_dmbase), `DMAdaptor`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorSetUp(DMAdaptor adaptor)
 {
@@ -427,7 +427,7 @@ static PetscErrorCode DMAdaptorPostAdapt(DMAdaptor adaptor)
   Developer Note:
   Some of the input arguments are absurdly specialized to special situations, it is not clear this is a good general API
 
-.seealso: `DMAdaptor`, `DMAdaptorComputeErrorIndicator()`
+.seealso: [](ch_dmbase), `DMAdaptor`, `DMAdaptorComputeErrorIndicator()`
 */
 static PetscErrorCode DMAdaptorSimpleErrorIndicator_Private(DMAdaptor adaptor, PetscInt dim, PetscInt Nc, const PetscScalar *field, const PetscScalar *gradient, const PetscFVCellGeom *cg, PetscReal *errInd, void *ctx)
 {
@@ -788,7 +788,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
 
   Level: intermediate
 
-.seealso: `DMAdaptor`, `DMAdaptationStrategy`, `DMAdaptorSetSolver()`, `DMAdaptorCreate()`
+.seealso: [](ch_dmbase), `DMAdaptor`, `DMAdaptationStrategy`, `DMAdaptorSetSolver()`, `DMAdaptorCreate()`
 @*/
 PetscErrorCode DMAdaptorAdapt(DMAdaptor adaptor, Vec x, DMAdaptationStrategy strategy, DM *adm, Vec *ax)
 {

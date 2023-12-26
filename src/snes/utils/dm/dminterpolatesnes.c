@@ -17,7 +17,10 @@
 
   Level: beginner
 
-.seealso: [](ch_snes), `DM`, `DMInterpolationInfo`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationDestroy()`
+  Developer Note:
+  The naming is incorrect, either the object should be named `DMInterpolation` or all the routines should begin with `DMInterpolationInfo`
+
+.seealso: [](ch_dmbase), `DM`, `DMInterpolationInfo`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationDestroy()`
 @*/
 PetscErrorCode DMInterpolationCreate(MPI_Comm comm, DMInterpolationInfo *ctx)
 {
@@ -46,7 +49,7 @@ PetscErrorCode DMInterpolationCreate(MPI_Comm comm, DMInterpolationInfo *ctx)
 
   Level: intermediate
 
-.seealso: [](ch_snes), `DM`, `DMInterpolationInfo`, `DMInterpolationGetDim()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
+.seealso: [](ch_dmbase), `DM`, `DMInterpolationInfo`, `DMInterpolationGetDim()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
 @*/
 PetscErrorCode DMInterpolationSetDim(DMInterpolationInfo ctx, PetscInt dim)
 {
@@ -69,7 +72,7 @@ PetscErrorCode DMInterpolationSetDim(DMInterpolationInfo ctx, PetscInt dim)
 
   Level: intermediate
 
-.seealso: [](ch_snes), `DM`, `DMInterpolationInfo`, `DMInterpolationSetDim()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
+.seealso: [](ch_dmbase), `DM`, `DMInterpolationInfo`, `DMInterpolationSetDim()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
 @*/
 PetscErrorCode DMInterpolationGetDim(DMInterpolationInfo ctx, PetscInt *dim)
 {
@@ -90,7 +93,7 @@ PetscErrorCode DMInterpolationGetDim(DMInterpolationInfo ctx, PetscInt *dim)
 
   Level: intermediate
 
-.seealso: [](ch_snes), `DM`, `DMInterpolationInfo`, `DMInterpolationGetDof()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
+.seealso: [](ch_dmbase), `DM`, `DMInterpolationInfo`, `DMInterpolationGetDof()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
 @*/
 PetscErrorCode DMInterpolationSetDof(DMInterpolationInfo ctx, PetscInt dof)
 {
@@ -113,7 +116,7 @@ PetscErrorCode DMInterpolationSetDof(DMInterpolationInfo ctx, PetscInt dof)
 
   Level: intermediate
 
-.seealso: [](ch_snes), `DM`, `DMInterpolationInfo`, `DMInterpolationSetDof()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
+.seealso: [](ch_dmbase), `DM`, `DMInterpolationInfo`, `DMInterpolationSetDof()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
 @*/
 PetscErrorCode DMInterpolationGetDof(DMInterpolationInfo ctx, PetscInt *dof)
 {
@@ -131,14 +134,14 @@ PetscErrorCode DMInterpolationGetDof(DMInterpolationInfo ctx, PetscInt *dof)
   Input Parameters:
 + ctx    - the context
 . n      - the number of points
-- points - the coordinates for each point, an array of size n * dim
+- points - the coordinates for each point, an array of size `n` * dim
 
   Level: intermediate
 
   Note:
-  The coordinate information is copied.
+  The input coordinate information is copied into the object.
 
-.seealso: [](ch_snes), `DM`, `DMInterpolationInfo`, `DMInterpolationSetDim()`, `DMInterpolationEvaluate()`, `DMInterpolationCreate()`
+.seealso: [](ch_dmbase), `DM`, `DMInterpolationInfo`, `DMInterpolationSetDim()`, `DMInterpolationEvaluate()`, `DMInterpolationCreate()`
 @*/
 PetscErrorCode DMInterpolationAddPoints(DMInterpolationInfo ctx, PetscInt n, PetscReal points[])
 {
@@ -165,7 +168,7 @@ PetscErrorCode DMInterpolationAddPoints(DMInterpolationInfo ctx, PetscInt n, Pet
 
   Level: intermediate
 
-.seealso: [](ch_snes), `DM`, `DMInterpolationInfo`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
+.seealso: [](ch_dmbase), `DM`, `DMInterpolationInfo`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
 @*/
 PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool redundantPoints, PetscBool ignoreOutsideDomain)
 {
@@ -296,7 +299,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   The local vector entries correspond to interpolation points lying on this process, according to the associated `DM`.
   This is a borrowed vector that the user should not destroy.
 
-.seealso: [](ch_snes), `DM`, `DMInterpolationInfo`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
+.seealso: [](ch_dmbase), `DM`, `DMInterpolationInfo`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
 @*/
 PetscErrorCode DMInterpolationGetCoordinates(DMInterpolationInfo ctx, Vec *coordinates)
 {
@@ -323,7 +326,7 @@ PetscErrorCode DMInterpolationGetCoordinates(DMInterpolationInfo ctx, Vec *coord
   Note:
   This vector should be returned using `DMInterpolationRestoreVector()`.
 
-.seealso: [](ch_snes), `DM`, `DMInterpolationInfo`, `DMInterpolationRestoreVector()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
+.seealso: [](ch_dmbase), `DM`, `DMInterpolationInfo`, `DMInterpolationRestoreVector()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
 @*/
 PetscErrorCode DMInterpolationGetVector(DMInterpolationInfo ctx, Vec *v)
 {
@@ -348,7 +351,7 @@ PetscErrorCode DMInterpolationGetVector(DMInterpolationInfo ctx, Vec *v)
 
   Level: intermediate
 
-.seealso: [](ch_snes), `DM`, `DMInterpolationInfo`, `DMInterpolationGetVector()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
+.seealso: [](ch_dmbase), `DM`, `DMInterpolationInfo`, `DMInterpolationGetVector()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
 @*/
 PetscErrorCode DMInterpolationRestoreVector(DMInterpolationInfo ctx, Vec *v)
 {
@@ -832,22 +835,19 @@ static inline PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, 
 }
 
 /*@C
-  DMInterpolationEvaluate - Using the input from dm and x, calculates interpolated field values at the interpolation points.
+  DMInterpolationEvaluate - Using the input from `dm` and `x`, calculates interpolated field values at the interpolation points.
 
   Input Parameters:
-+ ctx - The `DMInterpolationInfo` context
++ ctx - The `DMInterpolationInfo` context obtained with `DMInterpolationCreate()`
 . dm  - The `DM`
-- x   - The local vector containing the field to be interpolated
+- x   - The local vector containing the field to be interpolated, obtained with `DMInterpolationGetCoordinates()`
 
   Output Parameter:
-. v - The vector containing the interpolated values
+. v - The vector containing the interpolated values, obtained with `DMInterpolationGetVector()`
 
   Level: beginner
 
-  Note:
-  A suitable `v` can be obtained using `DMInterpolationGetVector()`.
-
-.seealso: [](ch_snes), `DM`, `DMInterpolationInfo`, `DMInterpolationGetVector()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
+.seealso: [](ch_dmbase), `DM`, `DMInterpolationInfo`, `DMInterpolationGetVector()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`, `DMInterpolationGetCoordinates()`
 @*/
 PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo ctx, DM dm, Vec x, Vec v)
 {
@@ -976,7 +976,7 @@ PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo ctx, DM dm, Vec x, Ve
 
   Level: beginner
 
-.seealso: [](ch_snes), `DM`, `DMInterpolationInfo`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
+.seealso: [](ch_dmbase), `DM`, `DMInterpolationInfo`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`, `DMInterpolationCreate()`
 @*/
 PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *ctx)
 {
