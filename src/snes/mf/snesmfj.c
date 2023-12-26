@@ -217,7 +217,7 @@ PetscErrorCode MatSNESMFGetReuseBase(Mat J, PetscBool *use)
 }
 
 /*@
-  MatCreateSNESMF - Creates a matrix-free matrix context for use with
+  MatCreateSNESMF - Creates a finite differencing based matrix-free matrix context for use with
   a `SNES` solver.  This matrix can be used as the Jacobian argument for
   the routine `SNESSetJacobian()`. See `MatCreateMFFD()` for details on how
   the finite difference computation is done.
@@ -249,8 +249,15 @@ PetscErrorCode MatSNESMFGetReuseBase(Mat J, PetscBool *use)
 
   Using a different function for the differencing will not work if you are using non-linear left preconditioning.
 
+  This uses finite-differencing to apply the operator. To create a matrix-free `Mat` whose matrix-vector operator you
+  provide with your own function use `MatCreateShell()`.
+
+  Developer Note:
+  This function should really be called `MatCreateSNESMFFD()` in correspondence to `MatCreateMFFD()` to clearly indicate
+  that this is for using finite differences to apply the operator matrix-free.
+
 .seealso: [](ch_snes), `SNES`, `MATMFFD`, `MatDestroy()`, `MatMFFDSetFunction()`, `MatMFFDSetFunctionError()`, `MatMFFDDSSetUmin()`
-          `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`, `MatCreateMFFD()`,
+          `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`, `MatCreateMFFD()`, `MatCreateShell()`,
           `MatMFFDGetH()`, `MatMFFDRegister()`, `MatMFFDComputeJacobian()`, `MatSNESMFSetReuseBase()`, `MatSNESMFGetReuseBase()`
 @*/
 PetscErrorCode MatCreateSNESMF(SNES snes, Mat *J)
