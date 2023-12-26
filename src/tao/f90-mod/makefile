@@ -1,7 +1,6 @@
 -include ../../../petscdir.mk
 #requiresdefine   'PETSC_USE_FORTRAN_BINDINGS'
 
-LIBBASE    = libpetsctao
 MANSEC     = Tao
 CLEANFILES = *.mod
 

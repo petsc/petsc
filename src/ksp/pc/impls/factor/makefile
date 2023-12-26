@@ -1,6 +1,5 @@
 -include ../../../../../petscdir.mk
 
-LIBBASE   = libpetscksp
 MANSEC    = KSP
 SUBMANSEC = PC
 

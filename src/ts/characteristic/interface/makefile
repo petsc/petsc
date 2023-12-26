@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 #requiresscalar    real
 
-LIBBASE   = libpetscts
 MANSEC    = TS
 SUBMANSEC = Characteristic
 

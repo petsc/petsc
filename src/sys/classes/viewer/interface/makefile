@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 
 CFLAGS    = -Dhello=hello2
-LIBBASE   = libpetscsys
 MANSEC    = Sys
 SUBMANSEC = Viewer
 

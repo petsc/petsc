@@ -2,7 +2,6 @@
 #requirespackage   'PETSC_HAVE_HYPRE'
 
 CFLAGS   = ${HYPRE_INCLUDE}
-LIBBASE  = libpetscmat
 MANSEC   = Mat
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

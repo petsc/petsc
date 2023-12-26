@@ -1,7 +1,6 @@
 -include ../../../../../../petscdir.mk
 #requirespackage  'PETSC_HAVE_PARMMG'
 
-LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMPlex
 

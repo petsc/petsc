@@ -2,7 +2,6 @@
 #requirespackage 'PETSC_HAVE_PTSCOTCH'
 
 CPPFLAGS  = ${SCOTCH_INCLUDE}
-LIBBASE   = libpetscmat
 MANSEC    = Mat
 SUBMANSEC = MatGraphOperations
 

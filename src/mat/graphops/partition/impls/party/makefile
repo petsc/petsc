@@ -2,7 +2,6 @@
 #requirespackage 'PETSC_HAVE_PARTY'
 
 CPPFLAGS  = ${PARTY_INCLUDE}
-LIBBASE   = libpetscmat
 MANSEC    = Mat
 SUBMANSEC = MatGraphOperations
 

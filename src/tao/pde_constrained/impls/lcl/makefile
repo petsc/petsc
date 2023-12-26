@@ -1,7 +1,6 @@
 -include ../../pde_../../../petscdir.mk
 #requiresscalar    real
 
-LIBBASE  = libpetsctao
 MANSEC   = Tao
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

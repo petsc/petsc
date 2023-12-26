@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 #requiresscalar    real
 
-LIBBASE   = libpetsctao
 MANSEC    = Tao
 SUBMANSEC = TaoLineSearch
 
