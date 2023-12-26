@@ -2,20 +2,20 @@
 #include <petsc/private/dmdaimpl.h> /*I  "petscdmda.h"   I*/
 
 /*@
-  DMDAConvertToCell - Convert (i,j,k) to local cell number
+  DMDAConvertToCell - Convert a (i,j,k) location in a `DMDA` to its local cell or vertex number
 
   Not Collective
 
   Input Parameters:
 + dm - the distributed array
-- s  - A `MatStencil` giving (i,j,k)
+- s  - A `MatStencil` that provides (i,j,k)
 
   Output Parameter:
-. cell - the local cell number
+. cell - the local cell or vertext number
 
   Level: developer
 
-.seealso: `DM`, `DMDA`
+.seealso: [](sec_struct), `DM`, `DMDA`
 @*/
 PetscErrorCode DMDAConvertToCell(DM dm, MatStencil s, PetscInt *cell)
 {

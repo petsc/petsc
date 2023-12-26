@@ -1435,18 +1435,18 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
 
 /*@C
   DMDACreate3d - Creates an object that will manage the communication of three-dimensional
-  regular array data that is distributed across some processors.
+  regular array data that is distributed across one or more MPI processes.
 
   Collective
 
   Input Parameters:
 + comm         - MPI communicator
 . bx           - type of x ghost nodes the array have.
-         Use one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`.
+                 Use one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`.
 . by           - type of y ghost nodes the array have.
-         Use one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`.
+                 Use one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`.
 . bz           - type of z ghost nodes the array have.
-         Use one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`.
+                 Use one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`.
 . stencil_type - Type of stencil (`DMDA_STENCIL_STAR` or `DMDA_STENCIL_BOX`)
 . M            - global dimension in x direction of the array
 . N            - global dimension in y direction of the array
@@ -1474,7 +1474,7 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
 . -da_refine_x <rx>     - refinement ratio in x direction
 . -da_refine_y <ry>     - refinement ratio in y direction
 . -da_refine_z <rz>     - refinement ratio in z directio
-- -da_refine <n>        - refine the DMDA n times before creating it
+- -da_refine <n>        - refine the `DMDA` n times before creating it
 
   Level: beginner
 
@@ -1493,13 +1493,13 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
 
   You must call `DMSetUp()` after this call before using this `DM`.
 
-  If you wish to use the options database to change values in the `DMDA` call `DMSetFromOptions()` after this call
+  To use the options database to change values in the `DMDA` call `DMSetFromOptions()` after this call
   but before `DMSetUp()`.
 
-.seealso: `DM`, `DMDA`, `DMDestroy()`, `DMView()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMGlobalToLocalBegin()`, `DMDAGetRefinementFactor()`,
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDestroy()`, `DMView()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMGlobalToLocalBegin()`, `DMDAGetRefinementFactor()`,
           `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMLocalToLocalBegin()`, `DMLocalToLocalEnd()`, `DMDASetRefinementFactor()`,
           `DMDAGetInfo()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMDACreateNaturalVector()`, `DMLoad()`, `DMDAGetOwnershipRanges()`,
-          `DMStagCreate3d()`
+          `DMStagCreate3d()`, `DMBoundaryType`
 @*/
 PetscErrorCode DMDACreate3d(MPI_Comm comm, DMBoundaryType bx, DMBoundaryType by, DMBoundaryType bz, DMDAStencilType stencil_type, PetscInt M, PetscInt N, PetscInt P, PetscInt m, PetscInt n, PetscInt p, PetscInt dof, PetscInt s, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[], DM *da)
 {

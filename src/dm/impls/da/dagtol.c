@@ -77,7 +77,7 @@ PetscErrorCode DMLocalToGlobalEnd_DA(DM da, Vec l, InsertMode mode, Vec g)
   This is an internal routine called by `DMDAGlobalToNatural()` to
   create the scatter context.
 
-.seealso: `DM`, `DMDA`, `DMDAGlobalToNaturalBegin()`, `DMDAGlobalToNaturalEnd()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGlobalToNaturalBegin()`, `DMDAGlobalToNaturalEnd()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
           `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMDACreateNaturalVector()`
 */
 static PetscErrorCode DMDAGlobalToNatural_Create(DM da)
@@ -115,11 +115,11 @@ static PetscErrorCode DMDAGlobalToNatural_Create(DM da)
 
   Input Parameters:
 + da   - the distributed array context
-. g    - the global vector
+. g    - the global vector, see `DMCreateGlobalVector()`
 - mode - one of `INSERT_VALUES` or `ADD_VALUES`
 
   Output Parameter:
-. n - the natural ordering values
+. n - the natural ordering values, see `DMDACreateNaturalVector()`
 
   Level: advanced
 
@@ -131,7 +131,7 @@ static PetscErrorCode DMDAGlobalToNatural_Create(DM da)
 
   You must call `DMDACreateNaturalVector()` before using this routine
 
-.seealso: `DM`, `DMDA`, `DMDAGlobalToNaturalEnd()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGlobalToNaturalEnd()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
           `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMDACreateNaturalVector()`
 @*/
 PetscErrorCode DMDAGlobalToNaturalBegin(DM da, Vec g, InsertMode mode, Vec n)
@@ -158,11 +158,11 @@ PetscErrorCode DMDAGlobalToNaturalBegin(DM da, Vec g, InsertMode mode, Vec n)
 
   Input Parameters:
 + da   - the distributed array context
-. g    - the global vector
+. g    - the global vector, see `DMCreateGlobalVector()`
 - mode - one of `INSERT_VALUES` or `ADD_VALUES`
 
   Output Parameter:
-. n - the global values in the natural ordering
+. n - the global values in the natural ordering, see `DMDACreateNaturalVector()`
 
   Level: advanced
 
@@ -172,7 +172,7 @@ PetscErrorCode DMDAGlobalToNaturalBegin(DM da, Vec g, InsertMode mode, Vec n)
   must have the same parallel data layout; they could, for example, be
   obtained with VecDuplicate() from the `DMDA` originating vectors.
 
-.seealso: `DM`, `DMDA`, `DMDAGlobalToNaturalBegin()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGlobalToNaturalBegin()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
           `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMDACreateNaturalVector()`
 @*/
 PetscErrorCode DMDAGlobalToNaturalEnd(DM da, Vec g, InsertMode mode, Vec n)
@@ -196,7 +196,7 @@ PetscErrorCode DMDAGlobalToNaturalEnd(DM da, Vec g, InsertMode mode, Vec n)
 
   Input Parameters:
 + da   - the distributed array context
-. g    - the global vector in a natural ordering
+. g    - the global vector in a natural ordering, see `DMDACreateNaturalVector()`
 - mode - one of `INSERT_VALUES` or `ADD_VALUES`
 
   Output Parameter:
@@ -210,7 +210,7 @@ PetscErrorCode DMDAGlobalToNaturalEnd(DM da, Vec g, InsertMode mode, Vec n)
   must have the same parallel data layout; they could, for example, be
   obtained with `VecDuplicate()` from the `DMDA` originating vectors.
 
-.seealso: `DM`, `DMDA`, `DMDAGlobalToNaturalEnd()`, `DMDAGlobalToNaturalBegin()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGlobalToNaturalEnd()`, `DMDAGlobalToNaturalBegin()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
           `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMDACreateNaturalVector()`
 @*/
 PetscErrorCode DMDANaturalToGlobalBegin(DM da, Vec n, InsertMode mode, Vec g)
@@ -251,7 +251,7 @@ PetscErrorCode DMDANaturalToGlobalBegin(DM da, Vec n, InsertMode mode, Vec g)
   must have the same parallel data layout; they could, for example, be
   obtained with `VecDuplicate()` from the `DMDA` originating vectors.
 
-.seealso: `DM`, `DMDA`, `DMDAGlobalToNaturalBegin()`, `DMDAGlobalToNaturalEnd()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGlobalToNaturalBegin()`, `DMDAGlobalToNaturalEnd()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
           `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMDACreateNaturalVector()`
 @*/
 PetscErrorCode DMDANaturalToGlobalEnd(DM da, Vec n, InsertMode mode, Vec g)

@@ -16,7 +16,7 @@ typedef struct {
   DM        resampleDa; /* the Battle-Lemarie interpolant DMDA */
   Vec       resample;   /* Vec of samples, one per dof per sample point */
   fftw_plan p_forward, p_backward;
-  unsigned  p_flag; /* planner flags, FFTW_ESTIMATE,FFTW_MEASURE, FFTW_PATIENT, FFTW_EXHAUSTIVE */
+  unsigned  p_flag; /* planner flags, FFTW_ESTIMATE, FFTW_MEASURE, FFTW_PATIENT, FFTW_EXHAUSTIVE */
 } Mat_USFFT;
 
 #if 0
@@ -136,10 +136,10 @@ PetscErrorCode MatDestroy_SeqUSFFT(Mat A)
    Collective
 
    Input Parameter:
-.   da - geometry of the domain encoded by a `DMDA`
+.  da - geometry of the domain encoded by a `DMDA`
 
    Output Parameter:
-.   A  - the matrix
+.  A  - the matrix
 
   Options Database Key:
 . -mat_usfft_plannerflags - set the FFTW planner flags

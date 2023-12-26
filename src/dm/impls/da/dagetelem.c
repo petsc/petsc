@@ -194,7 +194,8 @@ static PetscErrorCode DMDAGetElements_3D(DM dm, PetscInt *nel, PetscInt *nen, co
 
   Level: intermediate
 
-.seealso: `DM`, `DMDA`, `DMDAElementType`, `DMDASetElementType()`, `DMDAGetElements()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAElementType`, `DMDASetElementType()`, `DMDAGetElements()`, `DMDAGetCorners()`, `DMDAGetGhostCorners()`, `DMDAGetElementsSizes()`,
+          `DMDAGetElementsCornersIS()`, `DMDARestoreElementsCornersIS()`
 @*/
 PetscErrorCode DMDAGetElementsCorners(DM da, PetscInt *gx, PetscInt *gy, PetscInt *gz)
 {
@@ -222,7 +223,7 @@ PetscErrorCode DMDAGetElementsCorners(DM da, PetscInt *gx, PetscInt *gy, PetscIn
 }
 
 /*@
-  DMDAGetElementsSizes - Gets the local number of elements per direction for the non-overlapping decomposition identified by `DMDAGetElements()`
+  DMDAGetElementsSizes - Gets the local number of elements per coordinate direction for the non-overlapping decomposition identified by `DMDAGetElements()`
 
   Not Collective
 
@@ -239,7 +240,7 @@ PetscErrorCode DMDAGetElementsCorners(DM da, PetscInt *gx, PetscInt *gy, PetscIn
   Note:
   It returns the same number of elements, irrespective of the `DMDAElementType`
 
-.seealso: `DM`, `DMDA`, `DMDAElementType`, `DMDASetElementType()`, `DMDAGetElements`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAElementType`, `DMDASetElementType()`, `DMDAGetElements()`, `DMDAGetElementsCorners()`
 @*/
 PetscErrorCode DMDAGetElementsSizes(DM da, PetscInt *mx, PetscInt *my, PetscInt *mz)
 {
@@ -293,7 +294,8 @@ PetscErrorCode DMDAGetElementsSizes(DM da, PetscInt *mx, PetscInt *my, PetscInt 
 
   Level: intermediate
 
-.seealso: `DM`, `DMDA`, `DMDAElementType`, `DMDAGetElementType()`, `DMDAGetElements()`, `DMDARestoreElements()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAElementType`, `DMDAGetElementType()`, `DMDAGetElements()`, `DMDARestoreElements()`,
+          `DMDA_ELEMENT_P1`, `DMDA_ELEMENT_Q1`
 @*/
 PetscErrorCode DMDASetElementType(DM da, DMDAElementType etype)
 {
@@ -330,7 +332,8 @@ PetscErrorCode DMDASetElementType(DM da, DMDAElementType etype)
 
   Level: intermediate
 
-.seealso: `DM`, `DMDA`, `DMDAElementType`, `DMDASetElementType()`, `DMDAGetElements()`, `DMDARestoreElements()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAElementType`, `DMDASetElementType()`, `DMDAGetElements()`, `DMDARestoreElements()`,
+          `DMDA_ELEMENT_P1`, `DMDA_ELEMENT_Q1`
 @*/
 PetscErrorCode DMDAGetElementType(DM da, DMDAElementType *etype)
 {
@@ -357,7 +360,8 @@ PetscErrorCode DMDAGetElementType(DM da, DMDAElementType *etype)
 
   Output Parameters:
 + nel - number of local elements
-. nen - number of nodes in each element (for example in one dimension it is 2, in two dimensions it is 3 or 4)
+. nen - number of nodes in each element (for example in one dimension it is 2, in two dimensions it is 3 (for `DMDA_ELEMENT_P1`) and 4
+        (for `DMDA_ELEMENT_Q1`)
 - e   - the local indices of the elements' vertices
 
   Level: intermediate
@@ -369,14 +373,16 @@ PetscErrorCode DMDAGetElementType(DM da, DMDAElementType *etype)
 
   If on each process you integrate over its owned elements and use `ADD_VALUES` in `Vec`/`MatSetValuesLocal()` then you'll obtain the correct result.
 
-  Fortran Notes:
+  Fortran Note:
   Use
 .vb
    PetscScalar, pointer :: e(:)
 .ve
   to declare the element array
 
-.seealso: `DM`, `DMDA`, `DMDAElementType`, `DMDASetElementType()`, `VecSetValuesLocal()`, `MatSetValuesLocal()`, `DMGlobalToLocalBegin()`, `DMLocalToGlobalBegin()`, `DMDARestoreElements()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAElementType`, `DMDASetElementType()`, `VecSetValuesLocal()`, `MatSetValuesLocal()`,
+          `DMGlobalToLocalBegin()`, `DMLocalToGlobalBegin()`, `DMDARestoreElements()`, `DMDA_ELEMENT_P1`, `DMDA_ELEMENT_Q1`, `DMDAGetElementsSizes()`,
+          `DMDAGetElementsCorners()`
 @*/
 PetscErrorCode DMDAGetElements(DM dm, PetscInt *nel, PetscInt *nen, const PetscInt *e[])
 {
@@ -430,7 +436,8 @@ PetscErrorCode DMDAGetElements(DM dm, PetscInt *nel, PetscInt *nen, const PetscI
   Note:
   Call `DMDARestoreSubdomainCornersIS()` once you have finished accessing the index set.
 
-.seealso: `DM`, `DMDA`, `DMDAElementType`, `DMDASetElementType()`, `DMDAGetElements()`, `DMDARestoreElementsCornersIS()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAElementType`, `DMDASetElementType()`, `DMDAGetElements()`, `DMDARestoreElementsCornersIS()`,
+          `DMDAGetElementsSizes()`, `DMDAGetElementsCorners()`
 @*/
 PetscErrorCode DMDAGetSubdomainCornersIS(DM dm, IS *is)
 {
@@ -470,7 +477,7 @@ PetscErrorCode DMDAGetSubdomainCornersIS(DM dm, IS *is)
   Note:
   This restore signals the `DMDA` object that you no longer need access to the array information.
 
-.seealso: `DM`, `DMDA`, `DMDAElementType`, `DMDASetElementType()`, `DMDAGetElements()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAElementType`, `DMDASetElementType()`, `DMDAGetElements()`
 @*/
 PetscErrorCode DMDARestoreElements(DM dm, PetscInt *nel, PetscInt *nen, const PetscInt *e[])
 {
@@ -496,7 +503,7 @@ PetscErrorCode DMDARestoreElements(DM dm, PetscInt *nel, PetscInt *nen, const Pe
 
   Level: intermediate
 
-.seealso: `DM`, `DMDA`, `DMDAElementType`, `DMDASetElementType()`, `DMDAGetSubdomainCornersIS()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAElementType`, `DMDASetElementType()`, `DMDAGetSubdomainCornersIS()`
 @*/
 PetscErrorCode DMDARestoreSubdomainCornersIS(DM dm, IS *is)
 {

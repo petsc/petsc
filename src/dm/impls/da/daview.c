@@ -134,9 +134,9 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
   Level: beginner
 
   Note:
-  Use NULL (NULL_INTEGER in Fortran) in place of any output parameter that is not of interest.
+  Use `NULL` (`PETSC_NULL_INTEGER` in Fortran) in place of any output parameter that is not of interest.
 
-.seealso: `DM`, `DMDA`, `DMView()`, `DMDAGetCorners()`, `DMDAGetLocalInfo()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMView()`, `DMDAGetCorners()`, `DMDAGetLocalInfo()`
 @*/
 PetscErrorCode DMDAGetInfo(DM da, PetscInt *dim, PetscInt *M, PetscInt *N, PetscInt *P, PetscInt *m, PetscInt *n, PetscInt *p, PetscInt *dof, PetscInt *s, DMBoundaryType *bx, DMBoundaryType *by, DMBoundaryType *bz, DMDAStencilType *st)
 {
@@ -185,7 +185,7 @@ PetscErrorCode DMDAGetInfo(DM da, PetscInt *dim, PetscInt *M, PetscInt *N, Petsc
   Note:
   See `DMDALocalInfo` for the information that is returned
 
-.seealso: `DM`, `DMDA`, `DMDAGetInfo()`, `DMDAGetCorners()`, `DMDALocalInfo`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetInfo()`, `DMDAGetCorners()`, `DMDALocalInfo`
 @*/
 PetscErrorCode DMDAGetLocalInfo(DM da, DMDALocalInfo *info)
 {
