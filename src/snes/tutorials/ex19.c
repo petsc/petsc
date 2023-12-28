@@ -1226,8 +1226,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
    test:
       suffix: failure_size
       nsize: 1
-      # see https://github.com/open-mpi/ompi/issues/12035
-      requires: !defined(PETSC_USE_64BIT_INDICES) !defined(PETSCTEST_VALGRIND) !defined(PETSC_HAVE_OPENMPI)
+      requires: !defined(PETSC_USE_64BIT_INDICES) !defined(PETSCTEST_VALGRIND)
       args: -da_refine 100 -petsc_ci_portable_error_output -error_output_stdout
       filter: grep -E -v "(memory block|leaked context|not freed before MPI_Finalize|Could be the program crashed)"
 
