@@ -10,10 +10,7 @@ It supports MPI, and GPUs through
 CUDA, HIP or OpenCL, as well as hybrid MPI-GPU parallelism; it also supports the NEC-SX Tsubasa Vector Engine.
 Immediately jump in and run PETSc code :any:`handson`.
 
-PETSc is developed as :ref:`open-source <doc_license>`, requests and contributions are welcome.
-
-News
-====
+PETSc is developed as :ref:`open-source <doc_license>`, :any:`requests <doc_creepycrawly>` and :any:`contributions <ch_contributing>` are welcome.
 
 .. admonition:: News: PETSc is now associated with `NumFOCUS <http://numfocus.org>`__, a 501(c)(3) nonprofit supporting open code and reproducible science,
                 through which you can help support PETSc.
