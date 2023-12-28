@@ -49,20 +49,27 @@ static PetscErrorCode MatGetDiagonal_User(Mat A, Vec X)
 
 static PetscErrorCode TestMatrix(Mat A, Vec X, Vec Y, Vec Z)
 {
-  Vec         W1, W2, diff;
+  Vec         W1, W2, W3, diff;
   Mat         E;
   const char *mattypename;
-  PetscViewer viewer      = PETSC_VIEWER_STDOUT_WORLD;
-  PetscScalar diag[2]     = {2.9678190300000000e+08, 1.4173141580000000e+09};
-  PetscScalar multadd[2]  = {-6.8966198500000000e+08, -2.0310609940000000e+09};
-  PetscScalar multtadd[2] = {-9.1052873900000000e+08, -1.8101942400000000e+09};
+  PetscViewer viewer = PETSC_VIEWER_STDOUT_WORLD;
   PetscReal   nrm;
+#if defined(PETSC_USE_COMPLEX)
+  const PetscScalar diag[2]     = {PetscCMPLX(-6.2902938000000000e+07, 4.5741953400000000e+08), PetscCMPLX(1.0828994620000000e+09, 1.2955916360000000e+09)};
+  const PetscScalar multadd[2]  = {PetscCMPLX(1.4926230300000000e+08, -1.2811063360000000e+09), PetscCMPLX(-1.2985220710000000e+09, -2.1029893020000000e+09)};
+  const PetscScalar multtadd[2] = {PetscCMPLX(-1.5271967100000000e+08, -1.2648172000000000e+09), PetscCMPLX(-9.9654009700000000e+08, -2.1192784380000000e+09)};
+#else
+  const PetscScalar diag[2]     = {2.9678190300000000e+08, 1.4173141580000000e+09};
+  const PetscScalar multadd[2]  = {-6.8966198500000000e+08, -2.0310609940000000e+09};
+  const PetscScalar multtadd[2] = {-9.1052873900000000e+08, -1.8101942400000000e+09};
+#endif
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetType((PetscObject)A, &mattypename));
   PetscCall(PetscViewerASCIIPrintf(viewer, "\nMatrix of type: %s\n", mattypename));
   PetscCall(VecDuplicate(X, &W1));
   PetscCall(VecDuplicate(X, &W2));
+  PetscCall(VecDuplicate(X, &W3));
   PetscCall(MatScale(A, 31));
   PetscCall(MatShift(A, 37));
   PetscCall(MatDiagonalScale(A, X, Y));
@@ -74,6 +81,11 @@ static PetscErrorCode TestMatrix(Mat A, Vec X, Vec Y, Vec Z)
   PetscCall(PetscViewerASCIIPrintf(viewer, "Testing MatMult + MatMultTranspose\n"));
   PetscCall(MatMult(A, Z, W1));
   PetscCall(MatMultTranspose(A, W1, W2));
+  PetscCall(VecView(W2, viewer));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "Testing MatMultHermitianTranspose\n"));
+  PetscCall(VecConjugate(W1));
+  PetscCall(MatMultHermitianTranspose(A, W1, W2));
+  PetscCall(VecConjugate(W2));
   PetscCall(VecView(W2, viewer));
 
   PetscCall(PetscViewerASCIIPrintf(viewer, "Testing MatMultAdd\n"));
@@ -119,13 +131,39 @@ static PetscErrorCode TestMatrix(Mat A, Vec X, Vec Y, Vec Z)
 #endif
   PetscCall(VecDestroy(&diff));
 
+  PetscCall(PetscViewerASCIIPrintf(viewer, "Testing MatMultHermitianTransposeAdd\n"));
+  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, 2, multtadd, &diff));
+
+  PetscCall(VecSet(W1, -1.0));
+  PetscCall(MatMultHermitianTransposeAdd(A, W1, W1, W3));
+  PetscCall(VecConjugate(W3));
+  PetscCall(VecView(W3, viewer));
+  PetscCall(VecAXPY(W3, -1.0, diff));
+  PetscCall(VecNorm(W3, NORM_2, &nrm));
+#if defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
+  PetscCheck(nrm <= PETSC_SMALL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "MatMultHermitianTransposeAdd(A,x,x,y) produces incorrect result");
+#endif
+
+  PetscCall(VecSet(W3, -1.0));
+  PetscCall(MatMultHermitianTransposeAdd(A, W1, W3, W3));
+  PetscCall(VecConjugate(W3));
+  PetscCall(VecView(W3, viewer));
+  PetscCall(VecAXPY(W3, -1.0, diff));
+  PetscCall(VecNorm(W3, NORM_2, &nrm));
+#if defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
+  PetscCheck(nrm <= PETSC_SMALL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "MatMultHermitianTransposeAdd(A,x,y,y) produces incorrect result");
+#endif
+  PetscCall(VecDestroy(&diff));
+
   PetscCall(PetscViewerASCIIPrintf(viewer, "Testing MatGetDiagonal\n"));
   PetscCall(MatGetDiagonal(A, W2));
   PetscCall(VecView(W2, viewer));
   PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, 2, diag, &diff));
   PetscCall(VecAXPY(diff, -1.0, W2));
   PetscCall(VecNorm(diff, NORM_2, &nrm));
+#if defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
   PetscCheck(nrm <= PETSC_SMALL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "MatGetDiagonal() produces incorrect result");
+#endif
   PetscCall(VecDestroy(&diff));
 
   /* MATSHELL does not support MatDiagonalSet after MatScale */
@@ -140,27 +178,33 @@ static PetscErrorCode TestMatrix(Mat A, Vec X, Vec Y, Vec Z)
   PetscCall(MatDestroy(&E));
   PetscCall(VecDestroy(&W1));
   PetscCall(VecDestroy(&W2));
+  PetscCall(VecDestroy(&W3));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)
 {
+  const PetscInt inds[] = {0, 1};
+#if defined(PETSC_USE_COMPLEX)
+  const PetscScalar xvals[] = {PetscCMPLX(11, 4), PetscCMPLX(13, 2)}, yvals[] = {PetscCMPLX(17, 3), PetscCMPLX(19, 1)}, zvals[] = {PetscCMPLX(23, 6), PetscCMPLX(29, 2)};
+  PetscScalar       avals[] = {PetscCMPLX(2, 3), PetscCMPLX(3, 5), PetscCMPLX(5, 4), PetscCMPLX(7, 5)};
+#else
   const PetscScalar xvals[] = {11, 13}, yvals[] = {17, 19}, zvals[] = {23, 29};
-  const PetscInt    inds[]  = {0, 1};
   PetscScalar       avals[] = {2, 3, 5, 7};
-  Mat               A, S, D[4], N;
-  Vec               X, Y, Z;
-  User              user;
-  PetscInt          i;
+#endif
+  Mat      A, S, D[4], N;
+  Vec      X, Y, Z;
+  User     user;
+  PetscInt i;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
   PetscCall(MatCreateSeqAIJ(PETSC_COMM_WORLD, 2, 2, 2, NULL, &A));
   PetscCall(MatSetUp(A));
-  PetscCall(MatSetValues(A, 2, inds, 2, inds, avals, INSERT_VALUES));
   PetscCall(VecCreateSeq(PETSC_COMM_WORLD, 2, &X));
   PetscCall(VecDuplicate(X, &Y));
   PetscCall(VecDuplicate(X, &Z));
+  PetscCall(MatSetValues(A, 2, inds, 2, inds, avals, INSERT_VALUES));
   PetscCall(VecSetValues(X, 2, inds, xvals, INSERT_VALUES));
   PetscCall(VecSetValues(Y, 2, inds, yvals, INSERT_VALUES));
   PetscCall(VecSetValues(Z, 2, inds, zvals, INSERT_VALUES));
@@ -205,6 +249,12 @@ int main(int argc, char **args)
 
 /*TEST
 
-   test:
+   testset:
+     test:
+       suffix: 1
+       requires:!complex
+     test:
+       suffix: 2
+       requires: complex
 
 TEST*/
