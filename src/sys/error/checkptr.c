@@ -42,12 +42,12 @@ static PetscBool PetscSegvJumpBuf_set;
 
   Not Collective
 
-  Notes:
-  If the signal was received while executing PetscCheckPointer(), this function longjmps back
-  there, otherwise returns with no effect. This function is called automatically by
-  PetscSignalHandlerDefault().
-
   Level: developer
+
+  Note:
+  If the signal was received while executing `PetscCheckPointer()`, this function longjmps back
+  there, otherwise it returns with no effect. This function is called automatically by
+  `PetscSignalHandlerDefault()`.
 
 .seealso: `PetscPushSignalHandler()`
 @*/
@@ -68,7 +68,7 @@ void PetscSignalSegvCheckPointerOrMpi(void)
   Level: developer
 
   Note:
-  This is a non-standard PETSc function in that it returns the result as the return code and does not return an error code
+  This is a non-standard PETSc function in that it returns the result and does not return an error code
 
 .seealso: `PetscCheckPointerSetIntensity()`
 @*/
