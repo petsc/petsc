@@ -436,6 +436,19 @@ PETSC_EXTERN PetscErrorCode DMMonitorCancel(DM);
 PETSC_EXTERN PetscErrorCode DMMonitorSetFromOptions(DM, const char[], const char[], const char[], PetscErrorCode (*)(DM, void *), PetscErrorCode (*)(DM, PetscViewerAndFormat *), PetscBool *);
 PETSC_EXTERN PetscErrorCode DMMonitor(DM);
 
+static inline PetscBool DMPolytopeTypeIsHybrid(DMPolytopeType ct)
+{
+  switch (ct) {
+  case DM_POLYTOPE_POINT_PRISM_TENSOR:
+  case DM_POLYTOPE_SEG_PRISM_TENSOR:
+  case DM_POLYTOPE_TRI_PRISM_TENSOR:
+  case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+    return PETSC_TRUE;
+  default:
+    return PETSC_FALSE;
+  }
+}
+
 static inline PetscInt DMPolytopeTypeGetDim(DMPolytopeType ct)
 {
   switch (ct) {
