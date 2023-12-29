@@ -1,7 +1,7 @@
  Called MatMult
  Called MatMultAdd
  Called MatMultTranspose
- Called MatMultTranspose
+ Called MatMultHermitianTranspose
  Called MatMultTransposeAdd
  Called MatMultHermitianTransposeAdd
  Called MatTranspose

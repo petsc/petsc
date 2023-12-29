@@ -124,7 +124,11 @@ int main(int argc, char **args)
   while (s2 < M) s2 *= 10;
   PetscCall(MatDenseGetArray(A, &data));
   for (j = 0; j < N; j++) {
+#if defined(PETSC_USE_COMPLEX)
+    for (i = 0; i < m; i++) data[j * m + i] = s2 * j + i + s1 + 1 + PETSC_i * (s1 - 1);
+#else
     for (i = 0; i < m; i++) data[j * m + i] = s2 * j + i + s1 + 1;
+#endif
   }
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
@@ -172,7 +176,9 @@ int main(int argc, char **args)
     PetscCall(MatMultAddEqual(A, S, 10, &flg));
     if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error mult add\n", test));
     PetscCall(MatMultTransposeAddEqual(A, S, 10, &flg));
-    if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error mult add (T)\n", test));
+    if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error mult transpose add\n", test));
+    PetscCall(MatMultHermitianTransposeAddEqual(A, S, 10, &flg));
+    if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[test %" PetscInt_FMT "] Error mult hermitian transpose add\n", test));
     if (testzerorows) {
       Mat       ST, B, C, BT, BTT;
       IS        zr;
