@@ -12,11 +12,10 @@ PETSc is associated with `NumFOCUS <http://numfocus.org>`__, a 501(c)(3) nonprof
 .. toctree::
    :maxdepth: 2
 
+   mailing
    CODE_OF_CONDUCT
    roadmap
    governance
-   bugs
-   mailing
    meetings/meeting
    petsc_team
 
