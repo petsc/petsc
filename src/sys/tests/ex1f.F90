@@ -8,7 +8,7 @@
       PetscErrorCode  ierr
       integer line
 
-      call PetscError(PETSC_COMM_SELF,1,PETSC_ERROR_INITIAL,'Error message')
+      call PetscError(PETSC_COMM_SELF,1,PETSC_ERROR_INITIAL,'My error message')
       return
       end
 
