@@ -29,12 +29,12 @@ static EH eh = NULL;
 
   Input Parameters:
 + comm - communicator over which error occurred
-. line - the line number of the error (indicated by __LINE__)
-. file - the file in which the error was detected (indicated by __FILE__)
-. fun  - the function name
+. line - the line number of the error (usually indicated by `__LINE__` in the calling routine)
+. file - the file in which the error was detected (usually indicated by `__FILE__` in the calling routine)
+. fun  - the function name of the calling routine
 . mess - an error text string, usually just printed to the screen
 . n    - the generic error number
-. p    - specific error number
+. p    - `PETSC_ERROR_INITIAL` indicates this is the first time the error handler is being called while `PETSC_ERROR_REPEAT` indicates it was previously called
 - ctx  - error handler context
 
   Options Database Key:
@@ -45,12 +45,13 @@ static EH eh = NULL;
   Note:
   You must put (server-start) in your .emacs file for the emacsclient software to work
 
-  Developer Notes:
+  Developer Note:
   Since this is an error handler it cannot call `PetscCall()`; thus we just return if an error is detected.
   But some of the functions it calls do perform error checking that may not be appropriate in a error handler call.
 
 .seealso: `PetscError()`, `PetscPushErrorHandler()`, `PetscPopErrorHandler()`, `PetscAttachDebuggerErrorHandler()`,
-          `PetscAbortErrorHandler()`, `PetscMPIAbortErrorHandler()`, `PetscTraceBackErrorHandler()`, `PetscReturnErrorHandler()`
+          `PetscAbortErrorHandler()`, `PetscMPIAbortErrorHandler()`, `PetscTraceBackErrorHandler()`, `PetscReturnErrorHandler()`,
+          `PetscErrorType`, `PETSC_ERROR_INITIAL`, `PETSC_ERROR_REPEAT`, `PetscErrorCode`
  @*/
 PetscErrorCode PetscEmacsClientErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx)
 {
@@ -95,28 +96,29 @@ PetscErrorCode PetscEmacsClientErrorHandler(MPI_Comm comm, int line, const char 
 
   Calling sequence of `handler`:
 + comm - communicator over which error occurred
-. line - the line number of the error (indicated by __LINE__)
-. file - the file in which the error was detected (indicated by __FILE__)
-. fun  - the function name
+. line - the line number of the error (usually indicated by `__LINE__` in the calling routine)
+. file - the file in which the error was detected (usually indicated by `__FILE__` in the calling routine)
+. fun  - the function name of the calling routine
 . n    - the generic error number (see list defined in include/petscerror.h)
 . p    - `PETSC_ERROR_INITIAL` if error just detected, otherwise `PETSC_ERROR_REPEAT`
 . mess - an error text string, usually just printed to the screen
 - ctx  - the error handler context
 
   Options Database Keys:
-+ -on_error_attach_debugger <noxterm,gdb or dbx> - starts up the debugger if an error occurs
-- -on_error_abort                                - aborts the program if an error occurs
++ -on_error_attach_debugger <noxterm,lldb or gdb> - starts up the debugger if an error occurs
+- -on_error_abort                                 - aborts the program if an error occurs
 
   Level: intermediate
 
   Note:
   The currently available PETSc error handlers include `PetscTraceBackErrorHandler()`,
-  `PetscAttachDebuggerErrorHandler()`, `PetscAbortErrorHandler()`, and `PetscMPIAbortErrorHandler()`, `PetscReturnErrorHandler()`.
+  `PetscAttachDebuggerErrorHandler()`, `PetscAbortErrorHandler()`, `PetscMPIAbortErrorHandler()`, and `PetscReturnErrorHandler()`.
 
-  Fortran Notes:
-  You can only push one error handler from Fortran before popping it.
+  Fortran Note:
+  You can only push a single error handler from Fortran before popping it.
 
-.seealso: `PetscPopErrorHandler()`, `PetscAttachDebuggerErrorHandler()`, `PetscAbortErrorHandler()`, `PetscTraceBackErrorHandler()`, `PetscPushSignalHandler()`
+.seealso: `PetscPopErrorHandler()`, `PetscAttachDebuggerErrorHandler()`, `PetscAbortErrorHandler()`, `PetscTraceBackErrorHandler()`, `PetscPushSignalHandler()`,
+          `PetscErrorType`, `PETSC_ERROR_INITIAL`, `PETSC_ERROR_REPEAT`, `PetscErrorCode`
 @*/
 PetscErrorCode PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx), void *ctx)
 {
@@ -161,28 +163,26 @@ PetscErrorCode PetscPopErrorHandler(void)
 
   Input Parameters:
 + comm - communicator over which error occurred
-. line - the line number of the error (indicated by __LINE__)
+. line - the line number of the error (usually indicated by `__LINE__` in the calling routine)
 . fun  - the function name
-. file - the file in which the error was detected (indicated by __FILE__)
+. file - the file in which the error was detected (usually indicated by `__FILE__` in the calling routine)
 . mess - an error text string, usually just printed to the screen
 . n    - the generic error number
-. p    - specific error number
+. p    - `PETSC_ERROR_INITIAL` indicates this is the first time the error handler is being called while `PETSC_ERROR_REPEAT` indicates it was previously called
 - ctx  - error handler context
 
   Level: developer
 
   Notes:
-  Most users need not directly employ this routine and the other error
-  handlers, but can instead use the simplified interface `SETERRQ()`, which has
-  the calling sequence
-$     SETERRQ(comm, number, mess)
+  Users do not directly employ this routine
 
-  `PetscIgnoreErrorHandler()` does the same thing as this function, but is deprecated, you should use this function.
-
-  Use `PetscPushErrorHandler()` to set the desired error handler.
+  Use `PetscPushErrorHandler()` to set the desired error handler.  The
+  currently available PETSc error handlers include `PetscTraceBackErrorHandler()`,
+  `PetscAttachDebuggerErrorHandler()`, and `PetscAbortErrorHandler()`.
 
 .seealso: `PetscPushErrorHandler()`, `PetscPopErrorHandler()`, `PetscError()`, `PetscAbortErrorHandler()`, `PetscMPIAbortErrorHandler()`, `PetscTraceBackErrorHandler()`,
-          `PetscAttachDebuggerErrorHandler()`, `PetscEmacsClientErrorHandler()`
+          `PetscAttachDebuggerErrorHandler()`, `PetscEmacsClientErrorHandler()`,
+          `PetscErrorType`, `PETSC_ERROR_INITIAL`, `PETSC_ERROR_REPEAT`, `PetscErrorCode`
  @*/
 PetscErrorCode PetscReturnErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx)
 {
@@ -325,21 +325,21 @@ static void PetscCxxErrorThrow()
 #endif
 
 /*@C
-  PetscError - Routine that is called when an error has been detected, usually called through the macro SETERRQ(PETSC_COMM_SELF,).
+  PetscError - Routine that is called when an error has been detected, usually called through the macro `SETERRQ`(`PETSC_COMM_SELF`,)` or by `PetscCall()`.
 
   Collective
 
   Input Parameters:
-+ comm - communicator over which error occurred.  ALL ranks of this communicator MUST call this routine
-. line - the line number of the error (indicated by __LINE__)
++ comm - communicator over which error occurred.  ALL MPI processes of this communicator MUST call this routine
+. line - the line number of the error (usually indicated by `__LINE__` in the calling routine)
 . func - the function name in which the error was detected
-. file - the file in which the error was detected (indicated by __FILE__)
+. file - the file in which the error was detected (usually indicated by `__FILE__` in the calling routine)
 . n    - the generic error number
 . p    - `PETSC_ERROR_INITIAL` indicates the error was initially detected, `PETSC_ERROR_REPEAT` indicates this is a traceback from a previously detected error
 - mess - formatted message string - aka printf
 
   Options Database Keys:
-+ -error_output_stdout - output the error messages to stdout instead of the default stderr
++ -error_output_stdout - output the error messages to `stdout` instead of the default `stderr`
 - -error_output_none   - do not output the error messages
 
   Level: intermediate
@@ -349,7 +349,7 @@ static void PetscCxxErrorThrow()
   was detected. The return-value of this routine is what is ultimately returned by
   `SETERRQ()`.
 
-  Note that numerical errors (potential divide by zero, for example) are not managed by the
+  Numerical errors (potential divide by zero, for example) are not managed by the
   error return codes; they are managed via, for example, `KSPGetConvergedReason()` that
   indicates if the solve was successful or not. The option `-ksp_error_if_not_converged`, for
   example, turns numerical failures into hard errors managed via `PetscError()`.
@@ -365,18 +365,20 @@ static void PetscCxxErrorThrow()
   Most users need not directly use this routine and the error handlers, but can instead use
   the simplified interface `PetscCall()` or `SETERRQ()`.
 
-  Fortran Notes:
+  Fortran Note:
   This routine is used differently from Fortran
-$    PetscError(MPI_Comm comm, PetscErrorCode n, PetscErrorType p, char *message)
+.vb
+  PetscError(MPI_Comm comm, PetscErrorCode n, PetscErrorType p, char *message)
+.ve
 
-  Developer Notes:
+  Developer Note:
   Since this is called after an error condition it should not be calling any error handlers (currently it ignores any error codes)
   BUT this routine does call regular PETSc functions that may call error handlers, this is problematic and could be fixed by never calling other PETSc routines
   but this annoying.
 
 .seealso: `PetscErrorCode`, `PetscPushErrorHandler()`, `PetscPopErrorHandler()`, `PetscTraceBackErrorHandler()`, `PetscAbortErrorHandler()`, `PetscMPIAbortErrorHandler()`,
           `PetscReturnErrorHandler()`, `PetscAttachDebuggerErrorHandler()`, `PetscEmacsClientErrorHandler()`,
-          `SETERRQ()`, `PetscCall()`, `CHKMEMQ`, `PetscErrorMessage()`, `PETSCABORT()`
+          `SETERRQ()`, `PetscCall()`, `CHKMEMQ`, `PetscErrorMessage()`, `PETSCABORT()`, `PetscErrorType`, `PETSC_ERROR_INITIAL`, `PETSC_ERROR_REPEAT`
 @*/
 PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, ...)
 {
@@ -423,8 +425,6 @@ PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char 
   return ierr;
 }
 
-/* -------------------------------------------------------------------------*/
-
 /*@C
   PetscIntView - Prints an array of integers; useful for debugging.
 
@@ -440,8 +440,8 @@ PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char 
   Note:
   This may be called from within the debugger
 
-  Developer Notes:
-  idx cannot be const because may be passed to binary viewer where temporary byte swapping may be done
+  Developer Note:
+  `idx` cannot be const because may be passed to binary viewer where temporary byte swapping may be done
 
 .seealso: `PetscViewer`, `PetscRealView()`
 @*/
@@ -537,8 +537,8 @@ PetscErrorCode PetscIntView(PetscInt N, const PetscInt idx[], PetscViewer viewer
   Note:
   This may be called from within the debugger
 
-  Developer Notes:
-  idx cannot be const because may be passed to binary viewer where temporary byte swapping may be done
+  Developer Note:
+  `idx` cannot be const because may be passed to binary viewer where temporary byte swapping may be done
 
 .seealso: `PetscViewer`, `PetscIntView()`
 @*/
@@ -642,8 +642,8 @@ PetscErrorCode PetscRealView(PetscInt N, const PetscReal idx[], PetscViewer view
   Note:
   This may be called from within the debugger
 
-  Developer Notes:
-  idx cannot be const because may be passed to binary viewer where byte swapping may be done
+  Developer Note:
+  `idx` cannot be const because may be passed to binary viewer where byte swapping may be done
 
 .seealso: `PetscViewer`, `PetscIntView()`, `PetscRealView()`
 @*/

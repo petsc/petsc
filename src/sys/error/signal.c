@@ -63,10 +63,10 @@ static void PetscSignalHandler_Private(int sig)
 
   Level: advanced
 
-  Developer Notes:
-  This does not call `PetscError()`, handles the entire error process directly
+  Developer Note:
+  This does not call `PetscError()`, it handles the entire error process, including possibly printing the traceback, directly
 
-.seealso: `PetscPushSignalHandler()`
+.seealso: [](sec_errors), `PetscPushSignalHandler()`
 @*/
 PetscErrorCode PetscSignalHandlerDefault(int sig, void *ptr)
 {
