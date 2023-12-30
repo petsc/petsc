@@ -2631,7 +2631,7 @@ PetscErrorCode MatSeqBAIJSetColumnIndices(Mat mat, PetscInt *indices)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscAssertPointer(indices, 2);
-  PetscUseMethod(mat, "MatSeqBAIJSetColumnIndices_C", (Mat, PetscInt *), (mat, indices));
+  PetscUseMethod(mat, "MatSeqBAIJSetColumnIndices_C", (Mat, const PetscInt *), (mat, (const PetscInt *)indices));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

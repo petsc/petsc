@@ -78,7 +78,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da, PetscViewer viewer)
   rloc[3] = info.ym;
   rloc[4] = info.zs;
   rloc[5] = info.zm;
-  PetscCallMPI(MPI_Gather(rloc, 6, MPIU_INT, &grloc[0][0], 6, MPIU_INT, 0, comm));
+  PetscCallMPI(MPI_Gather(rloc, 6, MPIU_INT, rank == 0 ? grloc[0] : NULL, 6, MPIU_INT, 0, comm));
 
   /* Write XML header */
   maxnnodes = 0; /* Used for the temporary array size on rank 0 */
@@ -287,7 +287,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
   rloc[3] = info.ym;
   rloc[4] = info.zs;
   rloc[5] = info.zm;
-  PetscCallMPI(MPI_Gather(rloc, 6, MPIU_INT, &grloc[0][0], 6, MPIU_INT, 0, comm));
+  PetscCallMPI(MPI_Gather(rloc, 6, MPIU_INT, rank == 0 ? grloc[0] : NULL, 6, MPIU_INT, 0, comm));
 
   /* Write XML header */
   maxnnodes = 0; /* Used for the temporary array size on rank 0 */

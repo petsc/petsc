@@ -359,10 +359,12 @@ static inline PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, PetscInt *p
   PetscFunctionBegin;
   if (isOdd) *isOdd = PETSC_FALSE;
   PetscCheck(n >= 0 && n <= PETSC_FACTORIAL_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of elements %" PetscInt_FMT " is not in supported range [0,%d]", n, PETSC_FACTORIAL_MAX);
-  w = &work[n - 2];
-  for (i = 2; i <= n; i++) {
-    *(w--) = k % i;
-    k /= i;
+  if (n >= 2) {
+    w = &work[n - 2];
+    for (i = 2; i <= n; i++) {
+      *(w--) = k % i;
+      k /= i;
+    }
   }
   for (i = 0; i < n; i++) perm[i] = i;
   for (i = 0; i < n - 1; i++) {

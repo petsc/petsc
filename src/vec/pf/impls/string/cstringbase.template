@@ -4,7 +4,7 @@
 #define NOTLIKELY -1.234567890123
 
 EXTERN_C_BEGIN
-int PETSC_VISIBILITY_PUBLIC PFApply_String(void *value,PetscInt n,PetscScalar *in,PetscScalar *out)
+int PETSC_VISIBILITY_PUBLIC PFApply_String(void *value,PetscInt n,const PetscScalar *in,PetscScalar *out)
 {
   PetscInt    i;
   PetscScalar x,y,z,f = NOTLIKELY,x1 = 0,x2 = 0,x3 = 0,x4 = 0,x5 = 0;

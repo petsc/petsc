@@ -655,7 +655,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
       }
     }
     PetscCheck(nEdges == nEdges0, PETSC_COMM_SELF, PETSC_ERR_SUP, "nEdges != nEdges0: %d %d", (int)nEdges0, (int)nEdges);
-    qsort(Edges, nEdges, sizeof(Edge), gamg_hem_compare);
+    if (Edges) qsort(Edges, nEdges, sizeof(Edge), gamg_hem_compare);
 
     PetscCall(PetscInfo(info_is, "[%d] HEM iteration %d with %d edges\n", rank, iter, (int)nEdges));
 

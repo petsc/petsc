@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 
   red = fread(xyz, sizeof(PetscReal), ndims * ni, fp);
   PetscCheck(red == (size_t)(ndims * ni), PETSC_COMM_SELF, PETSC_ERR_SYS, "Unable to read from data file");
-  for (PetscInt i = 0; i < ni * ndims; i++) sxyz[i] = (size_t)xyz[i];
+  for (PetscInt i = 0; i < ni * ndims; i++) sxyz[i] = (real_t)xyz[i];
 
   PetscCall(PetscFClose(PETSC_COMM_SELF, fp));
 

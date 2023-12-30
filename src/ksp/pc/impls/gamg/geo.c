@@ -578,7 +578,7 @@ static PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc, Mat *a_Gmat, PetscCoarsenData *
     PetscCall(PetscFree(bIndexSet));
   }
   /* only sort locals */
-  qsort(gnodes, nloc, sizeof(GAMGNode), petsc_geo_mg_compare);
+  if (gnodes) qsort(gnodes, nloc, sizeof(GAMGNode), petsc_geo_mg_compare);
   /* create IS of permutation */
   for (kk = 0; kk < nloc; kk++) permute[kk] = gnodes[kk].lid; /* locals only */
   PetscCall(PetscFree(gnodes));

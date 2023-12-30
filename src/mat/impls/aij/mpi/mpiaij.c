@@ -4304,11 +4304,13 @@ PetscErrorCode MatUpdateMPIAIJWithArray(Mat mat, const PetscScalar v[])
     nnz = Adi[i + 1] - Adi[i] + Adj[i + 1] - Adj[i];
     ldi = ld[i];
     md  = Adi[i + 1] - Adi[i];
-    PetscCall(PetscArraycpy(ao, v + Iii, ldi));
     PetscCall(PetscArraycpy(ad, v + Iii + ldi, md));
-    PetscCall(PetscArraycpy(ao + ldi, v + Iii + ldi + md, nnz - ldi - md));
     ad += md;
-    ao += nnz - md;
+    if (ao) {
+      PetscCall(PetscArraycpy(ao, v + Iii, ldi));
+      PetscCall(PetscArraycpy(ao + ldi, v + Iii + ldi + md, nnz - ldi - md));
+      ao += nnz - md;
+    }
     Iii += nnz;
   }
   nooffprocentries      = mat->nooffprocentries;

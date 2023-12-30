@@ -5,13 +5,13 @@
    MatFDColoringSetFunction() takes a function with four arguments, we want to use SNESComputeFunction()
    since it logs function computation information.
 */
-static PetscErrorCode SNESComputeFunctionCtx(SNES snes, Vec x, Vec f, void *ctx)
+static PetscErrorCode SNESComputeFunctionCtx(void *snes, Vec x, Vec f, void *ctx)
 {
-  return SNESComputeFunction(snes, x, f);
+  return SNESComputeFunction((SNES)snes, x, f);
 }
-static PetscErrorCode SNESComputeMFFunctionCtx(SNES snes, Vec x, Vec f, void *ctx)
+static PetscErrorCode SNESComputeMFFunctionCtx(void *snes, Vec x, Vec f, void *ctx)
 {
-  return SNESComputeMFFunction(snes, x, f);
+  return SNESComputeMFFunction((SNES)snes, x, f);
 }
 
 /*@C

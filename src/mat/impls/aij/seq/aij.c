@@ -2553,9 +2553,11 @@ PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat A, IS isrow, IS iscol, PetscInt csi
     for (i = 0; i < nrows; i++) {
       ii    = starts[i];
       lensi = lens[i];
-      for (k = 0; k < lensi; k++) *j_new++ = aj[ii + k] - first;
-      PetscCall(PetscArraycpy(a_new, aa + starts[i], lensi));
-      a_new += lensi;
+      if (lensi) {
+        for (k = 0; k < lensi; k++) *j_new++ = aj[ii + k] - first;
+        PetscCall(PetscArraycpy(a_new, aa + starts[i], lensi));
+        a_new += lensi;
+      }
       i_new[i + 1] = i_new[i] + lensi;
       c->ilen[i]   = lensi;
     }
