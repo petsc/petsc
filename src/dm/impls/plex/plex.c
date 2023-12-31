@@ -93,15 +93,15 @@ PetscErrorCode DMPlexGetSimplexOrBoxCells(DM dm, PetscInt height, PetscInt *cSta
   PetscCall(ISGetIndices(valueIS, &ctypes));
   if (!Nct) cS = cE = 0;
   for (PetscInt t = 0; t < Nct; ++t) {
-    const PetscInt ct = ctypes[t];
-    PetscInt       ctS, ctE, ht;
+    const DMPolytopeType ct = (DMPolytopeType)ctypes[t];
+    PetscInt             ctS, ctE, ht;
 
     if (ct == DM_POLYTOPE_UNKNOWN) {
       // If any cells are not typed, just use all cells
       PetscCall(DMPlexGetHeightStratum(dm, PetscMax(height, 0), cStart, cEnd));
       break;
     }
-    if (ct == DM_POLYTOPE_FV_GHOST || ct == DM_POLYTOPE_POINT_PRISM_TENSOR || ct == DM_POLYTOPE_SEG_PRISM_TENSOR || ct == DM_POLYTOPE_TRI_PRISM_TENSOR || ct == DM_POLYTOPE_QUAD_PRISM_TENSOR) continue;
+    if (DMPolytopeTypeIsHybrid(ct) || ct == DM_POLYTOPE_FV_GHOST) continue;
     PetscCall(DMLabelGetStratumBounds(ctLabel, ct, &ctS, &ctE));
     if (ctS >= ctE) continue;
     // Check that a point has the right height
@@ -1284,7 +1284,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       for (c = cStart; c < cEnd; ++c) {
         if (wp && !PetscBTLookup(wp, c - pStart)) continue;
         PetscCall(DMPlexGetCellType(dm, c, &ct));
-        if (ct == DM_POLYTOPE_SEG_PRISM_TENSOR || ct == DM_POLYTOPE_TRI_PRISM_TENSOR || ct == DM_POLYTOPE_QUAD_PRISM_TENSOR) {
+        if (DMPolytopeTypeIsHybrid(ct)) {
           const PetscInt *cone;
           PetscInt        coneSize, e;
 
@@ -3941,7 +3941,7 @@ PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt o
   }
   PetscCall(DMPlexGetCellType(dm, p, &ct));
   if (ct == DM_POLYTOPE_FV_GHOST || ct == DM_POLYTOPE_INTERIOR_GHOST || ct == DM_POLYTOPE_UNKNOWN || ct == DM_POLYTOPE_UNKNOWN_CELL || ct == DM_POLYTOPE_UNKNOWN_FACE) ct = DM_POLYTOPE_UNKNOWN;
-  if (ct == DM_POLYTOPE_SEG_PRISM_TENSOR || ct == DM_POLYTOPE_TRI_PRISM_TENSOR || ct == DM_POLYTOPE_QUAD_PRISM_TENSOR) {
+  if (DMPolytopeTypeIsHybrid(ct) && ct != DM_POLYTOPE_POINT_PRISM_TENSOR) {
     PetscCall(DMPlexTransitiveClosure_Tensor_Internal(dm, p, ct, ornt, useCone, numPoints, points));
     PetscFunctionReturn(PETSC_SUCCESS);
   }

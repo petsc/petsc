@@ -683,7 +683,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     PetscCall(DMConvert(dmAux, DMPLEX, &plexAux));
     if (type == DM_BC_ESSENTIAL_FIELD || type == DM_BC_ESSENTIAL_BD_FIELD || type == DM_BC_NATURAL_FIELD) PetscCheck(localA, PETSC_COMM_SELF, PETSC_ERR_USER, "Missing localA vector");
   }
-  if (localU && localU != localX) PetscCall(DMPlexInsertBoundaryValues(plex, PETSC_TRUE, localU, time, NULL, NULL, NULL));
+  if (localU && localU != localX) PetscCall(DMPlexInsertBoundaryValues(plexIn, PETSC_TRUE, localU, time, NULL, NULL, NULL));
   PetscCall(DMGetCoordinateField(dm, &coordField));
   PetscCheck(coordField, PETSC_COMM_SELF, PETSC_ERR_USER, "DM must have a coordinate field");
   /**** No collective calls below this point ****/
