@@ -1,93 +1,74 @@
   0 SNES Function norm 10.2781 
-    0 KSP Residual norm 10.2527 
-    1 KSP Residual norm 2.66547 
-    2 KSP Residual norm 2.14954 
-    3 KSP Residual norm 0.936704 
+    0 KSP Residual norm 10.1621 
+    1 KSP Residual norm 2.54801 
+    2 KSP Residual norm 1.58203 
+    3 KSP Residual norm 0.838201 
   Linear solve converged due to CONVERGED_RTOL iterations 3
-  1 SNES Function norm 1.3995 
-    0 KSP Residual norm 0.936704 
-    1 KSP Residual norm 0.56997 
-    2 KSP Residual norm 0.452168 
-    3 KSP Residual norm 0.37517 
-    4 KSP Residual norm 0.321505 
-    5 KSP Residual norm 0.228601 
-    6 KSP Residual norm 0.0993375 
-    7 KSP Residual norm 0.0431408 
-  Linear solve converged due to CONVERGED_RTOL iterations 7
-  2 SNES Function norm 0.0726869 
-    0 KSP Residual norm 0.0431408 
-    1 KSP Residual norm 0.0274385 
-    2 KSP Residual norm 0.0189555 
-    3 KSP Residual norm 0.00937105 
-    4 KSP Residual norm 0.00494458 
-    5 KSP Residual norm 0.00282835 
+  1 SNES Function norm 1.05621 
+    0 KSP Residual norm 0.838201 
+    1 KSP Residual norm 0.650324 
+    2 KSP Residual norm 0.360822 
+    3 KSP Residual norm 0.20776 
+    4 KSP Residual norm 0.0960564 
+    5 KSP Residual norm 0.0567234 
   Linear solve converged due to CONVERGED_RTOL iterations 5
-  3 SNES Function norm 0.0109837 
-    0 KSP Residual norm 0.00282835 
-    1 KSP Residual norm 0.00207835 
-    2 KSP Residual norm 0.00187177 
-    3 KSP Residual norm 0.00143279 
-    4 KSP Residual norm 0.00106782 
-    5 KSP Residual norm 0.000569083 
-    6 KSP Residual norm 0.000357915 
-    7 KSP Residual norm 0.000258279 
-  Linear solve converged due to CONVERGED_RTOL iterations 7
-  4 SNES Function norm 0.00175073 
-    0 KSP Residual norm 0.000258279 
-    1 KSP Residual norm 0.000218845 
-    2 KSP Residual norm 0.000191138 
-    3 KSP Residual norm 0.000118262 
-    4 KSP Residual norm 6.13427e-05 
-    5 KSP Residual norm 4.39412e-05 
-    6 KSP Residual norm 2.57659e-05 
+  2 SNES Function norm 0.0576719 
+    0 KSP Residual norm 0.0567234 
+    1 KSP Residual norm 0.0496642 
+    2 KSP Residual norm 0.0369519 
+    3 KSP Residual norm 0.0131327 
+    4 KSP Residual norm 0.0099831 
+    5 KSP Residual norm 0.00717354 
+    6 KSP Residual norm 0.0023424 
   Linear solve converged due to CONVERGED_RTOL iterations 6
-  5 SNES Function norm 5.28417e-05 
-    0 KSP Residual norm 2.57659e-05 
-    1 KSP Residual norm 1.71353e-05 
-    2 KSP Residual norm 1.31089e-05 
-    3 KSP Residual norm 8.7226e-06 
-    4 KSP Residual norm 5.13095e-06 
-    5 KSP Residual norm 3.49879e-06 
-    6 KSP Residual norm 2.48189e-06 
-  Linear solve converged due to CONVERGED_RTOL iterations 6
-  6 SNES Function norm 1.21325e-05 
-    0 KSP Residual norm 2.48189e-06 
-    1 KSP Residual norm 2.21913e-06 
-    2 KSP Residual norm 1.6028e-06 
-    3 KSP Residual norm 1.22505e-06 
-    4 KSP Residual norm 8.16615e-07 
-    5 KSP Residual norm 5.14292e-07 
-    6 KSP Residual norm 3.18465e-07 
-    7 KSP Residual norm 2.31207e-07 
-  Linear solve converged due to CONVERGED_RTOL iterations 7
-  7 SNES Function norm 6.84681e-07 
-    0 KSP Residual norm 2.31207e-07 
-    1 KSP Residual norm 1.59653e-07 
-    2 KSP Residual norm 8.91299e-08 
-    3 KSP Residual norm 6.58494e-08 
-    4 KSP Residual norm 3.97919e-08 
-    5 KSP Residual norm 2.89634e-08 
-    6 KSP Residual norm 1.89701e-08 
-  Linear solve converged due to CONVERGED_RTOL iterations 6
-  8 SNES Function norm 1.188e-07 
-    0 KSP Residual norm 1.89701e-08 
-    1 KSP Residual norm 1.46063e-08 
-    2 KSP Residual norm 1.19679e-08 
-    3 KSP Residual norm 9.9971e-09 
-    4 KSP Residual norm 6.14893e-09 
-    5 KSP Residual norm 3.83795e-09 
-    6 KSP Residual norm 2.62872e-09 
-    7 KSP Residual norm 1.50313e-09 
-  Linear solve converged due to CONVERGED_RTOL iterations 7
-  9 SNES Function norm 2.22137e-09 
-L_2 Error: 0.000629252
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 9
+  3 SNES Function norm 0.00345787 
+    0 KSP Residual norm 0.0023424 
+    1 KSP Residual norm 0.0017353 
+    2 KSP Residual norm 0.00105718 
+    3 KSP Residual norm 0.000557015 
+    4 KSP Residual norm 0.000351944 
+    5 KSP Residual norm 0.000179459 
+  Linear solve converged due to CONVERGED_RTOL iterations 5
+  4 SNES Function norm 0.000200279 
+    0 KSP Residual norm 0.000179459 
+    1 KSP Residual norm 0.000131462 
+    2 KSP Residual norm 6.26777e-05 
+    3 KSP Residual norm 3.85537e-05 
+    4 KSP Residual norm 3.0915e-05 
+    5 KSP Residual norm 1.51535e-05 
+  Linear solve converged due to CONVERGED_RTOL iterations 5
+  5 SNES Function norm 2.6724e-05 
+    0 KSP Residual norm 1.51535e-05 
+    1 KSP Residual norm 6.6192e-06 
+    2 KSP Residual norm 4.47144e-06 
+    3 KSP Residual norm 3.99377e-06 
+    4 KSP Residual norm 1.5097e-06 
+  Linear solve converged due to CONVERGED_RTOL iterations 4
+  6 SNES Function norm 2.32971e-06 
+    0 KSP Residual norm 1.5097e-06 
+    1 KSP Residual norm 9.72569e-07 
+    2 KSP Residual norm 7.30195e-07 
+    3 KSP Residual norm 3.51447e-07 
+    4 KSP Residual norm 1.92251e-07 
+    5 KSP Residual norm 9.94109e-08 
+  Linear solve converged due to CONVERGED_RTOL iterations 5
+  7 SNES Function norm 1.05177e-07 
+    0 KSP Residual norm 9.94109e-08 
+    1 KSP Residual norm 5.71902e-08 
+    2 KSP Residual norm 2.33661e-08 
+    3 KSP Residual norm 1.62885e-08 
+    4 KSP Residual norm 1.13486e-08 
+    5 KSP Residual norm 6.76605e-09 
+  Linear solve converged due to CONVERGED_RTOL iterations 5
+  8 SNES Function norm 1.34519e-08 
+L_2 Error: 0.000629251
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 8
 SNES Object: 4 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=54
-  total number of function evaluations=10
+  total number of linear solver iterations=38
+  total number of function evaluations=9
   norm schedule ALWAYS
   SNESLineSearch Object: 4 MPI processes
     type: bt
