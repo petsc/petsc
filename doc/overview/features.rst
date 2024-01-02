@@ -5,7 +5,7 @@ Supported Systems
 
 - :ref:`HPC <doc_config_hpc>`
 - :ref:`Linux <doc_config_faq>`
-- :ref:`MacOS <doc_config_faq>`
+- :ref:`macOS <doc_config_faq>`
 - :ref:`Microsoft Windows <doc_windows>`
 
 Accelerator/GPU Features

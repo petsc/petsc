@@ -955,7 +955,7 @@ To find repeated occurrences, one can simply use ``M-,`` to find the next occurr
 
 VS Code Users
 ~~~~~~~~~~~~~
-`VS Code <https://code.visualstudio.com/>`_ (unlike :ref:`sec-visual-studio`, described below) is an open source editor with a rich extension ecosystem.
+`VS Code <https://code.visualstudio.com/>`_ (unlike :ref:`sec-visual-studio`, described below) is an open-source editor with a rich extension ecosystem.
 It has `excellent integration <https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd>`_ with clangd and will automatically pick up ``compile_commands.json``
 as produced by a command such as ``bear make -B`` (see :ref:`sec-developer-environments`).
 If you have no prior attachment to a specific code editor, we recommend trying VS Code.

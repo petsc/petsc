@@ -149,7 +149,7 @@ static PetscErrorCode PetscSFReduceBegin_Allgatherv(PetscSF sf, MPI_Datatype uni
     PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, PETSCSF_LEAF2ROOT, &rootbuf, &leafbuf, &req, NULL));
     PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, PETSCSF_LEAF2ROOT));
     if (dat->bcast_pattern) {
-#if defined(PETSC_HAVE_OMPI_MAJOR_VERSION) /* Workaround: cuda-aware OpenMPI-4.1.3 does not support MPI_Ireduce() with device buffers */
+#if defined(PETSC_HAVE_OMPI_MAJOR_VERSION) /* Workaround: cuda-aware Open MPI 4.1.3 does not support MPI_Ireduce() with device buffers */
       *req = MPI_REQUEST_NULL;             /* Set NULL so that we can safely MPI_Wait(req) */
       PetscCallMPI(MPI_Reduce(leafbuf, rootbuf, sf->nleaves, unit, op, dat->bcast_root, comm));
 #else

@@ -585,7 +585,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if s.find('skipping incompatible') < 0]
       # Multiple gfortran libraries present
       lines = [s for s in lines if s.find('may conflict with libgfortran') < 0]
-      # MacOS libraries built for different MacOS versions
+      # macOS libraries built for different macOS versions
       lines = [s for s in lines if s.find(' was built for newer macOS version') < 0]
       lines = [s for s in lines if s.find(' was built for newer OSX version') < 0]
       lines = [s for s in lines if s.find(' stack subq instruction is too different from dwarf stack size') < 0]

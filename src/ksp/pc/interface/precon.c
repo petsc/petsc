@@ -252,7 +252,7 @@ PetscErrorCode PCDiagonalScaleLeft(PC pc, Vec in, Vec out)
   \begin{align*}
   D M A D^{-1} y = D M b  \\
   D A M D^{-1} z = D b.
-  \end{aligne*}
+  \end{align*}
   $$
 
   `PCDiagonalScaleLeft()` scales a vector by $D$. `PCDiagonalScaleRight()` scales a vector by $D^{-1}$.

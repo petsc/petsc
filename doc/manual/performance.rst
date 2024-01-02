@@ -198,7 +198,7 @@ processes on the first socket and three processes on the second socket.
 Unfortunately, mechanisms for process placement vary across MPI
 implementations, so make sure to consult the manual of your MPI
 implementation. The following discussion is based on how processor
-placement is done with MPICH and OpenMPI, where one needs to pass
+placement is done with MPICH and Open MPI, where one needs to pass
 ``--bind-to core --map-by socket`` to ``mpirun``:
 
 .. code-block:: console

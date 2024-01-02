@@ -95,9 +95,9 @@
   #endif
 #elif defined(PETSC_HAVE_OMPI_MAJOR_VERSION)
   #if !defined(OMPI_MAJOR_VERSION)
-    #error "PETSc was configured with OpenMPI but now appears to be compiling using a non-OpenMPI mpi.h"
+    #error "PETSc was configured with Open MPI but now appears to be compiling using a non-Open MPI mpi.h"
   #elif (OMPI_MAJOR_VERSION != PETSC_HAVE_OMPI_MAJOR_VERSION) || (OMPI_MINOR_VERSION < PETSC_HAVE_OMPI_MINOR_VERSION) || (OMPI_MINOR_VERSION == PETSC_HAVE_OMPI_MINOR_VERSION && OMPI_RELEASE_VERSION < PETSC_HAVE_OMPI_RELEASE_VERSION)
-    #error "PETSc was configured with one OpenMPI mpi.h version but now appears to be compiling using a different OpenMPI mpi.h version"
+    #error "PETSc was configured with one Open MPI mpi.h version but now appears to be compiling using a different Open MPI mpi.h version"
   #endif
 #elif defined(PETSC_HAVE_MSMPI_VERSION)
   #if !defined(MSMPI_VER)
@@ -106,7 +106,7 @@
     #error "PETSc was configured with one MSMPI mpi.h version but now appears to be compiling using a different MSMPI mpi.h version"
   #endif
 #elif defined(OMPI_MAJOR_VERSION) || defined(MPICH_NUMVERSION) || defined(MSMPI_VER)
-  #error "PETSc was configured with undetermined MPI - but now appears to be compiling using any of OpenMPI, MS-MPI or a MPICH variant"
+  #error "PETSc was configured with undetermined MPI - but now appears to be compiling using any of Open MPI, MS-MPI or a MPICH variant"
 #endif
 
 /*

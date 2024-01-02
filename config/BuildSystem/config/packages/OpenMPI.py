@@ -69,7 +69,7 @@ class Configure(config.package.GNUPackage):
         else:
           raise RuntimeError
       except RuntimeError:
-        raise RuntimeError('Could not initialize 3rd-party submodule needed by OpenMPI')
+        raise RuntimeError('Could not initialize 3rd-party submodule needed by Open MPI')
     return
 
   def preInstall(self):
@@ -80,11 +80,11 @@ class Configure(config.package.GNUPackage):
   def checkDownload(self):
     if config.setCompilers.Configure.isCygwin(self.log):
       if config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log):
-        raise RuntimeError('Cannot download-install OpenMPI on Windows with cygwin compilers. Suggest installing OpenMPI via cygwin installer')
+        raise RuntimeError('Cannot download-install Open MPI on Windows with cygwin compilers. Suggest installing Open MPI via cygwin installer')
       else:
-        raise RuntimeError('Cannot download-install OpenMPI on Windows with Microsoft or Intel Compilers. Suggest using MS-MPI or Intel-MPI (do not use MPICH2')
+        raise RuntimeError('Cannot download-install Open MPI on Windows with Microsoft or Intel Compilers. Suggest using MS-MPI or Intel-MPI (do not use MPICH2')
     if self.argDB['download-'+self.downloadname.lower()] and  'package-prefix-hash' in self.argDB and self.argDB['package-prefix-hash'] == 'reuse':
-      self.logWrite('Reusing package prefix install of '+self.defaultInstallDir+' for OpenMPI')
+      self.logWrite('Reusing package prefix install of '+self.defaultInstallDir+' for Open MPI')
       self.installDir = self.defaultInstallDir
       self.updateCompilers(self.installDir,'mpicc','mpicxx','mpif77','mpif90')
       return self.installDir
@@ -93,7 +93,7 @@ class Configure(config.package.GNUPackage):
     return ''
 
   def Install(self):
-    '''After downloading and installing OpenMPI we need to reset the compilers to use those defined by the OpenMPI install'''
+    '''After downloading and installing Open MPI we need to reset the compilers to use those defined by the Open MPI install'''
     if 'package-prefix-hash' in self.argDB and self.argDB['package-prefix-hash'] == 'reuse':
       return self.defaultInstallDir
     installDir = config.package.GNUPackage.Install(self)

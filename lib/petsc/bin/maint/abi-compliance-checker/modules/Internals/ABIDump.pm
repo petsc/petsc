@@ -838,7 +838,7 @@ sub getSOPaths_Dir($$)
                 $Libs{realpath_F($P)} = 1;
             }
             if($In::Opt{"OS"} eq "macos")
-            { # shared libraries on MacOS X may have no extension
+            { # shared libraries on macOS may have no extension
                 foreach my $P (cmdFind($Path,"f"))
                 {
                     next if(ignorePath($P));

@@ -1049,6 +1049,7 @@ static PetscErrorCode PCHPDDMCreateSubMatrices_Private(Mat mat, PetscInt n, cons
     if (!flg) PetscCall(MatDuplicate(A, MAT_COPY_VALUES, *submat));
   } else if (!flg) PetscCall(MatCopy(A, (*submat)[0], SAME_NONZERO_PATTERN));
   if (flg) {
+    PetscCall(MatDestroy(*submat)); /* previously created Mat has to be destroyed */
     (*submat)[0] = A;
     PetscCall(PetscObjectReference((PetscObject)A));
   }

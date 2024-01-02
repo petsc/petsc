@@ -210,7 +210,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
    Not Collective
 
    Note:
-      Currently only supported on Linux and MacOS. Checks if divide by zero is enable and if so declares that trapping is on.
+   Currently only supported on Linux and macOS. Checks if divide by zero is enable and if so declares that trapping is on.
 
    Level: advanced
 

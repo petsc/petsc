@@ -469,7 +469,7 @@ How can I find the URL locations of the packages you install using ``--download-
 
    $ grep "self.download " $PETSC_DIR/config/BuildSystem/config/packages/*.py
 
-How to fix the problem: PETSc was configured with one MPICH (or OpenMPI) ``mpi.h`` version but now appears to be compiling using a different MPICH (or OpenMPI) ``mpi.h`` version
+How to fix the problem: PETSc was configured with one MPICH (or Open MPI) ``mpi.h`` version but now appears to be compiling using a different MPICH (or Open MPI) ``mpi.h`` version
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 This happens for generally one of two reasons:
@@ -2276,7 +2276,7 @@ Git bisect can be done as follows:
 How to fix the error "PMIX Error: error in file gds_ds12_lock_pthread.c"?
 -------------------------------------------------------------------------
 
-This seems to be an error when using OpenMPI and OpenBLAS with threads (or perhaps other
+This seems to be an error when using Open MPI and OpenBLAS with threads (or perhaps other
 packages that use threads).
 
 .. code-block:: console

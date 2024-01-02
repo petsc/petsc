@@ -700,7 +700,7 @@ with ``nsys-ui`` in the future.
 For an MPI parallel job, only one process can call ``nsys``,
 say have rank zero output ``nsys`` data and have all other
 ranks call the executable directly. For example with MPICH
-or OpenMPI - we can run a parallel job on 4 MPI tasks as:
+or Open MPI - we can run a parallel job on 4 MPI tasks as:
 
 .. code-block:: console
 

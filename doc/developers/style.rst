@@ -652,19 +652,23 @@ Spelling and Capitalization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #. Proper nouns, including Unix, Linux, X Windows, and Microsoft Windows, should be fully written and capitalized. This includes all operating systems.
+   The Apple computer operating system is written as macOS.
 
 #. Company names and product names should be capitalized.
 
 #. Company names and terms that are traditionally all capitalized, for example, MATLAB, NVIDIA, and CUDA, should be all capitalized.
 
+#. ARM is a family of processor designs, while Arm is the company that licenses them.
+
 #. Unix should not be all capitalized.
 
-#. Microsoft Windows should always be written out with two words. That is, it should not be shortened to Windows.
+#. Microsoft Windows should always be written out with two words. That is, it should not be shortened to Windows or MS Win etc.
 
 #. CMake should be capitalized as shown.
 
-#. BLAS and LAPACK are written in full capitalization
+#. BLAS and LAPACK are written in full capitalization.
 
+#. Open MPI is written as two words.
 
 References
 ----------
