@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 configure_options = [
-  # Autodetect cygwin blas/lapack, OpenMPI
+  # Autodetect cygwin blas/lapack, Open MPI
   # mpiexec prints  "unable to open debugger attach fifo messages" that breaks "make check"
   '--with-batch=1',
   '--with-debugging=0',

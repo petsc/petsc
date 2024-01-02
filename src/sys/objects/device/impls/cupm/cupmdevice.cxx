@@ -69,7 +69,7 @@ PetscErrorCode Device<T>::DeviceInternal::initialize() noexcept
     bool aware;
 
     PetscCall(CUPMAwareMPI_(&aware));
-    // For OpenMPI, we could do a compile time check with
+    // For Open MPI, we could do a compile time check with
     // "defined(PETSC_HAVE_OMPI_MAJOR_VERSION) && defined(MPIX_CUDA_AWARE_SUPPORT) &&
     // MPIX_CUDA_AWARE_SUPPORT" to see if it is CUDA-aware. However, recent versions of IBM
     // Spectrum MPI (e.g., 10.3.1) on Summit meet above conditions, but one has to use jsrun
@@ -79,7 +79,7 @@ PetscErrorCode Device<T>::DeviceInternal::initialize() noexcept
       PetscCall((*PetscErrorPrintf)("PETSc is configured with GPU support, but your MPI is not GPU-aware. For better performance, please use a GPU-aware MPI.\n"));
       PetscCall((*PetscErrorPrintf)("If you do not care, add option -use_gpu_aware_mpi 0. To not see the message again, add the option to your .petscrc, OR add it to the env var PETSC_OPTIONS.\n"));
       PetscCall((*PetscErrorPrintf)("If you do care, for IBM Spectrum MPI on OLCF Summit, you may need jsrun --smpiargs=-gpu.\n"));
-      PetscCall((*PetscErrorPrintf)("For OpenMPI, you need to configure it --with-cuda (https://www.open-mpi.org/faq/?category=buildcuda)\n"));
+      PetscCall((*PetscErrorPrintf)("For Open MPI, you need to configure it --with-cuda (https://www.open-mpi.org/faq/?category=buildcuda)\n"));
       PetscCall((*PetscErrorPrintf)("For MVAPICH2-GDR, you need to set MV2_USE_CUDA=1 (http://mvapich.cse.ohio-state.edu/userguide/gdr/)\n"));
       PetscCall((*PetscErrorPrintf)("For Cray-MPICH, you need to set MPICH_GPU_SUPPORT_ENABLED=1 (man mpi to see manual of cray-mpich)\n"));
       PETSCABORT(PETSC_COMM_SELF, PETSC_ERR_LIB);

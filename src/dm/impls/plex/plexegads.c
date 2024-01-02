@@ -5,7 +5,7 @@
   #include <egads.h>
 #endif
 
-/* We need to understand how to natively parse STEP files. There seems to be only one open source implementation of
+/* We need to understand how to natively parse STEP files. There seems to be only one open-source implementation of
    the STEP parser contained in the OpenCASCADE package. It is enough to make a strong man weep:
 
      https://github.com/tpaviot/oce/tree/master/src/STEPControl

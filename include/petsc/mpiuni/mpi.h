@@ -65,7 +65,7 @@
   the reason the send to self is not implemented in MPIUNI, and never
   will be.
 
-  Proper implementations of MPI [for eg: MPICH & OpenMPI] are
+  Proper implementations of MPI [for eg: MPICH & Open MPI] are
   available for most machines. When these packages are available, Its
   generally preferable to use one of them instead of MPIUNI - even if
   the user is using PETSc sequentially.
@@ -77,17 +77,17 @@
     - MPIUNI is not a standards compliant implementation even for one MPI rank.
     For example, if the user code has send/recv to self, then it will
     abort. [Similar issues exist with a number of other MPI functionality]
-    However MPICH & OpenMPI are the correct implementations of MPI
+    However MPICH & Open MPI are the correct implementations of MPI
     standard for one MPI rank.
 
     - When user code uses multiple MPI based packages that have their
     own *internal* stubs equivalent to MPIUNI - in sequential mode,
     invariably these multiple implementations of MPI for one rank conflict
     with each other. The correct thing to do is: make all such
-    packages use the *same* MPI implementation for one rank. MPICH/OpenMPI
+    packages use the *same* MPI implementation for one rank. MPICH/Open MPI
     satisfy this requirement correctly [and hence is the correct choice].
 
-    - Using MPICH/OpenMPI sequentially should have minimal
+    - Using MPICH/Open MPI sequentially should have minimal
     disadvantages. [for examples, the binaries can be run without
     mpirun/mpiexec as ./executable, without requiring any extra
     configurations for ssh/rsh/daemons etc..]. This should not be a

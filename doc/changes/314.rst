@@ -35,7 +35,7 @@ Changes: 3.14
    YAML-formatted options on the command line
 -  Add PETSC_OPTIONS_YAML environment variable for setting options in
    YAML format
--  Add PetscDetermineInitialFPTrap(); fix so that when Linux or MacOS
+-  Add PetscDetermineInitialFPTrap(); fix so that when Linux or macOS
    Fortran linker enables catching floating point divide by zero the
    trapping is disabled for LAPACK routines that generate divide by
    zero, for example, the reference implementation of ieeeck()
