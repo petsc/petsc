@@ -1596,7 +1596,7 @@ PetscErrorCode PetscOptionsFindPair(PetscOptions options, const char pre[], cons
 }
 
 /* Check whether any option begins with pre+name */
-PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions options, const char pre[], const char name[], const char *value[], PetscBool *set)
+PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions options, const char pre[], const char name[], const char *option[], const char *value[], PetscBool *set)
 {
   char buf[PETSC_MAX_OPTION_NAME];
   int  numCnt = 0, locs[16], loce[16];
@@ -1664,6 +1664,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions opti
       PetscCall(PetscStrncmp(options->names[i], opt, len, &match));
       if (match) {
         options->used[i] = PETSC_TRUE;
+        if (option) *option = options->names[i];
         if (value) *value = options->values[i];
         if (set) *set = PETSC_TRUE;
         PetscFunctionReturn(PETSC_SUCCESS);
