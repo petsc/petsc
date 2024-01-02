@@ -48,7 +48,7 @@ int main(int argc, char **argv)
   PetscCall(PetscSectionSetFieldName(section, 0, "u"));
   PetscCall(PetscSectionSetFieldName(section, 1, "v"));
   PetscCall(PetscSectionSetFieldName(section, 2, "w"));
-  PetscCall(PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscSectionViewFromOptions(section, NULL, "-mysection_view"));
   /* Tell the DM to use this data layout */
   PetscCall(DMSetLocalSection(dm, section));
   /* Create a Vec with this layout and view it */
@@ -71,10 +71,22 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: triangle
-    args: -info :~sys,mat
+    args: -mysection_view -info :~sys,mat
+
   test:
     suffix: 1
     requires: ctetgen
-    args: -dm_plex_dim 3 -info :~sys,mat
+    args: -dm_plex_dim 3 -mysection_view -info :~sys,mat
+
+  test:
+    suffix: filter_0
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 3,3 -dm_plex_label_lower 0,1,2,3,4,6 \
+      -dm_refine 1 -dm_plex_transform_type transform_filter -dm_plex_transform_active lower \
+      -dm_view
+
+  test:
+    suffix: submesh_0
+    requires: triangle
+    args: -dm_plex_label_middle 9,12,15,23,31 -dm_plex_submesh middle -dm_view
 
 TEST*/

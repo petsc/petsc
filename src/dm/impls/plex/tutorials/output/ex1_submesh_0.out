@@ -1,0 +1,13 @@
+DM Object: box 1 MPI process
+  type: plex
+box in 1 dimension:
+  Cells are at height 1
+  Number of 0-cells per rank: 3
+  Number of 1-cells per rank: 2
+  Number of 2-cells per rank: 4 [4]
+Labels:
+  celltype: 3 strata with value/size (0 (3), 1 (2), 12 (4))
+  depth: 3 strata with value/size (0 (3), 1 (2), 2 (4))
+  marker: 1 strata with value/size (1 (2))
+  Face Sets: 0 strata with value/size ()
+  middle: 1 strata with value/size (1 (5))
