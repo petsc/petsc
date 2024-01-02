@@ -1084,6 +1084,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     n = 4;
     PetscCall(PetscOptionsGetBoolArray(((PetscObject)viewer)->options, ((PetscObject)viewer)->prefix, "-dm_plex_view_numbers_depth", drawNumbers, &n, &flg));
     PetscCheck(!flg || n == dim + 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_SIZ, "Number of flags %" PetscInt_FMT " != %" PetscInt_FMT " dim+1", n, dim + 1);
+    n = 4;
     PetscCall(PetscOptionsGetBoolArray(((PetscObject)viewer)->options, ((PetscObject)viewer)->prefix, "-dm_plex_view_colors_depth", drawColors, &n, &flg));
     PetscCheck(!flg || n == dim + 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_SIZ, "Number of flags %" PetscInt_FMT " != %" PetscInt_FMT " dim+1", n, dim + 1);
     PetscCall(PetscOptionsGetStringArray(((PetscObject)viewer)->options, ((PetscObject)viewer)->prefix, "-dm_plex_view_labels", names, &numLabels, &useLabels));
@@ -1247,7 +1248,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
         else color = colors[rank % numColors];
         for (l = 0; l < numLabels; ++l) {
           PetscInt val;
-          PetscCall(DMGetLabelValue(dm, names[l], v, &val));
+          PetscCall(DMGetLabelValue(dm, names[l], e, &val));
           if (val >= 0) {
             color = lcolors[l % numLColors];
             break;
