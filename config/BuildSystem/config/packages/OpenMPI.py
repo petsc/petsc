@@ -7,6 +7,8 @@ class Configure(config.package.GNUPackage):
     self.version                = '5.0.1'
     self.download               = ['https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-'+self.version+'.tar.gz',
                                    'https://web.cels.anl.gov/projects/petsc/download/externalpackages/openmpi-'+self.version+'.tar.gz']
+    self.download_git           = ['git://https://github.com/open-mpi/ompi.git']
+    self.gitsubmodules          = ['.']
     self.downloaddirnames       = ['openmpi','ompi']
     self.skippackagewithoptions = 1
     self.isMPI                  = 1
@@ -51,26 +53,6 @@ class Configure(config.package.GNUPackage):
     # https://www.open-mpi.org/faq/?category=building#libevent-or-hwloc-errors-when-linking-fortran
     args.append('--with-libevent=internal')
     return args
-
-  def updateGitDir(self):
-    import os
-    config.package.GNUPackage.updateGitDir(self)
-    if not hasattr(self.sourceControl, 'git') or (self.packageDir != os.path.join(self.externalPackagesDir,'git.'+self.package)):
-      return
-    Dir = self.getDir()
-    try:
-      thirdparty = self.thirdparty
-    except AttributeError:
-      try:
-        self.executeShellCommand([self.sourceControl.git, 'submodule', 'update', '--init', '--recursive'], cwd=Dir, log=self.log)
-        import os
-        if os.path.isfile(os.path.join(Dir,'3rd-party','openpmix','README')):
-          self.thirdparty = os.path.join(Dir,'3rd-party')
-        else:
-          raise RuntimeError
-      except RuntimeError:
-        raise RuntimeError('Could not initialize 3rd-party submodule needed by Open MPI')
-    return
 
   def preInstall(self):
     if not self.getExecutable('perl'):
