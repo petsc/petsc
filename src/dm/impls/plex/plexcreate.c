@@ -210,7 +210,7 @@ PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscBool pro
   DM_Plex *mesh = (DM_Plex *)dm->data;
   PetscFE  fe   = NULL;
   DM       cdm;
-  PetscInt dim, dE, qorder;
+  PetscInt dim, dE, qorder, height;
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
@@ -220,11 +220,12 @@ PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscBool pro
   PetscObjectOptionsBegin((PetscObject)cdm);
   PetscCall(PetscOptionsBoundedInt("-default_quadrature_order", "Quadrature order is one less than quadrature points per edge", "DMPlexCreateCoordinateSpace", qorder, &qorder, NULL, 0));
   PetscOptionsEnd();
+  PetscCall(DMPlexGetVTKCellHeight(dm, &height));
   if (degree >= 0) {
     DMPolytopeType ct = DM_POLYTOPE_UNKNOWN;
     PetscInt       cStart, cEnd, gct;
 
-    PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+    PetscCall(DMPlexGetHeightStratum(dm, height, &cStart, &cEnd));
     if (cEnd > cStart) PetscCall(DMPlexGetCellType(dm, cStart, &ct));
     gct = (PetscInt)ct;
     PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &gct, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
