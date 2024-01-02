@@ -3850,6 +3850,8 @@ static void boxToAnnulus(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscI
   f0[1] = r * PetscSinReal(th);
 }
 
+PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions, const char pre[], const char name[], const char *option[], const char *value[], PetscBool *flg);
+
 const char *const DMPlexShapes[] = {"box", "box_surface", "ball", "sphere", "cylinder", "schwarz_p", "gyroid", "doublet", "annulus", "hypercubic", "zbox", "unknown", "DMPlexShape", "DM_SHAPE_", NULL};
 
 static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOptionsObject, PetscBool *useCoordSpace, DM dm)
@@ -3863,6 +3865,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   char           filename[PETSC_MAX_PATH_LEN]   = "<unspecified>";
   char           bdFilename[PETSC_MAX_PATH_LEN] = "<unspecified>";
   char           plexname[PETSC_MAX_PATH_LEN]   = "";
+  const char    *option;
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(DMPLEX_CreateFromOptions, dm, 0, 0, 0));
@@ -4078,6 +4081,22 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   }
   PetscCall(DMPlexSetRefinementUniform(dm, PETSC_TRUE));
   if (!((PetscObject)dm)->name && nameflg) PetscCall(PetscObjectSetName((PetscObject)dm, plexname));
+  // Allow label creation
+  PetscCall(PetscOptionsFindPairPrefix_Private(NULL, ((PetscObject)dm)->prefix, "-dm_plex_label_", &option, NULL, &flg));
+  if (flg) {
+    DMLabel     label;
+    PetscInt    points[1024], n = 1024;
+    char        fulloption[PETSC_MAX_PATH_LEN];
+    const char *name = &option[14];
+
+    PetscCall(DMCreateLabel(dm, name));
+    PetscCall(DMGetLabel(dm, name, &label));
+    fulloption[0] = '-';
+    fulloption[1] = 0;
+    PetscCall(PetscStrlcat(fulloption, option, PETSC_MAX_PATH_LEN));
+    PetscCall(PetscOptionsGetIntArray(NULL, ((PetscObject)dm)->prefix, fulloption, points, &n, NULL));
+    for (PetscInt p = 0; p < n; ++p) PetscCall(DMLabelSetValue(label, points[p], 1));
+  }
   PetscCall(PetscLogEventEnd(DMPLEX_CreateFromOptions, dm, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4192,6 +4211,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
 {
   PetscFunctionList        ordlist;
   char                     oname[256];
+  char                     sublabelname[PETSC_MAX_PATH_LEN] = "";
   DMPlexReorderDefaultFlag reorder;
   PetscReal                volume    = -1.0;
   PetscInt                 prerefine = 0, refine = 0, r, coarsen = 0, overlap = 0, extLayers = 0, dim;
@@ -4224,6 +4244,42 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
       PetscCall(DMPlexInterpolate(dm, &idm));
       PetscCall(DMPlexReplace_Internal(dm, &idm));
     }
+  }
+  // Handle submesh selection before distribution
+  PetscCall(PetscOptionsString("-dm_plex_submesh", "Label to use for submesh selection", "", sublabelname, sublabelname, PETSC_MAX_PATH_LEN, &flg));
+  if (flg) {
+    DM              subdm;
+    DMLabel         label;
+    IS              valueIS, pointIS;
+    const PetscInt *values, *points;
+    PetscBool       markedFaces = PETSC_FALSE;
+    PetscInt        Nv, value, Np;
+
+    PetscCall(DMGetLabel(dm, sublabelname, &label));
+    PetscCall(DMLabelGetNumValues(label, &Nv));
+    PetscCheck(Nv == 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Only a single label value is currently supported for submesh selection, not %" PetscInt_FMT, Nv);
+    PetscCall(DMLabelGetValueIS(label, &valueIS));
+    PetscCall(ISGetIndices(valueIS, &values));
+    value = values[0];
+    PetscCall(ISRestoreIndices(valueIS, &values));
+    PetscCall(ISDestroy(&valueIS));
+    PetscCall(DMLabelGetStratumSize(label, value, &Np));
+    PetscCall(DMLabelGetStratumIS(label, value, &pointIS));
+    PetscCall(ISGetIndices(pointIS, &points));
+    for (PetscInt p = 0; p < Np; ++p) {
+      PetscInt pdepth;
+
+      PetscCall(DMPlexGetPointDepth(dm, points[p], &pdepth));
+      if (pdepth) {
+        markedFaces = PETSC_TRUE;
+        break;
+      }
+    }
+    PetscCall(ISRestoreIndices(pointIS, &points));
+    PetscCall(ISDestroy(&pointIS));
+    PetscCall(DMPlexCreateSubmesh(dm, label, value, markedFaces, &subdm));
+    PetscCall(DMPlexReplace_Internal(dm, &subdm));
+    PetscCall(DMSetFromOptions_NonRefinement_Plex(dm, PetscOptionsObject));
   }
   /* Handle DMPlex refinement before distribution */
   PetscCall(PetscOptionsBool("-dm_refine_ignore_model", "Flag to ignore the geometry model when refining", "DMCreate", ignoreModel, &ignoreModel, &flg));
