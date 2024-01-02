@@ -11,7 +11,7 @@ def findlmansec(file):
     submansec = None
     with open(file) as mklines:
       #print(file)
-      submansecl = [line for line in mklines if line.find('SUBMANSEC') > -1]
+      submansecl = [line for line in mklines if (line.find('SUBMANSEC') > -1 and line.find('BFORT') == -1)]
       if submansecl:
         submansec = re.sub('[ ]*/\* [ ]*SUBMANSEC[ ]*=[ ]*','',submansecl[0]).strip('\n').strip('*/').strip()
         if submansec == submansecl[0].strip('\n'):
