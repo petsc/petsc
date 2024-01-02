@@ -76,12 +76,12 @@ Utilities for Simulations/Solvers
 
 Runtime
 
-* control of the simulation, :any:`sec_options`
+* control of the simulation via :any:`runtime options <sec_options>`
 
-* visualization of the solvers and simulation, :any:`sec_viewers`,
+* visualization of the solvers and simulation via :any:`viewers <sec_viewers>`,
 
 * :any:`monitoring <sec_kspmonitor>` of solution progress,
 
-* :any:`ch_profiling` of the performance,
+* :any:`profiling <ch_profiling>` of the performance,
 
-* robust :any:`sec_errors`.
+* robust :any:`error handling <sec_errors>`.

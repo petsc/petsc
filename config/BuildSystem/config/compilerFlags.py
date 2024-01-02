@@ -166,7 +166,7 @@ class Configure(config.base.Configure):
     return
 
   def checkIntelHardwareSupport(self):
-    '''Use Linux/MacOS commands to determine what operations the hardware supports'''
+    '''Use Linux/macOS commands to determine what operations the hardware supports'''
     try:
       (out, err, ret) = Configure.executeShellCommand('lscpu', log = self.log)
     except:

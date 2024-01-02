@@ -455,7 +455,7 @@ static PetscErrorCode PetscSFGetWindow(PetscSF sf, MPI_Datatype unit, void *arra
 #if defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
   case PETSCSF_WINDOW_FLAVOR_DYNAMIC:
     PetscCallMPI(MPI_Win_create_dynamic(w->info, PetscObjectComm((PetscObject)sf), &link->win));
-  #if defined(PETSC_HAVE_OMPI_MAJOR_VERSION) /* some OpenMPI versions do not support MPI_Win_attach(win,NULL,0); */
+  #if defined(PETSC_HAVE_OMPI_MAJOR_VERSION) /* some Open MPI versions do not support MPI_Win_attach(win,NULL,0); */
     PetscCallMPI(MPI_Win_attach(link->win, wsize ? array : (void *)dummy, wsize));
   #else
     PetscCallMPI(MPI_Win_attach(link->win, array, wsize));
@@ -517,7 +517,7 @@ found:
       MPI_Group   ingroup, outgroup;
       PetscMPIInt isize, osize;
 
-      /* OpenMPI 4.0.2 with btl=vader does not like calling
+      /* Open MPI 4.0.2 with btl=vader does not like calling
          - MPI_Win_complete when ogroup is empty
          - MPI_Win_wait when igroup is empty
          So, we do not even issue the corresponding start and post calls
@@ -636,7 +636,7 @@ found:
       MPI_Group   ingroup, outgroup;
       PetscMPIInt isize, osize;
 
-      /* OpenMPI 4.0.2 with btl=wader does not like calling
+      /* Open MPI 4.0.2 with btl=wader does not like calling
          - MPI_Win_complete when ogroup is empty
          - MPI_Win_wait when igroup is empty
          The MPI standard (Sec. 11.5.2 of MPI 3.1) only requires that

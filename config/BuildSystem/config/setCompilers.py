@@ -631,10 +631,10 @@ class Configure(config.base.Configure):
         try:
           v = tuple([int(a) for a in platform.mac_ver()[0].split('.')])
           if v >= (10,15,0):
-            if log: log.write('Detected Darwin/MacOSX Catalina OS\n')
+            if log: log.write('Detected Darwin/macOS Catalina OS\n')
             isDarwinCatalina_value = True
         except:
-          if log: log.write('MacOS version detecton failed!\n')
+          if log: log.write('macOS version detecton failed!\n')
           pass
       if output.find('freebsd') >= 0:
         if log: log.write('Detected FreeBSD')
@@ -1355,7 +1355,7 @@ class Configure(config.base.Configure):
     if hasattr(self, 'CC'):
       yield self.CC
       if self.argDB['download-mpich']: mesg ='with downloaded MPICH'
-      elif self.argDB['download-openmpi']: mesg ='with downloaded OpenMPI'
+      elif self.argDB['download-openmpi']: mesg ='with downloaded Open MPI'
       else: mesg = ''
       raise RuntimeError('Error '+mesg+': '+self.mesg)
     elif 'with-cc' in self.argDB:
@@ -1449,7 +1449,7 @@ class Configure(config.base.Configure):
       pass
     else:
       if self.isDarwin(self.log) and self.isARM(self.log) and output.find('x86_64-apple-darwin') > -1:
-        raise RuntimeError('Running on a macOS arm system but your compilers are configured for Intel processors\n' + output + '\n')
+        raise RuntimeError('Running on a macOS ARM system but your compilers are configured for Intel processors\n' + output + '\n')
 
     (output, error, status) = config.base.Configure.executeShellCommand(self.CC+' -v | head -n 20', log = self.log)
     output = output + error
@@ -1676,7 +1676,7 @@ class Configure(config.base.Configure):
     if hasattr(self, 'CXX'):
       yield self.CXX
       if self.argDB['download-mpich']: mesg ='with downloaded MPICH'
-      elif self.argDB['download-openmpi']: mesg ='with downloaded OpenMPI'
+      elif self.argDB['download-openmpi']: mesg ='with downloaded Open MPI'
       else: mesg = ''
       raise RuntimeError('Error '+mesg+': '+self.mesg)
     elif 'with-c++' in self.argDB:
@@ -1815,7 +1815,7 @@ class Configure(config.base.Configure):
     if hasattr(self, 'FC'):
       yield self.FC
       if self.argDB['download-mpich']: mesg ='with downloaded MPICH'
-      elif self.argDB['download-openmpi']: mesg ='with downloaded OpenMPI'
+      elif self.argDB['download-openmpi']: mesg ='with downloaded Open MPI'
       else: mesg = ''
       raise RuntimeError('Error '+mesg+': '+self.mesg)
     elif 'with-fc' in self.argDB:
@@ -2697,7 +2697,7 @@ if (dlclose(handle)) {
     return
 
   def requireMpiLdPath(self):
-    '''OpenMPI wrappers require LD_LIBRARY_PATH set'''
+    '''Open MPI wrappers require LD_LIBRARY_PATH set'''
     if 'with-mpi-dir' in self.argDB:
       libdir = os.path.join(self.argDB['with-mpi-dir'], 'lib')
       if os.path.exists(os.path.join(libdir,'libopen-rte.so')):

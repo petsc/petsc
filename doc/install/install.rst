@@ -333,7 +333,7 @@ MPI
 The Message Passing Interface (MPI) provides the parallel functionality for PETSc.
 
 MPI might already be installed. IBM, Intel, NVIDIA, and Cray provide their own and Linux and macOS package
-managers also provide open source versions called MPICH and OpenMPI. If MPI is not already installed use
+managers also provide open-source versions called MPICH and Open MPI. If MPI is not already installed use
 the following options to let PETSc's ``configure`` download and install MPI.
 
 - For `MPICH`_:
@@ -342,7 +342,7 @@ the following options to let PETSc's ``configure`` download and install MPI.
 
      $ ./configure --download-mpich
 
-- For `OpenMPI`_:
+- For `Open MPI`_:
 
   .. code-block:: console
 
@@ -409,7 +409,7 @@ the following options to let PETSc's ``configure`` download and install MPI.
      $  ./configure --with-mpi-dir=/absolute/path/to/mpi/install/directory
 
 - To control the compilers selected by ``mpicc``, ``mpicxx``, and ``mpif90`` one may use environmental
-  variables appropriate for the MPI libraries. For Intel MPI, MPICH, and OpenMPI they are
+  variables appropriate for the MPI libraries. For Intel MPI, MPICH, and Open MPI they are
 
   .. code-block:: console
 
@@ -439,11 +439,11 @@ the following options to let PETSc's ``configure`` download and install MPI.
 Installing With Open MPI With Shared MPI Libraries
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-`OpenMPI`_ defaults to building shared libraries for MPI. However, the binaries generated
+`Open MPI`_ defaults to building shared libraries for MPI. However, the binaries generated
 by MPI compiler wrappers ``mpicc``/``mpif90`` etc. require ``$LD_LIBRARY_PATH`` to be set to the
 location of these libraries.
 
-Due to this `OpenMPI`_ restriction one has to set ``$LD_LIBRARY_PATH`` correctly (per `OpenMPI`_ `installation instructions`_), before running PETSc ``configure``. If you do not set this environmental variables you will get messages when running ``configure`` such as:
+Due to this `Open MPI`_ restriction one has to set ``$LD_LIBRARY_PATH`` correctly (per `Open MPI`_ `installation instructions`_), before running PETSc ``configure``. If you do not set this environmental variables you will get messages when running ``configure`` such as:
 
 .. code-block:: text
 
@@ -453,7 +453,7 @@ Due to this `OpenMPI`_ restriction one has to set ``$LD_LIBRARY_PATH`` correctly
    to submit jobs you will need to configure using/configure.py with the additional option --with-batch.
    Otherwise there is problem with the compilers. Can you compile and run code with your C/C++ (and maybe Fortran) compilers?
 
-or when running a code compiled with `OpenMPI`_:
+or when running a code compiled with `Open MPI`_:
 
 .. code-block:: text
 
@@ -608,7 +608,7 @@ If not provided ``configure`` will generate a unique value automatically (for in
    $ ./configure --with-debugging=0
    $ make
 
-Produces the directories (on an Apple MacOS machine) ``$PETSC_DIR/arch-darwin-c-debug`` and
+Produces the directories (on an Apple macOS machine) ``$PETSC_DIR/arch-darwin-c-debug`` and
 ``$PETSC_DIR/arch-darwin-c-opt``.
 
 Installing On Machine Requiring Cross Compiler Or A Job Scheduler
@@ -687,7 +687,7 @@ Examples that use CUDA have the suffix .cu; see ``$PETSC_DIR/src/snes/tutorials/
 In most cases you need only pass the configure option ``--download-kokkos`` ``--download-kokkos-kernels``
 and one of ``--with-cuda``, ``--with-openmp``, or ``--with-pthread`` (or nothing to use sequential
 `Kokkos`_). See the :ref:`CUDA installation documenation <doc_config_accel_cuda>`,
-:ref:`OpenMPI installation documentation <doc_config_mpi>` for further reference on their
+:ref:`Open MPI installation documentation <doc_config_mpi>` for further reference on their
 respective requirements.
 
 Examples that use `Kokkos`_ at user-level have the suffix .kokkos.cxx; see
@@ -753,7 +753,7 @@ systems.  Also note the configuration examples in ``config/examples``.
 .. _MKL: https://software.intel.com/content/www/us/en/develop/tools/oneapi/components/onemkl.html
 .. _MKL Link Line Advisor: https://software.intel.com/content/www/us/en/develop/articles/intel-mkl-link-line-advisor.html
 .. _ESSL: https://www.ibm.com/support/knowledgecenter/en/SSFHY8/essl_welcome.html
-.. _OpenMPI: https://www.open-mpi.org/
+.. _Open MPI: https://www.open-mpi.org/
 .. _installation instructions: https://www.open-mpi.org/faq/?category=building
 .. _HDF5: https://www.hdfgroup.org/solutions/hdf5/
 .. _TAU: https://www.cs.uoregon.edu/research/tau/home.php

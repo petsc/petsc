@@ -75,7 +75,7 @@ the problem. We suggest providing the following information:
    - OS version and type: run ``uname -a`` to get the version number
    - PETSc version: run any PETSc program with the additional command-line option ``-version``, or look in
      ``$PETSC_DIR/include/petscversion.h``
-   - MPI implementation: MPICH, OpenMPI, IBM, Intel, etc.
+   - MPI implementation: MPICH, Open MPI, IBM, Intel, etc.
    - Compiler and version: GNU, Clang, Intel, etc.
    - Probable PETSc component: ``Mat``, ``Vec``, ``DM``, ``KSP``, etc.
 

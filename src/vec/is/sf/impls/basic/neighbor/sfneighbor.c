@@ -173,7 +173,7 @@ static PetscErrorCode PetscSFBcastBegin_Neighbor(PetscSF sf, MPI_Datatype unit, 
   PetscCall(PetscSFGetDistComm_Neighbor(sf, PETSCSF_ROOT2LEAF, &distcomm));
   PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, PETSCSF_ROOT2LEAF, &rootbuf, &leafbuf, &req, NULL));
   PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, PETSCSF_ROOT2LEAF));
-  /* OpenMPI-3.0 ran into error with rootdegree = leafdegree = 0, so we skip the call in this case */
+  /* Open MPI 3.0 ran into error with rootdegree = leafdegree = 0, so we skip the call in this case */
   if (dat->rootdegree || dat->leafdegree) PetscCallMPI(MPIU_Ineighbor_alltoallv(rootbuf, dat->rootcounts, dat->rootdispls, unit, leafbuf, dat->leafcounts, dat->leafdispls, unit, distcomm, req));
   PetscCall(PetscLogMPIMessages(dat->rootdegree, dat->rootcounts, unit, dat->leafdegree, dat->leafcounts, unit));
   PetscCall(PetscSFLinkScatterLocal(sf, link, PETSCSF_ROOT2LEAF, (void *)rootdata, leafdata, op));
