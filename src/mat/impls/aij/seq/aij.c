@@ -415,8 +415,8 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A, PetscInt m, const PetscInt im[], Petsc
     row = im[k];
     if (row < 0) continue;
     PetscCheck(row < A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT, row, A->rmap->n - 1);
-    rp = aj + ai[row];
-    if (!A->structure_only) ap = aa + ai[row];
+    rp = PetscSafePointerPlusOffset(aj, ai[row]);
+    if (!A->structure_only) ap = PetscSafePointerPlusOffset(aa, ai[row]);
     rmax = imax[row];
     nrow = ailen[row];
     low  = 0;
@@ -493,7 +493,7 @@ static PetscErrorCode MatSetValues_SeqAIJ_SortedFullNoPreallocation(Mat A, Petsc
   for (k = 0; k < m; k++) { /* loop over added rows */
     row = im[k];
     rp  = aj + ai[row];
-    ap  = aa + ai[row];
+    ap  = PetscSafePointerPlusOffset(aa, ai[row]);
 
     PetscCall(PetscMemcpy(rp, in, n * sizeof(PetscInt)));
     if (!A->structure_only) {
@@ -612,8 +612,8 @@ static PetscErrorCode MatGetValues_SeqAIJ(Mat A, PetscInt m, const PetscInt im[]
       continue;
     } /* negative row */
     PetscCheck(row < A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT, row, A->rmap->n - 1);
-    rp   = aj + ai[row];
-    ap   = aa + ai[row];
+    rp   = PetscSafePointerPlusOffset(aj, ai[row]);
+    ap   = PetscSafePointerPlusOffset(aa, ai[row]);
     nrow = ailen[row];
     for (l = 0; l < n; l++) { /* loop over columns */
       if (in[l] < 0) {
@@ -2212,7 +2212,7 @@ static PetscErrorCode MatZeroRowsColumns_SeqAIJ(Mat A, PetscInt N, const PetscIn
   PetscCall(PetscCalloc1(A->rmap->n, &zeroed));
   for (i = 0; i < N; i++) {
     PetscCheck(rows[i] >= 0 && rows[i] <= m, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "row %" PetscInt_FMT " out of range", rows[i]);
-    PetscCall(PetscArrayzero(&aa[a->i[rows[i]]], a->ilen[rows[i]]));
+    PetscCall(PetscArrayzero(PetscSafePointerPlusOffset(aa, a->i[rows[i]]), a->ilen[rows[i]]));
 
     zeroed[rows[i]] = PETSC_TRUE;
   }
@@ -2256,7 +2256,7 @@ PetscErrorCode MatGetRow_SeqAIJ(Mat A, PetscInt row, PetscInt *nz, PetscInt **id
   PetscFunctionBegin;
   PetscCall(MatSeqAIJGetArrayRead(A, &aa));
   *nz = a->i[row + 1] - a->i[row];
-  if (v) *v = aa ? (PetscScalar *)(aa + a->i[row]) : NULL;
+  if (v) *v = PetscSafePointerPlusOffset((PetscScalar *)aa, a->i[row]);
   if (idx) {
     if (*nz && a->j) *idx = a->j + a->i[row];
     else *idx = NULL;
@@ -2309,7 +2309,7 @@ static PetscErrorCode MatNorm_SeqAIJ(Mat A, NormType type, PetscReal *nrm)
   } else if (type == NORM_INFINITY) {
     *nrm = 0.0;
     for (j = 0; j < A->rmap->n; j++) {
-      const PetscScalar *v2 = v + a->i[j];
+      const PetscScalar *v2 = PetscSafePointerPlusOffset(v, a->i[j]);
       sum                   = 0.0;
       for (i = 0; i < a->i[j + 1] - a->i[j]; i++) {
         sum += PetscAbsScalar(*v2);
@@ -2553,9 +2553,11 @@ PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat A, IS isrow, IS iscol, PetscInt csi
     for (i = 0; i < nrows; i++) {
       ii    = starts[i];
       lensi = lens[i];
-      for (k = 0; k < lensi; k++) *j_new++ = aj[ii + k] - first;
-      PetscCall(PetscArraycpy(a_new, aa + starts[i], lensi));
-      a_new += lensi;
+      if (lensi) {
+        for (k = 0; k < lensi; k++) *j_new++ = aj[ii + k] - first;
+        PetscCall(PetscArraycpy(a_new, aa + starts[i], lensi));
+        a_new += lensi;
+      }
       i_new[i + 1] = i_new[i] + lensi;
       c->ilen[i]   = lensi;
     }
@@ -2609,8 +2611,8 @@ PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat A, IS isrow, IS iscol, PetscInt csi
       kstart   = ai[row];
       kend     = kstart + a->ilen[row];
       mat_i    = c->i[i];
-      mat_j    = c->j + mat_i;
-      mat_a    = c_a + mat_i;
+      mat_j    = PetscSafePointerPlusOffset(c->j, mat_i);
+      mat_a    = PetscSafePointerPlusOffset(c_a, mat_i);
       mat_ilen = c->ilen + i;
       for (k = kstart; k < kend; k++) {
         if ((tcol = smap[a->j[k]])) {
@@ -2630,8 +2632,8 @@ PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat A, IS isrow, IS iscol, PetscInt csi
       PetscInt ilen;
 
       mat_i = c->i[i];
-      mat_j = c->j + mat_i;
-      mat_a = c_a + mat_i;
+      mat_j = PetscSafePointerPlusOffset(c->j, mat_i);
+      mat_a = PetscSafePointerPlusOffset(c_a, mat_i);
       ilen  = c->ilen[i];
       PetscCall(PetscSortIntWithScalarArray(ilen, mat_j, mat_a));
     }
@@ -3003,7 +3005,7 @@ PetscErrorCode MatAXPYGetPreallocation_SeqX_private(PetscInt m, const PetscInt *
   PetscFunctionBegin;
   /* Set the number of nonzeros in the new matrix */
   for (i = 0; i < m; i++) {
-    const PetscInt *xjj = xj + xi[i], *yjj = yj + yi[i];
+    const PetscInt *xjj = PetscSafePointerPlusOffset(xj, xi[i]), *yjj = PetscSafePointerPlusOffset(yj, yi[i]);
     nzx    = xi[i + 1] - xi[i];
     nzy    = yi[i + 1] - yi[i];
     nnz[i] = 0;
@@ -4134,7 +4136,7 @@ static PetscErrorCode MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B, const PetscInt 
   PetscCall(MatSeqAIJSetPreallocation(B, 0, nnz));
   PetscCall(PetscFree(nnz));
 
-  for (i = 0; i < m; i++) PetscCall(MatSetValues_SeqAIJ(B, 1, &i, Ii[i + 1] - Ii[i], J + Ii[i], v ? v + Ii[i] : NULL, INSERT_VALUES));
+  for (i = 0; i < m; i++) PetscCall(MatSetValues_SeqAIJ(B, 1, &i, Ii[i + 1] - Ii[i], J + Ii[i], PetscSafePointerPlusOffset(v, Ii[i]), INSERT_VALUES));
 
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));

@@ -172,13 +172,13 @@ static PetscErrorCode MatCreateSubMatrix_SeqSBAIJ_Private(Mat A, IS isrow, IS is
     kend   = kstart + a->ilen[row];
     if (sym) {
       mat_i    = c->i[i];
-      mat_j    = c->j + mat_i;
-      mat_a    = c->a + mat_i * bs2;
+      mat_j    = PetscSafePointerPlusOffset(c->j, mat_i);
+      mat_a    = PetscSafePointerPlusOffset(c->a, mat_i * bs2);
       mat_ilen = c->ilen + i;
     } else {
       mat_i    = d->i[i];
-      mat_j    = d->j + mat_i;
-      mat_a    = d->a + mat_i * bs2;
+      mat_j    = PetscSafePointerPlusOffset(d->j, mat_i);
+      mat_a    = PetscSafePointerPlusOffset(d->a, mat_i * bs2);
       mat_ilen = d->ilen + i;
     }
     for (k = kstart; k < kend; k++) {
@@ -199,13 +199,13 @@ static PetscErrorCode MatCreateSubMatrix_SeqSBAIJ_Private(Mat A, IS isrow, IS is
       PetscInt ilen;
       if (sym) {
         mat_i = c->i[i];
-        mat_j = c->j + mat_i;
-        mat_a = c->a + mat_i * bs2;
+        mat_j = PetscSafePointerPlusOffset(c->j, mat_i);
+        mat_a = PetscSafePointerPlusOffset(c->a, mat_i * bs2);
         ilen  = c->ilen[i];
       } else {
         mat_i = d->i[i];
-        mat_j = d->j + mat_i;
-        mat_a = d->a + mat_i * bs2;
+        mat_j = PetscSafePointerPlusOffset(d->j, mat_i);
+        mat_a = PetscSafePointerPlusOffset(d->a, mat_i * bs2);
         ilen  = d->ilen[i];
       }
       PetscCall(PetscSortIntWithDataArray(ilen, mat_j, mat_a, bs2 * sizeof(MatScalar), work));

@@ -247,7 +247,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive_Scalable(Mat mat, PetscI
   for (i = 0; i < nidx; i++) {
     PetscCall(PetscCommDuplicate(PetscObjectComm((PetscObject)is[i]), &iscomms[i], NULL));
     PetscCall(ISGetIndices(is[i], &indices_i_temp));
-    PetscCall(PetscArraycpy(indices_temp + i * (max_lsize + nrecvs), indices_i_temp, isz[i]));
+    PetscCall(PetscArraycpy(PetscSafePointerPlusOffset(indices_temp, i * (max_lsize + nrecvs)), indices_i_temp, isz[i]));
     PetscCall(ISRestoreIndices(is[i], &indices_i_temp));
     PetscCall(ISDestroy(&is[i]));
   }
@@ -265,7 +265,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive_Scalable(Mat mat, PetscI
   }
   /* remove duplicate entities */
   for (i = 0; i < nidx; i++) {
-    indices_i = indices_temp + (max_lsize + nrecvs) * i;
+    indices_i = PetscSafePointerPlusOffset(indices_temp, (max_lsize + nrecvs) * i);
     isz_i     = isz[i];
     PetscCall(PetscSortRemoveDupsInt(&isz_i, indices_i));
     PetscCall(ISCreateGeneral(iscomms[i], isz_i, indices_i, PETSC_COPY_VALUES, &is[i]));
@@ -307,7 +307,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Send_Scalable(Mat mat, PetscInt 
   for (i = 0; i < nfrom; i++) max_fszs = fromsizes[2 * i] > max_fszs ? fromsizes[2 * i] : max_fszs;
   /* better way to estimate number of nonzero in the mat??? */
   PetscCall(PetscCalloc5(max_fszs * nidx, &rows_data_ptr, nidx, &rows_data, nidx, &rows_pos_i, nfrom * nidx, &indv_counts, tnz, &indices_tmp));
-  for (i = 0; i < nidx; i++) rows_data[i] = rows_data_ptr + max_fszs * i;
+  for (i = 0; i < nidx; i++) rows_data[i] = PetscSafePointerPlusOffset(rows_data_ptr, max_fszs * i);
   rows_pos  = 0;
   totalrows = 0;
   for (i = 0; i < nfrom; i++) {
@@ -1117,7 +1117,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A, MatCreateSubMatrixOption fla
 
     /*   Copy my part of matrix column indices over    */
     sendcount  = ad->nz + bd->nz;
-    jsendbuf   = b->j + b->i[rstarts[rank]];
+    jsendbuf   = PetscSafePointerPlusOffset(b->j, b->i[rstarts[rank]]);
     a_jsendbuf = ad->j;
     b_jsendbuf = bd->j;
     n          = A->rmap->rend - A->rmap->rstart;
@@ -1171,7 +1171,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A, MatCreateSubMatrixOption fla
     PetscCall(MatSeqAIJGetArrayRead(a->A, &ada));
     PetscCall(MatSeqAIJGetArrayRead(a->B, &bda));
     sendcount = ad->nz + bd->nz;
-    sendbuf   = b->a + b->i[rstarts[rank]];
+    sendbuf   = PetscSafePointerPlusOffset(b->a, b->i[rstarts[rank]]);
     a_sendbuf = ada;
     b_sendbuf = bda;
     b_sendj   = bd->j;
@@ -1460,11 +1460,11 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
         nzA    = ai[row + 1] - ai[row];
         nzB    = bi[row + 1] - bi[row];
         ncols  = nzA + nzB;
-        cworkA = aj + ai[row];
-        cworkB = bj ? bj + bi[row] : NULL;
+        cworkA = PetscSafePointerPlusOffset(aj, ai[row]);
+        cworkB = PetscSafePointerPlusOffset(bj, bi[row]);
 
         /* load the column indices for this row into cols*/
-        cols = sbuf_aj_i + ct2;
+        cols = PetscSafePointerPlusOffset(sbuf_aj_i, ct2);
 
         lwrite = 0;
         for (l = 0; l < nzB; l++) {
@@ -1516,7 +1516,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
       if (proc == rank) {
         /* diagonal part A = c->A */
         ncols = ai[row - rstart + 1] - ai[row - rstart];
-        cols  = aj + ai[row - rstart];
+        cols  = PetscSafePointerPlusOffset(aj, ai[row - rstart]);
         if (!allcolumns) {
           for (k = 0; k < ncols; k++) {
 #if defined(PETSC_USE_CTABLE)
@@ -1532,7 +1532,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
 
         /* off-diagonal part B = c->B */
         ncols = bi[row - rstart + 1] - bi[row - rstart];
-        cols  = bj ? bj + bi[row - rstart] : NULL;
+        cols  = PetscSafePointerPlusOffset(bj, bi[row - rstart]);
         if (!allcolumns) {
           for (k = 0; k < ncols; k++) {
 #if defined(PETSC_USE_CTABLE)
@@ -1725,12 +1725,12 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
       nzA    = ai[row + 1] - ai[row];
       nzB    = bi[row + 1] - bi[row];
       ncols  = nzA + nzB;
-      cworkB = bj ? bj + bi[row] : NULL;
-      vworkA = a_a + ai[row];
-      vworkB = b_a ? b_a + bi[row] : NULL;
+      cworkB = PetscSafePointerPlusOffset(bj, bi[row]);
+      vworkA = PetscSafePointerPlusOffset(a_a, ai[row]);
+      vworkB = PetscSafePointerPlusOffset(b_a, bi[row]);
 
       /* load the column values for this row into vals*/
-      vals = sbuf_aa_i + ct2;
+      vals = PetscSafePointerPlusOffset(sbuf_aa_i, ct2);
 
       lwrite = 0;
       for (l = 0; l < nzB; l++) {
@@ -1762,8 +1762,8 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
       if (allcolumns) {
         /* diagonal part A = c->A */
         ncols = ai[Crow + 1] - ai[Crow];
-        cols  = aj + ai[Crow];
-        vals  = a_a + ai[Crow];
+        cols  = PetscSafePointerPlusOffset(aj, ai[Crow]);
+        vals  = PetscSafePointerPlusOffset(a_a, ai[Crow]);
         i     = 0;
         for (k = 0; k < ncols; k++) {
           subcols[i]   = cols[k] + cstart;
@@ -1772,8 +1772,8 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
 
         /* off-diagonal part B = c->B */
         ncols = bi[Crow + 1] - bi[Crow];
-        cols  = bj + bi[Crow];
-        vals  = b_a + bi[Crow];
+        cols  = PetscSafePointerPlusOffset(bj, bi[Crow]);
+        vals  = PetscSafePointerPlusOffset(b_a, bi[Crow]);
         for (k = 0; k < ncols; k++) {
           subcols[i]   = bmap[cols[k]];
           subvals[i++] = vals[k];
@@ -1785,8 +1785,8 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
 #if defined(PETSC_USE_CTABLE)
         /* diagonal part A = c->A */
         ncols = ai[Crow + 1] - ai[Crow];
-        cols  = aj + ai[Crow];
-        vals  = a_a + ai[Crow];
+        cols  = PetscSafePointerPlusOffset(aj, ai[Crow]);
+        vals  = PetscSafePointerPlusOffset(a_a, ai[Crow]);
         i     = 0;
         for (k = 0; k < ncols; k++) {
           tcol = cmap_loc[cols[k]];
@@ -1798,8 +1798,8 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
 
         /* off-diagonal part B = c->B */
         ncols = bi[Crow + 1] - bi[Crow];
-        cols  = bj ? bj + bi[Crow] : NULL;
-        vals  = b_a ? b_a + bi[Crow] : NULL;
+        cols  = PetscSafePointerPlusOffset(bj, bi[Crow]);
+        vals  = PetscSafePointerPlusOffset(b_a, bi[Crow]);
         for (k = 0; k < ncols; k++) {
           PetscCall(PetscHMapIGetWithDefault(cmap, bmap[cols[k]] + 1, 0, &tcol));
           if (tcol) {
@@ -1895,7 +1895,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
         }
       } else {              /* allcolumns */
         nnz = rbuf2_i[ct1]; /* num of C entries in this row */
-        PetscCall(MatSetValues_SeqAIJ(submat, 1, &row, nnz, rbuf3_i + ct2, rbuf4_i + ct2, INSERT_VALUES));
+        PetscCall(MatSetValues_SeqAIJ(submat, 1, &row, nnz, PetscSafePointerPlusOffset(rbuf3_i, ct2), PetscSafePointerPlusOffset(rbuf4_i, ct2), INSERT_VALUES));
         ct2 += nnz;
       }
     }
@@ -2029,7 +2029,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ(Mat C, PetscInt ismax, const IS isrow
     else if (pos >= ismax) max_no = 0;
     else max_no = ismax - pos;
 
-    PetscCall(MatCreateSubMatrices_MPIAIJ_Local(C, max_no, isrow + pos, iscol + pos, scall, *submat + pos));
+    PetscCall(MatCreateSubMatrices_MPIAIJ_Local(C, max_no, PetscSafePointerPlusOffset(isrow, pos), PetscSafePointerPlusOffset(iscol, pos), scall, *submat + pos));
     if (!max_no) {
       if (scall == MAT_INITIAL_MATRIX) { /* submat[pos] is a dummy matrix */
         smat          = (Mat_SubSppt *)(*submat)[pos]->data;
@@ -2374,8 +2374,8 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
             nzA    = a_i[row + 1] - a_i[row];
             nzB    = b_i[row + 1] - b_i[row];
             ncols  = nzA + nzB;
-            cworkA = a_j + a_i[row];
-            cworkB = b_j ? b_j + b_i[row] : NULL;
+            cworkA = PetscSafePointerPlusOffset(a_j, a_i[row]);
+            cworkB = PetscSafePointerPlusOffset(b_j, b_i[row]);
 
             /* load the column indices for this row into cols */
             cols = sbuf_aj_i + ct2;
@@ -2428,7 +2428,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
     PetscCall(PetscMalloc1(ismax, &lens));
 
     if (ismax) PetscCall(PetscCalloc1(j, &lens[0]));
-    for (i = 1; i < ismax; i++) lens[i] = lens[i - 1] + nrow[i - 1];
+    for (i = 1; i < ismax; i++) lens[i] = PetscSafePointerPlusOffset(lens[i - 1], nrow[i - 1]);
 
     /* Update lens from local data */
     for (i = 0; i < ismax; i++) {
@@ -2656,9 +2656,9 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
           nzA    = a_i[row + 1] - a_i[row];
           nzB    = b_i[row + 1] - b_i[row];
           ncols  = nzA + nzB;
-          cworkB = b_j ? b_j + b_i[row] : NULL;
-          vworkA = a_a + a_i[row];
-          vworkB = b_a ? b_a + b_i[row] : NULL;
+          cworkB = PetscSafePointerPlusOffset(b_j, b_i[row]);
+          vworkA = PetscSafePointerPlusOffset(a_a, a_i[row]);
+          vworkB = PetscSafePointerPlusOffset(b_a, b_i[row]);
 
           /* load the column values for this row into vals*/
           vals = sbuf_aa_i + ct2;
@@ -2768,8 +2768,8 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
 #endif
         ilen  = imat_ilen[row];
         mat_i = imat_i[row];
-        mat_a = imat_a ? imat_a + mat_i : NULL;
-        mat_j = imat_j ? imat_j + mat_i : NULL;
+        mat_a = PetscSafePointerPlusOffset(imat_a, mat_i);
+        mat_j = PetscSafePointerPlusOffset(imat_j, mat_i);
         max2  = rbuf2_i[ct1];
         if (!allcolumns[is_no]) {
           for (l = 0; l < max2; l++, ct2++) {

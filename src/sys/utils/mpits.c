@@ -135,7 +135,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm, PetscMPIIn
   PetscMPIInt       size, rank, *iflags, nrecvs, tag, *franks, i, flg;
   MPI_Aint          lb, unitbytes;
   char             *tdata, *fdata;
-  MPI_Request      *reqs, *sendreqs = NULL;
+  MPI_Request      *reqs, *sendreqs;
   MPI_Status       *statuses;
   PetscCommCounter *counter;
 
@@ -160,7 +160,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm, PetscMPIIn
   PetscCall(PetscMalloc(nrecvs * count * unitbytes, &fdata));
   tdata = (char *)todata;
   PetscCall(PetscMalloc2(nto + nrecvs, &reqs, nto + nrecvs, &statuses));
-  if (nto) sendreqs = reqs + nrecvs;
+  sendreqs = PetscSafePointerPlusOffset(reqs, nrecvs);
   for (i = 0; i < nrecvs; i++) PetscCallMPI(MPI_Irecv((void *)(fdata + count * unitbytes * i), count, dtype, MPI_ANY_SOURCE, tag, comm, reqs + i));
   for (i = 0; i < nto; i++) PetscCallMPI(MPI_Isend((void *)(tdata + count * unitbytes * i), count, dtype, toranks[i], tag, comm, sendreqs + i));
   PetscCallMPI(MPI_Waitall(nto + nrecvs, reqs, statuses));

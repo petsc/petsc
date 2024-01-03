@@ -3796,11 +3796,11 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   PetscCall(PetscCalloc1(pcbddc->local_primal_size * pcbddc->local_primal_size, &coarse_submat_vals));
   PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, n_vertices, n_vertices, coarse_submat_vals, &S_VV));
   PetscCall(MatDenseSetLDA(S_VV, pcbddc->local_primal_size));
-  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, n_constraints, n_vertices, coarse_submat_vals + n_vertices, &S_CV));
+  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, n_constraints, n_vertices, PetscSafePointerPlusOffset(coarse_submat_vals, n_vertices), &S_CV));
   PetscCall(MatDenseSetLDA(S_CV, pcbddc->local_primal_size));
-  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, n_vertices, n_constraints, coarse_submat_vals + pcbddc->local_primal_size * n_vertices, &S_VC));
+  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, n_vertices, n_constraints, PetscSafePointerPlusOffset(coarse_submat_vals, pcbddc->local_primal_size * n_vertices), &S_VC));
   PetscCall(MatDenseSetLDA(S_VC, pcbddc->local_primal_size));
-  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, n_constraints, n_constraints, coarse_submat_vals + (pcbddc->local_primal_size + 1) * n_vertices, &S_CC));
+  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, n_constraints, n_constraints, PetscSafePointerPlusOffset(coarse_submat_vals, (pcbddc->local_primal_size + 1) * n_vertices), &S_CC));
   PetscCall(MatDenseSetLDA(S_CC, pcbddc->local_primal_size));
 
   /* determine if can use MatSolve routines instead of calling KSPSolve on ksp_R */
@@ -4047,7 +4047,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     if (!pcbddc->symmetric_primal) n *= 2;
     PetscCall(PetscCalloc1(n, &marr));
     PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, n_B, pcbddc->local_primal_size, marr, &pcbddc->coarse_phi_B));
-    marr += n_B * pcbddc->local_primal_size;
+    marr = PetscSafePointerPlusOffset(marr, n_B * pcbddc->local_primal_size);
     if (pcbddc->switch_static || pcbddc->dbg_flag) {
       PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, n_D, pcbddc->local_primal_size, marr, &pcbddc->coarse_phi_D));
       marr += n_D * pcbddc->local_primal_size;
@@ -7672,7 +7672,7 @@ static PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_su
     }
     PetscCall(PetscMalloc1(nis, &temp_idxs));
     PetscCall(PetscMalloc1(psum, &temp_idxs[0]));
-    for (i = 1; i < nis; i++) temp_idxs[i] = temp_idxs[i - 1] + count_is[i - 1];
+    for (i = 1; i < nis; i++) temp_idxs[i] = PetscSafePointerPlusOffset(temp_idxs[i - 1], count_is[i - 1]);
     PetscCall(PetscArrayzero(count_is, nis));
     ptr_idxs = recv_buffer_idxs_is;
     for (i = 0; i < n_recvs; i++) {

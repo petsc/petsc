@@ -209,10 +209,10 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt *
       for (ii = ROW + 1; ii < AM + 1; ii++) new_i[ii] = AI[ii] + CHUNKSIZE; \
       PetscCall(PetscArraycpy(new_j, AJ, AI[ROW] + NROW)); \
       len = (new_nz - CHUNKSIZE - AI[ROW] - NROW); \
-      PetscCall(PetscArraycpy(new_j + AI[ROW] + NROW + CHUNKSIZE, AJ + AI[ROW] + NROW, len)); \
+      PetscCall(PetscArraycpy(new_j + AI[ROW] + NROW + CHUNKSIZE, PetscSafePointerPlusOffset(AJ, AI[ROW] + NROW), len)); \
       PetscCall(PetscArraycpy(new_a, AA, BS2 *(AI[ROW] + NROW))); \
       PetscCall(PetscArrayzero(new_a + BS2 * (AI[ROW] + NROW), BS2 * CHUNKSIZE)); \
-      PetscCall(PetscArraycpy(new_a + BS2 * (AI[ROW] + NROW + CHUNKSIZE), AA + BS2 * (AI[ROW] + NROW), BS2 * len)); \
+      PetscCall(PetscArraycpy(new_a + BS2 * (AI[ROW] + NROW + CHUNKSIZE), PetscSafePointerPlusOffset(AA, BS2 * (AI[ROW] + NROW)), BS2 * len)); \
       /* free up old matrix storage */ \
       PetscCall(MatSeqXAIJFreeAIJ(A, &Ain->a, &Ain->j, &Ain->i)); \
       AA     = new_a; \

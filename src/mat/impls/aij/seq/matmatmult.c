@@ -305,8 +305,8 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_Sorted(Mat A, Mat B, Mat C)
       for (k = 0; k < bnzi; k++) ab_dense[bjj[k]] += valtmp * baj[k];
       flops += 2 * bnzi;
     }
-    aj += anzi;
-    aa += anzi;
+    aj = PetscSafePointerPlusOffset(aj, anzi);
+    aa = PetscSafePointerPlusOffset(aa, anzi);
 
     cnzi = ci[i + 1] - ci[i];
     for (k = 0; k < cnzi; k++) {
@@ -314,7 +314,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_Sorted(Mat A, Mat B, Mat C)
       ab_dense[cj[k]] = 0.0; /* zero ab_dense */
     }
     flops += cnzi;
-    cj += cnzi;
+    cj = PetscSafePointerPlusOffset(cj, cnzi);
     ca += cnzi;
   }
 #if defined(PETSC_HAVE_DEVICE)
@@ -1138,8 +1138,8 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Sorted(Mat A, Mat B, PetscReal f
 
   /* Determine ci and cj */
   for (i = 0; i < am; i++) {
-    const PetscInt  anzi = ai[i + 1] - ai[i]; /* number of nonzeros in this row of A, this is the number of rows of B that we merge */
-    const PetscInt *acol = aj + ai[i];        /* column indices of nonzero entries in this row */
+    const PetscInt  anzi = ai[i + 1] - ai[i];                     /* number of nonzeros in this row of A, this is the number of rows of B that we merge */
+    const PetscInt *acol = PetscSafePointerPlusOffset(aj, ai[i]); /* column indices of nonzero entries in this row */
     PetscInt packlen     = 0, *PETSC_RESTRICT crow;
 
     /* Pack segrow */
@@ -1349,10 +1349,10 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A, Mat B, Mat C)
 
   for (i = 0; i < cm; i++) {
     anzi = ai[i + 1] - ai[i];
-    acol = aj + ai[i];
-    aval = aa + ai[i];
+    acol = PetscSafePointerPlusOffset(aj, ai[i]);
+    aval = PetscSafePointerPlusOffset(aa, ai[i]);
     cnzi = ci[i + 1] - ci[i];
-    ccol = cj + ci[i];
+    ccol = PetscSafePointerPlusOffset(cj, ci[i]);
     cval = ca + ci[i];
     for (j = 0; j < cnzi; j++) {
       brow = ccol[j];
@@ -1541,8 +1541,8 @@ PETSC_INTERN PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A, Mat B, M
     for (i = 0; i < am; i++) {                  /* over rows of A in those columns */
       r1 = r2 = r3 = r4 = 0.0;
       n                 = a->i[i + 1] - a->i[i];
-      aj                = a->j ? a->j + a->i[i] : NULL;
-      aa                = av ? av + a->i[i] : NULL;
+      aj                = PetscSafePointerPlusOffset(a->j, a->i[i]);
+      aa                = PetscSafePointerPlusOffset(av, a->i[i]);
       for (j = 0; j < n; j++) {
         const PetscScalar aatmp = aa[j];
         const PetscInt    ajtmp = aj[j];
@@ -1582,8 +1582,8 @@ PETSC_INTERN PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A, Mat B, M
       for (i = 0; i < am; i++) {
         r1 = 0.0;
         n  = a->i[i + 1] - a->i[i];
-        aj = a->j + a->i[i];
-        aa = av + a->i[i];
+        aj = PetscSafePointerPlusOffset(a->j, a->i[i]);
+        aa = PetscSafePointerPlusOffset(av, a->i[i]);
         for (j = 0; j < n; j++) r1 += aa[j] * b1[aj[j]];
         if (add) c1[i] += r1;
         else c1[i] = r1;
@@ -1592,8 +1592,8 @@ PETSC_INTERN PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A, Mat B, M
       for (i = 0; i < am; i++) {
         r1 = r2 = 0.0;
         n       = a->i[i + 1] - a->i[i];
-        aj      = a->j + a->i[i];
-        aa      = av + a->i[i];
+        aj      = PetscSafePointerPlusOffset(a->j, a->i[i]);
+        aa      = PetscSafePointerPlusOffset(av, a->i[i]);
         for (j = 0; j < n; j++) {
           const PetscScalar aatmp = aa[j];
           const PetscInt    ajtmp = aj[j];
@@ -1612,8 +1612,8 @@ PETSC_INTERN PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A, Mat B, M
       for (i = 0; i < am; i++) {
         r1 = r2 = r3 = 0.0;
         n            = a->i[i + 1] - a->i[i];
-        aj           = a->j ? a->j + a->i[i] : NULL;
-        aa           = av ? av + a->i[i] : NULL;
+        aj           = PetscSafePointerPlusOffset(a->j, a->i[i]);
+        aa           = PetscSafePointerPlusOffset(av, a->i[i]);
         for (j = 0; j < n; j++) {
           const PetscScalar aatmp = aa[j];
           const PetscInt    ajtmp = aj[j];

@@ -21,7 +21,7 @@ static int sort_CompareSwarmPoint(const void *dataA, const void *dataB)
 static PetscErrorCode DMSwarmSortApplyCellIndexSort(DMSwarmSort ctx)
 {
   PetscFunctionBegin;
-  qsort(ctx->list, ctx->npoints, sizeof(SwarmPoint), sort_CompareSwarmPoint);
+  if (ctx->list) qsort(ctx->list, ctx->npoints, sizeof(SwarmPoint), sort_CompareSwarmPoint);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

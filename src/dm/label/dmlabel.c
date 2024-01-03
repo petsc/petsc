@@ -2652,11 +2652,11 @@ PetscErrorCode PetscSectionSymLabelGetStratum(PetscSectionSym sym, PetscInt stra
   }
   if (perms) {
     PetscAssertPointer(perms, 6);
-    *perms = sl->perms[i] ? &sl->perms[i][sl->minMaxOrients[i][0]] : NULL;
+    *perms = PetscSafePointerPlusOffset(sl->perms[i], sl->minMaxOrients[i][0]);
   }
   if (rots) {
     PetscAssertPointer(rots, 7);
-    *rots = sl->rots[i] ? &sl->rots[i][sl->minMaxOrients[i][0]] : NULL;
+    *rots = PetscSafePointerPlusOffset(sl->rots[i], sl->minMaxOrients[i][0]);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2727,8 +2727,8 @@ PetscErrorCode PetscSectionSymLabelSetStratum(PetscSectionSym sym, PetscInt stra
       sl->rots[i] = (const PetscScalar **)&ownRots[-minOrient];
     }
   } else {
-    sl->perms[i] = perms ? &perms[-minOrient] : NULL;
-    sl->rots[i]  = rots ? &rots[-minOrient] : NULL;
+    sl->perms[i] = PetscSafePointerPlusOffset(perms, -minOrient);
+    sl->rots[i]  = PetscSafePointerPlusOffset(rots, -minOrient);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

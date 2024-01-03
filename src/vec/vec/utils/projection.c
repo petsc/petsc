@@ -579,13 +579,13 @@ PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
 
       PetscCall(VecGetArray(vfull, &y));
       PetscCall(VecGetArrayRead(vreduced, &x));
-      y -= rstart;
+      y = PetscSafePointerPlusOffset(y, -rstart);
       for (i = 0; i < n; ++i) {
         if (id[i] < 0) continue;
         PetscCheck(id[i] >= rstart && id[i] < rend, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
         y[id[i]] = x[i];
       }
-      y += rstart;
+      y = PetscSafePointerPlusOffset(y, rstart);
       PetscCall(VecRestoreArrayRead(vreduced, &x));
       PetscCall(VecRestoreArray(vfull, &y));
     } else if (mode == SCATTER_REVERSE) {

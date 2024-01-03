@@ -153,7 +153,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, Mat C)
     conz = co->i[i + 1] - co->i[i];
 
     /* 1st off-diagonal part of C */
-    ca = coa + co->i[i];
+    ca = PetscSafePointerPlusOffset(coa, co->i[i]);
     k  = 0;
     for (k0 = 0; k0 < conz; k0++) {
       if (apJ[k] >= cstart) break;
@@ -162,14 +162,14 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, Mat C)
     }
 
     /* diagonal part of C */
-    ca = cda + cd->i[i];
+    ca = PetscSafePointerPlusOffset(cda, cd->i[i]);
     for (k1 = 0; k1 < cdnz; k1++) {
       ca[k1]        = apa[apJ[k]];
       apa[apJ[k++]] = 0.0;
     }
 
     /* 2nd off-diagonal part of C */
-    ca = coa + co->i[i];
+    ca = PetscSafePointerPlusOffset(coa, co->i[i]);
     for (; k0 < conz; k0++) {
       ca[k0]        = apa[apJ[k]];
       apa[apJ[k++]] = 0.0;
@@ -711,8 +711,8 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C)
 
     /* off-diagonal portion of A */
     anz = aoi[i + 1] - aoi[i];
-    aoj = ao->j + aoi[i];
-    aoa = ao->a + aoi[i];
+    aoj = PetscSafePointerPlusOffset(ao->j, aoi[i]);
+    aoa = PetscSafePointerPlusOffset(ao->a, aoi[i]);
     for (j = 0; j < anz; j++) {
       row = aoj[j];
       pnz = pi_oth[row + 1] - pi_oth[row];
@@ -734,7 +734,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C)
     conz = co->i[i + 1] - co->i[i];
 
     /* 1st off-diagonal part of C */
-    ca = coa + co->i[i];
+    ca = PetscSafePointerPlusOffset(coa, co->i[i]);
     k  = 0;
     for (k0 = 0; k0 < conz; k0++) {
       if (apJ[k] >= cstart) break;
@@ -752,7 +752,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C)
     }
 
     /* 2nd off-diagonal part of C */
-    ca = coa + co->i[i];
+    ca = PetscSafePointerPlusOffset(coa, co->i[i]);
     for (; k0 < conz; k0++) {
       ca[k0]        = apa_sparse[k];
       apa_sparse[k] = 0.0;

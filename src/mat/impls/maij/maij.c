@@ -278,8 +278,8 @@ PETSC_FORCE_INLINE static inline PetscErrorCode MatMultTranspose_MatMultTranspos
 
   for (PetscInt i = 0; i < m; i++) {
     const PetscInt     a_ii = a_i[i];
-    const PetscInt    *idx  = a_j ? a_j + a_ii : NULL;
-    const PetscScalar *v    = a_a ? a_a + a_ii : NULL;
+    const PetscInt    *idx  = PetscSafePointerPlusOffset(a_j, a_ii);
+    const PetscScalar *v    = PetscSafePointerPlusOffset(a_a, a_ii);
     const PetscInt     n    = a_i[i + 1] - a_ii;
     PetscScalar        alpha[MAT_SEQMAIJ_MAX_TEMPLATE_SIZE];
 
@@ -423,8 +423,8 @@ static PetscErrorCode MatMultTranspose_SeqMAIJ_N(Mat A, Vec xx, Vec yy)
   PetscCall(VecSet(yy, 0.0));
   PetscCall(VecGetArray(yy, &y));
   for (i = 0; i < m; i++) {
-    idx   = a->j + a->i[i];
-    v     = a->a + a->i[i];
+    idx   = PetscSafePointerPlusOffset(a->j, a->i[i]);
+    v     = PetscSafePointerPlusOffset(a->a, a->i[i]);
     n     = a->i[i + 1] - a->i[i];
     alpha = x + dof * i;
     while (n-- > 0) {

@@ -631,12 +631,12 @@ int main(int argc, char **argv)
     PetscCall(DMGetDimension(user.dm, &dim));
     PetscCall(DMPlexGetHeightStratum(user.dm, 0, &cStart, &cEnd));
     for (c = 0; c < cEnd - cStart; ++c) {
-      PetscReal *v0       = user.v0 ? &user.v0[c * dim] : NULL;
-      PetscReal *J        = user.J ? &user.J[c * dim * dim] : NULL;
-      PetscReal *invJ     = user.invJ ? &user.invJ[c * dim * dim] : NULL;
+      PetscReal *v0       = PetscSafePointerPlusOffset(user.v0, c * dim);
+      PetscReal *J        = PetscSafePointerPlusOffset(user.J, c * dim * dim);
+      PetscReal *invJ     = PetscSafePointerPlusOffset(user.invJ, c * dim * dim);
       PetscReal  detJ     = user.detJ ? user.detJ[c] : 0.0;
-      PetscReal *centroid = user.centroid ? &user.centroid[c * dim] : NULL;
-      PetscReal *normal   = user.normal ? &user.normal[c * dim] : NULL;
+      PetscReal *centroid = PetscSafePointerPlusOffset(user.centroid, c * dim);
+      PetscReal *normal   = PetscSafePointerPlusOffset(user.normal, c * dim);
       PetscReal  vol      = user.vol ? user.vol[c] : 0.0;
 
       PetscCall(CheckCell(user.dm, c + cStart, PETSC_FALSE, v0, J, invJ, detJ, centroid, normal, vol, NULL, NULL, NULL));

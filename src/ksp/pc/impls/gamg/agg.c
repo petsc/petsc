@@ -1230,7 +1230,7 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc, Mat Amat, PetscCoarsenData *a
     for (jj = 0; jj < col_bs; jj++) {
       for (kk = 0; kk < bs; kk++) {
         PetscInt         ii, stride;
-        const PetscReal *tp = pc_gamg->data + jj * bs * nloc + kk;
+        const PetscReal *tp = PetscSafePointerPlusOffset(pc_gamg->data, jj * bs * nloc + kk);
         for (ii = 0; ii < nloc; ii++, tp += bs) tmp_ldata[ii] = *tp;
 
         PetscCall(PCGAMGGetDataWithGhosts(Gmat, 1, tmp_ldata, &stride, &tmp_gdata));
@@ -1239,7 +1239,7 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc, Mat Amat, PetscCoarsenData *a
           PetscCall(PetscMalloc1(stride * bs * col_bs, &data_w_ghost));
           nbnodes = bs * stride;
         }
-        tp2 = data_w_ghost + jj * bs * stride + kk;
+        tp2 = PetscSafePointerPlusOffset(data_w_ghost, jj * bs * stride + kk);
         for (ii = 0; ii < stride; ii++, tp2 += bs) *tp2 = tmp_gdata[ii];
         PetscCall(PetscFree(tmp_gdata));
       }

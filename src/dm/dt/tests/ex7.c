@@ -317,7 +317,7 @@ int main(int argc, char **argv)
             for (p = 0; p < N; p++) xsplit[m * N + p] = x[split[m] * N + p];
           }
           PetscCall(PetscDTAltVApply(N, j, u, xsplit, &ux));
-          PetscCall(PetscDTAltVApply(N, k, w, &xsplit[j * N], &wx));
+          PetscCall(PetscDTAltVApply(N, k, w, PetscSafePointerPlusOffset(xsplit, j * N), &wx));
           uWwxcheck += isOdd ? -(ux * wx) : (ux * wx);
         }
         diff = PetscAbsReal(uWwx - uWwxcheck);

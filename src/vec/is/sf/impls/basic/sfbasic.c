@@ -464,7 +464,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedRootSF_Basic(PetscSF sf, PetscI
   PetscSF            esf;
   PetscInt           esf_nranks, esf_ndranks, *esf_roffset, *esf_rmine, *esf_rremote;
   PetscInt           i, j, p, q, nroots, esf_nleaves, *new_ilocal, nranks, ndranks, niranks, ndiranks, minleaf, maxleaf, maxlocal;
-  char              *rootdata, *leafdata = NULL, *leafmem; /* Only stores 0 or 1, so we can save memory with char */
+  char              *rootdata, *leafdata, *leafmem; /* Only stores 0 or 1, so we can save memory with char */
   PetscMPIInt       *esf_ranks;
   const PetscMPIInt *ranks, *iranks;
   const PetscInt    *roffset, *rmine, *rremote, *ioffset, *irootloc;
@@ -482,7 +482,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedRootSF_Basic(PetscSF sf, PetscI
   PetscCall(PetscSFGetLeafRange(sf, &minleaf, &maxleaf));
   maxlocal = maxleaf - minleaf + 1;
   PetscCall(PetscCalloc2(nroots, &rootdata, maxlocal, &leafmem));
-  if (leafmem) leafdata = leafmem - minleaf;
+  leafdata = PetscSafePointerPlusOffset(leafmem, -minleaf);
   /* Tag selected roots */
   for (i = 0; i < nselected; ++i) rootdata[selected[i]] = 1;
 

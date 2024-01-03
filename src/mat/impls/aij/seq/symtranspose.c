@@ -160,7 +160,7 @@ PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A, PetscInt rstart, Pet
   PetscCall(PetscArraycpy(atfill, ati, an));
 
   /* Walk through A row-wise and mark nonzero entries of A^T. */
-  aj = aj + ai[rstart];
+  aj = PetscSafePointerPlusOffset(aj, ai[rstart]);
   for (i = rstart; i < rend; i++) {
     anzj = ai[i + 1] - ai[i];
     for (j = 0; j < anzj; j++) {

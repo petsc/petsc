@@ -721,10 +721,10 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   network->cloneshared->subnetvtx  = subnetvtx;
   for (j = 0; j < Nsubnet; j++) {
     network->cloneshared->subnet[j].edges = subnetedge;
-    subnetedge += network->cloneshared->subnet[j].nedge;
+    subnetedge                            = PetscSafePointerPlusOffset(subnetedge, network->cloneshared->subnet[j].nedge);
 
     network->cloneshared->subnet[j].vertices = subnetvtx;
-    subnetvtx += network->cloneshared->subnet[j].nvtx;
+    subnetvtx                                = PetscSafePointerPlusOffset(subnetvtx, network->cloneshared->subnet[j].nvtx);
   }
   network->cloneshared->svertices = subnetvtx;
 

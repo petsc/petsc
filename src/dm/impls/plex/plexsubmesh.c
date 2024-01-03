@@ -68,7 +68,7 @@ PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, PetscInt ce
   }
   PetscCall(DMLabelGetDefaultValue(label, &defval));
   PetscCall(PetscCalloc1(pEnd - pStart, &leafData));
-  leafData -= pStart;
+  leafData = PetscSafePointerPlusOffset(leafData, -pStart);
   PetscCall(DMGetPointSF(dm, &sf));
   if (sf) PetscCall(PetscSFGetGraph(sf, &nroots, &nleaves, &ilocal, &iremote));
   if (sf && nroots >= 0) {
@@ -161,7 +161,7 @@ PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, PetscInt ce
       /* PetscCheck(leafData[f] == 2, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid facet support size (%" PetscInt_FMT ") on facet (%" PetscInt_FMT ")", leafData[f], f); */
     }
   }
-  leafData += pStart;
+  leafData = PetscSafePointerPlusOffset(leafData, pStart);
   PetscCall(PetscFree(leafData));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

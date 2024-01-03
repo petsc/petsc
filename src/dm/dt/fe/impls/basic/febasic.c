@@ -534,7 +534,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscWeakForm wf, Pe
 #endif
         }
       }
-      PetscCall(PetscFEEvaluateFieldJets_Internal(ds, Nf, face, q, Tf, &cgeom, &coefficients[cOffset], &coefficients_t[cOffset], u, u_x, u_t));
+      PetscCall(PetscFEEvaluateFieldJets_Internal(ds, Nf, face, q, Tf, &cgeom, &coefficients[cOffset], PetscSafePointerPlusOffset(coefficients_t, cOffset), u, u_x, u_t));
       if (dsAux) PetscCall(PetscFEEvaluateFieldJets_Internal(dsAux, NfAux, auxOnBd ? 0 : face, q, TfAux, &cgeom, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL));
       for (i = 0; i < n0; ++i) f0_func[i](dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, fegeom.v, fegeom.n, numConstants, constants, &f0[q * NcI]);
       for (c = 0; c < NcI; ++c) f0[q * NcI + c] *= w;
@@ -659,7 +659,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateHybridResidual_Basic(PetscDS ds, Pet
       }
       if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  quad point %" PetscInt_FMT " weight %g detJ %g\n", q, (double)quadWeights[q], (double)fegeom.detJ[0]));
       /* TODO Is this cell or face quadrature, meaning should we use 'q' or 'face*Nq+q' */
-      PetscCall(PetscFEEvaluateFieldJets_Hybrid_Internal(ds, Nf, 0, q, Tf, face, qpt, TfIn, &fegeom, &coefficients[cOffsetIn], &coefficients_t[cOffsetIn], u, u_x, u_t));
+      PetscCall(PetscFEEvaluateFieldJets_Hybrid_Internal(ds, Nf, 0, q, Tf, face, qpt, TfIn, &fegeom, &coefficients[cOffsetIn], PetscSafePointerPlusOffset(coefficients_t, cOffsetIn), u, u_x, u_t));
       if (dsAux) PetscCall(PetscFEEvaluateFieldJets_Internal(dsAux, NfAux, auxOnBd ? 0 : face[s], auxOnBd ? q : qpt[s], TfAux, &fegeom, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL));
       for (i = 0; i < n0; ++i) f0_func[i](dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, fegeom.v, fegeom.n, numConstants, constants, &f0[q * NcS]);
       for (c = 0; c < NcS; ++c) f0[q * NcS + c] *= w;
@@ -1108,7 +1108,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateHybridJacobian_Basic(PetscDS ds, Pet
 #endif
       }
       if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  quad point %" PetscInt_FMT "\n", q));
-      if (coefficients) PetscCall(PetscFEEvaluateFieldJets_Hybrid_Internal(ds, Nf, 0, q, T, face, qpt, TfIn, &fegeom, &coefficients[cOffset], &coefficients_t[cOffset], u, u_x, u_t));
+      if (coefficients) PetscCall(PetscFEEvaluateFieldJets_Hybrid_Internal(ds, Nf, 0, q, T, face, qpt, TfIn, &fegeom, &coefficients[cOffset], PetscSafePointerPlusOffset(coefficients_t, cOffset), u, u_x, u_t));
       if (dsAux) PetscCall(PetscFEEvaluateFieldJets_Internal(dsAux, NfAux, auxOnBd ? 0 : face[s], auxOnBd ? q : qpt[s], TAux, &fegeom, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL));
       if (n0) {
         PetscCall(PetscArrayzero(g0, NcS * NcT));

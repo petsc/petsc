@@ -265,13 +265,13 @@ static PetscErrorCode DMFieldEvaluateFE_DA(DMField field, IS cellIS, PetscQuadra
     void    *cB, *cD, *cH;
 
     if (datatype == PETSC_SCALAR) {
-      cB = B ? &((PetscScalar *)B)[nc * nq * c] : NULL;
-      cD = D ? &((PetscScalar *)D)[nc * nq * dim * c] : NULL;
-      cH = H ? &((PetscScalar *)H)[nc * nq * dim * dim * c] : NULL;
+      cB = PetscSafePointerPlusOffset((PetscScalar *)B, nc * nq * c);
+      cD = PetscSafePointerPlusOffset((PetscScalar *)D, nc * nq * dim * c);
+      cH = PetscSafePointerPlusOffset((PetscScalar *)H, nc * nq * dim * dim * c);
     } else {
-      cB = B ? &((PetscReal *)B)[nc * nq * c] : NULL;
-      cD = D ? &((PetscReal *)D)[nc * nq * dim * c] : NULL;
-      cH = H ? &((PetscReal *)H)[nc * nq * dim * dim * c] : NULL;
+      cB = PetscSafePointerPlusOffset(((PetscReal *)B), nc * nq * c);
+      cD = PetscSafePointerPlusOffset(((PetscReal *)D), nc * nq * dim * c);
+      cH = PetscSafePointerPlusOffset(((PetscReal *)H), nc * nq * dim * dim * c);
     }
     PetscCheck(cell >= cStart && cell < cEnd, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " not a cell [%" PetscInt_FMT ",%" PetscInt_FMT "), not implemented yet", cell, cStart, cEnd);
     for (i = 0; i < nc * whol; i++) work[i] = dafield->cornerCoeffs[i];

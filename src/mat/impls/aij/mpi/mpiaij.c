@@ -207,7 +207,7 @@ static PetscErrorCode MatFindNonzeroRows_MPIAIJ(Mat M, IS *keptrows)
     for (j = 0; j < na; j++) {
       if (aa[j] != 0.0) goto ok1;
     }
-    bb = bav ? bav + ib[i] : NULL;
+    bb = PetscSafePointerPlusOffset(bav, ib[i]);
     for (j = 0; j < nb; j++) {
       if (bb[j] != 0.0) goto ok1;
     }
@@ -233,7 +233,7 @@ static PetscErrorCode MatFindNonzeroRows_MPIAIJ(Mat M, IS *keptrows)
         goto ok2;
       }
     }
-    bb = bav ? bav + ib[i] : NULL;
+    bb = PetscSafePointerPlusOffset(bav, ib[i]);
     for (j = 0; j < nb; j++) {
       if (bb[j] != 0.0) {
         rows[cnt++] = rstart + i;
@@ -537,15 +537,15 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat, PetscInt m, const PetscInt im[], Pet
     if (im[i] >= rstart && im[i] < rend) {
       row      = im[i] - rstart;
       lastcol1 = -1;
-      rp1      = aj ? aj + ai[row] : NULL;
-      ap1      = aa ? aa + ai[row] : NULL;
+      rp1      = PetscSafePointerPlusOffset(aj, ai[row]);
+      ap1      = PetscSafePointerPlusOffset(aa, ai[row]);
       rmax1    = aimax[row];
       nrow1    = ailen[row];
       low1     = 0;
       high1    = nrow1;
       lastcol2 = -1;
-      rp2      = bj ? bj + bi[row] : NULL;
-      ap2      = ba ? ba + bi[row] : NULL;
+      rp2      = PetscSafePointerPlusOffset(bj, bi[row]);
+      ap2      = PetscSafePointerPlusOffset(ba, bi[row]);
       rmax2    = bimax[row];
       nrow2    = bilen[row];
       low2     = 0;
@@ -604,9 +604,9 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat, PetscInt m, const PetscInt im[], Pet
       if (!aij->donotstash) {
         mat->assembled = PETSC_FALSE;
         if (roworiented) {
-          PetscCall(MatStashValuesRow_Private(&mat->stash, im[i], n, in, v ? v + i * n : NULL, (PetscBool)(ignorezeroentries && (addv == ADD_VALUES))));
+          PetscCall(MatStashValuesRow_Private(&mat->stash, im[i], n, in, PetscSafePointerPlusOffset(v, i * n), (PetscBool)(ignorezeroentries && (addv == ADD_VALUES))));
         } else {
-          PetscCall(MatStashValuesCol_Private(&mat->stash, im[i], n, in, v ? v + i : NULL, m, (PetscBool)(ignorezeroentries && (addv == ADD_VALUES))));
+          PetscCall(MatStashValuesCol_Private(&mat->stash, im[i], n, in, PetscSafePointerPlusOffset(v, i), m, (PetscBool)(ignorezeroentries && (addv == ADD_VALUES))));
         }
       }
     }
@@ -979,7 +979,7 @@ static PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A, PetscInt N, const PetscIn
   /* remove zeroed rows of off-diagonal matrix */
   PetscCall(MatSeqAIJGetArray(l->B, &aij_a));
   ii = aij->i;
-  for (i = 0; i < len; i++) PetscCall(PetscArrayzero(aij_a + ii[lrows[i]], ii[lrows[i] + 1] - ii[lrows[i]]));
+  for (i = 0; i < len; i++) PetscCall(PetscArrayzero(PetscSafePointerPlusOffset(aij_a, ii[lrows[i]]), ii[lrows[i] + 1] - ii[lrows[i]]));
   /* loop over all elements of off process part of matrix zeroing removed columns*/
   if (aij->compressedrow.use) {
     m    = aij->compressedrow.nrows;
@@ -1860,13 +1860,13 @@ static PetscErrorCode MatNorm_MPIAIJ(Mat mat, NormType type, PetscReal *norm)
     } else if (type == NORM_INFINITY) { /* max row norm */
       PetscReal ntemp = 0.0;
       for (j = 0; j < aij->A->rmap->n; j++) {
-        v   = amata + amat->i[j];
+        v   = PetscSafePointerPlusOffset(amata, amat->i[j]);
         sum = 0.0;
         for (i = 0; i < amat->i[j + 1] - amat->i[j]; i++) {
           sum += PetscAbsScalar(*v);
           v++;
         }
-        v = bmata + bmat->i[j];
+        v = PetscSafePointerPlusOffset(bmata, bmat->i[j]);
         for (i = 0; i < bmat->i[j + 1] - bmat->i[j]; i++) {
           sum += PetscAbsScalar(*v);
           v++;
@@ -2066,7 +2066,7 @@ PetscErrorCode MatAXPYGetPreallocation_MPIX_private(PetscInt m, const PetscInt *
   PetscFunctionBegin;
   /* Set the number of nonzeros in the new matrix */
   for (i = 0; i < m; i++) {
-    const PetscInt *xjj = xj + xi[i], *yjj = yj + yi[i];
+    const PetscInt *xjj = PetscSafePointerPlusOffset(xj, xi[i]), *yjj = PetscSafePointerPlusOffset(yj, yi[i]);
     nzx    = xi[i + 1] - xi[i];
     nzy    = yi[i + 1] - yi[i];
     nnz[i] = 0;
@@ -3851,9 +3851,9 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_nonscalable(Mat mat, IS isrow, IS iscol
     row   = rstart + i;
     nz    = ii[i + 1] - ii[i];
     cwork = jj;
-    jj += nz;
+    jj    = PetscSafePointerPlusOffset(jj, nz);
     vwork = aa;
-    aa += nz;
+    aa    = PetscSafePointerPlusOffset(aa, nz);
     PetscCall(MatSetValues_MPIAIJ(M, 1, &row, nz, cwork, vwork, INSERT_VALUES));
   }
   PetscCall(MatSeqAIJRestoreArrayRead(Mreuse, (const PetscScalar **)&aa));
@@ -3893,7 +3893,7 @@ static PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B, const PetscInt 
   if (PetscDefined(USE_DEBUG)) {
     for (i = 0; i < m; i++) {
       nnz = Ii[i + 1] - Ii[i];
-      JJ  = J ? J + Ii[i] : NULL;
+      JJ  = PetscSafePointerPlusOffset(J, Ii[i]);
       PetscCheck(nnz >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local row %" PetscInt_FMT " has a negative %" PetscInt_FMT " number of columns", i, nnz);
       PetscCheck(!nnz || !(JJ[0] < 0), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Row %" PetscInt_FMT " starts with negative column index %" PetscInt_FMT, i, JJ[0]);
       PetscCheck(!nnz || !(JJ[nnz - 1] >= B->cmap->N), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Row %" PetscInt_FMT " ends with too large a column index %" PetscInt_FMT " (max allowed %" PetscInt_FMT ")", i, JJ[nnz - 1], B->cmap->N);
@@ -3902,7 +3902,7 @@ static PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B, const PetscInt 
 
   for (i = 0; i < m; i++) {
     nnz     = Ii[i + 1] - Ii[i];
-    JJ      = J ? J + Ii[i] : NULL;
+    JJ      = PetscSafePointerPlusOffset(J, Ii[i]);
     nnz_max = PetscMax(nnz_max, nnz);
     d       = 0;
     for (j = 0; j < nnz; j++) {
@@ -3916,7 +3916,7 @@ static PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B, const PetscInt 
 
   for (i = 0; i < m; i++) {
     ii = i + rstart;
-    PetscCall(MatSetValues_MPIAIJ(B, 1, &ii, Ii[i + 1] - Ii[i], J ? J + Ii[i] : NULL, v ? v + Ii[i] : NULL, INSERT_VALUES));
+    PetscCall(MatSetValues_MPIAIJ(B, 1, &ii, Ii[i + 1] - Ii[i], PetscSafePointerPlusOffset(J, Ii[i]), PetscSafePointerPlusOffset(v, Ii[i]), INSERT_VALUES));
   }
   nooffprocentries    = B->nooffprocentries;
   B->nooffprocentries = PETSC_TRUE;
@@ -4304,11 +4304,13 @@ PetscErrorCode MatUpdateMPIAIJWithArray(Mat mat, const PetscScalar v[])
     nnz = Adi[i + 1] - Adi[i] + Adj[i + 1] - Adj[i];
     ldi = ld[i];
     md  = Adi[i + 1] - Adi[i];
-    PetscCall(PetscArraycpy(ao, v + Iii, ldi));
     PetscCall(PetscArraycpy(ad, v + Iii + ldi, md));
-    PetscCall(PetscArraycpy(ao + ldi, v + Iii + ldi + md, nnz - ldi - md));
     ad += md;
-    ao += nnz - md;
+    if (ao) {
+      PetscCall(PetscArraycpy(ao, v + Iii, ldi));
+      PetscCall(PetscArraycpy(ao + ldi, v + Iii + ldi + md, nnz - ldi - md));
+      ao += nnz - md;
+    }
     Iii += nnz;
   }
   nooffprocentries      = mat->nooffprocentries;
@@ -5828,7 +5830,7 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A, Mat B, MatReuse scall, PetscInt
   PetscCall(PetscMPIIntCast(nsends + nrecvs, &nreqs));
   PetscCall(PetscMalloc1(nreqs, &reqs));
   rwaits = reqs;
-  swaits = reqs + nrecvs;
+  swaits = PetscSafePointerPlusOffset(reqs, nrecvs);
 
   if (!startsj_s || !bufa_ptr) scall = MAT_INITIAL_MATRIX;
   if (scall == MAT_INITIAL_MATRIX) {
@@ -6272,8 +6274,8 @@ static PetscErrorCode MatSplitEntries_Internal(Mat mat, PetscCount n, const Pets
     k   = rowBegin[r];
     mid = rowMid[r];
     s   = rowEnd[r];
-    PetscCall(PetscArraycpy(Aperm + Atot, perm + k, mid - k));
-    PetscCall(PetscArraycpy(Bperm + Btot, perm + mid, s - mid));
+    PetscCall(PetscArraycpy(PetscSafePointerPlusOffset(Aperm, Atot), PetscSafePointerPlusOffset(perm, k), mid - k));
+    PetscCall(PetscArraycpy(PetscSafePointerPlusOffset(Bperm, Btot), PetscSafePointerPlusOffset(perm, mid), s - mid));
     Atot += mid - k;
     Btot += s - mid;
 

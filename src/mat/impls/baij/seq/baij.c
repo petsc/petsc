@@ -2103,8 +2103,8 @@ PetscErrorCode MatGetValues_SeqBAIJ(Mat A, PetscInt m, const PetscInt im[], Pets
       continue;
     } /* negative row */
     PetscCheck(row < A->rmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row %" PetscInt_FMT " too large", row);
-    rp   = aj ? aj + ai[brow] : NULL;       /* mustn't add to NULL, that is UB */
-    ap   = aa ? aa + bs2 * ai[brow] : NULL; /* mustn't add to NULL, that is UB */
+    rp   = PetscSafePointerPlusOffset(aj, ai[brow]);
+    ap   = PetscSafePointerPlusOffset(aa, bs2 * ai[brow]);
     nrow = ailen[brow];
     for (l = 0; l < n; l++) { /* loop over columns */
       if (in[l] < 0) {
@@ -2492,8 +2492,8 @@ PetscErrorCode MatSetValues_SeqBAIJ(Mat A, PetscInt m, const PetscInt im[], Pets
     brow = row / bs;
     if (row < 0) continue;
     PetscCheck(row < A->rmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT, row, A->rmap->N - 1);
-    rp = aj + ai[brow];
-    if (!A->structure_only) ap = aa + bs2 * ai[brow];
+    rp = PetscSafePointerPlusOffset(aj, ai[brow]);
+    if (!A->structure_only) ap = PetscSafePointerPlusOffset(aa, bs2 * ai[brow]);
     rmax = imax[brow];
     nrow = ailen[brow];
     low  = 0;
@@ -2523,7 +2523,7 @@ PetscErrorCode MatSetValues_SeqBAIJ(Mat A, PetscInt m, const PetscInt im[], Pets
       for (i = low; i < high; i++) {
         if (rp[i] > bcol) break;
         if (rp[i] == bcol) {
-          bap = ap + bs2 * i + bs * cidx + ridx;
+          bap = PetscSafePointerPlusOffset(ap, bs2 * i + bs * cidx + ridx);
           if (!A->structure_only) {
             if (is == ADD_VALUES) *bap += value;
             else *bap = value;
@@ -2631,7 +2631,7 @@ PetscErrorCode MatSeqBAIJSetColumnIndices(Mat mat, PetscInt *indices)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscAssertPointer(indices, 2);
-  PetscUseMethod(mat, "MatSeqBAIJSetColumnIndices_C", (Mat, PetscInt *), (mat, indices));
+  PetscUseMethod(mat, "MatSeqBAIJSetColumnIndices_C", (Mat, const PetscInt *), (mat, (const PetscInt *)indices));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
