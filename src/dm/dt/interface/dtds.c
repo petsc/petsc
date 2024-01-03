@@ -649,7 +649,7 @@ PetscErrorCode PetscDSDestroy(PetscDS *ds)
   PetscCall(PetscDSDestroyBoundary(*ds));
   PetscCall(PetscFree((*ds)->constants));
   for (PetscInt c = 0; c < DM_NUM_POLYTOPES; ++c) {
-    const PetscInt Na = DMPolytopeTypeGetNumArrangments((DMPolytopeType)c);
+    const PetscInt Na = DMPolytopeTypeGetNumArrangements((DMPolytopeType)c);
     if ((*ds)->quadPerm[c])
       for (PetscInt o = 0; o < Na; ++o) PetscCall(ISDestroy(&(*ds)->quadPerm[c][o]));
     PetscCall(PetscFree((*ds)->quadPerm[c]));
@@ -4131,7 +4131,7 @@ PetscErrorCode PetscDSPermuteQuadPoint(PetscDS ds, PetscInt ornt, PetscInt field
   PetscCall(PetscQuadratureGetData(quad, NULL, NULL, &Nq, NULL, NULL));
   PetscCall(PetscQuadratureGetCellType(quad, &ct));
   PetscCheck(q >= 0 && q < Nq, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Quadrature point %" PetscInt_FMT " is not in [0, %" PetscInt_FMT ")", q, Nq);
-  Na = DMPolytopeTypeGetNumArrangments(ct) / 2;
+  Na = DMPolytopeTypeGetNumArrangements(ct) / 2;
   PetscCheck(ornt >= -Na && ornt < Na, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Orientation %" PetscInt_FMT " of %s is not in [%" PetscInt_FMT ", %" PetscInt_FMT ")", ornt, DMPolytopeTypes[ct], -Na, Na);
   if (!ds->quadPerm[(PetscInt)ct]) PetscCall(PetscQuadratureComputePermutations(quad, NULL, &ds->quadPerm[(PetscInt)ct]));
   permIS = ds->quadPerm[(PetscInt)ct][ornt + Na];

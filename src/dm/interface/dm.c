@@ -9168,7 +9168,7 @@ PetscErrorCode DMCopyAuxiliaryVec(DM dm, DM dmNew)
   Note:
   An arrangement is a face order combined with an orientation for each face
 
-  Each orientation (transformation) is labeled with an integer from negative `DMPolytopeTypeGetNumArrangments(ct)`/2 to `DMPolytopeTypeGetNumArrangments(ct)`/2
+  Each orientation (transformation) is labeled with an integer from negative `DMPolytopeTypeGetNumArrangements(ct)`/2 to `DMPolytopeTypeGetNumArrangements(ct)`/2
   that labels each arrangement (face ordering plus orientation for each face).
 
   See `DMPolytopeMatchVertexOrientation()` to find a new vertex orientation that takes the source vertex arrangement to the target vertex arrangement
@@ -9178,7 +9178,7 @@ PetscErrorCode DMCopyAuxiliaryVec(DM dm, DM dmNew)
 PetscErrorCode DMPolytopeMatchOrientation(DMPolytopeType ct, const PetscInt sourceCone[], const PetscInt targetCone[], PetscInt *ornt, PetscBool *found)
 {
   const PetscInt cS = DMPolytopeTypeGetConeSize(ct);
-  const PetscInt nO = DMPolytopeTypeGetNumArrangments(ct) / 2;
+  const PetscInt nO = DMPolytopeTypeGetNumArrangements(ct) / 2;
   PetscInt       o, c;
 
   PetscFunctionBegin;
@@ -9188,7 +9188,7 @@ PetscErrorCode DMPolytopeMatchOrientation(DMPolytopeType ct, const PetscInt sour
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   for (o = -nO; o < nO; ++o) {
-    const PetscInt *arr = DMPolytopeTypeGetArrangment(ct, o);
+    const PetscInt *arr = DMPolytopeTypeGetArrangement(ct, o);
 
     for (c = 0; c < cS; ++c)
       if (sourceCone[arr[c * 2]] != targetCone[c]) break;
@@ -9253,17 +9253,17 @@ PetscErrorCode DMPolytopeGetOrientation(DMPolytopeType ct, const PetscInt source
   Note:
   An arrangement is a vertex order
 
-  Each orientation (transformation) is labeled with an integer from negative `DMPolytopeTypeGetNumArrangments(ct)`/2 to `DMPolytopeTypeGetNumArrangments(ct)`/2
+  Each orientation (transformation) is labeled with an integer from negative `DMPolytopeTypeGetNumArrangements(ct)`/2 to `DMPolytopeTypeGetNumArrangements(ct)`/2
   that labels each arrangement (vertex ordering).
 
   See `DMPolytopeMatchOrientation()` to find a new face orientation that takes the source face arrangement to the target face arrangement
 
-.seealso: [](ch_dmbase), `DM`, `DMPolytopeType`, `DMPolytopeGetOrientation()`, `DMPolytopeMatchOrientation()`, `DMPolytopeTypeGetNumVertices()`, `DMPolytopeTypeGetVertexArrangment()`
+.seealso: [](ch_dmbase), `DM`, `DMPolytopeType`, `DMPolytopeGetOrientation()`, `DMPolytopeMatchOrientation()`, `DMPolytopeTypeGetNumVertices()`, `DMPolytopeTypeGetVertexArrangement()`
 @*/
 PetscErrorCode DMPolytopeMatchVertexOrientation(DMPolytopeType ct, const PetscInt sourceVert[], const PetscInt targetVert[], PetscInt *ornt, PetscBool *found)
 {
   const PetscInt cS = DMPolytopeTypeGetNumVertices(ct);
-  const PetscInt nO = DMPolytopeTypeGetNumArrangments(ct) / 2;
+  const PetscInt nO = DMPolytopeTypeGetNumArrangements(ct) / 2;
   PetscInt       o, c;
 
   PetscFunctionBegin;
@@ -9273,7 +9273,7 @@ PetscErrorCode DMPolytopeMatchVertexOrientation(DMPolytopeType ct, const PetscIn
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   for (o = -nO; o < nO; ++o) {
-    const PetscInt *arr = DMPolytopeTypeGetVertexArrangment(ct, o);
+    const PetscInt *arr = DMPolytopeTypeGetVertexArrangement(ct, o);
 
     for (c = 0; c < cS; ++c)
       if (sourceVert[arr[c]] != targetVert[c]) break;

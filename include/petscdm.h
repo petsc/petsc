@@ -544,7 +544,7 @@ static inline DMPolytopeType DMPolytopeTypeSimpleShape(PetscInt dim, PetscBool s
   return dim == 0 ? DM_POLYTOPE_POINT : (dim == 1 ? DM_POLYTOPE_SEGMENT : (dim == 2 ? (simplex ? DM_POLYTOPE_TRIANGLE : DM_POLYTOPE_QUADRILATERAL) : (dim == 3 ? (simplex ? DM_POLYTOPE_TETRAHEDRON : DM_POLYTOPE_HEXAHEDRON) : DM_POLYTOPE_UNKNOWN)));
 }
 
-static inline PetscInt DMPolytopeTypeGetNumArrangments(DMPolytopeType ct)
+static inline PetscInt DMPolytopeTypeGetNumArrangements(DMPolytopeType ct)
 {
   switch (ct) {
   case DM_POLYTOPE_POINT:
@@ -577,7 +577,7 @@ static inline PetscInt DMPolytopeTypeGetNumArrangments(DMPolytopeType ct)
 }
 
 /* An arrangement is a face order combined with an orientation for each face */
-static inline const PetscInt *DMPolytopeTypeGetArrangment(DMPolytopeType ct, PetscInt o)
+static inline const PetscInt *DMPolytopeTypeGetArrangement(DMPolytopeType ct, PetscInt o)
 {
   static const PetscInt pntArr[1 * 2] = {0, 0};
   /* a: swap */
@@ -780,7 +780,7 @@ static inline const PetscInt *DMPolytopeTypeGetArrangment(DMPolytopeType ct, Pet
 }
 
 /* A vertex arrangement is a vertex order */
-static inline const PetscInt *DMPolytopeTypeGetVertexArrangment(DMPolytopeType ct, PetscInt o)
+static inline const PetscInt *DMPolytopeTypeGetVertexArrangement(DMPolytopeType ct, PetscInt o)
 {
   static const PetscInt pntVerts[1]      = {0};
   static const PetscInt segVerts[2 * 2]  = {1, 0, 0, 1};

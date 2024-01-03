@@ -618,7 +618,7 @@ static PetscErrorCode PetscDualSpaceGetSymmetries_Sum(PetscDualSpace sp, const P
         DMPolytopeType ct;
 
         PetscCall(DMPlexGetCellType(K, 0, &ct));
-        groupSize       = DMPolytopeTypeGetNumArrangments(ct);
+        groupSize       = DMPolytopeTypeGetNumArrangements(ct);
         sum->numSelfSym = groupSize;
         sum->selfSymOff = groupSize / 2;
         PetscCall(PetscCalloc1(groupSize, &cellPerms));

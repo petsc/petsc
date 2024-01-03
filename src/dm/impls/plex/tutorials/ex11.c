@@ -84,7 +84,7 @@ static PetscErrorCode CheckCellVertices(DM dm, PetscInt cell, PetscInt o)
     closure[Nv++] = vertex;
   }
   PetscCheck(Nv == DMPolytopeTypeGetNumVertices(ct), comm, PETSC_ERR_ARG_WRONG, "Cell %" PetscInt_FMT " has %" PetscInt_FMT " vertices != %" PetscInt_FMT " vertices in a %s", cell, Nv, DMPolytopeTypeGetNumVertices(ct), DMPolytopeTypes[ct]);
-  arrVerts = DMPolytopeTypeGetVertexArrangment(ct, o);
+  arrVerts = DMPolytopeTypeGetVertexArrangement(ct, o);
   for (v = 0; v < Nv; ++v) {
     PetscCheck(closure[v] == arrVerts[v] + vStart, comm, PETSC_ERR_ARG_WRONG, "Cell %" PetscInt_FMT " vertex[%" PetscInt_FMT "]: %" PetscInt_FMT " should be %" PetscInt_FMT " for arrangement %" PetscInt_FMT, cell, v, closure[v], arrVerts[v] + vStart, o);
   }
@@ -130,7 +130,7 @@ static PetscErrorCode ReorientCell(DM dm, PetscInt cell, PetscInt o, PetscBool s
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode GenerateArrangments(DM dm, AppCtx *user)
+static PetscErrorCode GenerateArrangements(DM dm, AppCtx *user)
 {
   DM             odm;
   DMPolytopeType ct;
@@ -141,7 +141,7 @@ static PetscErrorCode GenerateArrangments(DM dm, AppCtx *user)
   if (!user->genArr) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectGetName((PetscObject)dm, &name));
   PetscCall(DMPlexGetCellType(dm, 0, &ct));
-  No = DMPolytopeTypeGetNumArrangments(ct) / 2;
+  No = DMPolytopeTypeGetNumArrangements(ct) / 2;
   for (o = PetscMax(-No, user->orntBounds[0]); o < PetscMin(No, user->orntBounds[1]); ++o) {
     if (ignoreOrnt(user, o)) continue;
     PetscCall(CreateMesh(PetscObjectComm((PetscObject)dm), user, &odm));
@@ -168,7 +168,7 @@ static PetscErrorCode VerifyCayleyTable(DM dm, AppCtx *user)
   PetscCall(PetscObjectGetName((PetscObject)dm, &name));
   PetscCall(DMPlexGetCellType(dm, 0, &ct));
   PetscCall(DMPlexGetCone(dm, 0, &refcone));
-  No = DMPolytopeTypeGetNumArrangments(ct) / 2;
+  No = DMPolytopeTypeGetNumArrangements(ct) / 2;
   if (user->printTable) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Cayley Table for %s\n", DMPolytopeTypes[ct]));
   for (o1 = PetscMax(-No, user->orntBounds[0]); o1 < PetscMin(No, user->orntBounds[1]); ++o1) {
     for (o2 = PetscMax(-No, user->orntBounds[0]); o2 < PetscMin(No, user->orntBounds[1]); ++o2) {
@@ -215,7 +215,7 @@ static PetscErrorCode VerifyInverse(DM dm, AppCtx *user)
   PetscCall(PetscObjectGetName((PetscObject)dm, &name));
   PetscCall(DMPlexGetCellType(dm, 0, &ct));
   PetscCall(DMPlexGetCone(dm, 0, &refcone));
-  No = DMPolytopeTypeGetNumArrangments(ct) / 2;
+  No = DMPolytopeTypeGetNumArrangements(ct) / 2;
   if (user->printTable) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Inverse table for %s\n", DMPolytopeTypes[ct]));
   for (o = PetscMax(-No, user->orntBounds[0]); o < PetscMin(No, user->orntBounds[1]); ++o) {
     if (ignoreOrnt(user, o)) continue;
@@ -351,7 +351,7 @@ static PetscErrorCode CheckSubcells(DM dm, DM odm, PetscInt p, PetscInt o, AppCt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode RefineArrangments(DM dm, AppCtx *user)
+static PetscErrorCode RefineArrangements(DM dm, AppCtx *user)
 {
   DM             odm, rdm;
   DMPolytopeType ct;
@@ -362,7 +362,7 @@ static PetscErrorCode RefineArrangments(DM dm, AppCtx *user)
   if (!user->refArr) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectGetName((PetscObject)dm, &name));
   PetscCall(DMPlexGetCellType(dm, 0, &ct));
-  No = DMPolytopeTypeGetNumArrangments(ct) / 2;
+  No = DMPolytopeTypeGetNumArrangements(ct) / 2;
   for (o = PetscMax(-No, user->orntBounds[0]); o < PetscMin(No, user->orntBounds[1]); ++o) {
     if (ignoreOrnt(user, o)) continue;
     PetscCall(CreateMesh(PetscObjectComm((PetscObject)dm), user, &odm));
@@ -393,10 +393,10 @@ int main(int argc, char **argv)
     PetscCall(ReorientCell(dm, 0, user.initOrnt, PETSC_FALSE));
     PetscCall(DMViewFromOptions(dm, NULL, "-ornt_dm_view"));
   }
-  PetscCall(GenerateArrangments(dm, &user));
+  PetscCall(GenerateArrangements(dm, &user));
   PetscCall(VerifyCayleyTable(dm, &user));
   PetscCall(VerifyInverse(dm, &user));
-  PetscCall(RefineArrangments(dm, &user));
+  PetscCall(RefineArrangements(dm, &user));
   PetscCall(DMDestroy(&dm));
   PetscCall(PetscFinalize());
   return 0;

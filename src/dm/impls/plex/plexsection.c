@@ -68,7 +68,7 @@ static PetscErrorCode DMPlexCreateSectionFields(DM dm, const PetscInt numComp[],
                 DMPolytopeType ct;
                 /* The number of arrangements is no longer based on the number of faces */
                 PetscCall(DMPlexGetCellType(K, kStart, &ct));
-                kConeSize = DMPolytopeTypeGetNumArrangments(ct) / 2;
+                kConeSize = DMPolytopeTypeGetNumArrangements(ct) / 2;
               }
               PetscCall(PetscSectionSymLabelSetStratum(sym, depth - h, numDof[depth - h], -kConeSize, kConeSize, PETSC_USE_POINTER, perms0 ? &perms0[-kConeSize] : NULL, flips0 ? &flips0[-kConeSize] : NULL));
             }
