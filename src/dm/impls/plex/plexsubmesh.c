@@ -1573,10 +1573,10 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
         }
         /* Cohesive cell:    Old and new split face, then new cohesive faces */
         {
-          const PetscInt No = DMPolytopeTypeGetNumArrangments(ct) / 2;
+          const PetscInt No = DMPolytopeTypeGetNumArrangements(ct) / 2;
           PetscCheck((coneONew[0] >= -No) && (coneONew[0] < No), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid %s orientation %" PetscInt_FMT, DMPolytopeTypes[ct], coneONew[0]);
         }
-        const PetscInt *arr = DMPolytopeTypeGetArrangment(ct, coneONew[0]);
+        const PetscInt *arr = DMPolytopeTypeGetArrangement(ct, coneONew[0]);
 
         coneNew[0]  = newp; /* Extracted negative side orientation above */
         coneNew[1]  = splitp;

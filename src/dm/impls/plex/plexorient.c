@@ -25,7 +25,7 @@ PetscErrorCode DMPlexOrientPoint(DM dm, PetscInt p, PetscInt o)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMPlexGetCellType(dm, p, &ct));
-  arr = DMPolytopeTypeGetArrangment(ct, o);
+  arr = DMPolytopeTypeGetArrangement(ct, o);
   PetscCall(DMPlexGetConeSize(dm, p, &coneSize));
   PetscCall(DMPlexGetCone(dm, p, &cone));
   PetscCall(DMPlexGetConeOrientation(dm, p, &ornt));
@@ -36,7 +36,7 @@ PetscErrorCode DMPlexOrientPoint(DM dm, PetscInt p, PetscInt o)
     PetscInt       nO;
 
     PetscCall(DMPlexGetCellType(dm, cone[c], &ft));
-    nO         = DMPolytopeTypeGetNumArrangments(ft) / 2;
+    nO         = DMPolytopeTypeGetNumArrangements(ft) / 2;
     newcone[c] = cone[arr[c * 2 + 0]];
     newornt[c] = DMPolytopeTypeComposeOrientation(ft, arr[c * 2 + 1], ornt[arr[c * 2 + 0]]);
     PetscCheck(!newornt[c] || !(newornt[c] >= nO || newornt[c] < -nO), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid orientation %" PetscInt_FMT " not in [%" PetscInt_FMT ",%" PetscInt_FMT ") for %s %" PetscInt_FMT, newornt[c], -nO, nO, DMPolytopeTypes[ft], cone[c]);

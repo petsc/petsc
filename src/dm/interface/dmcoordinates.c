@@ -969,13 +969,14 @@ static PetscErrorCode DMCreateAffineCoordinates_Internal(DM dm)
   DM             cdm;
   PetscFE        feLinear;
   DMPolytopeType ct;
-  PetscInt       dim, dE, cStart, cEnd, gct;
+  PetscInt       dim, dE, height, cStart, cEnd, gct;
 
   PetscFunctionBegin;
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMGetCoordinateDim(dm, &dE));
-  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(DMPlexGetVTKCellHeight(dm, &height));
+  PetscCall(DMPlexGetHeightStratum(dm, height, &cStart, &cEnd));
   if (cEnd > cStart) PetscCall(DMPlexGetCellType(dm, cStart, &ct));
   else ct = DM_POLYTOPE_UNKNOWN;
   gct = (PetscInt)ct;

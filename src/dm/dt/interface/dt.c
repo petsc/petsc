@@ -3353,7 +3353,7 @@ PetscErrorCode PetscQuadratureComputePermutations(PetscQuadrature quad, PetscInt
   PetscCall(PetscQuadratureGetData(quad, &qdim, NULL, &Nq, &xq, &wq));
   PetscCall(PetscQuadratureGetCellType(quad, &ct));
   dim = DMPolytopeTypeGetDim(ct);
-  Na  = DMPolytopeTypeGetNumArrangments(ct);
+  Na  = DMPolytopeTypeGetNumArrangements(ct);
   PetscCall(PetscMalloc1(Na, perm));
   if (Np) *Np = Na;
   Na /= 2;
