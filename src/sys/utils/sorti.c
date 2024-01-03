@@ -327,7 +327,7 @@ PetscErrorCode PetscSortInt(PetscInt n, PetscInt X[])
 - X - array of integers
 
   Notes:
-  This function sorts `PetscCount`s assumed to be in completely random order
+  This function sorts `PetscInt64`s assumed to be in completely random order
 
   Level: intermediate
 
