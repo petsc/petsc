@@ -2055,7 +2055,7 @@ PetscErrorCode PCFieldSplitSetFields(PC pc, const char splitname[], PetscInt n, 
 
 /*@
   PCFieldSplitSetDiagUseAmat - set flag indicating whether to extract diagonal blocks from Amat (rather than Pmat) to build
-  the sub-matrices associated with each split. Where `KSPSetOperators`(ksp,Amat,Pmat)) was used to supply the operators.
+  the sub-matrices associated with each split. Where `KSPSetOperators`(ksp,Amat,Pmat) was used to supply the operators.
 
   Logically Collective
 
@@ -2085,7 +2085,7 @@ PetscErrorCode PCFieldSplitSetDiagUseAmat(PC pc, PetscBool flg)
 
 /*@
   PCFieldSplitGetDiagUseAmat - get the flag indicating whether to extract diagonal blocks from Amat (rather than Pmat) to build
-  the sub-matrices associated with each split.  Where `KSPSetOperators`(ksp,Amat,Pmat)) was used to supply the operators.
+  the sub-matrices associated with each split.  Where `KSPSetOperators`(ksp,Amat,Pmat) was used to supply the operators.
 
   Logically Collective
 
@@ -2115,7 +2115,7 @@ PetscErrorCode PCFieldSplitGetDiagUseAmat(PC pc, PetscBool *flg)
 
 /*@
   PCFieldSplitSetOffDiagUseAmat - set flag indicating whether to extract off-diagonal blocks from Amat (rather than Pmat) to build
-  the sub-matrices associated with each split.  Where `KSPSetOperators`(ksp,Amat,Pmat)) was used to supply the operators.
+  the sub-matrices associated with each split.  Where `KSPSetOperators`(ksp,Amat,Pmat) was used to supply the operators.
 
   Logically Collective
 
@@ -2145,7 +2145,7 @@ PetscErrorCode PCFieldSplitSetOffDiagUseAmat(PC pc, PetscBool flg)
 
 /*@
   PCFieldSplitGetOffDiagUseAmat - get the flag indicating whether to extract off-diagonal blocks from Amat (rather than Pmat) to build
-  the sub-matrices associated with each split.  Where `KSPSetOperators`(ksp,Amat,Pmat)) was used to supply the operators.
+  the sub-matrices associated with each split.  Where `KSPSetOperators`(ksp,Amat,Pmat) was used to supply the operators.
 
   Logically Collective
 
@@ -2402,7 +2402,7 @@ PetscErrorCode PCFieldSplitSchurGetSubKSP(PC pc, PetscInt *n, KSP *subksp[])
 }
 
 /*@
-  PCFieldSplitSetSchurPre -  Indicates from what operator the preconditioner is constructucted for the Schur complement.
+  PCFieldSplitSetSchurPre -  Indicates from what operator the preconditioner is constructed for the Schur complement.
   The default is the A11 matrix.
 
   Collective
