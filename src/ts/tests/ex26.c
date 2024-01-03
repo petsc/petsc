@@ -93,8 +93,7 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec x, Vec xdot, PetscReal shift, M
 
     test:
       suffix: arkimex_explicit_stage
-      # see https://github.com/open-mpi/ompi/issues/12035
-      requires: !defined(PETSCTEST_VALGRIND) defined(PETSC_USE_DEBUG) !defined(PETSC_HAVE_OPENMPI)
+      requires: !defined(PETSCTEST_VALGRIND) defined(PETSC_USE_DEBUG)
       args: -ts_type arkimex -petsc_ci_portable_error_output -error_output_stdout -set_implicit
       filter: grep -E -v "(memory block|leaked context|not freed before MPI_Finalize|Could be the program crashed)"
 
