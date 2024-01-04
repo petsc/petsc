@@ -8,15 +8,6 @@ static char help[] = "Run Birthday Spacing Tests for PetscRandom.\n\n";
  * https://doi.org/10.1016/S0378-4754(00)00253-6
  */
 
-static int PetscInt64Compare(const void *a, const void *b)
-{
-  PetscInt64 A = *((const PetscInt64 *)a);
-  PetscInt64 B = *((const PetscInt64 *)b);
-  if (A < B) return -1;
-  if (A == B) return 0;
-  return 1;
-}
-
 static PetscErrorCode PoissonTailProbability(PetscReal lambda, PetscInt Y, PetscReal *prob)
 {
   PetscReal p = 1.;
@@ -91,9 +82,9 @@ int main(int argc, char **argv)
     X[i] = bin;
   }
 
-  qsort(X, n, sizeof(PetscInt64), PetscInt64Compare);
+  PetscCall(PetscSortInt64(n, X));
   for (i = 0; i < n - 1; i++) X[i] = X[i + 1] - X[i];
-  qsort(X, n - 1, sizeof(PetscInt64), PetscInt64Compare);
+  PetscCall(PetscSortInt64(n - 1, X));
   for (i = 0, Y = 0; i < n - 2; i++) Y += (X[i + 1] == X[i]);
 
   PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &Y, 1, MPIU_INT, MPI_SUM, MPI_COMM_WORLD));
