@@ -430,22 +430,6 @@ chk_loc:
 	  printf "****************************************************************************"${PETSC_TEXT_NORMAL}"\n" ;  false; fi
 	@${MKDIR} ${LOC}/manualpages
 
-chk_c2html:
-	@if [ ${C2HTML}foo = foo ] ; then \
-          printf ${PETSC_TEXT_HILIGHT}"*********************** ERROR ************************\n" ; \
-          echo "Require c2html for html docs. Please reconfigure with --download-c2html=1"; \
-          printf "******************************************************"${PETSC_TEXT_NORMAL}"\n" ;false; fi
-
-#
-#  This code needs to be rewritten in Python to reduce by a factor of 100 the time it takes to run
-#
-c2html: chk_loc  chk_c2html
-	-@if command -v parallel &> /dev/null; then \
-           ls include/makefile src/*/makefile | xargs dirname | parallel -j ${MAKE_TEST_NP} --load ${MAKE_LOAD} 'cd {}; ${OMAKE_SELF} HTMLMAP=${HTMLMAP} LOC=${LOC} PETSC_DIR=${PETSC_DIR} ACTION=html tree' ; \
-         else \
-           ${OMAKE_SELF} HTMLMAP=${HTMLMAP} LOC=${LOC} PETSC_DIR=${PETSC_DIR} ACTION=html tree; \
-        fi
-
 alldocclean: deletemanualpages allcleanhtml
 
 # Deletes man pages (.md version)
