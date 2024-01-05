@@ -79,8 +79,7 @@ int main(int argc, char **args)
 
   PetscCall(MatGetSize(B, &M, &N));
   nzp = PetscMax((PetscInt)(0.1 * M), 5);
-  PetscCall(PetscMalloc((nzp + 1) * (sizeof(PetscInt) + sizeof(PetscScalar)), &idxn));
-  a = (PetscScalar *)(idxn + nzp);
+  PetscCall(PetscMalloc2(nzp + 1, &idxn, nzp + 1, &a));
 
   /* Create vectors v1 and v2 that are compatible with A_save */
   PetscCall(VecCreate(PETSC_COMM_WORLD, &v1));
@@ -426,7 +425,7 @@ int main(int argc, char **args)
   PetscCall(VecDestroy(&v1));
   PetscCall(VecDestroy(&v2));
   PetscCall(PetscRandomDestroy(&rdm));
-  PetscCall(PetscFree(idxn));
+  PetscCall(PetscFree2(idxn, a));
 
   PetscCall(MatDestroy(&A_save));
   PetscCall(MatDestroy(&B));

@@ -162,8 +162,10 @@ static PetscErrorCode DMCoarsen_SNESVI(DM dm1, MPI_Comm comm, DM *dm2)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMDestroy_SNESVI(DM_SNESVI *dmsnesvi)
+static PetscErrorCode DMDestroy_SNESVI(void *ctx)
 {
+  DM_SNESVI *dmsnesvi = (DM_SNESVI *)ctx;
+
   PetscFunctionBegin;
   /* reset the base methods in the DM object that were changed when the DM_SNESVI was reset */
   dmsnesvi->dm->ops->createinterpolation = dmsnesvi->createinterpolation;

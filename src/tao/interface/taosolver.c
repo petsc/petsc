@@ -21,8 +21,9 @@ struct _n_TaoMonitorDrawCtx {
   PetscInt    howoften; /* when > 0 uses iteration % howoften, when negative only final solution plotted */
 };
 
-static PetscErrorCode KSPPreSolve_TAOEW_Private(KSP ksp, Vec b, Vec x, Tao tao)
+static PetscErrorCode KSPPreSolve_TAOEW_Private(KSP ksp, Vec b, Vec x, void *ctx)
 {
+  Tao  tao          = (Tao)ctx;
   SNES snes_ewdummy = tao->snes_ewdummy;
 
   PetscFunctionBegin;
@@ -37,8 +38,9 @@ static PetscErrorCode KSPPreSolve_TAOEW_Private(KSP ksp, Vec b, Vec x, Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPPostSolve_TAOEW_Private(KSP ksp, Vec b, Vec x, Tao tao)
+static PetscErrorCode KSPPostSolve_TAOEW_Private(KSP ksp, Vec b, Vec x, void *ctx)
 {
+  Tao  tao          = (Tao)ctx;
   SNES snes_ewdummy = tao->snes_ewdummy;
 
   PetscFunctionBegin;
@@ -57,8 +59,8 @@ static PetscErrorCode TaoSetUpEW_Private(Tao tao)
   if (tao->ksp_ewconv) {
     if (!tao->snes_ewdummy) PetscCall(SNESCreate(PetscObjectComm((PetscObject)tao), &tao->snes_ewdummy));
     tao->snes_ewdummy->ksp_ewconv = PETSC_TRUE;
-    PetscCall(KSPSetPreSolve(tao->ksp, (PetscErrorCode(*)(KSP, Vec, Vec, void *))KSPPreSolve_TAOEW_Private, tao));
-    PetscCall(KSPSetPostSolve(tao->ksp, (PetscErrorCode(*)(KSP, Vec, Vec, void *))KSPPostSolve_TAOEW_Private, tao));
+    PetscCall(KSPSetPreSolve(tao->ksp, KSPPreSolve_TAOEW_Private, tao));
+    PetscCall(KSPSetPostSolve(tao->ksp, KSPPostSolve_TAOEW_Private, tao));
 
     PetscCall(KSPGetOptionsPrefix(tao->ksp, &ewprefix));
     kctx = (SNESKSPEW *)tao->snes_ewdummy->kspconvctx;

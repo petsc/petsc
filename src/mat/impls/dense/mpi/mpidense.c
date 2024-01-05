@@ -227,13 +227,13 @@ static PetscErrorCode MatDenseGetArray_MPIDense(Mat A, PetscScalar **array)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatDenseGetArrayRead_MPIDense(Mat A, const PetscScalar **array)
+static PetscErrorCode MatDenseGetArrayRead_MPIDense(Mat A, PetscScalar **array)
 {
   Mat_MPIDense *a = (Mat_MPIDense *)A->data;
 
   PetscFunctionBegin;
   PetscCheck(!a->matinuse, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
-  PetscCall(MatDenseGetArrayRead(a->A, array));
+  PetscCall(MatDenseGetArrayRead(a->A, (const PetscScalar **)array));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -356,12 +356,12 @@ static PetscErrorCode MatDenseRestoreArray_MPIDense(Mat A, PetscScalar **array)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatDenseRestoreArrayRead_MPIDense(Mat A, const PetscScalar **array)
+static PetscErrorCode MatDenseRestoreArrayRead_MPIDense(Mat A, PetscScalar **array)
 {
   Mat_MPIDense *a = (Mat_MPIDense *)A->data;
 
   PetscFunctionBegin;
-  PetscCall(MatDenseRestoreArrayRead(a->A, array));
+  PetscCall(MatDenseRestoreArrayRead(a->A, (const PetscScalar **)array));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
