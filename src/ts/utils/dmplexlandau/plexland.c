@@ -233,11 +233,8 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
     IPf_sz_glb = ipf_offset[num_grids];
     IPf_sz_tot = IPf_sz_glb * ctx->batch_sz;
     // prep COO
-    {
-      PetscCall(PetscMalloc1(ctx->SData_d.coo_size, &coo_vals)); // allocate every time?
-      PetscCall(PetscInfo(ctx->plex[0], "COO Allocate %" PetscInt_FMT " values\n", (PetscInt)ctx->SData_d.coo_size));
-    }
-    if (shift == 0.0) { /* compute dynamic data f and df and init data for Jacobian */
+    PetscCall(PetscMalloc1(ctx->SData_d.coo_size, &coo_vals)); // allocate every time?
+    if (shift == 0.0) {                                        /* compute dynamic data f and df and init data for Jacobian */
 #if defined(PETSC_HAVE_THREADSAFETY)
       double starttime, endtime;
       starttime = MPI_Wtime();
@@ -2576,7 +2573,6 @@ PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t
   PetscCall(DMGetDimension(pack, &dim));
   PetscCall(PetscObjectStateGet((PetscObject)ctx->J, &state));
   if (state != ctx->norm_state) {
-    PetscCall(PetscInfo(ts, "Create Landau Jacobian t=%g J.state %" PetscInt64_FMT " --> %" PetscInt64_FMT "\n", (double)time_dummy, ctx->norm_state, state));
     PetscCall(MatZeroEntries(ctx->J));
     PetscCall(LandauFormJacobian_Internal(X, ctx->J, dim, 0.0, (void *)ctx));
     PetscCall(MatViewFromOptions(ctx->J, NULL, "-dm_landau_jacobian_view"));
@@ -2648,7 +2644,6 @@ PetscErrorCode DMPlexLandauIJacobian(TS ts, PetscReal time_dummy, Vec X, Vec U_t
 #if defined(PETSC_HAVE_THREADSAFETY)
   starttime = MPI_Wtime();
 #endif
-  PetscCall(PetscInfo(ts, "Adding mass to Jacobian t=%g, shift=%g\n", (double)time_dummy, (double)shift));
   PetscCheck(shift != 0.0, ctx->comm, PETSC_ERR_PLIB, "zero shift");
   PetscCall(PetscObjectStateGet((PetscObject)ctx->J, &state));
   PetscCheck(state == ctx->norm_state, ctx->comm, PETSC_ERR_PLIB, "wrong state, %" PetscInt64_FMT " %" PetscInt64_FMT "", ctx->norm_state, state);
