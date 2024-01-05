@@ -89,6 +89,8 @@ Changes: Development
 
 .. rubric:: TAO:
 
+- Deprecate ``TaoCancelMonitors()`` (resp. ``-tao_cancelmonitors``) in favor of ``TaoMonitorCancel()`` (resp. ``-tao_monitor_cancel``)
+
 .. rubric:: DM/DA:
 
 - Add MPI reduction inside ``SNESComputeObjective_DMDA()``. No need to call reduction into local callback

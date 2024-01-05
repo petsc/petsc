@@ -280,7 +280,7 @@ PetscErrorCode TaoDestroy(Tao *tao)
   PetscCall(ISDestroy(&(*tao)->state_is));
   PetscCall(ISDestroy(&(*tao)->design_is));
   PetscCall(VecDestroy(&(*tao)->res_weights_v));
-  PetscCall(TaoCancelMonitors(*tao));
+  PetscCall(TaoMonitorCancel(*tao));
   if ((*tao)->hist_malloc) PetscCall(PetscFree4((*tao)->hist_obj, (*tao)->hist_resid, (*tao)->hist_cnorm, (*tao)->hist_lits));
   if ((*tao)->res_weights_n) {
     PetscCall(PetscFree((*tao)->res_weights_rows));
@@ -347,7 +347,7 @@ PetscErrorCode TaoKSPSetUseEW(Tao tao, PetscBool flag)
 . -tao_fd_gradient        - use gradient computed with finite differences
 . -tao_fd_hessian         - use hessian computed with finite differences
 . -tao_mf_hessian         - use matrix-free hessian computed with finite differences
-. -tao_cancelmonitors     - cancels all monitors (except those set with command line)
+. -tao_monitor_cancel     - cancels all monitors (except those set with command line)
 . -tao_view               - prints information about the Tao after solving
 - -tao_converged_reason   - prints the reason Tao stopped iterating
 
@@ -460,8 +460,9 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
   }
 
   flg = PETSC_FALSE;
-  PetscCall(PetscOptionsBool("-tao_cancelmonitors", "cancel all monitors and call any registered destroy routines", "TaoCancelMonitors", flg, &flg, NULL));
-  if (flg) PetscCall(TaoCancelMonitors(tao));
+  PetscCall(PetscOptionsDeprecated("-tao_cancelmonitors", "-tao_monitor_cancel", "3.21", NULL));
+  PetscCall(PetscOptionsBool("-tao_monitor_cancel", "cancel all monitors and call any registered destroy routines", "TaoMonitorCancel", flg, &flg, NULL));
+  if (flg) PetscCall(TaoMonitorCancel(tao));
 
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-tao_draw_solution", "Plot solution vector at each iteration", "TaoSetMonitor", flg, &flg, NULL));
@@ -1455,7 +1456,7 @@ PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao, void *
 . -tao_view_solution    - view solution at each iteration
 . -tao_view_gradient    - view gradient at each iteration
 . -tao_view_ls_residual - view least-squares residual vector at each iteration
-- -tao_cancelmonitors   - cancels all monitors that have been hardwired into a code by calls to TaoSetMonitor(), but does not cancel those set via the options database.
+- -tao_monitor_cancel   - cancels all monitors that have been hardwired into a code by calls to TaoSetMonitor(), but does not cancel those set via the options database.
 
   Level: intermediate
 
@@ -1467,7 +1468,7 @@ PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao, void *
   Fortran Notes:
   Only one monitor function may be set
 
-.seealso: [](ch_tao), `Tao`, `TaoSolve()`, `TaoMonitorDefault()`, `TaoCancelMonitors()`, `TaoSetDestroyRoutine()`, `TaoView()`
+.seealso: [](ch_tao), `Tao`, `TaoSolve()`, `TaoMonitorDefault()`, `TaoMonitorCancel()`, `TaoSetDestroyRoutine()`, `TaoView()`
 @*/
 PetscErrorCode TaoSetMonitor(Tao tao, PetscErrorCode (*func)(Tao, void *), void *ctx, PetscErrorCode (*dest)(void **))
 {
@@ -1490,7 +1491,7 @@ PetscErrorCode TaoSetMonitor(Tao tao, PetscErrorCode (*func)(Tao, void *), void 
 }
 
 /*@
-  TaoCancelMonitors - Clears all the monitor functions for a `Tao` object.
+  TaoMonitorCancel - Clears all the monitor functions for a `Tao` object.
 
   Logically Collective
 
@@ -1498,7 +1499,7 @@ PetscErrorCode TaoSetMonitor(Tao tao, PetscErrorCode (*func)(Tao, void *), void 
 . tao - the `Tao` solver context
 
   Options Database Key:
-. -tao_cancelmonitors - cancels all monitors that have been hardwired
+. -tao_monitor_cancel - cancels all monitors that have been hardwired
     into a code by calls to `TaoSetMonitor()`, but does not cancel those
     set via the options database
 
@@ -1509,7 +1510,7 @@ PetscErrorCode TaoSetMonitor(Tao tao, PetscErrorCode (*func)(Tao, void *), void 
 
 .seealso: [](ch_tao), `Tao`, `TaoMonitorDefault()`, `TaoSetMonitor()`
 @*/
-PetscErrorCode TaoCancelMonitors(Tao tao)
+PetscErrorCode TaoMonitorCancel(Tao tao)
 {
   PetscInt i;
 
