@@ -12,7 +12,7 @@
 /* SUBMANSEC = FE */
 
 /*MC
-      PetscFEGeom - Structure for geometric information for `PetscFE`
+    PetscFEGeom - Structure for geometric information for `PetscFE`
 
     Level: intermediate
 

@@ -46,8 +46,8 @@ typedef enum {
 } MoabWriteMode;
 static const char *const MoabWriteModes[] = {"WRITE_PART", "FORMAT", "MoabWriteMode", "", 0};
 
-PETSC_EXTERN PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *moab);
-PETSC_EXTERN PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::Tag *ltog_tag, moab::Range *range, DM *moab);
+PETSC_EXTERN PetscErrorCode DMMoabCreate(MPI_Comm, DM *);
+PETSC_EXTERN PetscErrorCode DMMoabCreateMoab(MPI_Comm, moab::Interface *, moab::Tag *, moab::Range *, DM *);
 PETSC_EXTERN PetscErrorCode DMMoabOutput(DM, const char *, const char *);
 
 PETSC_EXTERN PetscErrorCode DMMoabSetInterface(DM, moab::Interface *);
@@ -57,74 +57,74 @@ PETSC_EXTERN PetscErrorCode DMMoabGetParallelComm(DM, moab::ParallelComm **);
 #endif
 
 PETSC_EXTERN PetscErrorCode DMMoabSetLocalVertices(DM, moab::Range *);
-PETSC_EXTERN PetscErrorCode DMMoabGetAllVertices(DM, moab::Range *local);
+PETSC_EXTERN PetscErrorCode DMMoabGetAllVertices(DM, moab::Range *);
 PETSC_EXTERN PetscErrorCode DMMoabGetLocalVertices(DM, const moab::Range **, const moab::Range **);
 PETSC_EXTERN PetscErrorCode DMMoabSetLocalElements(DM, moab::Range *);
 PETSC_EXTERN PetscErrorCode DMMoabGetLocalElements(DM, const moab::Range **);
 PETSC_EXTERN PetscErrorCode DMMoabSetLocalToGlobalTag(DM, moab::Tag);
 PETSC_EXTERN PetscErrorCode DMMoabGetLocalToGlobalTag(DM, moab::Tag *);
-PETSC_EXTERN PetscErrorCode DMMoabSetBlockSize(DM, PetscInt bs);
-PETSC_EXTERN PetscErrorCode DMMoabGetBlockSize(DM, PetscInt *bs);
+PETSC_EXTERN PetscErrorCode DMMoabSetBlockSize(DM, PetscInt);
+PETSC_EXTERN PetscErrorCode DMMoabGetBlockSize(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMMoabSetBlockFills(DM, const PetscInt *, const PetscInt *);
 PETSC_EXTERN PetscErrorCode DMMoabGetHierarchyLevel(DM, PetscInt *);
 
-PETSC_EXTERN PetscErrorCode DMMoabGetDimension(DM dm, PetscInt *dim);
-PETSC_EXTERN PetscErrorCode DMMoabGetBoundaryEntities(DM dm, moab::Range *, moab::Range *, moab::Range *);
-PETSC_EXTERN PetscErrorCode DMMoabGetMaterialBlock(DM dm, const moab::EntityHandle, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMMoabGetDimension(DM, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMMoabGetBoundaryEntities(DM, moab::Range *, moab::Range *, moab::Range *);
+PETSC_EXTERN PetscErrorCode DMMoabGetMaterialBlock(DM, const moab::EntityHandle, PetscInt *);
 
-PETSC_EXTERN PetscErrorCode DMMoabGetSize(DM dm, PetscInt *, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMMoabGetLocalSize(DM dm, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMMoabGetOffset(DM dm, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMMoabGetSize(DM, PetscInt *, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMMoabGetLocalSize(DM, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMMoabGetOffset(DM, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode DMMoabVecGetArrayRead(DM, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMMoabVecRestoreArrayRead(DM, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMMoabVecGetArray(DM, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMMoabVecRestoreArray(DM, Vec, void *);
 
-PETSC_EXTERN PetscErrorCode DMMoabCreateVector(DM dm, moab::Tag tag, const moab::Range *range, PetscBool serial, PetscBool destroy_tag, Vec *X);
-PETSC_EXTERN PetscErrorCode DMMoabGetVecTag(Vec vec, moab::Tag *tag);
-PETSC_EXTERN PetscErrorCode DMMoabGetVecRange(Vec vec, moab::Range *range);
+PETSC_EXTERN PetscErrorCode DMMoabCreateVector(DM, moab::Tag, const moab::Range *, PetscBool, PetscBool, Vec *);
+PETSC_EXTERN PetscErrorCode DMMoabGetVecTag(Vec, moab::Tag *);
+PETSC_EXTERN PetscErrorCode DMMoabGetVecRange(Vec, moab::Range *);
 
 PETSC_EXTERN PetscErrorCode DMMoabSetFieldVector(DM, PetscInt, Vec);
 PETSC_EXTERN PetscErrorCode DMMoabSetGlobalFieldVector(DM, Vec);
 
-PETSC_EXTERN PetscErrorCode DMMoabCreateVertices(DM, const PetscReal *coords, PetscInt nverts, moab::Range *);
-PETSC_EXTERN PetscErrorCode DMMoabCreateElement(DM, const moab::EntityType type, const moab::EntityHandle *conn, PetscInt nverts, moab::EntityHandle *elem);
-PETSC_EXTERN PetscErrorCode DMMoabCreateSubmesh(DM dm, DM *newdm);
-PETSC_EXTERN PetscErrorCode DMMoabRenumberMeshEntities(DM dm);
+PETSC_EXTERN PetscErrorCode DMMoabCreateVertices(DM, const PetscReal *, PetscInt, moab::Range *);
+PETSC_EXTERN PetscErrorCode DMMoabCreateElement(DM, const moab::EntityType, const moab::EntityHandle *, PetscInt, moab::EntityHandle *);
+PETSC_EXTERN PetscErrorCode DMMoabCreateSubmesh(DM, DM *);
+PETSC_EXTERN PetscErrorCode DMMoabRenumberMeshEntities(DM);
 
-PETSC_EXTERN PetscErrorCode DMMoabGetFieldName(DM dm, PetscInt field, const char **fieldName);
-PETSC_EXTERN PetscErrorCode DMMoabSetFieldName(DM dm, PetscInt field, const char *fieldName);
-PETSC_EXTERN PetscErrorCode DMMoabSetFieldNames(DM dm, PetscInt nfields, const char *fields[]);
-PETSC_EXTERN PetscErrorCode DMMoabGetFieldDof(DM dm, moab::EntityHandle point, PetscInt field, PetscInt *dof);
-PETSC_EXTERN PetscErrorCode DMMoabGetFieldDofs(DM dm, PetscInt npoints, const moab::EntityHandle *points, PetscInt field, PetscInt *dof);
-PETSC_EXTERN PetscErrorCode DMMoabGetFieldDofsLocal(DM dm, PetscInt npoints, const moab::EntityHandle *points, PetscInt field, PetscInt *dof);
-PETSC_EXTERN PetscErrorCode DMMoabGetDofs(DM dm, PetscInt npoints, const moab::EntityHandle *points, PetscInt *dof);
-PETSC_EXTERN PetscErrorCode DMMoabGetDofsLocal(DM dm, PetscInt npoints, const moab::EntityHandle *points, PetscInt *dof);
-PETSC_EXTERN PetscErrorCode DMMoabGetDofsBlocked(DM dm, PetscInt npoints, const moab::EntityHandle *points, PetscInt *dof);
-PETSC_EXTERN PetscErrorCode DMMoabGetDofsBlockedLocal(DM dm, PetscInt npoints, const moab::EntityHandle *points, PetscInt *dof);
+PETSC_EXTERN PetscErrorCode DMMoabGetFieldName(DM, PetscInt, const char **);
+PETSC_EXTERN PetscErrorCode DMMoabSetFieldName(DM, PetscInt, const char *);
+PETSC_EXTERN PetscErrorCode DMMoabSetFieldNames(DM, PetscInt, const char *[]);
+PETSC_EXTERN PetscErrorCode DMMoabGetFieldDof(DM, moab::EntityHandle, PetscInt, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMMoabGetFieldDofs(DM, PetscInt, const moab::EntityHandle *, PetscInt, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMMoabGetFieldDofsLocal(DM, PetscInt, const moab::EntityHandle *, PetscInt, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMMoabGetDofs(DM, PetscInt, const moab::EntityHandle *, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMMoabGetDofsLocal(DM, PetscInt, const moab::EntityHandle *, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMMoabGetDofsBlocked(DM, PetscInt, const moab::EntityHandle *, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMMoabGetDofsBlockedLocal(DM, PetscInt, const moab::EntityHandle *, PetscInt *);
 
-PETSC_EXTERN PetscErrorCode DMMoabGetVertexDofsBlocked(DM dm, PetscInt **dof);
-PETSC_EXTERN PetscErrorCode DMMoabGetVertexDofsBlockedLocal(DM dm, PetscInt **dof);
+PETSC_EXTERN PetscErrorCode DMMoabGetVertexDofsBlocked(DM, PetscInt **);
+PETSC_EXTERN PetscErrorCode DMMoabGetVertexDofsBlockedLocal(DM, PetscInt **);
 
 /* discretization and assembly specific DMMoab interface functions */
-PETSC_EXTERN PetscErrorCode DMMoabGetElementConnectivity(DM dm, moab::EntityHandle ehandle, PetscInt *nconn, const moab::EntityHandle **conn);
-PETSC_EXTERN PetscErrorCode DMMoabGetVertexConnectivity(DM dm, moab::EntityHandle ehandle, PetscInt *nconn, moab::EntityHandle **conn);
-PETSC_EXTERN PetscErrorCode DMMoabRestoreVertexConnectivity(DM dm, moab::EntityHandle ehandle, PetscInt *nconn, moab::EntityHandle **conn);
-PETSC_EXTERN PetscErrorCode DMMoabGetVertexCoordinates(DM dm, PetscInt nconn, const moab::EntityHandle *conn, PetscReal *vpos);
-PETSC_EXTERN PetscErrorCode DMMoabIsEntityOnBoundary(DM dm, const moab::EntityHandle ent, PetscBool *ent_on_boundary);
-PETSC_EXTERN PetscErrorCode DMMoabCheckBoundaryVertices(DM dm, PetscInt nconn, const moab::EntityHandle *cnt, PetscBool *isbdvtx);
-PETSC_EXTERN PetscErrorCode DMMoabGetBoundaryMarkers(DM dm, const moab::Range **bdvtx, const moab::Range **bdelems, const moab::Range **bdfaces);
+PETSC_EXTERN PetscErrorCode DMMoabGetElementConnectivity(DM, moab::EntityHandle, PetscInt *, const moab::EntityHandle **);
+PETSC_EXTERN PetscErrorCode DMMoabGetVertexConnectivity(DM, moab::EntityHandle, PetscInt *, moab::EntityHandle **);
+PETSC_EXTERN PetscErrorCode DMMoabRestoreVertexConnectivity(DM, moab::EntityHandle, PetscInt *, moab::EntityHandle **);
+PETSC_EXTERN PetscErrorCode DMMoabGetVertexCoordinates(DM, PetscInt, const moab::EntityHandle *, PetscReal *);
+PETSC_EXTERN PetscErrorCode DMMoabIsEntityOnBoundary(DM, const moab::EntityHandle, PetscBool *);
+PETSC_EXTERN PetscErrorCode DMMoabCheckBoundaryVertices(DM, PetscInt, const moab::EntityHandle *, PetscBool *);
+PETSC_EXTERN PetscErrorCode DMMoabGetBoundaryMarkers(DM, const moab::Range **, const moab::Range **, const moab::Range **);
 
 /* TODO: Replace nverts/coords with just moab::EntityHandle -- can also eliminate dim */
 /* TODO: Replace quad/npts with PetscDT */
-PETSC_EXTERN PetscErrorCode DMMoabFEMCreateQuadratureDefault(const PetscInt dim, const PetscInt nverts, PetscQuadrature *quadrature);
-PETSC_EXTERN PetscErrorCode DMMoabFEMComputeBasis(const PetscInt dim, const PetscInt nverts, const PetscReal *coordinates, const PetscQuadrature quadrature, PetscReal *phypts, PetscReal *jxw, PetscReal *phi, PetscReal **dphi);
-PETSC_EXTERN PetscErrorCode DMMoabPToRMapping(const PetscInt dim, const PetscInt nverts, const PetscReal *coordinates, const PetscReal *xphy, PetscReal *natparam, PetscReal *phi);
+PETSC_EXTERN PetscErrorCode DMMoabFEMCreateQuadratureDefault(const PetscInt, const PetscInt, PetscQuadrature *);
+PETSC_EXTERN PetscErrorCode DMMoabFEMComputeBasis(const PetscInt, const PetscInt, const PetscReal *, const PetscQuadrature, PetscReal *, PetscReal *, PetscReal *, PetscReal **);
+PETSC_EXTERN PetscErrorCode DMMoabPToRMapping(const PetscInt, const PetscInt, const PetscReal *, const PetscReal *, PetscReal *, PetscReal *);
 
 /* DM utility creation interface */
 PETSC_EXTERN PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm, PetscInt, PetscBool, const PetscReal *, PetscInt, PetscInt, DM *);
 PETSC_EXTERN PetscErrorCode DMMoabLoadFromFile(MPI_Comm, PetscInt, PetscInt, const char *, const char *, DM *);
 
 /* Uniform refinement hierarchy interface */
-PETSC_EXTERN PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegrees);
+PETSC_EXTERN PetscErrorCode DMMoabGenerateHierarchy(DM, PetscInt, PetscInt *);

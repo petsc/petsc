@@ -7,12 +7,12 @@
 PETSC_EXTERN PetscFunctionList MatCoarsenList;
 
 /*S
-     MatCoarsen - Object for managing the coarsening of a graph (symmetric matrix)
+  MatCoarsen - Object for managing the coarsening of a graph (symmetric matrix)
 
-   Level: advanced
+  Level: advanced
 
   Note:
-    This is used by the `PCGAMG` to generate coarser representations of an algebraic problem
+  This is used by the `PCGAMG` to generate coarser representations of an algebraic problem
 
 .seealso: [](ch_matrices), [](sec_graph), `Mat`, `MatCoarsenCreate()`, `MatCoarsenType`, `MatColoringType`, `MatPartitioningType`, `MatOrderingType`
           `MatColoring`, `MatPartitioning`

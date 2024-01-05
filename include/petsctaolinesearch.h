@@ -14,19 +14,19 @@ typedef struct _p_TaoLineSearch *TaoLineSearch;
 #include <petsctao.h>
 
 /*E
-    TaoLineSearchConvergedReason - reason a `TaoLineSearch` completed
+   TaoLineSearchConvergedReason - reason a `TaoLineSearch` completed
 
    Values:
-+ `TAOLINESEARCH_FAILED_ASCENT` - initial line search step * g is not descent direction
-. `TAOLINESEARCH_FAILED_INFORNAN` - function evaluation gives `Inf` or `Nan` value
++ `TAOLINESEARCH_FAILED_ASCENT`       - initial line search step * g is not descent direction
+. `TAOLINESEARCH_FAILED_INFORNAN`     - function evaluation gives `Inf` or `Nan` value
 . `TAOLINESEARCH_FAILED_BADPARAMETER` - negative value set as parameter
-. `TAOLINESEARCH_HALTED_MAXFCN` - maximum number of function evaluation reached
-. `TAOLINESEARCH_HALTED_UPPERBOUND` - step is at upper bound
-. `TAOLINESEARCH_HALTED_LOWERBOUND` - step is at lower bound
-. `TAOLINESEARCH_HALTED_RTOL` - range of uncertainty is smaller than given tolerance
-. `TAOLINESEARCH_HALTED_USER` - user can set this reason to stop line search
-. `TAOLINESEARCH_HALTED_OTHER` - any other reason
-- `TAOLINESEARCH_SUCCESS` - successful line search
+. `TAOLINESEARCH_HALTED_MAXFCN`       - maximum number of function evaluation reached
+. `TAOLINESEARCH_HALTED_UPPERBOUND`   - step is at upper bound
+. `TAOLINESEARCH_HALTED_LOWERBOUND`   - step is at lower bound
+. `TAOLINESEARCH_HALTED_RTOL`         - range of uncertainty is smaller than given tolerance
+. `TAOLINESEARCH_HALTED_USER`         - user can set this reason to stop line search
+. `TAOLINESEARCH_HALTED_OTHER`        - any other reason
+- `TAOLINESEARCH_SUCCESS`             - successful line search
 
    Level: beginner
 
@@ -48,20 +48,20 @@ typedef enum {
 } TaoLineSearchConvergedReason;
 
 /*J
-        TaoLineSearchType - String with the name of a `TaoLineSearch` method
+   TaoLineSearchType - String with the name of a `TaoLineSearch` method
 
    Values:
-+   `TAOLINESEARCHUNIT` -  "unit" do not perform a line search and always accept unit step length
-.   `TAOLINESEARCHMT` - "more-thuente" line search with a cubic model enforcing the strong Wolfe/curvature condition
-.   `TAOLINESEARCHGPCG` - "gpcg"
-.   `TAOLINESEARCHARMIJO` - "armijo" simple backtracking line search enforcing only the sufficient decrease condition
++   `TAOLINESEARCHUNIT`     -  "unit" do not perform a line search and always accept unit step length
+.   `TAOLINESEARCHMT`       - "more-thuente" line search with a cubic model enforcing the strong Wolfe/curvature condition
+.   `TAOLINESEARCHGPCG`     - "gpcg"
+.   `TAOLINESEARCHARMIJO`   - "armijo" simple backtracking line search enforcing only the sufficient decrease condition
 .   `TAOLINESEARCHOWARMIJO` - "owarmijo"
--   `TAOLINESEARCHIPM` - "ipm"
+-   `TAOLINESEARCHIPM`      - "ipm"
 
-  Options Database Key:
+   Options Database Key:
 .  -tao_ls_type <type> - select which method Tao should use at runtime
 
-  Level: beginner
+   Level: beginner
 
 .seealso: [](ch_tao), `Tao`, `TaoLineSearch`, `TaoLineSearchSetType()`, `TaoCreate()`, `TaoSetType()`
 J*/

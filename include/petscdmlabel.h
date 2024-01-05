@@ -17,7 +17,7 @@ typedef const char *DMLabelType;
   Note:
   A label consists of a set of points on a `DM`
 
-.seealso: `DM`, `DMPlexCreate()`, `DMLabelCreate()`, `DMLabelView()`, `DMLabelDestroy()`, `DMPlexCreateLabel()`,
+.seealso: [](ch_dmbase), `DM`, `DMPlexCreate()`, `DMLabelCreate()`, `DMLabelView()`, `DMLabelDestroy()`, `DMPlexCreateLabel()`,
           `DMLabelGetDefaultValue()`, `DMLabelSetDefaultValue()`, `DMLabelDuplicate()`, `DMLabelGetValue()`, `DMLabelSetValue()`,
           `DMLabelAddStratum()`, `DMLabelAddStrata()`, `DMLabelInsertIS()`, `DMLabelGetNumValues()`, `DMLabelGetValueIS()`,
           `DMLabelGetStratumSize()`, `DMLabelComputeIndex()`, `DMLabelDestroyIndex()`, `DMLabelDistribute()`, `DMLabelConvertToSection()`

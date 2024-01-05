@@ -3,7 +3,7 @@
 /* SUBMANSEC = IS */
 
 /*S
-     IS - Abstract PETSc object used for efficient indexing into vector and matrices
+   IS - Abstract PETSc object used for efficient indexing into vector and matrices
 
    Level: beginner
 
@@ -13,8 +13,8 @@ typedef struct _p_IS *IS;
 
 /*S
    ISLocalToGlobalMapping - mappings from a
-      local ordering (on individual MPI processes) of 0 to n-1 to a global PETSc ordering (across collections of MPI processes)
-      used by a vector or matrix.
+   local ordering (on individual MPI processes) of 0 to n-1 to a global PETSc ordering (across collections of MPI processes)
+   used by a vector or matrix.
 
    Level: intermediate
 
@@ -33,28 +33,28 @@ S*/
 typedef struct _p_ISLocalToGlobalMapping *ISLocalToGlobalMapping;
 
 /*S
-     ISColoring - sets of IS's that define a coloring of something, such as a graph defined by a sparse matrix
+   ISColoring - sets of `IS`s that define a coloring of something, such as a graph defined by a sparse matrix
 
    Level: intermediate
 
-    Notes:
-    One should not access the *is records below directly because they may not yet
-    have been created. One should use `ISColoringGetIS()` to make sure they are
-    created when needed.
+   Notes:
+   One should not access the *is records below directly because they may not yet
+   have been created. One should use `ISColoringGetIS()` to make sure they are
+   created when needed.
 
-    When the coloring type is `IS_COLORING_LOCAL` the coloring is in the local ordering of the unknowns.
-    That is the matching the local (ghosted) vector; a local to global mapping must be applied to map
-    them to the global ordering.
+   When the coloring type is `IS_COLORING_LOCAL` the coloring is in the local ordering of the unknowns.
+   That is the matching the local (ghosted) vector; a local to global mapping must be applied to map
+   them to the global ordering.
 
-    Developer Note:
-    This is not a `PetscObject`
+   Developer Note:
+   This is not a `PetscObject`
 
 .seealso: `IS`, `MatColoringCreate()`, `MatColoring`, `ISColoringCreate()`, `ISColoringGetIS()`, `ISColoringView()`
 S*/
 typedef struct _n_ISColoring *ISColoring;
 
 /*S
-     PetscLayout - defines layout of vectors and matrices (that is the "global" numbering of vector and matrix entries) across MPI processes (which rows are owned by which processes)
+   PetscLayout - defines layout of vectors and matrices (that is the "global" numbering of vector and matrix entries) across MPI processes (which rows are owned by which processes)
 
    Level: developer
 

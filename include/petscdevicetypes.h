@@ -24,7 +24,7 @@
   This enum uses a function (`PetscMemTypeToString()`) to convert to string representation so
   cannot be used in `PetscOptionsEnum()`.
 
-  Encoding of the bitmask in binary: xxxxyyyz
+  Encoding of the bitmask in binary\: xxxxyyyz
 .vb
  z = 0                - Host memory
  z = 1                - Device memory
@@ -282,7 +282,7 @@ PETSC_EXTERN const char *const PetscDeviceAttributes[];
 
   Level: beginner
 
-  Notes:
+  Note:
   This object is used to house configuration and state of a device, but does not offer any
   ability to interact with or drive device computation. This functionality is facilitated
   instead by the `PetscDeviceContext` object.
@@ -298,7 +298,7 @@ typedef struct _n_PetscDevice *PetscDevice;
   with the default `NULL` stream, which is usually blocking.
 
   Values:
-+ `PETSC_STREAM_GLOBAL_BLOCKING`    - Alias for `NULL` stream. Any stream of this type will block the host for all other streams to finish work before starting its operations.
++ `PETSC_STREAM_GLOBAL_BLOCKING`    - Alias for `NULL` stream. Block the host for all other streams to finish work before starting its operations.
 . `PETSC_STREAM_DEFAULT_BLOCKING`   - Stream will act independent of other streams, but will still be blocked by actions on the `NULL` stream.
 . `PETSC_STREAM_GLOBAL_NONBLOCKING` - Stream is truly asynchronous, and is blocked by nothing, not even the `NULL` stream.
 - `PETSC_STREAM_MAX`                - Always 1 greater than the largest `PetscStreamType`, do not use
@@ -421,7 +421,7 @@ PETSC_NODISCARD static inline PETSC_CONSTEXPR_14 PetscDeviceCopyMode PetscMemTyp
 + `PetscMemoryAccessRead(mode)` - `true` if `mode` is any kind of read, `false` otherwise
 - `PetscMemoryAccessWrite(mode)` - `true` if `mode` is any kind of write, `false` otherwise
 
-  Developer Notes:
+  Developer Note:
   This enum uses a function (`PetscMemoryAccessModeToString()`) to convert values to string
   representation, so cannot be used in `PetscOptionsEnum()`.
 

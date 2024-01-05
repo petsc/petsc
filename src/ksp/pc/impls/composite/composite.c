@@ -97,8 +97,8 @@ static PetscErrorCode PCApplyTranspose_Composite_Multiplicative(PC pc, Vec x, Ve
 
 /*
     This is very special for a matrix of the form alpha I + R + S
-where first preconditioner is built from alpha I + S and second from
-alpha I + R
+    where first preconditioner is built from alpha I + S and second from
+    alpha I + R
 */
 static PetscErrorCode PCApply_Composite_Special(PC pc, Vec x, Vec y)
 {
@@ -455,7 +455,7 @@ PetscErrorCode PCCompositeGetType(PC pc, PCCompositeType *type)
 
 /*@
   PCCompositeSpecialSetAlpha - Sets alpha for the special composite preconditioner, `PC_COMPOSITE_SPECIAL`,
-  for alphaI + R + S
+  for $\alpha I + R + S$
 
   Logically Collective
 
@@ -578,8 +578,8 @@ PetscErrorCode PCCompositeGetPC(PC pc, PetscInt n, PC *subpc)
 
    Options Database Keys:
 +  -pc_composite_type <type: one of multiplicative, additive, symmetric_multiplicative, special> - Sets composite preconditioner type
-.  -pc_use_amat - activates `PCSetUseAmat()`
--  -pc_composite_pcs - <pc0,pc1,...> list of PCs to compose
+.  -pc_use_amat                                                                                  - activates `PCSetUseAmat()`
+-  -pc_composite_pcs                                                                             - <pc0,pc1,...> list of PCs to compose
 
    Level: intermediate
 

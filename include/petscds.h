@@ -107,7 +107,7 @@ typedef void (*PetscRiemannFunc)(PetscInt, PetscInt, const PetscReal[], const Pe
 
   Level: beginner
 
-.seealso: [](ch_dmbase), `DMPlexTransformExtrudeSetNormalFunction()`
+.seealso: `DMPlexTransformExtrudeSetNormalFunction()`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscSimplePointFunc)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt r, PetscScalar u[], void *ctx);
 

@@ -56,7 +56,6 @@
   future release.
 
   Developer Notes:
-
   These are the generic error codes. These error codes are used in many different places in the
   PETSc source code. The C-string versions are at defined in `PetscErrorStrings[]` in
   `src/sys/error/err.c`, while the Fortran versions are defined in
@@ -156,7 +155,7 @@ typedef int PetscErrorCode;
 
     Note:
     Use `PetscClassIdRegister()` to obtain a new value for a new class being created. Usually
-         XXXInitializePackage() calls it for each class it defines.
+    XXXInitializePackage() calls it for each class it defines.
 
     Developer Note:
     Internal integer stored in the `_p_PetscObject` data structure. These are all computed by an offset from the lowest one, `PETSC_SMALLEST_CLASSID`.
@@ -172,10 +171,10 @@ typedef int PetscClassId;
 
     Notes:
     This is always a 32-bit integer, sometimes it is the same as `PetscInt`, but if PETSc was built with `--with-64-bit-indices` but
-           standard C/Fortran integers are 32-bit then this is NOT the same as `PetscInt`; it remains 32-bit.
+    standard C/Fortran integers are 32-bit then this is NOT the same as `PetscInt`; it remains 32-bit.
 
     `PetscMPIIntCast`(a,&b) checks if the given `PetscInt` a will fit in a `PetscMPIInt`, if not it
-      generates a `PETSC_ERR_ARG_OUTOFRANGE` error.
+    generates a `PETSC_ERR_ARG_OUTOFRANGE` error.
 
 .seealso: `PetscBLASInt`, `PetscInt`, `PetscMPIIntCast()`
 M*/
@@ -231,7 +230,7 @@ typedef float PetscFloat;
 
 /*MC
   PetscInt - PETSc type that represents an integer, used primarily to
-      represent size of arrays and indexing into arrays. Its size can be configured with the option `--with-64-bit-indices` to be either 32-bit (default) or 64-bit.
+             represent size of arrays and indexing into arrays. Its size can be configured with the option `--with-64-bit-indices` to be either 32-bit (default) or 64-bit.
 
   Level: beginner
 
@@ -330,21 +329,21 @@ enum {
    `PetscErrorCode` `PetscBLASIntCast`(a,&b) checks if the given `PetscInt` a will fit in a `PetscBLASInt`, if not it
     generates a `PETSC_ERR_ARG_OUTOFRANGE` error
 
-   Installation Notes:
-    ./configure automatically determines the size of the integers used by BLAS/LAPACK except when `--with-batch` is used
-    in that situation one must know (by some other means) if the integers used by BLAS/LAPACK are 64-bit and if so pass the flag `--known-64-bit-blas-indices`
+   Installation Notes\:
+   ./configure automatically determines the size of the integers used by BLAS/LAPACK except when `--with-batch` is used
+   in that situation one must know (by some other means) if the integers used by BLAS/LAPACK are 64-bit and if so pass the flag `--known-64-bit-blas-indices`
 
-    MATLAB ships with BLAS and LAPACK that use 64-bit integers, for example if you run ./configure with, the option
-     `--with-blaslapack-lib`=[/Applications/MATLAB_R2010b.app/bin/maci64/libmwblas.dylib,/Applications/MATLAB_R2010b.app/bin/maci64/libmwlapack.dylib]
+   MATLAB ships with BLAS and LAPACK that use 64-bit integers, for example if you run ./configure with, the option
+    `--with-blaslapack-lib`=[/Applications/MATLAB_R2010b.app/bin/maci64/libmwblas.dylib,/Applications/MATLAB_R2010b.app/bin/maci64/libmwlapack.dylib]
 
-    MKL ships with both 32 and 64-bit integer versions of the BLAS and LAPACK. If you pass the flag `-with-64-bit-blas-indices` PETSc will link
-    against the 64-bit version, otherwise it uses the 32-bit version
+   MKL ships with both 32 and 64-bit integer versions of the BLAS and LAPACK. If you pass the flag `-with-64-bit-blas-indices` PETSc will link
+   against the 64-bit version, otherwise it uses the 32-bit version
 
-    OpenBLAS can be built to use 64-bit integers. The ./configure options `--download-openblas` `-with-64-bit-blas-indices` will build a 64-bit integer version
+   OpenBLAS can be built to use 64-bit integers. The ./configure options `--download-openblas` `-with-64-bit-blas-indices` will build a 64-bit integer version
 
-    External packages such as hypre, ML, SuperLU etc do not provide any support for passing 64-bit integers to BLAS/LAPACK so cannot
-    be used with PETSc when PETSc links against 64-bit integer BLAS/LAPACK. ./configure will generate an error if you attempt to link PETSc against any of
-    these external libraries while using 64-bit integer BLAS/LAPACK.
+   External packages such as hypre, ML, SuperLU etc do not provide any support for passing 64-bit integers to BLAS/LAPACK so cannot
+   be used with PETSc when PETSc links against 64-bit integer BLAS/LAPACK. ./configure will generate an error if you attempt to link PETSc against any of
+   these external libraries while using 64-bit integer BLAS/LAPACK.
 
 .seealso: `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`
 M*/
@@ -406,13 +405,13 @@ enum {
 };
 
 /*E
-    PetscBool  - Logical variable. Actually an enum in C and a logical in Fortran.
+   PetscBool  - Logical variable. Actually an enum in C and a logical in Fortran.
 
    Level: beginner
 
    Developer Note:
    Why have `PetscBool`, why not use bool in C? The problem is that K and R C, C99 and C++ all have different mechanisms for
-      boolean values. It is not easy to have a simple macro that that will work properly in all circumstances with all three mechanisms.
+   Boolean values. It is not easy to have a simple macro that that will work properly in all circumstances with all three mechanisms.
 
 .seealso: `PETSC_TRUE`, `PETSC_FALSE`, `PetscNot()`, `PetscBool3`
 E*/
@@ -423,7 +422,7 @@ typedef enum {
 PETSC_EXTERN const char *const PetscBools[];
 
 /*E
-    PetscBool3  - Ternary logical variable. Actually an enum in C and a 4 byte integer in Fortran.
+   PetscBool3  - Ternary logical variable. Actually an enum in C and a 4 byte integer in Fortran.
 
    Level: beginner
 
@@ -483,11 +482,11 @@ typedef __fp16 PetscReal;
 
    Notes:
    For MPI calls that require datatypes, use `MPIU_COMPLEX` as the datatype for `PetscComplex` and `MPIU_SUM` etc for operations.
-          They will automatically work correctly regardless of the size of `PetscComplex`.
+   They will automatically work correctly regardless of the size of `PetscComplex`.
 
-          See `PetscScalar` for details on how to ./configure the size of `PetscReal`
+   See `PetscScalar` for details on how to ./configure the size of `PetscReal`
 
-          Complex numbers are automatically available if PETSc was able to find a working complex implementation
+   Complex numbers are automatically available if PETSc was able to find a working complex implementation
 
     PETSc has a 'fix' for complex numbers to support expressions such as `std::complex<PetscReal>` + `PetscInt`, which are not supported by the standard
     C++ library, but are convenient for petsc users. If the C++ compiler is able to compile code in `petsccxxcomplexfix.h` (This is checked by
@@ -563,8 +562,8 @@ typedef __complex128 PetscComplex;
 
 /*MC
    PetscScalar - PETSc type that represents either a double precision real number, a double precision
-       complex number, a single precision real number, a __float128 real or complex or a __fp16 real - if the code is configured
-       with `--with-scalar-type`=real,complex `--with-precision`=single,double,__float128,__fp16
+                 complex number, a single precision real number, a __float128 real or complex or a __fp16 real - if the code is configured
+                 with `--with-scalar-type`=real,complex `--with-precision`=single,double,__float128,__fp16
 
    Level: beginner
 
@@ -709,7 +708,7 @@ PETSC_EXTERN const char *const PetscDataTypes[];
 #define PETSC_FORTRANADDR PETSC_LONG
 
 /*S
-    PetscToken - 'Token' used for managing tokenizing strings
+  PetscToken - 'Token' used for managing tokenizing strings
 
   Level: intermediate
 
@@ -718,7 +717,7 @@ S*/
 typedef struct _p_PetscToken *PetscToken;
 
 /*S
-     PetscObject - any PETSc object, `PetscViewer`, `Mat`, `Vec`, `KSP` etc
+   PetscObject - any PETSc object, `PetscViewer`, `Mat`, `Vec`, `KSP` etc
 
    Level: beginner
 
@@ -771,11 +770,11 @@ typedef struct _n_PetscFunctionList *PetscFunctionList;
   PetscFileMode - Access mode for a file.
 
   Values:
-+  `FILE_MODE_UNDEFINED` - initial invalid value
-.  `FILE_MODE_READ` - open a file at its beginning for reading
-.  `FILE_MODE_WRITE` - open a file at its beginning for writing (will create if the file does not exist)
-.  `FILE_MODE_APPEND` - open a file at end for writing
-.  `FILE_MODE_UPDATE` - open a file for updating, meaning for reading and writing
++  `FILE_MODE_UNDEFINED`     - initial invalid value
+.  `FILE_MODE_READ`          - open a file at its beginning for reading
+.  `FILE_MODE_WRITE`         - open a file at its beginning for writing (will create if the file does not exist)
+.  `FILE_MODE_APPEND`        - open a file at end for writing
+.  `FILE_MODE_UPDATE`        - open a file for updating, meaning for reading and writing
 -  `FILE_MODE_APPEND_UPDATE` - open a file for updating, meaning for reading and writing, at the end
 
   Level: beginner
@@ -800,7 +799,7 @@ typedef enum {
 } PetscDLMode;
 
 /*S
-     PetscObjectList - Linked list of PETSc objects, each accessible by string name
+   PetscObjectList - Linked list of PETSc objects, each accessible by string name
 
    Level: developer
 
@@ -812,7 +811,7 @@ S*/
 typedef struct _n_PetscObjectList *PetscObjectList;
 
 /*S
-     PetscDLLibrary - Linked list of dynamic libraries to search for functions
+   PetscDLLibrary - Linked list of dynamic libraries to search for functions
 
    Level: developer
 
@@ -821,7 +820,7 @@ S*/
 typedef struct _n_PetscDLLibrary *PetscDLLibrary;
 
 /*S
-     PetscContainer - Simple PETSc object that contains a pointer to any required data
+   PetscContainer - Simple PETSc object that contains a pointer to any required data
 
    Level: advanced
 
@@ -833,7 +832,7 @@ S*/
 typedef struct _p_PetscContainer *PetscContainer;
 
 /*S
-     PetscRandom - Abstract PETSc object that manages generating random numbers
+   PetscRandom - Abstract PETSc object that manages generating random numbers
 
    Level: intermediate
 
@@ -873,16 +872,16 @@ typedef enum {
 } PetscBinarySeekType;
 
 /*E
-    PetscBuildTwoSidedType - algorithm for setting up two-sided communication for use with `PetscSF`
+   PetscBuildTwoSidedType - algorithm for setting up two-sided communication for use with `PetscSF`
 
    Values:
-+  `PETSC_BUILDTWOSIDED_ALLREDUCE` - classical algorithm using an `MPI_Allreduce()` with
-      a buffer of length equal to the communicator size. Not memory-scalable due to
-      the large reduction size. Requires only an MPI-1 implementation.
-.  `PETSC_BUILDTWOSIDED_IBARRIER` - nonblocking algorithm based on `MPI_Issend()` and `MPI_Ibarrier()`.
-      Proved communication-optimal in Hoefler, Siebert, and Lumsdaine (2010). Requires an MPI-3 implementation.
++  `PETSC_BUILDTWOSIDED_ALLREDUCE`  - classical algorithm using an `MPI_Allreduce()` with
+                                      a buffer of length equal to the communicator size. Not memory-scalable due to
+                                      the large reduction size. Requires only an MPI-1 implementation.
+.  `PETSC_BUILDTWOSIDED_IBARRIER`   - nonblocking algorithm based on `MPI_Issend()` and `MPI_Ibarrier()`.
+                                      Proved communication-optimal in Hoefler, Siebert, and Lumsdaine (2010). Requires an MPI-3 implementation.
 -  `PETSC_BUILDTWOSIDED_REDSCATTER` - similar to above, but use more optimized function
-      that only communicates the part of the reduction that is necessary.  Requires an MPI-2 implementation.
+                                      that only communicates the part of the reduction that is necessary.  Requires an MPI-2 implementation.
 
    Level: developer
 
@@ -902,15 +901,15 @@ PETSC_EXTERN const char *const PetscBuildTwoSidedTypes[];
   InsertMode - How the entries are combined with the current values in the vectors or matrices
 
   Values:
-+  `NOT_SET_VALUES` - do not actually use the values
-.  `INSERT_VALUES` - replace the current values with the provided values, unless the index is marked as constrained by the `PetscSection`
-.  `ADD_VALUES` - add the values to the current values, unless the index is marked as constrained by the `PetscSection`
-.  `MAX_VALUES` - use the maximum of each current value and provided value
-.  `MIN_VALUES` - use the minimum of each current value and provided value
++  `NOT_SET_VALUES`    - do not actually use the values
+.  `INSERT_VALUES`     - replace the current values with the provided values, unless the index is marked as constrained by the `PetscSection`
+.  `ADD_VALUES`        - add the values to the current values, unless the index is marked as constrained by the `PetscSection`
+.  `MAX_VALUES`        - use the maximum of each current value and provided value
+.  `MIN_VALUES`        - use the minimum of each current value and provided value
 .  `INSERT_ALL_VALUES` - insert, even if indices that are not marked as constrained by the `PetscSection`
-.  `ADD_ALL_VALUES` - add, even if indices that are not marked as constrained by the `PetscSection`
-.  `INSERT_BC_VALUES` - insert, but ignore indices that are not marked as constrained by the `PetscSection`
--  `ADD_BC_VALUES` - add, but ignore indices that are not marked as constrained by the `PetscSection`
+.  `ADD_ALL_VALUES`    - add, even if indices that are not marked as constrained by the `PetscSection`
+.  `INSERT_BC_VALUES`  - insert, but ignore indices that are not marked as constrained by the `PetscSection`
+-  `ADD_BC_VALUES`     - add, but ignore indices that are not marked as constrained by the `PetscSection`
 
   Level: beginner
 
@@ -948,7 +947,7 @@ M*/
 
 /*MC
     ADD_VALUES - Adds a value into a vector or matrix, if there previously was no value, just puts the
-                value into that location
+                 value into that location
 
     Level: beginner
 
@@ -977,7 +976,7 @@ M*/
    PetscSubcomm - A decomposition of an MPI communicator into subcommunicators
 
    Values:
-+   `PETSC_SUBCOMM_GENERAL` - similar to `MPI_Comm_split()` each process sets the new communicator (color) they will belong to and the order within that communicator
++   `PETSC_SUBCOMM_GENERAL`    - similar to `MPI_Comm_split()` each process sets the new communicator (color) they will belong to and the order within that communicator
 .   `PETSC_SUBCOMM_CONTIGUOUS` - each new communicator contains a set of process with contiguous ranks in the original MPI communicator
 -   `PETSC_SUBCOMM_INTERLACED` - each new communictor contains a set of processes equally far apart in rank from the others in that new communicator
 
@@ -1021,7 +1020,7 @@ typedef enum {
 PETSC_EXTERN const char *const PetscSubcommTypes[];
 
 /*S
-     PetscHeap - A simple class for managing heaps
+   PetscHeap - A simple class for managing heaps
 
    Level: intermediate
 

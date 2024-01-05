@@ -3,10 +3,10 @@
 /* SUBMANSEC = DMPlex */
 
 /*S
-  DMPlexTransform - An object encapsulating a mesh transformation
+  DMPlexTransform - An object encapsulating a `DMPLEX` transformation
 
   Level: intermediate
 
-.seealso: `DMPlexTransformCreate()`, `DMPlexTransformType`
+.seealso: [](ch_dmbase), `DMPLEX`, `DMPlexTransformCreate()`, `DMPlexTransformType`
 S*/
 typedef struct _p_DMPlexTransform *DMPlexTransform;
