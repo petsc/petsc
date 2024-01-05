@@ -1392,7 +1392,7 @@ PetscErrorCode MatDestroy(Mat *A)
 
   /* if memory was published with SAWs then destroy it */
   PetscCall(PetscObjectSAWsViewOff((PetscObject)*A));
-  PetscTryTypeMethod((*A), destroy);
+  PetscTryTypeMethod(*A, destroy);
 
   PetscCall(PetscFree((*A)->factorprefix));
   PetscCall(PetscFree((*A)->defaultvectype));

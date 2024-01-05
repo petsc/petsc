@@ -13,7 +13,7 @@ static char help[] = "Solves the van der Pol equation. \n Input parameters inclu
  * on the domain 0<=x<=0.5, with the initial conditions
  * y(0) = 2,
  * z(0) = -2/3 + 10/81*eps - 292/2187*eps^2-1814/19683*eps^3
- * IMEX schemes are applied to the splitted equation
+ * IMEX schemes are applied to the split equation
  * [y'] = [z]  + [0                 ]
  * [z']   [0]    [(((1-y^2)*z-y)/eps]
  *
