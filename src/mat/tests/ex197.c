@@ -38,11 +38,8 @@ int main(int argc, char **args)
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
   /* Create vectors */
-  PetscCall(VecCreate(PETSC_COMM_WORLD, &y));
-  PetscCall(VecSetSizes(y, PETSC_DECIDE, 2));
-  PetscCall(VecSetFromOptions(y));
+  PetscCall(MatCreateVecs(A, &x, &y));
   PetscCall(VecDuplicate(y, &ys));
-  PetscCall(VecDuplicate(y, &x));
 
   i = 0;
   v = 10.0 + 11.0 * PETSC_i;
@@ -85,9 +82,14 @@ int main(int argc, char **args)
          suffix: 1
          args: -mat_type {{aij dense}}
       test:
+         suffix: 1_cuda
+         output_file: output/ex197_1.out
+         requires: cuda
+         args: -mat_type densecuda
+         filter: sed -e 's/seqcuda/seq/'
+      test:
          suffix: 2
          args: -mat_type {{aij dense}}
-         diff_args: -j
          nsize: 2
 
 TEST*/
