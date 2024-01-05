@@ -77,19 +77,27 @@ int main(int argc, char **args)
 
    build:
       requires: complex
+
    testset:
+      output_file: output/ex197_1.out
       test:
          suffix: 1
          args: -mat_type {{aij dense}}
       test:
          suffix: 1_cuda
-         output_file: output/ex197_1.out
          requires: cuda
          args: -mat_type densecuda
          filter: sed -e 's/seqcuda/seq/'
+
+   testset:
+      output_file: output/ex197_2.out
+      nsize: 2
       test:
          suffix: 2
          args: -mat_type {{aij dense}}
-         nsize: 2
+      test:
+         suffix: 2_scalapack
+         requires: scalapack
+         args: -mat_type scalapack
 
 TEST*/
