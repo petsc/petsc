@@ -4243,6 +4243,12 @@ PetscErrorCode MatUpdateMPIAIJWithArrays(Mat mat, PetscInt m, PetscInt n, PetscI
   PetscCall(MatSeqAIJGetArrayWrite(Aij->B, &ao));
 
   for (i = 0; i < m; i++) {
+    if (PetscDefined(USE_DEBUG)) {
+      for (PetscInt j = Ii[i] + 1; j < Ii[i + 1]; ++j) {
+        PetscCheck(J[j] >= J[j - 1], PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column entry number %" PetscInt_FMT " (actual column %" PetscInt_FMT ") in row %" PetscInt_FMT " is not sorted", j - Ii[i], J[j], i);
+        PetscCheck(J[j] != J[j - 1], PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column entry number %" PetscInt_FMT " (actual column %" PetscInt_FMT ") in row %" PetscInt_FMT " is identical to previous entry", j - Ii[i], J[j], i);
+      }
+    }
     nnz = Ii[i + 1] - Ii[i];
     Iii = Ii[i];
     ldi = ld[i];
