@@ -131,11 +131,13 @@ checkbadSource:
 	-@git --no-pager grep -n -P 'cpy\(.*(.|->)ops, .*\)' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- Extra spaces in test harness rules ---------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -E '^(\!){0,1}[ ]*(suffix|output_file|nsize|requires|args):.*  .*' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "----- Extra comma in test harness rules ----------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P -E '^(\!){0,1}[ ]*requires:.*,' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- Using PetscInfo() without carriage return --------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'PetscCall\(PetscInfo\(' -- ${GITSRC} | grep -v '\\n' >> checkbadSource.out;true
 	-@echo "----- First blank line ---------------------------------------------" >> checkbadSource.out
 	@git --no-pager grep -n -P \^\$$ -- ${GITSRC} | grep ':1:' >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 23` ;\
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 24` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\

@@ -141,7 +141,7 @@ int main(int argc, char **argv)
       args: -mat_type aijhipsparse
     test:
       suffix: kokkos
-      requires: kokkos, kokkos_kernels
+      requires: kokkos kokkos_kernels
       args: -mat_type aijkokkos
 
 TEST*/
