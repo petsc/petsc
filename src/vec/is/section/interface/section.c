@@ -3052,6 +3052,7 @@ PetscErrorCode PetscSectionGetClosurePermutation(PetscSection section, PetscObje
 
   PetscFunctionBegin;
   PetscCall(PetscSectionGetClosurePermutation_Private(section, obj, depth, clSize, &clPerm));
+  PetscCheck(clPerm, PetscObjectComm((PetscObject)obj), PETSC_ERR_ARG_WRONG, "There is no closure permutation associated with this object for depth %" PetscInt_FMT " of size %" PetscInt_FMT, depth, clSize);
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, clSize, clPerm, PETSC_USE_POINTER, perm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
