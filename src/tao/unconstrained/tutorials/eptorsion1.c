@@ -639,7 +639,7 @@ PetscErrorCode HessianProduct(void *ptr, Vec svec, Vec y)
 
    test:
      suffix: snes
-     args: -snes_monitor ::ascii_info_detail -tao_type snes -snes_type newtontr -ksp_type cg  -snes_atol 1.e-4 -tao_mf_hessian {{0 1}} -pc_type none
+     args: -snes_monitor ::ascii_info_detail -tao_type snes -snes_type newtontr -ksp_type cg -snes_atol 1.e-4 -tao_mf_hessian {{0 1}} -pc_type none
 
    test:
      suffix: snes_2

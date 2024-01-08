@@ -232,7 +232,7 @@ int main(int argc, char **argv)
 
     test:
       args: -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -combined
-      requires:  !complex !single
+      requires: !complex !single
 
     test:
       suffix: 2

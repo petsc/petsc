@@ -157,12 +157,12 @@ int main(int argc, char **args)
 
     test:
       suffix: 2
-      args:  -procedural -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type bjacobi
+      args: -procedural -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type bjacobi
       nsize: 3
 
     test:
       suffix: 3
-      args:  -procedural -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type bjacobi
+      args: -procedural -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type bjacobi
       nsize: 5
 
 TEST*/

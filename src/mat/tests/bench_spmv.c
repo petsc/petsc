@@ -335,7 +335,7 @@ int main(int argc, char **args)
 /*TEST
 
    build:
-      requires:  !complex double !windows_compilers !defined(PETSC_USE_64BIT_INDICES)
+      requires: !complex double !windows_compilers !defined(PETSC_USE_64BIT_INDICES)
       depends: mmloader.c mmio.c cJSON.c
 
    test:

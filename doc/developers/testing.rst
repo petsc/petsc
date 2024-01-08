@@ -433,7 +433,7 @@ An example using a for loop is:
 
       testset:
         suffix: 1
-        args:   -f ${DATAFILESPATH}/matrices/small -mat_type aij
+        args: -f ${DATAFILESPATH}/matrices/small -mat_type aij
         requires: datafilespath
       testset:
         suffix: 2
@@ -569,7 +569,7 @@ Introduction to debugging workflows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Here, two different workflows on developing with the test harness are presented,
-and then the language for adding a new test is described.  Before describing the
+and then the language for adding a new test is described. Before describing the
 workflow, we first discuss the output of the test harness and how it maps onto
 makefile targets and shell scripts.
 
@@ -586,9 +586,9 @@ The string ``vec_is_sf_tests-ex1_basic_1`` gives the following information:
 * The makefile target for the *executable* is ``$PETSC_ARCH/tests/vec/is/sf/tests/ex1``
 * The shell script running the test is located at: ``$PETSC_DIR/$PETSC_ARCH/tests/vec/is/sf/tests/runex1_basic_1.sh``
 
-Let's say that you want to debug a single test as part of development.  There
-are two basic methods of doing this:  1)  use shell script directly in test
-directory, or 2) use the gmakefile.test from the top level directory.  We present both
+Let's say that you want to debug a single test as part of development. There
+are two basic methods of doing this: 1) use shell script directly in test
+directory, or 2) use the gmakefile.test from the top level directory. We present both
 workflows. 
 
 Debugging a test using shell the generated scripts
@@ -617,7 +617,7 @@ scripts:
         -m ................ Update results using petscdiff
         -M ................ Update alt files using petscdiff
         -o <arg> .......... Output format: 'interactive', 'err_only'
-        -p ................ Print command:  Print first command and exit
+        -p ................ Print command: Print first command and exit
         -t ................ Override the default timeout (default=60 sec)
         -U ................ run cUda-memcheck
         -V ................ run Valgrind
@@ -634,15 +634,15 @@ A basic workflow is something similar to:
      $ runex1_basic_1.sh -C
      $ <edit>
      $ ...
-     $ runex1_basic_1.sh -m  # If need to update results
+     $ runex1_basic_1.sh -m # If need to update results
      $ ...
-     $ runex1_basic_1.sh -V  # Make sure valgrind clean
+     $ runex1_basic_1.sh -V # Make sure valgrind clean
      $ cd $PETSC_DIR
      $ git commit -a
 
 For loops it sometimes can become onerous to run the whole test.
 In this case, you can use the ``-p`` flag to print just the first
-command.  It will print a command suitable for running from
+command. It will print a command suitable for running from
 ``$PETSC_DIR``, but it is easy to modify for execution in the test
 directory:
 
@@ -666,9 +666,9 @@ To compile the test and run it:
 
    $ make test search=vec_is_sf_tests-ex1_basic_1
 
-This can consist of your basic workflow.  However,
+This can consist of your basic workflow. However,
 for the normal compile and edit, running the entire harness with search can be
-cumbersome.  So first get the command:
+cumbersome. So first get the command:
 
 .. code-block:: console
 
@@ -792,11 +792,11 @@ Using the ``name`` field is equivalent to the search above:
 
 -  This can be combined with union/intersect queries as discussed below
 
-Arguments are tricky to search for.  Consider
+Arguments are tricky to search for. Consider
 
 .. code-block:: none
 
-  args:  -ksp_monitor_short -pc_type ml -ksp_max_it 3
+  args: -ksp_monitor_short -pc_type ml -ksp_max_it 3
 
 Search terms are
 
@@ -829,7 +829,7 @@ Multiple simultaneous queries can be performed with union (``,``), and intersect
 (``|``) operators in the ``query`` field. One may also use their alternate spellings
 (``%AND%`` and ``%OR%`` respectively). The alternate spellings are useful in cases where
 one cannot avoid (possibly multiple) shell expansions that might otherwise interpret the
-``|`` operator as a shell pipe.  Examples:
+``|`` operator as a shell pipe. Examples:
 
 -  All examples using ``cuda`` and all examples using ``hip``:
 
@@ -877,10 +877,10 @@ Here is a way of getting a feel for how the union and intersect operators work:
       $ make print-test query='requires|requires' queryval='ctetgen,triangle' | tr ' ' '\n' | wc -l
       22
 
-The total number of tests for running only ctetgen or triangle is 500.  They have 22 tests in common, and 478 that
+The total number of tests for running only ctetgen or triangle is 500. They have 22 tests in common, and 478 that
 run independently of each other.
 
-The union and intersection have fixed grouping.  So this string argument
+The union and intersection have fixed grouping. So this string argument
 
 .. code-block:: none
 
@@ -918,7 +918,7 @@ Debugging for loops
 ~~~~~~~~~~~~~~~~~~~
 
 One of the more difficult issues is how to debug for loops when a subset of the
-arguments are the ones that cause a code crash.  The default naming scheme is
+arguments are the ones that cause a code crash. The default naming scheme is
 not always helpful for figuring out the argument combination.
 
 For example:

@@ -256,12 +256,12 @@ PetscErrorCode InitialConditions(DM da, Vec U)
 /*TEST
 
    test:
-      args: -pc_type lu -da_refine 2  -ts_view  -ts_monitor -ts_max_time 1
+      args: -pc_type lu -da_refine 2 -ts_view -ts_monitor -ts_max_time 1
       requires: double
 
    test:
      suffix: 2
-     args:  -pc_type lu -da_refine 2  -ts_view  -ts_monitor_draw_solution -ts_monitor -ts_max_time 1
+     args: -pc_type lu -da_refine 2 -ts_view -ts_monitor_draw_solution -ts_monitor -ts_max_time 1
      requires: x double
      output_file: output/ex4_1.out
 

@@ -627,13 +627,13 @@ PetscErrorCode ComputeObjHessianWithSOA(Vec Dir, PetscScalar arr[], Aircraft act
       requires: !complex !single
 
     test:
-      args:  -ts_adapt_type none -ts_type rk -ts_rk_type 3 -viewer_binary_skip_info -tao_monitor -tao_gatol 1e-7
+      args: -ts_adapt_type none -ts_type rk -ts_rk_type 3 -viewer_binary_skip_info -tao_monitor -tao_gatol 1e-7
 
     test:
       suffix: 2
-      args:  -ts_adapt_type none -ts_type rk -ts_rk_type 3 -viewer_binary_skip_info -tao_monitor -tao_view -tao_type bntr -tao_bnk_pc_type none -exacthessian
+      args: -ts_adapt_type none -ts_type rk -ts_rk_type 3 -viewer_binary_skip_info -tao_monitor -tao_view -tao_type bntr -tao_bnk_pc_type none -exacthessian
 
     test:
       suffix: 3
-      args:  -ts_adapt_type none -ts_type rk -ts_rk_type 3 -viewer_binary_skip_info -tao_monitor -tao_view -tao_type bntr -tao_bnk_pc_type none -exacthessian -matrixfree
+      args: -ts_adapt_type none -ts_type rk -ts_rk_type 3 -viewer_binary_skip_info -tao_monitor -tao_view -tao_type bntr -tao_bnk_pc_type none -exacthessian -matrixfree
 TEST*/

@@ -500,131 +500,131 @@ static PetscErrorCode Test2_3d(DM dm)
    testset:
       suffix: periodic_1d_seq
       nsize: 1
-      args:  -dm_view -dim 1 -stag_grid_x 4 -stag_boundary_type_x periodic -stag_stencil_width {{0 1 2}separate output}
+      args: -dm_view -dim 1 -stag_grid_x 4 -stag_boundary_type_x periodic -stag_stencil_width {{0 1 2}separate output}
 
    testset:
       suffix: ghosted_1d_seq
       nsize: 1
-      args:  -dm_view -dim 1 -stag_grid_x 4 -stag_boundary_type_x ghosted -stag_stencil_width {{0 1 2}separate output}
+      args: -dm_view -dim 1 -stag_grid_x 4 -stag_boundary_type_x ghosted -stag_stencil_width {{0 1 2}separate output}
 
    testset:
       suffix: none_1d_seq
       nsize: 1
-      args:  -dm_view -dim 1 -stag_grid_x 4 -stag_boundary_type_x ghosted -stag_stencil_width {{0 1 2}separate output}
+      args: -dm_view -dim 1 -stag_grid_x 4 -stag_boundary_type_x ghosted -stag_stencil_width {{0 1 2}separate output}
 
    testset:
       suffix: periodic_1d_par
       nsize: 3
-      args:  -dm_view -dim 1 -setsizes -stag_boundary_type_x periodic -stag_stencil_width {{0 1 2}separate output}
+      args: -dm_view -dim 1 -setsizes -stag_boundary_type_x periodic -stag_stencil_width {{0 1 2}separate output}
 
    testset:
       suffix: ghosted_1d_par
       nsize: 3
-      args:  -dm_view -dim 1 -setsizes -stag_boundary_type_x ghosted -stag_stencil_width {{0 1 2}separate output}
+      args: -dm_view -dim 1 -setsizes -stag_boundary_type_x ghosted -stag_stencil_width {{0 1 2}separate output}
 
    testset:
       suffix: none_1d_par
       nsize: 3
-      args:  -dm_view -dim 1 -setsizes -stag_boundary_type_x ghosted -stag_stencil_width {{0 1 2}separate output}
+      args: -dm_view -dim 1 -setsizes -stag_boundary_type_x ghosted -stag_stencil_width {{0 1 2}separate output}
 
    testset:
       suffix: periodic_periodic_2d_seq
       nsize: 1
-      args:  -dm_view -dim 2 -stag_grid_x 4 -stag_grid_y 5 -stag_boundary_type_x periodic -stag_boundary_type_y periodic -stag_stencil_width {{0 1 2}separate output}
+      args: -dm_view -dim 2 -stag_grid_x 4 -stag_grid_y 5 -stag_boundary_type_x periodic -stag_boundary_type_y periodic -stag_stencil_width {{0 1 2}separate output}
 
    testset:
       suffix: periodic_ghosted_2d_seq
       nsize: 1
-      args:  -dm_view -dim 2 -stag_grid_x 4 -stag_grid_y 5 -stag_boundary_type_x periodic -stag_boundary_type_y ghosted -stag_stencil_width {{0 1 2}separate output}
+      args: -dm_view -dim 2 -stag_grid_x 4 -stag_grid_y 5 -stag_boundary_type_x periodic -stag_boundary_type_y ghosted -stag_stencil_width {{0 1 2}separate output}
 
    testset:
       suffix: none_none_2d_seq
       nsize: 1
-      args:  -dm_view -dim 2 -stag_grid_x 4 -stag_grid_y 5 -stag_boundary_type_x none -stag_boundary_type_y none -stag_stencil_width {{0 1 2}separate output}
+      args: -dm_view -dim 2 -stag_grid_x 4 -stag_grid_y 5 -stag_boundary_type_x none -stag_boundary_type_y none -stag_stencil_width {{0 1 2}separate output}
 
    testset:
       suffix: none_ghosted_2d_seq
       nsize: 1
-      args:  -dm_view -dim 2 -stag_grid_x 4 -stag_grid_y 5 -stag_boundary_type_x none -stag_boundary_type_y ghosted -stag_stencil_width {{0 1 2}separate output}
+      args: -dm_view -dim 2 -stag_grid_x 4 -stag_grid_y 5 -stag_boundary_type_x none -stag_boundary_type_y ghosted -stag_stencil_width {{0 1 2}separate output}
 
    testset:
       suffix: none_periodic_2d_seq
       nsize: 1
-      args:  -dm_view -dim 2 -stag_grid_x 4 -stag_grid_y 5 -stag_boundary_type_x none -stag_boundary_type_y periodic -stag_stencil_width {{0 1 2}separate output}
+      args: -dm_view -dim 2 -stag_grid_x 4 -stag_grid_y 5 -stag_boundary_type_x none -stag_boundary_type_y periodic -stag_stencil_width {{0 1 2}separate output}
 
    testset:
       suffix: periodic_periodic_2d_par
       nsize: 6
-      args:  -dm_view -dim 2 -setsizes -stag_boundary_type_x periodic -stag_boundary_type_y periodic -stag_stencil_width {{0 1 2}separate output}
+      args: -dm_view -dim 2 -setsizes -stag_boundary_type_x periodic -stag_boundary_type_y periodic -stag_stencil_width {{0 1 2}separate output}
 
    testset:
       suffix: periodic_ghosted_2d_par
       nsize: 6
-      args:  -dm_view -dim 2 -setsizes -stag_boundary_type_x periodic -stag_boundary_type_y ghosted -stag_stencil_width {{0 1 2}separate output}
+      args: -dm_view -dim 2 -setsizes -stag_boundary_type_x periodic -stag_boundary_type_y ghosted -stag_stencil_width {{0 1 2}separate output}
 
    testset:
       suffix: none_none_2d_par
       nsize: 6
-      args:  -dm_view -dim 2 -setsizes -stag_boundary_type_x none -stag_boundary_type_y none -stag_stencil_width {{0 1 2}separate output}
+      args: -dm_view -dim 2 -setsizes -stag_boundary_type_x none -stag_boundary_type_y none -stag_stencil_width {{0 1 2}separate output}
 
    testset:
       suffix: none_ghosted_2d_par
       nsize: 6
-      args:  -dm_view -dim 2 -setsizes -stag_boundary_type_x none -stag_boundary_type_y ghosted -stag_stencil_width {{0 1 2}separate output}
+      args: -dm_view -dim 2 -setsizes -stag_boundary_type_x none -stag_boundary_type_y ghosted -stag_stencil_width {{0 1 2}separate output}
 
    testset:
       suffix: none_periodic_2d_par
       nsize: 6
-      args:  -dm_view -dim 2 -setsizes -stag_boundary_type_x none -stag_boundary_type_y periodic -stag_stencil_width {{0 1 2}separate output}
+      args: -dm_view -dim 2 -setsizes -stag_boundary_type_x none -stag_boundary_type_y periodic -stag_stencil_width {{0 1 2}separate output}
 
    testset:
       suffix: periodic_periodic_periodic_3d_seq
       nsize: 1
-      args:  -dm_view -dim 3 -stag_grid_x 4 -stag_grid_y 5 -stag_grid_z 3 -stag_boundary_type_x periodic -stag_boundary_type_y periodic -stag_boundary_type_z periodic -stag_stencil_width {{0 1 2}separate output}
+      args: -dm_view -dim 3 -stag_grid_x 4 -stag_grid_y 5 -stag_grid_z 3 -stag_boundary_type_x periodic -stag_boundary_type_y periodic -stag_boundary_type_z periodic -stag_stencil_width {{0 1 2}separate output}
 
    testset:
       suffix: periodic_ghosted_periodic_3d_seq
       nsize: 1
-      args:  -dm_view -dim 3 -stag_grid_x 4 -stag_grid_y 5 -stag_grid_z 3 -stag_boundary_type_x periodic -stag_boundary_type_y ghosted -stag_boundary_type_z periodic -stag_stencil_width {{0 1 2}separate output}
+      args: -dm_view -dim 3 -stag_grid_x 4 -stag_grid_y 5 -stag_grid_z 3 -stag_boundary_type_x periodic -stag_boundary_type_y ghosted -stag_boundary_type_z periodic -stag_stencil_width {{0 1 2}separate output}
 
    testset:
       suffix: none_periodic_ghosted_3d_seq
       nsize: 1
-      args:  -dm_view -dim 3 -stag_grid_x 4 -stag_grid_y 5 -stag_grid_z 3 -stag_boundary_type_x none -stag_boundary_type_y periodic -stag_boundary_type_z ghosted -stag_stencil_width {{0 1 2}separate output}
+      args: -dm_view -dim 3 -stag_grid_x 4 -stag_grid_y 5 -stag_grid_z 3 -stag_boundary_type_x none -stag_boundary_type_y periodic -stag_boundary_type_z ghosted -stag_stencil_width {{0 1 2}separate output}
 
    testset:
       suffix: none_none_none_3d_seq
       nsize: 1
-      args:  -dm_view -dim 3 -stag_grid_x 4 -stag_grid_y 5 -stag_grid_z 3 -stag_boundary_type_x none -stag_boundary_type_y none -stag_boundary_type_z none -stag_stencil_width {{0 1 2}separate output}
+      args: -dm_view -dim 3 -stag_grid_x 4 -stag_grid_y 5 -stag_grid_z 3 -stag_boundary_type_x none -stag_boundary_type_y none -stag_boundary_type_z none -stag_stencil_width {{0 1 2}separate output}
 
    testset:
       suffix: periodic_periodic_periodic_3d_par
       nsize: 12
-      args:  -dm_view -dim 3 -setsizes -stag_boundary_type_x periodic -stag_boundary_type_y periodic -stag_boundary_type_z periodic -stag_stencil_width {{0 1 2}separate output}
+      args: -dm_view -dim 3 -setsizes -stag_boundary_type_x periodic -stag_boundary_type_y periodic -stag_boundary_type_z periodic -stag_stencil_width {{0 1 2}separate output}
 
    testset:
       suffix: periodic_ghosted_ghosted_3d_par
       nsize: 12
-      args:  -dm_view -dim 3 -setsizes -stag_boundary_type_x periodic -stag_boundary_type_y ghosted -stag_boundary_type_z ghosted -stag_stencil_width {{0 1 2}separate output}
+      args: -dm_view -dim 3 -setsizes -stag_boundary_type_x periodic -stag_boundary_type_y ghosted -stag_boundary_type_z ghosted -stag_stencil_width {{0 1 2}separate output}
 
    testset:
       suffix: ghosted_periodic_periodic_3d_par
       nsize: 12
-      args:  -dm_view -dim 3 -setsizes -stag_boundary_type_x ghosted -stag_boundary_type_y periodic -stag_boundary_type_z periodic -stag_stencil_width {{0 1 2}separate output}
+      args: -dm_view -dim 3 -setsizes -stag_boundary_type_x ghosted -stag_boundary_type_y periodic -stag_boundary_type_z periodic -stag_stencil_width {{0 1 2}separate output}
 
    testset:
       suffix: none_none_none_3d_par
       nsize: 12
-      args:  -dm_view -dim 3 -setsizes -stag_boundary_type_x none -stag_boundary_type_y none -stag_boundary_type_z none -stag_stencil_width {{0 1 2}separate output}
+      args: -dm_view -dim 3 -setsizes -stag_boundary_type_x none -stag_boundary_type_y none -stag_boundary_type_z none -stag_stencil_width {{0 1 2}separate output}
 
    test:
       suffix: periodic_none_none_3d_skinny_seq
       nsize: 1
-      args:  -dm_view -dim 3 -stag_boundary_type_x periodic -stag_boundary_type_y none -stag_boundary_type_z none -stag_grid_x 3 -stag_grid_y 6 -stag_grid_z 5 -stag_stencil_width 1 -useinjective 0
+      args: -dm_view -dim 3 -stag_boundary_type_x periodic -stag_boundary_type_y none -stag_boundary_type_z none -stag_grid_x 3 -stag_grid_y 6 -stag_grid_z 5 -stag_stencil_width 1 -useinjective 0
 
    test:
       suffix: periodic_none_none_3d_skinny_par
       nsize: 4
-      args:  -dm_view -dim 3 -stag_boundary_type_x periodic -stag_boundary_type_y none -stag_boundary_type_z none -stag_grid_x 3 -stag_grid_y 6 -stag_grid_z 5 -stag_ranks_x 1 -stag_ranks_y 2 -stag_ranks_z 2 -stag_stencil_width 1 -useinjective 0
+      args: -dm_view -dim 3 -stag_boundary_type_x periodic -stag_boundary_type_y none -stag_boundary_type_z none -stag_grid_x 3 -stag_grid_y 6 -stag_grid_z 5 -stag_ranks_x 1 -stag_ranks_y 2 -stag_ranks_z 2 -stag_stencil_width 1 -useinjective 0
 
 TEST*/

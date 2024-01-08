@@ -361,17 +361,17 @@ int main(int argc, char **argv)
   test:
     suffix: da_1
     requires: !complex
-    args: -dm_type da -dim 1  -num_fe_tests 2
+    args: -dm_type da -dim 1 -num_fe_tests 2
 
   test:
     suffix: da_2
     requires: !complex
-    args: -dm_type da -dim 2  -num_fe_tests 2
+    args: -dm_type da -dim 2 -num_fe_tests 2
 
   test:
     suffix: da_3
     requires: !complex
-    args: -dm_type da -dim 3  -num_fe_tests 2
+    args: -dm_type da -dim 3 -num_fe_tests 2
 
   test:
     suffix: ds
@@ -381,47 +381,47 @@ int main(int argc, char **argv)
   test:
     suffix: ds_simplex_0
     requires: !complex triangle
-    args: -dm_type plex -dm_plex_dim 2 -dm_plex_box_faces 3,3  -num_fe_tests 2  -petscspace_degree 0
+    args: -dm_type plex -dm_plex_dim 2 -dm_plex_box_faces 3,3 -num_fe_tests 2 -petscspace_degree 0
 
   test:
     suffix: ds_simplex_1
     requires: !complex triangle
-    args: -dm_type plex -dm_plex_dim 2 -dm_plex_box_faces 3,3  -num_fe_tests 2  -petscspace_degree 1
+    args: -dm_type plex -dm_plex_dim 2 -dm_plex_box_faces 3,3 -num_fe_tests 2 -petscspace_degree 1
 
   test:
     suffix: ds_simplex_2
     requires: !complex triangle
-    args: -dm_type plex -dm_plex_dim 2 -dm_plex_box_faces 3,3  -num_fe_tests 2  -petscspace_degree 2
+    args: -dm_type plex -dm_plex_dim 2 -dm_plex_box_faces 3,3 -num_fe_tests 2 -petscspace_degree 2
 
   test:
     suffix: ds_tensor_2_0
     requires: !complex
-    args: -dm_type plex -dm_plex_dim 2 -dm_plex_box_faces 3,3  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_degree 0 -dm_plex_simplex 0
+    args: -dm_type plex -dm_plex_dim 2 -dm_plex_box_faces 3,3 -num_fe_tests 2 -petscspace_poly_tensor 1 -petscspace_degree 0 -dm_plex_simplex 0
 
   test:
     suffix: ds_tensor_2_1
     requires: !complex
-    args: -dm_type plex -dm_plex_dim 2 -dm_plex_box_faces 3,3  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_degree 1 -dm_plex_simplex 0
+    args: -dm_type plex -dm_plex_dim 2 -dm_plex_box_faces 3,3 -num_fe_tests 2 -petscspace_poly_tensor 1 -petscspace_degree 1 -dm_plex_simplex 0
 
   test:
     suffix: ds_tensor_2_2
     requires: !complex
-    args: -dm_type plex -dm_plex_dim 2 -dm_plex_box_faces 3,3  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_degree 2 -dm_plex_simplex 0
+    args: -dm_type plex -dm_plex_dim 2 -dm_plex_box_faces 3,3 -num_fe_tests 2 -petscspace_poly_tensor 1 -petscspace_degree 2 -dm_plex_simplex 0
 
   test:
     suffix: ds_tensor_3_0
     requires: !complex
-    args: -dm_type plex -dm_plex_dim 3 -dm_plex_box_faces 3,3,3  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_degree 0 -dm_plex_simplex 0
+    args: -dm_type plex -dm_plex_dim 3 -dm_plex_box_faces 3,3,3 -num_fe_tests 2 -petscspace_poly_tensor 1 -petscspace_degree 0 -dm_plex_simplex 0
 
   test:
     suffix: ds_tensor_3_1
     requires: !complex
-    args: -dm_type plex -dm_plex_dim 3 -dm_plex_box_faces 3,3,3  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_degree 1 -dm_plex_simplex 0
+    args: -dm_type plex -dm_plex_dim 3 -dm_plex_box_faces 3,3,3 -num_fe_tests 2 -petscspace_poly_tensor 1 -petscspace_degree 1 -dm_plex_simplex 0
 
   test:
     suffix: ds_tensor_3_2
     requires: !complex
-    args: -dm_type plex -dm_plex_dim 3 -dm_plex_box_faces 3,3,3  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_degree 2 -dm_plex_simplex 0
+    args: -dm_type plex -dm_plex_dim 3 -dm_plex_box_faces 3,3,3 -num_fe_tests 2 -petscspace_poly_tensor 1 -petscspace_degree 2 -dm_plex_simplex 0
 
   test:
     suffix: shell

@@ -1137,7 +1137,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       suffix: cuda_2
       nsize: 3
       requires: cuda !single
-      args: -snes_monitor -dm_mat_type mpiaijcusparse -dm_vec_type mpicuda -pc_type gamg -ksp_monitor  -mg_levels_ksp_max_it 1
+      args: -snes_monitor -dm_mat_type mpiaijcusparse -dm_vec_type mpicuda -pc_type gamg -ksp_monitor -mg_levels_ksp_max_it 1
 
    test:
       suffix: cuda_dm_bind_below
@@ -1156,7 +1156,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       suffix: hip_2
       nsize: 3
       requires: hip !single
-      args: -snes_monitor -dm_mat_type mpiaijhipsparse -dm_vec_type mpihip -pc_type gamg -ksp_monitor  -mg_levels_ksp_max_it 1
+      args: -snes_monitor -dm_mat_type mpiaijhipsparse -dm_vec_type mpihip -pc_type gamg -ksp_monitor -mg_levels_ksp_max_it 1
 
    test:
       suffix: hip_dm_bind_below
@@ -1181,7 +1181,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
    test:
       suffix: mpibaijmkl
       nsize: 2
-      requires:  defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
+      requires: defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
       args: -dm_mat_type baij -snes_monitor -ksp_monitor -snes_view
 
    test:
@@ -1194,12 +1194,12 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
      suffix: logviewmemory
      requires: defined(PETSC_USE_LOG) !defined(PETSC_HAVE_THREADSAFETY)
      args: -log_view -log_view_memory -da_refine 4
-     filter: grep MatFDColorSetUp | wc -w | xargs  -I % sh -c "expr % \> 21"
+     filter: grep MatFDColorSetUp | wc -w | xargs -I % sh -c "expr % \> 21"
 
    test:
      suffix: fs
      requires: !single
-     args: -pc_type fieldsplit -da_refine 3  -all_ksp_monitor -fieldsplit_y_velocity_pc_type lu  -fieldsplit_temperature_pc_type lu -fieldsplit_x_velocity_pc_type lu  -snes_view
+     args: -pc_type fieldsplit -da_refine 3 -all_ksp_monitor -fieldsplit_y_velocity_pc_type lu -fieldsplit_temperature_pc_type lu -fieldsplit_x_velocity_pc_type lu -snes_view
 
    test:
      suffix: asm_matconvert

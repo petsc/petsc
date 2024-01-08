@@ -301,7 +301,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
       suffix: 5
       nsize: 2
       requires: hypre !complex
-      args: -pc_type mg  -da_refine 2 -ksp_monitor  -matptap_via hypre -pc_mg_galerkin both
+      args: -pc_type mg -da_refine 2 -ksp_monitor -matptap_via hypre -pc_mg_galerkin both
 
    test:
       suffix: 6

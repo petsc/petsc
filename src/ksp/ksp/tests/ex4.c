@@ -189,7 +189,7 @@ int main(int argc, char **args)
 
     test:
       suffix: 5
-      args: -pc_type eisenstat -ksp_monitor_short -m 5  -ksp_gmres_cgs_refinement_type refine_always
+      args: -pc_type eisenstat -ksp_monitor_short -m 5 -ksp_gmres_cgs_refinement_type refine_always
 
     test:
       requires: hypre defined(PETSC_HAVE_HYPRE_DEVICE)

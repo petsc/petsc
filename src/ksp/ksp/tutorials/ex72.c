@@ -458,7 +458,7 @@ int main(int argc, char **args)
       nsize: 2
       requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/medium
-      args:  -ksp_type bicg
+      args: -ksp_type bicg
       test:
          suffix: 2
 
@@ -825,7 +825,7 @@ int main(int argc, char **args)
          output_file: output/ex72_aij_gdsw.out
          suffix: is_gdsw
          nsize: 4
-         args: -pc_type mg -pc_mg_levels 2  -pc_mg_adapt_interp_coarse_space gdsw -pc_mg_galerkin -mg_levels_pc_type asm
+         args: -pc_type mg -pc_mg_levels 2 -pc_mg_adapt_interp_coarse_space gdsw -pc_mg_galerkin -mg_levels_pc_type asm
       test:
          suffix: is_asm
          nsize: {{1 2}separate output}

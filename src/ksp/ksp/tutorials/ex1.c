@@ -212,7 +212,7 @@ int main(int argc, char **args)
       # controls for the use of PCMPI on a particular system
       args: -mpi_linear_solver_server_minimum_count_per_rank 5 -mpi_linear_solver_server_ksp_view -mpi_linear_solver_server_mat_view
       # the usual options for the linear solver (in this case using the server)
-      args: -ksp_monitor -ksp_converged_reason -mat_view -ksp_view  -ksp_type cg -pc_type none
+      args: -ksp_monitor -ksp_converged_reason -mat_view -ksp_view -ksp_type cg -pc_type none
       # the options for the prefixed objects
       args: -prefix_test_mpi_linear_solver_server_mat_view -prefix_test_ksp_monitor -prefix_test_mpi_linear_solver_server_minimum_count_per_rank 5
 

@@ -202,7 +202,7 @@ static PetscErrorCode FormInitialSolution(TS ts, Vec U, void *ctx)
 /*TEST
 
      test:
-       args:  -ts_rtol 1e-04 -ts_dt 0.025 -pc_type lu -ksp_error_if_not_converged TRUE  -ts_type eimex -ts_adapt_type none -ts_eimex_order_adapt -ts_eimex_max_rows 7 -ts_monitor_draw_solution
+       args: -ts_rtol 1e-04 -ts_dt 0.025 -pc_type lu -ksp_error_if_not_converged TRUE -ts_type eimex -ts_adapt_type none -ts_eimex_order_adapt -ts_eimex_max_rows 7 -ts_monitor_draw_solution
        requires: x
        timeoutfactor: 3
 

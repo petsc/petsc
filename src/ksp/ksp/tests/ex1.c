@@ -114,7 +114,7 @@ int main(int argc, char **args)
 /*TEST
 
     test:
-      args:  -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+      args: -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
 
     test:
       suffix: 2

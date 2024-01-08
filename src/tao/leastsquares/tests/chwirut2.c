@@ -629,7 +629,7 @@ PetscErrorCode InitializeData(AppCtx *user)
        requires: !complex
 
      test:
-       args:  -tao_smonitor -tao_max_it 100 -tao_type pounders -tao_pounders_delta 0.05 -tao_gatol 1.e-5
+       args: -tao_smonitor -tao_max_it 100 -tao_type pounders -tao_pounders_delta 0.05 -tao_gatol 1.e-5
        requires: !single
        TODO: produces different output for many different systems
 
