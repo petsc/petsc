@@ -22,8 +22,8 @@ PETSC_EXTERN PetscErrorCode ISFinalizePackage(void);
 
    Values:
 +  `ISGENERAL` - the values are stored with an array of indices and generally have no structure
-.  `ISSTRIDE` - the values have a simple structure of an initial offset and then a step size between values
--  `ISBLOCK` - values are an array of indices, each representing a block of values
+.  `ISSTRIDE`  - the values have a simple structure of an initial offset and then a step size between values
+-  `ISBLOCK`   - values are an array of indices, each representing a block (of the same common length) of values
 
    Level: beginner
 
@@ -51,9 +51,9 @@ PETSC_EXTERN PetscErrorCode ISIdentity(IS, PetscBool *);
 PETSC_EXTERN PetscErrorCode ISContiguousLocal(IS, PetscInt, PetscInt, PetscInt *, PetscBool *);
 
 /*E
-    ISInfo - Info that may either be computed or set as known for an index set
+   ISInfo - Info that may either be computed or set as known for an index set
 
-    Level: intermediate
+   Level: intermediate
 
    Developer Note:
    Entries that are negative need not be called collectively by all processes.
@@ -149,11 +149,11 @@ PETSC_EXTERN PetscErrorCode ISStrideGetInfo(IS, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscClassId IS_LTOGM_CLASSID;
 
 /*E
-    ISGlobalToLocalMappingMode - Indicates mapping behavior if global indices are missing
+   ISGlobalToLocalMappingMode - Indicates mapping behavior if global indices are missing
 
    Values:
-+   `IS_GTOLM_MASK` - missing global indices are masked by mapping them to a local index of -1
--   `IS_GTOLM_DROP` - missing global indices are dropped
++  `IS_GTOLM_MASK` - missing global indices are masked by mapping them to a local index of -1
+-  `IS_GTOLM_DROP` - missing global indices are dropped
 
    Level: beginner
 
@@ -165,13 +165,13 @@ typedef enum {
 } ISGlobalToLocalMappingMode;
 
 /*J
-    ISLocalToGlobalMappingType - String with the name of a mapping method
+   ISLocalToGlobalMappingType - String with the name of a mapping method
 
    Values:
 +  `ISLOCALTOGLOBALMAPPINGBASIC` - a non-memory scalable way of storing `ISLocalToGlobalMapping` that allows applying `ISGlobalToLocalMappingApply()` efficiently
--  `ISLOCALTOGLOBALMAPPINGHASH` - a memory scalable way of storing `ISLocalToGlobalMapping` that allows applying `ISGlobalToLocalMappingApply()` reasonably efficiently
+-  `ISLOCALTOGLOBALMAPPINGHASH`  - a memory scalable way of storing `ISLocalToGlobalMapping` that allows applying `ISGlobalToLocalMappingApply()` reasonably efficiently
 
-  Level: beginner
+   Level: beginner
 
 .seealso: `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingSetType()`, `ISLocalToGlobalSetFromOptions()`, `ISGlobalToLocalMappingMode`
 J*/
@@ -215,17 +215,17 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMa
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingDuplicate(ISLocalToGlobalMapping, ISLocalToGlobalMapping *);
 
 /*E
-    ISColoringType - determines if the coloring is for the entire parallel grid/graph/matrix
-                     or for just the local ghosted portion
+   ISColoringType - determines if the coloring is for the entire parallel grid/graph/matrix
+                    or for just the local ghosted portion
 
-    Values:
-+   `IS_COLORING_GLOBAL` - does not include the colors for ghost points, this is used when the function
-                        is called synchronously in parallel. This requires generating a "parallel coloring".
--   `IS_COLORING_LOCAL` - includes colors for ghost points, this is used when the function can be called
-                         separately on individual processes with the ghost points already filled in. Does not
-                         require a "parallel coloring", rather each process colors its local + ghost part.
-                         Using this can result in much less parallel communication. Currently only works
-                         with `DMDA` and if you call `MatFDColoringSetFunction()` with the local function.
+   Values:
++  `IS_COLORING_GLOBAL` - does not include the colors for ghost points, this is used when the function
+                          is called synchronously in parallel. This requires generating a "parallel coloring".
+-  `IS_COLORING_LOCAL`  - includes colors for ghost points, this is used when the function can be called
+                          separately on individual processes with the ghost points already filled in. Does not
+                          require a "parallel coloring", rather each process colors its local + ghost part.
+                          Using this can result in much less parallel communication. Currently only works
+                          with `DMDA` and if you call `MatFDColoringSetFunction()` with the local function.
 
    Level: beginner
 
@@ -235,6 +235,7 @@ typedef enum {
   IS_COLORING_GLOBAL,
   IS_COLORING_LOCAL
 } ISColoringType;
+
 PETSC_EXTERN const char *const                ISColoringTypes[];
 typedef unsigned PETSC_IS_COLORING_VALUE_TYPE ISColoringValue;
 #define IS_COLORING_MAX     PETSC_IS_COLORING_MAX
@@ -282,16 +283,16 @@ struct _n_PetscLayout {
 };
 
 /*@C
-     PetscLayoutFindOwner - Find the owning MPI process for a global index
+   PetscLayoutFindOwner - Find the owning MPI process for a global index
 
-    Not Collective; No Fortran Support
+   Not Collective; No Fortran Support
 
    Input Parameters:
-+    map - the layout
--    idx - global index to find the owner of
++  map - the layout
+-  idx - global index to find the owner of
 
    Output Parameter:
-.    owner - the owning rank
+.  owner - the owning rank
 
    Level: developer
 
@@ -316,17 +317,17 @@ static inline PetscErrorCode PetscLayoutFindOwner(PetscLayout map, PetscInt idx,
 }
 
 /*@C
-     PetscLayoutFindOwnerIndex - Find the owning MPI process and the local index on that process for a global index
+    PetscLayoutFindOwnerIndex - Find the owning MPI process and the local index on that process for a global index
 
     Not Collective; No Fortran Support
 
    Input Parameters:
-+    map   - the layout
--    idx   - global index to find the owner of
++  map   - the layout
+-  idx   - global index to find the owner of
 
    Output Parameters:
-+    owner - the owning rank
--    lidx  - local index used by the owner for `idx`
++  owner - the owning rank
+-  lidx  - local index used by the owner for `idx`
 
    Level: developer
 

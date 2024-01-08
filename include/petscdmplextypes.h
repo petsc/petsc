@@ -19,7 +19,7 @@
 
   Level: beginner
 
-.seealso: `DMPlexGetCellRefiner()`, `DMPlexSetCellRefiner()`, `DMRefine()`, `DMPolytopeType`
+.seealso: [](ch_dmbase), `DMPLEX`, `DMPlexGetCellRefiner()`, `DMPlexSetCellRefiner()`, `DMRefine()`, `DMPolytopeType`
 E*/
 typedef enum {
   DM_SHAPE_BOX,
@@ -47,7 +47,7 @@ PETSC_EXTERN const char *const DMPlexShapes[];
 
   Level: beginner
 
-.seealso: `DMPlexCreatePartitionerGraph()`, `PetscPartitionerDMPlexPartition()`, `DMPlexDistribute()`
+.seealso: [](ch_dmbase), `DMPLEX`, `DMPlexCreatePartitionerGraph()`, `PetscPartitionerDMPlexPartition()`, `DMPlexDistribute()`
 E*/
 typedef enum {
   DM_PLEX_CSR_MAT,

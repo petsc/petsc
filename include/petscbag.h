@@ -5,12 +5,12 @@
 /* SUBMANSEC = Sys */
 
 /*S
-     PetscBag - PETSc object that manages a collection of user data including parameters.
-           A bag is essentially a C struct with serialization (you can save it and load it from files).
+   PetscBag - PETSc object that manages a collection of user data including parameters.
+              A bag is essentially a C struct with serialization (you can save it and load it from files).
 
    Level: beginner
 
-    Sample Usage:
+   Sample Usage:
 .vb
       typedef struct {
          PetscInt     height;

@@ -29,6 +29,12 @@ static PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJKokkos(Mat mat, PetscInt d
   Mat_MPIAIJ *mpiaij = (Mat_MPIAIJ *)mat->data;
 
   PetscFunctionBegin;
+  // If mat was set to use the "set values with a hash table" mechanism, discard it and restore the cached ops
+  if (mat->hash_active) {
+    mat->ops[0]      = mpiaij->cops;
+    mat->hash_active = PETSC_FALSE;
+  }
+
   PetscCall(PetscLayoutSetUp(mat->rmap));
   PetscCall(PetscLayoutSetUp(mat->cmap));
 #if defined(PETSC_USE_DEBUG)

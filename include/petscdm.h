@@ -338,7 +338,7 @@ PETSC_EXTERN PetscErrorCode DMCopyAuxiliaryVec(DM, DM);
 
   Level: intermediate
 
-.seealso: `DM`, `DMInterpolationCreate()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
+.seealso: [](ch_dmbase), `DM`, `DMInterpolationCreate()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
 M*/
 struct _DMInterpolationInfo {
   MPI_Comm   comm;
@@ -381,16 +381,16 @@ PETSC_EXTERN PetscErrorCode DMSetLabelOutput(DM, const char[], PetscBool);
 PETSC_EXTERN PetscErrorCode DMGetFirstLabeledPoint(DM, DM, DMLabel, PetscInt, const PetscInt *, PetscInt, PetscInt *, PetscDS *);
 
 /*E
-   DMCopyLabelsMode - Determines how `DMCopyLabels()` behaves when there is a `DMLabel` in the source and destination DMs with the same name
+   DMCopyLabelsMode - Determines how `DMCopyLabels()` behaves when there is a `DMLabel` in the source and destination `DM`s with the same name
 
    Values:
-+  `DM_COPY_LABELS_REPLACE`  - replace label in destination by label from source
-.  `DM_COPY_LABELS_KEEP`     - keep destination label
--  `DM_COPY_LABELS_FAIL`     - throw error
++  `DM_COPY_LABELS_REPLACE` - replace label in destination by label from source
+.  `DM_COPY_LABELS_KEEP`    - keep destination label
+-  `DM_COPY_LABELS_FAIL`    - generate an error
 
    Level: advanced
 
-.seealso: `DMLabel`, `DM`, `DMCompareLabels()`, `DMRemoveLabel()`
+.seealso: [](ch_dmbase), `DMLabel`, `DM`, `DMCompareLabels()`, `DMRemoveLabel()`
 E*/
 typedef enum {
   DM_COPY_LABELS_REPLACE,

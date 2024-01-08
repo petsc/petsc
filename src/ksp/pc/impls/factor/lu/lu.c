@@ -1,6 +1,6 @@
 /*
    Defines a direct factorization preconditioner for any Mat implementation
-   Note: this need not be consided a preconditioner since it supplies
+   Note: this need not be considered a preconditioner since it supplies
          a direct solver.
 */
 

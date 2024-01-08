@@ -39,8 +39,8 @@ PETSC_EXTERN const char *const PetscDualSpaceReferenceCells[];
   PetscDualSpaceTransformType - The type of function transform
 
   Values:
-+  `IDENTITY_TRANSFORM` - make no changes in the function
-.  `COVARIANT_PIOLA_TRANSFORM` - Covariant Piola: $\sigma^*(F) = J^{-T} F \circ \phi^{-1)$
++  `IDENTITY_TRANSFORM`            - make no changes in the function
+.  `COVARIANT_PIOLA_TRANSFORM`     - Covariant Piola: $\sigma^*(F) = J^{-T} F \circ \phi^{-1)$
 -  `CONTRAVARIANT_PIOLA_TRANSFORM` - Contravariant Piola: $\sigma^*(F) = 1/|J| J F \circ \phi^{-1)$
 
   Level: intermediate

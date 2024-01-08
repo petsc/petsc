@@ -3,7 +3,7 @@
 /* SUBMANSEC = Draw */
 
 /*J
-    PetscDrawType - String with the name of a `PetscDraw` implementation, for example `PETSC_DRAW_X` is for X Windows.
+   PetscDrawType - String with the name of a `PetscDraw` implementation, for example `PETSC_DRAW_X` is for X Windows.
 
    Level: beginner
 
@@ -17,7 +17,7 @@ typedef const char *PetscDrawType;
 #define PETSC_DRAW_IMAGE "image"
 
 /*S
-     PetscDraw - Abstract PETSc object for graphics, often represents a window on the screen
+   PetscDraw - Abstract PETSc object for graphics, often represents a window on the screen
 
    Level: beginner
 
@@ -35,7 +35,7 @@ S*/
 typedef struct _p_PetscDrawAxis *PetscDrawAxis;
 
 /*S
-     PetscDrawLG - An object that manages drawing simple x-y plots
+   PetscDrawLG - An object that manages drawing simple x-y plots
 
    Level: advanced
 
@@ -44,7 +44,7 @@ S*/
 typedef struct _p_PetscDrawLG *PetscDrawLG;
 
 /*S
-     PetscDrawSP - An object that manages drawing scatter plots
+   PetscDrawSP - An object that manages drawing scatter plots
 
    Level: advanced
 
@@ -53,7 +53,7 @@ S*/
 typedef struct _p_PetscDrawSP *PetscDrawSP;
 
 /*S
-     PetscDrawHG - An object that manages drawing histograms
+   PetscDrawHG - An object that manages drawing histograms
 
    Level: advanced
 
@@ -62,7 +62,7 @@ S*/
 typedef struct _p_PetscDrawHG *PetscDrawHG;
 
 /*S
-     PetscDrawBar - An object that manages drawing bar graphs
+   PetscDrawBar - An object that manages drawing bar graphs
 
    Level: advanced
 

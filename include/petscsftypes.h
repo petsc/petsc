@@ -7,8 +7,8 @@
 
    Level: intermediate
 
-       `PetscSF` uses the concept of star forests to indicate and determine the communication patterns concisely and efficiently.
-  A star  https://en.wikipedia.org/wiki/Star_(graph_theory) forest is simply a collection of trees of height 1. The leave nodes represent
+  `PetscSF` uses the concept of star forests to indicate and determine the communication patterns concisely and efficiently.
+  A star  <https://en.wikipedia.org/wiki/Star_(graph_theory)> forest is simply a collection of trees of height 1. The leave nodes represent
   "ghost locations" for the root nodes.
 
 .seealso: `PetscSFCreate()`, `VecScatter`, `VecScatterCreate()`
@@ -63,7 +63,7 @@ typedef struct {
 
 /*S
      VecScatter - Object used to manage communication of data
-       between vectors in parallel. Manages both scatters and gathers
+     between vectors in parallel. Manages both scatters and gathers
 
    Level: beginner
 
@@ -72,7 +72,7 @@ S*/
 typedef PetscSF VecScatter;
 
 /*J
-    VecScatterType - String with the name of a PETSc vector scatter type
+   VecScatterType - String with the name of a PETSc vector scatter type
 
    Level: beginner
 

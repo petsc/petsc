@@ -181,7 +181,7 @@ PetscErrorCode PetscSortRealWithArrayInt(PetscInt n, PetscReal r[], PetscInt Ii[
 }
 
 /*@
-  PetscFindReal - Finds a PetscReal` in a sorted array of `PetscReal`s
+  PetscFindReal - Finds a `PetscReal` in a sorted array of `PetscReal`s
 
   Not Collective
 
@@ -257,7 +257,7 @@ PetscErrorCode PetscSortRemoveDupsReal(PetscInt *n, PetscReal v[])
   Not Collective
 
   Input Parameters:
-+ ncut - splitig index
++ ncut - splitting index
 - n    - number of values to sort
 
   Input/Output Parameters:
@@ -322,7 +322,7 @@ PetscErrorCode PetscSortSplit(PetscInt ncut, PetscInt n, PetscScalar a[], PetscI
   Not Collective
 
   Input Parameters:
-+ ncut - splitig index
++ ncut - splitting index
 - n    - number of values to sort
 
   Input/Output Parameters:
