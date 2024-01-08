@@ -5,14 +5,15 @@
 /* SUBMANSEC = AO */
 
 /*S
-     AO - Abstract PETSc object that manages mapping between different global numberings
+   AO - Abstract PETSc object that manages mapping between different global numberings
 
    Level: intermediate
 
-   Notes:
+   Note:
    An application ordering is usually a mapping between an application-centric
    numbering (the ordering that is "natural" for the application) and
-   the parallel numbering that PETSc uses.
+   the parallel numbering ($0$ to $n_0-1$ on the first MPI process, $n_0$ to $n_1 - 1$ on the second MPI process, etc)
+   that PETSc uses.
 
 .seealso: `AOCreateBasic()`, `AOCreateBasicIS()`, `AOPetscToApplication()`, `AOView()`, `AOApplicationToPetsc()`, `AOType`, `AOSetType()`
 S*/
@@ -23,7 +24,7 @@ typedef struct _p_AO *AO;
 
    Level: beginner
 
-.seealso: `AOSetType()`, `AO`
+.seealso: `AOSetType()`, `AO`, `AOApplicationToPetsc()`, `AOCreateBasic()`, `AOCreate()`
 J*/
 typedef const char *AOType;
 #define AOBASIC          "basic"

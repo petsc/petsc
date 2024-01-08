@@ -13,8 +13,8 @@
   Level: beginner
 
   Developer Note:
-   The order of the enum entries is significant, as it corresponds to the canonical numbering
-   of DOFs, and the fact that the numbering starts at 0 may also be used by the implementation.
+  The order of the enum entries is significant, as it corresponds to the canonical numbering
+  of DOFs, and the fact that the numbering starts at 0 may also be used by the implementation.
 
 .seealso: [](ch_stag), `DMSTAG`, `DMDA`, `DMStagStencil`, `DMStagGetLocationSlot()`, `DMStagStencilType`
 E*/
@@ -75,7 +75,8 @@ typedef struct {
 
   Level: beginner
 
-.seealso: [](ch_stag), `DMSTAG`, `DMDA`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMStagStencil`, `DMDAStencilType`, `DMStagStencilLocation`
+.seealso: [](ch_stag), `DMSTAG`, `DMDA`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMStagStencil`, `DMDAStencilType`, `DMStagStencilLocation`,
+          `DMDAStencilType`
 E*/
 
 typedef enum {

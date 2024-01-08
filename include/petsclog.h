@@ -32,9 +32,9 @@ PETSC_EXTERN PetscErrorCode PetscInfo_Private(const char[], PetscObject, const c
   PetscInfoCommFlag - Describes the method by which to filter information displayed by `PetscInfo()` by communicator size
 
   Values:
-+ `PETSC_INFO_COMM_ALL` - Default uninitialized value. `PetscInfo()` will not filter based on
-                          communicator size (i.e. will print for all communicators)
-. `PETSC_INFO_COMM_NO_SELF` - `PetscInfo()` will NOT print for communicators with size = 1 (i.e. *_COMM_SELF)
++ `PETSC_INFO_COMM_ALL`       - Default uninitialized value. `PetscInfo()` will not filter based on
+                                communicator size (i.e. will print for all communicators)
+. `PETSC_INFO_COMM_NO_SELF`   - `PetscInfo()` will NOT print for communicators with size = 1 (i.e. *_COMM_SELF)
 - `PETSC_INFO_COMM_ONLY_SELF` - `PetscInfo()` will ONLY print for communicators with size = 1
 
   Level: intermediate
@@ -415,7 +415,7 @@ static inline PETSC_UNUSED PetscErrorCode PetscLogObjectDestroy(PetscObject o)
   #endif
 
 /*@C
-       PetscLogFlops - Log how many flops are performed in a calculation
+   PetscLogFlops - Log how many flops are performed in a calculation
 
    Input Parameter:
 .   flops - the number of flops
@@ -423,8 +423,8 @@ static inline PETSC_UNUSED PetscErrorCode PetscLogObjectDestroy(PetscObject o)
    Level: intermediate
 
    Note:
-     To limit the chance of integer overflow when multiplying by a constant, represent the constant as a double,
-     not an integer. Use `PetscLogFlops`(4.0*n) not `PetscLogFlops`(4*n)
+   To limit the chance of integer overflow when multiplying by a constant, represent the constant as a double,
+   not an integer. Use `PetscLogFlops`(4.0*n) not `PetscLogFlops`(4*n)
 
 .seealso: [](ch_profiling), `PetscLogView()`, `PetscLogGpuFlops()`
 @*/
@@ -723,19 +723,19 @@ PETSC_EXTERN PetscErrorCode PetscLogGpuTimeBegin(void);
 PETSC_EXTERN PetscErrorCode PetscLogGpuTimeEnd(void);
 
 /*@C
-       PetscLogGpuFlops - Log how many flops are performed in a calculation on the device
+   PetscLogGpuFlops - Log how many flops are performed in a calculation on the device
 
    Input Parameter:
-.   flops - the number of flops
+.  flops - the number of flops
 
    Level: intermediate
 
    Notes:
-     To limit the chance of integer overflow when multiplying by a constant, represent the constant as a double,
-     not an integer. Use `PetscLogFlops`(4.0*n) not `PetscLogFlops`(4*n)
+   To limit the chance of integer overflow when multiplying by a constant, represent the constant as a double,
+   not an integer. Use `PetscLogFlops`(4.0*n) not `PetscLogFlops`(4*n)
 
-     The values are also added to the total flop count for the MPI rank that is set with `PetscLogFlops()`; hence the number of flops
-     just on the CPU would be the value from set from `PetscLogFlops()` minus the value set from `PetscLogGpuFlops()`
+   The values are also added to the total flop count for the MPI rank that is set with `PetscLogFlops()`; hence the number of flops
+   just on the CPU would be the value from set from `PetscLogFlops()` minus the value set from `PetscLogGpuFlops()`
 
 .seealso: [](ch_profiling), `PetscLogView()`, `PetscLogFlops()`, `PetscLogGpuTimeBegin()`, `PetscLogGpuTimeEnd()`
 @*/

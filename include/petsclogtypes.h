@@ -50,7 +50,7 @@ typedef struct _n_PetscIntStack *PetscIntStack;
 
 /*MC
     PetscLogEvent - id used to identify PETSc or user events which timed portions (blocks of executable)
-     code.
+    code.
 
     Level: intermediate
 

@@ -142,43 +142,43 @@ PetscErrorCode           PetscOptionsEnd(void);
      displayed on the same window of a GUI that allows the user to set the options interactively. Often one should
      use `PetscObjectOptionsBegin()` rather than this call.
 
-   Synopsis:
+    Synopsis:
     #include <petscoptions.h>
     PetscErrorCode PetscOptionsBegin(MPI_Comm comm,const char prefix[],const char title[],const char mansec[])
 
     Collective
 
-  Input Parameters:
+    Input Parameters:
 +   comm - communicator that shares GUI
 .   prefix - options prefix for all options displayed on window (optional)
 .   title - short descriptive text, for example "Krylov Solver Options"
 -   mansec - section of manual pages for options, for example `KSP` (optional)
 
-  Level: intermediate
+    Level: intermediate
 
-  Notes:
+    Notes:
     This is a macro that handles its own error checking, it does not return an error code.
 
     The set of queries needs to be ended by a call to `PetscOptionsEnd()`.
 
     One can add subheadings with `PetscOptionsHeadBegin()`.
 
-  Developer Notes:
-      `PetscOptionsPublish` is set in `PetscOptionsCheckInitial_Private()` with `-saws_options`. When `PetscOptionsPublish` is set the
-      loop between `PetscOptionsBegin()` and `PetscOptionsEnd()` is run THREE times with `PetscOptionsPublishCount` of values -1,0,1.
-      Otherwise the loop is run ONCE with a `PetscOptionsPublishCount` of 1.
+    Developer Notes:
+    `PetscOptionsPublish` is set in `PetscOptionsCheckInitial_Private()` with `-saws_options`. When `PetscOptionsPublish` is set the
+    loop between `PetscOptionsBegin()` and `PetscOptionsEnd()` is run THREE times with `PetscOptionsPublishCount` of values -1,0,1.
+     Otherwise the loop is run ONCE with a `PetscOptionsPublishCount` of 1.
 +      \-1 - `PetscOptionsInt()` etc. just call `PetscOptionsGetInt()` etc.
-.      0  - The GUI objects are created in `PetscOptionsInt()` etc. and displayed in `PetscOptionsEnd()` and the options
-               database updated with user changes; `PetscOptionsGetInt()` etc. are also called.
--      1 - `PetscOptionsInt()` etc. again call `PetscOptionsGetInt()` etc. (possibly getting new values), in addition the help message and
+.      0   - The GUI objects are created in `PetscOptionsInt()` etc. and displayed in `PetscOptionsEnd()` and the options
+              database updated with user changes; `PetscOptionsGetInt()` etc. are also called.
+-      1   - `PetscOptionsInt()` etc. again call `PetscOptionsGetInt()` etc. (possibly getting new values), in addition the help message and
               default values are printed if -help was given.
-      When `PetscOptionsObject.changedmethod` is set this causes `PetscOptionsPublishCount` to be reset to -2 (so in the next loop iteration it is -1)
-      and the whole process is repeated. This is to handle when, for example, the `KSPType` is changed thus changing the list of
-      options available so they need to be redisplayed so the user can change the. Changing `PetscOptionsObjects.changedmethod` is never
-      currently set.
+     When `PetscOptionsObject.changedmethod` is set this causes `PetscOptionsPublishCount` to be reset to -2 (so in the next loop iteration it is -1)
+     and the whole process is repeated. This is to handle when, for example, the `KSPType` is changed thus changing the list of
+     options available so they need to be redisplayed so the user can change the. Changing `PetscOptionsObjects.changedmethod` is never
+     currently set.
 
-   Fortran Note:
-   Returns ierr error code per PETSc Fortran API
+     Fortran Note:
+     Returns ierr error code per PETSc Fortran API
 
 .seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
@@ -198,20 +198,20 @@ M*/
 
   /*MC
     PetscObjectOptionsBegin - Begins a set of queries on the options database that are related and should be
-     displayed on the same window of a GUI that allows the user to set the options interactively.
+    displayed on the same window of a GUI that allows the user to set the options interactively.
 
-   Synopsis:
+    Synopsis:
     #include <petscoptions.h>
     PetscErrorCode PetscObjectOptionsBegin(PetscObject obj)
 
     Collective
 
-  Input Parameter:
+    Input Parameter:
 .   obj - object to set options for
 
-  Level: intermediate
+    Level: intermediate
 
-  Notes:
+    Notes:
     This is a macro that handles its own error checking, it does not return an error code.
 
     Needs to be ended by a call the `PetscOptionsEnd()`
@@ -238,21 +238,21 @@ M*/
     PetscOptionsEnd - Ends a set of queries on the options database that are related and should be
      displayed on the same window of a GUI that allows the user to set the options interactively.
 
-   Synopsis:
+    Synopsis:
      #include <petscoptions.h>
      PetscErrorCode PetscOptionsEnd(void)
 
     Collective on the comm used in `PetscOptionsBegin()` or obj used in `PetscObjectOptionsBegin()`
 
-  Level: intermediate
+    Level: intermediate
 
-  Notes:
+    Notes:
     Needs to be preceded by a call to `PetscOptionsBegin()` or `PetscObjectOptionsBegin()`
 
     This is a macro that handles its own error checking, it does not return an error code.
 
-  Fortran Note:
-   Returns ierr error code per PETSc Fortran API
+    Fortran Note:
+    Returns ierr error code per PETSc Fortran API
 
 .seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
@@ -324,22 +324,22 @@ template <typename... T>
 PetscErrorCode PetscOptionsDeprecatedNoObject(T...);
 #else
   /*MC
-     PetscOptionsHeadBegin - Puts a heading before listing any more published options. Used, for example,
-            in `KSPSetFromOptions_GMRES()`.
+   PetscOptionsHeadBegin - Puts a heading before listing any more published options. Used, for example,
+   in `KSPSetFromOptions_GMRES()`.
 
    Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Input Parameter:
-.   head - the heading text
+.  head - the heading text
 
    Level: developer
 
    Notes:
-    Handles errors directly, hence does not return an error code
+   Handles errors directly, hence does not return an error code
 
-    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`, and `PetscOptionsObject` created in `PetscOptionsBegin()` should be the first argument
+   Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`, and `PetscOptionsObject` created in `PetscOptionsBegin()` should be the first argument
 
-    Must be followed by a call to `PetscOptionsHeadEnd()` in the same function.
+   Must be followed by a call to `PetscOptionsHeadEnd()` in the same function.
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -357,26 +357,26 @@ PetscErrorCode PetscOptionsDeprecatedNoObject(T...);
 
   /*MC
      PetscOptionsHeadEnd - Ends a section of options begun with `PetscOptionsHeadBegin()`
-            See, for example, `KSPSetFromOptions_GMRES()`.
+     See, for example, `KSPSetFromOptions_GMRES()`.
 
-   Synopsis:
+     Synopsis:
      #include <petscoptions.h>
      PetscErrorCode PetscOptionsHeadEnd(void)
 
-    Collective on the comm used in `PetscOptionsBegin()` or obj used in `PetscObjectOptionsBegin()`
+     Collective on the comm used in `PetscOptionsBegin()` or obj used in `PetscObjectOptionsBegin()`
 
-  Level: intermediate
+     Level: intermediate
 
-   Notes:
-    Must be between a `PetscOptionsBegin()` or `PetscObjectOptionsBegin()` and a `PetscOptionsEnd()`
+     Notes:
+     Must be between a `PetscOptionsBegin()` or `PetscObjectOptionsBegin()` and a `PetscOptionsEnd()`
 
-    Must be preceded by a call to `PetscOptionsHeadBegin()` in the same function.
+     Must be preceded by a call to `PetscOptionsHeadBegin()` in the same function.
 
-    This needs to be used only if the code below `PetscOptionsHeadEnd()` can be run ONLY once.
-    See, for example, `PCSetFromOptions_Composite()`. This is a `return(0)` in it for early exit
-    from the function.
+     This needs to be used only if the code below `PetscOptionsHeadEnd()` can be run ONLY once.
+     See, for example, `PCSetFromOptions_Composite()`. This is a `return(0)` in it for early exit
+     from the function.
 
-          This is only for use with the PETSc options GUI
+     This is only for use with the PETSc options GUI
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -495,9 +495,9 @@ M*/
    Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Input Parameters:
-+  opt - option name
-.  text - short string that describes the option
-.  man - manual page with additional information on option
++  opt          - option name
+.  text         - short string that describes the option
+.  man          - manual page with additional information on option
 .  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
 .vb
   PetscOptionsInt(..., obj->value,&obj->value,...)
@@ -512,17 +512,17 @@ or
 
    Output Parameters:
 +  value - the integer value to return
--  flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
+-  flg   - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
    Level: beginner
 
    Notes:
-    If the user does not supply the option at all `value` is NOT changed. Thus
-    you should ALWAYS initialize `value` if you access it without first checking if `flg` is `PETSC_TRUE`.
+   If the user does not supply the option at all `value` is NOT changed. Thus
+   you should ALWAYS initialize `value` if you access it without first checking if `flg` is `PETSC_TRUE`.
 
-    The `currentvalue` passed into this routine does not get transferred to the output `value` variable automatically.
+   The `currentvalue` passed into this routine does not get transferred to the output `value` variable automatically.
 
-    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+   Must be used between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
 .seealso: `PetscOptionsInt()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`, `PetscOptionsRangeInt()`
@@ -544,9 +544,9 @@ M*/
    Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
    Input Parameters:
-+  opt - option name
-.  text - short string that describes the option
-.  man - manual page with additional information on option
++  opt          - option name
+.  text         - short string that describes the option
+.  man          - manual page with additional information on option
 .  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
 .vb
                  PetscOptionsInt(..., obj->value,&obj->value,...) or
@@ -559,17 +559,17 @@ M*/
 
    Output Parameters:
 +  value - the integer value to return
--  flg - `PETSC_TRUE` if found, else `PETSC_FALSE`
+-  flg   - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
    Level: beginner
 
    Notes:
-    If the user does not supply the option at all `value` is NOT changed. Thus
-    you should ALWAYS initialize `value` if you access it without first checking if `flg` is `PETSC_TRUE`.
+   If the user does not supply the option at all `value` is NOT changed. Thus
+   you should ALWAYS initialize `value` if you access it without first checking if `flg` is `PETSC_TRUE`.
 
-    The `currentvalue` passed into this routine does not get transferred to the output `value` variable automatically.
+   The `currentvalue` passed into this routine does not get transferred to the output `value` variable automatically.
 
-    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+   Must be used between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
 .seealso: `PetscOptionsInt()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`, `PetscOptionsBoundedInt()`
@@ -614,7 +614,7 @@ M*/
 
   The `currentvalue` passed into this routine does not get transferred to the output `value` variable automatically.
 
-  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+  Must be used between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
 .seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`,
@@ -659,7 +659,7 @@ M*/
 
   The `currentvalue` passed into this routine does not get transferred to the output `value` variable automatically.
 
-  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+  Must be used between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
 .seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`,
@@ -692,7 +692,7 @@ M*/
   Level: beginner
 
   Note:
-  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+  Must be used between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
 .seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`,
@@ -727,7 +727,7 @@ M*/
   Level: beginner
 
   Notes:
-  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+  Must be used between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
   If the user provided no string (for example `-optionname` `-someotheroption`) `flg` is set to `PETSC_TRUE` (and the string is filled with nulls).
 
@@ -810,7 +810,7 @@ M*/
   Level: intermediate
 
   Notes:
-  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+  Must be used between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
   Must be followed by 0 or more `PetscOptionsBoolGroup()`s and `PetscOptionsBoolGroupEnd()`
 
@@ -844,7 +844,7 @@ M*/
   Level: intermediate
 
   Notes:
-  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+  Must be used between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
   Must follow a `PetscOptionsBoolGroupBegin()` and preceded a `PetscOptionsBoolGroupEnd()`
 
@@ -878,7 +878,7 @@ M*/
   Level: intermediate
 
   Notes:
-  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+  Must be used between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
   Must follow a `PetscOptionsBoolGroupBegin()`
 
@@ -919,7 +919,7 @@ M*/
   Level: intermediate
 
   Notes:
-  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+  Must be used between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
   If the user does not supply the option at all `value` is NOT changed. Thus
   you should ALWAYS initialize `value` if you access it without first checking if the `set` flag is `PETSC_TRUE`.
@@ -931,7 +931,7 @@ M*/
   To get a listing of all currently specified options,
   see `PetscOptionsView()` or `PetscOptionsGetAll()`
 
-  Developer Notes:
+  Developer Note:
   This cannot check for invalid selection because of things like `MATAIJ` that are not included in the list
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
@@ -970,7 +970,7 @@ M*/
   Level: intermediate
 
   Notes:
-  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+  Must be used between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
   If the user does not supply the option at all `value` is NOT changed. Thus
   you should ALWAYS initialize `value` if you access it without first checking if the `set` flag is `PETSC_TRUE`.
@@ -1011,7 +1011,7 @@ M*/
   Level: beginner
 
   Note:
-  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+  Must be used between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -1047,7 +1047,7 @@ M*/
   Level: beginner
 
   Note:
-  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+  Must be used between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -1090,7 +1090,7 @@ M*/
 
   There must be no intervening spaces between the values.
 
-  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+  Must be used between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -1132,7 +1132,7 @@ M*/
   The user is responsible for deallocating the strings that are
   returned.
 
-  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+  Must be used between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -1170,7 +1170,7 @@ M*/
   Notes:
   The user should pass in an array of `PetscBool`
 
-  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+  Must be used between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -1210,7 +1210,7 @@ M*/
 
   There must be no intervening spaces between the values.
 
-  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+  Must be used between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`,
@@ -1229,10 +1229,10 @@ M*/
   Logically Collective
 
   Input Parameters:
-+ oldname            - the old, deprecated option
-. newname            - the new option, or `NULL` if option is purely removed
-. version            - a string describing the version of first deprecation, e.g. "3.9"
-- info               - additional information string, or `NULL`.
++ oldname - the old, deprecated option
+. newname - the new option, or `NULL` if option is purely removed
+. version - a string describing the version of first deprecation, e.g. "3.9"
+- info    - additional information string, or `NULL`.
 
   Options Database Key:
 . -options_suppress_deprecated_warnings - do not print deprecation warnings
@@ -1247,7 +1247,7 @@ M*/
   See `PTScotch_PartGraph_Seq()` for an example of when (1) fails and `SNESTestJacobian()` where an example of (2) fails.
 
   Must be called between `PetscOptionsBegin()` (or `PetscObjectOptionsBegin()`) and `PetscOptionsEnd()`.
-  Only the process of rank zero that owns the `PetscOptionsItems` are argument (managed by `PetscOptionsBegin()` or `PetscObjectOptionsBegin()` prints the information
+  Only the process of MPI rank zero that owns the `PetscOptionsItems` are argument (managed by `PetscOptionsBegin()` or `PetscObjectOptionsBegin()` prints the information
   If newname is provided, the old option is replaced. Otherwise, it remains in the options database.
   If an option is not replaced, the info argument should be used to advise the user on how to proceed.
   There is a limit on the length of the warning printed, so very long strings provided as info may be truncated.
@@ -1264,10 +1264,10 @@ M*/
   Logically Collective
 
   Input Parameters:
-+ oldname            - the old, deprecated option
-. newname            - the new option, or `NULL` if option is purely removed
-. version            - a string describing the version of first deprecation, e.g. "3.9"
-- info               - additional information string, or `NULL`.
++ oldname - the old, deprecated option
+. newname - the new option, or `NULL` if option is purely removed
+. version - a string describing the version of first deprecation, e.g. "3.9"
+- info    - additional information string, or `NULL`.
 
   Options Database Key:
 . -options_suppress_deprecated_warnings - do not print deprecation warnings
@@ -1281,7 +1281,7 @@ M*/
   new call to `PetscOptionsXXX`(`newname`) and (2) the argument handling of the new call to `PetscOptionsXXX`(`newname`) is identical to the previous call.
   See `PTScotch_PartGraph_Seq()` for an example of when (1) fails and `SNESTestJacobian()` where an example of (2) fails.
 
-  Only the process of rank zero that owns the `PetscOptionsItems` are argument (managed by `PetscOptionsBegin()` or `PetscObjectOptionsBegin()` prints the information
+  Only the process of MPI rank zero that owns the `PetscOptionsItems` are argument (managed by `PetscOptionsBegin()` or `PetscObjectOptionsBegin()` prints the information
   If newname is provided, the old option is replaced. Otherwise, it remains in the options database.
   If an option is not replaced, the info argument should be used to advise the user on how to proceed.
   There is a limit on the length of the warning printed, so very long strings provided as info may be truncated.

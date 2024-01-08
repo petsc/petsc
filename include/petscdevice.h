@@ -222,7 +222,7 @@ M*/
 #define PetscDeviceCalloc(dctx, mtype, n, ptr) PetscDeviceAllocate_Private((dctx), PETSC_TRUE, (mtype), (size_t)(n) * sizeof(**(ptr)), PETSC_DEVICE_ALIGNOF(**(ptr)), (void **)(ptr))
 
 /*MC
-  PetscDeviceFree - Free device-aware memory
+  PetscDeviceFree - Free device-aware memory obtained with  `PetscDeviceMalloc()` or `PetscDeviceCalloc()`
 
   Synopsis:
   #include <petscdevice.h>
@@ -232,14 +232,14 @@ M*/
 
   Input Parameters:
 + dctx - The `PetscDeviceContext` used to free the memory
-- ptr  - The pointer to free
+- ptr  - The pointer to free, may be `NULL`
 
   Level: beginner
 
   Notes:
-  `ptr` may be `NULL`, and is set to `PETSC_NULLPTR` on successful deallocation.
+  `ptr` is set to `PETSC_NULLPTR` on successful deallocation.
 
-  `ptr` must have been allocated using `PetscDeviceMalloc()`, `PetscDeviceCalloc()`.
+  `ptr` must have been allocated using `PetscDeviceMalloc()`, `PetscDeviceCalloc()` not `PetscMalloc()` or related routines
 
   This routine falls back to using `PetscFree()` if PETSc was not configured with device
   support. The user should note that `PetscFree()` frees only host memory.
@@ -274,7 +274,7 @@ M*/
 - n    - The amount (in elements) to copy
 
   Notes:
-  Both `dest` and `src` must have been allocated using any of `PetscDeviceMalloc()`,
+  Both `dest` and `src` must have been allocated using `PetscDeviceMalloc()` or
   `PetscDeviceCalloc()`.
 
   This uses the `sizeof()` of the `src` memory type requested to determine the total memory to

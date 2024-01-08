@@ -10,7 +10,7 @@
 
 /*MC
      DMDA_STENCIL_STAR - "Star"-type stencil. In logical grid coordinates, only (i,j,k), (i+s,j,k), (i,j+s,k),
-                       (i,j,k+s) are in the stencil  NOT, for example, (i+s,j+s,k)
+                         (i,j,k+s) are in the stencil  NOT, for example, (i+s,j+s,k)
 
      Level: beginner
 
@@ -18,19 +18,19 @@
      Determines what ghost point values are brought over to each process in `DMGlobalToLocalBegin()`/ `DMGlobalToLocalEnd()`; in this case the "corner" values are not
      brought over and hence should not be accessed locally
 
-.seealso: `DMDA_STENCIL_BOX`, `DMDAStencilType`, `DMDASetStencilType()`
+.seealso: [](ch_dmbase), `DMDA`, `DMDA_STENCIL_BOX`, `DMDAStencilType`, `DMDASetStencilType()`
 M*/
 
 /*MC
      DMDA_STENCIL_BOX - "Box"-type stencil. In logical grid coordinates, any of (i,j,k), (i+s,j+r,k+t) may
-                      be in the stencil.
+                        be in the stencil.
 
      Level: beginner
 
      Note:
      Determines what ghost point values are brought over to each process in `DMGlobalToLocalBegin()`/ `DMGlobalToLocalEnd()`
 
-.seealso: `DMDA_STENCIL_STAR`, `DMDAStencilType`, `DMDASetStencilType()`
+.seealso: [](ch_dmbase), `DMDA`, `DMDA_STENCIL_STAR`, `DMDAStencilType`, `DMDASetStencilType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode DMDASetInterpolationType(DM, DMDAInterpolationType);
@@ -165,7 +165,7 @@ PETSC_EXTERN PetscErrorCode DMDACreatePatchIS(DM, MatStencil *, MatStencil *, IS
 
     Level: intermediate
 
-.seealso: `DMDACoor3d`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMGetCoordinateDM()`, `DMGetCoordinates()`
+.seealso: [](ch_dmbase), `DMDA`, `DMDACoor3d`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMGetCoordinateDM()`, `DMGetCoordinates()`
 M*/
 typedef struct {
   PetscScalar x, y;
@@ -197,7 +197,7 @@ typedef struct {
 
     Level: intermediate
 
-.seealso: `DMDACoor2d`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMGetCoordinateDM()`, `DMGetCoordinates()`
+.seealso: [](ch_dmbase), `DMDA`, `DMDACoor2d`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMGetCoordinateDM()`, `DMGetCoordinates()`
 M*/
 typedef struct {
   PetscScalar x, y, z;

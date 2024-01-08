@@ -16,7 +16,7 @@ PETSC_EXTERN PetscClassId DMFIELD_CLASSID;
 
     Level: intermediate
 
-.seealso: `DMField`, `DMFieldSetType()`, `DMFieldGetType()`, `DMFieldRegister()`
+.seealso: [](ch_dmbase), `DMField`, `DMFieldSetType()`, `DMFieldGetType()`, `DMFieldRegister()`
 J*/
 typedef const char *DMFieldType;
 #define DMFIELDDA    "da"

@@ -8,7 +8,7 @@
 PETSC_EXTERN PetscClassId MATLABENGINE_CLASSID;
 
 /*S
-     PetscMatlabEngine - Object used to communicate with MATLAB
+   PetscMatlabEngine - Object used to communicate with MATLAB
 
    Level: intermediate
 
