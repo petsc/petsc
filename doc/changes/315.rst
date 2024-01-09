@@ -107,7 +107,7 @@ Changes: 3.15
 
 .. rubric:: Mat:
 
--  Add ``MatSetPreallocationCOO`` and ``MatSetValuesCOO`` to preallocate and
+-  Add ``MatSetPreallocationCOO()`` and ``MatSetValuesCOO()`` to preallocate and
    set values in a matrix using COO format. Currently efficiently
    implemented only for ``MATCUSPARSE``
 -  Add the option ``MAT_FORCE_DIAGONAL_ENTRIES`` for ``MatSetOption()``. It
