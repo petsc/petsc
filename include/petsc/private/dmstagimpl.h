@@ -34,6 +34,7 @@ typedef struct {
   PetscMPIInt *neighbors;                  /* dim^3 local ranks                 */
   VecScatter   gtol;                       /* Global --> Local                  */
   VecScatter   ltog_injective;             /* Local  --> Global, injective      */
+  VecScatter   ltol;                       /* Local  --> Local                  */
   PetscInt    *locationOffsets;            /* Offsets for points in loc. rep.   */
 
   /* Additional convenience fields populated by DMSetUp() (easily computed from the above) */
@@ -62,6 +63,9 @@ PETSC_INTERN PetscErrorCode DMStagPopulateInterpolation3d_0_0_a_b_Private(DM, DM
 PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_1d(DM);
 PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_2d(DM);
 PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_3d(DM);
+PETSC_INTERN PetscErrorCode DMStagPopulateLocalToLocal1d_Internal(DM);
+PETSC_INTERN PetscErrorCode DMStagPopulateLocalToLocal2d_Internal(DM);
+PETSC_INTERN PetscErrorCode DMStagPopulateLocalToLocal3d_Internal(DM);
 PETSC_INTERN PetscErrorCode DMStagPopulateRestriction1d_a_b_Private(DM, DM, Mat);
 PETSC_INTERN PetscErrorCode DMStagPopulateRestriction2d_0_a_b_Private(DM, DM, Mat);
 PETSC_INTERN PetscErrorCode DMStagPopulateRestriction3d_0_0_a_b_Private(DM, DM, Mat);
