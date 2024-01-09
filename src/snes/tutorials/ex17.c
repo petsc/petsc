@@ -884,13 +884,13 @@ int main(int argc, char **argv)
       args: -sol_type elas_axial_disp -displacement_petscspace_degree 3 -dm_plex_separate_marker -dmsnes_check .0001 -pc_type lu
     test:
       suffix: 2d_q1_axial_elas
-      args: -sol_type elas_axial_disp -dm_plex_simplex 0 -displacement_petscspace_degree 1 -dm_plex_separate_marker -dm_refine 1 -dmsnes_check   .0001 -pc_type lu
+      args: -sol_type elas_axial_disp -dm_plex_simplex 0 -displacement_petscspace_degree 1 -dm_plex_separate_marker -dm_refine 1 -dmsnes_check .0001 -pc_type lu
     test:
       suffix: 2d_q2_axial_elas
-      args: -sol_type elas_axial_disp -dm_plex_simplex 0 -displacement_petscspace_degree 2 -dm_plex_separate_marker -dmsnes_check .0001 -pc_type   lu
+      args: -sol_type elas_axial_disp -dm_plex_simplex 0 -displacement_petscspace_degree 2 -dm_plex_separate_marker -dmsnes_check .0001 -pc_type lu
     test:
       suffix: 2d_q3_axial_elas
-      args: -sol_type elas_axial_disp -dm_plex_simplex 0 -displacement_petscspace_degree 3 -dm_plex_separate_marker -dmsnes_check .0001 -pc_type   lu
+      args: -sol_type elas_axial_disp -dm_plex_simplex 0 -displacement_petscspace_degree 3 -dm_plex_separate_marker -dmsnes_check .0001 -pc_type lu
 
     test:
       suffix: 2d_p1_uniform_elas

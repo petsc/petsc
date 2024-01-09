@@ -630,6 +630,6 @@ PetscErrorCode HessianProduct(void *ptr, Vec svec, Vec y)
       requires: !complex
 
    test:
-      args: -tao_monitor -tao_type bntr  -tao_view -tao_bnk_ksp_monitor_short
+      args: -tao_monitor -tao_type bntr -tao_view -tao_bnk_ksp_monitor_short
 
 TEST*/

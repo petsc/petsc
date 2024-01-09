@@ -643,7 +643,7 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec global_in, Mat AA, Mat BB, vo
       nsize: 4
       args: -ts_max_steps 10 -ts_monitor -snes_monitor -ksp_monitor
       # GEMV sensitve to single
-      args:  -vec_mdot_use_gemv 0 -vec_maxpy_use_gemv 0
+      args: -vec_mdot_use_gemv 0 -vec_maxpy_use_gemv 0
 
     test:
       suffix: tut_3

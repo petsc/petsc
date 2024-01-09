@@ -271,6 +271,6 @@ int main(int argc, char **argv)
     suffix: 4
     nsize: {{1 2 3 4 8}}
     requires: chaco parmetis ptscotch ctetgen
-    args: -dm_plex_dim 3 -dm_plex_box_faces {{2,3,4  5,4,3  7,11,5}} -partitioning {{chaco parmetis ptscotch}} -repartitioning {{parmetis ptscotch}} -tpweight {{0 1}}
+    args: -dm_plex_dim 3 -dm_plex_box_faces {{2,3,4 5,4,3 7,11,5}} -partitioning {{chaco parmetis ptscotch}} -repartitioning {{parmetis ptscotch}} -tpweight {{0 1}}
 
 TEST*/

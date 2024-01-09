@@ -125,7 +125,7 @@ int main(int argc, char **argv)
 
 /*TEST
   testset:
-    args: -n 2 -m 2 -test_name {{VecMDot  VecMAXPY}}
+    args: -n 2 -m 2 -test_name {{VecMDot VecMAXPY}}
     output_file: output/empty.out
     filter: grep "DOES_NOT_EXIST"
 

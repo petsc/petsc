@@ -217,12 +217,12 @@ int main(int argc, char **args)
    test:
       suffix: reuse
       nsize: 2
-      args: -ksp_monitor -ksp_rtol 1e-6   -pc_type hmg -pc_hmg_reuse_interpolation 1 -test_reuse_interpolation 1 -hmg_inner_pc_type gamg
+      args: -ksp_monitor -ksp_rtol 1e-6 -pc_type hmg -pc_hmg_reuse_interpolation 1 -test_reuse_interpolation 1 -hmg_inner_pc_type gamg
 
    test:
       suffix: component
       nsize: 2
-      args: -ksp_monitor -ksp_rtol 1e-6 -pc_type hmg -pc_hmg_coarsening_component 2  -pc_hmg_use_subspace_coarsening 1 -bs 4 -hmg_inner_pc_type gamg
+      args: -ksp_monitor -ksp_rtol 1e-6 -pc_type hmg -pc_hmg_coarsening_component 2 -pc_hmg_use_subspace_coarsening 1 -bs 4 -hmg_inner_pc_type gamg
 
    testset:
       output_file: output/ex4_expl.out

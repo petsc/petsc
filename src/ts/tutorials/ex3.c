@@ -558,7 +558,7 @@ PetscErrorCode IJacobianHeat(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal s, M
 
     test:
       suffix: 3
-      args:  -nox -ts_type rosw -ts_max_steps 3 -ksp_converged_reason
+      args: -nox -ts_type rosw -ts_max_steps 3 -ksp_converged_reason
       filter: sed "s/ATOL/RTOL/g"
       requires: !single
 

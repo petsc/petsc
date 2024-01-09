@@ -570,7 +570,7 @@ whatever you want (including pop up windows etc) and use it like below.
        strcat(buf, " ");
      }
 
-     ierr = PetscInitialize(&ac, &av, NULL, help);if (ierr) return ierr;
+     PetscCall(PetscInitialize(&ac, &av, NULL, help));
 
      return WinMain(inst, NULL, buf, SW_SHOWNORMAL);
    }
@@ -1824,16 +1824,14 @@ the program after ``PetscFinalize()``. Use the following code-snippet:
 
    main()
    {
-     PetscErrorCode ierr;
-
-     ierr = PetscInitialize();if (ierr) {return ierr;}
+     PetscCall(PetscInitialize());
      {
        your variables
        your code
 
        ...   /* all your destructors are called here automatically by C++ so they work correctly */
      }
-     ierr = PetscFinalize();if (ierr) {return ierr;}
+     PetscCall(PetscFinalize());
      return 0
    }
 

@@ -427,7 +427,7 @@ int main(int argc, char **args)
      test:
         suffix: 3b
         nsize: {{1 2}separate output}
-        args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system_with_x0  # this file includes all A, b and x0
+        args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system_with_x0 # this file includes all A, b and x0
      test:
         # Load square matrix, RHS and initial guess from HDF5 (Version 7.3 MAT-File)
         suffix: 3b_hdf5

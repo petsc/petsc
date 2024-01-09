@@ -116,7 +116,7 @@ int main(int argc, char **args)
 /*TEST
 
    build:
-      requires:  fftw complex
+      requires: fftw complex
 
    test:
       args: -mat_fftw_plannerflags FFTW_ESTIMATE

@@ -557,17 +557,17 @@ int main(int argc, char **argv)
       requires: !complex !single
 
     test:
-      args:  -ts_type cn -viewer_binary_skip_info -tao_monitor -tao_view -mu 1000 -ts_dt 0.03125
+      args: -ts_type cn -viewer_binary_skip_info -tao_monitor -tao_view -mu 1000 -ts_dt 0.03125
       output_file: output/ex20opt_ic_1.out
 
     test:
       suffix: 2
-      args:  -ts_type beuler -viewer_binary_skip_info -tao_monitor -tao_view -mu 100 -ts_dt 0.01 -tao_type bntr -tao_bnk_pc_type none
+      args: -ts_type beuler -viewer_binary_skip_info -tao_monitor -tao_view -mu 100 -ts_dt 0.01 -tao_type bntr -tao_bnk_pc_type none
       output_file: output/ex20opt_ic_2.out
 
     test:
       suffix: 3
-      args:  -ts_type cn -viewer_binary_skip_info -tao_monitor -tao_view -mu 100 -ts_dt 0.01 -tao_type bntr -tao_bnk_pc_type none
+      args: -ts_type cn -viewer_binary_skip_info -tao_monitor -tao_view -mu 100 -ts_dt 0.01 -tao_type bntr -tao_bnk_pc_type none
       output_file: output/ex20opt_ic_3.out
 
     test:

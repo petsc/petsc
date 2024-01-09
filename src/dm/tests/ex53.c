@@ -152,22 +152,22 @@ int main(int argc, char **argv)
 
     test:
       suffix: 2
-      nsize:  2
+      nsize: 2
       args: -sliceaxis 1
 
     test:
       suffix: 3
-      nsize:  4
-      args:  -sliceaxis 2
+      nsize: 4
+      args: -sliceaxis 2
 
     test:
       suffix: 4
-      nsize:  2
+      nsize: 2
       args: -sliceaxis 1 -dim 2
 
     test:
       suffix: 5
-      nsize:  3
+      nsize: 3
       args: -sliceaxis 0 -dim 2
 
 TEST*/

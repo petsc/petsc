@@ -1631,17 +1631,17 @@ int main(int argc, char **argv)
     test:
       suffix: 6_tri
       requires: triangle
-      args: -faces {{2,2  1,3  7,4}} -cell_simplex 1 -dm_generator triangle
+      args: -faces {{2,2 1,3 7,4}} -cell_simplex 1 -dm_generator triangle
     test:
       suffix: 6_quad
-      args: -faces {{2,2  1,3  7,4}} -cell_simplex 0
+      args: -faces {{2,2 1,3 7,4}} -cell_simplex 0
     test:
       suffix: 6_tet
       requires: ctetgen
-      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 1 -dm_generator ctetgen
+      args: -faces {{2,2,2 1,3,5 3,4,7}} -cell_simplex 1 -dm_generator ctetgen
     test:
       suffix: 6_hex
-      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 0
+      args: -faces {{2,2,2 1,3,5 3,4,7}} -cell_simplex 0
   testset:
     nsize: {{1 2 4}}
     args: -use_generator
@@ -1650,17 +1650,17 @@ int main(int argc, char **argv)
     test:
       suffix: 6_int_tri
       requires: triangle
-      args: -faces {{2,2  1,3  7,4}} -cell_simplex 1 -dm_generator triangle
+      args: -faces {{2,2 1,3 7,4}} -cell_simplex 1 -dm_generator triangle
     test:
       suffix: 6_int_quad
-      args: -faces {{2,2  1,3  7,4}} -cell_simplex 0
+      args: -faces {{2,2 1,3 7,4}} -cell_simplex 0
     test:
       suffix: 6_int_tet
       requires: ctetgen
-      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 1 -dm_generator ctetgen
+      args: -faces {{2,2,2 1,3,5 3,4,7}} -cell_simplex 1 -dm_generator ctetgen
     test:
       suffix: 6_int_hex
-      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 0
+      args: -faces {{2,2,2 1,3,5 3,4,7}} -cell_simplex 0
   testset:
     nsize: {{2 4}}
     args: -use_generator
@@ -1669,17 +1669,17 @@ int main(int argc, char **argv)
     test:
       suffix: 6_parint_tri
       requires: triangle
-      args: -faces {{2,2  1,3  7,4}} -cell_simplex 1 -dm_generator triangle
+      args: -faces {{2,2 1,3 7,4}} -cell_simplex 1 -dm_generator triangle
     test:
       suffix: 6_parint_quad
-      args: -faces {{2,2  1,3  7,4}} -cell_simplex 0
+      args: -faces {{2,2 1,3 7,4}} -cell_simplex 0
     test:
       suffix: 6_parint_tet
       requires: ctetgen
-      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 1 -dm_generator ctetgen
+      args: -faces {{2,2,2 1,3,5 3,4,7}} -cell_simplex 1 -dm_generator ctetgen
     test:
       suffix: 6_parint_hex
-      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 0
+      args: -faces {{2,2,2 1,3,5 3,4,7}} -cell_simplex 0
 
   testset: # 7 EXODUS
     requires: exodusii

@@ -250,7 +250,7 @@ PetscErrorCode Monitor(SNES snes, PetscInt its, PetscReal fnorm, void *dummy)
 
    test:
       suffix: 2
-      args: -variant -ksp_gmres_cgs_refinement_type refine_always  -snes_monitor_short
+      args: -variant -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short
       output_file: output/ex7_1.out
 
    # uses AIJ matrix to define diagonal matrix for Jacobian preconditioning
@@ -262,6 +262,6 @@ PetscErrorCode Monitor(SNES snes, PetscInt its, PetscReal fnorm, void *dummy)
    # uses MATMFFD matrix to define diagonal matrix for Jacobian preconditioning
    test:
       suffix: 4
-      args: -variant -pc_type jacobi -puremf  -snes_view -ksp_monitor
+      args: -variant -pc_type jacobi -puremf -snes_view -ksp_monitor
 
 TEST*/

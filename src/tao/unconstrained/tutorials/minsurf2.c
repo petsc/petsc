@@ -892,7 +892,7 @@ PetscErrorCode My_Monitor(Tao tao, void *ctx)
 
    test:
       suffix: 4_snes_ngmres
-      args: -tao_type snes -snes_type ngmres -npc_snes_type ncg -da_grid_x 10 -da_grid_y 10 -snes_atol 1.e-4 -npc_snes_ncg_type fr  -snes_converged_reason -snes_monitor ::ascii_info_detail -snes_ngmres_monitor -snes_ngmres_select_type {{linesearch difference}separate output}
+      args: -tao_type snes -snes_type ngmres -npc_snes_type ncg -da_grid_x 10 -da_grid_y 10 -snes_atol 1.e-4 -npc_snes_ncg_type fr -snes_converged_reason -snes_monitor ::ascii_info_detail -snes_ngmres_monitor -snes_ngmres_select_type {{linesearch difference}separate output}
       requires: !single
 
    test:

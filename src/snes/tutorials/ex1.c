@@ -319,30 +319,30 @@ PetscErrorCode FormJacobian2(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
    test:
       suffix: 2
       requires: !single
-      args:  -prefix_push mysolver_ -snes_monitor_short -prefix_pop -mysolver_snes_ksp_ew {{0 1}}
+      args: -prefix_push mysolver_ -snes_monitor_short -prefix_pop -mysolver_snes_ksp_ew {{0 1}}
       output_file: output/ex1_1.out
 
    test:
       suffix: 3
-      args: -prefix_push mysolver_ -ksp_view_solution ascii:ex1_2_sol.tmp:ascii_matlab  -snes_monitor_short -prefix_pop
+      args: -prefix_push mysolver_ -ksp_view_solution ascii:ex1_2_sol.tmp:ascii_matlab -snes_monitor_short -prefix_pop
       requires: !single
       output_file: output/ex1_1.out
 
    test:
       suffix: 4
-      args: -prefix_push mysolver_ -ksp_view_solution ascii:ex1_2_sol.tmp::append  -snes_monitor_short -prefix_pop
+      args: -prefix_push mysolver_ -ksp_view_solution ascii:ex1_2_sol.tmp::append -snes_monitor_short -prefix_pop
       requires: !single
       output_file: output/ex1_1.out
 
    test:
       suffix: 5
-      args: -prefix_push mysolver_ -ksp_view_solution ascii:ex1_2_sol.tmp:ascii_matlab:append  -snes_monitor_short -prefix_pop
+      args: -prefix_push mysolver_ -ksp_view_solution ascii:ex1_2_sol.tmp:ascii_matlab:append -snes_monitor_short -prefix_pop
       requires: !single
       output_file: output/ex1_1.out
 
    test:
       suffix: 6
-      args: -prefix_push mysolver_ -ksp_view_solution ascii:ex1_2_sol.tmp:default:append  -snes_monitor_short -prefix_pop
+      args: -prefix_push mysolver_ -ksp_view_solution ascii:ex1_2_sol.tmp:default:append -snes_monitor_short -prefix_pop
       requires: !single
       output_file: output/ex1_1.out
 

@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
 /*TEST
 
   testset:
-    requires: defined(PETSC_USE_INFO), defined(PETSC_USE_DEBUG), cxx
+    requires: defined(PETSC_USE_INFO) defined(PETSC_USE_DEBUG) cxx
     args: -info :device
     suffix: with_info
     test:

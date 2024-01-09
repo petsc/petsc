@@ -74,7 +74,7 @@ int main(int argc, char **argv)
         output_file: output/ex1_sphere.out
         suffix: p4est_topology_sphere_convert
         nsize: 3
-        args: -dm_type p8est -dm_forest_topology sphere -dm_view vtk:sphere.vtu  -dm_forest_initial_refinement 1 -dm_forest_maximum_refinement 1 -test_convert -dm_conv_view vtk:sphereconv.vtu
+        args: -dm_type p8est -dm_forest_topology sphere -dm_view vtk:sphere.vtu -dm_forest_initial_refinement 1 -dm_forest_maximum_refinement 1 -test_convert -dm_conv_view vtk:sphereconv.vtu
         requires: p4est !complex
 
       test:

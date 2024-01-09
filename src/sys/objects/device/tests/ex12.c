@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 /*TEST
 
   testset:
-    requires: defined(PETSC_HAVE_DEVICE), defined(PETSC_USE_INFO)
+    requires: defined(PETSC_HAVE_DEVICE) defined(PETSC_USE_INFO)
     filter: grep -e PetscDevice -e "PETSC ERROR" -e "PETSc successfully started"
     args: -info -device_enable {{none lazy eager}separate output}
     args: -petsc_ci_portable_error_output -error_output_stdout
