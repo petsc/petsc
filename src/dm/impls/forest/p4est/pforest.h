@@ -512,6 +512,9 @@ static PetscErrorCode DMPforestComputeLocalCellTransferSF_loop(p4est_t *p4estFro
   PetscInt       toFineLeaves = 0, fromFineLeaves = 0;
 
   PetscFunctionBegin;
+  /* -Wmaybe-uninitialized */
+  *toFineLeavesCount   = 0;
+  *fromFineLeavesCount = 0;
   for (t = flt; t <= llt; t++) { /* count roots and leaves */
     p4est_tree_t     *treeFrom  = &(((p4est_tree_t *)p4estFrom->trees->array)[t]);
     p4est_tree_t     *treeTo    = &(((p4est_tree_t *)p4estTo->trees->array)[t]);
