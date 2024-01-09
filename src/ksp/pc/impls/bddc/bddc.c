@@ -1787,8 +1787,8 @@ static PetscErrorCode PCApply_BDDC(PC pc, Vec r, Vec z)
       - pcis->vec1_D for the Dirichlet part (if needed, i.e. pcbddc->switch_static == PETSC_TRUE)
       - pcis->vec1_B the interface part of the global vector z
     */
+    PetscCall(PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][0], pc, 0, 0, 0));
     if (n_D) {
-      PetscCall(PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][0], pc, 0, 0, 0));
       PetscCall(KSPSolve(pcbddc->ksp_D, pcis->vec1_D, pcis->vec2_D));
       PetscCall(PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][0], pc, 0, 0, 0));
       PetscCall(KSPCheckSolve(pcbddc->ksp_D, pc, pcis->vec2_D));
@@ -1812,6 +1812,7 @@ static PetscErrorCode PCApply_BDDC(PC pc, Vec r, Vec z)
         PetscCall(MatMult(pcis->A_BI, pcis->vec2_D, pcis->vec1_B));
       }
     } else {
+      PetscCall(PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][0], pc, 0, 0, 0));
       PetscCall(VecSet(pcis->vec1_B, zero));
     }
     PetscCall(VecScatterBegin(pcis->global_to_B, pcis->vec1_B, z, ADD_VALUES, SCATTER_REVERSE));

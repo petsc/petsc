@@ -5640,6 +5640,7 @@ PetscErrorCode PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspos
   PetscCall(PCBDDCScatterCoarseDataEnd(pc, ADD_VALUES, SCATTER_FORWARD));
 
   /* Coarse solution -> rhs and sol updated inside PCBDDCScattarCoarseDataBegin/End */
+  PetscCall(PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][2], pc, 0, 0, 0));
   if (pcbddc->coarse_ksp) {
     Mat          coarse_mat;
     Vec          rhs, sol;
@@ -5663,9 +5664,7 @@ PetscErrorCode PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspos
     PetscCall(KSPGetOperators(pcbddc->coarse_ksp, &coarse_mat, NULL));
     if (applytranspose) {
       PetscCheck(!pcbddc->benign_apply_coarse_only, PetscObjectComm((PetscObject)pcbddc->coarse_ksp), PETSC_ERR_SUP, "Not yet implemented");
-      PetscCall(PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][2], pc, 0, 0, 0));
       PetscCall(KSPSolveTranspose(pcbddc->coarse_ksp, rhs, sol));
-      PetscCall(PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][2], pc, 0, 0, 0));
       PetscCall(KSPCheckSolve(pcbddc->coarse_ksp, pc, sol));
       PetscCall(MatGetTransposeNullSpace(coarse_mat, &nullsp));
       if (nullsp) PetscCall(MatNullSpaceRemove(nullsp, sol));
@@ -5680,9 +5679,7 @@ PetscErrorCode PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspos
         PetscCall(PCBDDCBenignRemoveInterior(coarse_pc, rhs, sol));
         PetscCall(PCPostSolve(coarse_pc, pcbddc->coarse_ksp));
       } else {
-        PetscCall(PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][2], pc, 0, 0, 0));
         PetscCall(KSPSolve(pcbddc->coarse_ksp, rhs, sol));
-        PetscCall(PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][2], pc, 0, 0, 0));
         PetscCall(KSPCheckSolve(pcbddc->coarse_ksp, pc, sol));
         if (nullsp) PetscCall(MatNullSpaceRemove(nullsp, sol));
       }
@@ -5698,9 +5695,10 @@ PetscErrorCode PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspos
       coarsepcbddc->benign_apply_coarse_only = PETSC_FALSE;
     }
   }
+  PetscCall(PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][2], pc, 0, 0, 0));
 
   /* Local solution on R nodes */
-  if (pcis->n && !pcbddc->benign_apply_coarse_only) PetscCall(PCBDDCSolveSubstructureCorrection(pc, pcis->vec1_B, pcis->vec1_D, applytranspose));
+  if (!pcbddc->benign_apply_coarse_only) PetscCall(PCBDDCSolveSubstructureCorrection(pc, pcis->vec1_B, pcis->vec1_D, applytranspose));
   /* communications from coarse sol to local primal nodes */
   PetscCall(PCBDDCScatterCoarseDataBegin(pc, INSERT_VALUES, SCATTER_REVERSE));
   PetscCall(PCBDDCScatterCoarseDataEnd(pc, INSERT_VALUES, SCATTER_REVERSE));
