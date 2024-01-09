@@ -110,6 +110,8 @@ Changes: Development
 
 .. rubric:: DMStag:
 
+- Add support for ``DMLocalToLocalBegin()`` and ``DMLocalToLocalEnd()``
+
 .. rubric:: DT:
 
 .. rubric:: Fortran:
