@@ -53,7 +53,7 @@ Changes: Development
 .. rubric:: Mat:
 
 - Reset ``MATLMVM`` history vecs if size is changed
-- Add specific support for ``MatMultHermitianTranspose()`` in ``MATSHELL``
+- Add specific support for ``MatMultHermitianTranspose()`` and ``MatMultHermitianTransposeAdd()`` in ``MATSHELL``, ``MATDENSE``, ``MATNEST`` and ``MATSCALAPACK``
 
 .. rubric:: MatCoarsen:
 
