@@ -1,24 +1,3 @@
-/* TODOLIST
-
-   Solvers
-   - Add support for cholesky for coarse solver (similar to local solvers)
-   - Propagate ksp prefixes for solvers to mat objects?
-
-   User interface
-   - ** DM attached to pc?
-
-   Debugging output
-   - * Better management of verbosity levels of debugging output
-
-   Extra
-   - *** Is it possible to work with PCBDDCGraph on boundary indices only (less memory consumed)?
-   - BDDC with MG framework?
-
-   MATIS related operations contained in BDDC code
-   - Provide general case for subassembling
-
-*/
-
 #include <petsc/private/pcbddcimpl.h> /*I "petscpc.h" I*/ /* header file for Fortran wrappers */
 #include <petsc/private/pcbddcprivateimpl.h>
 #include <petscblaslapack.h>
@@ -1210,17 +1189,6 @@ PetscErrorCode PCBDDCSetDofsSplitting(PC pc, PetscInt n_is, IS ISForDofs[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   PCPreSolve_BDDC - Changes the right hand side and (if necessary) the initial
-                     guess if a transformation of basis approach has been selected.
-
-   Input Parameter:
-+  pc - the preconditioner context
-
-   Note:
-     The interface routine PCPreSolve() is not usually called directly by
-   the user, but instead is called by KSPSolve().
-*/
 static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
 {
   PC_BDDC  *pcbddc = (PC_BDDC *)pc->data;
@@ -1394,19 +1362,6 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   PCPostSolve_BDDC - Changes the computed solution if a transformation of basis
-                     approach has been selected. Also, restores rhs to its original state.
-
-   Input Parameter:
-+  pc - the preconditioner context
-
-   Application Interface Routine: PCPostSolve()
-
-   Note:
-     The interface routine PCPostSolve() is not usually called directly by
-     the user, but instead is called by KSPSolve().
-*/
 static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
 {
   PC_BDDC *pcbddc = (PC_BDDC *)pc->data;
@@ -1437,17 +1392,6 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// PetscClangLinter pragma disable: -fdoc-sowing-chars
-/*
-  PCSetUp_BDDC - Prepares for the use of the BDDC preconditioner
-  by setting data structures and options.
-
-  Input Parameter:
-. pc - the preconditioner context
-
-   Application Interface Routine: PCSetUp()
-
-*/
 static PetscErrorCode PCSetUp_BDDC(PC pc)
 {
   PC_BDDC        *pcbddc = (PC_BDDC *)pc->data;
@@ -1731,19 +1675,6 @@ static PetscErrorCode PCSetUp_BDDC(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// PetscClangLinter pragma disable: -fdoc-sowing-chars
-/*
-   PCApply_BDDC - Applies the BDDC operator to a vector.
-
-   Input Parameters:
-+  pc - the preconditioner context
--  r - input vector (global)
-
-   Output Parameter:
-.  z - output vector (global)
-
-   Application Interface Routine: PCApply()
- */
 static PetscErrorCode PCApply_BDDC(PC pc, Vec r, Vec z)
 {
   PC_IS            *pcis   = (PC_IS *)(pc->data);
@@ -1903,18 +1834,6 @@ static PetscErrorCode PCApply_BDDC(PC pc, Vec r, Vec z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   PCApplyTranspose_BDDC - Applies the transpose of the BDDC operator to a vector.
-
-   Input Parameters:
-+  pc - the preconditioner context
--  r - input vector (global)
-
-   Output Parameter:
-.  z - output vector (global)
-
-   Application Interface Routine: PCApplyTranspose()
- */
 static PetscErrorCode PCApplyTranspose_BDDC(PC pc, Vec r, Vec z)
 {
   PC_IS            *pcis   = (PC_IS *)(pc->data);
