@@ -37,7 +37,7 @@ of many application codes simpler than “rolling them” yourself.
 -  PETSc can be used to provide a “MPI parallel linear
    solver” in an otherwise sequential or OpenMP parallel code.
    This approach can provide modest improvements in the application time
-   by utilizing modest numbers of MPI processes. See `PCMPI` for details on how to
+   by utilizing modest numbers of MPI processes. See ``PCMPI`` for details on how to
    utilize the PETSc MPI linear solver server.
 
 Since PETSc is under continued development, small changes in usage and
