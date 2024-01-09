@@ -2058,7 +2058,7 @@ Schur complements. The inverse of the Schur complement factorization is
    I   & A_{00}^{-1} A_{01} \\
    0 & I \\
    \end{array} \right)
-   \right]^{-1}
+   \right]^{-1} = 
 
 .. math::
 
@@ -2073,7 +2073,7 @@ Schur complements. The inverse of the Schur complement factorization is
    \left( \begin{array}{cc}
    I   & 0 \\
    A_{10}A_{00}^{-1} & I \\
-   \end{array} \right)^{-1}
+   \end{array} \right)^{-1} =
 
 .. math::
 
@@ -2088,7 +2088,7 @@ Schur complements. The inverse of the Schur complement factorization is
    \left( \begin{array}{cc}
    I   & 0 \\
    -A_{10}A_{00}^{-1} & I \\
-   \end{array} \right)
+   \end{array} \right) =
 
 .. math::
 
