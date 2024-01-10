@@ -156,7 +156,7 @@ static PetscErrorCode MatSetValues_ScaLAPACK(Mat A, PetscInt nr, const PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMultXXXYYY_ScaLAPACK(Mat A, PetscBool transpose, PetscScalar beta, const PetscScalar *x, PetscScalar *y)
+static PetscErrorCode MatMultXXXYYY_ScaLAPACK(Mat A, PetscBool transpose, PetscBool hermitian, PetscScalar beta, const PetscScalar *x, PetscScalar *y)
 {
   Mat_ScaLAPACK  *a = (Mat_ScaLAPACK *)A->data;
   PetscScalar    *x2d, *y2d, alpha = 1.0;
@@ -196,7 +196,8 @@ static PetscErrorCode MatMultXXXYYY_ScaLAPACK(Mat A, PetscBool transpose, PetscS
     if (beta != 0.0) PetscCallBLAS("SCALAPACKgemr2d", SCALAPACKgemr2d_(&one, &a->N, y, &one, &one, ydesc, y2d, &one, &one, y2desc, &a->grid->ictxrow));
 
     /* call PBLAS subroutine */
-    PetscCallBLAS("PBLASgemv", PBLASgemv_("T", &a->M, &a->N, &alpha, a->loc, &one, &one, a->desc, x2d, &one, &one, x2desc, &one, &beta, y2d, &one, &one, y2desc, &one));
+    if (hermitian) PetscCallBLAS("PBLASgemv", PBLASgemv_("C", &a->M, &a->N, &alpha, a->loc, &one, &one, a->desc, x2d, &one, &one, x2desc, &one, &beta, y2d, &one, &one, y2desc, &one));
+    else PetscCallBLAS("PBLASgemv", PBLASgemv_("T", &a->M, &a->N, &alpha, a->loc, &one, &one, a->desc, x2d, &one, &one, x2desc, &one, &beta, y2d, &one, &one, y2desc, &one));
 
     /* redistribute y from a row of a 2d matrix */
     PetscCallBLAS("SCALAPACKgemr2d", SCALAPACKgemr2d_(&one, &a->N, y2d, &one, &one, y2desc, y, &one, &one, ydesc, &a->grid->ictxrow));
@@ -251,7 +252,7 @@ static PetscErrorCode MatMult_ScaLAPACK(Mat A, Vec x, Vec y)
   PetscFunctionBegin;
   PetscCall(VecGetArrayRead(x, &xarray));
   PetscCall(VecGetArray(y, &yarray));
-  PetscCall(MatMultXXXYYY_ScaLAPACK(A, PETSC_FALSE, 0.0, xarray, yarray));
+  PetscCall(MatMultXXXYYY_ScaLAPACK(A, PETSC_FALSE, PETSC_FALSE, 0.0, xarray, yarray));
   PetscCall(VecRestoreArrayRead(x, &xarray));
   PetscCall(VecRestoreArray(y, &yarray));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -265,9 +266,23 @@ static PetscErrorCode MatMultTranspose_ScaLAPACK(Mat A, Vec x, Vec y)
   PetscFunctionBegin;
   PetscCall(VecGetArrayRead(x, &xarray));
   PetscCall(VecGetArray(y, &yarray));
-  PetscCall(MatMultXXXYYY_ScaLAPACK(A, PETSC_TRUE, 0.0, xarray, yarray));
+  PetscCall(MatMultXXXYYY_ScaLAPACK(A, PETSC_TRUE, PETSC_FALSE, 0.0, xarray, yarray));
   PetscCall(VecRestoreArrayRead(x, &xarray));
   PetscCall(VecRestoreArray(y, &yarray));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatMultHermitianTranspose_ScaLAPACK(Mat A, Vec x, Vec y)
+{
+  const PetscScalar *xarray;
+  PetscScalar       *yarray;
+
+  PetscFunctionBegin;
+  PetscCall(VecGetArrayRead(x, &xarray));
+  PetscCall(VecGetArrayWrite(y, &yarray));
+  PetscCall(MatMultXXXYYY_ScaLAPACK(A, PETSC_TRUE, PETSC_TRUE, 0.0, xarray, yarray));
+  PetscCall(VecRestoreArrayRead(x, &xarray));
+  PetscCall(VecRestoreArrayWrite(y, &yarray));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -280,7 +295,7 @@ static PetscErrorCode MatMultAdd_ScaLAPACK(Mat A, Vec x, Vec y, Vec z)
   if (y != z) PetscCall(VecCopy(y, z));
   PetscCall(VecGetArrayRead(x, &xarray));
   PetscCall(VecGetArray(z, &zarray));
-  PetscCall(MatMultXXXYYY_ScaLAPACK(A, PETSC_FALSE, 1.0, xarray, zarray));
+  PetscCall(MatMultXXXYYY_ScaLAPACK(A, PETSC_FALSE, PETSC_FALSE, 1.0, xarray, zarray));
   PetscCall(VecRestoreArrayRead(x, &xarray));
   PetscCall(VecRestoreArray(z, &zarray));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -295,7 +310,22 @@ static PetscErrorCode MatMultTransposeAdd_ScaLAPACK(Mat A, Vec x, Vec y, Vec z)
   if (y != z) PetscCall(VecCopy(y, z));
   PetscCall(VecGetArrayRead(x, &xarray));
   PetscCall(VecGetArray(z, &zarray));
-  PetscCall(MatMultXXXYYY_ScaLAPACK(A, PETSC_TRUE, 1.0, xarray, zarray));
+  PetscCall(MatMultXXXYYY_ScaLAPACK(A, PETSC_TRUE, PETSC_FALSE, 1.0, xarray, zarray));
+  PetscCall(VecRestoreArrayRead(x, &xarray));
+  PetscCall(VecRestoreArray(z, &zarray));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatMultHermitianTransposeAdd_ScaLAPACK(Mat A, Vec x, Vec y, Vec z)
+{
+  const PetscScalar *xarray;
+  PetscScalar       *zarray;
+
+  PetscFunctionBegin;
+  if (y != z) PetscCall(VecCopy(y, z));
+  PetscCall(VecGetArrayRead(x, &xarray));
+  PetscCall(VecGetArray(z, &zarray));
+  PetscCall(MatMultXXXYYY_ScaLAPACK(A, PETSC_TRUE, PETSC_TRUE, 1.0, xarray, zarray));
   PetscCall(VecRestoreArrayRead(x, &xarray));
   PetscCall(VecRestoreArray(z, &zarray));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1440,8 +1470,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_ScaLAPACK,
                                        0,
                                        /*119*/ 0,
                                        MatHermitianTranspose_ScaLAPACK,
-                                       0,
-                                       0,
+                                       MatMultHermitianTranspose_ScaLAPACK,
+                                       MatMultHermitianTransposeAdd_ScaLAPACK,
                                        0,
                                        /*124*/ 0,
                                        0,

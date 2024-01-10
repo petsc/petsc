@@ -64,7 +64,7 @@ private:
   static PetscErrorCode MatSolve_Factored_Dispatch_(Mat, Vec, Vec) noexcept;
   template <typename Solver, bool transpose>
   static PetscErrorCode MatMatSolve_Factored_Dispatch_(Mat, Mat, Mat) noexcept;
-  template <bool transpose>
+  template <bool transpose, bool hermitian>
   static PetscErrorCode MatMultAdd_Dispatch_(Mat, Vec, Vec, Vec) noexcept;
 
   template <bool to_host>
@@ -796,7 +796,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::MatMatSolve_Factored_Dispatch_(Mat A
 }
 
 template <device::cupm::DeviceType T>
-template <bool transpose>
+template <bool transpose, bool hermitian>
 inline PetscErrorCode MatDense_Seq_CUPM<T>::MatMultAdd_Dispatch_(Mat A, Vec xx, Vec yy, Vec zz) noexcept
 {
   const auto         m = static_cast<cupmBlasInt_t>(A->rmap->n);
@@ -814,7 +814,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::MatMultAdd_Dispatch_(Mat A, Vec xx, 
   PetscCall(PetscInfo(A, "Matrix-vector product %" PetscBLASInt_FMT " x %" PetscBLASInt_FMT " on backend\n", m, n));
   PetscCall(GetHandles_(&dctx, &handle));
   {
-    constexpr auto op   = transpose ? CUPMBLAS_OP_T : CUPMBLAS_OP_N;
+    constexpr auto op   = transpose ? (hermitian ? CUPMBLAS_OP_C : CUPMBLAS_OP_T) : CUPMBLAS_OP_N;
     const auto     one  = cupmScalarCast(1.0);
     const auto     zero = cupmScalarCast(0.0);
     const auto     da   = DeviceArrayRead(dctx, A);
@@ -1042,10 +1042,12 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::BindToCPU(Mat A, PetscBool to_host) 
   // Function pointer ops
   // ============================================================
   MatSetOp_CUPM(to_host, A, duplicate, MatDuplicate_SeqDense, Duplicate);
-  MatSetOp_CUPM(to_host, A, mult, MatMult_SeqDense, [](Mat A, Vec xx, Vec yy) { return MatMultAdd_Dispatch_</* transpose */ false>(A, xx, nullptr, yy); });
-  MatSetOp_CUPM(to_host, A, multtranspose, MatMultTranspose_SeqDense, [](Mat A, Vec xx, Vec yy) { return MatMultAdd_Dispatch_</* transpose */ true>(A, xx, nullptr, yy); });
-  MatSetOp_CUPM(to_host, A, multadd, MatMultAdd_SeqDense, MatMultAdd_Dispatch_</* transpose */ false>);
-  MatSetOp_CUPM(to_host, A, multtransposeadd, MatMultTransposeAdd_SeqDense, MatMultAdd_Dispatch_</* transpose */ true>);
+  MatSetOp_CUPM(to_host, A, mult, MatMult_SeqDense, [](Mat A, Vec xx, Vec yy) { return MatMultAdd_Dispatch_</* transpose */ false, /* hermitian */ false>(A, xx, nullptr, yy); });
+  MatSetOp_CUPM(to_host, A, multtranspose, MatMultTranspose_SeqDense, [](Mat A, Vec xx, Vec yy) { return MatMultAdd_Dispatch_</* transpose */ true, /* hermitian */ false>(A, xx, nullptr, yy); });
+  MatSetOp_CUPM(to_host, A, multhermitiantranspose, MatMultTranspose_SeqDense, [](Mat A, Vec xx, Vec yy) { return MatMultAdd_Dispatch_</* transpose */ true, /* hermitian */ true>(A, xx, nullptr, yy); });
+  MatSetOp_CUPM(to_host, A, multadd, MatMultAdd_SeqDense, MatMultAdd_Dispatch_</* transpose */ false, /* hermitian */ false>);
+  MatSetOp_CUPM(to_host, A, multtransposeadd, MatMultTransposeAdd_SeqDense, MatMultAdd_Dispatch_</* transpose */ true, /* hermitian */ false>);
+  MatSetOp_CUPM(to_host, A, multhermitiantransposeadd, MatMultHermitianTransposeAdd_SeqDense, MatMultAdd_Dispatch_</* transpose */ true, /* hermitian */ true>);
   MatSetOp_CUPM(to_host, A, matmultnumeric, MatMatMultNumeric_SeqDense_SeqDense, MatMatMult_Numeric_Dispatch</* transpose_A */ false, /* transpose_B */ false>);
   MatSetOp_CUPM(to_host, A, mattransposemultnumeric, MatMatTransposeMultNumeric_SeqDense_SeqDense, MatMatMult_Numeric_Dispatch</* transpose_A */ false, /* transpose_B */ true>);
   MatSetOp_CUPM(to_host, A, transposematmultnumeric, MatTransposeMatMultNumeric_SeqDense_SeqDense, MatMatMult_Numeric_Dispatch</* transpose_A */ true, /* transpose_B */ false>);

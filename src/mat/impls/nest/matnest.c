@@ -264,7 +264,7 @@ static PetscErrorCode MatProductSetFromOptions_Nest_Dense(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMultTranspose_Nest(Mat A, Vec x, Vec y)
+static PetscErrorCode MatMultTransposeKernel_Nest(Mat A, Vec x, Vec y, PetscBool herm)
 {
   Mat_Nest *bA = (Mat_Nest *)A->data;
   Vec      *bx = bA->left, *by = bA->right;
@@ -277,8 +277,8 @@ static PetscErrorCode MatMultTranspose_Nest(Mat A, Vec x, Vec y)
     PetscCall(VecZeroEntries(by[j]));
     for (i = 0; i < nr; i++) {
       if (!bA->m[i][j]) continue;
-      /* y[j] <- y[j] + (A[i][j])^T * x[i] */
-      PetscCall(MatMultTransposeAdd(bA->m[i][j], bx[i], by[j], by[j]));
+      if (herm) PetscCall(MatMultHermitianTransposeAdd(bA->m[i][j], bx[i], by[j], by[j])); /* y[j] <- y[j] + (A[i][j])^H * x[i] */
+      else PetscCall(MatMultTransposeAdd(bA->m[i][j], bx[i], by[j], by[j]));               /* y[j] <- y[j] + (A[i][j])^T * x[i] */
     }
   }
   for (i = 0; i < nr; i++) PetscCall(VecRestoreSubVector(x, bA->isglobal.row[i], &bx[i]));
@@ -286,7 +286,21 @@ static PetscErrorCode MatMultTranspose_Nest(Mat A, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMultTransposeAdd_Nest(Mat A, Vec x, Vec y, Vec z)
+static PetscErrorCode MatMultTranspose_Nest(Mat A, Vec x, Vec y)
+{
+  PetscFunctionBegin;
+  PetscCall(MatMultTransposeKernel_Nest(A, x, y, PETSC_FALSE));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatMultHermitianTranspose_Nest(Mat A, Vec x, Vec y)
+{
+  PetscFunctionBegin;
+  PetscCall(MatMultTransposeKernel_Nest(A, x, y, PETSC_TRUE));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatMultTransposeAddKernel_Nest(Mat A, Vec x, Vec y, Vec z, PetscBool herm)
 {
   Mat_Nest *bA = (Mat_Nest *)A->data;
   Vec      *bx = bA->left, *bz = bA->right;
@@ -304,12 +318,26 @@ static PetscErrorCode MatMultTransposeAdd_Nest(Mat A, Vec x, Vec y, Vec z)
     }
     for (i = 0; i < nr; i++) {
       if (!bA->m[i][j]) continue;
-      /* z[j] <- y[j] + (A[i][j])^T * x[i] */
-      PetscCall(MatMultTransposeAdd(bA->m[i][j], bx[i], bz[j], bz[j]));
+      if (herm) PetscCall(MatMultHermitianTransposeAdd(bA->m[i][j], bx[i], bz[j], bz[j])); /* z[j] <- y[j] + (A[i][j])^H * x[i] */
+      else PetscCall(MatMultTransposeAdd(bA->m[i][j], bx[i], bz[j], bz[j]));               /* z[j] <- y[j] + (A[i][j])^T * x[i] */
     }
   }
   for (i = 0; i < nr; i++) PetscCall(VecRestoreSubVector(x, bA->isglobal.row[i], &bx[i]));
   for (i = 0; i < nc; i++) PetscCall(VecRestoreSubVector(z, bA->isglobal.col[i], &bz[i]));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatMultTransposeAdd_Nest(Mat A, Vec x, Vec y, Vec z)
+{
+  PetscFunctionBegin;
+  PetscCall(MatMultTransposeAddKernel_Nest(A, x, y, z, PETSC_FALSE));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatMultHermitianTransposeAdd_Nest(Mat A, Vec x, Vec y, Vec z)
+{
+  PetscFunctionBegin;
+  PetscCall(MatMultTransposeAddKernel_Nest(A, x, y, z, PETSC_TRUE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2230,31 +2258,33 @@ PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat A)
 
   PetscCall(PetscMemzero(A->ops, sizeof(*A->ops)));
 
-  A->ops->mult                  = MatMult_Nest;
-  A->ops->multadd               = MatMultAdd_Nest;
-  A->ops->multtranspose         = MatMultTranspose_Nest;
-  A->ops->multtransposeadd      = MatMultTransposeAdd_Nest;
-  A->ops->transpose             = MatTranspose_Nest;
-  A->ops->assemblybegin         = MatAssemblyBegin_Nest;
-  A->ops->assemblyend           = MatAssemblyEnd_Nest;
-  A->ops->zeroentries           = MatZeroEntries_Nest;
-  A->ops->copy                  = MatCopy_Nest;
-  A->ops->axpy                  = MatAXPY_Nest;
-  A->ops->duplicate             = MatDuplicate_Nest;
-  A->ops->createsubmatrix       = MatCreateSubMatrix_Nest;
-  A->ops->destroy               = MatDestroy_Nest;
-  A->ops->view                  = MatView_Nest;
-  A->ops->getvecs               = NULL; /* Use VECNEST by calling MatNestSetVecType(A,VECNEST) */
-  A->ops->getlocalsubmatrix     = MatGetLocalSubMatrix_Nest;
-  A->ops->restorelocalsubmatrix = MatRestoreLocalSubMatrix_Nest;
-  A->ops->getdiagonal           = MatGetDiagonal_Nest;
-  A->ops->diagonalscale         = MatDiagonalScale_Nest;
-  A->ops->scale                 = MatScale_Nest;
-  A->ops->shift                 = MatShift_Nest;
-  A->ops->diagonalset           = MatDiagonalSet_Nest;
-  A->ops->setrandom             = MatSetRandom_Nest;
-  A->ops->hasoperation          = MatHasOperation_Nest;
-  A->ops->missingdiagonal       = MatMissingDiagonal_Nest;
+  A->ops->mult                      = MatMult_Nest;
+  A->ops->multadd                   = MatMultAdd_Nest;
+  A->ops->multtranspose             = MatMultTranspose_Nest;
+  A->ops->multtransposeadd          = MatMultTransposeAdd_Nest;
+  A->ops->transpose                 = MatTranspose_Nest;
+  A->ops->multhermitiantranspose    = MatMultHermitianTranspose_Nest;
+  A->ops->multhermitiantransposeadd = MatMultHermitianTransposeAdd_Nest;
+  A->ops->assemblybegin             = MatAssemblyBegin_Nest;
+  A->ops->assemblyend               = MatAssemblyEnd_Nest;
+  A->ops->zeroentries               = MatZeroEntries_Nest;
+  A->ops->copy                      = MatCopy_Nest;
+  A->ops->axpy                      = MatAXPY_Nest;
+  A->ops->duplicate                 = MatDuplicate_Nest;
+  A->ops->createsubmatrix           = MatCreateSubMatrix_Nest;
+  A->ops->destroy                   = MatDestroy_Nest;
+  A->ops->view                      = MatView_Nest;
+  A->ops->getvecs                   = NULL; /* Use VECNEST by calling MatNestSetVecType(A,VECNEST) */
+  A->ops->getlocalsubmatrix         = MatGetLocalSubMatrix_Nest;
+  A->ops->restorelocalsubmatrix     = MatRestoreLocalSubMatrix_Nest;
+  A->ops->getdiagonal               = MatGetDiagonal_Nest;
+  A->ops->diagonalscale             = MatDiagonalScale_Nest;
+  A->ops->scale                     = MatScale_Nest;
+  A->ops->shift                     = MatShift_Nest;
+  A->ops->diagonalset               = MatDiagonalSet_Nest;
+  A->ops->setrandom                 = MatSetRandom_Nest;
+  A->ops->hasoperation              = MatHasOperation_Nest;
+  A->ops->missingdiagonal           = MatMissingDiagonal_Nest;
 
   A->spptr     = NULL;
   A->assembled = PETSC_FALSE;

@@ -63,6 +63,8 @@ PETSC_INTERN PetscErrorCode MatDestroy_SeqDense(Mat);
 PETSC_INTERN PetscErrorCode MatDenseGetArray_SeqDense(Mat, PetscScalar *[]);
 PETSC_INTERN PetscErrorCode MatDenseRestoreArray_SeqDense(Mat, PetscScalar *[]);
 PETSC_INTERN PetscErrorCode MatAXPY_SeqDense(Mat, PetscScalar, Mat, MatStructure);
+PETSC_INTERN PetscErrorCode MatMultHermitianTransposeAdd_SeqDense(Mat, Vec, Vec, Vec);
+PETSC_INTERN PetscErrorCode MatMultHermitianTranspose_SeqDense(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatMultTransposeAdd_SeqDense(Mat, Vec, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatMultTranspose_SeqDense(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqDense(Mat, Vec, Vec, Vec);
