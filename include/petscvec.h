@@ -732,6 +732,7 @@ PETSC_EXTERN PetscErrorCode VecRealPart(Vec);
 PETSC_EXTERN PetscErrorCode VecScatterCreateToAll(Vec, VecScatter *, Vec *);
 PETSC_EXTERN PetscErrorCode VecScatterCreateToZero(Vec, VecScatter *, Vec *);
 
+/* These vector calls were included from TAO. They miss vtable entries and GPU implementation */
 PETSC_EXTERN PetscErrorCode ISComplementVec(IS, Vec, IS *);
 PETSC_EXTERN PetscErrorCode VecPow(Vec, PetscScalar);
 PETSC_EXTERN PetscErrorCode VecMedian(Vec, Vec, Vec, Vec);
@@ -744,6 +745,7 @@ PETSC_EXTERN PetscErrorCode VecWhichEqual(Vec, Vec, IS *);
 PETSC_EXTERN PetscErrorCode VecISAXPY(Vec, IS, PetscScalar, Vec);
 PETSC_EXTERN PetscErrorCode VecISCopy(Vec, IS, ScatterMode, Vec);
 PETSC_EXTERN PetscErrorCode VecISSet(Vec, IS, PetscScalar);
+PETSC_EXTERN PetscErrorCode VecISShift(Vec, IS, PetscScalar);
 PETSC_EXTERN PetscErrorCode VecBoundGradientProjection(Vec, Vec, Vec, Vec, Vec);
 PETSC_EXTERN PetscErrorCode VecStepBoundInfo(Vec, Vec, Vec, Vec, PetscReal *, PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode VecStepMax(Vec, Vec, PetscReal *);
