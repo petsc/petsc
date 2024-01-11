@@ -467,7 +467,7 @@ Usage of PETSc Functions and Macros
    -  all functions, such as ``KSPCreate()``, included in the public
       headers (``include/petsc*.h``) should be marked ``PETSC_EXTERN``;
 
-   - ``PetscDeviceInitializeDefaultDevice_Internal()`` is marked
+   - ``VecLoad_Default()`` is marked
      ``PETSC_SINGLE_LIBRARY_INTERN`` as it may be used across library boundaries, but is
      not intended to be visible to users;
 
