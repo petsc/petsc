@@ -105,7 +105,7 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
 
     PetscCall(PetscDSGetDiscretization(ds, ds_field, (PetscObject *)&fe));
     PetscCall(PetscFEGetHeightSubspace(fe, height, &fe));
-    PetscCheck(fe, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Height %" PetscInt_FMT " is invalid for DG coordinates", height);
+    PetscCheck(fe, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Height %" PetscInt_FMT " is invalid for DG discretizations", height);
     PetscCall(PetscFEGetDualSpace(fe, &dual_space));
     PetscCall(PetscDualSpaceGetDimension(dual_space, &num_dual_basis_vectors));
     PetscCall(PetscDualSpaceGetNumComponents(dual_space, num_comp));
@@ -116,7 +116,7 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
   PetscCall(PetscMalloc1(restr_size, &restr_indices));
   PetscInt cell_offset = 0;
 
-  PetscInt P = (PetscInt)PetscPowReal(*cell_size, 1.0 / (dim - height));
+  PetscInt P = dim - height ? (PetscInt)PetscPowReal(*cell_size, 1.0 / (dim - height)) : 0;
   for (PetscInt p = 0; p < *num_cells; p++) {
     PetscBool flip = PETSC_FALSE;
     PetscInt  c    = iter_indices[p];
