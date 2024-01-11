@@ -1,0 +1,18 @@
+Element #0
+0: 10 16 11 20 0 21 13 18 14 1 2 3 4
+Element #1
+0: 11 17 12 21 5 22 14 19 15 6 7 8 9
+========= Face restriction; marker: 4 ========
+num_elem: 1, elem_size: 3, num_dof:  23
+0: 13 20 10
+========= Face restriction; marker: 2 ========
+num_elem: 1, elem_size: 3, num_dof:  23
+0: 12 22 15
+========= Face restriction; marker: 1 ========
+num_elem: 2, elem_size: 3, num_dof:  23
+0: 10 16 11
+0: 11 17 12
+========= Face restriction; marker: 3 ========
+num_elem: 2, elem_size: 3, num_dof:  23
+0: 14 18 13
+0: 15 19 14
