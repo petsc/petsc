@@ -1392,7 +1392,7 @@ PetscErrorCode MatDestroy(Mat *A)
 
   /* if memory was published with SAWs then destroy it */
   PetscCall(PetscObjectSAWsViewOff((PetscObject)*A));
-  PetscTryTypeMethod((*A), destroy);
+  PetscTryTypeMethod(*A, destroy);
 
   PetscCall(PetscFree((*A)->factorprefix));
   PetscCall(PetscFree((*A)->defaultvectype));
@@ -7474,12 +7474,15 @@ typedef struct {
   Mat              C;
 } EnvelopeData;
 
-static PetscErrorCode EnvelopeDataDestroy(EnvelopeData *edata)
+static PetscErrorCode EnvelopeDataDestroy(void *ptr)
 {
+  EnvelopeData *edata = (EnvelopeData *)ptr;
+
+  PetscFunctionBegin;
   for (PetscInt i = 0; i < edata->n; i++) PetscCall(ISDestroy(&edata->is[i]));
   PetscCall(PetscFree(edata->is));
   PetscCall(PetscFree(edata));
-  return PETSC_SUCCESS;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@

@@ -1214,10 +1214,10 @@ cdef class TAO(Object):
 
         See Also
         --------
-        setMonitor, petsc.TaoCancelMonitors
+        setMonitor, petsc.TaoMonitorCancel
 
         """
-        CHKERR( TaoCancelMonitors(self.tao) )
+        CHKERR( TaoMonitorCancel(self.tao) )
         self.set_attr('__monitor__',  None)
 
     # Tao overwrites these statistics. Copy user defined only if present

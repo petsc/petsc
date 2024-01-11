@@ -5001,7 +5001,7 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
   n_D        = pcis->n - n_B;
   n_vertices = pcbddc->n_vertices;
 
-  /* Dohrmann's notation: dofs splitted in R (Remaining: all dofs but the vertices) and V (Vertices) */
+  /* Dohrmann's notation: dofs split in R (Remaining: all dofs but the vertices) and V (Vertices) */
 
   /* create auxiliary bitmask and allocate workspace */
   if (!sub_schurs || !sub_schurs->reuse_solver) {
