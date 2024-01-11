@@ -1230,7 +1230,7 @@ PetscErrorCode PetscSFLinkFetchAndOpLocal(PetscSF sf, PetscSFLink link, void *ro
 }
 
 /*
-  Create per-rank pack/unpack optimizations based on indice patterns
+  Create per-rank pack/unpack optimizations based on indices patterns
 
    Input Parameters:
   +  n       - Number of destination ranks
