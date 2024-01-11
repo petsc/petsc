@@ -1,5 +1,5 @@
 #include <petsc/private/fortranimpl.h>
-#include "petscsys.h"
+#include <petscsys.h>
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define petscgetarchtype_ PETSCGETARCHTYPE
   #define petscbarrier_     PETSCBARRIER

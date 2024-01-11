@@ -5,12 +5,6 @@
     #define _XOPEN_SOURCE 600
   #endif
 #endif
-#include "petsc/private/petscimpl.h"
-#include "petscerror.h"
-#include "petscis.h"
-#include "petscstring.h"
-#include "petscsys.h"
-#include "petscsystypes.h"
 #include <petsc/private/dmnetworkimpl.h> /*I  "petscdmnetwork.h"  I*/
 #include <petscdraw.h>
 

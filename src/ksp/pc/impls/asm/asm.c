@@ -11,7 +11,7 @@
 */
 
 #include <petsc/private/pcasmimpl.h> /*I "petscpc.h" I*/
-#include "petsc/private/matimpl.h"
+#include <petsc/private/matimpl.h>
 
 static PetscErrorCode PCView_ASM(PC pc, PetscViewer viewer)
 {

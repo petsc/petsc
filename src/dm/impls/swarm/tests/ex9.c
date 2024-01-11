@@ -26,8 +26,8 @@ static char help[] = "Landau Damping test using Vlasov-Poisson equations\n";
 #include <petscdraw.h>
 #include <petsc/private/dmpleximpl.h>  /* For norm and dot */
 #include <petsc/private/petscfeimpl.h> /* For interpolation */
-#include "petscdm.h"
-#include "petscdmlabel.h"
+#include <petscdm.h>
+#include <petscdmlabel.h>
 
 const char *EMTypes[] = {"primal", "mixed", "coulomb", "none", "EMType", "EM_", NULL};
 typedef enum {

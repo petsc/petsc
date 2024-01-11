@@ -2,8 +2,6 @@
      Provides the interface functions for vector operations that have PetscScalar/PetscReal in the signature
    These are the vector functions the user calls.
 */
-#include "petsc/private/sfimpl.h"
-#include "petscsystypes.h"
 #include <petsc/private/vecimpl.h> /*I  "petscvec.h"   I*/
 
 PetscInt VecGetSubVectorSavedStateId = -1;

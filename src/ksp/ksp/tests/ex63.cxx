@@ -66,7 +66,7 @@
 #include "Amesos2.hpp"
 #include "Amesos2_Version.hpp"
 
-#include "petsc.h"
+#include <petsc.h>
 
 int main(int argc, char *argv[])
 {
