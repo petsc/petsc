@@ -2378,7 +2378,7 @@ PetscErrorCode KSPSetResidualHistory(KSP ksp, PetscReal a[], PetscInt na, PetscB
 
   Output Parameters:
 + a  - pointer to array to hold history (or `NULL`)
-- na - number of used entries in a (or `NULL`)
+- na - number of used entries in a (or `NULL`). Note this has different meanings depending on the `reset` argument to `KSPSetResidualHistory()`
 
   Level: advanced
 
@@ -2387,14 +2387,27 @@ PetscErrorCode KSPSetResidualHistory(KSP ksp, PetscReal a[], PetscInt na, PetscB
 
   Can only be called after a `KSPSetResidualHistory()` otherwise `a` and `na` are set to `NULL` and zero
 
+  When `reset` was `PETSC_TRUE` since a residual is computed before the first iteration, the value of `na` is generally one more than the value
+  returned with `KSPGetIterationNumber()`.
+
+  Some Krylov methods may not compute the final residual norm when convergence is declared because the maximum number of iterations allowed has been reached.
+  In this situation, when `reset` was `PETSC_TRUE`, `na` will then equal the number of iterations reported with `KSPGetIterationNumber()`
+
+  Some Krylov methods (such as `KSPSTCG`), under certain circumstances, do not compute the final residual norm. In this situation, when `reset` was `PETSC_TRUE`,
+  `na` will then equal the number of iterations reported with `KSPGetIterationNumber()`
+
+  `KSPBCGSL` does not record the residual norms for the "subiterations" hence the results from `KSPGetResidualHistory()` and `KSPGetIterationNumber()` will be different
+
   Fortran Note:
   The Fortran version of this routine has a calling sequence
-$   call KSPGetResidualHistory(KSP ksp, integer na, integer ierr)
+.vb
+  call KSPGetResidualHistory(KSP ksp, integer na, integer ierr)
+.ve
   note that you have passed a Fortran array into `KSPSetResidualHistory()` and you need
   to access the residual values from this Fortran array you provided. Only the `na` (number of
   residual norms currently held) is set.
 
-.seealso: [](ch_ksp), `KSPSetResidualHistory()`, `KSP`
+.seealso: [](ch_ksp), `KSPSetResidualHistory()`, `KSP`, `KSPGetIterationNumber()`, `KSPSTCG`, `KSPBCGSL`
 @*/
 PetscErrorCode KSPGetResidualHistory(KSP ksp, const PetscReal *a[], PetscInt *na)
 {

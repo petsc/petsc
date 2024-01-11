@@ -724,6 +724,9 @@ static PetscErrorCode KSPSolve_PIPECG2(KSP ksp)
    This method has only a single non-blocking reduction per two iterations, compared to 2 blocking for standard `KSPCG`.  The
    non-blocking reduction is overlapped by two matrix-vector products and two preconditioner applications.
 
+   The solver has a two-step inner iteration, each of which computes the solution and updates the residual norm.
+   Hence the values from `KSPGetResidualHistory()` and `KSPGetIterationNumber()` will differ.
+
    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
    See [](doc_faq_pipelined)
 

@@ -40,6 +40,7 @@ static PetscErrorCode KSPSolve_TFQMR(KSP ksp)
   else ksp->rnorm = 0.0;
   ksp->its = 0;
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
+  PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm));
   PetscCall(KSPMonitor(ksp, 0, ksp->rnorm));
   PetscCall((*ksp->converged)(ksp, 0, ksp->rnorm, &ksp->reason, ksp->cnvP));
   if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
@@ -132,6 +133,9 @@ static PetscErrorCode KSPSolve_TFQMR(KSP ksp)
    The "residual norm" computed in this algorithm is actually just an upper bound on the actual residual norm.
    That is for left preconditioning it is a bound on the preconditioned residual and for right preconditioning
    it is a bound on the true residual.
+
+   The solver has a two-step inner iteration, each of which computes and updates to the solution and the residual norm.
+   Hence the values from `KSPGetResidualHistory()` and `KSPGetIterationNumber()` will differ.
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPTCQMR`
 M*/
