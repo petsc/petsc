@@ -1489,6 +1489,7 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
 . -dm_plex_gmsh_periodic      - Read Gmsh periodic section and construct a periodic Plex
 . -dm_plex_gmsh_highorder     - Generate high-order coordinates
 . -dm_plex_gmsh_project       - Project high-order coordinates to a different space, use the prefix dm_plex_gmsh_project_ to define the space
+. -dm_plex_gmsh_use_generic   - Generate generic labels, i.e. Cell Sets, Face Sets, etc.
 . -dm_plex_gmsh_use_regions   - Generate labels with region names
 . -dm_plex_gmsh_mark_vertices - Add vertices to generated labels
 . -dm_plex_gmsh_multiple_tags - Allow multiple tags for default labels
@@ -1499,7 +1500,7 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
   Notes:
   The Gmsh file format is described in <http://gmsh.info/doc/texinfo/gmsh.html#MSH-file-format>
 
-  By default, the "Cell Sets", "Face Sets", and "Vertex Sets" labels are created, and only insert the first tag on a point. By using -dm_plex_gmsh_multiple_tags, all tags can be inserted. Instead, -dm_plex_gmsh_use_regions creates labels based on the region names from the PhysicalNames section, and all tags are used.
+  By default, the "Cell Sets", "Face Sets", and "Vertex Sets" labels are created, and only insert the first tag on a point. By using -dm_plex_gmsh_multiple_tags, all tags can be inserted. Alternatively, -dm_plex_gmsh_use_regions creates labels based on the region names from the PhysicalNames section, and all tags are used, but you can retain the generic labels using -dm_plex_gmsh_use_generic.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMCreate()`
 @*/
@@ -1516,8 +1517,8 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   PetscInt     dim = 0, coordDim = -1, order = 0, maxHeight = 0;
   PetscInt     numNodes = 0, numElems = 0, numVerts = 0, numCells = 0, vStart, vEnd;
   PetscInt     cell, cone[8], e, n, v, d;
-  PetscBool    binary, useregions = PETSC_FALSE, markvertices = PETSC_FALSE, multipleTags = PETSC_FALSE;
-  PetscBool    hybrid = interpolate, periodic = PETSC_TRUE;
+  PetscBool    usegeneric = PETSC_TRUE, useregions = PETSC_FALSE, markvertices = PETSC_FALSE, multipleTags = PETSC_FALSE;
+  PetscBool    flg, binary, hybrid = interpolate, periodic = PETSC_TRUE;
   PetscBool    highOrder = PETSC_TRUE, highOrderSet, project = PETSC_FALSE;
   PetscBool    isSimplex = PETSC_FALSE, isHybrid = PETSC_FALSE, hasTetra = PETSC_FALSE;
   PetscMPIInt  rank;
@@ -1531,6 +1532,8 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   PetscCall(PetscOptionsBool("-dm_plex_gmsh_highorder", "Generate high-order coordinates", "DMPlexCreateGmsh", highOrder, &highOrder, &highOrderSet));
   PetscCall(PetscOptionsBool("-dm_plex_gmsh_project", "Project high-order coordinates to a different space", "DMPlexCreateGmsh", project, &project, NULL));
   PetscCall(PetscOptionsBool("-dm_plex_gmsh_use_regions", "Generate labels with region names", "DMPlexCreateGmsh", useregions, &useregions, NULL));
+  PetscCall(PetscOptionsBool("-dm_plex_gmsh_use_generic", "Generate generic labels, i.e. Cell Sets, Face Sets, etc", "DMPlexCreateGmsh", usegeneric, &usegeneric, &flg));
+  if (!flg && useregions) usegeneric = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-dm_plex_gmsh_mark_vertices", "Add vertices to generated labels", "DMPlexCreateGmsh", markvertices, &markvertices, NULL));
   PetscCall(PetscOptionsBool("-dm_plex_gmsh_multiple_tags", "Allow multiple tags for default labels", "DMPlexCreateGmsh", multipleTags, &multipleTags, NULL));
   PetscCall(PetscOptionsBoundedInt("-dm_plex_gmsh_spacedim", "Embedding space dimension", "DMPlexCreateGmsh", coordDim, &coordDim, NULL, PETSC_DECIDE));
@@ -1731,7 +1734,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
 
           for (t = 0; t < Nt; ++t) {
             const PetscInt  tag     = elem->tags[t];
-            const PetscBool generic = !Nr && (!t || multipleTags) ? PETSC_TRUE : PETSC_FALSE;
+            const PetscBool generic = usegeneric && (!t || multipleTags) ? PETSC_TRUE : PETSC_FALSE;
 
             if (generic) PetscCall(DMSetLabelValue_Fast(*dm, &cellSets, "Cell Sets", cell, tag));
             for (r = 0; r < Nr; ++r) {
@@ -1761,7 +1764,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
         PetscCheck(pdepth == dim - 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Plex facet %" PetscInt_FMT " for Gmsh element %" PetscInt_FMT " had depth %" PetscInt_FMT " != %" PetscInt_FMT, join[0], elem->id, pdepth, dim - 1);
         for (PetscInt t = 0; t < Nt; ++t) {
           const PetscInt  tag     = elem->tags[t];
-          const PetscBool generic = !Nr && (!t || multipleTags) ? PETSC_TRUE : PETSC_FALSE;
+          const PetscBool generic = usegeneric && (!t || multipleTags) ? PETSC_TRUE : PETSC_FALSE;
 
           if (generic) PetscCall(DMSetLabelValue_Fast(*dm, &faceSets, "Face Sets", join[0], tag));
           for (PetscInt r = 0; r < Nr; ++r) {
@@ -1788,7 +1791,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
         PetscCheck(joinSize == 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Could not determine Plex edge for Gmsh element %" PetscInt_FMT " (Plex cell %" PetscInt_FMT ")", elem->id, e);
         for (t = 0; t < Nt; ++t) {
           const PetscInt  tag     = elem->tags[t];
-          const PetscBool generic = !Nr && (!t || multipleTags) ? PETSC_TRUE : PETSC_FALSE;
+          const PetscBool generic = usegeneric && (!t || multipleTags) ? PETSC_TRUE : PETSC_FALSE;
 
           if (generic) PetscCall(DMSetLabelValue_Fast(*dm, &edgeSets, "Edge Sets", join[0], tag));
           for (r = 0; r < Nr; ++r) {
@@ -1806,7 +1809,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
         const PetscInt tag = elem->tags[0];
         PetscInt       r;
 
-        if (!Nr) PetscCall(DMSetLabelValue_Fast(*dm, &vertSets, "Vertex Sets", vStart + vv, tag));
+        if (usegeneric) PetscCall(DMSetLabelValue_Fast(*dm, &vertSets, "Vertex Sets", vStart + vv, tag));
         for (r = 0; r < Nr; ++r) {
           if (mesh->regionDims[r] != 0) continue;
           if (mesh->regionTags[r] == tag) PetscCall(DMSetLabelValue_Fast(*dm, &regionSets[r], mesh->regionNames[r], vStart + vv, tag));
@@ -1821,7 +1824,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
 
         for (t = 0; t < GMSH_MAX_TAGS; ++t) {
           const PetscInt  tag     = tags[t];
-          const PetscBool generic = !Nr && (!t || multipleTags) ? PETSC_TRUE : PETSC_FALSE;
+          const PetscBool generic = usegeneric && (!t || multipleTags) ? PETSC_TRUE : PETSC_FALSE;
 
           if (tag == -1) continue;
           if (generic) PetscCall(DMSetLabelValue_Fast(*dm, &vertSets, "Vertex Sets", vStart + vv, tag));
