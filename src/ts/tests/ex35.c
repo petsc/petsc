@@ -1,8 +1,8 @@
 static char help[] = "Test of Colorized Scatter Plot.\n";
 
-#include "petscdraw.h"
-#include "petscvec.h"
-#include "petscis.h"
+#include <petscdraw.h>
+#include <petscvec.h>
+#include <petscis.h>
 
 typedef struct {
   PetscInt Np; /* total number of particles */

@@ -1,5 +1,5 @@
 #include <petscksp.h>
-#include "petsc/private/petscimpl.h"
+#include <petsc/private/petscimpl.h>
 
 static char help[] = "Solves a saddle-point linear system using PCHPDDM.\n\n";
 

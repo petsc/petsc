@@ -1,6 +1,6 @@
 -include ../../../../../petscdir.mk
 
-MANSEC	       = Sys
+MANSEC         = Sys
 SUBMANSEC      = Viewer
 BFORTSUBMANSEC = IS
 

@@ -18,7 +18,7 @@ static char help[] = "Vlasov-Poisson example of central orbits\n";
 #include <petscds.h>
 #include <petsc/private/petscfeimpl.h> /* For interpolation */
 #include <petscksp.h>
-#include "petscsnes.h"
+#include <petscsnes.h>
 
 PETSC_EXTERN PetscErrorCode circleSingleX(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
 PETSC_EXTERN PetscErrorCode circleSingleV(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);

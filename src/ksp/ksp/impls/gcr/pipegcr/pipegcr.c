@@ -1,4 +1,4 @@
-#include "petscsys.h"
+#include <petscsys.h>
 #include <../src/ksp/ksp/impls/gcr/pipegcr/pipegcrimpl.h> /*I  "petscksp.h"  I*/
 
 static PetscBool  cited      = PETSC_FALSE;

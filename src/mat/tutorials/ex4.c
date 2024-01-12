@@ -1,12 +1,10 @@
 /*
- *
- *  Created on: Sep 25, 2017
- *      Author: Fande Kong
+  Contributed by: Fande Kong
  */
 
 static char help[] = "Illustrate the use of MatResetPreallocation.\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 int main(int argc, char **argv)
 {

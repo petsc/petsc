@@ -1,5 +1,4 @@
 #include <petsc/private/dmnetworkimpl.h> /*I  "petscdmnetwork.h"  I*/
-#include "petscis.h"
 
 PetscLogEvent DMNetwork_LayoutSetUp;
 PetscLogEvent DMNetwork_SetUpNetwork;

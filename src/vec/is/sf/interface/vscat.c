@@ -1,6 +1,3 @@
-#include "petscsf.h"
-#include "petscsystypes.h"
-#include "petscvec.h"
 #include <petsc/private/sfimpl.h>                 /*I "petscsf.h" I*/
 #include <../src/vec/is/sf/impls/basic/sfbasic.h> /* for VecScatterRemap_Internal */
 #include <../src/vec/is/sf/impls/basic/sfpack.h>

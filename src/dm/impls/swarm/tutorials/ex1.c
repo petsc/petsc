@@ -1,9 +1,9 @@
 static char help[] = "Example program demonstrating projection between particle and finite element spaces\n\n";
 
-#include "petscdmplex.h"
-#include "petscds.h"
-#include "petscdmswarm.h"
-#include "petscksp.h"
+#include <petscdmplex.h>
+#include <petscds.h>
+#include <petscdmswarm.h>
+#include <petscksp.h>
 
 int main(int argc, char **argv)
 {

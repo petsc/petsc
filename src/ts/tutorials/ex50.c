@@ -1,9 +1,7 @@
 static char help[] = "Solves one dimensional Burger's equation compares with exact solution\n\n";
 
 /*
-
     Not yet tested in parallel
-
 */
 
 /* ------------------------------------------------------------------------
@@ -318,9 +316,7 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec globalin, Mat A, Mat B, void 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* --------------------------------------------------------------------- */
-
-#include "petscblaslapack.h"
+#include <petscblaslapack.h>
 /*
      Matrix free operation of 1d Laplacian and Grad for GLL spectral elements
 */
