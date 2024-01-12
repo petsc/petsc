@@ -405,7 +405,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat A, MatType type, M
 
   baijmkl->sparse_optimized = PETSC_FALSE;
 
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatScale_SeqBAIJMKL_C", MatScale_SeqBAIJMKL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatScale_C", MatScale_SeqBAIJMKL));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqbaijmkl_seqbaij_C", MatConvert_SeqBAIJMKL_SeqBAIJ));
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATSEQBAIJMKL));
