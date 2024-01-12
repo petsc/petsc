@@ -4205,6 +4205,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
     PetscCall(DMPlexSetRefinementLimit(dm, volume));
     prerefine = PetscMax(prerefine, 1);
   }
+  if (prerefine) PetscCall(DMLocalizeCoordinates(dm));
   for (r = 0; r < prerefine; ++r) {
     DM             rdm;
     PetscPointFunc coordFunc = ((DM_Plex *)dm->data)->coordFunc;

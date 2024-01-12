@@ -1791,8 +1791,8 @@ PetscErrorCode DMNetworkDistribute(DM *dm, PetscInt overlap)
   PetscCheck(!overlap, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "overlap %" PetscInt_FMT " != 0 is not supported yet", overlap);
 
   /* This routine moves the component data to the appropriate processors. It makes use of the DataSection and the componentdataarray to move the component data to appropriate processors and returns a new DataSection and new componentdataarray. */
-  PetscCall(PetscLogEventBegin(DMNetwork_Distribute, dm, 0, 0, 0));
   PetscCall(DMNetworkCreate(PetscObjectComm((PetscObject)*dm), &newDM));
+  PetscCall(PetscLogEventBegin(DMNetwork_Distribute, newDM, 0, 0, 0));
   newDMnetwork                       = (DM_Network *)newDM->data;
   newDMnetwork->max_comps_registered = oldDMnetwork->max_comps_registered;
   PetscCall(PetscMalloc1(newDMnetwork->max_comps_registered, &newDMnetwork->component));
@@ -1953,12 +1953,12 @@ PetscErrorCode DMNetworkDistribute(DM *dm, PetscInt overlap)
   PetscCall(PetscSFDestroy(&pointsf));
   PetscCall(DMDestroy(dm));
   if (newDMnetwork->cloneshared->Nsvtx) PetscCall(PetscBTDestroy(&btable));
+  PetscCall(PetscLogEventEnd(DMNetwork_Distribute, newDM, 0, 0, 0));
 
   /* View distributed dmnetwork */
   PetscCall(DMViewFromOptions(newDM, NULL, "-dmnetwork_view_distributed"));
 
   *dm = newDM;
-  PetscCall(PetscLogEventEnd(DMNetwork_Distribute, dm, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
