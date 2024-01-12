@@ -2658,7 +2658,7 @@ PetscErrorCode SNESTestFunction(SNES snes)
 PetscErrorCode SNESTestJacobian(SNES snes)
 {
   Mat               A, B, C, D, jacobian;
-  Vec               x = snes->vec_sol, f = snes->vec_func;
+  Vec               x = snes->vec_sol, f;
   PetscReal         nrm, gnorm;
   PetscReal         threshold = 1.e-5;
   MatType           mattype;
@@ -2702,16 +2702,10 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   if (!flg) jacobian = snes->jacobian;
   else jacobian = snes->jacobian_pre;
 
-  if (!x) {
-    PetscCall(MatCreateVecs(jacobian, &x, NULL));
-  } else {
-    PetscCall(PetscObjectReference((PetscObject)x));
-  }
-  if (!f) {
-    PetscCall(VecDuplicate(x, &f));
-  } else {
-    PetscCall(PetscObjectReference((PetscObject)f));
-  }
+  if (!x) PetscCall(MatCreateVecs(jacobian, &x, NULL));
+  else PetscCall(PetscObjectReference((PetscObject)x));
+  PetscCall(VecDuplicate(x, &f));
+
   /* evaluate the function at this point because SNESComputeJacobianDefault() assumes that the function has been evaluated and put into snes->vec_func */
   PetscCall(SNESComputeFunction(snes, x, f));
   PetscCall(VecDestroy(&f));
@@ -2928,12 +2922,24 @@ PetscErrorCode SNESComputeJacobian(SNES snes, Vec X, Mat A, Mat B)
     PetscCall(KSPSetReusePreconditioner(snes->ksp, PETSC_FALSE));
   }
 
-  PetscCall(SNESTestFunction(snes));
-  PetscCall(SNESTestJacobian(snes));
+  /* monkey business to allow testing Jacobians in multilevel solvers.
+     This is needed because the SNESTestXXX interface does not accept vectors and matrices */
+  {
+    Vec xsave            = snes->vec_sol;
+    Mat jacobiansave     = snes->jacobian;
+    Mat jacobian_presave = snes->jacobian_pre;
 
-  /* make sure user returned a correct Jacobian and preconditioner */
-  /* PetscValidHeaderSpecific(A,MAT_CLASSID,3);
-    PetscValidHeaderSpecific(B,MAT_CLASSID,4);   */
+    snes->vec_sol      = X;
+    snes->jacobian     = A;
+    snes->jacobian_pre = B;
+    PetscCall(SNESTestFunction(snes));
+    PetscCall(SNESTestJacobian(snes));
+
+    snes->vec_sol      = xsave;
+    snes->jacobian     = jacobiansave;
+    snes->jacobian_pre = jacobian_presave;
+  }
+
   {
     PetscBool flag = PETSC_FALSE, flag_draw = PETSC_FALSE, flag_contour = PETSC_FALSE, flag_operator = PETSC_FALSE;
     PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_compare_explicit", NULL, NULL, &flag));
