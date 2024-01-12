@@ -436,6 +436,7 @@ PetscErrorCode VecScaleAsync_Private(Vec x, PetscScalar alpha, PetscDeviceContex
   PetscValidType(x, 1);
   VecCheckAssembled(x);
   PetscCall(VecSetErrorIfLocked(x, 1));
+  PetscValidLogicalCollectiveScalar(x, alpha, 2);
   if (alpha == one) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* get current stashed norms */
@@ -457,7 +458,7 @@ PetscErrorCode VecScaleAsync_Private(Vec x, PetscScalar alpha, PetscDeviceContex
 /*@
   VecScale - Scales a vector.
 
-  Not Collective
+  Logically Collective
 
   Input Parameters:
 + x     - the vector
@@ -499,7 +500,6 @@ PetscErrorCode VecSetAsync_Private(Vec x, PetscScalar alpha, PetscDeviceContext 
   PetscCall(PetscObjectStateIncrease((PetscObject)x));
 
   /*  norms can be simply set (if |alpha|*N not too large) */
-
   {
     PetscReal      val = PetscAbsScalar(alpha);
     const PetscInt N   = x->map->N;
@@ -699,6 +699,7 @@ PetscErrorCode VecAXPBYAsync_Private(Vec y, PetscScalar alpha, PetscScalar beta,
   PetscCall(VecLockReadPop(x));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
 /*@
   VecAXPBY - Computes `y = alpha x + beta y`.
 
