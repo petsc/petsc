@@ -902,7 +902,9 @@ class Configure(config.base.Configure):
         #include <optional>
         #include <variant>
         #include <tuple>
+        #include <new>
 
+        std::align_val_t dummy;
         [[nodiscard]] int nodiscardFunc() { return 0; }
         struct S2
         {
