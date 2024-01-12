@@ -639,7 +639,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
   PetscCall(MatShellSetOperation(A, MATOP_ASSEMBLY_END, (void (*)(void))MatAssemblyEnd_MFFD));
   PetscCall(MatShellSetOperation(A, MATOP_SET_FROM_OPTIONS, (void (*)(void))MatSetFromOptions_MFFD));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetContext_C", MatShellSetContext_MFFD));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetContext_C", MatShellSetContextDestroy_MFFD));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetContextDestroy_C", MatShellSetContextDestroy_MFFD));
 
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatMFFDSetBase_C", MatMFFDSetBase_MFFD));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatMFFDSetFunctioniBase_C", MatMFFDSetFunctioniBase_MFFD));

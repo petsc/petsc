@@ -4871,7 +4871,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqaij_seqsell_C", MatConvert_SeqAIJ_SeqSELL));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqaij_is_C", MatConvert_XAIJ_IS));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatIsTranspose_C", MatIsTranspose_SeqAIJ));
-  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatIsHermitianTranspose_C", MatIsTranspose_SeqAIJ));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatIsHermitianTranspose_C", MatIsHermitianTranspose_SeqAIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSeqAIJSetPreallocation_C", MatSeqAIJSetPreallocation_SeqAIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatResetPreallocation_C", MatResetPreallocation_SeqAIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSeqAIJSetPreallocationCSR_C", MatSeqAIJSetPreallocationCSR_SeqAIJ));

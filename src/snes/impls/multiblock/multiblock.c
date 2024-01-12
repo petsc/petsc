@@ -678,7 +678,7 @@ static PetscErrorCode SNESMultiblockSetType_Default(SNES snes, PCCompositeType t
     snes->ops->view  = SNESView_Multiblock;
 
     PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESMultiblockGetSubSNES_C", SNESMultiblockGetSubSNES_Default));
-    PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESMultiblockSchurPrecondition_C", 0));
+    PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESMultiblockSchurPrecondition_C", NULL));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
