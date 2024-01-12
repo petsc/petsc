@@ -194,15 +194,16 @@ PetscErrorCode MatFactorClearError(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode MatFindNonzeroRowsOrCols_Basic(Mat mat, PetscBool cols, PetscReal tol, IS *nonzero)
+PetscErrorCode MatFindNonzeroRowsOrCols_Basic(Mat mat, PetscBool cols, PetscReal tol, IS *nonzero)
 {
   Vec                r, l;
   const PetscScalar *al;
-  PetscInt           i, nz, gnz, N, n;
+  PetscInt           i, nz, gnz, N, n, st;
 
   PetscFunctionBegin;
   PetscCall(MatCreateVecs(mat, &r, &l));
   if (!cols) { /* nonzero rows */
+    PetscCall(MatGetOwnershipRange(mat, &st, NULL));
     PetscCall(MatGetSize(mat, &N, NULL));
     PetscCall(MatGetLocalSize(mat, &n, NULL));
     PetscCall(VecSet(l, 0.0));
@@ -210,6 +211,7 @@ PETSC_INTERN PetscErrorCode MatFindNonzeroRowsOrCols_Basic(Mat mat, PetscBool co
     PetscCall(MatMult(mat, r, l));
     PetscCall(VecGetArrayRead(l, &al));
   } else { /* nonzero columns */
+    PetscCall(MatGetOwnershipRangeColumn(mat, &st, NULL));
     PetscCall(MatGetSize(mat, NULL, &N));
     PetscCall(MatGetLocalSize(mat, NULL, &n));
     PetscCall(VecSet(r, 0.0));
@@ -231,10 +233,10 @@ PETSC_INTERN PetscErrorCode MatFindNonzeroRowsOrCols_Basic(Mat mat, PetscBool co
     if (nz) {
       if (tol < 0) {
         for (i = 0, nz = 0; i < n; i++)
-          if (al[i] != 0.0) nzr[nz++] = i;
+          if (al[i] != 0.0) nzr[nz++] = i + st;
       } else {
         for (i = 0, nz = 0; i < n; i++)
-          if (PetscAbsScalar(al[i]) > tol) nzr[nz++] = i;
+          if (PetscAbsScalar(al[i]) > tol) nzr[nz++] = i + st;
       }
     }
     PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)mat), nz, nzr, PETSC_OWN_POINTER, nonzero));
