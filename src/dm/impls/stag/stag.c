@@ -391,8 +391,7 @@ static PetscErrorCode CheckTransferOperatorRequirements_Private(DM dmc, DM dmf)
   PetscCheck(stencilWidthf >= 1, PetscObjectComm((PetscObject)dmf), PETSC_ERR_SUP, "DMCreateRestriction not implemented for fine grid stencil width < 1");
   PetscCall(DMStagGetLocalSizes(dmf, &nf[0], &nf[1], &nf[2]));
   PetscCall(DMStagGetLocalSizes(dmc, &nc[0], &nc[1], &nc[2]));
-  for (PetscInt d = 0; d < dim; ++d)
-    PetscCheck(nf[d] == 2 * nc[d], PetscObjectComm((PetscObject)dmc), PETSC_ERR_SUP, "No support for fine to coarse ratio other than 2 (it is %" PetscInt_FMT " to %" PetscInt_FMT " in dimension %" PetscInt_FMT ")", nf[d], nc[d], d);
+  for (PetscInt d = 0; d < dim; ++d) PetscCheck(nf[d] % nc[d] == 0, PetscObjectComm((PetscObject)dmc), PETSC_ERR_SUP, "DMCreateRestriction not implemented for non-integer refinement factor");
   PetscCall(DMStagGetDOF(dmc, &dofc[0], &dofc[1], &dofc[2], &dofc[3]));
   PetscCall(DMStagGetDOF(dmf, &doff[0], &doff[1], &doff[2], &doff[3]));
   for (PetscInt d = 0; d < dim + 1; ++d)
@@ -431,7 +430,7 @@ static PetscErrorCode ConvertToAIJ(MatType intype, MatType *outtype)
 
 static PetscErrorCode DMCreateInterpolation_Stag(DM dmc, DM dmf, Mat *A, Vec *vec)
 {
-  PetscInt               dim, entriesf, entriesc, doff[DMSTAG_MAX_STRATA];
+  PetscInt               dim, entriesf, entriesc;
   ISLocalToGlobalMapping ltogmf, ltogmc;
   MatType                mattype;
 
@@ -450,20 +449,10 @@ static PetscErrorCode DMCreateInterpolation_Stag(DM dmc, DM dmf, Mat *A, Vec *ve
   PetscCall(MatSetLocalToGlobalMapping(*A, ltogmf, ltogmc));
 
   PetscCall(DMGetDimension(dmc, &dim));
-  PetscCall(DMStagGetDOF(dmf, &doff[0], &doff[1], &doff[2], &doff[3]));
-  if (dim == 1) {
-    PetscCall(DMStagPopulateInterpolation1d_a_b_Private(dmc, dmf, *A));
-  } else if (dim == 2) {
-    if (doff[0] == 0) {
-      PetscCall(DMStagPopulateInterpolation2d_0_a_b_Private(dmc, dmf, *A));
-    } else
-      SETERRQ(PetscObjectComm((PetscObject)dmc), PETSC_ERR_SUP, "No default interpolation available between 2d DMStag objects with %" PetscInt_FMT " dof/vertex, %" PetscInt_FMT " dof/face and %" PetscInt_FMT " dof/element", doff[0], doff[1], doff[2]);
-  } else if (dim == 3) {
-    if (doff[0] == 0 && doff[1] == 0) {
-      PetscCall(DMStagPopulateInterpolation3d_0_0_a_b_Private(dmc, dmf, *A));
-    } else
-      SETERRQ(PetscObjectComm((PetscObject)dmc), PETSC_ERR_SUP, "No default interpolation available between 3d DMStag objects with %" PetscInt_FMT " dof/vertex, %" PetscInt_FMT " dof/edge, %" PetscInt_FMT " dof/face and %" PetscInt_FMT " dof/element", doff[0], doff[1], doff[2], doff[3]);
-  } else SETERRQ(PetscObjectComm((PetscObject)dmc), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
+  if (dim == 1) PetscCall(DMStagPopulateInterpolation1d_Internal(dmc, dmf, *A));
+  else if (dim == 2) PetscCall(DMStagPopulateInterpolation2d_Internal(dmc, dmf, *A));
+  else if (dim == 3) PetscCall(DMStagPopulateInterpolation3d_Internal(dmc, dmf, *A));
+  else SETERRQ(PetscObjectComm((PetscObject)dmc), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
   PetscCall(MatAssemblyBegin(*A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*A, MAT_FINAL_ASSEMBLY));
 
@@ -493,19 +482,10 @@ static PetscErrorCode DMCreateRestriction_Stag(DM dmc, DM dmf, Mat *A)
 
   PetscCall(DMGetDimension(dmc, &dim));
   PetscCall(DMStagGetDOF(dmf, &doff[0], &doff[1], &doff[2], &doff[3]));
-  if (dim == 1) {
-    PetscCall(DMStagPopulateRestriction1d_a_b_Private(dmc, dmf, *A));
-  } else if (dim == 2) {
-    if (doff[0] == 0) {
-      PetscCall(DMStagPopulateRestriction2d_0_a_b_Private(dmc, dmf, *A));
-    } else
-      SETERRQ(PetscObjectComm((PetscObject)dmc), PETSC_ERR_SUP, "No default restriction available between 2d DMStag objects with %" PetscInt_FMT " dof/vertex, %" PetscInt_FMT " dof/face and %" PetscInt_FMT " dof/element", doff[0], doff[1], doff[2]);
-  } else if (dim == 3) {
-    if (doff[0] == 0 && doff[0] == 0) {
-      PetscCall(DMStagPopulateRestriction3d_0_0_a_b_Private(dmc, dmf, *A));
-    } else
-      SETERRQ(PetscObjectComm((PetscObject)dmc), PETSC_ERR_SUP, "No default restriction available between 3d DMStag objects with %" PetscInt_FMT " dof/vertex, %" PetscInt_FMT " dof/edge, %" PetscInt_FMT " dof/face and %" PetscInt_FMT " dof/element", doff[0], doff[1], doff[2], doff[3]);
-  } else SETERRQ(PetscObjectComm((PetscObject)dmc), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
+  if (dim == 1) PetscCall(DMStagPopulateRestriction1d_Internal(dmc, dmf, *A));
+  else if (dim == 2) PetscCall(DMStagPopulateRestriction2d_Internal(dmc, dmf, *A));
+  else if (dim == 3) PetscCall(DMStagPopulateRestriction3d_Internal(dmc, dmf, *A));
+  else SETERRQ(PetscObjectComm((PetscObject)dmc), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
 
   PetscCall(MatAssemblyBegin(*A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*A, MAT_FINAL_ASSEMBLY));
