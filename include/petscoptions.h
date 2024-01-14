@@ -347,7 +347,7 @@ PetscErrorCode PetscOptionsDeprecatedNoObject(T...);
           `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`
-@*/
+M*/
   #define PetscOptionsHeadBegin(PetscOptionsObject, head) \
     do { \
       if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  %s\n", head)); \
