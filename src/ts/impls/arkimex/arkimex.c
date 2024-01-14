@@ -1445,9 +1445,15 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     }
   }
 
-  /* For fully implicit formulations we can solve the equations
-       F(tn,xn,xdot) = 0
-     for the explicit first stage */
+  /*
+     For fully implicit formulations we must solve the equations
+
+       F(t_n,x_n,xdot) = 0
+
+     for the explicit first stage.
+     Here we call SNESSolve using PETSC_MAX_REAL as shift to flag it.
+     Special handling is inside SNESTSFormFunction_ARKIMEX and SNESTSFormJacobian_ARKIMEX
+  */
   if (dirk && tab->explicit_first_stage && ts->steprestart) {
     ark->scoeff = PETSC_MAX_REAL;
     PetscCall(VecCopy(ts->vec_sol, Z));
@@ -1874,10 +1880,9 @@ static PetscErrorCode TSARKIMEXRestoreVecs(TS ts, DM dm, Vec *Z, Vec *Ydot)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-  This defines the nonlinear equation that is to be solved with SNES
-  G(U) = F[t0+Theta*dt, U, (U-U0)*shift] = 0
-*/
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatFindNonzeroRowsOrCols_Basic(Mat, PetscBool, PetscReal, IS *);
+
+/* This defines the nonlinear equation that is to be solved with SNES */
 static PetscErrorCode SNESTSFormFunction_ARKIMEX(SNES snes, Vec X, Vec F, TS ts)
 {
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
@@ -1891,7 +1896,7 @@ static PetscErrorCode SNESTSFormFunction_ARKIMEX(SNES snes, Vec X, Vec F, TS ts)
   ts->dm = dm;
 
   if (ark->scoeff == PETSC_MAX_REAL) {
-    /* We are solving F(t,x_n,xdot) = 0 to start the method */
+    /* We are solving F(t_n,x_n,xdot) = 0 to start the method */
     PetscCall(TSComputeIFunction(ts, ark->stage_time, Z, X, F, ark->imex));
   } else {
     PetscReal shift = ark->scoeff / ts->time_step;
@@ -1919,11 +1924,43 @@ static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes, Vec X, Mat A, Mat B,
   ts->dm = dm;
 
   if (ark->scoeff == PETSC_MAX_REAL) {
-    /* We are solving F(t,x_n,xdot) = 0 to start the method, we only only dF/dXdot
-       Jed's proposal is to compute with a very large shift and scale back the matrix */
+    PetscBool hasZeroRows;
+    IS        alg_is;
+
+    /* We are solving F(t_n,x_n,xdot) = 0 to start the method
+       Jed's proposal is to compute with a very large shift and then scale back the matrix */
     shift = 1.0 / PETSC_MACHINE_EPSILON;
     PetscCall(TSComputeIJacobian(ts, ark->stage_time, Z, X, shift, A, B, ark->imex));
     PetscCall(MatScale(B, PETSC_MACHINE_EPSILON));
+    /* DAEs need special handling for preconditioning purposes only.
+       We need to locate the algebraic variables and modify the preconditioning matrix by
+       calling MatZeroRows with identity on these variables.
+       We must store the IS in the DM since this function can be called by multilevel solvers.
+    */
+    PetscCall(PetscObjectQuery((PetscObject)dm, "TSARKIMEX_ALG_IS", (PetscObject *)&alg_is));
+    if (!alg_is) {
+      PetscInt m, n;
+      IS       nonzeroRows;
+
+      PetscCall(MatViewFromOptions(B, (PetscObject)snes, "-ts_arkimex_alg_mat_view_pre"));
+      PetscCall(MatFindNonzeroRowsOrCols_Basic(B, PETSC_FALSE, 100 * PETSC_MACHINE_EPSILON, &nonzeroRows));
+      if (nonzeroRows) PetscCall(ISViewFromOptions(nonzeroRows, (PetscObject)snes, "-ts_arkimex_alg_is_view_pre"));
+      PetscCall(MatGetOwnershipRange(B, &m, &n));
+      if (nonzeroRows) PetscCall(ISComplement(nonzeroRows, m, n, &alg_is));
+      else PetscCall(ISCreateStride(PetscObjectComm((PetscObject)snes), 0, m, 1, &alg_is));
+      PetscCall(ISDestroy(&nonzeroRows));
+      PetscCall(PetscObjectCompose((PetscObject)dm, "TSARKIMEX_ALG_IS", (PetscObject)alg_is));
+      PetscCall(ISDestroy(&alg_is));
+    }
+    PetscCall(PetscObjectQuery((PetscObject)dm, "TSARKIMEX_ALG_IS", (PetscObject *)&alg_is));
+    PetscCall(ISViewFromOptions(alg_is, (PetscObject)snes, "-ts_arkimex_alg_is_view"));
+    PetscCall(MatHasOperation(B, MATOP_ZERO_ROWS, &hasZeroRows));
+    if (hasZeroRows) {
+      /* the default of AIJ is to not keep the pattern! We should probably change it someday */
+      PetscCall(MatSetOption(B, MAT_KEEP_NONZERO_PATTERN, PETSC_TRUE));
+      PetscCall(MatZeroRowsIS(B, alg_is, 1.0, NULL, NULL));
+    }
+    PetscCall(MatViewFromOptions(B, (PetscObject)snes, "-ts_arkimex_alg_mat_view"));
     if (A != B) PetscCall(MatScale(A, PETSC_MACHINE_EPSILON));
   } else {
     shift = ark->scoeff / ts->time_step;

@@ -746,8 +746,8 @@ PetscErrorCode VecAXPBYPCZAsync_Private(Vec z, PetscScalar alpha, PetscScalar be
   PetscValidType(y, 6);
   PetscCheckSameTypeAndComm(x, 5, y, 6);
   PetscCheckSameTypeAndComm(x, 5, z, 1);
-  VecCheckSameSize(x, 1, y, 5);
-  VecCheckSameSize(x, 1, z, 6);
+  VecCheckSameSize(x, 5, y, 6);
+  VecCheckSameSize(x, 5, z, 1);
   PetscCheck(x != y && x != z, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_IDN, "x, y, and z must be different vectors");
   PetscCheck(y != z, PetscObjectComm((PetscObject)y), PETSC_ERR_ARG_IDN, "x, y, and z must be different vectors");
   VecCheckAssembled(x);

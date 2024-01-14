@@ -574,7 +574,7 @@ PETSC_EXTERN PetscErrorCode TSSetForcingFunction(TS, TSForcingFunction, void *);
 
 .seealso: [](ch_ts), `TS`, `TSSetIFunction()`, `DMTSSetIFunction()`, `TSIJacobian()`, `TSRHSFunction()`, `TSRHSJacobian()`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSIFunction)(TS ts, PetscReal t, Vec U, Vec U_tt, Vec F, void *ctx);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSIFunction)(TS ts, PetscReal t, Vec U, Vec U_t, Vec F, void *ctx);
 
 /*S
   TSIJacobian - A prototype of a `TS` Jacobian evaluation function that would be passed to `TSSetIJacobian()`

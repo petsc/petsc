@@ -1302,7 +1302,7 @@ PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF sf, PetscInt nselected, const
     PetscBool dups;
     PetscCall(PetscCheckDupsInt(nselected, selected, &dups));
     PetscCheck(!dups, comm, PETSC_ERR_ARG_WRONG, "selected[] has dups");
-    for (i = 0; i < nselected; i++) PetscCheck(selected[i] >= 0 && selected[i] < nroots, comm, PETSC_ERR_ARG_OUTOFRANGE, "selected root indice %" PetscInt_FMT " is out of [0,%" PetscInt_FMT ")", selected[i], nroots);
+    for (i = 0; i < nselected; i++) PetscCheck(selected[i] >= 0 && selected[i] < nroots, comm, PETSC_ERR_ARG_OUTOFRANGE, "selected root index %" PetscInt_FMT " is out of [0,%" PetscInt_FMT ")", selected[i], nroots);
   }
 
   if (sf->ops->CreateEmbeddedRootSF) PetscUseTypeMethod(sf, CreateEmbeddedRootSF, nselected, selected, esf);

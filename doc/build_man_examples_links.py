@@ -51,9 +51,10 @@ def main(petsc_dir):
     for i in mdict:
       if len(uses[i[1:-1]]) > 0:
         manpage = os.path.join(petsc_dir,'doc','manualpages',mdict[i])
+        set_uses = set(uses[i[1:-1]])
         with open(manpage,'a') as fd:
           fd.write('\n## Examples\n')
-          for j in uses[i[1:-1]]:
+          for j in set_uses:
             file = j.replace(petsc_dir+'/','')
             fd.write('<A HREF="PETSC_DOC_OUT_ROOT_PLACEHOLDER/'+file+'.html">'+file+'</A><BR>\n')
 

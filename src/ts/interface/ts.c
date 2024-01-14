@@ -4403,7 +4403,8 @@ PetscErrorCode SNESTSFormFunction(SNES snes, Vec U, Vec F, void *ctx)
   PetscValidHeaderSpecific(U, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(F, VEC_CLASSID, 3);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 4);
-  PetscCall((ts->ops->snesfunction)(snes, U, F, ts));
+  PetscCheck(ts->ops->snesfunction, PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "No method snesfunction for TS of type %s", ((PetscObject)ts)->type_name);
+  PetscCall((*ts->ops->snesfunction)(snes, U, F, ts));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -4438,7 +4439,8 @@ PetscErrorCode SNESTSFormJacobian(SNES snes, Vec U, Mat A, Mat B, void *ctx)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 3);
   PetscValidHeaderSpecific(B, MAT_CLASSID, 4);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 5);
-  PetscCall((ts->ops->snesjacobian)(snes, U, A, B, ts));
+  PetscCheck(ts->ops->snesjacobian, PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "No method snesjacobian for TS of type %s", ((PetscObject)ts)->type_name);
+  PetscCall((*ts->ops->snesjacobian)(snes, U, A, B, ts));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -5357,7 +5359,7 @@ PetscErrorCode TSComputeIJacobianDefaultColor(TS ts, PetscReal t, Vec U, Vec Udo
 + ts     - the `TS` context
 . time   - the current time (of the stage)
 . state  - the state to check if it is valid
-- reject - (output parameter) `PETSC_FALSE` if the state is acceptable, `PETSC_TRUE` if not acceptable
+- accept - (output parameter) `PETSC_FALSE` if the state is not acceptable, `PETSC_TRUE` if acceptable
 
   Level: intermediate
 
@@ -5373,7 +5375,7 @@ PetscErrorCode TSComputeIJacobianDefaultColor(TS ts, PetscReal t, Vec U, Vec Udo
 
 .seealso: [](ch_ts), `TSAdaptCheckStage()`, `TSFunctionDomainError()`, `SNESSetFunctionDomainError()`, `TSGetSNES()`
 @*/
-PetscErrorCode TSSetFunctionDomainError(TS ts, PetscErrorCode (*func)(TS ts, PetscReal time, Vec state, PetscBool *reject))
+PetscErrorCode TSSetFunctionDomainError(TS ts, PetscErrorCode (*func)(TS ts, PetscReal time, Vec state, PetscBool *accept))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);

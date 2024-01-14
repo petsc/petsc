@@ -234,9 +234,13 @@ struct _p_MatRootName {
 PETSC_EXTERN MatRootName MatRootNameList;
 
 /*
+   Utility private matrix routines used outside Mat
+*/
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatFindNonzeroRowsOrCols_Basic(Mat, PetscBool, PetscReal, IS *);
+
+/*
    Utility private matrix routines
 */
-PETSC_INTERN PetscErrorCode MatFindNonzeroRowsOrCols_Basic(Mat, PetscBool, PetscReal, IS *);
 PETSC_INTERN PetscErrorCode MatConvert_Basic(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatConvert_Shell(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatConvertFrom_Shell(Mat, MatType, MatReuse, Mat *);

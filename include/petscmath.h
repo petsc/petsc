@@ -150,7 +150,7 @@
   #define PetscCeilReal(a)        ceilf(a)
   #define PetscFloorReal(a)       floorf(a)
   #define PetscFmodReal(a, b)     fmodf(a, b)
-  #define PetscCopySignReal(a, b) copysignf(a, b)
+  #define PetscCopysignReal(a, b) copysignf(a, b)
   #define PetscTGamma(a)          tgammaf(a)
   #if defined(PETSC_HAVE_LGAMMA_IS_GAMMA)
     #define PetscLGamma(a) gammaf(a)

@@ -211,7 +211,7 @@ static PetscErrorCode MatDestroy_NormalHermitian(Mat N)
   PetscCall(VecDestroy(&Na->leftwork));
   PetscCall(VecDestroy(&Na->rightwork));
   PetscCall(PetscFree(N->data));
-  PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatNormalGetMatHermitian_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatNormalHermitianGetMat_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatConvert_normalh_seqaij_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatConvert_normalh_mpiaij_C", NULL));
 #if defined(PETSC_HAVE_HYPRE)
@@ -264,7 +264,7 @@ static PetscErrorCode MatGetDiagonalBlock_NormalHermitian(Mat N, Mat *D)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatNormalGetMat_NormalHermitian(Mat A, Mat *M)
+static PetscErrorCode MatNormalHermitianGetMat_NormalHermitian(Mat A, Mat *M)
 {
   Mat_NormalHermitian *Aa = (Mat_NormalHermitian *)A->data;
 
@@ -294,7 +294,7 @@ PetscErrorCode MatNormalHermitianGetMat(Mat A, Mat *M)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
   PetscAssertPointer(M, 2);
-  PetscUseMethod(A, "MatNormalGetMatHermitian_C", (Mat, Mat *), (A, M));
+  PetscUseMethod(A, "MatNormalHermitianGetMat_C", (Mat, Mat *), (A, M));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -409,7 +409,7 @@ PetscErrorCode MatCreateNormalHermitian(Mat A, Mat *N)
   (*N)->assembled              = PETSC_TRUE;
   (*N)->preallocated           = PETSC_TRUE;
 
-  PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatNormalGetMatHermitian_C", MatNormalGetMat_NormalHermitian));
+  PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatNormalHermitianGetMat_C", MatNormalHermitianGetMat_NormalHermitian));
   PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatConvert_normalh_seqaij_C", MatConvert_NormalHermitian_AIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatConvert_normalh_mpiaij_C", MatConvert_NormalHermitian_AIJ));
 #if defined(PETSC_HAVE_HYPRE)
