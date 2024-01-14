@@ -210,7 +210,14 @@ PetscErrorCode VecNorm(Vec x, NormType type, PetscReal *val)
     b1[0]          = -b0;
     b1[1]          = b0;
     PetscCall(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, PetscObjectComm((PetscObject)x)));
-    PetscCheck(-b2[0] == b2[1], PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_WRONGSTATE, "Some MPI processes have cached norm, others do not. This may happen when some MPI processes call VecGetArray() and some others do not.");
+    PetscCheck(-b2[0] == b2[1], PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_WRONGSTATE, "Some MPI processes have cached %s norm, others do not. This may happen when some MPI processes call VecGetArray() and some others do not.", NormTypes[type]);
+    if (flg) {
+      PetscReal b1[2], b2[2];
+      b1[0] = -(*val);
+      b1[1] = *val;
+      PetscCall(MPIU_Allreduce(b1, b2, 2, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)x)));
+      PetscCheck(-b2[0] == b2[1], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Difference in cached %s norms: local %g", NormTypes[type], (double)*val);
+    }
   }
   if (flg) PetscFunctionReturn(PETSC_SUCCESS);
 
@@ -436,6 +443,7 @@ PetscErrorCode VecScaleAsync_Private(Vec x, PetscScalar alpha, PetscDeviceContex
   PetscValidType(x, 1);
   VecCheckAssembled(x);
   PetscCall(VecSetErrorIfLocked(x, 1));
+  PetscValidLogicalCollectiveScalar(x, alpha, 2);
   if (alpha == one) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* get current stashed norms */
@@ -457,7 +465,7 @@ PetscErrorCode VecScaleAsync_Private(Vec x, PetscScalar alpha, PetscDeviceContex
 /*@
   VecScale - Scales a vector.
 
-  Not Collective
+  Logically Collective
 
   Input Parameters:
 + x     - the vector
@@ -499,7 +507,6 @@ PetscErrorCode VecSetAsync_Private(Vec x, PetscScalar alpha, PetscDeviceContext 
   PetscCall(PetscObjectStateIncrease((PetscObject)x));
 
   /*  norms can be simply set (if |alpha|*N not too large) */
-
   {
     PetscReal      val = PetscAbsScalar(alpha);
     const PetscInt N   = x->map->N;
@@ -699,6 +706,7 @@ PetscErrorCode VecAXPBYAsync_Private(Vec y, PetscScalar alpha, PetscScalar beta,
   PetscCall(VecLockReadPop(x));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
 /*@
   VecAXPBY - Computes `y = alpha x + beta y`.
 
