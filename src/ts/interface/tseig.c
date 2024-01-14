@@ -187,7 +187,7 @@ PetscErrorCode TSMonitorSPEig(TS ts, PetscInt step, PetscReal ptime, Vec v, void
   Note:
   Should be passed to `TSMonitorSet()` along with `TSMonitorSPEig()` an the context created with `TSMonitorSPEigCtxCreate()`
 
-.seealso: [](ch_ts), `TSMonitorSPEigCtxCreate()`, `TSMonitorSet()`, `TSMonitorSPEig();`
+.seealso: [](ch_ts), `TSMonitorSPEigCtxCreate()`, `TSMonitorSet()`, `TSMonitorSPEig()`
 @*/
 PetscErrorCode TSMonitorSPEigCtxDestroy(TSMonitorSPEigCtx *ctx)
 {
