@@ -1926,7 +1926,6 @@ static PetscErrorCode MatInvertDiagonal_SeqAIJ(Mat A, PetscScalar omega, PetscSc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#include <../src/mat/impls/aij/seq/ftn-kernels/frelax.h>
 PetscErrorCode MatSOR_SeqAIJ(Mat A, Vec bb, PetscReal omega, MatSORType flag, PetscReal fshift, PetscInt its, PetscInt lits, Vec xx)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;

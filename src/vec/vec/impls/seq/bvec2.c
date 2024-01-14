@@ -184,8 +184,6 @@ PetscErrorCode VecSwap_Seq(Vec xin, Vec yin)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#include <../src/vec/vec/impls/seq/ftn-kernels/fnorm.h>
-
 PetscErrorCode VecNorm_Seq(Vec xin, NormType type, PetscReal *z)
 {
   // use a local variable to ensure compiler doesn't think z aliases any of the other arrays
