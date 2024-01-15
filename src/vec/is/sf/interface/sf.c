@@ -1300,7 +1300,7 @@ PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF sf, PetscInt nselected, const
   PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
   PetscCall(PetscSFGetGraph(sf, &nroots, &nleaves, &ilocal, &iremote));
 
-  if (PetscDefined(USE_DEBUG)) { /* Error out if selected[] has dups or  out of range indices */
+  if (PetscDefined(USE_DEBUG)) { /* Error out if selected[] has dups or out of range indices */
     PetscBool dups;
     PetscCall(PetscCheckDupsInt(nselected, selected, &dups));
     PetscCheck(!dups, comm, PETSC_ERR_ARG_WRONG, "selected[] has dups");
