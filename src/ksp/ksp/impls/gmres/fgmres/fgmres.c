@@ -182,11 +182,13 @@ static PetscErrorCode KSPFGMRESCycle(PetscInt *itcount, KSP ksp)
     }
   }
   /* END OF ITERATION LOOP */
-  PetscCall(KSPLogResidualHistory(ksp, res_norm));
 
   /*
      Monitor if we know that we will not return for a restart */
-  if (loc_it && (ksp->reason || ksp->its >= ksp->max_it)) PetscCall(KSPMonitor(ksp, ksp->its, res_norm));
+  if (loc_it && (ksp->reason || ksp->its >= ksp->max_it)) {
+    PetscCall(KSPMonitor(ksp, ksp->its, res_norm));
+    PetscCall(KSPLogResidualHistory(ksp, res_norm));
+  }
 
   if (itcount) *itcount = loc_it;
 

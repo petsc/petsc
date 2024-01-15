@@ -27,6 +27,8 @@
 
   The type of norm used by the method can be controlled with `KSPSetNormType()`
 
+  Certain solvers, under certain conditions, may not compute the final residual norm in an iteration, in that case the previous norm is returned.
+
 .seealso: [](ch_ksp), `KSP`, `KSPSetNormType()`, `KSPBuildResidual()`, `KSPNormType`
 @*/
 PetscErrorCode KSPGetResidualNorm(KSP ksp, PetscReal *rnorm)
@@ -1248,7 +1250,10 @@ PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **ctx)
 - dtx   - unused convergence context
 
   Output Parameter:
-. reason - `KSP_CONVERGED_ITERATING`, `KSP_CONVERGED_ITS`
+. reason - `KSP_CONVERGED_ITERATING` or `KSP_CONVERGED_ITS`
+
+  Options Database Key:
+. -ksp_convergence_test skip - skips the test
 
   Level: advanced
 

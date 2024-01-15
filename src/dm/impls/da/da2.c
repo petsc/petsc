@@ -298,6 +298,8 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
   */
   PetscCheck((x >= s) || ((m <= 1) && (bx != DM_BOUNDARY_PERIODIC)), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local x-width of domain x %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT, x, s);
   PetscCheck((y >= s) || ((n <= 1) && (by != DM_BOUNDARY_PERIODIC)), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local y-width of domain y %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT, y, s);
+  PetscCheck((x > s) || ((bx != DM_BOUNDARY_MIRROR)), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local x-width of domain x %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT " with mirror", x, s);
+  PetscCheck((y > s) || ((by != DM_BOUNDARY_MIRROR)), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local y-width of domain y %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT " with mirror", y, s);
   xe = xs + x;
   ye = ys + y;
 

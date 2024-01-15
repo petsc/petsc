@@ -103,12 +103,6 @@ static PetscErrorCode SNESSolve_NRichardson(SNES snes)
   /* Call general purpose update function */
   PetscTryTypeMethod(snes, update, snes->iter);
 
-  /* set parameter for default relative tolerance convergence test */
-  snes->ttol = fnorm * snes->rtol;
-  /* test convergence */
-  PetscCall(SNESConverged(snes, 0, 0.0, 0.0, fnorm));
-  if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
-
   for (i = 1; i < maxits + 1; i++) {
     PetscCall(SNESLineSearchApply(snes->linesearch, X, F, &fnorm, Y));
     PetscCall(SNESLineSearchGetReason(snes->linesearch, &lsresult));

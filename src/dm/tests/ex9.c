@@ -28,7 +28,7 @@ int main(int argc, char **argv)
   PetscCall(ISLocalToGlobalMappingView(ltogs, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(DMDestroy(&dmred));
 
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_MIRROR, DM_BOUNDARY_MIRROR, DMDA_STENCIL_STAR, 3, 3, PETSC_DECIDE, PETSC_DECIDE, 2, 1, NULL, NULL, &da));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_MIRROR, DM_BOUNDARY_MIRROR, DMDA_STENCIL_STAR, 4, 4, PETSC_DECIDE, PETSC_DECIDE, 2, 1, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
   PetscCall(DMCompositeAddDM(packer, da));
