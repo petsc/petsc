@@ -165,7 +165,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp)
     PetscCall(VecMDotEnd(ZVEC(loc_it), loc_it + 2, redux, lhh));
     tt = PetscRealPart(lhh[loc_it + 1]);
 
-    /* Hessenberg entries, and entries for (naive) classical Graham-Schmidt
+    /* Hessenberg entries, and entries for (naive) classical Gram-Schmidt
       Note that the Hessenberg entries require a shift, as these are for the
       relation AU = VH, which is wrt unshifted basis vectors */
     hh  = HH(0, loc_it);
@@ -248,7 +248,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp)
        here to check that the hessenberg matrix is indeed non-singular (since
        FGMRES does not guarantee this) */
 
-    /* Now apply rotations to new col of hessenberg (and right side of system),
+    /* Now apply rotations to new col of Hessenberg (and right side of system),
        calculate new rotation, and get new residual norm at the same time*/
     PetscCall(KSPPIPEFGMRESUpdateHessenberg(ksp, loc_it, &hapend, &res_norm));
     if (ksp->reason) break;
@@ -274,11 +274,13 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp)
     }
   }
   /* END OF ITERATION LOOP */
-  PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm));
 
   /*
      Monitor if we know that we will not return for a restart */
-  if (loc_it && (ksp->reason || ksp->its >= ksp->max_it)) PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm));
+  if (loc_it && (ksp->reason || ksp->its >= ksp->max_it)) {
+    PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm));
+    PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm));
+  }
 
   if (itcount) *itcount = loc_it;
 

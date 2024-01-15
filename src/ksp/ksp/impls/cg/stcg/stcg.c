@@ -328,6 +328,7 @@ static PetscErrorCode KSPCGSolve_STCG(KSP ksp)
       if (norm_p > 0.0) {
         /*********************************************************************/
         /* Follow the direction to the boundary of the trust region.         */
+        /* Final residual norm is never computed.                            */
         /*********************************************************************/
 
         step       = (PetscSqrtReal(dMp * dMp + norm_p * (r2 - norm_d)) - dMp) / norm_p;
@@ -494,6 +495,7 @@ static PetscErrorCode KSPCGSolve_STCG(KSP ksp)
       if (cg->radius != 0.0 && norm_p > 0.0) {
         /*********************************************************************/
         /* Follow direction of negative curvature to boundary.               */
+        /* Final residual norm is never computed.                            */
         /*********************************************************************/
 
         step       = (PetscSqrtReal(dMp * dMp + norm_p * (r2 - norm_d)) - dMp) / norm_p;
