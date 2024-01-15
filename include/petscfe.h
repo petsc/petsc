@@ -150,7 +150,6 @@ PETSC_EXTERN PetscErrorCode PetscFEOpenCLGetRealType(PetscFE, PetscDataType *);
 
 #ifdef PETSC_HAVE_LIBCEED
 
-// clang-format off
   #ifndef PLEXFE_QFUNCTION
     #define PLEXFE_QFUNCTION(fname, f0_name, f1_name) \
       CEED_QFUNCTION(PlexQFunction##fname)(void *ctx, const CeedInt Q, const CeedScalar *const *in, CeedScalar *const *out) \
@@ -162,14 +161,14 @@ PETSC_EXTERN PetscErrorCode PetscFEOpenCLGetRealType(PetscFE, PetscDataType *);
 \
         CeedPragmaSIMD for (CeedInt i = 0; i < Q; ++i) \
         { \
-          const PetscInt   uOff[2]       = {0, Nc}; \
-          const PetscInt   uOff_x[2]     = {0, Nc * cdim}; \
-          const CeedScalar x[2]          = {qdata[i+Q*1], qdata[i+Q*2]}; \
-          const CeedScalar invJ[2][2]    = { \
-            {qdata[i+Q*3], qdata[i+Q*5]}, \
-            {qdata[i+Q*4], qdata[i+Q*6]} \
+          const PetscInt   uOff[2]    = {0, Nc}; \
+          const PetscInt   uOff_x[2]  = {0, Nc * cdim}; \
+          const CeedScalar x[2]       = {qdata[i + Q * 1], qdata[i + Q * 2]}; \
+          const CeedScalar invJ[2][2] = { \
+            {qdata[i + Q * 3], qdata[i + Q * 5]}, \
+            {qdata[i + Q * 4], qdata[i + Q * 6]} \
           }; \
-          const CeedScalar u_x[2]        = {invJ[0][0] * du[i+Q*0] + invJ[1][0] * du[i+Q*1], invJ[0][1] * du[i+Q*0] + invJ[1][1] * du[i+Q*1]}; \
+          const CeedScalar u_x[2] = {invJ[0][0] * du[i + Q * 0] + invJ[1][0] * du[i + Q * 1], invJ[0][1] * du[i + Q * 0] + invJ[1][1] * du[i + Q * 1]}; \
           PetscScalar      f0[Nc]; \
           PetscScalar      f1[Nc * cdim]; \
 \
@@ -185,7 +184,6 @@ PETSC_EXTERN PetscErrorCode PetscFEOpenCLGetRealType(PetscFE, PetscDataType *);
         return CEED_ERROR_SUCCESS; \
       }
   #endif
-// clang-format on
 
 #else
 

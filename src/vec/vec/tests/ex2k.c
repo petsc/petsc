@@ -30,13 +30,11 @@ int main(int argc, char **argv)
   PetscBool          outputBW = PETSC_FALSE; // output bandwidth instead of time
   PetscRandom        rnd;
   PetscLogStage      stage1;
-  // clang-format off
   // Try vectors of these (local) sizes. The max is very close to 2^31
-  PetscInt  Ms[]  = {128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768,
-                     65536, 131072, 262144, 524288, 1048576, 2097152, 4194304,
-                     8388608, 16777216, 33554432, 67108864, 134217728, 268435456, 536870912};
-  PetscInt  Ns[] = {1, 3, 8, 30}; // try this number of y vectors in VecMDot
-  // clang-format on
+  PetscInt Ms[] = {128,     256,      512,      1024,     2048,      4096,      8192,     16384,   //
+                   32768,   65536,    131072,   262144,   524288,    1048576,   2097152,  4194304, //
+                   8388608, 16777216, 33554432, 67108864, 134217728, 268435456, 536870912};
+  PetscInt Ns[] = {1, 3, 8, 30}; // try this number of y vectors in VecMDot
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));

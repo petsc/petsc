@@ -190,7 +190,6 @@ PetscErrorCode PetscDLClose(PetscDLHandle *handle)
 }
 
 // clang-format off
-
 /*@C
   PetscDLSym - finds a symbol in a dynamic library
 
