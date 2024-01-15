@@ -22,7 +22,7 @@ set 1 size: 3
 PetscSection Object: 1 MPI process
   type not yet set
 1 fields
-  field 0 with 2 components
+  field 0 "U" with 2 components
 Process 0:
   (   0) dim  0 offset   0
   (   1) dim  0 offset   0

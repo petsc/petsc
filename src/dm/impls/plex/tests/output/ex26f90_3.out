@@ -23,7 +23,7 @@ PetscViewer Object: 1 MPI process
 PetscSection Object: 1 MPI process
   type not yet set
 3 fields
-  field 0 with 2 components
+  field 0 "U" with 2 components
 Process 0:
   (   0) dim  0 offset   0
   (   1) dim  0 offset   3
@@ -338,7 +338,7 @@ Process 0:
   ( 310) dim  2 offset 930
   ( 311) dim  2 offset 933
   ( 312) dim  2 offset 936
-  field 1 with 3 components
+  field 1 "Sigma" with 3 components
 Process 0:
   (   0) dim  3 offset   0
   (   1) dim  3 offset   3
@@ -653,7 +653,7 @@ Process 0:
   ( 310) dim  0 offset 932
   ( 311) dim  0 offset 935
   ( 312) dim  0 offset 938
-  field 2 with 1 components
+  field 2 "Alpha" with 1 components
 Process 0:
   (   0) dim  0 offset   3
   (   1) dim  0 offset   6

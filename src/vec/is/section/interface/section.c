@@ -1546,9 +1546,13 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   PetscCall(PetscFree2(neg, recv));
   /* Set field dofs/offsets/constraints */
   for (f = 0; f < numFields; ++f) {
+    const char *name;
+
     gs->field[f]->includesConstraints = includeConstraints;
     PetscCall(PetscSectionGetFieldComponents(s, f, &numComponents));
     PetscCall(PetscSectionSetFieldComponents(gs, f, numComponents));
+    PetscCall(PetscSectionGetFieldName(s, f, &name));
+    PetscCall(PetscSectionSetFieldName(gs, f, name));
   }
   for (p = pStart; p < pEnd; ++p) {
     PetscCall(PetscSectionGetOffset(gs, p, &off));
@@ -2449,7 +2453,7 @@ PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer)
     if (s->numFields) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " fields\n", s->numFields));
       for (f = 0; f < s->numFields; ++f) {
-        PetscCall(PetscViewerASCIIPrintf(viewer, "  field %" PetscInt_FMT " with %" PetscInt_FMT " components\n", f, s->numFieldComponents[f]));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "  field %" PetscInt_FMT " \"%s\" with %" PetscInt_FMT " components\n", f, s->fieldNames[f], s->numFieldComponents[f]));
         PetscCall(PetscSectionView_ASCII(s->field[f], viewer));
       }
     } else {

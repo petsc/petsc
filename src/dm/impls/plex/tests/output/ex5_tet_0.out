@@ -46,7 +46,7 @@ Label 'cohesive':
 PetscSection Object: 1 MPI process
   type not yet set
 2 fields
-  field 0 with 3 components
+  field 0 "displacement" with 3 components
 Process 0:
   (   0) dim  0 offset   0
   (   1) dim  0 offset   0
@@ -85,7 +85,7 @@ Process 0:
   (  34) dim  0 offset  24
   (  35) dim  0 offset  27
   (  36) dim  0 offset  30
-  field 1 with 3 components
+  field 1 "fault traction" with 3 components
 Process 0:
   (   0) dim  0 offset   0
   (   1) dim  0 offset   0

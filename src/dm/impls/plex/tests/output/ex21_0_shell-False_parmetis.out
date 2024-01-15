@@ -471,7 +471,7 @@ PetscSF Object: 3 MPI processes
 PetscSection Object: Load: local section 3 MPI processes
   type not yet set
 2 fields
-  field 0 with 1 components
+  field 0 "Field_0" with 1 components
 Process 0:
   (   0) dim  0 offset   0
   (   1) dim  0 offset   0
@@ -544,7 +544,7 @@ Process 2:
   (  18) dim  0 offset   5
   (  19) dim  0 offset   5
   (  20) dim  0 offset   3
-  field 1 with 1 components
+  field 1 "Field_1" with 1 components
 Process 0:
   (   0) dim  0 offset   0
   (   1) dim  0 offset   0
@@ -620,7 +620,7 @@ Process 2:
 PetscSection Object: Load: global section 3 MPI processes
   type not yet set
 2 fields
-  field 0 with 1 components
+  field 0 "Field_0" with 1 components
 Process 0:
   (   0) dim  0 offset   0
   (   1) dim  0 offset   0
@@ -693,7 +693,7 @@ Process 2:
   (  18) dim -1 offset  -5
   (  19) dim -1 offset  -5
   (  20) dim -1 offset  -5
-  field 1 with 1 components
+  field 1 "Field_1" with 1 components
 Process 0:
   (   0) dim  0 offset   0
   (   1) dim  0 offset   0
