@@ -1349,8 +1349,8 @@ PetscErrorCode KSPConvergedDefaultCreate(void **ctx)
 }
 
 /*@
-  KSPConvergedDefaultSetUIRNorm - makes the default convergence test use || B*(b - A*(initial guess))||
-  instead of || B*b ||. In the case of right preconditioner or if `KSPSetNormType`(ksp,`KSP_NORM_UNPRECONDITIONED`)
+  KSPConvergedDefaultSetUIRNorm - makes the default convergence test use $ || B*(b - A*(initial guess))||$
+  instead of $ || B*b ||$. In the case of right preconditioner or if `KSPSetNormType`(ksp,`KSP_NORM_UNPRECONDITIONED`)
   is used there is no B in the above formula.
 
   Collective
@@ -1464,7 +1464,7 @@ PetscErrorCode KSPConvergedDefaultSetConvergedMaxits(KSP ksp, PetscBool flg)
 
   Output Parameter:
 . reason - the convergence reason; it is positive if the iteration has converged,
-            negative if the iteration has diverged, and `KSP_CONVERGED_ITERATING` otherwise
+           negative if the iteration has diverged, and `KSP_CONVERGED_ITERATING` otherwise
 
   Options Database Keys:
 + -ksp_max_it                                  - maximum number of linear iterations
@@ -2079,7 +2079,7 @@ PetscErrorCode KSPSetApplicationContext(KSP ksp, void *ctx)
   Level: intermediate
 
   Fortran Note:
-  To use this from Fortran you must write a Fortran interface definition for this
+  You may need to write a Fortran interface definition for this
   function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
 .seealso: [](ch_ksp), `KSP`, `KSPSetApplicationContext()`
