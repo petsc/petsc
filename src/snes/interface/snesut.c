@@ -712,7 +712,7 @@ PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm
 - dummy - unused context
 
   Output Parameter:
-. reason - converged reason, see `KSPConvergedReason`
+. reason - converged reason, see `SNESConvergedReason`
 
   Options Database Keys:
 + -snes_convergence_test default      - see `SNESSetFromOptions()`
