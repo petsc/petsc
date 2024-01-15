@@ -968,7 +968,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer viewer)
     PetscViewerASCIISynchronizedPrintf(viewer, ...);
     ...
     PetscViewerFlush(viewer);
-   PetscViewerASCIIPopSynchronized(viewer);
+    PetscViewerASCIIPopSynchronized(viewer);
 .ve
 
   Fortran Notes:
@@ -1043,6 +1043,8 @@ PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer viewer, const char
     next->size = QUEUESTRINGSIZE;
     PetscCall(PetscCalloc1(next->size, &next->string));
     string = next->string;
+
+    tab = vascii->tab;
     tab *= 2;
     while (tab--) *string++ = ' ';
     va_start(Argp, format);
