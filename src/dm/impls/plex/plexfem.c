@@ -2682,7 +2682,7 @@ PetscErrorCode DMPlexComputeBdIntegral(DM dm, Vec X, DMLabel label, PetscInt num
 }
 
 /*@
-  DMPlexComputeInterpolatorNested - Form the local portion of the interpolation matrix I from the coarse `DM` to a uniformly refined `DM`.
+  DMPlexComputeInterpolatorNested - Form the local portion of the interpolation matrix from the coarse `DM` to a uniformly refined `DM`.
 
   Input Parameters:
 + dmc       - The coarse mesh
@@ -2920,7 +2920,7 @@ PetscErrorCode DMPlexComputeMassMatrixNested(DM dmc, DM dmf, Mat mass, void *use
 }
 
 /*@
-  DMPlexComputeInterpolatorGeneral - Form the local portion of the interpolation matrix I from the coarse `DM` to a non-nested fine `DM`.
+  DMPlexComputeInterpolatorGeneral - Form the local portion of the interpolation matrix from the coarse `DM` to a non-nested fine `DM`.
 
   Input Parameters:
 + dmf  - The fine mesh
@@ -3092,7 +3092,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
 }
 
 /*@
-  DMPlexComputeMassMatrixGeneral - Form the local portion of the mass matrix M from the coarse `DM` to a non-nested fine `DM`.
+  DMPlexComputeMassMatrixGeneral - Form the local portion of the mass matrix from the coarse `DM` to a non-nested fine `DM`.
 
   Input Parameters:
 + dmf  - The fine mesh

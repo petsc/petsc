@@ -81,7 +81,7 @@ exampleVec: Values (Field 1):          (1.5,) constrained
 exampleVec: as global vector
 
   rank 0: []
-  rakn 1: [1.0, 1.1, 1.2, 1.3, 1.4, 1.6, 1.7]
+  rank 1: [1.0, 1.1, 1.2, 1.3, 1.4, 1.6, 1.7]
 
 =====================
  Load on 3 Processes
@@ -343,7 +343,6 @@ int main(int argc, char **argv)
       PetscCall(PetscViewerPushFormat(viewer, format));
       PetscCall(DMPlexTopologyLoad(dm, viewer, &sfXB));
       PetscCall(PetscViewerPopFormat(viewer));
-      PetscCall(PetscObjectSetName((PetscObject)dm, exampleDMPlexName));
       {
         DM               distributedDM;
         PetscInt         overlap = 1;

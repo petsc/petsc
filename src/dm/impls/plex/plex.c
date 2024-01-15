@@ -2126,14 +2126,14 @@ PetscErrorCode DMPlexLabelsView(DM dm, PetscViewer viewer)
   Input Parameters:
 + dm        - The `DM` that contains the topology on which the section to be saved is defined
 . viewer    - The `PetscViewer` for saving
-- sectiondm - The `DM` that contains the section to be saved
+- sectiondm - The `DM` that contains the section to be saved, can be `NULL`
 
   Level: advanced
 
   Notes:
   This function is a wrapper around `PetscSectionView()`; in addition to the raw section, it saves information that associates the section points to the topology (`dm`) points. When the topology (`dm`) and the section are later loaded with `DMPlexTopologyLoad()` and `DMPlexSectionLoad()`, respectively, this information is used to match section points with topology points.
 
-  In general `dm` and `sectiondm` are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
+  In general `dm` and `sectiondm` are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object (or in case `sectiondm` is `NULL`) if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMView()`, `DMPlexTopologyView()`, `DMPlexCoordinatesView()`, `DMPlexLabelsView()`, `DMPlexGlobalVectorView()`, `DMPlexLocalVectorView()`, `PetscSectionView()`, `DMPlexSectionLoad()`, `PetscViewer`
 @*/
@@ -2144,6 +2144,7 @@ PetscErrorCode DMPlexSectionView(DM dm, PetscViewer viewer, DM sectiondm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  if (!sectiondm) sectiondm = dm;
   PetscValidHeaderSpecific(sectiondm, DM_CLASSID, 3);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
   PetscCall(PetscLogEventBegin(DMPLEX_SectionView, viewer, 0, 0, 0));
@@ -2166,13 +2167,13 @@ PetscErrorCode DMPlexSectionView(DM dm, PetscViewer viewer, DM sectiondm)
   Input Parameters:
 + dm        - The `DM` that represents the topology
 . viewer    - The `PetscViewer` to save data with
-. sectiondm - The `DM` that contains the global section on which vec is defined
+. sectiondm - The `DM` that contains the global section on which vec is defined, can be `NULL`
 - vec       - The global vector to be saved
 
   Level: advanced
 
   Notes:
-  In general `dm` and `sectiondm` are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
+  In general `dm` and `sectiondm` are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object (or in case `sectiondm` is `NULL`) if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
 
   Calling sequence:
 .vb
@@ -2206,6 +2207,7 @@ PetscErrorCode DMPlexGlobalVectorView(DM dm, PetscViewer viewer, DM sectiondm, V
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  if (!sectiondm) sectiondm = dm;
   PetscValidHeaderSpecific(sectiondm, DM_CLASSID, 3);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 4);
   /* Check consistency */
@@ -2242,13 +2244,13 @@ PetscErrorCode DMPlexGlobalVectorView(DM dm, PetscViewer viewer, DM sectiondm, V
   Input Parameters:
 + dm        - The `DM` that represents the topology
 . viewer    - The `PetscViewer` to save data with
-. sectiondm - The `DM` that contains the local section on which `vec` is defined; may be the same as `dm`
+. sectiondm - The `DM` that contains the local section on which `vec` is defined, can be `NULL`
 - vec       - The local vector to be saved
 
   Level: advanced
 
   Note:
-  In general `dm` and `sectiondm` are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
+  In general `dm` and `sectiondm` are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object (or in case `sectiondm` is `NULL`) if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
 
   Calling sequence:
 .vb
@@ -2281,6 +2283,7 @@ PetscErrorCode DMPlexLocalVectorView(DM dm, PetscViewer viewer, DM sectiondm, Ve
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  if (!sectiondm) sectiondm = dm;
   PetscValidHeaderSpecific(sectiondm, DM_CLASSID, 3);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 4);
   /* Check consistency */
@@ -2467,7 +2470,7 @@ PetscErrorCode DMPlexLabelsLoad(DM dm, PetscViewer viewer, PetscSF globalToLocal
   Input Parameters:
 + dm                   - The `DM` that represents the topology
 . viewer               - The `PetscViewer` that represents the on-disk section (sectionA)
-. sectiondm            - The `DM` into which the on-disk section (sectionA) is migrated
+. sectiondm            - The `DM` into which the on-disk section (sectionA) is migrated, can be `NULL`
 - globalToLocalPointSF - The `PetscSF` returned by `DMPlexTopologyLoad(`) when loading dm from viewer
 
   Output Parameters:
@@ -2479,7 +2482,7 @@ PetscErrorCode DMPlexLabelsLoad(DM dm, PetscViewer viewer, PetscSF globalToLocal
   Notes:
   This function is a wrapper around `PetscSectionLoad()`; it loads, in addition to the raw section, a list of global point numbers that associates each on-disk section point with a global point number in [0, NX), where NX is the number of topology points in `dm`. Noting that globalToLocalPointSF associates each topology point in dm with a global number in [0, NX), one can readily establish an association of the on-disk section points with the topology points.
 
-  In general `dm` and `sectiondm` are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
+  In general `dm` and `sectiondm` are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object (or in case `sectiondm` is `NULL`) if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
 
   The output parameter, `globalDofSF` (`localDofSF`), can later be used with `DMPlexGlobalVectorLoad()` (`DMPlexLocalVectorLoad()`) to load on-disk vectors into global (local) vectors associated with sectiondm's global (local) section.
 
@@ -2515,6 +2518,7 @@ PetscErrorCode DMPlexSectionLoad(DM dm, PetscViewer viewer, DM sectiondm, PetscS
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  if (!sectiondm) sectiondm = dm;
   PetscValidHeaderSpecific(sectiondm, DM_CLASSID, 3);
   PetscValidHeaderSpecific(globalToLocalPointSF, PETSCSF_CLASSID, 4);
   if (globalDofSF) PetscAssertPointer(globalDofSF, 5);
@@ -2540,14 +2544,14 @@ PetscErrorCode DMPlexSectionLoad(DM dm, PetscViewer viewer, DM sectiondm, PetscS
   Input Parameters:
 + dm        - The `DM` that represents the topology
 . viewer    - The `PetscViewer` that represents the on-disk vector data
-. sectiondm - The `DM` that contains the global section on which vec is defined
+. sectiondm - The `DM` that contains the global section on which vec is defined, can be `NULL`
 . sf        - The `PetscSF` that migrates the on-disk vector data into vec
 - vec       - The global vector to set values of
 
   Level: advanced
 
   Notes:
-  In general dm and sectiondm are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
+  In general dm and sectiondm are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object (or in case `sectiondm` is `NULL`) if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
 
   Calling sequence:
 .vb
@@ -2578,6 +2582,7 @@ PetscErrorCode DMPlexGlobalVectorLoad(DM dm, PetscViewer viewer, DM sectiondm, P
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  if (!sectiondm) sectiondm = dm;
   PetscValidHeaderSpecific(sectiondm, DM_CLASSID, 3);
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 4);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 5);
@@ -2615,14 +2620,14 @@ PetscErrorCode DMPlexGlobalVectorLoad(DM dm, PetscViewer viewer, DM sectiondm, P
   Input Parameters:
 + dm        - The `DM` that represents the topology
 . viewer    - The `PetscViewer` that represents the on-disk vector data
-. sectiondm - The `DM` that contains the local section on which vec is defined
+. sectiondm - The `DM` that contains the local section on which vec is defined, can be `NULL`
 . sf        - The `PetscSF` that migrates the on-disk vector data into vec
 - vec       - The local vector to set values of
 
   Level: advanced
 
   Notes:
-  In general `dm` and `sectiondm` are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
+  In general `dm` and `sectiondm` are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with `PetscObjectSetName()`. In practice, however, they can be the same object (or in case `sectiondm` is `NULL`) if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
 
   Calling sequence:
 .vb
@@ -2653,6 +2658,7 @@ PetscErrorCode DMPlexLocalVectorLoad(DM dm, PetscViewer viewer, DM sectiondm, Pe
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  if (!sectiondm) sectiondm = dm;
   PetscValidHeaderSpecific(sectiondm, DM_CLASSID, 3);
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 4);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 5);
