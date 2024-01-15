@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.gitcommit         = 'v0.9.4-p3'
+    self.gitcommit         = 'v0.9.6-p1'
     self.download          = ['git://https://gitlab.com/petsc/pkg-c2html.git' ,
                               'https://gitlab.com/petsc/pkg-c2html/-/archive/'+self.gitcommit+'/pkg-c2html-'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['pkg-c2html']

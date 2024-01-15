@@ -744,7 +744,7 @@ PetscErrorCode VecMAXPY_Seq_GEMV(Vec yin, PetscInt nv, const PetscScalar alpha[]
     } else {
       // we only allow falling back on VecAXPY once
       if (nfail++ == 0) PetscCall(VecAXPY_Seq(yin, alpha[i], xin[i]));
-      else break; // break the whie loop
+      else break; // break the while loop
     }
     i = j;
   }

@@ -876,7 +876,7 @@ PetscErrorCode VecMAXPY_SeqKokkos_GEMV(Vec yin, PetscInt nv, const PetscScalar *
     } else {
       // we only allow falling back on VecAXPY once
       if (nfail++ == 0) PetscCall(VecAXPY_SeqKokkos(yin, a_h[i], xin[i]));
-      else break; // break the whie loop
+      else break; // break the while loop
     }
     i = j;
   }
