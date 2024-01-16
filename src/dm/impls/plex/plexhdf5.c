@@ -154,7 +154,7 @@ PetscErrorCode PetscViewerHDF5GetDMPlexStorageVersionWriting(PetscViewer viewer,
   PetscCall(PetscOptionsString("-dm_plex_view_hdf5_storage_version", "DMPlex HDF5 viewer storage version", NULL, optVersion, optVersion, sizeof(optVersion), NULL));
   PetscOptionsEnd();
   if (!fileHasVersion) {
-    PetscCall(PetscViewerHDF5WriteAttribute(viewer, NULL, ATTR_NAME, PETSC_STRING, optVersion));
+    PetscCall(PetscViewerHDF5WriteAttribute(viewer, "/", ATTR_NAME, PETSC_STRING, optVersion));
   } else {
     PetscBool flg;
 
