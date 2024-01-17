@@ -8461,8 +8461,8 @@ PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSe
 PetscErrorCode DMPlexMatGetClosureIndicesRefined(DM dmf, PetscSection fsection, PetscSection globalFSection, DM dmc, PetscSection csection, PetscSection globalCSection, PetscInt point, PetscInt cindices[], PetscInt findices[])
 {
   PetscInt       *fpoints = NULL, *ftotpoints = NULL;
-  PetscInt       *cpoints = NULL;
-  PetscInt        foffsets[32], coffsets[32];
+  PetscInt       *cpoints      = NULL;
+  PetscInt        foffsets[32] = {0}, coffsets[32] = {0};
   const PetscInt *fclperm = NULL, *cclperm = NULL; /* Closure permutations cannot work here */
   DMPolytopeType  ct;
   PetscInt        numFields, numSubcells, maxFPoints, numFPoints, numCPoints, numFIndices, numCIndices, dof, off, globalOff, pStart, pEnd, p, q, r, s, f;
@@ -8480,8 +8480,6 @@ PetscErrorCode DMPlexMatGetClosureIndicesRefined(DM dmf, PetscSection fsection, 
   PetscValidHeaderSpecific(globalCSection, PETSC_SECTION_CLASSID, 6);
   PetscCall(PetscSectionGetNumFields(fsection, &numFields));
   PetscCheck(numFields <= 31, PetscObjectComm((PetscObject)dmf), PETSC_ERR_ARG_OUTOFRANGE, "Number of fields %" PetscInt_FMT " limited to 31", numFields);
-  PetscCall(PetscArrayzero(foffsets, 32));
-  PetscCall(PetscArrayzero(coffsets, 32));
   /* Column indices */
   PetscCall(DMPlexGetTransitiveClosure(dmc, point, PETSC_TRUE, &numCPoints, &cpoints));
   maxFPoints = numCPoints;
