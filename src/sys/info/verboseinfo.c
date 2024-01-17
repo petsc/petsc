@@ -589,9 +589,9 @@ PetscErrorCode PetscInfo_Private(const char func[], PetscObject obj, const char 
 {
   PetscClassId classid = PETSC_SMALLEST_CLASSID;
   PetscBool    enabled = PETSC_FALSE;
-  MPI_Comm     comm    = PETSC_COMM_SELF;
-  PetscMPIInt  rank;
-  const char  *otype = NULL;
+  MPI_Comm     comm    = MPI_COMM_NULL;
+  PetscMPIInt  rank    = 0;
+  const char  *otype   = NULL;
 
   PetscFunctionBegin;
   if (obj) {
@@ -604,14 +604,14 @@ PetscErrorCode PetscInfo_Private(const char func[], PetscObject obj, const char 
   if (obj) {
     PetscCall(PetscObjectGetComm(obj, &comm));
     PetscCall(PetscObjectGetType(obj, &otype));
+    PetscCallMPI(MPI_Comm_rank(comm, &rank));
   }
-  PetscCallMPI(MPI_Comm_rank(comm, &rank));
   /* rank > 0 always jumps out */
   if (rank) PetscFunctionReturn(PETSC_SUCCESS);
   else {
-    PetscMPIInt size;
+    PetscMPIInt size = 1;
 
-    PetscCallMPI(MPI_Comm_size(comm, &size));
+    if (comm != MPI_COMM_NULL) PetscCallMPI(MPI_Comm_size(comm, &size));
     /* If no self printing is allowed, and size too small, get out */
     if ((PetscInfoCommFilter == PETSC_INFO_COMM_NO_SELF) && (size < 2)) PetscFunctionReturn(PETSC_SUCCESS);
     /* If ONLY self printing, and size too big, get out */
