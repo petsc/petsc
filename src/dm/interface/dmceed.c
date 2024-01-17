@@ -275,6 +275,7 @@ static PetscErrorCode DMCeedCreateGeometryFVM(DM dm, IS faceIS, PetscInt *Nqdata
   Ceed            ceed;
   DMCeed          sd;
   const PetscInt *faces;
+  CeedInt         strides[3];
   PetscInt        dim, cdim, fStart, fEnd, Nface, Nq = 1;
 
   PetscFunctionBegin;
@@ -285,8 +286,11 @@ static PetscErrorCode DMCeedCreateGeometryFVM(DM dm, IS faceIS, PetscInt *Nqdata
   PetscCall(ISGetPointRange(faceIS, &fStart, &fEnd, &faces));
   Nface = fEnd - fStart;
 
-  *Nqdata = cdim + 2; // face normal and support cell volumes
-  PetscCallCEED(CeedElemRestrictionCreateStrided(ceed, Nface, Nq, *Nqdata, Nface * Nq * (*Nqdata), CEED_STRIDES_BACKEND, erq));
+  *Nqdata    = cdim + 2; // face normal and support cell volumes
+  strides[0] = 1;
+  strides[1] = Nq;
+  strides[2] = Nq * (*Nqdata);
+  PetscCallCEED(CeedElemRestrictionCreateStrided(ceed, Nface, Nq, *Nqdata, Nface * Nq * (*Nqdata), strides, erq));
   PetscCallCEED(CeedElemRestrictionCreateVector(*erq, qd, NULL));
   *soldata = sd;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -297,6 +301,7 @@ static PetscErrorCode DMCeedCreateInfoFVM(DM dm, IS faceIS, PetscInt *Nqinfo, Ce
   Ceed            ceed;
   DMCeed          si;
   const PetscInt *faces;
+  CeedInt         strides[3];
   PetscInt        dim, fStart, fEnd, Nface, Nq = 1;
 
   PetscFunctionBegin;
@@ -306,8 +311,11 @@ static PetscErrorCode DMCeedCreateInfoFVM(DM dm, IS faceIS, PetscInt *Nqinfo, Ce
   PetscCall(ISGetPointRange(faceIS, &fStart, &fEnd, &faces));
   Nface = fEnd - fStart;
 
-  *Nqinfo = 3; // face number and support cell numbers
-  PetscCallCEED(CeedElemRestrictionCreateStrided(ceed, Nface, Nq, *Nqinfo, Nface * Nq * (*Nqinfo), CEED_STRIDES_BACKEND, eri));
+  *Nqinfo    = 3; // face number and support cell numbers
+  strides[0] = 1;
+  strides[1] = Nq;
+  strides[2] = Nq * (*Nqinfo);
+  PetscCallCEED(CeedElemRestrictionCreateStrided(ceed, Nface, Nq, *Nqinfo, Nface * Nq * (*Nqinfo), strides, eri));
   PetscCallCEED(CeedElemRestrictionCreateVector(*eri, qi, NULL));
   *solinfo = si;
   PetscFunctionReturn(PETSC_SUCCESS);
