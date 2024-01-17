@@ -55,9 +55,9 @@ Labels:
 DM Object: DMPlex Object (redistributed_) 4 MPI processes
   type: plex
 DMPlex Object in 3 dimensions:
-  Number of 0-cells per rank: 42 42 41 46
-  Number of 1-cells per rank: 88 88 86 95
-  Number of 2-cells per rank: 61 61 60 64
+  Number of 0-cells per rank: 42 42 46 41
+  Number of 1-cells per rank: 88 88 95 86
+  Number of 2-cells per rank: 61 61 64 60
   Number of 3-cells per rank: 14 14 14 14
 Labels:
   depth: 4 strata with value/size (0 (42), 1 (88), 2 (61), 3 (14))

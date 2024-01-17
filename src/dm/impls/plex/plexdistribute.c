@@ -1814,7 +1814,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
 
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, "Point migration", &lblMigration));
   PetscCall(DMPlexPartitionLabelInvert(dm, lblPartition, NULL, lblMigration));
-  PetscCall(DMPlexPartitionLabelCreateSF(dm, lblMigration, &sfMigration));
+  PetscCall(DMPlexPartitionLabelCreateSF(dm, lblMigration, PETSC_TRUE, &sfMigration));
   PetscCall(DMPlexStratifyMigrationSF(dm, sfMigration, &sfStratified));
   PetscCall(PetscSFDestroy(&sfMigration));
   sfMigration = sfStratified;
@@ -1960,7 +1960,7 @@ PetscErrorCode DMPlexDistributeOverlap_Internal(DM dm, PetscInt overlap, MPI_Com
   if (mesh->numOvLabels) PetscCall(DMPlexCreateOverlapLabelFromLabels(dm, mesh->numOvLabels, mesh->ovLabels, mesh->ovValues, mesh->numOvExLabels, mesh->ovExLabels, mesh->ovExValues, rootSection, rootrank, leafSection, leafrank, &lblOverlap));
   else PetscCall(DMPlexCreateOverlapLabel(dm, overlap, rootSection, rootrank, leafSection, leafrank, &lblOverlap));
   /* Convert overlap label to stratified migration SF */
-  PetscCall(DMPlexPartitionLabelCreateSF(dm, lblOverlap, &sfOverlap));
+  PetscCall(DMPlexPartitionLabelCreateSF(dm, lblOverlap, PETSC_FALSE, &sfOverlap));
   PetscCall(DMPlexStratifyMigrationSF(dm, sfOverlap, &sfStratified));
   PetscCall(PetscSFDestroy(&sfOverlap));
   sfOverlap = sfStratified;

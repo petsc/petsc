@@ -53,35 +53,35 @@ Labels:
 DM Object: DMPlex Object (redistributed_) 3 MPI processes
   type: plex
 DMPlex Object in 3 dimensions:
-  Number of 0-cells per rank: 52 60 53
-  Number of 1-cells per rank: 112 126 112
-  Number of 2-cells per rank: 80 86 78
-  Number of 3-cells per rank: 19 19 18
+  Number of 0-cells per rank: 48 58 57
+  Number of 1-cells per rank: 104 123 120
+  Number of 2-cells per rank: 75 85 83
+  Number of 3-cells per rank: 18 19 19
 Labels:
-  depth: 4 strata with value/size (0 (52), 1 (112), 2 (80), 3 (19))
-  celltype: 4 strata with value/size (0 (52), 1 (112), 4 (80), 7 (19))
+  depth: 4 strata with value/size (0 (48), 1 (104), 2 (75), 3 (18))
+  celltype: 4 strata with value/size (0 (48), 1 (104), 4 (75), 7 (18))
 End   cycle 1
 --------
 Begin cycle 2
 DM Object: DMPlex Object (loaded_) 2 MPI processes
   type: plex
 DMPlex Object in 3 dimensions:
-  Number of 0-cells per rank: 86 85
+  Number of 0-cells per rank: 74 79
   Number of 3-cells per rank: 28 28
 Labels:
-  depth: 2 strata with value/size (0 (86), 1 (28))
-  celltype: 2 strata with value/size (7 (28), 0 (86))
+  depth: 2 strata with value/size (0 (74), 1 (28))
+  celltype: 2 strata with value/size (7 (28), 0 (74))
 Loaded mesh distributed? TRUE
 DM Object: DMPlex Object (interpolated_) 2 MPI processes
   type: plex
 DMPlex Object in 3 dimensions:
-  Number of 0-cells per rank: 86 85
-  Number of 1-cells per rank: 181 180
-  Number of 2-cells per rank: 124 124
+  Number of 0-cells per rank: 74 79
+  Number of 1-cells per rank: 163 171
+  Number of 2-cells per rank: 118 121
   Number of 3-cells per rank: 28 28
 Labels:
-  celltype: 4 strata with value/size (0 (86), 7 (28), 4 (124), 1 (181))
-  depth: 4 strata with value/size (0 (86), 1 (181), 2 (124), 3 (28))
+  celltype: 4 strata with value/size (0 (74), 7 (28), 4 (118), 1 (163))
+  depth: 4 strata with value/size (0 (74), 1 (163), 2 (118), 3 (28))
 DM Object: DMPlex Object (redistributed_) 2 MPI processes
   type: plex
 DMPlex Object in 3 dimensions:
