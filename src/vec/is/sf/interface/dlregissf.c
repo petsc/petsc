@@ -55,6 +55,10 @@ PetscErrorCode PetscSFInitializePackage(void)
   PetscCall(PetscLogEventRegister("SFRemoteOff", PETSCSF_CLASSID, &PETSCSF_RemoteOff));
   PetscCall(PetscLogEventRegister("SFPack", PETSCSF_CLASSID, &PETSCSF_Pack));
   PetscCall(PetscLogEventRegister("SFUnpack", PETSCSF_CLASSID, &PETSCSF_Unpack));
+  /* Flag non-collective events */
+  PetscCall(PetscLogEventSetCollective(PETSCSF_Pack, PETSC_FALSE));
+  PetscCall(PetscLogEventSetCollective(PETSCSF_Unpack, PETSC_FALSE));
+
   /* Process Info */
   {
     PetscClassId classids[1];
