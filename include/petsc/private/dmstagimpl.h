@@ -22,7 +22,8 @@ typedef struct {
   PetscInt          nRanks[DMSTAG_MAX_DIM];       /* Ranks in each direction           */
 
   /* Fields unrelated to setup */
-  DMType coordinateDMType; /* DM type to create for coordinates */
+  DMType   coordinateDMType;             /* DM type to create for coordinates */
+  PetscInt refineFactor[DMSTAG_MAX_DIM]; /* Ratio used in refining and coarsening */
 
   /* Data above is copied by DMStagDuplicateWithoutSetup(), while data below is not */
 
