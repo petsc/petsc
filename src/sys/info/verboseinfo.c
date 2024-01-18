@@ -519,7 +519,8 @@ PetscErrorCode PetscInfoActivateClass(PetscClassId classid)
   messages are also printed to the history file, called by default
   .petschistory in ones home directory.
 */
-PETSC_INTERN FILE *petsc_history;
+PETSC_INTERN FILE          *petsc_history;
+PETSC_INTERN PetscErrorCode PetscVFPrintf_Internal(FILE *, const char[], ...);
 
 /*MC
   PetscInfo - Logs informative data
@@ -636,7 +637,7 @@ PetscErrorCode PetscInfo_Private(const char func[], PetscObject obj, const char 
     va_start(Argp, message);
     PetscCall(PetscVSNPrintf(string + len, 8 * 1024 - len, message, &fullLength, Argp));
     va_end(Argp);
-    PetscCall(PetscFPrintf(PETSC_COMM_SELF, PetscInfoFile, "%s", string));
+    PetscCall(PetscVFPrintf_Internal(PetscInfoFile, "%s", string));
     PetscCall(PetscFFlush(PetscInfoFile));
     if (petsc_history) {
       va_start(Argp, message);
