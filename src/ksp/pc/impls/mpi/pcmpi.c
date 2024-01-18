@@ -442,6 +442,7 @@ PetscErrorCode PCMPIServerBegin(void)
     PetscCall(TSInitializePackage());
     PetscCall(TaoInitializePackage());
   }
+  PetscCall(PetscLogStageRegister("PCMPI", &PCMPIStage));
 
   PetscCallMPI(MPI_Comm_rank(PC_MPI_COMM_WORLD, &rank));
   if (rank == 0) {
