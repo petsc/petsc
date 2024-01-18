@@ -2603,7 +2603,10 @@ PetscErrorCode TSReset(TS ts)
     PetscCall(VecDestroyVecs(ts->tspan->num_span_times, &ts->tspan->vecs_sol));
     PetscCall(PetscFree(ts->tspan));
   }
-  ts->setupcalled = PETSC_FALSE;
+  ts->rhsjacobian.time  = PETSC_MIN_REAL;
+  ts->rhsjacobian.scale = 1.0;
+  ts->ijacobian.shift   = 1.0;
+  ts->setupcalled       = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
