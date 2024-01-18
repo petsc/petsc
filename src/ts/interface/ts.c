@@ -3797,8 +3797,8 @@ static PetscErrorCode TSResizeGetVecArray(TS ts, PetscInt *nv, const char **name
   PetscFunctionBegin;
   for (tmp = ts->resizetransferobjs, cnt = 0; tmp; tmp = tmp->next)
     if (tmp->obj && tmp->obj->classid == VEC_CLASSID) cnt++;
-  if (names) PetscCall(PetscMalloc1(cnt, &vecsin));
-  if (vecs) PetscCall(PetscMalloc1(cnt, &namesin));
+  if (names) PetscCall(PetscMalloc1(cnt, &namesin));
+  if (vecs) PetscCall(PetscMalloc1(cnt, &vecsin));
   for (tmp = ts->resizetransferobjs, cnt = 0; tmp; tmp = tmp->next) {
     if (tmp->obj && tmp->obj->classid == VEC_CLASSID) {
       if (vecs) vecsin[cnt] = (Vec)tmp->obj;
