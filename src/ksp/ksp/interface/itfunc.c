@@ -494,17 +494,13 @@ PetscErrorCode KSPConvergedReasonView(KSP ksp, PetscViewer viewer)
 + ksp               - the `KSP` context
 . f                 - the ksp converged reason view function
 . vctx              - [optional] user-defined context for private data for the
-          ksp converged reason view routine (use `NULL` if no context is desired)
-- reasonviewdestroy - [optional] routine that frees reasonview context
-          (may be `NULL`)
+                      `KSPConvergedReason` view routine (use `NULL` if no context is desired)
+- reasonviewdestroy - [optional] routine that frees `vctx` (may be `NULL`)
 
   Options Database Keys:
 + -ksp_converged_reason             - sets a default `KSPConvergedReasonView()`
-- -ksp_converged_reason_view_cancel - cancels all converged reason viewers that have
-                            been hardwired into a code by
-                            calls to `KSPConvergedReasonViewSet()`, but
-                            does not cancel those set via
-                            the options database.
+- -ksp_converged_reason_view_cancel - cancels all converged reason viewers that have been hardwired into a code by
+                                      calls to `KSPConvergedReasonViewSet()`, but does not cancel those set via the options database.
 
   Level: intermediate
 
@@ -512,6 +508,9 @@ PetscErrorCode KSPConvergedReasonView(KSP ksp, PetscViewer viewer)
   Several different converged reason view routines may be set by calling
   `KSPConvergedReasonViewSet()` multiple times; all will be called in the
   order in which they were set.
+
+  Developer Note:
+  Should be named KSPConvergedReasonViewAdd().
 
 .seealso: [](ch_ksp), `KSPConvergedReasonView()`, `KSPConvergedReasonViewCancel()`
 @*/
@@ -610,7 +609,7 @@ PetscErrorCode KSPConvergedReasonViewFromOptions(KSP ksp)
   Notes:
   To change the format of the output, call `PetscViewerPushFormat`(`viewer`,`format`) before this call.
 
-  Suppose that the residual is reduced linearly, $r_k = c^k r_0$, which means $log r_k = log r_0 + k log c$. After linear regression,
+  Suppose that the residual is reduced linearly, $r_k = c^k r_0$, which means $\log r_k = \log r_0 + k \log c$. After linear regression,
   the slope is $\log c$. The coefficient of determination is given by $1 - \frac{\sum_i (y_i - f(x_i))^2}{\sum_i (y_i - \bar y)}$,
 
 .seealso: [](ch_ksp), `KSPConvergedReasonView()`, `KSPGetConvergedRate()`, `KSPSetTolerances()`, `KSPConvergedDefault()`
@@ -1015,7 +1014,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
 . -ksp_view_pmat binary                      - save matrix used to build preconditioner to the default binary viewer
 . -ksp_view_rhs binary                       - save right hand side vector to the default binary viewer
 . -ksp_view_solution binary                  - save computed solution vector to the default binary viewer
-           (can be read later with src/ksp/tutorials/ex10.c for testing solvers)
+                                               (can be read later with src/ksp/tutorials/ex10.c for testing solvers)
 . -ksp_view_mat_explicit                     - for matrix-free operators, computes the matrix entries and views them
 . -ksp_view_preconditioned_operator_explicit - computes the product of the preconditioner and matrix as an explicit matrix and views it
 . -ksp_converged_reason                      - print reason for converged or diverged, also prints number of iterations
@@ -1041,7 +1040,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
   If you provide a matrix that has a `MatSetNullSpace()` and `MatSetTransposeNullSpace()` this will use that information to solve singular systems
   in the least squares sense with a norm minimizing solution.
 
-  A x = b   where b = b_p + b_t where b_t is not in the range of A (and hence by the fundamental theorem of linear algebra is in the nullspace(A') see `MatSetNullSpace()`
+  $A x = b $  where $b = b_p + b_t$ where $b_t$ is not in the range of A (and hence by the fundamental theorem of linear algebra is in the nullspace(A'), see `MatSetNullSpace()`).
 
   `KSP` first removes b_t producing the linear system  A x = b_p (which has multiple solutions) and solves this to find the ||x|| minimizing solution (and hence
   it finds the solution x orthogonal to the nullspace(A). The algorithm is simply in each iteration of the Krylov method we remove the nullspace(A) from the search
@@ -1500,8 +1499,8 @@ PetscErrorCode KSPDestroy(KSP *ksp)
   Output Parameter:
 . side - the preconditioning side, where side is one of
 .vb
-      PC_LEFT - left preconditioning (default)
-      PC_RIGHT - right preconditioning
+      PC_LEFT      - left preconditioning (default)
+      PC_RIGHT     - right preconditioning
       PC_SYMMETRIC - symmetric preconditioning
 .ve
 
@@ -1543,8 +1542,8 @@ PetscErrorCode KSPSetPCSide(KSP ksp, PCSide side)
   Output Parameter:
 . side - the preconditioning side, where side is one of
 .vb
-      PC_LEFT - left preconditioning (default)
-      PC_RIGHT - right preconditioning
+      PC_LEFT      - left preconditioning (default)
+      PC_RIGHT     - right preconditioning
       PC_SYMMETRIC - symmetric preconditioning
 .ve
 
@@ -2230,11 +2229,8 @@ PetscErrorCode KSPMonitor(KSP ksp, PetscInt it, PetscReal rnorm)
 . -ksp_monitor_true_residual draw::draw_lg - sets `KSPMonitorTrueResidualDrawLG()` and plots residual
 . -ksp_monitor_max                         - sets `KSPMonitorTrueResidualMax()`
 . -ksp_monitor_singular_value              - sets `KSPMonitorSingularValue()`
-- -ksp_monitor_cancel                      - cancels all monitors that have
-                          been hardwired into a code by
-                          calls to `KSPMonitorSet()`, but
-                          does not cancel those set via
-                          the options database.
+- -ksp_monitor_cancel                      - cancels all monitors that have been hardwired into a code by calls to `KSPMonitorSet()`, but
+                                             does not cancel those set via the options database.
 
   Level: beginner
 
@@ -2741,9 +2737,7 @@ PetscErrorCode KSPGetConvergenceContext(KSP ksp, void *ctx)
   Output Parameter:
    Provide exactly one of
 + v - location to stash solution.
-- V - the solution is returned in this location. This vector is created
-       internally. This vector should NOT be destroyed by the user with
-       `VecDestroy()`.
+- V - the solution is returned in this location. This vector is created internally. This vector should NOT be destroyed by the user with `VecDestroy()`.
 
   Level: developer
 
@@ -2785,7 +2779,7 @@ PetscErrorCode KSPBuildSolution(KSP ksp, Vec v, Vec *V)
 
   Output Parameters:
 + v - optional location to stash residual.  If `v` is not provided,
-       then a location is generated.
+      then a location is generated.
 . t - work vector.  If not provided then one is generated.
 - V - the residual
 
@@ -2831,8 +2825,8 @@ PetscErrorCode KSPBuildResidual(KSP ksp, Vec t, Vec v, Vec *V)
   Level: advanced
 
   Notes:
-  Scales the matrix by  D^(-1/2)  A  D^(-1/2)  [D^(1/2) x ] = D^(-1/2) b
-  where D_{ii} is 1/abs(A_{ii}) unless A_{ii} is zero and then it is 1.
+  Scales the matrix by  $D^{-1/2}  A  D^{-1/2}  [D^{1/2} x ] = D^{-1/2} b $
+  where $D_{ii}$ is $1/abs(A_{ii}) $ unless $A_{ii}$ is zero and then it is 1.
 
   BE CAREFUL with this routine: it actually scales the matrix and right
   hand side that define the system. After the system is solved the matrix
@@ -2842,7 +2836,7 @@ PetscErrorCode KSPBuildResidual(KSP ksp, Vec t, Vec v, Vec *V)
   search.
 
   If you use this with the `PCType` `PCEISENSTAT` preconditioner than you can
-  use the `PCEisenstatSetNoDiagonalScaling()` option, or -pc_eisenstat_no_diagonal_scaling
+  use the `PCEisenstatSetNoDiagonalScaling()` option, or `-pc_eisenstat_no_diagonal_scaling`
   to save some unneeded, redundant flops.
 
 .seealso: [](ch_ksp), `KSPGetDiagonalScale()`, `KSPSetDiagonalScaleFix()`, `KSP`

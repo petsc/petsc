@@ -18,9 +18,10 @@ static PetscBool  KSPGuessRegisterAllCalled;
 .ve
 
   Then, it can be chosen with the procedural interface via
-$     KSPSetGuessType(ksp, "my_initial_guess")
-  or at runtime via the option
-$     -ksp_guess_type my_initial_guess
+.vb
+  KSPSetGuessType(ksp, "my_initial_guess")
+.ve
+  or at runtime via the option `-ksp_guess_type my_initial_guess`
 
   Level: developer
 
