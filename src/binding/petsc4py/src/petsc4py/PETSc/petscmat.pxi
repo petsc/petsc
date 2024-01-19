@@ -949,7 +949,7 @@ cdef inline PetscErrorCode matsetvalues_rcv(PetscMat A,
     cdef Py_ssize_t nm = PyArray_DIM(ai, 0)
     cdef Py_ssize_t si = PyArray_DIM(ai, 1)
     cdef Py_ssize_t sj = PyArray_DIM(aj, 1)
-    cdef Py_ssize_t sv = PyArray_SIZE(av) // PyArray_DIM(av, 0)
+    cdef Py_ssize_t sv = PyArray_MultiplyList(PyArray_DIMS(av)+1, PyArray_NDIM(av)-1)
     if ((nm != PyArray_DIM(aj, 0)) or
         (nm != PyArray_DIM(av, 0)) or
         (si*rbs * sj*cbs != sv)): raise ValueError(

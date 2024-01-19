@@ -293,24 +293,20 @@ PETSC_INTERN PetscErrorCode KSPCheckPCMPI(KSP);
 + -ksp_max_it                                                             - maximum number of linear iterations
 . -ksp_min_it                                                             - minimum number of linear iterations to use, defaults to zero
 . -ksp_rtol rtol                                                          - relative tolerance used in default determination of convergence, i.e.
-                if residual norm decreases by this factor than convergence is declared
+                                                                            if residual norm decreases by this factor than convergence is declared
 . -ksp_atol abstol                                                        - absolute tolerance used in default convergence test, i.e. if residual
-                norm is less than this then convergence is declared
+                                                                            norm is less than this then convergence is declared
 . -ksp_divtol tol                                                         - if residual norm increases by this factor than divergence is declared
 . -ksp_converged_use_initial_residual_norm                                - see `KSPConvergedDefaultSetUIRNorm()`
 . -ksp_converged_use_min_initial_residual_norm                            - see `KSPConvergedDefaultSetUMIRNorm()`
 . -ksp_converged_maxits                                                   - see `KSPConvergedDefaultSetConvergedMaxits()`
-. -ksp_norm_type                                                          - none - skip norms used in convergence tests (useful only when not using
-                       convergence test (say you always want to run with 5 iterations) to
-                       save on communication overhead
-                    preconditioned - default for left preconditioning
-                    unpreconditioned - see `KSPSetNormType()`
-                    natural - see `KSPSetNormType()`
+. -ksp_norm_type <none,preconditioned,unpreconditioned,natural>           - see `KSPSetNormType()`
 . -ksp_check_norm_iteration it                                            - do not compute residual norm until iteration number it (does compute at 0th iteration)
-       works only for `KSPBCGS`, `KSPIBCGS` and and `KSPCG`
-. -ksp_lag_norm                                                           - compute the norm of the residual for the ith iteration on the i+1 iteration; this means that one can use
-       the norm of the residual for convergence test WITHOUT an extra `MPI_Allreduce()` limiting global synchronizations.
-       This will require 1 more iteration of the solver than usual.
+                                                                            works only for `KSPBCGS`, `KSPIBCGS`, and `KSPCG`
+. -ksp_lag_norm                                                           - compute the norm of the residual for the ith iteration on the i+1 iteration;
+                                                                            this means that one can use the norm of the residual for convergence test WITHOUT
+                                                                            an extra `MPI_Allreduce()` limiting global synchronizations.
+                                                                            This will require 1 more iteration of the solver than usual.
 . -ksp_guess_type                                                         - Type of initial guess generator for repeated linear solves
 . -ksp_fischer_guess <model,size>                                         - uses the Fischer initial guess generator for repeated linear solves
 . -ksp_constant_null_space                                                - assume the operator (matrix) has the constant vector in its null space
@@ -321,19 +317,20 @@ PETSC_INTERN PetscErrorCode KSPCheckPCMPI(KSP);
 . -ksp_monitor draw::draw_lg                                              - plot residual norm at each iteration
 . -ksp_monitor_true_residual                                              - print true residual norm at each iteration
 . -all_ksp_monitor <optional filename>                                    - print residual norm at each iteration for ALL KSP solves, regardless of their prefix. This is
-                                           useful for `PCFIELDSPLIT`, `PCMG`, etc that have inner solvers and you wish to track the convergence of all the solvers
+                                                                            useful for `PCFIELDSPLIT`, `PCMG`, etc that have inner solvers and
+                                                                            you wish to track the convergence of all the solvers
 . -ksp_monitor_solution [ascii binary or draw][:filename][:format option] - plot solution at each iteration
 . -ksp_monitor_singular_value                                             - monitor extreme singular values at each iteration
 . -ksp_converged_reason                                                   - view the convergence state at the end of the solve
 . -ksp_use_explicittranspose                                              - transpose the system explicitly in KSPSolveTranspose
-. -ksp_error_if_not_converged                                             - stop the program as soon as an error is detected in a `KSPSolve()`, `KSP_DIVERGED_ITS` is not treated as an error on inner solves
+. -ksp_error_if_not_converged                                             - stop the program as soon as an error is detected in a `KSPSolve()`, `KSP_DIVERGED_ITS`
+                                                                            is not treated as an error on inner solves
 - -ksp_converged_rate                                                     - view the convergence rate at the end of the solve
 
   Level: beginner
 
   Note:
-  To see all options, run your program with the -help option
-  or consult [](ch_ksp)
+  To see all options, run your program with the `-help` option or consult [](ch_ksp)
 
 .seealso: [](ch_ksp), `KSP`, `KSPSetOptionsPrefix()`, `KSPResetFromOptions()`, `KSPSetUseFischerGuess()`
 @*/
@@ -611,7 +608,6 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
   }
 #endif
 
-  /* -----------------------------------------------------------------------*/
   PetscCall(KSPSetUpNorms_Private(ksp, PETSC_FALSE, NULL, &pcside));
   PetscCall(PetscOptionsEnum("-ksp_pc_side", "KSP preconditioner side", "KSPSetPCSide", PCSides, (PetscEnum)pcside, (PetscEnum *)&pcside, &flg));
   if (flg) PetscCall(KSPSetPCSide(ksp, pcside));

@@ -20,14 +20,14 @@
   Level: developer
 
   Note:
-  This routine assumes that an iterative method, designed for
-$     A x = b
+  This routine assumes that an iterative method, designed for $ A x = b $
   will be used with a preconditioner, C, such that the actual problem is either
-$     AC u = b (right preconditioning) or
-$     CA x = Cb (left preconditioning).
+.vb
+  AC u = b (right preconditioning) or
+  CA x = Cb (left preconditioning).
+.ve
   This means that the calculated residual will be scaled and/or preconditioned;
-  the true residual
-$     b-Ax
+  the true residual $ b-Ax $
   is returned in the `vt2` temporary work vector.
 
 .seealso: [](ch_ksp), `KSP`, `KSPSolve()`, `KSPMonitor()`
@@ -87,12 +87,12 @@ PetscErrorCode KSPInitialResidual(KSP ksp, Vec vsoln, Vec vt1, Vec vt2, Vec vres
   Output Parameter:
 . vsoln - contains solution on output
 
+  Level: advanced
+
   Note:
   If preconditioning either symmetrically or on the right, this routine solves
   for the correction to the unpreconditioned problem.  If preconditioning on
   the left, nothing is done.
-
-  Level: advanced
 
 .seealso: [](ch_ksp), `KSP`, `KSPSetPCSide()`
 @*/
