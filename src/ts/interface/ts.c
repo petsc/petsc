@@ -3397,10 +3397,6 @@ PetscErrorCode TSStep(TS ts)
     ts->steprollback = PETSC_FALSE;
     ts->steprestart  = PETSC_FALSE;
   }
-  if (!ts->reason) {
-    if (ts->steps >= ts->max_steps) ts->reason = TS_CONVERGED_ITS;
-    else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
-  }
 
   if (ts->reason < 0 && ts->errorifstepfailed) {
     PetscCall(TSMonitorCancel(ts));
@@ -4038,6 +4034,11 @@ PetscErrorCode TSSolve(TS ts, Vec u)
       PetscCall(TSPostEvaluate(ts));
       PetscCall(TSEventHandler(ts)); /* The right-hand side may be changed due to event. Be careful with Any computation using the RHS information after this point. */
       if (ts->steprollback) PetscCall(TSPostEvaluate(ts));
+      /* check convergence */
+      if (!ts->reason) {
+        if (ts->steps >= ts->max_steps) ts->reason = TS_CONVERGED_ITS;
+        else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
+      }
       if (!ts->steprollback) {
         PetscCall(TSTrajectorySet(ts->trajectory, ts, ts->steps, ts->ptime, ts->vec_sol));
         PetscCall(TSPostStep(ts));
