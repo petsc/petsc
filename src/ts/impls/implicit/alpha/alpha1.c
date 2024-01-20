@@ -269,15 +269,6 @@ static PetscErrorCode TSEvaluateWLTE_Alpha(TS ts, NormType wnormtype, PetscInt *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TSRollBack_Alpha(TS ts)
-{
-  TS_Alpha *th = (TS_Alpha *)ts->data;
-
-  PetscFunctionBegin;
-  PetscCall(VecCopy(th->X0, ts->vec_sol));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode TSInterpolate_Alpha(TS ts, PetscReal t, Vec X)
 {
   TS_Alpha *th = (TS_Alpha *)ts->data;
@@ -458,7 +449,6 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha(TS ts)
   ts->ops->setfromoptions = TSSetFromOptions_Alpha;
   ts->ops->step           = TSStep_Alpha;
   ts->ops->evaluatewlte   = TSEvaluateWLTE_Alpha;
-  ts->ops->rollback       = TSRollBack_Alpha;
   ts->ops->interpolate    = TSInterpolate_Alpha;
   ts->ops->resizeregister = TSResizeRegister_Alpha;
   ts->ops->snesfunction   = SNESTSFormFunction_Alpha;

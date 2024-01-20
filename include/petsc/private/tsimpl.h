@@ -161,8 +161,9 @@ struct _p_TS {
   TSEquationType equation_type;
 
   DM          dm;
-  Vec         vec_sol; /* solution vector in first and second order equations */
-  Vec         vec_dot; /* time derivative vector in second order equations */
+  Vec         vec_sol;  /* solution vector in first and second order equations */
+  Vec         vec_sol0; /* solution vector at the beginning of the step */
+  Vec         vec_dot;  /* time derivative vector in second order equations */
   TSAdapt     adapt;
   TSAdaptType default_adapt_type;
   TSEvent     event;
@@ -299,6 +300,7 @@ struct _p_TS {
   PetscInt  steps;               /* steps taken so far in all successive calls to TSSolve() */
   PetscReal ptime;               /* time at the start of the current step (stage time is internal if it exists) */
   PetscReal time_step;           /* current time increment */
+  PetscReal time_step0;          /* proposed time increment at the beginning of the step */
   PetscReal ptime_prev;          /* time at the start of the previous step */
   PetscReal ptime_prev_rollback; /* time at the start of the 2nd previous step to recover from rollback */
   PetscReal solvetime;           /* time at the conclusion of TSSolve() */

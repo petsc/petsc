@@ -2576,6 +2576,7 @@ PetscErrorCode TSReset(TS ts)
   PetscCall(MatDestroy(&ts->Brhs));
   PetscCall(VecDestroy(&ts->Frhs));
   PetscCall(VecDestroy(&ts->vec_sol));
+  PetscCall(VecDestroy(&ts->vec_sol0));
   PetscCall(VecDestroy(&ts->vec_dot));
   PetscCall(VecDestroy(&ts->vatol));
   PetscCall(VecDestroy(&ts->vrtol));
@@ -3376,8 +3377,13 @@ PetscErrorCode TSStep(TS ts)
   PetscCheck(ts->exact_final_time != TS_EXACTFINALTIME_UNSPECIFIED, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSStep()");
   PetscCheck(ts->exact_final_time != TS_EXACTFINALTIME_MATCHSTEP || ts->adapt, PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
 
+  if (!ts->vec_sol0) PetscCall(VecDuplicate(ts->vec_sol, &ts->vec_sol0));
+  PetscCall(VecCopy(ts->vec_sol, ts->vec_sol0));
+  ts->time_step0 = ts->time_step;
+
   if (!ts->steps) ts->ptime_prev = ts->ptime;
-  ptime                   = ts->ptime;
+  ptime = ts->ptime;
+
   ts->ptime_prev_rollback = ts->ptime_prev;
   ts->reason              = TS_CONVERGED_ITERATING;
 
@@ -5234,7 +5240,8 @@ PetscErrorCode TSRollBack(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscCheck(!ts->steprollback, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "TSRollBack already called");
-  PetscUseTypeMethod(ts, rollback);
+  PetscTryTypeMethod(ts, rollback);
+  PetscCall(VecCopy(ts->vec_sol0, ts->vec_sol));
   ts->time_step  = ts->ptime - ts->ptime_prev;
   ts->ptime      = ts->ptime_prev;
   ts->ptime_prev = ts->ptime_prev_rollback;

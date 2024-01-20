@@ -1301,7 +1301,7 @@ int main(int argc, char **argv)
 
    test:
       suffix: semiexplicit
-      args: -ts_monitor -snes_monitor_short -dae_semiexplicit -ts_rk_type 2a
+      args: -ts_monitor -dae_semiexplicit -snes_error_if_not_converged -ts_rk_type 2a
       localrunfiles: petscoptions X.bin Ybus.bin
 
    test:

@@ -322,15 +322,6 @@ static PetscErrorCode TSEvaluateWLTE_BDF(TS ts, NormType wnormtype, PetscInt *or
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TSRollBack_BDF(TS ts)
-{
-  TS_BDF *bdf = (TS_BDF *)ts->data;
-
-  PetscFunctionBegin;
-  PetscCall(VecCopy(bdf->work[1], ts->vec_sol));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode TSResizeRegister_BDF(TS ts, PetscBool reg)
 {
   TS_BDF     *bdf     = (TS_BDF *)ts->data;
@@ -529,7 +520,6 @@ PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS ts)
   ts->ops->setfromoptions = TSSetFromOptions_BDF;
   ts->ops->step           = TSStep_BDF;
   ts->ops->evaluatewlte   = TSEvaluateWLTE_BDF;
-  ts->ops->rollback       = TSRollBack_BDF;
   ts->ops->interpolate    = TSInterpolate_BDF;
   ts->ops->resizeregister = TSResizeRegister_BDF;
   ts->ops->snesfunction   = SNESTSFormFunction_BDF;
@@ -542,7 +532,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS ts)
   ts->data = (void *)bdf;
 
   bdf->status = TS_STEP_COMPLETE;
-  for (size_t i = 0; i < sizeof(bdf->work) / sizeof(Vec); i++) { bdf->work[i] = bdf->tvwork[i] = NULL; }
+  for (size_t i = 0; i < PETSC_STATIC_ARRAY_LENGTH(bdf->work); i++) { bdf->work[i] = bdf->tvwork[i] = NULL; }
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSBDFSetOrder_C", TSBDFSetOrder_BDF));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSBDFGetOrder_C", TSBDFGetOrder_BDF));

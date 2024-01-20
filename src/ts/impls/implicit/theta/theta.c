@@ -719,7 +719,6 @@ static PetscErrorCode TSRollBack_Theta(TS ts)
   TS        quadts = ts->quadraturets;
 
   PetscFunctionBegin;
-  PetscCall(VecCopy(th->X0, ts->vec_sol));
   if (quadts && ts->costintegralfwd) PetscCall(VecCopy(th->VecCostIntegral0, quadts->vec_sol));
   th->status = TS_STEP_INCOMPLETE;
   if (ts->mat_sensip) PetscCall(MatCopy(th->MatFwdSensip0, ts->mat_sensip, SAME_NONZERO_PATTERN));
