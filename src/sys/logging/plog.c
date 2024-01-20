@@ -1066,7 +1066,7 @@ PetscErrorCode PetscLogEventRegister(const char name[], PetscClassId classid, Pe
 /*@
   PetscLogEventSetCollective - Indicates that a particular event is collective.
 
-  Not Collective
+  Logically Collective
 
   Input Parameters:
 + event      - The event id
@@ -1077,9 +1077,9 @@ PetscErrorCode PetscLogEventRegister(const char name[], PetscClassId classid, Pe
   Notes:
   New events returned from `PetscLogEventRegister()` are collective by default.
 
-  Collective events are handled specially if the -log_sync is used. In that case the logging saves information about
+  Collective events are handled specially if the command line option -log_sync is used. In that case the logging saves information about
   two parts of the event; the time for all the MPI ranks to synchronize and then the time for the actual computation/communication
-  to be performed. This option is useful to debug imbalance within the computations or communications
+  to be performed. This option is useful to debug imbalance within the computations or communications.
 
 .seealso: [](ch_profiling), `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogEventRegister()`
 @*/

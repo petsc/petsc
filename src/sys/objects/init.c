@@ -490,6 +490,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
     char              mname[PETSC_MAX_PATH_LEN];
     PetscInt          n_max = PETSC_LOG_VIEW_FROM_OPTIONS_MAX;
     PetscViewerFormat format[PETSC_LOG_VIEW_FROM_OPTIONS_MAX];
+    PetscBool         ci_log = PetscCIEnabled;
 
     mname[0] = 0;
     PetscCall(PetscOptionsGetString(NULL, NULL, "-history", mname, sizeof(mname), &flg1));
@@ -501,6 +502,18 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
       }
     }
 
+    if (ci_log) {
+      static const char *LogOptions[] = {"-log_view", "-log_mpe", "-log_perfstubs", "-log_nvtx", "-log", "-log_all"};
+
+      for (size_t i = 0; i < PETSC_STATIC_ARRAY_LENGTH(LogOptions); i++) {
+        PetscCall(PetscOptionsHasName(NULL, NULL, LogOptions[i], &flg1));
+        if (flg1) {
+          ci_log = PETSC_FALSE;
+          break;
+        }
+      }
+    }
+    if (ci_log) PetscLogSyncOn = PETSC_TRUE;
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_sync", &PetscLogSyncOn, NULL));
 
     if (PetscDefined(HAVE_MPE)) {
@@ -529,7 +542,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
     flg1 = PETSC_FALSE;
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_all", &flg1, NULL));
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-log", &flg2, NULL));
-    if (flg1 || flg2) PetscCall(PetscLogDefaultBegin());
+    if (flg1 || flg2 || ci_log) PetscCall(PetscLogDefaultBegin());
 
     PetscCall(PetscOptionsGetString(NULL, NULL, "-log_trace", mname, sizeof(mname), &flg1));
     if (flg1) {
