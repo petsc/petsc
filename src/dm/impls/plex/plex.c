@@ -1761,38 +1761,51 @@ static PetscErrorCode DMPlexDrawCell(DM dm, PetscDraw draw, PetscInt cell, const
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMPlexDrawCellHighOrder(DM dm, PetscDraw draw, PetscInt cell, const PetscScalar coords[], PetscInt edgeDiv, PetscReal refCoords[], PetscReal edgeCoords[])
+static PetscErrorCode DrawPolygon_Private(DM dm, PetscDraw draw, PetscInt cell, PetscInt Nv, const PetscReal refVertices[], const PetscScalar coords[], PetscInt edgeDiv, PetscReal refCoords[], PetscReal edgeCoords[])
 {
-  DMPolytopeType ct;
-  PetscReal      centroid[2] = {0., 0.};
-  PetscMPIInt    rank;
-  PetscInt       fillColor, v, e, d;
+  PetscReal   centroid[2] = {0., 0.};
+  PetscMPIInt rank;
+  PetscInt    fillColor;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
-  PetscCall(DMPlexGetCellType(dm, cell, &ct));
   fillColor = PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS - 2) + 2;
+  for (PetscInt v = 0; v < Nv; ++v) {
+    centroid[0] += PetscRealPart(coords[v * 2 + 0]) / Nv;
+    centroid[1] += PetscRealPart(coords[v * 2 + 1]) / Nv;
+  }
+  for (PetscInt e = 0; e < Nv; ++e) {
+    refCoords[0] = refVertices[e * 2 + 0];
+    refCoords[1] = refVertices[e * 2 + 1];
+    for (PetscInt d = 1; d <= edgeDiv; ++d) {
+      refCoords[d * 2 + 0] = refCoords[0] + (refVertices[(e + 1) % Nv * 2 + 0] - refCoords[0]) * d / edgeDiv;
+      refCoords[d * 2 + 1] = refCoords[1] + (refVertices[(e + 1) % Nv * 2 + 1] - refCoords[1]) * d / edgeDiv;
+    }
+    PetscCall(DMPlexReferenceToCoordinates(dm, cell, edgeDiv + 1, refCoords, edgeCoords));
+    for (PetscInt d = 0; d < edgeDiv; ++d) {
+      PetscCall(PetscDrawTriangle(draw, centroid[0], centroid[1], edgeCoords[d * 2 + 0], edgeCoords[d * 2 + 1], edgeCoords[(d + 1) * 2 + 0], edgeCoords[(d + 1) * 2 + 1], fillColor, fillColor, fillColor));
+      PetscCall(PetscDrawLine(draw, edgeCoords[d * 2 + 0], edgeCoords[d * 2 + 1], edgeCoords[(d + 1) * 2 + 0], edgeCoords[(d + 1) * 2 + 1], PETSC_DRAW_BLACK));
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMPlexDrawCellHighOrder(DM dm, PetscDraw draw, PetscInt cell, const PetscScalar coords[], PetscInt edgeDiv, PetscReal refCoords[], PetscReal edgeCoords[])
+{
+  DMPolytopeType ct;
+
+  PetscFunctionBegin;
+  PetscCall(DMPlexGetCellType(dm, cell, &ct));
   switch (ct) {
   case DM_POLYTOPE_TRIANGLE: {
     PetscReal refVertices[6] = {-1., -1., 1., -1., -1., 1.};
 
-    for (v = 0; v < 3; ++v) {
-      centroid[0] += PetscRealPart(coords[v * 2 + 0]) / 3.;
-      centroid[1] += PetscRealPart(coords[v * 2 + 1]) / 3.;
-    }
-    for (e = 0; e < 3; ++e) {
-      refCoords[0] = refVertices[e * 2 + 0];
-      refCoords[1] = refVertices[e * 2 + 1];
-      for (d = 1; d <= edgeDiv; ++d) {
-        refCoords[d * 2 + 0] = refCoords[0] + (refVertices[(e + 1) % 3 * 2 + 0] - refCoords[0]) * d / edgeDiv;
-        refCoords[d * 2 + 1] = refCoords[1] + (refVertices[(e + 1) % 3 * 2 + 1] - refCoords[1]) * d / edgeDiv;
-      }
-      PetscCall(DMPlexReferenceToCoordinates(dm, cell, edgeDiv + 1, refCoords, edgeCoords));
-      for (d = 0; d < edgeDiv; ++d) {
-        PetscCall(PetscDrawTriangle(draw, centroid[0], centroid[1], edgeCoords[d * 2 + 0], edgeCoords[d * 2 + 1], edgeCoords[(d + 1) * 2 + 0], edgeCoords[(d + 1) * 2 + 1], fillColor, fillColor, fillColor));
-        PetscCall(PetscDrawLine(draw, edgeCoords[d * 2 + 0], edgeCoords[d * 2 + 1], edgeCoords[(d + 1) * 2 + 0], edgeCoords[(d + 1) * 2 + 1], PETSC_DRAW_BLACK));
-      }
-    }
+    PetscCall(DrawPolygon_Private(dm, draw, cell, 3, refVertices, coords, edgeDiv, refCoords, edgeCoords));
+  } break;
+  case DM_POLYTOPE_QUADRILATERAL: {
+    PetscReal refVertices[8] = {-1., -1., 1., -1., 1., 1., -1., 1.};
+
+    PetscCall(DrawPolygon_Private(dm, draw, cell, 4, refVertices, coords, edgeDiv, refCoords, edgeCoords));
   } break;
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot draw cells of type %s", DMPolytopeTypes[ct]);
@@ -1808,12 +1821,15 @@ static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
   Vec          coordinates;
   PetscReal    xyl[3], xyr[3];
   PetscReal   *refCoords, *edgeCoords;
-  PetscBool    isnull, drawAffine = PETSC_TRUE;
-  PetscInt     dim, vStart, vEnd, cStart, cEnd, c, edgeDiv = 4;
+  PetscBool    isnull, drawAffine;
+  PetscInt     dim, vStart, vEnd, cStart, cEnd, c, cDegree, edgeDiv;
 
   PetscFunctionBegin;
   PetscCall(DMGetCoordinateDim(dm, &dim));
   PetscCheck(dim <= 2, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Cannot draw meshes of dimension %" PetscInt_FMT, dim);
+  PetscCall(DMGetCoordinateDegree_Internal(dm, &cDegree));
+  drawAffine = cDegree > 1 ? PETSC_FALSE : PETSC_TRUE;
+  edgeDiv    = cDegree + 1;
   PetscCall(PetscOptionsGetBool(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dm_view_draw_affine", &drawAffine, NULL));
   if (!drawAffine) PetscCall(PetscMalloc2((edgeDiv + 1) * dim, &refCoords, (edgeDiv + 1) * dim, &edgeCoords));
   PetscCall(DMGetCoordinateDM(dm, &cdm));
@@ -1877,7 +1893,7 @@ static PetscErrorCode DMPlexCreateHighOrderSurrogate_Internal(DM dm, DM *hdm)
     Vec cl, rcl;
 
     PetscCall(DMRefine(odm, PetscObjectComm((PetscObject)odm), &rdm));
-    if (rd > 1) PetscCall(DMPlexCreateCoordinateSpace(rdm, rd, PETSC_FALSE, NULL));
+    PetscCall(DMPlexCreateCoordinateSpace(rdm, rd, PETSC_FALSE, NULL));
     PetscCall(PetscObjectSetName((PetscObject)rdm, "Refined Mesh with Linear Coordinates"));
     PetscCall(DMGetCoordinateDM(odm, &cdm));
     PetscCall(DMGetCoordinateDM(rdm, &rcdm));
