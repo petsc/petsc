@@ -1034,7 +1034,7 @@ static PetscErrorCode TestDiscretization(DM dm, AppCtx *user)
   PetscSection s;
 
   PetscFunctionBegin;
-  PetscCall(DMGetSection(dm, &s));
+  PetscCall(DMGetLocalSection(dm, &s));
   PetscCall(PetscObjectViewFromOptions((PetscObject)s, NULL, "-local_section_view"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1282,9 +1282,17 @@ int main(int argc, char **argv)
       args: -dim 2
       filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
     test:
+      suffix: tri_0_perm
+      args: -dim 2 -dm_plex_reorder_section
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g" -e "s/_neg//g" -e "s/_pos//g" -e "s~_ZL.*~~g"
+    test:
       suffix: tri_t1_0
       args: -dim 2 -test_num 1
       filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
+    test:
+      suffix: tri_t1_0_perm
+      args: -dim 2 -test_num 1 -dm_plex_reorder_section
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g" -e "s/_neg//g" -e "s/_pos//g" -e "s~_ZL.*~~g"
     test:
       suffix: tri_t2_0
       args: -dim 2 -test_num 2

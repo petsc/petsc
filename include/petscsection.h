@@ -2,6 +2,7 @@
 
 #include <petscsys.h>
 #include <petscis.h>
+#include <petscbt.h>
 #include <petscsectiontypes.h>
 
 /* SUBMANSEC = PetscSection */
@@ -25,6 +26,8 @@ PETSC_EXTERN PetscErrorCode PetscSectionGetChart(PetscSection, PetscInt *, Petsc
 PETSC_EXTERN PetscErrorCode PetscSectionSetChart(PetscSection, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscSectionGetPermutation(PetscSection, IS *);
 PETSC_EXTERN PetscErrorCode PetscSectionSetPermutation(PetscSection, IS);
+PETSC_EXTERN PetscErrorCode PetscSectionGetBlockStarts(PetscSection, PetscBT *);
+PETSC_EXTERN PetscErrorCode PetscSectionSetBlockStarts(PetscSection, PetscBT);
 PETSC_EXTERN PetscErrorCode PetscSectionGetPointMajor(PetscSection, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscSectionSetPointMajor(PetscSection, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscSectionGetIncludesConstraints(PetscSection, PetscBool *);

@@ -1123,8 +1123,8 @@ PetscErrorCode MatView(Mat mat, PetscViewer viewer)
       PetscCall(MatGetSize(mat, &rows, &cols));
       PetscCall(MatGetBlockSizes(mat, &rbs, &cbs));
       if (rbs != 1 || cbs != 1) {
-        if (rbs != cbs) PetscCall(PetscViewerASCIIPrintf(viewer, "rows=%" PetscInt_FMT ", cols=%" PetscInt_FMT ", rbs=%" PetscInt_FMT ", cbs=%" PetscInt_FMT "\n", rows, cols, rbs, cbs));
-        else PetscCall(PetscViewerASCIIPrintf(viewer, "rows=%" PetscInt_FMT ", cols=%" PetscInt_FMT ", bs=%" PetscInt_FMT "\n", rows, cols, rbs));
+        if (rbs != cbs) PetscCall(PetscViewerASCIIPrintf(viewer, "rows=%" PetscInt_FMT ", cols=%" PetscInt_FMT ", rbs=%" PetscInt_FMT ", cbs=%" PetscInt_FMT "%s\n", rows, cols, rbs, cbs, mat->bsizes ? " variable blocks set" : ""));
+        else PetscCall(PetscViewerASCIIPrintf(viewer, "rows=%" PetscInt_FMT ", cols=%" PetscInt_FMT ", bs=%" PetscInt_FMT "%s\n", rows, cols, rbs, mat->bsizes ? " variable blocks set" : ""));
       } else PetscCall(PetscViewerASCIIPrintf(viewer, "rows=%" PetscInt_FMT ", cols=%" PetscInt_FMT "\n", rows, cols));
       if (mat->factortype) {
         MatSolverType solver;
@@ -1146,6 +1146,16 @@ PetscErrorCode MatView(Mat mat, PetscViewer viewer)
       PetscCall(PetscViewerASCIIPushTab(viewer));
       PetscCall(MatProductView(mat, viewer));
       PetscCall(PetscViewerASCIIPopTab(viewer));
+      if (mat->bsizes && format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+        IS tmp;
+
+        PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)mat), mat->nblocks, mat->bsizes, PETSC_USE_POINTER, &tmp));
+        PetscCall(PetscObjectSetName((PetscObject)tmp, "Block Sizes"));
+        PetscCall(PetscViewerASCIIPushTab(viewer));
+        PetscCall(ISView(tmp, viewer));
+        PetscCall(PetscViewerASCIIPopTab(viewer));
+        PetscCall(ISDestroy(&tmp));
+      }
     }
   } else if (issaws) {
 #if defined(PETSC_HAVE_SAWS)
@@ -7728,8 +7738,8 @@ PetscErrorCode MatSetVariableBlockSizes(Mat mat, PetscInt nblocks, PetscInt *bsi
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscCheck(nblocks >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of local blocks must be great than or equal to zero");
   PetscCall(MatGetLocalSize(mat, &nlocal, NULL));
+  PetscCheck(nblocks >= 0 && nblocks <= nlocal, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of local blocks %" PetscInt_FMT " is not in [0, %" PetscInt_FMT "]", nblocks, nlocal);
   for (i = 0; i < nblocks; i++) ncnt += bsizes[i];
   PetscCheck(ncnt == nlocal, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Sum of local block sizes %" PetscInt_FMT " does not equal local size of matrix %" PetscInt_FMT, ncnt, nlocal);
   PetscCall(PetscFree(mat->bsizes));

@@ -428,3 +428,133 @@ PetscErrorCode DMPlexReorderGetDefault(DM dm, DMPlexReorderDefaultFlag *reorder)
   PetscUseMethod(dm, "DMPlexReorderGetDefault_C", (DM, DMPlexReorderDefaultFlag *), (dm, reorder));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+// Reorder to group split nodes
+PetscErrorCode DMPlexCreateSectionPermutation_Internal(DM dm, IS *permutation, PetscBT *blockStarts)
+{
+  IS        permIS;
+  PetscBT   bt, blst;
+  PetscInt *perm;
+  PetscInt  pStart, pEnd, i = 0;
+
+  PetscFunctionBegin;
+  *permutation = NULL;
+  *blockStarts = NULL;
+  {
+    DMPlexReorderDefaultFlag reorder;
+    PetscCall(DMPlexReorderSectionGetDefault(dm, &reorder));
+    if (reorder != DMPLEX_REORDER_DEFAULT_TRUE) PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+  PetscCall(PetscMalloc1(pEnd - pStart, &perm));
+  PetscCall(PetscBTCreate(pEnd - pStart, &bt));
+  PetscCall(PetscBTCreate(pEnd - pStart, &blst));
+  for (PetscInt p = pStart; p < pEnd; ++p) {
+    const PetscInt *supp, *cone;
+    PetscInt        suppSize;
+
+    if (PetscBTLookupSet(bt, p)) continue;
+    PetscCall(PetscBTSet(blst, p));
+    perm[i++] = p;
+    // Check for tensor cells in the support
+    PetscCall(DMPlexGetSupport(dm, p, &supp));
+    PetscCall(DMPlexGetSupportSize(dm, p, &suppSize));
+    for (PetscInt s = 0; s < suppSize; ++s) {
+      DMPolytopeType ct;
+      PetscInt       q, qq;
+
+      PetscCall(DMPlexGetCellType(dm, supp[s], &ct));
+      switch (ct) {
+      case DM_POLYTOPE_POINT_PRISM_TENSOR:
+      case DM_POLYTOPE_SEG_PRISM_TENSOR:
+      case DM_POLYTOPE_TRI_PRISM_TENSOR:
+      case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+        // If found, move up the split partner of the tensor cell, and the cell itself
+        PetscCall(DMPlexGetCone(dm, supp[s], &cone));
+        qq = supp[s];
+        q  = (cone[0] == p) ? cone[1] : cone[0];
+        if (!PetscBTLookupSet(bt, q)) {
+          perm[i++] = q;
+          s         = suppSize;
+        }
+        if (!PetscBTLookupSet(bt, qq)) {
+          perm[i++] = qq;
+          s         = suppSize;
+        }
+        break;
+      default:
+        break;
+      }
+    }
+  }
+  PetscCall(PetscBTDestroy(&bt));
+  PetscCheck(i == pEnd - pStart, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Number of points in permutation %" PetscInt_FMT " does not match chart size %" PetscInt_FMT, i, pEnd - pStart);
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, pEnd - pStart, perm, PETSC_OWN_POINTER, &permIS));
+  PetscCall(ISSetPermutation(permIS));
+  *permutation = permIS;
+  *blockStarts = blst;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode DMPlexReorderSectionSetDefault_Plex(DM dm, DMPlexReorderDefaultFlag reorder)
+{
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  mesh->reorderSection = reorder;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexReorderSectionSetDefault - Set flag indicating whether the local section should be reordered by default
+
+  Logically collective
+
+  Input Parameters:
++ dm      - The DM
+- reorder - Flag for reordering
+
+  Level: intermediate
+
+.seealso: `DMPlexReorderSectionGetDefault()`
+@*/
+PetscErrorCode DMPlexReorderSectionSetDefault(DM dm, DMPlexReorderDefaultFlag reorder)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscTryMethod(dm, "DMPlexReorderSectionSetDefault_C", (DM, DMPlexReorderDefaultFlag), (dm, reorder));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode DMPlexReorderSectionGetDefault_Plex(DM dm, DMPlexReorderDefaultFlag *reorder)
+{
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  *reorder = mesh->reorderSection;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexReorderSectionGetDefault - Get flag indicating whether the local section should be reordered by default
+
+  Not collective
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. reorder - Flag for reordering
+
+  Level: intermediate
+
+.seealso: `DMPlexReorderSetDefault()`
+@*/
+PetscErrorCode DMPlexReorderSectionGetDefault(DM dm, DMPlexReorderDefaultFlag *reorder)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscAssertPointer(reorder, 2);
+  PetscUseMethod(dm, "DMPlexReorderSectionGetDefault_C", (DM, DMPlexReorderDefaultFlag *), (dm, reorder));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}

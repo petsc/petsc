@@ -278,6 +278,8 @@ PETSC_EXTERN PetscErrorCode DMPlexGetOrdering1D(DM, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexPermute(DM, IS, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexReorderGetDefault(DM, DMPlexReorderDefaultFlag *);
 PETSC_EXTERN PetscErrorCode DMPlexReorderSetDefault(DM, DMPlexReorderDefaultFlag);
+PETSC_EXTERN PetscErrorCode DMPlexReorderSectionGetDefault(DM, DMPlexReorderDefaultFlag *);
+PETSC_EXTERN PetscErrorCode DMPlexReorderSectionSetDefault(DM, DMPlexReorderDefaultFlag);
 
 PETSC_EXTERN PetscErrorCode DMPlexCreateProcessSF(DM, PetscSF, IS *, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateTwoSidedProcessSF(DM, PetscSF, PetscSection, IS, PetscSection, IS, IS *, PetscSF *);
