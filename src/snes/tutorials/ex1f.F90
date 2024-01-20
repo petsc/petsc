@@ -114,7 +114,7 @@
       if (setls) then
         PetscCallA(SNESGetLineSearch(snes, linesearch, ierr))
         PetscCallA(SNESLineSearchSetType(linesearch, 'shell', ierr))
-        PetscCallA(SNESLineSearchShellSetUserFunc(linesearch, MyLineSearch,0,ierr))
+        PetscCallA(SNESLineSearchShellSetApply(linesearch, MyLineSearch,0,ierr))
       endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

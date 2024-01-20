@@ -804,7 +804,7 @@ static PetscErrorCode TaoSolve_PDIPM(Tao tao)
   /* Set linesearch */
   PetscCall(SNESGetLineSearch(pdipm->snes, &linesearch));
   PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHSHELL));
-  PetscCall(SNESLineSearchShellSetUserFunc(linesearch, SNESLineSearch_PDIPM, tao));
+  PetscCall(SNESLineSearchShellSetApply(linesearch, SNESLineSearch_PDIPM, tao));
   PetscCall(SNESLineSearchSetFromOptions(linesearch));
 
   tao->reason = TAO_CONTINUE_ITERATING;

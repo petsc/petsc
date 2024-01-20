@@ -652,23 +652,23 @@ int main(int argc, char **argv)
 
   if (useKokkos) {
     PetscCheck(MMS == 1, PETSC_COMM_WORLD, PETSC_ERR_USER, "FormFunctionLocalVec_Kokkos only works with MMS 1");
-    PetscCall(DMDASNESSetFunctionLocalVec(da, INSERT_VALUES, (DMDASNESFunctionVec)FormFunctionLocalVec, &user));
+    PetscCall(DMDASNESSetFunctionLocalVec(da, INSERT_VALUES, (DMDASNESFunctionVec_Fn *)FormFunctionLocalVec, &user));
   } else {
-    PetscCall(DMDASNESSetFunctionLocal(da, INSERT_VALUES, (DMDASNESFunction)FormFunctionLocal, &user));
+    PetscCall(DMDASNESSetFunctionLocal(da, INSERT_VALUES, (DMDASNESFunction_Fn *)FormFunctionLocal, &user));
   }
 
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-fd", &flg, NULL));
   if (!flg) {
-    if (useKokkos) PetscCall(DMDASNESSetJacobianLocalVec(da, (DMDASNESJacobianVec)FormJacobianLocalVec, &user));
-    else PetscCall(DMDASNESSetJacobianLocal(da, (DMDASNESJacobian)FormJacobianLocal, &user));
+    if (useKokkos) PetscCall(DMDASNESSetJacobianLocalVec(da, (DMDASNESJacobianVec_Fn *)FormJacobianLocalVec, &user));
+    else PetscCall(DMDASNESSetJacobianLocal(da, (DMDASNESJacobian_Fn *)FormJacobianLocal, &user));
   }
 
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-obj", &flg, NULL));
   if (flg) {
-    if (useKokkos) PetscCall(DMDASNESSetObjectiveLocalVec(da, (DMDASNESObjectiveVec)FormObjectiveLocalVec, &user));
-    else PetscCall(DMDASNESSetObjectiveLocal(da, (DMDASNESObjective)FormObjectiveLocal, &user));
+    if (useKokkos) PetscCall(DMDASNESSetObjectiveLocalVec(da, (DMDASNESObjectiveVec_Fn *)FormObjectiveLocalVec, &user));
+    else PetscCall(DMDASNESSetObjectiveLocal(da, (DMDASNESObjective_Fn *)FormObjectiveLocal, &user));
   }
 
   if (PetscDefined(HAVE_MATLAB)) {

@@ -479,8 +479,8 @@ PETSC_EXTERN PetscErrorCode TSSetStepNumber(TS, PetscInt);
 
   Level: beginner
 
-.seealso: [](ch_ts), `TS`, `TSSetRHSFunction()`, `DMTSSetRHSFunction()`, `TSIFunction()`,
-`TSIJacobian()`, `TSRHSJacobian()`
+.seealso: [](ch_ts), `TS`, `TSSetRHSFunction()`, `DMTSSetRHSFunction()`, `TSIFunction`,
+`TSIJacobian`, `TSRHSJacobian`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSFunction)(TS ts, PetscReal t, Vec u, Vec F, void *ctx);
 
@@ -497,8 +497,8 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSFunction)(TS ts, PetscReal t,
 
   Level: beginner
 
-.seealso: [](ch_ts), `TS`, `TSSetRHSJacobian()`, `DMTSSetRHSJacobian()`, `TSRHSFunction()`,
-`TSIFunction()`, `TSIJacobian()`
+.seealso: [](ch_ts), `TS`, `TSSetRHSJacobian()`, `DMTSSetRHSJacobian()`, `TSRHSFunction`,
+`TSIFunction`, `TSIJacobian`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSJacobian)(TS ts, PetscReal t, Vec u, Mat Amat, Mat Pmat, void *ctx);
 
@@ -572,7 +572,7 @@ PETSC_EXTERN PetscErrorCode TSSetForcingFunction(TS, TSForcingFunction, void *);
 
   Level: beginner
 
-.seealso: [](ch_ts), `TS`, `TSSetIFunction()`, `DMTSSetIFunction()`, `TSIJacobian()`, `TSRHSFunction()`, `TSRHSJacobian()`
+.seealso: [](ch_ts), `TS`, `TSSetIFunction()`, `DMTSSetIFunction()`, `TSIJacobian()`, `TSRHSFunction`, `TSRHSJacobian`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSIFunction)(TS ts, PetscReal t, Vec U, Vec U_t, Vec F, void *ctx);
 
@@ -591,7 +591,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSIFunction)(TS ts, PetscReal t, V
 
   Level: beginner
 
-.seealso: [](ch_ts), `TSSetIJacobian()`, `DMTSSetIJacobian()`, `TSIFunction()`, `TSRHSFunction()`, `TSRHSJacobian()`
+.seealso: [](ch_ts), `TSSetIJacobian()`, `DMTSSetIJacobian()`, `TSIFunction()`, `TSRHSFunction`, `TSRHSJacobian`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSIJacobian)(TS ts, PetscReal t, Vec U, Vec U_t, PetscReal a, Mat Amat, Mat Pmat, void *ctx);
 
@@ -635,7 +635,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSI2Function)(TS ts, PetscReal t, 
 
   Level: advanced
 
-.seealso: [](ch_ts), `TS`, `TSSetI2Jacobian()`, `DMTSSetI2Jacobian()`, `TSIFunction()`, `TSIJacobian()`, `TSRHSFunction()`, `TSRHSJacobian()`
+.seealso: [](ch_ts), `TS`, `TSSetI2Jacobian()`, `DMTSSetI2Jacobian()`, `TSIFunction`, `TSIJacobian`, `TSRHSFunction`, `TSRHSJacobian`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSI2Jacobian)(TS ts, PetscReal t, Vec U, Vec U_t, Vec U_tt, PetscReal v, PetscReal a, Mat J, Mat Jac, void *ctx);
 
@@ -783,7 +783,7 @@ PETSC_EXTERN PetscErrorCode DMTSSetIJacobianSerialize(DM, PetscErrorCode (*)(voi
 
   Level: beginner
 
-.seealso: `DMDA`, `DMDATSSetRHSFunctionLocal()`, `TSRHSFunction()`, `DMDATSRHSJacobianLocal()`, `DMDATSIJacobianLocal()`, `DMDATSIFunctionLocal()`
+.seealso: `DMDA`, `DMDATSSetRHSFunctionLocal()`, `TSRHSFunction`, `DMDATSRHSJacobianLocal()`, `DMDATSIJacobianLocal()`, `DMDATSIFunctionLocal()`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSRHSFunctionLocal)(DMDALocalInfo *info, PetscReal t, void *x, void *f, void *ctx);
 
@@ -800,7 +800,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSRHSFunctionLocal)(DMDALocalI
 
   Level: beginner
 
-.seealso: `DMDA`, `DMDATSSetRHSJacobianLocal()`, `TSRHSJacobian()`, `DMDATSRHSFunctionLocal()`, `DMDATSIJacobianLocal()`, `DMDATSIFunctionLocal()`
+.seealso: `DMDA`, `DMDATSSetRHSJacobianLocal()`, `TSRHSJacobian`, `DMDATSRHSFunctionLocal()`, `DMDATSIJacobianLocal()`, `DMDATSIFunctionLocal()`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSRHSJacobianLocal)(DMDALocalInfo *info, PetscReal t, void *x, Mat J, Mat B, void *ctx);
 

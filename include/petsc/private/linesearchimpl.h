@@ -11,10 +11,10 @@ typedef struct _LineSearchOps *LineSearchOps;
 
 struct _LineSearchOps {
   PetscErrorCode (*view)(SNESLineSearch, PetscViewer);
-  SNESLineSearchApplyFunc apply;
+  SNESLineSearchApply_Fn *apply;
   PetscErrorCode (*precheck)(SNESLineSearch, Vec, Vec, PetscBool *, void *);
-  SNESLineSearchVIProjectFunc viproject;
-  SNESLineSearchVINormFunc    vinorm;
+  SNESLineSearchVIProject_Fn *viproject;
+  SNESLineSearchVINorm_Fn    *vinorm;
   PetscErrorCode (*postcheck)(SNESLineSearch, Vec, Vec, Vec, PetscBool *, PetscBool *, void *);
   PetscErrorCode (*setfromoptions)(SNESLineSearch, PetscOptionItems *);
   PetscErrorCode (*reset)(SNESLineSearch);

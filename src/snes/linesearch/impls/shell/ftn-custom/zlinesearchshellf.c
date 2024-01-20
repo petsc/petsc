@@ -2,11 +2,11 @@
 #include <petscsnes.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-  #define sneslinesearchshellsetuserfunc_ SNESLINESEARCHSHELLSETUSERFUNC
-  #define sneslinesearchshellgetuserfunc_ SNESLINESEARCHSHELLGETUSERFUNC
+  #define sneslinesearchshellsetapply_ SNESLINESEARCHSHELLSETAPPLY
+  #define sneslinesearchshellgetapply_ SNESLINESEARCHSHELLGETAPPLY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define sneslinesearchshellsetuserfunc_ sneslinesearchshellsetuserfunc
-  #define sneslinesearchshellgetuserfunc_ sneslinesearchshellgetuserfunc
+  #define sneslinesearchshellsetapply_ sneslinesearchshellsetapply
+  #define sneslinesearchshellgetapply_ sneslinesearchshellgetapply
 #endif
 
 static PetscErrorCode oursneslinesearchshellfunction(SNESLineSearch linesearch, void *ctx)
@@ -16,16 +16,16 @@ static PetscErrorCode oursneslinesearchshellfunction(SNESLineSearch linesearch, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN void sneslinesearchshellsetuserfunc_(SNESLineSearch *linesearch, void (*func)(SNESLineSearch *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void sneslinesearchshellsetapply_(SNESLineSearch *linesearch, void (*func)(SNESLineSearch *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*linesearch, 3);
   ((PetscObject)*linesearch)->fortran_func_pointers[0] = (PetscVoidFunction)func;
 
-  *ierr = SNESLineSearchShellSetUserFunc(*linesearch, oursneslinesearchshellfunction, ctx);
+  *ierr = SNESLineSearchShellSetApply(*linesearch, oursneslinesearchshellfunction, ctx);
 }
 
-PETSC_EXTERN void sneslinesearchshellgetuserfunc_(SNESLineSearch *linesearch, void *func, void **ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void sneslinesearchshellgetapply_(SNESLineSearch *linesearch, void *func, void **ctx, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(ctx);
-  *ierr = SNESLineSearchShellGetUserFunc(*linesearch, NULL, ctx);
+  *ierr = SNESLineSearchShellGetApply(*linesearch, NULL, ctx);
 }

@@ -5,14 +5,14 @@
 /* This structure holds the user-provided DMDA callbacks */
 typedef struct {
   /* array versions for vector data */
-  DMDASNESFunction  residuallocal;
-  DMDASNESJacobian  jacobianlocal;
-  DMDASNESObjective objectivelocal;
+  DMDASNESFunction_Fn  *residuallocal;
+  DMDASNESJacobian_Fn  *jacobianlocal;
+  DMDASNESObjective_Fn *objectivelocal;
 
   /* Vec version for vector data */
-  DMDASNESFunctionVec  residuallocalvec;
-  DMDASNESJacobianVec  jacobianlocalvec;
-  DMDASNESObjectiveVec objectivelocalvec;
+  DMDASNESFunctionVec_Fn  *residuallocalvec;
+  DMDASNESJacobianVec_Fn  *jacobianlocalvec;
+  DMDASNESObjectiveVec_Fn *objectivelocalvec;
 
   /* user contexts */
   void      *residuallocalctx;
@@ -389,7 +389,7 @@ PetscErrorCode DMDASNESSetJacobianLocalVec(DM dm, PetscErrorCode (*func)(DMDALoc
 
   Level: beginner
 
-.seealso: [](ch_snes), `DMDA`, `DMSNESSetFunction()`, `DMDASNESSetJacobianLocal()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDASNESObjective`
+.seealso: [](ch_snes), `DMDA`, `DMSNESSetFunction()`, `DMDASNESSetJacobianLocal()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDASNESObjective_Fn`
 @*/
 PetscErrorCode DMDASNESSetObjectiveLocal(DM dm, PetscErrorCode (*func)(DMDALocalInfo *info, void *x, PetscReal *obj, void *), void *ctx)
 {
@@ -426,7 +426,7 @@ PetscErrorCode DMDASNESSetObjectiveLocal(DM dm, PetscErrorCode (*func)(DMDALocal
 
   Level: beginner
 
-.seealso: [](ch_snes), `DMDA`, `DMDASNESSetObjectiveLocal()`, `DMSNESSetFunction()`, `DMDASNESSetJacobianLocalVec()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDASNESObjectiveVec`
+.seealso: [](ch_snes), `DMDA`, `DMDASNESSetObjectiveLocal()`, `DMSNESSetFunction()`, `DMDASNESSetJacobianLocalVec()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDASNESObjectiveVec_Fn`
 @*/
 PetscErrorCode DMDASNESSetObjectiveLocalVec(DM dm, PetscErrorCode (*func)(DMDALocalInfo *info, Vec x, PetscReal *obj, void *), void *ctx)
 {

@@ -88,9 +88,9 @@ int main(int argc, char **argv)
   PetscCall(SNESSetApplicationContext(snes, user));
 
   /*  Set local callbacks */
-  if (use_obj) PetscCall(DMDASNESSetObjectiveLocal(da, (DMDASNESObjective)FormObjectiveLocal, NULL));
-  PetscCall(DMDASNESSetFunctionLocal(da, INSERT_VALUES, (DMDASNESFunction)FormFunctionLocal, NULL));
-  PetscCall(DMDASNESSetJacobianLocal(da, (DMDASNESJacobian)FormJacobianLocal, NULL));
+  if (use_obj) PetscCall(DMDASNESSetObjectiveLocal(da, (DMDASNESObjective_Fn *)FormObjectiveLocal, NULL));
+  PetscCall(DMDASNESSetFunctionLocal(da, INSERT_VALUES, (DMDASNESFunction_Fn *)FormFunctionLocal, NULL));
+  PetscCall(DMDASNESSetJacobianLocal(da, (DMDASNESJacobian_Fn *)FormJacobianLocal, NULL));
 
   /* Customize from command line */
   PetscCall(SNESSetFromOptions(snes));
