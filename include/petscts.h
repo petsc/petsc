@@ -712,7 +712,7 @@ PETSC_EXTERN PetscErrorCode TSSetPreStage(TS, PetscErrorCode (*)(TS, PetscReal))
 PETSC_EXTERN PetscErrorCode TSSetPostStage(TS, PetscErrorCode (*)(TS, PetscReal, PetscInt, Vec *));
 PETSC_EXTERN PetscErrorCode TSSetPostEvaluate(TS, PetscErrorCode (*)(TS));
 PETSC_EXTERN PetscErrorCode TSSetPostStep(TS, PetscErrorCode (*)(TS));
-PETSC_EXTERN PetscErrorCode TSSetResize(TS, PetscErrorCode (*)(TS, PetscInt, PetscReal, Vec, PetscBool *, void *), PetscErrorCode (*)(TS, PetscInt, Vec[], Vec[], void *), void *);
+PETSC_EXTERN PetscErrorCode TSSetResize(TS, PetscBool, PetscErrorCode (*)(TS, PetscInt, PetscReal, Vec, PetscBool *, void *), PetscErrorCode (*)(TS, PetscInt, Vec[], Vec[], void *), void *);
 PETSC_EXTERN PetscErrorCode TSPreStep(TS);
 PETSC_EXTERN PetscErrorCode TSPreStage(TS, PetscReal);
 PETSC_EXTERN PetscErrorCode TSPostStage(TS, PetscReal, PetscInt, Vec *);

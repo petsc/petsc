@@ -179,17 +179,18 @@ static PetscErrorCode TSTheta_SNESSolve(TS ts, Vec b, Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* We need to transfer X0 which will be copied into sol_prev */
 static PetscErrorCode TSResizeRegister_Theta(TS ts, PetscBool reg)
 {
-  TS_Theta  *th     = (TS_Theta *)ts->data;
-  const char name[] = "ts:theta:X0";
+  TS_Theta *th = (TS_Theta *)ts->data;
 
   PetscFunctionBegin;
-  if (reg && th->vec_sol_prev) {
-    PetscCall(TSResizeRegisterVec(ts, name, th->X0));
-  } else if (!reg) {
-    PetscCall(TSResizeRetrieveVec(ts, name, &th->X0));
+  if (reg) {
+    PetscCall(TSResizeRegisterVec(ts, "ts:theta:sol_prev", th->vec_sol_prev));
+    PetscCall(TSResizeRegisterVec(ts, "ts:theta:X0", th->X0));
+  } else {
+    PetscCall(TSResizeRetrieveVec(ts, "ts:theta:sol_prev", &th->vec_sol_prev));
+    PetscCall(PetscObjectReference((PetscObject)th->vec_sol_prev));
+    PetscCall(TSResizeRetrieveVec(ts, "ts:theta:X0", &th->X0));
     PetscCall(PetscObjectReference((PetscObject)th->X0));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1039,8 +1040,8 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
   PetscCall(TSAdaptCandidatesClear(ts->adapt));
   PetscCall(PetscObjectTypeCompare((PetscObject)ts->adapt, TSADAPTNONE, &match));
   if (!match) {
-    PetscCall(VecDuplicate(ts->vec_sol, &th->vec_sol_prev));
-    PetscCall(VecDuplicate(ts->vec_sol, &th->vec_lte_work));
+    if (!th->vec_sol_prev) PetscCall(VecDuplicate(ts->vec_sol, &th->vec_sol_prev));
+    if (!th->vec_lte_work) PetscCall(VecDuplicate(ts->vec_sol, &th->vec_lte_work));
   }
   PetscCall(TSGetSNES(ts, &ts->snes));
 

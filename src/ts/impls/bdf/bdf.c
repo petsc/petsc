@@ -325,11 +325,11 @@ static PetscErrorCode TSEvaluateWLTE_BDF(TS ts, NormType wnormtype, PetscInt *or
 static PetscErrorCode TSResizeRegister_BDF(TS ts, PetscBool reg)
 {
   TS_BDF     *bdf     = (TS_BDF *)ts->data;
-  const char *names[] = {"", "ts:bdf:1", "ts:bdf:2", "ts:bdf:3", "ts:bdf:4", "ts:bdf:5", "ts:bdf:6", ""};
-  PetscInt    i, maxn = (PetscInt)(sizeof(bdf->work) / sizeof(Vec) - 1);
+  const char *names[] = {"", "ts:bdf:1", "ts:bdf:2", "ts:bdf:3", "ts:bdf:4", "ts:bdf:5", "ts:bdf:6", "ts:bdf:7"};
+  PetscInt    i, maxn = PETSC_STATIC_ARRAY_LENGTH(bdf->work);
 
   PetscFunctionBegin;
-  PetscAssert(maxn == 7, PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "names need to be redefined");
+  PetscAssert(maxn == 8, PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "names need to be redefined");
   if (reg) {
     for (i = 1; i < PetscMin(bdf->n + 1, maxn); i++) { PetscCall(TSResizeRegisterVec(ts, names[i], bdf->work[i])); }
   } else {

@@ -474,7 +474,7 @@ int main(int argc, char **argv)
   PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_MATCHSTEP));
   PetscCall(TSSetFromOptions(ts));
   PetscCall(TSSetComputeInitialCondition(ts, SetInitialConditions));
-  PetscCall(TSSetResize(ts, TransferSetUp, TransferVecs, &ctx));
+  PetscCall(TSSetResize(ts, PETSC_FALSE, TransferSetUp, TransferVecs, &ctx));
 
   PetscCall(DMCreateGlobalVector(dm, &u));
   PetscCall(DMTSCheckFromOptions(ts, u));

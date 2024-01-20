@@ -17,7 +17,7 @@ static PetscErrorCode Transfer(TS, PetscInt, Vec[], Vec[], void *);
 int main(int argc, char **argv)
 {
   TS              ts;
-  PetscInt        n, ntransfer = 2;
+  PetscInt        n, ntransfer[] = {2, 2};
   const PetscInt  n_end = 11;
   PetscReal       t;
   const PetscReal t_end = 11;
@@ -78,7 +78,7 @@ int main(int argc, char **argv)
     PetscCall(TSSetEventHandler(ts, 3, direction, terminate, Event, PostEvent, NULL));
   }
   PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER));
-  PetscCall(TSSetResize(ts, TransferSetUp, Transfer, &ntransfer));
+  PetscCall(TSSetResize(ts, PETSC_TRUE, TransferSetUp, Transfer, ntransfer));
   PetscCall(TSSetFromOptions(ts));
 
   /* --- First Solve --- */
@@ -223,7 +223,12 @@ PetscErrorCode TransferSetUp(TS ts, PetscInt n, PetscReal t, Vec x, PetscBool *f
   PetscInt *nt = (PetscInt *)ctx;
 
   PetscFunctionBeginUser;
-  *flg = (PetscBool)(*nt && n && n % (*nt) == 0);
+  if (n == 1) {
+    nt[0] = 2;
+    nt[1] = 2;
+  }
+  *flg = (PetscBool)(nt[0] && n && n % (nt[0]) == 0);
+  if (*flg) nt[0] += nt[1];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -265,19 +270,19 @@ PetscErrorCode Transfer(TS ts, PetscInt nv, Vec vin[], Vec vout[], void *ctx)
       suffix: beuler
       diff_args: -j
       args: -ts_type beuler
-      output_file: output/ex1.out
+      output_file: output/ex1_theta.out
 
     test:
       suffix: cn
       diff_args: -j
       args: -ts_type cn
-      output_file: output/ex1.out
+      output_file: output/ex1_theta.out
 
     test:
       suffix: theta
       args: -ts_type theta
       diff_args: -j
-      output_file: output/ex1.out
+      output_file: output/ex1_theta.out
 
     test:
       suffix: bdf
@@ -289,7 +294,7 @@ PetscErrorCode Transfer(TS ts, PetscInt nv, Vec vin[], Vec vout[], void *ctx)
       suffix: alpha
       diff_args: -j
       args: -ts_type alpha
-      output_file: output/ex1.out
+      output_file: output/ex1_alpha.out
 
     test:
       suffix: rosw
@@ -301,6 +306,6 @@ PetscErrorCode Transfer(TS ts, PetscInt nv, Vec vin[], Vec vout[], void *ctx)
       suffix: arkimex
       diff_args: -j
       args: -ts_type arkimex
-      output_file: output/ex1.out
+      output_file: output/ex1_arkimex.out
 
 TEST*/

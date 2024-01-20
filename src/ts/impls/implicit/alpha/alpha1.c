@@ -34,17 +34,18 @@ typedef struct {
   TSStepStatus status;
 } TS_Alpha;
 
-/* We need to transfer X0 which will be copied into sol_prev */
 static PetscErrorCode TSResizeRegister_Alpha(TS ts, PetscBool reg)
 {
-  TS_Alpha  *th     = (TS_Alpha *)ts->data;
-  const char name[] = "ts:alpha:X0";
+  TS_Alpha *th = (TS_Alpha *)ts->data;
 
   PetscFunctionBegin;
-  if (reg && th->vec_sol_prev) {
-    PetscCall(TSResizeRegisterVec(ts, name, th->X0));
-  } else if (!reg) {
-    PetscCall(TSResizeRetrieveVec(ts, name, &th->X0));
+  if (reg) {
+    PetscCall(TSResizeRegisterVec(ts, "ts:theta:sol_prev", th->vec_sol_prev));
+    PetscCall(TSResizeRegisterVec(ts, "ts:theta:X0", th->X0));
+  } else {
+    PetscCall(TSResizeRetrieveVec(ts, "ts:theta:sol_prev", &th->vec_sol_prev));
+    PetscCall(PetscObjectReference((PetscObject)th->vec_sol_prev));
+    PetscCall(TSResizeRetrieveVec(ts, "ts:theta:X0", &th->X0));
     PetscCall(PetscObjectReference((PetscObject)th->X0));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -353,8 +354,8 @@ static PetscErrorCode TSSetUp_Alpha(TS ts)
   PetscCall(TSAdaptCandidatesClear(ts->adapt));
   PetscCall(PetscObjectTypeCompare((PetscObject)ts->adapt, TSADAPTNONE, &match));
   if (!match) {
-    PetscCall(VecDuplicate(ts->vec_sol, &th->vec_sol_prev));
-    PetscCall(VecDuplicate(ts->vec_sol, &th->vec_lte_work));
+    if (!th->vec_sol_prev) PetscCall(VecDuplicate(ts->vec_sol, &th->vec_sol_prev));
+    if (!th->vec_lte_work) PetscCall(VecDuplicate(ts->vec_sol, &th->vec_lte_work));
   }
 
   PetscCall(TSGetSNES(ts, &ts->snes));
