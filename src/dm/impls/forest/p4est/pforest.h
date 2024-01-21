@@ -4856,6 +4856,7 @@ static PetscErrorCode DMCreateMatrix_pforest(DM dm, Mat *mat)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMPforestGetPlex(dm, &plex));
   if (plex->prealloc_only != dm->prealloc_only) plex->prealloc_only = dm->prealloc_only; /* maybe this should go into forest->plex */
+  PetscCall(DMSetMatType(plex, dm->mattype));
   PetscCall(DMCreateMatrix(plex, mat));
   PetscCall(MatSetDM(*mat, dm));
   PetscFunctionReturn(PETSC_SUCCESS);
