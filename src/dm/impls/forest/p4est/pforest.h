@@ -362,7 +362,6 @@ static PetscErrorCode DMConvert_plex_pforest(DM dm, DMType newtype, DM *pforest)
   void     *ctx;
 
   PetscFunctionBegin;
-
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   comm = PetscObjectComm((PetscObject)dm);
   PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMPLEX, &isPlex));
@@ -1077,6 +1076,8 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     PetscCall(DMPforestGetRefinementLevel(dm, &currLevel));
     PetscCall(DMForestGetInitialRefinement(dm, &initLevel));
     PetscCall(DMForestGetMinimumRefinement(dm, &minLevel));
+    /* allow using PCMG and SNESFAS */
+    PetscCall(DMSetRefineLevel(dm, currLevel - minLevel));
     if (currLevel > minLevel) {
       DM_Forest_pforest *coarse_pforest;
       DMLabel            coarsen;
@@ -4125,7 +4126,6 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
   DMLabel              ghostLabelBase = NULL;
 
   PetscFunctionBegin;
-
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   comm = PetscObjectComm((PetscObject)dm);
   PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMPFOREST, &isPforest));
