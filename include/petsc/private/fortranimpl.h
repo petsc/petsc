@@ -274,7 +274,7 @@ typedef PETSC_UINTPTR_T PetscFortranAddr;
   do { \
     void(*func) types, *_ctx; \
     PetscFunctionBegin; \
-    PetscCall(PetscObjectGetFortranCallback((PetscObject)(obj), (cbclass), (cid), (PetscVoidFunction *)&func, &_ctx)); \
+    PetscCall(PetscObjectGetFortranCallback((PetscObject)(obj), (cbclass), (cid), (PetscVoid_Fn **)&func, &_ctx)); \
     if (func) PetscCallFortranVoidFunction((*func)args); \
     PetscFunctionReturn(PETSC_SUCCESS); \
   } while (0)

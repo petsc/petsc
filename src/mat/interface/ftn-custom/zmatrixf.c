@@ -584,7 +584,7 @@ static PetscErrorCode ournullfunction(MatNullSpace sp, Vec x, void *ctx)
 PETSC_EXTERN void matnullspacesetfunction_(MatNullSpace *sp, PetscErrorCode (*rem)(MatNullSpace, Vec, void *), void *ctx, PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*sp, 1);
-  ((PetscObject)*sp)->fortran_func_pointers[0] = (PetscVoidFunction)rem;
+  ((PetscObject)*sp)->fortran_func_pointers[0] = (PetscVoid_Fn *)rem;
 
   *ierr = MatNullSpaceSetFunction(*sp, ournullfunction, ctx);
 }

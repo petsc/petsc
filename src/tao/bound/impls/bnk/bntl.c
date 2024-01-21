@@ -232,8 +232,8 @@ PetscErrorCode TaoSolve_BNTL(Tao tao)
 /*------------------------------------------------------------*/
 static PetscErrorCode TaoSetUp_BNTL(Tao tao)
 {
-  KSP               ksp;
-  PetscVoidFunction valid;
+  KSP           ksp;
+  PetscVoid_Fn *valid;
 
   PetscFunctionBegin;
   PetscCall(TaoSetUp_BNK(tao));

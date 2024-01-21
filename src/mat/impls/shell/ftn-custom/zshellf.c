@@ -217,100 +217,100 @@ PETSC_EXTERN void matshellsetoperation_(Mat *mat, MatOperation *op, PetscErrorCo
 
   switch (*op) {
   case MATOP_MULT:
-    *ierr                                                          = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourmult);
-    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_MULT] = (PetscVoidFunction)f;
+    *ierr                                                          = MatShellSetOperation(*mat, *op, (PetscVoid_Fn *)ourmult);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_MULT] = (PetscVoid_Fn *)f;
     break;
   case MATOP_MULT_ADD:
-    *ierr                                                              = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourmultadd);
-    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_MULT_ADD] = (PetscVoidFunction)f;
+    *ierr                                                              = MatShellSetOperation(*mat, *op, (PetscVoid_Fn *)ourmultadd);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_MULT_ADD] = (PetscVoid_Fn *)f;
     break;
   case MATOP_MULT_TRANSPOSE:
-    *ierr                                                                    = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourmulttranspose);
-    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_MULT_TRANSPOSE] = (PetscVoidFunction)f;
+    *ierr                                                                    = MatShellSetOperation(*mat, *op, (PetscVoid_Fn *)ourmulttranspose);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_MULT_TRANSPOSE] = (PetscVoid_Fn *)f;
     break;
   case MATOP_MULT_HERMITIAN_TRANSPOSE:
-    *ierr                                                             = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourmulthermitiantranspose);
-    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_MULT_HT] = (PetscVoidFunction)f;
+    *ierr                                                             = MatShellSetOperation(*mat, *op, (PetscVoid_Fn *)ourmulthermitiantranspose);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_MULT_HT] = (PetscVoid_Fn *)f;
     break;
   case MATOP_MULT_TRANSPOSE_ADD:
-    *ierr                                                                        = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourmulttransposeadd);
-    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_MULT_TRANSPOSE_ADD] = (PetscVoidFunction)f;
+    *ierr                                                                        = MatShellSetOperation(*mat, *op, (PetscVoid_Fn *)ourmulttransposeadd);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_MULT_TRANSPOSE_ADD] = (PetscVoid_Fn *)f;
     break;
   case MATOP_MULT_HERMITIAN_TRANS_ADD:
-    *ierr                                                                 = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourmulthermitiantransposeadd);
-    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_MULT_HT_ADD] = (PetscVoidFunction)f;
+    *ierr                                                                 = MatShellSetOperation(*mat, *op, (PetscVoid_Fn *)ourmulthermitiantransposeadd);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_MULT_HT_ADD] = (PetscVoid_Fn *)f;
     break;
   case MATOP_SOR:
-    *ierr                                                         = MatShellSetOperation(*mat, *op, (PetscVoidFunction)oursor);
-    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_SOR] = (PetscVoidFunction)f;
+    *ierr                                                         = MatShellSetOperation(*mat, *op, (PetscVoid_Fn *)oursor);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_SOR] = (PetscVoid_Fn *)f;
     break;
   case MATOP_TRANSPOSE:
-    *ierr                                                               = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourtranspose);
-    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_TRANSPOSE] = (PetscVoidFunction)f;
+    *ierr                                                               = MatShellSetOperation(*mat, *op, (PetscVoid_Fn *)ourtranspose);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_TRANSPOSE] = (PetscVoid_Fn *)f;
     break;
   case MATOP_GET_DIAGONAL:
-    *ierr                                                                  = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourgetdiagonal);
-    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_GET_DIAGONAL] = (PetscVoidFunction)f;
+    *ierr                                                                  = MatShellSetOperation(*mat, *op, (PetscVoid_Fn *)ourgetdiagonal);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_GET_DIAGONAL] = (PetscVoid_Fn *)f;
     break;
   case MATOP_DIAGONAL_SCALE:
-    *ierr                                                                    = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourdiagonalscale);
-    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_DIAGONAL_SCALE] = (PetscVoidFunction)f;
+    *ierr                                                                    = MatShellSetOperation(*mat, *op, (PetscVoid_Fn *)ourdiagonalscale);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_DIAGONAL_SCALE] = (PetscVoid_Fn *)f;
     break;
   case MATOP_ZERO_ENTRIES:
-    *ierr                                                                  = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourzeroentries);
-    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_ZERO_ENTRIES] = (PetscVoidFunction)f;
+    *ierr                                                                  = MatShellSetOperation(*mat, *op, (PetscVoid_Fn *)ourzeroentries);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_ZERO_ENTRIES] = (PetscVoid_Fn *)f;
     break;
   case MATOP_AXPY:
-    *ierr                                                          = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ouraxpy);
-    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_AXPY] = (PetscVoidFunction)f;
+    *ierr                                                          = MatShellSetOperation(*mat, *op, (PetscVoid_Fn *)ouraxpy);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_AXPY] = (PetscVoid_Fn *)f;
     break;
   case MATOP_SHIFT:
-    *ierr                                                           = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourshift);
-    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_SHIFT] = (PetscVoidFunction)f;
+    *ierr                                                           = MatShellSetOperation(*mat, *op, (PetscVoid_Fn *)ourshift);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_SHIFT] = (PetscVoid_Fn *)f;
     break;
   case MATOP_DIAGONAL_SET:
-    *ierr                                                                  = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourdiagonalset);
-    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_DIAGONAL_SET] = (PetscVoidFunction)f;
+    *ierr                                                                  = MatShellSetOperation(*mat, *op, (PetscVoid_Fn *)ourdiagonalset);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_DIAGONAL_SET] = (PetscVoid_Fn *)f;
     break;
   case MATOP_DESTROY:
-    *ierr                                                             = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourdestroy);
-    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_DESTROY] = (PetscVoidFunction)f;
+    *ierr                                                             = MatShellSetOperation(*mat, *op, (PetscVoid_Fn *)ourdestroy);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_DESTROY] = (PetscVoid_Fn *)f;
     break;
   case MATOP_VIEW:
-    *ierr                                                          = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourview);
-    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_VIEW] = (PetscVoidFunction)f;
+    *ierr                                                          = MatShellSetOperation(*mat, *op, (PetscVoid_Fn *)ourview);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_VIEW] = (PetscVoid_Fn *)f;
     break;
   case MATOP_CREATE_VECS:
-    *ierr                                                                 = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourgetvecs);
-    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_CREATE_VECS] = (PetscVoidFunction)f;
+    *ierr                                                                 = MatShellSetOperation(*mat, *op, (PetscVoid_Fn *)ourgetvecs);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_CREATE_VECS] = (PetscVoid_Fn *)f;
     break;
   case MATOP_GET_DIAGONAL_BLOCK:
-    *ierr                                                                        = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourgetdiagonalblock);
-    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_GET_DIAGONAL_BLOCK] = (PetscVoidFunction)f;
+    *ierr                                                                        = MatShellSetOperation(*mat, *op, (PetscVoid_Fn *)ourgetdiagonalblock);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_GET_DIAGONAL_BLOCK] = (PetscVoid_Fn *)f;
     break;
   case MATOP_COPY:
-    *ierr                                                          = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourcopy);
-    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_COPY] = (PetscVoidFunction)f;
+    *ierr                                                          = MatShellSetOperation(*mat, *op, (PetscVoid_Fn *)ourcopy);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_COPY] = (PetscVoid_Fn *)f;
     break;
   case MATOP_SCALE:
-    *ierr                                                           = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourscale);
-    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_SCALE] = (PetscVoidFunction)f;
+    *ierr                                                           = MatShellSetOperation(*mat, *op, (PetscVoid_Fn *)ourscale);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_SCALE] = (PetscVoid_Fn *)f;
     break;
   case MATOP_SET_RANDOM:
-    *ierr                                                                = MatShellSetOperation(*mat, *op, (PetscVoidFunction)oursetrandom);
-    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_SET_RANDOM] = (PetscVoidFunction)f;
+    *ierr                                                                = MatShellSetOperation(*mat, *op, (PetscVoid_Fn *)oursetrandom);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_SET_RANDOM] = (PetscVoid_Fn *)f;
     break;
   case MATOP_ASSEMBLY_BEGIN:
-    *ierr                                                                    = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourassemblybegin);
-    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_ASSEMBLY_BEGIN] = (PetscVoidFunction)f;
+    *ierr                                                                    = MatShellSetOperation(*mat, *op, (PetscVoid_Fn *)ourassemblybegin);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_ASSEMBLY_BEGIN] = (PetscVoid_Fn *)f;
     break;
   case MATOP_ASSEMBLY_END:
-    *ierr                                                                  = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourassemblyend);
-    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_ASSEMBLY_END] = (PetscVoidFunction)f;
+    *ierr                                                                  = MatShellSetOperation(*mat, *op, (PetscVoid_Fn *)ourassemblyend);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_ASSEMBLY_END] = (PetscVoid_Fn *)f;
     break;
   case MATOP_DUPLICATE:
-    *ierr                                                               = MatShellSetOperation(*mat, *op, (PetscVoidFunction)ourduplicate);
-    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_DUPLICATE] = (PetscVoidFunction)f;
+    *ierr                                                               = MatShellSetOperation(*mat, *op, (PetscVoid_Fn *)ourduplicate);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_DUPLICATE] = (PetscVoid_Fn *)f;
     break;
   default:
     *ierr = PetscError(comm, __LINE__, "MatShellSetOperation_Fortran", __FILE__, PETSC_ERR_ARG_WRONG, PETSC_ERROR_INITIAL, "Cannot set that matrix operation");

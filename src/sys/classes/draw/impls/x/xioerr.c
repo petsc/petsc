@@ -9,9 +9,9 @@ void PetscXIOErrorHandlerJump(PETSC_UNUSED void *ctx)
   longjmp(PetscXIOErrorHandlerJumpBuf, 1);
 }
 
-PetscXIOErrorHandler PetscSetXIOErrorHandler(PetscXIOErrorHandler xioerrhdl)
+PetscXIOErrorHandler_Fn *PetscSetXIOErrorHandler(PetscXIOErrorHandler_Fn *xioerrhdl)
 {
-  return (PetscXIOErrorHandler)XSetIOErrorHandler((XIOErrorHandler)xioerrhdl);
+  return (PetscXIOErrorHandler_Fn *)XSetIOErrorHandler((XIOErrorHandler)xioerrhdl);
 }
 
 #endif

@@ -19,7 +19,7 @@ static PetscErrorCode oursneslinesearchshellfunction(SNESLineSearch linesearch, 
 PETSC_EXTERN void sneslinesearchshellsetapply_(SNESLineSearch *linesearch, void (*func)(SNESLineSearch *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*linesearch, 3);
-  ((PetscObject)*linesearch)->fortran_func_pointers[0] = (PetscVoidFunction)func;
+  ((PetscObject)*linesearch)->fortran_func_pointers[0] = (PetscVoid_Fn *)func;
 
   *ierr = SNESLineSearchShellSetApply(*linesearch, oursneslinesearchshellfunction, ctx);
 }

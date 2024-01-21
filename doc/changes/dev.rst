@@ -19,6 +19,8 @@ Changes: Development
 .. rubric:: Sys:
 
 - Add ``PetscBench`` an object class for managing benchmarks in PETSc
+- Deprecate ``PetscVoidFunction``, ``PetscVoidStarFunction``, and ``PetscErrorCodeFunction`` typedefs in favor of
+  ``PetscVoid_Fn`` and ``PetscErrorCode_Fn``
 
 .. rubric:: Event Logging:
 

@@ -15,7 +15,7 @@ public:
   {
     PetscFunctionBegin;
     PetscCall(PetscArrayzero(dctx, 1));
-    PetscCall(PetscHeaderCreate_Private((PetscObject)dctx, PETSC_DEVICE_CONTEXT_CLASSID, "PetscDeviceContext", "PetscDeviceContext", "Sys", PETSC_COMM_SELF, (PetscObjectDestroyFunction)PetscDeviceContextDestroy, (PetscObjectViewFunction)PetscDeviceContextView));
+    PetscCall(PetscHeaderCreate_Private((PetscObject)dctx, PETSC_DEVICE_CONTEXT_CLASSID, "PetscDeviceContext", "PetscDeviceContext", "Sys", PETSC_COMM_SELF, (PetscObjectDestroy_Fn *)PetscDeviceContextDestroy, (PetscObjectView_Fn *)PetscDeviceContextView));
     PetscCall(PetscLogObjectCreate((PetscObject)dctx));
 
     PetscCallCXX(PetscObjectCast(dctx)->cpp = new CxxData{dctx});

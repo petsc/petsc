@@ -3,8 +3,8 @@
 
 static PetscErrorCode TaoSetUp_BQNKTR(Tao tao)
 {
-  KSP               ksp;
-  PetscVoidFunction valid;
+  KSP           ksp;
+  PetscVoid_Fn *valid;
 
   PetscFunctionBegin;
   PetscCall(TaoSetUp_BQNK(tao));
