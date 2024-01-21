@@ -1603,7 +1603,7 @@ static PetscErrorCode DMCoarsen_Forest(DM dm, MPI_Comm comm, DM *dmCoarsened)
   DM      coarseDM;
 
   PetscFunctionBegin;
-  {
+  if (comm != MPI_COMM_NULL) {
     PetscMPIInt mpiComparison;
     MPI_Comm    dmcomm = PetscObjectComm((PetscObject)dm);
 
