@@ -1176,8 +1176,8 @@ int main(int argc, char **argv)
   } else {
     PetscCall(TSSetType(ts, TSCN));
     PetscCall(TSSetEquationType(ts, TS_EQ_DAE_IMPLICIT_INDEX1));
-    PetscCall(TSSetIFunction(ts, NULL, (TSIFunction)IFunction, &user));
-    PetscCall(TSSetIJacobian(ts, J, J, (TSIJacobian)IJacobian, &user));
+    PetscCall(TSSetIFunction(ts, NULL, (TSIFunction_Fn *)IFunction, &user));
+    PetscCall(TSSetIJacobian(ts, J, J, (TSIJacobian_Fn *)IJacobian, &user));
   }
   PetscCall(TSSetApplicationContext(ts, &user));
 

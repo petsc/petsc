@@ -10,11 +10,11 @@ typedef struct {
 
 static void FVPOL(int *N, double *X, double *Y, double *F, double *RPAR, void *IPAR)
 {
-  TS          ts    = (TS)IPAR;
-  TS_Radau5  *cvode = (TS_Radau5 *)ts->data;
-  DM          dm;
-  DMTS        tsdm;
-  TSIFunction ifunction;
+  TS              ts    = (TS)IPAR;
+  TS_Radau5      *cvode = (TS_Radau5 *)ts->data;
+  DM              dm;
+  DMTS            tsdm;
+  TSIFunction_Fn *ifunction;
 
   PetscCallAbort(PETSC_COMM_SELF, VecPlaceArray(cvode->work, Y));
   PetscCallAbort(PETSC_COMM_SELF, VecPlaceArray(cvode->workf, F));

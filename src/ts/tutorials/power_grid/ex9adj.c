@@ -275,12 +275,12 @@ int main(int argc, char **argv)
   PetscCall(TSSetProblemType(ts, TS_NONLINEAR));
   PetscCall(TSSetEquationType(ts, TS_EQ_ODE_EXPLICIT)); /* less Jacobian evaluations when adjoint BEuler is used, otherwise no effect */
   PetscCall(TSSetType(ts, TSRK));
-  PetscCall(TSSetRHSFunction(ts, NULL, (TSRHSFunction)RHSFunction, &ctx));
-  PetscCall(TSSetRHSJacobian(ts, A, A, (TSRHSJacobian)RHSJacobian, &ctx));
+  PetscCall(TSSetRHSFunction(ts, NULL, (TSRHSFunction_Fn *)RHSFunction, &ctx));
+  PetscCall(TSSetRHSJacobian(ts, A, A, (TSRHSJacobian_Fn *)RHSJacobian, &ctx));
   PetscCall(TSCreateQuadratureTS(ts, PETSC_TRUE, &quadts));
-  PetscCall(TSSetRHSFunction(quadts, NULL, (TSRHSFunction)CostIntegrand, &ctx));
-  PetscCall(TSSetRHSJacobian(quadts, DRDU, DRDU, (TSRHSJacobian)DRDUJacobianTranspose, &ctx));
-  PetscCall(TSSetRHSJacobianP(quadts, DRDP, (TSRHSJacobianP)DRDPJacobianTranspose, &ctx));
+  PetscCall(TSSetRHSFunction(quadts, NULL, (TSRHSFunction_Fn *)CostIntegrand, &ctx));
+  PetscCall(TSSetRHSJacobian(quadts, DRDU, DRDU, (TSRHSJacobian_Fn *)DRDUJacobianTranspose, &ctx));
+  PetscCall(TSSetRHSJacobianP(quadts, DRDP, (TSRHSJacobianP_Fn *)DRDPJacobianTranspose, &ctx));
   PetscCall(TSSetCostGradients(ts, 1, lambda, mu));
   PetscCall(TSSetRHSJacobianP(ts, Jacp, RHSJacobianP, &ctx));
 

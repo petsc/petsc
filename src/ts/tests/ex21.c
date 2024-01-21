@@ -174,8 +174,8 @@ int main(int argc, char **argv)
   PetscCall(DMDestroy(&da));
 
   PetscCall(TSGetDM(ts, &da));
-  PetscCall(DMDATSSetIFunctionLocal(da, INSERT_VALUES, (DMDATSIFunctionLocal)FormIFunctionLocal, &app));
-  PetscCall(DMDATSSetIJacobianLocal(da, (DMDATSIJacobianLocal)FormIJacobianLocal, &app));
+  PetscCall(DMDATSSetIFunctionLocal(da, INSERT_VALUES, (DMDATSIFunctionLocal_Fn *)FormIFunctionLocal, &app));
+  PetscCall(DMDATSSetIJacobianLocal(da, (DMDATSIJacobianLocal_Fn *)FormIJacobianLocal, &app));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options

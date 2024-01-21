@@ -456,7 +456,7 @@ M*/
 
 static PetscErrorCode TSHasRHSFunction(TS ts, PetscBool *has)
 {
-  TSRHSFunction func;
+  TSRHSFunction_Fn *func;
 
   PetscFunctionBegin;
   *has = PETSC_FALSE;
@@ -1467,7 +1467,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     if (PetscDefined(USE_DEBUG) && hasE) {
       PetscBool id = PETSC_FALSE;
       PetscCall(TSARKIMEXTestMassIdentity(ts, &id));
-      PetscCheck(id, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_INCOMP, "This scheme requires an identity mass matrix, however the TSIFunction you provided does not utilize an identity mass matrix");
+      PetscCheck(id, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_INCOMP, "This scheme requires an identity mass matrix, however the TSIFunction_Fn you provided does not utilize an identity mass matrix");
     }
     PetscCall(TSClone(ts, &ts_start));
     PetscCall(TSSetSolution(ts_start, ts->vec_sol));
@@ -2073,7 +2073,7 @@ static PetscErrorCode TSAdjointSetUp_ARKIMEX(TS ts)
   if (PetscDefined(USE_DEBUG)) {
     PetscBool id = PETSC_FALSE;
     PetscCall(TSARKIMEXTestMassIdentity(ts, &id));
-    PetscCheck(id, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_INCOMP, "Adjoint ARKIMEX requires an identity mass matrix, however the TSIFunction you provided does not utilize an identity mass matrix");
+    PetscCheck(id, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_INCOMP, "Adjoint ARKIMEX requires an identity mass matrix, however the TSIFunction_Fn you provided does not utilize an identity mass matrix");
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

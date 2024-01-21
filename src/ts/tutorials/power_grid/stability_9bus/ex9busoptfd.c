@@ -1024,8 +1024,8 @@ PetscErrorCode FormFunction(Tao tao, Vec P, PetscReal *f, void *ctx0)
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
   PetscCall(TSSetProblemType(ts, TS_NONLINEAR));
   PetscCall(TSSetType(ts, TSCN));
-  PetscCall(TSSetIFunction(ts, NULL, (TSIFunction)IFunction, ctx));
-  PetscCall(TSSetIJacobian(ts, J, J, (TSIJacobian)IJacobian, ctx));
+  PetscCall(TSSetIFunction(ts, NULL, (TSIFunction_Fn *)IFunction, ctx));
+  PetscCall(TSSetIJacobian(ts, J, J, (TSIJacobian_Fn *)IJacobian, ctx));
   PetscCall(TSSetApplicationContext(ts, ctx));
 
   PetscCall(TSMonitorSet(ts, MonitorUpdateQ, ctx, NULL));

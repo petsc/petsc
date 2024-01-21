@@ -128,7 +128,7 @@ int main(int argc, char **argv)
   if (!implicitform) {
     PetscCall(TSSetRHSFunction(ts, NULL, RHSFunctionPassive, &appctx));
   } else {
-    PetscCall(DMDATSSetIFunctionLocal(da, INSERT_VALUES, (DMDATSIFunctionLocal)IFunctionLocalPassive, &appctx));
+    PetscCall(DMDATSSetIFunctionLocal(da, INSERT_VALUES, (DMDATSIFunctionLocal_Fn *)IFunctionLocalPassive, &appctx));
   }
 
   if (!adctx->no_an) {

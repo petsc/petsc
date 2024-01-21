@@ -14,8 +14,8 @@ static char help[] = "Nonlinear DAE benchmark problems.\n";
 typedef struct _Problem *Problem;
 struct _Problem {
   PetscErrorCode (*destroy)(Problem);
-  TSIFunction function;
-  TSIJacobian jacobian;
+  TSIFunction_Fn *function;
+  TSIJacobian_Fn *jacobian;
   PetscErrorCode (*solution)(PetscReal, Vec, void *);
   MPI_Comm  comm;
   PetscReal final_time;

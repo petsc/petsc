@@ -1255,16 +1255,16 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec P, PetscReal *f, Vec G, void *c
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
   PetscCall(TSSetProblemType(ts, TS_NONLINEAR));
   PetscCall(TSSetType(ts, TSCN));
-  PetscCall(TSSetIFunction(ts, NULL, (TSIFunction)IFunction, ctx));
-  PetscCall(TSSetIJacobian(ts, ctx->J, ctx->J, (TSIJacobian)IJacobian, ctx));
+  PetscCall(TSSetIFunction(ts, NULL, (TSIFunction_Fn *)IFunction, ctx));
+  PetscCall(TSSetIJacobian(ts, ctx->J, ctx->J, (TSIJacobian_Fn *)IJacobian, ctx));
   PetscCall(TSSetApplicationContext(ts, ctx));
   /*   Set RHS JacobianP */
   PetscCall(TSSetRHSJacobianP(ts, ctx->Jacp, RHSJacobianP, ctx));
 
   PetscCall(TSCreateQuadratureTS(ts, PETSC_FALSE, &quadts));
-  PetscCall(TSSetRHSFunction(quadts, NULL, (TSRHSFunction)CostIntegrand, ctx));
-  PetscCall(TSSetRHSJacobian(quadts, ctx->DRDU, ctx->DRDU, (TSRHSJacobian)DRDUJacobianTranspose, ctx));
-  PetscCall(TSSetRHSJacobianP(quadts, ctx->DRDP, (TSRHSJacobianP)DRDPJacobianTranspose, ctx));
+  PetscCall(TSSetRHSFunction(quadts, NULL, (TSRHSFunction_Fn *)CostIntegrand, ctx));
+  PetscCall(TSSetRHSJacobian(quadts, ctx->DRDU, ctx->DRDU, (TSRHSJacobian_Fn *)DRDUJacobianTranspose, ctx));
+  PetscCall(TSSetRHSJacobianP(quadts, ctx->DRDP, (TSRHSJacobianP_Fn *)DRDPJacobianTranspose, ctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions

@@ -1064,7 +1064,7 @@ int main(int argc, char **argv)
   PetscCall(KSPGetPC(ksp, &pc));
   PetscCall(PCSetType(pc, PCBJACOBI));
 
-  PetscCall(TSSetIFunction(ts, NULL, (TSIFunction)FormIFunction, &user));
+  PetscCall(TSSetIFunction(ts, NULL, (TSIFunction_Fn *)FormIFunction, &user));
   PetscCall(TSSetMaxTime(ts, user.tfaulton));
   PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER));
   PetscCall(TSSetTimeStep(ts, 0.01));
@@ -1103,7 +1103,7 @@ int main(int argc, char **argv)
   PetscCall(TSSetTime(ts, user.tfaulton));
   PetscCall(TSSetMaxTime(ts, user.tfaultoff));
   PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER));
-  PetscCall(TSSetIFunction(ts, NULL, (TSIFunction)FormIFunction, &user));
+  PetscCall(TSSetIFunction(ts, NULL, (TSIFunction_Fn *)FormIFunction, &user));
 
   user.alg_flg = PETSC_TRUE;
   if (rank == 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n... (3) Disturbance period ... \n"));
@@ -1122,7 +1122,7 @@ int main(int argc, char **argv)
   PetscCall(TSSetTime(ts, user.tfaultoff));
   PetscCall(TSSetMaxTime(ts, user.tmax));
   PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER));
-  PetscCall(TSSetIFunction(ts, NULL, (TSIFunction)FormIFunction, &user));
+  PetscCall(TSSetIFunction(ts, NULL, (TSIFunction_Fn *)FormIFunction, &user));
 
   user.alg_flg = PETSC_FALSE;
   if (rank == 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n... (5) Post-disturbance period ... \n"));
