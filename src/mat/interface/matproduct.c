@@ -196,7 +196,7 @@ static PetscErrorCode MatProductSymbolic_Unsafe(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatProductReplaceMats - Replace the input matrices for the matrix-matrix product operation inside the computed matrix
 
   Collective
@@ -506,7 +506,7 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatProductSetFromOptions - Sets the options for the computation of a matrix-matrix product operation where the type,
   the algorithm etc are determined from the options database.
 
