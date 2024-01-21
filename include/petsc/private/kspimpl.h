@@ -223,7 +223,7 @@ static inline PetscErrorCode KSPLogErrorHistory(KSP ksp)
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   PetscCall(KSPGetDM(ksp, &dm));
   if (dm && ksp->err_hist && ksp->err_hist_max > ksp->err_hist_len) {
-    PetscSimplePointFunc exactSol;
+    PetscSimplePoint_Fn *exactSol;
     void                *exactCtx;
     PetscDS              ds;
     Vec                  u;

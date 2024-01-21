@@ -109,7 +109,8 @@ Changes: Development
 
 .. rubric:: DM/DA:
 
-- Add MPI reduction inside ``SNESComputeObjective_DMDA()``. No need to call reduction into local callback
+- Add MPI reduction inside ``SNESComputeObjective_DMDA()``. No need to call reduction in local callback
+- Deprecate ``PetscSimplePointFunc`` in favor of ``PetscSimplePoint_Fn``
 
 .. rubric:: DMSwarm:
 

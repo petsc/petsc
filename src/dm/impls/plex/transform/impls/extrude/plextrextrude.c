@@ -52,7 +52,7 @@ static PetscErrorCode DMPlexTransformSetFromOptions_Extrude(DMPlexTransform tr, 
   }
   PetscCall(PetscOptionsString("-dm_plex_transform_extrude_normal_function", "Function to determine normal vector", "DMPlexTransformExtrudeSetNormalFunction", funcname, funcname, sizeof(funcname), &flg));
   if (flg) {
-    PetscSimplePointFunc normalFunc;
+    PetscSimplePoint_Fn *normalFunc;
 
     PetscCall(PetscDLSym(NULL, funcname, (void **)&normalFunc));
     PetscCall(DMPlexTransformExtrudeSetNormalFunction(tr, normalFunc));
@@ -1082,13 +1082,13 @@ PetscErrorCode DMPlexTransformExtrudeSetNormal(DMPlexTransform tr, const PetscRe
 
   Input Parameters:
 + tr         - The `DMPlexTransform`
-- normalFunc - A function determining the extrusion direction
+- normalFunc - A function determining the extrusion direction, see `PetscSimplePoint_Fn` for the calling sequence
 
   Level: intermediate
 
-.seealso: `DMPlexTransform`, `DMPlexTransformExtrudeGetNormal()`
+.seealso: `DMPlexTransform`, `DMPlexTransformExtrudeGetNormal()`, `PetscSimplePoint_Fn`
 @*/
-PetscErrorCode DMPlexTransformExtrudeSetNormalFunction(DMPlexTransform tr, PetscSimplePointFunc normalFunc)
+PetscErrorCode DMPlexTransformExtrudeSetNormalFunction(DMPlexTransform tr, PetscSimplePoint_Fn *normalFunc)
 {
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
 

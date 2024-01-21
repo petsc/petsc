@@ -144,7 +144,7 @@ static PetscErrorCode SetupDiscretization(DM dm, const char name[], AppCtx *user
 /* This test tells us whether the given function is contained in the approximation space */
 static PetscErrorCode CheckInterpolation(DM dm, AppCtx *user)
 {
-  PetscSimplePointFunc exactSol[1];
+  PetscSimplePoint_Fn *exactSol[1];
   void                *exactCtx[1];
   PetscDS              ds;
   Vec                  u;
@@ -168,7 +168,7 @@ static PetscErrorCode CheckInterpolation(DM dm, AppCtx *user)
 /* This test tells us whether the element is unisolvent (the mass matrix has full rank), and what rate of convergence we achieve */
 static PetscErrorCode CheckL2Projection(DM dm, AppCtx *user)
 {
-  PetscSimplePointFunc exactSol[1];
+  PetscSimplePoint_Fn *exactSol[1];
   void                *exactCtx[1];
   SNES                 snes;
   PetscDS              ds;

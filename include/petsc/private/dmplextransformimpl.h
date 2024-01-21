@@ -59,7 +59,7 @@ typedef struct {
   PetscBool            useTensor;   /* Flag to create tensor cells */
   PetscBool            useNormal;   /* Use input normal instead of calculating it */
   PetscReal            normal[3];   /* Surface normal from input */
-  PetscSimplePointFunc normalFunc;  /* A function returning the normal at a given point */
+  PetscSimplePoint_Fn *normalFunc;  /* A function returning the normal at a given point */
   PetscBool            symmetric;   /* Extrude layers symmetrically about the surface */
   PetscBool            periodic;    /* Connect the extruded layer periodically to the beginning */
   /* Calculated quantities */

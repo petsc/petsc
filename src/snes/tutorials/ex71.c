@@ -325,7 +325,7 @@ int main(int argc, char **argv)
 
   {
     PetscDS              ds;
-    PetscSimplePointFunc exactFuncs[2];
+    PetscSimplePoint_Fn *exactFuncs[2];
     void                *ctxs[2];
 
     PetscCall(DMGetDS(dm, &ds));

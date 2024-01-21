@@ -164,7 +164,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
 
 static PetscErrorCode SetupVelocity(DM dm, DM dmAux, AppCtx *user)
 {
-  PetscSimplePointFunc funcs[1] = {velocity};
+  PetscSimplePoint_Fn *funcs[1] = {velocity};
   Vec                  v;
 
   PetscFunctionBeginUser;
@@ -225,7 +225,7 @@ static PetscErrorCode MonitorError(KSP ksp, PetscInt it, PetscReal rnorm, void *
 {
   DM                   dm;
   PetscDS              ds;
-  PetscSimplePointFunc func[1];
+  PetscSimplePoint_Fn *func[1];
   void                *ctxs[1];
   Vec                  u, r, error;
   PetscReal            time = 0.5, res;
@@ -257,7 +257,7 @@ static PetscErrorCode MyTSMonitorError(TS ts, PetscInt step, PetscReal crtime, V
 {
   DM                   dm;
   PetscDS              ds;
-  PetscSimplePointFunc func[1];
+  PetscSimplePoint_Fn *func[1];
   void                *ctxs[1];
   PetscReal            error;
 
@@ -300,7 +300,7 @@ int main(int argc, char **argv)
 
   {
     PetscDS              ds;
-    PetscSimplePointFunc func[1];
+    PetscSimplePoint_Fn *func[1];
     void                *ctxs[1];
 
     PetscCall(DMGetDS(dm, &ds));

@@ -3001,7 +3001,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
   PetscInt            *cells_flat = NULL;
   PetscReal           *vtxCoords  = NULL;
   TPSEvaluateFunc      evalFunc   = NULL;
-  PetscSimplePointFunc normalFunc = NULL;
+  PetscSimplePoint_Fn *normalFunc = NULL;
   DMLabel              label;
 
   PetscFunctionBegin;

@@ -64,7 +64,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
 
 static PetscErrorCode ComputeMetricSensor(DM dm, AppCtx *user, Vec *metric)
 {
-  PetscSimplePointFunc funcs[1] = {sensor};
+  PetscSimplePoint_Fn *funcs[1] = {sensor};
   DM                   dmSensor, dmGrad, dmHess, dmDet;
   PetscFE              fe;
   Vec                  f, g, H, determinant;

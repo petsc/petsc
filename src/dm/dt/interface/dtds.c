@@ -554,7 +554,7 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
   PetscInt             *tmpk;
   PetscBool            *tmpc;
   PetscPointFunc       *tmpup;
-  PetscSimplePointFunc *tmpexactSol, *tmpexactSol_t;
+  PetscSimplePoint_Fn **tmpexactSol, **tmpexactSol_t;
   void                **tmpexactCtx, **tmpexactCtx_t;
   void                **tmpctx;
   PetscInt              Nf = prob->Nf, f;
@@ -4056,7 +4056,7 @@ PetscErrorCode PetscDSCopyConstants(PetscDS prob, PetscDS newprob)
 @*/
 PetscErrorCode PetscDSCopyExactSolutions(PetscDS ds, PetscDS newds)
 {
-  PetscSimplePointFunc sol;
+  PetscSimplePoint_Fn *sol;
   void                *ctx;
   PetscInt             Nf, f;
 

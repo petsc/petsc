@@ -295,7 +295,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
 
 static PetscErrorCode MonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u, void *ctx)
 {
-  PetscSimplePointFunc funcs[2];
+  PetscSimplePoint_Fn *funcs[2];
   void                *ctxs[2];
   DM                   dm;
   PetscDS              ds;
@@ -340,7 +340,7 @@ int main(int argc, char **argv)
   PetscCall(DMTSCheckFromOptions(ts, u));
 
   {
-    PetscSimplePointFunc funcs[2];
+    PetscSimplePoint_Fn *funcs[2];
     void                *ctxs[2];
     PetscDS              ds;
 

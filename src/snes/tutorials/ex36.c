@@ -152,7 +152,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
 {
   PetscDS              ds;
   DMLabel              label;
-  PetscSimplePointFunc ex;
+  PetscSimplePoint_Fn *ex;
   const PetscInt       id = 1;
   void                *ctx;
 

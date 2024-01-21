@@ -549,13 +549,13 @@ PetscErrorCode DMSwarmSetNumSpecies(DM sw, PetscInt Ns)
 . sw - the `DMSWARM`
 
   Output Parameter:
-. coordFunc - the function setting initial particle positions, or `NULL`
+. coordFunc - the function setting initial particle positions, or `NULL`, see `PetscSimplePoint_Fn` for the calling sequence
 
   Level: intermediate
 
-.seealso: `DMSWARM`, `DMSwarmSetCoordinateFunction()`, `DMSwarmGetVelocityFunction()`, `DMSwarmInitializeCoordinates()`
+.seealso: `DMSWARM`, `DMSwarmSetCoordinateFunction()`, `DMSwarmGetVelocityFunction()`, `DMSwarmInitializeCoordinates()`, `PetscSimplePoint_Fn`
 @*/
-PetscErrorCode DMSwarmGetCoordinateFunction(DM sw, PetscSimplePointFunc *coordFunc)
+PetscErrorCode DMSwarmGetCoordinateFunction(DM sw, PetscSimplePoint_Fn **coordFunc)
 {
   DM_Swarm *swarm = (DM_Swarm *)sw->data;
 
@@ -573,13 +573,13 @@ PetscErrorCode DMSwarmGetCoordinateFunction(DM sw, PetscSimplePointFunc *coordFu
 
   Input Parameters:
 + sw        - the `DMSWARM`
-- coordFunc - the function setting initial particle positions
+- coordFunc - the function setting initial particle positions, see `PetscSimplePoint_Fn` for the calling sequence
 
   Level: intermediate
 
-.seealso: `DMSWARM`, `DMSwarmGetCoordinateFunction()`, `DMSwarmSetVelocityFunction()`, `DMSwarmInitializeCoordinates()`
+.seealso: `DMSWARM`, `DMSwarmGetCoordinateFunction()`, `DMSwarmSetVelocityFunction()`, `DMSwarmInitializeCoordinates()`, `PetscSimplePoint_Fn`
 @*/
-PetscErrorCode DMSwarmSetCoordinateFunction(DM sw, PetscSimplePointFunc coordFunc)
+PetscErrorCode DMSwarmSetCoordinateFunction(DM sw, PetscSimplePoint_Fn *coordFunc)
 {
   DM_Swarm *swarm = (DM_Swarm *)sw->data;
 
@@ -599,13 +599,13 @@ PetscErrorCode DMSwarmSetCoordinateFunction(DM sw, PetscSimplePointFunc coordFun
 . sw - the `DMSWARM`
 
   Output Parameter:
-. velFunc - the function setting initial particle velocities, or `NULL`
+. velFunc - the function setting initial particle velocities, or `NULL`, see `PetscSimplePoint_Fn` for the calling sequence
 
   Level: intermediate
 
-.seealso: `DMSWARM`, `DMSwarmSetVelocityFunction()`, `DMSwarmGetCoordinateFunction()`, `DMSwarmInitializeVelocities()`
+.seealso: `DMSWARM`, `DMSwarmSetVelocityFunction()`, `DMSwarmGetCoordinateFunction()`, `DMSwarmInitializeVelocities()`, `PetscSimplePoint_Fn`
 @*/
-PetscErrorCode DMSwarmGetVelocityFunction(DM sw, PetscSimplePointFunc *velFunc)
+PetscErrorCode DMSwarmGetVelocityFunction(DM sw, PetscSimplePoint_Fn **velFunc)
 {
   DM_Swarm *swarm = (DM_Swarm *)sw->data;
 
@@ -623,13 +623,13 @@ PetscErrorCode DMSwarmGetVelocityFunction(DM sw, PetscSimplePointFunc *velFunc)
 
   Input Parameters:
 + sw      - the `DMSWARM`
-- velFunc - the function setting initial particle velocities
+- velFunc - the function setting initial particle velocities, see `PetscSimplePoint_Fn` for the calling sequence
 
   Level: intermediate
 
-.seealso: `DMSWARM`, `DMSwarmGetVelocityFunction()`, `DMSwarmSetCoordinateFunction()`, `DMSwarmInitializeVelocities()`
+.seealso: `DMSWARM`, `DMSwarmGetVelocityFunction()`, `DMSwarmSetCoordinateFunction()`, `DMSwarmInitializeVelocities()`, `PetscSimplePoint_Fn`
 @*/
-PetscErrorCode DMSwarmSetVelocityFunction(DM sw, PetscSimplePointFunc velFunc)
+PetscErrorCode DMSwarmSetVelocityFunction(DM sw, PetscSimplePoint_Fn *velFunc)
 {
   DM_Swarm *swarm = (DM_Swarm *)sw->data;
 
@@ -752,7 +752,7 @@ PetscErrorCode DMSwarmComputeLocalSizeFromOptions(DM sw)
   PetscCall(PetscOptionsString("-dm_swarm_coordinate_function", "Function to determine particle coordinates", "DMSwarmSetCoordinateFunction", funcname, funcname, sizeof(funcname), &flg));
   PetscOptionsEnd();
   if (flg) {
-    PetscSimplePointFunc coordFunc;
+    PetscSimplePoint_Fn *coordFunc;
 
     PetscCall(DMSwarmGetNumSpecies(sw, &Ns));
     PetscCall(PetscDLSym(NULL, funcname, (void **)&coordFunc));
@@ -787,7 +787,7 @@ PetscErrorCode DMSwarmComputeLocalSizeFromOptions(DM sw)
 @*/
 PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
 {
-  PetscSimplePointFunc coordFunc;
+  PetscSimplePoint_Fn *coordFunc;
   PetscScalar         *weight;
   PetscReal           *x;
   PetscInt            *species;
@@ -880,7 +880,7 @@ PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
 @*/
 PetscErrorCode DMSwarmInitializeVelocities(DM sw, PetscProbFunc sampler, const PetscReal v0[])
 {
-  PetscSimplePointFunc velFunc;
+  PetscSimplePoint_Fn *velFunc;
   PetscReal           *v;
   PetscInt            *species;
   void                *ctx;
@@ -952,7 +952,7 @@ PetscErrorCode DMSwarmInitializeVelocitiesFromOptions(DM sw, const PetscReal v0[
   PetscCall(PetscOptionsString("-dm_swarm_velocity_function", "Function to determine particle velocities", "DMSwarmSetVelocityFunction", funcname, funcname, sizeof(funcname), &flg));
   PetscOptionsEnd();
   if (flg) {
-    PetscSimplePointFunc velFunc;
+    PetscSimplePoint_Fn *velFunc;
 
     PetscCall(PetscDLSym(NULL, funcname, (void **)&velFunc));
     PetscCheck(velFunc, PetscObjectComm((PetscObject)sw), PETSC_ERR_ARG_WRONG, "Could not locate function %s", funcname);
