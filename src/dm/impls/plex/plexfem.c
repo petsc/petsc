@@ -2432,9 +2432,9 @@ PetscErrorCode DMPlexComputeCellwiseIntegralFEM(DM dm, Vec X, Vec F, void *user)
 {
   PetscInt     printFEM;
   DM           dmF;
-  PetscSection sectionF;
+  PetscSection sectionF = NULL;
   PetscScalar *cintegral, *af;
-  PetscInt     Nf, f, cellHeight, cStart, cEnd, cell;
+  PetscInt     Nf, f, cellHeight, cStart, cEnd, cell, n;
   Vec          locX;
 
   PetscFunctionBegin;
@@ -2456,17 +2456,21 @@ PetscErrorCode DMPlexComputeCellwiseIntegralFEM(DM dm, Vec X, Vec F, void *user)
   PetscCall(DMPlexComputeIntegral_Internal(dm, locX, cStart, cEnd, cintegral, user));
   PetscCall(DMRestoreLocalVector(dm, &locX));
   /* Put values in F */
-  PetscCall(VecGetDM(F, &dmF));
-  PetscCall(DMGetLocalSection(dmF, &sectionF));
   PetscCall(VecGetArray(F, &af));
+  PetscCall(VecGetDM(F, &dmF));
+  if (dmF) PetscCall(DMGetLocalSection(dmF, &sectionF));
+  PetscCall(VecGetLocalSize(F, &n));
+  PetscCheck(n >= (cEnd - cStart) * Nf, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Vector size %" PetscInt_FMT " < %" PetscInt_FMT, n, (cEnd - cStart) * Nf);
   printFEM = ((DM_Plex *)dm->data)->printFEM;
   for (cell = cStart; cell < cEnd; ++cell) {
-    const PetscInt c = cell - cStart;
-    PetscInt       dof, off;
+    const PetscInt c   = cell - cStart;
+    PetscInt       dof = Nf, off = c * Nf;
 
     if (printFEM > 1) PetscCall(DMPrintCellVector(cell, "Cell Integral", Nf, &cintegral[c * Nf]));
-    PetscCall(PetscSectionGetDof(sectionF, cell, &dof));
-    PetscCall(PetscSectionGetOffset(sectionF, cell, &off));
+    if (sectionF) {
+      PetscCall(PetscSectionGetDof(sectionF, cell, &dof));
+      PetscCall(PetscSectionGetOffset(sectionF, cell, &off));
+    }
     PetscCheck(dof == Nf, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of cell dofs %" PetscInt_FMT " != %" PetscInt_FMT, dof, Nf);
     for (f = 0; f < Nf; ++f) af[off + f] = cintegral[c * Nf + f];
   }
