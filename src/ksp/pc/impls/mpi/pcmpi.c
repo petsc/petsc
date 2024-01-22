@@ -381,7 +381,9 @@ static PetscErrorCode PCMPIDestroy(PC pc)
   PetscFunctionBegin;
   PetscCallMPI(MPI_Scatter(pc ? km->ksps : NULL, 1, MPI_AINT, &ksp, 1, MPI_AINT, 0, comm));
   if (!ksp) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscLogStagePush(PCMPIStage));
   PetscCall(KSPDestroy(&ksp));
+  PetscCall(PetscLogStagePop());
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -442,6 +444,7 @@ PetscErrorCode PCMPIServerBegin(void)
     PetscCall(TSInitializePackage());
     PetscCall(TaoInitializePackage());
   }
+  PetscCall(PetscLogStageRegister("PCMPI", &PCMPIStage));
 
   PetscCallMPI(MPI_Comm_rank(PC_MPI_COMM_WORLD, &rank));
   if (rank == 0) {
