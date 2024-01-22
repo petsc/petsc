@@ -1670,9 +1670,13 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
         PetscCall(PetscLogHandlerDefaultGetClassPerf(handler, stage, oclass, &class_perf_info));
         if ((class_perf_info->creations > 0) || (class_perf_info->destructions > 0)) {
           PetscLogClassInfo class_reg_info;
+          PetscBool         flg;
 
           PetscCall(PetscLogStateClassGetInfo(state, oclass, &class_reg_info));
-          PetscCall(PetscFPrintf(comm, fd, "%20s %5d          %5d\n", class_reg_info.name, class_perf_info->creations, class_perf_info->destructions));
+          if (stage == 0 && oclass == num_classes - 1) {
+            PetscCall(PetscStrcmp(class_reg_info.name, "Viewer", &flg));
+            PetscCheck(flg && class_perf_info->creations == 1 && class_perf_info->destructions == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "The last PetscObject type of the main PetscLogStage should be PetscViewer with a single creation and no destruction");
+          } else PetscCall(PetscFPrintf(comm, fd, "%20s %5d          %5d\n", class_reg_info.name, class_perf_info->creations, class_perf_info->destructions));
         }
       }
     }
