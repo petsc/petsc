@@ -920,7 +920,7 @@ M*/
 
   Synopsis:
    #include "petsc/private/petscimpl.h"
-   PetscTryTtype(obj, method, other_args)
+   PetscTryTypeMethod(obj, method, other_args)
 
    Input Parameters:
 +   obj - the object, for example a `Mat`, that does not need to be cast to `PetscObject`
