@@ -241,7 +241,7 @@ PetscErrorCode TaoLineSearchDestroy(TaoLineSearch *ls)
   PetscCall(VecDestroy(&(*ls)->start_x));
   PetscCall(VecDestroy(&(*ls)->upper));
   PetscCall(VecDestroy(&(*ls)->lower));
-  if ((*ls)->ops->destroy) PetscCall((*(*ls)->ops->destroy)(*ls));
+  PetscTryTypeMethod(*ls, destroy);
   if ((*ls)->usemonitor) PetscCall(PetscViewerDestroy(&(*ls)->viewer));
   PetscCall(PetscHeaderDestroy(ls));
   PetscFunctionReturn(PETSC_SUCCESS);

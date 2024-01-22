@@ -781,7 +781,7 @@ PetscErrorCode DMDestroy(DM *dm)
   /* if memory was published with SAWs then destroy it */
   PetscCall(PetscObjectSAWsViewOff((PetscObject)*dm));
 
-  if ((*dm)->ops->destroy) PetscCall((*(*dm)->ops->destroy)(*dm));
+  PetscTryTypeMethod(*dm, destroy);
   PetscCall(DMMonitorCancel(*dm));
   PetscCall(DMCeedDestroy(&(*dm)->dmceed));
 #ifdef PETSC_HAVE_LIBCEED
@@ -3610,14 +3610,12 @@ PetscErrorCode DMRefineHierarchy(DM dm, PetscInt nlevels, DM dmf[])
   PetscCheck(nlevels >= 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "nlevels cannot be negative");
   if (nlevels == 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscAssertPointer(dmf, 3);
-  if (dm->ops->refinehierarchy) {
-    PetscUseTypeMethod(dm, refinehierarchy, nlevels, dmf);
-  } else if (dm->ops->refine) {
+  if (dm->ops->refine && !dm->ops->refinehierarchy) {
     PetscInt i;
 
     PetscCall(DMRefine(dm, PetscObjectComm((PetscObject)dm), &dmf[0]));
     for (i = 1; i < nlevels; i++) PetscCall(DMRefine(dmf[i - 1], PetscObjectComm((PetscObject)dm), &dmf[i]));
-  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "No RefineHierarchy for this DM yet");
+  } else PetscUseTypeMethod(dm, refinehierarchy, nlevels, dmf);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3644,14 +3642,12 @@ PetscErrorCode DMCoarsenHierarchy(DM dm, PetscInt nlevels, DM dmc[])
   PetscCheck(nlevels >= 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "nlevels cannot be negative");
   if (nlevels == 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscAssertPointer(dmc, 3);
-  if (dm->ops->coarsenhierarchy) {
-    PetscUseTypeMethod(dm, coarsenhierarchy, nlevels, dmc);
-  } else if (dm->ops->coarsen) {
+  if (dm->ops->coarsen && !dm->ops->coarsenhierarchy) {
     PetscInt i;
 
     PetscCall(DMCoarsen(dm, PetscObjectComm((PetscObject)dm), &dmc[0]));
     for (i = 1; i < nlevels; i++) PetscCall(DMCoarsen(dmc[i - 1], PetscObjectComm((PetscObject)dm), &dmc[i]));
-  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "No CoarsenHierarchy for this DM yet");
+  } else PetscUseTypeMethod(dm, coarsenhierarchy, nlevels, dmc);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -364,7 +364,7 @@ PetscErrorCode DMPlexTransformDestroy(DMPlexTransform *tr)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  if ((*tr)->ops->destroy) PetscCall((*(*tr)->ops->destroy)(*tr));
+  PetscTryTypeMethod(*tr, destroy);
   PetscCall(DMDestroy(&(*tr)->dm));
   PetscCall(DMLabelDestroy(&(*tr)->active));
   PetscCall(DMLabelDestroy(&(*tr)->trType));
