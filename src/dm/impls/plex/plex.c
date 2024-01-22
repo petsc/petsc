@@ -8947,7 +8947,7 @@ PetscErrorCode DMPlexCreateRankField(DM dm, Vec *ranks)
 @*/
 PetscErrorCode DMPlexCreateLabelField(DM dm, DMLabel label, Vec *val)
 {
-  DM           rdm;
+  DM           rdm, plex;
   PetscFE      fe;
   PetscScalar *v;
   PetscInt     dim, cStart, cEnd, c;
@@ -8956,6 +8956,9 @@ PetscErrorCode DMPlexCreateLabelField(DM dm, DMLabel label, Vec *val)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(label, 2);
   PetscAssertPointer(val, 3);
+  PetscCall(DMConvert(dm, DMPLEX, &plex));
+  PetscCall(DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd));
+  PetscCall(DMDestroy(&plex));
   PetscCall(DMClone(dm, &rdm));
   PetscCall(DMGetDimension(rdm, &dim));
   PetscCall(PetscFECreateDefault(PetscObjectComm((PetscObject)rdm), dim, 1, PETSC_TRUE, "PETSc___label_value_", -1, &fe));
@@ -8963,7 +8966,6 @@ PetscErrorCode DMPlexCreateLabelField(DM dm, DMLabel label, Vec *val)
   PetscCall(DMSetField(rdm, 0, NULL, (PetscObject)fe));
   PetscCall(PetscFEDestroy(&fe));
   PetscCall(DMCreateDS(rdm));
-  PetscCall(DMPlexGetHeightStratum(rdm, 0, &cStart, &cEnd));
   PetscCall(DMCreateGlobalVector(rdm, val));
   PetscCall(PetscObjectSetName((PetscObject)*val, "label_value"));
   PetscCall(VecGetArray(*val, &v));
