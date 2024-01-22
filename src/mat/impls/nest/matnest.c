@@ -1183,7 +1183,7 @@ static PetscErrorCode MatNestGetSubMats_Nest(Mat A, PetscInt *M, PetscInt *N, Ma
   Output Parameters:
 + M   - number of rows in the nest matrix
 . N   - number of cols in the nest matrix
-- mat - 2d array of matrices
+- mat - array of matrices
 
   Level: developer
 
@@ -1194,6 +1194,7 @@ static PetscErrorCode MatNestGetSubMats_Nest(Mat A, PetscInt *M, PetscInt *N, Ma
   This routine has a calling sequence
 $   call MatNestGetSubMats(A, M, N, mat, ierr)
   where the space allocated for the optional argument `mat` is assumed large enough (if provided).
+  Matrices in `mat` are returned in row-major order, see `MatCreateNest()` for an example.
 
 .seealso: [](ch_matrices), `Mat`, `MATNEST`, `MatNestGetSize()`, `MatNestGetSubMat()`, `MatNestGetLocalISs()`, `MatCreateNest()`,
           `MatNestSetSubMats()`, `MatNestGetISs()`, `MatNestSetSubMat()`
@@ -1453,12 +1454,15 @@ static PetscErrorCode MatNestSetSubMats_Nest(Mat A, PetscInt nr, const IS is_row
 . is_row - index sets for each nested row block, or `NULL` to make contiguous
 . nc     - number of nested column blocks
 . is_col - index sets for each nested column block, or `NULL` to make contiguous
-- a      - row-aligned array of nr*nc submatrices, empty submatrices can be passed using `NULL`
+- a      - array of nr*nc submatrices, empty submatrices can be passed using `NULL`
 
   Level: advanced
 
-  Note:
+  Notes:
   This always resets any submatrix information previously set
+
+  In both C and Fortran, `a` must be a row-major order array containing the matrices. See
+  `MatCreateNest()` for an example.
 
 .seealso: [](ch_matrices), `Mat`, `MATNEST`, `MatCreateNest()`, `MatNestSetSubMat()`, `MatNestGetSubMat()`, `MatNestGetSubMats()`
 @*/
@@ -1740,10 +1744,16 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A, PetscInt nr, const IS is_ro
 . is_row - index sets for each nested row block, or `NULL` to make contiguous
 . nc     - number of nested column blocks
 . is_col - index sets for each nested column block, or `NULL` to make contiguous
-- a      - row-aligned array of nr*nc submatrices, empty submatrices can be passed using `NULL`
+- a      - array of nr*nc submatrices, empty submatrices can be passed using `NULL`
 
   Output Parameter:
 . B - new matrix
+
+  Note:
+  In both C and Fortran, `a` must be a row-major order array holding references to the matrices.
+  For instance, to represent the matrix
+  $\begin{bmatrix} A_{11} & A_{12} \\ A_{21} & A_{22}\end{bmatrix}$
+  one should use `Mat a[4]={A11,A12,A21,A22}`.
 
   Level: advanced
 

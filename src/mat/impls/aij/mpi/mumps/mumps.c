@@ -2126,6 +2126,18 @@ static PetscErrorCode MatSetFromOptions_MUMPS(Mat F, Mat A)
     listvar_schur = mumps->id.listvar_schur;
     PetscMUMPS_c(mumps);
     PetscCheck(mumps->id.INFOG(1) >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "MUMPS error: INFOG(1)=%d " MUMPS_MANUALS, mumps->id.INFOG(1));
+
+    /* set PETSc-MUMPS default options - override MUMPS default */
+    mumps->id.ICNTL(3) = 0;
+    mumps->id.ICNTL(4) = 0;
+    if (mumps->petsc_size == 1) {
+      mumps->id.ICNTL(18) = 0; /* centralized assembled matrix input */
+      mumps->id.ICNTL(7)  = 7; /* automatic choice of ordering done by the package */
+    } else {
+      mumps->id.ICNTL(18) = 3; /* distributed assembled matrix input */
+      mumps->id.ICNTL(21) = 1; /* distributed solution */
+    }
+
     /* restore cached ICNTL and CNTL values */
     for (icntl = 0; icntl < nICNTL_pre; ++icntl) mumps->id.ICNTL(mumps->ICNTL_pre[1 + 2 * icntl]) = mumps->ICNTL_pre[2 + 2 * icntl];
     for (icntl = 0; icntl < nCNTL_pre; ++icntl) mumps->id.CNTL((PetscInt)mumps->CNTL_pre[1 + 2 * icntl]) = mumps->CNTL_pre[2 + 2 * icntl];
@@ -2162,17 +2174,6 @@ static PetscErrorCode MatSetFromOptions_MUMPS(Mat F, Mat A)
 
     mumps->scat_rhs = NULL;
     mumps->scat_sol = NULL;
-
-    /* set PETSc-MUMPS default options - override MUMPS default */
-    mumps->id.ICNTL(3) = 0;
-    mumps->id.ICNTL(4) = 0;
-    if (mumps->petsc_size == 1) {
-      mumps->id.ICNTL(18) = 0; /* centralized assembled matrix input */
-      mumps->id.ICNTL(7)  = 7; /* automatic choice of ordering done by the package */
-    } else {
-      mumps->id.ICNTL(18) = 3; /* distributed assembled matrix input */
-      mumps->id.ICNTL(21) = 1; /* distributed solution */
-    }
   }
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_1", "ICNTL(1): output stream for error messages", "None", mumps->id.ICNTL(1), &icntl, &flg));
   if (flg) mumps->id.ICNTL(1) = icntl;
@@ -2326,7 +2327,7 @@ static PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F, Mat A, IS r, PETSC_UNU
       mumps->id.irn = mumps->irn;
       mumps->id.jcn = mumps->jcn;
       if (mumps->id.ICNTL(6) > 1) mumps->id.a = (MumpsScalar *)mumps->val;
-      if (r) {
+      if (r && mumps->id.ICNTL(7) == 7) {
         mumps->id.ICNTL(7) = 1;
         if (!mumps->myid) {
           const PetscInt *idx;
