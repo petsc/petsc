@@ -209,15 +209,17 @@ PETSC_DEPRECATED_FUNCTION(3, 15, 0, "MatFactorGetCanUseOrdering()", ) static inl
 PETSC_EXTERN PetscErrorCode MatFactorGetSolverType(Mat, MatSolverType *);
 PETSC_EXTERN PetscErrorCode MatGetFactorType(Mat, MatFactorType *);
 PETSC_EXTERN PetscErrorCode MatSetFactorType(Mat, MatFactorType);
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*MatSolverFunction)(Mat, MatFactorType, Mat *);
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister(MatSolverType, MatType, MatFactorType, MatSolverFunction);
-PETSC_EXTERN PetscErrorCode MatSolverTypeGet(MatSolverType, MatType, MatFactorType, PetscBool *, PetscBool *, MatSolverFunction *);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(MatSolver_Fn)(Mat, MatFactorType, Mat *);
+PETSC_EXTERN_TYPEDEF typedef MatSolver_Fn *MatSolverFunction;
+
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister(MatSolverType, MatType, MatFactorType, MatSolver_Fn *);
+PETSC_EXTERN PetscErrorCode MatSolverTypeGet(MatSolverType, MatType, MatFactorType, PetscBool *, PetscBool *, MatSolver_Fn **);
 typedef MatSolverType       MatSolverPackage PETSC_DEPRECATED_TYPEDEF(3, 9, 0, "MatSolverType", );
-PETSC_DEPRECATED_FUNCTION(3, 9, 0, "MatSolverTypeRegister()", ) static inline PetscErrorCode MatSolverPackageRegister(MatSolverType stype, MatType mtype, MatFactorType ftype, MatSolverFunction f)
+PETSC_DEPRECATED_FUNCTION(3, 9, 0, "MatSolverTypeRegister()", ) static inline PetscErrorCode MatSolverPackageRegister(MatSolverType stype, MatType mtype, MatFactorType ftype, MatSolver_Fn *f)
 {
   return MatSolverTypeRegister(stype, mtype, ftype, f);
 }
-PETSC_DEPRECATED_FUNCTION(3, 9, 0, "MatSolverTypeGet()", ) static inline PetscErrorCode MatSolverPackageGet(MatSolverType stype, MatType mtype, MatFactorType ftype, PetscBool *foundmtype, PetscBool *foundstype, MatSolverFunction *f)
+PETSC_DEPRECATED_FUNCTION(3, 9, 0, "MatSolverTypeGet()", ) static inline PetscErrorCode MatSolverPackageGet(MatSolverType stype, MatType mtype, MatFactorType ftype, PetscBool *foundmtype, PetscBool *foundstype, MatSolver_Fn **f)
 {
   return MatSolverTypeGet(stype, mtype, ftype, foundmtype, foundstype, f);
 }
@@ -2179,26 +2181,28 @@ PETSC_EXTERN PetscErrorCode PetscViewerMathematicaPutMatrix(PetscViewer, PetscIn
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaPutCSRMatrix(PetscViewer, PetscInt, PetscInt, PetscInt *, PetscInt *, PetscReal *);
 
 #ifdef PETSC_HAVE_H2OPUS
-PETSC_EXTERN_TYPEDEF typedef PetscScalar (*MatH2OpusKernel)(PetscInt, PetscReal[], PetscReal[], void *);
-PETSC_EXTERN PetscErrorCode MatCreateH2OpusFromKernel(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscReal[], PetscBool, MatH2OpusKernel, void *, PetscReal, PetscInt, PetscInt, Mat *);
-PETSC_EXTERN PetscErrorCode MatCreateH2OpusFromMat(Mat, PetscInt, const PetscReal[], PetscBool, PetscReal, PetscInt, PetscInt, PetscInt, PetscReal, Mat *);
-PETSC_EXTERN PetscErrorCode MatH2OpusSetSamplingMat(Mat, Mat, PetscInt, PetscReal);
-PETSC_EXTERN PetscErrorCode MatH2OpusOrthogonalize(Mat);
-PETSC_EXTERN PetscErrorCode MatH2OpusCompress(Mat, PetscReal);
-PETSC_EXTERN PetscErrorCode MatH2OpusSetNativeMult(Mat, PetscBool);
-PETSC_EXTERN PetscErrorCode MatH2OpusGetNativeMult(Mat, PetscBool *);
-PETSC_EXTERN PetscErrorCode MatH2OpusGetIndexMap(Mat, IS *);
-PETSC_EXTERN PetscErrorCode MatH2OpusMapVec(Mat, PetscBool, Vec, Vec *);
-PETSC_EXTERN PetscErrorCode MatH2OpusLowRankUpdate(Mat, Mat, Mat, PetscScalar);
+PETSC_EXTERN_TYPEDEF typedef PetscScalar(MatH2OpusKernel_Fn)(PetscInt, PetscReal[], PetscReal[], void *);
+PETSC_EXTERN_TYPEDEF typedef MatH2OpusKernel_Fn *MatH2OpusKernel;
+PETSC_EXTERN PetscErrorCode                      MatCreateH2OpusFromKernel(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscReal[], PetscBool, MatH2OpusKernel_Fn *, void *, PetscReal, PetscInt, PetscInt, Mat *);
+PETSC_EXTERN PetscErrorCode                      MatCreateH2OpusFromMat(Mat, PetscInt, const PetscReal[], PetscBool, PetscReal, PetscInt, PetscInt, PetscInt, PetscReal, Mat *);
+PETSC_EXTERN PetscErrorCode                      MatH2OpusSetSamplingMat(Mat, Mat, PetscInt, PetscReal);
+PETSC_EXTERN PetscErrorCode                      MatH2OpusOrthogonalize(Mat);
+PETSC_EXTERN PetscErrorCode                      MatH2OpusCompress(Mat, PetscReal);
+PETSC_EXTERN PetscErrorCode                      MatH2OpusSetNativeMult(Mat, PetscBool);
+PETSC_EXTERN PetscErrorCode                      MatH2OpusGetNativeMult(Mat, PetscBool *);
+PETSC_EXTERN PetscErrorCode                      MatH2OpusGetIndexMap(Mat, IS *);
+PETSC_EXTERN PetscErrorCode                      MatH2OpusMapVec(Mat, PetscBool, Vec, Vec *);
+PETSC_EXTERN PetscErrorCode                      MatH2OpusLowRankUpdate(Mat, Mat, Mat, PetscScalar);
 #endif
 
 #ifdef PETSC_HAVE_HTOOL
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*MatHtoolKernel)(PetscInt, PetscInt, PetscInt, const PetscInt *, const PetscInt *, PetscScalar *, void *);
-PETSC_EXTERN PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscReal[], const PetscReal[], MatHtoolKernel, void *, Mat *);
-PETSC_EXTERN PetscErrorCode MatHtoolSetKernel(Mat, MatHtoolKernel, void *);
-PETSC_EXTERN PetscErrorCode MatHtoolGetPermutationSource(Mat, IS *);
-PETSC_EXTERN PetscErrorCode MatHtoolGetPermutationTarget(Mat, IS *);
-PETSC_EXTERN PetscErrorCode MatHtoolUsePermutation(Mat, PetscBool);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(MatHtoolKernel_Fn)(PetscInt, PetscInt, PetscInt, const PetscInt *, const PetscInt *, PetscScalar *, void *);
+PETSC_EXTERN_TYPEDEF typedef MatHtoolKernel_Fn *MatHtoolKernel;
+PETSC_EXTERN PetscErrorCode                     MatCreateHtoolFromKernel(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscReal[], const PetscReal[], MatHtoolKernel_Fn *, void *, Mat *);
+PETSC_EXTERN PetscErrorCode                     MatHtoolSetKernel(Mat, MatHtoolKernel_Fn *, void *);
+PETSC_EXTERN PetscErrorCode                     MatHtoolGetPermutationSource(Mat, IS *);
+PETSC_EXTERN PetscErrorCode                     MatHtoolGetPermutationTarget(Mat, IS *);
+PETSC_EXTERN PetscErrorCode                     MatHtoolUsePermutation(Mat, PetscBool);
 
 /*E
    MatHtoolCompressorType - Indicates the type of compressor used by a `MATHTOOL`

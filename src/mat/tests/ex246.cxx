@@ -43,14 +43,14 @@ public:
 
 int main(int argc, char **argv)
 {
-  Mat            A, B, P, R;
-  PetscInt       m = 100, dim = 3, M, begin = 0;
-  PetscMPIInt    size;
-  PetscReal     *coords, *gcoords, norm, epsilon, relative;
-  PetscBool      sym = PETSC_FALSE;
-  PetscRandom    rdm;
-  MatHtoolKernel kernel = GenEntries;
-  MyIMatrix     *imatrix;
+  Mat                A, B, P, R;
+  PetscInt           m = 100, dim = 3, M, begin = 0;
+  PetscMPIInt        size;
+  PetscReal         *coords, *gcoords, norm, epsilon, relative;
+  PetscBool          sym = PETSC_FALSE;
+  PetscRandom        rdm;
+  MatHtoolKernel_Fn *kernel = GenEntries;
+  MyIMatrix         *imatrix;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)NULL, help));

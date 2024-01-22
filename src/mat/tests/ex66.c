@@ -111,8 +111,8 @@ int main(int argc, char **argv)
   PetscCall(PetscRandomDestroy(&r));
 
   if (kernel || !randommat) {
-    MatH2OpusKernel k = Asymm ? GenEntry_Symm : GenEntry_Unsymm;
-    PetscInt        ist, ien;
+    MatH2OpusKernel_Fn *k = Asymm ? GenEntry_Symm : GenEntry_Unsymm;
+    PetscInt            ist, ien;
 
     PetscCall(MatGetOwnershipRange(A, &ist, &ien));
     for (i = ist; i < ien; i++) {

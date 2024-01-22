@@ -36,16 +36,16 @@ static PetscErrorCode GenEntriesRectangular(PetscInt sdim, PetscInt M, PetscInt 
 
 int main(int argc, char **argv)
 {
-  Mat            A, AT, D, B, P, R, RT;
-  PetscInt       m = 100, dim = 3, M, K = 10, begin, n = 0, N, bs;
-  PetscMPIInt    size;
-  PetscScalar   *ptr;
-  PetscReal     *coords, *gcoords, *scoords, *gscoords, *(ctx[2]), norm, epsilon;
-  MatHtoolKernel kernel = GenEntries;
-  PetscBool      flg, sym = PETSC_FALSE;
-  PetscRandom    rdm;
-  IS             iss, ist, is[2];
-  Vec            right, left, perm;
+  Mat                A, AT, D, B, P, R, RT;
+  PetscInt           m = 100, dim = 3, M, K = 10, begin, n = 0, N, bs;
+  PetscMPIInt        size;
+  PetscScalar       *ptr;
+  PetscReal         *coords, *gcoords, *scoords, *gscoords, *(ctx[2]), norm, epsilon;
+  MatHtoolKernel_Fn *kernel = GenEntries;
+  PetscBool          flg, sym = PETSC_FALSE;
+  PetscRandom        rdm;
+  IS                 iss, ist, is[2];
+  Vec                right, left, perm;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)NULL, help));
