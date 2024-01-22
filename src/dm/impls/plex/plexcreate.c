@@ -4479,6 +4479,77 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
       }
     }
   }
+  // Handle coordinate remapping
+  remap = PETSC_FALSE;
+  PetscCall(PetscOptionsBool("-dm_coord_remap", "Flag to control coordinate remapping", "", remap, &remap, NULL));
+  if (remap) {
+    DMPlexCoordMap map     = DM_COORD_MAP_NONE;
+    PetscPointFunc mapFunc = NULL;
+    PetscScalar    params[16];
+    PetscInt       Np = sizeof(params) / sizeof(params[0]), cdim;
+    MPI_Comm       comm;
+
+    PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+    PetscCall(DMGetCoordinateDim(dm, &cdim));
+    PetscCall(PetscOptionsScalarArray("-dm_coord_map_params", "Parameters for the coordinate remapping", "", params, &Np, &flg));
+    if (!flg) Np = 0;
+    // TODO Allow user to pass a map function by name
+    PetscCall(PetscOptionsEnum("-dm_coord_map", "Coordinate mapping for built-in mesh", "", DMPlexCoordMaps, (PetscEnum)map, (PetscEnum *)&map, &flg));
+    if (flg) {
+      switch (map) {
+      case DM_COORD_MAP_NONE:
+        mapFunc = coordMap_identity;
+        break;
+      case DM_COORD_MAP_SHEAR:
+        mapFunc = coordMap_shear;
+        if (!Np) {
+          Np        = cdim + 1;
+          params[0] = 0;
+          for (PetscInt d = 1; d <= cdim; ++d) params[d] = 1.0;
+        }
+        PetscCheck(Np == cdim + 1, comm, PETSC_ERR_ARG_WRONG, "The shear coordinate map must have cdim + 1 = %" PetscInt_FMT " parameters, not %" PetscInt_FMT, cdim + 1, Np);
+        break;
+      case DM_COORD_MAP_FLARE:
+        mapFunc = coordMap_flare;
+        if (!Np) {
+          Np        = cdim + 1;
+          params[0] = 0;
+          for (PetscInt d = 1; d <= cdim; ++d) params[d] = 1.0;
+        }
+        PetscCheck(Np == cdim + 1, comm, PETSC_ERR_ARG_WRONG, "The flare coordinate map must have cdim + 1 = %" PetscInt_FMT " parameters, not %" PetscInt_FMT, cdim + 1, Np);
+        break;
+      case DM_COORD_MAP_ANNULUS:
+        mapFunc = coordMap_annulus;
+        if (!Np) {
+          Np        = 2;
+          params[0] = 1.;
+          params[1] = 2.;
+        }
+        PetscCheck(Np == 2, comm, PETSC_ERR_ARG_WRONG, "The annulus coordinate map must have 2 parameters, not %" PetscInt_FMT, Np);
+        break;
+      case DM_COORD_MAP_SHELL:
+        mapFunc = coordMap_shell;
+        if (!Np) {
+          Np        = 2;
+          params[0] = 1.;
+          params[1] = 2.;
+        }
+        PetscCheck(Np == 2, comm, PETSC_ERR_ARG_WRONG, "The spherical shell coordinate map must have 2 parameters, not %" PetscInt_FMT, Np);
+        break;
+      default:
+        mapFunc = coordMap_identity;
+      }
+    }
+    if (Np) {
+      DM      cdm;
+      PetscDS cds;
+
+      PetscCall(DMGetCoordinateDM(dm, &cdm));
+      PetscCall(DMGetDS(cdm, &cds));
+      PetscCall(PetscDSSetConstants(cds, Np, params));
+    }
+    PetscCall(DMPlexRemapGeometry(dm, 0.0, mapFunc));
+  }
   /* Handle ghost cells */
   PetscCall(PetscOptionsBool("-dm_plex_create_fv_ghost_cells", "Flag to create finite volume ghost cells on the boundary", "DMCreate", ghostCells, &ghostCells, NULL));
   if (ghostCells) {

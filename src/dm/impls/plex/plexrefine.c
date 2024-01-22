@@ -343,7 +343,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *rdm)
     if (cDegree <= 1) {
       PetscCall(DMCopyDisc(cdm, rcdm));
     } else {
-      PetscCall(DMPlexCreateCoordinateSpace(*rdm, 1, PETSC_TRUE, NULL));
+      PetscCall(DMPlexCreateCoordinateSpace(*rdm, cDegree, PETSC_TRUE, NULL));
       PetscCall(DMGetCoordinateDM(*rdm, &rcdm));
     }
     PetscCall(DMPlexGetUseCeed(cdm, &useCeed));
