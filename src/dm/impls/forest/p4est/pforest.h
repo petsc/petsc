@@ -1314,7 +1314,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
   forest->preCoarseToFine = preCoarseToFine;
   forest->coarseToPreFine = coarseToPreFine;
   dm->setupcalled         = PETSC_TRUE;
-  PetscCall(MPIU_Allreduce(&ctx.anyChange, &(pforest->adaptivitySuccess), 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+  PetscCall(MPIU_Allreduce(&ctx.anyChange, &pforest->adaptivitySuccess, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
   PetscCall(DMPforestGetPlex(dm, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
