@@ -1585,11 +1585,6 @@ PetscErrorCode VecShiftAsync_Private(Vec v, PetscScalar shift, PetscDeviceContex
   PetscErrorCode (*shift_async)(Vec, PetscScalar, PetscDeviceContext) = NULL;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscValidLogicalCollectiveScalar(v, shift, 2);
-  PetscCall(VecSetErrorIfLocked(v, 1));
-  if (shift == (PetscScalar)0.0) PetscFunctionReturn(PETSC_SUCCESS);
-
   if (dctx) {
     PetscErrorCode (*shift_async)(Vec, PetscScalar, PetscDeviceContext);
 
@@ -1628,7 +1623,13 @@ PetscErrorCode VecShiftAsync_Private(Vec v, PetscScalar shift, PetscDeviceContex
 PetscErrorCode VecShift(Vec v, PetscScalar shift)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
+  PetscValidLogicalCollectiveScalar(v, shift, 2);
+  PetscCall(VecSetErrorIfLocked(v, 1));
+  if (shift == (PetscScalar)0.0) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscLogEventBegin(VEC_Shift, v, 0, 0, 0));
   PetscCall(VecShiftAsync_Private(v, shift, NULL));
+  PetscCall(PetscLogEventEnd(VEC_Shift, v, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

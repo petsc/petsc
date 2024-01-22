@@ -185,6 +185,7 @@ PetscErrorCode VecInitializePackage(void)
   PetscCall(PetscLogEventRegister("VecMTDot", VEC_CLASSID, &VEC_MTDot));
   PetscCall(PetscLogEventRegister("VecNorm", VEC_CLASSID, &VEC_Norm));
   PetscCall(PetscLogEventRegister("VecScale", VEC_CLASSID, &VEC_Scale));
+  PetscCall(PetscLogEventRegister("VecShift", VEC_CLASSID, &VEC_Shift));
   PetscCall(PetscLogEventRegister("VecCopy", VEC_CLASSID, &VEC_Copy));
   PetscCall(PetscLogEventRegister("VecSet", VEC_CLASSID, &VEC_Set));
   PetscCall(PetscLogEventRegister("VecAXPY", VEC_CLASSID, &VEC_AXPY));
