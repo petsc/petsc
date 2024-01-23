@@ -1,0 +1,8 @@
+Simulation parameters
+  polynomial order: 1
+  boundary conditions: DIRICHLET
+  right-hand side: CONSTANT, order 1
+  coefficient: CONSTANT, order 1
+  non-conforming AMR: 1
+    0 KSP Residual norm 1.328900398750e+00 
+    1 KSP Residual norm 0.000000000000e+00 

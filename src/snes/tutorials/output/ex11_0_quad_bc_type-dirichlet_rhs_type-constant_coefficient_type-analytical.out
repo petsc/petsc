@@ -1,0 +1,6 @@
+Simulation parameters
+  polynomial order: 1
+  boundary conditions: DIRICHLET
+  right-hand side: CONSTANT, order 1
+  coefficient: ANALYTICAL, order 1
+  non-conforming AMR: 0
