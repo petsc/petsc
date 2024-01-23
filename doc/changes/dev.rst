@@ -57,6 +57,7 @@ Changes: Development
 
 - Reset ``MATLMVM`` history vecs if size is changed
 - Add specific support for ``MatMultHermitianTranspose()`` and ``MatMultHermitianTransposeAdd()`` in ``MATSHELL``, ``MATDENSE``, ``MATNEST`` and ``MATSCALAPACK``
+- Add function ``MatProductGetAlgorithm()``
 
 .. rubric:: MatCoarsen:
 

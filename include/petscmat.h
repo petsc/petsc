@@ -284,6 +284,7 @@ PETSC_EXTERN PetscErrorCode MatProductCreate(Mat, Mat, Mat, Mat *);
 PETSC_EXTERN PetscErrorCode MatProductCreateWithMat(Mat, Mat, Mat, Mat);
 PETSC_EXTERN PetscErrorCode MatProductSetType(Mat, MatProductType);
 PETSC_EXTERN PetscErrorCode MatProductSetAlgorithm(Mat, MatProductAlgorithm);
+PETSC_EXTERN PetscErrorCode MatProductGetAlgorithm(Mat, MatProductAlgorithm *);
 PETSC_EXTERN PetscErrorCode MatProductSetFill(Mat, PetscReal);
 PETSC_EXTERN PetscErrorCode MatProductSetFromOptions(Mat);
 PETSC_EXTERN PetscErrorCode MatProductSymbolic(Mat);

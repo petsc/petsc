@@ -12,10 +12,11 @@ int main(int argc, char **argv)
     {3, 4, 5},
     {6, 7, 8}
   };
-  Mat         A, mC, C;
-  PetscScalar one = 1.;
-  PetscMPIInt size;
-  PetscBool   flg;
+  Mat                 A, mC, C;
+  PetscScalar         one = 1.;
+  PetscMPIInt         size;
+  PetscBool           flg;
+  MatProductAlgorithm alg;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
@@ -57,12 +58,14 @@ int main(int argc, char **argv)
   /* Developer API */
   PetscCall(MatProductCreate(A, P, NULL, &mC));
   PetscCall(MatProductSetType(mC, MATPRODUCT_PtAP));
-  PetscCall(MatProductSetAlgorithm(mC, "default"));
+  PetscCall(MatProductSetAlgorithm(mC, MATPRODUCTALGORITHMDEFAULT));
   PetscCall(MatProductSetFill(mC, PETSC_DEFAULT));
   PetscCall(MatProductSetFromOptions(mC));
   PetscCall(MatProductSymbolic(mC));
   PetscCall(MatProductNumeric(mC));
   PetscCall(MatProductNumeric(mC));
+  PetscCall(MatProductGetAlgorithm(mC, &alg));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "MatProduct algorithm: %s\n", alg));
 
   /* Check mC = C */
   PetscCall(MatEqual(C, mC, &flg));
