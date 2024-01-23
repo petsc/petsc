@@ -842,9 +842,7 @@ PetscErrorCode DMGetCoordinateField(DM dm, DMField *field)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(field, 2);
-  if (!dm->coordinates[0].field) {
-    if (dm->ops->createcoordinatefield) PetscCall((*dm->ops->createcoordinatefield)(dm, &dm->coordinates[0].field));
-  }
+  if (!dm->coordinates[0].field) PetscTryTypeMethod(dm, createcoordinatefield, &dm->coordinates[0].field);
   *field = dm->coordinates[0].field;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

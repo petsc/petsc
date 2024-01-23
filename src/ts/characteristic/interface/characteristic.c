@@ -40,7 +40,7 @@ PetscErrorCode CharacteristicDestroy(Characteristic *c)
   PetscValidHeaderSpecific(*c, CHARACTERISTIC_CLASSID, 1);
   if (--((PetscObject)(*c))->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
 
-  if ((*c)->ops->destroy) PetscCall((*(*c)->ops->destroy)((*c)));
+  PetscTryTypeMethod(*c, destroy);
   PetscCallMPI(MPI_Type_free(&(*c)->itemType));
   PetscCall(PetscFree((*c)->queue));
   PetscCall(PetscFree((*c)->queueLocal));

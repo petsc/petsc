@@ -3321,7 +3321,7 @@ PetscErrorCode PetscSectionSymDestroy(PetscSectionSym *sym)
     *sym = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  if ((*sym)->ops->destroy) PetscCall((*(*sym)->ops->destroy)(*sym));
+  PetscTryTypeMethod(*sym, destroy);
   PetscCheck(!(*sym)->workout, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Work array still checked out");
   for (link = (*sym)->workin; link; link = next) {
     PetscInt    **perms = (PetscInt **)link->perms;

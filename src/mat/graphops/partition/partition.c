@@ -452,7 +452,7 @@ PetscErrorCode MatPartitioningDestroy(MatPartitioning *part)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  if ((*part)->ops->destroy) PetscCall((*(*part)->ops->destroy)((*part)));
+  PetscTryTypeMethod(*part, destroy);
   PetscCall(PetscFree((*part)->vertex_weights));
   PetscCall(PetscFree((*part)->part_weights));
   PetscCall(PetscHeaderDestroy(part));

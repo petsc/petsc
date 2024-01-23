@@ -28,7 +28,7 @@ static PetscErrorCode DMSNESDestroy(DMSNES *kdm)
   }
   PetscCall(DMSNESUnsetFunctionContext_DMSNES(*kdm));
   PetscCall(DMSNESUnsetJacobianContext_DMSNES(*kdm));
-  if ((*kdm)->ops->destroy) PetscCall(((*kdm)->ops->destroy)(*kdm));
+  PetscTryTypeMethod(*kdm, destroy);
   PetscCall(PetscHeaderDestroy(kdm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

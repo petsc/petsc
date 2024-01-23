@@ -691,7 +691,7 @@ PetscErrorCode ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
   }
   if ((*mapping)->info_nodei) PetscCall(PetscFree(((*mapping)->info_nodei)[0]));
   PetscCall(PetscFree2((*mapping)->info_nodec, (*mapping)->info_nodei));
-  if ((*mapping)->ops->destroy) PetscCall((*(*mapping)->ops->destroy)(*mapping));
+  PetscTryTypeMethod(*mapping, destroy);
   PetscCall(PetscHeaderDestroy(mapping));
   *mapping = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);

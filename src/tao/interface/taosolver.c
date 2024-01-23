@@ -237,7 +237,7 @@ PetscErrorCode TaoDestroy(Tao *tao)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  if ((*tao)->ops->destroy) PetscCall((*((*tao))->ops->destroy)(*tao));
+  PetscTryTypeMethod(*tao, destroy);
   PetscCall(KSPDestroy(&(*tao)->ksp));
   PetscCall(SNESDestroy(&(*tao)->snes_ewdummy));
   PetscCall(TaoLineSearchDestroy(&(*tao)->linesearch));

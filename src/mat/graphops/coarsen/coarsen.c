@@ -163,7 +163,7 @@ PetscErrorCode MatCoarsenDestroy(MatCoarsen *agg)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  if ((*agg)->ops->destroy) PetscCall((*(*agg)->ops->destroy)((*agg)));
+  PetscTryTypeMethod(*agg, destroy);
   if ((*agg)->agg_lists) PetscCall(PetscCDDestroy((*agg)->agg_lists));
   PetscCall(PetscObjectComposeFunction((PetscObject)(*agg), "MatCoarsenSetMaximumIterations_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)(*agg), "MatCoarsenSetThreshold_C", NULL));

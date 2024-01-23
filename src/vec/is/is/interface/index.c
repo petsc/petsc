@@ -1039,7 +1039,7 @@ PetscErrorCode ISDestroy(IS *is)
     PetscCheck(refcnt <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Nonlocal IS has not been restored");
     PetscCall(ISDestroy(&(*is)->complement));
   }
-  if ((*is)->ops->destroy) PetscCall((*(*is)->ops->destroy)(*is));
+  PetscTryTypeMethod(*is, destroy);
   PetscCall(PetscLayoutDestroy(&(*is)->map));
   /* Destroy local representations of offproc data. */
   PetscCall(PetscFree((*is)->total));

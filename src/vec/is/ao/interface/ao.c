@@ -94,7 +94,7 @@ PetscErrorCode AODestroy(AO *ao)
   PetscCall(ISDestroy(&(*ao)->isapp));
   PetscCall(ISDestroy(&(*ao)->ispetsc));
   /* destroy the internal part */
-  if ((*ao)->ops->destroy) PetscCall((*(*ao)->ops->destroy)(*ao));
+  PetscTryTypeMethod(*ao, destroy);
   PetscCall(PetscHeaderDestroy(ao));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
