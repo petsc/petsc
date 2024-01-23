@@ -161,6 +161,22 @@ static PetscErrorCode MatCreateVecs_HT(Mat N, Vec *r, Vec *l)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatHasOperation_HT(Mat mat, MatOperation op, PetscBool *has)
+{
+  Mat A;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(mat, &A));
+  *has = PETSC_FALSE;
+  if (op == MATOP_MULT || op == MATOP_MULT_ADD) {
+    PetscCall(MatHasOperation(A, MATOP_MULT_HERMITIAN_TRANSPOSE, has));
+    if (!*has) PetscCall(MatHasOperation(A, MATOP_MULT_TRANSPOSE, has));
+  } else if (op == MATOP_MULT_HERMITIAN_TRANSPOSE || op == MATOP_MULT_HERMITIAN_TRANS_ADD || op == MATOP_MULT_TRANSPOSE || op == MATOP_MULT_TRANSPOSE_ADD) {
+    PetscCall(MatHasOperation(A, MATOP_MULT, has));
+  } else if (((void **)mat->ops)[op]) *has = PETSC_TRUE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatHermitianTransposeGetMat_HT(Mat N, Mat *M)
 {
   PetscFunctionBegin;
@@ -286,6 +302,7 @@ PetscErrorCode MatCreateHermitianTranspose(Mat A, Mat *N)
 #endif
   PetscCall(MatShellSetOperation(*N, MATOP_DUPLICATE, (void (*)(void))MatDuplicate_HT));
   PetscCall(MatShellSetOperation(*N, MATOP_CREATE_VECS, (void (*)(void))MatCreateVecs_HT));
+  PetscCall(MatShellSetOperation(*N, MATOP_HAS_OPERATION, (void (*)(void))MatHasOperation_HT));
   PetscCall(MatShellSetOperation(*N, MATOP_GET_DIAGONAL, (void (*)(void))MatGetDiagonal_HT));
   PetscCall(MatShellSetOperation(*N, MATOP_CONVERT, (void (*)(void))MatConvert_HT));
 
