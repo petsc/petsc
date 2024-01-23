@@ -185,6 +185,7 @@ PETSC_EXTERN PetscLogEvent VEC_MTDot;
 PETSC_EXTERN PetscLogEvent VEC_Norm;
 PETSC_EXTERN PetscLogEvent VEC_Normalize;
 PETSC_EXTERN PetscLogEvent VEC_Scale;
+PETSC_EXTERN PetscLogEvent VEC_Shift;
 PETSC_EXTERN PetscLogEvent VEC_Copy;
 PETSC_EXTERN PetscLogEvent VEC_Set;
 PETSC_EXTERN PetscLogEvent VEC_AXPY;
