@@ -215,7 +215,7 @@ checksource:
   tags:
     - gce-u22-stage1
   script:
-    - python3 ./configure --with-mpi=0 --with-fc=0 --with-cxx=0
+    - python3 ./configure --with-mpi=0 --with-fc=0 --with-cxx=0 --with-x=0 --with-bison=0 --with-cmake=0 --with-pthread=0 --with-regex=0
     - vermin --version
     - make vermin
     - PATH=/nfs/gce/projects/petsc/soft/clang+llvm-16.0.0-x86_64-linux-gnu-ubuntu-18.04/bin:$PATH make checkclangformat SHELL=bash

@@ -386,7 +386,7 @@ PetscErrorCode DMForestGetBaseCoordinateMapping(DM dm, PetscErrorCode (**func)(D
   adapted from an old forest and calls this routine.
 
   This can be called after setup with `adapt` = `NULL`, which will clear all internal data
-  related to the adaptivity forest from `dm`.  This way, repeatedly adapting does not leave
+  related to the adaptivity forest from `dm`. This way, repeatedly adapting does not leave
   stale `DM` objects in memory.
 
 .seealso: `DM`, `DMFOREST`, `DMForestGetAdaptivityForest()`, `DMForestSetAdaptivityPurpose()`
@@ -950,7 +950,7 @@ PetscErrorCode DMForestGetAdaptivityStrategy(DM dm, DMForestAdaptivityStrategy *
   Level: intermediate
 
   Notes:
-  `PETSC_FALSE` indicates that the post-adaptation forest is the same as the pre-adpatation
+  `PETSC_FALSE` indicates that the post-adaptation forest is the same as the pre-adaptation
   forest.  A requested adaptation may have been unsuccessful if, for example, the requested refinement would have
   exceeded the maximum refinement level.
 

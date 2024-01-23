@@ -220,6 +220,7 @@ PetscErrorCode VecShift_SeqKokkos(Vec xin, PetscScalar shift)
                  "VecShift", xin->map->n, KOKKOS_LAMBDA(const PetscInt &i) { xv(i) += shift; });
                PetscCall(VecRestoreKokkosView(xin, &xv)));
   PetscCall(PetscLogGpuTimeEnd());
+  PetscCall(PetscLogGpuFlops(xin->map->n));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

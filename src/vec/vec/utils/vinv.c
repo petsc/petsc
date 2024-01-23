@@ -1611,6 +1611,7 @@ PetscErrorCode VecShiftAsync_Private(Vec v, PetscScalar shift, PetscDeviceContex
     PetscCall(VecGetArray(v, &x));
     for (PetscInt i = 0; i < n; ++i) x[i] += shift;
     PetscCall(VecRestoreArray(v, &x));
+    PetscCall(PetscLogFlops(n));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

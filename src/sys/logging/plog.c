@@ -2310,14 +2310,16 @@ M*/
   PetscLogGpuTime - turn on the logging of GPU time for GPU kernels
 
   Options Database Key:
-. -log_view_gpu_time - provide the GPU times in the `-log_view` output
+. -log_view_gpu_time - provide the GPU times for all events in the `-log_view` output
 
   Level: advanced
 
   Notes:
   Turning on the timing of the GPU kernels can slow down the entire computation and should only
-  be used when studying the performance of operations on GPU such as vector operations and
+  be used when studying the performance of individual operations on GPU such as vector operations and
   matrix-vector operations.
+
+  If this option is not used then times for most of the events in the `-log_view` output will be listed as Nan, indicating the times are not available
 
   This routine should only be called once near the beginning of the program. Once it is started
   it cannot be turned off.

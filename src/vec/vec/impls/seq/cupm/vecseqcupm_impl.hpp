@@ -204,7 +204,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::PointwiseBinary_(BinaryFuncT &&binary, Vec
       )
     );
     // clang-format on
-    PetscCall(PetscLogFlops(n));
+    PetscCall(PetscLogGpuFlops(n));
     PetscCall(PetscDeviceContextSynchronizeIfGlobalBlocking_Internal(dctx));
   } else {
     PetscCall(MaybeIncrementEmptyLocalVec(zout));
@@ -260,7 +260,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::PointwiseUnary_(UnaryFuncT &&unary, Vec xi
     } else {
       PetscCall(apply(DeviceArrayRead(dctx, xinout).data(), DeviceArrayWrite(dctx, yin).data()));
     }
-    PetscCall(PetscLogFlops(n));
+    PetscCall(PetscLogGpuFlops(n));
     PetscCall(PetscDeviceContextSynchronizeIfGlobalBlocking_Internal(dctx));
   } else {
     if (inplace) {
@@ -1233,7 +1233,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::MDot_(std::false_type, Vec xin, PetscInt n
   // copy result of device reduction to host
   PetscCall(PetscCUPMMemcpyAsync(z, d_results, nvbatch, cupmMemcpyDeviceToHost, stream));
   // do these now while final reduction is in flight
-  PetscCall(PetscLogFlops(nwork));
+  PetscCall(PetscLogGpuFlops(nwork));
   PetscCall(PetscDeviceFree(dctx, d_results));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
