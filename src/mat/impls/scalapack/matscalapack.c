@@ -464,7 +464,7 @@ static PetscErrorCode MatDiagonalScale_ScaLAPACK(Mat A, Vec L, Vec R)
 
   PetscFunctionBegin;
   if (R) {
-    PetscCall(VecGetArrayRead(R, (const PetscScalar **)&d));
+    PetscCall(VecGetArrayRead(R, &d));
     /* create ScaLAPACK descriptor for vector (1d block distribution) */
     PetscCall(PetscLayoutGetRanges(A->cmap, &ranges));
     PetscCall(PetscBLASIntCast(ranges[1], &nb)); /* D block size */
@@ -492,10 +492,10 @@ static PetscErrorCode MatDiagonalScale_ScaLAPACK(Mat A, Vec L, Vec R)
       for (i = 0; i < a->locr; i++) a->loc[i + j * a->lld] *= d2d[j];
 
     PetscCall(PetscFree(d2d));
-    PetscCall(VecRestoreArrayRead(R, (const PetscScalar **)&d));
+    PetscCall(VecRestoreArrayRead(R, &d));
   }
   if (L) {
-    PetscCall(VecGetArrayRead(L, (const PetscScalar **)&d));
+    PetscCall(VecGetArrayRead(L, &d));
     /* create ScaLAPACK descriptor for vector (1d block distribution) */
     PetscCall(PetscLayoutGetRanges(A->rmap, &ranges));
     PetscCall(PetscBLASIntCast(ranges[1], &mb)); /* D block size */
@@ -524,7 +524,7 @@ static PetscErrorCode MatDiagonalScale_ScaLAPACK(Mat A, Vec L, Vec R)
       for (j = 0; j < a->locc; j++) a->loc[i + j * a->lld] *= d2d[i];
 
     PetscCall(PetscFree(d2d));
-    PetscCall(VecRestoreArrayRead(L, (const PetscScalar **)&d));
+    PetscCall(VecRestoreArrayRead(L, &d));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
