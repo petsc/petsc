@@ -30,17 +30,18 @@ static PetscErrorCode DMPlexConvertPlex(DM dm, DM *plex, PetscBool copy)
     if (!*plex) {
       PetscCall(DMConvert(dm, DMPLEX, plex));
       PetscCall(PetscObjectCompose((PetscObject)dm, "dm_plex", (PetscObject)*plex));
-      if (copy) {
-        DMSubDomainHookLink link;
-
-        PetscCall(DMCopyAuxiliaryVec(dm, *plex));
-        /* Run the subdomain hook (this will copy the DMSNES/DMTS) */
-        for (link = dm->subdomainhook; link; link = link->next) {
-          if (link->ddhook) PetscCall((*link->ddhook)(dm, *plex, link->ctx));
-        }
-      }
     } else {
       PetscCall(PetscObjectReference((PetscObject)*plex));
+    }
+    if (copy) {
+      DMSubDomainHookLink link;
+
+      PetscCall(DMCopyDS(dm, *plex));
+      PetscCall(DMCopyAuxiliaryVec(dm, *plex));
+      /* Run the subdomain hook (this will copy the DMSNES/DMTS) */
+      for (link = dm->subdomainhook; link; link = link->next) {
+        if (link->ddhook) PetscCall((*link->ddhook)(dm, *plex, link->ctx));
+      }
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2170,8 +2171,8 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
 
 PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec locX, PetscInt cStart, PetscInt cEnd, PetscScalar *cintegral, void *user)
 {
-  DM           dmAux = NULL;
-  PetscDS      prob, probAux = NULL;
+  DM           dmAux = NULL, plexA = NULL;
+  PetscDS      prob, probAux       = NULL;
   PetscSection section, sectionAux;
   Vec          locA;
   PetscInt     dim, numCells = cEnd - cStart, c, f;
@@ -2216,6 +2217,7 @@ PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec locX, PetscInt cStart, 
   PetscCall(DMGetAuxiliaryVec(dm, NULL, 0, 0, &locA));
   if (locA) {
     PetscCall(VecGetDM(locA, &dmAux));
+    PetscCall(DMConvert(dmAux, DMPLEX, &plexA));
     PetscCall(DMGetDS(dmAux, &probAux));
     PetscCall(PetscDSGetNumFields(probAux, &NfAux));
     PetscCall(DMGetLocalSection(dmAux, &sectionAux));
@@ -2277,9 +2279,9 @@ PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec locX, PetscInt cStart, 
     for (i = 0; i < totDim; ++i) u[c * totDim + i] = x[i];
     PetscCall(DMPlexVecRestoreClosure(dm, section, locX, c, NULL, &x));
     if (dmAux) {
-      PetscCall(DMPlexVecGetClosure(dmAux, sectionAux, locA, c, NULL, &x));
+      PetscCall(DMPlexVecGetClosure(plexA, sectionAux, locA, c, NULL, &x));
       for (i = 0; i < totDimAux; ++i) a[c * totDimAux + i] = x[i];
-      PetscCall(DMPlexVecRestoreClosure(dmAux, sectionAux, locA, c, NULL, &x));
+      PetscCall(DMPlexVecRestoreClosure(plexA, sectionAux, locA, c, NULL, &x));
     }
   }
   /* Do integration for each field */
@@ -2342,6 +2344,7 @@ PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec locX, PetscInt cStart, 
     PetscCall(DMDestroy(&dmGrad));
   }
   if (dmAux) PetscCall(PetscFree(a));
+  PetscCall(DMDestroy(&plexA));
   PetscCall(PetscFree(u));
   /* Cleanup */
   if (affineQuad) PetscCall(PetscFEGeomDestroy(&cgeomFEM));
@@ -2367,7 +2370,7 @@ PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec locX, PetscInt cStart, 
 @*/
 PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscScalar *integral, void *user)
 {
-  DM_Plex     *mesh = (DM_Plex *)dm->data;
+  PetscInt     printFEM;
   PetscScalar *cintegral, *lintegral;
   PetscInt     Nf, f, cellHeight, cStart, cEnd, cell;
   Vec          locX;
@@ -2377,6 +2380,7 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscScalar *integral, voi
   PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
   PetscAssertPointer(integral, 3);
   PetscCall(PetscLogEventBegin(DMPLEX_IntegralFEM, dm, 0, 0, 0));
+  PetscCall(DMPlexConvertPlex(dm, &dm, PETSC_TRUE));
   PetscCall(DMGetNumFields(dm, &Nf));
   PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, cellHeight, &cStart, &cEnd));
@@ -2389,21 +2393,23 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscScalar *integral, voi
   PetscCall(DMGlobalToLocalEnd(dm, X, INSERT_VALUES, locX));
   PetscCall(DMPlexComputeIntegral_Internal(dm, locX, cStart, cEnd, cintegral, user));
   PetscCall(DMRestoreLocalVector(dm, &locX));
+  printFEM = ((DM_Plex *)dm->data)->printFEM;
   /* Sum up values */
   for (cell = cStart; cell < cEnd; ++cell) {
     const PetscInt c = cell - cStart;
 
-    if (mesh->printFEM > 1) PetscCall(DMPrintCellVector(cell, "Cell Integral", Nf, &cintegral[c * Nf]));
+    if (printFEM > 1) PetscCall(DMPrintCellVector(cell, "Cell Integral", Nf, &cintegral[c * Nf]));
     for (f = 0; f < Nf; ++f) lintegral[f] += cintegral[c * Nf + f];
   }
   PetscCall(MPIU_Allreduce(lintegral, integral, Nf, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
-  if (mesh->printFEM) {
+  if (printFEM) {
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), "Integral:"));
     for (f = 0; f < Nf; ++f) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), " %g", (double)PetscRealPart(integral[f])));
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), "\n"));
   }
   PetscCall(PetscFree2(lintegral, cintegral));
   PetscCall(PetscLogEventEnd(DMPLEX_IntegralFEM, dm, 0, 0, 0));
+  PetscCall(DMDestroy(&dm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2424,11 +2430,11 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscScalar *integral, voi
 @*/
 PetscErrorCode DMPlexComputeCellwiseIntegralFEM(DM dm, Vec X, Vec F, void *user)
 {
-  DM_Plex     *mesh = (DM_Plex *)dm->data;
+  PetscInt     printFEM;
   DM           dmF;
-  PetscSection sectionF;
+  PetscSection sectionF = NULL;
   PetscScalar *cintegral, *af;
-  PetscInt     Nf, f, cellHeight, cStart, cEnd, cell;
+  PetscInt     Nf, f, cellHeight, cStart, cEnd, cell, n;
   Vec          locX;
 
   PetscFunctionBegin;
@@ -2436,6 +2442,7 @@ PetscErrorCode DMPlexComputeCellwiseIntegralFEM(DM dm, Vec X, Vec F, void *user)
   PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(F, VEC_CLASSID, 3);
   PetscCall(PetscLogEventBegin(DMPLEX_IntegralFEM, dm, 0, 0, 0));
+  PetscCall(DMPlexConvertPlex(dm, &dm, PETSC_TRUE));
   PetscCall(DMGetNumFields(dm, &Nf));
   PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, cellHeight, &cStart, &cEnd));
@@ -2449,22 +2456,28 @@ PetscErrorCode DMPlexComputeCellwiseIntegralFEM(DM dm, Vec X, Vec F, void *user)
   PetscCall(DMPlexComputeIntegral_Internal(dm, locX, cStart, cEnd, cintegral, user));
   PetscCall(DMRestoreLocalVector(dm, &locX));
   /* Put values in F */
-  PetscCall(VecGetDM(F, &dmF));
-  PetscCall(DMGetLocalSection(dmF, &sectionF));
   PetscCall(VecGetArray(F, &af));
+  PetscCall(VecGetDM(F, &dmF));
+  if (dmF) PetscCall(DMGetLocalSection(dmF, &sectionF));
+  PetscCall(VecGetLocalSize(F, &n));
+  PetscCheck(n >= (cEnd - cStart) * Nf, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Vector size %" PetscInt_FMT " < %" PetscInt_FMT, n, (cEnd - cStart) * Nf);
+  printFEM = ((DM_Plex *)dm->data)->printFEM;
   for (cell = cStart; cell < cEnd; ++cell) {
-    const PetscInt c = cell - cStart;
-    PetscInt       dof, off;
+    const PetscInt c   = cell - cStart;
+    PetscInt       dof = Nf, off = c * Nf;
 
-    if (mesh->printFEM > 1) PetscCall(DMPrintCellVector(cell, "Cell Integral", Nf, &cintegral[c * Nf]));
-    PetscCall(PetscSectionGetDof(sectionF, cell, &dof));
-    PetscCall(PetscSectionGetOffset(sectionF, cell, &off));
+    if (printFEM > 1) PetscCall(DMPrintCellVector(cell, "Cell Integral", Nf, &cintegral[c * Nf]));
+    if (sectionF) {
+      PetscCall(PetscSectionGetDof(sectionF, cell, &dof));
+      PetscCall(PetscSectionGetOffset(sectionF, cell, &off));
+    }
     PetscCheck(dof == Nf, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of cell dofs %" PetscInt_FMT " != %" PetscInt_FMT, dof, Nf);
     for (f = 0; f < Nf; ++f) af[off + f] = cintegral[c * Nf + f];
   }
   PetscCall(VecRestoreArray(F, &af));
   PetscCall(PetscFree(cintegral));
   PetscCall(PetscLogEventEnd(DMPLEX_IntegralFEM, dm, 0, 0, 0));
+  PetscCall(DMDestroy(&dm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2673,7 +2686,7 @@ PetscErrorCode DMPlexComputeBdIntegral(DM dm, Vec X, DMLabel label, PetscInt num
 }
 
 /*@
-  DMPlexComputeInterpolatorNested - Form the local portion of the interpolation matrix I from the coarse `DM` to a uniformly refined `DM`.
+  DMPlexComputeInterpolatorNested - Form the local portion of the interpolation matrix from the coarse `DM` to a uniformly refined `DM`.
 
   Input Parameters:
 + dmc       - The coarse mesh
@@ -2911,7 +2924,7 @@ PetscErrorCode DMPlexComputeMassMatrixNested(DM dmc, DM dmf, Mat mass, void *use
 }
 
 /*@
-  DMPlexComputeInterpolatorGeneral - Form the local portion of the interpolation matrix I from the coarse `DM` to a non-nested fine `DM`.
+  DMPlexComputeInterpolatorGeneral - Form the local portion of the interpolation matrix from the coarse `DM` to a non-nested fine `DM`.
 
   Input Parameters:
 + dmf  - The fine mesh
@@ -3083,7 +3096,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
 }
 
 /*@
-  DMPlexComputeMassMatrixGeneral - Form the local portion of the mass matrix M from the coarse `DM` to a non-nested fine `DM`.
+  DMPlexComputeMassMatrixGeneral - Form the local portion of the mass matrix from the coarse `DM` to a non-nested fine `DM`.
 
   Input Parameters:
 + dmf  - The fine mesh
@@ -4574,10 +4587,10 @@ static PetscErrorCode DMConvertPlex_Internal(DM dm, DM *plex, PetscBool copy)
     if (!*plex) {
       PetscCall(DMConvert(dm, DMPLEX, plex));
       PetscCall(PetscObjectCompose((PetscObject)dm, "dm_plex", (PetscObject)*plex));
-      if (copy) PetscCall(DMCopyAuxiliaryVec(dm, *plex));
     } else {
       PetscCall(PetscObjectReference((PetscObject)*plex));
     }
+    if (copy) PetscCall(DMCopyAuxiliaryVec(dm, *plex));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
