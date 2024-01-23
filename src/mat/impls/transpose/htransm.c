@@ -133,6 +133,7 @@ static PetscErrorCode MatDestroy_HT(Mat N)
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatTransposeGetMat_C", NULL));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatProductSetFromOptions_anytype_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatShellSetContext_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -245,10 +246,29 @@ static PetscErrorCode MatConvert_HT(Mat N, MatType newtype, MatReuse reuse, Mat 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatShellSetContext_HT(Mat mat, void *ctx)
+{
+  PetscFunctionBegin;
+  SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Cannot set the MATSHELL context for a MATHERMITIANTRANSPOSEVIRTUAL, it is used by the MATHERMITIANTRANSPOSEVIRTUAL");
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatShellSetContextDestroy_HT(Mat mat, void (*f)(void))
+{
+  PetscFunctionBegin;
+  SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Cannot set the MATSHELL context destroy for a MATHERMITIANTRANSPOSEVIRTUAL, it is used by the MATHERMITIANTRANSPOSEVIRTUAL");
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*MC
    MATHERMITIANTRANSPOSEVIRTUAL - "hermitiantranspose" - A matrix type that represents a virtual transpose of a matrix
 
   Level: advanced
+
+  Developers Notes:
+  This is implemented on top of `MATSHELL` to get support for scaling and shifting without requiring duplicate code
+
+  Users can not call `MatShellSetOperation()` operations on this class, there is some error checking for that incorrect usage
 
 .seealso: [](ch_matrices), `Mat`, `MATTRANSPOSEVIRTUAL`, `Mat`, `MatCreateHermitianTranspose()`, `MatCreateTranspose()`
 M*/
@@ -306,11 +326,13 @@ PetscErrorCode MatCreateHermitianTranspose(Mat A, Mat *N)
   PetscCall(MatShellSetOperation(*N, MATOP_GET_DIAGONAL, (void (*)(void))MatGetDiagonal_HT));
   PetscCall(MatShellSetOperation(*N, MATOP_CONVERT, (void (*)(void))MatConvert_HT));
 
-  PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatHermitianTransposeGetMat_C", MatHermitianTransposeGetMat_HT));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatHermitianTransposeGetMat_C", MatHermitianTransposeGetMat_HT));
 #if !defined(PETSC_USE_COMPLEX)
-  PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatTransposeGetMat_C", MatHermitianTransposeGetMat_HT));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatTransposeGetMat_C", MatHermitianTransposeGetMat_HT));
 #endif
-  PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatProductSetFromOptions_anytype_C", MatProductSetFromOptions_HT));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatProductSetFromOptions_anytype_C", MatProductSetFromOptions_HT));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatShellSetContext_C", MatShellSetContext_HT));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatShellSetContextDestroy_C", MatShellSetContextDestroy_HT));
   PetscCall(PetscObjectChangeTypeName((PetscObject)*N, MATHERMITIANTRANSPOSEVIRTUAL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
