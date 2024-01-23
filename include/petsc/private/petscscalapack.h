@@ -97,7 +97,7 @@ BLAS_EXTERN void      SCALAPACKgetrs_(const char *, PetscBLASInt *, PetscBLASInt
 BLAS_EXTERN PetscBLASInt SCALAPACKnumroc_(PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *);
 BLAS_EXTERN void         SCALAPACKdescinit_(PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *);
 BLAS_EXTERN void         SCALAPACKinfog2l_(PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *);
-BLAS_EXTERN void         SCALAPACKgemr2d_(PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *);
+BLAS_EXTERN void         SCALAPACKgemr2d_(PetscBLASInt *, PetscBLASInt *, const PetscScalar *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *);
 BLAS_EXTERN void         SCALAPACKmatadd_(PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscScalar *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscScalar *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *);
 BLAS_EXTERN void         SCALAPACKelset_(PetscScalar *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscScalar *);
 BLAS_EXTERN void         SCALAPACKelget_(const char *, const char *, PetscScalar *, PetscScalar *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *);
