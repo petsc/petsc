@@ -211,4 +211,5 @@ PETSC_EXTERN PetscErrorCode PetscDSUpdateBoundary(PetscDS, PetscInt, DMBoundaryC
 PETSC_EXTERN PetscErrorCode PetscDSGetNumBoundary(PetscDS, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetBoundary(PetscDS, PetscInt, PetscWeakForm *, DMBoundaryConditionType *, const char *[], DMLabel *, PetscInt *, const PetscInt *[], PetscInt *, PetscInt *, const PetscInt *[], void (**)(void), void (**)(void), void **);
 PETSC_EXTERN PetscErrorCode PetscDSCopyBoundary(PetscDS, PetscInt, const PetscInt[], PetscDS);
+PETSC_EXTERN PetscErrorCode PetscDSUpdateBoundaryLabels(PetscDS, DM);
 PETSC_EXTERN PetscErrorCode PetscDSDestroyBoundary(PetscDS);

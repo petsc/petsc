@@ -125,4 +125,6 @@ Changes: Development
 
 .. rubric:: DT:
 
+- Add ``PetscDSUpdateBoundaryLabels()``
+
 .. rubric:: Fortran:
