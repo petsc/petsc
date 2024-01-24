@@ -1136,6 +1136,7 @@ PetscErrorCode DMPlexInsertBoundaryValues_Plex(DM dm, PetscBool insertEssential,
   PetscCall(DMGetDS(dm, &prob));
   PetscCall(PetscDSGetNumBoundary(prob, &numBd));
   PetscCall(PetscObjectQuery((PetscObject)locX, "__Vec_bc_zero__", &isZero));
+  PetscCall(PetscDSUpdateBoundaryLabels(prob, dm));
   for (b = 0; b < numBd; ++b) {
     PetscWeakForm           wf;
     DMBoundaryConditionType type;
