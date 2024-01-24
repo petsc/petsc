@@ -189,13 +189,16 @@ PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, PetscInt ce
 @*/
 PetscErrorCode DMPlexMarkBoundaryFaces(DM dm, PetscInt val, DMLabel label)
 {
+  DM                     plex;
   DMPlexInterpolatedFlag flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(DMPlexIsInterpolated(dm, &flg));
+  PetscCall(DMConvert(dm, DMPLEX, &plex));
+  PetscCall(DMPlexIsInterpolated(plex, &flg));
   PetscCheck(flg == DMPLEX_INTERPOLATED_FULL, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "DM is not fully interpolated on this rank");
-  PetscCall(DMPlexMarkBoundaryFaces_Internal(dm, val, 0, label, PETSC_FALSE));
+  PetscCall(DMPlexMarkBoundaryFaces_Internal(plex, val, 0, label, PETSC_FALSE));
+  PetscCall(DMDestroy(&plex));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
