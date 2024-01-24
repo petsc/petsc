@@ -169,7 +169,7 @@ PetscErrorCode TaoSolve_BNTR(Tao tao)
         PetscCall(TaoComputeGradient(tao, tao->solution, bnk->unprojected_gradient));
         PetscCall(TaoBNKEstimateActiveSet(tao, bnk->as_type));
         PetscCall(VecCopy(bnk->unprojected_gradient, tao->gradient));
-        PetscCall(VecISSet(tao->gradient, bnk->active_idx, 0.0));
+        if (bnk->active_idx) PetscCall(VecISSet(tao->gradient, bnk->active_idx, 0.0));
         PetscCall(TaoGradientNorm(tao, tao->gradient, NORM_2, &bnk->gnorm));
       } else {
         /* Step is bad, revert old solution and re-solve with new radius*/
