@@ -7,7 +7,7 @@ from functools import reduce
 from collections import namedtuple
 from collections import defaultdict
 
-# not sure how to handle this with 'self' so its outside the class
+# not sure how to handle this with 'self' so it's outside the class
 def noCheck(command, status, output, error):
   return
 
@@ -2713,7 +2713,7 @@ if (dlclose(handle)) {
       if envVal in os.environ:
         msg = 'Found environment variable: %s=%s. ' % (envVal, os.environ[envVal])
         if envVal in self.framework.clArgDB or (envVal in ignoreEnvCompilers and 'with-'+envVal.lower() in self.framework.clArgDB):
-          self.logPrintWarning(msg+'Ignoring it, since its also set on command line')
+          self.logPrintWarning(msg+"Ignoring it, since it's also set on command line")
           del os.environ[envVal]
         elif self.argDB['with-environment-variables']:
           self.logPrintWarning(msg+'Using it! Use "./configure --disable-environment-variables" to NOT use the environmental variables')
