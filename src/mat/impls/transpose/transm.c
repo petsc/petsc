@@ -48,16 +48,6 @@ static PetscErrorCode MatDuplicate_Transpose(Mat N, MatDuplicateOption op, Mat *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatCreateVecs_Transpose(Mat N, Vec *r, Vec *l)
-{
-  Mat A;
-
-  PetscFunctionBegin;
-  PetscCall(MatShellGetContext(N, &A));
-  PetscCall(MatCreateVecs(A, l, r));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatHasOperation_Transpose(Mat mat, MatOperation op, PetscBool *has)
 {
   Mat A;
@@ -315,7 +305,6 @@ PetscErrorCode MatCreateTranspose(Mat A, Mat *N)
   PetscCall(MatShellSetOperation(*N, MATOP_MULT, (void (*)(void))MatMult_Transpose));
   PetscCall(MatShellSetOperation(*N, MATOP_MULT_TRANSPOSE, (void (*)(void))MatMultTranspose_Transpose));
   PetscCall(MatShellSetOperation(*N, MATOP_DUPLICATE, (void (*)(void))MatDuplicate_Transpose));
-  PetscCall(MatShellSetOperation(*N, MATOP_CREATE_VECS, (void (*)(void))MatCreateVecs_Transpose));
   PetscCall(MatShellSetOperation(*N, MATOP_HAS_OPERATION, (void (*)(void))MatHasOperation_Transpose));
   PetscCall(MatShellSetOperation(*N, MATOP_GET_DIAGONAL, (void (*)(void))MatGetDiagonal_Transpose));
   PetscCall(MatShellSetOperation(*N, MATOP_CONVERT, (void (*)(void))MatConvert_Transpose));
