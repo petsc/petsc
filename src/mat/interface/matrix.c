@@ -8683,18 +8683,18 @@ PetscErrorCode MatInterpolate(Mat A, Vec x, Vec y)
 @*/
 PetscErrorCode MatRestrict(Mat A, Vec x, Vec y)
 {
-  PetscInt M, N, Ny;
+  PetscInt M, N, Nx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidHeaderSpecific(x, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(y, VEC_CLASSID, 3);
   PetscCall(MatGetSize(A, &M, &N));
-  PetscCall(VecGetSize(y, &Ny));
-  if (M == Ny) {
-    PetscCall(MatMult(A, x, y));
-  } else {
+  PetscCall(VecGetSize(x, &Nx));
+  if (M == Nx) {
     PetscCall(MatMultTranspose(A, x, y));
+  } else {
+    PetscCall(MatMult(A, x, y));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
