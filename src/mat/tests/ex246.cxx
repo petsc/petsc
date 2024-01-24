@@ -105,9 +105,7 @@ int main(int argc, char **argv)
       requires: htool
    test:
       requires: htool
-      suffix: 2
       nsize: 4
       args: -m_local 120 -mat_htool_epsilon 1.0e-2 -symmetric {{false true}shared output}
-      output_file: output/ex101.out
 
 TEST*/
