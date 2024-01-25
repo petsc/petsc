@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version      = '1.3'
+    self.version      = '1.3.1'
     self.versionname  = 'ZLIB_VERSION'
     self.download     = ['http://www.zlib.net/zlib-'+self.version+'.tar.gz',
                          'https://github.com/madler/zlib/releases/download/v'+self.version+'/zlib-'+self.version+'.tar.gz',
