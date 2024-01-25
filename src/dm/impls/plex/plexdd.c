@@ -3,6 +3,40 @@
 #include <petsc/private/sectionimpl.h>
 #include <petsc/private/sfimpl.h>
 
+static PetscErrorCode DMTransferMaterialParameters(DM dm, PetscSF sf, DM odm)
+{
+  Vec A;
+
+  PetscFunctionBegin;
+  /* TODO handle regions? */
+  PetscCall(DMGetAuxiliaryVec(dm, NULL, 0, 0, &A));
+  if (A) {
+    DM           dmAux, ocdm, odmAux;
+    Vec          oA, oAt;
+    PetscSection sec, osec;
+
+    PetscCall(VecGetDM(A, &dmAux));
+    PetscCall(DMClone(odm, &odmAux));
+    PetscCall(DMGetCoordinateDM(odm, &ocdm));
+    PetscCall(DMSetCoordinateDM(odmAux, ocdm));
+    PetscCall(DMCopyDisc(dmAux, odmAux));
+
+    PetscCall(DMGetLocalSection(dmAux, &sec));
+    PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)sec), &osec));
+    PetscCall(VecCreate(PetscObjectComm((PetscObject)A), &oAt));
+    PetscCall(DMPlexDistributeField(dmAux, sf, sec, A, osec, oAt));
+    PetscCall(DMSetLocalSection(odmAux, osec));
+    PetscCall(PetscSectionDestroy(&osec));
+    PetscCall(DMCreateLocalVector(odmAux, &oA));
+    PetscCall(DMDestroy(&odmAux));
+    PetscCall(VecCopy(oAt, oA));
+    PetscCall(VecDestroy(&oAt));
+    PetscCall(DMSetAuxiliaryVec(odm, NULL, 0, 0, oA));
+    PetscCall(VecDestroy(&oA));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode DMCreateDomainDecomposition_Plex(DM dm, PetscInt *nsub, char ***names, IS **innerises, IS **outerises, DM **dms)
 {
   DM           odm;
@@ -38,7 +72,6 @@ PetscErrorCode DMCreateDomainDecomposition_Plex(DM dm, PetscInt *nsub, char ***n
   PetscCall(DMPlexSetMaxProjectionHeight(odm, mh));
 
   /* share discretization */
-  /* TODO material parameters */
   /* TODO Labels for regions may need to updated,
      now it uses the original ones, not the ones for the odm.
      Not sure what to do here */
@@ -55,6 +88,8 @@ PetscErrorCode DMCreateDomainDecomposition_Plex(DM dm, PetscInt *nsub, char ***n
     PetscCall(DMSetLocalSection(dm, tsec));
     PetscCall(PetscSectionDestroy(&tsec));
   }
+  /* TODO: what if these values changes? add to some DM hook? */
+  PetscCall(DMTransferMaterialParameters(dm, migrationSF, odm));
 
   /* TODO: it would be nice to automatically translate filenames with wildcards:
            name%r.vtu -> name${rank}.vtu
@@ -155,7 +190,6 @@ PetscErrorCode DMCreateDomainDecomposition_Plex(DM dm, PetscInt *nsub, char ***n
   PetscCall(PetscObjectCompose((PetscObject)odm, "__Plex_DD_IS_gi", (PetscObject)gi_is));
   PetscCall(PetscObjectCompose((PetscObject)odm, "__Plex_DD_IS_li", (PetscObject)li_is));
   PetscCall(PetscObjectCompose((PetscObject)odm, "__Plex_DD_IS_go", (PetscObject)go_is));
-  PetscCall(PetscObjectCompose((PetscObject)odm, "__Plex_DD_IS_lo", NULL));
   PetscCall(PetscObjectCompose((PetscObject)odm, "__Plex_DD_IS_gl", (PetscObject)gl_is));
   PetscCall(PetscObjectCompose((PetscObject)odm, "__Plex_DD_IS_ll", (PetscObject)ll_is));
 
@@ -176,7 +210,7 @@ PetscErrorCode DMCreateDomainDecomposition_Plex(DM dm, PetscInt *nsub, char ***n
 PetscErrorCode DMCreateDomainDecompositionScatters_Plex(DM dm, PetscInt n, DM *subdms, VecScatter **iscat, VecScatter **oscat, VecScatter **lscat)
 {
   Vec gvec, svec, lvec;
-  IS  gi_is, li_is, go_is, lo_is, gl_is, ll_is;
+  IS  gi_is, li_is, go_is, gl_is, ll_is;
 
   PetscFunctionBegin;
   if (iscat) PetscCall(PetscMalloc1(n, iscat));
@@ -190,11 +224,15 @@ PetscErrorCode DMCreateDomainDecompositionScatters_Plex(DM dm, PetscInt n, DM *s
     PetscCall(PetscObjectQuery((PetscObject)subdms[i], "__Plex_DD_IS_gi", (PetscObject *)&gi_is));
     PetscCall(PetscObjectQuery((PetscObject)subdms[i], "__Plex_DD_IS_li", (PetscObject *)&li_is));
     PetscCall(PetscObjectQuery((PetscObject)subdms[i], "__Plex_DD_IS_go", (PetscObject *)&go_is));
-    PetscCall(PetscObjectQuery((PetscObject)subdms[i], "__Plex_DD_IS_lo", (PetscObject *)&lo_is));
     PetscCall(PetscObjectQuery((PetscObject)subdms[i], "__Plex_DD_IS_gl", (PetscObject *)&gl_is));
     PetscCall(PetscObjectQuery((PetscObject)subdms[i], "__Plex_DD_IS_ll", (PetscObject *)&ll_is));
+    PetscCheck(gi_is, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "SubDM not obtained from DMCreateDomainDecomposition");
+    PetscCheck(li_is, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "SubDM not obtained from DMCreateDomainDecomposition");
+    PetscCheck(go_is, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "SubDM not obtained from DMCreateDomainDecomposition");
+    PetscCheck(gl_is, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "SubDM not obtained from DMCreateDomainDecomposition");
+    PetscCheck(ll_is, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "SubDM not obtained from DMCreateDomainDecomposition");
     if (iscat) PetscCall(VecScatterCreate(gvec, gi_is, svec, li_is, &(*iscat)[i]));
-    if (oscat) PetscCall(VecScatterCreate(gvec, go_is, svec, lo_is, &(*oscat)[i]));
+    if (oscat) PetscCall(VecScatterCreate(gvec, go_is, svec, NULL, &(*oscat)[i]));
     if (lscat) PetscCall(VecScatterCreate(gvec, gl_is, lvec, ll_is, &(*lscat)[i]));
     PetscCall(DMRestoreGlobalVector(subdms[i], &svec));
     PetscCall(DMRestoreLocalVector(subdms[i], &lvec));
@@ -259,33 +297,8 @@ PetscErrorCode DMCreateNeumannOverlap_Plex(DM dm, IS *ovl, Mat *J, PetscErrorCod
   PetscCall(PetscSectionDestroy(&osec));
 
   /* material parameters */
-  {
-    Vec A;
-
-    PetscCall(DMGetAuxiliaryVec(dm, NULL, 0, 0, &A));
-    if (A) {
-      DM  dmAux, ocdm, odmAux;
-      Vec oA;
-
-      PetscCall(VecGetDM(A, &dmAux));
-      PetscCall(DMClone(odm, &odmAux));
-      PetscCall(DMGetCoordinateDM(odm, &ocdm));
-      PetscCall(DMSetCoordinateDM(odmAux, ocdm));
-      PetscCall(DMCopyDisc(dmAux, odmAux));
-
-      PetscCall(DMGetLocalSection(dmAux, &sec));
-      PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)sec), &osec));
-      PetscCall(VecCreate(PetscObjectComm((PetscObject)A), &oA));
-      PetscCall(VecSetDM(oA, odmAux));
-      /* TODO: what if these values changes? */
-      PetscCall(DMPlexDistributeField(dmAux, sf, sec, A, osec, oA));
-      PetscCall(DMSetLocalSection(odmAux, osec));
-      PetscCall(PetscSectionDestroy(&osec));
-      PetscCall(DMSetAuxiliaryVec(odm, NULL, 0, 0, oA));
-      PetscCall(VecDestroy(&oA));
-      PetscCall(DMDestroy(&odmAux));
-    }
-  }
+  /* TODO: what if these values changes? add to some DM hook? */
+  PetscCall(DMTransferMaterialParameters(dm, sf, odm));
   PetscCall(PetscSFDestroy(&sf));
 
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_plex_view_neumann_original"));
