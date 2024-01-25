@@ -1978,8 +1978,10 @@ class CMakePackage(Package):
 
     if not config.setCompilers.Configure.isWindows(self.setCompilers.CC, self.log) and self.checkSharedLibrariesEnabled():
       args.append('-DBUILD_SHARED_LIBS:BOOL=ON')
+      args.append('-DBUILD_STATIC_LIBS:BOOL=OFF')
     else:
       args.append('-DBUILD_SHARED_LIBS:BOOL=OFF')
+      args.append('-DBUILD_STATIC_LIBS:BOOL=ON')
 
     if 'MSYSTEM' in os.environ:
       args.append('-G "MSYS Makefiles"')
