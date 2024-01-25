@@ -547,7 +547,6 @@ PetscErrorCode MatHeaderReplace(Mat A, Mat *C)
   A->stencil              = stencil;
 
   ((PetscObject)*C)->refct = 1;
-  PetscCall(MatShellSetOperation(*C, MATOP_DESTROY, (void (*)(void))NULL));
   PetscCall(MatDestroy(C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
