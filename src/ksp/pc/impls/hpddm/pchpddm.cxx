@@ -2351,19 +2351,11 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       if (!ctx) {
         if (data->deflation || overlap != -1) weighted = data->aux;
         else if (!data->B) {
-          PetscBool cmp[2];
+          PetscBool cmp;
           PetscCall(MatDuplicate(sub[0], MAT_COPY_VALUES, &weighted));
-          PetscCall(PetscObjectTypeCompare((PetscObject)weighted, MATNORMAL, cmp));
-          if (!cmp[0]) PetscCall(PetscObjectTypeCompare((PetscObject)weighted, MATNORMALHERMITIAN, cmp + 1));
-          else cmp[1] = PETSC_FALSE;
-          if (!cmp[0] && !cmp[1]) PetscCall(MatDiagonalScale(weighted, data->levels[0]->D, data->levels[0]->D));
-          else { /* MATNORMAL applies MatDiagonalScale() in a matrix-free fashion, not what is needed since this won't be passed to SLEPc during the eigensolve */
-            if (cmp[0]) PetscCall(MatNormalGetMat(weighted, &data->B));
-            else PetscCall(MatNormalHermitianGetMat(weighted, &data->B));
-            PetscCall(MatDiagonalScale(data->B, nullptr, data->levels[0]->D));
-            data->B = nullptr;
-            flg     = PETSC_FALSE;
-          }
+          PetscCall(PetscObjectTypeCompareAny((PetscObject)weighted, &cmp, MATNORMAL, MATNORMALHERMITIAN, ""));
+          if (cmp) flg = PETSC_FALSE;
+          PetscCall(MatDiagonalScale(weighted, data->levels[0]->D, data->levels[0]->D));
           /* neither MatDuplicate() nor MatDiagonalScale() handles the symmetry options, so propagate the options explicitly */
           /* only useful for -mat_type baij -pc_hpddm_levels_1_st_pc_type cholesky (no problem with MATAIJ or MATSBAIJ)      */
           PetscCall(MatPropagateSymmetryOptions(sub[0], weighted));

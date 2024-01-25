@@ -64,28 +64,28 @@ PC Object: 4 MPI processes
             restriction/interpolation type - RESTRICT
             Local solver information for first block is in the following KSP and PC objects on rank 0:
             Use -fieldsplit_1_pc_hpddm_levels_1_ksp_view ::ascii_info_detail to display information for all blocks
-          KSP Object: (fieldsplit_1_pc_hpddm_levels_1_sub_) 1 MPI process
-            type: preonly
-            maximum iterations=10000, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-            left preconditioning
-            using NONE norm type for convergence test
-          PC Object: (fieldsplit_1_pc_hpddm_levels_1_sub_) 1 MPI process
-            type: qr
-              out-of-place factorization
-              tolerance for zero pivot 2.22045e-14
-              matrix ordering: external
-              factor fill ratio given 0., needed 0.
-                Factored matrix follows:
-                  Mat Object: (fieldsplit_1_pc_hpddm_levels_1_sub_) 1 MPI process
-                    type: spqr
-                    rows=718, cols=718
-                    package used to perform factorization: spqr
-                    total: nonzeros=189808, allocated nonzeros=189808
-            linear system matrix = precond matrix:
-            Mat Object: (fieldsplit_1_pc_hpddm_levels_1_sub_) 1 MPI process
-              type: normalh
-              rows=718, cols=718
+            KSP Object: (fieldsplit_1_pc_hpddm_levels_1_sub_) 1 MPI process
+              type: preonly
+              maximum iterations=10000, initial guess is zero
+              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              left preconditioning
+              using NONE norm type for convergence test
+            PC Object: (fieldsplit_1_pc_hpddm_levels_1_sub_) 1 MPI process
+              type: qr
+                out-of-place factorization
+                tolerance for zero pivot 2.22045e-14
+                matrix ordering: external
+                factor fill ratio given 0., needed 0.
+                  Factored matrix follows:
+                    Mat Object: (fieldsplit_1_pc_hpddm_levels_1_sub_) 1 MPI process
+                      type: spqr
+                      rows=718, cols=718
+                      package used to perform factorization: spqr
+                      total: nonzeros=189808, allocated nonzeros=189808
+              linear system matrix = precond matrix:
+              Mat Object: (fieldsplit_1_pc_hpddm_levels_1_sub_) 1 MPI process
+                type: normalh
+                rows=718, cols=718
           linear system matrix = precond matrix:
           Mat Object: 4 MPI processes
             type: normalh
@@ -132,5 +132,5 @@ PC Object: 4 MPI processes
         (1,0) : type=transpose, rows=841, cols=4889
         (1,1) : prefix="fieldsplit_1_", type=mpiaij, rows=841, cols=841
 KSP type: gmres
-Number of iterations =   5
+Number of iterations =   6
 Residual norm 1.63035e-05
