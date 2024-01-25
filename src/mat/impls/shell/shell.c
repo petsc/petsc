@@ -1031,7 +1031,7 @@ static PetscErrorCode MatDuplicate_Shell(Mat mat, MatDuplicateOption op, Mat *M)
   ((Mat_Shell *)(*M)->data)->ctxcontainer = ((Mat_Shell *)mat->data)->ctxcontainer;
   PetscCall(PetscObjectCompose((PetscObject)(*M), "MatShell ctx", (PetscObject)((Mat_Shell *)(*M)->data)->ctxcontainer));
   PetscCall(PetscObjectChangeTypeName((PetscObject)(*M), ((PetscObject)mat)->type_name));
-  if (op != MAT_DO_NOT_COPY_VALUES) PetscCall(MatCopy(mat, *M, SAME_NONZERO_PATTERN));
+  if (op == MAT_COPY_VALUES) PetscCall(MatCopy(mat, *M, SAME_NONZERO_PATTERN));
   PetscCall(PetscObjectCopyFortranFunctionPointers((PetscObject)mat, (PetscObject)*M));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
