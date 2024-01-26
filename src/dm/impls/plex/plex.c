@@ -8929,7 +8929,7 @@ PetscErrorCode DMPlexCreateRankField(DM dm, Vec *ranks)
 }
 
 /*@
-  DMPlexCreateLabelField - Create a cell field whose value is the label value for that cell
+  DMPlexCreateLabelField - Create a field whose value is the label value for that point
 
   Input Parameters:
 + dm    - The `DMPLEX`
@@ -8947,37 +8947,52 @@ PetscErrorCode DMPlexCreateRankField(DM dm, Vec *ranks)
 @*/
 PetscErrorCode DMPlexCreateLabelField(DM dm, DMLabel label, Vec *val)
 {
-  DM           rdm, plex;
-  PetscFE      fe;
-  PetscScalar *v;
-  PetscInt     dim, cStart, cEnd, c;
+  DM             rdm, plex;
+  Vec            lval;
+  PetscSection   section;
+  PetscFE        fe;
+  PetscScalar   *v;
+  PetscInt       dim, pStart, pEnd, p, cStart;
+  DMPolytopeType ct;
+  char           name[PETSC_MAX_PATH_LEN];
+  const char    *lname, *prefix;
 
   PetscFunctionBeginUser;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(label, 2);
   PetscAssertPointer(val, 3);
-  PetscCall(DMConvert(dm, DMPLEX, &plex));
-  PetscCall(DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd));
-  PetscCall(DMDestroy(&plex));
   PetscCall(DMClone(dm, &rdm));
+  PetscCall(DMConvert(rdm, DMPLEX, &plex));
+  PetscCall(DMPlexGetHeightStratum(plex, 0, &cStart, NULL));
+  PetscCall(DMPlexGetCellType(plex, cStart, &ct));
+  PetscCall(DMDestroy(&plex));
   PetscCall(DMGetDimension(rdm, &dim));
-  PetscCall(PetscFECreateDefault(PetscObjectComm((PetscObject)rdm), dim, 1, PETSC_TRUE, "PETSc___label_value_", -1, &fe));
-  PetscCall(PetscObjectSetName((PetscObject)fe, "label_value"));
+  PetscCall(DMGetOptionsPrefix(dm, &prefix));
+  PetscCall(PetscObjectGetName((PetscObject)label, &lname));
+  PetscCall(PetscSNPrintf(name, sizeof(name), "%s%s_", prefix ? prefix : "", lname));
+  PetscCall(PetscFECreateByCell(PETSC_COMM_SELF, dim, 1, ct, name, -1, &fe));
+  PetscCall(PetscObjectSetName((PetscObject)fe, ""));
   PetscCall(DMSetField(rdm, 0, NULL, (PetscObject)fe));
   PetscCall(PetscFEDestroy(&fe));
   PetscCall(DMCreateDS(rdm));
   PetscCall(DMCreateGlobalVector(rdm, val));
-  PetscCall(PetscObjectSetName((PetscObject)*val, "label_value"));
-  PetscCall(VecGetArray(*val, &v));
-  for (c = cStart; c < cEnd; ++c) {
-    PetscScalar *lv;
-    PetscInt     cval;
+  PetscCall(DMCreateLocalVector(rdm, &lval));
+  PetscCall(PetscObjectSetName((PetscObject)*val, lname));
+  PetscCall(DMGetLocalSection(rdm, &section));
+  PetscCall(PetscSectionGetChart(section, &pStart, &pEnd));
+  PetscCall(VecGetArray(lval, &v));
+  for (p = pStart; p < pEnd; ++p) {
+    PetscInt cval, dof, off;
 
-    PetscCall(DMPlexPointGlobalRef(rdm, c, v, &lv));
-    PetscCall(DMLabelGetValue(label, c, &cval));
-    *lv = cval;
+    PetscCall(PetscSectionGetDof(section, p, &dof));
+    if (!dof) continue;
+    PetscCall(DMLabelGetValue(label, p, &cval));
+    PetscCall(PetscSectionGetOffset(section, p, &off));
+    for (PetscInt d = 0; d < dof; d++) v[off + d] = cval;
   }
-  PetscCall(VecRestoreArray(*val, &v));
+  PetscCall(VecRestoreArray(lval, &v));
+  PetscCall(DMLocalToGlobal(rdm, lval, INSERT_VALUES, *val));
+  PetscCall(VecDestroy(&lval));
   PetscCall(DMDestroy(&rdm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
