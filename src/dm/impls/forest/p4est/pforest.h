@@ -4315,6 +4315,8 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
       PetscCall(DMGetCellCoordinatesLocal(newPlex, &coords));
       if (coords) PetscCall(DMSetCellCoordinatesLocal(dm, coords));
     }
+  } else {
+    PetscCall(DMCopyLabels(dm, pforest->plex, PETSC_OWN_POINTER, PETSC_FALSE, DM_COPY_LABELS_REPLACE));
   }
   newPlex = pforest->plex;
   if (plex) {

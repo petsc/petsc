@@ -3751,6 +3751,32 @@ PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, PetscWeakForm *wf, DM
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscDSUpdateBoundaryLabels - Update `DMLabel` in each boundary condition using the label name and the input `DM`
+
+  Not Collective
+
+  Input Parameters:
++ ds - The source `PetscDS` object
+- dm - The `DM` holding labels
+
+  Level: intermediate
+
+.seealso: `PetscDS`, `DMBoundary`, `DM`, `PetscDSCopyBoundary()`, `PetscDSCreate()`, `DMGetLabel()`
+@*/
+PetscErrorCode PetscDSUpdateBoundaryLabels(PetscDS ds, DM dm)
+{
+  DSBoundary b;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
+  for (b = ds->boundary; b; b = b->next) {
+    if (b->lname) PetscCall(DMGetLabel(dm, b->lname, &b->label));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode DSBoundaryDuplicate_Internal(DSBoundary b, DSBoundary *bNew)
 {
   PetscFunctionBegin;
