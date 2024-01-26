@@ -7826,7 +7826,7 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmet
               aa     = aseq->a + ai[brow + ii] + k;
               for (int jjj = 0; jjj < index_size; jjj++) { // columns in block
                 int jj = index[jjj];
-                val    = PetscAbs(PetscRealPart(aa[jj]));
+                val += PetscAbs(PetscRealPart(aa[jj]));
               }
             }
           }
