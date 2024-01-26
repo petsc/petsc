@@ -473,6 +473,17 @@ typedef enum {
 } MatCompositeMergeType;
 PETSC_EXTERN PetscErrorCode MatCompositeSetMergeType(Mat, MatCompositeMergeType);
 PETSC_EXTERN PetscErrorCode MatCreateComposite(MPI_Comm, PetscInt, const Mat *, Mat *);
+/*E
+    MatCompositeType - indicates what type of `MATCOMPOSITE` is used
+
+    Values:
++  `MAT_COMPOSITE_ADDITIVE`       - sum of matrices (default)
+-  `MAT_COMPOSITE_MULTIPLICATIVE` - product of matrices
+
+    Level: beginner
+
+.seealso: [](ch_matrices), `MATCOMPOSITE`, `MatCompositeSetType()`, `MatCompositeGetType()`
+E*/
 typedef enum {
   MAT_COMPOSITE_ADDITIVE,
   MAT_COMPOSITE_MULTIPLICATIVE
