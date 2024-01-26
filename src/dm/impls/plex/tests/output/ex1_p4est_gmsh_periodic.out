@@ -6,7 +6,7 @@ Generated Mesh in 2 dimensions:
   Number of 2-cells per rank: 1314
 Periodic mesh coordinates localized
 Labels:
-  Cell Sets: 1 strata with value/size (0 (4380))
-  Face Sets: 1 strata with value/size (0 (122))
   depth: 3 strata with value/size (0 (1582), 1 (3432), 2 (1314))
   celltype: 3 strata with value/size (4 (1314), 1 (3432), 0 (1582))
+  Cell Sets: 1 strata with value/size (0 (4380))
+  Face Sets: 1 strata with value/size (0 (122))

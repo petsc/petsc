@@ -9,24 +9,24 @@ Domain radius (AMR levels) grid 0: par= 6.000e+00 perp= 6.000e+00 (0) , 1: par= 
   Number of 1-cells per rank: 75
   Number of 2-cells per rank: 26
 Labels:
+  depth: 3 strata with value/size (0 (41), 1 (75), 2 (26))
+  celltype: 3 strata with value/size (4 (26), 1 (75), 0 (41))
   marker: 1 strata with value/size (1 (38))
   Face Sets: 4 strata with value/size (4 (16), 1 (2), 2 (4), 3 (4))
   _forest_base_subpoint_map: 45 strata with value/size (0 (1), 1 (1), 2 (23), 3 (1), 4 (33), 5 (1), 6 (9), 7 (1), 33 (1), 37 (1), 23 (1), 25 (4), 41 (1), 24 (1), 26 (1), 34 (5), 38 (4), 27 (5), 42 (1), 28 (1), 35 (7), 39 (4), 29 (6), 43 (1), 30 (1), 36 (3), 40 (4), 31 (3), 44 (1), 32 (1), 8 (1), 9 (1), 11 (1), 12 (1), 10 (1), 13 (1), 14 (1), 15 (1), 16 (1), 17 (1), 18 (1), 19 (1), 20 (1), 21 (1), 22 (1))
-  depth: 3 strata with value/size (0 (41), 1 (75), 2 (26))
-  celltype: 3 strata with value/size (4 (26), 1 (75), 0 (41))
 Field e:
   adjacency FEM
 0 TS dt 0.01 time 0.005
 step    0) time= 5.000000e-03 temperature (eV): electron: T= 3.5979e+02 T_par= 3.0036e+02 T_perp= 3.8950e+02 ;ion: T= 2.3999e+02 T_par= 1.9984e+02 T_perp= 2.6006e+02 NRL_i_par= 2.0000e+02 NRL_i_perp= 2.6000e+02 NRL_e_par= 3.0000e+02 NRL_e_perp= 3.9000e+02
   0) species-0: charge density= -1.6018004042620e+01 z-momentum=  9.9228167689656e-04 energy=  1.4050262623995e+04
-  0) species-1: charge density=  1.6028907952774e+01 z-momentum= -9.9216833917771e-04 energy=  5.7714762935928e+03
-	  0) Total: charge density=  1.0903910154205e-02, momentum=  1.1333771884566e-07, energy=  1.9821738917588e+04 (m_i[0]/m_e = 3670.94, 26 cells on electron grid)
+  0) species-1: charge density=  1.6028907952774e+01 z-momentum= -9.9216833917772e-04 energy=  5.7714762935928e+03
+	  0) Total: charge density=  1.0903910154205e-02, momentum=  1.1333771884328e-07, energy=  1.9821738917588e+04 (m_i[0]/m_e = 3670.94, 26 cells on electron grid)
   Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 6
   Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 5
   Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 5
-      TSAdapt basic arkimex 0:1bee step   0 accepted t=0.005      + 1.000e-02 dt=1.500e-02  wlte=0.0969  wltea=   -1 wlter=   -1
+      TSAdapt basic arkimex 0:1bee step   0 accepted t=0.005      + 1.000e-02 dt=1.500e-02  wlte=0.0955  wltea=   -1 wlter=   -1
 1 TS dt 0.015 time 0.015
-step    1) time= 1.500000e-02 temperature (eV): electron: T= 3.6091e+02 T_par= 3.0243e+02 T_perp= 3.9015e+02 ;ion: T= 2.3999e+02 T_par= 1.9984e+02 T_perp= 2.6006e+02 NRL_i_par= 2.0000e+02 NRL_i_perp= 2.6000e+02 NRL_e_par= 3.0021e+02 NRL_e_perp= 3.8989e+02
-  1) species-0: charge density= -1.6018004042620e+01 z-momentum=  9.8980393887495e-04 energy=  1.4050259944917e+04
-  1) species-1: charge density=  1.6028907952774e+01 z-momentum= -9.8969060115610e-04 energy=  5.7714789726717e+03
-	  1) Total: charge density=  1.0903910154202e-02, momentum=  1.1333771884198e-07, energy=  1.9821738917588e+04 (m_i[0]/m_e = 3670.94, 26 cells on electron grid)
+step    1) time= 1.500000e-02 temperature (eV): electron: T= 3.6086e+02 T_par= 3.0234e+02 T_perp= 3.9012e+02 ;ion: T= 2.3999e+02 T_par= 1.9984e+02 T_perp= 2.6006e+02 NRL_i_par= 2.0000e+02 NRL_i_perp= 2.6000e+02 NRL_e_par= 3.0021e+02 NRL_e_perp= 3.8989e+02
+  1) species-0: charge density= -1.6018004042620e+01 z-momentum=  9.8991559794627e-04 energy=  1.4050260075707e+04
+  1) species-1: charge density=  1.6028907952774e+01 z-momentum= -9.8980226022742e-04 energy=  5.7714788418816e+03
+	  1) Total: charge density=  1.0903910154205e-02, momentum=  1.1333771884545e-07, energy=  1.9821738917588e+04 (m_i[0]/m_e = 3670.94, 26 cells on electron grid)
