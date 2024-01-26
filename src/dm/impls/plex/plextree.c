@@ -2236,7 +2236,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
     PetscCall(PetscSectionGetStorageSize(rootMatricesSec, &numRootMatrices));
     PetscCall(PetscMalloc2(numRootIndices, &rootIndices, numRootMatrices, &rootMatrices));
     for (p = pStartC; p < pEndC; p++) {
-      PetscInt     numRowIndices, numColIndices, matSize, dof;
+      PetscInt     numRowIndices = 0, numColIndices, matSize, dof;
       PetscInt     pIndOff, pMatOff, f;
       PetscInt    *pInd;
       PetscInt     maxChildId = maxChildIds[p - pStartC];
@@ -2262,9 +2262,8 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
       if (dof < 0) dof = -(dof + 1);
       if (maxChildId >= 0) { /* build an identity matrix, apply matrix constraints on the right */
         PetscInt i, j;
-        PetscInt numRowIndices = matSize / numColIndices;
 
-        if (!numRowIndices) { /* don't need to calculate the mat, just the indices */
+        if (matSize == 0) { /* don't need to calculate the mat, just the indices */
           PetscInt numIndices, *indices;
           PetscCall(DMPlexGetClosureIndices(coarse, localCoarse, globalCoarse, p, PETSC_TRUE, &numIndices, &indices, offsets, NULL));
           PetscCheck(numIndices == numColIndices, PETSC_COMM_SELF, PETSC_ERR_PLIB, "mismatching constraint indices calculations");
@@ -2278,6 +2277,19 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
           PetscInt     closureSize, *closure = NULL, cl;
           PetscScalar *pMatIn, *pMatModified;
           PetscInt     numPoints, *points;
+
+          {
+            PetscInt *closure = NULL, closureSize, cl;
+
+            PetscCall(DMPlexGetTransitiveClosure(coarse, p, PETSC_TRUE, &closureSize, &closure));
+            for (cl = 0; cl < closureSize; cl++) { /* get the closure */
+              PetscInt c = closure[2 * cl], clDof;
+
+              PetscCall(PetscSectionGetDof(localCoarse, c, &clDof));
+              numRowIndices += clDof;
+            }
+            PetscCall(DMPlexRestoreTransitiveClosure(coarse, p, PETSC_TRUE, &closureSize, &closure));
+          }
 
           PetscCall(DMGetWorkArray(coarse, numRowIndices * numRowIndices, MPIU_SCALAR, &pMatIn));
           for (i = 0; i < numRowIndices; i++) { /* initialize to the identity */
@@ -2355,10 +2367,9 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
         }
       } else if (matSize) {
         PetscInt  cOff;
-        PetscInt *rowIndices, *colIndices, a, aDof, aOff;
+        PetscInt *rowIndices, *colIndices, a, aDof = 0, aOff;
 
-        numRowIndices = matSize / numColIndices;
-        PetscCheck(numRowIndices == dof, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Miscounted dofs");
+        numRowIndices = dof;
         PetscCall(DMGetWorkArray(coarse, numRowIndices, MPIU_INT, &rowIndices));
         PetscCall(DMGetWorkArray(coarse, numColIndices, MPIU_INT, &colIndices));
         PetscCall(PetscSectionGetOffset(cSec, p, &cOff));
