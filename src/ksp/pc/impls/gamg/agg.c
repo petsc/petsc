@@ -607,7 +607,8 @@ static PetscErrorCode PCGAMGCreateGraph_AGG(PC pc, Mat Amat, Mat *a_Gmat)
   PetscCall(MatGetBlockSize(Amat, &bs));
   // check for valid indices wrt bs
   for (int ii = 0; ii < pc_gamg_agg->crs->strength_index_size; ii++) {
-    PetscCheck(pc_gamg_agg->crs->strength_index[ii] >= 0 && pc_gamg_agg->crs->strength_index[ii] < bs, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Indices (%d) must be non-negative and < block size (%d)", (int)pc_gamg_agg->crs->strength_index[ii], (int)bs);
+    PetscCheck(pc_gamg_agg->crs->strength_index[ii] >= 0 && pc_gamg_agg->crs->strength_index[ii] < bs, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Indices (%d) must be non-negative and < block size (%d), NB, can not use -mat_coarsen_strength_index with -mat_coarsen_strength_index",
+               (int)pc_gamg_agg->crs->strength_index[ii], (int)bs);
   }
   PetscCall(PetscObjectTypeCompare((PetscObject)pc_gamg_agg->crs, MATCOARSENHEM, &ishem));
   if (ishem) {

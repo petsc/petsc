@@ -73,6 +73,7 @@ Changes: Development
 - Add ``PCGAMGASMSetHEM()`` with corresponding option ``-pc_gamg_asm_hem_aggs N``. Use ASM smoother constructed from N applications of heavy edge matching
 - ``PCMAT`` use ``MatSolve()`` if implemented by the matrix type
 - Add ``PCLMVMSetUpdateVec()`` for the automatic update of the LMVM preconditioner inside a SNES solve
+- Add ``PCGAMGSetInjectionIndex()`` with corresponding option ``-pc_gamg_injection_index i,j,k...``. Inject provided indices of fine grid operator as first coarse grid restriction (sort of p-multigrid for C1 elements)
 
 .. rubric:: KSP:
 

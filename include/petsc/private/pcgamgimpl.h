@@ -50,6 +50,8 @@ typedef struct gamg_TAG {
   PetscBool use_sa_esteig;
   PetscReal emin, emax;
   PetscBool recompute_esteig;
+  PetscInt  injection_index_size;
+  PetscInt  injection_index[MAT_COARSEN_STRENGTH_INDEX_SIZE];
 } PC_GAMG;
 
 PetscErrorCode PCReset_MG(PC);
