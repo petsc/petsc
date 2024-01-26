@@ -4130,6 +4130,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
   comm = PetscObjectComm((PetscObject)dm);
   PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMPFOREST, &isPforest));
   PetscCheck(isPforest, comm, PETSC_ERR_ARG_WRONG, "Expected DM type %s, got %s", DMPFOREST, ((PetscObject)dm)->type_name);
+  PetscCall(DMSetUp(dm));
   PetscCall(DMGetDimension(dm, &dim));
   PetscCheck(dim == P4EST_DIM, comm, PETSC_ERR_ARG_WRONG, "Expected DM dimension %d, got %" PetscInt_FMT, P4EST_DIM, dim);
   forest  = (DM_Forest *)dm->data;
