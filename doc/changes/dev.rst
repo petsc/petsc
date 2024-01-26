@@ -57,9 +57,10 @@ Changes: Development
 
 .. rubric:: Mat:
 
-- Reset ``MATLMVM`` history vecs if size is changed
-- Add specific support for ``MatMultHermitianTranspose()`` and ``MatMultHermitianTransposeAdd()`` in ``MATSHELL``, ``MATDENSE``, ``MATNEST`` and ``MATSCALAPACK``
+- Reset ``MATLMVM`` history vectors if size is changed
+- Add specific support for ``MatMultHermitianTranspose()`` and ``MatMultHermitianTransposeAdd()`` in ``MATSHELL``, ``MATDENSE``, ``MATNEST``, and ``MATSCALAPACK``
 - Add function ``MatProductGetAlgorithm()``
+- ``MATTRANSPOSEVIRTUAL``, ``MATHERMITIANTRANSPOSEVIRTUAL``, ``MATNORMAL``, ``MATNORMALHERMITIAN``, and ``MATCOMPOSITE`` now derive from ``MATSHELL``. This implies a new behavior for those ``Mat``, as calling ``MatAssemblyBegin()``/``MatAssemblyEnd()`` destroys scalings and shifts for ``MATSHELL``, but it was not previously the case for other ``MatType``
 
 .. rubric:: MatCoarsen:
 
@@ -110,8 +111,8 @@ Changes: Development
 - Replace ``DMProjectCoordinates()`` with ``DMSetCoordinateDisc()``
 - Add argument to ``DMPlexCreateCoordinateSpace()``
 - Add ``DMPlexReorderSectionGetDefault()`` and ``DMPlexReorderSectionSetDefault()`` to allow point permutations when sections are built automatically
-- Add `DMPlexCoordMap` and some default maps
-- Add boolean argument to ``DMPlexPartitionLabelCreateSF()`` to sort ranks
+- Add ``DMPlexCoordMap`` and some default maps
+- Add Boolean argument to ``DMPlexPartitionLabelCreateSF()`` to sort ranks
 - Add ``DMClearAuxiliaryVec()`` to clear the auxiliary data
 
 .. rubric:: FE/FV:
