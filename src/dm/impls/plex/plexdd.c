@@ -91,23 +91,51 @@ PetscErrorCode DMCreateDomainDecomposition_Plex(DM dm, PetscInt *nsub, char ***n
   /* TODO: what if these values changes? add to some DM hook? */
   PetscCall(DMTransferMaterialParameters(dm, migrationSF, odm));
 
-  /* TODO: it would be nice to automatically translate filenames with wildcards:
-           name%r.vtu -> name${rank}.vtu
-           name%R.vtu -> name${PetscGlobalRank}.vtu
-           So that -dm_view vtk:name%R.vtu will automatically translate to the commented code below
-  */
+  PetscCall(DMViewFromOptions(odm, (PetscObject)dm, "-dm_plex_dd_overlap_dm_view"));
 #if 0
   {
-    char        name[256];
-    PetscViewer viewer;
+    DM              seqdm;
+    Vec             val;
+    IS              is;
+    PetscInt        vStart, vEnd;
+    const PetscInt *vnum;
+    char            name[256];
+    PetscViewer     viewer;
 
+    PetscCall(DMPlexDistributeOverlap_Internal(dm, 0, PETSC_COMM_SELF, "local_mesh", NULL, &seqdm));
+    PetscCall(PetscSNPrintf(name, sizeof(name), "local_mesh_%d.vtu", PetscGlobalRank));
+    PetscCall(PetscViewerVTKOpen(PetscObjectComm((PetscObject)seqdm), name, FILE_MODE_WRITE, &viewer));
+    PetscCall(DMGetLabel(seqdm, "local_mesh", &label));
+    PetscCall(DMPlexLabelComplete(seqdm, label));
+    PetscCall(DMPlexCreateLabelField(seqdm, label, &val));
+    PetscCall(VecView(val, viewer));
+    PetscCall(VecDestroy(&val));
+    PetscCall(PetscViewerDestroy(&viewer));
+
+    PetscCall(PetscSNPrintf(name, sizeof(name), "asm_vertices_%d.vtu", PetscGlobalRank));
+    PetscCall(PetscViewerVTKOpen(PetscObjectComm((PetscObject)seqdm), name, FILE_MODE_WRITE, &viewer));
+    PetscCall(DMCreateLabel(seqdm, "asm_vertices"));
+    PetscCall(DMGetLabel(seqdm, "asm_vertices", &label));
+    PetscCall(DMPlexGetVertexNumbering(dm, &is));
+    PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+    PetscCall(ISGetIndices(is, &vnum));
+    for (PetscInt v = 0; v < vEnd - vStart; v++) {
+      if (vnum[v] < 0) continue;
+      PetscCall(DMLabelSetValue(label, v + vStart, 1));
+    }
+    PetscCall(DMPlexCreateLabelField(seqdm, label, &val));
+    PetscCall(VecView(val, viewer));
+    PetscCall(VecDestroy(&val));
+    PetscCall(ISRestoreIndices(is, &vnum));
+    PetscCall(PetscViewerDestroy(&viewer));
+
+    PetscCall(DMDestroy(&seqdm));
     PetscCall(PetscSNPrintf(name, sizeof(name), "ovl_mesh_%d.vtu", PetscGlobalRank));
     PetscCall(PetscViewerVTKOpen(PetscObjectComm((PetscObject)odm), name, FILE_MODE_WRITE, &viewer));
     PetscCall(DMView(odm, viewer));
     PetscCall(PetscViewerDestroy(&viewer));
   }
 #endif
-  PetscCall(DMViewFromOptions(odm, (PetscObject)dm, "-dm_plex_dd_overlap_dm_view"));
 
   /* propagate original global ordering to overlapping DM */
   PetscCall(DMGetSectionSF(dm, &sectionSF));
