@@ -1195,7 +1195,7 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc, Mat Amat, PetscCoarsenData *a
   PetscCall(MatGetType(Amat, &mtype));
   PetscCall(MatCreate(comm, &Prol));
   PetscCall(MatSetSizes(Prol, nloc * bs, nLocalSelected * col_bs, PETSC_DETERMINE, PETSC_DETERMINE));
-  PetscCall(MatSetBlockSizes(Prol, bs, col_bs));
+  PetscCall(MatSetBlockSizes(Prol, bs, col_bs)); // should this be before MatSetSizes?
   PetscCall(MatSetType(Prol, mtype));
 #if PetscDefined(HAVE_DEVICE)
   PetscBool flg;
