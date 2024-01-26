@@ -2749,7 +2749,7 @@ PetscErrorCode DMDestroy_Network(DM dm)
 
   PetscFunctionBegin;
   /*
-    Developers Note: Due to the mixed topological definition of DMNetwork and data defined ON the
+    Developer Note: Due to the mixed topological definition of DMNetwork and data defined ON the
     network like DofSection, DataSection, *componentdataarray, and friends, when cloning, we share
     only the true topological data, and make our own data ON the network. Thus refct only refers
     to the number of references to topological data, and data ON the network is always destroyed.
@@ -2771,7 +2771,7 @@ PetscErrorCode DMDestroy_Network(DM dm)
   PetscCall(DMDestroy(&network->plex)); /* this is cloned in DMClone_Network, so safe to destroy */
 
   /*
-  Developers Note: The DMNetworkVertexInfo and DMNetworkEdgeInfo data structures are completely
+  Developer Note: The DMNetworkVertexInfo and DMNetworkEdgeInfo data structures are completely
   destroyed as they are again a mix of topological data:
     ISLocalToGlobalMapping            mapping;
     PetscSF                           sf;
