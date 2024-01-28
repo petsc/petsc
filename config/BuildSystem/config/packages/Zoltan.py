@@ -11,7 +11,6 @@ class Configure(config.package.GNUPackage):
     self.includes    = ['zoltan.h']
     self.liblist     = [['libzoltan.a']]
     self.buildLanguages = ['C','Cxx']
-    self.license     = 'http://www.cs.sandia.gov/Zoltan/Zoltan.html'
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)

@@ -11,7 +11,6 @@ class Configure(config.package.GNUPackage):
     self.functions        = ['CVSpgmr','CVDense']
     self.includes         = ['sundials/sundials_nvector.h']
     self.liblist          = [['libsundials_cvode.a','libsundials_nvecserial.a','libsundials_nvecparallel.a']] #currently only support CVODE
-    self.license          = 'http://www.llnl.gov/CASC/sundials/download/download.html'
     self.parallelMake     = 0  # uses recursive make so better be safe and not use make -j np
     self.complex          = 0
     self.precisions       = ['double']
