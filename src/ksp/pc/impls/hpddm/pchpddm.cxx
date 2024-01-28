@@ -2364,8 +2364,8 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
             data->B = nullptr;
             flg     = PETSC_FALSE;
           }
-          /* neither MatDuplicate() nor MatDiagonaleScale() handles the symmetry options, so propagate the options explicitly */
-          /* only useful for -mat_type baij -pc_hpddm_levels_1_st_pc_type cholesky (no problem with MATAIJ or MATSBAIJ)       */
+          /* neither MatDuplicate() nor MatDiagonalScale() handles the symmetry options, so propagate the options explicitly */
+          /* only useful for -mat_type baij -pc_hpddm_levels_1_st_pc_type cholesky (no problem with MATAIJ or MATSBAIJ)      */
           PetscCall(MatPropagateSymmetryOptions(sub[0], weighted));
         } else weighted = data->B;
       } else weighted = nullptr;

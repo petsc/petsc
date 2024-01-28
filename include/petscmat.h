@@ -1726,7 +1726,7 @@ PETSC_EXTERN PetscErrorCode MatTransposeColoringDestroy(MatTransposeColoring *);
    There is also a `PetscPartitioner` object that provides the same functionality. It can utilize the `MatPartitioning` operations
    via `PetscPartitionerSetType`(p,`PETSCPARTITIONERMATPARTITIONING`)
 
-   Developers Note:
+   Developer Note:
    It is an extra maintenance and documentation cost to have two objects with the same functionality. `PetscPartitioner` should be removed
 
 .seealso: [](ch_matrices), [](sec_graph), `Mat`, `MatPartitioningCreate()`, `MatPartitioningType`, `MatColoring`, `MatGetOrdering()`, `MatOrderingType`,
