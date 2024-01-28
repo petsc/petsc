@@ -2114,7 +2114,7 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscBool filter, Petsc
   PetscCall(PCBDDCGraphCreate(&graph));
   PetscCall(MatGetDM(pc->pmat, &dm));
   if (!dm) PetscCall(PCGetDM(pc, &dm));
-  if (dm) PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMPLEX, &isplex));
+  if (dm) PetscCall(PetscObjectTypeCompareAny((PetscObject)dm, &isplex, DMPLEX, DMP4EST, DMP8EST, ""));
   if (filter) isplex = PETSC_FALSE;
 
   if (isplex) { /* this code has been modified from plexpartition.c */
@@ -2127,6 +2127,7 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscBool filter, Petsc
     PetscSegBuffer  adjBuffer;
     PetscSF         sfPoint;
 
+    PetscCall(DMConvert(dm, DMPLEX, &dm));
     PetscCall(DMPlexGetHeightStratum(dm, 0, &pStart, &pEnd));
     PetscCall(DMGetPointSF(dm, &sfPoint));
     PetscCall(PetscSFGetGraph(sfPoint, &nroots, NULL, NULL, NULL));
@@ -2269,15 +2270,76 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscBool filter, Petsc
     if (ncc) *ncc = graph->ncc;
     if (cc || primalv) {
       Mat          A;
-      PetscBT      btv, btvt;
+      PetscBT      btv, btvt, btvc;
       PetscSection subSection;
       PetscInt    *ids, cum, cump, *cids, *pids;
+      PetscInt     dim, cStart, cEnd, fStart, fEnd, vStart, vEnd, pStart, pEnd;
 
+      PetscCall(DMGetDimension(dm, &dim));
       PetscCall(DMPlexGetSubdomainSection(dm, &subSection));
+      PetscCall(DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd));
+      PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+      PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+      PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
       PetscCall(MatISGetLocalMat(pc->pmat, &A));
       PetscCall(PetscMalloc3(A->rmap->n, &ids, graph->ncc + 1, &cids, A->rmap->n, &pids));
       PetscCall(PetscBTCreate(A->rmap->n, &btv));
       PetscCall(PetscBTCreate(A->rmap->n, &btvt));
+      PetscCall(PetscBTCreate(pEnd - pStart, &btvc));
+
+      /* First see if we find corners for the subdomains, i.e. a vertex
+         shared by at least dim subdomain boundary faces. This does not
+         cover all the possible cases with simplices but it is enough
+         for tensor cells */
+      if (vStart != fStart && dim <= 3) {
+        for (PetscInt c = cStart; c < cEnd; c++) {
+          PetscInt        nf, cnt = 0, mcnt = dim, *cfaces;
+          const PetscInt *faces;
+
+          PetscCall(DMPlexGetConeSize(dm, c, &nf));
+          PetscCall(DMGetWorkArray(dm, nf, MPIU_INT, &cfaces));
+          PetscCall(DMPlexGetCone(dm, c, &faces));
+          for (PetscInt f = 0; f < nf; f++) {
+            PetscInt nc, ff;
+
+            PetscCall(DMPlexGetSupportSize(dm, faces[f], &nc));
+            PetscCall(DMPlexGetTreeParent(dm, faces[f], &ff, NULL));
+            if (nc == 1 && faces[f] == ff) cfaces[cnt++] = faces[f];
+          }
+          if (cnt >= mcnt) {
+            PetscInt size, *closure = NULL;
+
+            PetscCall(DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &size, &closure));
+            for (PetscInt k = 0; k < 2 * size; k += 2) {
+              PetscInt v = closure[k];
+              if (v >= vStart && v < vEnd) {
+                PetscInt vsize, *vclosure = NULL;
+
+                cnt = 0;
+                PetscCall(DMPlexGetTransitiveClosure(dm, v, PETSC_FALSE, &vsize, &vclosure));
+                for (PetscInt vk = 0; vk < 2 * vsize; vk += 2) {
+                  PetscInt f = vclosure[vk];
+                  if (f >= fStart && f < fEnd) {
+                    PetscInt  nc, ff;
+                    PetscBool valid = PETSC_FALSE;
+
+                    for (PetscInt fk = 0; fk < nf; fk++)
+                      if (f == cfaces[fk]) valid = PETSC_TRUE;
+                    if (!valid) continue;
+                    PetscCall(DMPlexGetSupportSize(dm, f, &nc));
+                    PetscCall(DMPlexGetTreeParent(dm, f, &ff, NULL));
+                    if (nc == 1 && f == ff) cnt++;
+                  }
+                }
+                if (cnt >= mcnt) PetscCall(PetscBTSet(btvc, v - pStart));
+                PetscCall(DMPlexRestoreTransitiveClosure(dm, v, PETSC_FALSE, &vsize, &vclosure));
+              }
+            }
+            PetscCall(DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &size, &closure));
+          }
+          PetscCall(DMRestoreWorkArray(dm, nf, MPIU_INT, &cfaces));
+        }
+      }
 
       cids[0] = 0;
       for (i = 0, cump = 0, cum = 0; i < graph->ncc; i++) {
@@ -2296,7 +2358,8 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscBool filter, Petsc
             PetscCall(PetscSectionGetDof(subSection, p, &dof));
             for (s = 0; s < dof - cdof; s++) {
               if (PetscBTLookupSet(btvt, off + s)) continue;
-              if (!PetscBTLookup(btv, off + s)) ids[cum++] = off + s;
+              if (PetscBTLookup(btvc, p - pStart)) pids[cump++] = off + s; /* subdomain corner */
+              else if (!PetscBTLookup(btv, off + s)) ids[cum++] = off + s;
               else pids[cump++] = off + s; /* cross-vertex */
             }
             PetscCall(DMPlexGetTreeParent(dm, p, &pp, NULL));
@@ -2306,7 +2369,8 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscBool filter, Petsc
               PetscCall(PetscSectionGetDof(subSection, pp, &dof));
               for (s = 0; s < dof - cdof; s++) {
                 if (PetscBTLookupSet(btvt, off + s)) continue;
-                if (!PetscBTLookup(btv, off + s)) ids[cum++] = off + s;
+                if (PetscBTLookup(btvc, pp - pStart)) pids[cump++] = off + s; /* subdomain corner */
+                else if (!PetscBTLookup(btv, off + s)) ids[cum++] = off + s;
                 else pids[cump++] = off + s; /* cross-vertex */
               }
             }
@@ -2326,6 +2390,8 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscBool filter, Petsc
       PetscCall(PetscFree3(ids, cids, pids));
       PetscCall(PetscBTDestroy(&btv));
       PetscCall(PetscBTDestroy(&btvt));
+      PetscCall(PetscBTDestroy(&btvc));
+      PetscCall(DMDestroy(&dm));
     }
   } else {
     if (ncc) *ncc = graph->ncc;

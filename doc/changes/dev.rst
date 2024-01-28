@@ -112,6 +112,7 @@ Changes: Development
 - Add ``DMPlexReorderSectionGetDefault()`` and ``DMPlexReorderSectionSetDefault()`` to allow point permutations when sections are built automatically
 - Add `DMPlexCoordMap` and some default maps
 - Add boolean argument to ``DMPlexPartitionLabelCreateSF()`` to sort ranks
+- Add ``DMClearAuxiliaryVec()`` to clear the auxiliary data
 
 .. rubric:: FE/FV:
 

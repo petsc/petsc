@@ -749,17 +749,8 @@ PetscErrorCode DMDestroy(DM *dm)
   PetscCall(PetscSFDestroy(&(*dm)->sectionSF));
   if ((*dm)->sfNatural) PetscCall(PetscSFDestroy(&(*dm)->sfNatural));
   PetscCall(PetscObjectDereference((PetscObject)(*dm)->sfMigration));
-  {
-    Vec     *auxData;
-    PetscInt n, i, off = 0;
-
-    PetscCall(PetscHMapAuxGetSize((*dm)->auxData, &n));
-    PetscCall(PetscMalloc1(n, &auxData));
-    PetscCall(PetscHMapAuxGetVals((*dm)->auxData, &off, auxData));
-    for (i = 0; i < n; ++i) PetscCall(VecDestroy(&auxData[i]));
-    PetscCall(PetscFree(auxData));
-    PetscCall(PetscHMapAuxDestroy(&(*dm)->auxData));
-  }
+  PetscCall(DMClearAuxiliaryVec(*dm));
+  PetscCall(PetscHMapAuxDestroy(&(*dm)->auxData));
   if ((*dm)->coarseMesh && (*dm)->coarseMesh->fineMesh == *dm) PetscCall(DMSetFineDM((*dm)->coarseMesh, NULL));
 
   PetscCall(DMDestroy(&(*dm)->coarseMesh));
@@ -8997,7 +8988,7 @@ PetscErrorCode DMComputeError(DM dm, Vec sol, PetscReal errors[], Vec *errorVec)
 
   Level: advanced
 
-.seealso: [](ch_dmbase), `DM`, `DMSetAuxiliaryVec()`, `DMGetAuxiliaryLabels()`, `DMGetAuxiliaryVec()`
+.seealso: [](ch_dmbase), `DM`, `DMClearAuxiliaryVec()`, `DMSetAuxiliaryVec()`, `DMGetAuxiliaryLabels()`, `DMGetAuxiliaryVec()`
 @*/
 PetscErrorCode DMGetNumAuxiliaryVec(DM dm, PetscInt *numAux)
 {
@@ -9026,7 +9017,7 @@ PetscErrorCode DMGetNumAuxiliaryVec(DM dm, PetscInt *numAux)
   Note:
   If no auxiliary vector is found for this (label, value), (NULL, 0, 0) is checked as well.
 
-.seealso: [](ch_dmbase), `DM`, `DMSetAuxiliaryVec()`, `DMGetNumAuxiliaryVec()`, `DMGetAuxiliaryLabels()`
+.seealso: [](ch_dmbase), `DM`, `DMClearAuxiliaryVec()`, `DMSetAuxiliaryVec()`, `DMGetNumAuxiliaryVec()`, `DMGetAuxiliaryLabels()`
 @*/
 PetscErrorCode DMGetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, PetscInt part, Vec *aux)
 {
@@ -9059,7 +9050,7 @@ PetscErrorCode DMGetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, PetscInt 
 
   Level: advanced
 
-.seealso: [](ch_dmbase), `DM`, `DMGetAuxiliaryVec()`, `DMGetAuxiliaryLabels()`, `DMCopyAuxiliaryVec()`
+.seealso: [](ch_dmbase), `DM`, `DMClearAuxiliaryVec()`, `DMGetAuxiliaryVec()`, `DMGetAuxiliaryLabels()`, `DMCopyAuxiliaryVec()`
 @*/
 PetscErrorCode DMSetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, PetscInt part, Vec aux)
 {
@@ -9098,7 +9089,7 @@ PetscErrorCode DMSetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, PetscInt 
   Note:
   The arrays passed in must be at least as large as `DMGetNumAuxiliaryVec()`.
 
-.seealso: [](ch_dmbase), `DM`, `DMGetNumAuxiliaryVec()`, `DMGetAuxiliaryVec()`, `DMSetAuxiliaryVec()`, `DMCopyAuxiliaryVec()`
+.seealso: [](ch_dmbase), `DM`, `DMClearAuxiliaryVec()`, `DMGetNumAuxiliaryVec()`, `DMGetAuxiliaryVec()`, `DMSetAuxiliaryVec()`, `DMCopyAuxiliaryVec()`
 @*/
 PetscErrorCode DMGetAuxiliaryLabels(DM dm, DMLabel labels[], PetscInt values[], PetscInt parts[])
 {
@@ -9138,7 +9129,7 @@ PetscErrorCode DMGetAuxiliaryLabels(DM dm, DMLabel labels[], PetscInt values[], 
   Note:
   This is a shallow copy of the auxiliary vectors
 
-.seealso: [](ch_dmbase), `DM`, `DMGetNumAuxiliaryVec()`, `DMGetAuxiliaryVec()`, `DMSetAuxiliaryVec()`
+.seealso: [](ch_dmbase), `DM`, `DMClearAuxiliaryVec()`, `DMGetNumAuxiliaryVec()`, `DMGetAuxiliaryVec()`, `DMSetAuxiliaryVec()`
 @*/
 PetscErrorCode DMCopyAuxiliaryVec(DM dm, DM dmNew)
 {
@@ -9146,7 +9137,9 @@ PetscErrorCode DMCopyAuxiliaryVec(DM dm, DM dmNew)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(dmNew, DM_CLASSID, 2);
   if (dm == dmNew) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscHMapAux oldData = dmNew->auxData;
+  PetscCall(DMClearAuxiliaryVec(dmNew));
+
+  PetscCall(PetscHMapAuxDestroy(&dmNew->auxData));
   PetscCall(PetscHMapAuxDuplicate(dm->auxData, &dmNew->auxData));
   {
     Vec     *auxData;
@@ -9157,14 +9150,35 @@ PetscErrorCode DMCopyAuxiliaryVec(DM dm, DM dmNew)
     PetscCall(PetscHMapAuxGetVals(dmNew->auxData, &off, auxData));
     for (i = 0; i < n; ++i) PetscCall(PetscObjectReference((PetscObject)auxData[i]));
     PetscCall(PetscFree(auxData));
-    off = 0;
-    PetscCall(PetscHMapAuxGetSize(oldData, &n));
-    PetscCall(PetscMalloc1(n, &auxData));
-    PetscCall(PetscHMapAuxGetVals(oldData, &off, auxData));
-    for (i = 0; i < n; ++i) PetscCall(VecDestroy(&auxData[i]));
-    PetscCall(PetscFree(auxData));
   }
-  PetscCall(PetscHMapAuxDestroy(&oldData));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMClearAuxiliaryVec - Destroys the auxiliary vector information and creates a new empty one
+
+  Not Collective
+
+  Input Parameter:
+. dm - The `DM`
+
+  Level: advanced
+
+.seealso: [](ch_dmbase), `DM`, `DMCopyAuxiliaryVec()`, `DMGetNumAuxiliaryVec()`, `DMGetAuxiliaryVec()`, `DMSetAuxiliaryVec()`
+@*/
+PetscErrorCode DMClearAuxiliaryVec(DM dm)
+{
+  Vec     *auxData;
+  PetscInt n, i, off = 0;
+
+  PetscFunctionBegin;
+  PetscCall(PetscHMapAuxGetSize(dm->auxData, &n));
+  PetscCall(PetscMalloc1(n, &auxData));
+  PetscCall(PetscHMapAuxGetVals(dm->auxData, &off, auxData));
+  for (i = 0; i < n; ++i) PetscCall(VecDestroy(&auxData[i]));
+  PetscCall(PetscFree(auxData));
+  PetscCall(PetscHMapAuxDestroy(&dm->auxData));
+  PetscCall(PetscHMapAuxCreate(&dm->auxData));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

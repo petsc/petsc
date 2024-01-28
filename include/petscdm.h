@@ -322,6 +322,7 @@ PETSC_EXTERN PetscErrorCode DMGetAuxiliaryVec(DM, DMLabel, PetscInt, PetscInt, V
 PETSC_EXTERN PetscErrorCode DMSetAuxiliaryVec(DM, DMLabel, PetscInt, PetscInt, Vec);
 PETSC_EXTERN PetscErrorCode DMGetAuxiliaryLabels(DM, DMLabel[], PetscInt[], PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMCopyAuxiliaryVec(DM, DM);
+PETSC_EXTERN PetscErrorCode DMClearAuxiliaryVec(DM);
 
 /*MC
   DMInterpolationInfo - Structure for holding information about interpolation on a mesh

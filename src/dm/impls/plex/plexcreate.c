@@ -2317,6 +2317,7 @@ static inline PetscReal DiffNormReal(PetscInt dim, const PetscReal x[], const Pe
   for (i = 0; i < dim; ++i) prod += PetscSqr(x[i] - y[i]);
   return PetscSqrtReal(prod);
 }
+
 static inline PetscReal DotReal(PetscInt dim, const PetscReal x[], const PetscReal y[])
 {
   PetscReal prod = 0.0;
@@ -3601,13 +3602,17 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
 
 static PetscErrorCode DMPlexCreateBallMesh_Internal(DM dm, PetscInt dim, PetscReal R)
 {
-  DM      sdm, vol;
-  DMLabel bdlabel;
+  DM          sdm, vol;
+  DMLabel     bdlabel;
+  const char *prefix;
 
   PetscFunctionBegin;
   PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), &sdm));
   PetscCall(DMSetType(sdm, DMPLEX));
-  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)sdm, "bd_"));
+  PetscCall(DMGetOptionsPrefix(dm, &prefix));
+  PetscCall(DMSetOptionsPrefix(sdm, prefix));
+  PetscCall(DMAppendOptionsPrefix(sdm, "bd_"));
+  PetscCall(DMPlexDistributeSetDefault(sdm, PETSC_FALSE));
   PetscCall(DMPlexCreateSphereMesh_Internal(sdm, dim - 1, PETSC_TRUE, R));
   PetscCall(DMSetFromOptions(sdm));
   PetscCall(DMViewFromOptions(sdm, NULL, "-dm_view"));

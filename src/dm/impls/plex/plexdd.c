@@ -3,6 +3,47 @@
 #include <petsc/private/sectionimpl.h>
 #include <petsc/private/sfimpl.h>
 
+static PetscErrorCode DMTransferMaterialParameters(DM dm, PetscSF sf, DM odm)
+{
+  Vec A;
+
+  PetscFunctionBegin;
+  /* TODO handle regions? */
+  PetscCall(DMGetAuxiliaryVec(dm, NULL, 0, 0, &A));
+  if (A) {
+    DM           dmAux, ocdm, odmAux;
+    Vec          oA, oAt;
+    PetscSection sec, osec;
+
+    PetscCall(VecGetDM(A, &dmAux));
+    PetscCall(DMClone(odm, &odmAux));
+    PetscCall(DMGetCoordinateDM(odm, &ocdm));
+    PetscCall(DMSetCoordinateDM(odmAux, ocdm));
+    PetscCall(DMCopyDisc(dmAux, odmAux));
+
+    PetscCall(DMGetLocalSection(dmAux, &sec));
+    if (sf) {
+      PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)sec), &osec));
+      PetscCall(VecCreate(PetscObjectComm((PetscObject)A), &oAt));
+      PetscCall(DMPlexDistributeField(dmAux, sf, sec, A, osec, oAt));
+    } else {
+      PetscCall(PetscObjectReference((PetscObject)sec));
+      osec = sec;
+      PetscCall(PetscObjectReference((PetscObject)A));
+      oAt = A;
+    }
+    PetscCall(DMSetLocalSection(odmAux, osec));
+    PetscCall(PetscSectionDestroy(&osec));
+    PetscCall(DMCreateLocalVector(odmAux, &oA));
+    PetscCall(DMDestroy(&odmAux));
+    PetscCall(VecCopy(oAt, oA));
+    PetscCall(VecDestroy(&oAt));
+    PetscCall(DMSetAuxiliaryVec(odm, NULL, 0, 0, oA));
+    PetscCall(VecDestroy(&oA));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode DMCreateDomainDecomposition_Plex(DM dm, PetscInt *nsub, char ***names, IS **innerises, IS **outerises, DM **dms)
 {
   DM           odm;
@@ -38,7 +79,6 @@ PetscErrorCode DMCreateDomainDecomposition_Plex(DM dm, PetscInt *nsub, char ***n
   PetscCall(DMPlexSetMaxProjectionHeight(odm, mh));
 
   /* share discretization */
-  /* TODO material parameters */
   /* TODO Labels for regions may need to updated,
      now it uses the original ones, not the ones for the odm.
      Not sure what to do here */
@@ -55,24 +95,54 @@ PetscErrorCode DMCreateDomainDecomposition_Plex(DM dm, PetscInt *nsub, char ***n
     PetscCall(DMSetLocalSection(dm, tsec));
     PetscCall(PetscSectionDestroy(&tsec));
   }
+  /* TODO: what if these values changes? add to some DM hook? */
+  PetscCall(DMTransferMaterialParameters(dm, migrationSF, odm));
 
-  /* TODO: it would be nice to automatically translate filenames with wildcards:
-           name%r.vtu -> name${rank}.vtu
-           name%R.vtu -> name${PetscGlobalRank}.vtu
-           So that -dm_view vtk:name%R.vtu will automatically translate to the commented code below
-  */
+  PetscCall(DMViewFromOptions(odm, (PetscObject)dm, "-dm_plex_dd_overlap_dm_view"));
 #if 0
   {
-    char        name[256];
-    PetscViewer viewer;
+    DM              seqdm;
+    Vec             val;
+    IS              is;
+    PetscInt        vStart, vEnd;
+    const PetscInt *vnum;
+    char            name[256];
+    PetscViewer     viewer;
 
+    PetscCall(DMPlexDistributeOverlap_Internal(dm, 0, PETSC_COMM_SELF, "local_mesh", NULL, &seqdm));
+    PetscCall(PetscSNPrintf(name, sizeof(name), "local_mesh_%d.vtu", PetscGlobalRank));
+    PetscCall(PetscViewerVTKOpen(PetscObjectComm((PetscObject)seqdm), name, FILE_MODE_WRITE, &viewer));
+    PetscCall(DMGetLabel(seqdm, "local_mesh", &label));
+    PetscCall(DMPlexLabelComplete(seqdm, label));
+    PetscCall(DMPlexCreateLabelField(seqdm, label, &val));
+    PetscCall(VecView(val, viewer));
+    PetscCall(VecDestroy(&val));
+    PetscCall(PetscViewerDestroy(&viewer));
+
+    PetscCall(PetscSNPrintf(name, sizeof(name), "asm_vertices_%d.vtu", PetscGlobalRank));
+    PetscCall(PetscViewerVTKOpen(PetscObjectComm((PetscObject)seqdm), name, FILE_MODE_WRITE, &viewer));
+    PetscCall(DMCreateLabel(seqdm, "asm_vertices"));
+    PetscCall(DMGetLabel(seqdm, "asm_vertices", &label));
+    PetscCall(DMPlexGetVertexNumbering(dm, &is));
+    PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+    PetscCall(ISGetIndices(is, &vnum));
+    for (PetscInt v = 0; v < vEnd - vStart; v++) {
+      if (vnum[v] < 0) continue;
+      PetscCall(DMLabelSetValue(label, v + vStart, 1));
+    }
+    PetscCall(DMPlexCreateLabelField(seqdm, label, &val));
+    PetscCall(VecView(val, viewer));
+    PetscCall(VecDestroy(&val));
+    PetscCall(ISRestoreIndices(is, &vnum));
+    PetscCall(PetscViewerDestroy(&viewer));
+
+    PetscCall(DMDestroy(&seqdm));
     PetscCall(PetscSNPrintf(name, sizeof(name), "ovl_mesh_%d.vtu", PetscGlobalRank));
     PetscCall(PetscViewerVTKOpen(PetscObjectComm((PetscObject)odm), name, FILE_MODE_WRITE, &viewer));
     PetscCall(DMView(odm, viewer));
     PetscCall(PetscViewerDestroy(&viewer));
   }
 #endif
-  PetscCall(DMViewFromOptions(odm, (PetscObject)dm, "-dm_plex_dd_overlap_dm_view"));
 
   /* propagate original global ordering to overlapping DM */
   PetscCall(DMGetSectionSF(dm, &sectionSF));
@@ -89,23 +159,34 @@ PetscErrorCode DMCreateDomainDecomposition_Plex(DM dm, PetscInt *nsub, char ***n
   PetscCall(PetscSFBcastEnd(sectionSF, MPIU_INT, gidxs, lidxs, MPI_REPLACE));
   PetscCall(ISRestoreIndices(gi_is, (const PetscInt **)&gidxs));
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm), nl, lidxs, PETSC_OWN_POINTER, &lis));
-  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)odm), &tsec));
-  PetscCall(DMPlexDistributeFieldIS(dm, migrationSF, sec, lis, tsec, &gis));
+  if (migrationSF) {
+    PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)odm), &tsec));
+    PetscCall(DMPlexDistributeFieldIS(dm, migrationSF, sec, lis, tsec, &gis));
+  } else {
+    PetscCall(PetscObjectReference((PetscObject)lis));
+    gis  = lis;
+    tsec = NULL;
+  }
   PetscCall(PetscSectionDestroy(&tsec));
   PetscCall(ISDestroy(&lis));
   PetscCall(PetscSFDestroy(&migrationSF));
 
   /* make dofs on the overlap boundary (not the global boundary) constrained */
   PetscCall(DMGetLabel(odm, oname, &label));
-  PetscCall(DMPlexLabelComplete(odm, label));
-  PetscCall(DMGetLocalSection(odm, &tsec));
-  PetscCall(PetscSectionGetChart(tsec, &pStart, &pEnd));
-  PetscCall(DMLabelCreateIndex(label, pStart, pEnd));
-  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)tsec), &sec));
-  PetscCall(PetscSectionCopy_Internal(tsec, sec, label->bt));
-  PetscCall(DMSetLocalSection(odm, sec));
-  PetscCall(PetscSectionDestroy(&sec));
-  PetscCall(DMRemoveLabel(odm, oname, NULL));
+  if (label) {
+    PetscCall(DMPlexLabelComplete(odm, label));
+    PetscCall(DMGetLocalSection(odm, &tsec));
+    PetscCall(PetscSectionGetChart(tsec, &pStart, &pEnd));
+    PetscCall(DMLabelCreateIndex(label, pStart, pEnd));
+    PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)tsec), &sec));
+    PetscCall(PetscSectionCopy_Internal(tsec, sec, label->bt));
+    PetscCall(DMSetLocalSection(odm, sec));
+    PetscCall(PetscSectionDestroy(&sec));
+    PetscCall(DMRemoveLabel(odm, oname, NULL));
+  } else { /* sequential case */
+    PetscCall(DMGetLocalSection(dm, &sec));
+    PetscCall(DMSetLocalSection(odm, sec));
+  }
 
   /* Create index sets for dofs in the overlap dm */
   PetscCall(DMGetSectionSF(odm, &sectionSF));
@@ -128,7 +209,7 @@ PetscErrorCode DMCreateDomainDecomposition_Plex(DM dm, PetscInt *nsub, char ***n
   for (PetscInt i = 0; i < no; i++) {
     if (gidxs[i] >= rst && gidxs[i] < ren) lidxs[c++] = i;
   }
-  PetscCheck(c == ni, PETSC_COMM_SELF, PETSC_ERR_PLIB, "%" PetscInt_FMT " != %" PetscInt_FMT "\n", c, ni);
+  PetscCheck(c == ni, PETSC_COMM_SELF, PETSC_ERR_PLIB, "%" PetscInt_FMT " != %" PetscInt_FMT, c, ni);
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)odm), ni, lidxs, PETSC_OWN_POINTER, &li_is));
 
   /* global dofs in the overlap */
@@ -155,7 +236,6 @@ PetscErrorCode DMCreateDomainDecomposition_Plex(DM dm, PetscInt *nsub, char ***n
   PetscCall(PetscObjectCompose((PetscObject)odm, "__Plex_DD_IS_gi", (PetscObject)gi_is));
   PetscCall(PetscObjectCompose((PetscObject)odm, "__Plex_DD_IS_li", (PetscObject)li_is));
   PetscCall(PetscObjectCompose((PetscObject)odm, "__Plex_DD_IS_go", (PetscObject)go_is));
-  PetscCall(PetscObjectCompose((PetscObject)odm, "__Plex_DD_IS_lo", NULL));
   PetscCall(PetscObjectCompose((PetscObject)odm, "__Plex_DD_IS_gl", (PetscObject)gl_is));
   PetscCall(PetscObjectCompose((PetscObject)odm, "__Plex_DD_IS_ll", (PetscObject)ll_is));
 
@@ -176,7 +256,7 @@ PetscErrorCode DMCreateDomainDecomposition_Plex(DM dm, PetscInt *nsub, char ***n
 PetscErrorCode DMCreateDomainDecompositionScatters_Plex(DM dm, PetscInt n, DM *subdms, VecScatter **iscat, VecScatter **oscat, VecScatter **lscat)
 {
   Vec gvec, svec, lvec;
-  IS  gi_is, li_is, go_is, lo_is, gl_is, ll_is;
+  IS  gi_is, li_is, go_is, gl_is, ll_is;
 
   PetscFunctionBegin;
   if (iscat) PetscCall(PetscMalloc1(n, iscat));
@@ -190,11 +270,15 @@ PetscErrorCode DMCreateDomainDecompositionScatters_Plex(DM dm, PetscInt n, DM *s
     PetscCall(PetscObjectQuery((PetscObject)subdms[i], "__Plex_DD_IS_gi", (PetscObject *)&gi_is));
     PetscCall(PetscObjectQuery((PetscObject)subdms[i], "__Plex_DD_IS_li", (PetscObject *)&li_is));
     PetscCall(PetscObjectQuery((PetscObject)subdms[i], "__Plex_DD_IS_go", (PetscObject *)&go_is));
-    PetscCall(PetscObjectQuery((PetscObject)subdms[i], "__Plex_DD_IS_lo", (PetscObject *)&lo_is));
     PetscCall(PetscObjectQuery((PetscObject)subdms[i], "__Plex_DD_IS_gl", (PetscObject *)&gl_is));
     PetscCall(PetscObjectQuery((PetscObject)subdms[i], "__Plex_DD_IS_ll", (PetscObject *)&ll_is));
+    PetscCheck(gi_is, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "SubDM not obtained from DMCreateDomainDecomposition");
+    PetscCheck(li_is, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "SubDM not obtained from DMCreateDomainDecomposition");
+    PetscCheck(go_is, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "SubDM not obtained from DMCreateDomainDecomposition");
+    PetscCheck(gl_is, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "SubDM not obtained from DMCreateDomainDecomposition");
+    PetscCheck(ll_is, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "SubDM not obtained from DMCreateDomainDecomposition");
     if (iscat) PetscCall(VecScatterCreate(gvec, gi_is, svec, li_is, &(*iscat)[i]));
-    if (oscat) PetscCall(VecScatterCreate(gvec, go_is, svec, lo_is, &(*oscat)[i]));
+    if (oscat) PetscCall(VecScatterCreate(gvec, go_is, svec, NULL, &(*oscat)[i]));
     if (lscat) PetscCall(VecScatterCreate(gvec, gl_is, lvec, ll_is, &(*lscat)[i]));
     PetscCall(DMRestoreGlobalVector(subdms[i], &svec));
     PetscCall(DMRestoreLocalVector(subdms[i], &lvec));
@@ -259,33 +343,8 @@ PetscErrorCode DMCreateNeumannOverlap_Plex(DM dm, IS *ovl, Mat *J, PetscErrorCod
   PetscCall(PetscSectionDestroy(&osec));
 
   /* material parameters */
-  {
-    Vec A;
-
-    PetscCall(DMGetAuxiliaryVec(dm, NULL, 0, 0, &A));
-    if (A) {
-      DM  dmAux, ocdm, odmAux;
-      Vec oA;
-
-      PetscCall(VecGetDM(A, &dmAux));
-      PetscCall(DMClone(odm, &odmAux));
-      PetscCall(DMGetCoordinateDM(odm, &ocdm));
-      PetscCall(DMSetCoordinateDM(odmAux, ocdm));
-      PetscCall(DMCopyDisc(dmAux, odmAux));
-
-      PetscCall(DMGetLocalSection(dmAux, &sec));
-      PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)sec), &osec));
-      PetscCall(VecCreate(PetscObjectComm((PetscObject)A), &oA));
-      PetscCall(VecSetDM(oA, odmAux));
-      /* TODO: what if these values changes? */
-      PetscCall(DMPlexDistributeField(dmAux, sf, sec, A, osec, oA));
-      PetscCall(DMSetLocalSection(odmAux, osec));
-      PetscCall(PetscSectionDestroy(&osec));
-      PetscCall(DMSetAuxiliaryVec(odm, NULL, 0, 0, oA));
-      PetscCall(VecDestroy(&oA));
-      PetscCall(DMDestroy(&odmAux));
-    }
-  }
+  /* TODO: what if these values changes? add to some DM hook? */
+  PetscCall(DMTransferMaterialParameters(dm, sf, odm));
   PetscCall(PetscSFDestroy(&sf));
 
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_plex_view_neumann_original"));
