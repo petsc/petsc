@@ -1764,7 +1764,7 @@ static inline PetscErrorCode PetscMPIIntCast(PetscInt a, PetscMPIInt *b)
   Use `PetscIntMultError()` to compute the product of two `PetscInt` if you wish to generate an
   error if the result will not fit in a `PetscInt`.
 
-  Developers Notes:
+  Developer Notes:
   We currently assume that `PetscInt` addition can never overflow, this is obviously wrong but
   requires many more checks.
 
@@ -1801,7 +1801,7 @@ static inline PetscInt PetscRealIntMultTruncate(PetscReal a, PetscInt b)
 
    Use `PetscIntMultError()` to compute the product of two `PetscInt` if you wish to generate an error if the result will not fit in a `PetscInt`
 
-   Developers Notes:
+   Developer Notes:
    We currently assume that `PetscInt` addition can never overflow, this is obviously wrong but requires many more checks.
 
    This is used where we compute approximate sizes for workspace and need to insure the workspace is index-able.
@@ -1837,7 +1837,7 @@ static inline PetscInt PetscIntMultTruncate(PetscInt a, PetscInt b)
 
    Use `PetscIntMultError()` to compute the product of two `PetscInt` if you wish to generate an error if the result will not fit in a `PetscInt`
 
-   Developers Note:
+   Developer Note:
    This is used where we compute approximate sizes for workspace and need to insure the workspace is index-able.
 
 .seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscInt64Mult()`, `PetscIntMultError()`
@@ -1868,7 +1868,7 @@ static inline PetscInt PetscIntSumTruncate(PetscInt a, PetscInt b)
 
    Use `PetscIntMultTruncate()` to compute the product of two `PetscInt` and truncate it to fit in a `PetscInt`
 
-   Developers Note:
+   Developer Note:
    In most places in the source code we currently assume that `PetscInt` addition does not overflow, this is obviously wrong but requires many more checks.
    `PetscIntSumError()` can be used to check for this situation.
 
