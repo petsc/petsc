@@ -456,4 +456,8 @@ int main(int argc, char **argv)
     requires: triangle
     args: -pc_type mg -pc_mg_galerkin -pc_mg_adapt_interp_coarse_space gdsw -pc_mg_levels 2 -mg_levels_pc_type asm -initial_dm_plex_shape ball -initial_dm_refine 2 -mesh_dm_mat_type {{aij is}} -mg_levels_sub_pc_type lu -mg_levels_pc_asm_type basic -petscpartitioner_type simple
 
+  test:
+    suffix: asm_seq
+    args: -pc_type asm -pc_asm_dm_subdomains -sub_pc_type cholesky -snes_type newtonls -snes_error_if_not_converged -initial_dm_plex_simplex 0
+
 TEST*/

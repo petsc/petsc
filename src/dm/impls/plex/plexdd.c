@@ -22,9 +22,16 @@ static PetscErrorCode DMTransferMaterialParameters(DM dm, PetscSF sf, DM odm)
     PetscCall(DMCopyDisc(dmAux, odmAux));
 
     PetscCall(DMGetLocalSection(dmAux, &sec));
-    PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)sec), &osec));
-    PetscCall(VecCreate(PetscObjectComm((PetscObject)A), &oAt));
-    PetscCall(DMPlexDistributeField(dmAux, sf, sec, A, osec, oAt));
+    if (sf) {
+      PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)sec), &osec));
+      PetscCall(VecCreate(PetscObjectComm((PetscObject)A), &oAt));
+      PetscCall(DMPlexDistributeField(dmAux, sf, sec, A, osec, oAt));
+    } else {
+      PetscCall(PetscObjectReference((PetscObject)sec));
+      osec = sec;
+      PetscCall(PetscObjectReference((PetscObject)A));
+      oAt = A;
+    }
     PetscCall(DMSetLocalSection(odmAux, osec));
     PetscCall(PetscSectionDestroy(&osec));
     PetscCall(DMCreateLocalVector(odmAux, &oA));
@@ -152,23 +159,34 @@ PetscErrorCode DMCreateDomainDecomposition_Plex(DM dm, PetscInt *nsub, char ***n
   PetscCall(PetscSFBcastEnd(sectionSF, MPIU_INT, gidxs, lidxs, MPI_REPLACE));
   PetscCall(ISRestoreIndices(gi_is, (const PetscInt **)&gidxs));
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm), nl, lidxs, PETSC_OWN_POINTER, &lis));
-  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)odm), &tsec));
-  PetscCall(DMPlexDistributeFieldIS(dm, migrationSF, sec, lis, tsec, &gis));
+  if (migrationSF) {
+    PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)odm), &tsec));
+    PetscCall(DMPlexDistributeFieldIS(dm, migrationSF, sec, lis, tsec, &gis));
+  } else {
+    PetscCall(PetscObjectReference((PetscObject)lis));
+    gis  = lis;
+    tsec = NULL;
+  }
   PetscCall(PetscSectionDestroy(&tsec));
   PetscCall(ISDestroy(&lis));
   PetscCall(PetscSFDestroy(&migrationSF));
 
   /* make dofs on the overlap boundary (not the global boundary) constrained */
   PetscCall(DMGetLabel(odm, oname, &label));
-  PetscCall(DMPlexLabelComplete(odm, label));
-  PetscCall(DMGetLocalSection(odm, &tsec));
-  PetscCall(PetscSectionGetChart(tsec, &pStart, &pEnd));
-  PetscCall(DMLabelCreateIndex(label, pStart, pEnd));
-  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)tsec), &sec));
-  PetscCall(PetscSectionCopy_Internal(tsec, sec, label->bt));
-  PetscCall(DMSetLocalSection(odm, sec));
-  PetscCall(PetscSectionDestroy(&sec));
-  PetscCall(DMRemoveLabel(odm, oname, NULL));
+  if (label) {
+    PetscCall(DMPlexLabelComplete(odm, label));
+    PetscCall(DMGetLocalSection(odm, &tsec));
+    PetscCall(PetscSectionGetChart(tsec, &pStart, &pEnd));
+    PetscCall(DMLabelCreateIndex(label, pStart, pEnd));
+    PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)tsec), &sec));
+    PetscCall(PetscSectionCopy_Internal(tsec, sec, label->bt));
+    PetscCall(DMSetLocalSection(odm, sec));
+    PetscCall(PetscSectionDestroy(&sec));
+    PetscCall(DMRemoveLabel(odm, oname, NULL));
+  } else { /* sequential case */
+    PetscCall(DMGetLocalSection(dm, &sec));
+    PetscCall(DMSetLocalSection(odm, sec));
+  }
 
   /* Create index sets for dofs in the overlap dm */
   PetscCall(DMGetSectionSF(odm, &sectionSF));
@@ -191,7 +209,7 @@ PetscErrorCode DMCreateDomainDecomposition_Plex(DM dm, PetscInt *nsub, char ***n
   for (PetscInt i = 0; i < no; i++) {
     if (gidxs[i] >= rst && gidxs[i] < ren) lidxs[c++] = i;
   }
-  PetscCheck(c == ni, PETSC_COMM_SELF, PETSC_ERR_PLIB, "%" PetscInt_FMT " != %" PetscInt_FMT "\n", c, ni);
+  PetscCheck(c == ni, PETSC_COMM_SELF, PETSC_ERR_PLIB, "%" PetscInt_FMT " != %" PetscInt_FMT, c, ni);
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)odm), ni, lidxs, PETSC_OWN_POINTER, &li_is));
 
   /* global dofs in the overlap */
