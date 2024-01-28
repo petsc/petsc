@@ -808,7 +808,7 @@ PetscErrorCode DMPlexTransformGetTargetPoint(DMPlexTransform tr, DMPolytopeType 
   PetscInt        newp = ctSN, cind;
 
   PetscFunctionBeginHot;
-  PetscCheck(!(p < ctS) && !(p >= ctE), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %" PetscInt_FMT " is not a %s [%" PetscInt_FMT ", %" PetscInt_FMT ")", p, DMPolytopeTypes[ct], ctS, ctE);
+  PetscCheck(p >= ctS && p < ctE, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %" PetscInt_FMT " is not a %s [%" PetscInt_FMT ", %" PetscInt_FMT ")", p, DMPolytopeTypes[ct], ctS, ctE);
   PetscCall(DMPlexTransformCellTransform(tr, ct, p, &rt, &Nct, &rct, &rsize, &cone, &ornt));
   if (trType) {
     PetscCall(DMLabelGetValueIndex(trType, rt, &cind));
