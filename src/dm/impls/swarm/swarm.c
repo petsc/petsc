@@ -220,7 +220,7 @@ static PetscErrorCode DMSwarmDestroyVectorFromField_Private(DM dm, const char fi
   /* check vector is an inplace array */
   PetscCall(DMSwarmDataBucketGetDMSwarmDataFieldIdByName(swarm->db, fieldname, &fid));
   PetscCall(PetscObjectComposedDataGetInt((PetscObject)*vec, SwarmDataFieldId, cfid, flg));
-  PetscCheck(cfid == fid, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Vector being destroyed was not created from DMSwarm field(%s)! %" PetscInt_FMT " != %" PetscInt_FMT "", fieldname, cfid, fid);
+  PetscCheck(cfid == fid, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Vector being destroyed was not created from DMSwarm field(%s)! %" PetscInt_FMT " != %" PetscInt_FMT, fieldname, cfid, fid);
   PetscCall(VecGetLocalSize(*vec, &nlocal));
   PetscCall(VecGetBlockSize(*vec, &bs));
   PetscCheck(nlocal / bs == swarm->db->L, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "DMSwarm sizes have changed since vector was created - cannot ensure pointers are valid");

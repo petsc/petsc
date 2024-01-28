@@ -135,6 +135,8 @@ checkbadSource:
 	-@git --no-pager grep -n -P 'PetscCall\(PetscInfo\(' -- ${GITSRC} | grep -v '\\n' >> checkbadSource.out;true
 	-@echo "----- Using Petsc(Assert|Check)() with carriage return -------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -E 'Petsc(Assert|Check)\(.*[^\]\\\n' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "----- Extra \"\" after format specifier ending a string --------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P -E '_FMT \"\",' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- First blank line ---------------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P \^\$$ -- ${GITSRC} | grep ':1:' >> checkbadSource.out;true
 	-@echo "----- Blank line after PetscFunctionBegin and derivatives ----------" >> checkbadSource.out
@@ -145,7 +147,7 @@ checkbadSource:
 	-@git --no-pager grep -n -E -B 1 '  PetscFunctionBegin(User|Hot){0,1};' -- ${GITSRC} ':!src/sys/tests/*' ':!src/sys/tutorials/*' | grep -E '\-[0-9]+\-.*;' | grep -v '^--$$' | grep -v '\\' >> checkbadSource.out;true
 	-@echo "----- Uneeded parentheses [!&~*](foo[->|.]bar) ---------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -E '([\!\&\~\*\(]|\)\)|\([^,\*\(]+\**\))\(([a-zA-Z0-9_]+((\.|->)[a-zA-Z0-9_]+|\[[a-zA-Z0-9_ \%\+\*\-]+\])+)\)' -- ${GITSRC} >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 28` ;\
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 29` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\

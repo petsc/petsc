@@ -1034,7 +1034,7 @@ PetscErrorCode VecSetPreallocationCOO_MPI(Vec x, PetscCount coo_n, const PetscIn
     } else if (i1[k] >= rstart && i1[k] < rend) {
       i1[k] -= PETSC_MAX_INT; /* e.g., minus 2^31-1 to shift local rows to range of [-PETSC_MAX_INT, -1] */
     } else {
-      PetscCheck(i1[k] < M, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Found index %" PetscInt_FMT " in VecSetPreallocateCOO() larger than the global size %" PetscInt_FMT "", i1[k], M);
+      PetscCheck(i1[k] < M, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Found index %" PetscInt_FMT " in VecSetPreallocateCOO() larger than the global size %" PetscInt_FMT, i1[k], M);
       if (x->stash.donotstash) i1[k] = PETSC_MIN_INT; /* Ignore off-proc indices as if they were negative */
     }
   }
@@ -1133,7 +1133,7 @@ PetscErrorCode VecSetPreallocationCOO_MPI(Vec x, PetscCount coo_n, const PetscIn
   PetscCall(PetscSFFetchAndOpWithMemTypeBegin(sf1, MPIU_INT, PETSC_MEMTYPE_HOST, &nroots2 /*rootdata*/, PETSC_MEMTYPE_HOST, nentries /*leafdata*/, PETSC_MEMTYPE_HOST, offsets /*leafupdate*/, MPI_SUM));
   PetscCall(PetscSFFetchAndOpEnd(sf1, MPIU_INT, &nroots2, nentries, offsets, MPI_SUM)); /* Would nroots2 overflow, we check offsets[] below */
   PetscCall(PetscSFDestroy(&sf1));
-  PetscAssert(nleaves2 == n1 - rem, PETSC_COMM_SELF, PETSC_ERR_PLIB, "nleaves2 %" PetscInt_FMT " != number of remote entries %" PetscCount_FMT "", nleaves2, n1 - rem);
+  PetscAssert(nleaves2 == n1 - rem, PETSC_COMM_SELF, PETSC_ERR_PLIB, "nleaves2 %" PetscInt_FMT " != number of remote entries %" PetscCount_FMT, nleaves2, n1 - rem);
 
   /* Build 2nd SF to send remote COOs to their owner */
   PetscSF sf2;

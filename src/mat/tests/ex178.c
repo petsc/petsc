@@ -116,7 +116,7 @@ PetscErrorCode MatIsDiagonal(Mat A)
         PetscCheck(PetscAbsScalar(vals[j] - 1) < PETSC_SMALL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Row %" PetscInt_FMT " does not have 1 on the diagonal, it has %g", i, (double)PetscAbsScalar(vals[j]));
         founddiag = PETSC_TRUE;
       } else {
-        PetscCheck(PetscAbsScalar(vals[j]) < PETSC_SMALL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Row %" PetscInt_FMT " has off-diagonal value %g at %" PetscInt_FMT "", i, (double)PetscAbsScalar(vals[j]), cols[j]);
+        PetscCheck(PetscAbsScalar(vals[j]) < PETSC_SMALL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Row %" PetscInt_FMT " has off-diagonal value %g at %" PetscInt_FMT, i, (double)PetscAbsScalar(vals[j]), cols[j]);
       }
     }
     PetscCall(MatRestoreRow(A, i, &ncols, &cols, &vals));

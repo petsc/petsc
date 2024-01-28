@@ -62,7 +62,7 @@ PetscErrorCode DMStagRestrictSimple(DM dmf, Vec xf, DM dmc, Vec xc)
     PetscCall(DMStagRestrictSimple_3d(dmf, xf, dmc, xc));
     break;
   default:
-    SETERRQ(PetscObjectComm((PetscObject)dmf), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT "", dim);
+    SETERRQ(PetscObjectComm((PetscObject)dmf), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
     break;
   }
   PetscFunctionReturn(PETSC_SUCCESS);

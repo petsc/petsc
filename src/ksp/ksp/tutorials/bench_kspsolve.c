@@ -335,7 +335,7 @@ int main(int argc, char **argv)
 
   user.dim   = user.n * user.n * user.n;
   global_nnz = 64 + 27 * (user.n - 2) * (user.n - 2) * (user.n - 2) + 108 * (user.n - 2) * (user.n - 2) + 144 * (user.n - 2);
-  PetscCheck(user.n >= 2, PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Requires at least 2 grid points (-n 2), you specified -n %" PetscInt_FMT "", user.n);
+  PetscCheck(user.n >= 2, PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Requires at least 2 grid points (-n 2), you specified -n %" PetscInt_FMT, user.n);
   PetscCheck(user.dim >= user.size, PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "MPI size (%d) exceeds the grid size %" PetscInt_FMT " (-n %" PetscInt_FMT ")", user.size, user.dim, user.n);
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "===========================================\n"));
   if (user.matmult) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test: MatMult performance - Poisson\n"));

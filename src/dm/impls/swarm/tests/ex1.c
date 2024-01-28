@@ -105,7 +105,7 @@ static PetscErrorCode CheckMigrate(DM sw)
   PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, DMSwarmPICField_coor, &tmp));
   PetscCall(VecGetSize(preMigrate, &preSize));
   PetscCall(VecGetSize(postMigrate, &postSize));
-  PetscCheck(preSize == postSize, PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "Particles either lost or duplicated. Pre migrate global size %" PetscInt_FMT " != Post migrate size %" PetscInt_FMT "", preSize, postSize);
+  PetscCheck(preSize == postSize, PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "Particles either lost or duplicated. Pre migrate global size %" PetscInt_FMT " != Post migrate size %" PetscInt_FMT, preSize, postSize);
   PetscCall(VecNorm(preMigrate, NORM_2, &prenorm));
   PetscCall(VecNorm(postMigrate, NORM_2, &postnorm));
   PetscCheck(PetscAbsReal(prenorm - postnorm) < 100. * PETSC_MACHINE_EPSILON, PETSC_COMM_SELF, PETSC_ERR_COR, "Particle coordinates corrupted in migrate with abs(norm(pre) - norm(post)) = %.16g", PetscAbsReal(prenorm - postnorm));
