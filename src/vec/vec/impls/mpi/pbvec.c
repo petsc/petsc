@@ -91,7 +91,7 @@ static PetscErrorCode VecDuplicateVecs_MPI_GEMV(Vec w, PetscInt m, Vec *V[])
     if (m) ((Vec_MPI *)(*V)[0]->data)->array_allocated = array;
     // disable replacearray of the first vector, as freeing its memory also frees others in the group.
     // But replacearray of others is ok, as they don't own their array.
-    if (m > 1) (*V)[0]->ops->replacearray = NULL;
+    if (m > 1) (*V)[0]->ops->replacearray = VecReplaceArray_Default_GEMV_Error;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
