@@ -748,6 +748,15 @@ PetscErrorCode VecDuplicate_Seq(Vec win, Vec *V)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode VecReplaceArray_Default_GEMV_Error(Vec v, const PetscScalar *a)
+{
+  PetscFunctionBegin;
+  PetscCheck(PETSC_FALSE, PetscObjectComm((PetscObject)v), PETSC_ERR_SUP, "VecReplaceArray() is not supported on the first Vec obtained from VecDuplicateVecs(). \
+You could either 1) use -vec_mdot_use_gemv 0 -vec_maxpy_use_gemv 0 to turn off an optimization to allow your current code to work or 2) use VecDuplicate() to duplicate the vector.");
+  (void)a;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode VecDuplicateVecs_Seq_GEMV(Vec w, PetscInt m, Vec *V[])
 {
   PetscFunctionBegin;
@@ -779,7 +788,7 @@ static PetscErrorCode VecDuplicateVecs_Seq_GEMV(Vec w, PetscInt m, Vec *V[])
     if (m) ((Vec_Seq *)(*V)[0]->data)->array_allocated = array;
     // disable replacearray of the first vector, as freeing its memory also frees others in the group.
     // But replacearray of others is ok, as they don't own their array.
-    if (m > 1) (*V)[0]->ops->replacearray = NULL;
+    if (m > 1) (*V)[0]->ops->replacearray = VecReplaceArray_Default_GEMV_Error;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

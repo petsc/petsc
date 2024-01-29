@@ -324,7 +324,7 @@ static PetscErrorCode VecDuplicateVecs_MPIKokkos_GEMV(Vec w, PetscInt m, Vec *V[
 #endif
       // disable replacearray of the first vector, as freeing its memory also frees others in the group.
       // But replacearray of others is ok, as they don't own their array.
-      if (m > 1) v->ops->replacearray = NULL;
+      if (m > 1) v->ops->replacearray = VecReplaceArray_Default_GEMV_Error;
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
