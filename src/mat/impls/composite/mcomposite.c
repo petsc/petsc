@@ -1,4 +1,4 @@
-#include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
+#include <../src/mat/impls/shell/shell.h> /*I "petscmat.h" I*/
 
 const char *const MatCompositeMergeTypes[] = {"left", "right", "MatCompositeMergeType", "MAT_COMPOSITE_", NULL};
 
@@ -13,9 +13,6 @@ typedef struct {
   MatCompositeType      type;
   Mat_CompositeLink     head, tail;
   Vec                   work;
-  PetscScalar           scale;                                      /* scale factor supplied with MatScale() */
-  Vec                   left, right;                                /* left and right diagonal scaling provided with MatDiagonalScale() */
-  Vec                   leftwork, rightwork, leftwork2, rightwork2; /* Two pairs of working vectors */
   PetscInt              nmat;
   PetscBool             merge;
   MatCompositeMergeType mergetype;
@@ -33,11 +30,13 @@ typedef struct {
 
 static PetscErrorCode MatDestroy_Composite(Mat mat)
 {
-  Mat_Composite    *shell = (Mat_Composite *)mat->data;
-  Mat_CompositeLink next  = shell->head, oldnext;
+  Mat_Composite    *shell;
+  Mat_CompositeLink next, oldnext;
   PetscInt          i;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(mat, &shell));
+  next = shell->head;
   while (next) {
     PetscCall(MatDestroy(&next->mat));
     if (next->work && (!next->next || next->work != next->next->work)) PetscCall(VecDestroy(&next->work));
@@ -46,12 +45,6 @@ static PetscErrorCode MatDestroy_Composite(Mat mat)
     PetscCall(PetscFree(oldnext));
   }
   PetscCall(VecDestroy(&shell->work));
-  PetscCall(VecDestroy(&shell->left));
-  PetscCall(VecDestroy(&shell->right));
-  PetscCall(VecDestroy(&shell->leftwork));
-  PetscCall(VecDestroy(&shell->rightwork));
-  PetscCall(VecDestroy(&shell->leftwork2));
-  PetscCall(VecDestroy(&shell->rightwork2));
 
   if (shell->Mvctx) {
     for (i = 0; i < shell->nmat; i++) PetscCall(VecDestroy(&shell->lvecs[i]));
@@ -72,86 +65,72 @@ static PetscErrorCode MatDestroy_Composite(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatCompositeGetNumberMat_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatCompositeGetMat_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatCompositeSetScalings_C", NULL));
-  PetscCall(PetscFree(mat->data));
+  PetscCall(PetscFree(shell));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatShellSetContext_C", NULL)); // needed to avoid a call to MatShellSetContext_Immutable()
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMult_Composite_Multiplicative(Mat A, Vec x, Vec y)
 {
-  Mat_Composite    *shell = (Mat_Composite *)A->data;
-  Mat_CompositeLink next  = shell->head;
-  Vec               in, out;
-  PetscScalar       scale;
-  PetscInt          i;
+  Mat_Composite    *shell;
+  Mat_CompositeLink next;
+  Vec               out;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(A, &shell));
+  next = shell->head;
   PetscCheck(next, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must provide at least one matrix with MatCompositeAddMat()");
-  in = x;
-  if (shell->right) {
-    if (!shell->rightwork) PetscCall(VecDuplicate(shell->right, &shell->rightwork));
-    PetscCall(VecPointwiseMult(shell->rightwork, shell->right, in));
-    in = shell->rightwork;
-  }
   while (next->next) {
     if (!next->work) { /* should reuse previous work if the same size */
       PetscCall(MatCreateVecs(next->mat, NULL, &next->work));
     }
     out = next->work;
-    PetscCall(MatMult(next->mat, in, out));
-    in   = out;
+    PetscCall(MatMult(next->mat, x, out));
+    x    = out;
     next = next->next;
   }
-  PetscCall(MatMult(next->mat, in, y));
-  if (shell->left) PetscCall(VecPointwiseMult(y, shell->left, y));
-  scale = shell->scale;
+  PetscCall(MatMult(next->mat, x, y));
   if (shell->scalings) {
-    for (i = 0; i < shell->nmat; i++) scale *= shell->scalings[i];
+    PetscScalar scale = 1.0;
+    for (PetscInt i = 0; i < shell->nmat; i++) scale *= shell->scalings[i];
+    PetscCall(VecScale(y, scale));
   }
-  PetscCall(VecScale(y, scale));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultTranspose_Composite_Multiplicative(Mat A, Vec x, Vec y)
 {
-  Mat_Composite    *shell = (Mat_Composite *)A->data;
-  Mat_CompositeLink tail  = shell->tail;
-  Vec               in, out;
-  PetscScalar       scale;
-  PetscInt          i;
+  Mat_Composite    *shell;
+  Mat_CompositeLink tail;
+  Vec               out;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(A, &shell));
+  tail = shell->tail;
   PetscCheck(tail, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must provide at least one matrix with MatCompositeAddMat()");
-  in = x;
-  if (shell->left) {
-    if (!shell->leftwork) PetscCall(VecDuplicate(shell->left, &shell->leftwork));
-    PetscCall(VecPointwiseMult(shell->leftwork, shell->left, in));
-    in = shell->leftwork;
-  }
   while (tail->prev) {
     if (!tail->prev->work) { /* should reuse previous work if the same size */
       PetscCall(MatCreateVecs(tail->mat, NULL, &tail->prev->work));
     }
     out = tail->prev->work;
-    PetscCall(MatMultTranspose(tail->mat, in, out));
-    in   = out;
+    PetscCall(MatMultTranspose(tail->mat, x, out));
+    x    = out;
     tail = tail->prev;
   }
-  PetscCall(MatMultTranspose(tail->mat, in, y));
-  if (shell->right) PetscCall(VecPointwiseMult(y, shell->right, y));
-
-  scale = shell->scale;
+  PetscCall(MatMultTranspose(tail->mat, x, y));
   if (shell->scalings) {
-    for (i = 0; i < shell->nmat; i++) scale *= shell->scalings[i];
+    PetscScalar scale = 1.0;
+    for (PetscInt i = 0; i < shell->nmat; i++) scale *= shell->scalings[i];
+    PetscCall(VecScale(y, scale));
   }
-  PetscCall(VecScale(y, scale));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMult_Composite(Mat mat, Vec x, Vec y)
 {
-  Mat_Composite     *shell = (Mat_Composite *)mat->data;
-  Mat_CompositeLink  cur   = shell->head;
-  Vec                in, y2, xin;
+  Mat_Composite     *shell;
+  Mat_CompositeLink  cur;
+  Vec                y2, xin;
   Mat                A, B;
   PetscInt           i, j, k, n, nuniq, lo, hi, mid, *gindices, *buf, *tmp, tot;
   const PetscScalar *vals;
@@ -160,13 +139,9 @@ static PetscErrorCode MatMult_Composite(Mat mat, Vec x, Vec y)
   PetscBool          match;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(mat, &shell));
+  cur = shell->head;
   PetscCheck(cur, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must provide at least one matrix with MatCompositeAddMat()");
-  in = x;
-  if (shell->right) {
-    if (!shell->rightwork) PetscCall(VecDuplicate(shell->right, &shell->rightwork));
-    PetscCall(VecPointwiseMult(shell->rightwork, shell->right, in));
-    in = shell->rightwork;
-  }
 
   /* Try to merge Mvctx when instructed but not yet done. We did not do it in MatAssemblyEnd() since at that time
      we did not know whether mat is ADDITIVE or MULTIPLICATIVE. Only now we are assured mat is ADDITIVE and
@@ -258,16 +233,16 @@ static PetscErrorCode MatMult_Composite(Mat mat, Vec x, Vec y)
 
 skip_merge_mvctx:
   PetscCall(VecSet(y, 0));
-  if (!shell->leftwork2) PetscCall(VecDuplicate(y, &shell->leftwork2));
-  y2 = shell->leftwork2;
+  if (!((Mat_Shell *)mat->data)->left_work) PetscCall(VecDuplicate(y, &(((Mat_Shell *)mat->data)->left_work)));
+  y2 = ((Mat_Shell *)mat->data)->left_work;
 
   if (shell->Mvctx) { /* Have a merged Mvctx */
     /* Suppose we want to compute y = sMx, where s is the scaling factor and A, B are matrix M's diagonal/off-diagonal part. We could do
        in y = s(Ax1 + Bx2) or y = sAx1 + sBx2. The former incurs less FLOPS than the latter, but the latter provides an opportunity to
        overlap communication/computation since we can do sAx1 while communicating x2. Here, we use the former approach.
      */
-    PetscCall(VecScatterBegin(shell->Mvctx, in, shell->gvec, INSERT_VALUES, SCATTER_FORWARD));
-    PetscCall(VecScatterEnd(shell->Mvctx, in, shell->gvec, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterBegin(shell->Mvctx, x, shell->gvec, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(shell->Mvctx, x, shell->gvec, INSERT_VALUES, SCATTER_FORWARD));
 
     PetscCall(VecGetArrayRead(shell->gvec, &vals));
     for (i = 0; i < shell->len; i++) shell->larray[i] = vals[shell->location[i]];
@@ -275,7 +250,7 @@ skip_merge_mvctx:
 
     for (cur = shell->head, tot = i = 0; cur; cur = cur->next, i++) { /* i-th matrix */
       PetscCall(MatMPIAIJGetSeqAIJ(cur->mat, &A, &B, NULL));
-      PetscUseTypeMethod(A, mult, in, y2);
+      PetscUseTypeMethod(A, mult, x, y2);
       PetscCall(MatGetLocalSize(B, NULL, &n));
       PetscCall(VecPlaceArray(shell->lvecs[i], &shell->larray[tot]));
       PetscCall((*B->ops->multadd)(B, shell->lvecs[i], y2, y2));
@@ -286,98 +261,55 @@ skip_merge_mvctx:
   } else {
     if (shell->scalings) {
       for (cur = shell->head, i = 0; cur; cur = cur->next, i++) {
-        PetscCall(MatMult(cur->mat, in, y2));
+        PetscCall(MatMult(cur->mat, x, y2));
         PetscCall(VecAXPY(y, shell->scalings[i], y2));
       }
     } else {
-      for (cur = shell->head; cur; cur = cur->next) PetscCall(MatMultAdd(cur->mat, in, y, y));
+      for (cur = shell->head; cur; cur = cur->next) PetscCall(MatMultAdd(cur->mat, x, y, y));
     }
   }
-
-  if (shell->left) PetscCall(VecPointwiseMult(y, shell->left, y));
-  PetscCall(VecScale(y, shell->scale));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultTranspose_Composite(Mat A, Vec x, Vec y)
 {
-  Mat_Composite    *shell = (Mat_Composite *)A->data;
-  Mat_CompositeLink next  = shell->head;
-  Vec               in, y2 = NULL;
+  Mat_Composite    *shell;
+  Mat_CompositeLink next;
+  Vec               y2 = NULL;
   PetscInt          i;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(A, &shell));
+  next = shell->head;
   PetscCheck(next, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must provide at least one matrix with MatCompositeAddMat()");
-  in = x;
-  if (shell->left) {
-    if (!shell->leftwork) PetscCall(VecDuplicate(shell->left, &shell->leftwork));
-    PetscCall(VecPointwiseMult(shell->leftwork, shell->left, in));
-    in = shell->leftwork;
-  }
 
-  PetscCall(MatMultTranspose(next->mat, in, y));
+  PetscCall(MatMultTranspose(next->mat, x, y));
   if (shell->scalings) {
     PetscCall(VecScale(y, shell->scalings[0]));
-    if (!shell->rightwork2) PetscCall(VecDuplicate(y, &shell->rightwork2));
-    y2 = shell->rightwork2;
+    if (!((Mat_Shell *)A->data)->right_work) PetscCall(VecDuplicate(y, &(((Mat_Shell *)A->data)->right_work)));
+    y2 = ((Mat_Shell *)A->data)->right_work;
   }
   i = 1;
   while ((next = next->next)) {
-    if (!shell->scalings) PetscCall(MatMultTransposeAdd(next->mat, in, y, y));
+    if (!shell->scalings) PetscCall(MatMultTransposeAdd(next->mat, x, y, y));
     else {
-      PetscCall(MatMultTranspose(next->mat, in, y2));
+      PetscCall(MatMultTranspose(next->mat, x, y2));
       PetscCall(VecAXPY(y, shell->scalings[i++], y2));
     }
-  }
-  if (shell->right) PetscCall(VecPointwiseMult(y, shell->right, y));
-  PetscCall(VecScale(y, shell->scale));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatMultAdd_Composite(Mat A, Vec x, Vec y, Vec z)
-{
-  Mat_Composite *shell = (Mat_Composite *)A->data;
-
-  PetscFunctionBegin;
-  if (y != z) {
-    PetscCall(MatMult(A, x, z));
-    PetscCall(VecAXPY(z, 1.0, y));
-  } else {
-    if (!shell->leftwork) PetscCall(VecDuplicate(z, &shell->leftwork));
-    PetscCall(MatMult(A, x, shell->leftwork));
-    PetscCall(VecCopy(y, z));
-    PetscCall(VecAXPY(z, 1.0, shell->leftwork));
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatMultTransposeAdd_Composite(Mat A, Vec x, Vec y, Vec z)
-{
-  Mat_Composite *shell = (Mat_Composite *)A->data;
-
-  PetscFunctionBegin;
-  if (y != z) {
-    PetscCall(MatMultTranspose(A, x, z));
-    PetscCall(VecAXPY(z, 1.0, y));
-  } else {
-    if (!shell->rightwork) PetscCall(VecDuplicate(z, &shell->rightwork));
-    PetscCall(MatMultTranspose(A, x, shell->rightwork));
-    PetscCall(VecCopy(y, z));
-    PetscCall(VecAXPY(z, 1.0, shell->rightwork));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatGetDiagonal_Composite(Mat A, Vec v)
 {
-  Mat_Composite    *shell = (Mat_Composite *)A->data;
-  Mat_CompositeLink next  = shell->head;
+  Mat_Composite    *shell;
+  Mat_CompositeLink next;
   PetscInt          i;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(A, &shell));
+  next = shell->head;
   PetscCheck(next, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must provide at least one matrix with MatCompositeAddMat()");
-  PetscCheck(!shell->right && !shell->left, PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot get diagonal if left or right scaling");
-
   PetscCall(MatGetDiagonal(next->mat, v));
   if (shell->scalings) PetscCall(VecScale(v, shell->scalings[0]));
 
@@ -387,57 +319,26 @@ static PetscErrorCode MatGetDiagonal_Composite(Mat A, Vec v)
     PetscCall(MatGetDiagonal(next->mat, shell->work));
     PetscCall(VecAXPY(v, (shell->scalings ? shell->scalings[i++] : 1.0), shell->work));
   }
-  PetscCall(VecScale(v, shell->scale));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatAssemblyEnd_Composite(Mat Y, MatAssemblyType t)
 {
-  Mat_Composite *shell = (Mat_Composite *)Y->data;
+  Mat_Composite *shell;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(Y, &shell));
   if (shell->merge) PetscCall(MatCompositeMerge(Y));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatScale_Composite(Mat inA, PetscScalar alpha)
-{
-  Mat_Composite *a = (Mat_Composite *)inA->data;
-
-  PetscFunctionBegin;
-  a->scale *= alpha;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatDiagonalScale_Composite(Mat inA, Vec left, Vec right)
-{
-  Mat_Composite *a = (Mat_Composite *)inA->data;
-
-  PetscFunctionBegin;
-  if (left) {
-    if (!a->left) {
-      PetscCall(VecDuplicate(left, &a->left));
-      PetscCall(VecCopy(left, a->left));
-    } else {
-      PetscCall(VecPointwiseMult(a->left, left, a->left));
-    }
-  }
-  if (right) {
-    if (!a->right) {
-      PetscCall(VecDuplicate(right, &a->right));
-      PetscCall(VecCopy(right, a->right));
-    } else {
-      PetscCall(VecPointwiseMult(a->right, right, a->right));
-    }
-  }
+  else PetscCall(MatAssemblyEnd_Shell(Y, t));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetFromOptions_Composite(Mat A, PetscOptionItems *PetscOptionsObject)
 {
-  Mat_Composite *a = (Mat_Composite *)A->data;
+  Mat_Composite *a;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(A, &a));
   PetscOptionsHeadBegin(PetscOptionsObject, "MATCOMPOSITE options");
   PetscCall(PetscOptionsBool("-mat_composite_merge", "Merge at MatAssemblyEnd", "MatCompositeMerge", a->merge, &a->merge, NULL));
   PetscCall(PetscOptionsEnum("-mat_composite_merge_type", "Set composite merge direction", "MatCompositeSetMergeType", MatCompositeMergeTypes, (PetscEnum)a->mergetype, (PetscEnum *)&a->mergetype, NULL));
@@ -507,12 +408,14 @@ PetscErrorCode MatCreateComposite(MPI_Comm comm, PetscInt nmat, const Mat *mats,
 
 static PetscErrorCode MatCompositeAddMat_Composite(Mat mat, Mat smat)
 {
-  Mat_Composite    *shell = (Mat_Composite *)mat->data;
-  Mat_CompositeLink ilink, next = shell->head;
+  Mat_Composite    *shell;
+  Mat_CompositeLink ilink, next;
   VecType           vtype_mat, vtype_smat;
   PetscBool         match;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(mat, &shell));
+  next = shell->head;
   PetscCall(PetscNew(&ilink));
   ilink->next = NULL;
   PetscCall(PetscObjectReference((PetscObject)smat));
@@ -569,19 +472,20 @@ PetscErrorCode MatCompositeAddMat(Mat mat, Mat smat)
 
 static PetscErrorCode MatCompositeSetType_Composite(Mat mat, MatCompositeType type)
 {
-  Mat_Composite *b = (Mat_Composite *)mat->data;
+  Mat_Composite *b;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(mat, &b));
   b->type = type;
   if (type == MAT_COMPOSITE_MULTIPLICATIVE) {
-    mat->ops->getdiagonal   = NULL;
-    mat->ops->mult          = MatMult_Composite_Multiplicative;
-    mat->ops->multtranspose = MatMultTranspose_Composite_Multiplicative;
-    b->merge_mvctx          = PETSC_FALSE;
+    PetscCall(MatShellSetOperation(mat, MATOP_GET_DIAGONAL, NULL));
+    PetscCall(MatShellSetOperation(mat, MATOP_MULT, (void (*)(void))MatMult_Composite_Multiplicative));
+    PetscCall(MatShellSetOperation(mat, MATOP_MULT_TRANSPOSE, (void (*)(void))MatMultTranspose_Composite_Multiplicative));
+    b->merge_mvctx = PETSC_FALSE;
   } else {
-    mat->ops->getdiagonal   = MatGetDiagonal_Composite;
-    mat->ops->mult          = MatMult_Composite;
-    mat->ops->multtranspose = MatMultTranspose_Composite;
+    PetscCall(MatShellSetOperation(mat, MATOP_GET_DIAGONAL, (void (*)(void))MatGetDiagonal_Composite));
+    PetscCall(MatShellSetOperation(mat, MATOP_MULT, (void (*)(void))MatMult_Composite));
+    PetscCall(MatShellSetOperation(mat, MATOP_MULT_TRANSPOSE, (void (*)(void))MatMultTranspose_Composite));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -611,10 +515,11 @@ PetscErrorCode MatCompositeSetType(Mat mat, MatCompositeType type)
 
 static PetscErrorCode MatCompositeGetType_Composite(Mat mat, MatCompositeType *type)
 {
-  Mat_Composite *b = (Mat_Composite *)mat->data;
+  Mat_Composite *shell;
 
   PetscFunctionBegin;
-  *type = b->type;
+  PetscCall(MatShellGetContext(mat, &shell));
+  *type = shell->type;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -644,10 +549,11 @@ PetscErrorCode MatCompositeGetType(Mat mat, MatCompositeType *type)
 
 static PetscErrorCode MatCompositeSetMatStructure_Composite(Mat mat, MatStructure str)
 {
-  Mat_Composite *b = (Mat_Composite *)mat->data;
+  Mat_Composite *shell;
 
   PetscFunctionBegin;
-  b->structure = str;
+  PetscCall(MatShellGetContext(mat, &shell));
+  shell->structure = str;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -677,10 +583,11 @@ PetscErrorCode MatCompositeSetMatStructure(Mat mat, MatStructure str)
 
 static PetscErrorCode MatCompositeGetMatStructure_Composite(Mat mat, MatStructure *str)
 {
-  Mat_Composite *b = (Mat_Composite *)mat->data;
+  Mat_Composite *shell;
 
   PetscFunctionBegin;
-  *str = b->structure;
+  PetscCall(MatShellGetContext(mat, &shell));
+  *str = shell->structure;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -710,9 +617,10 @@ PetscErrorCode MatCompositeGetMatStructure(Mat mat, MatStructure *str)
 
 static PetscErrorCode MatCompositeSetMergeType_Composite(Mat mat, MatCompositeMergeType type)
 {
-  Mat_Composite *shell = (Mat_Composite *)mat->data;
+  Mat_Composite *shell;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(mat, &shell));
   shell->mergetype = type;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -747,16 +655,22 @@ PetscErrorCode MatCompositeSetMergeType(Mat mat, MatCompositeMergeType type)
 
 static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
 {
-  Mat_Composite    *shell = (Mat_Composite *)mat->data;
-  Mat_CompositeLink next = shell->head, prev = shell->tail;
+  Mat_Composite    *shell;
+  Mat_CompositeLink next, prev;
   Mat               tmat, newmat;
-  Vec               left, right;
-  PetscScalar       scale;
+  Vec               left, right, dshift;
+  PetscScalar       scale, shift;
   PetscInt          i;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(mat, &shell));
+  next = shell->head;
+  prev = shell->tail;
   PetscCheck(next, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must provide at least one matrix with MatCompositeAddMat()");
-  scale = shell->scale;
+  PetscCheck(!((Mat_Shell *)mat->data)->zrows && !((Mat_Shell *)mat->data)->zcols, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot call MatCompositeMerge() if MatZeroRows() or MatZeroRowsColumns() has been called on the input Mat"); // TODO FIXME: lift this limitation by calling MatZeroRows()/MatZeroRowsColumns() after the merge
+  PetscCheck(!((Mat_Shell *)mat->data)->axpy, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot call MatCompositeMerge() if MatAXPY() has been called on the input Mat"); // TODO FIXME: lift this limitation by calling MatAXPY() after the merge
+  scale = ((Mat_Shell *)mat->data)->vscale;
+  shift = ((Mat_Shell *)mat->data)->vshift;
   if (shell->type == MAT_COMPOSITE_ADDITIVE) {
     if (shell->mergetype == MAT_COMPOSITE_MERGE_RIGHT) {
       i = 0;
@@ -790,15 +704,21 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
     }
   }
 
-  if ((left = shell->left)) PetscCall(PetscObjectReference((PetscObject)left));
-  if ((right = shell->right)) PetscCall(PetscObjectReference((PetscObject)right));
+  if ((left = ((Mat_Shell *)mat->data)->left)) PetscCall(PetscObjectReference((PetscObject)left));
+  if ((right = ((Mat_Shell *)mat->data)->right)) PetscCall(PetscObjectReference((PetscObject)right));
+  if ((dshift = ((Mat_Shell *)mat->data)->dshift)) PetscCall(PetscObjectReference((PetscObject)dshift));
 
   PetscCall(MatHeaderReplace(mat, &tmat));
 
   PetscCall(MatDiagonalScale(mat, left, right));
   PetscCall(MatScale(mat, scale));
+  PetscCall(MatShift(mat, shift));
   PetscCall(VecDestroy(&left));
   PetscCall(VecDestroy(&right));
+  if (dshift) {
+    PetscCall(MatDiagonalSet(mat, dshift, ADD_VALUES));
+    PetscCall(VecDestroy(&dshift));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -832,9 +752,10 @@ PetscErrorCode MatCompositeMerge(Mat mat)
 
 static PetscErrorCode MatCompositeGetNumberMat_Composite(Mat mat, PetscInt *nmat)
 {
-  Mat_Composite *shell = (Mat_Composite *)mat->data;
+  Mat_Composite *shell;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(mat, &shell));
   *nmat = shell->nmat;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -865,11 +786,12 @@ PetscErrorCode MatCompositeGetNumberMat(Mat mat, PetscInt *nmat)
 
 static PetscErrorCode MatCompositeGetMat_Composite(Mat mat, PetscInt i, Mat *Ai)
 {
-  Mat_Composite    *shell = (Mat_Composite *)mat->data;
+  Mat_Composite    *shell;
   Mat_CompositeLink ilink;
   PetscInt          k;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(mat, &shell));
   PetscCheck(i < shell->nmat, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_OUTOFRANGE, "index out of range: %" PetscInt_FMT " >= %" PetscInt_FMT, i, shell->nmat);
   ilink = shell->head;
   for (k = 0; k < i; k++) ilink = ilink->next;
@@ -905,10 +827,11 @@ PetscErrorCode MatCompositeGetMat(Mat mat, PetscInt i, Mat *Ai)
 
 static PetscErrorCode MatCompositeSetScalings_Composite(Mat mat, const PetscScalar *scalings)
 {
-  Mat_Composite *shell = (Mat_Composite *)mat->data;
+  Mat_Composite *shell;
   PetscInt       nmat;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(mat, &shell));
   PetscCall(MatCompositeGetNumberMat(mat, &nmat));
   if (!shell->scalings) PetscCall(PetscMalloc1(nmat, &shell->scalings));
   PetscCall(PetscArraycpy(shell->scalings, scalings, nmat));
@@ -938,159 +861,6 @@ PetscErrorCode MatCompositeSetScalings(Mat mat, const PetscScalar *scalings)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static struct _MatOps MatOps_Values = {NULL,
-                                       NULL,
-                                       NULL,
-                                       MatMult_Composite,
-                                       MatMultAdd_Composite,
-                                       /*  5*/ MatMultTranspose_Composite,
-                                       MatMultTransposeAdd_Composite,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /* 10*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /* 15*/ NULL,
-                                       NULL,
-                                       MatGetDiagonal_Composite,
-                                       MatDiagonalScale_Composite,
-                                       NULL,
-                                       /* 20*/ NULL,
-                                       MatAssemblyEnd_Composite,
-                                       NULL,
-                                       NULL,
-                                       /* 24*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /* 29*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /* 34*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /* 39*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /* 44*/ NULL,
-                                       MatScale_Composite,
-                                       MatShift_Basic,
-                                       NULL,
-                                       NULL,
-                                       /* 49*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /* 54*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /* 59*/ NULL,
-                                       MatDestroy_Composite,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /* 64*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /* 69*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /* 74*/ NULL,
-                                       NULL,
-                                       MatSetFromOptions_Composite,
-                                       NULL,
-                                       NULL,
-                                       /* 79*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /* 84*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /* 89*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /* 94*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*99*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*104*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*109*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*114*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*119*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*124*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*129*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*134*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*139*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*144*/ NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       NULL,
-                                       /*150*/ NULL,
-                                       NULL};
-
 /*MC
    MATCOMPOSITE - A matrix defined by the sum (or product) of one or more matrices.
     The matrices need to have a correct size and parallel layout for the sum or product to be valid.
@@ -1099,6 +869,11 @@ static struct _MatOps MatOps_Values = {NULL,
 
    Note:
    To use the product of the matrices call `MatCompositeSetType`(mat,`MAT_COMPOSITE_MULTIPLICATIVE`);
+
+  Developer Notes:
+  This is implemented on top of `MATSHELL` to get support for scaling and shifting without requiring duplicate code
+
+  Users can not call `MatShellSetOperation()` operations on this class, there is some error checking for that incorrect usage
 
 .seealso: [](ch_matrices), `Mat`, `MatCreateComposite()`, `MatCompositeSetScalings()`, `MatCompositeAddMat()`, `MatSetType()`, `MatCompositeSetType()`, `MatCompositeGetType()`,
           `MatCompositeSetMatStructure()`, `MatCompositeGetMatStructure()`, `MatCompositeMerge()`, `MatCompositeSetMergeType()`, `MatCompositeGetNumberMat()`, `MatCompositeGetMat()`
@@ -1110,22 +885,22 @@ PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat A)
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&b));
-  A->data   = (void *)b;
-  A->ops[0] = MatOps_Values;
 
-  PetscCall(PetscLayoutSetUp(A->rmap));
-  PetscCall(PetscLayoutSetUp(A->cmap));
+  b->type        = MAT_COMPOSITE_ADDITIVE;
+  b->nmat        = 0;
+  b->merge       = PETSC_FALSE;
+  b->mergetype   = MAT_COMPOSITE_MERGE_RIGHT;
+  b->structure   = DIFFERENT_NONZERO_PATTERN;
+  b->merge_mvctx = PETSC_TRUE;
 
-  A->assembled    = PETSC_TRUE;
-  A->preallocated = PETSC_TRUE;
-  b->type         = MAT_COMPOSITE_ADDITIVE;
-  b->scale        = 1.0;
-  b->nmat         = 0;
-  b->merge        = PETSC_FALSE;
-  b->mergetype    = MAT_COMPOSITE_MERGE_RIGHT;
-  b->structure    = DIFFERENT_NONZERO_PATTERN;
-  b->merge_mvctx  = PETSC_TRUE;
-
+  PetscCall(MatSetType(A, MATSHELL));
+  PetscCall(MatShellSetContext(A, b));
+  PetscCall(MatShellSetOperation(A, MATOP_DESTROY, (void (*)(void))MatDestroy_Composite));
+  PetscCall(MatShellSetOperation(A, MATOP_MULT, (void (*)(void))MatMult_Composite));
+  PetscCall(MatShellSetOperation(A, MATOP_MULT_TRANSPOSE, (void (*)(void))MatMultTranspose_Composite));
+  PetscCall(MatShellSetOperation(A, MATOP_GET_DIAGONAL, (void (*)(void))MatGetDiagonal_Composite));
+  PetscCall(MatShellSetOperation(A, MATOP_ASSEMBLY_END, (void (*)(void))MatAssemblyEnd_Composite));
+  PetscCall(MatShellSetOperation(A, MATOP_SET_FROM_OPTIONS, (void (*)(void))MatSetFromOptions_Composite));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatCompositeAddMat_C", MatCompositeAddMat_Composite));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatCompositeSetType_C", MatCompositeSetType_Composite));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatCompositeGetType_C", MatCompositeGetType_Composite));
@@ -1136,7 +911,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatCompositeGetNumberMat_C", MatCompositeGetNumberMat_Composite));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatCompositeGetMat_C", MatCompositeGetMat_Composite));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatCompositeSetScalings_C", MatCompositeSetScalings_Composite));
-
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetContext_C", MatShellSetContext_Immutable));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetContextDestroy_C", MatShellSetContextDestroy_Immutable));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetManageScalingShifts_C", MatShellSetManageScalingShifts_Immutable));
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATCOMPOSITE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

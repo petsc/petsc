@@ -4,63 +4,7 @@
   much of anything.
 */
 
-#include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
-#include <petsc/private/vecimpl.h>
-
-struct _MatShellOps {
-  /*   3 */ PetscErrorCode (*mult)(Mat, Vec, Vec);
-  /*   5 */ PetscErrorCode (*multtranspose)(Mat, Vec, Vec);
-  /*  17 */ PetscErrorCode (*getdiagonal)(Mat, Vec);
-  /*  43 */ PetscErrorCode (*copy)(Mat, Mat, MatStructure);
-  /*  60 */ PetscErrorCode (*destroy)(Mat);
-  /* 121 */ PetscErrorCode (*multhermitiantranspose)(Mat, Vec, Vec);
-};
-
-struct _n_MatShellMatFunctionList {
-  PetscErrorCode (*symbolic)(Mat, Mat, Mat, void **);
-  PetscErrorCode (*numeric)(Mat, Mat, Mat, void *);
-  PetscErrorCode (*destroy)(void *);
-  MatProductType ptype;
-  char          *composedname; /* string to identify routine with double dispatch */
-  char          *resultname;   /* result matrix type */
-
-  struct _n_MatShellMatFunctionList *next;
-};
-typedef struct _n_MatShellMatFunctionList *MatShellMatFunctionList;
-
-typedef struct {
-  struct _MatShellOps ops[1];
-
-  /* The user will manage the scaling and shifts for the MATSHELL, not the default */
-  PetscBool managescalingshifts;
-
-  /* support for MatScale, MatShift and MatMultAdd */
-  PetscScalar vscale, vshift;
-  Vec         dshift;
-  Vec         left, right;
-  Vec         left_work, right_work;
-  Vec         left_add_work, right_add_work;
-
-  /* support for MatAXPY */
-  Mat              axpy;
-  PetscScalar      axpy_vscale;
-  Vec              axpy_left, axpy_right;
-  PetscObjectState axpy_state;
-
-  /* support for ZeroRows/Columns operations */
-  IS         zrows;
-  IS         zcols;
-  Vec        zvals;
-  Vec        zvals_w;
-  VecScatter zvals_sct_r;
-  VecScatter zvals_sct_c;
-
-  /* MatMat operations */
-  MatShellMatFunctionList matmat;
-
-  /* user defined context */
-  PetscContainer ctxcontainer;
-} Mat_Shell;
+#include <../src/mat/impls/shell/shell.h> /*I "petscmat.h" I*/
 
 /*
      Store and scale values on zeroed rows
@@ -1031,7 +975,7 @@ static PetscErrorCode MatDuplicate_Shell(Mat mat, MatDuplicateOption op, Mat *M)
   ((Mat_Shell *)(*M)->data)->ctxcontainer = ((Mat_Shell *)mat->data)->ctxcontainer;
   PetscCall(PetscObjectCompose((PetscObject)(*M), "MatShell ctx", (PetscObject)((Mat_Shell *)(*M)->data)->ctxcontainer));
   PetscCall(PetscObjectChangeTypeName((PetscObject)(*M), ((PetscObject)mat)->type_name));
-  if (op != MAT_DO_NOT_COPY_VALUES) PetscCall(MatCopy(mat, *M, SAME_NONZERO_PATTERN));
+  if (op == MAT_COPY_VALUES) PetscCall(MatCopy(mat, *M, SAME_NONZERO_PATTERN));
   PetscCall(PetscObjectCopyFortranFunctionPointers((PetscObject)mat, (PetscObject)*M));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1340,7 +1284,7 @@ static PetscErrorCode MatDiagonalScale_Shell(Mat Y, Vec left, Vec right)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatAssemblyEnd_Shell(Mat Y, MatAssemblyType t)
+PETSC_INTERN PetscErrorCode MatAssemblyEnd_Shell(Mat Y, MatAssemblyType t)
 {
   Mat_Shell *shell = (Mat_Shell *)Y->data;
 
@@ -1569,6 +1513,27 @@ static PetscErrorCode MatShellSetContextDestroy_Shell(Mat mat, PetscErrorCode (*
 
   PetscFunctionBegin;
   if (shell->ctxcontainer) PetscCall(PetscContainerSetUserDestroy(shell->ctxcontainer, f));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode MatShellSetContext_Immutable(Mat mat, void *ctx)
+{
+  PetscFunctionBegin;
+  SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Cannot call MatShellSetContext() for a %s, it is used internally by the structure", ((PetscObject)mat)->type_name);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode MatShellSetContextDestroy_Immutable(Mat mat, PetscErrorCode (*f)(void *))
+{
+  PetscFunctionBegin;
+  SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Cannot call MatShellSetContextDestroy() for a %s, it is used internally by the structure", ((PetscObject)mat)->type_name);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode MatShellSetManageScalingShifts_Immutable(Mat mat)
+{
+  PetscFunctionBegin;
+  SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Cannot call MatShellSetManageScalingShifts() for a %s, it is used internally by the structure", ((PetscObject)mat)->type_name);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

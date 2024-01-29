@@ -1,4 +1,4 @@
-#include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
+#include <../src/mat/impls/shell/shell.h> /*I "petscmat.h" I*/
 
 static PetscErrorCode MatMult_Transpose(Mat N, Vec x, Vec y)
 {
@@ -35,16 +35,14 @@ static PetscErrorCode MatDestroy_Transpose(Mat N)
 
 static PetscErrorCode MatDuplicate_Transpose(Mat N, MatDuplicateOption op, Mat *m)
 {
-  Mat A;
+  Mat A, C;
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(N, &A));
-  if (op == MAT_COPY_VALUES) {
-    PetscCall(MatTranspose(A, MAT_INITIAL_MATRIX, m));
-  } else if (op == MAT_DO_NOT_COPY_VALUES) {
-    PetscCall(MatDuplicate(A, MAT_DO_NOT_COPY_VALUES, m));
-    PetscCall(MatTranspose(*m, MAT_INPLACE_MATRIX, m));
-  } else SETERRQ(PetscObjectComm((PetscObject)N), PETSC_ERR_SUP, "MAT_SHARE_NONZERO_PATTERN not supported for this matrix type");
+  PetscCall(MatDuplicate(A, op, &C));
+  PetscCall(MatCreateTranspose(C, m));
+  PetscCall(MatDestroy(&C));
+  if (op == MAT_COPY_VALUES) PetscCall(MatCopy(N, *m, SAME_NONZERO_PATTERN));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -175,6 +173,17 @@ static PetscErrorCode MatGetDiagonal_Transpose(Mat N, Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatCopy_Transpose(Mat A, Mat B, MatStructure str)
+{
+  Mat a, b;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(A, &a));
+  PetscCall(MatShellGetContext(B, &b));
+  PetscCall(MatCopy(a, b, str));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatConvert_Transpose(Mat N, MatType newtype, MatReuse reuse, Mat *newmat)
 {
   Mat       A;
@@ -232,26 +241,12 @@ PetscErrorCode MatTransposeGetMat(Mat A, Mat *M)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatShellSetContext_Transpose(Mat mat, void *ctx)
-{
-  PetscFunctionBegin;
-  SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Cannot set the MATSHELL context for a MATTRANSPOSEVIRTUAL, it is used by the MATTRANSPOSEVIRTUAL");
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatShellSetContextDestroy_Transpose(Mat mat, void (*f)(void))
-{
-  PetscFunctionBegin;
-  SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Cannot set the MATSHELL context destroy for a MATTRANSPOSEVIRTUAL, it is used by the MATTRANSPOSEVIRTUAL");
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*MC
    MATTRANSPOSEVIRTUAL - "transpose" - A matrix type that represents a virtual transpose of a matrix
 
   Level: advanced
 
-  Developers Notes:
+  Developer Notes:
   This is implemented on top of `MATSHELL` to get support for scaling and shifting without requiring duplicate code
 
   Users can not call `MatShellSetOperation()` operations on this class, there is some error checking for that incorrect usage
@@ -307,12 +302,14 @@ PetscErrorCode MatCreateTranspose(Mat A, Mat *N)
   PetscCall(MatShellSetOperation(*N, MATOP_DUPLICATE, (void (*)(void))MatDuplicate_Transpose));
   PetscCall(MatShellSetOperation(*N, MATOP_HAS_OPERATION, (void (*)(void))MatHasOperation_Transpose));
   PetscCall(MatShellSetOperation(*N, MATOP_GET_DIAGONAL, (void (*)(void))MatGetDiagonal_Transpose));
+  PetscCall(MatShellSetOperation(*N, MATOP_COPY, (void (*)(void))MatCopy_Transpose));
   PetscCall(MatShellSetOperation(*N, MATOP_CONVERT, (void (*)(void))MatConvert_Transpose));
 
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatTransposeGetMat_C", MatTransposeGetMat_Transpose));
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatProductSetFromOptions_anytype_C", MatProductSetFromOptions_Transpose));
-  PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatShellSetContext_C", MatShellSetContext_Transpose));
-  PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatShellSetContextDestroy_C", MatShellSetContextDestroy_Transpose));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatShellSetContext_C", MatShellSetContext_Immutable));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatShellSetContextDestroy_C", MatShellSetContextDestroy_Immutable));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatShellSetManageScalingShifts_C", MatShellSetManageScalingShifts_Immutable));
   PetscCall(PetscObjectChangeTypeName((PetscObject)*N, MATTRANSPOSEVIRTUAL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

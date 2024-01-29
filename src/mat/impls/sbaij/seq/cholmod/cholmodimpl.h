@@ -50,6 +50,7 @@ typedef struct {
   cholmod_factor                *factor;
   cholmod_common                *common;
   SuiteSparseQR_C_factorization *spqrfact;
+  PetscScalar                    scale;
   PetscBool                      pack;
   PetscBool                      normal;
 } Mat_CHOLMOD;

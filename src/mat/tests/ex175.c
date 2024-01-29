@@ -4,7 +4,7 @@ static char help[] = "Tests MatCreateHermitianTranspose().\n\n";
 
 int main(int argc, char **args)
 {
-  Mat         C, C_htransposed, Cht, C_empty;
+  Mat         C, C_htransposed, Cht, C_empty, Cht_empty;
   PetscInt    i, j, m = 10, n = 10;
   PetscScalar v;
 
@@ -28,9 +28,12 @@ int main(int argc, char **args)
 
   PetscCall(MatView(C, PETSC_VIEWER_STDOUT_SELF));
   PetscCall(MatDuplicate(C_htransposed, MAT_COPY_VALUES, &Cht));
+  PetscCall(MatConvert(Cht, MATAIJ, MAT_INPLACE_MATRIX, &Cht));
   PetscCall(MatView(Cht, PETSC_VIEWER_STDOUT_SELF));
   PetscCall(MatDuplicate(C_htransposed, MAT_DO_NOT_COPY_VALUES, &C_empty));
-  PetscCall(MatView(C_empty, PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(MatHermitianTransposeGetMat(C_empty, &Cht_empty));
+  PetscCall(MatHermitianTranspose(Cht_empty, MAT_INPLACE_MATRIX, &Cht_empty));
+  PetscCall(MatView(Cht_empty, PETSC_VIEWER_STDOUT_SELF));
 
   PetscCall(MatDestroy(&C));
   PetscCall(MatDestroy(&C_htransposed));

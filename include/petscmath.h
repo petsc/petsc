@@ -697,7 +697,7 @@ M*/
 #define PetscAbsInt(a) (((a) < 0) ? (-(a)) : (a))
 
 /*MC
-   PetscAbsReal - Returns the absolute value of an real number
+   PetscAbsReal - Returns the absolute value of a real number
 
    Synopsis:
    #include <petscmath.h>
