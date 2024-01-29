@@ -50,54 +50,38 @@ PETSC_EXTERN PetscErrorCode DMStagCreate1d(MPI_Comm comm, DMBoundaryType bndx, P
 
 PETSC_INTERN PetscErrorCode DMStagRestrictSimple_1d(DM dmf, Vec xf_local, DM dmc, Vec xc_local)
 {
-  PetscScalar **LA_xf, **LA_xc;
-  PetscInt      i, start, n, nextra, N;
-  PetscInt      d, dof[2];
-  PetscInt      slot_left_coarse, slot_element_coarse, slot_left_fine, slot_element_fine;
+  PetscInt            Mf, Mc, factorx, dof[2];
+  PetscInt            xc, mc, nExtraxc, i, d;
+  PetscInt            ileftf, ielemf, ileftc, ielemc;
+  const PetscScalar **arrf;
+  PetscScalar       **arrc;
 
   PetscFunctionBegin;
+  PetscCall(DMStagGetGlobalSizes(dmf, &Mf, NULL, NULL));
+  PetscCall(DMStagGetGlobalSizes(dmc, &Mc, NULL, NULL));
+  factorx = Mf / Mc;
   PetscCall(DMStagGetDOF(dmc, &dof[0], &dof[1], NULL, NULL));
-  PetscCall(DMStagGetCorners(dmc, &start, NULL, NULL, &n, NULL, NULL, &nextra, NULL, NULL));
-  PetscCall(DMStagGetGlobalSizes(dmc, &N, NULL, NULL));
-  if (PetscDefined(USE_DEBUG)) {
-    PetscInt dof_check[2], n_fine, start_fine;
 
-    PetscCall(DMStagGetDOF(dmf, &dof_check[0], &dof_check[1], NULL, NULL));
-    PetscCall(DMStagGetCorners(dmf, &start_fine, NULL, NULL, &n_fine, NULL, NULL, NULL, NULL, NULL));
-    for (d = 0; d < 2; ++d)
-      PetscCheck(dof_check[d] == dof[d], PetscObjectComm((PetscObject)dmf), PETSC_ERR_ARG_INCOMP, "Cannot transfer between DMStag objects with different dof on each stratum. Stratum %" PetscInt_FMT " has %" PetscInt_FMT " dof (fine) but %" PetscInt_FMT " dof (coarse)", d, dof_check[d], dof[d]);
-    PetscCheck(n_fine == 2 * n, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Cannot transfer between DMStag objects unless there is a 2-1 coarsening. The fine DM has %" PetscInt_FMT " local elements and the coarse DM has %" PetscInt_FMT "", n_fine, n);
-    PetscCheck(start_fine == 2 * start, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Cannot transfer between DMStag objects unless there is a 2-1 coarsening. The fine DM starts at element %" PetscInt_FMT " and the coarse DM starts at %" PetscInt_FMT "", start_fine, start);
-    {
-      PetscInt size_local, entries_local;
-
-      PetscCall(DMStagGetEntriesLocal(dmf, &entries_local));
-      PetscCall(VecGetLocalSize(xf_local, &size_local));
-      PetscCheck(entries_local == size_local, PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Fine vector must be a local vector of size %" PetscInt_FMT ", but a vector of size %" PetscInt_FMT " was supplied", entries_local, size_local);
-    }
-    {
-      PetscInt size_local, entries_local;
-
-      PetscCall(DMStagGetEntriesLocal(dmc, &entries_local));
-      PetscCall(VecGetLocalSize(xc_local, &size_local));
-      PetscCheck(entries_local == size_local, PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Coarse vector must be a local vector of size %" PetscInt_FMT ", but a vector of size %" PetscInt_FMT " was supplied", entries_local, size_local);
-    }
-  }
+  PetscCall(DMStagGetCorners(dmc, &xc, NULL, NULL, &mc, NULL, NULL, &nExtraxc, NULL, NULL));
   PetscCall(VecZeroEntries(xc_local));
-  PetscCall(DMStagVecGetArray(dmf, xf_local, &LA_xf));
-  PetscCall(DMStagVecGetArray(dmc, xc_local, &LA_xc));
-  PetscCall(DMStagGetLocationSlot(dmf, DMSTAG_LEFT, 0, &slot_left_fine));
-  PetscCall(DMStagGetLocationSlot(dmf, DMSTAG_ELEMENT, 0, &slot_element_fine));
-  PetscCall(DMStagGetLocationSlot(dmc, DMSTAG_LEFT, 0, &slot_left_coarse));
-  PetscCall(DMStagGetLocationSlot(dmc, DMSTAG_ELEMENT, 0, &slot_element_coarse));
-  for (i = start; i < start + n + nextra; ++i) {
-    for (d = 0; d < dof[0]; ++d) LA_xc[i][slot_left_coarse + d] = LA_xf[2 * i][slot_left_fine + d];
-    if (i < N) {
-      for (d = 0; d < dof[1]; ++d) LA_xc[i][slot_element_coarse + d] = 0.5 * (LA_xf[2 * i][slot_element_fine + d] + LA_xf[2 * i + 1][slot_element_fine + d]);
+  PetscCall(DMStagVecGetArray(dmf, xf_local, &arrf));
+  PetscCall(DMStagVecGetArray(dmc, xc_local, &arrc));
+  PetscCall(DMStagGetLocationSlot(dmf, DMSTAG_LEFT, 0, &ileftf));
+  PetscCall(DMStagGetLocationSlot(dmf, DMSTAG_ELEMENT, 0, &ielemf));
+  PetscCall(DMStagGetLocationSlot(dmc, DMSTAG_LEFT, 0, &ileftc));
+  PetscCall(DMStagGetLocationSlot(dmc, DMSTAG_ELEMENT, 0, &ielemc));
+
+  for (d = 0; d < dof[0]; ++d)
+    for (i = xc; i < xc + mc + nExtraxc; ++i) arrc[i][ileftc + d] = arrf[factorx * i][ileftf + d];
+
+  for (d = 0; d < dof[1]; ++d)
+    for (i = xc; i < xc + mc; ++i) {
+      if (factorx % 2 == 0) arrc[i][ielemc + d] = 0.5 * (arrf[factorx * i + factorx / 2 - 1][ielemf + d] + arrf[factorx * i + factorx / 2][ielemf + d]);
+      else arrc[i][ielemc + d] = arrf[factorx * i + factorx / 2][ielemf + d];
     }
-  }
-  PetscCall(DMStagVecRestoreArray(dmf, xf_local, &LA_xf));
-  PetscCall(DMStagVecRestoreArray(dmc, xc_local, &LA_xc));
+
+  PetscCall(DMStagVecRestoreArray(dmf, xf_local, &arrf));
+  PetscCall(DMStagVecRestoreArray(dmc, xc_local, &arrc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

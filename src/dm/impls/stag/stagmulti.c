@@ -27,6 +27,30 @@ PetscErrorCode DMStagRestrictSimple(DM dmf, Vec xf, DM dmc, Vec xc)
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dmf, &dim));
+  if (PetscDefined(USE_DEBUG)) {
+    PetscInt d, nf[DMSTAG_MAX_DIM], nc[DMSTAG_MAX_DIM], doff[DMSTAG_MAX_STRATA], dofc[DMSTAG_MAX_STRATA];
+
+    PetscCall(DMStagGetLocalSizes(dmf, &nf[0], &nf[1], &nf[2]));
+    PetscCall(DMStagGetLocalSizes(dmc, &nc[0], &nc[1], &nc[2]));
+    for (d = 0; d < dim; ++d) PetscCheck(nf[d] % nc[d] == 0, PetscObjectComm((PetscObject)dmf), PETSC_ERR_PLIB, "Not implemented for non-integer refinement factor");
+    PetscCall(DMStagGetDOF(dmf, &doff[0], &doff[1], &doff[2], &doff[3]));
+    PetscCall(DMStagGetDOF(dmc, &dofc[0], &dofc[1], &dofc[2], &dofc[3]));
+    for (d = 0; d < dim + 1; ++d) PetscCheck(doff[d] == dofc[d], PetscObjectComm((PetscObject)dmf), PETSC_ERR_PLIB, "Cannot transfer between DMStag objects with different dof on each stratum");
+    {
+      PetscInt size_local, entries_local;
+
+      PetscCall(DMStagGetEntriesLocal(dmf, &entries_local));
+      PetscCall(VecGetLocalSize(xf, &size_local));
+      PetscCheck(entries_local == size_local, PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Fine vector must be a local vector of size %" PetscInt_FMT ", but a vector of size %" PetscInt_FMT " was supplied", entries_local, size_local);
+    }
+    {
+      PetscInt size_local, entries_local;
+
+      PetscCall(DMStagGetEntriesLocal(dmc, &entries_local));
+      PetscCall(VecGetLocalSize(xc, &size_local));
+      PetscCheck(entries_local == size_local, PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Coarse vector must be a local vector of size %" PetscInt_FMT ", but a vector of size %" PetscInt_FMT " was supplied", entries_local, size_local);
+    }
+  }
   switch (dim) {
   case 1:
     PetscCall(DMStagRestrictSimple_1d(dmf, xf, dmc, xc));
