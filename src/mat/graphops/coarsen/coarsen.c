@@ -420,7 +420,7 @@ static PetscErrorCode MatCoarsenSetMaximumIterations_MATCOARSEN(MatCoarsen coars
 }
 
 /*@
-  MatCoarsenSetStrengthIndex -  Index to use for index to use for strength of connection
+  MatCoarsenSetStrengthIndex -  Index array to use for index to use for strength of connection
 
   Logically Collective
 
