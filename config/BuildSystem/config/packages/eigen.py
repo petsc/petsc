@@ -4,7 +4,7 @@ class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     import os
     config.package.CMakePackage.__init__(self, framework)
-    self.version       = '3.3.7'
+    self.version       = '3.4.0'
     self.gitcommit     = self.version
     self.download      = ['git://https://gitlab.com/libeigen/eigen.git',
                           'https://gitlab.com/libeigen/eigen/-/archive/'+self.gitcommit+'/eigen-'+self.gitcommit+'.tar.gz',
