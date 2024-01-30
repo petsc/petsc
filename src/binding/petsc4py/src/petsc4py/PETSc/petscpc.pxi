@@ -118,6 +118,7 @@ cdef extern from * nogil:
         PC_HPDDM_COARSE_CORRECTION_DEFLATED
         PC_HPDDM_COARSE_CORRECTION_ADDITIVE
         PC_HPDDM_COARSE_CORRECTION_BALANCED
+        PC_HPDDM_COARSE_CORRECTION_NONE
 
     ctypedef enum PetscPCDeflationSpaceType "PCDeflationSpaceType":
         PC_DEFLATION_SPACE_HAAR

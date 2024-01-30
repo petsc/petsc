@@ -117,6 +117,7 @@
       PetscEnum, parameter :: PC_HPDDM_COARSE_CORRECTION_DEFLATED=0
       PetscEnum, parameter :: PC_HPDDM_COARSE_CORRECTION_ADDITIVE=1
       PetscEnum, parameter :: PC_HPDDM_COARSE_CORRECTION_BALANCED=2
+      PetscEnum, parameter :: PC_HPDDM_COARSE_CORRECTION_NONE=3
 !
 ! PCFailedReason
 !

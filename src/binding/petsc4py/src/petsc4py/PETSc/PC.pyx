@@ -132,6 +132,7 @@ class PCHPDDMCoarseCorrectionType(object):
     DEFLATED                 = PC_HPDDM_COARSE_CORRECTION_DEFLATED
     ADDITIVE                 = PC_HPDDM_COARSE_CORRECTION_ADDITIVE
     BALANCED                 = PC_HPDDM_COARSE_CORRECTION_BALANCED
+    NONE                     = PC_HPDDM_COARSE_CORRECTION_NONE
 
 class PCDeflationSpaceType(object):
     """The deflation space subtype."""

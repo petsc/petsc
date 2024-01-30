@@ -488,7 +488,8 @@ typedef enum {
     Values:
 +   `PC_HPDDM_COARSE_CORRECTION_DEFLATED` (default) - eq. (1) in `PCHPDDMShellApply()`
 .   `PC_HPDDM_COARSE_CORRECTION_ADDITIVE`           - eq. (2)
--   `PC_HPDDM_COARSE_CORRECTION_BALANCED`           - eq. (3)
+.   `PC_HPDDM_COARSE_CORRECTION_BALANCED`           - eq. (3)
+-   `PC_HPDDM_COARSE_CORRECTION_NONE`               - no coarse correction (mostly useful for debugging)
 
     Level: intermediate
 
@@ -497,7 +498,8 @@ E*/
 typedef enum {
   PC_HPDDM_COARSE_CORRECTION_DEFLATED,
   PC_HPDDM_COARSE_CORRECTION_ADDITIVE,
-  PC_HPDDM_COARSE_CORRECTION_BALANCED
+  PC_HPDDM_COARSE_CORRECTION_BALANCED,
+  PC_HPDDM_COARSE_CORRECTION_NONE
 } PCHPDDMCoarseCorrectionType;
 
 /*E
