@@ -1181,7 +1181,7 @@ analyze-pipeline:
   tags:
     - linux-docs
   before_script:
-    - git fetch --unshallow --no-tags origin +release:remotes/origin/release +main:remotes/origin/main
+    - git fetch --unshallow --tags origin +release:remotes/origin/release +main:remotes/origin/main
     - module --trace load python-3.11.2-gcc-9.4.0-6p2ktlj
     - printf "PATH:$PATH\n"
     - printf "PYTHONPATH:$PYTHONPATH\n"
