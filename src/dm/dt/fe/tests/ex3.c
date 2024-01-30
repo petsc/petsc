@@ -185,7 +185,7 @@ static PetscErrorCode CheckL2Projection(DM dm, AppCtx *user)
   PetscCall(SNESSetDM(snes, dm));
   PetscCall(VecSet(u, 0.0));
   PetscCall(PetscObjectSetName((PetscObject)u, "solution"));
-  PetscCall(DMPlexSetSNESLocalFEM(dm, user, user, user));
+  PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, user));
   PetscCall(SNESSetFromOptions(snes));
   PetscCall(DMSNESCheckFromOptions(snes, u));
   PetscCall(SNESSolve(snes, NULL, u));

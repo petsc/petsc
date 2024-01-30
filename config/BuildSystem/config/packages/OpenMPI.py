@@ -4,9 +4,11 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version                = '5.0.0'
+    self.version                = '5.0.1'
     self.download               = ['https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-'+self.version+'.tar.gz',
                                    'https://web.cels.anl.gov/projects/petsc/download/externalpackages/openmpi-'+self.version+'.tar.gz']
+    self.download_git           = ['git://https://github.com/open-mpi/ompi.git']
+    self.gitsubmodules          = ['.']
     self.downloaddirnames       = ['openmpi','ompi']
     self.skippackagewithoptions = 1
     self.isMPI                  = 1
@@ -52,26 +54,6 @@ class Configure(config.package.GNUPackage):
     args.append('--with-libevent=internal')
     return args
 
-  def updateGitDir(self):
-    import os
-    config.package.GNUPackage.updateGitDir(self)
-    if not hasattr(self.sourceControl, 'git') or (self.packageDir != os.path.join(self.externalPackagesDir,'git.'+self.package)):
-      return
-    Dir = self.getDir()
-    try:
-      thirdparty = self.thirdparty
-    except AttributeError:
-      try:
-        self.executeShellCommand([self.sourceControl.git, 'submodule', 'update', '--init', '--recursive'], cwd=Dir, log=self.log)
-        import os
-        if os.path.isfile(os.path.join(Dir,'3rd-party','openpmix','README')):
-          self.thirdparty = os.path.join(Dir,'3rd-party')
-        else:
-          raise RuntimeError
-      except RuntimeError:
-        raise RuntimeError('Could not initialize 3rd-party submodule needed by OpenMPI')
-    return
-
   def preInstall(self):
     if not self.getExecutable('perl'):
       raise RuntimeError('Cannot find perl required by --download-openmpi, install perl (possibly with a package manager) and run ./configure again') 
@@ -80,11 +62,11 @@ class Configure(config.package.GNUPackage):
   def checkDownload(self):
     if config.setCompilers.Configure.isCygwin(self.log):
       if config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log):
-        raise RuntimeError('Cannot download-install OpenMPI on Windows with cygwin compilers. Suggest installing OpenMPI via cygwin installer')
+        raise RuntimeError('Cannot download-install Open MPI on Windows with cygwin compilers. Suggest installing Open MPI via cygwin installer')
       else:
-        raise RuntimeError('Cannot download-install OpenMPI on Windows with Microsoft or Intel Compilers. Suggest using MS-MPI or Intel-MPI (do not use MPICH2')
+        raise RuntimeError('Cannot download-install Open MPI on Windows with Microsoft or Intel Compilers. Suggest using MS-MPI or Intel-MPI (do not use MPICH2')
     if self.argDB['download-'+self.downloadname.lower()] and  'package-prefix-hash' in self.argDB and self.argDB['package-prefix-hash'] == 'reuse':
-      self.logWrite('Reusing package prefix install of '+self.defaultInstallDir+' for OpenMPI')
+      self.logWrite('Reusing package prefix install of '+self.defaultInstallDir+' for Open MPI')
       self.installDir = self.defaultInstallDir
       self.updateCompilers(self.installDir,'mpicc','mpicxx','mpif77','mpif90')
       return self.installDir
@@ -93,7 +75,7 @@ class Configure(config.package.GNUPackage):
     return ''
 
   def Install(self):
-    '''After downloading and installing OpenMPI we need to reset the compilers to use those defined by the OpenMPI install'''
+    '''After downloading and installing Open MPI we need to reset the compilers to use those defined by the Open MPI install'''
     if 'package-prefix-hash' in self.argDB and self.argDB['package-prefix-hash'] == 'reuse':
       return self.defaultInstallDir
     installDir = config.package.GNUPackage.Install(self)

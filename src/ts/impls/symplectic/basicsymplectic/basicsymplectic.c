@@ -152,7 +152,7 @@ PetscErrorCode TSBasicSymplecticFinalizePackage(void)
 
   Level: advanced
 
-  Notes:
+  Note:
   Several symplectic methods are provided, this function is only needed to create new methods.
 
 .seealso: [](ch_ts), `TSBASICSYMPLECTIC`
@@ -379,7 +379,8 @@ static PetscErrorCode TSComputeLinearStability_BasicSymplectic(TS ts, PetscReal 
   Level: intermediate
 
   Note:
-  The symplectic solver always expects a two-way splitting with the split names being "position" and "momentum". Each split is associated with an `IS` object and a sub-`TS`
+  The symplectic solver always expects a two-way splitting with the split names being "position" and "momentum".
+  Each split is associated with an `IS` object and a sub-`TS`
   that is intended to store the user-provided RHS function.
 
 .seealso: [](ch_ts), `TSBASICSYMPLECTIC`, `TSBasicSymplecticType`
@@ -444,41 +445,48 @@ static PetscErrorCode TSBasicSymplecticGetType_BasicSymplectic(TS ts, TSBasicSym
 }
 
 /*MC
-  TSBASICSYMPLECTIC - ODE solver using basic symplectic integration schemes
+  TSBASICSYMPLECTIC - ODE solver using basic symplectic integration schemes <https://en.wikipedia.org/wiki/Symplectic_integrator>
 
   These methods are intended for separable Hamiltonian systems
-.vb
-  qdot = dH(q,p,t)/dp
+
+  $$
+  \begin{align*}
+  qdot = dH(q,p,t)/dp   \\
   pdot = -dH(q,p,t)/dq
-.ve
+  \end{align*}
+  $$
 
   where the Hamiltonian can be split into the sum of kinetic energy and potential energy
-.vb
+
+  $$
   H(q,p,t) = T(p,t) + V(q,t).
-.ve
+  $$
 
   As a result, the system can be generally represented by
-.vb
-  qdot = f(p,t) = dT(p,t)/dp
+
+  $$
+  \begin{align*}
+  qdot = f(p,t) = dT(p,t)/dp \\
   pdot = g(q,t) = -dV(q,t)/dq
-.ve
+  \end{align*}
+  $$
 
   and solved iteratively with
-.vb
-  q_new = q_old + d_i*h*f(p_old,t_old)
-  t_new = t_old + d_i*h
-  p_new = p_old + c_i*h*g(p_new,t_new)
-  i=0,1,...,n.
-.ve
+
+  $$
+  \begin{align*}
+  q_new = q_old + d_i*h*f(p_old,t_old) \\
+  t_new = t_old + d_i*h \\
+  p_new = p_old + c_i*h*g(p_new,t_new) \\
+  i     = 0,1,...,n.
+  \end{align*}
+  $$
 
   The solution vector should contain both q and p, which correspond to (generalized) position and momentum respectively. Note that the momentum component
   could simply be velocity in some representations. The symplectic solver always expects a two-way splitting with the split names being "position" and "momentum".
   Each split is associated with an `IS` object and a sub-`TS` that is intended to store the user-provided RHS function.
 
   Level: beginner
-
-  Reference:
-. * -  wikipedia (https://en.wikipedia.org/wiki/Symplectic_integrator)
 
 .seealso: [](ch_ts), `TSCreate()`, `TSSetType()`, `TSRHSSplitSetIS()`, `TSRHSSplitSetRHSFunction()`, `TSType`
 M*/

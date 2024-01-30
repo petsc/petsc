@@ -13,10 +13,10 @@
 
   Level: intermediate
 
-  Developer Notes:
+  Developer Note:
   Since the dimension may not yet have been set the code cannot error check for non-positive Y and Z number of grid points
 
-.seealso: `DM`, `DMDA`, `PetscSplitOwnership()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `PetscSplitOwnership()`
 @*/
 PetscErrorCode DMDASetSizes(DM da, PetscInt M, PetscInt N, PetscInt P)
 {
@@ -45,13 +45,13 @@ PetscErrorCode DMDASetSizes(DM da, PetscInt M, PetscInt N, PetscInt P)
 
   Input Parameters:
 + da - the `DMDA`
-. m  - the number of X procs (or `PETSC_DECIDE`)
-. n  - the number of Y procs (or `PETSC_DECIDE`)
-- p  - the number of Z procs (or `PETSC_DECIDE`)
+. m  - the number of X processes (or `PETSC_DECIDE`)
+. n  - the number of Y processes (or `PETSC_DECIDE`)
+- p  - the number of Z processes (or `PETSC_DECIDE`)
 
   Level: intermediate
 
-.seealso: `DM`, `DMDA`, `DMDASetSizes()`, `PetscSplitOwnership()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDASetSizes()`, `PetscSplitOwnership()`
 @*/
 PetscErrorCode DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
 {
@@ -94,7 +94,7 @@ PetscErrorCode DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
 
   Level: intermediate
 
-.seealso: `DM`, `DMDA`, `DMDACreate()`, `DMDestroy()`, `DMBoundaryType`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDACreate()`, `DMDestroy()`, `DMBoundaryType`, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`
 @*/
 PetscErrorCode DMDASetBoundaryType(DM da, DMBoundaryType bx, DMBoundaryType by, DMBoundaryType bz)
 {
@@ -119,11 +119,11 @@ PetscErrorCode DMDASetBoundaryType(DM da, DMBoundaryType bx, DMBoundaryType by, 
 
   Input Parameters:
 + da  - The `DMDA`
-- dof - Number of degrees of freedom
+- dof - Number of degrees of freedom per vertex
 
   Level: intermediate
 
-.seealso: `DM`, `DMDA`, `DMDAGetDof()`, `DMDACreate()`, `DMDestroy()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetDof()`, `DMDACreate()`, `DMDestroy()`
 @*/
 PetscErrorCode DMDASetDof(DM da, PetscInt dof)
 {
@@ -147,11 +147,11 @@ PetscErrorCode DMDASetDof(DM da, PetscInt dof)
 . da - The `DMDA`
 
   Output Parameter:
-. dof - Number of degrees of freedom
+. dof - Number of degrees of freedom per vertex
 
   Level: intermediate
 
-.seealso: `DM`, `DMDA`, `DMDASetDof()`, `DMDACreate()`, `DMDestroy()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDASetDof()`, `DMDACreate()`, `DMDestroy()`
 @*/
 PetscErrorCode DMDAGetDof(DM da, PetscInt *dof)
 {
@@ -179,7 +179,7 @@ PetscErrorCode DMDAGetDof(DM da, PetscInt *dof)
 
   Level: intermediate
 
-.seealso: `DM`, `DMDA`, `DMCreateDomainDecomposition()`, `DMDASetOverlap()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMCreateDomainDecomposition()`, `DMDASetOverlap()`
 @*/
 PetscErrorCode DMDAGetOverlap(DM da, PetscInt *x, PetscInt *y, PetscInt *z)
 {
@@ -206,7 +206,7 @@ PetscErrorCode DMDAGetOverlap(DM da, PetscInt *x, PetscInt *y, PetscInt *z)
 
   Level: intermediate
 
-.seealso: `DM`, `DMDA`, `DMCreateDomainDecomposition()`, `DMDAGetOverlap()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMCreateDomainDecomposition()`, `DMDAGetOverlap()`
 @*/
 PetscErrorCode DMDASetOverlap(DM da, PetscInt x, PetscInt y, PetscInt z)
 {
@@ -224,7 +224,7 @@ PetscErrorCode DMDASetOverlap(DM da, PetscInt x, PetscInt y, PetscInt z)
 }
 
 /*@
-  DMDAGetNumLocalSubDomains - Gets the number of local subdomains created upon decomposition.
+  DMDAGetNumLocalSubDomains - Gets the number of local subdomains that would be created upon decomposition.
 
   Not Collective
 
@@ -236,7 +236,7 @@ PetscErrorCode DMDASetOverlap(DM da, PetscInt x, PetscInt y, PetscInt z)
 
   Level: intermediate
 
-.seealso: `DM`, `DMDA`, `DMCreateDomainDecomposition()`, `DMDASetNumLocalSubDomains()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMCreateDomainDecomposition()`, `DMDASetNumLocalSubDomains()`
 @*/
 PetscErrorCode DMDAGetNumLocalSubDomains(DM da, PetscInt *Nsub)
 {
@@ -249,7 +249,7 @@ PetscErrorCode DMDAGetNumLocalSubDomains(DM da, PetscInt *Nsub)
 }
 
 /*@
-  DMDASetNumLocalSubDomains - Sets the number of local subdomains created upon decomposition.
+  DMDASetNumLocalSubDomains - Sets the number of local subdomains to create when decomposing with `DMCreateDomainDecomposition()`
 
   Not Collective
 
@@ -259,7 +259,7 @@ PetscErrorCode DMDAGetNumLocalSubDomains(DM da, PetscInt *Nsub)
 
   Level: intermediate
 
-.seealso: `DM`, `DMDA`, `DMCreateDomainDecomposition()`, `DMDAGetNumLocalSubDomains()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMCreateDomainDecomposition()`, `DMDAGetNumLocalSubDomains()`
 @*/
 PetscErrorCode DMDASetNumLocalSubDomains(DM da, PetscInt Nsub)
 {
@@ -273,7 +273,7 @@ PetscErrorCode DMDASetNumLocalSubDomains(DM da, PetscInt Nsub)
 }
 
 /*@
-  DMDASetOffset - Sets the index offset of the DA.
+  DMDASetOffset - Sets the index offset of the `DMDA`.
 
   Collective
 
@@ -286,13 +286,13 @@ PetscErrorCode DMDASetNumLocalSubDomains(DM da, PetscInt Nsub)
 . No - The problem offset in the y direction
 - Po - The problem offset in the z direction
 
-  Level: intermediate
+  Level: developer
 
   Note:
   This is used primarily to overlap a computation on a local `DMDA` with that on a global `DMDA` without
   changing boundary conditions or subdomain features that depend upon the global offsets.
 
-.seealso: `DM`, `DMDA`, `DMDAGetOffset()`, `DMDAVecGetArray()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetOffset()`, `DMDAVecGetArray()`
 @*/
 PetscErrorCode DMDASetOffset(DM da, PetscInt xo, PetscInt yo, PetscInt zo, PetscInt Mo, PetscInt No, PetscInt Po)
 {
@@ -333,9 +333,9 @@ PetscErrorCode DMDASetOffset(DM da, PetscInt xo, PetscInt yo, PetscInt zo, Petsc
 . No - The global size in the y direction
 - Po - The global size in the z direction
 
-  Level: intermediate
+  Level: developer
 
-.seealso: `DM`, `DMDA`, `DMDASetOffset()`, `DMDAVecGetArray()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDASetOffset()`, `DMDAVecGetArray()`
 @*/
 PetscErrorCode DMDAGetOffset(DM da, PetscInt *xo, PetscInt *yo, PetscInt *zo, PetscInt *Mo, PetscInt *No, PetscInt *Po)
 {
@@ -353,7 +353,7 @@ PetscErrorCode DMDAGetOffset(DM da, PetscInt *xo, PetscInt *yo, PetscInt *zo, Pe
 }
 
 /*@
-  DMDAGetNonOverlappingRegion - Gets the indices of the nonoverlapping region of a subdomain `DM`.
+  DMDAGetNonOverlappingRegion - Gets the indices of the nonoverlapping region of a subdomain `DMDA`.
 
   Not Collective
 
@@ -370,7 +370,7 @@ PetscErrorCode DMDAGetOffset(DM da, PetscInt *xo, PetscInt *yo, PetscInt *zo, Pe
 
   Level: intermediate
 
-.seealso: `DM`, `DMDA`, `DMDAGetOffset()`, `DMDAVecGetArray()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetOffset()`, `DMDAVecGetArray()`
 @*/
 PetscErrorCode DMDAGetNonOverlappingRegion(DM da, PetscInt *xs, PetscInt *ys, PetscInt *zs, PetscInt *xm, PetscInt *ym, PetscInt *zm)
 {
@@ -388,7 +388,7 @@ PetscErrorCode DMDAGetNonOverlappingRegion(DM da, PetscInt *xs, PetscInt *ys, Pe
 }
 
 /*@
-  DMDASetNonOverlappingRegion - Sets the indices of the nonoverlapping region of a subdomain `DM`.
+  DMDASetNonOverlappingRegion - Sets the indices of the nonoverlapping region of a subdomain `DMDA`.
 
   Collective
 
@@ -403,7 +403,7 @@ PetscErrorCode DMDAGetNonOverlappingRegion(DM da, PetscInt *xs, PetscInt *ys, Pe
 
   Level: intermediate
 
-.seealso: `DM`, `DMDA`, `DMDAGetOffset()`, `DMDAVecGetArray()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetOffset()`, `DMDAVecGetArray()`
 @*/
 PetscErrorCode DMDASetNonOverlappingRegion(DM da, PetscInt xs, PetscInt ys, PetscInt zs, PetscInt xm, PetscInt ym, PetscInt zm)
 {
@@ -438,7 +438,7 @@ PetscErrorCode DMDASetNonOverlappingRegion(DM da, PetscInt xs, PetscInt ys, Pets
 
   Level: intermediate
 
-.seealso: `DM`, `DMDA`, `DMDACreate()`, `DMDestroy()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDACreate()`, `DMDestroy()`, `DMDAStencilType`, `DMDA_STENCIL_BOX`, `DMDA_STENCIL_STAR.`
 @*/
 PetscErrorCode DMDASetStencilType(DM da, DMDAStencilType stype)
 {
@@ -465,7 +465,7 @@ PetscErrorCode DMDASetStencilType(DM da, DMDAStencilType stype)
 
   Level: intermediate
 
-.seealso: `DM`, `DMDA`, `DMDACreate()`, `DMDestroy()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDACreate()`, `DMDestroy()`, `DMDAStencilType`, `DMDA_STENCIL_BOX`, `DMDA_STENCIL_STAR.`
 @*/
 PetscErrorCode DMDAGetStencilType(DM da, DMDAStencilType *stype)
 {
@@ -489,7 +489,7 @@ PetscErrorCode DMDAGetStencilType(DM da, DMDAStencilType *stype)
 
   Level: intermediate
 
-.seealso: `DM`, `DMDA`, `DMDACreate()`, `DMDestroy()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDACreate()`, `DMDestroy()`, `DMDAStencilType`, `DMDA_STENCIL_BOX`, `DMDA_STENCIL_STAR.`
 @*/
 PetscErrorCode DMDASetStencilWidth(DM da, PetscInt width)
 {
@@ -516,7 +516,7 @@ PetscErrorCode DMDASetStencilWidth(DM da, PetscInt width)
 
   Level: intermediate
 
-.seealso: `DM`, `DMDA`, `DMDACreate()`, `DMDestroy()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDACreate()`, `DMDestroy()`, `DMDAStencilType`, `DMDA_STENCIL_BOX`, `DMDA_STENCIL_STAR.`
 @*/
 PetscErrorCode DMDAGetStencilWidth(DM da, PetscInt *width)
 {
@@ -547,16 +547,16 @@ static PetscErrorCode DMDACheckOwnershipRanges_Private(DM da, PetscInt M, PetscI
 
   Input Parameters:
 + da - The `DMDA`
-. lx - array containing number of nodes in the X direction on each process, or NULL. If non-null, must be of length da->m
-. ly - array containing number of nodes in the Y direction on each process, or NULL. If non-null, must be of length da->n
-- lz - array containing number of nodes in the Z direction on each process, or NULL. If non-null, must be of length da->p.
+. lx - array containing number of nodes in the X direction on each process, or `NULL`. If non-null, must be of length da->m
+. ly - array containing number of nodes in the Y direction on each process, or `NULL`. If non-null, must be of length da->n
+- lz - array containing number of nodes in the Z direction on each process, or `NULL`. If non-null, must be of length da->p.
 
   Level: intermediate
 
   Note:
   These numbers are NOT multiplied by the number of dof per node.
 
-.seealso: `DM`, `DMDA`, `DMDACreate()`, `DMDestroy()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDACreate()`, `DMDestroy()`
 @*/
 PetscErrorCode DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[])
 {
@@ -566,19 +566,19 @@ PetscErrorCode DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscInt
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   PetscCheck(!da->setupcalled, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "This function must be called before DMSetUp()");
   if (lx) {
-    PetscCheck(dd->m >= 0, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "Cannot set ownership ranges before setting number of procs");
+    PetscCheck(dd->m >= 0, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "Cannot set ownership ranges before setting number of processes");
     PetscCall(DMDACheckOwnershipRanges_Private(da, dd->M, dd->m, lx));
     if (!dd->lx) PetscCall(PetscMalloc1(dd->m, &dd->lx));
     PetscCall(PetscArraycpy(dd->lx, lx, dd->m));
   }
   if (ly) {
-    PetscCheck(dd->n >= 0, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "Cannot set ownership ranges before setting number of procs");
+    PetscCheck(dd->n >= 0, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "Cannot set ownership ranges before setting number of processes");
     PetscCall(DMDACheckOwnershipRanges_Private(da, dd->N, dd->n, ly));
     if (!dd->ly) PetscCall(PetscMalloc1(dd->n, &dd->ly));
     PetscCall(PetscArraycpy(dd->ly, ly, dd->n));
   }
   if (lz) {
-    PetscCheck(dd->p >= 0, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "Cannot set ownership ranges before setting number of procs");
+    PetscCheck(dd->p >= 0, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "Cannot set ownership ranges before setting number of processes");
     PetscCall(DMDACheckOwnershipRanges_Private(da, dd->P, dd->p, lz));
     if (!dd->lz) PetscCall(PetscMalloc1(dd->p, &dd->lz));
     PetscCall(PetscArraycpy(dd->lz, lz, dd->p));
@@ -601,7 +601,8 @@ PetscErrorCode DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscInt
   Note:
   You should call this on the coarser of the two `DMDA` you pass to `DMCreateInterpolation()`
 
-.seealso: `DM`, `DMDA`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDestroy()`, `DMDAInterpolationType`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDestroy()`, `DMDAInterpolationType`,
+          `DMDA_Q1`, `DMDA_Q0`
 @*/
 PetscErrorCode DMDASetInterpolationType(DM da, DMDAInterpolationType ctype)
 {
@@ -628,7 +629,8 @@ PetscErrorCode DMDASetInterpolationType(DM da, DMDAInterpolationType ctype)
 
   Level: intermediate
 
-.seealso: `DM`, `DMDA`, `DMDAInterpolationType`, `DMDASetInterpolationType()`, `DMCreateInterpolation()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAInterpolationType`, `DMDASetInterpolationType()`, `DMCreateInterpolation()`,
+          `DMDA_Q1`, `DMDA_Q0`
 @*/
 PetscErrorCode DMDAGetInterpolationType(DM da, DMDAInterpolationType *ctype)
 {
@@ -651,8 +653,7 @@ PetscErrorCode DMDAGetInterpolationType(DM da, DMDAInterpolationType *ctype)
 . da - the `DMDA` object
 
   Output Parameter:
-. ranks - the neighbors ranks, stored with the x index increasing most rapidly.
-              this process itself is in the list
+. ranks - the neighbors ranks, stored with the x index increasing most rapidly. The process itself is in the list
 
   Level: intermediate
 
@@ -663,10 +664,10 @@ PetscErrorCode DMDAGetInterpolationType(DM da, DMDAInterpolationType *ctype)
 
   Do not free the array, it is freed when the `DMDA` is destroyed.
 
-  Fortran Notes:
-  In Fortran you must pass in an array of the appropriate length.
+  Fortran Note:
+  Pass in an array of the appropriate length to contain the values
 
-.seealso: `DMDA`, `DM`
+.seealso: [](sec_struct), `DMDA`, `DM`
 @*/
 PetscErrorCode DMDAGetNeighbors(DM da, const PetscMPIInt *ranks[])
 {
@@ -701,11 +702,11 @@ PetscErrorCode DMDAGetNeighbors(DM da, const PetscMPIInt *ranks[])
 
   These numbers are NOT multiplied by the number of dof per node.
 
-  Fortran Notes:
-  In Fortran one must pass in arrays `lx`, `ly`, and `lz` that are long enough to hold the values; the sixth, seventh and
+  Fortran Note:
+  Pass in arrays `lx`, `ly`, and `lz` of the appropriate length to hold the values; the sixth, seventh and
   eighth arguments from `DMDAGetInfo()`
 
-.seealso: `DM`, `DMDA`, `DMDAGetCorners()`, `DMDAGetGhostCorners()`, `DMDACreate()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `VecGetOwnershipRanges()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetCorners()`, `DMDAGetGhostCorners()`, `DMDACreate()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `VecGetOwnershipRanges()`
 @*/
 PetscErrorCode DMDAGetOwnershipRanges(DM da, const PetscInt *lx[], const PetscInt *ly[], const PetscInt *lz[])
 {
@@ -734,14 +735,14 @@ PetscErrorCode DMDAGetOwnershipRanges(DM da, const PetscInt *lx[], const PetscIn
 + -da_refine_x refine_x - refinement ratio in x direction
 . -da_refine_y rafine_y - refinement ratio in y direction
 . -da_refine_z refine_z - refinement ratio in z direction
-- -da_refine <n>        - refine the DMDA object n times when it is created.
+- -da_refine <n>        - refine the `DMDA` object n times when it is created.
 
   Level: intermediate
 
   Note:
   Pass `PETSC_IGNORE` to leave a value unchanged
 
-.seealso: `DM`, `DMDA`, `DMRefine()`, `DMDAGetRefinementFactor()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMRefine()`, `DMDAGetRefinementFactor()`
 @*/
 PetscErrorCode DMDASetRefinementFactor(DM da, PetscInt refine_x, PetscInt refine_y, PetscInt refine_z)
 {
@@ -777,7 +778,7 @@ PetscErrorCode DMDASetRefinementFactor(DM da, PetscInt refine_x, PetscInt refine
   Note:
   Pass `NULL` for values you do not need
 
-.seealso: `DM`, `DMDA`, `DMRefine()`, `DMDASetRefinementFactor()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMRefine()`, `DMDASetRefinementFactor()`
 @*/
 PetscErrorCode DMDAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *refine_y, PetscInt *refine_z)
 {
@@ -798,17 +799,27 @@ PetscErrorCode DMDAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *refi
 
   Input Parameters:
 + da - the `DMDA` object
-- f  - the function that allocates the matrix for that specific DMDA
+- f  - the function that allocates the matrix for that specific `DMDA`
+
+  Calling sequence of `f`:
++ da - the `DMDA` object
+- A  - the created matrix
 
   Level: developer
 
-  Note:
-  See `DMDASetBlockFills()` that provides a simple way to provide the nonzero structure for
-  the diagonal and off-diagonal blocks of the matrix
+  Notes:
+  If the function is not provided a default function is used that uses the `DMDAStencilType`, `DMBoundaryType`, and value of `DMDASetStencilWidth()`
+  to construct the matrix.
 
-.seealso: `DM`, `DMDA`, `DMCreateMatrix()`, `DMDASetBlockFills()`
+  See `DMDASetBlockFills()` that provides a simple way to provide the nonzero structure for
+  the diagonal and off-diagonal blocks of the matrix without providing a custom function
+
+  Developer Note:
+  This should be called `DMDASetCreateMatrix()`
+
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMCreateMatrix()`, `DMDASetBlockFills()`
 @*/
-PetscErrorCode DMDASetGetMatrix(DM da, PetscErrorCode (*f)(DM, Mat *))
+PetscErrorCode DMDASetGetMatrix(DM da, PetscErrorCode (*f)(DM da, Mat *A))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
@@ -823,7 +834,7 @@ PetscErrorCode DMDASetGetMatrix(DM da, PetscErrorCode (*f)(DM, Mat *))
 
   Input Parameters:
 + da   - the `DMDA` object
-. m    - number of MatStencils
+. m    - number of `MatStencil` to map
 - idxm - grid points (and component number when dof > 1)
 
   Output Parameter:
@@ -831,7 +842,7 @@ PetscErrorCode DMDASetGetMatrix(DM da, PetscErrorCode (*f)(DM, Mat *))
 
   Level: intermediate
 
-.seealso: `DM`, `DMDA`, `MatStencil`
+.seealso: [](sec_struct), `DM`, `DMDA`, `MatStencil`
 @*/
 PetscErrorCode DMDAMapMatStencilToGlobal(DM da, PetscInt m, const MatStencil idxm[], PetscInt gidxm[])
 {
@@ -1352,10 +1363,10 @@ static PetscErrorCode DMDASetGLLCoordinates_1d(DM dm, PetscInt n, PetscReal *nod
 
   Note:
   The parallel decomposition of grid points must correspond to the degree of the GLL. That is, the number of grid points
-  on each process much be divisible by the number of GLL elements needed per process. This depends on whether the `DM` is
+  on each process much be divisible by the number of GLL elements needed per process. This depends on whether the `DMDA` is
   periodic or not.
 
-.seealso: `DM`, `DMDA`, `DMDACreate()`, `PetscDTGaussLobattoLegendreQuadrature()`, `DMGetCoordinates()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDACreate()`, `PetscDTGaussLobattoLegendreQuadrature()`, `DMGetCoordinates()`
 @*/
 PetscErrorCode DMDASetGLLCoordinates(DM da, PetscInt n, PetscReal *nodes)
 {

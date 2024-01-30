@@ -361,28 +361,24 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
 }
 
 /*MC
-  SNESNCG - Nonlinear Conjugate-Gradient method for the solution of nonlinear systems.
+  SNESNCG - Nonlinear Conjugate-Gradient method for the solution of nonlinear systems {cite}`bruneknepleysmithtu15`.
 
   Level: beginner
 
   Options Database Keys:
 +   -snes_ncg_type <fr, prp, dy, hs, cd> - Choice of conjugate-gradient update parameter, default is prp.
-.   -snes_linesearch_type <cp,l2,basic> - Line search type.
--   -snes_ncg_monitor - Print the beta values used in the ncg iteration, .
+.   -snes_linesearch_type <cp,l2,basic>  - Line search type.
+-   -snes_ncg_monitor                    - Print the beta values nonlinear Conjugate-Gradient used in the  iteration, .
 
    Notes:
-   This solves the nonlinear system of equations F(x) = 0 using the nonlinear generalization of the conjugate
+   This solves the nonlinear system of equations $ F(x) = 0 $ using the nonlinear generalization of the conjugate
    gradient method.  This may be used with a nonlinear preconditioner used to pick the new search directions, but otherwise
-   chooses the initial search direction as F(x) for the initial guess x.
+   chooses the initial search direction as $ F(x) $ for the initial guess $x$.
 
    Only supports left non-linear preconditioning.
 
    Default line search is `SNESLINESEARCHCP`, unless a nonlinear preconditioner is used with -npc_snes_type <type>, `SNESSetNPC()`, or `SNESGetNPC()` then
    `SNESLINESEARCHL2` is used. Also supports the special purpose line search `SNESLINESEARCHNCGLINEAR`
-
-   References:
-.  * -  Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu,"Composing Scalable Nonlinear Algebraic Solvers",
-   SIAM Review, 57(4), 2015
 
 .seealso: [](ch_snes), `SNES`, `SNESNCG`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`, `SNESNGMRES`, `SNESQN`, `SNESLINESEARCHNCGLINEAR`, `SNESNCGSetType()`, `SNESLineSearchSetType()`
 M*/

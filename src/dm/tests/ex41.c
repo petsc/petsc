@@ -5,7 +5,7 @@ static char help[] = "Tests mirror boundary conditions in 3-d.\n\n";
 
 int main(int argc, char **argv)
 {
-  PetscInt        M = 2, N = 3, P = 4, stencil_width = 1, dof = 1, m, n, p, xstart, ystart, zstart, i, j, k, c;
+  PetscInt        M = 4, N = 5, P = 6, stencil_width = 1, dof = 1, m, n, p, xstart, ystart, zstart, i, j, k, c;
   DM              da;
   Vec             global, local;
   PetscScalar ****vglobal;

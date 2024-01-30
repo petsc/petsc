@@ -206,20 +206,17 @@ int main(int argc, char **args)
    test:
       nsize: 2
       args: -mb 5 -nb 5 -M 12 -N 10
-      requires: scalapack
 
    test:
       suffix: 2
       nsize: 6
       args: -mb 8 -nb 6 -M 20 -N 50
-      requires: scalapack
       output_file: output/ex242_1.out
 
    test:
       suffix: 3
       nsize: 3
       args: -mb 2 -nb 2 -M 20 -N 20 -test_matmatmult
-      requires: scalapack
       output_file: output/ex242_1.out
 
 TEST*/

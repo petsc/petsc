@@ -13,7 +13,7 @@ static char help[] = "Solves the van der Pol equation. \n Input parameters inclu
  * on the domain 0<=x<=0.5, with the initial conditions
  * y(0) = 2,
  * z(0) = -2/3 + 10/81*eps - 292/2187*eps^2-1814/19683*eps^3
- * IMEX schemes are applied to the splitted equation
+ * IMEX schemes are applied to the split equation
  * [y'] = [z]  + [0                 ]
  * [z']   [0]    [(((1-y^2)*z-y)/eps]
  *
@@ -225,17 +225,17 @@ static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a
 /*TEST
 
    test:
-     args: -ts_type eimex -ts_adapt_type none  -pc_type lu -ts_dt 0.01 -ts_max_time 10 -ts_eimex_row_col 3,3 -ts_monitor_lg_solution
+     args: -ts_type eimex -ts_adapt_type none -pc_type lu -ts_dt 0.01 -ts_max_time 10 -ts_eimex_row_col 3,3 -ts_monitor_lg_solution
      requires: x
 
    test:
      suffix: adapt
-     args: -ts_type eimex -ts_adapt_type none  -pc_type lu -ts_dt 0.01 -ts_max_time 10 -ts_eimex_order_adapt -ts_eimex_max_rows 7 -ts_monitor_lg_solution
+     args: -ts_type eimex -ts_adapt_type none -pc_type lu -ts_dt 0.01 -ts_max_time 10 -ts_eimex_order_adapt -ts_eimex_max_rows 7 -ts_monitor_lg_solution
      requires: x
 
    test:
      suffix: loop
-     args: -ts_type eimex  -ts_adapt_type none  -pc_type lu -ts_dt {{0.005 0.001 0.0005}separate output} -ts_max_steps {{100 500 1000}separate output} -ts_eimex_row_col {{1,1 2,1 3,1 2,2 3,2 3,3}separate output}
+     args: -ts_type eimex -ts_adapt_type none -pc_type lu -ts_dt {{0.005 0.001 0.0005}separate output} -ts_max_steps {{100 500 1000}separate output} -ts_eimex_row_col {{1,1 2,1 3,1 2,2 3,2 3,3}separate output}
      requires: x
 
  TEST*/

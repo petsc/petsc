@@ -468,7 +468,7 @@ static PetscErrorCode MatSuperluSetILUDropTol_SuperLU(Mat F, PetscReal dtol)
 }
 
 /*@
-  MatSuperluSetILUDropTol - Set SuperLU ILU drop tolerance
+  MatSuperluSetILUDropTol - Set SuperLU <https://portal.nersc.gov/project/sparse/superlu/superlu_ug.pdf> ILU drop tolerance
 
   Logically Collective
 
@@ -480,9 +480,6 @@ static PetscErrorCode MatSuperluSetILUDropTol_SuperLU(Mat F, PetscReal dtol)
 . -mat_superlu_ilu_droptol <dtol> - the drop tolerance
 
   Level: beginner
-
-  References:
-.  * - SuperLU Users' Guide
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MATSOLVERSUPERLU`
 @*/
@@ -504,7 +501,7 @@ static PetscErrorCode MatFactorGetSolverType_seqaij_superlu(Mat A, MatSolverType
 
 /*MC
   MATSOLVERSUPERLU = "superlu" - A solver package providing solvers LU and ILU for sequential matrices
-  via the external package SuperLU.
+  via the external package SuperLU <https://portal.nersc.gov/project/sparse/superlu/superlu_ug.pdf>
 
   Use `./configure --download-superlu` to have PETSc installed with SuperLU
 
@@ -532,9 +529,9 @@ static PetscErrorCode MatFactorGetSolverType_seqaij_superlu(Mat A, MatSolverType
    Level: beginner
 
    Notes:
-    Do not confuse this with `MATSOLVERSUPERLU_DIST` which is for parallel sparse solves
+   Do not confuse this with `MATSOLVERSUPERLU_DIST` which is for parallel sparse solves
 
-    Cannot use ordering provided by PETSc, provides its own.
+   Cannot use ordering provided by PETSc, provides its own.
 
 .seealso: [](ch_matrices), `Mat`, `PCLU`, `PCILU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/

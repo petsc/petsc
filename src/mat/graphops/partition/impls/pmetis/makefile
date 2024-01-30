@@ -2,7 +2,6 @@
 #requirespackage 'PETSC_HAVE_PARMETIS'
 
 CPPFLAGS  = ${PARMETIS_INCLUDE}
-LIBBASE   = libpetscmat
 MANSEC    = Mat
 SUBMANSEC = MatGraphOperations
 

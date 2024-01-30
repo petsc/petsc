@@ -19,7 +19,7 @@
 
   Level: beginner
 
-.seealso: `DMPlexGetCellRefiner()`, `DMPlexSetCellRefiner()`, `DMRefine()`, `DMPolytopeType`
+.seealso: [](ch_dmbase), `DMPLEX`, `DMPlexGetCellRefiner()`, `DMPlexSetCellRefiner()`, `DMRefine()`, `DMPolytopeType`, `DMPlexCoordMap`
 E*/
 typedef enum {
   DM_SHAPE_BOX,
@@ -38,6 +38,30 @@ typedef enum {
 PETSC_EXTERN const char *const DMPlexShapes[];
 
 /*E
+  DMPlexCoordMap - The coordinate mapping used for automatic mesh creation.
+
+  Values:
++ `DM_COORD_MAP_NONE`    - The identity map
+. `DM_COORD_MAP_SHEAR`   - The shear (additive) map along some dimension
+. `DM_COORD_MAP_FLARE`   - The flare (multiplicative) map along some dimension
+. `DM_COORD_MAP_ANNULUS` - The map from a rectangle to an annulus
+. `DM_COORD_MAP_SHELL`   - The map from a rectangular solid to an spherical shell
+
+  Level: beginner
+
+.seealso: [](ch_dmbase), `DMPLEX`, `DMPlexGetCellRefiner()`, `DMPlexSetCellRefiner()`, `DMRefine()`, `DMPolytopeType`, `DMPlexShape`
+E*/
+typedef enum {
+  DM_COORD_MAP_NONE,
+  DM_COORD_MAP_SHEAR,
+  DM_COORD_MAP_FLARE,
+  DM_COORD_MAP_ANNULUS,
+  DM_COORD_MAP_SHELL,
+  DM_COORD_MAP_UNKNOWN
+} DMPlexCoordMap;
+PETSC_EXTERN const char *const DMPlexCoordMaps[];
+
+/*E
   DMPlexCSRAlgorithm - The algorithm for building the adjacency graph in CSR format, usually for a mesh partitioner
 
   Values:
@@ -47,7 +71,7 @@ PETSC_EXTERN const char *const DMPlexShapes[];
 
   Level: beginner
 
-.seealso: `DMPlexCreatePartitionerGraph()`, `PetscPartitionerDMPlexPartition()`, `DMPlexDistribute()`
+.seealso: [](ch_dmbase), `DMPLEX`, `DMPlexCreatePartitionerGraph()`, `PetscPartitionerDMPlexPartition()`, `DMPlexDistribute()`
 E*/
 typedef enum {
   DM_PLEX_CSR_MAT,

@@ -41,7 +41,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newtype, Ma
       aj++;
     }
     PetscCall(MatSetValues(B, bs, rows, bs * ncols, cols, aa, INSERT_VALUES));
-    aa += ncols * bs * bs;
+    aa = PetscSafePointerPlusOffset(aa, ncols * bs * bs);
   }
   PetscCall(PetscFree(cols));
   PetscCall(PetscFree(rows));

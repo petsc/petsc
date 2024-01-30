@@ -8,7 +8,7 @@
 
 /*S
      PetscViewer - Abstract PETSc object for displaying (in ASCII, binary, graphically etc)
-          PETSc objects and their data
+                   PETSc objects and their data
 
    Level: beginner
 

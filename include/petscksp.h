@@ -11,21 +11,21 @@ PETSC_EXTERN PetscErrorCode KSPInitializePackage(void);
 PETSC_EXTERN PetscErrorCode KSPFinalizePackage(void);
 
 /*S
-     KSP - Abstract PETSc object that manages all Krylov methods. This is the object that manages the
+   KSP - Abstract PETSc object that manages all Krylov methods. This is the object that manages the
          linear solves in PETSc (even those such as direct factorization-based solvers that do no use Krylov accelerators).
 
    Level: beginner
 
    Note:
-    When a direct solver is used, but no Krylov solver is used, the `KSP` object is still used but with a
-    `KSPType` of `KSPPREONLY` (or equivalently `KSPNONE`), meaning that only application of the preconditioner is used as the linear solver.
+   When a direct solver is used, but no Krylov solver is used, the `KSP` object is still used but with a
+   `KSPType` of `KSPPREONLY` (or equivalently `KSPNONE`), meaning that only application of the preconditioner is used as the linear solver.
 
 .seealso: [](doc_linsolve), [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `SNES`, `TS`, `PC`, `KSP`, `KSPDestroy()`, `KSPCG`, `KSPGMRES`
 S*/
 typedef struct _p_KSP *KSP;
 
 /*J
-    KSPType - String with the name of a PETSc Krylov method.
+   KSPType - String with the name of a PETSc Krylov method.
 
    Level: beginner
 
@@ -234,7 +234,7 @@ PETSC_EXTERN PetscErrorCode KSPComputeRitz(KSP, PetscBool, PetscBool, PetscInt *
 
   Values:
 + `KSP_FCD_TRUNC_TYPE_STANDARD` - uses all (up to mmax) stored directions
-- `KSP_FCD_TRUNC_TYPE_NOTAY` - uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1..
+- `KSP_FCD_TRUNC_TYPE_NOTAY`    - uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1..
 
    Level: intermediate
 
@@ -320,13 +320,13 @@ PETSC_DEPRECATED_FUNCTION(3, 14, 0, "KSPMatSolve()", ) static inline PetscErrorC
 
     Values:
 +   `KSP_HPDDM_TYPE_GMRES` (default) - Generalized Minimal Residual method
-.   `KSP_HPDDM_TYPE_BGMRES` - block GMRES
-.   `KSP_HPDDM_TYPE_CG` - Conjugate Gradient
-.   `KSP_HPDDM_TYPE_BCG` - block CG
-.   `KSP_HPDDM_TYPE_GCRODR` - Generalized Conjugate Residual method with inner Orthogonalization and Deflated Restarting
-.   `KSP_HPDDM_TYPE_BGCRODR` - block GCRODR
-.   `KSP_HPDDM_TYPE_BFBCG` - breakdown-free BCG
--   `KSP_HPDDM_TYPE_PREONLY` - apply the preconditioner only
+.   `KSP_HPDDM_TYPE_BGMRES`          - block GMRES
+.   `KSP_HPDDM_TYPE_CG`              - Conjugate Gradient
+.   `KSP_HPDDM_TYPE_BCG`             - block CG
+.   `KSP_HPDDM_TYPE_GCRODR`          - Generalized Conjugate Residual method with inner Orthogonalization and Deflated Restarting
+.   `KSP_HPDDM_TYPE_BGCRODR`         - block GCRODR
+.   `KSP_HPDDM_TYPE_BFBCG`           - breakdown-free BCG
+-   `KSP_HPDDM_TYPE_PREONLY`         - apply the preconditioner only
 
     Level: intermediate
 
@@ -348,9 +348,9 @@ PETSC_EXTERN const char *const KSPHPDDMTypes[];
     KSPHPDDMPrecision - Precision of Krylov bases used by `KSPHPDDM`
 
     Values:
-+   `KSP_HPDDM_PRECISION_HALF` - default when PETSc is configured `--with-precision=__fp16`
-.   `KSP_HPDDM_PRECISION_SINGLE` - default when PETSc is configured `--with-precision=single`
-.   `KSP_HPDDM_PRECISION_DOUBLE` - default when PETSc is configured `--with-precision=double`
++   `KSP_HPDDM_PRECISION_HALF`      - default when PETSc is configured `--with-precision=__fp16`
+.   `KSP_HPDDM_PRECISION_SINGLE`    - default when PETSc is configured `--with-precision=single`
+.   `KSP_HPDDM_PRECISION_DOUBLE`    - default when PETSc is configured `--with-precision=double`
 -   `KSP_HPDDM_PRECISION_QUADRUPLE` - default when PETSc is configured `--with-precision=__float128`
 
     Level: intermediate
@@ -367,12 +367,12 @@ PETSC_EXTERN PetscErrorCode KSPHPDDMSetType(KSP, KSPHPDDMType);
 PETSC_EXTERN PetscErrorCode KSPHPDDMGetType(KSP, KSPHPDDMType *);
 
 /*E
-    KSPGMRESCGSRefinementType - How the classical (unmodified) Gram-Schmidt is performed in the GMRES solvers
+   KSPGMRESCGSRefinementType - How the classical (unmodified) Gram-Schmidt is performed in the GMRES solvers
 
-    Values:
-+   `KSP_GMRES_CGS_REFINE_NEVER` - one step of classical Gram-Schmidt
-.   `KSP_GMRES_CGS_REFINE_IFNEEDED` - a second step is performed if the first step does not satisfy some criteria
--   `KSP_GMRES_CGS_REFINE_ALWAYS` - always perform two steps
+   Values:
++  `KSP_GMRES_CGS_REFINE_NEVER`    - one step of classical Gram-Schmidt
+.  `KSP_GMRES_CGS_REFINE_IFNEEDED` - a second step is performed if the first step does not satisfy some criteria
+-  `KSP_GMRES_CGS_REFINE_ALWAYS`   - always perform two steps
 
    Level: advanced
 
@@ -388,7 +388,7 @@ typedef enum {
 PETSC_EXTERN const char *const KSPGMRESCGSRefinementTypes[];
 
 /*MC
-    KSP_GMRES_CGS_REFINE_NEVER - Do the classical (unmodified) Gram-Schmidt process
+   KSP_GMRES_CGS_REFINE_NEVER - Do the classical (unmodified) Gram-Schmidt process
 
    Level: advanced
 
@@ -419,7 +419,7 @@ M*/
 M*/
 
 /*MC
-    KSP_GMRES_CGS_REFINE_ALWAYS - Do two steps of the classical (unmodified) Gram-Schmidt process.
+   KSP_GMRES_CGS_REFINE_ALWAYS - Do two steps of the classical (unmodified) Gram-Schmidt process.
 
    Level: advanced
 
@@ -547,15 +547,15 @@ PETSC_EXTERN PetscErrorCode PCRedistributeGetKSP(PC, KSP *);
 PETSC_EXTERN PetscErrorCode PCTelescopeGetKSP(PC, KSP *);
 
 /*E
-    KSPNormType - Norm calculated by the `KSP` and passed in the Krylov convergence
+   KSPNormType - Norm calculated by the `KSP` and passed in the Krylov convergence
        test routines.
 
-    Values:
-+   `KSP_NORM_DEFAULT` - use the default for the current `KSPType`
-.   `KSP_NORM_NONE` - use no norm calculation
-.   `KSP_NORM_PRECONDITIONED` - use the preconditioned residual norm
-.   `KSP_NORM_UNPRECONDITIONED` - use the unpreconditioned residual norm
--   `KSP_NORM_NATURAL` - use the natural norm (the norm induced by the linear operator)
+   Values:
++  `KSP_NORM_DEFAULT`          - use the default for the current `KSPType`
+.  `KSP_NORM_NONE`             - use no norm calculation
+.  `KSP_NORM_PRECONDITIONED`   - use the preconditioned residual norm
+.  `KSP_NORM_UNPRECONDITIONED` - use the unpreconditioned residual norm
+-  `KSP_NORM_NATURAL`          - use the natural norm (the norm induced by the linear operator)
 
    Level: advanced
 
@@ -577,21 +577,21 @@ typedef enum {
 PETSC_EXTERN const char *const *const KSPNormTypes;
 
 /*MC
-    KSP_NORM_NONE - Do not compute a norm during the Krylov process. This will
-          possibly save some computation but means the convergence test cannot
-          be based on a norm of a residual etc.
+   KSP_NORM_NONE - Do not compute a norm during the Krylov process. This will
+   possibly save some computation but means the convergence test cannot
+   be based on a norm of a residual etc.
 
    Level: advanced
 
-    Note:
-    Some Krylov methods need to compute a residual norm (such as `KPSGMRES`) and then this option is ignored
+   Note:
+   Some Krylov methods need to compute a residual norm (such as `KPSGMRES`) and then this option is ignored
 
 .seealso: [](ch_ksp), `KSPNormType`, `KSP`, `KSPSetNormType()`, `KSP_NORM_PRECONDITIONED`, `KSP_NORM_UNPRECONDITIONED`, `KSP_NORM_NATURAL`
 M*/
 
 /*MC
-    KSP_NORM_PRECONDITIONED - Compute the norm of the preconditioned residual B*(b - A*x), if left preconditioning, and pass that to the
-       convergence test routine.
+   KSP_NORM_PRECONDITIONED - Compute the norm of the preconditioned residual B*(b - A*x), if left preconditioning, and pass that to the
+   convergence test routine.
 
    Level: advanced
 
@@ -599,8 +599,8 @@ M*/
 M*/
 
 /*MC
-    KSP_NORM_UNPRECONDITIONED - Compute the norm of the true residual (b - A*x) and pass that to the
-       convergence test routine.
+   KSP_NORM_UNPRECONDITIONED - Compute the norm of the true residual (b - A*x) and pass that to the
+   convergence test routine.
 
    Level: advanced
 
@@ -608,8 +608,8 @@ M*/
 M*/
 
 /*MC
-    KSP_NORM_NATURAL - Compute the 'natural norm' of residual sqrt((b - A*x)*B*(b - A*x)) and pass that to the
-       convergence test routine. This is only supported by  `KSPCG`, `KSPCR`, `KSPCGNE`, `KSPCGS`, `KSPFCG`, `KSPPIPEFCG`, `KSPPIPEGCR`
+   KSP_NORM_NATURAL - Compute the 'natural norm' of residual sqrt((b - A*x)*B*(b - A*x)) and pass that to the
+   convergence test routine. This is only supported by  `KSPCG`, `KSPCR`, `KSPCGNE`, `KSPCGS`, `KSPFCG`, `KSPPIPEFCG`, `KSPPIPEGCR`
 
    Level: advanced
 
@@ -626,27 +626,27 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP, PetscBool);
 #define KSP_CONVERGED_CG_CONSTRAINED_DEPRECATED KSP_CONVERGED_CG_CONSTRAINED PETSC_DEPRECATED_ENUM(3, 19, 0, "KSP_CONVERGED_STEP_LENGTH", )
 #define KSP_DIVERGED_PCSETUP_FAILED_DEPRECATED  KSP_DIVERGED_PCSETUP_FAILED PETSC_DEPRECATED_ENUM(3, 11, 0, "KSP_DIVERGED_PC_FAILED", )
 /*E
-    KSPConvergedReason - reason a Krylov method was determined to have converged or diverged
+   KSPConvergedReason - reason a Krylov method was determined to have converged or diverged
 
    Values:
-+  `KSP_CONVERGED_RTOL_NORMAL` - requested decrease in the residual for the normal equations
-.  `KSP_CONVERGED_ATOL_NORMAL` - requested absolute value in the residual for the normal equations
-.  `KSP_CONVERGED_RTOL` - requested decrease in the residual
-.  `KSP_CONVERGED_ATOL` - requested absolute value in the residual
-.  `KSP_CONVERGED_ITS` - requested number of iterations
-.  `KSP_CONVERGED_NEG_CURVE` - see note below
-.  `KSP_CONVERGED_STEP_LENGTH` - see note below
++  `KSP_CONVERGED_RTOL_NORMAL`     - requested decrease in the residual for the normal equations
+.  `KSP_CONVERGED_ATOL_NORMAL`     - requested absolute value in the residual for the normal equations
+.  `KSP_CONVERGED_RTOL`            - requested decrease in the residual
+.  `KSP_CONVERGED_ATOL`            - requested absolute value in the residual
+.  `KSP_CONVERGED_ITS`             - requested number of iterations
+.  `KSP_CONVERGED_NEG_CURVE`       - see note below
+.  `KSP_CONVERGED_STEP_LENGTH`     - see note below
 .  `KSP_CONVERGED_HAPPY_BREAKDOWN` - happy breakdown (meaning early convergence of the `KSPType` occurred).
-.  `KSP_DIVERGED_NULL` - breakdown when solving the Hessenberg system within GMRES
-.  `KSP_DIVERGED_ITS` - requested number of iterations
-.  `KSP_DIVERGED_DTOL` - large increase in the residual norm
-.  `KSP_DIVERGED_BREAKDOWN` - breakdown in the Krylov method
-.  `KSP_DIVERGED_BREAKDOWN_BICG` - breakdown in the `KSPBGCS` Krylov method
-.  `KSP_DIVERGED_NONSYMMETRIC` - the operator or preonditioner was not symmetric for a `KSPType` that requires symmetry
-.  `KSP_DIVERGED_INDEFINITE_PC` - the preconditioner was indefinite for a `KSPType` that requires it be definite
-.  `KSP_DIVERGED_NANORINF` - a not a number of infinity was detected in a vector during the computation
-.  `KSP_DIVERGED_INDEFINITE_MAT` - the operator was indefinite for a `KSPType` that requires it be definite
--  `KSP_DIVERGED_PC_FAILED` - the action of the preconditioner failed for some reason
+.  `KSP_DIVERGED_NULL`             - breakdown when solving the Hessenberg system within GMRES
+.  `KSP_DIVERGED_ITS`              - requested number of iterations
+.  `KSP_DIVERGED_DTOL`             - large increase in the residual norm
+.  `KSP_DIVERGED_BREAKDOWN`        - breakdown in the Krylov method
+.  `KSP_DIVERGED_BREAKDOWN_BICG`   - breakdown in the `KSPBGCS` Krylov method
+.  `KSP_DIVERGED_NONSYMMETRIC`     - the operator or preonditioner was not symmetric for a `KSPType` that requires symmetry
+.  `KSP_DIVERGED_INDEFINITE_PC`    - the preconditioner was indefinite for a `KSPType` that requires it be definite
+.  `KSP_DIVERGED_NANORINF`         - a not a number of infinity was detected in a vector during the computation
+.  `KSP_DIVERGED_INDEFINITE_MAT`   - the operator was indefinite for a `KSPType` that requires it be definite
+-  `KSP_DIVERGED_PC_FAILED`        - the action of the preconditioner failed for some reason
 
    Level: beginner
 
@@ -689,7 +689,7 @@ typedef enum { /* converged */
 PETSC_EXTERN const char *const *KSPConvergedReasons;
 
 /*MC
-     KSP_CONVERGED_RTOL - norm(r) <= rtol*norm(b) or rtol*norm(b - A*x_0) if `KSPConvergedDefaultSetUIRNorm()` was called
+   KSP_CONVERGED_RTOL - $||r|| \le rtol*||b||$ or $rtol*||b - A*x_0||$ if `KSPConvergedDefaultSetUIRNorm()` was called
 
    Level: beginner
 
@@ -704,14 +704,14 @@ PETSC_EXTERN const char *const *KSPConvergedReasons;
 M*/
 
 /*MC
-     KSP_CONVERGED_ATOL - norm(r) <= atol
+   KSP_CONVERGED_ATOL - $||r|| \le atol$
 
    Level: beginner
 
    Notes:
    See `KSPNormType` and `KSPSetNormType()` for possible norms that may be used. By default
-       for left preconditioning it is the 2-norm of the preconditioned residual, and the
-       2-norm of the residual for right preconditioning
+   for left preconditioning it is the 2-norm of the preconditioned residual, and the
+   2-norm of the residual for right preconditioning
 
    See also `KSP_CONVERGED_RTOL` which may apply before this tolerance.
 
@@ -719,21 +719,21 @@ M*/
 M*/
 
 /*MC
-     KSP_DIVERGED_DTOL - norm(r) >= dtol*norm(b)
+   KSP_DIVERGED_DTOL - $||r|| \ge dtol*||b||$
 
    Level: beginner
 
    Note:
    See `KSPNormType` and `KSPSetNormType()` for possible norms that may be used. By default
-       for left preconditioning it is the 2-norm of the preconditioned residual, and the
-       2-norm of the residual for right preconditioning
+   for left preconditioning it is the 2-norm of the preconditioned residual, and the
+   2-norm of the residual for right preconditioning
 
 .seealso: [](ch_ksp), `KSPNormType`, `KSP_CONVERGED_ATOL`, `KSP_DIVERGED_RTOL`, `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
 M*/
 
 /*MC
-     KSP_DIVERGED_ITS - Ran out of iterations before any convergence criteria was
-      reached
+   KSP_DIVERGED_ITS - Ran out of iterations before any convergence criteria was
+   reached
 
    Level: beginner
 
@@ -741,9 +741,9 @@ M*/
 M*/
 
 /*MC
-     KSP_CONVERGED_ITS - Used by the `KSPPREONLY` solver after the single iteration of
-           the preconditioner is applied. Also used when the `KSPConvergedSkip()` convergence
-           test routine is set in KSP.
+   KSP_CONVERGED_ITS - Used by the `KSPPREONLY` solver after the single iteration of
+   the preconditioner is applied. Also used when the `KSPConvergedSkip()` convergence
+   test routine is set in `KSP`.
 
    Level: beginner
 
@@ -751,10 +751,10 @@ M*/
 M*/
 
 /*MC
-     KSP_DIVERGED_BREAKDOWN - A breakdown in the Krylov method was detected so the
-          method could not continue to enlarge the Krylov space. Could be due to a singular matrix or
-          preconditioner. In `KSPHPDDM`, this is also returned when some search directions within a block
-          are colinear.
+   KSP_DIVERGED_BREAKDOWN - A breakdown in the Krylov method was detected so the
+   method could not continue to enlarge the Krylov space. Could be due to a singular matrix or
+   preconditioner. In `KSPHPDDM`, this is also returned when some search directions within a block
+   are colinear.
 
    Level: beginner
 
@@ -762,8 +762,8 @@ M*/
 M*/
 
 /*MC
-     KSP_DIVERGED_BREAKDOWN_BICG - A breakdown in the `KSPBICG` method was detected so the
-          method could not continue to enlarge the Krylov space.
+   KSP_DIVERGED_BREAKDOWN_BICG - A breakdown in the `KSPBICG` method was detected so the
+   method could not continue to enlarge the Krylov space.
 
    Level: beginner
 
@@ -771,8 +771,8 @@ M*/
 M*/
 
 /*MC
-     KSP_DIVERGED_NONSYMMETRIC - It appears the operator or preconditioner is not
-        symmetric and this Krylov method (`KSPCG`, `KSPMINRES`, `KSPCR`) requires symmetry
+   KSP_DIVERGED_NONSYMMETRIC - It appears the operator or preconditioner is not
+   symmetric and this Krylov method (`KSPCG`, `KSPMINRES`, `KSPCR`) requires symmetry
 
    Level: beginner
 
@@ -780,35 +780,35 @@ M*/
 M*/
 
 /*MC
-     KSP_DIVERGED_INDEFINITE_PC - It appears the preconditioner is indefinite (has both
-        positive and negative eigenvalues) and this Krylov method (`KSPCG`) requires it to
-        be positive definite
+   KSP_DIVERGED_INDEFINITE_PC - It appears the preconditioner is indefinite (has both
+   positive and negative eigenvalues) and this Krylov method (`KSPCG`) requires it to
+   be positive definite
 
    Level: beginner
 
-     Note:
-    This can happen with the `PCICC` preconditioner, use the options database option `-pc_factor_shift_positive_definite` to force
-  the `PCICC` preconditioner to generate a positive definite preconditioner
+   Note:
+   This can happen with the `PCICC` preconditioner, use the options database option `-pc_factor_shift_positive_definite` to force
+   the `PCICC` preconditioner to generate a positive definite preconditioner
 
 .seealso: [](ch_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
 M*/
 
 /*MC
-     KSP_DIVERGED_PC_FAILED - It was not possible to build or use the requested preconditioner. This is usually due to a
-     zero pivot in a factorization. It can also result from a failure in a subpreconditioner inside a nested preconditioner
-     such as `PCFIELDSPLIT`.
+   KSP_DIVERGED_PC_FAILED - It was not possible to build or use the requested preconditioner. This is usually due to a
+   zero pivot in a factorization. It can also result from a failure in a subpreconditioner inside a nested preconditioner
+   such as `PCFIELDSPLIT`.
 
    Level: beginner
 
-    Note:
-    Run with `-ksp_error_if_not_converged` to stop the program when the error is detected and print an error message with details.
+   Note:
+   Run with `-ksp_error_if_not_converged` to stop the program when the error is detected and print an error message with details.
 
 .seealso: [](ch_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
 M*/
 
 /*MC
-     KSP_CONVERGED_ITERATING - This flag is returned if `KSPGetConvergedReason()` is called
-        while `KSPSolve()` is still running.
+   KSP_CONVERGED_ITERATING - This flag is returned if `KSPGetConvergedReason()` is called
+   while `KSPSolve()` is still running.
 
    Level: beginner
 
@@ -865,7 +865,7 @@ PETSC_DEPRECATED_FUNCTION(3, 12, 0, "KSPComputeOperator()", ) static inline Pets
 }
 
 /*E
-    KSPCGType - Determines what type of `KSPCG` to use
+   KSPCGType - Determines what type of `KSPCG` to use
 
    Values:
  + `KSP_CG_SYMMETRIC` - the matrix is complex symmetric
@@ -914,7 +914,7 @@ PETSC_EXTERN PetscErrorCode PCShellSetPreSolve(PC, PetscErrorCode (*)(PC, KSP, V
 PETSC_EXTERN PetscErrorCode PCShellSetPostSolve(PC, PetscErrorCode (*)(PC, KSP, Vec, Vec));
 
 /*S
-     KSPGuess - Abstract PETSc object that manages all initial guess generation methods for Krylov methods.
+   KSPGuess - Abstract PETSc object that manages all initial guess generation methods for Krylov methods.
 
    Level: intermediate
 
@@ -923,11 +923,11 @@ S*/
 typedef struct _p_KSPGuess *KSPGuess;
 
 /*J
-    KSPGuessType - String with the name of a PETSc initial guess approach for Krylov methods.
+   KSPGuessType - String with the name of a PETSc initial guess approach for Krylov methods.
 
    Values:
  + `KSPGUESSFISCHER` - methodology developed by Paul Fischer
- - `KSPGUESSPOD` - methodology based on proper orthogonal decomposition
+ - `KSPGUESSPOD`     - methodology based on proper orthogonal decomposition
 
    Level: intermediate
 

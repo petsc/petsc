@@ -1,0 +1,18 @@
+ Called MatMult
+ Called MatMultAdd
+ Called MatMultTranspose
+ Called MatMultHermitianTranspose
+ Called MatMultTransposeAdd
+ Called MatMultHermitianTransposeAdd
+ Called MatTranspose
+ Called MatGetDiagonal
+ Called MatDiagonalScale
+ Called MatZeroEntries
+ Called MatAXPY
+ Called MatShift
+ Called MatDiagonalSet
+Mat Object: 1 MPI process
+  type: shell
+ Called MatView
+ Called MatCreateVecs
+ Called MatDestroy

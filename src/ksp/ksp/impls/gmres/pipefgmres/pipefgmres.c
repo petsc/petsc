@@ -165,7 +165,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp)
     PetscCall(VecMDotEnd(ZVEC(loc_it), loc_it + 2, redux, lhh));
     tt = PetscRealPart(lhh[loc_it + 1]);
 
-    /* Hessenberg entries, and entries for (naive) classical Graham-Schmidt
+    /* Hessenberg entries, and entries for (naive) classical Gram-Schmidt
       Note that the Hessenberg entries require a shift, as these are for the
       relation AU = VH, which is wrt unshifted basis vectors */
     hh  = HH(0, loc_it);
@@ -248,7 +248,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp)
        here to check that the hessenberg matrix is indeed non-singular (since
        FGMRES does not guarantee this) */
 
-    /* Now apply rotations to new col of hessenberg (and right side of system),
+    /* Now apply rotations to new col of Hessenberg (and right side of system),
        calculate new rotation, and get new residual norm at the same time*/
     PetscCall(KSPPIPEFGMRESUpdateHessenberg(ksp, loc_it, &hapend, &res_norm));
     if (ksp->reason) break;
@@ -274,11 +274,13 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp)
     }
   }
   /* END OF ITERATION LOOP */
-  PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm));
 
   /*
      Monitor if we know that we will not return for a restart */
-  if (loc_it && (ksp->reason || ksp->its >= ksp->max_it)) PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm));
+  if (loc_it && (ksp->reason || ksp->its >= ksp->max_it)) {
+    PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm));
+    PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm));
+  }
 
   if (itcount) *itcount = loc_it;
 
@@ -524,7 +526,7 @@ PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp)
 }
 
 /*MC
-   KSPPIPEFGMRES - Implements the Pipelined (1-stage) Flexible Generalized Minimal Residual method. [](sec_pipelineksp). [](sec_flexibleksp)
+   KSPPIPEFGMRES - Implements the Pipelined (1-stage) Flexible Generalized Minimal Residual method {cite}`sananschneppmay2016`. [](sec_pipelineksp). [](sec_flexibleksp)
 
    Options Database Keys:
 +   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
@@ -552,10 +554,6 @@ PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp)
 
    Contributed by:
    P. Sanan and S.M. Schnepp
-
-   Reference:
-.  * -   P. Sanan, S.M. Schnepp, and D.A. May,  "Pipelined, Flexible Krylov Subspace Methods,"
-    SIAM Journal on Scientific Computing 2016 38:5, C441-C470,  DOI: 10.1137/15M1049130
 
 .seealso: [](ch_ksp), [](doc_faq_pipelined), [](sec_pipelineksp), [](sec_flexibleksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPLGMRES`, `KSPPIPECG`, `KSPPIPECR`, `KSPPGMRES`, `KSPFGMRES`
           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESMonitorKrylov()`, `KSPPIPEFGMRESSetShift()`
@@ -585,6 +583,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFGMRES(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetPreAllocateVectors_C", KSPGMRESSetPreAllocateVectors_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetRestart_C", KSPGMRESSetRestart_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESGetRestart_C", KSPGMRESGetRestart_GMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetHapTol_C", KSPGMRESSetHapTol_GMRES));
 
   pipefgmres->nextra_vecs    = 1;
   pipefgmres->haptol         = 1.0e-30;

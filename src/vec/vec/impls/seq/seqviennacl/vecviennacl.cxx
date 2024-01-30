@@ -1242,6 +1242,7 @@ static PetscErrorCode VecBindToCPU_SeqAIJViennaCL(Vec V, PetscBool flg)
     V->ops->getarray        = VecGetArray_SeqViennaCL;
     V->ops->restorearray    = VecRestoreArray_SeqViennaCL;
   }
+  V->ops->duplicatevecs = VecDuplicateVecs_Default;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

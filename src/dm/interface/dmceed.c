@@ -179,7 +179,7 @@ static PetscErrorCode DMCeedCreateGeometry(DM dm, IS cellIS, PetscInt *Nqdata, C
   PetscCallCEED(CeedOperatorSetField(sd->op, "x", sd->er, sd->basis, CEED_VECTOR_ACTIVE));
   PetscCallCEED(CeedOperatorSetField(sd->op, "dx", sd->er, sd->basis, CEED_VECTOR_ACTIVE));
   PetscCallCEED(CeedOperatorSetField(sd->op, "weight", CEED_ELEMRESTRICTION_NONE, sd->basis, CEED_VECTOR_NONE));
-  PetscCallCEED(CeedOperatorSetField(sd->op, "qdata", *erq, CEED_BASIS_COLLOCATED, CEED_VECTOR_ACTIVE));
+  PetscCallCEED(CeedOperatorSetField(sd->op, "qdata", *erq, CEED_BASIS_NONE, CEED_VECTOR_ACTIVE));
 
   PetscCallCEED(CeedElemRestrictionCreateVector(*erq, qd, NULL));
   *soldata = sd;
@@ -241,7 +241,7 @@ PetscErrorCode DMCeedCreate_Internal(DM dm, IS cellIS, PetscBool createGeometry,
   PetscCallCEED(CeedOperatorCreate(ceed, sd->qf, CEED_QFUNCTION_NONE, CEED_QFUNCTION_NONE, &sd->op));
   PetscCallCEED(CeedOperatorSetField(sd->op, "u", sd->er, sd->basis, CEED_VECTOR_ACTIVE));
   PetscCallCEED(CeedOperatorSetField(sd->op, "du", sd->er, sd->basis, CEED_VECTOR_ACTIVE));
-  PetscCallCEED(CeedOperatorSetField(sd->op, "qdata", sd->erq, CEED_BASIS_COLLOCATED, sd->qd));
+  PetscCallCEED(CeedOperatorSetField(sd->op, "qdata", sd->erq, CEED_BASIS_NONE, sd->qd));
   PetscCallCEED(CeedOperatorSetField(sd->op, "v", sd->er, sd->basis, CEED_VECTOR_ACTIVE));
   PetscCallCEED(CeedOperatorSetField(sd->op, "dv", sd->er, sd->basis, CEED_VECTOR_ACTIVE));
 
@@ -326,11 +326,11 @@ PetscErrorCode DMCeedCreateFVM_Internal(DM dm, IS faceIS, PetscBool createGeomet
   PetscCallCEED(CeedQFunctionSetContext(sd->qf, qfCtx));
 
   PetscCallCEED(CeedOperatorCreate(ceed, sd->qf, CEED_QFUNCTION_NONE, CEED_QFUNCTION_NONE, &sd->op));
-  PetscCallCEED(CeedOperatorSetField(sd->op, "uL", sd->erL, CEED_BASIS_COLLOCATED, CEED_VECTOR_ACTIVE));
-  PetscCallCEED(CeedOperatorSetField(sd->op, "uR", sd->erR, CEED_BASIS_COLLOCATED, CEED_VECTOR_ACTIVE));
-  PetscCallCEED(CeedOperatorSetField(sd->op, "geom", sd->erq, CEED_BASIS_COLLOCATED, sd->qd));
-  PetscCallCEED(CeedOperatorSetField(sd->op, "cL", sd->erL, CEED_BASIS_COLLOCATED, CEED_VECTOR_ACTIVE));
-  PetscCallCEED(CeedOperatorSetField(sd->op, "cR", sd->erR, CEED_BASIS_COLLOCATED, CEED_VECTOR_ACTIVE));
+  PetscCallCEED(CeedOperatorSetField(sd->op, "uL", sd->erL, CEED_BASIS_NONE, CEED_VECTOR_ACTIVE));
+  PetscCallCEED(CeedOperatorSetField(sd->op, "uR", sd->erR, CEED_BASIS_NONE, CEED_VECTOR_ACTIVE));
+  PetscCallCEED(CeedOperatorSetField(sd->op, "geom", sd->erq, CEED_BASIS_NONE, sd->qd));
+  PetscCallCEED(CeedOperatorSetField(sd->op, "cL", sd->erL, CEED_BASIS_NONE, CEED_VECTOR_ACTIVE));
+  PetscCallCEED(CeedOperatorSetField(sd->op, "cR", sd->erR, CEED_BASIS_NONE, CEED_VECTOR_ACTIVE));
 
   // Handle refinement
   sd->func = func;

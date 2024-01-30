@@ -3260,6 +3260,112 @@ PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_3d(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PETSC_INTERN PetscErrorCode DMStagPopulateLocalToLocal3d_Internal(DM dm)
+{
+  DM_Stag *const stag = (DM_Stag *)dm->data;
+  PetscInt      *idxRemap;
+  PetscBool      dummyEnd[3];
+  PetscInt       i, j, k, d, count, leftGhostElements, downGhostElements, backGhostElements, iOffset, jOffset, kOffset;
+  PetscInt       entriesPerRowGhost, entriesPerRowColGhost;
+  PetscInt       dOffset[8] = {0};
+
+  PetscFunctionBegin;
+  PetscCall(VecScatterCopy(stag->gtol, &stag->ltol));
+  PetscCall(PetscMalloc1(stag->entries, &idxRemap));
+
+  for (d = 0; d < 3; ++d) dummyEnd[d] = (PetscBool)(stag->lastRank[d] && stag->boundaryType[d] != DM_BOUNDARY_PERIODIC);
+  leftGhostElements     = stag->start[0] - stag->startGhost[0];
+  downGhostElements     = stag->start[1] - stag->startGhost[1];
+  backGhostElements     = stag->start[2] - stag->startGhost[2];
+  entriesPerRowGhost    = stag->nGhost[0] * stag->entriesPerElement;
+  entriesPerRowColGhost = stag->nGhost[0] * stag->nGhost[1] * stag->entriesPerElement;
+  dOffset[1]            = dOffset[0] + stag->dof[0];
+  dOffset[2]            = dOffset[1] + stag->dof[1];
+  dOffset[3]            = dOffset[2] + stag->dof[1];
+  dOffset[4]            = dOffset[3] + stag->dof[2];
+  dOffset[5]            = dOffset[4] + stag->dof[1];
+  dOffset[6]            = dOffset[5] + stag->dof[2];
+  dOffset[7]            = dOffset[6] + stag->dof[2];
+
+  count = 0;
+  for (k = 0; k < stag->n[2]; ++k) {
+    kOffset = entriesPerRowColGhost * (backGhostElements + k);
+    for (j = 0; j < stag->n[1]; ++j) {
+      jOffset = entriesPerRowGhost * (downGhostElements + j);
+      for (i = 0; i < stag->n[0]; ++i) {
+        iOffset = stag->entriesPerElement * (leftGhostElements + i);
+        // all
+        for (d = 0; d < stag->entriesPerElement; ++d) idxRemap[count++] = kOffset + jOffset + iOffset + d;
+      }
+      if (dummyEnd[0]) {
+        iOffset = stag->entriesPerElement * (leftGhostElements + stag->n[0]);
+        // back down left, back left, down left, left
+        for (d = 0; d < stag->dof[0]; ++d) idxRemap[count++] = kOffset + jOffset + iOffset + dOffset[0] + d;
+        for (d = 0; d < stag->dof[1]; ++d) idxRemap[count++] = kOffset + jOffset + iOffset + dOffset[2] + d;
+        for (d = 0; d < stag->dof[1]; ++d) idxRemap[count++] = kOffset + jOffset + iOffset + dOffset[4] + d;
+        for (d = 0; d < stag->dof[2]; ++d) idxRemap[count++] = kOffset + jOffset + iOffset + dOffset[6] + d;
+      }
+    }
+    if (dummyEnd[1]) {
+      jOffset = entriesPerRowGhost * (downGhostElements + stag->n[1]);
+      for (i = 0; i < stag->n[0]; ++i) {
+        iOffset = stag->entriesPerElement * (leftGhostElements + i);
+        // back down left, back down, down left, down
+        for (d = 0; d < stag->dof[0]; ++d) idxRemap[count++] = kOffset + jOffset + iOffset + dOffset[0] + d;
+        for (d = 0; d < stag->dof[1]; ++d) idxRemap[count++] = kOffset + jOffset + iOffset + dOffset[1] + d;
+        for (d = 0; d < stag->dof[1]; ++d) idxRemap[count++] = kOffset + jOffset + iOffset + dOffset[4] + d;
+        for (d = 0; d < stag->dof[2]; ++d) idxRemap[count++] = kOffset + jOffset + iOffset + dOffset[5] + d;
+      }
+      if (dummyEnd[0]) {
+        iOffset = stag->entriesPerElement * (leftGhostElements + stag->n[0]);
+        // back down left, down left
+        for (d = 0; d < stag->dof[0]; ++d) idxRemap[count++] = kOffset + jOffset + iOffset + dOffset[0] + d;
+        for (d = 0; d < stag->dof[1]; ++d) idxRemap[count++] = kOffset + jOffset + iOffset + dOffset[4] + d;
+      }
+    }
+  }
+  if (dummyEnd[2]) {
+    kOffset = entriesPerRowColGhost * (backGhostElements + stag->n[2]);
+    for (j = 0; j < stag->n[1]; ++j) {
+      jOffset = entriesPerRowGhost * (downGhostElements + j);
+      for (i = 0; i < stag->n[0]; ++i) {
+        iOffset = stag->entriesPerElement * (leftGhostElements + i);
+        // back down left, back down, back left, back
+        for (d = 0; d < stag->dof[0]; ++d) idxRemap[count++] = kOffset + jOffset + iOffset + dOffset[0] + d;
+        for (d = 0; d < stag->dof[1]; ++d) idxRemap[count++] = kOffset + jOffset + iOffset + dOffset[1] + d;
+        for (d = 0; d < stag->dof[1]; ++d) idxRemap[count++] = kOffset + jOffset + iOffset + dOffset[2] + d;
+        for (d = 0; d < stag->dof[2]; ++d) idxRemap[count++] = kOffset + jOffset + iOffset + dOffset[3] + d;
+      }
+      if (dummyEnd[0]) {
+        iOffset = stag->entriesPerElement * (leftGhostElements + stag->n[0]);
+        // back down left, back left
+        for (d = 0; d < stag->dof[0]; ++d) idxRemap[count++] = kOffset + jOffset + iOffset + dOffset[0] + d;
+        for (d = 0; d < stag->dof[1]; ++d) idxRemap[count++] = kOffset + jOffset + iOffset + dOffset[2] + d;
+      }
+    }
+    if (dummyEnd[1]) {
+      jOffset = entriesPerRowGhost * (downGhostElements + stag->n[1]);
+      for (i = 0; i < stag->n[0]; ++i) {
+        iOffset = stag->entriesPerElement * (leftGhostElements + i);
+        // back down left, back down
+        for (d = 0; d < stag->dof[0]; ++d) idxRemap[count++] = kOffset + jOffset + iOffset + dOffset[0] + d;
+        for (d = 0; d < stag->dof[1]; ++d) idxRemap[count++] = kOffset + jOffset + iOffset + dOffset[1] + d;
+      }
+      if (dummyEnd[0]) {
+        iOffset = stag->entriesPerElement * (leftGhostElements + stag->n[0]);
+        // back down left
+        for (d = 0; d < stag->dof[0]; ++d) idxRemap[count++] = kOffset + jOffset + iOffset + dOffset[0] + d;
+      }
+    }
+  }
+
+  PetscCheck(count == stag->entries, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of entries computed in ltol (%" PetscInt_FMT ") is not as expected (%" PetscInt_FMT ")", count, stag->entries);
+
+  PetscCall(VecScatterRemap(stag->ltol, idxRemap, NULL));
+  PetscCall(PetscFree(idxRemap));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_3D_AIJ_Assemble(DM dm, Mat A)
 {
   PetscInt          dof[DMSTAG_MAX_STRATA], epe, stencil_width, N[3], start[3], n[3], n_extra[3];

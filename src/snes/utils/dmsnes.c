@@ -28,7 +28,7 @@ static PetscErrorCode DMSNESDestroy(DMSNES *kdm)
   }
   PetscCall(DMSNESUnsetFunctionContext_DMSNES(*kdm));
   PetscCall(DMSNESUnsetJacobianContext_DMSNES(*kdm));
-  if ((*kdm)->ops->destroy) PetscCall(((*kdm)->ops->destroy)(*kdm));
+  PetscTryTypeMethod(*kdm, destroy);
   PetscCall(PetscHeaderDestroy(kdm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -427,7 +427,7 @@ PetscErrorCode DMSNESGetFunction(DM dm, PetscErrorCode (**f)(SNES, Vec, Vec, voi
 
   Input Parameters:
 + dm  - `DM` to be used with `SNES`
-. obj - objective evaluation function; see `SNESObjectiveFunction` for details
+. obj - objective evaluation function; see `SNESComputeObjective` for details
 - ctx - context for residual evaluation
 
   Level: advanced

@@ -133,7 +133,7 @@ int main(int argc, char **argv)
 /*TEST
 
      build:
-       requires: moab
+       requires: moab !complex
 
      test:
 

@@ -3,6 +3,8 @@
 #include <petscblaslapack.h>
 #include <petsctime.h>
 
+const char *const DMPlexCoordMaps[] = {"none", "shear", "flare", "annulus", "shell", "unknown", "DMPlexCoordMap", "DM_COORD_MAP_", NULL};
+
 /*@
   DMPlexFindVertices - Try to find DAG points based on their coordinates.
 
@@ -1378,10 +1380,10 @@ PetscErrorCode DMPlexComputeProjection2Dto1D(PetscScalar coords[], PetscReal R[]
   Output Parameter:
 . R - The rotation which accomplishes the projection
 
-  Note:
-  This uses the basis completion described by Frisvad in http://www.imm.dtu.dk/~jerf/papers/abstracts/onb.html, DOI:10.1080/2165347X.2012.689606
-
   Level: developer
+
+  Note:
+  This uses the basis completion described by Frisvad {cite}`frisvad2012building`
 
 .seealso: `DMPLEX`, `DMPlexComputeProjection2Dto1D()`, `DMPlexComputeProjection3Dto2D()`
 @*/
@@ -3808,6 +3810,83 @@ PetscErrorCode DMPlexReferenceToCoordinates(DM dm, PetscInt cell, PetscInt numPo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+void coordMap_identity(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  const PetscInt Nc = uOff[1] - uOff[0];
+  PetscInt       c;
+
+  for (c = 0; c < Nc; ++c) f0[c] = u[c];
+}
+
+/* Shear applies the transformation, assuming we fix z,
+  / 1  0  m_0 \
+  | 0  1  m_1 |
+  \ 0  0   1  /
+*/
+void coordMap_shear(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar coords[])
+{
+  const PetscInt Nc = uOff[1] - uOff[0];
+  const PetscInt ax = (PetscInt)PetscRealPart(constants[0]);
+  PetscInt       c;
+
+  for (c = 0; c < Nc; ++c) coords[c] = u[c] + constants[c + 1] * u[ax];
+}
+
+/* Flare applies the transformation, assuming we fix x_f,
+
+   x_i = x_i * alpha_i x_f
+*/
+void coordMap_flare(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar coords[])
+{
+  const PetscInt Nc = uOff[1] - uOff[0];
+  const PetscInt cf = (PetscInt)PetscRealPart(constants[0]);
+  PetscInt       c;
+
+  for (c = 0; c < Nc; ++c) coords[c] = u[c] * (c == cf ? 1.0 : constants[c + 1] * u[cf]);
+}
+
+/*
+  We would like to map the unit square to a quarter of the annulus between circles of radius 1 and 2. We start by mapping the straight sections, which
+  will correspond to the top and bottom of our square. So
+
+    (0,0)--(1,0)  ==>  (1,0)--(2,0)      Just a shift of (1,0)
+    (0,1)--(1,1)  ==>  (0,1)--(0,2)      Switch x and y
+
+  So it looks like we want to map each layer in y to a ray, so x is the radius and y is the angle:
+
+    (x, y)  ==>  (x+1, \pi/2 y)                           in (r', \theta') space
+            ==>  ((x+1) cos(\pi/2 y), (x+1) sin(\pi/2 y)) in (x', y') space
+*/
+void coordMap_annulus(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar xp[])
+{
+  const PetscReal ri = PetscRealPart(constants[0]);
+  const PetscReal ro = PetscRealPart(constants[1]);
+
+  xp[0] = (x[0] * (ro - ri) + ri) * PetscCosReal(0.5 * PETSC_PI * x[1]);
+  xp[1] = (x[0] * (ro - ri) + ri) * PetscSinReal(0.5 * PETSC_PI * x[1]);
+}
+
+/*
+  We would like to map the unit cube to a hemisphere of the spherical shell between balls of radius 1 and 2. We want to map the bottom surface onto the
+  lower hemisphere and the upper surface onto the top, letting z be the radius.
+
+    (x, y)  ==>  ((z+3)/2, \pi/2 (|x| or |y|), arctan y/x)                                                  in (r', \theta', \phi') space
+            ==>  ((z+3)/2 \cos(\theta') cos(\phi'), (z+3)/2 \cos(\theta') sin(\phi'), (z+3)/2 sin(\theta')) in (x', y', z') space
+*/
+void coordMap_shell(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar xp[])
+{
+  const PetscReal pi4    = PETSC_PI / 4.0;
+  const PetscReal ri     = PetscRealPart(constants[0]);
+  const PetscReal ro     = PetscRealPart(constants[1]);
+  const PetscReal rp     = (x[2] + 1) * 0.5 * (ro - ri) + ri;
+  const PetscReal phip   = PetscAtan2Real(x[1], x[0]);
+  const PetscReal thetap = 0.5 * PETSC_PI * (1.0 - ((((phip <= pi4) && (phip >= -pi4)) || ((phip >= 3.0 * pi4) || (phip <= -3.0 * pi4))) ? PetscAbsReal(x[0]) : PetscAbsReal(x[1])));
+
+  xp[0] = rp * PetscCosReal(thetap) * PetscCosReal(phip);
+  xp[1] = rp * PetscCosReal(thetap) * PetscSinReal(phip);
+  xp[2] = rp * PetscSinReal(thetap);
+}
+
 /*@C
   DMPlexRemapGeometry - This function maps the original `DM` coordinates to new coordinates.
 
@@ -3844,37 +3923,53 @@ PetscErrorCode DMPlexReferenceToCoordinates(DM dm, PetscInt cell, PetscInt numPo
 @*/
 PetscErrorCode DMPlexRemapGeometry(DM dm, PetscReal time, void (*func)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]))
 {
-  DM      cdm;
-  DMField cf;
-  Vec     lCoords, tmpCoords;
+  DM           cdm;
+  PetscDS      cds;
+  DMField      cf;
+  PetscObject  obj;
+  PetscClassId id;
+  Vec          lCoords, tmpCoords;
 
   PetscFunctionBegin;
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMGetCoordinatesLocal(dm, &lCoords));
-  PetscCall(DMGetLocalVector(cdm, &tmpCoords));
-  PetscCall(VecCopy(lCoords, tmpCoords));
-  /* We have to do the coordinate field manually right now since the coordinate DM will not have its own */
-  PetscCall(DMGetCoordinateField(dm, &cf));
-  cdm->coordinates[0].field = cf;
-  PetscCall(DMProjectFieldLocal(cdm, time, tmpCoords, &func, INSERT_VALUES, lCoords));
-  cdm->coordinates[0].field = NULL;
-  PetscCall(DMRestoreLocalVector(cdm, &tmpCoords));
-  PetscCall(DMSetCoordinatesLocal(dm, lCoords));
+  PetscCall(DMGetDS(cdm, &cds));
+  PetscCall(PetscDSGetDiscretization(cds, 0, &obj));
+  PetscCall(PetscObjectGetClassId(obj, &id));
+  if (id != PETSCFE_CLASSID) {
+    PetscSection       cSection;
+    const PetscScalar *constants;
+    PetscScalar       *coords, f[16];
+    PetscInt           dim, cdim, Nc, vStart, vEnd;
+
+    PetscCall(DMGetDimension(dm, &dim));
+    PetscCall(DMGetCoordinateDim(dm, &cdim));
+    PetscCheck(cdim <= 16, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Affine version of DMPlexRemapGeometry is currently limited to dimensions <= 16, not %" PetscInt_FMT, cdim);
+    PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+    PetscCall(DMGetCoordinateSection(dm, &cSection));
+    PetscCall(PetscDSGetConstants(cds, &Nc, &constants));
+    PetscCall(VecGetArrayWrite(lCoords, &coords));
+    for (PetscInt v = vStart; v < vEnd; ++v) {
+      PetscInt uOff[2] = {0, cdim};
+      PetscInt off, c;
+
+      PetscCall(PetscSectionGetOffset(cSection, v, &off));
+      (*func)(dim, 1, 0, uOff, NULL, &coords[off], NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.0, NULL, Nc, constants, f);
+      for (c = 0; c < cdim; ++c) coords[off + c] = f[c];
+    }
+    PetscCall(VecRestoreArrayWrite(lCoords, &coords));
+  } else {
+    PetscCall(DMGetLocalVector(cdm, &tmpCoords));
+    PetscCall(VecCopy(lCoords, tmpCoords));
+    /* We have to do the coordinate field manually right now since the coordinate DM will not have its own */
+    PetscCall(DMGetCoordinateField(dm, &cf));
+    cdm->coordinates[0].field = cf;
+    PetscCall(DMProjectFieldLocal(cdm, time, tmpCoords, &func, INSERT_VALUES, lCoords));
+    cdm->coordinates[0].field = NULL;
+    PetscCall(DMRestoreLocalVector(cdm, &tmpCoords));
+    PetscCall(DMSetCoordinatesLocal(dm, lCoords));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/* Shear applies the transformation, assuming we fix z,
-  / 1  0  m_0 \
-  | 0  1  m_1 |
-  \ 0  0   1  /
-*/
-static void f0_shear(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar coords[])
-{
-  const PetscInt Nc = uOff[1] - uOff[0];
-  const PetscInt ax = (PetscInt)PetscRealPart(constants[0]);
-  PetscInt       c;
-
-  for (c = 0; c < Nc; ++c) coords[c] = u[c] + constants[c + 1] * u[ax];
 }
 
 /*@C
@@ -3895,8 +3990,6 @@ PetscErrorCode DMPlexShearGeometry(DM dm, DMDirection direction, PetscReal multi
 {
   DM             cdm;
   PetscDS        cds;
-  PetscObject    obj;
-  PetscClassId   id;
   PetscScalar   *moduli;
   const PetscInt dir = (PetscInt)direction;
   PetscInt       dE, d, e;
@@ -3908,31 +4001,8 @@ PetscErrorCode DMPlexShearGeometry(DM dm, DMDirection direction, PetscReal multi
   moduli[0] = dir;
   for (d = 0, e = 0; d < dE; ++d) moduli[d + 1] = d == dir ? 0.0 : (multipliers ? multipliers[e++] : 1.0);
   PetscCall(DMGetDS(cdm, &cds));
-  PetscCall(PetscDSGetDiscretization(cds, 0, &obj));
-  PetscCall(PetscObjectGetClassId(obj, &id));
-  if (id != PETSCFE_CLASSID) {
-    Vec          lCoords;
-    PetscSection cSection;
-    PetscScalar *coords;
-    PetscInt     vStart, vEnd, v;
-
-    PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
-    PetscCall(DMGetCoordinateSection(dm, &cSection));
-    PetscCall(DMGetCoordinatesLocal(dm, &lCoords));
-    PetscCall(VecGetArray(lCoords, &coords));
-    for (v = vStart; v < vEnd; ++v) {
-      PetscReal ds;
-      PetscInt  off, c;
-
-      PetscCall(PetscSectionGetOffset(cSection, v, &off));
-      ds = PetscRealPart(coords[off + dir]);
-      for (c = 0; c < dE; ++c) coords[off + c] += moduli[c] * ds;
-    }
-    PetscCall(VecRestoreArray(lCoords, &coords));
-  } else {
-    PetscCall(PetscDSSetConstants(cds, dE + 1, moduli));
-    PetscCall(DMPlexRemapGeometry(dm, 0.0, f0_shear));
-  }
+  PetscCall(PetscDSSetConstants(cds, dE + 1, moduli));
+  PetscCall(DMPlexRemapGeometry(dm, 0.0, coordMap_shear));
   PetscCall(PetscFree(moduli));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

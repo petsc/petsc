@@ -192,6 +192,14 @@ static PetscErrorCode DMDestroy_Forest(DM dm)
   DM_Forest *forest = (DM_Forest *)dm->data;
 
   PetscFunctionBegin;
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMConvert_plex_p4est_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMConvert_p4est_plex_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMConvert_plex_p8est_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMConvert_p8est_plex_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMSetUpGLVisViewer_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMCreateNeumannOverlap_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexGetOverlap_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "MatComputeNeumannOverlap_C", NULL));
   if (--forest->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
   if (forest->destroy) PetscCall((*forest->destroy)(dm));
   PetscCall(PetscSFDestroy(&forest->cellSF));
@@ -378,7 +386,7 @@ PetscErrorCode DMForestGetBaseCoordinateMapping(DM dm, PetscErrorCode (**func)(D
   adapted from an old forest and calls this routine.
 
   This can be called after setup with `adapt` = `NULL`, which will clear all internal data
-  related to the adaptivity forest from `dm`.  This way, repeatedly adapting does not leave
+  related to the adaptivity forest from `dm`. This way, repeatedly adapting does not leave
   stale `DM` objects in memory.
 
 .seealso: `DM`, `DMFOREST`, `DMForestGetAdaptivityForest()`, `DMForestSetAdaptivityPurpose()`
@@ -942,7 +950,7 @@ PetscErrorCode DMForestGetAdaptivityStrategy(DM dm, DMForestAdaptivityStrategy *
   Level: intermediate
 
   Notes:
-  `PETSC_FALSE` indicates that the post-adaptation forest is the same as the pre-adpatation
+  `PETSC_FALSE` indicates that the post-adaptation forest is the same as the pre-adaptation
   forest.  A requested adaptation may have been unsuccessful if, for example, the requested refinement would have
   exceeded the maximum refinement level.
 
@@ -1595,7 +1603,7 @@ static PetscErrorCode DMCoarsen_Forest(DM dm, MPI_Comm comm, DM *dmCoarsened)
   DM      coarseDM;
 
   PetscFunctionBegin;
-  {
+  if (comm != MPI_COMM_NULL) {
     PetscMPIInt mpiComparison;
     MPI_Comm    dmcomm = PetscObjectComm((PetscObject)dm);
 

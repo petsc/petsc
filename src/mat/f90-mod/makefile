@@ -1,7 +1,6 @@
 -include ../../../petscdir.mk
 #requiresdefine   'PETSC_USE_FORTRAN_BINDINGS'
 
-LIBBASE    = libpetscmat
 MANSEC     = Mat
 CLEANFILES = *.mod
 

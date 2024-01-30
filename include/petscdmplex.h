@@ -225,7 +225,7 @@ PETSC_EXTERN PetscErrorCode DMPlexPartitionLabelInvert(DM, DMLabel, PetscSF, DML
 PETSC_EXTERN PetscErrorCode DMPlexPartitionLabelClosure(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexPartitionLabelAdjacency(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexPartitionLabelPropagate(DM, DMLabel);
-PETSC_EXTERN PetscErrorCode DMPlexPartitionLabelCreateSF(DM, DMLabel, PetscSF *);
+PETSC_EXTERN PetscErrorCode DMPlexPartitionLabelCreateSF(DM, DMLabel, PetscBool, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMPlexSetPartitionBalance(DM, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexGetPartitionBalance(DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexIsDistributed(DM, PetscBool *);
@@ -278,6 +278,8 @@ PETSC_EXTERN PetscErrorCode DMPlexGetOrdering1D(DM, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexPermute(DM, IS, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexReorderGetDefault(DM, DMPlexReorderDefaultFlag *);
 PETSC_EXTERN PetscErrorCode DMPlexReorderSetDefault(DM, DMPlexReorderDefaultFlag);
+PETSC_EXTERN PetscErrorCode DMPlexReorderSectionGetDefault(DM, DMPlexReorderDefaultFlag *);
+PETSC_EXTERN PetscErrorCode DMPlexReorderSectionSetDefault(DM, DMPlexReorderDefaultFlag);
 
 PETSC_EXTERN PetscErrorCode DMPlexCreateProcessSF(DM, PetscSF, IS *, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateTwoSidedProcessSF(DM, PetscSF, PetscSection, IS, PetscSection, IS, IS *, PetscSF *);
@@ -424,8 +426,9 @@ PETSC_EXTERN PetscErrorCode DMPlexComputeMassMatrixGeneral(DM, DM, Mat, void *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateRigidBody(DM, PetscInt, MatNullSpace *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateRigidBodies(DM, PetscInt, DMLabel, const PetscInt[], const PetscInt[], MatNullSpace *);
 
-PETSC_EXTERN PetscErrorCode DMPlexSetSNESLocalFEM(DM, void *, void *, void *);
+PETSC_EXTERN PetscErrorCode DMPlexSetSNESLocalFEM(DM, PetscBool, void *);
 PETSC_EXTERN PetscErrorCode DMPlexSNESComputeBoundaryFEM(DM, Vec, void *);
+PETSC_EXTERN PetscErrorCode DMPlexSNESComputeObjectiveFEM(DM, Vec, PetscReal *, void *);
 PETSC_EXTERN PetscErrorCode DMPlexSNESComputeResidualFEM(DM, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexSNESComputeResidualCEED(DM, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexSNESComputeResidualDS(DM, Vec, Vec, void *);

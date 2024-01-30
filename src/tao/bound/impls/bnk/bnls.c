@@ -150,7 +150,7 @@ PetscErrorCode TaoSolve_BNLS(Tao tao)
       /* compute the projected gradient */
       PetscCall(TaoBNKEstimateActiveSet(tao, bnk->as_type));
       PetscCall(VecCopy(bnk->unprojected_gradient, tao->gradient));
-      PetscCall(VecISSet(tao->gradient, bnk->active_idx, 0.0));
+      if (bnk->active_idx) PetscCall(VecISSet(tao->gradient, bnk->active_idx, 0.0));
       PetscCall(TaoGradientNorm(tao, tao->gradient, NORM_2, &bnk->gnorm));
       /* update the trust radius based on the step length */
       PetscCall(TaoBNKUpdateTrustRadius(tao, 0.0, 0.0, BNK_UPDATE_STEP, stepType, &stepAccepted));

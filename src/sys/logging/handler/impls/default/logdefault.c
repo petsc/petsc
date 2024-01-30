@@ -486,7 +486,7 @@ static PetscErrorCode PetscLogHandlerEventSync_Default(PetscLogHandler h, PetscL
   PetscLogDouble      time = 0.0;
 
   PetscFunctionBegin;
-  if (!(PetscLogSyncOn) || comm == MPI_COMM_NULL) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!PetscLogSyncOn || comm == MPI_COMM_NULL) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscLogHandlerGetState(h, &state));
   PetscCall(PetscLogStateEventGetInfo(state, event, &event_info));
   if (!event_info.collective) PetscFunctionReturn(PETSC_SUCCESS);
@@ -538,6 +538,21 @@ static PetscErrorCode PetscLogHandlerEventBegin_Default(PetscLogHandler h, Petsc
 
   PetscFunctionBegin;
   PetscCall(PetscLogHandlerGetState(h, &state));
+  if (PetscDefined(USE_DEBUG)) {
+    PetscCall(PetscLogStateEventGetInfo(state, event, &event_info));
+    if (PetscUnlikely(o1)) PetscValidHeader(o1, 3);
+    if (PetscUnlikely(o2)) PetscValidHeader(o2, 4);
+    if (PetscUnlikely(o3)) PetscValidHeader(o3, 5);
+    if (PetscUnlikely(o4)) PetscValidHeader(o4, 6);
+    if (event_info.collective && o1) {
+      PetscInt64 b1[2], b2[2];
+
+      b1[0] = -o1->cidx;
+      b1[1] = o1->cidx;
+      PetscCall(MPIU_Allreduce(b1, b2, 2, MPIU_INT64, MPI_MAX, PetscObjectComm(o1)));
+      PetscCheck(-b2[0] == b2[1], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Collective event %s not called collectively %" PetscInt64_FMT " != %" PetscInt64_FMT, event_info.name, b1[1], b2[1]);
+    }
+  }
   /* Synchronization */
   PetscCall(PetscLogHandlerEventSync_Default(h, event, PetscObjectComm(o1)));
   PetscCall(PetscLogStateGetCurrentStage(state, &stage));
@@ -584,13 +599,28 @@ static PetscErrorCode PetscLogHandlerEventEnd_Default(PetscLogHandler h, PetscLo
   PetscLogDouble          time;
   PetscLogState           state;
   int                     stage;
+  PetscLogEventInfo       event_info;
 
   PetscFunctionBegin;
   PetscCall(PetscLogHandlerGetState(h, &state));
+  if (PetscDefined(USE_DEBUG)) {
+    PetscCall(PetscLogStateEventGetInfo(state, event, &event_info));
+    if (PetscUnlikely(o1)) PetscValidHeader(o1, 3);
+    if (PetscUnlikely(o2)) PetscValidHeader(o2, 4);
+    if (PetscUnlikely(o3)) PetscValidHeader(o3, 5);
+    if (PetscUnlikely(o4)) PetscValidHeader(o4, 6);
+    if (event_info.collective && o1) {
+      PetscInt64 b1[2], b2[2];
+
+      b1[0] = -o1->cidx;
+      b1[1] = o1->cidx;
+      PetscCall(MPIU_Allreduce(b1, b2, 2, MPIU_INT64, MPI_MAX, PetscObjectComm(o1)));
+      PetscCheck(-b2[0] == b2[1], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Collective event %s not called collectively %" PetscInt64_FMT " != %" PetscInt64_FMT, event_info.name, b1[1], b2[1]);
+    }
+  }
   if (def->petsc_logActions) {
-    PetscLogEventInfo event_info;
-    PetscLogDouble    curTime;
-    Action            new_action;
+    PetscLogDouble curTime;
+    Action         new_action;
 
     PetscCall(PetscLogStateEventGetInfo(state, event, &event_info));
     PetscCall(PetscTime(&curTime));
@@ -1670,9 +1700,13 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
         PetscCall(PetscLogHandlerDefaultGetClassPerf(handler, stage, oclass, &class_perf_info));
         if ((class_perf_info->creations > 0) || (class_perf_info->destructions > 0)) {
           PetscLogClassInfo class_reg_info;
+          PetscBool         flg;
 
           PetscCall(PetscLogStateClassGetInfo(state, oclass, &class_reg_info));
-          PetscCall(PetscFPrintf(comm, fd, "%20s %5d          %5d\n", class_reg_info.name, class_perf_info->creations, class_perf_info->destructions));
+          if (stage == 0 && oclass == num_classes - 1) {
+            PetscCall(PetscStrcmp(class_reg_info.name, "Viewer", &flg));
+            PetscCheck(flg && class_perf_info->creations == 1 && class_perf_info->destructions == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "The last PetscObject type of the main PetscLogStage should be PetscViewer with a single creation and no destruction");
+          } else PetscCall(PetscFPrintf(comm, fd, "%20s %5d          %5d\n", class_reg_info.name, class_perf_info->creations, class_perf_info->destructions));
         }
       }
     }

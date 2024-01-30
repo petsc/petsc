@@ -114,14 +114,13 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
   if (objective) {
     PetscCall(SNESComputeObjective(snes, X, &f));
   } else {
-    f = PetscSqr(fnorm);
+    f = 0.5 * PetscSqr(fnorm);
   }
 
   /* compute the initial slope */
   if (objective) {
     /* slope comes from the function (assumed to be the gradient of the objective) */
     PetscCall(VecDotRealPart(Y, F, &initslope));
-    initslope *= 2.0; /* all the fitting assumes f = ||grad||^2, not f = 0.5 ||grad||^2 */
   } else {
     /* slope comes from the normal equations */
     PetscCall(MatMult(jac, Y, W));
@@ -150,7 +149,7 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
       } else {
         PetscCall(VecNorm(G, NORM_2, &gnorm));
       }
-      g = PetscSqr(gnorm);
+      g = 0.5 * PetscSqr(gnorm);
     }
     PetscCall(SNESLineSearchMonitor(linesearch));
 
@@ -165,13 +164,13 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
   }
 
   if (!objective) PetscCall(PetscInfo(snes, "Initial fnorm %14.12e gnorm %14.12e\n", (double)fnorm, (double)gnorm));
-  if (.5 * g <= .5 * f + lambda * alpha * initslope) { /* Sufficient reduction or step tolerance convergence */
+  if (g <= f + lambda * alpha * initslope) { /* Sufficient reduction or step tolerance convergence */
     if (monitor) {
       PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
       if (!objective) {
         PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: Using full step: fnorm %14.12e gnorm %14.12e\n", (double)fnorm, (double)gnorm));
       } else {
-        PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: Using full step: obj %14.12e obj %14.12e\n", (double)f, (double)g));
+        PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: Using full step: old obj %14.12e new obj %14.12e\n", (double)f, (double)g));
       }
       PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
     }
@@ -192,10 +191,8 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
     gprev      = g;
     if (linesearch->order != SNES_LINESEARCH_ORDER_LINEAR) {
       /* Fit points with quadratic */
-      lambdatemp = -initslope / (g - f - 2.0 * lambda * initslope);
-      if (lambdatemp > .5 * lambda) lambdatemp = .5 * lambda;
-      if (lambdatemp <= .1 * lambda) lambda = .1 * lambda;
-      else lambda = lambdatemp;
+      lambdatemp = -initslope * PetscSqr(lambda) / (2.0 * (g - f - lambda * initslope));
+      lambda     = PetscClipInterval(lambdatemp, .1 * lambda, .5 * lambda);
 
       PetscCall(VecWAXPY(W, -lambda, Y, X));
       if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));
@@ -215,7 +212,7 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
         } else {
           PetscCall(VecNorm(G, NORM_2, &gnorm));
         }
-        g = PetscSqr(gnorm);
+        g = 0.5 * PetscSqr(gnorm);
       }
       if (PetscIsInfOrNanReal(g)) {
         PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_NANORINF));
@@ -232,14 +229,13 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
         PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
       }
     }
-    if (linesearch->order != SNES_LINESEARCH_ORDER_LINEAR && .5 * g < .5 * f + lambda * alpha * initslope) { /* sufficient reduction */
+    if (linesearch->order != SNES_LINESEARCH_ORDER_LINEAR && g <= f + lambda * alpha * initslope) { /* sufficient reduction */
       if (monitor) {
         PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
         PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: Quadratically determined step, lambda=%18.16e\n", (double)lambda));
         PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
       }
     } else {
-      /* Fit points with cubic */
       for (count = 0; count < max_its; count++) {
         if (lambda <= minlambda) {
           if (monitor) {
@@ -248,7 +244,7 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
             if (!objective) {
               PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, minlambda=%18.16e, lambda=%18.16e, initial slope=%18.16e\n", (double)fnorm, (double)gnorm, (double)ynorm, (double)minlambda, (double)lambda, (double)initslope));
             } else {
-              PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: obj(0)=%18.16e, obj=%18.16e, ynorm=%18.16e, minlambda=%18.16e, lambda=%18.16e, initial slope=%18.16e\n", (double)f, (double)g, (double)ynorm, (double)minlambda, (double)lambda, (double)initslope / 2.0));
+              PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: obj(0)=%18.16e, obj=%18.16e, ynorm=%18.16e, minlambda=%18.16e, lambda=%18.16e, initial slope=%18.16e\n", (double)f, (double)g, (double)ynorm, (double)minlambda, (double)lambda, (double)initslope));
             }
             PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
           }
@@ -256,8 +252,9 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
           PetscFunctionReturn(PETSC_SUCCESS);
         }
         if (linesearch->order == SNES_LINESEARCH_ORDER_CUBIC) {
-          t1 = .5 * (g - f) - lambda * initslope;
-          t2 = .5 * (gprev - f) - lambdaprev * initslope;
+          /* Fit points with cubic */
+          t1 = g - f - lambda * initslope;
+          t2 = gprev - f - lambdaprev * initslope;
           a  = (t1 / (lambda * lambda) - t2 / (lambdaprev * lambdaprev)) / (lambda - lambdaprev);
           b  = (-lambdaprev * t1 / (lambda * lambda) + lambda * t2 / (lambdaprev * lambdaprev)) / (lambda - lambdaprev);
           d  = b * b - 3 * a * initslope;
@@ -265,15 +262,14 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
           if (a == 0.0) lambdatemp = -initslope / (2.0 * b);
           else lambdatemp = (-b + PetscSqrtReal(d)) / (3.0 * a);
         } else if (linesearch->order == SNES_LINESEARCH_ORDER_QUADRATIC) {
-          lambdatemp = -initslope / (g - f - 2.0 * initslope);
+          lambdatemp = -initslope * PetscSqr(lambda) / (2.0 * (g - f - lambda * initslope));
         } else if (linesearch->order == SNES_LINESEARCH_ORDER_LINEAR) { /* Just backtrack */
           lambdatemp = .5 * lambda;
         } else SETERRQ(PetscObjectComm((PetscObject)linesearch), PETSC_ERR_SUP, "Line search order %" PetscInt_FMT " for type bt", linesearch->order);
         lambdaprev = lambda;
         gprev      = g;
-        if (lambdatemp > .5 * lambda) lambdatemp = .5 * lambda;
-        if (lambdatemp <= .1 * lambda) lambda = .1 * lambda;
-        else lambda = lambdatemp;
+
+        lambda = PetscClipInterval(lambdatemp, .1 * lambda, .5 * lambda);
         PetscCall(VecWAXPY(W, -lambda, Y, X));
         if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));
         if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
@@ -293,14 +289,14 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
           } else {
             PetscCall(VecNorm(G, NORM_2, &gnorm));
           }
-          g = PetscSqr(gnorm);
+          g = 0.5 * PetscSqr(gnorm);
         }
         if (PetscIsInfOrNanReal(g)) {
           PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_NANORINF));
           PetscCall(PetscInfo(snes, "Aborted due to Nan or Inf in function evaluation\n"));
           PetscFunctionReturn(PETSC_SUCCESS);
         }
-        if (.5 * g < .5 * f + lambda * alpha * initslope) { /* is reduction enough? */
+        if (g <= f + lambda * alpha * initslope) { /* is reduction enough? */
           if (monitor) {
             PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
             if (!objective) {
@@ -394,7 +390,7 @@ static PetscErrorCode SNESLineSearchSetFromOptions_BT(SNESLineSearch linesearch,
 }
 
 /*MC
-   SNESLINESEARCHBT - Backtracking line search.
+   SNESLINESEARCHBT - Backtracking line search {cite}`dennis:83`.
 
    This line search finds the minimum of a polynomial fitting of the L2 norm of the
    function or the objective function if it is provided with `SNESSetObjective()`.
@@ -402,21 +398,18 @@ static PetscErrorCode SNESLineSearchSetFromOptions_BT(SNESLineSearch linesearch,
    and the fit is reattempted at most max_it times or until lambda is below minlambda.
 
    Options Database Keys:
-+  -snes_linesearch_alpha <1e\-4> - slope descent parameter
-.  -snes_linesearch_damping <1.0> - initial step length
-.  -snes_linesearch_maxstep <length> - if the length the initial step is larger than this then the
-                                       step is scaled back to be of this length at the beginning of the line search
-.  -snes_linesearch_max_it <40> - maximum number of shrinking step
++  -snes_linesearch_alpha <1e\-4>      - slope descent parameter
+.  -snes_linesearch_damping <1.0>      - initial step length
+.  -snes_linesearch_maxstep <length>   - if the length the initial step is larger than this then the
+                                         step is scaled back to be of this length at the beginning of the line search
+.  -snes_linesearch_max_it <40>        - maximum number of shrinking step
 .  -snes_linesearch_minlambda <1e\-12> - minimum step length allowed
--  -snes_linesearch_order <1,2,3> - order of the approximation. With order 1, it performs a simple backtracking without any curve fitting
+-  -snes_linesearch_order <1,2,3>      - order of the approximation. With order 1, it performs a simple backtracking without any curve fitting
 
    Level: advanced
 
    Note:
    This line search will always produce a step that is less than or equal to, in length, the full step size.
-
-   Reference:
-.  - * - "Numerical Methods for Unconstrained Optimization and Nonlinear Equations" by Dennis and Schnabel, page 325.
 
 .seealso: [](ch_snes), `SNESLineSearch`, `SNESLineSearchType`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
 M*/

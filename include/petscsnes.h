@@ -11,7 +11,7 @@
 /* SUBMANSEC = SNES */
 
 /*S
-     SNES - Abstract PETSc object that manages nonlinear solves
+   SNES - Abstract PETSc object that manages nonlinear solves
 
    Level: beginner
 
@@ -20,7 +20,7 @@ S*/
 typedef struct _p_SNES *SNES;
 
 /*J
-    SNESType - String with the name of a PETSc `SNES` method.
+   SNESType - String with the name of a PETSc `SNES` method.
 
    Level: beginner
 
@@ -153,7 +153,7 @@ PETSC_EXTERN PetscErrorCode SNESGetIterationNumber(SNES, PetscInt *);
 PETSC_EXTERN PetscErrorCode SNESSetIterationNumber(SNES, PetscInt);
 
 /*E
-    SNESNewtonTRFallbackType - type of fallback in case the solution of the trust-region subproblem is outside of the radius
+   SNESNewtonTRFallbackType - type of fallback in case the solution of the trust-region subproblem is outside of the radius
 
    Values:
 +  `SNES_TR_FALLBACK_NEWTON` - use scaled Newton step
@@ -257,17 +257,17 @@ PETSC_EXTERN PetscErrorCode SNESGetCheckJacobianDomainError(SNES, PetscBool *);
     SNESConvergedReason - reason a `SNESSolve()` was determined to have converged or diverged
 
    Values:
-+  `SNES_CONVERGED_FNORM_ABS` - 2-norm(F) <= abstol
++  `SNES_CONVERGED_FNORM_ABS`      - 2-norm(F) <= abstol
 .  `SNES_CONVERGED_FNORM_RELATIVE` - 2-norm(F) <= rtol*2-norm(F(x_0)) where x_0 is the initial guess
 .  `SNES_CONVERGED_SNORM_RELATIVE` - The 2-norm of the last step <= stol * 2-norm(x) where x is the current
-.  `SNES_DIVERGED_FUNCTION_COUNT` - The user provided function has been called more times than the maximum set in `SNESSetTolerances()`
-.  `SNES_DIVERGED_DTOL` - The norm of the function has increased by a factor of divtol set with `SNESSetDivergenceTolerance()`
-.  `SNES_DIVERGED_FNORM_NAN` - the 2-norm of the current function evaluation is not-a-number (NaN), this
-      is usually caused by a division of 0 by 0.
-.  `SNES_DIVERGED_MAX_IT` - `SNESSolve()` has reached the maximum number of iterations requested
-.  `SNES_DIVERGED_LINE_SEARCH` - The line search has failed. This only occurs for `SNES` solvers that use a line search
-.  `SNES_DIVERGED_LOCAL_MIN` - the algorithm seems to have stagnated at a local minimum that is not zero.
--  `SNES_CONERGED_ITERATING` - this only occurs if `SNESGetConvergedReason()` is called during the `SNESSolve()`
+.  `SNES_DIVERGED_FUNCTION_COUNT`  - The user provided function has been called more times than the maximum set in `SNESSetTolerances()`
+.  `SNES_DIVERGED_DTOL`            - The norm of the function has increased by a factor of divtol set with `SNESSetDivergenceTolerance()`
+.  `SNES_DIVERGED_FNORM_NAN`       - the 2-norm of the current function evaluation is not-a-number (NaN), this
+                                     is usually caused by a division of 0 by 0.
+.  `SNES_DIVERGED_MAX_IT`          - `SNESSolve()` has reached the maximum number of iterations requested
+.  `SNES_DIVERGED_LINE_SEARCH`     - The line search has failed. This only occurs for `SNES` solvers that use a line search
+.  `SNES_DIVERGED_LOCAL_MIN`       - the algorithm seems to have stagnated at a local minimum that is not zero.
+-  `SNES_CONERGED_ITERATING`       - this only occurs if `SNESGetConvergedReason()` is called during the `SNESSolve()`
 
    Level: beginner
 
@@ -276,28 +276,28 @@ PETSC_EXTERN PetscErrorCode SNESGetCheckJacobianDomainError(SNES, PetscBool *);
    testing with `-pc_type lu` to eliminate the linear solver as the cause of the problem).
 
    `SNES_DIVERGED_LOCAL_MIN` can only occur when using the line-search variant of `SNES`.
-       The line search wants to minimize Q(alpha) = 1/2 || F(x + alpha s) ||^2_2  this occurs
-       at Q'(alpha) = s^T F'(x+alpha s)^T F(x+alpha s) = 0. If s is the Newton direction - F'(x)^(-1)F(x) then
-       you get Q'(alpha) = -F(x)^T F'(x)^(-1)^T F'(x+alpha s)F(x+alpha s); when alpha = 0
-       Q'(0) = - ||F(x)||^2_2 which is always NEGATIVE if F'(x) is invertible. This means the Newton
-       direction is a descent direction and the line search should succeed if alpha is small enough.
+   The line search wants to minimize Q(alpha) = 1/2 || F(x + alpha s) ||^2_2  this occurs
+   at Q'(alpha) = s^T F'(x+alpha s)^T F(x+alpha s) = 0. If s is the Newton direction - F'(x)^(-1)F(x) then
+   you get Q'(alpha) = -F(x)^T F'(x)^(-1)^T F'(x+alpha s)F(x+alpha s); when alpha = 0
+   Q'(0) = - ||F(x)||^2_2 which is always NEGATIVE if F'(x) is invertible. This means the Newton
+   direction is a descent direction and the line search should succeed if alpha is small enough.
 
-       If F'(x) is NOT invertible AND F'(x)^T F(x) = 0 then Q'(0) = 0 and the Newton direction
-       is NOT a descent direction so the line search will fail. All one can do at this point
-       is change the initial guess and try again.
+   If F'(x) is NOT invertible AND F'(x)^T F(x) = 0 then Q'(0) = 0 and the Newton direction
+   is NOT a descent direction so the line search will fail. All one can do at this point
+   is change the initial guess and try again.
 
-       An alternative explanation: Newton's method can be regarded as replacing the function with
-       its linear approximation and minimizing the 2-norm of that. That is F(x+s) approx F(x) + F'(x)s
-       so we minimize || F(x) + F'(x) s ||^2_2; do this using Least Squares. If F'(x) is invertible then
-       s = - F'(x)^(-1)F(x) otherwise F'(x)^T F'(x) s = -F'(x)^T F(x). If F'(x)^T F(x) is NOT zero then there
-       exists a nontrivial (that is F'(x)s != 0) solution to the equation and this direction is
-       s = - [F'(x)^T F'(x)]^(-1) F'(x)^T F(x) so Q'(0) = - F(x)^T F'(x) [F'(x)^T F'(x)]^(-T) F'(x)^T F(x)
-       = - (F'(x)^T F(x)) [F'(x)^T F'(x)]^(-T) (F'(x)^T F(x)). Since we are assuming (F'(x)^T F(x)) != 0
-       and F'(x)^T F'(x) has no negative eigenvalues Q'(0) < 0 so s is a descent direction and the line
-       search should succeed for small enough alpha.
+   An alternative explanation: Newton's method can be regarded as replacing the function with
+   its linear approximation and minimizing the 2-norm of that. That is F(x+s) approx F(x) + F'(x)s
+   so we minimize || F(x) + F'(x) s ||^2_2; do this using Least Squares. If F'(x) is invertible then
+   s = - F'(x)^(-1)F(x) otherwise F'(x)^T F'(x) s = -F'(x)^T F(x). If F'(x)^T F(x) is NOT zero then there
+   exists a nontrivial (that is F'(x)s != 0) solution to the equation and this direction is
+   s = - [F'(x)^T F'(x)]^(-1) F'(x)^T F(x) so Q'(0) = - F(x)^T F'(x) [F'(x)^T F'(x)]^(-T) F'(x)^T F(x)
+   = - (F'(x)^T F(x)) [F'(x)^T F'(x)]^(-T) (F'(x)^T F(x)). Since we are assuming (F'(x)^T F(x)) != 0
+   and F'(x)^T F'(x) has no negative eigenvalues Q'(0) < 0 so s is a descent direction and the line
+   search should succeed for small enough alpha.
 
-       Note that this RARELY happens in practice. Far more likely the linear system is not being solved
-       (well enough?) or the Jacobian is wrong.
+   Note that this RARELY happens in practice. Far more likely the linear system is not being solved
+   (well enough?) or the Jacobian is wrong.
 
    `SNES_DIVERGED_MAX_IT` means that the solver reached the maximum number of iterations without satisfying any
    convergence criteria. `SNES_CONVERGED_ITS` means that `SNESConvergedSkip()` was chosen as the convergence test;
@@ -331,7 +331,7 @@ typedef enum {                       /* converged */
 PETSC_EXTERN const char *const *SNESConvergedReasons;
 
 /*MC
-     SNES_CONVERGED_FNORM_ABS - 2-norm(F) <= abstol
+   SNES_CONVERGED_FNORM_ABS - 2-norm(F) <= abstol
 
    Level: beginner
 
@@ -339,7 +339,7 @@ PETSC_EXTERN const char *const *SNESConvergedReasons;
 M*/
 
 /*MC
-     SNES_CONVERGED_FNORM_RELATIVE - 2-norm(F) <= rtol*2-norm(F(x_0)) where x_0 is the initial guess
+   SNES_CONVERGED_FNORM_RELATIVE - 2-norm(F) <= rtol*2-norm(F(x_0)) where x_0 is the initial guess
 
    Level: beginner
 
@@ -347,20 +347,11 @@ M*/
 M*/
 
 /*MC
-     SNES_CONVERGED_SNORM_RELATIVE - The 2-norm of the last step <= stol * 2-norm(x) where x is the current
-          solution and stol is the 4th argument to `SNESSetTolerances()`
+  SNES_CONVERGED_SNORM_RELATIVE - The 2-norm of the last step <= stol * 2-norm(x) where x is the current
+  solution and stol is the 4th argument to `SNESSetTolerances()`
 
-     Options Database Keys:
-      -snes_stol <stol> - the step tolerance
-
-   Level: beginner
-
-.seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
-M*/
-
-/*MC
-     SNES_DIVERGED_FUNCTION_COUNT - The user provided function has been called more times then the final
-         argument to `SNESSetTolerances()`
+  Options Database Key:
+  -snes_stol <stol> - the step tolerance
 
    Level: beginner
 
@@ -368,7 +359,16 @@ M*/
 M*/
 
 /*MC
-     SNES_DIVERGED_DTOL - The norm of the function has increased by a factor of divtol set with `SNESSetDivergenceTolerance()`
+   SNES_DIVERGED_FUNCTION_COUNT - The user provided function has been called more times then the final
+   argument to `SNESSetTolerances()`
+
+   Level: beginner
+
+.seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
+M*/
+
+/*MC
+   SNES_DIVERGED_DTOL - The norm of the function has increased by a factor of divtol set with `SNESSetDivergenceTolerance()`
 
    Level: beginner
 
@@ -376,8 +376,8 @@ M*/
 M*/
 
 /*MC
-     SNES_DIVERGED_FNORM_NAN - the 2-norm of the current function evaluation is not-a-number (NaN), this
-      is usually caused by a division of 0 by 0.
+   SNES_DIVERGED_FNORM_NAN - the 2-norm of the current function evaluation is not-a-number (NaN), this
+   is usually caused by a division of 0 by 0.
 
    Level: beginner
 
@@ -385,7 +385,7 @@ M*/
 M*/
 
 /*MC
-     SNES_DIVERGED_MAX_IT - SNESSolve() has reached the maximum number of iterations requested
+   SNES_DIVERGED_MAX_IT - SNESSolve() has reached the maximum number of iterations requested
 
    Level: beginner
 
@@ -393,7 +393,7 @@ M*/
 M*/
 
 /*MC
-     SNES_DIVERGED_LINE_SEARCH - The line search has failed. This only occurs for a `SNES` solvers that use a line search
+   SNES_DIVERGED_LINE_SEARCH - The line search has failed. This only occurs for a `SNES` solvers that use a line search
 
    Level: beginner
 
@@ -401,8 +401,8 @@ M*/
 M*/
 
 /*MC
-     SNES_DIVERGED_LOCAL_MIN - the algorithm seems to have stagnated at a local minimum that is not zero.
-        See the manual page for `SNESConvergedReason` for more details
+   SNES_DIVERGED_LOCAL_MIN - the algorithm seems to have stagnated at a local minimum that is not zero.
+   See the manual page for `SNESConvergedReason` for more details
 
    Level: beginner
 
@@ -410,7 +410,7 @@ M*/
 M*/
 
 /*MC
-     SNES_CONERGED_ITERATING - this only occurs if `SNESGetConvergedReason()` is called during the `SNESSolve()`
+   SNES_CONERGED_ITERATING - this only occurs if `SNESGetConvergedReason()` is called during the `SNESSolve()`
 
    Level: beginner
 
@@ -455,14 +455,14 @@ PETSC_EXTERN PetscErrorCode SNESGetObjective(SNES, PetscErrorCode (**)(SNES, Vec
 PETSC_EXTERN PetscErrorCode SNESComputeObjective(SNES, Vec, PetscReal *);
 
 /*E
-    SNESNormSchedule - Frequency with which the norm is computed during a nonliner solve
+   SNESNormSchedule - Frequency with which the norm is computed during a nonliner solve
 
    Values:
-+   `SNES_NORM_DEFAULT` - use the default behavior for the current `SNESType`
-.   `SNES_NORM_NONE` - avoid all norm computations
-.   `SNES_NORM_ALWAYS` - compute the norms whenever possible
-.   `SNES_NORM_INITIAL_ONLY` - compute the norm only when the algorithm starts
-.   `SNES_NORM_FINAL_ONLY` - compute the norm only when the algorithm finishes
++   `SNES_NORM_DEFAULT`            - use the default behavior for the current `SNESType`
+.   `SNES_NORM_NONE`               - avoid all norm computations
+.   `SNES_NORM_ALWAYS`             - compute the norms whenever possible
+.   `SNES_NORM_INITIAL_ONLY`       - compute the norm only when the algorithm starts
+.   `SNES_NORM_FINAL_ONLY`         - compute the norm only when the algorithm finishes
 -   `SNES_NORM_INITIAL_FINAL_ONLY` - compute the norm at the start and end of the algorithm
 
    Level: advanced
@@ -491,29 +491,29 @@ typedef enum {
 PETSC_EXTERN const char *const *const SNESNormSchedules;
 
 /*MC
-    SNES_NORM_NONE - Don't compute function and its L2 norm when possible
+   SNES_NORM_NONE - Don't compute function and its L2 norm when possible
 
    Level: advanced
 
-    Note:
-    This is most useful for stationary solvers with a fixed number of iterations used as smoothers.
+   Note:
+   This is most useful for stationary solvers with a fixed number of iterations used as smoothers.
 
 .seealso: [](ch_snes), `SNESNormSchedule`, `SNES`, `SNESSetNormSchedule()`, `SNES_NORM_DEFAULT`
 M*/
 
 /*MC
-    SNES_NORM_ALWAYS - Compute the function and its L2 norm at each iteration.
+   SNES_NORM_ALWAYS - Compute the function and its L2 norm at each iteration.
 
    Level: advanced
 
-    Note:
-    Most solvers will use this no matter what norm type is passed to them.
+   Note:
+   Most solvers will use this no matter what norm type is passed to them.
 
 .seealso: [](ch_snes), `SNESNormSchedule`, `SNES`, `SNESSetNormSchedule()`, `SNES_NORM_NONE`
 M*/
 
 /*MC
-    SNES_NORM_INITIAL_ONLY - Compute the function and its L2 at iteration 0, but do not update it.
+   SNES_NORM_INITIAL_ONLY - Compute the function and its L2 at iteration 0, but do not update it.
 
    Level: advanced
 
@@ -528,7 +528,7 @@ M*/
 M*/
 
 /*MC
-    SNES_NORM_FINAL_ONLY - Compute the function and its L2 norm on only the final iteration.
+   SNES_NORM_FINAL_ONLY - Compute the function and its L2 norm on only the final iteration.
 
    Level: advanced
 
@@ -542,7 +542,7 @@ M*/
 M*/
 
 /*MC
-    SNES_NORM_INITIAL_FINAL_ONLY - Compute the function and its L2 norm on only the initial and final iterations.
+   SNES_NORM_INITIAL_FINAL_ONLY - Compute the function and its L2 norm on only the initial and final iterations.
 
    Level: advanced
 
@@ -560,12 +560,12 @@ PETSC_EXTERN PetscErrorCode SNESGetUpdateNorm(SNES, PetscReal *);
 PETSC_EXTERN PetscErrorCode SNESGetSolutionNorm(SNES, PetscReal *);
 
 /*E
-    SNESFunctionType - Type of function computed
+   SNESFunctionType - Type of function computed
 
    Values:
-+  `SNES_FUNCTION_DEFAULT` - the default behavior for the current `SNESType`
++  `SNES_FUNCTION_DEFAULT`          - the default behavior for the current `SNESType`
 .  `SNES_FUNCTION_UNPRECONDITIONED` - the original function provided
--  `SNES_FUNCTION_PRECONDITIONED` - the modification of the function by the preconditioner
+-  `SNES_FUNCTION_PRECONDITIONED`   - the modification of the function by the preconditioner
 
    Level: advanced
 
@@ -604,7 +604,7 @@ PETSC_EXTERN PetscErrorCode SNESShellSetSolve(SNES, PetscErrorCode (*)(SNES, Vec
 /* --------- Routines specifically for line search methods --------------- */
 
 /*S
-     SNESLineSearch - Abstract PETSc object that manages line-search operations for nonlinear solvers
+   SNESLineSearch - Abstract PETSc object that manages line-search operations for nonlinear solvers
 
    Level: beginner
 
@@ -613,15 +613,15 @@ S*/
 typedef struct _p_LineSearch *SNESLineSearch;
 
 /*J
-    SNESLineSearchType - String with the name of a PETSc line search method `SNESLineSearch`
+   SNESLineSearchType - String with the name of a PETSc line search method `SNESLineSearch`
 
    Values:
-+  `SNESLINESEARCHBASIC` - (or equivalently `SNESLINESEARCHNONE`) Simple damping line search, defaults to using the full Newton step
-.  `SNESLINESEARCHBT` - Backtracking line search over the L2 norm of the function
-.  `SNESLINESEARCHL2` - Secant line search over the L2 norm of the function
-.  `SNESLINESEARCHCP` - Critical point secant line search assuming F(x) = grad G(x) for some unknown G(x)
++  `SNESLINESEARCHBASIC`   - (or equivalently `SNESLINESEARCHNONE`) Simple damping line search, defaults to using the full Newton step
+.  `SNESLINESEARCHBT`      - Backtracking line search over the L2 norm of the function
+.  `SNESLINESEARCHL2`      - Secant line search over the L2 norm of the function
+.  `SNESLINESEARCHCP`      - Critical point secant line search assuming F(x) = grad G(x) for some unknown G(x)
 .  `SNESLINESEARCHNLEQERR` - Affine-covariant error-oriented linesearch
--  `SNESLINESEARCHSHELL` - User provided `SNESLineSearch` implementation
+-  `SNESLINESEARCHSHELL`   - User provided `SNESLineSearch` implementation
 
    Level: beginner
 
@@ -700,13 +700,13 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchSetOrder(SNESLineSearch, PetscInt orde
     SNESLineSearchReason - indication if the line search has succeeded or failed and why
 
   Values:
-+  `SNES_LINESEARCH_SUCCEEDED` - the line search succeeded
++  `SNES_LINESEARCH_SUCCEEDED`       - the line search succeeded
 .  `SNES_LINESEARCH_FAILED_NANORINF` - a not a number of infinity appeared in the computions
-.  `SNES_LINESEARCH_FAILED_DOMAIN` - the function was evaluated outside of its domain, see `SNESSetFunctionDomainError()` and `SNESSetJacobianDomainError()`
-.  `SNES_LINESEARCH_FAILED_REDUCT` - the linear search failed to get the requested decrease in its norm or objective
-.  `SNES_LINESEARCH_FAILED_USER` - used by `SNESLINESEARCHNLEQERR` to indicate the user changed the search direction inappropriately
+.  `SNES_LINESEARCH_FAILED_DOMAIN`   - the function was evaluated outside of its domain, see `SNESSetFunctionDomainError()` and `SNESSetJacobianDomainError()`
+.  `SNES_LINESEARCH_FAILED_REDUCT`   - the linear search failed to get the requested decrease in its norm or objective
+.  `SNES_LINESEARCH_FAILED_USER`     - used by `SNESLINESEARCHNLEQERR` to indicate the user changed the search direction inappropriately
 -  `SNES_LINESEARCH_FAILED_FUNCTION` - indicates the maximum number of function evaluations allowed has been surpassed, `SNESConvergedReason` is also
-                                     set to `SNES_DIVERGED_FUNCTION_COUNT`
+                                       set to `SNES_DIVERGED_FUNCTION_COUNT`
 
    Level: intermediate
 
@@ -776,6 +776,7 @@ PETSC_EXTERN PetscErrorCode SNESTestLocalMin(SNES);
 /* Should this routine be private? */
 PETSC_EXTERN PetscErrorCode SNESComputeJacobian(SNES, Vec, Mat, Mat);
 PETSC_EXTERN PetscErrorCode SNESTestJacobian(SNES);
+PETSC_EXTERN PetscErrorCode SNESTestFunction(SNES);
 
 PETSC_EXTERN PetscErrorCode SNESSetDM(SNES, DM);
 PETSC_EXTERN PetscErrorCode SNESGetDM(SNES, DM *);
@@ -833,9 +834,11 @@ PETSC_EXTERN PetscErrorCode DMDASNESSetJacobianLocalVec(DM, DMDASNESJacobianVec,
 PETSC_EXTERN PetscErrorCode DMDASNESSetObjectiveLocalVec(DM, DMDASNESObjectiveVec, void *);
 
 PETSC_EXTERN PetscErrorCode DMSNESSetBoundaryLocal(DM, PetscErrorCode (*)(DM, Vec, void *), void *);
+PETSC_EXTERN PetscErrorCode DMSNESSetObjectiveLocal(DM, PetscErrorCode (*)(DM, Vec, PetscReal *, void *), void *);
 PETSC_EXTERN PetscErrorCode DMSNESSetFunctionLocal(DM, PetscErrorCode (*)(DM, Vec, Vec, void *), void *);
 PETSC_EXTERN PetscErrorCode DMSNESSetJacobianLocal(DM, PetscErrorCode (*)(DM, Vec, Mat, Mat, void *), void *);
 PETSC_EXTERN PetscErrorCode DMSNESGetBoundaryLocal(DM, PetscErrorCode (**)(DM, Vec, void *), void **);
+PETSC_EXTERN PetscErrorCode DMSNESGetObjectiveLocal(DM, PetscErrorCode (**)(DM, Vec, PetscReal *, void *), void **);
 PETSC_EXTERN PetscErrorCode DMSNESGetFunctionLocal(DM, PetscErrorCode (**)(DM, Vec, Vec, void *), void **);
 PETSC_EXTERN PetscErrorCode DMSNESGetJacobianLocal(DM, PetscErrorCode (**)(DM, Vec, Mat, Mat, void *), void **);
 
@@ -847,7 +850,7 @@ PETSC_EXTERN PetscErrorCode SNESMultiblockSetType(SNES, PCCompositeType);
 PETSC_EXTERN PetscErrorCode SNESMultiblockGetSubSNES(SNES, PetscInt *, SNES *[]);
 
 /*J
-    SNESMSType - String with the name of a PETSc `SNESMS` method.
+   SNESMSType - String with the name of a PETSc `SNESMS` method.
 
    Level: intermediate
 
@@ -878,13 +881,13 @@ PETSC_EXTERN PetscErrorCode SNESMSRegisterDestroy(void);
    SNESNGMRESRestartType - the restart approach used by `SNESNGMRES`
 
   Values:
-+   `SNES_NGMRES_RESTART_NONE` - never restart
++   `SNES_NGMRES_RESTART_NONE`       - never restart
 .   `SNES_NGMRES_RESTART_DIFFERENCE` - restart based upon difference criteria
--   `SNES_NGMRES_RESTART_PERIODIC` - restart after a fixed number of iterations
+-   `SNES_NGMRES_RESTART_PERIODIC`   - restart after a fixed number of iterations
 
   Options Database Keys:
-+ -snes_ngmres_restart_type<difference,periodic,none> - set the restart type
-- -snes_ngmres_restart[30]                            - sets the number of iterations before restart for periodic
++ -snes_ngmres_restart_type <difference,periodic,none> - set the restart type
+- -snes_ngmres_restart <30>                            - sets the number of iterations before restart for periodic
 
    Level: intermediate
 
@@ -903,7 +906,7 @@ PETSC_EXTERN const char *const SNESNGMRESRestartTypes[];
   combined solution are used to create the next iterate.
 
    Values:
-+   `SNES_NGMRES_SELECT_NONE` - choose the combined solution all the time
++   `SNES_NGMRES_SELECT_NONE`       - choose the combined solution all the time
 .   `SNES_NGMRES_SELECT_DIFFERENCE` - choose based upon the selection criteria
 -   `SNES_NGMRES_SELECT_LINESEARCH` - choose based upon line search combination
 
@@ -931,11 +934,11 @@ PETSC_EXTERN PetscErrorCode SNESNGMRESGetRestartFmRise(SNES, PetscBool *);
    SNESNCGType - the conjugate update approach for `SNESNCG`
 
    Values:
-+   `SNES_NCG_FR` - Fletcher-Reeves update
++   `SNES_NCG_FR`  - Fletcher-Reeves update
 .   `SNES_NCG_PRP` - Polak-Ribiere-Polyak update, the default and the only one that tolerates generalized search directions
-.   `SNES_NCG_HS` - Hestenes-Steifel update
-.   `SNES_NCG_DY` - Dai-Yuan update
--   `SNES_NCG_CD` - Conjugate Descent update
+.   `SNES_NCG_HS`  - Hestenes-Steifel update
+.   `SNES_NCG_DY`  - Dai-Yuan update
+-   `SNES_NCG_CD`  - Conjugate Descent update
 
   Options Database Key:
 . -snes_ncg_type<fr,prp,hs,dy,cd> - select type
@@ -959,8 +962,8 @@ PETSC_EXTERN PetscErrorCode SNESNCGSetType(SNES, SNESNCGType);
    SNESQNScaleType - the scaling type used by `SNESQN`
 
    Values:
-+   `SNES_QN_SCALE_NONE` - don't scale the problem
-.   `SNES_QN_SCALE_SCALAR` - use Shanno scaling
++   `SNES_QN_SCALE_NONE`     - don't scale the problem
+.   `SNES_QN_SCALE_SCALAR`   - use Shanno scaling
 .   `SNES_QN_SCALE_DIAGONAL` - scale with a diagonalized BFGS formula (see Gilbert and Lemarechal 1989), available
 -   `SNES_QN_SCALE_JACOBIAN` - scale by solving a linear system coming from the Jacobian you provided with `SNESSetJacobian()`
                                computed at the first iteration of `SNESQN` and at ever restart.
@@ -985,8 +988,8 @@ PETSC_EXTERN const char *const SNESQNScaleTypes[];
    SNESQNRestartType - the restart approached used by `SNESQN`
 
    Values:
-+   `SNES_QN_RESTART_NONE` - never restart
-.   `SNES_QN_RESTART_POWELL` - restart based upon descent criteria
++   `SNES_QN_RESTART_NONE`     - never restart
+.   `SNES_QN_RESTART_POWELL`   - restart based upon descent criteria
 -   `SNES_QN_RESTART_PERIODIC` - restart after a fixed number of iterations
 
   Options Database Keys:
@@ -1009,8 +1012,8 @@ PETSC_EXTERN const char *const SNESQNRestartTypes[];
    SNESQNType - the type used by `SNESQN`
 
   Values:
-+   `SNES_QN_LBFGS` - LBFGS variant
-.   `SNES_QN_BROYDEN` - Broyden variant
++   `SNES_QN_LBFGS`      - LBFGS variant
+.   `SNES_QN_BROYDEN`    - Broyden variant
 -   `SNES_QN_BADBROYDEN` - Bad Broyden variant
 
   Options Database Key:

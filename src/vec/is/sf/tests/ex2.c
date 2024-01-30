@@ -83,6 +83,6 @@ int main(int argc, char **argv)
     output_file: output/ex2_1.out
     #make sure the host memory is pinned
     # sf_backend hip is not needed if compiling only with hip
-    args:  -vec_type hip -sf_backend hip -vec_pinned_memory_min 0
+    args: -vec_type hip -sf_backend hip -vec_pinned_memory_min 0
 
 TEST*/

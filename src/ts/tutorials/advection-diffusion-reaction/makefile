@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-MANSEC          = TS
 CLEANFILES      = TS-data-*
 OBJECTS_EX5     = reaction_diffusion.o
 

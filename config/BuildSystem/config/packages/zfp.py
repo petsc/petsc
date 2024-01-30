@@ -4,14 +4,14 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.version           = '1.0.0'
+    self.version           = '1.0.1'
     self.gitcommit         = '{0}'.format(self.version)
     self.versionname       = 'ZFP_VERSION'
     self.download          = ['git://https://github.com/LLNL/zfp']
     self.functions         = ['zfp_field_2d']
     self.includes          = ['zfp/array2.hpp']
     self.liblist           = [['libzfp.a']]
-    self.license           = 'ttps://github.com/LLNL/zfp/'
+    self.license           = 'https://github.com/LLNL/zfp/'
     self.buildLanguages    = ['Cxx']
     # self.precisions        = ['double']
     self.complex           = 0

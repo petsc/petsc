@@ -199,10 +199,11 @@ static PetscErrorCode PCView_LSC(PC pc, PetscViewer viewer)
 }
 
 /*MC
-     PCLSC - Preconditioning for Schur complements, based on Least Squares Commutators
+   PCLSC - Preconditioning for Schur complements, based on Least Squares Commutators {cite}`elmanhowleshadidshuttleworthtuminaro2006` {cite}`silvester2001efficient`
 
    Options Database Key:
-.    -pc_lsc_scale_diag - Use the diagonal of A for scaling
++    -pc_lsc_commute    - Whether to commute the LSC preconditioner in the style of Olshanskii
+-    -pc_lsc_scale_diag - Whether to scale $BB^T$ products. Will use the inverse of the diagonal of Qscale or A if the former is not provided
 
    Level: intermediate
 
@@ -210,20 +211,20 @@ static PetscErrorCode PCView_LSC(PC pc, PetscViewer viewer)
    This preconditioner will normally be used with `PCFIELDSPLIT` to precondition the Schur complement, but
    it can be used for any Schur complement system.  Consider the Schur complement
 
-.vb
-   S = A11 - A10 inv(A00) A01
-.ve
+   $$
+   S = A11 - A10 A00^{-1} A01
+   $$
 
    `PCLSC` currently doesn't do anything with A11, so let's assume it is 0.  The idea is that a good approximation to
    inv(S) is given by
 
-.vb
-   inv(A10 A01) A10 A00 A01 inv(A10 A01)
-.ve
+   $$
+   (A10 A01)^{-1} A10 A00 A01 (A10 A01)^{-1}
+   $$
 
    The product A10 A01 can be computed for you, but you can provide it (this is
    usually more efficient anyway).  In the case of incompressible flow, A10 A01 is a Laplacian; call it L.  The current
-   interface is to hang L and a preconditioning matrix Lp on the preconditioning matrix.
+   interface is to compose L and a preconditioning matrix Lp on the preconditioning matrix.
 
    If you had called `KSPSetOperators`(ksp,S,Sp), S should have type `MATSCHURCOMPLEMENT` and Sp can be any type you
    like (`PCLSC` doesn't use it directly) but should have matrices composed with it, under the names "LSC_L" and "LSC_Lp".
@@ -243,17 +244,12 @@ static PetscErrorCode PCView_LSC(PC pc, PetscViewer viewer)
    if (Lp) { assemble Lp }
 .ve
 
-   With this, you should be able to choose LSC preconditioning, using e.g. ML's algebraic multigrid to solve with L
-
+   With this, you should be able to choose LSC preconditioning, using e.g. the `PCML` algebraic multigrid to solve with L
 .vb
    -fieldsplit_1_pc_type lsc -fieldsplit_1_lsc_pc_type ml
 .ve
 
    Since we do not use the values in Sp, you can still put an assembled matrix there to use normal preconditioners.
-
-   References:
-+  * - Elman, Howle, Shadid, Shuttleworth, and Tuminaro, Block preconditioners based on approximate commutators, 2006.
--  * - Silvester, Elman, Kay, Wathen, Efficient preconditioning of the linearized Navier Stokes equations for incompressible flow, 2001.
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `Block_Preconditioners`, `PCFIELDSPLIT`,
           `PCFieldSplitGetSubKSP()`, `PCFieldSplitSetFields()`, `PCFieldSplitSetType()`, `PCFieldSplitSetIS()`, `PCFieldSplitSetSchurPre()`,

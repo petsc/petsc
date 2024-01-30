@@ -1,54 +1,26 @@
-#include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
+#include <../src/mat/impls/shell/shell.h> /*I "petscmat.h" I*/
 
 typedef struct {
-  Mat         A;
-  Mat         D; /* local submatrix for diagonal part */
-  Vec         w, left, right, leftwork, rightwork;
-  PetscScalar scale;
+  Mat A;
+  Mat D; /* local submatrix for diagonal part */
+  Vec w;
 } Mat_NormalHermitian;
-
-static PetscErrorCode MatScale_NormalHermitian(Mat inA, PetscScalar scale)
-{
-  Mat_NormalHermitian *a = (Mat_NormalHermitian *)inA->data;
-
-  PetscFunctionBegin;
-  a->scale *= scale;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatDiagonalScale_NormalHermitian(Mat inA, Vec left, Vec right)
-{
-  Mat_NormalHermitian *a = (Mat_NormalHermitian *)inA->data;
-
-  PetscFunctionBegin;
-  if (left) {
-    if (!a->left) {
-      PetscCall(VecDuplicate(left, &a->left));
-      PetscCall(VecCopy(left, a->left));
-    } else {
-      PetscCall(VecPointwiseMult(a->left, left, a->left));
-    }
-  }
-  if (right) {
-    if (!a->right) {
-      PetscCall(VecDuplicate(right, &a->right));
-      PetscCall(VecCopy(right, a->right));
-    } else {
-      PetscCall(VecPointwiseMult(a->right, right, a->right));
-    }
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
 
 static PetscErrorCode MatCreateSubMatrices_NormalHermitian(Mat mat, PetscInt n, const IS irow[], const IS icol[], MatReuse scall, Mat *submat[])
 {
-  Mat_NormalHermitian *a = (Mat_NormalHermitian *)mat->data;
-  Mat                  B = a->A, *suba;
+  Mat_NormalHermitian *a;
+  Mat                  B, *suba;
   IS                  *row;
   PetscInt             M;
 
   PetscFunctionBegin;
-  PetscCheck(!a->left && !a->right && irow == icol, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Not implemented");
+  PetscCheck(!((Mat_Shell *)mat->data)->zrows && !((Mat_Shell *)mat->data)->zcols, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot call MatCreateSubMatrices() if MatZeroRows() or MatZeroRowsColumns() has been called on the input Mat"); // TODO FIXME: lift this limitation by calling MatZeroRows()/MatZeroRowsColumns() after the SubMatrices creation
+  PetscCheck(!((Mat_Shell *)mat->data)->axpy, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot call MatCreateSubMatrices() if MatAXPY() has been called on the input Mat"); // TODO FIXME: lift this limitation by calling MatAXPY() after the SubMatrices creation
+  PetscCheck(!((Mat_Shell *)mat->data)->left && !((Mat_Shell *)mat->data)->right, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot call MatCreateSubMatrices() if MatDiagonalScale() has been called on the input Mat"); // TODO FIXME: lift this limitation by calling MatDiagonalScale() after the SubMatrices creation with a SubVector
+  PetscCheck(!((Mat_Shell *)mat->data)->dshift, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot call MatCreateSubMatrices() if MatDiagonalSet() has been called on the input Mat"); // TODO FIXME: lift this limitation by calling MatDiagonalSet() after the SubMatrices creation with a SubVector
+  PetscCheck(irow == icol, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Not implemented");
+  PetscCall(MatShellGetContext(mat, &a));
+  B = a->A;
   if (scall != MAT_REUSE_MATRIX) PetscCall(PetscCalloc1(n, submat));
   PetscCall(MatGetSize(B, &M, NULL));
   PetscCall(PetscMalloc1(n, &row));
@@ -58,7 +30,8 @@ static PetscErrorCode MatCreateSubMatrices_NormalHermitian(Mat mat, PetscInt n, 
   PetscCall(MatCreateSubMatrices(B, n, row, icol, MAT_INITIAL_MATRIX, &suba));
   for (M = 0; M < n; ++M) {
     PetscCall(MatCreateNormalHermitian(suba[M], *submat + M));
-    ((Mat_NormalHermitian *)(*submat)[M]->data)->scale = a->scale;
+    ((Mat_Shell *)(*submat)[M]->data)->vscale = ((Mat_Shell *)mat->data)->vscale;
+    ((Mat_Shell *)(*submat)[M]->data)->vshift = ((Mat_Shell *)mat->data)->vshift;
   }
   PetscCall(ISDestroy(&row[0]));
   PetscCall(PetscFree(row));
@@ -68,155 +41,85 @@ static PetscErrorCode MatCreateSubMatrices_NormalHermitian(Mat mat, PetscInt n, 
 
 static PetscErrorCode MatPermute_NormalHermitian(Mat A, IS rowp, IS colp, Mat *B)
 {
-  Mat_NormalHermitian *a = (Mat_NormalHermitian *)A->data;
-  Mat                  C, Aa = a->A;
+  Mat_NormalHermitian *a;
+  Mat                  C, Aa;
   IS                   row;
 
   PetscFunctionBegin;
+  PetscCheck(!((Mat_Shell *)A->data)->zrows && !((Mat_Shell *)A->data)->zcols, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatCreateSubMatrices() if MatZeroRows() or MatZeroRowsColumns() has been called on the input Mat"); // TODO FIXME: lift this limitation by calling MatZeroRows()/MatZeroRowsColumns() after the permutation with a permuted zrows and zcols
+  PetscCheck(!((Mat_Shell *)A->data)->axpy, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatCreateSubMatrices() if MatAXPY() has been called on the input Mat"); // TODO FIXME: lift this limitation by calling MatAXPY() after the permutation with a permuted axpy
+  PetscCheck(!((Mat_Shell *)A->data)->left && !((Mat_Shell *)A->data)->right, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatCreateSubMatrices() if MatDiagonalScale() has been called on the input Mat"); // TODO FIXME: lift this limitation by calling MatDiagonalScale() after the permutation with a permuted left and right
+  PetscCheck(!((Mat_Shell *)A->data)->dshift, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatCreateSubMatrices() if MatDiagonalSet() has been called on the input Mat"); // TODO FIXME: lift this limitation by calling MatDiagonalSet() after the permutation with a permuted dshift
   PetscCheck(rowp == colp, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_INCOMP, "Row permutation and column permutation must be the same");
+  PetscCall(MatShellGetContext(A, &a));
+  Aa = a->A;
   PetscCall(ISCreateStride(PetscObjectComm((PetscObject)Aa), Aa->rmap->n, Aa->rmap->rstart, 1, &row));
   PetscCall(ISSetIdentity(row));
   PetscCall(MatPermute(Aa, row, colp, &C));
   PetscCall(ISDestroy(&row));
   PetscCall(MatCreateNormalHermitian(C, B));
   PetscCall(MatDestroy(&C));
+  ((Mat_Shell *)(*B)->data)->vscale = ((Mat_Shell *)A->data)->vscale;
+  ((Mat_Shell *)(*B)->data)->vshift = ((Mat_Shell *)A->data)->vshift;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDuplicate_NormalHermitian(Mat A, MatDuplicateOption op, Mat *B)
 {
-  Mat_NormalHermitian *a = (Mat_NormalHermitian *)A->data;
+  Mat_NormalHermitian *a;
   Mat                  C;
 
   PetscFunctionBegin;
-  PetscCheck(!a->left && !a->right, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Not implemented");
+  PetscCall(MatShellGetContext(A, &a));
   PetscCall(MatDuplicate(a->A, op, &C));
   PetscCall(MatCreateNormalHermitian(C, B));
   PetscCall(MatDestroy(&C));
-  if (op == MAT_COPY_VALUES) ((Mat_NormalHermitian *)(*B)->data)->scale = a->scale;
+  if (op == MAT_COPY_VALUES) PetscCall(MatCopy(A, *B, SAME_NONZERO_PATTERN));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatCopy_NormalHermitian(Mat A, Mat B, MatStructure str)
 {
-  Mat_NormalHermitian *a = (Mat_NormalHermitian *)A->data, *b = (Mat_NormalHermitian *)B->data;
+  Mat_NormalHermitian *a, *b;
 
   PetscFunctionBegin;
-  PetscCheck(!a->left && !a->right, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Not implemented");
+  PetscCall(MatShellGetContext(A, &a));
+  PetscCall(MatShellGetContext(B, &b));
   PetscCall(MatCopy(a->A, b->A, str));
-  b->scale = a->scale;
-  PetscCall(VecDestroy(&b->left));
-  PetscCall(VecDestroy(&b->right));
-  PetscCall(VecDestroy(&b->leftwork));
-  PetscCall(VecDestroy(&b->rightwork));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMult_NormalHermitian(Mat N, Vec x, Vec y)
 {
-  Mat_NormalHermitian *Na = (Mat_NormalHermitian *)N->data;
-  Vec                  in;
+  Mat_NormalHermitian *Na;
 
   PetscFunctionBegin;
-  in = x;
-  if (Na->right) {
-    if (!Na->rightwork) PetscCall(VecDuplicate(Na->right, &Na->rightwork));
-    PetscCall(VecPointwiseMult(Na->rightwork, Na->right, in));
-    in = Na->rightwork;
-  }
-  PetscCall(MatMult(Na->A, in, Na->w));
+  PetscCall(MatShellGetContext(N, &Na));
+  PetscCall(MatMult(Na->A, x, Na->w));
   PetscCall(MatMultHermitianTranspose(Na->A, Na->w, y));
-  if (Na->left) PetscCall(VecPointwiseMult(y, Na->left, y));
-  PetscCall(VecScale(y, Na->scale));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatMultHermitianAdd_Normal(Mat N, Vec v1, Vec v2, Vec v3)
-{
-  Mat_NormalHermitian *Na = (Mat_NormalHermitian *)N->data;
-  Vec                  in;
-
-  PetscFunctionBegin;
-  in = v1;
-  if (Na->right) {
-    if (!Na->rightwork) PetscCall(VecDuplicate(Na->right, &Na->rightwork));
-    PetscCall(VecPointwiseMult(Na->rightwork, Na->right, in));
-    in = Na->rightwork;
-  }
-  PetscCall(MatMult(Na->A, in, Na->w));
-  PetscCall(VecScale(Na->w, Na->scale));
-  if (Na->left) {
-    PetscCall(MatMultHermitianTranspose(Na->A, Na->w, v3));
-    PetscCall(VecPointwiseMult(v3, Na->left, v3));
-    PetscCall(VecAXPY(v3, 1.0, v2));
-  } else {
-    PetscCall(MatMultHermitianTransposeAdd(Na->A, Na->w, v2, v3));
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatMultHermitianTranspose_Normal(Mat N, Vec x, Vec y)
-{
-  Mat_NormalHermitian *Na = (Mat_NormalHermitian *)N->data;
-  Vec                  in;
-
-  PetscFunctionBegin;
-  in = x;
-  if (Na->left) {
-    if (!Na->leftwork) PetscCall(VecDuplicate(Na->left, &Na->leftwork));
-    PetscCall(VecPointwiseMult(Na->leftwork, Na->left, in));
-    in = Na->leftwork;
-  }
-  PetscCall(MatMult(Na->A, in, Na->w));
-  PetscCall(MatMultHermitianTranspose(Na->A, Na->w, y));
-  if (Na->right) PetscCall(VecPointwiseMult(y, Na->right, y));
-  PetscCall(VecScale(y, Na->scale));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatMultHermitianTransposeAdd_Normal(Mat N, Vec v1, Vec v2, Vec v3)
-{
-  Mat_NormalHermitian *Na = (Mat_NormalHermitian *)N->data;
-  Vec                  in;
-
-  PetscFunctionBegin;
-  in = v1;
-  if (Na->left) {
-    if (!Na->leftwork) PetscCall(VecDuplicate(Na->left, &Na->leftwork));
-    PetscCall(VecPointwiseMult(Na->leftwork, Na->left, in));
-    in = Na->leftwork;
-  }
-  PetscCall(MatMult(Na->A, in, Na->w));
-  PetscCall(VecScale(Na->w, Na->scale));
-  if (Na->right) {
-    PetscCall(MatMultHermitianTranspose(Na->A, Na->w, v3));
-    PetscCall(VecPointwiseMult(v3, Na->right, v3));
-    PetscCall(VecAXPY(v3, 1.0, v2));
-  } else {
-    PetscCall(MatMultHermitianTransposeAdd(Na->A, Na->w, v2, v3));
-  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDestroy_NormalHermitian(Mat N)
 {
-  Mat_NormalHermitian *Na = (Mat_NormalHermitian *)N->data;
+  Mat_NormalHermitian *Na;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(N, &Na));
   PetscCall(MatDestroy(&Na->A));
   PetscCall(MatDestroy(&Na->D));
   PetscCall(VecDestroy(&Na->w));
-  PetscCall(VecDestroy(&Na->left));
-  PetscCall(VecDestroy(&Na->right));
-  PetscCall(VecDestroy(&Na->leftwork));
-  PetscCall(VecDestroy(&Na->rightwork));
-  PetscCall(PetscFree(N->data));
-  PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatNormalGetMatHermitian_C", NULL));
+  PetscCall(PetscFree(Na));
+  PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatNormalHermitianGetMat_C", NULL));
+#if !defined(PETSC_USE_COMPLEX)
+  PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatNormalGetMat_C", NULL));
+#endif
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatConvert_normalh_seqaij_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatConvert_normalh_mpiaij_C", NULL));
 #if defined(PETSC_HAVE_HYPRE)
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatConvert_normalh_hypre_C", NULL));
 #endif
+  PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatShellSetContext_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -225,14 +128,16 @@ static PetscErrorCode MatDestroy_NormalHermitian(Mat N)
 */
 static PetscErrorCode MatGetDiagonal_NormalHermitian(Mat N, Vec v)
 {
-  Mat_NormalHermitian *Na = (Mat_NormalHermitian *)N->data;
-  Mat                  A  = Na->A;
+  Mat_NormalHermitian *Na;
+  Mat                  A;
   PetscInt             i, j, rstart, rend, nnz;
   const PetscInt      *cols;
   PetscScalar         *diag, *work, *values;
   const PetscScalar   *mvalues;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(N, &Na));
+  A = Na->A;
   PetscCall(PetscMalloc2(A->cmap->N, &diag, A->cmap->N, &work));
   PetscCall(PetscArrayzero(work, A->cmap->N));
   PetscCall(MatGetOwnershipRange(A, &rstart, &rend));
@@ -248,27 +153,33 @@ static PetscErrorCode MatGetDiagonal_NormalHermitian(Mat N, Vec v)
   PetscCall(PetscArraycpy(values, diag + rstart, rend - rstart));
   PetscCall(VecRestoreArray(v, &values));
   PetscCall(PetscFree2(diag, work));
-  PetscCall(VecScale(v, Na->scale));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatGetDiagonalBlock_NormalHermitian(Mat N, Mat *D)
 {
-  Mat_NormalHermitian *Na = (Mat_NormalHermitian *)N->data;
-  Mat                  M, A = Na->A;
+  Mat_NormalHermitian *Na;
+  Mat                  M, A;
 
   PetscFunctionBegin;
+  PetscCheck(!((Mat_Shell *)N->data)->zrows && !((Mat_Shell *)N->data)->zcols, PetscObjectComm((PetscObject)N), PETSC_ERR_SUP, "Cannot call MatGetDiagonalBlock() if MatZeroRows() or MatZeroRowsColumns() has been called on the input Mat"); // TODO FIXME
+  PetscCheck(!((Mat_Shell *)N->data)->axpy, PetscObjectComm((PetscObject)N), PETSC_ERR_SUP, "Cannot call MatGetDiagonalBlock() if MatAXPY() has been called on the input Mat");                                            // TODO FIXME
+  PetscCheck(!((Mat_Shell *)N->data)->left && !((Mat_Shell *)N->data)->right, PetscObjectComm((PetscObject)N), PETSC_ERR_SUP, "Cannot call MatGetDiagonalBlock() if MatDiagonalScale() has been called on the input Mat"); // TODO FIXME
+  PetscCheck(!((Mat_Shell *)N->data)->dshift, PetscObjectComm((PetscObject)N), PETSC_ERR_SUP, "Cannot call MatGetDiagonalBlock() if MatDiagonalSet() has been called on the input Mat");                                   // TODO FIXME
+  PetscCall(MatShellGetContext(N, &Na));
+  A = Na->A;
   PetscCall(MatGetDiagonalBlock(A, &M));
   PetscCall(MatCreateNormalHermitian(M, &Na->D));
   *D = Na->D;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatNormalGetMat_NormalHermitian(Mat A, Mat *M)
+static PetscErrorCode MatNormalHermitianGetMat_NormalHermitian(Mat A, Mat *M)
 {
-  Mat_NormalHermitian *Aa = (Mat_NormalHermitian *)A->data;
+  Mat_NormalHermitian *Aa;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(A, &Aa));
   *M = Aa->A;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -282,7 +193,7 @@ static PetscErrorCode MatNormalGetMat_NormalHermitian(Mat A, Mat *M)
 . A - the `MATNORMALHERMITIAN` matrix
 
   Output Parameter:
-. M - the matrix object stored inside A
+. M - the matrix object stored inside `A`
 
   Level: intermediate
 
@@ -294,17 +205,18 @@ PetscErrorCode MatNormalHermitianGetMat(Mat A, Mat *M)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
   PetscAssertPointer(M, 2);
-  PetscUseMethod(A, "MatNormalGetMatHermitian_C", (Mat, Mat *), (A, M));
+  PetscUseMethod(A, "MatNormalHermitianGetMat_C", (Mat, Mat *), (A, M));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatConvert_NormalHermitian_AIJ(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
 {
-  Mat_NormalHermitian *Aa = (Mat_NormalHermitian *)A->data;
+  Mat_NormalHermitian *Aa;
   Mat                  B, conjugate;
   PetscInt             m, n, M, N;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(A, &Aa));
   PetscCall(MatGetSize(A, &M, &N));
   PetscCall(MatGetLocalSize(A, &m, &n));
   if (reuse == MAT_REUSE_MATRIX) {
@@ -348,6 +260,11 @@ static PetscErrorCode MatConvert_NormalHermitian_HYPRE(Mat A, MatType type, MatR
 
   Level: intermediate
 
+  Developer Notes:
+  This is implemented on top of `MATSHELL` to get support for scaling and shifting without requiring duplicate code
+
+  Users can not call `MatShellSetOperation()` operations on this class, there is some error checking for that incorrect usage
+
 .seealso: [](ch_matrices), `Mat`, `MatCreateNormalHermitian()`, `MatMult()`, `MatNormalHermitianGetMat()`, `MATNORMAL`, `MatCreateNormal()`
 M*/
 
@@ -373,53 +290,53 @@ M*/
 @*/
 PetscErrorCode MatCreateNormalHermitian(Mat A, Mat *N)
 {
-  PetscInt             m, n;
   Mat_NormalHermitian *Na;
   VecType              vtype;
 
   PetscFunctionBegin;
-  PetscCall(MatGetLocalSize(A, &m, &n));
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), N));
-  PetscCall(MatSetSizes(*N, n, n, PETSC_DECIDE, PETSC_DECIDE));
-  PetscCall(PetscObjectChangeTypeName((PetscObject)*N, MATNORMALHERMITIAN));
   PetscCall(PetscLayoutReference(A->cmap, &(*N)->rmap));
   PetscCall(PetscLayoutReference(A->cmap, &(*N)->cmap));
-
+  PetscCall(MatSetType(*N, MATSHELL));
   PetscCall(PetscNew(&Na));
-  (*N)->data = (void *)Na;
+  PetscCall(MatShellSetContext(*N, Na));
   PetscCall(PetscObjectReference((PetscObject)A));
-  Na->A     = A;
-  Na->scale = 1.0;
-
+  Na->A = A;
   PetscCall(MatCreateVecs(A, NULL, &Na->w));
 
-  (*N)->ops->destroy           = MatDestroy_NormalHermitian;
-  (*N)->ops->mult              = MatMult_NormalHermitian;
-  (*N)->ops->multtranspose     = MatMultHermitianTranspose_Normal;
-  (*N)->ops->multtransposeadd  = MatMultHermitianTransposeAdd_Normal;
-  (*N)->ops->multadd           = MatMultHermitianAdd_Normal;
-  (*N)->ops->getdiagonal       = MatGetDiagonal_NormalHermitian;
+  PetscCall(MatSetBlockSizes(*N, PetscAbs(A->cmap->bs), PetscAbs(A->rmap->bs)));
+  PetscCall(MatShellSetOperation(*N, MATOP_DESTROY, (void (*)(void))MatDestroy_NormalHermitian));
+  PetscCall(MatShellSetOperation(*N, MATOP_MULT, (void (*)(void))MatMult_NormalHermitian));
+  PetscCall(MatShellSetOperation(*N, MATOP_MULT_HERMITIAN_TRANSPOSE, (void (*)(void))MatMult_NormalHermitian));
+#if !defined(PETSC_USE_COMPLEX)
+  PetscCall(MatShellSetOperation(*N, MATOP_MULT_TRANSPOSE, (void (*)(void))MatMult_NormalHermitian));
+#endif
+  PetscCall(MatShellSetOperation(*N, MATOP_DUPLICATE, (void (*)(void))MatDuplicate_NormalHermitian));
+  PetscCall(MatShellSetOperation(*N, MATOP_GET_DIAGONAL, (void (*)(void))MatGetDiagonal_NormalHermitian));
+  PetscCall(MatShellSetOperation(*N, MATOP_COPY, (void (*)(void))MatCopy_NormalHermitian));
   (*N)->ops->getdiagonalblock  = MatGetDiagonalBlock_NormalHermitian;
-  (*N)->ops->scale             = MatScale_NormalHermitian;
-  (*N)->ops->diagonalscale     = MatDiagonalScale_NormalHermitian;
   (*N)->ops->createsubmatrices = MatCreateSubMatrices_NormalHermitian;
   (*N)->ops->permute           = MatPermute_NormalHermitian;
-  (*N)->ops->duplicate         = MatDuplicate_NormalHermitian;
-  (*N)->ops->copy              = MatCopy_NormalHermitian;
-  (*N)->assembled              = PETSC_TRUE;
-  (*N)->preallocated           = PETSC_TRUE;
 
-  PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatNormalGetMatHermitian_C", MatNormalGetMat_NormalHermitian));
-  PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatConvert_normalh_seqaij_C", MatConvert_NormalHermitian_AIJ));
-  PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatConvert_normalh_mpiaij_C", MatConvert_NormalHermitian_AIJ));
-#if defined(PETSC_HAVE_HYPRE)
-  PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatConvert_normalh_hypre_C", MatConvert_NormalHermitian_HYPRE));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatNormalHermitianGetMat_C", MatNormalHermitianGetMat_NormalHermitian));
+#if !defined(PETSC_USE_COMPLEX)
+  PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatNormalGetMat_C", MatNormalHermitianGetMat_NormalHermitian));
 #endif
-  PetscCall(MatSetOption(*N, MAT_HERMITIAN, PETSC_TRUE));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatConvert_normalh_seqaij_C", MatConvert_NormalHermitian_AIJ));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatConvert_normalh_mpiaij_C", MatConvert_NormalHermitian_AIJ));
+#if defined(PETSC_HAVE_HYPRE)
+  PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatConvert_normalh_hypre_C", MatConvert_NormalHermitian_HYPRE));
+#endif
+  PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatShellSetContext_C", MatShellSetContext_Immutable));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatShellSetContextDestroy_C", MatShellSetContextDestroy_Immutable));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatShellSetManageScalingShifts_C", MatShellSetManageScalingShifts_Immutable));
+  PetscCall(MatSetOption(*N, !PetscDefined(USE_COMPLEX) ? MAT_SYMMETRIC : MAT_HERMITIAN, PETSC_TRUE));
   PetscCall(MatGetVecType(A, &vtype));
   PetscCall(MatSetVecType(*N, vtype));
 #if defined(PETSC_HAVE_DEVICE)
   PetscCall(MatBindToCPU(*N, A->boundtocpu));
 #endif
+  PetscCall(MatSetUp(*N));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)*N, MATNORMALHERMITIAN));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

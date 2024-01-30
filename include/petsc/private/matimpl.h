@@ -234,9 +234,13 @@ struct _p_MatRootName {
 PETSC_EXTERN MatRootName MatRootNameList;
 
 /*
+   Utility private matrix routines used outside Mat
+*/
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatFindNonzeroRowsOrCols_Basic(Mat, PetscBool, PetscReal, IS *);
+
+/*
    Utility private matrix routines
 */
-PETSC_INTERN PetscErrorCode MatFindNonzeroRowsOrCols_Basic(Mat, PetscBool, PetscReal, IS *);
 PETSC_INTERN PetscErrorCode MatConvert_Basic(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatConvert_Shell(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatConvertFrom_Shell(Mat, MatType, MatReuse, Mat *);
@@ -1611,6 +1615,29 @@ static inline PetscErrorCode PetscLLCondensedDestroy_fast(PetscInt *lnk)
 {
   return PetscFree(lnk);
 }
+
+PETSC_EXTERN PetscErrorCode PetscCDCreate(PetscInt, PetscCoarsenData **);
+PETSC_EXTERN PetscErrorCode PetscCDDestroy(PetscCoarsenData *);
+PETSC_EXTERN PetscErrorCode PetscCDIntNdSetID(PetscCDIntNd *, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscCDIntNdGetID(const PetscCDIntNd *, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscCDAppendID(PetscCoarsenData *, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscCDMoveAppend(PetscCoarsenData *, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscCDAppendNode(PetscCoarsenData *, PetscInt, PetscCDIntNd *);
+PETSC_EXTERN PetscErrorCode PetscCDRemoveNextNode(PetscCoarsenData *, PetscInt, PetscCDIntNd *);
+PETSC_EXTERN PetscErrorCode PetscCDCountAt(const PetscCoarsenData *, PetscInt, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscCDIsEmptyAt(const PetscCoarsenData *, PetscInt, PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscCDSetChunkSize(PetscCoarsenData *, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscCDPrint(const PetscCoarsenData *, PetscInt, MPI_Comm);
+PETSC_EXTERN PetscErrorCode PetscCDGetNonemptyIS(PetscCoarsenData *, IS *);
+PETSC_EXTERN PetscErrorCode PetscCDGetMat(PetscCoarsenData *, Mat *);
+PETSC_EXTERN PetscErrorCode PetscCDSetMat(PetscCoarsenData *, Mat);
+PETSC_EXTERN PetscErrorCode PetscCDClearMat(PetscCoarsenData *);
+PETSC_EXTERN PetscErrorCode PetscCDRemoveAllAt(PetscCoarsenData *, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscCDCount(const PetscCoarsenData *, PetscInt *_sz);
+
+PETSC_EXTERN PetscErrorCode PetscCDGetHeadPos(const PetscCoarsenData *, PetscInt, PetscCDIntNd **);
+PETSC_EXTERN PetscErrorCode PetscCDGetNextPos(const PetscCoarsenData *, PetscInt, PetscCDIntNd **);
+PETSC_EXTERN PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData *, const PetscInt, PetscInt *, IS **);
 
 /* this is extern because it is used in MatFDColoringUseDM() which is in the DM library */
 PETSC_EXTERN PetscErrorCode MatFDColoringApply_AIJ(Mat, MatFDColoring, Vec, void *);

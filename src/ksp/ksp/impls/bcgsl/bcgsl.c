@@ -53,6 +53,8 @@ static PetscErrorCode KSPSolve_BCGSL(KSP ksp)
   if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = zeta0;
   else ksp->rnorm = 0.0;
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
+  PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm));
+  PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm));
   PetscCall((*ksp->converged)(ksp, 0, ksp->rnorm, &ksp->reason, ksp->cnvP));
   if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
@@ -76,17 +78,19 @@ static PetscErrorCode KSPSolve_BCGSL(KSP ksp)
 
   for (k = 0; k < maxit; k += bcgsl->ell) {
     ksp->its = k;
-    if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = zeta;
-    else ksp->rnorm = 0.0;
+    if (k > 0) {
+      if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = zeta;
+      else ksp->rnorm = 0.0;
 
-    PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm));
-    PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm));
+      PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm));
+      PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm));
 
-    PetscCall((*ksp->converged)(ksp, k, ksp->rnorm, &ksp->reason, ksp->cnvP));
-    if (ksp->reason < 0) PetscFunctionReturn(PETSC_SUCCESS);
-    if (ksp->reason) {
-      if (bcgsl->delta > 0.0) PetscCall(VecAXPY(VX, 1.0, VXR));
-      PetscFunctionReturn(PETSC_SUCCESS);
+      PetscCall((*ksp->converged)(ksp, k, ksp->rnorm, &ksp->reason, ksp->cnvP));
+      if (ksp->reason < 0) PetscFunctionReturn(PETSC_SUCCESS);
+      if (ksp->reason) {
+        if (bcgsl->delta > 0.0) PetscCall(VecAXPY(VX, 1.0, VXR));
+        PetscFunctionReturn(PETSC_SUCCESS);
+      }
     }
 
     /* BiCG part */
@@ -519,17 +523,17 @@ static PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
 }
 
 /*MC
-    KSPBCGSL - Implements a slight variant of the Enhanced
-                BiCGStab(L) algorithm in (3) and (2).  The variation
+    KSPBCGSL - Implements a slight variant of the Enhanced BiCGStab(L) algorithm in {cite}`fokkema1996enhanced`
+                and {cite}`sleijpen1994bicgstab`, see also {cite}`sleijpen1995overview`. The variation
                 concerns cases when either kappa0**2 or kappa1**2 is
                 negative due to round-off. Kappa0 has also been pulled
                 out of the denominator in the formula for ghat.
 
    Options Database Keys:
-+  -ksp_bcgsl_ell <ell> - Number of Krylov search directions, defaults to 2, cf. `KSPBCGSLSetEll()`
-.  -ksp_bcgsl_cxpol - Use a convex function of the MinRes and OR polynomials after the BiCG step instead of default MinRes, cf. `KSPBCGSLSetPol()`
-.  -ksp_bcgsl_mrpoly - Use the default MinRes polynomial after the BiCG step, cf. `KSPBCGSLSetPol()`
-.  -ksp_bcgsl_xres <res> - Threshold used to decide when to refresh computed residuals, cf. `KSPBCGSLSetXRes()`
++  -ksp_bcgsl_ell <ell>         - Number of Krylov search directions, defaults to 2, cf. `KSPBCGSLSetEll()`
+.  -ksp_bcgsl_cxpol             - Use a convex function of the MinRes and OR polynomials after the BiCG step instead of default MinRes, cf. `KSPBCGSLSetPol()`
+.  -ksp_bcgsl_mrpoly            - Use the default MinRes polynomial after the BiCG step, cf. `KSPBCGSLSetPol()`
+.  -ksp_bcgsl_xres <res>        - Threshold used to decide when to refresh computed residuals, cf. `KSPBCGSLSetXRes()`
 -  -ksp_bcgsl_pinv <true/false> - (de)activate use of pseudoinverse, cf. `KSPBCGSLSetUsePseudoinverse()`
 
    Level: intermediate
@@ -537,22 +541,14 @@ static PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
    Contributed by:
    Joel M. Malard, email jm.malard@pnl.gov
 
+   Note:
+   The "sub-iterations" of this solver are not reported by `-ksp_monitor` or recorded in `KSPSetResidualHistory()` since the solution is not directly computed for
+   these sub-iterations.
+
    Developer Notes:
    This has not been completely cleaned up into PETSc style.
 
    All the BLAS and LAPACK calls in the source should be removed and replaced with loops and the macros for block solvers converted from LINPACK.
-
-   References:
-+  * - G.L.G. Sleijpen, H.A. van der Vorst, "An overview of
-         approaches for the stable computation of hybrid BiCG
-         methods", Applied Numerical Mathematics: Transactions
-         f IMACS, 19(3), 1996.
-.  * - G.L.G. Sleijpen, H.A. van der Vorst, D.R. Fokkema,
-         "BiCGStab(L) and other hybrid BiCG methods",
-          Numerical Algorithms, 7, 1994.
--  * - D.R. Fokkema, "Enhanced implementation of BiCGStab(L)
-         for solving linear systems of equations", preprint
-         from www.citeseer.com.
 
 .seealso: [](ch_ksp), `KSPFBCGS`, `KSPFBCGSR`, `KSPBCGS`, `KSPPIPEBCGS`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPBCGS`, `KSPSetPCSide()`,
           `KSPBCGSLSetEll()`, `KSPBCGSLSetXRes()`, `KSPBCGSLSetUsePseudoinverse()`, `KSPBCGSLSetPol()`

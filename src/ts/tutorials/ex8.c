@@ -431,7 +431,7 @@ int main(int argc, char **argv)
 
     test:
       requires: !complex
-      args:  -monitor_result -monitor_error -ts_atol 1e-2 -ts_rtol 1e-2 -ts_exact_final_time interpolate -ts_type arkimex
+      args: -monitor_result -monitor_error -ts_atol 1e-2 -ts_rtol 1e-2 -ts_exact_final_time interpolate -ts_type arkimex
 
     test:
       suffix: 2

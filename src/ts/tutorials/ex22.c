@@ -307,7 +307,7 @@ PetscErrorCode FormInitialSolution(TS ts, Vec X, void *ctx)
 
     test:
       suffix: 3
-      args: -nox -da_grid_x 200 -ts_monitor_draw_solution -ts_type rosw -ts_rosw_type ra34pw2 -ts_dt 5e-3 -ts_max_time .1  -ts_adapt_type none
+      args: -nox -da_grid_x 200 -ts_monitor_draw_solution -ts_type rosw -ts_rosw_type ra34pw2 -ts_dt 5e-3 -ts_max_time .1 -ts_adapt_type none
       nsize: 2
 
     test:

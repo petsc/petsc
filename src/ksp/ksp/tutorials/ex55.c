@@ -282,7 +282,7 @@ int main(int argc, char **args)
    test:
       suffix: geo
       nsize: 4
-      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type geo -use_coordinates -ksp_monitor_short -ksp_type cg -ksp_norm_type unpreconditioned  -mg_levels_ksp_max_it 3 -pc_gamg_threshold 0
+      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type geo -use_coordinates -ksp_monitor_short -ksp_type cg -ksp_norm_type unpreconditioned -mg_levels_ksp_max_it 3 -pc_gamg_threshold 0
       output_file: output/ex55_0.out
       requires: triangle
 

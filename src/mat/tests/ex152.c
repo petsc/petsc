@@ -3,15 +3,13 @@ static const char help[] = "Test ParMETIS handling of negative weights.\n\n";
 /* Test contributed by John Fettig */
 
 /*
- * This file implements two tests for a bug reported in ParMETIS. These tests are not expected to pass without the
- * patches in the PETSc distribution of ParMetis. See parmetis.py
- *
- *
- * The bug was reported upstream, but has received no action so far.
- *
- * http://glaros.dtc.umn.edu/gkhome/node/837
- *
- */
+  Implements two tests for a bug reported in ParMETIS. These tests are not expected to pass without the
+  patches in the PETSc distribution of ParMetis. See parmetis.py
+
+ The bug was reported upstream, but has received no action so far.
+
+ http://glaros.dtc.umn.edu/gkhome/node/837
+*/
 
 #include <petscsys.h>
 #include <parmetis.h>
@@ -86,7 +84,7 @@ int main(int argc, char *argv[])
 
   red = fread(xyz, sizeof(PetscReal), ndims * ni, fp);
   PetscCheck(red == (size_t)(ndims * ni), PETSC_COMM_SELF, PETSC_ERR_SYS, "Unable to read from data file");
-  for (PetscInt i = 0; i < ni * ndims; i++) sxyz[i] = (size_t)xyz[i];
+  for (PetscInt i = 0; i < ni * ndims; i++) sxyz[i] = (real_t)xyz[i];
 
   PetscCall(PetscFClose(PETSC_COMM_SELF, fp));
 

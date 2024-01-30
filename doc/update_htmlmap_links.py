@@ -17,7 +17,7 @@ def update_htmlmap_links(builder,htmlmap_filename):
         raise Exception("Unsupported builder named %s" % builder.name)
 
     with open(htmlmap_filename+'_modified', "w") as htmlmap_file_modified, open(htmlmap_filename, "r") as htmlmap_file:
-        pattern = re.compile(".*\+\+\+\+man\+(.*)$")  # Match URL in group
+        pattern = re.compile(r".*\+\+\+\+man\+(.*)$")  # Match URL in group
         for line in htmlmap_file.readlines():
             match = re.match(pattern, line)
             if match:

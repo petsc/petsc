@@ -355,7 +355,7 @@ int main(int argc, char **argv)
   PetscCall(CreateParticles(dm, &sw, &user));
   PetscCall(SNESCreate(comm, &user.snes));
   PetscCall(SNESSetDM(user.snes, dm));
-  PetscCall(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));
+  PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, &user));
   PetscCall(SNESSetFromOptions(user.snes));
   {
     Mat          J;

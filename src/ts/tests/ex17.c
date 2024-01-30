@@ -163,6 +163,9 @@ int main(int argc, char **argv)
 }
 
 /*TEST
+  testset:
+    # using gemv gives larger error which failed error checking
+    args: -vec_mdot_use_gemv 0 -vec_maxpy_use_gemv 0
 
     test:
       suffix: bdf

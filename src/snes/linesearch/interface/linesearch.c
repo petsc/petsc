@@ -238,7 +238,7 @@ PetscErrorCode SNESLineSearchSetUp(SNESLineSearch linesearch)
   if (!linesearch->setupcalled) {
     if (!linesearch->vec_sol_new) PetscCall(VecDuplicate(linesearch->vec_sol, &linesearch->vec_sol_new));
     if (!linesearch->vec_func_new) PetscCall(VecDuplicate(linesearch->vec_sol, &linesearch->vec_func_new));
-    if (linesearch->ops->setup) PetscUseTypeMethod(linesearch, setup);
+    PetscTryTypeMethod(linesearch, setup);
     if (!linesearch->ops->snesfunc) PetscCall(SNESLineSearchSetFunction(linesearch, SNESComputeFunction));
     linesearch->lambda      = linesearch->damping;
     linesearch->setupcalled = PETSC_TRUE;
@@ -264,7 +264,7 @@ PetscErrorCode SNESLineSearchSetUp(SNESLineSearch linesearch)
 PetscErrorCode SNESLineSearchReset(SNESLineSearch linesearch)
 {
   PetscFunctionBegin;
-  if (linesearch->ops->reset) PetscUseTypeMethod(linesearch, reset);
+  PetscTryTypeMethod(linesearch, reset);
 
   PetscCall(VecDestroy(&linesearch->vec_sol_new));
   PetscCall(VecDestroy(&linesearch->vec_func_new));
@@ -503,7 +503,7 @@ PetscErrorCode SNESLineSearchPostCheck(SNESLineSearch linesearch, Vec X, Vec Y, 
 }
 
 /*@C
-  SNESLineSearchPreCheckPicard - Implements a correction that is sometimes useful to improve the convergence rate of Picard iteration
+  SNESLineSearchPreCheckPicard - Implements a correction that is sometimes useful to improve the convergence rate of Picard iteration {cite}`hindmarsh1996time`
 
   Logically Collective
 
@@ -528,11 +528,8 @@ PetscErrorCode SNESLineSearchPostCheck(SNESLineSearch linesearch, Vec X, Vec Y, 
   This function should be passed to `SNESLineSearchSetPreCheck()`
 
   The justification for this method involves the linear convergence of a Picard iteration
-  so the Picard linearization should be provided in place of the "Jacobian". This correction
+  so the Picard linearization should be provided in place of the "Jacobian"  {cite}`hindmarsh1996time`. This correction
   is generally not useful when using a Newton linearization.
-
-  References:
-  . - * - Hindmarsh and Payne (1996) Time step limits for stable solutions of the ice sheet equation, Annals of Glaciology.
 
   Developer Note:
   The use of `PetscObjectGetState()` would eliminate the need for the `changed` argument to be provided
@@ -978,10 +975,8 @@ PetscErrorCode SNESLineSearchSetType(SNESLineSearch linesearch, SNESLineSearchTy
   PetscCall(PetscFunctionListFind(SNESLineSearchList, type, &r));
   PetscCheck(r, PetscObjectComm((PetscObject)linesearch), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested Line Search type %s", type);
   /* Destroy the previous private line search context */
-  if (linesearch->ops->destroy) {
-    PetscCall((*(linesearch)->ops->destroy)(linesearch));
-    linesearch->ops->destroy = NULL;
-  }
+  PetscTryTypeMethod(linesearch, destroy);
+  linesearch->ops->destroy = NULL;
   /* Reinitialize function pointers in SNESLineSearchOps structure */
   linesearch->ops->apply          = NULL;
   linesearch->ops->view           = NULL;

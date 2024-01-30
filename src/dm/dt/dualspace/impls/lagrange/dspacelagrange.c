@@ -1077,6 +1077,7 @@ static PetscErrorCode MatTensorAltV(Mat trace, Mat fiber, PetscInt dimTrace, Pet
     for (i = 0; i < mTrace; i++, l++) nnz[l] = (nnzTrace[i] / NkTrace) * (nnzFiber[j] / NkFiber) * Nk;
   n = (nTrace / NkTrace) * (nFiber / NkFiber) * Nk;
   PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, m, n, 0, nnz, &prod));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)prod, "altv_"));
   PetscCall(PetscFree(nnz));
   PetscCall(PetscFree2(nnzTrace, nnzFiber));
   /* reasoning about which points each dof needs depends on having zeros computed at points preserved */
@@ -1252,6 +1253,7 @@ static PetscErrorCode MatricesMerge(Mat matA, Mat matB, PetscInt dim, PetscInt k
     maxnnz = PetscMax(maxnnz, nnz[i + mA]);
   }
   PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, m, n, 0, nnz, &M));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)M, "altv_"));
   PetscCall(PetscFree(nnz));
   /* reasoning about which points each dof needs depends on having zeros computed at points preserved */
   PetscCall(MatSetOption(M, MAT_IGNORE_ZERO_ENTRIES, PETSC_FALSE));
@@ -1407,6 +1409,7 @@ static PetscErrorCode PetscDualSpaceLagrangeCreateSimplexNodeMat(Petsc1DNodeFami
   PetscCall(PetscQuadratureCreate(PETSC_COMM_SELF, &intNodes));
   PetscCall(PetscQuadratureSetData(intNodes, dim, 0, nNodes, nodeCoords, NULL));
   PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, nNodes * Nk, nNodes * Nk, Nk, NULL, &intMat));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)intMat, "lag_"));
   PetscCall(MatSetOption(intMat, MAT_IGNORE_ZERO_ENTRIES, PETSC_FALSE));
   for (j = 0; j < nNodes * Nk; j++) {
     PetscInt rem = j % Nk;
@@ -1533,6 +1536,7 @@ static PetscErrorCode PetscDualSpaceCreateAllDataFromInteriorData(PetscDualSpace
     }
   }
   PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, nDofs, nNodes * Nc, maxNzforms * Nk, NULL, &allMat));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)allMat, "ds_"));
   PetscCall(MatSetOption(allMat, MAT_IGNORE_ZERO_ENTRIES, PETSC_FALSE));
   PetscCall(PetscMalloc7(dim, &v0, dim, &pv0, dim * dim, &J, dim * dim, &Jinv, Nk * Nk, &L, maxNzforms * Nk, &work, maxNzforms * Nk, &iwork));
   for (j = 0; j < dim; j++) pv0[j] = -1.;
@@ -1663,6 +1667,7 @@ static PetscErrorCode PetscDualSpaceComputeFunctionalsFromAllData_Moments(PetscD
   sp->allNodes = sp->functional[0];
   PetscCall(PetscQuadratureGetData(sp->allNodes, NULL, NULL, &nNodes, NULL, &weights));
   PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, nDofs, nNodes * Nc, NULL, &allMat));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)allMat, "ds_"));
   PetscCall(MatDenseGetArrayWrite(allMat, &array));
   for (i = 0; i < nNodes * Nc; ++i) array[i] = weights[i];
   PetscCall(MatDenseRestoreArrayWrite(allMat, &array));
@@ -2535,6 +2540,7 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
   }
   PetscCheck(maxGroupSize <= nodeVecDim, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Dofs are not in blocks that can be solved");
   PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, nNodes, nNodes, 0, nnz, &A));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)A, "lag_"));
   PetscCall(PetscFree(nnz));
   PetscCall(PetscMalloc3(maxGroupSize * nodeVecDim, &V, maxGroupSize * nodeVecDim, &W, nodeVecDim * 2, &work));
   for (n = 0; n < nNodes;) { /* incremented in the loop */
@@ -2682,7 +2688,7 @@ static PetscErrorCode PetscDualSpaceGetSymmetries_Lagrange(PetscDualSpace sp, co
       DMPolytopeType ct;
       /* The number of arrangements is no longer based on the number of faces */
       PetscCall(DMPlexGetCellType(sp->dm, 0, &ct));
-      numFaces = DMPolytopeTypeGetNumArrangments(ct) / 2;
+      numFaces = DMPolytopeTypeGetNumArrangements(ct) / 2;
     }
     PetscCall(PetscCalloc1(numPoints, &symperms));
     PetscCall(PetscCalloc1(numPoints, &symflips));

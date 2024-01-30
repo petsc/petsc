@@ -1,7 +1,6 @@
 -include ../../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_H2OPUS'
 
-LIBBASE   = libpetscksp
 MANSEC    = KSP
 SUBMANSEC = PC
 

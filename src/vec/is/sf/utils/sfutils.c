@@ -291,8 +291,8 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   for (f = 0; f < numFields; ++f) hasc = (PetscBool)(hasc || sub[2 + f]);
 
   /* Could fuse these at the cost of copies and extra allocation */
-  PetscCall(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasDof[-rpStart], &leafSection->atlasDof[-lpStart], MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasDof[-rpStart], &leafSection->atlasDof[-lpStart], MPI_REPLACE));
+  PetscCall(PetscSFBcastBegin(embedSF, MPIU_INT, PetscSafePointerPlusOffset(rootSection->atlasDof, -rpStart), PetscSafePointerPlusOffset(leafSection->atlasDof, -lpStart), MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(embedSF, MPIU_INT, PetscSafePointerPlusOffset(rootSection->atlasDof, -rpStart), PetscSafePointerPlusOffset(leafSection->atlasDof, -lpStart), MPI_REPLACE));
   if (sub[1]) {
     PetscCall(PetscSectionCheckConstraints_Private(rootSection));
     PetscCall(PetscSectionCheckConstraints_Private(leafSection));
@@ -300,8 +300,8 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
     PetscCall(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->bc->atlasDof[-rpStart], &leafSection->bc->atlasDof[-lpStart], MPI_REPLACE));
   }
   for (f = 0; f < numFields; ++f) {
-    PetscCall(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->field[f]->atlasDof[-rpStart], &leafSection->field[f]->atlasDof[-lpStart], MPI_REPLACE));
-    PetscCall(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->field[f]->atlasDof[-rpStart], &leafSection->field[f]->atlasDof[-lpStart], MPI_REPLACE));
+    PetscCall(PetscSFBcastBegin(embedSF, MPIU_INT, PetscSafePointerPlusOffset(rootSection->field[f]->atlasDof, -rpStart), PetscSafePointerPlusOffset(leafSection->field[f]->atlasDof, -lpStart), MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(embedSF, MPIU_INT, PetscSafePointerPlusOffset(rootSection->field[f]->atlasDof, -rpStart), PetscSafePointerPlusOffset(leafSection->field[f]->atlasDof, -lpStart), MPI_REPLACE));
     if (sub[2 + f]) {
       PetscCall(PetscSectionCheckConstraints_Private(rootSection->field[f]));
       PetscCall(PetscSectionCheckConstraints_Private(leafSection->field[f]));
@@ -311,8 +311,8 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   }
   if (remoteOffsets) {
     PetscCall(PetscMalloc1(lpEnd - lpStart, remoteOffsets));
-    PetscCall(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart], MPI_REPLACE));
-    PetscCall(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart], MPI_REPLACE));
+    PetscCall(PetscSFBcastBegin(embedSF, MPIU_INT, PetscSafePointerPlusOffset(rootSection->atlasOff, -rpStart), PetscSafePointerPlusOffset(*remoteOffsets, -lpStart), MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(embedSF, MPIU_INT, PetscSafePointerPlusOffset(rootSection->atlasOff, -rpStart), PetscSafePointerPlusOffset(*remoteOffsets, -lpStart), MPI_REPLACE));
   }
   PetscCall(PetscSectionInvalidateMaxDof_Internal(leafSection));
   PetscCall(PetscSectionSetUp(leafSection));
@@ -387,8 +387,8 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
   PetscCall(ISRestoreIndices(selected, &indices));
   PetscCall(ISDestroy(&selected));
   PetscCall(PetscCalloc1(lpEnd - lpStart, remoteOffsets));
-  PetscCall(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart], MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart], MPI_REPLACE));
+  PetscCall(PetscSFBcastBegin(embedSF, MPIU_INT, PetscSafePointerPlusOffset(rootSection->atlasOff, -rpStart), PetscSafePointerPlusOffset(*remoteOffsets, -lpStart), MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(embedSF, MPIU_INT, PetscSafePointerPlusOffset(rootSection->atlasOff, -rpStart), PetscSafePointerPlusOffset(*remoteOffsets, -lpStart), MPI_REPLACE));
   PetscCall(PetscSFDestroy(&embedSF));
   PetscCall(PetscLogEventEnd(PETSCSF_RemoteOff, sf, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -197,7 +197,7 @@ PETSC_INTERN PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
   /* Determine number, sending ranks and length of incoming */
   for (i = 0; i < sf->nranks; i++) { rlengths[i] = sf->roffset[i + 1] - sf->roffset[i]; /* Number of roots referenced by my leaves; for rank sf->ranks[i] */ }
   nRemoteRootRanks = sf->nranks - sf->ndranks;
-  PetscCall(PetscCommBuildTwoSided(comm, 1, MPIU_INT, nRemoteRootRanks, sf->ranks + sf->ndranks, rlengths + sf->ndranks, &niranks, &iranks, (void **)&ilengths));
+  PetscCall(PetscCommBuildTwoSided(comm, 1, MPIU_INT, nRemoteRootRanks, PetscSafePointerPlusOffset(sf->ranks, sf->ndranks), PetscSafePointerPlusOffset(rlengths, sf->ndranks), &niranks, &iranks, (void **)&ilengths));
 
   /* Sort iranks. See use of VecScatterGetRemoteOrdered_Private() in MatGetBrowsOfAoCols_MPIAIJ() on why.
      We could sort ranks there at the price of allocating extra working arrays. Presumably, niranks is
@@ -464,7 +464,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedRootSF_Basic(PetscSF sf, PetscI
   PetscSF            esf;
   PetscInt           esf_nranks, esf_ndranks, *esf_roffset, *esf_rmine, *esf_rremote;
   PetscInt           i, j, p, q, nroots, esf_nleaves, *new_ilocal, nranks, ndranks, niranks, ndiranks, minleaf, maxleaf, maxlocal;
-  char              *rootdata, *leafdata = NULL, *leafmem; /* Only stores 0 or 1, so we can save memory with char */
+  char              *rootdata, *leafdata, *leafmem; /* Only stores 0 or 1, so we can save memory with char */
   PetscMPIInt       *esf_ranks;
   const PetscMPIInt *ranks, *iranks;
   const PetscInt    *roffset, *rmine, *rremote, *ioffset, *irootloc;
@@ -482,7 +482,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedRootSF_Basic(PetscSF sf, PetscI
   PetscCall(PetscSFGetLeafRange(sf, &minleaf, &maxleaf));
   maxlocal = maxleaf - minleaf + 1;
   PetscCall(PetscCalloc2(nroots, &rootdata, maxlocal, &leafmem));
-  if (leafmem) leafdata = leafmem - minleaf;
+  leafdata = PetscSafePointerPlusOffset(leafmem, -minleaf);
   /* Tag selected roots */
   for (i = 0; i < nselected; ++i) rootdata[selected[i]] = 1;
 

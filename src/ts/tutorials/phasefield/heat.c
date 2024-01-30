@@ -412,11 +412,11 @@ PetscErrorCode MyDestroy(void **ptr)
 /*TEST
 
    test:
-     args: -ts_monitor -snes_monitor  -pc_type lu  -snes_converged_reason   -ts_type cn  -da_refine 2 -square_initial
+     args: -ts_monitor -snes_monitor -pc_type lu -snes_converged_reason -ts_type cn -da_refine 2 -square_initial
 
    test:
      suffix: 2
-     args: -ts_monitor -snes_monitor  -pc_type lu  -snes_converged_reason   -ts_type cn  -da_refine 5 -mymonitor -square_initial -allen-cahn -kappa .001
+     args: -ts_monitor -snes_monitor -pc_type lu -snes_converged_reason -ts_type cn -da_refine 5 -mymonitor -square_initial -allen-cahn -kappa .001
      requires: x
 
 TEST*/

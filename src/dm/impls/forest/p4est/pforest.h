@@ -362,7 +362,6 @@ static PetscErrorCode DMConvert_plex_pforest(DM dm, DMType newtype, DM *pforest)
   void     *ctx;
 
   PetscFunctionBegin;
-
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   comm = PetscObjectComm((PetscObject)dm);
   PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMPLEX, &isPlex));
@@ -393,12 +392,6 @@ static PetscErrorCode DMForestDestroy_pforest(DM dm)
   if (pforest->forest) PetscCallP4est(p4est_destroy, (pforest->forest));
   pforest->forest = NULL;
   PetscCall(DMFTopologyDestroy_pforest(&pforest->topo));
-  PetscCall(PetscObjectComposeFunction((PetscObject)dm, PetscStringize(DMConvert_plex_pforest) "_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)dm, PetscStringize(DMConvert_pforest_plex) "_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMSetUpGLVisViewer_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMCreateNeumannOverlap_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexGetOverlap_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "MatComputeNeumannOverlap_C", NULL));
   PetscCall(PetscFree(pforest->ghostName));
   PetscCall(DMDestroy(&pforest->plex));
   PetscCall(PetscSFDestroy(&pforest->pointAdaptToSelfSF));
@@ -518,6 +511,9 @@ static PetscErrorCode DMPforestComputeLocalCellTransferSF_loop(p4est_t *p4estFro
   PetscInt       toFineLeaves = 0, fromFineLeaves = 0;
 
   PetscFunctionBegin;
+  /* -Wmaybe-uninitialized */
+  *toFineLeavesCount   = 0;
+  *fromFineLeavesCount = 0;
   for (t = flt; t <= llt; t++) { /* count roots and leaves */
     p4est_tree_t     *treeFrom  = &(((p4est_tree_t *)p4estFrom->trees->array)[t]);
     p4est_tree_t     *treeTo    = &(((p4est_tree_t *)p4estTo->trees->array)[t]);
@@ -1080,6 +1076,8 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     PetscCall(DMPforestGetRefinementLevel(dm, &currLevel));
     PetscCall(DMForestGetInitialRefinement(dm, &initLevel));
     PetscCall(DMForestGetMinimumRefinement(dm, &minLevel));
+    /* allow using PCMG and SNESFAS */
+    PetscCall(DMSetRefineLevel(dm, currLevel - minLevel));
     if (currLevel > minLevel) {
       DM_Forest_pforest *coarse_pforest;
       DMLabel            coarsen;
@@ -1106,7 +1104,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
 
     PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size));
     PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
-    if ((size > 1) && (pforest->partition_for_coarsening || forest->cellWeights || forest->weightCapacity != 1. || forest->weightsFactor != 1.)) {
+    if (size > 1 && (pforest->partition_for_coarsening || forest->cellWeights || forest->weightCapacity != 1. || forest->weightsFactor != 1.)) {
       PetscBool      copyForest  = PETSC_FALSE;
       p4est_t       *forest_copy = NULL;
       p4est_gloidx_t shipped     = 0;
@@ -1314,7 +1312,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
   forest->preCoarseToFine = preCoarseToFine;
   forest->coarseToPreFine = coarseToPreFine;
   dm->setupcalled         = PETSC_TRUE;
-  PetscCall(MPIU_Allreduce(&ctx.anyChange, &(pforest->adaptivitySuccess), 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+  PetscCall(MPIU_Allreduce(&ctx.anyChange, &pforest->adaptivitySuccess, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
   PetscCall(DMPforestGetPlex(dm, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2935,8 +2933,8 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
     const PetscSFNode *iremote;
     PetscInt           d;
     PetscSection       leafSection, rootSection;
-    /* count leaves */
 
+    /* count leaves */
     PetscCall(PetscSFGetGraph(pointTransferSF, &numRoots, &numLeaves, &leaves, &iremote));
     PetscCall(PetscSectionCreate(PETSC_COMM_SELF, &rootSection));
     PetscCall(PetscSectionCreate(PETSC_COMM_SELF, &leafSection));
@@ -4128,7 +4126,6 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
   DMLabel              ghostLabelBase = NULL;
 
   PetscFunctionBegin;
-
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   comm = PetscObjectComm((PetscObject)dm);
   PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMPFOREST, &isPforest));
@@ -4318,6 +4315,8 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
       PetscCall(DMGetCellCoordinatesLocal(newPlex, &coords));
       if (coords) PetscCall(DMSetCellCoordinatesLocal(dm, coords));
     }
+  } else {
+    PetscCall(DMCopyLabels(dm, pforest->plex, PETSC_OWN_POINTER, PETSC_FALSE, DM_COPY_LABELS_REPLACE));
   }
   newPlex = pforest->plex;
   if (plex) {
@@ -4342,7 +4341,7 @@ static PetscErrorCode DMSetFromOptions_pforest(DM dm, PetscOptionItems *PetscOpt
   PetscFunctionBegin;
   PetscCall(DMSetFromOptions_Forest(dm, PetscOptionsObject));
   PetscOptionsHeadBegin(PetscOptionsObject, "DM" P4EST_STRING " options");
-  PetscCall(PetscOptionsBool("-dm_p4est_partition_for_coarsening", "partition forest to allow for coarsening", "DMP4estSetPartitionForCoarsening", pforest->partition_for_coarsening, &(pforest->partition_for_coarsening), NULL));
+  PetscCall(PetscOptionsBool("-dm_p4est_partition_for_coarsening", "partition forest to allow for coarsening", "DMP4estSetPartitionForCoarsening", pforest->partition_for_coarsening, &pforest->partition_for_coarsening, NULL));
   PetscCall(PetscOptionsString("-dm_p4est_ghost_label_name", "the name of the ghost label when converting from a DMPlex", NULL, NULL, stringBuffer, sizeof(stringBuffer), &flg));
   PetscOptionsHeadEnd();
   if (flg) {
@@ -4765,10 +4764,12 @@ static PetscErrorCode VecViewLocal_pforest(Vec vec, PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCall(VecGetDM(vec, &dm));
+  PetscCall(PetscObjectReference((PetscObject)dm));
   PetscCall(DMPforestGetPlex(dm, &plex));
   PetscCall(VecSetDM(vec, plex));
   PetscCall(VecView_Plex_Local(vec, viewer));
   PetscCall(VecSetDM(vec, dm));
+  PetscCall(DMDestroy(&dm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -4779,10 +4780,12 @@ static PetscErrorCode VecView_pforest(Vec vec, PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCall(VecGetDM(vec, &dm));
+  PetscCall(PetscObjectReference((PetscObject)dm));
   PetscCall(DMPforestGetPlex(dm, &plex));
   PetscCall(VecSetDM(vec, plex));
   PetscCall(VecView_Plex(vec, viewer));
   PetscCall(VecSetDM(vec, dm));
+  PetscCall(DMDestroy(&dm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -4793,10 +4796,12 @@ static PetscErrorCode VecView_pforest_Native(Vec vec, PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCall(VecGetDM(vec, &dm));
+  PetscCall(PetscObjectReference((PetscObject)dm));
   PetscCall(DMPforestGetPlex(dm, &plex));
   PetscCall(VecSetDM(vec, plex));
   PetscCall(VecView_Plex_Native(vec, viewer));
   PetscCall(VecSetDM(vec, dm));
+  PetscCall(DMDestroy(&dm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -4807,10 +4812,12 @@ static PetscErrorCode VecLoad_pforest(Vec vec, PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCall(VecGetDM(vec, &dm));
+  PetscCall(PetscObjectReference((PetscObject)dm));
   PetscCall(DMPforestGetPlex(dm, &plex));
   PetscCall(VecSetDM(vec, plex));
   PetscCall(VecLoad_Plex(vec, viewer));
   PetscCall(VecSetDM(vec, dm));
+  PetscCall(DMDestroy(&dm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -4821,10 +4828,12 @@ static PetscErrorCode VecLoad_pforest_Native(Vec vec, PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCall(VecGetDM(vec, &dm));
+  PetscCall(PetscObjectReference((PetscObject)dm));
   PetscCall(DMPforestGetPlex(dm, &plex));
   PetscCall(VecSetDM(vec, plex));
   PetscCall(VecLoad_Plex_Native(vec, viewer));
   PetscCall(VecSetDM(vec, dm));
+  PetscCall(DMDestroy(&dm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -4859,6 +4868,7 @@ static PetscErrorCode DMCreateMatrix_pforest(DM dm, Mat *mat)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMPforestGetPlex(dm, &plex));
   if (plex->prealloc_only != dm->prealloc_only) plex->prealloc_only = dm->prealloc_only; /* maybe this should go into forest->plex */
+  PetscCall(DMSetMatType(plex, dm->mattype));
   PetscCall(DMCreateMatrix(plex, mat));
   PetscCall(MatSetDM(*mat, dm));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -5060,11 +5070,38 @@ static PetscErrorCode DMCreateNeumannOverlap_pforest(DM dm, IS *ovl, Mat *J, Pet
 
   PetscFunctionBegin;
   PetscCall(DMPforestGetPlex(dm, &plex));
+  PetscCall(DMCopyAuxiliaryVec(dm, plex));
   PetscCall(DMCreateNeumannOverlap_Plex(plex, ovl, J, setup, setup_ctx));
+  PetscCall(DMClearAuxiliaryVec(plex));
   if (!*setup) {
     PetscCall(PetscObjectQueryFunction((PetscObject)dm, "MatComputeNeumannOverlap_C", setup));
     if (*setup) PetscCall(PetscObjectCompose((PetscObject)*ovl, "_DM_Original_HPDDM", (PetscObject)dm));
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+  #define DMCreateDomainDecomposition_pforest _append_pforest(DMCreateDomainDecomposition)
+static PetscErrorCode DMCreateDomainDecomposition_pforest(DM dm, PetscInt *nsub, char ***names, IS **innerises, IS **outerises, DM **dms)
+{
+  DM plex;
+
+  PetscFunctionBegin;
+  PetscCall(DMPforestGetPlex(dm, &plex));
+  PetscCall(DMCopyAuxiliaryVec(dm, plex));
+  PetscCall(DMCreateDomainDecomposition(plex, nsub, names, innerises, outerises, dms));
+  PetscCall(DMClearAuxiliaryVec(plex));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+  #define DMCreateDomainDecompositionScatters_pforest _append_pforest(DMCreateDomainDecompositionScatters)
+static PetscErrorCode DMCreateDomainDecompositionScatters_pforest(DM dm, PetscInt n, DM *subdms, VecScatter **iscat, VecScatter **oscat, VecScatter **lscat)
+{
+  DM plex;
+
+  PetscFunctionBegin;
+  PetscCall(DMPforestGetPlex(dm, &plex));
+  PetscCall(DMCopyAuxiliaryVec(dm, plex));
+  PetscCall(DMCreateDomainDecompositionScatters(plex, n, subdms, iscat, oscat, lscat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -5089,6 +5126,8 @@ static PetscErrorCode DMInitialize_pforest(DM dm)
   dm->ops->computel2diff             = DMComputeL2Diff_pforest;
   dm->ops->computel2fielddiff        = DMComputeL2FieldDiff_pforest;
   dm->ops->getdimpoints              = DMGetDimPoints_pforest;
+  dm->ops->createdomaindecomposition = DMCreateDomainDecomposition_pforest;
+  dm->ops->createddscatters          = DMCreateDomainDecompositionScatters_pforest;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, PetscStringize(DMConvert_plex_pforest) "_C", DMConvert_plex_pforest));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, PetscStringize(DMConvert_pforest_plex) "_C", DMConvert_pforest_plex));

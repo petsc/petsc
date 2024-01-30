@@ -15,12 +15,12 @@ typedef struct _p_DM *DM;
   DMBoundaryType - Describes the choice for the filling of ghost cells on physical domain boundaries.
 
   Values:
-+ `DM_BOUNDARY_NONE` - no ghost nodes
-. `DM_BOUNDARY_GHOSTED` - ghost vertices/cells exist but aren't filled; you can put values into them and then apply a stencil that uses those ghost locations
-. `DM_BOUNDARY_MIRROR` - the ghost value is the same as the value 1 grid point in; that is, the 0th grid point in the real mesh acts like a mirror to define
-                         the ghost point value; not yet implemented for 3d
++ `DM_BOUNDARY_NONE`     - no ghost nodes
+. `DM_BOUNDARY_GHOSTED`  - ghost vertices/cells exist but aren't filled; you can put values into them and then apply a stencil that uses those ghost locations
+. `DM_BOUNDARY_MIRROR`   - the ghost value is the same as the value 1 grid point in; that is, the 0th grid point in the real mesh acts like a mirror to define
+                           the ghost point value; not yet implemented for 3d
 . `DM_BOUNDARY_PERIODIC` - ghost vertices/cells filled by the opposite edge of the domain
-- `DM_BOUNDARY_TWIST` - like periodic, only glued backwards like a Mobius strip
+- `DM_BOUNDARY_TWIST`    - like periodic, only glued backwards like a Mobius strip
 
   Level: beginner
 
@@ -28,16 +28,15 @@ typedef struct _p_DM *DM;
   This is information for the boundary of the __PHYSICAL__ domain. It has nothing to do with boundaries between
   processes. That width is always determined by the stencil width; see `DMDASetStencilWidth()`.
 
-  If the physical grid points have values 0 1 2 3 with `DM_BOUNDARY_MIRROR` then the local vector with ghost points has the values 1 0 1 2 3 2 .
+  If the physical grid points have values 0 1 2 3 with `DM_BOUNDARY_MIRROR` then the local vector with ghost points has the values 1 0 1 2 3 2.
+
+  See <https://scicomp.stackexchange.com/questions/5355/writing-the-poisson-equation-finite-difference-matrix-with-neumann-boundary-cond>
 
   Developer Note:
-    Should `DM_BOUNDARY_MIRROR` have the same meaning with DMDA_Q0, that is a staggered grid? In that case should the ghost point have the same value
+  Should `DM_BOUNDARY_MIRROR` have the same meaning with `DMDA_Q0`, that is a staggered grid? In that case should the ghost point have the same value
   as the 0th grid point where the physical boundary serves as the mirror?
 
-  References:
-. * -  https://scicomp.stackexchange.com/questions/5355/writing-the-poisson-equation-finite-difference-matrix-with-neumann-boundary-cond
-
-.seealso: `DM`, `DMDA`, `DMDASetBoundaryType()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDACreate()`
+.seealso: [](ch_dmbase), `DM`, `DMDA`, `DMDASetBoundaryType()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDACreate()`
 E*/
 typedef enum {
   DM_BOUNDARY_NONE,
@@ -51,12 +50,12 @@ typedef enum {
   DMBoundaryConditionType - indicates what type of boundary condition is to be imposed
 
   Values:
-+ `DM_BC_ESSENTIAL`       - A Dirichlet condition using a function of the coordinates
-. `DM_BC_ESSENTIAL_FIELD` - A Dirichlet condition using a function of the coordinates and auxiliary field data
++ `DM_BC_ESSENTIAL`          - A Dirichlet condition using a function of the coordinates
+. `DM_BC_ESSENTIAL_FIELD`    - A Dirichlet condition using a function of the coordinates and auxiliary field data
 . `DM_BC_ESSENTIAL_BD_FIELD` - A Dirichlet condition using a function of the coordinates, facet normal, and auxiliary field data
-. `DM_BC_NATURAL`         - A Neumann condition using a function of the coordinates
-. `DM_BC_NATURAL_FIELD`   - A Neumann condition using a function of the coordinates and auxiliary field data
-- `DM_BC_NATURAL_RIEMANN` - A flux condition which determines the state in ghost cells
+. `DM_BC_NATURAL`            - A Neumann condition using a function of the coordinates
+. `DM_BC_NATURAL_FIELD`      - A Neumann condition using a function of the coordinates and auxiliary field data
+- `DM_BC_NATURAL_RIEMANN`    - A flux condition which determines the state in ghost cells
 
   Level: beginner
 
@@ -64,7 +63,7 @@ typedef enum {
   The user can check whether a boundary condition is essential using (type & `DM_BC_ESSENTIAL`), and similarly for
   natural conditions (type & `DM_BC_NATURAL`)
 
-.seealso: `DM`, `DMAddBoundary()`, `DSAddBoundary()`, `DSGetBoundary()`
+.seealso: [](ch_dmbase), `DM`, `DMAddBoundary()`, `DSAddBoundary()`, `DSGetBoundary()`
 E*/
 typedef enum {
   DM_BC_ESSENTIAL          = 1,
@@ -79,13 +78,13 @@ typedef enum {
   DMPointLocationType - Describes the method to handle point location failure
 
   Values:
-+  `DM_POINTLOCATION_NONE` - return a negative cell number
++  `DM_POINTLOCATION_NONE`    - return a negative cell number
 .  `DM_POINTLOCATION_NEAREST` - the (approximate) nearest point in the mesh is used
--  `DM_POINTLOCATION_REMOVE` - returns values only for points which were located
+-  `DM_POINTLOCATION_REMOVE`  - returns values only for points which were located
 
   Level: intermediate
 
-.seealso: `DM`, `DMLocatePoints()`
+.seealso: [](ch_dmbase), `DM`, `DMLocatePoints()`
 E*/
 typedef enum {
   DM_POINTLOCATION_NONE,
@@ -98,7 +97,7 @@ typedef enum {
 
   Values:
 +  `DM_BLOCKING_TOPOLOGICAL_POINT` - select all fields at a topological point (cell center, at a face, etc)
--  `DM_BLOCKING_FIELD_NODE` - using a separate block for each field at a topological point
+-  `DM_BLOCKING_FIELD_NODE`        - using a separate block for each field at a topological point
 
   Level: intermediate
 
@@ -111,7 +110,7 @@ typedef enum {
   footprint and may harm performance. With field node blocking, the maximum block size will correspond to one Lagrange node,
   or 5x5 blocks for the CFD example.
 
-.seealso: `PCVPBJACOBI`, `MatSetVariableBlockSizes()`, `DMSetBlockingType()`
+.seealso: [](ch_dmbase), `PCVPBJACOBI`, `MatSetVariableBlockSizes()`, `DMSetBlockingType()`
 E*/
 typedef enum {
   DM_BLOCKING_TOPOLOGICAL_POINT,
@@ -122,13 +121,13 @@ typedef enum {
   DMAdaptationStrategy - Describes the strategy used for adaptive solves
 
   Values:
-+  `DM_ADAPTATION_INITIAL` - refine a mesh based on an initial guess
++  `DM_ADAPTATION_INITIAL`    - refine a mesh based on an initial guess
 .  `DM_ADAPTATION_SEQUENTIAL` - refine the mesh based on a sequence of solves, much like grid sequencing
 -  `DM_ADAPTATION_MULTILEVEL` - use the sequence of constructed meshes in a multilevel solve, much like the Systematic Upscaling of Brandt
 
   Level: beginner
 
-.seealso: `DM`, `DMAdaptor`, `DMAdaptationCriterion`, `DMAdaptorSolve()`
+.seealso: [](ch_dmbase), `DM`, `DMAdaptor`, `DMAdaptationCriterion`, `DMAdaptorSolve()`
 E*/
 typedef enum {
   DM_ADAPTATION_INITIAL,
@@ -141,14 +140,14 @@ typedef enum {
 
   Values:
 + `DM_ADAPTATION_REFINE` - uniformly refine a mesh, much like grid sequencing
-. `DM_ADAPTATION_LABEL` - adapt the mesh based upon a label of the cells filled with `DMAdaptFlag` markers.
+. `DM_ADAPTATION_LABEL`  - adapt the mesh based upon a label of the cells filled with `DMAdaptFlag` markers.
 . `DM_ADAPTATION_METRIC` - try to mesh the manifold described by the input metric tensor uniformly. PETSc can also construct such a metric based
                            upon an input primal or a gradient field.
-- `DM_ADAPTATION_NONE` - do no adaptation
+- `DM_ADAPTATION_NONE`   - do no adaptation
 
   Level: beginner
 
-.seealso: `DM`, `DMAdaptor`, `DMAdaptationStrategy`, `DMAdaptorSolve()`
+.seealso: [](ch_dmbase), `DM`, `DMAdaptor`, `DMAdaptationStrategy`, `DMAdaptorSolve()`
 E*/
 typedef enum {
   DM_ADAPTATION_NONE,
@@ -161,15 +160,15 @@ typedef enum {
   DMAdaptFlag - Marker in the label prescribing what adaptation to perform
 
   Values:
-+  `DM_ADAPT_DETERMINE` - undocumented
-.  `DM_ADAPT_KEEP` - undocumented
-.  `DM_ADAPT_REFINE` - undocumented
-.  `DM_ADAPT_COARSEN` - undocumented
++  `DM_ADAPT_DETERMINE`    - undocumented
+.  `DM_ADAPT_KEEP`         - undocumented
+.  `DM_ADAPT_REFINE`       - undocumented
+.  `DM_ADAPT_COARSEN`      - undocumented
 -  `DM_ADAPT_COARSEN_LAST` - undocumented
 
   Level: beginner
 
-.seealso: `DM`, `DMAdaptor`, `DMAdaptationStrategy`, `DMAdaptationCriterion`, `DMAdaptorSolve()`, `DMAdaptLabel()`
+.seealso: [](ch_dmbase), `DM`, `DMAdaptor`, `DMAdaptationStrategy`, `DMAdaptationCriterion`, `DMAdaptorSolve()`, `DMAdaptLabel()`
 E*/
 typedef enum {
   DM_ADAPT_DETERMINE = PETSC_DETERMINE,
@@ -190,7 +189,7 @@ typedef enum {
 
   Level: beginner
 
-.seealso: `DM`, `DMDA`, `DMDAGetRay()`, `DMDAGetProcessorSubset()`, `DMPlexShearGeometry()`
+.seealso: [](ch_dmbase), `DM`, `DMDA`, `DMDAGetRay()`, `DMDAGetProcessorSubset()`, `DMPlexShearGeometry()`
 E*/
 typedef enum {
   DM_X,
@@ -202,15 +201,15 @@ typedef enum {
   DMEnclosureType - The type of enclosure relation between one `DM` and another
 
    Values:
-+  `DM_ENC_SUBMESH` - the `DM` is the boundary of another `DM`
-.  `DM_ENC_SUPERMESH`  - the `DM` has the boundary of another `DM` (the reverse situation to `DM_ENC_SUBMESH`)
-.  `DM_ENC_EQUALITY` - unknown what this means
-.  `DM_ENC_NONE` - no relationship can be determined
--  `DM_ENC_UNKNOWN`  - the relationship is unknown
++  `DM_ENC_SUBMESH`   - the `DM` is the boundary of another `DM`
+.  `DM_ENC_SUPERMESH` - the `DM` has the boundary of another `DM` (the reverse situation to `DM_ENC_SUBMESH`)
+.  `DM_ENC_EQUALITY`  - it is unknown what this means
+.  `DM_ENC_NONE`      - no relationship can be determined
+-  `DM_ENC_UNKNOWN`   - the relationship is unknown
 
   Level: beginner
 
-.seealso: `DM`, `DMGetEnclosureRelation()`
+.seealso: [](ch_dmbase), `DM`, `DMGetEnclosureRelation()`
 E*/
 typedef enum {
   DM_ENC_EQUALITY,
@@ -231,7 +230,7 @@ typedef enum {
   constituent points. Normally these types are automatically inferred and the user does not specify
   them.
 
-.seealso: `DM`, `DMPlexComputeCellTypes()`
+.seealso: [](ch_dmbase), `DM`, `DMPlexComputeCellTypes()`
 E*/
 typedef enum {
   DM_POLYTOPE_POINT,
@@ -277,6 +276,8 @@ typedef enum {
     DMField - PETSc object for defining a field on a mesh topology
 
     Level: intermediate
+
+.seealso: [](ch_dmbase), `DM`, `DMUniversalLabel`, `DMLabelCreate()`
 S*/
 typedef struct _p_DMField *DMField;
 
@@ -284,6 +285,8 @@ typedef struct _p_DMField *DMField;
     DMUniversalLabel - A label that encodes a set of `DMLabel`s, bijectively
 
     Level: developer
+
+.seealso: [](ch_dmbase), `DM`, `DMLabel`, `DMUniversalLabelCreate()`
 S*/
 typedef struct _p_UniversalLabel *DMUniversalLabel;
 

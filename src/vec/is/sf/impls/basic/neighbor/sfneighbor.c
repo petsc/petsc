@@ -62,8 +62,8 @@ static PetscErrorCode PetscSFGetDistComm_Neighbor(PetscSF sf, PetscSFDirection d
     PetscCall(PetscSFGetLeafInfo_Basic(sf, &nleafranks, &ndleafranks, &leafranks, NULL, NULL, NULL)); /* My leaves will access whose roots (I am a source) */
     indegree     = nrootranks - ndrootranks;
     outdegree    = nleafranks - ndleafranks;
-    sources      = rootranks + ndrootranks;
-    destinations = leafranks + ndleafranks;
+    sources      = PetscSafePointerPlusOffset(rootranks, ndrootranks);
+    destinations = PetscSafePointerPlusOffset(leafranks, ndleafranks);
     PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
     if (direction == PETSCSF_LEAF2ROOT) {
       PetscCallMPI(MPI_Dist_graph_create_adjacent(comm, indegree, sources, dat->rootweights, outdegree, destinations, dat->leafweights, MPI_INFO_NULL, 1 /*reorder*/, mycomm));
@@ -199,9 +199,9 @@ static PetscErrorCode PetscSFSetUp_Neighbor(PetscSF sf)
   dat->nrootreqs      = 1; // collectives only need one MPI_Request. We just put it in rootreqs[]
 
   /* Only setup MPI displs/counts for non-distinguished ranks. Distinguished ranks use shared memory */
-#if !PetscDefined(HAVE_OPENMPI) || (defined(PETSC_HAVE_OMPI_MAJOR_VERSION) && PETSC_HAVE_OMPI_MAJOR_VERSION < 5)
+#if !PetscDefined(HAVE_OPENMPI) || (PetscDefined(HAVE_OMPI_MAJOR_VERSION) && PetscDefined(HAVE_OMPI_MINOR_VERSION) && PetscDefined(HAVE_OMPI_RELEASE_VERSION) && !(PETSC_HAVE_OMPI_MAJOR_VERSION == 5 && PETSC_HAVE_OMPI_MINOR_VERSION == 0 && PETSC_HAVE_OMPI_RELEASE_VERSION == 0))
   PetscCall(PetscMalloc6(m, &dat->rootdispls, m, &dat->rootcounts, m, &dat->rootweights, n, &dat->leafdispls, n, &dat->leafcounts, n, &dat->leafweights));
-#else // workaround for an OpenMPI bug, https://github.com/open-mpi/ompi/issues/12037
+#else // workaround for an OpenMPI 5.0.0 bug, https://github.com/open-mpi/ompi/issues/12037
   PetscMPIInt m2 = m ? m : 1, n2 = n ? n : 1;
   PetscCall(PetscMalloc6(m2, &dat->rootdispls, m2, &dat->rootcounts, m2, &dat->rootweights, n2, &dat->leafdispls, n2, &dat->leafcounts, n2, &dat->leafweights));
 #endif

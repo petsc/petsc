@@ -4,13 +4,17 @@
 
 /* This structure holds the user-provided DMDA callbacks */
 typedef struct {
-  PetscErrorCode (*residuallocal)(DMDALocalInfo *, void *, void *, void *);
-  PetscErrorCode (*jacobianlocal)(DMDALocalInfo *, void *, Mat, Mat, void *);
-  PetscErrorCode (*objectivelocal)(DMDALocalInfo *, void *, PetscReal *, void *);
+  /* array versions for vector data */
+  DMDASNESFunction  residuallocal;
+  DMDASNESJacobian  jacobianlocal;
+  DMDASNESObjective objectivelocal;
 
-  PetscErrorCode (*residuallocalvec)(DMDALocalInfo *, Vec, Vec, void *);
-  PetscErrorCode (*jacobianlocalvec)(DMDALocalInfo *, Vec, Mat, Mat, void *);
-  PetscErrorCode (*objectivelocalvec)(DMDALocalInfo *, Vec, PetscReal *, void *);
+  /* Vec version for vector data */
+  DMDASNESFunctionVec  residuallocalvec;
+  DMDASNESJacobianVec  jacobianlocalvec;
+  DMDASNESObjectiveVec objectivelocalvec;
+
+  /* user contexts */
   void      *residuallocalctx;
   void      *jacobianlocalctx;
   void      *objectivelocalctx;
@@ -56,7 +60,7 @@ static PetscErrorCode SNESComputeFunction_DMDA(SNES snes, Vec X, Vec F, void *ct
   DMSNES_DA    *dmdasnes = (DMSNES_DA *)ctx;
   DMDALocalInfo info;
   Vec           Xloc;
-  void         *x, *f;
+  void         *x, *f, *rctx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
@@ -68,14 +72,15 @@ static PetscErrorCode SNESComputeFunction_DMDA(SNES snes, Vec X, Vec F, void *ct
   PetscCall(DMGlobalToLocalBegin(dm, X, INSERT_VALUES, Xloc));
   PetscCall(DMGlobalToLocalEnd(dm, X, INSERT_VALUES, Xloc));
   PetscCall(DMDAGetLocalInfo(dm, &info));
+  rctx = dmdasnes->residuallocalctx ? dmdasnes->residuallocalctx : snes->user;
   switch (dmdasnes->residuallocalimode) {
   case INSERT_VALUES: {
     PetscCall(PetscLogEventBegin(SNES_FunctionEval, snes, X, F, 0));
-    if (dmdasnes->residuallocalvec) PetscCallBack("SNES DMDA local callback function", (*dmdasnes->residuallocalvec)(&info, Xloc, F, dmdasnes->residuallocalctx));
+    if (dmdasnes->residuallocalvec) PetscCallBack("SNES DMDA local callback function", (*dmdasnes->residuallocalvec)(&info, Xloc, F, rctx));
     else {
       PetscCall(DMDAVecGetArray(dm, Xloc, &x));
       PetscCall(DMDAVecGetArray(dm, F, &f));
-      PetscCallBack("SNES DMDA local callback function", (*dmdasnes->residuallocal)(&info, x, f, dmdasnes->residuallocalctx));
+      PetscCallBack("SNES DMDA local callback function", (*dmdasnes->residuallocal)(&info, x, f, rctx));
       PetscCall(DMDAVecRestoreArray(dm, Xloc, &x));
       PetscCall(DMDAVecRestoreArray(dm, F, &f));
     }
@@ -86,11 +91,11 @@ static PetscErrorCode SNESComputeFunction_DMDA(SNES snes, Vec X, Vec F, void *ct
     PetscCall(DMGetLocalVector(dm, &Floc));
     PetscCall(VecZeroEntries(Floc));
     PetscCall(PetscLogEventBegin(SNES_FunctionEval, snes, X, F, 0));
-    if (dmdasnes->residuallocalvec) PetscCallBack("SNES DMDA local callback function", (*dmdasnes->residuallocalvec)(&info, Xloc, Floc, dmdasnes->residuallocalctx));
+    if (dmdasnes->residuallocalvec) PetscCallBack("SNES DMDA local callback function", (*dmdasnes->residuallocalvec)(&info, Xloc, Floc, rctx));
     else {
       PetscCall(DMDAVecGetArray(dm, Xloc, &x));
       PetscCall(DMDAVecGetArray(dm, Floc, &f));
-      PetscCallBack("SNES DMDA local callback function", (*dmdasnes->residuallocal)(&info, x, f, dmdasnes->residuallocalctx));
+      PetscCallBack("SNES DMDA local callback function", (*dmdasnes->residuallocal)(&info, x, f, rctx));
       PetscCall(DMDAVecRestoreArray(dm, Xloc, &x));
       PetscCall(DMDAVecRestoreArray(dm, Floc, &f));
     }
@@ -114,7 +119,7 @@ static PetscErrorCode SNESComputeObjective_DMDA(SNES snes, Vec X, PetscReal *ob,
   DMSNES_DA    *dmdasnes = (DMSNES_DA *)ctx;
   DMDALocalInfo info;
   Vec           Xloc;
-  void         *x;
+  void         *x, *octx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
@@ -126,13 +131,15 @@ static PetscErrorCode SNESComputeObjective_DMDA(SNES snes, Vec X, PetscReal *ob,
   PetscCall(DMGlobalToLocalBegin(dm, X, INSERT_VALUES, Xloc));
   PetscCall(DMGlobalToLocalEnd(dm, X, INSERT_VALUES, Xloc));
   PetscCall(DMDAGetLocalInfo(dm, &info));
-  if (dmdasnes->objectivelocalvec) PetscCallBack("SNES DMDA local callback objective", (*dmdasnes->objectivelocalvec)(&info, Xloc, ob, dmdasnes->objectivelocalctx));
+  octx = dmdasnes->objectivelocalctx ? dmdasnes->objectivelocalctx : snes->user;
+  if (dmdasnes->objectivelocalvec) PetscCallBack("SNES DMDA local callback objective", (*dmdasnes->objectivelocalvec)(&info, Xloc, ob, octx));
   else {
     PetscCall(DMDAVecGetArray(dm, Xloc, &x));
-    PetscCallBack("SNES DMDA local callback objective", (*dmdasnes->objectivelocal)(&info, x, ob, dmdasnes->objectivelocalctx));
+    PetscCallBack("SNES DMDA local callback objective", (*dmdasnes->objectivelocal)(&info, x, ob, octx));
     PetscCall(DMDAVecRestoreArray(dm, Xloc, &x));
   }
   PetscCall(DMRestoreLocalVector(dm, &Xloc));
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, ob, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)snes)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -143,21 +150,21 @@ PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES snes, Vec X, Mat A, Ma
   DMSNES_DA    *dmdasnes = (DMSNES_DA *)ctx;
   DMDALocalInfo info;
   Vec           Xloc;
-  void         *x;
+  void         *x, *jctx;
 
   PetscFunctionBegin;
   PetscCheck(dmdasnes->residuallocal || dmdasnes->residuallocalvec, PetscObjectComm((PetscObject)snes), PETSC_ERR_PLIB, "Corrupt context");
   PetscCall(SNESGetDM(snes, &dm));
-
-  if (dmdasnes->jacobianlocal || dmdasnes->jacobianlocalctx) {
+  jctx = dmdasnes->jacobianlocalctx ? dmdasnes->jacobianlocalctx : snes->user;
+  if (dmdasnes->jacobianlocal || dmdasnes->jacobianlocalvec) {
     PetscCall(DMGetLocalVector(dm, &Xloc));
     PetscCall(DMGlobalToLocalBegin(dm, X, INSERT_VALUES, Xloc));
     PetscCall(DMGlobalToLocalEnd(dm, X, INSERT_VALUES, Xloc));
     PetscCall(DMDAGetLocalInfo(dm, &info));
-    if (dmdasnes->jacobianlocalvec) PetscCallBack("SNES DMDA local callback Jacobian", (*dmdasnes->jacobianlocalvec)(&info, Xloc, A, B, dmdasnes->jacobianlocalctx));
+    if (dmdasnes->jacobianlocalvec) PetscCallBack("SNES DMDA local callback Jacobian", (*dmdasnes->jacobianlocalvec)(&info, Xloc, A, B, jctx));
     else {
       PetscCall(DMDAVecGetArray(dm, Xloc, &x));
-      PetscCallBack("SNES DMDA local callback Jacobian", (*dmdasnes->jacobianlocal)(&info, x, A, B, dmdasnes->jacobianlocalctx));
+      PetscCallBack("SNES DMDA local callback Jacobian", (*dmdasnes->jacobianlocal)(&info, x, A, B, jctx));
       PetscCall(DMDAVecRestoreArray(dm, Xloc, &x));
     }
     PetscCall(DMRestoreLocalVector(dm, &Xloc));
@@ -292,17 +299,20 @@ PetscErrorCode DMDASNESSetFunctionLocalVec(DM dm, InsertMode imode, PetscErrorCo
 
   Input Parameters:
 + dm   - `DM` to associate callback with
-. func - local Jacobian evaluation
+. func - local Jacobian evaluation function
 - ctx  - optional context for local Jacobian evaluation
 
   Calling sequence of `func`:
 + info - `DMDALocalInfo` defining the subdomain to evaluate the Jacobian at
 . x    - dimensional pointer to state at which to evaluate Jacobian (e.g. PetscScalar *x or **x or ***x)
-. J    - Mat object for the Jacobian
-. M    - Mat object for the Jacobian preconditioner matrix, often `J`
+. J    - `Mat` object for the Jacobian
+. M    - `Mat` object for the Jacobian preconditioner matrix, often `J`
 - ctx  - optional context passed above
 
   Level: beginner
+
+  Note:
+  The `J` and `M` matrices are created internally by `DMCreateMatrix()`
 
 .seealso: [](ch_snes), `DMDA`, `DMDASNESSetFunctionLocal()`, `DMSNESSetJacobian()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
@@ -361,7 +371,6 @@ PetscErrorCode DMDASNESSetJacobianLocalVec(DM dm, PetscErrorCode (*func)(DMDALoc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// PetscClangLinter pragma disable: -fdoc-param-list-func-parameter-documentation
 /*@C
   DMDASNESSetObjectiveLocal - set a local residual evaluation function to used with a `DMDA`
 
@@ -372,11 +381,17 @@ PetscErrorCode DMDASNESSetJacobianLocalVec(DM dm, PetscErrorCode (*func)(DMDALoc
 . func - local objective evaluation, see `DMDASNESSetObjectiveLocal` for the calling sequence
 - ctx  - optional context for local residual evaluation
 
+  Calling sequence of `func`:
++ info - `DMDALocalInfo` defining the subdomain to evaluate the Jacobian at
+. x    - dimensional pointer to state at which to evaluate the objective (e.g. PetscScalar *x or **x or ***x)
+. obj  - returned objective value for the local subdomain
+- ctx  - optional context passed above
+
   Level: beginner
 
 .seealso: [](ch_snes), `DMDA`, `DMSNESSetFunction()`, `DMDASNESSetJacobianLocal()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDASNESObjective`
 @*/
-PetscErrorCode DMDASNESSetObjectiveLocal(DM dm, DMDASNESObjective func, void *ctx)
+PetscErrorCode DMDASNESSetObjectiveLocal(DM dm, PetscErrorCode (*func)(DMDALocalInfo *info, void *x, PetscReal *obj, void *), void *ctx)
 {
   DMSNES     sdm;
   DMSNES_DA *dmdasnes;
@@ -393,7 +408,6 @@ PetscErrorCode DMDASNESSetObjectiveLocal(DM dm, DMDASNESObjective func, void *ct
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// PetscClangLinter pragma disable: -fdoc-param-list-func-parameter-documentation
 /*@C
   DMDASNESSetObjectiveLocalVec - set a local residual evaluation function that operates on a local vector with `DMDA`
 
@@ -404,11 +418,17 @@ PetscErrorCode DMDASNESSetObjectiveLocal(DM dm, DMDASNESObjective func, void *ct
 . func - local objective evaluation, see `DMDASNESSetObjectiveLocalVec` for the calling sequence
 - ctx  - optional context for local residual evaluation
 
+  Calling sequence of `func`:
++ info - `DMDALocalInfo` defining the subdomain to evaluate the Jacobian at
+. x    - state vector at which to evaluate the objective
+. obj  - returned objective value for the local subdomain
+- ctx  - optional context passed above
+
   Level: beginner
 
 .seealso: [](ch_snes), `DMDA`, `DMDASNESSetObjectiveLocal()`, `DMSNESSetFunction()`, `DMDASNESSetJacobianLocalVec()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDASNESObjectiveVec`
 @*/
-PetscErrorCode DMDASNESSetObjectiveLocalVec(DM dm, DMDASNESObjectiveVec func, void *ctx)
+PetscErrorCode DMDASNESSetObjectiveLocalVec(DM dm, PetscErrorCode (*func)(DMDALocalInfo *info, Vec x, PetscReal *obj, void *), void *ctx)
 {
   DMSNES     sdm;
   DMSNES_DA *dmdasnes;

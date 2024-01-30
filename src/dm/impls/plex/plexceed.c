@@ -105,7 +105,7 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
 
     PetscCall(PetscDSGetDiscretization(ds, ds_field, (PetscObject *)&fe));
     PetscCall(PetscFEGetHeightSubspace(fe, height, &fe));
-    PetscCheck(fe, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Height %" PetscInt_FMT " is invalid for DG coordinates", height);
+    PetscCheck(fe, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Height %" PetscInt_FMT " is invalid for DG discretizations", height);
     PetscCall(PetscFEGetDualSpace(fe, &dual_space));
     PetscCall(PetscDualSpaceGetDimension(dual_space, &num_dual_basis_vectors));
     PetscCall(PetscDualSpaceGetNumComponents(dual_space, num_comp));
@@ -116,7 +116,7 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
   PetscCall(PetscMalloc1(restr_size, &restr_indices));
   PetscInt cell_offset = 0;
 
-  PetscInt P = (PetscInt)PetscPowReal(*cell_size, 1.0 / (dim - height));
+  PetscInt P = dim - height ? (PetscInt)PetscPowReal(*cell_size, 1.0 / (dim - height)) : 0;
   for (PetscInt p = 0; p < *num_cells; p++) {
     PetscBool flip = PETSC_FALSE;
     PetscInt  c    = iter_indices[p];
@@ -224,8 +224,8 @@ PetscErrorCode DMPlexGetLocalOffsetsSupport(DM dm, DMLabel domain_label, PetscIn
 
   PetscCall(PetscDSGetDiscretization(ds, ds_field, (PetscObject *)&fv));
   PetscCall(PetscFVGetNumComponents(fv, &Nc));
-  PetscCall(PetscMalloc1(NfInt * Nc, &restr_indices_neg));
-  PetscCall(PetscMalloc1(NfInt * Nc, &restr_indices_pos));
+  PetscCall(PetscMalloc1(NfInt, &restr_indices_neg));
+  PetscCall(PetscMalloc1(NfInt, &restr_indices_pos));
   PetscInt face_offset_neg = 0, face_offset_pos = 0;
 
   for (PetscInt p = 0; p < Nf; ++p) {
@@ -243,26 +243,22 @@ PetscErrorCode DMPlexGetLocalOffsetsSupport(DM dm, DMLabel domain_label, PetscIn
       // Essential boundary conditions are encoded as -(loc+1), but we don't care so we decode.
       PetscCall(DMPlexGetClosureIndices(dm, section, section, supp[0], PETSC_TRUE, &num_indices, &indices, field_offsets, NULL));
       PetscCheck(num_indices == Nc, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Number of closure indices %" PetscInt_FMT " != %" PetscInt_FMT " number of FV components", num_indices, Nc);
-      for (PetscInt c = 0; c < Nc; ++c) {
-        loc                                  = indices[field_offsets[dm_field] + c];
-        loc                                  = loc < 0 ? -(loc + 1) : loc;
-        restr_indices_neg[face_offset_neg++] = loc;
-        PetscCheck(loc >= 0 && loc < *l_size, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Location %" PetscInt_FMT " not in [0, %" PetscInt_FMT ") local vector", loc, *l_size);
-      }
+      loc                                  = indices[field_offsets[dm_field]];
+      loc                                  = loc < 0 ? -(loc + 1) : loc;
+      restr_indices_neg[face_offset_neg++] = loc;
+      PetscCheck(loc >= 0 && loc + Nc <= *l_size, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Location %" PetscInt_FMT " + Nc not in [0, %" PetscInt_FMT ") local vector", loc, *l_size);
       PetscCall(DMPlexRestoreClosureIndices(dm, section, section, supp[0], PETSC_TRUE, &num_indices, &indices, field_offsets, NULL));
       PetscCall(DMPlexGetClosureIndices(dm, section, section, supp[1], PETSC_TRUE, &num_indices, &indices, field_offsets, NULL));
       PetscCheck(num_indices == Nc, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Number of closure indices %" PetscInt_FMT " != %" PetscInt_FMT " number of FV components", num_indices, Nc);
-      for (PetscInt c = 0; c < Nc; ++c) {
-        loc                                  = indices[field_offsets[dm_field] + c];
-        loc                                  = loc < 0 ? -(loc + 1) : loc;
-        restr_indices_pos[face_offset_pos++] = loc;
-        PetscCheck(loc >= 0 && loc < *l_size, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Location %" PetscInt_FMT " not in [0, %" PetscInt_FMT ") local vector", loc, *l_size);
-      }
+      loc                                  = indices[field_offsets[dm_field]];
+      loc                                  = loc < 0 ? -(loc + 1) : loc;
+      restr_indices_pos[face_offset_pos++] = loc;
+      PetscCheck(loc >= 0 && loc + Nc <= *l_size, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Location %" PetscInt_FMT " + Nc not in [0, %" PetscInt_FMT ") local vector", loc, *l_size);
       PetscCall(DMPlexRestoreClosureIndices(dm, section, section, supp[1], PETSC_TRUE, &num_indices, &indices, field_offsets, NULL));
     }
   }
-  PetscCheck(face_offset_neg == NfInt * Nc, PETSC_COMM_SELF, PETSC_ERR_SUP, "Shape mismatch, neg offsets array of shape (%" PetscInt_FMT ") initialized for %" PetscInt_FMT " nodes", NfInt * Nc, face_offset_neg);
-  PetscCheck(face_offset_pos == NfInt * Nc, PETSC_COMM_SELF, PETSC_ERR_SUP, "Shape mismatch, pos offsets array of shape (%" PetscInt_FMT ") initialized for %" PetscInt_FMT " nodes", NfInt * Nc, face_offset_pos);
+  PetscCheck(face_offset_neg == NfInt, PETSC_COMM_SELF, PETSC_ERR_SUP, "Shape mismatch, neg offsets array of shape (%" PetscInt_FMT ") initialized for %" PetscInt_FMT " nodes", NfInt, face_offset_neg);
+  PetscCheck(face_offset_pos == NfInt, PETSC_COMM_SELF, PETSC_ERR_SUP, "Shape mismatch, pos offsets array of shape (%" PetscInt_FMT ") initialized for %" PetscInt_FMT " nodes", NfInt, face_offset_pos);
   if (iter_is) PetscCall(ISRestoreIndices(iter_is, &iter_indices));
   PetscCall(ISDestroy(&iter_is));
 

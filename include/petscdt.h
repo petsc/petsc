@@ -25,7 +25,7 @@ typedef struct _p_PetscQuadrature *PetscQuadrature;
 
   Values:
 +  `PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA` - compute the nodes via linear algebra
--  `PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON` - compute the nodes by solving a nonlinear equation with Newton's method
+-  `PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON`         - compute the nodes by solving a nonlinear equation with Newton's method
 
   Level: intermediate
 
@@ -40,11 +40,11 @@ typedef enum {
   PetscDTNodeType - A description of strategies for generating nodes (both
   quadrature nodes and nodes for Lagrange polynomials)
 
-   Values:
-+  `PETSCDTNODES_DEFAULT` - Nodes chosen by PETSc
-.  `PETSCDTNODES_GAUSSJACOBI` - Nodes at either Gauss-Jacobi or Gauss-Lobatto-Jacobi quadrature points
-.  `PETSCDTNODES_EQUISPACED` - Nodes equispaced either including the endpoints or excluding them
--  `PETSCDTNODES_TANHSINH` - Nodes at Tanh-Sinh quadrature points
+  Values:
++ `PETSCDTNODES_DEFAULT`     - Nodes chosen by PETSc
+. `PETSCDTNODES_GAUSSJACOBI` - Nodes at either Gauss-Jacobi or Gauss-Lobatto-Jacobi quadrature points
+. `PETSCDTNODES_EQUISPACED`  - Nodes equispaced either including the endpoints or excluding them
+- `PETSCDTNODES_TANHSINH`    - Nodes at Tanh-Sinh quadrature points
 
   Level: intermediate
 
@@ -70,19 +70,19 @@ PETSC_EXTERN const char *const *const PetscDTNodeTypes;
   Values:
 +  `PETSCDTSIMPLEXQUAD_DEFAULT` - Quadrature rule chosen by PETSc
 .  `PETSCDTSIMPLEXQUAD_CONIC`   - Quadrature rules constructed as
-                                conically-warped tensor products of 1D
-                                Gauss-Jacobi quadrature rules.  These are
-                                explicitly computable in any dimension for any
-                                degree, and the tensor-product structure can be
-                                exploited by sum-factorization methods, but
-                                they are not efficient in terms of nodes per
-                                polynomial degree.
+                                  conically-warped tensor products of 1D
+                                  Gauss-Jacobi quadrature rules.  These are
+                                  explicitly computable in any dimension for any
+                                  degree, and the tensor-product structure can be
+                                  exploited by sum-factorization methods, but
+                                  they are not efficient in terms of nodes per
+                                  polynomial degree.
 -  `PETSCDTSIMPLEXQUAD_MINSYM`  - Quadrature rules that are fully symmetric
-                                (symmetries of the simplex preserve the nodes
-                                and weights) with minimal (or near minimal)
-                                number of nodes.  In dimensions higher than 1
-                                these are not simple to compute, so lookup
-                                tables are used.
+                                  (symmetries of the simplex preserve the nodes
+                                  and weights) with minimal (or near minimal)
+                                  number of nodes.  In dimensions higher than 1
+                                  these are not simple to compute, so lookup
+                                  tables are used.
 
   Level: intermediate
 
@@ -333,7 +333,7 @@ static inline PetscErrorCode PetscDTBinomialInt(PetscInt n, PetscInt k, PetscInt
 -  k - an integer in [0, n!)
 
    Output Parameters:
-+  perm - the permuted list of the integers [0, ..., n-1]
++  perm  - the permuted list of the integers [0, ..., n-1]
 -  isOdd - if not `NULL`, returns whether the permutation used an even or odd number of swaps.
 
    Level: intermediate
@@ -359,10 +359,12 @@ static inline PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, PetscInt *p
   PetscFunctionBegin;
   if (isOdd) *isOdd = PETSC_FALSE;
   PetscCheck(n >= 0 && n <= PETSC_FACTORIAL_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of elements %" PetscInt_FMT " is not in supported range [0,%d]", n, PETSC_FACTORIAL_MAX);
-  w = &work[n - 2];
-  for (i = 2; i <= n; i++) {
-    *(w--) = k % i;
-    k /= i;
+  if (n >= 2) {
+    w = &work[n - 2];
+    for (i = 2; i <= n; i++) {
+      *(w--) = k % i;
+      k /= i;
+    }
   }
   for (i = 0; i < n; i++) perm[i] = i;
   for (i = 0; i < n - 1; i++) {
@@ -381,11 +383,11 @@ static inline PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, PetscInt *p
    PetscDTPermIndex - Encode a permutation of n into an integer in [0, n!).  This inverts `PetscDTEnumPerm()`.
 
    Input Parameters:
-+  n - a non-negative integer (see note about limits below)
++  n    - a non-negative integer (see note about limits below)
 -  perm - the permuted list of the integers [0, ..., n-1]
 
    Output Parameters:
-+  k - an integer in [0, n!)
++  k     - an integer in [0, n!)
 -  isOdd - if not `NULL`, returns whether the permutation used an even or odd number of swaps.
 
    Level: beginner
@@ -472,8 +474,8 @@ static inline PetscErrorCode PetscDTEnumSubset(PetscInt n, PetscInt k, PetscInt 
    This is the inverse of `PetscDTEnumSubset`.
 
    Input Parameters:
-+  n - a non-negative integer (see note about limits below)
-.  k - an integer in [0, n]
++  n      - a non-negative integer (see note about limits below)
+.  k      - an integer in [0, n]
 -  subset - an ordered subset of the integers [0, ..., n - 1]
 
    Output Parameter:
@@ -518,7 +520,7 @@ static inline PetscErrorCode PetscDTSubsetIndex(PetscInt n, PetscInt k, const Pe
 -  j - an index in [0, n choose k)
 
    Output Parameters:
-+  perm - the jth subset of size k of the integers [0, ..., n - 1], followed by its complementary set.
++  perm  - the jth subset of size k of the integers [0, ..., n - 1], followed by its complementary set.
 -  isOdd - if not `NULL`, return whether perm is an even or odd permutation.
 
    Level: beginner
@@ -532,7 +534,7 @@ M*/
 static inline PetscErrorCode PetscDTEnumSplit(PetscInt n, PetscInt k, PetscInt j, PetscInt *perm, PetscBool *isOdd)
 {
   PetscInt  i, l, m, Nk, odd = 0;
-  PetscInt *subcomp = perm + k;
+  PetscInt *subcomp = PetscSafePointerPlusOffset(perm, k);
 
   PetscFunctionBegin;
   if (isOdd) *isOdd = PETSC_FALSE;

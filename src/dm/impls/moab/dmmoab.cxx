@@ -6,7 +6,7 @@
 #include <moab/Skinner.hpp>
 
 /*MC
-  DMMOAB = "moab" - A `DM` object that encapsulates an unstructured mesh described by the MOAB mesh database.
+  DMMOAB = "moab" - A `DM` object that encapsulates an unstructured mesh described by the MOAB mesh database {cite}`moabwebsite`.
                     Direct access to the MOAB Interface and other mesh manipulation related objects are available
                     through public API. Ability to create global and local representation of Vecs containing all
                     unknowns in the interior and shared boundary via a transparent tag-data wrapper is provided
@@ -15,9 +15,6 @@
                     available.
 
   Level: intermediate
-
-  Reference:
-. * - https://www.mcs.anl.gov/~fathom/moab-docs/html/contents.html
 
 .seealso: `DMMOAB`, `DMType`, `DMMoabCreate()`, `DMCreate()`, `DMSetType()`, `DMMoabCreateMoab()`
 M*/

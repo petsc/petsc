@@ -870,23 +870,23 @@ x     Restore vector
 
    test:
       suffix: mf
-      args: -snes_monitor_short -pc_type lu -da_refine 4  -p 3 -ksp_rtol 1.e-12  -snes_mf_operator
+      args: -snes_monitor_short -pc_type lu -da_refine 4 -p 3 -ksp_rtol 1.e-12 -snes_mf_operator
       requires: !single
 
    test:
       suffix: mf_picard
-      args: -snes_monitor_short -pc_type lu -da_refine 4  -p 3 -ksp_rtol 1.e-12  -snes_mf_operator -picard
+      args: -snes_monitor_short -pc_type lu -da_refine 4 -p 3 -ksp_rtol 1.e-12 -snes_mf_operator -picard
       requires: !single
       output_file: output/ex15_mf.out
 
    test:
       suffix: fd_picard
-      args: -snes_monitor_short -pc_type lu -da_refine 2  -p 3 -ksp_rtol 1.e-12  -snes_fd -picard
+      args: -snes_monitor_short -pc_type lu -da_refine 2 -p 3 -ksp_rtol 1.e-12 -snes_fd -picard
       requires: !single
 
    test:
       suffix: fd_color_picard
-      args: -snes_monitor_short -pc_type lu -da_refine 4  -p 3 -ksp_rtol 1.e-12  -snes_fd_color -picard
+      args: -snes_monitor_short -pc_type lu -da_refine 4 -p 3 -ksp_rtol 1.e-12 -snes_fd_color -picard
       requires: !single
       output_file: output/ex15_mf.out
 

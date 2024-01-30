@@ -1793,6 +1793,13 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
           -ufv_vtk_interval 0 -ufv_vtk_basename ${wPETSC_DIR}/ex11 -monitor density,energy
 
     test:
+      suffix: euler_0
+      requires: exodusii !complex
+      args: -eu_riemann godunov -bc_wall 100,101 -ufv_cfl 5 -petsclimiter_type sin \
+            -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo \
+            -ts_max_time 1 -ts_ssp_type rks2 -ts_ssp_nstages 10
+
+    test:
       suffix: euler_ceed
       requires: exodusii libceed
       args: -eu_riemann godunov_ceed -bc_wall 100,101 -ufv_cfl 5 -petsclimiter_type sin \
@@ -1806,7 +1813,7 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
     test:
       suffix: p4est_advec_2d
       requires: p4est
-      args: -ufv_vtk_interval 0 -dm_type p4est -dm_forest_minimum_refinement 1 -dm_forest_initial_refinement 2 -dm_p4est_refine_pattern hash   -dm_forest_maximum_refinement 5
+      args: -ufv_vtk_interval 0 -dm_type p4est -dm_forest_minimum_refinement 1 -dm_forest_initial_refinement 2 -dm_p4est_refine_pattern hash -dm_forest_maximum_refinement 5
 
     # Advection in a box
     test:
@@ -1826,13 +1833,13 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
     test:
       suffix: adv_2d_quad_p4est_1
       requires: p4est
-      args: -ufv_vtk_interval 0 -dm_refine 5 -dm_type p4est -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow   3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1
+      args: -ufv_vtk_interval 0 -dm_refine 5 -dm_type p4est -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1
       timeoutfactor: 3
 
-    test:
+    test: # broken for quad precision
       suffix: adv_2d_quad_p4est_adapt_0
-      requires: p4est !__float128 #broken for quad precision
-      args: -ufv_vtk_interval 0 -dm_refine 3 -dm_type p4est -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow   3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1 -ufv_use_amr -refine_vec_tagger_box 0.005,inf -coarsen_vec_tagger_box   0,1.e-5 -petscfv_type leastsquares -ts_max_time 0.01
+      requires: p4est !__float128
+      args: -ufv_vtk_interval 0 -dm_refine 3 -dm_type p4est -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1 -ufv_use_amr -refine_vec_tagger_box 0.005,inf -coarsen_vec_tagger_box 0,1.e-5 -petscfv_type leastsquares -ts_max_time 0.01
       timeoutfactor: 3
 
     test:

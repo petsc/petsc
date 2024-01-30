@@ -423,6 +423,12 @@ specifying 0 for ``o1`` - ``o4``. The code between these two routine
 calls will be automatically timed and logged as part of the specified
 event.
 
+Events are collective by default on the communicator of ``o1`` (if present).
+They can be made not collective by using ``PetscLogEventSetCollective()``.
+No synchronization is performed on collective events in optimized builds unless
+the command line option ``-log_sync`` is used; however, we do check for collective
+semantics in debug mode.
+
 The user can log the number of floating-point operations for this
 segment of code by calling
 
@@ -700,7 +706,7 @@ with ``nsys-ui`` in the future.
 For an MPI parallel job, only one process can call ``nsys``,
 say have rank zero output ``nsys`` data and have all other
 ranks call the executable directly. For example with MPICH
-or OpenMPI - we can run a parallel job on 4 MPI tasks as:
+or Open MPI - we can run a parallel job on 4 MPI tasks as:
 
 .. code-block:: console
 

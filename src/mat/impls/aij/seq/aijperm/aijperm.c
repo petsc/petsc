@@ -280,9 +280,7 @@ static PetscErrorCode MatMult_SeqAIJPERM(Mat A, Vec xx, Vec yy)
   PetscScalar       *y;
   const MatScalar   *aa;
   const PetscInt    *aj, *ai;
-#if !(defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJPERM) && defined(notworking))
-  PetscInt i, j;
-#endif
+  PetscInt           i, j;
 #if defined(PETSC_USE_AVX512_KERNELS) && defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
   __m512d  vec_x, vec_y, vec_vals;
   __m256i  vec_idx, vec_ipos, vec_j;
@@ -324,10 +322,6 @@ static PetscErrorCode MatMult_SeqAIJPERM(Mat A, Vec xx, Vec yy)
   ngroup  = aijperm->ngroup;
   xgroup  = aijperm->xgroup;
   nzgroup = aijperm->nzgroup;
-
-#if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJPERM) && defined(notworking)
-  fortranmultaijperm_(&m, x, ii, aj, aa, y);
-#else
 
   for (igroup = 0; igroup < ngroup; igroup++) {
     jstart = xgroup[igroup];
@@ -372,15 +366,15 @@ static PetscErrorCode MatMult_SeqAIJPERM(Mat A, Vec xx, Vec yy)
          * the chunk, we should vectorize along nz, that is, perform the
          * mat-vec one row at a time as in the usual CSR case. */
         if (nz > isize) {
-  #if defined(PETSC_HAVE_CRAY_VECTOR)
-    #pragma _CRI preferstream
-  #endif
+#if defined(PETSC_HAVE_CRAY_VECTOR)
+  #pragma _CRI preferstream
+#endif
           for (i = 0; i < isize; i++) {
-  #if defined(PETSC_HAVE_CRAY_VECTOR)
-    #pragma _CRI prefervector
-  #endif
+#if defined(PETSC_HAVE_CRAY_VECTOR)
+  #pragma _CRI prefervector
+#endif
 
-  #if defined(PETSC_USE_AVX512_KERNELS) && defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#if defined(PETSC_USE_AVX512_KERNELS) && defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
             vec_y = _mm512_setzero_pd();
             ipos  = ip[i];
             for (j = 0; j < (nz >> 3); j++) {
@@ -403,19 +397,19 @@ static PetscErrorCode MatMult_SeqAIJPERM(Mat A, Vec xx, Vec yy)
               yp[i] += aa[ipos] * x[aj[ipos]];
             }
             yp[i] += _mm512_reduce_add_pd(vec_y);
-  #else
+#else
             for (j = 0; j < nz; j++) {
               ipos = ip[i] + j;
               yp[i] += aa[ipos] * x[aj[ipos]];
             }
-  #endif
+#endif
           }
         } else {
           /* Otherwise, there are enough rows in the chunk to make it
            * worthwhile to vectorize across the rows, that is, to do the
            * matvec by operating with "columns" of the chunk. */
           for (j = 0; j < nz; j++) {
-  #if defined(PETSC_USE_AVX512_KERNELS) && defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#if defined(PETSC_USE_AVX512_KERNELS) && defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
             vec_j = _mm256_set1_epi32(j);
             for (i = 0; i < ((isize >> 3) << 3); i += 8) {
               vec_y    = _mm512_loadu_pd(&yp[i]);
@@ -431,24 +425,23 @@ static PetscErrorCode MatMult_SeqAIJPERM(Mat A, Vec xx, Vec yy)
               ipos = ip[i] + j;
               yp[i] += aa[ipos] * x[aj[ipos]];
             }
-  #else
+#else
             for (i = 0; i < isize; i++) {
               ipos = ip[i] + j;
               yp[i] += aa[ipos] * x[aj[ipos]];
             }
-  #endif
+#endif
           }
         }
 
-  #if defined(PETSC_HAVE_CRAY_VECTOR)
-    #pragma _CRI ivdep
-  #endif
+#if defined(PETSC_HAVE_CRAY_VECTOR)
+  #pragma _CRI ivdep
+#endif
         /* Put results from yp[] into non-permuted result vector y. */
         for (i = 0; i < isize; i++) y[iperm[istart + i]] = yp[i];
       } /* End processing chunk of isize rows of a group. */
     }   /* End handling matvec for chunk with nz > 1. */
   }     /* End loop over igroup. */
-#endif
   PetscCall(PetscLogFlops(PetscMax(2.0 * a->nz - A->rmap->n, 0)));
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArray(yy, &y));
@@ -469,9 +462,7 @@ static PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A, Vec xx, Vec ww, Vec yy)
   PetscScalar       *y, *w;
   const MatScalar   *aa;
   const PetscInt    *aj, *ai;
-#if !defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJPERM)
-  PetscInt i, j;
-#endif
+  PetscInt           i, j;
 
   /* Variables that don't appear in MatMultAdd_SeqAIJ. */
   Mat_SeqAIJPERM *aijperm;
@@ -512,10 +503,6 @@ static PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A, Vec xx, Vec ww, Vec yy)
   ngroup  = aijperm->ngroup;
   xgroup  = aijperm->xgroup;
   nzgroup = aijperm->nzgroup;
-
-#if defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJPERM)
-  fortranmultaddaijperm_(&m, x, ii, aj, aa, y, w);
-#else
 
   for (igroup = 0; igroup < ngroup; igroup++) {
     jstart = xgroup[igroup];
@@ -564,13 +551,13 @@ static PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A, Vec xx, Vec ww, Vec yy)
          * the chunk, we should vectorize along nz, that is, perform the
          * mat-vec one row at a time as in the usual CSR case. */
         if (nz > isize) {
-  #if defined(PETSC_HAVE_CRAY_VECTOR)
-    #pragma _CRI preferstream
-  #endif
+#if defined(PETSC_HAVE_CRAY_VECTOR)
+  #pragma _CRI preferstream
+#endif
           for (i = 0; i < isize; i++) {
-  #if defined(PETSC_HAVE_CRAY_VECTOR)
-    #pragma _CRI prefervector
-  #endif
+#if defined(PETSC_HAVE_CRAY_VECTOR)
+  #pragma _CRI prefervector
+#endif
             for (j = 0; j < nz; j++) {
               ipos = ip[i] + j;
               yp[i] += aa[ipos] * x[aj[ipos]];
@@ -589,9 +576,9 @@ static PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A, Vec xx, Vec ww, Vec yy)
           }
         }
 
-  #if defined(PETSC_HAVE_CRAY_VECTOR)
-    #pragma _CRI ivdep
-  #endif
+#if defined(PETSC_HAVE_CRAY_VECTOR)
+  #pragma _CRI ivdep
+#endif
         /* Put results from yp[] into non-permuted result vector y. */
         for (i = 0; i < isize; i++) y[iperm[istart + i]] = yp[i];
       } /* End processing chunk of isize rows of a group. */
@@ -599,7 +586,6 @@ static PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A, Vec xx, Vec ww, Vec yy)
     } /* End handling matvec for chunk with nz > 1. */
   }   /* End loop over igroup. */
 
-#endif
   PetscCall(PetscLogFlops(2.0 * a->nz));
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArrayPair(yy, ww, &y, &w));

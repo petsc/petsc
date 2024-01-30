@@ -243,16 +243,16 @@ PetscErrorCode KSPViewFromOptions(KSP A, PetscObject obj, const char name[])
 + ksp      - Krylov solver context
 - normtype - one of
 .vb
-   KSP_NORM_NONE - skips computing the norm, this should generally only be used if you are using
-                 the Krylov method as a smoother with a fixed small number of iterations.
-                 Implicitly sets KSPConvergedSkip() as KSP convergence test.
-                 Note that certain algorithms such as KSPGMRES ALWAYS require the norm calculation,
-                 for these methods the norms are still computed, they are just not used in
-                 the convergence test.
-   KSP_NORM_PRECONDITIONED - the default for left preconditioned solves, uses the l2 norm
-                 of the preconditioned residual P^{-1}(b - A x)
-   KSP_NORM_UNPRECONDITIONED - uses the l2 norm of the true b - Ax residual.
-   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
+   KSP_NORM_NONE             - skips computing the norm, this should generally only be used if you are using
+                               the Krylov method as a smoother with a fixed small number of iterations.
+                               Implicitly sets `KSPConvergedSkip()` as the `KSP` convergence test.
+                               Note that certain algorithms such as `KSPGMRES` ALWAYS require the norm calculation,
+                               for these methods the norms are still computed, they are just not used in
+                               the convergence test.
+   KSP_NORM_PRECONDITIONED   - the default for left-preconditioned solves, uses the l2 norm
+                               of the preconditioned residual  P^{-1}(b - A x).
+   KSP_NORM_UNPRECONDITIONED - uses the l2 norm of the true  b - Ax residual.
+   KSP_NORM_NATURAL          - supported by `KSPCG`, `KSPCR`, `KSPCGNE`, `KSPCGS`
 .ve
 
   Options Database Key:
@@ -265,7 +265,7 @@ PetscErrorCode KSPViewFromOptions(KSP A, PetscObject obj, const char name[])
   If only one is set, PETSc tries to automatically change the other to find a compatible pair.  If no such combination
   is supported, PETSc will generate an error.
 
-  Developer Notes:
+  Developer Note:
   Supported combinations of norm and preconditioner side are set using `KSPSetSupportedNorm()`.
 
 .seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSPConvergedSkip()`, `KSPSetCheckNormIteration()`, `KSPSetPCSide()`, `KSPGetPCSide()`, `KSPNormType`
@@ -295,7 +295,7 @@ PetscErrorCode KSPSetNormType(KSP ksp, KSPNormType normtype)
   Use `KSPSetNormType`(ksp,`KSP_NORM_NONE`) to never check the norm
 
   On steps where the norm is not computed, the previous norm is still in the variable, so if you run with, for example,
-  -ksp_monitor the residual norm will appear to be unchanged for several iterations (though it is not really unchanged).
+  `-ksp_monitor` the residual norm will appear to be unchanged for several iterations (though it is not really unchanged).
 
   Level: advanced
 
@@ -331,7 +331,7 @@ PetscErrorCode KSPSetCheckNormIteration(KSP ksp, PetscInt it)
 
   Use `KSPSetNormType`(ksp,`KSP_NORM_NONE`) to never check the norm
 
-  If you lag the norm and run with, for example, -ksp_monitor, the residual norm reported will be the lagged one.
+  If you lag the norm and run with, for example, `-ksp_monitor`, the residual norm reported will be the lagged one.
 
 .seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSPConvergedSkip()`, `KSPSetNormType()`, `KSPSetCheckNormIteration()`
 @*/
@@ -762,7 +762,7 @@ PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
 }
 
 /*@C
-  KSPSetType - Builds the `KSP` datastructure for a particular `KSPType`
+  KSPSetType - Builds the `KSP` data structure for a particular `KSPType`
 
   Logically Collective
 
@@ -790,7 +790,7 @@ PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
   choosing the appropriate method.  In other words, this routine is
   not for beginners.
 
-  Developer Notes:
+  Developer Note:
   `KSPRegister()` is used to add Krylov types to `KSPList` from which they are accessed by `KSPSetType()`.
 
 .seealso: [](ch_ksp), `PCSetType()`, `KSPType`, `KSPRegister()`, `KSPCreate()`, `KSP`
@@ -829,7 +829,7 @@ PetscErrorCode KSPSetType(KSP ksp, KSPType type)
 }
 
 /*@C
-  KSPGetType - Gets the `KSP` type as a string from the KSP object.
+  KSPGetType - Gets the `KSP` type as a string from the `KSP` object.
 
   Not Collective
 
@@ -872,9 +872,10 @@ PetscErrorCode KSPGetType(KSP ksp, KSPType *type)
 .ve
 
   Then, your solver can be chosen with the procedural interface via
-$    ` KSPSetType`(ksp, "my_solver")
-  or at runtime via the option
-$     -ksp_type my_solver
+.vb
+  KSPSetType(ksp, "my_solver")
+.ve
+  or at runtime via the option `-ksp_type my_solver`
 
 .seealso: [](ch_ksp), `KSP`, `KSPType`, `KSPSetType`, `KSPRegisterAll()`
 @*/
@@ -921,9 +922,10 @@ PetscErrorCode KSPMonitorMakeKey_Internal(const char name[], PetscViewerType vty
 .ve
 
   Then, your monitor can be chosen with the procedural interface via
-$     KSPMonitorSetFromOptions(ksp, "-ksp_monitor_my_monitor", "my_monitor", NULL)
-  or at runtime via the option
-$     -ksp_monitor_my_monitor
+.vb
+  KSPMonitorSetFromOptions(ksp, "-ksp_monitor_my_monitor", "my_monitor", NULL)
+.ve
+  or at runtime via the option `-ksp_monitor_my_monitor`
 
 .seealso: [](ch_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorRegisterAll()`, `KSPMonitorSetFromOptions()`
 @*/

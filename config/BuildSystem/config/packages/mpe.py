@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download  = ['ftp://ftp.mcs.anl.gov/pub/mpi/mpe/mpe2.tar.gz']
+    self.download  = ['https://web.cels.anl.gov/projects/petsc/download/externalpackages/mpe2.tar.gz']
     self.functions = ['MPE_Log_event']
     self.includes  = ['mpe.h']
     self.liblist   = [['libmpe.a']]

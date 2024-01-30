@@ -135,7 +135,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm, PetscMPIIn
   PetscMPIInt       size, rank, *iflags, nrecvs, tag, *franks, i, flg;
   MPI_Aint          lb, unitbytes;
   char             *tdata, *fdata;
-  MPI_Request      *reqs, *sendreqs = NULL;
+  MPI_Request      *reqs, *sendreqs;
   MPI_Status       *statuses;
   PetscCommCounter *counter;
 
@@ -160,7 +160,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm, PetscMPIIn
   PetscCall(PetscMalloc(nrecvs * count * unitbytes, &fdata));
   tdata = (char *)todata;
   PetscCall(PetscMalloc2(nto + nrecvs, &reqs, nto + nrecvs, &statuses));
-  if (nto) sendreqs = reqs + nrecvs;
+  sendreqs = PetscSafePointerPlusOffset(reqs, nrecvs);
   for (i = 0; i < nrecvs; i++) PetscCallMPI(MPI_Irecv((void *)(fdata + count * unitbytes * i), count, dtype, MPI_ANY_SOURCE, tag, comm, reqs + i));
   for (i = 0; i < nto; i++) PetscCallMPI(MPI_Isend((void *)(tdata + count * unitbytes * i), count, dtype, toranks[i], tag, comm, sendreqs + i));
   PetscCallMPI(MPI_Waitall(nto + nrecvs, reqs, statuses));
@@ -240,19 +240,15 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm, PetscMPII
 
   Options Database Key:
 . -build_twosided <allreduce|ibarrier|redscatter> - algorithm to set up two-sided communication. Default is allreduce for communicators with <= 1024 ranks,
-                   otherwise ibarrier.
+                                                    otherwise ibarrier.
 
   Level: developer
 
   Notes:
   This memory-scalable interface is an alternative to calling `PetscGatherNumberOfMessages()` and
-  `PetscGatherMessageLengths()`, possibly with a subsequent round of communication to send other constant-size data.
+  `PetscGatherMessageLengths()`, possibly with a subsequent round of communication to send other constant-size data, see {cite}`hoeflersiebretlumsdaine10`.
 
   Basic data types as well as contiguous types are supported, but non-contiguous (e.g., strided) types are not.
-
-  References:
-.  * - Hoefler, Siebert and Lumsdaine, The MPI_Ibarrier implementation uses the algorithm in
-  Scalable communication protocols for dynamic sparse data exchange, 2010.
 
 .seealso: `PetscGatherNumberOfMessages()`, `PetscGatherMessageLengths()`, `PetscCommBuildTwoSidedSetType()`, `PetscCommBuildTwoSidedType`
 @*/
@@ -435,13 +431,9 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm, PetscMP
 
   Notes:
   This memory-scalable interface is an alternative to calling `PetscGatherNumberOfMessages()` and
-  `PetscGatherMessageLengths()`, possibly with a subsequent round of communication to send other data.
+  `PetscGatherMessageLengths()`, possibly with a subsequent round of communication to send other data, {cite}`hoeflersiebretlumsdaine10`.
 
   Basic data types as well as contiguous types are supported, but non-contiguous (e.g., strided) types are not.
-
-  References:
-.  * - Hoefler, Siebert and Lumsdaine, The MPI_Ibarrier implementation uses the algorithm in
-  Scalable communication protocols for dynamic sparse data exchange, 2010.
 
 .seealso: `PetscCommBuildTwoSided()`, `PetscCommBuildTwoSidedFReq()`, `PetscGatherNumberOfMessages()`, `PetscGatherMessageLengths()`
 @*/
@@ -486,13 +478,9 @@ PetscErrorCode PetscCommBuildTwoSidedF(MPI_Comm comm, PetscMPIInt count, MPI_Dat
 
   Notes:
   This memory-scalable interface is an alternative to calling `PetscGatherNumberOfMessages()` and
-  `PetscGatherMessageLengths()`, possibly with a subsequent round of communication to send other data.
+  `PetscGatherMessageLengths()`, possibly with a subsequent round of communication to send other data, {cite}`hoeflersiebretlumsdaine10`.
 
   Basic data types as well as contiguous types are supported, but non-contiguous (e.g., strided) types are not.
-
-  References:
-.  * - Hoefler, Siebert and Lumsdaine, The MPI_Ibarrier implementation uses the algorithm in
-  Scalable communication protocols for dynamic sparse data exchange, 2010.
 
 .seealso: `PetscCommBuildTwoSided()`, `PetscCommBuildTwoSidedF()`, `PetscGatherNumberOfMessages()`, `PetscGatherMessageLengths()`
 @*/

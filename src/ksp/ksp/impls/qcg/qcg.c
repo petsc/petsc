@@ -373,7 +373,7 @@ static PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems *PetscOpti
 }
 
 /*MC
-   KSPQCG - Code to run conjugate gradient method subject to a constraint on the solution norm.
+   KSPQCG - Code to run conjugate gradient method subject to a constraint on the solution norm  {cite}`steihaug:83`.
 
    Options Database Key:
 .      -ksp_qcg_trustregionradius <r> - Trust Region Radius
@@ -404,10 +404,6 @@ static PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems *PetscOpti
       `PCJACOBI`: D = diag [d_1, d_2, ...., d_n], where d_i = sqrt(H[i,i])
       `PCICC`:    D = L^T, implemented with forward and backward solves. Here L is an incomplete Cholesky factor of H.
 .ve
-
-  References:
-. * - Trond Steihaug, The Conjugate Gradient Method and Trust Regions in Large Scale Optimization,
-   SIAM Journal on Numerical Analysis, Vol. 20, No. 3 (Jun., 1983).
 
 .seealso: [](ch_ksp), 'KSPNASH`, `KSPGLTR`, `KSPSTCG`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPQCGSetTrustRegionRadius()`
           `KSPQCGGetTrialStepNorm()`, `KSPQCGGetQuadratic()`

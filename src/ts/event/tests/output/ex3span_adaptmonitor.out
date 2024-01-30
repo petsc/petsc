@@ -1,0 +1,133 @@
+      TSAdapt none beuler 0: step   0 accepted t=0.01       + 9.900e-02 dt=5.050e-02 
+      TSAdapt none beuler 0: step   1 accepted t=0.109      + 5.050e-02 dt=5.050e-02 
+      TSAdapt none beuler 0: step   2 accepted t=0.1595     + 5.050e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step   3 accepted t=0.21       + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step   4 accepted t=0.309      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step   5 accepted t=0.408      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step   6 accepted t=0.507      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step   7 accepted t=0.606      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step   8 accepted t=0.705      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step   9 accepted t=0.804      + 9.900e-02 dt=5.350e-02 
+      TSAdapt none beuler 0: step  10 accepted t=0.903      + 5.350e-02 dt=5.350e-02 
+      TSAdapt none beuler 0: step  11 accepted t=0.9565     + 5.350e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  12 accepted t=1.01       + 9.900e-02 dt=5.050e-02 
+      TSAdapt does not interfere, step  12 accepted. Event handling in progress
+      TSAdapt does not interfere, step  12 accepted. Event handling in progress
+      TSAdapt does not interfere, step  13 accepted. Event handling in progress
+      TSAdapt does not interfere, step  13 accepted. Event handling in progress
+      TSAdapt does not interfere, step  13 accepted. Event handling in progress
+      TSAdapt does not interfere, step  14 accepted. Processing post-event steps: 1-st accepted just now, 2-nd yet to come
+      TSAdapt none beuler 0: step  15 accepted t=1.109      + 5.050e-02 dt=5.050e-02 
+      TSAdapt none beuler 0: step  16 accepted t=1.1595     + 5.050e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  17 accepted t=1.21       + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  18 accepted t=1.309      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  19 accepted t=1.408      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  20 accepted t=1.507      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  21 accepted t=1.606      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  22 accepted t=1.705      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  23 accepted t=1.804      + 9.900e-02 dt=5.350e-02 
+      TSAdapt none beuler 0: step  24 accepted t=1.903      + 5.350e-02 dt=5.350e-02 
+      TSAdapt none beuler 0: step  25 accepted t=1.9565     + 5.350e-02 dt=9.900e-02 
+      TSAdapt does not interfere, step  25 accepted. Event handling in progress
+      TSAdapt does not interfere, step  26 accepted. Event handling in progress
+      TSAdapt does not interfere, step  27 accepted. Processing post-event steps: 1-st accepted just now, 2-nd yet to come
+      TSAdapt none beuler 0: step  28 accepted t=2.01       + 9.900e-02 dt=5.050e-02 
+      TSAdapt none beuler 0: step  29 accepted t=2.109      + 5.050e-02 dt=5.050e-02 
+      TSAdapt none beuler 0: step  30 accepted t=2.1595     + 5.050e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  31 accepted t=2.21       + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  32 accepted t=2.309      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  33 accepted t=2.408      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  34 accepted t=2.507      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  35 accepted t=2.606      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  36 accepted t=2.705      + 9.900e-02 dt=9.800e-02 
+      TSAdapt none beuler 0: step  37 accepted t=2.804      + 9.800e-02 dt=9.800e-02 
+      TSAdapt none beuler 0: step  38 accepted t=2.902      + 9.800e-02 dt=1.000e-02 
+      TSAdapt none beuler 0: step  39 accepted t=3          + 1.000e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  40 accepted t=3.01       + 9.900e-02 dt=5.050e-02 
+      TSAdapt none beuler 0: step  41 accepted t=3.109      + 5.050e-02 dt=5.050e-02 
+      TSAdapt none beuler 0: step  42 accepted t=3.1595     + 5.050e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  43 accepted t=3.21       + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  44 accepted t=3.309      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  45 accepted t=3.408      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  46 accepted t=3.507      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  47 accepted t=3.606      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  48 accepted t=3.705      + 9.900e-02 dt=9.800e-02 
+      TSAdapt none beuler 0: step  49 accepted t=3.804      + 9.800e-02 dt=9.800e-02 
+      TSAdapt none beuler 0: step  50 accepted t=3.902      + 9.800e-02 dt=1.000e-02 
+      TSAdapt none beuler 0: step  51 accepted t=4          + 1.000e-02 dt=1.000e-02 
+      TSAdapt none beuler 0: step  52 accepted t=4.01       + 1.000e-02 dt=9.500e-02 
+      TSAdapt none beuler 0: step  53 accepted t=4.02       + 9.500e-02 dt=9.500e-02 
+      TSAdapt none beuler 0: step  54 accepted t=4.115      + 9.500e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  55 accepted t=4.21       + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  56 accepted t=4.309      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  57 accepted t=4.408      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  58 accepted t=4.507      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  59 accepted t=4.606      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  60 accepted t=4.705      + 9.900e-02 dt=8.800e-02 
+      TSAdapt none beuler 0: step  61 accepted t=4.804      + 8.800e-02 dt=8.800e-02 
+      TSAdapt none beuler 0: step  62 accepted t=4.892      + 8.800e-02 dt=2.000e-02 
+      TSAdapt none beuler 0: step  63 accepted t=4.98       + 2.000e-02 dt=1.000e-02 
+      TSAdapt none beuler 0: step  64 accepted t=5          + 1.000e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  65 accepted t=5.01       + 9.900e-02 dt=5.050e-02 
+      TSAdapt none beuler 0: step  66 accepted t=5.109      + 5.050e-02 dt=5.050e-02 
+      TSAdapt none beuler 0: step  67 accepted t=5.1595     + 5.050e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  68 accepted t=5.21       + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  69 accepted t=5.309      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  70 accepted t=5.408      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  71 accepted t=5.507      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  72 accepted t=5.606      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  73 accepted t=5.705      + 9.900e-02 dt=8.800e-02 
+      TSAdapt none beuler 0: step  74 accepted t=5.804      + 8.800e-02 dt=8.800e-02 
+      TSAdapt none beuler 0: step  75 accepted t=5.892      + 8.800e-02 dt=2.000e-02 
+      TSAdapt none beuler 0: step  76 accepted t=5.98       + 2.000e-02 dt=1.000e-02 
+      TSAdapt none beuler 0: step  77 accepted t=6          + 1.000e-02 dt=1.000e-02 
+      TSAdapt none beuler 0: step  78 accepted t=6.01       + 1.000e-02 dt=9.500e-02 
+      TSAdapt none beuler 0: step  79 accepted t=6.02       + 9.500e-02 dt=9.500e-02 
+      TSAdapt none beuler 0: step  80 accepted t=6.115      + 9.500e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  81 accepted t=6.21       + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  82 accepted t=6.309      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  83 accepted t=6.408      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  84 accepted t=6.507      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  85 accepted t=6.606      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  86 accepted t=6.705      + 9.900e-02 dt=9.300e-02 
+      TSAdapt none beuler 0: step  87 accepted t=6.804      + 9.300e-02 dt=9.300e-02 
+      TSAdapt none beuler 0: step  88 accepted t=6.897      + 9.300e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  89 accepted t=6.99       + 9.900e-02 dt=6.050e-02 
+      TSAdapt none beuler 0: step  90 accepted t=7.089      + 6.050e-02 dt=6.050e-02 
+      TSAdapt none beuler 0: step  91 accepted t=7.1495     + 6.050e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  92 accepted t=7.21       + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  93 accepted t=7.309      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  94 accepted t=7.408      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  95 accepted t=7.507      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  96 accepted t=7.606      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  97 accepted t=7.705      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step  98 accepted t=7.804      + 9.900e-02 dt=5.350e-02 
+      TSAdapt none beuler 0: step  99 accepted t=7.903      + 5.350e-02 dt=5.350e-02 
+      TSAdapt none beuler 0: step 100 accepted t=7.9565     + 5.350e-02 dt=9.900e-02 
+      TSAdapt does not interfere, step 100 accepted. Event handling in progress
+      TSAdapt does not interfere, step 101 accepted. Event handling in progress
+      TSAdapt does not interfere, step 102 accepted. Processing post-event steps: 1-st accepted just now, 2-nd yet to come
+      TSAdapt none beuler 0: step 103 accepted t=8.01       + 9.900e-02 dt=5.050e-02 
+      TSAdapt none beuler 0: step 104 accepted t=8.109      + 5.050e-02 dt=5.050e-02 
+      TSAdapt none beuler 0: step 105 accepted t=8.1595     + 5.050e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step 106 accepted t=8.21       + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step 107 accepted t=8.309      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step 108 accepted t=8.408      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step 109 accepted t=8.507      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step 110 accepted t=8.606      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step 111 accepted t=8.705      + 9.900e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step 112 accepted t=8.804      + 9.900e-02 dt=5.350e-02 
+      TSAdapt none beuler 0: step 113 accepted t=8.903      + 5.350e-02 dt=5.350e-02 
+      TSAdapt none beuler 0: step 114 accepted t=8.9565     + 5.350e-02 dt=9.900e-02 
+      TSAdapt none beuler 0: step 115 accepted t=9.01       + 9.900e-02 dt=5.050e-02 
+      TSAdapt none beuler 0: step 116 accepted t=9.109      + 5.050e-02 dt=5.050e-02 
+      TSAdapt none beuler 0: step 117 accepted t=9.1595     + 5.050e-02 dt=9.900e-02 
+CONVERGED REASON: 1 (TS_CONVERGED_EVENT == 4)
+0	1.05	7.32747e-15	pass
+0	2.	3.94024e-09	pass
+0	4.	0.	pass
+0	6.	0.	pass
+0	8.	3.94024e-09	pass
+Final time = 9.21, max time = 9.21, pass
+Adapt = none
+Last dt = 0.099

@@ -146,7 +146,7 @@ int main(int argc, char **argv)
 /*TEST
 
      build:
-       requires: moab
+       requires: moab !complex
 
      test:
        args: -debug -n 2 -dim 2 -levels 2 -simplex

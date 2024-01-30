@@ -1,7 +1,6 @@
 -include ../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_ELEMENTAL'
 
-LIBBASE  = libpetscmat
 MANSEC   = Mat
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

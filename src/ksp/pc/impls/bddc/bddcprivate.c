@@ -2114,7 +2114,7 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscBool filter, Petsc
   PetscCall(PCBDDCGraphCreate(&graph));
   PetscCall(MatGetDM(pc->pmat, &dm));
   if (!dm) PetscCall(PCGetDM(pc, &dm));
-  if (dm) PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMPLEX, &isplex));
+  if (dm) PetscCall(PetscObjectTypeCompareAny((PetscObject)dm, &isplex, DMPLEX, DMP4EST, DMP8EST, ""));
   if (filter) isplex = PETSC_FALSE;
 
   if (isplex) { /* this code has been modified from plexpartition.c */
@@ -2127,6 +2127,7 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscBool filter, Petsc
     PetscSegBuffer  adjBuffer;
     PetscSF         sfPoint;
 
+    PetscCall(DMConvert(dm, DMPLEX, &dm));
     PetscCall(DMPlexGetHeightStratum(dm, 0, &pStart, &pEnd));
     PetscCall(DMGetPointSF(dm, &sfPoint));
     PetscCall(PetscSFGetGraph(sfPoint, &nroots, NULL, NULL, NULL));
@@ -2269,15 +2270,76 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscBool filter, Petsc
     if (ncc) *ncc = graph->ncc;
     if (cc || primalv) {
       Mat          A;
-      PetscBT      btv, btvt;
+      PetscBT      btv, btvt, btvc;
       PetscSection subSection;
       PetscInt    *ids, cum, cump, *cids, *pids;
+      PetscInt     dim, cStart, cEnd, fStart, fEnd, vStart, vEnd, pStart, pEnd;
 
+      PetscCall(DMGetDimension(dm, &dim));
       PetscCall(DMPlexGetSubdomainSection(dm, &subSection));
+      PetscCall(DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd));
+      PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+      PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+      PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
       PetscCall(MatISGetLocalMat(pc->pmat, &A));
       PetscCall(PetscMalloc3(A->rmap->n, &ids, graph->ncc + 1, &cids, A->rmap->n, &pids));
       PetscCall(PetscBTCreate(A->rmap->n, &btv));
       PetscCall(PetscBTCreate(A->rmap->n, &btvt));
+      PetscCall(PetscBTCreate(pEnd - pStart, &btvc));
+
+      /* First see if we find corners for the subdomains, i.e. a vertex
+         shared by at least dim subdomain boundary faces. This does not
+         cover all the possible cases with simplices but it is enough
+         for tensor cells */
+      if (vStart != fStart && dim <= 3) {
+        for (PetscInt c = cStart; c < cEnd; c++) {
+          PetscInt        nf, cnt = 0, mcnt = dim, *cfaces;
+          const PetscInt *faces;
+
+          PetscCall(DMPlexGetConeSize(dm, c, &nf));
+          PetscCall(DMGetWorkArray(dm, nf, MPIU_INT, &cfaces));
+          PetscCall(DMPlexGetCone(dm, c, &faces));
+          for (PetscInt f = 0; f < nf; f++) {
+            PetscInt nc, ff;
+
+            PetscCall(DMPlexGetSupportSize(dm, faces[f], &nc));
+            PetscCall(DMPlexGetTreeParent(dm, faces[f], &ff, NULL));
+            if (nc == 1 && faces[f] == ff) cfaces[cnt++] = faces[f];
+          }
+          if (cnt >= mcnt) {
+            PetscInt size, *closure = NULL;
+
+            PetscCall(DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &size, &closure));
+            for (PetscInt k = 0; k < 2 * size; k += 2) {
+              PetscInt v = closure[k];
+              if (v >= vStart && v < vEnd) {
+                PetscInt vsize, *vclosure = NULL;
+
+                cnt = 0;
+                PetscCall(DMPlexGetTransitiveClosure(dm, v, PETSC_FALSE, &vsize, &vclosure));
+                for (PetscInt vk = 0; vk < 2 * vsize; vk += 2) {
+                  PetscInt f = vclosure[vk];
+                  if (f >= fStart && f < fEnd) {
+                    PetscInt  nc, ff;
+                    PetscBool valid = PETSC_FALSE;
+
+                    for (PetscInt fk = 0; fk < nf; fk++)
+                      if (f == cfaces[fk]) valid = PETSC_TRUE;
+                    if (!valid) continue;
+                    PetscCall(DMPlexGetSupportSize(dm, f, &nc));
+                    PetscCall(DMPlexGetTreeParent(dm, f, &ff, NULL));
+                    if (nc == 1 && f == ff) cnt++;
+                  }
+                }
+                if (cnt >= mcnt) PetscCall(PetscBTSet(btvc, v - pStart));
+                PetscCall(DMPlexRestoreTransitiveClosure(dm, v, PETSC_FALSE, &vsize, &vclosure));
+              }
+            }
+            PetscCall(DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &size, &closure));
+          }
+          PetscCall(DMRestoreWorkArray(dm, nf, MPIU_INT, &cfaces));
+        }
+      }
 
       cids[0] = 0;
       for (i = 0, cump = 0, cum = 0; i < graph->ncc; i++) {
@@ -2296,7 +2358,8 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscBool filter, Petsc
             PetscCall(PetscSectionGetDof(subSection, p, &dof));
             for (s = 0; s < dof - cdof; s++) {
               if (PetscBTLookupSet(btvt, off + s)) continue;
-              if (!PetscBTLookup(btv, off + s)) ids[cum++] = off + s;
+              if (PetscBTLookup(btvc, p - pStart)) pids[cump++] = off + s; /* subdomain corner */
+              else if (!PetscBTLookup(btv, off + s)) ids[cum++] = off + s;
               else pids[cump++] = off + s; /* cross-vertex */
             }
             PetscCall(DMPlexGetTreeParent(dm, p, &pp, NULL));
@@ -2306,7 +2369,8 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscBool filter, Petsc
               PetscCall(PetscSectionGetDof(subSection, pp, &dof));
               for (s = 0; s < dof - cdof; s++) {
                 if (PetscBTLookupSet(btvt, off + s)) continue;
-                if (!PetscBTLookup(btv, off + s)) ids[cum++] = off + s;
+                if (PetscBTLookup(btvc, pp - pStart)) pids[cump++] = off + s; /* subdomain corner */
+                else if (!PetscBTLookup(btv, off + s)) ids[cum++] = off + s;
                 else pids[cump++] = off + s; /* cross-vertex */
               }
             }
@@ -2326,6 +2390,8 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscBool filter, Petsc
       PetscCall(PetscFree3(ids, cids, pids));
       PetscCall(PetscBTDestroy(&btv));
       PetscCall(PetscBTDestroy(&btvt));
+      PetscCall(PetscBTDestroy(&btvc));
+      PetscCall(DMDestroy(&dm));
     }
   } else {
     if (ncc) *ncc = graph->ncc;
@@ -3796,11 +3862,11 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   PetscCall(PetscCalloc1(pcbddc->local_primal_size * pcbddc->local_primal_size, &coarse_submat_vals));
   PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, n_vertices, n_vertices, coarse_submat_vals, &S_VV));
   PetscCall(MatDenseSetLDA(S_VV, pcbddc->local_primal_size));
-  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, n_constraints, n_vertices, coarse_submat_vals + n_vertices, &S_CV));
+  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, n_constraints, n_vertices, PetscSafePointerPlusOffset(coarse_submat_vals, n_vertices), &S_CV));
   PetscCall(MatDenseSetLDA(S_CV, pcbddc->local_primal_size));
-  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, n_vertices, n_constraints, coarse_submat_vals + pcbddc->local_primal_size * n_vertices, &S_VC));
+  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, n_vertices, n_constraints, PetscSafePointerPlusOffset(coarse_submat_vals, pcbddc->local_primal_size * n_vertices), &S_VC));
   PetscCall(MatDenseSetLDA(S_VC, pcbddc->local_primal_size));
-  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, n_constraints, n_constraints, coarse_submat_vals + (pcbddc->local_primal_size + 1) * n_vertices, &S_CC));
+  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, n_constraints, n_constraints, PetscSafePointerPlusOffset(coarse_submat_vals, (pcbddc->local_primal_size + 1) * n_vertices), &S_CC));
   PetscCall(MatDenseSetLDA(S_CC, pcbddc->local_primal_size));
 
   /* determine if can use MatSolve routines instead of calling KSPSolve on ksp_R */
@@ -4047,7 +4113,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     if (!pcbddc->symmetric_primal) n *= 2;
     PetscCall(PetscCalloc1(n, &marr));
     PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, n_B, pcbddc->local_primal_size, marr, &pcbddc->coarse_phi_B));
-    marr += n_B * pcbddc->local_primal_size;
+    marr = PetscSafePointerPlusOffset(marr, n_B * pcbddc->local_primal_size);
     if (pcbddc->switch_static || pcbddc->dbg_flag) {
       PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, n_D, pcbddc->local_primal_size, marr, &pcbddc->coarse_phi_D));
       marr += n_D * pcbddc->local_primal_size;
@@ -5001,7 +5067,7 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
   n_D        = pcis->n - n_B;
   n_vertices = pcbddc->n_vertices;
 
-  /* Dohrmann's notation: dofs splitted in R (Remaining: all dofs but the vertices) and V (Vertices) */
+  /* Dohrmann's notation: dofs split in R (Remaining: all dofs but the vertices) and V (Vertices) */
 
   /* create auxiliary bitmask and allocate workspace */
   if (!sub_schurs || !sub_schurs->reuse_solver) {
@@ -5640,6 +5706,7 @@ PetscErrorCode PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspos
   PetscCall(PCBDDCScatterCoarseDataEnd(pc, ADD_VALUES, SCATTER_FORWARD));
 
   /* Coarse solution -> rhs and sol updated inside PCBDDCScattarCoarseDataBegin/End */
+  PetscCall(PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][2], pc, 0, 0, 0));
   if (pcbddc->coarse_ksp) {
     Mat          coarse_mat;
     Vec          rhs, sol;
@@ -5663,9 +5730,7 @@ PetscErrorCode PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspos
     PetscCall(KSPGetOperators(pcbddc->coarse_ksp, &coarse_mat, NULL));
     if (applytranspose) {
       PetscCheck(!pcbddc->benign_apply_coarse_only, PetscObjectComm((PetscObject)pcbddc->coarse_ksp), PETSC_ERR_SUP, "Not yet implemented");
-      PetscCall(PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][2], pc, 0, 0, 0));
       PetscCall(KSPSolveTranspose(pcbddc->coarse_ksp, rhs, sol));
-      PetscCall(PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][2], pc, 0, 0, 0));
       PetscCall(KSPCheckSolve(pcbddc->coarse_ksp, pc, sol));
       PetscCall(MatGetTransposeNullSpace(coarse_mat, &nullsp));
       if (nullsp) PetscCall(MatNullSpaceRemove(nullsp, sol));
@@ -5680,9 +5745,7 @@ PetscErrorCode PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspos
         PetscCall(PCBDDCBenignRemoveInterior(coarse_pc, rhs, sol));
         PetscCall(PCPostSolve(coarse_pc, pcbddc->coarse_ksp));
       } else {
-        PetscCall(PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][2], pc, 0, 0, 0));
         PetscCall(KSPSolve(pcbddc->coarse_ksp, rhs, sol));
-        PetscCall(PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][2], pc, 0, 0, 0));
         PetscCall(KSPCheckSolve(pcbddc->coarse_ksp, pc, sol));
         if (nullsp) PetscCall(MatNullSpaceRemove(nullsp, sol));
       }
@@ -5698,9 +5761,10 @@ PetscErrorCode PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspos
       coarsepcbddc->benign_apply_coarse_only = PETSC_FALSE;
     }
   }
+  PetscCall(PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][2], pc, 0, 0, 0));
 
   /* Local solution on R nodes */
-  if (pcis->n && !pcbddc->benign_apply_coarse_only) PetscCall(PCBDDCSolveSubstructureCorrection(pc, pcis->vec1_B, pcis->vec1_D, applytranspose));
+  if (!pcbddc->benign_apply_coarse_only) PetscCall(PCBDDCSolveSubstructureCorrection(pc, pcis->vec1_B, pcis->vec1_D, applytranspose));
   /* communications from coarse sol to local primal nodes */
   PetscCall(PCBDDCScatterCoarseDataBegin(pc, INSERT_VALUES, SCATTER_REVERSE));
   PetscCall(PCBDDCScatterCoarseDataEnd(pc, INSERT_VALUES, SCATTER_REVERSE));
@@ -7672,7 +7736,7 @@ static PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_su
     }
     PetscCall(PetscMalloc1(nis, &temp_idxs));
     PetscCall(PetscMalloc1(psum, &temp_idxs[0]));
-    for (i = 1; i < nis; i++) temp_idxs[i] = temp_idxs[i - 1] + count_is[i - 1];
+    for (i = 1; i < nis; i++) temp_idxs[i] = PetscSafePointerPlusOffset(temp_idxs[i - 1], count_is[i - 1]);
     PetscCall(PetscArrayzero(count_is, nis));
     ptr_idxs = recv_buffer_idxs_is;
     for (i = 0; i < n_recvs; i++) {

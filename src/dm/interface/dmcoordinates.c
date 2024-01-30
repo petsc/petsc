@@ -842,9 +842,7 @@ PetscErrorCode DMGetCoordinateField(DM dm, DMField *field)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(field, 2);
-  if (!dm->coordinates[0].field) {
-    if (dm->ops->createcoordinatefield) PetscCall((*dm->ops->createcoordinatefield)(dm, &dm->coordinates[0].field));
-  }
+  if (!dm->coordinates[0].field) PetscTryTypeMethod(dm, createcoordinatefield, &dm->coordinates[0].field);
   *field = dm->coordinates[0].field;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -969,13 +967,14 @@ static PetscErrorCode DMCreateAffineCoordinates_Internal(DM dm)
   DM             cdm;
   PetscFE        feLinear;
   DMPolytopeType ct;
-  PetscInt       dim, dE, cStart, cEnd, gct;
+  PetscInt       dim, dE, height, cStart, cEnd, gct;
 
   PetscFunctionBegin;
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMGetCoordinateDim(dm, &dE));
-  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(DMPlexGetVTKCellHeight(dm, &height));
+  PetscCall(DMPlexGetHeightStratum(dm, height, &cStart, &cEnd));
   if (cEnd > cStart) PetscCall(DMPlexGetCellType(dm, cStart, &ct));
   else ct = DM_POLYTOPE_UNKNOWN;
   gct = (PetscInt)ct;

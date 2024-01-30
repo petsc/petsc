@@ -38,7 +38,7 @@ PetscErrorCode PetscRandomDestroy(PetscRandom *r)
     *r = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  if ((*r)->ops->destroy) PetscCall((*(*r)->ops->destroy)(*r));
+  PetscTryTypeMethod(*r, destroy);
   PetscCall(PetscHeaderDestroy(r));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -184,8 +184,6 @@ PetscErrorCode VecSwap_Seq(Vec xin, Vec yin)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#include <../src/vec/vec/impls/seq/ftn-kernels/fnorm.h>
-
 PetscErrorCode VecNorm_Seq(Vec xin, NormType type, PetscReal *z)
 {
   // use a local variable to ensure compiler doesn't think z aliases any of the other arrays
@@ -750,7 +748,52 @@ PetscErrorCode VecDuplicate_Seq(Vec win, Vec *V)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static const struct _VecOps DvOps = {
+PetscErrorCode VecReplaceArray_Default_GEMV_Error(Vec v, const PetscScalar *a)
+{
+  PetscFunctionBegin;
+  PetscCheck(PETSC_FALSE, PetscObjectComm((PetscObject)v), PETSC_ERR_SUP, "VecReplaceArray() is not supported on the first Vec obtained from VecDuplicateVecs(). \
+You could either 1) use -vec_mdot_use_gemv 0 -vec_maxpy_use_gemv 0 to turn off an optimization to allow your current code to work or 2) use VecDuplicate() to duplicate the vector.");
+  (void)a;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode VecDuplicateVecs_Seq_GEMV(Vec w, PetscInt m, Vec *V[])
+{
+  PetscFunctionBegin;
+  // This routine relies on the duplicate operation being VecDuplicate_Seq. If not, bail out to the default.
+  if (w->ops->duplicate != VecDuplicate_Seq) {
+    w->ops->duplicatevecs = VecDuplicateVecs_Default;
+    PetscCall(VecDuplicateVecs(w, m, V));
+  } else {
+    PetscInt     nlocal;
+    PetscScalar *array;
+    PetscInt64   lda; // use 64-bit as we will do "m * lda"
+
+    PetscCall(PetscMalloc1(m, V));
+    PetscCall(VecGetLocalSize(w, &nlocal));
+    lda = nlocal;
+    lda = ((lda + 31) / 32) * 32; // make every vector 32-elements aligned
+
+    PetscCall(PetscCalloc1(m * lda, &array));
+    for (PetscInt i = 0; i < m; i++) {
+      Vec v;
+      PetscCall(VecCreateSeqWithLayoutAndArray_Private(w->map, PetscSafePointerPlusOffset(array, i * lda), &v));
+      PetscCall(PetscObjectListDuplicate(((PetscObject)w)->olist, &((PetscObject)v)->olist));
+      PetscCall(PetscFunctionListDuplicate(((PetscObject)w)->qlist, &((PetscObject)v)->qlist));
+      v->ops->view          = w->ops->view;
+      v->stash.ignorenegidx = w->stash.ignorenegidx;
+      (*V)[i]               = v;
+    }
+    // so when the first vector is destroyed it will destroy the array
+    if (m) ((Vec_Seq *)(*V)[0]->data)->array_allocated = array;
+    // disable replacearray of the first vector, as freeing its memory also frees others in the group.
+    // But replacearray of others is ok, as they don't own their array.
+    if (m > 1) (*V)[0]->ops->replacearray = VecReplaceArray_Default_GEMV_Error;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static struct _VecOps DvOps = {
   PetscDesignatedInitializer(duplicate, VecDuplicate_Seq), /* 1 */
   PetscDesignatedInitializer(duplicatevecs, VecDuplicateVecs_Default),
   PetscDesignatedInitializer(destroyvecs, VecDestroyVecs_Default),
@@ -844,15 +887,53 @@ static const struct _VecOps DvOps = {
 };
 
 /*
+  Create a VECSEQ with the given layout and array
+
+  Input Parameter:
++ map   - the layout
+- array - the array on host
+
+  Output Parameter:
+. V  - The vector object
+*/
+PetscErrorCode VecCreateSeqWithLayoutAndArray_Private(PetscLayout map, const PetscScalar array[], Vec *V)
+{
+  PetscMPIInt size;
+
+  PetscFunctionBegin;
+  PetscCall(VecCreateWithLayout_Private(map, V));
+  PetscCallMPI(MPI_Comm_size(map->comm, &size));
+  PetscCheck(size == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot create VECSEQ on more than one process");
+  PetscCall(VecCreate_Seq_Private(*V, array));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
       This is called by VecCreate_Seq() (i.e. VecCreateSeq()) and VecCreateSeqWithArray()
 */
 PetscErrorCode VecCreate_Seq_Private(Vec v, const PetscScalar array[])
 {
-  Vec_Seq *s;
+  Vec_Seq  *s;
+  PetscBool mdot_use_gemv  = PETSC_TRUE;
+  PetscBool maxpy_use_gemv = PETSC_FALSE; // default is false as we saw bad performance with vendors' GEMV with tall skinny matrices.
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&s));
   v->ops[0] = DvOps;
+
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-vec_mdot_use_gemv", &mdot_use_gemv, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-vec_maxpy_use_gemv", &maxpy_use_gemv, NULL));
+
+  // allocate multiple vectors together
+  if (mdot_use_gemv || maxpy_use_gemv) v->ops[0].duplicatevecs = VecDuplicateVecs_Seq_GEMV;
+
+  if (mdot_use_gemv) {
+    v->ops[0].mdot        = VecMDot_Seq_GEMV;
+    v->ops[0].mdot_local  = VecMDot_Seq_GEMV;
+    v->ops[0].mtdot       = VecMTDot_Seq_GEMV;
+    v->ops[0].mtdot_local = VecMTDot_Seq_GEMV;
+  }
+  if (maxpy_use_gemv) v->ops[0].maxpy = VecMAXPY_Seq_GEMV;
 
   v->data            = (void *)s;
   v->petscnative     = PETSC_TRUE;

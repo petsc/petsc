@@ -2018,7 +2018,7 @@ general_assembly:
         for (i = 0; i < nvtxs; i++) PetscCall(MatSetValuesLocal(MT, 1, &i, xadj[i + 1] - xadj[i], adjncy + xadj[i], sarray + xadj[i], ADD_VALUES));
       }
     } else {
-      for (i = 0; i < nvtxs; i++) PetscCall(MatSetValuesLocal(MT, 1, &i, xadj[i + 1] - xadj[i], adjncy + xadj[i], sarray + xadj[i], ADD_VALUES));
+      for (i = 0; i < nvtxs; i++) PetscCall(MatSetValuesLocal(MT, 1, &i, xadj[i + 1] - xadj[i], PetscSafePointerPlusOffset(adjncy, xadj[i]), PetscSafePointerPlusOffset(sarray, xadj[i]), ADD_VALUES));
     }
     PetscCall(MatRestoreRowIJ(local_mat, 0, PETSC_FALSE, PETSC_FALSE, &nvtxs, (const PetscInt **)&xadj, (const PetscInt **)&adjncy, &done));
     PetscCheck(done, PetscObjectComm((PetscObject)local_mat), PETSC_ERR_PLIB, "Error in MatRestoreRowIJ");

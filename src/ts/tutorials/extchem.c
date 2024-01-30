@@ -407,7 +407,7 @@ PETSC_UNUSED PetscErrorCode PrintSpecies(User user, Vec molef)
       requires: tchem
 
     test:
-      args: -chem http://combustion.berkeley.edu/gri_mech/version30/files30/grimech30.dat -thermo http://combustion.berkeley.edu/gri_mech/version30/files30/thermo30.dat -initial_species CH4,O2,N2,AR -initial_mole 0.0948178320887,0.189635664177,0.706766236705,0.00878026702874 -Tini 1500 -Tini 1500 -ts_arkimex_fully_implicit -ts_max_snes_failures -1  -ts_adapt_dt_max 1e-4 -ts_arkimex_type 4 -ts_max_time .005
+      args: -chem http://combustion.berkeley.edu/gri_mech/version30/files30/grimech30.dat -thermo http://combustion.berkeley.edu/gri_mech/version30/files30/thermo30.dat -initial_species CH4,O2,N2,AR -initial_mole 0.0948178320887,0.189635664177,0.706766236705,0.00878026702874 -Tini 1500 -Tini 1500 -ts_arkimex_fully_implicit -ts_max_snes_failures -1 -ts_adapt_dt_max 1e-4 -ts_arkimex_type 4 -ts_max_time .005
       requires: !single
       filter: grep -v iterations
 

@@ -29,9 +29,9 @@ class Configure(config.base.Configure):
           (o2, e2, s2) = self.executeShellCommand([self.sourceControl.git, 'log', '-1', '--pretty=format:%H'],checkCommand = noCheck, log = self.log, cwd=self.petscdir.dir)
           (o3, e3, s3) = self.executeShellCommand([self.sourceControl.git, 'log', '-1', '--pretty=format:%ci'],checkCommand = noCheck, log = self.log, cwd=self.petscdir.dir)
           (o4, e4, s4) = self.executeShellCommand([self.sourceControl.git, 'rev-parse', '--abbrev-ref', 'HEAD'],checkCommand = noCheck, log = self.log, cwd=self.petscdir.dir)
+          (o5, e5, s5) = self.executeShellCommand([self.sourceControl.git, 'status', '--short', '-uno'],checkCommand = noCheck, log = self.log, cwd=self.petscdir.dir)
           if s2 or s3 or s4:
-            self.logPrintWarning('Git branch check is giving errors! Checking the repo with "git status"')
-            (o5, e5, s5) = self.executeShellCommand([self.sourceControl.git, 'status'],checkCommand = noCheck, log = self.log, cwd=self.petscdir.dir)
+            self.logPrintWarning('Git branch check is giving errors! Check configure.log for output from "git status"')
             self.logPrint(e5)
           else:
             if not o1: o1 = o2

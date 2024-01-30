@@ -426,7 +426,7 @@ int main(int argc, char **args)
 
     test:
       suffix: shiftinblocks
-      args:  -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_type INBLOCKS
+      args: -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_type INBLOCKS
       requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
 
     test:

@@ -7,12 +7,12 @@
 PETSC_EXTERN PetscFunctionList MatCoarsenList;
 
 /*S
-     MatCoarsen - Object for managing the coarsening of a graph (symmetric matrix)
+  MatCoarsen - Object for managing the coarsening of a graph (symmetric matrix)
 
-   Level: advanced
+  Level: advanced
 
   Note:
-    This is used by the `PCGAMG` to generate coarser representations of an algebraic problem
+  This is used by the `PCGAMG` to generate coarser representations of an algebraic problem
 
 .seealso: [](ch_matrices), [](sec_graph), `Mat`, `MatCoarsenCreate()`, `MatCoarsenType`, `MatColoringType`, `MatPartitioningType`, `MatOrderingType`
           `MatColoring`, `MatPartitioning`
@@ -68,28 +68,6 @@ PETSC_EXTERN PetscErrorCode MatCoarsenView(MatCoarsen, PetscViewer);
 PETSC_EXTERN PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen);
 PETSC_EXTERN PetscErrorCode MatCoarsenGetType(MatCoarsen, MatCoarsenType *);
 PETSC_EXTERN PetscErrorCode MatCoarsenViewFromOptions(MatCoarsen, PetscObject, const char[]);
-
-PETSC_EXTERN PetscErrorCode PetscCDCreate(PetscInt, PetscCoarsenData **);
-PETSC_EXTERN PetscErrorCode PetscCDDestroy(PetscCoarsenData *);
-PETSC_EXTERN PetscErrorCode PetscCDIntNdSetID(PetscCDIntNd *, PetscInt);
-PETSC_EXTERN PetscErrorCode PetscCDIntNdGetID(const PetscCDIntNd *, PetscInt *);
-PETSC_EXTERN PetscErrorCode PetscCDAppendID(PetscCoarsenData *, PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode PetscCDMoveAppend(PetscCoarsenData *, PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode PetscCDAppendNode(PetscCoarsenData *, PetscInt, PetscCDIntNd *);
-PETSC_EXTERN PetscErrorCode PetscCDRemoveNextNode(PetscCoarsenData *, PetscInt, PetscCDIntNd *);
-PETSC_EXTERN PetscErrorCode PetscCDCountAt(const PetscCoarsenData *, PetscInt, PetscInt *);
-PETSC_EXTERN PetscErrorCode PetscCDIsEmptyAt(const PetscCoarsenData *, PetscInt, PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscCDSetChunkSize(PetscCoarsenData *, PetscInt);
-PETSC_EXTERN PetscErrorCode PetscCDPrint(const PetscCoarsenData *, PetscInt, MPI_Comm);
-PETSC_EXTERN PetscErrorCode PetscCDGetNonemptyIS(PetscCoarsenData *, IS *);
-PETSC_EXTERN PetscErrorCode PetscCDGetMat(PetscCoarsenData *, Mat *);
-PETSC_EXTERN PetscErrorCode PetscCDSetMat(PetscCoarsenData *, Mat);
-PETSC_EXTERN PetscErrorCode PetscCDRemoveAllAt(PetscCoarsenData *, PetscInt);
-PETSC_EXTERN PetscErrorCode PetscCDCount(const PetscCoarsenData *, PetscInt *_sz);
-
-PETSC_EXTERN PetscErrorCode PetscCDGetHeadPos(const PetscCoarsenData *, PetscInt, PetscCDIntNd **);
-PETSC_EXTERN PetscErrorCode PetscCDGetNextPos(const PetscCoarsenData *, PetscInt, PetscCDIntNd **);
-PETSC_EXTERN PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData *, const PetscInt, PetscInt *, IS **);
 
 PETSC_EXTERN PetscErrorCode MatCoarsenMISKSetDistance(MatCoarsen, PetscInt);
 PETSC_EXTERN PetscErrorCode MatCoarsenMISKGetDistance(MatCoarsen, PetscInt *);

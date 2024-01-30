@@ -44,7 +44,7 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
   X            = snes->vec_sol;
   F            = snes->vec_func;
   B            = snes->vec_rhs;
-  XA           = snes->vec_sol_update;
+  XA           = snes->work[2];
   FA           = snes->work[0];
   D            = snes->work[1];
 
@@ -170,14 +170,14 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
 }
 
 /*MC
-  SNESANDERSON - Anderson Mixing nonlinear solver
+  SNESANDERSON - Anderson Mixing nonlinear solver {cite}`anderson1965`, {cite}`bruneknepleysmithtu15`
 
    Level: beginner
 
    Options Database Keys:
 +  -snes_anderson_m                - Number of stored previous solutions and residuals
 .  -snes_anderson_beta             - Anderson mixing parameter
-.  -snes_anderson_restart_type     - Type of restart (see SNESNGMRES)
+.  -snes_anderson_restart_type     - Type of restart (see `SNESNGMRES`)
 .  -snes_anderson_restart_it       - Number of iterations of restart conditions before restart
 .  -snes_anderson_restart          - Number of iterations before periodic restart
 -  -snes_anderson_monitor          - Prints relevant information about the ngmres iteration
@@ -187,12 +187,6 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
    optimization problem at each iteration.
 
    Very similar to the `SNESNGMRES` algorithm.
-
-   References:
-+  * -  D. G. Anderson. "Iterative procedures for nonlinear integral equations",
-    J. Assoc. Comput. Mach., 12, 1965
--  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu,"Composing Scalable Nonlinear Algebraic Solvers",
-   SIAM Review, 57(4), 2015
 
 .seealso: [](ch_snes), `SNESNGMRES`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`
 M*/

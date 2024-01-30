@@ -369,7 +369,7 @@ int main(int argc, char **args)
       if (attach_nearnullspace) PetscCall(MatSetNearNullSpace(Amat, nearNullSpace));
       PetscCall(MatNullSpaceDestroy(&nearNullSpace)); /* created by DM and destroyed by Mat */
     }
-    PetscCall(DMPlexSetSNESLocalFEM(dm, NULL, NULL, NULL));
+    PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, NULL));
     PetscCall(SNESSetJacobian(snes, Amat, Amat, NULL, NULL));
     PetscCall(SNESSetFromOptions(snes));
     PetscCall(DMSetUp(dm));
@@ -378,6 +378,11 @@ int main(int argc, char **args)
     /* ksp */
     PetscCall(SNESGetKSP(snes, &ksp));
     PetscCall(KSPSetComputeSingularValues(ksp, PETSC_TRUE));
+    if (!use_nearnullspace) {
+      PC pc;
+      PetscCall(KSPGetPC(ksp, &pc));
+      PetscCall(PCGAMGASMSetHEM(pc, 3)); // code coverage
+    }
     /* test BCs */
     PetscCall(VecZeroEntries(xx));
     if (test_nonzero_cols) {
@@ -455,14 +460,16 @@ int main(int argc, char **args)
   testset:
     nsize: 4
     requires: !single
-    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_lower 0,0,0 -dm_plex_box_upper 1,1,1 -dm_plex_box_faces 2,2,1 -petscpartitioner_simple_process_grid 2,2,1 -petscspace_degree 2 -snes_max_it 1 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-10 -ksp_norm_type unpreconditioned -pc_type gamg -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_aggressive_coarsening 1 -pc_gamg_threshold 0.001 -ksp_converged_reason  -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.1 -mg_levels_pc_type jacobi -petscpartitioner_type simple -my_dm_view -snes_lag_jacobian -2 -snes_type ksponly -pc_gamg_mis_k_minimum_degree_ordering true -pc_gamg_low_memory_threshold_filter
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_lower 0,0,0 -dm_plex_box_upper 1,1,1 -dm_plex_box_faces 2,2,1 -petscpartitioner_simple_process_grid 2,2,1 -petscspace_degree 2 -snes_max_it 1 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-10 -ksp_norm_type unpreconditioned -pc_type gamg -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_aggressive_coarsening 1 -pc_gamg_threshold 0.001 -ksp_converged_reason -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.1 -mg_levels_pc_type jacobi -petscpartitioner_type simple -my_dm_view -snes_lag_jacobian -2 -snes_type ksponly -pc_gamg_mis_k_minimum_degree_ordering true -pc_gamg_low_memory_threshold_filter
     timeoutfactor: 2
     test:
       suffix: 0
-      args: -run_type 1 -max_conv_its 3
+      args: -run_type 1 -max_conv_its 3 -mat_coarsen_type hem -mat_coarsen_max_it 5 -pc_gamg_asm_hem_aggs 4 -ksp_rtol 1.e-6
+      filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 7/Linear solve converged due to CONVERGED_RTOL iterations 8/g"
     test:
       suffix: 1
-      args: -run_type 2 -max_conv_its 2
+      filter: grep -v HERMITIAN
+      args: -run_type 2 -max_conv_its 2 -use_mat_nearnullspace false -snes_view
 
   test:
     nsize: 1
@@ -494,7 +501,7 @@ int main(int argc, char **args)
     suffix: repart
     nsize: 4
     requires: parmetis !single
-    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_lower 0,0,0 -dm_plex_box_upper 1,1,1 -run_type 1 -dm_plex_box_faces 2,2,1 -petscpartitioner_simple_process_grid 2,2,1 -max_conv_its 2 -petscspace_degree 2 -snes_max_it 4 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-2 -ksp_norm_type unpreconditioned -snes_rtol 1.e-3 -pc_type gamg -pc_gamg_esteig_ksp_max_it 10 -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_aggressive_coarsening 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -pc_gamg_mat_partitioning_type parmetis -pc_gamg_repartition true  -pc_gamg_process_eq_limit 20 -pc_gamg_coarse_eq_limit 10 -ksp_converged_reason  -pc_gamg_reuse_interpolation true -petscpartitioner_type simple
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_lower 0,0,0 -dm_plex_box_upper 1,1,1 -run_type 1 -dm_plex_box_faces 2,2,1 -petscpartitioner_simple_process_grid 2,2,1 -max_conv_its 2 -petscspace_degree 2 -snes_max_it 4 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-2 -ksp_norm_type unpreconditioned -snes_rtol 1.e-3 -pc_type gamg -pc_gamg_esteig_ksp_max_it 10 -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_aggressive_coarsening 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -pc_gamg_mat_partitioning_type parmetis -pc_gamg_repartition true -pc_gamg_process_eq_limit 20 -pc_gamg_coarse_eq_limit 10 -ksp_converged_reason -pc_gamg_reuse_interpolation true -petscpartitioner_type simple
 
   test:
     suffix: bddc
@@ -547,7 +554,7 @@ int main(int argc, char **args)
   testset:
     nsize: 4
     requires: !single
-    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_lower 0,0,0 -dm_plex_box_upper 1,1,1 -run_type 1 -dm_plex_box_faces 2,2,1 -petscpartitioner_simple_process_grid 2,2,1 -max_conv_its 2 -petscspace_degree 2 -snes_max_it 2 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-10 -ksp_norm_type unpreconditioned -snes_rtol 1.e-10 -pc_type gamg -pc_gamg_esteig_ksp_max_it 10 -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_aggressive_coarsening 0 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -ksp_monitor_short -ksp_converged_reason  -snes_monitor_short -dm_view -petscpartitioner_type simple -pc_gamg_process_eq_limit 20 -pc_gamg_coarse_eq_limit 40
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_lower 0,0,0 -dm_plex_box_upper 1,1,1 -run_type 1 -dm_plex_box_faces 2,2,1 -petscpartitioner_simple_process_grid 2,2,1 -max_conv_its 2 -petscspace_degree 2 -snes_max_it 2 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-10 -ksp_norm_type unpreconditioned -snes_rtol 1.e-10 -pc_type gamg -pc_gamg_esteig_ksp_max_it 10 -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_aggressive_coarsening 0 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -dm_view -petscpartitioner_type simple -pc_gamg_process_eq_limit 20 -pc_gamg_coarse_eq_limit 40
     output_file: output/ex56_cuda.out
 
     test:

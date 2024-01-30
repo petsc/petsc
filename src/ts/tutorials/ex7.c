@@ -265,10 +265,10 @@ PetscErrorCode MySNESMonitor(SNES snes, PetscInt its, PetscReal fnorm, PetscView
 
     test:
       suffix: 2
-      args: -ts_max_steps 5  -snes_mf_operator
+      args: -ts_max_steps 5 -snes_mf_operator
 
     test:
       suffix: 3
-      args: -ts_max_steps 5  -snes_mf -pc_type none
+      args: -ts_max_steps 5 -snes_mf -pc_type none
 
 TEST*/

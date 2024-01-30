@@ -1,106 +1,62 @@
-#include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
-
-typedef struct {
-  Mat A;
-} Mat_Transpose;
+#include <../src/mat/impls/shell/shell.h> /*I "petscmat.h" I*/
 
 static PetscErrorCode MatMult_Transpose(Mat N, Vec x, Vec y)
 {
-  Mat_Transpose *Na = (Mat_Transpose *)N->data;
+  Mat A;
 
   PetscFunctionBegin;
-  PetscCall(MatMultTranspose(Na->A, x, y));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatMultAdd_Transpose(Mat N, Vec v1, Vec v2, Vec v3)
-{
-  Mat_Transpose *Na = (Mat_Transpose *)N->data;
-
-  PetscFunctionBegin;
-  PetscCall(MatMultTransposeAdd(Na->A, v1, v2, v3));
+  PetscCall(MatShellGetContext(N, &A));
+  PetscCall(MatMultTranspose(A, x, y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultTranspose_Transpose(Mat N, Vec x, Vec y)
 {
-  Mat_Transpose *Na = (Mat_Transpose *)N->data;
+  Mat A;
 
   PetscFunctionBegin;
-  PetscCall(MatMult(Na->A, x, y));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatMultTransposeAdd_Transpose(Mat N, Vec v1, Vec v2, Vec v3)
-{
-  Mat_Transpose *Na = (Mat_Transpose *)N->data;
-
-  PetscFunctionBegin;
-  PetscCall(MatMultAdd(Na->A, v1, v2, v3));
+  PetscCall(MatShellGetContext(N, &A));
+  PetscCall(MatMult(A, x, y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDestroy_Transpose(Mat N)
 {
-  Mat_Transpose *Na = (Mat_Transpose *)N->data;
+  Mat A;
 
   PetscFunctionBegin;
-  PetscCall(MatDestroy(&Na->A));
+  PetscCall(MatShellGetContext(N, &A));
+  PetscCall(MatDestroy(&A));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatTransposeGetMat_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatProductSetFromOptions_anytype_C", NULL));
-  PetscCall(PetscFree(N->data));
+  PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatShellSetContext_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDuplicate_Transpose(Mat N, MatDuplicateOption op, Mat *m)
 {
-  Mat_Transpose *Na = (Mat_Transpose *)N->data;
+  Mat A, C;
 
   PetscFunctionBegin;
-  if (op == MAT_COPY_VALUES) {
-    PetscCall(MatTranspose(Na->A, MAT_INITIAL_MATRIX, m));
-  } else if (op == MAT_DO_NOT_COPY_VALUES) {
-    PetscCall(MatDuplicate(Na->A, MAT_DO_NOT_COPY_VALUES, m));
-    PetscCall(MatTranspose(*m, MAT_INPLACE_MATRIX, m));
-  } else SETERRQ(PetscObjectComm((PetscObject)N), PETSC_ERR_SUP, "MAT_SHARE_NONZERO_PATTERN not supported for this matrix type");
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatCreateVecs_Transpose(Mat A, Vec *r, Vec *l)
-{
-  Mat_Transpose *Aa = (Mat_Transpose *)A->data;
-
-  PetscFunctionBegin;
-  PetscCall(MatCreateVecs(Aa->A, l, r));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatAXPY_Transpose(Mat Y, PetscScalar a, Mat X, MatStructure str)
-{
-  Mat_Transpose *Ya = (Mat_Transpose *)Y->data;
-  Mat_Transpose *Xa = (Mat_Transpose *)X->data;
-  Mat            M  = Ya->A;
-  Mat            N  = Xa->A;
-
-  PetscFunctionBegin;
-  PetscCall(MatAXPY(M, a, N, str));
+  PetscCall(MatShellGetContext(N, &A));
+  PetscCall(MatDuplicate(A, op, &C));
+  PetscCall(MatCreateTranspose(C, m));
+  PetscCall(MatDestroy(&C));
+  if (op == MAT_COPY_VALUES) PetscCall(MatCopy(N, *m, SAME_NONZERO_PATTERN));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatHasOperation_Transpose(Mat mat, MatOperation op, PetscBool *has)
 {
-  Mat_Transpose *X = (Mat_Transpose *)mat->data;
-  PetscFunctionBegin;
+  Mat A;
 
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(mat, &A));
   *has = PETSC_FALSE;
-  if (op == MATOP_MULT) {
-    PetscCall(MatHasOperation(X->A, MATOP_MULT_TRANSPOSE, has));
-  } else if (op == MATOP_MULT_TRANSPOSE) {
-    PetscCall(MatHasOperation(X->A, MATOP_MULT, has));
-  } else if (op == MATOP_MULT_ADD) {
-    PetscCall(MatHasOperation(X->A, MATOP_MULT_TRANSPOSE_ADD, has));
-  } else if (op == MATOP_MULT_TRANSPOSE_ADD) {
-    PetscCall(MatHasOperation(X->A, MATOP_MULT_ADD, has));
+  if (op == MATOP_MULT || op == MATOP_MULT_ADD) {
+    PetscCall(MatHasOperation(A, MATOP_MULT_TRANSPOSE, has));
+  } else if (op == MATOP_MULT_TRANSPOSE || op == MATOP_MULT_TRANSPOSE_ADD) {
+    PetscCall(MatHasOperation(A, MATOP_MULT, has));
   } else if (((void **)mat->ops)[op]) *has = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -207,45 +163,56 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose(Mat D)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatGetDiagonal_Transpose(Mat A, Vec v)
+static PetscErrorCode MatGetDiagonal_Transpose(Mat N, Vec v)
 {
-  Mat_Transpose *Aa = (Mat_Transpose *)A->data;
+  Mat A;
 
   PetscFunctionBegin;
-  PetscCall(MatGetDiagonal(Aa->A, v));
+  PetscCall(MatShellGetContext(N, &A));
+  PetscCall(MatGetDiagonal(A, v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatConvert_Transpose(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
+static PetscErrorCode MatCopy_Transpose(Mat A, Mat B, MatStructure str)
 {
-  Mat_Transpose *Aa = (Mat_Transpose *)A->data;
-  PetscBool      flg;
+  Mat a, b;
 
   PetscFunctionBegin;
-  PetscCall(MatHasOperation(Aa->A, MATOP_TRANSPOSE, &flg));
+  PetscCall(MatShellGetContext(A, &a));
+  PetscCall(MatShellGetContext(B, &b));
+  PetscCall(MatCopy(a, b, str));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatConvert_Transpose(Mat N, MatType newtype, MatReuse reuse, Mat *newmat)
+{
+  Mat       A;
+  PetscBool flg;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(N, &A));
+  PetscCall(MatHasOperation(A, MATOP_TRANSPOSE, &flg));
   if (flg) {
     Mat B;
 
-    PetscCall(MatTranspose(Aa->A, MAT_INITIAL_MATRIX, &B));
+    PetscCall(MatTranspose(A, MAT_INITIAL_MATRIX, &B));
     if (reuse != MAT_INPLACE_MATRIX) {
       PetscCall(MatConvert(B, newtype, reuse, newmat));
       PetscCall(MatDestroy(&B));
     } else {
       PetscCall(MatConvert(B, newtype, MAT_INPLACE_MATRIX, &B));
-      PetscCall(MatHeaderReplace(A, &B));
+      PetscCall(MatHeaderReplace(N, &B));
     }
   } else { /* use basic converter as fallback */
-    PetscCall(MatConvert_Basic(A, newtype, reuse, newmat));
+    PetscCall(MatConvert_Basic(N, newtype, reuse, newmat));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatTransposeGetMat_Transpose(Mat A, Mat *M)
+static PetscErrorCode MatTransposeGetMat_Transpose(Mat N, Mat *M)
 {
-  Mat_Transpose *Aa = (Mat_Transpose *)A->data;
-
   PetscFunctionBegin;
-  *M = Aa->A;
+  PetscCall(MatShellGetContext(N, M));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -279,6 +246,11 @@ PetscErrorCode MatTransposeGetMat(Mat A, Mat *M)
 
   Level: advanced
 
+  Developer Notes:
+  This is implemented on top of `MATSHELL` to get support for scaling and shifting without requiring duplicate code
+
+  Users can not call `MatShellSetOperation()` operations on this class, there is some error checking for that incorrect usage
+
 .seealso: [](ch_matrices), `Mat`, `MATHERMITIANTRANSPOSEVIRTUAL`, `Mat`, `MatCreateHermitianTranspose()`, `MatCreateTranspose()`,
           `MATNORMALHERMITIAN`, `MATNORMAL`
 M*/
@@ -306,36 +278,16 @@ M*/
 @*/
 PetscErrorCode MatCreateTranspose(Mat A, Mat *N)
 {
-  Mat_Transpose *Na;
-  VecType        vtype;
+  VecType vtype;
 
   PetscFunctionBegin;
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), N));
   PetscCall(PetscLayoutReference(A->rmap, &((*N)->cmap)));
   PetscCall(PetscLayoutReference(A->cmap, &((*N)->rmap)));
-  PetscCall(PetscObjectChangeTypeName((PetscObject)*N, MATTRANSPOSEVIRTUAL));
-
-  PetscCall(PetscNew(&Na));
-  (*N)->data = (void *)Na;
+  PetscCall(MatSetType(*N, MATSHELL));
+  PetscCall(MatShellSetContext(*N, A));
   PetscCall(PetscObjectReference((PetscObject)A));
-  Na->A = A;
 
-  (*N)->ops->destroy               = MatDestroy_Transpose;
-  (*N)->ops->mult                  = MatMult_Transpose;
-  (*N)->ops->multadd               = MatMultAdd_Transpose;
-  (*N)->ops->multtranspose         = MatMultTranspose_Transpose;
-  (*N)->ops->multtransposeadd      = MatMultTransposeAdd_Transpose;
-  (*N)->ops->duplicate             = MatDuplicate_Transpose;
-  (*N)->ops->getvecs               = MatCreateVecs_Transpose;
-  (*N)->ops->axpy                  = MatAXPY_Transpose;
-  (*N)->ops->hasoperation          = MatHasOperation_Transpose;
-  (*N)->ops->productsetfromoptions = MatProductSetFromOptions_Transpose;
-  (*N)->ops->getdiagonal           = MatGetDiagonal_Transpose;
-  (*N)->ops->convert               = MatConvert_Transpose;
-  (*N)->assembled                  = PETSC_TRUE;
-
-  PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatTransposeGetMat_C", MatTransposeGetMat_Transpose));
-  PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatProductSetFromOptions_anytype_C", MatProductSetFromOptions_Transpose));
   PetscCall(MatSetBlockSizes(*N, PetscAbs(A->cmap->bs), PetscAbs(A->rmap->bs)));
   PetscCall(MatGetVecType(A, &vtype));
   PetscCall(MatSetVecType(*N, vtype));
@@ -343,5 +295,21 @@ PetscErrorCode MatCreateTranspose(Mat A, Mat *N)
   PetscCall(MatBindToCPU(*N, A->boundtocpu));
 #endif
   PetscCall(MatSetUp(*N));
+
+  PetscCall(MatShellSetOperation(*N, MATOP_DESTROY, (void (*)(void))MatDestroy_Transpose));
+  PetscCall(MatShellSetOperation(*N, MATOP_MULT, (void (*)(void))MatMult_Transpose));
+  PetscCall(MatShellSetOperation(*N, MATOP_MULT_TRANSPOSE, (void (*)(void))MatMultTranspose_Transpose));
+  PetscCall(MatShellSetOperation(*N, MATOP_DUPLICATE, (void (*)(void))MatDuplicate_Transpose));
+  PetscCall(MatShellSetOperation(*N, MATOP_HAS_OPERATION, (void (*)(void))MatHasOperation_Transpose));
+  PetscCall(MatShellSetOperation(*N, MATOP_GET_DIAGONAL, (void (*)(void))MatGetDiagonal_Transpose));
+  PetscCall(MatShellSetOperation(*N, MATOP_COPY, (void (*)(void))MatCopy_Transpose));
+  PetscCall(MatShellSetOperation(*N, MATOP_CONVERT, (void (*)(void))MatConvert_Transpose));
+
+  PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatTransposeGetMat_C", MatTransposeGetMat_Transpose));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatProductSetFromOptions_anytype_C", MatProductSetFromOptions_Transpose));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatShellSetContext_C", MatShellSetContext_Immutable));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatShellSetContextDestroy_C", MatShellSetContextDestroy_Immutable));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatShellSetManageScalingShifts_C", MatShellSetManageScalingShifts_Immutable));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)*N, MATTRANSPOSEVIRTUAL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

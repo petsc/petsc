@@ -25,7 +25,7 @@ M*/
 + viewer                      - `PETSCVIEWERVTK`
 . dm                          - `DM` on which `Vec` lives
 . PetscViewerVTKWriteFunction - function to write this `Vec`
-. fieldnum                    - which field of the `DM` to write (`PETSC_DEFAULT` if the while vector should be written)
+. fieldnum                    - which field of the `DM` to write (`PETSC_DEFAULT` if the whole vector should be written)
 . fieldtype                   - Either `PETSC_VTK_POINT_FIELD` or `PETSC_VTK_CELL_FIELD`
 . checkdm                     - whether to check for identical dm arguments as fields are added
 - vec                         - `Vec` from which to write

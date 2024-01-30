@@ -1,7 +1,9 @@
  Called MatMult
  Called MatMultAdd
  Called MatMultTranspose
+ Called MatMultTranspose
  Called MatMultTransposeAdd
+ Called MatMultHermitianTransposeAdd
  Called MatTranspose
  Called MatGetDiagonal
  Called MatDiagonalScale

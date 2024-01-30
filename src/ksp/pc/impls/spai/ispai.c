@@ -234,18 +234,18 @@ static PetscErrorCode PCSPAISetSp_SPAI(PC pc, PetscInt sp)
 
   Input Parameters:
 + pc       - the preconditioner
-- epsilon1 - epsilon (default .4)
-
-  Note:
-  Espilon must be between 0 and 1. It controls the
-  quality of the approximation of M to the inverse of
-  A. Higher values of epsilon lead to more work, more
-  fill, and usually better preconditioners. In many
-  cases the best choice of epsilon is the one that
-  divides the total solution time equally between the
-  preconditioner and the solver.
+- epsilon1 - the tolerance (default .4)
 
   Level: intermediate
+
+  Note:
+  `espilon1` must be between 0 and 1. It controls the
+  quality of the approximation of M to the inverse of
+  A. Higher values of `epsilon1` lead to more work, more
+  fill, and usually better preconditioners. In many
+  cases the best choice of `epsilon1` is the one that
+  divides the total solution time equally between the
+  preconditioner and the solver.
 
 .seealso: [](ch_ksp), `PCSPAI`, `PCSetType()`
   @*/
@@ -269,7 +269,7 @@ PetscErrorCode PCSPAISetEpsilon(PC pc, PetscReal epsilon1)
   the exact inverse of A in a series of improvement
   steps. The quality of the approximation is determined
   by epsilon. If an approximation achieving an accuracy
-  of epsilon is not obtained after ns steps, SPAI simply
+  of epsilon is not obtained after `nbsteps1` steps, `PCSPAI` simply
   uses the best approximation constructed so far.
 
   Level: intermediate
@@ -285,8 +285,7 @@ PetscErrorCode PCSPAISetNBSteps(PC pc, PetscInt nbsteps1)
 
 /* added 1/7/99 g.h. */
 /*@
-  PCSPAISetMax - set the size of various working buffers in
-  the `PCSPAI` preconditioner
+  PCSPAISetMax - set the size of various working buffers in the `PCSPAI` preconditioner
 
   Input Parameters:
 + pc   - the preconditioner
@@ -304,8 +303,7 @@ PetscErrorCode PCSPAISetMax(PC pc, PetscInt max1)
 }
 
 /*@
-  PCSPAISetMaxNew - set maximum number of new nonzero candidates per step
-  in `PCSPAI` preconditioner
+  PCSPAISetMaxNew - set maximum number of new nonzero candidates per step in the `PCSPAI` preconditioner
 
   Input Parameters:
 + pc      - the preconditioner
@@ -329,6 +327,8 @@ PetscErrorCode PCSPAISetMaxNew(PC pc, PetscInt maxnew1)
 + pc          - the preconditioner
 - block_size1 - block size (default 1)
 
+  Level: intermediate
+
   Notes:
   A block
   size of 1 treats A as a matrix of scalar elements. A
@@ -347,7 +347,8 @@ PetscErrorCode PCSPAISetMaxNew(PC pc, PetscInt maxnew1)
   can lead to very significant improvement in
   performance.
 
-  Level: intermediate
+  Developer Note:
+  This preconditioner could use the matrix block size as the default block size to use
 
 .seealso: [](ch_ksp), `PCSPAI`, `PCSetType()`
 @*/
@@ -365,13 +366,13 @@ PetscErrorCode PCSPAISetBlockSize(PC pc, PetscInt block_size1)
 + pc         - the preconditioner
 - cache_size - cache size {0,1,2,3,4,5} (default 5)
 
+  Level: intermediate
+
   Note:
   `PCSPAI` uses a hash table to cache messages and avoid
   redundant communication. If suggest always using
   5. This parameter is irrelevant in the serial
   version.
-
-  Level: intermediate
 
 .seealso: [](ch_ksp), `PCSPAI`, `PCSetType()`
 @*/
@@ -389,10 +390,10 @@ PetscErrorCode PCSPAISetCacheSize(PC pc, PetscInt cache_size)
 + pc      - the preconditioner
 - verbose - level (default 1)
 
-  Note:
-  print parameters, timings and matrix statistics
-
   Level: intermediate
+
+  Note:
+  Prints parameters, timings and matrix statistics
 
 .seealso: [](ch_ksp), `PCSPAI`, `PCSetType()`
 @*/
@@ -410,15 +411,15 @@ PetscErrorCode PCSPAISetVerbose(PC pc, PetscInt verbose)
 + pc - the preconditioner
 - sp - 0 or 1
 
+  Level: intermediate
+
   Note:
-  If A has a symmetric nonzero pattern use -sp 1 to
+  If A has a symmetric nonzero pattern use `sp` 1 to
   improve performance by eliminating some communication
   in the parallel version. Even if A does not have a
-  symmetric nonzero pattern -sp 1 may well lead to good
+  symmetric nonzero pattern `sp` 1 may well lead to good
   results, but the code will not follow the published
   SPAI algorithm exactly.
-
-  Level: intermediate
 
 .seealso: [](ch_ksp), `PCSPAI`, `PCSetType()`
 @*/
@@ -460,25 +461,22 @@ static PetscErrorCode PCSetFromOptions_SPAI(PC pc, PetscOptionItems *PetscOption
 }
 
 /*MC
-   PCSPAI - Use the Sparse Approximate Inverse method
+   PCSPAI - Use the Sparse Approximate Inverse method {cite}`gh97`
 
    Options Database Keys:
-+  -pc_spai_epsilon <eps> - set tolerance
-.  -pc_spai_nbstep <n> - set nbsteps
-.  -pc_spai_max <m> - set max
-.  -pc_spai_max_new <m> - set maxnew
-.  -pc_spai_block_size <n> - set block size
-.  -pc_spai_cache_size <n> - set cache size
-.  -pc_spai_sp <m> - set sp
++  -pc_spai_epsilon <eps>            - set tolerance
+.  -pc_spai_nbstep <n>               - set nbsteps
+.  -pc_spai_max <m>                  - set max
+.  -pc_spai_max_new <m>              - set maxnew
+.  -pc_spai_block_size <n>           - set block size
+.  -pc_spai_cache_size <n>           - set cache size
+.  -pc_spai_sp <m>                   - set sp
 -  -pc_spai_set_verbose <true,false> - verbose output
 
    Level: beginner
 
    Note:
     This only works with `MATAIJ` matrices.
-
-   References:
- . * -  Grote and Barnard (SIAM J. Sci. Comput.; vol 18, nr 3)
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
           `PCSPAISetEpsilon()`, `PCSPAISetMax()`, `PCSPAISetMaxNew()`, `PCSPAISetBlockSize()`,
@@ -697,7 +695,6 @@ static PetscErrorCode ConvertMatrixToMat(MPI_Comm comm, matrix *B, Mat *PB)
       PetscCall(MatSetValues(*PB, 1, &global_row, 1, &global_col, &val, ADD_VALUES));
     }
   }
-
   PetscCall(PetscFree(d_nnz));
   PetscCall(PetscFree(o_nnz));
 

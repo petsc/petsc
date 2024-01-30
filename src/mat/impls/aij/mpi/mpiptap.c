@@ -600,7 +600,7 @@ static inline PetscErrorCode MatPtAPSymbolicComputeOneRowOfAP_private(Mat A, Mat
     offset = row % dof;
     row /= dof;
     nzpi = po->i[row + 1] - po->i[row];
-    pj   = po->j + po->i[row];
+    pj   = PetscSafePointerPlusOffset(po->j, po->i[row]);
     for (k = 0; k < nzpi; k++) PetscCall(PetscHSetIAdd(oht, p->garray[pj[k]] * dof + offset));
   }
 
@@ -662,8 +662,8 @@ static inline PetscErrorCode MatPtAPNumericComputeOneRowOfAP_private(Mat A, Mat 
     offset = row % dof;
     row /= dof;
     nzpi = po->i[row + 1] - po->i[row];
-    pj   = po->j + po->i[row];
-    pa   = po->a + po->i[row];
+    pj   = PetscSafePointerPlusOffset(po->j, po->i[row]);
+    pa   = PetscSafePointerPlusOffset(po->a, po->i[row]);
     for (k = 0; k < nzpi; k++) PetscCall(PetscHMapIVAddValue(hmap, p->garray[pj[k]] * dof + offset, ra * pa[k]));
     PetscCall(PetscLogFlops(2.0 * nzpi));
   }
@@ -826,7 +826,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(Mat A, Mat P, PetscInt do
   /* Add contributions from remote */
   for (i = 0; i < pn; i++) {
     row = i + pcstart;
-    PetscCall(MatSetValues(C, 1, &row, ptap->c_othi[i + 1] - ptap->c_othi[i], c_othj + ptap->c_othi[i], c_otha + ptap->c_othi[i], ADD_VALUES));
+    PetscCall(MatSetValues(C, 1, &row, ptap->c_othi[i + 1] - ptap->c_othi[i], PetscSafePointerPlusOffset(c_othj, ptap->c_othi[i]), PetscSafePointerPlusOffset(c_otha, ptap->c_othi[i]), ADD_VALUES));
   }
   PetscCall(PetscFree2(c_othj, c_otha));
 
@@ -902,8 +902,8 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A, Mat P, Pets
     if (!voff) continue;
 
     /* Form remote C(ii, :) */
-    poj = po->j + po->i[ii];
-    poa = po->a + po->i[ii];
+    poj = PetscSafePointerPlusOffset(po->j, po->i[ii]);
+    poa = PetscSafePointerPlusOffset(po->a, po->i[ii]);
     for (j = 0; j < nzi; j++) {
       pocol   = poj[j] * dof + offset;
       c_rmtjj = c_rmtj + ptap->c_rmti[pocol];
@@ -961,7 +961,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A, Mat P, Pets
   /* Add contributions from remote */
   for (i = 0; i < pn; i++) {
     row = i + pcstart;
-    PetscCall(MatSetValues(C, 1, &row, ptap->c_othi[i + 1] - ptap->c_othi[i], c_othj + ptap->c_othi[i], c_otha + ptap->c_othi[i], ADD_VALUES));
+    PetscCall(MatSetValues(C, 1, &row, ptap->c_othi[i + 1] - ptap->c_othi[i], PetscSafePointerPlusOffset(c_othj, ptap->c_othi[i]), PetscSafePointerPlusOffset(c_otha, ptap->c_othi[i]), ADD_VALUES));
   }
   PetscCall(PetscFree2(c_othj, c_otha));
 
@@ -1187,7 +1187,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce(Mat A, Mat P, PetscInt d
 
   for (i = 0; i < pn; i++) {
     nzi = ptap->c_othi[i + 1] - ptap->c_othi[i];
-    rdj = c_othj + ptap->c_othi[i];
+    rdj = PetscSafePointerPlusOffset(c_othj, ptap->c_othi[i]);
     for (j = 0; j < nzi; j++) {
       col = rdj[j];
       /* diag part */
@@ -1329,7 +1329,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A, Mat P, Pet
     if (!(htsize + htosize)) continue;
 
     /* Form remote C(ii, :) */
-    poj = po->j + po->i[ii];
+    poj = PetscSafePointerPlusOffset(po->j, po->i[ii]);
     for (j = 0; j < nzi; j++) {
       PetscCall(PetscHSetIUpdate(hta[poj[j] * dof + offset], ht));
       PetscCall(PetscHSetIUpdate(hta[poj[j] * dof + offset], oht));
@@ -1444,7 +1444,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A, Mat P, Pet
   pcend *= dof;
   for (i = 0; i < pn; i++) {
     nzi = ptap->c_othi[i + 1] - ptap->c_othi[i];
-    rdj = c_othj + ptap->c_othi[i];
+    rdj = PetscSafePointerPlusOffset(c_othj, ptap->c_othi[i]);
     for (j = 0; j < nzi; j++) {
       col = rdj[j];
       /* diagonal part */
@@ -1592,7 +1592,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat C
     ai  = ad->i;
     pi  = p_loc->i;
     nzi = ai[i + 1] - ai[i];
-    aj  = ad->j + ai[i];
+    aj  = PetscSafePointerPlusOffset(ad->j, ai[i]);
     for (j = 0; j < nzi; j++) {
       row  = aj[j];
       pnz  = pi[row + 1] - pi[row];
@@ -1605,7 +1605,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat C
       ai  = ao->i;
       pi  = p_oth->i;
       nzi = ai[i + 1] - ai[i];
-      aj  = ao->j + ai[i];
+      aj  = PetscSafePointerPlusOffset(ao->j, ai[i]);
       for (j = 0; j < nzi; j++) {
         row  = aj[j];
         pnz  = pi[row + 1] - pi[row];
@@ -1626,7 +1626,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat C
     /* Copy data into free space, then initialize lnk */
     PetscCall(PetscLLCondensedClean(pN, apnz, current_space->array, lnk, lnkbt));
 
-    current_space->array += apnz;
+    current_space->array = PetscSafePointerPlusOffset(current_space->array, apnz);
     current_space->local_used += apnz;
     current_space->local_remaining -= apnz;
   }
@@ -1804,7 +1804,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat C
   for (i = 0; i < pn; i++) {
     /* add C_loc into Cmpi */
     nzi  = c_loc->i[i + 1] - c_loc->i[i];
-    Jptr = c_loc->j + c_loc->i[i];
+    Jptr = PetscSafePointerPlusOffset(c_loc->j, c_loc->i[i]);
     PetscCall(PetscLLCondensedAddSorted(nzi, Jptr, lnk, lnkbt));
 
     /* add received col data into lnk */
@@ -1943,7 +1943,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C)
       ncols = c_seq->i[i + 1] - c_seq->i[i];
       row   = rstart + i;
       PetscCall(MatSetValues_MPIAIJ(C, 1, &row, ncols, cols, vals, ADD_VALUES));
-      cols += ncols;
+      cols = PetscSafePointerPlusOffset(cols, ncols);
       vals += ncols;
     }
   } else {

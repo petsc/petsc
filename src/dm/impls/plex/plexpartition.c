@@ -1359,8 +1359,9 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
   DMPlexPartitionLabelCreateSF - Create a star forest from a label that assigns ranks to points
 
   Input Parameters:
-+ dm    - The `DM`
-- label - `DMLabel` assigning ranks to remote roots
++ dm        - The `DM`
+. label     - `DMLabel` assigning ranks to remote roots
+- sortRanks - Whether or not to sort the SF leaves by rank
 
   Output Parameter:
 . sf - The star forest communication context encapsulating the defined mapping
@@ -1372,28 +1373,30 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMLabel`, `PetscSF`, `DMPlexDistribute()`, `DMPlexCreateOverlap()`
 @*/
-PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf)
+PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscBool sortRanks, PetscSF *sf)
 {
   PetscMPIInt     rank;
   PetscInt        n, numRemote, p, numPoints, pStart, pEnd, idx = 0, nNeighbors;
   PetscSFNode    *remotePoints;
   IS              remoteRootIS, neighborsIS;
   const PetscInt *remoteRoots, *neighbors;
+  PetscMPIInt     myRank;
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(DMPLEX_PartLabelCreateSF, dm, 0, 0, 0));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
-
   PetscCall(DMLabelGetValueIS(label, &neighborsIS));
-#if 0
-  {
+
+  if (sortRanks) {
     IS is;
+
     PetscCall(ISDuplicate(neighborsIS, &is));
     PetscCall(ISSort(is));
     PetscCall(ISDestroy(&neighborsIS));
     neighborsIS = is;
   }
-#endif
+  myRank = sortRanks ? -1 : rank;
+
   PetscCall(ISGetLocalSize(neighborsIS, &nNeighbors));
   PetscCall(ISGetIndices(neighborsIS, &neighbors));
   for (numRemote = 0, n = 0; n < nNeighbors; ++n) {
@@ -1401,25 +1404,29 @@ PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf)
     numRemote += numPoints;
   }
   PetscCall(PetscMalloc1(numRemote, &remotePoints));
-  /* Put owned points first */
-  PetscCall(DMLabelGetStratumSize(label, rank, &numPoints));
-  if (numPoints > 0) {
-    PetscCall(DMLabelGetStratumIS(label, rank, &remoteRootIS));
-    PetscCall(ISGetIndices(remoteRootIS, &remoteRoots));
-    for (p = 0; p < numPoints; p++) {
-      remotePoints[idx].index = remoteRoots[p];
-      remotePoints[idx].rank  = rank;
-      idx++;
+
+  /* Put owned points first if not sorting the ranks */
+  if (!sortRanks) {
+    PetscCall(DMLabelGetStratumSize(label, rank, &numPoints));
+    if (numPoints > 0) {
+      PetscCall(DMLabelGetStratumIS(label, rank, &remoteRootIS));
+      PetscCall(ISGetIndices(remoteRootIS, &remoteRoots));
+      for (p = 0; p < numPoints; p++) {
+        remotePoints[idx].index = remoteRoots[p];
+        remotePoints[idx].rank  = rank;
+        idx++;
+      }
+      PetscCall(ISRestoreIndices(remoteRootIS, &remoteRoots));
+      PetscCall(ISDestroy(&remoteRootIS));
     }
-    PetscCall(ISRestoreIndices(remoteRootIS, &remoteRoots));
-    PetscCall(ISDestroy(&remoteRootIS));
   }
+
   /* Now add remote points */
   for (n = 0; n < nNeighbors; ++n) {
     const PetscInt nn = neighbors[n];
 
     PetscCall(DMLabelGetStratumSize(label, nn, &numPoints));
-    if (nn == rank || numPoints <= 0) continue;
+    if (nn == myRank || numPoints <= 0) continue;
     PetscCall(DMLabelGetStratumIS(label, nn, &remoteRootIS));
     PetscCall(ISGetIndices(remoteRootIS, &remoteRoots));
     for (p = 0; p < numPoints; p++) {
@@ -1430,6 +1437,7 @@ PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf)
     PetscCall(ISRestoreIndices(remoteRootIS, &remoteRoots));
     PetscCall(ISDestroy(&remoteRootIS));
   }
+
   PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)dm), sf));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   PetscCall(PetscSFSetGraph(*sf, pEnd - pStart, numRemote, NULL, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER));

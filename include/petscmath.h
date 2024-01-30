@@ -150,7 +150,7 @@
   #define PetscCeilReal(a)        ceilf(a)
   #define PetscFloorReal(a)       floorf(a)
   #define PetscFmodReal(a, b)     fmodf(a, b)
-  #define PetscCopySignReal(a, b) copysignf(a, b)
+  #define PetscCopysignReal(a, b) copysignf(a, b)
   #define PetscTGamma(a)          tgammaf(a)
   #if defined(PETSC_HAVE_LGAMMA_IS_GAMMA)
     #define PetscLGamma(a) gammaf(a)
@@ -183,10 +183,10 @@ PETSC_EXTERN MPI_Datatype MPIU___FP16 PETSC_ATTRIBUTE_MPI_TYPE_TAG(__fp16);
 /*MC
    MPIU_REAL - Portable MPI datatype corresponding to `PetscReal` independent of what precision `PetscReal` is in
 
-   Notes:
-   In MPI calls that require an MPI datatype that matches a `PetscReal` or array of `PetscReal` values, pass this value.
-
    Level: beginner
+
+   Note:
+   In MPI calls that require an MPI datatype that matches a `PetscReal` or array of `PetscReal` values, pass this value.
 
 .seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_SCALAR`, `MPIU_COMPLEX`, `MPIU_INT`
 M*/
@@ -375,7 +375,7 @@ static inline PetscComplex PetscAtanhComplex(PetscComplex z)
   #endif   /* (__cplusplus) */
 
 /*MC
-    PETSC_i - the pure imaginary complex number i
+   PETSC_i - the pure imaginary complex number i
 
    Level: intermediate
 
@@ -502,7 +502,7 @@ M*/
    Level: beginner
 
    Note:
-       If PETSc was configured for real numbers then this always returns the value 0
+   If PETSc was configured for real numbers then this always returns the value 0
 
 .seealso: `PetscScalar`, `PetscRealPart()`, `PetscMax()`, `PetscClipInterval()`, `PetscAbsInt()`, `PetscAbsReal()`, `PetscSqr()`
 M*/
@@ -697,7 +697,7 @@ M*/
 #define PetscAbsInt(a) (((a) < 0) ? (-(a)) : (a))
 
 /*MC
-   PetscAbsReal - Returns the absolute value of an real number
+   PetscAbsReal - Returns the absolute value of a real number
 
    Synopsis:
    #include <petscmath.h>
@@ -789,9 +789,9 @@ M*/
 #endif
 
 /*MC
-    PETSC_INFINITY - a finite number that represents infinity for setting certain bounds in `Tao`
+  PETSC_INFINITY - a finite number that represents infinity for setting certain bounds in `Tao`
 
-   Level: intermediate
+  Level: intermediate
 
   Note:
   This is not the IEEE infinity value
@@ -801,9 +801,9 @@ M*/
 #define PETSC_INFINITY (PETSC_MAX_REAL / 4)
 
 /*MC
-    PETSC_NINFINITY - a finite number that represents negative infinity for setting certain bounds in `Tao`
+  PETSC_NINFINITY - a finite number that represents negative infinity for setting certain bounds in `Tao`
 
-   Level: intermediate
+  Level: intermediate
 
   Note:
   This is not the negative IEEE infinity value
@@ -972,7 +972,7 @@ static inline PetscScalar PetscPowScalarReal(PetscScalar base, PetscReal power)
 }
 
 /*MC
-    PetscApproximateLTE - Performs a less than or equal to on a given constant with a fudge for floating point numbers
+   PetscApproximateLTE - Performs a less than or equal to on a given constant with a fudge for floating point numbers
 
    Synopsis:
    #include <petscmath.h>
@@ -987,14 +987,14 @@ static inline PetscScalar PetscPowScalarReal(PetscScalar base, PetscReal power)
    Level: advanced
 
    Notes:
-     The fudge factor is the value `PETSC_SMALL`
+   The fudge factor is the value `PETSC_SMALL`
 
-     The constant numerical value is automatically set to the appropriate precision of PETSc so can just be provided as, for example, 3.2
+   The constant numerical value is automatically set to the appropriate precision of PETSc so can just be provided as, for example, 3.2
 
-     This is used in several examples for setting initial conditions based on coordinate values that are computed with i*h that produces inexact
-     floating point results.
+   This is used in several examples for setting initial conditions based on coordinate values that are computed with i*h that produces inexact
+   floating point results.
 
-  Example\:
+   Example\:
 .vb
   PetscReal x;
   if (PetscApproximateLTE(x, 3.2)) { // replaces if (x <= 3.2) {
@@ -1005,7 +1005,7 @@ M*/
 #define PetscApproximateLTE(x, b) ((x) <= (PetscRealConstant(b) + PETSC_SMALL))
 
 /*MC
-    PetscApproximateGTE - Performs a greater than or equal to on a given constant with a fudge for floating point numbers
+   PetscApproximateGTE - Performs a greater than or equal to on a given constant with a fudge for floating point numbers
 
    Synopsis:
    #include <petscmath.h>
@@ -1020,14 +1020,14 @@ M*/
    Level: advanced
 
    Notes:
-     The fudge factor is the value `PETSC_SMALL`
+   The fudge factor is the value `PETSC_SMALL`
 
-     The constant numerical value is automatically set to the appropriate precision of PETSc so can just be provided as, for example, 3.2
+   The constant numerical value is automatically set to the appropriate precision of PETSc so can just be provided as, for example, 3.2
 
-     This is used in several examples for setting initial conditions based on coordinate values that are computed with i*h that produces inexact
-     floating point results.
+   This is used in several examples for setting initial conditions based on coordinate values that are computed with i*h that produces inexact
+   floating point results.
 
-  Example\:
+   Example\:
 .vb
   PetscReal x;
   if (PetscApproximateGTE(x, 3.2)) {  // replaces if (x >= 3.2) {
@@ -1038,7 +1038,7 @@ M*/
 #define PetscApproximateGTE(x, b) ((x) >= (PetscRealConstant(b) - PETSC_SMALL))
 
 /*MC
-    PetscCeilInt - Returns the ceiling of the quotation of two positive integers
+   PetscCeilInt - Returns the ceiling of the quotation of two positive integers
 
    Synopsis:
    #include <petscmath.h>

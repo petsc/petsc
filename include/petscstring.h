@@ -236,7 +236,7 @@ static inline PetscErrorCode PetscStrcmp(const char a[], const char b[], PetscBo
   copied and the final location of `s` is set to `NULL`. This is different then the behavior of
   `strncpy()` which leaves `s` non-terminated if there is not room for the entire string.
 
-  Developers Note:
+  Developer Note:
   Should this be `PetscStrlcpy()` to reflect its behavior which is like `strlcpy()` not
   `strncpy()`?
 
@@ -661,13 +661,10 @@ static inline PetscErrorCode PetscMemmove(void *a, const void *b, size_t n)
 
    Level: intermediate
 
-   Compile Option:
-    `PETSC_PREFER_DCOPY_FOR_MEMCPY` will cause the BLAS `dcopy()` routine to be used
-                                  for memory copies on double precision values.
-    `PETSC_PREFER_COPY_FOR_MEMCPY` will cause C code to be used
-                                  for memory copies on double precision values.
-    `PETSC_PREFER_FORTRAN_FORMEMCPY` will cause Fortran code to be used
-                                  for memory copies on double precision values.
+   Compile Options\:
++  `PETSC_PREFER_DCOPY_FOR_MEMCPY` - cause the BLAS `dcopy()` routine to be used for memory copies on double precision values.
+.  `PETSC_PREFER_COPY_FOR_MEMCPY` - cause C code to be used for memory copies on double precision values.
+-  `PETSC_PREFER_FORTRAN_FORMEMCPY` - cause Fortran code to be used for memory copies on double precision values.
 
    Notes:
    Prefer `PetscArraycpy()`
@@ -725,7 +722,7 @@ static inline PetscErrorCode PetscMemcpy(void *a, const void *b, size_t n)
 
    Compile Option:
    `PETSC_PREFER_BZERO` - on certain machines (the IBM RS6000) the bzero() routine happens
-  to be faster than the memset() routine. This flag causes the bzero() routine to be used.
+   to be faster than the memset() routine. This flag causes the bzero() routine to be used.
 
    Note:
    Prefer `PetscArrayzero()`

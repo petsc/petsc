@@ -364,7 +364,7 @@ PetscErrorCode DMPlexTransformDestroy(DMPlexTransform *tr)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  if ((*tr)->ops->destroy) PetscCall((*(*tr)->ops->destroy)(*tr));
+  PetscTryTypeMethod(*tr, destroy);
   PetscCall(DMDestroy(&(*tr)->dm));
   PetscCall(DMLabelDestroy(&(*tr)->active));
   PetscCall(DMLabelDestroy(&(*tr)->trType));
@@ -1259,7 +1259,7 @@ static PetscErrorCode DMPlexTransformGetCone_Internal(DMPlexTransform tr, PetscI
 
     /* Get the type (pct) and point number (pp) of the parent point in the original mesh which produces this cone point */
     for (lc = 0; lc < fn; ++lc) {
-      const PetscInt *parr = DMPolytopeTypeGetArrangment(pct, po);
+      const PetscInt *parr = DMPolytopeTypeGetArrangement(pct, po);
       const PetscInt  acp  = rcone[coff++];
       const PetscInt  pcp  = parr[acp * 2];
       const PetscInt  pco  = parr[acp * 2 + 1];

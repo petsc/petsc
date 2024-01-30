@@ -2,7 +2,6 @@
 #requirespackage   'PETSC_HAVE_METIS'
 
 CFLAGS    = ${METIS_INCLUDE}
-LIBBASE   = libpetscmat
 MANSEC    = Mat
 SUBMANSEC = MatGraphOperations
 

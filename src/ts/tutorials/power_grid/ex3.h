@@ -20,7 +20,7 @@ typedef struct {
 } AppCtx;
 
 /* Event check */
-PetscErrorCode EventFunction(TS ts, PetscReal t, Vec X, PetscScalar *fvalue, void *ctx)
+PetscErrorCode EventFunction(TS ts, PetscReal t, Vec X, PetscReal *fvalue, void *ctx)
 {
   AppCtx *user = (AppCtx *)ctx;
 

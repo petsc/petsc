@@ -18,7 +18,7 @@
      FVM++: Two points p and q are adjacent if q \in star(closure(p)), preallocCenterDim = 0
 .ve
 
-.seealso: `DM`, `DMDA`, `DMCreateMatrix()`, `DMDAPreallocateOperator()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMCreateMatrix()`, `DMDAPreallocateOperator()`
 @*/
 PetscErrorCode DMDASetPreallocationCenterDimension(DM dm, PetscInt preallocCenterDim)
 {
@@ -48,7 +48,7 @@ PetscErrorCode DMDASetPreallocationCenterDimension(DM dm, PetscInt preallocCente
      FVM++: Two points p and q are adjacent if q \in star(closure(p)), preallocCenterDim = 0
 .ve
 
-.seealso: `DM`, `DMDA`, `DMCreateMatrix()`, `DMDAPreallocateOperator()`, `DMDASetPreallocationCenterDimension()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMCreateMatrix()`, `DMDAPreallocateOperator()`, `DMDASetPreallocationCenterDimension()`
 @*/
 PetscErrorCode DMDAGetPreallocationCenterDimension(DM dm, PetscInt *preallocCenterDim)
 {

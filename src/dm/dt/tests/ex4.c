@@ -61,7 +61,7 @@ static PetscErrorCode CheckSymmetry(PetscInt dim, PetscInt order, PetscBool tens
       DMPolytopeType ct;
       /* The number of arrangements is no longer based on the number of faces */
       PetscCall(DMPlexGetCellType(dm, point, &ct));
-      numFaces = DMPolytopeTypeGetNumArrangments(ct) / 2;
+      numFaces = DMPolytopeTypeGetNumArrangements(ct) / 2;
     }
     for (j = -numFaces; j < numFaces; j++) {
       PetscInt           k, l;

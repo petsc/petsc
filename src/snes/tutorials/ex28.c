@@ -474,7 +474,7 @@ int main(int argc, char *argv[])
       suffix: 3
       nsize: 3
       output_file: output/ex28_3.out
-      args: -u_da_grid_x 20 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 -snes_mf_operator  -pc_type fieldsplit -pc_fieldsplit_dm_splits -pc_fieldsplit_type additive -fieldsplit_u_ksp_type gmres -fieldsplit_k_pc_type jacobi
+      args: -u_da_grid_x 20 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 -snes_mf_operator -pc_type fieldsplit -pc_fieldsplit_dm_splits -pc_fieldsplit_type additive -fieldsplit_u_ksp_type gmres -fieldsplit_k_pc_type jacobi
 
       test:
         suffix: std
@@ -500,7 +500,7 @@ int main(int argc, char *argv[])
       suffix: 3_nest_lu
       nsize: {{1 3}}
       output_file: output/ex28_3.out
-      args: -pack_dm_mat_type nest -u_da_grid_x 20 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 -snes_mf_operator  -pc_type lu -pc_factor_mat_solver_type mumps
+      args: -pack_dm_mat_type nest -u_da_grid_x 20 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 -snes_mf_operator -pc_type lu -pc_factor_mat_solver_type mumps
 
    test:
       suffix: 4

@@ -62,7 +62,7 @@ PETSC_EXTERN void dmdasnessetjacobianlocal_(DM *da, void (*jac)(DMDALocalInfo *,
 
   *ierr = DMGetDMSNESWrite(*da, &sdm);
   if (*ierr) return;
-  *ierr = DMDAGetInfo(*da, &dim, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+  *ierr = DMDAGetInfo(*da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
   if (*ierr) return;
   if (dim == 2) {
     *ierr = PetscObjectSetFortranCallback((PetscObject)sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, &_cb.lj2d, (PetscVoidFunction)jac, ctx);
@@ -124,7 +124,7 @@ PETSC_EXTERN void dmdasnessetfunctionlocal_(DM *da, InsertMode *mode, void (*fun
 
   *ierr = DMGetDMSNESWrite(*da, &sdm);
   if (*ierr) return;
-  *ierr = DMDAGetInfo(*da, &dim, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+  *ierr = DMDAGetInfo(*da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
   if (*ierr) return;
   if (dim == 2) {
     *ierr = PetscObjectSetFortranCallback((PetscObject)sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, &_cb.lf2d, (PetscVoidFunction)func, ctx);

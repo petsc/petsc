@@ -148,6 +148,7 @@ struct _TS_TimeSpan {
   PetscReal *span_times;     /* array of the time span */
   PetscReal  reltol;         /* relative tolerance for span point detection */
   PetscReal  abstol;         /* absolute tolerance for span point detection */
+  PetscReal  worktol;        /* the ultimate tolerance (variable), maintained within a single TS time step for consistency */
   PetscInt   spanctr;        /* counter of the time points that have been reached */
   Vec       *vecs_sol;       /* array of the solutions at the specified time points */
 };
@@ -434,49 +435,47 @@ PETSC_EXTERN PetscErrorCode DMTSView(DMTS, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMTSLoad(DMTS, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMTSCopy(DMTS, DMTS);
 
-typedef enum {
-  TSEVENT_NONE,
-  TSEVENT_LOCATED_INTERVAL,
-  TSEVENT_PROCESSING,
-  TSEVENT_ZERO,
-  TSEVENT_RESET_NEXTSTEP
-} TSEventStatus;
-
 struct _n_TSEvent {
-  PetscScalar *fvalue;                                                                      /* value of event function at the end of the step*/
-  PetscScalar *fvalue_prev;                                                                 /* value of event function at start of the step (left end-point of event interval) */
-  PetscReal    ptime_prev;                                                                  /* time at step start (left end-point of event interval) */
-  PetscReal    ptime_end;                                                                   /* end time of step (when an event interval is detected, ptime_end is fixed to the time at step end during event processing) */
-  PetscReal    ptime_right;                                                                 /* time on the right end-point of the event interval */
-  PetscScalar *fvalue_right;                                                                /* value of event function at the right end-point of the event interval */
-  PetscInt    *side;                                                                        /* Used for detecting repetition of end-point, -1 => left, +1 => right */
-  PetscReal    timestep_prev;                                                               /* previous time step */
-  PetscReal    timestep_posteventinterval;                                                  /* time step immediately after the event interval */
-  PetscReal    timestep_postevent;                                                          /* time step immediately after the event */
-  PetscReal    timestep_min;                                                                /* Minimum time step */
-  PetscBool   *zerocrossing;                                                                /* Flag to signal zero crossing detection */
-  PetscErrorCode (*indicator)(TS, PetscReal, Vec, PetscScalar *, void *);                   /* User function whose sign changes indicate events */
-  PetscErrorCode (*postevent)(TS, PetscInt, PetscInt[], PetscReal, Vec, PetscBool, void *); /* User post event function */
-  void         *ctx;                                                                        /* User context for event handler and post even functions */
-  PetscInt     *direction;                                                                  /* Zero crossing direction: 1 -> Going positive, -1 -> Going negative, 0 -> Any */
-  PetscBool    *terminate;                                                                  /* 1 -> Terminate time stepping, 0 -> continue */
-  PetscInt      nevents;                                                                    /* Number of events to handle */
-  PetscInt      nevents_zero;                                                               /* Number of event zero detected */
-  PetscInt     *events_zero;                                                                /* List of events that have reached zero */
-  PetscReal    *vtol;                                                                       /* Vector tolerances for event zero check */
-  TSEventStatus status;                                                                     /* Event status */
-  PetscInt      iterctr;                                                                    /* Iteration counter */
-  PetscViewer   monitor;
+  PetscReal *fvalue_prev;                                                                   /* value of indicator function at the left end-point of the event interval */
+  PetscReal *fvalue;                                                                        /* value of indicator function at the current point */
+  PetscReal *fvalue_right;                                                                  /* value of indicator function at the right end-point of the event interval */
+  PetscInt  *fsign_prev;                                                                    /* sign of indicator function at the left end-point of the event interval */
+  PetscInt  *fsign;                                                                         /* sign of indicator function at the current point */
+  PetscInt  *fsign_right;                                                                   /* sign of indicator function at the right end-point of the event interval */
+  PetscReal  ptime_prev;                                                                    /* time at the previous point (left end-point of the event interval) */
+  PetscReal  ptime_right;                                                                   /* time at the right end-point of the event interval */
+  PetscReal  ptime_cache;                                                                   /* the point visited by the TS before the event interval was detected; cached - to reuse if necessary */
+  PetscReal  timestep_cache;                                                                /* time step considered by the TS before the event interval was detected; cached - to reuse if necessary */
+  PetscInt  *side;                                                                          /* upon bracket subdivision, indicates which sub-bracket is taken further, -1 -> left one, +1 -> right one, +2 -> neither, 0 -> zero-crossing located */
+  PetscInt  *side_prev;                                                                     /* counts the repeating previous side's (with values: -n <=> '-1'*n; +n <=> '+1'*n); used in the Anderson-Bjorck iteration */
+  PetscReal  timestep_postevent;                                                            /* first time step after the event; can be PETSC_DECIDE */
+  PetscReal  timestep_2nd_postevent;                                                        /* second time step after the event; can be PETSC_DECIDE */
+  PetscReal  timestep_min;                                                                  /* minimum time step */
+  PetscBool *justrefined_AB;                                                                /* this flag shows if the given indicator function i = [0..nevents) participated in Anderson-Bjorck process in the last iteration of TSEventHandler() */
+  PetscReal *gamma_AB;                                                                      /* cumulative scaling factor for the Anderson-Bjorck iteration */
+  PetscErrorCode (*indicator)(TS, PetscReal, Vec, PetscReal *, void *);                     /* this callback defines the user function(s) whose sign changes indicate events */
+  PetscErrorCode (*postevent)(TS, PetscInt, PetscInt[], PetscReal, Vec, PetscBool, void *); /* user post-event callback */
+  void       *ctx;                                                                          /* user context for indicator and postevent callbacks */
+  PetscInt   *direction;                                                                    /* zero crossing direction to trigger the event: +1 -> going positive, -1 -> going negative, 0 -> any */
+  PetscBool  *terminate;                                                                    /* 1 -> terminate time stepping on event location, 0 -> continue */
+  PetscInt    nevents;                                                                      /* number of events (indicator functions) to handle on the current MPI process */
+  PetscInt    nevents_zero;                                                                 /* number of events triggered */
+  PetscInt   *events_zero;                                                                  /* list of the events triggered */
+  PetscReal  *vtol;                                                                         /* array of tolerances for the indicator function zero check */
+  PetscInt    iterctr;                                                                      /* iteration counter: used both for reporting and as a status indicator */
+  PetscBool   processing;                                                                   /* this flag shows if the event-resolving iterations are in progress, or the post-event dt handling is in progress */
+  PetscBool   revisit_right;                                                                /* [sync] "revisit the bracket's right end", if true, then fvalue(s) are not calculated, but are taken from fvalue_right(s) */
+  PetscViewer monitor;
   /* Struct to record the events */
   struct {
-    PetscInt   ctr;      /* recorder counter */
+    PetscInt   ctr;      /* Recorder counter */
     PetscReal *time;     /* Event times */
     PetscInt  *stepnum;  /* Step numbers */
     PetscInt  *nevents;  /* Number of events occurring at the event times */
     PetscInt **eventidx; /* Local indices of the events in the event list */
   } recorder;
   PetscInt recsize; /* Size of recorder stack */
-  PetscInt refct;   /* reference count */
+  PetscInt refct;   /* Reference count */
 };
 
 PETSC_EXTERN PetscErrorCode TSEventInitialize(TSEvent, TS, PetscReal, Vec);

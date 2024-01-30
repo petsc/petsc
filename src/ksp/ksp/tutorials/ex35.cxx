@@ -219,7 +219,7 @@ int main(int argc, char **argv)
   return 0;
 }
 
-PetscScalar ComputeDiffusionCoefficient(PetscReal coords[3], UserContext *user)
+PetscReal ComputeDiffusionCoefficient(PetscReal coords[3], UserContext *user)
 {
   switch (user->problem) {
   case 2:
@@ -494,7 +494,7 @@ PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user)
 {
   DM                 dm;
   Vec                sol;
-  PetscScalar        vpos[3];
+  PetscReal          vpos[3];
   const PetscScalar *x;
   PetscScalar       *e;
   PetscReal          l2err = 0.0, linferr = 0.0, global_l2, global_linf;
@@ -535,8 +535,8 @@ PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user)
 
     /* compute the discrete L2 error against the exact solution */
     const PetscScalar lerr = (ExactSolution(vpos, user) - x[dof_index]);
-    l2err += lerr * lerr;
-    if (linferr < fabs(lerr)) linferr = fabs(lerr);
+    l2err += PetscRealPart(lerr * PetscConj(lerr));
+    if (linferr < PetscAbsScalar(lerr)) linferr = PetscAbsScalar(lerr);
 
     if (err) { /* set the discrete L2 error against the exact solution */
       e[dof_index] = lerr;
@@ -608,7 +608,7 @@ PetscErrorCode InitializeOptions(UserContext *user)
 /*TEST
 
    build:
-      requires: moab
+      requires: moab !complex
 
    test:
       args: -levels 0 -nu .01 -n 10 -ksp_type cg -pc_type sor -ksp_converged_reason

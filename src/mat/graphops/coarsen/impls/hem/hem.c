@@ -330,8 +330,7 @@ PetscErrorCode PetscCDGetNonemptyIS(PetscCoarsenData *ail, IS *a_mis)
 PetscErrorCode PetscCDGetMat(PetscCoarsenData *ail, Mat *a_mat)
 {
   PetscFunctionBegin;
-  *a_mat   = ail->mat;
-  ail->mat = NULL; // give it up
+  *a_mat = ail->mat;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -344,6 +343,15 @@ PetscErrorCode PetscCDSetMat(PetscCoarsenData *ail, Mat a_mat)
     PetscCall(MatDestroy(&ail->mat)); //should not happen
   }
   ail->mat = a_mat;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* PetscCDClearMat
+ */
+PetscErrorCode PetscCDClearMat(PetscCoarsenData *ail)
+{
+  PetscFunctionBegin;
+  ail->mat = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -391,10 +399,6 @@ static int gamg_hem_compare(const void *a, const void *b)
   PetscReal va = ((Edge *)a)->weight, vb = ((Edge *)b)->weight;
   return (va <= vb - MY_MEPS) ? 1 : (va > vb + MY_MEPS) ? -1 : 0; /* 0 for equal */
 }
-/* static int gamg_hem_compare3(const void *a, const void *b, void *ctx) */
-/* { */
-/*   return gamg_hem_compare(a, b); */
-/* } */
 
 /*
   MatCoarsenApply_HEM_private - parallel heavy edge matching
@@ -431,7 +435,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(MatGetOwnershipRange(a_Gmat, &my0, &Iend));
   PetscCall(ISCreate(comm, &info_is));
-  PetscCall(PetscInfo(info_is, "%" PetscInt_FMT " iterations of HEM.\n", n_iter));
+  PetscCall(PetscInfo(info_is, "Start %" PetscInt_FMT " iterations of HEM.\n", n_iter));
 
   PetscCall(PetscMalloc1(nloc, &lid_matched));
   PetscCall(PetscMalloc1(nloc, &lid_cprowID));
@@ -473,7 +477,6 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
       for (ix = 0; ix < matB->compressedrow.nrows; ix++) {
         PetscInt *ridx = matB->compressedrow.rindex, lid = ridx[ix];
         if (ridx[ix] >= 0) lid_cprowID[lid] = ix;
-        else PetscCall(PetscPrintf(PETSC_COMM_SELF, "Missing slot in cprow? %d/%d ", (int)ix, (int)matB->compressedrow.nrows));
       }
     } else {
       matA = (Mat_SeqAIJ *)cMat->data;
@@ -552,8 +555,8 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
       PetscInt    lid = kk, max_pe = rank, pe, n;
       ii = matA->i;
       n  = ii[lid + 1] - ii[lid];
-      aj = matA->j + ii[lid];
-      ap = matA->a + ii[lid];
+      aj = PetscSafePointerPlusOffset(matA->j, ii[lid]);
+      ap = PetscSafePointerPlusOffset(matA->a, ii[lid]);
       for (int jj = 0; jj < n; jj++) {
         PetscInt lidj = aj[jj];
         if ((tt = PetscRealPart(ap[jj])) > threshold && lidj != lid) {
@@ -621,8 +624,8 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
       PetscReal      tt;
       ii = matA->i;
       n  = ii[lid + 1] - ii[lid];
-      aj = matA->j + ii[lid];
-      ap = matA->a + ii[lid];
+      aj = PetscSafePointerPlusOffset(matA->j, ii[lid]);
+      ap = PetscSafePointerPlusOffset(matA->a, ii[lid]);
       for (int jj = 0; jj < n; jj++) {
         PetscInt lidj = aj[jj];
         if ((tt = PetscRealPart(ap[jj])) > threshold && lidj != lid) {
@@ -652,9 +655,9 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
       }
     }
     PetscCheck(nEdges == nEdges0, PETSC_COMM_SELF, PETSC_ERR_SUP, "nEdges != nEdges0: %d %d", (int)nEdges0, (int)nEdges);
-    qsort(Edges, nEdges, sizeof(Edge), gamg_hem_compare);
+    if (Edges) qsort(Edges, nEdges, sizeof(Edge), gamg_hem_compare);
 
-    PetscCall(PetscInfo(info_is, "[%d] start HEM iteration %d with %d edges\n", rank, iter, (int)nEdges));
+    PetscCall(PetscInfo(info_is, "[%d] HEM iteration %d with %d edges\n", rank, iter, (int)nEdges));
 
     /* projection matrix */
     PetscCall(MatCreate(comm, &P));
@@ -736,7 +739,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
               max_e = PetscRealPart(lghost_max_ew[lidj]);
               /* check for max_e == to this edge and larger processor that will deal with this */
               if (ew >= PetscRealPart(lid_max_ew[lid0]) - MY_MEPS && lghost_max_pe[lidj] > rank) isOK = PETSC_FALSE;
-              PetscCheck(ew <= max_e + MY_MEPS, PETSC_COMM_SELF, PETSC_ERR_SUP, "edge weight %e > max %e", (double)PetscRealPart(ew), (double)PetscRealPart(max_e));
+              PetscCheck(ew <= max_e + MY_MEPS, PETSC_COMM_SELF, PETSC_ERR_SUP, "edge weight %e > max %e. ncols = %d, gid0 = %d, gid1 = %d", (double)PetscRealPart(ew), (double)PetscRealPart(max_e), (int)n, (int)(lid0 + my0), (int)lghost_gid[lidj]);
               if (print)
                 PetscCall(PetscSynchronizedPrintf(comm, "\t\t\t\t[%d] e0: looked at ghost adj (%d %d), diff = %10.4e, ghost on proc %d (max %d). isOK = %d, %d %d %d; ew = %e, lid0 max ew = %e, diff = %e, eps = %e\n", rank, (int)gid0, (int)lghost_gid[lidj], (double)(max_e - ew), lghost_pe[lidj], lghost_max_pe[lidj], isOK, (double)(ew) >= (double)(max_e - MY_MEPS), ew >= PetscRealPart(lid_max_ew[lid0]) - MY_MEPS, lghost_pe[lidj] > rank, (double)ew, (double)PetscRealPart(lid_max_ew[lid0]), (double)(ew - PetscRealPart(lid_max_ew[lid0])), (double)MY_MEPS));
             }
@@ -964,8 +967,8 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
         int            max_pe = rank, pe, n;
         ii                    = matA->i;
         n                     = ii[lid + 1] - ii[lid];
-        aj                    = matA->j + ii[lid];
-        ap                    = matA->a + ii[lid];
+        aj                    = PetscSafePointerPlusOffset(matA->j, ii[lid]);
+        ap                    = PetscSafePointerPlusOffset(matA->a, ii[lid]);
         for (int jj = 0; jj < n; jj++) {
           PetscInt lidj = aj[jj];
           if (lid_matched[lidj]) continue; /* this is new - can change local max */

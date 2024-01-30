@@ -198,6 +198,6 @@ int main(int argc, char **argv)
 /*TEST
 
     test:
-      args:  -testorder -nox
+      args: -testorder -nox
 
  TEST*/

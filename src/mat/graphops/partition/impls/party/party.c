@@ -370,14 +370,13 @@ static PetscErrorCode MatPartitioningDestroy_Party(MatPartitioning part)
 }
 
 /*MC
-   MATPARTITIONINGPARTY - Creates a partitioning context via the external package Party.
+   MATPARTITIONINGPARTY - Creates a partitioning context via the external package Party <
+   http://wwwcs.upb.de/fachbereich/AG/monien/RESEARCH/PART/party.htm>.
 
    Level: beginner
 
-   Notes:
-    See http://wwwcs.upb.de/fachbereich/AG/monien/RESEARCH/PART/party.html
-
-    Does not support the `MatPartitioningSetUseEdgeWeights()` option
+   Note:
+   Does not support the `MatPartitioningSetUseEdgeWeights()` option
 
 .seealso: `MatPartitioningSetType()`, `MatPartitioningType`, `MatPartitioningPartySetGlobal()`, `MatPartitioningPartySetLocal()`,
           `MatPartitioningPartySetCoarseLevel()`, `MatPartitioningPartySetMatchOptimization()`, `MatPartitioningPartySetBipart()`

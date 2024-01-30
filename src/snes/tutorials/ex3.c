@@ -712,7 +712,7 @@ PetscErrorCode MatrixFreePreconditioner(PC pc, Vec x, Vec y)
       suffix: 5
       requires: double !complex !single
       nsize: 2
-      args: -nox -snes_test_jacobian  -snes_test_jacobian_view
+      args: -nox -snes_test_jacobian -snes_test_jacobian_view
 
    test:
       suffix: 6

@@ -70,7 +70,7 @@ Label 'cohesive':
 PetscSection Object: 1 MPI process
   type not yet set
 2 fields
-  field 0 with 3 components
+  field 0 "displacement" with 3 components
 Process 0:
   (   0) dim  0 offset   0
   (   1) dim  0 offset   0
@@ -129,7 +129,7 @@ Process 0:
   (  54) dim  0 offset  33
   (  55) dim  0 offset  36
   (  56) dim  0 offset  39
-  field 1 with 3 components
+  field 1 "fault traction" with 3 components
 Process 0:
   (   0) dim  0 offset   0
   (   1) dim  0 offset   0
@@ -318,16 +318,16 @@ Vec Object: Local Residual 1 MPI process
 -0.0833333
 0.
 -0.0833333
--1.38778e-17
+-1.23358e-17
 0.0833333
 0.0833333
 0.
-2.46716e-17
-1.23358e-17
--9.25186e-18
+0.
+-3.70074e-17
+-3.08395e-18
 0.0833333
 0.0833333
--4.62593e-18
+-3.08395e-18
 0.166667
 0.166667
 Mat Object: Jacobian 1 MPI process

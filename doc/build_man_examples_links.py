@@ -10,8 +10,8 @@ def processfile(petsc_dir,dir,file,keyre,mdict,uses):
     text = fd.read()
   found = list(set(keyre.findall(text)))
   for i in found:
-    if len(uses[i]) < 10:
-      uses[i].append(os.path.join(dir,file))
+    if len(uses[i[1:-1]]) < 10:
+      uses[i[1:-1]].append(os.path.join(dir,file))
 
 def processdir(petsc_dir,dir,keyre,mdict,uses):
   '''Loop over tutorials, call processfile() on each'''
@@ -30,12 +30,15 @@ def loadmanualpagescit(petsc_dir):
   for line in  text.split():
     m = re.match(PATTERN, line)
     # print('Manual page '+m.group(1)+' location '+m.group(3))
+    if not m:
+      raise RuntimeError('Cannot find PATTERN '+str(PATTERN)+' in manualpages.cit line '+line)
     if re.match(EXCLUDE_PATTERN,m.group(1)): continue
-    mdict[m.group(1)] = m.group(3)
+    mdict[' '+m.group(1)+' '] = m.group(3)
+    mdict['\('+m.group(1)+'\('] = m.group(3)
   # sort to find enclosing names first
   mdict = dict(sorted(mdict.items(), key=lambda item: len(item[0]), reverse = True))
   keyre = re.compile('|'.join(list(mdict.keys())))
-  uses = {i: [] for i in mdict.keys()}
+  uses = {i[1:-1]: [] for i in mdict.keys()}
   return keyre,mdict,uses
 
 def main(petsc_dir):
@@ -46,11 +49,12 @@ def main(petsc_dir):
         processdir(petsc_dir,dirpath,keyre,mdict,uses)
 
     for i in mdict:
-      if len(uses[i]) > 0:
+      if len(uses[i[1:-1]]) > 0:
         manpage = os.path.join(petsc_dir,'doc','manualpages',mdict[i])
+        set_uses = set(uses[i[1:-1]])
         with open(manpage,'a') as fd:
           fd.write('\n## Examples\n')
-          for j in uses[i]:
+          for j in set_uses:
             file = j.replace(petsc_dir+'/','')
             fd.write('<A HREF="PETSC_DOC_OUT_ROOT_PLACEHOLDER/'+file+'.html">'+file+'</A><BR>\n')
 

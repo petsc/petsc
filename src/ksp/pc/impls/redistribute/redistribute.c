@@ -447,7 +447,7 @@ PetscErrorCode PCRedistributeGetKSP(PC pc, KSP *innerksp)
      Level: intermediate
 
      Notes:
-     Options for the redistribute `KSP` and `PC` with the options database prefix -redistribute_
+     Options for the redistribute `KSP` and `PC` with the options database prefix `-redistribute_`
 
      Usually run this with `-ksp_type preonly`
 
@@ -455,10 +455,13 @@ PetscErrorCode PCRedistributeGetKSP(PC pc, KSP *innerksp)
      -pc_type redistribute -redistribute_ksp_type cg -redistribute_pc_type bjacobi -redistribute_sub_pc_type icc` to take advantage of the symmetry.
 
      Supports the function `PCFieldSplitSetIS()`; pass the appropriate reduced field indices to an inner `PCFIELDSPLIT`, set with, for example
-     `-ksp_type preonly -pc_type redistribute -redistribute_pc_type fieldsplit. Does not support the `PCFIELDSPLIT` options database keys.
+     `-ksp_type preonly -pc_type redistribute -redistribute_pc_type fieldsplit`. Does not support the `PCFIELDSPLIT` options database keys.
 
      This does NOT call a partitioner to reorder rows to lower communication; the ordering of the rows in the original matrix and redistributed matrix is the same. Rows are moved
      between MPI processes inside the preconditioner to balance the number of rows on each process.
+
+     The matrix block information is lost with the possible removal of individual rows and columns of the matrix, thus the behavior of the preconditioner on the reduced
+     system may be very different (worse) than running that preconditioner on the full system. This is specifically true for elasticity problems.
 
      Developer Note:
      Should add an option to this preconditioner to use a partitioner to redistribute the rows to lower communication.

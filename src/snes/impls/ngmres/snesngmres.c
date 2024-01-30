@@ -170,12 +170,12 @@ static PetscErrorCode SNESSolve_NGMRES(SNES snes)
   X            = snes->vec_sol;
   F            = snes->vec_func;
   B            = snes->vec_rhs;
-  XA           = snes->vec_sol_update;
+  XA           = snes->work[2];
   FA           = snes->work[0];
   D            = snes->work[1];
 
   /* work for the line search */
-  Y  = snes->work[2];
+  Y  = snes->vec_sol_update;
   XM = snes->work[3];
   FM = snes->work[4];
 
@@ -462,36 +462,30 @@ static PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes, SNESNGMRESResta
 }
 
 /*MC
-  SNESNGMRES - The Nonlinear Generalized Minimum Residual method.
+  SNESNGMRES - The Nonlinear Generalized Minimum Residual method {cite}`ow1`, {cite}`bruneknepleysmithtu15`
 
    Level: beginner
 
    Options Database Keys:
 +  -snes_ngmres_select_type<difference,none,linesearch> - choose the select between candidate and combined solution
-.  -snes_ngmres_restart_type<difference,none,periodic> - choose the restart conditions
-.  -snes_ngmres_candidate        - Use `SNESNGMRES` variant which combines candidate solutions instead of actual solutions
-.  -snes_ngmres_m                - Number of stored previous solutions and residuals
-.  -snes_ngmres_restart_it       - Number of iterations the restart conditions hold before restart
-.  -snes_ngmres_gammaA           - Residual tolerance for solution select between the candidate and combination
-.  -snes_ngmres_gammaC           - Residual tolerance for restart
-.  -snes_ngmres_epsilonB         - Difference tolerance between subsequent solutions triggering restart
-.  -snes_ngmres_deltaB           - Difference tolerance between residuals triggering restart
-.  -snes_ngmres_restart_fm_rise  - Restart on residual rise from x_M step
-.  -snes_ngmres_monitor          - Prints relevant information about the ngmres iteration
-.  -snes_linesearch_type <basic,l2,cp> - Line search type used for the default smoother
--  -snes_ngmres_additive_snes_linesearch_type - linesearch type used to select between the candidate and combined solution with additive select type
+.  -snes_ngmres_restart_type<difference,none,periodic>  - choose the restart conditions
+.  -snes_ngmres_candidate                               - Use `SNESNGMRES` variant which combines candidate solutions instead of actual solutions
+.  -snes_ngmres_m                                       - Number of stored previous solutions and residuals
+.  -snes_ngmres_restart_it                              - Number of iterations the restart conditions hold before restart
+.  -snes_ngmres_gammaA                                  - Residual tolerance for solution select between the candidate and combination
+.  -snes_ngmres_gammaC                                  - Residual tolerance for restart
+.  -snes_ngmres_epsilonB                                - Difference tolerance between subsequent solutions triggering restart
+.  -snes_ngmres_deltaB                                  - Difference tolerance between residuals triggering restart
+.  -snes_ngmres_restart_fm_rise                         - Restart on residual rise from x_M step
+.  -snes_ngmres_monitor                                 - Prints relevant information about the ngmres iteration
+.  -snes_linesearch_type <basic,l2,cp>                  - Line search type used for the default smoother
+-  -snes_ngmres_additive_snes_linesearch_type           - line search type used to select between the candidate and combined solution with additive select type
 
    Notes:
    The N-GMRES method combines m previous solutions into a minimum-residual solution by solving a small linearized
    optimization problem at each iteration.
 
    Very similar to the `SNESANDERSON` algorithm.
-
-   References:
-+  * - C. W. Oosterlee and T. Washio, "Krylov Subspace Acceleration of Nonlinear Multigrid with Application to Recirculating Flows",
-   SIAM Journal on Scientific Computing, 21(5), 2000.
--  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
-   SIAM Review, 57(4), 2015
 
 .seealso: [](ch_snes), `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`, `SNESANDERSON`, `SNESNGMRESSetSelectType()`, `SNESNGMRESSetRestartType()`,
           `SNESNGMRESSetRestartFmRise()`, `SNESNGMRESSelectType`, ``SNESNGMRESRestartType`

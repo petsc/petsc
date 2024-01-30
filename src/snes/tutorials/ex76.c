@@ -510,7 +510,7 @@ int main(int argc, char **argv)
   PetscCall(VecDuplicate(u, &r));
 
   PetscCall(DMSetNullSpaceConstructor(dm, 1, CreatePressureNullSpace));
-  PetscCall(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));
+  PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, &user));
 
   PetscCall(SNESSetFromOptions(snes));
   {

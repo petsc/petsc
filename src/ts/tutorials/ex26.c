@@ -403,7 +403,7 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info, PetscReal ptime, Field **
     test:
       suffix: 3
       nsize: 4
-      args: -da_refine 2 -lidvelocity 100 -grashof 1e3 -ts_max_steps 10 -ts_rtol 1e-3 -ts_atol 1e-3 -pc_type none -ts_type beuler -ts_monitor -snes_monitor_short -snes_type aspin -da_overlap 4
+      args: -da_refine 2 -lidvelocity 100 -grashof 1e3 -ts_max_steps 10 -ts_rtol 1e-3 -ts_atol 1e-3 -pc_type none -ts_type beuler -ts_monitor -snes_monitor_short -snes_type aspin -da_overlap 4 -npc_sub_ksp_type preonly -npc_sub_pc_type lu
       requires: !complex !single
 
     test:

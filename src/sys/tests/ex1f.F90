@@ -8,7 +8,7 @@
       PetscErrorCode  ierr
       integer line
 
-      call PetscError(PETSC_COMM_SELF,1,PETSC_ERROR_INITIAL,'Error message')
+      call PetscError(PETSC_COMM_SELF,1,PETSC_ERROR_INITIAL,'My error message')
       return
       end
 
@@ -48,6 +48,6 @@
 !
 !   test:
 !     args: -error_output_stdout
-!     filter:Error: grep -E  "(My error handler|Operating system error: Cannot allocate memory)" | wc -l
+!     filter:Error: strings | grep -E "(My error handler|Operating system error: Cannot allocate memory)" | wc -l
 !
 !TEST*/

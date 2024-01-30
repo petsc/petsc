@@ -662,24 +662,18 @@ static PetscErrorCode TaoDestroy_ADMM(Tao tao)
 }
 
 /*MC
-
   TAOADMM - Alternating direction method of multipliers method fo solving linear problems with
-            constraints. in a min_x f(x) + g(z)  s.t. Ax+Bz=c.
+            constraints. in a $ \min_x f(x) + g(z)$  s.t. $Ax+Bz=c$.
             This algorithm employs two sub Tao solvers, of which type can be specified
             by the user. User need to provide ObjectiveAndGradient routine, and/or HessianRoutine for both subsolvers.
             Hessians can be given boolean flag determining whether they change with respect to a input vector. This can be set via
-            TaoADMMSet{Misfit,Regularizer}HessianChangeStatus.
-            Second subsolver does support TAOSHELL. It should be noted that L1-norm is used for objective value for TAOSHELL type.
+            `TaoADMMSet{Misfit,Regularizer}HessianChangeStatus()`.
+            Second subsolver does support `TAOSHELL`. It should be noted that L1-norm is used for objective value for `TAOSHELL` type.
             There is option to set regularizer option, and currently soft-threshold is implemented. For spectral penalty update,
             currently there are basic option and adaptive option.
-            Constraint is set at Ax+Bz=c, and A and B can be set with TaoADMMSet{Misfit,Regularizer}ConstraintJacobian.
-            c can be set with TaoADMMSetConstraintVectorRHS.
-            The user can also provide regularizer weight for second subsolver.
-
-  References:
-. * - Xu, Zheng and Figueiredo, Mario A. T. and Yuan, Xiaoming and Studer, Christoph and Goldstein, Tom
-          "Adaptive Relaxed ADMM: Convergence Theory and Practical Implementation"
-          The IEEE Conference on Computer Vision and Pattern Recognition (CVPR), July, 2017.
+            Constraint is set at Ax+Bz=c, and A and B can be set with `TaoADMMSet{Misfit,Regularizer}ConstraintJacobian()`.
+            c can be set with `TaoADMMSetConstraintVectorRHS()`.
+            The user can also provide regularizer weight for second subsolver. {cite}`xu2017adaptive`
 
   Options Database Keys:
 + -tao_admm_regularizer_coefficient        - regularizer constant (default 1.e-6)

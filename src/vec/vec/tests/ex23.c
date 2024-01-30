@@ -89,7 +89,7 @@ int main(int argc, char **argv)
         args: -vec_type cuda
       test:
         requires: viennacl
-        suffix:  viennacl
+        suffix: viennacl
         args: -vec_type viennacl
       test:
         requires: kokkos_kernels

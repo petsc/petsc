@@ -543,7 +543,7 @@ M*/
 
   Level: advanced
 
-  Notes:
+  Note:
   This returns the same truth value, it is only a hint to compilers that the result of cond is
   unlikely to be true.
 
@@ -574,7 +574,7 @@ M*/
 
   Level: advanced
 
-  Notes:
+  Note:
   This returns the same truth value, it is only a hint to compilers that the result of cond is
   likely to be true.
 
@@ -607,7 +607,7 @@ M*/
 
   Level: advanced
 
-  Notes:
+  Note:
   Indicates to the compiler (usually via some built-in) that a particular code path is always
   unreachable. Behavior is undefined if this function is ever executed, the user can expect an
   unceremonious crash.
@@ -873,8 +873,9 @@ M*/
   argument before returning the complement.
 
   This macro can be useful for negating `PetscDefined()` inside macros e.g.
-
-$ #define PETSC_DONT_HAVE_FOO PetscCompl(PetscDefined(HAVE_FOO))
+.vb
+  #define PETSC_DONT_HAVE_FOO PetscCompl(PetscDefined(HAVE_FOO))
+.ve
 
   Example usage:
 .vb
@@ -915,8 +916,9 @@ M*/
 
   The prefix "PETSC_" is automatically prepended to def. To avoid prepending "PETSC_", say to
   add custom checks in user code, one should use `PetscDefined_()`.
-
-$ #define FooDefined(d) PetscDefined_(PetscConcat(FOO_, d))
+.vb
+  #define FooDefined(d) PetscDefined_(PetscConcat(FOO_, d))
+.ve
 
   Developer Notes:
   Getting something that works in C and CPP for an arg that may or may not be defined is
@@ -983,9 +985,7 @@ M*/
   #include <petscmacros.h>
   bool PetscUnlikelyDebug(bool cond)
 
-  No Fortran Support
-
-  Not Collective
+  Not Collective; No Fortran Support
 
   Input Parameter:
 . cond - Boolean expression

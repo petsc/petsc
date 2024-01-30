@@ -189,9 +189,9 @@ PetscErrorCode ComputeJacobian(SNES, Vec x, Mat J, Mat, void *ctx)
       output_file: output/ex47cu_1.out
       test:
         suffix: 1
-        nsize:  1
+        nsize: 1
       test:
         suffix: 2
-        nsize:  2
+        nsize: 2
 
 TEST*/

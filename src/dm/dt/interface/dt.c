@@ -242,7 +242,7 @@ PetscErrorCode PetscQuadratureSetOrder(PetscQuadrature q, PetscInt order)
   Level: intermediate
 
   Note:
-  We are performing an integral int f(x) . w(x) dx, where both f and w (the weight) have Nc components.
+  We are performing an integral $\int f(x) w(x) dx$, where both $f$ and $w$ (the weight) have `Nc` components.
 
 .seealso: `PetscQuadrature`, `PetscQuadratureSetNumComponents()`, `PetscQuadratureGetData()`, `PetscQuadratureSetData()`
 @*/
@@ -256,7 +256,7 @@ PetscErrorCode PetscQuadratureGetNumComponents(PetscQuadrature q, PetscInt *Nc)
 }
 
 /*@
-  PetscQuadratureSetNumComponents - Return the number of components for functions to be integrated
+  PetscQuadratureSetNumComponents - Sets the number of components for functions to be integrated
 
   Not Collective
 
@@ -267,7 +267,7 @@ PetscErrorCode PetscQuadratureGetNumComponents(PetscQuadrature q, PetscInt *Nc)
   Level: intermediate
 
   Note:
-  We are performing an integral int f(x) . w(x) dx, where both f and w (the weight) have Nc components.
+  We are performing an integral $\int f(x) w(x) dx$, where both $f$ and $w$ (the weight) have `Nc` components.
 
 .seealso: `PetscQuadrature`, `PetscQuadratureGetNumComponents()`, `PetscQuadratureGetData()`, `PetscQuadratureSetData()`
 @*/
@@ -296,8 +296,8 @@ PetscErrorCode PetscQuadratureSetNumComponents(PetscQuadrature q, PetscInt Nc)
 
   Level: intermediate
 
-  Fortran Notes:
-  From Fortran you must call `PetscQuadratureRestoreData()` when you are done with the data
+  Fortran Note:
+  Call `PetscQuadratureRestoreData()` when you are done with the data
 
 .seealso: `PetscQuadrature`, `PetscQuadratureCreate()`, `PetscQuadratureSetData()`
 @*/
@@ -474,15 +474,18 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
 . origin      - a point in the original space
 . originImage - the image of the origin under the transformation
 . J           - the Jacobian of the image: an [imageDim x dim] matrix in row major order
-- formDegree  - transform the quadrature weights as k-forms of this form degree (if the number of components is a multiple of (dim choose formDegree), it is assumed that they represent multiple k-forms) [see `PetscDTAltVPullback()` for interpretation of formDegree]
+- formDegree  - transform the quadrature weights as k-forms of this form degree (if the number of components is a multiple of (dim choose `formDegree`),
+                it is assumed that they represent multiple k-forms) [see `PetscDTAltVPullback()` for interpretation of `formDegree`]
 
   Output Parameter:
-. Jinvstarq - a quadrature rule where each point is the image of a point in the original quadrature rule, and where the k-form weights have been pulled-back by the pseudoinverse of `J` to the k-form weights in the image space.
+. Jinvstarq - a quadrature rule where each point is the image of a point in the original quadrature rule, and where the k-form weights have
+  been pulled-back by the pseudoinverse of `J` to the k-form weights in the image space.
 
   Level: intermediate
 
   Note:
-  The new quadrature rule will have a different number of components if spaces have different dimensions.  For example, pushing a 2-form forward from a two dimensional space to a three dimensional space changes the number of components from 1 to 3.
+  The new quadrature rule will have a different number of components if spaces have different dimensions.
+  For example, pushing a 2-form forward from a two dimensional space to a three dimensional space changes the number of components from 1 to 3.
 
 .seealso: `PetscQuadrature`, `PetscDTAltVPullback()`, `PetscDTAltVPullbackMatrix()`
 @*/
@@ -510,7 +513,7 @@ PetscErrorCode PetscQuadraturePushForward(PetscQuadrature q, PetscInt imageDim, 
   PetscCall(PetscDTJacobianInverse_Internal(imageDim, dim, J, Jinv));
   PetscCall(PetscDTAltVPullbackMatrix(imageDim, dim, Jinv, formDegree, Jinvstar));
   for (pt = 0; pt < Npoints; pt++) {
-    const PetscReal *point      = &points[pt * dim];
+    const PetscReal *point      = PetscSafePointerPlusOffset(points, pt * dim);
     PetscReal       *imagePoint = &imagePoints[pt * imageDim];
 
     for (i = 0; i < imageDim; i++) {
@@ -651,7 +654,7 @@ PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)
   Level: intermediate
 
   Note:
-  Together v0 and jac define an affine mapping from the original reference element to each subelement
+  Together `v0` and `jac` define an affine mapping from the original reference element to each subelement
 
 .seealso: `PetscQuadrature`, `PetscFECreate()`, `PetscSpaceGetDimension()`, `PetscDualSpaceGetDimension()`
 @*/
@@ -691,8 +694,8 @@ PetscErrorCode PetscQuadratureExpandComposite(PetscQuadrature q, PetscInt numSub
 }
 
 /* Compute the coefficients for the Jacobi polynomial recurrence,
- *
- * J^{a,b}_n(x) = (cnm1 + cnm1x * x) * J^{a,b}_{n-1}(x) - cnm2 * J^{a,b}_{n-2}(x).
+
+   J^{a,b}_n(x) = (cnm1 + cnm1x * x) * J^{a,b}_{n-1}(x) - cnm2 * J^{a,b}_{n-2}(x).
  */
 #define PetscDTJacobiRecurrence_Internal(n, a, b, cnm1, cnm1x, cnm2) \
   do { \
@@ -844,9 +847,9 @@ static PetscErrorCode PetscDTJacobiEval_Internal(PetscInt npoints, PetscReal a, 
 
   Output Parameter:
 . p - an array containing the evaluations of the Jacobi polynomials's jets on the points.  the size is (degree + 1) x
-  (k + 1) x npoints, which also describes the order of the dimensions of this three-dimensional array: the first
-  (slowest varying) dimension is polynomial degree; the second dimension is derivative order; the third (fastest
-  varying) dimension is the index of the evaluation point.
+      (k + 1) x npoints, which also describes the order of the dimensions of this three-dimensional array: the first
+      (slowest varying) dimension is polynomial degree; the second dimension is derivative order; the third (fastest
+      varying) dimension is the index of the evaluation point.
 
   Level: advanced
 
@@ -899,9 +902,9 @@ PetscErrorCode PetscDTJacobiEvalJet(PetscReal alpha, PetscReal beta, PetscInt np
 - degrees - sorted array of degrees to evaluate
 
   Output Parameters:
-+ B  - row-oriented basis evaluation matrix B[point*ndegree + degree] (dimension npoints*ndegrees, allocated by caller) (or NULL)
-. D  - row-oriented derivative evaluation matrix (or NULL)
-- D2 - row-oriented second derivative evaluation matrix (or NULL)
++ B  - row-oriented basis evaluation matrix B[point*ndegree + degree] (dimension npoints*ndegrees, allocated by caller) (or `NULL`)
+. D  - row-oriented derivative evaluation matrix (or `NULL`)
+- D2 - row-oriented second derivative evaluation matrix (or `NULL`)
 
   Level: intermediate
 
@@ -931,9 +934,9 @@ PetscErrorCode PetscDTJacobiEval(PetscInt npoints, PetscReal alpha, PetscReal be
 - degrees - sorted array of degrees to evaluate
 
   Output Parameters:
-+ B  - row-oriented basis evaluation matrix B[point*ndegree + degree] (dimension npoints*ndegrees, allocated by caller) (or NULL)
-. D  - row-oriented derivative evaluation matrix (or NULL)
-- D2 - row-oriented second derivative evaluation matrix (or NULL)
++ B  - row-oriented basis evaluation matrix B[point*ndegree + degree] (dimension `npoints`*`ndegrees`, allocated by caller) (or `NULL`)
+. D  - row-oriented derivative evaluation matrix (or `NULL`)
+- D2 - row-oriented second derivative evaluation matrix (or `NULL`)
 
   Level: intermediate
 
@@ -947,7 +950,8 @@ PetscErrorCode PetscDTLegendreEval(PetscInt npoints, const PetscReal *points, Pe
 }
 
 /*@
-  PetscDTIndexToGradedOrder - convert an index into a tuple of monomial degrees in a graded order (that is, if the degree sum of tuple x is less than the degree sum of tuple y, then the index of x is smaller than the index of y)
+  PetscDTIndexToGradedOrder - convert an index into a tuple of monomial degrees in a graded order (that is, if the degree sum of tuple x is less than the degree sum of tuple y,
+  then the index of x is smaller than the index of y)
 
   Input Parameters:
 + len   - the desired length of the degree tuple
@@ -1063,13 +1067,13 @@ const char       PKDCitation[] = "@article{Kirby2010,\n"
 . points  - [npoints x dim] array of point coordinates
 . degree  - the degree (sum of degrees on the variables in a monomial) of the polynomial space to evaluate.  There are ((dim + degree) choose dim) polynomials in this space.
 - k       - the maximum order partial derivative to evaluate in the jet.  There are (dim + k choose dim) partial derivatives
-  in the jet.  Choosing k = 0 means to evaluate just the function and no derivatives
+            in the jet.  Choosing k = 0 means to evaluate just the function and no derivatives
 
   Output Parameter:
 . p - an array containing the evaluations of the PKD polynomials' jets on the points.  The size is ((dim + degree)
-  choose dim) x ((dim + k) choose dim) x npoints, which also describes the order of the dimensions of this
-  three-dimensional array: the first (slowest varying) dimension is basis function index; the second dimension is jet
-  index; the third (fastest varying) dimension is the index of the evaluation point.
+      choose dim) x ((dim + k) choose dim) x npoints, which also describes the order of the dimensions of this
+      three-dimensional array: the first (slowest varying) dimension is basis function index; the second dimension is jet
+      index; the third (fastest varying) dimension is the index of the evaluation point.
 
   Level: advanced
 
@@ -1083,7 +1087,7 @@ const char       PKDCitation[] = "@article{Kirby2010,\n"
   leading monomial x^2,y^0,z^1, which has degree tuple (2,0,1), which by `PetscDTGradedOrderToIndex()` has index 12 (it is the 13th basis function in the space);
   the partial derivative $\partial_x \partial_z$ has order tuple (1,0,1), appears at index 6 in the jet (it is the 7th partial derivative in the jet).
 
-  The implementation uses Kirby's singularity-free evaluation algorithm, https://doi.org/10.1145/1644001.1644006.
+  The implementation uses Kirby's singularity-free evaluation algorithm, <https://doi.org/10.1145/1644001.1644006>.
 
 .seealso: `PetscDTGradedOrderToIndex()`, `PetscDTIndexToGradedOrder()`, `PetscDTJacobiEvalJet()`
 @*/
@@ -1718,7 +1722,7 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_Internal(PetscInt npoints, Pe
 }
 
 /*@
-  PetscDTGaussJacobiQuadrature - quadrature for the interval [a, b] with the weight function
+  PetscDTGaussJacobiQuadrature - quadrature for the interval $[a, b]$ with the weight function
   $(x-a)^\alpha (x-b)^\beta$.
 
   Not Collective
@@ -1737,7 +1741,7 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_Internal(PetscInt npoints, Pe
   Level: intermediate
 
   Note:
-  This quadrature rule is exact for polynomials up to degree 2*npoints - 1.
+  This quadrature rule is exact for polynomials up to degree 2*`npoints` - 1.
 
 .seealso: `PetscDTGaussQuadrature()`
 @*/
@@ -1775,8 +1779,8 @@ static PetscErrorCode PetscDTGaussLobattoJacobiQuadrature_Internal(PetscInt npoi
 }
 
 /*@
-  PetscDTGaussLobattoJacobiQuadrature - quadrature for the interval [a, b] with the weight function
-  $(x-a)^\alpha (x-b)^\beta$, with endpoints a and b included as quadrature points.
+  PetscDTGaussLobattoJacobiQuadrature - quadrature for the interval $[a, b]$ with the weight function
+  $(x-a)^\alpha (x-b)^\beta$, with endpoints `a` and `b` included as quadrature points.
 
   Not Collective
 
@@ -1794,7 +1798,7 @@ static PetscErrorCode PetscDTGaussLobattoJacobiQuadrature_Internal(PetscInt npoi
   Level: intermediate
 
   Note:
-  This quadrature rule is exact for polynomials up to degree 2*npoints - 3.
+  This quadrature rule is exact for polynomials up to degree 2*`npoints` - 3.
 
 .seealso: `PetscDTGaussJacobiQuadrature()`
 @*/
@@ -1829,8 +1833,8 @@ PetscErrorCode PetscDTGaussLobattoJacobiQuadrature(PetscInt npoints, PetscReal a
 
   Level: intermediate
 
-  References:
-.  * - Golub and Welsch, Calculation of Quadrature Rules, Math. Comp. 23(106), 1969.
+  Note:
+  See {cite}`golub1969calculation`
 
 .seealso: `PetscDTLegendreEval()`, `PetscDTGaussJacobiQuadrature()`
 @*/
@@ -1851,7 +1855,7 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints, PetscReal a, PetscReal b
 
 /*@C
   PetscDTGaussLobattoLegendreQuadrature - creates a set of the locations and weights of the Gauss-Lobatto-Legendre
-  nodes of a given size on the domain [-1,1]
+  nodes of a given size on the domain $[-1,1]$
 
   Not Collective
 
@@ -1871,7 +1875,7 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints, PetscReal a, PetscReal b
 
   These are useful for implementing spectral methods based on Gauss-Lobatto-Legendre (GLL) nodes
 
-  See  https://epubs.siam.org/doi/abs/10.1137/110855442  https://epubs.siam.org/doi/abs/10.1137/120889873 for better ways to compute GLL nodes
+  See <https://epubs.siam.org/doi/abs/10.1137/110855442>  <https://epubs.siam.org/doi/abs/10.1137/120889873> for better ways to compute GLL nodes
 
 .seealso: `PetscDTGaussQuadrature()`, `PetscGaussLobattoLegendreCreateType`
 
@@ -1976,7 +1980,7 @@ PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt Nc, PetscInt 
 }
 
 /*@
-  PetscDTStroudConicalQuadrature - create Stroud conical quadrature for a simplex
+  PetscDTStroudConicalQuadrature - create Stroud conical quadrature for a simplex {cite}`karniadakis2005spectral`
 
   Not Collective
 
@@ -1994,9 +1998,6 @@ PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt Nc, PetscInt 
 
   Note:
   For `dim` == 1, this is Gauss-Legendre quadrature
-
-  References:
-. * - Karniadakis and Sherwin.  FIAT
 
 .seealso: `PetscDTGaussTensorQuadrature()`, `PetscDTGaussQuadrature()`
 @*/
@@ -2308,7 +2309,7 @@ PetscErrorCode PetscDTSimplexQuadrature(PetscInt dim, PetscInt degree, PetscDTSi
 
   Input Parameters:
 + dim   - The cell dimension
-. level - The number of points in one dimension, 2^l
+. level - The number of points in one dimension, $2^l$
 . a     - left end of interval (often-1)
 - b     - right end of interval (often +1)
 
@@ -2835,9 +2836,9 @@ static PetscErrorCode PetscDTLegendreIntegrate(PetscInt ninterval, const PetscRe
   Input Parameters:
 + degree  - degree of reconstruction polynomial
 . nsource - number of source intervals
-. sourcex - sorted coordinates of source cell boundaries (length nsource+1)
+. sourcex - sorted coordinates of source cell boundaries (length `nsource`+1)
 . ntarget - number of target intervals
-- targetx - sorted coordinates of target cell boundaries (length ntarget+1)
+- targetx - sorted coordinates of target cell boundaries (length `ntarget`+1)
 
   Output Parameter:
 . R - reconstruction matrix, utarget = sum_s R[t*nsource+s] * usource[s]
@@ -3352,7 +3353,7 @@ PetscErrorCode PetscQuadratureComputePermutations(PetscQuadrature quad, PetscInt
   PetscCall(PetscQuadratureGetData(quad, &qdim, NULL, &Nq, &xq, &wq));
   PetscCall(PetscQuadratureGetCellType(quad, &ct));
   dim = DMPolytopeTypeGetDim(ct);
-  Na  = DMPolytopeTypeGetNumArrangments(ct);
+  Na  = DMPolytopeTypeGetNumArrangements(ct);
   PetscCall(PetscMalloc1(Na, perm));
   if (Np) *Np = Na;
   Na /= 2;

@@ -55,7 +55,6 @@ PetscErrorCode PetscHeaderCreate_Private(PetscObject h, PetscClassId classid, co
   PetscCheck(flg, h->comm, PETSC_ERR_ARG_CORRUPT, "MPI_Comm does not have an object creation index");
   cidx    = (PetscInt64 *)get_tmp;
   h->cidx = (*cidx)++;
-  PetscCallMPI(MPI_Comm_set_attr(h->comm, Petsc_CreationIdx_keyval, cidx));
 
   /* Keep a record of object created */
   if (PetscDefined(USE_LOG) && PetscObjectsLog) {
@@ -326,8 +325,6 @@ PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj, PetscFortranCallba
 /*@C
   PetscObjectsDump - Prints all the currently existing objects.
 
-  On rank 0 of `PETSC_COMM_WORLD` prints the values
-
   Input Parameters:
 + fd  - file pointer
 - all - by default only tries to display objects created explicitly by the user, if all is `PETSC_TRUE` then lists all outstanding objects
@@ -336,6 +333,9 @@ PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj, PetscFortranCallba
 . -objects_dump <all> - print information about all the objects that exist at the end of the programs run
 
   Level: advanced
+
+  Note:
+  Only MPI rank 0 of `PETSC_COMM_WORLD` prints the values
 
 .seealso: `PetscObject`
 @*/
@@ -418,8 +418,8 @@ PetscErrorCode PetscObjectsView(PetscViewer viewer)
 . name - the name of an object
 
   Output Parameters:
-+ obj       - the object or `NULL` if there is no object
-- classname - the name of the class
++ obj       - the object or `NULL` if there is no object, optional, pass in `NULL` if not needed
+- classname - the name of the class of the object, optional, pass in `NULL` if not needed
 
   Level: advanced
 
@@ -433,14 +433,13 @@ PetscErrorCode PetscObjectsGetObject(const char *name, PetscObject *obj, char **
 
   PetscFunctionBegin;
   PetscAssertPointer(name, 1);
-  PetscAssertPointer(obj, 2);
-  *obj = NULL;
+  if (obj) *obj = NULL;
   for (i = 0; i < PetscObjectsMaxCounts; i++) {
     if ((h = PetscObjects[i])) {
       PetscCall(PetscObjectName(h));
       PetscCall(PetscStrcmp(h->name, name, &flg));
       if (flg) {
-        *obj = h;
+        if (obj) *obj = h;
         if (classname) *classname = h->class_name;
         PetscFunctionReturn(PETSC_SUCCESS);
       }
@@ -473,7 +472,7 @@ PetscErrorCode PetscObjectSetPrintedOptions(PetscObject obj)
 }
 
 /*@
-  PetscObjectInheritPrintedOptions - If the child object is not on the rank 0 process of the parent object and the child is sequential then the child gets it set.
+  PetscObjectInheritPrintedOptions - If the child object is not on the MPI rank 0 process of the parent object and the child is sequential then the child gets it set.
 
   Input Parameters:
 + pobj - the parent object
@@ -510,15 +509,24 @@ PetscErrorCode PetscObjectInheritPrintedOptions(PetscObject pobj, PetscObject ob
   Input Parameters:
 + obj     - the PETSc object
 . handle  - function that checks for options
-. destroy - function to destroy context if provided
+. destroy - function to destroy `ctx` if provided
 - ctx     - optional context for check function
+
+  Calling sequence of `handle`:
++ obj                - the PETSc object
+. PetscOptionsObject - the `PetscOptionItems` object
+- ctx                - optional context for `handle`
+
+  Calling sequence of `destroy`:
++ obj - the PETSc object
+- ctx - optional context for `handle`
 
   Level: developer
 
 .seealso: `KSPSetFromOptions()`, `PCSetFromOptions()`, `SNESSetFromOptions()`, `PetscObjectProcessOptionsHandlers()`, `PetscObjectDestroyOptionsHandlers()`,
           `PetscObject`
 @*/
-PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj, PetscErrorCode (*handle)(PetscObject, PetscOptionItems *, void *), PetscErrorCode (*destroy)(PetscObject, void *), void *ctx)
+PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj, PetscErrorCode (*handle)(PetscObject obj, PetscOptionItems *PetscOptionsObject, void *ctx), PetscErrorCode (*destroy)(PetscObject obj, void *ctx), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
@@ -576,7 +584,7 @@ PetscErrorCode PetscObjectDestroyOptionsHandlers(PetscObject obj)
 }
 
 /*@C
-  PetscObjectReference - Indicates to any `PetscObject` that it is being
+  PetscObjectReference - Indicates to a `PetscObject` that it is being
   referenced by another `PetscObject`. This increases the reference
   count for that object by one.
 
@@ -584,7 +592,7 @@ PetscErrorCode PetscObjectDestroyOptionsHandlers(PetscObject obj)
 
   Input Parameter:
 . obj - the PETSc object. This must be cast with (`PetscObject`), for example,
-         `PetscObjectReference`((`PetscObject`)mat);
+        `PetscObjectReference`((`PetscObject`)mat);
 
   Level: advanced
 
@@ -600,14 +608,13 @@ PetscErrorCode PetscObjectReference(PetscObject obj)
 }
 
 /*@C
-  PetscObjectGetReference - Gets the current reference count for
-  any PETSc object.
+  PetscObjectGetReference - Gets the current reference count for a PETSc object.
 
   Not Collective
 
   Input Parameter:
 . obj - the PETSc object; this must be cast with (`PetscObject`), for example,
-         `PetscObjectGetReference`((`PetscObject`)mat,&cnt);
+        `PetscObjectGetReference`((`PetscObject`)mat,&cnt);
 
   Output Parameter:
 . cnt - the reference count
@@ -634,12 +641,12 @@ PetscErrorCode PetscObjectGetReference(PetscObject obj, PetscInt *cnt)
 
   Input Parameter:
 . obj - the PETSc object; this must be cast with (`PetscObject`), for example,
-         `PetscObjectDereference`((`PetscObject`)mat);
+        `PetscObjectDereference`((`PetscObject`)mat);
 
   Level: advanced
 
   Note:
-  `PetscObjectDestroy()` sets the obj pointer to null after the call, this routine does not.
+  `PetscObjectDestroy()` sets the `obj` pointer to `NULL` after the call, this routine does not.
 
 .seealso: `PetscObjectCompose()`, `PetscObjectReference()`, `PetscObjectDestroy()`, `PetscObject`
 @*/
@@ -683,10 +690,10 @@ PetscErrorCode PetscObjectRemoveReference(PetscObject obj, const char name[])
   The second objects reference count is automatically increased by one when it is
   composed.
 
-  Replaces any previous object that had the same name.
+  Replaces any previous object that had been composed with the same name.
 
-  If ptr is null and name has previously been composed using an object, then that
-  entry is removed from the obj.
+  If `ptr` is `NULL` and `name` has previously been composed using an object, then that
+  entry is removed from `obj`.
 
   `PetscObjectCompose()` can be used with any PETSc object (such as
   `Mat`, `Vec`, `KSP`, `SNES`, etc.) or any user-provided object.
@@ -721,8 +728,7 @@ PetscErrorCode PetscObjectCompose(PetscObject obj, const char name[], PetscObjec
   Not Collective
 
   Input Parameters:
-+ obj  - the PETSc object
-         Thus must be cast with a (`PetscObject`), for example,
++ obj  - the PETSc object. It must be cast with a (`PetscObject`), for example,
          `PetscObjectCompose`((`PetscObject`)mat,...);
 . name - name associated with child object
 - ptr  - the other PETSc object associated with the PETSc object, this must be
@@ -999,7 +1005,7 @@ PetscErrorCode PetscObjectSetFromOptions(PetscObject obj)
 }
 
 /*@
-  PetscObjectSetUp - Sets up the internal data structures for the later use.
+  PetscObjectSetUp - Sets up the internal data structures for later use of the object
 
   Collective
 

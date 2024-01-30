@@ -16,10 +16,10 @@
   Level: advanced
 
   Notes:
-  The output of the subviewers is synchronized against the original viewer. For example, if a
+  The output of the subviewers is synchronized against the original `viewer`. For example, if a
   viewer on two MPI processes is decomposed into two subviewers, the output from the first viewer is
-  all printed before the output from the second viewer. You must call `PetscViewerFlush()` after
-  the call to `PetscViewerRestoreSubViewer()`.
+  all printed before the output from the second viewer. You must call `PetscViewerFlush()` on
+  `viewer` after the call to `PetscViewerRestoreSubViewer()`.
 
   Call `PetscViewerRestoreSubViewer()` to destroy this `PetscViewer`, NOT `PetscViewerDestroy()`
 
@@ -27,7 +27,7 @@
   parallel object. For example `PCView()` on a `PCBJACOBI` could use this to obtain a
   `PetscViewer` that is used with the sequential `KSP` on one block of the preconditioner.
 
-  `PetscViewerFlush()` is run automatically with `PetscViewerRestoreSubViewer()`
+  `PetscViewerFlush()` on the subviewer is run automatically with `PetscViewerRestoreSubViewer()`
 
   `PETSCVIEWERDRAW` and `PETSCVIEWERBINARY` only support returning a singleton viewer on MPI rank 0,
   all other ranks will return a `NULL` viewer
@@ -72,7 +72,7 @@ PetscErrorCode PetscViewerGetSubViewer(PetscViewer viewer, MPI_Comm comm, PetscV
   Level: advanced
 
   Note:
-  Automatically runs `PetscViewerFlush()` on the outter viewer
+  Automatically runs `PetscViewerFlush()` on `outviewer`
 
 .seealso: [](sec_viewers), `PetscViewer`, `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`, `PetscViewerGetSubViewer()`,
           `PetscViewerFlush()`

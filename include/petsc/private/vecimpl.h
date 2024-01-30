@@ -185,6 +185,7 @@ PETSC_EXTERN PetscLogEvent VEC_MTDot;
 PETSC_EXTERN PetscLogEvent VEC_Norm;
 PETSC_EXTERN PetscLogEvent VEC_Normalize;
 PETSC_EXTERN PetscLogEvent VEC_Scale;
+PETSC_EXTERN PetscLogEvent VEC_Shift;
 PETSC_EXTERN PetscLogEvent VEC_Copy;
 PETSC_EXTERN PetscLogEvent VEC_Set;
 PETSC_EXTERN PetscLogEvent VEC_AXPY;
@@ -240,7 +241,7 @@ PETSC_INTERN PetscErrorCode VecView_Binary(Vec, PetscViewer);
 
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecLoad_Default(Vec, PetscViewer);
 
-PETSC_INTERN PetscInt NormIds[7]; /* map from NormType to IDs used to cache/retrieve values of norms */
+PETSC_INTERN PetscInt NormIds[4]; /* map from NormType to IDs used to cache/retrieve values of norms, 1_AND_2 is excluded */
 
 PETSC_INTERN PetscErrorCode VecStashCreate_Private(MPI_Comm, PetscInt, VecStash *);
 PETSC_INTERN PetscErrorCode VecStashDestroy_Private(VecStash *);
@@ -383,6 +384,8 @@ PETSC_INTERN PetscErrorCode VecConvert_MPI_MPIKokkos_inplace(Vec);
 #endif
 
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecCreateWithLayout_Private(PetscLayout, Vec *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecCreateSeqWithLayoutAndArray_Private(PetscLayout, const PetscScalar *, Vec *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecCreateMPIWithLayoutAndArray_Private(PetscLayout, const PetscScalar *, Vec *);
 
 /* std::upper_bound(): Given a sorted array, return index of the first element in range [first,last) whose value
    is greater than value, or last if there is no such element.

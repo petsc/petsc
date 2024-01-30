@@ -6,3 +6,19 @@ Element #2
 0: 7 15 8 20 2 22 10 17 11
 Element #3
 0: 8 16 9 22 3 24 11 18 12
+========= Face restriction; marker: 4 ========
+num_elem: 2, elem_size: 3, num_dof:  25
+0: 7 19 4
+0: 10 20 7
+========= Face restriction; marker: 2 ========
+num_elem: 2, elem_size: 3, num_dof:  25
+0: 6 23 9
+0: 9 24 12
+========= Face restriction; marker: 1 ========
+num_elem: 2, elem_size: 3, num_dof:  25
+0: 4 13 5
+0: 5 14 6
+========= Face restriction; marker: 3 ========
+num_elem: 2, elem_size: 3, num_dof:  25
+0: 11 17 10
+0: 12 18 11

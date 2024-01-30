@@ -82,7 +82,7 @@ int main(int argc, char **argv)
       args: -vec_type hip
     test:
       suffix: kokkos
-      requires: kokkos, kokkos_kernels
+      requires: kokkos kokkos_kernels
       args: -vec_type kokkos
 
 TEST*/

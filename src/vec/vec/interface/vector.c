@@ -8,7 +8,7 @@
 /* Logging support */
 PetscClassId  VEC_CLASSID;
 PetscLogEvent VEC_View, VEC_Max, VEC_Min, VEC_Dot, VEC_MDot, VEC_TDot;
-PetscLogEvent VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY;
+PetscLogEvent VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Shift, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY;
 PetscLogEvent VEC_MTDot, VEC_MAXPY, VEC_Swap, VEC_AssemblyBegin, VEC_ScatterBegin, VEC_ScatterEnd;
 PetscLogEvent VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_SetPreallocateCOO, VEC_SetValuesCOO;
 PetscLogEvent VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceCommunication, VEC_ReduceBegin, VEC_ReduceEnd, VEC_Ops;
@@ -1032,8 +1032,6 @@ PetscErrorCode VecSetOption(Vec x, VecOption op, PetscBool flag)
 PetscErrorCode VecDuplicateVecs_Default(Vec w, PetscInt m, Vec *V[])
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(w, VEC_CLASSID, 1);
-  PetscAssertPointer(V, 3);
   PetscCheck(m > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "m must be > 0: m = %" PetscInt_FMT, m);
   PetscCall(PetscMalloc1(m, V));
   for (PetscInt i = 0; i < m; i++) PetscCall(VecDuplicate(w, *V + i));

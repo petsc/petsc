@@ -749,17 +749,8 @@ PetscErrorCode DMDestroy(DM *dm)
   PetscCall(PetscSFDestroy(&(*dm)->sectionSF));
   if ((*dm)->sfNatural) PetscCall(PetscSFDestroy(&(*dm)->sfNatural));
   PetscCall(PetscObjectDereference((PetscObject)(*dm)->sfMigration));
-  {
-    Vec     *auxData;
-    PetscInt n, i, off = 0;
-
-    PetscCall(PetscHMapAuxGetSize((*dm)->auxData, &n));
-    PetscCall(PetscMalloc1(n, &auxData));
-    PetscCall(PetscHMapAuxGetVals((*dm)->auxData, &off, auxData));
-    for (i = 0; i < n; ++i) PetscCall(VecDestroy(&auxData[i]));
-    PetscCall(PetscFree(auxData));
-    PetscCall(PetscHMapAuxDestroy(&(*dm)->auxData));
-  }
+  PetscCall(DMClearAuxiliaryVec(*dm));
+  PetscCall(PetscHMapAuxDestroy(&(*dm)->auxData));
   if ((*dm)->coarseMesh && (*dm)->coarseMesh->fineMesh == *dm) PetscCall(DMSetFineDM((*dm)->coarseMesh, NULL));
 
   PetscCall(DMDestroy(&(*dm)->coarseMesh));
@@ -781,7 +772,7 @@ PetscErrorCode DMDestroy(DM *dm)
   /* if memory was published with SAWs then destroy it */
   PetscCall(PetscObjectSAWsViewOff((PetscObject)*dm));
 
-  if ((*dm)->ops->destroy) PetscCall((*(*dm)->ops->destroy)(*dm));
+  PetscTryTypeMethod(*dm, destroy);
   PetscCall(DMMonitorCancel(*dm));
   PetscCall(DMCeedDestroy(&(*dm)->dmceed));
 #ifdef PETSC_HAVE_LIBCEED
@@ -842,6 +833,9 @@ PetscErrorCode DMSetUp(DM dm)
 . -dm_plex_simplex <bool>                            - `PETSC_TRUE` for simplex elements, `PETSC_FALSE` for tensor elements
 . -dm_plex_interpolate <bool>                        - `PETSC_TRUE` turns on topological interpolation (creating edges and faces)
 . -dm_plex_scale <sc>                                - Scale factor for mesh coordinates
+. -dm_coord_remap <bool>                             - Map coordinates using a function
+. -dm_coord_map <mapname>                            - Select a builtin coordinate map
+. -dm_coord_map_params <p0,p1,p2,...>                - Set coordinate mapping parameters
 . -dm_plex_box_faces <m,n,p>                         - Number of faces along each dimension
 . -dm_plex_box_lower <x,y,z>                         - Specify lower-left-bottom coordinates for the box
 . -dm_plex_box_upper <x,y,z>                         - Specify upper-right-top coordinates for the box
@@ -2138,6 +2132,7 @@ PetscErrorCode DMCreateSuperDM(DM dms[], PetscInt n, IS **is, DM *superdm)
   PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of DMs must be nonnegative: %" PetscInt_FMT, n);
   if (n) {
     DM dm = dms[0];
+    PetscCheck(dm->ops->createsuperdm, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "No method createsuperdm for DM of type %s\n", ((PetscObject)dm)->type_name);
     PetscCall((*dm->ops->createsuperdm)(dms, n, is, superdm));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2827,7 +2822,7 @@ PetscErrorCode DMGlobalToLocalBegin(DM dm, Vec g, InsertMode mode, Vec l)
     PetscCall(VecRestoreArrayAndMemType(l, &lArray));
     PetscCall(VecRestoreArrayReadAndMemType(g, &gArray));
   } else {
-    PetscCall((*dm->ops->globaltolocalbegin)(dm, g, mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode), l));
+    PetscUseTypeMethod(dm, globaltolocalbegin, g, mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode), l);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2873,7 +2868,7 @@ PetscErrorCode DMGlobalToLocalEnd(DM dm, Vec g, InsertMode mode, Vec l)
     PetscCall(VecRestoreArrayReadAndMemType(g, &gArray));
     if (transform) PetscCall(DMPlexGlobalToLocalBasis(dm, l));
   } else {
-    PetscCall((*dm->ops->globaltolocalend)(dm, g, mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode), l));
+    PetscUseTypeMethod(dm, globaltolocalend, g, mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode), l);
   }
   PetscCall(DMGlobalToLocalHook_Constraints(dm, g, mode, l, NULL));
   for (link = dm->gtolhook; link; link = link->next) {
@@ -3128,7 +3123,7 @@ PetscErrorCode DMLocalToGlobalBegin(DM dm, Vec l, InsertMode mode, Vec g)
       PetscCall(VecRestoreArrayRead(l, &lArray));
     }
   } else {
-    PetscCall((*dm->ops->localtoglobalbegin)(dm, l, mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode), g));
+    PetscUseTypeMethod(dm, localtoglobalbegin, l, mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode), g);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3197,7 +3192,7 @@ PetscErrorCode DMLocalToGlobalEnd(DM dm, Vec l, InsertMode mode, Vec g)
     PetscCall(VecRestoreArrayAndMemType(g, &gArray));
   } else if (s && isInsert) {
   } else {
-    PetscCall((*dm->ops->localtoglobalend)(dm, l, mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode), g));
+    PetscUseTypeMethod(dm, localtoglobalend, l, mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode), g);
   }
   for (link = dm->ltoghook; link; link = link->next) {
     if (link->endhook) PetscCall((*link->endhook)(dm, g, mode, l, link->ctx));
@@ -3610,14 +3605,12 @@ PetscErrorCode DMRefineHierarchy(DM dm, PetscInt nlevels, DM dmf[])
   PetscCheck(nlevels >= 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "nlevels cannot be negative");
   if (nlevels == 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscAssertPointer(dmf, 3);
-  if (dm->ops->refinehierarchy) {
-    PetscUseTypeMethod(dm, refinehierarchy, nlevels, dmf);
-  } else if (dm->ops->refine) {
+  if (dm->ops->refine && !dm->ops->refinehierarchy) {
     PetscInt i;
 
     PetscCall(DMRefine(dm, PetscObjectComm((PetscObject)dm), &dmf[0]));
     for (i = 1; i < nlevels; i++) PetscCall(DMRefine(dmf[i - 1], PetscObjectComm((PetscObject)dm), &dmf[i]));
-  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "No RefineHierarchy for this DM yet");
+  } else PetscUseTypeMethod(dm, refinehierarchy, nlevels, dmf);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3644,14 +3637,12 @@ PetscErrorCode DMCoarsenHierarchy(DM dm, PetscInt nlevels, DM dmc[])
   PetscCheck(nlevels >= 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "nlevels cannot be negative");
   if (nlevels == 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscAssertPointer(dmc, 3);
-  if (dm->ops->coarsenhierarchy) {
-    PetscUseTypeMethod(dm, coarsenhierarchy, nlevels, dmc);
-  } else if (dm->ops->coarsen) {
+  if (dm->ops->coarsen && !dm->ops->coarsenhierarchy) {
     PetscInt i;
 
     PetscCall(DMCoarsen(dm, PetscObjectComm((PetscObject)dm), &dmc[0]));
     for (i = 1; i < nlevels; i++) PetscCall(DMCoarsen(dmc[i - 1], PetscObjectComm((PetscObject)dm), &dmc[i]));
-  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "No CoarsenHierarchy for this DM yet");
+  } else PetscUseTypeMethod(dm, coarsenhierarchy, nlevels, dmc);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -8068,7 +8059,7 @@ PetscErrorCode DMProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (**f
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(localX, VEC_CLASSID, 6);
-  PetscCall((dm->ops->projectfunctionlocal)(dm, time, funcs, ctxs, mode, localX));
+  PetscUseTypeMethod(dm, projectfunctionlocal, time, funcs, ctxs, mode, localX);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -8166,7 +8157,7 @@ PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(localX, VEC_CLASSID, 11);
-  PetscCall((dm->ops->projectfunctionlabellocal)(dm, time, label, numIds, ids, Nc, comps, funcs, ctxs, mode, localX));
+  PetscUseTypeMethod(dm, projectfunctionlabellocal, time, label, numIds, ids, Nc, comps, funcs, ctxs, mode, localX);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -8227,7 +8218,7 @@ PetscErrorCode DMProjectFieldLocal(DM dm, PetscReal time, Vec localU, void (**fu
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (localU) PetscValidHeaderSpecific(localU, VEC_CLASSID, 3);
   PetscValidHeaderSpecific(localX, VEC_CLASSID, 6);
-  PetscCall((dm->ops->projectfieldlocal)(dm, time, localU, funcs, mode, localX));
+  PetscUseTypeMethod(dm, projectfieldlocal, time, localU, funcs, mode, localX);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -8292,7 +8283,7 @@ PetscErrorCode DMProjectFieldLabelLocal(DM dm, PetscReal time, DMLabel label, Pe
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(localU, VEC_CLASSID, 8);
   PetscValidHeaderSpecific(localX, VEC_CLASSID, 11);
-  PetscCall((dm->ops->projectfieldlabellocal)(dm, time, label, numIds, ids, Nc, comps, localU, funcs, mode, localX));
+  PetscUseTypeMethod(dm, projectfieldlabellocal, time, label, numIds, ids, Nc, comps, localU, funcs, mode, localX);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -8434,7 +8425,7 @@ PetscErrorCode DMProjectBdFieldLabelLocal(DM dm, PetscReal time, DMLabel label, 
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(localU, VEC_CLASSID, 8);
   PetscValidHeaderSpecific(localX, VEC_CLASSID, 11);
-  PetscCall((dm->ops->projectbdfieldlabellocal)(dm, time, label, numIds, ids, Nc, comps, localU, funcs, mode, localX));
+  PetscUseTypeMethod(dm, projectbdfieldlabellocal, time, label, numIds, ids, Nc, comps, localU, funcs, mode, localX);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -8467,7 +8458,7 @@ PetscErrorCode DMComputeL2Diff(DM dm, PetscReal time, PetscErrorCode (**funcs)(P
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(X, VEC_CLASSID, 5);
-  PetscCall((dm->ops->computel2diff)(dm, time, funcs, ctxs, X, diff));
+  PetscUseTypeMethod(dm, computel2diff, time, funcs, ctxs, X, diff);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -8501,7 +8492,7 @@ PetscErrorCode DMComputeL2GradientDiff(DM dm, PetscReal time, PetscErrorCode (**
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(X, VEC_CLASSID, 5);
-  PetscCall((dm->ops->computel2gradientdiff)(dm, time, funcs, ctxs, X, n, diff));
+  PetscUseTypeMethod(dm, computel2gradientdiff, time, funcs, ctxs, X, n, diff);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -8534,7 +8525,7 @@ PetscErrorCode DMComputeL2FieldDiff(DM dm, PetscReal time, PetscErrorCode (**fun
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(X, VEC_CLASSID, 5);
-  PetscCall((dm->ops->computel2fielddiff)(dm, time, funcs, ctxs, X, diff));
+  PetscUseTypeMethod(dm, computel2fielddiff, time, funcs, ctxs, X, diff);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -8561,7 +8552,7 @@ PetscErrorCode DMGetNeighbors(DM dm, PetscInt *nranks, const PetscMPIInt *ranks[
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall((dm->ops->getneighbors)(dm, nranks, ranks));
+  PetscUseTypeMethod(dm, getneighbors, nranks, ranks);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -8997,7 +8988,7 @@ PetscErrorCode DMComputeError(DM dm, Vec sol, PetscReal errors[], Vec *errorVec)
 
   Level: advanced
 
-.seealso: [](ch_dmbase), `DM`, `DMSetAuxiliaryVec()`, `DMGetAuxiliaryLabels()`, `DMGetAuxiliaryVec()`
+.seealso: [](ch_dmbase), `DM`, `DMClearAuxiliaryVec()`, `DMSetAuxiliaryVec()`, `DMGetAuxiliaryLabels()`, `DMGetAuxiliaryVec()`
 @*/
 PetscErrorCode DMGetNumAuxiliaryVec(DM dm, PetscInt *numAux)
 {
@@ -9026,7 +9017,7 @@ PetscErrorCode DMGetNumAuxiliaryVec(DM dm, PetscInt *numAux)
   Note:
   If no auxiliary vector is found for this (label, value), (NULL, 0, 0) is checked as well.
 
-.seealso: [](ch_dmbase), `DM`, `DMSetAuxiliaryVec()`, `DMGetNumAuxiliaryVec()`, `DMGetAuxiliaryLabels()`
+.seealso: [](ch_dmbase), `DM`, `DMClearAuxiliaryVec()`, `DMSetAuxiliaryVec()`, `DMGetNumAuxiliaryVec()`, `DMGetAuxiliaryLabels()`
 @*/
 PetscErrorCode DMGetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, PetscInt part, Vec *aux)
 {
@@ -9059,7 +9050,7 @@ PetscErrorCode DMGetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, PetscInt 
 
   Level: advanced
 
-.seealso: [](ch_dmbase), `DM`, `DMGetAuxiliaryVec()`, `DMGetAuxiliaryLabels()`, `DMCopyAuxiliaryVec()`
+.seealso: [](ch_dmbase), `DM`, `DMClearAuxiliaryVec()`, `DMGetAuxiliaryVec()`, `DMGetAuxiliaryLabels()`, `DMCopyAuxiliaryVec()`
 @*/
 PetscErrorCode DMSetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, PetscInt part, Vec aux)
 {
@@ -9074,9 +9065,9 @@ PetscErrorCode DMSetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, PetscInt 
   key.part  = part;
   PetscCall(PetscHMapAuxGet(dm->auxData, key, &old));
   PetscCall(PetscObjectReference((PetscObject)aux));
-  PetscCall(PetscObjectDereference((PetscObject)old));
   if (!aux) PetscCall(PetscHMapAuxDel(dm->auxData, key));
   else PetscCall(PetscHMapAuxSet(dm->auxData, key, aux));
+  PetscCall(VecDestroy(&old));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -9098,7 +9089,7 @@ PetscErrorCode DMSetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, PetscInt 
   Note:
   The arrays passed in must be at least as large as `DMGetNumAuxiliaryVec()`.
 
-.seealso: [](ch_dmbase), `DM`, `DMGetNumAuxiliaryVec()`, `DMGetAuxiliaryVec()`, `DMSetAuxiliaryVec()`, `DMCopyAuxiliaryVec()`
+.seealso: [](ch_dmbase), `DM`, `DMClearAuxiliaryVec()`, `DMGetNumAuxiliaryVec()`, `DMGetAuxiliaryVec()`, `DMSetAuxiliaryVec()`, `DMCopyAuxiliaryVec()`
 @*/
 PetscErrorCode DMGetAuxiliaryLabels(DM dm, DMLabel labels[], PetscInt values[], PetscInt parts[])
 {
@@ -9138,14 +9129,56 @@ PetscErrorCode DMGetAuxiliaryLabels(DM dm, DMLabel labels[], PetscInt values[], 
   Note:
   This is a shallow copy of the auxiliary vectors
 
-.seealso: [](ch_dmbase), `DM`, `DMGetNumAuxiliaryVec()`, `DMGetAuxiliaryVec()`, `DMSetAuxiliaryVec()`
+.seealso: [](ch_dmbase), `DM`, `DMClearAuxiliaryVec()`, `DMGetNumAuxiliaryVec()`, `DMGetAuxiliaryVec()`, `DMSetAuxiliaryVec()`
 @*/
 PetscErrorCode DMCopyAuxiliaryVec(DM dm, DM dmNew)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(dmNew, DM_CLASSID, 2);
+  if (dm == dmNew) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(DMClearAuxiliaryVec(dmNew));
+
   PetscCall(PetscHMapAuxDestroy(&dmNew->auxData));
   PetscCall(PetscHMapAuxDuplicate(dm->auxData, &dmNew->auxData));
+  {
+    Vec     *auxData;
+    PetscInt n, i, off = 0;
+
+    PetscCall(PetscHMapAuxGetSize(dmNew->auxData, &n));
+    PetscCall(PetscMalloc1(n, &auxData));
+    PetscCall(PetscHMapAuxGetVals(dmNew->auxData, &off, auxData));
+    for (i = 0; i < n; ++i) PetscCall(PetscObjectReference((PetscObject)auxData[i]));
+    PetscCall(PetscFree(auxData));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMClearAuxiliaryVec - Destroys the auxiliary vector information and creates a new empty one
+
+  Not Collective
+
+  Input Parameter:
+. dm - The `DM`
+
+  Level: advanced
+
+.seealso: [](ch_dmbase), `DM`, `DMCopyAuxiliaryVec()`, `DMGetNumAuxiliaryVec()`, `DMGetAuxiliaryVec()`, `DMSetAuxiliaryVec()`
+@*/
+PetscErrorCode DMClearAuxiliaryVec(DM dm)
+{
+  Vec     *auxData;
+  PetscInt n, i, off = 0;
+
+  PetscFunctionBegin;
+  PetscCall(PetscHMapAuxGetSize(dm->auxData, &n));
+  PetscCall(PetscMalloc1(n, &auxData));
+  PetscCall(PetscHMapAuxGetVals(dm->auxData, &off, auxData));
+  for (i = 0; i < n; ++i) PetscCall(VecDestroy(&auxData[i]));
+  PetscCall(PetscFree(auxData));
+  PetscCall(PetscHMapAuxDestroy(&dm->auxData));
+  PetscCall(PetscHMapAuxCreate(&dm->auxData));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -9168,7 +9201,7 @@ PetscErrorCode DMCopyAuxiliaryVec(DM dm, DM dmNew)
   Note:
   An arrangement is a face order combined with an orientation for each face
 
-  Each orientation (transformation) is labeled with an integer from negative `DMPolytopeTypeGetNumArrangments(ct)`/2 to `DMPolytopeTypeGetNumArrangments(ct)`/2
+  Each orientation (transformation) is labeled with an integer from negative `DMPolytopeTypeGetNumArrangements(ct)`/2 to `DMPolytopeTypeGetNumArrangements(ct)`/2
   that labels each arrangement (face ordering plus orientation for each face).
 
   See `DMPolytopeMatchVertexOrientation()` to find a new vertex orientation that takes the source vertex arrangement to the target vertex arrangement
@@ -9178,7 +9211,7 @@ PetscErrorCode DMCopyAuxiliaryVec(DM dm, DM dmNew)
 PetscErrorCode DMPolytopeMatchOrientation(DMPolytopeType ct, const PetscInt sourceCone[], const PetscInt targetCone[], PetscInt *ornt, PetscBool *found)
 {
   const PetscInt cS = DMPolytopeTypeGetConeSize(ct);
-  const PetscInt nO = DMPolytopeTypeGetNumArrangments(ct) / 2;
+  const PetscInt nO = DMPolytopeTypeGetNumArrangements(ct) / 2;
   PetscInt       o, c;
 
   PetscFunctionBegin;
@@ -9188,7 +9221,7 @@ PetscErrorCode DMPolytopeMatchOrientation(DMPolytopeType ct, const PetscInt sour
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   for (o = -nO; o < nO; ++o) {
-    const PetscInt *arr = DMPolytopeTypeGetArrangment(ct, o);
+    const PetscInt *arr = DMPolytopeTypeGetArrangement(ct, o);
 
     for (c = 0; c < cS; ++c)
       if (sourceCone[arr[c * 2]] != targetCone[c]) break;
@@ -9253,17 +9286,17 @@ PetscErrorCode DMPolytopeGetOrientation(DMPolytopeType ct, const PetscInt source
   Note:
   An arrangement is a vertex order
 
-  Each orientation (transformation) is labeled with an integer from negative `DMPolytopeTypeGetNumArrangments(ct)`/2 to `DMPolytopeTypeGetNumArrangments(ct)`/2
+  Each orientation (transformation) is labeled with an integer from negative `DMPolytopeTypeGetNumArrangements(ct)`/2 to `DMPolytopeTypeGetNumArrangements(ct)`/2
   that labels each arrangement (vertex ordering).
 
   See `DMPolytopeMatchOrientation()` to find a new face orientation that takes the source face arrangement to the target face arrangement
 
-.seealso: [](ch_dmbase), `DM`, `DMPolytopeType`, `DMPolytopeGetOrientation()`, `DMPolytopeMatchOrientation()`, `DMPolytopeTypeGetNumVertices()`, `DMPolytopeTypeGetVertexArrangment()`
+.seealso: [](ch_dmbase), `DM`, `DMPolytopeType`, `DMPolytopeGetOrientation()`, `DMPolytopeMatchOrientation()`, `DMPolytopeTypeGetNumVertices()`, `DMPolytopeTypeGetVertexArrangement()`
 @*/
 PetscErrorCode DMPolytopeMatchVertexOrientation(DMPolytopeType ct, const PetscInt sourceVert[], const PetscInt targetVert[], PetscInt *ornt, PetscBool *found)
 {
   const PetscInt cS = DMPolytopeTypeGetNumVertices(ct);
-  const PetscInt nO = DMPolytopeTypeGetNumArrangments(ct) / 2;
+  const PetscInt nO = DMPolytopeTypeGetNumArrangements(ct) / 2;
   PetscInt       o, c;
 
   PetscFunctionBegin;
@@ -9273,7 +9306,7 @@ PetscErrorCode DMPolytopeMatchVertexOrientation(DMPolytopeType ct, const PetscIn
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   for (o = -nO; o < nO; ++o) {
-    const PetscInt *arr = DMPolytopeTypeGetVertexArrangment(ct, o);
+    const PetscInt *arr = DMPolytopeTypeGetVertexArrangement(ct, o);
 
     for (c = 0; c < cS; ++c)
       if (sourceVert[arr[c]] != targetVert[c]) break;

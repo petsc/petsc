@@ -100,18 +100,14 @@ static PetscErrorCode MatColoringApply_SL(MatColoring mc, ISColoring *iscoloring
 }
 
 /*MC
-  MATCOLORINGSL - implements the SL (smallest last) coloring routine
+  MATCOLORINGSL - implements the SL (smallest last) coloring routine {cite}`more:coloring`
 
    Level: beginner
 
    Notes:
-    Supports only distance two colorings (for computation of Jacobians)
+   Supports only distance two colorings (for computation of Jacobians/Hessians)
 
-          This is a sequential algorithm
-
-   References:
-.  * - TF Coleman and J More, "Estimation of sparse Jacobian matrices and graph coloring," SIAM Journal on Numerical Analysis, vol. 20, no. 1,
-   pp. 187-209, 1983.
+   This is a sequential algorithm
 
 .seealso: `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`, `MATCOLORINGGREEDY`, `MatColoringType`
 M*/
@@ -207,18 +203,14 @@ static PetscErrorCode MatColoringApply_LF(MatColoring mc, ISColoring *iscoloring
 }
 
 /*MC
-  MATCOLORINGLF - implements the LF (largest first) coloring routine
+  MATCOLORINGLF - implements the LF (largest first) coloring routine {cite}`more:coloring`
 
    Level: beginner
 
    Notes:
-    Supports only distance two colorings (for computation of Jacobians)
+   Supports only distance two colorings (for computation of Jacobians/Hessians)
 
-    This is a sequential algorithm
-
-   References:
-.  * - TF Coleman and J More, "Estimation of sparse Jacobian matrices and graph coloring," SIAM Journal on Numerical Analysis, vol. 20, no. 1,
-   pp. 187-209, 1983.
+   This is a sequential algorithm
 
 .seealso: `MatColoringTpe`, `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`, `MATCOLORINGGREEDY`, `MatColoringType`
 M*/
@@ -312,18 +304,14 @@ static PetscErrorCode MatColoringApply_ID(MatColoring mc, ISColoring *iscoloring
 }
 
 /*MC
-  MATCOLORINGID - implements the ID (incidence degree) coloring routine
+  MATCOLORINGID - implements the ID (incidence degree) coloring routine {cite}`more:coloring`
 
    Level: beginner
 
    Notes:
-    Supports only distance two colorings (for computation of Jacobians)
+   Supports only distance two colorings (for computation of Jacobians/Hessians)
 
-          This is a sequential algorithm
-
-   References:
-.  * - TF Coleman and J More, "Estimation of sparse Jacobian matrices and graph coloring," SIAM Journal on Numerical Analysis, vol. 20, no. 1,
-   pp. 187-209, 1983.
+   This is a sequential algorithm
 
 .seealso: `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`, `MATCOLORINGGREEDY`, `MatColoringType`
 M*/

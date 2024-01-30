@@ -10,6 +10,7 @@ import subprocess
 import re
 import datetime
 import shutil
+import time
 
 sys.path.append(os.getcwd())
 sys.path.append(os.path.abspath('./ext'))
@@ -85,6 +86,9 @@ bibtex_bibfiles = ['petsc.bib']
 myst_enable_extensions = ["fieldlist", "dollarmath", "amsmath", "deflist"]
 
 remove_from_toctrees = ['manualpages/*/[A-Z]*','changes/2*','changes/3*']
+
+# prevents incorrect WARNING: duplicate citation for key "xxxx" warnings
+suppress_warnings = ['bibtex.duplicate_citation']
 
 # -- Options for HTML output ---------------------------------------------------
 
@@ -173,7 +177,6 @@ r'''
     'tableofcontents' : r''
 }
 
-
 # -- Setup and event callbacks -------------------------------------------------
 
 def setup(app):
@@ -182,12 +185,21 @@ def setup(app):
 
 
 def builder_init_handler(app):
+    global xtime
     if app.builder.name.endswith('html'):
         _build_classic_docs(app, 'pre')
         _update_htmlmap_links(app)
+        ptype = 'html'
+    else: ptype = 'pdf'
+    print("============================================")
+    print("    Running Sphinx on PETSc " + ptype)
+    xtime = time.clock_gettime(time.CLOCK_REALTIME)
 
 
 def build_finished_handler(app, exception):
+    global xtime
+    print("Time: "+str(time.clock_gettime(time.CLOCK_REALTIME) - xtime))
+    print("============================================")
     if app.builder.name.endswith('html'):
         _build_classic_docs(app, 'post')
         build_petsc4py_docs(app)
@@ -276,7 +288,7 @@ def build_petsc4py_docs(app):
     print(command)
     x = time.clock_gettime(time.CLOCK_REALTIME)
     subprocess.run(command, cwd=petsc_dir, check=True)
-    print("Time: "+str(time.clock_gettime(time.CLOCK_REALTIME) - x))
+    print("End building library for petsc4py docs Time: "+str(time.clock_gettime(time.CLOCK_REALTIME) - x))
     print('==============================================')
 
     command = ['make', 'website',
@@ -288,5 +300,5 @@ def build_petsc4py_docs(app):
     print(command)
     x = time.clock_gettime(time.CLOCK_REALTIME)
     subprocess.run(command, cwd=os.path.join(petsc_dir,'src','binding','petsc4py'), check=True)
-    print("Time: "+str(time.clock_gettime(time.CLOCK_REALTIME) - x))
+    print("End petsc4py docs Time: "+str(time.clock_gettime(time.CLOCK_REALTIME) - x))
     print('============================================')

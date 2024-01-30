@@ -1,4 +1,4 @@
-#include "petsc/private/sfimpl.h"
+#include <petsc/private/sfimpl.h>
 #include <../src/vec/is/sf/impls/basic/sfpack.h>
 #include <../src/vec/is/sf/impls/basic/sfbasic.h>
 
@@ -926,13 +926,11 @@ static PetscErrorCode PetscSFLinkPackRootData_Private(PetscSF sf, PetscSFLink li
   PetscSFPackOpt opt                                                                                              = NULL;
 
   PetscFunctionBegin;
-  PetscCall(PetscLogEventBegin(PETSCSF_Pack, sf, 0, 0, 0));
   if (!link->rootdirect[scope]) { /* If rootdata works directly as rootbuf, skip packing */
     PetscCall(PetscSFLinkGetRootPackOptAndIndices(sf, link, rootmtype, scope, &count, &start, &opt, &rootindices));
     PetscCall(PetscSFLinkGetPack(link, rootmtype, &Pack));
     PetscCall((*Pack)(link, count, start, opt, rootindices, rootdata, link->rootbuf[scope][rootmtype]));
   }
-  PetscCall(PetscLogEventEnd(PETSCSF_Pack, sf, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -946,13 +944,11 @@ static PetscErrorCode PetscSFLinkPackLeafData_Private(PetscSF sf, PetscSFLink li
   PetscSFPackOpt opt                                                                                              = NULL;
 
   PetscFunctionBegin;
-  PetscCall(PetscLogEventBegin(PETSCSF_Pack, sf, 0, 0, 0));
   if (!link->leafdirect[scope]) { /* If leafdata works directly as rootbuf, skip packing */
     PetscCall(PetscSFLinkGetLeafPackOptAndIndices(sf, link, leafmtype, scope, &count, &start, &opt, &leafindices));
     PetscCall(PetscSFLinkGetPack(link, leafmtype, &Pack));
     PetscCall((*Pack)(link, count, start, opt, leafindices, leafdata, link->leafbuf[scope][leafmtype]));
   }
-  PetscCall(PetscLogEventEnd(PETSCSF_Pack, sf, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1170,7 +1166,7 @@ PetscErrorCode PetscSFLinkFetchAndOpLocal(PetscSF sf, PetscSFLink link, void *ro
 }
 
 /*
-  Create per-rank pack/unpack optimizations based on indice patterns
+  Create per-rank pack/unpack optimizations based on indices patterns
 
    Input Parameters:
   +  n       - Number of destination ranks

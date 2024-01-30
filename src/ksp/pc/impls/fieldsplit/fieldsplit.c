@@ -568,7 +568,7 @@ static PetscErrorCode MatGolubKahanComputeExplicitOperator(Mat A, Mat B, Mat C, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions, const char pre[], const char name[], const char *value[], PetscBool *flg);
+PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions, const char pre[], const char name[], const char *option[], const char *value[], PetscBool *flg);
 
 static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 {
@@ -891,7 +891,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       if (sp) PetscCall(MatSetNullSpace(jac->schur, sp));
 
       PetscCall(PetscSNPrintf(schurtestoption, sizeof(schurtestoption), "-fieldsplit_%s_inner_", ilink->splitname));
-      PetscCall(PetscOptionsFindPairPrefix_Private(((PetscObject)pc)->options, ((PetscObject)pc)->prefix, schurtestoption, NULL, &flg));
+      PetscCall(PetscOptionsFindPairPrefix_Private(((PetscObject)pc)->options, ((PetscObject)pc)->prefix, schurtestoption, NULL, NULL, &flg));
       if (flg) {
         DM  dmInner;
         KSP kspInner;
@@ -945,7 +945,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         }
       }
       PetscCall(PetscSNPrintf(schurtestoption, sizeof(schurtestoption), "-fieldsplit_%s_upper_", ilink->splitname));
-      PetscCall(PetscOptionsFindPairPrefix_Private(((PetscObject)pc)->options, ((PetscObject)pc)->prefix, schurtestoption, NULL, &flg));
+      PetscCall(PetscOptionsFindPairPrefix_Private(((PetscObject)pc)->options, ((PetscObject)pc)->prefix, schurtestoption, NULL, NULL, &flg));
       if (flg) {
         DM dmInner;
 
@@ -2048,7 +2048,7 @@ PetscErrorCode PCFieldSplitSetFields(PC pc, const char splitname[], PetscInt n, 
 
 /*@
   PCFieldSplitSetDiagUseAmat - set flag indicating whether to extract diagonal blocks from Amat (rather than Pmat) to build
-  the sub-matrices associated with each split. Where `KSPSetOperators`(ksp,Amat,Pmat)) was used to supply the operators.
+  the sub-matrices associated with each split. Where `KSPSetOperators`(ksp,Amat,Pmat) was used to supply the operators.
 
   Logically Collective
 
@@ -2078,7 +2078,7 @@ PetscErrorCode PCFieldSplitSetDiagUseAmat(PC pc, PetscBool flg)
 
 /*@
   PCFieldSplitGetDiagUseAmat - get the flag indicating whether to extract diagonal blocks from Amat (rather than Pmat) to build
-  the sub-matrices associated with each split.  Where `KSPSetOperators`(ksp,Amat,Pmat)) was used to supply the operators.
+  the sub-matrices associated with each split.  Where `KSPSetOperators`(ksp,Amat,Pmat) was used to supply the operators.
 
   Logically Collective
 
@@ -2108,7 +2108,7 @@ PetscErrorCode PCFieldSplitGetDiagUseAmat(PC pc, PetscBool *flg)
 
 /*@
   PCFieldSplitSetOffDiagUseAmat - set flag indicating whether to extract off-diagonal blocks from Amat (rather than Pmat) to build
-  the sub-matrices associated with each split.  Where `KSPSetOperators`(ksp,Amat,Pmat)) was used to supply the operators.
+  the sub-matrices associated with each split.  Where `KSPSetOperators`(ksp,Amat,Pmat) was used to supply the operators.
 
   Logically Collective
 
@@ -2138,7 +2138,7 @@ PetscErrorCode PCFieldSplitSetOffDiagUseAmat(PC pc, PetscBool flg)
 
 /*@
   PCFieldSplitGetOffDiagUseAmat - get the flag indicating whether to extract off-diagonal blocks from Amat (rather than Pmat) to build
-  the sub-matrices associated with each split.  Where `KSPSetOperators`(ksp,Amat,Pmat)) was used to supply the operators.
+  the sub-matrices associated with each split.  Where `KSPSetOperators`(ksp,Amat,Pmat) was used to supply the operators.
 
   Logically Collective
 
@@ -2395,7 +2395,7 @@ PetscErrorCode PCFieldSplitSchurGetSubKSP(PC pc, PetscInt *n, KSP *subksp[])
 }
 
 /*@
-  PCFieldSplitSetSchurPre -  Indicates from what operator the preconditioner is constructucted for the Schur complement.
+  PCFieldSplitSetSchurPre -  Indicates from what operator the preconditioner is constructed for the Schur complement.
   The default is the A11 matrix.
 
   Collective
@@ -2567,7 +2567,7 @@ static PetscErrorCode PCFieldSplitGetSchurPre_FieldSplit(PC pc, PCFieldSplitSchu
 }
 
 /*@
-  PCFieldSplitSetSchurFactType -  sets which blocks of the approximate block factorization to retain in the preconditioner
+  PCFieldSplitSetSchurFactType -  sets which blocks of the approximate block factorization to retain in the preconditioner {cite}`murphy2000note` and {cite}`ipsen2001note`
 
   Collective
 
@@ -2582,20 +2582,19 @@ static PetscErrorCode PCFieldSplitGetSchurPre_FieldSplit(PC pc, PCFieldSplitSchu
 
   Notes:
   The FULL factorization is
+.vb
+  (A   B)  = (1       0) (A   0) (1  Ainv*B)  = L D U
+  (C   E)    (C*Ainv  1) (0   S) (0       1)
+.vb
+  where S = E - C*Ainv*B. In practice, the full factorization is applied via block triangular solves with the grouping $L*(D*U)$. UPPER uses $D*U$, LOWER uses $L*D$,
+  and DIAG is the diagonal part with the sign of S flipped (because this makes the preconditioner positive definite for many formulations,
+  thus allowing the use of `KSPMINRES)`. Sign flipping of S can be turned off with `PCFieldSplitSetSchurScale()`.
 
+  If A and S are solved exactly
 .vb
-   (A   B)  = (1       0) (A   0) (1  Ainv*B)  = L D U
-   (C   E)    (C*Ainv  1) (0   S) (0       1)
-.vb
-    where S = E - C*Ainv*B. In practice, the full factorization is applied via block triangular solves with the grouping L*(D*U). UPPER uses D*U, LOWER uses L*D,
-    and DIAG is the diagonal part with the sign of S flipped (because this makes the preconditioner positive definite for many formulations, thus allowing the use of `KSPMINRES)`.
-    Sign flipping of S can be turned off with `PCFieldSplitSetSchurScale()`.
-
-    If A and S are solved exactly
-.vb
-      *) FULL factorization is a direct solver.
-      *) The preconditioned operator with LOWER or UPPER has all eigenvalues equal to 1 and minimal polynomial of degree 2, so `KSPGMRES` converges in 2 iterations.
-      *) With DIAG, the preconditioned operator has three distinct nonzero eigenvalues and minimal polynomial of degree at most 4, so `KSPGMRES` converges in at most 4 iterations.
+  *) FULL factorization is a direct solver.
+  *) The preconditioned operator with LOWER or UPPER has all eigenvalues equal to 1 and minimal polynomial of degree 2, so `KSPGMRES` converges in 2 iterations.
+  *) With DIAG, the preconditioned operator has three distinct nonzero eigenvalues and minimal polynomial of degree at most 4, so `KSPGMRES` converges in at most 4 iterations.
 .ve
 
   If the iteration count is very low, consider using `KSPFGMRES` or `KSPGCR` which can use one less preconditioner
@@ -2603,13 +2602,10 @@ static PetscErrorCode PCFieldSplitGetSchurPre_FieldSplit(PC pc, PCFieldSplitSchu
 
   For symmetric problems in which A is positive definite and S is negative definite, DIAG can be used with `KSPMINRES`.
 
-  A flexible method like `KSPFGMRES` or `KSPGCR` must be used if the fieldsplit preconditioner is nonlinear (e.g. a few iterations of a Krylov method is used to solve with A or S).
+  A flexible method like `KSPFGMRES` or `KSPGCR`, [](sec_flexibleksp), must be used if the fieldsplit preconditioner is nonlinear (e.g. a few iterations of a Krylov method is used to solve with A or S).
 
-  References:
-+   * - Murphy, Golub, and Wathen, A note on preconditioning indefinite linear systems, SIAM J. Sci. Comput., 21 (2000).
--   * - Ipsen, A note on preconditioning nonsymmetric matrices, SIAM J. Sci. Comput., 23 (2001).
-
-.seealso: [](sec_block_matrices), `PC`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSchurPreType`, `PCFieldSplitSetSchurScale()`
+.seealso: [](sec_block_matrices), `PC`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSchurPreType`, `PCFieldSplitSetSchurScale()`,
+          [](sec_flexibleksp)
 @*/
 PetscErrorCode PCFieldSplitSetSchurFactType(PC pc, PCFieldSplitSchurFactType ftype)
 {
@@ -2638,7 +2634,7 @@ static PetscErrorCode PCFieldSplitSetSchurFactType_FieldSplit(PC pc, PCFieldSpli
 - scale - scaling factor for the Schur complement
 
   Options Database Key:
-. -pc_fieldsplit_schur_scale - default is -1.0
+. -pc_fieldsplit_schur_scale <scale> - default is -1.0
 
   Level: intermediate
 
@@ -2695,7 +2691,7 @@ PetscErrorCode PCFieldSplitGetSchurBlocks(PC pc, Mat *A00, Mat *A01, Mat *A10, M
 }
 
 /*@
-  PCFieldSplitSetGKBTol -  Sets the solver tolerance for the generalized Golub-Kahan bidiagonalization preconditioner in `PCFIELDSPLIT`
+  PCFieldSplitSetGKBTol -  Sets the solver tolerance for the generalized Golub-Kahan bidiagonalization preconditioner {cite}`arioli2013` in `PCFIELDSPLIT`
 
   Collective
 
@@ -2704,17 +2700,14 @@ PetscErrorCode PCFieldSplitGetSchurBlocks(PC pc, Mat *A00, Mat *A01, Mat *A10, M
 - tolerance - the solver tolerance
 
   Options Database Key:
-. -pc_fieldsplit_gkb_tol - default is 1e-5
+. -pc_fieldsplit_gkb_tol <tolerance> - default is 1e-5
 
   Level: intermediate
 
   Note:
-  The generalized GKB algorithm uses a lower bound estimate of the error in energy norm as stopping criterion.
+  The generalized GKB algorithm {cite}`arioli2013` uses a lower bound estimate of the error in energy norm as stopping criterion.
   It stops once the lower bound estimate undershoots the required solver tolerance. Although the actual error might be bigger than
-  this estimate, the stopping criterion is satisfactory in practical cases [A13].
-
-  References:
-  [Ar13] Generalized Golub-Kahan bidiagonalization and stopping criteria, SIAM J. Matrix Anal. Appl., Vol. 34, No. 2, pp. 571-592, 2013.
+  this estimate, the stopping criterion is satisfactory in practical cases.
 
 .seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitSetGKBDelay()`, `PCFieldSplitSetGKBNu()`, `PCFieldSplitSetGKBMaxit()`
 @*/
@@ -2746,7 +2739,7 @@ static PetscErrorCode PCFieldSplitSetGKBTol_FieldSplit(PC pc, PetscReal toleranc
 - maxit - the maximum number of iterations
 
   Options Database Key:
-. -pc_fieldsplit_gkb_maxit - default is 100
+. -pc_fieldsplit_gkb_maxit <maxit> - default is 100
 
   Level: intermediate
 
@@ -2771,7 +2764,7 @@ static PetscErrorCode PCFieldSplitSetGKBMaxit_FieldSplit(PC pc, PetscInt maxit)
 }
 
 /*@
-  PCFieldSplitSetGKBDelay -  Sets the delay in the lower bound error estimate in the generalized Golub-Kahan bidiagonalization in `PCFIELDSPLIT`
+  PCFieldSplitSetGKBDelay -  Sets the delay in the lower bound error estimate in the generalized Golub-Kahan bidiagonalization {cite}`arioli2013` in `PCFIELDSPLIT`
   preconditioner.
 
   Collective
@@ -2781,17 +2774,16 @@ static PetscErrorCode PCFieldSplitSetGKBMaxit_FieldSplit(PC pc, PetscInt maxit)
 - delay - the delay window in the lower bound estimate
 
   Options Database Key:
-. -pc_fieldsplit_gkb_delay - default is 5
+. -pc_fieldsplit_gkb_delay <delay> - default is 5
 
   Level: intermediate
 
-  Note:
-  The algorithm uses a lower bound estimate of the error in energy norm as stopping criterion. The lower bound of the error ||u-u^k||_H
-  is expressed as a truncated sum. The error at iteration k can only be measured at iteration (k + delay), and thus the algorithm needs
-  at least (delay + 1) iterations to stop. For more details on the generalized Golub-Kahan bidiagonalization method and its lower bound stopping criterion, please refer to
+  Notes:
+  The algorithm uses a lower bound estimate of the error in energy norm as stopping criterion. The lower bound of the error $ ||u-u^k||_H $
+  is expressed as a truncated sum. The error at iteration k can only be measured at iteration (k + `delay`), and thus the algorithm needs
+  at least (`delay` + 1) iterations to stop.
 
-  References:
-  [Ar13] Generalized Golub-Kahan bidiagonalization and stopping criteria, SIAM J. Matrix Anal. Appl., Vol. 34, No. 2, pp. 571-592, 2013.
+  For more details on the generalized Golub-Kahan bidiagonalization method and its lower bound stopping criterion, please refer to {cite}`arioli2013`
 
 .seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitSetGKBNu()`, `PCFieldSplitSetGKBTol()`, `PCFieldSplitSetGKBMaxit()`
 @*/
@@ -2814,8 +2806,8 @@ static PetscErrorCode PCFieldSplitSetGKBDelay_FieldSplit(PC pc, PetscInt delay)
 }
 
 /*@
-  PCFieldSplitSetGKBNu -  Sets the scalar value nu >= 0 in the transformation H = A00 + nu*A01*A01' of the (1,1) block in the Golub-Kahan bidiagonalization preconditioner
-  in `PCFIELDSPLIT`
+  PCFieldSplitSetGKBNu -  Sets the scalar value nu >= 0 in the transformation H = A00 + nu*A01*A01' of the (1,1) block in the
+  Golub-Kahan bidiagonalization preconditioner {cite}`arioli2013` in `PCFIELDSPLIT`
 
   Collective
 
@@ -2824,19 +2816,16 @@ static PetscErrorCode PCFieldSplitSetGKBDelay_FieldSplit(PC pc, PetscInt delay)
 - nu - the shift parameter
 
   Options Database Key:
-. -pc_fieldsplit_gkb_nu - default is 1
+. -pc_fieldsplit_gkb_nu <nu> - default is 1
 
   Level: intermediate
 
   Notes:
-  This shift is in general done to obtain better convergence properties for the outer loop of the algorithm. This is often achieved by choosing nu sufficiently big. However,
-  if nu is chosen too big, the matrix H might be badly conditioned and the solution of the linear system Hx = b in the inner loop becomes difficult. It is therefore
+  This shift is in general done to obtain better convergence properties for the outer loop of the algorithm. This is often achieved by choosing `nu` sufficiently large. However,
+  if `nu` is chosen too large, the matrix H might be badly conditioned and the solution of the linear system $Hx = b$ in the inner loop becomes difficult. It is therefore
   necessary to find a good balance in between the convergence of the inner and outer loop.
 
-  For nu = 0, no shift is done. In this case A00 has to be positive definite. The matrix N in [Ar13] is then chosen as identity.
-
-  References:
-  [Ar13] Generalized Golub-Kahan bidiagonalization and stopping criteria, SIAM J. Matrix Anal. Appl., Vol. 34, No. 2, pp. 571-592, 2013.
+  For `nu` = 0, no shift is done. In this case A00 has to be positive definite. The matrix N in {cite}`arioli2013` is then chosen as identity.
 
 .seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitSetGKBDelay()`, `PCFieldSplitSetGKBTol()`, `PCFieldSplitSetGKBMaxit()`
 @*/
@@ -2959,7 +2948,7 @@ static PetscErrorCode PCSetCoordinates_FieldSplit(PC pc, PetscInt dim, PetscInt 
 - type - `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE` (default), `PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE`, `PC_COMPOSITE_SPECIAL`, `PC_COMPOSITE_SCHUR`
 
   Options Database Key:
-. -pc_fieldsplit_type <type: one of multiplicative, additive, symmetric_multiplicative, special, schur> - Sets fieldsplit preconditioner type
+. -pc_fieldsplit_type <one of multiplicative, additive, symmetric_multiplicative, special, schur> - Sets fieldsplit preconditioner type
 
   Level: intermediate
 
@@ -3123,14 +3112,15 @@ PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc, PetscBool flg)
    collections of variables (that may overlap) called splits. See [the users manual section on "Solving Block Matrices"](sec_block_matrices) for more details.
 
    Options Database Keys:
-+   -pc_fieldsplit_%d_fields <a,b,..> - indicates the fields to be used in the `%d`'th split
-.   -pc_fieldsplit_default - automatically add any fields to additional splits that have not
-                              been supplied explicitly by `-pc_fieldsplit_%d_fields`
-.   -pc_fieldsplit_block_size <bs> - size of block that defines fields (i.e. there are bs fields)
++   -pc_fieldsplit_%d_fields <a,b,..>                                                - indicates the fields to be used in the `%d`'th split
+.   -pc_fieldsplit_default                                                           - automatically add any fields to additional splits that have not
+                                                                                     been supplied explicitly by `-pc_fieldsplit_%d_fields`
+.   -pc_fieldsplit_block_size <bs>                                                   - size of block that defines fields (i.e. there are bs fields)
 .   -pc_fieldsplit_type <additive,multiplicative,symmetric_multiplicative,schur,gkb> - type of relaxation or factorization splitting
-.   -pc_fieldsplit_schur_precondition <self,selfp,user,a11,full> - default is `a11`; see `PCFieldSplitSetSchurPre()`
-.   -pc_fieldsplit_schur_fact_type <diag,lower,upper,full> - set factorization type when using `-pc_fieldsplit_type schur`; see `PCFieldSplitSetSchurFactType()`
--   -pc_fieldsplit_detect_saddle_point - automatically finds rows with zero diagonal and uses Schur complement with no preconditioner as the solver
+.   -pc_fieldsplit_schur_precondition <self,selfp,user,a11,full>                     - default is `a11`; see `PCFieldSplitSetSchurPre()`
+.   -pc_fieldsplit_schur_fact_type <diag,lower,upper,full>                           - set factorization type when using `-pc_fieldsplit_type schur`;
+                                                                                     see `PCFieldSplitSetSchurFactType()`
+-   -pc_fieldsplit_detect_saddle_point                                               - automatically finds rows with zero diagonal and uses Schur complement with no preconditioner as the solver
 
      Options prefixes for inner solvers when using the Schur complement preconditioner are `-fieldsplit_0_` and `-fieldsplit_1_` .
      The options prefix for the inner solver when using the Golub-Kahan biadiagonalization preconditioner is `-fieldsplit_0_`

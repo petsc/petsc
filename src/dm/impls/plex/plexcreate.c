@@ -210,7 +210,7 @@ PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscBool pro
   DM_Plex *mesh = (DM_Plex *)dm->data;
   PetscFE  fe   = NULL;
   DM       cdm;
-  PetscInt dim, dE, qorder;
+  PetscInt dim, dE, qorder, height;
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
@@ -220,11 +220,12 @@ PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscBool pro
   PetscObjectOptionsBegin((PetscObject)cdm);
   PetscCall(PetscOptionsBoundedInt("-default_quadrature_order", "Quadrature order is one less than quadrature points per edge", "DMPlexCreateCoordinateSpace", qorder, &qorder, NULL, 0));
   PetscOptionsEnd();
+  PetscCall(DMPlexGetVTKCellHeight(dm, &height));
   if (degree >= 0) {
     DMPolytopeType ct = DM_POLYTOPE_UNKNOWN;
     PetscInt       cStart, cEnd, gct;
 
-    PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+    PetscCall(DMPlexGetHeightStratum(dm, height, &cStart, &cEnd));
     if (cEnd > cStart) PetscCall(DMPlexGetCellType(dm, cStart, &ct));
     gct = (PetscInt)ct;
     PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &gct, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
@@ -2316,6 +2317,7 @@ static inline PetscReal DiffNormReal(PetscInt dim, const PetscReal x[], const Pe
   for (i = 0; i < dim; ++i) prod += PetscSqr(x[i] - y[i]);
   return PetscSqrtReal(prod);
 }
+
 static inline PetscReal DotReal(PetscInt dim, const PetscReal x[], const PetscReal y[])
 {
   PetscReal prod = 0.0;
@@ -3544,21 +3546,20 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
 
   Notes:
   This meshes the surface of the Schwarz P or Gyroid surfaces.  Schwarz P is is the simplest member of the triply-periodic minimal surfaces.
-  https://en.wikipedia.org/wiki/Schwarz_minimal_surface#Schwarz_P_(%22Primitive%22) and can be cut with "clean" boundaries.
-  The Gyroid (https://en.wikipedia.org/wiki/Gyroid) is another triply-periodic minimal surface with applications in additive manufacturing; it is much more difficult to "cut" since there are no planes of symmetry.
+  <https://en.wikipedia.org/wiki/Schwarz_minimal_surface#Schwarz_P_(%22Primitive%22)> and can be cut with "clean" boundaries.
+  The Gyroid <https://en.wikipedia.org/wiki/Gyroid> is another triply-periodic minimal surface with applications in additive manufacturing; it is much more difficult to "cut" since there are no planes of symmetry.
   Our implementation creates a very coarse mesh of the surface and refines (by 4-way splitting) as many times as requested.
   On each refinement, all vertices are projected to their nearest point on the surface.
   This projection could readily be extended to related surfaces.
 
-  The face (edge) sets for the Schwarz P surface are numbered 1(-x), 2(+x), 3(-y), 4(+y), 5(-z), 6(+z).
-  When the mesh is refined, "Face Sets" contain the new vertices (created during refinement).  Use `DMPlexLabelComplete()` to propagate to coarse-level vertices.
+  See {cite}`maskery2018insights`
+
+  The face (edge) sets for the Schwarz P surface are numbered $1(-x), 2(+x), 3(-y), 4(+y), 5(-z), 6(+z)$.
+  When the mesh is refined, "Face Sets" contain the new vertices (created during refinement).
+  Use `DMPlexLabelComplete()` to propagate to coarse-level vertices.
 
   Developer Notes:
   The Gyroid mesh does not currently mark boundary sets.
-
-  References:
-. * - Maskery et al, Insights into the mechanical properties of several triply periodic minimal surface lattice structures made by polymer additive manufacturing, 2017.
-  https://doi.org/10.1016/j.polymer.2017.11.049
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateSphereMesh()`, `DMSetType()`, `DMCreate()`
 @*/
@@ -3601,13 +3602,17 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
 
 static PetscErrorCode DMPlexCreateBallMesh_Internal(DM dm, PetscInt dim, PetscReal R)
 {
-  DM      sdm, vol;
-  DMLabel bdlabel;
+  DM          sdm, vol;
+  DMLabel     bdlabel;
+  const char *prefix;
 
   PetscFunctionBegin;
   PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), &sdm));
   PetscCall(DMSetType(sdm, DMPLEX));
-  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)sdm, "bd_"));
+  PetscCall(DMGetOptionsPrefix(dm, &prefix));
+  PetscCall(DMSetOptionsPrefix(sdm, prefix));
+  PetscCall(DMAppendOptionsPrefix(sdm, "bd_"));
+  PetscCall(DMPlexDistributeSetDefault(sdm, PETSC_FALSE));
   PetscCall(DMPlexCreateSphereMesh_Internal(sdm, dim - 1, PETSC_TRUE, R));
   PetscCall(DMSetFromOptions(sdm));
   PetscCall(DMViewFromOptions(sdm, NULL, "-dm_view"));
@@ -3850,6 +3855,8 @@ static void boxToAnnulus(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscI
   f0[1] = r * PetscSinReal(th);
 }
 
+PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions, const char pre[], const char name[], const char *option[], const char *value[], PetscBool *flg);
+
 const char *const DMPlexShapes[] = {"box", "box_surface", "ball", "sphere", "cylinder", "schwarz_p", "gyroid", "doublet", "annulus", "hypercubic", "zbox", "unknown", "DMPlexShape", "DM_SHAPE_", NULL};
 
 static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOptionsObject, PetscBool *useCoordSpace, DM dm)
@@ -3863,6 +3870,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   char           filename[PETSC_MAX_PATH_LEN]   = "<unspecified>";
   char           bdFilename[PETSC_MAX_PATH_LEN] = "<unspecified>";
   char           plexname[PETSC_MAX_PATH_LEN]   = "";
+  const char    *option;
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(DMPLEX_CreateFromOptions, dm, 0, 0, 0));
@@ -4078,6 +4086,22 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   }
   PetscCall(DMPlexSetRefinementUniform(dm, PETSC_TRUE));
   if (!((PetscObject)dm)->name && nameflg) PetscCall(PetscObjectSetName((PetscObject)dm, plexname));
+  // Allow label creation
+  PetscCall(PetscOptionsFindPairPrefix_Private(NULL, ((PetscObject)dm)->prefix, "-dm_plex_label_", &option, NULL, &flg));
+  if (flg) {
+    DMLabel     label;
+    PetscInt    points[1024], n = 1024;
+    char        fulloption[PETSC_MAX_PATH_LEN];
+    const char *name = &option[14];
+
+    PetscCall(DMCreateLabel(dm, name));
+    PetscCall(DMGetLabel(dm, name, &label));
+    fulloption[0] = '-';
+    fulloption[1] = 0;
+    PetscCall(PetscStrlcat(fulloption, option, PETSC_MAX_PATH_LEN));
+    PetscCall(PetscOptionsGetIntArray(NULL, ((PetscObject)dm)->prefix, fulloption, points, &n, NULL));
+    for (PetscInt p = 0; p < n; ++p) PetscCall(DMLabelSetValue(label, points[p], 1));
+  }
   PetscCall(PetscLogEventEnd(DMPLEX_CreateFromOptions, dm, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4105,6 +4129,9 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM dm, PetscOptionItems *Pets
   PetscCall(PetscOptionsBool("-dm_plex_hash_location", "Use grid hashing for point location", "DMInterpolate", PETSC_FALSE, &mesh->useHashLocation, NULL));
   /* Partitioning and distribution */
   PetscCall(PetscOptionsBool("-dm_plex_partition_balance", "Attempt to evenly divide points on partition boundary between processes", "DMPlexSetPartitionBalance", PETSC_FALSE, &mesh->partitionBalance, NULL));
+  /* Reordering */
+  PetscCall(PetscOptionsBool("-dm_plex_reorder_section", "Compute point permutation for local section", "DMPlexReorderSectionSetDefault", PETSC_FALSE, &flg2, &flg));
+  if (flg) PetscCall(DMPlexReorderSectionSetDefault(dm, flg2 ? DMPLEX_REORDER_DEFAULT_TRUE : DMPLEX_REORDER_DEFAULT_FALSE));
   /* Generation and remeshing */
   PetscCall(PetscOptionsBool("-dm_plex_remesh_bd", "Allow changes to the boundary on remeshing", "DMAdapt", PETSC_FALSE, &mesh->remeshBd, NULL));
   /* Projection behavior */
@@ -4192,6 +4219,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
 {
   PetscFunctionList        ordlist;
   char                     oname[256];
+  char                     sublabelname[PETSC_MAX_PATH_LEN] = "";
   DMPlexReorderDefaultFlag reorder;
   PetscReal                volume    = -1.0;
   PetscInt                 prerefine = 0, refine = 0, r, coarsen = 0, overlap = 0, extLayers = 0, dim;
@@ -4225,6 +4253,42 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
       PetscCall(DMPlexReplace_Internal(dm, &idm));
     }
   }
+  // Handle submesh selection before distribution
+  PetscCall(PetscOptionsString("-dm_plex_submesh", "Label to use for submesh selection", "", sublabelname, sublabelname, PETSC_MAX_PATH_LEN, &flg));
+  if (flg) {
+    DM              subdm;
+    DMLabel         label;
+    IS              valueIS, pointIS;
+    const PetscInt *values, *points;
+    PetscBool       markedFaces = PETSC_FALSE;
+    PetscInt        Nv, value, Np;
+
+    PetscCall(DMGetLabel(dm, sublabelname, &label));
+    PetscCall(DMLabelGetNumValues(label, &Nv));
+    PetscCheck(Nv == 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Only a single label value is currently supported for submesh selection, not %" PetscInt_FMT, Nv);
+    PetscCall(DMLabelGetValueIS(label, &valueIS));
+    PetscCall(ISGetIndices(valueIS, &values));
+    value = values[0];
+    PetscCall(ISRestoreIndices(valueIS, &values));
+    PetscCall(ISDestroy(&valueIS));
+    PetscCall(DMLabelGetStratumSize(label, value, &Np));
+    PetscCall(DMLabelGetStratumIS(label, value, &pointIS));
+    PetscCall(ISGetIndices(pointIS, &points));
+    for (PetscInt p = 0; p < Np; ++p) {
+      PetscInt pdepth;
+
+      PetscCall(DMPlexGetPointDepth(dm, points[p], &pdepth));
+      if (pdepth) {
+        markedFaces = PETSC_TRUE;
+        break;
+      }
+    }
+    PetscCall(ISRestoreIndices(pointIS, &points));
+    PetscCall(ISDestroy(&pointIS));
+    PetscCall(DMPlexCreateSubmesh(dm, label, value, markedFaces, &subdm));
+    PetscCall(DMPlexReplace_Internal(dm, &subdm));
+    PetscCall(DMSetFromOptions_NonRefinement_Plex(dm, PetscOptionsObject));
+  }
   /* Handle DMPlex refinement before distribution */
   PetscCall(PetscOptionsBool("-dm_refine_ignore_model", "Flag to ignore the geometry model when refining", "DMCreate", ignoreModel, &ignoreModel, &flg));
   if (flg) ((DM_Plex *)dm->data)->ignoreModel = ignoreModel;
@@ -4239,6 +4303,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
     PetscCall(DMPlexSetRefinementLimit(dm, volume));
     prerefine = PetscMax(prerefine, 1);
   }
+  if (prerefine) PetscCall(DMLocalizeCoordinates(dm));
   for (r = 0; r < prerefine; ++r) {
     DM             rdm;
     PetscPointFunc coordFunc = ((DM_Plex *)dm->data)->coordFunc;
@@ -4419,6 +4484,77 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
       }
     }
   }
+  // Handle coordinate remapping
+  remap = PETSC_FALSE;
+  PetscCall(PetscOptionsBool("-dm_coord_remap", "Flag to control coordinate remapping", "", remap, &remap, NULL));
+  if (remap) {
+    DMPlexCoordMap map     = DM_COORD_MAP_NONE;
+    PetscPointFunc mapFunc = NULL;
+    PetscScalar    params[16];
+    PetscInt       Np = sizeof(params) / sizeof(params[0]), cdim;
+    MPI_Comm       comm;
+
+    PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+    PetscCall(DMGetCoordinateDim(dm, &cdim));
+    PetscCall(PetscOptionsScalarArray("-dm_coord_map_params", "Parameters for the coordinate remapping", "", params, &Np, &flg));
+    if (!flg) Np = 0;
+    // TODO Allow user to pass a map function by name
+    PetscCall(PetscOptionsEnum("-dm_coord_map", "Coordinate mapping for built-in mesh", "", DMPlexCoordMaps, (PetscEnum)map, (PetscEnum *)&map, &flg));
+    if (flg) {
+      switch (map) {
+      case DM_COORD_MAP_NONE:
+        mapFunc = coordMap_identity;
+        break;
+      case DM_COORD_MAP_SHEAR:
+        mapFunc = coordMap_shear;
+        if (!Np) {
+          Np        = cdim + 1;
+          params[0] = 0;
+          for (PetscInt d = 1; d <= cdim; ++d) params[d] = 1.0;
+        }
+        PetscCheck(Np == cdim + 1, comm, PETSC_ERR_ARG_WRONG, "The shear coordinate map must have cdim + 1 = %" PetscInt_FMT " parameters, not %" PetscInt_FMT, cdim + 1, Np);
+        break;
+      case DM_COORD_MAP_FLARE:
+        mapFunc = coordMap_flare;
+        if (!Np) {
+          Np        = cdim + 1;
+          params[0] = 0;
+          for (PetscInt d = 1; d <= cdim; ++d) params[d] = 1.0;
+        }
+        PetscCheck(Np == cdim + 1, comm, PETSC_ERR_ARG_WRONG, "The flare coordinate map must have cdim + 1 = %" PetscInt_FMT " parameters, not %" PetscInt_FMT, cdim + 1, Np);
+        break;
+      case DM_COORD_MAP_ANNULUS:
+        mapFunc = coordMap_annulus;
+        if (!Np) {
+          Np        = 2;
+          params[0] = 1.;
+          params[1] = 2.;
+        }
+        PetscCheck(Np == 2, comm, PETSC_ERR_ARG_WRONG, "The annulus coordinate map must have 2 parameters, not %" PetscInt_FMT, Np);
+        break;
+      case DM_COORD_MAP_SHELL:
+        mapFunc = coordMap_shell;
+        if (!Np) {
+          Np        = 2;
+          params[0] = 1.;
+          params[1] = 2.;
+        }
+        PetscCheck(Np == 2, comm, PETSC_ERR_ARG_WRONG, "The spherical shell coordinate map must have 2 parameters, not %" PetscInt_FMT, Np);
+        break;
+      default:
+        mapFunc = coordMap_identity;
+      }
+    }
+    if (Np) {
+      DM      cdm;
+      PetscDS cds;
+
+      PetscCall(DMGetCoordinateDM(dm, &cdm));
+      PetscCall(DMGetDS(cdm, &cds));
+      PetscCall(PetscDSSetConstants(cds, Np, params));
+    }
+    PetscCall(DMPlexRemapGeometry(dm, 0.0, mapFunc));
+  }
   /* Handle ghost cells */
   PetscCall(PetscOptionsBool("-dm_plex_create_fv_ghost_cells", "Flag to create finite volume ghost cells on the boundary", "DMCreate", ghostCells, &ghostCells, NULL));
   if (ghostCells) {
@@ -4579,15 +4715,18 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->computel2gradientdiff     = DMComputeL2GradientDiff_Plex;
   dm->ops->computel2fielddiff        = DMComputeL2FieldDiff_Plex;
   dm->ops->getneighbors              = DMGetNeighbors_Plex;
+  dm->ops->createdomaindecomposition = DMCreateDomainDecomposition_Plex;
+  dm->ops->createddscatters          = DMCreateDomainDecompositionScatters_Plex;
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexInsertBoundaryValues_C", DMPlexInsertBoundaryValues_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexInsertTimeDerivativeBoundaryValues_C", DMPlexInsertTimeDerivativeBoundaryValues_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMSetUpGLVisViewer_C", DMSetUpGLVisViewer_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMCreateNeumannOverlap_C", DMCreateNeumannOverlap_Plex));
-  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexGetOverlap_C", DMPlexGetOverlap_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexDistributeGetDefault_C", DMPlexDistributeGetDefault_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexDistributeSetDefault_C", DMPlexDistributeSetDefault_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexReorderGetDefault_C", DMPlexReorderGetDefault_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexReorderSetDefault_C", DMPlexReorderSetDefault_Plex));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexReorderSectionGetDefault_C", DMPlexReorderSectionGetDefault_Plex));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexReorderSectionSetDefault_C", DMPlexReorderSectionSetDefault_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMInterpolateSolution_C", DMInterpolateSolution_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexGetOverlap_C", DMPlexGetOverlap_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexSetOverlap_C", DMPlexSetOverlap_Plex));
@@ -4630,6 +4769,7 @@ PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm)
 . -dm_plex_remesh_bd                 - Allow changes to the boundary on remeshing
 . -dm_plex_max_projection_height     - Maximum mesh point height used to project locally
 . -dm_plex_regular_refinement        - Use special nested projection algorithm for regular refinement
+. -dm_plex_reorder_section           - Use specialized blocking if available
 . -dm_plex_check_all                 - Perform all checks below
 . -dm_plex_check_symmetry            - Check that the adjacency information in the mesh is symmetric
 . -dm_plex_check_skeleton <celltype> - Check that each cell has the correct number of vertices
@@ -4663,6 +4803,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   mesh->refinementLimit        = -1.0;
   mesh->distDefault            = PETSC_TRUE;
   mesh->reorderDefault         = DMPLEX_REORDER_DEFAULT_NOTSET;
+  mesh->reorderSection         = DMPLEX_REORDER_DEFAULT_NOTSET;
   mesh->distributionName       = NULL;
   mesh->interpolated           = DMPLEX_INTERPOLATED_INVALID;
   mesh->interpolatedCollective = DMPLEX_INTERPOLATED_INVALID;

@@ -207,7 +207,7 @@ static PetscErrorCode MatFindNonzeroRows_MPIAIJ(Mat M, IS *keptrows)
     for (j = 0; j < na; j++) {
       if (aa[j] != 0.0) goto ok1;
     }
-    bb = bav ? bav + ib[i] : NULL;
+    bb = PetscSafePointerPlusOffset(bav, ib[i]);
     for (j = 0; j < nb; j++) {
       if (bb[j] != 0.0) goto ok1;
     }
@@ -233,7 +233,7 @@ static PetscErrorCode MatFindNonzeroRows_MPIAIJ(Mat M, IS *keptrows)
         goto ok2;
       }
     }
-    bb = bav ? bav + ib[i] : NULL;
+    bb = PetscSafePointerPlusOffset(bav, ib[i]);
     for (j = 0; j < nb; j++) {
       if (bb[j] != 0.0) {
         rows[cnt++] = rstart + i;
@@ -537,15 +537,15 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat, PetscInt m, const PetscInt im[], Pet
     if (im[i] >= rstart && im[i] < rend) {
       row      = im[i] - rstart;
       lastcol1 = -1;
-      rp1      = aj ? aj + ai[row] : NULL;
-      ap1      = aa ? aa + ai[row] : NULL;
+      rp1      = PetscSafePointerPlusOffset(aj, ai[row]);
+      ap1      = PetscSafePointerPlusOffset(aa, ai[row]);
       rmax1    = aimax[row];
       nrow1    = ailen[row];
       low1     = 0;
       high1    = nrow1;
       lastcol2 = -1;
-      rp2      = bj ? bj + bi[row] : NULL;
-      ap2      = ba ? ba + bi[row] : NULL;
+      rp2      = PetscSafePointerPlusOffset(bj, bi[row]);
+      ap2      = PetscSafePointerPlusOffset(ba, bi[row]);
       rmax2    = bimax[row];
       nrow2    = bilen[row];
       low2     = 0;
@@ -604,9 +604,9 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat, PetscInt m, const PetscInt im[], Pet
       if (!aij->donotstash) {
         mat->assembled = PETSC_FALSE;
         if (roworiented) {
-          PetscCall(MatStashValuesRow_Private(&mat->stash, im[i], n, in, v ? v + i * n : NULL, (PetscBool)(ignorezeroentries && (addv == ADD_VALUES))));
+          PetscCall(MatStashValuesRow_Private(&mat->stash, im[i], n, in, PetscSafePointerPlusOffset(v, i * n), (PetscBool)(ignorezeroentries && (addv == ADD_VALUES))));
         } else {
-          PetscCall(MatStashValuesCol_Private(&mat->stash, im[i], n, in, v ? v + i : NULL, m, (PetscBool)(ignorezeroentries && (addv == ADD_VALUES))));
+          PetscCall(MatStashValuesCol_Private(&mat->stash, im[i], n, in, PetscSafePointerPlusOffset(v, i), m, (PetscBool)(ignorezeroentries && (addv == ADD_VALUES))));
         }
       }
     }
@@ -979,7 +979,7 @@ static PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A, PetscInt N, const PetscIn
   /* remove zeroed rows of off-diagonal matrix */
   PetscCall(MatSeqAIJGetArray(l->B, &aij_a));
   ii = aij->i;
-  for (i = 0; i < len; i++) PetscCall(PetscArrayzero(aij_a + ii[lrows[i]], ii[lrows[i] + 1] - ii[lrows[i]]));
+  for (i = 0; i < len; i++) PetscCall(PetscArrayzero(PetscSafePointerPlusOffset(aij_a, ii[lrows[i]]), ii[lrows[i] + 1] - ii[lrows[i]]));
   /* loop over all elements of off process part of matrix zeroing removed columns*/
   if (aij->compressedrow.use) {
     m    = aij->compressedrow.nrows;
@@ -1860,13 +1860,13 @@ static PetscErrorCode MatNorm_MPIAIJ(Mat mat, NormType type, PetscReal *norm)
     } else if (type == NORM_INFINITY) { /* max row norm */
       PetscReal ntemp = 0.0;
       for (j = 0; j < aij->A->rmap->n; j++) {
-        v   = amata + amat->i[j];
+        v   = PetscSafePointerPlusOffset(amata, amat->i[j]);
         sum = 0.0;
         for (i = 0; i < amat->i[j + 1] - amat->i[j]; i++) {
           sum += PetscAbsScalar(*v);
           v++;
         }
-        v = bmata + bmat->i[j];
+        v = PetscSafePointerPlusOffset(bmata, bmat->i[j]);
         for (i = 0; i < bmat->i[j + 1] - bmat->i[j]; i++) {
           sum += PetscAbsScalar(*v);
           v++;
@@ -2066,7 +2066,7 @@ PetscErrorCode MatAXPYGetPreallocation_MPIX_private(PetscInt m, const PetscInt *
   PetscFunctionBegin;
   /* Set the number of nonzeros in the new matrix */
   for (i = 0; i < m; i++) {
-    const PetscInt *xjj = xj + xi[i], *yjj = yj + yi[i];
+    const PetscInt *xjj = PetscSafePointerPlusOffset(xj, xi[i]), *yjj = PetscSafePointerPlusOffset(yj, yi[i]);
     nzx    = xi[i + 1] - xi[i];
     nzy    = yi[i + 1] - yi[i];
     nnz[i] = 0;
@@ -2961,10 +2961,9 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin, MatDuplicateOption cpvalues, Mat *
   PetscCall(MatSetType(mat, ((PetscObject)matin)->type_name));
   a = (Mat_MPIAIJ *)mat->data;
 
-  mat->factortype   = matin->factortype;
-  mat->assembled    = matin->assembled;
-  mat->insertmode   = NOT_SET_VALUES;
-  mat->preallocated = matin->preallocated;
+  mat->factortype = matin->factortype;
+  mat->assembled  = matin->assembled;
+  mat->insertmode = NOT_SET_VALUES;
 
   a->size         = oldmat->size;
   a->rank         = oldmat->rank;
@@ -2976,29 +2975,33 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin, MatDuplicateOption cpvalues, Mat *
 
   PetscCall(PetscLayoutReference(matin->rmap, &mat->rmap));
   PetscCall(PetscLayoutReference(matin->cmap, &mat->cmap));
-
-  if (oldmat->colmap) {
+  if (matin->hash_active) {
+    PetscCall(MatSetUp(mat));
+  } else {
+    mat->preallocated = matin->preallocated;
+    if (oldmat->colmap) {
 #if defined(PETSC_USE_CTABLE)
-    PetscCall(PetscHMapIDuplicate(oldmat->colmap, &a->colmap));
+      PetscCall(PetscHMapIDuplicate(oldmat->colmap, &a->colmap));
 #else
-    PetscCall(PetscMalloc1(mat->cmap->N, &a->colmap));
-    PetscCall(PetscArraycpy(a->colmap, oldmat->colmap, mat->cmap->N));
+      PetscCall(PetscMalloc1(mat->cmap->N, &a->colmap));
+      PetscCall(PetscArraycpy(a->colmap, oldmat->colmap, mat->cmap->N));
 #endif
-  } else a->colmap = NULL;
-  if (oldmat->garray) {
-    PetscInt len;
-    len = oldmat->B->cmap->n;
-    PetscCall(PetscMalloc1(len + 1, &a->garray));
-    if (len) PetscCall(PetscArraycpy(a->garray, oldmat->garray, len));
-  } else a->garray = NULL;
+    } else a->colmap = NULL;
+    if (oldmat->garray) {
+      PetscInt len;
+      len = oldmat->B->cmap->n;
+      PetscCall(PetscMalloc1(len + 1, &a->garray));
+      if (len) PetscCall(PetscArraycpy(a->garray, oldmat->garray, len));
+    } else a->garray = NULL;
 
-  /* It may happen MatDuplicate is called with a non-assembled matrix
-     In fact, MatDuplicate only requires the matrix to be preallocated
-     This may happen inside a DMCreateMatrix_Shell */
-  if (oldmat->lvec) PetscCall(VecDuplicate(oldmat->lvec, &a->lvec));
-  if (oldmat->Mvctx) PetscCall(VecScatterCopy(oldmat->Mvctx, &a->Mvctx));
-  PetscCall(MatDuplicate(oldmat->A, cpvalues, &a->A));
-  PetscCall(MatDuplicate(oldmat->B, cpvalues, &a->B));
+    /* It may happen MatDuplicate is called with a non-assembled matrix
+      In fact, MatDuplicate only requires the matrix to be preallocated
+      This may happen inside a DMCreateMatrix_Shell */
+    if (oldmat->lvec) PetscCall(VecDuplicate(oldmat->lvec, &a->lvec));
+    if (oldmat->Mvctx) PetscCall(VecScatterCopy(oldmat->Mvctx, &a->Mvctx));
+    PetscCall(MatDuplicate(oldmat->A, cpvalues, &a->A));
+    PetscCall(MatDuplicate(oldmat->B, cpvalues, &a->B));
+  }
   PetscCall(PetscFunctionListDuplicate(((PetscObject)matin)->qlist, &((PetscObject)mat)->qlist));
   *newmat = mat;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -3848,9 +3851,9 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_nonscalable(Mat mat, IS isrow, IS iscol
     row   = rstart + i;
     nz    = ii[i + 1] - ii[i];
     cwork = jj;
-    jj += nz;
+    jj    = PetscSafePointerPlusOffset(jj, nz);
     vwork = aa;
-    aa += nz;
+    aa    = PetscSafePointerPlusOffset(aa, nz);
     PetscCall(MatSetValues_MPIAIJ(M, 1, &row, nz, cwork, vwork, INSERT_VALUES));
   }
   PetscCall(MatSeqAIJRestoreArrayRead(Mreuse, (const PetscScalar **)&aa));
@@ -3890,7 +3893,7 @@ static PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B, const PetscInt 
   if (PetscDefined(USE_DEBUG)) {
     for (i = 0; i < m; i++) {
       nnz = Ii[i + 1] - Ii[i];
-      JJ  = J ? J + Ii[i] : NULL;
+      JJ  = PetscSafePointerPlusOffset(J, Ii[i]);
       PetscCheck(nnz >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local row %" PetscInt_FMT " has a negative %" PetscInt_FMT " number of columns", i, nnz);
       PetscCheck(!nnz || !(JJ[0] < 0), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Row %" PetscInt_FMT " starts with negative column index %" PetscInt_FMT, i, JJ[0]);
       PetscCheck(!nnz || !(JJ[nnz - 1] >= B->cmap->N), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Row %" PetscInt_FMT " ends with too large a column index %" PetscInt_FMT " (max allowed %" PetscInt_FMT ")", i, JJ[nnz - 1], B->cmap->N);
@@ -3899,7 +3902,7 @@ static PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B, const PetscInt 
 
   for (i = 0; i < m; i++) {
     nnz     = Ii[i + 1] - Ii[i];
-    JJ      = J ? J + Ii[i] : NULL;
+    JJ      = PetscSafePointerPlusOffset(J, Ii[i]);
     nnz_max = PetscMax(nnz_max, nnz);
     d       = 0;
     for (j = 0; j < nnz; j++) {
@@ -3913,7 +3916,7 @@ static PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B, const PetscInt 
 
   for (i = 0; i < m; i++) {
     ii = i + rstart;
-    PetscCall(MatSetValues_MPIAIJ(B, 1, &ii, Ii[i + 1] - Ii[i], J ? J + Ii[i] : NULL, v ? v + Ii[i] : NULL, INSERT_VALUES));
+    PetscCall(MatSetValues_MPIAIJ(B, 1, &ii, Ii[i + 1] - Ii[i], PetscSafePointerPlusOffset(J, Ii[i]), PetscSafePointerPlusOffset(v, Ii[i]), INSERT_VALUES));
   }
   nooffprocentries    = B->nooffprocentries;
   B->nooffprocentries = PETSC_TRUE;
@@ -3958,10 +3961,16 @@ static PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B, const PetscInt 
 
   The `i` and `j` indices are 0 based, and `i` indices are indices corresponding to the local `j` array.
 
+  A convenience routine for this functionality is `MatCreateMPIAIJWithArrays()`.
+
+  You can update the matrix with new numerical values using `MatUpdateMPIAIJWithArrays()` after this call if the column indices in `j` are sorted.
+
+  If you do **not** use `MatUpdateMPIAIJWithArrays()`, the column indices in `j` do not need to be sorted. If you will use
+  `MatUpdateMPIAIJWithArrays()`, the column indices **must** be sorted.
+
   The format which is used for the sparse matrix input, is equivalent to a
   row-major ordering.. i.e for the following matrix, the input data expected is
   as shown
-
 .vb
         1 0 0
         2 0 3     P0
@@ -3980,7 +3989,7 @@ static PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B, const PetscInt 
 .ve
 
 .seealso: [](ch_matrices), `Mat`, `MATMPIAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatCreateAIJ()`,
-          `MatCreateSeqAIJWithArrays()`, `MatCreateMPIAIJWithSplitArrays()`
+          `MatCreateSeqAIJWithArrays()`, `MatCreateMPIAIJWithSplitArrays()`, `MatCreateMPIAIJWithArrays()`, `MatSetPreallocationCOO()`, `MatSetValuesCOO()`
 @*/
 PetscErrorCode MatMPIAIJSetPreallocationCSR(Mat B, const PetscInt i[], const PetscInt j[], const PetscScalar v[])
 {
@@ -4113,7 +4122,7 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR(Mat B, const PetscInt i[], const Pet
   malloc in them to see if additional memory allocation was needed.
 
 .seealso: [](ch_matrices), `Mat`, [Sparse Matrices](sec_matsparse), `MATMPIAIJ`, `MATAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatCreateAIJ()`, `MatMPIAIJSetPreallocationCSR()`,
-          `MatGetInfo()`, `PetscSplitOwnership()`
+          `MatGetInfo()`, `PetscSplitOwnership()`, `MatSetPreallocationCOO()`, `MatSetValuesCOO()`
 @*/
 PetscErrorCode MatMPIAIJSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[])
 {
@@ -4154,11 +4163,14 @@ PetscErrorCode MatMPIAIJSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d_
 
   The `i` and `j` indices are 0 based, and `i` indices are indices corresponding to the local `j` array.
 
+  Once you have created the matrix you can update it with new numerical values using `MatUpdateMPIAIJWithArrays()`
+
+  If you do **not** use `MatUpdateMPIAIJWithArrays()`, the column indices in `j` do not need to be sorted. If you will use
+  `MatUpdateMPIAIJWithArrays()`, the column indices **must** be sorted.
+
   The format which is used for the sparse matrix input, is equivalent to a
   row-major ordering.. i.e for the following matrix, the input data expected is
   as shown
-
-  Once you have created the matrix you can update it with new numerical values using MatUpdateMPIAIJWithArrays
 .vb
         1 0 0
         2 0 3     P0
@@ -4177,7 +4189,7 @@ PetscErrorCode MatMPIAIJSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d_
 .ve
 
 .seealso: [](ch_matrices), `Mat`, `MATMPIAIK`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
-          `MATMPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`, `MatUpdateMPIAIJWithArrays()`
+          `MATMPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`, `MatUpdateMPIAIJWithArrays()`, `MatSetPreallocationCOO()`, `MatSetValuesCOO()`
 @*/
 PetscErrorCode MatCreateMPIAIJWithArrays(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, const PetscInt i[], const PetscInt j[], const PetscScalar a[], Mat *mat)
 {
@@ -4216,7 +4228,7 @@ PetscErrorCode MatCreateMPIAIJWithArrays(MPI_Comm comm, PetscInt m, PetscInt n, 
   Level: deprecated
 
 .seealso: [](ch_matrices), `Mat`, `MATMPIAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
-          `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`, `MatUpdateMPIAIJWithArray()`
+          `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`, `MatUpdateMPIAIJWithArray()`, `MatSetPreallocationCOO()`, `MatSetValuesCOO()`
 @*/
 PetscErrorCode MatUpdateMPIAIJWithArrays(Mat mat, PetscInt m, PetscInt n, PetscInt M, PetscInt N, const PetscInt Ii[], const PetscInt J[], const PetscScalar v[])
 {
@@ -4239,6 +4251,12 @@ PetscErrorCode MatUpdateMPIAIJWithArrays(Mat mat, PetscInt m, PetscInt n, PetscI
   PetscCall(MatSeqAIJGetArrayWrite(Aij->B, &ao));
 
   for (i = 0; i < m; i++) {
+    if (PetscDefined(USE_DEBUG)) {
+      for (PetscInt j = Ii[i] + 1; j < Ii[i + 1]; ++j) {
+        PetscCheck(J[j] >= J[j - 1], PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column entry number %" PetscInt_FMT " (actual column %" PetscInt_FMT ") in row %" PetscInt_FMT " is not sorted", j - Ii[i], J[j], i);
+        PetscCheck(J[j] != J[j - 1], PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column entry number %" PetscInt_FMT " (actual column %" PetscInt_FMT ") in row %" PetscInt_FMT " is identical to previous entry", j - Ii[i], J[j], i);
+      }
+    }
     nnz = Ii[i + 1] - Ii[i];
     Iii = Ii[i];
     ldi = ld[i];
@@ -4273,11 +4291,13 @@ PetscErrorCode MatUpdateMPIAIJWithArrays(Mat mat, PetscInt m, PetscInt n, PetscI
 
   Level: intermediate
 
-  Note:
+  Notes:
   The matrix must have been obtained with `MatCreateMPIAIJWithArrays()` or `MatMPIAIJSetPreallocationCSR()`
 
+  The column indices in the call to `MatCreateMPIAIJWithArrays()` or `MatMPIAIJSetPreallocationCSR()` must have been sorted for this call to work correctly
+
 .seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
-          `MATMPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`, `MatUpdateMPIAIJWithArrays()`
+          `MATMPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`, `MatUpdateMPIAIJWithArrays()`, `MatSetPreallocationCOO()`, `MatSetValuesCOO()`
 @*/
 PetscErrorCode MatUpdateMPIAIJWithArray(Mat mat, const PetscScalar v[])
 {
@@ -4301,11 +4321,13 @@ PetscErrorCode MatUpdateMPIAIJWithArray(Mat mat, const PetscScalar v[])
     nnz = Adi[i + 1] - Adi[i] + Adj[i + 1] - Adj[i];
     ldi = ld[i];
     md  = Adi[i + 1] - Adi[i];
-    PetscCall(PetscArraycpy(ao, v + Iii, ldi));
     PetscCall(PetscArraycpy(ad, v + Iii + ldi, md));
-    PetscCall(PetscArraycpy(ao + ldi, v + Iii + ldi + md, nnz - ldi - md));
     ad += md;
-    ao += nnz - md;
+    if (ao) {
+      PetscCall(PetscArraycpy(ao, v + Iii, ldi));
+      PetscCall(PetscArraycpy(ao + ldi, v + Iii + ldi + md, nnz - ldi - md));
+      ao += nnz - md;
+    }
     Iii += nnz;
   }
   nooffprocentries      = mat->nooffprocentries;
@@ -5825,7 +5847,7 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A, Mat B, MatReuse scall, PetscInt
   PetscCall(PetscMPIIntCast(nsends + nrecvs, &nreqs));
   PetscCall(PetscMalloc1(nreqs, &reqs));
   rwaits = reqs;
-  swaits = reqs + nrecvs;
+  swaits = PetscSafePointerPlusOffset(reqs, nrecvs);
 
   if (!startsj_s || !bufa_ptr) scall = MAT_INITIAL_MATRIX;
   if (scall == MAT_INITIAL_MATRIX) {
@@ -6269,8 +6291,8 @@ static PetscErrorCode MatSplitEntries_Internal(Mat mat, PetscCount n, const Pets
     k   = rowBegin[r];
     mid = rowMid[r];
     s   = rowEnd[r];
-    PetscCall(PetscArraycpy(Aperm + Atot, perm + k, mid - k));
-    PetscCall(PetscArraycpy(Bperm + Btot, perm + mid, s - mid));
+    PetscCall(PetscArraycpy(PetscSafePointerPlusOffset(Aperm, Atot), PetscSafePointerPlusOffset(perm, k), mid - k));
+    PetscCall(PetscArraycpy(PetscSafePointerPlusOffset(Bperm, Btot), PetscSafePointerPlusOffset(perm, mid), s - mid));
     Atot += mid - k;
     Btot += s - mid;
 
@@ -7804,7 +7826,7 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmet
               aa     = aseq->a + ai[brow + ii] + k;
               for (int jjj = 0; jjj < index_size; jjj++) { // columns in block
                 int jj = index[jjj];
-                val    = PetscAbs(PetscRealPart(aa[jj]));
+                val += PetscAbs(PetscRealPart(aa[jj]));
               }
             }
           }

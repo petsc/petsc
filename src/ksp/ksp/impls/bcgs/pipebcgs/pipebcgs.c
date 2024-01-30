@@ -215,13 +215,8 @@ static PetscErrorCode KSPSolve_PIPEBCGS(KSP ksp)
     performance of pipelined methods. See [](doc_faq_pipelined)
 
     Contributed by:
-    Siegfried Cools, Universiteit Antwerpen,
+    Siegfried Cools, Universiteit Antwerpen, {cite}`cools2017communication`
     EXA2CT European Project on EXascale Algorithms and Advanced Computational Techniques, 2016.
-
-    Reference:
-.   * - S. Cools and W. Vanroose,
-    "The communication-hiding pipelined BiCGStab method for the parallel solution of large unsymmetric linear systems",
-    Parallel Computing, 65:1-20, 2017.
 
 .seealso: [](ch_ksp), `KSPFBCGS`, `KSPFBCGSR`, `KSPBCGS`, `KSPBCGSL`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBCGS`, `KSPSetPCSide()`,
            [](sec_pipelineksp), [](doc_faq_pipelined)

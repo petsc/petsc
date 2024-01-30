@@ -624,24 +624,22 @@ static PetscErrorCode SNESView_NEWTONTRDC(SNES snes, PetscViewer viewer)
       SNESNEWTONTRDC - Newton based nonlinear solver that uses trust-region dogleg method with Cauchy direction
 
    Options Database Keys:
-+   -snes_trdc_tol <tol> - trust region tolerance
-.   -snes_trdc_eta1 <eta1> - trust region parameter 0.0 <= eta1 <= eta2, rho >= eta1 breaks out of the inner iteration (default: eta1=0.001)
-.   -snes_trdc_eta2 <eta2> - trust region parameter 0.0 <= eta1 <= eta2, rho <= eta2 shrinks the trust region (default: eta2=0.25)
-.   -snes_trdc_eta3 <eta3> - trust region parameter eta3 > eta2, rho >= eta3 expands the trust region (default: eta3=0.75)
-.   -snes_trdc_t1 <t1> - trust region parameter, shrinking factor of trust region (default: 0.25)
-.   -snes_trdc_t2 <t2> - trust region parameter, expanding factor of trust region (default: 2.0)
-.   -snes_trdc_deltaM <deltaM> - trust region parameter, max size of trust region, deltaM*norm2(x) (default: 0.5)
-.   -snes_trdc_delta0 <delta0> - trust region parameter, initial size of trust region, delta0*norm2(x) (default: 0.1)
-.   -snes_trdc_auto_scale_max <auto_scale_max> - used with auto_scale_multiphase, caps the maximum auto-scaling factor
-.   -snes_trdc_use_cauchy <use_cauchy> - True uses dogleg Cauchy (Steepest Descent direction) step & direction in the trust region algorithm
++   -snes_trdc_tol <tol>                                     - trust region tolerance
+.   -snes_trdc_eta1 <eta1>                                   - trust region parameter 0.0 <= eta1 <= eta2, rho >= eta1 breaks out of the inner iteration (default: eta1=0.001)
+.   -snes_trdc_eta2 <eta2>                                   - trust region parameter 0.0 <= eta1 <= eta2, rho <= eta2 shrinks the trust region (default: eta2=0.25)
+.   -snes_trdc_eta3 <eta3>                                   - trust region parameter eta3 > eta2, rho >= eta3 expands the trust region (default: eta3=0.75)
+.   -snes_trdc_t1 <t1>                                       - trust region parameter, shrinking factor of trust region (default: 0.25)
+.   -snes_trdc_t2 <t2>                                       - trust region parameter, expanding factor of trust region (default: 2.0)
+.   -snes_trdc_deltaM <deltaM>                               - trust region parameter, max size of trust region, $deltaM*norm2(x)$ (default: 0.5)
+.   -snes_trdc_delta0 <delta0>                               - trust region parameter, initial size of trust region, $delta0*norm2(x)$ (default: 0.1)
+.   -snes_trdc_auto_scale_max <auto_scale_max>               - used with auto_scale_multiphase, caps the maximum auto-scaling factor
+.   -snes_trdc_use_cauchy <use_cauchy>                       - True uses dogleg Cauchy (Steepest Descent direction) step & direction in the trust region algorithm
 -   -snes_trdc_auto_scale_multiphase <auto_scale_multiphase> - True turns on auto-scaling for multivariable block matrix for Cauchy and trust region
 
    Level: intermediate
 
-    References:
-.   - * "Linear and Nonlinear Solvers for Simulating Multiphase Flow
-    within Large-Scale Engineered Subsurface Systems" by Heeho D. Park, Glenn E. Hammond,
-    Albert J. Valocchi, Tara LaForce.
+   Note:
+   See {cite}`park2021linear`
 
 .seealso: [](ch_snes), `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESSetTrustRegionTolerance()`,
           `SNESNewtonTRDCPreCheck()`, `SNESNewtonTRDCGetPreCheck()`, `SNESNewtonTRDCSetPostCheck()`, `SNESNewtonTRDCGetPostCheck()`,

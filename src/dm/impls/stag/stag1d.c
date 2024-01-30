@@ -516,6 +516,24 @@ PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_1d(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PETSC_INTERN PetscErrorCode DMStagPopulateLocalToLocal1d_Internal(DM dm)
+{
+  DM_Stag *const stag = (DM_Stag *)dm->data;
+  PetscInt      *idxRemap;
+  PetscInt       i, leftGhostEntries;
+
+  PetscFunctionBegin;
+  PetscCall(VecScatterCopy(stag->gtol, &stag->ltol));
+  PetscCall(PetscMalloc1(stag->entries, &idxRemap));
+
+  leftGhostEntries = (stag->start[0] - stag->startGhost[0]) * stag->entriesPerElement;
+  for (i = 0; i < stag->entries; ++i) idxRemap[i] = leftGhostEntries + i;
+
+  PetscCall(VecScatterRemap(stag->ltol, idxRemap, NULL));
+  PetscCall(PetscFree(idxRemap));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_1D_AIJ_Assemble(DM dm, Mat A)
 {
   DMStagStencilType stencil_type;

@@ -12,7 +12,7 @@
 /* SUBMANSEC = TS */
 
 /*S
-     TS - Abstract PETSc object that manages all time-steppers (ODE integrators)
+   TS - Abstract PETSc object that manages all time-steppers (ODE integrators)
 
    Level: beginner
 
@@ -21,7 +21,7 @@ S*/
 typedef struct _p_TS *TS;
 
 /*J
-    TSType - String with the name of a PETSc `TS` method.
+   TSType - String with the name of a PETSc `TS` method.
 
    Level: beginner
 
@@ -54,10 +54,10 @@ typedef const char *TSType;
 #define TSDIRK            "dirk"
 
 /*E
-    TSProblemType - Determines the type of problem this `TS` object is to be used to solve
+   TSProblemType - Determines the type of problem this `TS` object is to be used to solve
 
    Values:
- + `TS_LINEAR` - a linear ODE or DAE
+ + `TS_LINEAR`    - a linear ODE or DAE
  - `TS_NONLINEAR` - a nonlinear ODE or DAE
 
    Level: beginner
@@ -74,8 +74,8 @@ typedef enum {
 
    Values:
 +  `TS_EQ_UNSPECIFIED` - (default)
-.  `TS_EQ_EXPLICIT` - {ODE and DAE index 1, 2, 3, HI} F(t,U,U_t) := M(t) U_t - G(U,t) = 0
--  `TS_EQ_IMPLICIT` - {ODE and DAE index 1, 2, 3, HI} F(t,U,U_t) = 0
+.  `TS_EQ_EXPLICIT`    - {ODE and DAE index 1, 2, 3, HI} F(t,U,U_t) := M(t) U_t - G(U,t) = 0
+-  `TS_EQ_IMPLICIT`    - {ODE and DAE index 1, 2, 3, HI} F(t,U,U_t) = 0
 
    Level: beginner
 
@@ -201,7 +201,7 @@ M*/
    Level: beginner
 
    Note:
-    See `TSSetMaxSNESFailures()` for how to allow more nonlinear solver failures.
+   See `TSSetMaxSNESFailures()` for how to allow more nonlinear solver failures.
 
 .seealso: [](ch_ts), `TS`, `TSSolve()`, `TSGetConvergedReason()`, `TSGetAdapt()`, `TSGetSNES()`, `SNESGetConvergedReason()`, `TSSetMaxSNESFailures()`
 M*/
@@ -212,7 +212,7 @@ M*/
    Level: beginner
 
    Notes:
-    See `TSSetMaxStepRejections()` for how to allow more step rejections.
+   See `TSSetMaxStepRejections()` for how to allow more step rejections.
 
 .seealso: [](ch_ts), `TS`, `TSSolve()`, `TSGetConvergedReason()`, `TSGetAdapt()`, `TSSetMaxStepRejections()`
 M*/
@@ -223,7 +223,7 @@ M*/
    Values:
 +  `TS_EXACTFINALTIME_STEPOVER`    - Don't do anything if requested final time is exceeded
 .  `TS_EXACTFINALTIME_INTERPOLATE` - Interpolate back to final time
--  `TS_EXACTFINALTIME_MATCHSTEP` - Adapt final time step to match the final time requested
+-  `TS_EXACTFINALTIME_MATCHSTEP`   - Adapt final time step to match the final time requested
 
    Level: beginner
 
@@ -296,7 +296,7 @@ PETSC_EXTERN PetscErrorCode TSGetCostHessianProducts(TS, PetscInt *, Vec **, Vec
 PETSC_EXTERN PetscErrorCode TSComputeSNESJacobian(TS, Vec, Mat, Mat);
 
 /*S
-     TSTrajectory - Abstract PETSc object that stores the trajectory (solution of ODE/DAE at each time step)
+   TSTrajectory - Abstract PETSc object that stores the trajectory (solution of ODE/DAE at each time step)
 
    Level: advanced
 
@@ -305,7 +305,7 @@ S*/
 typedef struct _p_TSTrajectory *TSTrajectory;
 
 /*J
-    TSTrajectoryType - String with the name of a PETSc `TS` trajectory storage method
+   TSTrajectoryType - String with the name of a PETSc `TS` trajectory storage method
 
    Level: intermediate
 
@@ -468,7 +468,7 @@ PETSC_EXTERN PetscErrorCode TSGetStepNumber(TS, PetscInt *);
 PETSC_EXTERN PetscErrorCode TSSetStepNumber(TS, PetscInt);
 
 /*S
-  TSRHSFunction - An `TS` right-hand-side evaluation function
+  TSRHSFunction - A prototype of a `TS` right-hand-side evaluation function that would be passed to `TSSetRHSFunction()`
 
   Calling Sequence:
 + ts  - timestep context
@@ -485,14 +485,14 @@ S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSFunction)(TS ts, PetscReal t, Vec u, Vec F, void *ctx);
 
 /*S
-  TSRHSJacobian - A `TS` right-hand-side Jacobian evaluation function
+  TSRHSJacobian - A prototype of a `TS` right-hand-side Jacobian evaluation function that would be passed to `TSSetRHSJacobian()`
 
   Calling Sequence:
 + ts   - the `TS` context obtained from `TSCreate()`
 . t    - current time
 . u    - input vector
 . Amat - (approximate) Jacobian matrix
-. Pmat - matrix from which preconditioner is to be constructed (usually the same as Amat)
+. Pmat - matrix from which preconditioner is to be constructed (usually the same as `Amat`)
 - ctx  - [optional] user-defined context for matrix evaluation routine
 
   Level: beginner
@@ -503,8 +503,8 @@ S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSJacobian)(TS ts, PetscReal t, Vec u, Mat Amat, Mat Pmat, void *ctx);
 
 /*S
-  TSRHSJacobianP - A function that computes the Jacobian of G w.r.t. the parameters P where U_t
-  = G(U,P,t), as well as the location to store the matrix.
+  TSRHSJacobianP - A prototype of a function that computes the Jacobian of G w.r.t. the parameters P where
+  U_t = G(U,P,t), as well as the location to store the matrix that would be passed to `TSSetRHSJacobianP()`
 
   Calling Sequence:
 + ts  - the `TS` context
@@ -526,7 +526,7 @@ PETSC_EXTERN PetscErrorCode TSGetRHSJacobian(TS, Mat *, Mat *, TSRHSJacobian *, 
 PETSC_EXTERN PetscErrorCode TSRHSJacobianSetReuse(TS, PetscBool);
 
 /*S
-  TSSolutionFunction - A `TS` solution evaluation function
+  TSSolutionFunction - A prototype of a `TS` solution evaluation function that would be passed to `TSSetSolutionFunction()`
 
   Calling Sequence:
 + ts  - timestep context
@@ -543,7 +543,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSSolutionFunction)(TS ts, PetscRe
 PETSC_EXTERN PetscErrorCode TSSetSolutionFunction(TS, TSSolutionFunction, void *);
 
 /*S
-  TSForcingFunction - A `TS` forcing function evaluation function
+  TSForcingFunction - A prototype of a `TS` forcing function evaluation function that would be passed to `TSSetForcingFunction()`
 
   Calling Sequence:
 + ts  - timestep context
@@ -560,7 +560,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSForcingFunction)(TS ts, PetscRea
 PETSC_EXTERN PetscErrorCode TSSetForcingFunction(TS, TSForcingFunction, void *);
 
 /*S
-  TSIFunction - A `TS` implicit function evaluation function
+  TSIFunction - A prototype of a `TS` implicit function evaluation function that would be passed to `TSSetIFunction()
 
   Calling Sequence:
 + ts  - the `TS` context obtained from `TSCreate()`
@@ -574,10 +574,10 @@ PETSC_EXTERN PetscErrorCode TSSetForcingFunction(TS, TSForcingFunction, void *);
 
 .seealso: [](ch_ts), `TS`, `TSSetIFunction()`, `DMTSSetIFunction()`, `TSIJacobian()`, `TSRHSFunction()`, `TSRHSJacobian()`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSIFunction)(TS ts, PetscReal t, Vec U, Vec U_tt, Vec F, void *ctx);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSIFunction)(TS ts, PetscReal t, Vec U, Vec U_t, Vec F, void *ctx);
 
 /*S
-  TSIJacobian - A `TS` Jacobian evaluation function
+  TSIJacobian - A prototype of a `TS` Jacobian evaluation function that would be passed to `TSSetIJacobian()`
 
   Calling Sequence:
 + ts   - the `TS` context obtained from `TSCreate()`
@@ -601,7 +601,7 @@ PETSC_EXTERN PetscErrorCode TSSetIJacobian(TS, Mat, Mat, TSIJacobian, void *);
 PETSC_EXTERN PetscErrorCode TSGetIJacobian(TS, Mat *, Mat *, TSIJacobian *, void **);
 
 /*S
-  TSI2Function - A `TS` implicit function evaluation function for 2nd order systems
+  TSI2Function - A prototype of a `TS` implicit function evaluation function for 2nd order systems that would be passed to `TSSetI2Function()`
 
   Calling Sequence:
 + ts   - the `TS` context obtained from `TSCreate()`
@@ -619,7 +619,7 @@ S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSI2Function)(TS ts, PetscReal t, Vec U, Vec U_t, Vec U_tt, Vec F, void *ctx);
 
 /*S
-  TSI2Jacobian - A `TS` implicit Jacobian evaluation function for 2nd order systems
+  TSI2Jacobian - A prototype of a `TS` implicit Jacobian evaluation function for 2nd order systems that would be passed to `TSSetI2Jacobian()`
 
   Calling Sequence:
 + ts   - the `TS` context obtained from `TSCreate()`
@@ -730,7 +730,7 @@ PETSC_EXTERN PetscErrorCode DMTSGetI2Jacobian(DM, TSI2Jacobian *, void **);
 PETSC_EXTERN PetscErrorCode DMTSSetI2JacobianContextDestroy(DM, PetscErrorCode (*)(void *));
 
 /*S
-  TSTransientVariable - A function to transform from state to transient variables
+  TSTransientVariable - A prototype of a function to transform from state to transient variables that would be passed to  `TSSetTransientVariable()`
 
   Calling Sequence:
 + ts  - timestep context
@@ -772,7 +772,7 @@ PETSC_EXTERN PetscErrorCode DMTSSetIFunctionSerialize(DM, PetscErrorCode (*)(voi
 PETSC_EXTERN PetscErrorCode DMTSSetIJacobianSerialize(DM, PetscErrorCode (*)(void *, PetscViewer), PetscErrorCode (*)(void **, PetscViewer));
 
 /*S
-  DMDATSRHSFunctionLocal - A local `TS` right hand side residual evaluation function for use with `DMDA`
+  DMDATSRHSFunctionLocal - A prototype of a local `TS` right hand side residual evaluation function for use with `DMDA` that would be passed to `DMDATSSetRHSFunctionLocal()`
 
   Calling Sequence:
 + info - defines the subdomain to evaluate the residual on
@@ -788,7 +788,7 @@ S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSRHSFunctionLocal)(DMDALocalInfo *info, PetscReal t, void *x, void *f, void *ctx);
 
 /*S
-  DMDATSRHSJacobianLocal - A local residual evaluation function for use with `DMDA`
+  DMDATSRHSJacobianLocal - A prototype of a local residual evaluation function for use with `DMDA` that would be passed to `DMDATSSetRHSJacobianLocal()`
 
   Calling Sequence:
 + info - defines the subdomain to evaluate the residual on
@@ -805,7 +805,7 @@ S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSRHSJacobianLocal)(DMDALocalInfo *info, PetscReal t, void *x, Mat J, Mat B, void *ctx);
 
 /*S
-  DMDATSIFunctionLocal - A local residual evaluation function for use with `DMDA`
+  DMDATSIFunctionLocal - A prototype of a local residual evaluation function for use with `DMDA` that would be passed to `DMDATSSetIFunctionLocal()`
 
   Calling Sequence:
 + info  - defines the subdomain to evaluate the residual on
@@ -822,7 +822,7 @@ S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSIFunctionLocal)(DMDALocalInfo *info, PetscReal t, void *x, void *xdot, void *imode, void *ctx);
 
 /*S
-  DMDATSIJacobianLocal - A local residual evaluation function for use with `DMDA`
+  DMDATSIJacobianLocal - A prototype of a local residual evaluation function for use with `DMDA` that would be passed to `DMDATSSetIJacobianLocal()`
 
   Calling Sequence:
 + info  - defines the subdomain to evaluate the residual on
@@ -926,8 +926,13 @@ PETSC_EXTERN PetscErrorCode       TSMonitorHGSwarmSolution(TS, PetscInt, PetscRe
 PETSC_EXTERN PetscErrorCode       TSMonitorHGCtxDestroy(TSMonitorHGCtx *);
 PETSC_EXTERN PetscErrorCode       TSMonitorHGSwarmSolution(TS, PetscInt, PetscReal, Vec, void *);
 
-PETSC_EXTERN PetscErrorCode TSSetEventHandler(TS, PetscInt, PetscInt[], PetscBool[], PetscErrorCode (*)(TS, PetscReal, Vec, PetscScalar[], void *), PetscErrorCode (*)(TS, PetscInt, PetscInt[], PetscReal, Vec, PetscBool, void *), void *);
-PETSC_EXTERN PetscErrorCode TSSetPostEventIntervalStep(TS, PetscReal);
+PETSC_EXTERN PetscErrorCode TSSetEventHandler(TS, PetscInt, PetscInt[], PetscBool[], PetscErrorCode (*)(TS, PetscReal, Vec, PetscReal[], void *), PetscErrorCode (*)(TS, PetscInt, PetscInt[], PetscReal, Vec, PetscBool, void *), void *);
+PETSC_EXTERN PetscErrorCode TSSetPostEventStep(TS, PetscReal);
+PETSC_EXTERN PetscErrorCode TSSetPostEventSecondStep(TS, PetscReal);
+PETSC_DEPRECATED_FUNCTION(3, 21, 0, "TSSetPostEventSecondStep()", ) static inline PetscErrorCode TSSetPostEventIntervalStep(TS ts, PetscReal dt)
+{
+  return TSSetPostEventSecondStep(ts, dt);
+}
 PETSC_EXTERN PetscErrorCode TSSetEventTolerances(TS, PetscReal, PetscReal[]);
 PETSC_EXTERN PetscErrorCode TSGetNumEvents(TS, PetscInt *);
 
@@ -956,16 +961,16 @@ PETSC_EXTERN PetscFunctionList TSSSPList;
 
    Level: beginner
 
-.seealso: [](ch_ts), `TS`, `TSAdaptCreate()`, `TSAdaptType`
+.seealso: [](ch_ts), `TS`, `TSGetAdapt()`, `TSAdaptCreate()`, `TSAdaptType`
 S*/
 typedef struct _p_TSAdapt *TSAdapt;
 
 /*J
-    TSAdaptType - String with the name of `TSAdapt` scheme.
+   TSAdaptType - String with the name of `TSAdapt` scheme.
 
    Level: beginner
 
-.seealso: [](ch_ts), `TSAdaptSetType()`, `TS`, `TSAdapt`
+.seealso: [](ch_ts), `TSGetAdapt()`, `TSAdaptSetType()`, `TS`, `TSAdapt`
 J*/
 typedef const char *TSAdaptType;
 #define TSADAPTNONE    "none"
@@ -1026,7 +1031,7 @@ S*/
 typedef struct _p_TSGLLEAdapt *TSGLLEAdapt;
 
 /*J
-    TSGLLEAdaptType - String with the name of `TSGLLEAdapt` scheme
+   TSGLLEAdaptType - String with the name of `TSGLLEAdapt` scheme
 
    Level: beginner
 
@@ -1052,7 +1057,7 @@ PETSC_EXTERN PetscErrorCode TSGLLEAdaptSetFromOptions(TSGLLEAdapt, PetscOptionIt
 PETSC_EXTERN PetscErrorCode TSGLLEAdaptDestroy(TSGLLEAdapt *);
 
 /*J
-    TSGLLEAcceptType - String with the name of `TSGLLEAccept` scheme
+   TSGLLEAcceptType - String with the name of `TSGLLEAccept` scheme
 
    Level: beginner
 
@@ -1082,7 +1087,7 @@ PETSC_EXTERN PetscErrorCode TSGLLEGetAdapt(TS, TSGLLEAdapt *);
 PETSC_EXTERN PetscErrorCode TSGLLESetAcceptType(TS, TSGLLEAcceptType);
 
 /*J
-    TSEIMEXType - String with the name of an Extrapolated IMEX `TSEIMEX` type
+   TSEIMEXType - String with the name of an Extrapolated IMEX `TSEIMEX` type
 
    Level: beginner
 
@@ -1095,7 +1100,7 @@ PETSC_EXTERN PetscErrorCode TSEIMEXSetRowCol(TS ts, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode TSEIMEXSetOrdAdapt(TS, PetscBool);
 
 /*J
-    TSRKType - String with the name of a Runge-Kutta `TSRK` type
+   TSRKType - String with the name of a Runge-Kutta `TSRK` type
 
    Level: beginner
 
@@ -1127,7 +1132,7 @@ PETSC_EXTERN PetscErrorCode TSRKFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSRKRegisterDestroy(void);
 
 /*J
-   TSMPRKType - String with the name of a Partitioned Runge-Kutta `TSMPRK` type
+   TSMPRKType - String with the name of a partitioned Runge-Kutta `TSMPRK` type
 
    Level: beginner
 
@@ -1149,7 +1154,7 @@ PETSC_EXTERN PetscErrorCode TSMPRKFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSMPRKRegisterDestroy(void);
 
 /*J
-    TSIRKType - String with the name of an implicit Runge-Kutta `TSIRK` type
+   TSIRKType - String with the name of an implicit Runge-Kutta `TSIRK` type
 
    Level: beginner
 
@@ -1169,7 +1174,7 @@ PETSC_EXTERN PetscErrorCode TSIRKFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSIRKRegisterDestroy(void);
 
 /*J
-    TSGLEEType - String with the name of a General Linear with Error Estimation `TSGLEE` type
+   TSGLEEType - String with the name of a General Linear with Error Estimation `TSGLEE` type
 
    Level: beginner
 
@@ -1186,7 +1191,7 @@ typedef const char *TSGLEEType;
 #define TSGLEERK285EX "rk285ex"
 
 /*J
-    TSGLEEMode - String with the mode of error estimation for a General Linear with Error Estimation `TSGLEE` type
+   TSGLEEMode - String with the mode of error estimation for a General Linear with Error Estimation `TSGLEE` type
 
    Level: beginner
 
@@ -1201,7 +1206,7 @@ PETSC_EXTERN PetscErrorCode TSGLEEInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLEERegisterDestroy(void);
 
 /*J
-    TSARKIMEXType - String with the name of an Additive Runge-Kutta IMEX `TSARKIMEX` type
+   TSARKIMEXType - String with the name of an Additive Runge-Kutta IMEX `TSARKIMEX` type
 
    Level: beginner
 
@@ -1231,7 +1236,7 @@ PETSC_EXTERN PetscErrorCode TSARKIMEXFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSARKIMEXRegisterDestroy(void);
 
 /*J
-    TSDIRKType - String with the name of a Diagonally Implicit Runge-Kutta `TSDIRK` type
+   TSDIRKType - String with the name of a Diagonally Implicit Runge-Kutta `TSDIRK` type
 
    Level: beginner
 
@@ -1259,7 +1264,7 @@ PETSC_EXTERN PetscErrorCode TSDIRKSetType(TS ts, TSDIRKType);
 PETSC_EXTERN PetscErrorCode TSDIRKRegister(TSDIRKType, PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[], PetscInt, const PetscReal[]);
 
 /*J
-    TSRosWType - String with the name of a Rosenbrock-W `TSROSW` type
+   TSRosWType - String with the name of a Rosenbrock-W `TSROSW` type
 
    Level: beginner
 

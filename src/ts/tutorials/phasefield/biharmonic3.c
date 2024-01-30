@@ -323,7 +323,7 @@ PetscErrorCode FormInitialSolution(DM da, Vec X, PetscReal kappa)
      requires: !complex !single
 
    test:
-     args: -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason  -ts_type beuler  -da_refine 5 -ts_dt 9.53674e-9 -ts_max_steps 50
+     args: -ts_monitor -snes_monitor -pc_type lu -snes_converged_reason -ts_type beuler -da_refine 5 -ts_dt 9.53674e-9 -ts_max_steps 50
      requires: x
 
 TEST*/

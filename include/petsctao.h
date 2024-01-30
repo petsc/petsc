@@ -14,8 +14,8 @@ PETSC_EXTERN PetscErrorCode TaoSoftThreshold(Vec, PetscReal, PetscReal, Vec);
   TaoSubsetType - Type representing the way TAO handles active sets
 
   Values:
-+ `TAO_SUBSET_SUBVEC` - Tao uses `MatCreateSubMatrix()` and `VecGetSubVector()`
-. `TAO_SUBSET_MASK` - Matrices are zeroed out corresponding to active set entries
++ `TAO_SUBSET_SUBVEC`     - Tao uses `MatCreateSubMatrix()` and `VecGetSubVector()`
+. `TAO_SUBSET_MASK`       - Matrices are zeroed out corresponding to active set entries
 - `TAO_SUBSET_MATRIXFREE` - Same as `TAO_SUBSET_MASK` but it can be applied to matrix-free operators
 
   Options database Key:
@@ -33,7 +33,7 @@ typedef enum {
 PETSC_EXTERN const char *const TaoSubsetTypes[];
 
 /*S
-     Tao - Abstract PETSc object that manages nonlinear optimization solves
+   Tao - Abstract PETSc object that manages nonlinear optimization solves
 
    Level: advanced
 
@@ -42,7 +42,7 @@ S*/
 typedef struct _p_Tao *Tao;
 
 /*E
-     TaoADMMUpdateType - Determine spectral penalty update routine for Lagrange augmented term for `TAOADMM`.
+  TaoADMMUpdateType - Determine spectral penalty update routine for Lagrange augmented term for `TAOADMM`.
 
   Level: advanced
 
@@ -56,7 +56,7 @@ typedef enum {
 PETSC_EXTERN const char *const TaoADMMUpdateTypes[];
 
 /*MC
-     TAO_ADMM_UPDATE_BASIC - Use same spectral penalty set at the beginning. No update
+  TAO_ADMM_UPDATE_BASIC - Use same spectral penalty set at the beginning. No update
 
   Level: advanced
 
@@ -67,7 +67,7 @@ PETSC_EXTERN const char *const TaoADMMUpdateTypes[];
 M*/
 
 /*MC
-     TAO_ADMM_UPDATE_ADAPTIVE - Adaptively update spectral penalty
+  TAO_ADMM_UPDATE_ADAPTIVE - Adaptively update spectral penalty
 
   Level: advanced
 
@@ -78,7 +78,7 @@ M*/
 M*/
 
 /*MC
-     ADMM_UPDATE_ADAPTIVE_RELAXED - Adaptively update spectral penalty, and relaxes parameter update
+  ADMM_UPDATE_ADAPTIVE_RELAXED - Adaptively update spectral penalty, and relaxes parameter update
 
   Level: advanced
 
@@ -89,7 +89,7 @@ M*/
 M*/
 
 /*E
-     TaoADMMRegularizerType - Determine regularizer routine - either user provided or soft threshold for `TAOADMM`
+  TaoADMMRegularizerType - Determine regularizer routine - either user provided or soft threshold for `TAOADMM`
 
   Level: advanced
 
@@ -125,7 +125,7 @@ M*/
 M*/
 
 /*E
-     TaoALMMType - Determine the augmented Lagrangian formulation used in the `TAOALMM` subproblem.
+   TaoALMMType - Determine the augmented Lagrangian formulation used in the `TAOALMM` subproblem.
 
    Values:
 +  `TAO_ALMM_CLASSIC` - classic augmented Lagrangian definition including slack variables for inequality constraints
@@ -142,24 +142,23 @@ typedef enum {
 PETSC_EXTERN const char *const TaoALMMTypes[];
 
 /*E
-     TaoBNCGType - Determine the conjugate gradient update formula used in the TAOBNCG algorithm.
+  TaoBNCGType - Determine the conjugate gradient update formula used in the TAOBNCG algorithm.
 
   Values:
-.vb
-  TAO_BNCG_GD         - basic gradient descent, no CG update
-  TAO_BNCG_PCGD       - preconditioned/scaled gradient descent
-  TAO_BNCG_HS         - Hestenes-Stiefel
-  TAO_BNCG_FR         - Fletcher-Reeves
-  TAO_BNCG_PRP        - Polak-Ribiere-Polyak (PRP)
-  TAO_BNCG_PRP_PLUS   - Polak-Ribiere-Polyak "plus" (PRP+)
-  TAO_BNCG_DY         - Dai-Yuan
-  TAO_BNCG_HZ         - Hager-Zhang (CG_DESCENT 5.3)
-  TAO_BNCG_DK         - Dai-Kou (2013)
-  TAO_BNCG_KD         - Kou-Dai (2015)
-  TAO_BNCG_SSML_BFGS  - Self-Scaling Memoryless BFGS (Perry-Shanno)
-  TAO_BNCG_SSML_DFP   - Self-Scaling Memoryless DFP
-  TAO_BNCG_SSML_BRDN  - Self-Scaling Memoryless (Symmetric) Broyden
-.ve
++  TAO_BNCG_GD         - basic gradient descent, no CG update
+.  TAO_BNCG_PCGD       - preconditioned/scaled gradient descent
+.  TAO_BNCG_HS         - Hestenes-Stiefel
+.  TAO_BNCG_FR         - Fletcher-Reeves
+.  TAO_BNCG_PRP        - Polak-Ribiere-Polyak (PRP)
+.  TAO_BNCG_PRP_PLUS   - Polak-Ribiere-Polyak "plus" (PRP+)
+.  TAO_BNCG_DY         - Dai-Yuan
+.  TAO_BNCG_HZ         - Hager-Zhang (CG_DESCENT 5.3)
+.  TAO_BNCG_DK         - Dai-Kou (2013)
+.  TAO_BNCG_KD         - Kou-Dai (2015)
+.  TAO_BNCG_SSML_BFGS  - Self-Scaling Memoryless BFGS (Perry-Shanno)
+.  TAO_BNCG_SSML_DFP   - Self-Scaling Memoryless DFP
+-  TAO_BNCG_SSML_BRDN  - Self-Scaling Memoryless (Symmetric) Broyden
+
   Level: advanced
 
 .seealso: `Tao`, `TAOBNCG`, `TaoBNCGSetType()`, `TaoBNCGGetType()`
@@ -183,22 +182,22 @@ typedef enum {
 PETSC_EXTERN const char *const TaoBNCGTypes[];
 
 /*J
-        TaoType - String with the name of a `Tao` method
+  TaoType - String with the name of a `Tao` method
 
   Values:
-+    `TAONLS` - nls Newton's method with line search for unconstrained minimization
-.    `TAONTR` - ntr Newton's method with trust region for unconstrained minimization
-.    `TAONTL` - ntl Newton's method with trust region, line search for unconstrained minimization
-.    `TAOLMVM` - lmvm Limited memory variable metric method for unconstrained minimization
-.    `TAOCG` - cg Nonlinear conjugate gradient method for unconstrained minimization
-.    `TAONM` - nm Nelder-Mead algorithm for derivate-free unconstrained minimization
-.    `TAOTRON` - tron Newton Trust Region method for bound constrained minimization
-.    `TAOGPCG` - gpcg Newton Trust Region method for quadratic bound constrained minimization
-.    `TAOBLMVM` - blmvm Limited memory variable metric method for bound constrained minimization
-.    `TAOLCL` - lcl Linearly constrained Lagrangian method for pde-constrained minimization
--    `TAOPOUNDERS` - Pounders Model-based algorithm for nonlinear least squares
++ `TAONLS`      - nls Newton's method with line search for unconstrained minimization
+. `TAONTR`      - ntr Newton's method with trust region for unconstrained minimization
+. `TAONTL`      - ntl Newton's method with trust region, line search for unconstrained minimization
+. `TAOLMVM`     - lmvm Limited memory variable metric method for unconstrained minimization
+. `TAOCG`       - cg Nonlinear conjugate gradient method for unconstrained minimization
+. `TAONM`       - nm Nelder-Mead algorithm for derivate-free unconstrained minimization
+. `TAOTRON`     - tron Newton Trust Region method for bound constrained minimization
+. `TAOGPCG`     - gpcg Newton Trust Region method for quadratic bound constrained minimization
+. `TAOBLMVM`    - blmvm Limited memory variable metric method for bound constrained minimization
+. `TAOLCL`      - lcl Linearly constrained Lagrangian method for pde-constrained minimization
+- `TAOPOUNDERS` - Pounders Model-based algorithm for nonlinear least squares
 
-       Level: beginner
+  Level: beginner
 
 .seealso: [](doc_taosolve), [](ch_tao), `Tao`, `TaoCreate()`, `TaoSetType()`
 J*/
@@ -245,29 +244,29 @@ PETSC_EXTERN PetscFunctionList TaoList;
     TaoConvergedReason - reason a `Tao` optimizer was said to have converged or diverged
 
    Values:
-+  `TAO_CONVERGED_GATOL` - ||g(X)|| < gatol
-.  `TAO_CONVERGED_GRTOL` - ||g(X)|| / f(X)  < grtol
-.  `TAO_CONVERGED_GTTOL` - ||g(X)|| / ||g(X0)|| < gttol
-.  `TAO_CONVERGED_STEPTOL` - step size smaller than tolerance
-.  `TAO_CONVERGED_MINF` - F < F_min
-.  `TAO_CONVERGED_USER` - the user indicates the optimization has succeeded
-.  `TAO_DIVERGED_MAXITS` - the maximum number of iterations allowed has been achieved
-.  `TAO_DIVERGED_NAN` - not a number appeared in the computations
-.  `TAO_DIVERGED_MAXFCN` - the maximum number of function evaluations has been computed
-.  `TAO_DIVERGED_LS_FAILURE` - a linesearch failed
++  `TAO_CONVERGED_GATOL`       - $||g(X)|| < gatol$
+.  `TAO_CONVERGED_GRTOL`       - $||g(X)|| / f(X)  < grtol$
+.  `TAO_CONVERGED_GTTOL`       - $||g(X)|| / ||g(X0)|| < gttol$
+.  `TAO_CONVERGED_STEPTOL`     - step size smaller than tolerance
+.  `TAO_CONVERGED_MINF`        - $F < F_min$
+.  `TAO_CONVERGED_USER`        - the user indicates the optimization has succeeded
+.  `TAO_DIVERGED_MAXITS`       - the maximum number of iterations allowed has been achieved
+.  `TAO_DIVERGED_NAN`          - not a number appeared in the computations
+.  `TAO_DIVERGED_MAXFCN`       - the maximum number of function evaluations has been computed
+.  `TAO_DIVERGED_LS_FAILURE`   - a linesearch failed
 .  `TAO_DIVERGED_TR_REDUCTION` - trust region failure
-.  `TAO_DIVERGED_USER` - the user has indicated the optimization has failed
--  `TAO_CONTINUE_ITERATING` - the optimization is still running, `TaoSolve()`
+.  `TAO_DIVERGED_USER`         - the user has indicated the optimization has failed
+-  `TAO_CONTINUE_ITERATING`    - the optimization is still running, `TaoSolve()`
 
    where
-+  X - current solution
-.  X0 - initial guess
-.  f(X) - current function value
-.  f(X*) - true solution (estimated)
-.  g(X) - current gradient
-.  its - current iterate number
-.  maxits - maximum number of iterates
-.  fevals - number of function evaluations
++  X            - current solution
+.  X0           - initial guess
+.  f(X)         - current function value
+.  f(X*)        - true solution (estimated)
+.  g(X)         - current gradient
+.  its          - current iterate number
+.  maxits       - maximum number of iterates
+.  fevals       - number of function evaluations
 -  max_funcsals - maximum number of function evaluations
 
    Level: beginner
@@ -479,7 +478,11 @@ PETSC_EXTERN PetscErrorCode TaoGetLineSearch(Tao, TaoLineSearch *);
 PETSC_EXTERN PetscErrorCode TaoSetConvergenceHistory(Tao, PetscReal *, PetscReal *, PetscReal *, PetscInt *, PetscInt, PetscBool);
 PETSC_EXTERN PetscErrorCode TaoGetConvergenceHistory(Tao, PetscReal **, PetscReal **, PetscReal **, PetscInt **, PetscInt *);
 PETSC_EXTERN PetscErrorCode TaoSetMonitor(Tao, PetscErrorCode (*)(Tao, void *), void *, PetscErrorCode (*)(void **));
-PETSC_EXTERN PetscErrorCode TaoCancelMonitors(Tao);
+PETSC_EXTERN PetscErrorCode TaoMonitorCancel(Tao);
+PETSC_DEPRECATED_FUNCTION(3, 21, 0, "TaoMonitorCancel()", ) static inline PetscErrorCode TaoCancelMonitors(Tao tao)
+{
+  return TaoMonitorCancel(tao);
+}
 PETSC_EXTERN PetscErrorCode TaoMonitorDefault(Tao, void *);
 PETSC_DEPRECATED_FUNCTION(3, 9, 0, "TaoMonitorDefault()", ) static inline PetscErrorCode TaoDefaultMonitor(Tao tao, void *ctx)
 {

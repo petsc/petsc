@@ -239,7 +239,7 @@ static PetscErrorCode KSPSolve_PIPECGRR(KSP ksp)
 }
 
 /*MC
-   KSPPIPECGRR - Pipelined conjugate gradient method with automated residual replacements. [](sec_pipelineksp)
+   KSPPIPECGRR - Pipelined conjugate gradient method with automated residual replacements {cite}`cools2018analyzing`. [](sec_pipelineksp)
 
    Level: intermediate
 
@@ -260,11 +260,6 @@ static PetscErrorCode KSPSolve_PIPECGRR(KSP ksp)
    Contributed by:
    Siegfried Cools, Universiteit Antwerpen, Dept. Mathematics & Computer Science,
    European FP7 Project on EXascale Algorithms and Advanced Computational Techniques (EXA2CT) / Research Foundation Flanders (FWO)
-
-   Reference:
-   S. Cools, E.F. Yetkin, E. Agullo, L. Giraud, W. Vanroose, "Analyzing the effect of local rounding error
-   propagation on the maximal attainable accuracy of the pipelined Conjugate Gradients method",
-   SIAM Journal on Matrix Analysis and Applications (SIMAX), 39(1):426--450, 2018.
 
 .seealso: [](ch_ksp), [](doc_faq_pipelined), [](sec_pipelineksp), `KSPCreate()`, `KSPSetType()`, `KSPPIPECR`, `KSPGROPPCG`, `KSPPIPECG`, `KSPPGMRES`, `KSPCG`, `KSPPIPEBCGS`, `KSPCGUseSingleReduction()`
 M*/

@@ -1,0 +1,231 @@
+Label 'subpoint_map':
+[0]: 11 (1)
+[0]: 15 (1)
+[0]: 5 (0)
+[0]: 6 (0)
+[0]: 8 (0)
+[0]: 0 (102)
+[0]: 3 (102)
+[0]: 10 (101)
+[0]: 12 (101)
+[0]: 18 (101)
+[0]: 1 (-102)
+[0]: 2 (-102)
+[0]: 13 (-101)
+[0]: 14 (-101)
+[0]: 16 (-101)
+[0]: 17 (-101)
+Label 'subpoint_map split':
+[0]: 7 (100)
+[0]: 8 (100)
+[0]: 10 (100)
+[0]: 12 (-100)
+[0]: 13 (-100)
+[0]: 14 (-100)
+[0]: 16 (101)
+[0]: 20 (101)
+[0]: 24 (-101)
+[0]: 25 (-101)
+Label 'cohesive':
+[0]: 4 (1)
+[0]: 5 (1)
+[0]: 26 (1)
+[0]: 27 (1)
+[0]: 28 (1)
+PetscSection Object: 1 MPI process
+  type not yet set
+2 fields
+  field 0 "displacement" with 2 components
+Process 0:
+  (   0) dim  0 offset   0
+  (   1) dim  0 offset   0
+  (   2) dim  0 offset   0
+  (   3) dim  0 offset   0
+  (   4) dim  0 offset   0
+  (   5) dim  0 offset   0
+  (   6) dim  2 offset   0
+  (   7) dim  2 offset   2
+  (   8) dim  2 offset   8
+  (   9) dim  2 offset  14
+  (  10) dim  2 offset  16
+  (  11) dim  2 offset  22
+  (  12) dim  2 offset   4
+  (  13) dim  2 offset  10
+  (  14) dim  2 offset  18
+  (  15) dim  0 offset  24
+  (  16) dim  0 offset  24
+  (  17) dim  0 offset  24
+  (  18) dim  0 offset  24
+  (  19) dim  0 offset  24
+  (  20) dim  0 offset  24
+  (  21) dim  0 offset  24
+  (  22) dim  0 offset  24
+  (  23) dim  0 offset  24
+  (  24) dim  0 offset  24
+  (  25) dim  0 offset  24
+  (  26) dim  0 offset   6
+  (  27) dim  0 offset  12
+  (  28) dim  0 offset  20
+  field 1 "fault traction" with 2 components
+Process 0:
+  (   0) dim  0 offset   0
+  (   1) dim  0 offset   0
+  (   2) dim  0 offset   0
+  (   3) dim  0 offset   0
+  (   4) dim  0 offset   0
+  (   5) dim  0 offset   0
+  (   6) dim  0 offset   2
+  (   7) dim  0 offset   4
+  (   8) dim  0 offset  10
+  (   9) dim  0 offset  16
+  (  10) dim  0 offset  18
+  (  11) dim  0 offset  24
+  (  12) dim  0 offset   6
+  (  13) dim  0 offset  12
+  (  14) dim  0 offset  20
+  (  15) dim  0 offset  24
+  (  16) dim  0 offset  24
+  (  17) dim  0 offset  24
+  (  18) dim  0 offset  24
+  (  19) dim  0 offset  24
+  (  20) dim  0 offset  24
+  (  21) dim  0 offset  24
+  (  22) dim  0 offset  24
+  (  23) dim  0 offset  24
+  (  24) dim  0 offset  24
+  (  25) dim  0 offset  24
+  (  26) dim  2 offset   6
+  (  27) dim  2 offset  12
+  (  28) dim  2 offset  20
+Vec Object: Local Solution 1 MPI process
+  type: seq
+-1.
+0.
+-2.22045e-16
+1.
+-1.66533e-16
+2.
+-1.
+0.
+-5.55112e-17
+-1.
+0.
+2.22045e-16
+1.
+0.
+1.
+1.
+-2.
+1.
+-2.
+2.
+-1.
+-2.
+-1.
+3.
+Discrete System with 2 fields
+    cell total dim 12 total comp 4
+    cohesive cell
+  Field displacement FEM 2 components (implicit) (Nq 2 Nqc 1) 1-jet
+    PetscFE Object: displacement 1 MPI process
+      type: basic
+      Basic Finite Element in 1 dimensions with 2 components
+      PetscSpace Object: displacement 1 MPI process
+        type: sum
+        Space in 1 variables with 2 components, size 4
+        Sum space of 2 concatenated subspaces (all identical)
+          PetscSpace Object: P1 1 MPI process
+            type: poly
+            Space in 1 variables with 1 components, size 2
+            Polynomial space of degree 1
+      PetscDualSpace Object: displacement 1 MPI process
+        type: sum
+        Dual space with 2 components, size 4
+        Sum dual space of 2 concatenated subspaces (all identical)
+          PetscDualSpace Object: 1 MPI process
+            type: lagrange
+            Dual space with 1 components, size 2
+            Continuous Lagrange dual space
+        Quadrature on a segment of order 3 on 2 points (dim 1)
+  Field fault traction FEM 2 components (implicit) (Nq 2 Nqc 1) 1-jet
+    PetscFE Object: fault traction (faulttraction_) 1 MPI process
+      type: vector
+      Vector Finite Element in 1 dimensions with 2 components
+      PetscSpace Object: fault traction (faulttraction_) 1 MPI process
+        type: sum
+        Space in 1 variables with 2 components, size 4
+        Sum space of 2 concatenated subspaces (all identical)
+          PetscSpace Object: Q1 (faulttraction_sumcomp_) 1 MPI process
+            type: poly
+            Space in 1 variables with 1 components, size 2
+            Polynomial space of degree 1
+      PetscDualSpace Object: fault traction (faulttraction_) 1 MPI process
+        type: sum
+        Dual space with 2 components, size 4
+        Sum dual space of 2 concatenated subspaces (all identical)
+          PetscDualSpace Object: Q1 1 MPI process
+            type: lagrange
+            Dual space with 1 components, size 2
+            Continuous Lagrange dual space
+        Quadrature on a segment of order 3 on 2 points (dim 1)
+  Weak Form System with 2 fields
+    boundary_residual_f0
+      (cohesive, 1) (0, 1) 
+      (material, 1) (0, 0) 
+      (material, 2) (0, 0) 
+    boundary_jacobian_g0
+      (cohesive, 1) (1, 0) 
+      (material, 1) (0, 1) 
+      (material, 2) (0, 1) 
+Vec Object: Local Residual 1 MPI process
+  type: seq
+0.
+0.
+1.33333
+0.666667
+-1.33333
+-0.666667
+-9.92914e-17
+3.73704e-16
+-0.333333
+0.
+0.333333
+0.
+-5.55112e-17
+-4.0637e-17
+0.
+0.
+1.
+1.33333
+-1.
+-1.33333
+-1.17309e-17
+2.22045e-16
+0.
+0.
+Mat Object: Jacobian 1 MPI process
+  type: seqaij
+row 0: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (8, 0.)  (9, 0.)  (16, 0.)  (17, 0.) 
+row 1: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (8, 0.)  (9, 0.)  (16, 0.)  (17, 0.) 
+row 2: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, -1.33333)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, -0.333333)  (13, 0.)  (16, 0.)  (17, 0.)  (18, 0.)  (19, 0.)  (20, -0.333333)  (21, 0.) 
+row 3: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, 0.)  (7, -1.33333)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, -0.333333)  (16, 0.)  (17, 0.)  (18, 0.)  (19, 0.)  (20, 0.)  (21, -0.333333) 
+row 4: (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, 1.33333)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.333333)  (13, 0.)  (14, 0.)  (15, 0.)  (16, 0.)  (17, 0.)  (18, 0.)  (19, 0.)  (20, 0.333333)  (21, 0.)  (22, 0.)  (23, 0.) 
+row 5: (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, 0.)  (7, 1.33333)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, 0.333333)  (14, 0.)  (15, 0.)  (16, 0.)  (17, 0.)  (18, 0.)  (19, 0.)  (20, 0.)  (21, 0.333333)  (22, 0.)  (23, 0.) 
+row 6: (2, -1.33333)  (3, 0.)  (4, 1.33333)  (5, 0.)  (6, 0.)  (7, 0.)  (8, -0.333333)  (9, 0.)  (10, 0.333333)  (11, 0.)  (12, 0.)  (13, 0.)  (16, -0.333333)  (17, 0.)  (18, 0.333333)  (19, 0.)  (20, 0.)  (21, 0.) 
+row 7: (2, 0.)  (3, -1.33333)  (4, 0.)  (5, 1.33333)  (6, 0.)  (7, 0.)  (8, 0.)  (9, -0.333333)  (10, 0.)  (11, 0.333333)  (12, 0.)  (13, 0.)  (16, 0.)  (17, -0.333333)  (18, 0.)  (19, 0.333333)  (20, 0.)  (21, 0.) 
+row 8: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, -0.333333)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, -0.666667)  (13, 0.) 
+row 9: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, 0.)  (7, -0.333333)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, -0.666667) 
+row 10: (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, 0.333333)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.666667)  (13, 0.)  (14, 0.)  (15, 0.) 
+row 11: (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, 0.)  (7, 0.333333)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, 0.666667)  (14, 0.)  (15, 0.) 
+row 12: (2, -0.333333)  (3, 0.)  (4, 0.333333)  (5, 0.)  (6, 0.)  (7, 0.)  (8, -0.666667)  (9, 0.)  (10, 0.666667)  (11, 0.)  (12, 0.)  (13, 0.) 
+row 13: (2, 0.)  (3, -0.333333)  (4, 0.)  (5, 0.333333)  (6, 0.)  (7, 0.)  (8, 0.)  (9, -0.666667)  (10, 0.)  (11, 0.666667)  (12, 0.)  (13, 0.) 
+row 14: (4, 0.)  (5, 0.)  (10, 0.)  (11, 0.)  (14, 0.)  (15, 0.) 
+row 15: (4, 0.)  (5, 0.)  (10, 0.)  (11, 0.)  (14, 0.)  (15, 0.) 
+row 16: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, -0.333333)  (7, 0.)  (16, 0.)  (17, 0.)  (18, 0.)  (19, 0.)  (20, -0.666667)  (21, 0.) 
+row 17: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, 0.)  (7, -0.333333)  (16, 0.)  (17, 0.)  (18, 0.)  (19, 0.)  (20, 0.)  (21, -0.666667) 
+row 18: (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, 0.333333)  (7, 0.)  (16, 0.)  (17, 0.)  (18, 0.)  (19, 0.)  (20, 0.666667)  (21, 0.)  (22, 0.)  (23, 0.) 
+row 19: (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, 0.)  (7, 0.333333)  (16, 0.)  (17, 0.)  (18, 0.)  (19, 0.)  (20, 0.)  (21, 0.666667)  (22, 0.)  (23, 0.) 
+row 20: (2, -0.333333)  (3, 0.)  (4, 0.333333)  (5, 0.)  (6, 0.)  (7, 0.)  (16, -0.666667)  (17, 0.)  (18, 0.666667)  (19, 0.)  (20, 0.)  (21, 0.) 
+row 21: (2, 0.)  (3, -0.333333)  (4, 0.)  (5, 0.333333)  (6, 0.)  (7, 0.)  (16, 0.)  (17, -0.666667)  (18, 0.)  (19, 0.666667)  (20, 0.)  (21, 0.) 
+row 22: (4, 0.)  (5, 0.)  (18, 0.)  (19, 0.)  (22, 0.)  (23, 0.) 
+row 23: (4, 0.)  (5, 0.)  (18, 0.)  (19, 0.)  (22, 0.)  (23, 0.) 

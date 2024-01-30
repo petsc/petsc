@@ -70,8 +70,6 @@ class Package(config.base.Configure):
     self.liblist                = [[]] # list of libraries we wish to check for (packages can override with their own generateLibList() method)
     self.extraLib               = []   # additional libraries needed to link
     self.includes               = []   # headers to check for
-    self.optionalincludes       = []   # headers to check for, do not error if not found
-    self.foundoptionalincludes  = 0
     self.macros                 = []   # optional macros we wish to check for in the headers
     self.functions              = []   # functions we wish to check for in the libraries
     self.functionsDefine        = []   # optional functions we wish to check for in the libraries that should generate a PETSC_HAVE_ define
@@ -1059,9 +1057,6 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
         if self.functionsDefine:
           self.executeTest(self.libraries.check,[lib, self.functionsDefine],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': 'Cxx' in self.buildLanguages, 'functionDefine': 1})
         self.logWrite(self.libraries.restoreLog())
-        self.logPrint('Checking for optional headers '+str(self.optionalincludes)+' in '+location+': '+str(incl))
-        if self.checkInclude(incl, self.optionalincludes, self.dinclude, timeout = 60.0):
-          self.foundoptionalincludes = 1
         self.logPrint('Checking for headers '+str(self.includes)+' in '+location+': '+str(incl))
         if (not self.includes) or self.checkInclude(incl, self.includes, self.dinclude, timeout = 60.0):
           if self.includes:
@@ -1983,8 +1978,10 @@ class CMakePackage(Package):
 
     if not config.setCompilers.Configure.isWindows(self.setCompilers.CC, self.log) and self.checkSharedLibrariesEnabled():
       args.append('-DBUILD_SHARED_LIBS:BOOL=ON')
+      args.append('-DBUILD_STATIC_LIBS:BOOL=OFF')
     else:
       args.append('-DBUILD_SHARED_LIBS:BOOL=OFF')
+      args.append('-DBUILD_STATIC_LIBS:BOOL=ON')
 
     if 'MSYSTEM' in os.environ:
       args.append('-G "MSYS Makefiles"')

@@ -1227,13 +1227,13 @@ PetscErrorCode PCGASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, 
 
 /*MC
    PCGASM - Use the (restricted) additive Schwarz method, each block is (approximately) solved with
-           its own `KSP` object on a subset of MPI ranks
+           its own `KSP` object on a subset of MPI processes
 
    Options Database Keys:
-+  -pc_gasm_total_subdomains <n>  - Sets total number of local subdomains to be distributed among MPI ranks
-.  -pc_gasm_view_subdomains       - activates the printing of subdomain indices in `PCView()`, -ksp_view or -snes_view
-.  -pc_gasm_print_subdomains      - activates the printing of subdomain indices in `PCSetUp()`
-.  -pc_gasm_overlap <ovl>         - Sets overlap by which to (automatically) extend local subdomains
++  -pc_gasm_total_subdomains <n>                   - Sets total number of local subdomains to be distributed among the MPI processes
+.  -pc_gasm_view_subdomains                        - activates the printing of subdomain indices in `PCView()`, -ksp_view or -snes_view
+.  -pc_gasm_print_subdomains                       - activates the printing of subdomain indices in `PCSetUp()`
+.  -pc_gasm_overlap <ovl>                          - Sets overlap by which to (automatically) extend local subdomains
 -  -pc_gasm_type [basic,restrict,interpolate,none] - Sets `PCGASMType`
 
    Level: beginner
@@ -1246,11 +1246,7 @@ PetscErrorCode PCGASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, 
    and set the options directly on the resulting `KSP` object (you can access its `PC`
    with `KSPGetPC()`)
 
-    References:
-+   * - M Dryja, OB Widlund, An additive variant of the Schwarz alternating method for the case of many subregions
-     Courant Institute, New York University Technical report
--   * - Barry Smith, Petter Bjorstad, and William Gropp, Domain Decompositions: Parallel Multilevel Methods for Elliptic Partial Differential Equations,
-    Cambridge University Press.
+   See {cite}`dryja1987additive` and {cite}`1sbg` for details on additive Schwarz algorithms
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCASM`, `PCGASMType`, `PCGASMSetType()`,
           `PCBJACOBI`, `PCGASMGetSubKSP()`, `PCGASMSetSubdomains()`,

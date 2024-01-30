@@ -13,12 +13,14 @@ import glob
 import posixpath
 import subprocess
 
+numberErrors = 0
 HLIST_COLUMNS = 3
 
 # Read an optional header file, whose contents are first copied over
 # Use the level info, and print a formatted index table of all the manual pages
 #
 def printindex(outfilename, headfilename, levels, titles, tables):
+      global numberErrors
       # Read in the header file
       headbuf = ''
       if posixpath.exists(headfilename) :
@@ -28,6 +30,7 @@ def printindex(outfilename, headfilename, levels, titles, tables):
       else:
             print('Error! SUBMANSEC header file "%s" does not exist' % headfilename)
             print('Likley you introduced a new set of manual pages but did not add the header file that describes them')
+            numberErrors = numberErrors + 1
 
       with open(outfilename, "w") as fd:
           # Since it uses three columns we must remove right sidebar so all columns are displayed completely
@@ -70,9 +73,10 @@ def printindex(outfilename, headfilename, levels, titles, tables):
 # alhabetical index to all the man page functions, and prints them all in
 # a single index page
 def printsingleindex(outfilename, alphabet_dict):
+      global numberErrors
       with open(outfilename, "w") as fd:
           fd.write("# Single Index of all PETSc Manual Pages\n\n")
-          fd.write(" Also see the [Manual page table of contents, by section](/manualpages/index.md).\n\n")
+          fd.write(" Also see the [Manual page table of contents, by section](/manualpages/index.rst).\n\n")
           for key in sorted(alphabet_dict.keys()):
                 fd.write("## %s\n\n" % key.upper())
                 fd.write("```{hlist}\n")
@@ -93,6 +97,7 @@ def printsingleindex(outfilename, alphabet_dict):
 # String 'Level:' and return the level info.
 # Also adds the BOLD HTML format to Level field
 def modifylevel(filename,secname,edit_branch):
+      global numberErrors
       with open(filename, "r") as fd:
           buf = fd.read()
 
@@ -110,6 +115,7 @@ def modifylevel(filename,secname,edit_branch):
               print("Warning. Could not find source path in %s" % filename)
       else:
         print('Error! No location in file:', filename)
+        numberErrors = numberErrors + 1
 
       re_level = re.compile(r'(Level:)\s+(\w+)')
       m = re_level.search(buf)
@@ -118,6 +124,7 @@ def modifylevel(filename,secname,edit_branch):
             level = m.group(2)
       else:
             print('Error! No level info in file:', filename)
+            numberErrors = numberErrors + 1
 
       # Reformat level and location
       tmpbuf = re_level.sub('',buf)
@@ -131,7 +138,7 @@ def modifylevel(filename,secname,edit_branch):
       tmpbuf = re.sub('.cxx#', '.cxx.html#', tmpbuf)
 
       # Add footer links
-      outbuf = tmpbuf + '\n[Index of all %s routines](index.md)  \n' % secname + '[Table of Contents for all manual pages](/manualpages/index.md)  \n' + '[Index of all manual pages](/manualpages/singleindex.md)  \n'
+      outbuf = tmpbuf + '\n[Index of all %s routines](index.md)  \n' % secname + '[Table of Contents for all manual pages](/manualpages/index.rst)  \n' + '[Index of all manual pages](/manualpages/singleindex.md)  \n'
 
       # write the modified manpage
       with open(filename, "w") as fd:
@@ -142,6 +149,7 @@ def modifylevel(filename,secname,edit_branch):
 # Go through each manpage file, present in dirname,
 # and create and return a table for it, wrt levels specified.
 def createtable(dirname,levels,secname,editbranch):
+      global numberErrors
       listdir =  os.listdir(dirname)
       mdfiles = [os.path.join(dirname,f) for f in listdir if f.endswith('.md')]
       mdfiles.sort()
@@ -157,6 +165,7 @@ def createtable(dirname,levels,secname,editbranch):
                   table[levels.index(level.lower())].append(filename)
             else:
                   print('Error! Unknown level \''+ level + '\' in', filename)
+                  numberErrors = numberErrors + 1
       return table
 
 # This routine is called for each man dir. Each time, it
@@ -164,10 +173,12 @@ def createtable(dirname,levels,secname,editbranch):
 # the union list.
 
 def addtolist(dirname,singlelist):
+      global numberErrors
       mdfiles = [os.path.join(dirname,f) for f in os.listdir(dirname) if f.endswith('.md')]
       mdfiles.sort()
       if mdfiles == []:
             print('Error! Empty directory:',dirname)
+            numberErrors = numberErrors + 1
             return None
 
       singlelist.extend(mdfiles)
@@ -178,6 +189,7 @@ def addtolist(dirname,singlelist):
 # key is the alphabet, and the vaue corresponds to this key is a dictionary
 # of FunctionName/PathToFile Pair.
 def createdict(singlelist):
+      global numberErrors
       newdict = {}
       for filename in singlelist:
             path,name     = posixpath.split(filename)
@@ -195,6 +207,7 @@ def createdict(singlelist):
 
 def getallmandirs(dirs):
       """ Gets the list of man* dirs present in the doc dir. Each dir will have an index created for it. """
+      global numberErrors
       mandirs = []
       for filename in dirs:
             path,name = posixpath.split(filename)
@@ -205,6 +218,7 @@ def getallmandirs(dirs):
 
 
 def main(PETSC_DIR):
+      global numberErrors
       HEADERDIR = 'doc/manualpages/MANSECHeaders'
       dirs      = glob.glob(os.path.join(PETSC_DIR,'doc','manualpages','*'))
       mandirs   = getallmandirs(dirs)
@@ -224,6 +238,7 @@ def main(PETSC_DIR):
         edit_branch = 'release' if git_ref == git_ref_release else 'main'
       except subprocess.CalledProcessError:
         print("WARNING: checking branch for man page edit links failed")
+        numberErrors = numberErrors + 1
         edit_branch = 'main'
 
       for dirname in mandirs:
@@ -238,6 +253,8 @@ def main(PETSC_DIR):
       alphabet_dict = createdict(singlelist)
       outfilename   = os.path.join(PETSC_DIR,'doc','manualpages','singleindex.md')
       printsingleindex (outfilename,alphabet_dict)
+      if numberErrors:
+        raise RuntimeError('Stopping document build since errors were detected in generating manual page indices')
 
 if __name__ == '__main__':
       main(os.path.abspath(os.environ['PETSC_DIR']))

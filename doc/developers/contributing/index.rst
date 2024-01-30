@@ -16,7 +16,7 @@ All new code in PETSc is accepted via merge requests (MRs).
 
 By submitting code, the contributor gives irretrievable consent to the
 redistribution and/or modification of the contributed source code as
-described in the `PETSc open source license <https://gitlab.com/petsc/petsc/-/blob/main/CONTRIBUTING>`__.
+described in the `PETSc open-source license <https://gitlab.com/petsc/petsc/-/blob/main/CONTRIBUTING>`__.
 
 How-Tos
 -------

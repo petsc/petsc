@@ -302,7 +302,7 @@ static PetscErrorCode FormObjectiveLocal(DMDALocalInfo *info, PetscScalar **x, P
     }
   }
   PetscCall(PetscLogFlops(12.0 * info->ym * info->xm));
-  PetscCall(MPIU_Allreduce(&lobj, obj, 1, MPIU_REAL, MPIU_SUM, comm));
+  *obj = lobj;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

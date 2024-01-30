@@ -1,5 +1,5 @@
-#include <petsc/private/matimpl.h>
-#include <../src/mat/impls/mffd/mffdimpl.h> /*I  "petscmat.h"   I*/
+#include <../src/mat/impls/shell/shell.h> /*I  "petscmat.h"   I*/
+#include <../src/mat/impls/mffd/mffdimpl.h>
 
 PetscFunctionList MatMFFDList              = NULL;
 PetscBool         MatMFFDRegisterAllCalled = PETSC_FALSE;
@@ -567,26 +567,12 @@ static PetscErrorCode MatMFFDSetHHistory_MFFD(Mat J, PetscScalar history[], Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatShellSetContext_MFFD(Mat mat, void *ctx)
-{
-  PetscFunctionBegin;
-  SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Cannot set the MATSHELL context for a MATMFFD, it is used by the MATMFFD");
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatShellSetContextDestroy_MFFD(Mat mat, void (*f)(void))
-{
-  PetscFunctionBegin;
-  SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Cannot set the MATSHELL context destroy for a MATMFFD, it is used by the MATMFFD");
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*MC
   MATMFFD - "mffd" - A matrix-free matrix type.
 
   Level: advanced
 
-  Developers Notes:
+  Developer Notes:
   This is implemented on top of `MATSHELL` to get support for scaling and shifting without requiring duplicate code
 
   Users should not MatShell... operations on this class, there is some error checking for that incorrect usage
@@ -638,8 +624,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
   PetscCall(MatShellSetOperation(A, MATOP_VIEW, (void (*)(void))MatView_MFFD));
   PetscCall(MatShellSetOperation(A, MATOP_ASSEMBLY_END, (void (*)(void))MatAssemblyEnd_MFFD));
   PetscCall(MatShellSetOperation(A, MATOP_SET_FROM_OPTIONS, (void (*)(void))MatSetFromOptions_MFFD));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetContext_C", MatShellSetContext_MFFD));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetContext_C", MatShellSetContextDestroy_MFFD));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetContext_C", MatShellSetContext_Immutable));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetContextDestroy_C", MatShellSetContextDestroy_Immutable));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetManageScalingShifts_C", MatShellSetManageScalingShifts_Immutable));
 
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatMFFDSetBase_C", MatMFFDSetBase_MFFD));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatMFFDSetFunctioniBase_C", MatMFFDSetFunctioniBase_MFFD));

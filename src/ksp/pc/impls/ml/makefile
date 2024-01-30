@@ -2,7 +2,6 @@
 #requirespackage  'PETSC_HAVE_ML'
 
 CFLAGS    = ${ML_INCLUDE}
-LIBBASE   = libpetscksp
 MANSEC    = KSP
 SUBMANSEC = PC
 

@@ -561,15 +561,15 @@ applications based on a fixed number of stored update vectors.
     - ``MATLMVMBadBrdn``
     - ``lmvmbadbrdn``
     - Square
-  * - Symmetric Rank-1 :cite:`keyprefix-nw99`
+  * - Symmetric Rank-1 :cite:`keyprefix-nocedal2006numerical`
     - ``MATLMVMSR1``
     - ``lmvmsr1``
     - Symmetric
-  * - Davidon-Fletcher-Powell (DFP) :cite:`keyprefix-nw99`
+  * - Davidon-Fletcher-Powell (DFP) :cite:`keyprefix-nocedal2006numerical`
     - ``MATLMVMDFP``
     - ``lmvmdfp``
     - SPD
-  * - Broyden-Fletcher-Goldfarb-Shanno (BFGS) :cite:`keyprefix-nw99`
+  * - Broyden-Fletcher-Goldfarb-Shanno (BFGS) :cite:`keyprefix-nocedal2006numerical`
     - ``MATLMVMBFGS``
     - ``lmvmbfgs``
     - SPD

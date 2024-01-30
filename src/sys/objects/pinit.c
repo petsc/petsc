@@ -449,7 +449,7 @@ PetscErrorCode PetscCitationsInitialize(void)
     and Stefano Zampini and Hong Zhang and Hong Zhang and Junchao Zhang},\n\
   Title = {{PETSc/TAO} Users Manual},\n\
   Number = {ANL-21/39 - Revision 3.20},\n\
-  Doi = {10.2172/1968587},\n\
+  Doi = {10.2172/2205494},\n\
   Institution = {Argonne National Laboratory},\n\
   Year = {2023}\n}\n",
                                    NULL));
@@ -814,7 +814,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
       }
     }
     #endif
-      /* check for OpenMPI version, it is not part of the MPI ABI initiative (is it part of another initiative that needs to be handled?) */
+      /* check for Open MPI version, it is not part of the MPI ABI initiative (is it part of another initiative that needs to be handled?) */
   #elif defined(OMPI_MAJOR_VERSION)
     {
       char     *ver, bs[MPI_MAX_LIBRARY_VERSION_STRING], *bsf;
@@ -842,8 +842,8 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 #endif
 
 #if defined(PETSC_HAVE_DLADDR) && !(defined(__cray__) && defined(__clang__))
-  /* These symbols are currently in the OpenMPI and MPICH libraries; they may not always be, in that case the test will simply not detect the problem */
-  PetscCheck(!dlsym(RTLD_DEFAULT, "ompi_mpi_init") || !dlsym(RTLD_DEFAULT, "MPID_Abort"), PETSC_COMM_SELF, PETSC_ERR_MPI_LIB_INCOMP, "Application was linked against both OpenMPI and MPICH based MPI libraries and will not run correctly");
+  /* These symbols are currently in the Open MPI and MPICH libraries; they may not always be, in that case the test will simply not detect the problem */
+  PetscCheck(!dlsym(RTLD_DEFAULT, "ompi_mpi_init") || !dlsym(RTLD_DEFAULT, "MPID_Abort"), PETSC_COMM_SELF, PETSC_ERR_MPI_LIB_INCOMP, "Application was linked against both Open MPI and MPICH based MPI libraries and will not run correctly");
 #endif
 
   /* on Windows - set printf to default to printing 2 digit exponents */
@@ -1135,7 +1135,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 #if defined(__VALGRIND_H)
   PETSC_RUNNING_ON_VALGRIND = RUNNING_ON_VALGRIND ? PETSC_TRUE : PETSC_FALSE;
   #if defined(PETSC_USING_DARWIN) && defined(PETSC_BLASLAPACK_SDOT_RETURNS_DOUBLE)
-  if (PETSC_RUNNING_ON_VALGRIND) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "WARNING: Running valgrind with the MacOS native BLAS and LAPACK can fail. If it fails suggest configuring with --download-fblaslapack or --download-f2cblaslapack"));
+  if (PETSC_RUNNING_ON_VALGRIND) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "WARNING: Running valgrind with the macOS native BLAS and LAPACK can fail. If it fails, try configuring with --download-fblaslapack or --download-f2cblaslapack"));
   #endif
 #endif
   /*
@@ -1660,9 +1660,8 @@ PetscErrorCode PetscFinalize(void)
   PetscGlobalArgs = NULL;
 
 #if defined(PETSC_HAVE_KOKKOS)
-  if (PetscBeganKokkos) {
+  if (PetscKokkosInitialized) {
     PetscCall(PetscKokkosFinalize_Private());
-    PetscBeganKokkos       = PETSC_FALSE;
     PetscKokkosInitialized = PETSC_FALSE;
   }
 #endif

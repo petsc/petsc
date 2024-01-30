@@ -343,7 +343,7 @@ static PetscErrorCode KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
 }
 
 /*MC
-     KSPGCR - Implements the preconditioned flexible Generalized Conjugate Residual method. [](sec_flexibleksp),
+     KSPGCR - Implements the preconditioned flexible Generalized Conjugate Residual method {cite}`eisenstat1983variational`. [](sec_flexibleksp),
 
    Options Database Key:
 .   -ksp_gcr_restart <restart> - the number of stored vectors to orthogonalize against
@@ -374,10 +374,6 @@ static PetscErrorCode KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
 
     Contributed by:
     Dave May
-
-    References:
-.   * - S. C. Eisenstat, H. C. Elman, and H. C. Schultz. Variational iterative methods for
-           nonsymmetric systems of linear equations. SIAM J. Numer. Anal., 20, 1983
 
 .seealso: [](ch_ksp), [](sec_flexibleksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPGCRSetRestart()`, `KSPGCRGetRestart()`,
           `KSPGCRSetRestart()`, `KSPGCRSetModifyPC()`, `KSPGMRES`, `KSPFGMRES`

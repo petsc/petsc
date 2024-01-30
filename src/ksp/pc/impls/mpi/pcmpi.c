@@ -381,7 +381,9 @@ static PetscErrorCode PCMPIDestroy(PC pc)
   PetscFunctionBegin;
   PetscCallMPI(MPI_Scatter(pc ? km->ksps : NULL, 1, MPI_AINT, &ksp, 1, MPI_AINT, 0, comm));
   if (!ksp) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscLogStagePush(PCMPIStage));
   PetscCall(KSPDestroy(&ksp));
+  PetscCall(PetscLogStagePop());
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -442,6 +444,7 @@ PetscErrorCode PCMPIServerBegin(void)
     PetscCall(TSInitializePackage());
     PetscCall(TaoInitializePackage());
   }
+  PetscCall(PetscLogStageRegister("PCMPI", &PCMPIStage));
 
   PetscCallMPI(MPI_Comm_rank(PC_MPI_COMM_WORLD, &rank));
   if (rank == 0) {
@@ -731,7 +734,7 @@ static PetscErrorCode PCSetFromOptions_MPI(PC pc, PetscOptionItems *PetscOptions
    Level: developer
 
    Notes:
-   The options database prefix for the actual solver is any prefix provided before use to the origjnal `KSP` with `KSPSetOptionsPrefix()`, mostly commonly no prefix is used.
+   The options database prefix for the actual solver is any prefix provided before use to the original `KSP` with `KSPSetOptionsPrefix()`, mostly commonly no prefix is used.
 
    It can be particularly useful for user OpenMP code or potentially user GPU code.
 

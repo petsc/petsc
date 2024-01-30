@@ -619,8 +619,8 @@ PETSC_EXTERN void matrestorerowij_(Mat *B, PetscInt *shift, PetscBool *sym, Pets
   at a time.
 */
 static int                matgetrowactive = 0;
-static const PetscInt    *my_ocols        = 0;
-static const PetscScalar *my_ovals        = 0;
+static const PetscInt    *my_ocols        = NULL;
+static const PetscScalar *my_ovals        = NULL;
 
 PETSC_EXTERN void matgetrow_(Mat *mat, PetscInt *row, PetscInt *ncols, PetscInt *cols, PetscScalar *vals, PetscErrorCode *ierr)
 {
@@ -904,17 +904,23 @@ PETSC_EXTERN void matgetinfo_(Mat *mat, MatInfoType *flag, MatInfo *info, int *i
 
 PETSC_EXTERN void matlufactor_(Mat *mat, IS *row, IS *col, const MatFactorInfo *info, int *ierr)
 {
-  *ierr = MatLUFactor(*mat, *row, *col, info);
+  CHKFORTRANNULLOBJECT(row);
+  CHKFORTRANNULLOBJECT(col);
+  *ierr = MatLUFactor(*mat, row ? *row : NULL, col ? *col : NULL, info);
 }
 
 PETSC_EXTERN void matilufactor_(Mat *mat, IS *row, IS *col, const MatFactorInfo *info, int *ierr)
 {
-  *ierr = MatILUFactor(*mat, *row, *col, info);
+  CHKFORTRANNULLOBJECT(row);
+  CHKFORTRANNULLOBJECT(col);
+  *ierr = MatILUFactor(*mat, row ? *row : NULL, col ? *col : NULL, info);
 }
 
 PETSC_EXTERN void matlufactorsymbolic_(Mat *fact, Mat *mat, IS *row, IS *col, const MatFactorInfo *info, int *ierr)
 {
-  *ierr = MatLUFactorSymbolic(*fact, *mat, *row, *col, info);
+  CHKFORTRANNULLOBJECT(row);
+  CHKFORTRANNULLOBJECT(col);
+  *ierr = MatLUFactorSymbolic(*fact, *mat, row ? *row : NULL, col ? *col : NULL, info);
 }
 
 PETSC_EXTERN void matlufactornumeric_(Mat *fact, Mat *mat, const MatFactorInfo *info, int *ierr)
@@ -924,12 +930,14 @@ PETSC_EXTERN void matlufactornumeric_(Mat *fact, Mat *mat, const MatFactorInfo *
 
 PETSC_EXTERN void matcholeskyfactor_(Mat *mat, IS *perm, const MatFactorInfo *info, int *ierr)
 {
-  *ierr = MatCholeskyFactor(*mat, *perm, info);
+  CHKFORTRANNULLOBJECT(perm);
+  *ierr = MatCholeskyFactor(*mat, perm ? *perm : NULL, info);
 }
 
 PETSC_EXTERN void matcholeskyfactorsymbolic_(Mat *fact, Mat *mat, IS *perm, const MatFactorInfo *info, int *ierr)
 {
-  *ierr = MatCholeskyFactorSymbolic(*fact, *mat, *perm, info);
+  CHKFORTRANNULLOBJECT(perm);
+  *ierr = MatCholeskyFactorSymbolic(*fact, *mat, perm ? *perm : NULL, info);
 }
 
 PETSC_EXTERN void matcholeskyfactornumeric_(Mat *fact, Mat *mat, const MatFactorInfo *info, int *ierr)
@@ -939,17 +947,21 @@ PETSC_EXTERN void matcholeskyfactornumeric_(Mat *fact, Mat *mat, const MatFactor
 
 PETSC_EXTERN void matilufactorsymbolic_(Mat *fact, Mat *mat, IS *row, IS *col, const MatFactorInfo *info, int *ierr)
 {
-  *ierr = MatILUFactorSymbolic(*fact, *mat, *row, *col, info);
+  CHKFORTRANNULLOBJECT(row);
+  CHKFORTRANNULLOBJECT(col);
+  *ierr = MatILUFactorSymbolic(*fact, *mat, row ? *row : NULL, col ? *col : NULL, info);
 }
 
 PETSC_EXTERN void maticcfactorsymbolic_(Mat *fact, Mat *mat, IS *perm, const MatFactorInfo *info, int *ierr)
 {
-  *ierr = MatICCFactorSymbolic(*fact, *mat, *perm, info);
+  CHKFORTRANNULLOBJECT(perm);
+  *ierr = MatICCFactorSymbolic(*fact, *mat, perm ? *perm : NULL, info);
 }
 
-PETSC_EXTERN void maticcfactor_(Mat *mat, IS *row, const MatFactorInfo *info, int *ierr)
+PETSC_EXTERN void maticcfactor_(Mat *mat, IS *perm, const MatFactorInfo *info, int *ierr)
 {
-  *ierr = MatICCFactor(*mat, *row, info);
+  CHKFORTRANNULLOBJECT(perm);
+  *ierr = MatICCFactor(*mat, perm ? *perm : NULL, info);
 }
 
 PETSC_EXTERN void matfactorinfoinitialize_(MatFactorInfo *info, int *ierr)

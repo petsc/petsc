@@ -1,0 +1,170 @@
+Label 'subpoint_map':
+[0]: 7 (1)
+[0]: 3 (0)
+[0]: 4 (0)
+[0]: 0 (102)
+[0]: 6 (101)
+[0]: 8 (101)
+[0]: 1 (-102)
+[0]: 9 (-101)
+[0]: 10 (-101)
+Label 'subpoint_map split':
+[0]: 4 (100)
+[0]: 5 (100)
+[0]: 7 (-100)
+[0]: 8 (-100)
+[0]: 10 (101)
+[0]: 14 (-101)
+Label 'cohesive':
+[0]: 2 (1)
+[0]: 15 (1)
+[0]: 16 (1)
+PetscSection Object: 1 MPI process
+  type not yet set
+2 fields
+  field 0 "displacement" with 2 components
+Process 0:
+  (   0) dim  0 offset   0
+  (   1) dim  0 offset   0
+  (   2) dim  0 offset   0
+  (   3) dim  2 offset   0
+  (   4) dim  2 offset   2
+  (   5) dim  2 offset   8
+  (   6) dim  2 offset  14
+  (   7) dim  2 offset   4
+  (   8) dim  2 offset  10
+  (   9) dim  0 offset  16
+  (  10) dim  0 offset  16
+  (  11) dim  0 offset  16
+  (  12) dim  0 offset  16
+  (  13) dim  0 offset  16
+  (  14) dim  0 offset  16
+  (  15) dim  0 offset   6
+  (  16) dim  0 offset  12
+  field 1 "fault traction" with 2 components
+Process 0:
+  (   0) dim  0 offset   0
+  (   1) dim  0 offset   0
+  (   2) dim  0 offset   0
+  (   3) dim  0 offset   2
+  (   4) dim  0 offset   4
+  (   5) dim  0 offset  10
+  (   6) dim  0 offset  16
+  (   7) dim  0 offset   6
+  (   8) dim  0 offset  12
+  (   9) dim  0 offset  16
+  (  10) dim  0 offset  16
+  (  11) dim  0 offset  16
+  (  12) dim  0 offset  16
+  (  13) dim  0 offset  16
+  (  14) dim  0 offset  16
+  (  15) dim  2 offset   6
+  (  16) dim  2 offset  12
+Vec Object: Local Solution 1 MPI process
+  type: seq
+-0.5
+0.5
+-2.77556e-17
+2.77556e-17
+0.
+1.
+0.
+0.
+0.
+1.
+2.77556e-17
+2.
+-1.
+0.
+0.5
+1.5
+Discrete System with 2 fields
+    cell total dim 12 total comp 4
+    cohesive cell
+  Field displacement FEM 2 components (implicit) (Nq 2 Nqc 1) 1-jet
+    PetscFE Object: displacement 1 MPI process
+      type: basic
+      Basic Finite Element in 1 dimensions with 2 components
+      PetscSpace Object: displacement 1 MPI process
+        type: sum
+        Space in 1 variables with 2 components, size 4
+        Sum space of 2 concatenated subspaces (all identical)
+          PetscSpace Object: P1 1 MPI process
+            type: poly
+            Space in 1 variables with 1 components, size 2
+            Polynomial space of degree 1
+      PetscDualSpace Object: displacement 1 MPI process
+        type: sum
+        Dual space with 2 components, size 4
+        Sum dual space of 2 concatenated subspaces (all identical)
+          PetscDualSpace Object: 1 MPI process
+            type: lagrange
+            Dual space with 1 components, size 2
+            Continuous Lagrange dual space
+        Quadrature on a segment of order 3 on 2 points (dim 1)
+  Field fault traction FEM 2 components (implicit) (Nq 2 Nqc 1) 1-jet
+    PetscFE Object: fault traction (faulttraction_) 1 MPI process
+      type: vector
+      Vector Finite Element in 1 dimensions with 2 components
+      PetscSpace Object: fault traction (faulttraction_) 1 MPI process
+        type: sum
+        Space in 1 variables with 2 components, size 4
+        Sum space of 2 concatenated subspaces (all identical)
+          PetscSpace Object: Q1 (faulttraction_sumcomp_) 1 MPI process
+            type: poly
+            Space in 1 variables with 1 components, size 2
+            Polynomial space of degree 1
+      PetscDualSpace Object: fault traction (faulttraction_) 1 MPI process
+        type: sum
+        Dual space with 2 components, size 4
+        Sum dual space of 2 concatenated subspaces (all identical)
+          PetscDualSpace Object: Q1 1 MPI process
+            type: lagrange
+            Dual space with 1 components, size 2
+            Continuous Lagrange dual space
+        Quadrature on a segment of order 3 on 2 points (dim 1)
+  Weak Form System with 2 fields
+    boundary_residual_f0
+      (cohesive, 1) (0, 1) 
+      (material, 1) (0, 0) 
+      (material, 2) (0, 0) 
+    boundary_jacobian_g0
+      (cohesive, 1) (1, 0) 
+      (material, 1) (0, 1) 
+      (material, 2) (0, 1) 
+Vec Object: Local Residual 1 MPI process
+  type: seq
+0.
+0.
+0.166667
+0.
+-0.166667
+0.
+-1.38778e-17
+0.
+0.333333
+0.
+-0.333333
+0.
+-1.38778e-17
+0.
+0.
+0.
+Mat Object: Jacobian 1 MPI process
+  type: seqaij
+row 0: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (8, 0.)  (9, 0.) 
+row 1: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (8, 0.)  (9, 0.) 
+row 2: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, -0.333333)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, -0.166667)  (13, 0.) 
+row 3: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, 0.)  (7, -0.333333)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, -0.166667) 
+row 4: (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, 0.333333)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.166667)  (13, 0.)  (14, 0.)  (15, 0.) 
+row 5: (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, 0.)  (7, 0.333333)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, 0.166667)  (14, 0.)  (15, 0.) 
+row 6: (2, -0.333333)  (3, 0.)  (4, 0.333333)  (5, 0.)  (6, 0.)  (7, 0.)  (8, -0.166667)  (9, 0.)  (10, 0.166667)  (11, 0.)  (12, 0.)  (13, 0.) 
+row 7: (2, 0.)  (3, -0.333333)  (4, 0.)  (5, 0.333333)  (6, 0.)  (7, 0.)  (8, 0.)  (9, -0.166667)  (10, 0.)  (11, 0.166667)  (12, 0.)  (13, 0.) 
+row 8: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, -0.166667)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, -0.333333)  (13, 0.) 
+row 9: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, 0.)  (7, -0.166667)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, -0.333333) 
+row 10: (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, 0.166667)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.333333)  (13, 0.)  (14, 0.)  (15, 0.) 
+row 11: (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, 0.)  (7, 0.166667)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, 0.333333)  (14, 0.)  (15, 0.) 
+row 12: (2, -0.166667)  (3, 0.)  (4, 0.166667)  (5, 0.)  (6, 0.)  (7, 0.)  (8, -0.333333)  (9, 0.)  (10, 0.333333)  (11, 0.)  (12, 0.)  (13, 0.) 
+row 13: (2, 0.)  (3, -0.166667)  (4, 0.)  (5, 0.166667)  (6, 0.)  (7, 0.)  (8, 0.)  (9, -0.333333)  (10, 0.)  (11, 0.333333)  (12, 0.)  (13, 0.) 
+row 14: (4, 0.)  (5, 0.)  (10, 0.)  (11, 0.)  (14, 0.)  (15, 0.) 
+row 15: (4, 0.)  (5, 0.)  (10, 0.)  (11, 0.)  (14, 0.)  (15, 0.) 

@@ -1,0 +1,153 @@
+
+Matrix of type: shell
+Mat Object: 1 MPI process
+  type: seqdense
+-6.2902938000000000e+07 + 4.5741953400000000e+08i -8.6359366000000000e+07 + 8.2368680200000000e+08i
+2.1562260800000000e+08 + 8.0739766600000000e+08i 1.0828994620000000e+09 + 1.2955916360000000e+09i
+Testing MatMult + MatMultTranspose
+Vec Object: 1 MPI process
+  type: seq
+-5.68471e+19 + 3.02618e+19 i
+-7.30611e+19 + 9.22255e+19 i
+Testing MatMultHermitianTranspose
+Vec Object: 1 MPI process
+  type: seq
+-5.68471e+19 + 3.02618e+19 i
+-7.30611e+19 + 9.22255e+19 i
+Testing MatMultAdd
+Vec Object: 1 MPI process
+  type: seq
+1.49262e+08 - 1.28111e+09 i
+-1.29852e+09 - 2.10299e+09 i
+Vec Object: 1 MPI process
+  type: seq
+1.49262e+08 - 1.28111e+09 i
+-1.29852e+09 - 2.10299e+09 i
+Testing MatMultTransposeAdd
+Vec Object: 1 MPI process
+  type: seq
+-1.5272e+08 - 1.26482e+09 i
+-9.9654e+08 - 2.11928e+09 i
+Vec Object: 1 MPI process
+  type: seq
+-1.5272e+08 - 1.26482e+09 i
+-9.9654e+08 - 2.11928e+09 i
+Testing MatMultHermitianTransposeAdd
+Vec Object: 1 MPI process
+  type: seq
+-1.5272e+08 - 1.26482e+09 i
+-9.9654e+08 - 2.11928e+09 i
+Vec Object: 1 MPI process
+  type: seq
+-1.5272e+08 - 1.26482e+09 i
+-9.9654e+08 - 2.11928e+09 i
+Testing MatGetDiagonal
+Vec Object: 1 MPI process
+  type: seq
+-6.29029e+07 + 4.5742e+08 i
+1.0829e+09 + 1.29559e+09 i
+MatDiagonalSet not tested on MATSHELL
+
+Matrix of type: seqaij
+Mat Object: 1 MPI process
+  type: seqdense
+-6.2902938000000000e+07 + 4.5741953400000000e+08i -8.6359366000000000e+07 + 8.2368680200000000e+08i
+2.1562260800000000e+08 + 8.0739766600000000e+08i 1.0828994620000000e+09 + 1.2955916360000000e+09i
+Testing MatMult + MatMultTranspose
+Vec Object: 1 MPI process
+  type: seq
+-5.68471e+19 + 3.02618e+19 i
+-7.30611e+19 + 9.22255e+19 i
+Testing MatMultHermitianTranspose
+Vec Object: 1 MPI process
+  type: seq
+-5.68471e+19 + 3.02618e+19 i
+-7.30611e+19 + 9.22255e+19 i
+Testing MatMultAdd
+Vec Object: 1 MPI process
+  type: seq
+1.49262e+08 - 1.28111e+09 i
+-1.29852e+09 - 2.10299e+09 i
+Vec Object: 1 MPI process
+  type: seq
+1.49262e+08 - 1.28111e+09 i
+-1.29852e+09 - 2.10299e+09 i
+Testing MatMultTransposeAdd
+Vec Object: 1 MPI process
+  type: seq
+-1.5272e+08 - 1.26482e+09 i
+-9.9654e+08 - 2.11928e+09 i
+Vec Object: 1 MPI process
+  type: seq
+-1.5272e+08 - 1.26482e+09 i
+-9.9654e+08 - 2.11928e+09 i
+Testing MatMultHermitianTransposeAdd
+Vec Object: 1 MPI process
+  type: seq
+-1.5272e+08 - 1.26482e+09 i
+-9.9654e+08 - 2.11928e+09 i
+Vec Object: 1 MPI process
+  type: seq
+-1.5272e+08 - 1.26482e+09 i
+-9.9654e+08 - 2.11928e+09 i
+Testing MatGetDiagonal
+Vec Object: 1 MPI process
+  type: seq
+-6.29029e+07 + 4.5742e+08 i
+1.0829e+09 + 1.29559e+09 i
+Vec Object: 1 MPI process
+  type: seq
+11. + 4. i
+13. + 2. i
+
+Matrix of type: nest
+Mat Object: 1 MPI process
+  type: seqdense
+-6.2902938000000000e+07 + 4.5741953400000000e+08i -8.6359366000000000e+07 + 8.2368680200000000e+08i
+2.1562260800000000e+08 + 8.0739766600000000e+08i 1.0828994620000000e+09 + 1.2955916360000000e+09i
+Testing MatMult + MatMultTranspose
+Vec Object: 1 MPI process
+  type: seq
+-5.68471e+19 + 3.02618e+19 i
+-7.30611e+19 + 9.22255e+19 i
+Testing MatMultHermitianTranspose
+Vec Object: 1 MPI process
+  type: seq
+-5.68471e+19 + 3.02618e+19 i
+-7.30611e+19 + 9.22255e+19 i
+Testing MatMultAdd
+Vec Object: 1 MPI process
+  type: seq
+1.49262e+08 - 1.28111e+09 i
+-1.29852e+09 - 2.10299e+09 i
+Vec Object: 1 MPI process
+  type: seq
+1.49262e+08 - 1.28111e+09 i
+-1.29852e+09 - 2.10299e+09 i
+Testing MatMultTransposeAdd
+Vec Object: 1 MPI process
+  type: seq
+-1.5272e+08 - 1.26482e+09 i
+-9.9654e+08 - 2.11928e+09 i
+Vec Object: 1 MPI process
+  type: seq
+-1.5272e+08 - 1.26482e+09 i
+-9.9654e+08 - 2.11928e+09 i
+Testing MatMultHermitianTransposeAdd
+Vec Object: 1 MPI process
+  type: seq
+-1.5272e+08 - 1.26482e+09 i
+-9.9654e+08 - 2.11928e+09 i
+Vec Object: 1 MPI process
+  type: seq
+-1.5272e+08 - 1.26482e+09 i
+-9.9654e+08 - 2.11928e+09 i
+Testing MatGetDiagonal
+Vec Object: 1 MPI process
+  type: seq
+-6.29029e+07 + 4.5742e+08 i
+1.0829e+09 + 1.29559e+09 i
+Vec Object: 1 MPI process
+  type: seq
+11. + 4. i
+13. + 2. i

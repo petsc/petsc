@@ -12,7 +12,7 @@ Labels:
 PetscSection Object: 1 MPI process
   type not yet set
 3 fields
-  field 0 with 2 components
+  field 0 "P2" with 2 components
 Process 0:
   (   0) dim  0 offset   0
   (   1) dim  0 offset   0
@@ -25,7 +25,7 @@ Process 0:
   (   8) dim  2 offset  12
   (   9) dim  2 offset  14
   (  10) dim  2 offset  16
-  field 1 with 1 components
+  field 1 "P1" with 1 components
 Process 0:
   (   0) dim  0 offset  18
   (   1) dim  0 offset  18
@@ -38,7 +38,7 @@ Process 0:
   (   8) dim  0 offset  22
   (   9) dim  0 offset  22
   (  10) dim  0 offset  22
-  field 2 with 1 components
+  field 2 "P1" with 1 components
 Process 0:
   (   0) dim  0 offset  22
   (   1) dim  0 offset  22

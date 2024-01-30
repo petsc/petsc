@@ -1,7 +1,7 @@
 PetscSection Object: Save: local section 2 MPI processes
   type not yet set
 2 fields
-  field 0 with 1 components
+  field 0 "Field_0" with 1 components
 Process 0:
   (   0) dim  2 offset   0
   (   1) dim  3 offset   3
@@ -11,7 +11,7 @@ Process 1:
   (   0) dim  7 offset   0
   (   1) dim  5 offset   7
   (   2) dim 11 offset  12 constrained 7
-  field 1 with 1 components
+  field 1 "Field_1" with 1 components
 Process 0:
   (   0) dim  1 offset   2
   (   1) dim  0 offset   6
@@ -24,7 +24,7 @@ Process 1:
 PetscSection Object: Save: global section 2 MPI processes
   type not yet set
 2 fields
-  field 0 with 1 components
+  field 0 "Field_0" with 1 components
 Process 0:
   (   0) dim  2 offset   0
   (   1) dim  3 offset   3
@@ -34,7 +34,7 @@ Process 1:
   (   0) dim  7 offset  11
   (   1) dim -6 offset  -7
   (   2) dim 11 offset  18
-  field 1 with 1 components
+  field 1 "Field_1" with 1 components
 Process 0:
   (   0) dim  1 offset   2
   (   1) dim  0 offset   6
@@ -47,7 +47,7 @@ Process 1:
 PetscSection Object: Load: section 3 MPI processes
   type not yet set
 2 fields
-  field 0 with 1 components
+  field 0 "Field_0" with 1 components
 Process 0:
   (   0) dim  2 offset   0
   (   1) dim  3 offset   3
@@ -56,7 +56,7 @@ Process 0:
 Process 1:
 Process 2:
   (   0) dim 11 offset  18
-  field 1 with 1 components
+  field 1 "Field_1" with 1 components
 Process 0:
   (   0) dim  1 offset   2
   (   1) dim  0 offset   6

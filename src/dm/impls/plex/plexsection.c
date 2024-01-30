@@ -68,9 +68,9 @@ static PetscErrorCode DMPlexCreateSectionFields(DM dm, const PetscInt numComp[],
                 DMPolytopeType ct;
                 /* The number of arrangements is no longer based on the number of faces */
                 PetscCall(DMPlexGetCellType(K, kStart, &ct));
-                kConeSize = DMPolytopeTypeGetNumArrangments(ct) / 2;
+                kConeSize = DMPolytopeTypeGetNumArrangements(ct) / 2;
               }
-              PetscCall(PetscSectionSymLabelSetStratum(sym, depth - h, numDof[depth - h], -kConeSize, kConeSize, PETSC_USE_POINTER, perms0 ? &perms0[-kConeSize] : NULL, flips0 ? &flips0[-kConeSize] : NULL));
+              PetscCall(PetscSectionSymLabelSetStratum(sym, depth - h, numDof[depth - h], -kConeSize, kConeSize, PETSC_USE_POINTER, PetscSafePointerPlusOffset(perms0, -kConeSize), PetscSafePointerPlusOffset(flips0, -kConeSize)));
             }
             PetscCall(PetscSectionSetFieldSym(*section, f, sym));
             PetscCall(PetscSectionSymDestroy(&sym));
@@ -422,9 +422,6 @@ static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
 
   The chart permutation is the same one set using `PetscSectionSetPermutation()`
 
-  Developer Notes:
-  This is used by `DMCreateLocalSection()`?
-
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreate()`, `PetscSectionCreate()`, `PetscSectionSetPermutation()`
 @*/
 PetscErrorCode DMPlexCreateSection(DM dm, DMLabel label[], const PetscInt numComp[], const PetscInt numDof[], PetscInt numBC, const PetscInt bcField[], const IS bcComps[], const IS bcPoints[], IS perm, PetscSection *section)
@@ -451,7 +448,8 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
 {
   PetscSection section;
   DMLabel     *labels;
-  IS          *bcPoints, *bcComps;
+  IS          *bcPoints, *bcComps, permIS;
+  PetscBT      blockStarts;
   PetscBool   *isFE;
   PetscInt    *bcFields, *numComp, *numDof;
   PetscInt     depth, dim, numBC = 0, Nf, Nds, s, bc = 0, f;
@@ -610,7 +608,10 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
     PetscInt d;
     for (d = 1; d < dim; ++d) PetscCheck(numDof[f * (dim + 1) + d] <= 0 || depth >= dim, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
   }
-  PetscCall(DMPlexCreateSection(dm, labels, numComp, numDof, numBC, bcFields, bcComps, bcPoints, NULL, &section));
+  PetscCall(DMPlexCreateSectionPermutation_Internal(dm, &permIS, &blockStarts));
+  PetscCall(DMPlexCreateSection(dm, labels, numComp, numDof, numBC, bcFields, bcComps, bcPoints, permIS, &section));
+  section->blockStarts = blockStarts;
+  PetscCall(ISDestroy(&permIS));
   for (f = 0; f < Nf; ++f) {
     PetscFE     fe;
     const char *name;

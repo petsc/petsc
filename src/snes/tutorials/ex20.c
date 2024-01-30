@@ -154,7 +154,7 @@ int main(int argc, char **argv)
   PetscCall(DMCreateGlobalVector(dm, &u));
   PetscCall(VecSet(u, 0.0));
   PetscCall(PetscObjectSetName((PetscObject)u, "potential"));
-  PetscCall(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));
+  PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, &user));
   PetscCall(SNESSetFromOptions(snes));
   PetscCall(SNESSolve(snes, NULL, u));
   PetscCall(SNESGetSolution(snes, &u));
@@ -182,8 +182,6 @@ int main(int argc, char **argv)
 
   test:
     suffix: 2d_p1_gmg_vcycle_cr
-    TODO: broken
-    # cannot MatShift() a MATNORMAL until this MatType inherits from MATSHELL, cf. https://gitlab.com/petsc/petsc/-/issues/972
     requires: triangle
     args: -potential_petscspace_degree 1 -dm_plex_box_faces 2,2 -dm_refine_hierarchy 3 \
           -ksp_rtol 5e-10 -pc_type mg  -pc_mg_adapt_cr \

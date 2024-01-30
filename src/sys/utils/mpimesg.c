@@ -30,7 +30,7 @@
 @*/
 PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm, const PetscMPIInt iflags[], const PetscMPIInt ilengths[], PetscMPIInt *nrecvs)
 {
-  PetscMPIInt size, rank, *recv_buf, i, *iflags_local = NULL, *iflags_localm = NULL;
+  PetscMPIInt size, rank, *recv_buf, i, *iflags_local = NULL, *iflags_localm;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -88,8 +88,8 @@ PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm, const PetscMPIInt ifla
 PetscErrorCode PetscGatherMessageLengths(MPI_Comm comm, PetscMPIInt nsends, PetscMPIInt nrecvs, const PetscMPIInt ilengths[], PetscMPIInt **onodes, PetscMPIInt **olengths)
 {
   PetscMPIInt  size, rank, tag, i, j;
-  MPI_Request *s_waits = NULL, *r_waits = NULL;
-  MPI_Status  *w_status = NULL;
+  MPI_Request *s_waits, *r_waits;
+  MPI_Status  *w_status;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -98,7 +98,7 @@ PetscErrorCode PetscGatherMessageLengths(MPI_Comm comm, PetscMPIInt nsends, Pets
 
   /* cannot use PetscMalloc3() here because in the call to MPI_Waitall() they MUST be contiguous */
   PetscCall(PetscMalloc2(nrecvs + nsends, &r_waits, nrecvs + nsends, &w_status));
-  if (nrecvs + nsends) s_waits = r_waits + nrecvs;
+  s_waits = PetscSafePointerPlusOffset(r_waits, nrecvs);
 
   /* Post the Irecv to get the message length-info */
   PetscCall(PetscMalloc1(nrecvs, olengths));
@@ -120,8 +120,8 @@ PetscErrorCode PetscGatherMessageLengths(MPI_Comm comm, PetscMPIInt nsends, Pets
   for (i = 0; i < nrecvs; ++i) {
     (*onodes)[i] = w_status[i].MPI_SOURCE;
 #if defined(PETSC_HAVE_OMPI_MAJOR_VERSION)
-    /* This line is a workaround for a bug in OpenMPI-2.1.1 distributed by Ubuntu-18.04.2 LTS.
-       It happens in self-to-self MPI_Send/Recv using MPI_ANY_SOURCE for message matching. OpenMPI
+    /* This line is a workaround for a bug in Open MPI 2.1.1 distributed by Ubuntu-18.04.2 LTS.
+       It happens in self-to-self MPI_Send/Recv using MPI_ANY_SOURCE for message matching. Open MPI
        does not put correct value in recv buffer. See also
        https://lists.mcs.anl.gov/pipermail/petsc-dev/2019-July/024803.html
        https://www.mail-archive.com/users@lists.open-mpi.org//msg33383.html
@@ -136,7 +136,7 @@ PetscErrorCode PetscGatherMessageLengths(MPI_Comm comm, PetscMPIInt nsends, Pets
 /* Same as PetscGatherNumberOfMessages(), except using PetscInt for ilengths[] */
 PetscErrorCode PetscGatherNumberOfMessages_Private(MPI_Comm comm, const PetscMPIInt iflags[], const PetscInt ilengths[], PetscMPIInt *nrecvs)
 {
-  PetscMPIInt size, rank, *recv_buf, i, *iflags_local = NULL, *iflags_localm = NULL;
+  PetscMPIInt size, rank, *recv_buf, i, *iflags_local = NULL, *iflags_localm;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -166,8 +166,8 @@ PetscErrorCode PetscGatherNumberOfMessages_Private(MPI_Comm comm, const PetscMPI
 PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm comm, PetscMPIInt nsends, PetscMPIInt nrecvs, const PetscInt ilengths[], PetscMPIInt **onodes, PetscInt **olengths)
 {
   PetscMPIInt  size, rank, tag, i, j;
-  MPI_Request *s_waits = NULL, *r_waits = NULL;
-  MPI_Status  *w_status = NULL;
+  MPI_Request *s_waits, *r_waits;
+  MPI_Status  *w_status;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -176,7 +176,7 @@ PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm comm, PetscMPIInt nsen
 
   /* cannot use PetscMalloc3() here because in the call to MPI_Waitall() they MUST be contiguous */
   PetscCall(PetscMalloc2(nrecvs + nsends, &r_waits, nrecvs + nsends, &w_status));
-  if (r_waits) s_waits = r_waits + nrecvs;
+  s_waits = PetscSafePointerPlusOffset(r_waits, nrecvs);
 
   /* Post the Irecv to get the message length-info */
   PetscCall(PetscMalloc1(nrecvs, olengths));
@@ -236,9 +236,9 @@ PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm comm, PetscMPIInt nsen
 @*/
 PetscErrorCode PetscGatherMessageLengths2(MPI_Comm comm, PetscMPIInt nsends, PetscMPIInt nrecvs, const PetscMPIInt ilengths1[], const PetscMPIInt ilengths2[], PetscMPIInt **onodes, PetscMPIInt **olengths1, PetscMPIInt **olengths2)
 {
-  PetscMPIInt  size, tag, i, j, *buf_s = NULL, *buf_r = NULL, *buf_j = NULL;
-  MPI_Request *s_waits = NULL, *r_waits = NULL;
-  MPI_Status  *w_status = NULL;
+  PetscMPIInt  size, tag, i, j, *buf_s, *buf_r, *buf_j = NULL;
+  MPI_Request *s_waits, *r_waits;
+  MPI_Status  *w_status;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -246,7 +246,7 @@ PetscErrorCode PetscGatherMessageLengths2(MPI_Comm comm, PetscMPIInt nsends, Pet
 
   /* cannot use PetscMalloc5() because r_waits and s_waits must be contiguous for the call to MPI_Waitall() */
   PetscCall(PetscMalloc4(nrecvs + nsends, &r_waits, 2 * nrecvs, &buf_r, 2 * nsends, &buf_s, nrecvs + nsends, &w_status));
-  s_waits = r_waits + nrecvs;
+  s_waits = PetscSafePointerPlusOffset(r_waits, nrecvs);
 
   /* Post the Irecv to get the message length-info */
   PetscCall(PetscMalloc1(nrecvs + 1, olengths1));

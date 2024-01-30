@@ -148,7 +148,7 @@ static void MPIAPI MPIU_MinIndex_Local(void *in, void *out, PetscMPIInt *cnt, MP
 PETSC_EXTERN void MPIAPI PetscSplitReduction_Local(void *, void *, PetscMPIInt *, MPI_Datatype *);
 
 const char *const NormTypes[] = {"1", "2", "FROBENIUS", "INFINITY", "1_AND_2", "NormType", "NORM_", NULL};
-PetscInt          NormIds[7]; /* map from NormType to IDs used to cache Normvalues */
+PetscInt          NormIds[4]; /* map from NormType to IDs used to cache norm values, 1_AND_2 is excluded */
 
 static PetscBool VecPackageInitialized = PETSC_FALSE;
 
@@ -185,6 +185,7 @@ PetscErrorCode VecInitializePackage(void)
   PetscCall(PetscLogEventRegister("VecMTDot", VEC_CLASSID, &VEC_MTDot));
   PetscCall(PetscLogEventRegister("VecNorm", VEC_CLASSID, &VEC_Norm));
   PetscCall(PetscLogEventRegister("VecScale", VEC_CLASSID, &VEC_Scale));
+  PetscCall(PetscLogEventRegister("VecShift", VEC_CLASSID, &VEC_Shift));
   PetscCall(PetscLogEventRegister("VecCopy", VEC_CLASSID, &VEC_Copy));
   PetscCall(PetscLogEventRegister("VecSet", VEC_CLASSID, &VEC_Set));
   PetscCall(PetscLogEventRegister("VecAXPY", VEC_CLASSID, &VEC_AXPY));

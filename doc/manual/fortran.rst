@@ -3,21 +3,29 @@
 PETSc for Fortran Users
 -----------------------
 
-Most of the functionality of PETSc can be obtained from Fortran programs.
-Make sure the suffix of all your Fortran files is .F90, not .f or .f90.
+Make sure the suffix of your Fortran files is .F90, not .f or .f90.
+
+Basic Fortran API Differences
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. _sec_fortran_includes:
 
 Modules and Include Files
-~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To use PETSc with Fortran you must use both PETSc include files and modules.
+You must use both PETSc include files and modules.
 At the beginning of every function and module definition you need something like
 
 .. code-block:: fortran
 
   #include "petsc/finclude/petscXXX.h"
            use petscXXX
+
+The Fortran include files for PETSc are located in the directory
+``$PETSC_DIR/include/petsc/finclude`` and the module files are located in ``$PETSC_DIR/$PETSC_ARCH/include``
+
+Declaring PETSc Object Variables
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can declare PETSc object variables using either of the following:
 
@@ -42,15 +50,14 @@ For example,
 
 PETSc types like ``PetscInt`` and ``PetscReal`` are simply aliases for basic Fortran types and cannot be written as ``type(tPetscInt)``
 
+Calling Sequences
+^^^^^^^^^^^^^^^^^
 
-The Fortran include files for PETSc are located in the directory
-``$PETSC_DIR/include/petsc/finclude`` and the module files are located in ``$PETSC_DIR/$PETSC_ARCH/include``
+PETSc Fortran routines have the
+same names as the corresponding C versions except for a few that use allocatable array arguments and end with ``F90()``,
+see :any:`sec_fortranarrays`.
 
-Most Fortran routines have the
-same names as the corresponding C versions, and PETSc command line
-options are fully supported. The routine arguments follow the usual
-Fortran conventions; the user need not worry about passing pointers or
-values. The calling sequences for the Fortran version are in most cases
+The calling sequences for the Fortran version are in most cases
 identical to the C version, except for the error checking variable
 discussed in :any:`sec_fortran_errors` and a few routines
 listed in :any:`sec_fortran_exceptions`.
@@ -61,7 +68,7 @@ instead of ``10.0`` or declare them as PETSc variables, e.g.
 ``PetscScalar one = 1.0``). Otherwise, the compiler interprets the input as a single
 precision number, which can cause crashes or other mysterious problems.
 We **highly** recommend using the ``implicit none``
-option at the beginning of each Fortran subroutine and declare all variables.
+option at the beginning of each Fortran subroutine and declaring all variables.
 
 .. _sec_fortran_errors:
 
@@ -69,8 +76,8 @@ Error Checking
 ^^^^^^^^^^^^^^
 
 In the Fortran version, each PETSc routine has as its final argument an
-integer error variable. The error code is set to
-be nonzero if an error has been detected; otherwise, it is zero. For
+integer error variable. The error code is
+nonzero if an error has been detected; otherwise, it is zero. For
 example, the Fortran and C variants of ``KSPSolve()`` are given,
 respectively, below, where ``ierr`` denotes the ``PetscErrorCode`` error variable:
 
@@ -86,37 +93,6 @@ For proper error handling one should not use the above syntax instead one should
    PetscCall(KSPSolve(ksp, b, x, ierr))   ! Fortran subroutines
    PetscCallA(KSPSolve(ksp, b, x, ierr))  ! Fortran main program
    PetscCall(KSPSolve(ksp, b, x))         // C
-
-
-
-
-Calling Fortran Routines from C (and C Routines from Fortran)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Different compilers have different methods of naming Fortran routines
-called from C (or C routines called from Fortran). Most Fortran
-compilers change all the capital letters in Fortran routines to
-all lowercase. With some compilers, the Fortran compiler appends an underscore
-to the end of each Fortran routine name; for example, the Fortran
-routine ``Dabsc()`` would be called from C with ``dabsc_()``. Other
-compilers change all the letters in Fortran routine names to capitals.
-
-PETSc provides two macros (defined in C/C++) to help write portable code
-that mixes C/C++ and Fortran. They are ``PETSC_HAVE_FORTRAN_UNDERSCORE``
-and ``PETSC_HAVE_FORTRAN_CAPS`` , which will be defined in the file
-``$PETSC_DIR/$PETSC_ARCH/include/petscconf.h`` based on the compilers
-conventions. The macros are used,
-for example, as follows:
-
-.. code-block:: fortran
-
-   #if defined(PETSC_HAVE_FORTRAN_CAPS)
-   #define dabsc_ DABSC
-   #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-   #define dabsc_ dabsc
-   #endif
-   .....
-   dabsc_( &n,x,y); /* call the Fortran function */
 
 Passing Null Pointers
 ^^^^^^^^^^^^^^^^^^^^^
@@ -137,21 +113,99 @@ command in Fortran:
 Matrix, Vector and IS Indices
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-All matrices, vectors and ``IS`` in PETSc use zero-based indexing,
+All matrices, vectors and ``IS`` in PETSc use zero-based indexing in the PETSc API
 regardless of whether C or Fortran is being used. For example,
 ``MatSetValues()`` and ``VecSetValues()`` always use
 zero indexing. See :any:`sec_matoptions` for further
 details.
 
-Setting Routines
-^^^^^^^^^^^^^^^^
+Indexing into Fortran arrays, for example obtained with ``VecGetArrayF90()``, uses the Fortran
+convention and generally begin with 1 except for special routines such as ``DMDAVecGetArrayF90()`` which uses the ranges
+provided by ``DMDAGetCorners()``.
+
+Setting Routines and Contexts
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Some PETSc functions take as arguments user-functions and contexts for the function. For example
+
+.. code-block:: fortran
+
+   external func
+   SNESSetFunction(snes, r, func, ctx, ierr)
+   SNES snes
+   Vec r
+   PetscErrorCode ierr
+
+where ``func`` has the calling sequence
+
+.. code-block:: fortran
+
+   subroutine func(snes, x, f, ctx, ierr)
+   SNES snes
+   Vec x,f
+   PetscErrorCode ierr
+
+and ``ctx`` can be almost anything (represented as ``void *`` in C).
+
+It can be a Fortran derived type as in
+
+.. code-block:: fortran
+
+   subroutine func(snes, x, f, ctx, ierr)
+   SNES snes
+   Vec x,f
+   type (userctx)   ctx
+   PetscErrorCode ierr
+   ...
+
+   external func
+   SNESSetFunction(snes, r, func, ctx, ierr)
+   SNES snes
+   Vec r
+   PetscErrorCode ierr
+   type (userctx)   ctx
+
+or a PETSc object
+
+.. code-block:: fortran
+
+   subroutine func(snes, x, f, ctx, ierr)
+   SNES snes
+   Vec x,f
+   Vec ctx
+   PetscErrorCode ierr
+   ...
+
+   external func
+   SNESSetFunction(snes, r, func, ctx, ierr)
+   SNES snes
+   Vec r
+   PetscErrorCode ierr
+   Vec ctx
+
+or nothing
+
+.. code-block:: fortran
+
+   subroutine func(snes, x, f, dummy, ierr)
+   SNES snes
+   Vec x,f
+   integer dummy(*)
+   PetscErrorCode ierr
+   ...
+
+   external func
+   SNESSetFunction(snes, r, func, 0, ierr)
+   SNES snes
+   Vec r
+   PetscErrorCode ierr
 
 When a function pointer (declared as external in Fortran) is passed as an argument to a PETSc function,
-such as the test function in ``KSPSetConvergenceTest()``, it is assumed that this
+it is assumed that this
 function references a routine written in the same language as the PETSc
 interface function that was called. For instance, if
-``KSPSetConvergenceTest()`` is called from C, the test function must be a C function. Likewise, if it is called from Fortran, the
-test function must be (a subroutine) written in Fortran.
+``SNESSetFunction()`` is called from C, the function must be a C function. Likewise, if it is called from Fortran, the
+function must be (a subroutine) written in Fortran.
 
 .. _sec_fortcompile:
 
@@ -185,6 +239,52 @@ The following functions are not supported in Fortran:
    PetscViewerStringOpen(), PetscViewerStringSPrintf(),
    PetscOptionsGetStringArray()
 
+.. _sec_fortranarrays:
+
+Routines that Return Fortran Allocatable Arrays
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Many PETSc functions that return an array of values in C in an argument (such as ``ISGetIndices()``)
+return an allocatable array in Fortran. The Fortran function names for these are suffixed with ``F90`` as indicated below.
+A few routines, such as ``VecDuplicateVecs()`` discussed above, do not return a Fortran allocatable array;
+a large enough array must be explicitly declared before use and passed into the routine.
+
+.. list-table::
+
+   * - C-API
+   * - ``ISGetIndices()``
+   * - ``ISRestoreIndices()``
+   * - ``ISLocalToGlobalMappingGetIndices()``
+   * - ``ISLocalToGlobalMappingRestoreIndices()``
+   * - ``VecGetArray()``
+   * - ``VecRestoreArray()``
+   * - ``VecGetArrayRead()``
+   * - ``VecRestoreArrayRead()``
+   * - ``VecDuplicateVecs()``
+   * - ``VecDestroyVecs()``
+   * - ``DMDAVecGetArray()``
+   * - ``DMDAVecRestoreArray()``
+   * - ``DMDAVecGetArrayRead()``
+   * - ``DMDAVecRestoreArrayRead()``
+   * - ``DMDAVecGetArrayWrite()``
+   * - ``DMDAVecRestoreArrayWrite()``
+   * - ``MatGetRowIJ()``
+   * - ``MatRestoreRowIJ()``
+   * - ``MatSeqAIJGetArray()``
+   * - ``MatSeqAIJRestoreArray()``
+   * - ``MatMPIAIJGetSeqAIJ()``
+   * - ``MatDenseGetArray()``
+   * - ``MatDenseRestoreArray()``
+
+The array arguments to these Fortran functions should be declared with forms such as
+
+.. code-block:: fortran
+
+   PetscScalar, pointer :: x(:)
+   PetscInt, pointer :: idx(:)
+
+See the manual pages for details and pointers to example programs.
+
 .. _sec_fortvecd:
 
 Duplicating Multiple Vectors
@@ -213,76 +313,6 @@ duplicates ``v_old`` to form two new vectors, ``v_new(1)`` and
    PetscCall(VecSet(v_new(2), alpha, ierr))
    ....
    PetscCall(VecDestroyVecs(2, v_new, ierr))
-
-.. _sec_fortranarrays:
-
-Routines that Return Fortran Allocatable Arrays
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Many PETSc functions that return an array of values in C in an argument (such as ``ISGetIndices()``)
-return an allocatable array in Fortran. The Fortran function names for these are suffixed with ``F90`` as indicated below.
-A few routines, such as ``VecDuplicateVecs()`` discussed above, do not return a Fortran allocatable array; a large enough array must be explicitly declared before use.
-
-.. list-table::
-   :header-rows: 1
-
-   * - C-API
-     - Fortran-API
-   * - ``ISGetIndices()``
-     - ``ISGetIndicesF90()``
-   * - ``ISRestoreIndices()``
-     - ``ISRestoreIndicesF90()``
-   * - ``ISLocalToGlobalMappingGetIndices()``
-     - ``ISLocalToGlobalMappingGetIndicesF90()``
-   * - ``ISLocalToGlobalMappingRestoreIndices()``
-     - ``ISLocalToGlobalMappingRestoreIndicesF90()``
-   * - ``VecGetArray()``
-     - ``VecGetArrayF90()``
-   * - ``VecRestoreArray()``
-     - ``VecRestoreArrayF90()``
-   * - ``VecGetArrayRead()``
-     - ``VecGetArrayReadF90()``
-   * - ``VecRestoreArrayRead()``
-     - ``VecRestoreArrayReadF90()``
-   * - ``VecDuplicateVecs()``
-     - ``VecDuplicateVecsF90()``
-   * - ``VecDestroyVecs()``
-     - ``VecDestroyVecsF90()``
-   * - ``DMDAVecGetArray()``
-     - ``DMDAVecGetArrayF90()``
-   * - ``DMDAVecRestoreArray()``
-     - ``DMDAVecRestoreArrayF90()``
-   * - ``DMDAVecGetArrayRead()``
-     - ``DMDAVecGetArrayReadF90()``
-   * - ``DMDAVecRestoreArrayRead()``
-     - ``DMDAVecRestoreArrayReadF90()``
-   * - ``DMDAVecGetArrayWrite()``
-     - ``DMDAVecGetArrayWriteF90()``
-   * - ``DMDAVecRestoreArrayWrite()``
-     - ``DMDAVecRestoreArrayWriteF90()``
-   * - ``MatGetRowIJ()``
-     - ``MatGetRowIJF90()``
-   * - ``MatRestoreRowIJ()``
-     - ``MatRestoreRowIJF90()``
-   * - ``MatSeqAIJGetArray()``
-     - ``MatSeqAIJGetArrayF90()``
-   * - ``MatSeqAIJRestoreArray()``
-     - ``MatSeqAIJRestoreArrayF90()``
-   * - ``MatMPIAIJGetSeqAIJ()``
-     - ``MatMPIAIJGetSeqAIJF90()``
-   * - ``MatDenseGetArray()``
-     - ``MatDenseGetArrayF90()``
-   * - ``MatDenseRestoreArray()``
-     - ``MatDenseRestoreArrayF90()``
-
-The array arguments to these Fortran functions should be declared with forms such as
-
-.. code-block:: fortran
-
-   PetscScalar, pointer :: x(:)
-   PetscInt, pointer :: idx(:)
-
-See the manual pages for details and pointers to example programs.
 
 .. _sec_fortran-examples:
 
@@ -330,5 +360,35 @@ differs only slightly.
    .. literalinclude:: /../src/snes/tutorials/ex1f.F90
       :language: fortran
       :end-before: !/*TEST
+
+Calling Fortran Routines from C (and C Routines from Fortran)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The information here applies only if you plan to call your **own**
+C functions from Fortran or Fortran functions from C.
+Different compilers have different methods of naming Fortran routines
+called from C (or C routines called from Fortran). Most Fortran
+compilers change the capital letters in Fortran routines to
+all lowercase. With some compilers, the Fortran compiler appends an underscore
+to the end of each Fortran routine name; for example, the Fortran
+routine ``Dabsc()`` would be called from C with ``dabsc_()``. Other
+compilers change all the letters in Fortran routine names to capitals.
+
+PETSc provides two macros (defined in C/C++) to help write portable code
+that mixes C/C++ and Fortran. They are ``PETSC_HAVE_FORTRAN_UNDERSCORE``
+and ``PETSC_HAVE_FORTRAN_CAPS`` , which will be defined in the file
+``$PETSC_DIR/$PETSC_ARCH/include/petscconf.h`` based on the compilers
+conventions. The macros are used,
+for example, as follows:
+
+.. code-block:: fortran
+
+   #if defined(PETSC_HAVE_FORTRAN_CAPS)
+   #define dabsc_ DABSC
+   #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+   #define dabsc_ dabsc
+   #endif
+   .....
+   dabsc_( &n,x,y); /* call the Fortran function */
 
 

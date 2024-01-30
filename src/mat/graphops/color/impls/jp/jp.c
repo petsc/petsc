@@ -465,7 +465,7 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc, ISColoring *iscoloring
 }
 
 /*MC
-  MATCOLORINGJP - Parallel Jones-Plassmann coloring
+  MATCOLORINGJP - Parallel Jones-Plassmann coloring {cite}`jp:pcolor`
 
    Level: beginner
 
@@ -473,14 +473,10 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc, ISColoring *iscoloring
 .  -mat_coloring_jp_local - perform a local coloring before applying the parallel algorithm
 
    Notes:
-    This method uses a parallel Luby-style coloring with weights to choose an independent set of processor
+   This method uses a parallel Luby-style coloring with weights to choose an independent set of processor
    boundary vertices at each stage that may be assigned colors independently.
 
    Supports both distance one and distance two colorings.
-
-   References:
-.  * - M. Jones and P. Plassmann, "A parallel graph coloring heuristic," SIAM Journal on Scientific Computing, vol. 14, no. 3,
-   pp. 654-669, 1993.
 
 .seealso: `MatColoring`, `MatColoringType`, `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`
 M*/

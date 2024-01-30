@@ -14,9 +14,12 @@
 /* SUBMANSEC = Vec */
 
 /*S
-     Vec - Abstract PETSc vector object
+   Vec - Abstract PETSc vector object. Used for holding solutions and right-hand sides for (non) linear systems and integrators
 
    Level: beginner
+
+   Note:
+   Internally the actual vector representation is generally a simple array but most PETSc code can work on other representations through this abstraction
 
 .seealso: [](doc_vector), [](ch_vectors), `VecCreate()`, `VecType`, `VecSetType()`
 S*/
@@ -26,8 +29,8 @@ typedef struct _p_Vec *Vec;
   ScatterMode - Determines the direction of a scatter
 
   Values:
-+  `SCATTER_FORWARD` - Scatters the values as dictated by the `VecScatterCreate()` call
-.  `SCATTER_REVERSE` - Moves the values in the opposite direction than the directions indicated in the `VecScatterCreate()` call
++  `SCATTER_FORWARD`       - Scatters the values as dictated by the `VecScatterCreate()` call
+.  `SCATTER_REVERSE`       - Moves the values in the opposite direction than the directions indicated in the `VecScatterCreate()` call
 .  `SCATTER_FORWARD_LOCAL` - Scatters the values as dictated by the `VecScatterCreate()` call except NO MPI communication is done
 -  `SCATTER_REVERSE_LOCAL` - Moves the values in the opposite direction than the directions indicated in the `VecScatterCreate()` call
                              except NO MPI communication is done
@@ -54,7 +57,7 @@ M*/
 
 /*MC
     SCATTER_REVERSE - Moves the values in the opposite direction then the directions indicated in
-         in the `VecScatterCreate()`
+                      in the `VecScatterCreate()`
 
     Level: beginner
 
@@ -64,7 +67,7 @@ M*/
 
 /*MC
     SCATTER_FORWARD_LOCAL - Scatters the values as dictated by the `VecScatterCreate()` call except NO parallel communication
-       is done. Any variables that have be moved between processes are ignored
+                            is done. Any variables that have be moved between processes are ignored
 
     Level: developer
 
@@ -74,8 +77,8 @@ M*/
 
 /*MC
     SCATTER_REVERSE_LOCAL - Moves the values in the opposite direction then the directions indicated in
-         in the `VecScatterCreate()`  except NO parallel communication
-       is done. Any variables that have be moved between processes are ignored
+                           in the `VecScatterCreate()`  except NO parallel communication
+                           is done. Any variables that have be moved between processes are ignored
 
     Level: developer
 
@@ -84,7 +87,7 @@ M*/
 M*/
 
 /*J
-    VecType - String with the name of a PETSc vector
+   VecType - String with the name of a PETSc vector type
 
    Level: beginner
 
@@ -159,16 +162,16 @@ PETSC_EXTERN PetscErrorCode VecConcatenate(PetscInt, const Vec[], Vec *, IS *[])
     NormType - determines what type of norm to compute
 
     Values:
-+    `NORM_1` - the one norm, ||v|| = sum_i | v_i |. ||A|| = max_j || v_*j ||, maximum column sum
-.    `NORM_2` - the two norm, ||v|| = sqrt(sum_i |v_i|^2) (vectors only)
-.    `NORM_FROBENIUS` - ||A|| = sqrt(sum_ij |A_ij|^2), same as `NORM_2` for vectors
-.    `NORM_INFINITY` - ||v|| = max_i |v_i|. ||A|| = max_i || v_i* ||, maximum row sum
--    `NORM_1_AND_2` - computes both the 1 and 2 norm of a vector
++    `NORM_1`         - the one norm, $||v|| = \sum_i | v_i |$. $||A|| = \max_j || v_*j ||$, maximum column sum
+.    `NORM_2`         - the two norm, $||v|| = sqrt(\sum_i |v_i|^2)$ (vectors only)
+.    `NORM_FROBENIUS` - $||A|| = sqrt(\sum_ij |A_ij|^2)$, same as `NORM_2` for vectors
+.    `NORM_INFINITY`  - $||v|| = \max_i |v_i|$. $||A|| = \max_i || v_i* ||$, maximum row sum
+-    `NORM_1_AND_2`   - computes both the 1 and 2 norm of a vector. The values are stored in two adjacent `PetscReal` memory locations
 
     Level: beginner
 
-  Note:
-  The `v` above represents a `Vec` while the `A` represents a `Mat`
+    Note:
+    The `v` above represents a `Vec` while the `A` represents a `Mat`
 
 .seealso: [](ch_vectors), `Vec`, `Mat`, `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `MatNorm()`, `NORM_1`,
           `NORM_2`, `NORM_FROBENIUS`, `NORM_INFINITY`, `NORM_1_AND_2`
@@ -184,7 +187,7 @@ PETSC_EXTERN const char *const NormTypes[];
 #define NORM_MAX NORM_INFINITY
 
 /*MC
-     NORM_1 - the one norm, ||v|| = sum_i | v_i |. ||A|| = max_j || v_*j ||, maximum column sum
+   NORM_1 - the one norm, $||v|| = \sum_i | v_i |$. $||A|| = \max_j || v_{*,j} ||$, maximum column sum
 
    Level: beginner
 
@@ -193,7 +196,7 @@ PETSC_EXTERN const char *const NormTypes[];
 M*/
 
 /*MC
-     NORM_2 - the two norm, ||v|| = sqrt(sum_i |v_i|^2) (vectors only)
+   NORM_2 - the two norm, $||v|| = \sqrt{\sum_i |v_i|^2}$ (vectors only)
 
    Level: beginner
 
@@ -202,7 +205,7 @@ M*/
 M*/
 
 /*MC
-     NORM_FROBENIUS - ||A|| = sqrt(sum_ij |A_ij|^2), same as `NORM_2` for vectors
+   NORM_FROBENIUS - $||A|| = \sqrt{\sum_{i,j} |A_{i,j}|^2}$, same as `NORM_2` for vectors
 
    Level: beginner
 
@@ -211,7 +214,7 @@ M*/
 M*/
 
 /*MC
-     NORM_INFINITY - ||v|| = max_i |v_i|. ||A|| = max_i || v_i* ||, maximum row sum
+   NORM_INFINITY - $||v|| = \max_i |v_i|$. $||A|| = \max_i || v_{i,*} ||$, maximum row sum
 
    Level: beginner
 
@@ -220,7 +223,7 @@ M*/
 M*/
 
 /*MC
-     NORM_1_AND_2 - computes both the 1 and 2 norm of a vector. The values are stored in two adjacent `PetscReal` memory locations
+   NORM_1_AND_2 - computes both the 1 and 2 norm of a vector. The values are stored in two adjacent `PetscReal` memory locations
 
    Level: beginner
 
@@ -229,7 +232,7 @@ M*/
 M*/
 
 /*MC
-     NORM_MAX - see `NORM_INFINITY`
+   NORM_MAX - see `NORM_INFINITY`
 
    Level: beginner
 M*/
@@ -238,17 +241,17 @@ M*/
     ReductionType - determines what type of column reduction (one that is not a type of norm defined in `NormType`) to compute
 
     Values:
-+  `REDUCTION_SUM_REALPART` - sum of real part of each matrix column
-.  `REDUCTION_SUM_IMAGINARYPART` - sum of imaginary part of each matrix column
-.  `REDUCTION_MEAN_REALPART` - arithmetic mean of real part of each matrix column
++  `REDUCTION_SUM_REALPART`       - sum of real part of each matrix column
+.  `REDUCTION_SUM_IMAGINARYPART`  - sum of imaginary part of each matrix column
+.  `REDUCTION_MEAN_REALPART`      - arithmetic mean of real part of each matrix column
 -  `REDUCTION_MEAN_IMAGINARYPART` - arithmetic mean of imaginary part of each matrix column
 
     Level: beginner
 
     Developer Note:
-  The constants defined in `ReductionType` MUST BE DISTINCT from those defined in `NormType`.
-  This is because `MatGetColumnReductions()` is used to compute both norms and other types of reductions,
-  and the constants defined in both `NormType` and `ReductionType` are used to designate the desired operation.
+    The constants defined in `ReductionType` MUST BE DISTINCT from those defined in `NormType`.
+   This is because `MatGetColumnReductions()` is used to compute both norms and other types of reductions,
+   and the constants defined in both `NormType` and `ReductionType` are used to designate the desired operation.
 
 .seealso: [](ch_vectors), `MatGetColumnReductions()`, `MatGetColumnNorms()`, `NormType`, `REDUCTION_SUM_REALPART`,
           `REDUCTION_SUM_IMAGINARYPART`, `REDUCTION_MEAN_REALPART`, `REDUCTION_NORM_1`, `REDUCTION_NORM_2`, `REDUCTION_NORM_FROBENIUS`, `REDUCTION_NORM_INFINITY`
@@ -261,7 +264,7 @@ typedef enum {
 } ReductionType;
 
 /*MC
-     REDUCTION_SUM_REALPART - sum of real part of matrix column
+   REDUCTION_SUM_REALPART - sum of real part of matrix column
 
    Level: beginner
 
@@ -270,7 +273,7 @@ typedef enum {
 M*/
 
 /*MC
-     REDUCTION_SUM_IMAGINARYPART - sum of imaginary part of matrix column
+   REDUCTION_SUM_IMAGINARYPART - sum of imaginary part of matrix column
 
    Level: beginner
 
@@ -279,7 +282,7 @@ M*/
 M*/
 
 /*MC
-     REDUCTION_MEAN_REALPART - arithmetic mean of real part of matrix column
+   REDUCTION_MEAN_REALPART - arithmetic mean of real part of matrix column
 
    Level: beginner
 
@@ -288,7 +291,7 @@ M*/
 M*/
 
 /*MC
-     REDUCTION_MEAN_IMAGINARYPART - arithmetic mean of imaginary part of matrix column
+   REDUCTION_MEAN_IMAGINARYPART - arithmetic mean of imaginary part of matrix column
 
    Level: beginner
 
@@ -377,10 +380,10 @@ PETSC_EXTERN PetscErrorCode VecSetValuesCOO(Vec, const PetscScalar[], InsertMode
    Not Collective
 
    Input Parameters:
-+  v - the vector
-.  row - the row location of the entry
++  v     - the vector
+.  row   - the row location of the entry
 .  value - the value to insert
--  mode - either `INSERT_VALUES` or `ADD_VALUES`
+-  mode  - either `INSERT_VALUES` or `ADD_VALUES`
 
    Level: beginner
 
@@ -487,10 +490,10 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec);
    Not Collective
 
    Input Parameters:
-+  v - the vector
-.  row - the row location of the entry
++  v     - the vector
+.  row   - the row location of the entry
 .  value - the value to insert
--  mode - either `INSERT_VALUES` or `ADD_VALUES`
+-  mode  - either `INSERT_VALUES` or `ADD_VALUES`
 
    Level: beginner
 
@@ -587,7 +590,7 @@ PETSC_EXTERN PetscErrorCode VecGetArrayWriteAndMemType(Vec, PetscScalar **, Pets
 PETSC_EXTERN PetscErrorCode VecRestoreArrayWriteAndMemType(Vec, PetscScalar **);
 
 /*@C
-   VecGetArrayPair - Accesses a pair of pointers for two vectors that may be common. When not common the first pointer is read only
+   VecGetArrayPair - Accesses a pair of pointers for two vectors that may be common. When the vectors are not the same the first pointer is read only
 
    Logically Collective; No Fortran Support
 
@@ -618,8 +621,8 @@ static inline PetscErrorCode VecGetArrayPair(Vec x, Vec y, PetscScalar **xv, Pet
    Logically Collective; No Fortran Support
 
    Input Parameters:
-+  x - the vector
-.  y - the second vector
++  x  - the vector
+.  y  - the second vector
 .  xv - location to put pointer to the first array
 -  yv - location to put pointer to the second array
 
@@ -729,6 +732,7 @@ PETSC_EXTERN PetscErrorCode VecRealPart(Vec);
 PETSC_EXTERN PetscErrorCode VecScatterCreateToAll(Vec, VecScatter *, Vec *);
 PETSC_EXTERN PetscErrorCode VecScatterCreateToZero(Vec, VecScatter *, Vec *);
 
+/* These vector calls were included from TAO. They miss vtable entries and GPU implementation */
 PETSC_EXTERN PetscErrorCode ISComplementVec(IS, Vec, IS *);
 PETSC_EXTERN PetscErrorCode VecPow(Vec, PetscScalar);
 PETSC_EXTERN PetscErrorCode VecMedian(Vec, Vec, Vec, Vec);
@@ -741,6 +745,7 @@ PETSC_EXTERN PetscErrorCode VecWhichEqual(Vec, Vec, IS *);
 PETSC_EXTERN PetscErrorCode VecISAXPY(Vec, IS, PetscScalar, Vec);
 PETSC_EXTERN PetscErrorCode VecISCopy(Vec, IS, ScatterMode, Vec);
 PETSC_EXTERN PetscErrorCode VecISSet(Vec, IS, PetscScalar);
+PETSC_EXTERN PetscErrorCode VecISShift(Vec, IS, PetscScalar);
 PETSC_EXTERN PetscErrorCode VecBoundGradientProjection(Vec, Vec, Vec, Vec, Vec);
 PETSC_EXTERN PetscErrorCode VecStepBoundInfo(Vec, Vec, Vec, Vec, PetscReal *, PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode VecStepMax(Vec, Vec, PetscReal *);
@@ -750,16 +755,16 @@ PETSC_EXTERN PetscErrorCode PetscViewerMathematicaGetVector(PetscViewer, Vec);
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaPutVector(PetscViewer, Vec);
 
 /*S
-     Vecs - Collection of vectors where the data for the vectors is stored in
-            one contiguous memory
+   Vecs - Collection of vectors where the data for the vectors is stored in
+          one contiguous memory
 
    Level: advanced
 
    Notes:
-    Temporary construct for handling multiply right hand side solves
+   Temporary construct for handling multiply right hand side solves
 
-    This is faked by storing a single vector that has enough array space for
-    n vectors
+   This is faked by storing a single vector that has enough array space for
+   n vectors
 
 S*/
 struct _n_Vecs {
@@ -820,9 +825,9 @@ PETSC_EXTERN PetscErrorCode PetscSectionVecNorm(PetscSection, PetscSection, Vec,
   Values:
 +  `VECTAGGERABSOLUTE` - "absolute" values are in a interval (box for complex values) of explicitly defined values
 .  `VECTAGGERRELATIVE` - "relative" values are in a interval (box for complex values) of values relative to the set of all values in the vector
-.  `VECTAGGERCDF` - "cdf" values are in a relative range of the *cumulative distribution* of values in the vector
-.  `VECTAGGEROR` - "or" values are in the union of other tags
--  `VECTAGGERAND` - "and" values are in the intersection of other tags
+.  `VECTAGGERCDF`      - "cdf" values are in a relative range of the *cumulative distribution* of values in the vector
+.  `VECTAGGEROR`       - "or" values are in the union of other tags
+-  `VECTAGGERAND`      - "and" values are in the intersection of other tags
 
   Level: advanced
 
@@ -892,7 +897,7 @@ PETSC_EXTERN PetscErrorCode VecTaggerCDFGetBox(VecTagger, const VecTaggerBox **)
   VecTaggerCDFMethod - Determines what method is used to compute absolute values from cumulative distribution values (e.g., what value is the preimage of .95 in the cdf).
 
    Values:
-+  `VECTAGGER_CDF_GATHER` - gather results to rank 0, perform the computation and broadcast the result
++  `VECTAGGER_CDF_GATHER`    - gather results to MPI rank 0, perform the computation and broadcast the result
 -  `VECTAGGER_CDF_ITERATIVE` - compute the results on all ranks iteratively using `MPI_Allreduce()`
 
   Level: advanced

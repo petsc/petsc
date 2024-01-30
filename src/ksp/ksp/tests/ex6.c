@@ -135,18 +135,18 @@ int main(int argc, char **args)
 /*TEST
 
     test:
-      args: -ksp_type preonly  -pc_type lu -options_left no  -f ${DATAFILESPATH}/matrices/arco1
+      args: -ksp_type preonly -pc_type lu -options_left no -f ${DATAFILESPATH}/matrices/arco1
       requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
 
     test:
       suffix: 2
-      args: -sub_pc_type ilu -options_left no  -f ${DATAFILESPATH}/matrices/arco1 -ksp_gmres_restart 100 -ksp_gmres_cgs_refinement_type refine_always -sub_ksp_type preonly -pc_type bjacobi -pc_bjacobi_blocks 8 -sub_pc_factor_in_place -ksp_monitor_short
-      requires: datafilespath double  !complex !defined(PETSC_USE_64BIT_INDICES)
+      args: -sub_pc_type ilu -options_left no -f ${DATAFILESPATH}/matrices/arco1 -ksp_gmres_restart 100 -ksp_gmres_cgs_refinement_type refine_always -sub_ksp_type preonly -pc_type bjacobi -pc_bjacobi_blocks 8 -sub_pc_factor_in_place -ksp_monitor_short
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
 
     test:
       suffix: 7
-      args: -ksp_gmres_cgs_refinement_type refine_always -pc_type asm -pc_asm_blocks 6 -f ${DATAFILESPATH}/matrices/small -matload_block_size 6  -ksp_monitor_short
-      requires: datafilespath double  !complex !defined(PETSC_USE_64BIT_INDICES)
+      args: -ksp_gmres_cgs_refinement_type refine_always -pc_type asm -pc_asm_blocks 6 -f ${DATAFILESPATH}/matrices/small -matload_block_size 6 -ksp_monitor_short
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
 
     test:
       requires: double !complex !defined(PETSC_USE_64BIT_INDICES)
@@ -168,11 +168,8 @@ int main(int argc, char **args)
       test:
         suffix: 3_skip
         args: -ksp_type {{chebyshev cg groppcg pipecg pipecgrr pipelcg pipeprcg cgne nash stcg gltr fcg pipefcg gmres fgmres lgmres dgmres pgmres tcqmr bcgs ibcgs qmrcgs fbcgs fbcgsr bcgsl pipebcgs cgs tfqmr cr pipecr qcg bicg minres lcd gcr cgls richardson}}
-      test:
-        requires: !pgf90_compiler
-        suffix: 3_skip_pipefgmres
-        args: -ksp_type pipefgmres
       #PIPEGCR generates nans on linux-knl
+      #PIPEFGMRES can have happy breakdown which is not handled well with no convergence test
       test:
         requires: !defined(PETSC_USE_AVX512_KERNELS)
         suffix: 3_skip_pipegcr

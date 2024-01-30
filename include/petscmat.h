@@ -8,8 +8,9 @@
 /* SUBMANSEC = Mat */
 
 /*S
-     Mat - Abstract PETSc matrix object used to manage all linear operators in PETSc, even those without
-           an explicit sparse representation (such as matrix-free operators)
+   Mat - Abstract PETSc matrix object used to manage all linear operators in PETSc, even those without
+         an explicit sparse representation (such as matrix-free operators). Also used to hold representations of graphs
+         for graph operations such as coloring, `MatColoringCreate()`
 
    Level: beginner
 
@@ -21,7 +22,7 @@ S*/
 typedef struct _p_Mat *Mat;
 
 /*J
-    MatType - String with the name of a PETSc matrix type
+   MatType - String with the name of a PETSc matrix type
 
    Level: beginner
 
@@ -134,9 +135,9 @@ typedef const char *MatType;
 #define MATH2OPUS                    "h2opus"
 
 /*J
-    MatSolverType - String with the name of a PETSc factorization based matrix solver type.
+   MatSolverType - String with the name of a PETSc factorization-based matrix solver type.
 
-    For example: "petsc" indicates what PETSc provides, "superlu_dist" the parallel SuperLU_DIST package etc
+   For example: "petsc" indicates what PETSc provides, "superlu_dist" the parallel SuperLU_DIST package etc
 
    Level: beginner
 
@@ -175,12 +176,12 @@ typedef const char *MatSolverType;
     MatFactorType - indicates what type of factorization is requested
 
     Values:
-+  `MAT_FACTOR_LU` - LU factorization
++  `MAT_FACTOR_LU`       - LU factorization
 .  `MAT_FACTOR_CHOLESKY` - Cholesky factorization
-.  `MAT_FACTOR_ILU` - ILU factorization
-.  `MAT_FACTOR_ICC` - incomplete Cholesky factorization
-.  `MAT_FACTOR_ILUDT` - ILU factorization with drop tolerance
--  `MAT_FACTOR_QR` - QR factorization
+.  `MAT_FACTOR_ILU`      - ILU factorization
+.  `MAT_FACTOR_ICC`      - incomplete Cholesky factorization
+.  `MAT_FACTOR_ILUDT`    - ILU factorization with drop tolerance
+-  `MAT_FACTOR_QR`       - QR factorization
 
     Level: beginner
 
@@ -225,12 +226,12 @@ PETSC_DEPRECATED_FUNCTION(3, 9, 0, "MatSolverTypeGet()", ) static inline PetscEr
     MatProductType - indicates what type of matrix product to compute
 
     Values:
-+  `MATPRODUCT_AB` - product of two matrices
-.  `MATPRODUCT_AtB` - product of the transpose of a given matrix with a matrix
-.  `MATPRODUCT_ABt` - product of a matrix with the transpose of another given matrix
++  `MATPRODUCT_AB`   - product of two matrices
+.  `MATPRODUCT_AtB`  - product of the transpose of a given matrix with a matrix
+.  `MATPRODUCT_ABt`  - product of a matrix with the transpose of another given matrix
 .  `MATPRODUCT_PtAP` - the triple product of the transpose of a matrix with another matrix and itself
 .  `MATPRODUCT_RARt` - the triple product of a matrix, another matrix and the transpose of the first matrix
--  `MATPRODUCT_ABC` - the product of three matrices
+-  `MATPRODUCT_ABC`  - the product of three matrices
 
     Level: beginner
 
@@ -283,6 +284,7 @@ PETSC_EXTERN PetscErrorCode MatProductCreate(Mat, Mat, Mat, Mat *);
 PETSC_EXTERN PetscErrorCode MatProductCreateWithMat(Mat, Mat, Mat, Mat);
 PETSC_EXTERN PetscErrorCode MatProductSetType(Mat, MatProductType);
 PETSC_EXTERN PetscErrorCode MatProductSetAlgorithm(Mat, MatProductAlgorithm);
+PETSC_EXTERN PetscErrorCode MatProductGetAlgorithm(Mat, MatProductAlgorithm *);
 PETSC_EXTERN PetscErrorCode MatProductSetFill(Mat, PetscReal);
 PETSC_EXTERN PetscErrorCode MatProductSetFromOptions(Mat);
 PETSC_EXTERN PetscErrorCode MatProductSymbolic(Mat);
@@ -305,14 +307,14 @@ PETSC_EXTERN PetscClassId MAT_NULLSPACE_CLASSID;
 PETSC_EXTERN PetscClassId MATMFFD_CLASSID;
 
 /*E
-    MatReuse - Indicates if matrices obtained from a previous call to `MatCreateSubMatrices()`, `MatCreateSubMatrix()`, `MatConvert()` or several other functions
-     are to be reused to store the new matrix values.
+   MatReuse - Indicates if matrices obtained from a previous call to `MatCreateSubMatrices()`, `MatCreateSubMatrix()`, `MatConvert()` or several other functions
+   are to be reused to store the new matrix values.
 
    Values:
 +  `MAT_INITIAL_MATRIX` - create a new matrix
-.  `MAT_REUSE_MATRIX` - reuse the matrix created with a previous call that used `MAT_INITIAL_MATRIX`
+.  `MAT_REUSE_MATRIX`   - reuse the matrix created with a previous call that used `MAT_INITIAL_MATRIX`
 .  `MAT_INPLACE_MATRIX` - replace the first input matrix with the new matrix (not applicable to all functions)
--  `MAT_IGNORE_MATRIX` - do not create a new matrix or reuse a give matrix, just ignore that matrix argument (not applicable to all functions)
+-  `MAT_IGNORE_MATRIX`  - do not create a new matrix or reuse a give matrix, just ignore that matrix argument (not applicable to all functions)
 
     Level: beginner
 
@@ -327,11 +329,11 @@ typedef enum {
 
 /*E
     MatCreateSubMatrixOption - Indicates if matrices obtained from a call to `MatCreateSubMatrices()`
-     include the matrix values. Currently it is only used by `MatGetSeqNonzeroStructure()`.
+    include the matrix values. Currently it is only used by `MatGetSeqNonzeroStructure()`.
 
     Values:
 +  `MAT_DO_NOT_GET_VALUES` - do not copy the matrix values
--  `MAT_GET_VALUES` - copy the matrix values
+-  `MAT_GET_VALUES`        - copy the matrix values
 
     Level: developer
 
@@ -370,16 +372,21 @@ PETSC_EXTERN PetscFunctionList MatColoringList;
 PETSC_EXTERN PetscFunctionList MatPartitioningList;
 
 /*E
-    MatStructure - Indicates if two matrices have the same nonzero structure
+   MatStructure - Indicates if two matrices have the same nonzero structure
 
    Values:
-+  `SAME_NONZERO_PATTERN`  - the two matrices have identical nonzero patterns
++  `SAME_NONZERO_PATTERN`      - the two matrices have identical nonzero patterns
 .  `DIFFERENT_NONZERO_PATTERN` - the two matrices may have different nonzero patterns
-.  `SUBSET_NONZERO_PATTERN` - the nonzero pattern of the second matrix is a subset of the nonzero pattern of the first matrix
--  `UNKNOWN_NONZERO_PATTERN` - there is no known relationship between the nonzero patterns. In this case the implementations
-                               may try to detect a relationship to optimize the operation
+.  `SUBSET_NONZERO_PATTERN`    - the nonzero pattern of the second matrix is a subset of the nonzero pattern of the first matrix
+-  `UNKNOWN_NONZERO_PATTERN`   - there is no known relationship between the nonzero patterns. In this case the implementations
+                                 may try to detect a relationship to optimize the operation
 
-    Level: beginner
+   Level: beginner
+
+   Note:
+   Certain matrix operations (such as `MatAXPY()`) can run much faster if the sparsity pattern of the matrices are the same. But actually determining if
+   the patterns are the same may be costly. This provides a way for users who know something about the sparsity patterns to provide this information
+   to certain PETSc routines.
 
 .seealso: [](ch_matrices), `Mat`, `MatCopy()`, `MatAXPY()`, `MatAYPX()`
 E*/
@@ -466,6 +473,17 @@ typedef enum {
 } MatCompositeMergeType;
 PETSC_EXTERN PetscErrorCode MatCompositeSetMergeType(Mat, MatCompositeMergeType);
 PETSC_EXTERN PetscErrorCode MatCreateComposite(MPI_Comm, PetscInt, const Mat *, Mat *);
+/*E
+    MatCompositeType - indicates what type of `MATCOMPOSITE` is used
+
+    Values:
++  `MAT_COMPOSITE_ADDITIVE`       - sum of matrices (default)
+-  `MAT_COMPOSITE_MULTIPLICATIVE` - product of matrices
+
+    Level: beginner
+
+.seealso: [](ch_matrices), `MATCOMPOSITE`, `MatCompositeSetType()`, `MatCompositeGetType()`
+E*/
 typedef enum {
   MAT_COMPOSITE_ADDITIVE,
   MAT_COMPOSITE_MULTIPLICATIVE
@@ -529,8 +547,8 @@ PETSC_EXTERN PetscErrorCode MatSetValuesBatch(Mat, PetscInt, PetscInt, PetscInt[
 PETSC_EXTERN PetscErrorCode MatSetRandom(Mat, PetscRandom);
 
 /*S
-     MatStencil - Data structure (C struct) for storing information about rows and
-        columns of a matrix as indexed on an associated grid. These are arguments to `MatSetStencil()` and `MatSetBlockStencil()`
+   MatStencil - Data structure (C struct) for storing information about rows and
+   columns of a matrix as indexed on an associated grid. These are arguments to `MatSetStencil()` and `MatSetBlockStencil()`
 
    Level: beginner
 
@@ -576,9 +594,9 @@ PETSC_EXTERN PetscErrorCode MatAssemblyEnd(Mat, MatAssemblyType);
 PETSC_EXTERN PetscErrorCode MatAssembled(Mat, PetscBool *);
 
 /*E
-    MatOption - Options that may be set for a matrix that indicate properties of the matrix or affect its behavior or storage
+   MatOption - Options that may be set for a matrix that indicate properties of the matrix or affect its behavior or storage
 
-    Level: beginner
+   Level: beginner
 
    Note:
    See `MatSetOption()` for the use of the options
@@ -698,20 +716,20 @@ PETSC_EXTERN PetscErrorCode MatMatTransposeSolve(Mat, Mat, Mat);
 PETSC_EXTERN PetscErrorCode MatResidual(Mat, Vec, Vec, Vec);
 
 /*E
-    MatDuplicateOption - Indicates if a duplicated sparse matrix should have
+  MatDuplicateOption - Indicates if a duplicated sparse matrix should have
   its numerical values copied over or just its nonzero structure.
 
-    Values:
-+   `MAT_DO_NOT_COPY_VALUES`    - Create a matrix using the same nonzero pattern as the original matrix,
-                               with zeros for the numerical values
-.   `MAT_COPY_VALUES`           - Create a matrix with the same nonzero pattern as the original matrix
-                               and with the same numerical values.
--   `MAT_SHARE_NONZERO_PATTERN` - Create a matrix that shares the nonzero structure with the previous matrix
-                               and does not copy it, using zeros for the numerical values. The parent and
-                               child matrices will share their index (i and j) arrays, and you cannot
-                               insert new nonzero entries into either matrix
+  Values:
++ `MAT_DO_NOT_COPY_VALUES`    - Create a matrix using the same nonzero pattern as the original matrix,
+                                with zeros for the numerical values
+. `MAT_COPY_VALUES`           - Create a matrix with the same nonzero pattern as the original matrix
+                                and with the same numerical values.
+- `MAT_SHARE_NONZERO_PATTERN` - Create a matrix that shares the nonzero structure with the previous matrix
+                                and does not copy it, using zeros for the numerical values. The parent and
+                                child matrices will share their index (i and j) arrays, and you cannot
+                                insert new nonzero entries into either matrix
 
-    Level: beginner
+  Level: beginner
 
   Note:
   Many matrix types (including `MATSEQAIJ`) do not support the `MAT_SHARE_NONZERO_PATTERN` optimization; in
@@ -746,7 +764,7 @@ PETSC_EXTERN PetscErrorCode MatGetColumnIJ(Mat, PetscInt, PetscBool, PetscBool, 
 PETSC_EXTERN PetscErrorCode MatRestoreColumnIJ(Mat, PetscInt, PetscBool, PetscBool, PetscInt *, const PetscInt *[], const PetscInt *[], PetscBool *);
 
 /*S
-     MatInfo - Context of matrix information, used with `MatGetInfo()`
+   MatInfo - Context of matrix information, used with `MatGetInfo()`
 
    Level: intermediate
 
@@ -767,10 +785,10 @@ typedef struct {
 
 /*E
     MatInfoType - Indicates if you want information about the local part of the matrix,
-     the entire parallel matrix or the maximum over all the local parts.
+    the entire parallel matrix or the maximum over all the local parts.
 
     Values:
-+   `MAT_LOCAL` - values for each MPI process part of the matrix
++   `MAT_LOCAL`      - values for each MPI process part of the matrix
 .   `MAT_GLOBAL_MAX` - maximum of each value over all MPI processes
 -   `MAT_GLOBAL_SUM` - sum of each value over all MPI processes
 
@@ -930,10 +948,10 @@ PETSC_EXTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm, Mat, Pets
    Not Collective
 
    Input Parameters:
-+  mat - the matrix
-.  i - the row location of the entry
-.  j - the column location of the entry
-.  va - the value to insert
++  mat  - the matrix
+.  i    - the row location of the entry
+.  j    - the column location of the entry
+.  va   - the value to insert
 -  mode - either `INSERT_VALUES` or `ADD_VALUES`
 
    Level: beginner
@@ -987,10 +1005,10 @@ static inline PetscErrorCode MatGetValue(Mat mat, PetscInt row, PetscInt col, Pe
    Not Collective
 
    Input Parameters:
-+  mat - the matrix
-.  i - the row location of the entry
-.  j - the column location of the entry
-.  va - the value to insert
++  mat  - the matrix
+.  i    - the row location of the entry
+.  j    - the column location of the entry
+.  va   - the value to insert
 -  mode - either `INSERT_VALUES` or `ADD_VALUES`
 
    Level: intermediate
@@ -1009,7 +1027,7 @@ static inline PetscErrorCode MatSetValueLocal(Mat mat, PetscInt i, PetscInt j, P
 
 /*MC
    MatPreallocateBegin - Begins the block of code that will count the number of nonzeros per
-       row in a matrix providing the data that one can use to correctly preallocate the matrix.
+   row in a matrix providing the data that one can use to correctly preallocate the matrix.
 
    Synopsis:
    #include <petscmat.h>
@@ -1018,7 +1036,7 @@ static inline PetscErrorCode MatSetValueLocal(Mat mat, PetscInt i, PetscInt j, P
    Collective
 
    Input Parameters:
-+  comm - the communicator that will share the eventually allocated matrix
++  comm  - the communicator that will share the eventually allocated matrix
 .  nrows - the number of LOCAL rows in the matrix
 -  ncols - the number of LOCAL columns in the matrix
 
@@ -1037,7 +1055,7 @@ static inline PetscErrorCode MatSetValueLocal(Mat mat, PetscInt i, PetscInt j, P
    Do not malloc or free `dnz` and `onz`, that is handled internally by these routines
 
    Developer Note:
-    This is a MACRO not a function because it has a leading { that is closed by `PetscPreallocateFinalize()`.
+   This is a MACRO, not a function, because it has a leading { that is closed by `PetscPreallocateFinalize()`.
 
 .seealso: [](ch_matrices), `MatPreallocateEnd()`, `MatPreallocateSet()`, `MatPreallocateSymmetricSetBlock()`, `MatPreallocateSetLocal()`,
           `MatPreallocateSymmetricSetLocalBlock()`
@@ -1057,7 +1075,7 @@ M*/
 
 /*MC
    MatPreallocateSetLocal - Indicates the locations (rows and columns) in the matrix where nonzeros will be
-       inserted using a local number of the rows and columns
+   inserted using a local number of the rows and columns
 
    Synopsis:
    #include <petscmat.h>
@@ -1066,14 +1084,14 @@ M*/
    Not Collective
 
    Input Parameters:
-+  map - the row mapping from local numbering to global numbering
++  map   - the row mapping from local numbering to global numbering
 .  nrows - the number of rows indicated
-.  rows - the indices of the rows
-.  cmap - the column mapping from local to global numbering
+.  rows  - the indices of the rows
+.  cmap  - the column mapping from local to global numbering
 .  ncols - the number of columns in the matrix
-.  cols - the columns indicated
-.  dnz - the array that will be passed to the matrix preallocation routines
--  onz - the other array passed to the matrix preallocation routines
+.  cols  - the columns indicated
+.  dnz   - the array that will be passed to the matrix preallocation routines
+-  onz   - the other array passed to the matrix preallocation routines
 
    Level: deprecated (since v3.19)
 
@@ -1091,7 +1109,7 @@ M*/
 
 /*MC
    MatPreallocateSetLocalRemoveDups - Indicates the locations (rows and columns) in the matrix where nonzeros will be
-       inserted using a local number of the rows and columns. This version removes any duplicate columns in cols
+   inserted using a local number of the rows and columns. This version removes any duplicate columns in cols
 
    Synopsis:
    #include <petscmat.h>
@@ -1100,14 +1118,14 @@ M*/
    Not Collective
 
    Input Parameters:
-+  map - the row mapping from local numbering to global numbering
++  map   - the row mapping from local numbering to global numbering
 .  nrows - the number of rows indicated
-.  rows - the indices of the rows (these values are mapped to the global values)
-.  cmap - the column mapping from local to global numbering
+.  rows  - the indices of the rows (these values are mapped to the global values)
+.  cmap  - the column mapping from local to global numbering
 .  ncols - the number of columns in the matrix   (this value will be changed if duplicate columns are found)
-.  cols - the columns indicated (these values are mapped to the global values, they are then sorted and duplicates removed)
-.  dnz - the array that will be passed to the matrix preallocation routines
--  onz - the other array passed to the matrix preallocation routines
+.  cols  - the columns indicated (these values are mapped to the global values, they are then sorted and duplicates removed)
+.  dnz   - the array that will be passed to the matrix preallocation routines
+-  onz   - the other array passed to the matrix preallocation routines
 
    Level: deprecated (since v3.19)
 
@@ -1125,7 +1143,7 @@ M*/
 
 /*MC
    MatPreallocateSetLocalBlock - Indicates the locations (rows and columns) in the matrix where nonzeros will be
-       inserted using a local number of the rows and columns
+   inserted using a local number of the rows and columns
 
    Synopsis:
    #include <petscmat.h>
@@ -1134,14 +1152,14 @@ M*/
    Not Collective
 
    Input Parameters:
-+  map - the row mapping from local numbering to global numbering
++  map   - the row mapping from local numbering to global numbering
 .  nrows - the number of rows indicated
-.  rows - the indices of the rows
-.  cmap - the column mapping from local to global numbering
+.  rows  - the indices of the rows
+.  cmap  - the column mapping from local to global numbering
 .  ncols - the number of columns in the matrix
-.  cols - the columns indicated
-.  dnz - the array that will be passed to the matrix preallocation routines
--  onz - the other array passed to the matrix preallocation routines
+.  cols  - the columns indicated
+.  dnz   - the array that will be passed to the matrix preallocation routines
+-  onz   - the other array passed to the matrix preallocation routines
 
    Level: deprecated (since v3.19)
 
@@ -1159,7 +1177,7 @@ M*/
 
 /*MC
    MatPreallocateSymmetricSetLocalBlock - Indicates the locations (rows and columns) in the matrix where nonzeros will be
-       inserted using a local number of the rows and columns
+   inserted using a local number of the rows and columns
 
    Synopsis:
    #include <petscmat.h>
@@ -1168,13 +1186,13 @@ M*/
    Not Collective
 
    Input Parameters:
-+  map - the mapping between local numbering and global numbering
++  map   - the mapping between local numbering and global numbering
 .  nrows - the number of rows indicated
-.  rows - the indices of the rows
+.  rows  - the indices of the rows
 .  ncols - the number of columns in the matrix
-.  cols - the columns indicated
-.  dnz - the array that will be passed to the matrix preallocation routines
--  onz - the other array passed to the matrix preallocation routines
+.  cols  - the columns indicated
+.  dnz   - the array that will be passed to the matrix preallocation routines
+-  onz   - the other array passed to the matrix preallocation routines
 
    Level: deprecated (since v3.19)
 
@@ -1192,7 +1210,7 @@ M*/
 
 /*MC
    MatPreallocateSet - Indicates the locations (rows and columns) in the matrix where nonzeros will be
-       inserted using a local number of the rows and columns
+   inserted using a local number of the rows and columns
 
    Synopsis:
    #include <petscmat.h>
@@ -1201,9 +1219,9 @@ M*/
    Not Collective
 
    Input Parameters:
-+  row - the row
++  row   - the row
 .  ncols - the number of columns in the matrix
--  cols - the columns indicated
+-  cols  - the columns indicated
 
    Output Parameters:
 +  dnz - the array that will be passed to the matrix preallocation routines
@@ -1217,7 +1235,7 @@ M*/
 
    Do not malloc or free `dnz` and `onz` that is handled internally by these routines
 
-   This is a MACRO not a function because it uses variables declared in MatPreallocateBegin().
+   This is a MACRO, not a function, because it uses variables declared in MatPreallocateBegin().
 
 .seealso: [](ch_matrices), `MatPreallocateEnd()`, `MatPreallocateSet()`, `MatPreallocateSymmetricSetBlock()`
           `MatPreallocateBegin()`, `MatPreallocateSetLocal()`
@@ -1230,7 +1248,7 @@ M*/
 
 /*MC
    MatPreallocateSymmetricSetBlock - Indicates the locations (rows and columns) in the matrix where nonzeros will be
-       inserted using a local number of the rows and columns
+   inserted using a local number of the rows and columns
 
    Synopsis:
    #include <petscmat.h>
@@ -1240,11 +1258,11 @@ M*/
 
    Input Parameters:
 +  nrows - the number of rows indicated
-.  rows - the indices of the rows
+.  rows  - the indices of the rows
 .  ncols - the number of columns in the matrix
-.  cols - the columns indicated
-.  dnz - the array that will be passed to the matrix preallocation routines
--  onz - the other array passed to the matrix preallocation routines
+.  cols  - the columns indicated
+.  dnz   - the array that will be passed to the matrix preallocation routines
+-  onz   - the other array passed to the matrix preallocation routines
 
    Level: deprecated (since v3.19)
 
@@ -1254,7 +1272,7 @@ M*/
 
    Do not malloc or free `dnz` and `onz` that is handled internally by these routines
 
-   This is a MACRO not a function because it uses variables declared in MatPreallocateBegin().
+   This is a MACRO, not a function, because it uses variables declared in MatPreallocateBegin().
 
 .seealso: [](ch_matrices), `MatPreallocateEnd()`, `MatPreallocateSet()`, `MatPreallocateBegin()`,
           `MatPreallocateSymmetricSetLocalBlock()`, `MatPreallocateSetLocal()`
@@ -1275,12 +1293,12 @@ M*/
    Not Collective
 
    Input Parameters:
-+  A - matrix
-.  row - row where values exist (must be local to this process)
++  A     - matrix
+.  row   - row where values exist (must be local to this process)
 .  ncols - number of columns
-.  cols - columns with nonzeros
-.  dnz - the array that will be passed to the matrix preallocation routines
--  onz - the other array passed to the matrix preallocation routines
+.  cols  - columns with nonzeros
+.  dnz   - the array that will be passed to the matrix preallocation routines
+-  onz   - the other array passed to the matrix preallocation routines
 
    Level: deprecated (since v3.19)
 
@@ -1290,7 +1308,8 @@ M*/
 
    Do not malloc or free `dnz` and `onz` that is handled internally by these routines
 
-  This is a MACRO not a function because it uses a bunch of variables private to the MatPreallocation.... routines.
+   Developer Note:
+   This is a MACRO, not a function, because it uses a bunch of variables private to the MatPreallocation.... routines.
 
 .seealso: [](ch_matrices), `MatPreallocateBegin()`, `MatPreallocateSet()`, `MatPreallocateSymmetricSetBlock()`, `MatPreallocateSetLocal()`,
           `MatPreallocateSymmetricSetLocalBlock()`
@@ -1299,7 +1318,7 @@ M*/
 
 /*MC
    MatPreallocateEnd - Ends the block of code that will count the number of nonzeros per
-       row in a matrix providing the data that one can use to correctly preallocate the matrix.
+   row in a matrix providing the data that one can use to correctly preallocate the matrix.
 
    Synopsis:
    #include <petscmat.h>
@@ -1320,7 +1339,7 @@ M*/
    Do not malloc or free `dnz` and `onz`, that is handled internally by these routines
 
    Developer Note:
-    This is a MACRO not a function because it closes the { started in MatPreallocateBegin().
+   This is a MACRO, not a function, because it closes the { started in MatPreallocateBegin().
 
 .seealso: [](ch_matrices), `MatPreallocateBegin()`, `MatPreallocateSet()`, `MatPreallocateSymmetricSetBlock()`, `MatPreallocateSetLocal()`,
           `MatPreallocateSymmetricSetLocalBlock()`
@@ -1389,8 +1408,8 @@ PETSC_EXTERN PetscErrorCode MatFindZeroRows(Mat, IS *);
 */
 
 /*J
-    MatOrderingType - String with the name of a PETSc matrix ordering. These orderings are most commonly used
-    to reduce fill in sparse factorizations.
+   MatOrderingType - String with the name of a PETSc matrix ordering. These orderings are most commonly used
+   to reduce fill in sparse factorizations.
 
    Level: beginner
 
@@ -1433,13 +1452,13 @@ PETSC_EXTERN PetscErrorCode MatCreateLaplacian(Mat, PetscReal, PetscBool, Mat *)
 PETSC_EXTERN PetscErrorCode MatFactorGetPreferredOrdering(Mat, MatFactorType, MatOrderingType *);
 
 /*S
-    MatFactorShiftType - Type of numeric shift used for factorizations
+   MatFactorShiftType - Type of numeric shift used for factorizations
 
    Values:
-+  `MAT_SHIFT_NONE` - do not shift the matrix diagonal entries
-.  `MAT_SHIFT_NONZERO` - shift the entries to be non-zero
++  `MAT_SHIFT_NONE`              - do not shift the matrix diagonal entries
+.  `MAT_SHIFT_NONZERO`           - shift the entries to be non-zero
 .  `MAT_SHIFT_POSITIVE_DEFINITE` - shift the entries to force the factorization to be positive definite
--  `MAT_SHIFT_INBLOCKS` - only shift the factors inside the small dense diagonal blocks of the matrix, for example with `MATBAIJ`
+-  `MAT_SHIFT_INBLOCKS`          - only shift the factors inside the small dense diagonal blocks of the matrix, for example with `MATBAIJ`
 
    Level: intermediate
 
@@ -1458,11 +1477,11 @@ PETSC_EXTERN const char *const MatFactorShiftTypesDetail[];
     MatFactorError - indicates what type of error was generated in a matrix factorization
 
     Values:
-+   `MAT_FACTOR_NOERROR` - there was no error during the factorization
-.   `MAT_FACTOR_STRUCT_ZEROPIVOT` - there was a missing entry in a diagonal location of the matrix
++   `MAT_FACTOR_NOERROR`           - there was no error during the factorization
+.   `MAT_FACTOR_STRUCT_ZEROPIVOT`  - there was a missing entry in a diagonal location of the matrix
 .   `MAT_FACTOR_NUMERIC_ZEROPIVOT` - there was a (near) zero pivot during the factorization
-.   `MAT_FACTOR_OUTMEMORY` - the factorization has run out of memory
--   `MAT_FACTOR_OTHER` - some other error has occurred.
+.   `MAT_FACTOR_OUTMEMORY`         - the factorization has run out of memory
+-   `MAT_FACTOR_OTHER`             - some other error has occurred.
 
     Level: intermediate
 
@@ -1553,21 +1572,21 @@ PETSC_EXTERN PetscErrorCode MatFactorFactorizeSchurComplement(Mat);
 
 PETSC_EXTERN PetscErrorCode MatSeqDenseInvert(Mat);
 /*E
-    MatSORType - What type of (S)SOR to perform
+   MatSORType - What type of (S)SOR to perform
 
    Values:
-+  `SOR_FORWARD_SWEEP` - do a sweep from the first row of the matrix to the last
-.  `SOR_BACKWARD_SWEEP` -  do a sweep from the last row to the first
-.  `SOR_SYMMETRIC_SWEEP` - do a sweep from the first row to the last and then back to the first
-.  `SOR_LOCAL_FORWARD_SWEEP` - each MPI rank does its own forward sweep with no communication
-.  `SOR_LOCAL_BACKWARD_SWEEP` - each MPI rank does its own backward sweep with no communication
-.  `SOR_LOCAL_SYMMETRIC_SWEEP` - each MPI rank does its own symmetric sweep with no communication
-.  `SOR_ZERO_INITIAL_GUESS` - indicates the initial solution is zero so the sweep can avoid unneeded computation
-.  `SOR_EISENSTAT` - apply the Eisentat application of SOR, see `PCEISENSTAT`
-.  `SOR_APPLY_UPPER` - multiply by the upper triangular portion of the matrix
--  `SOR_APPLY_LOWER` - multiply by the lower triangular portion of the matrix
++  `SOR_FORWARD_SWEEP`         - do a sweep from the first row of the matrix to the last
+.  `SOR_BACKWARD_SWEEP`        - do a sweep from the last row to the first
+.  `SOR_SYMMETRIC_SWEEP`       - do a sweep from the first row to the last and then back to the first
+.  `SOR_LOCAL_FORWARD_SWEEP`   - each MPI process does its own forward sweep with no communication
+.  `SOR_LOCAL_BACKWARD_SWEEP`  - each MPI process does its own backward sweep with no communication
+.  `SOR_LOCAL_SYMMETRIC_SWEEP` - each MPI process does its own symmetric sweep with no communication
+.  `SOR_ZERO_INITIAL_GUESS`    - indicates the initial solution is zero so the sweep can avoid unneeded computation
+.  `SOR_EISENSTAT`             - apply the Eisentat application of SOR, see `PCEISENSTAT`
+.  `SOR_APPLY_UPPER`           - multiply by the upper triangular portion of the matrix
+-  `SOR_APPLY_LOWER`           - multiply by the lower triangular portion of the matrix
 
-    Level: beginner
+   Level: beginner
 
    Note:
    These may be bitwise ORd together
@@ -1592,7 +1611,7 @@ typedef enum {
 PETSC_EXTERN PetscErrorCode MatSOR(Mat, Vec, PetscReal, MatSORType, PetscReal, PetscInt, PetscInt, Vec);
 
 /*S
-     MatColoring - Object for managing the coloring of matrices.
+   MatColoring - Object for managing the coloring of matrices.
 
    Level: beginner
 
@@ -1610,7 +1629,7 @@ S*/
 typedef struct _p_MatColoring *MatColoring;
 
 /*J
-    MatColoringType - String with the name of a PETSc matrix coloring
+   MatColoringType - String with the name of a PETSc matrix coloring
 
    Level: beginner
 
@@ -1628,10 +1647,10 @@ typedef const char *MatColoringType;
 /*E
    MatColoringWeightType - Type of weight scheme used for the coloring algorithm
 
-    Values:
-+   `MAT_COLORING_RANDOM`  - Random weights
-.   `MAT_COLORING_LEXICAL` - Lexical weighting based upon global numbering.
--   `MAT_COLORING_LF`      - Last-first weighting.
+   Values:
++  `MAT_COLORING_RANDOM`  - Random weights
+.  `MAT_COLORING_LEXICAL` - Lexical weighting based upon global numbering.
+-  `MAT_COLORING_LF`      - Last-first weighting.
 
     Level: intermediate
 
@@ -1668,7 +1687,7 @@ PETSC_DEPRECATED_FUNCTION(3, 10, 0, "MatColoringTest()", ) static inline PetscEr
 PETSC_EXTERN PetscErrorCode MatISColoringTest(Mat, ISColoring);
 
 /*S
-     MatFDColoring - Object for computing a sparse Jacobian via finite differences with coloring
+   MatFDColoring - Object for computing a sparse Jacobian via finite differences with coloring
 
    Level: beginner
 
@@ -1696,7 +1715,7 @@ PETSC_EXTERN PetscErrorCode MatFDColoringSetBlockSize(MatFDColoring, PetscInt, P
 PETSC_EXTERN PetscErrorCode MatFDColoringSetValues(Mat, MatFDColoring, const PetscScalar *);
 
 /*S
-     MatTransposeColoring - Object for computing a sparse matrix product C=A*B^T via coloring
+   MatTransposeColoring - Object for computing a sparse matrix product $C = A*B^T$ via coloring
 
    Level: developer
 
@@ -1710,16 +1729,16 @@ PETSC_EXTERN PetscErrorCode MatTransColoringApplyDenToSp(MatTransposeColoring, M
 PETSC_EXTERN PetscErrorCode MatTransposeColoringDestroy(MatTransposeColoring *);
 
 /*S
-     MatPartitioning - Object for managing the partitioning of a matrix or graph
+   MatPartitioning - Object for managing the partitioning of a matrix or graph
 
    Level: beginner
 
    Note:
-     There is also a `PetscPartitioner` object that provides the same functionality. It can utilize the `MatPartitioning` operations
-     via `PetscPartitionerSetType`(p,`PETSCPARTITIONERMATPARTITIONING`)
+   There is also a `PetscPartitioner` object that provides the same functionality. It can utilize the `MatPartitioning` operations
+   via `PetscPartitionerSetType`(p,`PETSCPARTITIONERMATPARTITIONING`)
 
-   Developers Note:
-     It is an extra maintenance and documentation cost to have two objects with the same functionality. `PetscPartitioner` should be removed
+   Developer Note:
+   It is an extra maintenance and documentation cost to have two objects with the same functionality. `PetscPartitioner` should be removed
 
 .seealso: [](ch_matrices), [](sec_graph), `Mat`, `MatPartitioningCreate()`, `MatPartitioningType`, `MatColoring`, `MatGetOrdering()`, `MatOrderingType`,
           `MatCoarsenType`, `MatCoarsenType`
@@ -2037,8 +2056,8 @@ PETSC_EXTERN PetscErrorCode MatISGetLocalToGlobalMapping(Mat, ISLocalToGlobalMap
 PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 10, 0, "MatConvert()", ) PetscErrorCode MatISGetMPIXAIJ(Mat, MatReuse, Mat *);
 
 /*S
-     MatNullSpace - Object that removes a null space from a vector, i.e.
-         orthogonalizes the vector to a subspace
+   MatNullSpace - Object that removes a null space from a vector, i.e.
+                  orthogonalizes the vector to a subspace
 
    Level: advanced
 
@@ -2134,11 +2153,11 @@ S*/
 typedef struct _p_MatMFFD *MatMFFD;
 
 /*J
-    MatMFFDType - algorithm used to compute the `h` used in computing matrix-vector products via differencing of a function
+   MatMFFDType - algorithm used to compute the `h` used in computing matrix-vector products via differencing of a function
 
    Values:
-+   `MATMFFD_DS` - an algorithm described by Dennis and Schnabel
--   `MATMFFD_WP` - the Walker-Pernice strategy.
++   `MATMFFD_DS` - an algorithm described by Dennis and Schnabel {cite}`dennis:83`
+-   `MATMFFD_WP` - the Walker-Pernice {cite}`pw98` strategy.
 
    Level: beginner
 
@@ -2182,12 +2201,12 @@ PETSC_EXTERN PetscErrorCode MatHtoolGetPermutationTarget(Mat, IS *);
 PETSC_EXTERN PetscErrorCode MatHtoolUsePermutation(Mat, PetscBool);
 
 /*E
-     MatHtoolCompressorType - Indicates the type of compressor used by a `MATHTOOL`
+   MatHtoolCompressorType - Indicates the type of compressor used by a `MATHTOOL`
 
-    Values:
-+   `MAT_HTOOL_COMPRESSOR_SYMPARTIAL_ACA` (default) - symmetric partial adaptive cross approximation
-.   `MAT_HTOOL_COMPRESSOR_FULL_ACA` - full adaptive cross approximation
--   `MAT_HTOOL_COMPRESSOR_SVD` - singular value decomposition
+   Values:
++  `MAT_HTOOL_COMPRESSOR_SYMPARTIAL_ACA` (default) - symmetric partial adaptive cross approximation
+.  `MAT_HTOOL_COMPRESSOR_FULL_ACA`                 - full adaptive cross approximation
+-  `MAT_HTOOL_COMPRESSOR_SVD`                      - singular value decomposition
 
    Level: intermediate
 
@@ -2200,18 +2219,18 @@ typedef enum {
 } MatHtoolCompressorType;
 
 /*E
-     MatHtoolClusteringType - Indicates the type of clustering used by a `MATHTOOL`
+   MatHtoolClusteringType - Indicates the type of clustering used by a `MATHTOOL`
 
-    Values:
-+   `MAT_HTOOL_CLUSTERING_PCA_REGULAR` (default) - axis computed via principle component analysis, split uniformly
-.   `MAT_HTOOL_CLUSTERING_PCA_GEOMETRIC` - axis computed via principle component analysis, split barycentrically
-.   `MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_REGULAR` - axis along the largest extent of the bounding box, split uniformly
--   `MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_GEOMETRIC` - axis along the largest extent of the bounding box, split barycentrically
+   Values:
++  `MAT_HTOOL_CLUSTERING_PCA_REGULAR` (default)    - axis computed via principle component analysis, split uniformly
+.  `MAT_HTOOL_CLUSTERING_PCA_GEOMETRIC`            - axis computed via principle component analysis, split barycentrically
+.  `MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_REGULAR`   - axis along the largest extent of the bounding box, split uniformly
+-  `MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_GEOMETRIC` - axis along the largest extent of the bounding box, split barycentrically
 
    Level: intermediate
 
-    Note:
-    Higher-dimensional clustering is not yet supported in Htool, but once it is, one should add BOUNDING_BOX_{2,3} types
+   Note:
+   Higher-dimensional clustering is not yet supported in Htool, but once it is, one should add BOUNDING_BOX_{2,3} types
 
 .seealso: [](ch_matrices), `Mat`, `MatCreateHtoolFromKernel()`, `MATHTOOL`, `MatHtoolCompressorType`
 E*/
@@ -2386,10 +2405,10 @@ PETSC_EXTERN const char *const MatCUSPARSEStorageFormats[];
     matrices whose operation should use a particular storage format.
 
     Values:
-+   `MAT_CUSPARSE_MULT_DIAG` - sets the storage format for the diagonal matrix in the parallel `MatMult()`
++   `MAT_CUSPARSE_MULT_DIAG`    - sets the storage format for the diagonal matrix in the parallel `MatMult()`
 .   `MAT_CUSPARSE_MULT_OFFDIAG` - sets the storage format for the off-diagonal matrix in the parallel `MatMult()`
-.   `MAT_CUSPARSE_MULT` - sets the storage format for the entire matrix in the serial (single GPU) `MatMult()`
--   `MAT_CUSPARSE_ALL` - sets the storage format for all `MATAIJCUSPARSE` (GPU) matrices
+.   `MAT_CUSPARSE_MULT`         - sets the storage format for the entire matrix in the serial (single GPU) `MatMult()`
+-   `MAT_CUSPARSE_ALL`          - sets the storage format for all `MATAIJCUSPARSE` (GPU) matrices
 
     Level: intermediate
 
@@ -2461,10 +2480,10 @@ PETSC_EXTERN const char *const MatHIPSPARSEStorageFormats[];
     matrices whose operation should use a particular storage format.
 
     Values:
-+   `MAT_HIPSPARSE_MULT_DIAG` - sets the storage format for the diagonal matrix in the parallel `MatMult()`
++   `MAT_HIPSPARSE_MULT_DIAG`    - sets the storage format for the diagonal matrix in the parallel `MatMult()`
 .   `MAT_HIPSPARSE_MULT_OFFDIAG` - sets the storage format for the off-diagonal matrix in the parallel `MatMult()`
-.   `MAT_HIPSPARSE_MULT` - sets the storage format for the entire matrix in the serial (single GPU) `MatMult()`
--   `MAT_HIPSPARSE_ALL` - sets the storage format for all HIPSPARSE (GPU) matrices
+.   `MAT_HIPSPARSE_MULT`         - sets the storage format for the entire matrix in the serial (single GPU) `MatMult()`
+-   `MAT_HIPSPARSE_ALL`          - sets the storage format for all HIPSPARSE (GPU) matrices
 
     Level: intermediate
 

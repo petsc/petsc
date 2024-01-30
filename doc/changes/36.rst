@@ -91,7 +91,7 @@ Changes: 3.6
    discretizations (-pc_hypre_type ams)
 -  Added Interface to ADS solver from HYPRE for Raviart-Thomas
    discretizations (-pc_hypre_type ads)
--  Contributed MKL Pardiso interface providing PCCholesky support.
+-  Contributed MKL PARDISO interface providing PCCholesky support.
    Useable with: -pc_type cholesky -mat_type sbaij
    -pc_factor_mat_solver_package mkl_pardiso
 -  PCGASMSetTotalSubdomains() can now create multirank subdomains if

@@ -62,7 +62,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
   PetscCall(TaoComputeObjectiveAndGradient(tao, tao->solution, &bnk->f, bnk->unprojected_gradient));
   PetscCall(TaoBNKEstimateActiveSet(tao, bnk->as_type));
   PetscCall(VecCopy(bnk->unprojected_gradient, tao->gradient));
-  PetscCall(VecISSet(tao->gradient, bnk->active_idx, 0.0));
+  if (bnk->active_idx) PetscCall(VecISSet(tao->gradient, bnk->active_idx, 0.0));
   PetscCall(TaoGradientNorm(tao, tao->gradient, NORM_2, &bnk->gnorm));
 
   /* Test the initial point for convergence */
@@ -242,7 +242,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
           PetscCall(TaoComputeGradient(tao, tao->solution, bnk->unprojected_gradient));
           PetscCall(TaoBNKEstimateActiveSet(tao, bnk->as_type));
           PetscCall(VecCopy(bnk->unprojected_gradient, tao->gradient));
-          PetscCall(VecISSet(tao->gradient, bnk->active_idx, 0.0));
+          if (bnk->active_idx) PetscCall(VecISSet(tao->gradient, bnk->active_idx, 0.0));
           /* Compute gradient at the new iterate and flip switch to compute the Hessian later */
           PetscCall(TaoGradientNorm(tao, tao->gradient, NORM_2, &bnk->gnorm));
           *needH = PETSC_TRUE;
@@ -354,13 +354,11 @@ PetscErrorCode TaoBNKBoundStep(Tao tao, PetscInt asType, Vec step)
   PetscFunctionBegin;
   switch (asType) {
   case BNK_AS_NONE:
-    PetscCall(VecISSet(step, bnk->active_idx, 0.0));
+    if (bnk->active_idx) PetscCall(VecISSet(step, bnk->active_idx, 0.0));
     break;
-
   case BNK_AS_BERTSEKAS:
     PetscCall(TaoBoundStep(tao->solution, tao->XL, tao->XU, bnk->active_lower, bnk->active_upper, bnk->active_fixed, 1.0, step));
     break;
-
   default:
     break;
   }

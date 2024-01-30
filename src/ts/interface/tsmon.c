@@ -297,7 +297,7 @@ PetscErrorCode TSMonitorExtreme(TS ts, PetscInt step, PetscReal ptime, Vec v, Pe
 
   One can provide a function that transforms the solution before plotting it with `TSMonitorLGCtxSetTransform()` or `TSMonitorLGSetTransform()`
 
-  Many of the functions that control the monitoring have two forms: TSMonitorLGSet/GetXXXX() and TSMonitorLGCtxSet/GetXXXX() the first take a `TS` object as the
+  Many of the functions that control the monitoring have two forms\: TSMonitorLGSet/GetXXXX() and TSMonitorLGCtxSet/GetXXXX() the first take a `TS` object as the
   first argument (if that `TS` object does not have a `TSMonitorLGCtx` associated with it the function call is ignored) and the second takes a `TSMonitorLGCtx` object
   as the first argument.
 
@@ -324,6 +324,26 @@ PetscErrorCode TSMonitorLGCtxCreate(MPI_Comm comm, const char host[], const char
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  TSMonitorLGTimeStep - Monitors a `TS` by printing the time-steps
+
+  Collective
+
+  Input Parameters:
++ ts     - the time integrator
+. step   - the current time step
+. ptime  - the current time
+. v      - the current state
+- monctx - the monitor context obtained with `TSMonitorLGCtxCreate()`
+
+  Level: advanced
+
+  Note:
+  This is not called directly by users, rather one calls `TSMonitorSet()` along the `ctx` created by `TSMonitorLGCtxCreate()`
+  and `TSMonitorLGCtxDestroy()`
+
+.seealso: [](ch_ts), `TS`, `TSMonitorLGCtxCreate()`, `TSMonitorSet()`, `TSMonitorLGCtxDestroy()`
+@*/
 PetscErrorCode TSMonitorLGTimeStep(TS ts, PetscInt step, PetscReal ptime, Vec v, void *monctx)
 {
   TSMonitorLGCtx ctx = (TSMonitorLGCtx)monctx;
@@ -361,7 +381,7 @@ PetscErrorCode TSMonitorLGTimeStep(TS ts, PetscInt step, PetscReal ptime, Vec v,
   Note:
   Pass to `TSMonitorSet()` along with the context and `TSMonitorLGTimeStep()`
 
-.seealso: [](ch_ts), `TS`, `TSMonitorLGCtxCreate()`, `TSMonitorSet()`, `TSMonitorLGTimeStep();`
+.seealso: [](ch_ts), `TS`, `TSMonitorLGCtxCreate()`, `TSMonitorSet()`, `TSMonitorLGTimeStep()`
 @*/
 PetscErrorCode TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx)
 {

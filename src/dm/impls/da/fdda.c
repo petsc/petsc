@@ -89,7 +89,7 @@ static PetscErrorCode DMDASetBlockFills_Private2(DM_DA *dd)
 
   Input Parameters:
 + da    - the distributed array
-. dfill - the fill pattern in the diagonal block (may be NULL, means use dense block)
+. dfill - the fill pattern in the diagonal block (may be `NULL`, means use dense block)
 - ofill - the fill pattern in the off-diagonal blocks
 
   Level: developer
@@ -98,7 +98,7 @@ static PetscErrorCode DMDASetBlockFills_Private2(DM_DA *dd)
   This only makes sense when you are doing multicomponent problems but using the
   `MATMPIAIJ` matrix format
 
-  The format for dfill and ofill is a 2 dimensional dof by dof matrix with 1 entries
+  The format for `dfill` and `ofill` is a 2 dimensional dof by dof matrix with 1 entries
   representing coupling and 0 entries for missing coupling. For example
 .vb
             dfill[9] = {1, 0, 0,
@@ -110,11 +110,12 @@ static PetscErrorCode DMDASetBlockFills_Private2(DM_DA *dd)
   diagonal block).
 
   `DMDASetGetMatrix()` allows you to provide general code for those more complicated nonzero patterns then
-  can be represented in the dfill, ofill format
+  can be represented in the `dfill`, `ofill` format
 
-  Contributed by Glenn Hammond
+  Contributed by\:
+  Glenn Hammond
 
-.seealso: `DM`, `DMDA`, `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`, `DMDASetBlockFillsSparse()`
 @*/
 PetscErrorCode DMDASetBlockFills(DM da, const PetscInt *dfill, const PetscInt *ofill)
 {
@@ -165,9 +166,10 @@ PetscErrorCode DMDASetBlockFills(DM da, const PetscInt *dfill, const PetscInt *o
   `DMDASetGetMatrix()` allows you to provide general code for those more complicated nonzero patterns then
   can be represented in the `dfill`, `ofill` format
 
-  Contributed by Philip C. Roth
+  Contributed by\:
+  Philip C. Roth
 
-.seealso: `DM`, `DMDA`, `DMDASetBlockFills()`, `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDASetBlockFills()`, `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`
 @*/
 PetscErrorCode DMDASetBlockFillsSparse(DM da, const PetscInt *dfillsparse, const PetscInt *ofillsparse)
 {
@@ -675,19 +677,21 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
    specialized setting routines depend only on the particular preallocation
    details of the matrix, not the type itself.
   */
-  PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPIAIJSetPreallocation_C", &aij));
-  if (!aij) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqAIJSetPreallocation_C", &aij));
-  if (!aij) {
-    PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPIBAIJSetPreallocation_C", &baij));
-    if (!baij) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqBAIJSetPreallocation_C", &baij));
-    if (!baij) {
-      PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPISBAIJSetPreallocation_C", &sbaij));
-      if (!sbaij) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqSBAIJSetPreallocation_C", &sbaij));
-      if (!sbaij) {
-        PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPISELLSetPreallocation_C", &sell));
-        if (!sell) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqSELLSetPreallocation_C", &sell));
+  if (!da->prealloc_skip) { // Flag is likely set when user intends to use MatSetPreallocationCOO()
+    PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPIAIJSetPreallocation_C", &aij));
+    if (!aij) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqAIJSetPreallocation_C", &aij));
+    if (!aij) {
+      PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPIBAIJSetPreallocation_C", &baij));
+      if (!baij) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqBAIJSetPreallocation_C", &baij));
+      if (!baij) {
+        PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPISBAIJSetPreallocation_C", &sbaij));
+        if (!sbaij) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqSBAIJSetPreallocation_C", &sbaij));
+        if (!sbaij) {
+          PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPISELLSetPreallocation_C", &sell));
+          if (!sell) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqSELLSetPreallocation_C", &sell));
+        }
+        if (!sell) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatISSetPreallocation_C", &is));
       }
-      if (!sell) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatISSetPreallocation_C", &is));
     }
   }
   if (aij) {
@@ -738,7 +742,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
     } else SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Not implemented for %" PetscInt_FMT " dimension and Matrix Type: %s in %" PetscInt_FMT " dimension! Send mail to petsc-maint@mcs.anl.gov for code", dim, Atype, dim);
   } else if (is) {
     PetscCall(DMCreateMatrix_DA_IS(da, A));
-  } else {
+  } else { // unknown type or da->prealloc_skip so structural information may be needed, but no prealloc
     ISLocalToGlobalMapping ltog;
 
     PetscCall(MatSetBlockSize(A, dof));

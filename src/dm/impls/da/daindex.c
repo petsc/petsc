@@ -46,22 +46,22 @@ PetscErrorCode DMDAGetNatural_Private(DM da, PetscInt *outNlocal, IS *isnatural)
 }
 
 /*@C
-  DMDASetAOType - Sets the type of application ordering for a distributed array.
+  DMDASetAOType - Sets the type of application ordering to create with `DMDAGetAO()`, for a distributed array.
 
   Collective
 
   Input Parameters:
 + da     - the distributed array
-- aotype - type of `AO`
+- aotype - type of `AO`. `AOType` which can be `AOBASIC`, `AOADVANCED`, `AOMAPPING`, or `AOMEMORYSCALABLE`
 
   Level: intermediate
 
   Note:
-  It will generate and error if an `AO` has already been obtained with a call to `DMDAGetAO()` and the user sets a different `AOType`
+  It will generate an error if an `AO` has already been obtained with a call to `DMDAGetAO()` and the user sets a different `AOType`
 
-.seealso: `DM`, `DMDA`, `DMDACreate2d()`, `DMDAGetAO()`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `DMLocalToGlobal()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDACreate2d()`, `DMDAGetAO()`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `DMLocalToGlobal()`
           `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToLocalBegin()`, `DMLocalToLocalEnd()`, `DMDAGetGlobalIndices()`, `DMDAGetOwnershipRanges()`,
-          `AO`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
+          `AO`, `AOPetscToApplication()`, `AOApplicationToPetsc()`, `AOType`, `AOBASIC`, `AOADVANCED`, `AOMAPPING`, `AOMEMORYSCALABLE`
 @*/
 PetscErrorCode DMDASetAOType(DM da, AOType aotype)
 {
@@ -105,9 +105,9 @@ PetscErrorCode DMDASetAOType(DM da, AOType aotype)
   for each node (rather than 1 component for the whole grid, then the next
   component, etc.)
 
-  Do NOT call `AODestroy()` on the ao returned by this function.
+  Do NOT call `AODestroy()` on the `ao` returned by this function.
 
-.seealso: `DM`, `DMDA`, `DMDACreate2d()`, `DMDASetAOType()`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `DMLocalToGlobal()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDACreate2d()`, `DMDASetAOType()`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `DMLocalToGlobal()`
           `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToLocalBegin()`, `DMLocalToLocalEnd()`, `DMDAGetOwnershipRanges()`,
           `AO`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
 @*/

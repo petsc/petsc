@@ -158,7 +158,7 @@ static PetscErrorCode KSPSolve_PIPECG(KSP ksp)
 PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP, Vec, Vec, Vec *);
 
 /*MC
-   KSPPIPECG - Pipelined conjugate gradient method. [](sec_pipelineksp)
+   KSPPIPECG - Pipelined conjugate gradient method {cite}`ghyselsvanroose2014`. [](sec_pipelineksp)
 
    Level: intermediate
 
@@ -173,10 +173,6 @@ PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP, Vec, Vec, Vec *);
 
    Contributed by:
    Pieter Ghysels, Universiteit Antwerpen, Intel Exascience lab Flanders
-
-   Reference:
-   P. Ghysels and W. Vanroose, "Hiding global synchronization latency in the preconditioned Conjugate Gradient algorithm",
-   Submitted to Parallel Computing, 2012.
 
 .seealso: [](ch_ksp), [](doc_faq_pipelined), [](sec_pipelineksp), `KSPCreate()`, `KSPSetType()`, `KSPPIPECG2`, `KSPPIPECR`, `KSPGROPPCG`, `KSPPGMRES`, `KSPCG`, `KSPCGUseSingleReduction()`
 M*/

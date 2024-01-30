@@ -14,14 +14,14 @@ static char help[] = "Parallel bouncing ball example to test TS event feature.\n
 
 #include <petscts.h>
 
-PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscScalar *fvalue, void *ctx)
+PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscReal *fvalue, void *ctx)
 {
   const PetscScalar *u;
 
   PetscFunctionBeginUser;
   /* Event for ball height */
   PetscCall(VecGetArrayRead(U, &u));
-  fvalue[0] = u[0];
+  fvalue[0] = PetscRealPart(u[0]);
   PetscCall(VecRestoreArrayRead(U, &u));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -1,4 +1,4 @@
-#include <petsc/private/matimpl.h> /*I "petscmatcoarsen.h" I*/
+#include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
 
 /* Logging support */
 PetscClassId MAT_COARSEN_CLASSID;
@@ -163,7 +163,7 @@ PetscErrorCode MatCoarsenDestroy(MatCoarsen *agg)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  if ((*agg)->ops->destroy) PetscCall((*(*agg)->ops->destroy)((*agg)));
+  PetscTryTypeMethod(*agg, destroy);
   if ((*agg)->agg_lists) PetscCall(PetscCDDestroy((*agg)->agg_lists));
   PetscCall(PetscObjectComposeFunction((PetscObject)(*agg), "MatCoarsenSetMaximumIterations_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)(*agg), "MatCoarsenSetThreshold_C", NULL));
@@ -420,7 +420,7 @@ static PetscErrorCode MatCoarsenSetMaximumIterations_MATCOARSEN(MatCoarsen coars
 }
 
 /*@
-  MatCoarsenSetStrengthIndex -  Index to use for index to use for strength of connection
+  MatCoarsenSetStrengthIndex -  Index array to use for index to use for strength of connection
 
   Logically Collective
 

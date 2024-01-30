@@ -2515,7 +2515,7 @@ cdef class Mat(Object):
         values: Sequence[Scalar],
         addv: InsertModeSpec = None,
         ) -> None:
-        """Set values to the rows ⊗ col entries of the matrix.
+        """Set values to the rows ⊗ cols entries of the matrix.
 
         Not collective.
 

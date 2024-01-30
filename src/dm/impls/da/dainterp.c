@@ -3,7 +3,7 @@
 */
 
 /*
-      For linear elements there are two branches of code to compute the interpolation. They should compute the same results but may not. The "new version" does
+   For linear elements there are two branches of code to compute the interpolation. They should compute the same results but may not. The "new version" does
    not work for periodic domains, the old does. Change NEWVERSION to 1 to compile in the new version. Eventually when we are sure the two produce identical results
    we will remove/merge the new version. Based on current tests, these both produce the same results. We are leaving NEWVERSION for now in the code since some
    consider it cleaner, but old version is turned on since it handles periodic case.
@@ -1357,7 +1357,7 @@ PetscErrorCode DMCreateAggregates(DM dac, DM daf, Mat *mat)
   It is not clear what its use case is and it may be removed in a future release.
   Users should contact petsc-maint@mcs.anl.gov if they plan to use it.
 
-.seealso: `DMRefine()`, `DMCreateInjection()`, `DMCreateInterpolation()`
+.seealso: [](sec_struct), `DMRefine()`, `DMCreateInjection()`, `DMCreateInterpolation()`
 @*/
 PetscErrorCode DMDACreateAggregates(DM dac, DM daf, Mat *rest)
 {

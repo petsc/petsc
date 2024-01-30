@@ -288,6 +288,6 @@ int main(int argc, char **args)
 
    test:
       nsize: {{1 3}}
-      args: -bs {{1 2 3  5  7 8}} -mat_ignore_lower_triangular -prob {{1 2}}
+      args: -bs {{1 2 3 5 7 8}} -mat_ignore_lower_triangular -prob {{1 2}}
 
 TEST*/

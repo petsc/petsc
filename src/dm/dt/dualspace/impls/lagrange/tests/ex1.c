@@ -277,7 +277,7 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
         DMPolytopeType ct;
         /* The number of arrangements is no longer based on the number of faces */
         PetscCall(DMPlexGetCellType(K, 0, &ct));
-        numFaces = DMPolytopeTypeGetNumArrangments(ct) / 2;
+        numFaces = DMPolytopeTypeGetNumArrangements(ct) / 2;
       }
       for (o = -numFaces; o < numFaces; ++o) {
         Mat symMat;

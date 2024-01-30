@@ -45,6 +45,11 @@ PetscErrorCode DMPlexSetReferenceTree(DM dm, DM ref)
 
   Level: intermediate
 
+  Developer Notes:
+  The reference tree is shallow copied during `DMClone()`, thus it is may be shared by different `DM`s.
+  It is not a topological-only object, since some parts of the library use its local section to compute
+  interpolation and injection matrices. This may lead to unexpected failures during those calls.
+
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexSetReferenceTree()`, `DMPlexCreateDefaultReferenceTree()`
 @*/
 PetscErrorCode DMPlexGetReferenceTree(DM dm, DM *ref)
@@ -2656,6 +2661,9 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
     PetscCall(PetscFree2(dnnz, onnz));
 
     PetscCall(DMPlexGetReferenceTree(fine, &refTree));
+    PetscCall(DMCopyDisc(fine, refTree));
+    PetscCall(DMSetLocalSection(refTree, NULL));
+    PetscCall(DMSetDefaultConstraints(refTree, NULL, NULL, NULL));
     PetscCall(DMPlexReferenceTreeGetChildrenMatrices(refTree, &refPointFieldMats, &refPointFieldN));
     PetscCall(DMGetDefaultConstraints(refTree, &refConSec, NULL, NULL));
     PetscCall(DMPlexGetAnchors(refTree, &refAnSec, NULL));
@@ -3513,6 +3521,9 @@ PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFin
 
   /* get the templates for the fine-to-coarse injection from the reference tree */
   PetscCall(DMPlexGetReferenceTree(coarse, &refTree));
+  PetscCall(DMCopyDisc(coarse, refTree));
+  PetscCall(DMSetLocalSection(refTree, NULL));
+  PetscCall(DMSetDefaultConstraints(refTree, NULL, NULL, NULL));
   PetscCall(DMGetDefaultConstraints(refTree, &cSecRef, NULL, NULL));
   PetscCall(PetscSectionGetChart(cSecRef, &pRefStart, &pRefEnd));
   PetscCall(DMPlexReferenceTreeGetInjector(refTree, &injRef));
@@ -4058,7 +4069,6 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
   PetscScalar ***childrenMats = NULL; /* gcc -O gives 'may be used uninitialized' warning'. Initializing to suppress this warning */
 
   PetscFunctionBegin;
-
   /* get the templates for the fine-to-coarse injection from the reference tree */
   PetscCall(VecSetOption(vecFine, VEC_IGNORE_NEGATIVE_INDICES, PETSC_TRUE));
   PetscCall(VecSetOption(vecCoarse, VEC_IGNORE_NEGATIVE_INDICES, PETSC_TRUE));

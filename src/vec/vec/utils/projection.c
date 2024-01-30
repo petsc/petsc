@@ -457,6 +457,8 @@ PetscErrorCode VecWhichInactive(Vec VecLow, Vec V, Vec D, Vec VecHigh, PetscBool
   VecISAXPY - Adds a reduced vector to the appropriate elements of a full-space vector.
   vfull[is[i]] += alpha*vreduced[i]
 
+  Logically Collective
+
   Input Parameters:
 + vfull    - the full-space vector
 . is       - the index set for the reduced space
@@ -500,21 +502,13 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
     PetscCall(VecGetLocalSize(vreduced, &m));
     PetscCheck(m == n, PETSC_COMM_SELF, PETSC_ERR_SUP, "IS local length %" PetscInt_FMT " not equal to Vec local length %" PetscInt_FMT, n, m);
     PetscCall(VecGetOwnershipRange(vfull, &rstart, &rend));
-    y -= rstart;
-    if (alpha == 1.0) {
-      for (i = 0; i < n; ++i) {
-        if (id[i] < 0) continue;
-        PetscCheck(id[i] >= rstart && id[i] < rend, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
-        y[id[i]] += x[i];
-      }
-    } else {
-      for (i = 0; i < n; ++i) {
-        if (id[i] < 0) continue;
-        PetscCheck(id[i] >= rstart && id[i] < rend, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
-        y[id[i]] += alpha * x[i];
-      }
+    y = PetscSafePointerPlusOffset(y, -rstart);
+    for (i = 0; i < n; ++i) {
+      if (id[i] < 0) continue;
+      PetscCheck(id[i] >= rstart && id[i] < rend, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
+      y[id[i]] += alpha * x[i];
     }
-    y += rstart;
+    y = PetscSafePointerPlusOffset(y, rstart);
     PetscCall(ISRestoreIndices(is, &id));
     PetscCall(VecRestoreArray(vfull, &y));
     PetscCall(VecRestoreArrayRead(vreduced, &x));
@@ -524,6 +518,8 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
 
 /*@
   VecISCopy - Copies between a reduced vector and the appropriate elements of a full-space vector.
+
+  Logically Collective
 
   Input Parameters:
 + vfull    - the full-space vector
@@ -554,6 +550,7 @@ PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vfull, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(is, IS_CLASSID, 2);
+  PetscValidLogicalCollectiveEnum(vfull, mode, 3);
   PetscValidHeaderSpecific(vreduced, VEC_CLASSID, 4);
   PetscCall(VecGetSize(vfull, &nfull));
   PetscCall(VecGetSize(vreduced, &nreduced));
@@ -579,13 +576,13 @@ PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
 
       PetscCall(VecGetArray(vfull, &y));
       PetscCall(VecGetArrayRead(vreduced, &x));
-      y -= rstart;
+      y = PetscSafePointerPlusOffset(y, -rstart);
       for (i = 0; i < n; ++i) {
         if (id[i] < 0) continue;
         PetscCheck(id[i] >= rstart && id[i] < rend, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
         y[id[i]] = x[i];
       }
-      y += rstart;
+      y = PetscSafePointerPlusOffset(y, rstart);
       PetscCall(VecRestoreArrayRead(vreduced, &x));
       PetscCall(VecRestoreArray(vfull, &y));
     } else if (mode == SCATTER_REVERSE) {
@@ -636,6 +633,8 @@ PetscErrorCode ISComplementVec(IS S, Vec V, IS *T)
 /*@
   VecISSet - Sets the elements of a vector, specified by an index set, to a constant
 
+  Logically Collective
+
   Input Parameters:
 + V - the vector
 . S - index set for the locations in the vector
@@ -647,7 +646,7 @@ PetscErrorCode ISComplementVec(IS S, Vec V, IS *T)
   The index set identifies entries in the global vector.
   Negative indices are skipped; indices outside the ownership range of V will raise an error.
 
-.seealso: `VecISCopy()`, `VecISAXPY()`, `VecSet()`
+.seealso: `VecISCopy()`, `VecISAXPY()`, `VecISShift()`, `VecSet()`
 @*/
 PetscErrorCode VecISSet(Vec V, IS S, PetscScalar c)
 {
@@ -656,11 +655,9 @@ PetscErrorCode VecISSet(Vec V, IS S, PetscScalar c)
   PetscScalar    *v;
 
   PetscFunctionBegin;
-  if (!S) PetscFunctionReturn(PETSC_SUCCESS); /* simply return with no-op if the index set is NULL */
   PetscValidHeaderSpecific(V, VEC_CLASSID, 1);
-  PetscValidHeaderSpecific(S, IS_CLASSID, 2);
   PetscValidType(V, 1);
-
+  PetscValidHeaderSpecific(S, IS_CLASSID, 2);
   PetscCall(VecGetOwnershipRange(V, &low, &high));
   PetscCall(ISGetLocalSize(S, &nloc));
   PetscCall(ISGetIndices(S, &s));
@@ -669,6 +666,48 @@ PetscErrorCode VecISSet(Vec V, IS S, PetscScalar c)
     if (s[i] < 0) continue;
     PetscCheck(s[i] >= low && s[i] < high, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
     v[s[i] - low] = c;
+  }
+  PetscCall(ISRestoreIndices(S, &s));
+  PetscCall(VecRestoreArray(V, &v));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  VecISShift - Shifts the elements of a vector, specified by an index set, by a constant
+
+  Logically Collective
+
+  Input Parameters:
++ V - the vector
+. S - index set for the locations in the vector
+- c - the constant
+
+  Level: advanced
+
+  Notes:
+  The index set identifies entries in the global vector.
+  Negative indices are skipped; indices outside the ownership range of V will raise an error.
+
+.seealso: `VecISCopy()`, `VecISAXPY()`, `VecISSet()`, `VecShift()`
+@*/
+PetscErrorCode VecISShift(Vec V, IS S, PetscScalar c)
+{
+  PetscInt        nloc, low, high, i;
+  const PetscInt *s;
+  PetscScalar    *v;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(V, VEC_CLASSID, 1);
+  PetscValidType(V, 1);
+  PetscValidHeaderSpecific(S, IS_CLASSID, 2);
+  PetscCall(VecGetOwnershipRange(V, &low, &high));
+  PetscCall(ISGetLocalSize(S, &nloc));
+  PetscCall(ISGetIndices(S, &s));
+  PetscCall(VecGetArray(V, &v));
+  for (i = 0; i < nloc; ++i) {
+    if (s[i] < 0) continue;
+    PetscCheck(s[i] >= low && s[i] < high, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
+    v[s[i] - low] += c;
   }
   PetscCall(ISRestoreIndices(S, &s));
   PetscCall(VecRestoreArray(V, &v));

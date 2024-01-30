@@ -649,7 +649,7 @@ PetscErrorCode PetscDSDestroy(PetscDS *ds)
   PetscCall(PetscDSDestroyBoundary(*ds));
   PetscCall(PetscFree((*ds)->constants));
   for (PetscInt c = 0; c < DM_NUM_POLYTOPES; ++c) {
-    const PetscInt Na = DMPolytopeTypeGetNumArrangments((DMPolytopeType)c);
+    const PetscInt Na = DMPolytopeTypeGetNumArrangements((DMPolytopeType)c);
     if ((*ds)->quadPerm[c])
       for (PetscInt o = 0; o < Na; ++o) PetscCall(ISDestroy(&(*ds)->quadPerm[c][o]));
     PetscCall(PetscFree((*ds)->quadPerm[c]));
@@ -1302,7 +1302,7 @@ PetscErrorCode PetscDSSetJetDegree(PetscDS ds, PetscInt f, PetscInt k)
   Level: intermediate
 
   Note:
-  We are using a first order FEM model for the weak form:  \int_\Omega \phi obj(u, u_t, \nabla u, x, t)
+  We are using a first order FEM model for the weak form\: $  \int_\Omega \phi obj(u, u_t, \nabla u, x, t)$
 
 .seealso: `PetscDS`, `PetscDSSetObjective()`, `PetscDSGetResidual()`
 @*/
@@ -1353,7 +1353,7 @@ PetscErrorCode PetscDSGetObjective(PetscDS ds, PetscInt f, void (**obj)(PetscInt
   Level: intermediate
 
   Note:
-  We are using a first order FEM model for the weak form:  \int_\Omega \phi obj(u, u_t, \nabla u, x, t)
+  We are using a first order FEM model for the weak form\: $  \int_\Omega \phi obj(u, u_t, \nabla u, x, t)$
 
 .seealso: `PetscDS`, `PetscDSGetObjective()`, `PetscDSSetResidual()`
 @*/
@@ -1405,7 +1405,7 @@ PetscErrorCode PetscDSSetObjective(PetscDS ds, PetscInt f, void (*obj)(PetscInt 
   Note:
   `f1` has an identical form and is omitted for brevity.
 
-  We are using a first order FEM model for the weak form:  \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)
+  We are using a first order FEM model for the weak form\: $  \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)$
 
 .seealso: `PetscDS`, `PetscDSSetResidual()`
 @*/
@@ -1459,7 +1459,7 @@ PetscErrorCode PetscDSGetResidual(PetscDS ds, PetscInt f, void (**f0)(PetscInt d
   Note:
   `f1` has an identical form and is omitted for brevity.
 
-  We are using a first order FEM model for the weak form:  \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)
+  We are using a first order FEM model for the weak form\: $  \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)$
 
 .seealso: `PetscDS`, `PetscDSGetResidual()`
 @*/
@@ -1512,7 +1512,7 @@ PetscErrorCode PetscDSSetResidual(PetscDS ds, PetscInt f, void (*f0)(PetscInt di
   Note:
   `f1` has an identical form and is omitted for brevity.
 
-  We are using a first order FEM model for the weak form: \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)
+  We are using a first order FEM model for the weak form\: $ \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)$
 
 .seealso: `PetscDS`, `PetscDSSetRHSResidual()`
 @*/
@@ -1566,7 +1566,7 @@ PetscErrorCode PetscDSGetRHSResidual(PetscDS ds, PetscInt f, void (**f0)(PetscIn
   Note:
   `f1` has an identical form and is omitted for brevity.
 
-  We are using a first order FEM model for the weak form: \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)
+  We are using a first order FEM model for the weak form\: $ \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)$
 
 .seealso: `PetscDS`, `PetscDSGetResidual()`
 @*/
@@ -1647,7 +1647,10 @@ PetscErrorCode PetscDSHasJacobian(PetscDS ds, PetscBool *hasJac)
   `g1`, `g2`, and `g3` have identical calling sequences to `g0` and are omitted for brevity.
 
   We are using a first order FEM model for the weak form\:
+
+  $$
   \int_\Omega \phi g_0(u, u_t, \nabla u, x, t) \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
+  $$
 
 .seealso: `PetscDS`, `PetscDSSetJacobian()`
 @*/
@@ -3748,6 +3751,32 @@ PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, PetscWeakForm *wf, DM
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscDSUpdateBoundaryLabels - Update `DMLabel` in each boundary condition using the label name and the input `DM`
+
+  Not Collective
+
+  Input Parameters:
++ ds - The source `PetscDS` object
+- dm - The `DM` holding labels
+
+  Level: intermediate
+
+.seealso: `PetscDS`, `DMBoundary`, `DM`, `PetscDSCopyBoundary()`, `PetscDSCreate()`, `DMGetLabel()`
+@*/
+PetscErrorCode PetscDSUpdateBoundaryLabels(PetscDS ds, DM dm)
+{
+  DSBoundary b;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
+  for (b = ds->boundary; b; b = b->next) {
+    if (b->lname) PetscCall(DMGetLabel(dm, b->lname, &b->label));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode DSBoundaryDuplicate_Internal(DSBoundary b, DSBoundary *bNew)
 {
   PetscFunctionBegin;
@@ -4128,7 +4157,7 @@ PetscErrorCode PetscDSPermuteQuadPoint(PetscDS ds, PetscInt ornt, PetscInt field
   PetscCall(PetscQuadratureGetData(quad, NULL, NULL, &Nq, NULL, NULL));
   PetscCall(PetscQuadratureGetCellType(quad, &ct));
   PetscCheck(q >= 0 && q < Nq, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Quadrature point %" PetscInt_FMT " is not in [0, %" PetscInt_FMT ")", q, Nq);
-  Na = DMPolytopeTypeGetNumArrangments(ct) / 2;
+  Na = DMPolytopeTypeGetNumArrangements(ct) / 2;
   PetscCheck(ornt >= -Na && ornt < Na, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Orientation %" PetscInt_FMT " of %s is not in [%" PetscInt_FMT ", %" PetscInt_FMT ")", ornt, DMPolytopeTypes[ct], -Na, Na);
   if (!ds->quadPerm[(PetscInt)ct]) PetscCall(PetscQuadratureComputePermutations(quad, NULL, &ds->quadPerm[(PetscInt)ct]));
   permIS = ds->quadPerm[(PetscInt)ct][ornt + Na];

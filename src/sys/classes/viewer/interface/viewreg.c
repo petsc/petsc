@@ -349,9 +349,9 @@ static PetscErrorCode PetscOptionsGetViewers_Internal(MPI_Comm comm, PetscOption
           *comma_separator   = 0;
           next_viewer_string = comma_separator + 1;
         }
-        this_viewer = viewer ? &viewer[n] : NULL;
+        this_viewer = PetscSafePointerPlusOffset(viewer, n);
         if (this_viewer) *this_viewer = NULL;
-        this_viewer_format = format ? &format[n] : NULL;
+        this_viewer_format = PetscSafePointerPlusOffset(format, n);
         if (this_viewer_format) *this_viewer_format = PETSC_VIEWER_DEFAULT;
         PetscCall(PetscOptionsGetViewers_Single(comm, this_viewer_string, this_viewer, this_viewer_format));
         this_viewer_string = next_viewer_string;

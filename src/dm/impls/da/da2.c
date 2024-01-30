@@ -298,6 +298,8 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
   */
   PetscCheck((x >= s) || ((m <= 1) && (bx != DM_BOUNDARY_PERIODIC)), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local x-width of domain x %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT, x, s);
   PetscCheck((y >= s) || ((n <= 1) && (by != DM_BOUNDARY_PERIODIC)), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local y-width of domain y %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT, y, s);
+  PetscCheck((x > s) || ((bx != DM_BOUNDARY_MIRROR)), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local x-width of domain x %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT " with mirror", x, s);
+  PetscCheck((y > s) || ((by != DM_BOUNDARY_MIRROR)), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local y-width of domain y %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT " with mirror", y, s);
   xe = xs + x;
   ye = ys + y;
 
@@ -745,8 +747,8 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
 }
 
 /*@C
-  DMDACreate2d -  Creates an object that will manage the communication of  two-dimensional
-  regular array data that is distributed across some processors.
+  DMDACreate2d -  Creates an object that will manage the communication of two-dimensional
+  regular array data that is distributed across one or more MPI processes.
 
   Collective
 
@@ -775,7 +777,7 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
 . -da_processors_y <ny> - number of processors in y direction
 . -da_refine_x <rx>     - refinement ratio in x direction
 . -da_refine_y <ry>     - refinement ratio in y direction
-- -da_refine <n>        - refine the DMDA n times before creating
+- -da_refine <n>        - refine the `DMDA` n times before creating
 
   Level: beginner
 
@@ -794,13 +796,13 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
 
   You must call `DMSetUp()` after this call before using this `DM`.
 
-  If you wish to use the options database to change values in the `DMDA` call `DMSetFromOptions()` after this call
+  To use the options database to change values in the `DMDA` call `DMSetFromOptions()` after this call
   but before `DMSetUp()`.
 
-.seealso: `DM`, `DMDA`, `DMDestroy()`, `DMView()`, `DMDACreate1d()`, `DMDACreate3d()`, `DMGlobalToLocalBegin()`, `DMDAGetRefinementFactor()`,
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDestroy()`, `DMView()`, `DMDACreate1d()`, `DMDACreate3d()`, `DMGlobalToLocalBegin()`, `DMDAGetRefinementFactor()`,
           `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMLocalToLocalBegin()`, `DMLocalToLocalEnd()`, `DMDASetRefinementFactor()`,
           `DMDAGetInfo()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMDACreateNaturalVector()`, `DMLoad()`, `DMDAGetOwnershipRanges()`,
-          `DMStagCreate2d()`
+          `DMStagCreate2d()`, `DMBoundaryType`
 @*/
 PetscErrorCode DMDACreate2d(MPI_Comm comm, DMBoundaryType bx, DMBoundaryType by, DMDAStencilType stencil_type, PetscInt M, PetscInt N, PetscInt m, PetscInt n, PetscInt dof, PetscInt s, const PetscInt lx[], const PetscInt ly[], DM *da)
 {

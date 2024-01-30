@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-MANSEC           = KSP
 CLEANFILES       = rhs.vtk solution.vtk bench_kspsolve
 NP               = 1
 

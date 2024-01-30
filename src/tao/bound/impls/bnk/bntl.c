@@ -182,7 +182,7 @@ PetscErrorCode TaoSolve_BNTL(Tao tao)
       PetscCall(TaoComputeGradient(tao, tao->solution, bnk->unprojected_gradient));
       PetscCall(TaoBNKEstimateActiveSet(tao, bnk->as_type));
       PetscCall(VecCopy(bnk->unprojected_gradient, tao->gradient));
-      PetscCall(VecISSet(tao->gradient, bnk->active_idx, 0.0));
+      if (bnk->active_idx) PetscCall(VecISSet(tao->gradient, bnk->active_idx, 0.0));
       PetscCall(TaoGradientNorm(tao, tao->gradient, NORM_2, &bnk->gnorm));
     } else {
       /* Trust-region rejected the step. Revert the solution. */
@@ -207,7 +207,7 @@ PetscErrorCode TaoSolve_BNTL(Tao tao)
         /* compute the projected gradient */
         PetscCall(TaoBNKEstimateActiveSet(tao, bnk->as_type));
         PetscCall(VecCopy(bnk->unprojected_gradient, tao->gradient));
-        PetscCall(VecISSet(tao->gradient, bnk->active_idx, 0.0));
+        if (bnk->active_idx) PetscCall(VecISSet(tao->gradient, bnk->active_idx, 0.0));
         PetscCall(TaoGradientNorm(tao, tao->gradient, NORM_2, &bnk->gnorm));
         /* Line search succeeded so we should update the trust radius based on the LS step length */
         tao->trust = oldTrust;

@@ -11,7 +11,7 @@ def findlmansec(file):
     submansec = None
     with open(file) as mklines:
       #print(file)
-      submansecl = [line for line in mklines if line.find('SUBMANSEC') > -1]
+      submansecl = [line for line in mklines if (line.find('SUBMANSEC') > -1 and line.find('BFORT') == -1)]
       if submansecl:
         submansec = re.sub('[ ]*/\* [ ]*SUBMANSEC[ ]*=[ ]*','',submansecl[0]).strip('\n').strip('*/').strip()
         if submansec == submansecl[0].strip('\n'):
@@ -36,6 +36,7 @@ def processdir(petsc_dir, dir, doctext):
   if os.path.isfile(os.path.join(dir,'makefile')):
     lmansec = findlmansec(os.path.join(dir,'makefile'))
 
+  numberErrors = 0
   for file in os.listdir(dir):
     llmansec = lmansec
     if os.path.isfile(os.path.join(dir,file)) and pathlib.Path(file).suffix in ['.c', '.cxx', '.h', '.cu', '.cpp', '.hpp']:
@@ -56,7 +57,15 @@ def processdir(petsc_dir, dir, doctext):
                  '-Wargdesc', os.path.join(loc,'manualpages','doctext','doctextcommon.txt'),
                  file]
       #print(command)
-      subprocess.run(command, cwd=dir, check=True)
+      sp = subprocess.run(command, cwd=dir, capture_output=True, encoding='UTF-8', check=True)
+      if sp.stdout and sp.stdout.find('WARNING') > -1:
+        print(sp.stdout)
+        numberErrors = numberErrors + 1
+      if sp.stderr and sp.stderr.find('WARNING') > -1:
+        print(sp.stderr)
+        numberErrors = numberErrors + 1
+  return numberErrors
+
 
 def processkhash(T, t, KeyType, ValType, text):
   '''Replaces T, t, KeyType, and ValType in text (from include/petsc/private/hashset.txt) with a set of supported values'''
@@ -79,9 +88,16 @@ def main(petsc_dir, doctext):
         khash.write(processkhash('Obj','obj','PetscInt64','PetscObject',text))
 
   # generate the .md files for the manual pages from all the PETSc source code
+  try:
+    os.unlink(os.path.join(petsc_dir,'doc','manualpages','manualpages.cit'))
+  except:
+    pass
+  numberErrors = 0
   for dirpath, dirnames, filenames in os.walk(os.path.join(petsc_dir),topdown=True):
     dirnames[:] = [d for d in dirnames if d not in ['tests', 'tutorials', 'doc', 'output', 'ftn-custom', 'f90-custom', 'ftn-auto', 'f90-mod', 'binding', 'binding', 'config', 'lib', '.git', 'share', 'systems'] and not d.startswith('arch')]
-    processdir(petsc_dir,dirpath,doctext)
+    numberErrors = numberErrors + processdir(petsc_dir,dirpath,doctext)
+  if numberErrors:
+    raise RuntimeError('Stopping document build since errors were detected in generating manual pages')
 
   # generate list of all manual pages
   with open(os.path.join(petsc_dir,'doc','manualpages','htmlmap'),mode='w') as map:

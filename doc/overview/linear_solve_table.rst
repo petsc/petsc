@@ -358,7 +358,7 @@ Direct Solvers
      -
      -
      - ``MATSEQAIJ``, ``MATSEQBAIJ``
-     - `MKL Pardiso
+     - `MKL PARDISO
        <https://software.intel.com/content/www/us/en/develop/documentation/onemkl-developer-reference-c/top.html>`__
      -
      - X
@@ -416,7 +416,7 @@ Direct Solvers
      -
      -
      - ``MATSEQSBAIJ``
-     - `MKL Pardiso
+     - `MKL PARDISO
        <https://software.intel.com/content/www/us/en/develop/documentation/onemkl-developer-reference-c/top.html>`__
      -
      -

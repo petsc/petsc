@@ -1039,7 +1039,7 @@ PetscErrorCode ISDestroy(IS *is)
     PetscCheck(refcnt <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Nonlocal IS has not been restored");
     PetscCall(ISDestroy(&(*is)->complement));
   }
-  if ((*is)->ops->destroy) PetscCall((*(*is)->ops->destroy)(*is));
+  PetscTryTypeMethod(*is, destroy);
   PetscCall(PetscLayoutDestroy(&(*is)->map));
   /* Destroy local representations of offproc data. */
   PetscCall(PetscFree((*is)->total));
@@ -1909,8 +1909,9 @@ PetscErrorCode ISOnComm(IS is, MPI_Comm comm, PetscCopyMode mode, IS *newis)
 
   Notes:
   This is much like the block size for `Vec`s. It indicates that one can think of the indices as
-  being in a collection of equal size blocks. For `ISBLOCK` these collections of blocks are all contiquous
-  within a block but this is not the case for other `IS`.
+  being in a collection of equal size blocks. For `ISBLOCK` these collections of blocks are all contiguous
+  within a block but this is not the case for other `IS`. For example, an `IS` with entries {0, 2, 3, 4, 6, 7} could
+  have a block size of three set.
 
   `ISBlockGetIndices()` only works for `ISBLOCK`, not others.
 
@@ -1928,10 +1929,10 @@ PetscErrorCode ISSetBlockSize(IS is, PetscInt bs)
     PetscCall(ISGetIndices(is, &indices));
     if (indices) {
       PetscCall(ISGetLocalSize(is, &length));
-      PetscCheck(length % bs == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Local size %" PetscInt_FMT " not compatible with block size %" PetscInt_FMT, length, bs);
-      for (i = 0; i < length / bs; i += bs) {
-        for (j = 0; j < bs - 1; j++) {
-          PetscCheck(indices[i * bs + j] == indices[i * bs + j + 1] - 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Block size %" PetscInt_FMT " is incompatible with the indices: non consecutive indices %" PetscInt_FMT " %" PetscInt_FMT, bs, indices[i * bs + j], indices[i * bs + j + 1]);
+      PetscCheck(length % bs == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Local size %" PetscInt_FMT " not compatible with proposed block size %" PetscInt_FMT, length, bs);
+      for (i = 1; i < length / bs; i += bs) {
+        for (j = 1; j < bs - 1; j++) {
+          PetscCheck(indices[i * bs + j] == indices[(i - 1) * bs + j] + indices[i * bs] - indices[(i - 1) * bs], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Proposed block size %" PetscInt_FMT " is incompatible with the indices", bs);
         }
       }
     }

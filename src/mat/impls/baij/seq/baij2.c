@@ -119,8 +119,8 @@ static PetscErrorCode MatCreateSubMatrix_SeqBAIJ_Private(Mat A, IS isrow, IS isc
     kstart   = ai[row];
     kend     = kstart + a->ilen[row];
     mat_i    = c->i[i];
-    mat_j    = c->j ? c->j + mat_i : NULL;       /* mustn't add to NULL, that is UB */
-    mat_a    = c->a ? c->a + mat_i * bs2 : NULL; /* mustn't add to NULL, that is UB */
+    mat_j    = PetscSafePointerPlusOffset(c->j, mat_i);
+    mat_a    = PetscSafePointerPlusOffset(c->a, mat_i * bs2);
     mat_ilen = c->ilen + i;
     for (k = kstart; k < kend; k++) {
       if ((tcol = ssmap[a->j[k]])) {
@@ -3298,7 +3298,7 @@ PetscErrorCode MatDiagonalScale_SeqBAIJ(Mat A, Vec ll, Vec rr)
     for (i = 0; i < mbs; i++) { /* for each block row */
       M  = ai[i + 1] - ai[i];
       li = l + i * bs;
-      v  = aa + bs2 * ai[i];
+      v  = PetscSafePointerPlusOffset(aa, bs2 * ai[i]);
       for (j = 0; j < M; j++) { /* for each block */
         for (k = 0; k < bs2; k++) (*v++) *= li[k % bs];
       }
@@ -3314,7 +3314,7 @@ PetscErrorCode MatDiagonalScale_SeqBAIJ(Mat A, Vec ll, Vec rr)
     for (i = 0; i < mbs; i++) { /* for each block row */
       iai = ai[i];
       M   = ai[i + 1] - iai;
-      v   = aa + bs2 * iai;
+      v   = PetscSafePointerPlusOffset(aa, bs2 * iai);
       for (j = 0; j < M; j++) { /* for each block */
         ri = r + bs * aj[iai + j];
         for (k = 0; k < bs; k++) {

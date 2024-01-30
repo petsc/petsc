@@ -293,7 +293,7 @@ static PetscErrorCode TSAdaptSetFromOptions_DSP(TSAdapt adapt, PetscOptionItems 
 }
 
 /*@C
-  TSAdaptDSPSetFilter - Sets internal parameters corresponding to the named filter
+  TSAdaptDSPSetFilter - Sets internal parameters corresponding to the named filter {cite}`soderlind2006adaptive` {cite}`soderlind2003digital`
 
   Collective
 
@@ -314,9 +314,6 @@ static PetscErrorCode TSAdaptSetFromOptions_DSP(TSAdapt adapt, PetscOptionItems 
 
   Level: intermediate
 
-  References:
-.  * - http://dx.doi.org/10.1145/641876.641877
-
 .seealso: [](ch_ts), `TSADAPTDSP`, `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptDSPSetPID()`
 @*/
 PetscErrorCode TSAdaptDSPSetFilter(TSAdapt adapt, const char *name)
@@ -329,7 +326,7 @@ PetscErrorCode TSAdaptDSPSetFilter(TSAdapt adapt, const char *name)
 }
 
 /*@
-  TSAdaptDSPSetPID - Set the PID controller parameters
+  TSAdaptDSPSetPID - Set the PID controller parameters {cite}`soderlind2006adaptive`  {cite}`soderlind2003digital`
 
   Input Parameters:
 + adapt - adaptive controller context
@@ -341,9 +338,6 @@ PetscErrorCode TSAdaptDSPSetFilter(TSAdapt adapt, const char *name)
 . -ts_adapt_dsp_pid <kkI,kkP,kkD> - Sets PID controller parameters
 
   Level: intermediate
-
-  References:
-.  * - http://dx.doi.org/10.1016/j.cam.2005.03.008
 
 .seealso: [](ch_ts), `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptDSPSetFilter()`
 @*/
@@ -360,18 +354,15 @@ PetscErrorCode TSAdaptDSPSetPID(TSAdapt adapt, PetscReal kkI, PetscReal kkP, Pet
 
 /*MC
    TSADAPTDSP - Adaptive controller for time-stepping based on digital signal processing (DSP)
+   {cite}`soderlind2006adaptive`  {cite}`soderlind2003digital`
 
-   Options Database Key:
+   Options Database Keys:
 +   -ts_adapt_dsp_filter <name> - Sets predefined controller by name; use -help for a list of available controllers
 .   -ts_adapt_dsp_pid <kkI,kkP,kkD> - Sets PID controller parameters
 .   -ts_adapt_dsp_kbeta <b1,b2,b2> - Sets general filter parameters
 -   -ts_adapt_dsp_alpha <a2,a3> - Sets general filter parameters
 
    Level: intermediate
-
-   References:
-+  * - http://dx.doi.org/10.1145/641876.641877
--  * - http://dx.doi.org/10.1016/j.cam.2005.03.008
 
 .seealso: [](ch_ts), `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptDSPSetPID()`, `TSAdaptDSPSetFilter()`, `TSAdaptType`
 M*/

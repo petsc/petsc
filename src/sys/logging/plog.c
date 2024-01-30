@@ -1066,7 +1066,7 @@ PetscErrorCode PetscLogEventRegister(const char name[], PetscClassId classid, Pe
 /*@
   PetscLogEventSetCollective - Indicates that a particular event is collective.
 
-  Not Collective
+  Logically Collective
 
   Input Parameters:
 + event      - The event id
@@ -1077,9 +1077,9 @@ PetscErrorCode PetscLogEventRegister(const char name[], PetscClassId classid, Pe
   Notes:
   New events returned from `PetscLogEventRegister()` are collective by default.
 
-  Collective events are handled specially if the -log_sync is used. In that case the logging saves information about
+  Collective events are handled specially if the command line option -log_sync is used. In that case the logging saves information about
   two parts of the event; the time for all the MPI ranks to synchronize and then the time for the actual computation/communication
-  to be performed. This option is useful to debug imbalance within the computations or communications
+  to be performed. This option is useful to debug imbalance within the computations or communications.
 
 .seealso: [](ch_profiling), `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogEventRegister()`
 @*/
@@ -1987,18 +1987,20 @@ PetscErrorCode PetscLogMPEDump(const char sname[])
 
   To view the nested XML format filename.xml first copy  ${PETSC_DIR}/share/petsc/xml/performance_xml2html.xsl to the current
   directory then open filename.xml with your browser. Specific notes for certain browsers
-$    Firefox and Internet explorer - simply open the file
-$    Google Chrome - you must start up Chrome with the option --allow-file-access-from-files
-$    Safari - see https://ccm.net/faq/36342-safari-how-to-enable-local-file-access
-  or one can use the package http://xmlsoft.org/XSLT/xsltproc2.html to translate the xml file to html and then open it with
+.vb
+    Firefox and Internet explorer - simply open the file
+    Google Chrome - you must start up Chrome with the option --allow-file-access-from-files
+    Safari - see https://ccm.net/faq/36342-safari-how-to-enable-local-file-access
+.ve
+  or one can use the package <http://xmlsoft.org/XSLT/xsltproc2.html> to translate the xml file to html and then open it with
   your browser.
   Alternatively, use the script ${PETSC_DIR}/lib/petsc/bin/petsc-performance-view to automatically open a new browser
   window and render the XML log file contents.
 
   The nested XML format was kindly donated by Koos Huijssen and Christiaan M. Klaij  MARITIME  RESEARCH  INSTITUTE  NETHERLANDS
 
-  The Flame Graph output can be visualised using either the original Flame Graph script (https://github.com/brendangregg/FlameGraph)
-  or using speedscope (https://www.speedscope.app).
+  The Flame Graph output can be visualised using either the original Flame Graph script <https://github.com/brendangregg/FlameGraph>
+  or using speedscope <https://www.speedscope.app>.
   Old XML profiles may be converted into this format using the script ${PETSC_DIR}/lib/petsc/bin/xml2flamegraph.py.
 
 .seealso: [](ch_profiling), `PetscLogDefaultBegin()`, `PetscLogDump()`
@@ -2308,14 +2310,16 @@ M*/
   PetscLogGpuTime - turn on the logging of GPU time for GPU kernels
 
   Options Database Key:
-. -log_view_gpu_time - provide the GPU times in the `-log_view` output
+. -log_view_gpu_time - provide the GPU times for all events in the `-log_view` output
 
   Level: advanced
 
   Notes:
   Turning on the timing of the GPU kernels can slow down the entire computation and should only
-  be used when studying the performance of operations on GPU such as vector operations and
+  be used when studying the performance of individual operations on GPU such as vector operations and
   matrix-vector operations.
+
+  If this option is not used then times for most of the events in the `-log_view` output will be listed as Nan, indicating the times are not available
 
   This routine should only be called once near the beginning of the program. Once it is started
   it cannot be turned off.

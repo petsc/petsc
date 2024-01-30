@@ -113,8 +113,8 @@ static PetscErrorCode CheckOffsets(DM dm, AppCtx *user, const char *domain_name,
       PetscCall(DMPlexGetLocalOffsetsSupport(dm, domain_label, label_value, &Nface, &Nc, &n, &offsetsNeg, &offsetsPos));
       PetscCall(PetscMalloc1(Nface * Nc * 2, &offsets));
       for (PetscInt f = 0; f < Nface; ++f) {
-        for (PetscInt c = 0; c < Nc; ++c) offsets[i++] = offsetsNeg[f * Nc + c];
-        for (PetscInt c = 0; c < Nc; ++c) offsets[i++] = offsetsPos[f * Nc + c];
+        for (PetscInt c = 0; c < Nc; ++c) offsets[i++] = offsetsNeg[f] + c;
+        for (PetscInt c = 0; c < Nc; ++c) offsets[i++] = offsetsPos[f] + c;
       }
       PetscCheck(i == Nface * Nc * 2, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Total offsets %" PetscInt_FMT " != %" PetscInt_FMT, i, Nface * Nc * 2);
       PetscCall(PetscFree(offsetsNeg));

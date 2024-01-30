@@ -192,7 +192,7 @@ int main(int argc, char **args)
    test:
       nsize: {{1 3}shared output}
       suffix: wo_explicit_schur
-      requires: !complex
+      requires: !complex !single
       filter: sed -e "s/seq/mpi/g" -e "s/CONVERGED_ATOL/CONVERGED_RTOL/g" -e "s/ 1 MPI process/ 3 MPI processes/g" -e "s/iterations [4-5]/iterations 4/g" -e "s/hermitiantranspose/transpose/g"
       args: -outer_fieldsplit_sizes {{1,2,2 2,1,2 2,2,1}separate output} -ksp_view_mat -pc_type fieldsplit -ksp_converged_reason -fieldsplit_pc_type jacobi -test_matmult
 

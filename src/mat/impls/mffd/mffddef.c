@@ -177,12 +177,11 @@ PetscErrorCode MatMFFDDSSetUmin(Mat A, PetscReal umin)
      F'(u)*a = [F(u+h*a) - F(u)]/h where
      h = error_rel*u'a/||a||^2                        if  |u'a| > umin*||a||_{1}
        = error_rel*umin*sign(u'a)*||a||_{1}/||a||^2   otherwise
- where
+  where
      error_rel = square root of relative error in function evaluation
      umin = minimum iterate parameter
 
-  References:
-.  * -  Dennis and Schnabel, "Numerical Methods for Unconstrained Optimization and Nonlinear Equations"
+  Method taken from {cite}`dennis:83`
 
 .seealso: `MATMFFD`, `MATMFFD_WP`, `MatCreateMFFD()`, `MatCreateSNESMF()`, `MATMFFD_WP`, `MatMFFDDSSetUmin()`
 M*/

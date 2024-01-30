@@ -12,7 +12,7 @@
 PETSC_EXTERN PetscClassId PETSC_VIEWER_CLASSID;
 
 /*J
-    PetscViewerType - String with the name of a PETSc `PetscViewer` implementation
+   PetscViewerType - String with the name of a PETSc `PetscViewer` implementation
 
    Level: beginner
 
@@ -80,7 +80,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerMatlabOpen(MPI_Comm, const char[], PetscF
     PetscViewerGLVisType - indicates what type of `PETSCVIEWERGLVIS` viewer to use
 
     Values:
-+   `PETSC_VIEWER_GLVIS_DUMP` - save the data to a file
++   `PETSC_VIEWER_GLVIS_DUMP`   - save the data to a file
 -   `PETSC_VIEWER_GLVIS_SOCKET` - communicate the data to another program via a socket
 
     Level: beginner
@@ -119,33 +119,27 @@ PETSC_EXTERN PetscErrorCode PetscViewerCheckWritable(PetscViewer);
 #define PETSC_VIEWER_ASCII_VTK_CELL_ATTR   PETSC_VIEWER_ASCII_VTK_CELL PETSC_DEPRECATED_ENUM(3, 14, 0, "PetscViewerVTKOpen() with XML (.vtr.vts.vtu) format", )
 #define PETSC_VIEWER_ASCII_VTK_COORDS_ATTR PETSC_VIEWER_ASCII_VTK_COORDS PETSC_DEPRECATED_ENUM(3, 14, 0, "PetscViewerVTKOpen() with XML (.vtr .vts .vtu) format", )
 /*E
-    PetscViewerFormat - Way a viewer presents the object
+   PetscViewerFormat - Way a viewer presents the object
 
    Values:
-+    `PETSC_VIEWER_DEFAULT` - default format for the specific object being viewed
-.    `PETSC_VIEWER_ASCII_MATLAB` - MATLAB format
-.    `PETSC_VIEWER_ASCII_DENSE` - print matrix as dense
-.    `PETSC_VIEWER_ASCII_IMPL` - implementation-specific format
-      (which is in many cases the same as the default)
-.    `PETSC_VIEWER_ASCII_INFO` - basic information about object
-.    `PETSC_VIEWER_ASCII_INFO_DETAIL` - more detailed info
-       about object
-.    `PETSC_VIEWER_ASCII_COMMON` - identical output format for
-       all objects of a particular type
-.    `PETSC_VIEWER_ASCII_INDEX` - (for vectors) prints the vector
-       element number next to each vector entry
-.    `PETSC_VIEWER_ASCII_SYMMODU` - print parallel vectors without
-       indicating the processor ranges
-.    `PETSC_VIEWER_ASCII_VTK` - outputs the object to a VTK file (deprecated since v3.14)
-.    `PETSC_VIEWER_NATIVE` - store the object to the binary
-       file in its native format (for example, dense
-       matrices are stored as dense), `DMDA` vectors are dumped directly to the
-       file instead of being first put in the natural ordering
-.    `PETSC_VIEWER_ASCII_LATEX` - output the data in LaTeX
-.    `PETSC_VIEWER_BINARY_MATLAB` - output additional information that can be used to read the data into MATLAB
-.    `PETSC_VIEWER_DRAW_BASIC` - views the vector with a simple 1d plot
-.    `PETSC_VIEWER_DRAW_LG` - views the vector with a line graph
--    `PETSC_VIEWER_DRAW_CONTOUR` - views the vector with a contour plot
++    `PETSC_VIEWER_DEFAULT`           - default format for the specific object being viewed
+.    `PETSC_VIEWER_ASCII_MATLAB`      - MATLAB format
+.    `PETSC_VIEWER_ASCII_DENSE`       - print matrix as a dense two dimensiona array
+.    `PETSC_VIEWER_ASCII_IMPL`        - implementation-specific format (which is in many cases the same as the default)
+.    `PETSC_VIEWER_ASCII_INFO`        - basic information about object
+.    `PETSC_VIEWER_ASCII_INFO_DETAIL` - more detailed info about object
+.    `PETSC_VIEWER_ASCII_COMMON`      - identical output format for all objects of a particular type
+.    `PETSC_VIEWER_ASCII_INDEX`       - (for vectors) prints the vector  element number next to each vector entry
+.    `PETSC_VIEWER_ASCII_SYMMODU`     - print parallel vectors without indicating the MPI process ranges that own the entries
+.    `PETSC_VIEWER_ASCII_VTK`         - outputs the object to a VTK file (deprecated since v3.14)
+.    `PETSC_VIEWER_NATIVE`            - store the object to the binary file in its native format (for example, dense
+                                        matrices are stored as dense), `DMDA` vectors are dumped directly to the
+                                        file instead of being first put in the natural ordering
+.    `PETSC_VIEWER_ASCII_LATEX`       - output the data in LaTeX
+.    `PETSC_VIEWER_BINARY_MATLAB`     - output additional information that can be used to read the data into MATLAB
+.    `PETSC_VIEWER_DRAW_BASIC`        - views the vector with a simple 1d plot
+.    `PETSC_VIEWER_DRAW_LG`           - views the vector with a line graph
+-    `PETSC_VIEWER_DRAW_CONTOUR`      - views the vector with a contour plot
 
    Level: beginner
 

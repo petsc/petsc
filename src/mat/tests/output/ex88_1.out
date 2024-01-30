@@ -9,6 +9,11 @@ Vec Object: 1 MPI process
   type: seq
 3.92973e+19
 8.54197e+19
+Testing MatMultHermitianTranspose
+Vec Object: 1 MPI process
+  type: seq
+3.92973e+19
+8.54197e+19
 Testing MatMultAdd
 Vec Object: 1 MPI process
   type: seq
@@ -19,6 +24,15 @@ Vec Object: 1 MPI process
 -6.89662e+08
 -2.03106e+09
 Testing MatMultTransposeAdd
+Vec Object: 1 MPI process
+  type: seq
+-9.10529e+08
+-1.81019e+09
+Vec Object: 1 MPI process
+  type: seq
+-9.10529e+08
+-1.81019e+09
+Testing MatMultHermitianTransposeAdd
 Vec Object: 1 MPI process
   type: seq
 -9.10529e+08
@@ -44,6 +58,11 @@ Vec Object: 1 MPI process
   type: seq
 3.92973e+19
 8.54197e+19
+Testing MatMultHermitianTranspose
+Vec Object: 1 MPI process
+  type: seq
+3.92973e+19
+8.54197e+19
 Testing MatMultAdd
 Vec Object: 1 MPI process
   type: seq
@@ -54,6 +73,15 @@ Vec Object: 1 MPI process
 -6.89662e+08
 -2.03106e+09
 Testing MatMultTransposeAdd
+Vec Object: 1 MPI process
+  type: seq
+-9.10529e+08
+-1.81019e+09
+Vec Object: 1 MPI process
+  type: seq
+-9.10529e+08
+-1.81019e+09
+Testing MatMultHermitianTransposeAdd
 Vec Object: 1 MPI process
   type: seq
 -9.10529e+08
@@ -82,6 +110,11 @@ Vec Object: 1 MPI process
   type: seq
 3.92973e+19
 8.54197e+19
+Testing MatMultHermitianTranspose
+Vec Object: 1 MPI process
+  type: seq
+3.92973e+19
+8.54197e+19
 Testing MatMultAdd
 Vec Object: 1 MPI process
   type: seq
@@ -92,6 +125,15 @@ Vec Object: 1 MPI process
 -6.89662e+08
 -2.03106e+09
 Testing MatMultTransposeAdd
+Vec Object: 1 MPI process
+  type: seq
+-9.10529e+08
+-1.81019e+09
+Vec Object: 1 MPI process
+  type: seq
+-9.10529e+08
+-1.81019e+09
+Testing MatMultHermitianTransposeAdd
 Vec Object: 1 MPI process
   type: seq
 -9.10529e+08

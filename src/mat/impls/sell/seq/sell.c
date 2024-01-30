@@ -1450,8 +1450,8 @@ PetscErrorCode MatAssemblyEnd_SeqSELL(Mat A, MatAssemblyType mode)
   /* Set unused slots for column indices to last valid column index. Set unused slots for values to zero. This allows for a use of unmasked intrinsics -> higher performance */
   for (i = 0; i < a->totalslices; ++i) {
     shift = a->sliidx[i];                                                   /* starting index of the slice */
-    cp    = a->colidx + shift;                                              /* pointer to the column indices of the slice */
-    vp    = a->val + shift;                                                 /* pointer to the nonzero values of the slice */
+    cp    = PetscSafePointerPlusOffset(a->colidx, shift);                   /* pointer to the column indices of the slice */
+    vp    = PetscSafePointerPlusOffset(a->val, shift);                      /* pointer to the nonzero values of the slice */
     for (row_in_slice = 0; row_in_slice < a->sliceheight; ++row_in_slice) { /* loop over rows in the slice */
       row  = a->sliceheight * i + row_in_slice;
       nrow = a->rlen[row]; /* number of nonzeros in row */
@@ -2306,7 +2306,7 @@ PetscErrorCode MatDuplicate_SeqSELL(Mat A, MatDuplicateOption cpvalues, Mat *B)
 
 /*MC
    MATSEQSELL - MATSEQSELL = "seqsell" - A matrix type to be used for sequential sparse matrices,
-   based on the sliced Ellpack format
+   based on the sliced Ellpack format, {cite}`zhangellpack2018`
 
    Options Database Key:
 . -mat_type seqsell - sets the matrix type to "`MATSEQELL` during a call to `MatSetFromOptions()`
@@ -2317,7 +2317,7 @@ PetscErrorCode MatDuplicate_SeqSELL(Mat A, MatDuplicateOption cpvalues, Mat *B)
 M*/
 
 /*MC
-   MATSELL - MATSELL = "sell" - A matrix type to be used for sparse matrices.
+   MATSELL - MATSELL = "sell" - A matrix type to be used for sparse matrices, {cite}`zhangellpack2018`
 
    This matrix type is identical to `MATSEQSELL` when constructed with a single process communicator,
    and `MATMPISELL` otherwise.  As a result, for single process communicators,
@@ -2331,15 +2331,15 @@ M*/
   Level: beginner
 
   Notes:
-   This format is only supported for real scalars, double precision, and 32-bit indices (the defaults).
+  This format is only supported for real scalars, double precision, and 32-bit indices (the defaults).
 
-   It can provide better performance on Intel and AMD processes with AVX2 or AVX512 support for matrices that have a similar number of
-   non-zeros in contiguous groups of rows. However if the computation is memory bandwidth limited it may not provide much improvement.
+  It can provide better performance on Intel and AMD processes with AVX2 or AVX512 support for matrices that have a similar number of
+  non-zeros in contiguous groups of rows. However if the computation is memory bandwidth limited it may not provide much improvement.
 
   Developer Notes:
-   On Intel (and AMD) systems some of the matrix operations use SIMD (AVX) instructions to achieve higher performance.
+  On Intel (and AMD) systems some of the matrix operations use SIMD (AVX) instructions to achieve higher performance.
 
-   The sparse matrix format is as follows. For simplicity we assume a slice size of 2, it is actually 8
+  The sparse matrix format is as follows. For simplicity we assume a slice size of 2, it is actually 8
 .vb
                             (2 0  3 4)
    Consider the matrix A =  (5 0  6 0)
@@ -2362,11 +2362,7 @@ M*/
 
 .ve
 
-      See MatMult_SeqSELL() for how this format is used with the SIMD operations to achieve high performance.
-
- References:
-. * - Hong Zhang, Richard T. Mills, Karl Rupp, and Barry F. Smith, Vectorized Parallel Sparse Matrix-Vector Multiplication in {PETSc} Using {AVX-512},
-   Proceedings of the 47th International Conference on Parallel Processing, 2018.
+    See `MatMult_SeqSELL()` for how this format is used with the SIMD operations to achieve high performance.
 
 .seealso: `Mat`, `MatCreateSeqSELL()`, `MatCreateSeqAIJ()`, `MatCreateSell()`, `MATSEQSELL`, `MATMPISELL`, `MATSEQAIJ`, `MATMPIAIJ`, `MATAIJ`
 M*/

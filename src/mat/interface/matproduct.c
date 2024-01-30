@@ -196,7 +196,7 @@ static PetscErrorCode MatProductSymbolic_Unsafe(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatProductReplaceMats - Replace the input matrices for the matrix-matrix product operation inside the computed matrix
 
   Collective
@@ -507,7 +507,7 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatProductSetFromOptions - Sets the options for the computation of a matrix-matrix product operation where the type,
   the algorithm etc are determined from the options database.
 
@@ -862,7 +862,7 @@ PetscErrorCode MatProductSetFill(Mat mat, PetscReal fill)
 
   Level: intermediate
 
-.seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductClear()`, `MatProductSetType()`, `MatProductSetFill()`, `MatProductCreate()`, `MatProductAlgorithm`, `MatProductType`
+.seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductClear()`, `MatProductSetType()`, `MatProductSetFill()`, `MatProductCreate()`, `MatProductAlgorithm`, `MatProductType`, `MatProductGetAlgorithm()`
 @*/
 PetscErrorCode MatProductSetAlgorithm(Mat mat, MatProductAlgorithm alg)
 {
@@ -871,6 +871,31 @@ PetscErrorCode MatProductSetAlgorithm(Mat mat, MatProductAlgorithm alg)
   MatCheckProduct(mat, 1);
   PetscCall(PetscFree(mat->product->alg));
   PetscCall(PetscStrallocpy(alg, &mat->product->alg));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  MatProductGetAlgorithm - Returns the selected algorithm for a matrix-matrix product operation
+
+  Not Collective
+
+  Input Parameter:
+. mat - the matrix whose values are computed via a matrix-matrix product operation
+
+  Output Parameter:
+. alg - the selected algorithm of the matrix product, e.g., `MATPRODUCTALGORITHMDEFAULT`.
+
+  Level: intermediate
+
+.seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductSetAlgorithm()`
+@*/
+PetscErrorCode MatProductGetAlgorithm(Mat mat, MatProductAlgorithm *alg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
+  PetscAssertPointer(alg, 2);
+  if (mat->product) *alg = mat->product->alg;
+  else *alg = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -1,0 +1,12 @@
+CONVERGED REASON: 4 (TS_CONVERGED_EVENT == 4)
+0	1.05	6.63801e-08	pass
+1	1.	1.11022e-16	pass
+1	2.	1.32376e-07	pass
+1	3.	1.30025e-10	pass
+1	4.	2.30497e-10	pass
+1	5.	1.73748e-10	pass
+1	6.	2.30497e-10	pass
+1	7.	1.73749e-10	pass
+1	8.	2.30498e-10	pass
+1	9.	4.39892e-07	pass
+3	9.05	1.30935e-11	pass

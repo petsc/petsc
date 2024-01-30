@@ -102,9 +102,6 @@ static PetscErrorCode SNESSetUp_NASM(SNES snes)
   PetscInt    i;
   const char *optionsprefix;
   Vec         F;
-  PetscMPIInt size;
-  KSP         ksp;
-  PC          pc;
 
   PetscFunctionBegin;
   if (!nasm->subsnes) {
@@ -120,17 +117,18 @@ static PetscErrorCode SNESSetUp_NASM(SNES snes)
       PetscCall(SNESGetOptionsPrefix(snes, &optionsprefix));
       PetscCall(PetscMalloc1(nasm->n, &nasm->subsnes));
       for (i = 0; i < nasm->n; i++) {
-        PetscCall(SNESCreate(PETSC_COMM_SELF, &nasm->subsnes[i]));
+        PetscCall(SNESCreate(PetscObjectComm((PetscObject)subdms[i]), &nasm->subsnes[i]));
         PetscCall(PetscObjectIncrementTabLevel((PetscObject)nasm->subsnes[i], (PetscObject)snes, 1));
         PetscCall(SNESAppendOptionsPrefix(nasm->subsnes[i], optionsprefix));
         PetscCall(SNESAppendOptionsPrefix(nasm->subsnes[i], "sub_"));
         PetscCall(SNESSetDM(nasm->subsnes[i], subdms[i]));
-        PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)nasm->subsnes[i]), &size));
-        if (size == 1) {
-          PetscCall(SNESGetKSP(nasm->subsnes[i], &ksp));
-          PetscCall(KSPGetPC(ksp, &pc));
-          PetscCall(KSPSetType(ksp, KSPPREONLY));
-          PetscCall(PCSetType(pc, PCLU));
+        if (snes->ops->usercompute) {
+          PetscCall(SNESSetComputeApplicationContext(nasm->subsnes[i], snes->ops->usercompute, snes->ops->userdestroy));
+        } else {
+          void *ctx;
+
+          PetscCall(SNESGetApplicationContext(snes, &ctx));
+          PetscCall(SNESSetApplicationContext(nasm->subsnes[i], ctx));
         }
         PetscCall(SNESSetFromOptions(nasm->subsnes[i]));
         PetscCall(DMDestroy(&subdms[i]));
@@ -609,8 +607,7 @@ static PetscErrorCode SNESNASMSolveLocal_Private(SNES snes, Vec B, Vec Y, Vec X)
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(VecSet(Y, 0));
   if (nasm->eventrestrictinterp) PetscCall(PetscLogEventBegin(nasm->eventrestrictinterp, snes, 0, 0, 0));
-  for (i = 0; i < nasm->n; i++) {
-    /* scatter the solution to the global solution and the local solution */
+  for (i = 0; i < nasm->n; i++) { /* scatter the global solution to the overlap solution and the local solution */
     Xl         = nasm->x[i];
     Xlloc      = nasm->xl[i];
     oscat      = nasm->oscatter[i];
@@ -618,6 +615,7 @@ static PetscErrorCode SNESNASMSolveLocal_Private(SNES snes, Vec B, Vec Y, Vec X)
     gscat      = nasm->gscatter[i];
     PetscCall(VecScatterBegin(oscat, X, Xl, INSERT_VALUES, SCATTER_FORWARD));
     PetscCall(VecScatterBegin(gscat, X, Xlloc, INSERT_VALUES, SCATTER_FORWARD));
+
     if (B) {
       /* scatter the RHS to the local RHS */
       Bl = nasm->b[i];
@@ -628,6 +626,9 @@ static PetscErrorCode SNESNASMSolveLocal_Private(SNES snes, Vec B, Vec Y, Vec X)
 
   if (nasm->eventsubsolve) PetscCall(PetscLogEventBegin(nasm->eventsubsolve, snes, 0, 0, 0));
   for (i = 0; i < nasm->n; i++) {
+    PetscErrorCode (*bl)(DM, Vec, void *);
+    void *bctx;
+
     Xl      = nasm->x[i];
     Xlloc   = nasm->xl[i];
     Yl      = nasm->y[i];
@@ -643,6 +644,10 @@ static PetscErrorCode SNESNASMSolveLocal_Private(SNES snes, Vec B, Vec Y, Vec X)
       Bl = nasm->b[i];
       PetscCall(VecScatterEnd(oscat_copy, B, Bl, INSERT_VALUES, SCATTER_FORWARD));
     } else Bl = NULL;
+
+    PetscCall(SNESGetDM(subsnes, &subdm));
+    PetscCall(DMSNESGetBoundaryLocal(subdm, &bl, &bctx));
+    if (bl) PetscCall((*bl)(subdm, Xlloc, bctx));
 
     PetscCall(DMSubDomainRestrict(dm, oscat, gscat, subdm));
     PetscCall(VecCopy(Xl, Yl));
@@ -741,7 +746,7 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
   snes->reason = SNES_CONVERGED_ITERATING;
   PetscCall(SNESGetNormSchedule(snes, &normschedule));
-  if (normschedule == SNES_NORM_ALWAYS || normschedule == SNES_NORM_INITIAL_ONLY || normschedule == SNES_NORM_INITIAL_FINAL_ONLY) {
+  if (normschedule == SNES_NORM_ALWAYS || normschedule == SNES_NORM_INITIAL_ONLY || normschedule == SNES_NORM_INITIAL_FINAL_ONLY || !snes->max_its) {
     /* compute the initial function and preconditioned update delX */
     if (!snes->vec_func_init_set) {
       PetscCall(SNESComputeFunction(snes, X, F));
@@ -798,17 +803,17 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
 }
 
 /*MC
-  SNESNASM - Nonlinear Additive Schwarz solver
+  SNESNASM - Nonlinear Additive Schwarz solver {cite}`ck02`, {cite}`bruneknepleysmithtu15`
 
    Options Database Keys:
-+  -snes_nasm_log - enable logging events for the communication and solve stages
-.  -snes_nasm_type <basic,restrict> - type of subdomain update used
-.  -snes_nasm_damping <dmp> - the new solution is obtained as old solution plus dmp times (sum of the solutions on the subdomains)
-.  -snes_nasm_finaljacobian - compute the local and global jacobians of the final iterate
-.  -snes_nasm_finaljacobian_type <finalinner,finalouter,initial> - pick state the jacobian is calculated at
-.  -sub_snes_ - options prefix of the subdomain nonlinear solves
-.  -sub_ksp_ - options prefix of the subdomain Krylov solver
--  -sub_pc_ - options prefix of the subdomain preconditioner
++  -snes_nasm_log                                                - enable logging events for the communication and solve stages
+.  -snes_nasm_type <basic,restrict>                              - type of subdomain update used
+.  -snes_nasm_damping <dmp>                                      - the new solution is obtained as old solution plus dmp times (sum of the solutions on the subdomains)
+.  -snes_nasm_finaljacobian                                      - compute the local and global Jacobians of the final iterate
+.  -snes_nasm_finaljacobian_type <finalinner,finalouter,initial> - pick state the Jacobian is calculated at
+.  -sub_snes_                                                    - options prefix of the subdomain nonlinear solves
+.  -sub_ksp_                                                     - options prefix of the subdomain Krylov solver
+-  -sub_pc_                                                      - options prefix of the subdomain preconditioner
 
    Level: advanced
 
@@ -818,16 +823,12 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
 
    Developer Note:
    This is a non-Newton based nonlinear solver that does not directly require a Jacobian; hence the flag snes->usesksp is set to
-       false and `SNESView()` and -snes_view do not display a `KSP` object. However, if the flag nasm->finaljacobian is set (for example, if
-       `SNESNASM` is used as a nonlinear preconditioner for  `SNESASPIN`) then `SNESSetUpMatrices()` is called to generate the
-       Jacobian (needed by `SNESASPIN`)
-       and this utilizes the inner `KSP` object for storing the matrices, but the `KSP` is never used for solving a linear system. When `SNESNASM` is
-       used by `SNESASPIN` they share the same Jacobian matrices because `SNESSetUp()` (called on the outer `SNESASPIN`) causes the inner `SNES`
-       object (in this case `SNESNASM`) to inherit the outer Jacobian matrices.
-
-   References:
-.  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
-   SIAM Review, 57(4), 2015
+   false and `SNESView()` and -snes_view do not display a `KSP` object. However, if the flag nasm->finaljacobian is set (for example, if
+   `SNESNASM` is used as a nonlinear preconditioner for  `SNESASPIN`) then `SNESSetUpMatrices()` is called to generate the
+   Jacobian (needed by `SNESASPIN`)
+   and this utilizes the inner `KSP` object for storing the matrices, but the `KSP` is never used for solving a linear system. When `SNESNASM` is
+   used by `SNESASPIN` they share the same Jacobian matrices because `SNESSetUp()` (called on the outer `SNESASPIN`) causes the inner `SNES`
+   object (in this case `SNESNASM`) to inherit the outer Jacobian matrices.
 
 .seealso: [](ch_snes), `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`, `SNESNASMSetType()`, `SNESNASMGetType()`, `SNESNASMSetSubdomains()`, `SNESNASMGetSubdomains()`,
           `SNESNASMGetSubdomainVecs()`, `SNESNASMSetComputeFinalJacobian()`, `SNESNASMSetDamping()`, `SNESNASMGetDamping()`, `SNESNASMSetWeight()`,

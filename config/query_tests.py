@@ -66,7 +66,7 @@ def get_value(varset):
   """
   Searching args is a bit funky:
   Consider
-      args:  -ksp_monitor_short -pc_type ml -ksp_max_it 3
+      args: -ksp_monitor_short -pc_type ml -ksp_max_it 3
   Search terms are:
     ksp_monitor, 'pc_type ml', ksp_max_it
   Also ignore all loops

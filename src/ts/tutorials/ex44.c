@@ -5,9 +5,10 @@ static char help[] = "Parallel bouncing ball example formulated as a second-orde
 
       u_tt = -9.8 - 1/2 Cd (u_t)^2 sign(u_t)
 
-  There are two events set in this example. The first one checks for the ball hitting the
+  There is one event set in this example, which checks for the ball hitting the
   ground (u = 0). Every time the ball hits the ground, its velocity u_t is attenuated by
-  a restitution coefficient Cr. The second event sets a limit on the number of ball bounces.
+  a restitution coefficient Cr. On reaching the limit on the number of ball bounces,
+  the TS run is requested to terminate from the PostEvent() callback.
 */
 
 #include <petscts.h>
@@ -19,22 +20,17 @@ typedef struct {
   PetscInt  maxbounces;
 } AppCtx;
 
-static PetscErrorCode Event(TS ts, PetscReal t, Vec U, PetscScalar *fvalue, void *ctx)
+static PetscErrorCode Event(TS ts, PetscReal t, Vec U, PetscReal *fvalue, void *ctx)
 {
-  AppCtx            *app = (AppCtx *)ctx;
   Vec                V;
-  const PetscScalar *u, *v;
+  const PetscScalar *u;
 
   PetscFunctionBeginUser;
   /* Event for ball height */
   PetscCall(TS2GetSolution(ts, &U, &V));
   PetscCall(VecGetArrayRead(U, &u));
-  PetscCall(VecGetArrayRead(V, &v));
-  fvalue[0] = u[0];
-  /* Event for number of bounces */
-  fvalue[1] = app->maxbounces - app->bounces;
+  fvalue[0] = PetscRealPart(u[0]);
   PetscCall(VecRestoreArrayRead(U, &u));
-  PetscCall(VecRestoreArrayRead(V, &v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -44,13 +40,13 @@ static PetscErrorCode PostEvent(TS ts, PetscInt nevents, PetscInt event_list[], 
   Vec          V;
   PetscScalar *u, *v;
   PetscMPIInt  rank;
+  PetscBool    inflag = PETSC_FALSE, outflag;
 
   PetscFunctionBeginUser;
-  if (!nevents) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-  if (event_list[0] == 0) {
+  if (nevents > 0) {
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "Processor [%d]: Ball hit the ground at t = %5.2f seconds\n", rank, (double)t));
-    /* Set new initial conditions with .9 attenuation */
+    /* Set new initial conditions with attenuation Cr */
     PetscCall(TS2GetSolution(ts, &U, &V));
     PetscCall(VecGetArray(U, &u));
     PetscCall(VecGetArray(V, &v));
@@ -59,9 +55,13 @@ static PetscErrorCode PostEvent(TS ts, PetscInt nevents, PetscInt event_list[], 
     PetscCall(VecRestoreArray(U, &u));
     PetscCall(VecRestoreArray(V, &v));
     app->bounces++;
-  } else if (event_list[0] == 1) {
-    PetscCall(PetscPrintf(PETSC_COMM_SELF, "Processor [%d]: Ball bounced %" PetscInt_FMT " times\n", rank, app->bounces));
   }
+  if (app->bounces >= app->maxbounces) { // 'app->bounces' may be different on different processes
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "Processor [%d]: Ball bounced %" PetscInt_FMT " times\n", rank, app->bounces));
+    inflag = PETSC_TRUE; // current process requested to terminate
+  }
+  PetscCall(MPIU_Allreduce(&inflag, &outflag, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)ts)));
+  if (outflag) PetscCall(TSSetConvergedReason(ts, TS_CONVERGED_USER)); // request TS to terminate, sync on all ranks
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -104,11 +104,11 @@ static PetscErrorCode I2Jacobian(TS ts, PetscReal t, Vec U, Vec V, Vec A, PetscR
 
   PetscCall(MatGetOwnershipRange(P, &i, NULL));
   PetscCall(MatSetValue(P, i, i, Jac, INSERT_VALUES));
-  PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(P, MAT_FINAL_ASSEMBLY));
   if (J != P) {
-    PetscCall(MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(P, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -122,8 +122,8 @@ int main(int argc, char **argv)
   PetscMPIInt  rank;
   PetscScalar *u, *v;
   AppCtx       app;
-  PetscInt     direction[2];
-  PetscBool    terminate[2];
+  PetscInt     direction[1];
+  PetscBool    terminate[1];
   TSAdapt      adapt;
 
   PetscFunctionBeginUser;
@@ -153,9 +153,7 @@ int main(int argc, char **argv)
 
   direction[0] = -1;
   terminate[0] = PETSC_FALSE;
-  direction[1] = -1;
-  terminate[1] = PETSC_TRUE;
-  PetscCall(TSSetEventHandler(ts, 2, direction, terminate, Event, PostEvent, &app));
+  PetscCall(TSSetEventHandler(ts, 1, direction, terminate, Event, PostEvent, &app)); // each process has one event-function defined
 
   PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, 1, 1, PETSC_DECIDE, PETSC_DECIDE, 1, NULL, 0, NULL, &J));
   PetscCall(MatSetFromOptions(J));
@@ -192,18 +190,23 @@ int main(int argc, char **argv)
 
     test:
       suffix: a
-      args: -ts_alpha_radius {{1.0 0.5}}
+      args: -ts_alpha_radius {{1.0 0.5}} -ts_max_time 50
       output_file: output/ex44.out
 
     test:
       suffix: b
-      args: -ts_rtol 0 -ts_atol 1e-1 -ts_adapt_type basic
+      args: -ts_rtol 0 -ts_atol 1e-1 -ts_adapt_type basic -ts_max_time 50
+      output_file: output/ex44.out
+
+    test:
+      suffix: bmf
+      args: -snes_mf_operator -ts_rtol 0 -ts_atol 1e-1 -ts_adapt_type basic -ts_max_time 50
       output_file: output/ex44.out
 
     test:
       suffix: 2
       nsize: 2
-      args: -ts_rtol 0 -ts_atol 1e-1 -ts_adapt_type basic
+      args: -ts_rtol 0 -ts_atol 1e-1 -ts_adapt_type basic -ts_max_time 50
       output_file: output/ex44_2.out
       filter: sort -b
       filter_output: sort -b

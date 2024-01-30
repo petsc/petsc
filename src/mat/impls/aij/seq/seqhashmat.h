@@ -51,7 +51,7 @@ static PetscErrorCode MatAssemblyEnd_Seq_Hash(Mat A, MatAssemblyType type)
   PetscCall(PetscHMapIJVDestroy(&a->ht));
 
   for (PetscInt i = 0, start = 0; i < m; i++) {
-    PetscCall(MatSetValues(A, 1, &i, a->dnz[i], &cols[start], &values[start], A->insertmode));
+    PetscCall(MatSetValues(A, 1, &i, a->dnz[i], PetscSafePointerPlusOffset(cols, start), PetscSafePointerPlusOffset(values, start), A->insertmode));
     start += a->dnz[i];
   }
   PetscCall(PetscFree3(cols, rowstarts, values));

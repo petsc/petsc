@@ -40,7 +40,7 @@ PetscErrorCode CharacteristicDestroy(Characteristic *c)
   PetscValidHeaderSpecific(*c, CHARACTERISTIC_CLASSID, 1);
   if (--((PetscObject)(*c))->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
 
-  if ((*c)->ops->destroy) PetscCall((*(*c)->ops->destroy)((*c)));
+  PetscTryTypeMethod(*c, destroy);
   PetscCallMPI(MPI_Type_free(&(*c)->itemType));
   PetscCall(PetscFree((*c)->queue));
   PetscCall(PetscFree((*c)->queueLocal));
@@ -330,9 +330,9 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   PetscCall(PetscMalloc1(c->numFieldComp, &fieldValues));
   PetscCall(PetscLogEventBegin(CHARACTERISTIC_Solve, NULL, NULL, NULL, NULL));
 
-  /* -----------------------------------------------------------------------
+  /*
      PART 1, AT t-dt/2
-     -----------------------------------------------------------------------*/
+    */
   PetscCall(PetscLogEventBegin(CHARACTERISTIC_QueueSetup, NULL, NULL, NULL, NULL));
   /* GET POSITION AT HALF TIME IN THE PAST */
   if (c->velocityInterpLocal) {
@@ -425,9 +425,9 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   }
   PetscCall(PetscLogEventEnd(CHARACTERISTIC_HalfTimeExchange, NULL, NULL, NULL, NULL));
 
-  /* -----------------------------------------------------------------------
+  /*
      PART 2, AT t-dt
-     -----------------------------------------------------------------------*/
+  */
 
   /* GET POSITION AT t_n (local values) */
   PetscCall(PetscLogEventBegin(CHARACTERISTIC_FullTimeLocal, NULL, NULL, NULL, NULL));
@@ -626,12 +626,10 @@ PetscErrorCode CharacteristicGetValuesEnd(Characteristic c)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*---------------------------------------------------------------------*/
 /*
   Based on code from http://linux.wku.edu/~lamonml/algor/sort/heap.html
 */
 static PetscErrorCode CharacteristicHeapSort(Characteristic c, Queue queue, PetscInt size)
-/*---------------------------------------------------------------------*/
 {
   CharacteristicPointDA2D temp;
   PetscInt                n;
@@ -657,12 +655,10 @@ static PetscErrorCode CharacteristicHeapSort(Characteristic c, Queue queue, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*---------------------------------------------------------------------*/
 /*
   Based on code from http://linux.wku.edu/~lamonml/algor/sort/heap.html
 */
 static PetscErrorCode CharacteristicSiftDown(Characteristic c, Queue queue, PetscInt root, PetscInt bottom)
-/*---------------------------------------------------------------------*/
 {
   PetscBool               done = PETSC_FALSE;
   PetscInt                maxChild;

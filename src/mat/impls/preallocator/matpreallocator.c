@@ -182,8 +182,8 @@ static PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool
     for (PetscInt i = 0; i < rEnd - rStart; i++) {
       PetscInt grow = rStart + i;
       PetscInt end = rowstarts[i], start = end - p->dnz[i] - p->onz[i];
-      PetscCall(PetscSortInt(end - start, &cols[start]));
-      PetscCall(MatSetValuesBlocked(A, 1, &grow, end - start, &cols[start], zeros, INSERT_VALUES));
+      PetscCall(PetscSortInt(end - start, PetscSafePointerPlusOffset(cols, start)));
+      PetscCall(MatSetValuesBlocked(A, 1, &grow, end - start, PetscSafePointerPlusOffset(cols, start), zeros, INSERT_VALUES));
     }
     PetscCall(PetscFree(zeros));
     PetscCall(PetscFree2(cols, rowstarts));

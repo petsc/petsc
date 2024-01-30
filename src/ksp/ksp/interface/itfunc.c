@@ -494,17 +494,13 @@ PetscErrorCode KSPConvergedReasonView(KSP ksp, PetscViewer viewer)
 + ksp               - the `KSP` context
 . f                 - the ksp converged reason view function
 . vctx              - [optional] user-defined context for private data for the
-          ksp converged reason view routine (use `NULL` if no context is desired)
-- reasonviewdestroy - [optional] routine that frees reasonview context
-          (may be `NULL`)
+                      `KSPConvergedReason` view routine (use `NULL` if no context is desired)
+- reasonviewdestroy - [optional] routine that frees `vctx` (may be `NULL`)
 
   Options Database Keys:
 + -ksp_converged_reason             - sets a default `KSPConvergedReasonView()`
-- -ksp_converged_reason_view_cancel - cancels all converged reason viewers that have
-                            been hardwired into a code by
-                            calls to `KSPConvergedReasonViewSet()`, but
-                            does not cancel those set via
-                            the options database.
+- -ksp_converged_reason_view_cancel - cancels all converged reason viewers that have been hardwired into a code by
+                                      calls to `KSPConvergedReasonViewSet()`, but does not cancel those set via the options database.
 
   Level: intermediate
 
@@ -512,6 +508,9 @@ PetscErrorCode KSPConvergedReasonView(KSP ksp, PetscViewer viewer)
   Several different converged reason view routines may be set by calling
   `KSPConvergedReasonViewSet()` multiple times; all will be called in the
   order in which they were set.
+
+  Developer Note:
+  Should be named KSPConvergedReasonViewAdd().
 
 .seealso: [](ch_ksp), `KSPConvergedReasonView()`, `KSPConvergedReasonViewCancel()`
 @*/
@@ -594,7 +593,7 @@ PetscErrorCode KSPConvergedReasonViewFromOptions(KSP ksp)
 }
 
 /*@C
-  KSPConvergedRateView - Displays the reason a `KSP` solve converged or diverged to a viewer
+  KSPConvergedRateView - Displays the convergence rate <https://en.wikipedia.org/wiki/Coefficient_of_determination> of `KSPSolve()` to a viewer
 
   Collective
 
@@ -610,11 +609,8 @@ PetscErrorCode KSPConvergedReasonViewFromOptions(KSP ksp)
   Notes:
   To change the format of the output, call `PetscViewerPushFormat`(`viewer`,`format`) before this call.
 
-  Suppose that the residual is reduced linearly, $r_k = c^k r_0$, which means $log r_k = log r_0 + k log c$. After linear regression,
+  Suppose that the residual is reduced linearly, $r_k = c^k r_0$, which means $\log r_k = \log r_0 + k \log c$. After linear regression,
   the slope is $\log c$. The coefficient of determination is given by $1 - \frac{\sum_i (y_i - f(x_i))^2}{\sum_i (y_i - \bar y)}$,
-
-  References:
-.  * -  `//en.wikipedia.org/wiki/Coefficient_of_determination`
 
 .seealso: [](ch_ksp), `KSPConvergedReasonView()`, `KSPGetConvergedRate()`, `KSPSetTolerances()`, `KSPConvergedDefault()`
 @*/
@@ -1018,7 +1014,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
 . -ksp_view_pmat binary                      - save matrix used to build preconditioner to the default binary viewer
 . -ksp_view_rhs binary                       - save right hand side vector to the default binary viewer
 . -ksp_view_solution binary                  - save computed solution vector to the default binary viewer
-           (can be read later with src/ksp/tutorials/ex10.c for testing solvers)
+                                               (can be read later with src/ksp/tutorials/ex10.c for testing solvers)
 . -ksp_view_mat_explicit                     - for matrix-free operators, computes the matrix entries and views them
 . -ksp_view_preconditioned_operator_explicit - computes the product of the preconditioner and matrix as an explicit matrix and views it
 . -ksp_converged_reason                      - print reason for converged or diverged, also prints number of iterations
@@ -1044,7 +1040,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
   If you provide a matrix that has a `MatSetNullSpace()` and `MatSetTransposeNullSpace()` this will use that information to solve singular systems
   in the least squares sense with a norm minimizing solution.
 
-  A x = b   where b = b_p + b_t where b_t is not in the range of A (and hence by the fundamental theorem of linear algebra is in the nullspace(A') see `MatSetNullSpace()`
+  $A x = b $  where $b = b_p + b_t$ where $b_t$ is not in the range of A (and hence by the fundamental theorem of linear algebra is in the nullspace(A'), see `MatSetNullSpace()`).
 
   `KSP` first removes b_t producing the linear system  A x = b_p (which has multiple solutions) and solves this to find the ||x|| minimizing solution (and hence
   it finds the solution x orthogonal to the nullspace(A). The algorithm is simply in each iteration of the Krylov method we remove the nullspace(A) from the search
@@ -1430,8 +1426,6 @@ PetscErrorCode KSPReset(KSP ksp)
   PetscCall(VecDestroy(&ksp->diagonal));
   PetscCall(VecDestroy(&ksp->truediagonal));
 
-  PetscCall(KSPResetViewers(ksp));
-
   ksp->setupstage = KSP_SETUP_NEW;
   ksp->nmax       = PETSC_DECIDE;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1471,6 +1465,7 @@ PetscErrorCode KSPDestroy(KSP *ksp)
   pc         = (*ksp)->pc;
   (*ksp)->pc = NULL;
   PetscCall(KSPReset((*ksp)));
+  PetscCall(KSPResetViewers(*ksp));
   (*ksp)->pc = pc;
   PetscTryTypeMethod((*ksp), destroy);
 
@@ -1503,8 +1498,8 @@ PetscErrorCode KSPDestroy(KSP *ksp)
   Output Parameter:
 . side - the preconditioning side, where side is one of
 .vb
-      PC_LEFT - left preconditioning (default)
-      PC_RIGHT - right preconditioning
+      PC_LEFT      - left preconditioning (default)
+      PC_RIGHT     - right preconditioning
       PC_SYMMETRIC - symmetric preconditioning
 .ve
 
@@ -1546,8 +1541,8 @@ PetscErrorCode KSPSetPCSide(KSP ksp, PCSide side)
   Output Parameter:
 . side - the preconditioning side, where side is one of
 .vb
-      PC_LEFT - left preconditioning (default)
-      PC_RIGHT - right preconditioning
+      PC_LEFT      - left preconditioning (default)
+      PC_RIGHT     - right preconditioning
       PC_SYMMETRIC - symmetric preconditioning
 .ve
 
@@ -2233,11 +2228,8 @@ PetscErrorCode KSPMonitor(KSP ksp, PetscInt it, PetscReal rnorm)
 . -ksp_monitor_true_residual draw::draw_lg - sets `KSPMonitorTrueResidualDrawLG()` and plots residual
 . -ksp_monitor_max                         - sets `KSPMonitorTrueResidualMax()`
 . -ksp_monitor_singular_value              - sets `KSPMonitorSingularValue()`
-- -ksp_monitor_cancel                      - cancels all monitors that have
-                          been hardwired into a code by
-                          calls to `KSPMonitorSet()`, but
-                          does not cancel those set via
-                          the options database.
+- -ksp_monitor_cancel                      - cancels all monitors that have been hardwired into a code by calls to `KSPMonitorSet()`, but
+                                             does not cancel those set via the options database.
 
   Level: beginner
 
@@ -2381,7 +2373,7 @@ PetscErrorCode KSPSetResidualHistory(KSP ksp, PetscReal a[], PetscInt na, PetscB
 
   Output Parameters:
 + a  - pointer to array to hold history (or `NULL`)
-- na - number of used entries in a (or `NULL`)
+- na - number of used entries in a (or `NULL`). Note this has different meanings depending on the `reset` argument to `KSPSetResidualHistory()`
 
   Level: advanced
 
@@ -2390,14 +2382,27 @@ PetscErrorCode KSPSetResidualHistory(KSP ksp, PetscReal a[], PetscInt na, PetscB
 
   Can only be called after a `KSPSetResidualHistory()` otherwise `a` and `na` are set to `NULL` and zero
 
+  When `reset` was `PETSC_TRUE` since a residual is computed before the first iteration, the value of `na` is generally one more than the value
+  returned with `KSPGetIterationNumber()`.
+
+  Some Krylov methods may not compute the final residual norm when convergence is declared because the maximum number of iterations allowed has been reached.
+  In this situation, when `reset` was `PETSC_TRUE`, `na` will then equal the number of iterations reported with `KSPGetIterationNumber()`
+
+  Some Krylov methods (such as `KSPSTCG`), under certain circumstances, do not compute the final residual norm. In this situation, when `reset` was `PETSC_TRUE`,
+  `na` will then equal the number of iterations reported with `KSPGetIterationNumber()`
+
+  `KSPBCGSL` does not record the residual norms for the "subiterations" hence the results from `KSPGetResidualHistory()` and `KSPGetIterationNumber()` will be different
+
   Fortran Note:
   The Fortran version of this routine has a calling sequence
-$   call KSPGetResidualHistory(KSP ksp, integer na, integer ierr)
+.vb
+  call KSPGetResidualHistory(KSP ksp, integer na, integer ierr)
+.ve
   note that you have passed a Fortran array into `KSPSetResidualHistory()` and you need
   to access the residual values from this Fortran array you provided. Only the `na` (number of
   residual norms currently held) is set.
 
-.seealso: [](ch_ksp), `KSPSetResidualHistory()`, `KSP`
+.seealso: [](ch_ksp), `KSPSetResidualHistory()`, `KSP`, `KSPGetIterationNumber()`, `KSPSTCG`, `KSPBCGSL`
 @*/
 PetscErrorCode KSPGetResidualHistory(KSP ksp, const PetscReal *a[], PetscInt *na)
 {
@@ -2487,27 +2492,24 @@ PetscErrorCode KSPGetErrorHistory(KSP ksp, const PetscReal *a[], PetscInt *na)
 }
 
 /*@
-  KSPComputeConvergenceRate - Compute the convergence rate for the iteration
+  KSPComputeConvergenceRate - Compute the convergence rate for the iteration <https:/en.wikipedia.org/wiki/Coefficient_of_determination>
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . ksp - The `KSP`
 
   Output Parameters:
 + cr   - The residual contraction rate
-. rRsq - The coefficient of determination, R^2, indicating the linearity of the data
+. rRsq - The coefficient of determination, $R^2$, indicating the linearity of the data
 . ce   - The error contraction rate
-- eRsq - The coefficient of determination, R^2, indicating the linearity of the data
+- eRsq - The coefficient of determination, $R^2$, indicating the linearity of the data
 
   Level: advanced
 
   Note:
   Suppose that the residual is reduced linearly, $r_k = c^k r_0$, which means $log r_k = log r_0 + k log c$. After linear regression,
   the slope is $\log c$. The coefficient of determination is given by $1 - \frac{\sum_i (y_i - f(x_i))^2}{\sum_i (y_i - \bar y)}$,
-
-  References:
-. * - `//en.wikipedia.org/wiki/Coefficient_of_determination`
 
 .seealso: [](ch_ksp), `KSP`, `KSPConvergedRateView()`
 @*/
@@ -2734,9 +2736,7 @@ PetscErrorCode KSPGetConvergenceContext(KSP ksp, void *ctx)
   Output Parameter:
    Provide exactly one of
 + v - location to stash solution.
-- V - the solution is returned in this location. This vector is created
-       internally. This vector should NOT be destroyed by the user with
-       `VecDestroy()`.
+- V - the solution is returned in this location. This vector is created internally. This vector should NOT be destroyed by the user with `VecDestroy()`.
 
   Level: developer
 
@@ -2778,7 +2778,7 @@ PetscErrorCode KSPBuildSolution(KSP ksp, Vec v, Vec *V)
 
   Output Parameters:
 + v - optional location to stash residual.  If `v` is not provided,
-       then a location is generated.
+      then a location is generated.
 . t - work vector.  If not provided then one is generated.
 - V - the residual
 
@@ -2824,8 +2824,8 @@ PetscErrorCode KSPBuildResidual(KSP ksp, Vec t, Vec v, Vec *V)
   Level: advanced
 
   Notes:
-  Scales the matrix by  D^(-1/2)  A  D^(-1/2)  [D^(1/2) x ] = D^(-1/2) b
-  where D_{ii} is 1/abs(A_{ii}) unless A_{ii} is zero and then it is 1.
+  Scales the matrix by  $D^{-1/2}  A  D^{-1/2}  [D^{1/2} x ] = D^{-1/2} b $
+  where $D_{ii}$ is $1/abs(A_{ii}) $ unless $A_{ii}$ is zero and then it is 1.
 
   BE CAREFUL with this routine: it actually scales the matrix and right
   hand side that define the system. After the system is solved the matrix
@@ -2835,7 +2835,7 @@ PetscErrorCode KSPBuildResidual(KSP ksp, Vec t, Vec v, Vec *V)
   search.
 
   If you use this with the `PCType` `PCEISENSTAT` preconditioner than you can
-  use the `PCEisenstatSetNoDiagonalScaling()` option, or -pc_eisenstat_no_diagonal_scaling
+  use the `PCEisenstatSetNoDiagonalScaling()` option, or `-pc_eisenstat_no_diagonal_scaling`
   to save some unneeded, redundant flops.
 
 .seealso: [](ch_ksp), `KSPGetDiagonalScale()`, `KSPSetDiagonalScaleFix()`, `KSP`

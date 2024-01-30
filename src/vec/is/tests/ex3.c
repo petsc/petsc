@@ -35,7 +35,7 @@ int main(int argc, char **argv)
 
    test:
      suffix: 2
-     args:  -broken
-     filter: Error: grep -o  "[0]PETSC ERROR: Object is in wrong state"
+     args: -broken
+     filter: Error: grep -o "[0]PETSC ERROR: Object is in wrong state"
 
 TEST*/

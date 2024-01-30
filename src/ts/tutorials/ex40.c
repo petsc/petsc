@@ -5,9 +5,10 @@ static char help[] = "Serial bouncing ball example to test TS event feature.\n";
                   u1_t = u2
                   u2_t = -9.8
 
-  There are two events set in this example. The first one checks for the ball hitting the
+  There is one event set in this example, which checks for the ball hitting the
   ground (u1 = 0). Every time the ball hits the ground, its velocity u2 is attenuated by
-  a factor of 0.9. The second event sets a limit on the number of ball bounces.
+  a factor of 0.9. On reaching the limit on the number of ball bounces,
+  the TS run is requested to terminate from the PostEvent() callback.
 */
 
 #include <petscts.h>
@@ -17,17 +18,14 @@ typedef struct {
   PetscInt nbounces;
 } AppCtx;
 
-PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscScalar *fvalue, void *ctx)
+PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscReal *fvalue, void *ctx)
 {
-  AppCtx            *app = (AppCtx *)ctx;
   const PetscScalar *u;
 
   PetscFunctionBeginUser;
   /* Event for ball height */
   PetscCall(VecGetArrayRead(U, &u));
-  fvalue[0] = u[0];
-  /* Event for number of bounces */
-  fvalue[1] = app->maxbounces - app->nbounces;
+  fvalue[0] = PetscRealPart(u[0]);
   PetscCall(VecRestoreArrayRead(U, &u));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -38,17 +36,17 @@ PetscErrorCode PostEventFunction(TS ts, PetscInt nevents, PetscInt event_list[],
   PetscScalar *u;
 
   PetscFunctionBeginUser;
-  if (event_list[0] == 0) {
-    PetscCall(PetscPrintf(PETSC_COMM_SELF, "Ball hit the ground at t = %5.2f seconds\n", (double)t));
-    /* Set new initial conditions with .9 attenuation */
-    PetscCall(VecGetArray(U, &u));
-    u[0] = 0.0;
-    u[1] = -0.9 * u[1];
-    PetscCall(VecRestoreArray(U, &u));
-  } else if (event_list[0] == 1) {
-    PetscCall(PetscPrintf(PETSC_COMM_SELF, "Ball bounced %" PetscInt_FMT " times\n", app->nbounces));
-  }
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "Ball hit the ground at t = %5.2f seconds\n", (double)t));
+  /* Set new initial conditions with .9 attenuation */
+  PetscCall(VecGetArray(U, &u));
+  u[0] = 0.0;
+  u[1] = -0.9 * u[1];
+  PetscCall(VecRestoreArray(U, &u));
   app->nbounces++;
+  if (app->nbounces >= app->maxbounces) {
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "Ball bounced %" PetscInt_FMT " times\n", app->nbounces));
+    PetscCall(TSSetConvergedReason(ts, TS_CONVERGED_USER)); // request TS to terminate; since the program is serial, no need to sync this call
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -61,7 +59,7 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *ctx)
   const PetscScalar *u;
 
   PetscFunctionBeginUser;
-  /*  The next three lines allow us to access the entries of the vectors directly */
+  /*  The following lines allow us to access the entries of the vectors directly */
   PetscCall(VecGetArrayRead(U, &u));
   PetscCall(VecGetArray(F, &f));
 
@@ -93,11 +91,11 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B, void 
 
   PetscCall(VecRestoreArrayRead(U, &u));
 
-  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
   if (A != B) {
-    PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -147,11 +145,11 @@ static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a
   PetscCall(VecRestoreArrayRead(U, &u));
   PetscCall(VecRestoreArrayRead(Udot, &udot));
 
-  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
   if (A != B) {
-    PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -164,8 +162,8 @@ int main(int argc, char **argv)
   PetscInt     n = 2;
   PetscScalar *u;
   AppCtx       app;
-  PetscInt     direction[2];
-  PetscBool    terminate[2];
+  PetscInt     direction[1];
+  PetscBool    terminate[1];
   PetscBool    rhs_form = PETSC_FALSE, hist = PETSC_TRUE;
   TSAdapt      adapt;
 
@@ -184,6 +182,12 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsBool("-test_adapthistory", "", "", hist, &hist, NULL));
   PetscOptionsEnd();
 
+  Mat A; /* Jacobian matrix */
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatSetSizes(A, n, n, PETSC_DETERMINE, PETSC_DETERMINE));
+  PetscCall(MatSetType(A, MATDENSE));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -202,17 +206,10 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-rhs-form", &rhs_form, NULL));
   if (rhs_form) {
     PetscCall(TSSetRHSFunction(ts, NULL, RHSFunction, NULL));
-    PetscCall(TSSetRHSJacobian(ts, NULL, NULL, RHSJacobian, NULL));
+    PetscCall(TSSetRHSJacobian(ts, A, A, RHSJacobian, NULL));
   } else {
-    Mat A; /* Jacobian matrix */
-    PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
-    PetscCall(MatSetSizes(A, n, n, PETSC_DETERMINE, PETSC_DETERMINE));
-    PetscCall(MatSetType(A, MATDENSE));
-    PetscCall(MatSetFromOptions(A));
-    PetscCall(MatSetUp(A));
     PetscCall(TSSetIFunction(ts, NULL, IFunction, NULL));
     PetscCall(TSSetIJacobian(ts, A, A, IJacobian, NULL));
-    PetscCall(MatDestroy(&A));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -234,18 +231,16 @@ int main(int argc, char **argv)
   PetscCall(TSSetMaxTime(ts, 30.0));
   PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER));
   PetscCall(TSSetTimeStep(ts, 0.1));
-  /* The adaptive time step controller could take very large timesteps resulting in
-     the same event occurring multiple times in the same interval. A maximum step size
+  /* The adaptive time step controller could take very large timesteps
+     jumping over the next event zero-crossing point. A maximum step size
      limit is enforced here to avoid this issue. */
   PetscCall(TSGetAdapt(ts, &adapt));
   PetscCall(TSAdaptSetStepLimits(adapt, 0.0, 0.5));
 
-  /* Set directions and terminate flags for the two events */
+  /* Set direction and terminate flag for the event */
   direction[0] = -1;
-  direction[1] = -1;
   terminate[0] = PETSC_FALSE;
-  terminate[1] = PETSC_TRUE;
-  PetscCall(TSSetEventHandler(ts, 2, direction, terminate, EventFunction, PostEventFunction, (void *)&app));
+  PetscCall(TSSetEventHandler(ts, 1, direction, terminate, EventFunction, PostEventFunction, (void *)&app));
 
   PetscCall(TSSetFromOptions(ts));
 
@@ -272,6 +267,13 @@ int main(int argc, char **argv)
     PetscCall(TSAdaptHistoryGetStep(adapt, 0, &t0, &dt));
     /* this example fails with single (or smaller) precision */
 #if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL___FP16)
+    /*
+       In the first TSSolve() the final time 'tf' is the event location found after a few event handler iterations.
+       If 'tf' is set as the max time for the second run, the TS solver may approach this point by
+       slightly different steps, resulting in a slightly different solution and fvalue[] at 'tf',
+       so that the event may not be triggered at 'tf' anymore. Fix: apply safety factor 1.05
+    */
+    PetscCall(TSSetMaxTime(ts, tf * 1.05));
     PetscCall(TSAdaptSetType(adapt, TSADAPTBASIC));
     PetscCall(TSAdaptSetStepLimits(adapt, 0.0, 0.5));
     PetscCall(TSSetFromOptions(ts));
@@ -288,6 +290,7 @@ int main(int argc, char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  PetscCall(MatDestroy(&A));
   PetscCall(VecDestroy(&U));
   PetscCall(TSDestroy(&ts));
 
@@ -309,7 +312,17 @@ int main(int argc, char **argv)
 
     test:
       suffix: c
-      args: -ts_type theta -ts_adapt_type basic -ts_atol 1e-1 -snes_stol 1e-4 -ts_trajectory_dirname ex40_c_dir
+      args: -snes_mf_operator -ts_type theta -ts_adapt_type basic -ts_atol 1e-1 -snes_stol 1e-4 -ts_trajectory_dirname ex40_c_dir
+      output_file: output/ex40.out
+
+    test:
+      suffix: cr
+      args: -rhs-form -ts_type theta -ts_adapt_type basic -ts_atol 1e-1 -snes_stol 1e-4 -ts_trajectory_dirname ex40_cr_dir
+      output_file: output/ex40.out
+
+    test:
+      suffix: crmf
+      args: -rhs-form -snes_mf_operator -ts_type theta -ts_adapt_type basic -ts_atol 1e-1 -snes_stol 1e-4 -ts_trajectory_dirname ex40_crmf_dir
       output_file: output/ex40.out
 
     test:

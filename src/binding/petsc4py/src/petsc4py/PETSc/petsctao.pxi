@@ -131,7 +131,7 @@ cdef extern from * nogil:
                                         PetscTAOConvergedReason*)
 
     PetscErrorCode TaoSetMonitor(PetscTAO,PetscTaoMonitor,void*,PetscTaoMonitorDestroy)
-    PetscErrorCode TaoCancelMonitors(PetscTAO)
+    PetscErrorCode TaoMonitorCancel(PetscTAO)
 
     PetscErrorCode TaoComputeObjective(PetscTAO,PetscVec,PetscReal*)
     PetscErrorCode TaoComputeResidual(PetscTAO,PetscVec,PetscVec)

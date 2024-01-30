@@ -482,7 +482,7 @@ static PetscErrorCode TSEIMEXSetOrdAdapt_EIMEX(TS ts, PetscBool flg)
 }
 
 /*MC
-      TSEIMEX - Time stepping with Extrapolated IMEX methods.
+   TSEIMEX - Time stepping with Extrapolated IMEX methods {cite}`constantinescu_a2010a`.
 
    These methods are intended for problems with well-separated time scales, especially when a slow scale is strongly nonlinear such that it
    is expensive to solve with a fully implicit method. The user should provide the stiff part of the equation using `TSSetIFunction()` and the
@@ -493,11 +493,13 @@ static PetscErrorCode TSEIMEXSetOrdAdapt_EIMEX(TS ts, PetscBool flg)
   Notes:
   The default is a 3-stage scheme, it can be changed with `TSEIMEXSetMaxRows()` or -ts_eimex_max_rows
 
-  This method currently only works with ODE, for which the stiff part G(t,X,Xdot) has the form Xdot + Ghat(t,X).
+  This method currently only works with ODE, for which the stiff part $ G(t,X,Xdot) $  has the form $ Xdot + Ghat(t,X)$.
 
   The general system is written as
 
+  $$
   G(t,X,Xdot) = F(t,X)
+  $$
 
   where G represents the stiff part and F represents the non-stiff part. The user should provide the stiff part
   of the equation using TSSetIFunction() and the non-stiff part with `TSSetRHSFunction()`.
@@ -505,14 +507,15 @@ static PetscErrorCode TSEIMEXSetOrdAdapt_EIMEX(TS ts, PetscBool flg)
 
   Another common form for the system is
 
+  $$
   y'=f(x)+g(x)
+  $$
 
   The relationship between F,G and f,g is
 
+  $$
   G = y'-g(x), F = f(x)
-
- Reference:
-. [1] -  E. Constantinescu and A. Sandu, Extrapolated implicit-explicit time stepping, SIAM Journal on Scientific Computing, 31 (2010), pp. 4452-4477.
+  $$
 
 .seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSEIMEXSetMaxRows()`, `TSEIMEXSetRowCol()`, `TSEIMEXSetOrdAdapt()`, `TSType`
  M*/

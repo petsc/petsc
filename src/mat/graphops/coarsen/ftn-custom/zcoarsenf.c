@@ -1,5 +1,5 @@
 #include <petsc/private/fortranimpl.h>
-#include <petscmatcoarsen.h>
+#include <petsc/private/matimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define matcoarsenviewfromoptions_ MATCOARSENVIEWFROMOPTIONS

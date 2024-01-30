@@ -273,7 +273,7 @@ static PetscErrorCode PCHPDDMHasNeumannMat_HPDDM(PC pc, PetscBool has)
   Notes:
   This may be used to bypass a call to `MatCreateSubMatrices()` and to `MatConvert()` for `MATSBAIJ` matrices.
 
-  If a `DMCreateNeumannOverlap()` implementation is available in the `DM` attached to the Pmat, or the Amat, or the `PC`, the flag is internally set to `PETSC_TRUE`. Its default value is otherwise `PETSC_FALSE`.
+  If a function is composed with DMCreateNeumannOverlap_C implementation is available in the `DM` attached to the Pmat, or the Amat, or the `PC`, the flag is internally set to `PETSC_TRUE`. Its default value is otherwise `PETSC_FALSE`.
 
 .seealso: [](ch_ksp), `PCHPDDM`, `PCHPDDMSetAuxiliaryMat()`
 @*/
@@ -826,7 +826,7 @@ static PetscErrorCode PCMatApply_HPDDMShell(PC pc, Mat X, Mat Y)
         PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)A), &container));
         PetscCall(PetscObjectCompose((PetscObject)A, "_HPDDM_MatProduct", (PetscObject)container));
       }
-      PetscCall(PetscContainerSetPointer(container, ctx->V + 1)); /* need to compose B and D from MatProductCreateWithMath(A, B, NULL, D), which are stored in the contiguous array ctx->V */
+      PetscCall(PetscContainerSetPointer(container, ctx->V + 1)); /* need to compose B and D from MatProductCreateWithMat(A, B, NULL, D), which are stored in the contiguous array ctx->V */
     }
     if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_BALANCED) {
       PetscCall(MatProductCreateWithMat(A, ctx->V[1], nullptr, ctx->V[2]));
@@ -1049,6 +1049,7 @@ static PetscErrorCode PCHPDDMCreateSubMatrices_Private(Mat mat, PetscInt n, cons
     if (!flg) PetscCall(MatDuplicate(A, MAT_COPY_VALUES, *submat));
   } else if (!flg) PetscCall(MatCopy(A, (*submat)[0], SAME_NONZERO_PATTERN));
   if (flg) {
+    PetscCall(MatDestroy(*submat)); /* previously created Mat has to be destroyed */
     (*submat)[0] = A;
     PetscCall(PetscObjectReference((PetscObject)A));
   }
@@ -1540,7 +1541,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
     PetscCall(MatGetDM(P, &dm));
     if (!dm) PetscCall(MatGetDM(A, &dm));
     if (!dm) PetscCall(PCGetDM(pc, &dm));
-    if (dm) { /* this is the hook for DMPLEX and DMDA for which the auxiliary Mat is the local Neumann matrix */
+    if (dm) { /* this is the hook for DMPLEX for which the auxiliary Mat is the local Neumann matrix */
       PetscCall(PetscObjectQueryFunction((PetscObject)dm, "DMCreateNeumannOverlap_C", &create));
       if (create) {
         PetscCall((*create)(dm, &uis, &uaux, &usetup, &uctx));
@@ -2350,21 +2351,13 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       if (!ctx) {
         if (data->deflation || overlap != -1) weighted = data->aux;
         else if (!data->B) {
-          PetscBool cmp[2];
+          PetscBool cmp;
           PetscCall(MatDuplicate(sub[0], MAT_COPY_VALUES, &weighted));
-          PetscCall(PetscObjectTypeCompare((PetscObject)weighted, MATNORMAL, cmp));
-          if (!cmp[0]) PetscCall(PetscObjectTypeCompare((PetscObject)weighted, MATNORMALHERMITIAN, cmp + 1));
-          else cmp[1] = PETSC_FALSE;
-          if (!cmp[0] && !cmp[1]) PetscCall(MatDiagonalScale(weighted, data->levels[0]->D, data->levels[0]->D));
-          else { /* MATNORMAL applies MatDiagonalScale() in a matrix-free fashion, not what is needed since this won't be passed to SLEPc during the eigensolve */
-            if (cmp[0]) PetscCall(MatNormalGetMat(weighted, &data->B));
-            else PetscCall(MatNormalHermitianGetMat(weighted, &data->B));
-            PetscCall(MatDiagonalScale(data->B, nullptr, data->levels[0]->D));
-            data->B = nullptr;
-            flg     = PETSC_FALSE;
-          }
-          /* neither MatDuplicate() nor MatDiagonaleScale() handles the symmetry options, so propagate the options explicitly */
-          /* only useful for -mat_type baij -pc_hpddm_levels_1_st_pc_type cholesky (no problem with MATAIJ or MATSBAIJ)       */
+          PetscCall(PetscObjectTypeCompareAny((PetscObject)weighted, &cmp, MATNORMAL, MATNORMALHERMITIAN, ""));
+          if (cmp) flg = PETSC_FALSE;
+          PetscCall(MatDiagonalScale(weighted, data->levels[0]->D, data->levels[0]->D));
+          /* neither MatDuplicate() nor MatDiagonalScale() handles the symmetry options, so propagate the options explicitly */
+          /* only useful for -mat_type baij -pc_hpddm_levels_1_st_pc_type cholesky (no problem with MATAIJ or MATSBAIJ)      */
           PetscCall(MatPropagateSymmetryOptions(sub[0], weighted));
         } else weighted = data->B;
       } else weighted = nullptr;
@@ -2736,10 +2729,11 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
 }
 
 /*MC
-     PCHPDDM - Interface with the HPDDM library.
+   PCHPDDM - Interface with the HPDDM library.
 
-   This `PC` may be used to build multilevel spectral domain decomposition methods based on the GenEO framework [2011, 2019]. It may be viewed as an alternative to spectral
-   AMGe or `PCBDDC` with adaptive selection of constraints. The interface is explained in details in [2021] (see references below)
+   This `PC` may be used to build multilevel spectral domain decomposition methods based on the GenEO framework {cite}`spillane2011robust` {cite}`al2021multilevel`.
+   It may be viewed as an alternative to spectral
+   AMGe or `PCBDDC` with adaptive selection of constraints. The interface is explained in details in {cite}`jolivetromanzampini2020`
 
    The matrix to be preconditioned (Pmat) may be unassembled (`MATIS`), assembled (`MATAIJ`, `MATBAIJ`, or `MATSBAIJ`), hierarchical (`MATHTOOL`), or `MATNORMAL`.
 
@@ -2747,9 +2741,9 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
    `PCHPDDMSetAuxiliaryMat()`. Calling this routine is not needed when using a `MATIS` Pmat, assembly is done internally using `MatConvert()`.
 
    Options Database Keys:
-+   -pc_hpddm_define_subdomains <true, default=false> - on the finest level, calls `PCASMSetLocalSubdomains()` with the `IS` supplied in `PCHPDDMSetAuxiliaryMat()`
-    (not relevant with an unassembled Pmat)
-.   -pc_hpddm_has_neumann <true, default=false> - on the finest level, informs the `PC` that the local Neumann matrix is supplied in `PCHPDDMSetAuxiliaryMat()`
++   -pc_hpddm_define_subdomains <true, default=false>    - on the finest level, calls `PCASMSetLocalSubdomains()` with the `IS` supplied in `PCHPDDMSetAuxiliaryMat()`
+                                                         (not relevant with an unassembled Pmat)
+.   -pc_hpddm_has_neumann <true, default=false>          - on the finest level, informs the `PC` that the local Neumann matrix is supplied in `PCHPDDMSetAuxiliaryMat()`
 -   -pc_hpddm_coarse_correction <type, default=deflated> - determines the `PCHPDDMCoarseCorrectionType` when calling `PCApply()`
 
    Options for subdomain solvers, subdomain eigensolvers (for computing deflation vectors), and the coarse solver can be set using the following options database prefixes.
@@ -2772,8 +2766,14 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
 
    In order to activate a "level N+1" coarse correction, it is mandatory to call -pc_hpddm_levels_N_eps_nev <nu> or -pc_hpddm_levels_N_eps_threshold <val>. The default -pc_hpddm_coarse_p value is 1, meaning that the coarse operator is aggregated on a single process.
 
-   This preconditioner requires that you build PETSc with SLEPc (``--download-slepc``). By default, the underlying concurrent eigenproblems
-   are solved using SLEPc shift-and-invert spectral transformation. This is usually what gives the best performance for GenEO, cf. [2011, 2013]. As
+   Level: intermediate
+
+   Notes:
+   This preconditioner requires that PETSc is built with SLEPc (``--download-slepc``).
+
+   By default, the underlying concurrent eigenproblems
+   are solved using SLEPc shift-and-invert spectral transformation. This is usually what gives the best performance for GenEO, cf.
+   {cite}`spillane2011robust` {cite}`jolivet2013scalabledd`. As
    stated above, SLEPc options are available through -pc_hpddm_levels_%d_, e.g., -pc_hpddm_levels_1_eps_type arpack -pc_hpddm_levels_1_eps_nev 10
    -pc_hpddm_levels_1_st_type sinvert. There are furthermore three options related to the (subdomain-wise local) eigensolver that are not described in
    SLEPc documentation since they are specific to `PCHPDDM`.
@@ -2790,17 +2790,7 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
    correct value using the third option from the list, -pc_hpddm_levels_1_eps_use_inertia, see `MatGetInertia()`. In that case, there is no need
    to supply -pc_hpddm_levels_1_eps_nev. This last option also only applies to the fine-level (N = 1) eigensolver.
 
-   References:
-+   2011 - A robust two-level domain decomposition preconditioner for systems of PDEs. Spillane, Dolean, Hauret, Nataf, Pechstein, and Scheichl. Comptes Rendus Mathematique.
-.   2013 - Scalable domain decomposition preconditioners for heterogeneous elliptic problems. Jolivet, Hecht, Nataf, and Prud'homme. SC13.
-.   2015 - An introduction to domain decomposition methods: algorithms, theory, and parallel implementation. Dolean, Jolivet, and Nataf. SIAM.
-.   2019 - A multilevel Schwarz preconditioner based on a hierarchy of robust coarse spaces. Al Daas, Grigori, Jolivet, and Tournier. SIAM Journal on Scientific Computing.
-.   2021 - KSPHPDDM and PCHPDDM: extending PETSc with advanced Krylov methods and robust multilevel overlapping Schwarz preconditioners. Jolivet, Roman, and Zampini. Computer & Mathematics with Applications.
-.   2022a - A robust algebraic domain decomposition preconditioner for sparse normal equations. Al Daas, Jolivet, and Scott. SIAM Journal on Scientific Computing.
-.   2022b - A robust algebraic multilevel domain decomposition preconditioner for sparse symmetric positive definite matrices. Al Daas and Jolivet.
--   2023 - Recent advances in domain decomposition methods for large-scale saddle point problems. Nataf and Tournier. Comptes Rendus Mecanique.
-
-   Level: intermediate
+   See also {cite}`dolean2015introduction`, {cite}`al2022robust`, {cite}`al2022robustpd`, and {cite}`nataf2022recent`
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCHPDDMSetAuxiliaryMat()`, `MATIS`, `PCBDDC`, `PCDEFLATION`, `PCTELESCOPE`, `PCASM`,
           `PCHPDDMSetCoarseCorrectionType()`, `PCHPDDMHasNeumannMat()`, `PCHPDDMSetRHSMat()`, `PCHPDDMSetDeflationMat()`, `PCHPDDMSetSTShareSubKSP()`,

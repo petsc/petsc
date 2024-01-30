@@ -30,5 +30,6 @@ int main(int argc, char **argv)
 
   test:
     suffix: 0
+    args: -petsc_ci 0
 
 TEST*/

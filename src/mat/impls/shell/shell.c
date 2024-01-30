@@ -4,62 +4,7 @@
   much of anything.
 */
 
-#include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
-#include <petsc/private/vecimpl.h>
-
-struct _MatShellOps {
-  /*  3 */ PetscErrorCode (*mult)(Mat, Vec, Vec);
-  /*  5 */ PetscErrorCode (*multtranspose)(Mat, Vec, Vec);
-  /* 17 */ PetscErrorCode (*getdiagonal)(Mat, Vec);
-  /* 43 */ PetscErrorCode (*copy)(Mat, Mat, MatStructure);
-  /* 60 */ PetscErrorCode (*destroy)(Mat);
-};
-
-struct _n_MatShellMatFunctionList {
-  PetscErrorCode (*symbolic)(Mat, Mat, Mat, void **);
-  PetscErrorCode (*numeric)(Mat, Mat, Mat, void *);
-  PetscErrorCode (*destroy)(void *);
-  MatProductType ptype;
-  char          *composedname; /* string to identify routine with double dispatch */
-  char          *resultname;   /* result matrix type */
-
-  struct _n_MatShellMatFunctionList *next;
-};
-typedef struct _n_MatShellMatFunctionList *MatShellMatFunctionList;
-
-typedef struct {
-  struct _MatShellOps ops[1];
-
-  /* The user will manage the scaling and shifts for the MATSHELL, not the default */
-  PetscBool managescalingshifts;
-
-  /* support for MatScale, MatShift and MatMultAdd */
-  PetscScalar vscale, vshift;
-  Vec         dshift;
-  Vec         left, right;
-  Vec         left_work, right_work;
-  Vec         left_add_work, right_add_work;
-
-  /* support for MatAXPY */
-  Mat              axpy;
-  PetscScalar      axpy_vscale;
-  Vec              axpy_left, axpy_right;
-  PetscObjectState axpy_state;
-
-  /* support for ZeroRows/Columns operations */
-  IS         zrows;
-  IS         zcols;
-  Vec        zvals;
-  Vec        zvals_w;
-  VecScatter zvals_sct_r;
-  VecScatter zvals_sct_c;
-
-  /* MatMat operations */
-  MatShellMatFunctionList matmat;
-
-  /* user defined context */
-  PetscContainer ctxcontainer;
-} Mat_Shell;
+#include <../src/mat/impls/shell/shell.h> /*I "petscmat.h" I*/
 
 /*
      Store and scale values on zeroed rows
@@ -142,7 +87,7 @@ static PetscErrorCode MatShellPostZeroRight(Mat A, Vec x)
 /*
       xx = diag(left)*x
 */
-static PetscErrorCode MatShellPreScaleLeft(Mat A, Vec x, Vec *xx)
+static PetscErrorCode MatShellPreScaleLeft(Mat A, Vec x, Vec *xx, PetscBool conjugate)
 {
   Mat_Shell *shell = (Mat_Shell *)A->data;
 
@@ -152,7 +97,19 @@ static PetscErrorCode MatShellPreScaleLeft(Mat A, Vec x, Vec *xx)
     *xx = x;
   } else {
     if (!shell->left_work) PetscCall(VecDuplicate(shell->left, &shell->left_work));
-    PetscCall(VecPointwiseMult(shell->left_work, x, shell->left));
+    if (conjugate) { /* get arrays because there is no VecPointwiseMultConj() */
+      PetscInt           i, m;
+      const PetscScalar *d, *xarray;
+      PetscScalar       *w;
+      PetscCall(VecGetLocalSize(x, &m));
+      PetscCall(VecGetArrayRead(shell->left, &d));
+      PetscCall(VecGetArrayRead(x, &xarray));
+      PetscCall(VecGetArrayWrite(shell->left_work, &w));
+      for (i = 0; i < m; i++) w[i] = PetscConj(d[i]) * xarray[i];
+      PetscCall(VecRestoreArrayRead(shell->dshift, &d));
+      PetscCall(VecRestoreArrayRead(x, &xarray));
+      PetscCall(VecRestoreArrayWrite(shell->left_work, &w));
+    } else PetscCall(VecPointwiseMult(shell->left_work, x, shell->left));
     *xx = shell->left_work;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -192,12 +149,24 @@ static PetscErrorCode MatShellPostScaleLeft(Mat A, Vec x)
 /*
     x = diag(right)*x
 */
-static PetscErrorCode MatShellPostScaleRight(Mat A, Vec x)
+static PetscErrorCode MatShellPostScaleRight(Mat A, Vec x, PetscBool conjugate)
 {
   Mat_Shell *shell = (Mat_Shell *)A->data;
 
   PetscFunctionBegin;
-  if (shell->right) PetscCall(VecPointwiseMult(x, x, shell->right));
+  if (shell->right) {
+    if (conjugate) { /* get arrays because there is no VecPointwiseMultConj() */
+      PetscInt           i, m;
+      const PetscScalar *d;
+      PetscScalar       *xarray;
+      PetscCall(VecGetLocalSize(x, &m));
+      PetscCall(VecGetArrayRead(shell->right, &d));
+      PetscCall(VecGetArray(x, &xarray));
+      for (i = 0; i < m; i++) xarray[i] = PetscConj(d[i]) * xarray[i];
+      PetscCall(VecRestoreArrayRead(shell->dshift, &d));
+      PetscCall(VecRestoreArray(x, &xarray));
+    } else PetscCall(VecPointwiseMult(x, x, shell->right));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -205,10 +174,14 @@ static PetscErrorCode MatShellPostScaleRight(Mat A, Vec x)
          Y = vscale*Y + diag(dshift)*X + vshift*X
 
          On input Y already contains A*x
+
+         If conjugate=PETSC_TRUE then vscale, dshift, and vshift are conjugated
 */
-static PetscErrorCode MatShellShiftAndScale(Mat A, Vec X, Vec Y)
+static PetscErrorCode MatShellShiftAndScale(Mat A, Vec X, Vec Y, PetscBool conjugate)
 {
-  Mat_Shell *shell = (Mat_Shell *)A->data;
+  Mat_Shell  *shell  = (Mat_Shell *)A->data;
+  PetscScalar vscale = conjugate ? PetscConj(shell->vscale) : shell->vscale;
+  PetscScalar vshift = conjugate ? PetscConj(shell->vshift) : shell->vshift;
 
   PetscFunctionBegin;
   if (shell->dshift) { /* get arrays because there is no VecPointwiseMultAdd() */
@@ -219,14 +192,17 @@ static PetscErrorCode MatShellShiftAndScale(Mat A, Vec X, Vec Y)
     PetscCall(VecGetArrayRead(shell->dshift, &d));
     PetscCall(VecGetArrayRead(X, &x));
     PetscCall(VecGetArray(Y, &y));
-    for (i = 0; i < m; i++) y[i] = shell->vscale * y[i] + d[i] * x[i];
+    if (conjugate)
+      for (i = 0; i < m; i++) y[i] = vscale * y[i] + PetscConj(d[i]) * x[i];
+    else
+      for (i = 0; i < m; i++) y[i] = vscale * y[i] + d[i] * x[i];
     PetscCall(VecRestoreArrayRead(shell->dshift, &d));
     PetscCall(VecRestoreArrayRead(X, &x));
     PetscCall(VecRestoreArray(Y, &y));
   } else {
-    PetscCall(VecScale(Y, shell->vscale));
+    PetscCall(VecScale(Y, vscale));
   }
-  if (shell->vshift != 0.0) PetscCall(VecAXPY(Y, shell->vshift, X)); /* if test is for non-square matrices */
+  if (vshift != 0.0) PetscCall(VecAXPY(Y, vshift, X)); /* if test is for non-square matrices */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -999,7 +975,7 @@ static PetscErrorCode MatDuplicate_Shell(Mat mat, MatDuplicateOption op, Mat *M)
   ((Mat_Shell *)(*M)->data)->ctxcontainer = ((Mat_Shell *)mat->data)->ctxcontainer;
   PetscCall(PetscObjectCompose((PetscObject)(*M), "MatShell ctx", (PetscObject)((Mat_Shell *)(*M)->data)->ctxcontainer));
   PetscCall(PetscObjectChangeTypeName((PetscObject)(*M), ((PetscObject)mat)->type_name));
-  if (op != MAT_DO_NOT_COPY_VALUES) PetscCall(MatCopy(mat, *M, SAME_NONZERO_PATTERN));
+  if (op == MAT_COPY_VALUES) PetscCall(MatCopy(mat, *M, SAME_NONZERO_PATTERN));
   PetscCall(PetscObjectCopyFortranFunctionPointers((PetscObject)mat, (PetscObject)*M));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1020,7 +996,7 @@ static PetscErrorCode MatMult_Shell(Mat A, Vec x, Vec y)
     /* increase the state of the output vector since the user did not update its state themself as should have been done */
     PetscCall(PetscObjectStateIncrease((PetscObject)y));
   }
-  PetscCall(MatShellShiftAndScale(A, xx, y));
+  PetscCall(MatShellShiftAndScale(A, xx, y, PETSC_FALSE));
   PetscCall(MatShellPostScaleLeft(A, y));
   PetscCall(MatShellPostZeroLeft(A, y));
 
@@ -1064,7 +1040,7 @@ static PetscErrorCode MatMultTranspose_Shell(Mat A, Vec x, Vec y)
 
   PetscFunctionBegin;
   PetscCall(MatShellPreZeroLeft(A, x, &xx));
-  PetscCall(MatShellPreScaleLeft(A, xx, &xx));
+  PetscCall(MatShellPreScaleLeft(A, xx, &xx, PETSC_FALSE));
   PetscCall(PetscObjectStateGet((PetscObject)y, &instate));
   PetscCall((*shell->ops->multtranspose)(A, xx, y));
   PetscCall(PetscObjectStateGet((PetscObject)y, &outstate));
@@ -1072,8 +1048,8 @@ static PetscErrorCode MatMultTranspose_Shell(Mat A, Vec x, Vec y)
     /* increase the state of the output vector since the user did not update its state themself as should have been done */
     PetscCall(PetscObjectStateIncrease((PetscObject)y));
   }
-  PetscCall(MatShellShiftAndScale(A, xx, y));
-  PetscCall(MatShellPostScaleRight(A, y));
+  PetscCall(MatShellShiftAndScale(A, xx, y, PETSC_FALSE));
+  PetscCall(MatShellPostScaleRight(A, y, PETSC_FALSE));
   PetscCall(MatShellPostZeroRight(A, y));
 
   if (shell->axpy) {
@@ -1091,6 +1067,41 @@ static PetscErrorCode MatMultTranspose_Shell(Mat A, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatMultHermitianTranspose_Shell(Mat A, Vec x, Vec y)
+{
+  Mat_Shell       *shell = (Mat_Shell *)A->data;
+  Vec              xx;
+  PetscObjectState instate, outstate;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellPreZeroLeft(A, x, &xx));
+  PetscCall(MatShellPreScaleLeft(A, xx, &xx, PETSC_TRUE));
+  PetscCall(PetscObjectStateGet((PetscObject)y, &instate));
+  PetscCall((*shell->ops->multhermitiantranspose)(A, xx, y));
+  PetscCall(PetscObjectStateGet((PetscObject)y, &outstate));
+  if (instate == outstate) {
+    /* increase the state of the output vector since the user did not update its state themself as should have been done */
+    PetscCall(PetscObjectStateIncrease((PetscObject)y));
+  }
+  PetscCall(MatShellShiftAndScale(A, xx, y, PETSC_TRUE));
+  PetscCall(MatShellPostScaleRight(A, y, PETSC_TRUE));
+  PetscCall(MatShellPostZeroRight(A, y));
+
+  if (shell->axpy) {
+    Mat              X;
+    PetscObjectState axpy_state;
+
+    PetscCall(MatShellGetContext(shell->axpy, &X));
+    PetscCall(PetscObjectStateGet((PetscObject)X, &axpy_state));
+    PetscCheck(shell->axpy_state == axpy_state, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Invalid AXPY state: cannot modify the X matrix passed to MatAXPY(Y,a,X,...)");
+    PetscCall(MatCreateVecs(shell->axpy, shell->axpy_right ? NULL : &shell->axpy_right, shell->axpy_left ? NULL : &shell->axpy_left));
+    PetscCall(VecCopy(x, shell->axpy_left));
+    PetscCall(MatMultHermitianTranspose(shell->axpy, shell->axpy_left, shell->axpy_right));
+    PetscCall(VecAXPY(y, PetscConj(shell->axpy_vscale), shell->axpy_right));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatMultTransposeAdd_Shell(Mat A, Vec x, Vec y, Vec z)
 {
   Mat_Shell *shell = (Mat_Shell *)A->data;
@@ -1102,6 +1113,22 @@ static PetscErrorCode MatMultTransposeAdd_Shell(Mat A, Vec x, Vec y, Vec z)
     PetscCall(VecAXPY(z, 1.0, shell->left_add_work));
   } else {
     PetscCall(MatMultTranspose(A, x, z));
+    PetscCall(VecAXPY(z, 1.0, y));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatMultHermitianTransposeAdd_Shell(Mat A, Vec x, Vec y, Vec z)
+{
+  Mat_Shell *shell = (Mat_Shell *)A->data;
+
+  PetscFunctionBegin;
+  if (y == z) {
+    if (!shell->left_add_work) PetscCall(VecDuplicate(z, &shell->left_add_work));
+    PetscCall(MatMultHermitianTranspose(A, x, shell->left_add_work));
+    PetscCall(VecAXPY(z, 1.0, shell->left_add_work));
+  } else {
+    PetscCall(MatMultHermitianTranspose(A, x, z));
     PetscCall(VecAXPY(z, 1.0, y));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1257,7 +1284,7 @@ static PetscErrorCode MatDiagonalScale_Shell(Mat Y, Vec left, Vec right)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatAssemblyEnd_Shell(Mat Y, MatAssemblyType t)
+PETSC_INTERN PetscErrorCode MatAssemblyEnd_Shell(Mat Y, MatAssemblyType t)
 {
   Mat_Shell *shell = (Mat_Shell *)Y->data;
 
@@ -1429,7 +1456,7 @@ static struct _MatOps MatOps_Values = {NULL,
                                        /*119*/ NULL,
                                        NULL,
                                        NULL,
-                                       NULL,
+                                       MatMultHermitianTransposeAdd_Shell,
                                        NULL,
                                        /*124*/ NULL,
                                        NULL,
@@ -1486,6 +1513,27 @@ static PetscErrorCode MatShellSetContextDestroy_Shell(Mat mat, PetscErrorCode (*
 
   PetscFunctionBegin;
   if (shell->ctxcontainer) PetscCall(PetscContainerSetUserDestroy(shell->ctxcontainer, f));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode MatShellSetContext_Immutable(Mat mat, void *ctx)
+{
+  PetscFunctionBegin;
+  SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Cannot call MatShellSetContext() for a %s, it is used internally by the structure", ((PetscObject)mat)->type_name);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode MatShellSetContextDestroy_Immutable(Mat mat, PetscErrorCode (*f)(void *))
+{
+  PetscFunctionBegin;
+  SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Cannot call MatShellSetContextDestroy() for a %s, it is used internally by the structure", ((PetscObject)mat)->type_name);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode MatShellSetManageScalingShifts_Immutable(Mat mat)
+{
+  PetscFunctionBegin;
+  SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Cannot call MatShellSetManageScalingShifts() for a %s, it is used internally by the structure", ((PetscObject)mat)->type_name);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1564,6 +1612,15 @@ static PetscErrorCode MatShellSetOperation_Shell(Mat mat, MatOperation op, void 
       mat->ops->multtranspose   = (PetscErrorCode(*)(Mat, Vec, Vec))f;
     }
     break;
+  case MATOP_MULT_HERMITIAN_TRANSPOSE:
+    if (shell->managescalingshifts) {
+      shell->ops->multhermitiantranspose = (PetscErrorCode(*)(Mat, Vec, Vec))f;
+      mat->ops->multhermitiantranspose   = MatMultHermitianTranspose_Shell;
+    } else {
+      shell->ops->multhermitiantranspose = NULL;
+      mat->ops->multhermitiantranspose   = (PetscErrorCode(*)(Mat, Vec, Vec))f;
+    }
+    break;
   default:
     (((void (**)(void))mat->ops)[op]) = f;
     break;
@@ -1605,6 +1662,10 @@ static PetscErrorCode MatShellGetOperation_Shell(Mat mat, MatOperation op, void 
     break;
   case MATOP_MULT_TRANSPOSE:
     if (shell->ops->multtranspose) *f = (void (*)(void))shell->ops->multtranspose;
+    else *f = (((void (**)(void))mat->ops)[op]);
+    break;
+  case MATOP_MULT_HERMITIAN_TRANSPOSE:
+    if (shell->ops->multhermitiantranspose) *f = (void (*)(void))shell->ops->multhermitiantranspose;
     else *f = (((void (**)(void))mat->ops)[op]);
     break;
   default:

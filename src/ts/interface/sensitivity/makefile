@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-LIBBASE   = libpetscts
 MANSEC    = TS
 SUBMANSEC = Sensitivity
 

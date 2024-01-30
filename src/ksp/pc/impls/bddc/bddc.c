@@ -1,24 +1,3 @@
-/* TODOLIST
-
-   Solvers
-   - Add support for cholesky for coarse solver (similar to local solvers)
-   - Propagate ksp prefixes for solvers to mat objects?
-
-   User interface
-   - ** DM attached to pc?
-
-   Debugging output
-   - * Better management of verbosity levels of debugging output
-
-   Extra
-   - *** Is it possible to work with PCBDDCGraph on boundary indices only (less memory consumed)?
-   - BDDC with MG framework?
-
-   MATIS related operations contained in BDDC code
-   - Provide general case for subassembling
-
-*/
-
 #include <petsc/private/pcbddcimpl.h> /*I "petscpc.h" I*/ /* header file for Fortran wrappers */
 #include <petsc/private/pcbddcprivateimpl.h>
 #include <petscblaslapack.h>
@@ -1210,17 +1189,6 @@ PetscErrorCode PCBDDCSetDofsSplitting(PC pc, PetscInt n_is, IS ISForDofs[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   PCPreSolve_BDDC - Changes the right hand side and (if necessary) the initial
-                     guess if a transformation of basis approach has been selected.
-
-   Input Parameter:
-+  pc - the preconditioner context
-
-   Note:
-     The interface routine PCPreSolve() is not usually called directly by
-   the user, but instead is called by KSPSolve().
-*/
 static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
 {
   PC_BDDC  *pcbddc = (PC_BDDC *)pc->data;
@@ -1394,19 +1362,6 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   PCPostSolve_BDDC - Changes the computed solution if a transformation of basis
-                     approach has been selected. Also, restores rhs to its original state.
-
-   Input Parameter:
-+  pc - the preconditioner context
-
-   Application Interface Routine: PCPostSolve()
-
-   Note:
-     The interface routine PCPostSolve() is not usually called directly by
-     the user, but instead is called by KSPSolve().
-*/
 static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
 {
   PC_BDDC *pcbddc = (PC_BDDC *)pc->data;
@@ -1437,17 +1392,6 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// PetscClangLinter pragma disable: -fdoc-sowing-chars
-/*
-  PCSetUp_BDDC - Prepares for the use of the BDDC preconditioner
-  by setting data structures and options.
-
-  Input Parameter:
-. pc - the preconditioner context
-
-   Application Interface Routine: PCSetUp()
-
-*/
 static PetscErrorCode PCSetUp_BDDC(PC pc)
 {
   PC_BDDC        *pcbddc = (PC_BDDC *)pc->data;
@@ -1731,19 +1675,6 @@ static PetscErrorCode PCSetUp_BDDC(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// PetscClangLinter pragma disable: -fdoc-sowing-chars
-/*
-   PCApply_BDDC - Applies the BDDC operator to a vector.
-
-   Input Parameters:
-+  pc - the preconditioner context
--  r - input vector (global)
-
-   Output Parameter:
-.  z - output vector (global)
-
-   Application Interface Routine: PCApply()
- */
 static PetscErrorCode PCApply_BDDC(PC pc, Vec r, Vec z)
 {
   PC_IS            *pcis   = (PC_IS *)(pc->data);
@@ -1787,8 +1718,8 @@ static PetscErrorCode PCApply_BDDC(PC pc, Vec r, Vec z)
       - pcis->vec1_D for the Dirichlet part (if needed, i.e. pcbddc->switch_static == PETSC_TRUE)
       - pcis->vec1_B the interface part of the global vector z
     */
+    PetscCall(PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][0], pc, 0, 0, 0));
     if (n_D) {
-      PetscCall(PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][0], pc, 0, 0, 0));
       PetscCall(KSPSolve(pcbddc->ksp_D, pcis->vec1_D, pcis->vec2_D));
       PetscCall(PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][0], pc, 0, 0, 0));
       PetscCall(KSPCheckSolve(pcbddc->ksp_D, pc, pcis->vec2_D));
@@ -1812,6 +1743,7 @@ static PetscErrorCode PCApply_BDDC(PC pc, Vec r, Vec z)
         PetscCall(MatMult(pcis->A_BI, pcis->vec2_D, pcis->vec1_B));
       }
     } else {
+      PetscCall(PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][0], pc, 0, 0, 0));
       PetscCall(VecSet(pcis->vec1_B, zero));
     }
     PetscCall(VecScatterBegin(pcis->global_to_B, pcis->vec1_B, z, ADD_VALUES, SCATTER_REVERSE));
@@ -1902,18 +1834,6 @@ static PetscErrorCode PCApply_BDDC(PC pc, Vec r, Vec z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   PCApplyTranspose_BDDC - Applies the transpose of the BDDC operator to a vector.
-
-   Input Parameters:
-+  pc - the preconditioner context
--  r - input vector (global)
-
-   Output Parameter:
-.  z - output vector (global)
-
-   Application Interface Routine: PCApplyTranspose()
- */
 static PetscErrorCode PCApplyTranspose_BDDC(PC pc, Vec r, Vec z)
 {
   PC_IS            *pcis   = (PC_IS *)(pc->data);
@@ -2730,7 +2650,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
 }
 
 /*MC
-   PCBDDC - Balancing Domain Decomposition by Constraints preconditioners
+   PCBDDC - Balancing Domain Decomposition by Constraints preconditioners, {cite}`dohrmann2007approximate`, {cite}`klawonn2006dual`, {cite}`mandel2008multispace`
 
    Requires `MATIS` matrices (Pmat) with local matrices (inside the `MATIS`) of type `MATSEQAIJ`, `MATSEQBAIJ` or `MATSEQSBAIJ`
 
@@ -2739,7 +2659,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
    Unlike 'conventional' interface preconditioners, `PCBDDC` iterates over all degrees of freedom, not just those on the interface. This allows the use
    of approximate solvers on the subdomains.
 
-   Approximate local solvers are automatically adapted (see [1]) if the user has attached a nullspace object to the subdomain matrices, and informed
+   Approximate local solvers are automatically adapted (see {cite}`dohrmann2007approximate`,) if the user has attached a nullspace object to the subdomain matrices, and informed
    `PCBDDC` of using approximate solvers (via the command line).
 
    Boundary nodes are split in vertices, edges and faces classes using information from the local to global mapping of dofs and the local connectivity graph of nodes.
@@ -2750,33 +2670,33 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
 
    Constraints can be customized by attaching a `MatNullSpace` object to the `MATIS` matrix via `MatSetNearNullSpace()`. Non-singular modes are retained via SVD.
 
-   Change of basis is performed similarly to [2] when requested. When more than one constraint is present on a single connected component
+   Change of basis is performed similarly to {cite}`klawonn2006dual` when requested. When more than one constraint is present on a single connected component
    (i.e. an edge or a face), a robust method based on local QR factorizations is used.
    User defined change of basis can be passed to `PCBDDC` with `PCBDDCSetChangeOfBasisMat()`
 
-   The PETSc implementation also supports multilevel `PCBDDC` [3]. Coarse grids are partitioned using a `MatPartitioning` object.
+   The PETSc implementation also supports multilevel `PCBDDC` {cite}`mandel2008multispace`. Coarse grids are partitioned using a `MatPartitioning` object.
 
-   Adaptive selection of primal constraints [4] is supported for SPD systems with high-contrast in the coefficients if MUMPS or MKL_PARDISO are present.
+   Adaptive selection of primal constraints is supported for SPD systems with high-contrast in the coefficients if MUMPS or MKL_PARDISO are present.
    Future versions of the code will also consider using PASTIX.
 
    An experimental interface to the FETI-DP method is available. FETI-DP operators could be created using `PCBDDCCreateFETIDPOperators()`.
     A stand-alone class for the FETI-DP method will be provided in the next releases.
 
    Options Database Keys:
-+    -pc_bddc_use_vertices <true> - use or not vertices in primal space
-.    -pc_bddc_use_edges <true> - use or not edges in primal space
-.    -pc_bddc_use_faces <false> - use or not faces in primal space
-.    -pc_bddc_symmetric <true> - symmetric computation of primal basis functions. Specify false for unsymmetric problems
++    -pc_bddc_use_vertices <true>         - use or not vertices in primal space
+.    -pc_bddc_use_edges <true>            - use or not edges in primal space
+.    -pc_bddc_use_faces <false>           - use or not faces in primal space
+.    -pc_bddc_symmetric <true>            - symmetric computation of primal basis functions. Specify false for unsymmetric problems
 .    -pc_bddc_use_change_of_basis <false> - use change of basis approach (on edges only)
 .    -pc_bddc_use_change_on_faces <false> - use change of basis approach on faces if change of basis has been requested
-.    -pc_bddc_switch_static <false> - switches from M_2 (default) to M_3 operator (see reference article [1])
-.    -pc_bddc_levels <0> - maximum number of levels for multilevel
-.    -pc_bddc_coarsening_ratio <8> - number of subdomains which will be aggregated together at the coarser level (e.g. H/h ratio at the coarser level, significative only in the multilevel case)
-.    -pc_bddc_coarse_redistribute <0> - size of a subset of processors where the coarse problem will be remapped (the value is ignored if not at the coarsest level)
-.    -pc_bddc_use_deluxe_scaling <false> - use deluxe scaling
-.    -pc_bddc_schur_layers <\-1> - select the economic version of deluxe scaling by specifying the number of layers (-1 corresponds to the original deluxe scaling)
-.    -pc_bddc_adaptive_threshold <0.0> - when a value different than zero is specified, adaptive selection of constraints is performed on edges and faces (requires deluxe scaling and MUMPS or MKL_PARDISO installed)
--    -pc_bddc_check_level <0> - set verbosity level of debugging output
+.    -pc_bddc_switch_static <false>       - switches from M_2 (default) to M_3 operator (see reference article [1])
+.    -pc_bddc_levels <0>                  - maximum number of levels for multilevel
+.    -pc_bddc_coarsening_ratio <8>        - number of subdomains which will be aggregated together at the coarser level (e.g. H/h ratio at the coarser level, significative only in the multilevel case)
+.    -pc_bddc_coarse_redistribute <0>     - size of a subset of processors where the coarse problem will be remapped (the value is ignored if not at the coarsest level)
+.    -pc_bddc_use_deluxe_scaling <false>  - use deluxe scaling
+.    -pc_bddc_schur_layers <\-1>          - select the economic version of deluxe scaling by specifying the number of layers (-1 corresponds to the original deluxe scaling)
+.    -pc_bddc_adaptive_threshold <0.0>    - when a value different than zero is specified, adaptive selection of constraints is performed on edges and faces (requires deluxe scaling and MUMPS or MKL_PARDISO installed)
+-    -pc_bddc_check_level <0>             - set verbosity level of debugging output
 
    Options for Dirichlet, Neumann or coarse solver can be set using the appropriate options prefix
 .vb
@@ -2800,15 +2720,10 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
 .ve
    will use a threshold of 5 for constraints' selection at the first coarse level and will redistribute the coarse problem of the first coarse level on 3 processors
 
-   References:
-+  * - C. R. Dohrmann. "An approximate BDDC preconditioner", Numerical Linear Algebra with Applications Volume 14, Issue 2, pages 149--168, March 2007
-.  * - A. Klawonn and O. B. Widlund. "Dual-Primal FETI Methods for Linear Elasticity", Communications on Pure and Applied Mathematics Volume 59, Issue 11, pages 1523--1572, November 2006
-.  * - J. Mandel, B. Sousedik, C. R. Dohrmann. "Multispace and Multilevel BDDC", Computing Volume 83, Issue 2--3, pages 55--85, November 2008
--  * - C. Pechstein and C. R. Dohrmann. "Modern domain decomposition methods BDDC, deluxe scaling, and an algebraic approach", Seminar talk, Linz, December 2013, http://people.ricam.oeaw.ac.at/c.pechstein/pechstein-bddc2013.pdf
-
    Level: intermediate
 
-   Contributed by Stefano Zampini
+   Contributed by:
+   Stefano Zampini
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MATIS`, `PCLU`, `PCGAMG`, `PC`, `PCBDDCSetLocalAdjacencyGraph()`, `PCBDDCSetDofsSplitting()`,
           `PCBDDCSetDirichletBoundaries()`, `PCBDDCSetNeumannBoundaries()`, `PCBDDCSetPrimalVerticesIS()`, `MatNullSpace`, `MatSetNearNullSpace()`,

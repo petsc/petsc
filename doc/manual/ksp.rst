@@ -379,10 +379,10 @@ can be used by the options database command
   * - Enhanced BiCGSTAB(L)
     - ``KSPBCGSL``
     - ``bcgsl``
-  * - Minimal Residual Method :cite:`paigesaunders1975`
+  * - Minimal Residual Method :cite:`paige.saunders:solution`
     - ``KSPMINRES``
     - ``minres``
-  * - Generalized Minimal Residual :cite:`ss:86`
+  * - Generalized Minimal Residual :cite:`saad.schultz:gmres`
     - ``KSPGMRES``
     - ``gmres``
   * - Flexible Generalized Minimal Residual :cite:`saad1993`
@@ -427,7 +427,7 @@ can be used by the options database command
   * - Least Squares Method
     - ``KSPLSQR``
     - ``lsqr``
-  * - Symmetric LQ Method :cite:`paigesaunders1975`
+  * - Symmetric LQ Method :cite:`paige.saunders:solution`
     - ``KSPSYMMLQ``
     - ``symmlq``
   * - TSIRM
@@ -978,7 +978,7 @@ conjunction with a full interpolation, while ``PC_ASM_NONE`` (or
 ``-pc_asm_type`` ``none``) ignores off-process values for both
 restriction and interpolation. The ASM types with limited restriction or
 interpolation were suggested by Xiao-Chuan Cai and Marcus Sarkis
-:cite:`cs97a`. ``PC_ASM_RESTRICT`` is the PETSc default, as
+:cite:`cs99`. ``PC_ASM_RESTRICT`` is the PETSc default, as
 it saves substantial communication and for many problems has the added
 benefit of requiring fewer iterations for convergence than the standard
 additive Schwarz method.
@@ -2058,7 +2058,7 @@ Schur complements. The inverse of the Schur complement factorization is
    I   & A_{00}^{-1} A_{01} \\
    0 & I \\
    \end{array} \right)
-   \right]^{-1}
+   \right]^{-1} = 
 
 .. math::
 
@@ -2073,7 +2073,7 @@ Schur complements. The inverse of the Schur complement factorization is
    \left( \begin{array}{cc}
    I   & 0 \\
    A_{10}A_{00}^{-1} & I \\
-   \end{array} \right)^{-1}
+   \end{array} \right)^{-1} =
 
 .. math::
 
@@ -2088,7 +2088,7 @@ Schur complements. The inverse of the Schur complement factorization is
    \left( \begin{array}{cc}
    I   & 0 \\
    -A_{10}A_{00}^{-1} & I \\
-   \end{array} \right)
+   \end{array} \right) =
 
 .. math::
 
@@ -2465,9 +2465,9 @@ a linear system when the application code, including the matrix generation, is r
 MPI rank (with or without OpenMP). The application code must be built with MPI and must call
 ``PetscInitialize()`` at the very beginning of the program and end with ``PetscFinalize()``. The
 application code may utilize OpenMP.
-The code may create multiple matrices and `KSP` objects and call `KSPSolve()`, similarly the
-code may utilize the `SNES` nonlinear solvers, the `TS` ODE integrators, and the `TAO` optimization algorithms
-which use `KSP`.
+The code may create multiple matrices and ``KSP`` objects and call ``KSPSolve()``, similarly the
+code may utilize the ``SNES`` nonlinear solvers, the ``TS`` ODE integrators, and the ``Tao`` optimization algorithms
+which use ``KSP``.
 
 The program must then be launched using the standard approaches for launching MPI programs with the additional
 PETSc option ``-mpi_linear_solver_server``.  The linear solves are controlled via the options database in the usual manner (using any options prefix

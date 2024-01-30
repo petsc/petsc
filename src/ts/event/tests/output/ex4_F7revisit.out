@@ -1,0 +1,6 @@
+[0] TSEvent: iter 0 - Event 0 refining the bracket with sign change [0.03 - 0.07], next stepping to 0.054
+[0] TSEvent: iter 1 - Event 0 refining the bracket with sign change [0.03 - 0.054], next stepping to 0.042
+[0] TSEvent: iter 2 - reached too small bracket [0.042 - 0.054], next stepping to its right end 0.054 (revisiting)
+[0] TSEvent: iter 3 - Event 0 accepting time 0.054 as event location, due to reaching too small bracket [0.042 - 0.054]
+0	0.054	0.004	pass
+This test: PASSED

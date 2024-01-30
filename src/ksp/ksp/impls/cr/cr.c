@@ -137,7 +137,7 @@ static PetscErrorCode KSPSolve_CR(KSP ksp)
 }
 
 /*MC
-     KSPCR - This code implements the (preconditioned) conjugate residuals method
+     KSPCR - This code implements the (preconditioned) conjugate residuals method {cite}`hs:52`
 
    Level: beginner
 
@@ -147,10 +147,6 @@ static PetscErrorCode KSPSolve_CR(KSP ksp)
    The preconditioner must be POSITIVE-DEFINITE and the operator POSITIVE-SEMIDEFINITE.
 
    Support only for left preconditioning.
-
-   References:
-.  * - Magnus R. Hestenes and Eduard Stiefel, Methods of Conjugate Gradients for Solving Linear Systems,
-   Journal of Research of the National Bureau of Standards Vol. 49, No. 6, December 1952 Research Paper 2379
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCG`
 M*/

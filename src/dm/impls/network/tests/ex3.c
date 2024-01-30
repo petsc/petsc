@@ -123,9 +123,9 @@ int main(int argc, char **argv)
 /*TEST
   test:
     suffix: 0
-    args:  -ne 5
+    args: -ne 5
   test:
     suffix: 1
     nsize: 2
-    args:  -ne 5 -petscpartitioner_type simple
+    args: -ne 5 -petscpartitioner_type simple
  TEST*/

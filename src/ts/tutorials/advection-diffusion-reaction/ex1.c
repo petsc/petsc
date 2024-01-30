@@ -272,7 +272,7 @@ int main(int argc, char **argv)
 
    test:
      suffix: 2
-     args: -ts_monitor_lg_error -ts_monitor_lg_solution  -ts_view
+     args: -ts_monitor_lg_error -ts_monitor_lg_solution -ts_view
      requires: x dlsym defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
      output_file: output/ex1_1.out
 

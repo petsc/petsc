@@ -802,7 +802,8 @@ PetscErrorCode KSPMINRESGetUseQLP(KSP ksp, PetscBool *qlp)
 }
 
 /*MC
-   KSPMINRES - This code implements the MINRES (Minimum Residual) method and its QLP variant.
+   KSPMINRES - This code implements the MINRES (Minimum Residual) method and its QLP variant {cite}`paige.saunders:solution`, {cite}`choi2011minres`,
+   {cite}`liu2022newton`.
 
    Options Database Keys:
 +   -ksp_minres_qlp <bool> - activates QLP code
@@ -821,11 +822,6 @@ PetscErrorCode KSPMINRESGetUseQLP(KSP ksp, PetscBool *qlp)
    Contributed by:
    Original MINRES code - Robert Scheichl: maprs@maths.bath.ac.uk
    QLP variant adapted from: https://stanford.edu/group/SOL/software/minresqlp/minresqlp-matlab/CPS11.zip
-
-   Reference:
-+ * - Paige & Saunders, Solution of sparse indefinite systems of linear equations, SIAM J. Numer. Anal. 12, 1975.
-. * - S.-C. T. Choi, C. C. Paige and M. A. Saunders. MINRES-QLP: A Krylov subspace method for indefinite or singular symmetric systems, SIAM J. Sci. Comput. 33:4, 2011.
-- * - Y. Liu and F. Roosta. A Newton-MR algorithm with complexity guarantees for nonconvex smooth unconstrained optimization. https://arxiv.org/pdf/2208.07095.pdf
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCG`, `KSPCR`, `KSPMINRESGetUseQLP()`, `KSPMINRESSetUseQLP()`, `KSPMINRESSetRadius()`
           `KSPMINRESGetRadius()`

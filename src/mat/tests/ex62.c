@@ -78,8 +78,7 @@ int main(int argc, char **args)
 
   PetscCall(MatGetType(B, &mattype));
 
-  PetscCall(PetscMalloc(nzp * (sizeof(PetscInt) + sizeof(PetscScalar)), &idxn));
-  a = (PetscScalar *)(idxn + nzp);
+  PetscCall(PetscMalloc2(nzp, &idxn, nzp, &a));
 
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rdm));
   PetscCall(PetscRandomSetFromOptions(rdm));
@@ -304,7 +303,7 @@ int main(int argc, char **args)
 
   /* Destroy objects */
   PetscCall(PetscRandomDestroy(&rdm));
-  PetscCall(PetscFree(idxn));
+  PetscCall(PetscFree2(idxn, a));
 
   PetscCall(MatDestroy(&A_save));
   PetscCall(MatDestroy(&B));

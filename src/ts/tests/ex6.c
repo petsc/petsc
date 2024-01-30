@@ -107,6 +107,6 @@ PetscErrorCode SNESFunction(SNES snes, Vec V, Vec F, void *actx)
 /*TEST
 
     test:
-      args:  -ts_monitor -ts_view
+      args: -ts_monitor -ts_view
 
 TEST*/

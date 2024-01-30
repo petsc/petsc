@@ -2,7 +2,6 @@
 #requirespackage  'PETSC_HAVE_AMGX'
 ALL: lib
 
-LIBBASE   = libpetscksp
 MANSEC    = KSP
 SUBMANSEC = PC
 

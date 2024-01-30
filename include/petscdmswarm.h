@@ -14,14 +14,15 @@ typedef struct _p_DMSwarmSort       *DMSwarmSort;
 
    Values:
 +  `DMSWARM_BASIC` - defines N entries of varied data-types which the user may register.
--  `DMSWARM_PIC` - suitable for particle-in-cell methods. Configured as `DMSWARM_PIC`, the swarm will be aware of, another `DM` which serves as the background mesh.
+-  `DMSWARM_PIC`   - suitable for particle-in-cell methods. Configured as `DMSWARM_PIC`, the swarm will be aware of, another `DM` which serves as the background mesh.
+
    Fields specific to particle-in-cell methods are registered by default. These include spatial coordinates, a unique identifier, a cell index and an index for
    the owning rank. The background mesh will (by default) define the spatial decomposition of the points defined in the swarm. `DMSWARM_PIC` provides support
    for particle-in-cell operations such as defining initial point coordinates, communicating particles between sub-domains, projecting particle data fields on to the mesh.
 
    Level: beginner
 
-.seealso: `DMSWARM`, `DMSwarmSetType()`
+.seealso: [](ch_dmbase), `DMSWARM`, `DMSwarmSetType()`
 E*/
 typedef enum {
   DMSWARM_BASIC = 0,
@@ -46,16 +47,16 @@ typedef enum {
    DMSwarmPICLayoutType - Defines the method used to define particle coordinates within each cell. The layouts are constructured using the reference cell geometry
 
    Values:
-+  `DMSWARMPIC_LAYOUT_REGULAR` - defines points on a regular ijk mesh. When using `DMSWARMPIC_LAYOUT_REGULAR`, the fill_param defines the number of points in each spatial direction.
-.  `DMSWARMPIC_LAYOUT_GAUSS` -  defines points using an npoint Gauss-Legendre tensor product quadrature rule.
-   When using `DMSWARMPIC_LAYOUT_GAUSS`, the fill_param defines the number of quadrature points in each spatial direction.
-
--  `DMSWARMPIC_LAYOUT_SUBDIVISION` - defines points on the centroid of a sub-divided reference cell.
-   When using `DMSWARMPIC_LAYOUT_SUBDIVISION`, the fill_param defines the number times the reference cell is sub-divided.
++  `DMSWARMPIC_LAYOUT_REGULAR`     - defines points on a regular ijk mesh. In this case
+                                     the `fill_param` argument of `DMSwarmInsertPointsUsingCellDM()` defines the number of points in each spatial direction.
+.  `DMSWARMPIC_LAYOUT_GAUSS`       - defines points using an npoint Gauss-Legendre tensor product quadrature rule. In this case
+                                     the `fill_param` argument of `DMSwarmInsertPointsUsingCellDM()` defines the number of quadrature points in each spatial direction.
+-  `DMSWARMPIC_LAYOUT_SUBDIVISION` - defines points on the centroid of a sub-divided reference cell. In this case
+                                     the `fill_param` argument of `DMSwarmInsertPointsUsingCellDM()` defines the number times the reference cell is sub-divided.
 
    Level: beginner
 
-.seealso: `DMSWARM`, `DM`, `DMSwarmInsertPointsUsingCellDM()`
+.seealso: [](ch_dmbase), `DMSWARM`, `DM`, `DMSwarmInsertPointsUsingCellDM()`
 E*/
 typedef enum {
   DMSWARMPIC_LAYOUT_REGULAR = 0,

@@ -17,6 +17,7 @@ cdef extern from "<petsc4py/numpy.h>":
     int       PyArray_NDIM(ndarray)
     npy_intp* PyArray_DIMS(ndarray)
     npy_intp  PyArray_DIM(ndarray, int)
+    npy_intp  PyArray_MultiplyList(const npy_intp*, int)
 
     enum: NPY_INTP
     dtype   PyArray_DescrFromType(int)

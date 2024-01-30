@@ -940,7 +940,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   /* Allocate space for storing the set of neighbours for each node */
   if (graph->nvtxs) PetscCall(PetscMalloc1(k, &graph->neighbours_set[0]));
   for (i = 1; i < graph->nvtxs; i++) { /* dont count myself */
-    graph->neighbours_set[i] = graph->neighbours_set[i - 1] + graph->count[i - 1];
+    graph->neighbours_set[i] = PetscSafePointerPlusOffset(graph->neighbours_set[i - 1], graph->count[i - 1]);
   }
   /* Get information for sharing subdomains */
   PetscCall(PetscArrayzero(graph->count, graph->nvtxs));

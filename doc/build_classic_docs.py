@@ -30,7 +30,7 @@ def main(stage,outdir):
                  '--with-bison=0',
                  '--with-cmake=0',
                  '--with-pthread=0',
-                 '--with-regexp=0',
+                 '--with-regex=0',
                  '--with-mkl_sparse_optimize=0',
                  '--with-mkl_sparse=0',
                  '--with-debugging=0',
@@ -43,39 +43,26 @@ def main(stage,outdir):
         command.append('--download-sowing')
         c2html = None
         doctext = None
-        mapnames = None
       else:
         command.append('--with-fc=0')
-        import shutil
         c2html = shutil.which('c2html')
         if c2html: command.append('--with-c2html')
         else:  command.append('--download-c2html')
         doctext = shutil.which('doctext')
-        mapnames = shutil.which('mapnames')    # assumes that if doctext is in the path so is mapnames since both are in sowing
         if doctext: command.append('--with-sowing')
         else:  command.append('--download-sowing')
 
       x = time.clock_gettime(time.CLOCK_REALTIME)
       print('==================================================================')
-      #print('Running configure')
+      print('Running configure')
       subprocess.run(command, cwd=petsc_dir, check=True)
       print("Time: "+str(time.clock_gettime(time.CLOCK_REALTIME) - x))
       print('==================================================================')
-      if not c2html:
-        with open(os.path.join(petsc_dir,petsc_arch,'lib','petsc','conf','petscvariables')) as f:
-          c2html = [line for line in f if line.find('C2HTML ') > -1]
-          c2html = re.sub('[ ]*C2HTML[ ]*=[ ]*','',c2html[0]).strip('\n').strip()
       if not doctext:
         with open(os.path.join(petsc_dir,petsc_arch,'lib','petsc','conf','petscvariables')) as f:
           doctext = [line for line in f if line.find('DOCTEXT ') > -1]
           doctext = re.sub('[ ]*DOCTEXT[ ]*=[ ]*','',doctext[0]).strip('\n').strip()
-      if not mapnames:
-        with open(os.path.join(petsc_dir,petsc_arch,'lib','petsc','conf','petscvariables')) as f:
-          mapnames = [line for line in f if line.find('MAPNAMES ') > -1]
-          mapnames = re.sub('[ ]*MAPNAMES[ ]*=[ ]*','',mapnames[0]).strip('\n').strip()
-      print('Using C2HTML:', c2html)
       print('Using DOCTEXT:', doctext)
-      print('Using MAPNAMES:', mapnames)
 
       import build_man_pages
       x = time.clock_gettime(time.CLOCK_REALTIME)
@@ -110,15 +97,22 @@ def main(stage,outdir):
       print('============================================')
     else:
       if not os.path.isfile(os.path.join(petsc_dir, "configure.log")): raise Exception("Expected PETSc configuration not found")
-      loc = outdir
-      command = ['make', 'c2html',
-                 'PETSC_DIR=%s' % petsc_dir,
-                 'PETSC_ARCH=%s' % petsc_arch,
-                 'HTMLMAP=%s' % os.path.join(os.getcwd(),'manualpages','htmlmap'),
-                 'LOC=%s' % loc]
+      c2html = shutil.which('c2html')
+      if not c2html:
+        with open(os.path.join(petsc_dir,petsc_arch,'lib','petsc','conf','petscvariables')) as f:
+          c2html = [line for line in f if line.find('C2HTML ') > -1]
+          c2html = re.sub('[ ]*C2HTML[ ]*=[ ]*','',c2html[0]).strip('\n').strip()
+      print('Using C2HTML:', c2html)
+      mapnames = shutil.which('mapnames')
+      if not mapnames:
+        with open(os.path.join(petsc_dir,petsc_arch,'lib','petsc','conf','petscvariables')) as f:
+          mapnames = [line for line in f if line.find('MAPNAMES ') > -1]
+          mapnames = re.sub('[ ]*MAPNAMES[ ]*=[ ]*','',mapnames[0]).strip('\n').strip()
+      print('Using MAPNAMES:', mapnames)
+      import build_c2html
       x = time.clock_gettime(time.CLOCK_REALTIME)
       print('============================================')
-      print('make c2html')
-      subprocess.run(command, cwd=petsc_dir, check=True)
+      print('Building c2html')
+      build_c2html.main(petsc_dir,outdir,c2html,mapnames)
       print("Time: "+str(time.clock_gettime(time.CLOCK_REALTIME) - x))
       print('============================================')

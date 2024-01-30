@@ -811,7 +811,7 @@ int main(int argc, char **argv)
     PetscCall(MatSetNullSpace(A, nullSpace));
   }
 
-  PetscCall(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));
+  PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, &user));
   PetscCall(SNESSetJacobian(snes, A, J, NULL, NULL));
 
   PetscCall(SNESSetFromOptions(snes));
@@ -1175,7 +1175,7 @@ int main(int argc, char **argv)
     suffix: 44
     requires: triangle !single
     nsize: 2
-    args: -run_type full -dm_refine_volume_limit_pre 0.0625 -variable_coefficient nonlinear -petscspace_degree 1 -snes_type fas -snes_fas_levels 3 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short  -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -dm_refine_hierarchy 2 -dm_plex_print_fem 0 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short -fas_levels_2_snes_type newtonls -fas_levels_2_pc_type svd -fas_levels_2_ksp_rtol 1.0e-10 -fas_levels_2_snes_atol 1.0e-11 -fas_levels_2_snes_monitor_short
+    args: -run_type full -dm_refine_volume_limit_pre 0.0625 -variable_coefficient nonlinear -petscspace_degree 1 -snes_type fas -snes_fas_levels 3 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -dm_refine_hierarchy 2 -dm_plex_print_fem 0 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short -fas_levels_2_snes_type newtonls -fas_levels_2_pc_type svd -fas_levels_2_ksp_rtol 1.0e-10 -fas_levels_2_snes_atol 1.0e-11 -fas_levels_2_snes_monitor_short
 
   # These tests use a loose tolerance just to exercise the PtAP operations for MATIS and multiple PCBDDC setup calls inside PCMG
   testset:
@@ -1661,7 +1661,7 @@ int main(int argc, char **argv)
   test:
     suffix: p4est_convergence_test_1
     requires: p4est
-    args:  -quiet -run_type test -petscspace_degree 1 -dm_plex_simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 2 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
+    args: -quiet -run_type test -petscspace_degree 1 -dm_plex_simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 2 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
     nsize: 4
 
   test:
@@ -1797,5 +1797,13 @@ int main(int argc, char **argv)
           -variable_coefficient checkerboard_0 -mat_petscspace_degree 0 -div 16 -k 3 \
           -snes_max_it 1 -ksp_converged_reason \
           -ksp_rtol 1e-8 -pc_type mg -pc_mg_galerkin -pc_mg_adapt_interp_coarse_space gdsw -pc_mg_levels 2 -mg_levels_pc_type asm -dm_mat_type is -mg_levels_gdsw_tolerance 0.1 -mg_levels_gdsw_pseudo_pc_type qr
+
+  test:
+    suffix: p4est_2d_asm
+    requires: p4est
+    nsize: 4
+    args: -run_type test -run_test_check_ksp -quiet -petscspace_degree 1 -petscpartitioner_type simple -bc_type none -dm_plex_simplex 0 \
+          -pc_type asm -ksp_converged_reason -dm_plex_convert_type p4est -dm_forest_minimum_refinement 1 -dm_forest_initial_refinement 3 -dm_forest_maximum_refinement 5 \
+          -pc_asm_dm_subdomains -dm_p4est_refine_pattern hash -dm_plex_dd_overlap 1 -sub_pc_type lu
 
 TEST*/

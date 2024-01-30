@@ -27,7 +27,7 @@
       PetscCallA(ISCreateStride(PETSC_COMM_SELF,n,first,step,set,ierr))
       PetscCallA(ISView(set,PETSC_VIEWER_STDOUT_SELF,ierr))
 
-!     Extract the indice values from the set. Demonstrates how a Fortran
+!     Extract the indices values from the set. Demonstrates how a Fortran
 !     code can directly access the array storing a PETSc index set with
 !     ISGetIndicesF90().
 

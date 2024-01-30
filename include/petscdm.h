@@ -322,6 +322,7 @@ PETSC_EXTERN PetscErrorCode DMGetAuxiliaryVec(DM, DMLabel, PetscInt, PetscInt, V
 PETSC_EXTERN PetscErrorCode DMSetAuxiliaryVec(DM, DMLabel, PetscInt, PetscInt, Vec);
 PETSC_EXTERN PetscErrorCode DMGetAuxiliaryLabels(DM, DMLabel[], PetscInt[], PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMCopyAuxiliaryVec(DM, DM);
+PETSC_EXTERN PetscErrorCode DMClearAuxiliaryVec(DM);
 
 /*MC
   DMInterpolationInfo - Structure for holding information about interpolation on a mesh
@@ -338,7 +339,7 @@ PETSC_EXTERN PetscErrorCode DMCopyAuxiliaryVec(DM, DM);
 
   Level: intermediate
 
-.seealso: `DM`, `DMInterpolationCreate()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
+.seealso: [](ch_dmbase), `DM`, `DMInterpolationCreate()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
 M*/
 struct _DMInterpolationInfo {
   MPI_Comm   comm;
@@ -381,16 +382,16 @@ PETSC_EXTERN PetscErrorCode DMSetLabelOutput(DM, const char[], PetscBool);
 PETSC_EXTERN PetscErrorCode DMGetFirstLabeledPoint(DM, DM, DMLabel, PetscInt, const PetscInt *, PetscInt, PetscInt *, PetscDS *);
 
 /*E
-   DMCopyLabelsMode - Determines how `DMCopyLabels()` behaves when there is a `DMLabel` in the source and destination DMs with the same name
+   DMCopyLabelsMode - Determines how `DMCopyLabels()` behaves when there is a `DMLabel` in the source and destination `DM`s with the same name
 
    Values:
-+  `DM_COPY_LABELS_REPLACE`  - replace label in destination by label from source
-.  `DM_COPY_LABELS_KEEP`     - keep destination label
--  `DM_COPY_LABELS_FAIL`     - throw error
++  `DM_COPY_LABELS_REPLACE` - replace label in destination by label from source
+.  `DM_COPY_LABELS_KEEP`    - keep destination label
+-  `DM_COPY_LABELS_FAIL`    - generate an error
 
    Level: advanced
 
-.seealso: `DMLabel`, `DM`, `DMCompareLabels()`, `DMRemoveLabel()`
+.seealso: [](ch_dmbase), `DMLabel`, `DM`, `DMCompareLabels()`, `DMRemoveLabel()`
 E*/
 typedef enum {
   DM_COPY_LABELS_REPLACE,
@@ -435,6 +436,19 @@ PETSC_EXTERN PetscErrorCode DMMonitorSet(DM, PetscErrorCode (*)(DM, void *), voi
 PETSC_EXTERN PetscErrorCode DMMonitorCancel(DM);
 PETSC_EXTERN PetscErrorCode DMMonitorSetFromOptions(DM, const char[], const char[], const char[], PetscErrorCode (*)(DM, void *), PetscErrorCode (*)(DM, PetscViewerAndFormat *), PetscBool *);
 PETSC_EXTERN PetscErrorCode DMMonitor(DM);
+
+static inline PetscBool DMPolytopeTypeIsHybrid(DMPolytopeType ct)
+{
+  switch (ct) {
+  case DM_POLYTOPE_POINT_PRISM_TENSOR:
+  case DM_POLYTOPE_SEG_PRISM_TENSOR:
+  case DM_POLYTOPE_TRI_PRISM_TENSOR:
+  case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+    return PETSC_TRUE;
+  default:
+    return PETSC_FALSE;
+  }
+}
 
 static inline PetscInt DMPolytopeTypeGetDim(DMPolytopeType ct)
 {
@@ -531,7 +545,7 @@ static inline DMPolytopeType DMPolytopeTypeSimpleShape(PetscInt dim, PetscBool s
   return dim == 0 ? DM_POLYTOPE_POINT : (dim == 1 ? DM_POLYTOPE_SEGMENT : (dim == 2 ? (simplex ? DM_POLYTOPE_TRIANGLE : DM_POLYTOPE_QUADRILATERAL) : (dim == 3 ? (simplex ? DM_POLYTOPE_TETRAHEDRON : DM_POLYTOPE_HEXAHEDRON) : DM_POLYTOPE_UNKNOWN)));
 }
 
-static inline PetscInt DMPolytopeTypeGetNumArrangments(DMPolytopeType ct)
+static inline PetscInt DMPolytopeTypeGetNumArrangements(DMPolytopeType ct)
 {
   switch (ct) {
   case DM_POLYTOPE_POINT:
@@ -564,7 +578,7 @@ static inline PetscInt DMPolytopeTypeGetNumArrangments(DMPolytopeType ct)
 }
 
 /* An arrangement is a face order combined with an orientation for each face */
-static inline const PetscInt *DMPolytopeTypeGetArrangment(DMPolytopeType ct, PetscInt o)
+static inline const PetscInt *DMPolytopeTypeGetArrangement(DMPolytopeType ct, PetscInt o)
 {
   static const PetscInt pntArr[1 * 2] = {0, 0};
   /* a: swap */
@@ -767,7 +781,7 @@ static inline const PetscInt *DMPolytopeTypeGetArrangment(DMPolytopeType ct, Pet
 }
 
 /* A vertex arrangement is a vertex order */
-static inline const PetscInt *DMPolytopeTypeGetVertexArrangment(DMPolytopeType ct, PetscInt o)
+static inline const PetscInt *DMPolytopeTypeGetVertexArrangement(DMPolytopeType ct, PetscInt o)
 {
   static const PetscInt pntVerts[1]      = {0};
   static const PetscInt segVerts[2 * 2]  = {1, 0, 0, 1};

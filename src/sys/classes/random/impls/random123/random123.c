@@ -40,7 +40,7 @@ static PetscErrorCode PetscRandomSeed_Random123(PetscRandom r)
 
 static PetscReal PetscRandom123Step(PetscRandom123 *r123)
 {
-  PetscReal scale = ((PetscReal)1.) / (UINT64_MAX + ((PetscReal)1.));
+  PetscReal scale = ((PetscReal)1.) / (((PetscReal)UINT64_MAX) + ((PetscReal)1.));
   PetscReal shift = .5 * scale;
   PetscInt  mod   = (r123->count++) % 4;
   PetscReal ret;

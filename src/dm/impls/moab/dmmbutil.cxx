@@ -813,23 +813,22 @@ static PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt 
 }
 
 /*@C
-  DMMoabLoadFromFile - Creates a DM object by loading the mesh from a user specified file.
+  DMMoabLoadFromFile - Creates a `DMMOAB` object by loading the mesh from a user specified file
+  <https://www.mcs.anl.gov/~fathom/moab-docs/html/contents.html#fivetwo>
 
   Collective
 
   Input Parameters:
-+ comm        - The communicator for the DM object
++ comm        - The communicator for the `DMOAB` object
 . dim         - The spatial dimension
 . nghost      - The number of ghosted layers needed in the partitioned mesh
 . filename    - The name of the mesh file to be loaded
 - usrreadopts - The options string to read a MOAB mesh.
 
   Output Parameter:
-. dm - The DM object
+. dm - The `DM` object
 
   Level: beginner
-
-  References: Parallel Mesh Initialization: https://www.mcs.anl.gov/~fathom/moab-docs/html/contents.html#fivetwo
 
 .seealso: `DMSetType()`, `DMCreate()`, `DMMoabCreateBoxMesh()`
 @*/

@@ -429,8 +429,8 @@ static PetscErrorCode KSPGuessFischerSetModel_Fischer(KSPGuess guess, PetscInt m
 }
 
 /*MC
-    KSPGUESSFISCHER - Implements Paul Fischer's initial guess algorithms and a non-orthogonalizing variant for situations where
-    a linear system is solved repeatedly
+    KSPGUESSFISCHER - Implements Paul Fischer's initial guess algorithms {cite}`fischer1998projection`
+    and a non-orthogonalizing variant for situations where a linear system is solved repeatedly
 
     Level: intermediate
 
@@ -461,9 +461,6 @@ static PetscErrorCode KSPGuessFischerSetModel_Fischer(KSPGuess guess, PetscInt m
 
     Developer Note:
     The option `-ksp_fischer_guess <int,int>` is still available for backward compatibility
-
-  References:
-. * - Fischer, Projection techniques for iterative solution of Ax=b with successive right-hand sides, 1993, https://ntrs.nasa.gov/api/citations/19940020363/downloads/19940020363.pdf
 
 .seealso: [](ch_ksp), `KSPGuess`, `KSPGuessType`, `KSP`
 M*/

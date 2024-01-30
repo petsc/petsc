@@ -155,7 +155,9 @@ typedef struct {
   DMPlexInterpolatedFlag interpolated;
   DMPlexInterpolatedFlag interpolatedCollective;
 
+  /* Ordering */
   DMPlexReorderDefaultFlag reorderDefault; /* Reorder the DM by default */
+  DMPlexReorderDefaultFlag reorderSection; /* Reorder the local section by default */
 
   /* Distribution */
   PetscBool distDefault;      /* Distribute the DM by default */
@@ -377,6 +379,8 @@ PETSC_INTERN PetscErrorCode DMPlexReorderGetDefault_Plex(DM, DMPlexReorderDefaul
 PETSC_INTERN PetscErrorCode DMPlexReorderSetDefault_Plex(DM, DMPlexReorderDefaultFlag);
 PETSC_INTERN PetscErrorCode DMPlexGetUseCeed_Plex(DM, PetscBool *);
 PETSC_INTERN PetscErrorCode DMPlexSetUseCeed_Plex(DM, PetscBool);
+PETSC_INTERN PetscErrorCode DMPlexReorderSectionGetDefault_Plex(DM, DMPlexReorderDefaultFlag *);
+PETSC_INTERN PetscErrorCode DMPlexReorderSectionSetDefault_Plex(DM, DMPlexReorderDefaultFlag);
 
 #if 1
 static inline PetscInt DihedralInvert(PetscInt N, PetscInt a)
@@ -463,6 +467,7 @@ PETSC_EXTERN PetscInt       DMPolytopeConvertNewOrientation_Internal(DMPolytopeT
 PETSC_EXTERN PetscInt       DMPolytopeConvertOldOrientation_Internal(DMPolytopeType, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexConvertOldOrientations_Internal(DM);
 
+PETSC_EXTERN PetscErrorCode DMPlexComputeIntegral_Internal(DM, Vec, PetscInt, PetscInt, PetscScalar *, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeResidual_Internal(DM, PetscFormKey, IS, PetscReal, Vec, Vec, PetscReal, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM, PetscFormKey[], IS, PetscReal, Vec, Vec, PetscReal, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeJacobian_Internal(DM, PetscFormKey, IS, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
@@ -814,6 +819,8 @@ PETSC_EXTERN PetscErrorCode DMPlexBasisTransformPointTensor_Internal(DM, DM, Vec
 PETSC_INTERN PetscErrorCode DMPlexBasisTransformApplyReal_Internal(DM, const PetscReal[], PetscBool, PetscInt, const PetscReal *, PetscReal *, void *);
 PETSC_INTERN PetscErrorCode DMPlexBasisTransformApply_Internal(DM, const PetscReal[], PetscBool, PetscInt, const PetscScalar *, PetscScalar *, void *);
 PETSC_INTERN PetscErrorCode DMCreateNeumannOverlap_Plex(DM, IS *, Mat *, PetscErrorCode (**)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void *), void **);
+PETSC_INTERN PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM, PetscInt, PetscInt, DMLabel, PetscBool);
+PETSC_INTERN PetscErrorCode DMPlexDistributeOverlap_Internal(DM, PetscInt, MPI_Comm, const char *, PetscSF *, DM *);
 
 PETSC_INTERN PetscErrorCode DMPeriodicCoordinateSetUp_Internal(DM);
 
@@ -834,3 +841,13 @@ PETSC_INTERN PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer);
 PETSC_INTERN PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer);
 PETSC_INTERN PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm);
 PETSC_INTERN PetscErrorCode DMCreateSuperDM_Plex(DM dms[], PetscInt len, IS **is, DM *superdm);
+PETSC_INTERN PetscErrorCode DMCreateDomainDecompositionScatters_Plex(DM, PetscInt, DM *, VecScatter **, VecScatter **, VecScatter **);
+PETSC_INTERN PetscErrorCode DMCreateDomainDecomposition_Plex(DM, PetscInt *, char ***, IS **, IS **, DM **);
+PETSC_INTERN PetscErrorCode DMPlexCreateSectionPermutation_Internal(DM dm, IS *permutation, PetscBT *blockStarts);
+
+// Coordinate mapping functions
+PETSC_INTERN void coordMap_identity(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);
+PETSC_INTERN void coordMap_shear(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);
+PETSC_INTERN void coordMap_flare(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);
+PETSC_INTERN void coordMap_annulus(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);
+PETSC_INTERN void coordMap_shell(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);

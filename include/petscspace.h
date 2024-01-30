@@ -26,12 +26,12 @@ PETSC_EXTERN PetscClassId PETSCSPACE_CLASSID;
 
   Values:
 +  `PETSCSPACEPOLYNOMIAL` - a polynomial space, e.g. P1 is the space of linear polynomials
-.  `PETSCSPACEPTRIMMED` - a trimmed polynomial space
-.  `PETSCSPACETENSOR` - a space consisting of the tensor product of two or more spaces
-.  `PETSCSPACESUM` - a direct or a concatenation sum
-.  `PETSCSPACEPOINT` - functions defined by values on a set of quadrature points
-.  `PETSCSPACESUBSPACE` - some kind of subspace, no idea what
--  `PETSCSPACEWXY` - space that encapsulates the Wheeler-Xu-Yotov enrichments
+.  `PETSCSPACEPTRIMMED`   - a trimmed polynomial space
+.  `PETSCSPACETENSOR`     - a space consisting of the tensor product of two or more spaces
+.  `PETSCSPACESUM`        - a direct or a concatenation sum
+.  `PETSCSPACEPOINT`      - functions defined by values on a set of quadrature points
+.  `PETSCSPACESUBSPACE`   - some kind of subspace, no idea what
+-  `PETSCSPACEWXY`        - space that encapsulates the Wheeler-Xu-Yotov enrichments
 
   Level: beginner
 

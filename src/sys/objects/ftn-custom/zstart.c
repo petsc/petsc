@@ -150,7 +150,7 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc, char ***argv)
   PetscCallMPI(MPI_Bcast(argc, 1, MPI_INT, 0, PETSC_COMM_WORLD));
 
   /* PetscTrMalloc() not yet set, so don't use PetscMalloc() */
-  PetscCall(PetscMallocAlign((*argc + 1) * (warg * sizeof(char) + sizeof(char *)), PETSC_FALSE, 0, 0, 0, (void **)argv));
+  PetscCall(PetscMallocAlign((*argc + 1) * (warg * sizeof(char) + sizeof(char *)), PETSC_FALSE, 0, NULL, NULL, (void **)argv));
   (*argv)[0] = (char *)(*argv + *argc + 1);
 
   if (rank == 0) {
@@ -291,7 +291,7 @@ PETSC_EXTERN void petscinitializef_(char *filename, char *help, PetscBool *reada
 PETSC_EXTERN void petscfinalize_(PetscErrorCode *ierr)
 {
   /* was malloced with PetscMallocAlign() so free the same way */
-  *ierr = PetscFreeAlign(PetscGlobalArgs, 0, 0, 0);
+  *ierr = PetscFreeAlign(PetscGlobalArgs, 0, NULL, NULL);
   if (*ierr) {
     (void)(*PetscErrorPrintf)("PetscFinalize:Freeing args\n");
     return;

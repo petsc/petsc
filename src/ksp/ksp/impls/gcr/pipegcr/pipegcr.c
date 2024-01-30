@@ -1,4 +1,4 @@
-#include "petscsys.h"
+#include <petscsys.h>
 #include <../src/ksp/ksp/impls/gcr/pipegcr/pipegcrimpl.h> /*I  "petscksp.h"  I*/
 
 static PetscBool  cited      = PETSC_FALSE;
@@ -708,7 +708,7 @@ PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP ksp
 }
 
 /*MC
-  KSPPIPEGCR - Implements a Pipelined Generalized Conjugate Residual method. [](sec_flexibleksp). [](sec_pipelineksp)
+  KSPPIPEGCR - Implements a Pipelined Generalized Conjugate Residual method {cite}`sananschneppmay2016`. [](sec_flexibleksp). [](sec_pipelineksp)
 
   Options Database Keys:
 +   -ksp_pipegcr_mmax <N>  - the max number of Krylov directions to orthogonalize against
@@ -739,10 +739,6 @@ PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP ksp
 
   Contributed by:
   Sascha M. Schnepp and Patrick Sanan
-
-  Reference:
-. * - P. Sanan, S.M. Schnepp, and D.A. May, "Pipelined, Flexible Krylov Subspace Methods,"
-    SIAM Journal on Scientific Computing 2016 38:5, C441-C470, DOI: 10.1137/15M1049130
 
 .seealso: [](ch_ksp), [](sec_flexibleksp), [](sec_pipelineksp), [](doc_faq_pipelined), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
           `KSPPIPEFGMRES`, `KSPPIPECG`, `KSPPIPECR`, `KSPPIPEFCG`, `KSPPIPEGCRSetTruncationType()`, `KSPPIPEGCRSetNprealloc()`, `KSPPIPEGCRSetUnrollW()`, `KSPPIPEGCRSetMmax()`,

@@ -6,10 +6,7 @@
 # compare against C versions of the same kernels.
 #requiresdefine   'PETSC_USE_FORTRAN_KERNELS'
 
-LIBBASE  = libpetscvec
-MANSEC   = Sys
+MANSEC = Sys
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules_doc.mk
-
-

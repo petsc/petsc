@@ -220,7 +220,7 @@ static PetscErrorCode PetscFECreatePointTrace_Vector(PetscFE fe, PetscInt refPoi
 PETSC_INTERN PetscErrorCode PetscFEIntegrate_Basic(PetscDS, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
 PETSC_INTERN PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS, PetscInt, PetscBdPointFunc, PetscInt, PetscFEGeom *, const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
 PETSC_INTERN PetscErrorCode PetscFEIntegrateHybridResidual_Basic(PetscDS, PetscDS, PetscFormKey, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscScalar[]);
-PETSC_INTERN PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS, PetscWeakForm, PetscFormKey, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscReal, PetscScalar[]);
+PETSC_INTERN PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS, PetscWeakForm, PetscFEJacobianType, PetscFormKey, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscReal, PetscScalar[]);
 PETSC_INTERN PetscErrorCode PetscFEIntegrateHybridJacobian_Basic(PetscDS, PetscDS, PetscFEJacobianType, PetscFormKey, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscReal, PetscScalar[]);
 
 static PetscErrorCode PetscFEInitialize_Vector(PetscFE fe)

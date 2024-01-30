@@ -233,11 +233,8 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
     IPf_sz_glb = ipf_offset[num_grids];
     IPf_sz_tot = IPf_sz_glb * ctx->batch_sz;
     // prep COO
-    {
-      PetscCall(PetscMalloc1(ctx->SData_d.coo_size, &coo_vals)); // allocate every time?
-      PetscCall(PetscInfo(ctx->plex[0], "COO Allocate %" PetscInt_FMT " values\n", (PetscInt)ctx->SData_d.coo_size));
-    }
-    if (shift == 0.0) { /* compute dynamic data f and df and init data for Jacobian */
+    PetscCall(PetscMalloc1(ctx->SData_d.coo_size, &coo_vals)); // allocate every time?
+    if (shift == 0.0) {                                        /* compute dynamic data f and df and init data for Jacobian */
 #if defined(PETSC_HAVE_THREADSAFETY)
       double starttime, endtime;
       starttime = MPI_Wtime();
@@ -815,7 +812,7 @@ static PetscErrorCode maxwellian(PetscInt dim, PetscReal time, const PetscReal x
 . time    - Current time
 . temps   - Temperatures of each species (global)
 . ns      - Number density of each species (global)
-. grid    - index into current grid - just used for offset into temp and ns
+. grid    - index into current grid - just used for offset into `temp` and `ns`
 . b_id    - batch index
 . n_batch - number of batches
 - actx    - Landau context
@@ -824,8 +821,6 @@ static PetscErrorCode maxwellian(PetscInt dim, PetscReal time, const PetscReal x
 . X - The state (local to this grid)
 
   Level: beginner
-
- .keywords: mesh
 
 .seealso: `DMPlexLandauCreateVelocitySpace()`
  @*/
@@ -870,7 +865,6 @@ PetscErrorCode DMPlexLandauAddMaxwellians(DM dm, Vec X, PetscReal time, PetscRea
 
  Level: beginner
 
- .keywords: mesh
 .seealso: `DMPlexLandauCreateVelocitySpace()`, `DMPlexLandauAddMaxwellians()`
  */
 static PetscErrorCode LandauSetInitialCondition(DM dm, Vec X, PetscInt grid, PetscInt b_id, PetscInt n_batch, void *actx)
@@ -1917,7 +1911,7 @@ static PetscErrorCode LandauCreateJacobianMatrix(MPI_Comm comm, Vec X, IS grid_b
 
 PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat);
 /*@C
-  DMPlexLandauCreateVelocitySpace - Create a DMPlex velocity space mesh
+  DMPlexLandauCreateVelocitySpace - Create a `DMPLEX` velocity space mesh
 
   Collective
 
@@ -1927,13 +1921,11 @@ PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat);
 - prefix - prefix for options (not tested)
 
   Output Parameters:
-+ pack - The DM object representing the mesh
++ pack - The `DM` object representing the mesh
 . X    - A vector (user destroys)
 - J    - Optional matrix (object destroys)
 
   Level: beginner
-
- .keywords: mesh
 
 .seealso: `DMPlexCreate()`, `DMPlexLandauDestroyVelocitySpace()`
  @*/
@@ -2089,7 +2081,7 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
   Collective
 
   Input Parameters:
-+ pack     - the DMComposite
++ pack     - the `DMCOMPOSITE`
 . func     - call back function
 - user_ctx - user context
 
@@ -2097,8 +2089,6 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
 . X - Vector to data to
 
   Level: advanced
-
- .keywords: mesh
 
 .seealso: `DMPlexLandauCreateVelocitySpace()`
  @*/
@@ -2142,16 +2132,14 @@ PetscErrorCode DMPlexLandauAccess(DM pack, Vec X, PetscErrorCode (*func)(DM, Vec
 }
 
 /*@
-  DMPlexLandauDestroyVelocitySpace - Destroy a DMPlex velocity space mesh
+  DMPlexLandauDestroyVelocitySpace - Destroy a `DMPLEX` velocity space mesh
 
   Collective
 
   Input/Output Parameters:
-. dm - the dm to destroy
+. dm - the `DM` to destroy
 
   Level: beginner
-
- .keywords: mesh
 
 .seealso: `DMPlexLandauCreateVelocitySpace()`
  @*/
@@ -2276,8 +2264,6 @@ static void f0_s_rv2(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt u
 - stepi - current step to print
 
   Level: beginner
-
- .keywords: mesh
 
 .seealso: `DMPlexLandauCreateVelocitySpace()`
  @*/
@@ -2437,14 +2423,12 @@ PetscErrorCode DMPlexLandauPrintNorms(Vec X, PetscInt stepi)
   Collective
 
   Input Parameter:
-. pack - the DM object. Puts matrix in Landau context M field
+. pack - the `DM` object. Puts matrix in Landau context M field
 
   Output Parameter:
-. Amat - The mass matrix (optional), mass matrix is added to the DM context
+. Amat - The mass matrix (optional), mass matrix is added to the `DM` context
 
   Level: beginner
-
- .keywords: mesh
 
 .seealso: `DMPlexLandauCreateVelocitySpace()`
  @*/
@@ -2548,7 +2532,7 @@ PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat)
 }
 
 /*@
-  DMPlexLandauIFunction - TS residual calculation, confusingly this computes the Jacobian w/o mass
+  DMPlexLandauIFunction - `TS` residual calculation, confusingly this computes the Jacobian w/o mass
 
   Collective
 
@@ -2563,8 +2547,6 @@ PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat)
 . F - The residual
 
   Level: beginner
-
- .keywords: mesh
 
 .seealso: `DMPlexLandauCreateVelocitySpace()`, `DMPlexLandauIJacobian()`
  @*/
@@ -2591,7 +2573,6 @@ PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t
   PetscCall(DMGetDimension(pack, &dim));
   PetscCall(PetscObjectStateGet((PetscObject)ctx->J, &state));
   if (state != ctx->norm_state) {
-    PetscCall(PetscInfo(ts, "Create Landau Jacobian t=%g J.state %" PetscInt64_FMT " --> %" PetscInt64_FMT "\n", (double)time_dummy, ctx->norm_state, state));
     PetscCall(MatZeroEntries(ctx->J));
     PetscCall(LandauFormJacobian_Internal(X, ctx->J, dim, 0.0, (void *)ctx));
     PetscCall(MatViewFromOptions(ctx->J, NULL, "-dm_landau_jacobian_view"));
@@ -2620,7 +2601,7 @@ PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t
 }
 
 /*@
-  DMPlexLandauIJacobian - TS Jacobian construction, confusingly this adds mass
+  DMPlexLandauIJacobian - `TS` Jacobian construction, confusingly this adds mass
 
   Collective
 
@@ -2637,8 +2618,6 @@ PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t
 - Pmat - same as Amat
 
   Level: beginner
-
- .keywords: mesh
 
 .seealso: `DMPlexLandauCreateVelocitySpace()`, `DMPlexLandauIFunction()`
  @*/
@@ -2665,7 +2644,6 @@ PetscErrorCode DMPlexLandauIJacobian(TS ts, PetscReal time_dummy, Vec X, Vec U_t
 #if defined(PETSC_HAVE_THREADSAFETY)
   starttime = MPI_Wtime();
 #endif
-  PetscCall(PetscInfo(ts, "Adding mass to Jacobian t=%g, shift=%g\n", (double)time_dummy, (double)shift));
   PetscCheck(shift != 0.0, ctx->comm, PETSC_ERR_PLIB, "zero shift");
   PetscCall(PetscObjectStateGet((PetscObject)ctx->J, &state));
   PetscCheck(state == ctx->norm_state, ctx->comm, PETSC_ERR_PLIB, "wrong state, %" PetscInt64_FMT " %" PetscInt64_FMT "", ctx->norm_state, state);

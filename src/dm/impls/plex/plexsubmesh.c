@@ -47,9 +47,9 @@ static PetscErrorCode DMPlexGetTensorPrismBounds_Internal(DM dm, PetscInt dim, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, PetscInt cellHeight, DMLabel label)
+PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, PetscInt cellHeight, DMLabel label, PetscBool missing_only)
 {
-  PetscInt           depth, pStart, pEnd, fStart, fEnd, f, supportSize, nroots = -1, nleaves = -1;
+  PetscInt           depth, pStart, pEnd, fStart, fEnd, f, supportSize, nroots = -1, nleaves = -1, defval;
   PetscSF            sf;
   const PetscSFNode *iremote = NULL;
   const PetscInt    *ilocal  = NULL;
@@ -66,8 +66,9 @@ static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, Pets
     fStart = 0;
     fEnd   = 0;
   }
+  PetscCall(DMLabelGetDefaultValue(label, &defval));
   PetscCall(PetscCalloc1(pEnd - pStart, &leafData));
-  leafData -= pStart;
+  leafData = PetscSafePointerPlusOffset(leafData, -pStart);
   PetscCall(DMGetPointSF(dm, &sf));
   if (sf) PetscCall(PetscSFGetGraph(sf, &nroots, &nleaves, &ilocal, &iremote));
   if (sf && nroots >= 0) {
@@ -135,6 +136,7 @@ static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, Pets
         PetscInt *closure = NULL;
         PetscInt  clSize, cl, cval;
 
+        PetscAssert(!missing_only, PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented");
         PetscCall(DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &clSize, &closure));
         for (cl = 0; cl < clSize * 2; cl += 2) {
           PetscCall(DMLabelGetValue(label, closure[cl], &cval));
@@ -145,14 +147,21 @@ static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, Pets
         if (cl == clSize * 2) PetscCall(DMLabelSetValue(label, f, 1));
         PetscCall(DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &clSize, &closure));
       } else {
-        PetscCall(DMLabelSetValue(label, f, val));
+        if (missing_only) {
+          PetscInt fval;
+          PetscCall(DMLabelGetValue(label, f, &fval));
+          if (fval != defval) PetscCall(DMLabelClearValue(label, f, fval));
+          else PetscCall(DMLabelSetValue(label, f, val));
+        } else {
+          PetscCall(DMLabelSetValue(label, f, val));
+        }
       }
     } else {
       /* TODO: See the above comment on DMForest */
       /* PetscCheck(leafData[f] == 2, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid facet support size (%" PetscInt_FMT ") on facet (%" PetscInt_FMT ")", leafData[f], f); */
     }
   }
-  leafData += pStart;
+  leafData = PetscSafePointerPlusOffset(leafData, pStart);
   PetscCall(PetscFree(leafData));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -180,13 +189,16 @@ static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, Pets
 @*/
 PetscErrorCode DMPlexMarkBoundaryFaces(DM dm, PetscInt val, DMLabel label)
 {
+  DM                     plex;
   DMPlexInterpolatedFlag flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(DMPlexIsInterpolated(dm, &flg));
+  PetscCall(DMConvert(dm, DMPLEX, &plex));
+  PetscCall(DMPlexIsInterpolated(plex, &flg));
   PetscCheck(flg == DMPLEX_INTERPOLATED_FULL, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "DM is not fully interpolated on this rank");
-  PetscCall(DMPlexMarkBoundaryFaces_Internal(dm, val, 0, label));
+  PetscCall(DMPlexMarkBoundaryFaces_Internal(plex, val, 0, label, PETSC_FALSE));
+  PetscCall(DMDestroy(&plex));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -330,17 +342,18 @@ PetscErrorCode DMPlexLabelAddCells(DM dm, DMLabel label)
     for (p = 0; p < numPoints; ++p) {
       const PetscInt point   = points[p];
       PetscInt      *closure = NULL;
-      PetscInt       closureSize, cl, h, pStart, pEnd, cStart, cEnd;
+      PetscInt       closureSize, cl, h, cStart, cEnd;
+      DMPolytopeType ct;
 
       // If the point is a hybrid, allow hybrid cells
+      PetscCall(DMPlexGetCellType(dm, point, &ct));
       PetscCall(DMPlexGetPointHeight(dm, point, &h));
-      PetscCall(DMPlexGetSimplexOrBoxCells(dm, h, &pStart, &pEnd));
-      if (point >= pStart && point < pEnd) {
-        cStart = csStart;
-        cEnd   = csEnd;
-      } else {
+      if (DMPolytopeTypeIsHybrid(ct)) {
         cStart = chStart;
         cEnd   = chEnd;
+      } else {
+        cStart = csStart;
+        cEnd   = csEnd;
       }
 
       PetscCall(DMPlexGetTransitiveClosure(dm, points[p], PETSC_FALSE, &closureSize, &closure));
@@ -1563,10 +1576,10 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
         }
         /* Cohesive cell:    Old and new split face, then new cohesive faces */
         {
-          const PetscInt No = DMPolytopeTypeGetNumArrangments(ct) / 2;
+          const PetscInt No = DMPolytopeTypeGetNumArrangements(ct) / 2;
           PetscCheck((coneONew[0] >= -No) && (coneONew[0] < No), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid %s orientation %" PetscInt_FMT, DMPolytopeTypes[ct], coneONew[0]);
         }
-        const PetscInt *arr = DMPolytopeTypeGetArrangment(ct, coneONew[0]);
+        const PetscInt *arr = DMPolytopeTypeGetArrangement(ct, coneONew[0]);
 
         coneNew[0]  = newp; /* Extracted negative side orientation above */
         coneNew[1]  = splitp;

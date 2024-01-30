@@ -281,13 +281,13 @@ shared libraries and run with --known-mpi-shared-libraries=1')
       self.logWrite('Unable to run '+self.mpiexec+' with option "-n 1 printenv"\nThis could be ok, some MPI implementations such as SGI produce a non-zero status with non-MPI programs\n'+out+err)
     else:
       if out.find('MPIR_CVAR_CH3') > -1:
-        if hasattr(self,'ompi_major_version'): raise RuntimeError("Your libraries are from OpenMPI but it appears your mpiexec is from MPICH");
+        if hasattr(self,'ompi_major_version'): raise RuntimeError("Your libraries are from Open MPI but it appears your mpiexec is from MPICH");
         self.addDefine('HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE', 'MPIR_CVAR_CH3')
       elif  out.find('MPIR_CVAR_CH3') > -1:
-        if hasattr(self,'ompi_major_version'): raise RuntimeError("Your libraries are from OpenMPI but it appears your mpiexec is from MPICH");
+        if hasattr(self,'ompi_major_version'): raise RuntimeError("Your libraries are from Open MPI but it appears your mpiexec is from MPICH");
         self.addDefine('HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE', 'MPICH')
       elif out.find('OMPI_COMM_WORLD_SIZE') > -1:
-        if hasattr(self,'mpich_numversion'): raise RuntimeError("Your libraries are from MPICH but it appears your mpiexec is from OpenMPI");
+        if hasattr(self,'mpich_numversion'): raise RuntimeError("Your libraries are from MPICH but it appears your mpiexec is from Open MPI");
         self.addDefine('HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE', 'OMP')
     if hasattr(self,'isNecMPI'):
       (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -n 1 -V /usr/bin/true', checkCommand = noCheck, timeout = 120, threads = 1, log = self.log)
@@ -349,7 +349,7 @@ shared libraries and run with --known-mpi-shared-libraries=1')
                 self.logPrint("Exception: while running ping skipping ping check\n")
 
               if not hostnameworks:
-                # Note: host may not work on MacOS, this is normal
+                # Note: host may not work on macOS, this is normal
                 self.getExecutable('host')
                 if hasattr(self,'host'):
                   try:
@@ -499,7 +499,7 @@ Unable to run hostname to check the network')
       self.addDefine('HAVE_MPI_NEIGHBORHOOD_COLLECTIVES',1)
     cuda_aware = 0
     if hasattr(self, 'ompi_major_version'):
-      openmpi_cuda_test = '#include<mpi.h>\n #include <mpi-ext.h>\n #if defined(MPIX_CUDA_AWARE_SUPPORT) && MPIX_CUDA_AWARE_SUPPORT\n #else\n #error This OpenMPI is not CUDA-aware\n #endif\n'
+      openmpi_cuda_test = '#include<mpi.h>\n #include <mpi-ext.h>\n #if defined(MPIX_CUDA_AWARE_SUPPORT) && MPIX_CUDA_AWARE_SUPPORT\n #else\n #error This Open MPI is not CUDA-aware\n #endif\n'
       if self.checkCompile(openmpi_cuda_test):
         cuda_aware = 1
     elif hasattr(self, 'mpich_numversion'):
@@ -558,7 +558,7 @@ Unable to run hostname to check the network')
     return
 
   def configureMPIX(self):
-    '''Check for experimental functions added by MPICH or OpenMPI as MPIX'''
+    '''Check for experimental functions added by MPICH or Open MPI as MPIX'''
     # mpich-4.2 has a bug fix (PR6454). Without it, we could not use MPIX stream
     if (hasattr(self, 'mpich_numversion') and int(self.mpich_numversion) >= 40200000):
       oldFlags = self.compilers.CPPFLAGS
@@ -640,11 +640,11 @@ Unable to run hostname to check the network')
     return
 
   def checkDownload(self):
-    '''Check if we should download MPICH or OpenMPI'''
+    '''Check if we should download MPICH or Open MPI'''
     if 'download-mpi' in self.argDB and self.argDB['download-mpi']:
       raise RuntimeError('Option --download-mpi does not exist! Use --download-mpich or --download-openmpi instead.')
     if self.argDB['download-mpich'] and self.argDB['download-openmpi']:
-      raise RuntimeError('Cannot install more than one of OpenMPI or  MPICH for a single configuration. \nUse different PETSC_ARCH if you want to be able to switch between two')
+      raise RuntimeError('Cannot install more than one of Open MPI or  MPICH for a single configuration. \nUse different PETSC_ARCH if you want to be able to switch between two')
     return None
 
   def SGIMPICheck(self):
@@ -764,7 +764,7 @@ Unable to run hostname to check the network')
       self.isNecMPI = 1
       self.addDefine('HAVE_NECMPI',1)
 
-    # IBM Spectrum MPI is derived from OpenMPI, we do not yet have specific tests for it
+    # IBM Spectrum MPI is derived from Open MPI, we do not yet have specific tests for it
     # https://www.ibm.com/us-en/marketplace/spectrum-mpi
     openmpi_test = '#include <mpi.h>\nint ompi_major = OMPI_MAJOR_VERSION;\nint ompi_minor = OMPI_MINOR_VERSION;\nint ompi_release = OMPI_RELEASE_VERSION;\n'
     if self.checkCompile(openmpi_test):
@@ -782,7 +782,7 @@ Unable to run hostname to check the network')
         self.mpi_pkg_version = '  OMPI_VERSION: '+ompi_major_version+'.'+ompi_minor_version+'.'+ompi_release_version+'\n'
         MPI_VER = '  OMPI_VERSION: '+ompi_major_version+'.'+ompi_minor_version+'.'+ompi_release_version
       except:
-        self.logPrint('Unable to parse OpenMPI version from header. Probably a buggy preprocessor')
+        self.logPrint('Unable to parse Open MPI version from header. Probably a buggy preprocessor')
     if MPI_VER:
       self.compilers.CPPFLAGS = oldFlags
       self.mpi_pkg_version = MPI_VER+'\n'

@@ -2227,7 +2227,7 @@ PetscErrorCode SNESPicardComputeJacobian(SNES snes, Vec x1, Mat J, Mat B, void *
 }
 
 /*@C
-  SNESSetPicard - Use `SNES` to solve the system A(x) x = bp(x) + b via a Picard type iteration (Picard linearization)
+  SNESSetPicard - Use `SNES` to solve the system $A(x) x = bp(x) + b $ via a Picard type iteration (Picard linearization)
 
   Logically Collective
 
@@ -2248,19 +2248,19 @@ PetscErrorCode SNESPicardComputeJacobian(SNES snes, Vec x1, Mat J, Mat B, void *
 
   One can call `SNESSetPicard()` or `SNESSetFunction()` (and possibly `SNESSetJacobian()`) but cannot call both
 
-  Solves the equation A(x) x = bp(x) - b via the defect correction algorithm A(x^{n}) (x^{n+1} - x^{n}) = bp(x^{n}) + b - A(x^{n})x^{n}.
-  When an exact solver is used this corresponds to the "classic" Picard A(x^{n}) x^{n+1} = bp(x^{n}) + b iteration.
+  Solves the equation $A(x) x = bp(x) - b$ via the defect correction algorithm $A(x^{n}) (x^{n+1} - x^{n}) = bp(x^{n}) + b - A(x^{n})x^{n}$.
+  When an exact solver is used this corresponds to the "classic" Picard $A(x^{n}) x^{n+1} = bp(x^{n}) + b$ iteration.
 
   Run with `-snes_mf_operator` to solve the system with Newton's method using A(x^{n}) to construct the preconditioner.
 
   We implement the defect correction form of the Picard iteration because it converges much more generally when inexact linear solvers are used then
-  the direct Picard iteration A(x^n) x^{n+1} = bp(x^n) + b
+  the direct Picard iteration $A(x^n) x^{n+1} = bp(x^n) + b$
 
   There is some controversity over the definition of a Picard iteration for nonlinear systems but almost everyone agrees that it involves a linear solve and some
-  believe it is the iteration  A(x^{n}) x^{n+1} = b(x^{n}) hence we use the name Picard. If anyone has an authoritative  reference that defines the Picard iteration
-  different please contact us at petsc-dev@mcs.anl.gov and we'll have an entirely new argument :-).
+  believe it is the iteration  $A(x^{n}) x^{n+1} = b(x^{n})$ hence we use the name Picard. If anyone has an authoritative  reference that defines the Picard iteration
+  different please contact us at petsc-dev@mcs.anl.gov and we'll have an entirely new argument \:-).
 
-  When used with `-snes_mf_operator` this will run matrix-free Newton's method where the matrix-vector product is of the true Jacobian of A(x)x - bp(x) -b and
+  When used with `-snes_mf_operator` this will run matrix-free Newton's method where the matrix-vector product is of the true Jacobian of $A(x)x - bp(x) - b$ and
   A(x^{n}) is used to build the preconditioner
 
   When used with `-snes_fd` this will compute the true Jacobian (very slowly one column at at time) and thus represent Newton's method.
@@ -2537,10 +2537,128 @@ PetscErrorCode SNESComputeNGS(SNES snes, Vec b, Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode SNESComputeFunction_FD(SNES snes, Vec Xin, Vec G)
+{
+  Vec          X;
+  PetscScalar *g;
+  PetscReal    f, f2;
+  PetscInt     low, high, N, i;
+  PetscBool    flg;
+  PetscReal    h = .5 * PETSC_SQRT_MACHINE_EPSILON;
+
+  PetscFunctionBegin;
+  PetscCall(PetscOptionsGetReal(((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_fd_delta", &h, &flg));
+  PetscCall(VecDuplicate(Xin, &X));
+  PetscCall(VecCopy(Xin, X));
+  PetscCall(VecGetSize(X, &N));
+  PetscCall(VecGetOwnershipRange(X, &low, &high));
+  PetscCall(VecSetOption(X, VEC_IGNORE_OFF_PROC_ENTRIES, PETSC_TRUE));
+  PetscCall(VecGetArray(G, &g));
+  for (i = 0; i < N; i++) {
+    PetscCall(VecSetValue(X, i, -h, ADD_VALUES));
+    PetscCall(VecAssemblyBegin(X));
+    PetscCall(VecAssemblyEnd(X));
+    PetscCall(SNESComputeObjective(snes, X, &f));
+    PetscCall(VecSetValue(X, i, 2.0 * h, ADD_VALUES));
+    PetscCall(VecAssemblyBegin(X));
+    PetscCall(VecAssemblyEnd(X));
+    PetscCall(SNESComputeObjective(snes, X, &f2));
+    PetscCall(VecSetValue(X, i, -h, ADD_VALUES));
+    PetscCall(VecAssemblyBegin(X));
+    PetscCall(VecAssemblyEnd(X));
+    if (i >= low && i < high) g[i - low] = (f2 - f) / (2.0 * h);
+  }
+  PetscCall(VecRestoreArray(G, &g));
+  PetscCall(VecDestroy(&X));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode SNESTestFunction(SNES snes)
+{
+  Vec               x, g1, g2, g3;
+  PetscBool         complete_print = PETSC_FALSE, test = PETSC_FALSE;
+  PetscReal         hcnorm, fdnorm, hcmax, fdmax, diffmax, diffnorm;
+  PetscScalar       dot;
+  MPI_Comm          comm;
+  PetscViewer       viewer, mviewer;
+  PetscViewerFormat format;
+  PetscInt          tabs;
+  static PetscBool  directionsprinted = PETSC_FALSE;
+  PetscErrorCode (*objective)(SNES, Vec, PetscReal *, void *);
+
+  PetscFunctionBegin;
+  PetscCall(SNESGetObjective(snes, &objective, NULL));
+  if (!objective) PetscFunctionReturn(PETSC_SUCCESS);
+
+  PetscObjectOptionsBegin((PetscObject)snes);
+  PetscCall(PetscOptionsName("-snes_test_function", "Compare hand-coded and finite difference function", "None", &test));
+  PetscCall(PetscOptionsViewer("-snes_test_function_view", "View difference between hand-coded and finite difference function element entries", "None", &mviewer, &format, &complete_print));
+  PetscOptionsEnd();
+  if (!test) {
+    if (complete_print) PetscCall(PetscViewerDestroy(&mviewer));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+
+  PetscCall(PetscObjectGetComm((PetscObject)snes, &comm));
+  PetscCall(PetscViewerASCIIGetStdout(comm, &viewer));
+  PetscCall(PetscViewerASCIIGetTab(viewer, &tabs));
+  PetscCall(PetscViewerASCIISetTab(viewer, ((PetscObject)snes)->tablevel));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "  ---------- Testing Function -------------\n"));
+  if (!complete_print && !directionsprinted) {
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Run with -snes_test_function_view and optionally -snes_test_function <threshold> to show difference\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "    of hand-coded and finite difference function entries greater than <threshold>.\n"));
+  }
+  if (!directionsprinted) {
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Testing hand-coded Function, if (for double precision runs) ||F - Ffd||/||F|| is\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "    O(1.e-8), the hand-coded Function is probably correct.\n"));
+    directionsprinted = PETSC_TRUE;
+  }
+  if (complete_print) PetscCall(PetscViewerPushFormat(mviewer, format));
+
+  PetscCall(SNESGetSolution(snes, &x));
+  PetscCall(VecDuplicate(x, &g1));
+  PetscCall(VecDuplicate(x, &g2));
+  PetscCall(VecDuplicate(x, &g3));
+  PetscCall(SNESComputeFunction(snes, x, g1));
+  PetscCall(SNESComputeFunction_FD(snes, x, g2));
+
+  PetscCall(VecNorm(g2, NORM_2, &fdnorm));
+  PetscCall(VecNorm(g1, NORM_2, &hcnorm));
+  PetscCall(VecNorm(g2, NORM_INFINITY, &fdmax));
+  PetscCall(VecNorm(g1, NORM_INFINITY, &hcmax));
+  PetscCall(VecDot(g1, g2, &dot));
+  PetscCall(VecCopy(g1, g3));
+  PetscCall(VecAXPY(g3, -1.0, g2));
+  PetscCall(VecNorm(g3, NORM_2, &diffnorm));
+  PetscCall(VecNorm(g3, NORM_INFINITY, &diffmax));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "  ||Ffd|| %g, ||F|| = %g, angle cosine = (Ffd'F)/||Ffd||||F|| = %g\n", (double)fdnorm, (double)hcnorm, (double)(PetscRealPart(dot) / (fdnorm * hcnorm))));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "  2-norm ||F - Ffd||/||F|| = %g, ||F - Ffd|| = %g\n", (double)(diffnorm / PetscMax(hcnorm, fdnorm)), (double)diffnorm));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "  max-norm ||F - Ffd||/||F|| = %g, ||F - Ffd|| = %g\n", (double)(diffmax / PetscMax(hcmax, fdmax)), (double)diffmax));
+
+  if (complete_print) {
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Hand-coded function ----------\n"));
+    PetscCall(VecView(g1, mviewer));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Finite difference function ----------\n"));
+    PetscCall(VecView(g2, mviewer));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Hand-coded minus finite-difference function ----------\n"));
+    PetscCall(VecView(g3, mviewer));
+  }
+  PetscCall(VecDestroy(&g1));
+  PetscCall(VecDestroy(&g2));
+  PetscCall(VecDestroy(&g3));
+
+  if (complete_print) {
+    PetscCall(PetscViewerPopFormat(mviewer));
+    PetscCall(PetscViewerDestroy(&mviewer));
+  }
+  PetscCall(PetscViewerASCIISetTab(viewer, tabs));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode SNESTestJacobian(SNES snes)
 {
   Mat               A, B, C, D, jacobian;
-  Vec               x = snes->vec_sol, f = snes->vec_func;
+  Vec               x = snes->vec_sol, f;
   PetscReal         nrm, gnorm;
   PetscReal         threshold = 1.e-5;
   MatType           mattype;
@@ -2560,7 +2678,6 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   PetscCall(PetscOptionsDeprecated("-snes_test_jacobian_display", "-snes_test_jacobian_view", "3.13", NULL));
   PetscCall(PetscOptionsViewer("-snes_test_jacobian_view", "View difference between hand-coded and finite difference Jacobians element entries", "None", &mviewer, &format, &complete_print));
   PetscCall(PetscOptionsDeprecated("-snes_test_jacobian_display_threshold", "-snes_test_jacobian", "3.13", "-snes_test_jacobian accepts an optional threshold (since v3.10)"));
-  /* Cannot remove the what otherwise would be redundant call to (PetscOptionsReal("-snes_test_jacobian_display_threshold") below because its usage is different than the replacement usage */
   PetscCall(PetscOptionsReal("-snes_test_jacobian_display_threshold", "Display difference between hand-coded and finite difference Jacobians which exceed input threshold", "None", threshold, &threshold, &threshold_print));
   PetscOptionsEnd();
   if (!test) PetscFunctionReturn(PETSC_SUCCESS);
@@ -2585,16 +2702,10 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   if (!flg) jacobian = snes->jacobian;
   else jacobian = snes->jacobian_pre;
 
-  if (!x) {
-    PetscCall(MatCreateVecs(jacobian, &x, NULL));
-  } else {
-    PetscCall(PetscObjectReference((PetscObject)x));
-  }
-  if (!f) {
-    PetscCall(VecDuplicate(x, &f));
-  } else {
-    PetscCall(PetscObjectReference((PetscObject)f));
-  }
+  if (!x) PetscCall(MatCreateVecs(jacobian, &x, NULL));
+  else PetscCall(PetscObjectReference((PetscObject)x));
+  PetscCall(VecDuplicate(x, &f));
+
   /* evaluate the function at this point because SNESComputeJacobianDefault() assumes that the function has been evaluated and put into snes->vec_func */
   PetscCall(SNESComputeFunction(snes, x, f));
   PetscCall(VecDestroy(&f));
@@ -2811,10 +2922,24 @@ PetscErrorCode SNESComputeJacobian(SNES snes, Vec X, Mat A, Mat B)
     PetscCall(KSPSetReusePreconditioner(snes->ksp, PETSC_FALSE));
   }
 
-  PetscCall(SNESTestJacobian(snes));
-  /* make sure user returned a correct Jacobian and preconditioner */
-  /* PetscValidHeaderSpecific(A,MAT_CLASSID,3);
-    PetscValidHeaderSpecific(B,MAT_CLASSID,4);   */
+  /* monkey business to allow testing Jacobians in multilevel solvers.
+     This is needed because the SNESTestXXX interface does not accept vectors and matrices */
+  {
+    Vec xsave            = snes->vec_sol;
+    Mat jacobiansave     = snes->jacobian;
+    Mat jacobian_presave = snes->jacobian_pre;
+
+    snes->vec_sol      = X;
+    snes->jacobian     = A;
+    snes->jacobian_pre = B;
+    PetscCall(SNESTestFunction(snes));
+    PetscCall(SNESTestJacobian(snes));
+
+    snes->vec_sol      = xsave;
+    snes->jacobian     = jacobiansave;
+    snes->jacobian_pre = jacobian_presave;
+  }
+
   {
     PetscBool flag = PETSC_FALSE, flag_draw = PETSC_FALSE, flag_contour = PETSC_FALSE, flag_operator = PETSC_FALSE;
     PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_compare_explicit", NULL, NULL, &flag));
@@ -5134,12 +5259,9 @@ PetscErrorCode SNESTestLocalMin(SNES snes)
   Note:
   The default is to use a constant relative tolerance for
   the inner linear solvers.  Alternatively, one can use the
-  Eisenstat-Walker method, where the relative convergence tolerance
+  Eisenstat-Walker method {cite}`ew96`, where the relative convergence tolerance
   is reset at each Newton iteration according progress of the nonlinear
   solver.
-
-  References:
-.  - * S. C. Eisenstat and H. F. Walker, "Choosing the forcing terms in an inexact Newton method", SISC 17 (1), pp.16-32, 1996.
 
 .seealso: [](ch_snes), `KSP`, `SNES`, `SNESKSPGetUseEW()`, `SNESKSPGetParametersEW()`, `SNESKSPSetParametersEW()`
 @*/
@@ -5563,8 +5685,12 @@ PetscErrorCode SNESGetNPC(SNES snes, SNES *pc)
     PetscCall(SNESGetOptionsPrefix(snes, &optionsprefix));
     PetscCall(SNESSetOptionsPrefix(snes->npc, optionsprefix));
     PetscCall(SNESAppendOptionsPrefix(snes->npc, "npc_"));
-    PetscCall(SNESGetApplicationContext(snes, &ctx));
-    PetscCall(SNESSetApplicationContext(snes->npc, ctx));
+    if (snes->ops->usercompute) {
+      PetscCall(SNESSetComputeApplicationContext(snes, snes->ops->usercompute, snes->ops->userdestroy));
+    } else {
+      PetscCall(SNESGetApplicationContext(snes, &ctx));
+      PetscCall(SNESSetApplicationContext(snes->npc, ctx));
+    }
     PetscCall(SNESSetCountersReset(snes->npc, PETSC_FALSE));
   }
   *pc = snes->npc;

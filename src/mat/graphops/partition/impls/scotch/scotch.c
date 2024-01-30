@@ -463,15 +463,12 @@ static PetscErrorCode MatPartitioningDestroy_PTScotch(MatPartitioning part)
 }
 
 /*MC
-   MATPARTITIONINGPTSCOTCH - Creates a partitioning context that uses the external package SCOTCH.
+   MATPARTITIONINGPTSCOTCH - Creates a partitioning context that uses the external package SCOTCH <http://www.labri.fr/perso/pelegrin/scotch/>.
 
    Level: beginner
 
-   Note:
-    See http://www.labri.fr/perso/pelegrin/scotch/
-
 .seealso: `MatPartitioningSetType()`, `MatPartitioningType`, `MatPartitioningPTScotchSetImbalance()`, `MatPartitioningPTScotchGetImbalance()`,
-          `MatPartitioningPTScotchSetStrategy()`, `MatPartitioningPTScotchGetStrategy()`
+          `MatPartitioningPTScotchSetStrategy()`, `MatPartitioningPTScotchGetStrategy()`, `MatPartitioning`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning part)

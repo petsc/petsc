@@ -1,6 +1,3 @@
-#include "petscsf.h"
-#include "petscsystypes.h"
-#include "petscvec.h"
 #include <petsc/private/sfimpl.h>                 /*I "petscsf.h" I*/
 #include <../src/vec/is/sf/impls/basic/sfbasic.h> /* for VecScatterRemap_Internal */
 #include <../src/vec/is/sf/impls/basic/sfpack.h>
@@ -933,7 +930,7 @@ PetscErrorCode VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *newsf)
     PetscMPIInt     nsend, nrecv, nreq, yrank, *sendto, *recvfrom, tag1, tag2;
     PetscInt       *slens, *rlens, count;
     PetscInt       *rxindices, *ryindices;
-    MPI_Request    *reqs, *sreqs, *rreqs = NULL;
+    MPI_Request    *reqs, *sreqs, *rreqs;
 
     /* Sorting makes code simpler, faster and also helps getting rid of many O(P) arrays, which hurt scalability at large scale
        yindices_sorted - sorted yindices
@@ -1007,7 +1004,7 @@ PetscErrorCode VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *newsf)
     PetscCall(PetscMPIIntCast((nsend + nrecv) * 2, &nreq));
     PetscCall(PetscMalloc1(nreq, &reqs));
     sreqs = reqs;
-    if (reqs) rreqs = reqs + nsend * 2;
+    rreqs = PetscSafePointerPlusOffset(reqs, nsend * 2);
 
     for (i = disp = 0; i < nrecv; i++) {
       count = rlens[i];

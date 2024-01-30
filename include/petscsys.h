@@ -95,9 +95,9 @@
   #endif
 #elif defined(PETSC_HAVE_OMPI_MAJOR_VERSION)
   #if !defined(OMPI_MAJOR_VERSION)
-    #error "PETSc was configured with OpenMPI but now appears to be compiling using a non-OpenMPI mpi.h"
+    #error "PETSc was configured with Open MPI but now appears to be compiling using a non-Open MPI mpi.h"
   #elif (OMPI_MAJOR_VERSION != PETSC_HAVE_OMPI_MAJOR_VERSION) || (OMPI_MINOR_VERSION < PETSC_HAVE_OMPI_MINOR_VERSION) || (OMPI_MINOR_VERSION == PETSC_HAVE_OMPI_MINOR_VERSION && OMPI_RELEASE_VERSION < PETSC_HAVE_OMPI_RELEASE_VERSION)
-    #error "PETSc was configured with one OpenMPI mpi.h version but now appears to be compiling using a different OpenMPI mpi.h version"
+    #error "PETSc was configured with one Open MPI mpi.h version but now appears to be compiling using a different Open MPI mpi.h version"
   #endif
 #elif defined(PETSC_HAVE_MSMPI_VERSION)
   #if !defined(MSMPI_VER)
@@ -106,7 +106,7 @@
     #error "PETSc was configured with one MSMPI mpi.h version but now appears to be compiling using a different MSMPI mpi.h version"
   #endif
 #elif defined(OMPI_MAJOR_VERSION) || defined(MPICH_NUMVERSION) || defined(MSMPI_VER)
-  #error "PETSc was configured with undetermined MPI - but now appears to be compiling using any of OpenMPI, MS-MPI or a MPICH variant"
+  #error "PETSc was configured with undetermined MPI - but now appears to be compiling using any of Open MPI, MS-MPI or a MPICH variant"
 #endif
 
 /*
@@ -218,21 +218,19 @@ M*/
 M*/
 
 /*MC
-    PETSC_DETERMINE - standard way of passing in integer or floating point parameter
-       where you wish PETSc to compute the required value.
+   PETSC_DETERMINE - standard way of passing in integer or floating point parameter where you wish PETSc to compute the required value.
 
    Level: beginner
 
    Developer Note:
    I would like to use const `PetscInt` `PETSC_DETERMINE` = `PETSC_DECIDE`; but for
-     some reason this is not allowed by the standard even though `PETSC_DECIDE` is a constant value.
+   some reason this is not allowed by the standard even though `PETSC_DECIDE` is a constant value.
 
 .seealso: `PETSC_DECIDE`, `PETSC_DEFAULT`, `PETSC_IGNORE`, `VecSetSizes()`
 M*/
 
 /*MC
-    PETSC_DEFAULT - standard way of passing in integer or floating point parameter
-       where you wish PETSc to use the default.
+   PETSC_DEFAULT - standard way of passing in integer or floating point parameter where you wish PETSc to use the default.
 
    Level: beginner
 
@@ -248,26 +246,25 @@ M*/
 #define PETSC_DEFAULT   (-2)
 
 /*MC
-    PETSC_COMM_WORLD - the equivalent of the `MPI_COMM_WORLD` communicator which represents
-           all the processes that PETSc knows about.
+   PETSC_COMM_WORLD - the equivalent of the `MPI_COMM_WORLD` communicator which represents all the processes that PETSc knows about.
 
    Level: beginner
 
    Notes:
    By default `PETSC_COMM_WORLD` and `MPI_COMM_WORLD` are identical unless you wish to
-          run PETSc on ONLY a subset of `MPI_COMM_WORLD`. In that case create your new (smaller)
-          communicator, call it, say comm, and set `PETSC_COMM_WORLD` = comm BEFORE calling
-          PetscInitialize(), but after `MPI_Init()` has been called.
+   run PETSc on ONLY a subset of `MPI_COMM_WORLD`. In that case create your new (smaller)
+   communicator, call it, say comm, and set `PETSC_COMM_WORLD` = comm BEFORE calling
+   `PetscInitialize()`, but after `MPI_Init()` has been called.
 
-          The value of `PETSC_COMM_WORLD` should never be USED/accessed before `PetscInitialize()`
-          is called because it may not have a valid value yet.
+   The value of `PETSC_COMM_WORLD` should never be used or accessed before `PetscInitialize()`
+   is called because it may not have a valid value yet.
 
 .seealso: `PETSC_COMM_SELF`
 M*/
 PETSC_EXTERN MPI_Comm PETSC_COMM_WORLD;
 
 /*MC
-    PETSC_COMM_SELF - This is always `MPI_COMM_SELF`
+   PETSC_COMM_SELF - This is always `MPI_COMM_SELF`
 
    Level: beginner
 
@@ -279,8 +276,7 @@ M*/
 #define PETSC_COMM_SELF MPI_COMM_SELF
 
 /*MC
-    PETSC_MPI_THREAD_REQUIRED - the required threading support used if PETSc initializes
-           MPI with `MPI_Init_thread()`.
+   PETSC_MPI_THREAD_REQUIRED - the required threading support used if PETSc initializes MPI with `MPI_Init_thread()`.
 
    Level: beginner
 
@@ -1089,8 +1085,8 @@ PETSC_EXTERN PetscErrorCode PetscMaxSum(MPI_Comm, const PetscInt[], PetscInt *, 
 
 #if (defined(PETSC_HAVE_REAL___FLOAT128) && !defined(PETSC_SKIP_REAL___FLOAT128)) || (defined(PETSC_HAVE_REAL___FP16) && !defined(PETSC_SKIP_REAL___FP16))
 /*MC
-    MPIU_SUM___FP16___FLOAT128 - MPI_Op that acts as a replacement for `MPI_SUM` with
-    custom `MPI_Datatype` `MPIU___FLOAT128`, `MPIU___COMPLEX128`, and `MPIU___FP16`.
+   MPIU_SUM___FP16___FLOAT128 - MPI_Op that acts as a replacement for `MPI_SUM` with
+   custom `MPI_Datatype` `MPIU___FLOAT128`, `MPIU___COMPLEX128`, and `MPIU___FP16`.
 
    Level: advanced
 
@@ -1328,15 +1324,15 @@ M*/
 #define PetscNot(a) ((a) ? PETSC_FALSE : PETSC_TRUE)
 
 /*MC
-    PetscHelpPrintf - Prints help messages.
+   PetscHelpPrintf - Prints help messages.
 
    Synopsis:
     #include <petscsys.h>
      PetscErrorCode (*PetscHelpPrintf)(MPI_Comm comm, const char format[],args);
 
-    Not Collective, only applies on MPI rank 0; No Fortran Support
+   Not Collective, only applies on MPI rank 0; No Fortran Support
 
-    Input Parameters:
+   Input Parameters:
 +  comm - the MPI communicator over which the help message is printed
 .  format - the usual printf() format string
 -  args - arguments to be printed
@@ -1344,9 +1340,9 @@ M*/
    Level: developer
 
    Notes:
-     You can change how help messages are printed by replacing the function pointer with a function that does not simply write to stdout.
+   You can change how help messages are printed by replacing the function pointer with a function that does not simply write to stdout.
 
-      To use, write your own function, for example,
+   To use, write your own function, for example,
 .vb
    PetscErrorCode mypetschelpprintf(MPI_Comm comm,const char format[],....)
    {
@@ -1354,8 +1350,11 @@ M*/
    }
 .ve
 then do the assignment
-$    PetscHelpPrintf = mypetschelpprintf;
-   You can do the assignment before `PetscInitialize()`.
+.vb
+  PetscHelpPrintf = mypetschelpprintf;
+.ve
+
+  You can do the assignment before `PetscInitialize()`.
 
   The default routine used is called `PetscHelpPrintfDefault()`.
 
@@ -1441,10 +1440,10 @@ PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt, const PetscScalar[], Petsc
    Not Collective
 
    Input Parameters:
-+  a - pointer to first element to fetch (any type but usually `PetscInt` or `PetscScalar`)
-.  n - number of elements to fetch
++  a  - pointer to first element to fetch (any type but usually `PetscInt` or `PetscScalar`)
+.  n  - number of elements to fetch
 .  rw - 1 if the memory will be written to, otherwise 0 (ignored by many processors)
--  t - temporal locality (PETSC_PREFETCH_HINT_{NTA,T0,T1,T2}), see note
+-  t  - temporal locality (PETSC_PREFETCH_HINT_{NTA,T0,T1,T2}), see note
 
    Level: developer
 
@@ -1454,9 +1453,9 @@ PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt, const PetscScalar[], Petsc
    Adopting Intel's x86/x86-64 conventions, there are four levels of temporal locality.  Not all architectures offer
    equivalent locality hints, but the following macros are always defined to their closest analogue.
 +  `PETSC_PREFETCH_HINT_NTA` - Non-temporal.  Prefetches directly to L1, evicts to memory (skips higher level cache unless it was already there when prefetched).
-.  `PETSC_PREFETCH_HINT_T0` - Fetch to all levels of cache and evict to the closest level.  Use this when the memory will be reused regularly despite necessary eviction from L1.
-.  `PETSC_PREFETCH_HINT_T1` - Fetch to level 2 and higher (not L1).
--  `PETSC_PREFETCH_HINT_T2` - Fetch to high-level cache only.  (On many systems, T0 and T1 are equivalent.)
+.  `PETSC_PREFETCH_HINT_T0`  - Fetch to all levels of cache and evict to the closest level.  Use this when the memory will be reused regularly despite necessary eviction from L1.
+.  `PETSC_PREFETCH_HINT_T1`  - Fetch to level 2 and higher (not L1).
+-  `PETSC_PREFETCH_HINT_T2`  - Fetch to high-level cache only.  (On many systems, T0 and T1 are equivalent.)
 
    This function does nothing on architectures that do not support prefetch and never errors (even if passed an invalid
    address).
@@ -1481,10 +1480,6 @@ M*/
     #define PETSC_USE_FORTRAN_KERNEL_MULTCRL
   #endif
 
-  #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJPERM)
-    #define PETSC_USE_FORTRAN_KERNEL_MULTAIJPERM
-  #endif
-
   #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
     #define PETSC_USE_FORTRAN_KERNEL_MULTAIJ
   #endif
@@ -1493,20 +1488,12 @@ M*/
     #define PETSC_USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ
   #endif
 
-  #if !defined(PETSC_USE_FORTRAN_KERNEL_NORM)
-    #define PETSC_USE_FORTRAN_KERNEL_NORM
-  #endif
-
   #if !defined(PETSC_USE_FORTRAN_KERNEL_MAXPY)
     #define PETSC_USE_FORTRAN_KERNEL_MAXPY
   #endif
 
   #if !defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
     #define PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ
-  #endif
-
-  #if !defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
-    #define PETSC_USE_FORTRAN_KERNEL_RELAXAIJ
   #endif
 
   #if !defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJ)
@@ -1551,8 +1538,8 @@ M*/
 #endif
 
 /*MC
-    MPI_Comm - the basic object used by MPI to determine which processes are involved in a
-        communication
+   MPI_Comm - the basic object used by MPI to determine which processes are involved in a
+   communication
 
    Level: beginner
 
@@ -1572,16 +1559,16 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_at_all(MPI_File, MPI_Offset, void *, 
 #endif
 
 /*@C
-    PetscIntCast - casts a `PetscInt64` (which is 64 bits in size) to a `PetscInt` (which may be 32-bits in size), generates an
-         error if the `PetscInt` is not large enough to hold the number.
+   PetscIntCast - casts a `PetscInt64` (which is 64 bits in size) to a `PetscInt` (which may be 32-bits in size), generates an
+   error if the `PetscInt` is not large enough to hold the number.
 
    Not Collective; No Fortran Support
 
    Input Parameter:
-.     a - the `PetscInt64` value
+.  a - the `PetscInt64` value
 
    Output Parameter:
-.     b - the resulting `PetscInt` value
+.  b - the resulting `PetscInt` value
 
    Level: advanced
 
@@ -1601,21 +1588,21 @@ static inline PetscErrorCode PetscIntCast(PetscInt64 a, PetscInt *b)
 }
 
 /*@C
-    PetscCountCast - casts a `PetscCount` to a `PetscInt` (which may be 32-bits in size), generates an
-         error if the `PetscInt` is not large enough to hold the number.
+   PetscCountCast - casts a `PetscCount` to a `PetscInt` (which may be 32-bits in size), generates an
+   error if the `PetscInt` is not large enough to hold the number.
 
    Not Collective; No Fortran Support
 
    Input Parameter:
-.     a - the `PetscCount` value
+.  a - the `PetscCount` value
 
    Output Parameter:
-.     b - the resulting `PetscInt` value
+.  b - the resulting `PetscInt` value
 
    Level: advanced
 
    Note:
-     If integers needed for the applications are too large to fit in 32-bit integers you can ./configure using `--with-64-bit-indices` to make `PetscInt` use 64-bit integers
+   If integers needed for the applications are too large to fit in 32-bit integers you can ./configure using `--with-64-bit-indices` to make `PetscInt` use 64-bit integers
 
 .seealso: `PetscCount`, `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscMPIIntCast()`, `PetscBLASIntCast()`, `PetscIntMultError()`, `PetscIntSumError()`, `PetscIntCast()`
 @*/
@@ -1629,16 +1616,16 @@ static inline PetscErrorCode PetscCountCast(PetscCount a, PetscInt *b)
 }
 
 /*@C
-    PetscBLASIntCast - casts a `PetscInt` (which may be 64-bits in size) to a `PetscBLASInt` (which may be 32-bits in size), generates an
-         error if the `PetscBLASInt` is not large enough to hold the number.
+   PetscBLASIntCast - casts a `PetscInt` (which may be 64-bits in size) to a `PetscBLASInt` (which may be 32-bits in size), generates an
+   error if the `PetscBLASInt` is not large enough to hold the number.
 
    Not Collective; No Fortran Support
 
    Input Parameter:
-.     a - the `PetscInt` value
+.  a - the `PetscInt` value
 
    Output Parameter:
-.     b - the resulting `PetscBLASInt` value
+.  b - the resulting `PetscBLASInt` value
 
    Level: advanced
 
@@ -1660,20 +1647,20 @@ static inline PetscErrorCode PetscBLASIntCast(PetscInt a, PetscBLASInt *b)
 }
 
 /*@C
-    PetscCuBLASIntCast - like `PetscBLASIntCast()`, but for `PetscCuBLASInt`.
+   PetscCuBLASIntCast - like `PetscBLASIntCast()`, but for `PetscCuBLASInt`.
 
    Not Collective; No Fortran Support
 
    Input Parameter:
-.     a - the `PetscInt` value
+.  a - the `PetscInt` value
 
    Output Parameter:
-.     b - the resulting `PetscCuBLASInt` value
+.  b - the resulting `PetscCuBLASInt` value
 
    Level: advanced
 
    Note:
-      Errors if the integer is negative since PETSc calls to cuBLAS and friends never need to cast negative integer inputs
+   Errors if the integer is negative since PETSc calls to cuBLAS and friends never need to cast negative integer inputs
 
 .seealso: `PetscCuBLASInt`, `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscMPIIntCast()`, `PetscIntCast()`
 @*/
@@ -1688,20 +1675,20 @@ static inline PetscErrorCode PetscCuBLASIntCast(PetscInt a, PetscCuBLASInt *b)
 }
 
 /*@C
-    PetscHipBLASIntCast - like `PetscBLASIntCast()`, but for `PetscHipBLASInt`.
+   PetscHipBLASIntCast - like `PetscBLASIntCast()`, but for `PetscHipBLASInt`.
 
    Not Collective; No Fortran Support
 
    Input Parameter:
-.     a - the `PetscInt` value
+.  a - the `PetscInt` value
 
    Output Parameter:
-.     b - the resulting `PetscHipBLASInt` value
+.  b - the resulting `PetscHipBLASInt` value
 
    Level: advanced
 
    Note:
-      Errors if the integer is negative since PETSc calls to hipBLAS and friends never need to cast negative integer inputs
+   Errors if the integer is negative since PETSc calls to hipBLAS and friends never need to cast negative integer inputs
 
 .seealso: `PetscHipBLASInt`, `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscMPIIntCast()`, `PetscIntCast()`
 @*/
@@ -1716,16 +1703,16 @@ static inline PetscErrorCode PetscHipBLASIntCast(PetscInt a, PetscHipBLASInt *b)
 }
 
 /*@C
-    PetscMPIIntCast - casts a `PetscInt` (which may be 64-bits in size) to a PetscMPIInt (which may be 32-bits in size), generates an
-         error if the `PetscMPIInt` is not large enough to hold the number.
+   PetscMPIIntCast - casts a `PetscInt` (which may be 64-bits in size) to a `PetscMPIInt` (which may be 32-bits in size), generates an
+   error if the `PetscMPIInt` is not large enough to hold the number.
 
    Not Collective; No Fortran Support
 
    Input Parameter:
-.     a - the `PetscInt` value
+.  a - the `PetscInt` value
 
    Output Parameter:
-.     b - the resulting `PetscMPIInt` value
+.  b - the resulting `PetscMPIInt` value
 
    Level: advanced
 
@@ -1765,7 +1752,7 @@ static inline PetscErrorCode PetscMPIIntCast(PetscInt a, PetscMPIInt *b)
   Use `PetscIntMultError()` to compute the product of two `PetscInt` if you wish to generate an
   error if the result will not fit in a `PetscInt`.
 
-  Developers Notes:
+  Developer Notes:
   We currently assume that `PetscInt` addition can never overflow, this is obviously wrong but
   requires many more checks.
 
@@ -1782,17 +1769,16 @@ static inline PetscInt PetscRealIntMultTruncate(PetscReal a, PetscInt b)
 }
 
 /*@C
-
    PetscIntMultTruncate - Computes the product of two positive `PetscInt` and truncates the value to slightly less than the maximal possible value
 
    Not Collective; No Fortran Support
 
    Input Parameters:
-+     a - the PetscInt value
--     b - the second value
++  a - the `PetscInt` value
+-  b - the second value
 
    Returns:
-      the result as a `PetscInt` value
+   The result as a `PetscInt` value
 
    Level: advanced
 
@@ -1803,7 +1789,7 @@ static inline PetscInt PetscRealIntMultTruncate(PetscReal a, PetscInt b)
 
    Use `PetscIntMultError()` to compute the product of two `PetscInt` if you wish to generate an error if the result will not fit in a `PetscInt`
 
-   Developers Notes:
+   Developer Notes:
    We currently assume that `PetscInt` addition can never overflow, this is obviously wrong but requires many more checks.
 
    This is used where we compute approximate sizes for workspace and need to insure the workspace is index-able.
@@ -1819,17 +1805,16 @@ static inline PetscInt PetscIntMultTruncate(PetscInt a, PetscInt b)
 }
 
 /*@C
-
    PetscIntSumTruncate - Computes the sum of two positive `PetscInt` and truncates the value to slightly less than the maximal possible value
 
    Not Collective; No Fortran Support
 
    Input Parameters:
-+     a - the `PetscInt` value
--     b - the second value
++  a - the `PetscInt` value
+-  b - the second value
 
    Returns:
-     the result as a `PetscInt` value
+   The result as a `PetscInt` value
 
    Level: advanced
 
@@ -1840,7 +1825,7 @@ static inline PetscInt PetscIntMultTruncate(PetscInt a, PetscInt b)
 
    Use `PetscIntMultError()` to compute the product of two `PetscInt` if you wish to generate an error if the result will not fit in a `PetscInt`
 
-   Developers Note:
+   Developer Note:
    This is used where we compute approximate sizes for workspace and need to insure the workspace is index-able.
 
 .seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscInt64Mult()`, `PetscIntMultError()`
@@ -1853,17 +1838,16 @@ static inline PetscInt PetscIntSumTruncate(PetscInt a, PetscInt b)
 }
 
 /*@C
-
    PetscIntMultError - Computes the product of two positive `PetscInt` and generates an error with overflow.
 
    Not Collective; No Fortran Support
 
    Input Parameters:
-+     a - the `PetscInt` value
--     b - the second value
++  a - the `PetscInt` value
+-  b - the second value
 
    Output Parameter:
-.     result - the result as a `PetscInt` value, or `NULL` if you do not want the result, you just want to check if it overflows
+.  result - the result as a `PetscInt` value, or `NULL` if you do not want the result, you just want to check if it overflows
 
    Level: advanced
 
@@ -1872,7 +1856,7 @@ static inline PetscInt PetscIntSumTruncate(PetscInt a, PetscInt b)
 
    Use `PetscIntMultTruncate()` to compute the product of two `PetscInt` and truncate it to fit in a `PetscInt`
 
-   Developers Note:
+   Developer Note:
    In most places in the source code we currently assume that `PetscInt` addition does not overflow, this is obviously wrong but requires many more checks.
    `PetscIntSumError()` can be used to check for this situation.
 
@@ -1897,11 +1881,11 @@ static inline PetscErrorCode PetscIntMultError(PetscInt a, PetscInt b, PetscInt 
    Not Collective; No Fortran Support
 
    Input Parameters:
-+     a - the `PetscInt` value
--     b - the second value
++  a - the `PetscInt` value
+-  b - the second value
 
    Output Parameter:
-.     c - the result as a `PetscInt` value,  or `NULL` if you do not want the result, you just want to check if it overflows
+.  c - the result as a `PetscInt` value,  or `NULL` if you do not want the result, you just want to check if it overflows
 
    Level: advanced
 
@@ -2220,13 +2204,13 @@ PETSC_EXTERN                PetscErrorCode (*PetscVFPrintf)(FILE *, const char[]
 PETSC_EXTERN PetscSegBuffer PetscCitationsList;
 
 /*@C
-      PetscCitationsRegister - Register a bibtex item to obtain credit for an implemented algorithm used in the code.
+     PetscCitationsRegister - Register a bibtex item to obtain credit for an implemented algorithm used in the code.
 
      Not Collective; No Fortran Support
 
      Input Parameters:
-+      cite - the bibtex item, formatted to displayed on multiple lines nicely
--      set - a boolean variable initially set to `PETSC_FALSE`; this is used to insure only a single registration of the citation
++    cite - the bibtex item, formatted to displayed on multiple lines nicely
+-    set - a boolean variable initially set to `PETSC_FALSE`; this is used to insure only a single registration of the citation
 
      Options Database Key:
 .     -citations [filename]   - print out the bibtex entries for the given computation
@@ -2295,11 +2279,11 @@ static inline unsigned int PetscStrHash(const char *str)
    Level: developer
 
    Notes:
-     In optimized mode this directly calls `MPI_Allreduce()`
+   In optimized mode this directly calls `MPI_Allreduce()`
 
-     This is defined as a macro that can return error codes internally so it cannot be used in a subroutine that returns void.
+   This is defined as a macro that can return error codes internally so it cannot be used in a subroutine that returns void.
 
-     The error code this returns should be checked with `PetscCall()` even though it looks like an MPI function because it always returns PETSc error codes
+   The error code this returns should be checked with `PetscCall()` even though it looks like an MPI function because it always returns PETSc error codes
 
 .seealso: `MPI_Allreduce()`
 M*/
@@ -2350,3 +2334,14 @@ PETSC_EXTERN PetscBool      PCMPIServerActive;
 
 PETSC_EXTERN PetscErrorCode PetscBLASSetNumThreads(PetscInt);
 PETSC_EXTERN PetscErrorCode PetscBLASGetNumThreads(PetscInt *);
+
+/*MC
+   PetscSafePointerPlusOffset - Checks that a pointer is not `NULL` before applying an offset
+
+   Level: beginner
+
+   Note:
+   This is needed to avoid errors with undefined-behavior sanitizers such as
+   UBSan, assuming PETSc has been configured with `-fsanitize=undefined` as part of the compiler flags
+M*/
+#define PetscSafePointerPlusOffset(ptr, offset) ((ptr) ? (ptr) + (offset) : NULL)

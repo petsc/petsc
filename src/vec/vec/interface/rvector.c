@@ -2,8 +2,6 @@
      Provides the interface functions for vector operations that have PetscScalar/PetscReal in the signature
    These are the vector functions the user calls.
 */
-#include "petsc/private/sfimpl.h"
-#include "petscsystypes.h"
 #include <petsc/private/vecimpl.h> /*I  "petscvec.h"   I*/
 
 PetscInt VecGetSubVectorSavedStateId = -1;
@@ -208,10 +206,18 @@ PetscErrorCode VecNorm(Vec x, NormType type, PetscReal *val)
   PetscCall(VecNormAvailable(x, type, &flg, val));
   // check that all MPI processes call this routine together and have same availability
   if (PetscDefined(USE_DEBUG)) {
-    PetscBool minflg;
-
-    PetscCall(MPIU_Allreduce(&flg, &minflg, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)x)));
-    PetscCheck(flg == minflg, PetscObjectComm((PetscObject)(x)), PETSC_ERR_ARG_WRONGSTATE, "Some MPI processes have cached norm, others do not. This may happen when some MPI processes call VecGetArray() and some others do not.");
+    PetscMPIInt b0 = (PetscMPIInt)flg, b1[2], b2[2];
+    b1[0]          = -b0;
+    b1[1]          = b0;
+    PetscCall(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, PetscObjectComm((PetscObject)x)));
+    PetscCheck(-b2[0] == b2[1], PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_WRONGSTATE, "Some MPI processes have cached %s norm, others do not. This may happen when some MPI processes call VecGetArray() and some others do not.", NormTypes[type]);
+    if (flg) {
+      PetscReal b1[2], b2[2];
+      b1[0] = -(*val);
+      b1[1] = *val;
+      PetscCall(MPIU_Allreduce(b1, b2, 2, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)x)));
+      PetscCheck(-b2[0] == b2[1], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Difference in cached %s norms: local %g", NormTypes[type], (double)*val);
+    }
   }
   if (flg) PetscFunctionReturn(PETSC_SUCCESS);
 
@@ -437,6 +443,7 @@ PetscErrorCode VecScaleAsync_Private(Vec x, PetscScalar alpha, PetscDeviceContex
   PetscValidType(x, 1);
   VecCheckAssembled(x);
   PetscCall(VecSetErrorIfLocked(x, 1));
+  PetscValidLogicalCollectiveScalar(x, alpha, 2);
   if (alpha == one) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* get current stashed norms */
@@ -458,7 +465,7 @@ PetscErrorCode VecScaleAsync_Private(Vec x, PetscScalar alpha, PetscDeviceContex
 /*@
   VecScale - Scales a vector.
 
-  Not Collective
+  Logically Collective
 
   Input Parameters:
 + x     - the vector
@@ -500,7 +507,6 @@ PetscErrorCode VecSetAsync_Private(Vec x, PetscScalar alpha, PetscDeviceContext 
   PetscCall(PetscObjectStateIncrease((PetscObject)x));
 
   /*  norms can be simply set (if |alpha|*N not too large) */
-
   {
     PetscReal      val = PetscAbsScalar(alpha);
     const PetscInt N   = x->map->N;
@@ -700,6 +706,7 @@ PetscErrorCode VecAXPBYAsync_Private(Vec y, PetscScalar alpha, PetscScalar beta,
   PetscCall(VecLockReadPop(x));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
 /*@
   VecAXPBY - Computes `y = alpha x + beta y`.
 
@@ -739,8 +746,8 @@ PetscErrorCode VecAXPBYPCZAsync_Private(Vec z, PetscScalar alpha, PetscScalar be
   PetscValidType(y, 6);
   PetscCheckSameTypeAndComm(x, 5, y, 6);
   PetscCheckSameTypeAndComm(x, 5, z, 1);
-  VecCheckSameSize(x, 1, y, 5);
-  VecCheckSameSize(x, 1, z, 6);
+  VecCheckSameSize(x, 5, y, 6);
+  VecCheckSameSize(x, 5, z, 1);
   PetscCheck(x != y && x != z, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_IDN, "x, y, and z must be different vectors");
   PetscCheck(y != z, PetscObjectComm((PetscObject)y), PETSC_ERR_ARG_IDN, "x, y, and z must be different vectors");
   VecCheckAssembled(x);
@@ -1609,7 +1616,7 @@ PetscErrorCode VecGetSubVector(Vec X, IS is, Vec *Y)
         PetscCall(VecSetType(Z, ((PetscObject)X)->type_name));
         PetscCall(VecSetSizes(Z, n, N));
         PetscCall(VecSetBlockSize(Z, bs));
-        PetscCall(VecPlaceArray(Z, x ? x + start : NULL));
+        PetscCall(VecPlaceArray(Z, PetscSafePointerPlusOffset(x, start)));
         PetscCall(VecRestoreArrayRead(X, &x));
       }
 
@@ -3138,7 +3145,7 @@ PetscErrorCode VecGetArray3d(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt
   b = (PetscScalar **)((*a) + m);
   for (i = 0; i < m; i++) (*a)[i] = b + i * n - nstart;
   for (i = 0; i < m; i++)
-    for (j = 0; j < n; j++) b[i * n + j] = aa + i * n * p + j * p - pstart;
+    for (j = 0; j < n; j++) b[i * n + j] = PetscSafePointerPlusOffset(aa, i * n * p + j * p - pstart);
   *a -= mstart;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3722,7 +3729,7 @@ PetscErrorCode VecGetArray3dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, Pets
   b = (PetscScalar **)((*a) + m);
   for (i = 0; i < m; i++) (*a)[i] = b + i * n - nstart;
   for (i = 0; i < m; i++)
-    for (j = 0; j < n; j++) b[i * n + j] = (PetscScalar *)aa + i * n * p + j * p - pstart;
+    for (j = 0; j < n; j++) b[i * n + j] = PetscSafePointerPlusOffset((PetscScalar *)aa, i * n * p + j * p - pstart);
   *a -= mstart;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

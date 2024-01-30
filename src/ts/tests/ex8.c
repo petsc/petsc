@@ -121,7 +121,7 @@ PetscErrorCode TSFunctionI(TS ts, PetscReal t, Vec UV, Vec UVdot, Vec F, void *a
 /*TEST
 
     test:
-      args:  -ts_view
+      args: -ts_view
 
     test:
       suffix: 2

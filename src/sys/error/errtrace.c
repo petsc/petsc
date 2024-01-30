@@ -152,16 +152,16 @@ static PETSC_TLS PetscBool petsc_traceback_error_silent = PETSC_FALSE;
 
   Input Parameters:
 + comm - communicator over which error occurred
-. line - the line number of the error (indicated by __LINE__)
+. line - the line number of the error (usually indicated by `__LINE__` in the calling routine)
 . fun  - the function name
-. file - the file in which the error was detected (indicated by __FILE__)
+. file - the file in which the error was detected (usually indicated by `__FILE__` in the calling routine)
 . mess - an error text string, usually just printed to the screen
 . n    - the generic error number
 . p    - `PETSC_ERROR_INITIAL` if this is the first call the error handler, otherwise `PETSC_ERROR_REPEAT`
 - ctx  - error handler context
 
   Options Database Keys:
-+ -error_output_stdout - output the error messages to stdout instead of the default stderr
++ -error_output_stdout - output the error messages to `stdout` instead of the default `stderr`
 - -error_output_none   - do not output the error messages
 
   Notes:
@@ -172,7 +172,8 @@ static PETSC_TLS PetscBool petsc_traceback_error_silent = PETSC_FALSE;
   Level: developer
 
 .seealso: `PetscError()`, `PetscPushErrorHandler()`, `PetscPopErrorHandler()`, `PetscAttachDebuggerErrorHandler()`,
-          `PetscAbortErrorHandler()`, `PetscMPIAbortErrorHandler()`, `PetscReturnErrorHandler()`, `PetscEmacsClientErrorHandler()`
+          `PetscAbortErrorHandler()`, `PetscMPIAbortErrorHandler()`, `PetscReturnErrorHandler()`, `PetscEmacsClientErrorHandler()`,
+           `PETSC_ERROR_INITIAL`, `PETSC_ERROR_REPEAT`, `PetscErrorCode`, `PetscErrorType`
  @*/
 PetscErrorCode PetscTraceBackErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx)
 {

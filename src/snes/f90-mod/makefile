@@ -1,7 +1,6 @@
 -include ../../../petscdir.mk
 #requiresdefine   'PETSC_USE_FORTRAN_BINDINGS'
 
-LIBBASE    = libpetscsnes
 MANSEC     = SNES
 CLEANFILES = *.mod
 

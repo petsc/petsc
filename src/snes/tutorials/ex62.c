@@ -423,7 +423,7 @@ int main(int argc, char **argv)
   PetscCall(DMPlexCreateClosureIndex(dm, NULL));
 
   PetscCall(DMCreateGlobalVector(dm, &u));
-  PetscCall(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));
+  PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, &user));
   PetscCall(SNESSetFromOptions(snes));
   PetscCall(DMSNESCheckFromOptions(snes, u));
   PetscCall(PetscObjectSetName((PetscObject)u, "Solution"));
@@ -484,7 +484,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_p2_p1_conv_gamg
     requires: triangle
-    args: -sol trig -vel_petscspace_degree 2 -pres_petscspace_degree 1 -snes_convergence_estimate -convest_num_refine 2  \
+    args: -sol trig -vel_petscspace_degree 2 -pres_petscspace_degree 1 -snes_convergence_estimate -convest_num_refine 2 \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full \
         -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type gamg -fieldsplit_pressure_mg_coarse_pc_type svd
 

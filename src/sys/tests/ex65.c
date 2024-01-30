@@ -4,7 +4,7 @@ static const char help[] = "Test PetscFunctionList.\n";
 #include <petscviewer.h>
 
 #define PETSC_DEFINE_FUNCTION_AND_STR(name) \
-  static void name() \
+  static void name(void) \
   { \
     puts("called " PetscStringize(name) "()"); \
   } \

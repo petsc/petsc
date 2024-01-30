@@ -139,6 +139,6 @@ PetscErrorCode UserJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr)
       requires: !single !defined(PETSC_HAVE_SUN_CXX) !complex
 
    test:
-      args:  -snes_monitor_solution -snes_linesearch_monitor
+      args: -snes_monitor_solution -snes_linesearch_monitor
 
 TEST*/

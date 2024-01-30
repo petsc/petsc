@@ -32,7 +32,7 @@ PetscErrorCode PetscFreeSpaceContiguous(PetscFreeSpaceList *head, PetscInt *spac
   while ((*head)) {
     a = (*head)->more_space;
     PetscCall(PetscArraycpy(space, (*head)->array_head, (*head)->local_used));
-    space += (*head)->local_used;
+    space = PetscSafePointerPlusOffset(space, (*head)->local_used);
     PetscCall(PetscFree((*head)->array_head));
     PetscCall(PetscFree(*head));
     *head = a;

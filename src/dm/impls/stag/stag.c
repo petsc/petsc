@@ -346,6 +346,7 @@ static PetscErrorCode DMDestroy_Stag(DM dm)
   for (i = 0; i < DMSTAG_MAX_DIM; ++i) PetscCall(PetscFree(stag->l[i]));
   PetscCall(VecScatterDestroy(&stag->gtol));
   PetscCall(VecScatterDestroy(&stag->ltog_injective));
+  PetscCall(VecScatterDestroy(&stag->ltol));
   PetscCall(PetscFree(stag->neighbors));
   PetscCall(PetscFree(stag->locationOffsets));
   PetscCall(PetscFree(stag->coordinateDMType));
@@ -740,6 +741,41 @@ static PetscErrorCode DMGlobalToLocalEnd_Stag(DM dm, Vec g, InsertMode mode, Vec
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode DMLocalToLocalBegin_Stag(DM dm, Vec g, InsertMode mode, Vec l)
+{
+  DM_Stag *const stag = (DM_Stag *)dm->data;
+
+  PetscFunctionBegin;
+  if (!stag->ltol) {
+    PetscInt dim;
+    PetscCall(DMGetDimension(dm, &dim));
+    switch (dim) {
+    case 1:
+      PetscCall(DMStagPopulateLocalToLocal1d_Internal(dm));
+      break;
+    case 2:
+      PetscCall(DMStagPopulateLocalToLocal2d_Internal(dm));
+      break;
+    case 3:
+      PetscCall(DMStagPopulateLocalToLocal3d_Internal(dm));
+      break;
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, dim);
+    }
+  }
+  PetscCall(VecScatterBegin(stag->ltol, g, l, mode, SCATTER_FORWARD));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMLocalToLocalEnd_Stag(DM dm, Vec g, InsertMode mode, Vec l)
+{
+  DM_Stag *const stag = (DM_Stag *)dm->data;
+
+  PetscFunctionBegin;
+  PetscCall(VecScatterEnd(stag->ltol, g, l, mode, SCATTER_FORWARD));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
 If a stratum is active (non-zero dof), make it active in the coordinate DM.
 */
@@ -934,6 +970,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm)
 
   stag->gtol           = NULL;
   stag->ltog_injective = NULL;
+  stag->ltol           = NULL;
   for (i = 0; i < DMSTAG_MAX_STRATA; ++i) stag->dof[i] = 0;
   for (i = 0; i < DMSTAG_MAX_DIM; ++i) stag->l[i] = NULL;
   stag->stencilType  = DMSTAG_STENCIL_NONE;
@@ -960,6 +997,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm)
   dm->ops->globaltolocalend    = DMGlobalToLocalEnd_Stag;
   dm->ops->localtoglobalbegin  = DMLocalToGlobalBegin_Stag;
   dm->ops->localtoglobalend    = DMLocalToGlobalEnd_Stag;
+  dm->ops->localtolocalbegin   = DMLocalToLocalBegin_Stag;
+  dm->ops->localtolocalend     = DMLocalToLocalEnd_Stag;
   dm->ops->setfromoptions      = DMSetFromOptions_Stag;
   switch (dim) {
   case 1:

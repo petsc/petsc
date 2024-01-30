@@ -1,6 +1,5 @@
-#include "petscsys.h"
-#include "petscfix.h"
-#include "petsc/private/fortranimpl.h"
+#include <petscsys.h>
+#include <petsc/private/fortranimpl.h>
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
   #define petscgetversion_       PETSCGETVERSION

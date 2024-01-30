@@ -1,0 +1,135 @@
+0 TS dt 0.18 time 0.01
+1 TS dt 0.02 time 0.19
+2 TS dt 0.18 time 0.21
+3 TS dt 0.18 time 0.39
+4 TS dt 0.18 time 0.57
+5 TS dt 0.13 time 0.75
+6 TS dt 0.13 time 0.88
+6 TS dt 0.11978 time 0.88 (r)
+7 TS dt 0.000220405 time 0.99978
+7 TS dt 0.00022037 time 0.99978 (r)
+8 TS dt 0.01 time 1.
+9 TS dt 0.1 time 1.01
+9 TS dt 0.0534198 time 1.01 (r)
+9 TS dt 0.0396125 time 1.01 (r)
+10 TS dt 0.000416927 time 1.04961
+10 TS dt 0.000387576 time 1.04961 (r)
+10 TS dt 0.000387514 time 1.04961 (r)
+11 TS dt 0.1127 time 1.05
+12 TS dt 0.0473 time 1.1627
+13 TS dt 0.1127 time 1.21
+14 TS dt 0.1127 time 1.3227
+15 TS dt 0.1127 time 1.4354
+16 TS dt 0.1127 time 1.5481
+17 TS dt 0.1127 time 1.6608
+18 TS dt 0.1127 time 1.7735
+19 TS dt 0.0619 time 1.8862
+20 TS dt 0.0619 time 1.9481
+20 TS dt 0.0518641 time 1.9481 (r)
+21 TS dt 3.58615e-05 time 1.99996
+22 TS dt 0.00999999 time 2.
+23 TS dt 0.1 time 2.01
+24 TS dt 0.1 time 2.11
+25 TS dt 0.1127 time 2.21
+26 TS dt 0.1127 time 2.3227
+27 TS dt 0.1127 time 2.4354
+28 TS dt 0.1127 time 2.5481
+29 TS dt 0.1127 time 2.6608
+30 TS dt 0.1127 time 2.7735
+31 TS dt 0.1138 time 2.8862
+32 TS dt 0.01 time 3.
+33 TS dt 0.1 time 3.01
+34 TS dt 0.1 time 3.11
+35 TS dt 0.1127 time 3.21
+36 TS dt 0.1127 time 3.3227
+37 TS dt 0.1127 time 3.4354
+38 TS dt 0.1127 time 3.5481
+39 TS dt 0.1127 time 3.6608
+40 TS dt 0.1127 time 3.7735
+41 TS dt 0.1138 time 3.8862
+42 TS dt 0.0015 time 4.
+43 TS dt 0.0085 time 4.0015
+44 TS dt 0.1 time 4.01
+45 TS dt 0.1 time 4.11
+46 TS dt 0.1127 time 4.21
+47 TS dt 0.1127 time 4.3227
+48 TS dt 0.1127 time 4.4354
+49 TS dt 0.1127 time 4.5481
+50 TS dt 0.1127 time 4.6608
+51 TS dt 0.1125 time 4.7735
+52 TS dt 0.1125 time 4.886
+53 TS dt 0.0015 time 4.9985
+54 TS dt 0.01 time 5.
+55 TS dt 0.1 time 5.01
+56 TS dt 0.1 time 5.11
+57 TS dt 0.1127 time 5.21
+58 TS dt 0.1127 time 5.3227
+59 TS dt 0.1127 time 5.4354
+60 TS dt 0.1127 time 5.5481
+61 TS dt 0.1127 time 5.6608
+62 TS dt 0.1125 time 5.7735
+63 TS dt 0.1125 time 5.886
+64 TS dt 0.0015 time 5.9985
+65 TS dt 0.0015 time 6.
+66 TS dt 0.0085 time 6.0015
+67 TS dt 0.1 time 6.01
+68 TS dt 0.1 time 6.11
+69 TS dt 0.1127 time 6.21
+70 TS dt 0.1127 time 6.3227
+71 TS dt 0.1127 time 6.4354
+72 TS dt 0.1127 time 6.5481
+73 TS dt 0.1127 time 6.6608
+74 TS dt 0.10825 time 6.7735
+75 TS dt 0.10825 time 6.88175
+76 TS dt 0.11 time 6.99
+76 TS dt 0.0101495 time 6.99 (r)
+76 TS dt 0.00999975 time 6.99 (r)
+77 TS dt 2.48584e-07 time 7.
+78 TS dt 0.1127 time 7.
+79 TS dt 0.0973 time 7.1127
+80 TS dt 0.1127 time 7.21
+81 TS dt 0.1127 time 7.3227
+82 TS dt 0.1127 time 7.4354
+83 TS dt 0.1127 time 7.5481
+84 TS dt 0.1127 time 7.6608
+85 TS dt 0.1127 time 7.7735
+86 TS dt 0.0619 time 7.8862
+87 TS dt 0.0619 time 7.9481
+87 TS dt 0.0518641 time 7.9481 (r)
+88 TS dt 3.58615e-05 time 7.99996
+89 TS dt 0.00999999 time 8.
+90 TS dt 0.1 time 8.01
+91 TS dt 0.1 time 8.11
+92 TS dt 0.1127 time 8.21
+93 TS dt 0.1127 time 8.3227
+94 TS dt 0.1127 time 8.4354
+95 TS dt 0.1127 time 8.5481
+96 TS dt 0.1127 time 8.6608
+97 TS dt 0.1127 time 8.7735
+98 TS dt 0.0619 time 8.8862
+99 TS dt 0.0619 time 8.9481
+99 TS dt 0.0518641 time 8.9481 (r)
+100 TS dt 3.58615e-05 time 8.99996
+101 TS dt 0.00999999 time 9.
+102 TS dt 0.1 time 9.01
+102 TS dt 0.0276737 time 9.01 (r)
+103 TS dt 0.00869361 time 9.03767
+104 TS dt 0.00366379 time 9.04637
+104 TS dt 0.00363203 time 9.04637 (r)
+105 TS dt 6.26924e-07 time 9.05
+106 TS dt 0.06 time 9.05
+CONVERGED REASON: 4 (TS_CONVERGED_EVENT == 4)
+0	1.	2.77556e-15	pass
+0	1.05	8.65974e-15	pass
+0	2.	5.87754e-09	pass
+0	3.	0.	pass
+0	4.	0.	pass
+0	5.	0.	pass
+0	6.	0.	pass
+0	7.	9.76996e-15	pass
+0	8.	5.87753e-09	pass
+0	9.	5.87754e-09	pass
+0	9.05	1.07386e-10	pass
+Final time = 9.05, max time = 9.8, pass
+Adapt = none
+Last dt = 0.06

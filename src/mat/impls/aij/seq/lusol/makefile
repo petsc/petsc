@@ -3,7 +3,6 @@
 #requiresscalar    real
 #requiresprecision double
 
-LIBBASE  = libpetscmat
 MANSEC   = Mat
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

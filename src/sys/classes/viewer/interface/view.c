@@ -98,7 +98,7 @@ PetscErrorCode PetscViewerDestroy(PetscViewer *viewer)
   }
 
   PetscCall(PetscObjectSAWsViewOff((PetscObject)*viewer));
-  if ((*viewer)->ops->destroy) PetscCall((*(*viewer)->ops->destroy)(*viewer));
+  PetscTryTypeMethod(*viewer, destroy);
   PetscCall(PetscHeaderDestroy(viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

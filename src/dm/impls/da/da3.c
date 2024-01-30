@@ -360,6 +360,10 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
   }
   z = lz[rank / (m * n)];
 
+  PetscCheck((x > s) || ((bx != DM_BOUNDARY_MIRROR)), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local x-width of domain x %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT " with mirror", x, s);
+  PetscCheck((y > s) || ((by != DM_BOUNDARY_MIRROR)), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local y-width of domain y %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT " with mirror", y, s);
+  PetscCheck((z > s) || ((bz != DM_BOUNDARY_MIRROR)), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local z-width of domain z %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT " with mirror", z, s);
+
   /* note this is different than x- and y-, as we will handle as an important special
    case when p=P=1 and DM_BOUNDARY_PERIODIC and s > z.  This is to deal with 2D problems
    in a 3D code.  Additional code for this case is noted with "2d case" comments */
@@ -1146,7 +1150,7 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
           for (j = 0; j < x_t; j++) idx[nn++] = s_t++;
         } else if (Zs - zs < 0) {
           if (bz == DM_BOUNDARY_MIRROR) {
-            for (j = 0; j < x; j++) idx[nn++] = bases[rank] + j + x * i + (s_z - k - 1) * x * y;
+            for (j = 0; j < x; j++) idx[nn++] = bases[rank] + j + x * i + (s_z - k) * x * y;
           } else {
             for (j = 0; j < x; j++) idx[nn++] = -1;
           }
@@ -1214,7 +1218,7 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
           for (j = 0; j < x_t; j++) idx[nn++] = s_t++;
         } else if (Ys - ys < 0) {
           if (by == DM_BOUNDARY_MIRROR) {
-            for (j = 0; j < x; j++) idx[nn++] = bases[rank] + j + k * x * y + (s_y - i) * x;
+            for (j = 0; j < x; j++) idx[nn++] = bases[rank] + j + k * x * y + (s_y - i + 1) * x;
           } else {
             for (j = 0; j < x; j++) idx[nn++] = -1;
           }
@@ -1239,7 +1243,7 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
           for (j = 0; j < s_x; j++) idx[nn++] = s_t++;
         } else if (Xs - xs < 0) {
           if (bx == DM_BOUNDARY_MIRROR) {
-            for (j = 0; j < s_x; j++) idx[nn++] = bases[rank] + s_x - j - 1 + k * x * y + i * x;
+            for (j = 0; j < s_x; j++) idx[nn++] = bases[rank] + s_x - j - 1 + k * x * y + i * x + 1;
           } else {
             for (j = 0; j < s_x; j++) idx[nn++] = -1;
           }
@@ -1257,7 +1261,7 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
           for (j = 0; j < s_x; j++) idx[nn++] = s_t++;
         } else if (xe - Xe < 0) {
           if (bx == DM_BOUNDARY_MIRROR) {
-            for (j = 0; j < s_x; j++) idx[nn++] = bases[rank] + x - j - 1 + k * x * y + i * x;
+            for (j = 0; j < s_x; j++) idx[nn++] = bases[rank] + x - j - 1 + k * x * y + i * x - 1;
           } else {
             for (j = 0; j < s_x; j++) idx[nn++] = -1;
           }
@@ -1282,7 +1286,7 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
           for (j = 0; j < x_t; j++) idx[nn++] = s_t++;
         } else if (ye - Ye < 0) {
           if (by == DM_BOUNDARY_MIRROR) {
-            for (j = 0; j < x; j++) idx[nn++] = bases[rank] + j + k * x * y + (y - i) * x;
+            for (j = 0; j < x; j++) idx[nn++] = bases[rank] + j + k * x * y + (y - i - 1) * x;
           } else {
             for (j = 0; j < x; j++) idx[nn++] = -1;
           }
@@ -1350,7 +1354,7 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
           for (j = 0; j < x_t; j++) idx[nn++] = s_t++;
         } else if (ze - Ze < 0) {
           if (bz == DM_BOUNDARY_MIRROR) {
-            for (j = 0; j < x; j++) idx[nn++] = bases[rank] + j + (z - k - 1) * x * y + i * x;
+            for (j = 0; j < x; j++) idx[nn++] = bases[rank] + j + (z - k - 2) * x * y + i * x;
           } else {
             for (j = 0; j < x; j++) idx[nn++] = -1;
           }
@@ -1435,18 +1439,18 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
 
 /*@C
   DMDACreate3d - Creates an object that will manage the communication of three-dimensional
-  regular array data that is distributed across some processors.
+  regular array data that is distributed across one or more MPI processes.
 
   Collective
 
   Input Parameters:
 + comm         - MPI communicator
 . bx           - type of x ghost nodes the array have.
-         Use one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`.
+                 Use one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`.
 . by           - type of y ghost nodes the array have.
-         Use one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`.
+                 Use one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`.
 . bz           - type of z ghost nodes the array have.
-         Use one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`.
+                 Use one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`.
 . stencil_type - Type of stencil (`DMDA_STENCIL_STAR` or `DMDA_STENCIL_BOX`)
 . M            - global dimension in x direction of the array
 . N            - global dimension in y direction of the array
@@ -1474,7 +1478,7 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
 . -da_refine_x <rx>     - refinement ratio in x direction
 . -da_refine_y <ry>     - refinement ratio in y direction
 . -da_refine_z <rz>     - refinement ratio in z directio
-- -da_refine <n>        - refine the DMDA n times before creating it
+- -da_refine <n>        - refine the `DMDA` n times before creating it
 
   Level: beginner
 
@@ -1493,13 +1497,13 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
 
   You must call `DMSetUp()` after this call before using this `DM`.
 
-  If you wish to use the options database to change values in the `DMDA` call `DMSetFromOptions()` after this call
+  To use the options database to change values in the `DMDA` call `DMSetFromOptions()` after this call
   but before `DMSetUp()`.
 
-.seealso: `DM`, `DMDA`, `DMDestroy()`, `DMView()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMGlobalToLocalBegin()`, `DMDAGetRefinementFactor()`,
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDestroy()`, `DMView()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMGlobalToLocalBegin()`, `DMDAGetRefinementFactor()`,
           `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMLocalToLocalBegin()`, `DMLocalToLocalEnd()`, `DMDASetRefinementFactor()`,
           `DMDAGetInfo()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMDACreateNaturalVector()`, `DMLoad()`, `DMDAGetOwnershipRanges()`,
-          `DMStagCreate3d()`
+          `DMStagCreate3d()`, `DMBoundaryType`
 @*/
 PetscErrorCode DMDACreate3d(MPI_Comm comm, DMBoundaryType bx, DMBoundaryType by, DMBoundaryType bz, DMDAStencilType stencil_type, PetscInt M, PetscInt N, PetscInt P, PetscInt m, PetscInt n, PetscInt p, PetscInt dof, PetscInt s, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[], DM *da)
 {

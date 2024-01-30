@@ -1,9 +1,9 @@
 static char help[] = "Example program demonstrating projection between particle and finite element spaces using OpenMP in 2D cylindrical coordinates\n";
 
-#include "petscdmplex.h"
-#include "petscds.h"
-#include "petscdmswarm.h"
-#include "petscksp.h"
+#include <petscdmplex.h>
+#include <petscds.h>
+#include <petscdmswarm.h>
+#include <petscksp.h>
 #include <petsc/private/petscimpl.h>
 #if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_THREADSAFETY)
   #include <omp.h>

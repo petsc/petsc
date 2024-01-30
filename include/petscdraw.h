@@ -69,7 +69,6 @@ PETSC_EXTERN PetscErrorCode PetscDrawViewFromOptions(PetscDraw, PetscObject, con
 #define PETSC_DRAW_MAXCOLOR        256
 
 /*MC
-
    PetscDrawRealToColor - Maps a real value within an interval to a color.
    The color is an integer value in the range [`PETSC_DRAW_BASIC_COLORS` to 255]
    that can be passed to various drawing routines.
@@ -82,8 +81,8 @@ PETSC_EXTERN PetscErrorCode PetscDrawViewFromOptions(PetscDraw, PetscObject, con
 
    Input Parameters:
 +  value - value to map within the interval [`min`, `max`]
-.  min - lower end of interval
--  max - upper end of interval
+.  min   - lower end of interval
+-  max   - upper end of interval
 
    Returns:
    The result as integer
@@ -130,13 +129,13 @@ PETSC_EXTERN PetscErrorCode PetscDrawLineSetWidth(PetscDraw, PetscReal);
 PETSC_EXTERN PetscErrorCode PetscDrawLineGetWidth(PetscDraw, PetscReal *);
 
 /*E
-    PetscDrawMarkerType - How a "mark" is indicate in a figure
+   PetscDrawMarkerType - How a "mark" is indicate in a figure
 
    Values:
-+  `PETSC_MARKER_CROSS` - a small pixel based x symbol or the character x if that is not available
-.  `PETSC_MARKER_PLUS` - a small pixel based + symbol or the character + if that is not available
++  `PETSC_MARKER_CROSS`  - a small pixel based x symbol or the character x if that is not available
+.  `PETSC_MARKER_PLUS`   - a small pixel based + symbol or the character + if that is not available
 .  `PETSC_MARKER_CIRCLE` - a small pixel based circle symbol or the character o if that is not available
--  `PETSC_MARKER_POINT` - the make obtained with `PetscDrawPoint()`
+-  `PETSC_MARKER_POINT`  - the make obtained with `PetscDrawPoint()`
 
    Level: intermediate
 
@@ -206,22 +205,22 @@ PETSC_EXTERN PetscErrorCode PetscDrawGetBoundingBox(PetscDraw, PetscReal *, Pets
 PETSC_EXTERN PetscErrorCode PetscDrawSetVisible(PetscDraw, PetscBool);
 
 /*E
-    PetscDrawButton - Used to determine which button was pressed
+   PetscDrawButton - Used to determine which button was pressed
 
    Values:
-+  `PETSC_BUTTON_NONE` - no button was pressed
-.  `PETSC_BUTTON_LEFT` - the left button
-.  `PETSC_BUTTON_CENTER` - the center button
-.  `PETSC_BUTTON_RIGHT` - the right button
-.  `PETSC_BUTTON_WHEEL_UP` - the wheel was moved up
-.  `PETSC_BUTTON_WHEEL_DOWN` - the wheel was moved down
-.  `PETSC_BUTTON_LEFT_SHIFT` - the left button and the shift key
++  `PETSC_BUTTON_NONE`        - no button was pressed
+.  `PETSC_BUTTON_LEFT`        - the left button
+.  `PETSC_BUTTON_CENTER`      - the center button
+.  `PETSC_BUTTON_RIGHT`       - the right button
+.  `PETSC_BUTTON_WHEEL_UP`    - the wheel was moved up
+.  `PETSC_BUTTON_WHEEL_DOWN`  - the wheel was moved down
+.  `PETSC_BUTTON_LEFT_SHIFT`  - the left button and the shift key
 .  `PETSC_BUTTON_CENTER_SHIFT`- the center button and the shift key
 -  `PETSC_BUTTON_RIGHT_SHIFT` - the right button and the shift key
 
    Level: intermediate
 
-.seealso: `PetscDrawGetMouseButton()`
+.seealso: `PetscDraw`, `PetscDrawGetMouseButton()`
 E*/
 typedef enum {
   PETSC_BUTTON_NONE = 0,
@@ -240,11 +239,11 @@ PETSC_EXTERN PetscErrorCode PetscDrawGetMouseButton(PetscDraw, PetscDrawButton *
 PETSC_EXTERN PetscErrorCode PetscDrawZoom(PetscDraw, PetscErrorCode (*)(PetscDraw, void *), void *);
 
 /*S
-     PetscDrawViewPorts - Object representing subwindows in a `PetscDraw` object
+   PetscDrawViewPorts - Object representing subwindows in a `PetscDraw` object
 
    Level: intermediate
 
-.seealso: `PetscDrawViewPortsCreate()`, `PetscDrawViewPortsSet()`
+.seealso: `PetscDraw`, `PetscDrawViewPortsCreate()`, `PetscDrawViewPortsSet()`
 S*/
 typedef struct {
   PetscInt   nports;
@@ -356,7 +355,7 @@ PETSC_EXTERN_TYPEDEF typedef void (*PetscXIOErrorHandler)(void *);
 PETSC_EXTERN PetscXIOErrorHandler PetscSetXIOErrorHandler(PetscXIOErrorHandler);
 
   /*MC
-    PetscDrawCollectiveBegin - Begins a set of draw operations
+   PetscDrawCollectiveBegin - Begins a set of draw operations
 
    Collective
 
@@ -364,25 +363,25 @@ PETSC_EXTERN PetscXIOErrorHandler PetscSetXIOErrorHandler(PetscXIOErrorHandler);
     #include <petscdraw.h>
     PetscErrorCode PetscDrawCollectiveBegin(PetscDraw draw)
 
-    Collective
+   Collective
 
    Input Parameter:
 .   draw - the draw object
 
-  Level: advanced
+   Level: advanced
 
    Notes:
-    This is a macro that handles its own error checking, it does not return an error code.
+   This is a macro that handles its own error checking, it does not return an error code.
 
-    The set of operations needs to be ended by a call to `PetscDrawCollectiveEnd()`.
+   The set of operations needs to be ended by a call to `PetscDrawCollectiveEnd()`.
 
-    X windows draw operations that are enclosed by these routines handle correctly resizing or closing of
-    the window without crashing the program.
+   X windows draw operations that are enclosed by these routines handle correctly resizing or closing of
+   the window without crashing the program.
 
-  Developer Note:
-    This only applies to X windows and so should have a more specific name such as `PetscDrawXCollectiveBegin()`
+   Developer Note:
+   This only applies to X windows and so should have a more specific name such as `PetscDrawXCollectiveBegin()`
 
-.seealso: `PetscDrawCollectiveEnd()`
+.seealso: `PetscDraw`, `PetscDrawCollectiveEnd()`
 M*/
   #define PetscDrawCollectiveBegin(draw) \
     do { \
@@ -403,7 +402,7 @@ M*/
       } while (0)
 
   /*MC
-    PetscDrawCollectiveEnd - Ends a set of draw operations begun with `PetscDrawCollectiveBegin()`
+   PetscDrawCollectiveEnd - Ends a set of draw operations begun with `PetscDrawCollectiveBegin()`
 
    Collective
 
@@ -411,23 +410,23 @@ M*/
     #include <petscdraw.h>
     PetscErrorCode PetscDrawCollectiveEnd(PetscDraw draw)
 
-    Collective
+   Collective
 
-  Input Parameter:
+   Input Parameter:
 .   draw - the draw object
 
-  Level: advanced
+   Level: advanced
 
-  Notes:
-    This is a macro that handles its own error checking, it does not return an error code.
+   Notes:
+   This is a macro that handles its own error checking, it does not return an error code.
 
-    X windows draw operations that are enclosed by these routines handle correctly resizing or closing of
-    the window without crashing the program.
+   X windows draw operations that are enclosed by these routines handle correctly resizing or closing of
+   the window without crashing the program.
 
-  Developer Note:
-    This only applies to X windows and so should have a more specific name such as `PetscDrawXCollectiveEnd()`
+   Developer Note:
+   This only applies to X windows and so should have a more specific name such as `PetscDrawXCollectiveEnd()`
 
-.seealso: `PetscDrawCollectiveBegin()`
+.seealso: `PetscDraw`, `PetscDrawCollectiveBegin()`
 M*/
   #define PetscDrawCollectiveEnd(draw) \
     if (_Petsc_isdrawx) { \
