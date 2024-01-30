@@ -27,11 +27,11 @@ structs = {}
 
 def getenums(filename):
   import re
-  regtypedef  = re.compile('typedef [ ]*enum')
-  regcomment  = re.compile('/\* [A-Za-z _(),<>|^\*]* \*/')
-  reg         = re.compile('}')
-  regblank    = re.compile(' [ ]*')
-  regname     = re.compile('}[ A-Za-z]*')
+  regtypedef  = re.compile(r'typedef [ ]*enum')
+  regcomment  = re.compile(r'/\* [A-Za-z _(),<>|^\*]* \*/')
+  reg         = re.compile(r'}')
+  regblank    = re.compile(r' [ ]*')
+  regname     = re.compile(r'}[ A-Za-z]*')
   f = open(filename)
   line = f.readline()
   while line:
@@ -73,8 +73,8 @@ def getenums(filename):
 
 def getsenums(filename):
   import re
-  regdefine   = re.compile('#define [A-Za-z]*Type ')
-  regblank    = re.compile(' [ ]*')
+  regdefine   = re.compile(r'#define [A-Za-z]*Type ')
+  regblank    = re.compile(r' [ ]*')
   f = open(filename)
   line = f.readline()
   while line:
@@ -92,11 +92,11 @@ def getsenums(filename):
 
 def getstructs(filename):
   import re
-  regtypedef  = re.compile('^typedef [ ]*struct {')
-  regcomment  = re.compile('/\* [A-Za-z _(),<>|^\*/0-9.]* \*/')
-  reg         = re.compile('}')
-  regblank    = re.compile(' [ ]*')
-  regname     = re.compile('}[ A-Za-z]*')
+  regtypedef  = re.compile(r'^typedef [ ]*struct {')
+  regcomment  = re.compile(r'/\* [A-Za-z _(),<>|^\*/0-9.]* \*/')
+  reg         = re.compile(r'}')
+  regblank    = re.compile(r' [ ]*')
+  regname     = re.compile(r'}[ A-Za-z]*')
   f = open(filename)
   line = f.readline()
   while line:
@@ -133,10 +133,10 @@ def getstructs(filename):
 
 def getclasses(filename):
   import re
-  regclass    = re.compile('typedef struct _[pn]_[A-Za-z_]*[ ]*\*')
-  regcomment  = re.compile('/\* [A-Za-z _(),<>|^\*]* \*/')
-  regblank    = re.compile(' [ ]*')
-  regsemi     = re.compile(';')
+  regclass    = re.compile(r'typedef struct _[pn]_[A-Za-z_]*[ ]*\*')
+  regcomment  = re.compile(r'/\* [A-Za-z _(),<>|^\*]* \*/')
+  regblank    = re.compile(r' [ ]*')
+  regsemi     = re.compile(r';')
   f = open(filename)
   line = f.readline()
   while line:
@@ -155,11 +155,11 @@ def getclasses(filename):
 
 def getfunctions(filename):
   import re
-  regfun      = re.compile('EXTERN PetscErrorCode PETSC[A-Z]*_DLLEXPORT ')
-  regcomment  = re.compile('/\* [A-Za-z _(),<>|^\*]* \*/')
-  regblank    = re.compile(' [ ]*')
-  regarg      = re.compile('\([A-Za-z*_\[\]]*[,\)]')
-  regerror    = re.compile('PetscErrorCode')
+  regfun      = re.compile(r'EXTERN PetscErrorCode PETSC[A-Z]*_DLLEXPORT ')
+  regcomment  = re.compile(r'/\* [A-Za-z _(),<>|^\*]* \*/')
+  regblank    = re.compile(r' [ ]*')
+  regarg      = re.compile(r'\([A-Za-z*_\[\]]*[,\)]')
+  regerror    = re.compile(r'PetscErrorCode')
 
   rejects     = ['PetscErrorCode','DALocalFunction','...','<','(*)','(**)','off_t','MPI_Datatype','va_list','size_t','PetscStack']
   #
