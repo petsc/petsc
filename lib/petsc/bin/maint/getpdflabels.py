@@ -20,9 +20,9 @@ def main():
 #
     lines = sys.stdin.readlines()
 #
-    regchapter    = re.compile('(chapter{)([^}]*)(})')
-    regsection    = re.compile('(section{)([^}]*)(})')
-    regsubsection = re.compile('(subsection{)([^}]*)(})')
+    regchapter    = re.compile(r'(chapter{)([^}]*)(})')
+    regsection    = re.compile(r'(section{)([^}]*)(})')
+    regsubsection = re.compile(r'(subsection{)([^}]*)(})')
     reglabel      = re.compile(r'(label{)([^}]*)(})')
 
     chapter    = 1
