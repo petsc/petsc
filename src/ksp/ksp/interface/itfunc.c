@@ -2475,7 +2475,9 @@ PetscErrorCode KSPSetErrorHistory(KSP ksp, PetscReal a[], PetscInt na, PetscBool
 
   Fortran Note:
   The Fortran version of this routine has a calling sequence
-$   call KSPGetErrorHistory(KSP ksp, integer na, integer ierr)
+.vb
+  call KSPGetErrorHistory(KSP ksp, integer na, integer ierr)
+.ve
   note that you have passed a Fortran array into `KSPSetErrorHistory()` and you need
   to access the residual values from this Fortran array you provided. Only the `na` (number of
   residual norms currently held) is set.
@@ -2936,14 +2938,8 @@ PetscErrorCode KSPGetDiagonalScaleFix(KSP ksp, PetscBool *fix)
 
   Input Parameters:
 + ksp  - the `KSP` context
-. func - function to compute the operators
+. func - function to compute the operators, see `KSPComputeOperators_Fn` for the calling sequence
 - ctx  - optional context
-
-  Calling sequence of `func`:
-+ ksp - the `KSP` context
-. A   - the linear operator
-. B   - the matrix from which the preconditioner is built, often `A`
-- ctx - optional user-provided context
 
   Level: beginner
 
@@ -2958,9 +2954,9 @@ PetscErrorCode KSPGetDiagonalScaleFix(KSP ksp, PetscBool *fix)
   Perhaps this routine and `KSPSetComputeRHS()` could be combined into a new API that makes clear when new matrices are computing without requiring call this
   routine to indicate when the new matrix should be computed.
 
-.seealso: [](ch_ksp), `KSP`, `KSPSetOperators()`, `KSPSetComputeRHS()`, `DMKSPSetComputeOperators()`, `KSPSetComputeInitialGuess()`
+.seealso: [](ch_ksp), `KSP`, `KSPSetOperators()`, `KSPSetComputeRHS()`, `DMKSPSetComputeOperators()`, `KSPSetComputeInitialGuess()`, `KSPComputeOperators_Fn`
 @*/
-PetscErrorCode KSPSetComputeOperators(KSP ksp, PetscErrorCode (*func)(KSP ksp, Mat A, Mat B, void *ctx), void *ctx)
+PetscErrorCode KSPSetComputeOperators(KSP ksp, KSPComputeOperators_Fn *func, void *ctx)
 {
   DM dm;
 
@@ -2979,22 +2975,17 @@ PetscErrorCode KSPSetComputeOperators(KSP ksp, PetscErrorCode (*func)(KSP ksp, M
 
   Input Parameters:
 + ksp  - the `KSP` context
-. func - function to compute the right hand side
+. func - function to compute the right hand side, see `KSPComputeRHS_Fn` for the calling squence
 - ctx  - optional context
-
-  Calling sequence of `func`:
-+ ksp - the `KSP` context
-. b   - right hand side of linear system
-- ctx - optional user-provided context
 
   Level: beginner
 
   Note:
   The routine you provide will be called EACH you call `KSPSolve()` to prepare the new right hand side for that solve
 
-.seealso: [](ch_ksp), `KSP`, `KSPSolve()`, `DMKSPSetComputeRHS()`, `KSPSetComputeOperators()`, `KSPSetOperators()`
+.seealso: [](ch_ksp), `KSP`, `KSPSolve()`, `DMKSPSetComputeRHS()`, `KSPSetComputeOperators()`, `KSPSetOperators()`, `KSPComputeRHS_Fn`
 @*/
-PetscErrorCode KSPSetComputeRHS(KSP ksp, PetscErrorCode (*func)(KSP ksp, Vec b, void *ctx), void *ctx)
+PetscErrorCode KSPSetComputeRHS(KSP ksp, KSPComputeRHS_Fn *func, void *ctx)
 {
   DM dm;
 
@@ -3012,13 +3003,8 @@ PetscErrorCode KSPSetComputeRHS(KSP ksp, PetscErrorCode (*func)(KSP ksp, Vec b, 
 
   Input Parameters:
 + ksp  - the `KSP` context
-. func - function to compute the initial guess
+. func - function to compute the initial guess, see `KSPComputeInitialGuess_Fn` for calling sequence
 - ctx  - optional context
-
-  Calling sequence of `func`:
-+ ksp - the `KSP` context
-. x   - solution vector
-- ctx - optional user-provided context
 
   Level: beginner
 
@@ -3026,9 +3012,10 @@ PetscErrorCode KSPSetComputeRHS(KSP ksp, PetscErrorCode (*func)(KSP ksp, Vec b, 
   This should only be used in conjunction with `KSPSetComputeRHS()` and `KSPSetComputeOperators()`, otherwise
   call `KSPSetInitialGuessNonzero()` and set the initial guess values in the solution vector passed to `KSPSolve()` before calling the solver
 
-.seealso: [](ch_ksp), `KSP`, `KSPSolve()`, `KSPSetComputeRHS()`, `KSPSetComputeOperators()`, `DMKSPSetComputeInitialGuess()`, `KSPSetInitialGuessNonzero()`
+.seealso: [](ch_ksp), `KSP`, `KSPSolve()`, `KSPSetComputeRHS()`, `KSPSetComputeOperators()`, `DMKSPSetComputeInitialGuess()`, `KSPSetInitialGuessNonzero()`,
+          `KSPComputeInitialGuess_Fn`
 @*/
-PetscErrorCode KSPSetComputeInitialGuess(KSP ksp, PetscErrorCode (*func)(KSP ksp, Vec x, void *ctx), void *ctx)
+PetscErrorCode KSPSetComputeInitialGuess(KSP ksp, KSPComputeInitialGuess_Fn *func, void *ctx)
 {
   DM dm;
 

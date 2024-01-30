@@ -1029,15 +1029,61 @@ PETSC_EXTERN PetscErrorCode KSPSetDMActive(KSP, PetscBool);
 PETSC_EXTERN PetscErrorCode KSPGetDM(KSP, DM *);
 PETSC_EXTERN PetscErrorCode KSPSetApplicationContext(KSP, void *);
 PETSC_EXTERN PetscErrorCode KSPGetApplicationContext(KSP, void *);
-PETSC_EXTERN PetscErrorCode KSPSetComputeRHS(KSP, PetscErrorCode (*func)(KSP, Vec, void *), void *);
-PETSC_EXTERN PetscErrorCode KSPSetComputeOperators(KSP, PetscErrorCode (*)(KSP, Mat, Mat, void *), void *);
-PETSC_EXTERN PetscErrorCode KSPSetComputeInitialGuess(KSP, PetscErrorCode (*)(KSP, Vec, void *), void *);
-PETSC_EXTERN PetscErrorCode DMKSPSetComputeOperators(DM, PetscErrorCode (*)(KSP, Mat, Mat, void *), void *);
-PETSC_EXTERN PetscErrorCode DMKSPGetComputeOperators(DM, PetscErrorCode (**)(KSP, Mat, Mat, void *), void *);
-PETSC_EXTERN PetscErrorCode DMKSPSetComputeRHS(DM, PetscErrorCode (*)(KSP, Vec, void *), void *);
-PETSC_EXTERN PetscErrorCode DMKSPGetComputeRHS(DM, PetscErrorCode (**)(KSP, Vec, void *), void *);
-PETSC_EXTERN PetscErrorCode DMKSPSetComputeInitialGuess(DM, PetscErrorCode (*)(KSP, Vec, void *), void *);
-PETSC_EXTERN PetscErrorCode DMKSPGetComputeInitialGuess(DM, PetscErrorCode (**)(KSP, Vec, void *), void *);
+
+/*S
+  KSPComputeRHS_Fn - A prototype of a `KSP` evaluation function that would be passed to `KSPSetComputeRHS()`
+
+  Calling Sequence:
++ ksp  - `ksp` context
+. b    - output vector
+- ctx - [optional] user-defined function context
+
+  Level: beginner
+
+.seealso: [](ch_snes), `KSP`, `KSPSetComputeRHS()`, `SNESGetFunction()`, `KSPComputeInitialGuess_Fn`, `KSPComputeOperators_Fn`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(KSPComputeRHS_Fn)(KSP ksp, Vec b, void *ctx);
+
+PETSC_EXTERN PetscErrorCode KSPSetComputeRHS(KSP, KSPComputeRHS_Fn *, void *);
+
+/*S
+  KSPComputeOperators_Fn - A prototype of a `KSP` evaluation function that would be passed to `KSPSetComputeOperators()`
+
+  Calling Sequence:
++ ksp - `KSP` context
+. A   - the operator that defines the linear system
+. P   - an operator from which to build the preconditioner (often the same as `A`)
+- ctx - [optional] user-defined function context
+
+  Level: beginner
+
+.seealso: [](ch_snes), `KSP`, `KSPSetComputeRHS()`, `SNESGetFunction()`, `KSPComputeRHS_Fn`, `KSPComputeInitialGuess_Fn`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(KSPComputeOperators_Fn)(KSP ksp, Mat A, Mat P, void *ctx);
+
+PETSC_EXTERN PetscErrorCode KSPSetComputeOperators(KSP, KSPComputeOperators_Fn, void *);
+
+/*S
+  KSPComputeInitialGuess_Fn - A prototype of a `KSP` evaluation function that would be passed to `KSPSetComputeInitialGuess()`
+
+  Calling Sequence:
++ ksp  - `ksp` context
+. x    - output vector
+- ctx - [optional] user-defined function context
+
+  Level: beginner
+
+.seealso: [](ch_snes), `KSP`, `KSPSetComputeInitialGuess()`, `SNESGetFunction()`, `KSPComputeRHS_Fn`, `KSPComputeOperators_Fn`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(KSPComputeInitialGuess_Fn)(KSP ksp, Vec x, void *ctx);
+
+PETSC_EXTERN PetscErrorCode KSPSetComputeInitialGuess(KSP, KSPComputeInitialGuess_Fn *, void *);
+PETSC_EXTERN PetscErrorCode DMKSPSetComputeOperators(DM, KSPComputeOperators_Fn *, void *);
+PETSC_EXTERN PetscErrorCode DMKSPGetComputeOperators(DM, KSPComputeOperators_Fn **, void *);
+PETSC_EXTERN PetscErrorCode DMKSPSetComputeRHS(DM, KSPComputeRHS_Fn *, void *);
+PETSC_EXTERN PetscErrorCode DMKSPGetComputeRHS(DM, KSPComputeRHS_Fn **, void *);
+PETSC_EXTERN PetscErrorCode DMKSPSetComputeInitialGuess(DM, KSPComputeInitialGuess_Fn *, void *);
+PETSC_EXTERN PetscErrorCode DMKSPGetComputeInitialGuess(DM, KSPComputeInitialGuess_Fn **, void *);
 
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalSolve(DM, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMProjectField(DM, PetscReal, Vec, void (**)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), InsertMode, Vec);
