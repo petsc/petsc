@@ -1809,6 +1809,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
         const PetscInt tag = elem->tags[0];
         PetscInt       r;
 
+        if (vv < 0) continue;
         if (usegeneric) PetscCall(DMSetLabelValue_Fast(*dm, &vertSets, "Vertex Sets", vStart + vv, tag));
         for (r = 0; r < Nr; ++r) {
           if (mesh->regionDims[r] != 0) continue;
@@ -1822,6 +1823,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
         const PetscInt *tags = &mesh->nodelist->tag[v * GMSH_MAX_TAGS];
         PetscInt        r, t;
 
+        if (vv < 0) continue;
         for (t = 0; t < GMSH_MAX_TAGS; ++t) {
           const PetscInt  tag     = tags[t];
           const PetscBool generic = usegeneric && (!t || multipleTags) ? PETSC_TRUE : PETSC_FALSE;
