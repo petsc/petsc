@@ -1636,7 +1636,7 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt heigh
 
     for (h = 0; h <= depth; h++) {
       if (h == 0 && cEnd == cStart + 1) continue;
-      if (sp->ops->createheightsubspace) PetscCall((*sp->ops->createheightsubspace)(sp, height, &(sp->heightSpaces[h])));
+      if (sp->ops->createheightsubspace) PetscUseTypeMethod(sp, createheightsubspace, height, &sp->heightSpaces[h]);
       else if (sp->pointSpaces) {
         PetscInt hStart, hEnd;
 
@@ -1707,7 +1707,7 @@ PetscErrorCode PetscDualSpaceGetPointSubspace(PetscDualSpace sp, PetscInt point,
 
     for (p = 0; p < pEnd - pStart; p++) {
       if (p + pStart == cStart && cEnd == cStart + 1) continue;
-      if (sp->ops->createpointsubspace) PetscCall((*sp->ops->createpointsubspace)(sp, p + pStart, &(sp->pointSpaces[p])));
+      if (sp->ops->createpointsubspace) PetscUseTypeMethod(sp, createpointsubspace, p + pStart, &sp->pointSpaces[p]);
       else if (sp->heightSpaces || sp->ops->createheightsubspace) {
         PetscInt dim, depth, height;
         DMLabel  label;
@@ -1760,7 +1760,7 @@ PetscErrorCode PetscDualSpaceGetSymmetries(PetscDualSpace sp, const PetscInt ***
     PetscAssertPointer(flips, 3);
     *flips = NULL;
   }
-  if (sp->ops->getsymmetries) PetscCall((sp->ops->getsymmetries)(sp, perms, flips));
+  PetscTryTypeMethod(sp, getsymmetries, perms, flips);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -84,10 +84,9 @@ PetscErrorCode PetscLimiterSetType(PetscLimiter lim, PetscLimiterType name)
   PetscCall(PetscFunctionListFind(PetscLimiterList, name, &r));
   PetscCheck(r, PetscObjectComm((PetscObject)lim), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscLimiter type: %s", name);
 
-  if (lim->ops->destroy) {
-    PetscUseTypeMethod(lim, destroy);
-    lim->ops->destroy = NULL;
-  }
+  PetscTryTypeMethod(lim, destroy);
+  lim->ops->destroy = NULL;
+
   PetscCall((*r)(lim));
   PetscCall(PetscObjectChangeTypeName((PetscObject)lim, name));
   PetscFunctionReturn(PETSC_SUCCESS);

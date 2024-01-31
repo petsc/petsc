@@ -3343,7 +3343,7 @@ PetscErrorCode SNESSetUp(SNES snes)
     }
   }
   if (snes->mf) PetscCall(SNESSetUpMatrixFree_Private(snes, snes->mf_operator, snes->mf_version));
-  if (snes->ops->usercompute && !snes->user) PetscCall((*snes->ops->usercompute)(snes, (void **)&snes->user));
+  if (snes->ops->usercompute && !snes->user) PetscCallBack("SNES callback compute application context", (*snes->ops->usercompute)(snes, (void **)&snes->user));
 
   snes->jac_iter = 0;
   snes->pre_iter = 0;
@@ -3387,7 +3387,7 @@ PetscErrorCode SNESReset(SNES snes)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   if (snes->ops->userdestroy && snes->user) {
-    PetscCall((*snes->ops->userdestroy)((void **)&snes->user));
+    PetscCallBack("SNES callback destroy application context", (*snes->ops->userdestroy)((void **)&snes->user));
     snes->user = NULL;
   }
   if (snes->npc) PetscCall(SNESReset(snes->npc));
@@ -4769,7 +4769,7 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x)
     PetscCall(SNESSetUp(snes));
 
     if (!grid) {
-      if (snes->ops->computeinitialguess) PetscCallBack("SNES callback initial guess", (*snes->ops->computeinitialguess)(snes, snes->vec_sol, snes->initialguessP));
+      if (snes->ops->computeinitialguess) PetscCallBack("SNES callback compute initial guess", (*snes->ops->computeinitialguess)(snes, snes->vec_sol, snes->initialguessP));
     }
 
     if (snes->conv_hist_reset) snes->conv_hist_len = 0;

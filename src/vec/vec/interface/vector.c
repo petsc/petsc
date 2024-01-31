@@ -96,7 +96,7 @@ PetscErrorCode VecGetLocalToGlobalMapping(Vec X, ISLocalToGlobalMapping *mapping
   PetscValidHeaderSpecific(X, VEC_CLASSID, 1);
   PetscValidType(X, 1);
   PetscAssertPointer(mapping, 2);
-  if (X->ops->getlocaltoglobalmapping) PetscCall((*X->ops->getlocaltoglobalmapping)(X, mapping));
+  if (X->ops->getlocaltoglobalmapping) PetscUseTypeMethod(X, getlocaltoglobalmapping, mapping);
   else *mapping = X->map->mapping;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

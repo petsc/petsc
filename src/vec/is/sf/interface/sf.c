@@ -947,7 +947,7 @@ PetscErrorCode PetscSFGetRootRanks(PetscSF sf, PetscInt *nranks, const PetscMPII
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscCheck(sf->setupcalled, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call PetscSFSetUp() before obtaining ranks");
   if (sf->ops->GetRootRanks) {
-    PetscCall((sf->ops->GetRootRanks)(sf, nranks, ranks, roffset, rmine, rremote));
+    PetscUseTypeMethod(sf, GetRootRanks, nranks, ranks, roffset, rmine, rremote);
   } else {
     /* The generic implementation */
     if (nranks) *nranks = sf->nranks;
@@ -983,7 +983,7 @@ PetscErrorCode PetscSFGetLeafRanks(PetscSF sf, PetscInt *niranks, const PetscMPI
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscCheck(sf->setupcalled, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call PetscSFSetUp() before obtaining ranks");
   if (sf->ops->GetLeafRanks) {
-    PetscCall((sf->ops->GetLeafRanks)(sf, niranks, iranks, ioffset, irootloc));
+    PetscUseTypeMethod(sf, GetLeafRanks, niranks, iranks, ioffset, irootloc);
   } else {
     PetscSFType type;
     PetscCall(PetscSFGetType(sf, &type));

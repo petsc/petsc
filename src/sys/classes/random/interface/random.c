@@ -162,7 +162,7 @@ PetscErrorCode PetscRandomGetValuesReal(PetscRandom r, PetscInt n, PetscReal *va
   PetscValidType(r, 1);
   if (!r->ops->getvaluesreal) {
     PetscInt i;
-    for (i = 0; i < n; i++) PetscCall((*r->ops->getvaluereal)(r, val + i));
+    for (i = 0; i < n; i++) PetscUseTypeMethod(r, getvaluereal, val + i);
   } else PetscUseTypeMethod(r, getvaluesreal, n, val);
   PetscCall(PetscObjectStateIncrease((PetscObject)r));
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -3338,7 +3338,7 @@ PetscErrorCode MatLoad_MPIBAIJ_Binary(Mat mat, PetscViewer viewer)
   /* store matrix values */
   for (i = 0; i < m; i++) {
     PetscInt row = rs + i, s = rowidxs[i], e = rowidxs[i + 1];
-    PetscCall((*mat->ops->setvalues)(mat, 1, &row, e - s, colidxs + s, matvals + s, INSERT_VALUES));
+    PetscUseTypeMethod(mat, setvalues, 1, &row, e - s, colidxs + s, matvals + s, INSERT_VALUES);
   }
 
   PetscCall(PetscFree(rowidxs));
