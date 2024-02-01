@@ -1123,7 +1123,7 @@ PetscErrorCode PetscOptionsBoolArray_Private(PetscOptionItems *PetscOptionsObjec
 
   Output Parameters:
 + viewer - the viewer
-. format - the PetscViewerFormat requested by the user, pass NULL if not needed
+. format - the PetscViewerFormat requested by the user, pass `NULL` if not needed
 - set    - `PETSC_TRUE` if found, else `PETSC_FALSE`
 
   Level: beginner
