@@ -1110,17 +1110,11 @@ static PetscErrorCode PetscFECreatePointTraceDefault_Internal(PetscFE fe, PetscI
 
 PETSC_EXTERN PetscErrorCode PetscFECreatePointTrace(PetscFE fe, PetscInt refPoint, PetscFE *trFE)
 {
-  PetscErrorCode (*createpointtrace)(PetscFE, PetscInt, PetscFE *);
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fe, PETSCFE_CLASSID, 1);
   PetscAssertPointer(trFE, 3);
-  createpointtrace = fe->ops->createpointtrace;
-  if (createpointtrace) {
-    PetscCall((*createpointtrace)(fe, refPoint, trFE));
-  } else {
-    PetscCall(PetscFECreatePointTraceDefault_Internal(fe, refPoint, trFE));
-  }
+  if (fe->ops->createpointtrace) PetscUseTypeMethod(fe, createpointtrace, refPoint, trFE);
+  else PetscCall(PetscFECreatePointTraceDefault_Internal(fe, refPoint, trFE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -152,16 +152,17 @@ PetscErrorCode PFApplyVec(PF pf, Vec x, Vec y)
   PetscCheck((pf->dimout * (p / pf->dimout)) == p, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Local output vector length %" PetscInt_FMT " not divisible by dimout %" PetscInt_FMT " of function", p, pf->dimout);
   PetscCheck((n / pf->dimin) == (p / pf->dimout), PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Local vector lengths %" PetscInt_FMT " %" PetscInt_FMT " are wrong for dimin and dimout %" PetscInt_FMT " %" PetscInt_FMT " of function", n, p, pf->dimin, pf->dimout);
 
-  if (pf->ops->applyvec) PetscCall((*pf->ops->applyvec)(pf->data, x, y));
+  if (pf->ops->applyvec) PetscCallBack("PF callback apply to vector", (*pf->ops->applyvec)(pf->data, x, y));
   else {
-    PetscScalar *xx, *yy;
+    const PetscScalar *xx;
+    PetscScalar       *yy;
 
     PetscCall(VecGetLocalSize(x, &n));
     n = n / pf->dimin;
-    PetscCall(VecGetArray(x, &xx));
+    PetscCall(VecGetArrayRead(x, &xx));
     PetscCall(VecGetArray(y, &yy));
-    PetscCall((*pf->ops->apply)(pf->data, n, xx, yy));
-    PetscCall(VecRestoreArray(x, &xx));
+    PetscCallBack("PF callback apply to array", (*pf->ops->apply)(pf->data, n, xx, yy));
+    PetscCall(VecRestoreArrayRead(x, &xx));
     PetscCall(VecRestoreArray(y, &yy));
   }
   if (nox) PetscCall(VecDestroy(&x));
@@ -195,7 +196,7 @@ PetscErrorCode PFApply(PF pf, PetscInt n, const PetscScalar *x, PetscScalar *y)
   PetscAssertPointer(y, 4);
   PetscCheck(x != y, PETSC_COMM_SELF, PETSC_ERR_ARG_IDN, "x and y must be different arrays");
 
-  PetscCall((*pf->ops->apply)(pf->data, n, x, y));
+  PetscCallBack("PF callback apply", (*pf->ops->apply)(pf->data, n, x, y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -265,7 +266,7 @@ PetscErrorCode PFView(PF pf, PetscViewer viewer)
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)pf, viewer));
     if (pf->ops->view) {
       PetscCall(PetscViewerASCIIPushTab(viewer));
-      PetscCall((*pf->ops->view)(pf->data, viewer));
+      PetscCallBack("PF callback view", (*pf->ops->view)(pf->data, viewer));
       PetscCall(PetscViewerASCIIPopTab(viewer));
     }
   }

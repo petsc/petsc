@@ -261,7 +261,7 @@ PetscErrorCode PetscSpaceDestroy(PetscSpace *sp)
   ((PetscObject)(*sp))->refct = 0;
   PetscCall(DMDestroy(&(*sp)->dm));
 
-  PetscCall((*(*sp)->ops->destroy)(*sp));
+  PetscUseTypeMethod(*sp, destroy);
   PetscCall(PetscHeaderDestroy(sp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

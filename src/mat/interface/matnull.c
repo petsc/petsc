@@ -420,7 +420,7 @@ PetscErrorCode MatNullSpaceTest(MatNullSpace sp, Mat mat, PetscBool *isNull)
   }
 
   for (j = 0; j < n; j++) {
-    PetscCall((*mat->ops->mult)(mat, sp->vecs[j], l));
+    PetscUseTypeMethod(mat, mult, sp->vecs[j], l);
     PetscCall(VecNorm(l, NORM_2, &nrm));
     if (nrm >= tol) consistent = PETSC_FALSE;
     if (flg1) {

@@ -2396,7 +2396,7 @@ PetscErrorCode MatZeroRows_SeqBAIJ(Mat A, PetscInt is_n, const PetscInt is_idx[]
           PetscCall(PetscArrayzero(aa, count * bs));
         }
         /* Now insert all the diagonal values for this bs */
-        for (k = 0; k < bs; k++) PetscCall((*A->ops->setvalues)(A, 1, rows + j + k, 1, rows + j + k, &diag, INSERT_VALUES));
+        for (k = 0; k < bs; k++) PetscUseTypeMethod(A, setvalues, 1, rows + j + k, 1, rows + j + k, &diag, INSERT_VALUES);
       } else { /* (diag == 0.0) */
         baij->ilen[row / bs] = 0;
       }      /* end (diag == 0.0) */
@@ -2406,7 +2406,7 @@ PetscErrorCode MatZeroRows_SeqBAIJ(Mat A, PetscInt is_n, const PetscInt is_idx[]
         aa[0] = zero;
         aa += bs;
       }
-      if (diag != (PetscScalar)0.0) PetscCall((*A->ops->setvalues)(A, 1, rows + j, 1, rows + j, &diag, INSERT_VALUES));
+      if (diag != (PetscScalar)0.0) PetscUseTypeMethod(A, setvalues, 1, rows + j, 1, rows + j, &diag, INSERT_VALUES);
     }
   }
 
@@ -3742,7 +3742,7 @@ PetscErrorCode MatLoad_SeqBAIJ_Binary(Mat mat, PetscViewer viewer)
   /* store matrix values */
   for (i = 0; i < m; i++) {
     PetscInt row = i, s = rowidxs[i], e = rowidxs[i + 1];
-    PetscCall((*mat->ops->setvalues)(mat, 1, &row, e - s, colidxs + s, matvals + s, INSERT_VALUES));
+    PetscUseTypeMethod(mat, setvalues, 1, &row, e - s, colidxs + s, matvals + s, INSERT_VALUES);
   }
 
   PetscCall(PetscFree(rowidxs));

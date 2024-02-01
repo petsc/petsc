@@ -463,11 +463,8 @@ PetscErrorCode TSTrajectorySetType(TSTrajectory tj, TS ts, TSTrajectoryType type
 
   PetscCall(PetscFunctionListFind(TSTrajectoryList, type, &r));
   PetscCheck(r, PetscObjectComm((PetscObject)tj), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TSTrajectory type: %s", type);
-  if (tj->ops->destroy) {
-    PetscCall((*(tj)->ops->destroy)(tj));
-
-    tj->ops->destroy = NULL;
-  }
+  PetscTryTypeMethod(tj, destroy);
+  tj->ops->destroy = NULL;
   PetscCall(PetscMemzero(tj->ops, sizeof(*tj->ops)));
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)tj, type));

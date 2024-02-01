@@ -382,7 +382,7 @@ PetscErrorCode VecTaggerComputeBoxes(VecTagger tagger, Vec vec, PetscInt *numBox
   PetscCheck(vls % tbs == 0, PetscObjectComm((PetscObject)tagger), PETSC_ERR_ARG_INCOMP, "vec local size %" PetscInt_FMT " is not a multiple of tagger block size %" PetscInt_FMT, vls, tbs);
   if (tagger->ops->computeboxes) {
     *listed = PETSC_TRUE;
-    PetscCall((*tagger->ops->computeboxes)(tagger, vec, numBoxes, boxes, listed));
+    PetscUseTypeMethod(tagger, computeboxes, vec, numBoxes, boxes, listed);
   } else *listed = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -416,7 +416,7 @@ PetscErrorCode VecTaggerComputeIS(VecTagger tagger, Vec vec, IS *is, PetscBool *
   PetscCall(VecTaggerGetBlockSize(tagger, &tbs));
   PetscCheck(vls % tbs == 0, PetscObjectComm((PetscObject)tagger), PETSC_ERR_ARG_INCOMP, "vec local size %" PetscInt_FMT " is not a multiple of tagger block size %" PetscInt_FMT, vls, tbs);
   if (tagger->ops->computeis) {
-    PetscCall((*tagger->ops->computeis)(tagger, vec, is, listed));
+    PetscUseTypeMethod(tagger, computeis, vec, is, listed);
   } else if (listed) *listed = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

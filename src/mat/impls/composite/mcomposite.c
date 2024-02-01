@@ -253,7 +253,7 @@ skip_merge_mvctx:
       PetscUseTypeMethod(A, mult, x, y2);
       PetscCall(MatGetLocalSize(B, NULL, &n));
       PetscCall(VecPlaceArray(shell->lvecs[i], &shell->larray[tot]));
-      PetscCall((*B->ops->multadd)(B, shell->lvecs[i], y2, y2));
+      PetscUseTypeMethod(B, multadd, shell->lvecs[i], y2, y2);
       PetscCall(VecResetArray(shell->lvecs[i]));
       PetscCall(VecAXPY(y, (shell->scalings ? shell->scalings[i] : 1.0), y2));
       tot += n;

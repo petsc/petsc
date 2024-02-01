@@ -3563,7 +3563,7 @@ PetscErrorCode PetscSectionGetPointSyms(PetscSection section, PetscInt numPoints
     sym->workout = link;
     PetscCall(PetscArrayzero((PetscInt **)link->perms, numPoints));
     PetscCall(PetscArrayzero((PetscInt **)link->rots, numPoints));
-    PetscCall((*sym->ops->getpoints)(sym, section, numPoints, points, link->perms, link->rots));
+    PetscUseTypeMethod(sym, getpoints, section, numPoints, points, link->perms, link->rots);
     if (perms) *perms = link->perms;
     if (rots) *rots = link->rots;
   }
