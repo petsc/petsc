@@ -52,7 +52,11 @@ class Configure(config.base.Configure):
           return [library]
         if with_rpath and not dirname in self.rpathSkipDirs:
           if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
-            return [getattr(self.setCompilers, flagName)+dirname,'-L'+dirname,'-l'+name]
+            import pathlib
+            if pathlib.Path(library).suffix[1:].isnumeric(): # libfoo.so.1.0
+              return [getattr(self.setCompilers, flagName)+dirname,library]
+            else:
+              return [getattr(self.setCompilers, flagName)+dirname,'-L'+dirname,'-l'+name]
           if flagSubst in self.argDB:
             return [self.argDB[flagSubst]+dirname,'-L'+dirname,'-l'+name]
         return ['-L'+dirname,'-l'+name]
