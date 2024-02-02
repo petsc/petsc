@@ -1846,7 +1846,7 @@ static PetscErrorCode DMPlexDistributionLoad_HDF5_Private(DM dm, PetscViewer vie
   /* pointSF does not contain cells in the leaves if overlap = 0. */
   PetscCall(DMPlexSetOverlap_Plex(*distdm, NULL, DMPLEX_OVERLAP_MANUAL));
   PetscCall(DMPlexDistributeSetDefault(*distdm, PETSC_FALSE));
-  PetscCall(DMPlexReorderSetDefault(*distdm, DMPLEX_REORDER_DEFAULT_FALSE));
+  PetscCall(DMPlexReorderSetDefault(*distdm, DM_REORDER_DEFAULT_FALSE));
   PetscCall(PetscLogEventEnd(DMPLEX_DistributionLoad, viewer, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

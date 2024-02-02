@@ -253,33 +253,11 @@ PETSC_EXTERN PetscErrorCode DMPlexGetMigrationSF(DM, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMPlexDistributionSetName(DM, const char[]);
 PETSC_EXTERN PetscErrorCode DMPlexDistributionGetName(DM, const char *[]);
 
-/*E
-   DMPlexReorderDefaultFlag - Flag indicating whether the `DMPLEX` should be reordered by default
-
-   Values:
-+  `DMPLEX_REORDER_DEFAULT_NOTSET` - Flag not set.
-.  `DMPLEX_REORDER_DEFAULT_FALSE`  - Do not reorder by default.
--  `DMPLEX_REORDER_DEFAULT_TRUE`   - Reorder by default.
-
-   Level: intermediate
-
-   Developer Note:
-   Could be replaced with `PETSC_BOOL3`
-
-.seealso: `DMPlexReorderSetDefault()`, `DMPlexReorderGetDefault()`, `DMPlexGetOrdering()`, `DMPlexPermute()`
-E*/
-typedef enum {
-  DMPLEX_REORDER_DEFAULT_NOTSET = -1,
-  DMPLEX_REORDER_DEFAULT_FALSE  = 0,
-  DMPLEX_REORDER_DEFAULT_TRUE
-} DMPlexReorderDefaultFlag;
 PETSC_EXTERN PetscErrorCode DMPlexGetOrdering(DM, MatOrderingType, DMLabel, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexGetOrdering1D(DM, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexPermute(DM, IS, DM *);
-PETSC_EXTERN PetscErrorCode DMPlexReorderGetDefault(DM, DMPlexReorderDefaultFlag *);
-PETSC_EXTERN PetscErrorCode DMPlexReorderSetDefault(DM, DMPlexReorderDefaultFlag);
-PETSC_EXTERN PetscErrorCode DMPlexReorderSectionGetDefault(DM, DMPlexReorderDefaultFlag *);
-PETSC_EXTERN PetscErrorCode DMPlexReorderSectionSetDefault(DM, DMPlexReorderDefaultFlag);
+PETSC_EXTERN PetscErrorCode DMPlexReorderGetDefault(DM, DMReorderDefaultFlag *);
+PETSC_EXTERN PetscErrorCode DMPlexReorderSetDefault(DM, DMReorderDefaultFlag);
 
 PETSC_EXTERN PetscErrorCode DMPlexCreateProcessSF(DM, PetscSF, IS *, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateTwoSidedProcessSF(DM, PetscSF, PetscSection, IS, PetscSection, IS, IS *, PetscSF *);

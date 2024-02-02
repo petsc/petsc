@@ -1751,6 +1751,7 @@ static PetscErrorCode DMInitialize_Swarm(DM sw)
   sw->ops->clone                    = DMClone_Swarm;
   sw->ops->setup                    = DMSetup_Swarm;
   sw->ops->createlocalsection       = NULL;
+  sw->ops->createsectionpermutation = NULL;
   sw->ops->createdefaultconstraints = NULL;
   sw->ops->createglobalvector       = DMCreateGlobalVector_Swarm;
   sw->ops->createlocalvector        = DMCreateLocalVector_Swarm;

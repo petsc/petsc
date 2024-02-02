@@ -41,6 +41,7 @@ struct _DMOps {
   PetscErrorCode (*setfromoptions)(DM, PetscOptionItems *);
   PetscErrorCode (*setup)(DM);
   PetscErrorCode (*createlocalsection)(DM);
+  PetscErrorCode (*createsectionpermutation)(DM, IS *, PetscBT *);
   PetscErrorCode (*createdefaultconstraints)(DM);
   PetscErrorCode (*createglobalvector)(DM, Vec *);
   PetscErrorCode (*createlocalvector)(DM, Vec *);
@@ -266,10 +267,13 @@ struct _p_DM {
   PetscSF   sfNatural;   /* SF mapping to the "natural" ordering */
   PetscBool useNatural;  /* Create the natural SF */
   /* Allows a non-standard data layout */
-  PetscBool    adjacency[2];  /* [use cone() or support() first, use the transitive closure] */
-  PetscSection localSection;  /* Layout for local vectors */
-  PetscSection globalSection; /* Layout for global vectors */
-  PetscLayout  map;
+  PetscBool            adjacency[2];       /* [use cone() or support() first, use the transitive closure] */
+  PetscSection         localSection;       /* Layout for local vectors */
+  PetscSection         globalSection;      /* Layout for global vectors */
+  PetscLayout          map;                /* Parallel division of unknowns across processes */
+  DMReorderDefaultFlag reorderSection;     /* Reorder the local section by default */
+  MatOrderingType      reorderSectionType; /* The type of reordering */
+
   // Affine transform applied in DMGlobalToLocal
   struct {
     VecScatter affine_to_local;

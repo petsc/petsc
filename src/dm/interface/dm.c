@@ -742,6 +742,7 @@ PetscErrorCode DMDestroy(DM *dm)
 
   PetscCall(PetscSectionDestroy(&(*dm)->localSection));
   PetscCall(PetscSectionDestroy(&(*dm)->globalSection));
+  PetscCall(PetscFree((*dm)->reorderSectionType));
   PetscCall(PetscLayoutDestroy(&(*dm)->map));
   PetscCall(PetscSectionDestroy(&(*dm)->defaultConstraint.section));
   PetscCall(MatDestroy(&(*dm)->defaultConstraint.mat));
@@ -4350,6 +4351,29 @@ PetscErrorCode DMSetLocalSection(DM dm, PetscSection section)
   }
   /* The global section will be rebuilt in the next call to DMGetGlobalSection(). */
   PetscCall(PetscSectionDestroy(&dm->globalSection));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  DMCreateSectionPermutation - Create a permutation of the `PetscSection` chart and optionally a blokc structure.
+
+  Input Parameter:
+. dm - The `DM`
+
+  Output Parameter:
++ perm        - A permutation of the mesh points in the chart
+- blockStarts - A high bit is set for the point that begins every block, or NULL for default blocking
+
+  Level: developer
+
+.seealso: [](ch_dmbase), `DM`, `PetscSection`, `DMGetLocalSection()`, `DMGetGlobalSection()`
+@*/
+PetscErrorCode DMCreateSectionPermutation(DM dm, IS *perm, PetscBT *blockStarts)
+{
+  PetscFunctionBegin;
+  *perm        = NULL;
+  *blockStarts = NULL;
+  PetscTryTypeMethod(dm, createsectionpermutation, perm, blockStarts);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -9401,5 +9425,97 @@ PetscErrorCode DMPolytopeInCellTest(DMPolytopeType ct, const PetscReal point[], 
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported polytope type %s", DMPolytopeTypes[ct]);
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMReorderSectionSetDefault - Set flag indicating whether the local section should be reordered by default
+
+  Logically collective
+
+  Input Parameters:
++ dm      - The DM
+- reorder - Flag for reordering
+
+  Level: intermediate
+
+.seealso: `DMReorderSectionGetDefault()`
+@*/
+PetscErrorCode DMReorderSectionSetDefault(DM dm, DMReorderDefaultFlag reorder)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscTryMethod(dm, "DMReorderSectionSetDefault_C", (DM, DMReorderDefaultFlag), (dm, reorder));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMReorderSectionGetDefault - Get flag indicating whether the local section should be reordered by default
+
+  Not collective
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. reorder - Flag for reordering
+
+  Level: intermediate
+
+.seealso: `DMReorderSetDefault()`
+@*/
+PetscErrorCode DMReorderSectionGetDefault(DM dm, DMReorderDefaultFlag *reorder)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscAssertPointer(reorder, 2);
+  *reorder = DM_REORDER_DEFAULT_NOTSET;
+  PetscTryMethod(dm, "DMReorderSectionGetDefault_C", (DM, DMReorderDefaultFlag *), (dm, reorder));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  DMReorderSectionSetType - Set the type of local section reordering
+
+  Logically collective
+
+  Input Parameters:
++ dm      - The DM
+- reorder - The reordering method
+
+  Level: intermediate
+
+.seealso: `DMReorderSectionGetType()`, `DMReorderSectionSetDefault()`
+@*/
+PetscErrorCode DMReorderSectionSetType(DM dm, MatOrderingType reorder)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscTryMethod(dm, "DMReorderSectionSetType_C", (DM, MatOrderingType), (dm, reorder));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  DMReorderSectionGetType - Get the reordering type for the local section
+
+  Not collective
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. reorder - The reordering method
+
+  Level: intermediate
+
+.seealso: `DMReorderSetDefault()`, `DMReorderSectionGetDefault()`
+@*/
+PetscErrorCode DMReorderSectionGetType(DM dm, MatOrderingType *reorder)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscAssertPointer(reorder, 2);
+  *reorder = NULL;
+  PetscTryMethod(dm, "DMReorderSectionGetType_C", (DM, MatOrderingType *), (dm, reorder));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

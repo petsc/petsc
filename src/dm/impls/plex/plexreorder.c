@@ -366,7 +366,7 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMPlexReorderSetDefault_Plex(DM dm, DMPlexReorderDefaultFlag reorder)
+PetscErrorCode DMPlexReorderSetDefault_Plex(DM dm, DMReorderDefaultFlag reorder)
 {
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
@@ -388,15 +388,15 @@ PetscErrorCode DMPlexReorderSetDefault_Plex(DM dm, DMPlexReorderDefaultFlag reor
 
 .seealso: `DMPlexReorderGetDefault()`
 @*/
-PetscErrorCode DMPlexReorderSetDefault(DM dm, DMPlexReorderDefaultFlag reorder)
+PetscErrorCode DMPlexReorderSetDefault(DM dm, DMReorderDefaultFlag reorder)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscTryMethod(dm, "DMPlexReorderSetDefault_C", (DM, DMPlexReorderDefaultFlag), (dm, reorder));
+  PetscTryMethod(dm, "DMPlexReorderSetDefault_C", (DM, DMReorderDefaultFlag), (dm, reorder));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMPlexReorderGetDefault_Plex(DM dm, DMPlexReorderDefaultFlag *reorder)
+PetscErrorCode DMPlexReorderGetDefault_Plex(DM dm, DMReorderDefaultFlag *reorder)
 {
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
@@ -420,17 +420,33 @@ PetscErrorCode DMPlexReorderGetDefault_Plex(DM dm, DMPlexReorderDefaultFlag *reo
 
 .seealso: `DMPlexReorderSetDefault()`
 @*/
-PetscErrorCode DMPlexReorderGetDefault(DM dm, DMPlexReorderDefaultFlag *reorder)
+PetscErrorCode DMPlexReorderGetDefault(DM dm, DMReorderDefaultFlag *reorder)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(reorder, 2);
-  PetscUseMethod(dm, "DMPlexReorderGetDefault_C", (DM, DMPlexReorderDefaultFlag *), (dm, reorder));
+  PetscUseMethod(dm, "DMPlexReorderGetDefault_C", (DM, DMReorderDefaultFlag *), (dm, reorder));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMCreateSectionPermutation_Plex_Reverse(DM dm, IS *permutation, PetscBT *blockStarts)
+{
+  IS        permIS;
+  PetscInt *perm;
+  PetscInt  pStart, pEnd;
+
+  PetscFunctionBegin;
+  PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+  PetscCall(PetscMalloc1(pEnd - pStart, &perm));
+  for (PetscInt p = pStart; p < pEnd; ++p) perm[pEnd - 1 - p] = p;
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, pEnd - pStart, perm, PETSC_OWN_POINTER, &permIS));
+  PetscCall(ISSetPermutation(permIS));
+  *permutation = permIS;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // Reorder to group split nodes
-PetscErrorCode DMPlexCreateSectionPermutation_Internal(DM dm, IS *permutation, PetscBT *blockStarts)
+static PetscErrorCode DMCreateSectionPermutation_Plex_Cohesive(DM dm, IS *permutation, PetscBT *blockStarts)
 {
   IS        permIS;
   PetscBT   bt, blst;
@@ -438,13 +454,6 @@ PetscErrorCode DMPlexCreateSectionPermutation_Internal(DM dm, IS *permutation, P
   PetscInt  pStart, pEnd, i = 0;
 
   PetscFunctionBegin;
-  *permutation = NULL;
-  *blockStarts = NULL;
-  {
-    DMPlexReorderDefaultFlag reorder;
-    PetscCall(DMPlexReorderSectionGetDefault(dm, &reorder));
-    if (reorder != DMPLEX_REORDER_DEFAULT_TRUE) PetscFunctionReturn(PETSC_SUCCESS);
-  }
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   PetscCall(PetscMalloc1(pEnd - pStart, &perm));
   PetscCall(PetscBTCreate(pEnd - pStart, &bt));
@@ -496,65 +505,52 @@ PetscErrorCode DMPlexCreateSectionPermutation_Internal(DM dm, IS *permutation, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMPlexReorderSectionSetDefault_Plex(DM dm, DMPlexReorderDefaultFlag reorder)
+PetscErrorCode DMCreateSectionPermutation_Plex(DM dm, IS *perm, PetscBT *blockStarts)
 {
-  DM_Plex *mesh = (DM_Plex *)dm->data;
+  DMReorderDefaultFlag reorder;
+  MatOrderingType      otype;
+  PetscBool            iscohesive, isreverse;
 
   PetscFunctionBegin;
-  mesh->reorderSection = reorder;
+  PetscCall(DMReorderSectionGetDefault(dm, &reorder));
+  if (reorder != DM_REORDER_DEFAULT_TRUE) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(DMReorderSectionGetType(dm, &otype));
+  if (!otype) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscStrncmp(otype, "cohesive", 1024, &iscohesive));
+  PetscCall(PetscStrncmp(otype, "reverse", 1024, &isreverse));
+  if (iscohesive) {
+    PetscCall(DMCreateSectionPermutation_Plex_Cohesive(dm, perm, blockStarts));
+  } else if (isreverse) {
+    PetscCall(DMCreateSectionPermutation_Plex_Reverse(dm, perm, blockStarts));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
-  DMPlexReorderSectionSetDefault - Set flag indicating whether the local section should be reordered by default
-
-  Logically collective
-
-  Input Parameters:
-+ dm      - The DM
-- reorder - Flag for reordering
-
-  Level: intermediate
-
-.seealso: `DMPlexReorderSectionGetDefault()`
-@*/
-PetscErrorCode DMPlexReorderSectionSetDefault(DM dm, DMPlexReorderDefaultFlag reorder)
+PetscErrorCode DMReorderSectionSetDefault_Plex(DM dm, DMReorderDefaultFlag reorder)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscTryMethod(dm, "DMPlexReorderSectionSetDefault_C", (DM, DMPlexReorderDefaultFlag), (dm, reorder));
+  dm->reorderSection = reorder;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMPlexReorderSectionGetDefault_Plex(DM dm, DMPlexReorderDefaultFlag *reorder)
+PetscErrorCode DMReorderSectionGetDefault_Plex(DM dm, DMReorderDefaultFlag *reorder)
 {
-  DM_Plex *mesh = (DM_Plex *)dm->data;
-
   PetscFunctionBegin;
-  *reorder = mesh->reorderSection;
+  *reorder = dm->reorderSection;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
-  DMPlexReorderSectionGetDefault - Get flag indicating whether the local section should be reordered by default
-
-  Not collective
-
-  Input Parameter:
-. dm - The DM
-
-  Output Parameter:
-. reorder - Flag for reordering
-
-  Level: intermediate
-
-.seealso: `DMPlexReorderSetDefault()`
-@*/
-PetscErrorCode DMPlexReorderSectionGetDefault(DM dm, DMPlexReorderDefaultFlag *reorder)
+PetscErrorCode DMReorderSectionSetType_Plex(DM dm, MatOrderingType reorder)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscAssertPointer(reorder, 2);
-  PetscUseMethod(dm, "DMPlexReorderSectionGetDefault_C", (DM, DMPlexReorderDefaultFlag *), (dm, reorder));
+  PetscCall(PetscFree(dm->reorderSectionType));
+  PetscCall(PetscStrallocpy(reorder, (char **)&dm->reorderSectionType));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode DMReorderSectionGetType_Plex(DM dm, MatOrderingType *reorder)
+{
+  PetscFunctionBegin;
+  *reorder = dm->reorderSectionType;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

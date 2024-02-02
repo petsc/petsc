@@ -111,6 +111,9 @@ Changes: Development
 
 - Add MPI reduction inside ``SNESComputeObjective_DMDA()``. No need to call reduction in local callback
 - Deprecate ``PetscSimplePointFunc`` in favor of ``PetscSimplePointFn``
+- Move ``DMPlexReorderDefaultFlag`` to ``DMReorderDefaultFlag``
+- Add ``DMCreateSectionPermutation()``, ``DMReorderSectionGetType()``, and ``DMReorderSectionSetType()``
+- Add ``DMReorderSectionGetDefault()`` and ``DMReorderSectionSetDefault()`` to allow point permutations when sections are built automatically
 
 .. rubric:: DMSwarm:
 
@@ -120,7 +123,6 @@ Changes: Development
 - Change protototype of ``DMPlexSetSNESLocalFEM()``. Now it accepts a single context and a Boolean indicating to use the objective function callback
 - Replace ``DMProjectCoordinates()`` with ``DMSetCoordinateDisc()``
 - Add argument to ``DMPlexCreateCoordinateSpace()``
-- Add ``DMPlexReorderSectionGetDefault()`` and ``DMPlexReorderSectionSetDefault()`` to allow point permutations when sections are built automatically
 - Add ``DMPlexCoordMap`` and some default maps
 - Add Boolean argument to ``DMPlexPartitionLabelCreateSF()`` to sort ranks
 - Add ``DMClearAuxiliaryVec()`` to clear the auxiliary data

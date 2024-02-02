@@ -2704,8 +2704,10 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "MatComputeNeumannOverlap_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexReorderGetDefault_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexReorderSetDefault_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexReorderSectionGetDefault_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexReorderSectionSetDefault_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMReorderSectionGetDefault_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMReorderSectionSetDefault_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMReorderSectionGetType_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMReorderSectionSetType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexGetOverlap_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexSetOverlap_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexGetUseCeed_C", NULL));

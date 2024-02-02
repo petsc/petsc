@@ -17,6 +17,7 @@ native    DMDirection
 native    DMEnclosureType
 native    DMPolytopeType
 native    DMCopyLabelsMode
+native    DMReorderDefaultFlag
 
 nativeptr DM
 
@@ -53,7 +54,6 @@ nativeptr DMNetworkMonitor
 # dmplex.h
 native    DMPlexInterpolatedFlag
 native    DMPlexTPSType
-native    DMPlexReorderDefaultFlag
 
 # dmswarm.h
 native    DMSwarmType

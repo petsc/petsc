@@ -1461,6 +1461,7 @@ PETSC_EXTERN PetscErrorCode DMInitialize_Moab(DM dm)
   dm->ops->clone                    = DMClone_Moab;
   dm->ops->setup                    = DMSetUp_Moab;
   dm->ops->createlocalsection       = NULL;
+  dm->ops->createsectionpermutation = NULL;
   dm->ops->createdefaultconstraints = NULL;
   dm->ops->createglobalvector       = DMCreateGlobalVector_Moab;
   dm->ops->createlocalvector        = DMCreateLocalVector_Moab;

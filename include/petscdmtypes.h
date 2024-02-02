@@ -272,6 +272,27 @@ typedef enum {
   NUM_PETSC_UNITS
 } PetscUnit;
 
+/*E
+   DMReorderDefaultFlag - Flag indicating whether the `DM` should be reordered by default
+
+   Values:
++  `DM_REORDER_DEFAULT_NOTSET` - Flag not set.
+.  `DM_REORDER_DEFAULT_FALSE`  - Do not reorder by default.
+-  `DM_REORDER_DEFAULT_TRUE`   - Reorder by default.
+
+   Level: intermediate
+
+   Developer Note:
+   Could be replaced with `PETSC_BOOL3`
+
+.seealso: `DMPlexReorderSetDefault()`, `DMPlexReorderGetDefault()`, `DMPlexGetOrdering()`, `DMPlexPermute()`
+E*/
+typedef enum {
+  DM_REORDER_DEFAULT_NOTSET = -1,
+  DM_REORDER_DEFAULT_FALSE  = 0,
+  DM_REORDER_DEFAULT_TRUE
+} DMReorderDefaultFlag;
+
 /*S
     DMField - PETSc object for defining a field on a mesh topology
 

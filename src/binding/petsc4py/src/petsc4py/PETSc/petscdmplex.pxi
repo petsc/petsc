@@ -2,11 +2,6 @@
 
 cdef extern from * nogil:
 
-    ctypedef enum PetscDMPlexReorderDefaultFlag "DMPlexReorderDefaultFlag":
-        DMPLEX_REORDER_DEFAULT_NOTSET
-        DMPLEX_REORDER_DEFAULT_FALSE
-        DMPLEX_REORDER_DEFAULT_TRUE
-
     ctypedef const char* PetscDMPlexTransformType "DMPlexTransformType"
     PetscDMPlexTransformType DMPLEXREFINEREGULAR
     PetscDMPlexTransformType DMPLEXREFINEALFELD
@@ -131,8 +126,8 @@ cdef extern from * nogil:
 
     PetscErrorCode DMPlexGetOrdering(PetscDM,PetscMatOrderingType,PetscDMLabel,PetscIS*)
     PetscErrorCode DMPlexPermute(PetscDM,PetscIS,PetscDM*)
-    PetscErrorCode DMPlexReorderGetDefault(PetscDM,PetscDMPlexReorderDefaultFlag*)
-    PetscErrorCode DMPlexReorderSetDefault(PetscDM,PetscDMPlexReorderDefaultFlag)
+    PetscErrorCode DMPlexReorderGetDefault(PetscDM,PetscDMReorderDefaultFlag*)
+    PetscErrorCode DMPlexReorderSetDefault(PetscDM,PetscDMReorderDefaultFlag)
 
     #int DMPlexCreateSubmesh(PetscDM,PetscDMLabel,PetscInt,PetscDM*)
     #int DMPlexCreateHybridMesh(PetscDM,PetscDMLabel,PetscDMLabel,PetscInt,PetscDMLabel*,PetscDMLabel*,PetscDM *,PetscDM *)
