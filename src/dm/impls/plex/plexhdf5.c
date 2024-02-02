@@ -2763,7 +2763,7 @@ PetscErrorCode DMPlexSectionLoad_HDF5_Internal(DM dm, PetscViewer viewer, DM sec
       PetscCall(DMGetGlobalSection(sectiondm, &gsectionB1));
       PetscCall(PetscSectionGetIncludesConstraints(gsectionB1, &includesConstraintsB));
       PetscCall(DMGetPointSF(sectiondm, &pointsf));
-      PetscCall(PetscSectionCreateGlobalSection(sectionB, pointsf, includesConstraintsB, PETSC_TRUE, &gsectionB));
+      PetscCall(PetscSectionCreateGlobalSection(sectionB, pointsf, PETSC_TRUE, includesConstraintsB, PETSC_TRUE, &gsectionB));
       PetscCall(DMPlexSectionLoad_HDF5_Internal_CreateDataSF(sectionA, layout, offsetsA, gsectionB, &gsfABdata));
       PetscCall(PetscSectionDestroy(&gsectionB));
       *gsf = gsfABdata;

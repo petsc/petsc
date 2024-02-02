@@ -189,7 +189,7 @@ int main(int argc, char **argv)
     PetscCall(PetscSFCreate(comm, &sf));
     PetscCall(PetscSFSetGraph(sf, nroots, nleaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER));
     /* Create global section*/
-    PetscCall(PetscSectionCreateGlobalSection(section, sf, user.includes_constraints, PETSC_FALSE, &gsection));
+    PetscCall(PetscSectionCreateGlobalSection(section, sf, PETSC_TRUE, user.includes_constraints, PETSC_FALSE, &gsection));
     PetscCall(PetscSFDestroy(&sf));
     /* View */
     PetscCall(PetscViewerHDF5Open(comm, user.fname, FILE_MODE_WRITE, &viewer));

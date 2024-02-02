@@ -1631,9 +1631,9 @@ PetscErrorCode DMNetworkAssembleGraphStructures(DM dm)
   if (size > 1) {
     PetscCall(PetscSFGetSubSF(network->plex->sf, network->vertex.mapping, &network->vertex.sf));
 
-    PetscCall(PetscSectionCreateGlobalSection(network->vertex.DofSection, network->vertex.sf, PETSC_FALSE, PETSC_FALSE, &network->vertex.GlobalDofSection));
+    PetscCall(PetscSectionCreateGlobalSection(network->vertex.DofSection, network->vertex.sf, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, &network->vertex.GlobalDofSection));
     PetscCall(PetscSFGetSubSF(network->plex->sf, network->edge.mapping, &network->edge.sf));
-    PetscCall(PetscSectionCreateGlobalSection(network->edge.DofSection, network->edge.sf, PETSC_FALSE, PETSC_FALSE, &network->edge.GlobalDofSection));
+    PetscCall(PetscSectionCreateGlobalSection(network->edge.DofSection, network->edge.sf, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, &network->edge.GlobalDofSection));
   } else {
     /* create structures for vertex */
     PetscCall(PetscSectionClone(network->vertex.DofSection, &network->vertex.GlobalDofSection));

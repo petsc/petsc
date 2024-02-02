@@ -309,6 +309,7 @@ struct _p_DM {
   DMSpace     *probs;    /* Array of discrete systems */
   /* Output structures */
   DM        dmBC;              /* The DM with boundary conditions in the global DM */
+  PetscBool ignorePermOutput;  /* Ignore the local section permutation on output */
   PetscInt  outputSequenceNum; /* The current sequence number for output */
   PetscReal outputSequenceVal; /* The current sequence value for output */
   PetscErrorCode (*monitor[MAXDMMONITORS])(DM, void *);

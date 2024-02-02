@@ -2900,7 +2900,7 @@ PetscErrorCode DMPlexGetSubdomainSection(DM dm, PetscSection *subsection)
 
     PetscCall(PetscSFCreate(PETSC_COMM_SELF, &sf));
     PetscCall(DMGetLocalSection(dm, &section));
-    PetscCall(PetscSectionCreateGlobalSection(section, sf, PETSC_FALSE, PETSC_TRUE, &mesh->subdomainSection));
+    PetscCall(PetscSectionCreateGlobalSection(section, sf, PETSC_TRUE, PETSC_FALSE, PETSC_TRUE, &mesh->subdomainSection));
     PetscCall(PetscSFDestroy(&sf));
   }
   *subsection = mesh->subdomainSection;
@@ -8702,7 +8702,7 @@ PetscErrorCode DMPlexCreateNumbering_Plex(DM dm, PetscInt pStart, PetscInt pEnd,
   PetscCall(PetscSectionSetChart(section, pStart, pEnd));
   for (p = pStart; p < pEnd; ++p) PetscCall(PetscSectionSetDof(section, p, 1));
   PetscCall(PetscSectionSetUp(section));
-  PetscCall(PetscSectionCreateGlobalSection(section, sf, PETSC_FALSE, PETSC_FALSE, &globalSection));
+  PetscCall(PetscSectionCreateGlobalSection(section, sf, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, &globalSection));
   PetscCall(PetscMalloc1(pEnd - pStart, &numbers));
   for (p = pStart; p < pEnd; ++p) {
     PetscCall(PetscSectionGetOffset(globalSection, p, &numbers[p - pStart]));
@@ -9862,7 +9862,7 @@ static PetscErrorCode DMGetFullDM(DM dm, DM *odm)
   PetscCall(DMCopyFields(dm, *odm));
   PetscCall(DMGetLocalSection(*odm, &newSection));
   PetscCall(DMGetPointSF(*odm, &sf));
-  PetscCall(PetscSectionCreateGlobalSection(newSection, sf, PETSC_TRUE, PETSC_FALSE, &gsection));
+  PetscCall(PetscSectionCreateGlobalSection(newSection, sf, PETSC_TRUE, PETSC_TRUE, PETSC_FALSE, &gsection));
   PetscCall(DMSetGlobalSection(*odm, gsection));
   PetscCall(PetscSectionDestroy(&gsection));
   PetscFunctionReturn(PETSC_SUCCESS);

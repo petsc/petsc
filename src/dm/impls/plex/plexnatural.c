@@ -185,7 +185,7 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
     /* Create the SF associated with this section
          Roots are natural dofs, leaves are global dofs */
     PetscCall(DMGetPointSF(dm, &sf));
-    PetscCall(PetscSectionCreateGlobalSection(sectionDist, sf, PETSC_TRUE, PETSC_TRUE, &gLocSection));
+    PetscCall(PetscSectionCreateGlobalSection(sectionDist, sf, PETSC_TRUE, PETSC_TRUE, PETSC_TRUE, &gLocSection));
     PetscCall(PetscSFCreateSectionSF(sfEmbed, section, remoteOffsets, gLocSection, &sfField));
     PetscCall(PetscSFDestroy(&sfEmbed));
     PetscCall(PetscSectionDestroy(&gLocSection));

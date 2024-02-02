@@ -881,5 +881,5 @@ cdef class Section(Object):
 
         """
         cdef Section gsec = Section()
-        CHKERR( PetscSectionCreateGlobalSection(self.sec,sf.sf,PETSC_FALSE,PETSC_FALSE,&gsec.sec) )
+        CHKERR( PetscSectionCreateGlobalSection(self.sec,sf.sf,PETSC_TRUE,PETSC_FALSE,PETSC_FALSE,&gsec.sec) )
         return gsec

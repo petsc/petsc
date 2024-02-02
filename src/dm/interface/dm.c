@@ -903,6 +903,7 @@ PetscErrorCode DMSetFromOptions(DM dm)
   PetscCall(PetscOptionsEnum("-dm_blocking_type", "Topological point or field node blocking", "DMSetBlockingType", DMBlockingTypes, (PetscEnum)dm->blocking_type, (PetscEnum *)&dm->blocking_type, NULL));
   PetscCall(PetscOptionsEnum("-dm_is_coloring_type", "Global or local coloring of Jacobian", "DMSetISColoringType", ISColoringTypes, (PetscEnum)dm->coloringtype, (PetscEnum *)&dm->coloringtype, NULL));
   PetscCall(PetscOptionsInt("-dm_bind_below", "Set the size threshold (in entries) below which the Vec is bound to the CPU", "VecBindToCPU", dm->bind_below, &dm->bind_below, &flg));
+  PetscCall(PetscOptionsBool("-dm_ignore_perm_output", "Ignore the local section permutation on output", "DMGetOutputDM", dm->ignorePermOutput, &dm->ignorePermOutput, NULL));
   PetscTryTypeMethod(dm, setfromoptions, PetscOptionsObject);
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)dm, PetscOptionsObject));
@@ -4590,7 +4591,7 @@ PetscErrorCode DMGetGlobalSection(DM dm, PetscSection *section)
     PetscCheck(s, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM must have a default PetscSection in order to create a global PetscSection");
     PetscCheck(dm->sf, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM must have a point PetscSF in order to create a global PetscSection");
     PetscCall(DMGetIsoperiodicPointSF_Internal(dm, &sf));
-    PetscCall(PetscSectionCreateGlobalSection(s, sf, PETSC_FALSE, PETSC_FALSE, &dm->globalSection));
+    PetscCall(PetscSectionCreateGlobalSection(s, sf, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, &dm->globalSection));
     PetscCall(PetscLayoutDestroy(&dm->map));
     PetscCall(PetscSectionGetValueLayout(PetscObjectComm((PetscObject)dm), dm->globalSection, &dm->map));
     PetscCall(PetscSectionViewFromOptions(dm->globalSection, NULL, "-global_section_view"));
@@ -6408,21 +6409,25 @@ PetscErrorCode DMGetDimPoints(DM dm, PetscInt dim, PetscInt *pStart, PetscInt *p
 PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
 {
   PetscSection section;
-  PetscBool    hasConstraints, ghasConstraints;
+  IS           perm;
+  PetscBool    hasConstraints, newDM, gnewDM;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(odm, 2);
   PetscCall(DMGetLocalSection(dm, &section));
   PetscCall(PetscSectionHasConstraints(section, &hasConstraints));
-  PetscCall(MPIU_Allreduce(&hasConstraints, &ghasConstraints, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
-  if (!ghasConstraints) {
+  PetscCall(PetscSectionGetPermutation(section, &perm));
+  newDM = hasConstraints || perm ? PETSC_TRUE : PETSC_FALSE;
+  PetscCall(MPIU_Allreduce(&newDM, &gnewDM, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+  if (!gnewDM) {
     *odm = dm;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (!dm->dmBC) {
     PetscSection newSection, gsection;
     PetscSF      sf;
+    PetscBool    usePerm = dm->ignorePermOutput ? PETSC_FALSE : PETSC_TRUE;
 
     PetscCall(DMClone(dm, &dm->dmBC));
     PetscCall(DMCopyDisc(dm, dm->dmBC));
@@ -6430,7 +6435,7 @@ PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
     PetscCall(DMSetLocalSection(dm->dmBC, newSection));
     PetscCall(PetscSectionDestroy(&newSection));
     PetscCall(DMGetPointSF(dm->dmBC, &sf));
-    PetscCall(PetscSectionCreateGlobalSection(section, sf, PETSC_TRUE, PETSC_FALSE, &gsection));
+    PetscCall(PetscSectionCreateGlobalSection(section, sf, usePerm, PETSC_TRUE, PETSC_FALSE, &gsection));
     PetscCall(DMSetGlobalSection(dm->dmBC, gsection));
     PetscCall(PetscSectionDestroy(&gsection));
   }
