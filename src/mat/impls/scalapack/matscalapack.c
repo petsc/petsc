@@ -355,6 +355,30 @@ PetscErrorCode MatMatMultSymbolic_ScaLAPACK(Mat A, Mat B, PetscReal fill, Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatTransposeMatMultNumeric_ScaLAPACK(Mat A, Mat B, Mat C)
+{
+  Mat_ScaLAPACK *a    = (Mat_ScaLAPACK *)A->data;
+  Mat_ScaLAPACK *b    = (Mat_ScaLAPACK *)B->data;
+  Mat_ScaLAPACK *c    = (Mat_ScaLAPACK *)C->data;
+  PetscScalar    sone = 1.0, zero = 0.0;
+  PetscBLASInt   one = 1;
+
+  PetscFunctionBegin;
+  PetscCallBLAS("PBLASgemm", PBLASgemm_("T", "N", &a->N, &b->N, &a->M, &sone, a->loc, &one, &one, a->desc, b->loc, &one, &one, b->desc, &zero, c->loc, &one, &one, c->desc));
+  C->assembled = PETSC_TRUE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatTransposeMatMultSymbolic_ScaLAPACK(Mat A, Mat B, PetscReal fill, Mat C)
+{
+  PetscFunctionBegin;
+  PetscCall(MatSetSizes(C, A->cmap->n, B->cmap->n, PETSC_DECIDE, PETSC_DECIDE));
+  PetscCall(MatSetType(C, MATSCALAPACK));
+  PetscCall(MatSetUp(C));
+  C->ops->transposematmultnumeric = MatTransposeMatMultNumeric_ScaLAPACK;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatMatTransposeMultNumeric_ScaLAPACK(Mat A, Mat B, Mat C)
 {
   Mat_ScaLAPACK *a    = (Mat_ScaLAPACK *)A->data;
@@ -375,22 +399,7 @@ static PetscErrorCode MatMatTransposeMultSymbolic_ScaLAPACK(Mat A, Mat B, PetscR
   PetscCall(MatSetSizes(C, A->rmap->n, B->rmap->n, PETSC_DECIDE, PETSC_DECIDE));
   PetscCall(MatSetType(C, MATSCALAPACK));
   PetscCall(MatSetUp(C));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatProductSetFromOptions_ScaLAPACK_AB(Mat C)
-{
-  PetscFunctionBegin;
-  C->ops->matmultsymbolic = MatMatMultSymbolic_ScaLAPACK;
-  C->ops->productsymbolic = MatProductSymbolic_AB;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatProductSetFromOptions_ScaLAPACK_ABt(Mat C)
-{
-  PetscFunctionBegin;
-  C->ops->mattransposemultsymbolic = MatMatTransposeMultSymbolic_ScaLAPACK;
-  C->ops->productsymbolic          = MatProductSymbolic_ABt;
+  C->ops->mattransposemultnumeric = MatMatTransposeMultNumeric_ScaLAPACK;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -401,10 +410,16 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_ScaLAPACK(Mat C)
   PetscFunctionBegin;
   switch (product->type) {
   case MATPRODUCT_AB:
-    PetscCall(MatProductSetFromOptions_ScaLAPACK_AB(C));
+    C->ops->matmultsymbolic = MatMatMultSymbolic_ScaLAPACK;
+    C->ops->productsymbolic = MatProductSymbolic_AB;
+    break;
+  case MATPRODUCT_AtB:
+    C->ops->transposematmultsymbolic = MatTransposeMatMultSymbolic_ScaLAPACK;
+    C->ops->productsymbolic          = MatProductSymbolic_AtB;
     break;
   case MATPRODUCT_ABt:
-    PetscCall(MatProductSetFromOptions_ScaLAPACK_ABt(C));
+    C->ops->mattransposemultsymbolic = MatMatTransposeMultSymbolic_ScaLAPACK;
+    C->ops->productsymbolic          = MatProductSymbolic_ABt;
     break;
   default:
     SETERRQ(PetscObjectComm((PetscObject)C), PETSC_ERR_SUP, "MatProduct type %s is not supported for ScaLAPACK and ScaLAPACK matrices", MatProductTypes[product->type]);
@@ -1481,7 +1496,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_ScaLAPACK,
                                        /*129*/ 0,
                                        0,
                                        0,
-                                       0,
+                                       MatTransposeMatMultNumeric_ScaLAPACK,
                                        0,
                                        /*134*/ 0,
                                        0,
