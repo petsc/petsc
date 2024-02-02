@@ -3,6 +3,8 @@
 #include <petscsnes.h>
 #include <petsc/private/petscimpl.h>
 
+/* SUBMANSEC = SNES */
+
 PETSC_EXTERN PetscBool      SNESRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode SNESRegisterAll(void);
 
@@ -175,24 +177,55 @@ struct _p_SNES {
 typedef struct _p_DMSNES  *DMSNES;
 typedef struct _DMSNESOps *DMSNESOps;
 struct _DMSNESOps {
-  PetscErrorCode (*computefunction)(SNES, Vec, Vec, void *);
-  PetscErrorCode (*computemffunction)(SNES, Vec, Vec, void *);
-  PetscErrorCode (*computejacobian)(SNES, Vec, Mat, Mat, void *);
+  SNESFunctionFn *computefunction;
+  SNESFunctionFn *computemffunction;
+  SNESJacobianFn *computejacobian;
 
   /* objective */
-  PetscErrorCode (*computeobjective)(SNES, Vec, PetscReal *, void *);
+  SNESObjectiveFn *computeobjective;
 
   /* Picard iteration functions */
-  PetscErrorCode (*computepfunction)(SNES, Vec, Vec, void *);
-  PetscErrorCode (*computepjacobian)(SNES, Vec, Mat, Mat, void *);
+  SNESFunctionFn *computepfunction;
+  SNESJacobianFn *computepjacobian;
 
   /* User-defined smoother */
-  PetscErrorCode (*computegs)(SNES, Vec, Vec, void *);
+  SNESNGSFn *computegs;
 
   PetscErrorCode (*destroy)(DMSNES);
   PetscErrorCode (*duplicate)(DMSNES, DMSNES);
 };
 
+/*S
+   DMSNES - Object held by a `DM` that contains all the callback functions and their contexts needed by a `SNES`
+
+   Level: developer
+
+   Notes:
+   Users provides callback functions and their contexts to `SNES` using, for example, `SNESSetFunction()`. These values are stored
+   in a `DMSNES` that is contained in the `DM` associated with the `SNES`. If no `DM` was provided by
+   the user with `SNESSetDM()` it is automatically created by `SNESGetDM()` with `DMShellCreate()`.
+
+   Users very rarely need to worked directly with the `DMSNES` object, rather they work with the `SNES` and the `DM` they created
+
+   Multiple `DM` can share a single `DMSNES`, often each `DM` is associated with
+   a grid refinement level. `DMGetDMSNES()` returns the `DMSNES` associated with a `DM`. `DMGetDMSNESWrite()` returns a unique
+   `DMSNES` that is only associated with the current `DM`, making a copy of the shared `DMSNES` if needed (copy-on-write).
+
+   See `DMKSP` for details on why there is a needed for `DMSNES` instead of simply storing the user callbacks directly in the `DM` or the `TS`
+
+   Developer Note:
+   The `originaldm` inside the `DMSNES` is NOT reference counted (to prevent a reference count loop between a `DM` and a `DMSNES`).
+   The `DM` on which this context was first created is cached here to implement one-way
+   copy-on-write. When `DMGetDMSNESWrite()` sees a request using a different `DM`, it makes a copy of the `TSDM`. Thus, if a user
+   only interacts directly with one level, e.g., using `TSSetIFunction()`, then coarse levels of a multilevel item
+   integrator are built, then the user changes the routine with another call to `TSSetIFunction()`, it automatically
+   propagates to all the levels. If instead, they get out a specific level and set the function on that level,
+   subsequent changes to the original level will no longer propagate to that level.
+
+.seealso: [](ch_ts), `SNES`, `SNESCreate()`, `DM`, `DMGetDMSNESWrite()`, `DMGetDMSNES()`,  `DMKSP`, `DMTS`, `DMSNESSetFunction()`, `DMSNESGetFunction()`,
+          `DMSNESSetFunctionContextDestroy()`, `DMSNESSetMFFunction()`, `DMSNESSetNGS()`, `DMSNESGetNGS()`, `DMSNESSetJacobian()`, `DMSNESGetJacobian()`,
+          `DMSNESSetJacobianContextDestroy()`, `DMSNESSetPicard()`, `DMSNESGetPicard()`, `DMSNESSetObjective()`, `DMSNESGetObjective()`, `DMCopyDMSNES()`
+S*/
 struct _p_DMSNES {
   PETSCHEADER(struct _DMSNESOps);
   PetscContainer functionctxcontainer;
@@ -204,13 +237,7 @@ struct _p_DMSNES {
 
   void *data;
 
-  /* This is NOT reference counted. The DM on which this context was first created is cached here to implement one-way
-   * copy-on-write. When DMGetDMSNESWrite() sees a request using a different DM, it makes a copy. Thus, if a user
-   * only interacts directly with one level, e.g., using SNESSetFunction(), then SNESSetUp_FAS() is called to build
-   * coarse levels, then the user changes the routine with another call to SNESSetFunction(), it automatically
-   * propagates to all the levels. If instead, they get out a specific level and set the function on that level,
-   * subsequent changes to the original level will no longer propagate to that level.
-   */
+  /* See developer note for DMSNES above */
   DM originaldm;
 };
 PETSC_EXTERN PetscErrorCode DMGetDMSNES(DM, DMSNES *);
@@ -255,10 +282,11 @@ PETSC_INTERN PetscErrorCode SNESDestroy_VI(SNES);
 PETSC_INTERN PetscErrorCode SNESView_VI(SNES, PetscViewer);
 PETSC_INTERN PetscErrorCode SNESSetFromOptions_VI(SNES, PetscOptionItems *);
 PETSC_INTERN PetscErrorCode SNESSetUp_VI(SNES);
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESVIComputeVariableBoundsFunction)(SNES, Vec, Vec);
-PETSC_INTERN PetscErrorCode SNESVISetComputeVariableBounds_VI(SNES, SNESVIComputeVariableBoundsFunction);
-PETSC_INTERN PetscErrorCode SNESVISetVariableBounds_VI(SNES, Vec, Vec);
-PETSC_INTERN PetscErrorCode SNESConvergedDefault_VI(SNES, PetscInt, PetscReal, PetscReal, PetscReal, SNESConvergedReason *, void *);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESVIComputeVariableBoundsFn)(SNES, Vec, Vec);
+PETSC_EXTERN_TYPEDEF typedef SNESVIComputeVariableBoundsFn *SNESVIComputeVariableBoundsFunction; // deprecated version
+PETSC_INTERN PetscErrorCode                                 SNESVISetComputeVariableBounds_VI(SNES, SNESVIComputeVariableBoundsFn);
+PETSC_INTERN PetscErrorCode                                 SNESVISetVariableBounds_VI(SNES, Vec, Vec);
+PETSC_INTERN PetscErrorCode                                 SNESConvergedDefault_VI(SNES, PetscInt, PetscReal, PetscReal, PetscReal, SNESConvergedReason *, void *);
 
 PETSC_EXTERN PetscErrorCode DMSNESUnsetFunctionContext_Internal(DM);
 PETSC_EXTERN PetscErrorCode DMSNESUnsetJacobianContext_Internal(DM);

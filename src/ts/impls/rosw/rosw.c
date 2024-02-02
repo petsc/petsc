@@ -1344,10 +1344,10 @@ static PetscErrorCode TSRosWTableauSetUp(TS ts)
 
 static PetscErrorCode TSSetUp_RosW(TS ts)
 {
-  TS_RosW      *ros = (TS_RosW *)ts->data;
-  DM            dm;
-  SNES          snes;
-  TSRHSJacobian rhsjacobian;
+  TS_RosW         *ros = (TS_RosW *)ts->data;
+  DM               dm;
+  SNES             snes;
+  TSRHSJacobianFn *rhsjacobian;
 
   PetscFunctionBegin;
   PetscCall(TSRosWTableauSetUp(ts));

@@ -146,7 +146,7 @@ typedef struct {
 
 static PetscMPIInt Petsc_Superlu_dist_keyval = MPI_KEYVAL_INVALID;
 
-PETSC_EXTERN PetscMPIInt MPIAPI Petsc_Superlu_dist_keyval_Delete_Fn(MPI_Comm comm, PetscMPIInt keyval, void *attr_val, void *extra_state)
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_Superlu_dist_keyval_DeleteFn(MPI_Comm comm, PetscMPIInt keyval, void *attr_val, void *extra_state)
 {
   PetscSuperLU_DIST *context = (PetscSuperLU_DIST *)attr_val;
 
@@ -167,7 +167,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_Superlu_dist_keyval_Delete_Fn(MPI_Comm com
    Performs MPI_Comm_free_keyval() on Petsc_Superlu_dist_keyval but keeps the global variable for
    users who do not destroy all PETSc objects before PetscFinalize().
 
-   The value Petsc_Superlu_dist_keyval is retained so that Petsc_Superlu_dist_keyval_Delete_Fn()
+   The value Petsc_Superlu_dist_keyval is retained so that Petsc_Superlu_dist_keyval_DeleteFn()
    can still check that the keyval associated with the MPI communicator is correct when the MPI
    communicator is destroyed.
 
@@ -999,7 +999,7 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void)
   PetscCall(MatSolverTypeRegister(MATSOLVERSUPERLU_DIST, MATMPIAIJ, MAT_FACTOR_CHOLESKY, MatGetFactor_aij_superlu_dist));
   PetscCall(MatSolverTypeRegister(MATSOLVERSUPERLU_DIST, MATSEQAIJ, MAT_FACTOR_CHOLESKY, MatGetFactor_aij_superlu_dist));
   if (Petsc_Superlu_dist_keyval == MPI_KEYVAL_INVALID) {
-    PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_Superlu_dist_keyval_Delete_Fn, &Petsc_Superlu_dist_keyval, NULL));
+    PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_Superlu_dist_keyval_DeleteFn, &Petsc_Superlu_dist_keyval, NULL));
     PetscCall(PetscRegisterFinalize(Petsc_Superlu_dist_keyval_free));
   }
   PetscFunctionReturn(PETSC_SUCCESS);

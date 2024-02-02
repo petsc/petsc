@@ -51,7 +51,7 @@ PETSC_EXTERN void dmkspsetcomputerhs_(DM *dm, void (*func)(KSP *, Vec *, void *,
   DMKSP kdm;
   *ierr = DMGetDMKSP(*dm, &kdm);
   if (!*ierr) {
-    kdm->fortran_func_pointers[0] = (PetscVoidFunction)func;
+    kdm->fortran_func_pointers[0] = (PetscVoidFn *)func;
     *ierr                         = DMKSPSetComputeRHS(*dm, ourkspcomputerhs, ctx);
   }
 }
@@ -61,7 +61,7 @@ PETSC_EXTERN void dmkspsetcomputeinitialguess_(DM *dm, void (*func)(KSP *, Vec *
   DMKSP kdm;
   *ierr = DMGetDMKSP(*dm, &kdm);
   if (!*ierr) {
-    kdm->fortran_func_pointers[2] = (PetscVoidFunction)func;
+    kdm->fortran_func_pointers[2] = (PetscVoidFn *)func;
 
     *ierr = DMKSPSetComputeInitialGuess(*dm, ourkspcomputeinitialguess, ctx);
   }
@@ -72,7 +72,7 @@ PETSC_EXTERN void dmkspsetcomputeoperators_(DM *dm, void (*func)(KSP *, Vec *, v
   DMKSP kdm;
   *ierr = DMGetDMKSP(*dm, &kdm);
   if (!*ierr) {
-    kdm->fortran_func_pointers[1] = (PetscVoidFunction)func;
+    kdm->fortran_func_pointers[1] = (PetscVoidFn *)func;
     *ierr                         = DMKSPSetComputeOperators(*dm, ourkspcomputeoperators, ctx);
   }
 }

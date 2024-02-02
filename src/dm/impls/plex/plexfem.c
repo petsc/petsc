@@ -1159,7 +1159,7 @@ PetscErrorCode DMPlexInsertBoundaryValues_Plex(DM dm, PetscBool insertEssential,
       switch (type) {
         /* for FEM, there is no insertion to be done for non-essential boundary conditions */
       case DM_BC_ESSENTIAL: {
-        PetscSimplePointFunc func = (PetscSimplePointFunc)bvfunc;
+        PetscSimplePointFn *func = (PetscSimplePointFn *)bvfunc;
 
         if (isZero) func = zero;
         PetscCall(DMPlexLabelAddCells(dm, label));
@@ -1221,7 +1221,7 @@ PetscErrorCode DMPlexInsertTimeDerivativeBoundaryValues_Plex(DM dm, PetscBool in
       switch (type) {
         /* for FEM, there is no insertion to be done for non-essential boundary conditions */
       case DM_BC_ESSENTIAL: {
-        PetscSimplePointFunc func_t = (PetscSimplePointFunc)bvfunc;
+        PetscSimplePointFn *func_t = (PetscSimplePointFn *)bvfunc;
 
         if (isZero) func_t = zero;
         PetscCall(DMPlexLabelAddCells(dm, label));

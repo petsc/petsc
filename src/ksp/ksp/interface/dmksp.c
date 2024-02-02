@@ -55,7 +55,7 @@ static PetscErrorCode DMRefineHook_DMKSP(DM dm, DM dmc, void *ctx)
 
   Level: developer
 
-.seealso: [](ch_ksp), `DMKSPCreate()`, `DMKSPDestroy()`
+.seealso: [](ch_ksp), `DMKSP`, `DMKSPCreate()`, `DMKSPDestroy()`
 */
 static PetscErrorCode DMKSPCopy(DMKSP kdm, DMKSP nkdm)
 {
@@ -189,7 +189,7 @@ PetscErrorCode DMCopyDMKSP(DM dmsrc, DM dmdest)
 
   Input Parameters:
 + dm   - `DM` to be used with `KSP`
-. func - matrix evaluation function,  for calling sequence see `KSPSetComputeOperators()`
+. func - matrix evaluation function,  for calling sequence see `KSPComputeOperatorsFn`
 - ctx  - context for matrix evaluation
 
   Level: developer
@@ -202,9 +202,9 @@ PetscErrorCode DMCopyDMKSP(DM dmsrc, DM dmdest)
   Developer Note:
   If `DM` took a more central role at some later date, this could become the primary method of setting the matrix.
 
-.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeOperators()`, `KSPSetOperators()`
+.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeOperators()`, `KSPSetOperators()`, `KSPComputeOperatorsFn`
 @*/
-PetscErrorCode DMKSPSetComputeOperators(DM dm, PetscErrorCode (*func)(KSP, Mat, Mat, void *), void *ctx)
+PetscErrorCode DMKSPSetComputeOperators(DM dm, KSPComputeOperatorsFn *func, void *ctx)
 {
   DMKSP kdm;
 
@@ -225,14 +225,14 @@ PetscErrorCode DMKSPSetComputeOperators(DM dm, PetscErrorCode (*func)(KSP, Mat, 
 . dm - `DM` used with a `KSP`
 
   Output Parameters:
-+ func - matrix evaluation function,  for calling sequence see `KSPSetComputeOperators()`
++ func - matrix evaluation function,  for calling sequence see `KSPComputeOperatorsFn`
 - ctx  - context for matrix evaluation
 
   Level: developer
 
-.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `KSPSetComputeOperators()`, `DMKSPSetComputeOperators()`
+.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `KSPSetComputeOperators()`, `DMKSPSetComputeOperators()`, `KSPComputeOperatorsFn`
 @*/
-PetscErrorCode DMKSPGetComputeOperators(DM dm, PetscErrorCode (**func)(KSP, Mat, Mat, void *), void *ctx)
+PetscErrorCode DMKSPGetComputeOperators(DM dm, KSPComputeOperatorsFn **func, void *ctx)
 {
   DMKSP kdm;
 
@@ -251,7 +251,7 @@ PetscErrorCode DMKSPGetComputeOperators(DM dm, PetscErrorCode (**func)(KSP, Mat,
 
   Input Parameters:
 + dm   - `DM` used with a `KSP`
-. func - right hand side evaluation function,  for calling sequence see `KSPSetComputeRHS()`
+. func - right hand side evaluation function,  for calling sequence see `KSPComputeRHSFn`
 - ctx  - context for right hand side evaluation
 
   Level: developer
@@ -266,7 +266,7 @@ PetscErrorCode DMKSPGetComputeOperators(DM dm, PetscErrorCode (**func)(KSP, Mat,
 
 .seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeRHS()`, `KSPSetRHS()`
 @*/
-PetscErrorCode DMKSPSetComputeRHS(DM dm, PetscErrorCode (*func)(KSP, Vec, void *), void *ctx)
+PetscErrorCode DMKSPSetComputeRHS(DM dm, KSPComputeRHSFn *func, void *ctx)
 {
   DMKSP kdm;
 
@@ -285,7 +285,7 @@ PetscErrorCode DMKSPSetComputeRHS(DM dm, PetscErrorCode (*func)(KSP, Vec, void *
 
   Input Parameters:
 + dm   - `DM` to be used with `KSP`
-. func - initial guess evaluation function, for calling sequence see `KSPSetComputeInitialGuess()`
+. func - initial guess evaluation function, for calling sequence see `KSPComputeInitialGuessFn`
 - ctx  - context for right hand side evaluation
 
   Level: developer
@@ -294,9 +294,9 @@ PetscErrorCode DMKSPSetComputeRHS(DM dm, PetscErrorCode (*func)(KSP, Vec, void *
   `KSPSetComputeInitialGuess()` is normally used, but it calls this function internally because the user context is actually
   associated with the `DM`.
 
-.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeRHS()`, `KSPSetRHS()`
+.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeRHS()`, `KSPSetRHS()`, `KSPComputeInitialGuessFn`
 @*/
-PetscErrorCode DMKSPSetComputeInitialGuess(DM dm, PetscErrorCode (*func)(KSP, Vec, void *), void *ctx)
+PetscErrorCode DMKSPSetComputeInitialGuess(DM dm, KSPComputeInitialGuessFn *func, void *ctx)
 {
   DMKSP kdm;
 
@@ -317,14 +317,14 @@ PetscErrorCode DMKSPSetComputeInitialGuess(DM dm, PetscErrorCode (*func)(KSP, Ve
 . dm - `DM` to be used with `KSP`
 
   Output Parameters:
-+ func - right hand side evaluation function,  for calling sequence see `KSPSetComputeRHS()`
++ func - right hand side evaluation function,  for calling sequence see `KSPComputeRHSFn`
 - ctx  - context for right hand side evaluation
 
   Level: advanced
 
-.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `KSPSetComputeRHS()`, `DMKSPSetComputeRHS()`
+.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `KSPSetComputeRHS()`, `DMKSPSetComputeRHS()`, `KSPComputeRHSFn`
 @*/
-PetscErrorCode DMKSPGetComputeRHS(DM dm, PetscErrorCode (**func)(KSP, Vec, void *), void *ctx)
+PetscErrorCode DMKSPGetComputeRHS(DM dm, KSPComputeRHSFn **func, void *ctx)
 {
   DMKSP kdm;
 
@@ -345,14 +345,14 @@ PetscErrorCode DMKSPGetComputeRHS(DM dm, PetscErrorCode (**func)(KSP, Vec, void 
 . dm - `DM` used with a `KSP`
 
   Output Parameters:
-+ func - initial guess evaluation function, for calling sequence see `KSPSetComputeInitialGuess()`
++ func - initial guess evaluation function, for calling sequence see `KSPComputeInitialGuessFn`
 - ctx  - context for right hand side evaluation
 
   Level: advanced
 
-.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `KSPSetComputeRHS()`, `DMKSPSetComputeRHS()`
+.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `KSPSetComputeRHS()`, `DMKSPSetComputeRHS()`, `KSPComputeInitialGuessFn`
 @*/
-PetscErrorCode DMKSPGetComputeInitialGuess(DM dm, PetscErrorCode (**func)(KSP, Vec, void *), void *ctx)
+PetscErrorCode DMKSPGetComputeInitialGuess(DM dm, KSPComputeInitialGuessFn **func, void *ctx)
 {
   DMKSP kdm;
 

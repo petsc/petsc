@@ -164,8 +164,8 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
 
 static PetscErrorCode SetupVelocity(DM dm, DM dmAux, AppCtx *user)
 {
-  PetscSimplePointFunc funcs[1] = {velocity};
-  Vec                  v;
+  PetscSimplePointFn *funcs[1] = {velocity};
+  Vec                 v;
 
   PetscFunctionBeginUser;
   PetscCall(DMCreateLocalVector(dmAux, &v));
@@ -223,12 +223,12 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
 
 static PetscErrorCode MonitorError(KSP ksp, PetscInt it, PetscReal rnorm, void *ctx)
 {
-  DM                   dm;
-  PetscDS              ds;
-  PetscSimplePointFunc func[1];
-  void                *ctxs[1];
-  Vec                  u, r, error;
-  PetscReal            time = 0.5, res;
+  DM                  dm;
+  PetscDS             ds;
+  PetscSimplePointFn *func[1];
+  void               *ctxs[1];
+  Vec                 u, r, error;
+  PetscReal           time = 0.5, res;
 
   PetscFunctionBeginUser;
   PetscCall(KSPGetDM(ksp, &dm));
@@ -255,11 +255,11 @@ static PetscErrorCode MonitorError(KSP ksp, PetscInt it, PetscReal rnorm, void *
 
 static PetscErrorCode MyTSMonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u, void *ctx)
 {
-  DM                   dm;
-  PetscDS              ds;
-  PetscSimplePointFunc func[1];
-  void                *ctxs[1];
-  PetscReal            error;
+  DM                  dm;
+  PetscDS             ds;
+  PetscSimplePointFn *func[1];
+  void               *ctxs[1];
+  PetscReal           error;
 
   PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &dm));
@@ -299,9 +299,9 @@ int main(int argc, char **argv)
   PetscCall(TSSetFromOptions(ts));
 
   {
-    PetscDS              ds;
-    PetscSimplePointFunc func[1];
-    void                *ctxs[1];
+    PetscDS             ds;
+    PetscSimplePointFn *func[1];
+    void               *ctxs[1];
 
     PetscCall(DMGetDS(dm, &ds));
     PetscCall(PetscDSGetExactSolution(ds, 0, &func[0], &ctxs[0]));

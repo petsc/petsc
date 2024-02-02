@@ -102,7 +102,7 @@ int main(int argc, char **argv)
   PetscCall(TSSetType(ts, TSCN));
   PetscCall(TSSetDM(ts, da));
   PetscCall(TSSetProblemType(ts, TS_NONLINEAR));
-  PetscCall(DMDATSSetIFunctionLocal(da, INSERT_VALUES, (DMDATSIFunctionLocal)IFunctionLocalPassive, &appctx));
+  PetscCall(DMDATSSetIFunctionLocal(da, INSERT_VALUES, (DMDATSIFunctionLocalFn *)IFunctionLocalPassive, &appctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Some data required for matrix-free context

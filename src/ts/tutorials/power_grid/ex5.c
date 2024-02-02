@@ -260,11 +260,11 @@ int main(int argc, char **argv)
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
   PetscCall(TSSetProblemType(ts, TS_NONLINEAR));
   PetscCall(TSSetType(ts, TSBEULER));
-  PetscCall(TSSetIFunction(ts, NULL, (TSIFunction)IFunction, &user));
+  PetscCall(TSSetIFunction(ts, NULL, (TSIFunctionFn *)IFunction, &user));
 
   PetscCall(TSGetSNES(ts, &snes));
   PetscCall(SNESSetJacobian(snes, A, A, SNESComputeJacobianDefault, NULL));
-  /*  PetscCall(TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,&user)); */
+  /*  PetscCall(TSSetIJacobian(ts,A,A,(TSIJacobianFn *)IJacobian,&user)); */
   PetscCall(TSSetApplicationContext(ts, &user));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

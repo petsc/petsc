@@ -41,7 +41,7 @@ PetscErrorCode SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*comput
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESVISetComputeVariableBounds_VI(SNES snes, SNESVIComputeVariableBoundsFunction compute)
+PetscErrorCode SNESVISetComputeVariableBounds_VI(SNES snes, SNESVIComputeVariableBoundsFn *compute)
 {
   PetscFunctionBegin;
   snes->ops->computevariablebounds = compute;

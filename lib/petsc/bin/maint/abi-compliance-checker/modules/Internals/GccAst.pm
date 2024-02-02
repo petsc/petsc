@@ -2525,7 +2525,7 @@ sub detectLang($)
     }
     else
     { # GCC 3
-        my $Fncs = getTreeAttr_Fncs($TypeId);
+        my $Fncs = getTreeAttrFncs($TypeId);
         while($Fncs)
         {
             if($LibInfo{$V}{"info"}{$Fncs}!~/artificial/) {
@@ -3114,7 +3114,7 @@ sub getTreeAttr_Prms($)
     return "";
 }
 
-sub getTreeAttr_Fncs($)
+sub getTreeAttrFncs($)
 {
     if($_[0] and my $Info = $LibInfo{$V}{"info"}{$_[0]})
     {

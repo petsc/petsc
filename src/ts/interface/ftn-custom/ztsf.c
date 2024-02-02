@@ -141,21 +141,21 @@ PETSC_EXTERN void tsmonitorlgsettransform_(TS *ts, void (*f)(void *, Vec *, Vec 
 {
   *ierr = TSMonitorLGSetTransform(*ts, ourtransform, NULL, NULL);
   if (*ierr) return;
-  *ierr = PetscObjectSetFortranCallback((PetscObject)*ts, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.transform, (PetscVoidFunction)f, ctx);
+  *ierr = PetscObjectSetFortranCallback((PetscObject)*ts, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.transform, (PetscVoidFn *)f, ctx);
 }
 
 PETSC_EXTERN void tssetprestep_(TS *ts, PetscErrorCode (*f)(TS *, PetscErrorCode *), PetscErrorCode *ierr)
 {
   *ierr = TSSetPreStep(*ts, ourprestep);
   if (*ierr) return;
-  *ierr = PetscObjectSetFortranCallback((PetscObject)*ts, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.prestep, (PetscVoidFunction)f, NULL);
+  *ierr = PetscObjectSetFortranCallback((PetscObject)*ts, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.prestep, (PetscVoidFn *)f, NULL);
 }
 
 PETSC_EXTERN void tssetpoststep_(TS *ts, PetscErrorCode (*f)(TS *, PetscErrorCode *), PetscErrorCode *ierr)
 {
   *ierr = TSSetPostStep(*ts, ourpoststep);
   if (*ierr) return;
-  *ierr = PetscObjectSetFortranCallback((PetscObject)*ts, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.poststep, (PetscVoidFunction)f, NULL);
+  *ierr = PetscObjectSetFortranCallback((PetscObject)*ts, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.poststep, (PetscVoidFn *)f, NULL);
 }
 
 PETSC_EXTERN void tscomputerhsfunctionlinear_(TS *ts, PetscReal *t, Vec *X, Vec *F, void *ctx, PetscErrorCode *ierr)
@@ -168,10 +168,10 @@ PETSC_EXTERN void tssetrhsfunction_(TS *ts, Vec *r, PetscErrorCode (*f)(TS *, Pe
   CHKFORTRANNULLOBJECT(r);
   CHKFORTRANNULLFUNCTION(f);
   R = r ? *r : (Vec)NULL;
-  if ((PetscVoidFunction)f == (PetscVoidFunction)tscomputerhsfunctionlinear_) {
+  if ((PetscVoidFn *)f == (PetscVoidFn *)tscomputerhsfunctionlinear_) {
     *ierr = TSSetRHSFunction(*ts, R, TSComputeRHSFunctionLinear, fP);
   } else {
-    *ierr = PetscObjectSetFortranCallback((PetscObject)*ts, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.rhsfunction, (PetscVoidFunction)f, fP);
+    *ierr = PetscObjectSetFortranCallback((PetscObject)*ts, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.rhsfunction, (PetscVoidFn *)f, fP);
     *ierr = TSSetRHSFunction(*ts, R, ourrhsfunction, NULL);
   }
 }
@@ -192,10 +192,10 @@ PETSC_EXTERN void tssetifunction_(TS *ts, Vec *r, PetscErrorCode (*f)(TS *, Pets
   CHKFORTRANNULLOBJECT(r);
   CHKFORTRANNULLFUNCTION(f);
   R = r ? *r : (Vec)NULL;
-  if ((PetscVoidFunction)f == (PetscVoidFunction)tscomputeifunctionlinear_) {
+  if ((PetscVoidFn *)f == (PetscVoidFn *)tscomputeifunctionlinear_) {
     *ierr = TSSetIFunction(*ts, R, TSComputeIFunctionLinear, fP);
   } else {
-    *ierr = PetscObjectSetFortranCallback((PetscObject)*ts, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.ifunction, (PetscVoidFunction)f, fP);
+    *ierr = PetscObjectSetFortranCallback((PetscObject)*ts, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.ifunction, (PetscVoidFn *)f, fP);
     *ierr = TSSetIFunction(*ts, R, ourifunction, NULL);
   }
 }
@@ -214,10 +214,10 @@ PETSC_EXTERN void tscomputerhsjacobianconstant_(TS *ts, PetscReal *t, Vec *X, Ma
 PETSC_EXTERN void tssetrhsjacobian_(TS *ts, Mat *A, Mat *B, void (*f)(TS *, PetscReal *, Vec *, Mat *, Mat *, void *, PetscErrorCode *), void *fP, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLFUNCTION(f);
-  if ((PetscVoidFunction)f == (PetscVoidFunction)tscomputerhsjacobianconstant_) {
+  if ((PetscVoidFn *)f == (PetscVoidFn *)tscomputerhsjacobianconstant_) {
     *ierr = TSSetRHSJacobian(*ts, *A, *B, TSComputeRHSJacobianConstant, fP);
   } else {
-    *ierr = PetscObjectSetFortranCallback((PetscObject)*ts, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.rhsjacobian, (PetscVoidFunction)f, fP);
+    *ierr = PetscObjectSetFortranCallback((PetscObject)*ts, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.rhsjacobian, (PetscVoidFn *)f, fP);
     *ierr = TSSetRHSJacobian(*ts, *A, *B, ourrhsjacobian, NULL);
   }
 }
@@ -229,10 +229,10 @@ PETSC_EXTERN void tscomputeijacobianconstant_(TS *ts, PetscReal *t, Vec *X, Vec 
 PETSC_EXTERN void tssetijacobian_(TS *ts, Mat *A, Mat *B, void (*f)(TS *, PetscReal *, Vec *, Mat *, Mat *, void *, PetscErrorCode *), void *fP, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLFUNCTION(f);
-  if ((PetscVoidFunction)f == (PetscVoidFunction)tscomputeijacobianconstant_) {
+  if ((PetscVoidFn *)f == (PetscVoidFn *)tscomputeijacobianconstant_) {
     *ierr = TSSetIJacobian(*ts, *A, *B, TSComputeIJacobianConstant, fP);
   } else {
-    *ierr = PetscObjectSetFortranCallback((PetscObject)*ts, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.ijacobian, (PetscVoidFunction)f, fP);
+    *ierr = PetscObjectSetFortranCallback((PetscObject)*ts, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.ijacobian, (PetscVoidFn *)f, fP);
     *ierr = TSSetIJacobian(*ts, *A, *B, ourijacobian, NULL);
   }
 }
@@ -256,11 +256,11 @@ PETSC_EXTERN void tsmonitordefault_(TS *ts, PetscInt *its, PetscReal *fgnorm, Ve
 PETSC_EXTERN void tsmonitorset_(TS *ts, void (*func)(TS *, PetscInt *, PetscReal *, Vec *, void *, PetscErrorCode *), void *mctx, void (*d)(void *, PetscErrorCode *), PetscErrorCode *ierr)
 {
   CHKFORTRANNULLFUNCTION(d);
-  if ((PetscVoidFunction)func == (PetscVoidFunction)tsmonitordefault_) {
+  if ((PetscVoidFn *)func == (PetscVoidFn *)tsmonitordefault_) {
     *ierr = TSMonitorSet(*ts, (PetscErrorCode(*)(TS, PetscInt, PetscReal, Vec, void *))TSMonitorDefault, *(PetscViewerAndFormat **)mctx, (PetscErrorCode(*)(void **))PetscViewerAndFormatDestroy);
   } else {
-    *ierr = PetscObjectSetFortranCallback((PetscObject)*ts, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.monitor, (PetscVoidFunction)func, mctx);
-    *ierr = PetscObjectSetFortranCallback((PetscObject)*ts, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.mondestroy, (PetscVoidFunction)d, mctx);
+    *ierr = PetscObjectSetFortranCallback((PetscObject)*ts, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.monitor, (PetscVoidFn *)func, mctx);
+    *ierr = PetscObjectSetFortranCallback((PetscObject)*ts, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.mondestroy, (PetscVoidFn *)d, mctx);
     *ierr = TSMonitorSet(*ts, ourmonitor, *ts, ourmonitordestroy);
   }
 }

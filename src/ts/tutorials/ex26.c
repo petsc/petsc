@@ -158,7 +158,7 @@ int main(int argc, char **argv)
      Create time integration context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(DMSetApplicationContext(da, &user));
-  PetscCall(DMDATSSetIFunctionLocal(da, INSERT_VALUES, (DMDATSIFunctionLocal)FormIFunctionLocal, &user));
+  PetscCall(DMDATSSetIFunctionLocal(da, INSERT_VALUES, (DMDATSIFunctionLocalFn *)FormIFunctionLocal, &user));
   PetscCall(TSSetMaxSteps(ts, 10000));
   PetscCall(TSSetMaxTime(ts, 1e12));
   PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER));

@@ -1029,15 +1029,61 @@ PETSC_EXTERN PetscErrorCode KSPSetDMActive(KSP, PetscBool);
 PETSC_EXTERN PetscErrorCode KSPGetDM(KSP, DM *);
 PETSC_EXTERN PetscErrorCode KSPSetApplicationContext(KSP, void *);
 PETSC_EXTERN PetscErrorCode KSPGetApplicationContext(KSP, void *);
-PETSC_EXTERN PetscErrorCode KSPSetComputeRHS(KSP, PetscErrorCode (*func)(KSP, Vec, void *), void *);
-PETSC_EXTERN PetscErrorCode KSPSetComputeOperators(KSP, PetscErrorCode (*)(KSP, Mat, Mat, void *), void *);
-PETSC_EXTERN PetscErrorCode KSPSetComputeInitialGuess(KSP, PetscErrorCode (*)(KSP, Vec, void *), void *);
-PETSC_EXTERN PetscErrorCode DMKSPSetComputeOperators(DM, PetscErrorCode (*)(KSP, Mat, Mat, void *), void *);
-PETSC_EXTERN PetscErrorCode DMKSPGetComputeOperators(DM, PetscErrorCode (**)(KSP, Mat, Mat, void *), void *);
-PETSC_EXTERN PetscErrorCode DMKSPSetComputeRHS(DM, PetscErrorCode (*)(KSP, Vec, void *), void *);
-PETSC_EXTERN PetscErrorCode DMKSPGetComputeRHS(DM, PetscErrorCode (**)(KSP, Vec, void *), void *);
-PETSC_EXTERN PetscErrorCode DMKSPSetComputeInitialGuess(DM, PetscErrorCode (*)(KSP, Vec, void *), void *);
-PETSC_EXTERN PetscErrorCode DMKSPGetComputeInitialGuess(DM, PetscErrorCode (**)(KSP, Vec, void *), void *);
+
+/*S
+  KSPComputeRHSFn - A prototype of a `KSP` evaluation function that would be passed to `KSPSetComputeRHS()`
+
+  Calling Sequence:
++ ksp  - `ksp` context
+. b    - output vector
+- ctx - [optional] user-defined function context
+
+  Level: beginner
+
+.seealso: [](ch_snes), `KSP`, `KSPSetComputeRHS()`, `SNESGetFunction()`, `KSPComputeInitialGuessFn`, `KSPComputeOperatorsFn`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(KSPComputeRHSFn)(KSP ksp, Vec b, void *ctx);
+
+PETSC_EXTERN PetscErrorCode KSPSetComputeRHS(KSP, KSPComputeRHSFn *, void *);
+
+/*S
+  KSPComputeOperatorsFn - A prototype of a `KSP` evaluation function that would be passed to `KSPSetComputeOperators()`
+
+  Calling Sequence:
++ ksp - `KSP` context
+. A   - the operator that defines the linear system
+. P   - an operator from which to build the preconditioner (often the same as `A`)
+- ctx - [optional] user-defined function context
+
+  Level: beginner
+
+.seealso: [](ch_snes), `KSP`, `KSPSetComputeRHS()`, `SNESGetFunction()`, `KSPComputeRHSFn`, `KSPComputeInitialGuessFn`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(KSPComputeOperatorsFn)(KSP ksp, Mat A, Mat P, void *ctx);
+
+PETSC_EXTERN PetscErrorCode KSPSetComputeOperators(KSP, KSPComputeOperatorsFn, void *);
+
+/*S
+  KSPComputeInitialGuessFn - A prototype of a `KSP` evaluation function that would be passed to `KSPSetComputeInitialGuess()`
+
+  Calling Sequence:
++ ksp  - `ksp` context
+. x    - output vector
+- ctx - [optional] user-defined function context
+
+  Level: beginner
+
+.seealso: [](ch_snes), `KSP`, `KSPSetComputeInitialGuess()`, `SNESGetFunction()`, `KSPComputeRHSFn`, `KSPComputeOperatorsFn`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(KSPComputeInitialGuessFn)(KSP ksp, Vec x, void *ctx);
+
+PETSC_EXTERN PetscErrorCode KSPSetComputeInitialGuess(KSP, KSPComputeInitialGuessFn *, void *);
+PETSC_EXTERN PetscErrorCode DMKSPSetComputeOperators(DM, KSPComputeOperatorsFn *, void *);
+PETSC_EXTERN PetscErrorCode DMKSPGetComputeOperators(DM, KSPComputeOperatorsFn **, void *);
+PETSC_EXTERN PetscErrorCode DMKSPSetComputeRHS(DM, KSPComputeRHSFn *, void *);
+PETSC_EXTERN PetscErrorCode DMKSPGetComputeRHS(DM, KSPComputeRHSFn **, void *);
+PETSC_EXTERN PetscErrorCode DMKSPSetComputeInitialGuess(DM, KSPComputeInitialGuessFn *, void *);
+PETSC_EXTERN PetscErrorCode DMKSPGetComputeInitialGuess(DM, KSPComputeInitialGuessFn **, void *);
 
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalSolve(DM, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMProjectField(DM, PetscReal, Vec, void (**)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), InsertMode, Vec);

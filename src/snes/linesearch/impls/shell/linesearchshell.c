@@ -2,25 +2,20 @@
 #include <petsc/private/snesimpl.h>
 
 typedef struct {
-  SNESLineSearchUserFunc func;
-  void                  *ctx;
+  SNESLineSearchShellApplyFn *func;
+  void                       *ctx;
 } SNESLineSearch_Shell;
 
 // PetscClangLinter pragma disable: -fdoc-param-list-func-parameter-documentation
 /*@C
-  SNESLineSearchShellSetUserFunc - Sets the user function for the `SNESLINESEARCHSHELL` implementation.
+  SNESLineSearchShellSetApply - Sets the apply function for the `SNESLINESEARCHSHELL` implementation.
 
   Not Collective
 
   Input Parameters:
 + linesearch - `SNESLineSearch` context
-. func       - function implementing the linesearch shell.
+. func       - function implementing the linesearch shell, see `SNESLineSearchShellApplyFn` for calling sequence
 - ctx        - context for func
-
-  Calling sequence of `func`:
-$  PetscErrorCode func(SNESLinesearch ls, void *ctx)
-+ ls  - the linesearch instance
-- ctx - the above mentioned context
 
   Usage\:
 .vb
@@ -41,14 +36,15 @@ $  PetscErrorCode func(SNESLinesearch ls, void *ctx)
 
   PetscCall(SNESGetLineSearch(snes, &linesearch));
   PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHSHELL));
-  PetscCall(SNESLineSearchShellSetUserFunc(linesearch, shellfunc, NULL));
+  PetscCall(SNESLineSearchShellSetApply(linesearch, shellfunc, NULL));
 .ve
 
   Level: advanced
 
-.seealso: [](ch_snes), `SNESLineSearchShellGetUserFunc()`, `SNESLINESEARCHSHELL`, `SNESLineSearchType`, `SNESLineSearch`
+.seealso: [](ch_snes), `SNESLineSearchShellGetApply()`, `SNESLINESEARCHSHELL`, `SNESLineSearchType`, `SNESLineSearch`,
+          `SNESLineSearchShellApplyFn`
 @*/
-PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch linesearch, SNESLineSearchUserFunc func, void *ctx)
+PetscErrorCode SNESLineSearchShellSetApply(SNESLineSearch linesearch, SNESLineSearchShellApplyFn *func, void *ctx)
 {
   PetscBool             flg;
   SNESLineSearch_Shell *shell = (SNESLineSearch_Shell *)linesearch->data;
@@ -64,7 +60,7 @@ PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch linesearch, SNESLin
 }
 
 /*@C
-  SNESLineSearchShellGetUserFunc - Gets the user function and context for the  `SNESLINESEARCHSHELL`
+  SNESLineSearchShellGetApply - Gets the apply function and context for the `SNESLINESEARCHSHELL`
 
   Not Collective
 
@@ -72,14 +68,15 @@ PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch linesearch, SNESLin
 . linesearch - the line search object
 
   Output Parameters:
-+ func - the user function; can be `NULL` if it is not needed
++ func - the user function; can be `NULL` if it is not needed, see `SNESLineSearchShellApplyFn` for calling sequence
 - ctx  - the user function context; can be `NULL` if it is not needed
 
   Level: advanced
 
-.seealso: [](ch_snes), `SNESLineSearchShellSetUserFunc()`, `SNESLINESEARCHSHELL`, `SNESLineSearchType`, `SNESLineSearch`
+.seealso: [](ch_snes), `SNESLineSearchShellSetApply()`, `SNESLINESEARCHSHELL`, `SNESLineSearchType`, `SNESLineSearch`,
+          `SNESLineSearchShellApplyFn`
 @*/
-PetscErrorCode SNESLineSearchShellGetUserFunc(SNESLineSearch linesearch, SNESLineSearchUserFunc *func, void **ctx)
+PetscErrorCode SNESLineSearchShellGetApply(SNESLineSearch linesearch, SNESLineSearchShellApplyFn **func, void **ctx)
 {
   PetscBool             flg;
   SNESLineSearch_Shell *shell = (SNESLineSearch_Shell *)linesearch->data;
@@ -104,7 +101,7 @@ static PetscErrorCode SNESLineSearchApply_Shell(SNESLineSearch linesearch)
   /* apply the user function */
   if (shell->func) {
     PetscCall((*shell->func)(linesearch, shell->ctx));
-  } else SETERRQ(PetscObjectComm((PetscObject)linesearch), PETSC_ERR_USER, "SNESLineSearchShell needs to have a shell function set with SNESLineSearchShellSetUserFunc");
+  } else SETERRQ(PetscObjectComm((PetscObject)linesearch), PETSC_ERR_USER, "SNESLineSearchShell needs to have a shell function set with SNESLineSearchShellSetApply()");
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -118,17 +115,15 @@ static PetscErrorCode SNESLineSearchDestroy_Shell(SNESLineSearch linesearch)
 }
 
 /*MC
-   SNESLINESEARCHSHELL - Provides context for a user-provided line search routine.
-
-  The user routine has one argument, the `SNESLineSearch` context.  The user uses the interface to
-  extract line search parameters and set them accordingly when the computation is finished.
+  SNESLINESEARCHSHELL - Provides an API for a user-provided line search routine.
 
   Any of the other line searches may serve as a guide to how this is to be done.  There is also a basic
-  template in the documentation for `SNESLineSearchShellSetUserFunc()`.
+  template in the documentation for `SNESLineSearchShellSetApply()`.
 
   Level: advanced
 
-.seealso: [](ch_snes), `SNESLineSearch`, `SNES`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
+.seealso: [](ch_snes), `SNESLineSearch`, `SNES`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`, `SNESLineSearchShellSetApply()`,
+          `SNESLineSearchShellApplyFn`
 M*/
 
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Shell(SNESLineSearch linesearch)

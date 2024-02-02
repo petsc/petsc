@@ -150,11 +150,11 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
 {
-  PetscDS              ds;
-  DMLabel              label;
-  PetscSimplePointFunc ex;
-  const PetscInt       id = 1;
-  void                *ctx;
+  PetscDS             ds;
+  DMLabel             label;
+  PetscSimplePointFn *ex;
+  const PetscInt      id = 1;
+  void               *ctx;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDS(dm, &ds));

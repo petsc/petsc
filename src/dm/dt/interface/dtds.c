@@ -549,15 +549,15 @@ static PetscErrorCode PetscDSDestroyStructs_Static(PetscDS prob)
 
 static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
 {
-  PetscObject          *tmpd;
-  PetscBool            *tmpi;
-  PetscInt             *tmpk;
-  PetscBool            *tmpc;
-  PetscPointFunc       *tmpup;
-  PetscSimplePointFunc *tmpexactSol, *tmpexactSol_t;
-  void                **tmpexactCtx, **tmpexactCtx_t;
-  void                **tmpctx;
-  PetscInt              Nf = prob->Nf, f;
+  PetscObject         *tmpd;
+  PetscBool           *tmpi;
+  PetscInt            *tmpk;
+  PetscBool           *tmpc;
+  PetscPointFunc      *tmpup;
+  PetscSimplePointFn **tmpexactSol, **tmpexactSol_t;
+  void               **tmpexactCtx, **tmpexactCtx_t;
+  void               **tmpctx;
+  PetscInt             Nf = prob->Nf, f;
 
   PetscFunctionBegin;
   if (Nf >= NfNew) PetscFunctionReturn(PETSC_SUCCESS);
@@ -4056,9 +4056,9 @@ PetscErrorCode PetscDSCopyConstants(PetscDS prob, PetscDS newprob)
 @*/
 PetscErrorCode PetscDSCopyExactSolutions(PetscDS ds, PetscDS newds)
 {
-  PetscSimplePointFunc sol;
-  void                *ctx;
-  PetscInt             Nf, f;
+  PetscSimplePointFn *sol;
+  void               *ctx;
+  PetscInt            Nf, f;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);

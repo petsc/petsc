@@ -19,7 +19,7 @@ PetscObjectId PetscObjectNewId_Internal(void)
   return idcnt++;
 }
 
-PetscErrorCode PetscHeaderCreate_Function(PetscErrorCode ierr, PetscObject *h, PetscClassId classid, const char class_name[], const char descr[], const char mansec[], MPI_Comm comm, PetscObjectDestroyFunction destroy, PetscObjectViewFunction view)
+PetscErrorCode PetscHeaderCreate_Function(PetscErrorCode ierr, PetscObject *h, PetscClassId classid, const char class_name[], const char descr[], const char mansec[], MPI_Comm comm, PetscObjectDestroyFn *destroy, PetscObjectViewFn *view)
 {
   if (ierr) return ierr;
   PetscFunctionBegin;
@@ -31,7 +31,7 @@ PetscErrorCode PetscHeaderCreate_Function(PetscErrorCode ierr, PetscObject *h, P
 /*
    PetscHeaderCreate_Private - Fills in the default values.
 */
-PetscErrorCode PetscHeaderCreate_Private(PetscObject h, PetscClassId classid, const char class_name[], const char descr[], const char mansec[], MPI_Comm comm, PetscObjectDestroyFunction destroy, PetscObjectViewFunction view)
+PetscErrorCode PetscHeaderCreate_Private(PetscObject h, PetscClassId classid, const char class_name[], const char descr[], const char mansec[], MPI_Comm comm, PetscObjectDestroyFn *destroy, PetscObjectViewFn *view)
 {
   void       *get_tmp;
   PetscInt64 *cidx;

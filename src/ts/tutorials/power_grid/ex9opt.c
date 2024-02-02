@@ -245,8 +245,8 @@ int main(int argc, char **argv)
   PetscCall(TSSetProblemType(ctx.ts, TS_NONLINEAR));
   PetscCall(TSSetEquationType(ctx.ts, TS_EQ_ODE_EXPLICIT)); /* less Jacobian evaluations when adjoint BEuler is used, otherwise no effect */
   PetscCall(TSSetType(ctx.ts, TSRK));
-  PetscCall(TSSetRHSFunction(ctx.ts, NULL, (TSRHSFunction)RHSFunction, &ctx));
-  PetscCall(TSSetRHSJacobian(ctx.ts, A, A, (TSRHSJacobian)RHSJacobian, &ctx));
+  PetscCall(TSSetRHSFunction(ctx.ts, NULL, (TSRHSFunctionFn *)RHSFunction, &ctx));
+  PetscCall(TSSetRHSJacobian(ctx.ts, A, A, (TSRHSJacobianFn *)RHSJacobian, &ctx));
   PetscCall(TSSetExactFinalTime(ctx.ts, TS_EXACTFINALTIME_MATCHSTEP));
 
   PetscCall(MatCreateVecs(A, &lambda[0], NULL));
@@ -264,9 +264,9 @@ int main(int argc, char **argv)
   PetscCall(TSGetTimeStep(ctx.ts, &ctx.dt)); /* save the stepsize */
 
   PetscCall(TSCreateQuadratureTS(ctx.ts, PETSC_TRUE, &quadts));
-  PetscCall(TSSetRHSFunction(quadts, NULL, (TSRHSFunction)CostIntegrand, &ctx));
-  PetscCall(TSSetRHSJacobian(quadts, DRDU, DRDU, (TSRHSJacobian)DRDUJacobianTranspose, &ctx));
-  PetscCall(TSSetRHSJacobianP(quadts, DRDP, (TSRHSJacobianP)DRDPJacobianTranspose, &ctx));
+  PetscCall(TSSetRHSFunction(quadts, NULL, (TSRHSFunctionFn *)CostIntegrand, &ctx));
+  PetscCall(TSSetRHSJacobian(quadts, DRDU, DRDU, (TSRHSJacobianFn *)DRDUJacobianTranspose, &ctx));
+  PetscCall(TSSetRHSJacobianP(quadts, DRDP, (TSRHSJacobianPFn *)DRDPJacobianTranspose, &ctx));
   PetscCall(TSSetSolution(ctx.ts, U));
 
   /* Create TAO solver and set desired solution method */

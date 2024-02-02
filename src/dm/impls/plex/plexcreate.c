@@ -2998,11 +2998,11 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
   PetscMPIInt rank;
   PetscInt    topoDim = 2, spaceDim = 3, numFaces = 0, numVertices = 0, numEdges = 0;
   PetscInt(*edges)[2] = NULL, *edgeSets = NULL;
-  PetscInt            *cells_flat = NULL;
-  PetscReal           *vtxCoords  = NULL;
-  TPSEvaluateFunc      evalFunc   = NULL;
-  PetscSimplePointFunc normalFunc = NULL;
-  DMLabel              label;
+  PetscInt           *cells_flat = NULL;
+  PetscReal          *vtxCoords  = NULL;
+  TPSEvaluateFunc     evalFunc   = NULL;
+  PetscSimplePointFn *normalFunc = NULL;
+  DMLabel             label;
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(DMPLEX_Generate, dm, 0, 0, 0));

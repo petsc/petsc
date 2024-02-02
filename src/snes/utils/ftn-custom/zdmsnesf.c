@@ -22,7 +22,7 @@ static PetscErrorCode ourj(SNES snes, Vec X, Mat J, Mat P, void *ptr)
   PetscFunctionBegin;
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(DMGetDMSNES(dm, &sdm));
-  PetscCall(PetscObjectGetFortranCallback((PetscObject)sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, _cb.snesjacobian, (PetscVoidFunction *)&func, &ctx));
+  PetscCall(PetscObjectGetFortranCallback((PetscObject)sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, _cb.snesjacobian, (PetscVoidFn **)&func, &ctx));
   PetscCallFortranVoidFunction((*func)(&snes, &X, &J, &P, ctx, &ierr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -33,7 +33,7 @@ PETSC_EXTERN void dmsnessetjacobian_(DM *dm, void (*jac)(DM *, Vec *, Mat *, Mat
 
   *ierr = DMGetDMSNESWrite(*dm, &sdm);
   if (*ierr) return;
-  *ierr = PetscObjectSetFortranCallback((PetscObject)sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, &_cb.snesjacobian, (PetscVoidFunction)jac, ctx);
+  *ierr = PetscObjectSetFortranCallback((PetscObject)sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, &_cb.snesjacobian, (PetscVoidFn *)jac, ctx);
   if (*ierr) return;
   *ierr = DMSNESSetJacobian(*dm, ourj, NULL);
 }
@@ -47,7 +47,7 @@ static PetscErrorCode ourf(SNES snes, Vec X, Vec F, void *ptr)
   PetscFunctionBegin;
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(DMGetDMSNES(dm, &sdm));
-  PetscCall(PetscObjectGetFortranCallback((PetscObject)sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, _cb.snesfunction, (PetscVoidFunction *)&func, &ctx));
+  PetscCall(PetscObjectGetFortranCallback((PetscObject)sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, _cb.snesfunction, (PetscVoidFn **)&func, &ctx));
   PetscCallFortranVoidFunction((*func)(&snes, &X, &F, ctx, &ierr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -58,7 +58,7 @@ PETSC_EXTERN void dmsnessetfunction_(DM *dm, void (*func)(SNES *, Vec *, Vec *, 
 
   *ierr = DMGetDMSNESWrite(*dm, &sdm);
   if (*ierr) return;
-  *ierr = PetscObjectSetFortranCallback((PetscObject)sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, &_cb.snesfunction, (PetscVoidFunction)func, ctx);
+  *ierr = PetscObjectSetFortranCallback((PetscObject)sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, &_cb.snesfunction, (PetscVoidFn *)func, ctx);
   if (*ierr) return;
   *ierr = DMSNESSetFunction(*dm, ourf, NULL);
 }

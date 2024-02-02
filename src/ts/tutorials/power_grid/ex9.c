@@ -170,8 +170,8 @@ int main(int argc, char **argv)
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
   PetscCall(TSSetProblemType(ts, TS_NONLINEAR));
   PetscCall(TSSetType(ts, TSTHETA));
-  PetscCall(TSSetRHSFunction(ts, NULL, (TSRHSFunction)RHSFunction, &ctx));
-  PetscCall(TSSetRHSJacobian(ts, A, A, (TSRHSJacobian)RHSJacobian, &ctx));
+  PetscCall(TSSetRHSFunction(ts, NULL, (TSRHSFunctionFn *)RHSFunction, &ctx));
+  PetscCall(TSSetRHSJacobian(ts, A, A, (TSRHSJacobianFn *)RHSJacobian, &ctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions

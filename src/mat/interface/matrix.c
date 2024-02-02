@@ -11030,7 +11030,7 @@ PetscErrorCode MatGalerkin(Mat restrct, Mat dA, Mat interpolate, MatReuse reuse,
   extern PetscErrorCode usermult(Mat, Vec, Vec);
 
   PetscCall(MatCreateXXX(comm, ..., &A));
-  PetscCall(MatSetOperation(A, MATOP_MULT, (PetscVoidFunction)usermult));
+  PetscCall(MatSetOperation(A, MATOP_MULT, (PetscVoidFn *)usermult));
 .ve
 
   Notes:

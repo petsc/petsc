@@ -1,33 +1,14 @@
 #include <petsc/private/snesimpl.h>
 
-/*MC
-    SNESObjectiveFunction - functional form used to convey an objective function to the nonlinear solver, that will be used instead of the 2-norm of the residual
-
-     Synopsis:
-     #include <petscsnes.h>
-       SNESObjectiveFunction(SNES snes,Vec x,PetscReal *obj,void *ctx);
-
-     Input Parameters:
-+      snes - the `SNES` context
-.      X    - solution
-.      obj  - real to hold the objective value
--      ctx  - optional user-defined objective context
-
-   Level: advanced
-
-.seealso: [](ch_snes), `SNES`, `SNESSetFunction()`, `SNESGetFunction()`, `SNESSetObjective()`, `SNESGetObjective()`, `SNESJacobianFunction`, `SNESFunction`
-M*/
-
 /*@C
-  SNESSetObjective - Sets the objective function minimized by some of the `SNES` linesearch methods, used instead of the 2-norm of the residual
+  SNESSetObjective - Sets the objective function minimized by some of the `SNES` linesearch methods, used instead of the 2-norm of the residual in the line search
 
   Logically Collective
 
   Input Parameters:
 + snes - the `SNES` context
-. obj  - objective evaluation routine; see `SNESObjectiveFunction` for details
-- ctx  - [optional] user-defined context for private data for the
-         function evaluation routine (may be `NULL`)
+. obj  - objective evaluation routine; see `SNESObjectiveFn` for details
+- ctx  - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
   Level: intermediate
 
@@ -38,9 +19,10 @@ M*/
 
   This is not used in the `SNESLINESEARCHCP` line search.
 
-.seealso: [](ch_snes), `SNES`, `SNESLineSearch()`, `SNESGetObjective()`, `SNESComputeObjective()`, `SNESSetFunction()`, `SNESSetJacobian()`, `SNESObjectiveFunction`
+.seealso: [](ch_snes), `SNES`, `SNESLineSearch()`, `SNESGetObjective()`, `SNESComputeObjective()`, `SNESSetFunction()`, `SNESSetJacobian()`,
+          `SNESObjectiveFn`
 @*/
-PetscErrorCode SNESSetObjective(SNES snes, PetscErrorCode (*obj)(SNES, Vec, PetscReal *, void *), void *ctx)
+PetscErrorCode SNESSetObjective(SNES snes, SNESObjectiveFn *obj, void *ctx)
 {
   DM dm;
 
@@ -60,14 +42,14 @@ PetscErrorCode SNESSetObjective(SNES snes, PetscErrorCode (*obj)(SNES, Vec, Pets
 . snes - the `SNES` context
 
   Output Parameters:
-+ obj - objective evaluation routine (or `NULL`); see `SNESObjectiveFunction` for details
++ obj - objective evaluation routine (or `NULL`); see `SNESObjectiveFn` for details
 - ctx - the function context (or `NULL`)
 
   Level: advanced
 
-.seealso: [](ch_snes), `SNES`, `SNESSetObjective()`, `SNESObjectiveFunction`, `SNESGetSolution()`
+.seealso: [](ch_snes), `SNES`, `SNESSetObjective()`, `SNESGetSolution()`, `SNESObjectiveFn`
 @*/
-PetscErrorCode SNESGetObjective(SNES snes, PetscErrorCode (**obj)(SNES, Vec, PetscReal *, void *), void **ctx)
+PetscErrorCode SNESGetObjective(SNES snes, SNESObjectiveFn **obj, void **ctx)
 {
   DM dm;
 
@@ -153,7 +135,7 @@ PetscErrorCode SNESComputeObjective(SNES snes, Vec X, PetscReal *ob)
 
   This uses quadratic interpolation of the objective to form each value in the function.
 
-.seealso: [](ch_snes), `SNESSetObjective()`, `SNESSetFunction()`, `SNESComputeObjective()`, `SNESComputeJacobianDefault()`
+.seealso: [](ch_snes), `SNESSetObjective()`, `SNESSetFunction()`, `SNESComputeObjective()`, `SNESComputeJacobianDefault()`, `SNESObjectiveFn`
 @*/
 PetscErrorCode SNESObjectiveComputeFunctionDefaultFD(SNES snes, Vec X, Vec F, void *ctx)
 {
