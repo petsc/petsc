@@ -93,8 +93,8 @@ int main(int argc, char **argv)
   PetscCall(SNESSetDM(snes, da));
   PetscCall(SNESSetType(snes, SNESVINEWTONRSLS));
   PetscCall(SNESVISetComputeVariableBounds(snes, &FormBounds));
-  PetscCall(DMDASNESSetFunctionLocal(da, INSERT_VALUES, (DMDASNESFunction_Fn *)FormFunctionLocal, NULL));
-  PetscCall(DMDASNESSetJacobianLocal(da, (DMDASNESJacobian_Fn *)FormJacobianLocal, NULL));
+  PetscCall(DMDASNESSetFunctionLocal(da, INSERT_VALUES, (DMDASNESFunctionFn *)FormFunctionLocal, NULL));
+  PetscCall(DMDASNESSetJacobianLocal(da, (DMDASNESJacobianFn *)FormJacobianLocal, NULL));
   PetscCall(SNESSetFromOptions(snes));
 
   /* solve nonlinear system */

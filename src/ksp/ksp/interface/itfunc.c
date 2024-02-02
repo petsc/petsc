@@ -2938,7 +2938,7 @@ PetscErrorCode KSPGetDiagonalScaleFix(KSP ksp, PetscBool *fix)
 
   Input Parameters:
 + ksp  - the `KSP` context
-. func - function to compute the operators, see `KSPComputeOperators_Fn` for the calling sequence
+. func - function to compute the operators, see `KSPComputeOperatorsFn` for the calling sequence
 - ctx  - optional context
 
   Level: beginner
@@ -2954,9 +2954,9 @@ PetscErrorCode KSPGetDiagonalScaleFix(KSP ksp, PetscBool *fix)
   Perhaps this routine and `KSPSetComputeRHS()` could be combined into a new API that makes clear when new matrices are computing without requiring call this
   routine to indicate when the new matrix should be computed.
 
-.seealso: [](ch_ksp), `KSP`, `KSPSetOperators()`, `KSPSetComputeRHS()`, `DMKSPSetComputeOperators()`, `KSPSetComputeInitialGuess()`, `KSPComputeOperators_Fn`
+.seealso: [](ch_ksp), `KSP`, `KSPSetOperators()`, `KSPSetComputeRHS()`, `DMKSPSetComputeOperators()`, `KSPSetComputeInitialGuess()`, `KSPComputeOperatorsFn`
 @*/
-PetscErrorCode KSPSetComputeOperators(KSP ksp, KSPComputeOperators_Fn *func, void *ctx)
+PetscErrorCode KSPSetComputeOperators(KSP ksp, KSPComputeOperatorsFn *func, void *ctx)
 {
   DM dm;
 
@@ -2975,7 +2975,7 @@ PetscErrorCode KSPSetComputeOperators(KSP ksp, KSPComputeOperators_Fn *func, voi
 
   Input Parameters:
 + ksp  - the `KSP` context
-. func - function to compute the right hand side, see `KSPComputeRHS_Fn` for the calling squence
+. func - function to compute the right hand side, see `KSPComputeRHSFn` for the calling squence
 - ctx  - optional context
 
   Level: beginner
@@ -2983,9 +2983,9 @@ PetscErrorCode KSPSetComputeOperators(KSP ksp, KSPComputeOperators_Fn *func, voi
   Note:
   The routine you provide will be called EACH you call `KSPSolve()` to prepare the new right hand side for that solve
 
-.seealso: [](ch_ksp), `KSP`, `KSPSolve()`, `DMKSPSetComputeRHS()`, `KSPSetComputeOperators()`, `KSPSetOperators()`, `KSPComputeRHS_Fn`
+.seealso: [](ch_ksp), `KSP`, `KSPSolve()`, `DMKSPSetComputeRHS()`, `KSPSetComputeOperators()`, `KSPSetOperators()`, `KSPComputeRHSFn`
 @*/
-PetscErrorCode KSPSetComputeRHS(KSP ksp, KSPComputeRHS_Fn *func, void *ctx)
+PetscErrorCode KSPSetComputeRHS(KSP ksp, KSPComputeRHSFn *func, void *ctx)
 {
   DM dm;
 
@@ -3003,7 +3003,7 @@ PetscErrorCode KSPSetComputeRHS(KSP ksp, KSPComputeRHS_Fn *func, void *ctx)
 
   Input Parameters:
 + ksp  - the `KSP` context
-. func - function to compute the initial guess, see `KSPComputeInitialGuess_Fn` for calling sequence
+. func - function to compute the initial guess, see `KSPComputeInitialGuessFn` for calling sequence
 - ctx  - optional context
 
   Level: beginner
@@ -3013,9 +3013,9 @@ PetscErrorCode KSPSetComputeRHS(KSP ksp, KSPComputeRHS_Fn *func, void *ctx)
   call `KSPSetInitialGuessNonzero()` and set the initial guess values in the solution vector passed to `KSPSolve()` before calling the solver
 
 .seealso: [](ch_ksp), `KSP`, `KSPSolve()`, `KSPSetComputeRHS()`, `KSPSetComputeOperators()`, `DMKSPSetComputeInitialGuess()`, `KSPSetInitialGuessNonzero()`,
-          `KSPComputeInitialGuess_Fn`
+          `KSPComputeInitialGuessFn`
 @*/
-PetscErrorCode KSPSetComputeInitialGuess(KSP ksp, KSPComputeInitialGuess_Fn *func, void *ctx)
+PetscErrorCode KSPSetComputeInitialGuess(KSP ksp, KSPComputeInitialGuessFn *func, void *ctx)
 {
   DM dm;
 

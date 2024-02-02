@@ -144,12 +144,12 @@ static PetscErrorCode SetupDiscretization(DM dm, const char name[], AppCtx *user
 /* This test tells us whether the given function is contained in the approximation space */
 static PetscErrorCode CheckInterpolation(DM dm, AppCtx *user)
 {
-  PetscSimplePoint_Fn *exactSol[1];
-  void                *exactCtx[1];
-  PetscDS              ds;
-  Vec                  u;
-  PetscReal            error, tol = PETSC_SMALL;
-  MPI_Comm             comm;
+  PetscSimplePointFn *exactSol[1];
+  void               *exactCtx[1];
+  PetscDS             ds;
+  Vec                 u;
+  PetscReal           error, tol = PETSC_SMALL;
+  MPI_Comm            comm;
 
   PetscFunctionBeginUser;
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
@@ -168,13 +168,13 @@ static PetscErrorCode CheckInterpolation(DM dm, AppCtx *user)
 /* This test tells us whether the element is unisolvent (the mass matrix has full rank), and what rate of convergence we achieve */
 static PetscErrorCode CheckL2Projection(DM dm, AppCtx *user)
 {
-  PetscSimplePoint_Fn *exactSol[1];
-  void                *exactCtx[1];
-  SNES                 snes;
-  PetscDS              ds;
-  Vec                  u;
-  PetscReal            error, tol = PETSC_SMALL;
-  MPI_Comm             comm;
+  PetscSimplePointFn *exactSol[1];
+  void               *exactCtx[1];
+  SNES                snes;
+  PetscDS             ds;
+  Vec                 u;
+  PetscReal           error, tol = PETSC_SMALL;
+  MPI_Comm            comm;
 
   PetscFunctionBeginUser;
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));

@@ -20,7 +20,7 @@ Changes: Development
 
 - Add ``PetscBench`` an object class for managing benchmarks in PETSc
 - Deprecate ``PetscVoidFunction``, ``PetscVoidStarFunction``, and ``PetscErrorCodeFunction`` typedefs in favor of
-  ``PetscVoid_Fn`` and ``PetscErrorCode_Fn``
+  ``PetscVoidFn`` and ``PetscErrorCodeFn``
 
 .. rubric:: Event Logging:
 
@@ -86,9 +86,9 @@ Changes: Development
 - Add support for Quasi-Newton models in ``SNESNEWTONTR`` via ``SNESNewtonTRSetQNType``
 - Add support for trust region norm customization in ``SNESNEWTONTR`` via ``SNESNewtonTRSetNormType``
 - Remove default of ``KSPPREONLY`` and ``PCLU`` for ``SNESNASM`` subdomain solves: for ``SNESASPIN`` use ``-npc_sub_ksp_type preonly -npc_sub_pc_type lu``
-- Add function typedefs ``SNESInitialGuess_Fn``, ``SNESFunction_Fn``, ``SNESObjective_Fn``, ``SNESJacobian_Fn``, and ``SNESNGS_Fn``
+- Add function typedefs ``SNESInitialGuessFn``, ``SNESFunctionFn``, ``SNESObjectiveFn``, ``SNESJacobianFn``, and ``SNESNGSFn``
 - Deprecate ``DMDASNESFunction``, ``DMDASNESJacobian``, ``DMDASNESObjective``, ``DMDASNESFunctionVec``, ``DMDASNESJacobianVec``, and ``DMDASNESObjectiveVec``
-  in favor of ``DMDASNESFunction_Fn``, ``DMDASNESJacobian_Fn``, ``DMDASNESObjective_Fn``, ``DMDASNESFunctionVec_Fn``, ``DMDASNESJacobianVec_Fn``, and ``DMDASNESObjectiveVec_Fn``
+  in favor of ``DMDASNESFunctionFn``, ``DMDASNESJacobianFn``, ``DMDASNESObjectiveFn``, ``DMDASNESFunctionVecFn``, ``DMDASNESJacobianVecFn``, and ``DMDASNESObjectiveVecFn``
 
 .. rubric:: SNESLineSearch:
 
@@ -110,7 +110,7 @@ Changes: Development
 .. rubric:: DM/DA:
 
 - Add MPI reduction inside ``SNESComputeObjective_DMDA()``. No need to call reduction in local callback
-- Deprecate ``PetscSimplePointFunc`` in favor of ``PetscSimplePoint_Fn``
+- Deprecate ``PetscSimplePointFunc`` in favor of ``PetscSimplePointFn``
 
 .. rubric:: DMSwarm:
 

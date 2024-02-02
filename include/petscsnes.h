@@ -431,7 +431,7 @@ PETSC_DEPRECATED_FUNCTION(3, 5, 0, "SNESConvergedSkip()", ) static inline void S
 #define SNESSkipConverged (SNESSkipConverged, SNESConvergedSkip)
 
 /*S
-  SNESInitialGuess_Fn - A prototype of a `SNES` compute initial guess function that would be passed to `SNESSetComputeInitialGuess()`
+  SNESInitialGuessFn - A prototype of a `SNES` compute initial guess function that would be passed to `SNESSetComputeInitialGuess()`
 
   Calling Sequence:
 + snes  - `SNES` context
@@ -440,12 +440,12 @@ PETSC_DEPRECATED_FUNCTION(3, 5, 0, "SNESConvergedSkip()", ) static inline void S
 
   Level: beginner
 
-.seealso: [](ch_snes), `SNES`, `SNESSetComputeInitialGuess()`, `SNESSetFunction()`, `SNESGetFunction()`, `SNESJacobian_Fn`, `SNESFunction_Fn`
+.seealso: [](ch_snes), `SNES`, `SNESSetComputeInitialGuess()`, `SNESSetFunction()`, `SNESGetFunction()`, `SNESJacobianFn`, `SNESFunctionFn`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESInitialGuess_Fn)(SNES snes, Vec u, void *ctx);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESInitialGuessFn)(SNES snes, Vec u, void *ctx);
 
 /*S
-  SNESFunction_Fn - A prototype of a `SNES` evaluation function that would be passed to `SNESSetFunction()`
+  SNESFunctionFn - A prototype of a `SNES` evaluation function that would be passed to `SNESSetFunction()`
 
   Calling Sequence:
 + snes  - `SNES` context
@@ -455,12 +455,12 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESInitialGuess_Fn)(SNES snes, Vec 
 
   Level: beginner
 
-.seealso: [](ch_snes), `SNES`, `SNESSetFunction()`, `SNESGetFunction()`, `SNESJacobian_Fn`, `SNESNGS_Fn`
+.seealso: [](ch_snes), `SNES`, `SNESSetFunction()`, `SNESGetFunction()`, `SNESJacobianFn`, `SNESNGSFn`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESFunction_Fn)(SNES snes, Vec u, Vec F, void *ctx);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESFunctionFn)(SNES snes, Vec u, Vec F, void *ctx);
 
 /*S
-  SNESObjective_Fn - A prototype of a `SNES` objective evaluation function that would be passed to `SNESSetObjective()`
+  SNESObjectiveFn - A prototype of a `SNES` objective evaluation function that would be passed to `SNESSetObjective()`
 
   Calling Sequence:
 + snes  - `SNES` context
@@ -470,12 +470,12 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESFunction_Fn)(SNES snes, Vec u, V
 
   Level: beginner
 
-.seealso: [](ch_snes), `SNES`, `SNESSetFunction()`, `SNESGetFunction()`, `SNESJacobian_Fn`, `SNESNGS_Fn`
+.seealso: [](ch_snes), `SNES`, `SNESSetFunction()`, `SNESGetFunction()`, `SNESJacobianFn`, `SNESNGSFn`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESObjective_Fn)(SNES snes, Vec u, PetscReal *o, void *ctx);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESObjectiveFn)(SNES snes, Vec u, PetscReal *o, void *ctx);
 
 /*S
-  SNESJacobian_Fn - A prototype of a `SNES` Jacobian evaluation function that would be passed to `SNESSetJacobian()`
+  SNESJacobianFn - A prototype of a `SNES` Jacobian evaluation function that would be passed to `SNESSetJacobian()`
 
   Calling Sequence:
 + snes   - the `SNES` context obtained from `SNESCreate()`
@@ -486,12 +486,12 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESObjective_Fn)(SNES snes, Vec u, 
 
   Level: beginner
 
-.seealso: [](ch_snes), `SNES`, `SNESSetJacobian()`, `SNESGetJacobian()`, `SNESFunction_Fn`, `SNESNGS_Fn`
+.seealso: [](ch_snes), `SNES`, `SNESSetJacobian()`, `SNESGetJacobian()`, `SNESFunctionFn`, `SNESNGSFn`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESJacobian_Fn)(SNES snes, Vec u, Mat Amat, Mat Pmat, void *ctx);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESJacobianFn)(SNES snes, Vec u, Mat Amat, Mat Pmat, void *ctx);
 
 /*S
-  SNESNGS_Fn - A prototype of a `SNES` nonlinear Gauss-Seidel function that would be passed to `SNESSetNGS()`
+  SNESNGSFn - A prototype of a `SNES` nonlinear Gauss-Seidel function that would be passed to `SNESSetNGS()`
 
   Calling Sequence:
 + snes   - the `SNES` context obtained from `SNESCreate()`
@@ -501,32 +501,32 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESJacobian_Fn)(SNES snes, Vec u, M
 
   Level: beginner
 
-.seealso: [](ch_snes), `SNES`, `SNESSetJacobian()`, `SNESGetJacobian()`, `SNESFunction_Fn`, `SNESSetFunction()`, `SNESGetFunction()`, `SNESJacobian_Fn`
+.seealso: [](ch_snes), `SNES`, `SNESSetJacobian()`, `SNESGetJacobian()`, `SNESFunctionFn`, `SNESSetFunction()`, `SNESGetFunction()`, `SNESJacobianFn`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESNGS_Fn)(SNES snes, Vec u, Vec b, void *ctx);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESNGSFn)(SNES snes, Vec u, Vec b, void *ctx);
 
 /* --------- Solving systems of nonlinear equations --------------- */
-PETSC_EXTERN PetscErrorCode SNESSetFunction(SNES, Vec, SNESFunction_Fn *, void *);
-PETSC_EXTERN PetscErrorCode SNESGetFunction(SNES, Vec *, SNESFunction_Fn **, void **);
+PETSC_EXTERN PetscErrorCode SNESSetFunction(SNES, Vec, SNESFunctionFn *, void *);
+PETSC_EXTERN PetscErrorCode SNESGetFunction(SNES, Vec *, SNESFunctionFn **, void **);
 PETSC_EXTERN PetscErrorCode SNESComputeFunction(SNES, Vec, Vec);
 PETSC_EXTERN PetscErrorCode SNESComputeMFFunction(SNES, Vec, Vec);
 PETSC_EXTERN PetscErrorCode SNESSetInitialFunction(SNES, Vec);
 
-PETSC_EXTERN PetscErrorCode  SNESSetJacobian(SNES, Mat, Mat, SNESJacobian_Fn *, void *);
-PETSC_EXTERN PetscErrorCode  SNESGetJacobian(SNES, Mat *, Mat *, SNESJacobian_Fn **, void **);
-PETSC_EXTERN SNESFunction_Fn SNESObjectiveComputeFunctionDefaultFD;
-PETSC_EXTERN SNESJacobian_Fn SNESComputeJacobianDefault;
-PETSC_EXTERN SNESJacobian_Fn SNESComputeJacobianDefaultColor;
-PETSC_EXTERN PetscErrorCode  SNESPruneJacobianColor(SNES, Mat, Mat);
-PETSC_EXTERN PetscErrorCode  SNESSetComputeInitialGuess(SNES, SNESInitialGuess_Fn *, void *);
-PETSC_EXTERN PetscErrorCode  SNESSetPicard(SNES, Vec, SNESFunction_Fn *, Mat, Mat, SNESJacobian_Fn *, void *);
-PETSC_EXTERN PetscErrorCode  SNESGetPicard(SNES, Vec *, SNESFunction_Fn **, Mat *, Mat *, SNESJacobian_Fn **, void **);
-PETSC_EXTERN SNESFunction_Fn SNESPicardComputeFunction;
-PETSC_EXTERN SNESFunction_Fn SNESPicardComputeMFFunction;
-PETSC_EXTERN SNESJacobian_Fn SNESPicardComputeJacobian;
+PETSC_EXTERN PetscErrorCode SNESSetJacobian(SNES, Mat, Mat, SNESJacobianFn *, void *);
+PETSC_EXTERN PetscErrorCode SNESGetJacobian(SNES, Mat *, Mat *, SNESJacobianFn **, void **);
+PETSC_EXTERN SNESFunctionFn SNESObjectiveComputeFunctionDefaultFD;
+PETSC_EXTERN SNESJacobianFn SNESComputeJacobianDefault;
+PETSC_EXTERN SNESJacobianFn SNESComputeJacobianDefaultColor;
+PETSC_EXTERN PetscErrorCode SNESPruneJacobianColor(SNES, Mat, Mat);
+PETSC_EXTERN PetscErrorCode SNESSetComputeInitialGuess(SNES, SNESInitialGuessFn *, void *);
+PETSC_EXTERN PetscErrorCode SNESSetPicard(SNES, Vec, SNESFunctionFn *, Mat, Mat, SNESJacobianFn *, void *);
+PETSC_EXTERN PetscErrorCode SNESGetPicard(SNES, Vec *, SNESFunctionFn **, Mat *, Mat *, SNESJacobianFn **, void **);
+PETSC_EXTERN SNESFunctionFn SNESPicardComputeFunction;
+PETSC_EXTERN SNESFunctionFn SNESPicardComputeMFFunction;
+PETSC_EXTERN SNESJacobianFn SNESPicardComputeJacobian;
 
-PETSC_EXTERN PetscErrorCode SNESSetObjective(SNES, SNESObjective_Fn *, void *);
-PETSC_EXTERN PetscErrorCode SNESGetObjective(SNES, SNESObjective_Fn **, void **);
+PETSC_EXTERN PetscErrorCode SNESSetObjective(SNES, SNESObjectiveFn *, void *);
+PETSC_EXTERN PetscErrorCode SNESGetObjective(SNES, SNESObjectiveFn **, void **);
 PETSC_EXTERN PetscErrorCode SNESComputeObjective(SNES, Vec, PetscReal *);
 
 /*E
@@ -660,8 +660,8 @@ PETSC_EXTERN const char *const *const SNESFunctionTypes;
 PETSC_EXTERN PetscErrorCode SNESSetFunctionType(SNES, SNESFunctionType);
 PETSC_EXTERN PetscErrorCode SNESGetFunctionType(SNES, SNESFunctionType *);
 
-PETSC_EXTERN PetscErrorCode SNESSetNGS(SNES, SNESNGS_Fn *, void *);
-PETSC_EXTERN PetscErrorCode SNESGetNGS(SNES, SNESNGS_Fn **, void **);
+PETSC_EXTERN PetscErrorCode SNESSetNGS(SNES, SNESNGSFn *, void *);
+PETSC_EXTERN PetscErrorCode SNESGetNGS(SNES, SNESNGSFn **, void **);
 PETSC_EXTERN PetscErrorCode SNESComputeNGS(SNES, Vec, Vec);
 
 PETSC_EXTERN PetscErrorCode SNESNGSSetSweeps(SNES, PetscInt);
@@ -721,7 +721,7 @@ PETSC_EXTERN PetscFunctionList SNESLineSearchList;
 #define SNES_LINESEARCH_ORDER_CUBIC     3
 
 /*S
-  SNESLineSearchVIProject_Fn - A prototype of a `SNES` function that projects a vector onto the VI bounds, passed to `SNESLineSearchSetVIFunctions()`
+  SNESLineSearchVIProjectFn - A prototype of a `SNES` function that projects a vector onto the VI bounds, passed to `SNESLineSearchSetVIFunctions()`
 
   Calling Sequence:
 + snes  - `SNES` context
@@ -730,15 +730,15 @@ PETSC_EXTERN PetscFunctionList SNESLineSearchList;
   Level: advanced
 
   Note:
-  The deprecated `SNESLineSearchVIProjectFunc` still works as a replacement for `SNESLineSearchVIProject_Fn` *.
+  The deprecated `SNESLineSearchVIProjectFunc` still works as a replacement for `SNESLineSearchVIProjectFn` *.
 
 .seealso: [](ch_snes), `SNES`, `SNESLineSearch`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESLineSearchVIProject_Fn)(SNES snes, Vec u);
-PETSC_EXTERN_TYPEDEF typedef SNESLineSearchVIProject_Fn *SNESLineSearchVIProjectFunc; // deprecated
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESLineSearchVIProjectFn)(SNES snes, Vec u);
+PETSC_EXTERN_TYPEDEF typedef SNESLineSearchVIProjectFn *SNESLineSearchVIProjectFunc; // deprecated
 
 /*S
-  SNESLineSearchVIProject_Fn - A prototype of a `SNES` function that computes the norm of the active set variables in a vector in a VI solve,
+  SNESLineSearchVIProjectFn - A prototype of a `SNES` function that computes the norm of the active set variables in a vector in a VI solve,
   passed to `SNESLineSearchSetVIFunctions()`
 
   Calling Sequence:
@@ -750,17 +750,17 @@ PETSC_EXTERN_TYPEDEF typedef SNESLineSearchVIProject_Fn *SNESLineSearchVIProject
   Level: advanced
 
   Note:
-  The deprecated `SNESLineSearchVINormFunc` still works as a replacement for `SNESLineSearchVINorm_Fn` *.
+  The deprecated `SNESLineSearchVINormFunc` still works as a replacement for `SNESLineSearchVINormFn` *.
 
 .seealso: [](ch_snes), `SNES`, `SNESLineSearch`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESLineSearchVINorm_Fn)(SNES snes, Vec f, Vec u, PetscReal *fnorm);
-PETSC_EXTERN_TYPEDEF typedef SNESLineSearchVINorm_Fn *SNESLineSearchVINormFunc; // deprecated
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESLineSearchVINormFn)(SNES snes, Vec f, Vec u, PetscReal *fnorm);
+PETSC_EXTERN_TYPEDEF typedef SNESLineSearchVINormFn *SNESLineSearchVINormFunc; // deprecated
 
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESLineSearchApply_Fn)(SNESLineSearch);
-PETSC_EXTERN_TYPEDEF typedef SNESLineSearchApply_Fn *SNESLineSearchApplyFunc; // deprecated
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESLineSearchShellApply_Fn)(SNESLineSearch, void *);
-PETSC_EXTERN_TYPEDEF typedef SNESLineSearchShellApply_Fn *SNESLineSearchUserFunc; // deprecated
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESLineSearchApplyFn)(SNESLineSearch);
+PETSC_EXTERN_TYPEDEF typedef SNESLineSearchApplyFn *SNESLineSearchApplyFunc; // deprecated
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESLineSearchShellApplyFn)(SNESLineSearch, void *);
+PETSC_EXTERN_TYPEDEF typedef SNESLineSearchShellApplyFn *SNESLineSearchUserFunc; // deprecated
 
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate(MPI_Comm, SNESLineSearch *);
 PETSC_EXTERN PetscErrorCode SNESLineSearchReset(SNESLineSearch);
@@ -786,8 +786,8 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchGetPostCheck(SNESLineSearch, PetscErro
 
 /* set the functions for VI-specific line search operations */
 
-PETSC_EXTERN PetscErrorCode SNESLineSearchSetVIFunctions(SNESLineSearch, SNESLineSearchVIProject_Fn *, SNESLineSearchVINorm_Fn *);
-PETSC_EXTERN PetscErrorCode SNESLineSearchGetVIFunctions(SNESLineSearch, SNESLineSearchVIProject_Fn **, SNESLineSearchVINorm_Fn **);
+PETSC_EXTERN PetscErrorCode SNESLineSearchSetVIFunctions(SNESLineSearch, SNESLineSearchVIProjectFn *, SNESLineSearchVINormFn *);
+PETSC_EXTERN PetscErrorCode SNESLineSearchGetVIFunctions(SNESLineSearch, SNESLineSearchVIProjectFn **, SNESLineSearchVINormFn **);
 
 /* pointers to the associated SNES in order to be able to get the function evaluation out */
 PETSC_EXTERN PetscErrorCode SNESLineSearchSetSNES(SNESLineSearch, SNES);
@@ -860,8 +860,8 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchAppendOptionsPrefix(SNESLineSearch, co
 PETSC_EXTERN PetscErrorCode SNESLineSearchGetOptionsPrefix(SNESLineSearch, const char *prefix[]);
 
 /* Shell interface functions */
-PETSC_EXTERN PetscErrorCode SNESLineSearchShellSetApply(SNESLineSearch, SNESLineSearchShellApply_Fn, void *);
-PETSC_EXTERN PetscErrorCode SNESLineSearchShellGetApply(SNESLineSearch, SNESLineSearchShellApply_Fn **, void **);
+PETSC_EXTERN PetscErrorCode SNESLineSearchShellSetApply(SNESLineSearch, SNESLineSearchShellApplyFn, void *);
+PETSC_EXTERN PetscErrorCode SNESLineSearchShellGetApply(SNESLineSearch, SNESLineSearchShellApplyFn **, void **);
 
 PETSC_DEPRECATED_FUNCTION(3, 21, 0, "SNESLinesearchShellSetApply()", ) static inline PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch ls, SNESLineSearchUserFunc f, void *ctx)
 {
@@ -923,37 +923,37 @@ PETSC_DEPRECATED_FUNCTION(3, 4, 0, "SNESSetLineSearch()", ) static inline PetscE
 }
 
 PETSC_EXTERN PetscErrorCode SNESSetUpMatrices(SNES);
-PETSC_EXTERN PetscErrorCode DMSNESSetFunction(DM, SNESFunction_Fn *, void *);
-PETSC_EXTERN PetscErrorCode DMSNESGetFunction(DM, SNESFunction_Fn **, void **);
+PETSC_EXTERN PetscErrorCode DMSNESSetFunction(DM, SNESFunctionFn *, void *);
+PETSC_EXTERN PetscErrorCode DMSNESGetFunction(DM, SNESFunctionFn **, void **);
 PETSC_EXTERN PetscErrorCode DMSNESSetFunctionContextDestroy(DM, PetscErrorCode (*)(void *));
-PETSC_EXTERN PetscErrorCode DMSNESSetMFFunction(DM, SNESFunction_Fn *, void *);
-PETSC_EXTERN PetscErrorCode DMSNESSetNGS(DM, SNESNGS_Fn *, void *);
-PETSC_EXTERN PetscErrorCode DMSNESGetNGS(DM, SNESNGS_Fn **, void **);
-PETSC_EXTERN PetscErrorCode DMSNESSetJacobian(DM, SNESJacobian_Fn *, void *);
-PETSC_EXTERN PetscErrorCode DMSNESGetJacobian(DM, SNESJacobian_Fn **, void **);
+PETSC_EXTERN PetscErrorCode DMSNESSetMFFunction(DM, SNESFunctionFn *, void *);
+PETSC_EXTERN PetscErrorCode DMSNESSetNGS(DM, SNESNGSFn *, void *);
+PETSC_EXTERN PetscErrorCode DMSNESGetNGS(DM, SNESNGSFn **, void **);
+PETSC_EXTERN PetscErrorCode DMSNESSetJacobian(DM, SNESJacobianFn *, void *);
+PETSC_EXTERN PetscErrorCode DMSNESGetJacobian(DM, SNESJacobianFn **, void **);
 PETSC_EXTERN PetscErrorCode DMSNESSetJacobianContextDestroy(DM, PetscErrorCode (*)(void *));
-PETSC_EXTERN PetscErrorCode DMSNESSetPicard(DM, SNESFunction_Fn *, SNESJacobian_Fn *, void *);
-PETSC_EXTERN PetscErrorCode DMSNESGetPicard(DM, SNESFunction_Fn **, SNESJacobian_Fn **, void **);
-PETSC_EXTERN PetscErrorCode DMSNESSetObjective(DM, SNESObjective_Fn *, void *);
-PETSC_EXTERN PetscErrorCode DMSNESGetObjective(DM, SNESObjective_Fn **, void **);
+PETSC_EXTERN PetscErrorCode DMSNESSetPicard(DM, SNESFunctionFn *, SNESJacobianFn *, void *);
+PETSC_EXTERN PetscErrorCode DMSNESGetPicard(DM, SNESFunctionFn **, SNESJacobianFn **, void **);
+PETSC_EXTERN PetscErrorCode DMSNESSetObjective(DM, SNESObjectiveFn *, void *);
+PETSC_EXTERN PetscErrorCode DMSNESGetObjective(DM, SNESObjectiveFn **, void **);
 PETSC_EXTERN PetscErrorCode DMCopyDMSNES(DM, DM);
 
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(DMDASNESFunction_Fn)(DMDALocalInfo *, void *, void *, void *);
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(DMDASNESJacobian_Fn)(DMDALocalInfo *, void *, Mat, Mat, void *);
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(DMDASNESObjective_Fn)(DMDALocalInfo *, void *, PetscReal *, void *);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(DMDASNESFunctionFn)(DMDALocalInfo *, void *, void *, void *);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(DMDASNESJacobianFn)(DMDALocalInfo *, void *, Mat, Mat, void *);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(DMDASNESObjectiveFn)(DMDALocalInfo *, void *, PetscReal *, void *);
 
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(DMDASNESFunctionVec_Fn)(DMDALocalInfo *, Vec, Vec, void *);
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(DMDASNESJacobianVec_Fn)(DMDALocalInfo *, Vec, Mat, Mat, void *);
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(DMDASNESObjectiveVec_Fn)(DMDALocalInfo *, Vec, PetscReal *, void *);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(DMDASNESFunctionVecFn)(DMDALocalInfo *, Vec, Vec, void *);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(DMDASNESJacobianVecFn)(DMDALocalInfo *, Vec, Mat, Mat, void *);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(DMDASNESObjectiveVecFn)(DMDALocalInfo *, Vec, PetscReal *, void *);
 
-PETSC_EXTERN PetscErrorCode DMDASNESSetFunctionLocal(DM, InsertMode, DMDASNESFunction_Fn *, void *);
-PETSC_EXTERN PetscErrorCode DMDASNESSetJacobianLocal(DM, DMDASNESJacobian_Fn *, void *);
-PETSC_EXTERN PetscErrorCode DMDASNESSetObjectiveLocal(DM, DMDASNESObjective_Fn *, void *);
-PETSC_EXTERN PetscErrorCode DMDASNESSetPicardLocal(DM, InsertMode, DMDASNESFunction_Fn *, DMDASNESJacobian_Fn, void *);
+PETSC_EXTERN PetscErrorCode DMDASNESSetFunctionLocal(DM, InsertMode, DMDASNESFunctionFn *, void *);
+PETSC_EXTERN PetscErrorCode DMDASNESSetJacobianLocal(DM, DMDASNESJacobianFn *, void *);
+PETSC_EXTERN PetscErrorCode DMDASNESSetObjectiveLocal(DM, DMDASNESObjectiveFn *, void *);
+PETSC_EXTERN PetscErrorCode DMDASNESSetPicardLocal(DM, InsertMode, DMDASNESFunctionFn *, DMDASNESJacobianFn, void *);
 
-PETSC_EXTERN PetscErrorCode DMDASNESSetFunctionLocalVec(DM, InsertMode, DMDASNESFunctionVec_Fn *, void *);
-PETSC_EXTERN PetscErrorCode DMDASNESSetJacobianLocalVec(DM, DMDASNESJacobianVec_Fn *, void *);
-PETSC_EXTERN PetscErrorCode DMDASNESSetObjectiveLocalVec(DM, DMDASNESObjectiveVec_Fn *, void *);
+PETSC_EXTERN PetscErrorCode DMDASNESSetFunctionLocalVec(DM, InsertMode, DMDASNESFunctionVecFn *, void *);
+PETSC_EXTERN PetscErrorCode DMDASNESSetJacobianLocalVec(DM, DMDASNESJacobianVecFn *, void *);
+PETSC_EXTERN PetscErrorCode DMDASNESSetObjectiveLocalVec(DM, DMDASNESObjectiveVecFn *, void *);
 
 PETSC_EXTERN PetscErrorCode DMSNESSetBoundaryLocal(DM, PetscErrorCode (*)(DM, Vec, void *), void *);
 PETSC_EXTERN PetscErrorCode DMSNESSetObjectiveLocal(DM, PetscErrorCode (*)(DM, Vec, PetscReal *, void *), void *);

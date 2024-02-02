@@ -764,8 +764,8 @@ static PetscErrorCode TSGLLESetType_GLLE(TS ts, TSGLLEType type)
 
 static PetscErrorCode TSGLLESetAcceptType_GLLE(TS ts, TSGLLEAcceptType type)
 {
-  TSGLLEAccept_Fn *r;
-  TS_GLLE         *gl = (TS_GLLE *)ts->data;
+  TSGLLEAcceptFn *r;
+  TS_GLLE        *gl = (TS_GLLE *)ts->data;
 
   PetscFunctionBegin;
   PetscCall(PetscFunctionListFind(TSGLLEAcceptList, type, &r));
@@ -1233,7 +1233,7 @@ PetscErrorCode TSGLLERegister(const char sname[], PetscErrorCode (*function)(TS)
 
   Input Parameters:
 + sname    - name of user-defined acceptance scheme
-- function - routine to create method context, see `TSGLLEAccept_Fn` for the calling sequence
+- function - routine to create method context, see `TSGLLEAcceptFn` for the calling sequence
 
   Level: advanced
 
@@ -1251,9 +1251,9 @@ PetscErrorCode TSGLLERegister(const char sname[], PetscErrorCode (*function)(TS)
 .ve
   or at runtime via the option `-ts_gl_accept_type my_scheme`
 
-.seealso: [](ch_ts), `TSGLLE`, `TSGLLEType`, `TSGLLERegisterAll()`, `TSGLLEAccept_Fn`
+.seealso: [](ch_ts), `TSGLLE`, `TSGLLEType`, `TSGLLERegisterAll()`, `TSGLLEAcceptFn`
 @*/
-PetscErrorCode TSGLLEAcceptRegister(const char sname[], TSGLLEAccept_Fn *function)
+PetscErrorCode TSGLLEAcceptRegister(const char sname[], TSGLLEAcceptFn *function)
 {
   PetscFunctionBegin;
   PetscCall(PetscFunctionListAdd(&TSGLLEAcceptList, sname, function));

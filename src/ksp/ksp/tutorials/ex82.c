@@ -26,16 +26,16 @@ static PetscErrorCode GenEntries(PetscInt sdim, PetscInt M, PetscInt N, const Pe
 
 int main(int argc, char **argv)
 {
-  KSP                ksp;
-  PC                 pc;
-  Vec                b, x;
-  Mat                A;
-  PetscInt           m = 100, dim = 3, M, begin = 0, n = 0, overlap = 1;
-  PetscMPIInt        size;
-  PetscReal         *coords, *gcoords;
-  MatHtoolKernel_Fn *kernel = GenEntries;
-  PetscBool          flg, sym = PETSC_FALSE;
-  PetscRandom        rdm;
+  KSP               ksp;
+  PC                pc;
+  Vec               b, x;
+  Mat               A;
+  PetscInt          m = 100, dim = 3, M, begin = 0, n = 0, overlap = 1;
+  PetscMPIInt       size;
+  PetscReal        *coords, *gcoords;
+  MatHtoolKernelFn *kernel = GenEntries;
+  PetscBool         flg, sym = PETSC_FALSE;
+  PetscRandom       rdm;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)NULL, help));

@@ -123,8 +123,8 @@ int main(int argc, char **argv)
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
   PetscCall(TSSetProblemType(ts, TS_NONLINEAR));
   PetscCall(TSSetType(ts, TSBEULER));
-  PetscCall(TSSetRHSFunction(ts, NULL, (TSRHSFunction_Fn *)RHSFunction, &ctx));
-  PetscCall(TSSetRHSJacobian(ts, ctx.Jac, ctx.Jac, (TSRHSJacobian_Fn *)RHSJacobian, &ctx));
+  PetscCall(TSSetRHSFunction(ts, NULL, (TSRHSFunctionFn *)RHSFunction, &ctx));
+  PetscCall(TSSetRHSJacobian(ts, ctx.Jac, ctx.Jac, (TSRHSJacobianFn *)RHSJacobian, &ctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -135,8 +135,8 @@ int main(int argc, char **argv)
   PetscCall(TSSetRHSJacobianP(ts, ctx.Jacp, RHSJacobianP, &ctx));
 
   PetscCall(TSCreateQuadratureTS(ts, PETSC_FALSE, &quadts));
-  PetscCall(TSSetRHSFunction(quadts, NULL, (TSRHSFunction_Fn *)CostIntegrand, &ctx));
-  PetscCall(TSSetRHSJacobian(quadts, ctx.DRDU, ctx.DRDU, (TSRHSJacobian_Fn *)DRDUJacobianTranspose, &ctx));
+  PetscCall(TSSetRHSFunction(quadts, NULL, (TSRHSFunctionFn *)CostIntegrand, &ctx));
+  PetscCall(TSSetRHSJacobian(quadts, ctx.DRDU, ctx.DRDU, (TSRHSJacobianFn *)DRDUJacobianTranspose, &ctx));
   PetscCall(TSSetRHSJacobianP(quadts, ctx.DRDP, DRDPJacobianTranspose, &ctx));
   if (sa == SA_ADJ) {
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

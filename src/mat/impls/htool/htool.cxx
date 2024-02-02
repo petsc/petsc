@@ -572,7 +572,7 @@ PETSC_EXTERN PetscErrorCode MatHtoolGetHierarchicalMat(Mat A, const htool::Virtu
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatHtoolSetKernel_Htool(Mat A, MatHtoolKernel_Fn *kernel, void *kernelctx)
+static PetscErrorCode MatHtoolSetKernel_Htool(Mat A, MatHtoolKernelFn *kernel, void *kernelctx)
 {
   Mat_Htool *a = (Mat_Htool *)A->data;
 
@@ -596,13 +596,13 @@ static PetscErrorCode MatHtoolSetKernel_Htool(Mat A, MatHtoolKernel_Fn *kernel, 
 
 .seealso: [](ch_matrices), `Mat`, `MATHTOOL`, `MatCreateHtoolFromKernel()`
 @*/
-PETSC_EXTERN PetscErrorCode MatHtoolSetKernel(Mat A, MatHtoolKernel_Fn *kernel, void *kernelctx)
+PETSC_EXTERN PetscErrorCode MatHtoolSetKernel(Mat A, MatHtoolKernelFn *kernel, void *kernelctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   if (!kernelctx) PetscValidFunction(kernel, 2);
   if (!kernel) PetscAssertPointer(kernelctx, 3);
-  PetscTryMethod(A, "MatHtoolSetKernel_C", (Mat, MatHtoolKernel_Fn *, void *), (A, kernel, kernelctx));
+  PetscTryMethod(A, "MatHtoolSetKernel_C", (Mat, MatHtoolKernelFn *, void *), (A, kernel, kernelctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -837,7 +837,7 @@ static PetscErrorCode MatTranspose_Htool(Mat A, MatReuse reuse, Mat *B)
 
 .seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MATHTOOL`, `PCSetCoordinates()`, `MatHtoolSetKernel()`, `MatHtoolCompressorType`, `MATH2OPUS`, `MatCreateH2OpusFromKernel()`
 @*/
-PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt spacedim, const PetscReal coords_target[], const PetscReal coords_source[], MatHtoolKernel_Fn *kernel, void *kernelctx, Mat *B)
+PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt spacedim, const PetscReal coords_target[], const PetscReal coords_source[], MatHtoolKernelFn *kernel, void *kernelctx, Mat *B)
 {
   Mat        A;
   Mat_Htool *a;

@@ -100,19 +100,19 @@ struct _p_PetscDS {
   PetscBool forceQuad;                  /* Flag to force matching quadratures in discretizations */
   IS       *quadPerm[DM_NUM_POLYTOPES]; /* qP[ct][o]: q point permutation for orientation o of integ domain */
   /* Equations */
-  DSBoundary            boundary;     /* Linked list of boundary conditions */
-  PetscBool             useJacPre;    /* Flag for using the Jacobian preconditioner */
-  PetscBool            *implicit;     /* Flag for implicit or explicit solve for each field */
-  PetscInt             *jetDegree;    /* The highest derivative for each field equation, or the k-jet that each discretization needs to tabulate */
-  PetscWeakForm         wf;           /* The PetscWeakForm holding all pointwise functions */
-  PetscPointFunc       *update;       /* Direct update of field coefficients */
-  PetscSimplePoint_Fn **exactSol;     /* Exact solutions for each field */
-  void                **exactCtx;     /* Contexts for the exact solution functions */
-  PetscSimplePoint_Fn **exactSol_t;   /* Time derivative of the exact solutions for each field */
-  void                **exactCtx_t;   /* Contexts for the time derivative of the exact solution functions */
-  PetscInt              numConstants; /* Number of constants passed to point functions */
-  PetscScalar          *constants;    /* Array of constants passed to point functions */
-  void                **ctx;          /* User contexts for each field */
+  DSBoundary           boundary;     /* Linked list of boundary conditions */
+  PetscBool            useJacPre;    /* Flag for using the Jacobian preconditioner */
+  PetscBool           *implicit;     /* Flag for implicit or explicit solve for each field */
+  PetscInt            *jetDegree;    /* The highest derivative for each field equation, or the k-jet that each discretization needs to tabulate */
+  PetscWeakForm        wf;           /* The PetscWeakForm holding all pointwise functions */
+  PetscPointFunc      *update;       /* Direct update of field coefficients */
+  PetscSimplePointFn **exactSol;     /* Exact solutions for each field */
+  void               **exactCtx;     /* Contexts for the exact solution functions */
+  PetscSimplePointFn **exactSol_t;   /* Time derivative of the exact solutions for each field */
+  void               **exactCtx_t;   /* Contexts for the time derivative of the exact solution functions */
+  PetscInt             numConstants; /* Number of constants passed to point functions */
+  PetscScalar         *constants;    /* Array of constants passed to point functions */
+  void               **ctx;          /* User contexts for each field */
   /* Computed sizes */
   PetscInt         totDim;            /* Total system dimension */
   PetscInt         totComp;           /* Total field components */

@@ -324,9 +324,9 @@ int main(int argc, char **argv)
   PetscCall(SNESSetFromOptions(snes));
 
   {
-    PetscDS              ds;
-    PetscSimplePoint_Fn *exactFuncs[2];
-    void                *ctxs[2];
+    PetscDS             ds;
+    PetscSimplePointFn *exactFuncs[2];
+    void               *ctxs[2];
 
     PetscCall(DMGetDS(dm, &ds));
     PetscCall(PetscDSGetExactSolution(ds, 0, &exactFuncs[0], &ctxs[0]));

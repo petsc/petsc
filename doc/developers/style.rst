@@ -60,7 +60,7 @@ important. We use several conventions
    an underscore in them unless they refer to another package that uses
    an underscore, for example, ``MATSOLVERSUPERLU_DIST``.
 
-#. Typedefs for functions should end in ``_Fn`` as in, for example, ``SNESFunction_Fn``.
+#. Typedefs for functions should end in ``Fn`` as in, for example, ``SNESFunctionFn``.
 
 Coding Conventions and Style
 ----------------------------

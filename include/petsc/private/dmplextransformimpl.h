@@ -49,19 +49,19 @@ typedef struct {
 
 typedef struct {
   /* Inputs */
-  PetscInt             dimEx;       /* The dimension of the extruded mesh */
-  PetscInt             cdim;        /* The coordinate dimension of the input mesh */
-  PetscInt             cdimEx;      /* The coordinate dimension of the extruded mesh */
-  PetscInt             layers;      /* The number of extruded layers */
-  PetscReal            thickness;   /* The total thickness of the extruded layers */
-  PetscInt             Nth;         /* The number of specified thicknesses */
-  PetscReal           *thicknesses; /* The input layer thicknesses */
-  PetscBool            useTensor;   /* Flag to create tensor cells */
-  PetscBool            useNormal;   /* Use input normal instead of calculating it */
-  PetscReal            normal[3];   /* Surface normal from input */
-  PetscSimplePoint_Fn *normalFunc;  /* A function returning the normal at a given point */
-  PetscBool            symmetric;   /* Extrude layers symmetrically about the surface */
-  PetscBool            periodic;    /* Connect the extruded layer periodically to the beginning */
+  PetscInt            dimEx;       /* The dimension of the extruded mesh */
+  PetscInt            cdim;        /* The coordinate dimension of the input mesh */
+  PetscInt            cdimEx;      /* The coordinate dimension of the extruded mesh */
+  PetscInt            layers;      /* The number of extruded layers */
+  PetscReal           thickness;   /* The total thickness of the extruded layers */
+  PetscInt            Nth;         /* The number of specified thicknesses */
+  PetscReal          *thicknesses; /* The input layer thicknesses */
+  PetscBool           useTensor;   /* Flag to create tensor cells */
+  PetscBool           useNormal;   /* Use input normal instead of calculating it */
+  PetscReal           normal[3];   /* Surface normal from input */
+  PetscSimplePointFn *normalFunc;  /* A function returning the normal at a given point */
+  PetscBool           symmetric;   /* Extrude layers symmetrically about the surface */
+  PetscBool           periodic;    /* Connect the extruded layer periodically to the beginning */
   /* Calculated quantities */
   PetscReal       *layerPos; /* The position of each layer relative to the original surface, along the local normal direction */
   PetscInt        *Nt;       /* The array of the number of target types */

@@ -223,12 +223,12 @@ static inline PetscErrorCode KSPLogErrorHistory(KSP ksp)
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   PetscCall(KSPGetDM(ksp, &dm));
   if (dm && ksp->err_hist && ksp->err_hist_max > ksp->err_hist_len) {
-    PetscSimplePoint_Fn *exactSol;
-    void                *exactCtx;
-    PetscDS              ds;
-    Vec                  u;
-    PetscReal            error;
-    PetscInt             Nf;
+    PetscSimplePointFn *exactSol;
+    void               *exactCtx;
+    PetscDS             ds;
+    Vec                 u;
+    PetscReal           error;
+    PetscInt            Nf;
 
     PetscCall(KSPBuildSolution(ksp, NULL, &u));
     /* TODO Was needed to correct for Newton solution, but I just need to set a solution */
@@ -280,9 +280,9 @@ PETSC_INTERN PetscErrorCode KSPPlotEigenContours_Private(KSP, PetscInt, const Pe
 typedef struct _p_DMKSP  *DMKSP;
 typedef struct _DMKSPOps *DMKSPOps;
 struct _DMKSPOps {
-  KSPComputeOperators_Fn    *computeoperators;
-  KSPComputeRHS_Fn          *computerhs;
-  KSPComputeInitialGuess_Fn *computeinitialguess;
+  KSPComputeOperatorsFn    *computeoperators;
+  KSPComputeRHSFn          *computerhs;
+  KSPComputeInitialGuessFn *computeinitialguess;
   PetscErrorCode (*destroy)(DMKSP *);
   PetscErrorCode (*duplicate)(DMKSP, DMKSP);
 };

@@ -117,8 +117,8 @@ int main(int argc, char **argv)
   PetscCall(TSSetType(ts, TSTHETA));
   PetscCall(TSSetEquationType(ts, TS_EQ_IMPLICIT));
   PetscCall(TSARKIMEXSetFullyImplicit(ts, PETSC_TRUE));
-  PetscCall(TSSetIFunction(ts, NULL, (TSIFunction_Fn *)IFunction, &ctx));
-  PetscCall(TSSetIJacobian(ts, A, A, (TSIJacobian_Fn *)IJacobian, &ctx));
+  PetscCall(TSSetIFunction(ts, NULL, (TSIFunctionFn *)IFunction, &ctx));
+  PetscCall(TSSetIJacobian(ts, A, A, (TSIJacobianFn *)IJacobian, &ctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions

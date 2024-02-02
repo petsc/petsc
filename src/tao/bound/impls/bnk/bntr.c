@@ -200,8 +200,8 @@ PetscErrorCode TaoSolve_BNTR(Tao tao)
 /*------------------------------------------------------------*/
 static PetscErrorCode TaoSetUp_BNTR(Tao tao)
 {
-  KSP           ksp;
-  PetscVoid_Fn *valid;
+  KSP          ksp;
+  PetscVoidFn *valid;
 
   PetscFunctionBegin;
   PetscCall(TaoSetUp_BNK(tao));

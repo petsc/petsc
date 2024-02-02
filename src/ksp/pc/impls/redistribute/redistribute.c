@@ -96,9 +96,9 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     PetscCall(MatCreateSubMatrix(pc->pmat, red->is, red->is, MAT_REUSE_MATRIX, &tmat));
     PetscCall(KSPSetOperators(red->ksp, tmat, tmat));
   } else {
-    PetscInt      NN;
-    PC            ipc;
-    PetscVoid_Fn *fptr;
+    PetscInt     NN;
+    PC           ipc;
+    PetscVoidFn *fptr;
 
     PetscCall(PetscObjectGetComm((PetscObject)pc, &comm));
     PetscCallMPI(MPI_Comm_size(comm, &size));

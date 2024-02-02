@@ -137,7 +137,7 @@ typedef struct _p_PetscObject {
 #define PETSCFREEDHEADER -1
 
 /*S
-  PetscObjectDestroy_Fn - A prototype of a function that can destroy a `PetscObject`
+  PetscObjectDestroyFn - A prototype of a function that can destroy a `PetscObject`
 
   Calling Sequence:
 . obj - the `PetscObject` to destroy
@@ -145,16 +145,16 @@ typedef struct _p_PetscObject {
   Level: beginner
 
   Note:
-  The deprecated `PetscObjectDestroyFunction` works as a replacement for `PetscObjectDestroy_Fn` *.
+  The deprecated `PetscObjectDestroyFunction` works as a replacement for `PetscObjectDestroyFn` *.
 
 .seealso: `PetscObject`, `PetscObjectDestroy()`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(PetscObjectDestroy_Fn)(PetscObject *obj);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(PetscObjectDestroyFn)(PetscObject *obj);
 
-PETSC_EXTERN_TYPEDEF typedef PetscObjectDestroy_Fn *PetscObjectDestroyFunction;
+PETSC_EXTERN_TYPEDEF typedef PetscObjectDestroyFn *PetscObjectDestroyFunction;
 
 /*S
-  PetscObjectView_Fn - A prototype of a function that can view a `PetscObject`
+  PetscObjectViewFn - A prototype of a function that can view a `PetscObject`
 
   Calling Sequence:
 + obj - the `PetscObject` to view
@@ -163,20 +163,20 @@ PETSC_EXTERN_TYPEDEF typedef PetscObjectDestroy_Fn *PetscObjectDestroyFunction;
   Level: beginner
 
   Note:
-  The deprecated `PetscObjectViewFunction` works as a replacement for `PetscObjectView_Fn` *.
+  The deprecated `PetscObjectViewFunction` works as a replacement for `PetscObjectViewFn` *.
 
 .seealso: `PetscObject`, `PetscObjectDestroy()`, `PetscViewer`, `PetscObjectView()`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(PetscObjectView_Fn)(PetscObject obj, PetscViewer v);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(PetscObjectViewFn)(PetscObject obj, PetscViewer v);
 
-PETSC_EXTERN_TYPEDEF typedef PetscObjectView_Fn *PetscObjectViewFunction;
+PETSC_EXTERN_TYPEDEF typedef PetscObjectViewFn *PetscObjectViewFunction;
 
 /*MC
     PetscHeaderCreate - Creates a raw PETSc object of a particular class
 
   Synopsis:
   #include <petsc/private/petscimpl.h>
-  PetscErrorCode PetscHeaderCreate(PetscObject h, PetscClassId classid, const char class_name[], const char descr[], const char mansec[], MPI_Comm comm, PetscObjectDestroy_Fn * destroy, PetscObjectView_Fn * view)
+  PetscErrorCode PetscHeaderCreate(PetscObject h, PetscClassId classid, const char class_name[], const char descr[], const char mansec[], MPI_Comm comm, PetscObjectDestroyFn * destroy, PetscObjectViewFn * view)
 
   Input Parameters:
 + classid    - The classid associated with this object (for example `VEC_CLASSID`)
@@ -301,10 +301,10 @@ PETSC_EXTERN_TYPEDEF typedef PetscObjectView_Fn *PetscObjectViewFunction;
 .seealso: `PetscObject`, `PetscHeaderDestroy()`, `PetscClassIdRegister()`
 M*/
 #define PetscHeaderCreate(h, classid, class_name, descr, mansec, comm, destroy, view) \
-  PetscHeaderCreate_Function(PetscNew(&(h)), (PetscObject *)&(h), (classid), (class_name), (descr), (mansec), (comm), (PetscObjectDestroy_Fn *)(destroy), (PetscObjectView_Fn *)(view))
+  PetscHeaderCreate_Function(PetscNew(&(h)), (PetscObject *)&(h), (classid), (class_name), (descr), (mansec), (comm), (PetscObjectDestroyFn *)(destroy), (PetscObjectViewFn *)(view))
 
-PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Function(PetscErrorCode, PetscObject *, PetscClassId, const char[], const char[], const char[], MPI_Comm, PetscObjectDestroy_Fn *, PetscObjectView_Fn *);
-PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject, PetscClassId, const char[], const char[], const char[], MPI_Comm, PetscObjectDestroy_Fn *, PetscObjectView_Fn *);
+PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Function(PetscErrorCode, PetscObject *, PetscClassId, const char[], const char[], const char[], MPI_Comm, PetscObjectDestroyFn *, PetscObjectViewFn *);
+PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject, PetscClassId, const char[], const char[], const char[], MPI_Comm, PetscObjectDestroyFn *, PetscObjectViewFn *);
 PETSC_EXTERN PetscErrorCode PetscHeaderDestroy_Function(PetscObject *);
 PETSC_EXTERN PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
 PETSC_INTERN PetscObjectId  PetscObjectNewId_Internal(void);

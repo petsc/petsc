@@ -2,8 +2,8 @@
 #include <petsc/private/snesimpl.h>
 
 typedef struct {
-  SNESLineSearchShellApply_Fn *func;
-  void                        *ctx;
+  SNESLineSearchShellApplyFn *func;
+  void                       *ctx;
 } SNESLineSearch_Shell;
 
 // PetscClangLinter pragma disable: -fdoc-param-list-func-parameter-documentation
@@ -14,7 +14,7 @@ typedef struct {
 
   Input Parameters:
 + linesearch - `SNESLineSearch` context
-. func       - function implementing the linesearch shell, see `SNESLineSearchShellApply_Fn` for calling sequence
+. func       - function implementing the linesearch shell, see `SNESLineSearchShellApplyFn` for calling sequence
 - ctx        - context for func
 
   Usage\:
@@ -42,9 +42,9 @@ typedef struct {
   Level: advanced
 
 .seealso: [](ch_snes), `SNESLineSearchShellGetApply()`, `SNESLINESEARCHSHELL`, `SNESLineSearchType`, `SNESLineSearch`,
-          `SNESLineSearchShellApply_Fn`
+          `SNESLineSearchShellApplyFn`
 @*/
-PetscErrorCode SNESLineSearchShellSetApply(SNESLineSearch linesearch, SNESLineSearchShellApply_Fn *func, void *ctx)
+PetscErrorCode SNESLineSearchShellSetApply(SNESLineSearch linesearch, SNESLineSearchShellApplyFn *func, void *ctx)
 {
   PetscBool             flg;
   SNESLineSearch_Shell *shell = (SNESLineSearch_Shell *)linesearch->data;
@@ -68,15 +68,15 @@ PetscErrorCode SNESLineSearchShellSetApply(SNESLineSearch linesearch, SNESLineSe
 . linesearch - the line search object
 
   Output Parameters:
-+ func - the user function; can be `NULL` if it is not needed, see `SNESLineSearchShellApply_Fn` for calling sequence
++ func - the user function; can be `NULL` if it is not needed, see `SNESLineSearchShellApplyFn` for calling sequence
 - ctx  - the user function context; can be `NULL` if it is not needed
 
   Level: advanced
 
 .seealso: [](ch_snes), `SNESLineSearchShellSetApply()`, `SNESLINESEARCHSHELL`, `SNESLineSearchType`, `SNESLineSearch`,
-          `SNESLineSearchShellApply_Fn`
+          `SNESLineSearchShellApplyFn`
 @*/
-PetscErrorCode SNESLineSearchShellGetApply(SNESLineSearch linesearch, SNESLineSearchShellApply_Fn **func, void **ctx)
+PetscErrorCode SNESLineSearchShellGetApply(SNESLineSearch linesearch, SNESLineSearchShellApplyFn **func, void **ctx)
 {
   PetscBool             flg;
   SNESLineSearch_Shell *shell = (SNESLineSearch_Shell *)linesearch->data;
@@ -123,7 +123,7 @@ static PetscErrorCode SNESLineSearchDestroy_Shell(SNESLineSearch linesearch)
   Level: advanced
 
 .seealso: [](ch_snes), `SNESLineSearch`, `SNES`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`, `SNESLineSearchShellSetApply()`,
-          `SNESLineSearchShellApply_Fn`
+          `SNESLineSearchShellApplyFn`
 M*/
 
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Shell(SNESLineSearch linesearch)

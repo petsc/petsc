@@ -868,8 +868,8 @@ int main(int argc, char **argv)
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
   PetscCall(TSSetProblemType(ts, TS_NONLINEAR));
   PetscCall(TSSetType(ts, TSCN));
-  PetscCall(TSSetIFunction(ts, NULL, (TSIFunction_Fn *)IFunction, &user));
-  PetscCall(TSSetIJacobian(ts, J, J, (TSIJacobian_Fn *)IJacobian, &user));
+  PetscCall(TSSetIFunction(ts, NULL, (TSIFunctionFn *)IFunction, &user));
+  PetscCall(TSSetIJacobian(ts, J, J, (TSIJacobianFn *)IJacobian, &user));
   PetscCall(TSSetApplicationContext(ts, &user));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

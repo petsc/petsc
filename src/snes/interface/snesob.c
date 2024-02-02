@@ -7,7 +7,7 @@
 
   Input Parameters:
 + snes - the `SNES` context
-. obj  - objective evaluation routine; see `SNESObjective_Fn` for details
+. obj  - objective evaluation routine; see `SNESObjectiveFn` for details
 - ctx  - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
   Level: intermediate
@@ -20,9 +20,9 @@
   This is not used in the `SNESLINESEARCHCP` line search.
 
 .seealso: [](ch_snes), `SNES`, `SNESLineSearch()`, `SNESGetObjective()`, `SNESComputeObjective()`, `SNESSetFunction()`, `SNESSetJacobian()`,
-          `SNESObjective_Fn`
+          `SNESObjectiveFn`
 @*/
-PetscErrorCode SNESSetObjective(SNES snes, SNESObjective_Fn *obj, void *ctx)
+PetscErrorCode SNESSetObjective(SNES snes, SNESObjectiveFn *obj, void *ctx)
 {
   DM dm;
 
@@ -42,14 +42,14 @@ PetscErrorCode SNESSetObjective(SNES snes, SNESObjective_Fn *obj, void *ctx)
 . snes - the `SNES` context
 
   Output Parameters:
-+ obj - objective evaluation routine (or `NULL`); see `SNESObjective_Fn` for details
++ obj - objective evaluation routine (or `NULL`); see `SNESObjectiveFn` for details
 - ctx - the function context (or `NULL`)
 
   Level: advanced
 
-.seealso: [](ch_snes), `SNES`, `SNESSetObjective()`, `SNESGetSolution()`, `SNESObjective_Fn`
+.seealso: [](ch_snes), `SNES`, `SNESSetObjective()`, `SNESGetSolution()`, `SNESObjectiveFn`
 @*/
-PetscErrorCode SNESGetObjective(SNES snes, SNESObjective_Fn **obj, void **ctx)
+PetscErrorCode SNESGetObjective(SNES snes, SNESObjectiveFn **obj, void **ctx)
 {
   DM dm;
 
@@ -135,7 +135,7 @@ PetscErrorCode SNESComputeObjective(SNES snes, Vec X, PetscReal *ob)
 
   This uses quadratic interpolation of the objective to form each value in the function.
 
-.seealso: [](ch_snes), `SNESSetObjective()`, `SNESSetFunction()`, `SNESComputeObjective()`, `SNESComputeJacobianDefault()`, `SNESObjective_Fn`
+.seealso: [](ch_snes), `SNESSetObjective()`, `SNESSetFunction()`, `SNESComputeObjective()`, `SNESComputeJacobianDefault()`, `SNESObjectiveFn`
 @*/
 PetscErrorCode SNESObjectiveComputeFunctionDefaultFD(SNES snes, Vec X, Vec F, void *ctx)
 {

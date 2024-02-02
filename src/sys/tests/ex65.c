@@ -54,7 +54,7 @@ static PetscErrorCode TestPetscFunctionListFind(PetscViewer viewer, PetscFunctio
   PetscFunctionBegin;
   // add a bunch of functions, and ensure they are all there
   for (size_t i = 0; i < num_funcs; ++i) {
-    PetscVoid_Fn *func;
+    PetscVoidFn *func;
 
     PetscCall(PetscFunctionListAdd(&fl, all_names[i], all_funcs[i]));
     PetscCall(PetscFunctionListFind(fl, all_names[i], &func));
@@ -65,7 +65,7 @@ static PetscErrorCode TestPetscFunctionListFind(PetscViewer viewer, PetscFunctio
 
   // ensure that none of them are missing
   for (size_t i = 0; i < num_funcs; ++i) {
-    PetscVoid_Fn *func;
+    PetscVoidFn *func;
 
     PetscCall(PetscFunctionListFind(fl, all_names[i], &func));
     PetscCheck(func == all_funcs[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscFunctionListFind() failed to find %s() after inserting all functions! returned %p != expected %p", all_names[i], (void *)(PETSC_UINTPTR_T)func, (void *)(PETSC_UINTPTR_T)(all_funcs[i]));
@@ -78,7 +78,7 @@ static PetscErrorCode TestPetscFunctionListFind(PetscViewer viewer, PetscFunctio
 
   // ensure that none of them are missing
   for (size_t i = 0; i < num_funcs; ++i) {
-    PetscVoid_Fn *fl_func, *fl_dup_func;
+    PetscVoidFn *fl_func, *fl_dup_func;
 
     PetscCall(PetscFunctionListFind(fl, all_names[i], &fl_func));
     PetscCheck(fl_func == all_funcs[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscFunctionListFind() failed to find %s() after inserting all functions! returned %p != expected %p", all_names[i], (void *)(PETSC_UINTPTR_T)fl_func, (void *)(PETSC_UINTPTR_T)(all_funcs[i]));
@@ -95,7 +95,7 @@ static PetscErrorCode TestPetscFunctionListFind(PetscViewer viewer, PetscFunctio
   PetscCall(PetscFunctionListClear(fl));
   // ensure that none of them are missing
   for (size_t i = 0; i < num_funcs; ++i) {
-    PetscVoid_Fn *fl_dup_func;
+    PetscVoidFn *fl_dup_func;
 
     PetscCall(PetscFunctionListFind(fl_dup, all_names[i], &fl_dup_func));
     PetscCheck(fl_dup_func == all_funcs[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscFunctionListFind() failed to find %s() in duplicated function list after clearing original list! returned %p != expected %p", all_names[i], (void *)(PETSC_UINTPTR_T)fl_dup_func, (void *)(PETSC_UINTPTR_T)(all_funcs[i]));

@@ -177,19 +177,19 @@ struct _p_SNES {
 typedef struct _p_DMSNES  *DMSNES;
 typedef struct _DMSNESOps *DMSNESOps;
 struct _DMSNESOps {
-  SNESFunction_Fn *computefunction;
-  SNESFunction_Fn *computemffunction;
-  SNESJacobian_Fn *computejacobian;
+  SNESFunctionFn *computefunction;
+  SNESFunctionFn *computemffunction;
+  SNESJacobianFn *computejacobian;
 
   /* objective */
-  SNESObjective_Fn *computeobjective;
+  SNESObjectiveFn *computeobjective;
 
   /* Picard iteration functions */
-  SNESFunction_Fn *computepfunction;
-  SNESJacobian_Fn *computepjacobian;
+  SNESFunctionFn *computepfunction;
+  SNESJacobianFn *computepjacobian;
 
   /* User-defined smoother */
-  SNESNGS_Fn *computegs;
+  SNESNGSFn *computegs;
 
   PetscErrorCode (*destroy)(DMSNES);
   PetscErrorCode (*duplicate)(DMSNES, DMSNES);
@@ -282,11 +282,11 @@ PETSC_INTERN PetscErrorCode SNESDestroy_VI(SNES);
 PETSC_INTERN PetscErrorCode SNESView_VI(SNES, PetscViewer);
 PETSC_INTERN PetscErrorCode SNESSetFromOptions_VI(SNES, PetscOptionItems *);
 PETSC_INTERN PetscErrorCode SNESSetUp_VI(SNES);
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESVIComputeVariableBounds_Fn)(SNES, Vec, Vec);
-PETSC_EXTERN_TYPEDEF typedef SNESVIComputeVariableBounds_Fn *SNESVIComputeVariableBoundsFunction; // deprecated version
-PETSC_INTERN PetscErrorCode                                  SNESVISetComputeVariableBounds_VI(SNES, SNESVIComputeVariableBounds_Fn);
-PETSC_INTERN PetscErrorCode                                  SNESVISetVariableBounds_VI(SNES, Vec, Vec);
-PETSC_INTERN PetscErrorCode                                  SNESConvergedDefault_VI(SNES, PetscInt, PetscReal, PetscReal, PetscReal, SNESConvergedReason *, void *);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESVIComputeVariableBoundsFn)(SNES, Vec, Vec);
+PETSC_EXTERN_TYPEDEF typedef SNESVIComputeVariableBoundsFn *SNESVIComputeVariableBoundsFunction; // deprecated version
+PETSC_INTERN PetscErrorCode                                 SNESVISetComputeVariableBounds_VI(SNES, SNESVIComputeVariableBoundsFn);
+PETSC_INTERN PetscErrorCode                                 SNESVISetVariableBounds_VI(SNES, Vec, Vec);
+PETSC_INTERN PetscErrorCode                                 SNESConvergedDefault_VI(SNES, PetscInt, PetscReal, PetscReal, PetscReal, SNESConvergedReason *, void *);
 
 PETSC_EXTERN PetscErrorCode DMSNESUnsetFunctionContext_Internal(DM);
 PETSC_EXTERN PetscErrorCode DMSNESUnsetJacobianContext_Internal(DM);

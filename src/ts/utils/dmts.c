@@ -111,7 +111,7 @@ PetscErrorCode DMTSView(DMTS kdm, PetscViewer viewer)
 #endif
   } else if (isbinary) {
     struct {
-      TSIFunction_Fn *ifunction;
+      TSIFunctionFn *ifunction;
     } funcstruct;
     struct {
       PetscErrorCode (*ifunctionview)(void *, PetscViewer);
@@ -120,7 +120,7 @@ PetscErrorCode DMTSView(DMTS kdm, PetscViewer viewer)
       PetscErrorCode (*ifunctionload)(void **, PetscViewer);
     } funcloadstruct;
     struct {
-      TSIJacobian_Fn *ijacobian;
+      TSIJacobianFn *ijacobian;
     } jacstruct;
     struct {
       PetscErrorCode (*ijacobianview)(void *, PetscViewer);
@@ -369,9 +369,9 @@ PetscErrorCode DMCopyDMTS(DM dmsrc, DM dmdest)
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not. If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
 
-.seealso: [](ch_ts), `DMTS`, `TS`, `DM`, `TSIFunction_Fn`
+.seealso: [](ch_ts), `DMTS`, `TS`, `DM`, `TSIFunctionFn`
 @*/
-PetscErrorCode DMTSSetIFunction(DM dm, TSIFunction_Fn *func, void *ctx)
+PetscErrorCode DMTSSetIFunction(DM dm, TSIFunctionFn *func, void *ctx)
 {
   DMTS tsdm;
 
@@ -434,7 +434,7 @@ PetscErrorCode DMTSUnsetIFunctionContext_Internal(DM dm)
 . dm - `DM` to be used with `TS`
 
   Output Parameters:
-+ func - function evaluation function, for calling sequence see `TSIFunction_Fn`
++ func - function evaluation function, for calling sequence see `TSIFunctionFn`
 - ctx  - context for residual evaluation
 
   Level: developer
@@ -443,9 +443,9 @@ PetscErrorCode DMTSUnsetIFunctionContext_Internal(DM dm)
   `TSGetIFunction()` is normally used, but it calls this function internally because the user context is actually
   associated with the `DM`.
 
-.seealso: [](ch_ts), `DMTS`, `TS`, `DM`, `DMTSSetIFunction()`, `TSIFunction_Fn`
+.seealso: [](ch_ts), `DMTS`, `TS`, `DM`, `DMTSSetIFunction()`, `TSIFunctionFn`
 @*/
-PetscErrorCode DMTSGetIFunction(DM dm, TSIFunction_Fn **func, void **ctx)
+PetscErrorCode DMTSGetIFunction(DM dm, TSIFunctionFn **func, void **ctx)
 {
   DMTS tsdm;
 
@@ -478,7 +478,7 @@ PetscErrorCode DMTSGetIFunction(DM dm, TSIFunction_Fn **func, void **ctx)
 
 .seealso: [](ch_ts), `DMTS`, `DM`, `TS`, `TSSetI2Function()`
 @*/
-PetscErrorCode DMTSSetI2Function(DM dm, TSI2Function_Fn *fun, void *ctx)
+PetscErrorCode DMTSSetI2Function(DM dm, TSI2FunctionFn *fun, void *ctx)
 {
   DMTS tsdm;
 
@@ -556,7 +556,7 @@ PetscErrorCode DMTSUnsetI2FunctionContext_Internal(DM dm)
 
 .seealso: [](ch_ts), `DMTS`, `DM`, `TS`, `DMTSSetI2Function()`, `TSGetI2Function()`
 @*/
-PetscErrorCode DMTSGetI2Function(DM dm, TSI2Function_Fn **fun, void **ctx)
+PetscErrorCode DMTSGetI2Function(DM dm, TSI2FunctionFn **fun, void **ctx)
 {
   DMTS tsdm;
 
@@ -587,9 +587,9 @@ PetscErrorCode DMTSGetI2Function(DM dm, TSI2Function_Fn **fun, void **ctx)
   `TSSetI2Jacobian()` is normally used, but it calls this function internally because the user context is actually
   associated with the `DM`.
 
-.seealso: [](ch_ts), `DMTS`, `DM`, `TS`, `TSI2Jacobian_Fn`, `TSSetI2Jacobian()`
+.seealso: [](ch_ts), `DMTS`, `DM`, `TS`, `TSI2JacobianFn`, `TSSetI2Jacobian()`
 @*/
-PetscErrorCode DMTSSetI2Jacobian(DM dm, TSI2Jacobian_Fn *jac, void *ctx)
+PetscErrorCode DMTSSetI2Jacobian(DM dm, TSI2JacobianFn *jac, void *ctx)
 {
   DMTS tsdm;
 
@@ -655,7 +655,7 @@ PetscErrorCode DMTSUnsetI2JacobianContext_Internal(DM dm)
 . dm - `DM` to be used with `TS`
 
   Output Parameters:
-+ jac - Jacobian evaluation function,  for calling sequence see `TSI2Jacobian_Fn`
++ jac - Jacobian evaluation function,  for calling sequence see `TSI2JacobianFn`
 - ctx - context for Jacobian evaluation
 
   Level: developer
@@ -664,9 +664,9 @@ PetscErrorCode DMTSUnsetI2JacobianContext_Internal(DM dm)
   `TSGetI2Jacobian()` is normally used, but it calls this function internally because the user context is actually
   associated with the `DM`.
 
-.seealso: [](ch_ts), `DMTS`, `DM`, `TS`, `DMTSSetI2Jacobian()`, `TSGetI2Jacobian()`, `TSI2Jacobian_Fn`
+.seealso: [](ch_ts), `DMTS`, `DM`, `TS`, `DMTSSetI2Jacobian()`, `TSGetI2Jacobian()`, `TSI2JacobianFn`
 @*/
-PetscErrorCode DMTSGetI2Jacobian(DM dm, TSI2Jacobian_Fn **jac, void **ctx)
+PetscErrorCode DMTSGetI2Jacobian(DM dm, TSI2JacobianFn **jac, void **ctx)
 {
   DMTS tsdm;
 
@@ -688,7 +688,7 @@ PetscErrorCode DMTSGetI2Jacobian(DM dm, TSI2Jacobian_Fn **jac, void **ctx)
 
   Input Parameters:
 + dm   - `DM` to be used with `TS`
-. func - RHS function evaluation routine, see `TSRHSFunction_Fn` for the calling sequence
+. func - RHS function evaluation routine, see `TSRHSFunctionFn` for the calling sequence
 - ctx  - context for residual evaluation
 
   Level: developer
@@ -698,9 +698,9 @@ PetscErrorCode DMTSGetI2Jacobian(DM dm, TSI2Jacobian_Fn **jac, void **ctx)
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not. If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
 
-.seealso: [](ch_ts), `DMTS`, `DM`, `TS`, `TSRHSFunction_Fn`
+.seealso: [](ch_ts), `DMTS`, `DM`, `TS`, `TSRHSFunctionFn`
 @*/
-PetscErrorCode DMTSSetRHSFunction(DM dm, TSRHSFunction_Fn *func, void *ctx)
+PetscErrorCode DMTSSetRHSFunction(DM dm, TSRHSFunctionFn *func, void *ctx)
 {
   DMTS tsdm;
 
@@ -770,7 +770,7 @@ PetscErrorCode DMTSUnsetRHSFunctionContext_Internal(DM dm)
 
   Input Parameters:
 + dm   - `DM` to be used with `TS`
-. tvar - a function that transforms to transient variables, see `TSTransientVariable_Fn` for the calling sequence
+. tvar - a function that transforms to transient variables, see `TSTransientVariableFn` for the calling sequence
 - ctx  - a context for tvar
 
   Level: developer
@@ -788,9 +788,9 @@ PetscErrorCode DMTSUnsetRHSFunctionContext_Internal(DM dm)
   dF/dP + shift * dF/dCdot dC/dP.
   $$
 
-.seealso: [](ch_ts), `DMTS`, `TS`, `TSBDF`, `TSSetTransientVariable()`, `DMTSGetTransientVariable()`, `DMTSSetIFunction()`, `DMTSSetIJacobian()`, `TSTransientVariable_Fn`
+.seealso: [](ch_ts), `DMTS`, `TS`, `TSBDF`, `TSSetTransientVariable()`, `DMTSGetTransientVariable()`, `DMTSSetIFunction()`, `DMTSSetIJacobian()`, `TSTransientVariableFn`
 @*/
-PetscErrorCode DMTSSetTransientVariable(DM dm, TSTransientVariable_Fn *tvar, void *ctx)
+PetscErrorCode DMTSSetTransientVariable(DM dm, TSTransientVariableFn *tvar, void *ctx)
 {
   DMTS dmts;
 
@@ -811,7 +811,7 @@ PetscErrorCode DMTSSetTransientVariable(DM dm, TSTransientVariable_Fn *tvar, voi
 . dm - `DM` to be used with `TS`
 
   Output Parameters:
-+ tvar - a function that transforms to transient variables, see `TSTransientVariable_Fn` for the calling sequence
++ tvar - a function that transforms to transient variables, see `TSTransientVariableFn` for the calling sequence
 - ctx  - a context for tvar
 
   Level: developer
@@ -819,9 +819,9 @@ PetscErrorCode DMTSSetTransientVariable(DM dm, TSTransientVariable_Fn *tvar, voi
   Note:
   Normally `TSSetTransientVariable()` is used
 
-.seealso: [](ch_ts), `DMTS`, `DM`, `DMTSSetTransientVariable()`, `DMTSGetIFunction()`, `DMTSGetIJacobian()`, `TSTransientVariable_Fn`
+.seealso: [](ch_ts), `DMTS`, `DM`, `DMTSSetTransientVariable()`, `DMTSGetIFunction()`, `DMTSGetIJacobian()`, `TSTransientVariableFn`
 @*/
-PetscErrorCode DMTSGetTransientVariable(DM dm, TSTransientVariable_Fn **tvar, void *ctx)
+PetscErrorCode DMTSGetTransientVariable(DM dm, TSTransientVariableFn **tvar, void *ctx)
 {
   DMTS dmts;
 
@@ -842,14 +842,14 @@ PetscErrorCode DMTSGetTransientVariable(DM dm, TSTransientVariable_Fn **tvar, vo
 . dm - `DM` to be used with `TS`
 
   Output Parameters:
-+ func - solution function evaluation function, for calling sequence see `TSSolution_Fn`
++ func - solution function evaluation function, for calling sequence see `TSSolutionFn`
 - ctx  - context for solution evaluation
 
   Level: developer
 
-.seealso: [](ch_ts), `DMTS`, `TS`, `DM`, `DMTSSetSolutionFunction()`, `TSSolution_Fn`
+.seealso: [](ch_ts), `DMTS`, `TS`, `DM`, `DMTSSetSolutionFunction()`, `TSSolutionFn`
 @*/
-PetscErrorCode DMTSGetSolutionFunction(DM dm, TSSolution_Fn **func, void **ctx)
+PetscErrorCode DMTSGetSolutionFunction(DM dm, TSSolutionFn **func, void **ctx)
 {
   DMTS tsdm;
 
@@ -868,7 +868,7 @@ PetscErrorCode DMTSGetSolutionFunction(DM dm, TSSolution_Fn **func, void **ctx)
 
   Input Parameters:
 + dm   - `DM` to be used with `TS`
-. func - solution function evaluation routine, for calling sequence see `TSSolution_Fn`
+. func - solution function evaluation routine, for calling sequence see `TSSolutionFn`
 - ctx  - context for solution evaluation
 
   Level: developer
@@ -878,9 +878,9 @@ PetscErrorCode DMTSGetSolutionFunction(DM dm, TSSolution_Fn **func, void **ctx)
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not. If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
 
-.seealso: [](ch_ts), `DMTS`, `DM`, `TS`, `DMTSGetSolutionFunction()`, `TSSolution_Fn`
+.seealso: [](ch_ts), `DMTS`, `DM`, `TS`, `DMTSGetSolutionFunction()`, `TSSolutionFn`
 @*/
-PetscErrorCode DMTSSetSolutionFunction(DM dm, TSSolution_Fn *func, void *ctx)
+PetscErrorCode DMTSSetSolutionFunction(DM dm, TSSolutionFn *func, void *ctx)
 {
   DMTS tsdm;
 
@@ -899,7 +899,7 @@ PetscErrorCode DMTSSetSolutionFunction(DM dm, TSSolution_Fn *func, void *ctx)
 
   Input Parameters:
 + dm   - `DM` to be used with `TS`
-. func - forcing function evaluation routine, for calling sequence see `TSForcing_Fn`
+. func - forcing function evaluation routine, for calling sequence see `TSForcingFn`
 - ctx  - context for solution evaluation
 
   Level: developer
@@ -909,9 +909,9 @@ PetscErrorCode DMTSSetSolutionFunction(DM dm, TSSolution_Fn *func, void *ctx)
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not. If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
 
-.seealso: [](ch_ts), `DMTS`, `DM`, `TS`, `TSForcing_Fn`, `TSSetForcingFunction()`, `DMTSGetForcingFunction()`
+.seealso: [](ch_ts), `DMTS`, `DM`, `TS`, `TSForcingFn`, `TSSetForcingFunction()`, `DMTSGetForcingFunction()`
 @*/
-PetscErrorCode DMTSSetForcingFunction(DM dm, TSForcing_Fn *func, void *ctx)
+PetscErrorCode DMTSSetForcingFunction(DM dm, TSForcingFn *func, void *ctx)
 {
   DMTS tsdm;
 
@@ -932,7 +932,7 @@ PetscErrorCode DMTSSetForcingFunction(DM dm, TSForcing_Fn *func, void *ctx)
 . dm - `DM` to be used with `TS`
 
   Output Parameters:
-+ f   - forcing function evaluation function; see `TSForcing_Fn` for the calling sequence
++ f   - forcing function evaluation function; see `TSForcingFn` for the calling sequence
 - ctx - context for solution evaluation
 
   Level: developer
@@ -942,9 +942,9 @@ PetscErrorCode DMTSSetForcingFunction(DM dm, TSForcing_Fn *func, void *ctx)
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not. If `DM` took a more central role at some later date, this could become the primary method of setting the residual.
 
-.seealso: [](ch_ts), `DMTS`, `TS`, `DM`, `TSSetForcingFunction()`, `TSForcing_Fn`
+.seealso: [](ch_ts), `DMTS`, `TS`, `DM`, `TSSetForcingFunction()`, `TSForcingFn`
 @*/
-PetscErrorCode DMTSGetForcingFunction(DM dm, TSForcing_Fn **f, void **ctx)
+PetscErrorCode DMTSGetForcingFunction(DM dm, TSForcingFn **f, void **ctx)
 {
   DMTS tsdm;
 
@@ -965,7 +965,7 @@ PetscErrorCode DMTSGetForcingFunction(DM dm, TSForcing_Fn **f, void **ctx)
 . dm - `DM` to be used with `TS`
 
   Output Parameters:
-+ func - residual evaluation function, for calling sequence see `TSRHSFunction_Fn`
++ func - residual evaluation function, for calling sequence see `TSRHSFunctionFn`
 - ctx  - context for residual evaluation
 
   Level: developer
@@ -974,9 +974,9 @@ PetscErrorCode DMTSGetForcingFunction(DM dm, TSForcing_Fn **f, void **ctx)
   `TSGetRHSFunction()` is normally used, but it calls this function internally because the user context is actually
   associated with the DM.
 
-.seealso: [](ch_ts), `DMTS`, `DM`, `TS`, `TSRHSFunction_Fn`, `TSGetRHSFunction()`
+.seealso: [](ch_ts), `DMTS`, `DM`, `TS`, `TSRHSFunctionFn`, `TSGetRHSFunction()`
 @*/
-PetscErrorCode DMTSGetRHSFunction(DM dm, TSRHSFunction_Fn **func, void **ctx)
+PetscErrorCode DMTSGetRHSFunction(DM dm, TSRHSFunctionFn **func, void **ctx)
 {
   DMTS tsdm;
 
@@ -998,7 +998,7 @@ PetscErrorCode DMTSGetRHSFunction(DM dm, TSRHSFunction_Fn **func, void **ctx)
 
   Input Parameters:
 + dm   - `DM` to be used with `TS`
-. func - Jacobian evaluation routine, see `TSIJacobian_Fn` for the calling sequence
+. func - Jacobian evaluation routine, see `TSIJacobianFn` for the calling sequence
 - ctx  - context for residual evaluation
 
   Level: developer
@@ -1008,9 +1008,9 @@ PetscErrorCode DMTSGetRHSFunction(DM dm, TSRHSFunction_Fn **func, void **ctx)
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not. If `DM` took a more central role at some later date, this could become the primary method of setting the Jacobian.
 
-.seealso: [](ch_ts), `DMTS`, `TS`, `DM`, `TSIJacobian_Fn`, `DMTSGetIJacobian()`, `TSSetIJacobian()`
+.seealso: [](ch_ts), `DMTS`, `TS`, `DM`, `TSIJacobianFn`, `DMTSGetIJacobian()`, `TSSetIJacobian()`
 @*/
-PetscErrorCode DMTSSetIJacobian(DM dm, TSIJacobian_Fn *func, void *ctx)
+PetscErrorCode DMTSSetIJacobian(DM dm, TSIJacobianFn *func, void *ctx)
 {
   DMTS tsdm;
 
@@ -1081,7 +1081,7 @@ PetscErrorCode DMTSUnsetIJacobianContext_Internal(DM dm)
 . dm - `DM` to be used with `TS`
 
   Output Parameters:
-+ func - Jacobian evaluation function, for calling sequence see `TSIJacobian_Fn`
++ func - Jacobian evaluation function, for calling sequence see `TSIJacobianFn`
 - ctx  - context for residual evaluation
 
   Level: developer
@@ -1091,9 +1091,9 @@ PetscErrorCode DMTSUnsetIJacobianContext_Internal(DM dm)
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not. If `DM` took a more central role at some later date, this could become the primary method of setting the Jacobian.
 
-.seealso: [](ch_ts), `DMTS`, `DM`, `TS`, `DMTSSetIJacobian()`, `TSIJacobian_Fn`
+.seealso: [](ch_ts), `DMTS`, `DM`, `TS`, `DMTSSetIJacobian()`, `TSIJacobianFn`
 @*/
-PetscErrorCode DMTSGetIJacobian(DM dm, TSIJacobian_Fn **func, void **ctx)
+PetscErrorCode DMTSGetIJacobian(DM dm, TSIJacobianFn **func, void **ctx)
 {
   DMTS tsdm;
 
@@ -1115,7 +1115,7 @@ PetscErrorCode DMTSGetIJacobian(DM dm, TSIJacobian_Fn **func, void **ctx)
 
   Input Parameters:
 + dm   - `DM` to be used with `TS`
-. func - Jacobian evaluation routine, for calling sequence see `TSIJacobian_Fn`
+. func - Jacobian evaluation routine, for calling sequence see `TSIJacobianFn`
 - ctx  - context for residual evaluation
 
   Level: developer
@@ -1128,9 +1128,9 @@ PetscErrorCode DMTSGetIJacobian(DM dm, TSIJacobian_Fn **func, void **ctx)
   Developer Notes:
   If `DM` took a more central role at some later date, this could become the primary method of setting the Jacobian.
 
-.seealso: [](ch_ts), `DMTS`, `TSRHSJacobian_Fn`, `DMTSGetRHSJacobian()`, `TSSetRHSJacobian()`
+.seealso: [](ch_ts), `DMTS`, `TSRHSJacobianFn`, `DMTSGetRHSJacobian()`, `TSSetRHSJacobian()`
 @*/
-PetscErrorCode DMTSSetRHSJacobian(DM dm, TSRHSJacobian_Fn *func, void *ctx)
+PetscErrorCode DMTSSetRHSJacobian(DM dm, TSRHSJacobianFn *func, void *ctx)
 {
   DMTS tsdm;
 
@@ -1196,7 +1196,7 @@ PetscErrorCode DMTSUnsetRHSJacobianContext_Internal(DM dm)
 . dm - `DM` to be used with `TS`
 
   Output Parameters:
-+ func - Jacobian evaluation function, for calling sequence see `TSRHSJacobian_Fn`
++ func - Jacobian evaluation function, for calling sequence see `TSRHSJacobianFn`
 - ctx  - context for residual evaluation
 
   Level: developer
@@ -1206,9 +1206,9 @@ PetscErrorCode DMTSUnsetRHSJacobianContext_Internal(DM dm)
   associated with the `DM`.  This makes the interface consistent regardless of whether the user interacts with a `DM` or
   not. If `DM` took a more central role at some later date, this could become the primary method of setting the Jacobian.
 
-.seealso: [](ch_ts), `DMTS`, `DM`, `TS`, `DMTSSetRHSJacobian()`, `TSRHSJacobian_Fn`
+.seealso: [](ch_ts), `DMTS`, `DM`, `TS`, `DMTSSetRHSJacobian()`, `TSRHSJacobianFn`
 @*/
-PetscErrorCode DMTSGetRHSJacobian(DM dm, TSRHSJacobian_Fn **func, void **ctx)
+PetscErrorCode DMTSGetRHSJacobian(DM dm, TSRHSJacobianFn **func, void **ctx)
 {
   DMTS tsdm;
 
@@ -1224,7 +1224,7 @@ PetscErrorCode DMTSGetRHSJacobian(DM dm, TSRHSJacobian_Fn **func, void **ctx)
 }
 
 /*@C
-  DMTSSetIFunctionSerialize - sets functions used to view and load a `TSIFunction_Fn` context
+  DMTSSetIFunctionSerialize - sets functions used to view and load a `TSIFunctionFn` context
 
   Not Collective
 
@@ -1250,7 +1250,7 @@ PetscErrorCode DMTSSetIFunctionSerialize(DM dm, PetscErrorCode (*view)(void *, P
 }
 
 /*@C
-  DMTSSetIJacobianSerialize - sets functions used to view and load a `TSIJacobian_Fn` context
+  DMTSSetIJacobianSerialize - sets functions used to view and load a `TSIJacobianFn` context
 
   Not Collective
 

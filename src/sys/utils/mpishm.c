@@ -15,7 +15,7 @@ struct _n_PetscShmComm {
    Note: this is declared extern "C" because it is passed to MPI_Comm_create_keyval()
 
 */
-PETSC_EXTERN PetscMPIInt MPIAPI Petsc_ShmComm_Attr_Delete_Fn(MPI_Comm comm, PetscMPIInt keyval, void *val, void *extra_state)
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_ShmComm_Attr_DeleteFn(MPI_Comm comm, PetscMPIInt keyval, void *val, void *extra_state)
 {
   PetscShmComm p = (PetscShmComm)val;
 

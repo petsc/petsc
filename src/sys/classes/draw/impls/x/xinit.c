@@ -44,8 +44,8 @@ PetscErrorCode PetscDrawXiClose(PetscDraw_X *XiWin)
   PetscCall(PetscFree(XiWin->font));
   if (XiWin->disp) {
 #if defined(PETSC_HAVE_SETJMP_H)
-    jmp_buf                  jmpbuf;
-    PetscXIOErrorHandler_Fn *xioerrhdl;
+    jmp_buf                 jmpbuf;
+    PetscXIOErrorHandlerFn *xioerrhdl;
     PetscCall(PetscMemcpy(&jmpbuf, &PetscXIOErrorHandlerJumpBuf, sizeof(jmpbuf)));
     xioerrhdl = PetscSetXIOErrorHandler(PetscXIOErrorHandlerJump);
     if (!setjmp(PetscXIOErrorHandlerJumpBuf))

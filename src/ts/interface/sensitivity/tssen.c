@@ -23,9 +23,9 @@ PetscLogEvent TS_AdjointStep, TS_ForwardStep, TS_JacobianPEval;
   Note:
   `Amat` has the same number of rows and the same row parallel layout as `u`, `Amat` has the same number of columns and parallel layout as `p`
 
-.seealso: [](ch_ts), `TS`, `TSRHSJacobianP_Fn`, `TSGetRHSJacobianP()`
+.seealso: [](ch_ts), `TS`, `TSRHSJacobianPFn`, `TSGetRHSJacobianP()`
 @*/
-PetscErrorCode TSSetRHSJacobianP(TS ts, Mat Amat, TSRHSJacobianP_Fn *func, void *ctx)
+PetscErrorCode TSSetRHSJacobianP(TS ts, Mat Amat, TSRHSJacobianPFn *func, void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -59,9 +59,9 @@ PetscErrorCode TSSetRHSJacobianP(TS ts, Mat Amat, TSRHSJacobianP_Fn *func, void 
   Note:
   `Amat` has the same number of rows and the same row parallel layout as `u`, `Amat` has the same number of columns and parallel layout as `p`
 
-.seealso: [](ch_ts), `TSSetRHSJacobianP()`, `TS`, `TSRHSJacobianP_Fn`
+.seealso: [](ch_ts), `TSSetRHSJacobianP()`, `TS`, `TSRHSJacobianPFn`
 @*/
-PetscErrorCode TSGetRHSJacobianP(TS ts, Mat *Amat, TSRHSJacobianP_Fn **func, void **ctx)
+PetscErrorCode TSGetRHSJacobianP(TS ts, Mat *Amat, TSRHSJacobianPFn **func, void **ctx)
 {
   PetscFunctionBegin;
   if (func) *func = ts->rhsjacobianp;

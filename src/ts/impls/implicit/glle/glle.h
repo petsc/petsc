@@ -35,8 +35,8 @@ struct _TSGLLEScheme {
 };
 
 typedef struct TS_GLLE {
-  TSGLLEAccept_Fn *Accept; /* Decides whether to accept a given time step, given estimates of local truncation error */
-  TSGLLEAdapt      adapt;
+  TSGLLEAcceptFn *Accept; /* Decides whether to accept a given time step, given estimates of local truncation error */
+  TSGLLEAdapt     adapt;
 
   /* These names are only stored so that they can be printed in TSView_GLLE() without making these schemes full-blown
    objects (the implementations I'm thinking of do not have state and I'm lazy). */

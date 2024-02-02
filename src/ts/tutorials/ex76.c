@@ -1176,7 +1176,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode UniformBoundaryConditions(DM dm, DMLabel label, PetscSimplePoint_Fn *exactFuncs[], PetscSimplePoint_Fn *exactFuncs_t[], AppCtx *user)
+static PetscErrorCode UniformBoundaryConditions(DM dm, DMLabel label, PetscSimplePointFn *exactFuncs[], PetscSimplePointFn *exactFuncs_t[], AppCtx *user)
 {
   PetscDS  ds;
   PetscInt id;
@@ -1206,13 +1206,13 @@ static PetscErrorCode UniformBoundaryConditions(DM dm, DMLabel label, PetscSimpl
 
 static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 {
-  PetscSimplePoint_Fn *exactFuncs[3];
-  PetscSimplePoint_Fn *exactFuncs_t[3];
-  PetscDS              ds;
-  PetscWeakForm        wf;
-  DMLabel              label;
-  Parameter           *ctx;
-  PetscInt             id, bd;
+  PetscSimplePointFn *exactFuncs[3];
+  PetscSimplePointFn *exactFuncs_t[3];
+  PetscDS             ds;
+  PetscWeakForm       wf;
+  DMLabel             label;
+  Parameter          *ctx;
+  PetscInt            id, bd;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetLabel(dm, "marker", &label));

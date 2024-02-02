@@ -1031,7 +1031,7 @@ PETSC_EXTERN PetscErrorCode KSPSetApplicationContext(KSP, void *);
 PETSC_EXTERN PetscErrorCode KSPGetApplicationContext(KSP, void *);
 
 /*S
-  KSPComputeRHS_Fn - A prototype of a `KSP` evaluation function that would be passed to `KSPSetComputeRHS()`
+  KSPComputeRHSFn - A prototype of a `KSP` evaluation function that would be passed to `KSPSetComputeRHS()`
 
   Calling Sequence:
 + ksp  - `ksp` context
@@ -1040,14 +1040,14 @@ PETSC_EXTERN PetscErrorCode KSPGetApplicationContext(KSP, void *);
 
   Level: beginner
 
-.seealso: [](ch_snes), `KSP`, `KSPSetComputeRHS()`, `SNESGetFunction()`, `KSPComputeInitialGuess_Fn`, `KSPComputeOperators_Fn`
+.seealso: [](ch_snes), `KSP`, `KSPSetComputeRHS()`, `SNESGetFunction()`, `KSPComputeInitialGuessFn`, `KSPComputeOperatorsFn`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(KSPComputeRHS_Fn)(KSP ksp, Vec b, void *ctx);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(KSPComputeRHSFn)(KSP ksp, Vec b, void *ctx);
 
-PETSC_EXTERN PetscErrorCode KSPSetComputeRHS(KSP, KSPComputeRHS_Fn *, void *);
+PETSC_EXTERN PetscErrorCode KSPSetComputeRHS(KSP, KSPComputeRHSFn *, void *);
 
 /*S
-  KSPComputeOperators_Fn - A prototype of a `KSP` evaluation function that would be passed to `KSPSetComputeOperators()`
+  KSPComputeOperatorsFn - A prototype of a `KSP` evaluation function that would be passed to `KSPSetComputeOperators()`
 
   Calling Sequence:
 + ksp - `KSP` context
@@ -1057,14 +1057,14 @@ PETSC_EXTERN PetscErrorCode KSPSetComputeRHS(KSP, KSPComputeRHS_Fn *, void *);
 
   Level: beginner
 
-.seealso: [](ch_snes), `KSP`, `KSPSetComputeRHS()`, `SNESGetFunction()`, `KSPComputeRHS_Fn`, `KSPComputeInitialGuess_Fn`
+.seealso: [](ch_snes), `KSP`, `KSPSetComputeRHS()`, `SNESGetFunction()`, `KSPComputeRHSFn`, `KSPComputeInitialGuessFn`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(KSPComputeOperators_Fn)(KSP ksp, Mat A, Mat P, void *ctx);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(KSPComputeOperatorsFn)(KSP ksp, Mat A, Mat P, void *ctx);
 
-PETSC_EXTERN PetscErrorCode KSPSetComputeOperators(KSP, KSPComputeOperators_Fn, void *);
+PETSC_EXTERN PetscErrorCode KSPSetComputeOperators(KSP, KSPComputeOperatorsFn, void *);
 
 /*S
-  KSPComputeInitialGuess_Fn - A prototype of a `KSP` evaluation function that would be passed to `KSPSetComputeInitialGuess()`
+  KSPComputeInitialGuessFn - A prototype of a `KSP` evaluation function that would be passed to `KSPSetComputeInitialGuess()`
 
   Calling Sequence:
 + ksp  - `ksp` context
@@ -1073,17 +1073,17 @@ PETSC_EXTERN PetscErrorCode KSPSetComputeOperators(KSP, KSPComputeOperators_Fn, 
 
   Level: beginner
 
-.seealso: [](ch_snes), `KSP`, `KSPSetComputeInitialGuess()`, `SNESGetFunction()`, `KSPComputeRHS_Fn`, `KSPComputeOperators_Fn`
+.seealso: [](ch_snes), `KSP`, `KSPSetComputeInitialGuess()`, `SNESGetFunction()`, `KSPComputeRHSFn`, `KSPComputeOperatorsFn`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(KSPComputeInitialGuess_Fn)(KSP ksp, Vec x, void *ctx);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(KSPComputeInitialGuessFn)(KSP ksp, Vec x, void *ctx);
 
-PETSC_EXTERN PetscErrorCode KSPSetComputeInitialGuess(KSP, KSPComputeInitialGuess_Fn *, void *);
-PETSC_EXTERN PetscErrorCode DMKSPSetComputeOperators(DM, KSPComputeOperators_Fn *, void *);
-PETSC_EXTERN PetscErrorCode DMKSPGetComputeOperators(DM, KSPComputeOperators_Fn **, void *);
-PETSC_EXTERN PetscErrorCode DMKSPSetComputeRHS(DM, KSPComputeRHS_Fn *, void *);
-PETSC_EXTERN PetscErrorCode DMKSPGetComputeRHS(DM, KSPComputeRHS_Fn **, void *);
-PETSC_EXTERN PetscErrorCode DMKSPSetComputeInitialGuess(DM, KSPComputeInitialGuess_Fn *, void *);
-PETSC_EXTERN PetscErrorCode DMKSPGetComputeInitialGuess(DM, KSPComputeInitialGuess_Fn **, void *);
+PETSC_EXTERN PetscErrorCode KSPSetComputeInitialGuess(KSP, KSPComputeInitialGuessFn *, void *);
+PETSC_EXTERN PetscErrorCode DMKSPSetComputeOperators(DM, KSPComputeOperatorsFn *, void *);
+PETSC_EXTERN PetscErrorCode DMKSPGetComputeOperators(DM, KSPComputeOperatorsFn **, void *);
+PETSC_EXTERN PetscErrorCode DMKSPSetComputeRHS(DM, KSPComputeRHSFn *, void *);
+PETSC_EXTERN PetscErrorCode DMKSPGetComputeRHS(DM, KSPComputeRHSFn **, void *);
+PETSC_EXTERN PetscErrorCode DMKSPSetComputeInitialGuess(DM, KSPComputeInitialGuessFn *, void *);
+PETSC_EXTERN PetscErrorCode DMKSPGetComputeInitialGuess(DM, KSPComputeInitialGuessFn **, void *);
 
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalSolve(DM, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMProjectField(DM, PetscReal, Vec, void (**)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), InsertMode, Vec);

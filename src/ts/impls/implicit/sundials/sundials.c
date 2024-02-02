@@ -80,14 +80,14 @@ static int TSPSolve_Sundials_Private(realtype tn, N_Vector y, N_Vector fy, N_Vec
 */
 static int TSFunction_Sundials(realtype t, N_Vector y, N_Vector ydot, void *ctx)
 {
-  TS              ts = (TS)ctx;
-  DM              dm;
-  DMTS            tsdm;
-  TSIFunction_Fn *ifunction;
-  MPI_Comm        comm;
-  TS_Sundials    *cvode = (TS_Sundials *)ts->data;
-  Vec             yy = cvode->w1, yyd = cvode->w2, yydot = cvode->ydot;
-  PetscScalar    *y_data, *ydot_data;
+  TS             ts = (TS)ctx;
+  DM             dm;
+  DMTS           tsdm;
+  TSIFunctionFn *ifunction;
+  MPI_Comm       comm;
+  TS_Sundials   *cvode = (TS_Sundials *)ts->data;
+  Vec            yy = cvode->w1, yyd = cvode->w2, yydot = cvode->ydot;
+  PetscScalar   *y_data, *ydot_data;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)ts, &comm));

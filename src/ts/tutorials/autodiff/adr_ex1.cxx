@@ -222,7 +222,7 @@ int main(int argc, char **argv)
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
   PetscCall(TSSetProblemType(ts, TS_NONLINEAR));
   PetscCall(TSSetType(ts, TSROSW));
-  PetscCall(TSSetIFunction(ts, NULL, (TSIFunction_Fn *)IFunctionPassive, &ctx));
+  PetscCall(TSSetIFunction(ts, NULL, (TSIFunctionFn *)IFunctionPassive, &ctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -243,8 +243,8 @@ int main(int argc, char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set Jacobian
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(TSSetIJacobian(ts, A, A, (TSIJacobian_Fn *)IJacobian, &ctx));
-  PetscCall(TSSetSolutionFunction(ts, (TSSolution_Fn *)Solution, &ctx));
+  PetscCall(TSSetIJacobian(ts, A, A, (TSIJacobianFn *)IJacobian, &ctx));
+  PetscCall(TSSetSolutionFunction(ts, (TSSolutionFn *)Solution, &ctx));
 
   {
     DM    dm;

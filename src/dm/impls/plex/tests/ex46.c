@@ -4,8 +4,8 @@ static char help[] = "Tests 1D nested mesh refinement.\n\n";
 #include <petscds.h>
 
 typedef struct {
-  PetscInt             Nr;       /* Number of refinements */
-  PetscSimplePoint_Fn *funcs[2]; /* Functions to test */
+  PetscInt            Nr;       /* Number of refinements */
+  PetscSimplePointFn *funcs[2]; /* Functions to test */
 } AppCtx;
 
 static PetscErrorCode constant(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -94,7 +94,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode CheckError(DM dm, Vec u, PetscSimplePoint_Fn *funcs[])
+static PetscErrorCode CheckError(DM dm, Vec u, PetscSimplePointFn *funcs[])
 {
   PetscReal error, tol = PETSC_SMALL;
   MPI_Comm  comm;

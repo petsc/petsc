@@ -1205,7 +1205,7 @@ static PetscErrorCode VecApplyUnary_Private(Vec v, PetscDeviceContext dctx, cons
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscScalar ScalarReciprocal_Fn(PetscScalar x)
+static PetscScalar ScalarReciprocal_Function(PetscScalar x)
 {
   const PetscScalar zero = 0.0;
 
@@ -1215,18 +1215,18 @@ static PetscScalar ScalarReciprocal_Fn(PetscScalar x)
 PetscErrorCode VecReciprocalAsync_Private(Vec v, PetscDeviceContext dctx)
 {
   PetscFunctionBegin;
-  PetscCall(VecApplyUnary_Private(v, dctx, VecAsyncFnName(Reciprocal), v->ops->reciprocal, ScalarReciprocal_Fn));
+  PetscCall(VecApplyUnary_Private(v, dctx, VecAsyncFnName(Reciprocal), v->ops->reciprocal, ScalarReciprocal_Function));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecReciprocal_Default(Vec v)
 {
   PetscFunctionBegin;
-  PetscCall(VecApplyUnary_Private(v, NULL, NULL, NULL, ScalarReciprocal_Fn));
+  PetscCall(VecApplyUnary_Private(v, NULL, NULL, NULL, ScalarReciprocal_Function));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscScalar ScalarExp_Fn(PetscScalar x)
+static PetscScalar ScalarExp_Function(PetscScalar x)
 {
   return PetscExpScalar(x);
 }
@@ -1235,7 +1235,7 @@ PetscErrorCode VecExpAsync_Private(Vec v, PetscDeviceContext dctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscCall(VecApplyUnary_Private(v, dctx, VecAsyncFnName(Exp), v->ops->exp, ScalarExp_Fn));
+  PetscCall(VecApplyUnary_Private(v, dctx, VecAsyncFnName(Exp), v->ops->exp, ScalarExp_Function));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1262,7 +1262,7 @@ PetscErrorCode VecExp(Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscScalar ScalarLog_Fn(PetscScalar x)
+static PetscScalar ScalarLog_Function(PetscScalar x)
 {
   return PetscLogScalar(x);
 }
@@ -1271,7 +1271,7 @@ PetscErrorCode VecLogAsync_Private(Vec v, PetscDeviceContext dctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscCall(VecApplyUnary_Private(v, dctx, VecAsyncFnName(Log), v->ops->log, ScalarLog_Fn));
+  PetscCall(VecApplyUnary_Private(v, dctx, VecAsyncFnName(Log), v->ops->log, ScalarLog_Function));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1298,7 +1298,7 @@ PetscErrorCode VecLog(Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscScalar ScalarAbs_Fn(PetscScalar x)
+static PetscScalar ScalarAbs_Function(PetscScalar x)
 {
   return PetscAbsScalar(x);
 }
@@ -1307,7 +1307,7 @@ PetscErrorCode VecAbsAsync_Private(Vec v, PetscDeviceContext dctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscCall(VecApplyUnary_Private(v, dctx, VecAsyncFnName(Abs), v->ops->abs, ScalarAbs_Fn));
+  PetscCall(VecApplyUnary_Private(v, dctx, VecAsyncFnName(Abs), v->ops->abs, ScalarAbs_Function));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1330,7 +1330,7 @@ PetscErrorCode VecAbs(Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscScalar ScalarConjugate_Fn(PetscScalar x)
+static PetscScalar ScalarConjugate_Function(PetscScalar x)
 {
   return PetscConj(x);
 }
@@ -1339,7 +1339,7 @@ PetscErrorCode VecConjugateAsync_Private(Vec v, PetscDeviceContext dctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  if (PetscDefined(USE_COMPLEX)) PetscCall(VecApplyUnary_Private(v, dctx, VecAsyncFnName(Conjugate), v->ops->conjugate, ScalarConjugate_Fn));
+  if (PetscDefined(USE_COMPLEX)) PetscCall(VecApplyUnary_Private(v, dctx, VecAsyncFnName(Conjugate), v->ops->conjugate, ScalarConjugate_Function));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1362,16 +1362,16 @@ PetscErrorCode VecConjugate(Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscScalar ScalarSqrtAbs_Fn(PetscScalar x)
+static PetscScalar ScalarSqrtAbs_Function(PetscScalar x)
 {
-  return PetscSqrtScalar(ScalarAbs_Fn(x));
+  return PetscSqrtScalar(ScalarAbs_Function(x));
 }
 
 PetscErrorCode VecSqrtAbsAsync_Private(Vec v, PetscDeviceContext dctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscCall(VecApplyUnary_Private(v, dctx, VecAsyncFnName(SqrtAbs), v->ops->sqrt, ScalarSqrtAbs_Fn));
+  PetscCall(VecApplyUnary_Private(v, dctx, VecAsyncFnName(SqrtAbs), v->ops->sqrt, ScalarSqrtAbs_Function));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1398,7 +1398,7 @@ PetscErrorCode VecSqrtAbs(Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscScalar ScalarImaginaryPart_Fn(PetscScalar x)
+static PetscScalar ScalarImaginaryPart_Function(PetscScalar x)
 {
   const PetscReal imag = PetscImaginaryPart(x);
 
@@ -1425,11 +1425,11 @@ PetscErrorCode VecImaginaryPart(Vec v)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscCall(VecApplyUnary_Private(v, NULL, NULL, NULL, ScalarImaginaryPart_Fn));
+  PetscCall(VecApplyUnary_Private(v, NULL, NULL, NULL, ScalarImaginaryPart_Function));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscScalar ScalarRealPart_Fn(PetscScalar x)
+static PetscScalar ScalarRealPart_Function(PetscScalar x)
 {
   const PetscReal real = PetscRealPart(x);
 
@@ -1456,7 +1456,7 @@ PetscErrorCode VecRealPart(Vec v)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscCall(VecApplyUnary_Private(v, NULL, NULL, NULL, ScalarRealPart_Fn));
+  PetscCall(VecApplyUnary_Private(v, NULL, NULL, NULL, ScalarRealPart_Function));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

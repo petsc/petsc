@@ -610,9 +610,9 @@ static PetscErrorCode THISetUpDM(THI thi, DM dm)
   }
   PetscCall(THIInitializePrm(thi, da2prm, X));
   if (thi->tridiagonal) { /* Reset coarse Jacobian evaluation */
-    PetscCall(DMDASNESSetJacobianLocal(dm, (DMDASNESJacobian_Fn *)THIJacobianLocal_3D_Full, thi));
+    PetscCall(DMDASNESSetJacobianLocal(dm, (DMDASNESJacobianFn *)THIJacobianLocal_3D_Full, thi));
   }
-  if (thi->coarse2d) PetscCall(DMDASNESSetJacobianLocal(dm, (DMDASNESJacobian_Fn *)THIJacobianLocal_2D, thi));
+  if (thi->coarse2d) PetscCall(DMDASNESSetJacobianLocal(dm, (DMDASNESJacobianFn *)THIJacobianLocal_2D, thi));
   PetscCall(PetscObjectCompose((PetscObject)dm, "DMDA2Prm", (PetscObject)da2prm));
   PetscCall(PetscObjectCompose((PetscObject)dm, "DMDA2Prm_Vec", (PetscObject)X));
   PetscCall(DMDestroy(&da2prm));
@@ -1494,11 +1494,11 @@ int main(int argc, char *argv[])
     if (rlevel - clevel > 0) PetscCall(DMSetMatType(da, thi->mattype));
   }
 
-  PetscCall(DMDASNESSetFunctionLocal(da, ADD_VALUES, (DMDASNESFunction_Fn *)THIFunctionLocal, thi));
+  PetscCall(DMDASNESSetFunctionLocal(da, ADD_VALUES, (DMDASNESFunctionFn *)THIFunctionLocal, thi));
   if (thi->tridiagonal) {
-    PetscCall(DMDASNESSetJacobianLocal(da, (DMDASNESJacobian_Fn *)THIJacobianLocal_3D_Tridiagonal, thi));
+    PetscCall(DMDASNESSetJacobianLocal(da, (DMDASNESJacobianFn *)THIJacobianLocal_3D_Tridiagonal, thi));
   } else {
-    PetscCall(DMDASNESSetJacobianLocal(da, (DMDASNESJacobian_Fn *)THIJacobianLocal_3D_Full, thi));
+    PetscCall(DMDASNESSetJacobianLocal(da, (DMDASNESJacobianFn *)THIJacobianLocal_3D_Full, thi));
   }
   PetscCall(DMCoarsenHookAdd(da, DMCoarsenHook_THI, NULL, thi));
   PetscCall(DMRefineHookAdd(da, DMRefineHook_THI, NULL, thi));

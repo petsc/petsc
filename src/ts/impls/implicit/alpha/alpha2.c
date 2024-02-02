@@ -39,8 +39,8 @@ typedef struct {
 
   TSStepStatus status;
 
-  TSAlpha2Predictor_Fn *predictor;
-  void                 *predictor_ctx;
+  TSAlpha2PredictorFn *predictor;
+  void                *predictor_ctx;
 } TS_Alpha;
 
 /*@C
@@ -60,9 +60,9 @@ typedef struct {
   the initial guess will be the converged solution from the previous time step, without regard
   for the previous velocity or acceleration.
 
-.seealso: [](ch_ts), `TS`, `TSALPHA2`, `TSAlpha2Predictor_Fn`
+.seealso: [](ch_ts), `TS`, `TSALPHA2`, `TSAlpha2PredictorFn`
 @*/
-PetscErrorCode TSAlpha2SetPredictor(TS ts, TSAlpha2Predictor_Fn *predictor, void *ctx)
+PetscErrorCode TSAlpha2SetPredictor(TS ts, TSAlpha2PredictorFn *predictor, void *ctx)
 {
   TS_Alpha *th = (TS_Alpha *)(ts->data);
 

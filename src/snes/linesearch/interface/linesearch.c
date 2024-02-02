@@ -1680,8 +1680,8 @@ PetscErrorCode SNESLineSearchSetReason(SNESLineSearch linesearch, SNESLineSearch
 
   Input Parameters:
 + linesearch  - the linesearch object
-. projectfunc - function for projecting the function to the bounds, see `SNESLineSearchVIProject_Fn` for calling sequence
-- normfunc    - function for computing the norm of an active set, see `SNESLineSearchVINorm_Fn` for calling sequence
+. projectfunc - function for projecting the function to the bounds, see `SNESLineSearchVIProjectFn` for calling sequence
+- normfunc    - function for computing the norm of an active set, see `SNESLineSearchVINormFn` for calling sequence
 
   Level: advanced
 
@@ -1692,9 +1692,9 @@ PetscErrorCode SNESLineSearchSetReason(SNESLineSearch linesearch, SNESLineSearch
   on the inactive set.  This should be implemented by `normfunc`.
 
 .seealso: [](ch_snes), `SNES`, `SNESLineSearch`, `SNESLineSearchGetVIFunctions()`, `SNESLineSearchSetPostCheck()`, `SNESLineSearchSetPreCheck()`,
-          `SNESLineSearchVIProject_Fn`, `SNESLineSearchVINorm_Fn`
+          `SNESLineSearchVIProjectFn`, `SNESLineSearchVINormFn`
 @*/
-PetscErrorCode SNESLineSearchSetVIFunctions(SNESLineSearch linesearch, SNESLineSearchVIProject_Fn *projectfunc, SNESLineSearchVINorm_Fn *normfunc)
+PetscErrorCode SNESLineSearchSetVIFunctions(SNESLineSearch linesearch, SNESLineSearchVIProjectFn *projectfunc, SNESLineSearchVINormFn *normfunc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
@@ -1712,15 +1712,15 @@ PetscErrorCode SNESLineSearchSetVIFunctions(SNESLineSearch linesearch, SNESLineS
 . linesearch - the line search context, obtain with `SNESGetLineSearch()`
 
   Output Parameters:
-+ projectfunc - function for projecting the function to the bounds, see `SNESLineSearchVIProject_Fn` for calling sequence
-- normfunc    - function for computing the norm of an active set, see `SNESLineSearchVINorm_Fn ` for calling sequence
++ projectfunc - function for projecting the function to the bounds, see `SNESLineSearchVIProjectFn` for calling sequence
+- normfunc    - function for computing the norm of an active set, see `SNESLineSearchVINormFn ` for calling sequence
 
   Level: advanced
 
 .seealso: [](ch_snes), `SNES`, `SNESLineSearch`, `SNESLineSearchSetVIFunctions()`, `SNESLineSearchGetPostCheck()`, `SNESLineSearchGetPreCheck()`,
-          `SNESLineSearchVIProject_Fn`, `SNESLineSearchVINorm_Fn`
+          `SNESLineSearchVIProjectFn`, `SNESLineSearchVINormFn`
 @*/
-PetscErrorCode SNESLineSearchGetVIFunctions(SNESLineSearch linesearch, SNESLineSearchVIProject_Fn **projectfunc, SNESLineSearchVINorm_Fn **normfunc)
+PetscErrorCode SNESLineSearchGetVIFunctions(SNESLineSearch linesearch, SNESLineSearchVIProjectFn **projectfunc, SNESLineSearchVINormFn **normfunc)
 {
   PetscFunctionBegin;
   if (projectfunc) *projectfunc = linesearch->ops->viproject;

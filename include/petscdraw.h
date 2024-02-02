@@ -351,9 +351,9 @@ PETSC_EXTERN PetscErrorCode PetscDrawUtilitySetGamma(PetscReal);
 
 PETSC_EXTERN jmp_buf PetscXIOErrorHandlerJumpBuf;
 PETSC_EXTERN void    PetscXIOErrorHandlerJump(void *);
-PETSC_EXTERN_TYPEDEF typedef void(PetscXIOErrorHandler_Fn)(void *);
-PETSC_EXTERN_TYPEDEF typedef PetscXIOErrorHandler_Fn *PetscXIOErrorHandler;
-PETSC_EXTERN PetscXIOErrorHandler_Fn                 *PetscSetXIOErrorHandler(PetscXIOErrorHandler_Fn *);
+PETSC_EXTERN_TYPEDEF typedef void(PetscXIOErrorHandlerFn)(void *);
+PETSC_EXTERN_TYPEDEF typedef PetscXIOErrorHandlerFn *PetscXIOErrorHandler;
+PETSC_EXTERN PetscXIOErrorHandlerFn                 *PetscSetXIOErrorHandler(PetscXIOErrorHandlerFn *);
 
   /*MC
    PetscDrawCollectiveBegin - Begins a set of draw operations
@@ -387,7 +387,7 @@ M*/
   #define PetscDrawCollectiveBegin(draw) \
     do { \
       jmp_buf _Petsc_jmpbuf; \
-      PetscXIOErrorHandler_Fn *volatile _Petsc_xioerrhdl = PETSC_NULLPTR; \
+      PetscXIOErrorHandlerFn *volatile _Petsc_xioerrhdl = PETSC_NULLPTR; \
       PetscBool _Petsc_isdrawx, _Petsc_xioerr, _Petsc_xioerr_local = PETSC_FALSE; \
       PetscCall(PetscObjectTypeCompare((PetscObject)(draw), PETSC_DRAW_X, &_Petsc_isdrawx)); \
       if (_Petsc_isdrawx) { \

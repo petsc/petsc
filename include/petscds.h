@@ -95,7 +95,7 @@ typedef void (*PetscBdPointJac)(PetscInt, PetscInt, PetscInt, const PetscInt[], 
 typedef void (*PetscRiemannFunc)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscInt, const PetscScalar[], PetscScalar[], void *);
 
 /*S
-  PetscSimplePoint_Fn - A prototype of a simple pointwise function that can be passed to, for example, `DMPlexTransformExtrudeSetNormalFunction()`
+  PetscSimplePointFn - A prototype of a simple pointwise function that can be passed to, for example, `DMPlexTransformExtrudeSetNormalFunction()`
 
   Calling Sequence:
 + dim  - The coordinate dimension of the original mesh (usually a surface)
@@ -108,13 +108,13 @@ typedef void (*PetscRiemannFunc)(PetscInt, PetscInt, const PetscReal[], const Pe
   Level: beginner
 
   Note:
-  The deprecated `PetscSimplePointFunc` works as a replacement for `PetscSimplePoint_Fn` *
+  The deprecated `PetscSimplePointFunc` works as a replacement for `PetscSimplePointFn` *
 
 .seealso: `DMPlexTransformExtrudeSetNormalFunction()`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(PetscSimplePoint_Fn)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt r, PetscScalar u[], void *ctx);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(PetscSimplePointFn)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt r, PetscScalar u[], void *ctx);
 
-PETSC_EXTERN_TYPEDEF typedef PetscSimplePoint_Fn *PetscSimplePointFunc;
+PETSC_EXTERN_TYPEDEF typedef PetscSimplePointFn *PetscSimplePointFunc;
 
 PETSC_EXTERN PetscFunctionList PetscDSList;
 PETSC_EXTERN PetscErrorCode    PetscDSCreate(MPI_Comm, PetscDS *);

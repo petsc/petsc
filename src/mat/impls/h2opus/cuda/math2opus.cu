@@ -102,12 +102,12 @@ public:
 template <class T>
 class PetscFunctionGenerator {
 private:
-  MatH2OpusKernel_Fn *k;
-  int                 dim;
-  void               *ctx;
+  MatH2OpusKernelFn *k;
+  int                dim;
+  void              *ctx;
 
 public:
-  PetscFunctionGenerator(MatH2OpusKernel_Fn *k, int dim, void *ctx)
+  PetscFunctionGenerator(MatH2OpusKernelFn *k, int dim, void *ctx)
   {
     this->k   = k;
     this->dim = dim;
@@ -719,7 +719,7 @@ static PetscErrorCode MatSetFromOptions_H2OPUS(Mat A, PetscOptionItems *PetscOpt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatH2OpusSetCoords_H2OPUS(Mat, PetscInt, const PetscReal[], PetscBool, MatH2OpusKernel_Fn *, void *);
+static PetscErrorCode MatH2OpusSetCoords_H2OPUS(Mat, PetscInt, const PetscReal[], PetscBool, MatH2OpusKernelFn *, void *);
 
 static PetscErrorCode MatH2OpusInferCoordinates_Private(Mat A)
 {
@@ -1169,7 +1169,7 @@ static PetscErrorCode MatView_H2OPUS(Mat A, PetscViewer view)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatH2OpusSetCoords_H2OPUS(Mat A, PetscInt spacedim, const PetscReal coords[], PetscBool cdist, MatH2OpusKernel_Fn *kernel, void *kernelctx)
+static PetscErrorCode MatH2OpusSetCoords_H2OPUS(Mat A, PetscInt spacedim, const PetscReal coords[], PetscBool cdist, MatH2OpusKernelFn *kernel, void *kernelctx)
 {
   Mat_H2OPUS *h2opus = (Mat_H2OPUS *)A->data;
   PetscReal  *gcoords;
@@ -1598,7 +1598,7 @@ PetscErrorCode MatH2OpusSetSamplingMat(Mat A, Mat B, PetscInt bs, PetscReal tol)
 
 .seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`
 @*/
-PetscErrorCode MatCreateH2OpusFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt spacedim, const PetscReal coords[], PetscBool cdist, MatH2OpusKernel_Fn *kernel, void *kernelctx, PetscReal eta, PetscInt leafsize, PetscInt basisord, Mat *nA)
+PetscErrorCode MatCreateH2OpusFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt spacedim, const PetscReal coords[], PetscBool cdist, MatH2OpusKernelFn *kernel, void *kernelctx, PetscReal eta, PetscInt leafsize, PetscInt basisord, Mat *nA)
 {
   Mat         A;
   Mat_H2OPUS *h2opus;

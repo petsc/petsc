@@ -34,7 +34,7 @@ PetscErrorCode PetscLogHandlerCreate(MPI_Comm comm, PetscLogHandler *handler)
   PetscCall(PetscLogHandlerPackageInitialize());
   // We do not use PetscHeaderCreate() here because having PetscLogObjectCreate() run for PetscLogHandler would be very fragile
   PetscCall(PetscNew(&h));
-  PetscCall(PetscHeaderCreate_Private((PetscObject)(h), PETSCLOGHANDLER_CLASSID, "PetscLogHandler", "Profile events, stages, and objects", "Profiling", comm, (PetscObjectDestroy_Fn *)PetscLogHandlerDestroy, (PetscObjectView_Fn *)PetscLogHandlerView));
+  PetscCall(PetscHeaderCreate_Private((PetscObject)(h), PETSCLOGHANDLER_CLASSID, "PetscLogHandler", "Profile events, stages, and objects", "Profiling", comm, (PetscObjectDestroyFn *)PetscLogHandlerDestroy, (PetscObjectViewFn *)PetscLogHandlerView));
   *handler = h;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

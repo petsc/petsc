@@ -38,16 +38,16 @@ static PetscErrorCode TaoBNKComputeSubHessian(Tao tao)
 
 PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
 {
-  TAO_BNK      *bnk = (TAO_BNK *)tao->data;
-  PC            pc;
-  PetscReal     f_min, ftrial, prered, actred, kappa, sigma, resnorm;
-  PetscReal     tau, tau_1, tau_2, tau_max, tau_min, max_radius;
-  PetscBool     is_bfgs, is_jacobi, is_symmetric, sym_set;
-  PetscInt      n, N, nDiff;
-  PetscInt      i_max = 5;
-  PetscInt      j_max = 1;
-  PetscInt      i, j;
-  PetscVoid_Fn *kspTR;
+  TAO_BNK     *bnk = (TAO_BNK *)tao->data;
+  PC           pc;
+  PetscReal    f_min, ftrial, prered, actred, kappa, sigma, resnorm;
+  PetscReal    tau, tau_1, tau_2, tau_max, tau_min, max_radius;
+  PetscBool    is_bfgs, is_jacobi, is_symmetric, sym_set;
+  PetscInt     n, N, nDiff;
+  PetscInt     i_max = 5;
+  PetscInt     j_max = 1;
+  PetscInt     i, j;
+  PetscVoidFn *kspTR;
 
   PetscFunctionBegin;
   /* Project the current point onto the feasible set */
@@ -408,11 +408,11 @@ PetscErrorCode TaoBNKTakeCGSteps(Tao tao, PetscBool *terminate)
 
 PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *ksp_reason, PetscInt *step_type)
 {
-  TAO_BNK      *bnk         = (TAO_BNK *)tao->data;
-  PetscInt      bfgsUpdates = 0;
-  PetscInt      kspits;
-  PetscBool     is_lmvm;
-  PetscVoid_Fn *kspTR;
+  TAO_BNK     *bnk         = (TAO_BNK *)tao->data;
+  PetscInt     bfgsUpdates = 0;
+  PetscInt     kspits;
+  PetscBool    is_lmvm;
+  PetscVoidFn *kspTR;
 
   PetscFunctionBegin;
   /* If there are no inactive variables left, save some computation and return an adjusted zero step

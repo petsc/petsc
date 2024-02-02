@@ -125,7 +125,7 @@ PETSC_EXTERN void pcshellgetcontext_(PC *pc, void **ctx, PetscErrorCode *ierr)
 PETSC_EXTERN void pcshellsetapply_(PC *pc, void (*apply)(void *, Vec *, Vec *, PetscErrorCode *), PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*pc, 11);
-  ((PetscObject)*pc)->fortran_func_pointers[0] = (PetscVoid_Fn *)apply;
+  ((PetscObject)*pc)->fortran_func_pointers[0] = (PetscVoidFn *)apply;
 
   *ierr = PCShellSetApply(*pc, ourshellapply);
 }
@@ -133,7 +133,7 @@ PETSC_EXTERN void pcshellsetapply_(PC *pc, void (*apply)(void *, Vec *, Vec *, P
 PETSC_EXTERN void pcshellsetapplysymmetricleft_(PC *pc, void (*apply)(void *, Vec *, Vec *, PetscErrorCode *), PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*pc, 11);
-  ((PetscObject)*pc)->fortran_func_pointers[9] = (PetscVoid_Fn *)apply;
+  ((PetscObject)*pc)->fortran_func_pointers[9] = (PetscVoidFn *)apply;
 
   *ierr = PCShellSetApplySymmetricLeft(*pc, ourshellapplysymmetricleft);
 }
@@ -141,7 +141,7 @@ PETSC_EXTERN void pcshellsetapplysymmetricleft_(PC *pc, void (*apply)(void *, Ve
 PETSC_EXTERN void pcshellsetapplysymmetricright_(PC *pc, void (*apply)(void *, Vec *, Vec *, PetscErrorCode *), PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*pc, 11);
-  ((PetscObject)*pc)->fortran_func_pointers[10] = (PetscVoid_Fn *)apply;
+  ((PetscObject)*pc)->fortran_func_pointers[10] = (PetscVoidFn *)apply;
 
   *ierr = PCShellSetApplySymmetricRight(*pc, ourshellapplysymmetricright);
 }
@@ -149,7 +149,7 @@ PETSC_EXTERN void pcshellsetapplysymmetricright_(PC *pc, void (*apply)(void *, V
 PETSC_EXTERN void pcshellsetapplyctx_(PC *pc, void (*apply)(void *, void *, Vec *, Vec *, PetscErrorCode *), PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*pc, 11);
-  ((PetscObject)*pc)->fortran_func_pointers[0] = (PetscVoid_Fn *)apply;
+  ((PetscObject)*pc)->fortran_func_pointers[0] = (PetscVoidFn *)apply;
 
   *ierr = PCShellSetApply(*pc, ourshellapplyctx);
 }
@@ -157,7 +157,7 @@ PETSC_EXTERN void pcshellsetapplyctx_(PC *pc, void (*apply)(void *, void *, Vec 
 PETSC_EXTERN void pcshellsetapplyba_(PC *pc, void (*apply)(void *, PCSide *, Vec *, Vec *, Vec *, PetscErrorCode *), PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*pc, 11);
-  ((PetscObject)*pc)->fortran_func_pointers[1] = (PetscVoid_Fn *)apply;
+  ((PetscObject)*pc)->fortran_func_pointers[1] = (PetscVoidFn *)apply;
 
   *ierr = PCShellSetApplyBA(*pc, ourshellapplyba);
 }
@@ -165,14 +165,14 @@ PETSC_EXTERN void pcshellsetapplyba_(PC *pc, void (*apply)(void *, PCSide *, Vec
 PETSC_EXTERN void pcshellsetapplyrichardson_(PC *pc, void (*apply)(void *, Vec *, Vec *, Vec *, PetscReal *, PetscReal *, PetscReal *, PetscInt *, PetscBool *, PetscInt *, PCRichardsonConvergedReason *, PetscErrorCode *), PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*pc, 11);
-  ((PetscObject)*pc)->fortran_func_pointers[2] = (PetscVoid_Fn *)apply;
+  ((PetscObject)*pc)->fortran_func_pointers[2] = (PetscVoidFn *)apply;
   *ierr                                        = PCShellSetApplyRichardson(*pc, ourapplyrichardson);
 }
 
 PETSC_EXTERN void pcshellsetapplytranspose_(PC *pc, void (*applytranspose)(void *, Vec *, Vec *, PetscErrorCode *), PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*pc, 11);
-  ((PetscObject)*pc)->fortran_func_pointers[3] = (PetscVoid_Fn *)applytranspose;
+  ((PetscObject)*pc)->fortran_func_pointers[3] = (PetscVoidFn *)applytranspose;
 
   *ierr = PCShellSetApplyTranspose(*pc, ourshellapplytranspose);
 }
@@ -180,7 +180,7 @@ PETSC_EXTERN void pcshellsetapplytranspose_(PC *pc, void (*applytranspose)(void 
 PETSC_EXTERN void pcshellsetsetupctx_(PC *pc, void (*setup)(void *, void *, PetscErrorCode *), PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*pc, 11);
-  ((PetscObject)*pc)->fortran_func_pointers[4] = (PetscVoid_Fn *)setup;
+  ((PetscObject)*pc)->fortran_func_pointers[4] = (PetscVoidFn *)setup;
 
   *ierr = PCShellSetSetUp(*pc, ourshellsetupctx);
 }
@@ -188,7 +188,7 @@ PETSC_EXTERN void pcshellsetsetupctx_(PC *pc, void (*setup)(void *, void *, Pets
 PETSC_EXTERN void pcshellsetsetup_(PC *pc, void (*setup)(void *, PetscErrorCode *), PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*pc, 11);
-  ((PetscObject)*pc)->fortran_func_pointers[4] = (PetscVoid_Fn *)setup;
+  ((PetscObject)*pc)->fortran_func_pointers[4] = (PetscVoidFn *)setup;
 
   *ierr = PCShellSetSetUp(*pc, ourshellsetup);
 }
@@ -196,7 +196,7 @@ PETSC_EXTERN void pcshellsetsetup_(PC *pc, void (*setup)(void *, PetscErrorCode 
 PETSC_EXTERN void pcshellsetdestroy_(PC *pc, void (*setup)(void *, PetscErrorCode *), PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*pc, 11);
-  ((PetscObject)*pc)->fortran_func_pointers[5] = (PetscVoid_Fn *)setup;
+  ((PetscObject)*pc)->fortran_func_pointers[5] = (PetscVoidFn *)setup;
 
   *ierr = PCShellSetDestroy(*pc, ourshelldestroy);
 }
@@ -204,7 +204,7 @@ PETSC_EXTERN void pcshellsetdestroy_(PC *pc, void (*setup)(void *, PetscErrorCod
 PETSC_EXTERN void pcshellsetpresolve_(PC *pc, void (*presolve)(void *, void *, Vec *, Vec *, PetscErrorCode *), PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*pc, 11);
-  ((PetscObject)*pc)->fortran_func_pointers[6] = (PetscVoid_Fn *)presolve;
+  ((PetscObject)*pc)->fortran_func_pointers[6] = (PetscVoidFn *)presolve;
 
   *ierr = PCShellSetPreSolve(*pc, ourshellpresolve);
 }
@@ -212,7 +212,7 @@ PETSC_EXTERN void pcshellsetpresolve_(PC *pc, void (*presolve)(void *, void *, V
 PETSC_EXTERN void pcshellsetpostsolve_(PC *pc, void (*postsolve)(void *, void *, Vec *, Vec *, PetscErrorCode *), PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*pc, 11);
-  ((PetscObject)*pc)->fortran_func_pointers[7] = (PetscVoid_Fn *)postsolve;
+  ((PetscObject)*pc)->fortran_func_pointers[7] = (PetscVoidFn *)postsolve;
 
   *ierr = PCShellSetPostSolve(*pc, ourshellpostsolve);
 }
@@ -220,7 +220,7 @@ PETSC_EXTERN void pcshellsetpostsolve_(PC *pc, void (*postsolve)(void *, void *,
 PETSC_EXTERN void pcshellsetview_(PC *pc, void (*view)(void *, PetscViewer *, PetscErrorCode *), PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*pc, 11);
-  ((PetscObject)*pc)->fortran_func_pointers[8] = (PetscVoid_Fn *)view;
+  ((PetscObject)*pc)->fortran_func_pointers[8] = (PetscVoidFn *)view;
 
   *ierr = PCShellSetView(*pc, ourshellview);
 }
