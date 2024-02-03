@@ -7,10 +7,12 @@ Below is the guide to running TAS using ex13, which is a Poisson Problem in 2D a
 
 1. Compile ``ex13.c``
 
-  a. This file is located in ``PETSC_DIR/src/snes/tutorials/``
-  b. If you do not know how to build a PETSc code here is an example makefile
+  a. This example source file, and the corresponding ``makefile`` are located in ``PETSC_DIR/src/snes/tutorials/``
+  b. Compile with the command:
 
-      .. literalinclude:: makefile
+      .. code-block:: console
+
+         $ make ex13
 
 2. Run ex13 with the following command:
 
