@@ -426,8 +426,8 @@ static PetscErrorCode MatReset_Nest(Mat A)
   if (vs->m) {
     for (i = 0; i < vs->nr; i++) {
       for (j = 0; j < vs->nc; j++) PetscCall(MatDestroy(&vs->m[i][j]));
-      PetscCall(PetscFree(vs->m[i]));
     }
+    PetscCall(PetscFree(vs->m[0]));
     PetscCall(PetscFree(vs->m));
   }
 
@@ -1369,8 +1369,9 @@ static PetscErrorCode MatNestSetSubMats_Nest(Mat A, PetscInt nr, const IS is_row
 
   /* Create space for submatrices */
   PetscCall(PetscMalloc1(nr, &s->m));
-  for (i = 0; i < nr; i++) PetscCall(PetscMalloc1(nc, &s->m[i]));
+  PetscCall(PetscMalloc1(nr * nc, &s->m[0]));
   for (i = 0; i < nr; i++) {
+    s->m[i] = s->m[0] + i * nc;
     for (j = 0; j < nc; j++) {
       s->m[i][j] = a[i * nc + j];
       if (a[i * nc + j]) PetscCall(PetscObjectReference((PetscObject)a[i * nc + j]));
