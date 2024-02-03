@@ -3252,8 +3252,8 @@ PetscErrorCode MatMumpsGetNullPivots(Mat F, PetscInt *size, PetscInt **array)
   Options Database Keys:
 +  -mat_mumps_icntl_1   - ICNTL(1): output stream for error messages
 .  -mat_mumps_icntl_2   - ICNTL(2): output stream for diagnostic printing, statistics, and warning
-.  -mat_mumps_icntl_3   -  ICNTL(3): output stream for global information, collected on the host
-.  -mat_mumps_icntl_4   -  ICNTL(4): level of printing (0 to 4)
+.  -mat_mumps_icntl_3   - ICNTL(3): output stream for global information, collected on the host
+.  -mat_mumps_icntl_4   - ICNTL(4): level of printing (0 to 4)
 .  -mat_mumps_icntl_6   - ICNTL(6): permutes to a zero-free diagonal and/or scale the matrix (0 to 7)
 .  -mat_mumps_icntl_7   - ICNTL(7): computes a symmetric permutation in sequential analysis, 0=AMD, 2=AMF, 3=Scotch, 4=PORD, 5=Metis, 6=QAMD, and 7=auto
                           Use -pc_factor_mat_ordering_type <type> to have PETSc perform the ordering (sequential only)
@@ -3281,7 +3281,7 @@ PetscErrorCode MatMumpsGetNullPivots(Mat F, PetscInt *size, PetscInt **array)
 .  -mat_mumps_icntl_38 - ICNTL(38): sets the estimated compression rate of LU factors with BLR
 .  -mat_mumps_icntl_58 - ICNTL(58): options for symbolic factorization
 .  -mat_mumps_cntl_1   - CNTL(1): relative pivoting threshold
-.  -mat_mumps_cntl_2   -  CNTL(2): stopping criterion of refinement
+.  -mat_mumps_cntl_2   - CNTL(2): stopping criterion of refinement
 .  -mat_mumps_cntl_3   - CNTL(3): absolute pivoting threshold
 .  -mat_mumps_cntl_4   - CNTL(4): value for static pivoting
 .  -mat_mumps_cntl_5   - CNTL(5): fixation for null pivots
