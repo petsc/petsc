@@ -260,27 +260,24 @@ static PetscErrorCode DMClone_Stag(DM dm, DM *newdm)
 static PetscErrorCode DMCoarsen_Stag(DM dm, MPI_Comm comm, DM *dmc)
 {
   const DM_Stag *const stag = (DM_Stag *)dm->data;
-  PetscInt             d, dim;
+  PetscInt             dim, i, d;
+  PetscInt            *l[DMSTAG_MAX_DIM];
 
   PetscFunctionBegin;
   PetscCall(DMStagDuplicateWithoutSetup(dm, comm, dmc));
   PetscCall(DMSetOptionsPrefix(*dmc, ((PetscObject)dm)->prefix));
   PetscCall(DMGetDimension(dm, &dim));
-  for (d = 0; d < dim; ++d) PetscCheck(stag->N[d] % 2 == 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "coarsening not supported except for even numbers of elements in each dimension ");
-  PetscCall(DMStagSetGlobalSizes(*dmc, stag->N[0] / 2, stag->N[1] / 2, stag->N[2] / 2));
-  {
-    PetscInt *l[DMSTAG_MAX_DIM];
-    for (d = 0; d < dim; ++d) {
-      PetscInt i;
-      PetscCall(PetscMalloc1(stag->nRanks[d], &l[d]));
-      for (i = 0; i < stag->nRanks[d]; ++i) {
-        PetscCheck(stag->l[d][i] % 2 == 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "coarsening not supported except for an even number of elements in each direction on each rank");
-        l[d][i] = stag->l[d][i] / 2; /* Just halve everything */
-      }
+  for (d = 0; d < dim; ++d) PetscCheck(stag->N[d] % stag->refineFactor[d] == 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "coarsening not supported except when the number of elements in each dimension is a multiple of the refinement factor");
+  PetscCall(DMStagSetGlobalSizes(*dmc, stag->N[0] / stag->refineFactor[0], stag->N[1] / stag->refineFactor[1], stag->N[2] / stag->refineFactor[2]));
+  for (d = 0; d < dim; ++d) {
+    PetscCall(PetscMalloc1(stag->nRanks[d], &l[d]));
+    for (i = 0; i < stag->nRanks[d]; ++i) {
+      PetscCheck(stag->l[d][i] % stag->refineFactor[d] == 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "coarsening not supported except when the number of elements in each direction on each rank is a multiple of the refinement factor");
+      l[d][i] = stag->l[d][i] / stag->refineFactor[d]; /* Just divide everything */
     }
-    PetscCall(DMStagSetOwnershipRanges(*dmc, l[0], l[1], l[2]));
-    for (d = 0; d < dim; ++d) PetscCall(PetscFree(l[d]));
   }
+  PetscCall(DMStagSetOwnershipRanges(*dmc, l[0], l[1], l[2]));
+  for (d = 0; d < dim; ++d) PetscCall(PetscFree(l[d]));
   PetscCall(DMSetUp(*dmc));
 
   if (dm->coordinates[0].dm) { /* Note that with product coordinates, dm->coordinates = NULL, so we check the DM */
@@ -311,27 +308,24 @@ static PetscErrorCode DMCoarsen_Stag(DM dm, MPI_Comm comm, DM *dmc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMRefine_Stag(DM dm, MPI_Comm comm, DM *dmc)
+static PetscErrorCode DMRefine_Stag(DM dm, MPI_Comm comm, DM *dmf)
 {
   const DM_Stag *const stag = (DM_Stag *)dm->data;
+  PetscInt             dim, i, d;
+  PetscInt            *l[DMSTAG_MAX_DIM];
 
   PetscFunctionBegin;
-  PetscCall(DMStagDuplicateWithoutSetup(dm, comm, dmc));
-  PetscCall(DMSetOptionsPrefix(*dmc, ((PetscObject)dm)->prefix));
-  PetscCall(DMStagSetGlobalSizes(*dmc, stag->N[0] * 2, stag->N[1] * 2, stag->N[2] * 2));
-  {
-    PetscInt  dim, d;
-    PetscInt *l[DMSTAG_MAX_DIM];
-    PetscCall(DMGetDimension(dm, &dim));
-    for (d = 0; d < dim; ++d) {
-      PetscInt i;
-      PetscCall(PetscMalloc1(stag->nRanks[d], &l[d]));
-      for (i = 0; i < stag->nRanks[d]; ++i) { l[d][i] = stag->l[d][i] * 2; /* Just double everything */ }
-    }
-    PetscCall(DMStagSetOwnershipRanges(*dmc, l[0], l[1], l[2]));
-    for (d = 0; d < dim; ++d) PetscCall(PetscFree(l[d]));
+  PetscCall(DMStagDuplicateWithoutSetup(dm, comm, dmf));
+  PetscCall(DMSetOptionsPrefix(*dmf, ((PetscObject)dm)->prefix));
+  PetscCall(DMStagSetGlobalSizes(*dmf, stag->N[0] * stag->refineFactor[0], stag->N[1] * stag->refineFactor[1], stag->N[2] * stag->refineFactor[2]));
+  PetscCall(DMGetDimension(dm, &dim));
+  for (d = 0; d < dim; ++d) {
+    PetscCall(PetscMalloc1(stag->nRanks[d], &l[d]));
+    for (i = 0; i < stag->nRanks[d]; ++i) l[d][i] = stag->l[d][i] * stag->refineFactor[d]; /* Just multiply everything */
   }
-  PetscCall(DMSetUp(*dmc));
+  PetscCall(DMStagSetOwnershipRanges(*dmf, l[0], l[1], l[2]));
+  for (d = 0; d < dim; ++d) PetscCall(PetscFree(l[d]));
+  PetscCall(DMSetUp(*dmf));
   /* Note: For now, we do not refine coordinates */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -397,8 +391,7 @@ static PetscErrorCode CheckTransferOperatorRequirements_Private(DM dmc, DM dmf)
   PetscCheck(stencilWidthf >= 1, PetscObjectComm((PetscObject)dmf), PETSC_ERR_SUP, "DMCreateRestriction not implemented for fine grid stencil width < 1");
   PetscCall(DMStagGetLocalSizes(dmf, &nf[0], &nf[1], &nf[2]));
   PetscCall(DMStagGetLocalSizes(dmc, &nc[0], &nc[1], &nc[2]));
-  for (PetscInt d = 0; d < dim; ++d)
-    PetscCheck(nf[d] == 2 * nc[d], PetscObjectComm((PetscObject)dmc), PETSC_ERR_SUP, "No support for fine to coarse ratio other than 2 (it is %" PetscInt_FMT " to %" PetscInt_FMT " in dimension %" PetscInt_FMT ")", nf[d], nc[d], d);
+  for (PetscInt d = 0; d < dim; ++d) PetscCheck(nf[d] % nc[d] == 0, PetscObjectComm((PetscObject)dmc), PETSC_ERR_SUP, "DMCreateRestriction not implemented for non-integer refinement factor");
   PetscCall(DMStagGetDOF(dmc, &dofc[0], &dofc[1], &dofc[2], &dofc[3]));
   PetscCall(DMStagGetDOF(dmf, &doff[0], &doff[1], &doff[2], &doff[3]));
   for (PetscInt d = 0; d < dim + 1; ++d)
@@ -437,7 +430,7 @@ static PetscErrorCode ConvertToAIJ(MatType intype, MatType *outtype)
 
 static PetscErrorCode DMCreateInterpolation_Stag(DM dmc, DM dmf, Mat *A, Vec *vec)
 {
-  PetscInt               dim, entriesf, entriesc, doff[DMSTAG_MAX_STRATA];
+  PetscInt               dim, entriesf, entriesc;
   ISLocalToGlobalMapping ltogmf, ltogmc;
   MatType                mattype;
 
@@ -456,20 +449,10 @@ static PetscErrorCode DMCreateInterpolation_Stag(DM dmc, DM dmf, Mat *A, Vec *ve
   PetscCall(MatSetLocalToGlobalMapping(*A, ltogmf, ltogmc));
 
   PetscCall(DMGetDimension(dmc, &dim));
-  PetscCall(DMStagGetDOF(dmf, &doff[0], &doff[1], &doff[2], &doff[3]));
-  if (dim == 1) {
-    PetscCall(DMStagPopulateInterpolation1d_a_b_Private(dmc, dmf, *A));
-  } else if (dim == 2) {
-    if (doff[0] == 0) {
-      PetscCall(DMStagPopulateInterpolation2d_0_a_b_Private(dmc, dmf, *A));
-    } else
-      SETERRQ(PetscObjectComm((PetscObject)dmc), PETSC_ERR_SUP, "No default interpolation available between 2d DMStag objects with %" PetscInt_FMT " dof/vertex, %" PetscInt_FMT " dof/face and %" PetscInt_FMT " dof/element", doff[0], doff[1], doff[2]);
-  } else if (dim == 3) {
-    if (doff[0] == 0 && doff[1] == 0) {
-      PetscCall(DMStagPopulateInterpolation3d_0_0_a_b_Private(dmc, dmf, *A));
-    } else
-      SETERRQ(PetscObjectComm((PetscObject)dmc), PETSC_ERR_SUP, "No default interpolation available between 3d DMStag objects with %" PetscInt_FMT " dof/vertex, %" PetscInt_FMT " dof/edge, %" PetscInt_FMT " dof/face and %" PetscInt_FMT " dof/element", doff[0], doff[1], doff[2], doff[3]);
-  } else SETERRQ(PetscObjectComm((PetscObject)dmc), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
+  if (dim == 1) PetscCall(DMStagPopulateInterpolation1d_Internal(dmc, dmf, *A));
+  else if (dim == 2) PetscCall(DMStagPopulateInterpolation2d_Internal(dmc, dmf, *A));
+  else if (dim == 3) PetscCall(DMStagPopulateInterpolation3d_Internal(dmc, dmf, *A));
+  else SETERRQ(PetscObjectComm((PetscObject)dmc), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
   PetscCall(MatAssemblyBegin(*A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*A, MAT_FINAL_ASSEMBLY));
 
@@ -499,19 +482,10 @@ static PetscErrorCode DMCreateRestriction_Stag(DM dmc, DM dmf, Mat *A)
 
   PetscCall(DMGetDimension(dmc, &dim));
   PetscCall(DMStagGetDOF(dmf, &doff[0], &doff[1], &doff[2], &doff[3]));
-  if (dim == 1) {
-    PetscCall(DMStagPopulateRestriction1d_a_b_Private(dmc, dmf, *A));
-  } else if (dim == 2) {
-    if (doff[0] == 0) {
-      PetscCall(DMStagPopulateRestriction2d_0_a_b_Private(dmc, dmf, *A));
-    } else
-      SETERRQ(PetscObjectComm((PetscObject)dmc), PETSC_ERR_SUP, "No default restriction available between 2d DMStag objects with %" PetscInt_FMT " dof/vertex, %" PetscInt_FMT " dof/face and %" PetscInt_FMT " dof/element", doff[0], doff[1], doff[2]);
-  } else if (dim == 3) {
-    if (doff[0] == 0 && doff[0] == 0) {
-      PetscCall(DMStagPopulateRestriction3d_0_0_a_b_Private(dmc, dmf, *A));
-    } else
-      SETERRQ(PetscObjectComm((PetscObject)dmc), PETSC_ERR_SUP, "No default restriction available between 3d DMStag objects with %" PetscInt_FMT " dof/vertex, %" PetscInt_FMT " dof/edge, %" PetscInt_FMT " dof/face and %" PetscInt_FMT " dof/element", doff[0], doff[1], doff[2], doff[3]);
-  } else SETERRQ(PetscObjectComm((PetscObject)dmc), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
+  if (dim == 1) PetscCall(DMStagPopulateRestriction1d_Internal(dmc, dmf, *A));
+  else if (dim == 2) PetscCall(DMStagPopulateRestriction2d_Internal(dmc, dmf, *A));
+  else if (dim == 3) PetscCall(DMStagPopulateRestriction3d_Internal(dmc, dmf, *A));
+  else SETERRQ(PetscObjectComm((PetscObject)dmc), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
 
   PetscCall(MatAssemblyBegin(*A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*A, MAT_FINAL_ASSEMBLY));
@@ -907,7 +881,7 @@ static PetscErrorCode DMView_Stag(DM dm, PetscViewer viewer)
 static PetscErrorCode DMSetFromOptions_Stag(DM dm, PetscOptionItems *PetscOptionsObject)
 {
   DM_Stag *const stag = (DM_Stag *)dm->data;
-  PetscInt       dim;
+  PetscInt       dim, nRefine = 0, refineFactorTotal[DMSTAG_MAX_DIM], i, d;
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
@@ -927,7 +901,21 @@ static PetscErrorCode DMSetFromOptions_Stag(DM dm, PetscOptionItems *PetscOption
   PetscCall(PetscOptionsInt("-stag_dof_1", "Number of dof per 1-cell (element in 1D, face in 2D, edge in 3D)", "DMStagSetDOF", stag->dof[1], &stag->dof[1], NULL));
   PetscCall(PetscOptionsInt("-stag_dof_2", "Number of dof per 2-cell (element in 2D, face in 3D)", "DMStagSetDOF", stag->dof[2], &stag->dof[2], NULL));
   PetscCall(PetscOptionsInt("-stag_dof_3", "Number of dof per 3-cell (element in 3D)", "DMStagSetDOF", stag->dof[3], &stag->dof[3], NULL));
+  PetscCall(PetscOptionsBoundedInt("-stag_refine_x", "Refinement factor in x-direction", "DMStagSetRefinementFactor", stag->refineFactor[0], &stag->refineFactor[0], NULL, 1));
+  if (dim > 1) PetscCall(PetscOptionsBoundedInt("-stag_refine_y", "Refinement factor in y-direction", "DMStagSetRefinementFactor", stag->refineFactor[1], &stag->refineFactor[1], NULL, 1));
+  if (dim > 2) PetscCall(PetscOptionsBoundedInt("-stag_refine_z", "Refinement factor in z-direction", "DMStagSetRefinementFactor", stag->refineFactor[2], &stag->refineFactor[2], NULL, 1));
+  PetscCall(PetscOptionsBoundedInt("-stag_refine", "Refine grid one or more times", "None", nRefine, &nRefine, NULL, 0));
   PetscOptionsHeadEnd();
+
+  for (d = 0; d < dim; ++d) refineFactorTotal[d] = 1;
+  while (nRefine--)
+    for (d = 0; d < dim; ++d) refineFactorTotal[d] *= stag->refineFactor[d];
+  for (d = 0; d < dim; ++d) {
+    stag->N[d] *= refineFactorTotal[d];
+    if (stag->l[d])
+      for (i = 0; i < stag->nRanks[d]; ++i) stag->l[d][i] *= refineFactorTotal[d];
+  }
+
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -977,6 +965,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm)
   stag->stencilWidth = 0;
   for (i = 0; i < DMSTAG_MAX_DIM; ++i) stag->nRanks[i] = -1;
   stag->coordinateDMType = NULL;
+  for (i = 0; i < DMSTAG_MAX_DIM; ++i) stag->refineFactor[i] = 2;
 
   PetscCall(DMGetDimension(dm, &dim));
   PetscCheck(dim == 1 || dim == 2 || dim == 3, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DMSetDimension() must be called to set a dimension with value 1, 2, or 3");
