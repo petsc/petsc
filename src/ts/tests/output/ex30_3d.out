@@ -4,26 +4,27 @@ n:             e:  1.000e+00                           i:  1.000e+00  1.000e-06
 thermal T (K): e= 2.321e+07 i= 1.160e+07  1.160e+07. Normalization grid 0: v_0= 1.876e+07 ( 6.256e-02c) n_0= 1.000e+20 t_0= 1.909e-05 1 batched, view batch 0
 Domain radius (AMR levels) grid 0: par= 5.000e+00 perp= 5.000e+00 (0) , 1: par= 5.835e-02 perp= 5.835e-02 (0) , 2: par= 6.151e-03 perp= 6.151e-03 (0) 
 0) FormLandau 648 IPs, 24 cells total, Nb=27, Nq=27, dim=3, Tab: Nb=27 Nf=3 Np=27 cdim=3 N=375
-  0) species 0: density=-1.6723662400371e+01, x-momentum=-5.6631782424310e-17, y-momentum= 2.7183729767415e-17, z-momentum= 3.4261220683746e-17, energy=  4.3148931734697e+04
-  0) species 1: density= 1.6723361379863e+01, x-momentum=-1.6584947295265e-15, y-momentum= 2.0719284300398e-15, z-momentum= 1.4014586459836e-15, energy=  2.1574077533965e+04
-  0) species 2: density= 3.0102050483754e-04, x-momentum=-4.0001212019734e-20, y-momentum= 3.8841227939643e-20, z-momentum= 8.7545968308738e-21, energy=  2.1574077533962e-02
-	  0) Total: charge density= -3.1989488098391e-12, x-momentum= -1.7151665131628e-15, y-momentum=  2.0991510010352e-15, z-momentum=  1.4357286212642e-15, energy=  6.4723030842740e+04 (m_i[0]/m_e = 3670.94, 8 cells)
+  0) species 0: density=-1.6022277759757e+01, x-momentum=-8.2274350015640e-18, y-momentum= 1.6194057942560e-17, z-momentum= 7.2078969466151e-18, energy=  4.8065850328539e+04
+  0) species 1: density= 1.6021989363948e+01, x-momentum=-2.7199585560090e-16, y-momentum= 1.6591747191655e-16, z-momentum= 1.3708591122285e-15, energy=  2.4032492579400e+04
+  0) species 2: density= 2.8839580855106e-04, x-momentum=-1.8705655228634e-20, y-momentum= 2.5986561592977e-20, z-momentum= 1.8559745281452e-20, energy=  2.4032492579402e-02
+	  0) Total: charge density= -9.4643910764081e-14, x-momentum= -2.8024199625769e-16, y-momentum=  1.8213751642070e-16, z-momentum=  1.3780855689204e-15, energy=  7.2098366940431e+04 (m_i[0]/m_e = 3670.94, 8 cells)
 0 TS dt 0.1 time 0.
-    0 SNES Function norm 6.060618887732e-01 
-    1 SNES Function norm 2.922429838367e-02 
-    2 SNES Function norm 4.454962917174e-03 
-    3 SNES Function norm 6.377787267818e-04 
-    4 SNES Function norm 9.153202625964e-05 
-    5 SNES Function norm 1.313441500017e-05 
-    6 SNES Function norm 1.884797539048e-06 
-    7 SNES Function norm 2.704684492255e-07 
-    8 SNES Function norm 3.881226242849e-08 
-    9 SNES Function norm 5.569563339132e-09 
-   10 SNES Function norm 7.992320402391e-10 
-   11 SNES Function norm 1.146901883762e-10 
-  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 11
+    0 SNES Function norm 1.744167693340e-02 
+    1 SNES Function norm 1.883413763990e-04 
+    2 SNES Function norm 6.878398862285e-06 
+    3 SNES Function norm 2.881309739998e-07 
+    4 SNES Function norm 1.227610429245e-08 
+    5 SNES Function norm 5.240901554350e-10 
+    6 SNES Function norm 2.237984647377e-11 
+  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 6
 1 TS dt 0.1 time 0.1
-  1) species 0: density=-1.6723662400371e+01, x-momentum=-5.6619927330648e-17, y-momentum= 2.7444541827984e-17, z-momentum= 3.4498322556990e-17, energy=  4.3154409485928e+04
-  1) species 1: density= 1.6723361379863e+01, x-momentum=-1.6639346466385e-15, y-momentum= 2.0637685543718e-15, z-momentum= 1.4034986149006e-15, energy=  2.1568602025284e+04
-  1) species 2: density= 3.0102050483754e-04, x-momentum=-3.8666136003026e-20, y-momentum= 3.7652061870116e-20, z-momentum= 8.5940958889744e-21, energy=  1.9332001674587e-02
-	  1) Total: charge density= -3.1882906688027e-12, x-momentum= -1.7205932401051e-15, y-momentum=  2.0912507482617e-15, z-momentum=  1.4380055315535e-15, energy=  6.4723030843214e+04 (m_i[0]/m_e = 3670.94, 8 cells)
+  1) species 0: density=-1.6022277759757e+01, x-momentum=-8.4882470621323e-18, y-momentum= 1.5980666256640e-17, z-momentum= 7.0419256353444e-18, energy=  4.8065479411868e+04
+  1) species 1: density= 1.6021989363948e+01, x-momentum=-2.5839606282085e-16, y-momentum= 1.7135738902857e-16, z-momentum= 1.3858188842866e-15, energy=  2.4032863583165e+04
+  1) species 2: density= 2.8839580855106e-04, x-momentum=-1.8253334392372e-20, y-momentum= 2.5709332693333e-20, z-momentum= 1.8413835334271e-20, energy=  2.3944974655924e-02
+	  1) Total: charge density= -9.1091251295389e-14, x-momentum= -2.6690256321738e-16, y-momentum=  1.8736376461790e-16, z-momentum=  1.3928792237573e-15, energy=  7.2098366940007e+04 (m_i[0]/m_e = 3670.94, 8 cells)
+Particle Moments:	 number density      momentum (par)     energy             entropy      loss : # OMP threads 1.
+	Initial:         3.345209694066e-07  6.874545861581e-18 7.209836694046e+04 4.260241e+00 0.000000e+00
+	Coarse-graining: 3.345209694066e-07  1.756801056932e-16 7.209836694043e+04 5.162487e+00 4.757279e-08
+	Landau:          3.345209694066e-07  1.672917451059e-16 7.209836694001e+04 5.162155e+00 4.752809e-08
+Coarse-graining entropy generation = 9.022452e-01 ; Landau entropy generation = 9.019133e-01
+(relative) energy conservation: Coarse-graining = -4.311178e-13 ; Landau = -6.278052e-12
