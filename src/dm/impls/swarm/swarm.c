@@ -347,11 +347,14 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
   for (field = 0; field < Nf; ++field) {
     PetscTabulation Tcoarse;
     PetscObject     obj;
+    PetscClassId    id;
     PetscReal      *fieldVals;
     PetscInt        Nc, i;
 
     PetscCall(PetscDSGetDiscretization(prob, field, &obj));
-    PetscCall(PetscFEGetNumComponents((PetscFE)obj, &Nc));
+    PetscCall(PetscObjectGetClassId(obj, &id));
+    if (id == PETSCFE_CLASSID) PetscCall(PetscFEGetNumComponents((PetscFE)obj, &Nc));
+    else PetscCall(PetscFVGetNumComponents((PetscFV)obj, &Nc));
     PetscCheck(Nc == 1, PetscObjectComm((PetscObject)dmf), PETSC_ERR_SUP, "Can only interpolate a scalar field from particles, Nc = %" PetscInt_FMT, Nc);
 
     PetscCall(DMSwarmGetField(dmc, DMSwarmPICField_coor, NULL, NULL, (void **)&fieldVals));
@@ -365,7 +368,8 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
       PetscCall(DMPlexGetClosureIndices(dmf, fsection, globalFSection, cell, PETSC_FALSE, &numFIndices, &findices, NULL, NULL));
       PetscCall(DMSwarmSortGetPointsPerCell(dmc, cell, &numCIndices, &cindices));
       for (p = 0; p < numCIndices; ++p) CoordinatesRealToRef(dim, dim, v0ref, v0, invJ, &fieldVals[cindices[p] * dim], &xi[p * dim]);
-      PetscCall(PetscFECreateTabulation((PetscFE)obj, 1, numCIndices, xi, 0, &Tcoarse));
+      if (id == PETSCFE_CLASSID) PetscCall(PetscFECreateTabulation((PetscFE)obj, 1, numCIndices, xi, 0, &Tcoarse));
+      else PetscCall(PetscFVCreateTabulation((PetscFV)obj, 1, numCIndices, xi, 0, &Tcoarse));
       /* Get elemMat entries by multiplying by weight */
       PetscCall(PetscArrayzero(elemMat, numCIndices * totDim));
       for (i = 0; i < numFIndices; ++i) {
