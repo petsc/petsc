@@ -144,6 +144,19 @@ int main(int argc, char **args)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "C MatMatTransposeMult C:\n"));
     PetscCall(MatView(B, PETSC_VIEWER_STDOUT_WORLD));
   }
+  PetscCall(MatDestroy(&B));
+
+  /* Test MatTransposeMatMult(): B = C^T*C */
+  PetscCall(MatTransposeMatMult(C, C, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &B));
+  PetscCall(MatScale(C, 2.0));
+  PetscCall(MatTransposeMatMult(C, C, MAT_REUSE_MATRIX, PETSC_DEFAULT, &B));
+  PetscCall(MatTransposeMatMultEqual(C, C, B, 10, &flg));
+  PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Check fails: B != C^T*C");
+
+  if (mats_view) {
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "C MatTransposeMatMult C:\n"));
+    PetscCall(MatView(B, PETSC_VIEWER_STDOUT_WORLD));
+  }
 
   /* Test MatMult() */
   PetscCall(MatComputeOperator(C, MATAIJ, &Caij));
