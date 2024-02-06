@@ -253,7 +253,7 @@ M*/
   #endif
 #endif
 
-#if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
+#if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && (defined(PETSC_HAVE_MPIUNI) || defined(PETSC_HAVE_MPI_INT64_T)) /* MPI_INT64_T is not guaranteed to be a macro */
 typedef int64_t PetscInt64;
 
   #define PETSC_INT64_MIN INT64_MIN
@@ -300,7 +300,7 @@ enum {
 #define PETSC_MAX_INT    PETSC_INT_MAX
 #define PETSC_MAX_UINT16 65535
 
-#if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
+#if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && (defined(PETSC_HAVE_MPIUNI) || defined(PETSC_HAVE_MPI_INT64_T)) /* MPI_INT64_T is not guaranteed to be a macro */
   #define MPIU_INT64     MPI_INT64_T
   #define PetscInt64_FMT PRId64
 #elif (PETSC_SIZEOF_LONG_LONG == 8)
