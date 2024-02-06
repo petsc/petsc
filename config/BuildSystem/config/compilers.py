@@ -850,6 +850,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
       fbody = "      subroutine asub()\n      print*,'testing'\n      return\n      end\n"
     self.popLanguage()
     iscray = config.setCompilers.Configure.isCray(self.getCompiler('FC'), self.log)
+    isintel = config.setCompilers.Configure.isIntel(self.getCompiler('C'), self.log)
     try:
       if self.checkCrossLink(fbody,cbody,language1='FC',language2='C'):
         self.logWrite(self.setCompilers.restoreLog())
@@ -858,34 +859,25 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
         skipfortranlibraries = 0
         self.logWrite(self.setCompilers.restoreLog())
         oldLibs = self.setCompilers.LIBS
-        self.setCompilers.LIBS = '-lgfortran '+self.setCompilers.LIBS
-        self.setCompilers.saveLog()
-        if self.checkCrossLink(fbody,cbody,language1='FC',language2='C'):
-          self.logWrite(self.setCompilers.restoreLog())
-          self.logPrint('Fortran requires -lgfortran to link with C compiler', 3, 'compilers')
-          self.setCompilers.LIBS = oldLibs
-          self.flibs.append('-lgfortran')
-          skipfortranlibraries = 1
-        else:
-          self.logWrite(self.setCompilers.restoreLog())
-          self.setCompilers.LIBS = oldLibs
-          self.logPrint('Fortran code cannot directly be linked with C linker, therefore will determine needed Fortran libraries')
-          skipfortranlibraries = 0
-        if iscray:
-          oldLibs = self.setCompilers.LIBS
-          self.setCompilers.LIBS = '-lmpifort_cray '+self.setCompilers.LIBS
+        testlibs = ['-lgfortran']
+        if iscray: testlibs.append('-lmpifort_cray')
+        if isintel: testlibs.append('-fortlib')
+        for testlib in testlibs:
+          self.setCompilers.LIBS = testlib+' '+self.setCompilers.LIBS
           self.setCompilers.saveLog()
           if self.checkCrossLink(fbody,cbody,language1='FC',language2='C'):
             self.logWrite(self.setCompilers.restoreLog())
-            self.logPrint('Fortran requires -lmpifort_cray to link with C compiler', 3, 'compilers')
+            self.logPrint('Fortran requires '+testlib+' to link with C compiler', 3, 'compilers')
             self.setCompilers.LIBS = oldLibs
-            self.flibs.append('-lmpifort_cray')
+            self.flibs.append(testlib)
             skipfortranlibraries = 1
+            break
           else:
             self.logWrite(self.setCompilers.restoreLog())
             self.setCompilers.LIBS = oldLibs
-            self.logPrint('Fortran code cannot directly be linked with C linker, therefore will determine needed Fortran libraries')
             skipfortranlibraries = 0
+        if not skipfortranlibraries:
+          self.logPrint('Fortran code cannot directly be linked with C linker, therefore will determine needed Fortran libraries')
     except RuntimeError as e:
       self.logWrite(self.setCompilers.restoreLog())
       self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
