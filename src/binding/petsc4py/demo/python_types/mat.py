@@ -90,9 +90,7 @@ class Poisson2D:
 
 # Access the option database and read options from the command line
 OptDB = PETSc.Options()
-n  = OptDB.getInt('n', 16) # Read `-n <int>`, defaults to 16
-nx = OptDB.getInt('nx', n)
-ny = OptDB.getInt('ny', n)
+nx, ny = OptDB.getIntArray('grid', (16, 16)) # Read `-grid <int,int>`, defaults to 16,16
 
 # Create the distributed memory implementation for structured grid
 da = PETSc.DMDA().create([nx, ny], stencil_width=1)

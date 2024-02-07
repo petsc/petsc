@@ -107,14 +107,26 @@ cdef class Options:
     def getBool(self, name, default=None):
         return getopt(self.opt, OPT_BOOL, self.prefix, name, default)
 
+    def getBoolArray(self, name, default=None):
+        return getopt(self.opt, OPT_BOOLARRAY, self.prefix, name, default)
+
     def getInt(self, name, default=None):
         return getopt(self.opt, OPT_INT, self.prefix, name, default)
+
+    def getIntArray(self, name, default=None):
+        return getopt(self.opt, OPT_INTARRAY, self.prefix, name, default)
 
     def getReal(self, name, default=None):
         return getopt(self.opt, OPT_REAL, self.prefix, name, default)
 
+    def getRealArray(self, name, default=None):
+        return getopt(self.opt, OPT_REALARRAY, self.prefix, name, default)
+
     def getScalar(self, name, default=None):
         return getopt(self.opt, OPT_SCALAR, self.prefix, name, default)
+
+    def getScalarArray(self, name, default=None):
+        return getopt(self.opt, OPT_SCALARARRAY, self.prefix, name, default)
 
     def getString(self, name, default=None):
         return getopt(self.opt, OPT_STRING, self.prefix, name, default)
