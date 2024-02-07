@@ -1538,7 +1538,7 @@ M*/
   This is a low level routine used by the logging functions in PETSc.
 
   A `PETSCLOGHANDLERDEFAULT` must be running for this to work, having been started either with
-  `PetscLogDefaultBegin()` or from the command line wth `-log_view`.  If it was not started,
+  `PetscLogDefaultBegin()` or from the command line with `-log_view`.  If it was not started,
   all performance statistics in `info` will be zeroed.
 
 .seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogGetDefaultHandler()`
@@ -1577,7 +1577,7 @@ PetscErrorCode PetscLogStageGetPerfInfo(PetscLogStage stage, PetscEventPerfInfo 
   This is a low level routine used by the logging functions in PETSc
 
   A `PETSCLOGHANDLERDEFAULT` must be running for this to work, having been started either with
-  `PetscLogDefaultBegin()` or from the command line wth `-log_view`.  If it was not started,
+  `PetscLogDefaultBegin()` or from the command line with `-log_view`.  If it was not started,
   all performance statistics in `info` will be zeroed.
 
 .seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogGetDefaultHandler()`

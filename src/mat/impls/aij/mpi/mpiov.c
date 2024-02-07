@@ -1148,7 +1148,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A, MatCreateSubMatrixOption fla
     displs[0] = 0;
     for (i = 1; i < size; i++) displs[i] = displs[i - 1] + recvcounts[i - 1];
     PetscCallMPI(MPI_Allgatherv(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, b->j, recvcounts, displs, MPIU_INT, PetscObjectComm((PetscObject)A)));
-    /*  Assemble the matrix into useable form (note numerical values not yet set) */
+    /*  Assemble the matrix into usable form (note numerical values not yet set) */
     /* set the b->ilen (length of each row) values */
     PetscCall(PetscArraycpy(b->ilen, lens, A->rmap->N));
     /* set the b->i indices */

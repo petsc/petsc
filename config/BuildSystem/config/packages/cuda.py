@@ -17,7 +17,7 @@ class Configure(config.package.Package):
     # CUDA provides 2 variants of libcuda.so (for access to CUDA driver API):
     # - fully functional compile, runtime libraries installed with the GPU driver
     #    (for ex:) /usr/lib64/libcuda.so (compile), libcuda.so.1 (runtime)
-    # -	stub library - useable only for compiles
+    # -	stub library - usable only for compiles
     # 	 (for ex:) /usr/local/cuda/lib64/stubs/libcuda.so  (without corresponding libcuda.so.1 for runtime)
     # We are preferring this stub library - as it enables compiles on non-GPU nodes (for ex: login nodes).
     # Using RPATH to this stub location is not appropriate - so skipping via libraries.rpathSkipDirs()
