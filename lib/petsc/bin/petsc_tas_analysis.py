@@ -908,7 +908,7 @@ def leastSquares(x, y):
     :param y: Contains the y values for the data.
     :type y: numpy array
 
-    :returns: alpha -- the convRate fo the least squares solution
+    :returns: alpha -- the convRate for the least squares solution
     :returns: c -- the constant of the least squares solution.
     """
 

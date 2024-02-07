@@ -39,7 +39,7 @@ Changes: 2.1.6
 -  The ncols argument made optional in MatGetRow()
 -  Added MAT_KEEP_ZEROED_ROWS for MPIROWBS
 -  Removed -aij_oneindex support from AIJ code
--  Added MatPartitioningSetPartitionWeights() - useable with ParMetis
+-  Added MatPartitioningSetPartitionWeights() - usable with ParMetis
 -  MatGetSubMatrices() now works for ROWBS
 
 .. rubric:: PC:

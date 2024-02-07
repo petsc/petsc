@@ -344,7 +344,7 @@ PetscErrorCode VecStashScatterGetMesg_Private(VecStash *stash, PetscMPIInt *nval
      the calling function. Until then keep receiving messages */
   while (!match_found) {
     PetscCallMPI(MPI_Waitany(2 * stash->nrecvs, stash->recv_waits, &i, &recv_status));
-    /* Now pack the received message into a structure which is useable by others */
+    /* Now pack the received message into a structure which is usable by others */
     if (i % 2) {
       PetscCallMPI(MPI_Get_count(&recv_status, MPIU_INT, nvals));
       flg_v[2 * recv_status.MPI_SOURCE + 1] = i / 2;

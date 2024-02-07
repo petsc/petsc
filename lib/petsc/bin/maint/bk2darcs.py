@@ -102,7 +102,7 @@ def main():
   #now process each revision [ignore the first]
   for rev in revs:
     # rev  - basic string
-    # revq - rev with quotes  [useable with -r]
+    # revq - rev with quotes  [usable with -r]
     # revn - rev number [ 1.234.4 etc..]
     # revi - just the 2nd number in rev
     os.chdir(bk_repo)

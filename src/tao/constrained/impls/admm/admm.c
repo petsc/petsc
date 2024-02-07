@@ -662,7 +662,7 @@ static PetscErrorCode TaoDestroy_ADMM(Tao tao)
 }
 
 /*MC
-  TAOADMM - Alternating direction method of multipliers method fo solving linear problems with
+  TAOADMM - Alternating direction method of multipliers method for solving linear problems with
             constraints. in a $ \min_x f(x) + g(z)$  s.t. $Ax+Bz=c$.
             This algorithm employs two sub Tao solvers, of which type can be specified
             by the user. User need to provide ObjectiveAndGradient routine, and/or HessianRoutine for both subsolvers.

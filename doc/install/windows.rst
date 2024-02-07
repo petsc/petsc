@@ -96,7 +96,7 @@ interface to Microsoft/Intel compilers).
 
          $ C:\cygwin\bin\mintty.exe
 
-   #. Verify if the compilers are useable (by running cl, ifort in this Cygwin
+   #. Verify if the compilers are usable (by running cl, ifort in this Cygwin
       terminal/bash-shell).
 
    #. Now run ``configure`` with ``win32fe`` [#win32]_ and then build the libraries with
