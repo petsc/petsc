@@ -487,8 +487,7 @@ PetscErrorCode MatSetFromOptions_LMVMSymBrdn(Mat B, PetscOptionItems *PetscOptio
   PetscFunctionBegin;
   PetscCall(MatSetFromOptions_LMVM(B, PetscOptionsObject));
   PetscOptionsHeadBegin(PetscOptionsObject, "Restricted/Symmetric Broyden method for approximating SPD Jacobian actions (MATLMVMSYMBRDN)");
-  PetscCall(PetscOptionsReal("-mat_lmvm_phi", "(developer) convex ratio between BFGS and DFP components of the update", "", lsb->phi, &lsb->phi, NULL));
-  PetscCheck(!(lsb->phi < 0.0) && !(lsb->phi > 1.0), PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "convex ratio for the update formula cannot be outside the range of [0, 1]");
+  PetscCall(PetscOptionsRangeReal("-mat_lmvm_phi", "(developer) convex ratio between BFGS and DFP components of the update", "", lsb->phi, &lsb->phi, NULL, 0.0, 1.0));
   PetscCall(MatSetFromOptions_LMVMSymBrdn_Private(B, PetscOptionsObject));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -505,12 +504,9 @@ PetscErrorCode MatSetFromOptions_LMVMSymBrdn_Private(Mat B, PetscOptionItems *Pe
 
   PetscFunctionBegin;
   PetscCall(PetscOptionsReal("-mat_lmvm_beta", "(developer) exponential factor in the diagonal J0 scaling", "", lsb->beta, &lsb->beta, NULL));
-  PetscCall(PetscOptionsReal("-mat_lmvm_theta", "(developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling", "", lsb->theta, &lsb->theta, NULL));
-  PetscCheck(!(lsb->theta < 0.0) && !(lsb->theta > 1.0), PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "convex ratio for the diagonal J0 scale cannot be outside the range of [0, 1]");
-  PetscCall(PetscOptionsReal("-mat_lmvm_rho", "(developer) update limiter in the J0 scaling", "", lsb->rho, &lsb->rho, NULL));
-  PetscCheck(!(lsb->rho < 0.0) && !(lsb->rho > 1.0), PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "update limiter in the J0 scaling cannot be outside the range of [0, 1]");
-  PetscCall(PetscOptionsReal("-mat_lmvm_alpha", "(developer) convex ratio in the J0 scaling", "", lsb->alpha, &lsb->alpha, NULL));
-  PetscCheck(!(lsb->alpha < 0.0) && !(lsb->alpha > 1.0), PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "convex ratio in the J0 scaling cannot be outside the range of [0, 1]");
+  PetscCall(PetscOptionsRangeReal("-mat_lmvm_theta", "(developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling", "", lsb->theta, &lsb->theta, NULL, 0.0, 1.0));
+  PetscCall(PetscOptionsRangeReal("-mat_lmvm_rho", "(developer) update limiter in the J0 scaling", "", lsb->rho, &lsb->rho, NULL, 0.0, 1.0));
+  PetscCall(PetscOptionsRangeReal("-mat_lmvm_alpha", "(developer) convex ratio in the J0 scaling", "", lsb->alpha, &lsb->alpha, NULL, 0.0, 1.0));
   PetscCall(PetscOptionsBoundedInt("-mat_lmvm_sigma_hist", "(developer) number of past updates to use in the default J0 scalar", "", lsb->sigma_hist, &lsb->sigma_hist, NULL, 1));
   PetscCall(PetscOptionsEnum("-mat_lmvm_scale_type", "(developer) scaling type applied to J0", "MatLMVMSymBrdnScaleType", MatLMVMSymBroydenScaleTypes, (PetscEnum)stype, (PetscEnum *)&stype, &flg));
   if (flg) PetscCall(MatLMVMSymBroydenSetScaleType(B, stype));

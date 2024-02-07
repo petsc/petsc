@@ -662,8 +662,7 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod, Physics phys, PetscOptionIt
     PetscCall(PetscOptionsReal("-eu_amach", "Shock speed (Mach)", "", eu->amach, &eu->amach, NULL));
     PetscCall(PetscOptionsReal("-eu_rho2", "Density right of discontinuity", "", eu->rhoR, &eu->rhoR, NULL));
     alpha = 60.;
-    PetscCall(PetscOptionsReal("-eu_alpha", "Angle of discontinuity", "", alpha, &alpha, NULL));
-    PetscCheck(alpha > 0. && alpha <= 90., PETSC_COMM_WORLD, PETSC_ERR_SUP, "Alpha bust be > 0 and <= 90 (%g)", (double)alpha);
+    PetscCall(PetscOptionsRangeReal("-eu_alpha", "Angle of discontinuity", "", alpha, &alpha, NULL, 0.0, 90.0));
     eu->itana = 1. / PetscTanReal(alpha * PETSC_PI / 180.0);
     PetscCall(PetscOptionsString("-eu_type", "Type of Euler test", "", type, type, sizeof(type), NULL));
     PetscCall(PetscStrcmp(type, "linear_wave", &is));

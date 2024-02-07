@@ -3883,7 +3883,6 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   PetscCall(PetscOptionsBool("-dm_plex_reference_cell_domain", "Use a reference cell domain", "", refDomain, &refDomain, NULL));
   PetscCall(PetscOptionsEnum("-dm_plex_shape", "Shape for built-in mesh", "", DMPlexShapes, (PetscEnum)shape, (PetscEnum *)&shape, &flg));
   PetscCall(PetscOptionsBoundedInt("-dm_plex_dim", "Topological dimension of the mesh", "DMGetDimension", dim, &dim, &flg, 0));
-  PetscCheck(dim >= 0, comm, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %" PetscInt_FMT " should be in [0, infinity)", dim);
   PetscCall(PetscOptionsBool("-dm_plex_simplex", "Mesh cell shape", "", simplex, &simplex, &flg));
   PetscCall(PetscOptionsBool("-dm_plex_interpolate", "Flag to create edges and faces automatically", "", interpolate, &interpolate, &flg));
   PetscCall(PetscOptionsBool("-dm_plex_adj_cone", "Set adjacency direction", "DMSetBasicAdjacency", adjCone, &adjCone, &flg));

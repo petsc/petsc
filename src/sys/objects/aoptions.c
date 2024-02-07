@@ -740,27 +740,34 @@ PetscErrorCode PetscOptionsString_Private(PetscOptionItems *PetscOptionsObject, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscOptionsReal_Private(PetscOptionItems *PetscOptionsObject, const char opt[], const char text[], const char man[], PetscReal currentvalue, PetscReal *value, PetscBool *set)
+PetscErrorCode PetscOptionsReal_Private(PetscOptionItems *PetscOptionsObject, const char opt[], const char text[], const char man[], PetscReal currentvalue, PetscReal *value, PetscBool *set, PetscReal lb, PetscReal ub)
 {
-  const char *prefix = PetscOptionsObject->prefix;
-  PetscBool   lset;
+  const char        *prefix  = PetscOptionsObject->prefix;
+  const PetscOptions options = PetscOptionsObject->options;
+  PetscBool          wasset;
 
   PetscFunctionBegin;
   PetscAssertPointer(opt, 2);
   PetscAssertPointer(value, 6);
   if (set) PetscAssertPointer(set, 7);
+  PetscCheck(currentvalue >= lb, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Current value %g less than allowed bound %g", (double)currentvalue, (double)lb);
+  PetscCheck(currentvalue <= ub, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Current value %g greater than allowed bound %g", (double)currentvalue, (double)ub);
   if (!PetscOptionsObject->count) {
     PetscOptionItem amsopt;
 
     PetscCall(PetscOptionItemCreate_Private(PetscOptionsObject, opt, text, man, OPTION_REAL, &amsopt));
     PetscCall(PetscMalloc(sizeof(PetscReal), &amsopt->data));
-
     *(PetscReal *)amsopt->data = currentvalue;
+
+    PetscCall(PetscOptionsGetReal(options, prefix, opt, &currentvalue, &wasset));
+    if (wasset) *(PetscReal *)amsopt->data = currentvalue;
   }
-  PetscCall(PetscOptionsGetReal(PetscOptionsObject->options, prefix, opt, value, &lset));
-  if (set) *set = lset;
+  PetscCall(PetscOptionsGetReal(PetscOptionsObject->options, prefix, opt, value, &wasset));
+  PetscCheck(!wasset || *value >= lb, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Newly set value %g less than allowed bound %g", (double)*value, (double)lb);
+  PetscCheck(!wasset || *value <= ub, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Newly set value %g greater than allowed bound %g", (double)*value, (double)ub);
+  if (set) *set = wasset;
   if (ShouldPrintHelp(PetscOptionsObject)) {
-    PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  -%s%s: <now %g : formerly %g>: %s (%s)\n", Prefix(prefix), opt + 1, lset ? (double)*value : (double)currentvalue, (double)currentvalue, text, ManSection(man)));
+    PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  -%s%s: <now %g : formerly %g>: %s (%s)\n", Prefix(prefix), opt + 1, wasset ? (double)*value : (double)currentvalue, (double)currentvalue, text, ManSection(man)));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

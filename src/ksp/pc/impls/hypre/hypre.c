@@ -758,58 +758,33 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc, PetscOptionItems *
     jac->cycletype = indx + 1;
     PetscCallExternal(HYPRE_BoomerAMGSetCycleType, jac->hsolver, jac->cycletype);
   }
-  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_max_levels", "Number of levels (of grids) allowed", "None", jac->maxlevels, &jac->maxlevels, &flg));
-  if (flg) {
-    PetscCheck(jac->maxlevels >= 2, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Number of levels %" PetscInt_FMT " must be at least two", jac->maxlevels);
-    PetscCallExternal(HYPRE_BoomerAMGSetMaxLevels, jac->hsolver, jac->maxlevels);
-  }
-  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_max_iter", "Maximum iterations used PER hypre call", "None", jac->maxiter, &jac->maxiter, &flg));
-  if (flg) {
-    PetscCheck(jac->maxiter >= 1, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Number of iterations %" PetscInt_FMT " must be at least one", jac->maxiter);
-    PetscCallExternal(HYPRE_BoomerAMGSetMaxIter, jac->hsolver, jac->maxiter);
-  }
-  PetscCall(PetscOptionsReal("-pc_hypre_boomeramg_tol", "Convergence tolerance PER hypre call (0.0 = use a fixed number of iterations)", "None", jac->tol, &jac->tol, &flg));
-  if (flg) {
-    PetscCheck(jac->tol >= 0.0, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Tolerance %g must be greater than or equal to zero", (double)jac->tol);
-    PetscCallExternal(HYPRE_BoomerAMGSetTol, jac->hsolver, jac->tol);
-  }
+  PetscCall(PetscOptionsBoundedInt("-pc_hypre_boomeramg_max_levels", "Number of levels (of grids) allowed", "None", jac->maxlevels, &jac->maxlevels, &flg, 2));
+  if (flg) PetscCallExternal(HYPRE_BoomerAMGSetMaxLevels, jac->hsolver, jac->maxlevels);
+  PetscCall(PetscOptionsBoundedInt("-pc_hypre_boomeramg_max_iter", "Maximum iterations used PER hypre call", "None", jac->maxiter, &jac->maxiter, &flg, 1));
+  if (flg) PetscCallExternal(HYPRE_BoomerAMGSetMaxIter, jac->hsolver, jac->maxiter);
+  PetscCall(PetscOptionsBoundedReal("-pc_hypre_boomeramg_tol", "Convergence tolerance PER hypre call (0.0 = use a fixed number of iterations)", "None", jac->tol, &jac->tol, &flg, 0.0));
+  if (flg) PetscCallExternal(HYPRE_BoomerAMGSetTol, jac->hsolver, jac->tol);
   bs = 1;
   if (pc->pmat) PetscCall(MatGetBlockSize(pc->pmat, &bs));
   PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_numfunctions", "Number of functions", "HYPRE_BoomerAMGSetNumFunctions", bs, &bs, &flg));
   if (flg) PetscCallExternal(HYPRE_BoomerAMGSetNumFunctions, jac->hsolver, bs);
 
-  PetscCall(PetscOptionsReal("-pc_hypre_boomeramg_truncfactor", "Truncation factor for interpolation (0=no truncation)", "None", jac->truncfactor, &jac->truncfactor, &flg));
-  if (flg) {
-    PetscCheck(jac->truncfactor >= 0.0, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Truncation factor %g must be great than or equal zero", (double)jac->truncfactor);
-    PetscCallExternal(HYPRE_BoomerAMGSetTruncFactor, jac->hsolver, jac->truncfactor);
-  }
+  PetscCall(PetscOptionsBoundedReal("-pc_hypre_boomeramg_truncfactor", "Truncation factor for interpolation (0=no truncation)", "None", jac->truncfactor, &jac->truncfactor, &flg, 0.0));
+  if (flg) PetscCallExternal(HYPRE_BoomerAMGSetTruncFactor, jac->hsolver, jac->truncfactor);
 
-  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_P_max", "Max elements per row for interpolation operator (0=unlimited)", "None", jac->pmax, &jac->pmax, &flg));
-  if (flg) {
-    PetscCheck(jac->pmax >= 0, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "P_max %" PetscInt_FMT " must be greater than or equal to zero", jac->pmax);
-    PetscCallExternal(HYPRE_BoomerAMGSetPMaxElmts, jac->hsolver, jac->pmax);
-  }
+  PetscCall(PetscOptionsBoundedInt("-pc_hypre_boomeramg_P_max", "Max elements per row for interpolation operator (0=unlimited)", "None", jac->pmax, &jac->pmax, &flg, 0));
+  if (flg) PetscCallExternal(HYPRE_BoomerAMGSetPMaxElmts, jac->hsolver, jac->pmax);
 
   PetscCall(PetscOptionsRangeInt("-pc_hypre_boomeramg_agg_nl", "Number of levels of aggressive coarsening", "None", jac->agg_nl, &jac->agg_nl, &flg, 0, jac->maxlevels));
   if (flg) PetscCallExternal(HYPRE_BoomerAMGSetAggNumLevels, jac->hsolver, jac->agg_nl);
 
-  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_agg_num_paths", "Number of paths for aggressive coarsening", "None", jac->agg_num_paths, &jac->agg_num_paths, &flg));
-  if (flg) {
-    PetscCheck(jac->agg_num_paths >= 1, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Number of paths %" PetscInt_FMT " must be greater than or equal to 1", jac->agg_num_paths);
-    PetscCallExternal(HYPRE_BoomerAMGSetNumPaths, jac->hsolver, jac->agg_num_paths);
-  }
+  PetscCall(PetscOptionsBoundedInt("-pc_hypre_boomeramg_agg_num_paths", "Number of paths for aggressive coarsening", "None", jac->agg_num_paths, &jac->agg_num_paths, &flg, 1));
+  if (flg) PetscCallExternal(HYPRE_BoomerAMGSetNumPaths, jac->hsolver, jac->agg_num_paths);
 
-  PetscCall(PetscOptionsReal("-pc_hypre_boomeramg_strong_threshold", "Threshold for being strongly connected", "None", jac->strongthreshold, &jac->strongthreshold, &flg));
-  if (flg) {
-    PetscCheck(jac->strongthreshold >= 0.0, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Strong threshold %g must be great than or equal zero", (double)jac->strongthreshold);
-    PetscCallExternal(HYPRE_BoomerAMGSetStrongThreshold, jac->hsolver, jac->strongthreshold);
-  }
-  PetscCall(PetscOptionsReal("-pc_hypre_boomeramg_max_row_sum", "Maximum row sum", "None", jac->maxrowsum, &jac->maxrowsum, &flg));
-  if (flg) {
-    PetscCheck(jac->maxrowsum >= 0.0, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Maximum row sum %g must be greater than zero", (double)jac->maxrowsum);
-    PetscCheck(jac->maxrowsum <= 1.0, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Maximum row sum %g must be less than or equal one", (double)jac->maxrowsum);
-    PetscCallExternal(HYPRE_BoomerAMGSetMaxRowSum, jac->hsolver, jac->maxrowsum);
-  }
+  PetscCall(PetscOptionsBoundedReal("-pc_hypre_boomeramg_strong_threshold", "Threshold for being strongly connected", "None", jac->strongthreshold, &jac->strongthreshold, &flg, 0.0));
+  if (flg) PetscCallExternal(HYPRE_BoomerAMGSetStrongThreshold, jac->hsolver, jac->strongthreshold);
+  PetscCall(PetscOptionsRangeReal("-pc_hypre_boomeramg_max_row_sum", "Maximum row sum", "None", jac->maxrowsum, &jac->maxrowsum, &flg, 0.0, 1.0));
+  if (flg) PetscCallExternal(HYPRE_BoomerAMGSetMaxRowSum, jac->hsolver, jac->maxrowsum);
 
   /* Grid sweeps */
   PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_grid_sweeps_all", "Number of sweeps for the up and down grid levels", "None", jac->gridsweeps[0], &indx, &flg));
