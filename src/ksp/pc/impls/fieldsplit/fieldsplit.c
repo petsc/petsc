@@ -1738,8 +1738,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc, PetscOptionItems *Petsc
   } else if (jac->type == PC_COMPOSITE_GKB) {
     PetscCall(PetscOptionsReal("-pc_fieldsplit_gkb_tol", "The tolerance for the lower bound stopping criterion", "PCFieldSplitGKBTol", jac->gkbtol, &jac->gkbtol, NULL));
     PetscCall(PetscOptionsInt("-pc_fieldsplit_gkb_delay", "The delay value for lower bound criterion", "PCFieldSplitGKBDelay", jac->gkbdelay, &jac->gkbdelay, NULL));
-    PetscCall(PetscOptionsReal("-pc_fieldsplit_gkb_nu", "Parameter in augmented Lagrangian approach", "PCFieldSplitGKBNu", jac->gkbnu, &jac->gkbnu, NULL));
-    PetscCheck(jac->gkbnu >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "nu cannot be less than 0: value %g", (double)jac->gkbnu);
+    PetscCall(PetscOptionsBoundedReal("-pc_fieldsplit_gkb_nu", "Parameter in augmented Lagrangian approach", "PCFieldSplitGKBNu", jac->gkbnu, &jac->gkbnu, NULL, 0.0));
     PetscCall(PetscOptionsInt("-pc_fieldsplit_gkb_maxit", "Maximum allowed number of iterations", "PCFieldSplitGKBMaxit", jac->gkbmaxit, &jac->gkbmaxit, NULL));
     PetscCall(PetscOptionsBool("-pc_fieldsplit_gkb_monitor", "Prints number of GKB iterations and error", "PCFieldSplitGKB", jac->gkbmonitor, &jac->gkbmonitor, NULL));
   }

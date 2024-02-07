@@ -172,10 +172,8 @@ static PetscErrorCode KSPSetFromOptions_LCD(KSP ksp, PetscOptionItems *PetscOpti
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "KSP LCD options");
-  PetscCall(PetscOptionsInt("-ksp_lcd_restart", "Number of vectors conjugate", "KSPLCDSetRestart", lcd->restart, &lcd->restart, &flg));
-  PetscCheck(!flg || lcd->restart >= 1, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Restart must be positive");
-  PetscCall(PetscOptionsReal("-ksp_lcd_haptol", "Tolerance for exact convergence (happy ending)", "KSPLCDSetHapTol", lcd->haptol, &lcd->haptol, &flg));
-  PetscCheck(!flg || lcd->haptol >= 0.0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Tolerance must be non-negative");
+  PetscCall(PetscOptionsBoundedInt("-ksp_lcd_restart", "Number of vectors conjugate", "KSPLCDSetRestart", lcd->restart, &lcd->restart, &flg, 1));
+  PetscCall(PetscOptionsBoundedReal("-ksp_lcd_haptol", "Tolerance for exact convergence (happy ending)", "KSPLCDSetHapTol", lcd->haptol, &lcd->haptol, &flg, 0.0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
