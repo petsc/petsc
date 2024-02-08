@@ -21,9 +21,13 @@ cdef extern from * nogil:
     PetscErrorCode PetscOptionsGetAll(PetscOptions,char*[])
 
     PetscErrorCode PetscOptionsGetBool(PetscOptions,char[],char[],PetscBool*,PetscBool*)
+    PetscErrorCode PetscOptionsGetBoolArray(PetscOptions,char[],char[],PetscBool[],PetscInt*,PetscBool*)
     PetscErrorCode PetscOptionsGetInt(PetscOptions,char[],char[],PetscInt*,PetscBool*)
+    PetscErrorCode PetscOptionsGetIntArray(PetscOptions,char[],char[],PetscInt[],PetscInt*,PetscBool*)
     PetscErrorCode PetscOptionsGetReal(PetscOptions,char[],char[],PetscReal*,PetscBool*)
+    PetscErrorCode PetscOptionsGetRealArray(PetscOptions,char[],char[],PetscReal[],PetscInt*,PetscBool*)
     PetscErrorCode PetscOptionsGetScalar(PetscOptions,char[],char[],PetscScalar*,PetscBool*)
+    PetscErrorCode PetscOptionsGetScalarArray(PetscOptions,char[],char[],PetscScalar[],PetscInt*,PetscBool*)
     PetscErrorCode PetscOptionsGetString(PetscOptions,char[],char[],char[],size_t,PetscBool*)
 
     ctypedef struct _p_PetscToken
@@ -67,11 +71,41 @@ cdef getopt_Bool(PetscOptions opt, const char *pre, const char *name, object def
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
 
+cdef getopt_BoolArray(PetscOptions opt, const char *pre, const char *name, object deft):
+    cdef PetscBool value[1024], *ivalue = value, *ivaluedeft = NULL
+    cdef PetscInt nmax = 1024, ndeft = 0
+    cdef PetscBool flag = PETSC_FALSE
+    cdef object dummy
+    if deft is not None:
+        deft = iarray_b(deft, &ndeft, &ivaluedeft)
+        if ndeft > nmax:
+            dummy = oarray_b(empty_b(ndeft), &nmax, &ivalue)
+        memcpy(ivalue, ivaluedeft, <size_t>ndeft*sizeof(PetscBool))
+    CHKERR( PetscOptionsGetBoolArray(opt, pre, name, ivalue, &nmax, &flag) )
+    if flag==PETSC_TRUE: return array_b(nmax, ivalue)
+    if deft is not None: return deft
+    raise KeyError(opt2str(pre, name))
+
 cdef getopt_Int(PetscOptions opt, const char *pre, const char *name, object deft):
     cdef PetscInt value = 0
     cdef PetscBool flag = PETSC_FALSE
     CHKERR( PetscOptionsGetInt(opt, pre, name, &value, &flag) )
     if flag==PETSC_TRUE: return toInt(value)
+    if deft is not None: return deft
+    raise KeyError(opt2str(pre, name))
+
+cdef getopt_IntArray(PetscOptions opt, const char *pre, const char *name, object deft):
+    cdef PetscInt value[1024], *ivalue = value, *ivaluedeft = NULL
+    cdef PetscInt nmax = 1024, ndeft = 0
+    cdef PetscBool flag = PETSC_FALSE
+    cdef object dummy
+    if deft is not None:
+        deft = iarray_i(deft, &ndeft, &ivaluedeft)
+        if ndeft > nmax:
+            dummy = oarray_i(empty_i(ndeft), &nmax, &ivalue)
+        memcpy(ivalue, ivaluedeft, <size_t>ndeft*sizeof(PetscInt))
+    CHKERR( PetscOptionsGetIntArray(opt, pre, name, ivalue, &nmax, &flag) )
+    if flag==PETSC_TRUE: return array_i(nmax, ivalue)
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
 
@@ -83,11 +117,41 @@ cdef getopt_Real(PetscOptions opt, const char *pre, const char *name, object def
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
 
+cdef getopt_RealArray(PetscOptions opt, const char *pre, const char *name, object deft):
+    cdef PetscReal value[1024], *ivalue = value, *ivaluedeft = NULL
+    cdef PetscInt nmax = 1024, ndeft = 0
+    cdef PetscBool flag = PETSC_FALSE
+    cdef object dummy
+    if deft is not None:
+        deft = iarray_r(deft, &ndeft, &ivaluedeft)
+        if ndeft > nmax:
+            dummy = oarray_r(empty_r(ndeft), &nmax, &ivalue)
+        memcpy(ivalue, ivaluedeft, <size_t>ndeft*sizeof(PetscReal))
+    CHKERR( PetscOptionsGetRealArray(opt, pre, name, ivalue, &nmax, &flag) )
+    if flag==PETSC_TRUE: return array_r(nmax, ivalue)
+    if deft is not None: return deft
+    raise KeyError(opt2str(pre, name))
+
 cdef getopt_Scalar(PetscOptions opt, const char *pre, const char *name, object deft):
     cdef PetscScalar value = 0
     cdef PetscBool flag = PETSC_FALSE
     CHKERR( PetscOptionsGetScalar(opt, pre, name, &value, &flag) )
     if flag==PETSC_TRUE: return toScalar(value)
+    if deft is not None: return deft
+    raise KeyError(opt2str(pre, name))
+
+cdef getopt_ScalarArray(PetscOptions opt, const char *pre, const char *name, object deft):
+    cdef PetscScalar value[1024], *ivalue = value, *ivaluedeft = NULL
+    cdef PetscInt nmax = 1024, ndeft = 0
+    cdef PetscBool flag = PETSC_FALSE
+    cdef object dummy
+    if deft is not None:
+        deft = iarray_s(deft, &ndeft, &ivaluedeft)
+        if ndeft > nmax:
+            dummy = oarray_s(empty_s(ndeft), &nmax, &ivalue)
+        memcpy(ivalue, ivaluedeft, <size_t>ndeft*sizeof(PetscScalar))
+    CHKERR( PetscOptionsGetScalarArray(opt, pre, name, ivalue, &nmax, &flag) )
+    if flag==PETSC_TRUE: return array_s(nmax, ivalue)
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
 
@@ -99,12 +163,15 @@ cdef getopt_String(PetscOptions opt, const char *pre, const char *name, object d
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
 
-
 cdef enum PetscOptType:
     OPT_BOOL
+    OPT_BOOLARRAY
     OPT_INT
+    OPT_INTARRAY
     OPT_REAL
+    OPT_REALARRAY
     OPT_SCALAR
+    OPT_SCALARARRAY
     OPT_STRING
 
 cdef getpair(prefix, name, const char **pr, const char **nm):
@@ -128,11 +195,15 @@ cdef getopt(PetscOptions opt, PetscOptType otype, prefix, name, deft):
     cdef const char *pr = NULL
     cdef const char *nm = NULL
     tmp = getpair(prefix, name, &pr, &nm)
-    if otype == OPT_BOOL   : return getopt_Bool   (opt, pr, nm, deft)
-    if otype == OPT_INT    : return getopt_Int    (opt, pr, nm, deft)
-    if otype == OPT_REAL   : return getopt_Real   (opt, pr, nm, deft)
-    if otype == OPT_SCALAR : return getopt_Scalar (opt, pr, nm, deft)
-    if otype == OPT_STRING : return getopt_String (opt, pr, nm, deft)
+    if otype == OPT_BOOL        : return getopt_Bool        (opt, pr, nm, deft)
+    if otype == OPT_BOOLARRAY   : return getopt_BoolArray   (opt, pr, nm, deft)
+    if otype == OPT_INT         : return getopt_Int         (opt, pr, nm, deft)
+    if otype == OPT_INTARRAY    : return getopt_IntArray    (opt, pr, nm, deft)
+    if otype == OPT_REAL        : return getopt_Real        (opt, pr, nm, deft)
+    if otype == OPT_REALARRAY   : return getopt_RealArray   (opt, pr, nm, deft)
+    if otype == OPT_SCALAR      : return getopt_Scalar      (opt, pr, nm, deft)
+    if otype == OPT_SCALARARRAY : return getopt_ScalarArray (opt, pr, nm, deft)
+    if otype == OPT_STRING      : return getopt_String      (opt, pr, nm, deft)
 
 
 # simple minded options parser
