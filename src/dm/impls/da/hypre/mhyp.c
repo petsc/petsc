@@ -510,7 +510,7 @@ static PetscErrorCode MatZeroEntries_HYPRESStruct_3d(Mat mat)
   PetscInt          part = 0; /* only one part */
 
   PetscFunctionBegin;
-  size = (ex->hbox.imax[0] - (ex->hbox.imin[0]) + 1) * (ex->hbox.imax[1] - (ex->hbox.imin[1]) + 1) * (ex->hbox.imax[2] - (ex->hbox.imin[2]) + 1);
+  size = (ex->hbox.imax[0] - ex->hbox.imin[0] + 1) * (ex->hbox.imax[1] - ex->hbox.imin[1] + 1) * (ex->hbox.imax[2] - ex->hbox.imin[2] + 1);
   {
     HYPRE_Int      i, *entries, iupper[3], ilower[3];
     HYPRE_Complex *values;

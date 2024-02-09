@@ -360,9 +360,9 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
   }
   z = lz[rank / (m * n)];
 
-  PetscCheck((x > s) || ((bx != DM_BOUNDARY_MIRROR)), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local x-width of domain x %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT " with mirror", x, s);
-  PetscCheck((y > s) || ((by != DM_BOUNDARY_MIRROR)), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local y-width of domain y %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT " with mirror", y, s);
-  PetscCheck((z > s) || ((bz != DM_BOUNDARY_MIRROR)), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local z-width of domain z %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT " with mirror", z, s);
+  PetscCheck((x > s) || (bx != DM_BOUNDARY_MIRROR), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local x-width of domain x %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT " with mirror", x, s);
+  PetscCheck((y > s) || (by != DM_BOUNDARY_MIRROR), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local y-width of domain y %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT " with mirror", y, s);
+  PetscCheck((z > s) || (bz != DM_BOUNDARY_MIRROR), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local z-width of domain z %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT " with mirror", z, s);
 
   /* note this is different than x- and y-, as we will handle as an important special
    case when p=P=1 and DM_BOUNDARY_PERIODIC and s > z.  This is to deal with 2D problems

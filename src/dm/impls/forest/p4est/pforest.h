@@ -236,7 +236,7 @@ static void GeometryDestroy_pforest(p4est_geometry_t *geom)
 static PetscErrorCode DMFTopologyDestroy_pforest(DMFTopology_pforest **topo)
 {
   PetscFunctionBegin;
-  if (!(*topo)) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!*topo) PetscFunctionReturn(PETSC_SUCCESS);
   if (--((*topo)->refct) > 0) {
     *topo = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -491,7 +491,7 @@ static int pforest_refine_uniform(p4est_t *p4est, p4est_topidx_t which_tree, p4e
   PforestAdaptCtx *ctx      = (PforestAdaptCtx *)p4est->user_pointer;
   PetscInt         maxLevel = ctx->maxLevel;
 
-  return ((PetscInt)quadrant->level < maxLevel);
+  return (PetscInt)quadrant->level < maxLevel;
 }
 
 static int pforest_refine_flag(p4est_t *p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrant)
@@ -501,7 +501,7 @@ static int pforest_refine_flag(p4est_t *p4est, p4est_topidx_t which_tree, p4est_
 
   if ((PetscInt)quadrant->level >= maxLevel) return 0;
 
-  return (quadrant->p.user_int == DM_ADAPT_REFINE);
+  return quadrant->p.user_int == DM_ADAPT_REFINE;
 }
 
 static PetscErrorCode DMPforestComputeLocalCellTransferSF_loop(p4est_t *p4estFrom, PetscInt FromOffset, p4est_t *p4estTo, PetscInt ToOffset, p4est_topidx_t flt, p4est_topidx_t llt, PetscInt *toFineLeavesCount, PetscInt *toLeaves, PetscSFNode *fromRoots, PetscInt *fromFineLeavesCount, PetscInt *fromLeaves, PetscSFNode *toRoots)

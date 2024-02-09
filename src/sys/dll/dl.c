@@ -77,7 +77,7 @@ PetscErrorCode PetscDLLibraryRetrieve(MPI_Comm comm, const char libname[], char 
   if (par2[len - 1] == 'a' && par2[len - 2] == '.') par2[len - 2] = 0;
 
   PetscCall(PetscFileRetrieve(comm, par2, lname, llen, found));
-  if (!(*found)) {
+  if (!*found) {
     const char suffix[] = "." PETSC_SLSUFFIX;
 
     /* see if library name does already not have suffix attached */

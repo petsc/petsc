@@ -59,7 +59,7 @@ static const char *TikZColors[] = {"white", "black", "red", "green", "cyan", "bl
 
 static inline const char *TikZColorMap(int cl)
 {
-  return ((cl < 16) ? (TikZColors[cl] ? TikZColors[cl] : "black") : "black");
+  return (cl < 16) ? (TikZColors[cl] ? TikZColors[cl] : "black") : "black";
 }
 
 /*

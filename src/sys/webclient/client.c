@@ -8,9 +8,9 @@ static BIO *bio_err = NULL;
 #if defined(PETSC_USE_SSL_CERTIFICATE)
 static int password_cb(char *buf, int num, int rwflag, void *userdata)
 {
-  if (num < strlen(PASSWORD) + 1) return (0);
+  if (num < strlen(PASSWORD) + 1) return 0;
   strcpy(buf, PASSWORD);
-  return (strlen(PASSWORD));
+  return strlen(PASSWORD);
 }
 #endif
 

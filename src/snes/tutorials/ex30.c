@@ -349,7 +349,7 @@ static inline PetscScalar Pressure(PetscInt i, PetscInt j, AppCtx *user)
   r  = PetscSqrtReal(x * x + z * z);
   st = z / r;
   ct = x / r;
-  return (-2.0 * (c * ct - d * st) / r);
+  return -2.0 * (c * ct - d * st) / r;
 }
 
 /*  computes the second invariant of the strain rate tensor */

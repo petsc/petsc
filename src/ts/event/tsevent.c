@@ -678,7 +678,7 @@ static inline PetscReal TSEvent_update_from_right(TSEvent event)
 
 static inline PetscBool Not_PETSC_DECIDE(PetscReal dt)
 {
-  return (dt == PETSC_DECIDE ? PETSC_FALSE : PETSC_TRUE);
+  return dt == PETSC_DECIDE ? PETSC_FALSE : PETSC_TRUE;
 }
 
 // PetscClangLinter pragma disable: -fdoc-section-spacing

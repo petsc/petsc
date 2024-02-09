@@ -1246,7 +1246,7 @@ static PetscErrorCode GmshReadElements(GmshFile *gmsh, GmshMesh *mesh)
     keymap[GMSH_VTX] = nk++;
 
     PetscCall(GmshElementsCreate(mesh->numElems, &mesh->elements));
-#define key(eid) keymap[GmshCellMap[elements[(eid)].cellType].polytope]
+#define key(eid) keymap[GmshCellMap[elements[eid].cellType].polytope]
     for (e = 0; e < ne; ++e) offset[1 + key(e)]++;
     for (k = 1; k < nk; ++k) offset[k] += offset[k - 1];
     for (e = 0; e < ne; ++e) mesh->elements[offset[key(e)]++] = elements[e];

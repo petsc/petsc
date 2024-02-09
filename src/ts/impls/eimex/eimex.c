@@ -26,7 +26,7 @@ typedef struct {
 /* This function is pure */
 static PetscInt Map(PetscInt i, PetscInt j, PetscInt s)
 {
-  return ((2 * s - j + 1) * j / 2 + i - j);
+  return (2 * s - j + 1) * j / 2 + i - j;
 }
 
 static PetscErrorCode TSEvaluateStep_EIMEX(TS ts, PetscInt order, Vec X, PetscBool *done)

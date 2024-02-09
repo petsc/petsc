@@ -166,7 +166,7 @@ int main(int argc, char **argv)
 static PetscReal p(PetscReal xi, PetscReal ecc)
 {
   PetscReal t = 1.0 + ecc * PetscCosScalar(xi);
-  return (t * t * t);
+  return t * t * t;
 }
 
 PetscErrorCode ComputeB(AppCtx *user)

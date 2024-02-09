@@ -52,7 +52,7 @@ static PetscErrorCode Petsc1DNodeFamilyDestroy(Petsc1DNodeFamily *nf)
   PetscInt i, nc;
 
   PetscFunctionBegin;
-  if (!(*nf)) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!*nf) PetscFunctionReturn(PETSC_SUCCESS);
   if (--(*nf)->refct > 0) {
     *nf = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -356,7 +356,7 @@ static PetscErrorCode PetscLagNodeIndicesDuplicate(PetscLagNodeIndices ni, Petsc
 static PetscErrorCode PetscLagNodeIndicesDestroy(PetscLagNodeIndices *ni)
 {
   PetscFunctionBegin;
-  if (!(*ni)) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!*ni) PetscFunctionReturn(PETSC_SUCCESS);
   if (--(*ni)->refct > 0) {
     *ni = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);

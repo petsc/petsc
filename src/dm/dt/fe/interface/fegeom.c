@@ -90,7 +90,7 @@ PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt 
   PetscFunctionBegin;
   PetscAssertPointer(geom, 1);
   PetscAssertPointer(chunkGeom, 4);
-  if (!(*chunkGeom)) PetscCall(PetscNew(chunkGeom));
+  if (!*chunkGeom) PetscCall(PetscNew(chunkGeom));
   Nq                        = geom->numPoints;
   dE                        = geom->dimEmbed;
   (*chunkGeom)->dim         = geom->dim;

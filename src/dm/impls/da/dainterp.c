@@ -125,7 +125,7 @@ static PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac, DM daf, Mat *A)
 
     for (i = i_start; i < i_start + m_f; i++) {
       /* convert to local "natural" numbering and then to PETSc global numbering */
-      row = idx_f[(i - i_start_ghost)];
+      row = idx_f[i - i_start_ghost];
 
       i_c = (i / ratio); /* coarse grid node to left of fine grid node */
       PetscCheck(i_c >= i_start_ghost_c, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA, i_start %" PetscInt_FMT " i_c %" PetscInt_FMT " i_start_ghost_c %" PetscInt_FMT, i_start, i_c, i_start_ghost_c); /* remainders */
@@ -221,7 +221,7 @@ static PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac, DM daf, Mat *A)
   /* loop over local fine grid nodes setting interpolation for those*/
   for (i = i_start; i < i_start + m_f; i++) {
     /* convert to local "natural" numbering and then to PETSc global numbering */
-    row = idx_f[(i - i_start_ghost)];
+    row = idx_f[i - i_start_ghost];
 
     i_c = (i / ratio); /* coarse grid node to left of fine grid node */
 
@@ -1090,7 +1090,7 @@ static PetscErrorCode DMCreateInjection_DA_1D(DM dac, DM daf, VecScatter *inject
 
     PetscCheck(i_f >= i_start_ghost && i_f < i_start_ghost + m_ghost, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA, i_c %" PetscInt_FMT " i_f %" PetscInt_FMT " fine ghost range [%" PetscInt_FMT ",%" PetscInt_FMT "]", i, i_f, i_start_ghost, i_start_ghost + m_ghost);
 
-    row        = idx_f[(i_f - i_start_ghost)];
+    row        = idx_f[i_f - i_start_ghost];
     cols[nc++] = row;
   }
 

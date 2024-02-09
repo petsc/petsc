@@ -73,11 +73,11 @@ static int PetscML_getrow(ML_Operator *ML_data, int N_requested_rows, int reques
   FineGridCtx *ml = (FineGridCtx *)ML_Get_MyGetrowData(ML_data);
   Mat_SeqAIJ  *a  = (Mat_SeqAIJ *)ml->Aloc->data;
 
-  if (MatGetSize(ml->Aloc, &m, NULL)) return (0);
+  if (MatGetSize(ml->Aloc, &m, NULL)) return 0;
   for (i = 0; i < N_requested_rows; i++) {
     row            = requested_rows[i];
     row_lengths[i] = a->ilen[row];
-    if (allocated_space < k + row_lengths[i]) return (0);
+    if (allocated_space < k + row_lengths[i]) return 0;
     if ((row >= 0) || (row <= (m - 1))) {
       aj = a->j + a->i[row];
       aa = a->a + a->i[row];
@@ -87,7 +87,7 @@ static int PetscML_getrow(ML_Operator *ML_data, int N_requested_rows, int reques
       }
     }
   }
-  return (1);
+  return 1;
 }
 
 static PetscErrorCode PetscML_comm(double p[], void *ML_data)

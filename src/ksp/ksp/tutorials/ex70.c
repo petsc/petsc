@@ -137,7 +137,7 @@ static PetscInt map_wIwDI_uJuDJ(PetscInt wi, PetscInt wd, PetscInt w_NPE, PetscI
   r  = w_dof * wi + wd;
   c  = u_dof * ui + ud;
   ij = r * nc + c;
-  return (ij);
+  return ij;
 }
 
 static void BForm_DivT(PetscScalar Ke[], PetscScalar coords[], PetscScalar eta[])

@@ -438,7 +438,7 @@ static void update_offset(printbuffer *const buffer)
 static cJSON_bool compare_double(double a, double b)
 {
   double maxVal = fabs(a) > fabs(b) ? fabs(a) : fabs(b);
-  return (fabs(a - b) <= maxVal * DBL_EPSILON);
+  return fabs(a - b) <= maxVal * DBL_EPSILON;
 }
 
 /* Render the number nicely from the given item into a string. */

@@ -276,7 +276,7 @@ PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *
   PetscCall(PetscSectionGetPermutation(s2, &perm2));
   if (perm1 && perm2) {
     PetscCall(ISEqual(perm1, perm2, congruent));
-    if (!(*congruent)) goto not_congruent;
+    if (!*congruent) goto not_congruent;
   } else if (perm1 != perm2) goto not_congruent;
 
   for (p = pStart; p < pEnd; ++p) {
@@ -295,7 +295,7 @@ PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *
     PetscCall(PetscSectionGetConstraintIndices(s1, p, &idx1));
     PetscCall(PetscSectionGetConstraintIndices(s2, p, &idx2));
     PetscCall(PetscArraycmp(idx1, idx2, ncdof, congruent));
-    if (!(*congruent)) goto not_congruent;
+    if (!*congruent) goto not_congruent;
   }
 
   PetscCall(PetscSectionGetNumFields(s1, &nfields));
@@ -323,7 +323,7 @@ PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *
       PetscCall(PetscSectionGetFieldConstraintIndices(s1, p, f, &idx1));
       PetscCall(PetscSectionGetFieldConstraintIndices(s2, p, f, &idx2));
       PetscCall(PetscArraycmp(idx1, idx2, nfcdof, congruent));
-      if (!(*congruent)) goto not_congruent;
+      if (!*congruent) goto not_congruent;
     }
   }
 

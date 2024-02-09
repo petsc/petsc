@@ -91,12 +91,12 @@ static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
      are likely not defined correctly for that case */
   PetscCheck(!PetscDefined(USE_COMPLEX) || PetscDefined(SKIP_COMPLEX), PETSC_COMM_WORLD, PETSC_ERR_SUP, "PIPEFGMRES has not been implemented for use with complex scalars");
 
-#define VecXDot(x, y, a)          ((pipefcg->type == (KSP_CG_HERMITIAN)) ? VecDot(x, y, a) : VecTDot(x, y, a))
-#define VecXDotBegin(x, y, a)     ((pipefcg->type == (KSP_CG_HERMITIAN)) ? VecDotBegin(x, y, a) : VecTDotBegin(x, y, a))
-#define VecXDotEnd(x, y, a)       ((pipefcg->type == (KSP_CG_HERMITIAN)) ? VecDotEnd(x, y, a) : VecTDotEnd(x, y, a))
-#define VecMXDot(x, n, y, a)      ((pipefcg->type == (KSP_CG_HERMITIAN)) ? VecMDot(x, n, y, a) : VecMTDot(x, n, y, a))
-#define VecMXDotBegin(x, n, y, a) ((pipefcg->type == (KSP_CG_HERMITIAN)) ? VecMDotBegin(x, n, y, a) : VecMTDotBegin(x, n, y, a))
-#define VecMXDotEnd(x, n, y, a)   ((pipefcg->type == (KSP_CG_HERMITIAN)) ? VecMDotEnd(x, n, y, a) : VecMTDotEnd(x, n, y, a))
+#define VecXDot(x, y, a)          (pipefcg->type == KSP_CG_HERMITIAN ? VecDot(x, y, a) : VecTDot(x, y, a))
+#define VecXDotBegin(x, y, a)     (pipefcg->type == KSP_CG_HERMITIAN ? VecDotBegin(x, y, a) : VecTDotBegin(x, y, a))
+#define VecXDotEnd(x, y, a)       (pipefcg->type == KSP_CG_HERMITIAN ? VecDotEnd(x, y, a) : VecTDotEnd(x, y, a))
+#define VecMXDot(x, n, y, a)      (pipefcg->type == KSP_CG_HERMITIAN ? VecMDot(x, n, y, a) : VecMTDot(x, n, y, a))
+#define VecMXDotBegin(x, n, y, a) (pipefcg->type == KSP_CG_HERMITIAN ? VecMDotBegin(x, n, y, a) : VecMTDotBegin(x, n, y, a))
+#define VecMXDotEnd(x, n, y, a)   (pipefcg->type == KSP_CG_HERMITIAN ? VecMDotEnd(x, n, y, a) : VecMTDotEnd(x, n, y, a))
 
   pipefcg = (KSP_PIPEFCG *)ksp->data;
   X       = ksp->vec_sol;
@@ -265,7 +265,7 @@ static PetscErrorCode KSPSolve_PIPEFCG(KSP ksp)
   Vec          B, R, Z, X;
   Mat          Amat, Pmat;
 
-#define VecXDot(x, y, a) ((pipefcg->type == (KSP_CG_HERMITIAN)) ? VecDot(x, y, a) : VecTDot(x, y, a))
+#define VecXDot(x, y, a) (pipefcg->type == KSP_CG_HERMITIAN ? VecDot(x, y, a) : VecTDot(x, y, a))
 
   PetscFunctionBegin;
   PetscCall(PetscCitationsRegister(citation, &cited));

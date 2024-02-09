@@ -319,7 +319,7 @@ int main(int argc, char **argv)
   PetscCall(MatDestroy(&Ap));
   PetscCall(MatDestroy(&sp));
   PetscCall(PetscFinalize());
-  return (0);
+  return 0;
 }
 
 /*TEST

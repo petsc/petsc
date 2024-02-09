@@ -175,7 +175,7 @@ void exchangeVal(PetscReal *a, PetscReal *b)
 
 PetscReal mcVal(PetscReal St, PetscReal r, PetscReal vol, PetscReal dt, PetscReal eps)
 {
-  return (St * PetscExpReal((r - 0.5 * vol * vol) * dt + vol * PetscSqrtReal(dt) * eps));
+  return St * PetscExpReal((r - 0.5 * vol * vol) * dt + vol * PetscSqrtReal(dt) * eps);
 }
 
 PetscInt divWork(PetscMPIInt id, PetscInt num, PetscMPIInt size)

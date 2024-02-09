@@ -187,7 +187,7 @@ PetscErrorCode DMPlexGetFieldTypes_Internal(DM dm, PetscSection section, PetscIn
     }
   }
 
-  if (!(*types)) {
+  if (!*types) {
     if (field >= 0) {
       const char *fieldname;
 
