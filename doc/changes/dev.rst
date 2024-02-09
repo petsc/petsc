@@ -110,6 +110,11 @@ Changes: Development
 .. rubric:: TAO:
 
 - Deprecate ``TaoCancelMonitors()`` (resp. ``-tao_cancelmonitors``) in favor of ``TaoMonitorCancel()`` (resp. ``-tao_monitor_cancel``)
+- Deprecate ``-tao_view_gradient``, ``-tao_view_ls_residual``, ``-tao_view_solution``, and ``-tao_view_stepdirection`` in favor of
+  ``-tao_monitor_gradient``, ``-tao_monitor_ls_residual``, ``-tao_monitor_solution``, and ``-tao_monitor_step``
+- Deprecate ``-tao_draw_solution``, ``-tao_draw_gradient``, and ``-tao_draw_step`` in favor of ``-tao_monitor_solution_draw``, ``-tao_monitor_gradient_draw``, and ``-tao_monitor_step_draw``
+- Deprecate ``TaoSetMonitor()`` in favor of ``TaoMonitorSet()``
+- Deprecate all of the provided ``Tao`` monitor routine names in favor of the standard PETSc naming conventions
 
 .. rubric:: DM/DA:
 

@@ -2936,13 +2936,13 @@ about the iterations. The user can initiate monitoring with the command
 
 .. code-block::
 
-      TaoSetMonitor(Tao, PetscErrorCode (*mon)(Tao,void*), void*);
+      TaoMonitorSet(Tao, PetscErrorCode (*mon)(Tao,void*), void*);
 
 The routine ``mon`` indicates a user-defined monitoring routine, and
 ``void*`` denotes an optional user-defined context for private data for
 the monitor routine.
 
-The routine set by ``TaoSetMonitor()`` is called once during each
+The routine set by ``TaoMonitorSet()`` is called once during each
 iteration of the optimization solver. Hence, the user can employ this
 routine for any application-specific computations that should be done
 after the solution update.

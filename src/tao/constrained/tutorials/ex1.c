@@ -24,8 +24,8 @@ Input parameters include:\n\
   -init_view         : view initial object setup\n\
   -snes_fd           : snes with finite difference Jacobian (needed for pdipm)\n\
   -snes_compare_explicit : compare user Jacobian with finite difference Jacobian \n\
-  -tao_cmonitor      : convergence monitor with constraint norm \n\
-  -tao_view_solution : view exact solution at each iteration\n\
+  -tao_monitor_constraint_norm : convergence monitor with constraint norm \n\
+  -tao_monitor_solution : view exact solution at each iteration\n\
   Note: external package MUMPS is required to run pdipm in parallel. This is designed for a maximum of 2 processors, the code will error if size > 2.\n";
 
 /*

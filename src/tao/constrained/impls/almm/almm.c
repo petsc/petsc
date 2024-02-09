@@ -362,8 +362,8 @@ static PetscErrorCode TaoSetFromOptions_ALMM(Tao tao, PetscOptionItems *PetscOpt
   PetscCall(TaoSetFromOptions(auglag->subsolver));
   for (i = 0; i < tao->numbermonitors; i++) {
     PetscCall(PetscObjectReference((PetscObject)tao->monitorcontext[i]));
-    PetscCall(TaoSetMonitor(auglag->subsolver, tao->monitor[i], tao->monitorcontext[i], tao->monitordestroy[i]));
-    if (tao->monitor[i] == TaoMonitorDefault || tao->monitor[i] == TaoDefaultCMonitor || tao->monitor[i] == TaoDefaultGMonitor || tao->monitor[i] == TaoDefaultSMonitor) auglag->info = PETSC_TRUE;
+    PetscCall(TaoMonitorSet(auglag->subsolver, tao->monitor[i], tao->monitorcontext[i], tao->monitordestroy[i]));
+    if (tao->monitor[i] == TaoMonitorDefault || tao->monitor[i] == TaoMonitorConstraintNorm || tao->monitor[i] == TaoMonitorGlobalization || tao->monitor[i] == TaoMonitorDefaultShort) auglag->info = PETSC_TRUE;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

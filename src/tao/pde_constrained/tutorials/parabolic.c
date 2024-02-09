@@ -1267,7 +1267,7 @@ PetscErrorCode ParabolicMonitor(Tao tao, void *ptr)
       requires: !complex
 
    test:
-      args: -tao_cmonitor -tao_type lcl -ns 1 -tao_gatol 1.e-4 -ksp_max_it 30
+      args: -tao_monitor_constraint_norm -tao_type lcl -ns 1 -tao_gatol 1.e-4 -ksp_max_it 30
       requires: !single
 
 TEST*/
