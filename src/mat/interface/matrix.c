@@ -5950,7 +5950,7 @@ PetscErrorCode MatAssemblyEnd(Mat mat, MatAssemblyType type)
   supported by `MATMPIBAIJ` format only.
 
   `MAT_KEEP_NONZERO_PATTERN` indicates when `MatZeroRows()` is called the zeroed entries
-  are kept in the nonzero structure
+  are kept in the nonzero structure. This flag is not used for `MatZeroRowsColumns()`
 
   `MAT_IGNORE_ZERO_ENTRIES` - for `MATAIJ` and `MATIS` matrices this will stop zero values from creating
   a zero location in the matrix
@@ -6187,7 +6187,9 @@ PetscErrorCode MatZeroEntries(Mat mat)
   routine, regardless of whether any rows being zeroed are owned by
   them.
 
-  Unlike `MatZeroRows()` this does not change the nonzero structure of the matrix, it merely zeros those entries in the matrix.
+  Unlike `MatZeroRows()`, this ignores the `MAT_KEEP_NONZERO_PATTERN` option value set with `MatSetOption()`, it merely zeros those entries in the matrix, but never
+  removes them from the nonzero pattern. The nonzero pattern of the matrix can still change if a nonzero needs to be inserted on a diagonal entry that was previously
+  missing.
 
   Each processor can indicate any rows in the entire matrix to be zeroed (i.e. each process does NOT have to
   list only rows local to itself).
@@ -6302,7 +6304,7 @@ PetscErrorCode MatZeroRowsColumnsIS(Mat mat, IS is, PetscScalar diag, Vec x, Vec
   owns that are to be zeroed. This saves a global synchronization in the implementation.
 
 .seealso: [](ch_matrices), `Mat`, `MatZeroRowsIS()`, `MatZeroRowsColumns()`, `MatZeroRowsLocalIS()`, `MatZeroRowsStencil()`, `MatZeroEntries()`, `MatZeroRowsLocal()`, `MatSetOption()`,
-          `MatZeroRowsColumnsLocal()`, `MatZeroRowsColumnsLocalIS()`, `MatZeroRowsColumnsIS()`, `MatZeroRowsColumnsStencil()`, `PCREDISTRIBUTE`
+          `MatZeroRowsColumnsLocal()`, `MatZeroRowsColumnsLocalIS()`, `MatZeroRowsColumnsIS()`, `MatZeroRowsColumnsStencil()`, `PCREDISTRIBUTE`, `MAT_KEEP_NONZERO_PATTERN`
 @*/
 PetscErrorCode MatZeroRows(Mat mat, PetscInt numRows, const PetscInt rows[], PetscScalar diag, Vec x, Vec b)
 {

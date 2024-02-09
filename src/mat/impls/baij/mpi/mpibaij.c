@@ -1658,7 +1658,7 @@ static PetscErrorCode MatZeroRows_MPIBAIJ(Mat A, PetscInt N, const PetscInt rows
   PetscCall(PetscFree(lrows));
 
   /* only change matrix nonzero state if pattern was allowed to be changed */
-  if (!((Mat_SeqBAIJ *)(l->A->data))->keepnonzeropattern) {
+  if (!((Mat_SeqBAIJ *)(l->A->data))->keepnonzeropattern || !((Mat_SeqBAIJ *)(l->A->data))->nonew) {
     PetscObjectState state = l->A->nonzerostate + l->B->nonzerostate;
     PetscCall(MPIU_Allreduce(&state, &A->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)A)));
   }
@@ -1754,7 +1754,7 @@ static PetscErrorCode MatZeroRowsColumns_MPIBAIJ(Mat A, PetscInt N, const PetscI
   PetscCall(PetscFree(lrows));
 
   /* only change matrix nonzero state if pattern was allowed to be changed */
-  if (!((Mat_SeqBAIJ *)(l->A->data))->keepnonzeropattern) {
+  if (!((Mat_SeqBAIJ *)(l->A->data))->nonew) {
     PetscObjectState state = l->A->nonzerostate + l->B->nonzerostate;
     PetscCall(MPIU_Allreduce(&state, &A->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)A)));
   }
