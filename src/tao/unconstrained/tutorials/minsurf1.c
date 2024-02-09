@@ -594,76 +594,76 @@ static PetscErrorCode MSA_InitialPoint(AppCtx *user, Vec X)
       requires: !complex
 
    test:
-      args: -tao_smonitor -tao_type nls -mx 10 -my 8 -tao_gatol 1.e-4
+      args: -tao_monitor_short -tao_type nls -mx 10 -my 8 -tao_gatol 1.e-4
       requires: !single
 
    test:
       suffix: 2
-      args: -tao_smonitor -tao_type bmrm -mx 10 -my 8 -tao_gatol 1.e-3
+      args: -tao_monitor_short -tao_type bmrm -mx 10 -my 8 -tao_gatol 1.e-3
       requires: !single
 
    test:
       suffix: 3
-      args: -tao_smonitor -tao_type lmvm -mx 10 -my 8 -tao_gatol 1.e-3
+      args: -tao_monitor_short -tao_type lmvm -mx 10 -my 8 -tao_gatol 1.e-3
       requires: !single
 
    test:
       suffix: 4
-      args: -tao_smonitor -tao_type bntr -mx 10 -my 8 -tao_gatol 1.e-4
+      args: -tao_monitor_short -tao_type bntr -mx 10 -my 8 -tao_gatol 1.e-4
       requires: !single
 
    test:
       suffix: 4_ew
-      args: -tao_smonitor -tao_type bntr -tao_ksp_ew -mx 10 -my 8 -tao_gatol 1.e-4
+      args: -tao_monitor_short -tao_type bntr -tao_ksp_ew -mx 10 -my 8 -tao_gatol 1.e-4
       requires: !single
 
    test:
       suffix: 5
-      args: -tao_smonitor -tao_type bntl -mx 10 -my 8 -tao_gatol 1.e-4
+      args: -tao_monitor_short -tao_type bntl -mx 10 -my 8 -tao_gatol 1.e-4
       requires: !single
 
    test:
       suffix: 5_ew
-      args: -tao_smonitor -tao_type bntl -tao_ksp_ew -mx 10 -my 8 -tao_gatol 1.e-4
+      args: -tao_monitor_short -tao_type bntl -tao_ksp_ew -mx 10 -my 8 -tao_gatol 1.e-4
       requires: !single
 
    test:
       suffix: 6
-      args: -tao_smonitor -tao_type bnls -mx 10 -my 8 -tao_gatol 1.e-4
+      args: -tao_monitor_short -tao_type bnls -mx 10 -my 8 -tao_gatol 1.e-4
       requires: !single
 
    test:
       suffix: 6_ew
-      args: -tao_smonitor -tao_type bnls -tao_ksp_ew -tao_bnk_ksp_ew_version 3 -mx 10 -my 8 -tao_gatol 1.e-4
+      args: -tao_monitor_short -tao_type bnls -tao_ksp_ew -tao_bnk_ksp_ew_version 3 -mx 10 -my 8 -tao_gatol 1.e-4
       requires: !single
 
    test:
       suffix: 7
-      args: -tao_smonitor -tao_type bntr -mx 10 -my 8 -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4
+      args: -tao_monitor_short -tao_type bntr -mx 10 -my 8 -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4
       requires: !single
 
    test:
       suffix: 8
-      args: -tao_smonitor -tao_type bntl -mx 10 -my 8 -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4
+      args: -tao_monitor_short -tao_type bntl -mx 10 -my 8 -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4
       requires: !single
 
    test:
       suffix: 9
-      args: -tao_smonitor -tao_type bnls -mx 10 -my 8 -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4
+      args: -tao_monitor_short -tao_type bnls -mx 10 -my 8 -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4
       requires: !single
 
    test:
       suffix: 10
-      args: -tao_smonitor -tao_type bnls -mx 10 -my 8 -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4 -tao_mf_hessian
+      args: -tao_monitor_short -tao_type bnls -mx 10 -my 8 -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4 -tao_mf_hessian
 
    test:
       suffix: 11
-      args: -tao_smonitor -tao_type bntr -mx 10 -my 8 -tao_gatol 1.e-4 -tao_mf_hessian
+      args: -tao_monitor_short -tao_type bntr -mx 10 -my 8 -tao_gatol 1.e-4 -tao_mf_hessian
       requires: !single
 
    test:
       suffix: 12
-      args: -tao_smonitor -tao_type bntl -mx 10 -my 8 -tao_gatol 1.e-4 -tao_mf_hessian
+      args: -tao_monitor_short -tao_type bntl -mx 10 -my 8 -tao_gatol 1.e-4 -tao_mf_hessian
       requires: !single
 
 TEST*/

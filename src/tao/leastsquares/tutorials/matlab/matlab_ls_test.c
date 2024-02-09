@@ -164,6 +164,6 @@ int main(int argc, char **argv)
 
    test:
       localrunfiles: more_wild_probs TestingInitialize.m TestingFinalize.m ProblemInitialize.m ProblemFinalize.m
-      args: -tao_smonitor -prob_id 5
+      args: -tao_monitor_short -prob_id 5
 
 TEST*/

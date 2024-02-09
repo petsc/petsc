@@ -327,31 +327,33 @@ PetscErrorCode TaoKSPSetUseEW(Tao tao, PetscBool flag)
 . tao - the `Tao` solver context
 
   Options Database Keys:
-+ -tao_type <type>        - The algorithm that Tao uses (lmvm, nls, etc.)
-. -tao_gatol <gatol>      - absolute error tolerance for ||gradient||
-. -tao_grtol <grtol>      - relative error tolerance for ||gradient||
-. -tao_gttol <gttol>      - reduction of ||gradient|| relative to initial gradient
-. -tao_max_it <max>       - sets maximum number of iterations
-. -tao_max_funcs <max>    - sets maximum number of function evaluations
-. -tao_fmin <fmin>        - stop if function value reaches fmin
-. -tao_steptol <tol>      - stop if trust region radius less than <tol>
-. -tao_trust0 <t>         - initial trust region radius
-. -tao_monitor            - prints function value and residual norm at each iteration
-. -tao_smonitor           - same as tao_monitor, but truncates very small values
-. -tao_cmonitor           - prints function value, residual, and constraint norm at each iteration
-. -tao_view_solution      - prints solution vector at each iteration
-. -tao_view_ls_residual   - prints least-squares residual vector at each iteration
-. -tao_view_stepdirection - prints step direction vector at each iteration
-. -tao_view_gradient      - prints gradient vector at each iteration
-. -tao_draw_solution      - graphically view solution vector at each iteration
-. -tao_draw_step          - graphically view step vector at each iteration
-. -tao_draw_gradient      - graphically view gradient at each iteration
-. -tao_fd_gradient        - use gradient computed with finite differences
-. -tao_fd_hessian         - use hessian computed with finite differences
-. -tao_mf_hessian         - use matrix-free hessian computed with finite differences
-. -tao_monitor_cancel     - cancels all monitors (except those set with command line)
-. -tao_view               - prints information about the Tao after solving
-- -tao_converged_reason   - prints the reason Tao stopped iterating
++ -tao_type <type>             - The algorithm that Tao uses (lmvm, nls, etc.)
+. -tao_gatol <gatol>           - absolute error tolerance for ||gradient||
+. -tao_grtol <grtol>           - relative error tolerance for ||gradient||
+. -tao_gttol <gttol>           - reduction of ||gradient|| relative to initial gradient
+. -tao_max_it <max>            - sets maximum number of iterations
+. -tao_max_funcs <max>         - sets maximum number of function evaluations
+. -tao_fmin <fmin>             - stop if function value reaches fmin
+. -tao_steptol <tol>           - stop if trust region radius less than <tol>
+. -tao_trust0 <t>              - initial trust region radius
+. -tao_view_solution           - view the solution at the end of the optimization process
+. -tao_monitor                 - prints function value and residual norm at each iteration
+. -tao_monitor_short           - same as `-tao_monitor`, but truncates very small values
+. -tao_monitor_constraint_norm - prints objective value, gradient, and constraint norm at each iteration
+. -tao_monitor_globalization   - prints information about the globalization at each iteration
+. -tao_monitor_solution        - prints solution vector at each iteration
+. -tao_monitor_ls_residual     - prints least-squares residual vector at each iteration
+. -tao_monitor_step            - prints step vector at each iteration
+. -tao_monitor_gradient        - prints gradient vector at each iteration
+. -tao_monitor_solution_draw   - graphically view solution vector at each iteration
+. -tao_monitor_step_draw       - graphically view step vector at each iteration
+. -tao_monitor_gradient_draw   - graphically view gradient at each iteration
+. -tao_monitor_cancel          - cancels all monitors (except those set with command line)
+. -tao_fd_gradient             - use gradient computed with finite differences
+. -tao_fd_hessian              - use hessian computed with finite differences
+. -tao_mf_hessian              - use matrix-free Hessian computed with finite differences
+. -tao_view                    - prints information about the Tao after solving
+- -tao_converged_reason        - prints the reason Tao stopped iterating
 
   Level: beginner
 
@@ -412,53 +414,65 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
   if (flg) tao->steptol_changed = PETSC_TRUE;
   PetscCall(PetscOptionsReal("-tao_trust0", "Initial trust region radius", "TaoSetTrustRegionRadius", tao->trust0, &tao->trust0, &flg));
   if (flg) tao->trust0_changed = PETSC_TRUE;
-  PetscCall(PetscOptionsString("-tao_view_solution", "view solution vector after each evaluation", "TaoSetMonitor", "stdout", monfilename, sizeof(monfilename), &flg));
+
+  PetscCall(PetscOptionsDeprecated("-tao_solution_monitor", "-tao_monitor_solution", "3.21", NULL));
+  PetscCall(PetscOptionsDeprecated("-tao_gradient_monitor", "-tao_monitor_gradient", "3.21", NULL));
+  PetscCall(PetscOptionsDeprecated("-tao_stepdirection_monitor", "-tao_monitor_step", "3.21", NULL));
+  PetscCall(PetscOptionsDeprecated("-tao_residual_monitor", "-tao_monitor_residual", "3.21", NULL));
+  PetscCall(PetscOptionsDeprecated("-tao_smonitor", "-tao_monitor_short", "3.21", NULL));
+  PetscCall(PetscOptionsDeprecated("-tao_cmonitor", "-tao_monitor_constraint_norm", "3.21", NULL));
+  PetscCall(PetscOptionsDeprecated("-tao_gmonitor", "-tao_monitor_globalization", "3.21", NULL));
+  PetscCall(PetscOptionsDeprecated("-tao_draw_solution", "-tao_monitor_solution_draw", "3.21", NULL));
+  PetscCall(PetscOptionsDeprecated("-tao_draw_gradient", "-tao_monitor_gradient_draw", "3.21", NULL));
+  PetscCall(PetscOptionsDeprecated("-tao_draw_step", "-tao_monitor_step_draw", "3.21", NULL));
+
+  PetscCall(PetscOptionsString("-tao_monitor_solution", "View solution vector after each iteration", "TaoMonitorSet", "stdout", monfilename, sizeof(monfilename), &flg));
   if (flg) {
     PetscCall(PetscViewerASCIIOpen(comm, monfilename, &monviewer));
-    PetscCall(TaoSetMonitor(tao, TaoSolutionMonitor, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
+    PetscCall(TaoMonitorSet(tao, TaoMonitorSolution, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
   }
 
   PetscCall(PetscOptionsBool("-tao_converged_reason", "Print reason for Tao converged", "TaoSolve", tao->printreason, &tao->printreason, NULL));
-  PetscCall(PetscOptionsString("-tao_view_gradient", "view gradient vector after each evaluation", "TaoSetMonitor", "stdout", monfilename, sizeof(monfilename), &flg));
+  PetscCall(PetscOptionsString("-tao_monitor_gradient", "View gradient vector for each iteration", "TaoMonitorSet", "stdout", monfilename, sizeof(monfilename), &flg));
   if (flg) {
     PetscCall(PetscViewerASCIIOpen(comm, monfilename, &monviewer));
-    PetscCall(TaoSetMonitor(tao, TaoGradientMonitor, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
+    PetscCall(TaoMonitorSet(tao, TaoMonitorGradient, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
   }
 
-  PetscCall(PetscOptionsString("-tao_view_stepdirection", "view step direction vector after each iteration", "TaoSetMonitor", "stdout", monfilename, sizeof(monfilename), &flg));
+  PetscCall(PetscOptionsString("-tao_monitor_step", "View step vector after each iteration", "TaoMonitorSet", "stdout", monfilename, sizeof(monfilename), &flg));
   if (flg) {
     PetscCall(PetscViewerASCIIOpen(comm, monfilename, &monviewer));
-    PetscCall(TaoSetMonitor(tao, TaoStepDirectionMonitor, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
+    PetscCall(TaoMonitorSet(tao, TaoMonitorStep, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
   }
 
-  PetscCall(PetscOptionsString("-tao_view_residual", "view least-squares residual vector after each evaluation", "TaoSetMonitor", "stdout", monfilename, sizeof(monfilename), &flg));
+  PetscCall(PetscOptionsString("-tao_monitor_residual", "View least-squares residual vector after each iteration", "TaoMonitorSet", "stdout", monfilename, sizeof(monfilename), &flg));
   if (flg) {
     PetscCall(PetscViewerASCIIOpen(comm, monfilename, &monviewer));
-    PetscCall(TaoSetMonitor(tao, TaoResidualMonitor, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
+    PetscCall(TaoMonitorSet(tao, TaoMonitorResidual, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
   }
 
-  PetscCall(PetscOptionsString("-tao_monitor", "Use the default convergence monitor", "TaoSetMonitor", "stdout", monfilename, sizeof(monfilename), &flg));
+  PetscCall(PetscOptionsString("-tao_monitor", "Use the default convergence monitor", "TaoMonitorSet", "stdout", monfilename, sizeof(monfilename), &flg));
   if (flg) {
     PetscCall(PetscViewerASCIIOpen(comm, monfilename, &monviewer));
-    PetscCall(TaoSetMonitor(tao, TaoMonitorDefault, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
+    PetscCall(TaoMonitorSet(tao, TaoMonitorDefault, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
   }
 
-  PetscCall(PetscOptionsString("-tao_gmonitor", "Use the convergence monitor with extra globalization info", "TaoSetMonitor", "stdout", monfilename, sizeof(monfilename), &flg));
+  PetscCall(PetscOptionsString("-tao_monitor_globalization", "Use the convergence monitor with extra globalization info", "TaoMonitorSet", "stdout", monfilename, sizeof(monfilename), &flg));
   if (flg) {
     PetscCall(PetscViewerASCIIOpen(comm, monfilename, &monviewer));
-    PetscCall(TaoSetMonitor(tao, TaoDefaultGMonitor, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
+    PetscCall(TaoMonitorSet(tao, TaoMonitorGlobalization, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
   }
 
-  PetscCall(PetscOptionsString("-tao_smonitor", "Use the short convergence monitor", "TaoSetMonitor", "stdout", monfilename, sizeof(monfilename), &flg));
+  PetscCall(PetscOptionsString("-tao_monitor_short", "Use the short convergence monitor", "TaoMonitorSet", "stdout", monfilename, sizeof(monfilename), &flg));
   if (flg) {
     PetscCall(PetscViewerASCIIOpen(comm, monfilename, &monviewer));
-    PetscCall(TaoSetMonitor(tao, TaoDefaultSMonitor, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
+    PetscCall(TaoMonitorSet(tao, TaoMonitorDefaultShort, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
   }
 
-  PetscCall(PetscOptionsString("-tao_cmonitor", "Use the default convergence monitor with constraint norm", "TaoSetMonitor", "stdout", monfilename, sizeof(monfilename), &flg));
+  PetscCall(PetscOptionsString("-tao_monitor_constraint_norm", "Use the default convergence monitor with constraint norm", "TaoMonitorSet", "stdout", monfilename, sizeof(monfilename), &flg));
   if (flg) {
     PetscCall(PetscViewerASCIIOpen(comm, monfilename, &monviewer));
-    PetscCall(TaoSetMonitor(tao, TaoDefaultCMonitor, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
+    PetscCall(TaoMonitorSet(tao, TaoMonitorConstraintNorm, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
   }
 
   flg = PETSC_FALSE;
@@ -467,31 +481,31 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
   if (flg) PetscCall(TaoMonitorCancel(tao));
 
   flg = PETSC_FALSE;
-  PetscCall(PetscOptionsBool("-tao_draw_solution", "Plot solution vector at each iteration", "TaoSetMonitor", flg, &flg, NULL));
+  PetscCall(PetscOptionsBool("-tao_monitor_solution_draw", "Plot solution vector at each iteration", "TaoMonitorSet", flg, &flg, NULL));
   if (flg) {
     TaoMonitorDrawCtx drawctx;
     PetscInt          howoften = 1;
     PetscCall(TaoMonitorDrawCtxCreate(PetscObjectComm((PetscObject)tao), NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 300, 300, howoften, &drawctx));
-    PetscCall(TaoSetMonitor(tao, TaoDrawSolutionMonitor, drawctx, (PetscErrorCode(*)(void **))TaoMonitorDrawCtxDestroy));
+    PetscCall(TaoMonitorSet(tao, TaoMonitorSolutionDraw, drawctx, (PetscErrorCode(*)(void **))TaoMonitorDrawCtxDestroy));
   }
 
   flg = PETSC_FALSE;
-  PetscCall(PetscOptionsBool("-tao_draw_step", "plots step direction at each iteration", "TaoSetMonitor", flg, &flg, NULL));
-  if (flg) PetscCall(TaoSetMonitor(tao, TaoDrawStepMonitor, NULL, NULL));
+  PetscCall(PetscOptionsBool("-tao_monitor_step_draw", "Plots step at each iteration", "TaoMonitorSet", flg, &flg, NULL));
+  if (flg) PetscCall(TaoMonitorSet(tao, TaoMonitorStepDraw, NULL, NULL));
 
   flg = PETSC_FALSE;
-  PetscCall(PetscOptionsBool("-tao_draw_gradient", "plots gradient at each iteration", "TaoSetMonitor", flg, &flg, NULL));
+  PetscCall(PetscOptionsBool("-tao_monitor_gradient_draw", "plots gradient at each iteration", "TaoMonitorSet", flg, &flg, NULL));
   if (flg) {
     TaoMonitorDrawCtx drawctx;
     PetscInt          howoften = 1;
     PetscCall(TaoMonitorDrawCtxCreate(PetscObjectComm((PetscObject)tao), NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 300, 300, howoften, &drawctx));
-    PetscCall(TaoSetMonitor(tao, TaoDrawGradientMonitor, drawctx, (PetscErrorCode(*)(void **))TaoMonitorDrawCtxDestroy));
+    PetscCall(TaoMonitorSet(tao, TaoMonitorGradientDraw, drawctx, (PetscErrorCode(*)(void **))TaoMonitorDrawCtxDestroy));
   }
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-tao_fd_gradient", "compute gradient using finite differences", "TaoDefaultComputeGradient", flg, &flg, NULL));
   if (flg) PetscCall(TaoSetGradient(tao, NULL, TaoDefaultComputeGradient, NULL));
   flg = PETSC_FALSE;
-  PetscCall(PetscOptionsBool("-tao_fd_hessian", "compute hessian using finite differences", "TaoDefaultComputeHessian", flg, &flg, NULL));
+  PetscCall(PetscOptionsBool("-tao_fd_hessian", "compute Hessian using finite differences", "TaoDefaultComputeHessian", flg, &flg, NULL));
   if (flg) {
     Mat H;
 
@@ -501,7 +515,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
     PetscCall(MatDestroy(&H));
   }
   flg = PETSC_FALSE;
-  PetscCall(PetscOptionsBool("-tao_mf_hessian", "compute matrix-free hessian using finite differences", "TaoDefaultComputeHessianMFFD", flg, &flg, NULL));
+  PetscCall(PetscOptionsBool("-tao_mf_hessian", "compute matrix-free Hessian using finite differences", "TaoDefaultComputeHessianMFFD", flg, &flg, NULL));
   if (flg) {
     Mat H;
 
@@ -1420,7 +1434,7 @@ PetscErrorCode TaoSetUpdate(Tao tao, PetscErrorCode (*func)(Tao, PetscInt, void 
   Note:
   The new convergence testing routine should call `TaoSetConvergedReason()`.
 
-.seealso: [](ch_tao), `Tao`, `TaoSolve()`, `TaoSetConvergedReason()`, `TaoGetSolutionStatus()`, `TaoGetTolerances()`, `TaoSetMonitor`
+.seealso: [](ch_tao), `Tao`, `TaoSolve()`, `TaoSetConvergedReason()`, `TaoGetSolutionStatus()`, `TaoGetTolerances()`, `TaoMonitorSet()`
 @*/
 PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao, void *), void *ctx)
 {
@@ -1432,7 +1446,7 @@ PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao, void *
 }
 
 /*@C
-  TaoSetMonitor - Sets an additional function that is to be used at every
+  TaoMonitorSet - Sets an additional function that is to be used at every
   iteration of the solver to display the iteration's
   progress.
 
@@ -1451,20 +1465,13 @@ PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao, void *
   Calling sequence of `dest`:
 . ctx - monitoring context
 
-  Options Database Keys:
-+ -tao_monitor          - sets the default monitor `TaoMonitorDefault()`
-. -tao_smonitor         - sets short monitor
-. -tao_cmonitor         - same as smonitor plus constraint norm
-. -tao_view_solution    - view solution at each iteration
-. -tao_view_gradient    - view gradient at each iteration
-. -tao_view_ls_residual - view least-squares residual vector at each iteration
-- -tao_monitor_cancel   - cancels all monitors that have been hardwired into a code by calls to TaoSetMonitor(), but does not cancel those set via the options database.
-
   Level: intermediate
 
   Notes:
+  See `TaoSetFromOptions()` for a monitoring options.
+
   Several different monitoring routines may be set by calling
-  `TaoSetMonitor()` multiple times; all will be called in the
+  `TaoMonitorSet()` multiple times; all will be called in the
   order in which they were set.
 
   Fortran Notes:
@@ -1472,7 +1479,7 @@ PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao, void *
 
 .seealso: [](ch_tao), `Tao`, `TaoSolve()`, `TaoMonitorDefault()`, `TaoMonitorCancel()`, `TaoSetDestroyRoutine()`, `TaoView()`
 @*/
-PetscErrorCode TaoSetMonitor(Tao tao, PetscErrorCode (*func)(Tao, void *), void *ctx, PetscErrorCode (*dest)(void **))
+PetscErrorCode TaoMonitorSet(Tao tao, PetscErrorCode (*func)(Tao, void *), void *ctx, PetscErrorCode (*dest)(void **))
 {
   PetscInt  i;
   PetscBool identical;
@@ -1502,7 +1509,7 @@ PetscErrorCode TaoSetMonitor(Tao tao, PetscErrorCode (*func)(Tao, void *), void 
 
   Options Database Key:
 . -tao_monitor_cancel - cancels all monitors that have been hardwired
-    into a code by calls to `TaoSetMonitor()`, but does not cancel those
+    into a code by calls to `TaoMonitorSet()`, but does not cancel those
     set via the options database
 
   Level: advanced
@@ -1510,7 +1517,7 @@ PetscErrorCode TaoSetMonitor(Tao tao, PetscErrorCode (*func)(Tao, void *), void 
   Note:
   There is no way to clear one specific monitor from a `Tao` object.
 
-.seealso: [](ch_tao), `Tao`, `TaoMonitorDefault()`, `TaoSetMonitor()`
+.seealso: [](ch_tao), `Tao`, `TaoMonitorDefault()`, `TaoMonitorSet()`
 @*/
 PetscErrorCode TaoMonitorCancel(Tao tao)
 {
@@ -1543,7 +1550,7 @@ PetscErrorCode TaoMonitorCancel(Tao tao)
   This monitor prints the function value and gradient
   norm at each iteration.
 
-.seealso: [](ch_tao), `Tao`, `TaoDefaultSMonitor()`, `TaoSetMonitor()`
+.seealso: [](ch_tao), `Tao`, `TaoMonitorDefaultShort()`, `TaoMonitorSet()`
 @*/
 PetscErrorCode TaoMonitorDefault(Tao tao, void *ctx)
 {
@@ -1575,7 +1582,7 @@ PetscErrorCode TaoMonitorDefault(Tao tao, void *ctx)
 }
 
 /*@
-  TaoDefaultGMonitor - Default routine for monitoring progress of `TaoSolve()` with extra detail on the globalization method.
+  TaoMonitorGlobalization - Default routine for monitoring progress of `TaoSolve()` with extra detail on the globalization method.
 
   Collective
 
@@ -1584,7 +1591,7 @@ PetscErrorCode TaoMonitorDefault(Tao tao, void *ctx)
 - ctx - `PetscViewer` context or `NULL`
 
   Options Database Key:
-. -tao_gmonitor - turn on monitoring with globalization information
+. -tao_monitor_globalization - turn on monitoring with globalization information
 
   Level: advanced
 
@@ -1593,9 +1600,9 @@ PetscErrorCode TaoMonitorDefault(Tao tao, void *ctx)
   iteration, as well as the step size and trust radius. Note that the
   step size and trust radius may be the same for some algorithms.
 
-.seealso: [](ch_tao), `Tao`, `TaoDefaultSMonitor()`, `TaoSetMonitor()`
+.seealso: [](ch_tao), `Tao`, `TaoMonitorDefaultShort()`, `TaoMonitorSet()`
 @*/
-PetscErrorCode TaoDefaultGMonitor(Tao tao, void *ctx)
+PetscErrorCode TaoMonitorGlobalization(Tao tao, void *ctx)
 {
   PetscInt    its, tabs;
   PetscReal   fct, gnorm, stp, tr;
@@ -1628,7 +1635,7 @@ PetscErrorCode TaoDefaultGMonitor(Tao tao, void *ctx)
 }
 
 /*@
-  TaoDefaultSMonitor - Default routine for monitoring progress of `TaoSolve()`
+  TaoMonitorDefaultShort - Routine for monitoring progress of `TaoSolve()` that displays fewer digits than `TaoMonitorDefault()`
 
   Collective
 
@@ -1637,7 +1644,7 @@ PetscErrorCode TaoDefaultGMonitor(Tao tao, void *ctx)
 - ctx - `PetscViewer` context of type `PETSCVIEWERASCII`
 
   Options Database Key:
-. -tao_smonitor - turn on default short monitoring
+. -tao_monitor_short - turn on default short monitoring
 
   Level: advanced
 
@@ -1648,9 +1655,9 @@ PetscErrorCode TaoDefaultGMonitor(Tao tao, void *ctx)
   different on different machines; by using this routine different
   machines will usually generate the same output.
 
-.seealso: [](ch_tao), `Tao`, `TaoMonitorDefault()`, `TaoSetMonitor()`
+.seealso: [](ch_tao), `Tao`, `TaoMonitorDefault()`, `TaoMonitorSet()`
 @*/
-PetscErrorCode TaoDefaultSMonitor(Tao tao, void *ctx)
+PetscErrorCode TaoMonitorDefaultShort(Tao tao, void *ctx)
 {
   PetscInt    its, tabs;
   PetscReal   fct, gnorm;
@@ -1680,7 +1687,7 @@ PetscErrorCode TaoDefaultSMonitor(Tao tao, void *ctx)
 }
 
 /*@
-  TaoDefaultCMonitor - same as `TaoMonitorDefault()` except
+  TaoMonitorConstraintNorm - same as `TaoMonitorDefault()` except
   it prints the norm of the constraint function.
 
   Collective
@@ -1690,13 +1697,13 @@ PetscErrorCode TaoDefaultSMonitor(Tao tao, void *ctx)
 - ctx - `PetscViewer` context or `NULL`
 
   Options Database Key:
-. -tao_cmonitor - monitor the constraints
+. -tao_monitor_constraint_norm - monitor the constraints
 
   Level: advanced
 
-.seealso: [](ch_tao), `Tao`, `TaoMonitorDefault()`, `TaoSetMonitor()`
+.seealso: [](ch_tao), `Tao`, `TaoMonitorDefault()`, `TaoMonitorSet()`
 @*/
-PetscErrorCode TaoDefaultCMonitor(Tao tao, void *ctx)
+PetscErrorCode TaoMonitorConstraintNorm(Tao tao, void *ctx)
 {
   PetscInt    its, tabs;
   PetscReal   fct, gnorm;
@@ -1719,7 +1726,7 @@ PetscErrorCode TaoDefaultCMonitor(Tao tao, void *ctx)
 }
 
 /*@C
-  TaoSolutionMonitor - Views the solution at each iteration of `TaoSolve()`
+  TaoMonitorSolution - Views the solution at each iteration of `TaoSolve()`
 
   Collective
 
@@ -1728,13 +1735,13 @@ PetscErrorCode TaoDefaultCMonitor(Tao tao, void *ctx)
 - ctx - `PetscViewer` context or `NULL`
 
   Options Database Key:
-. -tao_view_solution - view the solution
+. -tao_monitor_solution - view the solution
 
   Level: advanced
 
-.seealso: [](ch_tao), `Tao`, `TaoDefaultSMonitor()`, `TaoSetMonitor()`
+.seealso: [](ch_tao), `Tao`, `TaoMonitorDefaultShort()`, `TaoMonitorSet()`
 @*/
-PetscErrorCode TaoSolutionMonitor(Tao tao, void *ctx)
+PetscErrorCode TaoMonitorSolution(Tao tao, void *ctx)
 {
   PetscViewer viewer = (PetscViewer)ctx;
 
@@ -1746,7 +1753,7 @@ PetscErrorCode TaoSolutionMonitor(Tao tao, void *ctx)
 }
 
 /*@C
-  TaoGradientMonitor - Views the gradient at each iteration of `TaoSolve()`
+  TaoMonitorGradient - Views the gradient at each iteration of `TaoSolve()`
 
   Collective
 
@@ -1755,13 +1762,13 @@ PetscErrorCode TaoSolutionMonitor(Tao tao, void *ctx)
 - ctx - `PetscViewer` context or `NULL`
 
   Options Database Key:
-. -tao_view_gradient - view the gradient at each iteration
+. -tao_monitor_gradient - view the gradient at each iteration
 
   Level: advanced
 
-.seealso: [](ch_tao), `Tao`, `TaoDefaultSMonitor()`, `TaoSetMonitor()`
+.seealso: [](ch_tao), `Tao`, `TaoMonitorDefaultShort()`, `TaoMonitorSet()`
 @*/
-PetscErrorCode TaoGradientMonitor(Tao tao, void *ctx)
+PetscErrorCode TaoMonitorGradient(Tao tao, void *ctx)
 {
   PetscViewer viewer = (PetscViewer)ctx;
 
@@ -1773,7 +1780,7 @@ PetscErrorCode TaoGradientMonitor(Tao tao, void *ctx)
 }
 
 /*@C
-  TaoStepDirectionMonitor - Views the step-direction at each iteration of `TaoSolve()`
+  TaoMonitorStep - Views the step-direction at each iteration of `TaoSolve()`
 
   Collective
 
@@ -1782,13 +1789,13 @@ PetscErrorCode TaoGradientMonitor(Tao tao, void *ctx)
 - ctx - `PetscViewer` context or `NULL`
 
   Options Database Key:
-. -tao_view_stepdirection - view the step direction vector at each iteration
+. -tao_monitor_step - view the step vector at each iteration
 
   Level: advanced
 
-.seealso: [](ch_tao), `Tao`, `TaoDefaultSMonitor()`, `TaoSetMonitor()`
+.seealso: [](ch_tao), `Tao`, `TaoMonitorDefaultShort()`, `TaoMonitorSet()`
 @*/
-PetscErrorCode TaoStepDirectionMonitor(Tao tao, void *ctx)
+PetscErrorCode TaoMonitorStep(Tao tao, void *ctx)
 {
   PetscViewer viewer = (PetscViewer)ctx;
 
@@ -1800,7 +1807,7 @@ PetscErrorCode TaoStepDirectionMonitor(Tao tao, void *ctx)
 }
 
 /*@C
-  TaoDrawSolutionMonitor - Plots the solution at each iteration of `TaoSolve()`
+  TaoMonitorSolutionDraw - Plots the solution at each iteration of `TaoSolve()`
 
   Collective
 
@@ -1809,13 +1816,13 @@ PetscErrorCode TaoStepDirectionMonitor(Tao tao, void *ctx)
 - ctx - `TaoMonitorDraw` context
 
   Options Database Key:
-. -tao_draw_solution - draw the solution at each iteration
+. -tao_monitor_solution_draw - draw the solution at each iteration
 
   Level: advanced
 
-.seealso: [](ch_tao), `Tao`, `TaoSolutionMonitor()`, `TaoSetMonitor()`, `TaoDrawGradientMonitor`, `TaoMonitorDraw`
+.seealso: [](ch_tao), `Tao`, `TaoMonitorSolution()`, `TaoMonitorSet()`, `TaoMonitorGradientDraw()`
 @*/
-PetscErrorCode TaoDrawSolutionMonitor(Tao tao, void *ctx)
+PetscErrorCode TaoMonitorSolutionDraw(Tao tao, void *ctx)
 {
   TaoMonitorDrawCtx ictx = (TaoMonitorDrawCtx)ctx;
 
@@ -1827,7 +1834,7 @@ PetscErrorCode TaoDrawSolutionMonitor(Tao tao, void *ctx)
 }
 
 /*@C
-  TaoDrawGradientMonitor - Plots the gradient at each iteration of `TaoSolve()`
+  TaoMonitorGradientDraw - Plots the gradient at each iteration of `TaoSolve()`
 
   Collective
 
@@ -1836,13 +1843,13 @@ PetscErrorCode TaoDrawSolutionMonitor(Tao tao, void *ctx)
 - ctx - `PetscViewer` context
 
   Options Database Key:
-. -tao_draw_gradient - draw the gradient at each iteration
+. -tao_monitor_gradient_draw - draw the gradient at each iteration
 
   Level: advanced
 
-.seealso: [](ch_tao), `Tao`, `TaoGradientMonitor()`, `TaoSetMonitor()`, `TaoDrawSolutionMonitor`
+.seealso: [](ch_tao), `Tao`, `TaoMonitorGradient()`, `TaoMonitorSet()`, `TaoMonitorSolutionDraw()`
 @*/
-PetscErrorCode TaoDrawGradientMonitor(Tao tao, void *ctx)
+PetscErrorCode TaoMonitorGradientDraw(Tao tao, void *ctx)
 {
   TaoMonitorDrawCtx ictx = (TaoMonitorDrawCtx)ctx;
 
@@ -1854,7 +1861,7 @@ PetscErrorCode TaoDrawGradientMonitor(Tao tao, void *ctx)
 }
 
 /*@C
-  TaoDrawStepMonitor - Plots the step direction at each iteration of `TaoSolve()`
+  TaoMonitorStepDraw - Plots the step direction at each iteration of `TaoSolve()`
 
   Collective
 
@@ -1863,13 +1870,13 @@ PetscErrorCode TaoDrawGradientMonitor(Tao tao, void *ctx)
 - ctx - the `PetscViewer` context
 
   Options Database Key:
-. -tao_draw_step - draw the step direction at each iteration
+. -tao_monitor_step_draw - draw the step direction at each iteration
 
   Level: advanced
 
-.seealso: [](ch_tao), `Tao`, `TaoSetMonitor()`, `TaoDrawSolutionMonitor`
+.seealso: [](ch_tao), `Tao`, `TaoMonitorSet()`, `TaoMonitorSolutionDraw`
 @*/
-PetscErrorCode TaoDrawStepMonitor(Tao tao, void *ctx)
+PetscErrorCode TaoMonitorStepDraw(Tao tao, void *ctx)
 {
   PetscViewer viewer = (PetscViewer)ctx;
 
@@ -1881,7 +1888,7 @@ PetscErrorCode TaoDrawStepMonitor(Tao tao, void *ctx)
 }
 
 /*@C
-  TaoResidualMonitor - Views the least-squares residual at each iteration of `TaoSolve()`
+  TaoMonitorResidual - Views the least-squares residual at each iteration of `TaoSolve()`
 
   Collective
 
@@ -1890,13 +1897,13 @@ PetscErrorCode TaoDrawStepMonitor(Tao tao, void *ctx)
 - ctx - the `PetscViewer` context or `NULL`
 
   Options Database Key:
-. -tao_view_ls_residual - view the residual at each iteration
+. -tao_monitor_ls_residual - view the residual at each iteration
 
   Level: advanced
 
-.seealso: [](ch_tao), `Tao`, `TaoDefaultSMonitor()`, `TaoSetMonitor()`
+.seealso: [](ch_tao), `Tao`, `TaoMonitorDefaultShort()`, `TaoMonitorSet()`
 @*/
-PetscErrorCode TaoResidualMonitor(Tao tao, void *ctx)
+PetscErrorCode TaoMonitorResidual(Tao tao, void *ctx)
 {
   PetscViewer viewer = (PetscViewer)ctx;
 
@@ -2434,7 +2441,7 @@ PetscErrorCode TaoGetType(Tao tao, TaoType *type)
 
   Level: developer
 
-.seealso: [](ch_tao), `Tao`, `TaoGetConvergedReason()`, `TaoMonitorDefault()`, `TaoSetMonitor()`
+.seealso: [](ch_tao), `Tao`, `TaoGetConvergedReason()`, `TaoMonitorDefault()`, `TaoMonitorSet()`
 @*/
 PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, PetscReal cnorm, PetscReal steplength)
 {

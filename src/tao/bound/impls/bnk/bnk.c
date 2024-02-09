@@ -1046,7 +1046,7 @@ PetscErrorCode TaoSetUp_BNK(Tao tao)
     PetscCall(TaoSetObjectiveAndGradient(bnk->bncg, NULL, tao->ops->computeobjectiveandgradient, tao->user_objgradP));
     PetscCall(PetscObjectCopyFortranFunctionPointers((PetscObject)tao, (PetscObject)(bnk->bncg)));
     for (i = 0; i < tao->numbermonitors; ++i) {
-      PetscCall(TaoSetMonitor(bnk->bncg, tao->monitor[i], tao->monitorcontext[i], tao->monitordestroy[i]));
+      PetscCall(TaoMonitorSet(bnk->bncg, tao->monitor[i], tao->monitorcontext[i], tao->monitordestroy[i]));
       PetscCall(PetscObjectReference((PetscObject)(tao->monitorcontext[i])));
     }
   }

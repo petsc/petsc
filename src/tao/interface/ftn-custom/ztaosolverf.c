@@ -18,7 +18,7 @@
   #define taosetequalityconstraintsroutine_   TAOSETEQUALITYCONSTRAINTSROUTINE
   #define taosetvariableboundsroutine_        TAOSETVARIABLEBOUNDSROUTINE
   #define taosetconstraintsroutine_           TAOSETCONSTRAINTSROUTINE
-  #define taosetmonitor_                      TAOSETMONITOR
+  #define taomonitorset_                      TAOMONITORSET
   #define taosettype_                         TAOSETTYPE
   #define taoview_                            TAOVIEW
   #define taogetconvergencehistory_           TAOGETCONVERGENCEHISTORY
@@ -46,7 +46,7 @@
   #define taosetequalityconstraintsroutine_   taosetequalityconstraintsroutine
   #define taosetvariableboundsroutine_        taosetvariableboundsroutine
   #define taosetconstraintsroutine_           taosetconstraintsroutine
-  #define taosetmonitor_                      taosetmonitor
+  #define taomonitorset_                      taomonitorset
   #define taosettype_                         taosettype
   #define taoview_                            taoview
   #define taogetconvergencehistory_           taogetconvergencehistory
@@ -252,14 +252,14 @@ PETSC_EXTERN void taosetvariableboundsroutine_(Tao *tao, void (*func)(Tao *, Vec
   if (!*ierr) *ierr = TaoSetVariableBoundsRoutine(*tao, ourtaoboundsroutine, ctx);
 }
 
-PETSC_EXTERN void taosetmonitor_(Tao *tao, void (*func)(Tao *, void *, PetscErrorCode *), void *ctx, void (*mondestroy)(void *, PetscErrorCode *), PetscErrorCode *ierr)
+PETSC_EXTERN void taomonitorset_(Tao *tao, void (*func)(Tao *, void *, PetscErrorCode *), void *ctx, void (*mondestroy)(void *, PetscErrorCode *), PetscErrorCode *ierr)
 {
   CHKFORTRANNULLFUNCTION(mondestroy);
   *ierr = PetscObjectSetFortranCallback((PetscObject)*tao, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.mon, (PetscVoidFn *)func, ctx);
   if (*ierr) return;
   *ierr = PetscObjectSetFortranCallback((PetscObject)*tao, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.mondestroy, (PetscVoidFn *)mondestroy, ctx);
   if (*ierr) return;
-  *ierr = TaoSetMonitor(*tao, ourtaomonitor, *tao, ourtaomondestroy);
+  *ierr = TaoMonitorSet(*tao, ourtaomonitor, *tao, ourtaomondestroy);
 }
 
 PETSC_EXTERN void taosetconvergencetest_(Tao *tao, void (*func)(Tao *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)

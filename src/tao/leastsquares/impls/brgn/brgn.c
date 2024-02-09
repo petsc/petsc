@@ -364,7 +364,7 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
     PetscCall(TaoSetMaximumIterations(gn->subsolver, tao->max_it));
     PetscCall(TaoSetMaximumFunctionEvaluations(gn->subsolver, tao->max_funcs));
     for (i = 0; i < tao->numbermonitors; ++i) {
-      PetscCall(TaoSetMonitor(gn->subsolver, tao->monitor[i], tao->monitorcontext[i], tao->monitordestroy[i]));
+      PetscCall(TaoMonitorSet(gn->subsolver, tao->monitor[i], tao->monitorcontext[i], tao->monitordestroy[i]));
       PetscCall(PetscObjectReference((PetscObject)(tao->monitorcontext[i])));
     }
     PetscCall(TaoSetUp(gn->subsolver));
