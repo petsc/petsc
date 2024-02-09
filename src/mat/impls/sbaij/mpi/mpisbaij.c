@@ -1957,7 +1957,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
                                        NULL,
                                        NULL,
                                        /*150*/ NULL,
-                                       MatEliminateZeros_MPISBAIJ};
+                                       MatEliminateZeros_MPISBAIJ,
+                                       NULL};
 
 static PetscErrorCode MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B, PetscInt bs, PetscInt d_nz, const PetscInt *d_nnz, PetscInt o_nz, const PetscInt *o_nnz)
 {

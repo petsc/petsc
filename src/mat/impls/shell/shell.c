@@ -1485,6 +1485,7 @@ static struct _MatOps MatOps_Values = {NULL,
                                        NULL,
                                        NULL,
                                        /*150*/ NULL,
+                                       NULL,
                                        NULL};
 
 static PetscErrorCode MatShellSetContext_Shell(Mat mat, void *ctx)

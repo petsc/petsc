@@ -220,20 +220,25 @@ int main(int argc, char **args)
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-check_scaling", &flg, NULL));
   if (flg) {
-    Vec       max, min;
+    Vec       max, min, l1;
     PetscInt  idx;
     PetscReal val;
 
     PetscCall(VecDuplicate(x, &max));
     PetscCall(VecDuplicate(x, &min));
+    PetscCall(VecDuplicate(x, &l1));
     PetscCall(MatGetRowMaxAbs(A, max, NULL));
     PetscCall(MatGetRowMinAbs(A, min, NULL));
-    {
+    PetscCall(MatGetRowSumAbs(A, l1));
+    if (PETSC_FALSE) {
       PetscCall(PetscViewerASCIIOpen(PETSC_COMM_WORLD, "max.data", &viewer));
       PetscCall(VecView(max, viewer));
       PetscCall(PetscViewerDestroy(&viewer));
       PetscCall(PetscViewerASCIIOpen(PETSC_COMM_WORLD, "min.data", &viewer));
       PetscCall(VecView(min, viewer));
+      PetscCall(PetscViewerDestroy(&viewer));
+      PetscCall(PetscViewerASCIIOpen(PETSC_COMM_WORLD, "l1.data", &viewer));
+      PetscCall(VecView(l1, viewer));
       PetscCall(PetscViewerDestroy(&viewer));
     }
     PetscCall(VecView(max, PETSC_VIEWER_DRAW_WORLD));
@@ -248,8 +253,15 @@ int main(int argc, char **args)
     PetscCall(VecMax(max, &idx, &val));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Largest row ratio %g at row %" PetscInt_FMT "\n", (double)val, idx));
     PetscCall(VecView(max, PETSC_VIEWER_DRAW_WORLD));
+    PetscCall(VecMax(max, &idx, &val));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Largest row ratio %g at row %" PetscInt_FMT "\n", (double)val, idx));
+    PetscCall(VecView(max, PETSC_VIEWER_DRAW_WORLD));
+    PetscCall(VecView(max, PETSC_VIEWER_DRAW_WORLD));
+    PetscCall(VecMax(l1, &idx, &val));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Largest l1 row element %g at row %" PetscInt_FMT "\n", (double)val, idx));
     PetscCall(VecDestroy(&max));
     PetscCall(VecDestroy(&min));
+    PetscCall(VecDestroy(&l1));
   }
 
   /*  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD)); */
@@ -688,7 +700,7 @@ int main(int argc, char **args)
       args: -ksp_monitor_short -ksp_view
       test:
          suffix: xxt
-         args: -f0 ${DATAFILESPATH}/matrices/poisson1 -check_symmetry -ksp_type cg -pc_type tfs
+         args: -f0 ${DATAFILESPATH}/matrices/poisson1 -check_symmetry -check_scaling -ksp_type cg -pc_type tfs
       test:
          suffix: xyt
          args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type gmres -pc_type tfs

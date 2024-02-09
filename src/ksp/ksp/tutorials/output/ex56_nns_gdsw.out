@@ -1,9 +1,9 @@
-  0 KSP Residual norm 230.817 
-  1 KSP Residual norm 18.3775 
-  2 KSP Residual norm 2.17553 
-  3 KSP Residual norm 0.152776 
-  4 KSP Residual norm 0.0125378 
-  5 KSP Residual norm 0.00101888 
+  0 KSP Residual norm 230.849 
+  1 KSP Residual norm 18.3653 
+  2 KSP Residual norm 2.17815 
+  3 KSP Residual norm 0.153527 
+  4 KSP Residual norm 0.0126957 
+  5 KSP Residual norm 0.001034 
 KSP Object: 8 MPI processes
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -66,8 +66,8 @@ PC Object: 8 MPI processes
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
         Chebyshev polynomial of first kind
-        eigenvalue targets used: min 0.200629, max 2.20692
-        eigenvalues estimated via cg: min 0.0707696, max 2.00629
+        eigenvalue targets used: min 0.199958, max 2.19953
+        eigenvalues estimated via cg: min 0.0791763, max 1.99958
         eigenvalues estimated using cg with transform: [0. 0.1; 0. 1.1]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
           type: cg
@@ -88,33 +88,33 @@ PC Object: 8 MPI processes
         number of blocks = 8
         Local solver information for first block is in the following KSP and PC objects on rank 0:
         Use -mg_levels_1_ksp_view ::ascii_info_detail to display information for all blocks
-      KSP Object: (mg_levels_1_sub_) 1 MPI process
-        type: preonly
-        maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-        left preconditioning
-        using NONE norm type for convergence test
-      PC Object: (mg_levels_1_sub_) 1 MPI process
-        type: ilu
-          out-of-place factorization
-          0 levels of fill
-          tolerance for zero pivot 2.22045e-14
-          matrix ordering: natural
-          factor fill ratio given 1., needed 1.
-            Factored matrix follows:
-              Mat Object: (mg_levels_1_sub_) 1 MPI process
-                type: seqaij
-                rows=24, cols=24, bs=3
-                package used to perform factorization: petsc
-                total: nonzeros=576, allocated nonzeros=576
-                  using I-node routines: found 5 nodes, limit used is 5
-        linear system matrix = precond matrix:
-        Mat Object: (mg_levels_1_sub_) 1 MPI process
-          type: seqaij
-          rows=24, cols=24, bs=3
-          total: nonzeros=576, allocated nonzeros=576
-          total number of mallocs used during MatSetValues calls=0
-            using I-node routines: found 5 nodes, limit used is 5
+        KSP Object: (mg_levels_1_sub_) 1 MPI process
+          type: preonly
+          maximum iterations=10000, initial guess is zero
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using NONE norm type for convergence test
+        PC Object: (mg_levels_1_sub_) 1 MPI process
+          type: ilu
+            out-of-place factorization
+            0 levels of fill
+            tolerance for zero pivot 2.22045e-14
+            matrix ordering: natural
+            factor fill ratio given 1., needed 1.
+              Factored matrix follows:
+                Mat Object: (mg_levels_1_sub_) 1 MPI process
+                  type: seqaij
+                  rows=24, cols=24, bs=3
+                  package used to perform factorization: petsc
+                  total: nonzeros=576, allocated nonzeros=576
+                    using I-node routines: found 5 nodes, limit used is 5
+          linear system matrix = precond matrix:
+          Mat Object: (mg_levels_1_sub_) 1 MPI process
+            type: seqaij
+            rows=24, cols=24, bs=3
+            total: nonzeros=576, allocated nonzeros=576
+            total number of mallocs used during MatSetValues calls=0
+              using I-node routines: found 5 nodes, limit used is 5
       linear system matrix = precond matrix:
       Mat Object: 8 MPI processes
         type: mpiaij

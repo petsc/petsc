@@ -1248,6 +1248,7 @@ static const struct _MatOps MatOps_Values = {MatSetValues_MPISELL,
                                              NULL,
                                              NULL,
                                              /*150*/ NULL,
+                                             NULL,
                                              NULL};
 
 /*@C
