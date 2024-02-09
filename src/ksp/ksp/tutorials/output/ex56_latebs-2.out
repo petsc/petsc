@@ -1,16 +1,16 @@
-  0 KSP Residual norm 812.231 
-  1 KSP Residual norm 197.161 
-  2 KSP Residual norm 76.2475 
-  3 KSP Residual norm 28.4689 
-  4 KSP Residual norm 7.62913 
-  5 KSP Residual norm 3.94312 
-  6 KSP Residual norm 1.72213 
-  7 KSP Residual norm 0.743203 
-  8 KSP Residual norm 0.28132 
-  9 KSP Residual norm 0.0877174 
- 10 KSP Residual norm 0.0357948 
- 11 KSP Residual norm 0.0180276 
- 12 KSP Residual norm 0.00705683 
+  0 KSP Residual norm 811.729 
+  1 KSP Residual norm 196.893 
+  2 KSP Residual norm 75.8449 
+  3 KSP Residual norm 28.2346 
+  4 KSP Residual norm 7.67089 
+  5 KSP Residual norm 4.07462 
+  6 KSP Residual norm 1.78085 
+  7 KSP Residual norm 0.760909 
+  8 KSP Residual norm 0.285578 
+  9 KSP Residual norm 0.0871707 
+ 10 KSP Residual norm 0.0348666 
+ 11 KSP Residual norm 0.0175898 
+ 12 KSP Residual norm 0.00702007 
 Linear solve converged due to CONVERGED_RTOL iterations 12
 KSP Object: 8 MPI processes
   type: cg
@@ -53,8 +53,8 @@ PC Object: 8 MPI processes
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
         Chebyshev polynomial of first kind
-        eigenvalue targets used: min 0.636368, max 3.34093
-        eigenvalues provided (min 0.0755794, max 3.18184) with transform: [0. 0.2; 0. 1.05]
+        eigenvalue targets used: min 0.637877, max 3.34886
+        eigenvalues provided (min 0.12274, max 3.18939) with transform: [0. 0.2; 0. 1.05]
       maximum iterations=2, nonzero initial guess
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
@@ -79,109 +79,19 @@ PC Object: 8 MPI processes
     total number of mallocs used during MatSetValues calls=0
       has attached near null space
       using I-node (on process 0) routines: found 125 nodes, limit used is 5
-  0 KSP Residual norm 0.00812231 
-  1 KSP Residual norm 0.00197161 
-  2 KSP Residual norm 0.000762475 
-  3 KSP Residual norm 0.000284689 
-  4 KSP Residual norm 7.62913e-05 
-  5 KSP Residual norm 3.94312e-05 
-  6 KSP Residual norm 1.72213e-05 
-  7 KSP Residual norm 7.43203e-06 
-  8 KSP Residual norm 2.8132e-06 
-  9 KSP Residual norm 8.77174e-07 
- 10 KSP Residual norm 3.57948e-07 
- 11 KSP Residual norm 1.80276e-07 
- 12 KSP Residual norm 7.05683e-08 
-Linear solve converged due to CONVERGED_RTOL iterations 12
-KSP Object: 8 MPI processes
-  type: cg
-  maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-  left preconditioning
-  using PRECONDITIONED norm type for convergence test
-PC Object: 8 MPI processes
-  type: gamg
-    type is MULTIPLICATIVE, levels=2 cycles=v
-      Cycles per PCApply=1
-      Using externally compute Galerkin coarse grid matrices
-      GAMG specific options
-        Threshold for dropping small values in graph on each level =   -0.01   -0.01  
-        Threshold scaling factor for each level not specified = 1.
-        Using parallel coarse grid solver (all coarse grid equations not put on one process)
-        AGG specific options
-          Number of levels of aggressive coarsening 1
-          Square graph aggressive coarsening
-          Number smoothing steps 1
-        Complexity:    grid = 1.054    operator = 1.07125
-  Coarse grid solver -- level 0 -------------------------------
-    KSP Object: (mg_coarse_) 8 MPI processes
-      type: cg
-      maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-      left preconditioning
-      using PRECONDITIONED norm type for convergence test
-    PC Object: (mg_coarse_) 8 MPI processes
-      type: jacobi
-        type DIAGONAL
-      linear system matrix = precond matrix:
-      Mat Object: 8 MPI processes
-        type: mpiaij
-        rows=162, cols=162, bs=6
-        total: nonzeros=14076, allocated nonzeros=14076
-        total number of mallocs used during MatSetValues calls=0
-          using nonscalable MatPtAP() implementation
-          using I-node (on process 0) routines: found 4 nodes, limit used is 5
-  Down solver (pre-smoother) on level 1 -------------------------------
-    KSP Object: (mg_levels_1_) 8 MPI processes
-      type: chebyshev
-        Chebyshev polynomial of first kind
-        eigenvalue targets used: min 0.636368, max 3.34093
-        eigenvalues estimated via cg: min 0.0755794, max 3.18184
-        eigenvalues estimated using cg with transform: [0. 0.2; 0. 1.05]
-        KSP Object: (mg_levels_1_esteig_) 8 MPI processes
-          type: cg
-          maximum iterations=10, initial guess is zero
-          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
-          left preconditioning
-          using PRECONDITIONED norm type for convergence test
-        estimating eigenvalues using noisy right hand side
-      maximum iterations=2, nonzero initial guess
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-      left preconditioning
-      using NONE norm type for convergence test
-    PC Object: (mg_levels_1_) 8 MPI processes
-      type: jacobi
-        type DIAGONAL
-      linear system matrix = precond matrix:
-      Mat Object: 8 MPI processes
-        type: mpiaij
-        rows=3000, cols=3000, bs=3
-        total: nonzeros=197568, allocated nonzeros=243000
-        total number of mallocs used during MatSetValues calls=0
-          has attached near null space
-          using I-node (on process 0) routines: found 125 nodes, limit used is 5
-  Up solver (post-smoother) same as down solver (pre-smoother)
-  linear system matrix = precond matrix:
-  Mat Object: 8 MPI processes
-    type: mpiaij
-    rows=3000, cols=3000, bs=3
-    total: nonzeros=197568, allocated nonzeros=243000
-    total number of mallocs used during MatSetValues calls=0
-      has attached near null space
-      using I-node (on process 0) routines: found 125 nodes, limit used is 5
-  0 KSP Residual norm 0.00812231 
-  1 KSP Residual norm 0.00197161 
-  2 KSP Residual norm 0.000762475 
-  3 KSP Residual norm 0.000284689 
-  4 KSP Residual norm 7.62913e-05 
-  5 KSP Residual norm 3.94312e-05 
-  6 KSP Residual norm 1.72213e-05 
-  7 KSP Residual norm 7.43203e-06 
-  8 KSP Residual norm 2.8132e-06 
-  9 KSP Residual norm 8.77174e-07 
- 10 KSP Residual norm 3.57948e-07 
- 11 KSP Residual norm 1.80276e-07 
- 12 KSP Residual norm 7.05683e-08 
+  0 KSP Residual norm 0.00811776 
+  1 KSP Residual norm 0.0019706 
+  2 KSP Residual norm 0.000760067 
+  3 KSP Residual norm 0.000283356 
+  4 KSP Residual norm 7.66295e-05 
+  5 KSP Residual norm 4.03444e-05 
+  6 KSP Residual norm 1.76322e-05 
+  7 KSP Residual norm 7.55751e-06 
+  8 KSP Residual norm 2.8446e-06 
+  9 KSP Residual norm 8.72259e-07 
+ 10 KSP Residual norm 3.49599e-07 
+ 11 KSP Residual norm 1.76513e-07 
+ 12 KSP Residual norm 7.01895e-08 
 Linear solve converged due to CONVERGED_RTOL iterations 12
 KSP Object: 8 MPI processes
   type: cg
@@ -225,11 +135,13 @@ PC Object: 8 MPI processes
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
         Chebyshev polynomial of first kind
-        eigenvalue targets used: min 0.636368, max 3.34093
-        eigenvalues estimated via cg: min 0.0755794, max 3.18184
-        eigenvalues estimated using cg with transform: [0. 0.2; 0. 1.05]
+        eigenvalue targets used: min 0.637376, max 3.34622
+        eigenvalues estimated via gmres: min 0.0806313, max 3.18688
+        eigenvalues estimated using gmres with transform: [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
-          type: cg
+          type: gmres
+            restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            happy breakdown tolerance 1e-30
           maximum iterations=10, initial guess is zero
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
@@ -259,4 +171,96 @@ PC Object: 8 MPI processes
     total number of mallocs used during MatSetValues calls=0
       has attached near null space
       using I-node (on process 0) routines: found 125 nodes, limit used is 5
-[0]main |b-Ax|/|b|=2.415298e-04, |b|=5.391826e+00, emax=9.914426e-01
+  0 KSP Residual norm 0.00811776 
+  1 KSP Residual norm 0.0019706 
+  2 KSP Residual norm 0.000760067 
+  3 KSP Residual norm 0.000283356 
+  4 KSP Residual norm 7.66295e-05 
+  5 KSP Residual norm 4.03444e-05 
+  6 KSP Residual norm 1.76322e-05 
+  7 KSP Residual norm 7.55751e-06 
+  8 KSP Residual norm 2.8446e-06 
+  9 KSP Residual norm 8.72259e-07 
+ 10 KSP Residual norm 3.49599e-07 
+ 11 KSP Residual norm 1.76513e-07 
+ 12 KSP Residual norm 7.01895e-08 
+Linear solve converged due to CONVERGED_RTOL iterations 12
+KSP Object: 8 MPI processes
+  type: cg
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 8 MPI processes
+  type: gamg
+    type is MULTIPLICATIVE, levels=2 cycles=v
+      Cycles per PCApply=1
+      Using externally compute Galerkin coarse grid matrices
+      GAMG specific options
+        Threshold for dropping small values in graph on each level =   -0.01   -0.01  
+        Threshold scaling factor for each level not specified = 1.
+        Using parallel coarse grid solver (all coarse grid equations not put on one process)
+        AGG specific options
+          Number of levels of aggressive coarsening 1
+          Square graph aggressive coarsening
+          Number smoothing steps 1
+        Complexity:    grid = 1.054    operator = 1.07125
+  Coarse grid solver -- level 0 -------------------------------
+    KSP Object: (mg_coarse_) 8 MPI processes
+      type: cg
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using PRECONDITIONED norm type for convergence test
+    PC Object: (mg_coarse_) 8 MPI processes
+      type: jacobi
+        type DIAGONAL
+      linear system matrix = precond matrix:
+      Mat Object: 8 MPI processes
+        type: mpiaij
+        rows=162, cols=162, bs=6
+        total: nonzeros=14076, allocated nonzeros=14076
+        total number of mallocs used during MatSetValues calls=0
+          using nonscalable MatPtAP() implementation
+          using I-node (on process 0) routines: found 4 nodes, limit used is 5
+  Down solver (pre-smoother) on level 1 -------------------------------
+    KSP Object: (mg_levels_1_) 8 MPI processes
+      type: chebyshev
+        Chebyshev polynomial of first kind
+        eigenvalue targets used: min 0.637376, max 3.34622
+        eigenvalues estimated via gmres: min 0.0806313, max 3.18688
+        eigenvalues estimated using gmres with transform: [0. 0.2; 0. 1.05]
+        KSP Object: (mg_levels_1_esteig_) 8 MPI processes
+          type: gmres
+            restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            happy breakdown tolerance 1e-30
+          maximum iterations=10, initial guess is zero
+          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using PRECONDITIONED norm type for convergence test
+        estimating eigenvalues using noisy right hand side
+      maximum iterations=2, nonzero initial guess
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (mg_levels_1_) 8 MPI processes
+      type: jacobi
+        type DIAGONAL
+      linear system matrix = precond matrix:
+      Mat Object: 8 MPI processes
+        type: mpiaij
+        rows=3000, cols=3000, bs=3
+        total: nonzeros=197568, allocated nonzeros=243000
+        total number of mallocs used during MatSetValues calls=0
+          has attached near null space
+          using I-node (on process 0) routines: found 125 nodes, limit used is 5
+  Up solver (post-smoother) same as down solver (pre-smoother)
+  linear system matrix = precond matrix:
+  Mat Object: 8 MPI processes
+    type: mpiaij
+    rows=3000, cols=3000, bs=3
+    total: nonzeros=197568, allocated nonzeros=243000
+    total number of mallocs used during MatSetValues calls=0
+      has attached near null space
+      using I-node (on process 0) routines: found 125 nodes, limit used is 5
+[0]main |b-Ax|/|b|=2.411451e-04, |b|=5.391826e+00, emax=9.916715e-01

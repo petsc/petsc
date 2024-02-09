@@ -808,6 +808,7 @@ PETSC_EXTERN PetscErrorCode MatGetDiagonal(Mat, Vec);
 PETSC_EXTERN PetscErrorCode MatGetRowMax(Mat, Vec, PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatGetRowMin(Mat, Vec, PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatGetRowMaxAbs(Mat, Vec, PetscInt[]);
+PETSC_EXTERN PetscErrorCode MatGetRowSumAbs(Mat, Vec);
 PETSC_EXTERN PetscErrorCode MatGetRowMinAbs(Mat, Vec, PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatGetRowSum(Mat, Vec);
 PETSC_EXTERN PetscErrorCode MatTranspose(Mat, MatReuse, Mat *);

@@ -120,7 +120,7 @@ int main(int argc, char **args)
     if (!test_late_bs) PetscCall(MatSetBlockSize(Amat, 3));
     PetscCall(MatSetType(Amat, MATAIJ));
     PetscCall(MatSetOption(Amat, MAT_SPD, PETSC_TRUE));
-    PetscCall(MatSetOption(Amat, MAT_SPD_ETERNAL, PETSC_TRUE));
+    PetscCall(MatSetOption(Amat, MAT_SPD_ETERNAL, PETSC_TRUE)); // this keeps CG after switch to negative
     PetscCall(MatSetFromOptions(Amat));
     PetscCall(MatSeqAIJSetPreallocation(Amat, 0, d_nnz));
     PetscCall(MatMPIAIJSetPreallocation(Amat, 0, d_nnz, 0, o_nnz));
@@ -287,7 +287,7 @@ int main(int argc, char **args)
     MatNullSpace matnull;
     Vec          vec_coords;
     PetscScalar *c;
-
+    PC           pc;
     PetscCall(VecCreate(MPI_COMM_WORLD, &vec_coords));
     PetscCall(VecSetBlockSize(vec_coords, 3));
     PetscCall(VecSetSizes(vec_coords, m, PETSC_DECIDE));
@@ -299,6 +299,8 @@ int main(int argc, char **args)
     PetscCall(MatSetNearNullSpace(Amat, matnull));
     PetscCall(MatNullSpaceDestroy(&matnull));
     PetscCall(VecDestroy(&vec_coords));
+    PetscCall(KSPGetPC(ksp, &pc));
+    PetscCall(PCJacobiSetRowl1Scale(pc, 0.5));
   } else {
     PC       pc;
     PetscInt idx[] = {1, 2};
@@ -341,7 +343,8 @@ int main(int argc, char **args)
 
     PetscCall(MaybeLogStagePush(stage[2]));
     /* PC setup basically */
-    PetscCall(MatScale(Amat, 100000.0));
+    PetscCall(MatScale(Amat, -100000.0));
+    PetscCall(MatSetOption(Amat, MAT_SPD, PETSC_FALSE));
     PetscCall(KSPSetOperators(ksp, Amat, Amat));
     PetscCall(KSPSetUp(ksp));
 
@@ -470,6 +473,22 @@ PetscErrorCode elem_3d_elast_v_25(PetscScalar *dd)
        suffix: 2
        nsize: 8
        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[3|4]/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
+
+   testset:
+     nsize: 8
+     args: -ne 15 -alpha 1.e-3 -ksp_type cg -ksp_converged_reason -use_mat_nearnullspace -ksp_rtol 1e-4 -ksp_norm_type unpreconditioned -two_solves
+     test:
+       requires: hypre !complex !defined(PETSC_HAVE_HYPRE_DEVICE)
+       suffix: hypre
+       args: -pc_type hypre -pc_hypre_boomeramg_relax_type_all l1scaled-Jacobi
+     test:
+       suffix: gamg
+       args: -pc_type gamg -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -mg_levels_pc_jacobi_type rowl1 -mg_levels_pc_jacobi_rowl1_scale .5 -mg_levels_pc_jacobi_fixdiagonal
+     test:
+       nsize: 1
+       suffix: baij
+       filter: grep -v variant
+       args: -pc_type jacobi -pc_jacobi_type rowl1 -ksp_type cg -mat_type baij -ksp_view -ksp_rtol 1e-1
 
    test:
       suffix: latebs

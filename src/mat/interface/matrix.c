@@ -5129,7 +5129,7 @@ PetscErrorCode MatGetRowMax(Mat mat, Vec v, PetscInt idx[])
 
   This code is only implemented for a couple of matrix formats.
 
-.seealso: [](ch_matrices), `Mat`, `MatGetDiagonal()`, `MatCreateSubMatrices()`, `MatCreateSubMatrix()`, `MatGetRowMax()`, `MatGetRowMin()`, `MatGetRowMinAbs()`
+.seealso: [](ch_matrices), `Mat`, `MatGetDiagonal()`, `MatCreateSubMatrices()`, `MatCreateSubMatrix()`, `MatGetRowSum()`, `MatGetRowMin()`, `MatGetRowMinAbs()`
 @*/
 PetscErrorCode MatGetRowMaxAbs(Mat mat, Vec v, PetscInt idx[])
 {
@@ -5154,6 +5154,41 @@ PetscErrorCode MatGetRowMaxAbs(Mat mat, Vec v, PetscInt idx[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  MatGetRowSumAbs - Gets the sum value (in absolute value) of each row of the matrix
+
+  Logically Collective
+
+  Input Parameter:
+. mat - the matrix
+
+  Output Parameter:
+. v - the vector for storing the sum
+
+  Level: intermediate
+
+  This code is only implemented for a couple of matrix formats.
+
+.seealso: [](ch_matrices), `Mat`, `MatGetDiagonal()`, `MatCreateSubMatrices()`, `MatCreateSubMatrix()`, `MatGetRowMax()`, `MatGetRowMin()`, `MatGetRowMinAbs()`
+@*/
+PetscErrorCode MatGetRowSumAbs(Mat mat, Vec v)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
+  PetscValidType(mat, 1);
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 2);
+  PetscCheck(mat->assembled, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
+
+  if (!mat->cmap->N) {
+    PetscCall(VecSet(v, 0.0));
+  } else {
+    MatCheckPreallocated(mat, 1);
+    PetscUseTypeMethod(mat, getrowsumabs, v);
+  }
+  PetscCall(PetscObjectStateIncrease((PetscObject)v));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   MatGetRowSum - Gets the sum of each row of the matrix
 
@@ -5170,7 +5205,7 @@ PetscErrorCode MatGetRowMaxAbs(Mat mat, Vec v, PetscInt idx[])
   Note:
   This code is slow since it is not currently specialized for different formats
 
-.seealso: [](ch_matrices), `Mat`, `MatGetDiagonal()`, `MatCreateSubMatrices()`, `MatCreateSubMatrix()`, `MatGetRowMax()`, `MatGetRowMin()`, `MatGetRowMaxAbs()`, `MatGetRowMinAbs()`
+.seealso: [](ch_matrices), `Mat`, `MatGetDiagonal()`, `MatCreateSubMatrices()`, `MatCreateSubMatrix()`, `MatGetRowMax()`, `MatGetRowMin()`, `MatGetRowMaxAbs()`, `MatGetRowMinAbs()`, `MatGetRowSumAbs()`
 @*/
 PetscErrorCode MatGetRowSum(Mat mat, Vec v)
 {

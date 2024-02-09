@@ -2200,6 +2200,24 @@ static PetscErrorCode MatGetRowMaxAbs_MPIAIJ(Mat A, Vec v, PetscInt idx[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatGetRowSumAbs_MPIAIJ(Mat A, Vec v)
+{
+  Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data;
+  PetscInt    m = A->rmap->n;
+  Vec         vB, vA;
+
+  PetscFunctionBegin;
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF, m, &vA));
+  PetscCall(MatGetRowSumAbs(a->A, vA));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF, m, &vB));
+  PetscCall(MatGetRowSumAbs(a->B, vB));
+  PetscCall(VecAXPY(vA, 1.0, vB));
+  PetscCall(VecDestroy(&vB));
+  PetscCall(VecCopy(vA, v));
+  PetscCall(VecDestroy(&vA));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatGetRowMinAbs_MPIAIJ(Mat A, Vec v, PetscInt idx[])
 {
   Mat_MPIAIJ        *mat = (Mat_MPIAIJ *)A->data;
@@ -2857,7 +2875,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        MatCreateGraph_Simple_AIJ,
                                        NULL,
                                        /*150*/ NULL,
-                                       MatEliminateZeros_MPIAIJ};
+                                       MatEliminateZeros_MPIAIJ,
+                                       MatGetRowSumAbs_MPIAIJ};
 
 static PetscErrorCode MatStoreValues_MPIAIJ(Mat mat)
 {

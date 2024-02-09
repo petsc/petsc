@@ -120,6 +120,7 @@ typedef enum {
 
    Values:
 +  `PC_JACOBI_DIAGONAL` - use the diagonal entry, if it is zero use one
+.  `PC_JACOBI_ROWL1`    - add sum of absolute values in row i, j != i, to diag_ii
 .  `PC_JACOBI_ROWMAX`   - use the maximum absolute value in the row
 -  `PC_JACOBI_ROWSUM`   - use the sum of the values in the row (not the absolute values)
 
@@ -129,6 +130,7 @@ typedef enum {
 E*/
 typedef enum {
   PC_JACOBI_DIAGONAL,
+  PC_JACOBI_ROWL1,
   PC_JACOBI_ROWMAX,
   PC_JACOBI_ROWSUM
 } PCJacobiType;

@@ -65,6 +65,7 @@ Changes: Development
 - Add specific support for ``MatMultHermitianTranspose()`` and ``MatMultHermitianTransposeAdd()`` in ``MATSHELL``, ``MATDENSE``, ``MATNEST``, and ``MATSCALAPACK``
 - Add function ``MatProductGetAlgorithm()``
 - ``MATTRANSPOSEVIRTUAL``, ``MATHERMITIANTRANSPOSEVIRTUAL``, ``MATNORMAL``, ``MATNORMALHERMITIAN``, and ``MATCOMPOSITE`` now derive from ``MATSHELL``. This implies a new behavior for those ``Mat``, as calling ``MatAssemblyBegin()``/``MatAssemblyEnd()`` destroys scalings and shifts for ``MATSHELL``, but it was not previously the case for other ``MatType``
+- Add function ``MatGetRowSumAbs()`` to compute vector of L1 norms of rows ([B]AIJ only)
 
 .. rubric:: MatCoarsen:
 
@@ -79,6 +80,8 @@ Changes: Development
 - ``PCMAT`` use ``MatSolve()`` if implemented by the matrix type
 - Add ``PCLMVMSetUpdateVec()`` for the automatic update of the LMVM preconditioner inside a SNES solve
 - Add ``PCGAMGSetInjectionIndex()`` with corresponding option ``-pc_gamg_injection_index i,j,k...``. Inject provided indices of fine grid operator as first coarse grid restriction (sort of p-multigrid for C1 elements)
+- Add ``PC_JACOBI_ROWL1`` to ``PCJacobiType`` to use (scaled) l1 row norms for diagonal approximation with scaling of off-diagonal elements
+- Add ``PCJacobiSetRowl1Scale()`` and ``-pc_jacobi_rowl1_scale scale`` to access new scale member of PC_Jacobi class, for new row l1 Jacobi
 
 .. rubric:: KSP:
 

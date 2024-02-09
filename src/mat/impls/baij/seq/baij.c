@@ -2680,6 +2680,45 @@ static PetscErrorCode MatGetRowMaxAbs_SeqBAIJ(Mat A, Vec v, PetscInt idx[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatGetRowSumAbs_SeqBAIJ(Mat A, Vec v)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data;
+  PetscInt     i, j, n, row, bs, *ai, mbs;
+  PetscReal    atmp;
+  PetscScalar *x, zero = 0.0;
+  MatScalar   *aa;
+  PetscInt     ncols, brow, krow, kcol;
+
+  PetscFunctionBegin;
+  PetscCheck(!A->factortype, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
+  bs  = A->rmap->bs;
+  aa  = a->a;
+  ai  = a->i;
+  mbs = a->mbs;
+
+  PetscCall(VecSet(v, zero));
+  PetscCall(VecGetArrayWrite(v, &x));
+  PetscCall(VecGetLocalSize(v, &n));
+  PetscCheck(n == A->rmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nonconforming matrix and vector");
+  for (i = 0; i < mbs; i++) {
+    ncols = ai[1] - ai[0];
+    ai++;
+    brow = bs * i;
+    for (j = 0; j < ncols; j++) {
+      for (kcol = 0; kcol < bs; kcol++) {
+        for (krow = 0; krow < bs; krow++) {
+          atmp = PetscAbsScalar(*aa);
+          aa++;
+          row = brow + krow; /* row index */
+          x[row] += atmp;
+        }
+      }
+    }
+  }
+  PetscCall(VecRestoreArrayWrite(v, &x));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatCopy_SeqBAIJ(Mat A, Mat B, MatStructure str)
 {
   PetscFunctionBegin;
@@ -3122,7 +3161,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
                                        NULL,
                                        NULL,
                                        /*150*/ NULL,
-                                       MatEliminateZeros_SeqBAIJ};
+                                       MatEliminateZeros_SeqBAIJ,
+                                       MatGetRowSumAbs_SeqBAIJ};
 
 static PetscErrorCode MatStoreValues_SeqBAIJ(Mat mat)
 {

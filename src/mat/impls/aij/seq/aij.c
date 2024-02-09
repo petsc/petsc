@@ -3135,6 +3135,36 @@ static PetscErrorCode MatGetRowMaxAbs_SeqAIJ(Mat A, Vec v, PetscInt idx[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatGetRowSumAbs_SeqAIJ(Mat A, Vec v)
+{
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ *)A->data;
+  PetscInt         i, j, m = A->rmap->n, *ai, ncols, n;
+  PetscScalar     *x;
+  const MatScalar *aa, *av;
+
+  PetscFunctionBegin;
+  PetscCheck(!A->factortype, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
+  PetscCall(MatSeqAIJGetArrayRead(A, &av));
+  aa = av;
+  ai = a->i;
+
+  PetscCall(VecSet(v, 0.0));
+  PetscCall(VecGetArrayWrite(v, &x));
+  PetscCall(VecGetLocalSize(v, &n));
+  PetscCheck(n == A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nonconforming matrix and vector");
+  for (i = 0; i < m; i++) {
+    ncols = ai[1] - ai[0];
+    ai++;
+    for (j = 0; j < ncols; j++) {
+      x[i] += PetscAbsScalar(*aa);
+      aa++;
+    }
+  }
+  PetscCall(VecRestoreArrayWrite(v, &x));
+  PetscCall(MatSeqAIJRestoreArrayRead(A, &av));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatGetRowMax_SeqAIJ(Mat A, Vec v, PetscInt idx[])
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ *)A->data;
@@ -3620,7 +3650,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
                                        MatCreateGraph_Simple_AIJ,
                                        NULL,
                                        /*150*/ MatTransposeSymbolic_SeqAIJ,
-                                       MatEliminateZeros_SeqAIJ};
+                                       MatEliminateZeros_SeqAIJ,
+                                       MatGetRowSumAbs_SeqAIJ};
 
 static PetscErrorCode MatSeqAIJSetColumnIndices_SeqAIJ(Mat mat, PetscInt *indices)
 {
