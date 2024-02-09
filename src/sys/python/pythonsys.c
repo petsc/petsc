@@ -46,11 +46,15 @@ static PetscErrorCode PetscPythonFindLibraryName(const char pythonexe[], const c
 
 static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[], char pythonlib[], size_t pl)
 {
-  const char cmdline1[] = "-c 'import os, sysconfig; print(os.path.join(sysconfig.get_config_var(\"LIBDIR\"),sysconfig.get_config_var(\"LDLIBRARY\")))'";
-  const char cmdline2[] = "-c 'import os, sysconfig; print(os.path.join(sysconfig.get_path(\"stdlib\"),os.path.pardir,\"libpython\"+sysconfig.get_python_version()+\".dylib\"))'";
-  const char cmdline3[] = "-c 'import os, sysconfig; print(os.path.join(sysconfig.get_config_var(\"LIBPL\"),sysconfig.get_config_var(\"LDLIBRARY\")))'";
-  const char cmdline4[] = "-c 'import sysconfig; print(sysconfig.get_config_var(\"LIBPYTHON\"))'";
-  const char cmdline5[] = "-c 'import os, sysconfig; import sys;print(os.path.join(sysconfig.get_config_var(\"LIBDIR\"),\"libpython\"+sys.version[:3]+\".so\"))'";
+  // clang-format off
+  const char *const cmdlines[] = {"-c 'import os, sysconfig; print(os.path.join(sysconfig.get_config_var(\"LIBDIR\"),sysconfig.get_config_var(\"LDLIBRARY\")))'",
+                                  "-c 'import os, sysconfig; print(os.path.join(sysconfig.get_path(\"stdlib\"),os.path.pardir,\"libpython\"+sysconfig.get_python_version()+\".dylib\"))'",
+                                  "-c 'import os, sysconfig; print(os.path.join(sysconfig.get_path(\"stdlib\"),os.path.pardir,\"libpython\"+sysconfig.get_python_version()+\".so\"))'",
+                                  "-c 'import os, sysconfig; print(os.path.join(sysconfig.get_config_var(\"LIBPL\"),sysconfig.get_config_var(\"LDLIBRARY\")))'",
+                                  "-c 'import sysconfig; print(sysconfig.get_config_var(\"LIBPYTHON\"))'",
+                                  "-c 'import os, sysconfig; print(os.path.join(sysconfig.get_config_var(\"LIBDIR\"),\"libpython\"+sysconfig.get_python_version()+\".dylib\"))'",
+                                  "-c 'import os, sysconfig; print(os.path.join(sysconfig.get_config_var(\"LIBDIR\"),\"libpython\"+sysconfig.get_python_version()+\".so\"))'"};
+  // clang-format on
 
   PetscBool found = PETSC_FALSE;
 
@@ -60,11 +64,11 @@ static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[], char python
   PetscFunctionReturn(PETSC_SUCCESS);
 #endif
 
-  PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline1, pythonlib, pl, &found));
-  if (!found) PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline2, pythonlib, pl, &found));
-  if (!found) PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline3, pythonlib, pl, &found));
-  if (!found) PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline4, pythonlib, pl, &found));
-  if (!found) PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline5, pythonlib, pl, &found));
+  for (size_t i = 0; i < PETSC_STATIC_ARRAY_LENGTH(cmdlines); i++) {
+    PetscCall(PetscInfo(NULL, "Looking for Python library with \"%s %s\"\n", pythonexe, cmdlines[i]));
+    PetscCall(PetscPythonFindLibraryName(pythonexe, cmdlines[i], pythonlib, pl, &found));
+    if (found) break;
+  }
   PetscCall(PetscInfo(NULL, "Python library  %s found %d\n", pythonlib, found));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
