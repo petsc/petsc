@@ -60,6 +60,7 @@ Changes: Development
 
 - Add ``PetscSectionGetBlockStarts()`` and ``PetscSectionSetBlockStarts()``
 - Add argument to ``PetscSectionCreateGlobalSection()`` that can ignore the local section permutation
+- Add ``PetscSectionCreateComponentSubsection()``
 
 .. rubric:: PetscPartitioner:
 

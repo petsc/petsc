@@ -2091,6 +2091,69 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt len, const 
 }
 
 /*@
+  PetscSectionCreateComponentSubsection - Create a new, smaller `PetscSection` composed of only selected components
+
+  Collective
+
+  Input Parameters:
++ s     - the `PetscSection`
+. len   - the number of components
+- comps - the component numbers
+
+  Output Parameter:
+. subs - the subsection
+
+  Level: advanced
+
+  Notes:
+  The chart of `subs` is the same as the chart of `s`
+
+  This will error if the section has more than one field, or if a component number is out of range
+
+.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreateSupersection()`, `PetscSectionCreate()`
+@*/
+PetscErrorCode PetscSectionCreateComponentSubsection(PetscSection s, PetscInt len, const PetscInt comps[], PetscSection *subs)
+{
+  PetscSectionSym sym;
+  const char     *name = NULL;
+  PetscInt        Nf, pStart, pEnd;
+
+  PetscFunctionBegin;
+  if (!len) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
+  PetscAssertPointer(comps, 3);
+  PetscAssertPointer(subs, 4);
+  PetscCall(PetscSectionGetNumFields(s, &Nf));
+  PetscCheck(Nf == 1, PetscObjectComm((PetscObject)s), PETSC_ERR_ARG_WRONG, "This method can only handle one field, not %" PetscInt_FMT, Nf);
+  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)s), subs));
+  PetscCall(PetscSectionSetNumFields(*subs, 1));
+  PetscCall(PetscSectionGetFieldName(s, 0, &name));
+  PetscCall(PetscSectionSetFieldName(*subs, 0, name));
+  PetscCall(PetscSectionSetFieldComponents(*subs, 0, len));
+  PetscCall(PetscSectionGetFieldSym(s, 0, &sym));
+  PetscCall(PetscSectionSetFieldSym(*subs, 0, sym));
+  for (PetscInt c = 0; c < len; ++c) {
+    PetscCall(PetscSectionGetComponentName(s, 0, comps[c], &name));
+    PetscCall(PetscSectionSetComponentName(*subs, 0, c, name));
+  }
+  PetscCall(PetscSectionGetChart(s, &pStart, &pEnd));
+  PetscCall(PetscSectionSetChart(*subs, pStart, pEnd));
+  for (PetscInt p = pStart; p < pEnd; ++p) {
+    PetscInt dof, cdof, cfdof;
+
+    PetscCall(PetscSectionGetDof(s, p, &dof));
+    if (!dof) continue;
+    PetscCall(PetscSectionGetFieldConstraintDof(s, p, 0, &cfdof));
+    PetscCall(PetscSectionGetConstraintDof(s, p, &cdof));
+    PetscCheck(!cdof && !cfdof, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Component selection does not work with constraints");
+    PetscCall(PetscSectionSetFieldDof(*subs, p, 0, len));
+    PetscCall(PetscSectionSetDof(*subs, p, len));
+  }
+  PetscCall(PetscSectionSetUp(*subs));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   PetscSectionCreateSupersection - Create a new, larger section composed of multiple `PetscSection`s
 
   Collective
