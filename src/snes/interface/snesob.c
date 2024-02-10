@@ -7,8 +7,8 @@
 
   Input Parameters:
 + snes - the `SNES` context
-. obj  - objective evaluation routine; see `SNESObjectiveFn` for details
-- ctx  - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
+. obj  - objective evaluation routine; see `SNESObjectiveFn` for the calling sequence
+- ctx  - [optional] user-defined context for private data for the objective evaluation routine (may be `NULL`)
 
   Level: intermediate
 
@@ -42,7 +42,7 @@ PetscErrorCode SNESSetObjective(SNES snes, SNESObjectiveFn *obj, void *ctx)
 . snes - the `SNES` context
 
   Output Parameters:
-+ obj - objective evaluation routine (or `NULL`); see `SNESObjectiveFn` for details
++ obj - objective evaluation routine (or `NULL`); see `SNESObjectiveFn` for the calling sequence
 - ctx - the function context (or `NULL`)
 
   Level: advanced
