@@ -48,7 +48,7 @@
     *a_p = NULL; \
     if (a == NULL) PetscFunctionReturn(PETSC_SUCCESS); \
     if (destructor) { \
-      for (int i = 0; i < a->num_entries; i++) { PetscCall((*destructor)(&a->array[i])); } \
+      for (int i = 0; i < a->num_entries; i++) PetscCall((*destructor)(&a->array[i])); \
     } \
     PetscCall(PetscFree(a->array)); \
     PetscCall(PetscFree(a)); \

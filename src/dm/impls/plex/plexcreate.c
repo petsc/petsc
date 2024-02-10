@@ -4493,7 +4493,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
     DMPlexCoordMap map     = DM_COORD_MAP_NONE;
     PetscPointFunc mapFunc = NULL;
     PetscScalar    params[16];
-    PetscInt       Np = sizeof(params) / sizeof(params[0]), cdim;
+    PetscInt       Np = PETSC_STATIC_ARRAY_LENGTH(params), cdim;
     MPI_Comm       comm;
 
     PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));

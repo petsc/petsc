@@ -439,7 +439,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
   #else
   Kokkos::View<PetscReal ***, Kokkos::LayoutRight> d_fdf_k = *static_cast<Kokkos::View<PetscReal ***, Kokkos::LayoutRight> *>(SData_d->ipfdf_data);
   #endif
-  auto                                            d_Eq_m_k           = static_cast<Kokkos::View<PetscReal *, Kokkos::LayoutLeft> *>(SData_d->Eq_m); // static storage, dynamci data - E(t), copy later, single vertex
+  auto                                            d_Eq_m_k           = static_cast<Kokkos::View<PetscReal *, Kokkos::LayoutLeft> *>(SData_d->Eq_m); // static storage, dynamic data - E(t), copy later, single vertex
   // COO
   auto       d_coo_elem_offsets_k                           = static_cast<Kokkos::View<LandauIdx *, Kokkos::LayoutLeft> *>(SData_d->coo_elem_offsets);
   LandauIdx *d_coo_elem_offsets                             = (SData_d->coo_size == 0) ? NULL : d_coo_elem_offsets_k->data();

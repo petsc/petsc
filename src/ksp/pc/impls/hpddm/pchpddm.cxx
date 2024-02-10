@@ -2319,10 +2319,10 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           PetscCall(MatSetOptionsPrefix(*b, ((PetscObject)s)->prefix));
           n = -1;
           PetscCall(PetscOptionsGetInt(nullptr, ((PetscObject)s)->prefix, "-mat_mumps_icntl_26", &n, nullptr));
-          if (n == 1) {
-            PetscCall(MatNestGetISs(N, is, nullptr));  /* allocates a square MatDense of size is[1]->map->n, so one */
-            PetscCall(MatFactorSetSchurIS(*b, is[1])); /*  needs to be able to deactivate this path when dealing    */
-          }                                            /*  with a large constraint space in order to avoid OOM      */
+          if (n == 1) {                                /* allocates a square MatDense of size is[1]->map->n, so one */
+            PetscCall(MatNestGetISs(N, is, nullptr));  /*  needs to be able to deactivate this path when dealing    */
+            PetscCall(MatFactorSetSchurIS(*b, is[1])); /*  with a large constraint space in order to avoid OOM      */
+          }
         } else {
           PetscCall(MatConvert(N, MATAIJ, MAT_INITIAL_MATRIX, b));
           PetscCall(PCSetOperators(s, N, *b));

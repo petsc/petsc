@@ -2017,7 +2017,7 @@ static PetscErrorCode TSTrajectorySetFromOptions_Memory(TSTrajectory tj, PetscOp
 #endif
     PetscCall(PetscOptionsBool("-ts_trajectory_save_stack", "Save all stack to disk", "TSTrajectorySetSaveStack", tjsch->save_stack, &tjsch->save_stack, NULL));
     PetscCall(PetscOptionsBool("-ts_trajectory_use_dram", "Use DRAM for checkpointing", "TSTrajectorySetUseDRAM", tjsch->stack.use_dram, &tjsch->stack.use_dram, NULL));
-    PetscCall(PetscOptionsEnum("-ts_trajectory_memory_type", "Checkpointing scchedule software to use", "TSTrajectoryMemorySetType", TSTrajectoryMemoryTypes, (PetscEnum)(int)tjsch->tj_memory_type, &etmp, &flg));
+    PetscCall(PetscOptionsEnum("-ts_trajectory_memory_type", "Checkpointing schedule software to use", "TSTrajectoryMemorySetType", TSTrajectoryMemoryTypes, (PetscEnum)(int)tjsch->tj_memory_type, &etmp, &flg));
     if (flg) PetscCall(TSTrajectoryMemorySetType(tj, (TSTrajectoryMemoryType)etmp));
   }
   PetscOptionsHeadEnd();
