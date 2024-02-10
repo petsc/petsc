@@ -440,8 +440,8 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
   PetscReal gkp1_yk, gd_old, tau_bfgs, tau_dfp, gkp1D_yk, gtDg;
   PetscInt  dim;
   PetscBool cg_restart = PETSC_FALSE;
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   /* Local curvature check to see if we need to restart */
   if (tao->niter >= 1 || tao->recycle) {
     PetscCall(VecWAXPY(cg->yk, -1.0, cg->G_old, tao->gradient));

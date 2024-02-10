@@ -20,7 +20,6 @@ static PetscErrorCode MatAssemblyEnd_MPIAIJKokkos(Mat A, MatAssemblyType mode)
     PetscCall(MatSetType(mpiaij->B, MATSEQAIJKOKKOS));
     PetscCall(VecSetType(mpiaij->lvec, VECSEQKOKKOS));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

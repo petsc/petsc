@@ -93,7 +93,6 @@ PetscErrorCode Tangent1(TS ts, PetscReal t, Vec U, Vec A, PetscReal shiftA, Mat 
   PetscReal   T     = 0;
 
   PetscFunctionBeginUser;
-
   T = shiftA + (Omega * Omega);
 
   PetscCall(MatSetValue(P, 0, 0, T, INSERT_VALUES));
@@ -137,7 +136,6 @@ PetscErrorCode Tangent2(TS ts, PetscReal t, Vec U, Vec V, Vec A, PetscReal shift
   PetscReal   T = 0;
 
   PetscFunctionBeginUser;
-
   T = shiftA + shiftV * (2 * Xi * Omega) + (Omega * Omega);
 
   PetscCall(MatSetValue(P, 0, 0, T, INSERT_VALUES));

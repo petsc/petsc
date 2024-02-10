@@ -71,6 +71,7 @@ PetscErrorCode VecGetCeedVectorRead(Vec X, Ceed ceed, CeedVector *cx)
   PetscMemType       memtype;
   const PetscScalar *x;
   PetscInt           n;
+
   PetscFunctionBegin;
   PetscCall(VecGetLocalSize(X, &n));
   PetscCall(VecGetArrayReadAndMemType(X, &x, &memtype));

@@ -206,7 +206,6 @@ static PetscErrorCode MatConvertToTriples_mpiaij_mpiaij_MKL_CPARDISO(Mat A, MatR
     }
   }
   row[m] = nz;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -280,7 +279,6 @@ static PetscErrorCode MatConvertToTriples_mpibaij_mpibaij_MKL_CPARDISO(Mat A, Ma
     bv += (countB - jB) * bs2;
   }
   row[m] = nz + 1;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -340,7 +338,6 @@ static PetscErrorCode MatConvertToTriples_mpisbaij_mpisbaij_MKL_CPARDISO(Mat A, 
     bv += countB * bs2;
   }
   row[m] = nz + 1;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -555,7 +552,6 @@ static PetscErrorCode PetscInitialize_MKL_CPARDISO(Mat A, Mat_MKL_CPARDISO *mat_
   MPI_Comm    comm;
 
   PetscFunctionBegin;
-
   PetscCallMPI(MPI_Comm_dup(PetscObjectComm((PetscObject)A), &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   mat_mkl_cpardiso->comm_mkl_cpardiso = MPI_Comm_c2f(comm);

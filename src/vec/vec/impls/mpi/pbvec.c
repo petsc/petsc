@@ -116,7 +116,6 @@ static PetscErrorCode VecSetOption_MPI(Vec V, VecOption op, PetscBool flag)
     }
     break;
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

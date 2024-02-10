@@ -4077,7 +4077,6 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_CUSPARSE(void)
   PetscCall(MatSolverTypeRegister(MATSOLVERCUSPARSE, MATSEQAIJCUSPARSE, MAT_FACTOR_CHOLESKY, MatGetFactor_seqaijcusparse_cusparse));
   PetscCall(MatSolverTypeRegister(MATSOLVERCUSPARSE, MATSEQAIJCUSPARSE, MAT_FACTOR_ILU, MatGetFactor_seqaijcusparse_cusparse));
   PetscCall(MatSolverTypeRegister(MATSOLVERCUSPARSE, MATSEQAIJCUSPARSE, MAT_FACTOR_ICC, MatGetFactor_seqaijcusparse_cusparse));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -4266,6 +4265,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEInvalidateTranspose(Mat A, PetscBool dest
 static PetscErrorCode MatCOOStructDestroy_SeqAIJCUSPARSE(void *data)
 {
   MatCOOStruct_SeqAIJ *coo = (MatCOOStruct_SeqAIJ *)data;
+
   PetscFunctionBegin;
   PetscCallCUDA(cudaFree(coo->perm));
   PetscCallCUDA(cudaFree(coo->jmap));

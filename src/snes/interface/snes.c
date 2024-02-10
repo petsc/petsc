@@ -5760,7 +5760,6 @@ PetscErrorCode SNESSetLineSearch(SNES snes, SNESLineSearch linesearch)
   PetscCall(SNESLineSearchDestroy(&snes->linesearch));
 
   snes->linesearch = linesearch;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

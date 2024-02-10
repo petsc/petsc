@@ -167,9 +167,8 @@ PetscErrorCode OtherFunctionForDifferencing(void *dummy, Vec x, Vec f)
 
 PetscErrorCode FormInitialGuess(SNES snes, Vec x)
 {
-  PetscScalar pfive = .50;
   PetscFunctionBeginUser;
-  PetscCall(VecSet(x, pfive));
+  PetscCall(VecSet(x, 0.5));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */

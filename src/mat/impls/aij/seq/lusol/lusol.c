@@ -424,7 +424,6 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A, MatFactorType ftype
   B->factortype = MAT_FACTOR_LU;
   PetscCall(PetscFree(B->solvertype));
   PetscCall(PetscStrallocpy(MATSOLVERLUSOL, &B->solvertype));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

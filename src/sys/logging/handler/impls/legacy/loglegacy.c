@@ -115,8 +115,8 @@ PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_Legacy(PetscLogHandler handler
 PetscErrorCode PetscLogHandlerCreateLegacy(MPI_Comm comm, PetscErrorCode (*PetscLogPLB)(PetscLogEvent e, int _i, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4), PetscErrorCode (*PetscLogPLE)(PetscLogEvent e, int _i, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4), PetscErrorCode (*PetscLogPHC)(PetscObject o), PetscErrorCode (*PetscLogPHD)(PetscObject o), PetscLogHandler *handler)
 {
   PetscLogHandler_Legacy legacy;
+  PetscLogHandler        h;
 
-  PetscLogHandler h;
   PetscFunctionBegin;
   PetscCall(PetscLogHandlerCreate(comm, handler));
   h = *handler;

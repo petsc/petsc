@@ -278,7 +278,6 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat BB, void *ctx)
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   }
   PetscCall(VecRestoreArrayRead(x, &tmp));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

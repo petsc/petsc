@@ -169,7 +169,6 @@ PetscErrorCode MatGetColumnSums(Mat A, PetscScalar sums[])
 #endif
 
   PetscFunctionBegin;
-
 #if !defined(PETSC_USE_COMPLEX)
   PetscCall(MatGetColumnSumsRealPart(A, sums));
 #else
@@ -258,7 +257,6 @@ PetscErrorCode MatGetColumnMeans(Mat A, PetscScalar means[])
 #endif
 
   PetscFunctionBegin;
-
 #if !defined(PETSC_USE_COMPLEX)
   PetscCall(MatGetColumnMeansRealPart(A, means));
 #else

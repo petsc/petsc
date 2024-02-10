@@ -346,7 +346,6 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
     PetscCall(MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY));
     PetscCall(PetscCDSetMat(agg_lists, mat));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -397,6 +396,7 @@ static PetscErrorCode MatCoarsenSetFromOptions_MISK(MatCoarsen coarse, PetscOpti
 {
   PetscInt  k = 1;
   PetscBool flg;
+
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "MatCoarsen-MISk options");
   PetscCall(PetscOptionsInt("-mat_coarsen_misk_distance", "k distance for MIS", "", k, &k, &flg));

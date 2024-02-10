@@ -9,9 +9,9 @@ int main(int argc, char **argv)
   PetscBool    prefix = PETSC_FALSE, flg;
   PetscInt     zero   = 0;
   PetscScalar  value  = 0;
+
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-with_prefix", &prefix, NULL));
   PetscCall(MatCreateDense(PETSC_COMM_WORLD, 1, 1, 1, 1, NULL, &mat));
   PetscCall(MatSetOptionsPrefix(mat, prefix ? "prefix_" : NULL));

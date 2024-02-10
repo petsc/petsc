@@ -983,7 +983,6 @@ static PetscErrorCode MatStashScatterEnd_BTS(MatStash *stash)
   PetscCall(PetscMatStashSpaceDestroy(&stash->space_head));
 
   stash->space = NULL;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

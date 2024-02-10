@@ -507,7 +507,6 @@ static PetscErrorCode PetscLogGetStageEventPerfInfo_threaded(PetscLogHandler_Def
   PetscHashIJKKey     key;
 
   PetscFunctionBegin;
-
 #if PetscDefined(HAVE_THREADSAFETY)
   key.i = PetscLogGetTid();
 #else
@@ -1805,6 +1804,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
 static PetscErrorCode PetscLogHandlerView_Default(PetscLogHandler handler, PetscViewer viewer)
 {
   PetscViewerFormat format;
+
   PetscFunctionBegin;
   PetscCall(PetscViewerGetFormat(viewer, &format));
   if (format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_ASCII_INFO) {

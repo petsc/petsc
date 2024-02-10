@@ -76,7 +76,6 @@ PetscErrorCode FormInitGuess(DM da, Vec X, Params *p)
     Restore vector
   */
   PetscCall(DMDAVecRestoreArray(da,X,&x));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -154,7 +153,6 @@ PetscErrorCode FormFunction(DM da, Vec X, Vec F, Params *p)
   PetscCall(DMDAVecRestoreArray(da,localX,&x));
   PetscCall(DMRestoreLocalVector(da,&localX));
   PetscCall(PetscLogFlops(11.0*ym*xm));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -250,6 +248,5 @@ PetscErrorCode FormJacobian(DM da, Vec X, Mat J, Params *p)
     matrix. If we do, it will generate an error.
   */
   PetscCall(MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }

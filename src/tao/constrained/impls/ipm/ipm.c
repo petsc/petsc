@@ -539,6 +539,7 @@ static PetscErrorCode IPMObjective(TaoLineSearch ls, Vec X, PetscReal *f, void *
 {
   Tao tao = (Tao)tptr;
   TAO_IPM *ipmP = (TAO_IPM*)tao->data;
+
   PetscFunctionBegin;
   PetscCall(IPMComputeKKT(tao));
   *f = ipmP->phi;

@@ -1064,6 +1064,7 @@ PetscErrorCode PetscDualSpaceSumSetInterleave(PetscDualSpace sp, PetscBool inter
 static PetscErrorCode PetscDualSpaceSumSetInterleave_Sum(PetscDualSpace sp, PetscBool interleave_basis, PetscBool interleave_components)
 {
   PetscDualSpace_Sum *sum = (PetscDualSpace_Sum *)sp->data;
+
   PetscFunctionBegin;
   sum->interleave_basis      = interleave_basis;
   sum->interleave_components = interleave_components;
@@ -1100,6 +1101,7 @@ PetscErrorCode PetscDualSpaceSumGetInterleave(PetscDualSpace sp, PetscBool *inte
 static PetscErrorCode PetscDualSpaceSumGetInterleave_Sum(PetscDualSpace sp, PetscBool *interleave_basis, PetscBool *interleave_components)
 {
   PetscDualSpace_Sum *sum = (PetscDualSpace_Sum *)sp->data;
+
   PetscFunctionBegin;
   if (interleave_basis) *interleave_basis = sum->interleave_basis;
   if (interleave_components) *interleave_components = sum->interleave_components;

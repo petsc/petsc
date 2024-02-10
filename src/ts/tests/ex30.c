@@ -88,8 +88,8 @@ static PetscErrorCode makeSwarm(DM sw, const PetscInt dim, const PetscInt Np, co
   PetscReal    *coords;
   PetscDataType dtype;
   PetscInt      bs, p, zero = 0;
-  PetscFunctionBeginUser;
 
+  PetscFunctionBeginUser;
   PetscCall(DMSwarmSetLocalSizes(sw, Np, zero));
   PetscCall(DMSwarmGetField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void **)&coords));
   for (p = 0; p < Np; p++) {
@@ -105,6 +105,7 @@ static PetscErrorCode createMp(const DM dm, DM sw, Mat *Mp_out)
 {
   PetscBool removePoints = PETSC_TRUE;
   Mat       M_p;
+
   PetscFunctionBeginUser;
   // migrate after coords are set
   PetscCall(DMSwarmMigrate(sw, removePoints));
@@ -225,7 +226,6 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, const Vec rhs, Vec work, Mat 
   PetscCall(KSPDestroy(&ksp));
   PetscCall(MatDestroy(&PM_p));
   PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &ff));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -816,7 +816,6 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt num_vertices, const PetscInt a_Np
       PetscCall(KSPDestroy(&t_ksp[grid][tid]));
     }
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

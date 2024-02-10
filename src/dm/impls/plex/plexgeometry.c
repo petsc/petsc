@@ -1394,8 +1394,8 @@ PetscErrorCode DMPlexComputeProjection3Dto1D(PetscScalar coords[], PetscReal R[]
   PetscReal z    = PetscRealPart(coords[5] - coords[2]);
   PetscReal r    = PetscSqrtReal(x * x + y * y + z * z);
   PetscReal rinv = 1. / r;
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   x *= rinv;
   y *= rinv;
   z *= rinv;

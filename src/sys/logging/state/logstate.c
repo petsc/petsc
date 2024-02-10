@@ -57,6 +57,7 @@ PetscErrorCode PetscLogStateCreate(PetscLogState *state)
 PetscErrorCode PetscLogStateDestroy(PetscLogState *state)
 {
   PetscLogState s;
+
   PetscFunctionBegin;
   s      = *state;
   *state = NULL;
@@ -205,6 +206,7 @@ static PetscErrorCode PetscLogStateResize(PetscLogState state)
 PetscErrorCode PetscLogStateStageRegister(PetscLogState state, const char sname[], PetscLogStage *stage)
 {
   PetscInt s;
+
   PetscFunctionBegin;
   PetscCall(PetscLogRegistryStageRegister(state->registry, sname, stage));
   PetscCall(PetscLogStateResize(state));

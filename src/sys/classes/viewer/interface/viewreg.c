@@ -280,7 +280,6 @@ static PetscErrorCode PetscOptionsGetViewers_Single(MPI_Comm comm, const char va
     PetscCall(PetscViewerGetFormat(*viewer, format));
   }
   PetscCall(PetscFree(loc0_vtype));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -662,6 +661,7 @@ PetscErrorCode PetscViewerFlowControlStepMain(PetscViewer viewer, PetscInt i, Pe
 PetscErrorCode PetscViewerFlowControlEndMain(PetscViewer viewer, PetscInt *mcnt)
 {
   MPI_Comm comm;
+
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)viewer, &comm));
   *mcnt = 0;
@@ -672,6 +672,7 @@ PetscErrorCode PetscViewerFlowControlEndMain(PetscViewer viewer, PetscInt *mcnt)
 PetscErrorCode PetscViewerFlowControlStepWorker(PetscViewer viewer, PetscMPIInt rank, PetscInt *mcnt)
 {
   MPI_Comm comm;
+
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)viewer, &comm));
   while (PETSC_TRUE) {
@@ -684,6 +685,7 @@ PetscErrorCode PetscViewerFlowControlStepWorker(PetscViewer viewer, PetscMPIInt 
 PetscErrorCode PetscViewerFlowControlEndWorker(PetscViewer viewer, PetscInt *mcnt)
 {
   MPI_Comm comm;
+
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)viewer, &comm));
   while (PETSC_TRUE) {

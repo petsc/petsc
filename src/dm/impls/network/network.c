@@ -37,7 +37,6 @@ PetscErrorCode DMNetworkInitializeHeaderComponentData(DM dm)
       network->header[p].maxcomps = defaultnumcomp;
       PetscCall(SetUpNetworkHeaderComponentValue(dm, &network->header[p], &network->cvalue[p]));
     }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1484,7 +1483,6 @@ PetscErrorCode DMNetworkGetComponent(DM dm, PetscInt p, PetscInt compnum, PetscI
   }
 
   if (nvar) *nvar = header->nvar[compnum];
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -454,7 +454,6 @@ static PetscErrorCode PhysicsCreate_SW(Model mod, Physics phys, PetscOptionItems
   PetscCall(ModelFunctionalRegister(mod, "Height", &sw->functional.Height, PhysicsFunctional_SW, phys));
   PetscCall(ModelFunctionalRegister(mod, "Speed", &sw->functional.Speed, PhysicsFunctional_SW, phys));
   PetscCall(ModelFunctionalRegister(mod, "Energy", &sw->functional.Energy, PhysicsFunctional_SW, phys));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -478,6 +477,7 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod, PetscReal time, const Pet
   Physics_Euler *eu   = (Physics_Euler *)phys->data;
   EulerNode     *uu   = (EulerNode *)u;
   PetscReal      p0, gamma, c = 0.;
+
   PetscFunctionBeginUser;
   PetscCheck(time == 0.0, mod->comm, PETSC_ERR_SUP, "No solution known for time %g", (double)time);
 
@@ -528,7 +528,6 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod, PetscReal time, const Pet
   PetscCall(SpeedOfSound_PG(gamma, uu, &c));
   c = (uu->ru[0] / uu->r) + c;
   if (c > phys->maxspeed) phys->maxspeed = c;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -540,6 +539,7 @@ static PetscErrorCode PhysicsBoundary_Euler_Wall(PetscReal time, const PetscReal
   EulerNode       *xG   = (EulerNode *)a_xG;
   Physics          phys = (Physics)ctx;
   Physics_Euler   *eu   = (Physics_Euler *)phys->data;
+
   PetscFunctionBeginUser;
   xG->r = xI->r;                                     /* ghost cell density - same */
   xG->E = xI->E;                                     /* ghost cell energy - same */
@@ -698,7 +698,6 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod, Physics phys, PetscOptionIt
   PetscCall(ModelFunctionalRegister(mod, "Density", &eu->monitor.Density, PhysicsFunctional_Euler, phys));
   PetscCall(ModelFunctionalRegister(mod, "Momentum", &eu->monitor.Momentum, PhysicsFunctional_Euler, phys));
   PetscCall(ModelFunctionalRegister(mod, "Pressure", &eu->monitor.Pressure, PhysicsFunctional_Euler, phys));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -918,6 +917,7 @@ static PetscErrorCode FunctionalLinkDestroy(FunctionalLink *link)
 static PetscErrorCode SolutionFunctional(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *modctx)
 {
   Model mod;
+
   PetscFunctionBeginUser;
   mod = (Model)modctx;
   PetscCall((*mod->solution)(mod, time, x, u, mod->solutionctx));
@@ -1226,7 +1226,6 @@ static PetscErrorCode Transfer(TS ts, PetscInt nv, Vec vecsin[], Vec vecsout[], 
 
   PetscCall(TSSetDM(ts, tctx->adaptedDM));
   PetscCall(DMDestroy(&tctx->adaptedDM));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

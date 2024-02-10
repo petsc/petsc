@@ -423,7 +423,6 @@ PetscErrorCode DMDASetNonOverlappingRegion(DM da, PetscInt xs, PetscInt ys, Pets
   dd->nonxm = xm;
   dd->nonym = ym;
   dd->nonzm = zm;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -285,8 +285,8 @@ static PetscErrorCode PetscLogHandlerDestroy_Nested(PetscLogHandler h)
 static PetscErrorCode PetscLogNestedEventNodesOrderDepthFirst(PetscInt num_nodes, PetscInt parent, PetscNestedEventNode tree[], PetscInt *num_descendants)
 {
   PetscInt node, start_loc;
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   node      = 0;
   start_loc = 0;
   while (node < num_nodes) {

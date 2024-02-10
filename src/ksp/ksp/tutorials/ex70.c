@@ -118,9 +118,8 @@ static void CreateGaussQuadrature(PetscInt *ngp, PetscScalar gp_xi[][2], PetscSc
 
 static PetscErrorCode DMDAGetElementEqnums_up(const PetscInt element[], PetscInt s_u[], PetscInt s_p[])
 {
-  PetscInt i;
   PetscFunctionBeginUser;
-  for (i = 0; i < NODES_PER_EL; i++) {
+  for (PetscInt i = 0; i < NODES_PER_EL; i++) {
     /* velocity */
     s_u[NSD * i + 0] = 3 * element[i];
     s_u[NSD * i + 1] = 3 * element[i] + 1;
@@ -325,11 +324,10 @@ static void LForm_MomentumRHS(PetscScalar Fe[], PetscScalar coords[], PetscScala
 
 static PetscErrorCode GetElementCoords(const PetscScalar _coords[], const PetscInt e2n[], PetscScalar el_coords[])
 {
-  PetscInt i, d;
   PetscFunctionBeginUser;
   /* get coords for the element */
-  for (i = 0; i < 4; i++) {
-    for (d = 0; d < NSD; d++) el_coords[NSD * i + d] = _coords[NSD * e2n[i] + d];
+  for (PetscInt i = 0; i < 4; i++) {
+    for (PetscInt d = 0; d < NSD; d++) el_coords[NSD * i + d] = _coords[NSD * e2n[i] + d];
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -456,7 +454,6 @@ static PetscErrorCode AssembleStokes_PC(Mat A, DM stokes_da, DM quadrature)
 
   PetscCall(DMSwarmRestoreField(quadrature, "eta_q", NULL, NULL, (void **)&q_eta));
   PetscCall(VecRestoreArrayRead(coords, &_coords));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -520,7 +517,6 @@ static PetscErrorCode AssembleStokes_RHS(Vec F, DM stokes_da, DM quadrature)
   PetscCall(DMLocalToGlobalBegin(stokes_da, local_F, ADD_VALUES, F));
   PetscCall(DMLocalToGlobalEnd(stokes_da, local_F, ADD_VALUES, F));
   PetscCall(DMRestoreLocalVector(stokes_da, &local_F));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

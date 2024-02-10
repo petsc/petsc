@@ -48,6 +48,7 @@ PetscErrorCode PetscMatlabEngineCreate(MPI_Comm comm, const char host[], PetscMa
   PetscMatlabEngine e;
   PetscBool         flg = PETSC_FALSE;
   char              lhost[64];
+
   PetscFunctionBegin;
   if (MATLABENGINE_CLASSID == -1) PetscCall(PetscClassIdRegister("MATLAB Engine", &MATLABENGINE_CLASSID));
   PetscCall(PetscHeaderCreate(e, MATLABENGINE_CLASSID, "MatlabEngine", "MATLAB Engine", "Sys", comm, PetscMatlabEngineDestroy, NULL));

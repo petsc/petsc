@@ -982,7 +982,6 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
 
   /* View from Options */
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1096,7 +1095,6 @@ static PetscErrorCode DMStagSetUpBuildNeighbors_2d(DM dm)
       stag->neighbors[i] = -1;
     }
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -185,9 +185,8 @@ int main(int argc, char **argv)
 */
 PetscErrorCode FormInitialGuess(Vec x)
 {
-  PetscScalar pfive = .50;
   PetscFunctionBeginUser;
-  PetscCall(VecSet(x, pfive));
+  PetscCall(VecSet(x, 0.5));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* ------------------------------------------------------------------- */

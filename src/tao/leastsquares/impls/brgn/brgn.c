@@ -529,6 +529,7 @@ PetscErrorCode TaoBRGNSetL1SmoothEpsilon(Tao tao, PetscReal epsilon)
 PetscErrorCode TaoBRGNSetDictionaryMatrix(Tao tao, Mat dict)
 {
   TAO_BRGN *gn = (TAO_BRGN *)tao->data;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (dict) {

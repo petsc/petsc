@@ -25,6 +25,7 @@
 static PetscErrorCode LandauGPUMapsDestroy(void *ptr)
 {
   P4estVertexMaps *maps = (P4estVertexMaps *)ptr;
+
   PetscFunctionBegin;
   // free device data
   if (maps[0].deviceType != LANDAU_CPU) {
@@ -40,12 +41,12 @@ static PetscErrorCode LandauGPUMapsDestroy(void *ptr)
     PetscCall(PetscFree(maps[grid].gIdx));
   }
   PetscCall(PetscFree(maps));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 static PetscErrorCode energy_f(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf_dummy, PetscScalar *u, void *actx)
 {
   PetscReal v2 = 0;
+
   PetscFunctionBegin;
   /* compute v^2 / 2 */
   for (int i = 0; i < dim; ++i) v2 += x[i] * x[i];
@@ -594,7 +595,6 @@ static PetscErrorCode GeometryDMLandau(DM base, PetscInt point, PetscInt dim, co
   xyz[0] = r;
   xyz[1] = z;
   if (dim == 3) xyz[2] = abc[2];
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -725,7 +725,6 @@ static PetscErrorCode LandauDMCreateVMeshes(MPI_Comm comm_self, const PetscInt d
   PetscCall(DMSetDimension(pack, dim));
   PetscCall(PetscObjectSetName((PetscObject)pack, "Mesh"));
   PetscCall(DMSetApplicationContext(pack, ctx));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -783,6 +782,7 @@ static PetscErrorCode maxwellian(PetscInt dim, PetscReal time, const PetscReal x
   MaxwellianCtx *mctx = (MaxwellianCtx *)actx;
   PetscInt       i;
   PetscReal      v2 = 0, theta = 2 * mctx->kT_m / (mctx->v_0 * mctx->v_0), shift; /* theta = 2kT/mc^2 */
+
   PetscFunctionBegin;
   /* compute the exponents, v^2 */
   for (i = 0; i < dim; ++i) v2 += x[i] * x[i];
@@ -870,6 +870,7 @@ PetscErrorCode DMPlexLandauAddMaxwellians(DM dm, Vec X, PetscReal time, PetscRea
 static PetscErrorCode LandauSetInitialCondition(DM dm, Vec X, PetscInt grid, PetscInt b_id, PetscInt n_batch, void *actx)
 {
   LandauCtx *ctx = (LandauCtx *)actx;
+
   PetscFunctionBegin;
   if (!ctx) PetscCall(DMGetApplicationContext(dm, &ctx));
   PetscCall(VecZeroEntries(X));
@@ -1799,6 +1800,7 @@ static void g0_r(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[
 static PetscErrorCode MatrixNfDestroy(void *ptr)
 {
   PetscInt *nf = (PetscInt *)ptr;
+
   PetscFunctionBegin;
   PetscCall(PetscFree(nf));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1905,7 +1907,6 @@ static PetscErrorCode LandauCreateJacobianMatrix(MPI_Comm comm, Vec X, IS grid_b
     PetscCall(VecScatterCreate(X, ctx->batch_is, X, NULL, &ctx->plex_batch));
     PetscCall(VecDuplicate(X, &ctx->work_vec));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2071,7 +2072,6 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
     PetscCall(PetscObjectCompose((PetscObject)ctx->J, "batch size", (PetscObject)container));
     PetscCall(PetscContainerDestroy(&container));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2095,6 +2095,7 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
 PetscErrorCode DMPlexLandauAccess(DM pack, Vec X, PetscErrorCode (*func)(DM, Vec, PetscInt, PetscInt, PetscInt, void *), void *user_ctx)
 {
   LandauCtx *ctx;
+
   PetscFunctionBegin;
   PetscCall(DMGetApplicationContext(pack, &ctx)); // uses ctx->num_grids; ctx->plex[grid]; ctx->batch_sz; ctx->mat_offset
   for (PetscInt grid = 0; grid < ctx->num_grids; grid++) {
@@ -2146,6 +2147,7 @@ PetscErrorCode DMPlexLandauAccess(DM pack, Vec X, PetscErrorCode (*func)(DM, Vec
 PetscErrorCode DMPlexLandauDestroyVelocitySpace(DM *dm)
 {
   LandauCtx *ctx;
+
   PetscFunctionBegin;
   PetscCall(DMGetApplicationContext(*dm, &ctx));
   PetscCall(MatDestroy(&ctx->M));

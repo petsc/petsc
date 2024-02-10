@@ -243,7 +243,6 @@ PetscErrorCode MatCoarsenView(MatCoarsen agg, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   if (agg->strength_index_size > 0) PetscCall(PetscViewerASCIIPrintf(viewer, " Using scalar strength-of-connection index index[%d] = {%d, ..}\n", (int)agg->strength_index_size, (int)agg->strength_index[0]));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -382,7 +381,6 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
 
   PetscTryTypeMethod(coarser, setfromoptions, PetscOptionsObject);
   PetscOptionsEnd();
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -408,7 +406,6 @@ PetscErrorCode MatCoarsenSetMaximumIterations(MatCoarsen coarse, PetscInt n)
   PetscValidHeaderSpecific(coarse, MAT_COARSEN_CLASSID, 1);
   PetscValidLogicalCollectiveInt(coarse, n, 2);
   PetscTryMethod(coarse, "MatCoarsenSetMaximumIterations_C", (MatCoarsen, PetscInt), (coarse, n));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -475,7 +472,6 @@ PetscErrorCode MatCoarsenSetThreshold(MatCoarsen coarse, PetscReal b)
   PetscValidHeaderSpecific(coarse, MAT_COARSEN_CLASSID, 1);
   PetscValidLogicalCollectiveReal(coarse, b, 2);
   PetscTryMethod(coarse, "MatCoarsenSetThreshold_C", (MatCoarsen, PetscReal), (coarse, b));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

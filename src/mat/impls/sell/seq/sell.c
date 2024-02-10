@@ -276,7 +276,6 @@ PetscErrorCode MatConvert_SeqAIJ_SeqSELL(Mat A, MatType newtype, MatReuse reuse,
   const PetscScalar *vals;
 
   PetscFunctionBegin;
-
   if (reuse == MAT_REUSE_MATRIX) {
     B = *newmat;
   } else {

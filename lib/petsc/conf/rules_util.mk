@@ -134,8 +134,14 @@ checkbadSource:
 	-@echo "----- Using PetscInfo() without carriage return --------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'PetscCall\(PetscInfo\(' -- ${GITSRC} | grep -v '\\n' >> checkbadSource.out;true
 	-@echo "----- First blank line ---------------------------------------------" >> checkbadSource.out
-	@git --no-pager grep -n -P \^\$$ -- ${GITSRC} | grep ':1:' >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 23` ;\
+	-@git --no-pager grep -n -P \^\$$ -- ${GITSRC} | grep ':1:' >> checkbadSource.out;true
+	-@echo "----- Blank line after PetscFunctionBegin and derivatives ----------" >> checkbadSource.out
+	-@git --no-pager grep -n -E -A 1 '  PetscFunctionBegin(User|Hot){0,1};' -- ${GITSRC} | grep -E '\-[0-9]+\-$$' | grep -v '^--$$' >> checkbadSource.out;true
+	-@echo "----- Blank line before PetscFunctionReturn ------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -E -B 1 '  PetscFunctionReturn' -- ${GITSRC} | grep -E '\-[0-9]+\-$$' | grep -v '^--$$' >> checkbadSource.out;true
+	-@echo "----- No blank line before PetscFunctionBegin and derivatives ------" >> checkbadSource.out
+	@git --no-pager grep -n -E -B 1 '  PetscFunctionBegin(User|Hot){0,1};' -- ${GITSRC} ':!src/sys/tests/*' ':!src/sys/tutorials/*' | grep -E '\-[0-9]+\-.*;' | grep -v '^--$$' | grep -v '\\' >> checkbadSource.out;true
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 26` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\

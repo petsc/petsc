@@ -811,7 +811,6 @@ PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIMAIJ_allatonce(Mat A, Mat P
   Mat_MPIMAIJ *maij = (Mat_MPIMAIJ *)P->data;
 
   PetscFunctionBegin;
-
   PetscCall(MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(A, maij->A, maij->dof, C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -835,7 +834,6 @@ PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIMAIJ_allatonce_merged(Mat A
   Mat_MPIMAIJ *maij = (Mat_MPIMAIJ *)P->data;
 
   PetscFunctionBegin;
-
   PetscCall(MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(A, maij->A, maij->dof, C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -847,7 +845,6 @@ PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIMAIJ_allatonce_merged(Mat 
   Mat_MPIMAIJ *maij = (Mat_MPIMAIJ *)P->data;
 
   PetscFunctionBegin;
-
   PetscCall(MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce_merged(A, maij->A, maij->dof, fill, C));
   C->ops->ptapnumeric = MatPtAPNumeric_MPIAIJ_MPIMAIJ_allatonce_merged;
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -692,7 +692,6 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
   default:
     break;
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

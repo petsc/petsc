@@ -383,7 +383,6 @@ PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData *ail, const PetscInt a
   }
   PetscCheck(*a_sz == kk, PETSC_COMM_SELF, PETSC_ERR_PLIB, "*a_sz %" PetscInt_FMT " != kk %" PetscInt_FMT, *a_sz, kk);
   *a_local_is = is_loc; /* out */
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1140,7 +1139,6 @@ static PetscErrorCode MatCoarsenApply_HEM(MatCoarsen coarse)
 
   PetscFunctionBegin;
   PetscCall(MatCoarsenApply_HEM_private(mat, coarse->max_it, coarse->threshold, &coarse->agg_lists));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

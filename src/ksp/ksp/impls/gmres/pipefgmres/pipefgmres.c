@@ -41,7 +41,6 @@ static PetscErrorCode KSPSetUp_PIPEFGMRES(KSP ksp)
 
   PetscCall(KSPCreateVecs(ksp, pipefgmres->vv_allocated, &pipefgmres->zvecs_user_work[0], 0, NULL));
   for (k = 0; k < pipefgmres->vv_allocated; k++) pipefgmres->zvecs[k] = pipefgmres->zvecs_user_work[0][k];
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

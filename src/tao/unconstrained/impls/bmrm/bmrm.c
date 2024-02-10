@@ -508,7 +508,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BMRM(Tao tao)
   if (!tao->max_funcs_changed) tao->max_funcs = 4000;
   if (!tao->gatol_changed) tao->gatol = 1.0e-12;
   if (!tao->grtol_changed) tao->grtol = 1.0e-12;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

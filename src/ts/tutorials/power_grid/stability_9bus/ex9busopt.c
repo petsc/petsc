@@ -915,7 +915,6 @@ static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat A, void *ctx0)
   Userctx    *ctx = (Userctx *)ctx0;
 
   PetscFunctionBeginUser;
-
   if (ctx->jacp_flg) {
     PetscCall(MatZeroEntries(A));
 

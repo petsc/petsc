@@ -103,7 +103,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsRealArray("-source_loc", "The source location", "ex18.c", options->source, &d, &flg));
   PetscCheck(!flg || d == 2, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must give dim coordinates for the source location, not %" PetscInt_FMT, d);
   PetscOptionsEnd();
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1020,10 +1019,8 @@ int main(int argc, char **argv)
   Vec       u;
   AppCtx    user;
   PetscReal t0, t = 0.0;
-  void     *ctxs[2];
+  void     *ctxs[2] = {&t, &t};
 
-  ctxs[0] = &t;
-  ctxs[1] = &t;
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   comm                    = PETSC_COMM_WORLD;

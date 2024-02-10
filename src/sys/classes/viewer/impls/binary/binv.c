@@ -282,6 +282,7 @@ PetscErrorCode PetscViewerBinarySetUseMPIIO(PetscViewer viewer, PetscBool use)
 static PetscErrorCode PetscViewerBinarySetUseMPIIO_Binary(PetscViewer viewer, PetscBool use)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary *)viewer->data;
+
   PetscFunctionBegin;
   PetscCheck(!viewer->setupcalled || vbinary->usempiio == use, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ORDER, "Cannot change MPIIO to %s after setup", PetscBools[use]);
   vbinary->usempiio = use;

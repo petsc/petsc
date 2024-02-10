@@ -39,7 +39,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsInt("-particles_per_cell", "Number of particles per cell", "ex28.c", options->particlesPerCell, &options->particlesPerCell, NULL));
   PetscCall(PetscOptionsInt("-output_step", "Number of time steps between output", "ex28.c", options->ostep, &options->ostep, NULL));
   PetscOptionsEnd();
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -385,7 +384,6 @@ static PetscErrorCode SPMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *
   DM                 dmSw;
 
   PetscFunctionBeginUser;
-
   if (step < 0) PetscFunctionReturn(PETSC_SUCCESS);
   if (((user->ostep > 0) && (!(step % user->ostep)))) {
     PetscDrawAxis axis;

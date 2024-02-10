@@ -1122,7 +1122,6 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx, PetscInt my)
   char                     filename[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBeginUser;
-
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-gnuplot", &output_gnuplot, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-glvis", &glvis, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-change", &change, NULL));

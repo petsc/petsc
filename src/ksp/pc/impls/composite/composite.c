@@ -26,7 +26,6 @@ static PetscErrorCode PCApply_Composite_Multiplicative(PC pc, Vec x, Vec y)
   Mat              mat  = pc->pmat;
 
   PetscFunctionBegin;
-
   PetscCheck(next, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "No composite preconditioners supplied via PCCompositeAddPCType() or -pc_composite_pcs");
 
   /* Set the reuse flag on children PCs */

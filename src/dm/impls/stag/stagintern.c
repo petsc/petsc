@@ -55,7 +55,6 @@ PetscErrorCode DMStagDuplicateWithoutSetup(DM dm, MPI_Comm comm, DM *newdm)
   /* Copy vectype and mattype from original DM */
   PetscCall(DMSetVecType(*newdm, dm->vectype));
   PetscCall(DMSetMatType(*newdm, dm->mattype));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

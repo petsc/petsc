@@ -96,7 +96,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscPrintf(comm, "eta = %g\n", (double)options->eta));
   PetscCall(PetscPrintf(comm, "mu = %g\n", (double)options->mu));
   PetscOptionsEnd();
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -358,6 +357,7 @@ static PetscErrorCode Monitor(TS ts, PetscInt stepi, PetscReal time, Vec X, void
 static PetscErrorCode CreateBCLabel(DM dm, const char name[])
 {
   DMLabel label;
+
   PetscFunctionBeginUser;
   PetscCall(DMCreateLabel(dm, name));
   PetscCall(DMGetLabel(dm, name, &label));
@@ -373,6 +373,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
   char        buff[256];
   PetscMPIInt size;
   PetscInt    nface = 1;
+
   PetscFunctionBeginUser;
   PetscCall(PetscStrlen(filename, &len));
   if (len) {
@@ -414,7 +415,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
   PetscCall(PetscObjectSetName((PetscObject)*dm, "Mesh"));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view_mhd"));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view_res"));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -393,7 +393,6 @@ static PetscErrorCode DMFieldCreateDefaultQuadrature_DA(DMField field, IS cellIS
   }
   dim -= h;
   if (dim > 0) PetscCall(PetscDTGaussTensorQuadrature(dim, 1, 1, -1.0, 1.0, quad));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

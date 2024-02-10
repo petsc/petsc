@@ -234,7 +234,6 @@ PetscErrorCode pic_advect(PetscInt ppcell, PetscInt meshtype)
   PetscCall(VecDestroy(&pfields[0]));
   PetscCall(DMDestroy(&celldm));
   PetscCall(DMDestroy(&swarm));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

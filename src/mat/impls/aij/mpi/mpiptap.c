@@ -687,7 +687,6 @@ static inline PetscErrorCode MatPtAPNumericComputeOneRowOfAP_private(Mat A, Mat 
       PetscCall(PetscLogFlops(2.0 * pnz));
     }
   } /* end if (ao) */
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -840,7 +839,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(Mat A, Mat P, PetscInt do
 PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce(Mat A, Mat P, Mat C)
 {
   PetscFunctionBegin;
-
   PetscCall(MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(A, P, 1, C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -975,7 +973,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A, Mat P, Pets
 PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce_merged(Mat A, Mat P, Mat C)
 {
   PetscFunctionBegin;
-
   PetscCall(MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(A, P, 1, C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

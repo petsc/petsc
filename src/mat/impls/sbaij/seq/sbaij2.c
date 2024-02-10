@@ -116,7 +116,6 @@ static PetscErrorCode MatCreateSubMatrix_SeqSBAIJ_Private(Mat A, IS isrow, IS is
   PetscBool       flag;
 
   PetscFunctionBegin;
-
   PetscCall(ISGetIndices(isrow, &irow));
   PetscCall(ISGetIndices(iscol, &icol));
   PetscCall(ISGetLocalSize(isrow, &nrows));

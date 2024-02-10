@@ -548,6 +548,7 @@ PetscErrorCode DMPlexMigrateIsoperiodicFaceSF_Internal(DM old_dm, DM dm, PetscSF
 PetscErrorCode DMPeriodicCoordinateSetUp_Internal(DM dm)
 {
   DM_Plex *plex = (DM_Plex *)dm->data;
+
   PetscFunctionBegin;
   if (!plex->periodic.face_sf) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMGetIsoperiodicPointSF_Plex(dm, NULL));
@@ -615,6 +616,7 @@ PetscErrorCode DMPeriodicCoordinateSetUp_Internal(DM dm)
 static PetscErrorCode DMPlexOrientPositiveEdges_Private(DM dm)
 {
   PetscInt dim, eStart, eEnd;
+
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
   if (dim < 3) PetscFunctionReturn(PETSC_SUCCESS); // not necessary
@@ -916,6 +918,7 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
 PetscErrorCode DMPlexSetIsoperiodicFaceSF(DM dm, PetscSF face_sf)
 {
   DM_Plex *plex = (DM_Plex *)dm->data;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(PetscObjectReference((PetscObject)face_sf));
@@ -949,6 +952,7 @@ PetscErrorCode DMPlexSetIsoperiodicFaceSF(DM dm, PetscSF face_sf)
 PetscErrorCode DMPlexGetIsoperiodicFaceSF(DM dm, PetscSF *face_sf)
 {
   DM_Plex *plex = (DM_Plex *)dm->data;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   *face_sf = plex->periodic.face_sf;
@@ -983,6 +987,7 @@ PetscErrorCode DMPlexGetIsoperiodicFaceSF(DM dm, PetscSF *face_sf)
 PetscErrorCode DMPlexSetIsoperiodicFaceTransform(DM dm, const PetscScalar t[])
 {
   DM_Plex *plex = (DM_Plex *)dm->data;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   for (PetscInt i = 0; i < 4; i++) {

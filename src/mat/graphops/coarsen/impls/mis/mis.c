@@ -257,7 +257,6 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
     PetscCheck(MM >= bb[0], comm, PETSC_ERR_PLIB, "Sum of aggs too big");
   }
   PetscCall(ISDestroy(&info_is));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

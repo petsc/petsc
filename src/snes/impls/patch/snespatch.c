@@ -21,7 +21,6 @@ static PetscErrorCode SNESPatchComputeResidual_Private(SNES snes, Vec x, Vec F, 
   PetscScalar       *XWithAll;
 
   PetscFunctionBegin;
-
   /* scatter from x to patch->patchStateWithAll[pt] */
   pt = pcpatch->currentPatch;
   PetscCall(ISGetSize(pcpatch->dofMappingWithoutToWithAll[pt], &size));
@@ -365,7 +364,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES snes)
   patchpc->resetsolver          = PCReset_PATCH_Nonlinear;
   patchpc->destroysolver        = PCDestroy_PATCH_Nonlinear;
   patchpc->updatemultiplicative = PCUpdateMultiplicative_PATCH_Nonlinear;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

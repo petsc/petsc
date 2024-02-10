@@ -1556,7 +1556,6 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_Newton_Internal(PetscInt npoi
   PetscInt  k;
 
   PetscFunctionBegin;
-
   a1 = PetscPowReal(2.0, a + b + 1);
 #if defined(PETSC_HAVE_LGAMMA)
   {

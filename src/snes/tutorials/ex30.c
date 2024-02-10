@@ -997,7 +997,6 @@ PetscErrorCode Initialize(DM da)
 
   /* Restore x to Xguess */
   PetscCall(DMDAVecRestoreArray(da, Xguess, (void **)&x));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

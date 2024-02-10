@@ -1564,6 +1564,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJKokkosGetKokkosCsrMatrix(Mat A, KokkosCsrMa
 PETSC_INTERN PetscErrorCode MatCreateSeqAIJKokkosWithKokkosCsrMatrix(MPI_Comm comm, KokkosCsrMatrix csr, Mat *A)
 {
   Mat_SeqAIJKokkos *akok;
+
   PetscFunctionBegin;
   PetscCallCXX(akok = new Mat_SeqAIJKokkos(csr));
   PetscCall(MatCreate(comm, A));

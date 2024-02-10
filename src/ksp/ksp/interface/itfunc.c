@@ -577,7 +577,6 @@ PetscErrorCode KSPConvergedReasonViewFromOptions(KSP ksp)
   PetscInt          i;
 
   PetscFunctionBegin;
-
   /* Call all user-provided reason review routines */
   for (i = 0; i < ksp->numberreasonviews; i++) PetscCall((*ksp->reasonview[i])(ksp, ksp->reasonviewcontext[i]));
 

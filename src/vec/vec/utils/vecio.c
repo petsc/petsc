@@ -179,7 +179,6 @@ static PetscErrorCode VecLoad_ADIOS(Vec xin, PetscViewer viewer)
   adios_perform_reads(adios->adios_fp, 1);
   PetscCall(VecRestoreArray(xin, &x));
   adios_selection_delete(sel);
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif

@@ -68,7 +68,6 @@ static PetscErrorCode DMDASetBlockFills_Private2(DM_DA *dd)
   PetscInt i, k, cnt = 1;
 
   PetscFunctionBegin;
-
   /* ofillcount tracks the columns of ofill that have any nonzero in thems; the value in each location is the number of
    columns to the left with any nonzeros in them plus 1 */
   PetscCall(PetscCalloc1(dd->w, &dd->ofillcols));

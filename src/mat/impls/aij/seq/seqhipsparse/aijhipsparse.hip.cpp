@@ -3459,7 +3459,6 @@ static PetscErrorCode MatBindToCPU_SeqAIJHIPSPARSE(Mat A, PetscBool flg)
   A->boundtocpu = flg;
   if (flg && a->inode.size) a->inode.use = PETSC_TRUE;
   else a->inode.use = PETSC_FALSE;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3554,7 +3553,6 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_HIPSPARSE(void)
   PetscCall(MatSolverTypeRegister(MATSOLVERHIPSPARSE, MATSEQAIJHIPSPARSE, MAT_FACTOR_CHOLESKY, MatGetFactor_seqaijhipsparse_hipsparse));
   PetscCall(MatSolverTypeRegister(MATSOLVERHIPSPARSE, MATSEQAIJHIPSPARSE, MAT_FACTOR_ILU, MatGetFactor_seqaijhipsparse_hipsparse));
   PetscCall(MatSolverTypeRegister(MATSOLVERHIPSPARSE, MATSEQAIJHIPSPARSE, MAT_FACTOR_ICC, MatGetFactor_seqaijhipsparse_hipsparse));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3728,6 +3726,7 @@ static PetscErrorCode MatSeqAIJHIPSPARSEInvalidateTranspose(Mat A, PetscBool des
 static PetscErrorCode MatCOOStructDestroy_SeqAIJHIPSPARSE(void *data)
 {
   MatCOOStruct_SeqAIJ *coo = (MatCOOStruct_SeqAIJ *)data;
+
   PetscFunctionBegin;
   PetscCallHIP(hipFree(coo->perm));
   PetscCallHIP(hipFree(coo->jmap));

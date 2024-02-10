@@ -127,7 +127,6 @@ PetscErrorCode DMPlexGetFieldTypes_Internal(DM dm, PetscSection section, PetscIn
   DMLabel                  depthLabel, ctLabel;
 
   PetscFunctionBegin;
-
   /* the vcdof and globalvcdof are sized to allow every polytope type and simple vertex at DM_NUM_POLYTOPES */
   PetscCall(PetscArrayzero(vcdof, DM_NUM_POLYTOPES + 1));
   PetscCall(DMGetCoordinateDim(dm, &cdim));

@@ -141,6 +141,7 @@ static PetscErrorCode PetscViewerFileSetName_VTK(PetscViewer viewer, const char 
 static PetscErrorCode PetscViewerFileGetName_VTK(PetscViewer viewer, const char **name)
 {
   PetscViewer_VTK *vtk = (PetscViewer_VTK *)viewer->data;
+
   PetscFunctionBegin;
   *name = vtk->filename;
   PetscFunctionReturn(PETSC_SUCCESS);

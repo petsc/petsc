@@ -889,7 +889,6 @@ static PetscErrorCode DMPlexTreeExchangeSupports(DM dm)
   mesh->supports = newSupports;
   PetscCall(PetscFree(offsets));
   PetscCall(PetscFree(numTrueSupp));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1385,7 +1384,6 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
   PetscCall(MatAssemblyEnd(cMat, MAT_FINAL_ASSEMBLY));
   PetscCall(PetscFree6(v0, v0parent, vtmp, J, Jparent, invJparent));
   PetscCall(ISRestoreIndices(aIS, &anchors));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2063,7 +2061,6 @@ PetscErrorCode DMPlexTreeRefineCell(DM dm, PetscInt cell, DM *ncdm)
     PetscCall(VecRestoreArray(coordVec, &coords));
   }
   PetscCall(PetscSectionDestroy(&parentSection));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3518,7 +3515,6 @@ PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFin
   PetscScalar ***childrenMats = NULL; /* gcc -O gives 'may be used uninitialized' warning'. Initializing to suppress this warning */
 
   PetscFunctionBegin;
-
   /* get the templates for the fine-to-coarse injection from the reference tree */
   PetscCall(DMPlexGetReferenceTree(coarse, &refTree));
   PetscCall(DMCopyDisc(coarse, refTree));

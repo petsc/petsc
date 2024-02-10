@@ -32,7 +32,6 @@ PetscErrorCode landau_field_print_access_callback(DM dm, Vec x, PetscInt local_f
   val     = (PetscScalar)(LAND_PACK_IDX(b_id, grid) + (species + 1) * 10);
   PetscCall(VecSet(x, val));
   PetscCall(PetscInfo(dm, "DMPlexLandauAccess user 'add' method to grid %" PetscInt_FMT ", batch %" PetscInt_FMT " and local field %" PetscInt_FMT " with %" PetscInt_FMT " grids\n", grid, b_id, local_field, ctx->num_grids));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -83,6 +82,7 @@ static PetscErrorCode maxwellian(PetscInt dim, PetscReal time, const PetscReal x
 {
   MaxwellianCtx *mctx  = (MaxwellianCtx *)actx;
   PetscReal      theta = 2 * mctx->kT_m / (mctx->v_0 * mctx->v_0); /* theta = 2kT/mc^2 */
+
   PetscFunctionBegin;
   /* evaluate the shifted Maxwellian */
   if (dim == 2) u[0] += alphai * mctx->n * PetscPowReal(PETSC_PI * theta, -1.5) * PetscExpReal(-(alphai * x[0] * x[0] + (x[1] - mctx->shift) * (x[1] - mctx->shift)) / theta);
@@ -94,6 +94,7 @@ static PetscErrorCode SetMaxwellians(DM dm, Vec X, PetscReal time, PetscReal tem
 {
   PetscErrorCode (*initu[LANDAU_MAX_SPECIES])(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
   MaxwellianCtx *mctxs[LANDAU_MAX_SPECIES], data[LANDAU_MAX_SPECIES];
+
   PetscFunctionBegin;
   if (!ctx) PetscCall(DMGetApplicationContext(dm, &ctx));
   for (PetscInt ii = ctx->species_offset[grid], i0 = 0; ii < ctx->species_offset[grid + 1]; ii++, i0++) {
@@ -199,7 +200,6 @@ PetscErrorCode createTS_NRL(LandauCtx *ctx, Vec Temps)
   PetscCall(TSSetStepNumber(ts, 0));
   PetscCall(TSSetMaxSteps(ts, 1));
   PetscCall(TSSetTime(ts, 0));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -321,7 +321,6 @@ PetscErrorCode Monitor(TS ts, PetscInt stepi, PetscReal time, Vec X, void *actx)
     PetscCall(TSSolve(ts_nrl, NULL));
   } else if (printing) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
   if (printing) { PetscCall(DMPlexLandauPrintNorms(X, stepi /*id + 1*/)); }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -338,6 +337,7 @@ int main(int argc, char **argv)
   PetscBool   use_nrl   = PETSC_TRUE;
   PetscBool   print_nrl = PETSC_FALSE;
   PetscReal   dt0;
+
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));

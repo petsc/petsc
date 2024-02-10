@@ -596,7 +596,6 @@ static PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc, Mat *a_Gmat, PetscCoarsenData *
   PetscCall(MatCoarsenDestroy(&crs));
 
   PetscCall(ISDestroy(&perm));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -715,7 +714,6 @@ static PetscErrorCode PCGAMGProlongator_GEO(PC pc, Mat Amat, PetscCoarsenData *a
 
   *a_P_out = Prol; /* out */
   PetscCall(PetscFree(clid_flid));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

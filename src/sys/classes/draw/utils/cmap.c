@@ -71,9 +71,8 @@ static PetscErrorCode PetscDrawCmap_Hue(int mapsize, unsigned char R[], unsigned
 
 static PetscErrorCode PetscDrawCmap_Gray(int mapsize, unsigned char R[], unsigned char G[], unsigned char B[])
 {
-  int i;
   PetscFunctionBegin;
-  for (i = 0; i < mapsize; i++) R[i] = G[i] = B[i] = (unsigned char)((255.0 * i) / (mapsize - 1));
+  for (int i = 0; i < mapsize; i++) R[i] = G[i] = B[i] = (unsigned char)((255.0 * i) / (mapsize - 1));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -161,10 +160,9 @@ static PetscErrorCode PetscDrawCmap_Hot(int mapsize, unsigned char R[], unsigned
 
 static PetscErrorCode PetscDrawCmap_Bone(int mapsize, unsigned char R[], unsigned char G[], unsigned char B[])
 {
-  int i;
   PetscFunctionBegin;
   (void)PetscDrawCmap_Hot(mapsize, R, G, B);
-  for (i = 0; i < mapsize; i++) {
+  for (int i = 0; i < mapsize; i++) {
     double u = (double)i / (mapsize - 1);
     double r = (7 * u + B[i] / 255.0) / 8;
     double g = (7 * u + G[i] / 255.0) / 8;

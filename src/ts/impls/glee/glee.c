@@ -277,7 +277,6 @@ PetscErrorCode TSGLEERegisterAll(void)
                     B[2][9] = {{0.353553390593273786, 0.353553390593273786, 0.292893218813452483, 0, 0, 0, 0, 0, 0}, {-0.471404520791031678, -0.471404520791031678, -0.390524291751269959, 0.235702260395515839, 0.235702260395515839, 0.195262145875634979, 0.235702260395515839, 0.235702260395515839, 0.195262145875634979}}, U[9][2] = {{1, 0}, {1, 0}, {1, 0}, {1, 0.75}, {1, 0.75}, {1, 0.75}, {1, 0.75}, {1, 0.75}, {1, 0.75}}, V[2][2] = {{1, 0}, {0, 1}}, S[2] = {1, 0}, F[2] = {1, 0}, Fembed[2] = {1, 1 - GAMMA}, Ferror[2] = {0, 1}, Serror[2] = {1, 0};
     PetscCall(TSGLEERegister(TSGLEERK285EX, p, s, r, GAMMA, &A[0][0], &B[0][0], &U[0][0], &V[0][0], S, F, NULL, Fembed, Ferror, Serror, 0, NULL));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -431,7 +430,6 @@ static PetscErrorCode TSEvaluateStep_GLEE(TS ts, PetscInt order, Vec X, PetscBoo
   PetscScalar *ws = glee->swork, *wr = glee->rwork;
 
   PetscFunctionBegin;
-
   switch (glee->status) {
   case TS_STEP_INCOMPLETE:
   case TS_STEP_PENDING:
@@ -766,7 +764,6 @@ static PetscErrorCode TSStartingMethod_GLEE(TS ts)
     PetscCall(VecZeroEntries(glee->Y[i]));
     PetscCall(VecAXPY(glee->Y[i], S[i], ts->vec_sol));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

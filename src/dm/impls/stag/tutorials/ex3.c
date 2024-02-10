@@ -1757,7 +1757,6 @@ static PetscErrorCode CreateSystem(DM dmSol, Mat *pA, Vec *pRhs, PetscBool pinPr
   PetscCall(VecAssemblyBegin(rhs));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscCall(VecAssemblyEnd(rhs));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -42,7 +42,6 @@ static PetscErrorCode KSPSetUp_FCG(KSP ksp)
   const PetscInt nworkstd = 2;
 
   PetscFunctionBegin;
-
   /* Allocate "standard" work vectors (not including the basis and transformed basis vectors) */
   PetscCall(KSPSetWorkVecs(ksp, nworkstd));
 
@@ -83,7 +82,6 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
   PetscScalar alphaold = 0, betaold = 1.0, *e = NULL, *d = NULL; /* Variables for eigen estimation  - FINISH */
 
   PetscFunctionBegin;
-
 #define VecXDot(x, y, a)     (((fcg->type) == (KSP_CG_HERMITIAN)) ? VecDot(x, y, a) : VecTDot(x, y, a))
 #define VecXMDot(a, b, c, d) (((fcg->type) == (KSP_CG_HERMITIAN)) ? VecMDot(a, b, c, d) : VecMTDot(a, b, c, d))
 
@@ -275,7 +273,6 @@ static PetscErrorCode KSPDestroy_FCG(KSP ksp)
   KSP_FCG *fcg = (KSP_FCG *)ksp->data;
 
   PetscFunctionBegin;
-
   /* Destroy "standard" work vecs */
   PetscCall(VecDestroyVecs(ksp->nwork, &ksp->work));
 

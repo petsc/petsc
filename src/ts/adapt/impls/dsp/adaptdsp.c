@@ -43,6 +43,7 @@ static PetscReal Limiter(PetscReal value, PetscReal kappa)
 static PetscErrorCode TSAdaptRestart_DSP(TSAdapt adapt)
 {
   TSAdapt_DSP *dsp = (TSAdapt_DSP *)adapt->data;
+
   PetscFunctionBegin;
   dsp->cerror[0] = dsp->hratio[0] = 1.0;
   dsp->cerror[1] = dsp->hratio[1] = 1.0;
@@ -53,6 +54,7 @@ static PetscErrorCode TSAdaptRestart_DSP(TSAdapt adapt)
 static PetscErrorCode TSAdaptRollBack_DSP(TSAdapt adapt)
 {
   TSAdapt_DSP *dsp = (TSAdapt_DSP *)adapt->data;
+
   PetscFunctionBegin;
   dsp->cerror[0] = dsp->cerror[1];
   dsp->cerror[1] = dsp->cerror[2];

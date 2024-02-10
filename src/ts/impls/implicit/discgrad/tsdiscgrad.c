@@ -350,7 +350,6 @@ static PetscErrorCode SNESTSFormFunction_DiscGrad(SNES snes, Vec x, Vec y, TS ts
   PetscCall(VecDestroy(&SgF));
   PetscCall(VecDestroy(&G));
   PetscCall(MatDestroy(&S));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

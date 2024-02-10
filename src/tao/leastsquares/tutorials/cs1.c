@@ -244,7 +244,6 @@ PetscErrorCode InitializeUserData(AppCtx *user)
     user->D[k][k]     = -1.0;
     user->D[k][k + 1] = 1.0;
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

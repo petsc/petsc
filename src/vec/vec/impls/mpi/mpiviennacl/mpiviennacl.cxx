@@ -382,6 +382,5 @@ PetscErrorCode VecCreate_MPIViennaCL_Private(Vec vv, PetscBool alloc, PetscInt n
     vecviennacl->GPUarray           = (ViennaCLVector *)array;
     vv->offloadmask                 = PETSC_OFFLOAD_UNALLOCATED;
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }

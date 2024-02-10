@@ -40,7 +40,6 @@ static PetscErrorCode SNESTRDC_KSPConverged_Destroy(void *cctx)
   PetscFunctionBegin;
   PetscCall((*ctx->convdestroy)(ctx->convctx));
   PetscCall(PetscFree(ctx));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -688,6 +687,5 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTRDC(SNES snes)
   PetscCall(VecGetBlockSize(snes->work[0],&neP->bs));
   PetscCall(PetscCalloc1(neP->bs,&neP->inorms));
   */
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -144,7 +144,6 @@ static PetscErrorCode PCBDDCComputeNedelecChangeEdge(Mat lG, IS edge, IS extrow,
     PetscCall(MatDestroy(&GEd));
     PetscCall(MatDestroy(&GEc));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1354,7 +1353,6 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   /* set change of basis */
   PetscCall(PCBDDCSetChangeOfBasisMat(pc, T, singular));
   PetscCall(MatDestroy(&T));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

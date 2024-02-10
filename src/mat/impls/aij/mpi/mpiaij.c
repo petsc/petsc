@@ -163,7 +163,6 @@ static PetscErrorCode MatBindToCPU_MPIAIJ(Mat A, PetscBool flg)
    * to differ from the parent matrix. */
   if (a->lvec) PetscCall(VecBindToCPU(a->lvec, flg));
   if (a->diag) PetscCall(VecBindToCPU(a->diag, flg));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

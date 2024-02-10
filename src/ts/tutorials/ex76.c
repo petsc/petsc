@@ -1610,7 +1610,6 @@ static PetscErrorCode MonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u
 
   PetscCall(VecViewFromOptions(divu, NULL, "-div_vec_view"));
   PetscCall(DMRestoreGlobalVector(dmCell, &divu));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

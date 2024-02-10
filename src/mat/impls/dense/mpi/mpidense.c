@@ -507,6 +507,7 @@ static PetscErrorCode MatMultTransposeKernel_MPIDense(Mat A, Vec xx, Vec yy, Pet
   const PetscScalar *ax;
   PetscScalar       *ay;
   PetscMemType       axmtype, aymtype;
+
   PetscFunctionBegin;
   if (!a->Mvctx) PetscCall(MatSetUpMultiply_MPIDense(A));
   PetscCall(VecSet(yy, 0.0));
@@ -2372,8 +2373,8 @@ static PetscErrorCode MatProductSetFromOptions_MPIDense_AB(Mat C)
   const char  *algTypes[2] = {"petsc", "elemental"};
   PetscInt     alg, nalg = PetscDefined(HAVE_ELEMENTAL) ? 2 : 1;
   PetscBool    flg = PETSC_FALSE;
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   /* Set default algorithm */
   alg = 0; /* default is petsc */
   PetscCall(PetscStrcmp(product->alg, "default", &flg));

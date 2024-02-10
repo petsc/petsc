@@ -256,7 +256,6 @@ PetscErrorCode MatCreateSNESMFMore(SNES snes, Vec x, Mat *J)
   PetscCall(MatShellSetOperation(*J, MATOP_DESTROY, (void (*)(void))SNESMatrixFreeDestroy2_Private));
   PetscCall(MatShellSetOperation(*J, MATOP_VIEW, (void (*)(void))SNESMatrixFreeView2_Private));
   PetscCall(MatSetUp(*J));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

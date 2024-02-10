@@ -567,6 +567,7 @@ static PetscErrorCode PetscSFLinkSyncDevice_Kokkos(PetscSFLink PETSC_UNUSED link
 static PetscErrorCode PetscSFLinkSyncStream_Kokkos(PetscSFLink PETSC_UNUSED link)
 {
   DeviceExecutionSpace &exec = PetscGetKokkosExecutionSpace();
+
   PetscFunctionBegin;
   exec.fence();
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -339,8 +339,8 @@ PetscErrorCode InitializeLambda(DM da, Vec lambda, PetscReal x, PetscReal y)
 {
   PetscInt i, j, Mx, My, xs, ys, xm, ym;
   Field  **l;
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &Mx, &My, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
   /* locate the global i index for x and j index for y */
   i = (PetscInt)(x * (Mx - 1));
@@ -407,7 +407,6 @@ PetscErrorCode IFunctionActive(TS ts, PetscReal ftime, Vec U, Vec Udot, Vec F, v
   PetscScalar   dummy;
 
   PetscFunctionBegin;
-
   PetscCall(TSGetDM(ts, &da));
   PetscCall(DMDAGetLocalInfo(da, &info));
   PetscCall(DMGetLocalVector(da, &localU));
@@ -521,7 +520,6 @@ PetscErrorCode IFunctionActive(TS ts, PetscReal ftime, Vec U, Vec Udot, Vec F, v
   delete[] u_a;
   delete[] f_c;
   delete[] u_c;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -746,7 +744,6 @@ PetscErrorCode RHSFunctionActive(TS ts, PetscReal ftime, Vec U, Vec F, void *ptr
   delete[] u_a;
   delete[] f_c;
   delete[] u_c;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

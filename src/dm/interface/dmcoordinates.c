@@ -8,6 +8,7 @@ PetscErrorCode DMRestrictHook_Coordinates(DM dm, DM dmc, void *ctx)
   DM  dm_coord, dmc_coord;
   Vec coords, ccoords;
   Mat inject;
+
   PetscFunctionBegin;
   PetscCall(DMGetCoordinateDM(dm, &dm_coord));
   PetscCall(DMGetCoordinateDM(dmc, &dmc_coord));
@@ -30,6 +31,7 @@ static PetscErrorCode DMSubDomainHook_Coordinates(DM dm, DM subdm, void *ctx)
   DM          dm_coord, subdm_coord;
   Vec         coords, ccoords, clcoords;
   VecScatter *scat_i, *scat_g;
+
   PetscFunctionBegin;
   PetscCall(DMGetCoordinateDM(dm, &dm_coord));
   PetscCall(DMGetCoordinateDM(subdm, &subdm_coord));

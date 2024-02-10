@@ -1519,8 +1519,8 @@ static PetscErrorCode PCHYPRESetInterpolations_HYPRE(PC pc, PetscInt dim, Mat RT
   PC_HYPRE *jac = (PC_HYPRE *)pc->data;
   PetscBool ishypre;
   PetscInt  i;
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   PetscCall(MatDestroy(&jac->RT_PiFull));
   PetscCall(MatDestroy(&jac->ND_PiFull));
   for (i = 0; i < 3; ++i) {
@@ -1573,7 +1573,6 @@ static PetscErrorCode PCHYPRESetInterpolations_HYPRE(PC pc, PetscInt dim, Mat RT
       }
     }
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

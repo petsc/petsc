@@ -56,7 +56,6 @@ static PetscErrorCode TaoPounders(AppCtx *user)
   char buf[1024];
 
   PetscFunctionBegin;
-
   /* Set the values for the algorithm options we want to use */
   PetscCall(PetscSNPrintf(buf, PETSC_STATIC_ARRAY_LENGTH(buf), "%d", user->npmax));
   PetscCall(PetscOptionsSetValue(NULL, "-tao_pounders_npmax", buf));

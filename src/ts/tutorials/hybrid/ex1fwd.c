@@ -117,7 +117,6 @@ PetscErrorCode ShiftGradients(TS ts, Vec U, AppCtx *actx)
   x[0]   = tmp[0] + A2[0];
   x[1]   = tmp[1] + A2[1];
   PetscCall(MatDenseRestoreColumn(sp, &x));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

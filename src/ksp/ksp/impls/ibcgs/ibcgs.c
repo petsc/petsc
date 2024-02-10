@@ -332,7 +332,6 @@ M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_IBCGS(KSP ksp)
 {
   PetscFunctionBegin;
-
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 3));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_RIGHT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_RIGHT, 1));

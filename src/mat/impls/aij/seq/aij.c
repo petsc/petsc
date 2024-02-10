@@ -4653,6 +4653,7 @@ PetscErrorCode MatSeqAIJGetMaxRowNonzeros(Mat A, PetscInt *nz)
 static PetscErrorCode MatCOOStructDestroy_SeqAIJ(void *data)
 {
   MatCOOStruct_SeqAIJ *coo = (MatCOOStruct_SeqAIJ *)data;
+
   PetscFunctionBegin;
   PetscCall(PetscFree(coo->perm));
   PetscCall(PetscFree(coo->jmap));

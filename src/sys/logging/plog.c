@@ -491,6 +491,7 @@ PetscErrorCode PetscLogDefaultBegin(void)
 PetscErrorCode PetscLogTraceBegin(FILE *file)
 {
   PetscLogHandler handler;
+
   PetscFunctionBegin;
   PetscCall(PetscLogTryGetHandler(PETSCLOGHANDLERTRACE, &handler));
   if (handler) PetscFunctionReturn(PETSC_SUCCESS);

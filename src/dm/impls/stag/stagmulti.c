@@ -638,7 +638,6 @@ PETSC_INTERN PetscErrorCode DMStagPopulateInterpolation2d_Internal(DM dmc, DM dm
         PetscCall(DMStagStencilToIndexLocal(dmc, dim, 1, colc, ic));
         PetscCall(MatSetValuesLocal(A, 1, &ir, 1, ic, weight, INSERT_VALUES));
       }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -987,7 +986,6 @@ PETSC_INTERN PetscErrorCode DMStagPopulateInterpolation3d_Internal(DM dmc, DM dm
           PetscCall(DMStagStencilToIndexLocal(dmc, dim, 1, colc, ic));
           PetscCall(MatSetValuesLocal(A, 1, &ir, 1, ic, weight, INSERT_VALUES));
         }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

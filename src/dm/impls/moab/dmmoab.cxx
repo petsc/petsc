@@ -1242,7 +1242,6 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
       for (unsigned j = 0; j < msetelems.size(); ++j) dmmoab->materials[dmmoab->elocal->index(msetelems[j])] = partID;
     }
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

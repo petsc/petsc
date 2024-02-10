@@ -1794,7 +1794,6 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
   *connOut = conn;
 
   *tree_face_to_uniq = ttf;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

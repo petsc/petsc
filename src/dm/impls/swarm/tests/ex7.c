@@ -196,9 +196,9 @@ PetscErrorCode particlesToGrid(const DM dm, DM sw, const PetscInt Np, const Pets
   if (a_tid == target) PetscCall(VecViewFromOptions(rho, NULL, "-rho_view"));
   // output
   *Mp_out = M_p;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
 static PetscErrorCode maxwellian(PetscInt dim, const PetscReal x[], PetscReal kt_m, PetscReal n, PetscScalar *u)
 {
   PetscInt  i;

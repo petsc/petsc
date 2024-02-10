@@ -761,7 +761,6 @@ static PetscErrorCode DMCreateCoordinateDM_Stag(DM dm, DM *dmc)
   const char    *prefix;
 
   PetscFunctionBegin;
-
   PetscCheck(stag->coordinateDMType, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Before creating a coordinate DM, a type must be specified with DMStagSetCoordinateDMType()");
 
   PetscCall(DMGetDimension(dm, &dim));
@@ -915,7 +914,6 @@ static PetscErrorCode DMSetFromOptions_Stag(DM dm, PetscOptionItems *PetscOption
     if (stag->l[d])
       for (i = 0; i < stag->nRanks[d]; ++i) stag->l[d][i] *= refineFactorTotal[d];
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

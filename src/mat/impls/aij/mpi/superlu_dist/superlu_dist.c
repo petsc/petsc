@@ -272,7 +272,6 @@ static PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
   /* clear composed functions */
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatFactorGetSolverType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSuperluDistGetDiagU_C", NULL));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

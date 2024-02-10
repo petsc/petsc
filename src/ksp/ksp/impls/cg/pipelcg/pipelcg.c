@@ -54,7 +54,6 @@ static PetscErrorCode KSPSetUp_PIPELCG(KSP ksp)
   PetscCall(VecDuplicateVecs(plcg->p, 3 * (l - 1) + 1, &plcg->Q));
   PetscCall(PetscCalloc1(2, &plcg->alpha));
   PetscCall(PetscCalloc1(l, &plcg->sigma));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

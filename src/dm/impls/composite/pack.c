@@ -334,7 +334,6 @@ PetscErrorCode DMCompositeGetLocalAccessArray(DM dm, Vec pvec, PetscInt nwanted,
 
     nlocal += link->nlocal;
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1599,7 +1598,6 @@ static PetscErrorCode DMLocalToGlobalBegin_Composite(DM dm, Vec lvec, InsertMode
 
   PetscCall(VecRestoreArray(gvec, NULL));
   PetscCall(VecRestoreArray(lvec, NULL));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1651,7 +1649,6 @@ static PetscErrorCode DMLocalToLocalBegin_Composite(DM dm, Vec vec1, InsertMode 
 
   PetscCall(VecRestoreArray(vec1, NULL));
   PetscCall(VecRestoreArray(vec2, NULL));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

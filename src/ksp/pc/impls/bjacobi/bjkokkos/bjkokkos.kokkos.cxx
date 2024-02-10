@@ -1044,7 +1044,6 @@ static PetscErrorCode PCReset_BJKOKKOS(PC pc)
   jac->batch_b      = NULL;
   jac->batch_x      = NULL;
   jac->batch_values = NULL;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

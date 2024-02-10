@@ -243,8 +243,8 @@ static PetscErrorCode TronGradientProjections(Tao tao, TAO_TRON *tron)
 
      The free, active, and binding variables should be already identified
   */
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   for (i = 0; i < tron->maxgpits; ++i) {
     if (-actred <= (tron->pg_ftol) * actred_max) break;
 

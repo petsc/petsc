@@ -209,7 +209,6 @@ PetscErrorCode pic_insert_DMPLEX(PetscBool is_simplex, PetscInt dim)
   const char *fieldnames[] = {"viscosity", "DMSwarm_rank"};
 
   PetscFunctionBegin;
-
   /* Create the background cell DM */
   {
     PetscInt faces[3] = {4, 2, 4};

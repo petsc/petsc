@@ -23,6 +23,5 @@ PetscErrorCode MatCoarsenRegisterAll(void)
   PetscCall(MatCoarsenRegister(MATCOARSENMIS, MatCoarsenCreate_MIS));
   PetscCall(MatCoarsenRegister(MATCOARSENHEM, MatCoarsenCreate_HEM));
   PetscCall(MatCoarsenRegister(MATCOARSENMISK, MatCoarsenCreate_MISK));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }

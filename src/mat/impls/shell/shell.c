@@ -1504,7 +1504,6 @@ static PetscErrorCode MatShellSetContext_Shell(Mat mat, void *ctx)
     PetscCall(PetscObjectCompose((PetscObject)mat, "MatShell ctx", NULL));
     shell->ctxcontainer = NULL;
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

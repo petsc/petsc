@@ -180,7 +180,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetPointsPerCell(DM dm, PetscInt e, Petsc
   }
   *npoints = points_per_cell;
   *pidlist = plist;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

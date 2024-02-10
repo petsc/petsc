@@ -285,7 +285,6 @@ PetscErrorCode ComputeVariableBounds(Tao tao, Vec xl, Vec xu, void *ctx)
     xl_array[xm - 1] = 0;
     PetscCall(VecRestoreArray(xu, &xl_array));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* -------------------------------------------------------------------- */
