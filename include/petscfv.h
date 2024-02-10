@@ -88,6 +88,7 @@ PETSC_EXTERN PetscErrorCode PetscFVGetQuadrature(PetscFV, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscFVSetDualSpace(PetscFV, PetscDualSpace);
 PETSC_EXTERN PetscErrorCode PetscFVGetDualSpace(PetscFV, PetscDualSpace *);
 
+PETSC_EXTERN PetscErrorCode PetscFVClone(PetscFV, PetscFV *);
 PETSC_EXTERN PetscErrorCode PetscFVRefine(PetscFV, PetscFV *);
 
 PETSC_EXTERN PetscErrorCode PetscFVGetCellTabulation(PetscFV, PetscTabulation *);

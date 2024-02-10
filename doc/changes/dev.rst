@@ -145,6 +145,7 @@ Changes: Development
 .. rubric:: FE/FV:
 
 - Add Jacobian type argument to ``PetscFEIntegrateBdJacobian()``
+- Add ``PetscFVClone()``
 
 .. rubric:: DMNetwork:
 

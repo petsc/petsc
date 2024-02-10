@@ -1431,8 +1431,8 @@ PetscErrorCode PetscFVSetQuadrature(PetscFV fvm, PetscQuadrature q)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscCall(PetscQuadratureDestroy(&fvm->quadrature));
   PetscCall(PetscObjectReference((PetscObject)q));
+  PetscCall(PetscQuadratureDestroy(&fvm->quadrature));
   fvm->quadrature = q;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1712,6 +1712,44 @@ PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV fvm, PetscDS prob, PetscInt f
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscTryTypeMethod(fvm, integraterhsfunction, prob, field, Nf, fgeom, neighborVol, uL, uR, fluxL, fluxR);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscFVClone - Create a shallow copy of a `PetscFV` object that jsut references the internal objects.
+
+  Input Parameter:
+. fv - The initial `PetscFV`
+
+  Output Parameter:
+. fvNew - A clone of the `PetscFV`
+
+  Level: advanced
+
+  Notes:
+  This is typically used to change the number of components.
+
+.seealso: `PetscFV`, `PetscFVType`, `PetscFVCreate()`, `PetscFVSetType()`
+@*/
+PetscErrorCode PetscFVClone(PetscFV fv, PetscFV *fvNew)
+{
+  PetscDualSpace  Q;
+  DM              K;
+  PetscQuadrature q;
+  PetscInt        Nc, cdim;
+
+  PetscFunctionBegin;
+  PetscCall(PetscFVGetDualSpace(fv, &Q));
+  PetscCall(PetscFVGetQuadrature(fv, &q));
+  PetscCall(PetscDualSpaceGetDM(Q, &K));
+
+  PetscCall(PetscFVCreate(PetscObjectComm((PetscObject)fv), fvNew));
+  PetscCall(PetscFVSetDualSpace(*fvNew, Q));
+  PetscCall(PetscFVGetNumComponents(fv, &Nc));
+  PetscCall(PetscFVSetNumComponents(*fvNew, Nc));
+  PetscCall(PetscFVGetSpatialDimension(fv, &cdim));
+  PetscCall(PetscFVSetSpatialDimension(*fvNew, cdim));
+  PetscCall(PetscFVSetQuadrature(*fvNew, q));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
