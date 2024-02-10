@@ -386,7 +386,7 @@ static PetscErrorCode TestL2ProjectionParticlesToField(DM dm, DM sw, Vec fhat, A
   PetscReal   fmoments[3]; // \int \hat f, \int x \hat f, \int r^2 \hat f
 
   PetscFunctionBeginUser;
-  PetscCall(DMSwarmProjectFields(sw, 1, fieldnames, fields, SCATTER_FORWARD));
+  PetscCall(DMSwarmProjectFields(sw, dm, 1, fieldnames, fields, SCATTER_FORWARD));
 
   /* Check moments of field */
   PetscCall(computeParticleMoments(sw, pmoments, user));
@@ -407,7 +407,7 @@ static PetscErrorCode TestL2ProjectionFieldToParticles(DM dm, DM sw, Vec fhat, A
   PetscReal   fmoments[3]; // \int \hat f, \int x \hat f, \int r^2 \hat f
 
   PetscFunctionBeginUser;
-  PetscCall(DMSwarmProjectFields(sw, 1, fieldnames, fields, SCATTER_REVERSE));
+  PetscCall(DMSwarmProjectFields(sw, dm, 1, fieldnames, fields, SCATTER_REVERSE));
 
   /* Check moments */
   PetscCall(computeParticleMoments(sw, pmoments, user));

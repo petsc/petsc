@@ -1077,7 +1077,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx, PetscInt my)
   /* project the swarm properties */
   PetscCall(DMCreateGlobalVector(dm_coeff, &pfields[0]));
   PetscCall(DMCreateGlobalVector(dm_coeff, &pfields[1]));
-  PetscCall(DMSwarmProjectFields(dms_mpoint, 2, fieldnames, pfields, SCATTER_FORWARD));
+  PetscCall(DMSwarmProjectFields(dms_mpoint, NULL, 2, fieldnames, pfields, SCATTER_FORWARD));
   eta_v = pfields[0];
   rho_v = pfields[1];
   PetscCall(PetscObjectSetName((PetscObject)eta_v, "eta"));
@@ -1212,7 +1212,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx, PetscInt my)
 
     /* update coefficients on quadrature points */
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, ".... project\n"));
-    PetscCall(DMSwarmProjectFields(dms_mpoint, 2, fieldnames, pfields, SCATTER_FORWARD));
+    PetscCall(DMSwarmProjectFields(dms_mpoint, NULL, 2, fieldnames, pfields, SCATTER_FORWARD));
     eta_v = pfields[0];
     rho_v = pfields[1];
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, ".... interp\n"));

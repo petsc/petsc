@@ -133,6 +133,8 @@ Changes: Development
 
 .. rubric:: DMSwarm:
 
+- Add continuous ``DM`` argument to ``DMSwarmProjectFields()``
+
 .. rubric:: DMPlex:
 
 - Drop support for MED, i.e. remove ``DMPlexCreateMedFromFile()`` and ``--with-med``

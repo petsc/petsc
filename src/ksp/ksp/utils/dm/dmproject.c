@@ -645,12 +645,13 @@ static PetscErrorCode DMSwarmProjectFields_DA_Internal(DM swarm, DM celldm, Pets
 }
 
 /*@C
-  DMSwarmProjectFields - Project a set of swarm fields onto the cell `DM`
+  DMSwarmProjectFields - Project a set of swarm fields onto another `DM`
 
   Collective
 
   Input Parameters:
-+ dm         - the `DMSWARM`
++ sw         - the `DMSWARM`
+. dm         - the `DM`, or `NULL` to use the cell `DM`
 . nfields    - the number of swarm fields to project
 . fieldnames - the textual names of the swarm fields to project
 . fields     - an array of `Vec`'s of length nfields
@@ -677,20 +678,19 @@ static PetscErrorCode DMSwarmProjectFields_DA_Internal(DM swarm, DM celldm, Pets
 
 .seealso: [](ch_dmbase), `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
-PetscErrorCode DMSwarmProjectFields(DM dm, PetscInt nfields, const char *fieldnames[], Vec fields[], ScatterMode mode)
+PetscErrorCode DMSwarmProjectFields(DM sw, DM dm, PetscInt nfields, const char *fieldnames[], Vec fields[], ScatterMode mode)
 {
-  DM_Swarm         *swarm = (DM_Swarm *)dm->data;
+  DM_Swarm         *swarm = (DM_Swarm *)sw->data;
   DMSwarmDataField *gfield;
-  DM                celldm;
   PetscBool         isDA, isPlex;
   MPI_Comm          comm;
 
   PetscFunctionBegin;
-  DMSWARMPICVALID(dm);
-  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
-  PetscCall(DMSwarmGetCellDM(dm, &celldm));
-  PetscCall(PetscObjectTypeCompare((PetscObject)celldm, DMDA, &isDA));
-  PetscCall(PetscObjectTypeCompare((PetscObject)celldm, DMPLEX, &isPlex));
+  DMSWARMPICVALID(sw);
+  PetscCall(PetscObjectGetComm((PetscObject)sw, &comm));
+  if (!dm) PetscCall(DMSwarmGetCellDM(sw, &dm));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMDA, &isDA));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMPLEX, &isPlex));
   PetscCall(PetscMalloc1(nfields, &gfield));
   for (PetscInt f = 0; f < nfields; ++f) PetscCall(DMSwarmDataBucketGetDMSwarmDataFieldByName(swarm->db, fieldnames[f], &gfield[f]));
 
@@ -699,14 +699,14 @@ PetscErrorCode DMSwarmProjectFields(DM dm, PetscInt nfields, const char *fieldna
       PetscCheck(gfield[f]->petsc_type == PETSC_REAL, comm, PETSC_ERR_SUP, "Projection only valid for fields using a data type = PETSC_REAL");
       PetscCheck(gfield[f]->bs == 1, comm, PETSC_ERR_SUP, "Projection only valid for fields with block size = 1");
     }
-    PetscCall(DMSwarmProjectFields_DA_Internal(dm, celldm, nfields, gfield, fields, mode));
+    PetscCall(DMSwarmProjectFields_DA_Internal(sw, dm, nfields, gfield, fields, mode));
   } else if (isPlex) {
     PetscInt Nf;
 
-    PetscCall(DMGetNumFields(celldm, &Nf));
+    PetscCall(DMGetNumFields(dm, &Nf));
     PetscCheck(Nf == nfields, comm, PETSC_ERR_ARG_WRONG, "Number of DM fields %" PetscInt_FMT " != %" PetscInt_FMT " number of requested Swarm fields", Nf, nfields);
-    PetscCall(DMSwarmProjectFields_Plex_Internal(dm, celldm, nfields, fieldnames, fields[0], mode));
-  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Only supported for cell DMs of type DMDA and DMPLEX");
+    PetscCall(DMSwarmProjectFields_Plex_Internal(sw, dm, nfields, fieldnames, fields[0], mode));
+  } else SETERRQ(PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "Only supported for cell DMs of type DMDA and DMPLEX");
 
   PetscCall(PetscFree(gfield));
   PetscFunctionReturn(PETSC_SUCCESS);
