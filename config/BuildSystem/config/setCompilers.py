@@ -248,7 +248,7 @@ class Configure(config.base.Configure):
                                                  ]]))
       if not found and Configure.isCrayPEWrapper(compiler,log):
         (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
-        found = any([s in output for s in ['(GCC)']])
+        found = any([s in output for s in ['(GCC)','GNU Fortran','gcc-','g++-']])
       if found:
         if log: log.write('Detected GNU compiler\n')
         return 1
