@@ -4666,6 +4666,7 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
 {
   DM_Plex        *mesh = (DM_Plex *)dm->data;
   DM              plex = NULL, plexA = NULL;
+  const char     *name = "BdResidual";
   DMEnclosureType encAux;
   PetscDS         prob, probAux       = NULL;
   PetscSection    section, sectionAux = NULL;
@@ -4775,7 +4776,7 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
     for (face = 0; face < numFaces; ++face) {
       const PetscInt point = points[face], *support;
 
-      if (mesh->printFEM > 1) PetscCall(DMPrintCellVector(point, "BdResidual", totDim, &elemVec[face * totDim]));
+      if (mesh->printFEM > 1) PetscCall(DMPrintCellVector(point, name, totDim, &elemVec[face * totDim]));
       PetscCall(DMPlexGetSupport(plex, point, &support));
       PetscCall(DMPlexVecSetClosure(plex, NULL, locF, support[0], &elemVec[face * totDim], ADD_ALL_VALUES));
     }
@@ -4786,6 +4787,23 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
     PetscCall(PetscFree4(u, u_t, elemVec, a));
   }
 end:
+  if (mesh->printFEM) {
+    PetscSection s;
+    Vec          locFbc;
+    PetscInt     pStart, pEnd, maxDof;
+    PetscScalar *zeroes;
+
+    PetscCall(DMGetLocalSection(dm, &s));
+    PetscCall(VecDuplicate(locF, &locFbc));
+    PetscCall(VecCopy(locF, locFbc));
+    PetscCall(PetscSectionGetChart(s, &pStart, &pEnd));
+    PetscCall(PetscSectionGetMaxDof(s, &maxDof));
+    PetscCall(PetscCalloc1(maxDof, &zeroes));
+    for (PetscInt p = pStart; p < pEnd; p++) PetscCall(VecSetValuesSection(locFbc, s, p, zeroes, INSERT_BC_VALUES));
+    PetscCall(PetscFree(zeroes));
+    PetscCall(DMPrintLocalVec(dm, name, mesh->printTol, locFbc));
+    PetscCall(VecDestroy(&locFbc));
+  }
   PetscCall(DMDestroy(&plex));
   PetscCall(DMDestroy(&plexA));
   PetscFunctionReturn(PETSC_SUCCESS);
