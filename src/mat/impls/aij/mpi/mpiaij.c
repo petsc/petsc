@@ -4166,8 +4166,8 @@ PetscErrorCode MatMPIAIJSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d_
        calculated if N is given) For square matrices n is almost always m.
 . M    - number of global rows (or `PETSC_DETERMINE` to have calculated if m is given)
 . N    - number of global columns (or `PETSC_DETERMINE` to have calculated if n is given)
-. i    - row indices; that is i[0] = 0, i[row] = i[row-1] + number of elements in that row of the matrix
-. j    - column indices
+. i    - row indices (of length m+1); that is i[0] = 0, i[row] = i[row-1] + number of elements in that row of the matrix
+. j    - global column indices
 - a    - optional matrix values
 
   Output Parameter:
@@ -4178,13 +4178,13 @@ PetscErrorCode MatMPIAIJSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d_
   Notes:
   The `i`, `j`, and `a` arrays ARE copied by this routine into the internal format used by PETSc;
   thus you CANNOT change the matrix entries by changing the values of a[] after you have
-  called this routine. Use `MatCreateMPIAIJWithSplitArrays()` to avoid needing to copy the arrays.
+  called this routine. Use `MatCreateMPIAIJWithSplitArray()` to avoid needing to copy the arrays.
 
   The `i` and `j` indices are 0 based, and `i` indices are indices corresponding to the local `j` array.
 
-  Once you have created the matrix you can update it with new numerical values using `MatUpdateMPIAIJWithArrays()`
+  Once you have created the matrix you can update it with new numerical values using `MatUpdateMPIAIJWithArray()`
 
-  If you do **not** use `MatUpdateMPIAIJWithArrays()`, the column indices in `j` do not need to be sorted. If you will use
+  If you do **not** use `MatUpdateMPIAIJWithArray()`, the column indices in `j` do not need to be sorted. If you will use
   `MatUpdateMPIAIJWithArrays()`, the column indices **must** be sorted.
 
   The format which is used for the sparse matrix input, is equivalent to a
@@ -4208,7 +4208,7 @@ PetscErrorCode MatMPIAIJSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d_
 .ve
 
 .seealso: [](ch_matrices), `Mat`, `MATMPIAIK`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
-          `MATMPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`, `MatUpdateMPIAIJWithArrays()`, `MatSetPreallocationCOO()`, `MatSetValuesCOO()`
+          `MATMPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`, `MatUpdateMPIAIJWithArray()`, `MatSetPreallocationCOO()`, `MatSetValuesCOO()`
 @*/
 PetscErrorCode MatCreateMPIAIJWithArrays(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, const PetscInt i[], const PetscInt j[], const PetscScalar a[], Mat *mat)
 {

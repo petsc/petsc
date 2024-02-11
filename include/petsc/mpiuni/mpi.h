@@ -229,6 +229,7 @@ typedef int MPI_Datatype;
 #define MPI_INT8_T        (5 << 20 | 1 << 8 | (int)sizeof(int8_t))
 #define MPI_INT16_T       (5 << 20 | 1 << 8 | (int)sizeof(int16_t))
 #define MPI_INT32_T       (5 << 20 | 1 << 8 | (int)sizeof(int32_t))
+#define MPI_INT64_T       (5 << 20 | 1 << 8 | (int)sizeof(int64_t))
 
 #define MPI_UNSIGNED_SHORT     (5 << 20 | 1 << 8 | (int)sizeof(unsigned short))
 #define MPI_UNSIGNED           (5 << 20 | 1 << 8 | (int)sizeof(unsigned))

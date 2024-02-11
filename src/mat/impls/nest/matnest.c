@@ -248,19 +248,12 @@ static PetscErrorCode MatProductSymbolic_Nest_Dense(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatProductSetFromOptions_Nest_Dense_AB(Mat C)
-{
-  PetscFunctionBegin;
-  C->ops->productsymbolic = MatProductSymbolic_Nest_Dense;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatProductSetFromOptions_Nest_Dense(Mat C)
 {
   Mat_Product *product = C->product;
 
   PetscFunctionBegin;
-  if (product->type == MATPRODUCT_AB) PetscCall(MatProductSetFromOptions_Nest_Dense_AB(C));
+  if (product->type == MATPRODUCT_AB) C->ops->productsymbolic = MatProductSymbolic_Nest_Dense;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -459,7 +452,6 @@ static PetscErrorCode MatDestroy_Nest(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_nest_seqdense_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_nest_seqdense_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_nest_mpidense_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_nest_dense_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2317,7 +2309,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_nest_seqdense_C", MatConvert_Nest_Dense));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_nest_seqdense_C", MatProductSetFromOptions_Nest_Dense));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_nest_mpidense_C", MatProductSetFromOptions_Nest_Dense));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_nest_dense_C", MatProductSetFromOptions_Nest_Dense));
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATNEST));
   PetscFunctionReturn(PETSC_SUCCESS);

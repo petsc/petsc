@@ -1727,7 +1727,7 @@ PetscErrorCode KSPGetMinimumIterations(KSP ksp, PetscInt *minit)
   Note:
   If this is not called the X vector is zeroed in the call to `KSPSolve()`.
 
-.seealso: [](ch_ksp), `KSPGetInitialGuessNonzero()`, `KSPSetGuessType()`, `KSPGuessType`, `KSP`
+.seealso: [](ch_ksp), `KSPGetInitialGuessNonzero()`, `KSPGuessSetType()`, `KSPGuessType`, `KSP`
 @*/
 PetscErrorCode KSPSetInitialGuessNonzero(KSP ksp, PetscBool flg)
 {

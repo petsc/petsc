@@ -10062,44 +10062,41 @@ PetscErrorCode MatRARt(Mat A, Mat R, MatReuse scall, PetscReal fill, Mat *C)
 
 static PetscErrorCode MatProduct_Private(Mat A, Mat B, MatReuse scall, PetscReal fill, MatProductType ptype, Mat *C)
 {
-  PetscFunctionBegin;
-  PetscCheck(scall != MAT_INPLACE_MATRIX, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Inplace product not supported");
+  PetscBool flg = PETSC_TRUE;
 
+  PetscFunctionBegin;
+  PetscCheck(scall != MAT_INPLACE_MATRIX, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "MAT_INPLACE_MATRIX product not supported");
   if (scall == MAT_INITIAL_MATRIX) {
     PetscCall(PetscInfo(A, "Calling MatProduct API with MAT_INITIAL_MATRIX and product type %s\n", MatProductTypes[ptype]));
     PetscCall(MatProductCreate(A, B, NULL, C));
-    PetscCall(MatProductSetType(*C, ptype));
     PetscCall(MatProductSetAlgorithm(*C, MATPRODUCTALGORITHMDEFAULT));
     PetscCall(MatProductSetFill(*C, fill));
-
-    (*C)->product->api_user = PETSC_TRUE;
-    PetscCall(MatProductSetFromOptions(*C));
-    PetscCall(MatProductSymbolic(*C));
   } else { /* scall == MAT_REUSE_MATRIX */
     Mat_Product *product = (*C)->product;
-    PetscBool    isdense;
 
-    PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)(*C), &isdense, MATSEQDENSE, MATMPIDENSE, ""));
-    if (isdense && product && product->type != ptype) {
+    PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)(*C), &flg, MATSEQDENSE, MATMPIDENSE, ""));
+    if (flg && product && product->type != ptype) {
       PetscCall(MatProductClear(*C));
       product = NULL;
     }
     PetscCall(PetscInfo(A, "Calling MatProduct API with MAT_REUSE_MATRIX %s product present and product type %s\n", product ? "with" : "without", MatProductTypes[ptype]));
     if (!product) { /* user provide the dense matrix *C without calling MatProductCreate() or reusing it from previous calls */
-      PetscCheck(isdense, PetscObjectComm((PetscObject)(*C)), PETSC_ERR_SUP, "Call MatProductCreate() first");
+      PetscCheck(flg, PetscObjectComm((PetscObject)(*C)), PETSC_ERR_SUP, "Call MatProductCreate() first");
       PetscCall(MatProductCreate_Private(A, B, NULL, *C));
-      product           = (*C)->product;
-      product->fill     = fill;
-      product->api_user = PETSC_TRUE;
-      product->clear    = PETSC_TRUE;
-
-      PetscCall(MatProductSetType(*C, ptype));
-      PetscCall(MatProductSetFromOptions(*C));
-      PetscCheck((*C)->ops->productsymbolic, PetscObjectComm((PetscObject)(*C)), PETSC_ERR_SUP, "MatProduct %s not supported for %s and %s", MatProductTypes[ptype], ((PetscObject)A)->type_name, ((PetscObject)B)->type_name);
-      PetscCall(MatProductSymbolic(*C));
-    } else { /* user may change input matrices A or B when REUSE */
+      product        = (*C)->product;
+      product->fill  = fill;
+      product->clear = PETSC_TRUE;
+    } else { /* user may change input matrices A or B when MAT_REUSE_MATRIX */
+      flg = PETSC_FALSE;
       PetscCall(MatProductReplaceMats(A, B, NULL, *C));
     }
+  }
+  if (flg) {
+    (*C)->product->api_user = PETSC_TRUE;
+    PetscCall(MatProductSetType(*C, ptype));
+    PetscCall(MatProductSetFromOptions(*C));
+    PetscCheck((*C)->ops->productsymbolic, PetscObjectComm((PetscObject)(*C)), PETSC_ERR_SUP, "MatProduct %s not supported for %s and %s", MatProductTypes[ptype], ((PetscObject)A)->type_name, ((PetscObject)B)->type_name);
+    PetscCall(MatProductSymbolic(*C));
   }
   PetscCall(MatProductNumeric(*C));
   PetscFunctionReturn(PETSC_SUCCESS);
