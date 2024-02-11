@@ -33,7 +33,7 @@ KSP Object:
     restart=30, using Modified Gram-Schmidt Orthogonalization
     happy breakdown tolerance 1e-30
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-08, absolute=1e-50, divergence=10000.
+  tolerances: relative=1e-08, absolute=1e-50, divergence=10000.
   left preconditioning
 PC Object:
   type: bjacobi
@@ -43,7 +43,7 @@ PC Object:
 KSP Object:
   type: preonly
   maximum iterations=10000
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
 PC Object:
   type: ilu

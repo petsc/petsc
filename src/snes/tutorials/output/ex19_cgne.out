@@ -5,7 +5,7 @@ lid velocity = 0.00591716, prandtl # = 1., grashof # = 1.
 KSP Object: 1 MPI process
   type: cgne
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using UNPRECONDITIONED norm type for convergence test
 PC Object: 1 MPI process
@@ -34,7 +34,7 @@ PC Object: 1 MPI process
 KSP Object: 1 MPI process
   type: cgne
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using UNPRECONDITIONED norm type for convergence test
 PC Object: 1 MPI process

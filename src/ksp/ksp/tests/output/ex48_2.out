@@ -15,7 +15,7 @@ Iteratively computed extreme singular values: max 4.4641 min 1. max/min 4.4641
 KSP Object: 1 MPI process
   type: minres
   maximum iterations=5, initial guess is zero
-  tolerances:  relative=0., absolute=0., divergence=10000.
+  tolerances: relative=0., absolute=0., divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
 PC Object: 1 MPI process

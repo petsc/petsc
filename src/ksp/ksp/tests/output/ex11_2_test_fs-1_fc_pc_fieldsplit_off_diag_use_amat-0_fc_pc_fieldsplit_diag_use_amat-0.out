@@ -55,7 +55,7 @@ KSP Object: (fc_) 4 MPI processes
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     happy breakdown tolerance 1e-30
   maximum iterations=4000, initial guess is zero
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
   right preconditioning
   diagonally scaled system
   using UNPRECONDITIONED norm type for convergence test
@@ -70,7 +70,7 @@ PC Object: (fc_) 4 MPI processes
       KSP Object: (fc_fieldsplit_velocity_) 4 MPI processes
         type: cg
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-06, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-06, absolute=1e-50, divergence=10000.
         left preconditioning
         using PRECONDITIONED norm type for convergence test
       PC Object: (fc_fieldsplit_velocity_) 4 MPI processes
@@ -81,7 +81,7 @@ PC Object: (fc_) 4 MPI processes
         KSP Object: (fc_fieldsplit_velocity_sub_) 1 MPI process
           type: preonly
           maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
         PC Object: (fc_fieldsplit_velocity_sub_) 1 MPI process
@@ -117,7 +117,7 @@ PC Object: (fc_) 4 MPI processes
           restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
           happy breakdown tolerance 1e-30
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         right preconditioning
         using UNPRECONDITIONED norm type for convergence test
       PC Object: (fc_fieldsplit_pressure_) 4 MPI processes
@@ -125,7 +125,7 @@ PC Object: (fc_) 4 MPI processes
           KSP Object: (fc_fieldsplit_pressure_lsc_) 4 MPI processes
             type: cg
             maximum iterations=10000, initial guess is zero
-            tolerances:  relative=0.01, absolute=1e-50, divergence=10000.
+            tolerances: relative=0.01, absolute=1e-50, divergence=10000.
             left preconditioning
             using PRECONDITIONED norm type for convergence test
           PC Object: (fc_fieldsplit_pressure_lsc_) 4 MPI processes
@@ -136,7 +136,7 @@ PC Object: (fc_) 4 MPI processes
             KSP Object: (fc_fieldsplit_pressure_lsc_sub_) 1 MPI process
               type: preonly
               maximum iterations=10000, initial guess is zero
-              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
               left preconditioning
               using NONE norm type for convergence test
             PC Object: (fc_fieldsplit_pressure_lsc_sub_) 1 MPI process
@@ -276,7 +276,7 @@ KSP Object: (fc_) 4 MPI processes
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     happy breakdown tolerance 1e-30
   maximum iterations=4000, initial guess is zero
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
   right preconditioning
   diagonally scaled system
   using UNPRECONDITIONED norm type for convergence test
@@ -291,7 +291,7 @@ PC Object: (fc_) 4 MPI processes
       KSP Object: (fc_fieldsplit_velocity_) 4 MPI processes
         type: cg
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-06, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-06, absolute=1e-50, divergence=10000.
         left preconditioning
         using PRECONDITIONED norm type for convergence test
       PC Object: (fc_fieldsplit_velocity_) 4 MPI processes
@@ -302,7 +302,7 @@ PC Object: (fc_) 4 MPI processes
         KSP Object: (fc_fieldsplit_velocity_sub_) 1 MPI process
           type: preonly
           maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
         PC Object: (fc_fieldsplit_velocity_sub_) 1 MPI process
@@ -338,7 +338,7 @@ PC Object: (fc_) 4 MPI processes
           restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
           happy breakdown tolerance 1e-30
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         right preconditioning
         using UNPRECONDITIONED norm type for convergence test
       PC Object: (fc_fieldsplit_pressure_) 4 MPI processes
@@ -346,7 +346,7 @@ PC Object: (fc_) 4 MPI processes
           KSP Object: (fc_fieldsplit_pressure_lsc_) 4 MPI processes
             type: cg
             maximum iterations=10000, initial guess is zero
-            tolerances:  relative=0.01, absolute=1e-50, divergence=10000.
+            tolerances: relative=0.01, absolute=1e-50, divergence=10000.
             left preconditioning
             using PRECONDITIONED norm type for convergence test
           PC Object: (fc_fieldsplit_pressure_lsc_) 4 MPI processes
@@ -357,7 +357,7 @@ PC Object: (fc_) 4 MPI processes
             KSP Object: (fc_fieldsplit_pressure_lsc_sub_) 1 MPI process
               type: preonly
               maximum iterations=10000, initial guess is zero
-              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
               left preconditioning
               using NONE norm type for convergence test
             PC Object: (fc_fieldsplit_pressure_lsc_sub_) 1 MPI process

@@ -74,7 +74,7 @@ SNES Object: 4 MPI processes
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object: 4 MPI processes
@@ -86,7 +86,7 @@ SNES Object: 4 MPI processes
       KSP Object: (mg_coarse_) 4 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_coarse_) 4 MPI processes
@@ -95,7 +95,7 @@ SNES Object: 4 MPI processes
           KSP Object: (mg_coarse_redundant_) 1 MPI process
             type: preonly
             maximum iterations=10000, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+            tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
           PC Object: (mg_coarse_redundant_) 1 MPI process
@@ -131,7 +131,7 @@ SNES Object: 4 MPI processes
         type: richardson
           damping factor=1.
         maximum iterations=2, nonzero initial guess
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_levels_1_) 4 MPI processes
@@ -150,7 +150,7 @@ SNES Object: 4 MPI processes
         type: richardson
           damping factor=1.
         maximum iterations=2, nonzero initial guess
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_levels_2_) 4 MPI processes
@@ -169,7 +169,7 @@ SNES Object: 4 MPI processes
         type: richardson
           damping factor=1.
         maximum iterations=2, nonzero initial guess
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_levels_3_) 4 MPI processes
@@ -188,7 +188,7 @@ SNES Object: 4 MPI processes
         type: richardson
           damping factor=1.
         maximum iterations=2, nonzero initial guess
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_levels_4_) 4 MPI processes

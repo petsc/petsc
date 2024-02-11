@@ -132,7 +132,7 @@ PetscErrorCode KSPView(KSP ksp, PetscViewer viewer)
     }
     if (ksp->min_it) PetscCall(PetscViewerASCIIPrintf(viewer, "  minimum iterations=%" PetscInt_FMT "\n", ksp->min_it));
     if (ksp->guess_knoll) PetscCall(PetscViewerASCIIPrintf(viewer, "  using preconditioner applied to right hand side for initial guess\n"));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  tolerances:  relative=%g, absolute=%g, divergence=%g\n", (double)ksp->rtol, (double)ksp->abstol, (double)ksp->divtol));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  tolerances: relative=%g, absolute=%g, divergence=%g\n", (double)ksp->rtol, (double)ksp->abstol, (double)ksp->divtol));
     if (ksp->pc_side == PC_RIGHT) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "  right preconditioning\n"));
     } else if (ksp->pc_side == PC_SYMMETRIC) {

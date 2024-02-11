@@ -2,7 +2,7 @@ Linear solve converged due to CONVERGED_RTOL iterations 50
 KSP Object: 1 MPI process
   type: cg
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=0.1, absolute=1e-50, divergence=10000.
+  tolerances: relative=0.1, absolute=1e-50, divergence=10000.
   left preconditioning
   using UNPRECONDITIONED norm type for convergence test
 PC Object: 1 MPI process
@@ -20,7 +20,7 @@ Linear solve converged due to CONVERGED_RTOL iterations 50
 KSP Object: 1 MPI process
   type: cg
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=0.1, absolute=1e-50, divergence=10000.
+  tolerances: relative=0.1, absolute=1e-50, divergence=10000.
   left preconditioning
   using UNPRECONDITIONED norm type for convergence test
 PC Object: 1 MPI process
@@ -38,7 +38,7 @@ Linear solve converged due to CONVERGED_RTOL iterations 50
 KSP Object: 1 MPI process
   type: cg
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=0.1, absolute=1e-50, divergence=10000.
+  tolerances: relative=0.1, absolute=1e-50, divergence=10000.
   left preconditioning
   using UNPRECONDITIONED norm type for convergence test
 PC Object: 1 MPI process

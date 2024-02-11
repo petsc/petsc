@@ -24,7 +24,7 @@ SNES Object: 1 MPI process
     type: richardson
       damping factor=1.
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=0., absolute=1e-08, divergence=10000.
+    tolerances: relative=0., absolute=1e-08, divergence=10000.
     left preconditioning
     using UNPRECONDITIONED norm type for convergence test
   PC Object: 1 MPI process
@@ -36,7 +36,7 @@ SNES Object: 1 MPI process
       KSP Object: (mg_coarse_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_coarse_) 1 MPI process
@@ -66,7 +66,7 @@ SNES Object: 1 MPI process
           restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
           happy breakdown tolerance 1e-30
         maximum iterations=10, nonzero initial guess
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_levels_1_) 1 MPI process
@@ -97,7 +97,7 @@ SNES Object: 1 MPI process
           restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
           happy breakdown tolerance 1e-30
         maximum iterations=10, nonzero initial guess
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_levels_2_) 1 MPI process
@@ -128,7 +128,7 @@ SNES Object: 1 MPI process
           restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
           happy breakdown tolerance 1e-30
         maximum iterations=10, nonzero initial guess
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_levels_3_) 1 MPI process

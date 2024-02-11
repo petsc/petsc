@@ -28,7 +28,7 @@ SNES Object: 5 MPI processes
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-09, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object: 5 MPI processes
@@ -86,7 +86,7 @@ SNES Object: 5 MPI processes
       KSP Object: (pc_bddc_dirichlet_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (pc_bddc_dirichlet_) 1 MPI process
@@ -113,7 +113,7 @@ SNES Object: 5 MPI processes
       KSP Object: (pc_bddc_neumann_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (pc_bddc_neumann_) 1 MPI process
@@ -140,7 +140,7 @@ SNES Object: 5 MPI processes
       KSP Object: (pc_bddc_coarse_) 5 MPI processes
         type: preonly
         maximum iterations=1, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (pc_bddc_coarse_) 5 MPI processes
@@ -149,7 +149,7 @@ SNES Object: 5 MPI processes
           KSP Object: (pc_bddc_coarse_redundant_) 1 MPI process
             type: preonly
             maximum iterations=10000, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+            tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
           PC Object: (pc_bddc_coarse_redundant_) 1 MPI process

@@ -45,7 +45,7 @@ SNES Object: 1 MPI process
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
     right preconditioning
     using UNPRECONDITIONED norm type for convergence test
   PC Object: 1 MPI process
@@ -56,7 +56,7 @@ SNES Object: 1 MPI process
     KSP Object: (fieldsplit_x_velocity_) 1 MPI process
       type: preonly
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (fieldsplit_x_velocity_) 1 MPI process
@@ -84,7 +84,7 @@ SNES Object: 1 MPI process
     KSP Object: (fieldsplit_y_velocity_) 1 MPI process
       type: preonly
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (fieldsplit_y_velocity_) 1 MPI process
@@ -112,7 +112,7 @@ SNES Object: 1 MPI process
     KSP Object: (fieldsplit_Omega_) 1 MPI process
       type: preonly
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (fieldsplit_Omega_) 1 MPI process
@@ -140,7 +140,7 @@ SNES Object: 1 MPI process
     KSP Object: (fieldsplit_temperature_) 1 MPI process
       type: preonly
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (fieldsplit_temperature_) 1 MPI process

@@ -111,7 +111,7 @@ Tao Object: 1 MPI process
   KSP Object: (tao_bnk_) 1 MPI process
     type: stcg
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using UNPRECONDITIONED norm type for convergence test
   PC Object: (tao_bnk_) 1 MPI process
