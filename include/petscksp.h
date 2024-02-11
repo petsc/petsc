@@ -918,7 +918,7 @@ PETSC_EXTERN PetscErrorCode PCShellSetPostSolve(PC, PetscErrorCode (*)(PC, KSP, 
 
    Level: intermediate
 
-.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetGuessType()`, `KSPGuessType`
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPGuessSetType()`, `KSPGuessType`
 S*/
 typedef struct _p_KSPGuess *KSPGuess;
 
