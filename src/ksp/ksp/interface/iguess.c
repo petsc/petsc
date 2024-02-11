@@ -19,7 +19,8 @@ static PetscBool  KSPGuessRegisterAllCalled;
 
   Then, it can be chosen with the procedural interface via
 .vb
-  KSPSetGuessType(ksp, "my_initial_guess")
+  KSPGetGuess(ksp, &guess);
+  KSPGuessSetType(guess, "my_initial_guess");
 .ve
   or at runtime via the option `-ksp_guess_type my_initial_guess`
 
@@ -66,7 +67,7 @@ PetscErrorCode KSPGuessRegisterAll(void)
 . guess - `KSPGuess` object
 
   Options Database Keys:
-+ -ksp_guess_type  <method>      - Turns on generation of initial guesses and sets the method; use -help for a list of available methods
++ -ksp_guess_type <method>       - Turns on generation of initial guesses and sets the method; use -help for a list of available methods
 . -ksp_guess_view <viewer>       - view the `KSPGuess` object
 . -ksp_guess_fischer_model <a,b> - set details for the Fischer models
 . -ksp_guess_fischer_monitor     - monitor the Fischer models
@@ -78,7 +79,7 @@ PetscErrorCode KSPGuessRegisterAll(void)
 
   Level: developer
 
-.seealso: [](ch_ksp), `KSPGuess`, `KSPGetGuess()`, `KSPSetGuessType()`, `KSPGuessType`
+.seealso: [](ch_ksp), `KSPGuess`, `KSPGetGuess()`, `KSPGuessSetType()`, `KSPGuessType`
 @*/
 PetscErrorCode KSPGuessSetFromOptions(KSPGuess guess)
 {
