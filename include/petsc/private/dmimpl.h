@@ -535,6 +535,7 @@ PETSC_INTERN PetscErrorCode DMGetLocalBoundingIndices_DMDA(DM, PetscReal[], Pets
 PETSC_INTERN PetscErrorCode DMSetField_Internal(DM, PetscInt, DMLabel, PetscObject);
 
 PETSC_INTERN PetscErrorCode DMSetLabelValue_Fast(DM, DMLabel *, const char[], PetscInt, PetscInt);
+PETSC_INTERN PetscErrorCode DMGetPoints_Internal(DM, DMLabel, PetscInt, PetscInt, IS *);
 
 PETSC_INTERN PetscErrorCode DMCompleteBCLabels_Internal(DM dm);
 PETSC_EXTERN PetscErrorCode DMUniversalLabelCreate(DM, DMUniversalLabel *);

@@ -1,6 +1,6 @@
 #include <petsc/private/dmpleximpl.h> /*I      "petscdmplex.h"          I*/
 
-static PetscErrorCode DMGetPoints_Private(DM dm, DMLabel domainLabel, PetscInt labelVal, PetscInt height, IS *pointIS)
+PetscErrorCode DMGetPoints_Internal(DM dm, DMLabel domainLabel, PetscInt labelVal, PetscInt height, IS *pointIS)
 {
   PetscInt depth;
   DMLabel  depthLabel;
@@ -90,7 +90,7 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
   }
   PetscCheck(ds_field != -1, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Could not find dm_field %" PetscInt_FMT " in DS", dm_field);
 
-  PetscCall(DMGetPoints_Private(dm, domain_label, label_value, height, &iter_is));
+  PetscCall(DMGetPoints_Internal(dm, domain_label, label_value, height, &iter_is));
   if (iter_is) {
     PetscCall(ISGetLocalSize(iter_is, num_cells));
     PetscCall(ISGetIndices(iter_is, &iter_indices));
@@ -208,7 +208,7 @@ PetscErrorCode DMPlexGetLocalOffsetsSupport(DM dm, DMLabel domain_label, PetscIn
   PetscCall(DMGetLocalSection(dm, &section));
   PetscCall(PetscSectionGetStorageSize(section, l_size));
 
-  PetscCall(DMGetPoints_Private(dm, domain_label, label_value, height, &iter_is));
+  PetscCall(DMGetPoints_Internal(dm, domain_label, label_value, height, &iter_is));
   if (iter_is) {
     PetscCall(ISGetIndices(iter_is, &iter_indices));
     PetscCall(ISGetLocalSize(iter_is, &Nf));
@@ -371,7 +371,7 @@ PetscErrorCode DMPlexCeedComputeGeometryFVM(DM dm, CeedVector qd)
 
   PetscFunctionBegin;
   PetscCall(DMGetCoordinateDim(dm, &cdim));
-  PetscCall(DMGetPoints_Private(dm, domain_label, label_value, height, &iter_is));
+  PetscCall(DMGetPoints_Internal(dm, domain_label, label_value, height, &iter_is));
   if (iter_is) {
     PetscCall(ISGetIndices(iter_is, &iter_indices));
     PetscCall(ISGetLocalSize(iter_is, &Nf));

@@ -1772,6 +1772,14 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
             -monitor height,energy
 
     test:
+      suffix: sw_ceed_small
+      requires: exodusii libceed
+      args: -sw_riemann rusanov_ceed -bc_wall 1,3 -ufv_cfl 5 -petsclimiter_type sin -dm_plex_use_ceed \
+            -dm_plex_shape annulus -dm_plex_simplex 0 -dm_plex_box_lower 0,1 -dm_plex_box_upper 6.28,3 -dm_plex_box_faces 8,2 \
+            -ts_max_time 1 -ts_ssp_type rks2 -ts_ssp_nstages 10 \
+            -monitor height,energy
+
+    test:
       suffix: sw_1
       nsize: 2
       args: -bc_wall 1,3 -ufv_cfl 5 -petsclimiter_type sin \
