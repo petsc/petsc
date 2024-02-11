@@ -805,7 +805,7 @@ static PetscErrorCode CreateDM(MPI_Comm comm, AppCtx *user, DM *dm)
   }
   /* Localize coordinates */
   PetscCall(DMLocalizeCoordinates(*dm));
-  PetscCall(PetscObjectSetName((PetscObject)(*dm), "Mesh"));
+  PetscCall(PetscObjectSetName((PetscObject)*dm, "Mesh"));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   /* Setup problem */
   PetscCall(SetupDiscretization(*dm, user));

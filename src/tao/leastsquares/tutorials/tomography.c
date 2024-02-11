@@ -213,9 +213,9 @@ PetscErrorCode InitializeUserData(AppCtx *user)
   PetscCall(VecCreate(PETSC_COMM_WORLD, &user->xGT));
   PetscCall(VecLoad(user->xGT, fd));
   PetscCall(PetscViewerDestroy(&fd));
-  PetscCall(VecDuplicate(user->xGT, &(user->xlb)));
+  PetscCall(VecDuplicate(user->xGT, &user->xlb));
   PetscCall(VecSet(user->xlb, 0.0));
-  PetscCall(VecDuplicate(user->xGT, &(user->xub)));
+  PetscCall(VecDuplicate(user->xGT, &user->xub));
   PetscCall(VecSet(user->xub, PETSC_INFINITY));
 
   /* Specify the size */

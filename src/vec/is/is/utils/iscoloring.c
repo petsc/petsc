@@ -77,7 +77,7 @@ PetscErrorCode ISColoringDestroy(ISColoring *iscoloring)
 
   PetscFunctionBegin;
   if (!*iscoloring) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscAssertPointer((*iscoloring), 1);
+  PetscAssertPointer(*iscoloring, 1);
   if (--(*iscoloring)->refct > 0) {
     *iscoloring = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -89,7 +89,7 @@ PetscErrorCode ISColoringDestroy(ISColoring *iscoloring)
   }
   if ((*iscoloring)->allocated) PetscCall(PetscFree((*iscoloring)->colors));
   PetscCall(PetscCommDestroy(&(*iscoloring)->comm));
-  PetscCall(PetscFree((*iscoloring)));
+  PetscCall(PetscFree(*iscoloring));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

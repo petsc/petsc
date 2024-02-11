@@ -112,7 +112,7 @@ PETSC_EXTERN PetscErrorCode PetscDeviceMemset(PetscDeviceContext, void *PETSC_RE
 #else
   #include <string.h> // memset()
   #define PetscDeviceAllocate_Private(PetscDeviceContext, clear, PetscMemType, size, alignment, ptr) PetscMallocA(1, (clear), __LINE__, PETSC_FUNCTION_NAME, __FILE__, (size), (ptr))
-  #define PetscDeviceDeallocate_Private(PetscDeviceContext, ptr)                                     PetscFree((ptr))
+  #define PetscDeviceDeallocate_Private(PetscDeviceContext, ptr)                                     PetscFree(ptr)
   #define PetscDeviceMemcpy(PetscDeviceContext, dest, src, size)                                     PetscMemcpy((dest), (src), (size))
   #define PetscDeviceMemset(PetscDeviceContext, ptr, v, size)                                        ((void)memset((ptr), (unsigned char)(v), (size)), PETSC_SUCCESS)
 #endif /* PetscDefined(HAVE_CXX) */

@@ -84,8 +84,8 @@ PetscErrorCode AODestroy(AO *ao)
 {
   PetscFunctionBegin;
   if (!*ao) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*ao), AO_CLASSID, 1);
-  if (--((PetscObject)(*ao))->refct > 0) {
+  PetscValidHeaderSpecific(*ao, AO_CLASSID, 1);
+  if (--((PetscObject)*ao)->refct > 0) {
     *ao = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

@@ -652,17 +652,17 @@ PetscErrorCode DMDestroy(DM *dm)
 
   PetscFunctionBegin;
   if (!*dm) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*dm), DM_CLASSID, 1);
+  PetscValidHeaderSpecific(*dm, DM_CLASSID, 1);
 
   /* count all non-cyclic references in the doubly-linked list of coarse<->fine meshes */
   PetscCall(DMCountNonCyclicReferences_Internal(*dm, PETSC_TRUE, PETSC_TRUE, &cnt));
-  --((PetscObject)(*dm))->refct;
+  --((PetscObject)*dm)->refct;
   if (--cnt > 0) {
     *dm = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  if (((PetscObject)(*dm))->refct < 0) PetscFunctionReturn(PETSC_SUCCESS);
-  ((PetscObject)(*dm))->refct = 0;
+  if (((PetscObject)*dm)->refct < 0) PetscFunctionReturn(PETSC_SUCCESS);
+  ((PetscObject)*dm)->refct = 0;
 
   PetscCall(DMClearGlobalVectors(*dm));
   PetscCall(DMClearLocalVectors(*dm));
@@ -7982,7 +7982,7 @@ static PetscErrorCode DMPopulateBoundary(DM dm)
     dm->boundary = NULL;
   }
 
-  lastnext = &(dm->boundary);
+  lastnext = &dm->boundary;
   while (dsbound) {
     DMBoundary dmbound;
 
@@ -7991,7 +7991,7 @@ static PetscErrorCode DMPopulateBoundary(DM dm)
     dmbound->label      = dsbound->label;
     /* push on the back instead of the front so that it is in the same order as in the PetscDS */
     *lastnext = dmbound;
-    lastnext  = &(dmbound->next);
+    lastnext  = &dmbound->next;
     dsbound   = dsbound->next;
   }
   PetscFunctionReturn(PETSC_SUCCESS);

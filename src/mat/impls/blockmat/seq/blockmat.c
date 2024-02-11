@@ -313,7 +313,7 @@ static PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
       notdone = PETSC_FALSE;
       nextcol = 1000000000;
       for (j = 0; j < bs; j++) {
-        while ((ilens[j] > 0 && ii[j][0] / bs <= currentcol)) {
+        while (ilens[j] > 0 && ii[j][0] / bs <= currentcol) {
           ii[j]++;
           ilens[j]--;
         }
@@ -350,8 +350,8 @@ static PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
       notdone = PETSC_FALSE;
       nextcol = 1000000000;
       PetscCall(PetscArrayzero(llens, bs));
-      for (j = 0; j < bs; j++) {                                /* loop over rows in block */
-        while ((ilens[j] > 0 && ii[j][0] / bs <= currentcol)) { /* loop over columns in row */
+      for (j = 0; j < bs; j++) {                              /* loop over rows in block */
+        while (ilens[j] > 0 && ii[j][0] / bs <= currentcol) { /* loop over columns in row */
           ii[j]++;
           ilens[j]--;
           llens[j]++;

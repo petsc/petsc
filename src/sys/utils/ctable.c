@@ -127,7 +127,7 @@ PetscErrorCode PetscTableIsEmpty(const PetscTable ta, PetscInt *flag)
   PetscFunctionBegin;
   PetscAssertPointer(ta, 1);
   PetscAssertPointer(flag, 2);
-  *flag = !(ta->count);
+  *flag = !ta->count;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

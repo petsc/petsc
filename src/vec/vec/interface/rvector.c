@@ -1403,7 +1403,7 @@ PetscErrorCode VecConcatenate(PetscInt nx, const Vec X[], Vec *Y, IS *x_is[])
     PetscCall((*(*X)->ops->concatenate)(nx, X, Y, x_is));
   } else {
     /* loop over vectors and start creating IS */
-    comm = PetscObjectComm((PetscObject)(*X));
+    comm = PetscObjectComm((PetscObject)*X);
     PetscCall(VecGetType(*X, &vec_type));
     PetscCall(PetscMalloc1(nx, &is_tmp));
     for (i = 0; i < nx; i++) {

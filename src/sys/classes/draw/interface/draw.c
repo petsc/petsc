@@ -234,7 +234,7 @@ PetscErrorCode PetscDrawAppendTitle(PetscDraw draw, const char title[])
     PetscCall(PetscStrlen(draw->title, &len1));
     PetscCall(PetscStrlen(title, &len2));
     new_len = len1 + len2 + 1;
-    PetscCall(PetscRealloc(new_len * sizeof(*(draw->title)), &draw->title));
+    PetscCall(PetscRealloc(new_len * sizeof(*draw->title), &draw->title));
     PetscCall(PetscStrncpy(draw->title + len1, title, len2 + 1));
   } else {
     PetscCall(PetscStrallocpy(title, &draw->title));
@@ -274,7 +274,7 @@ PetscErrorCode PetscDrawDestroy(PetscDraw *draw)
   PetscFunctionBegin;
   if (!*draw) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*draw, PETSC_DRAW_CLASSID, 1);
-  if (--((PetscObject)(*draw))->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
+  if (--((PetscObject)*draw)->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
 
   if ((*draw)->pause == -2) {
     (*draw)->pause = -1;

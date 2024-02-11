@@ -612,7 +612,7 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
     n8 = sn8;
   }
 
-  if (((stencil_type == DMDA_STENCIL_STAR) || (bx && bx != DM_BOUNDARY_PERIODIC) || (by && by != DM_BOUNDARY_PERIODIC))) {
+  if ((stencil_type == DMDA_STENCIL_STAR) || (bx && bx != DM_BOUNDARY_PERIODIC) || (by && by != DM_BOUNDARY_PERIODIC)) {
     /*
         Recompute the local to global mappings, this time keeping the
       information about the cross corner processor numbers and any ghosted

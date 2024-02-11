@@ -669,8 +669,8 @@ PetscErrorCode SNESLineSearchDestroy(SNESLineSearch *linesearch)
 {
   PetscFunctionBegin;
   if (!*linesearch) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*linesearch), SNESLINESEARCH_CLASSID, 1);
-  if (--((PetscObject)(*linesearch))->refct > 0) {
+  PetscValidHeaderSpecific(*linesearch, SNESLINESEARCH_CLASSID, 1);
+  if (--((PetscObject)*linesearch)->refct > 0) {
     *linesearch = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -678,7 +678,7 @@ PetscErrorCode SNESLineSearchDestroy(SNESLineSearch *linesearch)
   PetscCall(SNESLineSearchReset(*linesearch));
   PetscTryTypeMethod(*linesearch, destroy);
   PetscCall(PetscOptionsRestoreViewer(&(*linesearch)->monitor));
-  PetscCall(SNESLineSearchMonitorCancel((*linesearch)));
+  PetscCall(SNESLineSearchMonitorCancel(*linesearch));
   PetscCall(PetscHeaderDestroy(linesearch));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

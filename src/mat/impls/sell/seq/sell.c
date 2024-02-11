@@ -771,7 +771,7 @@ PetscErrorCode MatMissingDiagonal_SeqSELL(Mat A, PetscBool *missing, PetscInt *d
 
   PetscFunctionBegin;
   *missing = PETSC_FALSE;
-  if (A->rmap->n > 0 && !(a->colidx)) {
+  if (A->rmap->n > 0 && !a->colidx) {
     *missing = PETSC_TRUE;
     if (d) *d = 0;
     PetscCall(PetscInfo(A, "Matrix has no entries therefore is missing diagonal\n"));

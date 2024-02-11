@@ -528,7 +528,7 @@ PetscErrorCode ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping mapping
   if (mapping->info_indices) {
     PetscInt i;
 
-    PetscCall(PetscFree((mapping->info_indices)[0]));
+    PetscCall(PetscFree(mapping->info_indices[0]));
     for (i = 1; i < mapping->info_nproc; i++) PetscCall(PetscFree(mapping->info_indices[i]));
     PetscCall(PetscFree(mapping->info_indices));
   }
@@ -674,8 +674,8 @@ PetscErrorCode ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
 {
   PetscFunctionBegin;
   if (!*mapping) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*mapping), IS_LTOGM_CLASSID, 1);
-  if (--((PetscObject)(*mapping))->refct > 0) {
+  PetscValidHeaderSpecific(*mapping, IS_LTOGM_CLASSID, 1);
+  if (--((PetscObject)*mapping)->refct > 0) {
     *mapping = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

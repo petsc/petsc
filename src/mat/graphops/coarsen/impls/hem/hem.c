@@ -125,7 +125,7 @@ PetscErrorCode PetscCDGetHeadPos(const PetscCoarsenData *ail, PetscInt a_idx, Pe
 PetscErrorCode PetscCDGetNextPos(const PetscCoarsenData *ail, PetscInt l_idx, PetscCDIntNd **pos)
 {
   PetscFunctionBegin;
-  PetscCheck((*pos), PETSC_COMM_SELF, PETSC_ERR_PLIB, "NULL input position.");
+  PetscCheck(*pos, PETSC_COMM_SELF, PETSC_ERR_PLIB, "NULL input position.");
   *pos = (*pos)->next;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

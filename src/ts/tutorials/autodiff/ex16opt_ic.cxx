@@ -195,7 +195,7 @@ int main(int argc, char **argv)
   if (monitor) PetscCall(TSMonitorSet(ts, Monitor, &user, NULL));
 
   PetscCall(TSSetTime(ts, 0.0));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "mu %g, steps %" PetscInt_FMT ", ftime %g\n", (double)user.mu, user.steps, (double)(user.ftime)));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "mu %g, steps %" PetscInt_FMT ", ftime %g\n", (double)user.mu, user.steps, (double)user.ftime));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Save trajectory of solution so that TSAdjointSolve() may be used
@@ -211,7 +211,7 @@ int main(int argc, char **argv)
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(TSSolve(ts, user.x));
-  PetscCall(TSGetSolveTime(ts, &(user.ftime)));
+  PetscCall(TSGetSolveTime(ts, &user.ftime));
   PetscCall(TSGetStepNumber(ts, &user.steps));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "mu %g, steps %" PetscInt_FMT ", ftime %g\n", (double)user.mu, user.steps, (double)user.ftime));
 

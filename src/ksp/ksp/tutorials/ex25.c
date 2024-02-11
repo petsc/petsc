@@ -78,7 +78,7 @@ static PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
   PetscFunctionBeginUser;
   PetscCall(KSPGetDM(ksp, &da));
   PetscCall(DMDAGetInfo(da, 0, &mx, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
-  h = 1.0 / ((mx - 1));
+  h = 1.0 / (mx - 1);
   PetscCall(VecSet(b, h));
   idx[0] = 0;
   idx[1] = mx - 1;

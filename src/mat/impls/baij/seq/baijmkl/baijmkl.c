@@ -167,13 +167,13 @@ static PetscErrorCode MatSeqBAIJMKL_create_mkl_handle(Mat A)
   bs                  = A->rmap->bs;
   aa                  = a->a;
 
-  if ((nz != 0) & !(A->structure_only)) {
+  if ((nz != 0) & !A->structure_only) {
     /* Create a new, optimized sparse matrix handle only if the matrix has nonzero entries.
      * The MKL sparse-inspector executor routines don't like being passed an empty matrix. */
     if (PetscSeqBAIJSupportsZeroBased()) {
       aj = a->j;
       ai = a->i;
-      PetscCallMKL(mkl_sparse_x_create_bsr(&(baijmkl->bsrA), SPARSE_INDEX_BASE_ZERO, SPARSE_LAYOUT_COLUMN_MAJOR, (MKL_INT)mbs, (MKL_INT)nbs, (MKL_INT)bs, (MKL_INT *)ai, (MKL_INT *)(ai + 1), (MKL_INT *)aj, aa));
+      PetscCallMKL(mkl_sparse_x_create_bsr(&baijmkl->bsrA, SPARSE_INDEX_BASE_ZERO, SPARSE_LAYOUT_COLUMN_MAJOR, (MKL_INT)mbs, (MKL_INT)nbs, (MKL_INT)bs, (MKL_INT *)ai, (MKL_INT *)(ai + 1), (MKL_INT *)aj, aa));
     } else {
       PetscCall(PetscMalloc2(mbs + 1, &ai, nz, &aj));
       for (i = 0; i < mbs + 1; i++) ai[i] = a->i[i] + 1;

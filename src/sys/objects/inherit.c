@@ -921,7 +921,7 @@ PetscErrorCode PetscContainerDestroy(PetscContainer *obj)
   PetscFunctionBegin;
   if (!*obj) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*obj, PETSC_CONTAINER_CLASSID, 1);
-  if (--((PetscObject)(*obj))->refct > 0) {
+  if (--((PetscObject)*obj)->refct > 0) {
     *obj = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

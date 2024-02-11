@@ -61,7 +61,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C, PetscInt is_max, IS is[], Pets
       PetscCall(PetscStrlen(MATSEQBAIJ, &new_len));
       PetscCall(PetscStrlen(MATSEQSBAIJ, &cur_len));
       max_len = PetscMax(cur_len, new_len) + 1;
-      PetscCall(PetscRealloc(max_len * sizeof(*(obj->type_name)), &obj->type_name));
+      PetscCall(PetscRealloc(max_len * sizeof(*obj->type_name), &obj->type_name));
       /* The resulting submatrices should be BAIJ, not SBAIJ, hence we change this value to
          trigger that */
       for (iov = 0; iov < ov; ++iov) {
@@ -463,8 +463,8 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
 static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Local(Mat C, PetscInt *data, PetscInt whose, PetscInt *nidx, PetscBT *table)
 {
   Mat_MPISBAIJ *c = (Mat_MPISBAIJ *)C->data;
-  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ *)(c->A)->data;
-  Mat_SeqBAIJ  *b = (Mat_SeqBAIJ *)(c->B)->data;
+  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ *)c->A->data;
+  Mat_SeqBAIJ  *b = (Mat_SeqBAIJ *)c->B->data;
   PetscInt      row, mbs, Mbs, *nidx_i, col, col_max, isz, isz0, *ai, *aj, *bi, *bj, *garray, rstart, l;
   PetscInt      a_start, a_end, b_start, b_end, i, j, k, is_max, *idx_i, n;
   PetscBT       table0;  /* mark the indices of input is[] for look up */

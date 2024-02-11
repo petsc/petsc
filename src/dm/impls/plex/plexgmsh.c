@@ -376,7 +376,7 @@ static PetscErrorCode GmshEntitiesDestroy(GmshEntities **entities)
     PetscCall(PetscFree((*entities)->entity[dim]));
     PetscCall(PetscHMapIDestroy(&(*entities)->entityMap[dim]));
   }
-  PetscCall(PetscFree((*entities)));
+  PetscCall(PetscFree(*entities));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -423,7 +423,7 @@ static PetscErrorCode GmshNodesDestroy(GmshNodes **nodes)
   PetscCall(PetscFree((*nodes)->id));
   PetscCall(PetscFree((*nodes)->xyz));
   PetscCall(PetscFree((*nodes)->tag));
-  PetscCall(PetscFree((*nodes)));
+  PetscCall(PetscFree(*nodes));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -494,7 +494,7 @@ static PetscErrorCode GmshMeshDestroy(GmshMesh **mesh)
   PetscCall(PetscSegBufferDestroy(&(*mesh)->segbuf));
   for (r = 0; r < (*mesh)->numRegions; ++r) PetscCall(PetscFree((*mesh)->regionNames[r]));
   PetscCall(PetscFree3((*mesh)->regionDims, (*mesh)->regionTags, (*mesh)->regionNames));
-  PetscCall(PetscFree((*mesh)));
+  PetscCall(PetscFree(*mesh));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

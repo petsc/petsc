@@ -161,7 +161,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
       ls->reason = TAOLINESEARCH_HALTED_MAXFCN;
       break;
     }
-    if ((neP->bracket) && (ls->stepmax - ls->stepmin <= ls->rtol * ls->stepmax)) {
+    if (neP->bracket && (ls->stepmax - ls->stepmin <= ls->rtol * ls->stepmax)) {
       PetscCall(PetscInfo(ls, "Relative width of interval of uncertainty is at most rtol (%g)\n", (double)ls->rtol));
       ls->reason = TAOLINESEARCH_HALTED_RTOL;
       break;

@@ -9,7 +9,7 @@ static PetscErrorCode MatDestroy_FFT(Mat A)
   Mat_FFT *fft = (Mat_FFT *)A->data;
 
   PetscFunctionBegin;
-  if (fft->matdestroy) PetscCall((fft->matdestroy)(A));
+  if (fft->matdestroy) PetscCall(fft->matdestroy(A));
   PetscCall(PetscFree(fft->dim));
   PetscCall(PetscFree(A->data));
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, NULL));

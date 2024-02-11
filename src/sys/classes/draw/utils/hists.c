@@ -162,7 +162,7 @@ PetscErrorCode PetscDrawHGDestroy(PetscDrawHG *hist)
   PetscFunctionBegin;
   if (!*hist) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*hist, PETSC_DRAWHG_CLASSID, 1);
-  if (--((PetscObject)(*hist))->refct > 0) {
+  if (--((PetscObject)*hist)->refct > 0) {
     *hist = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

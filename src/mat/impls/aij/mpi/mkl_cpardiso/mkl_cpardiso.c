@@ -146,8 +146,8 @@ static PetscErrorCode MatConvertToTriples_mpiaij_mpiaij_MKL_CPARDISO(Mat A, MatR
   const PetscScalar *av, *bv;
   PetscScalar       *val;
   Mat_MPIAIJ        *mat = (Mat_MPIAIJ *)A->data;
-  Mat_SeqAIJ        *aa  = (Mat_SeqAIJ *)(mat->A)->data;
-  Mat_SeqAIJ        *bb  = (Mat_SeqAIJ *)(mat->B)->data;
+  Mat_SeqAIJ        *aa  = (Mat_SeqAIJ *)mat->A->data;
+  Mat_SeqAIJ        *bb  = (Mat_SeqAIJ *)mat->B->data;
   PetscInt           colA_start, jB, jcol;
 
   PetscFunctionBegin;
@@ -217,8 +217,8 @@ static PetscErrorCode MatConvertToTriples_mpibaij_mpibaij_MKL_CPARDISO(Mat A, Ma
   const PetscScalar *av, *bv;
   PetscScalar       *val;
   Mat_MPIBAIJ       *mat = (Mat_MPIBAIJ *)A->data;
-  Mat_SeqBAIJ       *aa  = (Mat_SeqBAIJ *)(mat->A)->data;
-  Mat_SeqBAIJ       *bb  = (Mat_SeqBAIJ *)(mat->B)->data;
+  Mat_SeqBAIJ       *aa  = (Mat_SeqBAIJ *)mat->A->data;
+  Mat_SeqBAIJ       *bb  = (Mat_SeqBAIJ *)mat->B->data;
   PetscInt           colA_start, jB, jcol;
 
   PetscFunctionBegin;
@@ -290,8 +290,8 @@ static PetscErrorCode MatConvertToTriples_mpisbaij_mpisbaij_MKL_CPARDISO(Mat A, 
   const PetscScalar *av, *bv;
   PetscScalar       *val;
   Mat_MPISBAIJ      *mat = (Mat_MPISBAIJ *)A->data;
-  Mat_SeqSBAIJ      *aa  = (Mat_SeqSBAIJ *)(mat->A)->data;
-  Mat_SeqBAIJ       *bb  = (Mat_SeqBAIJ *)(mat->B)->data;
+  Mat_SeqSBAIJ      *aa  = (Mat_SeqSBAIJ *)mat->A->data;
+  Mat_SeqBAIJ       *bb  = (Mat_SeqBAIJ *)mat->B->data;
 
   PetscFunctionBegin;
   ai     = aa->i;

@@ -39,14 +39,14 @@ PETSC_EXTERN void matfdcoloringrestoreperturbedcolumnsf90_(MatFDColoring *x, F90
 static PetscErrorCode ourmatfdcoloringfunctionts(TS ts, PetscReal t, Vec x, Vec y, MatFDColoring fd)
 {
   PetscErrorCode ierr = PETSC_SUCCESS;
-  (*(void (*)(TS *, PetscReal *, Vec *, Vec *, void *, PetscErrorCode *))(fd->ftn_func_pointer))(&ts, &t, &x, &y, fd->ftn_func_cntx, &ierr);
+  (*(void (*)(TS *, PetscReal *, Vec *, Vec *, void *, PetscErrorCode *))fd->ftn_func_pointer)(&ts, &t, &x, &y, fd->ftn_func_cntx, &ierr);
   return ierr;
 }
 
 static PetscErrorCode ourmatfdcoloringfunctionsnes(SNES snes, Vec x, Vec y, MatFDColoring fd)
 {
   PetscErrorCode ierr = PETSC_SUCCESS;
-  (*(void (*)(SNES *, Vec *, Vec *, void *, PetscErrorCode *))(fd->ftn_func_pointer))(&snes, &x, &y, fd->ftn_func_cntx, &ierr);
+  (*(void (*)(SNES *, Vec *, Vec *, void *, PetscErrorCode *))fd->ftn_func_pointer)(&snes, &x, &y, fd->ftn_func_cntx, &ierr);
   return ierr;
 }
 

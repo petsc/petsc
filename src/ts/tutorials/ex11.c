@@ -1151,7 +1151,7 @@ static PetscErrorCode adaptToleranceFVMSetUp(TS ts, PetscInt nstep, PetscReal ti
     PetscCall(DMPlexPointLocalRead(cellDM, c, pointGeom, &cg));
     PetscCall(DMPlexPointLocalRead(plex, c, pointVals, &pointVal));
 
-    PetscCall((user->model->errorIndicator)(dim, cg->volume, user->model->physics->dof, pointVal, pointGrad, &errInd, user->model->errorCtx));
+    PetscCall(user->model->errorIndicator(dim, cg->volume, user->model->physics->dof, pointVal, pointGrad, &errInd, user->model->errorCtx));
     errArray[c - cStart] = errInd;
     minMaxInd[0]         = PetscMin(minMaxInd[0], errInd);
     minMaxInd[1]         = PetscMax(minMaxInd[1], errInd);

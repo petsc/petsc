@@ -883,9 +883,9 @@ static PetscErrorCode PCDestroy_HPDDMShell(PC pc)
   PetscCall(HPDDM::Schwarz<PetscScalar>::destroy(ctx, PETSC_TRUE));
   PetscCall(VecDestroyVecs(1, &ctx->v[0]));
   PetscCall(VecDestroyVecs(2, &ctx->v[1]));
-  PetscCall(PetscObjectQuery((PetscObject)(ctx->pc)->mat, "_HPDDM_MatProduct", (PetscObject *)&container));
+  PetscCall(PetscObjectQuery((PetscObject)ctx->pc->mat, "_HPDDM_MatProduct", (PetscObject *)&container));
   PetscCall(PetscContainerDestroy(&container));
-  PetscCall(PetscObjectCompose((PetscObject)(ctx->pc)->mat, "_HPDDM_MatProduct", nullptr));
+  PetscCall(PetscObjectCompose((PetscObject)ctx->pc->mat, "_HPDDM_MatProduct", nullptr));
   PetscCall(MatDestroy(ctx->V));
   PetscCall(MatDestroy(ctx->V + 1));
   PetscCall(MatDestroy(ctx->V + 2));

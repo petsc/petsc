@@ -95,7 +95,7 @@ static PetscErrorCode KSPSetUp_CG(KSP ksp)
 /*
      A macro used in the following KSPSolve_CG and KSPSolve_CG_SingleReduction routines
 */
-#define VecXDot(x, y, a) (((cg->type) == (KSP_CG_HERMITIAN)) ? VecDot(x, y, a) : VecTDot(x, y, a))
+#define VecXDot(x, y, a) ((cg->type == (KSP_CG_HERMITIAN)) ? VecDot(x, y, a) : VecTDot(x, y, a))
 
 /*
      KSPSolve_CG - This routine actually applies the conjugate gradient method

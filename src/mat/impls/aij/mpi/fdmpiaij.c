@@ -307,7 +307,7 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
           PetscScalar *tmp = Jentry2[nz].valaddr;
           *tmp             = dy[row] * dx;
 #else
-          *(Jentry2[nz].valaddr) = dy[row] * dx;
+          *Jentry2[nz].valaddr = dy[row] * dx;
 #endif
           nz++;
         }
@@ -318,7 +318,7 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
           PetscScalar *tmp = Jentry[nz].valaddr;
           *tmp             = dy[row] * vscale_array[Jentry[nz].col];
 #else
-          *(Jentry[nz].valaddr)  = dy[row] * vscale_array[Jentry[nz].col];
+          *Jentry[nz].valaddr  = dy[row] * vscale_array[Jentry[nz].col];
 #endif
           nz++;
         }
@@ -372,7 +372,7 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
           PetscScalar *tmp = Jentry2[nz].valaddr;
           *tmp             = y[row] * dx;
 #else
-          *(Jentry2[nz].valaddr) = y[row] * dx;
+          *Jentry2[nz].valaddr = y[row] * dx;
 #endif
           nz++;
         }
@@ -383,7 +383,7 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
           PetscScalar *tmp = Jentry[nz].valaddr;
           *tmp             = y[row] * vscale_array[Jentry[nz].col];
 #else
-          *(Jentry[nz].valaddr)  = y[row] * vscale_array[Jentry[nz].col];
+          *Jentry[nz].valaddr  = y[row] * vscale_array[Jentry[nz].col];
 #endif
           nz++;
         }
@@ -763,8 +763,8 @@ PetscErrorCode MatFDColoringSetValues(Mat J, MatFDColoring coloring, const Petsc
   for (i = 0; i < ncolors; i += bcols) {
     nrows_k = nrows[nbcols++];
     for (l = 0; l < nrows_k; l++) {
-      row                      = Jentry2[nz].row; /* local row index */
-      *(Jentry2[nz++].valaddr) = y[row];
+      row                    = Jentry2[nz].row; /* local row index */
+      *Jentry2[nz++].valaddr = y[row];
     }
     y += bcols * coloring->m;
   }

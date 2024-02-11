@@ -410,7 +410,7 @@ static PetscErrorCode DMForestTemplate_pforest(DM dm, DM tdm)
 
   PetscFunctionBegin;
   if (pforest->topo) pforest->topo->refct++;
-  PetscCall(DMFTopologyDestroy_pforest(&(tpforest->topo)));
+  PetscCall(DMFTopologyDestroy_pforest(&tpforest->topo));
   tpforest->topo = pforest->topo;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -646,8 +646,8 @@ static PetscErrorCode DMPforestComputeLocalCellTransferSF(MPI_Comm comm, p4est_t
 /* range of processes whose B sections overlap this ranks A section */
 static PetscErrorCode DMPforestComputeOverlappingRanks(PetscMPIInt size, PetscMPIInt rank, p4est_t *p4estA, p4est_t *p4estB, PetscInt *startB, PetscInt *endB)
 {
-  p4est_quadrant_t *myCoarseStart = &(p4estA->global_first_position[rank]);
-  p4est_quadrant_t *myCoarseEnd   = &(p4estA->global_first_position[rank + 1]);
+  p4est_quadrant_t *myCoarseStart = &p4estA->global_first_position[rank];
+  p4est_quadrant_t *myCoarseEnd   = &p4estA->global_first_position[rank + 1];
   p4est_quadrant_t *globalFirstB  = p4estB->global_first_position;
 
   PetscFunctionBegin;
@@ -2138,17 +2138,17 @@ static PetscErrorCode DMShareDiscretization(DM dmA, DM dmB)
   if (dmB->localSection != dmA->localSection || dmB->globalSection != dmA->globalSection) {
     PetscCall(DMClearLocalVectors(dmB));
     PetscCall(PetscObjectReference((PetscObject)dmA->localSection));
-    PetscCall(PetscSectionDestroy(&(dmB->localSection)));
+    PetscCall(PetscSectionDestroy(&dmB->localSection));
     dmB->localSection = dmA->localSection;
     PetscCall(DMClearGlobalVectors(dmB));
     PetscCall(PetscObjectReference((PetscObject)dmA->globalSection));
-    PetscCall(PetscSectionDestroy(&(dmB->globalSection)));
+    PetscCall(PetscSectionDestroy(&dmB->globalSection));
     dmB->globalSection = dmA->globalSection;
     PetscCall(PetscObjectReference((PetscObject)dmA->defaultConstraint.section));
-    PetscCall(PetscSectionDestroy(&(dmB->defaultConstraint.section)));
+    PetscCall(PetscSectionDestroy(&dmB->defaultConstraint.section));
     dmB->defaultConstraint.section = dmA->defaultConstraint.section;
     PetscCall(PetscObjectReference((PetscObject)dmA->defaultConstraint.mat));
-    PetscCall(MatDestroy(&(dmB->defaultConstraint.mat)));
+    PetscCall(MatDestroy(&dmB->defaultConstraint.mat));
     dmB->defaultConstraint.mat = dmA->defaultConstraint.mat;
     if (dmA->map) PetscCall(PetscLayoutReference(dmA->map, &dmB->map));
   }
@@ -2203,7 +2203,7 @@ static PetscErrorCode DMPforestGetCellCoveringSF(MPI_Comm comm, p4est_t *p4estC,
 
     /* locate myFineStart in (or before) a cell */
     if (treeStart->quadrants.elem_count) {
-      PetscCallP4estReturn(overlapIndex, sc_array_bsearch, (&(treeStart->quadrants), myFineStart, p4est_quadrant_disjoint));
+      PetscCallP4estReturn(overlapIndex, sc_array_bsearch, (&treeStart->quadrants, myFineStart, p4est_quadrant_disjoint));
       if (overlapIndex < 0) {
         firstCell = 0;
       } else {
@@ -2213,7 +2213,7 @@ static PetscErrorCode DMPforestGetCellCoveringSF(MPI_Comm comm, p4est_t *p4estC,
       firstCell = 0;
     }
     if (treeEnd && treeEnd->quadrants.elem_count) {
-      PetscCallP4estReturn(overlapIndex, sc_array_bsearch, (&(treeEnd->quadrants), myFineEnd, p4est_quadrant_disjoint));
+      PetscCallP4estReturn(overlapIndex, sc_array_bsearch, (&treeEnd->quadrants, myFineEnd, p4est_quadrant_disjoint));
       if (overlapIndex < 0) { /* all of this local section is overlapped */
         lastCell = p4estC->local_num_quadrants;
       } else {
@@ -2373,7 +2373,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
     PetscCall(DMForestGetAdaptivityForest(fine, &adaptFine));
     if (adaptCoarse && adaptCoarse->data == fine->data) { /* coarse is adapted from fine */
       if (pforestC->pointSelfToAdaptSF) {
-        PetscCall(PetscObjectReference((PetscObject)(pforestC->pointSelfToAdaptSF)));
+        PetscCall(PetscObjectReference((PetscObject)pforestC->pointSelfToAdaptSF));
         *sf = pforestC->pointSelfToAdaptSF;
         if (childIds) {
           PetscCall(PetscMalloc1(pEndF - pStartF, &cids));
@@ -2387,7 +2387,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
       }
     } else if (adaptFine && adaptFine->data == coarse->data) { /* fine is adapted from coarse */
       if (pforestF->pointAdaptToSelfSF) {
-        PetscCall(PetscObjectReference((PetscObject)(pforestF->pointAdaptToSelfSF)));
+        PetscCall(PetscObjectReference((PetscObject)pforestF->pointAdaptToSelfSF));
         *sf = pforestF->pointAdaptToSelfSF;
         if (childIds) {
           PetscCall(PetscMalloc1(pEndF - pStartF, &cids));
@@ -3218,7 +3218,7 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
 
       if (c < cLocalStart) {
         /* get from the beginning of the ghost layer */
-        q = &(ghosts[c]);
+        q = &ghosts[c];
         t = (PetscInt)q->p.which_tree;
       } else if (c < cLocalEnd) {
         PetscInt lo = 0, hi = num_trees;
@@ -3246,7 +3246,7 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
         /* get from the end of the ghost layer */
         c -= (cLocalEnd - cLocalStart);
 
-        q = &(ghosts[c]);
+        q = &ghosts[c];
         t = (PetscInt)q->p.which_tree;
       }
 
@@ -3761,7 +3761,7 @@ static PetscErrorCode DMPforestMapCoordinates(DM dm, DM plex)
         } else if (cell < cLocalEnd) {
           cell -= cLocalStart;
           for (t = flt; t <= llt; t++) {
-            p4est_tree_t *tree = &(trees[t]);
+            p4est_tree_t *tree = &trees[t];
 
             if (cell >= tree->quadrants_offset && (size_t)cell < tree->quadrants_offset + tree->quadrants.elem_count) {
               coarsePoint = t;
@@ -3803,7 +3803,7 @@ static PetscErrorCode DMPforestMapCoordinates(DM dm, DM plex)
       }
     }
     for (t = flt; t <= llt; t++) {
-      p4est_tree_t     *tree     = &(trees[t]);
+      p4est_tree_t     *tree     = &trees[t];
       PetscInt          offset   = cLocalStart + tree->quadrants_offset, i;
       PetscInt          numQuads = (PetscInt)tree->quadrants.elem_count;
       p4est_quadrant_t *quads    = (p4est_quadrant_t *)tree->quadrants.array;
@@ -3995,7 +3995,7 @@ static PetscErrorCode DMPforestLocalizeCoordinates(DM dm, DM plex)
     }
   }
   for (t = flt; t <= llt; t++) {
-    p4est_tree_t     *tree     = &(trees[t]);
+    p4est_tree_t     *tree     = &trees[t];
     PetscInt          offset   = cLocalStart + tree->quadrants_offset;
     PetscInt          numQuads = (PetscInt)tree->quadrants.elem_count;
     p4est_quadrant_t *quads    = (p4est_quadrant_t *)tree->quadrants.array;
@@ -4054,7 +4054,7 @@ static PetscErrorCode DMPforestLocalizeCoordinates(DM dm, DM plex)
     }
   }
   for (t = flt; t <= llt; t++) {
-    p4est_tree_t     *tree     = &(trees[t]);
+    p4est_tree_t     *tree     = &trees[t];
     PetscInt          offset   = cLocalStart + tree->quadrants_offset;
     PetscInt          numQuads = (PetscInt)tree->quadrants.elem_count;
     p4est_quadrant_t *quads    = (p4est_quadrant_t *)tree->quadrants.array;
@@ -4098,8 +4098,8 @@ static PetscErrorCode DMForestClearAdaptivityForest_pforest(DM dm)
   PetscFunctionBegin;
   forest  = (DM_Forest *)dm->data;
   pforest = (DM_Forest_pforest *)forest->data;
-  PetscCall(PetscSFDestroy(&(pforest->pointAdaptToSelfSF)));
-  PetscCall(PetscSFDestroy(&(pforest->pointSelfToAdaptSF)));
+  PetscCall(PetscSFDestroy(&pforest->pointAdaptToSelfSF));
+  PetscCall(PetscSFDestroy(&pforest->pointSelfToAdaptSF));
   PetscCall(PetscFree(pforest->pointAdaptToSelfCids));
   PetscCall(PetscFree(pforest->pointSelfToAdaptCids));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -5046,11 +5046,11 @@ static PetscErrorCode DMForestCreateCellSF_pforest(DM dm, PetscSF *cellSF)
     PetscCall(PetscMalloc2(nMirror, &mirror, nMirror, &mirrorPtrs));
     mirror_array = (p4est_quadrant_t *)pforest->ghost->mirrors.array;
     for (q = 0; q < nMirror; q++) {
-      p4est_quadrant_t *mir = &(mirror_array[q]);
+      p4est_quadrant_t *mir = &mirror_array[q];
 
       mirror[q].rank  = rank;
       mirror[q].index = (PetscInt)mir->p.piggy3.local_num + cLocalStart;
-      mirrorPtrs[q]   = (void *)&(mirror[q]);
+      mirrorPtrs[q]   = (void *)&mirror[q];
     }
     PetscCallP4est(p4est_ghost_exchange_custom, (pforest->forest, pforest->ghost, sizeof(PetscSFNode), mirrorPtrs, remote));
     PetscCall(PetscFree2(mirror, mirrorPtrs));

@@ -176,9 +176,9 @@ int main(int argc, char **argv)
   user.ds = user.es / (user.ms - 1);
   user.dt = user.expiry / user.mt;
 
-  PetscCall(PetscMalloc1(gxm, &(user.Vt1)));
-  PetscCall(PetscMalloc1(gxm, &(user.c)));
-  PetscCall(PetscMalloc1(gxm, &(user.d)));
+  PetscCall(PetscMalloc1(gxm, &user.Vt1));
+  PetscCall(PetscMalloc1(gxm, &user.c));
+  PetscCall(PetscMalloc1(gxm, &user.d));
 
   /*
      Calculate the values for the constant.  Vt1 begins with the ending

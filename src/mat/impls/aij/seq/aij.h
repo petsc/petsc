@@ -654,7 +654,7 @@ static inline void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum, cons
  */
 #define MatRowMergeMax_SeqAIJ(mat, nrows, ta) \
   do { \
-    if ((mat)) { \
+    if (mat) { \
       for (PetscInt _row = 0; _row < (nrows); _row++) { \
         const PetscInt _nz = (mat)->i[_row + 1] - (mat)->i[_row]; \
         for (PetscInt _j = 0; _j < _nz; _j++) { \

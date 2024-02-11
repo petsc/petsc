@@ -53,7 +53,7 @@ PetscErrorCode MatDestroy_MPIAIJ_PtAP(void *data)
   PetscCall(MatDestroy(&ptap->Rd));
   PetscCall(MatDestroy(&ptap->Ro));
   if (ptap->AP_loc) { /* used by alg_rap */
-    Mat_SeqAIJ *ap = (Mat_SeqAIJ *)(ptap->AP_loc)->data;
+    Mat_SeqAIJ *ap = (Mat_SeqAIJ *)ptap->AP_loc->data;
     PetscCall(PetscFree(ap->i));
     PetscCall(PetscFree2(ap->j, ap->a));
     PetscCall(MatDestroy(&ptap->AP_loc));
@@ -96,7 +96,7 @@ PetscErrorCode MatDestroy_MPIAIJ_PtAP(void *data)
 PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, Mat C)
 {
   Mat_MPIAIJ        *a = (Mat_MPIAIJ *)A->data, *p = (Mat_MPIAIJ *)P->data;
-  Mat_SeqAIJ        *ad = (Mat_SeqAIJ *)(a->A)->data, *ao = (Mat_SeqAIJ *)(a->B)->data;
+  Mat_SeqAIJ        *ad = (Mat_SeqAIJ *)a->A->data, *ao = (Mat_SeqAIJ *)a->B->data;
   Mat_SeqAIJ        *ap, *p_loc, *p_oth = NULL, *c_seq;
   Mat_APMPI         *ptap;
   Mat                AP_loc, C_loc, C_oth;
@@ -132,8 +132,8 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, Mat C)
 
   /* 2-2) compute numeric A_loc*P - dominating part */
   /* get data from symbolic products */
-  p_loc = (Mat_SeqAIJ *)(ptap->P_loc)->data;
-  if (ptap->P_oth) p_oth = (Mat_SeqAIJ *)(ptap->P_oth)->data;
+  p_loc = (Mat_SeqAIJ *)ptap->P_loc->data;
+  if (ptap->P_oth) p_oth = (Mat_SeqAIJ *)ptap->P_oth->data;
 
   api = ap->i;
   apj = ap->j;
@@ -234,7 +234,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, PetscReal fi
   PetscInt                *owners_co, *coi, *coj; /* i and j array of (p->B)^T*A*P - used in the communication */
   PetscMPIInt             *len_r, *id_r;          /* array of length of comm->size, store send/recv matrix values */
   PetscInt                *api, *apj, *Jptr, apnz, *prmap = p->garray, con, j, Crmax, *aj, *ai, *pi, nout;
-  Mat_SeqAIJ              *p_loc, *p_oth = NULL, *ad = (Mat_SeqAIJ *)(a->A)->data, *ao = NULL, *c_loc, *c_oth;
+  Mat_SeqAIJ              *p_loc, *p_oth = NULL, *ad = (Mat_SeqAIJ *)a->A->data, *ao = NULL, *c_loc, *c_oth;
   PetscScalar             *apv;
   PetscHMapI               ta;
   MatType                  mtype;
@@ -250,7 +250,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, PetscReal fi
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
-  if (size > 1) ao = (Mat_SeqAIJ *)(a->B)->data;
+  if (size > 1) ao = (Mat_SeqAIJ *)a->B->data;
 
   /* create symbolic parallel matrix Cmpi */
   PetscCall(MatGetType(A, &mtype));
@@ -573,7 +573,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, PetscReal fi
 static inline PetscErrorCode MatPtAPSymbolicComputeOneRowOfAP_private(Mat A, Mat P, Mat P_oth, const PetscInt *map, PetscInt dof, PetscInt i, PetscHSetI dht, PetscHSetI oht)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data, *p = (Mat_MPIAIJ *)P->data;
-  Mat_SeqAIJ *ad = (Mat_SeqAIJ *)(a->A)->data, *ao = (Mat_SeqAIJ *)(a->B)->data, *p_oth = (Mat_SeqAIJ *)P_oth->data, *pd = (Mat_SeqAIJ *)p->A->data, *po = (Mat_SeqAIJ *)p->B->data;
+  Mat_SeqAIJ *ad = (Mat_SeqAIJ *)a->A->data, *ao = (Mat_SeqAIJ *)a->B->data, *p_oth = (Mat_SeqAIJ *)P_oth->data, *pd = (Mat_SeqAIJ *)p->A->data, *po = (Mat_SeqAIJ *)p->B->data;
   PetscInt   *ai, nzi, j, *aj, row, col, *pi, *pj, pnz, nzpi, *p_othcols, k;
   PetscInt    pcstart, pcend, column, offset;
 
@@ -632,7 +632,7 @@ static inline PetscErrorCode MatPtAPSymbolicComputeOneRowOfAP_private(Mat A, Mat
 static inline PetscErrorCode MatPtAPNumericComputeOneRowOfAP_private(Mat A, Mat P, Mat P_oth, const PetscInt *map, PetscInt dof, PetscInt i, PetscHMapIV hmap)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data, *p = (Mat_MPIAIJ *)P->data;
-  Mat_SeqAIJ *ad = (Mat_SeqAIJ *)(a->A)->data, *ao = (Mat_SeqAIJ *)(a->B)->data, *p_oth = (Mat_SeqAIJ *)P_oth->data, *pd = (Mat_SeqAIJ *)p->A->data, *po = (Mat_SeqAIJ *)p->B->data;
+  Mat_SeqAIJ *ad = (Mat_SeqAIJ *)a->A->data, *ao = (Mat_SeqAIJ *)a->B->data, *p_oth = (Mat_SeqAIJ *)P_oth->data, *pd = (Mat_SeqAIJ *)p->A->data, *po = (Mat_SeqAIJ *)p->B->data;
   PetscInt   *ai, nzi, j, *aj, row, col, *pi, pnz, *p_othcols, pcstart, *pj, k, nzpi, offset;
   PetscScalar ra, *aa, *pa;
 
@@ -787,8 +787,8 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(Mat A, Mat P, PetscInt do
   PetscCall(MatGetOwnershipRangeColumn(P, &pcstart, &pcend));
   pcstart = pcstart * dof;
   pcend   = pcend * dof;
-  cd      = (Mat_SeqAIJ *)(c->A)->data;
-  co      = (Mat_SeqAIJ *)(c->B)->data;
+  cd      = (Mat_SeqAIJ *)c->A->data;
+  co      = (Mat_SeqAIJ *)c->B->data;
 
   cmaxr = 0;
   for (i = 0; i < pn; i++) cmaxr = PetscMax(cmaxr, (cd->i[i + 1] - cd->i[i]) + (co->i[i + 1] - co->i[i]));
@@ -881,8 +881,8 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A, Mat P, Pets
   pcend *= dof;
   cmaxr = 0;
   for (i = 0; i < pon; i++) cmaxr = PetscMax(cmaxr, ptap->c_rmti[i + 1] - ptap->c_rmti[i]);
-  cd = (Mat_SeqAIJ *)(c->A)->data;
-  co = (Mat_SeqAIJ *)(c->B)->data;
+  cd = (Mat_SeqAIJ *)c->A->data;
+  co = (Mat_SeqAIJ *)c->B->data;
   for (i = 0; i < pn; i++) cmaxr = PetscMax(cmaxr, (cd->i[i + 1] - cd->i[i]) + (co->i[i + 1] - co->i[i]));
   PetscCall(PetscCalloc4(cmaxr, &apindices, cmaxr, &apvalues, cmaxr, &apvaluestmp, pon, &c_rmtc));
   PetscCall(PetscHMapIVCreateWithSize(cmaxr, &hmap));
@@ -1521,7 +1521,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat C
   PetscInt                *owners_co, *coi, *coj; /* i and j array of (p->B)^T*A*P - used in the communication */
   PetscMPIInt             *len_r, *id_r;          /* array of length of comm->size, store send/recv matrix values */
   PetscInt                *api, *apj, *Jptr, apnz, *prmap = p->garray, con, j, ap_rmax = 0, Crmax, *aj, *ai, *pi;
-  Mat_SeqAIJ              *p_loc, *p_oth = NULL, *ad = (Mat_SeqAIJ *)(a->A)->data, *ao = NULL, *c_loc, *c_oth;
+  Mat_SeqAIJ              *p_loc, *p_oth = NULL, *ad = (Mat_SeqAIJ *)a->A->data, *ao = NULL, *c_loc, *c_oth;
   PetscScalar             *apv;
   PetscHMapI               ta;
   MatType                  mtype;
@@ -1537,7 +1537,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat C
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
-  if (size > 1) ao = (Mat_SeqAIJ *)(a->B)->data;
+  if (size > 1) ao = (Mat_SeqAIJ *)a->B->data;
 
   /* create symbolic parallel matrix Cmpi */
   PetscCall(MatGetType(A, &mtype));
@@ -1561,8 +1561,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat C
   PetscCall(MatTranspose(p->B, MAT_INITIAL_MATRIX, &ptap->Ro));
 
   /* (1) compute symbolic AP = A_loc*P = Ad*P_loc + Ao*P_oth (api,apj) */
-  p_loc = (Mat_SeqAIJ *)(ptap->P_loc)->data;
-  if (ptap->P_oth) p_oth = (Mat_SeqAIJ *)(ptap->P_oth)->data;
+  p_loc = (Mat_SeqAIJ *)ptap->P_loc->data;
+  if (ptap->P_oth) p_oth = (Mat_SeqAIJ *)ptap->P_oth->data;
 
   /* create and initialize a linked list */
   PetscCall(PetscHMapICreateWithSize(pn, &ta)); /* for compute AP_loc and Cmpi */
@@ -1857,7 +1857,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat C
 PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C)
 {
   Mat_MPIAIJ        *a = (Mat_MPIAIJ *)A->data, *p = (Mat_MPIAIJ *)P->data;
-  Mat_SeqAIJ        *ad = (Mat_SeqAIJ *)(a->A)->data, *ao = (Mat_SeqAIJ *)(a->B)->data;
+  Mat_SeqAIJ        *ad = (Mat_SeqAIJ *)a->A->data, *ao = (Mat_SeqAIJ *)a->B->data;
   Mat_SeqAIJ        *ap, *p_loc, *p_oth = NULL, *c_seq;
   Mat_APMPI         *ptap;
   Mat                AP_loc, C_loc, C_oth;
@@ -1893,8 +1893,8 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C)
 
   /* 2-2) compute numeric A_loc*P - dominating part */
   /* get data from symbolic products */
-  p_loc = (Mat_SeqAIJ *)(ptap->P_loc)->data;
-  if (ptap->P_oth) p_oth = (Mat_SeqAIJ *)(ptap->P_oth)->data;
+  p_loc = (Mat_SeqAIJ *)ptap->P_loc->data;
+  if (ptap->P_oth) p_oth = (Mat_SeqAIJ *)ptap->P_oth->data;
   apa = ptap->apa;
   api = ap->i;
   apj = ap->j;

@@ -40,7 +40,7 @@ int main(int argc, char **argv)
   PetscInt          m = 100, dim = 3, M, K = 10, begin, n = 0, N, bs;
   PetscMPIInt       size;
   PetscScalar      *ptr;
-  PetscReal        *coords, *gcoords, *scoords, *gscoords, *(ctx[2]), norm, epsilon;
+  PetscReal        *coords, *gcoords, *scoords, *gscoords, *ctx[2], norm, epsilon;
   MatHtoolKernelFn *kernel = GenEntries;
   PetscBool         flg, sym = PETSC_FALSE;
   PetscRandom       rdm;

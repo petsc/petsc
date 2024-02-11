@@ -269,7 +269,7 @@ static PetscErrorCode VecTaggerComputeBox_CDF_SortedArray_Iterative(VecTagger ta
 static PetscErrorCode VecTaggerComputeBoxes_CDF_Iterative(VecTagger tagger, Vec vec, PetscInt bs, VecTaggerBox *boxes)
 {
   VecTagger_CDF    *cdf  = (VecTagger_CDF *)tagger->data;
-  VecTagger_Simple *smpl = &(cdf->smpl);
+  VecTagger_Simple *smpl = &cdf->smpl;
   Vec               vComp;
   PetscInt          i, N, M, n, m, rstart;
 #if defined(PETSC_USE_COMPLEX)

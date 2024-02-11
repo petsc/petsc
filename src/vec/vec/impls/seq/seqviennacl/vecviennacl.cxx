@@ -218,7 +218,7 @@ PetscErrorCode VecViennaCLCopyToGPU(Vec v)
       } catch (std::exception const &ex) {
         SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex.what());
       }
-      PetscCall(PetscLogCpuToGpu((v->map->n) * sizeof(PetscScalar)));
+      PetscCall(PetscLogCpuToGpu(v->map->n * sizeof(PetscScalar)));
       PetscCall(PetscLogEventEnd(VEC_ViennaCLCopyToGPU, v, 0, 0, 0));
       v->offloadmask = PETSC_OFFLOAD_BOTH;
     }
@@ -243,7 +243,7 @@ PetscErrorCode VecViennaCLCopyFromGPU(Vec v)
     } catch (std::exception const &ex) {
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex.what());
     }
-    PetscCall(PetscLogGpuToCpu((v->map->n) * sizeof(PetscScalar)));
+    PetscCall(PetscLogGpuToCpu(v->map->n * sizeof(PetscScalar)));
     PetscCall(PetscLogEventEnd(VEC_ViennaCLCopyFromGPU, v, 0, 0, 0));
     v->offloadmask = PETSC_OFFLOAD_BOTH;
   }
@@ -1123,8 +1123,8 @@ PetscErrorCode VecDuplicate_SeqViennaCL(Vec win, Vec *V)
   PetscFunctionBegin;
   PetscCall(VecCreateSeqViennaCL(PetscObjectComm((PetscObject)win), win->map->n, V));
   PetscCall(PetscLayoutReference(win->map, &(*V)->map));
-  PetscCall(PetscObjectListDuplicate(((PetscObject)win)->olist, &((PetscObject)(*V))->olist));
-  PetscCall(PetscFunctionListDuplicate(((PetscObject)win)->qlist, &((PetscObject)(*V))->qlist));
+  PetscCall(PetscObjectListDuplicate(((PetscObject)win)->olist, &((PetscObject)*V)->olist));
+  PetscCall(PetscFunctionListDuplicate(((PetscObject)win)->qlist, &((PetscObject)*V)->qlist));
   (*V)->stash.ignorenegidx = win->stash.ignorenegidx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

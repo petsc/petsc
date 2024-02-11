@@ -1182,7 +1182,7 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp, PetscInt its, PetscReal fnorm
   if (scale->bnrm < 0.0) {
     Vec b;
     PetscCall(KSPGetRhs(ksp, &b));
-    PetscCall(VecNorm(b, NORM_2, &(scale->bnrm)));
+    PetscCall(VecNorm(b, NORM_2, &scale->bnrm));
   }
   PetscCall(KSPGetTolerances(ksp, &outer_rtol, &outer_abstol, &outer_dtol, &outer_maxits));
   inner_rtol = PetscMin(scale->coef * scale->bnrm * outer_rtol / fnorm, 0.999);

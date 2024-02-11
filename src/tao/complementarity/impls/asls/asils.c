@@ -216,7 +216,7 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
     } else {
       PetscCall(MatDestroy(&asls->Jpre_sub));
       asls->Jpre_sub = asls->J_sub;
-      PetscCall(PetscObjectReference((PetscObject)(asls->Jpre_sub)));
+      PetscCall(PetscObjectReference((PetscObject)asls->Jpre_sub));
     }
     PetscCall(MatDiagonalSet(asls->J_sub, asls->r1, ADD_VALUES));
     PetscCall(TaoVecGetSubVec(tao->stepdirection, asls->free, tao->subset_type, 0.0, &asls->dxfree));

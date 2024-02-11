@@ -88,7 +88,7 @@ static PetscErrorCode SNESMonitorVI(SNES snes, PetscInt its, PetscReal fgnorm, v
 
   rnorm = 0.0;
   for (i = 0; i < n; i++) {
-    if (((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + zerotolerance || (PetscRealPart(f[i]) <= 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - zerotolerance) || PetscRealPart(f[i]) >= 0.0))) rnorm += PetscRealPart(PetscConj(f[i]) * f[i]);
+    if ((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + zerotolerance || (PetscRealPart(f[i]) <= 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - zerotolerance) || PetscRealPart(f[i]) >= 0.0)) rnorm += PetscRealPart(PetscConj(f[i]) * f[i]);
     else if (PetscRealPart(x[i]) <= PetscRealPart(xl[i]) + zerotolerance && PetscRealPart(f[i]) > 0.0) act[0]++;
     else if (PetscRealPart(x[i]) >= PetscRealPart(xu[i]) - zerotolerance && PetscRealPart(f[i]) < 0.0) act[1]++;
     else SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_PLIB, "Can never get here");
@@ -292,7 +292,7 @@ PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES snes, Vec F, Vec X, PetscReal 
   PetscCall(VecGetArrayRead(F, &f));
   rnorm = 0.0;
   for (i = 0; i < n; i++) {
-    if (((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + zerotolerance || (PetscRealPart(f[i]) <= 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - zerotolerance) || PetscRealPart(f[i]) >= 0.0))) rnorm += PetscRealPart(PetscConj(f[i]) * f[i]);
+    if ((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + zerotolerance || (PetscRealPart(f[i]) <= 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - zerotolerance) || PetscRealPart(f[i]) >= 0.0)) rnorm += PetscRealPart(PetscConj(f[i]) * f[i]);
   }
   PetscCall(VecRestoreArrayRead(F, &f));
   PetscCall(VecRestoreArrayRead(snes->xl, &xl));

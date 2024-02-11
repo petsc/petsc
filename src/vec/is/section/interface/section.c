@@ -2664,7 +2664,7 @@ PetscErrorCode PetscSectionDestroy(PetscSection *s)
   PetscFunctionBegin;
   if (!*s) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*s, PETSC_SECTION_CLASSID, 1);
-  if (--((PetscObject)(*s))->refct > 0) {
+  if (--((PetscObject)*s)->refct > 0) {
     *s = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -3385,8 +3385,8 @@ PetscErrorCode PetscSectionSymDestroy(PetscSectionSym *sym)
 
   PetscFunctionBegin;
   if (!*sym) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*sym), PETSC_SECTION_SYM_CLASSID, 1);
-  if (--((PetscObject)(*sym))->refct > 0) {
+  PetscValidHeaderSpecific(*sym, PETSC_SECTION_SYM_CLASSID, 1);
+  if (--((PetscObject)*sym)->refct > 0) {
     *sym = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -3446,7 +3446,7 @@ PetscErrorCode PetscSectionSetSym(PetscSection section, PetscSectionSym sym)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 1);
-  PetscCall(PetscSectionSymDestroy(&(section->sym)));
+  PetscCall(PetscSectionSymDestroy(&section->sym));
   if (sym) {
     PetscValidHeaderSpecific(sym, PETSC_SECTION_SYM_CLASSID, 2);
     PetscCheckSameComm(section, 1, sym, 2);

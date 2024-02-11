@@ -40,11 +40,11 @@ static PetscErrorCode PetscDualSpaceRefinedSetCellSpaces_Refined(PetscDualSpace 
   dm = sp->dm;
   PetscCheck(dm, PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_WRONGSTATE, "PetscDualSpace must have a DM (PetscDualSpaceSetDM()) before calling PetscDualSpaceRefinedSetCellSpaces");
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
-  if (!sp->pointSpaces) PetscCall(PetscCalloc1(pEnd - pStart, &(sp->pointSpaces)));
+  if (!sp->pointSpaces) PetscCall(PetscCalloc1(pEnd - pStart, &sp->pointSpaces));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   for (c = 0; c < cEnd - cStart; c++) {
     PetscCall(PetscObjectReference((PetscObject)cellSpaces[c]));
-    PetscCall(PetscDualSpaceDestroy(&(sp->pointSpaces[c + cStart - pStart])));
+    PetscCall(PetscDualSpaceDestroy(&sp->pointSpaces[c + cStart - pStart]));
     sp->pointSpaces[c + cStart - pStart] = cellSpaces[c];
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -121,7 +121,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Refined(PetscDualSpace sp)
   }
   PetscCall(PetscDualSpaceGetSection(sp, &section));
   PetscCall(PetscDualSpaceGetDimension(sp, &spdim));
-  PetscCall(PetscMalloc1(spdim, &(sp->functional)));
+  PetscCall(PetscMalloc1(spdim, &sp->functional));
   PetscCall(PetscDualSpacePushForwardSubspaces_Internal(sp, pStart, pEnd));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -139,12 +139,12 @@ PetscErrorCode VecTaggerDestroy(VecTagger *tagger)
 {
   PetscFunctionBegin;
   if (!*tagger) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*tagger), VEC_TAGGER_CLASSID, 1);
-  if (--((PetscObject)(*tagger))->refct > 0) {
+  PetscValidHeaderSpecific(*tagger, VEC_TAGGER_CLASSID, 1);
+  if (--((PetscObject)*tagger)->refct > 0) {
     *tagger = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  PetscTryTypeMethod((*tagger), destroy);
+  PetscTryTypeMethod(*tagger, destroy);
   PetscCall(PetscHeaderDestroy(tagger));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

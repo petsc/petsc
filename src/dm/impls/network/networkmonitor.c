@@ -80,8 +80,8 @@ PetscErrorCode DMNetworkMonitorPop(DMNetworkMonitor monitor)
     monitor->firstnode = node->next;
 
     /* Free list node */
-    PetscCall(PetscViewerDestroy(&(node->viewer)));
-    PetscCall(VecDestroy(&(node->v)));
+    PetscCall(PetscViewerDestroy(&node->viewer));
+    PetscCall(VecDestroy(&node->v));
     PetscCall(PetscFree(node));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -145,7 +145,7 @@ PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor, const char *name, P
   PetscCall(PetscMalloc1(1, &node));
 
   /* Setup viewer. */
-  PetscCall(PetscViewerDrawOpen(monitor->comm, NULL, titleBuffer, PETSC_DECIDE, PETSC_DECIDE, PETSC_DRAW_QUARTER_SIZE, PETSC_DRAW_QUARTER_SIZE, &(node->viewer)));
+  PetscCall(PetscViewerDrawOpen(monitor->comm, NULL, titleBuffer, PETSC_DECIDE, PETSC_DECIDE, PETSC_DRAW_QUARTER_SIZE, PETSC_DRAW_QUARTER_SIZE, &node->viewer));
   PetscCall(PetscViewerPushFormat(node->viewer, PETSC_VIEWER_DRAW_LG_XRANGE));
   PetscCall(PetscViewerDrawGetDrawLG(node->viewer, 0, &drawlg));
   PetscCall(PetscDrawLGGetAxis(drawlg, &axis));
@@ -154,7 +154,7 @@ PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor, const char *name, P
   PetscCall(PetscDrawAxisSetHoldLimits(axis, hold));
 
   /* Setup vector storage for drawing. */
-  PetscCall(VecCreateSeq(PETSC_COMM_SELF, nodes, &(node->v)));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF, nodes, &node->v));
 
   node->element   = element;
   node->nodes     = nodes;

@@ -3062,7 +3062,7 @@ static PetscErrorCode MatCreateSubMatricesMPI_MPIXAIJ(Mat C, PetscInt ismax, con
          to be done without serializing on the IS list, so, most likely, it is best
          done by rewriting MatCreateSubMatrices_MPIAIJ() directly.
       */
-      PetscCall(ISGetNonlocalIS(iscol[i], &(ciscol[ii])));
+      PetscCall(ISGetNonlocalIS(iscol[i], &ciscol[ii]));
       /* Now we have to
          (a) make sure ciscol[ii] is sorted, since, even if the off-proc indices
              were sorted on each rank, concatenated they might no longer be sorted;

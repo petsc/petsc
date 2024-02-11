@@ -397,7 +397,7 @@ PetscErrorCode DMCoarsen_ShellDA(DM dm, MPI_Comm comm, DM *dmc)
   if (!*dmc) {
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "The coarse DM should never be NULL. The DM hierarchy should have already been defined");
   } else {
-    PetscCall(PetscObjectReference((PetscObject)(*dmc)));
+    PetscCall(PetscObjectReference((PetscObject)*dmc));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

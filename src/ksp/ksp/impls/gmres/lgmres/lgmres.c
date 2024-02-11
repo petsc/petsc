@@ -87,7 +87,7 @@ static PetscErrorCode KSPSetUp_LGMRES(KSP ksp)
 
 static PetscErrorCode KSPLGMRESCycle(PetscInt *itcount, KSP ksp)
 {
-  KSP_LGMRES *lgmres = (KSP_LGMRES *)(ksp->data);
+  KSP_LGMRES *lgmres = (KSP_LGMRES *)ksp->data;
   PetscReal   res_norm, res;
   PetscReal   hapbnd, tt;
   PetscScalar tmp;
@@ -353,7 +353,7 @@ static PetscErrorCode KSPLGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest
 {
   PetscScalar tt;
   PetscInt    ii, k, j;
-  KSP_LGMRES *lgmres = (KSP_LGMRES *)(ksp->data);
+  KSP_LGMRES *lgmres = (KSP_LGMRES *)ksp->data;
   /* LGMRES_MOD */
   PetscInt it_arnoldi, it_aug;
   PetscInt jj, spot = 0;
@@ -439,7 +439,7 @@ static PetscErrorCode KSPLGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
 {
   PetscScalar *hh, *cc, *ss, tt;
   PetscInt     j;
-  KSP_LGMRES  *lgmres = (KSP_LGMRES *)(ksp->data);
+  KSP_LGMRES  *lgmres = (KSP_LGMRES *)ksp->data;
 
   PetscFunctionBegin;
   hh = HH(0, it); /* pointer to beginning of column to update - so incrementing hh "steps down" the (it+1)th col of HH*/

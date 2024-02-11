@@ -337,7 +337,7 @@ static PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F, Mat A, IS r, IS c, const 
   /************************************************************************/
 
   F->ops->lufactornumeric = MatLUFactorNumeric_LUSOL;
-  lusol                   = (Mat_LUSOL *)(F->spptr);
+  lusol                   = (Mat_LUSOL *)F->spptr;
 
   /************************************************************************/
   /* Initialize parameters                                                */

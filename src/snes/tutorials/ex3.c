@@ -199,7 +199,7 @@ int main(int argc, char **argv)
   if (post_check) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Activating post step checking routine\n"));
     PetscCall(SNESLineSearchSetPostCheck(linesearch, PostCheck, &checkP));
-    PetscCall(VecDuplicate(x, &(checkP.last_step)));
+    PetscCall(VecDuplicate(x, &checkP.last_step));
 
     checkP.tolerance = 1.0;
     checkP.user      = &ctx;

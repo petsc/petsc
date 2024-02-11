@@ -106,7 +106,7 @@ PetscErrorCode MatColoringCreate(Mat m, MatColoring *mcptr)
 PetscErrorCode MatColoringDestroy(MatColoring *mc)
 {
   PetscFunctionBegin;
-  if (--((PetscObject)(*mc))->refct > 0) {
+  if (--((PetscObject)*mc)->refct > 0) {
     *mc = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

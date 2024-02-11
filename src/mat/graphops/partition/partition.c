@@ -446,8 +446,8 @@ PetscErrorCode MatPartitioningDestroy(MatPartitioning *part)
 {
   PetscFunctionBegin;
   if (!*part) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*part), MAT_PARTITIONING_CLASSID, 1);
-  if (--((PetscObject)(*part))->refct > 0) {
+  PetscValidHeaderSpecific(*part, MAT_PARTITIONING_CLASSID, 1);
+  if (--((PetscObject)*part)->refct > 0) {
     *part = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

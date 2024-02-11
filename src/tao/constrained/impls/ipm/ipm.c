@@ -688,7 +688,7 @@ static PetscErrorCode IPMUpdateAi(Tao tao)
 
   /* Create Ai matrix if it doesn't exist yet */
   if (!ipmP->Ai) {
-    comm = ((PetscObject)(tao->solution))->comm;
+    comm = ((PetscObject)tao->solution)->comm;
     PetscCallMPI(MPI_Comm_size(comm, &size));
     if (size == 1) {
       PetscCall(PetscMalloc1(ipmP->nb, &nonzeros));
@@ -812,7 +812,7 @@ static PetscErrorCode IPMUpdateK(Tao tao)
   PetscInt         sstart, send;
 
   PetscFunctionBegin;
-  comm = ((PetscObject)(tao->solution))->comm;
+  comm = ((PetscObject)tao->solution)->comm;
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(IPMUpdateAi(tao));
 

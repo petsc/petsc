@@ -973,8 +973,8 @@ static PetscErrorCode MatDuplicate_Shell(Mat mat, MatDuplicateOption op, Mat *M)
   PetscFunctionBegin;
   PetscCall(MatCreateShell(PetscObjectComm((PetscObject)mat), mat->rmap->n, mat->cmap->n, mat->rmap->N, mat->cmap->N, NULL, M));
   ((Mat_Shell *)(*M)->data)->ctxcontainer = ((Mat_Shell *)mat->data)->ctxcontainer;
-  PetscCall(PetscObjectCompose((PetscObject)(*M), "MatShell ctx", (PetscObject)((Mat_Shell *)(*M)->data)->ctxcontainer));
-  PetscCall(PetscObjectChangeTypeName((PetscObject)(*M), ((PetscObject)mat)->type_name));
+  PetscCall(PetscObjectCompose((PetscObject)*M, "MatShell ctx", (PetscObject)((Mat_Shell *)(*M)->data)->ctxcontainer));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)*M, ((PetscObject)mat)->type_name));
   if (op == MAT_COPY_VALUES) PetscCall(MatCopy(mat, *M, SAME_NONZERO_PATTERN));
   PetscCall(PetscObjectCopyFortranFunctionPointers((PetscObject)mat, (PetscObject)*M));
   PetscFunctionReturn(PETSC_SUCCESS);

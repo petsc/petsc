@@ -156,14 +156,14 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqDense(Mat A, MatType newtype, M
   PetscFunctionBegin;
   if (reuse == MAT_REUSE_MATRIX) {
     PetscCall(PetscObjectTypeCompare((PetscObject)*newmat, MATSEQDENSE, &isseqdense));
-    PetscCheck(isseqdense, PetscObjectComm((PetscObject)*newmat), PETSC_ERR_USER, "Cannot reuse matrix of type %s", ((PetscObject)(*newmat))->type_name);
+    PetscCheck(isseqdense, PetscObjectComm((PetscObject)*newmat), PETSC_ERR_USER, "Cannot reuse matrix of type %s", ((PetscObject)*newmat)->type_name);
   }
   if (reuse != MAT_REUSE_MATRIX) {
     PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &B));
     PetscCall(MatSetSizes(B, m, n, m, n));
     PetscCall(MatSetType(B, MATSEQDENSE));
     PetscCall(MatSeqDenseSetPreallocation(B, NULL));
-    b = (Mat_SeqDense *)(B->data);
+    b = (Mat_SeqDense *)B->data;
   } else {
     b = (Mat_SeqDense *)((*newmat)->data);
     for (i = 0; i < n; i++) PetscCall(PetscArrayzero(b->v + i * b->lda, m));
@@ -930,7 +930,7 @@ PetscErrorCode MatQRFactor_SeqDense(Mat A, IS col, const MatFactorInfo *minfo)
   min = PetscMin(m, n);
   if (!mat->tau) { PetscCall(PetscMalloc1(min, &mat->tau)); }
   if (!mat->pivots) { PetscCall(PetscMalloc1(n, &mat->pivots)); }
-  if (!mat->qrrhs) PetscCall(MatCreateVecs(A, NULL, &(mat->qrrhs)));
+  if (!mat->qrrhs) PetscCall(MatCreateVecs(A, NULL, &mat->qrrhs));
   if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(PETSC_SUCCESS);
   if (!mat->fwork) {
     PetscScalar dummy;
@@ -999,7 +999,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqdense_petsc(Mat A, MatFactorType fty
   } else if (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) {
     (*fact)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqDense;
   } else if (ftype == MAT_FACTOR_QR) {
-    PetscCall(PetscObjectComposeFunction((PetscObject)(*fact), "MatQRFactorSymbolic_C", MatQRFactorSymbolic_SeqDense));
+    PetscCall(PetscObjectComposeFunction((PetscObject)*fact, "MatQRFactorSymbolic_C", MatQRFactorSymbolic_SeqDense));
   }
   (*fact)->factortype = ftype;
 
@@ -1073,10 +1073,10 @@ static PetscErrorCode MatMultKernel_SeqDense(Mat A, Vec xx, Vec yy, PetscBool tr
       for (i = 0; i < m; i++) y[i] = 0.0;
   } else {
     if (trans) {
-      if (herm) PetscCallBLAS("BLASgemv", BLASgemv_("C", &m, &n, &_DOne, v, &(mat->lda), x, &_One, &_DZero, y, &_One));
-      else PetscCallBLAS("BLASgemv", BLASgemv_("T", &m, &n, &_DOne, v, &(mat->lda), x, &_One, &_DZero, y, &_One));
+      if (herm) PetscCallBLAS("BLASgemv", BLASgemv_("C", &m, &n, &_DOne, v, &mat->lda, x, &_One, &_DZero, y, &_One));
+      else PetscCallBLAS("BLASgemv", BLASgemv_("T", &m, &n, &_DOne, v, &mat->lda, x, &_One, &_DZero, y, &_One));
     } else {
-      PetscCallBLAS("BLASgemv", BLASgemv_("N", &m, &n, &_DOne, v, &(mat->lda), x, &_One, &_DZero, y, &_One));
+      PetscCallBLAS("BLASgemv", BLASgemv_("N", &m, &n, &_DOne, v, &mat->lda, x, &_One, &_DZero, y, &_One));
     }
     if (trans) PetscCall(PetscLogFlops(2.0 * A->rmap->n * A->cmap->n - A->cmap->n));
     else PetscCall(PetscLogFlops(2.0 * A->rmap->n * A->cmap->n - A->rmap->n));
@@ -1122,10 +1122,10 @@ static PetscErrorCode MatMultAddKernel_SeqDense(Mat A, Vec xx, Vec zz, Vec yy, P
   PetscCall(VecGetArray(yy, &y));
   PetscCall(VecGetArrayRead(xx, &x));
   if (trans) {
-    if (herm) PetscCallBLAS("BLASgemv", BLASgemv_("C", &m, &n, &_DOne, v, &(mat->lda), x, &_One, &_DOne, y, &_One));
-    else PetscCallBLAS("BLASgemv", BLASgemv_("T", &m, &n, &_DOne, v, &(mat->lda), x, &_One, &_DOne, y, &_One));
+    if (herm) PetscCallBLAS("BLASgemv", BLASgemv_("C", &m, &n, &_DOne, v, &mat->lda, x, &_One, &_DOne, y, &_One));
+    else PetscCallBLAS("BLASgemv", BLASgemv_("T", &m, &n, &_DOne, v, &mat->lda, x, &_One, &_DOne, y, &_One));
   } else {
-    PetscCallBLAS("BLASgemv", BLASgemv_("N", &m, &n, &_DOne, v, &(mat->lda), x, &_One, &_DOne, y, &_One));
+    PetscCallBLAS("BLASgemv", BLASgemv_("N", &m, &n, &_DOne, v, &mat->lda, x, &_One, &_DOne, y, &_One));
   }
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArray(yy, &y));
@@ -1692,7 +1692,7 @@ PetscErrorCode MatDestroy_SeqDense(Mat mat)
 
   PetscFunctionBegin;
   PetscCall(PetscLogObjectState((PetscObject)mat, "Rows %" PetscInt_FMT " Cols %" PetscInt_FMT, mat->rmap->n, mat->cmap->n));
-  PetscCall(VecDestroy(&(l->qrrhs)));
+  PetscCall(VecDestroy(&l->qrrhs));
   PetscCall(PetscFree(l->tau));
   PetscCall(PetscFree(l->pivots));
   PetscCall(PetscFree(l->fwork));

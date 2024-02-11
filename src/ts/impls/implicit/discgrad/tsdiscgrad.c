@@ -270,7 +270,7 @@ static PetscErrorCode TSGetStages_DiscGrad(TS ts, PetscInt *ns, Vec **Y)
 
   PetscFunctionBegin;
   if (ns) *ns = 1;
-  if (Y) *Y = &(dg->X);
+  if (Y) *Y = &dg->X;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

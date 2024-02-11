@@ -561,7 +561,7 @@ static PetscErrorCode TSStep_GLEE(TS ts)
       glee->status  = TS_STEP_COMPLETE;
       /* compute and store the global error */
       /* Note: this is not needed if TSAdaptGLEE is not used */
-      PetscCall(TSGetTimeError(ts, 0, &(glee->yGErr)));
+      PetscCall(TSGetTimeError(ts, 0, &glee->yGErr));
       PetscCall(PetscObjectComposedDataSetReal((PetscObject)ts->vec_sol, explicit_stage_time_id, ts->ptime));
       break;
     } else { /* Roll back the current step */
@@ -944,7 +944,7 @@ static PetscErrorCode TSGetAuxSolution_GLEE(TS ts, Vec *X)
   PetscFunctionBegin;
   PetscCall(VecZeroEntries(*X));
   for (i = 0; i < r; i++) wr[i] = F[i];
-  PetscCall(VecMAXPY((*X), r, wr, Y));
+  PetscCall(VecMAXPY(*X, r, wr, Y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -962,7 +962,7 @@ static PetscErrorCode TSGetTimeError_GLEE(TS ts, PetscInt n, Vec *X)
   PetscCall(VecZeroEntries(*X));
   if (n == 0) {
     for (i = 0; i < r; i++) wr[i] = F[i];
-    PetscCall(VecMAXPY((*X), r, wr, Y));
+    PetscCall(VecMAXPY(*X, r, wr, Y));
   } else if (n == -1) {
     *X = glee->yGErr;
   }

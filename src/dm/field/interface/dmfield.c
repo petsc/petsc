@@ -38,12 +38,12 @@ PetscErrorCode DMFieldDestroy(DMField *field)
 {
   PetscFunctionBegin;
   if (!*field) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*field), DMFIELD_CLASSID, 1);
-  if (--((PetscObject)(*field))->refct > 0) {
+  PetscValidHeaderSpecific(*field, DMFIELD_CLASSID, 1);
+  if (--((PetscObject)*field)->refct > 0) {
     *field = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  PetscTryTypeMethod((*field), destroy);
+  PetscTryTypeMethod(*field, destroy);
   PetscCall(DMDestroy(&((*field)->dm)));
   PetscCall(PetscHeaderDestroy(field));
   PetscFunctionReturn(PETSC_SUCCESS);

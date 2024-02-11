@@ -1028,8 +1028,8 @@ PetscErrorCode ISDestroy(IS *is)
 {
   PetscFunctionBegin;
   if (!*is) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*is), IS_CLASSID, 1);
-  if (--((PetscObject)(*is))->refct > 0) {
+  PetscValidHeaderSpecific(*is, IS_CLASSID, 1);
+  if (--((PetscObject)*is)->refct > 0) {
     *is = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -1352,7 +1352,7 @@ static PetscErrorCode ISGatherTotal_Private(IS is)
   for (i = 1; i < size; ++i) offsets[i] = offsets[i - 1] + sizes[i - 1];
   N = offsets[size - 1] + sizes[size - 1];
 
-  PetscCall(PetscMalloc1(N, &(is->total)));
+  PetscCall(PetscMalloc1(N, &is->total));
   PetscCall(ISGetIndices(is, &lindices));
   PetscCallMPI(MPI_Allgatherv((void *)lindices, nn, MPIU_INT, is->total, sizes, offsets, MPIU_INT, comm));
   PetscCall(ISRestoreIndices(is, &lindices));
@@ -1469,7 +1469,7 @@ PetscErrorCode ISGetNonlocalIndices(IS is, const PetscInt *indices[])
     if (!is->total) PetscCall(ISGatherTotal_Private(is));
     PetscCall(ISGetLocalSize(is, &n));
     PetscCall(ISGetSize(is, &N));
-    PetscCall(PetscMalloc1(N - n, &(is->nonlocal)));
+    PetscCall(PetscMalloc1(N - n, &is->nonlocal));
     PetscCall(PetscArraycpy(is->nonlocal, is->total, is->local_offset));
     PetscCall(PetscArraycpy(is->nonlocal + is->local_offset, is->total + is->local_offset + n, N - is->local_offset - n));
     *indices = is->nonlocal;
@@ -1530,14 +1530,14 @@ PetscErrorCode ISGetNonlocalIS(IS is, IS *complement)
   /* Check if the complement exists already. */
   if (is->complement) {
     *complement = is->complement;
-    PetscCall(PetscObjectReference((PetscObject)(is->complement)));
+    PetscCall(PetscObjectReference((PetscObject)is->complement));
   } else {
     PetscInt        N, n;
     const PetscInt *idx;
     PetscCall(ISGetSize(is, &N));
     PetscCall(ISGetLocalSize(is, &n));
     PetscCall(ISGetNonlocalIndices(is, &idx));
-    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, N - n, idx, PETSC_USE_POINTER, &(is->complement)));
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, N - n, idx, PETSC_USE_POINTER, &is->complement));
     PetscCall(PetscObjectReference((PetscObject)is->complement));
     *complement = is->complement;
   }
@@ -1565,9 +1565,9 @@ PetscErrorCode ISRestoreNonlocalIS(IS is, IS *complement)
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscAssertPointer(complement, 2);
   PetscCheck(*complement == is->complement, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Complement IS being restored was not obtained with ISGetNonlocalIS()");
-  PetscCall(PetscObjectGetReference((PetscObject)(is->complement), &refcnt));
+  PetscCall(PetscObjectGetReference((PetscObject)is->complement, &refcnt));
   PetscCheck(refcnt > 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Duplicate call to ISRestoreNonlocalIS() detected");
-  PetscCall(PetscObjectDereference((PetscObject)(is->complement)));
+  PetscCall(PetscObjectDereference((PetscObject)is->complement));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

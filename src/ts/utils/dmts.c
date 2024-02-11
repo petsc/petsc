@@ -53,8 +53,8 @@ static PetscErrorCode DMTSDestroy(DMTS *kdm)
 {
   PetscFunctionBegin;
   if (!*kdm) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*kdm), DMTS_CLASSID, 1);
-  if (--((PetscObject)(*kdm))->refct > 0) {
+  PetscValidHeaderSpecific(*kdm, DMTS_CLASSID, 1);
+  if (--((PetscObject)*kdm)->refct > 0) {
     *kdm = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

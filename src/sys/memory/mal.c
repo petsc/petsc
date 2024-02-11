@@ -153,7 +153,7 @@ PETSC_EXTERN PetscErrorCode PetscReallocAlign(size_t mem, int line, const char f
 #if PetscDefined(HAVE_POSIX_MEMALIGN)
   /* There are no standard guarantees that realloc() maintains the alignment of memalign(), so I think we have to
    * realloc and, if the alignment is wrong, malloc/copy/free. */
-  if (((size_t)(*result)) % PETSC_MEMALIGN) {
+  if (((size_t)*result) % PETSC_MEMALIGN) {
     void *newResult;
   #if PetscDefined(HAVE_MEMKIND)
     {

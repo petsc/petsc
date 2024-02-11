@@ -253,9 +253,9 @@ PetscErrorCode IFunctionLocalPassive(DMDALocalInfo *info, PetscReal t, Field **u
   PetscScalar uc, uxx, uyy, vc, vxx, vyy;
 
   PetscFunctionBegin;
-  hx = 2.50 / (PetscReal)(info->mx);
+  hx = 2.50 / (PetscReal)info->mx;
   sx = 1.0 / (hx * hx);
-  hy = 2.50 / (PetscReal)(info->my);
+  hy = 2.50 / (PetscReal)info->my;
   sy = 1.0 / (hy * hy);
 
   /* Get local grid boundaries */
@@ -298,9 +298,9 @@ PetscErrorCode IFunctionActive(TS ts, PetscReal ftime, Vec U, Vec Udot, Vec F, v
   PetscCall(TSGetDM(ts, &da));
   PetscCall(DMDAGetLocalInfo(da, &info));
   PetscCall(DMGetLocalVector(da, &localU));
-  hx  = 2.50 / (PetscReal)(info.mx);
+  hx  = 2.50 / (PetscReal)info.mx;
   sx  = 1.0 / (hx * hx);
-  hy  = 2.50 / (PetscReal)(info.my);
+  hy  = 2.50 / (PetscReal)info.my;
   sy  = 1.0 / (hy * hy);
   xs  = info.xs;
   xm  = info.xm;

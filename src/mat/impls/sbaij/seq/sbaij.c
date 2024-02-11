@@ -1179,7 +1179,7 @@ static PetscErrorCode MatZeroRowsColumns_SeqSBAIJ(Mat A, PetscInt is_n, const Pe
         for (k = 0; k < bs; k++) {
           col = bs * baij->j[j] + k;
           if (col <= i) continue;
-          aa = ((MatScalar *)(baij->a)) + j * bs2 + (i % bs) + bs * k;
+          aa = ((MatScalar *)baij->a) + j * bs2 + (i % bs) + bs * k;
           if (!zeroed[i] && zeroed[col]) bb[i] -= aa[0] * xx[col];
           if (zeroed[i] && !zeroed[col]) bb[col] -= aa[0] * xx[i];
         }
@@ -1195,7 +1195,7 @@ static PetscErrorCode MatZeroRowsColumns_SeqSBAIJ(Mat A, PetscInt is_n, const Pe
         for (k = 0; k < bs; k++) {
           col = bs * baij->j[j] + k;
           if (zeroed[col]) {
-            aa    = ((MatScalar *)(baij->a)) + j * bs2 + (i % bs) + bs * k;
+            aa    = ((MatScalar *)baij->a) + j * bs2 + (i % bs) + bs * k;
             aa[0] = 0.0;
           }
         }
@@ -1212,7 +1212,7 @@ static PetscErrorCode MatZeroRowsColumns_SeqSBAIJ(Mat A, PetscInt is_n, const Pe
   for (i = 0; i < is_n; i++) {
     row   = is_idx[i];
     count = (baij->i[row / bs + 1] - baij->i[row / bs]) * bs;
-    aa    = ((MatScalar *)(baij->a)) + baij->i[row / bs] * bs2 + (row % bs);
+    aa    = ((MatScalar *)baij->a) + baij->i[row / bs] * bs2 + (row % bs);
     for (k = 0; k < count; k++) {
       aa[0] = zero;
       aa += bs;

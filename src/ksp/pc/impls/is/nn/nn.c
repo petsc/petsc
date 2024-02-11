@@ -39,7 +39,7 @@ static PetscErrorCode PCSetUp_NN(PC pc)
  */
 static PetscErrorCode PCApply_NN(PC pc, Vec r, Vec z)
 {
-  PC_IS      *pcis  = (PC_IS *)(pc->data);
+  PC_IS      *pcis  = (PC_IS *)pc->data;
   PetscScalar m_one = -1.0;
   Vec         w     = pcis->vec1_global;
 
@@ -203,7 +203,7 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
   PetscScalar **DZ_OUT; /* proc[k].DZ_OUT[i][] = bit of vector to be sent from processor k to processor i */
 
   /* aliasing some names */
-  PC_IS        *pcis     = (PC_IS *)(pc->data);
+  PC_IS        *pcis     = (PC_IS *)pc->data;
   PC_NN        *pcnn     = (PC_NN *)pc->data;
   PetscInt      n_neigh  = pcis->n_neigh;
   PetscInt     *neigh    = pcis->neigh;
@@ -247,8 +247,8 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
     PetscCall(PetscObjectGetNewTag((PetscObject)pc, &tag));
     PetscCall(PetscMalloc2(n_neigh + 1, &send_request, n_neigh + 1, &recv_request));
     for (i = 1; i < n_neigh; i++) {
-      PetscCallMPI(MPI_Isend((void *)(DZ_OUT[i]), n_shared[i], MPIU_SCALAR, neigh[i], tag, PetscObjectComm((PetscObject)pc), &(send_request[i])));
-      PetscCallMPI(MPI_Irecv((void *)(DZ_IN[i]), n_shared[i], MPIU_SCALAR, neigh[i], tag, PetscObjectComm((PetscObject)pc), &(recv_request[i])));
+      PetscCallMPI(MPI_Isend((void *)DZ_OUT[i], n_shared[i], MPIU_SCALAR, neigh[i], tag, PetscObjectComm((PetscObject)pc), &send_request[i]));
+      PetscCallMPI(MPI_Irecv((void *)DZ_IN[i], n_shared[i], MPIU_SCALAR, neigh[i], tag, PetscObjectComm((PetscObject)pc), &recv_request[i]));
     }
   }
 
@@ -286,7 +286,7 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
   if (n_neigh > 1) {
     MPI_Status *stat;
     PetscCall(PetscMalloc1(n_neigh - 1, &stat));
-    if (n_neigh - 1) PetscCallMPI(MPI_Waitall(n_neigh - 1, &(send_request[1]), stat));
+    if (n_neigh - 1) PetscCallMPI(MPI_Waitall(n_neigh - 1, &send_request[1], stat));
     PetscCall(PetscFree(stat));
   }
 
@@ -303,10 +303,10 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
     PetscMPIInt size;
     PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size));
     /* Create the global coarse vectors (rhs and solution). */
-    PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)pc), 1, size, &(pcnn->coarse_b)));
-    PetscCall(VecDuplicate(pcnn->coarse_b, &(pcnn->coarse_x)));
+    PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)pc), 1, size, &pcnn->coarse_b));
+    PetscCall(VecDuplicate(pcnn->coarse_b, &pcnn->coarse_x));
     /* Create and set the global coarse AIJ matrix. */
-    PetscCall(MatCreate(PetscObjectComm((PetscObject)pc), &(pcnn->coarse_mat)));
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)pc), &pcnn->coarse_mat));
     PetscCall(MatSetSizes(pcnn->coarse_mat, 1, 1, size, size));
     PetscCall(MatSetType(pcnn->coarse_mat, MATAIJ));
     PetscCall(MatSeqAIJSetPreallocation(pcnn->coarse_mat, 1, NULL));
@@ -396,7 +396,7 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
 PetscErrorCode PCNNApplySchurToChunk(PC pc, PetscInt n, PetscInt *idx, PetscScalar *chunk, PetscScalar *array_N, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 {
   PetscInt i;
-  PC_IS   *pcis = (PC_IS *)(pc->data);
+  PC_IS   *pcis = (PC_IS *)pc->data;
 
   PetscFunctionBegin;
   PetscCall(PetscArrayzero(array_N, pcis->n));
@@ -430,7 +430,7 @@ PetscErrorCode PCNNApplySchurToChunk(PC pc, PetscInt n, PetscInt *idx, PetscScal
 */
 PetscErrorCode PCNNApplyInterfacePreconditioner(PC pc, Vec r, Vec z, PetscScalar *work_N, Vec vec1_B, Vec vec2_B, Vec vec3_B, Vec vec1_D, Vec vec2_D, Vec vec1_N, Vec vec2_N)
 {
-  PC_IS *pcis = (PC_IS *)(pc->data);
+  PC_IS *pcis = (PC_IS *)pc->data;
 
   PetscFunctionBegin;
   /*
@@ -501,8 +501,8 @@ PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B,
   PetscInt     k;
   PetscScalar  value;
   PetscScalar *lambda;
-  PC_NN       *pcnn = (PC_NN *)(pc->data);
-  PC_IS       *pcis = (PC_IS *)(pc->data);
+  PC_NN       *pcnn = (PC_NN *)pc->data;
+  PC_IS       *pcis = (PC_IS *)pc->data;
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(PC_ApplyCoarse, pc, 0, 0, 0));

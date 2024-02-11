@@ -323,7 +323,7 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
       PetscCall(VecDotBegin(dXold, dX, &dXdotdXold));
       PetscCall(VecDotEnd(dX, dX, &dXdotdX));
       PetscCall(VecDotEnd(dXold, dX, &dXdotdXold));
-      beta = PetscRealPart(((dXdotdX - dXdotdXold) / dXolddotdXold));
+      beta = PetscRealPart((dXdotdX - dXdotdXold) / dXolddotdXold);
       if (beta < 0.0) beta = 0.0; /* restart */
       break;
     case SNES_NCG_HS: /* Hestenes-Stiefel */

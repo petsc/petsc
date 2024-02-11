@@ -145,7 +145,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
     PetscCall(TaoMatGetSubMat(tao->hessian, tron->Free_Local, tron->diag, tao->subset_type, &tron->H_sub));
     if (tao->hessian == tao->hessian_pre) {
       PetscCall(MatDestroy(&tron->Hpre_sub));
-      PetscCall(PetscObjectReference((PetscObject)(tron->H_sub)));
+      PetscCall(PetscObjectReference((PetscObject)tron->H_sub));
       tron->Hpre_sub = tron->H_sub;
     } else {
       PetscCall(TaoMatGetSubMat(tao->hessian_pre, tron->Free_Local, tron->diag, tao->subset_type, &tron->Hpre_sub));

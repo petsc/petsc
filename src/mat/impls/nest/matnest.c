@@ -368,7 +368,7 @@ static PetscErrorCode MatTranspose_Nest(Mat A, MatReuse reuse, Mat *B)
   for (i = 0; i < nr; i++) {
     for (j = 0; j < nc; j++) {
       if (bA->m[i][j]) {
-        PetscCall(MatTranspose(bA->m[i][j], reuse, &(bC->m[j][i])));
+        PetscCall(MatTranspose(bA->m[i][j], reuse, &bC->m[j][i]));
       } else {
         bC->m[j][i] = NULL;
       }

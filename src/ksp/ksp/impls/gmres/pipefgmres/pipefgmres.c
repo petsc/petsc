@@ -46,7 +46,7 @@ static PetscErrorCode KSPSetUp_PIPEFGMRES(KSP ksp)
 
 static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp)
 {
-  KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)(ksp->data);
+  KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
   PetscReal       res_norm;
   PetscReal       hapbnd, tt;
   PetscScalar    *hh, *hes, *lhh, shift = pipefgmres->shift;
@@ -341,7 +341,7 @@ static PetscErrorCode KSPPIPEFGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec v
 {
   PetscScalar     tt;
   PetscInt        k, j;
-  KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)(ksp->data);
+  KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
 
   PetscFunctionBegin;
   if (it < 0) {                        /* no pipefgmres steps have been performed */
@@ -378,7 +378,7 @@ static PetscErrorCode KSPPIPEFGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscB
   PetscScalar    *hh, *cc, *ss, *rs;
   PetscInt        j;
   PetscReal       hapbnd;
-  KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)(ksp->data);
+  KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
 
   PetscFunctionBegin;
   hh = HH(0, it); /* pointer to beginning of column to update */

@@ -259,7 +259,7 @@ static PetscErrorCode TSDestroy_Sundials(TS ts)
 
   PetscFunctionBegin;
   PetscCall(TSReset_Sundials(ts));
-  PetscCallMPI(MPI_Comm_free(&(cvode->comm_sundials)));
+  PetscCallMPI(MPI_Comm_free(&cvode->comm_sundials));
   PetscCall(PetscFree(ts->data));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSSundialsSetType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSSundialsSetMaxl_C", NULL));
@@ -912,7 +912,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Sundials(TS ts)
   cvode->monitorstep = PETSC_TRUE;
   cvode->use_dense   = PETSC_FALSE;
 
-  PetscCallMPI(MPI_Comm_dup(PetscObjectComm((PetscObject)ts), &(cvode->comm_sundials)));
+  PetscCallMPI(MPI_Comm_dup(PetscObjectComm((PetscObject)ts), &cvode->comm_sundials));
 
   cvode->mindt = -1.;
   cvode->maxdt = -1.;

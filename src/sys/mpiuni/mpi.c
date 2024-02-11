@@ -245,7 +245,7 @@ int MPI_Comm_delete_attr(MPI_Comm comm, int keyval)
     attr[idx][keyval].active        = 0;
     attr[idx][keyval].attribute_val = 0;
     if (attr_keyval[keyval].del) {
-      if ((ret = (*(attr_keyval[keyval].del))(comm, keyval, save_attribute_val, attr_keyval[keyval].extra_state))) return ret;
+      if ((ret = (*attr_keyval[keyval].del)(comm, keyval, save_attribute_val, attr_keyval[keyval].extra_state))) return ret;
     }
     if ((ret = MPI_Attr_dereference_keyval(keyval))) return ret;
   }

@@ -193,7 +193,7 @@ static PetscErrorCode DMFieldEvaluate_DA(DMField field, Vec points, PetscDataTyp
   PetscCall(VecGetLocalSize(points, &N));
   PetscCheck(N % dim == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Point vector size %" PetscInt_FMT " not divisible by coordinate dimension %" PetscInt_FMT, N, dim);
   n          = N / dim;
-  coordRange = &(dafield->coordRange[0]);
+  coordRange = &dafield->coordRange[0];
   PetscCall(VecGetArrayRead(points, &array));
   MultilinearEvaluate(dim, coordRange, nc, dafield->cornerCoeffs, dafield->work, n, array, datatype, B, D, H);
   PetscCall(VecRestoreArrayRead(points, &array));
@@ -435,7 +435,7 @@ static PetscErrorCode DMFieldInitialize_DA(DMField field)
       }
     }
     PetscCall(VecRestoreArrayRead(coords, &array));
-    PetscCall(MPIU_Allreduce((PetscReal *)mins, &(dafield->coordRange[0][0]), 2 * dim, MPIU_REAL, MPI_MIN, PetscObjectComm((PetscObject)dm)));
+    PetscCall(MPIU_Allreduce((PetscReal *)mins, &dafield->coordRange[0][0], 2 * dim, MPIU_REAL, MPI_MIN, PetscObjectComm((PetscObject)dm)));
     for (j = 0; j < dim; j++) dafield->coordRange[j][1] = -dafield->coordRange[j][1];
   } else {
     for (j = 0; j < dim; j++) {

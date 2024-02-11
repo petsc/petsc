@@ -249,19 +249,19 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
 {
   PetscFunctionBegin;
   if (!*part) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*part), PETSCPARTITIONER_CLASSID, 1);
+  PetscValidHeaderSpecific(*part, PETSCPARTITIONER_CLASSID, 1);
 
-  if (--((PetscObject)(*part))->refct > 0) {
+  if (--((PetscObject)*part)->refct > 0) {
     *part = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  ((PetscObject)(*part))->refct = 0;
+  ((PetscObject)*part)->refct = 0;
 
   PetscCall(PetscPartitionerReset(*part));
 
   PetscCall(PetscOptionsRestoreViewer(&(*part)->viewer));
   PetscCall(PetscOptionsRestoreViewer(&(*part)->viewerGraph));
-  PetscTryTypeMethod((*part), destroy);
+  PetscTryTypeMethod(*part, destroy);
   PetscCall(PetscHeaderDestroy(part));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

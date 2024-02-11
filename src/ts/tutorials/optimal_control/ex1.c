@@ -364,7 +364,7 @@ int main(int argc, char **argv)
       PetscCall(MatSetOption(aircraft.H, MAT_SYMMETRIC, PETSC_TRUE));
       PetscCall(TaoSetHessian(tao, aircraft.H, aircraft.H, MatrixFreeObjHessian, (void *)&aircraft));
     } else {
-      PetscCall(MatCreateDense(MPI_COMM_WORLD, PETSC_DETERMINE, PETSC_DETERMINE, 2 * aircraft.nsteps, 2 * aircraft.nsteps, NULL, &(aircraft.H)));
+      PetscCall(MatCreateDense(MPI_COMM_WORLD, PETSC_DETERMINE, PETSC_DETERMINE, 2 * aircraft.nsteps, 2 * aircraft.nsteps, NULL, &aircraft.H));
       PetscCall(MatSetOption(aircraft.H, MAT_SYMMETRIC, PETSC_TRUE));
       PetscCall(TaoSetHessian(tao, aircraft.H, aircraft.H, FormObjHessian, (void *)&aircraft));
     }

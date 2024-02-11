@@ -64,8 +64,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   PetscOptionsBegin(comm, "", "FE Test Options", "PETSCFE");
   PetscCall(PetscOptionsString("-func", "Function to project into space", "", name, name, PETSC_MAX_PATH_LEN, NULL));
-  PetscCall(PetscOptionsReal("-shear", "Factor by which to shear along the x-direction", "", options->shear, &(options->shear), NULL));
-  PetscCall(PetscOptionsReal("-flatten", "Factor by which to flatten", "", options->flatten, &(options->flatten), NULL));
+  PetscCall(PetscOptionsReal("-shear", "Factor by which to shear along the x-direction", "", options->shear, &options->shear, NULL));
+  PetscCall(PetscOptionsReal("-flatten", "Factor by which to flatten", "", options->flatten, &options->flatten, NULL));
   PetscOptionsEnd();
 
   for (i = 0; i < Nfunc; ++i) {

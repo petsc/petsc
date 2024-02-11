@@ -347,7 +347,7 @@ static PetscErrorCode DMDASubDomainDA_Private(DM dm, PetscInt *nlocal, DM **sdm)
         yo    = ys;
         zo    = zs;
 
-        PetscCall(DMDACreate(PETSC_COMM_SELF, &(da[idx])));
+        PetscCall(DMDACreate(PETSC_COMM_SELF, &da[idx]));
         PetscCall(DMSetOptionsPrefix(da[idx], "sub_"));
         PetscCall(DMSetDimension(da[idx], info.dim));
         PetscCall(DMDASetDof(da[idx], info.dof));

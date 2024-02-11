@@ -104,7 +104,7 @@ static PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat, Vec a, Vec y)
     } else {
       /* Compute error if desired */
       PetscCall(SNESGetIterationNumber(snes, &iter));
-      if ((ctx->need_err) || ((ctx->compute_err_freq) && (ctx->compute_err_iter != iter) && (!((iter - 1) % ctx->compute_err_freq)))) {
+      if (ctx->need_err || (ctx->compute_err_freq && (ctx->compute_err_iter != iter) && (!((iter - 1) % ctx->compute_err_freq)))) {
         /* Use Jorge's method to compute noise */
         PetscCall(SNESDiffParameterCompute_More(snes, ctx->data, U, a, &noise, &h));
 

@@ -152,7 +152,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A)
     PetscCallExternal(mkl_sparse_set_memory_hint, aijmkl->csrA, SPARSE_MEMORY_AGGRESSIVE);
     if (!aijmkl->no_SpMV2) PetscCallExternal(mkl_sparse_optimize, aijmkl->csrA);
     aijmkl->sparse_optimized = PETSC_TRUE;
-    PetscCall(PetscObjectStateGet((PetscObject)A, &(aijmkl->state)));
+    PetscCall(PetscObjectStateGet((PetscObject)A, &aijmkl->state));
   } else {
     aijmkl->csrA = NULL;
   }
@@ -212,7 +212,7 @@ static PetscErrorCode MatSeqAIJMKL_setup_structure_from_mkl_handle(MPI_Comm comm
     PetscCallExternal(mkl_sparse_set_mv_hint, aijmkl->csrA, SPARSE_OPERATION_NON_TRANSPOSE, aijmkl->descr, 1000);
     PetscCallExternal(mkl_sparse_set_memory_hint, aijmkl->csrA, SPARSE_MEMORY_AGGRESSIVE);
   }
-  PetscCall(PetscObjectStateGet((PetscObject)A, &(aijmkl->state)));
+  PetscCall(PetscObjectStateGet((PetscObject)A, &aijmkl->state));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE */
@@ -248,7 +248,7 @@ static PetscErrorCode MatSeqAIJMKL_update_from_mkl_handle(Mat A)
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
-  PetscCall(PetscObjectStateGet((PetscObject)A, &(aijmkl->state)));
+  PetscCall(PetscObjectStateGet((PetscObject)A, &aijmkl->state));
   /* At this point our matrix has a valid MKL handle, the contents of which match the PETSc AIJ representation.
    * The MKL handle has *not* had mkl_sparse_optimize() called on it, though -- the MKL developers have confirmed
    * that the matrix inspection/optimization step is not performed when matrix-matrix multiplication is finalized. */

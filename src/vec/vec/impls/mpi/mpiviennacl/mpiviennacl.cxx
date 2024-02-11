@@ -135,10 +135,10 @@ static PetscErrorCode VecDuplicate_MPIViennaCL(Vec win, Vec *v)
   (*v)->stash.ignorenegidx = win->stash.ignorenegidx;
 
   /* change type_name appropriately */
-  PetscCall(PetscObjectChangeTypeName((PetscObject)(*v), VECMPIVIENNACL));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)*v, VECMPIVIENNACL));
 
-  PetscCall(PetscObjectListDuplicate(((PetscObject)win)->olist, &((PetscObject)(*v))->olist));
-  PetscCall(PetscFunctionListDuplicate(((PetscObject)win)->qlist, &((PetscObject)(*v))->qlist));
+  PetscCall(PetscObjectListDuplicate(((PetscObject)win)->olist, &((PetscObject)*v)->olist));
+  PetscCall(PetscFunctionListDuplicate(((PetscObject)win)->qlist, &((PetscObject)*v)->qlist));
   (*v)->map->bs   = PetscAbs(win->map->bs);
   (*v)->bstash.bs = win->bstash.bs;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -235,7 +235,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_MPIViennaCL(Vec vv)
   PetscFunctionBegin;
   PetscCall(PetscLayoutSetUp(vv->map));
   PetscCall(VecViennaCLAllocateCheck(vv));
-  PetscCall(VecCreate_MPIViennaCL_Private(vv, PETSC_FALSE, 0, ((Vec_ViennaCL *)(vv->spptr))->GPUarray));
+  PetscCall(VecCreate_MPIViennaCL_Private(vv, PETSC_FALSE, 0, ((Vec_ViennaCL *)vv->spptr)->GPUarray));
   PetscCall(VecViennaCLAllocateCheckHost(vv));
   PetscCall(VecSet(vv, 0.0));
   PetscCall(VecSet_Seq(vv, 0.0));

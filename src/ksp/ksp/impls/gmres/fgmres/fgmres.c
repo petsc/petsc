@@ -40,7 +40,7 @@ static PetscErrorCode KSPSetUp_FGMRES(KSP ksp)
 
 static PetscErrorCode KSPFGMRESResidual(KSP ksp)
 {
-  KSP_FGMRES *fgmres = (KSP_FGMRES *)(ksp->data);
+  KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data;
   Mat         Amat, Pmat;
 
   PetscFunctionBegin;
@@ -55,7 +55,7 @@ static PetscErrorCode KSPFGMRESResidual(KSP ksp)
 
 static PetscErrorCode KSPFGMRESCycle(PetscInt *itcount, KSP ksp)
 {
-  KSP_FGMRES *fgmres = (KSP_FGMRES *)(ksp->data);
+  KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data;
   PetscReal   res_norm;
   PetscReal   hapbnd, tt;
   PetscBool   hapend = PETSC_FALSE;  /* indicates happy breakdown ending */
@@ -258,7 +258,7 @@ static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest
 {
   PetscScalar tt;
   PetscInt    ii, k, j;
-  KSP_FGMRES *fgmres = (KSP_FGMRES *)(ksp->data);
+  KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data;
 
   PetscFunctionBegin;
   /* Solve for solution vector that minimizes the residual */
@@ -303,7 +303,7 @@ static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
 {
   PetscScalar *hh, *cc, *ss, tt;
   PetscInt     j;
-  KSP_FGMRES  *fgmres = (KSP_FGMRES *)(ksp->data);
+  KSP_FGMRES  *fgmres = (KSP_FGMRES *)ksp->data;
 
   PetscFunctionBegin;
   hh = HH(0, it); /* pointer to beginning of column to update - so

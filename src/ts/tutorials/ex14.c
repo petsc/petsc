@@ -481,7 +481,7 @@ static PetscErrorCode PRangeMinMax(PRange *p, PetscReal min, PetscReal max)
 static PetscErrorCode THIDestroy(THI *thi)
 {
   PetscFunctionBeginUser;
-  if (--((PetscObject)(*thi))->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
+  if (--((PetscObject)*thi)->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFree((*thi)->units));
   PetscCall(PetscFree((*thi)->mattype));
   PetscCall(PetscFree((*thi)->monitor_basename));

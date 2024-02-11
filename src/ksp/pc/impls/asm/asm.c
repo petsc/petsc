@@ -302,7 +302,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
 
   /* Convert the types of the submatrices (if needbe) */
   if (osm->sub_mat_type) {
-    for (i = 0; i < osm->n_local_true; i++) PetscCall(MatConvert(osm->pmat[i], osm->sub_mat_type, MAT_INPLACE_MATRIX, &(osm->pmat[i])));
+    for (i = 0; i < osm->n_local_true; i++) PetscCall(MatConvert(osm->pmat[i], osm->sub_mat_type, MAT_INPLACE_MATRIX, &osm->pmat[i]));
   }
 
   if (!pc->setupcalled) {

@@ -728,7 +728,7 @@ static PetscErrorCode KSPView_Chebyshev(KSP ksp, PetscViewer viewer)
     PetscCall(KSPChebyshevGetEigenvalues_Chebyshev(ksp, &emax, &emin));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  eigenvalue targets used: min %g, max %g\n", (double)emin, (double)emax));
     if (cheb->kspest) {
-      PetscCall(PetscViewerASCIIPrintf(viewer, "  eigenvalues estimated via %s: min %g, max %g\n", ((PetscObject)(cheb->kspest))->type_name, (double)cheb->emin_computed, (double)cheb->emax_computed));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "  eigenvalues estimated via %s: min %g, max %g\n", ((PetscObject)cheb->kspest)->type_name, (double)cheb->emin_computed, (double)cheb->emax_computed));
       PetscCall(PetscViewerASCIIPrintf(viewer, "  eigenvalues estimated using %s with transform: [%g %g; %g %g]\n", ((PetscObject)cheb->kspest)->type_name, (double)cheb->tform[0], (double)cheb->tform[1], (double)cheb->tform[2], (double)cheb->tform[3]));
       PetscCall(PetscViewerASCIIPushTab(viewer));
       PetscCall(KSPView(cheb->kspest, viewer));

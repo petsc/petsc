@@ -261,7 +261,7 @@ PetscScalar ComputeForcingFunction(PetscReal coords[3], UserContext *user)
 }
 
 #define BCHECKEPS                   1e-10
-#define BCHECK(coordxyz, truetrace) ((coordxyz < truetrace + BCHECKEPS && coordxyz > truetrace - BCHECKEPS))
+#define BCHECK(coordxyz, truetrace) (coordxyz < truetrace + BCHECKEPS && coordxyz > truetrace - BCHECKEPS)
 
 PetscScalar EvaluateStrongDirichletCondition(PetscReal coords[3], UserContext *user)
 {

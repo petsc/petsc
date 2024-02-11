@@ -810,7 +810,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Sum(PetscDualSpace sp)
 
     PetscCall(DMPlexGetDepth(K, &depth));
     PetscCall(DMPlexGetChart(K, &pStart, &pEnd));
-    PetscCall(PetscCalloc1(pEnd, &(sp->pointSpaces)));
+    PetscCall(PetscCalloc1(pEnd, &sp->pointSpaces));
     PetscCall(PetscMalloc2(depth + 1, &pStratStart, depth + 1, &pStratEnd));
     for (PetscInt d = 0; d <= depth; ++d) PetscCall(DMPlexGetDepthStratum(K, d, &pStratStart[d], &pStratEnd[d]));
 

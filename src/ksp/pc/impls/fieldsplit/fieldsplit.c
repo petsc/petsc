@@ -445,8 +445,8 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         PetscCall(PetscInfo(pc, "Setting up physics based fieldsplit preconditioner using the embedded DM\n"));
         for (ilink = jac->head, i = 0; ilink; ilink = ilink->next, ++i) {
           const char *prefix;
-          PetscCall(PetscObjectGetOptionsPrefix((PetscObject)(ilink->ksp), &prefix));
-          PetscCall(PetscObjectSetOptionsPrefix((PetscObject)(dms[i]), prefix));
+          PetscCall(PetscObjectGetOptionsPrefix((PetscObject)ilink->ksp, &prefix));
+          PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dms[i], prefix));
           PetscCall(KSPSetDM(ilink->ksp, dms[i]));
           PetscCall(KSPSetDMActive(ilink->ksp, PETSC_FALSE));
           {
@@ -2937,7 +2937,7 @@ static PetscErrorCode PCSetCoordinates_FieldSplit(PC pc, PetscInt dim, PetscInt 
     PetscCall(ISGetIndices(is_coords, &block_dofs_enumeration));
 
     // Allocate coordinates vector and set it directly
-    PetscCall(PetscMalloc1(ndofs_block * dim, &(ilink_current->coords)));
+    PetscCall(PetscMalloc1(ndofs_block * dim, &ilink_current->coords));
     for (PetscInt dof = 0; dof < ndofs_block; ++dof) {
       for (PetscInt d = 0; d < dim; ++d) (ilink_current->coords)[dim * dof + d] = coords[dim * block_dofs_enumeration[dof] + d];
     }

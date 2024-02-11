@@ -834,7 +834,7 @@ M*/
 M*/
 #define PetscNew(b) PetscCalloc1(1, (b))
 
-#define PetscNewLog(o, b) PETSC_DEPRECATED_MACRO(3, 18, 0, "PetscNew()", ) PetscNew((b))
+#define PetscNewLog(o, b) PETSC_DEPRECATED_MACRO(3, 18, 0, "PetscNew()", ) PetscNew(b)
 
 /*MC
    PetscFree - Frees memory

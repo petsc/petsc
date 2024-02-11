@@ -1093,7 +1093,7 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
     n26 = sn26;
   }
 
-  if (((stencil_type == DMDA_STENCIL_STAR) || (bx != DM_BOUNDARY_PERIODIC && bx) || (by != DM_BOUNDARY_PERIODIC && by) || (bz != DM_BOUNDARY_PERIODIC && bz))) {
+  if ((stencil_type == DMDA_STENCIL_STAR) || (bx != DM_BOUNDARY_PERIODIC && bx) || (by != DM_BOUNDARY_PERIODIC && by) || (bz != DM_BOUNDARY_PERIODIC && bz)) {
     /*
         Recompute the local to global mappings, this time keeping the
       information about the cross corner processor numbers.

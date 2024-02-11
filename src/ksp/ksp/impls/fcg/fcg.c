@@ -82,8 +82,8 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
   PetscScalar alphaold = 0, betaold = 1.0, *e = NULL, *d = NULL; /* Variables for eigen estimation  - FINISH */
 
   PetscFunctionBegin;
-#define VecXDot(x, y, a)     (((fcg->type) == (KSP_CG_HERMITIAN)) ? VecDot(x, y, a) : VecTDot(x, y, a))
-#define VecXMDot(a, b, c, d) (((fcg->type) == (KSP_CG_HERMITIAN)) ? VecMDot(a, b, c, d) : VecMTDot(a, b, c, d))
+#define VecXDot(x, y, a)     ((fcg->type == (KSP_CG_HERMITIAN)) ? VecDot(x, y, a) : VecTDot(x, y, a))
+#define VecXMDot(a, b, c, d) ((fcg->type == (KSP_CG_HERMITIAN)) ? VecMDot(a, b, c, d) : VecMTDot(a, b, c, d))
 
   X = ksp->vec_sol;
   B = ksp->vec_rhs;

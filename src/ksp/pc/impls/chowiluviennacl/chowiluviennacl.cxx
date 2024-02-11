@@ -53,7 +53,7 @@ static PetscErrorCode PCSetUp_CHOWILUVIENNACL(PC pc)
     SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "No support for complex arithmetic in CHOWILUVIENNACL preconditioner");
 #else
     PetscCall(MatViennaCLCopyToGPU(pc->pmat));
-    gpustruct = (Mat_SeqAIJViennaCL *)(pc->pmat->spptr);
+    gpustruct = (Mat_SeqAIJViennaCL *)pc->pmat->spptr;
 
     viennacl::linalg::chow_patel_tag ilu_tag;
     ViennaCLAIJMatrix               *mat = (ViennaCLAIJMatrix *)gpustruct->mat;

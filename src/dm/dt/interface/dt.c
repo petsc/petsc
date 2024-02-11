@@ -127,8 +127,8 @@ PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *q)
 {
   PetscFunctionBegin;
   if (!*q) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*q), PETSCQUADRATURE_CLASSID, 1);
-  if (--((PetscObject)(*q))->refct > 0) {
+  PetscValidHeaderSpecific(*q, PETSCQUADRATURE_CLASSID, 1);
+  if (--((PetscObject)*q)->refct > 0) {
     *q = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

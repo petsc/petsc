@@ -48,8 +48,8 @@ PetscErrorCode VecDuplicate_MPI(Vec win, Vec *v)
   (*v)->stash.donotstash   = win->stash.donotstash;
   (*v)->stash.ignorenegidx = win->stash.ignorenegidx;
 
-  PetscCall(PetscObjectListDuplicate(((PetscObject)win)->olist, &((PetscObject)(*v))->olist));
-  PetscCall(PetscFunctionListDuplicate(((PetscObject)win)->qlist, &((PetscObject)(*v))->qlist));
+  PetscCall(PetscObjectListDuplicate(((PetscObject)win)->olist, &((PetscObject)*v)->olist));
+  PetscCall(PetscFunctionListDuplicate(((PetscObject)win)->qlist, &((PetscObject)*v)->qlist));
 
   (*v)->bstash.bs = win->bstash.bs;
   PetscFunctionReturn(PETSC_SUCCESS);

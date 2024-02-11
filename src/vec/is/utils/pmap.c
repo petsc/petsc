@@ -129,7 +129,7 @@ PetscErrorCode PetscLayoutDestroy(PetscLayout *map)
   if (!(*map)->refcnt--) {
     if ((*map)->range_alloc) PetscCall(PetscFree((*map)->range));
     PetscCall(ISLocalToGlobalMappingDestroy(&(*map)->mapping));
-    PetscCall(PetscFree((*map)));
+    PetscCall(PetscFree(*map));
   }
   *map = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);

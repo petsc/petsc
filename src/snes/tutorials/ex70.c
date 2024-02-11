@@ -703,7 +703,7 @@ PetscErrorCode StokesCalcError(Stokes *s)
 
   /* total error */
   PetscCall(VecNorm(s->y, NORM_2, &val));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, " discretization error [u,p] = %g\n", (double)PetscRealPart((val / scale))));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, " discretization error [u,p] = %g\n", (double)PetscRealPart(val / scale)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

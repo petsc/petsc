@@ -6,7 +6,7 @@ static PetscErrorCode PetscSpaceSetFromOptions_Ptrimmed(PetscSpace sp, PetscOpti
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "PetscSpace polynomial options");
-  PetscCall(PetscOptionsInt("-petscspace_ptrimmed_form_degree", "form degree of trimmed space", "PetscSpacePTrimmedSetFormDegree", pt->formDegree, &(pt->formDegree), NULL));
+  PetscCall(PetscOptionsInt("-petscspace_ptrimmed_form_degree", "form degree of trimmed space", "PetscSpacePTrimmedSetFormDegree", pt->formDegree, &pt->formDegree, NULL));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -308,7 +308,7 @@ static PetscErrorCode PetscSpaceGetHeightSubspace_Ptrimmed(PetscSpace sp, PetscI
   PetscFunctionBegin;
   PetscCall(PetscSpaceGetNumVariables(sp, &dim));
   PetscCheck(height <= dim && height >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %" PetscInt_FMT " for dimension %" PetscInt_FMT " space", height, dim);
-  if (!pt->subspaces) PetscCall(PetscCalloc1(dim, &(pt->subspaces)));
+  if (!pt->subspaces) PetscCall(PetscCalloc1(dim, &pt->subspaces));
   if ((dim - height) <= PetscAbsInt(pt->formDegree)) {
     if (!pt->subspaces[height - 1]) {
       PetscInt    Nc, degree, Nf, Ncopies, Nfsub;

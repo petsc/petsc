@@ -371,7 +371,7 @@ PetscErrorCode PetscDrawLGDestroy(PetscDrawLG *lg)
   PetscFunctionBegin;
   if (!*lg) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*lg, PETSC_DRAWLG_CLASSID, 1);
-  if (--((PetscObject)(*lg))->refct > 0) {
+  if (--((PetscObject)*lg)->refct > 0) {
     *lg = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

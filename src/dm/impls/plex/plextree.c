@@ -796,7 +796,7 @@ static PetscErrorCode DMPlexTreeExchangeSupports(DM dm)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   /* symmetrize the hierarchy */
   PetscCall(DMPlexGetDepth(dm, &depth));
-  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)(mesh->supportSection)), &newSupportSection));
+  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)mesh->supportSection), &newSupportSection));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   PetscCall(PetscSectionSetChart(newSupportSection, pStart, pEnd));
   PetscCall(PetscCalloc1(pEnd, &offsets));
@@ -2252,7 +2252,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
       }
       numColIndices -= 2 * numFields;
       PetscCall(PetscSectionGetOffset(rootIndicesSec, p, &pIndOff));
-      pInd = &(rootIndices[pIndOff]);
+      pInd = &rootIndices[pIndOff];
       PetscCall(PetscSectionGetDof(rootMatricesSec, p, &matSize));
       if (matSize) {
         PetscCall(PetscSectionGetOffset(rootMatricesSec, p, &pMatOff));
@@ -3885,7 +3885,7 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
       PetscCall(PetscSectionGetDof(rootValuesSec, p, &numValues));
       if (!numValues) continue;
       PetscCall(PetscSectionGetOffset(rootValuesSec, p, &pValOff));
-      pVal = &(rootValues[pValOff]);
+      pVal = &rootValues[pValOff];
       if (maxChildId >= 0) { /* build an identity matrix, apply matrix constraints on the right */
         PetscInt closureSize = numValues;
         PetscCall(DMPlexVecGetClosure(coarse, NULL, vecCoarseLocal, p, &closureSize, &pVal));

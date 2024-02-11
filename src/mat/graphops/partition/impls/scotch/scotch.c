@@ -426,7 +426,7 @@ static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part
       PetscCall(ISCreateGeneral(pcomm, mat->rmap->n, NDorder, PETSC_OWN_POINTER, &ndis));
     }
     PetscCall(ISSetPermutation(ndis));
-    PetscCall(PetscObjectCompose((PetscObject)(*partitioning), "_petsc_matpartitioning_ndorder", (PetscObject)ndis));
+    PetscCall(PetscObjectCompose((PetscObject)*partitioning, "_petsc_matpartitioning_ndorder", (PetscObject)ndis));
     PetscCall(ISDestroy(&ndis));
   }
 

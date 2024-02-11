@@ -236,15 +236,15 @@ PetscErrorCode PetscLimiterDestroy(PetscLimiter *lim)
 {
   PetscFunctionBegin;
   if (!*lim) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*lim), PETSCLIMITER_CLASSID, 1);
+  PetscValidHeaderSpecific(*lim, PETSCLIMITER_CLASSID, 1);
 
-  if (--((PetscObject)(*lim))->refct > 0) {
+  if (--((PetscObject)*lim)->refct > 0) {
     *lim = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  ((PetscObject)(*lim))->refct = 0;
+  ((PetscObject)*lim)->refct = 0;
 
-  PetscTryTypeMethod((*lim), destroy);
+  PetscTryTypeMethod(*lim, destroy);
   PetscCall(PetscHeaderDestroy(lim));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1118,13 +1118,13 @@ PetscErrorCode PetscFVDestroy(PetscFV *fvm)
 
   PetscFunctionBegin;
   if (!*fvm) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*fvm), PETSCFV_CLASSID, 1);
+  PetscValidHeaderSpecific(*fvm, PETSCFV_CLASSID, 1);
 
-  if (--((PetscObject)(*fvm))->refct > 0) {
+  if (--((PetscObject)*fvm)->refct > 0) {
     *fvm = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  ((PetscObject)(*fvm))->refct = 0;
+  ((PetscObject)*fvm)->refct = 0;
 
   for (i = 0; i < (*fvm)->numComponents; i++) PetscCall(PetscFree((*fvm)->componentNames[i]));
   PetscCall(PetscFree((*fvm)->componentNames));
@@ -1134,7 +1134,7 @@ PetscErrorCode PetscFVDestroy(PetscFV *fvm)
   PetscCall(PetscQuadratureDestroy(&(*fvm)->quadrature));
   PetscCall(PetscTabulationDestroy(&(*fvm)->T));
 
-  PetscTryTypeMethod((*fvm), destroy);
+  PetscTryTypeMethod(*fvm, destroy);
   PetscCall(PetscHeaderDestroy(fvm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -3046,7 +3046,7 @@ static PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ_inplace(Mat fact, Mat A, 
 
   #if defined(PETSC_USE_INFO)
   if (ai[am] != 0) {
-    PetscReal af = (PetscReal)(ui[am]) / ((PetscReal)ai[am]);
+    PetscReal af = (PetscReal)ui[am] / ((PetscReal)ai[am]);
     PetscCall(PetscInfo(A, "Reallocs %" PetscInt_FMT " Fill ratio:given %g needed %g\n", reallocs, (double)fill, (double)af));
     PetscCall(PetscInfo(A, "Run with -pc_factor_fill %g or use \n", (double)af));
     PetscCall(PetscInfo(A, "PCFactorSetFill(pc,%g) for best performance.\n", (double)af));

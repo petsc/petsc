@@ -46,7 +46,7 @@ static PetscErrorCode PetscConcat(MatSetValues_Seq_Hash, TYPE_BS)(Mat A, PetscIn
       if (key.j < 0) continue;
   #endif
 #endif
-      value = values ? ((a->roworiented) ? values[r * n + c] : values[r + m * c]) : 0;
+      value = values ? (a->roworiented ? values[r * n + c] : values[r + m * c]) : 0;
       switch (addv) {
       case INSERT_VALUES:
         PetscCall(PetscHMapIJVQuerySet(a->ht, key, value, &missing));

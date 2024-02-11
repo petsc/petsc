@@ -159,7 +159,7 @@ PetscErrorCode PetscDrawSPDestroy(PetscDrawSP *sp)
   PetscFunctionBegin;
   if (!*sp) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*sp, PETSC_DRAWSP_CLASSID, 1);
-  if (--((PetscObject)(*sp))->refct > 0) {
+  if (--((PetscObject)*sp)->refct > 0) {
     *sp = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

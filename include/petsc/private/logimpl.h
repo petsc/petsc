@@ -33,9 +33,9 @@
     a->num_entries = 0; \
     a->max_entries = max_init; \
     if (constructor) { \
-      PetscCall(PetscMalloc1(max_init, &(a->array))); \
+      PetscCall(PetscMalloc1(max_init, &a->array)); \
     } else { \
-      PetscCall(PetscCalloc1(max_init, &(a->array))); \
+      PetscCall(PetscCalloc1(max_init, &a->array)); \
     } \
     PetscFunctionReturn(PETSC_SUCCESS); \
   } \
@@ -48,7 +48,7 @@
     *a_p = NULL; \
     if (a == NULL) PetscFunctionReturn(PETSC_SUCCESS); \
     if (destructor) { \
-      for (int i = 0; i < a->num_entries; i++) { PetscCall((*destructor)(&(a->array[i]))); } \
+      for (int i = 0; i < a->num_entries; i++) { PetscCall((*destructor)(&a->array[i])); } \
     } \
     PetscCall(PetscFree(a->array)); \
     PetscCall(PetscFree(a)); \
@@ -81,7 +81,7 @@
     PetscFunctionBegin; \
     PetscCall(PetscLog##Container##Recapacity(a, new_size)); \
     if (constructor) \
-      for (int i = a->num_entries; i < new_size; i++) PetscCall((*constructor)(&(a->array[i]))); \
+      for (int i = a->num_entries; i < new_size; i++) PetscCall((*constructor)(&a->array[i])); \
     a->num_entries = PetscMax(a->num_entries, new_size); \
     PetscFunctionReturn(PETSC_SUCCESS); \
   } \
@@ -100,7 +100,7 @@
     if (equal) { \
       for (int i = 0; i < a->num_entries; i++) { \
         PetscBool is_equal; \
-        PetscCall((*equal)(&(a->array[i]), key, &is_equal)); \
+        PetscCall((*equal)(&a->array[i], key, &is_equal)); \
         if (is_equal) { \
           *idx_p = i; \
           break; \

@@ -700,7 +700,7 @@ PetscErrorCode PetscBagView(PetscBag bag, PetscViewer view)
         for (i = 0; i < nitem->msize; i++) {
           if (((int)value[i]) == -1) value[i] = PETSC_TRUE;
           /* the checks here with != PETSC_FALSE and PETSC_TRUE is a special case; here we truly demand that the value be 0 or 1 */
-          PetscCheck(value[i] == PETSC_FALSE || value[i] == PETSC_TRUE, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Boolean value for %s %s is corrupt; integer value %" PetscInt_FMT, nitem->name, nitem->help, (PetscInt)(value[i]));
+          PetscCheck(value[i] == PETSC_FALSE || value[i] == PETSC_TRUE, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Boolean value for %s %s is corrupt; integer value %" PetscInt_FMT, nitem->name, nitem->help, (PetscInt)value[i]);
           PetscCall(PetscViewerASCIIPrintf(view, " %s", PetscBools[value[i]]));
         }
         PetscCall(PetscViewerASCIIPrintf(view, "; %s\n", nitem->help));
@@ -730,7 +730,7 @@ PetscErrorCode PetscBagView(PetscBag bag, PetscViewer view)
       PetscCall(PetscViewerBinaryWrite(view, nitem->help, PETSC_BAG_HELP_LENGTH, PETSC_CHAR));
       PetscCall(PetscViewerBinaryWrite(view, &nitem->msize, 1, PETSC_INT));
       /* some Fortran compilers use -1 as boolean */
-      if (dtype == PETSC_BOOL && ((*(int *)(((char *)bag) + nitem->offset) == -1))) *(int *)(((char *)bag) + nitem->offset) = PETSC_TRUE;
+      if (dtype == PETSC_BOOL && (*(int *)(((char *)bag) + nitem->offset) == -1)) *(int *)(((char *)bag) + nitem->offset) = PETSC_TRUE;
 
       PetscCall(PetscViewerBinaryWrite(view, (((char *)bag) + nitem->offset), nitem->msize, nitem->dtype));
       if (dtype == PETSC_ENUM) PetscCall(PetscViewerBinaryWriteStringArray(view, (const char *const *)nitem->list));
@@ -1013,7 +1013,7 @@ PetscErrorCode PetscBagSetOptionsPrefix(PetscBag bag, const char pre[])
     PetscAssertPointer(pre, 2);
     PetscCheck(pre[0] != '-', PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Options prefix should not begin with a hyphen");
     PetscCall(PetscFree(bag->bagprefix));
-    PetscCall(PetscStrallocpy(pre, &(bag->bagprefix)));
+    PetscCall(PetscStrallocpy(pre, &bag->bagprefix));
   } else PetscCall(PetscFree(bag->bagprefix));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

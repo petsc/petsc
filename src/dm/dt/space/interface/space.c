@@ -252,13 +252,13 @@ PetscErrorCode PetscSpaceDestroy(PetscSpace *sp)
 {
   PetscFunctionBegin;
   if (!*sp) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*sp), PETSCSPACE_CLASSID, 1);
+  PetscValidHeaderSpecific(*sp, PETSCSPACE_CLASSID, 1);
 
-  if (--((PetscObject)(*sp))->refct > 0) {
+  if (--((PetscObject)*sp)->refct > 0) {
     *sp = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  ((PetscObject)(*sp))->refct = 0;
+  ((PetscObject)*sp)->refct = 0;
   PetscCall(DMDestroy(&(*sp)->dm));
 
   PetscUseTypeMethod(*sp, destroy);

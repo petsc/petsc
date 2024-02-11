@@ -227,13 +227,13 @@ PetscErrorCode PetscSFDestroy(PetscSF *sf)
 {
   PetscFunctionBegin;
   if (!*sf) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*sf), PETSCSF_CLASSID, 1);
-  if (--((PetscObject)(*sf))->refct > 0) {
+  PetscValidHeaderSpecific(*sf, PETSCSF_CLASSID, 1);
+  if (--((PetscObject)*sf)->refct > 0) {
     *sf = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscSFReset(*sf));
-  PetscTryTypeMethod((*sf), Destroy);
+  PetscTryTypeMethod(*sf, Destroy);
   PetscCall(PetscSFDestroy(&(*sf)->vscat.lsf));
   if ((*sf)->vscat.bs > 1) PetscCallMPI(MPI_Type_free(&(*sf)->vscat.unit));
 #if defined(PETSC_HAVE_CUDA) && defined(PETSC_HAVE_MPIX_STREAM)
@@ -795,7 +795,7 @@ PetscErrorCode PetscSFGetGraph(PetscSF sf, PetscInt *nroots, PetscInt *nleaves, 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   if (sf->ops->GetGraph) {
-    PetscCall((sf->ops->GetGraph)(sf, nroots, nleaves, ilocal, iremote));
+    PetscCall(sf->ops->GetGraph(sf, nroots, nleaves, ilocal, iremote));
   } else {
     if (nroots) *nroots = sf->nroots;
     if (nleaves) *nleaves = sf->nleaves;
@@ -1534,7 +1534,7 @@ PetscErrorCode PetscSFReduceBegin(PetscSF sf, MPI_Datatype unit, const void *lea
   if (!sf->vscat.logging) PetscCall(PetscLogEventBegin(PETSCSF_ReduceBegin, sf, 0, 0, 0));
   PetscCall(PetscGetMemType(rootdata, &rootmtype));
   PetscCall(PetscGetMemType(leafdata, &leafmtype));
-  PetscCall((sf->ops->ReduceBegin)(sf, unit, leafmtype, leafdata, rootmtype, rootdata, op));
+  PetscCall(sf->ops->ReduceBegin(sf, unit, leafmtype, leafdata, rootmtype, rootdata, op));
   if (!sf->vscat.logging) PetscCall(PetscLogEventEnd(PETSCSF_ReduceBegin, sf, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1565,7 +1565,7 @@ PetscErrorCode PetscSFReduceWithMemTypeBegin(PetscSF sf, MPI_Datatype unit, Pets
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscCall(PetscSFSetUp(sf));
   if (!sf->vscat.logging) PetscCall(PetscLogEventBegin(PETSCSF_ReduceBegin, sf, 0, 0, 0));
-  PetscCall((sf->ops->ReduceBegin)(sf, unit, leafmtype, leafdata, rootmtype, rootdata, op));
+  PetscCall(sf->ops->ReduceBegin(sf, unit, leafmtype, leafdata, rootmtype, rootdata, op));
   if (!sf->vscat.logging) PetscCall(PetscLogEventEnd(PETSCSF_ReduceBegin, sf, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

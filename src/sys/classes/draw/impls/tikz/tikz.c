@@ -65,8 +65,8 @@ static inline const char *TikZColorMap(int cl)
 /*
      These macros transform from the users coordinates to the (0,0) -> (1,1) coordinate system
 */
-#define XTRANS(draw, x) (double)(((draw)->port_xl + (((x - (draw)->coor_xl) * ((draw)->port_xr - (draw)->port_xl)) / ((draw)->coor_xr - (draw)->coor_xl))))
-#define YTRANS(draw, y) (double)(((draw)->port_yl + (((y - (draw)->coor_yl) * ((draw)->port_yr - (draw)->port_yl)) / ((draw)->coor_yr - (draw)->coor_yl))))
+#define XTRANS(draw, x) (double)((draw)->port_xl + (((x - (draw)->coor_xl) * ((draw)->port_xr - (draw)->port_xl)) / ((draw)->coor_xr - (draw)->coor_xl)))
+#define YTRANS(draw, y) (double)((draw)->port_yl + (((y - (draw)->coor_yl) * ((draw)->port_yr - (draw)->port_yl)) / ((draw)->coor_yr - (draw)->coor_yl)))
 
 static PetscErrorCode PetscDrawClear_TikZ(PetscDraw draw)
 {
@@ -75,7 +75,7 @@ static PetscErrorCode PetscDrawClear_TikZ(PetscDraw draw)
 
   PetscFunctionBegin;
   /* often PETSc generates unneeded clears, we want avoid creating empty pictures for them */
-  PetscCall(MPIU_Allreduce(&win->written, &written, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)(draw))));
+  PetscCall(MPIU_Allreduce(&win->written, &written, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)draw)));
   if (!written) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFPrintf(PetscObjectComm((PetscObject)draw), win->fd, TikZ_END_FRAME));
   PetscCall(PetscFPrintf(PetscObjectComm((PetscObject)draw), win->fd, TikZ_BEGIN_FRAME));
@@ -173,8 +173,8 @@ static PetscErrorCode PetscDrawStringBoxed_TikZ(PetscDraw draw, PetscReal xl, Pe
 static PetscErrorCode PetscDrawStringGetSize_TikZ(PetscDraw draw, PetscReal *x, PetscReal *y)
 {
   PetscFunctionBegin;
-  if (x) *x = .014 * (draw->coor_xr - draw->coor_xl) / ((draw->port_xr - draw->port_xl));
-  if (y) *y = .05 * (draw->coor_yr - draw->coor_yl) / ((draw->port_yr - draw->port_yl));
+  if (x) *x = .014 * (draw->coor_xr - draw->coor_xl) / (draw->port_xr - draw->port_xl);
+  if (y) *y = .05 * (draw->coor_yr - draw->coor_yl) / (draw->port_yr - draw->port_yl);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

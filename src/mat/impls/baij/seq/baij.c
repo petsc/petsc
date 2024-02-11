@@ -2386,7 +2386,7 @@ PetscErrorCode MatZeroRows_SeqBAIJ(Mat A, PetscInt is_n, const PetscInt is_idx[]
     row = rows[j];
     PetscCheck(row >= 0 && row <= A->rmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "row %" PetscInt_FMT " out of range", row);
     count = (baij->i[row / bs + 1] - baij->i[row / bs]) * bs;
-    aa    = ((MatScalar *)(baij->a)) + baij->i[row / bs] * bs2 + (row % bs);
+    aa    = ((MatScalar *)baij->a) + baij->i[row / bs] * bs2 + (row % bs);
     if (sizes[i] == bs && !baij->keepnonzeropattern) {
       if (diag != (PetscScalar)0.0) {
         if (baij->ilen[row / bs] > 0) {
@@ -2447,7 +2447,7 @@ static PetscErrorCode MatZeroRowsColumns_SeqBAIJ(Mat A, PetscInt is_n, const Pet
         for (k = 0; k < bs; k++) {
           col = bs * baij->j[j] + k;
           if (zeroed[col]) {
-            aa = ((MatScalar *)(baij->a)) + j * bs2 + (i % bs) + bs * k;
+            aa = ((MatScalar *)baij->a) + j * bs2 + (i % bs) + bs * k;
             if (vecs) bb[i] -= aa[0] * xx[col];
             aa[0] = 0.0;
           }
@@ -2465,7 +2465,7 @@ static PetscErrorCode MatZeroRowsColumns_SeqBAIJ(Mat A, PetscInt is_n, const Pet
   for (i = 0; i < is_n; i++) {
     row   = is_idx[i];
     count = (baij->i[row / bs + 1] - baij->i[row / bs]) * bs;
-    aa    = ((MatScalar *)(baij->a)) + baij->i[row / bs] * bs2 + (row % bs);
+    aa    = ((MatScalar *)baij->a) + baij->i[row / bs] * bs2 + (row % bs);
     for (k = 0; k < count; k++) {
       aa[0] = zero;
       aa += bs;

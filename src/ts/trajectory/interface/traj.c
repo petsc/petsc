@@ -564,8 +564,8 @@ PetscErrorCode TSTrajectoryDestroy(TSTrajectory *tj)
 {
   PetscFunctionBegin;
   if (!*tj) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*tj), TSTRAJECTORY_CLASSID, 1);
-  if (--((PetscObject)(*tj))->refct > 0) {
+  PetscValidHeaderSpecific(*tj, TSTRAJECTORY_CLASSID, 1);
+  if (--((PetscObject)*tj)->refct > 0) {
     *tj = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -578,12 +578,12 @@ PetscErrorCode TSTrajectoryDestroy(TSTrajectory *tj)
   PetscCall(VecDestroy(&(*tj)->Udot));
 
   if ((*tj)->transformdestroy) PetscCall((*(*tj)->transformdestroy)((*tj)->transformctx));
-  PetscTryTypeMethod((*tj), destroy);
+  PetscTryTypeMethod(*tj, destroy);
   if (!((*tj)->keepfiles)) {
     PetscMPIInt rank;
     MPI_Comm    comm;
 
-    PetscCall(PetscObjectGetComm((PetscObject)(*tj), &comm));
+    PetscCall(PetscObjectGetComm((PetscObject)*tj, &comm));
     PetscCallMPI(MPI_Comm_rank(comm, &rank));
     if (rank == 0 && (*tj)->dirname) { /* we own the directory, so we run PetscRMTree on it */
       PetscCall(PetscRMTree((*tj)->dirname));

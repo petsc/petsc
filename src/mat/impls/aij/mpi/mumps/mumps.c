@@ -227,8 +227,8 @@ static PetscErrorCode PetscMUMPSIntCSRCast(PETSC_UNUSED Mat_MUMPS *mumps, PetscI
       PetscCall(PetscMalloc1(nnz, &mumps->ja_alloc));
       mumps->cur_jlen = nnz;
     }
-    for (i = 0; i < nrow + 1; i++) PetscCall(PetscMUMPSIntCast(ia[i], &(mumps->ia_alloc[i])));
-    for (i = 0; i < nnz; i++) PetscCall(PetscMUMPSIntCast(ja[i], &(mumps->ja_alloc[i])));
+    for (i = 0; i < nrow + 1; i++) PetscCall(PetscMUMPSIntCast(ia[i], &mumps->ia_alloc[i]));
+    for (i = 0; i < nnz; i++) PetscCall(PetscMUMPSIntCast(ja[i], &mumps->ja_alloc[i]));
     *ia_mumps = mumps->ia_alloc;
     *ja_mumps = mumps->ja_alloc;
   }
@@ -655,8 +655,8 @@ static PetscErrorCode MatConvertToTriples_mpisbaij_mpisbaij(Mat A, PetscInt shif
   const PetscScalar *av, *bv, *v1, *v2;
   PetscScalar       *val;
   Mat_MPISBAIJ      *mat = (Mat_MPISBAIJ *)A->data;
-  Mat_SeqSBAIJ      *aa  = (Mat_SeqSBAIJ *)(mat->A)->data;
-  Mat_SeqBAIJ       *bb  = (Mat_SeqBAIJ *)(mat->B)->data;
+  Mat_SeqSBAIJ      *aa  = (Mat_SeqSBAIJ *)mat->A->data;
+  Mat_SeqBAIJ       *bb  = (Mat_SeqBAIJ *)mat->B->data;
   const PetscInt     bs2 = aa->bs2, mbs = aa->mbs;
 #if defined(PETSC_USE_COMPLEX)
   PetscBool hermitian, isset;
@@ -828,8 +828,8 @@ static PetscErrorCode MatConvertToTriples_mpiaij_mpiaij(Mat A, PetscInt shift, M
 static PetscErrorCode MatConvertToTriples_mpibaij_mpiaij(Mat A, PetscInt shift, MatReuse reuse, Mat_MUMPS *mumps)
 {
   Mat_MPIBAIJ       *mat = (Mat_MPIBAIJ *)A->data;
-  Mat_SeqBAIJ       *aa  = (Mat_SeqBAIJ *)(mat->A)->data;
-  Mat_SeqBAIJ       *bb  = (Mat_SeqBAIJ *)(mat->B)->data;
+  Mat_SeqBAIJ       *aa  = (Mat_SeqBAIJ *)mat->A->data;
+  Mat_SeqBAIJ       *bb  = (Mat_SeqBAIJ *)mat->B->data;
   const PetscInt    *ai = aa->i, *bi = bb->i, *aj = aa->j, *bj = bb->j, *ajj, *bjj;
   const PetscInt    *garray = mat->garray, mbs = mat->mbs, rstart = A->rmap->rstart, cstart = A->cmap->rstart;
   const PetscInt     bs2 = mat->bs2;
@@ -1190,7 +1190,7 @@ static PetscErrorCode MatConvertToTriples_nest_xaij(Mat A, PetscInt shift, MatRe
            But since we do it only once, we pay the price of setting up an SF for each block */
         if (PetscDefined(USE_64BIT_INDICES)) {
           for (PetscInt k = 0; k < mumps->nnz; k++) pjcns_w[k] = mumps->jcn[k];
-        } else pjcns_w = (PetscInt *)(mumps->jcn); /* This cast is needed only to silence warnings for 64bit integers builds */
+        } else pjcns_w = (PetscInt *)mumps->jcn; /* This cast is needed only to silence warnings for 64bit integers builds */
         PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)A), &csf));
         PetscCall(PetscSFSetGraphLayout(csf, cmap, mumps->nnz, NULL, PETSC_OWN_POINTER, pjcns_w));
         PetscCall(PetscSFBcastBegin(csf, MPIU_INT, cidx, pjcns_w, MPI_REPLACE));
@@ -2336,7 +2336,7 @@ static PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F, Mat A, IS r, PETSC_UNU
 
           PetscCall(PetscMalloc1(M, &mumps->id.perm_in));
           PetscCall(ISGetIndices(r, &idx));
-          for (i = 0; i < M; i++) PetscCall(PetscMUMPSIntCast(idx[i] + 1, &(mumps->id.perm_in[i]))); /* perm_in[]: start from 1, not 0! */
+          for (i = 0; i < M; i++) PetscCall(PetscMUMPSIntCast(idx[i] + 1, &mumps->id.perm_in[i])); /* perm_in[]: start from 1, not 0! */
           PetscCall(ISRestoreIndices(r, &idx));
         }
       }
@@ -2677,7 +2677,7 @@ static PetscErrorCode MatFactorSetSchurIS_MUMPS(Mat F, IS is)
   PetscCall(PetscFree(mumps->id.listvar_schur));
   PetscCall(PetscMalloc1(size, &mumps->id.listvar_schur));
   PetscCall(ISGetIndices(is, &idxs));
-  for (i = 0; i < size; i++) PetscCall(PetscMUMPSIntCast(idxs[i] + 1, &(mumps->id.listvar_schur[i])));
+  for (i = 0; i < size; i++) PetscCall(PetscMUMPSIntCast(idxs[i] + 1, &mumps->id.listvar_schur[i]));
   PetscCall(ISRestoreIndices(is, &idxs));
   /* set a special value of ICNTL (not handled my MUMPS) to be used in the solve phase by PETSc */
   mumps->id.ICNTL(26) = -1;

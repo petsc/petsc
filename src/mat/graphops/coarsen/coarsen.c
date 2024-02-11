@@ -157,17 +157,17 @@ PetscErrorCode MatCoarsenDestroy(MatCoarsen *agg)
 {
   PetscFunctionBegin;
   if (!*agg) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*agg), MAT_COARSEN_CLASSID, 1);
-  if (--((PetscObject)(*agg))->refct > 0) {
+  PetscValidHeaderSpecific(*agg, MAT_COARSEN_CLASSID, 1);
+  if (--((PetscObject)*agg)->refct > 0) {
     *agg = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscTryTypeMethod(*agg, destroy);
   if ((*agg)->agg_lists) PetscCall(PetscCDDestroy((*agg)->agg_lists));
-  PetscCall(PetscObjectComposeFunction((PetscObject)(*agg), "MatCoarsenSetMaximumIterations_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)(*agg), "MatCoarsenSetThreshold_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)(*agg), "MatCoarsenSetStrengthIndex_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*agg, "MatCoarsenSetMaximumIterations_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*agg, "MatCoarsenSetThreshold_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*agg, "MatCoarsenSetStrengthIndex_C", NULL));
 
   PetscCall(PetscHeaderDestroy(agg));
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -63,7 +63,7 @@ static PetscErrorCode KSPSolve_CGNE(KSP ksp)
   P             = ksp->work[2];
   T             = ksp->work[3];
 
-#define VecXDot(x, y, a) (((cg->type) == (KSP_CG_HERMITIAN)) ? VecDot(x, y, a) : VecTDot(x, y, a))
+#define VecXDot(x, y, a) ((cg->type == (KSP_CG_HERMITIAN)) ? VecDot(x, y, a) : VecTDot(x, y, a))
 
   if (eigs) {
     e    = cg->e;

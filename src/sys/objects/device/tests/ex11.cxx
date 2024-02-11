@@ -245,8 +245,8 @@ int main(int argc, char *argv[])
   const auto         create_container = [&](PetscContainer *c, const char name[], PetscObjectId *id) {
     PetscFunctionBegin;
     PetscCall(PetscContainerCreate(PETSC_COMM_WORLD, c));
-    PetscCall(PetscObjectSetName((PetscObject)(*c), name));
-    PetscCall(PetscObjectGetId((PetscObject)(*c), id));
+    PetscCall(PetscObjectSetName((PetscObject)*c, name));
+    PetscCall(PetscObjectGetId((PetscObject)*c, id));
     if (container_view) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Container '%s' -> id %" PetscInt64_FMT "\n", name, *id));
     PetscFunctionReturn(PETSC_SUCCESS);
   };

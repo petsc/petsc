@@ -2945,8 +2945,8 @@ PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm)
   PetscCall(VecSetFromOptions(Vleaves));
   PetscCall(VecGetArray(Vleaves, &varr));
   for (i = 0; i < nleaves; i++) {
-    varr[2 * i]     = (PetscScalar)(iremote[i].rank);  /* rank of remote process */
-    varr[2 * i + 1] = (PetscScalar)(iremote[i].index); /* local index in remote process */
+    varr[2 * i]     = (PetscScalar)iremote[i].rank;  /* rank of remote process */
+    varr[2 * i + 1] = (PetscScalar)iremote[i].index; /* local index in remote process */
   }
   PetscCall(VecRestoreArray(Vleaves, &varr));
 

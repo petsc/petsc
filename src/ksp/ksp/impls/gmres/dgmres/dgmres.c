@@ -103,7 +103,7 @@ PetscErrorCode KSPSetUp_DGMRES(KSP ksp)
  */
 static PetscErrorCode KSPDGMRESCycle(PetscInt *itcount, KSP ksp)
 {
-  KSP_DGMRES *dgmres = (KSP_DGMRES *)(ksp->data);
+  KSP_DGMRES *dgmres = (KSP_DGMRES *)ksp->data;
   PetscReal   res_norm, res, hapbnd, tt;
   PetscInt    it     = 0;
   PetscInt    max_k  = dgmres->max_k;
@@ -318,7 +318,7 @@ static PetscErrorCode KSPDGMRESBuildSoln(PetscScalar *nrs, Vec vs, Vec vdest, KS
 {
   PetscScalar tt;
   PetscInt    ii, k, j;
-  KSP_DGMRES *dgmres = (KSP_DGMRES *)(ksp->data);
+  KSP_DGMRES *dgmres = (KSP_DGMRES *)ksp->data;
 
   /* Solve for solution vector that minimizes the residual */
 
@@ -363,7 +363,7 @@ static PetscErrorCode KSPDGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
 {
   PetscScalar *hh, *cc, *ss, tt;
   PetscInt     j;
-  KSP_DGMRES  *dgmres = (KSP_DGMRES *)(ksp->data);
+  KSP_DGMRES  *dgmres = (KSP_DGMRES *)ksp->data;
 
   PetscFunctionBegin;
   hh = HH(0, it);
@@ -587,30 +587,30 @@ PetscErrorCode KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *ExtrNeig)
 
   /* Compute XMX = X'*M^{-1}*A*X -- size (neig, neig) */
   if (!XMX) PetscCall(PetscMalloc1(neig1 * neig1, &XMX));
-  for (j = 0; j < neig; j++) PetscCall(VecMDot(MX[j], neig, XX, &(XMX[j * neig1])));
+  for (j = 0; j < neig; j++) PetscCall(VecMDot(MX[j], neig, XX, &XMX[j * neig1]));
 
   if (r > 0) {
     /* Compute UMX = U'*M^{-1}*A*X -- size (r, neig) */
     if (!UMX) PetscCall(PetscMalloc1(max_neig * neig1, &UMX));
-    for (j = 0; j < neig; j++) PetscCall(VecMDot(MX[j], r, UU, &(UMX[j * max_neig])));
+    for (j = 0; j < neig; j++) PetscCall(VecMDot(MX[j], r, UU, &UMX[j * max_neig]));
     /* Compute XMU = X'*M^{-1}*A*U -- size(neig, r) */
     if (!XMU) PetscCall(PetscMalloc1(max_neig * neig1, &XMU));
-    for (j = 0; j < r; j++) PetscCall(VecMDot(MU[j], neig, XX, &(XMU[j * neig1])));
+    for (j = 0; j < r; j++) PetscCall(VecMDot(MU[j], neig, XX, &XMU[j * neig1]));
   }
 
   /* Form the new matrix T = [T UMX; XMU XMX]; */
   if (!TT) PetscCall(PetscMalloc1(max_neig * max_neig, &TT));
   if (r > 0) {
     /* Add XMU to T */
-    for (j = 0; j < r; j++) PetscCall(PetscArraycpy(&(TT[max_neig * j + r]), &(XMU[neig1 * j]), neig));
+    for (j = 0; j < r; j++) PetscCall(PetscArraycpy(&TT[max_neig * j + r], &XMU[neig1 * j], neig));
     /* Add [UMX; XMX] to T */
     for (j = 0; j < neig; j++) {
       k = r + j;
-      PetscCall(PetscArraycpy(&(TT[max_neig * k]), &(UMX[max_neig * j]), r));
-      PetscCall(PetscArraycpy(&(TT[max_neig * k + r]), &(XMX[neig1 * j]), neig));
+      PetscCall(PetscArraycpy(&TT[max_neig * k], &UMX[max_neig * j], r));
+      PetscCall(PetscArraycpy(&TT[max_neig * k + r], &XMX[neig1 * j], neig));
     }
   } else { /* Add XMX to T */
-    for (j = 0; j < neig; j++) PetscCall(PetscArraycpy(&(TT[max_neig * j]), &(XMX[neig1 * j]), neig));
+    for (j = 0; j < neig; j++) PetscCall(PetscArraycpy(&TT[max_neig * j], &XMX[neig1 * j], neig));
   }
 
   dgmres->r += neig;
@@ -759,7 +759,7 @@ PetscErrorCode KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
   PetscCall(PetscFree(select));
 
   /* Extract the Schur vectors */
-  for (j = 0; j < NbrEig; j++) PetscCall(PetscArraycpy(&SR[j * N], &(Q[j * ldQ]), n));
+  for (j = 0; j < NbrEig; j++) PetscCall(PetscArraycpy(&SR[j * N], &Q[j * ldQ], n));
   *neig = NbrEig;
   PetscCall(PetscFree(A));
   PetscCall(PetscFree(work));
@@ -932,12 +932,12 @@ static PetscErrorCode KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
     PetscReal    Dif[2];
     PetscBLASInt ijob  = 2;
     PetscBLASInt wantQ = 1, wantZ = 1;
-    PetscCallBLAS("LAPACKtgsen", LAPACKtgsen_(&ijob, &wantQ, &wantZ, select, &N, AUAU, &ldA, AUU, &ldA, wr, wi, beta, Q, &N, Z, &N, &NbrEig, NULL, NULL, &(Dif[0]), work, &lwork, iwork, &liwork, &info));
+    PetscCallBLAS("LAPACKtgsen", LAPACKtgsen_(&ijob, &wantQ, &wantZ, select, &N, AUAU, &ldA, AUU, &ldA, wr, wi, beta, Q, &N, Z, &N, &NbrEig, NULL, NULL, &Dif[0], work, &lwork, iwork, &liwork, &info));
     PetscCheck(info != 1, PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB, "Unable to reorder the eigenvalues with the LAPACK routine: ill-conditioned problem.");
   }
   PetscCall(PetscFree(select));
 
-  for (j = 0; j < r; j++) PetscCall(PetscArraycpy(&SR2[j * aug1], &(Z[j * N]), N));
+  for (j = 0; j < r; j++) PetscCall(PetscArraycpy(&SR2[j * aug1], &Z[j * N], N));
 
   /* Multiply the Schur vectors SR2 by U (and X)  to get a new U
    -- save it temporarily in MU */

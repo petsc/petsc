@@ -298,8 +298,8 @@ static PetscErrorCode MatSeqAIJHIPSPARSEBuildILULowerTriMatrix(Mat A)
           AiLo[i] = rowOffset;
           rowOffset += nz + 1;
 
-          PetscCall(PetscArraycpy(&(AjLo[offset]), vi, nz));
-          PetscCall(PetscArraycpy(&(AALo[offset]), v, nz));
+          PetscCall(PetscArraycpy(&AjLo[offset], vi, nz));
+          PetscCall(PetscArraycpy(&AALo[offset], v, nz));
           offset += nz;
           AjLo[offset] = (PetscInt)i;
           AALo[offset] = (MatScalar)1.0;
@@ -363,7 +363,7 @@ static PetscErrorCode MatSeqAIJHIPSPARSEBuildILULowerTriMatrix(Mat A)
         offset               = 1;
         for (i = 1; i < n; i++) {
           nz = ai[i + 1] - ai[i];
-          PetscCall(PetscArraycpy(&(loTriFactor->AA_h[offset]), v, nz));
+          PetscCall(PetscArraycpy(&loTriFactor->AA_h[offset], v, nz));
           offset += nz;
           loTriFactor->AA_h[offset] = 1.0;
           offset += 1;
@@ -419,8 +419,8 @@ static PetscErrorCode MatSeqAIJHIPSPARSEBuildILUUpperTriMatrix(Mat A)
           AAUp[offset] = (MatScalar)1. / v[nz];
           AiUp[i]      = AiUp[i + 1] - (nz + 1);
 
-          PetscCall(PetscArraycpy(&(AjUp[offset + 1]), vi, nz));
-          PetscCall(PetscArraycpy(&(AAUp[offset + 1]), v, nz));
+          PetscCall(PetscArraycpy(&AjUp[offset + 1], vi, nz));
+          PetscCall(PetscArraycpy(&AAUp[offset + 1], v, nz));
         }
 
         /* allocate space for the triangular factor information */
@@ -480,7 +480,7 @@ static PetscErrorCode MatSeqAIJHIPSPARSEBuildILUUpperTriMatrix(Mat A)
 
           /* first, set the diagonal elements */
           upTriFactor->AA_h[offset] = 1. / v[nz];
-          PetscCall(PetscArraycpy(&(upTriFactor->AA_h[offset + 1]), v, nz));
+          PetscCall(PetscArraycpy(&upTriFactor->AA_h[offset + 1], v, nz));
         }
         upTriFactor->csrMat->values->assign(upTriFactor->AA_h, upTriFactor->AA_h + nzUpper);
         PetscCall(PetscLogCpuToGpu(nzUpper * sizeof(PetscScalar)));
@@ -577,8 +577,8 @@ static PetscErrorCode MatSeqAIJHIPSPARSEBuildICCTriMatrices(Mat A)
 
           offset += 1;
           if (nz > 0) {
-            PetscCall(PetscArraycpy(&(AjUp[offset]), vj, nz));
-            PetscCall(PetscArraycpy(&(AAUp[offset]), v, nz));
+            PetscCall(PetscArraycpy(&AjUp[offset], vj, nz));
+            PetscCall(PetscArraycpy(&AAUp[offset], v, nz));
             for (j = offset; j < offset + nz; j++) {
               AAUp[j] = -AAUp[j];
               AALo[j] = AAUp[j] / v[nz];
@@ -690,7 +690,7 @@ static PetscErrorCode MatSeqAIJHIPSPARSEBuildICCTriMatrices(Mat A)
 
           offset += 1;
           if (nz > 0) {
-            PetscCall(PetscArraycpy(&(AAUp[offset]), v, nz));
+            PetscCall(PetscArraycpy(&AAUp[offset], v, nz));
             for (j = offset; j < offset + nz; j++) {
               AAUp[j] = -AAUp[j];
               AALo[j] = AAUp[j] / v[nz];
@@ -963,9 +963,9 @@ static PetscErrorCode MatSeqAIJHIPSPARSEFormExplicitTranspose(Mat A)
     PetscCallHIPSPARSE(hipsparseSetMatType(matstructT->descr, HIPSPARSE_MATRIX_TYPE_GENERAL));
 
     /* set alpha and beta */
-    PetscCallHIP(hipMalloc((void **)&(matstructT->alpha_one), sizeof(PetscScalar)));
-    PetscCallHIP(hipMalloc((void **)&(matstructT->beta_zero), sizeof(PetscScalar)));
-    PetscCallHIP(hipMalloc((void **)&(matstructT->beta_one), sizeof(PetscScalar)));
+    PetscCallHIP(hipMalloc((void **)&matstructT->alpha_one, sizeof(PetscScalar)));
+    PetscCallHIP(hipMalloc((void **)&matstructT->beta_zero, sizeof(PetscScalar)));
+    PetscCallHIP(hipMalloc((void **)&matstructT->beta_one, sizeof(PetscScalar)));
     PetscCallHIP(hipMemcpy(matstructT->alpha_one, &PETSC_HIPSPARSE_ONE, sizeof(PetscScalar), hipMemcpyHostToDevice));
     PetscCallHIP(hipMemcpy(matstructT->beta_zero, &PETSC_HIPSPARSE_ZERO, sizeof(PetscScalar), hipMemcpyHostToDevice));
     PetscCallHIP(hipMemcpy(matstructT->beta_one, &PETSC_HIPSPARSE_ONE, sizeof(PetscScalar), hipMemcpyHostToDevice));
@@ -1875,12 +1875,12 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaijhipsparse_hipsparse(Mat A, MatFac
   PetscCall(MatSetType(*B, MATSEQAIJHIPSPARSE));
 
   prefix = (*B)->factorprefix ? (*B)->factorprefix : ((PetscObject)A)->prefix;
-  PetscOptionsBegin(PetscObjectComm((PetscObject)(*B)), prefix, "MatGetFactor", "Mat");
+  PetscOptionsBegin(PetscObjectComm((PetscObject)*B), prefix, "MatGetFactor", "Mat");
   PetscCall(PetscOptionsString("-mat_factor_bind_factorization", "Do matrix factorization on host or device when possible", "MatGetFactor", NULL, factPlace, sizeof(factPlace), NULL));
   PetscOptionsEnd();
   PetscCall(PetscStrcasecmp("device", factPlace, &factOnDevice));
   PetscCall(PetscStrcasecmp("host", factPlace, &factOnHost));
-  PetscCheck(factOnDevice || factOnHost, PetscObjectComm((PetscObject)(*B)), PETSC_ERR_ARG_OUTOFRANGE, "Wrong option %s to -mat_factor_bind_factorization <string>. Only host and device are allowed", factPlace);
+  PetscCheck(factOnDevice || factOnHost, PetscObjectComm((PetscObject)*B), PETSC_ERR_ARG_OUTOFRANGE, "Wrong option %s to -mat_factor_bind_factorization <string>. Only host and device are allowed", factPlace);
   ((Mat_SeqAIJHIPSPARSETriFactors *)(*B)->spptr)->factorizeOnDevice = factOnDevice;
 
   if (A->boundtocpu && A->bindingpropagates) PetscCall(MatBindToCPU(*B, PETSC_TRUE));
@@ -1910,7 +1910,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaijhipsparse_hipsparse(Mat A, MatFac
 
   PetscCall(MatSeqAIJSetPreallocation(*B, MAT_SKIP_ALLOCATION, NULL));
   (*B)->canuseordering = PETSC_TRUE;
-  PetscCall(PetscObjectComposeFunction((PetscObject)(*B), "MatFactorGetSolverType_C", MatFactorGetSolverType_seqaij_hipsparse));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*B, "MatFactorGetSolverType_C", MatFactorGetSolverType_seqaij_hipsparse));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2040,7 +2040,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJHIPSPARSECopyToGPU(Mat A)
       PetscCall(PetscLogEventBegin(MAT_HIPSPARSECopyToGPU, A, 0, 0, 0));
       matrix->values->assign(a->a, a->a + a->nz);
       PetscCallHIP(WaitForHIP());
-      PetscCall(PetscLogCpuToGpu((a->nz) * sizeof(PetscScalar)));
+      PetscCall(PetscLogCpuToGpu(a->nz * sizeof(PetscScalar)));
       PetscCall(PetscLogEventEnd(MAT_HIPSPARSECopyToGPU, A, 0, 0, 0));
       PetscCall(MatSeqAIJHIPSPARSEInvalidateTranspose(A, PETSC_FALSE));
     } else {
@@ -2076,9 +2076,9 @@ PETSC_INTERN PetscErrorCode MatSeqAIJHIPSPARSECopyToGPU(Mat A)
         PetscCallHIPSPARSE(hipsparseSetMatIndexBase(matstruct->descr, HIPSPARSE_INDEX_BASE_ZERO));
         PetscCallHIPSPARSE(hipsparseSetMatType(matstruct->descr, HIPSPARSE_MATRIX_TYPE_GENERAL));
 
-        PetscCallHIP(hipMalloc((void **)&(matstruct->alpha_one), sizeof(PetscScalar)));
-        PetscCallHIP(hipMalloc((void **)&(matstruct->beta_zero), sizeof(PetscScalar)));
-        PetscCallHIP(hipMalloc((void **)&(matstruct->beta_one), sizeof(PetscScalar)));
+        PetscCallHIP(hipMalloc((void **)&matstruct->alpha_one, sizeof(PetscScalar)));
+        PetscCallHIP(hipMalloc((void **)&matstruct->beta_zero, sizeof(PetscScalar)));
+        PetscCallHIP(hipMalloc((void **)&matstruct->beta_one, sizeof(PetscScalar)));
         PetscCallHIP(hipMemcpy(matstruct->alpha_one, &PETSC_HIPSPARSE_ONE, sizeof(PetscScalar), hipMemcpyHostToDevice));
         PetscCallHIP(hipMemcpy(matstruct->beta_zero, &PETSC_HIPSPARSE_ZERO, sizeof(PetscScalar), hipMemcpyHostToDevice));
         PetscCallHIP(hipMemcpy(matstruct->beta_one, &PETSC_HIPSPARSE_ONE, sizeof(PetscScalar), hipMemcpyHostToDevice));
@@ -2652,9 +2652,9 @@ static PetscErrorCode MatProductSymbolic_SeqAIJHIPSPARSE_SeqAIJHIPSPARSE(Mat C)
   PetscCallHIPSPARSE(hipsparseCreateMatDescr(&Cmat->descr));
   PetscCallHIPSPARSE(hipsparseSetMatIndexBase(Cmat->descr, HIPSPARSE_INDEX_BASE_ZERO));
   PetscCallHIPSPARSE(hipsparseSetMatType(Cmat->descr, HIPSPARSE_MATRIX_TYPE_GENERAL));
-  PetscCallHIP(hipMalloc((void **)&(Cmat->alpha_one), sizeof(PetscScalar)));
-  PetscCallHIP(hipMalloc((void **)&(Cmat->beta_zero), sizeof(PetscScalar)));
-  PetscCallHIP(hipMalloc((void **)&(Cmat->beta_one), sizeof(PetscScalar)));
+  PetscCallHIP(hipMalloc((void **)&Cmat->alpha_one, sizeof(PetscScalar)));
+  PetscCallHIP(hipMalloc((void **)&Cmat->beta_zero, sizeof(PetscScalar)));
+  PetscCallHIP(hipMalloc((void **)&Cmat->beta_one, sizeof(PetscScalar)));
   PetscCallHIP(hipMemcpy(Cmat->alpha_one, &PETSC_HIPSPARSE_ONE, sizeof(PetscScalar), hipMemcpyHostToDevice));
   PetscCallHIP(hipMemcpy(Cmat->beta_zero, &PETSC_HIPSPARSE_ZERO, sizeof(PetscScalar), hipMemcpyHostToDevice));
   PetscCallHIP(hipMemcpy(Cmat->beta_one, &PETSC_HIPSPARSE_ONE, sizeof(PetscScalar), hipMemcpyHostToDevice));
@@ -4145,9 +4145,9 @@ PetscErrorCode MatSeqAIJHIPSPARSEMergeMats(Mat A, Mat B, MatReuse reuse, Mat *C)
     PetscCallHIPSPARSE(hipsparseCreateMatDescr(&Cmat->descr));
     PetscCallHIPSPARSE(hipsparseSetMatIndexBase(Cmat->descr, HIPSPARSE_INDEX_BASE_ZERO));
     PetscCallHIPSPARSE(hipsparseSetMatType(Cmat->descr, HIPSPARSE_MATRIX_TYPE_GENERAL));
-    PetscCallHIP(hipMalloc((void **)&(Cmat->alpha_one), sizeof(PetscScalar)));
-    PetscCallHIP(hipMalloc((void **)&(Cmat->beta_zero), sizeof(PetscScalar)));
-    PetscCallHIP(hipMalloc((void **)&(Cmat->beta_one), sizeof(PetscScalar)));
+    PetscCallHIP(hipMalloc((void **)&Cmat->alpha_one, sizeof(PetscScalar)));
+    PetscCallHIP(hipMalloc((void **)&Cmat->beta_zero, sizeof(PetscScalar)));
+    PetscCallHIP(hipMalloc((void **)&Cmat->beta_one, sizeof(PetscScalar)));
     PetscCallHIP(hipMemcpy(Cmat->alpha_one, &PETSC_HIPSPARSE_ONE, sizeof(PetscScalar), hipMemcpyHostToDevice));
     PetscCallHIP(hipMemcpy(Cmat->beta_zero, &PETSC_HIPSPARSE_ZERO, sizeof(PetscScalar), hipMemcpyHostToDevice));
     PetscCallHIP(hipMemcpy(Cmat->beta_one, &PETSC_HIPSPARSE_ONE, sizeof(PetscScalar), hipMemcpyHostToDevice));
@@ -4266,9 +4266,9 @@ PetscErrorCode MatSeqAIJHIPSPARSEMergeMats(Mat A, Mat B, MatReuse reuse, Mat *C)
         PetscCallHIPSPARSE(hipsparseCreateMatDescr(&CmatT->descr));
         PetscCallHIPSPARSE(hipsparseSetMatIndexBase(CmatT->descr, HIPSPARSE_INDEX_BASE_ZERO));
         PetscCallHIPSPARSE(hipsparseSetMatType(CmatT->descr, HIPSPARSE_MATRIX_TYPE_GENERAL));
-        PetscCallHIP(hipMalloc((void **)&(CmatT->alpha_one), sizeof(PetscScalar)));
-        PetscCallHIP(hipMalloc((void **)&(CmatT->beta_zero), sizeof(PetscScalar)));
-        PetscCallHIP(hipMalloc((void **)&(CmatT->beta_one), sizeof(PetscScalar)));
+        PetscCallHIP(hipMalloc((void **)&CmatT->alpha_one, sizeof(PetscScalar)));
+        PetscCallHIP(hipMalloc((void **)&CmatT->beta_zero, sizeof(PetscScalar)));
+        PetscCallHIP(hipMalloc((void **)&CmatT->beta_one, sizeof(PetscScalar)));
         PetscCallHIP(hipMemcpy(CmatT->alpha_one, &PETSC_HIPSPARSE_ONE, sizeof(PetscScalar), hipMemcpyHostToDevice));
         PetscCallHIP(hipMemcpy(CmatT->beta_zero, &PETSC_HIPSPARSE_ZERO, sizeof(PetscScalar), hipMemcpyHostToDevice));
         PetscCallHIP(hipMemcpy(CmatT->beta_one, &PETSC_HIPSPARSE_ONE, sizeof(PetscScalar), hipMemcpyHostToDevice));

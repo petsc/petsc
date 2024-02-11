@@ -417,7 +417,7 @@ static PetscErrorCode THIDestroy(THI *thi)
 {
   PetscFunctionBeginUser;
   if (!*thi) PetscFunctionReturn(PETSC_SUCCESS);
-  if (--((PetscObject)(*thi))->refct > 0) {
+  if (--((PetscObject)*thi)->refct > 0) {
     *thi = 0;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

@@ -2,7 +2,7 @@
 #include <petsc/private/vecimpl.h>
 
 #define offset(j)       PetscMax(((j) - (2 * l)), 0)
-#define shift(i, j)     ((i)-offset((j)))
+#define shift(i, j)     ((i)-offset(j))
 #define G(i, j)         (plcg->G[((j) * (2 * l + 1)) + (shift((i), (j)))])
 #define G_noshift(i, j) (plcg->G[((j) * (2 * l + 1)) + (i)])
 #define alpha(i)        (plcg->alpha[(i)])

@@ -548,7 +548,7 @@ PetscErrorCode VecDuplicate(Vec v, Vec *newv)
     PetscCall(VecBindToCPU(*newv, PETSC_TRUE));
   }
 #endif
-  PetscCall(PetscObjectStateIncrease((PetscObject)(*newv)));
+  PetscCall(PetscObjectStateIncrease((PetscObject)*newv));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -569,8 +569,8 @@ PetscErrorCode VecDestroy(Vec *v)
   PetscFunctionBegin;
   PetscAssertPointer(v, 1);
   if (!*v) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*v), VEC_CLASSID, 1);
-  if (--((PetscObject)(*v))->refct > 0) {
+  PetscValidHeaderSpecific(*v, VEC_CLASSID, 1);
+  if (--((PetscObject)*v)->refct > 0) {
     *v = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

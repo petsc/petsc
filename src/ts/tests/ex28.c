@@ -353,7 +353,7 @@ static PetscErrorCode HGMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *
 
   PetscFunctionBeginUser;
   if (step < 0) PetscFunctionReturn(PETSC_SUCCESS);
-  if (((user->ostep > 0) && (!(step % user->ostep)))) {
+  if ((user->ostep > 0) && (!(step % user->ostep))) {
     PetscDrawAxis axis;
 
     PetscCall(TSGetDM(ts, &sw));
@@ -385,7 +385,7 @@ static PetscErrorCode SPMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *
 
   PetscFunctionBeginUser;
   if (step < 0) PetscFunctionReturn(PETSC_SUCCESS);
-  if (((user->ostep > 0) && (!(step % user->ostep)))) {
+  if ((user->ostep > 0) && (!(step % user->ostep))) {
     PetscDrawAxis axis;
 
     PetscCall(TSGetDM(ts, &dmSw));
@@ -418,7 +418,7 @@ static PetscErrorCode KSConv(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx
 
   PetscFunctionBeginUser;
   if (step < 0) PetscFunctionReturn(PETSC_SUCCESS);
-  if (((user->ostep > 0) && (!(step % user->ostep)))) {
+  if ((user->ostep > 0) && (!(step % user->ostep))) {
     PetscDrawAxis axis;
     PetscCall(PetscDrawSPGetAxis(user->drawks, &axis));
     PetscCall(PetscDrawAxisSetLabels(axis, "Particles", "t", "D_n"));

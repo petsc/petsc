@@ -1307,7 +1307,7 @@ static PetscErrorCode DMCompositeSampleGLVisFields_Private(PetscObject oX, Petsc
     PetscCall(PetscViewerGLVisGetFields_Internal(ctx->subv[i], &nfi, NULL, NULL, &g2l, NULL, &fctx));
     if (!nfi) continue;
     if (g2l) PetscCall((*g2l)((PetscObject)ctx->vecs[i], nfi, oXfield + cumf, fctx));
-    else PetscCall(VecCopy(ctx->vecs[i], (Vec)(oXfield[cumf])));
+    else PetscCall(VecCopy(ctx->vecs[i], (Vec)oXfield[cumf]));
     cumf += nfi;
   }
   PetscCall(DMCompositeRestoreAccessArray(ctx->dm, X, n, NULL, ctx->vecs));
