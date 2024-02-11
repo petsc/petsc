@@ -1,16 +1,16 @@
-  0 SNES Function norm 0.137187 
-    0 KSP Residual norm 0.120308 
-    1 KSP Residual norm 0.0327681 
-    2 KSP Residual norm 0.00345772 
-    3 KSP Residual norm 0.000364886 
-    4 KSP Residual norm 3.85056e-05 
-    5 KSP Residual norm 4.06341e-06 
-    6 KSP Residual norm 4.28803e-07 
-    7 KSP Residual norm 4.52507e-08 
-    8 KSP Residual norm 4.77521e-09 
-    9 KSP Residual norm 5.039e-10 
-   10 KSP Residual norm 5.318e-11 
-  1 SNES Function norm 6.672e-11 
+  0 SNES Function norm 0.137187
+    0 KSP Residual norm 0.120308
+    1 KSP Residual norm 0.0327681
+    2 KSP Residual norm 0.00345772
+    3 KSP Residual norm 0.000364886
+    4 KSP Residual norm 3.85056e-05
+    5 KSP Residual norm 4.06341e-06
+    6 KSP Residual norm 4.28803e-07
+    7 KSP Residual norm 4.52507e-08
+    8 KSP Residual norm 4.77521e-09
+    9 KSP Residual norm 5.039e-10
+   10 KSP Residual norm 5.318e-11
+  1 SNES Function norm 6.672e-11
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI process
   type: newtonls

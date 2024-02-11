@@ -17,9 +17,9 @@ Process [0]
 Process [1]
 4.67798
 7.
-  0 SNES Function norm 5.414682427127e+00 
-  1 SNES Function norm 2.952582418265e-01 
-  2 SNES Function norm 4.502293658739e-04 
-  3 SNES Function norm 1.389665806646e-09 
+  0 SNES Function norm 5.414682427127e+00
+  1 SNES Function norm 2.952582418265e-01
+  2 SNES Function norm 4.502293658739e-04
+  3 SNES Function norm 1.389665806646e-09
 Number of SNES iterations = 3
 Norm of error 1.49752e-10 Iterations 3

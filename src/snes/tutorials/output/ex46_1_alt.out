@@ -1,6 +1,6 @@
-  0 SNES Function norm 0.146402 
-  1 SNES Function norm 0.00119047 
-  2 SNES Function norm 7.73027e-07 
+  0 SNES Function norm 0.146402
+  1 SNES Function norm 0.00119047
+  2 SNES Function norm 7.73027e-07
 SNES Object: 1 MPI process
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000

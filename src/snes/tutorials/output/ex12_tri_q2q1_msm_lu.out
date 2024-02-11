@@ -1,6 +1,6 @@
-  0 SNES Function norm 8.32828 
-    0 KSP Residual norm 11.2821 
-    1 KSP Residual norm 0.0646504 
+  0 SNES Function norm 8.32828
+    0 KSP Residual norm 11.2821
+    1 KSP Residual norm 0.0646504
     2 KSP Residual norm < 1.e-11
   Linear solve converged due to CONVERGED_RTOL iterations 2
   1 SNES Function norm < 1.e-11

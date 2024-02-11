@@ -1,20 +1,20 @@
-  0 KSP Residual norm 76.9968 
-  1 KSP Residual norm 8.08208 
-  2 KSP Residual norm 15.1105 
-  3 KSP Residual norm 6.17191 
-  4 KSP Residual norm 1.69055 
-  5 KSP Residual norm 0.839527 
-  6 KSP Residual norm 0.503547 
-  7 KSP Residual norm 0.22474 
-  8 KSP Residual norm 0.0980339 
-  9 KSP Residual norm 0.0489431 
- 10 KSP Residual norm 0.0211883 
- 11 KSP Residual norm 0.0172013 
- 12 KSP Residual norm 0.0111598 
- 13 KSP Residual norm 0.00568569 
- 14 KSP Residual norm 0.00254207 
- 15 KSP Residual norm 0.000942484 
- 16 KSP Residual norm 0.000394248 
+  0 KSP Residual norm 76.9968
+  1 KSP Residual norm 8.08208
+  2 KSP Residual norm 15.1105
+  3 KSP Residual norm 6.17191
+  4 KSP Residual norm 1.69055
+  5 KSP Residual norm 0.839527
+  6 KSP Residual norm 0.503547
+  7 KSP Residual norm 0.22474
+  8 KSP Residual norm 0.0980339
+  9 KSP Residual norm 0.0489431
+ 10 KSP Residual norm 0.0211883
+ 11 KSP Residual norm 0.0172013
+ 12 KSP Residual norm 0.0111598
+ 13 KSP Residual norm 0.00568569
+ 14 KSP Residual norm 0.00254207
+ 15 KSP Residual norm 0.000942484
+ 16 KSP Residual norm 0.000394248
 KSP Object: 4 MPI processes
   type: cg
   maximum iterations=10000, initial guess is zero

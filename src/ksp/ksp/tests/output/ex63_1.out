@@ -2,7 +2,7 @@ Teuchos::GlobalMPISession::GlobalMPISession(): started processor with name Barry
 Amesos2 version 0.3d - 07/28/2011
 
 Norm2 of Ax - b = {3.88578058618804789e-16}
-  0 KSP Residual norm 0.000000000000e+00 
+  0 KSP Residual norm 0.000000000000e+00
 Linear solve converged due to CONVERGED_ATOL iterations 0
 KSP Object: 1 MPI process
   type: gmres

@@ -14,7 +14,7 @@
 
 ../ex63 : Warning, the 11th option '-ksp_converged_reason' was not recognized (use --help)!
 Norm2 of Ax - b = {1.11022302462515654e-16}
-  0 KSP Residual norm 0.000000000000e+00 
+  0 KSP Residual norm 0.000000000000e+00
 Linear solve converged due to CONVERGED_ATOL iterations 0
 KSP Object: 1 MPI process
   type: gmres

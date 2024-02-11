@@ -1,24 +1,24 @@
-  0 SNES Function norm 27982.5 
-    0 SNES Function norm 27982.5 
-      0 SNES Function norm 25715.7 
-      1 SNES Function norm 11344.9 
-        0 SNES Function norm 16515.3 
-        1 SNES Function norm 1.04005e+06 
-        2 SNES Function norm 308267. 
-        3 SNES Function norm 91410.6 
-        4 SNES Function norm 27106.5 
-        5 SNES Function norm 8014.94 
-        6 SNES Function norm 2370.78 
-        7 SNES Function norm 696.385 
-        8 SNES Function norm 179.424 
-        9 SNES Function norm 31.6193 
-       10 SNES Function norm 1.46351 
-       11 SNES Function norm 0.00362442 
-       12 SNES Function norm 2.14519e-08 
-      0 SNES Function norm 53763.8 
-      1 SNES Function norm 13036.4 
-    0 SNES Function norm 23366.6 
-    1 SNES Function norm 6924.35 
+  0 SNES Function norm 27982.5
+    0 SNES Function norm 27982.5
+      0 SNES Function norm 25715.7
+      1 SNES Function norm 11344.9
+        0 SNES Function norm 16515.3
+        1 SNES Function norm 1.04005e+06
+        2 SNES Function norm 308267.
+        3 SNES Function norm 91410.6
+        4 SNES Function norm 27106.5
+        5 SNES Function norm 8014.94
+        6 SNES Function norm 2370.78
+        7 SNES Function norm 696.385
+        8 SNES Function norm 179.424
+        9 SNES Function norm 31.6193
+       10 SNES Function norm 1.46351
+       11 SNES Function norm 0.00362442
+       12 SNES Function norm 2.14519e-08
+      0 SNES Function norm 53763.8
+      1 SNES Function norm 13036.4
+    0 SNES Function norm 23366.6
+    1 SNES Function norm 6924.35
 L_2 Error: 1.51907
 Nonlinear solve did not converge due to DIVERGED_INNER iterations 0
 SNES Object: 1 MPI process

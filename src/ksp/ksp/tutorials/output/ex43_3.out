@@ -1,25 +1,25 @@
   Residual norms for stokes_ solve.
-  0 KSP Residual norm 0.00454925 
-  1 KSP Residual norm 0.00445265 
-  2 KSP Residual norm 0.00390246 
-  3 KSP Residual norm 0.00285626 
-  4 KSP Residual norm 0.00217438 
-  5 KSP Residual norm 0.00137538 
-  6 KSP Residual norm 0.00100592 
-  7 KSP Residual norm 0.000805012 
-  8 KSP Residual norm 0.000703663 
-  9 KSP Residual norm 0.000670825 
- 10 KSP Residual norm 0.000619861 
- 11 KSP Residual norm 0.000548141 
- 12 KSP Residual norm 0.000467674 
- 13 KSP Residual norm 0.00045039 
- 14 KSP Residual norm 0.000428086 
- 15 KSP Residual norm 0.000331618 
- 16 KSP Residual norm 0.00020597 
- 17 KSP Residual norm 0.000115577 
- 18 KSP Residual norm 8.8882e-05 
- 19 KSP Residual norm 6.37702e-05 
- 20 KSP Residual norm 3.59527e-05 
+  0 KSP Residual norm 0.00454925
+  1 KSP Residual norm 0.00445265
+  2 KSP Residual norm 0.00390246
+  3 KSP Residual norm 0.00285626
+  4 KSP Residual norm 0.00217438
+  5 KSP Residual norm 0.00137538
+  6 KSP Residual norm 0.00100592
+  7 KSP Residual norm 0.000805012
+  8 KSP Residual norm 0.000703663
+  9 KSP Residual norm 0.000670825
+ 10 KSP Residual norm 0.000619861
+ 11 KSP Residual norm 0.000548141
+ 12 KSP Residual norm 0.000467674
+ 13 KSP Residual norm 0.00045039
+ 14 KSP Residual norm 0.000428086
+ 15 KSP Residual norm 0.000331618
+ 16 KSP Residual norm 0.00020597
+ 17 KSP Residual norm 0.000115577
+ 18 KSP Residual norm 8.8882e-05
+ 19 KSP Residual norm 6.37702e-05
+ 20 KSP Residual norm 3.59527e-05
 KSP Object: (stokes_) 4 MPI processes
   type: gcr
     restart = 60 

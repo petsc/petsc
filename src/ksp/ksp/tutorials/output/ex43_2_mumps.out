@@ -1,9 +1,9 @@
   Residual norms for stokes_ solve.
-  0 KSP Residual norm 0.0239928 
-  1 KSP Residual norm 0.00018525 
-  2 KSP Residual norm 3.95184e-05 
-  3 KSP Residual norm 8.60318e-07 
-  4 KSP Residual norm 9.54453e-08 
+  0 KSP Residual norm 0.0239928
+  1 KSP Residual norm 0.00018525
+  2 KSP Residual norm 3.95184e-05
+  3 KSP Residual norm 8.60318e-07
+  4 KSP Residual norm 9.54453e-08
 KSP Object: (stokes_) 1 MPI process
   type: fgmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement

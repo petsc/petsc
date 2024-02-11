@@ -2,32 +2,32 @@ Mat Object:
   type: mpiaij
   rows=110, cols=110
   total: nonzeros=434, allocated nonzeros=434
-  0 KSP Residual norm 2.06585 
-  1 KSP Residual norm 0.449121 
-  2 KSP Residual norm 0.347613 
-  3 KSP Residual norm 0.328636 
-  4 KSP Residual norm 0.28997 
-  5 KSP Residual norm 0.21452 
-  6 KSP Residual norm 0.149 
-  7 KSP Residual norm 0.111732 
-  8 KSP Residual norm 0.103296 
-  9 KSP Residual norm 0.102195 
- 10 KSP Residual norm 0.0763708 
- 11 KSP Residual norm 0.0304652 
- 12 KSP Residual norm 0.0118337 
- 13 KSP Residual norm 0.00555947 
- 14 KSP Residual norm 0.00265734 
- 15 KSP Residual norm 0.00123329 
- 16 KSP Residual norm 0.000494685 
- 17 KSP Residual norm 0.000183703 
- 18 KSP Residual norm 6.45078e-05 
- 19 KSP Residual norm 1.82215e-05 
- 20 KSP Residual norm 4.98715e-06 
- 21 KSP Residual norm 1.30623e-06 
- 22 KSP Residual norm 3.76668e-07 
- 23 KSP Residual norm 1.00542e-07 
- 24 KSP Residual norm 2.48681e-08 
- 25 KSP Residual norm 6.43512e-09 
+  0 KSP Residual norm 2.06585
+  1 KSP Residual norm 0.449121
+  2 KSP Residual norm 0.347613
+  3 KSP Residual norm 0.328636
+  4 KSP Residual norm 0.28997
+  5 KSP Residual norm 0.21452
+  6 KSP Residual norm 0.149
+  7 KSP Residual norm 0.111732
+  8 KSP Residual norm 0.103296
+  9 KSP Residual norm 0.102195
+ 10 KSP Residual norm 0.0763708
+ 11 KSP Residual norm 0.0304652
+ 12 KSP Residual norm 0.0118337
+ 13 KSP Residual norm 0.00555947
+ 14 KSP Residual norm 0.00265734
+ 15 KSP Residual norm 0.00123329
+ 16 KSP Residual norm 0.000494685
+ 17 KSP Residual norm 0.000183703
+ 18 KSP Residual norm 6.45078e-05
+ 19 KSP Residual norm 1.82215e-05
+ 20 KSP Residual norm 4.98715e-06
+ 21 KSP Residual norm 1.30623e-06
+ 22 KSP Residual norm 3.76668e-07
+ 23 KSP Residual norm 1.00542e-07
+ 24 KSP Residual norm 2.48681e-08
+ 25 KSP Residual norm 6.43512e-09
 KSP Object:
   type: gmres
     restart=30, using Modified Gram-Schmidt Orthogonalization

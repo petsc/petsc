@@ -1,14 +1,14 @@
-  0 SNES Function norm 14.5309 
-    0 KSP Residual norm 17.9962 
-    1 KSP Residual norm 0.718899 
-    2 KSP Residual norm 0.074823 
-    3 KSP Residual norm 0.00270797 
-    4 KSP Residual norm 0.000198576 
-    5 KSP Residual norm 2.29871e-05 
-    6 KSP Residual norm 9.70025e-07 
-    7 KSP Residual norm 3.21553e-08 
-    8 KSP Residual norm 2.7741e-09 
-  1 SNES Function norm 5.38576e-09 
+  0 SNES Function norm 14.5309
+    0 KSP Residual norm 17.9962
+    1 KSP Residual norm 0.718899
+    2 KSP Residual norm 0.074823
+    3 KSP Residual norm 0.00270797
+    4 KSP Residual norm 0.000198576
+    5 KSP Residual norm 2.29871e-05
+    6 KSP Residual norm 9.70025e-07
+    7 KSP Residual norm 3.21553e-08
+    8 KSP Residual norm 2.7741e-09
+  1 SNES Function norm 5.38576e-09
 SNES Object: 5 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000

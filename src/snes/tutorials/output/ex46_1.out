@@ -1,6 +1,6 @@
-  0 SNES Function norm 0.146402 
-  1 SNES Function norm 0.00120796 
-  2 SNES Function norm 8.07655e-08 
+  0 SNES Function norm 0.146402
+  1 SNES Function norm 0.00120796
+  2 SNES Function norm 8.07655e-08
   3 SNES Function norm < 1.e-11
 SNES Object: 1 MPI process
   type: newtonls

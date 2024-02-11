@@ -1,5 +1,5 @@
-  0 KSP Residual norm 9.498551328864e-01 
-  1 KSP Residual norm 1.118520285740e-16 
+  0 KSP Residual norm 9.498551328864e-01
+  1 KSP Residual norm 1.118520285740e-16
 Linear solve converged due to CONVERGED_RTOL iterations 1
 KSP Object: 1 MPI process
   type: gmres
@@ -50,8 +50,8 @@ PC Object: 1 MPI process
       has attached null space
       has attached transposed null space
       not using I-node routines
-  0 KSP Residual norm 4.716750439283e-02 
-  1 KSP Residual norm 7.423680515748e-18 
+  0 KSP Residual norm 4.716750439283e-02
+  1 KSP Residual norm 7.423680515748e-18
 Linear solve converged due to CONVERGED_RTOL iterations 1
 KSP Object: 1 MPI process
   type: gmres

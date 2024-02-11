@@ -22,12 +22,12 @@ row 6: (5, -1.)  (6, 2.)  (7, -1.)
 row 7: (6, -1.)  (7, 2.)  (8, -1.) 
 row 8: (7, -1.)  (8, 2.)  (9, -1.) 
 row 9: (8, -1.)  (9, 2.) 
-    0 KSP Residual norm 1.414213562373e+00 
-    1 KSP Residual norm 7.071067811865e-01 
-    2 KSP Residual norm 4.714045207910e-01 
-    3 KSP Residual norm 3.535533905933e-01 
-    4 KSP Residual norm 2.828427124746e-01 
-    5 KSP Residual norm 3.150891133835e-16 
+    0 KSP Residual norm 1.414213562373e+00
+    1 KSP Residual norm 7.071067811865e-01
+    2 KSP Residual norm 4.714045207910e-01
+    3 KSP Residual norm 3.535533905933e-01
+    4 KSP Residual norm 2.828427124746e-01
+    5 KSP Residual norm 3.150891133835e-16
   Linear solve converged due to CONVERGED_RTOL iterations 5
 KSP Object: 2 MPI processes
   type: cg
@@ -87,12 +87,12 @@ row 6: (5, -1.)  (6, 4.)  (7, -1.)
 row 7: (6, -1.)  (7, 4.)  (8, -1.) 
 row 8: (7, -1.)  (8, 4.)  (9, -1.) 
 row 9: (8, -1.)  (9, 4.) 
-    0 KSP Residual norm 1.414213562373e+00 
-    1 KSP Residual norm 3.535533905933e-01 
-    2 KSP Residual norm 9.428090415821e-02 
-    3 KSP Residual norm 2.525381361381e-02 
-    4 KSP Residual norm 6.766572068771e-03 
-    5 KSP Residual norm 2.720697860662e-18 
+    0 KSP Residual norm 1.414213562373e+00
+    1 KSP Residual norm 3.535533905933e-01
+    2 KSP Residual norm 9.428090415821e-02
+    3 KSP Residual norm 2.525381361381e-02
+    4 KSP Residual norm 6.766572068771e-03
+    5 KSP Residual norm 2.720697860662e-18
   Linear solve converged due to CONVERGED_RTOL iterations 5
 KSP Object: 2 MPI processes
   type: cg
@@ -140,9 +140,9 @@ row 7: (6, -1.)  (7, 4.)  (8, -1.)
 row 8: (7, -1.)  (8, 4.)  (9, -1.) 
 row 9: (8, -1.)  (9, 4.) 
     Residual norms for prefix_test_ solve.
-    0 KSP Residual norm 3.933161163617e-01 
-    1 KSP Residual norm 5.041304699196e-04 
-    2 KSP Residual norm 2.224496587197e-17 
+    0 KSP Residual norm 3.933161163617e-01
+    1 KSP Residual norm 5.041304699196e-04
+    2 KSP Residual norm 2.224496587197e-17
 MPI linear solver server statistics:
     Ranks        KSPSolve()s     Mats        KSPs       Avg. Size      Avg. Its
      2               3            3           2            10            4

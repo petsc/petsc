@@ -1,18 +1,18 @@
-      0 SNES Function norm 2.16768 
+      0 SNES Function norm 2.16768
       Linear solve converged due to CONVERGED_RTOL iterations 5
-      1 SNES Function norm 5.24514e-06 
+      1 SNES Function norm 5.24514e-06
       Linear solve converged due to CONVERGED_RTOL iterations 5
-      2 SNES Function norm 1.899e-11 
-    0 SNES Function norm 1.18058 
+      2 SNES Function norm 1.899e-11
+    0 SNES Function norm 1.18058
     Linear solve converged due to CONVERGED_RTOL iterations 4
-    1 SNES Function norm 2.75972e-05 
+    1 SNES Function norm 2.75972e-05
     Linear solve converged due to CONVERGED_RTOL iterations 5
-    2 SNES Function norm 3.046e-11 
-  0 SNES Function norm 0.386707 
+    2 SNES Function norm 3.046e-11
+  0 SNES Function norm 0.386707
   Linear solve converged due to CONVERGED_RTOL iterations 5
-  1 SNES Function norm 0.0637671 
+  1 SNES Function norm 0.0637671
   Linear solve converged due to CONVERGED_RTOL iterations 5
-  2 SNES Function norm 3.02347e-07 
+  2 SNES Function norm 3.02347e-07
   Linear solve converged due to CONVERGED_RTOL iterations 5
   3 SNES Function norm < 1.e-11
 errors on 17 x 17 grid:  av |u-uexact|  = 2.707e-03,  |u-uexact|_inf = 1.428e-02

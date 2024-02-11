@@ -1,26 +1,26 @@
 lid velocity = 0.0625, prandtl # = 1., grashof # = 1.
-  0 SNES Function norm 2.391552133017e-01 
-    0 KSP Residual norm 2.487202582099e-01 
-    1 KSP Residual norm 2.061836020657e-02 
-    2 KSP Residual norm 5.209414702046e-03 
-    3 KSP Residual norm 1.568272395677e-03 
-    4 KSP Residual norm 3.295627866513e-04 
-    5 KSP Residual norm 9.155694279372e-05 
-    6 KSP Residual norm 3.446349799027e-05 
-    7 KSP Residual norm 7.611368243653e-06 
-    8 KSP Residual norm 2.122390430419e-06 
-  1 SNES Function norm 6.848107477293e-05 
-    0 KSP Residual norm 2.038292834185e-05 
-    1 KSP Residual norm 5.930353180150e-06 
-    2 KSP Residual norm 9.461586866971e-07 
-    3 KSP Residual norm 3.023548973492e-07 
-    4 KSP Residual norm 8.500626673260e-08 
-    5 KSP Residual norm 1.686734638740e-08 
-    6 KSP Residual norm 4.802448278829e-09 
-    7 KSP Residual norm 1.753962559544e-09 
-    8 KSP Residual norm 3.745101287855e-10 
-    9 KSP Residual norm 1.072508427565e-10 
-  2 SNES Function norm 2.138743891290e-10 
+  0 SNES Function norm 2.391552133017e-01
+    0 KSP Residual norm 2.487202582099e-01
+    1 KSP Residual norm 2.061836020657e-02
+    2 KSP Residual norm 5.209414702046e-03
+    3 KSP Residual norm 1.568272395677e-03
+    4 KSP Residual norm 3.295627866513e-04
+    5 KSP Residual norm 9.155694279372e-05
+    6 KSP Residual norm 3.446349799027e-05
+    7 KSP Residual norm 7.611368243653e-06
+    8 KSP Residual norm 2.122390430419e-06
+  1 SNES Function norm 6.848107477293e-05
+    0 KSP Residual norm 2.038292834185e-05
+    1 KSP Residual norm 5.930353180150e-06
+    2 KSP Residual norm 9.461586866971e-07
+    3 KSP Residual norm 3.023548973492e-07
+    4 KSP Residual norm 8.500626673260e-08
+    5 KSP Residual norm 1.686734638740e-08
+    6 KSP Residual norm 4.802448278829e-09
+    7 KSP Residual norm 1.753962559544e-09
+    8 KSP Residual norm 3.745101287855e-10
+    9 KSP Residual norm 1.072508427565e-10
+  2 SNES Function norm 2.138743891290e-10
 SNES Object: 2 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000

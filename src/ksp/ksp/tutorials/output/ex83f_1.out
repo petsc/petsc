@@ -1,5 +1,5 @@
-  0 KSP Residual norm 2.061552812809e+00 
-  1 KSP Residual norm 0.000000000000e+00 
+  0 KSP Residual norm 2.061552812809e+00
+  1 KSP Residual norm 0.000000000000e+00
 KSP Object: 1 MPI process
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -28,8 +28,8 @@ PC Object: 1 MPI process
     total: nonzeros=5, allocated nonzeros=0
     total number of mallocs used during MatSetValues calls=0
       not using I-node routines
-  0 KSP Residual norm 1.600781059358e+00 
-  1 KSP Residual norm 0.000000000000e+00 
+  0 KSP Residual norm 1.600781059358e+00
+  1 KSP Residual norm 0.000000000000e+00
 KSP Object: 1 MPI process
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement

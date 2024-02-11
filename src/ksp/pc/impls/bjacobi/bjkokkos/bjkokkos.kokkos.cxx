@@ -166,7 +166,7 @@ static KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_TFQMR(const team_member tea
   r0 = dp = PetscSqrtReal(PetscRealPart(dpi));
   // diagnostics
 #if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
-  if (monitor) Kokkos::single(Kokkos::PerTeam(team), [=]() { printf("%3d KSP Residual norm %14.12e \n", 0, (double)dp); });
+  if (monitor) Kokkos::single(Kokkos::PerTeam(team), [=]() { printf("%3d KSP Residual norm %14.12e\n", 0, (double)dp); });
 #endif
   if (dp < atol) {
     metad->reason = KSP_CONVERGED_ATOL_NORMAL;
@@ -250,7 +250,7 @@ static KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_TFQMR(const team_member tea
       team.team_barrier();
       dpest = PetscSqrtReal(2 * it + m + 2.0) * tau;
 #if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
-      if (monitor && m == 1) Kokkos::single(Kokkos::PerTeam(team), [=]() { printf("%3d KSP Residual norm %14.12e \n", it + 1, (double)dpest); });
+      if (monitor && m == 1) Kokkos::single(Kokkos::PerTeam(team), [=]() { printf("%3d KSP Residual norm %14.12e\n", it + 1, (double)dpest); });
 #endif
       if (dpest < atol) {
         metad->reason = KSP_CONVERGED_ATOL_NORMAL;
@@ -403,7 +403,7 @@ static KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_BICG(const team_member team
   team.team_barrier();
   r0 = dp = PetscSqrtReal(PetscRealPart(dpi));
 #if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
-  if (monitor) Kokkos::single(Kokkos::PerTeam(team), [=]() { printf("%3d KSP Residual norm %14.12e \n", 0, (double)dp); });
+  if (monitor) Kokkos::single(Kokkos::PerTeam(team), [=]() { printf("%3d KSP Residual norm %14.12e\n", 0, (double)dp); });
 #endif
   if (dp < atol) {
     metad->reason = KSP_CONVERGED_ATOL_NORMAL;
@@ -477,7 +477,7 @@ static KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_BICG(const team_member team
     team.team_barrier();
     dp = PetscSqrtReal(PetscRealPart(dpi));
 #if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
-    if (monitor) Kokkos::single(Kokkos::PerTeam(team), [=]() { printf("%3d KSP Residual norm %14.12e \n", it + 1, (double)dp); });
+    if (monitor) Kokkos::single(Kokkos::PerTeam(team), [=]() { printf("%3d KSP Residual norm %14.12e\n", it + 1, (double)dp); });
 #endif
     if (dp < atol) {
       metad->reason = KSP_CONVERGED_ATOL_NORMAL;
