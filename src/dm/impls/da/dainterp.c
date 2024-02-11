@@ -92,9 +92,7 @@ static PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac, DM daf, Mat *A)
       row = idx_f[i - i_start_ghost];
 
       i_c = (i / ratio); /* coarse grid node to left of fine grid node */
-      PetscCheck(i_c >= i_start_ghost_c, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA\n\
-                                          i_start %" PetscInt_FMT " i_c %" PetscInt_FMT " i_start_ghost_c %" PetscInt_FMT,
-                 i_start, i_c, i_start_ghost_c);
+      PetscCheck(i_c >= i_start_ghost_c, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA, i_start %" PetscInt_FMT " i_c %" PetscInt_FMT " i_start_ghost_c %" PetscInt_FMT, i_start, i_c, i_start_ghost_c);
 
       /*
        Only include those interpolation points that are truly
@@ -130,11 +128,7 @@ static PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac, DM daf, Mat *A)
       row = idx_f[(i - i_start_ghost)];
 
       i_c = (i / ratio); /* coarse grid node to left of fine grid node */
-      PetscCheck(i_c >= i_start_ghost_c, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA\n\
-                                          i_start %" PetscInt_FMT " i_c %" PetscInt_FMT " i_start_ghost_c %" PetscInt_FMT,
-                 i_start, i_c, i_start_ghost_c);
-
-      /* remainders */
+      PetscCheck(i_c >= i_start_ghost_c, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA, i_start %" PetscInt_FMT " i_c %" PetscInt_FMT " i_start_ghost_c %" PetscInt_FMT, i_start, i_c, i_start_ghost_c); /* remainders */
       li = i - ratio * (i / ratio);
       if (i == mx - 1) li = nxi - 1;
 
@@ -330,12 +324,8 @@ static PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac, DM daf, Mat *A)
       i_c = (i / ratioi); /* coarse grid node to left of fine grid node */
       j_c = (j / ratioj); /* coarse grid node below fine grid node */
 
-      PetscCheck(j_c >= j_start_ghost_c, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA\n\
-                                          j_start %" PetscInt_FMT " j_c %" PetscInt_FMT " j_start_ghost_c %" PetscInt_FMT,
-                 j_start, j_c, j_start_ghost_c);
-      PetscCheck(i_c >= i_start_ghost_c, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA\n\
-                                          i_start %" PetscInt_FMT " i_c %" PetscInt_FMT " i_start_ghost_c %" PetscInt_FMT,
-                 i_start, i_c, i_start_ghost_c);
+      PetscCheck(j_c >= j_start_ghost_c, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA, j_start %" PetscInt_FMT " j_c %" PetscInt_FMT " j_start_ghost_c %" PetscInt_FMT, j_start, j_c, j_start_ghost_c);
+      PetscCheck(i_c >= i_start_ghost_c, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA, i_start %" PetscInt_FMT " i_c %" PetscInt_FMT " i_start_ghost_c %" PetscInt_FMT, i_start, i_c, i_start_ghost_c);
 
       /*
        Only include those interpolation points that are truly
@@ -552,12 +542,8 @@ static PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac, DM daf, Mat *A)
       i_c = (i / ratioi); /* coarse grid node to left of fine grid node */
       j_c = (j / ratioj); /* coarse grid node below fine grid node */
 
-      PetscCheck(j_c >= j_start_ghost_c, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA\n\
-    j_start %" PetscInt_FMT " j_c %" PetscInt_FMT " j_start_ghost_c %" PetscInt_FMT,
-                 j_start, j_c, j_start_ghost_c);
-      PetscCheck(i_c >= i_start_ghost_c, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA\n\
-    i_start %" PetscInt_FMT " i_c %" PetscInt_FMT " i_start_ghost_c %" PetscInt_FMT,
-                 i_start, i_c, i_start_ghost_c);
+      PetscCheck(j_c >= j_start_ghost_c, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA, j_start %" PetscInt_FMT " j_c %" PetscInt_FMT " j_start_ghost_c %" PetscInt_FMT, j_start, j_c, j_start_ghost_c);
+      PetscCheck(i_c >= i_start_ghost_c, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA, i_start %" PetscInt_FMT " i_c %" PetscInt_FMT " i_start_ghost_c %" PetscInt_FMT, i_start, i_c, i_start_ghost_c);
 
       /*
          Only include those interpolation points that are truly
@@ -683,15 +669,9 @@ static PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac, DM daf, Mat *A)
         j_c = (j / ratioj); /* coarse grid node below fine grid node */
         l_c = (l / ratiol);
 
-        PetscCheck(l_c >= l_start_ghost_c, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA\n\
-    l_start %" PetscInt_FMT " l_c %" PetscInt_FMT " l_start_ghost_c %" PetscInt_FMT,
-                   l_start, l_c, l_start_ghost_c);
-        PetscCheck(j_c >= j_start_ghost_c, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA\n\
-    j_start %" PetscInt_FMT " j_c %" PetscInt_FMT " j_start_ghost_c %" PetscInt_FMT,
-                   j_start, j_c, j_start_ghost_c);
-        PetscCheck(i_c >= i_start_ghost_c, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA\n\
-    i_start %" PetscInt_FMT " i_c %" PetscInt_FMT " i_start_ghost_c %" PetscInt_FMT,
-                   i_start, i_c, i_start_ghost_c);
+        PetscCheck(l_c >= l_start_ghost_c, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA, l_start %" PetscInt_FMT " l_c %" PetscInt_FMT " l_start_ghost_c %" PetscInt_FMT, l_start, l_c, l_start_ghost_c);
+        PetscCheck(j_c >= j_start_ghost_c, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA, j_start %" PetscInt_FMT " j_c %" PetscInt_FMT " j_start_ghost_c %" PetscInt_FMT, j_start, j_c, j_start_ghost_c);
+        PetscCheck(i_c >= i_start_ghost_c, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA, i_start %" PetscInt_FMT " i_c %" PetscInt_FMT " i_start_ghost_c %" PetscInt_FMT, i_start, i_c, i_start_ghost_c);
 
         /*
            Only include those interpolation points that are truly
@@ -824,15 +804,9 @@ static PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac, DM daf, Mat *A)
         i_c = (i / ratioi);
         j_c = (j / ratioj);
         l_c = (l / ratiok);
-        PetscCheck(l_c >= l_start_ghost_c, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA\n\
-                                            l_start %" PetscInt_FMT " l_c %" PetscInt_FMT " l_start_ghost_c %" PetscInt_FMT,
-                   l_start, l_c, l_start_ghost_c);
-        PetscCheck(j_c >= j_start_ghost_c, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA\n\
-                                            j_start %" PetscInt_FMT " j_c %" PetscInt_FMT " j_start_ghost_c %" PetscInt_FMT,
-                   j_start, j_c, j_start_ghost_c);
-        PetscCheck(i_c >= i_start_ghost_c, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA\n\
-                                            i_start %" PetscInt_FMT " i_c %" PetscInt_FMT " i_start_ghost_c %" PetscInt_FMT,
-                   i_start, i_c, i_start_ghost_c);
+        PetscCheck(l_c >= l_start_ghost_c, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA, l_start %" PetscInt_FMT " l_c %" PetscInt_FMT " l_start_ghost_c %" PetscInt_FMT, l_start, l_c, l_start_ghost_c);
+        PetscCheck(j_c >= j_start_ghost_c, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA, j_start %" PetscInt_FMT " j_c %" PetscInt_FMT " j_start_ghost_c %" PetscInt_FMT, j_start, j_c, j_start_ghost_c);
+        PetscCheck(i_c >= i_start_ghost_c, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA, i_start %" PetscInt_FMT " i_c %" PetscInt_FMT " i_start_ghost_c %" PetscInt_FMT, i_start, i_c, i_start_ghost_c);
 
         /*
          Only include those interpolation points that are truly
@@ -1114,7 +1088,7 @@ static PetscErrorCode DMCreateInjection_DA_1D(DM dac, DM daf, VecScatter *inject
   for (i = i_start_c; i < i_start_c + m_c; i++) {
     PetscInt i_f = i * ratioi;
 
-    PetscCheck(i_f >= i_start_ghost && i_f < i_start_ghost + m_ghost, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA\ni_c %" PetscInt_FMT " i_f %" PetscInt_FMT " fine ghost range [%" PetscInt_FMT ",%" PetscInt_FMT "]", i, i_f, i_start_ghost, i_start_ghost + m_ghost);
+    PetscCheck(i_f >= i_start_ghost && i_f < i_start_ghost + m_ghost, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA, i_c %" PetscInt_FMT " i_f %" PetscInt_FMT " fine ghost range [%" PetscInt_FMT ",%" PetscInt_FMT "]", i, i_f, i_start_ghost, i_start_ghost + m_ghost);
 
     row        = idx_f[(i_f - i_start_ghost)];
     cols[nc++] = row;
@@ -1178,12 +1152,8 @@ static PetscErrorCode DMCreateInjection_DA_2D(DM dac, DM daf, VecScatter *inject
   for (j = j_start_c; j < j_start_c + n_c; j++) {
     for (i = i_start_c; i < i_start_c + m_c; i++) {
       PetscInt i_f = i * ratioi, j_f = j * ratioj;
-      PetscCheck(j_f >= j_start_ghost && j_f < j_start_ghost + n_ghost, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA\n\
-    j_c %" PetscInt_FMT " j_f %" PetscInt_FMT " fine ghost range [%" PetscInt_FMT ",%" PetscInt_FMT "]",
-                 j, j_f, j_start_ghost, j_start_ghost + n_ghost);
-      PetscCheck(i_f >= i_start_ghost && i_f < i_start_ghost + m_ghost, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA\n\
-    i_c %" PetscInt_FMT " i_f %" PetscInt_FMT " fine ghost range [%" PetscInt_FMT ",%" PetscInt_FMT "]",
-                 i, i_f, i_start_ghost, i_start_ghost + m_ghost);
+      PetscCheck(j_f >= j_start_ghost && j_f < j_start_ghost + n_ghost, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA, j_c %" PetscInt_FMT " j_f %" PetscInt_FMT " fine ghost range [%" PetscInt_FMT ",%" PetscInt_FMT "]", j, j_f, j_start_ghost, j_start_ghost + n_ghost);
+      PetscCheck(i_f >= i_start_ghost && i_f < i_start_ghost + m_ghost, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Processor's coarse DMDA must lie over fine DMDA, i_c %" PetscInt_FMT " i_f %" PetscInt_FMT " fine ghost range [%" PetscInt_FMT ",%" PetscInt_FMT "]", i, i_f, i_start_ghost, i_start_ghost + m_ghost);
       row        = idx_f[(m_ghost * (j_f - j_start_ghost) + (i_f - i_start_ghost))];
       cols[nc++] = row;
     }

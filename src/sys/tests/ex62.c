@@ -28,7 +28,7 @@ PetscErrorCode Fibonnaci(PetscInt64 **set, PetscInt n)
                       14930352, 24157817, 39088169, 63245986, 102334155, 165580141, 267914296, 433494437, 701408733, 1134903170, 1836311903, 2971215073, 4807526976, 7778742049, 12586269025};
 
   PetscFunctionBeginUser;
-  PetscAssert((n < 50), PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONGSTATE, "n must be less than 50\n");
+  PetscAssert((n < 50), PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONGSTATE, "n must be less than 50");
   PetscCall(PetscMalloc1(n + 1, set));
   (*set)[0] = (PetscInt64)n;
   for (ii = 0; ii < n; ii++) { (*set)[ii + 1] = fib[ii]; }

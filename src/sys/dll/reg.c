@@ -84,24 +84,24 @@ PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void)
     PetscBool found;
   #if defined(PETSC_USE_SINGLE_LIBRARY)
     PetscCall(PetscLoadDynamicLibrary("", &found));
-    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc dynamic library. You cannot move the dynamic libraries!");
   #else
     PetscCall(PetscLoadDynamicLibrary("sys", &found));
-    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc Sys dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc Sys dynamic library. You cannot move the dynamic libraries!");
     PetscCall(PetscLoadDynamicLibrary("vec", &found));
-    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc Vec dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc Vec dynamic library. You cannot move the dynamic libraries!");
     PetscCall(PetscLoadDynamicLibrary("mat", &found));
-    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc Mat dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc Mat dynamic library. You cannot move the dynamic libraries!");
     PetscCall(PetscLoadDynamicLibrary("dm", &found));
-    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc DM dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc DM dynamic library. You cannot move the dynamic libraries!");
     PetscCall(PetscLoadDynamicLibrary("ksp", &found));
-    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc KSP dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc KSP dynamic library. You cannot move the dynamic libraries!");
     PetscCall(PetscLoadDynamicLibrary("snes", &found));
-    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc SNES dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc SNES dynamic library. You cannot move the dynamic libraries!");
     PetscCall(PetscLoadDynamicLibrary("ts", &found));
-    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc TS dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc TS dynamic library. You cannot move the dynamic libraries!");
     PetscCall(PetscLoadDynamicLibrary("tao", &found));
-    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate Tao dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate Tao dynamic library. You cannot move the dynamic libraries!");
   #endif
 #else /* defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES) */
   #if defined(PETSC_USE_SINGLE_LIBRARY)
@@ -129,7 +129,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void)
   {
     PetscBool found;
     PetscCall(PetscLoadDynamicLibrary("bamg", &found));
-    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc BAMG dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc BAMG dynamic library. You cannot move the dynamic libraries!");
   }
 #endif
 

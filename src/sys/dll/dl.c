@@ -139,12 +139,12 @@ PetscErrorCode PetscDLLibraryOpen(MPI_Comm comm, const char path[], PetscDLLibra
   /* retrieve the library */
   PetscCall(PetscInfo(NULL, "Retrieving %s\n", path));
   PetscCall(PetscDLLibraryRetrieve(comm, path, par2, PETSC_MAX_PATH_LEN, &foundlibrary));
-  PetscCheck(foundlibrary, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate dynamic library:\n  %s", path);
+  PetscCheck(foundlibrary, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate dynamic library: %s", path);
   /* Eventually ./configure should determine if the system needs an executable dynamic library */
 #define PETSC_USE_NONEXECUTABLE_SO
 #if !defined(PETSC_USE_NONEXECUTABLE_SO)
   PetscCall(PetscTestFile(par2, 'x', &foundlibrary));
-  PetscCheck(foundlibrary, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Dynamic library is not executable:\n  %s\n  %s", path, par2);
+  PetscCheck(foundlibrary, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Dynamic library is not executable: %s %s", path, par2);
 #endif
 
   /* copy path and setup shared library suffix  */

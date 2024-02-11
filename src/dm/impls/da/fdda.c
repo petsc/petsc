@@ -341,12 +341,9 @@ PetscErrorCode DMCreateColoring_DA_3d_MPIAIJ(DM da, ISColoringType ctype, ISColo
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, &n, &p, &M, &N, &P, &nc, &s, &bx, &by, &bz, &st));
   col = 2 * s + 1;
-  PetscCheck(bx != DM_BOUNDARY_PERIODIC || (m % col) == 0, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "For coloring efficiency ensure number of grid points in X is divisible\n\
-                 by 2*stencil_width + 1\n");
-  PetscCheck(by != DM_BOUNDARY_PERIODIC || (n % col) == 0, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "For coloring efficiency ensure number of grid points in Y is divisible\n\
-                 by 2*stencil_width + 1\n");
-  PetscCheck(bz != DM_BOUNDARY_PERIODIC || (p % col) == 0, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "For coloring efficiency ensure number of grid points in Z is divisible\n\
-                 by 2*stencil_width + 1\n");
+  PetscCheck(bx != DM_BOUNDARY_PERIODIC || (m % col) == 0, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "For coloring efficiency ensure number of grid points in X is divisible by 2*stencil_width + 1");
+  PetscCheck(by != DM_BOUNDARY_PERIODIC || (n % col) == 0, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "For coloring efficiency ensure number of grid points in Y is divisible by 2*stencil_width + 1");
+  PetscCheck(bz != DM_BOUNDARY_PERIODIC || (p % col) == 0, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "For coloring efficiency ensure number of grid points in Z is divisible by 2*stencil_width + 1");
 
   PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &nx, &ny, &nz));
   PetscCall(DMDAGetGhostCorners(da, &gxs, &gys, &gzs, &gnx, &gny, &gnz));

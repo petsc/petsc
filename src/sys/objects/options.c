@@ -1070,7 +1070,7 @@ PetscErrorCode PetscOptionsPrefixPush(PetscOptions options, const char prefix[])
   PetscFunctionBegin;
   PetscAssertPointer(prefix, 2);
   options = options ? options : defaultoptions;
-  PetscCheck(options->prefixind < MAXPREFIXES, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Maximum depth of prefix stack %d exceeded, recompile \n src/sys/objects/options.c with larger value for MAXPREFIXES", MAXPREFIXES);
+  PetscCheck(options->prefixind < MAXPREFIXES, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Maximum depth of prefix stack %d exceeded, recompile src/sys/objects/options.c with larger value for MAXPREFIXES", MAXPREFIXES);
   key[0] = '-'; /* keys must start with '-' */
   PetscCall(PetscStrncpy(key + 1, prefix, sizeof(key) - 1));
   PetscCall(PetscOptionsValidKey(key, &valid));

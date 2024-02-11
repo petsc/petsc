@@ -12,7 +12,7 @@ int main(int argc, char **argv)
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-dim", &dim, &flg));
-  PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Supply -dim option\n");
+  PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Supply -dim option");
   if (dim == 1) PetscCall(DMStagCreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 3, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, &dmc));
   else if (dim == 2) PetscCall(DMStagCreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 3, 3, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, NULL, &dmc));
   else if (dim == 3) PetscCall(DMStagCreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 3, 3, 3, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, NULL, NULL, &dmc));

@@ -267,7 +267,7 @@ static PetscErrorCode GmshExpect(GmshFile *gmsh, const char Section[], char line
 
   PetscFunctionBegin;
   PetscCall(GmshMatch(gmsh, Section, line, &match));
-  PetscCheck(match, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file, expecting %s\nnot %s", Section, line);
+  PetscCheck(match, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file, expecting %s, not %s", Section, line);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

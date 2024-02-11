@@ -874,7 +874,7 @@ PetscErrorCode PetscMallocView(FILE *fp)
   PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &rank));
   PetscCall(PetscFFlush(fp));
 
-  PetscCheck(PetscLogMalloc >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "PetscMallocView() called without call to PetscMallocViewSet() this is often due to\n                      setting the option -malloc_view AFTER PetscInitialize() with PetscOptionsInsert() or PetscOptionsInsertFile()");
+  PetscCheck(PetscLogMalloc >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "PetscMallocView() called without call to PetscMallocViewSet() this is often due to setting the option -malloc_view AFTER PetscInitialize() with PetscOptionsInsert() or PetscOptionsInsertFile()");
 
   if (!fp) fp = PETSC_STDOUT;
   PetscCall(PetscMemoryGetMaximumUsage(&rss));

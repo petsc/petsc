@@ -111,7 +111,7 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[], const char url[],
   PetscFunctionBegin;
   PetscCall(PetscStrallocpy(url, &host));
   PetscCall(PetscStrchr(host, '/', &path));
-  PetscCheck(path, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "url must contain / it is %s", url);
+  PetscCheck(path, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "URL must contain /, it is %s", url);
   *path = 0;
   PetscCall(PetscStrlen(host, &hostlen));
 
@@ -120,7 +120,7 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[], const char url[],
 
   if (header) {
     PetscCall(PetscStrendswith(header, "\r\n", &flg));
-    PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "header must end with \\r\\n");
+    PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Header must end with \\r\\n, it is %s", header);
   }
 
   PetscCall(PetscStrlen(type, &typelen));

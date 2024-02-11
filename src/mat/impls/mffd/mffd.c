@@ -311,7 +311,7 @@ static PetscErrorCode MatMult_MFFD(Mat mat, Vec a, Vec y)
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(mat, &ctx));
-  PetscCheck(ctx->current_u, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "MatMFFDSetBase() has not been called, this is often caused by forgetting to call \n\t\tMatAssemblyBegin/End on the first Mat in the SNES compute function");
+  PetscCheck(ctx->current_u, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "MatMFFDSetBase() has not been called, this is often caused by forgetting to call MatAssemblyBegin/End on the first Mat in the SNES compute function");
   /* We log matrix-free matrix-vector products separately, so that we can
      separate the performance monitoring from the cases that use conventional
      storage.  We may eventually modify event logging to associate events

@@ -98,7 +98,7 @@ PETSC_EXTERN PetscErrorCode PetscFreeAlign(void *ptr, int line, const char func[
 
   #if PetscDefined(HAVE_FREE_RETURN_INT)
   int err = free(ptr);
-  PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_PLIB, "System free returned error %d\n", err);
+  PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_PLIB, "System free returned error %d", err);
   #else
   free(ptr);
   #endif

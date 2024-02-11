@@ -1642,8 +1642,7 @@ static PetscErrorCode MatZeroRows_MPIBAIJ(Mat A, PetscInt N, const PetscInt rows
     PetscCall(MatZeroRows_SeqBAIJ(l->A, len, lrows, diag, NULL, NULL));
   } else if (diag != 0.0) {
     PetscCall(MatZeroRows_SeqBAIJ(l->A, len, lrows, 0.0, NULL, NULL));
-    PetscCheck(!((Mat_SeqBAIJ *)l->A->data)->nonew, PETSC_COMM_SELF, PETSC_ERR_SUP, "MatZeroRows() on rectangular matrices cannot be used with the Mat options \n\
-       MAT_NEW_NONZERO_LOCATIONS,MAT_NEW_NONZERO_LOCATION_ERR,MAT_NEW_NONZERO_ALLOCATION_ERR");
+    PetscCheck(!((Mat_SeqBAIJ *)l->A->data)->nonew, PETSC_COMM_SELF, PETSC_ERR_SUP, "MatZeroRows() on rectangular matrices cannot be used with the Mat options MAT_NEW_NONZERO_LOCATIONS, MAT_NEW_NONZERO_LOCATION_ERR, and MAT_NEW_NONZERO_ALLOCATION_ERR");
     for (r = 0; r < len; ++r) {
       const PetscInt row = lrows[r] + A->rmap->rstart;
       PetscCall(MatSetValues(A, 1, &row, 1, &row, &diag, INSERT_VALUES));

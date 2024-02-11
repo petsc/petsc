@@ -2140,7 +2140,7 @@ PetscErrorCode DMCreateSuperDM(DM dms[], PetscInt n, IS **is, DM *superdm)
   PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of DMs must be nonnegative: %" PetscInt_FMT, n);
   if (n) {
     DM dm = dms[0];
-    PetscCheck(dm->ops->createsuperdm, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "No method createsuperdm for DM of type %s\n", ((PetscObject)dm)->type_name);
+    PetscCheck(dm->ops->createsuperdm, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "No method createsuperdm for DM of type %s", ((PetscObject)dm)->type_name);
     PetscCall((*dm->ops->createsuperdm)(dms, n, is, superdm));
   }
   PetscFunctionReturn(PETSC_SUCCESS);

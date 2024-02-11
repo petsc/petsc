@@ -98,7 +98,7 @@ static PetscErrorCode PetscLogNestedFindNestedId(PetscLogHandler h, NestedId ori
 
     PetscCall(PetscLogHandlerGetState(h, &state));
     PetscCall(PetscLogStateEventGetInfo(state, event_id, &event_info));
-    PetscCheck(i > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Tried to end event %s, but it is not in the event stack\n", event_info.name);
+    PetscCheck(i > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Tried to end event %s, but it is not in the event stack", event_info.name);
   } else {
     PetscLogStage     stage_id = NestedIdToStage(orig_id);
     PetscLogState     state;
@@ -106,7 +106,7 @@ static PetscErrorCode PetscLogNestedFindNestedId(PetscLogHandler h, NestedId ori
 
     PetscCall(PetscLogHandlerGetState(h, &state));
     PetscCall(PetscLogStateStageGetInfo(state, stage_id, &stage_info));
-    PetscCheck(i > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Tried to pop stage %s, but it is not in the stage stack\n", stage_info.name);
+    PetscCheck(i > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Tried to pop stage %s, but it is not in the stage stack", stage_info.name);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

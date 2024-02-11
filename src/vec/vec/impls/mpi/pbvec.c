@@ -792,7 +792,7 @@ PetscErrorCode VecGhostGetGhostIS(Vec X, IS *ghost)
   PetscValidType(X, 1);
   PetscAssertPointer(ghost, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)X, VECMPI, &flg));
-  PetscCheck(flg, PetscObjectComm((PetscObject)X), PETSC_ERR_ARG_WRONGSTATE, "VecGhostGetGhostIS was not supported for vec type %s\n", ((PetscObject)X)->type_name);
+  PetscCheck(flg, PetscObjectComm((PetscObject)X), PETSC_ERR_ARG_WRONGSTATE, "VecGhostGetGhostIS was not supported for vec type %s", ((PetscObject)X)->type_name);
   w      = (Vec_MPI *)(X)->data;
   *ghost = w->ghost;
   PetscFunctionReturn(PETSC_SUCCESS);

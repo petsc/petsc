@@ -604,7 +604,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
 #if defined(PETSC_HAVE_KOKKOS_KERNELS_BATCH)
       PetscCall(PCApply_BJKOKKOSKERNELS(pc, glb_bdata, glb_xdata, glb_Aai, glb_Aaj, glb_Aaa, team_size, info, batch_sz, &pcreason));
 #else
-      PetscCheck(ksp_type_idx != BATCH_KSP_GMRESKK_IDX, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Type: BATCH_KSP_GMRES not supported for complex\n");
+      PetscCheck(ksp_type_idx != BATCH_KSP_GMRESKK_IDX, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Type: BATCH_KSP_GMRES not supported for complex");
 #endif
     } else { // Kokkos Krylov
       using scr_mem_t    = Kokkos::DefaultExecutionSpace::scratch_memory_space;
@@ -846,11 +846,11 @@ static PetscErrorCode PCSetUp_BJKOKKOS(PC pc)
           PetscInt rowA = icolindices[row_B], minj = PETSC_MAX_INT, maxj = 0;
           //PetscCall(PetscPrintf(PETSC_COMM_SELF, "\t[%d] rowA = %d\n",rank,rowA));
           PetscCall(MatGetRow(Aseq, rowA, &ncols, &colsA, NULL)); // not sorted in permutation
-          PetscCheck(ncols, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Empty row not supported: %" PetscInt_FMT "\n", row_B);
+          PetscCheck(ncols, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Empty row not supported: %" PetscInt_FMT "", row_B);
           for (PetscInt colj = 0; colj < ncols; colj++) {
             PetscInt colB = rowindices[colsA[colj]]; // use local idx
             //PetscCall(PetscPrintf(PETSC_COMM_SELF, "\t\t[%d] colB = %d\n",rank,colB));
-            PetscCheck(colB >= 0 && colB < nloc, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "colB < 0: %" PetscInt_FMT "\n", colB);
+            PetscCheck(colB >= 0 && colB < nloc, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "colB < 0: %" PetscInt_FMT "", colB);
             if (colB > maxj) maxj = colB;
             if (colB < minj) minj = colB;
           }
@@ -859,13 +859,13 @@ static PetscErrorCode PCSetUp_BJKOKKOS(PC pc)
             //PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "\t\t finish block %d, N loc = %d (%d,%d)\n", nDMs+1, bend - bsrt,bsrt,bend));
             block_sizes[nDMs] = bend - bsrt;
             ntot += block_sizes[nDMs];
-            PetscCheck(minj == bend, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "minj != bend: %" PetscInt_FMT " != %" PetscInt_FMT "\n", minj, bend);
+            PetscCheck(minj == bend, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "minj != bend: %" PetscInt_FMT " != %" PetscInt_FMT "", minj, bend);
             bsrt = bend;
             bend++; // start with size 1 in new block
             nDMs++;
           }
           if (maxj + 1 > bend) bend = maxj + 1;
-          PetscCheck(minj >= bsrt || row_B == Iend - 1, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "%" PetscInt_FMT ") minj < bsrt: %" PetscInt_FMT " != %" PetscInt_FMT "\n", rowA, minj, bsrt);
+          PetscCheck(minj >= bsrt || row_B == Iend - 1, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "%" PetscInt_FMT ") minj < bsrt: %" PetscInt_FMT " != %" PetscInt_FMT "", rowA, minj, bsrt);
           //PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] %d) row %d.%d) cols %d : %d ; bsrt = %d, bend = %d\n",rank,row_B,nDMs,rowA,minj,maxj,bsrt,bend));
         }
         // do last block
@@ -874,7 +874,7 @@ static PetscErrorCode PCSetUp_BJKOKKOS(PC pc)
         ntot += block_sizes[nDMs];
         nDMs++;
         // cleanup
-        PetscCheck(ntot == nloc, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "n total != n local: %" PetscInt_FMT " != %" PetscInt_FMT "\n", ntot, nloc);
+        PetscCheck(ntot == nloc, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "n total != n local: %" PetscInt_FMT " != %" PetscInt_FMT "", ntot, nloc);
         PetscCall(ISRestoreIndices(isrow, &rowindices));
         PetscCall(ISRestoreIndices(isicol, &icolindices));
         PetscCall(PetscRealloc(sizeof(PetscInt) * nDMs, &block_sizes));
@@ -908,7 +908,7 @@ static PetscErrorCode PCSetUp_BJKOKKOS(PC pc)
 #else
           KSPType ksptype;
           PetscCall(KSPGetType(jac->ksp, &ksptype));
-          PetscCheck(flg, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Type: %s not supported in complex\n", ksptype);
+          PetscCheck(flg, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Type: %s not supported in complex", ksptype);
 #endif
         }
       }

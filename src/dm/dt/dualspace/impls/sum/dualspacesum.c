@@ -447,7 +447,7 @@ static PetscErrorCode PetscDualSpaceSumCreateMappings(PetscDualSpace sp, PetscBo
         PetscCall(PetscSectionGetDof(subsection, p, &subdof));
         PetscCall(PetscSectionGetOffset(section, p, &off));
         PetscCall(PetscSectionGetDof(section, p, &dof));
-        PetscCheck(subdof * Ns == dof || !interleave_basis, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Basis cannot be interleaved\n");
+        PetscCheck(subdof * Ns == dof || !interleave_basis, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Basis cannot be interleaved");
         stride = interleave_basis ? Ns : 1;
         for (PetscInt k = 0; k < subdof; k++) { rows[suboff + k] = off + roffset[p - pStart] + k * stride; }
         roffset[p - pStart] += interleave_basis ? 1 : subdof;

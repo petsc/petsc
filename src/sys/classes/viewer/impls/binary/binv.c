@@ -777,7 +777,7 @@ static PetscErrorCode PetscViewerFileClose_BinarySTDIO(PetscViewer v)
       {
         FILE *fp;
         PetscCall(PetscPOpen(PETSC_COMM_SELF, NULL, cmd, "r", &fp));
-        PetscCheck(!fgets(out, (int)(sizeof(out) - 1), fp), PETSC_COMM_SELF, PETSC_ERR_LIB, "Error from command %s\n%s", cmd, out);
+        PetscCheck(!fgets(out, (int)(sizeof(out) - 1), fp), PETSC_COMM_SELF, PETSC_ERR_LIB, "Error from command %s %s", cmd, out);
         PetscCall(PetscPClose(PETSC_COMM_SELF, fp));
       }
 #endif

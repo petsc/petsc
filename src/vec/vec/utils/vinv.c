@@ -35,7 +35,7 @@ PetscErrorCode VecStrideSet(Vec v, PetscInt start, PetscScalar s)
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
-  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n  Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
+  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
   PetscCall(VecGetArray(v, &x));
   for (i = start; i < n; i += bs) x[i] = s;
   PetscCall(VecRestoreArray(v, &x));
@@ -75,7 +75,7 @@ PetscErrorCode VecStrideScale(Vec v, PetscInt start, PetscScalar scale)
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
-  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n  Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
+  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
   PetscCall(VecGetArray(v, &x));
   for (i = start; i < n; i += bs) x[i] *= scale;
   PetscCall(VecRestoreArray(v, &x));
@@ -126,7 +126,7 @@ PetscErrorCode VecStrideNorm(Vec v, PetscInt start, NormType ntype, PetscReal *n
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
-  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
+  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
   PetscCall(VecGetArrayRead(v, &x));
   if (ntype == NORM_2) {
     PetscScalar sum = 0.0;
@@ -191,7 +191,7 @@ PetscErrorCode VecStrideMax(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
-  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
+  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
   PetscCall(VecGetArrayRead(v, &x));
   for (i = start; i < n; i += bs) {
     if (PetscRealPart(x[i]) > max) {
@@ -266,7 +266,7 @@ PetscErrorCode VecStrideMin(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
-  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride\nHave you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
+  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
   PetscCall(VecGetArrayRead(v, &x));
   for (i = start; i < n; i += bs) {
     if (PetscRealPart(x[i]) < min) {
@@ -336,7 +336,7 @@ PetscErrorCode VecStrideSum(Vec v, PetscInt start, PetscScalar *sum)
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
-  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
+  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
   PetscCall(VecGetArrayRead(v, &x));
   for (i = start; i < n; i += bs) local_sum += x[i];
   PetscCall(MPIU_Allreduce(&local_sum, sum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)v)));
@@ -858,7 +858,7 @@ PetscErrorCode VecStrideGather(Vec v, PetscInt start, Vec s, InsertMode addv)
   PetscValidLogicalCollectiveInt(v, start, 2);
   PetscValidHeaderSpecific(s, VEC_CLASSID, 3);
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
-  PetscCheck(start < v->map->bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start,
+  PetscCheck(start < v->map->bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start,
              v->map->bs);
   PetscUseTypeMethod(v, stridegather, start, s, addv);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -898,7 +898,7 @@ PetscErrorCode VecStrideScatter(Vec s, PetscInt start, Vec v, InsertMode addv)
   PetscValidLogicalCollectiveInt(v, start, 2);
   PetscValidHeaderSpecific(v, VEC_CLASSID, 3);
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
-  PetscCheck(start < v->map->bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start,
+  PetscCheck(start < v->map->bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start,
              v->map->bs);
   PetscCall((*v->ops->stridescatter)(s, start, v, addv));
   PetscFunctionReturn(PETSC_SUCCESS);
