@@ -134,10 +134,12 @@ PetscErrorCode DMCreate(MPI_Comm comm, DM *dm)
 @*/
 PetscErrorCode DMClone(DM dm, DM *newdm)
 {
-  PetscSF  sf;
-  Vec      coords;
-  void    *ctx;
-  PetscInt dim, cdim, i;
+  PetscSF              sf;
+  Vec                  coords;
+  void                *ctx;
+  MatOrderingType      otype;
+  DMReorderDefaultFlag flg;
+  PetscInt             dim, cdim, i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -160,6 +162,10 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   PetscCall(DMSetPointSF(*newdm, sf));
   PetscCall(DMGetApplicationContext(dm, &ctx));
   PetscCall(DMSetApplicationContext(*newdm, ctx));
+  PetscCall(DMReorderSectionGetDefault(dm, &flg));
+  PetscCall(DMReorderSectionSetDefault(*newdm, flg));
+  PetscCall(DMReorderSectionGetType(dm, &otype));
+  PetscCall(DMReorderSectionSetType(*newdm, otype));
   for (i = 0; i < 2; ++i) {
     if (dm->coordinates[i].dm) {
       DM           ncdm;
