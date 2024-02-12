@@ -31,7 +31,7 @@ def main(petsc_dir,loc,c2html,mapnames):
 
   # walk directories generating list of all source code that needs processing and creating index.html for each directory
   SKIPDIRS = set('public html benchmarks output arch doc binding config petsc-doc lib bin .git systems share mpiuni kernels khash valgrind interfaces data linter'.split())
-  SUFFIXES = set('.F90 .F .c .cxx .cpp .h .cu'.split())
+  SUFFIXES = set('.F90 .F .c .cxx .cpp .h .cu .hpp'.split())
   allfiles = []
   for root, dirs, files in chain.from_iterable(os.walk(path) for path in [petsc_dir]):
     dirs[:] = [d for d in dirs if not any([s for s in SKIPDIRS if d.startswith(s)])]
