@@ -74,7 +74,7 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
 {
   PetscInt    i, k, idx, mi;
   KSP_FCG    *fcg   = (KSP_FCG *)ksp->data;
-  PetscScalar alpha = 0.0, beta = 0.0, dpi, s;
+  PetscScalar alpha = 0.0, beta = 0.0, dpi, dpiold = 0.0, s;
   PetscReal   dp = 0.0;
   Vec         B, R, Z, X, Pcurr, Ccurr;
   Mat         Amat, Pmat;
@@ -197,8 +197,21 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
     betaold = beta;
     PetscCall(VecXDot(Pcurr, R, &beta)); /*  beta <- pi'*r       */
     KSPCheckDot(ksp, beta);
+    if ((i > 0) && (PetscAbsScalar(beta * betaold) < 0.0)) {
+      PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "Diverged due to indefinite preconditioner, beta %g, betaold %g", (double)PetscRealPart(beta), (double)PetscRealPart(betaold));
+      ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+      PetscCall(PetscInfo(ksp, "diverging due to indefinite preconditioner\n"));
+      break;
+    }
     PetscCall(KSP_MatMult(ksp, Amat, Pcurr, Ccurr)); /*  w <- A*pi (stored in ci)   */
-    PetscCall(VecXDot(Pcurr, Ccurr, &dpi));          /*  dpi <- pi'*w        */
+    dpiold = dpi;
+    PetscCall(VecXDot(Pcurr, Ccurr, &dpi)); /*  dpi <- pi'*w        */
+    if ((dpi == 0.0) || ((i > 0) && ((PetscSign(PetscRealPart(dpi)) * PetscSign(PetscRealPart(dpiold))) < 0.0))) {
+      PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "Diverged due to indefinite matrix, dpi %g, dpiold %g", (double)PetscRealPart(dpi), (double)PetscRealPart(dpiold));
+      ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
+      PetscCall(PetscInfo(ksp, "diverging due to indefinite matrix\n"));
+      break;
+    }
     alphaold = alpha;
     alpha    = beta / dpi;                /*  alpha <- beta/dpi    */
     PetscCall(VecAXPY(X, alpha, Pcurr));  /*  x <- x + alpha * pi  */

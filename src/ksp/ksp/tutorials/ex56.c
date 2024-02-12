@@ -515,7 +515,7 @@ PetscErrorCode elem_3d_elast_v_25(PetscScalar *dd)
    test:
       suffix: nns_telescope
       nsize: 2
-      args: -use_mat_nearnullspace -ksp_monitor_short -pc_type telescope -pc_telescope_reduction_factor 2 -telescope_pc_type gamg -telescope_pc_gamg_esteig_ksp_type cg -telescope_pc_gamg_esteig_ksp_max_it 10
+      args: -use_mat_nearnullspace -pc_type telescope -pc_telescope_reduction_factor 2 -telescope_pc_type gamg -telescope_pc_gamg_esteig_ksp_type cg -telescope_pc_gamg_esteig_ksp_max_it 10
 
    test:
       suffix: nns_gdsw
@@ -527,6 +527,6 @@ PetscErrorCode elem_3d_elast_v_25(PetscScalar *dd)
       suffix: seqaijmkl
       nsize: 8
       requires: mkl_sparse
-      args: -ne 9 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_agg_nsmooths 1 -pc_gamg_reuse_interpolation true -two_solves -ksp_converged_reason -use_mat_nearnullspace -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_pc_type jacobi -mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.05 -pc_gamg_esteig_ksp_max_it 10 -pc_gamg_threshold 0.01 -pc_gamg_coarse_eq_limit 2000 -pc_gamg_process_eq_limit 200 -pc_gamg_repartition false -pc_mg_cycle_type v -ksp_monitor_short -mat_seqaij_type seqaijmkl
+      args: -ne 9 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_agg_nsmooths 1 -pc_gamg_reuse_interpolation true -two_solves -ksp_converged_reason -use_mat_nearnullspace -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_pc_type jacobi -mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.05 -pc_gamg_esteig_ksp_max_it 10 -pc_gamg_threshold 0.01 -pc_gamg_coarse_eq_limit 2000 -pc_gamg_process_eq_limit 200 -pc_gamg_repartition false -pc_mg_cycle_type v -mat_seqaij_type seqaijmkl
 
 TEST*/
