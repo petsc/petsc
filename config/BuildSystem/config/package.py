@@ -611,7 +611,7 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
       if self.argDB['with-'+self.package+'-pkg-config']:
         if path: os.environ['PKG_CONFIG_PATH'] = path
         else: os.environ['PKG_CONFIG_PATH'] = ''
-      yield('pkg-config located libraries and includes '+self.PACKAGE, None, l, i)
+      yield('pkg-config located libraries and includes '+self.PACKAGE, None, l.split(), i)
       raise RuntimeError('pkg-config could not locate correct includes and libraries for '+self.package)
 
 
