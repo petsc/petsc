@@ -114,9 +114,9 @@ class Configure(config.package.Package):
       raise RuntimeError('clang only supports cuda archs specified as version number(s) (got "'+self.cudaArch+'")')
     return ''.join(' --cuda-gpu-arch=sm_'+gen for gen in self.cudaArchList())
 
-  def cmakeArchProperty(self):
+  def cmakeArch(self):
     # CMake supports 'all', 'all-major', 'native', and a semicolon-separated list of numbers
-    return 'CMAKE_CUDA_ARCHITECTURES="'+self.cudaArch.replace(',', ';')+'"'
+    return self.cudaArch.replace(',', ';')
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
