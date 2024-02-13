@@ -152,16 +152,17 @@ static PetscErrorCode PCASMPrintSubdomains(PC pc)
 
 static PetscErrorCode PCSetUp_ASM(PC pc)
 {
-  PC_ASM     *osm = (PC_ASM *)pc->data;
-  PetscBool   flg;
-  PetscInt    i, m, m_local;
-  MatReuse    scall = MAT_REUSE_MATRIX;
-  IS          isl;
-  KSP         ksp;
-  PC          subpc;
-  const char *prefix, *pprefix;
-  Vec         vec;
-  DM         *domain_dm = NULL;
+  PC_ASM       *osm = (PC_ASM *)pc->data;
+  PetscBool     flg;
+  PetscInt      i, m, m_local;
+  MatReuse      scall = MAT_REUSE_MATRIX;
+  IS            isl;
+  KSP           ksp;
+  PC            subpc;
+  const char   *prefix, *pprefix;
+  Vec           vec;
+  DM           *domain_dm = NULL;
+  MatNullSpace *nullsp    = NULL;
 
   PetscFunctionBegin;
   if (!pc->setupcalled) {
@@ -276,6 +277,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
        Destroy the blocks from the previous iteration
     */
     if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
+      PetscCall(MatGetNullSpaces(osm->n_local_true, osm->pmat, &nullsp));
       PetscCall(MatDestroyMatrices(osm->n_local_true, &osm->pmat));
       scall = MAT_INITIAL_MATRIX;
     }
@@ -283,6 +285,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
 
   /* Destroy previous submatrices of a different type than pc->pmat since MAT_REUSE_MATRIX won't work in that case */
   if (scall == MAT_REUSE_MATRIX && osm->sub_mat_type) {
+    PetscCall(MatGetNullSpaces(osm->n_local_true, osm->pmat, &nullsp));
     if (osm->n_local_true > 0) PetscCall(MatDestroySubMatrices(osm->n_local_true, &osm->pmat));
     scall = MAT_INITIAL_MATRIX;
   }
@@ -294,6 +297,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
   if (scall == MAT_INITIAL_MATRIX) {
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject)pc->pmat, &pprefix));
     for (i = 0; i < osm->n_local_true; i++) PetscCall(PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i], pprefix));
+    if (nullsp) PetscCall(MatRestoreNullSpaces(osm->n_local_true, osm->pmat, &nullsp));
   }
 
   /* Convert the types of the submatrices (if needbe) */
