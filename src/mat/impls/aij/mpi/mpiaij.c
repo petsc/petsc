@@ -843,11 +843,10 @@ static PetscErrorCode MatZeroEntries_MPIAIJ(Mat A)
 
 static PetscErrorCode MatZeroRows_MPIAIJ(Mat A, PetscInt N, const PetscInt rows[], PetscScalar diag, Vec x, Vec b)
 {
-  Mat_MPIAIJ      *mat = (Mat_MPIAIJ *)A->data;
-  PetscObjectState sA, sB;
-  PetscInt        *lrows;
-  PetscInt         r, len;
-  PetscBool        cong, lch, gch;
+  Mat_MPIAIJ *mat = (Mat_MPIAIJ *)A->data;
+  PetscInt   *lrows;
+  PetscInt    r, len;
+  PetscBool   cong;
 
   PetscFunctionBegin;
   /* get locally owned rows */
@@ -865,9 +864,6 @@ static PetscErrorCode MatZeroRows_MPIAIJ(Mat A, PetscInt N, const PetscInt rows[
     PetscCall(VecRestoreArrayRead(x, &xx));
     PetscCall(VecRestoreArray(b, &bb));
   }
-
-  sA = mat->A->nonzerostate;
-  sB = mat->B->nonzerostate;
 
   if (diag != 0.0 && cong) {
     PetscCall(MatZeroRows(mat->A, len, lrows, diag, NULL, NULL));
@@ -908,10 +904,11 @@ static PetscErrorCode MatZeroRows_MPIAIJ(Mat A, PetscInt N, const PetscInt rows[
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
-  /* reduce nonzerostate */
-  lch = (PetscBool)(sA != mat->A->nonzerostate || sB != mat->B->nonzerostate);
-  PetscCall(MPIU_Allreduce(&lch, &gch, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)A)));
-  if (gch) A->nonzerostate++;
+  /* only change matrix nonzero state if pattern was allowed to be changed */
+  if (!((Mat_SeqAIJ *)(mat->A->data))->keepnonzeropattern || !((Mat_SeqAIJ *)(mat->A->data))->nonew) {
+    PetscObjectState state = mat->A->nonzerostate + mat->B->nonzerostate;
+    PetscCall(MPIU_Allreduce(&state, &A->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)A)));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1026,7 +1023,7 @@ static PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A, PetscInt N, const PetscIn
   PetscCall(PetscFree(lrows));
 
   /* only change matrix nonzero state if pattern was allowed to be changed */
-  if (!((Mat_SeqAIJ *)(l->A->data))->keepnonzeropattern) {
+  if (!((Mat_SeqAIJ *)(l->A->data))->nonew) {
     PetscObjectState state = l->A->nonzerostate + l->B->nonzerostate;
     PetscCall(MPIU_Allreduce(&state, &A->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)A)));
   }
