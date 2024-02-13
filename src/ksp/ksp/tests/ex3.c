@@ -211,7 +211,7 @@ int main(int argc, char **args)
 
     test:
       suffix: gamg_provided_not_ok
-      filter: grep -v "variant HERMITIAN"
+      filter: grep -v "variant HERMITIAN" | sed -e "s/Iterations 4/Iterations 5/g"
       args: -pc_type gamg -mg_levels_pc_type sor -mg_levels_esteig_ksp_type cg -ksp_view
 
 TEST*/

@@ -1,9 +1,9 @@
-  Linear solve converged due to CONVERGED_RTOL iterations 6
+  Linear solve converged due to CONVERGED_RTOL iterations 5
 SNES Object: 4 MPI processes
   type: ksponly
   maximum iterations=1, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=6
+  total number of linear solver iterations=5
   total number of function evaluations=1
   norm schedule ALWAYS
   Jacobian is never rebuilt
@@ -77,8 +77,8 @@ SNES Object: 4 MPI processes
       KSP Object: (mg_levels_1_) 4 MPI processes
         type: chebyshev
           Chebyshev polynomial of first kind
-          eigenvalue targets used: min 0.281329, max 1.54731
-          eigenvalues provided (min 0.459708, max 1.40664) with transform: [0. 0.2; 0. 1.1]
+          eigenvalue targets used: min 0.260428, max 1.43236
+          eigenvalues provided (min 0.413297, max 1.30214) with transform: [0. 0.2; 0. 1.1]
         maximum iterations=2, nonzero initial guess
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
@@ -210,8 +210,8 @@ SNES Object: 4 MPI processes
       KSP Object: (mg_levels_1_) 4 MPI processes
         type: chebyshev
           Chebyshev polynomial of first kind
-          eigenvalue targets used: min 0.323576, max 1.77967
-          eigenvalues provided (min 0.140204, max 1.61788) with transform: [0. 0.2; 0. 1.1]
+          eigenvalue targets used: min 0.327489, max 1.80119
+          eigenvalues provided (min 0.133814, max 1.63744) with transform: [0. 0.2; 0. 1.1]
         maximum iterations=2, nonzero initial guess
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning

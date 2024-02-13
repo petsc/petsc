@@ -84,7 +84,7 @@ static PetscErrorCode KSPSetUp_CG(KSP ksp)
   */
   if (ksp->calc_sings) {
     PetscCall(PetscFree4(cgP->e, cgP->d, cgP->ee, cgP->dd));
-    PetscCall(PetscMalloc4(maxit, &cgP->e, maxit, &cgP->d, maxit, &cgP->ee, maxit, &cgP->dd));
+    PetscCall(PetscMalloc4(maxit + 1, &cgP->e, maxit, &cgP->d, maxit, &cgP->ee, maxit, &cgP->dd));
 
     ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
     ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_CG;
@@ -216,7 +216,7 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
       break;
 #if !defined(PETSC_USE_COMPLEX)
     } else if ((i > 0) && (beta * betaold < 0.0)) {
-      PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "Diverged due to indefinite preconditioner, beta %g, betaold %g", (double)beta, (double)betaold);
+      PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "Diverged due to indefinite preconditioner, beta %g, betaold %g", (double)PetscRealPart(beta), (double)PetscRealPart(betaold));
       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
       PetscCall(PetscInfo(ksp, "diverging due to indefinite preconditioner\n"));
       break;

@@ -27,7 +27,7 @@ PetscErrorCode KSPComputeEigenvalues_CG(KSP ksp, PetscInt nmax, PetscReal *r, Pe
   /* copy tridiagonal matrix to work space */
   for (PetscInt j = 0; j < n; j++) {
     r[j]  = PetscRealPart(d[j]);
-    ee[j] = PetscRealPart(e[j]);
+    ee[j] = PetscRealPart(e[j + 1]);
   }
 
   PetscCall(PetscBLASIntCast(n, &bn));
@@ -60,7 +60,7 @@ PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP ksp, PetscReal *emax, Pets
   /* copy tridiagonal matrix to work space */
   for (PetscInt j = 0; j < n; j++) {
     dd[j] = PetscRealPart(d[j]);
-    ee[j] = PetscRealPart(e[j]);
+    ee[j] = PetscRealPart(e[j + 1]);
   }
 
   PetscCall(PetscBLASIntCast(n, &bn));
