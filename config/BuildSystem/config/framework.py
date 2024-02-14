@@ -936,7 +936,10 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
   def processPackageListDefine(self, defineDict):
     key = 'PETSC_HAVE_PACKAGES'
-    pkglist = sorted(set([pkg.pkgname.lower() for pkg in self.packages]))
+    pkglist = []
+    for pkg in self.packages:
+      pkglist.extend(pkg.pkgname.lower().split())
+    pkglist.sort()
     str = '":' + ':'.join(pkglist) + ':"'
     defineDict[key] = (key, str)
 

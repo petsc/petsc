@@ -19,6 +19,7 @@ class Configure(config.package.CMakePackage):
     self.functions         = ['umfpack_dl_wsolve','cholmod_l_solve','klu_l_solve','SuiteSparseQR_C_solve','amd_info']
     self.includes          = ['umfpack.h','cholmod.h','klu.h','SuiteSparseQR_C.h','amd.h']
     self.includedir        = [os.path.join('include', 'suitesparse'),'include']
+    self.pkgname           = 'SPQR UMFPACK KLU CHOLMOD AMD'
     self.hastests          = 1
     self.buildLanguages    = ['Cxx']
     self.hastestsdatafiles = 1
@@ -34,6 +35,12 @@ class Configure(config.package.CMakePackage):
     self.cuda       = framework.require('config.packages.cuda',self)
     self.openmp     = framework.require('config.packages.openmp',self)
     self.odeps      = [self.openmp,self.cuda]
+    return
+
+  def getSearchDirectories(self):
+    '''Generate list of possible locations of SuiteSparse'''
+    yield ''
+    yield '/usr'
     return
 
   def formCMakeConfigureArgs(self):

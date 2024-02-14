@@ -38,6 +38,19 @@ class Configure(config.base.Configure):
       return [library] if with_rpath else []
     if library.startswith('${FC_LINKER_SLFLAG}'):
       return [library] if with_rpath else []
+    flagName  = self.language[-1]+'SharedLinkerFlag'
+    flagSubst = self.language[-1].upper()+'_LINKER_SLFLAG'
+    if library.startswith('-L'):
+      dirname = library[2:]
+      if not dirname.startswith('$') and not os.path.isdir(dirname): self.logPrintWarning('Warning! getLibArgumentList(): could not locate dir :'+ dirname)
+      if dirname in self.sysDirs:
+          return []
+      if with_rpath and not dirname in self.rpathSkipDirs:
+        if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
+          return [getattr(self.setCompilers, flagName)+dirname,library]
+        if flagSubst in self.argDB:
+          return [self.argDB[flagSubst]+dirname,library]
+      return [library]
     if library.lstrip()[0] == '-':
       return [library]
     if len(library) > 3 and library[-4:] == '.lib':
@@ -45,8 +58,6 @@ class Configure(config.base.Configure):
     if os.path.basename(library).startswith('lib'):
       name = self.getLibName(library)
       if ((len(library) > 2 and library[1] == ':') or os.path.isabs(library)):
-        flagName  = self.language[-1]+'SharedLinkerFlag'
-        flagSubst = self.language[-1].upper()+'_LINKER_SLFLAG'
         dirname   = os.path.dirname(library).replace('\\ ',' ').replace(' ', '\\ ').replace('\\(','(').replace('(', '\\(').replace('\\)',')').replace(')', '\\)')
         if dirname in self.sysDirs:
           return [library]
