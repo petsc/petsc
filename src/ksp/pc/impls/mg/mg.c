@@ -329,6 +329,8 @@ static PetscErrorCode CreateCR_Private(PC pc, PetscInt l, PC *cr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions, const char[], const char[], const char *[], const char *[], PetscBool *);
+
 PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms)
 {
   PC_MG         *mg = (PC_MG *)pc->data;
@@ -389,19 +391,7 @@ PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms)
       PetscCall(PetscObjectIncrementTabLevel((PetscObject)mglevels[i]->smoothd, (PetscObject)pc, levels - i));
       PetscCall(KSPSetOptionsPrefix(mglevels[i]->smoothd, prefix));
       PetscCall(PetscObjectComposedDataSetInt((PetscObject)mglevels[i]->smoothd, PetscMGLevelId, mglevels[i]->level));
-      if (i || levels == 1) {
-        char tprefix[128];
-
-        PetscCall(KSPSetType(mglevels[i]->smoothd, KSPCHEBYSHEV));
-        PetscCall(KSPSetConvergenceTest(mglevels[i]->smoothd, KSPConvergedSkip, NULL, NULL));
-        PetscCall(KSPSetNormType(mglevels[i]->smoothd, KSP_NORM_NONE));
-        PetscCall(KSPGetPC(mglevels[i]->smoothd, &ipc));
-        PetscCall(PCSetType(ipc, PCSOR));
-        PetscCall(KSPSetTolerances(mglevels[i]->smoothd, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, mg->default_smoothd));
-
-        PetscCall(PetscSNPrintf(tprefix, 128, "mg_levels_%d_", (int)i));
-        PetscCall(KSPAppendOptionsPrefix(mglevels[i]->smoothd, tprefix));
-      } else {
+      if (i == 0 && levels > 1) { // coarse grid
         PetscCall(KSPAppendOptionsPrefix(mglevels[0]->smoothd, "mg_coarse_"));
 
         /* coarse solve is (redundant) LU by default; set shifttype NONZERO to avoid annoying zero-pivot in LU preconditioner */
@@ -414,6 +404,31 @@ PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms)
           PetscCall(PCSetType(ipc, PCLU));
         }
         PetscCall(PCFactorSetShiftType(ipc, MAT_SHIFT_INBLOCKS));
+      } else {
+        char tprefix[128];
+
+        PetscCall(KSPSetType(mglevels[i]->smoothd, KSPCHEBYSHEV));
+        PetscCall(KSPSetConvergenceTest(mglevels[i]->smoothd, KSPConvergedSkip, NULL, NULL));
+        PetscCall(KSPSetNormType(mglevels[i]->smoothd, KSP_NORM_NONE));
+        PetscCall(KSPGetPC(mglevels[i]->smoothd, &ipc));
+        PetscCall(PCSetType(ipc, PCSOR));
+        PetscCall(KSPSetTolerances(mglevels[i]->smoothd, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, mg->default_smoothd));
+
+        if (i == levels - 1 && levels > 1) { // replace 'mg_finegrid_' with 'mg_levels_X_'
+          PetscBool set;
+          PetscCall(PetscOptionsFindPairPrefix_Private(((PetscObject)mglevels[i]->smoothd)->options, ((PetscObject)mglevels[i]->smoothd)->prefix, "-mg_fine_", NULL, NULL, &set));
+          if (set) {
+            if (prefix) PetscCall(PetscSNPrintf(tprefix, 128, "%smg_fine_", prefix));
+            else PetscCall(PetscSNPrintf(tprefix, 128, "mg_fine_"));
+            PetscCall(KSPSetOptionsPrefix(mglevels[i]->smoothd, tprefix));
+          } else {
+            PetscCall(PetscSNPrintf(tprefix, 128, "mg_levels_%d_", (int)i));
+            PetscCall(KSPAppendOptionsPrefix(mglevels[i]->smoothd, tprefix));
+          }
+        } else {
+          PetscCall(PetscSNPrintf(tprefix, 128, "mg_levels_%d_", (int)i));
+          PetscCall(KSPAppendOptionsPrefix(mglevels[i]->smoothd, tprefix));
+        }
       }
     }
     mglevels[i]->smoothu = mglevels[i]->smoothd;
@@ -446,7 +461,7 @@ PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms)
 
   Notes:
   If the number of levels is one then the multigrid uses the `-mg_levels` prefix
-  for setting the level options rather than the `-mg_coarse` prefix.
+  for setting the level options rather than the `-mg_coarse` or `-mg_fine` prefix.
 
   You can free the information in comms after this routine is called.
 
@@ -1887,9 +1902,9 @@ PetscErrorCode PCMGGetCoarseSpaceConstructor(const char name[], PetscErrorCode (
 
    Notes:
    The Krylov solver (if any) and preconditioner (smoother) and their parameters are controlled from the options database with the standard
-   options database keywords prefixed with `-mg_levels_` to affect all the levels but the coarsest, which is controlled with `-mg_coarse_`.
-   One can set different preconditioners etc on specific levels with the prefix `-mg_levels_n_` where `n` is the level number (zero being
-   the coarse level. For example
+   options database keywords prefixed with `-mg_levels_` to affect all the levels but the coarsest, which is controlled with `-mg_coarse_`,
+   and the finest where `-mg_fine_` can override `-mg_levels_`.  One can set different preconditioners etc on specific levels with the prefix
+   `-mg_levels_n_` where `n` is the level number (zero being the coarse level. For example
 .vb
    -mg_levels_ksp_type gmres -mg_levels_pc_type bjacobi -mg_coarse_pc_type svd -mg_levels_2_pc_type sor
 .ve
