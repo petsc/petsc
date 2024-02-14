@@ -74,6 +74,25 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMSetApplicationContext(*dm, user));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
+  { // perturb to get general coordinates
+    Vec          coordinates;
+    PetscScalar *coords;
+    PetscInt     nloc, v;
+    PetscRandom  rnd;
+    PetscReal    del;
+    PetscCall(PetscRandomCreate(PETSC_COMM_SELF, &rnd));
+    PetscCall(PetscRandomSetInterval(rnd, -PETSC_SQRT_MACHINE_EPSILON, PETSC_SQRT_MACHINE_EPSILON));
+    PetscCall(PetscRandomSetFromOptions(rnd));
+    PetscCall(DMGetCoordinatesLocal(*dm, &coordinates));
+    PetscCall(VecGetArray(coordinates, &coords));
+    PetscCall(VecGetLocalSize(coordinates, &nloc));
+    for (v = 0; v < nloc; ++v) {
+      PetscCall(PetscRandomGetValueReal(rnd, &del));
+      coords[v] += del * coords[v];
+    }
+    PetscCall(VecRestoreArray(coordinates, &coords));
+    PetscCall(PetscRandomDestroy(&rnd));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
