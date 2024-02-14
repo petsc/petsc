@@ -82,6 +82,7 @@ Changes: Development
 - Add ``PCGAMGSetInjectionIndex()`` with corresponding option ``-pc_gamg_injection_index i,j,k...``. Inject provided indices of fine grid operator as first coarse grid restriction (sort of p-multigrid for C1 elements)
 - Add ``PC_JACOBI_ROWL1`` to ``PCJacobiType`` to use (scaled) l1 row norms for diagonal approximation with scaling of off-diagonal elements
 - Add ``PCJacobiSetRowl1Scale()`` and ``-pc_jacobi_rowl1_scale scale`` to access new scale member of PC_Jacobi class, for new row l1 Jacobi
+- Add ``-mg_fine_...`` prefix alias for fine grid options to override ``-mg_levels_...`` options, like ``-mg_coarse_...``
 
 .. rubric:: KSP:
 

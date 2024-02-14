@@ -812,7 +812,7 @@ static PetscErrorCode PCSetFromOptions_Exotic(PC pc, PetscOptionItems *PetscOpti
    They refer to them as GDSW (generalized Dryja, Smith, Widlund preconditioners). See, for example, {cite}`dohrmann2008extending`, {cite}`dohrmann2008family`,
    {cite}`dohrmann2008domain`, {cite}`dohrmann2009overlapping`.
 
-   The usual `PCMG` options are supported, such as -mg_levels_pc_type <type> -mg_coarse_pc_type <type> and  -pc_mg_type <type>
+   The usual `PCMG` options are supported, such as -mg_levels_pc_type <type> -mg_coarse_pc_type <type> -mg_fine_pc_type <type> and -pc_mg_type <type>
 
 .seealso: [](ch_ksp), `PCMG`, `PCSetDM()`, `PCExoticType`, `PCExoticSetType()`
 M*/
