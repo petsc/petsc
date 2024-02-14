@@ -651,7 +651,7 @@ class Configure(config.base.Configure):
   @staticmethod
   def isCygwin(log):
     '''Returns true if system is Cygwin'''
-    global isUname_value,sCygwin_value
+    global isUname_value,isCygwin_value
     if not isUname_value: config.setCompilers.Configure.isUname(log)
     return isCygwin_value
 
