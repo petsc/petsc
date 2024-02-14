@@ -591,10 +591,12 @@ PetscErrorCode PetscObjectDestroyOptionsHandlers(PetscObject obj)
   Logically Collective
 
   Input Parameter:
-. obj - the PETSc object. This must be cast with (`PetscObject`), for example,
-        `PetscObjectReference`((`PetscObject`)mat);
+. obj - the PETSc object. This must be cast with (`PetscObject`), for example, `PetscObjectReference`((`PetscObject`)mat);
 
   Level: advanced
+
+  Note:
+  If `obj` is `NULL` this function returns without doing anything.
 
 .seealso: `PetscObjectCompose()`, `PetscObjectDereference()`, `PetscObject`
 @*/
@@ -614,7 +616,7 @@ PetscErrorCode PetscObjectReference(PetscObject obj)
 
   Input Parameter:
 . obj - the PETSc object; this must be cast with (`PetscObject`), for example,
-        `PetscObjectGetReference`((`PetscObject`)mat,&cnt);
+        `PetscObjectGetReference`((`PetscObject`)mat,&cnt); `obj` cannot be `NULL`
 
   Output Parameter:
 . cnt - the reference count
@@ -645,8 +647,10 @@ PetscErrorCode PetscObjectGetReference(PetscObject obj, PetscInt *cnt)
 
   Level: advanced
 
-  Note:
+  Notes:
   `PetscObjectDestroy()` sets the `obj` pointer to `NULL` after the call, this routine does not.
+
+  If `obj` is `NULL` this function returns without doing anything.
 
 .seealso: `PetscObjectCompose()`, `PetscObjectReference()`, `PetscObjectDestroy()`, `PetscObject`
 @*/
