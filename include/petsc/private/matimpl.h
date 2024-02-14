@@ -441,6 +441,7 @@ typedef struct { /* used by MatProduct() */
   PetscBool      symbolic_used_the_fact_C_is_symmetric; /* MatMatMult(A,B,MAT_REUSE_MATRIX,..&C) is still legitimate), we need to redo symbolic! */
   PetscReal      fill;
   PetscBool      api_user; /* used to distinguish command line options and to indicate the matrix values are ready to be consumed at symbolic phase if needed */
+  PetscBool      setfromoptionscalled;
 
   /* Some products may display the information on the algorithm used */
   PetscErrorCode (*view)(Mat, PetscViewer);
