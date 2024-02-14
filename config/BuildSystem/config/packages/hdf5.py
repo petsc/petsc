@@ -70,8 +70,11 @@ class Configure(config.package.GNUPackage):
       args.append('--enable-parallel')
     if not self.argDB['download-hdf5-shared-libraries']:
       args.append('--enable-shared=0')
-    if hasattr(self.compilers, 'FC') and self.argDB['with-hdf5-fortran-bindings']:
-      args.append('--enable-fortran')
+    if self.argDB['with-hdf5-fortran-bindings']:
+      if hasattr(self.compilers, 'FC'):
+        args.append('--enable-fortran')
+      else:
+        raise RuntimeError('Cannot build HDF5 Fortran bindings --with-fc=0 or with a malfunctioning Fortran compiler.')
     if self.zlib.found:
       args.append('--with-zlib=yes')
     else:
