@@ -8,6 +8,8 @@ CLEANFILES       = ex5f90t
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 
+ex55: ex55.o ex55k.o
+
 #-------------------------------------------------------------------------
 
 #  these tests are used by the makefile in PETSC_DIR for basic tests of the install and should not be removed
