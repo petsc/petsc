@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-#!/bin/env python
+#!/usr/bin/env python3
+#!/bin/env python3
 #
 #    Nags the user to update to the latest version
 #
