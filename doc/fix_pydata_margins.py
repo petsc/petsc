@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """ Reduce the top and bottom margins for <h2> to not waste so much vertical space in the manual pages """
 
 import os

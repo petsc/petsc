@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Usage bk2darcs local-bk-repo local-darcs-repo
 #
