@@ -374,7 +374,7 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
 {
   const PetscInt Nf          = prob->Nf;
   PetscBool      hasH        = PETSC_FALSE;
-  PetscInt       maxOrder[4] = {-1, -1, -1, -1};
+  PetscInt       maxOrder[4] = {-2, -2, -2, -2};
   PetscInt       dim, dimEmbed, NbMax = 0, NcMax = 0, NqMax = 0, NsMax = 1, f;
 
   PetscFunctionBegin;
