@@ -1,4 +1,4 @@
-static char help[] = "Tests save/load of plex/section/vec in HDF5.\n\n";
+static char help[] = "Tests save/load of plex/section/vec on different numbers of processes in HDF5.\n\n";
 
 #include <petscdmshell.h>
 #include <petscdmplex.h>

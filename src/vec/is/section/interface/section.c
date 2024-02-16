@@ -1447,6 +1447,7 @@ PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *s
   Input Parameters:
 + s                  - The `PetscSection` for the local field layout
 . sf                 - The `PetscSF` describing parallel layout of the section points (leaves are unowned local points)
+. usePermutation     - By default this is `PETSC_TRUE`, meaning any permutation of the local section is transferred to the global section
 . includeConstraints - By default this is `PETSC_FALSE`, meaning that the global field vector will not possess constrained dofs
 - localOffsets       - If `PETSC_TRUE`, use local rather than global offsets for the points
 
@@ -1463,7 +1464,7 @@ PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *s
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreate()`, `PetscSectionCreateGlobalSectionCensored()`
 @*/
-PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, PetscBool includeConstraints, PetscBool localOffsets, PetscSection *gsection)
+PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, PetscBool usePermutation, PetscBool includeConstraints, PetscBool localOffsets, PetscSection *gsection)
 {
   PetscSection    gs;
   const PetscInt *pind = NULL;
@@ -1474,9 +1475,10 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 2);
-  PetscValidLogicalCollectiveBool(s, includeConstraints, 3);
-  PetscValidLogicalCollectiveBool(s, localOffsets, 4);
-  PetscAssertPointer(gsection, 5);
+  PetscValidLogicalCollectiveBool(s, usePermutation, 3);
+  PetscValidLogicalCollectiveBool(s, includeConstraints, 4);
+  PetscValidLogicalCollectiveBool(s, localOffsets, 5);
+  PetscAssertPointer(gsection, 6);
   PetscCheck(s->pointMajor, PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for field major ordering");
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)s), &gs));
   PetscCall(PetscSectionGetNumFields(s, &numFields));
@@ -1517,7 +1519,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
     }
   }
   /* Calculate new sizes, get process offset, and calculate point offsets */
-  if (s->perm) PetscCall(ISGetIndices(s->perm, &pind));
+  if (usePermutation && s->perm) PetscCall(ISGetIndices(s->perm, &pind));
   for (p = 0, off = 0; p < pEnd - pStart; ++p) {
     const PetscInt q = pind ? pind[p] : p;
 
@@ -1533,7 +1535,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
     gs->atlasOff[p - pStart] += globalOff;
     if (neg) neg[p] = -(gs->atlasOff[p - pStart] + 1);
   }
-  if (s->perm) PetscCall(ISRestoreIndices(s->perm, &pind));
+  if (usePermutation && s->perm) PetscCall(ISRestoreIndices(s->perm, &pind));
   /* Put in negative offsets for ghost points */
   if (nroots >= 0) {
     PetscCall(PetscArrayzero(recv, nlocal));

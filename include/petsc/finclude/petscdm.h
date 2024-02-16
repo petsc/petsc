@@ -21,6 +21,7 @@
 #define DMPolytopeType               PetscEnum
 #define DMCopyLabelsMode             PetscEnum
 #define PetscDTSimplexQuadratureType PetscEnum
+#define DMReorderDefaultFlag         PetscEnum
 
 #define DM               type(tDM)
 

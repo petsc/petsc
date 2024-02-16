@@ -134,10 +134,12 @@ PetscErrorCode DMCreate(MPI_Comm comm, DM *dm)
 @*/
 PetscErrorCode DMClone(DM dm, DM *newdm)
 {
-  PetscSF  sf;
-  Vec      coords;
-  void    *ctx;
-  PetscInt dim, cdim, i;
+  PetscSF              sf;
+  Vec                  coords;
+  void                *ctx;
+  MatOrderingType      otype;
+  DMReorderDefaultFlag flg;
+  PetscInt             dim, cdim, i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -160,6 +162,10 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   PetscCall(DMSetPointSF(*newdm, sf));
   PetscCall(DMGetApplicationContext(dm, &ctx));
   PetscCall(DMSetApplicationContext(*newdm, ctx));
+  PetscCall(DMReorderSectionGetDefault(dm, &flg));
+  PetscCall(DMReorderSectionSetDefault(*newdm, flg));
+  PetscCall(DMReorderSectionGetType(dm, &otype));
+  PetscCall(DMReorderSectionSetType(*newdm, otype));
   for (i = 0; i < 2; ++i) {
     if (dm->coordinates[i].dm) {
       DM           ncdm;
@@ -742,6 +748,7 @@ PetscErrorCode DMDestroy(DM *dm)
 
   PetscCall(PetscSectionDestroy(&(*dm)->localSection));
   PetscCall(PetscSectionDestroy(&(*dm)->globalSection));
+  PetscCall(PetscFree((*dm)->reorderSectionType));
   PetscCall(PetscLayoutDestroy(&(*dm)->map));
   PetscCall(PetscSectionDestroy(&(*dm)->defaultConstraint.section));
   PetscCall(MatDestroy(&(*dm)->defaultConstraint.mat));
@@ -896,6 +903,7 @@ PetscErrorCode DMSetFromOptions(DM dm)
   PetscCall(PetscOptionsEnum("-dm_blocking_type", "Topological point or field node blocking", "DMSetBlockingType", DMBlockingTypes, (PetscEnum)dm->blocking_type, (PetscEnum *)&dm->blocking_type, NULL));
   PetscCall(PetscOptionsEnum("-dm_is_coloring_type", "Global or local coloring of Jacobian", "DMSetISColoringType", ISColoringTypes, (PetscEnum)dm->coloringtype, (PetscEnum *)&dm->coloringtype, NULL));
   PetscCall(PetscOptionsInt("-dm_bind_below", "Set the size threshold (in entries) below which the Vec is bound to the CPU", "VecBindToCPU", dm->bind_below, &dm->bind_below, &flg));
+  PetscCall(PetscOptionsBool("-dm_ignore_perm_output", "Ignore the local section permutation on output", "DMGetOutputDM", dm->ignorePermOutput, &dm->ignorePermOutput, NULL));
   PetscTryTypeMethod(dm, setfromoptions, PetscOptionsObject);
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)dm, PetscOptionsObject));
@@ -4353,6 +4361,29 @@ PetscErrorCode DMSetLocalSection(DM dm, PetscSection section)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  DMCreateSectionPermutation - Create a permutation of the `PetscSection` chart and optionally a blokc structure.
+
+  Input Parameter:
+. dm - The `DM`
+
+  Output Parameter:
++ perm        - A permutation of the mesh points in the chart
+- blockStarts - A high bit is set for the point that begins every block, or NULL for default blocking
+
+  Level: developer
+
+.seealso: [](ch_dmbase), `DM`, `PetscSection`, `DMGetLocalSection()`, `DMGetGlobalSection()`
+@*/
+PetscErrorCode DMCreateSectionPermutation(DM dm, IS *perm, PetscBT *blockStarts)
+{
+  PetscFunctionBegin;
+  *perm        = NULL;
+  *blockStarts = NULL;
+  PetscTryTypeMethod(dm, createsectionpermutation, perm, blockStarts);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   DMGetDefaultConstraints - Get the `PetscSection` and `Mat` that specify the local constraint interpolation. See `DMSetDefaultConstraints()` for a description of the purpose of constraint interpolation.
 
@@ -4560,7 +4591,7 @@ PetscErrorCode DMGetGlobalSection(DM dm, PetscSection *section)
     PetscCheck(s, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM must have a default PetscSection in order to create a global PetscSection");
     PetscCheck(dm->sf, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM must have a point PetscSF in order to create a global PetscSection");
     PetscCall(DMGetIsoperiodicPointSF_Internal(dm, &sf));
-    PetscCall(PetscSectionCreateGlobalSection(s, sf, PETSC_FALSE, PETSC_FALSE, &dm->globalSection));
+    PetscCall(PetscSectionCreateGlobalSection(s, sf, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, &dm->globalSection));
     PetscCall(PetscLayoutDestroy(&dm->map));
     PetscCall(PetscSectionGetValueLayout(PetscObjectComm((PetscObject)dm), dm->globalSection, &dm->map));
     PetscCall(PetscSectionViewFromOptions(dm->globalSection, NULL, "-global_section_view"));
@@ -6378,21 +6409,25 @@ PetscErrorCode DMGetDimPoints(DM dm, PetscInt dim, PetscInt *pStart, PetscInt *p
 PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
 {
   PetscSection section;
-  PetscBool    hasConstraints, ghasConstraints;
+  IS           perm;
+  PetscBool    hasConstraints, newDM, gnewDM;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(odm, 2);
   PetscCall(DMGetLocalSection(dm, &section));
   PetscCall(PetscSectionHasConstraints(section, &hasConstraints));
-  PetscCall(MPIU_Allreduce(&hasConstraints, &ghasConstraints, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
-  if (!ghasConstraints) {
+  PetscCall(PetscSectionGetPermutation(section, &perm));
+  newDM = hasConstraints || perm ? PETSC_TRUE : PETSC_FALSE;
+  PetscCall(MPIU_Allreduce(&newDM, &gnewDM, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+  if (!gnewDM) {
     *odm = dm;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (!dm->dmBC) {
     PetscSection newSection, gsection;
     PetscSF      sf;
+    PetscBool    usePerm = dm->ignorePermOutput ? PETSC_FALSE : PETSC_TRUE;
 
     PetscCall(DMClone(dm, &dm->dmBC));
     PetscCall(DMCopyDisc(dm, dm->dmBC));
@@ -6400,7 +6435,7 @@ PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
     PetscCall(DMSetLocalSection(dm->dmBC, newSection));
     PetscCall(PetscSectionDestroy(&newSection));
     PetscCall(DMGetPointSF(dm->dmBC, &sf));
-    PetscCall(PetscSectionCreateGlobalSection(section, sf, PETSC_TRUE, PETSC_FALSE, &gsection));
+    PetscCall(PetscSectionCreateGlobalSection(section, sf, usePerm, PETSC_TRUE, PETSC_FALSE, &gsection));
     PetscCall(DMSetGlobalSection(dm->dmBC, gsection));
     PetscCall(PetscSectionDestroy(&gsection));
   }
@@ -9401,5 +9436,97 @@ PetscErrorCode DMPolytopeInCellTest(DMPolytopeType ct, const PetscReal point[], 
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported polytope type %s", DMPolytopeTypes[ct]);
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMReorderSectionSetDefault - Set flag indicating whether the local section should be reordered by default
+
+  Logically collective
+
+  Input Parameters:
++ dm      - The DM
+- reorder - Flag for reordering
+
+  Level: intermediate
+
+.seealso: `DMReorderSectionGetDefault()`
+@*/
+PetscErrorCode DMReorderSectionSetDefault(DM dm, DMReorderDefaultFlag reorder)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscTryMethod(dm, "DMReorderSectionSetDefault_C", (DM, DMReorderDefaultFlag), (dm, reorder));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMReorderSectionGetDefault - Get flag indicating whether the local section should be reordered by default
+
+  Not collective
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. reorder - Flag for reordering
+
+  Level: intermediate
+
+.seealso: `DMReorderSetDefault()`
+@*/
+PetscErrorCode DMReorderSectionGetDefault(DM dm, DMReorderDefaultFlag *reorder)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscAssertPointer(reorder, 2);
+  *reorder = DM_REORDER_DEFAULT_NOTSET;
+  PetscTryMethod(dm, "DMReorderSectionGetDefault_C", (DM, DMReorderDefaultFlag *), (dm, reorder));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  DMReorderSectionSetType - Set the type of local section reordering
+
+  Logically collective
+
+  Input Parameters:
++ dm      - The DM
+- reorder - The reordering method
+
+  Level: intermediate
+
+.seealso: `DMReorderSectionGetType()`, `DMReorderSectionSetDefault()`
+@*/
+PetscErrorCode DMReorderSectionSetType(DM dm, MatOrderingType reorder)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscTryMethod(dm, "DMReorderSectionSetType_C", (DM, MatOrderingType), (dm, reorder));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  DMReorderSectionGetType - Get the reordering type for the local section
+
+  Not collective
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. reorder - The reordering method
+
+  Level: intermediate
+
+.seealso: `DMReorderSetDefault()`, `DMReorderSectionGetDefault()`
+@*/
+PetscErrorCode DMReorderSectionGetType(DM dm, MatOrderingType *reorder)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscAssertPointer(reorder, 2);
+  *reorder = NULL;
+  PetscTryMethod(dm, "DMReorderSectionGetType_C", (DM, MatOrderingType *), (dm, reorder));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

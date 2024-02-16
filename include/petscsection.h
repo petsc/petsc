@@ -65,7 +65,7 @@ PETSC_EXTERN PetscErrorCode PetscSectionViewFromOptions(PetscSection, PetscObjec
 PETSC_EXTERN PetscErrorCode PetscSectionLoad(PetscSection, PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscSectionReset(PetscSection);
 PETSC_EXTERN PetscErrorCode PetscSectionDestroy(PetscSection *);
-PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSection(PetscSection, PetscSF, PetscBool, PetscBool, PetscSection *);
+PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSection(PetscSection, PetscSF, PetscBool, PetscBool, PetscBool, PetscSection *);
 PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection, PetscSF, PetscBool, PetscInt, const PetscInt[], PetscSection *);
 PETSC_EXTERN PetscErrorCode PetscSectionCreateSubsection(PetscSection, PetscInt, const PetscInt[], PetscSection *);
 PETSC_EXTERN PetscErrorCode PetscSectionCreateSupersection(PetscSection[], PetscInt, PetscSection *);

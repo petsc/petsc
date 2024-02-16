@@ -92,7 +92,7 @@ int main(int argc, char **argv)
     }
     PetscCall(PetscSectionSetUp(s));
     PetscCall(DMGetPointSF(dm, &sf));
-    PetscCall(PetscSectionCreateGlobalSection(s, sf, PETSC_FALSE, PETSC_FALSE, &gsection));
+    PetscCall(PetscSectionCreateGlobalSection(s, sf, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, &gsection));
     PetscCall(PetscSectionGetStorageSize(gsection, &gSizeBefore));
     minBefore = gSizeBefore;
     maxBefore = gSizeBefore;
@@ -105,7 +105,7 @@ int main(int argc, char **argv)
   PetscCall(DMPlexRebalanceSharedPoints(dm, user.entityDepth, user.useInitialGuess, user.parallel, &success));
 
   if (size > 1) {
-    PetscCall(PetscSectionCreateGlobalSection(s, sf, PETSC_FALSE, PETSC_FALSE, &gsection));
+    PetscCall(PetscSectionCreateGlobalSection(s, sf, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, &gsection));
     PetscCall(PetscSectionGetStorageSize(gsection, &gSizeAfter));
     minAfter = gSizeAfter;
     maxAfter = gSizeAfter;

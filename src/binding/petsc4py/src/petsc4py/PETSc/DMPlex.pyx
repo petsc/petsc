@@ -1,21 +1,11 @@
 # --------------------------------------------------------------------
 
-class DMPlexReorderDefaultFlag(object):
-    NOTSET = DMPLEX_REORDER_DEFAULT_NOTSET
-    FALSE  = DMPLEX_REORDER_DEFAULT_FALSE
-    TRUE   = DMPLEX_REORDER_DEFAULT_TRUE
-
-# --------------------------------------------------------------------
-
 cdef class DMPlex(DM):
     """Encapsulate an unstructured mesh.
 
     DMPlex encapsulates both topology and geometry. It is capable of parallel refinement and coarsening (using Pragmatic or ParMmg) and parallel redistribution for load balancing. It is designed to interface with the `FE` and ``FV`` trial discretization objects.
 
     """
-
-    ReorderDefaultFlag = DMPlexReorderDefaultFlag
-    """Flag indicating whether `DMPlex` is reordered by default."""
 
     #
 
@@ -2139,7 +2129,7 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexPermute(self.dm, perm.iset, &dm.dm) )
         return dm
 
-    def reorderGetDefault(self) -> DMPlex.ReorderDefaultFlag:
+    def reorderGetDefault(self) -> DM.ReorderDefaultFlag:
         """Return flag indicating whether the `DMPlex` should be reordered by default.
 
         Not collective.
@@ -2149,11 +2139,11 @@ cdef class DMPlex(DM):
         `DMPlex.reorderSetDefault`, petsc.DMPlexReorderGetDefault
 
         """
-        cdef PetscDMPlexReorderDefaultFlag reorder = DMPLEX_REORDER_DEFAULT_NOTSET
+        cdef PetscDMReorderDefaultFlag reorder = DM_REORDER_DEFAULT_NOTSET
         CHKERR( DMPlexReorderGetDefault(self.dm, &reorder) )
         return reorder
 
-    def reorderSetDefault(self, flag: DMPlex.ReorderDefaultFlag):
+    def reorderSetDefault(self, flag: DM.ReorderDefaultFlag):
         """Set flag indicating whether the DM should be reordered by default.
 
         Logically collective.
@@ -2168,7 +2158,7 @@ cdef class DMPlex(DM):
         DMPlex.reorderGetDefault, petsc.DMPlexReorderSetDefault
 
         """
-        cdef PetscDMPlexReorderDefaultFlag reorder = flag
+        cdef PetscDMReorderDefaultFlag reorder = flag
         CHKERR( DMPlexReorderSetDefault(self.dm, reorder) )
         return
 
@@ -3276,18 +3266,14 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexLocalVectorLoad(self.dm, viewer.vwr, sectiondm.dm, sf.sf, vec.vec))
 
 # --------------------------------------------------------------------
-
-del DMPlexReorderDefaultFlag
-
-# --------------------------------------------------------------------
 class DMPlexTransformType(object):
     REFINEREGULAR = S_(DMPLEXREFINEREGULAR)
     REFINEALFELD = S_(DMPLEXREFINEALFELD)
     REFINEPOWELLSABIN = S_(DMPLEXREFINEPOWELLSABIN)
     REFINEBOUNDARYLAYER = S_(DMPLEXREFINEBOUNDARYLAYER)
     REFINESBR = S_(DMPLEXREFINESBR)
-    REFINETOBOX = S_(DMPLEXREFINETOBOX) 
-    REFINETOSIMPLEX = S_(DMPLEXREFINETOSIMPLEX) 
+    REFINETOBOX = S_(DMPLEXREFINETOBOX)
+    REFINETOSIMPLEX = S_(DMPLEXREFINETOSIMPLEX)
     REFINE1D = S_(DMPLEXREFINE1D)
     EXTRUDE = S_(DMPLEXEXTRUDE)
     TRANSFORMFILTER = S_(DMPLEXTRANSFORMFILTER)
@@ -3319,7 +3305,7 @@ cdef class DMPlexTransform(Object):
         cdef PetscDMPlexTransformType cval = NULL
         CHKERR( DMPlexTransformGetType(self.tr, &cval) )
         return bytes2str(cval)
-    
+
     def setUp(self):
         CHKERR( DMPlexTransformSetUp(self.tr) )
         return self
@@ -3331,7 +3317,7 @@ cdef class DMPlexTransform(Object):
 
     def setDM(self, DM dm):
         CHKERR( DMPlexTransformSetDM(self.tr, dm.dm) )
-    
+
     def setFromOptions(self):
         CHKERR( DMPlexTransformSetFromOptions(self.tr) )
 
