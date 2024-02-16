@@ -10097,7 +10097,6 @@ static PetscErrorCode MatProduct_Private(Mat A, Mat B, MatReuse scall, PetscReal
     (*C)->product->api_user = PETSC_TRUE;
     PetscCall(MatProductSetType(*C, ptype));
     PetscCall(MatProductSetFromOptions(*C));
-    PetscCheck((*C)->ops->productsymbolic, PetscObjectComm((PetscObject)(*C)), PETSC_ERR_SUP, "MatProduct %s not supported for %s and %s", MatProductTypes[ptype], ((PetscObject)A)->type_name, ((PetscObject)B)->type_name);
     PetscCall(MatProductSymbolic(*C));
   }
   PetscCall(MatProductNumeric(*C));

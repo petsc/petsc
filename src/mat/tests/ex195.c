@@ -18,7 +18,7 @@ int main(int argc, char **args)
   PetscInt    m, M, n, istart, iend, ii, i, J, j, K = 10;
   PetscScalar v;
   PetscMPIInt size;
-  PetscBool   equal;
+  PetscBool   equal, test = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
@@ -71,6 +71,26 @@ int main(int argc, char **args)
   mata[0] = A1, mata[1] = A2, mata[2] = A3, mata[3] = A4;
   PetscCall(MatNestSetSubMats(nest, 2, NULL, 2, NULL, mata));
   PetscCall(MatSetUp(nest));
+
+  /* test matrix product error messages */
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_nest*nest", &test, NULL));
+  if (test) PetscCall(MatMatMult(nest, nest, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
+
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_matproductsetfromoptions", &test, NULL));
+  if (test) {
+    PetscCall(MatProductCreate(nest, nest, NULL, &C));
+    PetscCall(MatProductSetType(C, MATPRODUCT_AB));
+    PetscCall(MatProductSymbolic(C));
+  }
+
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_matproductsymbolic", &test, NULL));
+  if (test) {
+    PetscCall(MatProductCreate(nest, nest, NULL, &C));
+    PetscCall(MatProductSetType(C, MATPRODUCT_AB));
+    PetscCall(MatProductSetFromOptions(C));
+    PetscCall(MatProductSymbolic(C));
+  }
+
   PetscCall(MatConvert(nest, MATAIJ, MAT_INITIAL_MATRIX, &aij));
   PetscCall(MatView(aij, PETSC_VIEWER_STDOUT_WORLD));
 
