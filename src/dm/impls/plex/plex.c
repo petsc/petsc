@@ -158,7 +158,6 @@ PetscErrorCode DMPlexGetFieldTypes_Internal(DM dm, PetscSection section, PetscIn
     } else {
       if ((cStart >= pStart) && (cStart < pEnd)) PetscCall(PetscSectionGetDof(section, cStart, &vcdof[c]));
     }
-    PetscCall(MPIU_Allreduce(vcdof, globalvcdof, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
   }
 
   PetscCall(MPIU_Allreduce(vcdof, globalvcdof, DM_NUM_POLYTOPES + 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
