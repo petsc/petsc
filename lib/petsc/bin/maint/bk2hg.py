@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Usage bk2hg local-bk-repo local-hg-repo
 #

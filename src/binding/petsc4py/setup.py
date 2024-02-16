@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Author:  Lisandro Dalcin
 # Contact: dalcinl@gmail.com
 

@@ -148,7 +148,7 @@ Autotools,
 
 .. code-block:: python
 
-   #!/usr/bin/env python
+   #!/usr/bin/env python3
    import os
    execfile(os.path.join(os.path.dirname(__file__), 'config', 'configure.py'))
 

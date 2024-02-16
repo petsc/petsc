@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """ Loops through all the source using doctext to generate the manual pages"""
 
 import os

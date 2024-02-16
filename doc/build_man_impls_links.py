@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """ Adds links in the manual pages to implementations of the function
     Also adds References section if any {cite} are found in the manual page
 """

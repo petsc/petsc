@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-#!/bin/env python
+#!/usr/bin/env python3
 #
 #    Generates etag and ctag (use -noctags to skip generation of ctags) files for PETSc
 #    Adds file names to list of tags in a TAGS file

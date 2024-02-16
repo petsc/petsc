@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """ Configure PETSc and build and place the generated manual pages (as .md files) and html source (as .html files)"""
 
 import os

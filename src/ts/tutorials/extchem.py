@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 #    Reads in the output trajectory data from a run of extchem and
 #  formats it for graphing
