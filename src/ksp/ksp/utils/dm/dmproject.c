@@ -516,12 +516,19 @@ static PetscErrorCode DMSwarmProjectParticles_Conservative_PLEX(DM sw, DM dm, Ve
 
 static PetscErrorCode DMSwarmProjectFields_Plex_Internal(DM sw, DM dm, PetscInt Nf, const char *fieldnames[], Vec vec, ScatterMode mode)
 {
-  Vec u;
+  PetscDS  ds;
+  Vec      u;
+  PetscInt f = 0, bs, *Nc;
 
   PetscFunctionBegin;
+  PetscCall(DMGetDS(dm, &ds));
+  PetscCall(PetscDSGetComponents(ds, &Nc));
   PetscCall(PetscCitationsRegister(SwarmProjCitation, &SwarmProjcite));
   PetscCheck(Nf == 1, PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "Currently supported only for a single field");
-  PetscCall(DMSwarmCreateGlobalVectorFromField(sw, fieldnames[0], &u));
+  PetscCall(DMSwarmVectorDefineField(sw, fieldnames[f]));
+  PetscCall(DMSwarmCreateGlobalVectorFromField(sw, fieldnames[f], &u));
+  PetscCall(VecGetBlockSize(u, &bs));
+  PetscCheck(Nc[f] == bs, PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "Field %" PetscInt_FMT " components %" PetscInt_FMT " != %" PetscInt_FMT " blocksize for swarm field %s", f, Nc[f], bs, fieldnames[f]);
   if (mode == SCATTER_FORWARD) {
     PetscCall(DMSwarmProjectField_Conservative_PLEX(sw, dm, u, vec));
   } else {

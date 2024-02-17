@@ -134,6 +134,8 @@ Changes: Development
 .. rubric:: DMSwarm:
 
 - Add continuous ``DM`` argument to ``DMSwarmProjectFields()``
+- Add ``DMSwarmGetFieldInfo()``
+- Add ``DMSwarmVectorGetField()``
 
 .. rubric:: DMPlex:
 

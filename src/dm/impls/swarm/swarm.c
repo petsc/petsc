@@ -92,6 +92,31 @@ static PetscErrorCode VecView_Swarm(Vec v, PetscViewer viewer)
 }
 
 /*@C
+  DMSwarmVectorGetField - Gets the field from which to define a `Vec` object
+  when `DMCreateLocalVector()`, or `DMCreateGlobalVector()` is called
+
+  Not collective
+
+  Input Parameter:
+. dm - a `DMSWARM`
+
+  Output Parameter:
+. fieldname - the textual name given to a registered field, or the empty string if it has not been set
+
+  Level: beginner
+
+.seealso: `DM`, `DMSWARM`, `DMSwarmVectorDefineField()` `DMSwarmRegisterPetscDatatypeField()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`
+@*/
+PetscErrorCode DMSwarmVectorGetField(DM dm, const char *fieldname[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMSWARM);
+  PetscAssertPointer(fieldname, 2);
+  *fieldname = ((DM_Swarm *)dm->data)->vec_field_name;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
   DMSwarmVectorDefineField - Sets the field from which to define a `Vec` object
   when `DMCreateLocalVector()`, or `DMCreateGlobalVector()` is called
 
@@ -109,7 +134,7 @@ static PetscErrorCode VecView_Swarm(Vec v, PetscViewer viewer)
   This function must be called prior to calling `DMCreateLocalVector()`, `DMCreateGlobalVector()`.
   Multiple calls to `DMSwarmVectorDefineField()` are permitted.
 
-.seealso: `DM`, `DMSWARM`, `DMSwarmRegisterPetscDatatypeField()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`
+.seealso: `DM`, `DMSWARM`, `DMSwarmVectorGetField()`, `DMSwarmRegisterPetscDatatypeField()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`
 @*/
 PetscErrorCode DMSwarmVectorDefineField(DM dm, const char fieldname[])
 {
@@ -119,6 +144,8 @@ PetscErrorCode DMSwarmVectorDefineField(DM dm, const char fieldname[])
   PetscDataType type;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMSWARM);
+  if (fieldname) PetscAssertPointer(fieldname, 2);
   if (!swarm->issetup) PetscCall(DMSetUp(dm));
   PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &n, NULL, NULL));
   PetscCall(DMSwarmGetField(dm, fieldname, &bs, &type, (void **)&array));
@@ -273,7 +300,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
   PetscInt     locRows, locCols, rStart, colStart, colEnd, *rowIDXs;
   PetscReal   *xi, *v0, *J, *invJ, detJ = 1.0, v0ref[3] = {-1.0, -1.0, -1.0};
   PetscScalar *elemMat;
-  PetscInt     dim, Nf, field, cStart, cEnd, cell, totDim, maxC = 0;
+  PetscInt     dim, Nf, field, cStart, cEnd, cell, totDim, maxC = 0, totNc = 0;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)mass, &comm));
@@ -305,11 +332,30 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
   PetscCall(PetscHSetIJCreate(&ht));
 
   PetscCall(PetscSynchronizedFlush(comm, NULL));
+  for (field = 0; field < Nf; ++field) {
+    PetscObject  obj;
+    PetscClassId id;
+    PetscInt     Nc;
+
+    PetscCall(PetscDSGetDiscretization(prob, field, &obj));
+    PetscCall(PetscObjectGetClassId(obj, &id));
+    if (id == PETSCFE_CLASSID) PetscCall(PetscFEGetNumComponents((PetscFE)obj, &Nc));
+    else PetscCall(PetscFVGetNumComponents((PetscFV)obj, &Nc));
+    totNc += Nc;
+  }
   /* count non-zeros */
   PetscCall(DMSwarmSortGetAccess(dmc));
   for (field = 0; field < Nf; ++field) {
+    PetscObject  obj;
+    PetscClassId id;
+    PetscInt     Nc;
+
+    PetscCall(PetscDSGetDiscretization(prob, field, &obj));
+    PetscCall(PetscObjectGetClassId(obj, &id));
+    if (id == PETSCFE_CLASSID) PetscCall(PetscFEGetNumComponents((PetscFE)obj, &Nc));
+    else PetscCall(PetscFVGetNumComponents((PetscFV)obj, &Nc));
+
     for (cell = cStart; cell < cEnd; ++cell) {
-      PetscInt  c, i;
       PetscInt *findices, *cindices; /* fine is vertices, coarse is particles */
       PetscInt  numFIndices, numCIndices;
 
@@ -319,18 +365,21 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
       {
         PetscHashIJKey key;
         PetscBool      missing;
-        for (i = 0; i < numFIndices; ++i) {
+        for (PetscInt i = 0; i < numFIndices; ++i) {
           key.j = findices[i]; /* global column (from Plex) */
           if (key.j >= 0) {
             /* Get indices for coarse elements */
-            for (c = 0; c < numCIndices; ++c) {
-              key.i = cindices[c] + rStart; /* global cols (from Swarm) */
-              if (key.i < 0) continue;
-              PetscCall(PetscHSetIJQueryAdd(ht, key, &missing));
-              if (missing) {
-                if ((key.j >= colStart) && (key.j < colEnd)) ++dnz[key.i - rStart];
-                else ++onz[key.i - rStart];
-              } else SETERRQ(PetscObjectComm((PetscObject)dmf), PETSC_ERR_SUP, "Set new value at %" PetscInt_FMT ",%" PetscInt_FMT, key.i, key.j);
+            for (PetscInt j = 0; j < numCIndices; ++j) {
+              for (PetscInt c = 0; c < Nc; ++c) {
+                // TODO Need field offset on particle here
+                key.i = cindices[j] * totNc + c + rStart; /* global cols (from Swarm) */
+                if (key.i < 0) continue;
+                PetscCall(PetscHSetIJQueryAdd(ht, key, &missing));
+                if (missing) {
+                  if ((key.j >= colStart) && (key.j < colEnd)) ++dnz[key.i - rStart];
+                  else ++onz[key.i - rStart];
+                } else SETERRQ(PetscObjectComm((PetscObject)dmf), PETSC_ERR_SUP, "Set new value at %" PetscInt_FMT ",%" PetscInt_FMT, key.i, key.j);
+              }
             }
           }
         }
@@ -343,46 +392,47 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
   PetscCall(MatXAIJSetPreallocation(mass, 1, dnz, onz, NULL, NULL));
   PetscCall(MatSetOption(mass, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE));
   PetscCall(PetscFree2(dnz, onz));
-  PetscCall(PetscMalloc3(maxC * totDim, &elemMat, maxC, &rowIDXs, maxC * dim, &xi));
+  PetscCall(PetscMalloc3(maxC * totNc * totDim, &elemMat, maxC * totNc, &rowIDXs, maxC * dim, &xi));
   for (field = 0; field < Nf; ++field) {
     PetscTabulation Tcoarse;
     PetscObject     obj;
     PetscClassId    id;
     PetscReal      *fieldVals;
-    PetscInt        Nc, i;
+    PetscInt        Nc;
 
     PetscCall(PetscDSGetDiscretization(prob, field, &obj));
     PetscCall(PetscObjectGetClassId(obj, &id));
     if (id == PETSCFE_CLASSID) PetscCall(PetscFEGetNumComponents((PetscFE)obj, &Nc));
     else PetscCall(PetscFVGetNumComponents((PetscFV)obj, &Nc));
-    PetscCheck(Nc == 1, PetscObjectComm((PetscObject)dmf), PETSC_ERR_SUP, "Can only interpolate a scalar field from particles, Nc = %" PetscInt_FMT, Nc);
 
     PetscCall(DMSwarmGetField(dmc, DMSwarmPICField_coor, NULL, NULL, (void **)&fieldVals));
     for (cell = cStart; cell < cEnd; ++cell) {
       PetscInt *findices, *cindices;
       PetscInt  numFIndices, numCIndices;
-      PetscInt  p, c;
 
       /* TODO: Use DMField instead of assuming affine */
       PetscCall(DMPlexComputeCellGeometryFEM(dmf, cell, NULL, v0, J, invJ, &detJ));
       PetscCall(DMPlexGetClosureIndices(dmf, fsection, globalFSection, cell, PETSC_FALSE, &numFIndices, &findices, NULL, NULL));
       PetscCall(DMSwarmSortGetPointsPerCell(dmc, cell, &numCIndices, &cindices));
-      for (p = 0; p < numCIndices; ++p) CoordinatesRealToRef(dim, dim, v0ref, v0, invJ, &fieldVals[cindices[p] * dim], &xi[p * dim]);
+      for (PetscInt j = 0; j < numCIndices; ++j) CoordinatesRealToRef(dim, dim, v0ref, v0, invJ, &fieldVals[cindices[j] * dim], &xi[j * dim]);
       if (id == PETSCFE_CLASSID) PetscCall(PetscFECreateTabulation((PetscFE)obj, 1, numCIndices, xi, 0, &Tcoarse));
       else PetscCall(PetscFVCreateTabulation((PetscFV)obj, 1, numCIndices, xi, 0, &Tcoarse));
       /* Get elemMat entries by multiplying by weight */
-      PetscCall(PetscArrayzero(elemMat, numCIndices * totDim));
-      for (i = 0; i < numFIndices; ++i) {
-        for (p = 0; p < numCIndices; ++p) {
-          for (c = 0; c < Nc; ++c) {
+      PetscCall(PetscArrayzero(elemMat, numCIndices * Nc * totDim));
+      for (PetscInt i = 0; i < numFIndices / Nc; ++i) {
+        for (PetscInt j = 0; j < numCIndices; ++j) {
+          for (PetscInt c = 0; c < Nc; ++c) {
+            // TODO Need field offset on particle and field here
             /* B[(p*pdim + i)*Nc + c] is the value at point p for basis function i and component c */
-            elemMat[p * numFIndices + i] += Tcoarse->T[0][(p * numFIndices + i) * Nc + c] * (useDeltaFunction ? 1.0 : detJ);
+            elemMat[(j * totNc + c) * numFIndices + i * Nc + c] += Tcoarse->T[0][(j * numFIndices + i * Nc + c) * Nc + c] * (useDeltaFunction ? 1.0 : detJ);
           }
         }
       }
-      for (p = 0; p < numCIndices; ++p) rowIDXs[p] = cindices[p] + rStart;
-      if (0) PetscCall(DMPrintCellMatrix(cell, name, 1, numCIndices, elemMat));
-      PetscCall(MatSetValues(mass, numCIndices, rowIDXs, numFIndices, findices, elemMat, ADD_VALUES));
+      for (PetscInt j = 0; j < numCIndices; ++j)
+        // TODO Need field offset on particle here
+        for (PetscInt c = 0; c < Nc; ++c) rowIDXs[j * Nc + c] = cindices[j] * totNc + c + rStart;
+      if (0) PetscCall(DMPrintCellMatrix(cell, name, numCIndices * Nc, numFIndices, elemMat));
+      PetscCall(MatSetValues(mass, numCIndices * Nc, rowIDXs, numFIndices, findices, elemMat, ADD_VALUES));
       PetscCall(PetscFree(cindices));
       PetscCall(DMPlexRestoreClosureIndices(dmf, fsection, globalFSection, cell, PETSC_FALSE, &numFIndices, &findices, NULL, NULL));
       PetscCall(PetscTabulationDestroy(&Tcoarse));
@@ -423,13 +473,18 @@ static PetscErrorCode DMCreateMatrix_Swarm(DM sw, Mat *m)
 static PetscErrorCode DMCreateMassMatrix_Swarm(DM dmCoarse, DM dmFine, Mat *mass)
 {
   PetscSection gsf;
-  PetscInt     m, n;
+  PetscInt     m, n, Np, bs = 1;
   void        *ctx;
+  PetscBool    set  = ((DM_Swarm *)dmCoarse->data)->vec_field_set;
+  char        *name = ((DM_Swarm *)dmCoarse->data)->vec_field_name;
 
   PetscFunctionBegin;
   PetscCall(DMGetGlobalSection(dmFine, &gsf));
   PetscCall(PetscSectionGetConstrainedStorageSize(gsf, &m));
-  PetscCall(DMSwarmGetLocalSize(dmCoarse, &n));
+  PetscCall(DMSwarmGetLocalSize(dmCoarse, &Np));
+  // TODO Include all fields
+  if (set) PetscCall(DMSwarmGetFieldInfo(dmCoarse, name, &bs, NULL));
+  n = Np * bs;
   PetscCall(MatCreate(PetscObjectComm((PetscObject)dmCoarse), mass));
   PetscCall(MatSetSizes(*mass, n, m, PETSC_DETERMINE, PETSC_DETERMINE));
   PetscCall(MatSetType(*mass, dmCoarse->mattype));
@@ -1110,6 +1165,19 @@ PetscErrorCode DMSwarmRestoreField(DM dm, const char fieldname[], PetscInt *bloc
   PetscCall(DMSwarmDataBucketGetDMSwarmDataFieldByName(swarm->db, fieldname, &gfield));
   PetscCall(DMSwarmDataFieldRestoreAccess(gfield));
   if (data) *data = NULL;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode DMSwarmGetFieldInfo(DM dm, const char fieldname[], PetscInt *blocksize, PetscDataType *type)
+{
+  DM_Swarm        *swarm = (DM_Swarm *)dm->data;
+  DMSwarmDataField gfield;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMSWARM);
+  PetscCall(DMSwarmDataBucketGetDMSwarmDataFieldByName(swarm->db, fieldname, &gfield));
+  if (blocksize) *blocksize = gfield->bs;
+  if (type) *type = gfield->petsc_type;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
