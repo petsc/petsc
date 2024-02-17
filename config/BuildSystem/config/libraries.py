@@ -40,17 +40,20 @@ class Configure(config.base.Configure):
       return [library] if with_rpath else []
     flagName  = self.language[-1]+'SharedLinkerFlag'
     flagSubst = self.language[-1].upper()+'_LINKER_SLFLAG'
+    rpathFlag = ''
+    if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
+      rpathFlag = getattr(self.setCompilers, flagName)
+    elif flagSubst in self.argDB:
+      rpathFlag = self.argDB[flagSubst]
     if library.startswith('-L'):
       dirname = library[2:]
-      if not dirname.startswith('$') and not os.path.isdir(dirname): self.logPrintWarning('Warning! getLibArgumentList(): could not locate dir :'+ dirname)
+      if not dirname.startswith('$') and not os.path.isdir(dirname): self.logPrint('Warning! getLibArgumentList(): could not locate dir '+ dirname)
       if dirname in self.sysDirs:
           return []
-      if with_rpath and not dirname in self.rpathSkipDirs:
-        if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
-          return [getattr(self.setCompilers, flagName)+dirname,library]
-        if flagSubst in self.argDB:
-          return [self.argDB[flagSubst]+dirname,library]
-      return [library]
+      elif with_rpath and rpathFlag and not dirname in self.rpathSkipDirs:
+        return [rpathFlag+dirname,library]
+      else:
+        return [library]
     if library.lstrip()[0] == '-':
       return [library]
     if len(library) > 3 and library[-4:] == '.lib':
