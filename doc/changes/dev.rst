@@ -147,6 +147,7 @@ Changes: Development
 
 - Add Jacobian type argument to ``PetscFEIntegrateBdJacobian()``
 - Add ``PetscFVClone()``
+- Add ``PetscFVCreateDualSpace()``
 
 .. rubric:: DMNetwork:
 

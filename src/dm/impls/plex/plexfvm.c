@@ -23,10 +23,15 @@ static PetscErrorCode DMPlexApplyLimiter_Internal(DM dm, DM dmCell, PetscLimiter
     PetscScalar     *ncx;
     PetscFVCellGeom *ncg;
     const PetscInt  *fcells;
-    PetscInt         ncell, d;
+    PetscInt         Ns, ncell, d;
     PetscReal        v[3];
 
     PetscCall(DMPlexGetSupport(dm, face, &fcells));
+    PetscCall(DMPlexGetSupportSize(dm, face, &Ns));
+    if (Ns < 2) {
+      for (d = 0; d < dof; ++d) cellPhi[d] = 1.0;
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
     ncell = cell == fcells[0] ? fcells[1] : fcells[0];
     if (field >= 0) {
       PetscCall(DMPlexPointLocalFieldRead(dm, ncell, field, x, &ncx));
@@ -54,6 +59,7 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscFV fvm, PetscInt 
   DMLabel            ghostLabel;
   PetscDS            prob;
   PetscLimiter       lim;
+  PetscLimiterType   limType;
   const PetscScalar *facegeom, *cellgeom, *x;
   PetscScalar       *gr;
   PetscReal         *cellPhi;
@@ -110,6 +116,7 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscFV fvm, PetscInt 
     }
   }
   /* Limit interior gradients (using cell-based loop because it generalizes better to vector limiters) */
+  PetscCall(PetscLimiterGetType(lim, &limType));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
   PetscCall(DMGetWorkArray(dm, dof, MPIU_REAL, &cellPhi));
   for (cell = (dmGrad && lim) ? cStart : cEnd; cell < cEnd; ++cell) {
@@ -129,9 +136,13 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscFV fvm, PetscInt 
     PetscCall(DMPlexPointLocalRead(dmCell, cell, cellgeom, &cg));
     PetscCall(DMPlexPointGlobalRef(dmGrad, cell, gr, &cgrad));
     if (!cgrad) continue; /* Unowned overlap cell, we do not compute */
-    /* Limiter will be minimum value over all neighbors */
-    for (d = 0; d < dof; ++d) cellPhi[d] = PETSC_MAX_REAL;
-    for (f = 0; f < coneSize; ++f) PetscCall(DMPlexApplyLimiter_Internal(dm, dmCell, lim, dim, dof, cell, nFields > 1 ? field : -1, faces[f], fStart, fEnd, cellPhi, x, cellgeom, cg, cx, cgrad));
+    if (limType) {
+      /* Limiter will be minimum value over all neighbors */
+      for (d = 0; d < dof; ++d) cellPhi[d] = PETSC_MAX_REAL;
+      for (f = 0; f < coneSize; ++f) PetscCall(DMPlexApplyLimiter_Internal(dm, dmCell, lim, dim, dof, cell, nFields > 1 ? field : -1, faces[f], fStart, fEnd, cellPhi, x, cellgeom, cg, cx, cgrad));
+    } else {
+      for (d = 0; d < dof; ++d) cellPhi[d] = 1.0;
+    }
     /* Apply limiter to gradient */
     for (pd = 0; pd < dof; ++pd) /* Scalar limiter applied to each component separately */
       for (d = 0; d < dim; ++d) cgrad[pd * dim + d] *= cellPhi[pd];
