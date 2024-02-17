@@ -2320,13 +2320,13 @@ PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec locX, PetscInt cStart, 
     } else if (id == PETSCFV_CLASSID) {
       PetscInt       foff;
       PetscPointFunc obj_func;
-      PetscScalar    lint;
 
       PetscCall(PetscDSGetObjective(prob, f, &obj_func));
       PetscCall(PetscDSGetFieldOffset(prob, f, &foff));
       if (obj_func) {
         for (c = 0; c < numCells; ++c) {
           PetscScalar *u_x;
+          PetscScalar  lint = 0.;
 
           PetscCall(DMPlexPointLocalRead(dmGrad, c, lgrad, &u_x));
           obj_func(dim, Nf, NfAux, uOff, uOff_x, &u[totDim * c + foff], NULL, u_x, aOff, NULL, &a[totDimAux * c], NULL, NULL, 0.0, cgeomFVM[c].centroid, numConstants, constants, &lint);

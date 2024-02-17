@@ -216,7 +216,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrate_Basic(PetscDS ds, PetscInt field, P
       fegeom.detJ = &cgeom->detJ[e * Np];
     }
     for (q = 0; q < Nq; ++q) {
-      PetscScalar integrand;
+      PetscScalar integrand = 0.;
       PetscReal   w;
 
       if (isAffine) {
