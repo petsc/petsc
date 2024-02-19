@@ -221,7 +221,7 @@ typedef struct {
     PetscScalar (*transform)[4][4]; // geometric transform
     // Created eagerly (depends on points)
     PetscSF composed_sf; // root(non-periodic global points) <-- leaf(local points)
-    IS      periodic_points;
+    IS     *periodic_points;
   } periodic;
 
   /* Projection */

@@ -317,160 +317,175 @@ static PetscErrorCode DMCoordAddPeriodicOffsets_Private(DM dm, Vec g, InsertMode
 //
 // + closure_sf - augmented point SF (see `DMGetPointSF()`) that includes the faces and all points in its closure. This
 //   can be used to create a global section and section SF.
-// - is_points - index set for just the points in the closure of `face_sf`. These may be used to apply an affine
+// - is_points - array of index sets for just the points in the closure of `face_sf`. These may be used to apply an affine
 //   transformation to periodic dofs; see DMPeriodicCoordinateSetUp_Internal().
 //
-static PetscErrorCode DMPlexCreateIsoperiodicPointSF_Private(DM dm, PetscSF face_sf, PetscSF *closure_sf, IS *is_points)
+static PetscErrorCode DMPlexCreateIsoperiodicPointSF_Private(DM dm, PetscInt num_face_sfs, PetscSF *face_sfs, PetscSF *closure_sf, IS **is_points)
 {
   MPI_Comm           comm;
-  PetscInt           nroots, nleaves, npoints;
-  const PetscInt    *filocal, *pilocal;
-  const PetscSFNode *firemote, *piremote;
   PetscMPIInt        rank;
   PetscSF            point_sf;
+  PetscInt           nroots, nleaves;
+  const PetscInt    *filocal;
+  const PetscSFNode *firemote;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  PetscCall(PetscSFGetGraph(face_sf, &nroots, &nleaves, &filocal, &firemote));
   PetscCall(DMGetPointSF(dm, &point_sf)); // Point SF has remote points
-  PetscCall(PetscSFGetGraph(point_sf, NULL, &npoints, &pilocal, &piremote));
-  PetscInt *rootdata, *leafdata;
-  PetscCall(PetscCalloc2(2 * nroots, &rootdata, 2 * nroots, &leafdata));
-  for (PetscInt i = 0; i < nleaves; i++) {
-    PetscInt point = filocal[i], cl_size, *closure = NULL;
-    PetscCall(DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &cl_size, &closure));
-    leafdata[point] = cl_size - 1;
-    PetscCall(DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &cl_size, &closure));
-  }
-  PetscCall(PetscSFReduceBegin(face_sf, MPIU_INT, leafdata, rootdata + nroots, MPIU_SUM));
-  PetscCall(PetscSFReduceEnd(face_sf, MPIU_INT, leafdata, rootdata + nroots, MPIU_SUM));
+  PetscCall(PetscMalloc1(num_face_sfs, is_points));
 
-  PetscInt root_offset = 0;
-  for (PetscInt p = 0; p < nroots; p++) {
-    const PetscInt *donor_dof = rootdata + nroots;
-    if (donor_dof[p] == 0) {
-      rootdata[2 * p]     = -1;
-      rootdata[2 * p + 1] = -1;
-      continue;
+  for (PetscInt f = 0; f < num_face_sfs; f++) {
+    PetscSF   face_sf = face_sfs[f];
+    PetscInt *rootdata, *leafdata;
+
+    PetscCall(PetscSFGetGraph(face_sf, &nroots, &nleaves, &filocal, &firemote));
+    PetscCall(PetscCalloc2(2 * nroots, &rootdata, 2 * nroots, &leafdata));
+    for (PetscInt i = 0; i < nleaves; i++) {
+      PetscInt point = filocal[i], cl_size, *closure = NULL;
+      PetscCall(DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &cl_size, &closure));
+      leafdata[point] = cl_size - 1;
+      PetscCall(DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &cl_size, &closure));
     }
-    PetscInt  cl_size;
-    PetscInt *closure = NULL;
-    PetscCall(DMPlexGetTransitiveClosure(dm, p, PETSC_TRUE, &cl_size, &closure));
-    // cl_size - 1 = points not including self
-    PetscAssert(donor_dof[p] == cl_size - 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Reduced leaf cone sizes do not match root cone sizes");
-    rootdata[2 * p]     = root_offset;
-    rootdata[2 * p + 1] = cl_size - 1;
-    root_offset += cl_size - 1;
-    PetscCall(DMPlexRestoreTransitiveClosure(dm, p, PETSC_TRUE, &cl_size, &closure));
-  }
-  PetscCall(PetscSFBcastBegin(face_sf, MPIU_2INT, rootdata, leafdata, MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(face_sf, MPIU_2INT, rootdata, leafdata, MPI_REPLACE));
-  // Count how many leaves we need to communicate the closures
-  PetscInt leaf_offset = 0;
-  for (PetscInt i = 0; i < nleaves; i++) {
-    PetscInt point = filocal[i];
-    if (leafdata[2 * point + 1] < 0) continue;
-    leaf_offset += leafdata[2 * point + 1];
-  }
+    PetscCall(PetscSFReduceBegin(face_sf, MPIU_INT, leafdata, rootdata + nroots, MPIU_SUM));
+    PetscCall(PetscSFReduceEnd(face_sf, MPIU_INT, leafdata, rootdata + nroots, MPIU_SUM));
 
-  PetscSFNode *closure_leaf;
-  PetscCall(PetscMalloc1(leaf_offset, &closure_leaf));
-  leaf_offset = 0;
-  for (PetscInt i = 0; i < nleaves; i++) {
-    PetscInt point   = filocal[i];
-    PetscInt cl_size = leafdata[2 * point + 1];
-    if (cl_size < 0) continue;
-    for (PetscInt j = 0; j < cl_size; j++) {
-      closure_leaf[leaf_offset].rank  = firemote[i].rank;
-      closure_leaf[leaf_offset].index = leafdata[2 * point] + j;
-      leaf_offset++;
-    }
-  }
-
-  PetscSF sf_closure;
-  PetscCall(PetscSFCreate(comm, &sf_closure));
-  PetscCall(PetscSFSetGraph(sf_closure, root_offset, leaf_offset, NULL, PETSC_USE_POINTER, closure_leaf, PETSC_OWN_POINTER));
-
-  // Pack root buffer with owner for every point in the root cones
-  PetscSFNode *donor_closure;
-  PetscCall(PetscCalloc1(root_offset, &donor_closure));
-  root_offset = 0;
-  for (PetscInt p = 0; p < nroots; p++) {
-    if (rootdata[2 * p] < 0) continue;
-    PetscInt  cl_size;
-    PetscInt *closure = NULL;
-    PetscCall(DMPlexGetTransitiveClosure(dm, p, PETSC_TRUE, &cl_size, &closure));
-    for (PetscInt j = 1; j < cl_size; j++) {
-      PetscInt c = closure[2 * j];
-      if (pilocal) {
-        PetscInt found = -1;
-        if (npoints > 0) PetscCall(PetscFindInt(c, npoints, pilocal, &found));
-        if (found >= 0) {
-          donor_closure[root_offset++] = piremote[found];
-          continue;
-        }
+    PetscInt root_offset = 0;
+    for (PetscInt p = 0; p < nroots; p++) {
+      const PetscInt *donor_dof = rootdata + nroots;
+      if (donor_dof[p] == 0) {
+        rootdata[2 * p]     = -1;
+        rootdata[2 * p + 1] = -1;
+        continue;
       }
-      // we own c
-      donor_closure[root_offset].rank  = rank;
-      donor_closure[root_offset].index = c;
-      root_offset++;
+      PetscInt  cl_size;
+      PetscInt *closure = NULL;
+      PetscCall(DMPlexGetTransitiveClosure(dm, p, PETSC_TRUE, &cl_size, &closure));
+      // cl_size - 1 = points not including self
+      PetscAssert(donor_dof[p] == cl_size - 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Reduced leaf cone sizes do not match root cone sizes");
+      rootdata[2 * p]     = root_offset;
+      rootdata[2 * p + 1] = cl_size - 1;
+      root_offset += cl_size - 1;
+      PetscCall(DMPlexRestoreTransitiveClosure(dm, p, PETSC_TRUE, &cl_size, &closure));
     }
-    PetscCall(DMPlexRestoreTransitiveClosure(dm, p, PETSC_TRUE, &cl_size, &closure));
-  }
-
-  PetscSFNode *leaf_donor_closure;
-  PetscCall(PetscMalloc1(leaf_offset, &leaf_donor_closure));
-  PetscCall(PetscSFBcastBegin(sf_closure, MPIU_2INT, donor_closure, leaf_donor_closure, MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(sf_closure, MPIU_2INT, donor_closure, leaf_donor_closure, MPI_REPLACE));
-  PetscCall(PetscSFDestroy(&sf_closure));
-  PetscCall(PetscFree(donor_closure));
-
-  PetscSFNode *new_iremote;
-  PetscCall(PetscCalloc1(nroots, &new_iremote));
-  for (PetscInt i = 0; i < nroots; i++) new_iremote[i].rank = -1;
-  // Walk leaves and match vertices
-  leaf_offset = 0;
-  for (PetscInt i = 0; i < nleaves; i++) {
-    PetscInt  point   = filocal[i], cl_size;
-    PetscInt *closure = NULL;
-    PetscCall(DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &cl_size, &closure));
-    for (PetscInt j = 1; j < cl_size; j++) { // TODO: should we send donor edge orientations so we can flip for consistency?
-      PetscInt    c  = closure[2 * j];
-      PetscSFNode lc = leaf_donor_closure[leaf_offset];
-      // printf("[%d] face %d.%d: %d ?-- (%d,%d)\n", rank, point, j, c, lc.rank, lc.index);
-      if (new_iremote[c].rank == -1) {
-        new_iremote[c] = lc;
-      } else PetscCheck(new_iremote[c].rank == lc.rank && new_iremote[c].index == lc.index, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatched cone ordering between faces");
-      leaf_offset++;
+    PetscCall(PetscSFBcastBegin(face_sf, MPIU_2INT, rootdata, leafdata, MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(face_sf, MPIU_2INT, rootdata, leafdata, MPI_REPLACE));
+    // Count how many leaves we need to communicate the closures
+    PetscInt leaf_offset = 0;
+    for (PetscInt i = 0; i < nleaves; i++) {
+      PetscInt point = filocal[i];
+      if (leafdata[2 * point + 1] < 0) continue;
+      leaf_offset += leafdata[2 * point + 1];
     }
-    PetscCall(DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &cl_size, &closure));
-  }
-  PetscCall(PetscFree(leaf_donor_closure));
 
-  // Include face points in closure SF
-  for (PetscInt i = 0; i < nleaves; i++) new_iremote[filocal[i]] = firemote[i];
-  // consolidate leaves
-  PetscInt num_new_leaves = 0;
-  for (PetscInt i = 0; i < nroots; i++) {
-    if (new_iremote[i].rank == -1) continue;
-    new_iremote[num_new_leaves] = new_iremote[i];
-    leafdata[num_new_leaves]    = i;
-    num_new_leaves++;
-  }
-  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, num_new_leaves, leafdata, PETSC_COPY_VALUES, is_points));
+    PetscSFNode *closure_leaf;
+    PetscCall(PetscMalloc1(leaf_offset, &closure_leaf));
+    leaf_offset = 0;
+    for (PetscInt i = 0; i < nleaves; i++) {
+      PetscInt point   = filocal[i];
+      PetscInt cl_size = leafdata[2 * point + 1];
+      if (cl_size < 0) continue;
+      for (PetscInt j = 0; j < cl_size; j++) {
+        closure_leaf[leaf_offset].rank  = firemote[i].rank;
+        closure_leaf[leaf_offset].index = leafdata[2 * point] + j;
+        leaf_offset++;
+      }
+    }
 
-  PetscSF csf;
-  PetscCall(PetscSFCreate(comm, &csf));
-  PetscCall(PetscSFSetGraph(csf, nroots, num_new_leaves, leafdata, PETSC_COPY_VALUES, new_iremote, PETSC_COPY_VALUES));
-  PetscCall(PetscFree(new_iremote)); // copy and delete because new_iremote is longer than it needs to be
-  PetscCall(PetscFree2(rootdata, leafdata));
+    PetscSF sf_closure;
+    PetscCall(PetscSFCreate(comm, &sf_closure));
+    PetscCall(PetscSFSetGraph(sf_closure, root_offset, leaf_offset, NULL, PETSC_USE_POINTER, closure_leaf, PETSC_OWN_POINTER));
 
-  if (npoints < 0) { // empty point_sf
-    *closure_sf = csf;
-  } else {
-    PetscCall(PetscSFMerge(point_sf, csf, closure_sf));
-    PetscCall(PetscSFDestroy(&csf));
+    PetscSFNode *leaf_donor_closure;
+    { // Pack root buffer with owner for every point in the root cones
+      PetscSFNode       *donor_closure;
+      const PetscInt    *pilocal;
+      const PetscSFNode *piremote;
+      PetscInt           npoints;
+
+      PetscCall(PetscSFGetGraph(point_sf, NULL, &npoints, &pilocal, &piremote));
+      PetscCall(PetscCalloc1(root_offset, &donor_closure));
+      root_offset = 0;
+      for (PetscInt p = 0; p < nroots; p++) {
+        if (rootdata[2 * p] < 0) continue;
+        PetscInt  cl_size;
+        PetscInt *closure = NULL;
+        PetscCall(DMPlexGetTransitiveClosure(dm, p, PETSC_TRUE, &cl_size, &closure));
+        for (PetscInt j = 1; j < cl_size; j++) {
+          PetscInt c = closure[2 * j];
+          if (pilocal) {
+            PetscInt found = -1;
+            if (npoints > 0) PetscCall(PetscFindInt(c, npoints, pilocal, &found));
+            if (found >= 0) {
+              donor_closure[root_offset++] = piremote[found];
+              continue;
+            }
+          }
+          // we own c
+          donor_closure[root_offset].rank  = rank;
+          donor_closure[root_offset].index = c;
+          root_offset++;
+        }
+        PetscCall(DMPlexRestoreTransitiveClosure(dm, p, PETSC_TRUE, &cl_size, &closure));
+      }
+
+      PetscCall(PetscMalloc1(leaf_offset, &leaf_donor_closure));
+      PetscCall(PetscSFBcastBegin(sf_closure, MPIU_2INT, donor_closure, leaf_donor_closure, MPI_REPLACE));
+      PetscCall(PetscSFBcastEnd(sf_closure, MPIU_2INT, donor_closure, leaf_donor_closure, MPI_REPLACE));
+      PetscCall(PetscSFDestroy(&sf_closure));
+      PetscCall(PetscFree(donor_closure));
+    }
+
+    PetscSFNode *new_iremote;
+    PetscCall(PetscCalloc1(nroots, &new_iremote));
+    for (PetscInt i = 0; i < nroots; i++) new_iremote[i].rank = -1;
+    // Walk leaves and match vertices
+    leaf_offset = 0;
+    for (PetscInt i = 0; i < nleaves; i++) {
+      PetscInt  point   = filocal[i], cl_size;
+      PetscInt *closure = NULL;
+      PetscCall(DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &cl_size, &closure));
+      for (PetscInt j = 1; j < cl_size; j++) { // TODO: should we send donor edge orientations so we can flip for consistency?
+        PetscInt    c  = closure[2 * j];
+        PetscSFNode lc = leaf_donor_closure[leaf_offset];
+        // printf("[%d] face %d.%d: %d ?-- (%d,%d)\n", rank, point, j, c, lc.rank, lc.index);
+        if (new_iremote[c].rank == -1) {
+          new_iremote[c] = lc;
+        } else PetscCheck(new_iremote[c].rank == lc.rank && new_iremote[c].index == lc.index, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatched cone ordering between faces");
+        leaf_offset++;
+      }
+      PetscCall(DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &cl_size, &closure));
+    }
+    PetscCall(PetscFree(leaf_donor_closure));
+
+    // Include face points in closure SF
+    for (PetscInt i = 0; i < nleaves; i++) new_iremote[filocal[i]] = firemote[i];
+    // consolidate leaves
+    PetscInt num_new_leaves = 0;
+    for (PetscInt i = 0; i < nroots; i++) {
+      if (new_iremote[i].rank == -1) continue;
+      new_iremote[num_new_leaves] = new_iremote[i];
+      leafdata[num_new_leaves]    = i;
+      num_new_leaves++;
+    }
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, num_new_leaves, leafdata, PETSC_COPY_VALUES, &(*is_points)[f]));
+
+    PetscSF csf;
+    PetscCall(PetscSFCreate(comm, &csf));
+    PetscCall(PetscSFSetGraph(csf, nroots, num_new_leaves, leafdata, PETSC_COPY_VALUES, new_iremote, PETSC_COPY_VALUES));
+    PetscCall(PetscFree(new_iremote)); // copy and delete because new_iremote is longer than it needs to be
+    PetscCall(PetscFree2(rootdata, leafdata));
+
+    PetscInt npoints;
+    PetscCall(PetscSFGetGraph(point_sf, NULL, &npoints, NULL, NULL));
+    if (npoints < 0) { // empty point_sf
+      *closure_sf = csf;
+    } else {
+      PetscCall(PetscSFMerge(point_sf, csf, closure_sf));
+      PetscCall(PetscSFDestroy(&csf));
+    }
+    if (f > 0) PetscCall(PetscSFDestroy(&point_sf)); // Only destory if point_sf is from previous calls to PetscSFMerge
+    point_sf = *closure_sf;                          // Use combined point + isoperiodic SF to define point ownership for further face_sf
   }
   PetscCall(PetscObjectSetName((PetscObject)*closure_sf, "Composed Periodic Points"));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -481,7 +496,7 @@ static PetscErrorCode DMGetIsoperiodicPointSF_Plex(DM dm, PetscSF *sf)
   DM_Plex *plex = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
-  if (!plex->periodic.composed_sf) PetscCall(DMPlexCreateIsoperiodicPointSF_Private(dm, plex->periodic.face_sfs[0], &plex->periodic.composed_sf, &plex->periodic.periodic_points));
+  if (!plex->periodic.composed_sf) PetscCall(DMPlexCreateIsoperiodicPointSF_Private(dm, plex->periodic.num_face_sfs, plex->periodic.face_sfs, &plex->periodic.composed_sf, &plex->periodic.periodic_points));
   if (sf) *sf = plex->periodic.composed_sf;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -580,7 +595,7 @@ PetscErrorCode DMPeriodicCoordinateSetUp_Internal(DM dm)
   {
     PetscInt        npoints;
     const PetscInt *points;
-    IS              is = plex->periodic.periodic_points;
+    IS              is = plex->periodic.periodic_points[0];
     PetscSegBuffer  seg;
     PetscSection    section;
     PetscCall(DMGetLocalSection(dm, &section));

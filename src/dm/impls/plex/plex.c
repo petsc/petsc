@@ -2736,7 +2736,10 @@ PetscErrorCode DMDestroy_Plex(DM dm)
     PetscCall(PetscFree(mesh->periodic.face_sfs));
   }
   PetscCall(PetscSFDestroy(&mesh->periodic.composed_sf));
-  PetscCall(ISDestroy(&mesh->periodic.periodic_points));
+  if (mesh->periodic.periodic_points) {
+    for (PetscInt i = 0; i < mesh->periodic.num_face_sfs; i++) PetscCall(ISDestroy(&mesh->periodic.periodic_points[i]));
+    PetscCall(PetscFree(mesh->periodic.periodic_points));
+  }
   if (mesh->periodic.transform) PetscCall(PetscFree(mesh->periodic.transform));
   PetscCall(PetscSectionDestroy(&mesh->anchorSection));
   PetscCall(ISDestroy(&mesh->anchorIS));
