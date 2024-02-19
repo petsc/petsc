@@ -304,8 +304,11 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Periodicity_Private(DM dm, 
 static PetscErrorCode DMCoordAddPeriodicOffsets_Private(DM dm, Vec g, InsertMode mode, Vec l, void *ctx)
 {
   PetscFunctionBegin;
-  PetscCall(VecScatterBegin(dm->periodic.affine_to_local, dm->periodic.affine, l, ADD_VALUES, SCATTER_FORWARD));
-  PetscCall(VecScatterEnd(dm->periodic.affine_to_local, dm->periodic.affine, l, ADD_VALUES, SCATTER_FORWARD));
+  // These `VecScatter`s should be merged to improve efficiency; the scatters cannot be overlapped.
+  for (PetscInt i = 0; i < dm->periodic.num_affines; i++) {
+    PetscCall(VecScatterBegin(dm->periodic.affine_to_local[i], dm->periodic.affine[i], l, ADD_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(dm->periodic.affine_to_local[i], dm->periodic.affine[i], l, ADD_VALUES, SCATTER_FORWARD));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -582,66 +585,71 @@ PetscErrorCode DMPlexMigrateIsoperiodicFaceSF_Internal(DM old_dm, DM dm, PetscSF
 PetscErrorCode DMPeriodicCoordinateSetUp_Internal(DM dm)
 {
   DM_Plex *plex = (DM_Plex *)dm->data;
+  size_t   count;
+  IS       isdof;
+  PetscInt dim;
 
   PetscFunctionBegin;
   if (!plex->periodic.face_sfs) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMGetIsoperiodicPointSF_Plex(dm, NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMGetIsoperiodicPointSF_C", DMGetIsoperiodicPointSF_Plex));
 
-  PetscInt dim;
   PetscCall(DMGetDimension(dm, &dim));
-  size_t count;
-  IS     isdof;
-  {
-    PetscInt        npoints;
-    const PetscInt *points;
-    IS              is = plex->periodic.periodic_points[0];
-    PetscSegBuffer  seg;
-    PetscSection    section;
-    PetscCall(DMGetLocalSection(dm, &section));
-    PetscCall(PetscSegBufferCreate(sizeof(PetscInt), 32, &seg));
-    PetscCall(ISGetSize(is, &npoints));
-    PetscCall(ISGetIndices(is, &points));
-    for (PetscInt i = 0; i < npoints; i++) {
-      PetscInt point = points[i], off, dof;
-      PetscCall(PetscSectionGetOffset(section, point, &off));
-      PetscCall(PetscSectionGetDof(section, point, &dof));
-      PetscAssert(dof % dim == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unexpected dof %" PetscInt_FMT " not divisible by dimension %" PetscInt_FMT, dof, dim);
-      for (PetscInt j = 0; j < dof / dim; j++) {
-        PetscInt *slot;
-        PetscCall(PetscSegBufferGetInts(seg, 1, &slot));
-        *slot = off / dim + j;
+  dm->periodic.num_affines = plex->periodic.num_face_sfs;
+  PetscCall(PetscMalloc2(dm->periodic.num_affines, &dm->periodic.affine_to_local, dm->periodic.num_affines, &dm->periodic.affine));
+
+  for (PetscInt f = 0; f < plex->periodic.num_face_sfs; f++) {
+    {
+      PetscInt        npoints;
+      const PetscInt *points;
+      IS              is = plex->periodic.periodic_points[f];
+      PetscSegBuffer  seg;
+      PetscSection    section;
+      PetscCall(DMGetLocalSection(dm, &section));
+      PetscCall(PetscSegBufferCreate(sizeof(PetscInt), 32, &seg));
+      PetscCall(ISGetSize(is, &npoints));
+      PetscCall(ISGetIndices(is, &points));
+      for (PetscInt i = 0; i < npoints; i++) {
+        PetscInt point = points[i], off, dof;
+        PetscCall(PetscSectionGetOffset(section, point, &off));
+        PetscCall(PetscSectionGetDof(section, point, &dof));
+        PetscAssert(dof % dim == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unexpected dof %" PetscInt_FMT " not divisible by dimension %" PetscInt_FMT, dof, dim);
+        for (PetscInt j = 0; j < dof / dim; j++) {
+          PetscInt *slot;
+          PetscCall(PetscSegBufferGetInts(seg, 1, &slot));
+          *slot = off / dim + j;
+        }
       }
+      PetscInt *ind;
+      PetscCall(PetscSegBufferGetSize(seg, &count));
+      PetscCall(PetscSegBufferExtractAlloc(seg, &ind));
+      PetscCall(PetscSegBufferDestroy(&seg));
+      PetscCall(ISCreateBlock(PETSC_COMM_SELF, dim, count, ind, PETSC_OWN_POINTER, &isdof));
     }
-    PetscInt *ind;
-    PetscCall(PetscSegBufferGetSize(seg, &count));
-    PetscCall(PetscSegBufferExtractAlloc(seg, &ind));
-    PetscCall(PetscSegBufferDestroy(&seg));
-    PetscCall(ISCreateBlock(PETSC_COMM_SELF, dim, count, ind, PETSC_OWN_POINTER, &isdof));
-  }
-  Vec        L, P;
-  VecType    vec_type;
-  VecScatter scatter;
-  PetscCall(DMGetLocalVector(dm, &L));
-  PetscCall(VecCreate(PETSC_COMM_SELF, &P));
-  PetscCall(VecSetSizes(P, count * dim, count * dim));
-  PetscCall(VecGetType(L, &vec_type));
-  PetscCall(VecSetType(P, vec_type));
-  PetscCall(VecScatterCreate(P, NULL, L, isdof, &scatter));
-  PetscCall(DMRestoreLocalVector(dm, &L));
-  PetscCall(ISDestroy(&isdof));
+    Vec        L, P;
+    VecType    vec_type;
+    VecScatter scatter;
+    PetscCall(DMGetLocalVector(dm, &L));
+    PetscCall(VecCreate(PETSC_COMM_SELF, &P));
+    PetscCall(VecSetSizes(P, count * dim, count * dim));
+    PetscCall(VecGetType(L, &vec_type));
+    PetscCall(VecSetType(P, vec_type));
+    PetscCall(VecScatterCreate(P, NULL, L, isdof, &scatter));
+    PetscCall(DMRestoreLocalVector(dm, &L));
+    PetscCall(ISDestroy(&isdof));
 
-  {
-    PetscScalar *x;
-    PetscCall(VecGetArrayWrite(P, &x));
-    for (PetscInt i = 0; i < (PetscInt)count; i++) {
-      for (PetscInt j = 0; j < dim; j++) x[i * dim + j] = plex->periodic.transform[0][j][3];
+    {
+      PetscScalar *x;
+      PetscCall(VecGetArrayWrite(P, &x));
+      for (PetscInt i = 0; i < (PetscInt)count; i++) {
+        for (PetscInt j = 0; j < dim; j++) x[i * dim + j] = plex->periodic.transform[f][j][3];
+      }
+      PetscCall(VecRestoreArrayWrite(P, &x));
     }
-    PetscCall(VecRestoreArrayWrite(P, &x));
-  }
 
-  dm->periodic.affine_to_local = scatter;
-  dm->periodic.affine          = P;
+    dm->periodic.affine_to_local[f] = scatter;
+    dm->periodic.affine[f]          = P;
+  }
   PetscCall(DMGlobalToLocalHookAdd(dm, NULL, DMCoordAddPeriodicOffsets_Private, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
