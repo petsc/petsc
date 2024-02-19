@@ -179,14 +179,13 @@ static PetscInt ZCodeFind(ZCode key, PetscInt n, const ZCode X[])
   return key == X[lo] ? lo : -(lo + (key > X[lo]) + 1);
 }
 
-static PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Periodicity_Private(DM dm, const ZLayout *layout, const ZCode *vert_z, PetscSegBuffer per_faces, const PetscReal *lower, const PetscReal *upper, const DMBoundaryType *periodicity, PetscSegBuffer donor_face_closure, PetscSegBuffer my_donor_faces)
+static PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Periodicity_Private(DM dm, const ZLayout *layout, const ZCode *vert_z, PetscSegBuffer per_faces[3], const PetscReal *lower, const PetscReal *upper, const DMBoundaryType *periodicity, PetscSegBuffer donor_face_closure[3], PetscSegBuffer my_donor_faces[3])
 {
-  MPI_Comm     comm;
-  size_t       num_faces;
-  PetscInt     dim, *faces, vStart, vEnd;
-  PetscMPIInt  size;
-  ZCode       *donor_verts, *donor_minz;
-  PetscSFNode *leaf;
+  MPI_Comm    comm;
+  PetscInt    dim, vStart, vEnd;
+  PetscMPIInt size;
+  PetscSF     face_sfs[3];
+  PetscScalar transforms[3][4][4] = {{{0}}};
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
@@ -194,93 +193,108 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Periodicity_Private(DM dm, 
   PetscCall(DMGetDimension(dm, &dim));
   const PetscInt csize = PetscPowInt(2, dim - 1);
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
-  PetscCall(PetscSegBufferGetSize(per_faces, &num_faces));
-  PetscCall(PetscSegBufferExtractInPlace(per_faces, &faces));
-  PetscCall(PetscSegBufferExtractInPlace(donor_face_closure, &donor_verts));
-  PetscCall(PetscMalloc1(num_faces, &donor_minz));
-  PetscCall(PetscMalloc1(num_faces, &leaf));
-  for (PetscInt i = 0; i < (PetscInt)num_faces; i++) {
-    ZCode minz = donor_verts[i * csize];
-    for (PetscInt j = 1; j < csize; j++) minz = PetscMin(minz, donor_verts[i * csize + j]);
-    donor_minz[i] = minz;
-  }
-  {
-    PetscBool sorted;
-    PetscCall(PetscSortedInt64(num_faces, (const PetscInt64 *)donor_minz, &sorted));
-    PetscCheck(sorted, PETSC_COMM_SELF, PETSC_ERR_PLIB, "minz not sorted; periodicity in multiple dimensions not yet supported");
-  }
-  for (PetscInt i = 0; i < (PetscInt)num_faces;) {
-    ZCode    z           = donor_minz[i];
-    PetscInt remote_rank = ZCodeFind(z, size + 1, layout->zstarts), remote_count = 0;
-    if (remote_rank < 0) remote_rank = -(remote_rank + 1) - 1;
-    // Process all the vertices on this rank
-    for (ZCode rz = layout->zstarts[remote_rank]; rz < layout->zstarts[remote_rank + 1]; rz++) {
-      Ijk loc = ZCodeSplit(rz);
-      if (rz == z) {
-        leaf[i].rank  = remote_rank;
-        leaf[i].index = remote_count;
-        i++;
-        if (i == (PetscInt)num_faces) break;
-        z = donor_minz[i];
+
+  PetscInt num_directions = 0;
+  for (PetscInt direction = 0; direction < dim; direction++) {
+    size_t       num_faces;
+    PetscInt    *faces;
+    ZCode       *donor_verts, *donor_minz;
+    PetscSFNode *leaf;
+
+    if (periodicity[direction] != DM_BOUNDARY_PERIODIC) continue;
+    PetscCall(PetscSegBufferGetSize(per_faces[direction], &num_faces));
+    PetscCall(PetscSegBufferExtractInPlace(per_faces[direction], &faces));
+    PetscCall(PetscSegBufferExtractInPlace(donor_face_closure[direction], &donor_verts));
+    PetscCall(PetscMalloc1(num_faces, &donor_minz));
+    PetscCall(PetscMalloc1(num_faces, &leaf));
+    for (PetscInt i = 0; i < (PetscInt)num_faces; i++) {
+      ZCode minz = donor_verts[i * csize];
+      for (PetscInt j = 1; j < csize; j++) minz = PetscMin(minz, donor_verts[i * csize + j]);
+      donor_minz[i] = minz;
+    }
+    {
+      PetscBool sorted;
+      PetscCall(PetscSortedInt64(num_faces, (const PetscInt64 *)donor_minz, &sorted));
+      // If a donor vertex were chosen to broker multiple faces, we would have a logic error.
+      // Checking for sorting is a cheap check that there are no duplicates.
+      PetscCheck(sorted, PETSC_COMM_SELF, PETSC_ERR_PLIB, "minz not sorted; possible duplicates not checked");
+    }
+    for (PetscInt i = 0; i < (PetscInt)num_faces;) {
+      ZCode    z           = donor_minz[i];
+      PetscInt remote_rank = ZCodeFind(z, size + 1, layout->zstarts), remote_count = 0;
+      if (remote_rank < 0) remote_rank = -(remote_rank + 1) - 1;
+      // Process all the vertices on this rank
+      for (ZCode rz = layout->zstarts[remote_rank]; rz < layout->zstarts[remote_rank + 1]; rz++) {
+        Ijk loc = ZCodeSplit(rz);
+        if (rz == z) {
+          leaf[i].rank  = remote_rank;
+          leaf[i].index = remote_count;
+          i++;
+          if (i == (PetscInt)num_faces) break;
+          z = donor_minz[i];
+        }
+        if (IjkActive(layout->vextent, loc)) remote_count++;
       }
-      if (IjkActive(layout->vextent, loc)) remote_count++;
     }
-  }
-  PetscCall(PetscFree(donor_minz));
-  PetscSF sfper;
-  PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)dm), &sfper));
-  PetscCall(PetscSFSetGraph(sfper, vEnd - vStart, num_faces, NULL, PETSC_USE_POINTER, leaf, PETSC_USE_POINTER));
-  const PetscInt *my_donor_degree;
-  PetscCall(PetscSFComputeDegreeBegin(sfper, &my_donor_degree));
-  PetscCall(PetscSFComputeDegreeEnd(sfper, &my_donor_degree));
-  PetscInt num_multiroots = 0;
-  for (PetscInt i = 0; i < vEnd - vStart; i++) {
-    num_multiroots += my_donor_degree[i];
-    if (my_donor_degree[i] == 0) continue;
-    PetscAssert(my_donor_degree[i] == 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Local vertex has multiple faces");
-  }
-  PetscInt *my_donors, *donor_indices, *my_donor_indices;
-  size_t    num_my_donors;
-  PetscCall(PetscSegBufferGetSize(my_donor_faces, &num_my_donors));
-  PetscCheck((PetscInt)num_my_donors == num_multiroots, PETSC_COMM_SELF, PETSC_ERR_SUP, "Donor request does not match expected donors");
-  PetscCall(PetscSegBufferExtractInPlace(my_donor_faces, &my_donors));
-  PetscCall(PetscMalloc1(vEnd - vStart, &my_donor_indices));
-  for (PetscInt i = 0; i < (PetscInt)num_my_donors; i++) {
-    PetscInt f = my_donors[i];
-    PetscInt num_points, *points = NULL, minv = PETSC_MAX_INT;
-    PetscCall(DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &num_points, &points));
-    for (PetscInt j = 0; j < num_points; j++) {
-      PetscInt p = points[2 * j];
-      if (p < vStart || vEnd <= p) continue;
-      minv = PetscMin(minv, p);
+    PetscCall(PetscFree(donor_minz));
+    PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)dm), &face_sfs[num_directions]));
+    PetscCall(PetscSFSetGraph(face_sfs[num_directions], vEnd - vStart, num_faces, NULL, PETSC_USE_POINTER, leaf, PETSC_USE_POINTER));
+    const PetscInt *my_donor_degree;
+    PetscCall(PetscSFComputeDegreeBegin(face_sfs[num_directions], &my_donor_degree));
+    PetscCall(PetscSFComputeDegreeEnd(face_sfs[num_directions], &my_donor_degree));
+    PetscInt num_multiroots = 0;
+    for (PetscInt i = 0; i < vEnd - vStart; i++) {
+      num_multiroots += my_donor_degree[i];
+      if (my_donor_degree[i] == 0) continue;
+      PetscAssert(my_donor_degree[i] == 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Local vertex has multiple faces");
     }
-    PetscCall(DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &num_points, &points));
-    PetscAssert(my_donor_degree[minv - vStart] == 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Local vertex not requested");
-    my_donor_indices[minv - vStart] = f;
+    PetscInt *my_donors, *donor_indices, *my_donor_indices;
+    size_t    num_my_donors;
+    PetscCall(PetscSegBufferGetSize(my_donor_faces[direction], &num_my_donors));
+    PetscCheck((PetscInt)num_my_donors == num_multiroots, PETSC_COMM_SELF, PETSC_ERR_SUP, "Donor request does not match expected donors");
+    PetscCall(PetscSegBufferExtractInPlace(my_donor_faces[direction], &my_donors));
+    PetscCall(PetscMalloc1(vEnd - vStart, &my_donor_indices));
+    for (PetscInt i = 0; i < (PetscInt)num_my_donors; i++) {
+      PetscInt f = my_donors[i];
+      PetscInt num_points, *points = NULL, minv = PETSC_MAX_INT;
+      PetscCall(DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &num_points, &points));
+      for (PetscInt j = 0; j < num_points; j++) {
+        PetscInt p = points[2 * j];
+        if (p < vStart || vEnd <= p) continue;
+        minv = PetscMin(minv, p);
+      }
+      PetscCall(DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &num_points, &points));
+      PetscAssert(my_donor_degree[minv - vStart] == 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Local vertex not requested");
+      my_donor_indices[minv - vStart] = f;
+    }
+    PetscCall(PetscMalloc1(num_faces, &donor_indices));
+    PetscCall(PetscSFBcastBegin(face_sfs[num_directions], MPIU_INT, my_donor_indices, donor_indices, MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(face_sfs[num_directions], MPIU_INT, my_donor_indices, donor_indices, MPI_REPLACE));
+    PetscCall(PetscFree(my_donor_indices));
+    // Modify our leafs so they point to donor faces instead of donor minz. Additionally, give them indices as faces.
+    for (PetscInt i = 0; i < (PetscInt)num_faces; i++) leaf[i].index = donor_indices[i];
+    PetscCall(PetscFree(donor_indices));
+    PetscInt pStart, pEnd;
+    PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+    PetscCall(PetscSFSetGraph(face_sfs[num_directions], pEnd - pStart, num_faces, faces, PETSC_COPY_VALUES, leaf, PETSC_OWN_POINTER));
+    {
+      char face_sf_name[PETSC_MAX_PATH_LEN];
+      PetscCall(PetscSNPrintf(face_sf_name, sizeof face_sf_name, "Z-order Isoperiodic Faces #%" PetscInt_FMT, num_directions));
+      PetscCall(PetscObjectSetName((PetscObject)face_sfs[num_directions], face_sf_name));
+    }
+
+    transforms[num_directions][0][0]         = 1;
+    transforms[num_directions][1][1]         = 1;
+    transforms[num_directions][2][2]         = 1;
+    transforms[num_directions][3][3]         = 1;
+    transforms[num_directions][direction][3] = upper[direction] - lower[direction];
+    num_directions++;
   }
-  PetscCall(PetscMalloc1(num_faces, &donor_indices));
-  PetscCall(PetscSFBcastBegin(sfper, MPIU_INT, my_donor_indices, donor_indices, MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(sfper, MPIU_INT, my_donor_indices, donor_indices, MPI_REPLACE));
-  PetscCall(PetscFree(my_donor_indices));
-  // Modify our leafs so they point to donor faces instead of donor minz. Additionally, give them indices as faces.
-  for (PetscInt i = 0; i < (PetscInt)num_faces; i++) leaf[i].index = donor_indices[i];
-  PetscCall(PetscFree(donor_indices));
-  PetscInt pStart, pEnd;
-  PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
-  PetscCall(PetscSFSetGraph(sfper, pEnd - pStart, num_faces, faces, PETSC_COPY_VALUES, leaf, PETSC_OWN_POINTER));
-  PetscCall(PetscObjectSetName((PetscObject)sfper, "Z-order Isoperiodic Faces"));
 
-  PetscCall(DMPlexSetIsoperiodicFaceSF(dm, sfper));
+  PetscCall(DMPlexSetIsoperiodicFaceSF(dm, face_sfs[0]));
+  PetscCall(DMPlexSetIsoperiodicFaceTransform(dm, (PetscScalar *)transforms));
 
-  PetscScalar t[4][4] = {{0}};
-  t[0][0]             = 1;
-  t[1][1]             = 1;
-  t[2][2]             = 1;
-  t[3][3]             = 1;
-  for (PetscInt i = 0; i < dim; i++)
-    if (periodicity[i] == DM_BOUNDARY_PERIODIC) t[i][3] = upper[i] - lower[i];
-  PetscCall(DMPlexSetIsoperiodicFaceTransform(dm, &t[0][0]));
-  PetscCall(PetscSFDestroy(&sfper));
+  for (PetscInt i = 0; i < num_directions; i++) PetscCall(PetscSFDestroy(&face_sfs[i]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -820,10 +834,12 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
     DMLabel label;
     PetscCall(DMCreateLabel(dm, "Face Sets"));
     PetscCall(DMGetLabel(dm, "Face Sets", &label));
-    PetscSegBuffer per_faces, donor_face_closure, my_donor_faces;
-    PetscCall(PetscSegBufferCreate(sizeof(PetscInt), 64, &per_faces));
-    PetscCall(PetscSegBufferCreate(sizeof(PetscInt), 64, &my_donor_faces));
-    PetscCall(PetscSegBufferCreate(sizeof(ZCode), 64 * PetscPowInt(2, dim), &donor_face_closure));
+    PetscSegBuffer per_faces[3], donor_face_closure[3], my_donor_faces[3];
+    for (PetscInt i = 0; i < 3; i++) {
+      PetscCall(PetscSegBufferCreate(sizeof(PetscInt), 64, &per_faces[i]));
+      PetscCall(PetscSegBufferCreate(sizeof(PetscInt), 64, &my_donor_faces[i]));
+      PetscCall(PetscSegBufferCreate(sizeof(ZCode), 64 * PetscPowInt(2, dim), &donor_face_closure[i]));
+    }
     PetscInt fStart, fEnd, vStart, vEnd;
     PetscCall(DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd));
     PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
@@ -851,13 +867,13 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
           if (periodicity[bc / 2] == DM_BOUNDARY_PERIODIC) {
             PetscInt *put;
             if (bc % 2 == 0) { // donor face; no label
-              PetscCall(PetscSegBufferGet(my_donor_faces, 1, &put));
+              PetscCall(PetscSegBufferGet(my_donor_faces[bc / 2], 1, &put));
               *put = f;
             } else { // periodic face
-              PetscCall(PetscSegBufferGet(per_faces, 1, &put));
+              PetscCall(PetscSegBufferGet(per_faces[bc / 2], 1, &put));
               *put = f;
               ZCode *zput;
-              PetscCall(PetscSegBufferGet(donor_face_closure, num_fverts, &zput));
+              PetscCall(PetscSegBufferGet(donor_face_closure[bc / 2], num_fverts, &zput));
               for (PetscInt i = 0; i < num_fverts; i++) {
                 Ijk loc = ZCodeSplit(vert_z[fverts[i] - vStart]);
                 switch (bc / 2) {
@@ -889,9 +905,11 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
     if (periodicity[0] == DM_BOUNDARY_PERIODIC || (dim > 1 && periodicity[1] == DM_BOUNDARY_PERIODIC) || (dim > 2 && periodicity[2] == DM_BOUNDARY_PERIODIC)) {
       PetscCall(DMPlexCreateBoxMesh_Tensor_SFC_Periodicity_Private(dm, &layout, vert_z, per_faces, lower, upper, periodicity, donor_face_closure, my_donor_faces));
     }
-    PetscCall(PetscSegBufferDestroy(&per_faces));
-    PetscCall(PetscSegBufferDestroy(&donor_face_closure));
-    PetscCall(PetscSegBufferDestroy(&my_donor_faces));
+    for (PetscInt i = 0; i < 3; i++) {
+      PetscCall(PetscSegBufferDestroy(&per_faces[i]));
+      PetscCall(PetscSegBufferDestroy(&donor_face_closure[i]));
+      PetscCall(PetscSegBufferDestroy(&my_donor_faces[i]));
+    }
   }
   PetscCall(PetscFree(layout.zstarts));
   PetscCall(PetscFree(vert_z));
