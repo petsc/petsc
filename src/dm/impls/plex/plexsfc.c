@@ -489,69 +489,78 @@ static PetscErrorCode DMGetIsoperiodicPointSF_Plex(DM dm, PetscSF *sf)
 PetscErrorCode DMPlexMigrateIsoperiodicFaceSF_Internal(DM old_dm, DM dm, PetscSF sf_migration)
 {
   DM_Plex    *plex = (DM_Plex *)old_dm->data;
-  PetscSF     sf_point;
+  PetscSF     sf_point, *new_face_sfs;
   PetscMPIInt rank;
 
   PetscFunctionBegin;
   if (!plex->periodic.face_sfs) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
   PetscCall(DMGetPointSF(dm, &sf_point));
-  PetscInt           old_npoints, new_npoints, old_nleaf, new_nleaf, point_nleaf;
-  PetscSFNode       *new_leafdata, *rootdata, *leafdata;
-  const PetscInt    *old_local, *point_local;
-  const PetscSFNode *old_remote, *point_remote;
-  PetscCall(PetscSFGetGraph(plex->periodic.face_sfs[0], &old_npoints, &old_nleaf, &old_local, &old_remote));
-  PetscCall(PetscSFGetGraph(sf_migration, NULL, &new_nleaf, NULL, NULL));
-  PetscCall(PetscSFGetGraph(sf_point, &new_npoints, &point_nleaf, &point_local, &point_remote));
-  PetscAssert(new_nleaf == new_npoints, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected migration leaf space to match new point root space");
-  PetscCall(PetscMalloc3(old_npoints, &rootdata, old_npoints, &leafdata, new_npoints, &new_leafdata));
+  PetscCall(PetscMalloc1(plex->periodic.num_face_sfs, &new_face_sfs));
 
-  // Fill new_leafdata with new owners of all points
-  for (PetscInt i = 0; i < new_npoints; i++) {
-    new_leafdata[i].rank  = rank;
-    new_leafdata[i].index = i;
-  }
-  for (PetscInt i = 0; i < point_nleaf; i++) {
-    PetscInt j      = point_local[i];
-    new_leafdata[j] = point_remote[i];
-  }
-  // REPLACE is okay because every leaf agrees about the new owners
-  PetscCall(PetscSFReduceBegin(sf_migration, MPIU_2INT, new_leafdata, rootdata, MPI_REPLACE));
-  PetscCall(PetscSFReduceEnd(sf_migration, MPIU_2INT, new_leafdata, rootdata, MPI_REPLACE));
-  // rootdata now contains the new owners
+  for (PetscInt f = 0; f < plex->periodic.num_face_sfs; f++) {
+    PetscInt           old_npoints, new_npoints, old_nleaf, new_nleaf, point_nleaf;
+    PetscSFNode       *new_leafdata, *rootdata, *leafdata;
+    const PetscInt    *old_local, *point_local;
+    const PetscSFNode *old_remote, *point_remote;
+    PetscCall(PetscSFGetGraph(plex->periodic.face_sfs[f], &old_npoints, &old_nleaf, &old_local, &old_remote));
+    PetscCall(PetscSFGetGraph(sf_migration, NULL, &new_nleaf, NULL, NULL));
+    PetscCall(PetscSFGetGraph(sf_point, &new_npoints, &point_nleaf, &point_local, &point_remote));
+    PetscAssert(new_nleaf == new_npoints, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected migration leaf space to match new point root space");
+    PetscCall(PetscMalloc3(old_npoints, &rootdata, old_npoints, &leafdata, new_npoints, &new_leafdata));
 
-  // Send to leaves of old space
-  for (PetscInt i = 0; i < old_npoints; i++) {
-    leafdata[i].rank  = -1;
-    leafdata[i].index = -1;
-  }
-  PetscCall(PetscSFBcastBegin(plex->periodic.face_sfs[0], MPIU_2INT, rootdata, leafdata, MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(plex->periodic.face_sfs[0], MPIU_2INT, rootdata, leafdata, MPI_REPLACE));
+    // Fill new_leafdata with new owners of all points
+    for (PetscInt i = 0; i < new_npoints; i++) {
+      new_leafdata[i].rank  = rank;
+      new_leafdata[i].index = i;
+    }
+    for (PetscInt i = 0; i < point_nleaf; i++) {
+      PetscInt j      = point_local[i];
+      new_leafdata[j] = point_remote[i];
+    }
+    // REPLACE is okay because every leaf agrees about the new owners
+    PetscCall(PetscSFReduceBegin(sf_migration, MPIU_2INT, new_leafdata, rootdata, MPI_REPLACE));
+    PetscCall(PetscSFReduceEnd(sf_migration, MPIU_2INT, new_leafdata, rootdata, MPI_REPLACE));
+    // rootdata now contains the new owners
 
-  // Send to new leaf space
-  PetscCall(PetscSFBcastBegin(sf_migration, MPIU_2INT, leafdata, new_leafdata, MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(sf_migration, MPIU_2INT, leafdata, new_leafdata, MPI_REPLACE));
+    // Send to leaves of old space
+    for (PetscInt i = 0; i < old_npoints; i++) {
+      leafdata[i].rank  = -1;
+      leafdata[i].index = -1;
+    }
+    PetscCall(PetscSFBcastBegin(plex->periodic.face_sfs[f], MPIU_2INT, rootdata, leafdata, MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(plex->periodic.face_sfs[f], MPIU_2INT, rootdata, leafdata, MPI_REPLACE));
 
-  PetscInt     nface = 0, *new_local;
-  PetscSFNode *new_remote;
-  for (PetscInt i = 0; i < new_npoints; i++) nface += (new_leafdata[i].rank >= 0);
-  PetscCall(PetscMalloc1(nface, &new_local));
-  PetscCall(PetscMalloc1(nface, &new_remote));
-  nface = 0;
-  for (PetscInt i = 0; i < new_npoints; i++) {
-    if (new_leafdata[i].rank == -1) continue;
-    new_local[nface]  = i;
-    new_remote[nface] = new_leafdata[i];
-    nface++;
+    // Send to new leaf space
+    PetscCall(PetscSFBcastBegin(sf_migration, MPIU_2INT, leafdata, new_leafdata, MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(sf_migration, MPIU_2INT, leafdata, new_leafdata, MPI_REPLACE));
+
+    PetscInt     nface = 0, *new_local;
+    PetscSFNode *new_remote;
+    for (PetscInt i = 0; i < new_npoints; i++) nface += (new_leafdata[i].rank >= 0);
+    PetscCall(PetscMalloc1(nface, &new_local));
+    PetscCall(PetscMalloc1(nface, &new_remote));
+    nface = 0;
+    for (PetscInt i = 0; i < new_npoints; i++) {
+      if (new_leafdata[i].rank == -1) continue;
+      new_local[nface]  = i;
+      new_remote[nface] = new_leafdata[i];
+      nface++;
+    }
+    PetscCall(PetscFree3(rootdata, leafdata, new_leafdata));
+    PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)dm), &new_face_sfs[f]));
+    PetscCall(PetscSFSetGraph(new_face_sfs[f], new_npoints, nface, new_local, PETSC_OWN_POINTER, new_remote, PETSC_OWN_POINTER));
+    {
+      char new_face_sf_name[PETSC_MAX_PATH_LEN];
+      PetscCall(PetscSNPrintf(new_face_sf_name, sizeof new_face_sf_name, "Migrated Isoperiodic Faces #%" PetscInt_FMT, f));
+      PetscCall(PetscObjectSetName((PetscObject)new_face_sfs[f], new_face_sf_name));
+    }
   }
-  PetscCall(PetscFree3(rootdata, leafdata, new_leafdata));
-  PetscSF sf_face;
-  PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)dm), &sf_face));
-  PetscCall(PetscSFSetGraph(sf_face, new_npoints, nface, new_local, PETSC_OWN_POINTER, new_remote, PETSC_OWN_POINTER));
-  PetscCall(PetscObjectSetName((PetscObject)sf_face, "Migrated Isoperiodic Faces"));
-  PetscCall(DMPlexSetIsoperiodicFaceSF(dm, 1, &sf_face));
-  PetscCall(DMPlexSetIsoperiodicFaceTransform(dm, 1, (PetscScalar *)plex->periodic.transform));
-  PetscCall(PetscSFDestroy(&sf_face));
+
+  PetscCall(DMPlexSetIsoperiodicFaceSF(dm, plex->periodic.num_face_sfs, new_face_sfs));
+  PetscCall(DMPlexSetIsoperiodicFaceTransform(dm, plex->periodic.num_face_sfs, (PetscScalar *)plex->periodic.transform));
+  for (PetscInt f = 0; f < plex->periodic.num_face_sfs; f++) PetscCall(PetscSFDestroy(&new_face_sfs[f]));
+  PetscCall(PetscFree(new_face_sfs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
