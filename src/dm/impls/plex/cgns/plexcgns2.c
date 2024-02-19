@@ -712,10 +712,11 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
       PetscInt quadrature_order = field_order;
       PetscCall(DMClone(dm, &colloc_dm));
       { // Inform the new colloc_dm that it is a coordinate DM so isoperiodic affine corrections can be applied
-        PetscSF face_sf;
-        PetscCall(DMPlexGetIsoperiodicFaceSF(dm, &face_sf));
-        PetscCall(DMPlexSetIsoperiodicFaceSF(colloc_dm, face_sf));
-        if (face_sf) colloc_dm->periodic.setup = DMPeriodicCoordinateSetUp_Internal;
+        const PetscSF *face_sfs;
+        PetscInt       num_face_sfs;
+        PetscCall(DMPlexGetIsoperiodicFaceSF(dm, &num_face_sfs, &face_sfs));
+        PetscCall(DMPlexSetIsoperiodicFaceSF(colloc_dm, num_face_sfs, (PetscSF *)face_sfs));
+        if (face_sfs) colloc_dm->periodic.setup = DMPeriodicCoordinateSetUp_Internal;
       }
       PetscCall(DMPlexIsSimplex(dm, &is_simplex));
       PetscCall(PetscFECreateLagrange(PetscObjectComm((PetscObject)dm), topo_dim, coord_dim, is_simplex, field_order, quadrature_order, &fe));

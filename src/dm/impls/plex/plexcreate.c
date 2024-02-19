@@ -92,8 +92,12 @@ PetscErrorCode DMPlexReplace_Internal(DM dm, DM *ndm)
   PetscCall(DMInitialize_Plex(dm));
   dm->data = dmNew->data;
   ((DM_Plex *)dmNew->data)->refct++;
-  PetscCall(DMPlexGetIsoperiodicFaceSF(dm, &sf));
-  PetscCall(DMPlexSetIsoperiodicFaceSF(dm, sf)); // for the compose function effect on dm
+  {
+    PetscInt       num_face_sfs;
+    const PetscSF *sfs;
+    PetscCall(DMPlexGetIsoperiodicFaceSF(dm, &num_face_sfs, &sfs));
+    PetscCall(DMPlexSetIsoperiodicFaceSF(dm, num_face_sfs, (PetscSF *)sfs)); // for the compose function effect on dm
+  }
   PetscCall(DMDestroyLabelLinkList_Internal(dm));
   PetscCall(DMCopyLabels(dmNew, dm, PETSC_OWN_POINTER, PETSC_TRUE, DM_COPY_LABELS_FAIL));
   PetscCall(DMGetCoarseDM(dmNew, &coarseDM));
@@ -4743,14 +4747,15 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
 
 PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm)
 {
-  DM_Plex *mesh = (DM_Plex *)dm->data;
-  PetscSF  face_sf;
+  DM_Plex       *mesh = (DM_Plex *)dm->data;
+  const PetscSF *face_sfs;
+  PetscInt       num_face_sfs;
 
   PetscFunctionBegin;
   mesh->refct++;
   (*newdm)->data = mesh;
-  PetscCall(DMPlexGetIsoperiodicFaceSF(dm, &face_sf));
-  PetscCall(DMPlexSetIsoperiodicFaceSF(*newdm, face_sf));
+  PetscCall(DMPlexGetIsoperiodicFaceSF(dm, &num_face_sfs, &face_sfs));
+  PetscCall(DMPlexSetIsoperiodicFaceSF(*newdm, num_face_sfs, (PetscSF *)face_sfs));
   PetscCall(PetscObjectChangeTypeName((PetscObject)*newdm, DMPLEX));
   PetscCall(DMInitialize_Plex(*newdm));
   PetscFunctionReturn(PETSC_SUCCESS);

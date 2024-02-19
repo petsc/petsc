@@ -1043,7 +1043,8 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       PetscCall(DMGetPointSF(dm, &sf));
       PetscCall(PetscSFView(sf, viewer));
     }
-    if (mesh->periodic.face_sf) PetscCall(PetscSFView(mesh->periodic.face_sf, viewer));
+    if (mesh->periodic.face_sfs)
+      for (PetscInt i = 0; i < mesh->periodic.num_face_sfs; i++) PetscCall(PetscSFView(mesh->periodic.face_sfs[i], viewer));
     PetscCall(PetscViewerFlush(viewer));
   } else if (format == PETSC_VIEWER_ASCII_LATEX) {
     const char  *name, *color;
@@ -2730,9 +2731,13 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   PetscCall(ISDestroy(&mesh->subpointIS));
   PetscCall(ISDestroy(&mesh->globalVertexNumbers));
   PetscCall(ISDestroy(&mesh->globalCellNumbers));
-  PetscCall(PetscSFDestroy(&mesh->periodic.face_sf));
+  if (mesh->periodic.face_sfs) {
+    for (PetscInt i = 0; i < mesh->periodic.num_face_sfs; i++) PetscCall(PetscSFDestroy(&mesh->periodic.face_sfs[i]));
+    PetscCall(PetscFree(mesh->periodic.face_sfs));
+  }
   PetscCall(PetscSFDestroy(&mesh->periodic.composed_sf));
   PetscCall(ISDestroy(&mesh->periodic.periodic_points));
+  if (mesh->periodic.transform) PetscCall(PetscFree(mesh->periodic.transform));
   PetscCall(PetscSectionDestroy(&mesh->anchorSection));
   PetscCall(ISDestroy(&mesh->anchorIS));
   PetscCall(PetscSectionDestroy(&mesh->parentSection));

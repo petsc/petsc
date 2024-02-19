@@ -179,9 +179,9 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateHypercubicMesh(MPI_Comm, PetscInt, const
 PETSC_EXTERN PetscErrorCode DMPlexExtrude(DM, PetscInt, PetscReal, PetscBool, PetscBool, PetscBool, const PetscReal[], const PetscReal[], DM *);
 PETSC_EXTERN PetscErrorCode DMPlexInflateToGeomModel(DM);
 
-PETSC_EXTERN PetscErrorCode DMPlexSetIsoperiodicFaceSF(DM, PetscSF);
-PETSC_EXTERN PetscErrorCode DMPlexGetIsoperiodicFaceSF(DM, PetscSF *);
-PETSC_EXTERN PetscErrorCode DMPlexSetIsoperiodicFaceTransform(DM, const PetscScalar[]);
+PETSC_EXTERN PetscErrorCode DMPlexSetIsoperiodicFaceSF(DM, PetscInt, PetscSF *);
+PETSC_EXTERN PetscErrorCode DMPlexGetIsoperiodicFaceSF(DM, PetscInt *, const PetscSF **);
+PETSC_EXTERN PetscErrorCode DMPlexSetIsoperiodicFaceTransform(DM, PetscInt, const PetscScalar *);
 
 PETSC_EXTERN PetscErrorCode DMPlexCheck(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckSymmetry(DM);

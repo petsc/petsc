@@ -291,8 +291,8 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Periodicity_Private(DM dm, 
     num_directions++;
   }
 
-  PetscCall(DMPlexSetIsoperiodicFaceSF(dm, face_sfs[0]));
-  PetscCall(DMPlexSetIsoperiodicFaceTransform(dm, (PetscScalar *)transforms));
+  PetscCall(DMPlexSetIsoperiodicFaceSF(dm, num_directions, face_sfs));
+  PetscCall(DMPlexSetIsoperiodicFaceTransform(dm, num_directions, (PetscScalar *)transforms));
 
   for (PetscInt i = 0; i < num_directions; i++) PetscCall(PetscSFDestroy(&face_sfs[i]));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -481,11 +481,7 @@ static PetscErrorCode DMGetIsoperiodicPointSF_Plex(DM dm, PetscSF *sf)
   DM_Plex *plex = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
-  if (!plex->periodic.composed_sf) {
-    PetscSF face_sf = plex->periodic.face_sf;
-
-    PetscCall(DMPlexCreateIsoperiodicPointSF_Private(dm, face_sf, &plex->periodic.composed_sf, &plex->periodic.periodic_points));
-  }
+  if (!plex->periodic.composed_sf) PetscCall(DMPlexCreateIsoperiodicPointSF_Private(dm, plex->periodic.face_sfs[0], &plex->periodic.composed_sf, &plex->periodic.periodic_points));
   if (sf) *sf = plex->periodic.composed_sf;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -497,14 +493,14 @@ PetscErrorCode DMPlexMigrateIsoperiodicFaceSF_Internal(DM old_dm, DM dm, PetscSF
   PetscMPIInt rank;
 
   PetscFunctionBegin;
-  if (!plex->periodic.face_sf) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!plex->periodic.face_sfs) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
   PetscCall(DMGetPointSF(dm, &sf_point));
   PetscInt           old_npoints, new_npoints, old_nleaf, new_nleaf, point_nleaf;
   PetscSFNode       *new_leafdata, *rootdata, *leafdata;
   const PetscInt    *old_local, *point_local;
   const PetscSFNode *old_remote, *point_remote;
-  PetscCall(PetscSFGetGraph(plex->periodic.face_sf, &old_npoints, &old_nleaf, &old_local, &old_remote));
+  PetscCall(PetscSFGetGraph(plex->periodic.face_sfs[0], &old_npoints, &old_nleaf, &old_local, &old_remote));
   PetscCall(PetscSFGetGraph(sf_migration, NULL, &new_nleaf, NULL, NULL));
   PetscCall(PetscSFGetGraph(sf_point, &new_npoints, &point_nleaf, &point_local, &point_remote));
   PetscAssert(new_nleaf == new_npoints, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected migration leaf space to match new point root space");
@@ -529,8 +525,8 @@ PetscErrorCode DMPlexMigrateIsoperiodicFaceSF_Internal(DM old_dm, DM dm, PetscSF
     leafdata[i].rank  = -1;
     leafdata[i].index = -1;
   }
-  PetscCall(PetscSFBcastBegin(plex->periodic.face_sf, MPIU_2INT, rootdata, leafdata, MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(plex->periodic.face_sf, MPIU_2INT, rootdata, leafdata, MPI_REPLACE));
+  PetscCall(PetscSFBcastBegin(plex->periodic.face_sfs[0], MPIU_2INT, rootdata, leafdata, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(plex->periodic.face_sfs[0], MPIU_2INT, rootdata, leafdata, MPI_REPLACE));
 
   // Send to new leaf space
   PetscCall(PetscSFBcastBegin(sf_migration, MPIU_2INT, leafdata, new_leafdata, MPI_REPLACE));
@@ -553,8 +549,8 @@ PetscErrorCode DMPlexMigrateIsoperiodicFaceSF_Internal(DM old_dm, DM dm, PetscSF
   PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)dm), &sf_face));
   PetscCall(PetscSFSetGraph(sf_face, new_npoints, nface, new_local, PETSC_OWN_POINTER, new_remote, PETSC_OWN_POINTER));
   PetscCall(PetscObjectSetName((PetscObject)sf_face, "Migrated Isoperiodic Faces"));
-  PetscCall(DMPlexSetIsoperiodicFaceSF(dm, sf_face));
-  PetscCall(DMPlexSetIsoperiodicFaceTransform(dm, &plex->periodic.transform[0][0]));
+  PetscCall(DMPlexSetIsoperiodicFaceSF(dm, 1, &sf_face));
+  PetscCall(DMPlexSetIsoperiodicFaceTransform(dm, 1, (PetscScalar *)plex->periodic.transform));
   PetscCall(PetscSFDestroy(&sf_face));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -564,7 +560,7 @@ PetscErrorCode DMPeriodicCoordinateSetUp_Internal(DM dm)
   DM_Plex *plex = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
-  if (!plex->periodic.face_sf) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!plex->periodic.face_sfs) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMGetIsoperiodicPointSF_Plex(dm, NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMGetIsoperiodicPointSF_C", DMGetIsoperiodicPointSF_Plex));
 
@@ -615,7 +611,7 @@ PetscErrorCode DMPeriodicCoordinateSetUp_Internal(DM dm)
     PetscScalar *x;
     PetscCall(VecGetArrayWrite(P, &x));
     for (PetscInt i = 0; i < (PetscInt)count; i++) {
-      for (PetscInt j = 0; j < dim; j++) x[i * dim + j] = plex->periodic.transform[j][3];
+      for (PetscInt j = 0; j < dim; j++) x[i * dim + j] = plex->periodic.transform[0][j][3];
     }
     PetscCall(VecRestoreArrayWrite(P, &x));
   }
@@ -922,8 +918,9 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
   Logically Collective
 
   Input Parameters:
-+ dm      - The `DMPLEX` on which to set periodicity
-- face_sf - `PetscSF` in which roots are (owned) donor faces and leaves are faces that must be matched to a (possibly remote) donor face.
++ dm           - The `DMPLEX` on which to set periodicity
+. num_face_sfs - Number of `PetscSF`s in `face_sfs`
+- face_sfs     - Array of `PetscSF` in which roots are (owned) donor faces and leaves are faces that must be matched to a (possibly remote) donor face.
 
   Level: advanced
 
@@ -933,26 +930,35 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
 
 .seealso: [](ch_unstructured), `DMPLEX`, `DMGetGlobalSection()`, `DMPlexGetIsoperiodicFaceSF()`
 @*/
-PetscErrorCode DMPlexSetIsoperiodicFaceSF(DM dm, PetscSF face_sf)
+PetscErrorCode DMPlexSetIsoperiodicFaceSF(DM dm, PetscInt num_face_sfs, PetscSF *face_sfs)
 {
   DM_Plex *plex = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(PetscObjectReference((PetscObject)face_sf));
-  PetscCall(PetscSFDestroy(&plex->periodic.face_sf));
-  plex->periodic.face_sf = face_sf;
-  if (face_sf) PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMGetIsoperiodicPointSF_C", DMGetIsoperiodicPointSF_Plex));
+  if (face_sfs) PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMGetIsoperiodicPointSF_C", DMGetIsoperiodicPointSF_Plex));
+  if (face_sfs == plex->periodic.face_sfs && num_face_sfs == plex->periodic.num_face_sfs) PetscFunctionReturn(PETSC_SUCCESS);
+
+  for (PetscInt i = 0; i < num_face_sfs; i++) PetscCall(PetscObjectReference((PetscObject)face_sfs[i]));
+
+  if (plex->periodic.num_face_sfs > 0) {
+    for (PetscInt i = 0; i < plex->periodic.num_face_sfs; i++) PetscCall(PetscSFDestroy(&plex->periodic.face_sfs[i]));
+    PetscCall(PetscFree(plex->periodic.face_sfs));
+  }
+
+  plex->periodic.num_face_sfs = num_face_sfs;
+  PetscCall(PetscCalloc1(num_face_sfs, &plex->periodic.face_sfs));
+  for (PetscInt i = 0; i < num_face_sfs; i++) plex->periodic.face_sfs[i] = face_sfs[i];
 
   DM cdm = dm->coordinates[0].dm; // Can't DMGetCoordinateDM because it automatically creates one
   if (cdm) {
-    PetscCall(DMPlexSetIsoperiodicFaceSF(cdm, face_sf));
-    if (face_sf) cdm->periodic.setup = DMPeriodicCoordinateSetUp_Internal;
+    PetscCall(DMPlexSetIsoperiodicFaceSF(cdm, num_face_sfs, face_sfs));
+    if (face_sfs) cdm->periodic.setup = DMPeriodicCoordinateSetUp_Internal;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   DMPlexGetIsoperiodicFaceSF - Obtain periodicity for a mesh
 
   Logically Collective
@@ -961,19 +967,21 @@ PetscErrorCode DMPlexSetIsoperiodicFaceSF(DM dm, PetscSF face_sf)
 . dm - The `DMPLEX` for which to obtain periodic relation
 
   Output Parameter:
-. face_sf - `PetscSF` in which roots are (owned) donor faces and leaves are faces that must be matched to a (possibly remote) donor face.
++ num_face_sfs - Number of `PetscSF`s in the array
+- face_sfs     - Array of `PetscSF` in which roots are (owned) donor faces and leaves are faces that must be matched to a (possibly remote) donor face.
 
   Level: advanced
 
 .seealso: [](ch_unstructured), `DMPLEX`, `DMGetGlobalSection()`, `DMPlexSetIsoperiodicFaceSF()`
 @*/
-PetscErrorCode DMPlexGetIsoperiodicFaceSF(DM dm, PetscSF *face_sf)
+PetscErrorCode DMPlexGetIsoperiodicFaceSF(DM dm, PetscInt *num_face_sfs, const PetscSF **face_sfs)
 {
   DM_Plex *plex = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  *face_sf = plex->periodic.face_sf;
+  *face_sfs     = plex->periodic.face_sfs;
+  *num_face_sfs = plex->periodic.num_face_sfs;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -984,7 +992,8 @@ PetscErrorCode DMPlexGetIsoperiodicFaceSF(DM dm, PetscSF *face_sf)
 
   Input Parameters:
 + dm - `DMPLEX` that has been configured with `DMPlexSetIsoperiodicFaceSF()`
-- t  - 4x4 affine transformation basis.
+. n  - Number of transforms in array
+- t  - Array of 4x4 affine transformation basis.
 
   Level: advanced
 
@@ -1002,16 +1011,21 @@ PetscErrorCode DMPlexGetIsoperiodicFaceSF(DM dm, PetscSF *face_sf)
 
 .seealso: [](ch_unstructured), `DMPLEX`, `DMGetGlobalSection()`, `DMPlexSetIsoperiodicFaceSF()`
 @*/
-PetscErrorCode DMPlexSetIsoperiodicFaceTransform(DM dm, const PetscScalar t[])
+PetscErrorCode DMPlexSetIsoperiodicFaceTransform(DM dm, PetscInt n, const PetscScalar *t)
 {
   DM_Plex *plex = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  for (PetscInt i = 0; i < 4; i++) {
+  PetscCheck(n == plex->periodic.num_face_sfs, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Number of transforms (%" PetscInt_FMT ") must equal number of isoperiodc face SFs (%" PetscInt_FMT ")", n, plex->periodic.num_face_sfs);
+
+  PetscCall(PetscMalloc1(n, &plex->periodic.transform));
+  for (PetscInt i = 0; i < n; i++) {
     for (PetscInt j = 0; j < 4; j++) {
-      PetscCheck(i != j || t[i * 4 + j] == 1., PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Rotated transforms not supported");
-      plex->periodic.transform[i][j] = t[i * 4 + j];
+      for (PetscInt k = 0; k < 4; k++) {
+        PetscCheck(j != k || t[i * 16 + j * 4 + k] == 1., PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Rotated transforms not supported");
+        plex->periodic.transform[i][j][k] = t[i * 16 + j * 4 + k];
+      }
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
