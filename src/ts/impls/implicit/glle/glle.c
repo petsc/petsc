@@ -861,7 +861,7 @@ static PetscErrorCode TSSolve_GLLE(TS ts)
     ts->ksp_its += lits;
     if (snesreason < 0 && ts->max_snes_failures > 0 && ++ts->num_snes_failures >= ts->max_snes_failures) {
       ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
-      PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", nonlinear solve solve failures %" PetscInt_FMT " greater than current TS allowed, stopping solve\n", ts->steps, ts->num_snes_failures));
+      PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", nonlinear solve failures %" PetscInt_FMT " greater than current TS allowed, stopping solve\n", ts->steps, ts->num_snes_failures));
       PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
@@ -936,7 +936,7 @@ static PetscErrorCode TSSolve_GLLE(TS ts)
         ts->ksp_its += lits;
         if (snesreason < 0 && ts->max_snes_failures > 0 && ++ts->num_snes_failures >= ts->max_snes_failures) {
           ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
-          PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", nonlinear solve solve failures %" PetscInt_FMT " greater than current TS allowed, stopping solve\n", ts->steps, ts->num_snes_failures));
+          PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", nonlinear solve failures %" PetscInt_FMT " greater than current TS allowed, stopping solve\n", ts->steps, ts->num_snes_failures));
           PetscFunctionReturn(PETSC_SUCCESS);
         }
       }

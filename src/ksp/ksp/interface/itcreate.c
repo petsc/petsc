@@ -459,7 +459,7 @@ PetscErrorCode KSPGetNormType(KSP ksp, KSPNormType *normtype)
 
   If you wish to replace either `Amat` or `Pmat` but leave the other one untouched then
   first call `KSPGetOperators()` to get the one you wish to keep, call `PetscObjectReference()`
-  on it and then pass it back in in your call to `KSPSetOperators()`.
+  on it and then pass it back in your call to `KSPSetOperators()`.
 
   Developer Notes:
   If the operators have NOT been set with `KSPSetOperators()` then the operators

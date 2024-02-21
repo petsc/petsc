@@ -219,7 +219,7 @@ M*/
      Level: intermediate
 
      Note:
-     See Section 4 Table 7.2 in in {cite}`wanner1996solving`
+     See Section 4 Table 7.2 in {cite}`wanner1996solving`
 
 .seealso: [](ch_ts), `TSROSW`, `TSROSWGRK4T`, `TSROSWVELDD4`, `TSROSW4L`
 M*/
@@ -253,7 +253,7 @@ M*/
      Level: intermediate
 
      Note:
-     See Section 4 Table 7.2 in in {cite}`wanner1996solving`
+     See Section 4 Table 7.2 in {cite}`wanner1996solving`
 
 .seealso: [](ch_ts), `TSROSW`, `TSROSWGRK4T`, `TSROSWSHAMP4`, `TSROSW4L`
 M*/

@@ -106,7 +106,7 @@ int main(int argc, char **args)
   PetscCall(MatDestroy(&TA));
   PetscCall(MatDestroy(&B));
 
-  /* Test KAIJ when T is is an identity matrix */
+  /* Test KAIJ when T is an identity matrix */
 
   if (p == q) {
     for (i = 0; i < p; i++) {

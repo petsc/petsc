@@ -204,7 +204,7 @@ Features
 -  Added ``ViewerASCIIUseTabs()`` to allow turning off tabbing during
    certain viewer operations.
 -  Added ``ViewerGetSingleton()``, ViewerRestoreSingleton() to allow
-   managing the calling a a sequential viewer from within a parallel
+   managing the calling of a sequential viewer from within a parallel
    viewer.
 -  Added ``ViewerASCIISynchronizedPrintf``\ (viewer,....)
 -  Binary and ASCII viewers can create compressed files by simply

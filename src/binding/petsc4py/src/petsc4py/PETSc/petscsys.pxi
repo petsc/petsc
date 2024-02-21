@@ -73,7 +73,7 @@ cdef inline PetscErrorCode Sys_Sizes(
         on = None; oN = size
     if on is not None: n = asInt(on)
     if oN is not None: N = asInt(oN)
-    # check block, local, and and global sizes
+    # check block, local, and global sizes
     if (bs < 1): raise ValueError(
         "block size %d must be positive" % toInt(bs))
     if n==PETSC_DECIDE and N==PETSC_DECIDE: raise ValueError(

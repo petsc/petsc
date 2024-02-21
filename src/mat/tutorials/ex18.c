@@ -1,7 +1,7 @@
 static char help[] = "Demonstrates the use of the COO interface to PETSc matrices for finite element computations\n\n";
 
 /*
-     The COO interface for PETSc matrices provides a convenient way to provide finite element element stiffness matrices to PETSc matrix that should work
+     The COO interface for PETSc matrices provides a convenient way to provide finite element stiffness matrices to PETSc matrix that should work
    well on both CPUs and GPUs. It is an alternative to using MatSetValues()
 
      This example is intended for people who are NOT using DMPLEX or libCEED or any other higher-level infrastructure for finite elements;
@@ -10,7 +10,7 @@ static char help[] = "Demonstrates the use of the COO interface to PETSc matrice
 
      Please do NOT use this example as a starting point to writing your own finite element code from scratch!
 
-     Each element in this example has three vertices; hence the the usage below needs to be adjusted for elements of a different number of vertices.
+     Each element in this example has three vertices; hence the usage below needs to be adjusted for elements of a different number of vertices.
 */
 
 #include <petscmat.h>

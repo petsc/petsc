@@ -7070,7 +7070,7 @@ static PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_su
   im_active = !!n;
   PetscCall(MPIU_Allreduce(&im_active, &active_procs, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)mat)));
   void_procs = size - active_procs;
-  /* get ranks of of non-active processes in mat communicator */
+  /* get ranks of non-active processes in mat communicator */
   if (void_procs) {
     PetscInt ncand;
 

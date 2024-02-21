@@ -121,7 +121,7 @@ def __register_all_classids() -> None:
   * please add your new class in alphabetical order and preserve the alignment! *
 
   The automated way to do it (in emacs) is to slap it in the first entry then highlight
-  the the contents (i.e. excluding "classid_map = {" and the closing "}") and do:
+  the contents (i.e. excluding "classid_map = {" and the closing "}") and do:
 
   1. M-x sort-fields RET
   2. M-x align-regexp RET : RET

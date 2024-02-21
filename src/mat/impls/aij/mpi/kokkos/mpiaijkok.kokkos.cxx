@@ -1778,7 +1778,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJKokkos(Mat A, MatType mtype,
 /*MC
    MATAIJKOKKOS - "mpiaijkokkos", a matrix type to be used for CSR sparse matrices with Kokkos
 
-   A matrix type type using Kokkos-Kernels CrsMatrix type for portability across different device types
+   A matrix type using Kokkos-Kernels CrsMatrix type for portability across different device types
 
    Options Database Key:
 .  -mat_type aijkokkos - sets the matrix type to `MATAIJKOKKOS`

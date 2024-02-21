@@ -1603,7 +1603,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
             self.includeDir   /* subdir of self.installDir */
             self.libDir       /* subdir of self.installDir, defined as self.installDir + self.libDirs[0] */
             self.confDir      /* where packages private to the configure/build process are built, such as --download-make */
-                              /* The subdirectory of this 'conf' is where where the configuration information will be stored for the package */
+                              /* The subdirectory of this 'conf' is where the configuration information will be stored for the package */
             self.packageDir = /* this dir is where the source is unpacked and built */
             self.getDir():
               ...

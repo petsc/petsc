@@ -327,7 +327,7 @@ PetscErrorCode PetscSubcommGetParent(PetscSubcomm scomm, MPI_Comm *pcomm)
 }
 
 /*@C
-  PetscSubcommGetContiguousParent - Gets a communicator that that is a duplicate of the parent but has the ranks
+  PetscSubcommGetContiguousParent - Gets a communicator that is a duplicate of the parent but has the ranks
   reordered by the order they are in the children
 
   Collective

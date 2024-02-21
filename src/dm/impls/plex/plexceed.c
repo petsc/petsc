@@ -304,7 +304,7 @@ static PetscErrorCode PetscIntArrayIntoCeedInt_Private(PetscInt length, PetscInt
 -  dm_field - Index of `DMPLEX` field
 
   Output Parameter:
-.  ERestrict - libCEED restriction from local vector to to the cells
+.  ERestrict - libCEED restriction from local vector to the cells
 
   Level: developer
 

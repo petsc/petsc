@@ -136,7 +136,7 @@ int main(int argc, char **args)
   PetscCall(KSPGetIterationNumber(ksp, &its));
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "Norm of error %g, Iterations %" PetscInt_FMT "\n", (double)norm, its));
 
-  /* check that KSP automatically handles the fact that the the new non-zero values in the matrix are propagated to the KSP solver */
+  /* check that KSP automatically handles the fact that the new non-zero values in the matrix are propagated to the KSP solver */
   PetscCall(MatShift(A, 2.0));
   PetscCall(KSPSolve(ksp, b, x));
 

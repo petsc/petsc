@@ -1671,7 +1671,7 @@ is achieved with the ``PCKSP`` type.
 
 .. code-block::
 
-   PCSetType(PC pc,PCKSP PCKSP);
+   PCSetType(PC pc,PCKSP);
    PCKSPGetKSP(pc,&ksp);
     /* set any KSP/PC options */
 

@@ -282,7 +282,7 @@ static PetscErrorCode SubHessianUpdate(Tao tao, Vec x, Mat H, Mat Hpre, void *pt
     PetscCall(ADMMInternalHessianUpdate(am->subsolverX->hessian, am->ATA, am->xJI, am));
   } else if (am->Hxbool) {
     /* Hessian doesn't get updated. H(x) = c */
-    /* Update Lagrangian only only per TAO call */
+    /* Update Lagrangian only once per TAO call */
     PetscCall(ADMMInternalHessianUpdate(am->subsolverX->hessian, am->ATA, am->xJI, am));
     am->Hxbool = PETSC_FALSE;
   }
@@ -303,7 +303,7 @@ static PetscErrorCode RegHessianUpdate(Tao tao, Vec z, Mat H, Mat Hpre, void *pt
     PetscCall(ADMMInternalHessianUpdate(am->subsolverZ->hessian, am->BTB, am->zJI, am));
   } else if (am->Hzbool) {
     /* Hessian doesn't get updated. H(x) = c */
-    /* Update Lagrangian only only per TAO call */
+    /* Update Lagrangian only once per TAO call */
     PetscCall(ADMMInternalHessianUpdate(am->subsolverZ->hessian, am->BTB, am->zJI, am));
     am->Hzbool = PETSC_FALSE;
   }

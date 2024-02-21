@@ -90,7 +90,7 @@ static PetscErrorCode TestAllocate(PetscDeviceContext dctx, PetscRandom rand, Pe
   for (PetscInt i = 0; i < n; ++i) tmp_ptr[i] = (PetscScalar)i;
   PetscCall(PetscDeviceArrayCopy(dctx, tmp_ptr, ptr, n));
   PetscCall(PetscDeviceContextSynchronize(dctx));
-  for (PetscInt i = 0; i < n; ++i) PetscCheck(tmp_ptr[i] == (PetscScalar)0.0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDeviceArrayZero() did not not clear memory, ptr[%" PetscInt_FMT "] %g != 0", i, (double)PetscAbsScalar(tmp_ptr[i]));
+  for (PetscInt i = 0; i < n; ++i) PetscCheck(tmp_ptr[i] == (PetscScalar)0.0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDeviceArrayZero() did not clear memory, ptr[%" PetscInt_FMT "] %g != 0", i, (double)PetscAbsScalar(tmp_ptr[i]));
   PetscCall(PetscDeviceFree(dctx, tmp_ptr));
   PetscCall(PetscDeviceFree(dctx, ptr));
   PetscFunctionReturn(PETSC_SUCCESS);

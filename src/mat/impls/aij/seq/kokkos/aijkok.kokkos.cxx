@@ -651,7 +651,7 @@ static PetscErrorCode MatDestroy_SeqAIJKokkos(Mat A)
 /*MC
    MATSEQAIJKOKKOS - MATAIJKOKKOS = "(seq)aijkokkos" - A matrix type to be used for sparse matrices with Kokkos
 
-   A matrix type type using Kokkos-Kernels CrsMatrix type for portability across different device types
+   A matrix type using Kokkos-Kernels CrsMatrix type for portability across different device types
 
    Options Database Key:
 .  -mat_type aijkokkos - sets the matrix type to `MATSEQAIJKOKKOS` during a call to `MatSetFromOptions()`

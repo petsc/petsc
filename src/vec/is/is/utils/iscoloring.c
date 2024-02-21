@@ -710,7 +710,7 @@ PetscErrorCode ISAllGather(IS is, IS *isout)
 }
 
 /*@C
-  ISAllGatherColors - Given a a set of colors on each processor, generates a large
+  ISAllGatherColors - Given a set of colors on each processor, generates a large
   set (same on each processor) by concatenating together each processors colors
 
   Collective

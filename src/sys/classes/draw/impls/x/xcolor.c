@@ -107,7 +107,7 @@ static PetscErrorCode PetscDrawSetUpColormap_Private(Display *display, int scree
     XParseColor(display, gColormap, colornames[i], &colordef);
     /* try to allocate the color in the default-map */
     found = XAllocColor(display, defaultmap, &colordef);
-    /* use it, if it it exists and is not already used in the new colormap */
+    /* use it, if it exists and is not already used in the new colormap */
     if (found && colordef.pixel < PETSC_DRAW_MAXCOLOR && !cmap_pixvalues_used[colordef.pixel]) {
       cmap_pixvalues_used[colordef.pixel] = PETSC_TRUE;
       /* otherwise search for the next available slot */
@@ -135,7 +135,7 @@ static PetscErrorCode PetscDrawSetUpColormap_Private(Display *display, int scree
     if (!fast) {
       /* try to allocate the color in the default-map */
       found = XAllocColor(display, defaultmap, &colordef);
-      /* use it, if it it exists and is not already used in the new colormap */
+      /* use it, if it exists and is not already used in the new colormap */
       if (found && colordef.pixel < PETSC_DRAW_MAXCOLOR && !cmap_pixvalues_used[colordef.pixel]) {
         cmap_pixvalues_used[colordef.pixel] = PETSC_TRUE;
         /* otherwise search for the next available slot */

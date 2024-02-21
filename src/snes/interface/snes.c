@@ -2235,7 +2235,7 @@ PetscErrorCode SNESPicardComputeJacobian(SNES snes, Vec x1, Mat J, Mat B, void *
   When used with `-snes_mf_operator` this will run matrix-free Newton's method where the matrix-vector product is of the true Jacobian of $A(x)x - bp(x) - b$ and
   A(x^{n}) is used to build the preconditioner
 
-  When used with `-snes_fd` this will compute the true Jacobian (very slowly one column at at time) and thus represent Newton's method.
+  When used with `-snes_fd` this will compute the true Jacobian (very slowly one column at a time) and thus represent Newton's method.
 
   When used with `-snes_fd_coloring` this will compute the Jacobian via coloring and thus represent a faster implementation of Newton's method. But the
   the nonzero structure of the Jacobian is, in general larger than that of the Picard matrix A so you must provide in A the needed nonzero structure for the correct

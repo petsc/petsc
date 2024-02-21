@@ -21,7 +21,7 @@ PETSc source tree and set the `PETSC_DIR <petsc:doc_multi>` and `PETSC_ARCH
   $ python -m pip install src/binding/petsc4py
 
 The installation of :mod:`petsc4py` supports multiple `PETSC_ARCH
-<petsc:doc_multi>` in the the form of colon separated list::
+<petsc:doc_multi>` in the form of colon separated list::
 
   $ PETSC_ARCH='arch-0:...:arch-N' python -m pip install src/binding/petsc4py
 

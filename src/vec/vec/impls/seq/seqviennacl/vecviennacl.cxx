@@ -1344,7 +1344,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLQueue(Vec v, PETSC_UINTPTR_T *queue)
 }
 
 /*@C
-  VecViennaCLGetCLMemRead - Provides access to the the CL buffer inside a Vec.
+  VecViennaCLGetCLMemRead - Provides access to the CL buffer inside a Vec.
 
   Caller should cast (*mem) to (const cl_mem). Caller is responsible for
   invoking clReleaseMemObject().
@@ -1380,7 +1380,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemRead(Vec v, PETSC_UINTPTR_T *mem)
 }
 
 /*@C
-  VecViennaCLGetCLMemWrite - Provides access to the the CL buffer inside a Vec.
+  VecViennaCLGetCLMemWrite - Provides access to the CL buffer inside a Vec.
 
   Caller should cast (*mem) to (const cl_mem). Caller is responsible for
   invoking clReleaseMemObject().
@@ -1450,7 +1450,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMemWrite(Vec v)
 }
 
 /*@C
-  VecViennaCLGetCLMem - Provides access to the the CL buffer inside a Vec.
+  VecViennaCLGetCLMem - Provides access to the CL buffer inside a Vec.
 
   Caller should cast (*mem) to (const cl_mem). Caller is responsible for
   invoking clReleaseMemObject().

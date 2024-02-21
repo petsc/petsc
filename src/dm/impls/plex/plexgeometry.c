@@ -2734,7 +2734,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
     case DM_POLYTOPE_SEG_PRISM_TENSOR: {
       PetscInt fv[4] = {0, 1, 2, 3};
 
-      /* Side faces for hybrid cells are are stored as tensor products */
+      /* Side faces for hybrid cells are stored as tensor products */
       if (isHybrid && f > 1) {
         fv[2] = 3;
         fv[3] = 2;
@@ -3733,7 +3733,7 @@ PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPo
 }
 
 /*@
-  DMPlexReferenceToCoordinates - Map references coordinates to coordinates in the the mesh for a single element map.
+  DMPlexReferenceToCoordinates - Map references coordinates to coordinates in the mesh for a single element map.
 
   Not Collective
 

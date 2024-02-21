@@ -146,7 +146,7 @@ M*/
 /*MC
      TSARKIMEX2E - Second order ARK IMEX scheme with L-stable implicit part.
 
-     This method has one explicit stage and two implicit stages. It is is an optimal method developed by Emil Constantinescu.
+     This method has one explicit stage and two implicit stages. It is an optimal method developed by Emil Constantinescu.
 
      Options Database Key:
 .      -ts_arkimex_type 2e - set arkimex type to 2e

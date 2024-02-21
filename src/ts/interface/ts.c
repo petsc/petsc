@@ -792,7 +792,7 @@ PetscErrorCode TSGetRHSMats_Private(TS ts, Mat *Arhs, Mat *Brhs)
   Most users should not need to explicitly call this routine, as it
   is used internally within the nonlinear solvers.
 
-  If the user did did not write their equations in implicit form, this
+  If the user did not write their equations in implicit form, this
   function recasts them in implicit form.
 
 .seealso: [](ch_ts), `TS`, `TSSetIFunction()`, `TSComputeRHSFunction()`
