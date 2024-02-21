@@ -1,5 +1,5 @@
 /*
-   Code for calculating extreme eigenvalues via the Lanczo method
+   Code for calculating extreme eigenvalues via the Lanczos method
    running with CG. Note this only works for symmetric real and Hermitian
    matrices (not complex matrices that are symmetric).
 */
