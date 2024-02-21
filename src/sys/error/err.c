@@ -298,7 +298,7 @@ PetscErrorCode PetscErrorMessage(PetscErrorCode errnum, const char *text[], char
 
 #if defined(PETSC_CLANGUAGE_CXX)
   /* C++ exceptions are formally not allowed to propagate through extern "C" code. In practice, far too much software
- * would be broken if implementations did not handle it it some common cases. However, keep in mind
+ * would be broken if implementations did not handle it in some common cases. However, keep in mind
  *
  *   Rule 62. Don't allow exceptions to propagate across module boundaries
  *

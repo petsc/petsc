@@ -734,7 +734,7 @@ PetscErrorCode VecViewFromOptions(Vec A, PetscObject obj, const char name[])
   In the debugger you can do call `VecView`(v,0) to display the vector. (The same holds for any PETSc object viewer).
 
   Notes for binary viewer:
-  If you pass multiple vectors to a binary viewer you can read them back in in the same order
+  If you pass multiple vectors to a binary viewer you can read them back in the same order
   with `VecLoad()`.
 
   If the blocksize of the vector is greater than one then you must provide a unique prefix to

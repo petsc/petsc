@@ -222,7 +222,7 @@ PetscErrorCode PetscGarbageCleanup(MPI_Comm comm)
   /* Gather and intersect */
   PetscCall(GarbageKeyAllReduceIntersect_Private(comm, keys, &entries));
 
-  /* Collectively destroy objects objects that appear in garbage in
+  /* Collectively destroy objects that appear in garbage in
      creation index order */
   for (ii = 0; ii < entries; ii++) {
     PetscCall(PetscHMapObjGet(garbage.map, keys[ii], &obj));

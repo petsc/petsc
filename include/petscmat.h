@@ -556,7 +556,7 @@ PETSC_EXTERN PetscErrorCode MatSetRandom(Mat, PetscRandom);
 
    Notes:
    The i,j, and k represent the logical coordinates over the entire grid (for 2 and 1 dimensional problems the k and j entries are ignored).
-   The c represents the the degrees of freedom at each grid point (the dof argument to `DMDASetDOF()`). If dof is 1 then this entry is ignored.
+   The c represents the degrees of freedom at each grid point (the dof argument to `DMDASetDOF()`). If dof is 1 then this entry is ignored.
 
    For stencil access to vectors see `DMDAVecGetArray()`, `DMDAVecGetArrayF90()`.
 

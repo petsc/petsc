@@ -72,7 +72,7 @@ class Configure(config.base.Configure):
     return self.check('pid_t', 'int')
 
   def checkC99Complex(self):
-    '''Check for complex numbers in in C99 std
+    '''Check for complex numbers in C99 std
        Note that since PETSc source code uses _Complex we test specifically for that, not complex'''
     includes = '#include <complex.h>\n'
     body     = 'double _Complex x;\n x = I;\n(void)x'

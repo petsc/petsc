@@ -1016,7 +1016,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx, PetscInt my)
     /*
        Fetch the registered data from the material point DMSwarm.
        The fields "eta" and "rho" were registered by this example.
-       The field identified by the the variable DMSwarmPICField_coor
+       The field identified by the variable DMSwarmPICField_coor
        was registered by the DMSwarm implementation when the function
          DMSwarmSetType(dms_mpoint,DMSWARM_PIC)
        was called. The returned array defines the coordinates of each

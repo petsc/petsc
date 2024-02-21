@@ -43,7 +43,7 @@ Prizes won by PETSc users
 * Gordon Bell Finalist at SC2009
 
 * `GTC <http://gk.ps.uci.edu/GTC/index.html>`__ was listed as one of the `Top Ten Advances
-  in Computational Science Accomplishments of of DOE in 2008
+  in Computational Science Accomplishments of DOE in 2008
   <http://www.sc.doe.gov/ascr/ASCAC/Meetings/Aug08/ViewFromWashington&Germantown.pdf>`__
 
 * `Gordon Bell Special Prize at SC2004

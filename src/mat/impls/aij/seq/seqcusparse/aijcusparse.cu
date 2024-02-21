@@ -4054,7 +4054,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat B)
 /*MC
    MATSEQAIJCUSPARSE - MATAIJCUSPARSE = "(seq)aijcusparse" - A matrix type to be used for sparse matrices.
 
-   A matrix type type whose data resides on NVIDIA GPUs. These matrices can be in either
+   A matrix type whose data resides on NVIDIA GPUs. These matrices can be in either
    CSR, ELL, or Hybrid format.
    All matrix calculations are performed on NVIDIA GPUs using the CuSPARSE library.
 

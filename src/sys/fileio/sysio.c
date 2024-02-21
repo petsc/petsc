@@ -167,7 +167,7 @@ static PetscErrorCode PetscByteSwapReal(PetscReal *buff, PetscInt n)
 
 /*
   PetscByteSwapScalar - Swap bytes in a PetscScalar
-  The complex case is dealt with with an array of PetscReal, twice as long.
+  The complex case is dealt with an array of PetscReal, twice as long.
 */
 static PetscErrorCode PetscByteSwapScalar(PetscScalar *buff, PetscInt n)
 {

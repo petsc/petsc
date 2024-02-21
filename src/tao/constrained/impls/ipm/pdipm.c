@@ -544,7 +544,7 @@ static PetscErrorCode TaoSNESFunction_PDIPM(SNES snes, Vec X, Vec F, void *ctx)
 }
 
 /*
-  Evaluate F(X); then update update tao->gnorm0, tao->step = mu,
+  Evaluate F(X); then update tao->gnorm0, tao->step = mu,
   tao->residual = norm2(F_x,F_z) and tao->cnorm = norm2(F_ce,F_ci).
 */
 static PetscErrorCode TaoSNESFunction_PDIPM_residual(SNES snes, Vec X, Vec F, void *ctx)

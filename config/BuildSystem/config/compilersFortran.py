@@ -420,7 +420,7 @@ class Configure(config.base.Configure):
     self.popLanguage()
     if modname: os.remove(os.path.join(testdir, modname))
     os.rmdir(testdir)
-    # Flag not used by PETSc - do do not flag a runtime error
+    # Flag not used by PETSc - do not flag a runtime error
     #if not found:
     #  raise RuntimeError('Cannot determine Fortran module output flag')
     return

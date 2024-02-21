@@ -3531,7 +3531,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJHIPSPARSE(Mat B)
 /*MC
    MATSEQAIJHIPSPARSE - MATAIJHIPSPARSE = "(seq)aijhipsparse" - A matrix type to be used for sparse matrices on AMD GPUs
 
-   A matrix type type whose data resides on AMD GPUs. These matrices can be in either
+   A matrix type whose data resides on AMD GPUs. These matrices can be in either
    CSR, ELL, or Hybrid format.
    All matrix calculations are performed on AMD/NVIDIA GPUs using the HIPSPARSE library.
 

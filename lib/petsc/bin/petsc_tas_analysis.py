@@ -364,7 +364,7 @@ def dataProcesCSV(cmdLineArgs, fileName):
         # Added a check to make sure the problem is truly a SNES rather than TS
         if (df.loc[SNESSolveFilter & (df['Stage Name'] == 'ConvEst Refinement Level 0') & rankFilter, 'Time'] == 0).bool():
             print(f'The sampled time value for SNESSolve is 0.  This most commonly happens if the problem'
-                  f' is a Time Step problem.\n If this is a Time Step problem hit (y) to apply the the Time Step filter'
+                  f' is a Time Step problem.\n If this is a Time Step problem hit (y) to apply the Time Step filter'
                   f'(This can also be done on the command line using -ts 1).\nOtherwise hit (n) to continue using the SNES Solver filter')
             response = input()
             if response.lower() == 'y':

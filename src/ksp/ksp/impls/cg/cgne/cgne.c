@@ -26,7 +26,7 @@ static PetscErrorCode KSPSetUp_CGNE(KSP ksp)
   PetscCall(KSPSetWorkVecs(ksp, 4));
 
   /*
-     If user requested computations of eigenvalues then allocate work work space needed
+     If user requested computations of eigenvalues then allocate work space needed
   */
   if (ksp->calc_sings) {
     /* get space to store tridiagonal matrix for Lanczos */

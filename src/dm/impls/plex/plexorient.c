@@ -203,7 +203,7 @@ PetscErrorCode DMPlexOrient(DM dm)
    - Collect numComponents adj data from each proc to 0
    - Build same serial graph
    - Use same solver
-   - Use Scatterv to to send back flipped flags for each component
+   - Use Scatterv to send back flipped flags for each component
    - Negate flippedCells by component
 
    NEW STYLE

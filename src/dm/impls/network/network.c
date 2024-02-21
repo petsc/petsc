@@ -66,7 +66,7 @@ PetscErrorCode DMNetworkGetPlex(DM dm, DM *plexdm)
 }
 
 /*@
-  DMNetworkGetNumSubNetworks - Gets the the number of subnetworks
+  DMNetworkGetNumSubNetworks - Gets the number of subnetworks
 
   Not Collective
 

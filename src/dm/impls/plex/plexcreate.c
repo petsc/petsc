@@ -3545,7 +3545,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
   Level: beginner
 
   Notes:
-  This meshes the surface of the Schwarz P or Gyroid surfaces.  Schwarz P is is the simplest member of the triply-periodic minimal surfaces.
+  This meshes the surface of the Schwarz P or Gyroid surfaces.  Schwarz P is the simplest member of the triply-periodic minimal surfaces.
   <https://en.wikipedia.org/wiki/Schwarz_minimal_surface#Schwarz_P_(%22Primitive%22)> and can be cut with "clean" boundaries.
   The Gyroid <https://en.wikipedia.org/wiki/Gyroid> is another triply-periodic minimal surface with applications in additive manufacturing; it is much more difficult to "cut" since there are no planes of symmetry.
   Our implementation creates a very coarse mesh of the surface and refines (by 4-way splitting) as many times as requested.

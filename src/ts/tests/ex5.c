@@ -54,7 +54,7 @@ static char help[] = "Nonlinear, time-dependent. Developed from radiative_surfac
                 Precipitable water in centimeters
                 Wind direction
 
-   Inputs are are read in from the text file ex5_control.txt. To change an
+   Inputs are read in from the text file ex5_control.txt. To change an
    input value use ex5_control.txt.
 
    Solvers:

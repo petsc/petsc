@@ -161,7 +161,7 @@ solver.
 Command-line Options
 ~~~~~~~~~~~~~~~~~~~~
 
-Additional options for the TAO solver can be be set from the command
+Additional options for the TAO solver can be set from the command
 line by using the
 
 .. code::

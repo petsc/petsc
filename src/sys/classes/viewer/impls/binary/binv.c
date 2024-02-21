@@ -1230,7 +1230,7 @@ PetscErrorCode PetscViewerBinaryReadStringArray(PetscViewer viewer, char ***data
   Logically Collective
 
   Input Parameters:
-+ viewer - the `PetscViewer`; must be a a `PETSCVIEWERBINARY`, `PETSCVIEWERMATLAB`, `PETSCVIEWERHDF5`, or `PETSCVIEWERASCII`  `PetscViewer`
++ viewer - the `PetscViewer`; must be a `PETSCVIEWERBINARY`, `PETSCVIEWERMATLAB`, `PETSCVIEWERHDF5`, or `PETSCVIEWERASCII`  `PetscViewer`
 - mode   - open mode of file
 .vb
     FILE_MODE_WRITE - create new file for output

@@ -9,7 +9,7 @@ PetscClassId PETSC_DRAWAXIS_CLASSID = 0;
   Collective
 
   Input Parameter:
-. draw - `PetscDraw` object where axis to to be made
+. draw - `PetscDraw` object where axis to be made
 
   Output Parameter:
 . axis - the axis datastructure

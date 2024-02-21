@@ -185,7 +185,7 @@ PetscErrorCode DMCompositeGetAccess(DM dm, Vec gvec, ...)
   if (!com->setup) PetscCall(DMSetUp(dm));
 
   PetscCall(VecLockGet(gvec, &readonly));
-  /* loop over packed objects, handling one at at time */
+  /* loop over packed objects, handling one at a time */
   va_start(Argp, gvec);
   while (next) {
     Vec *vec;
@@ -372,7 +372,7 @@ PetscErrorCode DMCompositeRestoreAccess(DM dm, Vec gvec, ...)
   if (!com->setup) PetscCall(DMSetUp(dm));
 
   PetscCall(VecLockGet(gvec, &readonly));
-  /* loop over packed objects, handling one at at time */
+  /* loop over packed objects, handling one at a time */
   va_start(Argp, gvec);
   while (next) {
     Vec *vec;
@@ -516,7 +516,7 @@ PetscErrorCode DMCompositeScatter(DM dm, Vec gvec, ...)
   PetscCheck(flg, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Not for type %s", ((PetscObject)dm)->type_name);
   if (!com->setup) PetscCall(DMSetUp(dm));
 
-  /* loop over packed objects, handling one at at time */
+  /* loop over packed objects, handling one at a time */
   va_start(Argp, gvec);
   for (cnt = 3, next = com->next; next; cnt++, next = next->next) {
     Vec local;
@@ -572,7 +572,7 @@ PetscErrorCode DMCompositeScatterArray(DM dm, Vec gvec, Vec *lvecs)
   PetscCheck(flg, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Not for type %s", ((PetscObject)dm)->type_name);
   if (!com->setup) PetscCall(DMSetUp(dm));
 
-  /* loop over packed objects, handling one at at time */
+  /* loop over packed objects, handling one at a time */
   for (i = 0, next = com->next; next; next = next->next, i++) {
     if (lvecs[i]) {
       Vec                global;
@@ -626,7 +626,7 @@ PetscErrorCode DMCompositeGather(DM dm, InsertMode imode, Vec gvec, ...)
   PetscCheck(flg, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Not for type %s", ((PetscObject)dm)->type_name);
   if (!com->setup) PetscCall(DMSetUp(dm));
 
-  /* loop over packed objects, handling one at at time */
+  /* loop over packed objects, handling one at a time */
   va_start(Argp, gvec);
   for (cnt = 3, next = com->next; next; cnt++, next = next->next) {
     Vec local;
@@ -683,7 +683,7 @@ PetscErrorCode DMCompositeGatherArray(DM dm, InsertMode imode, Vec gvec, Vec *lv
   PetscCheck(flg, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Not for type %s", ((PetscObject)dm)->type_name);
   if (!com->setup) PetscCall(DMSetUp(dm));
 
-  /* loop over packed objects, handling one at at time */
+  /* loop over packed objects, handling one at a time */
   for (next = com->next, i = 0; next; next = next->next, i++) {
     if (lvecs[i]) {
       PetscScalar *array;
@@ -783,7 +783,7 @@ static PetscErrorCode       VecView_DMComposite(Vec gvec, PetscViewer viewer)
   } else {
     PetscInt cnt = 0;
 
-    /* loop over packed objects, handling one at at time */
+    /* loop over packed objects, handling one at a time */
     while (next) {
       Vec                vec;
       const PetscScalar *array;
@@ -878,7 +878,7 @@ PetscErrorCode DMCompositeGetISLocalToGlobalMappings(DM dm, ISLocalToGlobalMappi
   next = com->next;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
 
-  /* loop over packed objects, handling one at at time */
+  /* loop over packed objects, handling one at a time */
   cnt = 0;
   while (next) {
     ISLocalToGlobalMapping ltog;
@@ -932,13 +932,13 @@ PetscErrorCode DMCompositeGetISLocalToGlobalMappings(DM dm, ISLocalToGlobalMappi
 . dm - the `DMCOMPOSITE`
 
   Output Parameter:
-. is - array of serial index sets for each each component of the `DMCOMPOSITE`
+. is - array of serial index sets for each component of the `DMCOMPOSITE`
 
   Level: intermediate
 
   Notes:
   At present, a composite local vector does not normally exist.  This function is used to provide index sets for
-  `MatGetLocalSubMatrix()`.  In the future, the scatters for each entry in the `DMCOMPOSITE` may be be merged into a single
+  `MatGetLocalSubMatrix()`.  In the future, the scatters for each entry in the `DMCOMPOSITE` may be merged into a single
   scatter to a composite local vector.  The user should not typically need to know which is being done.
 
   To get the composite global indices at all local points (including ghosts), use `DMCompositeGetISLocalToGlobalMappings()`.
@@ -1017,7 +1017,7 @@ PetscErrorCode DMCompositeGetGlobalISs(DM dm, IS *is[])
   next = com->next;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
 
-  /* loop over packed objects, handling one at at time */
+  /* loop over packed objects, handling one at a time */
   while (next) {
     PetscDS prob;
 
@@ -1140,7 +1140,7 @@ PetscErrorCode DMCompositeGetLocalVectors(DM dm, ...)
   PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMCOMPOSITE, &flg));
   PetscCheck(flg, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Not for type %s", ((PetscObject)dm)->type_name);
   next = com->next;
-  /* loop over packed objects, handling one at at time */
+  /* loop over packed objects, handling one at a time */
   va_start(Argp, dm);
   while (next) {
     Vec *vec;
@@ -1181,7 +1181,7 @@ PetscErrorCode DMCompositeRestoreLocalVectors(DM dm, ...)
   PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMCOMPOSITE, &flg));
   PetscCheck(flg, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Not for type %s", ((PetscObject)dm)->type_name);
   next = com->next;
-  /* loop over packed objects, handling one at at time */
+  /* loop over packed objects, handling one at a time */
   va_start(Argp, dm);
   while (next) {
     Vec *vec;
@@ -1226,7 +1226,7 @@ PetscErrorCode DMCompositeGetEntries(DM dm, ...)
   PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMCOMPOSITE, &flg));
   PetscCheck(flg, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Not for type %s", ((PetscObject)dm)->type_name);
   next = com->next;
-  /* loop over packed objects, handling one at at time */
+  /* loop over packed objects, handling one at a time */
   va_start(Argp, dm);
   while (next) {
     DM *dmn;
@@ -1266,7 +1266,7 @@ PetscErrorCode DMCompositeGetEntriesArray(DM dm, DM dms[])
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMCOMPOSITE, &flg));
   PetscCheck(flg, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Not for type %s", ((PetscObject)dm)->type_name);
-  /* loop over packed objects, handling one at at time */
+  /* loop over packed objects, handling one at a time */
   for (next = com->next, i = 0; next; next = next->next, i++) dms[i] = next->dm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1374,7 +1374,7 @@ static PetscErrorCode DMRefine_Composite(DM dmi, MPI_Comm comm, DM *fine)
   next = com->next;
   PetscCall(DMCompositeCreate(comm, fine));
 
-  /* loop over packed objects, handling one at at time */
+  /* loop over packed objects, handling one at a time */
   while (next) {
     PetscCall(DMRefine(next->dm, comm, &dm));
     PetscCall(DMCompositeAddDM(*fine, dm));
@@ -1397,7 +1397,7 @@ static PetscErrorCode DMCoarsen_Composite(DM dmi, MPI_Comm comm, DM *fine)
   next = com->next;
   PetscCall(DMCompositeCreate(comm, fine));
 
-  /* loop over packed objects, handling one at at time */
+  /* loop over packed objects, handling one at a time */
   while (next) {
     PetscCall(DMCoarsen(next->dm, comm, &dm));
     PetscCall(DMCompositeAddDM(*fine, dm));
@@ -1437,7 +1437,7 @@ static PetscErrorCode DMCreateInterpolation_Composite(DM coarse, DM fine, Mat *A
   PetscCall(PetscCalloc1(nDM * nDM, &mats));
   if (v) PetscCall(PetscCalloc1(nDM, &vecs));
 
-  /* loop over packed objects, handling one at at time */
+  /* loop over packed objects, handling one at a time */
   for (nextc = comcoarse->next, nextf = comfine->next, i = 0; nextc; nextc = nextc->next, nextf = nextf->next, i++) {
     if (!v) PetscCall(DMCreateInterpolation(nextc->dm, nextf->dm, &mats[i * nDM + i], NULL));
     else PetscCall(DMCreateInterpolation(nextc->dm, nextf->dm, &mats[i * nDM + i], &vecs[i]));
@@ -1523,7 +1523,7 @@ static PetscErrorCode DMGlobalToLocalBegin_Composite(DM dm, Vec gvec, InsertMode
   PetscCall(VecGetArray(gvec, &garray));
   PetscCall(VecGetArray(lvec, &larray));
 
-  /* loop over packed objects, handling one at at time */
+  /* loop over packed objects, handling one at a time */
   next = com->next;
   while (next) {
     Vec      local, global;
@@ -1576,7 +1576,7 @@ static PetscErrorCode DMLocalToGlobalBegin_Composite(DM dm, Vec lvec, InsertMode
   PetscCall(VecGetArray(lvec, &larray));
   PetscCall(VecGetArray(gvec, &garray));
 
-  /* loop over packed objects, handling one at at time */
+  /* loop over packed objects, handling one at a time */
   next = com->next;
   while (next) {
     Vec global, local;
@@ -1628,7 +1628,7 @@ static PetscErrorCode DMLocalToLocalBegin_Composite(DM dm, Vec vec1, InsertMode 
   PetscCall(VecGetArray(vec1, &array1));
   PetscCall(VecGetArray(vec2, &array2));
 
-  /* loop over packed objects, handling one at at time */
+  /* loop over packed objects, handling one at a time */
   next = com->next;
   while (next) {
     Vec local1, local2;

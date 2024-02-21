@@ -722,7 +722,7 @@ PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP ksp
   Compare to `KSPGCR`
 
   The `KSPPIPEGCR` Krylov method supports non-symmetric matrices and permits the use of a preconditioner
-  which may vary from one iteration to the next. Users can can define a method to vary the
+  which may vary from one iteration to the next. Users can define a method to vary the
   preconditioner between iterates via `KSPPIPEGCRSetModifyPC()`.
   Restarts are solves with x0 not equal to zero. When a restart occurs, the initial starting
   solution is given by the current estimate for x which was obtained by the last restart

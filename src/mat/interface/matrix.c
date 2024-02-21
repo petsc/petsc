@@ -4806,7 +4806,7 @@ PetscErrorCode MatGetFactor(Mat mat, MatSolverType type, MatFactorType ftype, Ma
 }
 
 /*@C
-  MatGetFactorAvailable - Returns a a flag if matrix supports particular type and factor type
+  MatGetFactorAvailable - Returns a flag if matrix supports particular type and factor type
 
   Not Collective
 

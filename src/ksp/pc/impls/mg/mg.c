@@ -1087,7 +1087,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       if (mglevels[i]->smoothu && (mglevels[i]->smoothu != mglevels[i]->smoothd)) PetscCall(KSPSetFromOptions(mglevels[i]->smoothu));
       if (mglevels[i]->cr) PetscCall(KSPSetFromOptions(mglevels[i]->cr));
     }
-    /* insure that if either interpolation or restriction is set the other other one is set */
+    /* insure that if either interpolation or restriction is set the other one is set */
     for (i = 1; i < n; i++) {
       PetscCall(PCMGGetInterpolation(pc, i, NULL));
       PetscCall(PCMGGetRestriction(pc, i, NULL));

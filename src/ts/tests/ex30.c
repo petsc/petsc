@@ -457,7 +457,7 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt num_vertices, const PetscInt a_Np
   printCtx->g_Mass         = g_Mass;
   printCtx->globXArray     = globXArray;
   printCtx->print_entropy  = PETSC_FALSE;
-  PetscOptionsBegin(PETSC_COMM_SELF, "", "Print Options Options", "DMPLEX");
+  PetscOptionsBegin(PETSC_COMM_SELF, "", "Print Options", "DMPLEX");
   PetscCall(PetscOptionsBool("-print_entropy", "Print entropy and moments at each time step", "ex30.c", printCtx->print_entropy, &printCtx->print_entropy, NULL));
   PetscOptionsEnd();
   // view

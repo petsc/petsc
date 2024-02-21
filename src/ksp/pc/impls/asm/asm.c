@@ -347,7 +347,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       PetscCall(VecScatterCreate(osm->ly, isll, osm->y[i], isl, &osm->lrestriction[i]));
       PetscCall(ISDestroy(&isll));
       PetscCall(ISDestroy(&isl));
-      if (osm->lprolongation) { /* generate a scatter from y[i] to ly picking only the the non-overlapping is_local[i] entries */
+      if (osm->lprolongation) { /* generate a scatter from y[i] to ly picking only the non-overlapping is_local[i] entries */
         ISLocalToGlobalMapping ltog;
         IS                     isll, isll_local;
         const PetscInt        *idx_local;

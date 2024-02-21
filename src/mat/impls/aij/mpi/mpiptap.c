@@ -156,7 +156,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, Mat C)
   C_loc = ptap->C_loc;
   C_oth = ptap->C_oth;
 
-  /* add C_loc and Co to to C */
+  /* add C_loc and Co to C */
   PetscCall(MatGetOwnershipRange(C, &rstart, &rend));
 
   /* C_loc -> C */
@@ -1920,7 +1920,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C)
   C_loc = ptap->C_loc;
   C_oth = ptap->C_oth;
 
-  /* add C_loc and Co to to C */
+  /* add C_loc and Co to C */
   PetscCall(MatGetOwnershipRange(C, &rstart, &rend));
 
   /* C_loc -> C */
