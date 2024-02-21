@@ -2549,13 +2549,15 @@ on a common interpolation set :math:`\{y_1, \cdots , y_{l_k}\}` of size
 :math:`l_k\in[n+1,`\ ``npmax``\ :math:`]`.
 
 The gradients and Hessians of the models in
-(`:eq:eq_models`) are then used to construct the main
+:any:`eq_models` are then used to construct the main
 model,
 
 .. math::
   :label: eq_newton2
 
    m_k(x) = f(x_k) +
+
+.. math::
    2(x-x_k)^T \sum_{i=1}^{m} F_i(x_k) g_k^{(i)} +
    (x-x_k)^T \sum_{i=1}^{m}
    \left( g_k^{(i)} \left(g_k^{(i)}\right)^T +  F_i(x_k)
