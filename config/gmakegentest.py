@@ -347,7 +347,7 @@ class generateExamples(Petsc):
       execname=getlangsplit(exfile)
     return execname
 
-  def getSubstVars(self,testDict,rpath,testname):
+  def getSubstVars(self,testDict,rpath,testname,runscript_dir):
     """
       Create a dictionary with all of the variables that get substituted
       into the template commands found in example_template.py
@@ -374,7 +374,10 @@ class generateExamples(Petsc):
     subst['label_suffix']=''
     subst['comments']="\n#".join(subst['comments'].split("\n"))
     if subst['comments']: subst['comments']="#"+subst['comments']
-    subst['exec']="../"+subst['execname']
+    if os.path.exists('/usr/bin/cygcheck.exe'):
+      subst['exec']="../"+subst['execname']
+    else:
+      subst['exec']=os.path.join(runscript_dir,subst['execname'])
     subst['testroot']=self.testroot_dir
     subst['testname']=testname
     dp = self.conf.get('DATAFILESPATH','')
@@ -562,7 +565,7 @@ class generateExamples(Petsc):
     with open(os.path.join(runscript_dir,testname+".sh"),"w",opener=opener) as fh:
 
       # Get variables to go into shell scripts.  last time testDict used
-      subst=self.getSubstVars(testDict,rpath,testname)
+      subst=self.getSubstVars(testDict,rpath,testname,runscript_dir)
       loopVars = self._getLoopVars(subst,testname)  # Alters subst as well
       if 'subtests' in testDict:
         # The subtests inherit inDict, so we don't need top-level loops.
