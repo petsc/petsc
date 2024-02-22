@@ -199,7 +199,7 @@ PetscErrorCode KSPChebyshevSetEigenvalues(KSP ksp, PetscReal emax, PetscReal emi
 
   The default transform is (0,0.1; 0,1.1) which targets the "upper" part of the spectrum, as desirable for use with multigrid.
 
-  The eigenvalues are estimated using the Lanczo (`KSPCG`) or Arnoldi (`KSPGMRES`) process depending on if the operator is
+  The eigenvalues are estimated using the Lanczos (`KSPCG`) or Arnoldi (`KSPGMRES`) process depending on if the operator is
   symmetric definite or not.
 
   Level: intermediate
