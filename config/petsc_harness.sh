@@ -306,15 +306,14 @@ function petsc_mpiexec_cudamemcheck() {
     memcheck_args="${PETSC_CUDAMEMCHECK_ARGS}"
   fi
   pre_args=()
-  # regex to detect a path containing petsc-arch path, which is where the test lives. This
+  # regex to detect where the test lives in the command line. This
   # marks the end of the options to mpiexec, and hence where we should insert the
   # cuda-memcheck command
-  re=".*${petsc_arch}.*"
-  rempi=".*${petsc_arch}/bin/mpiexec"
+  re="${executable}"
   for i in "$@"; do
     # first occurence of the presence of petsc_arch is the executable,
     # except when we install MPI ourselves
-    if [[ $i =~ ${re} ]] && [[ ! $i =~ ${rempi} ]]; then
+    if [[ $i =~ ${re} ]]; then
       # found it, put cuda memcheck command in
       pre_args+=("${memcheck_cmd} ${memcheck_args}")
       break
@@ -342,12 +341,9 @@ function petsc_mpiexec_cudamemcheck() {
 function petsc_mpiexec_valgrind() {
   valgrind_cmd="valgrind -q --tool=memcheck --leak-check=yes --num-callers=20 --track-origins=yes --keep-debuginfo=yes --suppressions=${PETSC_DIR}/share/petsc/suppressions/valgrind --error-exitcode=10"
   pre_args=()
-  re=".*${petsc_arch}.*"
-  rempi=".*${petsc_arch}/bin/mpiexec"
+  re="${executable}"
   for i in "$@"; do
-    # first occurence of the presence of petsc_arch is the executable,
-    # except when we install MPI ourselves
-    if [[ $i =~ ${re} ]] && [[ ! $i =~ ${rempi} ]]; then
+    if [[ $i =~ ${re} ]]; then
       pre_args+=("${valgrind_cmd}")
       break
     fi
