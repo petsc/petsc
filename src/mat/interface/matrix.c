@@ -8892,6 +8892,85 @@ PetscErrorCode MatGetNullSpace(Mat mat, MatNullSpace *nullsp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  MatGetNullSpaces - gets the null spaces, transpose null spaces, and near null spaces from an array of matrices
+
+  Logically Collective
+
+  Input Parameters:
++ n   - the number of matrices
+- mat - the array of matrices
+
+  Output Parameters:
+. nullsp - an array of null spaces, `NULL` for each matrix that does not have a null space
+
+  Level: developer
+
+  Note:
+  Call `MatRestoreNullspaces()` to provide these to another array of matrices
+
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatNullSpaceCreate()`, `MatSetNearNullSpace()`, `MatGetNullSpace()`, `MatSetTransposeNullSpace()`, `MatGetTransposeNullSpace()`,
+          `MatNullSpaceRemove()`, `MatRestoreNullSpaces()`
+@*/
+PetscErrorCode MatGetNullSpaces(PetscInt n, Mat mat[], MatNullSpace *nullsp[])
+{
+  PetscFunctionBegin;
+  PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of matrices %" PetscInt_FMT " must be non-negative", n);
+  PetscAssertPointer(mat, 2);
+  PetscAssertPointer(nullsp, 3);
+
+  PetscCall(PetscCalloc1(3 * n, nullsp));
+  for (PetscInt i = 0; i < n; i++) {
+    PetscValidHeaderSpecific(mat[i], MAT_CLASSID, 2);
+    (*nullsp)[i] = mat[i]->nullsp;
+    PetscCall(PetscObjectReference((PetscObject)(*nullsp)[i]));
+    (*nullsp)[n + i] = mat[i]->nearnullsp;
+    PetscCall(PetscObjectReference((PetscObject)(*nullsp)[n + i]));
+    (*nullsp)[2 * n + i] = mat[i]->transnullsp;
+    PetscCall(PetscObjectReference((PetscObject)(*nullsp)[2 * n + i]));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  MatRestoreNullSpaces - sets the null spaces, transpose null spaces, and near null spaces obtained with `MatGetNullSpaces()` for an array of matrices
+
+  Logically Collective
+
+  Input Parameters:
++ n      - the number of matrices
+. mat    - the array of matrices
+- nullsp - an array of null spaces, `NULL` if the null space does not exist
+
+  Level: developer
+
+  Note:
+  Call `MatGetNullSpaces()` to create `nullsp`
+
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatNullSpaceCreate()`, `MatSetNearNullSpace()`, `MatGetNullSpace()`, `MatSetTransposeNullSpace()`, `MatGetTransposeNullSpace()`,
+          `MatNullSpaceRemove()`, `MatGetNullSpaces()`
+@*/
+PetscErrorCode MatRestoreNullSpaces(PetscInt n, Mat mat[], MatNullSpace *nullsp[])
+{
+  PetscFunctionBegin;
+  PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of matrices %" PetscInt_FMT " must be non-negative", n);
+  PetscAssertPointer(mat, 2);
+  PetscAssertPointer(nullsp, 3);
+  PetscAssertPointer(*nullsp, 3);
+
+  for (PetscInt i = 0; i < n; i++) {
+    PetscValidHeaderSpecific(mat[i], MAT_CLASSID, 2);
+    PetscCall(MatSetNullSpace(mat[i], (*nullsp)[i]));
+    PetscCall(PetscObjectDereference((PetscObject)(*nullsp)[i]));
+    PetscCall(MatSetNearNullSpace(mat[i], (*nullsp)[n + i]));
+    PetscCall(PetscObjectDereference((PetscObject)(*nullsp)[n + i]));
+    PetscCall(MatSetTransposeNullSpace(mat[i], (*nullsp)[2 * n + i]));
+    PetscCall(PetscObjectDereference((PetscObject)(*nullsp)[2 * n + i]));
+  }
+  PetscCall(PetscFree(*nullsp));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   MatSetNullSpace - attaches a null space to a matrix.
 

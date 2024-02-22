@@ -2078,6 +2078,8 @@ PETSC_EXTERN PetscErrorCode MatSetTransposeNullSpace(Mat, MatNullSpace);
 PETSC_EXTERN PetscErrorCode MatSetNullSpace(Mat, MatNullSpace);
 PETSC_EXTERN PetscErrorCode MatSetNearNullSpace(Mat, MatNullSpace);
 PETSC_EXTERN PetscErrorCode MatGetNearNullSpace(Mat, MatNullSpace *);
+PETSC_EXTERN PetscErrorCode MatGetNullSpaces(PetscInt, Mat[], MatNullSpace *[]);
+PETSC_EXTERN PetscErrorCode MatRestoreNullSpaces(PetscInt, Mat[], MatNullSpace *[]);
 PETSC_EXTERN PetscErrorCode MatNullSpaceTest(MatNullSpace, Mat, PetscBool *);
 PETSC_EXTERN PetscErrorCode MatNullSpaceView(MatNullSpace, PetscViewer);
 PETSC_EXTERN PetscErrorCode MatNullSpaceGetVecs(MatNullSpace, PetscBool *, PetscInt *, const Vec **);

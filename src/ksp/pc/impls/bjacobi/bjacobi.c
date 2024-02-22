@@ -1002,6 +1002,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc, Mat mat, Mat pmat)
   IS                     is;
   MatReuse               scall;
   VecType                vectype;
+  MatNullSpace          *nullsp_mat = NULL, *nullsp_pmat = NULL;
 
   PetscFunctionBegin;
   PetscCall(MatGetLocalSize(pc->pmat, &M, &N));
@@ -1087,14 +1088,22 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc, Mat mat, Mat pmat)
        Destroy the blocks from the previous iteration
     */
     if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
+      PetscCall(MatGetNullSpaces(n_local, bjac->pmat, &nullsp_pmat));
       PetscCall(MatDestroyMatrices(n_local, &bjac->pmat));
-      if (pc->useAmat) PetscCall(MatDestroyMatrices(n_local, &bjac->mat));
+      if (pc->useAmat) {
+        PetscCall(MatGetNullSpaces(n_local, bjac->mat, &nullsp_mat));
+        PetscCall(MatDestroyMatrices(n_local, &bjac->mat));
+      }
       scall = MAT_INITIAL_MATRIX;
     } else scall = MAT_REUSE_MATRIX;
   }
 
   PetscCall(MatCreateSubMatrices(pmat, n_local, bjac->is, bjac->is, scall, &bjac->pmat));
-  if (pc->useAmat) PetscCall(MatCreateSubMatrices(mat, n_local, bjac->is, bjac->is, scall, &bjac->mat));
+  if (nullsp_pmat) PetscCall(MatRestoreNullSpaces(n_local, bjac->pmat, &nullsp_pmat));
+  if (pc->useAmat) {
+    PetscCall(MatCreateSubMatrices(mat, n_local, bjac->is, bjac->is, scall, &bjac->mat));
+    if (nullsp_mat) PetscCall(MatRestoreNullSpaces(n_local, bjac->mat, &nullsp_mat));
+  }
   /* Return control to the user so that the submatrices can be modified (e.g., to apply
      different boundary conditions for the submatrices than for the global problem) */
   PetscCall(PCModifySubMatrices(pc, n_local, bjac->is, bjac->is, bjac->pmat, pc->modifysubmatricesP));

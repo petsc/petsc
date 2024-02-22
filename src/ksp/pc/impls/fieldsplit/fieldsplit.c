@@ -687,8 +687,11 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     }
     PetscCall(VecDestroy(&xtmp));
   } else {
-    MatReuse scall;
+    MatReuse      scall;
+    MatNullSpace *nullsp = NULL;
+
     if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
+      PetscCall(MatGetNullSpaces(nsplit, jac->pmat, &nullsp));
       for (i = 0; i < nsplit; i++) PetscCall(MatDestroy(&jac->pmat[i]));
       scall = MAT_INITIAL_MATRIX;
     } else scall = MAT_REUSE_MATRIX;
@@ -701,6 +704,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       if (!pmat) PetscCall(MatCreateSubMatrix(pc->pmat, ilink->is, ilink->is_col, scall, &jac->pmat[i]));
       ilink = ilink->next;
     }
+    if (nullsp) PetscCall(MatRestoreNullSpaces(nsplit, jac->pmat, &nullsp));
   }
   if (jac->diag_use_amat) {
     ilink = jac->head;
@@ -711,8 +715,11 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         ilink = ilink->next;
       }
     } else {
-      MatReuse scall;
+      MatReuse      scall;
+      MatNullSpace *nullsp = NULL;
+
       if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
+        PetscCall(MatGetNullSpaces(nsplit, jac->mat, &nullsp));
         for (i = 0; i < nsplit; i++) PetscCall(MatDestroy(&jac->mat[i]));
         scall = MAT_INITIAL_MATRIX;
       } else scall = MAT_REUSE_MATRIX;
@@ -721,6 +728,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         PetscCall(MatCreateSubMatrix(pc->mat, ilink->is, ilink->is_col, scall, &jac->mat[i]));
         ilink = ilink->next;
       }
+      if (nullsp) PetscCall(MatRestoreNullSpaces(nsplit, jac->mat, &nullsp));
     }
   } else {
     jac->mat = jac->pmat;
