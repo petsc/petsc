@@ -830,7 +830,7 @@ static PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat, MatAssemblyType mode)
     }
     PetscCall(MatStashScatterEnd_Private(&mat->stash));
     /* Now process the block-stash. Since the values are stashed column-oriented,
-       set the roworiented flag to column oriented, and after MatSetValues()
+       set the row-oriented flag to column-oriented, and after MatSetValues()
        restore the original flags */
     r1 = baij->roworiented;
     r2 = a->roworiented;

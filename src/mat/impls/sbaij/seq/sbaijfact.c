@@ -610,7 +610,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat C, Mat A, const MatFactor
             aa[j * bs2 + k1] = dk[k1];
           }
         }
-        /* transform columnoriented blocks that lie in the lower triangle to roworiented blocks */
+        /* transform column-oriented blocks that lie in the lower triangle to row-oriented blocks */
         if (i > aj[j]) {
           ap = aa + j * bs2;                       /* ptr to the beginning of j-th block of aa */
           for (k = 0; k < bs2; k++) dk[k] = ap[k]; /* dk <- j-th block of aa */
@@ -920,7 +920,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat C, Mat A, const MatFactor
             aa[j * 4 + k1] = dk[k1];
           }
         }
-        /* transform columnoriented blocks that lie in the lower triangle to roworiented blocks */
+        /* transform column-oriented blocks that lie in the lower triangle to row-oriented blocks */
         if (i > aj[j]) {
           ap    = aa + j * 4; /* ptr to the beginning of the block */
           dk[1] = ap[1];      /* swap ap[1] and ap[2] */

@@ -928,16 +928,15 @@ static PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat, MatAssemblyType mode)
     }
     PetscCall(MatStashScatterEnd_Private(&mat->stash));
     /* Now process the block-stash. Since the values are stashed column-oriented,
-       set the roworiented flag to column oriented, and after MatSetValues()
+       set the row-oriented flag to column-oriented, and after MatSetValues()
        restore the original flags */
     r1 = baij->roworiented;
     r2 = a->roworiented;
     r3 = ((Mat_SeqBAIJ *)baij->B->data)->roworiented;
 
-    baij->roworiented = PETSC_FALSE;
-    a->roworiented    = PETSC_FALSE;
-
-    (((Mat_SeqBAIJ *)baij->B->data))->roworiented = PETSC_FALSE; /* b->roworiented */
+    baij->roworiented                             = PETSC_FALSE;
+    a->roworiented                                = PETSC_FALSE;
+    (((Mat_SeqBAIJ *)baij->B->data))->roworiented = PETSC_FALSE;
     while (1) {
       PetscCall(MatStashScatterGetMesg_Private(&mat->bstash, &n, &row, &col, &val, &flg));
       if (!flg) break;
@@ -955,10 +954,9 @@ static PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat, MatAssemblyType mode)
     }
     PetscCall(MatStashScatterEnd_Private(&mat->bstash));
 
-    baij->roworiented = r1;
-    a->roworiented    = r2;
-
-    ((Mat_SeqBAIJ *)baij->B->data)->roworiented = r3; /* b->roworiented */
+    baij->roworiented                           = r1;
+    a->roworiented                              = r2;
+    ((Mat_SeqBAIJ *)baij->B->data)->roworiented = r3;
   }
 
   PetscCall(MatAssemblyBegin(baij->A, mode));

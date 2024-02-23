@@ -48,7 +48,7 @@ int main(int argc, char **args)
     col = start / bs;
     PetscCall(PetscMalloc1(bs * bs, &bval));
     k = 1;
-    /* row oriented - default */
+    /* row-oriented - default */
     for (i = 0; i < bs; i++) {
       for (j = 0; j < bs; j++) {
         bval[i * bs + j] = (PetscScalar)k;

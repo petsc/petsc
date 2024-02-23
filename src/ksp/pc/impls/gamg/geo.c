@@ -1,5 +1,5 @@
 /*
- GAMG geometric-algebric multiogrid PC - Mark Adams 2011
+ GAMG geometric-algebric multigrid PC - Mark Adams 2011
  */
 
 #include <../src/ksp/pc/impls/gamg/gamg.h> /*I "petscpc.h" I*/
@@ -60,7 +60,7 @@ static PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc,
   }
   for (kk = 0; kk < arrsz; kk++) pc_gamg->data[kk] = -999.;
   pc_gamg->data[arrsz] = -99.;
-  /* copy data in - column oriented */
+  /* copy data in - column-oriented */
   if (nloc == a_nloc) {
     for (kk = 0; kk < nloc; kk++) {
       for (ii = 0; ii < ndm; ii++) pc_gamg->data[ii * nloc + kk] = coords[kk * ndm + ii];
