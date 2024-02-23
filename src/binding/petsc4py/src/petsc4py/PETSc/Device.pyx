@@ -44,9 +44,10 @@ StreamType = make_enum_class(
 
   """,
   (
-    ("GLOBAL_BLOCKING"    , PETSC_STREAM_GLOBAL_BLOCKING),
-    ("DEFAULT_BLOCKING"   , PETSC_STREAM_DEFAULT_BLOCKING),
-    ("GLOBAL_NONBLOCKING" , PETSC_STREAM_GLOBAL_NONBLOCKING),
+    ("DEFAULT"                  , PETSC_STREAM_DEFAULT),
+    ("NONBLOCKING"              , PETSC_STREAM_NONBLOCKING),
+    ("DEFAULT_WITH_BARRIER"     , PETSC_STREAM_DEFAULT_WITH_BARRIER),
+    ("NONBLOCKING_WITH_BARRIER" , PETSC_STREAM_NONBLOCKING_WITH_BARRIER),
   )
 )
 
@@ -262,7 +263,7 @@ cdef class DeviceContext(Object):
     stream_type, setStreamType, petsc.PetscDeviceContextGetStreamType
 
     """
-    cdef PetscStreamType cstream_type = PETSC_STREAM_DEFAULT_BLOCKING
+    cdef PetscStreamType cstream_type = PETSC_STREAM_DEFAULT
 
     CHKERR(PetscDeviceContextGetStreamType(self.dctx, &cstream_type))
     return toStreamType(cstream_type)
@@ -402,7 +403,7 @@ cdef class DeviceContext(Object):
 
     """
     cdef PetscDeviceContext *subctx       = NULL
-    cdef PetscStreamType     cstream_type = PETSC_STREAM_DEFAULT_BLOCKING
+    cdef PetscStreamType     cstream_type = PETSC_STREAM_DEFAULT
     cdef PetscInt cn = asInt(n)
     try:
       if stream_type is None:

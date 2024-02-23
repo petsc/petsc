@@ -294,23 +294,33 @@ S*/
 typedef struct _n_PetscDevice *PetscDevice;
 
 /*E
-  PetscStreamType - Stream blocking mode, indicates how a stream implementation will interact
-  with the default `NULL` stream, which is usually blocking.
+  PetscStreamType - indicates how a stream implementation will interact
+  with other streams and if it blocks the host.
 
   Values:
-+ `PETSC_STREAM_GLOBAL_BLOCKING`    - Alias for `NULL` stream. Block the host for all other streams to finish work before starting its operations.
-. `PETSC_STREAM_DEFAULT_BLOCKING`   - Stream will act independent of other streams, but will still be blocked by actions on the `NULL` stream.
-. `PETSC_STREAM_GLOBAL_NONBLOCKING` - Stream is truly asynchronous, and is blocked by nothing, not even the `NULL` stream.
++ `PETSC_STREAM_DEFAULT`                  - Same as the default stream in CUDA or HIP. Streams of this type may or may not synchronize implicitly with other streams. It does not block the host.
+. `PETSC_STREAM_NONBLOCKING`              - Same as the nonblocking stream in CUDA or HIP. Streams of this type is truly asynchronous, and is blocked by nothing. It does not block the host. In CUDA, it is created with cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking).
+. `PETSC_STREAM_DEFAULT_WITH_BARRIER`     - Same as the default stream in CUDA or HIP. PETSc async functions using this kind of stream will end with a stream synchronization. Stream of this type may or may not synchronize implicitly with other streams.
+. `PETSC_STREAM_NONBLOCKING_WITH_BARRIER` - Same as the nonblocking stream in CUDA or HIP. PETSc async functions using this kind of stream will end with a stream synchronization. Streams of this type are truly asynchronous and are blocked by nothing.
 - `PETSC_STREAM_MAX`                - Always 1 greater than the largest `PetscStreamType`, do not use
 
   Level: intermediate
 
+  Note:
+  The default stream, also known as the NULL stream or stream 0, can have two different behaviors: legacy behavior and per-thread behavior.
+  The behavior is determined at compile time. By default, the legacy default stream is used.
+  The legacy default stream implicitly synchronizes with per-thread default streams.
+  The per-thread default stream, like nonblocking streams, does not synchronizes with other per-thread streams, but synchronize with the default stream.
+  The per-thread default stream may be useful for running kernels launched from different threads concurrently on the same GPU when the Multi-Process Service is not available.
+  To use the per-thread default stream, one can enable it by using the nvcc option "--default-stream per-thread" or the hipcc option "-fgpu-default-stream=per-thread", depending on the backend used.
+
 .seealso: `PetscDeviceContextSetStreamType()`, `PetscDeviceContextGetStreamType()`
 E*/
 typedef enum {
-  PETSC_STREAM_GLOBAL_BLOCKING,
-  PETSC_STREAM_DEFAULT_BLOCKING,
-  PETSC_STREAM_GLOBAL_NONBLOCKING,
+  PETSC_STREAM_DEFAULT,
+  PETSC_STREAM_NONBLOCKING,
+  PETSC_STREAM_DEFAULT_WITH_BARRIER,
+  PETSC_STREAM_NONBLOCKING_WITH_BARRIER,
   PETSC_STREAM_MAX
 } PetscStreamType;
 PETSC_EXTERN const char *const PetscStreamTypes[];

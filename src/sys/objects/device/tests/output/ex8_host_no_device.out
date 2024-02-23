@@ -9,7 +9,7 @@ PetscDevice Object: 1 MPI process
   id: 0
 PetscDeviceContext Object: 1 MPI process
   type not yet set
-  stream type: default_blocking
+  stream type: default
   children: 0
   PetscDevice Object: 1 MPI process
     type: host

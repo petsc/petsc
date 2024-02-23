@@ -54,7 +54,7 @@ public:
       PetscCall(CxxDataCast(dctx)->clear());
       PetscCall(CxxDataCast(dctx)->reset_self(dctx));
     }
-    dctx->streamType = PETSC_STREAM_DEFAULT_BLOCKING;
+    dctx->streamType = PETSC_STREAM_DEFAULT;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -442,7 +442,7 @@ static PetscErrorCode PetscDeviceContextDuplicate_Private(PetscDeviceContext dct
 @*/
 PetscErrorCode PetscDeviceContextDuplicate(PetscDeviceContext dctx, PetscDeviceContext *dctxdup)
 {
-  auto stype = PETSC_STREAM_DEFAULT_BLOCKING;
+  auto stype = PETSC_STREAM_DEFAULT;
 
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
@@ -677,7 +677,7 @@ PetscErrorCode PetscDeviceContextForkWithStreamType(PetscDeviceContext dctx, Pet
 @*/
 PetscErrorCode PetscDeviceContextFork(PetscDeviceContext dctx, PetscInt n, PetscDeviceContext **dsub)
 {
-  auto stype = PETSC_STREAM_DEFAULT_BLOCKING;
+  auto stype = PETSC_STREAM_DEFAULT;
 
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
@@ -900,7 +900,7 @@ static PetscErrorCode PetscDeviceContextGetNullContextForDevice_Private(PetscBoo
         PetscCall(PetscObjectSetName(pobj, name.c_str()));
         PetscCall(PetscObjectSetOptionsPrefix(pobj, prefix.c_str()));
       }
-      PetscCall(PetscDeviceContextSetStreamType(*dctx, PETSC_STREAM_GLOBAL_BLOCKING));
+      PetscCall(PetscDeviceContextSetStreamType(*dctx, PETSC_STREAM_DEFAULT));
       PetscCall(PetscDeviceContextSetDevice_Private(*dctx, device, user_set_device));
       PetscCall(PetscDeviceContextSetUp(*dctx));
       // would use ctxlist.cbegin() but GCC 4.8 can't handle const iterator insert!
@@ -1013,7 +1013,7 @@ PetscErrorCode PetscDeviceContextView(PetscDeviceContext dctx, PetscViewer viewe
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare(PetscObjectCast(viewer), PETSCVIEWERASCII, &iascii));
   if (iascii) {
-    auto        stype = PETSC_STREAM_DEFAULT_BLOCKING;
+    auto        stype = PETSC_STREAM_DEFAULT;
     PetscViewer sub;
 
     PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sub));
