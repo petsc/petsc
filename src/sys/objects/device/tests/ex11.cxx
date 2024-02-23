@@ -269,7 +269,7 @@ int main(int argc, char *argv[])
 
   PetscCall(PetscDeviceContextCreate(&dctx_a));
   PetscCall(PetscObjectSetName(PetscObjectCast(dctx_a), "dctx_a"));
-  PetscCall(PetscDeviceContextSetStreamType(dctx_a, PETSC_STREAM_DEFAULT_BLOCKING));
+  PetscCall(PetscDeviceContextSetStreamType(dctx_a, PETSC_STREAM_DEFAULT));
   PetscCall(PetscDeviceContextSetFromOptions(PETSC_COMM_WORLD, dctx_a));
   PetscCall(PetscDeviceContextDuplicate(dctx_a, &dctx_b));
   PetscCall(PetscObjectSetName(PetscObjectCast(dctx_b), "dctx_b"));

@@ -22,6 +22,7 @@ Changes: Development
 - Deprecate ``PetscVoidFunction``, ``PetscVoidStarFunction``, and ``PetscErrorCodeFunction`` typedefs in favor of
   ``PetscVoidFn`` and ``PetscErrorCodeFn``
 - Add ``PetscOptionsBoundedReal()`` and ``PetscOptionsRangeReal()``
+- Rename Petsc stream types to ``PETSC_STREAM_DEFAULT``, ``PETSC_STREAM_NONBLOCKING``, ``PETSC_STREAM_DEFAULT_WITH_BARRIER`` and ``PETSC_STREAM_NONBLOCKING_WITH_BARRIER``. The root device context uses ``PETSC_STREAM_DEFAULT`` by default
 
 .. rubric:: Event Logging:
 

@@ -205,7 +205,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::PointwiseBinary_(BinaryFuncT &&binary, Vec
     );
     // clang-format on
     PetscCall(PetscLogGpuFlops(n));
-    PetscCall(PetscDeviceContextSynchronizeIfGlobalBlocking_Internal(dctx));
+    PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   } else {
     PetscCall(MaybeIncrementEmptyLocalVec(zout));
   }
@@ -261,7 +261,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::PointwiseUnary_(UnaryFuncT &&unary, Vec xi
       PetscCall(apply(DeviceArrayRead(dctx, xinout).data(), DeviceArrayWrite(dctx, yin).data()));
     }
     PetscCall(PetscLogGpuFlops(n));
-    PetscCall(PetscDeviceContextSynchronizeIfGlobalBlocking_Internal(dctx));
+    PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   } else {
     if (inplace) {
       PetscCall(MaybeIncrementEmptyLocalVec(xinout));
@@ -485,7 +485,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::AYPXAsync(Vec yin, PetscScalar alpha, Vec 
     }
     PetscCall(PetscLogGpuFlops((alphaIsOne ? 1 : 2) * n));
   }
-  if (n > 0) PetscCall(PetscDeviceContextSynchronizeIfGlobalBlocking_Internal(dctx));
+  if (n > 0) PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -516,7 +516,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::AXPYAsync(Vec yin, PetscScalar alpha, Vec 
     PetscCallCUPMBLAS(cupmBlasXaxpy(cupmBlasHandle, n, cupmScalarPtrCast(&alpha), DeviceArrayRead(dctx, xin), 1, DeviceArrayReadWrite(dctx, yin), 1));
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(PetscLogGpuFlops(2 * n));
-    if (n > 0) PetscCall(PetscDeviceContextSynchronizeIfGlobalBlocking_Internal(dctx));
+    if (n > 0) PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   } else {
     PetscCall(VecAXPY_Seq(yin, alpha, xin));
   }
@@ -821,7 +821,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::WAXPYAsync(Vec win, PetscScalar alpha, Vec
       PetscCall(PetscLogGpuTimeEnd());
     }
     PetscCall(PetscLogGpuFlops(2 * n));
-    PetscCall(PetscDeviceContextSynchronizeIfGlobalBlocking_Internal(dctx));
+    PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -965,7 +965,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::MAXPYAsync(Vec xin, PetscInt nv, const Pet
     } while (yidx < nv);
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(PetscDeviceFree(dctx, d_alpha));
-    PetscCall(PetscDeviceContextSynchronizeIfGlobalBlocking_Internal(dctx));
+    PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   }
   PetscCall(PetscLogGpuFlops(nv * 2 * n));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1182,8 +1182,8 @@ inline PetscErrorCode VecSeq_CUPM<T>::MDot_(std::false_type, Vec xin, PetscInt n
     // sub. Ideally the parent context should also join in on the fork, but it is extremely
     // fiddly to do so presently
     PetscCall(PetscDeviceContextGetStreamType(dctx, &stype));
-    if (stype == PETSC_STREAM_GLOBAL_BLOCKING) stype = PETSC_STREAM_DEFAULT_BLOCKING;
-    // If we have a globally blocking stream create nonblocking streams instead (as we can
+    if (stype == PETSC_STREAM_DEFAULT || stype == PETSC_STREAM_DEFAULT_WITH_BARRIER) stype = PETSC_STREAM_NONBLOCKING;
+    // If we have a default stream create nonblocking streams instead (as we can
     // locally exploit the parallelism). Otherwise use the prescribed stream type.
     PetscCall(PetscDeviceContextForkWithStreamType(dctx, stype, num_sub_streams, &sub));
     PetscCall(PetscLogGpuTimeBegin());
@@ -1320,7 +1320,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::SetAsync(Vec xin, PetscScalar alpha, Petsc
       PetscCallThrust(THRUST_CALL(thrust::fill, stream, dptr, dptr + n, alpha));
     }
   }
-  if (n > 0) PetscCall(PetscDeviceContextSynchronizeIfGlobalBlocking_Internal(dctx));
+  if (n > 0) PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1350,7 +1350,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::ScaleAsync(Vec xin, PetscScalar alpha, Pet
     PetscCallCUPMBLAS(cupmBlasXscal(cupmBlasHandle, n, cupmScalarPtrCast(&alpha), DeviceArrayReadWrite(dctx, xin), 1));
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(PetscLogGpuFlops(n));
-    PetscCall(PetscDeviceContextSynchronizeIfGlobalBlocking_Internal(dctx));
+    PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   } else {
     PetscCall(MaybeIncrementEmptyLocalVec(xin));
   }
@@ -1449,7 +1449,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::CopyAsync(Vec xin, Vec yout, PetscDeviceCo
     default:
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_GPU, "Unknown cupmMemcpyKind %d", static_cast<int>(mode));
     }
-    PetscCall(PetscDeviceContextSynchronizeIfGlobalBlocking_Internal(dctx));
+    PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   } else {
     PetscCall(MaybeIncrementEmptyLocalVec(yout));
   }
@@ -1479,7 +1479,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::SwapAsync(Vec xin, Vec yin, PetscDeviceCon
     PetscCall(PetscLogGpuTimeBegin());
     PetscCallCUPMBLAS(cupmBlasXswap(cupmBlasHandle, n, DeviceArrayReadWrite(dctx, xin), 1, DeviceArrayReadWrite(dctx, yin), 1));
     PetscCall(PetscLogGpuTimeEnd());
-    PetscCall(PetscDeviceContextSynchronizeIfGlobalBlocking_Internal(dctx));
+    PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   } else {
     PetscCall(MaybeIncrementEmptyLocalVec(xin));
     PetscCall(MaybeIncrementEmptyLocalVec(yin));
@@ -1536,7 +1536,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::AXPBYAsync(Vec yin, PetscScalar alpha, Pet
     }
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(PetscLogGpuFlops((betaIsZero ? 1 : 3) * n));
-    PetscCall(PetscDeviceContextSynchronizeIfGlobalBlocking_Internal(dctx));
+    PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   } else {
     PetscCall(MaybeIncrementEmptyLocalVec(yin));
   }

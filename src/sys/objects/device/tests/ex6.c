@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
   testset:
     requires: cxx
     args: -root_device_context_stream_type \
-      {{global_blocking default_blocking global_nonblocking}separate output}
+      {{default default_with_barrier nonblocking}separate output}
     filter: grep -ve "ex6 on a" -ve "\[0\] "
     test:
       requires: !device

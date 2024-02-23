@@ -107,7 +107,7 @@ static PetscErrorCode TestAsyncCoherence(PetscDeviceContext dctx, PetscRandom ra
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextGetDeviceType(dctx, &dtype));
   // ensure the streams are nonblocking
-  PetscCall(PetscDeviceContextForkWithStreamType(dctx, PETSC_STREAM_GLOBAL_NONBLOCKING, nsub, &sub));
+  PetscCall(PetscDeviceContextForkWithStreamType(dctx, PETSC_STREAM_NONBLOCKING, nsub, &sub));
   // do a warmup to ensure each context acquires any necessary data structures
   for (PetscInt i = 0; i < nsub; ++i) {
     PetscCall(PetscDeviceMalloc(sub[i], PETSC_MEMTYPE_HOST, n, &ptr));
