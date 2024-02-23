@@ -2918,17 +2918,22 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat B, PetscInt d_nz, const Pets
   PetscCall(VecScatterDestroy(&b->Mvctx));
 
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)B), &size));
+
+  MatSeqXAIJGetOptions_Private(b->B);
   PetscCall(MatDestroy(&b->B));
   PetscCall(MatCreate(PETSC_COMM_SELF, &b->B));
   PetscCall(MatSetSizes(b->B, B->rmap->n, size > 1 ? B->cmap->N : 0, B->rmap->n, size > 1 ? B->cmap->N : 0));
   PetscCall(MatSetBlockSizesFromMats(b->B, B, B));
   PetscCall(MatSetType(b->B, MATSEQAIJ));
+  MatSeqXAIJRestoreOptions_Private(b->B);
 
+  MatSeqXAIJGetOptions_Private(b->A);
   PetscCall(MatDestroy(&b->A));
   PetscCall(MatCreate(PETSC_COMM_SELF, &b->A));
   PetscCall(MatSetSizes(b->A, B->rmap->n, B->cmap->n, B->rmap->n, B->cmap->n));
   PetscCall(MatSetBlockSizesFromMats(b->A, B, B));
   PetscCall(MatSetType(b->A, MATSEQAIJ));
+  MatSeqXAIJRestoreOptions_Private(b->A);
 
   PetscCall(MatSeqAIJSetPreallocation(b->A, d_nz, d_nnz));
   PetscCall(MatSeqAIJSetPreallocation(b->B, o_nz, o_nnz));
@@ -6692,11 +6697,19 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   if (cstart) {
     for (k = 0; k < Annz; k++) Aj[k] -= cstart;
   }
-  PetscCall(MatDestroy(&mpiaij->A));
-  PetscCall(MatDestroy(&mpiaij->B));
+
   PetscCall(MatGetRootType_Private(mat, &rtype));
+
+  MatSeqXAIJGetOptions_Private(mpiaij->A);
+  PetscCall(MatDestroy(&mpiaij->A));
   PetscCall(MatCreateSeqAIJWithArrays(PETSC_COMM_SELF, m, n, Ai, Aj, Aa, &mpiaij->A));
+  MatSeqXAIJRestoreOptions_Private(mpiaij->A);
+
+  MatSeqXAIJGetOptions_Private(mpiaij->B);
+  PetscCall(MatDestroy(&mpiaij->B));
   PetscCall(MatCreateSeqAIJWithArrays(PETSC_COMM_SELF, m, mat->cmap->N, Bi, Bj, Ba, &mpiaij->B));
+  MatSeqXAIJRestoreOptions_Private(mpiaij->B);
+
   PetscCall(MatSetUpMultiply_MPIAIJ(mat));
   mat->was_assembled = PETSC_TRUE; // was_assembled in effect means the Mvctx is built; doing so avoids redundant MatSetUpMultiply_MPIAIJ
   state              = mpiaij->A->nonzerostate + mpiaij->B->nonzerostate;

@@ -2013,15 +2013,20 @@ static PetscErrorCode MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B, PetscInt bs, P
   PetscCall(VecScatterDestroy(&b->sMvctx));
 
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)B), &size));
+
+  MatSeqXAIJGetOptions_Private(b->B);
   PetscCall(MatDestroy(&b->B));
   PetscCall(MatCreate(PETSC_COMM_SELF, &b->B));
   PetscCall(MatSetSizes(b->B, B->rmap->n, size > 1 ? B->cmap->N : 0, B->rmap->n, size > 1 ? B->cmap->N : 0));
   PetscCall(MatSetType(b->B, MATSEQBAIJ));
+  MatSeqXAIJRestoreOptions_Private(b->B);
 
+  MatSeqXAIJGetOptions_Private(b->A);
   PetscCall(MatDestroy(&b->A));
   PetscCall(MatCreate(PETSC_COMM_SELF, &b->A));
   PetscCall(MatSetSizes(b->A, B->rmap->n, B->cmap->n, B->rmap->n, B->cmap->n));
   PetscCall(MatSetType(b->A, MATSEQSBAIJ));
+  MatSeqXAIJRestoreOptions_Private(b->A);
 
   PetscCall(MatSeqSBAIJSetPreallocation(b->A, bs, d_nz, d_nnz));
   PetscCall(MatSeqBAIJSetPreallocation(b->B, bs, o_nz, o_nnz));
