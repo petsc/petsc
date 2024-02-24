@@ -267,7 +267,7 @@ def chkcygwinwindowscompilers():
     path = os.path.join(os.getcwd(),'lib','petsc','bin','win32fe')
     for l in range(1,len(sys.argv)):
       option = sys.argv[l]
-      for i in ['cl','icl','ifort','lib','nvcc']:
+      for i in ['cl','icl','ifort','icx','ifx','lib','nvcc']:
         if option.endswith('="win32fe '+i+'"'):
           sys.argv[l] = option[:option.find('=')+1]+os.path.join(path,'win32fe_'+i)
           print('===============================================================================')

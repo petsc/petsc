@@ -1003,7 +1003,12 @@ class Configure(config.base.Configure):
     isGNUish     = bool(isGNUish)
     lang,LANG    = language.lower(),language.upper()
     compiler     = self.getCompiler(lang=language)
-    stdflag_base = '-std:' if self.isMSVC(compiler, self.log) else '-std='
+    if self.isMSVC(compiler, self.log):
+      stdflag_base = '-std:'
+    elif self.isWindows(compiler, self.log) and self.isIntel(compiler, self.log):
+      stdflag_base = '-Qstd='
+    else:
+      stdflag_base = '-std='
     DialectFlags = namedtuple('DialectFlags',['standard','gnu'])
     BaseFlags    = DialectFlags(standard=stdflag_base+'c++',gnu=stdflag_base+'gnu++')
     self.logPrint('checkCxxDialect: checking C++ dialect version for language "{lang}" using compiler "{compiler}"'.format(lang=LANG,compiler=compiler))
