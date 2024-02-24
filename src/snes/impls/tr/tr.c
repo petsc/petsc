@@ -166,7 +166,7 @@ PetscErrorCode SNESNewtonTRSetFallbackType(SNES snes, SNESNewtonTRFallbackType f
 . func - [optional] function evaluation routine, for the calling sequence see `SNESNewtonTRPreCheck()`
 - ctx  - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
-  Level: deprecated (since 3.19)
+  Level: intermediate
 
   Note:
   This function is called BEFORE the function evaluation within the solver.
@@ -191,8 +191,6 @@ PetscErrorCode SNESNewtonTRSetPreCheck(SNES snes, PetscErrorCode (*func)(SNES, V
 /*@C
   SNESNewtonTRGetPreCheck - Gets the pre-check function
 
-  Deprecated use `SNESNEWTONDCTRDC`
-
   Not Collective
 
   Input Parameter:
@@ -202,7 +200,7 @@ PetscErrorCode SNESNewtonTRSetPreCheck(SNES snes, PetscErrorCode (*func)(SNES, V
 + func - [optional] function evaluation routine, for the calling sequence see `SNESNewtonTRPreCheck()`
 - ctx  - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
-  Level: deprecated (since 3.19)
+  Level: intermediate
 
 .seealso: [](ch_snes), `SNESNEWTONTR`, `SNESNewtonTRSetPreCheck()`, `SNESNewtonTRPreCheck()`
 @*/
@@ -231,7 +229,7 @@ PetscErrorCode SNESNewtonTRGetPreCheck(SNES snes, PetscErrorCode (**func)(SNES, 
 . func - [optional] function evaluation routine, for the calling sequence see `SNESNewtonTRPostCheck()`
 - ctx  - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
-  Level: deprecated (since 3.19)
+  Level: intermediate
 
   Note:
   This function is called BEFORE the function evaluation within the solver while the function set in
@@ -872,7 +870,8 @@ static PetscErrorCode SNESView_NEWTONTR(SNES snes, PetscViewer viewer)
 .  -snes_tr_deltaM <deltaM>                      - trust region parameter, max size of trust region (default: MAX_REAL)
 .  -snes_tr_delta0 <delta0>                      - trust region parameter, initial size of trust region (default: 0.2)
 -  -snes_tr_fallback_type <newton,cauchy,dogleg> - Solution strategy to test reduction when step is outside of trust region. Can use scaled Newton direction, Cauchy point (Steepest Descent direction) or dogleg method.
-    Level: deprecated
+
+   Level: beginner
 
 .seealso: [](ch_snes), `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESSetTrustRegionTolerance()`,
           `SNESNewtonTRPreCheck()`, `SNESNewtonTRGetPreCheck()`, `SNESNewtonTRSetPostCheck()`, `SNESNewtonTRGetPostCheck()`,
