@@ -269,7 +269,7 @@ def chkcygwinwindowscompilers():
       option = sys.argv[l]
       for i in ['cl','icl','ifort','lib','nvcc']:
         if option.endswith('="win32fe '+i+'"'):
-          sys.argv[l] = option[:option.find('=')+1]+os.path.join(path,'win_'+i)
+          sys.argv[l] = option[:option.find('=')+1]+os.path.join(path,'win32fe_'+i)
           print('===============================================================================')
           print(' *** Arguments of the form XXX="win32fe '+i+'" are deprecated              ****')
           print(' *** Use XXX='+i+'                                                         ****')
@@ -277,7 +277,7 @@ def chkcygwinwindowscompilers():
 
           break
         if option.endswith('='+i):
-          sys.argv[l] = option[:option.find('=')+1]+os.path.join(path,'win_'+i)
+          sys.argv[l] = option[:option.find('=')+1]+os.path.join(path,'win32fe_'+i)
           break
   return 0
 
