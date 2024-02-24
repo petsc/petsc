@@ -261,7 +261,8 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 500', log = log, logOutputflg = False)
       output = output + error
-      found = any([s in output for s in ['Emit Clang AST']])
+      found = (any([s in output for s in ['Emit Clang AST']])
+               and not any([s in output for s in ['Intel(R)','Win32 Development Tool Front End']]))
       if found:
         if log: log.write('Detected CLANG compiler\n')
         return 1
