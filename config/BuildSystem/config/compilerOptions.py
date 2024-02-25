@@ -3,9 +3,9 @@ import os
 import re
 import nargs
 
-re_win32fe_cl    = re.compile(r'win32fe\s+cl')
-re_win32fe_icl   = re.compile(r'win32fe\s+icl')
-re_win32fe_ifort = re.compile(r'win32fe\s+ifort')
+re_win32fe_cl    = re.compile(r'win32fe[\s_]+cl')
+re_win32fe_icl   = re.compile(r'win32fe[\s_]+ic[lx]')
+re_win32fe_ifort = re.compile(r'win32fe[\s_]+if(x|ort)')
 
 class CompilerOptions(config.base.Configure):
   def getCFlags(self, compiler, bopt, language):
@@ -50,7 +50,7 @@ class CompilerOptions(config.base.Configure):
           flags.append('-O')
     else:
       # Linux Intel
-      if config.setCompilers.Configure.isIntel(compiler, self.log) and not compiler.find('win32fe') >=0:
+      if config.setCompilers.Configure.isIntel(compiler, self.log) and not re_win32fe_icl.search(compiler):
         if bopt == '':
           flags.extend(['-wd1572', '-Wno-unknown-pragmas'])
           # next one fails in OpenMP build and we don't use it anyway so remove
@@ -61,7 +61,7 @@ class CompilerOptions(config.base.Configure):
           flags.append('-g')
           flags.append('-O3')
       # Windows Intel
-      elif 'win_icl' in compiler or re_win32fe_icl.search(compiler):
+      elif re_win32fe_icl.search(compiler):
         if bopt == '':
           flags.extend(['-Qstd=c99'])
           if self.argDB['with-shared-libraries']:
@@ -73,7 +73,7 @@ class CompilerOptions(config.base.Configure):
         elif bopt == 'O':
           flags.extend(['-O3', '-QxW'])
       # Windows Microsoft
-      elif 'win_cl' in compiler or re_win32fe_cl.search(compiler):
+      elif re_win32fe_cl.search(compiler):
         if bopt == '':
           dir(self)
           # cause compiler to generate only a single copy of static strings; needed usage of __func__ in PETSc
@@ -176,7 +176,7 @@ class CompilerOptions(config.base.Configure):
         flags.append('-O')
     else:
       # Linux Intel
-      if config.setCompilers.Configure.isIntel(compiler, self.log) and not compiler.find('win32fe') >=0:
+      if config.setCompilers.Configure.isIntel(compiler, self.log) and not re_win32fe_icl.search(compiler):
         if bopt == '':
           flags.append('-wd1572')
         elif bopt == 'g':
@@ -185,7 +185,7 @@ class CompilerOptions(config.base.Configure):
           flags.append('-g')
           flags.append('-O3')
       # Windows Intel
-      elif 'win_icl' in compiler or re_win32fe_icl.search(compiler):
+      elif re_win32fe_icl.search(compiler):
         if bopt == '':
           if self.argDB['with-shared-libraries']:
             flags.extend(['-MD','-GR','-EHsc'])
@@ -196,7 +196,7 @@ class CompilerOptions(config.base.Configure):
         elif bopt in ['O']:
           flags.extend(['-O3', '-QxW'])
       # Windows Microsoft
-      elif 'win_cl' in compiler or re_win32fe_cl.search(compiler):
+      elif re_win32fe_cl.search(compiler):
         if bopt == '':
           # cause compiler to generate only a single copy of static strings; needed usage of __func__ in PETSc
           flags.extend(['-GF'])
@@ -274,14 +274,14 @@ class CompilerOptions(config.base.Configure):
         elif bopt == 'O':
           flags.extend(['-fast', '-Mnoframe'])
       # Linux Intel
-      if config.setCompilers.Configure.isIntel(compiler, self.log) and not compiler.find('win32fe') >=0:
+      if config.setCompilers.Configure.isIntel(compiler, self.log) and not re_win32fe_ifort.search(compiler):
         if bopt == 'g':
           flags.extend(['-g','-O0'])
         elif bopt == 'O':
           flags.append('-g')
           flags.append('-O3')
       # Windows Intel
-      elif 'win_ifort' in compiler or re_win32fe_ifort.search(compiler):
+      elif re_win32fe_ifort.search(compiler):
         if bopt == '':
           if self.argDB['with-shared-libraries']:
             flags.extend(['-MD'])

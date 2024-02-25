@@ -19,7 +19,7 @@
   #define petscoptionsrealarray_           PETSCOPTIONSREALARRAY
   #define petscoptionsscalar_              PETSCOPTIONSSCALAR
   #define petscoptionsscalararray_         PETSCOPTIONSSCALARARRAY
-  #define petscoptionsstring               PETSCOPTIONSSTRING
+  #define petscoptionsstring_              PETSCOPTIONSSTRING
   #define petscsubcommview_                PETSCSUBCOMMVIEW
   #define petscsubcommgetparent_           PETSCSUBCOMMGETPARENT
   #define petscsubcommgetcontiguousparent_ PETSCSUBCOMMGETCONTIGUOUSPARENT

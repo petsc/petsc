@@ -15,6 +15,8 @@ Changes: Development
 
 - Add ``--download-blis-use-openmp=0`` to force ``download-blis`` to not build with OpenMP when ``with-openmp`` is provided
 - Add ```PetscBLASSetNumThreads()`` and ``PetscBLASGetNumThreads()`` for controlling how many threads the BLAS routines use
+- Change ``win_cl`` and similar ``win32fe`` compiler wrappers to ``win32fe_cl``
+- Add build support for Intel oneAPI compilers ``icx`` and ``ifx`` on Microsoft Windows with compiler wrappers ``win32fe_icx`` and ``win32fe_ifx`` (only static library build with ``ifx``)
 
 .. rubric:: Sys:
 
