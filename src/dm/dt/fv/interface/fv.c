@@ -1873,6 +1873,18 @@ static PetscErrorCode PetscFVSetUp_Upwind(PetscFV fvm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode PetscFVComputeGradient_Upwind(PetscFV fv, PetscInt numFaces, const PetscScalar dx[], PetscScalar grad[])
+{
+  PetscInt dim;
+
+  PetscFunctionBegin;
+  PetscCall(PetscFVGetSpatialDimension(fv, &dim));
+  for (PetscInt f = 0; f < numFaces; ++f) {
+    for (PetscInt d = 0; d < dim; ++d) grad[f * dim + d] = 0.;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
   neighborVol[f*2+0] contains the left  geom
   neighborVol[f*2+1] contains the right geom
@@ -1911,6 +1923,7 @@ static PetscErrorCode PetscFVInitialize_Upwind(PetscFV fvm)
   fvm->ops->setup                = PetscFVSetUp_Upwind;
   fvm->ops->view                 = PetscFVView_Upwind;
   fvm->ops->destroy              = PetscFVDestroy_Upwind;
+  fvm->ops->computegradient      = PetscFVComputeGradient_Upwind;
   fvm->ops->integraterhsfunction = PetscFVIntegrateRHSFunction_Upwind;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2113,7 +2126,7 @@ static PetscErrorCode PetscFVLeastSquaresDebugCell_Static(PetscFV fvm, PetscInt 
 #endif
 
 /*
-  PetscFVComputeGradient - Compute the gradient reconstruction matrix for a given cell
+  PetscFVComputeGradient_LeastSquares - Compute the gradient reconstruction matrix for a given cell
 
   Input Parameters:
 + fvm      - The `PetscFV` object
