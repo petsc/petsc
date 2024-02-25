@@ -565,9 +565,9 @@ class Configure(config.base.Configure):
     if cls.isCygwin(log):
       compiler = os.path.basename(compiler)
       if compiler.startswith('win_'):
-        if log: log.write('Detected Windows compiler\n')
+        if log: log.write('Detected Microsoft Windows native compiler\n')
         return 1
-    if log: log.write('Detected Non-Windows compiler\n')
+    if log: log.write('Detected Non-Microsoft Windows native compiler\n')
     return 0
 
   @classmethod
