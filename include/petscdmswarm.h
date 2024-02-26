@@ -86,8 +86,10 @@ PETSC_EXTERN PetscErrorCode DMSwarmRegisterUserStructField(DM, const char[], siz
 PETSC_EXTERN PetscErrorCode DMSwarmRegisterUserDatatypeField(DM, const char[], size_t, PetscInt);
 PETSC_EXTERN PetscErrorCode DMSwarmGetField(DM, const char[], PetscInt *, PetscDataType *, void **);
 PETSC_EXTERN PetscErrorCode DMSwarmRestoreField(DM, const char[], PetscInt *, PetscDataType *, void **);
+PETSC_EXTERN PetscErrorCode DMSwarmGetFieldInfo(DM, const char[], PetscInt *, PetscDataType *);
 
 PETSC_EXTERN PetscErrorCode DMSwarmVectorDefineField(DM, const char[]);
+PETSC_EXTERN PetscErrorCode DMSwarmVectorGetField(DM, const char *[]);
 
 PETSC_EXTERN PetscErrorCode DMSwarmAddPoint(DM);
 PETSC_EXTERN PetscErrorCode DMSwarmAddNPoints(DM, PetscInt);

@@ -70,4 +70,4 @@ cdef extern from * nogil:
     PetscErrorCode DMSwarmSortGetIsValid(PetscDM,PetscBool*)
     PetscErrorCode DMSwarmSortGetSizes(PetscDM,PetscInt*,PetscInt*)
 
-    PetscErrorCode DMSwarmProjectFields(PetscDM,PetscInt,const char**,PetscVec*,PetscScatterMode)
+    PetscErrorCode DMSwarmProjectFields(PetscDM,PetscDM,PetscInt,const char**,PetscVec*,PetscScatterMode)

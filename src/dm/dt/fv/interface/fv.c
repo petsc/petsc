@@ -1431,8 +1431,8 @@ PetscErrorCode PetscFVSetQuadrature(PetscFV fvm, PetscQuadrature q)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscCall(PetscQuadratureDestroy(&fvm->quadrature));
   PetscCall(PetscObjectReference((PetscObject)q));
+  PetscCall(PetscQuadratureDestroy(&fvm->quadrature));
   fvm->quadrature = q;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1472,6 +1472,51 @@ PetscErrorCode PetscFVGetQuadrature(PetscFV fvm, PetscQuadrature *q)
 }
 
 /*@
+  PetscFVCreateDualSpace - Creates a `PetscDualSpace` appropriate for the `PetscFV`
+
+  Not Collective
+
+  Input Parameter:
++ fvm - The `PetscFV` object
+- ct  - The `DMPolytopeType` for the cell
+
+  Level: intermediate
+
+.seealso: `PetscFVGetDualSpace()`, `PetscFVSetDualSpace()`, `PetscDualSpace`, `PetscFV`, `PetscFVCreate()`
+@*/
+PetscErrorCode PetscFVCreateDualSpace(PetscFV fvm, DMPolytopeType ct)
+{
+  DM       K;
+  PetscInt dim, Nc;
+
+  PetscFunctionBegin;
+  PetscCall(PetscFVGetSpatialDimension(fvm, &dim));
+  PetscCall(PetscFVGetNumComponents(fvm, &Nc));
+  PetscCall(PetscDualSpaceCreate(PetscObjectComm((PetscObject)fvm), &fvm->dualSpace));
+  PetscCall(PetscDualSpaceSetType(fvm->dualSpace, PETSCDUALSPACESIMPLE));
+  PetscCall(DMPlexCreateReferenceCell(PETSC_COMM_SELF, ct, &K));
+  PetscCall(PetscDualSpaceSetNumComponents(fvm->dualSpace, Nc));
+  PetscCall(PetscDualSpaceSetDM(fvm->dualSpace, K));
+  PetscCall(DMDestroy(&K));
+  PetscCall(PetscDualSpaceSimpleSetDimension(fvm->dualSpace, Nc));
+  // Should we be using PetscFVGetQuadrature() here?
+  for (PetscInt c = 0; c < Nc; ++c) {
+    PetscQuadrature qc;
+    PetscReal      *points, *weights;
+
+    PetscCall(PetscQuadratureCreate(PETSC_COMM_SELF, &qc));
+    PetscCall(PetscCalloc1(dim, &points));
+    PetscCall(PetscCalloc1(Nc, &weights));
+    weights[c] = 1.0;
+    PetscCall(PetscQuadratureSetData(qc, dim, Nc, 1, points, weights));
+    PetscCall(PetscDualSpaceSimpleSetFunctional(fvm->dualSpace, c, qc));
+    PetscCall(PetscQuadratureDestroy(&qc));
+  }
+  PetscCall(PetscDualSpaceSetUp(fvm->dualSpace));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   PetscFVGetDualSpace - Returns the `PetscDualSpace` used to define the inner product on a `PetscFV`
 
   Not Collective
@@ -1487,7 +1532,7 @@ PetscErrorCode PetscFVGetQuadrature(PetscFV fvm, PetscQuadrature *q)
   Developer Notes:
   There is overlap between the methods of `PetscFE` and `PetscFV`, they should probably share a common parent class
 
-.seealso: `PetscDualSpace`, `PetscFV`, `PetscFVCreate()`
+.seealso: `PetscFVSetDualSpace()`, `PetscFVCreateDualSpace()`, `PetscDualSpace`, `PetscFV`, `PetscFVCreate()`
 @*/
 PetscErrorCode PetscFVGetDualSpace(PetscFV fvm, PetscDualSpace *sp)
 {
@@ -1495,32 +1540,10 @@ PetscErrorCode PetscFVGetDualSpace(PetscFV fvm, PetscDualSpace *sp)
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscAssertPointer(sp, 2);
   if (!fvm->dualSpace) {
-    DM       K;
-    PetscInt dim, Nc, c;
+    PetscInt dim;
 
     PetscCall(PetscFVGetSpatialDimension(fvm, &dim));
-    PetscCall(PetscFVGetNumComponents(fvm, &Nc));
-    PetscCall(PetscDualSpaceCreate(PetscObjectComm((PetscObject)fvm), &fvm->dualSpace));
-    PetscCall(PetscDualSpaceSetType(fvm->dualSpace, PETSCDUALSPACESIMPLE));
-    PetscCall(DMPlexCreateReferenceCell(PETSC_COMM_SELF, DMPolytopeTypeSimpleShape(dim, PETSC_FALSE), &K));
-    PetscCall(PetscDualSpaceSetNumComponents(fvm->dualSpace, Nc));
-    PetscCall(PetscDualSpaceSetDM(fvm->dualSpace, K));
-    PetscCall(DMDestroy(&K));
-    PetscCall(PetscDualSpaceSimpleSetDimension(fvm->dualSpace, Nc));
-    /* Should we be using PetscFVGetQuadrature() here? */
-    for (c = 0; c < Nc; ++c) {
-      PetscQuadrature qc;
-      PetscReal      *points, *weights;
-
-      PetscCall(PetscQuadratureCreate(PETSC_COMM_SELF, &qc));
-      PetscCall(PetscCalloc1(dim, &points));
-      PetscCall(PetscCalloc1(Nc, &weights));
-      weights[c] = 1.0;
-      PetscCall(PetscQuadratureSetData(qc, dim, Nc, 1, points, weights));
-      PetscCall(PetscDualSpaceSimpleSetFunctional(fvm->dualSpace, c, qc));
-      PetscCall(PetscQuadratureDestroy(&qc));
-    }
-    PetscCall(PetscDualSpaceSetUp(fvm->dualSpace));
+    PetscCall(PetscFVCreateDualSpace(fvm, DMPolytopeTypeSimpleShape(dim, PETSC_FALSE)));
   }
   *sp = fvm->dualSpace;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1540,7 +1563,7 @@ PetscErrorCode PetscFVGetDualSpace(PetscFV fvm, PetscDualSpace *sp)
   Note:
   A simple dual space is provided automatically, and the user typically will not need to override it.
 
-.seealso: `PetscDualSpace`, `PetscFV`, `PetscFVCreate()`
+.seealso: `PetscFVGetDualSpace()`, `PetscFVCreateDualSpace()`, `PetscDualSpace`, `PetscFV`, `PetscFVCreate()`
 @*/
 PetscErrorCode PetscFVSetDualSpace(PetscFV fvm, PetscDualSpace sp)
 {
@@ -1617,9 +1640,9 @@ PetscErrorCode PetscFVGetCellTabulation(PetscFV fvm, PetscTabulation *T)
 @*/
 PetscErrorCode PetscFVCreateTabulation(PetscFV fvm, PetscInt nrepl, PetscInt npoints, const PetscReal points[], PetscInt K, PetscTabulation *T)
 {
-  PetscInt pdim = 1; /* Dimension of approximation space P */
-  PetscInt cdim;     /* Spatial dimension */
-  PetscInt Nc;       /* Field components */
+  PetscInt pdim; // Dimension of approximation space P
+  PetscInt cdim; // Spatial dimension
+  PetscInt Nc;   // Field components
   PetscInt k, p, d, c, e;
 
   PetscFunctionBegin;
@@ -1632,6 +1655,7 @@ PetscErrorCode PetscFVCreateTabulation(PetscFV fvm, PetscInt nrepl, PetscInt npo
   PetscAssertPointer(T, 6);
   PetscCall(PetscFVGetSpatialDimension(fvm, &cdim));
   PetscCall(PetscFVGetNumComponents(fvm, &Nc));
+  pdim = Nc;
   PetscCall(PetscMalloc1(1, T));
   (*T)->K    = !cdim ? 0 : K;
   (*T)->Nr   = nrepl;
@@ -1644,7 +1668,7 @@ PetscErrorCode PetscFVCreateTabulation(PetscFV fvm, PetscInt nrepl, PetscInt npo
   if (K >= 0) {
     for (p = 0; p < nrepl * npoints; ++p)
       for (d = 0; d < pdim; ++d)
-        for (c = 0; c < Nc; ++c) (*T)->T[0][(p * pdim + d) * Nc + c] = 1.0;
+        for (c = 0; c < Nc; ++c) (*T)->T[0][(p * pdim + d) * Nc + c] = 1.;
   }
   if (K >= 1) {
     for (p = 0; p < nrepl * npoints; ++p)
@@ -1712,6 +1736,44 @@ PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV fvm, PetscDS prob, PetscInt f
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscTryTypeMethod(fvm, integraterhsfunction, prob, field, Nf, fgeom, neighborVol, uL, uR, fluxL, fluxR);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscFVClone - Create a shallow copy of a `PetscFV` object that jsut references the internal objects.
+
+  Input Parameter:
+. fv - The initial `PetscFV`
+
+  Output Parameter:
+. fvNew - A clone of the `PetscFV`
+
+  Level: advanced
+
+  Notes:
+  This is typically used to change the number of components.
+
+.seealso: `PetscFV`, `PetscFVType`, `PetscFVCreate()`, `PetscFVSetType()`
+@*/
+PetscErrorCode PetscFVClone(PetscFV fv, PetscFV *fvNew)
+{
+  PetscDualSpace  Q;
+  DM              K;
+  PetscQuadrature q;
+  PetscInt        Nc, cdim;
+
+  PetscFunctionBegin;
+  PetscCall(PetscFVGetDualSpace(fv, &Q));
+  PetscCall(PetscFVGetQuadrature(fv, &q));
+  PetscCall(PetscDualSpaceGetDM(Q, &K));
+
+  PetscCall(PetscFVCreate(PetscObjectComm((PetscObject)fv), fvNew));
+  PetscCall(PetscFVSetDualSpace(*fvNew, Q));
+  PetscCall(PetscFVGetNumComponents(fv, &Nc));
+  PetscCall(PetscFVSetNumComponents(*fvNew, Nc));
+  PetscCall(PetscFVGetSpatialDimension(fv, &cdim));
+  PetscCall(PetscFVSetSpatialDimension(*fvNew, cdim));
+  PetscCall(PetscFVSetQuadrature(*fvNew, q));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1835,6 +1897,18 @@ static PetscErrorCode PetscFVSetUp_Upwind(PetscFV fvm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode PetscFVComputeGradient_Upwind(PetscFV fv, PetscInt numFaces, const PetscScalar dx[], PetscScalar grad[])
+{
+  PetscInt dim;
+
+  PetscFunctionBegin;
+  PetscCall(PetscFVGetSpatialDimension(fv, &dim));
+  for (PetscInt f = 0; f < numFaces; ++f) {
+    for (PetscInt d = 0; d < dim; ++d) grad[f * dim + d] = 0.;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
   neighborVol[f*2+0] contains the left  geom
   neighborVol[f*2+1] contains the right geom
@@ -1873,6 +1947,7 @@ static PetscErrorCode PetscFVInitialize_Upwind(PetscFV fvm)
   fvm->ops->setup                = PetscFVSetUp_Upwind;
   fvm->ops->view                 = PetscFVView_Upwind;
   fvm->ops->destroy              = PetscFVDestroy_Upwind;
+  fvm->ops->computegradient      = PetscFVComputeGradient_Upwind;
   fvm->ops->integraterhsfunction = PetscFVIntegrateRHSFunction_Upwind;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2075,7 +2150,7 @@ static PetscErrorCode PetscFVLeastSquaresDebugCell_Static(PetscFV fvm, PetscInt 
 #endif
 
 /*
-  PetscFVComputeGradient - Compute the gradient reconstruction matrix for a given cell
+  PetscFVComputeGradient_LeastSquares - Compute the gradient reconstruction matrix for a given cell
 
   Input Parameters:
 + fvm      - The `PetscFV` object

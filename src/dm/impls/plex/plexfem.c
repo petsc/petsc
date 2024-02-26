@@ -2320,13 +2320,13 @@ PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec locX, PetscInt cStart, 
     } else if (id == PETSCFV_CLASSID) {
       PetscInt       foff;
       PetscPointFunc obj_func;
-      PetscScalar    lint;
 
       PetscCall(PetscDSGetObjective(prob, f, &obj_func));
       PetscCall(PetscDSGetFieldOffset(prob, f, &foff));
       if (obj_func) {
         for (c = 0; c < numCells; ++c) {
           PetscScalar *u_x;
+          PetscScalar  lint = 0.;
 
           PetscCall(DMPlexPointLocalRead(dmGrad, c, lgrad, &u_x));
           obj_func(dim, Nf, NfAux, uOff, uOff_x, &u[totDim * c + foff], NULL, u_x, aOff, NULL, &a[totDimAux * c], NULL, NULL, 0.0, cgeomFVM[c].centroid, numConstants, constants, &lint);
@@ -5891,19 +5891,22 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscFormKey key, IS cellIS
       PetscCall(PetscDSGetFieldOffset(prob, fieldI, &offsetI));
       PetscCall(PetscObjectGetClassId((PetscObject)fv, &id));
       if (id != PETSCFV_CLASSID) continue;
-      /* Put in the identity */
+      /* Put in the weighted identity */
       PetscCall(PetscFVGetNumComponents(fv, &NcI));
       for (c = cStart; c < cEnd; ++c) {
         const PetscInt cind    = c - cStart;
         const PetscInt eOffset = cind * totDim * totDim;
+        PetscReal      vol;
+
+        PetscCall(DMPlexComputeCellGeometryFVM(dm, c, &vol, NULL, NULL));
         for (fc = 0; fc < NcI; ++fc) {
           for (f = 0; f < NbI; ++f) {
             const PetscInt i = offsetI + f * NcI + fc;
             if (hasPrec) {
-              if (hasJac) elemMat[eOffset + i * totDim + i] = 1.0;
-              elemMatP[eOffset + i * totDim + i] = 1.0;
+              if (hasJac) elemMat[eOffset + i * totDim + i] = vol;
+              elemMatP[eOffset + i * totDim + i] = vol;
             } else {
-              elemMat[eOffset + i * totDim + i] = 1.0;
+              elemMat[eOffset + i * totDim + i] = vol;
             }
           }
         }

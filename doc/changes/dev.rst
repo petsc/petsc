@@ -60,6 +60,7 @@ Changes: Development
 
 - Add ``PetscSectionGetBlockStarts()`` and ``PetscSectionSetBlockStarts()``
 - Add argument to ``PetscSectionCreateGlobalSection()`` that can ignore the local section permutation
+- Add ``PetscSectionCreateComponentSubsection()``
 
 .. rubric:: PetscPartitioner:
 
@@ -132,6 +133,10 @@ Changes: Development
 
 .. rubric:: DMSwarm:
 
+- Add continuous ``DM`` argument to ``DMSwarmProjectFields()``
+- Add ``DMSwarmGetFieldInfo()``
+- Add ``DMSwarmVectorGetField()``
+
 .. rubric:: DMPlex:
 
 - Drop support for MED, i.e. remove ``DMPlexCreateMedFromFile()`` and ``--with-med``
@@ -145,6 +150,8 @@ Changes: Development
 .. rubric:: FE/FV:
 
 - Add Jacobian type argument to ``PetscFEIntegrateBdJacobian()``
+- Add ``PetscFVClone()``
+- Add ``PetscFVCreateDualSpace()``
 
 .. rubric:: DMNetwork:
 

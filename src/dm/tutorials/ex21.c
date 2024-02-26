@@ -131,7 +131,7 @@ PetscErrorCode pic_advect(PetscInt ppcell, PetscInt meshtype)
 
   /* Project initial value of phi onto the mesh */
   PetscCall(DMCreateGlobalVector(celldm, &pfields[0]));
-  PetscCall(DMSwarmProjectFields(swarm, 1, fieldnames, pfields, SCATTER_FORWARD));
+  PetscCall(DMSwarmProjectFields(swarm, NULL, 1, fieldnames, pfields, SCATTER_FORWARD));
 
   if (view) {
     /* View swarm all swarm fields using data type PETSC_REAL */
@@ -202,7 +202,7 @@ PetscErrorCode pic_advect(PetscInt ppcell, PetscInt meshtype)
     }
 
     /* Project swarm field "phi" onto the cell DM */
-    PetscCall(DMSwarmProjectFields(swarm, 1, fieldnames, pfields, SCATTER_FORWARD));
+    PetscCall(DMSwarmProjectFields(swarm, NULL, 1, fieldnames, pfields, SCATTER_FORWARD));
 
     if (view) {
       PetscViewer viewer;

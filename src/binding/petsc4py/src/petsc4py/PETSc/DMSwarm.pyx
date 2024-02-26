@@ -802,13 +802,15 @@ cdef class DMSwarm(DM):
         CHKERR( DMSwarmSortGetSizes(self.dm, &ncells, &npoints) )
         return (toInt(ncells), toInt(npoints))
 
-    def projectFields(self, fieldnames: Sequence[str], vecs: Sequence[Vec], mode: ScatterModeSpec = None) -> None:
+    def projectFields(self, DM dm, fieldnames: Sequence[str], vecs: Sequence[Vec], mode: ScatterModeSpec = None) -> None:
         """Project a set of `DMSwarm` fields onto the cell `DM`.
 
         Collective.
 
         Parameters
         ----------
+        dm
+            The continuum `DM`.
         fieldnames
             The textual names of the swarm fields to project.
 
@@ -829,7 +831,7 @@ cdef class DMSwarm(DM):
             fieldnames[i] = str2bytes(fieldnames[i], &cval)
             cfieldnames[i] = cval
             cfieldvecs[i] = (<Vec?>(vecs[i])).vec
-        CHKERR( DMSwarmProjectFields(self.dm, cnfields, cfieldnames, cfieldvecs, cmode) )
+        CHKERR( DMSwarmProjectFields(self.dm, dm.dm, cnfields, cfieldnames, cfieldvecs, cmode) )
         return
 
 
