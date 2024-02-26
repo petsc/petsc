@@ -200,10 +200,10 @@ class Configure(config.base.Configure):
           pre = prototype[f]
       else:
         # We use char because int might match the return type of a gcc2 builtin and its argument prototype would still apply.
-        pre = 'char '+funcName+'();'
+        pre = 'char '+funcName+'(void);'
       # Capture the function call in a static function so that any local variables are isolated from
       # calls to other library functions.
-      return pre + '\nstatic void _check_%s() { %s }' % (funcName, genCall(f, funcName, pre=True))
+      return pre + '\nstatic void _check_%s(void) { %s }' % (funcName, genCall(f, funcName, pre=True))
     def genCall(f, funcName, pre=False):
       if self.language[-1] != 'FC' and not pre:
         return '_check_' + funcName + '();'
@@ -320,10 +320,10 @@ extern "C" {
                   '#include <stdio.h>\ndouble floor(double);',
                   '#include <stdio.h>\ndouble log10(double);',
                   '#include <stdio.h>\ndouble pow(double, double);']
-    calls = ['double x,y; int s = scanf("%lf",&x); y = sin(x); printf("%f %d",y,s);\n',
-             'double x,y; int s = scanf("%lf",&x); y = floor(x); printf("%f %d",y,s);\n',
-             'double x,y; int s = scanf("%lf",&x); y = log10(x); printf("%f %d",y,s);\n',
-             'double x,y; int s = scanf("%lf",&x); y = pow(x,x); printf("%f %d",y,s);\n']
+    calls = ['double x,y; int s = scanf("%lf",&x); y = sin(x); printf("%f %d",y,s)',
+             'double x,y; int s = scanf("%lf",&x); y = floor(x); printf("%f %d",y,s)',
+             'double x,y; int s = scanf("%lf",&x); y = log10(x); printf("%f %d",y,s)',
+             'double x,y; int s = scanf("%lf",&x); y = pow(x,x); printf("%f %d",y,s)']
     if self.check('', funcs, prototype = prototypes, call = calls):
       self.math = []
     elif self.check('m', funcs, prototype = prototypes, call = calls):
@@ -366,11 +366,11 @@ extern "C" {
 
   def checkMathFenv(self):
     '''Checks if <fenv.h> can be used with FE_DFL_ENV'''
-    if not self.math is None and self.check(self.math, ['fesetenv'], prototype = ['#include <fenv.h>'], call = ['fesetenv(FE_DFL_ENV);']):
+    if not self.math is None and self.check(self.math, ['fesetenv'], prototype = ['#include <fenv.h>'], call = ['fesetenv(FE_DFL_ENV)']):
       self.addDefine('HAVE_FENV_H', 1)
     else:
       self.logPrint('<fenv.h> with FE_DFL_ENV not found')
-    if not self.math is None and self.check(self.math, ['feclearexcept'], prototype = ['#include <fenv.h>'], call = ['feclearexcept(FE_INEXACT);']):
+    if not self.math is None and self.check(self.math, ['feclearexcept'], prototype = ['#include <fenv.h>'], call = ['feclearexcept(FE_INEXACT)']):
       self.addDefine('HAVE_FE_VALUES', 1)
     else:
       self.logPrint('<fenv.h> with FE_INEXACT not found')
@@ -390,7 +390,7 @@ extern "C" {
     self.rt = None
     funcs = ['clock_gettime']
     prototypes = ['#include <time.h>']
-    calls = ['struct timespec tp; clock_gettime(CLOCK_REALTIME,&tp);']
+    calls = ['struct timespec tp; clock_gettime(CLOCK_REALTIME,&tp)']
     if self.check('', funcs, prototype=prototypes, call=calls):
       self.logPrint('realtime functions are linked in by default')
       self.rt = []
