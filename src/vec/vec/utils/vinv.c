@@ -1660,10 +1660,9 @@ PetscErrorCode VecShift(Vec v, PetscScalar shift)
 @*/
 PetscErrorCode VecPermute(Vec x, IS row, PetscBool inv)
 {
-  const PetscScalar *array;
-  PetscScalar       *newArray;
-  const PetscInt    *idx;
-  PetscInt           i, rstart, rend;
+  PetscScalar    *array, *newArray;
+  const PetscInt *idx;
+  PetscInt        i, rstart, rend;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
@@ -1671,19 +1670,20 @@ PetscErrorCode VecPermute(Vec x, IS row, PetscBool inv)
   PetscCall(VecSetErrorIfLocked(x, 1));
   PetscCall(VecGetOwnershipRange(x, &rstart, &rend));
   PetscCall(ISGetIndices(row, &idx));
-  PetscCall(VecGetArrayRead(x, &array));
+  PetscCall(VecGetArray(x, &array));
   PetscCall(PetscMalloc1(x->map->n, &newArray));
+  PetscCall(PetscArraycpy(newArray, array, x->map->n));
   if (PetscDefined(USE_DEBUG)) {
     for (i = 0; i < x->map->n; i++) PetscCheck(!(idx[i] < rstart) && !(idx[i] >= rend), PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Permutation index %" PetscInt_FMT " is out of bounds: %" PetscInt_FMT, i, idx[i]);
   }
   if (!inv) {
-    for (i = 0; i < x->map->n; i++) newArray[i] = array[idx[i] - rstart];
+    for (i = 0; i < x->map->n; i++) array[i] = newArray[idx[i] - rstart];
   } else {
-    for (i = 0; i < x->map->n; i++) newArray[idx[i] - rstart] = array[i];
+    for (i = 0; i < x->map->n; i++) array[idx[i] - rstart] = newArray[i];
   }
-  PetscCall(VecRestoreArrayRead(x, &array));
+  PetscCall(VecRestoreArray(x, &array));
   PetscCall(ISRestoreIndices(row, &idx));
-  PetscCall(VecReplaceArray(x, newArray));
+  PetscCall(PetscFree(newArray));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
