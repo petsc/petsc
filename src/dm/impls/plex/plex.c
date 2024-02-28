@@ -7722,7 +7722,9 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
 
         if (outValues) {
           /* get the point-to-point submatrix */
-          for (f = 0; f < numFields; f++) PetscCall(MatGetValues(cMat, fEnd[f] - fStart[f], indices + fStart[f], fAnchorEnd[f] - fAnchorStart[f], newIndices + fAnchorStart[f], pointMat[f] + pointMatOffsets[f][p]));
+          for (f = 0; f < numFields; f++) {
+            if (fEnd[f] - fStart[f] > 0) PetscCall(MatGetValues(cMat, fEnd[f] - fStart[f], indices + fStart[f], fAnchorEnd[f] - fAnchorStart[f], newIndices + fAnchorStart[f], pointMat[f] + pointMatOffsets[f][p]));
+          }
         }
       } else {
         newPoints[2 * newP]     = b;
@@ -7983,6 +7985,7 @@ PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection
   PetscInt *idx;
   PetscInt  Nf, Ncl, Ni = 0, offsets[32], p, f;
   PetscBool isLocal = (section == idxSection) ? PETSC_TRUE : PETSC_FALSE;
+  PetscInt  idxStart, idxEnd;
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -8075,6 +8078,7 @@ PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection
   }
   /* 5) Calculate indices */
   PetscCall(DMGetWorkArray(dm, Ni, MPIU_INT, &idx));
+  PetscCall(PetscSectionGetChart(idxSection, &idxStart, &idxEnd));
   if (Nf) {
     PetscInt  idxOff;
     PetscBool useFieldOffsets;
@@ -8093,6 +8097,7 @@ PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection
       for (p = 0; p < Ncl; ++p) {
         const PetscInt pnt = points[p * 2];
 
+        if (pnt < idxStart || pnt >= idxEnd) continue;
         PetscCall(PetscSectionGetOffset(idxSection, pnt, &idxOff));
         /* Note that we pass a local section even though we're using global offsets.  This is because global sections do
          * not (at the time of this writing) have fields set. They probably should, in which case we would pass the
@@ -8107,6 +8112,7 @@ PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection
       const PetscInt  pnt  = points[p * 2];
       const PetscInt *perm = perms[0] ? perms[0][p] : NULL;
 
+      if (pnt < idxStart || pnt >= idxEnd) continue;
       PetscCall(PetscSectionGetOffset(idxSection, pnt, &idxOff));
       /* Note that we pass a local section even though we're using global offsets.  This is because global sections do
        * not (at the time of this writing) have fields set. They probably should, in which case we would pass the global section. */
@@ -8265,7 +8271,7 @@ PetscErrorCode DMPlexMatSetClosureGeneral(DM dmRow, PetscSection sectionRow, Pet
   DM_Plex           *mesh = (DM_Plex *)dmRow->data;
   PetscInt          *indicesRow, *indicesCol;
   PetscInt           numIndicesRow, numIndicesCol;
-  const PetscScalar *valuesOrig = values;
+  const PetscScalar *valuesV0 = values, *valuesV1, *valuesV2;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -8281,8 +8287,10 @@ PetscErrorCode DMPlexMatSetClosureGeneral(DM dmRow, PetscSection sectionRow, Pet
   PetscValidHeaderSpecific(globalSectionCol, PETSC_SECTION_CLASSID, 7);
   PetscValidHeaderSpecific(A, MAT_CLASSID, 9);
 
-  PetscCall(DMPlexGetClosureIndices(dmRow, sectionRow, globalSectionRow, point, useRowPerm, &numIndicesRow, &indicesRow, NULL, (PetscScalar **)&values));
-  PetscCall(DMPlexGetClosureIndices(dmCol, sectionCol, globalSectionCol, point, useColPerm, &numIndicesCol, &indicesCol, NULL, (PetscScalar **)&values));
+  valuesV1 = valuesV0;
+  PetscCall(DMPlexGetClosureIndices(dmRow, sectionRow, globalSectionRow, point, useRowPerm, &numIndicesRow, &indicesRow, NULL, (PetscScalar **)&valuesV1));
+  valuesV2 = valuesV1;
+  PetscCall(DMPlexGetClosureIndices(dmCol, sectionCol, globalSectionCol, point, useColPerm, &numIndicesCol, &indicesCol, NULL, (PetscScalar **)&valuesV2));
 
   if (mesh->printSetValues) PetscCall(DMPlexPrintMatSetValues(PETSC_VIEWER_STDOUT_SELF, A, point, numIndicesRow, indicesRow, numIndicesCol, indicesCol, values));
   /* TODO: fix this code to not use error codes as handle-able exceptions! */
@@ -8293,14 +8301,16 @@ PetscErrorCode DMPlexMatSetClosureGeneral(DM dmRow, PetscSection sectionRow, Pet
     PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank));
     PetscCall((*PetscErrorPrintf)("[%d]ERROR in DMPlexMatSetClosure\n", rank));
     PetscCall(DMPlexPrintMatSetValues(PETSC_VIEWER_STDERR_SELF, A, point, numIndicesRow, indicesRow, numIndicesCol, indicesCol, values));
-    PetscCall(DMPlexRestoreClosureIndices(dmRow, sectionRow, globalSectionRow, point, PETSC_TRUE, &numIndicesRow, &indicesRow, NULL, (PetscScalar **)&values));
-    PetscCall(DMPlexRestoreClosureIndices(dmCol, sectionCol, globalSectionCol, point, PETSC_TRUE, &numIndicesCol, &indicesRow, NULL, (PetscScalar **)&values));
-    if (values != valuesOrig) PetscCall(DMRestoreWorkArray(dmRow, 0, MPIU_SCALAR, &values));
+    PetscCall(DMPlexRestoreClosureIndices(dmCol, sectionCol, globalSectionCol, point, PETSC_TRUE, &numIndicesCol, &indicesRow, NULL, (PetscScalar **)&valuesV2));
+    PetscCall(DMPlexRestoreClosureIndices(dmRow, sectionRow, globalSectionRow, point, PETSC_TRUE, &numIndicesRow, &indicesRow, NULL, (PetscScalar **)&valuesV1));
+    if (valuesV2 != valuesV1) PetscCall(DMRestoreWorkArray(dmCol, 0, MPIU_SCALAR, &valuesV2));
+    if (valuesV1 != valuesV0) PetscCall(DMRestoreWorkArray(dmRow, 0, MPIU_SCALAR, &valuesV1));
   }
 
-  PetscCall(DMPlexRestoreClosureIndices(dmRow, sectionRow, globalSectionRow, point, useRowPerm, &numIndicesRow, &indicesRow, NULL, (PetscScalar **)&values));
-  PetscCall(DMPlexRestoreClosureIndices(dmCol, sectionCol, globalSectionCol, point, useColPerm, &numIndicesCol, &indicesCol, NULL, (PetscScalar **)&values));
-  if (values != valuesOrig) PetscCall(DMRestoreWorkArray(dmRow, 0, MPIU_SCALAR, &values));
+  PetscCall(DMPlexRestoreClosureIndices(dmCol, sectionCol, globalSectionCol, point, useColPerm, &numIndicesCol, &indicesCol, NULL, (PetscScalar **)&valuesV2));
+  PetscCall(DMPlexRestoreClosureIndices(dmRow, sectionRow, globalSectionRow, point, useRowPerm, &numIndicesRow, &indicesRow, NULL, (PetscScalar **)&valuesV1));
+  if (valuesV2 != valuesV1) PetscCall(DMRestoreWorkArray(dmCol, 0, MPIU_SCALAR, &valuesV2));
+  if (valuesV1 != valuesV0) PetscCall(DMRestoreWorkArray(dmRow, 0, MPIU_SCALAR, &valuesV1));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
