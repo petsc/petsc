@@ -399,7 +399,7 @@ static PetscErrorCode CreateQFunctionContext_SW(Physics phys, Ceed ceed, CeedQFu
   PetscCallCEED(CeedQFunctionContextSetData(*qfCtx, CEED_MEM_HOST, CEED_USE_POINTER, sizeof(*sw), sw));
   PetscCallCEED(CeedQFunctionContextSetDataDestroy(*qfCtx, CEED_MEM_HOST, FreeContextPetsc));
   PetscCallCEED(CeedQFunctionContextRegisterDouble(*qfCtx, "gravity", offsetof(Physics_SW, gravity), 1, "Accelaration due to gravity"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -606,7 +606,7 @@ static PetscErrorCode CreateQFunctionContext_Euler(Physics phys, Ceed ceed, Ceed
   PetscCallCEED(CeedQFunctionContextSetData(*qfCtx, CEED_MEM_HOST, CEED_USE_POINTER, sizeof(*eu), eu));
   PetscCallCEED(CeedQFunctionContextSetDataDestroy(*qfCtx, CEED_MEM_HOST, FreeContextPetsc));
   PetscCallCEED(CeedQFunctionContextRegisterDouble(*qfCtx, "gamma", offsetof(Physics_Euler, gamma), 1, "Heat capacity ratio"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 

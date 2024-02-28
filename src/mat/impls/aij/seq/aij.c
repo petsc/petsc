@@ -5296,7 +5296,7 @@ PetscErrorCode MatCreateSeqAIJWithArrays(MPI_Comm comm, PetscInt m, PetscInt n, 
   if (PetscDefined(USE_DEBUG)) {
     for (ii = 0; ii < aij->i[m]; ii++) {
       PetscCheck(j[ii] >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative column index at location = %" PetscInt_FMT " index = %" PetscInt_FMT, ii, j[ii]);
-      PetscCheck(j[ii] <= n - 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column index to large at location = %" PetscInt_FMT " index = %" PetscInt_FMT, ii, j[ii]);
+      PetscCheck(j[ii] <= n - 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column index to large at location = %" PetscInt_FMT " index = %" PetscInt_FMT " last column = %" PetscInt_FMT, ii, j[ii], n - 1);
     }
   }
 
