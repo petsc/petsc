@@ -74,6 +74,7 @@ IS Object: 3 MPI processes
 [2] 2 17
 [2] 3 18
 [2] 4 19
+Row IS 1
 IS Object: 3 MPI processes
   type: general
 [0] Number of indices in set 5
@@ -94,7 +95,7 @@ IS Object: 3 MPI processes
 [2] 2 27
 [2] 3 28
 [2] 4 29
-Row IS 1
+Col IS 1
 IS Object: 3 MPI processes
   type: general
 [0] Number of indices in set 5
@@ -115,7 +116,6 @@ IS Object: 3 MPI processes
 [2] 2 2
 [2] 3 3
 [2] 4 4
-Col IS 1
 Submatrices (repetition 1):
 Mat Object: 3 MPI processes
   type: mpiaij

@@ -854,6 +854,7 @@ static PetscErrorCode PetscViewerGetSubViewer_ASCII(PetscViewer viewer, MPI_Comm
      PCView_GASM().
   */
   PetscCall(PetscViewerASCIIPushSynchronized(viewer));
+  PetscCall(PetscViewerFlush(viewer));
   PetscCall(PetscViewerCreate(subcomm, outviewer));
   PetscCall(PetscViewerSetType(*outviewer, PETSCVIEWERASCII));
   PetscCall(PetscViewerASCIIPushSynchronized(*outviewer));

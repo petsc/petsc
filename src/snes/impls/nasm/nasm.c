@@ -216,9 +216,9 @@ static PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
         PetscCall(PetscViewerASCIIPushTab(viewer));
         PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
         if (rank == 0) {
-          PetscCall(PetscViewerASCIIPushTab(viewer));
+          PetscCall(PetscViewerASCIIPushTab(sviewer));
           PetscCall(SNESView(nasm->subsnes[0], sviewer));
-          PetscCall(PetscViewerASCIIPopTab(viewer));
+          PetscCall(PetscViewerASCIIPopTab(sviewer));
         }
         PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
         PetscCall(PetscViewerASCIIPopTab(viewer));
