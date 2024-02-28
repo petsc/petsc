@@ -369,4 +369,9 @@ PetscErrorCode AssembleMatrix(Mat A, PetscInt m, PetscInt n)
       requires: superlu_dist
       args: -M 7 -N 9 -print_error -pc_gasm_total_subdomains 2 -pc_gasm_print_subdomains -sub_pc_type lu -sub_pc_factor_mat_solver_type superlu_dist
 
+   test:
+      suffix: gasm_view
+      nsize: 8
+      args: -pc_type gasm -ksp_view -Mdomains 2 -Ndomains 2 -user_set_subdomains
+
 TEST*/

@@ -43,9 +43,9 @@ static PetscErrorCode PCView_ASM(PC pc, PetscViewer viewer)
         PetscCall(PetscViewerASCIIPrintf(viewer, "  Use -%sksp_view ::ascii_info_detail to display information for all blocks\n", prefix ? prefix : ""));
         PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
         if (rank == 0) {
-          PetscCall(PetscViewerASCIIPushTab(viewer));
+          PetscCall(PetscViewerASCIIPushTab(sviewer));
           PetscCall(KSPView(osm->ksp[0], sviewer));
-          PetscCall(PetscViewerASCIIPopTab(viewer));
+          PetscCall(PetscViewerASCIIPopTab(sviewer));
         }
         PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
       }
@@ -59,9 +59,9 @@ static PetscErrorCode PCView_ASM(PC pc, PetscViewer viewer)
       PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
       for (i = 0; i < osm->n_local_true; i++) {
         PetscCall(ISGetLocalSize(osm->is[i], &bsz));
-        PetscCall(PetscViewerASCIISynchronizedPrintf(sviewer, "[%d] local block number %" PetscInt_FMT ", size = %" PetscInt_FMT "\n", (int)rank, i, bsz));
+        PetscCall(PetscViewerASCIIPrintf(sviewer, "[%d] local block number %" PetscInt_FMT ", size = %" PetscInt_FMT "\n", (int)rank, i, bsz));
         PetscCall(KSPView(osm->ksp[i], sviewer));
-        PetscCall(PetscViewerASCIISynchronizedPrintf(sviewer, "- - - - - - - - - - - - - - - - - -\n"));
+        PetscCall(PetscViewerASCIIPrintf(sviewer, "- - - - - - - - - - - - - - - - - -\n"));
       }
       PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
       PetscCall(PetscViewerASCIIPopTab(viewer));

@@ -198,8 +198,6 @@ static PetscErrorCode PCView_GASM(PC pc, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Subdomain solver info is as follows:\n"));
     PetscCall(PetscViewerASCIIPushTab(viewer));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  - - - - - - - - - - - - - - - - - -\n"));
-    /* Make sure that everybody waits for the banner to be printed. */
-    PetscCallMPI(MPI_Barrier(PetscObjectComm((PetscObject)viewer)));
     /* Now let subdomains go one at a time in the global numbering order and print their subdomain/solver info. */
     PetscCall(PCGASMComputeGlobalSubdomainNumbering_Private(pc, &numbering, &permutation));
     l = 0;
@@ -214,19 +212,26 @@ static PetscErrorCode PCView_GASM(PC pc, PetscViewer viewer)
           PetscCall(ISGetLocalSize(osm->ois[d], &bsz));
           PetscCall(PetscViewerASCIISynchronizedPrintf(sviewer, "  [%d|%d] (subcomm [%d|%d]) local subdomain number %" PetscInt_FMT ", local size = %" PetscInt_FMT "\n", rank, size, srank, ssize, d, bsz));
           PetscCall(PetscViewerFlush(sviewer));
+          PetscCall(PetscViewerASCIIPushTab(sviewer));
           if (view_subdomains) PetscCall(PCGASMSubdomainView_Private(pc, d, sviewer));
           if (!pc->setupcalled) {
-            PetscCall(PetscViewerASCIIPrintf(sviewer, "  Solver not set up yet: PCSetUp() not yet called\n"));
+            PetscCall(PetscViewerASCIISynchronizedPrintf(sviewer, "  Solver not set up yet: PCSetUp() not yet called\n"));
           } else {
             PetscCall(KSPView(osm->ksp[d], sviewer));
           }
+          PetscCall(PetscViewerASCIIPopTab(sviewer));
           PetscCall(PetscViewerASCIIPrintf(sviewer, "  - - - - - - - - - - - - - - - - - -\n"));
           PetscCall(PetscViewerFlush(sviewer));
           PetscCall(PetscViewerRestoreSubViewer(viewer, ((PetscObject)osm->ois[d])->comm, &sviewer));
           ++l;
+        } else {
+          PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
+          PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
         }
+      } else {
+        PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
+        PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
       }
-      PetscCallMPI(MPI_Barrier(PetscObjectComm((PetscObject)pc)));
     }
     PetscCall(PetscFree2(numbering, permutation));
     PetscCall(PetscViewerASCIIPopTab(viewer));
