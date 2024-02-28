@@ -1082,13 +1082,13 @@ Objects are destroyed with
 User Callbacks
 ~~~~~~~~~~~~~~
 
-The user may wish to override or provide custom functionality in many situations. This is handled via callbacks, which the library will call at the appropriate time. The most general callback is provided by
+The user may wish to override or provide custom functionality in many situations. This is handled via callbacks, which the library will call at the appropriate time. The most general way to apply a callback has this form:
 
 .. code-block::
 
-  ObjecSetCallback(obj,callbackfunction(), void *ctx, contextdestroy(void *ctx));
+  ObjecCallbackSetter(obj, callbackfunction(), void *ctx, contextdestroy(void *ctx));
 
-where ``callbackfunction()`` is what will be called
+where ``PetscObjectCallbackSetter()`` is a callback setter such as ``SNESSetFunction()``. ``callbackfunction()`` is what will be called
 by the library, ``ctx`` is an optional data structure (array, struct, PETSc object) that is used by ``callbackfunction()``
 and ``contextdestroy(void *ctx)`` is an optional function that will be called when ``obj`` is destroyed to free
 anything in ``ctx``. The use of the ``contextdestroy()`` allows users to "set and forget"
