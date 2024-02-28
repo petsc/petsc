@@ -37,11 +37,21 @@ static PetscErrorCode PCApply_BDDC(PC, Vec, Vec);
 
 static PetscErrorCode PCSetFromOptions_BDDC(PC pc, PetscOptionItems *PetscOptionsObject)
 {
-  PC_BDDC *pcbddc = (PC_BDDC *)pc->data;
-  PetscInt nt, i;
+  PC_BDDC  *pcbddc = (PC_BDDC *)pc->data;
+  PetscInt  nt, i;
+  char      load[PETSC_MAX_PATH_LEN] = {'\0'};
+  PetscBool flg;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "BDDC options");
+  /* Load customization from binary file (debugging) */
+  PetscCall(PetscOptionsString("-pc_bddc_load", "Load customization from file (intended for debug)", "none", load, load, sizeof(load), &flg));
+  if (flg) {
+    size_t len;
+
+    PetscCall(PetscStrlen(load, &len));
+    PetscCall(PCBDDCLoadOrViewCustomization(pc, PETSC_TRUE, len ? load : NULL));
+  }
   /* Verbose debugging */
   PetscCall(PetscOptionsInt("-pc_bddc_check_level", "Verbose output for PCBDDC (intended for debug)", "none", pcbddc->dbg_flag, &pcbddc->dbg_flag, NULL));
   /* Approximate solvers */
@@ -57,6 +67,7 @@ static PetscErrorCode PCSetFromOptions_BDDC(PC pc, PetscOptionItems *PetscOption
   PetscCall(PetscOptionsBool("-pc_bddc_neumann_approximate_scale", "Inform PCBDDC that we need to scale the Neumann solve", "none", pcbddc->NullSpace_corr[3], &pcbddc->NullSpace_corr[3], NULL));
   /* Primal space customization */
   PetscCall(PetscOptionsBool("-pc_bddc_use_local_mat_graph", "Use or not adjacency graph of local mat for interface analysis", "none", pcbddc->use_local_adj, &pcbddc->use_local_adj, NULL));
+  PetscCall(PetscOptionsInt("-pc_bddc_local_mat_graph_square", "Square adjacency graph of local mat for interface analysis", "none", pcbddc->local_adj_square, &pcbddc->local_adj_square, NULL));
   PetscCall(PetscOptionsInt("-pc_bddc_graph_maxcount", "Maximum number of shared subdomains for a connected component", "none", pcbddc->graphmaxcount, &pcbddc->graphmaxcount, NULL));
   PetscCall(PetscOptionsBool("-pc_bddc_corner_selection", "Activates face-based corner selection", "none", pcbddc->corner_selection, &pcbddc->corner_selection, NULL));
   PetscCall(PetscOptionsBool("-pc_bddc_use_vertices", "Use or not corner dofs in coarse space", "none", pcbddc->use_vertices, &pcbddc->use_vertices, NULL));
@@ -1671,6 +1682,19 @@ static PetscErrorCode PCSetUp_BDDC(PC pc)
   if (pcbddc->dbg_flag) {
     PetscCall(PetscViewerASCIISubtractTab(pcbddc->dbg_viewer, 2 * pcbddc->current_level));
     PetscCall(PetscViewerASCIIPopSynchronized(pcbddc->dbg_viewer));
+  }
+
+  { /* Dump customization */
+    PetscBool flg;
+    char      save[PETSC_MAX_PATH_LEN] = {'\0'};
+
+    PetscCall(PetscOptionsGetString(NULL, ((PetscObject)pc)->prefix, "-pc_bddc_save", save, sizeof(save), &flg));
+    if (flg) {
+      size_t len;
+
+      PetscCall(PetscStrlen(save, &len));
+      PetscCall(PCBDDCLoadOrViewCustomization(pc, PETSC_FALSE, len ? save : NULL));
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

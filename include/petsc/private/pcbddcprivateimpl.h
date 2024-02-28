@@ -7,6 +7,9 @@
 PETSC_EXTERN PetscErrorCode PCBDDCAnalyzeInterface(PC);
 PETSC_EXTERN PetscErrorCode PCBDDCConstraintsSetUp(PC);
 
+/* load or dump customization */
+PETSC_EXTERN PetscErrorCode PCBDDCLoadOrViewCustomization(PC, PetscBool, const char *);
+
 /* reset functions */
 PETSC_EXTERN PetscErrorCode PCBDDCResetTopography(PC);
 PETSC_EXTERN PetscErrorCode PCBDDCResetSolvers(PC);
@@ -44,8 +47,8 @@ PETSC_EXTERN PetscErrorCode PCBDDCSetUpLocalWorkVectors(PC);
 PETSC_EXTERN PetscErrorCode PCBDDCSetUpSolvers(PC);
 PETSC_EXTERN PetscErrorCode PCBDDCSetUpLocalScatters(PC);
 PETSC_EXTERN PetscErrorCode PCBDDCSetUpLocalSolvers(PC, PetscBool, PetscBool);
-PETSC_EXTERN PetscErrorCode PCBDDCSetUpCorrection(PC, PetscScalar **);
-PETSC_EXTERN PetscErrorCode PCBDDCSetUpCoarseSolver(PC, PetscScalar *);
+PETSC_EXTERN PetscErrorCode PCBDDCSetUpCorrection(PC, Mat *);
+PETSC_EXTERN PetscErrorCode PCBDDCSetUpCoarseSolver(PC, Mat);
 PETSC_EXTERN PetscErrorCode PCBDDCComputePrimalNumbering(PC, PetscInt *, PetscInt **);
 PETSC_EXTERN PetscErrorCode PCBDDCScatterCoarseDataBegin(PC, InsertMode, ScatterMode);
 PETSC_EXTERN PetscErrorCode PCBDDCScatterCoarseDataEnd(PC, InsertMode, ScatterMode);

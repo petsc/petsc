@@ -272,15 +272,22 @@ int main(int argc, char **args)
 
   if (user.multi_element) {
     ISLocalToGlobalMapping mapn;
-    PetscInt              *e_glo = NULL;
+    PetscInt              *e_glo = NULL, m, n, M, N;
 
     PetscCall(PetscMalloc1(nel * nen, &e_glo));
     PetscCall(ISLocalToGlobalMappingApplyBlock(map, nen * nel, e_loc, e_glo));
     PetscCall(ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)map), user.dof, nen * nel, e_glo, PETSC_OWN_POINTER, &mapn));
+    PetscCall(MatGetLocalSize(A, &m, &n));
+    PetscCall(MatGetSize(A, &M, &N));
+    PetscCall(MatDestroy(&A));
+    PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+    PetscCall(MatSetSizes(A, m, n, M, N));
+    PetscCall(MatSetBlockSize(A, user.dof));
+    PetscCall(MatSetType(A, MATIS));
     PetscCall(MatISSetAllowRepeated(A, PETSC_TRUE));
     PetscCall(MatSetLocalToGlobalMapping(A, mapn, mapn));
+    PetscCall(MatISSetPreallocation(A, user.dof * nen, NULL, user.dof * nen, NULL));
     PetscCall(ISLocalToGlobalMappingViewFromOptions(mapn, NULL, "-multi_view"));
-    PetscCall(MatSetDM(A, NULL));
     PetscCall(ISLocalToGlobalMappingDestroy(&mapn));
   }
 
@@ -707,6 +714,7 @@ int main(int argc, char **args)
      args: -sub_0_pc_bddc_interface_ext_type dirichlet
      suffix: composite_bddc_dirichlet
 
+# GDSW tests
  testset:
    nsize: 8
    filter: grep -v "variant HERMITIAN"
@@ -729,5 +737,11 @@ int main(int argc, char **args)
      requires: mumps !complex
      suffix: gdsw_elast_adaptive
      args: -pde_type Elasticity -mg_levels_gdsw_tolerance 0.01 -ksp_monitor_singular_value -mg_levels_gdsw_userdefined {{0 1}separate output}
+
+# Multi-Element tests
+ testset:
+   nsize: {{1 2 3}}
+   suffix: bddc_multi_element
+   args: -cells 3,3,3 -dim 3 -ksp_error_if_not_converged -multi_element -pde_type {{Poisson Elasticity}} -ksp_converged_reason
 
 TEST*/
