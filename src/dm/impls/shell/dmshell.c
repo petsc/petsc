@@ -1115,7 +1115,7 @@ static PetscErrorCode DMCreateSubDM_Shell(DM dm, PetscInt numFields, const Petsc
 {
   PetscFunctionBegin;
   if (subdm) PetscCall(DMShellCreate(PetscObjectComm((PetscObject)dm), subdm));
-  PetscCall(DMCreateSectionSubDM(dm, numFields, fields, is, subdm));
+  PetscCall(DMCreateSectionSubDM(dm, numFields, fields, NULL, NULL, is, subdm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
