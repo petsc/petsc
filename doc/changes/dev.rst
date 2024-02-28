@@ -40,6 +40,8 @@ Changes: Development
 
 .. rubric:: IS:
 
+- Add ``ISLocalToGlobalMappingGetNodeInfo()`` and ``ISLocalToGlobalMappingRestoreNodeInfo()`` to access neighboring information of local indices
+
 .. rubric:: VecScatter / PetscSF:
 
 - Add MPI-4.0 persistent neighborhood collectives support. Use -sf_neighbor_persistent along with -sf_type neighbor to enable it

@@ -203,6 +203,8 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetNodeInfo(ISLocalToGlobalMap
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRestoreNodeInfo(ISLocalToGlobalMapping, PetscInt *, PetscInt *[], PetscInt **[]);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping, PetscInt *, PetscInt *[], PetscInt *[], PetscInt **[]);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping, PetscInt *, PetscInt *[], PetscInt *[], PetscInt **[]);
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetBlockNodeInfo(ISLocalToGlobalMapping, PetscInt *, PetscInt *[], PetscInt **[]);
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRestoreBlockNodeInfo(ISLocalToGlobalMapping, PetscInt *, PetscInt *[], PetscInt **[]);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetBlockInfo(ISLocalToGlobalMapping, PetscInt *, PetscInt *[], PetscInt *[], PetscInt **[]);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRestoreBlockInfo(ISLocalToGlobalMapping, PetscInt *, PetscInt *[], PetscInt *[], PetscInt **[]);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping, const PetscInt **);
