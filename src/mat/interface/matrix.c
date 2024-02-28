@@ -1950,8 +1950,8 @@ PetscErrorCode MatSetStencil(Mat mat, PetscInt dim, const PetscInt dims[], const
 
   The `m` and `n` count the NUMBER of blocks in the row direction and column direction,
   NOT the total number of rows/columns; for example, if the block size is 2 and
-  you are passing in values for rows 2,3,4,5  then m would be 2 (not 4).
-  The values in idxm would be 1 2; that is the first index for each block divided by
+  you are passing in values for rows 2,3,4,5  then `m` would be 2 (not 4).
+  The values in `idxm` would be 1 2; that is the first index for each block divided by
   the block size.
 
   You must call `MatSetBlockSize()` when constructing this matrix (before
@@ -1991,7 +1991,7 @@ PetscErrorCode MatSetStencil(Mat mat, PetscInt dim, const PetscInt dims[], const
    v[] should be passed in like
    v[] = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
 
-  If you are not using row oriented storage of v (that is you called MatSetOption(mat,MAT_ROW_ORIENTED,PETSC_FALSE)) then
+  If you are not using row-oriented storage of v (that is you called MatSetOption(mat,MAT_ROW_ORIENTED,PETSC_FALSE)) then
    v[] = [1,5,9,13,2,6,10,14,3,7,11,15,4,8,12,16]
 .ve
 
@@ -5964,7 +5964,7 @@ PetscErrorCode MatAssemblyEnd(Mat mat, MatAssemblyType type)
   part of the matrix (since they should match the upper triangular part).
 
   `MAT_SORTED_FULL` - each process provides exactly its local rows; all column indices for a given row are passed in a
-  single call to `MatSetValues()`, preallocation is perfect, row oriented, `INSERT_VALUES` is used. Common
+  single call to `MatSetValues()`, preallocation is perfect, row-oriented, `INSERT_VALUES` is used. Common
   with finite difference schemes with non-periodic boundary conditions.
 
   Developer Note:

@@ -171,6 +171,25 @@ typedef struct {
   PetscCount *perm; /* The permutation array in sorting (i,j) by row and then by col */
 } MatCOOStruct_SeqAIJ;
 
+#define MatSeqXAIJGetOptions_Private(A) \
+  { \
+    const PetscBool oldvalues = (PetscBool)(A != PETSC_NULLPTR); \
+    PetscInt        nonew = 0, nounused = 0; \
+    PetscBool       roworiented = PETSC_FALSE; \
+    if (oldvalues) { \
+      nonew       = ((Mat_SeqAIJ *)A->data)->nonew; \
+      nounused    = ((Mat_SeqAIJ *)A->data)->nounused; \
+      roworiented = ((Mat_SeqAIJ *)A->data)->roworiented; \
+    }
+
+#define MatSeqXAIJRestoreOptions_Private(A) \
+  if (oldvalues) { \
+    ((Mat_SeqAIJ *)A->data)->nonew       = nonew; \
+    ((Mat_SeqAIJ *)A->data)->nounused    = nounused; \
+    ((Mat_SeqAIJ *)A->data)->roworiented = roworiented; \
+  } \
+  }
+
 /*
   Frees the a, i, and j arrays from the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
 */

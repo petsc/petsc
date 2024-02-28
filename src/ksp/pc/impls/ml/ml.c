@@ -429,7 +429,7 @@ static PetscErrorCode PCSetCoordinates_ML(PC pc, PetscInt ndm, PetscInt a_nloc, 
     PetscCall(PetscMalloc1(arrsz, &pc_ml->coords));
   }
   for (kk = 0; kk < arrsz; kk++) pc_ml->coords[kk] = -999.;
-  /* copy data in - column oriented */
+  /* copy data in - column-oriented */
   if (nloc == a_nloc) {
     for (kk = 0; kk < nloc; kk++) {
       for (ii = 0; ii < ndm; ii++) pc_ml->coords[ii * nloc + kk] = coords[kk * ndm + ii];
