@@ -353,7 +353,9 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateReferenceTree_SetTree(DM, PetscSection, 
 PETSC_EXTERN PetscErrorCode DMPlexCreateReferenceTree_Union(DM, DM, const char *, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeInterpolatorTree(DM, DM, PetscSF, PetscInt *, Mat);
 PETSC_EXTERN PetscErrorCode DMPlexComputeInjectorTree(DM, DM, PetscSF, PetscInt *, Mat);
-PETSC_EXTERN PetscErrorCode DMPlexAnchorsModifyMat(DM, PetscSection, PetscInt, PetscInt, const PetscInt[], const PetscInt ***, const PetscScalar[], PetscInt *, PetscInt *, PetscInt *[], PetscScalar *[], PetscInt[], PetscBool);
+PETSC_INTERN PetscErrorCode DMPlexAnchorsModifyMat(DM, PetscSection, PetscInt, PetscInt, const PetscInt[], const PetscInt ***, const PetscScalar[], PetscInt *, PetscInt *, PetscInt *[], PetscScalar *[], PetscInt[], PetscBool);
+PETSC_INTERN PetscErrorCode DMPlexAnchorsModifyMat_Internal(DM, PetscSection, PetscInt, PetscInt, const PetscInt[], const PetscInt ***, PetscInt, PetscInt, const PetscScalar[], PetscInt *, PetscInt *, PetscInt *[], PetscScalar *[], PetscInt[], PetscBool, PetscBool);
+PETSC_INTERN PetscErrorCode DMPlexAnchorsGetSubMatModification(DM, PetscSection, PetscInt, PetscInt, const PetscInt[], const PetscInt ***, PetscInt *, PetscInt *, PetscInt *[], PetscInt[], PetscScalar *[]);
 PETSC_INTERN PetscErrorCode DMPlexLocatePoint_Internal(DM, PetscInt, const PetscScalar[], PetscInt, PetscInt *);
 /* these two are PETSC_EXTERN just because of src/dm/impls/plex/tests/ex18.c */
 PETSC_EXTERN PetscErrorCode DMPlexOrientInterface_Internal(DM);
