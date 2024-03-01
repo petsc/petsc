@@ -77,6 +77,8 @@ Changes: Development
 - ``MATTRANSPOSEVIRTUAL``, ``MATHERMITIANTRANSPOSEVIRTUAL``, ``MATNORMAL``, ``MATNORMALHERMITIAN``, and ``MATCOMPOSITE`` now derive from ``MATSHELL``. This implies a new behavior for those ``Mat``, as calling ``MatAssemblyBegin()``/``MatAssemblyEnd()`` destroys scalings and shifts for ``MATSHELL``, but it was not previously the case for other ``MatType``
 - Add function ``MatGetRowSumAbs()`` to compute vector of L1 norms of rows ([B]AIJ only)
 - Add partial support for ``MatBackwardSolve()``/``MatForwardSolve()`` with ``MATSOLVERMKL_PARDISO`` and ``MATSOLVERMKL_CPARDISO``
+- Deprecate ``MATIS`` options ``-matis_xxx``. Use ``-mat_is_xxx``
+- Add support for repeated entries in the local part of the local to global map for ``MATIS`` via the routines ``MatISSetAllowRepeated()`` and ``MatISGetAllowRepeated()``.
 
 .. rubric:: MatCoarsen:
 

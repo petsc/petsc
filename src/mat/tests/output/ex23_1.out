@@ -8,8 +8,8 @@ Mat Object: 1 MPI process
   type: is
   Mat Object: (is_) 1 MPI process
     type: seqaij
-row 0: (0, 2.)  (1, -2.) 
-row 1: (0, -4.)  (1, 4.) 
+  row 0:   (0, 2.)    (1, -2.)   
+  row 1:   (0, -4.)    (1, 4.)   
 Mat Object: 1 MPI process
   type: seqaij
 row 0: (0, 2.)  (1, -2.) 
@@ -125,3 +125,4 @@ Test MatInvertBlockDiagonal blockdiag 2 2 2 1
 Test MatInvertBlockDiagonal blockdiag 2 2 2 2
 Test MatInvertBlockDiagonal blockdiag 2 2 2 3
 Test MatGetDiagonalBlock
+Test MatISSetAllowRepeated(false) with possibly repeated entries

@@ -1328,11 +1328,11 @@ int main(int argc, char **argv)
     test:
       requires: !single cuda
       suffix: quad_bddc_cuda
-      args: -matis_localmat_type aijcusparse -pc_bddc_dirichlet_pc_factor_mat_solver_type cusparse -pc_bddc_neumann_pc_factor_mat_solver_type cusparse
+      args: -mat_is_localmat_type aijcusparse -pc_bddc_dirichlet_pc_factor_mat_solver_type cusparse -pc_bddc_neumann_pc_factor_mat_solver_type cusparse
     test:
       requires: !single viennacl
       suffix: quad_bddc_viennacl
-      args: -matis_localmat_type aijviennacl
+      args: -mat_is_localmat_type aijviennacl
 
   # Full solve simplex: ASM
   test:

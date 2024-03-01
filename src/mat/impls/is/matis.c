@@ -207,7 +207,7 @@ static PetscErrorCode MatPtAPSymbolic_IS_XAIJ(Mat A, Mat P, PetscReal fill, Mat 
     PetscCall(ISLocalToGlobalMappingGetSize(rl2g, &N1));
     PetscCall(ISLocalToGlobalMappingGetBlockSize(rl2g, &ibs1));
     PetscCall(ISLocalToGlobalMappingGetBlockIndices(rl2g, &garray));
-    PetscCall(ISCreateBlock(comm, ibs, N / ibs, garray, PETSC_COPY_VALUES, &ptap->ris1));
+    PetscCall(ISCreateBlock(comm, ibs, N1 / ibs, garray, PETSC_COPY_VALUES, &ptap->ris1));
     PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(rl2g, &garray));
     if (ibs1 == ibs && N1 == N) { /* check if the l2gmaps are the same */
       const PetscInt *i1, *i2;
@@ -562,7 +562,7 @@ static PetscErrorCode MatMPIXAIJComputeLocalToGlobalMapping_Private(Mat A, ISLoc
     PetscCall(ISDestroy(&ndmap));
     PetscCall(ISDestroy(&ndsub));
     PetscCall(ISLocalToGlobalMappingSetBlockSize(*l2g, bs));
-    PetscCall(ISLocalToGlobalMappingViewFromOptions(*l2g, NULL, "-matis_nd_l2g_view"));
+    PetscCall(ISLocalToGlobalMappingViewFromOptions(*l2g, NULL, "-mat_is_nd_l2g_view"));
     break;
   case MAT_IS_DISASSEMBLE_L2G_NATURAL:
     PetscCall(PetscObjectQuery((PetscObject)A, "__PETSc_dm", (PetscObject *)&dm));
@@ -814,6 +814,7 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A, MatType type, MatReuse reu
   PetscInt              *lr, *lc, *l2gidxs;
   PetscInt               i, j, nr, nc, rbs, cbs;
   PetscBool              convert, lreuse, *istrans;
+  PetscBool3             allow_repeated = PETSC_BOOL3_UNKNOWN;
 
   PetscFunctionBegin;
   PetscCall(MatNestGetSubMats(A, &nr, &nc, &nest));
@@ -838,7 +839,7 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A, MatType type, MatReuse reu
   PetscCall(MatNestGetISs(A, isrow, iscol));
   for (i = 0; i < nr; i++) {
     for (j = 0; j < nc; j++) {
-      PetscBool ismatis;
+      PetscBool ismatis, sallow;
       PetscInt  l1, l2, lb1, lb2, ij = i * nc + j;
 
       /* Null matrix pointers are allowed in MATNEST */
@@ -851,13 +852,17 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A, MatType type, MatReuse reu
         PetscCall(MatTransposeGetMat(nest[i][j], &T));
         PetscCall(PetscObjectTypeCompare((PetscObject)T, MATIS, &ismatis));
         PetscCheck(ismatis, comm, PETSC_ERR_SUP, "Cannot convert from MATNEST to MATIS! Matrix block (%" PetscInt_FMT ",%" PetscInt_FMT ") (transposed) is not of type MATIS", i, j);
+        PetscCall(MatISGetAllowRepeated(T, &sallow));
         PetscCall(MatISGetLocalMat(T, &lT));
         PetscCall(MatCreateTranspose(lT, &snest[ij]));
       } else {
         PetscCall(PetscObjectTypeCompare((PetscObject)nest[i][j], MATIS, &ismatis));
         PetscCheck(ismatis, comm, PETSC_ERR_SUP, "Cannot convert from MATNEST to MATIS! Matrix block (%" PetscInt_FMT ",%" PetscInt_FMT ") is not of type MATIS", i, j);
+        PetscCall(MatISGetAllowRepeated(nest[i][j], &sallow));
         PetscCall(MatISGetLocalMat(nest[i][j], &snest[ij]));
       }
+      if (allow_repeated == PETSC_BOOL3_UNKNOWN) allow_repeated = PetscBoolToBool3(sallow);
+      PetscCheck(sallow == PetscBool3ToBool(allow_repeated), comm, PETSC_ERR_SUP, "Cannot mix repeated and non repeated maps");
 
       /* Check compatibility of local sizes */
       PetscCall(MatGetSize(snest[ij], &l1, &l2));
@@ -1026,6 +1031,7 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A, MatType type, MatReuse reu
     PetscCall(MatSetBlockSizes(B, rbs, cbs));
     PetscCall(MatSetType(B, MATIS));
     PetscCall(MatISSetLocalMatType(B, MATNEST));
+    PetscCall(MatISSetAllowRepeated(B, PetscBool3ToBool(allow_repeated)));
     { /* hack : avoid setup of scatters */
       Mat_IS *matis     = (Mat_IS *)B->data;
       matis->islocalref = PETSC_TRUE;
@@ -1087,7 +1093,7 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A, MatType type, MatReuse reu
 
   /* Create local matrix in MATNEST format */
   convert = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL, ((PetscObject)A)->prefix, "-matis_convert_local_nest", &convert, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, ((PetscObject)A)->prefix, "-mat_is_convert_local_nest", &convert, NULL));
   if (convert) {
     Mat              M;
     MatISLocalFields lf;
@@ -1235,10 +1241,14 @@ static PetscErrorCode MatTranspose_IS(Mat A, MatReuse reuse, Mat *B)
   if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(A, *B));
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     ISLocalToGlobalMapping rl2g, cl2g;
+    PetscBool              allow_repeated;
+
     PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &C));
     PetscCall(MatSetSizes(C, A->cmap->n, A->rmap->n, A->cmap->N, A->rmap->N));
     PetscCall(MatSetBlockSizes(C, PetscAbs(A->cmap->bs), PetscAbs(A->rmap->bs)));
     PetscCall(MatSetType(C, MATIS));
+    PetscCall(MatISGetAllowRepeated(A, &allow_repeated));
+    PetscCall(MatISSetAllowRepeated(C, allow_repeated));
     PetscCall(MatGetLocalToGlobalMapping(A, &rl2g, &cl2g));
     PetscCall(MatSetLocalToGlobalMapping(C, cl2g, rl2g));
   } else C = *B;
@@ -1265,6 +1275,7 @@ static PetscErrorCode MatDiagonalSet_IS(Mat A, Vec D, InsertMode insmode)
   Mat_IS *is = (Mat_IS *)A->data;
 
   PetscFunctionBegin;
+  PetscCheck(!is->allow_repeated || insmode == ADD_VALUES, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "INSERT_VALUES with repeated entries not supported");
   if (D) { /* MatShift_IS pass D = NULL */
     PetscCall(VecScatterBegin(is->rctx, D, is->y, INSERT_VALUES, SCATTER_FORWARD));
     PetscCall(VecScatterEnd(is->rctx, D, is->y, INSERT_VALUES, SCATTER_FORWARD));
@@ -1375,6 +1386,7 @@ static PetscErrorCode MatCreateSubMatrix_IS(Mat mat, IS irow, IS icol, MatReuse 
     PetscCall(ISGetLocalSize(icol, &n));
     PetscCall(MatCreate(comm, newmat));
     PetscCall(MatSetType(*newmat, MATIS));
+    PetscCall(MatISSetAllowRepeated(*newmat, matis->allow_repeated));
     PetscCall(MatSetSizes(*newmat, m, n, PETSC_DECIDE, PETSC_DECIDE));
     PetscCall(MatSetBlockSizes(*newmat, rbs, cbs));
     /* communicate irow to their owners in the layout */
@@ -1527,9 +1539,131 @@ static PetscErrorCode MatISSetUpSF_IS(Mat B)
 }
 
 /*@
+  MatISGetAllowRepeated - Get the flag to allow repeated entries in the local to global map
+
+  Not Collective
+
+  Input Parameter:
+. A - the matrix
+
+  Output Parameter:
+. flg - the boolean flag
+
+  Level: intermediate
+
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateIS()`, `MatSetLocalToGlobalMapping()`, `MatISSetAllowRepeated()`
+@*/
+PetscErrorCode MatISGetAllowRepeated(Mat A, PetscBool *flg)
+{
+  PetscBool ismatis;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscAssertPointer(flg, 2);
+  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATIS, &ismatis));
+  PetscCheck(ismatis, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Not for matrix type %s", ((PetscObject)A)->type_name);
+  *flg = ((Mat_IS *)A->data)->allow_repeated;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  MatISSetAllowRepeated - Set the flag to allow repeated entries in the local to global map
+
+  Logically Collective
+
+  Input Parameters:
++ A   - the matrix
+- flg - the boolean flag
+
+  Level: intermediate
+
+  Notes:
+  The default value is `PETSC_FALSE`.
+  When called AFTER calling `MatSetLocalToGlobalMapping()` it will recreate the local matrices
+  if `flg` is different from the previously set value.
+  Specifically, when `flg` is true it will just recreate the local matrices, while if
+  `flg` is false will assemble the local matrices summing up repeated entries.
+
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateIS()`, `MatSetLocalToGlobalMapping()`, `MatISGetAllowRepeated()`
+@*/
+PetscErrorCode MatISSetAllowRepeated(Mat A, PetscBool flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscValidType(A, 1);
+  PetscValidLogicalCollectiveBool(A, flg, 2);
+  PetscTryMethod(A, "MatISSetAllowRepeated_C", (Mat, PetscBool), (A, flg));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatISSetAllowRepeated_IS(Mat A, PetscBool flg)
+{
+  Mat_IS                *matis = (Mat_IS *)A->data;
+  Mat                    lA    = NULL;
+  ISLocalToGlobalMapping lrmap, lcmap;
+
+  PetscFunctionBegin;
+  if (flg == matis->allow_repeated) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!matis->A) { /* matrix has not been preallocated yet */
+    matis->allow_repeated = flg;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  PetscCheck(!matis->islocalref, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Not implemented for local references");
+  if (matis->allow_repeated) { /* we will assemble the old local matrix if needed */
+    lA = matis->A;
+    PetscCall(PetscObjectReference((PetscObject)lA));
+  }
+  /* In case flg is True, we only recreate the local matrix */
+  matis->allow_repeated = flg;
+  PetscCall(MatSetLocalToGlobalMapping(A, A->rmap->mapping, A->cmap->mapping));
+  if (lA) { /* assemble previous local matrix if needed */
+    Mat nA = matis->A;
+
+    PetscCall(MatGetLocalToGlobalMapping(nA, &lrmap, &lcmap));
+    if (!lrmap && !lcmap) {
+      PetscCall(MatISSetLocalMat(A, lA));
+    } else {
+      Mat            P = NULL, R = NULL;
+      MatProductType ptype;
+
+      if (lrmap == lcmap) {
+        ptype = MATPRODUCT_PtAP;
+        PetscCall(MatCreateFromISLocalToGlobalMapping(lcmap, nA, PETSC_TRUE, PETSC_FALSE, NULL, &P));
+        PetscCall(MatProductCreate(lA, P, NULL, &nA));
+      } else {
+        if (lcmap) PetscCall(MatCreateFromISLocalToGlobalMapping(lcmap, nA, PETSC_TRUE, PETSC_FALSE, NULL, &P));
+        if (lrmap) PetscCall(MatCreateFromISLocalToGlobalMapping(lrmap, nA, PETSC_FALSE, PETSC_TRUE, NULL, &R));
+        if (R && P) {
+          ptype = MATPRODUCT_ABC;
+          PetscCall(MatProductCreate(R, lA, P, &nA));
+        } else if (R) {
+          ptype = MATPRODUCT_AB;
+          PetscCall(MatProductCreate(R, lA, NULL, &nA));
+        } else {
+          ptype = MATPRODUCT_AB;
+          PetscCall(MatProductCreate(lA, P, NULL, &nA));
+        }
+      }
+      PetscCall(MatProductSetType(nA, ptype));
+      PetscCall(MatProductSetFromOptions(nA));
+      PetscCall(MatProductSymbolic(nA));
+      PetscCall(MatProductNumeric(nA));
+      PetscCall(MatProductClear(nA));
+      PetscCall(MatConvert(nA, matis->lmattype, MAT_INPLACE_MATRIX, &nA));
+      PetscCall(MatISSetLocalMat(A, nA));
+      PetscCall(MatDestroy(&nA));
+      PetscCall(MatDestroy(&P));
+      PetscCall(MatDestroy(&R));
+    }
+  }
+  PetscCall(MatDestroy(&lA));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   MatISStoreL2L - Store local-to-local operators during the Galerkin process of computing `MatPtAP()`
 
-  Collective
+  Logically Collective
 
   Input Parameters:
 + A     - the matrix
@@ -1562,7 +1696,7 @@ static PetscErrorCode MatISStoreL2L_IS(Mat A, PetscBool store)
 /*@
   MatISFixLocalEmpty - Compress out zero local rows from the local matrices
 
-  Collective
+  Logically Collective
 
   Input Parameters:
 + A   - the matrix
@@ -1853,7 +1987,7 @@ PETSC_INTERN PetscErrorCode MatConvert_IS_XAIJ(Mat mat, MatType mtype, MatReuse 
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)mat), &size));
-  if (size == 1 && mat->rmap->N == matis->A->rmap->N && mat->cmap->N == matis->A->cmap->N) {
+  if (size == 1 && mat->rmap->N == matis->A->rmap->N && mat->cmap->N == matis->A->cmap->N && !matis->allow_repeated) {
     Mat      B;
     IS       irows = NULL, icols = NULL;
     PetscInt rbs, cbs;
@@ -1863,15 +1997,16 @@ PETSC_INTERN PetscErrorCode MatConvert_IS_XAIJ(Mat mat, MatType mtype, MatReuse 
     if (reuse != MAT_REUSE_MATRIX) { /* check if l2g maps are one-to-one */
       IS              rows, cols;
       const PetscInt *ridxs, *cidxs;
-      PetscInt        i, nw, *work;
+      PetscInt        i, nw;
+      PetscBT         work;
 
       PetscCall(ISLocalToGlobalMappingGetBlockIndices(matis->rmapping, &ridxs));
       PetscCall(ISLocalToGlobalMappingGetSize(matis->rmapping, &nw));
       nw = nw / rbs;
-      PetscCall(PetscCalloc1(nw, &work));
-      for (i = 0; i < nw; i++) work[ridxs[i]] += 1;
+      PetscCall(PetscBTCreate(nw, &work));
+      for (i = 0; i < nw; i++) PetscCall(PetscBTSet(work, ridxs[i]));
       for (i = 0; i < nw; i++)
-        if (!work[i] || work[i] > 1) break;
+        if (!PetscBTLookup(work, i)) break;
       if (i == nw) {
         PetscCall(ISCreateBlock(PETSC_COMM_SELF, rbs, nw, ridxs, PETSC_USE_POINTER, &rows));
         PetscCall(ISSetPermutation(rows));
@@ -1879,15 +2014,15 @@ PETSC_INTERN PetscErrorCode MatConvert_IS_XAIJ(Mat mat, MatType mtype, MatReuse 
         PetscCall(ISDestroy(&rows));
       }
       PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(matis->rmapping, &ridxs));
-      PetscCall(PetscFree(work));
+      PetscCall(PetscBTDestroy(&work));
       if (irows && matis->rmapping != matis->cmapping) {
         PetscCall(ISLocalToGlobalMappingGetBlockIndices(matis->cmapping, &cidxs));
         PetscCall(ISLocalToGlobalMappingGetSize(matis->cmapping, &nw));
         nw = nw / cbs;
-        PetscCall(PetscCalloc1(nw, &work));
-        for (i = 0; i < nw; i++) work[cidxs[i]] += 1;
+        PetscCall(PetscBTCreate(nw, &work));
+        for (i = 0; i < nw; i++) PetscCall(PetscBTSet(work, cidxs[i]));
         for (i = 0; i < nw; i++)
-          if (!work[i] || work[i] > 1) break;
+          if (!PetscBTLookup(work, i)) break;
         if (i == nw) {
           PetscCall(ISCreateBlock(PETSC_COMM_SELF, cbs, nw, cidxs, PETSC_USE_POINTER, &cols));
           PetscCall(ISSetPermutation(cols));
@@ -1895,7 +2030,7 @@ PETSC_INTERN PetscErrorCode MatConvert_IS_XAIJ(Mat mat, MatType mtype, MatReuse 
           PetscCall(ISDestroy(&cols));
         }
         PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(matis->cmapping, &cidxs));
-        PetscCall(PetscFree(work));
+        PetscCall(PetscBTDestroy(&work));
       } else if (irows) {
         PetscCall(PetscObjectReference((PetscObject)irows));
         icols = irows;
@@ -2024,9 +2159,7 @@ general_assembly:
     PetscCheck(done, PetscObjectComm((PetscObject)local_mat), PETSC_ERR_PLIB, "Error in MatRestoreRowIJ");
     PetscCall(MatSeqAIJRestoreArray(local_mat, &sarray));
   } else { /* very basic values insertion for all other matrix types */
-    PetscInt i;
-
-    for (i = 0; i < local_rows; i++) {
+    for (PetscInt i = 0; i < local_rows; i++) {
       PetscInt        j;
       const PetscInt *local_indices_cols;
 
@@ -2035,8 +2168,8 @@ general_assembly:
       PetscCall(MatRestoreRow(local_mat, i, &j, &local_indices_cols, &array));
     }
   }
-  PetscCall(MatAssemblyBegin(MT, MAT_FINAL_ASSEMBLY));
   PetscCall(MatDestroy(&local_mat));
+  PetscCall(MatAssemblyBegin(MT, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(MT, MAT_FINAL_ASSEMBLY));
   if (isseqdense) PetscCall(MatSetOption(MT, MAT_ROW_ORIENTED, PETSC_TRUE));
   if (reuse == MAT_INPLACE_MATRIX) {
@@ -2044,38 +2177,6 @@ general_assembly:
   } else if (reuse == MAT_INITIAL_MATRIX) {
     *M = MT;
   }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@
-  MatISGetMPIXAIJ - Converts `MATIS` matrix into a parallel `MATAIJ` format
-
-  Input Parameters:
-+ mat   - the matrix (should be of type `MATIS`)
-- reuse - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
-
-  Output Parameter:
-. newmat - the matrix in `MATAIJ` format
-
-  Level: deprecated
-
-  Note:
-  This function has been deprecated and it will be removed in future releases. Update your code to use the `MatConvert()` interface.
-
-.seealso: [](ch_matrices), `Mat`, `MATIS`, `MatConvert()`
-@*/
-PetscErrorCode MatISGetMPIXAIJ(Mat mat, MatReuse reuse, Mat *newmat)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidLogicalCollectiveEnum(mat, reuse, 2);
-  PetscAssertPointer(newmat, 3);
-  if (reuse == MAT_REUSE_MATRIX) {
-    PetscValidHeaderSpecific(*newmat, MAT_CLASSID, 3);
-    PetscCheckSameComm(mat, 1, *newmat, 3);
-    PetscCheck(mat != *newmat, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot reuse the same matrix");
-  }
-  PetscUseMethod(mat, "MatISGetMPIXAIJ_C", (Mat, MatType, MatReuse, Mat *), (mat, MATAIJ, reuse, newmat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2095,6 +2196,7 @@ static PetscErrorCode MatDuplicate_IS(Mat mat, MatDuplicateOption op, Mat *newma
   PetscCall(MatSetBlockSize(B, rbs == cbs ? rbs : 1));
   PetscCall(MatSetType(B, MATIS));
   PetscCall(MatISSetLocalMatType(B, matis->lmattype));
+  PetscCall(MatISSetAllowRepeated(B, matis->allow_repeated));
   PetscCall(MatSetLocalToGlobalMapping(B, mat->rmap->mapping, mat->cmap->mapping));
   PetscCall(MatDuplicate(matis->A, op, &localmat));
   PetscCall(MatSetLocalToGlobalMapping(localmat, matis->A->rmap->mapping, matis->A->cmap->mapping));
@@ -2178,7 +2280,6 @@ static PetscErrorCode MatDestroy_IS(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatISGetLocalMat_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatISSetLocalMat_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatISRestoreLocalMat_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatISGetMPIXAIJ_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatISSetPreallocation_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatISStoreL2L_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatISFixLocalEmpty_C", NULL));
@@ -2193,6 +2294,7 @@ static PetscErrorCode MatDestroy_IS(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSetPreallocationCOOLocal_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSetPreallocationCOO_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSetValuesCOO_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatISSetAllowRepeated_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2381,6 +2483,7 @@ static PetscErrorCode MatISSetUpScatters_Private(Mat A)
 
 static PetscErrorCode MatISFilterL2GMap(Mat A, ISLocalToGlobalMapping map, ISLocalToGlobalMapping *nmap, ISLocalToGlobalMapping *lmap)
 {
+  Mat_IS                    *matis = (Mat_IS *)A->data;
   IS                         is;
   ISLocalToGlobalMappingType l2gtype;
   const PetscInt            *idxs;
@@ -2396,12 +2499,12 @@ static PetscErrorCode MatISFilterL2GMap(Mat A, ISLocalToGlobalMapping map, ISLoc
   PetscCall(PetscHSetICreate(&ht));
   PetscCall(PetscMalloc1(n / bs, &nidxs));
   for (i = 0, c = 0; i < n / bs; i++) {
-    PetscBool missing;
+    PetscBool missing = PETSC_TRUE;
     if (idxs[i] < 0) {
       flg[0] = PETSC_TRUE;
       continue;
     }
-    PetscCall(PetscHSetIQueryAdd(ht, idxs[i], &missing));
+    if (!matis->allow_repeated) PetscCall(PetscHSetIQueryAdd(ht, idxs[i], &missing));
     if (!missing) flg[1] = PETSC_TRUE;
     else nidxs[c++] = idxs[i];
   }
@@ -2415,19 +2518,18 @@ static PetscErrorCode MatISFilterL2GMap(Mat A, ISLocalToGlobalMapping map, ISLoc
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  /* New l2g map without negative or repeated indices */
+  /* New l2g map without negative indices (and repeated indices if not allowed) */
   PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)A), bs, c, nidxs, PETSC_USE_POINTER, &is));
   PetscCall(ISLocalToGlobalMappingCreateIS(is, nmap));
   PetscCall(ISDestroy(&is));
   PetscCall(ISLocalToGlobalMappingGetType(map, &l2gtype));
   PetscCall(ISLocalToGlobalMappingSetType(*nmap, l2gtype));
 
-  /* New local l2g map for repeated indices */
+  /* New local l2g map for repeated indices if not allowed */
   PetscCall(ISGlobalToLocalMappingApplyBlock(*nmap, IS_GTOLM_MASK, n / bs, idxs, NULL, nidxs));
   PetscCall(ISCreateBlock(PETSC_COMM_SELF, bs, n / bs, nidxs, PETSC_USE_POINTER, &is));
   PetscCall(ISLocalToGlobalMappingCreateIS(is, lmap));
   PetscCall(ISDestroy(&is));
-
   PetscCall(PetscFree(nidxs));
   PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(map, &idxs));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2437,8 +2539,8 @@ static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A, ISLocalToGlobalMappin
 {
   Mat_IS                *is            = (Mat_IS *)A->data;
   ISLocalToGlobalMapping localrmapping = NULL, localcmapping = NULL;
-  PetscBool              cong, freem[]                       = {PETSC_FALSE, PETSC_FALSE};
   PetscInt               nr, rbs, nc, cbs;
+  PetscBool              cong, freem[] = {PETSC_FALSE, PETSC_FALSE};
 
   PetscFunctionBegin;
   if (rmapping) PetscCheckSameComm(A, 1, rmapping, 2);
@@ -2490,6 +2592,9 @@ static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A, ISLocalToGlobalMappin
   }
 
   /* Clean up */
+  is->lnnzstate = 0;
+  PetscCall(MatDestroy(&is->dA));
+  PetscCall(MatDestroy(&is->assembledA));
   PetscCall(MatDestroy(&is->A));
   if (is->csf != is->sf) {
     PetscCall(PetscSFDestroy(&is->csf));
@@ -2795,8 +2900,8 @@ static PetscErrorCode MatAssemblyEnd_IS(Mat A, MatAssemblyType type)
   }
   lnnz          = (PetscBool)(is->A->nonzerostate == is->lnnzstate);
   is->lnnzstate = is->A->nonzerostate;
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &lnnz, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)A)));
-  if (lnnz) A->nonzerostate++;
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &lnnz, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
+  if (!lnnz) A->nonzerostate++;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2819,13 +2924,15 @@ static PetscErrorCode MatISRestoreLocalMat_IS(Mat mat, Mat *local)
 /*@
   MatISGetLocalMat - Gets the local matrix stored inside a `MATIS` matrix.
 
+  Not Collective.
+
   Input Parameter:
 . mat - the matrix
 
   Output Parameter:
 . local - the local matrix
 
-  Level: advanced
+  Level: intermediate
 
   Notes:
   This can be called if you have precomputed the nonzero structure of the
@@ -2848,11 +2955,13 @@ PetscErrorCode MatISGetLocalMat(Mat mat, Mat *local)
 /*@
   MatISRestoreLocalMat - Restores the local matrix obtained with `MatISGetLocalMat()`
 
+  Not Collective.
+
   Input Parameters:
 + mat   - the matrix
 - local - the local matrix
 
-  Level: advanced
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MATIS`, `MatISGetLocalMat()`
 @*/
@@ -2879,11 +2988,13 @@ static PetscErrorCode MatISSetLocalMatType_IS(Mat mat, MatType mtype)
 /*@C
   MatISSetLocalMatType - Specifies the type of local matrix inside the `MATIS`
 
+  Logically Collective.
+
   Input Parameters:
 + mat   - the matrix
 - mtype - the local matrix type
 
-  Level: advanced
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MATIS`, `MatSetType()`, `MatType`
 @*/
@@ -2917,25 +3028,20 @@ static PetscErrorCode MatISSetLocalMat_IS(Mat mat, Mat local)
   PetscCall(MatGetType(is->A, &mtype));
   PetscCall(MatISSetLocalMatType(mat, mtype));
   if (!sametype && !is->islocalref) PetscCall(MatISSetUpScatters_Private(mat));
+  is->lnnzstate = 0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
   MatISSetLocalMat - Replace the local matrix stored inside a `MATIS` object.
 
-  Collective
+  Not Collective
 
   Input Parameters:
 + mat   - the matrix
 - local - the local matrix
 
-  Level: advanced
-
-  Notes:
-  Any previous matrix within the `MATIS` has its reference count decreased by one.
-
-  This can be called if you have precomputed the local matrix and
-  want to provide it to the matrix object `MATIS`.
+  Level: intermediate
 
 .seealso: [](ch_matrices), `Mat`, `MATIS`, `MatISSetLocalMatType`, `MatISGetLocalMat()`
 @*/
@@ -3093,10 +3199,15 @@ static PetscErrorCode MatSetFromOptions_IS(Mat A, PetscOptionItems *PetscOptions
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "MATIS options");
-  PetscCall(PetscOptionsBool("-matis_keepassembled", "Store an assembled version if needed", "MatISKeepAssembled", a->keepassembled, &a->keepassembled, NULL));
-  PetscCall(PetscOptionsBool("-matis_fixempty", "Fix local matrices in case of empty local rows/columns", "MatISFixLocalEmpty", a->locempty, &a->locempty, NULL));
-  PetscCall(PetscOptionsBool("-matis_storel2l", "Store local-to-local matrices generated from PtAP operations", "MatISStoreL2L", a->storel2l, &a->storel2l, NULL));
-  PetscCall(PetscOptionsFList("-matis_localmat_type", "Matrix type", "MatISSetLocalMatType", MatList, a->lmattype, type, 256, &flg));
+  PetscCall(PetscOptionsDeprecated("-matis_keepassembled", "-mat_is_keepassembled", "3.21", NULL));
+  PetscCall(PetscOptionsDeprecated("-matis_fixempty", "-mat_is_fixempty", "3.21", NULL));
+  PetscCall(PetscOptionsDeprecated("-matis_storel2l", "-mat_is_storel2l", "3.21", NULL));
+  PetscCall(PetscOptionsDeprecated("-matis_localmat_type", "-mat_is_localmat_type", "3.21", NULL));
+  PetscCall(PetscOptionsBool("-mat_is_keepassembled", "Store an assembled version if needed", NULL, a->keepassembled, &a->keepassembled, NULL));
+  PetscCall(PetscOptionsBool("-mat_is_fixempty", "Fix local matrices in case of empty local rows/columns", "MatISFixLocalEmpty", a->locempty, &a->locempty, NULL));
+  PetscCall(PetscOptionsBool("-mat_is_storel2l", "Store local-to-local matrices generated from PtAP operations", "MatISStoreL2L", a->storel2l, &a->storel2l, NULL));
+  PetscCall(PetscOptionsBool("-mat_is_allow_repeated", "Allow local repeated entries", "MatISSetAllowRepeated", a->allow_repeated, &a->allow_repeated, NULL));
+  PetscCall(PetscOptionsFList("-mat_is_localmat_type", "Matrix type", "MatISSetLocalMatType", MatList, a->lmattype, type, 256, &flg));
   if (flg) PetscCall(MatISSetLocalMatType(A, type));
   if (a->A) PetscCall(MatSetFromOptions(a->A));
   PetscOptionsHeadEnd();
@@ -3104,8 +3215,9 @@ static PetscErrorCode MatSetFromOptions_IS(Mat A, PetscOptionItems *PetscOptions
 }
 
 /*@
-  MatCreateIS - Creates a "process" unassembled matrix, `MATIS`, assembled on each
-  process but not across processes.
+  MatCreateIS - Creates a "process" unassembled matrix.
+
+  Collective.
 
   Input Parameters:
 + comm - MPI communicator that will share the matrix
@@ -3120,11 +3232,11 @@ static PetscErrorCode MatSetFromOptions_IS(Mat A, PetscOptionItems *PetscOptions
   Output Parameter:
 . A - the resulting matrix
 
-  Level: advanced
+  Level: intermediate
 
   Notes:
   `m` and `n` are NOT related to the size of the map; they represent the size of the local parts of the distributed vectors
-  used in `MatMult()` operations. The sizes of rmap and cmap define the size of the local matrices.
+  used in `MatMult()` operations. The local sizes of `rmap` and `cmap` define the size of the local matrices.
 
   If `rmap` (`cmap`) is `NULL`, then the local row (column) spaces matches the global space.
 
@@ -3357,24 +3469,24 @@ static PetscErrorCode MatISGetLocalToGlobalMapping_IS(Mat A, ISLocalToGlobalMapp
 }
 
 /*MC
-   MATIS - MATIS = "is" - A matrix type to be used for using the non-overlapping domain decomposition methods (e.g. `PCBDDC` or `KSPFETIDP`).
-   This stores the matrices in globally unassembled form. Each processor assembles only its local Neumann problem and the parallel matrix vector
-   product is handled "implicitly".
+  MATIS - MATIS = "is" - A matrix type to be used for non-overlapping domain decomposition methods (e.g. `PCBDDC` or `KSPFETIDP`).
+  This stores the matrices in globally unassembled form and the parallel matrix vector product is handled "implicitly".
 
-   Options Database Keys:
-+ -mat_type is - sets the matrix type to `MATIS`.
-. -matis_fixempty - Fixes local matrices in case of empty local rows/columns.
-- -matis_storel2l - stores the local-to-local operators generated by the Galerkin process of `MatPtAP()`.
+  Options Database Keys:
++ -mat_type is           - Set the matrix type to `MATIS`.
+. -mat_is_allow_repeated - Allow repeated entries in the local part of the local to global maps.
+. -mat_is_fixempty       - Fix local matrices in case of empty local rows/columns.
+- -mat_is_storel2l       - Store the local-to-local operators generated by the Galerkin process of `MatPtAP()`.
 
-  Level: advanced
+  Level: intermediate
 
-   Notes:
-   Options prefix for the inner matrix are given by `-is_mat_xxx`
+  Notes:
+  Options prefix for the inner matrix are given by `-is_mat_xxx`
 
-   You must call `MatSetLocalToGlobalMapping()` before using this matrix type.
+  You must call `MatSetLocalToGlobalMapping()` before using this matrix type.
 
-   You can do matrix preallocation on the local matrix after you obtain it with
-   `MatISGetLocalMat()`; otherwise, you could use `MatISSetPreallocation()`
+  You can do matrix preallocation on the local matrix after you obtain it with
+  `MatISGetLocalMat()`; otherwise, you could use `MatISSetPreallocation()` or `MatXAIJSetPreallocation()`
 
 .seealso: [](ch_matrices), `Mat`, `MATIS`, `Mat`, `MatISGetLocalMat()`, `MatSetLocalToGlobalMapping()`, `MatISSetPreallocation()`, `MatCreateIS()`, `PCBDDC`, `KSPFETIDP`
 M*/
@@ -3434,8 +3546,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatISGetLocalMat_C", MatISGetLocalMat_IS));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatISRestoreLocalMat_C", MatISRestoreLocalMat_IS));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatISSetLocalMat_C", MatISSetLocalMat_IS));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatISGetMPIXAIJ_C", MatConvert_IS_XAIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatISSetPreallocation_C", MatISSetPreallocation_IS));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatISSetAllowRepeated_C", MatISSetAllowRepeated_IS));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatISStoreL2L_C", MatISStoreL2L_IS));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatISFixLocalEmpty_C", MatISFixLocalEmpty_IS));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatISGetLocalToGlobalMapping_C", MatISGetLocalToGlobalMapping_IS));

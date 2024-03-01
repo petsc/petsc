@@ -206,7 +206,6 @@ cdef extern from * nogil:
 
     PetscErrorCode MatCreateIS(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscLGMap,PetscLGMap,PetscMat*)
     PetscErrorCode MatISGetLocalMat(PetscMat,PetscMat*)
-    PetscErrorCode MatISGetMPIXAIJ(PetscMat,PetscMatReuse,PetscMat*)
 
     PetscErrorCode MatCreateScatter(MPI_Comm,PetscScatter,PetscMat*)
     PetscErrorCode MatScatterSetVecScatter(PetscMat,PetscScatter)
@@ -400,6 +399,8 @@ cdef extern from * nogil:
     PetscErrorCode MatGetOrdering(PetscMat,PetscMatOrderingType,PetscIS*,PetscIS*)
     PetscErrorCode MatReorderForNonzeroDiagonal(PetscMat,PetscReal,PetscIS,PetscIS)
 
+    PetscErrorCode MatISSetAllowRepeated(PetscMat,PetscBool)
+    PetscErrorCode MatISGetAllowRepeated(PetscMat,PetscBool*)
     PetscErrorCode MatISFixLocalEmpty(PetscMat,PetscBool)
     PetscErrorCode MatISGetLocalMat(PetscMat,PetscMat*)
     PetscErrorCode MatISRestoreLocalMat(PetscMat,PetscMat*)
