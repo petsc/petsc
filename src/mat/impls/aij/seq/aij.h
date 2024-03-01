@@ -180,7 +180,8 @@ typedef struct {
       nonew       = ((Mat_SeqAIJ *)A->data)->nonew; \
       nounused    = ((Mat_SeqAIJ *)A->data)->nounused; \
       roworiented = ((Mat_SeqAIJ *)A->data)->roworiented; \
-    }
+    } \
+    (void)0
 
 #define MatSeqXAIJRestoreOptions_Private(A) \
   if (oldvalues) { \
@@ -188,7 +189,8 @@ typedef struct {
     ((Mat_SeqAIJ *)A->data)->nounused    = nounused; \
     ((Mat_SeqAIJ *)A->data)->roworiented = roworiented; \
   } \
-  }
+  } \
+  (void)0
 
 /*
   Frees the a, i, and j arrays from the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
