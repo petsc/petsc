@@ -1570,7 +1570,7 @@ static PetscErrorCode DMCreateSubDM_Forest(DM dm, PetscInt numFields, const Pets
 {
   PetscFunctionBegin;
   if (subdm) PetscCall(DMClone(dm, subdm));
-  PetscCall(DMCreateSectionSubDM(dm, numFields, fields, is, subdm));
+  PetscCall(DMCreateSectionSubDM(dm, numFields, fields, NULL, NULL, is, subdm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -4151,7 +4151,7 @@ PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, const PetscInt fiel
 {
   PetscFunctionBegin;
   if (subdm) PetscCall(DMClone(dm, subdm));
-  PetscCall(DMCreateSectionSubDM(dm, numFields, fields, is, subdm));
+  PetscCall(DMCreateSectionSubDM(dm, numFields, fields, NULL, NULL, is, subdm));
   if (subdm) (*subdm)->useNatural = dm->useNatural;
   if (dm->useNatural && dm->sfMigration) {
     PetscSF sfNatural;
