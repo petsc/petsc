@@ -633,13 +633,15 @@ PetscErrorCode MatGetValues_SeqSBAIJ(Mat A, PetscInt m, const PetscInt im[], Pet
 
 static PetscErrorCode MatPermute_SeqSBAIJ(Mat A, IS rowp, IS colp, Mat *B)
 {
-  Mat C;
+  Mat       C;
+  PetscBool flg = (PetscBool)(rowp == colp);
 
   PetscFunctionBegin;
   PetscCall(MatConvert(A, MATSEQBAIJ, MAT_INITIAL_MATRIX, &C));
   PetscCall(MatPermute(C, rowp, colp, B));
   PetscCall(MatDestroy(&C));
-  if (rowp == colp) PetscCall(MatConvert(*B, MATSEQSBAIJ, MAT_INPLACE_MATRIX, B));
+  if (!flg) PetscCall(ISEqual(rowp, colp, &flg));
+  if (flg) PetscCall(MatConvert(*B, MATSEQSBAIJ, MAT_INPLACE_MATRIX, B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

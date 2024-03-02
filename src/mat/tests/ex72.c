@@ -31,12 +31,13 @@ int main(int argc, char **argv)
   char        filein[PETSC_MAX_PATH_LEN], fileout[PETSC_MAX_PATH_LEN];
   char        ordering[256] = MATORDERINGRCM;
   PetscViewer view;
-  PetscBool   flag, symmetric = PETSC_FALSE, aijonly = PETSC_FALSE, permute = PETSC_FALSE;
+  PetscBool   flag, symmetric = PETSC_FALSE, skew = PETSC_FALSE, aijonly = PETSC_FALSE, permute = PETSC_FALSE;
   IS          rowperm = NULL, colperm = NULL;
   PetscMPIInt size;
+  MatInfo     info;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only!");
 
@@ -55,6 +56,7 @@ int main(int argc, char **argv)
   PetscCall(PetscFOpen(PETSC_COMM_SELF, filein, "r", &file));
   PetscCallExternal(mm_read_banner, file, &matcode);
   if (mm_is_symmetric(matcode)) symmetric = PETSC_TRUE;
+  if (mm_is_skew(matcode)) skew = PETSC_TRUE;
   PetscCallExternal(mm_write_banner, stdout, matcode);
   PetscCallExternal(mm_read_mtx_crd_size, file, &M, &N, &nz);
   PetscCall(PetscFClose(PETSC_COMM_SELF, file));
@@ -74,7 +76,8 @@ int main(int argc, char **argv)
   PetscCall(MatView(A, view));
   PetscCall(PetscViewerDestroy(&view));
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "Writing matrix completes.\n"));
-
+  PetscCall(MatGetInfo(A, MAT_GLOBAL_SUM, &info));
+  PetscCheck(info.nz_used == (!skew ? nz : 2 * nz), PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Different number of nonzero in MM matrix and PETSc Mat, %d != %g", nz, (double)info.nz_used);
   PetscCall(MatDestroy(&A));
   PetscCall(ISDestroy(&rowperm));
   PetscCall(ISDestroy(&colperm));
@@ -96,6 +99,11 @@ int main(int argc, char **argv)
    test:
       suffix: 2
       args: -fin ${wPETSC_DIR}/share/petsc/datafiles/matrices/LFAT5.mtx -fout petscmat.sbaij
+      output_file: output/ex72_2.out
+
+   test:
+      suffix: 2_permute
+      args: -fin ${wPETSC_DIR}/share/petsc/datafiles/matrices/LFAT5.mtx -fout petscmat.sbaij -permute rcm
       output_file: output/ex72_2.out
 
    test:
