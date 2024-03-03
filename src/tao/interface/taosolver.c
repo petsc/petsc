@@ -368,7 +368,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
   TaoType     default_type = TAOLMVM;
   char        type[256], monfilename[PETSC_MAX_PATH_LEN];
   PetscViewer monviewer;
-  PetscBool   flg;
+  PetscBool   flg, found;
   MPI_Comm    comm;
 
   PetscFunctionBegin;
@@ -523,9 +523,8 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
     PetscCall(TaoSetHessian(tao, H, H, TaoDefaultComputeHessianMFFD, NULL));
     PetscCall(MatDestroy(&H));
   }
-  flg = PETSC_FALSE;
-  PetscCall(PetscOptionsBool("-tao_recycle_history", "enable recycling/re-using information from the previous TaoSolve() call for some algorithms", "TaoSetRecycleHistory", flg, &flg, NULL));
-  if (flg) PetscCall(TaoSetRecycleHistory(tao, PETSC_TRUE));
+  PetscCall(PetscOptionsBool("-tao_recycle_history", "enable recycling/re-using information from the previous TaoSolve() call for some algorithms", "TaoSetRecycleHistory", flg, &flg, &found));
+  if (found) PetscCall(TaoSetRecycleHistory(tao, flg));
   PetscCall(PetscOptionsEnum("-tao_subset_type", "subset type", "", TaoSubSetTypes, (PetscEnum)tao->subset_type, (PetscEnum *)&tao->subset_type, NULL));
 
   if (tao->ksp) {
