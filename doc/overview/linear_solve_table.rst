@@ -322,7 +322,7 @@ Direct Solvers
    * -
      -
      -
-     - ``MATAIJ``, ``MATBAIJ``
+     - ``MATAIJ``, ``MATBAIJ``, ``MATSEQSELL``, ``MATDENSE``, ``MATNEST``
      - `MUMPS <https://mumps-solver.org/>`__
      - X
      - X
@@ -337,7 +337,7 @@ Direct Solvers
      -
      -
      - ``MATSEQAIJ``
-     - `UMPFPACK (SuiteSparse) <https://people.engr.tamu.edu/davis/suitesparse.html>`__
+     - `UMFPACK (SuiteSparse) <https://people.engr.tamu.edu/davis/suitesparse.html>`__
      -
      - X
    * -
@@ -366,7 +366,7 @@ Direct Solvers
      -
      -
      - ``MATMPIAIJ``, ``MATMPIBAIJ``
-     - `MKL CPardiso
+     - `MKL Cluster PARDISO
        <https://software.intel.com/content/www/us/en/develop/documentation/onemkl-developer-reference-c/top.html>`__
      - X
      - X
@@ -394,7 +394,7 @@ Direct Solvers
    * -
      -
      -
-     - ``MATSBAIJ``
+     - ``MATAIJ``, ``MATSBAIJ``, ``MATDENSE``, ``MATNEST``
      - `MUMPS <https://mumps-solver.org/>`__
      - X
      - X
