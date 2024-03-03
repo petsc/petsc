@@ -34,7 +34,7 @@ static PetscErrorCode VecView_Swarm_HDF5_Internal(Vec v, PetscViewer viewer)
   DM        dm;
   PetscReal seqval;
   PetscInt  seqnum, bs;
-  PetscBool isseq;
+  PetscBool isseq, ists;
 
   PetscFunctionBegin;
   PetscCall(VecGetDM(v, &dm));
@@ -42,7 +42,8 @@ static PetscErrorCode VecView_Swarm_HDF5_Internal(Vec v, PetscViewer viewer)
   PetscCall(PetscViewerHDF5PushGroup(viewer, "/particle_fields"));
   PetscCall(PetscObjectTypeCompare((PetscObject)v, VECSEQ, &isseq));
   PetscCall(DMGetOutputSequenceNumber(dm, &seqnum, &seqval));
-  PetscCall(PetscViewerHDF5SetTimestep(viewer, seqnum));
+  PetscCall(PetscViewerHDF5IsTimestepping(viewer, &ists));
+  if (ists) PetscCall(PetscViewerHDF5SetTimestep(viewer, seqnum));
   /* PetscCall(DMSequenceView_HDF5(dm, "time", seqnum, (PetscScalar) seqval, viewer)); */
   PetscCall(VecViewNative(v, viewer));
   PetscCall(PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject)v, "Nc", PETSC_INT, (void *)&bs));
