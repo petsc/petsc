@@ -2783,8 +2783,7 @@ PetscErrorCode MatSOR_MPISBAIJ(Mat matin, Vec bb, PetscReal omega, MatSORType fl
 }
 
 /*@
-  MatCreateMPISBAIJWithArrays - creates a `MATMPISBAIJ` matrix using arrays that contain in standard
-  CSR format the local rows.
+  MatCreateMPISBAIJWithArrays - creates a `MATMPISBAIJ` matrix using arrays that contain in standard CSR format for the local rows.
 
   Collective
 
@@ -2793,8 +2792,8 @@ PetscErrorCode MatSOR_MPISBAIJ(Mat matin, Vec bb, PetscReal omega, MatSORType fl
 . bs   - the block size, only a block size of 1 is supported
 . m    - number of local rows (Cannot be `PETSC_DECIDE`)
 . n    - This value should be the same as the local size used in creating the
-       x vector for the matrix-vector product y = Ax. (or `PETSC_DECIDE` to have
-       calculated if `N` is given) For square matrices `n` is almost always `m`.
+         x vector for the matrix-vector product $ y = Ax $. (or `PETSC_DECIDE` to have
+         calculated if `N` is given) For square matrices `n` is almost always `m`.
 . M    - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
 . N    - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
 . i    - row indices; that is i[0] = 0, i[row] = i[row-1] + number of block elements in that row block row of the matrix
@@ -2814,7 +2813,7 @@ PetscErrorCode MatSOR_MPISBAIJ(Mat matin, Vec bb, PetscReal omega, MatSORType fl
   The `i` and `j` indices are 0 based, and `i` indices are indices corresponding to the local `j` array.
 
 .seealso: [](ch_matrices), `Mat`, `MATMPISBAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
-          `MATMPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`
+          `MATMPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`, `MatMPISBAIJSetPreallocationCSR()`
 @*/
 PetscErrorCode MatCreateMPISBAIJWithArrays(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt M, PetscInt N, const PetscInt i[], const PetscInt j[], const PetscScalar a[], Mat *mat)
 {
@@ -2836,19 +2835,24 @@ PetscErrorCode MatCreateMPISBAIJWithArrays(MPI_Comm comm, PetscInt bs, PetscInt 
   Input Parameters:
 + B  - the matrix
 . bs - the block size
-. i  - the indices into `j` for the start of each local row (starts with zero)
-. j  - the column indices for each local row (starts with zero) these must be sorted for each row
-- v  - optional values in the matrix
+. i  - the indices into `j` for the start of each local row (indices start with zero)
+. j  - the column indices for each local row (indices start with zero) these must be sorted for each row
+- v  - optional values in the matrix, pass `NULL` if not provided
 
   Level: advanced
 
   Notes:
+  The `i`, `j`, and `v` arrays ARE copied by this routine into the internal format used by PETSc;
+  thus you CANNOT change the matrix entries by changing the values of `v` after you have
+  called this routine.
+
   Though this routine has Preallocation() in the name it also sets the exact nonzero locations of the matrix entries
   and usually the numerical values as well
 
-  Any entries below the diagonal are ignored
+  Any entries passed in that are below the diagonal are ignored
 
-.seealso: [](ch_matrices), `Mat`, `MATMPISBAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIBAIJSetPreallocation()`, `MatCreateAIJ()`, `MATMPIAIJ`
+.seealso: [](ch_matrices), `Mat`, `MATMPISBAIJ`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIBAIJSetPreallocation()`, `MatCreateAIJ()`, `MATMPIAIJ`,
+          `MatCreateMPISBAIJWithArrays()`
 @*/
 PetscErrorCode MatMPISBAIJSetPreallocationCSR(Mat B, PetscInt bs, const PetscInt i[], const PetscInt j[], const PetscScalar v[])
 {

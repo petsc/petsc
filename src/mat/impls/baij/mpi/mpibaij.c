@@ -2658,11 +2658,15 @@ static PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B, PetscInt bs, 
 . bs - the block size
 . i  - the indices into `j` for the start of each local row (starts with zero)
 . j  - the column indices for each local row (starts with zero) these must be sorted for each row
-- v  - optional values in the matrix
+- v  - optional values in the matrix, use `NULL` if not provided
 
   Level: advanced
 
   Notes:
+  The `i`, `j`, and `v` arrays ARE copied by this routine into the internal format used by PETSc;
+  thus you CANNOT change the matrix entries by changing the values of `v` after you have
+  called this routine.
+
   The order of the entries in values is specified by the `MatOption` `MAT_ROW_ORIENTED`.  For example, C programs
   may want to use the default `MAT_ROW_ORIENTED` with value `PETSC_TRUE` and use an array v[nnz][bs][bs] where the second index is
   over rows within a block and the last index is over columns within a block row.  Fortran programs will likely set
@@ -3548,8 +3552,7 @@ PETSC_EXTERN PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin, PetscInt *mi
 }
 
 /*@
-  MatCreateMPIBAIJWithArrays - creates a `MATMPIBAIJ` matrix using arrays that contain in standard block
-  CSR format the local rows.
+  MatCreateMPIBAIJWithArrays - creates a `MATMPIBAIJ` matrix using arrays that contain in standard block CSR format for the local rows.
 
   Collective
 
@@ -3558,10 +3561,10 @@ PETSC_EXTERN PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin, PetscInt *mi
 . bs   - the block size, only a block size of 1 is supported
 . m    - number of local rows (Cannot be `PETSC_DECIDE`)
 . n    - This value should be the same as the local size used in creating the
-       x vector for the matrix-vector product y = Ax. (or `PETSC_DECIDE` to have
-       calculated if N is given) For square matrices n is almost always m.
-. M    - number of global rows (or `PETSC_DETERMINE` to have calculated if m is given)
-. N    - number of global columns (or `PETSC_DETERMINE` to have calculated if n is given)
+         x vector for the matrix-vector product $ y = Ax $. (or `PETSC_DECIDE` to have
+         calculated if `N` is given) For square matrices `n` is almost always `m`.
+. M    - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
+. N    - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
 . i    - row indices; that is i[0] = 0, i[row] = i[row-1] + number of block elements in that rowth block row of the matrix
 . j    - column indices
 - a    - matrix values
@@ -3581,7 +3584,7 @@ PETSC_EXTERN PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin, PetscInt *mi
   block, followed by the second column of the first block etc etc.  That is, the blocks are contiguous in memory
   with column-major ordering within blocks.
 
-  The `i` and `j` indices are 0 based, and i indices are indices corresponding to the local `j` array.
+  The `i` and `j` indices are 0 based, and `i` indices are indices corresponding to the local `j` array.
 
 .seealso: `Mat`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
           `MATMPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`

@@ -3969,8 +3969,8 @@ static PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B, const PetscInt 
 
   Input Parameters:
 + B - the matrix
-. i - the indices into j for the start of each local row (starts with zero)
-. j - the column indices for each local row (starts with zero)
+. i - the indices into `j` for the start of each local row (indices start with zero)
+. j - the column indices for each local row (indices start with zero)
 - v - optional values in the matrix
 
   Level: developer
@@ -4164,10 +4164,10 @@ PetscErrorCode MatMPIAIJSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d_
 + comm - MPI communicator
 . m    - number of local rows (Cannot be `PETSC_DECIDE`)
 . n    - This value should be the same as the local size used in creating the
-       x vector for the matrix-vector product y = Ax. (or `PETSC_DECIDE` to have
-       calculated if N is given) For square matrices n is almost always m.
-. M    - number of global rows (or `PETSC_DETERMINE` to have calculated if m is given)
-. N    - number of global columns (or `PETSC_DETERMINE` to have calculated if n is given)
+         x vector for the matrix-vector product $ y = Ax$. (or `PETSC_DECIDE` to have
+         calculated if `N` is given) For square matrices n is almost always `m`.
+. M    - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
+. N    - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
 . i    - row indices (of length m+1); that is i[0] = 0, i[row] = i[row-1] + number of elements in that row of the matrix
 . j    - global column indices
 - a    - optional matrix values
@@ -6937,8 +6937,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
 + comm - MPI communicator
 . m    - number of local rows (Cannot be `PETSC_DECIDE`)
 . n    - This value should be the same as the local size used in creating the
-       x vector for the matrix-vector product y = Ax. (or `PETSC_DECIDE` to have
-       calculated if `N` is given) For square matrices `n` is almost always `m`.
+         x vector for the matrix-vector product $y = Ax$. (or `PETSC_DECIDE` to have
+         calculated if `N` is given) For square matrices `n` is almost always `m`.
 . M    - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
 . N    - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
 . i    - row indices for "diagonal" portion of matrix; that is i[0] = 0, i[row] = i[row-1] + number of elements in that row of the matrix

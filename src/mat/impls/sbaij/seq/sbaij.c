@@ -1847,11 +1847,11 @@ PetscErrorCode MatSeqSBAIJRestoreArray(Mat A, PetscScalar **array)
   Level: beginner
 
   Notes:
-    By default if you insert values into the lower triangular part of the matrix they are simply ignored (since they are not
-     stored and it is assumed they symmetric to the upper triangular). If you call `MatSetOption`(`Mat`,`MAT_IGNORE_LOWER_TRIANGULAR`,`PETSC_FALSE`) or use
-     the options database `-mat_ignore_lower_triangular` false it will generate an error if you try to set a value in the lower triangular portion.
+  By default if you insert values into the lower triangular part of the matrix they are simply ignored (since they are not
+  stored and it is assumed they symmetric to the upper triangular). If you call `MatSetOption`(`Mat`,`MAT_IGNORE_LOWER_TRIANGULAR`,`PETSC_FALSE`) or use
+  the options database `-mat_ignore_lower_triangular` false it will generate an error if you try to set a value in the lower triangular portion.
 
-    The number of rows in the matrix must be less than or equal to the number of columns
+  The number of rows in the matrix must be less than or equal to the number of columns
 
 .seealso: [](ch_matrices), `Mat`, `MATSEQSBAIJ`, `MatCreateSeqSBAIJ()`, `MatType`, `MATMPISBAIJ`
 M*/
@@ -1952,14 +1952,13 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
   Input Parameters:
 + B   - the symmetric matrix
 . bs  - size of block, the blocks are ALWAYS square. One can use `MatSetBlockSizes()` to set a different row and column blocksize but the row
-          blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with `MatCreateVecs()`
+        blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with `MatCreateVecs()`
 . nz  - number of block nonzeros per block row (same for all rows)
 - nnz - array containing the number of block nonzeros in the upper triangular plus
-         diagonal portion of each block (possibly different for each block row) or `NULL`
+        diagonal portion of each block (possibly different for each block row) or `NULL`
 
   Options Database Keys:
-+ -mat_no_unroll  - uses code that does not unroll the loops in the
-                     block calculations (much slower)
++ -mat_no_unroll  - uses code that does not unroll the loops in the block calculations (much slower)
 - -mat_block_size - size of the blocks to use (only works if a negative bs is passed in
 
   Level: intermediate
@@ -1994,20 +1993,22 @@ PetscErrorCode MatSeqSBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt nz, cons
   Input Parameters:
 + B  - the matrix
 . bs - size of block, the blocks are ALWAYS square.
-. i  - the indices into j for the start of each local row (starts with zero)
-. j  - the column indices for each local row (starts with zero) these must be sorted for each row
-- v  - optional values in the matrix
+. i  - the indices into `j` for the start of each local row (indices start with zero)
+. j  - the column indices for each local row (indices start with zero) these must be sorted for each row
+- v  - optional values in the matrix, use `NULL` if not provided
 
   Level: advanced
 
   Notes:
+  The `i`,`j`,`v` values are COPIED with this routine; to avoid the copy use `MatCreateSeqSBAIJWithArrays()`
+
   The order of the entries in values is specified by the `MatOption` `MAT_ROW_ORIENTED`.  For example, C programs
   may want to use the default `MAT_ROW_ORIENTED` = `PETSC_TRUE` and use an array v[nnz][bs][bs] where the second index is
   over rows within a block and the last index is over columns within a block row.  Fortran programs will likely set
   `MAT_ROW_ORIENTED` = `PETSC_FALSE` and use a Fortran array v(bs,bs,nnz) in which the first index is over rows within a
   block column and the second index is over columns within a block.
 
-  Any entries below the diagonal are ignored
+  Any entries provided that lie below the diagonal are ignored
 
   Though this routine has Preallocation() in the name it also sets the exact nonzero locations of the matrix entries
   and usually the numerical values as well
@@ -2046,8 +2047,7 @@ PetscErrorCode MatSeqSBAIJSetPreallocationCSR(Mat B, PetscInt bs, const PetscInt
 . A - the symmetric matrix
 
   Options Database Keys:
-+ -mat_no_unroll  - uses code that does not unroll the loops in the
-                     block calculations (much slower)
++ -mat_no_unroll  - uses code that does not unroll the loops in the block calculations (much slower)
 - -mat_block_size - size of the blocks to use
 
   Level: intermediate

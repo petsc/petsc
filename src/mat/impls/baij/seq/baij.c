@@ -2606,11 +2606,11 @@ static PetscErrorCode MatSeqBAIJSetColumnIndices_SeqBAIJ(Mat mat, const PetscInt
 }
 
 /*@
-  MatSeqBAIJSetColumnIndices - Set the column indices for all the rows in the matrix.
+  MatSeqBAIJSetColumnIndices - Set the column indices for all the block rows in the matrix.
 
   Input Parameters:
 + mat     - the `MATSEQBAIJ` matrix
-- indices - the column indices
+- indices - the block column indices
 
   Level: advanced
 
@@ -3532,8 +3532,8 @@ PetscErrorCode MatSeqBAIJRestoreArray(Mat A, PetscScalar **array)
    Level: beginner
 
    Notes:
-    `MatSetOptions`(,`MAT_STRUCTURE_ONLY`,`PETSC_TRUE`) may be called for this matrix type. In this no
-    space is allocated for the nonzero entries and any entries passed with `MatSetValues()` are ignored
+   `MatSetOptions`(,`MAT_STRUCTURE_ONLY`,`PETSC_TRUE`) may be called for this matrix type. In this no
+   space is allocated for the nonzero entries and any entries passed with `MatSetValues()` are ignored
 
    Run with `-info` to see what version of the matrix-vector product is being used
 
@@ -3814,7 +3814,7 @@ PetscErrorCode MatLoad_SeqBAIJ(Mat mat, PetscViewer viewer)
   Input Parameters:
 + comm - MPI communicator, set to `PETSC_COMM_SELF`
 . bs   - size of block, the blocks are ALWAYS square. One can use `MatSetBlockSizes()` to set a different row and column blocksize but the row
-          blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with `MatCreateVecs()`
+         blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with `MatCreateVecs()`
 . m    - number of rows
 . n    - number of columns
 . nz   - number of nonzero blocks  per block row (same for all rows)
@@ -3873,10 +3873,10 @@ PetscErrorCode MatCreateSeqBAIJ(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt
   Input Parameters:
 + B   - the matrix
 . bs  - size of block, the blocks are ALWAYS square. One can use `MatSetBlockSizes()` to set a different row and column blocksize but the row
-          blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with `MatCreateVecs()`
+        blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with `MatCreateVecs()`
 . nz  - number of block nonzeros per block row (same for all rows)
 - nnz - array containing the number of block nonzeros in the various block rows
-         (possibly different for each block row) or `NULL`
+        (possibly different for each block row) or `NULL`
 
   Options Database Keys:
 + -mat_no_unroll  - uses code that does not unroll the loops in the block calculations (much slower)
@@ -3896,7 +3896,7 @@ PetscErrorCode MatCreateSeqBAIJ(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt
   storage.  That is, the stored row and column indices can begin at
   either one (as in Fortran) or zero.
 
-  Specify the preallocated storage with either nz or nnz (not both).
+  Specify the preallocated storage with either `nz` or `nnz` (not both).
   Set `nz` = `PETSC_DEFAULT` and `nnz` = `NULL` for PETSc to control dynamic memory
   allocation.  See [Sparse Matrices](sec_matsparse) for details.
 
@@ -3920,13 +3920,15 @@ PetscErrorCode MatSeqBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt nz, const
   Input Parameters:
 + B  - the matrix
 . bs - the blocksize
-. i  - the indices into `j` for the start of each local row (starts with zero)
-. j  - the column indices for each local row (starts with zero) these must be sorted for each row
-- v  - optional values in the matrix
+. i  - the indices into `j` for the start of each local row (indices start with zero)
+. j  - the column indices for each local row (indices start with zero) these must be sorted for each row
+- v  - optional values in the matrix, use `NULL` if not provided
 
   Level: advanced
 
   Notes:
+  The `i`,`j`,`v` values are COPIED with this routine; to avoid the copy use `MatCreateSeqBAIJWithArrays()`
+
   The order of the entries in values is specified by the `MatOption` `MAT_ROW_ORIENTED`.  For example, C programs
   may want to use the default `MAT_ROW_ORIENTED` of `PETSC_TRUE` and use an array v[nnz][bs][bs] where the second index is
   over rows within a block and the last index is over columns within a block row.  Fortran programs will likely set
