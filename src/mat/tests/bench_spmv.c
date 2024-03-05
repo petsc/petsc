@@ -129,14 +129,17 @@ PetscErrorCode TimedSpMV(Mat A, Vec b, PetscReal *time, const char *petscmatform
   PetscInt       i;
   Vec            u;
   PetscLogDouble vstart = 0, vend = 0;
-  PetscBool      isaijcusparse, isaijkokkos, issellcuda;
+  PetscBool      isaijcusparse, isaijhipsparse, isaijkokkos, issellcuda, issellhip;
 
   PetscFunctionBeginUser;
   PetscCall(PetscStrcmp(petscmatformat, MATAIJCUSPARSE, &isaijcusparse));
+  PetscCall(PetscStrcmp(petscmatformat, MATAIJHIPSPARSE, &isaijhipsparse));
   PetscCall(PetscStrcmp(petscmatformat, MATAIJKOKKOS, &isaijkokkos));
   PetscCall(PetscStrcmp(petscmatformat, MATSELLCUDA, &issellcuda));
+  PetscCall(PetscStrcmp(petscmatformat, MATSELLHIP, &issellhip));
   if (isaijcusparse || issellcuda) PetscCall(VecSetType(b, VECCUDA));
   if (isaijkokkos) PetscCall(VecSetType(b, VECKOKKOS));
+  if (isaijhipsparse || issellhip) PetscCall(VecSetType(b, VECHIP));
   PetscCall(VecDuplicate(b, &u));
   if (time) *time = 0.0;
   for (i = 0; i < repetitions; i++) {
@@ -146,6 +149,9 @@ PetscErrorCode TimedSpMV(Mat A, Vec b, PetscReal *time, const char *petscmatform
       if (issellcuda) {
         PetscCall(MatConvert(A2, MATSELL, MAT_INPLACE_MATRIX, &A2));
         PetscCall(MatConvert(A2, MATSELLCUDA, MAT_INPLACE_MATRIX, &A2));
+      } else if (issellhip) {
+        PetscCall(MatConvert(A2, MATSELL, MAT_INPLACE_MATRIX, &A2));
+        PetscCall(MatConvert(A2, MATSELLHIP, MAT_INPLACE_MATRIX, &A2));
       } else {
         PetscCall(MatConvert(A2, petscmatformat, MAT_INPLACE_MATRIX, &A2));
       }
@@ -199,13 +205,25 @@ PetscErrorCode MapToPetscMatType(const char *matformat, PetscBool use_gpu, char 
   PetscFunctionBeginUser;
   PetscCall(PetscStrcmp(matformat, "csr", &iscsr));
   if (iscsr) {
-    if (use_gpu) PetscCall(PetscStrallocpy(MATAIJCUSPARSE, petscmatformat));
-    else PetscCall(PetscStrallocpy(MATAIJ, petscmatformat));
+    if (use_gpu) {
+#if defined(PETSC_HAVE_CUDA)
+      PetscCall(PetscStrallocpy(MATAIJCUSPARSE, petscmatformat));
+#endif
+#if defined(PETSC_HAVE_HIP)
+      PetscCall(PetscStrallocpy(MATAIJHIPSPARSE, petscmatformat));
+#endif
+    } else PetscCall(PetscStrallocpy(MATAIJ, petscmatformat));
   } else {
     PetscCall(PetscStrcmp(matformat, "sell", &issell));
     if (issell) {
-      if (use_gpu) PetscCall(PetscStrallocpy(MATSELLCUDA, petscmatformat));
-      else PetscCall(PetscStrallocpy(MATSELL, petscmatformat));
+      if (use_gpu) {
+#if defined(PETSC_HAVE_CUDA)
+        PetscCall(PetscStrallocpy(MATSELLCUDA, petscmatformat));
+#endif
+#if defined(PETSC_HAVE_HIP)
+        PetscCall(PetscStrallocpy(MATSELLHIP, petscmatformat));
+#endif
+      } else PetscCall(PetscStrallocpy(MATSELL, petscmatformat));
     } else {
       PetscCall(PetscStrcmp(matformat, "csrkokkos", &iscsrkokkos));
       if (iscsrkokkos) PetscCall(PetscStrallocpy(MATAIJKOKKOS, petscmatformat));
@@ -347,5 +365,11 @@ int main(int argc, char **args)
       args:-AMTX ${wPETSC_DIR}/share/petsc/datafiles/matrices/amesos2_test_mat0.mtx -use_gpu
       output_file: output/bench_spmv_1.out
       requires: cuda
+
+   test:
+      suffix: 3
+      args:-AMTX ${wPETSC_DIR}/share/petsc/datafiles/matrices/amesos2_test_mat0.mtx -use_gpu
+      output_file: output/bench_spmv_1.out
+      requires: hip
 
 TEST*/
