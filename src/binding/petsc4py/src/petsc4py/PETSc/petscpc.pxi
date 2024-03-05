@@ -271,6 +271,8 @@ cdef extern from * nogil:
     PetscErrorCode PCMGGetLevels(PetscPC,PetscInt*)
     PetscErrorCode PCMGSetCycleType(PetscPC,PetscPCMGCycleType)
     PetscErrorCode PCMGSetCycleTypeOnLevel(PetscPC,PetscInt,PetscPCMGCycleType)
+
+    # --- BDDC ---
     PetscErrorCode PCBDDCSetDiscreteGradient(PetscPC,PetscMat,PetscInt,PetscInt,PetscBool,PetscBool)
     PetscErrorCode PCBDDCSetDivergenceMat(PetscPC,PetscMat,PetscBool,PetscIS)
     PetscErrorCode PCBDDCSetChangeOfBasisMat(PetscPC,PetscMat,PetscBool)
@@ -284,6 +286,7 @@ cdef extern from * nogil:
     PetscErrorCode PCBDDCSetNeumannBoundariesLocal(PetscPC,PetscIS)
     PetscErrorCode PCBDDCSetDofsSplitting(PetscPC,PetscInt,PetscIS[])
     PetscErrorCode PCBDDCSetDofsSplittingLocal(PetscPC,PetscInt,PetscIS[])
+    PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PetscPC,PetscInt,const PetscInt*,const PetscInt*,PetscCopyMode)
 
     # --- Patch ---
     ctypedef PetscErrorCode (*PetscPCPatchComputeOperator)(PetscPC,
@@ -317,6 +320,7 @@ cdef extern from * nogil:
     PetscErrorCode PCPatchSetComputeFunctionInteriorFacets(PetscPC, PetscPCPatchComputeFunction, void*)
     PetscErrorCode PCPatchSetConstructType(PetscPC, PetscPCPatchConstructType, PetscPCPatchConstructOperator, void*)
 
+    # --- HPDDM ---
     ctypedef PetscErrorCode (*PetscPCHPDDMAuxiliaryMat)(PetscMat,
                                              PetscReal,
                                              PetscVec,
