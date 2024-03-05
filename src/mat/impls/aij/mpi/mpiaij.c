@@ -6703,11 +6703,13 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   MatSeqXAIJGetOptions_Private(mpiaij->A);
   PetscCall(MatDestroy(&mpiaij->A));
   PetscCall(MatCreateSeqAIJWithArrays(PETSC_COMM_SELF, m, n, Ai, Aj, Aa, &mpiaij->A));
+  PetscCall(MatSetBlockSizesFromMats(mpiaij->A, mat, mat));
   MatSeqXAIJRestoreOptions_Private(mpiaij->A);
 
   MatSeqXAIJGetOptions_Private(mpiaij->B);
   PetscCall(MatDestroy(&mpiaij->B));
   PetscCall(MatCreateSeqAIJWithArrays(PETSC_COMM_SELF, m, mat->cmap->N, Bi, Bj, Ba, &mpiaij->B));
+  PetscCall(MatSetBlockSizesFromMats(mpiaij->B, mat, mat));
   MatSeqXAIJRestoreOptions_Private(mpiaij->B);
 
   PetscCall(MatSetUpMultiply_MPIAIJ(mat));
