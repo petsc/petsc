@@ -4114,9 +4114,9 @@ static PetscErrorCode MatResetPreallocation_SeqAIJ(Mat A)
 
   Input Parameters:
 + B - the matrix
-. i - the indices into j for the start of each row (starts with zero)
-. j - the column indices for each row (starts with zero) these must be sorted for each row
-- v - optional values in the matrix
+. i - the indices into `j` for the start of each row (indices start with zero)
+. j - the column indices for each row (indices start with zero) these must be sorted for each row
+- v - optional values in the matrix, use `NULL` if not provided
 
   Level: developer
 
