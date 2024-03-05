@@ -1,0 +1,11 @@
+DM Object: 2 MPI processes
+  type: da
+Processor [0] M 8 N 8 m 1 n 2 w 2 s 1
+X range of indices: 0 8, Y range of indices: 0 4
+Processor [1] M 8 N 8 m 1 n 2 w 2 s 1
+X range of indices: 0 8, Y range of indices: 4 8
+min: (0., 0., 0.) max: (1., 1., 0.)
+DM Object: ions (pic_) 2 MPI processes
+  type: swarm
+ions in 2 dimensions:
+  Number of particles per rank: 8 8
