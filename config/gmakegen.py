@@ -178,7 +178,7 @@ class Petsc(object):
     def gen_gnumake(self, fd):
         def write(stem, srcs):
             for lang in LANGS:
-                fd.write('%(stem)s.%(lang)s := %(srcs)s\n' % dict(stem=stem, lang=lang.replace('_','.'), srcs=' '.join(srcs[lang])))
+                fd.write('%(stem)s.%(lang)s := %(srcs)s\n' % dict(stem=stem, lang=lang.replace('_','.'), srcs=' '.join(sorted(srcs[lang]))))
         for pkg in self.pkg_pkgs:
             srcs = self.gen_pkg(pkg)
             write('srcs-' + pkg, srcs)
