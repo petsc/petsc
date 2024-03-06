@@ -1475,6 +1475,10 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
 . -da_processors_x <MX> - number of processors in x direction
 . -da_processors_y <MY> - number of processors in y direction
 . -da_processors_z <MZ> - number of processors in z direction
+. -da_bd_x <bx>         - boundary type in x direction
+. -da_bd_y <by>         - boundary type in y direction
+. -da_bd_z <bz>         - boundary type in x direction
+. -da_bd_all <bt>       - boundary type in all directions
 . -da_refine_x <rx>     - refinement ratio in x direction
 . -da_refine_y <ry>     - refinement ratio in y direction
 . -da_refine_z <rz>     - refinement ratio in z directio

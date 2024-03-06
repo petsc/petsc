@@ -775,6 +775,9 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
 . -da_grid_y <ny>       - number of grid points in y direction
 . -da_processors_x <nx> - number of processors in x direction
 . -da_processors_y <ny> - number of processors in y direction
+. -da_bd_x <bx>         - boundary type in x direction
+. -da_bd_y <by>         - boundary type in y direction
+. -da_bd_all <bt>       - boundary type in all directions
 . -da_refine_x <rx>     - refinement ratio in x direction
 . -da_refine_y <ry>     - refinement ratio in y direction
 - -da_refine <n>        - refine the `DMDA` n times before creating

@@ -2,9 +2,10 @@
 
 static PetscErrorCode DMSetFromOptions_DA(DM da, PetscOptionItems *PetscOptionsObject)
 {
-  DM_DA    *dd     = (DM_DA *)da->data;
-  PetscInt  refine = 0, dim = da->dim, maxnlevels = 100, refx[100], refy[100], refz[100], n, i;
-  PetscBool flg;
+  DM_DA         *dd     = (DM_DA *)da->data;
+  PetscInt       refine = 0, dim = da->dim, maxnlevels = 100, refx[100], refy[100], refz[100], n, i;
+  DMBoundaryType bt = DM_BOUNDARY_NONE;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   PetscCheck(dd->M >= 0, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_OUTOFRANGE, "Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
@@ -29,6 +30,12 @@ static PetscErrorCode DMSetFromOptions_DA(DM da, PetscOptionItems *PetscOptionsO
   PetscCall(PetscOptionsBoundedInt("-da_processors_x", "Number of processors in x direction", "DMDASetNumProcs", dd->m, &dd->m, NULL, PETSC_DECIDE));
   if (dim > 1) PetscCall(PetscOptionsBoundedInt("-da_processors_y", "Number of processors in y direction", "DMDASetNumProcs", dd->n, &dd->n, NULL, PETSC_DECIDE));
   if (dim > 2) PetscCall(PetscOptionsBoundedInt("-da_processors_z", "Number of processors in z direction", "DMDASetNumProcs", dd->p, &dd->p, NULL, PETSC_DECIDE));
+  // Handle boundaries
+  PetscCall(PetscOptionsEnum("-da_bd_x", "Boundary type for x direction", "DMDASetBoundaryType", DMBoundaryTypes, (PetscEnum)dd->bx, (PetscEnum *)&dd->bx, NULL));
+  if (dim > 1) PetscCall(PetscOptionsEnum("-da_bd_y", "Boundary type for y direction", "DMDASetBoundaryType", DMBoundaryTypes, (PetscEnum)dd->by, (PetscEnum *)&dd->by, NULL));
+  if (dim > 2) PetscCall(PetscOptionsEnum("-da_bd_z", "Boundary type for z direction", "DMDASetBoundaryType", DMBoundaryTypes, (PetscEnum)dd->bz, (PetscEnum *)&dd->bz, NULL));
+  PetscCall(PetscOptionsEnum("-da_bd_all", "Boundary type for every direction", "DMDASetBoundaryType", DMBoundaryTypes, (PetscEnum)bt, (PetscEnum *)&bt, &flg));
+  if (flg) PetscCall(DMDASetBoundaryType(da, bt, bt, bt));
   /* Handle DMDA refinement */
   PetscCall(PetscOptionsBoundedInt("-da_refine_x", "Refinement ratio in x direction", "DMDASetRefinementFactor", dd->refine_x, &dd->refine_x, NULL, 1));
   if (dim > 1) PetscCall(PetscOptionsBoundedInt("-da_refine_y", "Refinement ratio in y direction", "DMDASetRefinementFactor", dd->refine_y, &dd->refine_y, NULL, 1));

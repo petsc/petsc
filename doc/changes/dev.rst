@@ -131,6 +131,7 @@ Changes: Development
 - Add ``DMCreateSectionPermutation()``, ``DMReorderSectionGetType()``, and ``DMReorderSectionSetType()``
 - Add ``DMReorderSectionGetDefault()`` and ``DMReorderSectionSetDefault()`` to allow point permutations when sections are built automatically
 - Change interface to ``DMCreateSectionSubDM()`` to add component specification
+- Add ``DMDAGetBoundaryType()``
 
 .. rubric:: DMSwarm:
 
