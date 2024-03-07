@@ -30,3 +30,12 @@ class Configure(config.package.CMakePackage):
     if self.hdf5.directory:
       args.append('-DHDF5_ROOT:PATH={}'.format(self.hdf5.directory))
     return args
+
+  def configureLibrary(self):
+    config.package.Package.configureLibrary(self)
+    oldFlags = self.compilers.CPPFLAGS
+    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+    if not self.checkCompile('#include "cgnslib.h"', '#if (CG_SIZEOF_SIZE < '+str(self.getDefaultIndexSize())+')\n#error incompatible CG_SIZEOF_SIZE\n#endif\n'):
+      raise RuntimeError('CGNS specified is incompatible!\n--with-64-bit-indices option requires CGNS built with CGNS_ENABLE_64BIT.\nSuggest using --download-cgns for a compatible CGNS')
+    self.compilers.CPPFLAGS = oldFlags
+    return
