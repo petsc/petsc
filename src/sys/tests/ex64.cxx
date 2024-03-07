@@ -566,7 +566,6 @@ public:
       }
       MapCheck(map, i < max_iter, PETSC_COMM_SELF, PETSC_ERR_PLIB, "%s iterator did not appear to make forward progress using postfix decrement! Reached maximum iteration count %zu for map of size %zu", it_name, max_iter, map.size());
     }
-
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 

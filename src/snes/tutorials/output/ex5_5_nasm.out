@@ -1,12 +1,12 @@
-  0 SNES Function norm 1.17887 
-  1 SNES Function norm 0.162933 
-  2 SNES Function norm 0.116153 
-  3 SNES Function norm 0.0935734 
-  4 SNES Function norm 0.0768149 
-  5 SNES Function norm 0.0626638 
-  6 SNES Function norm 0.0510275 
-  7 SNES Function norm 0.0414024 
-  8 SNES Function norm 0.0335337 
-  9 SNES Function norm 0.0271102 
- 10 SNES Function norm 0.0218904 
+  0 SNES Function norm 1.17887
+  1 SNES Function norm 0.162933
+  2 SNES Function norm 0.116153
+  3 SNES Function norm 0.0935734
+  4 SNES Function norm 0.0768149
+  5 SNES Function norm 0.0626638
+  6 SNES Function norm 0.0510275
+  7 SNES Function norm 0.0414024
+  8 SNES Function norm 0.0335337
+  9 SNES Function norm 0.0271102
+ 10 SNES Function norm 0.0218904
 Nonlinear solve did not converge due to DIVERGED_MAX_IT iterations 10

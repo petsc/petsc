@@ -286,7 +286,7 @@ typedef PetscInt64 PetscInt;
   #define PETSC_INT_MAX PETSC_INT64_MAX
   #define PetscInt_FMT  PetscInt64_FMT
 #else
-typedef int       PetscInt;
+typedef int PetscInt;
 
 enum {
   PETSC_INT_MIN = INT_MIN,
@@ -457,7 +457,7 @@ M*/
 #if defined(PETSC_USE_REAL_SINGLE)
 typedef float PetscReal;
 #elif defined(PETSC_USE_REAL_DOUBLE)
-typedef double    PetscReal;
+typedef double PetscReal;
 #elif defined(PETSC_USE_REAL___FLOAT128)
   #if defined(__cplusplus)
 extern "C" {

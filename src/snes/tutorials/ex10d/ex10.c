@@ -606,7 +606,6 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr)
   PetscCall(VecRestoreArray(localX, &x));
   PetscCall(VecRestoreArray(F, &f));
   /* PetscCall(VecView(F,PETSC_VIEWER_STDOUT_WORLD)); */
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

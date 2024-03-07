@@ -796,7 +796,7 @@ static PetscErrorCode DMPlexTreeExchangeSupports(DM dm)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   /* symmetrize the hierarchy */
   PetscCall(DMPlexGetDepth(dm, &depth));
-  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)(mesh->supportSection)), &newSupportSection));
+  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)mesh->supportSection), &newSupportSection));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   PetscCall(PetscSectionSetChart(newSupportSection, pStart, pEnd));
   PetscCall(PetscCalloc1(pEnd, &offsets));
@@ -889,7 +889,6 @@ static PetscErrorCode DMPlexTreeExchangeSupports(DM dm)
   mesh->supports = newSupports;
   PetscCall(PetscFree(offsets));
   PetscCall(PetscFree(numTrueSupp));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1385,7 +1384,6 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
   PetscCall(MatAssemblyEnd(cMat, MAT_FINAL_ASSEMBLY));
   PetscCall(PetscFree6(v0, v0parent, vtmp, J, Jparent, invJparent));
   PetscCall(ISRestoreIndices(aIS, &anchors));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2063,7 +2061,6 @@ PetscErrorCode DMPlexTreeRefineCell(DM dm, PetscInt cell, DM *ncdm)
     PetscCall(VecRestoreArray(coordVec, &coords));
   }
   PetscCall(PetscSectionDestroy(&parentSection));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2255,7 +2252,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
       }
       numColIndices -= 2 * numFields;
       PetscCall(PetscSectionGetOffset(rootIndicesSec, p, &pIndOff));
-      pInd = &(rootIndices[pIndOff]);
+      pInd = &rootIndices[pIndOff];
       PetscCall(PetscSectionGetDof(rootMatricesSec, p, &matSize));
       if (matSize) {
         PetscCall(PetscSectionGetOffset(rootMatricesSec, p, &pMatOff));
@@ -3518,7 +3515,6 @@ PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFin
   PetscScalar ***childrenMats = NULL; /* gcc -O gives 'may be used uninitialized' warning'. Initializing to suppress this warning */
 
   PetscFunctionBegin;
-
   /* get the templates for the fine-to-coarse injection from the reference tree */
   PetscCall(DMPlexGetReferenceTree(coarse, &refTree));
   PetscCall(DMCopyDisc(coarse, refTree));
@@ -3889,7 +3885,7 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
       PetscCall(PetscSectionGetDof(rootValuesSec, p, &numValues));
       if (!numValues) continue;
       PetscCall(PetscSectionGetOffset(rootValuesSec, p, &pValOff));
-      pVal = &(rootValues[pValOff]);
+      pVal = &rootValues[pValOff];
       if (maxChildId >= 0) { /* build an identity matrix, apply matrix constraints on the right */
         PetscInt closureSize = numValues;
         PetscCall(DMPlexVecGetClosure(coarse, NULL, vecCoarseLocal, p, &closureSize, &pVal));

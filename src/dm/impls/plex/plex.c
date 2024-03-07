@@ -127,7 +127,6 @@ PetscErrorCode DMPlexGetFieldTypes_Internal(DM dm, PetscSection section, PetscIn
   DMLabel                  depthLabel, ctLabel;
 
   PetscFunctionBegin;
-
   /* the vcdof and globalvcdof are sized to allow every polytope type and simple vertex at DM_NUM_POLYTOPES */
   PetscCall(PetscArrayzero(vcdof, DM_NUM_POLYTOPES + 1));
   PetscCall(DMGetCoordinateDim(dm, &cdim));
@@ -188,7 +187,7 @@ PetscErrorCode DMPlexGetFieldTypes_Internal(DM dm, PetscSection section, PetscIn
     }
   }
 
-  if (!(*types)) {
+  if (!*types) {
     if (field >= 0) {
       const char *fieldname;
 
@@ -1512,7 +1511,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     PetscCall(MPIU_Allreduce(lm, gm, 3, MPIU_INT64, MPI_SUM, comm));
     PetscCall(PetscViewerASCIIPrintf(viewer, ", empty %" PetscInt_FMT ")\n", (PetscInt)gm[2]));
 #if defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  Edge Cut: %" PetscInt_FMT " (on node %.3f)\n", (PetscInt)(gm[0] / 2), gm[0] ? ((double)(gm[1])) / ((double)gm[0]) : 1.));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Edge Cut: %" PetscInt_FMT " (on node %.3f)\n", (PetscInt)(gm[0] / 2), gm[0] ? ((double)gm[1]) / ((double)gm[0]) : 1.));
 #else
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Edge Cut: %" PetscInt_FMT " (on node %.3f)\n", (PetscInt)(gm[0] / 2), 0.0));
 #endif

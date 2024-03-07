@@ -142,7 +142,7 @@ static PetscErrorCode MatSolve_SPQR(Mat F, Vec B, Vec X)
   PetscCall(MatSolve_SPQR_Internal(F, &cholB, &Y_handle));
   PetscCall(VecGetLocalSize(X, &n));
   PetscCall(VecGetArrayWrite(X, &v));
-  PetscCall(PetscArraycpy(v, (PetscScalar *)(Y_handle->x), n));
+  PetscCall(PetscArraycpy(v, (PetscScalar *)Y_handle->x, n));
   PetscCall(VecRestoreArrayWrite(X, &v));
   PetscCallExternal(!cholmod_l_free_dense, &Y_handle, chol->common);
   PetscCall(VecUnWrapCholmod(B, GET_ARRAY_READ, &cholB));
@@ -163,7 +163,7 @@ static PetscErrorCode MatMatSolve_SPQR(Mat F, Mat B, Mat X)
   PetscCall(MatDenseGetArrayWrite(X, &v));
   PetscCall(MatDenseGetLDA(X, &lda));
   if ((size_t)lda == Y_handle->d) {
-    PetscCall(PetscArraycpy(v, (PetscScalar *)(Y_handle->x), lda * Y_handle->ncol));
+    PetscCall(PetscArraycpy(v, (PetscScalar *)Y_handle->x, lda * Y_handle->ncol));
   } else {
     for (size_t j = 0; j < Y_handle->ncol; j++) PetscCall(PetscArraycpy(&v[j * lda], &(((PetscScalar *)Y_handle->x)[j * Y_handle->d]), Y_handle->nrow));
   }

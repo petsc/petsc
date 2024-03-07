@@ -77,7 +77,7 @@ PetscErrorCode ISColoringDestroy(ISColoring *iscoloring)
 
   PetscFunctionBegin;
   if (!*iscoloring) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscAssertPointer((*iscoloring), 1);
+  PetscAssertPointer(*iscoloring, 1);
   if (--(*iscoloring)->refct > 0) {
     *iscoloring = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -89,7 +89,7 @@ PetscErrorCode ISColoringDestroy(ISColoring *iscoloring)
   }
   if ((*iscoloring)->allocated) PetscCall(PetscFree((*iscoloring)->colors));
   PetscCall(PetscCommDestroy(&(*iscoloring)->comm));
-  PetscCall(PetscFree((*iscoloring)));
+  PetscCall(PetscFree(*iscoloring));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -333,8 +333,8 @@ PetscErrorCode ISColoringCreate(MPI_Comm comm, PetscInt ncolors, PetscInt n, con
 
   PetscFunctionBegin;
   if (ncolors != PETSC_DECIDE && ncolors > IS_COLORING_MAX) {
-    PetscCheck(ncolors <= PETSC_MAX_UINT16, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Max color value exceeds %d limit. This number is unrealistic. Perhaps a bug in code?\nCurrent max: %d user requested: %" PetscInt_FMT, PETSC_MAX_UINT16, PETSC_IS_COLORING_MAX, ncolors);
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Max color value exceeds limit. Perhaps reconfigure PETSc with --with-is-color-value-type=short?\n Current max: %d user requested: %" PetscInt_FMT, PETSC_IS_COLORING_MAX, ncolors);
+    PetscCheck(ncolors <= PETSC_MAX_UINT16, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Max color value exceeds %d limit. This number is unrealistic. Perhaps a bug in code? Current max: %d user requested: %" PetscInt_FMT, PETSC_MAX_UINT16, PETSC_IS_COLORING_MAX, ncolors);
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Max color value exceeds limit. Perhaps reconfigure PETSc with --with-is-color-value-type=short? Current max: %d user requested: %" PetscInt_FMT, PETSC_IS_COLORING_MAX, ncolors);
   }
   PetscCall(PetscNew(iscoloring));
   PetscCall(PetscCommDuplicate(comm, &(*iscoloring)->comm, &tag));

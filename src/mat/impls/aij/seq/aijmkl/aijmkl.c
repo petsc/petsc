@@ -77,7 +77,6 @@ static PetscErrorCode MatDestroy_SeqAIJMKL(Mat A)
   Mat_SeqAIJMKL *aijmkl = (Mat_SeqAIJMKL *)A->spptr;
 
   PetscFunctionBegin;
-
   /* If MatHeaderMerge() was used, then this SeqAIJMKL matrix will not have an spptr pointer. */
   if (aijmkl) {
     /* Clean up everything in the Mat_SeqAIJMKL data structure, then free A->spptr. */
@@ -153,11 +152,10 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A)
     PetscCallExternal(mkl_sparse_set_memory_hint, aijmkl->csrA, SPARSE_MEMORY_AGGRESSIVE);
     if (!aijmkl->no_SpMV2) PetscCallExternal(mkl_sparse_optimize, aijmkl->csrA);
     aijmkl->sparse_optimized = PETSC_TRUE;
-    PetscCall(PetscObjectStateGet((PetscObject)A, &(aijmkl->state)));
+    PetscCall(PetscObjectStateGet((PetscObject)A, &aijmkl->state));
   } else {
     aijmkl->csrA = NULL;
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 #endif
 }
@@ -214,7 +212,7 @@ static PetscErrorCode MatSeqAIJMKL_setup_structure_from_mkl_handle(MPI_Comm comm
     PetscCallExternal(mkl_sparse_set_mv_hint, aijmkl->csrA, SPARSE_OPERATION_NON_TRANSPOSE, aijmkl->descr, 1000);
     PetscCallExternal(mkl_sparse_set_memory_hint, aijmkl->csrA, SPARSE_MEMORY_AGGRESSIVE);
   }
-  PetscCall(PetscObjectStateGet((PetscObject)A, &(aijmkl->state)));
+  PetscCall(PetscObjectStateGet((PetscObject)A, &aijmkl->state));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE */
@@ -250,7 +248,7 @@ static PetscErrorCode MatSeqAIJMKL_update_from_mkl_handle(Mat A)
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
-  PetscCall(PetscObjectStateGet((PetscObject)A, &(aijmkl->state)));
+  PetscCall(PetscObjectStateGet((PetscObject)A, &aijmkl->state));
   /* At this point our matrix has a valid MKL handle, the contents of which match the PETSc AIJ representation.
    * The MKL handle has *not* had mkl_sparse_optimize() called on it, though -- the MKL developers have confirmed
    * that the matrix inspection/optimization step is not performed when matrix-matrix multiplication is finalized. */
@@ -334,7 +332,6 @@ static PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
    * (The default is to do "lazy" inspection, deferring this until something like MatMult() is called.) */
   aijmkl = (Mat_SeqAIJMKL *)A->spptr;
   if (aijmkl->eager_inspection) PetscCall(MatSeqAIJMKL_create_mkl_handle(A));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -384,7 +381,6 @@ PetscErrorCode MatMult_SeqAIJMKL_SpMV2(Mat A, Vec xx, Vec yy)
   PetscObjectState   state;
 
   PetscFunctionBegin;
-
   /* If there are no nonzero entries, zero yy and return immediately. */
   if (!a->nz) {
     PetscCall(VecGetArray(yy, &y));
@@ -458,7 +454,6 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL_SpMV2(Mat A, Vec xx, Vec yy)
   PetscObjectState   state;
 
   PetscFunctionBegin;
-
   /* If there are no nonzero entries, zero yy and return immediately. */
   if (!a->nz) {
     PetscCall(VecGetArray(yy, &y));
@@ -548,7 +543,6 @@ PetscErrorCode MatMultAdd_SeqAIJMKL_SpMV2(Mat A, Vec xx, Vec yy, Vec zz)
   PetscObjectState state;
 
   PetscFunctionBegin;
-
   /* If there are no nonzero entries, set zz = yy and return immediately. */
   if (!a->nz) {
     PetscCall(VecGetArrayPair(yy, zz, &y, &z));
@@ -647,7 +641,6 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A, Vec xx, Vec yy, Vec zz
   /* Variables not in MatMultTransposeAdd_SeqAIJ. */
 
   PetscFunctionBegin;
-
   /* If there are no nonzero entries, set zz = yy and return immediately. */
   if (!a->nz) {
     PetscCall(VecGetArrayPair(yy, zz, &y, &z));
@@ -716,7 +709,6 @@ static PetscErrorCode MatMatMultSymbolic_SeqAIJMKL_SeqAIJMKL_Private(Mat A, cons
   }
 
   PetscCall(MatSeqAIJMKL_setup_structure_from_mkl_handle(PETSC_COMM_SELF, csrC, nrows, ncols, C));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -745,7 +737,6 @@ PetscErrorCode MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_Private(Mat A, const sparse
 
   /* Have to update the PETSc AIJ representation for matrix C from contents of MKL handle. */
   PetscCall(MatSeqAIJMKL_update_from_mkl_handle(C));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

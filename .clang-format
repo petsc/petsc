@@ -99,6 +99,7 @@ IndentWidth: 2
 IndentWrappedFunctionNames: false
 InsertTrailingCommas: None
 KeepEmptyLinesAtTheStartOfBlocks: false
+KeepEmptyLinesAtEOF: false
 LambdaBodyIndentation: Signature
 MacroBlockBegin: ''
 MacroBlockEnd:   ''

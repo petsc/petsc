@@ -224,7 +224,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat A, Mat B, PetscR
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* These are PETSc arrays, so change flags so arrays can be deleted by PETSc */
-  c          = (Mat_SeqAIJ *)(C->data);
+  c          = (Mat_SeqAIJ *)C->data;
   c->free_a  = PETSC_FALSE;
   c->free_ij = PETSC_TRUE;
   c->nonew   = 0;
@@ -466,7 +466,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_fast(Mat A, Mat B, Pets
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* These are PETSc arrays, so change flags so arrays can be deleted by PETSc */
-  c          = (Mat_SeqAIJ *)(C->data);
+  c          = (Mat_SeqAIJ *)C->data;
   c->free_a  = PETSC_TRUE;
   c->free_ij = PETSC_TRUE;
   c->nonew   = 0;
@@ -569,7 +569,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(Mat A, Mat B, PetscReal
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* These are PETSc arrays, so change flags so arrays can be deleted by PETSc */
-  c          = (Mat_SeqAIJ *)(C->data);
+  c          = (Mat_SeqAIJ *)C->data;
   c->free_a  = PETSC_TRUE;
   c->free_ij = PETSC_TRUE;
   c->nonew   = 0;
@@ -672,7 +672,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Heap(Mat A, Mat B, PetscReal fil
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* These are PETSc arrays, so change flags so arrays can be deleted by PETSc */
-  c          = (Mat_SeqAIJ *)(C->data);
+  c          = (Mat_SeqAIJ *)C->data;
   c->free_a  = PETSC_TRUE;
   c->free_ij = PETSC_TRUE;
   c->nonew   = 0;
@@ -788,7 +788,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap(Mat A, Mat B, PetscReal f
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* These are PETSc arrays, so change flags so arrays can be deleted by PETSc */
-  c          = (Mat_SeqAIJ *)(C->data);
+  c          = (Mat_SeqAIJ *)C->data;
   c->free_a  = PETSC_TRUE;
   c->free_ij = PETSC_TRUE;
   c->nonew   = 0;
@@ -1085,7 +1085,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_RowMerge(Mat A, Mat B, PetscReal
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* These are PETSc arrays, so change flags so arrays can be deleted by PETSc */
-  c          = (Mat_SeqAIJ *)(C->data);
+  c          = (Mat_SeqAIJ *)C->data;
   c->free_a  = PETSC_TRUE;
   c->free_ij = PETSC_TRUE;
   c->nonew   = 0;
@@ -1185,7 +1185,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Sorted(Mat A, Mat B, PetscReal f
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* These are PETSc arrays, so change flags so arrays can be deleted by PETSc */
-  c          = (Mat_SeqAIJ *)(C->data);
+  c          = (Mat_SeqAIJ *)C->data;
   c->free_a  = PETSC_TRUE;
   c->free_ij = PETSC_TRUE;
   c->nonew   = 0;
@@ -1298,7 +1298,7 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A, Mat B, PetscReal
     {
       Mat_SeqAIJ *c = (Mat_SeqAIJ *)C->data;
       PetscCall(PetscInfo(C, "Use coloring of C=A*B^T; B^T: %" PetscInt_FMT " %" PetscInt_FMT ", Bt_dense: %" PetscInt_FMT ",%" PetscInt_FMT "; Cnz %" PetscInt_FMT " / (cm*ncolors %" PetscInt_FMT ") = %g\n", B->cmap->n, B->rmap->n, Bt_dense->rmap->n,
-                          Bt_dense->cmap->n, c->nz, A->rmap->n * matcoloring->ncolors, (double)(((PetscReal)(c->nz)) / ((PetscReal)(A->rmap->n * matcoloring->ncolors)))));
+                          Bt_dense->cmap->n, c->nz, A->rmap->n * matcoloring->ncolors, (double)(((PetscReal)c->nz) / ((PetscReal)(A->rmap->n * matcoloring->ncolors)))));
     }
 #endif
   }

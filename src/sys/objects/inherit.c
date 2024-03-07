@@ -21,8 +21,8 @@ PetscObjectId PetscObjectNewId_Internal(void)
 
 PetscErrorCode PetscHeaderCreate_Function(PetscErrorCode ierr, PetscObject *h, PetscClassId classid, const char class_name[], const char descr[], const char mansec[], MPI_Comm comm, PetscObjectDestroyFn *destroy, PetscObjectViewFn *view)
 {
-  if (ierr) return ierr;
   PetscFunctionBegin;
+  if (ierr) PetscFunctionReturn(ierr);
   PetscCall(PetscHeaderCreate_Private(*h, classid, class_name, descr, mansec, comm, destroy, view));
   PetscCall(PetscLogObjectCreate(*h));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -921,7 +921,7 @@ PetscErrorCode PetscContainerDestroy(PetscContainer *obj)
   PetscFunctionBegin;
   if (!*obj) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*obj, PETSC_CONTAINER_CLASSID, 1);
-  if (--((PetscObject)(*obj))->refct > 0) {
+  if (--((PetscObject)*obj)->refct > 0) {
     *obj = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

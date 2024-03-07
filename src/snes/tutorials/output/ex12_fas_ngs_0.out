@@ -1,56 +1,56 @@
-  0 SNES Function norm 95.2794 
-    1 SNES Function norm 11.2562 
-      0 SNES Function norm 6.68972 
-      1 SNES Function norm 1.27466 
-      2 SNES Function norm 0.079264 
-      3 SNES Function norm 0.000353131 
-      4 SNES Function norm 7.07495e-09 
-    1 SNES Function norm 1.52162 
-  1 SNES Function norm 1.52162 
-    1 SNES Function norm 0.785084 
-      0 SNES Function norm 0.643439 
-      1 SNES Function norm 0.0233763 
-      2 SNES Function norm 3.2067e-05 
-      3 SNES Function norm 6.041e-11 
-    1 SNES Function norm 0.170971 
-  2 SNES Function norm 0.170971 
-    1 SNES Function norm 0.0601088 
-      0 SNES Function norm 0.0465713 
-      1 SNES Function norm 0.000125247 
-      2 SNES Function norm 9.069e-10 
+  0 SNES Function norm 95.2794
+    1 SNES Function norm 11.2562
+      0 SNES Function norm 6.68972
+      1 SNES Function norm 1.27466
+      2 SNES Function norm 0.079264
+      3 SNES Function norm 0.000353131
+      4 SNES Function norm 7.07495e-09
+    1 SNES Function norm 1.52162
+  1 SNES Function norm 1.52162
+    1 SNES Function norm 0.785084
+      0 SNES Function norm 0.643439
+      1 SNES Function norm 0.0233763
+      2 SNES Function norm 3.2067e-05
+      3 SNES Function norm 6.041e-11
+    1 SNES Function norm 0.170971
+  2 SNES Function norm 0.170971
+    1 SNES Function norm 0.0601088
+      0 SNES Function norm 0.0465713
+      1 SNES Function norm 0.000125247
+      2 SNES Function norm 9.069e-10
       3 SNES Function norm < 1.e-11
-    1 SNES Function norm 0.00964638 
-  3 SNES Function norm 0.00964638 
-    1 SNES Function norm 0.00427687 
-      0 SNES Function norm 0.00402538 
-      1 SNES Function norm 9.35825e-07 
+    1 SNES Function norm 0.00964638
+  3 SNES Function norm 0.00964638
+    1 SNES Function norm 0.00427687
+      0 SNES Function norm 0.00402538
+      1 SNES Function norm 9.35825e-07
       2 SNES Function norm < 1.e-11
-    1 SNES Function norm 0.00100069 
-  4 SNES Function norm 0.00100069 
-    1 SNES Function norm 0.000502492 
-      0 SNES Function norm 0.000461856 
-      1 SNES Function norm 1.23187e-08 
+    1 SNES Function norm 0.00100069
+  4 SNES Function norm 0.00100069
+    1 SNES Function norm 0.000502492
+      0 SNES Function norm 0.000461856
+      1 SNES Function norm 1.23187e-08
       2 SNES Function norm < 1.e-11
-    1 SNES Function norm 0.000113958 
-  5 SNES Function norm 0.000113958 
-    1 SNES Function norm 5.42902e-05 
-      0 SNES Function norm 4.86028e-05 
-      1 SNES Function norm 1.364e-10 
+    1 SNES Function norm 0.000113958
+  5 SNES Function norm 0.000113958
+    1 SNES Function norm 5.42902e-05
+      0 SNES Function norm 4.86028e-05
+      1 SNES Function norm 1.364e-10
       2 SNES Function norm < 1.e-11
-    1 SNES Function norm 1.16564e-05 
-  6 SNES Function norm 1.16564e-05 
-    1 SNES Function norm 5.44297e-06 
-      0 SNES Function norm 4.84838e-06 
+    1 SNES Function norm 1.16564e-05
+  6 SNES Function norm 1.16564e-05
+    1 SNES Function norm 5.44297e-06
+      0 SNES Function norm 4.84838e-06
       1 SNES Function norm < 1.e-11
       2 SNES Function norm < 1.e-11
-    1 SNES Function norm 1.15586e-06 
-  7 SNES Function norm 1.15586e-06 
-    1 SNES Function norm 5.35218e-07 
-      0 SNES Function norm 4.76451e-07 
+    1 SNES Function norm 1.15586e-06
+  7 SNES Function norm 1.15586e-06
+    1 SNES Function norm 5.35218e-07
+      0 SNES Function norm 4.76451e-07
       1 SNES Function norm < 1.e-11
       2 SNES Function norm < 1.e-11
-    1 SNES Function norm 1.13316e-07 
-  8 SNES Function norm 1.13316e-07 
+    1 SNES Function norm 1.13316e-07
+  8 SNES Function norm 1.13316e-07
 L_2 Error: 0.0198799
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 8
 SNES Object: 1 MPI process
@@ -75,7 +75,7 @@ SNES Object: 1 MPI process
           restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
           happy breakdown tolerance 1e-30
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-10, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-10, absolute=1e-50, divergence=10000.
         left preconditioning
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_coarse_) 1 MPI process

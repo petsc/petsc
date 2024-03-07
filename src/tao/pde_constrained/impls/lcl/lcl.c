@@ -122,8 +122,8 @@ static PetscErrorCode TaoSetup_LCL(Tao tao)
   PetscCall(ISGetLocalSize(tao->design_is, &nlocaldesign));
   PetscCall(VecSetSizes(lclP->U, nlocalstate, lclP->m));
   PetscCall(VecSetSizes(lclP->V, nlocaldesign, lclP->n - lclP->m));
-  PetscCall(VecSetType(lclP->U, ((PetscObject)(tao->solution))->type_name));
-  PetscCall(VecSetType(lclP->V, ((PetscObject)(tao->solution))->type_name));
+  PetscCall(VecSetType(lclP->U, ((PetscObject)tao->solution)->type_name));
+  PetscCall(VecSetType(lclP->V, ((PetscObject)tao->solution)->type_name));
   PetscCall(VecSetFromOptions(lclP->U));
   PetscCall(VecSetFromOptions(lclP->V));
   PetscCall(VecDuplicate(lclP->U, &lclP->DU));

@@ -136,7 +136,7 @@ PetscErrorCode PCISSetSubdomainScalingFactor(PC pc, PetscScalar scal)
 @*/
 PetscErrorCode PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesolvers)
 {
-  PC_IS    *pcis = (PC_IS *)(pc->data);
+  PC_IS    *pcis = (PC_IS *)pc->data;
   Mat_IS   *matis;
   MatReuse  reuse;
   PetscBool flg, issbaij;
@@ -162,7 +162,7 @@ PetscErrorCode PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesolv
     PetscCall(ISLocalToGlobalMappingDestroy(&pcis->mapping));
     pcis->mapping = matis->rmapping;
     PetscCall(ISLocalToGlobalMappingGetSize(pcis->mapping, &pcis->n));
-    PetscCall(ISLocalToGlobalMappingGetInfo(pcis->mapping, &(pcis->n_neigh), &(pcis->neigh), &(pcis->n_shared), &(pcis->shared)));
+    PetscCall(ISLocalToGlobalMappingGetInfo(pcis->mapping, &pcis->n_neigh, &pcis->neigh, &pcis->n_shared, &pcis->shared));
 
     /* Identifying interior and interface nodes, in local numbering */
     PetscCall(PetscBTCreate(pcis->n, &bt));
@@ -420,7 +420,7 @@ PetscErrorCode PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesolv
 @*/
 PetscErrorCode PCISReset(PC pc)
 {
-  PC_IS    *pcis = (PC_IS *)(pc->data);
+  PC_IS    *pcis = (PC_IS *)pc->data;
   PetscBool correcttype;
 
   PetscFunctionBegin;
@@ -454,7 +454,7 @@ PetscErrorCode PCISReset(PC pc)
   PetscCall(VecScatterDestroy(&pcis->N_to_D));
   PetscCall(VecScatterDestroy(&pcis->global_to_B));
   PetscCall(PetscFree(pcis->work_N));
-  if (pcis->n_neigh > -1) PetscCall(ISLocalToGlobalMappingRestoreInfo(pcis->mapping, &(pcis->n_neigh), &(pcis->neigh), &(pcis->n_shared), &(pcis->shared)));
+  if (pcis->n_neigh > -1) PetscCall(ISLocalToGlobalMappingRestoreInfo(pcis->mapping, &pcis->n_neigh, &pcis->neigh, &pcis->n_shared, &pcis->shared));
   PetscCall(ISLocalToGlobalMappingDestroy(&pcis->mapping));
   PetscCall(ISLocalToGlobalMappingDestroy(&pcis->BtoNmap));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCISSetUseStiffnessScaling_C", NULL));
@@ -480,7 +480,7 @@ PetscErrorCode PCISReset(PC pc)
 @*/
 PetscErrorCode PCISInitialize(PC pc)
 {
-  PC_IS    *pcis = (PC_IS *)(pc->data);
+  PC_IS    *pcis = (PC_IS *)pc->data;
   PetscBool correcttype;
 
   PetscFunctionBegin;
@@ -515,7 +515,7 @@ PetscErrorCode PCISInitialize(PC pc)
 @*/
 PetscErrorCode PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 {
-  PC_IS *pcis = (PC_IS *)(pc->data);
+  PC_IS *pcis = (PC_IS *)pc->data;
 
   PetscFunctionBegin;
   if (!vec2_B) vec2_B = v;
@@ -555,7 +555,7 @@ PetscErrorCode PCISScatterArrayNToVecB(PC pc, PetscScalar *array_N, Vec v_B, Ins
   PetscInt        i;
   const PetscInt *idex;
   PetscScalar    *array_B;
-  PC_IS          *pcis = (PC_IS *)(pc->data);
+  PC_IS          *pcis = (PC_IS *)pc->data;
 
   PetscFunctionBegin;
   PetscCall(VecGetArray(v_B, &array_B));
@@ -605,7 +605,7 @@ PetscErrorCode PCISScatterArrayNToVecB(PC pc, PetscScalar *array_N, Vec v_B, Ins
 @*/
 PetscErrorCode PCISApplyInvSchur(PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
 {
-  PC_IS *pcis = (PC_IS *)(pc->data);
+  PC_IS *pcis = (PC_IS *)pc->data;
 
   PetscFunctionBegin;
   /*

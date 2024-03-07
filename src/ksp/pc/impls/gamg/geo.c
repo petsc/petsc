@@ -21,7 +21,7 @@ typedef struct {
 
 static inline int petsc_geo_mg_compare(const void *a, const void *b)
 {
-  return (((GAMGNode *)a)->degree - ((GAMGNode *)b)->degree);
+  return ((GAMGNode *)a)->degree - ((GAMGNode *)b)->degree;
 }
 
 // PetscClangLinter pragma disable: -fdoc-sowing-chars
@@ -391,7 +391,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
         } /* aggregates iterations */
         clid++;
       } /* a coarse agg */
-    }   /* for all fine nodes */
+    } /* for all fine nodes */
 
     PetscCall(ISRestoreIndices(selected_2, &selected_idx_2));
     PetscCall(MatAssemblyBegin(a_Prol, MAT_FINAL_ASSEMBLY));
@@ -596,7 +596,6 @@ static PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc, Mat *a_Gmat, PetscCoarsenData *
   PetscCall(MatCoarsenDestroy(&crs));
 
   PetscCall(ISDestroy(&perm));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -715,7 +714,6 @@ static PetscErrorCode PCGAMGProlongator_GEO(PC pc, Mat Amat, PetscCoarsenData *a
 
   *a_P_out = Prol; /* out */
   PetscCall(PetscFree(clid_flid));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

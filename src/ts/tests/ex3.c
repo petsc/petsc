@@ -405,12 +405,12 @@ PetscErrorCode femBg(PetscScalar btri[][3], PetscScalar *f, PetscInt nz, PetscSc
               /* if (il==0 && j==-1) { */
               /* f[i] += bij*dd*exact(zz,t); */
               /* }*/ /*end if*/
-            }        /*end else*/
-          }          /*end for (iqq)*/
-        }            /*end if (i>0)*/
-      }              /*end for (iq)*/
-    }                /*end for (iquad)*/
-  }                  /*end for (il)*/
+            } /*end else*/
+          } /*end for (iqq)*/
+        } /*end if (i>0)*/
+      } /*end for (iq)*/
+    } /*end for (iquad)*/
+  } /*end for (il)*/
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -479,11 +479,11 @@ PetscErrorCode femA(AppCtx *obj, PetscInt nz, PetscScalar *z)
               add_term = aij * dd;
               PetscCall(MatSetValue(obj->Amat, i, j, add_term, ADD_VALUES));
             } /*endif*/
-          }   /*end for (iqq)*/
-        }     /*end if (i>0)*/
-      }       /*end for (iq)*/
-    }         /*end for (iquad)*/
-  }           /*end for (il)*/
+          } /*end for (iqq)*/
+        } /*end if (i>0)*/
+      } /*end for (iq)*/
+    } /*end for (iquad)*/
+  } /*end for (il)*/
   PetscCall(MatAssemblyBegin(obj->Amat, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(obj->Amat, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);

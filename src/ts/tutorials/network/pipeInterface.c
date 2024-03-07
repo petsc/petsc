@@ -71,7 +71,7 @@ PetscErrorCode PipeSetUp(Pipe pipe)
   PetscCall(DMDASetFieldName(pipe->da, 0, "Q"));
   PetscCall(DMDASetFieldName(pipe->da, 1, "H"));
   PetscCall(DMDASetUniformCoordinates(pipe->da, 0, pipe->length, 0, 0, 0, 0));
-  PetscCall(DMCreateGlobalVector(pipe->da, &(pipe->x)));
+  PetscCall(DMCreateGlobalVector(pipe->da, &pipe->x));
 
   PetscCall(DMDAGetLocalInfo(pipe->da, &info));
 
@@ -105,7 +105,7 @@ PetscErrorCode PipeCreateJacobian(Pipe pipe, Mat *Jin, Mat *J[])
   if (Jin) {
     *J             = Jin;
     pipe->jacobian = Jin;
-    PetscCall(PetscObjectReference((PetscObject)(Jin[0])));
+    PetscCall(PetscObjectReference((PetscObject)Jin[0]));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscMalloc1(3, &Jpipe));
@@ -220,8 +220,8 @@ PetscErrorCode JunctionCreateJacobian(DM dm, PetscInt v, Mat *Jin, Mat *J[])
         Jv[2 * e + 1] = Jin[1];
       }
       Jv[2 * e + 2] = Jin[2];
-      PetscCall(PetscObjectReference((PetscObject)(Jv[2 * e + 1])));
-      PetscCall(PetscObjectReference((PetscObject)(Jv[2 * e + 2])));
+      PetscCall(PetscObjectReference((PetscObject)Jv[2 * e + 1]));
+      PetscCall(PetscObjectReference((PetscObject)Jv[2 * e + 2]));
     } else {
       /* create J(v,e) */
       PetscCall(MatCreate(PETSC_COMM_SELF, &Jv[2 * e + 1]));

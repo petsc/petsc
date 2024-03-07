@@ -37,7 +37,6 @@ PetscErrorCode DMNetworkInitializeHeaderComponentData(DM dm)
       network->header[p].maxcomps = defaultnumcomp;
       PetscCall(SetUpNetworkHeaderComponentValue(dm, &network->header[p], &network->cvalue[p]));
     }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1484,7 +1483,6 @@ PetscErrorCode DMNetworkGetComponent(DM dm, PetscInt p, PetscInt compnum, PetscI
   }
 
   if (nvar) *nvar = header->nvar[compnum];
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2947,8 +2945,8 @@ PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm)
   PetscCall(VecSetFromOptions(Vleaves));
   PetscCall(VecGetArray(Vleaves, &varr));
   for (i = 0; i < nleaves; i++) {
-    varr[2 * i]     = (PetscScalar)(iremote[i].rank);  /* rank of remote process */
-    varr[2 * i + 1] = (PetscScalar)(iremote[i].index); /* local index in remote process */
+    varr[2 * i]     = (PetscScalar)iremote[i].rank;  /* rank of remote process */
+    varr[2 * i + 1] = (PetscScalar)iremote[i].index; /* local index in remote process */
   }
   PetscCall(VecRestoreArray(Vleaves, &varr));
 

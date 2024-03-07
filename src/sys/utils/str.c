@@ -154,8 +154,7 @@ PetscErrorCode PetscStrArrayallocpy(const char *const *list, char ***t)
   PetscInt n = 0;
 
   PetscFunctionBegin;
-  while (list[n++])
-    ;
+  while (list[n++]);
   PetscCall(PetscMalloc1(n + 1, t));
   for (PetscInt i = 0; i < n; i++) PetscCall(PetscStrallocpy(list[i], (*t) + i));
   (*t)[n] = NULL;

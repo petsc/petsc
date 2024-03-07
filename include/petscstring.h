@@ -682,7 +682,7 @@ static inline PetscErrorCode PetscMemcpy(void *a, const void *b, size_t n)
   if (PetscUnlikely((n == 0) || (a == b))) PetscFunctionReturn(PETSC_SUCCESS);
   PetscAssert(a, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Trying to copy %zu bytes to a null pointer (Argument #1)", n);
   PetscAssert(b, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Trying to copy %zu bytes from a null pointer (Argument #2)", n);
-  PetscAssert(!(((al > bl) && (al - bl) < n) || (bl - al) < n), PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Memory regions overlap: either use PetscMemmove()\nor make sure your copy regions and lengths are correct.\nLength (bytes) %zu first address %" PRIxPTR " second address %" PRIxPTR, n, al, bl);
+  PetscAssert(!(((al > bl) && (al - bl) < n) || (bl - al) < n), PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Memory regions overlap: either use PetscMemmove(), or make sure your copy regions and lengths are correct. Length (bytes) %zu first address %" PRIxPTR " second address %" PRIxPTR, n, al, bl);
   if (PetscDefined(PREFER_DCOPY_FOR_MEMCPY) || PetscDefined(PREFER_COPY_FOR_MEMCPY) || PetscDefined(PREFER_FORTRAN_FORMEMCPY)) {
     if (!(al % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {
       const size_t       scalar_len = n / sizeof(PetscScalar);

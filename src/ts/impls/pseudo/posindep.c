@@ -140,7 +140,7 @@ static PetscErrorCode TSStep_Pseudo(TS ts)
     PetscCall(SNESGetLinearSolveIterations(ts->snes, &lits));
     ts->snes_its += nits;
     ts->ksp_its += lits;
-    PetscCall(TSPostStage(ts, ts->ptime + ts->time_step, 0, &(pseudo->update)));
+    PetscCall(TSPostStage(ts, ts->ptime + ts->time_step, 0, &pseudo->update));
     PetscCall(TSAdaptCheckStage(ts->adapt, ts, ts->ptime + ts->time_step, pseudo->update, &stepok));
     if (!stepok) {
       next_time_step = ts->time_step;

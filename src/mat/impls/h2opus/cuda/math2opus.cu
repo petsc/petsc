@@ -143,7 +143,7 @@ typedef struct {
   #if defined(H2OPUS_USE_MPI)
   DistributedHMatrix *dist_hmatrix;
   #else
-  HMatrix       *dist_hmatrix;     /* just to not clutter the code */
+  HMatrix *dist_hmatrix; /* just to not clutter the code */
   #endif
   /* May use permutations */
   PetscSF                           sf;
@@ -158,7 +158,7 @@ typedef struct {
   #if defined(H2OPUS_USE_MPI)
   DistributedHMatrix_GPU *dist_hmatrix_gpu;
   #else
-  HMatrix_GPU   *dist_hmatrix_gpu; /* just to not clutter the code */
+  HMatrix_GPU *dist_hmatrix_gpu; /* just to not clutter the code */
   #endif
   #if defined(PETSC_H2OPUS_USE_GPU)
   thrust::device_vector<PetscScalar> *xx_gpu, *yy_gpu;

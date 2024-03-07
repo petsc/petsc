@@ -883,9 +883,9 @@ static PetscErrorCode PCDestroy_HPDDMShell(PC pc)
   PetscCall(HPDDM::Schwarz<PetscScalar>::destroy(ctx, PETSC_TRUE));
   PetscCall(VecDestroyVecs(1, &ctx->v[0]));
   PetscCall(VecDestroyVecs(2, &ctx->v[1]));
-  PetscCall(PetscObjectQuery((PetscObject)(ctx->pc)->mat, "_HPDDM_MatProduct", (PetscObject *)&container));
+  PetscCall(PetscObjectQuery((PetscObject)ctx->pc->mat, "_HPDDM_MatProduct", (PetscObject *)&container));
   PetscCall(PetscContainerDestroy(&container));
-  PetscCall(PetscObjectCompose((PetscObject)(ctx->pc)->mat, "_HPDDM_MatProduct", nullptr));
+  PetscCall(PetscObjectCompose((PetscObject)ctx->pc->mat, "_HPDDM_MatProduct", nullptr));
   PetscCall(MatDestroy(ctx->V));
   PetscCall(MatDestroy(ctx->V + 1));
   PetscCall(MatDestroy(ctx->V + 2));
@@ -2319,10 +2319,10 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           PetscCall(MatSetOptionsPrefix(*b, ((PetscObject)s)->prefix));
           n = -1;
           PetscCall(PetscOptionsGetInt(nullptr, ((PetscObject)s)->prefix, "-mat_mumps_icntl_26", &n, nullptr));
-          if (n == 1) {
-            PetscCall(MatNestGetISs(N, is, nullptr));  /* allocates a square MatDense of size is[1]->map->n, so one */
-            PetscCall(MatFactorSetSchurIS(*b, is[1])); /*  needs to be able to deactivate this path when dealing    */
-          }                                            /*  with a large constraint space in order to avoid OOM      */
+          if (n == 1) {                                /* allocates a square MatDense of size is[1]->map->n, so one */
+            PetscCall(MatNestGetISs(N, is, nullptr));  /*  needs to be able to deactivate this path when dealing    */
+            PetscCall(MatFactorSetSchurIS(*b, is[1])); /*  with a large constraint space in order to avoid OOM      */
+          }
         } else {
           PetscCall(MatConvert(N, MATAIJ, MAT_INITIAL_MATRIX, b));
           PetscCall(PCSetOperators(s, N, *b));

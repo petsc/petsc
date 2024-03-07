@@ -128,9 +128,9 @@ static PetscErrorCode PCSetUp_HMG(PC pc)
     if (!hmg->innerpctype) {
       /* If hypre is available, use hypre, otherwise, use gamg */
 #if PetscDefined(HAVE_HYPRE)
-      PetscCall(PetscStrallocpy(PCHYPRE, &(hmg->innerpctype)));
+      PetscCall(PetscStrallocpy(PCHYPRE, &hmg->innerpctype));
 #else
-      PetscCall(PetscStrallocpy(PCGAMG, &(hmg->innerpctype)));
+      PetscCall(PetscStrallocpy(PCGAMG, &hmg->innerpctype));
 #endif
     }
     PetscCall(PCSetType(hmg->innerpc, hmg->innerpctype));
@@ -338,7 +338,7 @@ static PetscErrorCode PCHMGSetInnerPCType_HMG(PC pc, PCType type)
   PC_HMG *hmg = (PC_HMG *)mg->innerctx;
 
   PetscFunctionBegin;
-  PetscCall(PetscStrallocpy(type, &(hmg->innerpctype)));
+  PetscCall(PetscStrallocpy(type, &hmg->innerpctype));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

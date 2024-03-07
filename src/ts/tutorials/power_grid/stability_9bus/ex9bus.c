@@ -142,7 +142,6 @@ PetscErrorCode EventFunction(TS ts, PetscReal t, Vec X, PetscReal *fvalue, void 
   PetscScalar        Efd, RF, VR, Vr, Vi, Vm;
 
   PetscFunctionBegin;
-
   PetscCall(DMCompositeGetLocalVectors(user->dmpgrid, &Xgen, &Xnet));
   PetscCall(DMCompositeScatter(user->dmpgrid, X, Xgen, Xnet));
 
@@ -179,7 +178,6 @@ PetscErrorCode EventFunction(TS ts, PetscReal t, Vec X, PetscReal *fvalue, void 
   PetscCall(VecRestoreArrayRead(Xnet, &xnet));
 
   PetscCall(DMCompositeRestoreLocalVectors(user->dmpgrid, &Xgen, &Xnet));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -196,7 +194,6 @@ PetscErrorCode PostEventFunction(TS ts, PetscInt nevents, PetscInt event_list[],
   PetscScalar  Vr, Vi, Vm;
 
   PetscFunctionBegin;
-
   PetscCall(DMCompositeGetLocalVectors(user->dmpgrid, &Xgen, &Xnet));
   PetscCall(DMCompositeScatter(user->dmpgrid, X, Xgen, Xnet));
 
@@ -293,7 +290,6 @@ PetscErrorCode PostEventFunction(TS ts, PetscInt nevents, PetscInt event_list[],
   PetscCall(VecRestoreArray(Xnet, &xnet));
 
   PetscCall(DMCompositeRestoreLocalVectors(user->dmpgrid, &Xgen, &Xnet));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1015,7 +1011,6 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat A, Mat B, void *ctx)
   user->t = t;
 
   PetscCall(ResidualJacobian(X, A, B, user));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

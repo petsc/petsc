@@ -233,10 +233,10 @@ static PetscErrorCode MatCreateSubMatrices_Htool(Mat A, PetscInt n, const IS iro
                     }
                   }
                 }
-              }                       /* complete local diagonal block not in IS */
+              } /* complete local diagonal block not in IS */
             } else flg = PETSC_FALSE; /* IS not long enough to store the local diagonal block */
           } else flg = PETSC_FALSE;   /* rmap->rstart not in IS */
-        }                             /* unsorted IS */
+        } /* unsorted IS */
       }
     } else flg = PETSC_FALSE;                                       /* different row and column IS */
     if (!flg) a->wrapper->copy_submatrix(nrow, m, idxr, idxc, ptr); /* reassemble everything */

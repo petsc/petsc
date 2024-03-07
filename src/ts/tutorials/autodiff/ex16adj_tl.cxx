@@ -129,7 +129,6 @@ static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat A, void *ctx)
   PetscInt      i, j = 0;
 
   PetscFunctionBeginUser;
-
   /* Set values for independent variables and parameters */
   PetscCall(VecGetArray(X, &x));
   x_a[0].setValue(x[0]);

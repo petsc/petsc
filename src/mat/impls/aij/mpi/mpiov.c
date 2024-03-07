@@ -1585,7 +1585,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
         row--;
         PetscCheck(row >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "row not found in table");
 #else
-        row = rmap[sbuf1_i[ct1]];      /* the row index in submat */
+        row = rmap[sbuf1_i[ct1]]; /* the row index in submat */
 #endif
         /* Now, store row index of submat in sbuf1_i[ct1] */
         sbuf1_i[ct1] = row;
@@ -3062,7 +3062,7 @@ static PetscErrorCode MatCreateSubMatricesMPI_MPIXAIJ(Mat C, PetscInt ismax, con
          to be done without serializing on the IS list, so, most likely, it is best
          done by rewriting MatCreateSubMatrices_MPIAIJ() directly.
       */
-      PetscCall(ISGetNonlocalIS(iscol[i], &(ciscol[ii])));
+      PetscCall(ISGetNonlocalIS(iscol[i], &ciscol[ii]));
       /* Now we have to
          (a) make sure ciscol[ii] is sorted, since, even if the off-proc indices
              were sorted on each rank, concatenated they might no longer be sorted;

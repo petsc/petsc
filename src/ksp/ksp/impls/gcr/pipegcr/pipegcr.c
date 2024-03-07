@@ -368,10 +368,10 @@ static PetscErrorCode KSPSetUp_PIPEGCR(KSP ksp)
 
   /* Allocated space for pointers to additional work vectors
     note that mmax is the number of previous directions, so we add 1 for the current direction */
-  PetscCall(PetscMalloc6(pipegcr->mmax + 1, &(pipegcr->pvecs), pipegcr->mmax + 1, &(pipegcr->ppvecs), pipegcr->mmax + 1, &(pipegcr->svecs), pipegcr->mmax + 1, &(pipegcr->psvecs), pipegcr->mmax + 1, &(pipegcr->qvecs), pipegcr->mmax + 1, &(pipegcr->pqvecs)));
-  if (pipegcr->unroll_w) PetscCall(PetscMalloc3(pipegcr->mmax + 1, &(pipegcr->tvecs), pipegcr->mmax + 1, &(pipegcr->ptvecs), pipegcr->mmax + 2, &(pipegcr->told)));
-  PetscCall(PetscMalloc4(pipegcr->mmax + 2, &(pipegcr->pold), pipegcr->mmax + 2, &(pipegcr->sold), pipegcr->mmax + 2, &(pipegcr->qold), pipegcr->mmax + 2, &(pipegcr->chunksizes)));
-  PetscCall(PetscMalloc3(pipegcr->mmax + 2, &(pipegcr->dots), pipegcr->mmax + 1, &(pipegcr->etas), pipegcr->mmax + 2, &(pipegcr->redux)));
+  PetscCall(PetscMalloc6(pipegcr->mmax + 1, &pipegcr->pvecs, pipegcr->mmax + 1, &pipegcr->ppvecs, pipegcr->mmax + 1, &pipegcr->svecs, pipegcr->mmax + 1, &pipegcr->psvecs, pipegcr->mmax + 1, &pipegcr->qvecs, pipegcr->mmax + 1, &pipegcr->pqvecs));
+  if (pipegcr->unroll_w) PetscCall(PetscMalloc3(pipegcr->mmax + 1, &pipegcr->tvecs, pipegcr->mmax + 1, &pipegcr->ptvecs, pipegcr->mmax + 2, &pipegcr->told));
+  PetscCall(PetscMalloc4(pipegcr->mmax + 2, &pipegcr->pold, pipegcr->mmax + 2, &pipegcr->sold, pipegcr->mmax + 2, &pipegcr->qold, pipegcr->mmax + 2, &pipegcr->chunksizes));
+  PetscCall(PetscMalloc3(pipegcr->mmax + 2, &pipegcr->dots, pipegcr->mmax + 1, &pipegcr->etas, pipegcr->mmax + 2, &pipegcr->redux));
   /* If the requested number of preallocated vectors is greater than mmax reduce nprealloc */
   if (pipegcr->nprealloc > pipegcr->mmax + 1) PetscCall(PetscInfo(NULL, "Requested nprealloc=%" PetscInt_FMT " is greater than m_max+1=%" PetscInt_FMT ". Resetting nprealloc = m_max+1.\n", pipegcr->nprealloc, pipegcr->mmax + 1));
 

@@ -108,7 +108,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat A, MatType newtype, Ma
   } else B = *newmat;
 
   if (bs == 1) {
-    b = (Mat_SeqBAIJ *)(B->data);
+    b = (Mat_SeqBAIJ *)B->data;
 
     PetscCall(PetscArraycpy(b->i, a->i, m + 1));
     PetscCall(PetscArraycpy(b->ilen, a->ilen, m));

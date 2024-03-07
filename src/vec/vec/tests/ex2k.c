@@ -30,22 +30,20 @@ int main(int argc, char **argv)
   PetscBool          outputBW = PETSC_FALSE; // output bandwidth instead of time
   PetscRandom        rnd;
   PetscLogStage      stage1;
-  // clang-format off
   // Try vectors of these (local) sizes. The max is very close to 2^31
-  PetscInt  Ms[]  = {128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768,
-                     65536, 131072, 262144, 524288, 1048576, 2097152, 4194304,
-                     8388608, 16777216, 33554432, 67108864, 134217728, 268435456, 536870912};
-  PetscInt  Ns[] = {1, 3, 8, 30}; // try this number of y vectors in VecMDot
-  // clang-format on
+  PetscInt Ms[] = {128,     256,      512,      1024,     2048,      4096,      8192,     16384,   //
+                   32768,   65536,    131072,   262144,   524288,    1048576,   2097152,  4194304, //
+                   8388608, 16777216, 33554432, 67108864, 134217728, 268435456, 536870912};
+  PetscInt Ns[] = {1, 3, 8, 30}; // try this number of y vectors in VecMDot
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rnd));
 
-  mcount = sizeof(Ms) / sizeof(Ms[0]); // length of Ms[]
-  ncount = sizeof(Ns) / sizeof(Ns[0]); // length of Ns[]
-  maxN   = Ns[ncount - 1];             // at most this many y vectors
+  mcount = PETSC_STATIC_ARRAY_LENGTH(Ms); // length of Ms[]
+  ncount = PETSC_STATIC_ARRAY_LENGTH(Ns); // length of Ns[]
+  maxN   = Ns[ncount - 1];                // at most this many y vectors
 
   nsamples = mcount;
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &mcount, NULL)); // Up to vectors of local size 2^{mcount+6}

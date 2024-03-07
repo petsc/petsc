@@ -87,7 +87,7 @@ PetscErrorCode SNESShellGetContext(SNES snes, void *ctx)
   PetscAssertPointer(ctx, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)snes, SNESSHELL, &flg));
   if (!flg) *(void **)ctx = NULL;
-  else *(void **)ctx = ((SNES_Shell *)(snes->data))->ctx;
+  else *(void **)ctx = ((SNES_Shell *)snes->data)->ctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -287,7 +287,7 @@ PetscErrorCode DMMoabSetLocalVertices(DM dm, moab::Range *range)
 #ifdef MOAB_HAVE_MPI
   PetscCall(MPIU_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
 #else
-  dmmoab->n       = dmmoab->nloc;
+  dmmoab->n = dmmoab->nloc;
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -397,7 +397,7 @@ PetscErrorCode DMMoabSetLocalElements(DM dm, moab::Range *range)
   PetscCall(MPIU_Allreduce(&dmmoab->neleloc, &dmmoab->nele, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
   PetscCall(PetscInfo(dm, "Created %" PetscInt_FMT " local and %" PetscInt_FMT " global elements.\n", dmmoab->neleloc, dmmoab->nele));
 #else
-  dmmoab->nele    = dmmoab->neleloc;
+  dmmoab->nele = dmmoab->neleloc;
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1013,7 +1013,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
     PetscCall(MPIU_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
     PetscCall(PetscInfo(NULL, "Filset ID: %lu, Vertices: local - %zu, owned - %" PetscInt_FMT ", ghosted - %" PetscInt_FMT ".\n", dmmoab->fileset, dmmoab->vlocal->size(), dmmoab->nloc, dmmoab->nghost));
 #else
-    dmmoab->n       = dmmoab->nloc;
+    dmmoab->n = dmmoab->nloc;
 #endif
   }
 
@@ -1051,7 +1051,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
     PetscCall(MPIU_Allreduce(&dmmoab->neleloc, &dmmoab->nele, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
     PetscCall(PetscInfo(NULL, "%d-dim elements: owned - %" PetscInt_FMT ", ghosted - %" PetscInt_FMT ".\n", dmmoab->dim, dmmoab->neleloc, dmmoab->neleghost));
 #else
-    dmmoab->nele    = dmmoab->neleloc;
+    dmmoab->nele = dmmoab->neleloc;
 #endif
   }
 
@@ -1242,7 +1242,6 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
       for (unsigned j = 0; j < msetelems.size(); ++j) dmmoab->materials[dmmoab->elocal->index(msetelems[j])] = partID;
     }
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

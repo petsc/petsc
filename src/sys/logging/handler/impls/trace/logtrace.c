@@ -116,7 +116,7 @@ PetscErrorCode PetscLogHandlerCreateTrace(MPI_Comm comm, FILE *file, PetscLogHan
   PetscCall(PetscLogHandlerCreate(comm, handler));
   h = *handler;
   PetscCall(PetscLogHandlerSetType(h, PETSCLOGHANDLERTRACE));
-  tr                  = (PetscLogHandler_Trace)(h->data);
+  tr                  = (PetscLogHandler_Trace)h->data;
   tr->petsc_tracefile = file;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

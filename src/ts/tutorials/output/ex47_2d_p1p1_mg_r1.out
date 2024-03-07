@@ -1,6 +1,6 @@
 Timestep: 0000 time = 0        	 L_2 Error: 1.0821e-16
 0 TS dt 0.1 time 0.
-    0 SNES Function norm 0.38487 
+    0 SNES Function norm 0.38487
       0 KSP unpreconditioned resid norm 3.848701079585e-01 true resid norm 3.848701079585e-01 ||r(i)||/||b|| 1.000000000000e+00
       1 KSP unpreconditioned resid norm 6.306958768405e-02 true resid norm 6.306958768405e-02 ||r(i)||/||b|| 1.638723984531e-01
       2 KSP unpreconditioned resid norm 5.760676204313e-03 true resid norm 5.760676204313e-03 ||r(i)||/||b|| 1.496784521633e-02
@@ -10,7 +10,7 @@ Timestep: 0000 time = 0        	 L_2 Error: 1.0821e-16
       6 KSP unpreconditioned resid norm 6.294785394574e-07 true resid norm 6.294785394633e-07 ||r(i)||/||b|| 1.635561002132e-06
       7 KSP unpreconditioned resid norm 4.711800149142e-09 true resid norm 4.711800136142e-09 ||r(i)||/||b|| 1.224257233469e-08
       8 KSP unpreconditioned resid norm 1.845375931471e-11 true resid norm 1.845373359363e-11 ||r(i)||/||b|| 4.794795234038e-11
-    1 SNES Function norm 1.845e-11 
+    1 SNES Function norm 1.845e-11
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI process
   type: newtonls
@@ -31,7 +31,7 @@ SNES Object: 1 MPI process
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-09, absolute=1e-50, divergence=10000.
     right preconditioning
     using UNPRECONDITIONED norm type for convergence test
   PC Object: 1 MPI process
@@ -43,7 +43,7 @@ SNES Object: 1 MPI process
       KSP Object: (mg_coarse_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_coarse_) 1 MPI process
@@ -79,12 +79,12 @@ SNES Object: 1 MPI process
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               happy breakdown tolerance 1e-30
             maximum iterations=10, initial guess is zero
-            tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+            tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
             left preconditioning
             using PRECONDITIONED norm type for convergence test
           estimating eigenvalues using noisy right hand side
         maximum iterations=2, nonzero initial guess
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_levels_1_) 1 MPI process
@@ -107,7 +107,7 @@ SNES Object: 1 MPI process
         not using I-node routines
 Timestep: 0001 time = 0.1      	 L_2 Error: 0.042609
 1 TS dt 0.1 time 0.1
-    0 SNES Function norm 0.383649 
+    0 SNES Function norm 0.383649
       0 KSP unpreconditioned resid norm 3.836491353067e-01 true resid norm 3.836491353067e-01 ||r(i)||/||b|| 1.000000000000e+00
       1 KSP unpreconditioned resid norm 6.087119748495e-02 true resid norm 6.087119748495e-02 ||r(i)||/||b|| 1.586637160965e-01
       2 KSP unpreconditioned resid norm 5.740698672644e-03 true resid norm 5.740698672644e-03 ||r(i)||/||b|| 1.496340834459e-02
@@ -117,7 +117,7 @@ Timestep: 0001 time = 0.1      	 L_2 Error: 0.042609
       6 KSP unpreconditioned resid norm 6.188836190140e-07 true resid norm 6.188836190145e-07 ||r(i)||/||b|| 1.613150042733e-06
       7 KSP unpreconditioned resid norm 4.800059529470e-09 true resid norm 4.800059540549e-09 ||r(i)||/||b|| 1.251158701742e-08
       8 KSP unpreconditioned resid norm 1.774392929439e-11 true resid norm 1.774395612425e-11 ||r(i)||/||b|| 4.625047860478e-11
-    1 SNES Function norm 1.774e-11 
+    1 SNES Function norm 1.774e-11
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI process
   type: newtonls
@@ -138,7 +138,7 @@ SNES Object: 1 MPI process
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-09, absolute=1e-50, divergence=10000.
     right preconditioning
     using UNPRECONDITIONED norm type for convergence test
   PC Object: 1 MPI process
@@ -150,7 +150,7 @@ SNES Object: 1 MPI process
       KSP Object: (mg_coarse_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_coarse_) 1 MPI process
@@ -186,12 +186,12 @@ SNES Object: 1 MPI process
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               happy breakdown tolerance 1e-30
             maximum iterations=10, initial guess is zero
-            tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+            tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
             left preconditioning
             using PRECONDITIONED norm type for convergence test
           estimating eigenvalues using noisy right hand side
         maximum iterations=2, nonzero initial guess
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_levels_1_) 1 MPI process
@@ -214,7 +214,7 @@ SNES Object: 1 MPI process
         not using I-node routines
 Timestep: 0002 time = 0.2      	 L_2 Error: 0.084372
 2 TS dt 0.1 time 0.2
-    0 SNES Function norm 0.380922 
+    0 SNES Function norm 0.380922
       0 KSP unpreconditioned resid norm 3.809222270566e-01 true resid norm 3.809222270566e-01 ||r(i)||/||b|| 1.000000000000e+00
       1 KSP unpreconditioned resid norm 5.968841254678e-02 true resid norm 5.968841254678e-02 ||r(i)||/||b|| 1.566944859270e-01
       2 KSP unpreconditioned resid norm 5.800384745162e-03 true resid norm 5.800384745162e-03 ||r(i)||/||b|| 1.522721525069e-02
@@ -224,7 +224,7 @@ Timestep: 0002 time = 0.2      	 L_2 Error: 0.084372
       6 KSP unpreconditioned resid norm 6.078212012816e-07 true resid norm 6.078212013076e-07 ||r(i)||/||b|| 1.595656956026e-06
       7 KSP unpreconditioned resid norm 4.860650279105e-09 true resid norm 4.860650279805e-09 ||r(i)||/||b|| 1.276021700641e-08
       8 KSP unpreconditioned resid norm 1.731140125257e-11 true resid norm 1.731140182079e-11 ||r(i)||/||b|| 4.544602701334e-11
-    1 SNES Function norm 1.731e-11 
+    1 SNES Function norm 1.731e-11
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI process
   type: newtonls
@@ -245,7 +245,7 @@ SNES Object: 1 MPI process
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-09, absolute=1e-50, divergence=10000.
     right preconditioning
     using UNPRECONDITIONED norm type for convergence test
   PC Object: 1 MPI process
@@ -257,7 +257,7 @@ SNES Object: 1 MPI process
       KSP Object: (mg_coarse_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_coarse_) 1 MPI process
@@ -293,12 +293,12 @@ SNES Object: 1 MPI process
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               happy breakdown tolerance 1e-30
             maximum iterations=10, initial guess is zero
-            tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+            tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
             left preconditioning
             using PRECONDITIONED norm type for convergence test
           estimating eigenvalues using noisy right hand side
         maximum iterations=2, nonzero initial guess
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_levels_1_) 1 MPI process
@@ -321,7 +321,7 @@ SNES Object: 1 MPI process
         not using I-node routines
 Timestep: 0003 time = 0.3      	 L_2 Error: 0.12562
 3 TS dt 0.1 time 0.3
-    0 SNES Function norm 0.377457 
+    0 SNES Function norm 0.377457
       0 KSP unpreconditioned resid norm 3.774573494154e-01 true resid norm 3.774573494154e-01 ||r(i)||/||b|| 1.000000000000e+00
       1 KSP unpreconditioned resid norm 5.954853714304e-02 true resid norm 5.954853714304e-02 ||r(i)||/||b|| 1.577622935022e-01
       2 KSP unpreconditioned resid norm 5.848939409168e-03 true resid norm 5.848939409168e-03 ||r(i)||/||b|| 1.549562995190e-02
@@ -331,7 +331,7 @@ Timestep: 0003 time = 0.3      	 L_2 Error: 0.12562
       6 KSP unpreconditioned resid norm 6.025388075754e-07 true resid norm 6.025388075944e-07 ||r(i)||/||b|| 1.596309645388e-06
       7 KSP unpreconditioned resid norm 4.883261060044e-09 true resid norm 4.883261063505e-09 ||r(i)||/||b|| 1.293725256924e-08
       8 KSP unpreconditioned resid norm 1.729375636379e-11 true resid norm 1.729375104729e-11 ||r(i)||/||b|| 4.581643747055e-11
-    1 SNES Function norm 1.729e-11 
+    1 SNES Function norm 1.729e-11
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI process
   type: newtonls
@@ -352,7 +352,7 @@ SNES Object: 1 MPI process
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-09, absolute=1e-50, divergence=10000.
     right preconditioning
     using UNPRECONDITIONED norm type for convergence test
   PC Object: 1 MPI process
@@ -364,7 +364,7 @@ SNES Object: 1 MPI process
       KSP Object: (mg_coarse_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_coarse_) 1 MPI process
@@ -400,12 +400,12 @@ SNES Object: 1 MPI process
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               happy breakdown tolerance 1e-30
             maximum iterations=10, initial guess is zero
-            tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+            tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
             left preconditioning
             using PRECONDITIONED norm type for convergence test
           estimating eigenvalues using noisy right hand side
         maximum iterations=2, nonzero initial guess
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_levels_1_) 1 MPI process
@@ -428,7 +428,7 @@ SNES Object: 1 MPI process
         not using I-node routines
 Timestep: 0004 time = 0.4      	 L_2 Error: 0.16664
 4 TS dt 0.1 time 0.4
-    0 SNES Function norm 0.37449 
+    0 SNES Function norm 0.37449
       0 KSP unpreconditioned resid norm 3.744902213650e-01 true resid norm 3.744902213650e-01 ||r(i)||/||b|| 1.000000000000e+00
       1 KSP unpreconditioned resid norm 5.982974938131e-02 true resid norm 5.982974938131e-02 ||r(i)||/||b|| 1.597631819684e-01
       2 KSP unpreconditioned resid norm 5.840834302842e-03 true resid norm 5.840834302842e-03 ||r(i)||/||b|| 1.559676052836e-02
@@ -438,7 +438,7 @@ Timestep: 0004 time = 0.4      	 L_2 Error: 0.16664
       6 KSP unpreconditioned resid norm 6.010616249637e-07 true resid norm 6.010616249715e-07 ||r(i)||/||b|| 1.605012869978e-06
       7 KSP unpreconditioned resid norm 4.858498871957e-09 true resid norm 4.858498872870e-09 ||r(i)||/||b|| 1.297363347743e-08
       8 KSP unpreconditioned resid norm 1.751406135113e-11 true resid norm 1.751403567040e-11 ||r(i)||/||b|| 4.676767154710e-11
-    1 SNES Function norm 1.751e-11 
+    1 SNES Function norm 1.751e-11
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI process
   type: newtonls
@@ -459,7 +459,7 @@ SNES Object: 1 MPI process
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-09, absolute=1e-50, divergence=10000.
     right preconditioning
     using UNPRECONDITIONED norm type for convergence test
   PC Object: 1 MPI process
@@ -471,7 +471,7 @@ SNES Object: 1 MPI process
       KSP Object: (mg_coarse_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_coarse_) 1 MPI process
@@ -507,12 +507,12 @@ SNES Object: 1 MPI process
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               happy breakdown tolerance 1e-30
             maximum iterations=10, initial guess is zero
-            tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+            tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
             left preconditioning
             using PRECONDITIONED norm type for convergence test
           estimating eigenvalues using noisy right hand side
         maximum iterations=2, nonzero initial guess
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_levels_1_) 1 MPI process
@@ -535,7 +535,7 @@ SNES Object: 1 MPI process
         not using I-node routines
 Timestep: 0005 time = 0.5      	 L_2 Error: 0.2076
 5 TS dt 0.1 time 0.5
-    0 SNES Function norm 0.372928 
+    0 SNES Function norm 0.372928
       0 KSP unpreconditioned resid norm 3.729281667988e-01 true resid norm 3.729281667988e-01 ||r(i)||/||b|| 1.000000000000e+00
       1 KSP unpreconditioned resid norm 6.002541949214e-02 true resid norm 6.002541949214e-02 ||r(i)||/||b|| 1.609570551010e-01
       2 KSP unpreconditioned resid norm 5.775316419172e-03 true resid norm 5.775316419172e-03 ||r(i)||/||b|| 1.548640444284e-02
@@ -545,7 +545,7 @@ Timestep: 0005 time = 0.5      	 L_2 Error: 0.2076
       6 KSP unpreconditioned resid norm 5.991553964591e-07 true resid norm 5.991553964691e-07 ||r(i)||/||b|| 1.606624143229e-06
       7 KSP unpreconditioned resid norm 4.791537579858e-09 true resid norm 4.791537591102e-09 ||r(i)||/||b|| 1.284841966278e-08
       8 KSP unpreconditioned resid norm 1.772048749492e-11 true resid norm 1.772051502236e-11 ||r(i)||/||b|| 4.751723414853e-11
-    1 SNES Function norm 1.772e-11 
+    1 SNES Function norm 1.772e-11
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI process
   type: newtonls
@@ -566,7 +566,7 @@ SNES Object: 1 MPI process
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-09, absolute=1e-50, divergence=10000.
     right preconditioning
     using UNPRECONDITIONED norm type for convergence test
   PC Object: 1 MPI process
@@ -578,7 +578,7 @@ SNES Object: 1 MPI process
       KSP Object: (mg_coarse_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_coarse_) 1 MPI process
@@ -614,12 +614,12 @@ SNES Object: 1 MPI process
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               happy breakdown tolerance 1e-30
             maximum iterations=10, initial guess is zero
-            tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+            tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
             left preconditioning
             using PRECONDITIONED norm type for convergence test
           estimating eigenvalues using noisy right hand side
         maximum iterations=2, nonzero initial guess
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_levels_1_) 1 MPI process
@@ -642,7 +642,7 @@ SNES Object: 1 MPI process
         not using I-node routines
 Timestep: 0006 time = 0.6      	 L_2 Error: 0.24859
 6 TS dt 0.1 time 0.6
-    0 SNES Function norm 0.372986 
+    0 SNES Function norm 0.372986
       0 KSP unpreconditioned resid norm 3.729860798745e-01 true resid norm 3.729860798745e-01 ||r(i)||/||b|| 1.000000000000e+00
       1 KSP unpreconditioned resid norm 5.998286066860e-02 true resid norm 5.998286066860e-02 ||r(i)||/||b|| 1.608179605222e-01
       2 KSP unpreconditioned resid norm 5.687596001641e-03 true resid norm 5.687596001641e-03 ||r(i)||/||b|| 1.524881572941e-02
@@ -652,7 +652,7 @@ Timestep: 0006 time = 0.6      	 L_2 Error: 0.24859
       6 KSP unpreconditioned resid norm 5.948808411325e-07 true resid norm 5.948808411183e-07 ||r(i)||/||b|| 1.594914323126e-06
       7 KSP unpreconditioned resid norm 4.702487381111e-09 true resid norm 4.702487348039e-09 ||r(i)||/||b|| 1.260767519695e-08
       8 KSP unpreconditioned resid norm 1.779657220875e-11 true resid norm 1.779659688198e-11 ||r(i)||/||b|| 4.771383663424e-11
-    1 SNES Function norm 1.780e-11 
+    1 SNES Function norm 1.780e-11
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI process
   type: newtonls
@@ -673,7 +673,7 @@ SNES Object: 1 MPI process
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-09, absolute=1e-50, divergence=10000.
     right preconditioning
     using UNPRECONDITIONED norm type for convergence test
   PC Object: 1 MPI process
@@ -685,7 +685,7 @@ SNES Object: 1 MPI process
       KSP Object: (mg_coarse_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_coarse_) 1 MPI process
@@ -721,12 +721,12 @@ SNES Object: 1 MPI process
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               happy breakdown tolerance 1e-30
             maximum iterations=10, initial guess is zero
-            tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+            tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
             left preconditioning
             using PRECONDITIONED norm type for convergence test
           estimating eigenvalues using noisy right hand side
         maximum iterations=2, nonzero initial guess
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_levels_1_) 1 MPI process
@@ -749,7 +749,7 @@ SNES Object: 1 MPI process
         not using I-node routines
 Timestep: 0007 time = 0.7      	 L_2 Error: 0.28962
 7 TS dt 0.1 time 0.7
-    0 SNES Function norm 0.374276 
+    0 SNES Function norm 0.374276
       0 KSP unpreconditioned resid norm 3.742759385298e-01 true resid norm 3.742759385298e-01 ||r(i)||/||b|| 1.000000000000e+00
       1 KSP unpreconditioned resid norm 5.979030900298e-02 true resid norm 5.979030900298e-02 ||r(i)||/||b|| 1.597492727901e-01
       2 KSP unpreconditioned resid norm 5.617806615202e-03 true resid norm 5.617806615202e-03 ||r(i)||/||b|| 1.500979901959e-02
@@ -759,7 +759,7 @@ Timestep: 0007 time = 0.7      	 L_2 Error: 0.28962
       6 KSP unpreconditioned resid norm 5.892156061787e-07 true resid norm 5.892156061538e-07 ||r(i)||/||b|| 1.574281286872e-06
       7 KSP unpreconditioned resid norm 4.617371734791e-09 true resid norm 4.617371702498e-09 ||r(i)||/||b|| 1.233681149965e-08
       8 KSP unpreconditioned resid norm 1.776419283029e-11 true resid norm 1.776421370272e-11 ||r(i)||/||b|| 4.746287931973e-11
-    1 SNES Function norm 1.776e-11 
+    1 SNES Function norm 1.776e-11
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI process
   type: newtonls
@@ -780,7 +780,7 @@ SNES Object: 1 MPI process
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-09, absolute=1e-50, divergence=10000.
     right preconditioning
     using UNPRECONDITIONED norm type for convergence test
   PC Object: 1 MPI process
@@ -792,7 +792,7 @@ SNES Object: 1 MPI process
       KSP Object: (mg_coarse_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_coarse_) 1 MPI process
@@ -828,12 +828,12 @@ SNES Object: 1 MPI process
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               happy breakdown tolerance 1e-30
             maximum iterations=10, initial guess is zero
-            tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+            tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
             left preconditioning
             using PRECONDITIONED norm type for convergence test
           estimating eigenvalues using noisy right hand side
         maximum iterations=2, nonzero initial guess
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_levels_1_) 1 MPI process
@@ -856,7 +856,7 @@ SNES Object: 1 MPI process
         not using I-node routines
 Timestep: 0008 time = 0.8      	 L_2 Error: 0.33068
 8 TS dt 0.1 time 0.8
-    0 SNES Function norm 0.376133 
+    0 SNES Function norm 0.376133
       0 KSP unpreconditioned resid norm 3.761327824878e-01 true resid norm 3.761327824878e-01 ||r(i)||/||b|| 1.000000000000e+00
       1 KSP unpreconditioned resid norm 5.960286328784e-02 true resid norm 5.960286328784e-02 ||r(i)||/||b|| 1.584622932721e-01
       2 KSP unpreconditioned resid norm 5.587587079708e-03 true resid norm 5.587587079708e-03 ||r(i)||/||b|| 1.485535784132e-02
@@ -866,7 +866,7 @@ Timestep: 0008 time = 0.8      	 L_2 Error: 0.33068
       6 KSP unpreconditioned resid norm 5.843952130956e-07 true resid norm 5.843952130851e-07 ||r(i)||/||b|| 1.553693908890e-06
       7 KSP unpreconditioned resid norm 4.557400918821e-09 true resid norm 4.557400934472e-09 ||r(i)||/||b|| 1.211646829699e-08
       8 KSP unpreconditioned resid norm 1.769382827441e-11 true resid norm 1.769385166385e-11 ||r(i)||/||b|| 4.704150365949e-11
-    1 SNES Function norm 1.769e-11 
+    1 SNES Function norm 1.769e-11
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI process
   type: newtonls
@@ -887,7 +887,7 @@ SNES Object: 1 MPI process
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-09, absolute=1e-50, divergence=10000.
     right preconditioning
     using UNPRECONDITIONED norm type for convergence test
   PC Object: 1 MPI process
@@ -899,7 +899,7 @@ SNES Object: 1 MPI process
       KSP Object: (mg_coarse_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_coarse_) 1 MPI process
@@ -935,12 +935,12 @@ SNES Object: 1 MPI process
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               happy breakdown tolerance 1e-30
             maximum iterations=10, initial guess is zero
-            tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+            tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
             left preconditioning
             using PRECONDITIONED norm type for convergence test
           estimating eigenvalues using noisy right hand side
         maximum iterations=2, nonzero initial guess
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_levels_1_) 1 MPI process
@@ -963,7 +963,7 @@ SNES Object: 1 MPI process
         not using I-node routines
 Timestep: 0009 time = 0.9      	 L_2 Error: 0.37179
 9 TS dt 0.1 time 0.9
-    0 SNES Function norm 0.377927 
+    0 SNES Function norm 0.377927
       0 KSP unpreconditioned resid norm 3.779274613460e-01 true resid norm 3.779274613460e-01 ||r(i)||/||b|| 1.000000000000e+00
       1 KSP unpreconditioned resid norm 5.952775794612e-02 true resid norm 5.952775794612e-02 ||r(i)||/||b|| 1.575110676904e-01
       2 KSP unpreconditioned resid norm 5.596783441033e-03 true resid norm 5.596783441033e-03 ||r(i)||/||b|| 1.480914729271e-02
@@ -973,7 +973,7 @@ Timestep: 0009 time = 0.9      	 L_2 Error: 0.37179
       6 KSP unpreconditioned resid norm 5.821644196935e-07 true resid norm 5.821644196750e-07 ||r(i)||/||b|| 1.540413119496e-06
       7 KSP unpreconditioned resid norm 4.532618828776e-09 true resid norm 4.532618817180e-09 ||r(i)||/||b|| 1.199335661144e-08
       8 KSP unpreconditioned resid norm 1.763889785026e-11 true resid norm 1.763888741317e-11 ||r(i)||/||b|| 4.667267985859e-11
-    1 SNES Function norm 1.764e-11 
+    1 SNES Function norm 1.764e-11
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI process
   type: newtonls
@@ -994,7 +994,7 @@ SNES Object: 1 MPI process
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-09, absolute=1e-50, divergence=10000.
     right preconditioning
     using UNPRECONDITIONED norm type for convergence test
   PC Object: 1 MPI process
@@ -1006,7 +1006,7 @@ SNES Object: 1 MPI process
       KSP Object: (mg_coarse_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_coarse_) 1 MPI process
@@ -1042,12 +1042,12 @@ SNES Object: 1 MPI process
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               happy breakdown tolerance 1e-30
             maximum iterations=10, initial guess is zero
-            tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+            tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
             left preconditioning
             using PRECONDITIONED norm type for convergence test
           estimating eigenvalues using noisy right hand side
         maximum iterations=2, nonzero initial guess
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_levels_1_) 1 MPI process

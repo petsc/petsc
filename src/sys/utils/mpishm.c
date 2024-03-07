@@ -40,6 +40,7 @@ static MPI_Comm       shmcomm_dupped_comms[MAX_SHMCOMM_DUPPED_COMMS];
 static PetscErrorCode PetscShmCommDestroyDuppedComms(void)
 {
   PetscInt i;
+
   PetscFunctionBegin;
   for (i = 0; i < num_dupped_comms; i++) PetscCall(PetscCommDestroy(&shmcomm_dupped_comms[i]));
   num_dupped_comms = 0; /* reset so that PETSc can be reinitialized */

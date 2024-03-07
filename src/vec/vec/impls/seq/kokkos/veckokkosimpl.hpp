@@ -67,6 +67,7 @@ struct Vec_Kokkos {
   PetscErrorCode UpdateArray(PetscScalar *array)
   {
     PetscScalarKokkosViewHost v_h(array, v_dual.extent(0));
+
     PetscFunctionBegin;
     /* Kokkos said they would add error-checking so that users won't accidentally pass two different Views in this case */
     PetscCallCXX(v_dual = PetscScalarKokkosDualView(v_h, v_h));
@@ -77,6 +78,7 @@ struct Vec_Kokkos {
   PetscErrorCode UpdateArray(PetscScalar *array)
   {
     PetscScalarKokkosViewHost v_h(array, v_dual.extent(0));
+
     PetscFunctionBegin;
     PetscCallCXX(v_dual = PetscScalarKokkosDualView(v_dual.view<DefaultMemorySpace>(), v_h));
     PetscCallCXX(v_dual.modify_host());
@@ -87,6 +89,7 @@ struct Vec_Kokkos {
   PetscErrorCode UpdateArray(PetscScalar *array)
   {
     PetscScalarKokkosView v_d(array, v_dual.extent(0));
+
     PetscFunctionBegin;
     PetscCallCXX(v_dual = PetscScalarKokkosDualView(v_d, v_dual.view<Kokkos::HostSpace>()));
     PetscCallCXX(v_dual.modify_device());

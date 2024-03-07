@@ -62,7 +62,6 @@ static PetscErrorCode PCSetUp_Galerkin(PC pc)
   }
   PetscCheck(jac->R || jac->P, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Must set restriction or interpolation of PCGALERKIN with PCGalerkinSetRestriction()/Interpolation()");
   /* should check here that sizes of R/P match size of a */
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

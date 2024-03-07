@@ -378,7 +378,6 @@ static PetscErrorCode UpdateVelocity_2d(const Ctx *ctx, Vec velocity, Vec stress
   PetscScalar       ***arr_velocity;
 
   PetscFunctionBeginUser;
-
   /* Prepare direct access to buoyancy data */
   PetscCall(DMStagGetLocationSlot(ctx->dm_buoyancy, DMSTAG_LEFT, 0, &slot_buoyancy_left));
   PetscCall(DMStagGetLocationSlot(ctx->dm_buoyancy, DMSTAG_DOWN, 0, &slot_buoyancy_down));
@@ -460,7 +459,6 @@ static PetscErrorCode UpdateVelocity_3d(const Ctx *ctx, Vec velocity, Vec stress
   PetscScalar       ****arr_velocity;
 
   PetscFunctionBeginUser;
-
   /* Prepare direct access to buoyancy data */
   PetscCall(DMStagGetLocationSlot(ctx->dm_buoyancy, DMSTAG_LEFT, 0, &slot_buoyancy_left));
   PetscCall(DMStagGetLocationSlot(ctx->dm_buoyancy, DMSTAG_DOWN, 0, &slot_buoyancy_down));
@@ -574,7 +572,6 @@ static PetscErrorCode UpdateStress_2d(const Ctx *ctx, Vec velocity, Vec stress, 
   PetscScalar       ***arr_stress;
 
   PetscFunctionBeginUser;
-
   /* Prepare read-write access to stress data */
   PetscCall(DMStagGetLocationSlot(ctx->dm_stress, DMSTAG_ELEMENT, 0, &slot_txx));
   PetscCall(DMStagGetLocationSlot(ctx->dm_stress, DMSTAG_ELEMENT, 1, &slot_tyy));
@@ -658,7 +655,6 @@ static PetscErrorCode UpdateStress_3d(const Ctx *ctx, Vec velocity, Vec stress, 
   PetscScalar       ****arr_stress;
 
   PetscFunctionBeginUser;
-
   /* Prepare read-write access to stress data */
   PetscCall(DMStagGetLocationSlot(ctx->dm_stress, DMSTAG_ELEMENT, 0, &slot_txx));
   PetscCall(DMStagGetLocationSlot(ctx->dm_stress, DMSTAG_ELEMENT, 1, &slot_tyy));
@@ -781,7 +777,6 @@ static PetscErrorCode DumpStress(const Ctx *ctx, Vec stress, PetscInt timestep)
   Vec vec_normal, vec_shear = NULL;
 
   PetscFunctionBeginUser;
-
   PetscCall(DMStagVecSplitToDMDA(ctx->dm_stress, stress, DMSTAG_ELEMENT, -ctx->dim, &da_normal, &vec_normal));
   PetscCall(PetscObjectSetName((PetscObject)vec_normal, "normal stresses"));
 
@@ -832,7 +827,6 @@ static PetscErrorCode DumpVelocity(const Ctx *ctx, Vec velocity, PetscInt timest
   PetscInt ex, ey, ez, startx, starty, startz, nx, ny, nz;
 
   PetscFunctionBeginUser;
-
   if (ctx->dim == 2) {
     PetscCall(DMStagCreateCompatibleDMStag(ctx->dm_velocity, 0, 0, 2, 0, &dmVelAvg)); /* 2 dof per element */
   } else if (ctx->dim == 3) {

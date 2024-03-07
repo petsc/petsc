@@ -368,7 +368,7 @@ static PetscErrorCode MatTranspose_Nest(Mat A, MatReuse reuse, Mat *B)
   for (i = 0; i < nr; i++) {
     for (j = 0; j < nc; j++) {
       if (bA->m[i][j]) {
-        PetscCall(MatTranspose(bA->m[i][j], reuse, &(bC->m[j][i])));
+        PetscCall(MatTranspose(bA->m[i][j], reuse, &bC->m[j][i]));
       } else {
         bC->m[j][i] = NULL;
       }
@@ -2211,8 +2211,8 @@ static PetscErrorCode MatHasOperation_Nest(Mat mat, MatOperation op, PetscBool *
   MatOperation opAdd;
   PetscInt     i, j, nr = bA->nr, nc = bA->nc;
   PetscBool    flg;
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   *has = PETSC_FALSE;
   if (op == MATOP_MULT || op == MATOP_MULT_ADD || op == MATOP_MULT_TRANSPOSE || op == MATOP_MULT_TRANSPOSE_ADD) {
     opAdd = (op == MATOP_MULT || op == MATOP_MULT_ADD ? MATOP_MULT_ADD : MATOP_MULT_TRANSPOSE_ADD);

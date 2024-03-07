@@ -82,7 +82,7 @@ int main(int argc, char **argv)
   PetscCall(TaoSetObjectiveAndGradient(tao, NULL, FormFunctionGradient, (void *)&user));
 
   /* Create a matrix data structure to store the Hessian.  This structure will be used by TAO */
-  PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, N, N, 7, NULL, &(user.H)));
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, N, N, 7, NULL, &user.H));
   PetscCall(MatSetOption(user.H, MAT_SYMMETRIC, PETSC_TRUE));
   PetscCall(TaoSetHessian(tao, user.H, user.H, FormHessian, (void *)&user));
 

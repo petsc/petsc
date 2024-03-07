@@ -167,9 +167,8 @@ PetscErrorCode OtherFunctionForDifferencing(void *dummy, Vec x, Vec f)
 
 PetscErrorCode FormInitialGuess(SNES snes, Vec x)
 {
-  PetscScalar pfive = .50;
   PetscFunctionBeginUser;
-  PetscCall(VecSet(x, pfive));
+  PetscCall(VecSet(x, 0.5));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
@@ -237,7 +236,7 @@ PetscErrorCode Monitor(SNES snes, PetscInt its, PetscReal fnorm, void *dummy)
 
   PetscFunctionBeginUser;
   PetscCall(PetscObjectGetComm((PetscObject)snes, &comm));
-  PetscCall(PetscFPrintf(comm, stdout, "iter = %" PetscInt_FMT ", SNES Function norm %g \n", its, (double)fnorm));
+  PetscCall(PetscFPrintf(comm, stdout, "iter = %" PetscInt_FMT ", SNES Function norm %g\n", its, (double)fnorm));
   PetscCall(SNESGetSolution(snes, &x));
   PetscCall(VecView(x, monP->viewer));
   PetscFunctionReturn(PETSC_SUCCESS);

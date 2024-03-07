@@ -318,7 +318,6 @@ PetscErrorCode AssembleMatrix(Mat A, PetscInt m, PetscInt n)
   }
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

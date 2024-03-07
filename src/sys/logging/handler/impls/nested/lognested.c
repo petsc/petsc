@@ -24,7 +24,7 @@ static PetscErrorCode PetscLogEventGetNestedEvent(PetscLogHandler h, PetscLogEve
 
   PetscFunctionBegin;
   PetscCall(PetscLogHandlerGetState(h, &state));
-  PetscCall(PetscIntStackTop(nested->nested_stack, &(key.root)));
+  PetscCall(PetscIntStackTop(nested->nested_stack, &key.root));
   key.leaf = NestedIdFromEvent(e);
   PetscCall(PetscNestedHashPut(nested->pair_map, key, &iter, &missing));
   if (missing) {
@@ -54,7 +54,7 @@ static PetscErrorCode PetscLogStageGetNestedEvent(PetscLogHandler h, PetscLogSta
 
   PetscFunctionBegin;
   PetscCall(PetscLogHandlerGetState(h, &state));
-  PetscCall(PetscIntStackTop(nested->nested_stack, &(key.root)));
+  PetscCall(PetscIntStackTop(nested->nested_stack, &key.root));
   key.leaf = NestedIdFromStage(stage);
   PetscCall(PetscNestedHashPut(nested->pair_map, key, &iter, &missing));
   if (missing) {
@@ -98,7 +98,7 @@ static PetscErrorCode PetscLogNestedFindNestedId(PetscLogHandler h, NestedId ori
 
     PetscCall(PetscLogHandlerGetState(h, &state));
     PetscCall(PetscLogStateEventGetInfo(state, event_id, &event_info));
-    PetscCheck(i > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Tried to end event %s, but it is not in the event stack\n", event_info.name);
+    PetscCheck(i > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Tried to end event %s, but it is not in the event stack", event_info.name);
   } else {
     PetscLogStage     stage_id = NestedIdToStage(orig_id);
     PetscLogState     state;
@@ -106,7 +106,7 @@ static PetscErrorCode PetscLogNestedFindNestedId(PetscLogHandler h, NestedId ori
 
     PetscCall(PetscLogHandlerGetState(h, &state));
     PetscCall(PetscLogStateStageGetInfo(state, stage_id, &stage_info));
-    PetscCheck(i > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Tried to pop stage %s, but it is not in the stage stack\n", stage_info.name);
+    PetscCheck(i > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Tried to pop stage %s, but it is not in the stage stack", stage_info.name);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -118,7 +118,7 @@ static PetscErrorCode PetscLogNestedCheckNested(PetscLogHandler h, NestedId leaf
   NestedId               val;
 
   PetscFunctionBegin;
-  PetscCall(PetscIntStackTop(nested->nested_stack, &(key.root)));
+  PetscCall(PetscIntStackTop(nested->nested_stack, &key.root));
   key.leaf = leaf;
   PetscCall(PetscNestedHashGet(nested->pair_map, key, &val));
   PetscCheck(val == nested_event, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Logging events and stages are not nested, nested logging cannot be used");
@@ -285,8 +285,8 @@ static PetscErrorCode PetscLogHandlerDestroy_Nested(PetscLogHandler h)
 static PetscErrorCode PetscLogNestedEventNodesOrderDepthFirst(PetscInt num_nodes, PetscInt parent, PetscNestedEventNode tree[], PetscInt *num_descendants)
 {
   PetscInt node, start_loc;
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   node      = 0;
   start_loc = 0;
   while (node < num_nodes) {

@@ -157,7 +157,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type,
     PetscCheck(realpart[evInd] >= 1.0e-12 || imagpart[evInd] >= 1.0e-12, PetscObjectComm((PetscObject)L), PETSC_ERR_PLIB, "Graph Laplacian must have only one zero eigenvalue");
     evInd = perm[0];
     for (i = 0; i < n; ++i) {
-      PetscCheck(PetscAbsReal(eigvec[evInd * n + i] - eigvec[evInd * n + 0]) <= 1.0e-10, PetscObjectComm((PetscObject)L), PETSC_ERR_PLIB, "Graph Laplacian must have constant lowest eigenvector ev_%" PetscInt_FMT " %g != ev_0 %g", i, (double)(eigvec[evInd * n + i]), (double)(eigvec[evInd * n + 0]));
+      PetscCheck(PetscAbsReal(eigvec[evInd * n + i] - eigvec[evInd * n + 0]) <= 1.0e-10, PetscObjectComm((PetscObject)L), PETSC_ERR_PLIB, "Graph Laplacian must have constant lowest eigenvector ev_%" PetscInt_FMT " %g != ev_0 %g", i, (double)eigvec[evInd * n + i], (double)eigvec[evInd * n + 0]);
     }
     /* Construct Fiedler partition */
     evInd = perm[1];

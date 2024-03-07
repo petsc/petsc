@@ -168,7 +168,7 @@ static PetscErrorCode MatLUFactorNumeric_KLU(Mat F, Mat A, const MatFactorInfo *
 static PetscErrorCode MatLUFactorSymbolic_KLU(Mat F, Mat A, IS r, IS c, const MatFactorInfo *info)
 {
   Mat_SeqAIJ     *a  = (Mat_SeqAIJ *)A->data;
-  Mat_KLU        *lu = (Mat_KLU *)(F->data);
+  Mat_KLU        *lu = (Mat_KLU *)F->data;
   PetscInt        i, *ai = a->i, *aj = a->j, m = A->rmap->n, n = A->cmap->n;
   const PetscInt *ra, *ca;
 
@@ -206,13 +206,13 @@ static PetscErrorCode MatView_Info_KLU(Mat A, PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCall(PetscViewerASCIIPrintf(viewer, "KLU stats:\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "  Number of diagonal blocks: %" PetscInt_FMT "\n", (PetscInt)(Numeric->nblocks)));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "  Number of diagonal blocks: %" PetscInt_FMT "\n", (PetscInt)Numeric->nblocks));
   PetscCall(PetscViewerASCIIPrintf(viewer, "  Total nonzeros=%" PetscInt_FMT "\n", (PetscInt)(Numeric->lnz + Numeric->unz)));
   PetscCall(PetscViewerASCIIPrintf(viewer, "KLU runtime parameters:\n"));
   /* Control parameters used by numeric factorization */
   PetscCall(PetscViewerASCIIPrintf(viewer, "  Partial pivoting tolerance: %g\n", lu->Common.tol));
   /* BTF preordering */
-  PetscCall(PetscViewerASCIIPrintf(viewer, "  BTF preordering enabled: %" PetscInt_FMT "\n", (PetscInt)(lu->Common.btf)));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "  BTF preordering enabled: %" PetscInt_FMT "\n", (PetscInt)lu->Common.btf));
   /* mat ordering */
   if (!lu->PetscMatOrdering) PetscCall(PetscViewerASCIIPrintf(viewer, "  Ordering: %s (not using the PETSc ordering)\n", KluOrderingTypes[(int)lu->Common.ordering]));
   /* matrix row scaling */

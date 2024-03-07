@@ -257,7 +257,7 @@ PetscErrorCode PetscViewerASCIIOpen(MPI_Comm comm, const char name[], PetscViewe
   PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Viewer_keyval, (void **)&vlink, (PetscMPIInt *)&flg));
   if (flg) {
     while (vlink) {
-      PetscCall(PetscStrcmp(name, ((PetscViewer_ASCII *)(vlink->viewer->data))->filename, &eq));
+      PetscCall(PetscStrcmp(name, ((PetscViewer_ASCII *)vlink->viewer->data)->filename, &eq));
       if (eq) {
         PetscCall(PetscObjectReference((PetscObject)vlink->viewer));
         *lab = vlink->viewer;

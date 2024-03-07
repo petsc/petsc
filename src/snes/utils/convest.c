@@ -27,8 +27,8 @@ PetscErrorCode PetscConvEstDestroy(PetscConvEst *ce)
 {
   PetscFunctionBegin;
   if (!*ce) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*ce), PETSC_OBJECT_CLASSID, 1);
-  if (--((PetscObject)(*ce))->refct > 0) {
+  PetscValidHeaderSpecific(*ce, PETSC_OBJECT_CLASSID, 1);
+  if (--((PetscObject)*ce)->refct > 0) {
     *ce = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

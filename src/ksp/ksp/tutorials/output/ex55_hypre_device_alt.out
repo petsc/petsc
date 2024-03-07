@@ -1,22 +1,22 @@
-  0 KSP Residual norm 78.3345 
-  1 KSP Residual norm 10.7583 
-  2 KSP Residual norm 12.647 
-  3 KSP Residual norm 6.61255 
-  4 KSP Residual norm 2.08857 
-  5 KSP Residual norm 0.948655 
-  6 KSP Residual norm 0.479593 
-  7 KSP Residual norm 0.234874 
-  8 KSP Residual norm 0.0910193 
-  9 KSP Residual norm 0.0309807 
- 10 KSP Residual norm 0.012141 
- 11 KSP Residual norm 0.00546044 
- 12 KSP Residual norm 0.00244445 
- 13 KSP Residual norm 0.00127377 
- 14 KSP Residual norm 0.000692398 
+  0 KSP Residual norm 78.3345
+  1 KSP Residual norm 10.7583
+  2 KSP Residual norm 12.647
+  3 KSP Residual norm 6.61255
+  4 KSP Residual norm 2.08857
+  5 KSP Residual norm 0.948655
+  6 KSP Residual norm 0.479593
+  7 KSP Residual norm 0.234874
+  8 KSP Residual norm 0.0910193
+  9 KSP Residual norm 0.0309807
+ 10 KSP Residual norm 0.012141
+ 11 KSP Residual norm 0.00546044
+ 12 KSP Residual norm 0.00244445
+ 13 KSP Residual norm 0.00127377
+ 14 KSP Residual norm 0.000692398
 KSP Object: 4 MPI processes
   type: cg
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
 PC Object: 4 MPI processes

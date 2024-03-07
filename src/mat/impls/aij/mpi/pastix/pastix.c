@@ -191,14 +191,14 @@ static PetscErrorCode MatDestroy_Pastix(Mat A)
     lu->iparm[IPARM_START_TASK] = API_TASK_CLEAN;
     lu->iparm[IPARM_END_TASK]   = API_TASK_CLEAN;
 
-    PetscPastixCall(&(lu->pastix_data), lu->pastix_comm, lu->n, lu->colptr, lu->row, (PastixScalar *)lu->val, lu->perm, lu->invp, (PastixScalar *)lu->rhs, lu->rhsnbr, lu->iparm, lu->dparm);
+    PetscPastixCall(&lu->pastix_data, lu->pastix_comm, lu->n, lu->colptr, lu->row, (PastixScalar *)lu->val, lu->perm, lu->invp, (PastixScalar *)lu->rhs, lu->rhsnbr, lu->iparm, lu->dparm);
     PetscCheck(lu->iparm[IPARM_ERROR_NUMBER] == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by PaStiX in destroy: iparm(IPARM_ERROR_NUMBER)=%" PetscInt_FMT, lu->iparm[IPARM_ERROR_NUMBER]);
     PetscCall(PetscFree(lu->colptr));
     PetscCall(PetscFree(lu->row));
     PetscCall(PetscFree(lu->val));
     PetscCall(PetscFree(lu->perm));
     PetscCall(PetscFree(lu->invp));
-    PetscCallMPI(MPI_Comm_free(&(lu->pastix_comm)));
+    PetscCallMPI(MPI_Comm_free(&lu->pastix_comm));
   }
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatFactorGetSolverType_C", NULL));
   PetscCall(PetscFree(A->data));
@@ -240,13 +240,13 @@ static PetscErrorCode MatSolve_PaStiX(Mat A, Vec b, Vec x)
   lu->iparm[IPARM_END_TASK]   = API_TASK_REFINE;
   lu->iparm[IPARM_RHS_MAKING] = API_RHS_B;
 
-  PetscPastixCall(&(lu->pastix_data), lu->pastix_comm, lu->n, lu->colptr, lu->row, (PastixScalar *)lu->val, lu->perm, lu->invp, (PastixScalar *)lu->rhs, lu->rhsnbr, lu->iparm, lu->dparm);
+  PetscPastixCall(&lu->pastix_data, lu->pastix_comm, lu->n, lu->colptr, lu->row, (PastixScalar *)lu->val, lu->perm, lu->invp, (PastixScalar *)lu->rhs, lu->rhsnbr, lu->iparm, lu->dparm);
   PetscCheck(lu->iparm[IPARM_ERROR_NUMBER] == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by PaStiX in solve phase: lu->iparm[IPARM_ERROR_NUMBER] = %" PetscInt_FMT, lu->iparm[IPARM_ERROR_NUMBER]);
 
   if (lu->commSize == 1) {
-    PetscCall(VecRestoreArray(x, &(lu->rhs)));
+    PetscCall(VecRestoreArray(x, &lu->rhs));
   } else {
-    PetscCall(VecRestoreArray(x_seq, &(lu->rhs)));
+    PetscCall(VecRestoreArray(x_seq, &lu->rhs));
   }
 
   if (lu->commSize > 1) { /* convert PaStiX centralized solution to petsc mpi x */
@@ -280,7 +280,7 @@ static PetscErrorCode MatFactorNumeric_PaStiX(Mat F, Mat A, const MatFactorInfo 
     (F)->ops->solve = MatSolve_PaStiX;
 
     /* Initialize a PASTIX instance */
-    PetscCallMPI(MPI_Comm_dup(PetscObjectComm((PetscObject)A), &(lu->pastix_comm)));
+    PetscCallMPI(MPI_Comm_dup(PetscObjectComm((PetscObject)A), &lu->pastix_comm));
     PetscCallMPI(MPI_Comm_rank(lu->pastix_comm, &lu->commRank));
     PetscCallMPI(MPI_Comm_size(lu->pastix_comm, &lu->commSize));
 
@@ -292,7 +292,7 @@ static PetscErrorCode MatFactorNumeric_PaStiX(Mat F, Mat A, const MatFactorInfo 
     lu->rhsnbr = 1;
 
     /* Call to set default pastix options */
-    PetscPastixCall(&(lu->pastix_data), lu->pastix_comm, lu->n, lu->colptr, lu->row, (PastixScalar *)lu->val, lu->perm, lu->invp, (PastixScalar *)lu->rhs, lu->rhsnbr, lu->iparm, lu->dparm);
+    PetscPastixCall(&lu->pastix_data, lu->pastix_comm, lu->n, lu->colptr, lu->row, (PastixScalar *)lu->val, lu->perm, lu->invp, (PastixScalar *)lu->rhs, lu->rhsnbr, lu->iparm, lu->dparm);
     PetscCheck(lu->iparm[IPARM_ERROR_NUMBER] == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by PaStiX in MatFactorNumeric: iparm(IPARM_ERROR_NUMBER)=%" PetscInt_FMT, lu->iparm[IPARM_ERROR_NUMBER]);
 
     PetscOptionsBegin(PetscObjectComm((PetscObject)F), ((PetscObject)F)->prefix, "PaStiX Options", "Mat");
@@ -302,7 +302,7 @@ static PetscErrorCode MatFactorNumeric_PaStiX(Mat F, Mat A, const MatFactorInfo 
     if ((flg && icntl >= 0) || PetscLogPrintInfo) lu->iparm[IPARM_VERBOSE] = icntl;
     icntl = -1;
     PetscCall(PetscOptionsInt("-mat_pastix_threadnbr", "iparm[IPARM_THREAD_NBR] : Number of thread by MPI node", "None", lu->iparm[IPARM_THREAD_NBR], &icntl, &flg));
-    if ((flg && icntl > 0)) lu->iparm[IPARM_THREAD_NBR] = icntl;
+    if (flg && icntl > 0) lu->iparm[IPARM_THREAD_NBR] = icntl;
     PetscOptionsEnd();
     valOnly = PETSC_FALSE;
   } else {
@@ -326,8 +326,8 @@ static PetscErrorCode MatFactorNumeric_PaStiX(Mat F, Mat A, const MatFactorInfo 
   PetscCall(MatDestroyMatrices(1, &tseq));
 
   if (!lu->perm) {
-    PetscCall(PetscMalloc1(lu->n, &(lu->perm)));
-    PetscCall(PetscMalloc1(lu->n, &(lu->invp)));
+    PetscCall(PetscMalloc1(lu->n, &lu->perm));
+    PetscCall(PetscMalloc1(lu->n, &lu->invp));
   }
 
   if (isSym) {
@@ -354,12 +354,12 @@ static PetscErrorCode MatFactorNumeric_PaStiX(Mat F, Mat A, const MatFactorInfo 
     lu->iparm[IPARM_START_TASK] = API_TASK_ORDERING;
     lu->iparm[IPARM_END_TASK]   = API_TASK_NUMFACT;
 
-    PetscPastixCall(&(lu->pastix_data), lu->pastix_comm, lu->n, lu->colptr, lu->row, (PastixScalar *)lu->val, lu->perm, lu->invp, (PastixScalar *)lu->rhs, lu->rhsnbr, lu->iparm, lu->dparm);
+    PetscPastixCall(&lu->pastix_data, lu->pastix_comm, lu->n, lu->colptr, lu->row, (PastixScalar *)lu->val, lu->perm, lu->invp, (PastixScalar *)lu->rhs, lu->rhsnbr, lu->iparm, lu->dparm);
     PetscCheck(lu->iparm[IPARM_ERROR_NUMBER] == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by PaStiX in analysis phase: iparm(IPARM_ERROR_NUMBER)=%" PetscInt_FMT, lu->iparm[IPARM_ERROR_NUMBER]);
   } else {
     lu->iparm[IPARM_START_TASK] = API_TASK_NUMFACT;
     lu->iparm[IPARM_END_TASK]   = API_TASK_NUMFACT;
-    PetscPastixCall(&(lu->pastix_data), lu->pastix_comm, lu->n, lu->colptr, lu->row, (PastixScalar *)lu->val, lu->perm, lu->invp, (PastixScalar *)lu->rhs, lu->rhsnbr, lu->iparm, lu->dparm);
+    PetscPastixCall(&lu->pastix_data, lu->pastix_comm, lu->n, lu->colptr, lu->row, (PastixScalar *)lu->val, lu->perm, lu->invp, (PastixScalar *)lu->rhs, lu->rhsnbr, lu->iparm, lu->dparm);
     PetscCheck(lu->iparm[IPARM_ERROR_NUMBER] == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by PaStiX in analysis phase: iparm(IPARM_ERROR_NUMBER)=%" PetscInt_FMT, lu->iparm[IPARM_ERROR_NUMBER]);
   }
 

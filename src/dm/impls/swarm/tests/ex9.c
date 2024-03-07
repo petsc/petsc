@@ -165,7 +165,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsRealArray("-charges", "Species charges", "ex9.c", options->charges, &d, NULL));
   PetscCall(PetscOptionsEnum("-em_type", "Type of electrostatic solver", "ex9.c", EMTypes, (PetscEnum)options->em, (PetscEnum *)&options->em, NULL));
   PetscOptionsEnd();
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -260,7 +259,6 @@ static PetscErrorCode SetupContext(DM dm, DM sw, AppCtx *user)
     PetscCall(PetscDrawAxisSetLabels(axis_Pot, "Particles", "x", "potential"));
     PetscCall(PetscDrawSetSave(user->PotDraw, "ex9_phi_spatial.png"));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1504,7 +1502,6 @@ static PetscErrorCode ComputeFieldAtParticles(SNES snes, DM sw, PetscReal E[])
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No solver for electrostatic model %s", EMTypes[ctx->em]);
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

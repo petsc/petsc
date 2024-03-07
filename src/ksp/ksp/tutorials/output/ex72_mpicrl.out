@@ -15,22 +15,22 @@ Mat Object:
   package used to perform factorization: petsc
   total: nonzeros=72, allocated nonzeros=72
     not using I-node routines
-  0 KSP Residual norm 104.813 
-  1 KSP Residual norm 40.4428 
-  2 KSP Residual norm 15.6387 
-  3 KSP Residual norm 3.50016 
-  4 KSP Residual norm 0.614837 
-  5 KSP Residual norm 0.222981 
-  6 KSP Residual norm 0.0543251 
-  7 KSP Residual norm 0.0115868 
-  8 KSP Residual norm 0.00298028 
-  9 KSP Residual norm 0.00046493 
+  0 KSP Residual norm 104.813
+  1 KSP Residual norm 40.4428
+  2 KSP Residual norm 15.6387
+  3 KSP Residual norm 3.50016
+  4 KSP Residual norm 0.614837
+  5 KSP Residual norm 0.222981
+  6 KSP Residual norm 0.0543251
+  7 KSP Residual norm 0.0115868
+  8 KSP Residual norm 0.00298028
+  9 KSP Residual norm 0.00046493
 KSP Object:
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     happy breakdown tolerance 1e-30
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
 PC Object:
@@ -41,7 +41,7 @@ PC Object:
   KSP Object:(sub_)
     type: preonly
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object:(sub_)

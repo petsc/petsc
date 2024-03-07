@@ -130,6 +130,5 @@ PETSC_EXTERN PetscErrorCode SNESCreate_ASPIN(SNES snes)
 
   snes->ops->destroy = SNESDestroy_ASPIN;
   PetscCall(PetscObjectChangeTypeName((PetscObject)snes, SNESASPIN));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }

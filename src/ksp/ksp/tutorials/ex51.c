@@ -353,7 +353,7 @@ static PetscReal polyBasisFunc(PetscInt order, PetscInt basis, PetscReal *xLocVa
       denominator *= (xLocVal[basis] - xLocVal[i]);
     }
   }
-  return (numerator / denominator);
+  return numerator / denominator;
 }
 
 /* --------------------------------------------------------------------- */
@@ -380,7 +380,7 @@ static PetscReal derivPolyBasisFunc(PetscInt order, PetscInt basis, PetscReal *x
     }
   }
 
-  return (numerator / denominator);
+  return numerator / denominator;
 }
 
 /* --------------------------------------------------------------------- */

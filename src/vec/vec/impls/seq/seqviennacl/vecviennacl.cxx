@@ -218,7 +218,7 @@ PetscErrorCode VecViennaCLCopyToGPU(Vec v)
       } catch (std::exception const &ex) {
         SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex.what());
       }
-      PetscCall(PetscLogCpuToGpu((v->map->n) * sizeof(PetscScalar)));
+      PetscCall(PetscLogCpuToGpu(v->map->n * sizeof(PetscScalar)));
       PetscCall(PetscLogEventEnd(VEC_ViennaCLCopyToGPU, v, 0, 0, 0));
       v->offloadmask = PETSC_OFFLOAD_BOTH;
     }
@@ -243,7 +243,7 @@ PetscErrorCode VecViennaCLCopyFromGPU(Vec v)
     } catch (std::exception const &ex) {
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex.what());
     }
-    PetscCall(PetscLogGpuToCpu((v->map->n) * sizeof(PetscScalar)));
+    PetscCall(PetscLogGpuToCpu(v->map->n * sizeof(PetscScalar)));
     PetscCall(PetscLogEventEnd(VEC_ViennaCLCopyFromGPU, v, 0, 0, 0));
     v->offloadmask = PETSC_OFFLOAD_BOTH;
   }
@@ -1024,7 +1024,6 @@ PetscErrorCode VecCreateSeqViennaCLWithArrays(MPI_Comm comm, PetscInt bs, PetscI
   PetscMPIInt size;
 
   PetscFunctionBegin;
-
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCheck(size <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot create VECSEQ on more than one process");
 
@@ -1044,7 +1043,6 @@ PetscErrorCode VecCreateSeqViennaCLWithArrays(MPI_Comm comm, PetscInt bs, PetscI
   } else {
     (*V)->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1125,8 +1123,8 @@ PetscErrorCode VecDuplicate_SeqViennaCL(Vec win, Vec *V)
   PetscFunctionBegin;
   PetscCall(VecCreateSeqViennaCL(PetscObjectComm((PetscObject)win), win->map->n, V));
   PetscCall(PetscLayoutReference(win->map, &(*V)->map));
-  PetscCall(PetscObjectListDuplicate(((PetscObject)win)->olist, &((PetscObject)(*V))->olist));
-  PetscCall(PetscFunctionListDuplicate(((PetscObject)win)->qlist, &((PetscObject)(*V))->qlist));
+  PetscCall(PetscObjectListDuplicate(((PetscObject)win)->olist, &((PetscObject)*V)->olist));
+  PetscCall(PetscFunctionListDuplicate(((PetscObject)win)->qlist, &((PetscObject)*V)->qlist));
   (*V)->stash.ignorenegidx = win->stash.ignorenegidx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1298,7 +1296,6 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLContext(Vec v, PETSC_UINTPTR_T *ctx)
   } catch (std::exception const &ex) {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex.what());
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 #endif
 }
@@ -1338,7 +1335,6 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLQueue(Vec v, PETSC_UINTPTR_T *queue)
   } catch (std::exception const &ex) {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex.what());
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 #endif
 }
@@ -1416,7 +1412,6 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemWrite(Vec v, PETSC_UINTPTR_T *mem
   } catch (std::exception const &ex) {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex.what());
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 #endif
 }
@@ -1444,7 +1439,6 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMemWrite(Vec v)
   PetscFunctionBegin;
   PetscCheckTypeNames(v, VECSEQVIENNACL, VECMPIVIENNACL);
   PetscCall(VecViennaCLRestoreArrayWrite(v, NULL));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 #endif
 }
@@ -1486,7 +1480,6 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMem(Vec v, PETSC_UINTPTR_T *mem)
   } catch (std::exception const &ex) {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex.what());
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 #endif
 }
@@ -1514,7 +1507,6 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec v)
   PetscFunctionBegin;
   PetscCheckTypeNames(v, VECSEQVIENNACL, VECMPIVIENNACL);
   PetscCall(VecViennaCLRestoreArray(v, NULL));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 #endif
 }
@@ -1539,6 +1531,5 @@ PetscErrorCode VecCreate_SeqViennaCL_Private(Vec V, const ViennaCLVector *array)
     vecviennacl->GPUarray           = (ViennaCLVector *)array;
     V->offloadmask                  = PETSC_OFFLOAD_UNALLOCATED;
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }

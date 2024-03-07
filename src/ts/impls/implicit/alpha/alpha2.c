@@ -64,7 +64,7 @@ typedef struct {
 @*/
 PetscErrorCode TSAlpha2SetPredictor(TS ts, TSAlpha2PredictorFn *predictor, void *ctx)
 {
-  TS_Alpha *th = (TS_Alpha *)(ts->data);
+  TS_Alpha *th = (TS_Alpha *)ts->data;
 
   PetscFunctionBegin;
   th->predictor     = predictor;
@@ -75,7 +75,7 @@ PetscErrorCode TSAlpha2SetPredictor(TS ts, TSAlpha2PredictorFn *predictor, void 
 static PetscErrorCode TSAlpha_ApplyPredictor(TS ts, Vec X1)
 {
   /* Apply a custom predictor if set, or default to same-displacement. */
-  TS_Alpha *th = (TS_Alpha *)(ts->data);
+  TS_Alpha *th = (TS_Alpha *)ts->data;
 
   PetscFunctionBegin;
   if (th->predictor) PetscCall(th->predictor(ts, th->X0, th->V0, th->A0, X1, th->predictor_ctx));

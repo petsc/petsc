@@ -7,7 +7,7 @@
 PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *)mat->data;
-  Mat_SeqBAIJ *B    = (Mat_SeqBAIJ *)(baij->B->data);
+  Mat_SeqBAIJ *B    = (Mat_SeqBAIJ *)baij->B->data;
   PetscInt     i, j, *aj = B->j, ec = 0, *garray;
   PetscInt     bs = mat->rmap->bs, *stmp;
   IS           from, to;

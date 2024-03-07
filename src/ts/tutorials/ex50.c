@@ -92,8 +92,6 @@ int main(int argc, char **argv)
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscFunctionBeginUser;
-
-  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
 
   /*initialize parameters */

@@ -113,7 +113,7 @@ static PetscErrorCode MatCreateSubMatrix_SeqBAIJ_Private(Mat A, IS isrow, IS isc
     PetscCall(MatSetType(C, ((PetscObject)A)->type_name));
     PetscCall(MatSeqBAIJSetPreallocation(C, bs, 0, lens));
   }
-  c = (Mat_SeqBAIJ *)(C->data);
+  c = (Mat_SeqBAIJ *)C->data;
   for (i = 0; i < nrows; i++) {
     row      = irow[i];
     kstart   = ai[row];

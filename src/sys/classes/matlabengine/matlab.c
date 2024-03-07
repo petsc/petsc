@@ -48,6 +48,7 @@ PetscErrorCode PetscMatlabEngineCreate(MPI_Comm comm, const char host[], PetscMa
   PetscMatlabEngine e;
   PetscBool         flg = PETSC_FALSE;
   char              lhost[64];
+
   PetscFunctionBegin;
   if (MATLABENGINE_CLASSID == -1) PetscCall(PetscClassIdRegister("MATLAB Engine", &MATLABENGINE_CLASSID));
   PetscCall(PetscHeaderCreate(e, MATLABENGINE_CLASSID, "MatlabEngine", "MATLAB Engine", "Sys", comm, PetscMatlabEngineDestroy, NULL));
@@ -110,7 +111,7 @@ PetscErrorCode PetscMatlabEngineDestroy(PetscMatlabEngine *v)
   PetscFunctionBegin;
   if (!*v) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*v, MATLABENGINE_CLASSID, 1);
-  if (--((PetscObject)(*v))->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
+  if (--((PetscObject)*v)->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscInfo(0, "Stopping MATLAB engine\n"));
   err = engClose((*v)->ep);
   PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error closing MATLAB engine");
@@ -158,7 +159,7 @@ PetscErrorCode PetscMatlabEngineEvaluate(PetscMatlabEngine mengine, const char s
   /*
      Check for error in MATLAB: indicated by ? as first character in engine->buffer
   */
-  PetscCheck(mengine->buffer[4] != '?', PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in evaluating MATLAB command:%s\n%s", string, mengine->buffer);
+  PetscCheck(mengine->buffer[4] != '?', PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in evaluating MATLAB command: %s %s", string, mengine->buffer);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

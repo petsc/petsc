@@ -40,16 +40,16 @@ typedef struct {
 
 static inline PetscBool PetscSubcomm_isActiveRank(PetscSubcomm scomm)
 {
-  if (scomm->color == 0) return (PETSC_TRUE);
-  else return (PETSC_FALSE);
+  if (scomm->color == 0) return PETSC_TRUE;
+  else return PETSC_FALSE;
 }
 
 static inline PetscBool PCTelescope_isActiveRank(PC_Telescope sred)
 {
-  if (sred->psubcomm) return (PetscSubcomm_isActiveRank(sred->psubcomm));
+  if (sred->psubcomm) return PetscSubcomm_isActiveRank(sred->psubcomm);
   else {
-    if (sred->subcomm != MPI_COMM_NULL) return (PETSC_TRUE);
-    else return (PETSC_FALSE);
+    if (sred->subcomm != MPI_COMM_NULL) return PETSC_TRUE;
+    else return PETSC_FALSE;
   }
 }
 

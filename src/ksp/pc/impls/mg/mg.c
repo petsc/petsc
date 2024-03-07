@@ -1818,7 +1818,7 @@ static PetscErrorCode PCGetCoarseOperators_MG(PC pc, PetscInt *num_levels, Mat *
   PetscCheck(mglevels, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Must set MG levels before calling");
   PetscCall(PetscMalloc1(mg->nlevels, &mat));
   for (l = 0; l < mg->nlevels - 1; l++) {
-    PetscCall(KSPGetOperators(mglevels[l]->smoothd, NULL, &(mat[l])));
+    PetscCall(KSPGetOperators(mglevels[l]->smoothd, NULL, &mat[l]));
     PetscCall(PetscObjectReference((PetscObject)mat[l]));
   }
   *num_levels      = mg->nlevels;

@@ -463,7 +463,6 @@ PetscErrorCode PetscCitationsInitialize(void)
   Publisher = {Birkh{\\\"{a}}user Press},\n\
   Year = {1997}\n}\n",
                                    NULL));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

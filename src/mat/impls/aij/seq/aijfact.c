@@ -1758,7 +1758,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact, Mat A, IS isrow, IS iscol, 
     bjlvl_ptr[i] = current_space_lvl->array;
 
     /* make sure the active row i has diagonal entry */
-    PetscCheck(*(bj_ptr[i] + bdiag[i]) == i, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Row %" PetscInt_FMT " has missing diagonal in factored matrix\ntry running with -pc_factor_nonzeros_along_diagonal or -pc_factor_diagonal_fill", i);
+    PetscCheck(*(bj_ptr[i] + bdiag[i]) == i, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Row %" PetscInt_FMT " has missing diagonal in factored matrix, try running with -pc_factor_nonzeros_along_diagonal or -pc_factor_diagonal_fill", i);
 
     current_space->array += nzi;
     current_space->local_used += nzi;
@@ -1947,7 +1947,7 @@ static PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact, Mat A, IS is
     bjlvl_ptr[i] = current_space_lvl->array;
 
     /* make sure the active row i has diagonal entry */
-    PetscCheck(*(bj_ptr[i] + bdiag[i]) == i, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Row %" PetscInt_FMT " has missing diagonal in factored matrix\ntry running with -pc_factor_nonzeros_along_diagonal or -pc_factor_diagonal_fill", i);
+    PetscCheck(*(bj_ptr[i] + bdiag[i]) == i, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Row %" PetscInt_FMT " has missing diagonal in factored matrix, try running with -pc_factor_nonzeros_along_diagonal or -pc_factor_diagonal_fill", i);
 
     current_space->array += nzi;
     current_space->local_used += nzi;
@@ -3046,7 +3046,7 @@ static PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ_inplace(Mat fact, Mat A, 
 
   #if defined(PETSC_USE_INFO)
   if (ai[am] != 0) {
-    PetscReal af = (PetscReal)(ui[am]) / ((PetscReal)ai[am]);
+    PetscReal af = (PetscReal)ui[am] / (PetscReal)ai[am];
     PetscCall(PetscInfo(A, "Reallocs %" PetscInt_FMT " Fill ratio:given %g needed %g\n", reallocs, (double)fill, (double)af));
     PetscCall(PetscInfo(A, "Run with -pc_factor_fill %g or use \n", (double)af));
     PetscCall(PetscInfo(A, "PCFactorSetFill(pc,%g) for best performance.\n", (double)af));
@@ -3093,7 +3093,7 @@ static PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ_inplace(Mat fact, Mat A, 
   fact->info.factor_mallocs   = reallocs;
   fact->info.fill_ratio_given = fill;
   if (ai[am] != 0) {
-    fact->info.fill_ratio_needed = ((PetscReal)ui[am]) / ((PetscReal)ai[am]);
+    fact->info.fill_ratio_needed = (PetscReal)ui[am] / (PetscReal)ai[am];
   } else {
     fact->info.fill_ratio_needed = 0.0;
   }

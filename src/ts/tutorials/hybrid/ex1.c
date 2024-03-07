@@ -206,7 +206,7 @@ int main(int argc, char **argv)
   PetscCall(TSDestroy(&ts));
 
   PetscCall(PetscFinalize());
-  return (0);
+  return 0;
 }
 
 /*TEST

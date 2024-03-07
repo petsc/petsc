@@ -119,7 +119,6 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
 
   PetscFunctionBegin;
-
   PetscCall(TaoComputeVariableBounds(tao));
   PetscCall(VecMedian(tao->XL, tao->solution, tao->XU, tao->solution));
   PetscCall(TaoLineSearchSetVariableBounds(tao->linesearch, tao->XL, tao->XU));
@@ -219,7 +218,6 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
     PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
     if (tao->reason != TAO_CONTINUE_ITERATING) break;
   } /* END MAIN LOOP  */
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

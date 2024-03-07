@@ -1,5 +1,5 @@
 atol=1e-50, rtol=1e-08, stol=1e-08, maxit=50, maxf=10000
-  0 SNES Function norm 5.41468 
+  0 SNES Function norm 5.41468
   ---------- Testing Jacobian -------------
   Testing hand-coded Jacobian, if (for double precision runs) ||J - Jfd||_F/||J||_F is
     O(1.e-8), the hand-coded Jacobian is probably correct.
@@ -28,8 +28,8 @@ row 1: (0, -16.)
 row 2:
 row 3: (4, -16.) 
 row 4: (3, 16.) 
-    0 KSP Residual norm 6.945929944146e+00 
-    1 KSP Residual norm 2.792520156365e-15 
+    0 KSP Residual norm 6.945929944146e+00
+    1 KSP Residual norm 2.792520156365e-15
 Vec Object: 1 MPI process
   type: seq
 0.5
@@ -58,7 +58,7 @@ row 1: (1, 1.)
 row 2: (2, 1.) 
 row 3: (3, 1.) 
 row 4: (4, 1.) 
-  1 SNES Function norm 111.09 
+  1 SNES Function norm 111.09
 SNES Object: 1 MPI process
   type: ksptransposeonly
   maximum iterations=50, maximum function evaluations=10000
@@ -71,7 +71,7 @@ SNES Object: 1 MPI process
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object: 1 MPI process

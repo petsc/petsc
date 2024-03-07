@@ -36,7 +36,7 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(PetscBool, const char *, Pe
     if ((a) == PETSC_NULL_CHARACTER_Fortran) { \
       (b) = (a) = NULL; \
     } else { \
-      while (((n) > 0) && ((a)[(n)-1] == ' ')) (n)--; \
+      while (((n) > 0) && ((a)[(n) - 1] == ' ')) (n)--; \
       *ierr = PetscMalloc1((n) + 1, &(b)); \
       if (*ierr) return; \
       *ierr  = PetscMemcpy((b), (a), (n)); \

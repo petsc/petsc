@@ -38,7 +38,7 @@ int main(int argc, char **argv)
   PetscCall(VecSetSizes(z, n, PETSC_DECIDE));
   PetscCall(VecSet(z, 1.0));
   PetscCall(VecNorm(z, NORM_2, &ans));
-  PetscCheck(PetscAbs(nrm - ans) < PETSC_SMALL, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Diff is too big, %g\n", (double)nrm);
+  PetscCheck(PetscAbs(nrm - ans) < PETSC_SMALL, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Diff is too big, %g", (double)nrm);
   PetscCall(VecDestroy(&x));
   PetscCall(VecDestroy(&y));
   PetscCall(VecDestroy(&z));

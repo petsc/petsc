@@ -6,8 +6,8 @@ static PetscErrorCode DMKSPDestroy(DMKSP *kdm)
 {
   PetscFunctionBegin;
   if (!*kdm) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*kdm), DMKSP_CLASSID, 1);
-  if (--((PetscObject)(*kdm))->refct > 0) {
+  PetscValidHeaderSpecific(*kdm, DMKSP_CLASSID, 1);
+  if (--((PetscObject)*kdm)->refct > 0) {
     *kdm = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

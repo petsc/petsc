@@ -209,7 +209,7 @@ static PetscErrorCode PCView_BJacobi(PC pc, PetscViewer viewer)
         PetscCall(PetscViewerGetSubViewer(viewer, mpjac->psubcomm->child, &sviewer));
         if (!mpjac->psubcomm->color) {
           PetscCall(PetscViewerASCIIPushTab(sviewer));
-          PetscCall(KSPView(*(jac->ksp), sviewer));
+          PetscCall(KSPView(*jac->ksp, sviewer));
           PetscCall(PetscViewerASCIIPopTab(sviewer));
         }
         PetscCall(PetscViewerRestoreSubViewer(viewer, mpjac->psubcomm->child, &sviewer));

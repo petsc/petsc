@@ -761,7 +761,6 @@ static PetscErrorCode DMCreateCoordinateDM_Stag(DM dm, DM *dmc)
   const char    *prefix;
 
   PetscFunctionBegin;
-
   PetscCheck(stag->coordinateDMType, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Before creating a coordinate DM, a type must be specified with DMStagSetCoordinateDMType()");
 
   PetscCall(DMGetDimension(dm, &dim));
@@ -915,7 +914,6 @@ static PetscErrorCode DMSetFromOptions_Stag(DM dm, PetscOptionItems *PetscOption
     if (stag->l[d])
       for (i = 0; i < stag->nRanks[d]; ++i) stag->l[d][i] *= refineFactorTotal[d];
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -970,7 +968,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm)
   PetscCall(DMGetDimension(dm, &dim));
   PetscCheck(dim == 1 || dim == 2 || dim == 3, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DMSetDimension() must be called to set a dimension with value 1, 2, or 3");
 
-  PetscCall(PetscMemzero(dm->ops, sizeof(*(dm->ops))));
+  PetscCall(PetscMemzero(dm->ops, sizeof(*dm->ops)));
   dm->ops->createcoordinatedm  = DMCreateCoordinateDM_Stag;
   dm->ops->createglobalvector  = DMCreateGlobalVector_Stag;
   dm->ops->createlocalvector   = DMCreateLocalVector_Stag;

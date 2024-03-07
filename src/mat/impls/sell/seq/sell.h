@@ -90,7 +90,7 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
       PetscInt  new_size = Ain->maxallocmat + SH * MUL, *new_colidx; \
       datatype *new_val; \
 \
-      PetscCheck(NONEW != -2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check", ROW, COL); \
+      PetscCheck(NONEW != -2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc. Use MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check", ROW, COL); \
       /* malloc new storage space */ \
       PetscCall(PetscMalloc2(BS2 *new_size, &new_val, BS2 *new_size, &new_colidx)); \
 \
@@ -145,7 +145,7 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
           /* allocates a larger array for the XSELL matrix types; only extend the current slice by one more column. */ \
           PetscInt   new_size = a->maxallocmat + a->sliceheight, *new_colidx; \
           MatScalar *new_val; \
-          PetscCheck(a->nonew != -2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check", orow, ocol); \
+          PetscCheck(a->nonew != -2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc. Use MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check", orow, ocol); \
           /* malloc new storage space */ \
           PetscCall(PetscMalloc2(new_size, &new_val, new_size, &new_colidx)); \
           /* copy over old data into new slots by two steps: one step for data before the current slice and the other for the rest */ \

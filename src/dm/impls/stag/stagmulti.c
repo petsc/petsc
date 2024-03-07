@@ -62,7 +62,7 @@ PetscErrorCode DMStagRestrictSimple(DM dmf, Vec xf, DM dmc, Vec xc)
     PetscCall(DMStagRestrictSimple_3d(dmf, xf, dmc, xc));
     break;
   default:
-    SETERRQ(PetscObjectComm((PetscObject)dmf), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT "", dim);
+    SETERRQ(PetscObjectComm((PetscObject)dmf), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
     break;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -638,7 +638,6 @@ PETSC_INTERN PetscErrorCode DMStagPopulateInterpolation2d_Internal(DM dmc, DM dm
         PetscCall(DMStagStencilToIndexLocal(dmc, dim, 1, colc, ic));
         PetscCall(MatSetValuesLocal(A, 1, &ir, 1, ic, weight, INSERT_VALUES));
       }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -987,7 +986,6 @@ PETSC_INTERN PetscErrorCode DMStagPopulateInterpolation3d_Internal(DM dmc, DM dm
           PetscCall(DMStagStencilToIndexLocal(dmc, dim, 1, colc, ic));
           PetscCall(MatSetValuesLocal(A, 1, &ir, 1, ic, weight, INSERT_VALUES));
         }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -456,7 +456,6 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_3d(DM dm)
 
   /* View from Options */
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -733,7 +732,6 @@ static PetscErrorCode DMStagSetUpBuildNeighbors_3d(DM dm)
       stag->neighbors[i] = -1;
     }
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -821,7 +819,6 @@ static PetscErrorCode DMStagSetUpBuildGlobalOffsets_3d(DM dm, PetscInt **pGlobal
       /* Don't need to compute entries in last element */
     }
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1645,7 +1642,6 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm, const PetscInt *globalOf
     PetscCall(ISDestroy(&isLocal));  /* frees idxLocal */
     PetscCall(ISDestroy(&isGlobal)); /* free idxGlobal */
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1660,7 +1656,6 @@ static PetscErrorCode DMStagSetUpBuildL2G_3d(DM dm, const PetscInt *globalOffset
   PetscBool            nextToDummyEnd[3], dummyStart[3], dummyEnd[3], star;
 
   PetscFunctionBegin;
-
   /* Check stencil type */
   PetscCheck(stag->stencilType == DMSTAG_STENCIL_NONE || stag->stencilType == DMSTAG_STENCIL_BOX || stag->stencilType == DMSTAG_STENCIL_STAR, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported stencil type %s", DMStagStencilTypes[stag->stencilType]);
   star = (PetscBool)(stag->stencilType == DMSTAG_STENCIL_STAR || stag->stencilType == DMSTAG_STENCIL_NONE);

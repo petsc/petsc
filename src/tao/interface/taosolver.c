@@ -391,7 +391,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
   if (tao->linesearch) {
     const char *prefix;
     PetscCall(TaoLineSearchGetOptionsPrefix(tao->linesearch, &prefix));
-    if (!prefix) PetscCall(TaoLineSearchSetOptionsPrefix(tao->linesearch, ((PetscObject)(tao))->prefix));
+    if (!prefix) PetscCall(TaoLineSearchSetOptionsPrefix(tao->linesearch, ((PetscObject)tao)->prefix));
   }
 
   PetscCall(PetscOptionsReal("-tao_catol", "Stop if constraints violations within", "TaoSetConstraintTolerances", tao->catol, &tao->catol, &flg));

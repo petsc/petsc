@@ -133,12 +133,12 @@ PetscErrorCode KSPGuessDestroy(KSPGuess *guess)
 {
   PetscFunctionBegin;
   if (!*guess) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*guess), KSPGUESS_CLASSID, 1);
-  if (--((PetscObject)(*guess))->refct > 0) {
+  PetscValidHeaderSpecific(*guess, KSPGUESS_CLASSID, 1);
+  if (--((PetscObject)*guess)->refct > 0) {
     *guess = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  PetscTryTypeMethod((*guess), destroy);
+  PetscTryTypeMethod(*guess, destroy);
   PetscCall(MatDestroy(&(*guess)->A));
   PetscCall(PetscHeaderDestroy(guess));
   PetscFunctionReturn(PETSC_SUCCESS);

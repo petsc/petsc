@@ -339,8 +339,8 @@ PetscErrorCode InitializeLambda(DM da, Vec lambda, PetscReal x, PetscReal y)
 {
   PetscInt i, j, Mx, My, xs, ys, xm, ym;
   Field  **l;
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &Mx, &My, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
   /* locate the global i index for x and j index for y */
   i = (PetscInt)(x * (Mx - 1));
@@ -365,9 +365,9 @@ PetscErrorCode IFunctionLocalPassive(DMDALocalInfo *info, PetscReal t, Field **u
   PetscScalar uc, uxx, uyy, vc, vxx, vyy;
 
   PetscFunctionBegin;
-  hx = 2.50 / (PetscReal)(info->mx);
+  hx = 2.50 / (PetscReal)info->mx;
   sx = 1.0 / (hx * hx);
-  hy = 2.50 / (PetscReal)(info->my);
+  hy = 2.50 / (PetscReal)info->my;
   sy = 1.0 / (hy * hy);
 
   /* Get local grid boundaries */
@@ -407,13 +407,12 @@ PetscErrorCode IFunctionActive(TS ts, PetscReal ftime, Vec U, Vec Udot, Vec F, v
   PetscScalar   dummy;
 
   PetscFunctionBegin;
-
   PetscCall(TSGetDM(ts, &da));
   PetscCall(DMDAGetLocalInfo(da, &info));
   PetscCall(DMGetLocalVector(da, &localU));
-  hx  = 2.50 / (PetscReal)(info.mx);
+  hx  = 2.50 / (PetscReal)info.mx;
   sx  = 1.0 / (hx * hx);
-  hy  = 2.50 / (PetscReal)(info.my);
+  hy  = 2.50 / (PetscReal)info.my;
   sy  = 1.0 / (hy * hy);
   xs  = info.xs;
   xm  = info.xm;
@@ -521,7 +520,6 @@ PetscErrorCode IFunctionActive(TS ts, PetscReal ftime, Vec U, Vec Udot, Vec F, v
   delete[] u_a;
   delete[] f_c;
   delete[] u_c;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -746,7 +744,6 @@ PetscErrorCode RHSFunctionActive(TS ts, PetscReal ftime, Vec U, Vec F, void *ptr
   delete[] u_a;
   delete[] f_c;
   delete[] u_c;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -37,7 +37,6 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
   PetscScalar *arr;
 
   PetscFunctionBeginUser;
-
   /* Check that grid and rank grid is as expected for this test */
   {
     PetscInt nRanks[3], n[3], dim;

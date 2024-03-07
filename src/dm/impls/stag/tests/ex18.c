@@ -258,7 +258,6 @@ static PetscErrorCode CreateSystem(DM dm, Mat *pA, Vec *pRhs)
   PetscBool     hasPressure;
 
   PetscFunctionBeginUser;
-
   /* Determine whether or not to create system including pressure dof (on elements) */
   PetscCall(DMStagGetDOF(dm, &dof[0], &dof[1], &dof[2], NULL));
   PetscCheck(dof[0] == 0 && dof[1] == 1 && (dof[2] == 1 || dof[2] == 0), PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "CreateSystem only implemented for velocity-only or velocity+pressure grids");
@@ -667,7 +666,6 @@ static PetscErrorCode CreateSystem(DM dm, Mat *pA, Vec *pRhs)
     PetscCall(VecAssemblyBegin(rhs));
     PetscCall(VecAssemblyEnd(rhs));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

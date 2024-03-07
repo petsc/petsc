@@ -14,14 +14,14 @@
 
 ../ex63 : Warning, the 11th option '-ksp_converged_reason' was not recognized (use --help)!
 Norm2 of Ax - b = {1.11022302462515654e-16}
-  0 KSP Residual norm 0.000000000000e+00 
+  0 KSP Residual norm 0.000000000000e+00
 Linear solve converged due to CONVERGED_ATOL iterations 0
 KSP Object: 1 MPI process
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     happy breakdown tolerance 1e-30
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
 PC Object: 1 MPI process

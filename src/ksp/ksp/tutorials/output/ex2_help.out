@@ -302,13 +302,13 @@ Viewer (-mat_factor_view) options:
   -mat_factor_view draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
   -mat_factor_view socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
   -mat_factor_view saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
-  0 KSP Residual norm 3.811398540713e+00 
-  1 KSP Residual norm 1.444731352039e+00 
-  2 KSP Residual norm 4.712840878823e-01 
-  3 KSP Residual norm 6.943414362981e-02 
-  4 KSP Residual norm 9.502667693381e-03 
-  5 KSP Residual norm 7.905767061099e-04 
-  6 KSP Residual norm 1.108383257088e-04 
+  0 KSP Residual norm 3.811398540713e+00
+  1 KSP Residual norm 1.444731352039e+00
+  2 KSP Residual norm 4.712840878823e-01
+  3 KSP Residual norm 6.943414362981e-02
+  4 KSP Residual norm 9.502667693381e-03
+  5 KSP Residual norm 7.905767061099e-04
+  6 KSP Residual norm 1.108383257088e-04
 Viewer (-ksp_converged_reason) options:
   -ksp_converged_reason ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
   -ksp_converged_reason binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)

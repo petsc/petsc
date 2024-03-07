@@ -276,7 +276,7 @@ PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *
   PetscCall(PetscSectionGetPermutation(s2, &perm2));
   if (perm1 && perm2) {
     PetscCall(ISEqual(perm1, perm2, congruent));
-    if (!(*congruent)) goto not_congruent;
+    if (!*congruent) goto not_congruent;
   } else if (perm1 != perm2) goto not_congruent;
 
   for (p = pStart; p < pEnd; ++p) {
@@ -295,7 +295,7 @@ PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *
     PetscCall(PetscSectionGetConstraintIndices(s1, p, &idx1));
     PetscCall(PetscSectionGetConstraintIndices(s2, p, &idx2));
     PetscCall(PetscArraycmp(idx1, idx2, ncdof, congruent));
-    if (!(*congruent)) goto not_congruent;
+    if (!*congruent) goto not_congruent;
   }
 
   PetscCall(PetscSectionGetNumFields(s1, &nfields));
@@ -323,7 +323,7 @@ PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *
       PetscCall(PetscSectionGetFieldConstraintIndices(s1, p, f, &idx1));
       PetscCall(PetscSectionGetFieldConstraintIndices(s2, p, f, &idx2));
       PetscCall(PetscArraycmp(idx1, idx2, nfcdof, congruent));
-      if (!(*congruent)) goto not_congruent;
+      if (!*congruent) goto not_congruent;
     }
   }
 
@@ -2664,7 +2664,7 @@ PetscErrorCode PetscSectionDestroy(PetscSection *s)
   PetscFunctionBegin;
   if (!*s) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*s, PETSC_SECTION_CLASSID, 1);
-  if (--((PetscObject)(*s))->refct > 0) {
+  if (--((PetscObject)*s)->refct > 0) {
     *s = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -3385,8 +3385,8 @@ PetscErrorCode PetscSectionSymDestroy(PetscSectionSym *sym)
 
   PetscFunctionBegin;
   if (!*sym) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*sym), PETSC_SECTION_SYM_CLASSID, 1);
-  if (--((PetscObject)(*sym))->refct > 0) {
+  PetscValidHeaderSpecific(*sym, PETSC_SECTION_SYM_CLASSID, 1);
+  if (--((PetscObject)*sym)->refct > 0) {
     *sym = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -3446,7 +3446,7 @@ PetscErrorCode PetscSectionSetSym(PetscSection section, PetscSectionSym sym)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 1);
-  PetscCall(PetscSectionSymDestroy(&(section->sym)));
+  PetscCall(PetscSectionSymDestroy(&section->sym));
   if (sym) {
     PetscValidHeaderSpecific(sym, PETSC_SECTION_SYM_CLASSID, 2);
     PetscCheckSameComm(section, 1, sym, 2);

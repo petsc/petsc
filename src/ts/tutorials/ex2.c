@@ -264,7 +264,6 @@ PetscErrorCode InitialConditions(Vec u, AppCtx *appctx)
     PetscCall(PetscPrintf(appctx->comm, "initial guess vector\n"));
     PetscCall(VecView(u, PETSC_VIEWER_STDOUT_WORLD));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* --------------------------------------------------------------------- */
@@ -488,7 +487,6 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec global_in, Vec global_out, vo
     PetscCall(PetscPrintf(appctx->comm, "RHS function vector\n"));
     PetscCall(VecView(global_out, PETSC_VIEWER_STDOUT_WORLD));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* --------------------------------------------------------------------- */
@@ -622,7 +620,6 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec global_in, Mat AA, Mat BB, vo
      to the matrix. If we do, it will generate an error.
   */
   PetscCall(MatSetOption(BB, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -12,28 +12,28 @@ static PetscErrorCode PetscLogHandlerEventBegin_Legacy(PetscLogHandler handler, 
 {
   PetscLogHandler_Legacy legacy = (PetscLogHandler_Legacy)handler->data;
 
-  return (*(legacy->PetscLogPLB))(e, 0, o1, o2, o3, o4);
+  return (*legacy->PetscLogPLB)(e, 0, o1, o2, o3, o4);
 }
 
 static PetscErrorCode PetscLogHandlerEventEnd_Legacy(PetscLogHandler handler, PetscLogEvent e, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
 {
   PetscLogHandler_Legacy legacy = (PetscLogHandler_Legacy)handler->data;
 
-  return (*(legacy->PetscLogPLE))(e, 0, o1, o2, o3, o4);
+  return (*legacy->PetscLogPLE)(e, 0, o1, o2, o3, o4);
 }
 
 static PetscErrorCode PetscLogHandlerObjectCreate_Legacy(PetscLogHandler handler, PetscObject o)
 {
   PetscLogHandler_Legacy legacy = (PetscLogHandler_Legacy)handler->data;
 
-  return (*(legacy->PetscLogPHC))(o);
+  return (*legacy->PetscLogPHC)(o);
 }
 
 static PetscErrorCode PetscLogHandlerObjectDestroy_Legacy(PetscLogHandler handler, PetscObject o)
 {
   PetscLogHandler_Legacy legacy = (PetscLogHandler_Legacy)handler->data;
 
-  return (*(legacy->PetscLogPHD))(o);
+  return (*legacy->PetscLogPHD)(o);
 }
 
 static PetscErrorCode PetcLogHandlerDestroy_Legacy(PetscLogHandler handler)
@@ -115,8 +115,8 @@ PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_Legacy(PetscLogHandler handler
 PetscErrorCode PetscLogHandlerCreateLegacy(MPI_Comm comm, PetscErrorCode (*PetscLogPLB)(PetscLogEvent e, int _i, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4), PetscErrorCode (*PetscLogPLE)(PetscLogEvent e, int _i, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4), PetscErrorCode (*PetscLogPHC)(PetscObject o), PetscErrorCode (*PetscLogPHD)(PetscObject o), PetscLogHandler *handler)
 {
   PetscLogHandler_Legacy legacy;
+  PetscLogHandler        h;
 
-  PetscLogHandler h;
   PetscFunctionBegin;
   PetscCall(PetscLogHandlerCreate(comm, handler));
   h = *handler;

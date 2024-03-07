@@ -116,7 +116,6 @@ PetscErrorCode DMStagCreateISFromStencils(DM dm, PetscInt n_stencil, DMStagStenc
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm), count, idx, PETSC_OWN_POINTER, is));
   PetscCall(ISSetInfo(*is, IS_SORTED, IS_GLOBAL, PETSC_TRUE, PETSC_TRUE));
   PetscCall(ISSetInfo(*is, IS_UNIQUE, IS_GLOBAL, PETSC_TRUE, PETSC_TRUE));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -138,7 +138,7 @@ PetscErrorCode KSPMonitorResidual(KSP ksp, PetscInt n, PetscReal rnorm, PetscVie
   PetscCall(PetscViewerPushFormat(viewer, format));
   PetscCall(PetscViewerASCIIAddTab(viewer, tablevel));
   if (n == 0 && prefix) PetscCall(PetscViewerASCIIPrintf(viewer, "  Residual norms for %s solve.\n", prefix));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP Residual norm %14.12e \n", n, (double)rnorm));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP Residual norm %14.12e\n", n, (double)rnorm));
   PetscCall(PetscViewerASCIISubtractTab(viewer, tablevel));
   PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -283,8 +283,8 @@ PetscErrorCode KSPMonitorResidualShort(KSP ksp, PetscInt its, PetscReal fnorm, P
   PetscCall(PetscViewerPushFormat(viewer, format));
   PetscCall(PetscViewerASCIIAddTab(viewer, tablevel));
   if (its == 0 && prefix) PetscCall(PetscViewerASCIIPrintf(viewer, "  Residual norms for %s solve.\n", prefix));
-  if (fnorm > 1.e-9) PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP Residual norm %g \n", its, (double)fnorm));
-  else if (fnorm > 1.e-11) PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP Residual norm %5.3e \n", its, (double)fnorm));
+  if (fnorm > 1.e-9) PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP Residual norm %g\n", its, (double)fnorm));
+  else if (fnorm > 1.e-11) PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP Residual norm %5.3e\n", its, (double)fnorm));
   else PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP Residual norm < 1.e-11\n", its));
   PetscCall(PetscViewerASCIISubtractTab(viewer, tablevel));
   PetscCall(PetscViewerPopFormat(viewer));
@@ -355,7 +355,7 @@ PetscErrorCode KSPMonitorResidualRange(KSP ksp, PetscInt it, PetscReal rnorm, Pe
   PetscCall(KSPMonitorRange_Private(ksp, it, &perc));
   rel  = (prev - rnorm) / prev;
   prev = rnorm;
-  PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP preconditioned resid norm %14.12e Percent values above 20 percent of maximum %5.2f relative decrease %5.2e ratio %5.2e \n", it, (double)rnorm, (double)(100.0 * perc), (double)rel, (double)(rel / perc)));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP preconditioned resid norm %14.12e Percent values above 20 percent of maximum %5.2f relative decrease %5.2e ratio %5.2e\n", it, (double)rnorm, (double)(100.0 * perc), (double)rel, (double)(rel / perc)));
   PetscCall(PetscViewerASCIISubtractTab(viewer, tablevel));
   PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -861,7 +861,7 @@ PetscErrorCode KSPMonitorSolution(KSP ksp, PetscInt n, PetscReal rnorm, PetscVie
   PetscCall(PetscViewerPushFormat(viewer, format));
   PetscCall(PetscViewerASCIIAddTab(viewer, tablevel));
   if (n == 0 && prefix) PetscCall(PetscViewerASCIIPrintf(viewer, "  Solution norms for %s solve.\n", prefix));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP Solution norm %14.12e \n", n, (double)snorm));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP Solution norm %14.12e\n", n, (double)snorm));
   PetscCall(PetscViewerASCIISubtractTab(viewer, tablevel));
   PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1035,7 +1035,7 @@ PetscErrorCode KSPMonitorSingularValue(KSP ksp, PetscInt n, PetscReal rnorm, Pet
   PetscCall(PetscViewerASCIIAddTab(viewer, tablevel));
   if (n == 0 && prefix) PetscCall(PetscViewerASCIIPrintf(viewer, "  Residual norms for %s solve.\n", prefix));
   if (!ksp->calc_sings) {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP Residual norm %14.12e \n", n, (double)rnorm));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP Residual norm %14.12e\n", n, (double)rnorm));
   } else {
     PetscCall(KSPComputeExtremeSingularValues(ksp, &emax, &emin));
     PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP Residual norm %14.12e %% max %14.12e min %14.12e max/min %14.12e\n", n, (double)rnorm, (double)emax, (double)emin, (double)(emax / emin)));
@@ -1182,7 +1182,7 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp, PetscInt its, PetscReal fnorm
   if (scale->bnrm < 0.0) {
     Vec b;
     PetscCall(KSPGetRhs(ksp, &b));
-    PetscCall(VecNorm(b, NORM_2, &(scale->bnrm)));
+    PetscCall(VecNorm(b, NORM_2, &scale->bnrm));
   }
   PetscCall(KSPGetTolerances(ksp, &outer_rtol, &outer_abstol, &outer_dtol, &outer_maxits));
   inner_rtol = PetscMin(scale->coef * scale->bnrm * outer_rtol / fnorm, 0.999);

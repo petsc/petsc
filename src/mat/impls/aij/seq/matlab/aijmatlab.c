@@ -197,7 +197,7 @@ static PetscErrorCode MatGetFactor_seqaij_matlab(Mat A, MatFactorType ftype, Mat
   (*F)->ops->lufactorsymbolic  = MatLUFactorSymbolic_Matlab;
   (*F)->ops->ilufactorsymbolic = MatLUFactorSymbolic_Matlab;
 
-  PetscCall(PetscObjectComposeFunction((PetscObject)(*F), "MatFactorGetSolverType_C", MatFactorGetSolverType_seqaij_matlab));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*F, "MatFactorGetSolverType_C", MatFactorGetSolverType_seqaij_matlab));
 
   (*F)->factortype = ftype;
   PetscCall(PetscFree((*F)->solvertype));

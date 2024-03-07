@@ -1,5 +1,5 @@
-  0 SNES Function norm 3.86571 
-  1 SNES Function norm 1.3323 
-  2 SNES Function norm 1.81987e-06 
-  3 SNES Function norm 1.372e-11 
+  0 SNES Function norm 3.86571
+  1 SNES Function norm 1.3323
+  2 SNES Function norm 1.81987e-06
+  3 SNES Function norm 1.372e-11
 errors on 9 x 9 grid:  av |u-uexact|  = 3.076e-03,  |u-uexact|_inf = 1.334e-02

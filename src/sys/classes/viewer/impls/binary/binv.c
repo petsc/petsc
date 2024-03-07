@@ -282,6 +282,7 @@ PetscErrorCode PetscViewerBinarySetUseMPIIO(PetscViewer viewer, PetscBool use)
 static PetscErrorCode PetscViewerBinarySetUseMPIIO_Binary(PetscViewer viewer, PetscBool use)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary *)viewer->data;
+
   PetscFunctionBegin;
   PetscCheck(!viewer->setupcalled || vbinary->usempiio == use, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ORDER, "Cannot change MPIIO to %s after setup", PetscBools[use]);
   vbinary->usempiio = use;
@@ -776,7 +777,7 @@ static PetscErrorCode PetscViewerFileClose_BinarySTDIO(PetscViewer v)
       {
         FILE *fp;
         PetscCall(PetscPOpen(PETSC_COMM_SELF, NULL, cmd, "r", &fp));
-        PetscCheck(!fgets(out, (int)(sizeof(out) - 1), fp), PETSC_COMM_SELF, PETSC_ERR_LIB, "Error from command %s\n%s", cmd, out);
+        PetscCheck(!fgets(out, (int)(sizeof(out) - 1), fp), PETSC_COMM_SELF, PETSC_ERR_LIB, "Error from command %s %s", cmd, out);
         PetscCall(PetscPClose(PETSC_COMM_SELF, fp));
       }
 #endif
@@ -1169,8 +1170,7 @@ PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer viewer, const char 
   PetscFunctionBegin;
   PetscCall(PetscViewerSetUp(viewer));
   /* count number of strings */
-  while (data[n++])
-    ;
+  while (data[n++]);
   n--;
   PetscCall(PetscMalloc1(n + 1, &sizes));
   sizes[0] = n;

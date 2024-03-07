@@ -199,7 +199,7 @@ static PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat F, Mat A, const MatFactorIn
 static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F, Mat A, IS r, IS c, const MatFactorInfo *info)
 {
   Mat_SeqAIJ  *a  = (Mat_SeqAIJ *)A->data;
-  Mat_UMFPACK *lu = (Mat_UMFPACK *)(F->data);
+  Mat_UMFPACK *lu = (Mat_UMFPACK *)F->data;
   PetscInt     i, *ai = a->i, *aj = a->j, m = A->rmap->n, n = A->cmap->n, status, idx;
 #if !defined(PETSC_USE_COMPLEX)
   PetscScalar *av = a->a;

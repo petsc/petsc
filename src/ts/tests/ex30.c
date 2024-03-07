@@ -88,8 +88,8 @@ static PetscErrorCode makeSwarm(DM sw, const PetscInt dim, const PetscInt Np, co
   PetscReal    *coords;
   PetscDataType dtype;
   PetscInt      bs, p, zero = 0;
-  PetscFunctionBeginUser;
 
+  PetscFunctionBeginUser;
   PetscCall(DMSwarmSetLocalSizes(sw, Np, zero));
   PetscCall(DMSwarmGetField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void **)&coords));
   for (p = 0; p < Np; p++) {
@@ -105,6 +105,7 @@ static PetscErrorCode createMp(const DM dm, DM sw, Mat *Mp_out)
 {
   PetscBool removePoints = PETSC_TRUE;
   Mat       M_p;
+
   PetscFunctionBeginUser;
   // migrate after coords are set
   PetscCall(DMSwarmMigrate(sw, removePoints));
@@ -225,7 +226,6 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, const Vec rhs, Vec work, Mat 
   PetscCall(KSPDestroy(&ksp));
   PetscCall(MatDestroy(&PM_p));
   PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &ff));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -300,7 +300,7 @@ PetscErrorCode gridToParticles_private(DM grid_dm[], DM globSwarmArray[], const 
         }
       }
     } // thread batch
-  }   // batch
+  } // batch
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -599,9 +599,9 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt num_vertices, const PetscInt a_Np
                 } else moments_0[4] -= w;
               }
             } // grid
-          }   // target
-        }     // active
-      }       // threads
+          } // target
+        } // active
+      } // threads
       /* Create particle swarm */
       for (int tid = 0; tid < numthreads; tid++) {
         const PetscInt v_id = v_id_0 + tid, glb_v_id = global_vertex_id_0 + v_id;
@@ -622,7 +622,7 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt num_vertices, const PetscInt a_Np
             if (ierr_t) ierr = ierr_t;
           }
         } // active
-      }   // threads
+      } // threads
       PetscCheck(ierr != 9999, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Only support one species per grid");
       PetscCheck(!ierr, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Error in OMP loop. ierr = %d", (int)ierr);
       // make globMpArray
@@ -683,8 +683,8 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt num_vertices, const PetscInt a_Np
             PetscCall(PetscFree4(xx_t[grid][tid], yy_t[grid][tid], wp_t[grid][tid], zz_t[grid][tid]));
           }
         } // active
-      }   // threads
-    }     // (fake) particle loop
+      } // threads
+    } // (fake) particle loop
     // standard view of initial conditions
     if (v_target >= global_vertex_id_0 && v_target < global_vertex_id_0 + ctx->batch_sz) {
       PetscCall(DMSetOutputSequenceNumber(ctx->plex[g_target], 0, 0.0));
@@ -816,7 +816,6 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt num_vertices, const PetscInt a_Np
       PetscCall(KSPDestroy(&t_ksp[grid][tid]));
     }
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -839,9 +838,8 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsInt("-number_spatial_vertices", "Number of user spatial vertices to be batched for Landau", "ex30.c", num_vertices, &num_vertices, NULL));
   PetscCall(PetscOptionsInt("-number_particles_per_dimension", "Number of particles per grid, with slight modification per spatial vertex, in each dimension of base Cartesian grid", "ex30.c", Np, &Np, NULL));
   PetscCall(PetscOptionsBool("-use_uniform_particle_grid", "Use uniform particle grid", "ex30.c", use_uniform_particle_grid, &use_uniform_particle_grid, NULL));
-  PetscCall(PetscOptionsInt("-vertex_view_target", "Global vertex for diagnostics", "ex30.c", v_target, &v_target, NULL));
+  PetscCall(PetscOptionsRangeInt("-vertex_view_target", "Global vertex for diagnostics", "ex30.c", v_target, &v_target, NULL, 0, num_vertices - 1));
   PetscCall(PetscOptionsReal("-e_shift", "Bim-Maxwellian shift", "ex30.c", shift, &shift, NULL));
-  PetscCheck(v_target < num_vertices, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Batch to view %" PetscInt_FMT " should be < number of vertices %" PetscInt_FMT, v_target, num_vertices);
   PetscCall(PetscOptionsInt("-grid_view_target", "Grid to view with diagnostics", "ex30.c", g_target, &g_target, NULL));
   PetscOptionsEnd();
   /* Create a mesh */

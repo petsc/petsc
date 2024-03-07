@@ -204,7 +204,7 @@ PCTFS_gs_id *PCTFS_gs_init(PetscInt *elms, PetscInt nel, PetscInt level)
 
   gs->PCTFS_gs_comm = PCTFS_gs_comm;
 
-  return (gs);
+  return gs;
 }
 
 /******************************************************************************/
@@ -213,7 +213,7 @@ static PCTFS_gs_id *gsi_new(void)
   PCTFS_gs_id *gs;
   gs = (PCTFS_gs_id *)malloc(sizeof(PCTFS_gs_id));
   PetscCallAbort(PETSC_COMM_WORLD, PetscMemzero(gs, sizeof(PCTFS_gs_id)));
-  return (gs);
+  return gs;
 }
 
 /******************************************************************************/
@@ -378,7 +378,7 @@ static PCTFS_gs_id *gsi_check_args(PetscInt *in_elms, PetscInt nel, PetscInt lev
   else if (vals[5] > PCTFS_num_nodes) vals[5] = PCTFS_num_nodes;
   gs->level = vals[5];
 
-  return (gs);
+  return gs;
 }
 
 /******************************************************************************/

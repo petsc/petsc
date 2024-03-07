@@ -400,7 +400,7 @@ typedef enum {
 } MatStructure;
 PETSC_EXTERN const char *const MatStructures[];
 
-#if defined                 PETSC_HAVE_MKL_SPARSE
+#if defined PETSC_HAVE_MKL_SPARSE
 PETSC_EXTERN PetscErrorCode MatCreateSeqAIJMKL(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscInt[], Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateMPIAIJMKL(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateBAIJMKL(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Mat *);

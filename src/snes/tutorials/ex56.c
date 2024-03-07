@@ -203,7 +203,7 @@ int main(int argc, char **args)
   DM            dm;
   PetscBool     flg;
   PetscReal     Lx, mdisp[10], err[10];
-  PetscFunctionBeginUser;
+
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
   comm = PETSC_COMM_WORLD;

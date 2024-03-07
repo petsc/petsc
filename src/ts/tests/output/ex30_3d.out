@@ -9,13 +9,13 @@ Domain radius (AMR levels) grid 0: par= 5.000e+00 perp= 5.000e+00 (0) , 1: par= 
   0) species 2: density= 2.8839580855106e-04, x-momentum=-1.8705655228634e-20, y-momentum= 2.5986561592977e-20, z-momentum= 1.8559745281452e-20, energy=  2.4032492579402e-02
 	  0) Total: charge density= -9.4643910764081e-14, x-momentum= -2.8024199625769e-16, y-momentum=  1.8213751642070e-16, z-momentum=  1.3780855689204e-15, energy=  7.2098366940431e+04 (m_i[0]/m_e = 3670.94, 8 cells)
 0 TS dt 0.1 time 0.
-    0 SNES Function norm 1.744167693340e-02 
-    1 SNES Function norm 1.883413763990e-04 
-    2 SNES Function norm 6.878398862285e-06 
-    3 SNES Function norm 2.881309739998e-07 
-    4 SNES Function norm 1.227610429245e-08 
-    5 SNES Function norm 5.240901554350e-10 
-    6 SNES Function norm 2.237984647377e-11 
+    0 SNES Function norm 1.744167693340e-02
+    1 SNES Function norm 1.883413763990e-04
+    2 SNES Function norm 6.878398862285e-06
+    3 SNES Function norm 2.881309739998e-07
+    4 SNES Function norm 1.227610429245e-08
+    5 SNES Function norm 5.240901554350e-10
+    6 SNES Function norm 2.237984647377e-11
   Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 6
 1 TS dt 0.1 time 0.1
   1) species 0: density=-1.6022277759757e+01, x-momentum=-8.4882470621323e-18, y-momentum= 1.5980666256640e-17, z-momentum= 7.0419256353444e-18, energy=  4.8065479411868e+04

@@ -561,7 +561,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
       PetscCall(PetscFree5(qqc, qqr, TAU, WORK, fids));
       clid++;
     } /* coarse agg */
-  }   /* for all fine nodes */
+  } /* for all fine nodes */
   PetscCall(MatAssemblyBegin(a_Prol, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(a_Prol, MAT_FINAL_ASSEMBLY));
   PetscCall(PCGAMGHashTableDestroy(&fgid_flid));
@@ -933,7 +933,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
         }
       }
     } /* selected/deleted */
-  }   /* node loop */
+  } /* node loop */
 
   if (isMPI) {
     PetscScalar    *cpcol_2_parent, *cpcol_2_gid;
@@ -1002,7 +1002,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
 
           PetscCall(PetscCDGetNextPos(aggs_2, lid, &pos));
         } /* loop over list of deleted */
-      }   /* selected */
+      } /* selected */
     }
     PetscCall(PCGAMGHashTableDestroy(&gid_cpid));
 

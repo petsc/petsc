@@ -219,7 +219,6 @@ PetscErrorCode DMTSSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal,
 
   dmlocalts->boundarylocal    = func;
   dmlocalts->boundarylocalctx = ctx;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

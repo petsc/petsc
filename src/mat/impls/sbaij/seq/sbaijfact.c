@@ -93,7 +93,7 @@ static PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F, Mat A, IS pe
         q[m]  = vj;
         q[vj] = qm;
       } /* if (vj > k) */
-    }   /* for (j=jmin; j<jmax; j++) */
+    } /* for (j=jmin; j<jmax; j++) */
 
     /* modify nonzero structure of k-th row by computing fill-in
        for each row i to be merged in */

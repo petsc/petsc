@@ -3402,18 +3402,18 @@ PetscErrorCode SNESDestroy(SNES *snes)
 {
   PetscFunctionBegin;
   if (!*snes) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*snes), SNES_CLASSID, 1);
-  if (--((PetscObject)(*snes))->refct > 0) {
+  PetscValidHeaderSpecific(*snes, SNES_CLASSID, 1);
+  if (--((PetscObject)*snes)->refct > 0) {
     *snes = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PetscCall(SNESReset((*snes)));
+  PetscCall(SNESReset(*snes));
   PetscCall(SNESDestroy(&(*snes)->npc));
 
   /* if memory was published with SAWs then destroy it */
   PetscCall(PetscObjectSAWsViewOff((PetscObject)*snes));
-  PetscTryTypeMethod((*snes), destroy);
+  PetscTryTypeMethod(*snes, destroy);
 
   if ((*snes)->dm) PetscCall(DMCoarsenHookRemove((*snes)->dm, DMCoarsenHook_SNESVecSol, DMRestrictHook_SNESVecSol, *snes));
   PetscCall(DMDestroy(&(*snes)->dm));
@@ -3423,8 +3423,8 @@ PetscErrorCode SNESDestroy(SNES *snes)
   PetscCall(PetscFree((*snes)->kspconvctx));
   if ((*snes)->ops->convergeddestroy) PetscCall((*(*snes)->ops->convergeddestroy)((*snes)->cnvP));
   if ((*snes)->conv_hist_alloc) PetscCall(PetscFree2((*snes)->conv_hist, (*snes)->conv_hist_its));
-  PetscCall(SNESMonitorCancel((*snes)));
-  PetscCall(SNESConvergedReasonViewCancel((*snes)));
+  PetscCall(SNESMonitorCancel(*snes));
+  PetscCall(SNESConvergedReasonViewCancel(*snes));
   PetscCall(PetscHeaderDestroy(snes));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -5760,7 +5760,6 @@ PetscErrorCode SNESSetLineSearch(SNES snes, SNESLineSearch linesearch)
   PetscCall(SNESLineSearchDestroy(&snes->linesearch));
 
   snes->linesearch = linesearch;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

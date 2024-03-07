@@ -147,7 +147,7 @@ int main(int argc, char **argv)
     efficiently using a coloring of the columns of the matrix.
   */
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-snes_fd_coloring", &fd_coloring, NULL));
-  PetscCheck(!matrix_free || !fd_coloring, PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Use only one of -snes_mf, -snes_fd_coloring options!\nYou can do -snes_mf_operator -snes_fd_coloring");
+  PetscCheck(!matrix_free || !fd_coloring, PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Use only one of -snes_mf, -snes_fd_coloring options! You can do -snes_mf_operator -snes_fd_coloring");
 
   if (fd_coloring) {
     ISColoring  iscoloring;
@@ -468,7 +468,6 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr)
     PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

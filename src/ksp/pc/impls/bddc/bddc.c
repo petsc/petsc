@@ -1192,7 +1192,7 @@ PetscErrorCode PCBDDCSetDofsSplitting(PC pc, PetscInt n_is, IS ISForDofs[])
 static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
 {
   PC_BDDC  *pcbddc = (PC_BDDC *)pc->data;
-  PC_IS    *pcis   = (PC_IS *)(pc->data);
+  PC_IS    *pcis   = (PC_IS *)pc->data;
   Vec       used_vec;
   PetscBool iscg, save_rhs = PETSC_TRUE, benign_correction_computed;
 
@@ -1603,7 +1603,7 @@ static PetscErrorCode PCSetUp_BDDC(PC pc)
   PetscCall(PCBDDCSetUpLocalWorkVectors(pc));
 
   if (pcbddc->use_change_of_basis) {
-    PC_IS *pcis = (PC_IS *)(pc->data);
+    PC_IS *pcis = (PC_IS *)pc->data;
 
     PetscCall(PCBDDCComputeLocalMatrix(pc, pcbddc->ChangeOfBasisMatrix));
     if (pcbddc->benign_change) {
@@ -1677,8 +1677,8 @@ static PetscErrorCode PCSetUp_BDDC(PC pc)
 
 static PetscErrorCode PCApply_BDDC(PC pc, Vec r, Vec z)
 {
-  PC_IS            *pcis   = (PC_IS *)(pc->data);
-  PC_BDDC          *pcbddc = (PC_BDDC *)(pc->data);
+  PC_IS            *pcis   = (PC_IS *)pc->data;
+  PC_BDDC          *pcbddc = (PC_BDDC *)pc->data;
   Mat               lA     = NULL;
   PetscInt          n_B = pcis->n_B, n_D = pcis->n - n_B;
   const PetscScalar one   = 1.0;
@@ -1836,8 +1836,8 @@ static PetscErrorCode PCApply_BDDC(PC pc, Vec r, Vec z)
 
 static PetscErrorCode PCApplyTranspose_BDDC(PC pc, Vec r, Vec z)
 {
-  PC_IS            *pcis   = (PC_IS *)(pc->data);
-  PC_BDDC          *pcbddc = (PC_BDDC *)(pc->data);
+  PC_IS            *pcis   = (PC_IS *)pc->data;
+  PC_BDDC          *pcbddc = (PC_BDDC *)pc->data;
   Mat               lA     = NULL;
   PetscInt          n_B = pcis->n_B, n_D = pcis->n - n_B;
   const PetscScalar one   = 1.0;
@@ -2302,7 +2302,7 @@ static PetscErrorCode PCSetUp_BDDCIPC(PC pc)
   PetscCall(PCSetUp(bddcipc_ctx->bddc));
 
   /* create interface scatter */
-  pcis = (PC_IS *)(bddcipc_ctx->bddc->data);
+  pcis = (PC_IS *)bddcipc_ctx->bddc->data;
   PetscCall(VecScatterDestroy(&bddcipc_ctx->g2l));
   PetscCall(MatCreateVecs(pc->pmat, &vv, NULL));
   PetscCall(ISRenumber(pcis->is_B_global, NULL, NULL, &is));
@@ -2320,7 +2320,7 @@ static PetscErrorCode PCApply_BDDCIPC(PC pc, Vec r, Vec x)
 
   PetscFunctionBegin;
   PetscCall(PCShellGetContext(pc, &bddcipc_ctx));
-  pcis              = (PC_IS *)(bddcipc_ctx->bddc->data);
+  pcis              = (PC_IS *)bddcipc_ctx->bddc->data;
   tmps              = pcis->global_to_B;
   pcis->global_to_B = bddcipc_ctx->g2l;
   PetscCall(PCBDDCScalingRestriction(bddcipc_ctx->bddc, r, pcis->vec1_B));
@@ -2338,7 +2338,7 @@ static PetscErrorCode PCApplyTranspose_BDDCIPC(PC pc, Vec r, Vec x)
 
   PetscFunctionBegin;
   PetscCall(PCShellGetContext(pc, &bddcipc_ctx));
-  pcis              = (PC_IS *)(bddcipc_ctx->bddc->data);
+  pcis              = (PC_IS *)bddcipc_ctx->bddc->data;
   tmps              = pcis->global_to_B;
   pcis->global_to_B = bddcipc_ctx->g2l;
   PetscCall(PCBDDCScalingRestriction(bddcipc_ctx->bddc, r, pcis->vec1_B));

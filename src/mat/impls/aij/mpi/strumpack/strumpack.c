@@ -45,7 +45,6 @@ static PetscErrorCode MatDestroy_STRUMPACK(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSTRUMPACKGetCompLossyPrecision_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSTRUMPACKSetCompButterflyLevels_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSTRUMPACKGetCompButterflyLevels_C", NULL));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -905,7 +904,6 @@ static PetscErrorCode MatMatSolve_STRUMPACK(Mat A, Mat B_mpi, Mat X)
   }
   PetscCall(MatDenseRestoreArrayRead(B_mpi, &bptr));
   PetscCall(MatDenseRestoreArray(X, &xptr));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

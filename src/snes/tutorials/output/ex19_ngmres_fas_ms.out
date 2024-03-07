@@ -1,11 +1,11 @@
 lid velocity = 200., prandtl # = 1., grashof # = 10000.
-      0 SNES Function norm 2240.15 
-      1 SNES Function norm 0.590311 
-      2 SNES Function norm 5.84955e-06 
+      0 SNES Function norm 2240.15
+      1 SNES Function norm 0.590311
+      2 SNES Function norm 5.84955e-06
     Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
-    0 SNES Function norm 3455.4 
-    1 SNES Function norm 201221. 
-    2 SNES Function norm 2.47608e+09 
+    0 SNES Function norm 3455.4
+    1 SNES Function norm 201221.
+    2 SNES Function norm 2.47608e+09
   Nonlinear solve did not converge due to DIVERGED_DTOL iterations 2
   SNES Object: 2 MPI processes
     type: ngmres
@@ -47,7 +47,7 @@ lid velocity = 200., prandtl # = 1., grashof # = 10000.
           KSP Object: (npc_fas_coarse_) 2 MPI processes
             type: preonly
             maximum iterations=10000, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+            tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
           PC Object: (npc_fas_coarse_) 2 MPI processes
@@ -58,7 +58,7 @@ lid velocity = 200., prandtl # = 1., grashof # = 10000.
             KSP Object: (npc_fas_coarse_sub_) 1 MPI process
               type: preonly
               maximum iterations=10000, initial guess is zero
-              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
               left preconditioning
               using NONE norm type for convergence test
             PC Object: (npc_fas_coarse_sub_) 1 MPI process

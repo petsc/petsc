@@ -857,7 +857,7 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm, PetscInt dim, PetscInt nghost, 
   pcomm  = dmmoab->pcomm;
   nprocs = pcomm->size();
 #else
-  nprocs      = 1;
+  nprocs = 1;
 #endif
   /* TODO: Decipher dimension based on the loaded mesh instead of getting from user */
   dmmoab->dim         = dim;

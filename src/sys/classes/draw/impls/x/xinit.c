@@ -257,6 +257,7 @@ PetscErrorCode PetscDrawXiQuickPixmap(PetscDraw_X *XiWin)
 PetscErrorCode PetscDrawXiResizeWindow(PetscDraw_X *XiWin, int w, int h)
 {
   XEvent event;
+
   PetscFunctionBegin;
   XSelectInput(XiWin->disp, XiWin->win, StructureNotifyMask);
   XResizeWindow(XiWin->disp, XiWin->win, (unsigned int)w, (unsigned int)h);
@@ -271,6 +272,7 @@ PetscErrorCode PetscDrawXiGetGeometry(PetscDraw_X *XiWin, int *x, int *y, int *w
   Window            root, parent, child;
   int               xx = 0, yy = 0;
   unsigned int      ww = 0, hh = 0, dummy;
+
   PetscFunctionBegin;
   if (XiWin->win) {
     XGetGeometry(XiWin->disp, XiWin->win, &parent, &xx, &yy, &ww, &hh, &dummy, &dummy);

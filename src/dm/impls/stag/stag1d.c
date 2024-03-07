@@ -442,7 +442,6 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM dm)
 
   /* View from Options */
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

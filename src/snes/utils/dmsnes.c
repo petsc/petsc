@@ -21,8 +21,8 @@ static PetscErrorCode DMSNESDestroy(DMSNES *kdm)
 {
   PetscFunctionBegin;
   if (!*kdm) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*kdm), DMSNES_CLASSID, 1);
-  if (--((PetscObject)(*kdm))->refct > 0) {
+  PetscValidHeaderSpecific(*kdm, DMSNES_CLASSID, 1);
+  if (--((PetscObject)*kdm)->refct > 0) {
     *kdm = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

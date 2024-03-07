@@ -451,7 +451,7 @@ struct lor {
 };
 template <typename Type>
 struct lxor {
-  __device__ Type operator()(Type x, Type y) { return (!x != !y); }
+  __device__ Type operator()(Type x, Type y) { return !x != !y; }
 };
 
 template <typename Type>
@@ -823,7 +823,7 @@ struct lor {
 };
 template <typename Type>
 struct lxor {
-  __device__ Type operator()(Type x, Type y) { return (!x != !y); }
+  __device__ Type operator()(Type x, Type y) { return !x != !y; }
 };
 
 template <typename Type>

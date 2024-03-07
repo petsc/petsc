@@ -367,7 +367,6 @@ static PetscErrorCode SNESSetUp_Composite(SNES snes)
 #endif
     PetscCall(PetscMalloc1(jac->lwork, &jac->work));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

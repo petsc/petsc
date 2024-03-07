@@ -209,7 +209,7 @@ static PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt i
 #else
             col = sell->colmap[in[j]] - 1;
 #endif
-            if (col < 0 && !((Mat_SeqSELL *)(sell->B->data))->nonew) {
+            if (col < 0 && !((Mat_SeqSELL *)sell->B->data)->nonew) {
               PetscCall(MatDisAssemble_MPISELL(mat));
               col = in[j];
               /* Reinitialize the variables required by MatSetValues_SeqSELL_B_Private() */
@@ -346,7 +346,7 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat, MatAssemblyType mode)
   PetscCall(VecDestroy(&sell->diag));
 
   /* if no new nonzero locations are allowed in matrix then only set the matrix state the first time through */
-  if ((!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) || !((Mat_SeqSELL *)(sell->A->data))->nonew) {
+  if ((!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) || !((Mat_SeqSELL *)sell->A->data)->nonew) {
     PetscObjectState state = sell->A->nonzerostate + sell->B->nonzerostate;
     PetscCall(MPIU_Allreduce(&state, &mat->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)mat)));
   }
@@ -660,8 +660,8 @@ static PetscErrorCode MatView_MPISELL_ASCIIorDraworSocket(Mat mat, PetscViewer v
     */
     PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
     if (rank == 0) {
-      PetscCall(PetscObjectSetName((PetscObject)((Mat_MPISELL *)(A->data))->A, ((PetscObject)mat)->name));
-      PetscCall(MatView_SeqSELL(((Mat_MPISELL *)(A->data))->A, sviewer));
+      PetscCall(PetscObjectSetName((PetscObject)((Mat_MPISELL *)A->data)->A, ((PetscObject)mat)->name));
+      PetscCall(MatView_SeqSELL(((Mat_MPISELL *)A->data)->A, sviewer));
     }
     PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
     PetscCall(MatDestroy(&A));

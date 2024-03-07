@@ -2483,7 +2483,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
           if (vertexLoc == value) closure[faceSize++] = point;
         }
       }
-      if (!(*nFV)) PetscCall(DMPlexGetNumFaceVertices(dm, dim, numCorners, nFV));
+      if (!*nFV) PetscCall(DMPlexGetNumFaceVertices(dm, dim, numCorners, nFV));
       PetscCheck(faceSize <= *nFV, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid submesh: Too many vertices %" PetscInt_FMT " of an element on the surface", faceSize);
       if (faceSize == *nFV) {
         const PetscInt *cells = NULL;
@@ -2618,7 +2618,7 @@ static PetscErrorCode DMPlexMarkCohesiveSubmesh_Uninterpolated(DM dm, PetscBool 
     PetscCall(DMPlexGetConeSize(dm, cMax, &coneSize));
   }
   PetscCall(PetscMalloc1(*numFaces * 2, subCells));
-  if (!(*numFaces)) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!*numFaces) PetscFunctionReturn(PETSC_SUCCESS);
   *nFV = hasLagrange ? coneSize / 3 : coneSize / 2;
   for (c = cMax; c < cEnd; ++c) {
     const PetscInt *cells;

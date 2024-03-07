@@ -560,92 +560,94 @@ static PetscErrorCode DMDAGetFaceInterpolation(PC pc, DM da, PC_Exotic *exotic, 
   {
     gl[cnt++] = mwidth + 1;
   }
-  {{gl[cnt++] = mwidth * nwidth + 1;
-}
-{
-  gl[cnt++] = mwidth * nwidth + mwidth; /* these are the interior nodes */
-  gl[cnt++] = mwidth * nwidth + mwidth + m - istart - 1;
-}
-{
-  gl[cnt++] = mwidth * nwidth + mwidth * (n - jstart - 1) + 1;
-}
-}
-{
-  gl[cnt++] = mwidth * nwidth * (p - kstart - 1) + mwidth + 1;
-}
-
-/* PetscIntView(6,gl,PETSC_VIEWER_STDOUT_WORLD); */
-/* convert that to global numbering and get them on all processes */
-PetscCall(ISLocalToGlobalMappingApply(ltg, 6, gl, gl));
-/* PetscIntView(6,gl,PETSC_VIEWER_STDOUT_WORLD); */
-PetscCall(PetscMalloc1(6 * mp * np * pp, &globals));
-PetscCallMPI(MPI_Allgather(gl, 6, MPIU_INT, globals, 6, MPIU_INT, PetscObjectComm((PetscObject)da)));
-
-/* Number the coarse grid points from 0 to Ntotal */
-PetscCall(PetscHMapICreateWithSize(Ntotal / 3, &ht));
-for (i = 0, cnt = 0; i < 6 * mp * np * pp; i++) {
-  PetscHashIter it      = 0;
-  PetscBool     missing = PETSC_TRUE;
-
-  PetscCall(PetscHMapIPut(ht, globals[i] + 1, &it, &missing));
-  if (missing) {
-    ++cnt;
-    PetscCall(PetscHMapIIterSet(ht, it, cnt));
+  {
+    {
+      gl[cnt++] = mwidth * nwidth + 1;
+    }
+    {
+      gl[cnt++] = mwidth * nwidth + mwidth; /* these are the interior nodes */
+      gl[cnt++] = mwidth * nwidth + mwidth + m - istart - 1;
+    }
+    {
+      gl[cnt++] = mwidth * nwidth + mwidth * (n - jstart - 1) + 1;
+    }
   }
-}
-PetscCheck(cnt == Ntotal, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Hash table size %" PetscInt_FMT " not equal to total number coarse grid points %" PetscInt_FMT, cnt, Ntotal);
-PetscCall(PetscFree(globals));
-for (i = 0; i < 6; i++) {
-  PetscCall(PetscHMapIGetWithDefault(ht, gl[i] + 1, 0, gl + i));
-  --(gl[i]);
-}
-PetscCall(PetscHMapIDestroy(&ht));
-/* PetscIntView(6,gl,PETSC_VIEWER_STDOUT_WORLD); */
+  {
+    gl[cnt++] = mwidth * nwidth * (p - kstart - 1) + mwidth + 1;
+  }
 
-/* construct global interpolation matrix */
-PetscCall(MatGetLocalSize(Aglobal, &Ng, NULL));
-if (reuse == MAT_INITIAL_MATRIX) {
-  PetscCall(MatCreateAIJ(PetscObjectComm((PetscObject)da), Ng, PETSC_DECIDE, PETSC_DECIDE, Ntotal, Nint + Nsurf, NULL, Nint, NULL, P));
-} else {
-  PetscCall(MatZeroEntries(*P));
-}
-PetscCall(MatSetOption(*P, MAT_ROW_ORIENTED, PETSC_FALSE));
-PetscCall(MatDenseGetArrayRead(Xint, &rxint));
-PetscCall(MatSetValues(*P, Nint, IIint, 6, gl, rxint, INSERT_VALUES));
-PetscCall(MatDenseRestoreArrayRead(Xint, &rxint));
-PetscCall(MatDenseGetArrayRead(Xsurf, &rxint));
-PetscCall(MatSetValues(*P, Nsurf, IIsurf, 6, gl, rxint, INSERT_VALUES));
-PetscCall(MatDenseRestoreArrayRead(Xsurf, &rxint));
-PetscCall(MatAssemblyBegin(*P, MAT_FINAL_ASSEMBLY));
-PetscCall(MatAssemblyEnd(*P, MAT_FINAL_ASSEMBLY));
-PetscCall(PetscFree2(IIint, IIsurf));
+  /* PetscIntView(6,gl,PETSC_VIEWER_STDOUT_WORLD); */
+  /* convert that to global numbering and get them on all processes */
+  PetscCall(ISLocalToGlobalMappingApply(ltg, 6, gl, gl));
+  /* PetscIntView(6,gl,PETSC_VIEWER_STDOUT_WORLD); */
+  PetscCall(PetscMalloc1(6 * mp * np * pp, &globals));
+  PetscCallMPI(MPI_Allgather(gl, 6, MPIU_INT, globals, 6, MPIU_INT, PetscObjectComm((PetscObject)da)));
+
+  /* Number the coarse grid points from 0 to Ntotal */
+  PetscCall(PetscHMapICreateWithSize(Ntotal / 3, &ht));
+  for (i = 0, cnt = 0; i < 6 * mp * np * pp; i++) {
+    PetscHashIter it      = 0;
+    PetscBool     missing = PETSC_TRUE;
+
+    PetscCall(PetscHMapIPut(ht, globals[i] + 1, &it, &missing));
+    if (missing) {
+      ++cnt;
+      PetscCall(PetscHMapIIterSet(ht, it, cnt));
+    }
+  }
+  PetscCheck(cnt == Ntotal, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Hash table size %" PetscInt_FMT " not equal to total number coarse grid points %" PetscInt_FMT, cnt, Ntotal);
+  PetscCall(PetscFree(globals));
+  for (i = 0; i < 6; i++) {
+    PetscCall(PetscHMapIGetWithDefault(ht, gl[i] + 1, 0, gl + i));
+    --(gl[i]);
+  }
+  PetscCall(PetscHMapIDestroy(&ht));
+  /* PetscIntView(6,gl,PETSC_VIEWER_STDOUT_WORLD); */
+
+  /* construct global interpolation matrix */
+  PetscCall(MatGetLocalSize(Aglobal, &Ng, NULL));
+  if (reuse == MAT_INITIAL_MATRIX) {
+    PetscCall(MatCreateAIJ(PetscObjectComm((PetscObject)da), Ng, PETSC_DECIDE, PETSC_DECIDE, Ntotal, Nint + Nsurf, NULL, Nint, NULL, P));
+  } else {
+    PetscCall(MatZeroEntries(*P));
+  }
+  PetscCall(MatSetOption(*P, MAT_ROW_ORIENTED, PETSC_FALSE));
+  PetscCall(MatDenseGetArrayRead(Xint, &rxint));
+  PetscCall(MatSetValues(*P, Nint, IIint, 6, gl, rxint, INSERT_VALUES));
+  PetscCall(MatDenseRestoreArrayRead(Xint, &rxint));
+  PetscCall(MatDenseGetArrayRead(Xsurf, &rxint));
+  PetscCall(MatSetValues(*P, Nsurf, IIsurf, 6, gl, rxint, INSERT_VALUES));
+  PetscCall(MatDenseRestoreArrayRead(Xsurf, &rxint));
+  PetscCall(MatAssemblyBegin(*P, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(*P, MAT_FINAL_ASSEMBLY));
+  PetscCall(PetscFree2(IIint, IIsurf));
 
 #if defined(PETSC_USE_DEBUG_foo)
-{
-  Vec          x, y;
-  PetscScalar *yy;
-  PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)da), Ng, PETSC_DETERMINE, &y));
-  PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)da), PETSC_DETERMINE, Ntotal, &x));
-  PetscCall(VecSet(x, 1.0));
-  PetscCall(MatMult(*P, x, y));
-  PetscCall(VecGetArray(y, &yy));
-  for (i = 0; i < Ng; i++) PetscCheck(PetscAbsScalar(yy[i] - 1.0) <= 1.e-10, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Wrong p interpolation at i %" PetscInt_FMT " value %g", i, (double)PetscAbsScalar(yy[i]));
-  PetscCall(VecRestoreArray(y, &yy));
-  PetscCall(VecDestroy(x));
-  PetscCall(VecDestroy(y));
-}
+  {
+    Vec          x, y;
+    PetscScalar *yy;
+    PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)da), Ng, PETSC_DETERMINE, &y));
+    PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)da), PETSC_DETERMINE, Ntotal, &x));
+    PetscCall(VecSet(x, 1.0));
+    PetscCall(MatMult(*P, x, y));
+    PetscCall(VecGetArray(y, &yy));
+    for (i = 0; i < Ng; i++) PetscCheck(PetscAbsScalar(yy[i] - 1.0) <= 1.e-10, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Wrong p interpolation at i %" PetscInt_FMT " value %g", i, (double)PetscAbsScalar(yy[i]));
+    PetscCall(VecRestoreArray(y, &yy));
+    PetscCall(VecDestroy(x));
+    PetscCall(VecDestroy(y));
+  }
 #endif
 
-PetscCall(MatDestroy(&Aii));
-PetscCall(MatDestroy(&Ais));
-PetscCall(MatDestroy(&Asi));
-PetscCall(MatDestroy(&A));
-PetscCall(ISDestroy(&is));
-PetscCall(ISDestroy(&isint));
-PetscCall(ISDestroy(&issurf));
-PetscCall(MatDestroy(&Xint));
-PetscCall(MatDestroy(&Xsurf));
-PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(MatDestroy(&Aii));
+  PetscCall(MatDestroy(&Ais));
+  PetscCall(MatDestroy(&Asi));
+  PetscCall(MatDestroy(&A));
+  PetscCall(ISDestroy(&is));
+  PetscCall(ISDestroy(&isint));
+  PetscCall(ISDestroy(&issurf));
+  PetscCall(MatDestroy(&Xint));
+  PetscCall(MatDestroy(&Xsurf));
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@

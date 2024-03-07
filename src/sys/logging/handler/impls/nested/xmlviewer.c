@@ -300,6 +300,7 @@ static PetscErrorCode PetscLogNestedTreePrintLine(PetscViewer viewer, const Pets
 static PetscErrorCode PetscNestedNameGetBase(const char name[], const char *base[])
 {
   size_t n;
+
   PetscFunctionBegin;
   PetscCall(PetscStrlen(name, &n));
   while (n > 0 && name[n - 1] != ';') n--;

@@ -134,7 +134,6 @@ static PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void
   PetscCall(DMDAVecRestoreArrayRead(da, Ulocal, &u));
   PetscCall(DMDAVecRestoreArray(da, F, &f));
   PetscCall(DMRestoreLocalVector(da, &Ulocal));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

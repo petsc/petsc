@@ -296,7 +296,7 @@ PetscErrorCode FillCOO(Mat A, void *ctx)
     coo_v[count] = vcent;
     count++;
   }
-  PetscCheck(count == user->nnz, PETSC_COMM_SELF, PETSC_ERR_USER_INPUT, "Expected %" PetscInt_FMT " nonzeros but got %" PetscInt_FMT " nonzeros in COO format\n", user->nnz, count);
+  PetscCheck(count == user->nnz, PETSC_COMM_SELF, PETSC_ERR_USER_INPUT, "Expected %" PetscInt_FMT " nonzeros but got %" PetscInt_FMT " nonzeros in COO format", user->nnz, count);
   PetscCall(MatSetPreallocationCOO(A, user->nnz, coo_i, coo_j));
   PetscCall(MatSetValuesCOO(A, coo_v, INSERT_VALUES));
   PetscCall(PetscFree3(coo_i, coo_j, coo_v));
@@ -335,8 +335,8 @@ int main(int argc, char **argv)
 
   user.dim   = user.n * user.n * user.n;
   global_nnz = 64 + 27 * (user.n - 2) * (user.n - 2) * (user.n - 2) + 108 * (user.n - 2) * (user.n - 2) + 144 * (user.n - 2);
-  PetscCheck(user.n >= 2, PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Requires at least 2 grid points (-n 2), you specified -n %" PetscInt_FMT "\n", user.n);
-  PetscCheck(user.dim >= user.size, PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "MPI size (%d) exceeds the grid size %" PetscInt_FMT " (-n %" PetscInt_FMT ")\n", user.size, user.dim, user.n);
+  PetscCheck(user.n >= 2, PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Requires at least 2 grid points (-n 2), you specified -n %" PetscInt_FMT, user.n);
+  PetscCheck(user.dim >= user.size, PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "MPI size (%d) exceeds the grid size %" PetscInt_FMT " (-n %" PetscInt_FMT ")", user.size, user.dim, user.n);
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "===========================================\n"));
   if (user.matmult) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test: MatMult performance - Poisson\n"));
   else PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test: KSP performance - Poisson\n"));

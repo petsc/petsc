@@ -174,8 +174,8 @@ static PetscErrorCode GmshCellInfoSetUp(void)
   size_t           i, n;
   static PetscBool called = PETSC_FALSE;
 
-  if (called) return PETSC_SUCCESS;
   PetscFunctionBegin;
+  if (called) PetscFunctionReturn(PETSC_SUCCESS);
   called = PETSC_TRUE;
   n      = PETSC_STATIC_ARRAY_LENGTH(GmshCellMap);
   for (i = 0; i < n; ++i) {
@@ -267,7 +267,7 @@ static PetscErrorCode GmshExpect(GmshFile *gmsh, const char Section[], char line
 
   PetscFunctionBegin;
   PetscCall(GmshMatch(gmsh, Section, line, &match));
-  PetscCheck(match, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file, expecting %s\nnot %s", Section, line);
+  PetscCheck(match, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file, expecting %s, not %s", Section, line);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -376,7 +376,7 @@ static PetscErrorCode GmshEntitiesDestroy(GmshEntities **entities)
     PetscCall(PetscFree((*entities)->entity[dim]));
     PetscCall(PetscHMapIDestroy(&(*entities)->entityMap[dim]));
   }
-  PetscCall(PetscFree((*entities)));
+  PetscCall(PetscFree(*entities));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -423,7 +423,7 @@ static PetscErrorCode GmshNodesDestroy(GmshNodes **nodes)
   PetscCall(PetscFree((*nodes)->id));
   PetscCall(PetscFree((*nodes)->xyz));
   PetscCall(PetscFree((*nodes)->tag));
-  PetscCall(PetscFree((*nodes)));
+  PetscCall(PetscFree(*nodes));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -494,7 +494,7 @@ static PetscErrorCode GmshMeshDestroy(GmshMesh **mesh)
   PetscCall(PetscSegBufferDestroy(&(*mesh)->segbuf));
   for (r = 0; r < (*mesh)->numRegions; ++r) PetscCall(PetscFree((*mesh)->regionNames[r]));
   PetscCall(PetscFree3((*mesh)->regionDims, (*mesh)->regionTags, (*mesh)->regionNames));
-  PetscCall(PetscFree((*mesh)));
+  PetscCall(PetscFree(*mesh));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1246,7 +1246,7 @@ static PetscErrorCode GmshReadElements(GmshFile *gmsh, GmshMesh *mesh)
     keymap[GMSH_VTX] = nk++;
 
     PetscCall(GmshElementsCreate(mesh->numElems, &mesh->elements));
-#define key(eid) keymap[GmshCellMap[elements[(eid)].cellType].polytope]
+#define key(eid) keymap[GmshCellMap[elements[eid].cellType].polytope]
     for (e = 0; e < ne; ++e) offset[1 + key(e)]++;
     for (k = 1; k < nk; ++k) offset[k] += offset[k - 1];
     for (e = 0; e < ne; ++e) mesh->elements[offset[key(e)]++] = elements[e];

@@ -445,7 +445,6 @@ PetscErrorCode DesignMatMult(Mat J_shell, Vec X, Vec Y)
     PetscCall(VecScale(user->yiwork[i], user->ht));
   }
   PetscCall(Gather_i(Y, user->yiwork, user->yi_scatter, user->nt));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

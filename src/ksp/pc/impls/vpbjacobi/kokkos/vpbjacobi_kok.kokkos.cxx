@@ -184,7 +184,7 @@ PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Kokkos(PC pc)
   const auto &bs2    = pckok->bs2_dual.view_device();
   const auto &blkMap = pckok->blkMap_dual.view_device();
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)pc->pmat, MATMPIAIJ, &ismpi));
-  A = ismpi ? static_cast<Mat_MPIAIJ *>((pc->pmat)->data)->A : pc->pmat;
+  A = ismpi ? static_cast<Mat_MPIAIJ *>(pc->pmat->data)->A : pc->pmat;
   PetscCall(MatInvertVariableBlockDiagonal_SeqAIJKokkos(A, bs, bs2, blkMap, pckok->work, pckok->diag));
   pc->ops->apply          = PCApplyOrTranspose_VPBJacobi_Kokkos<PETSC_FALSE>;
   pc->ops->applytranspose = PCApplyOrTranspose_VPBJacobi_Kokkos<PETSC_TRUE>;

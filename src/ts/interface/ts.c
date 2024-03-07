@@ -2627,7 +2627,7 @@ PetscErrorCode TSDestroy(TS *ts)
   PetscFunctionBegin;
   if (!*ts) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*ts, TS_CLASSID, 1);
-  if (--((PetscObject)(*ts))->refct > 0) {
+  if (--((PetscObject)*ts)->refct > 0) {
     *ts = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -2639,7 +2639,7 @@ PetscErrorCode TSDestroy(TS *ts)
 
   /* if memory was published with SAWs then destroy it */
   PetscCall(PetscObjectSAWsViewOff((PetscObject)*ts));
-  PetscTryTypeMethod((*ts), destroy);
+  PetscTryTypeMethod(*ts, destroy);
 
   PetscCall(TSTrajectoryDestroy(&(*ts)->trajectory));
 
@@ -2648,8 +2648,8 @@ PetscErrorCode TSDestroy(TS *ts)
 
   PetscCall(SNESDestroy(&(*ts)->snes));
   PetscCall(DMDestroy(&(*ts)->dm));
-  PetscCall(TSMonitorCancel((*ts)));
-  PetscCall(TSAdjointMonitorCancel((*ts)));
+  PetscCall(TSMonitorCancel(*ts));
+  PetscCall(TSAdjointMonitorCancel(*ts));
 
   PetscCall(TSDestroy(&(*ts)->quadraturets));
   PetscCall(PetscHeaderDestroy(ts));

@@ -95,7 +95,7 @@ PetscErrorCode SNESComputeObjective(SNES snes, Vec X, PetscReal *ob)
   PetscCall(DMGetDMSNES(dm, &sdm));
   PetscCheck(sdm->ops->computeobjective, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetObjective() before SNESComputeObjective().");
   PetscCall(PetscLogEventBegin(SNES_ObjectiveEval, snes, X, 0, 0));
-  PetscCall((sdm->ops->computeobjective)(snes, X, ob, sdm->objectivectx));
+  PetscCall(sdm->ops->computeobjective(snes, X, ob, sdm->objectivectx));
   PetscCall(PetscLogEventEnd(SNES_ObjectiveEval, snes, X, 0, 0));
   if (snes->vec_rhs) {
     PetscScalar dot;

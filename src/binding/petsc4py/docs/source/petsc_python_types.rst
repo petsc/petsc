@@ -59,7 +59,7 @@ arguments to specify that our preconditioner should be used:
   KSP Object: 1 MPI process
     type: cg
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object: 1 MPI process

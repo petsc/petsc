@@ -1165,7 +1165,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateHybridJacobian_Basic(PetscDS ds, Pet
         const PetscInt i = offsetI + f;
         for (g = gS; g < gE; ++g) {
           const PetscInt j = offsetJ + g;
-          PetscCheck(i < totDim && j < totDim, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Fuck up %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n", f, i, g, j);
+          PetscCheck(i < totDim && j < totDim, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Fuck up %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT, f, i, g, j);
           PetscCall(PetscPrintf(PETSC_COMM_SELF, "    elemMat[%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT "]: %g\n", f / NcI, f % NcI, g / NcJ, g % NcJ, (double)PetscRealPart(elemMat[eOffset + i * totDim + j])));
         }
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));

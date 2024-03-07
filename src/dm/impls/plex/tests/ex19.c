@@ -47,7 +47,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsReal("-hmin", "Min size prescribed by the metric", "ex19.c", options->hmin, &options->hmin, NULL));
   PetscCall(PetscOptionsBool("-do_L2", "Test L2 projection", "ex19.c", options->doL2, &options->doL2, NULL));
   PetscOptionsEnd();
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

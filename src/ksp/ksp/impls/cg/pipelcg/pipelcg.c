@@ -2,14 +2,14 @@
 #include <petsc/private/vecimpl.h>
 
 #define offset(j)       PetscMax(((j) - (2 * l)), 0)
-#define shift(i, j)     ((i)-offset((j)))
+#define shift(i, j)     ((i) - offset(j))
 #define G(i, j)         (plcg->G[((j) * (2 * l + 1)) + (shift((i), (j)))])
 #define G_noshift(i, j) (plcg->G[((j) * (2 * l + 1)) + (i)])
-#define alpha(i)        (plcg->alpha[(i)])
-#define gamma(i)        (plcg->gamma[(i)])
-#define delta(i)        (plcg->delta[(i)])
-#define sigma(i)        (plcg->sigma[(i)])
-#define req(i)          (plcg->req[(i)])
+#define alpha(i)        (plcg->alpha[i])
+#define gamma(i)        (plcg->gamma[i])
+#define delta(i)        (plcg->delta[i])
+#define sigma(i)        (plcg->sigma[i])
+#define req(i)          (plcg->req[i])
 
 typedef struct KSP_CG_PIPE_L_s KSP_CG_PIPE_L;
 struct KSP_CG_PIPE_L_s {
@@ -54,7 +54,6 @@ static PetscErrorCode KSPSetUp_PIPELCG(KSP ksp)
   PetscCall(VecDuplicateVecs(plcg->p, 3 * (l - 1) + 1, &plcg->Q));
   PetscCall(PetscCalloc1(2, &plcg->alpha));
   PetscCall(PetscCalloc1(l, &plcg->sigma));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

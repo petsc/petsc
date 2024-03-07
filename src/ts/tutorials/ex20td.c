@@ -184,8 +184,8 @@ PetscErrorCode RHSJacobianP_global(TS ts, PetscReal t, Vec U, Mat A, void *ctx)
   J[1][0] = 0;
   J[0][1] = 0;
   J[1][1] = (1. - u[0] * u[0]) * u[1] - u[0];
-  col[0]  = (curr_step)*2;
-  col[1]  = (curr_step)*2 + 1;
+  col[0]  = curr_step * 2;
+  col[1]  = curr_step * 2 + 1;
   PetscCall(MatSetValues(A, 2, row, 2, col, &J[0][0], INSERT_VALUES));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
@@ -421,7 +421,7 @@ int main(int argc, char **argv)
   }
   PetscCall(TSDestroy(&ts));
   PetscCall(PetscFinalize());
-  return (0);
+  return 0;
 }
 
 /*TEST

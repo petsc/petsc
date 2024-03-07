@@ -38,7 +38,7 @@ PetscErrorCode CharacteristicDestroy(Characteristic *c)
   PetscFunctionBegin;
   if (!*c) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*c, CHARACTERISTIC_CLASSID, 1);
-  if (--((PetscObject)(*c))->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
+  if (--((PetscObject)*c)->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscTryTypeMethod(*c, destroy);
   PetscCallMPI(MPI_Type_free(&(*c)->itemType));
@@ -359,7 +359,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
       Qi.proc = DMDAGetNeighborRelative(da, Qi.x, Qi.y);
 
       /* Check for Periodic boundaries and move all periodic points back onto the domain */
-      PetscCall(DMDAMapCoordsToPeriodicDomain(da, &(Qi.x), &(Qi.y)));
+      PetscCall(DMDAMapCoordsToPeriodicDomain(da, &Qi.x, &Qi.y));
       PetscCall(CharacteristicAddPoint(c, &Qi));
     }
   }
@@ -441,7 +441,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
     Qi.proc = DMDAGetNeighborRelative(da, Qi.x, Qi.y);
 
     /* Check for Periodic boundaries and move all periodic points back onto the domain */
-    PetscCall(DMDAMapCoordsToPeriodicDomain(da, &(Qi.x), &(Qi.y)));
+    PetscCall(DMDAMapCoordsToPeriodicDomain(da, &Qi.x, &Qi.y));
 
     c->queue[n] = Qi;
   }
@@ -554,8 +554,8 @@ PetscErrorCode CharacteristicSendCoordinatesBegin(Characteristic c)
   PetscCall(PetscArrayzero(c->needCount, c->numNeighbors));
   for (i = 0; i < c->queueSize; i++) c->needCount[c->queue[i].proc]++;
   c->fillCount[0] = 0;
-  for (n = 1; n < c->numNeighbors; n++) PetscCallMPI(MPI_Irecv(&(c->fillCount[n]), 1, MPIU_INT, c->neighbors[n], tag, PetscObjectComm((PetscObject)c), &(c->request[n - 1])));
-  for (n = 1; n < c->numNeighbors; n++) PetscCallMPI(MPI_Send(&(c->needCount[n]), 1, MPIU_INT, c->neighbors[n], tag, PetscObjectComm((PetscObject)c)));
+  for (n = 1; n < c->numNeighbors; n++) PetscCallMPI(MPI_Irecv(&c->fillCount[n], 1, MPIU_INT, c->neighbors[n], tag, PetscObjectComm((PetscObject)c), &c->request[n - 1]));
+  for (n = 1; n < c->numNeighbors; n++) PetscCallMPI(MPI_Send(&c->needCount[n], 1, MPIU_INT, c->neighbors[n], tag, PetscObjectComm((PetscObject)c)));
   PetscCallMPI(MPI_Waitall(c->numNeighbors - 1, c->request, c->status));
   /* Initialize the remote queue */
   c->queueLocalMax = c->localOffsets[0] = 0;
@@ -578,7 +578,7 @@ PetscErrorCode CharacteristicSendCoordinatesBegin(Characteristic c)
   /* Send and Receive requests for values at t_n+1/2, giving the coordinates for interpolation */
   for (n = 1; n < c->numNeighbors; n++) {
     PetscCall(PetscInfo(NULL, "Receiving %" PetscInt_FMT " requests for values from proc %d\n", c->fillCount[n], c->neighbors[n]));
-    PetscCallMPI(MPI_Irecv(&(c->queueRemote[c->remoteOffsets[n]]), c->fillCount[n], c->itemType, c->neighbors[n], tag, PetscObjectComm((PetscObject)c), &(c->request[n - 1])));
+    PetscCallMPI(MPI_Irecv(&(c->queueRemote[c->remoteOffsets[n]]), c->fillCount[n], c->itemType, c->neighbors[n], tag, PetscObjectComm((PetscObject)c), &c->request[n - 1]));
   }
   for (n = 1; n < c->numNeighbors; n++) {
     PetscCall(PetscInfo(NULL, "Sending %" PetscInt_FMT " requests for values from proc %d\n", c->needCount[n], c->neighbors[n]));
@@ -612,7 +612,7 @@ PetscErrorCode CharacteristicGetValuesBegin(Characteristic c)
 
   PetscFunctionBegin;
   /* SEND AND RECEIVE FILLED REQUESTS for velocities at t_n+1/2 */
-  for (n = 1; n < c->numNeighbors; n++) PetscCallMPI(MPI_Irecv(&(c->queue[c->localOffsets[n]]), c->needCount[n], c->itemType, c->neighbors[n], tag, PetscObjectComm((PetscObject)c), &(c->request[n - 1])));
+  for (n = 1; n < c->numNeighbors; n++) PetscCallMPI(MPI_Irecv(&(c->queue[c->localOffsets[n]]), c->needCount[n], c->itemType, c->neighbors[n], tag, PetscObjectComm((PetscObject)c), &c->request[n - 1]));
   for (n = 1; n < c->numNeighbors; n++) PetscCallMPI(MPI_Send(&(c->queueRemote[c->remoteOffsets[n]]), c->fillCount[n], c->itemType, c->neighbors[n], tag, PetscObjectComm((PetscObject)c)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -701,7 +701,7 @@ static PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
   rank         = 0;
   PetscCall(PetscMalloc1(PJ, &procs));
   for (pj = 0; pj < PJ; pj++) {
-    PetscCall(PetscMalloc1(PI, &(procs[pj])));
+    PetscCall(PetscMalloc1(PI, &procs[pj]));
     for (pi = 0; pi < PI; pi++) {
       procs[pj][pi] = rank;
       rank++;

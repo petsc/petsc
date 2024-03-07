@@ -670,7 +670,7 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
       #define PetscCheckSameType(a, arga, b, argb) \
         do { \
           PetscBool pcst_type_eq_ = PETSC_TRUE; \
-          PetscCall(PetscStrcmp(((PetscObject)(a))->type_name, (((PetscObject)(b)))->type_name, &pcst_type_eq_)); \
+          PetscCall(PetscStrcmp(((PetscObject)(a))->type_name, ((PetscObject)(b))->type_name, &pcst_type_eq_)); \
           PetscCheck(pcst_type_eq_, PETSC_COMM_SELF, PETSC_ERR_ARG_NOTSAMETYPE, "Objects not of same type : Argument # % d and % d, % s != % s ", arga, argb, ((PetscObject)(a))->type_name, ((PetscObject)(b))->type_name); \
         } while (0)
     #else

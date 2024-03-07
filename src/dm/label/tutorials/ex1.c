@@ -57,7 +57,7 @@ PetscErrorCode CheckLabelsSame(DMLabel label0, DMLabel label1)
   PetscCall(PetscObjectGetName((PetscObject)label1, &name1));
   PetscCall(DMLabelCompare(PETSC_COMM_WORLD, label0, label1, &same, &msg));
   PetscCheck(same == (PetscBool)!msg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMLabelCompare returns inconsistent same=%d msg=\"%s\"", same, msg);
-  PetscCheck(same, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels \"%s\" and \"%s\" should not differ! Message:\n%s", name0, name1, msg);
+  PetscCheck(same, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels \"%s\" and \"%s\" should not differ! Message: %s", name0, name1, msg);
   /* Test passing NULL, must not fail */
   PetscCall(DMLabelCompare(PETSC_COMM_WORLD, label0, label1, NULL, NULL));
   PetscCall(PetscFree(msg));
@@ -92,7 +92,7 @@ PetscErrorCode CheckDMLabelsSame(DM dm0, DM dm1)
   PetscCall(PetscObjectGetName((PetscObject)dm1, &name1));
   PetscCall(DMCompareLabels(dm0, dm1, &same, &msg));
   PetscCheck(same == (PetscBool)!msg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMCompareLabels returns inconsistent same=%d msg=\"%s\"", same, msg);
-  PetscCheck(same, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels of DMs \"%s\" and \"%s\" should not differ! Message:\n%s", name0, name1, msg);
+  PetscCheck(same, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels of DMs \"%s\" and \"%s\" should not differ! Message: %s", name0, name1, msg);
   /* Test passing NULL, must not fail */
   PetscCall(DMCompareLabels(dm0, dm1, NULL, NULL));
   PetscCall(PetscFree(msg));

@@ -82,7 +82,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   }
   PetscCall(PetscOptionsReal("-moment_tol", "Tolerance for moment checks", "ex2.c", options->momentTol, &options->momentTol, NULL));
   PetscOptionsEnd();
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -587,7 +586,6 @@ static PetscErrorCode TestFieldGradientProjection(DM dm, DM sw, AppCtx *user)
   PetscCall(DMRestoreGlobalVector(dm, &fhat));
   PetscCall(DMRestoreGlobalVector(dm, &rhs));
   PetscCall(DMRestoreGlobalVector(dm, &grad));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -8,7 +8,7 @@
 PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *)mat->data;
-  Mat_SeqAIJ *B   = (Mat_SeqAIJ *)(aij->B->data);
+  Mat_SeqAIJ *B   = (Mat_SeqAIJ *)aij->B->data;
   PetscInt    i, j, *aj = B->j, *garray;
   PetscInt    ec = 0; /* Number of nonzero external columns */
   IS          from, to;

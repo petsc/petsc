@@ -359,7 +359,7 @@ static PetscErrorCode MatSetValues_MPISBAIJ(Mat mat, PetscInt m, const PetscInt 
 #else
             col = baij->colmap[in[j] / bs] - 1;
 #endif
-            if (col < 0 && !((Mat_SeqSBAIJ *)(baij->A->data))->nonew) {
+            if (col < 0 && !((Mat_SeqSBAIJ *)baij->A->data)->nonew) {
               PetscCall(MatDisAssemble_MPISBAIJ(mat));
               col = in[j];
               /* Reinitialize the variables required by MatSetValues_SeqBAIJ_B_Private() */
@@ -639,7 +639,7 @@ static PetscErrorCode MatSetValuesBlocked_MPISBAIJ(Mat mat, PetscInt m, const Pe
 #else
             col = (baij->colmap[in[j]] - 1) / bs;
 #endif
-            if (col < 0 && !((Mat_SeqBAIJ *)(baij->A->data))->nonew) {
+            if (col < 0 && !((Mat_SeqBAIJ *)baij->A->data)->nonew) {
               PetscCall(MatDisAssemble_MPISBAIJ(mat));
               col = in[j];
             }
@@ -886,7 +886,7 @@ static PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat, MatAssemblyType mode)
   baij->rowvalues = NULL;
 
   /* if no new nonzero locations are allowed in matrix then only set the matrix state the first time through */
-  if ((!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) || !((Mat_SeqBAIJ *)(baij->A->data))->nonew) {
+  if ((!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) || !((Mat_SeqBAIJ *)baij->A->data)->nonew) {
     PetscObjectState state = baij->A->nonzerostate + baij->B->nonzerostate;
     PetscCall(MPIU_Allreduce(&state, &mat->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)mat)));
   }
@@ -1007,8 +1007,8 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat, PetscViewer 
     PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
     if (((PetscObject)mat)->name) PetscCall(PetscObjectGetName((PetscObject)mat, &matname));
     if (rank == 0) {
-      if (((PetscObject)mat)->name) PetscCall(PetscObjectSetName((PetscObject)((Mat_MPISBAIJ *)(A->data))->A, matname));
-      PetscCall(MatView_SeqSBAIJ(((Mat_MPISBAIJ *)(A->data))->A, sviewer));
+      if (((PetscObject)mat)->name) PetscCall(PetscObjectSetName((PetscObject)((Mat_MPISBAIJ *)A->data)->A, matname));
+      PetscCall(MatView_SeqSBAIJ(((Mat_MPISBAIJ *)A->data)->A, sviewer));
     }
     PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
     PetscCall(MatDestroy(&A));
@@ -2520,7 +2520,7 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin, MatDuplicateOption cpvalu
 #endif
     } else a->colmap = NULL;
 
-    if (oldmat->garray && (len = ((Mat_SeqBAIJ *)(oldmat->B->data))->nbs)) {
+    if (oldmat->garray && (len = ((Mat_SeqBAIJ *)oldmat->B->data)->nbs)) {
       PetscCall(PetscMalloc1(len, &a->garray));
       PetscCall(PetscArraycpy(a->garray, oldmat->garray, len));
     } else a->garray = NULL;
@@ -2570,7 +2570,7 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat mat, PetscViewer viewer)
 PetscErrorCode MatGetRowMaxAbs_MPISBAIJ(Mat A, Vec v, PetscInt idx[])
 {
   Mat_MPISBAIJ *a = (Mat_MPISBAIJ *)A->data;
-  Mat_SeqBAIJ  *b = (Mat_SeqBAIJ *)(a->B)->data;
+  Mat_SeqBAIJ  *b = (Mat_SeqBAIJ *)a->B->data;
   PetscReal     atmp;
   PetscReal    *work, *svalues, *rvalues;
   PetscInt      i, bs, mbs, *bi, *bj, brow, j, ncols, krow, kcol, col, row, Mbs, bcol;

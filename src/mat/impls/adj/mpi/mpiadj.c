@@ -189,7 +189,7 @@ static PetscErrorCode MatCreateSubMatrices_MPIAdj_Private(Mat mat, PetscInt n, c
     if (scall == MAT_INITIAL_MATRIX) {
       PetscCall(MatCreateMPIAdj(scomm_row, irow_n, icol_n, sxadj, sadjncy, svalues, submat[i]));
     } else {
-      Mat         sadj = *(submat[i]);
+      Mat         sadj = *submat[i];
       Mat_MPIAdj *sa   = (Mat_MPIAdj *)((sadj)->data);
       PetscCall(PetscObjectGetComm((PetscObject)sadj, &scomm_mat));
       PetscCallMPI(MPI_Comm_compare(scomm_row, scomm_mat, &issame));

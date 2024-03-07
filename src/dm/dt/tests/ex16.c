@@ -61,13 +61,13 @@ static PetscErrorCode PetscFEVectorTest(PetscFE orig_fe, PetscInt n_copies, Pets
             }
           }
           if (err < PETSC_SMALL) {
-            PetscCheck(pre_image[e] == -1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Original basis %d and %d both match to vector basis %d\n", (int)pre_image[e], (int)b, (int)e);
+            PetscCheck(pre_image[e] == -1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Original basis %d and %d both match to vector basis %d", (int)pre_image[e], (int)b, (int)e);
             pre_image[e] = b;
           }
         }
       }
     }
-    for (PetscInt e = 0; e < vNb; e++) PetscCheck(pre_image[e] >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "No original basis matched to %d\n", (int)e);
+    for (PetscInt e = 0; e < vNb; e++) PetscCheck(pre_image[e] >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "No original basis matched to %d", (int)e);
     PetscCall(PetscViewerASCIIPrintf(viewer, "Vector basis to original basis:"));
     for (PetscInt e = 0; e < vNb; e++) {
       if (!(e % 16)) PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
@@ -99,7 +99,7 @@ static PetscErrorCode PetscFEVectorTest(PetscFE orig_fe, PetscInt n_copies, Pets
       PetscInt size   = num_points * vNb * vNc * dblock;
       for (PetscInt i = 0; i < size; i++) err = PetscMax(err, PetscAbsReal(vec_T->T[k][i] - dup_T->T[k][i]));
     }
-    PetscCheck(err < PETSC_SMALL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Error between direct tabulation and indirect tabulation: %g\n", (double)err);
+    PetscCheck(err < PETSC_SMALL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Error between direct tabulation and indirect tabulation: %g", (double)err);
   }
   PetscCall(PetscTabulationDestroy(&dup_T));
   PetscCall(PetscTabulationDestroy(&vec_T));

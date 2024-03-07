@@ -35,7 +35,7 @@ PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscI
   PetscCall(PetscCalloc3(N * dimEmbed, &g->v, N * dimEmbed * dimEmbed, &g->J, N, &g->detJ));
   if (faceData) {
     PetscCall(PetscCalloc2(numCells, &g->face, N * dimEmbed, &g->n));
-    PetscCall(PetscCalloc6(N * dimEmbed * dimEmbed, &(g->suppJ[0]), N * dimEmbed * dimEmbed, &(g->suppJ[1]), N * dimEmbed * dimEmbed, &(g->suppInvJ[0]), N * dimEmbed * dimEmbed, &(g->suppInvJ[1]), N, &(g->suppDetJ[0]), N, &(g->suppDetJ[1])));
+    PetscCall(PetscCalloc6(N * dimEmbed * dimEmbed, &g->suppJ[0], N * dimEmbed * dimEmbed, &g->suppJ[1], N * dimEmbed * dimEmbed, &g->suppInvJ[0], N * dimEmbed * dimEmbed, &g->suppInvJ[1], N, &g->suppDetJ[0], N, &g->suppDetJ[1]));
   }
   PetscCall(PetscCalloc1(N * dimEmbed * dimEmbed, &g->invJ));
   *geom = g;
@@ -90,7 +90,7 @@ PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt 
   PetscFunctionBegin;
   PetscAssertPointer(geom, 1);
   PetscAssertPointer(chunkGeom, 4);
-  if (!(*chunkGeom)) PetscCall(PetscNew(chunkGeom));
+  if (!*chunkGeom) PetscCall(PetscNew(chunkGeom));
   Nq                        = geom->numPoints;
   dE                        = geom->dimEmbed;
   (*chunkGeom)->dim         = geom->dim;

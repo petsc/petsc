@@ -360,27 +360,27 @@ static PetscErrorCode PetscDualSpaceClearDMData_Internal(PetscDualSpace sp, DM d
   if (sp->pointSpaces) {
     PetscInt i;
 
-    for (i = 0; i < pEnd - pStart; i++) PetscCall(PetscDualSpaceDestroy(&(sp->pointSpaces[i])));
+    for (i = 0; i < pEnd - pStart; i++) PetscCall(PetscDualSpaceDestroy(&sp->pointSpaces[i]));
   }
   PetscCall(PetscFree(sp->pointSpaces));
 
   if (sp->heightSpaces) {
     PetscInt i;
 
-    for (i = 0; i <= depth; i++) PetscCall(PetscDualSpaceDestroy(&(sp->heightSpaces[i])));
+    for (i = 0; i <= depth; i++) PetscCall(PetscDualSpaceDestroy(&sp->heightSpaces[i]));
   }
   PetscCall(PetscFree(sp->heightSpaces));
 
-  PetscCall(PetscSectionDestroy(&(sp->pointSection)));
-  PetscCall(PetscSectionDestroy(&(sp->intPointSection)));
-  PetscCall(PetscQuadratureDestroy(&(sp->intNodes)));
-  PetscCall(VecDestroy(&(sp->intDofValues)));
-  PetscCall(VecDestroy(&(sp->intNodeValues)));
-  PetscCall(MatDestroy(&(sp->intMat)));
-  PetscCall(PetscQuadratureDestroy(&(sp->allNodes)));
-  PetscCall(VecDestroy(&(sp->allDofValues)));
-  PetscCall(VecDestroy(&(sp->allNodeValues)));
-  PetscCall(MatDestroy(&(sp->allMat)));
+  PetscCall(PetscSectionDestroy(&sp->pointSection));
+  PetscCall(PetscSectionDestroy(&sp->intPointSection));
+  PetscCall(PetscQuadratureDestroy(&sp->intNodes));
+  PetscCall(VecDestroy(&sp->intDofValues));
+  PetscCall(VecDestroy(&sp->intNodeValues));
+  PetscCall(MatDestroy(&sp->intMat));
+  PetscCall(PetscQuadratureDestroy(&sp->allNodes));
+  PetscCall(VecDestroy(&sp->allDofValues));
+  PetscCall(VecDestroy(&sp->allNodeValues));
+  PetscCall(MatDestroy(&sp->allMat));
   PetscCall(PetscFree(sp->numDof));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -404,18 +404,18 @@ PetscErrorCode PetscDualSpaceDestroy(PetscDualSpace *sp)
 
   PetscFunctionBegin;
   if (!*sp) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*sp), PETSCDUALSPACE_CLASSID, 1);
+  PetscValidHeaderSpecific(*sp, PETSCDUALSPACE_CLASSID, 1);
 
-  if (--((PetscObject)(*sp))->refct > 0) {
+  if (--((PetscObject)*sp)->refct > 0) {
     *sp = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  ((PetscObject)(*sp))->refct = 0;
+  ((PetscObject)*sp)->refct = 0;
 
   PetscCall(PetscDualSpaceGetDimension(*sp, &dim));
   dm = (*sp)->dm;
 
-  PetscTryTypeMethod((*sp), destroy);
+  PetscTryTypeMethod(*sp, destroy);
   PetscCall(PetscDualSpaceClearDMData_Internal(*sp, dm));
 
   for (f = 0; f < dim; ++f) PetscCall(PetscQuadratureDestroy(&(*sp)->functional[f]));
@@ -699,7 +699,7 @@ PetscErrorCode PetscDualSpaceGetDimension(PetscDualSpace sp, PetscInt *dim)
 
     PetscCall(PetscDualSpaceGetSection(sp, &section));
     if (section) {
-      PetscCall(PetscSectionGetStorageSize(section, &(sp->spdim)));
+      PetscCall(PetscSectionGetStorageSize(section, &sp->spdim));
     } else sp->spdim = 0;
   }
   *dim = sp->spdim;
@@ -731,7 +731,7 @@ PetscErrorCode PetscDualSpaceGetInteriorDimension(PetscDualSpace sp, PetscInt *i
 
     PetscCall(PetscDualSpaceGetSection(sp, &section));
     if (section) {
-      PetscCall(PetscSectionGetConstrainedStorageSize(section, &(sp->spintdim)));
+      PetscCall(PetscSectionGetConstrainedStorageSize(section, &sp->spintdim));
     } else sp->spintdim = 0;
   }
   *intdim = sp->spintdim;
@@ -795,14 +795,14 @@ PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace sp, const PetscInt **numDo
 
     PetscCall(PetscDualSpaceGetDM(sp, &dm));
     PetscCall(DMPlexGetDepth(dm, &depth));
-    PetscCall(PetscCalloc1(depth + 1, &(sp->numDof)));
+    PetscCall(PetscCalloc1(depth + 1, &sp->numDof));
     PetscCall(PetscDualSpaceGetSection(sp, &section));
     for (d = 0; d <= depth; d++) {
       PetscInt dStart, dEnd;
 
       PetscCall(DMPlexGetDepthStratum(dm, d, &dStart, &dEnd));
       if (dEnd <= dStart) continue;
-      PetscCall(PetscSectionGetDof(section, dStart, &(sp->numDof[d])));
+      PetscCall(PetscSectionGetDof(section, dStart, &sp->numDof[d]));
     }
   }
   *numDof = sp->numDof;
@@ -917,7 +917,7 @@ PetscErrorCode PetscDualSpaceGetSection(PetscDualSpace sp, PetscSection *section
   }
   if (!sp->pointSection) {
     /* mark the boundary */
-    PetscCall(PetscDualSpaceSectionCreate_Internal(sp, &(sp->pointSection)));
+    PetscCall(PetscDualSpaceSectionCreate_Internal(sp, &sp->pointSection));
     PetscCall(DMPlexGetChart(sp->dm, &pStart, &pEnd));
     for (p = pStart; p < pEnd; p++) {
       PetscDualSpace psp;
@@ -971,7 +971,7 @@ PetscErrorCode PetscDualSpaceGetInteriorSection(PetscDualSpace sp, PetscSection 
     PetscSection full_section;
 
     PetscCall(PetscDualSpaceGetSection(sp, &full_section));
-    PetscCall(PetscDualSpaceSectionCreate_Internal(sp, &(sp->intPointSection)));
+    PetscCall(PetscDualSpaceSectionCreate_Internal(sp, &sp->intPointSection));
     PetscCall(PetscSectionGetChart(full_section, &pStart, &pEnd));
     for (p = pStart; p < pEnd; p++) {
       PetscInt dof, cdof;
@@ -1024,7 +1024,7 @@ PetscErrorCode PetscDualSpacePushForwardSubspaces_Internal(PetscDualSpace sp, Pe
       PetscQuadrature fn;
 
       PetscCall(PetscDualSpaceGetFunctional(ssp, f, &fn));
-      PetscCall(PetscQuadraturePushForward(fn, dim, sv0, v0, J, k, &(sp->functional[off + f])));
+      PetscCall(PetscQuadraturePushForward(fn, dim, sv0, v0, J, k, &sp->functional[off + f]));
     }
   }
   PetscCall(PetscFree3(v0, sv0, J));
@@ -1195,9 +1195,9 @@ PetscErrorCode PetscDualSpaceApplyAllDefault(PetscDualSpace sp, const PetscScala
   PetscAssertPointer(pointEval, 2);
   PetscAssertPointer(spValue, 3);
   PetscCall(PetscDualSpaceGetAllData(sp, NULL, &allMat));
-  if (!(sp->allNodeValues)) PetscCall(MatCreateVecs(allMat, &(sp->allNodeValues), NULL));
+  if (!sp->allNodeValues) PetscCall(MatCreateVecs(allMat, &sp->allNodeValues, NULL));
   pointValues = sp->allNodeValues;
-  if (!(sp->allDofValues)) PetscCall(MatCreateVecs(allMat, NULL, &(sp->allDofValues)));
+  if (!sp->allDofValues) PetscCall(MatCreateVecs(allMat, NULL, &sp->allDofValues));
   dofValues = sp->allDofValues;
   PetscCall(VecPlaceArray(pointValues, pointEval));
   PetscCall(VecPlaceArray(dofValues, spValue));
@@ -1231,9 +1231,9 @@ PetscErrorCode PetscDualSpaceApplyInteriorDefault(PetscDualSpace sp, const Petsc
   PetscAssertPointer(pointEval, 2);
   PetscAssertPointer(spValue, 3);
   PetscCall(PetscDualSpaceGetInteriorData(sp, NULL, &intMat));
-  if (!(sp->intNodeValues)) PetscCall(MatCreateVecs(intMat, &(sp->intNodeValues), NULL));
+  if (!sp->intNodeValues) PetscCall(MatCreateVecs(intMat, &sp->intNodeValues, NULL));
   pointValues = sp->intNodeValues;
-  if (!(sp->intDofValues)) PetscCall(MatCreateVecs(intMat, NULL, &(sp->intDofValues)));
+  if (!sp->intDofValues) PetscCall(MatCreateVecs(intMat, NULL, &sp->intDofValues));
   dofValues = sp->intDofValues;
   PetscCall(VecPlaceArray(pointValues, pointEval));
   PetscCall(VecPlaceArray(dofValues, spValue));
@@ -1268,8 +1268,8 @@ PetscErrorCode PetscDualSpaceGetAllData(PetscDualSpace sp, PetscQuadrature *allN
     Mat             amat;
 
     PetscUseTypeMethod(sp, createalldata, &qpoints, &amat);
-    PetscCall(PetscQuadratureDestroy(&(sp->allNodes)));
-    PetscCall(MatDestroy(&(sp->allMat)));
+    PetscCall(PetscQuadratureDestroy(&sp->allNodes));
+    PetscCall(MatDestroy(&sp->allMat));
     sp->allNodes = qpoints;
     sp->allMat   = amat;
   }
@@ -1380,8 +1380,8 @@ PetscErrorCode PetscDualSpaceGetInteriorData(PetscDualSpace sp, PetscQuadrature 
     Mat             imat;
 
     PetscUseTypeMethod(sp, createintdata, &qpoints, &imat);
-    PetscCall(PetscQuadratureDestroy(&(sp->intNodes)));
-    PetscCall(MatDestroy(&(sp->intMat)));
+    PetscCall(PetscQuadratureDestroy(&sp->intNodes));
+    PetscCall(MatDestroy(&sp->intMat));
     sp->intNodes = qpoints;
     sp->intMat   = imat;
   }
@@ -1620,7 +1620,7 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt heigh
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscAssertPointer(subsp, 3);
-  PetscCheck((sp->uniform), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "A non-uniform dual space does not have a single dual space at each height");
+  PetscCheck(sp->uniform, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "A non-uniform dual space does not have a single dual space at each height");
   *subsp = NULL;
   dm     = sp->dm;
   PetscCall(DMPlexGetDepth(dm, &depth));
@@ -1632,7 +1632,7 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt heigh
   }
   if (!sp->heightSpaces) {
     PetscInt h;
-    PetscCall(PetscCalloc1(depth + 1, &(sp->heightSpaces)));
+    PetscCall(PetscCalloc1(depth + 1, &sp->heightSpaces));
 
     for (h = 0; h <= depth; h++) {
       if (h == 0 && cEnd == cStart + 1) continue;
@@ -1644,7 +1644,7 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt heigh
         if (hEnd > hStart) {
           const char *name;
 
-          PetscCall(PetscObjectReference((PetscObject)(sp->pointSpaces[hStart])));
+          PetscCall(PetscObjectReference((PetscObject)sp->pointSpaces[hStart]));
           if (sp->pointSpaces[hStart]) {
             PetscCall(PetscObjectGetName((PetscObject)sp, &name));
             PetscCall(PetscObjectSetName((PetscObject)sp->pointSpaces[hStart], name));
@@ -1703,7 +1703,7 @@ PetscErrorCode PetscDualSpaceGetPointSubspace(PetscDualSpace sp, PetscInt point,
   }
   if (!sp->pointSpaces) {
     PetscInt p;
-    PetscCall(PetscCalloc1(pEnd - pStart, &(sp->pointSpaces)));
+    PetscCall(PetscCalloc1(pEnd - pStart, &sp->pointSpaces));
 
     for (p = 0; p < pEnd - pStart; p++) {
       if (p + pStart == cStart && cEnd == cStart + 1) continue;
@@ -1716,7 +1716,7 @@ PetscErrorCode PetscDualSpaceGetPointSubspace(PetscDualSpace sp, PetscInt point,
         PetscCall(DMPlexGetDepthLabel(dm, &label));
         PetscCall(DMLabelGetValue(label, p + pStart, &depth));
         height = dim - depth;
-        PetscCall(PetscDualSpaceGetHeightSubspace(sp, height, &(sp->pointSpaces[p])));
+        PetscCall(PetscDualSpaceGetHeightSubspace(sp, height, &sp->pointSpaces[p]));
         PetscCall(PetscObjectReference((PetscObject)sp->pointSpaces[p]));
       }
     }

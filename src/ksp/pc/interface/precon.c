@@ -97,8 +97,8 @@ PetscErrorCode PCDestroy(PC *pc)
 {
   PetscFunctionBegin;
   if (!*pc) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*pc), PC_CLASSID, 1);
-  if (--((PetscObject)(*pc))->refct > 0) {
+  PetscValidHeaderSpecific(*pc, PC_CLASSID, 1);
+  if (--((PetscObject)*pc)->refct > 0) {
     *pc = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -107,7 +107,7 @@ PetscErrorCode PCDestroy(PC *pc)
 
   /* if memory was published with SAWs then destroy it */
   PetscCall(PetscObjectSAWsViewOff((PetscObject)*pc));
-  PetscTryTypeMethod((*pc), destroy);
+  PetscTryTypeMethod(*pc, destroy);
   PetscCall(DMDestroy(&(*pc)->dm));
   PetscCall(PetscHeaderDestroy(pc));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1606,7 +1606,7 @@ PetscErrorCode PCPreSolve(PC pc, KSP ksp)
   PetscCall(KSPGetRhs(ksp, &rhs));
 
   if (pc->ops->presolve) PetscUseTypeMethod(pc, presolve, ksp, rhs, x);
-  else if (pc->presolve) PetscCall((pc->presolve)(pc, ksp));
+  else if (pc->presolve) PetscCall(pc->presolve(pc, ksp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

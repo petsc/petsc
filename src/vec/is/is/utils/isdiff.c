@@ -702,7 +702,7 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
         PetscCallMPI(MPI_Comm_free(&subcomm));
       }
     } /* for (l = low; l < high; ++l) */
-  }   /* if (low <= high) */
+  } /* if (low <= high) */
   PetscCall(PetscFree2(inds, colors));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

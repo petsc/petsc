@@ -86,6 +86,7 @@ PetscErrorCode MatKAIJGetAIJ(Mat A, Mat *B)
 PetscErrorCode MatKAIJGetS(Mat A, PetscInt *m, PetscInt *n, PetscScalar **S)
 {
   Mat_SeqKAIJ *b = (Mat_SeqKAIJ *)A->data;
+
   PetscFunctionBegin;
   if (m) *m = b->p;
   if (n) *n = b->q;
@@ -116,6 +117,7 @@ PetscErrorCode MatKAIJGetS(Mat A, PetscInt *m, PetscInt *n, PetscScalar **S)
 PetscErrorCode MatKAIJGetSRead(Mat A, PetscInt *m, PetscInt *n, const PetscScalar **S)
 {
   Mat_SeqKAIJ *b = (Mat_SeqKAIJ *)A->data;
+
   PetscFunctionBegin;
   if (m) *m = b->p;
   if (n) *n = b->q;
@@ -195,6 +197,7 @@ PetscErrorCode MatKAIJRestoreSRead(Mat A, const PetscScalar **S)
 PetscErrorCode MatKAIJGetT(Mat A, PetscInt *m, PetscInt *n, PetscScalar **T)
 {
   Mat_SeqKAIJ *b = (Mat_SeqKAIJ *)A->data;
+
   PetscFunctionBegin;
   if (m) *m = b->p;
   if (n) *n = b->q;
@@ -225,6 +228,7 @@ PetscErrorCode MatKAIJGetT(Mat A, PetscInt *m, PetscInt *n, PetscScalar **T)
 PetscErrorCode MatKAIJGetTRead(Mat A, PetscInt *m, PetscInt *n, const PetscScalar **T)
 {
   Mat_SeqKAIJ *b = (Mat_SeqKAIJ *)A->data;
+
   PetscFunctionBegin;
   if (m) *m = b->p;
   if (n) *n = b->q;
@@ -503,7 +507,6 @@ static PetscErrorCode MatKAIJ_build_AIJ_OAIJ(Mat A)
     if (a->isTI) PetscCall(PetscFree(T));
     a->state = state;
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -268,7 +268,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Native(DM dm, PetscInt height
     if (nroots > 0) {
       if (cellNum[p - pStart] < 0) continue;
     }
-    PetscCall(PetscSectionGetOffset(section, p, &(vOffsets[idx++])));
+    PetscCall(PetscSectionGetOffset(section, p, &vOffsets[idx++]));
   }
   vOffsets[*numVertices] = size;
   PetscCall(PetscSegBufferExtractAlloc(adjBuffer, &graph));
@@ -291,7 +291,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Native(DM dm, PetscInt height
     PetscCall(PetscSectionSetUp(section));
     PetscCall(PetscSectionGetStorageSize(section, &size));
     PetscCall(PetscMalloc1(*numVertices + 1, &vOffsets));
-    for (idx = 0, p = 0; p < *numVertices; p++) PetscCall(PetscSectionGetOffset(section, p, &(vOffsets[idx++])));
+    for (idx = 0, p = 0; p < *numVertices; p++) PetscCall(PetscSectionGetOffset(section, p, &vOffsets[idx++]));
     vOffsets[*numVertices] = size;
     PetscCall(PetscSegBufferExtractAlloc(adjBuffer, &graph));
   } else {
@@ -1927,8 +1927,8 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
     PetscCall(PetscLogEventBegin(DMPLEX_RebalScatterPart, 0, 0, 0, 0));
     PetscCall(PetscMalloc1(size, &counts));
     PetscCall(PetscMalloc1(size + 1, &mpiCumSumVertices));
-    for (i = 0; i < size; i++) PetscCall(PetscMPIIntCast(cumSumVertices[i + 1] - cumSumVertices[i], &(counts[i])));
-    for (i = 0; i <= size; i++) PetscCall(PetscMPIIntCast(cumSumVertices[i], &(mpiCumSumVertices[i])));
+    for (i = 0; i < size; i++) PetscCall(PetscMPIIntCast(cumSumVertices[i + 1] - cumSumVertices[i], &counts[i]));
+    for (i = 0; i <= size; i++) PetscCall(PetscMPIIntCast(cumSumVertices[i], &mpiCumSumVertices[i]));
     PetscCallMPI(MPI_Scatterv(partGlobal, counts, mpiCumSumVertices, MPIU_INT, part, counts[rank], MPIU_INT, 0, comm));
     PetscCall(PetscFree(counts));
     PetscCall(PetscFree(mpiCumSumVertices));

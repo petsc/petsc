@@ -20,7 +20,6 @@ static PetscErrorCode MatAssemblyEnd_MPIAIJKokkos(Mat A, MatAssemblyType mode)
     PetscCall(MatSetType(mpiaij->B, MATSEQAIJKOKKOS));
     PetscCall(VecSetType(mpiaij->lvec, VECSEQKOKKOS));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1182,8 +1181,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AtB(Mat_Product *product, 
   // Create C2, which shares a, i arrays with C2_mid, but with new column indices and potentially larger column size
   MatColIdxKokkosView oldj = mm->C2_mid.graph.entries, newj(NoInit("j"), oldj.extent(0));
   PetscIntKokkosView  map  = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), map_h);
-  PetscCallCXX(Kokkos::parallel_for(
-    oldj.extent(0), KOKKOS_LAMBDA(const PetscInt i) { newj(i) = map(oldj(i)); }));
+  PetscCallCXX(Kokkos::parallel_for(oldj.extent(0), KOKKOS_LAMBDA(const PetscInt i) { newj(i) = map(oldj(i)); }));
   PetscCallCXX(mm->C2 = KokkosCsrMatrix("C2", mm->C2_mid.numRows(), mm->n /*new column size*/, mm->C2_mid.nnz(), mm->C2_mid.values, mm->C2_mid.graph.row_map, newj));
 
   // C = (C1+Fd, C2+Fo)
@@ -1295,8 +1293,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AB(Mat_Product *product, M
   // Create C2, which shares a, i arrays with C2_mid, but with new column indices and potentially larger column size
   MatColIdxKokkosView oldj = mm->C2_mid.graph.entries, newj(NoInit("j"), oldj.extent(0));
   PetscIntKokkosView  map  = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), map_h);
-  PetscCallCXX(Kokkos::parallel_for(
-    oldj.extent(0), KOKKOS_LAMBDA(const PetscInt i) { newj(i) = map(oldj(i)); }));
+  PetscCallCXX(Kokkos::parallel_for(oldj.extent(0), KOKKOS_LAMBDA(const PetscInt i) { newj(i) = map(oldj(i)); }));
   mm->C2 = KokkosCsrMatrix("C2", mm->C2_mid.numRows(), mm->n /*new column size*/, mm->C2_mid.nnz(), mm->C2_mid.values, mm->C2_mid.graph.row_map, newj);
 
   // C = (Cd, Co) = (C1+C3, C2+C4)
@@ -1663,8 +1660,7 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJKokkos(Mat mat, const PetscScalar v[
 
   PetscCall(PetscLogGpuTimeBegin());
   /* Pack entries to be sent to remote */
-  Kokkos::parallel_for(
-    vsend.extent(0), KOKKOS_LAMBDA(const PetscCount i) { vsend(i) = v1(Cperm1(i)); });
+  Kokkos::parallel_for(vsend.extent(0), KOKKOS_LAMBDA(const PetscCount i) { vsend(i) = v1(Cperm1(i)); });
 
   /* Send remote entries to their owner and overlap the communication with local computation */
   PetscCall(PetscSFReduceWithMemTypeBegin(coo->sf, MPIU_SCALAR, PETSC_MEMTYPE_KOKKOS, vsend.data(), PETSC_MEMTYPE_KOKKOS, v2.data(), MPI_REPLACE));

@@ -95,7 +95,6 @@ int main(int argc, char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
-  PetscFunctionBeginUser;
   appctx.D1    = 8.0e-5;
   appctx.D2    = 4.0e-5;
   appctx.gamma = .024;

@@ -731,7 +731,6 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
   SNES_NASM       *nasm = (SNES_NASM *)snes->data;
 
   PetscFunctionBegin;
-
   PetscCheck(!snes->xl & !snes->xu && !snes->ops->computevariablebounds, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
   PetscCall(PetscCitationsRegister(SNESCitation, &SNEScite));
@@ -960,11 +959,9 @@ PetscErrorCode SNESNASMSetWeight(SNES snes, Vec weight)
   SNES_NASM *nasm = (SNES_NASM *)snes->data;
 
   PetscFunctionBegin;
-
   PetscCall(VecDestroy(&nasm->weight));
   nasm->weight_set = PETSC_TRUE;
   nasm->weight     = weight;
   PetscCall(PetscObjectReference((PetscObject)nasm->weight));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }

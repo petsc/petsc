@@ -189,8 +189,8 @@ static PetscErrorCode PetscStageInfoInit(PetscStagePerf *stageInfo)
 {
   PetscFunctionBegin;
   PetscCall(PetscMemzero(stageInfo, sizeof(*stageInfo)));
-  PetscCall(PetscLogEventPerfArrayCreate(128, &(stageInfo->eventLog)));
-  PetscCall(PetscLogClassPerfArrayCreate(128, &(stageInfo->classLog)));
+  PetscCall(PetscLogEventPerfArrayCreate(128, &stageInfo->eventLog));
+  PetscCall(PetscLogClassPerfArrayCreate(128, &stageInfo->classLog));
   PetscCall(PetscEventPerfInfoInit(&stageInfo->perfInfo));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -198,8 +198,8 @@ static PetscErrorCode PetscStageInfoInit(PetscStagePerf *stageInfo)
 static PetscErrorCode PetscStageInfoReset(PetscStagePerf *stageInfo)
 {
   PetscFunctionBegin;
-  PetscCall(PetscLogEventPerfArrayDestroy(&(stageInfo->eventLog)));
-  PetscCall(PetscLogClassPerfArrayDestroy(&(stageInfo->classLog)));
+  PetscCall(PetscLogEventPerfArrayDestroy(&stageInfo->eventLog));
+  PetscCall(PetscLogClassPerfArrayDestroy(&stageInfo->classLog));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -270,9 +270,9 @@ static PetscErrorCode PetscLogHandlerContextCreate_Default(PetscLogHandler_Defau
   PetscFunctionBegin;
   PetscCall(PetscNew(def_p));
   def = *def_p;
-  PetscCall(PetscLogStageInfoArrayCreate(8, &(def->stages)));
-  PetscCall(PetscLogActionArrayCreate(64, &(def->petsc_actions)));
-  PetscCall(PetscLogObjectArrayCreate(64, &(def->petsc_objects)));
+  PetscCall(PetscLogStageInfoArrayCreate(8, &def->stages));
+  PetscCall(PetscLogActionArrayCreate(64, &def->petsc_actions));
+  PetscCall(PetscLogObjectArrayCreate(64, &def->petsc_objects));
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_include_actions", &def->petsc_logActions, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_include_objects", &def->petsc_logObjects, NULL));
@@ -507,7 +507,6 @@ static PetscErrorCode PetscLogGetStageEventPerfInfo_threaded(PetscLogHandler_Def
   PetscHashIJKKey     key;
 
   PetscFunctionBegin;
-
 #if PetscDefined(HAVE_THREADSAFETY)
   key.i = PetscLogGetTid();
 #else
@@ -1805,6 +1804,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
 static PetscErrorCode PetscLogHandlerView_Default(PetscLogHandler handler, PetscViewer viewer)
 {
   PetscViewerFormat format;
+
   PetscFunctionBegin;
   PetscCall(PetscViewerGetFormat(viewer, &format));
   if (format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_ASCII_INFO) {

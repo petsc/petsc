@@ -23,6 +23,7 @@ typedef struct {
   {
      Vec  X,Y,F,W,G;
      SNES snes;
+
      PetscFunctionBegin;
      PetscCall(SNESLineSearchGetSNES(linesearch,&snes));
      PetscCall(SNESLineSearchSetReason(linesearch,SNES_LINESEARCH_SUCCEEDED));

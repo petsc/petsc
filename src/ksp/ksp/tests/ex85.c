@@ -16,6 +16,7 @@ int main(int argc, char **args)
   PetscInt    n = 6, i, j, col[2];
   PetscScalar value[4];
   PetscMPIInt size;
+
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));

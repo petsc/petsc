@@ -296,7 +296,6 @@ static PetscErrorCode RegHessianUpdate(Tao tao, Vec z, Mat H, Mat Hpre, void *pt
   TAO_ADMM *am     = (TAO_ADMM *)parent->data;
 
   PetscFunctionBegin;
-
   if (am->Hzchange) {
     /* Case where Hessian gets updated with respect to x vector input. */
     PetscCall((*am->ops->reghess)(am->subsolverZ, z, H, Hpre, am->reghessP));
@@ -355,11 +354,11 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao)
 
   if (!am->zJI) {
     /* Currently, B is assumed to be a linear system, i.e., not getting updated*/
-    PetscCall(MatTransposeMatMult(am->JB, am->JB, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &(am->BTB)));
+    PetscCall(MatTransposeMatMult(am->JB, am->JB, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &am->BTB));
   }
   if (!am->xJI) {
     /* Currently, A is assumed to be a linear system, i.e., not getting updated*/
-    PetscCall(MatTransposeMatMult(am->subsolverX->jacobian_equality, am->subsolverX->jacobian_equality, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &(am->ATA)));
+    PetscCall(MatTransposeMatMult(am->subsolverX->jacobian_equality, am->subsolverX->jacobian_equality, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &am->ATA));
   }
 
   is_reg_shell = PETSC_FALSE;

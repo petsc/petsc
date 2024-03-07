@@ -169,6 +169,7 @@ static
 PetscErrorCode VecGetCurrentMemType(Vec v, PetscMemType *m)
 {
   PetscBool bound;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscAssertPointer(m,2);
@@ -233,6 +234,7 @@ static
 PetscErrorCode MatGetCurrentMemType(Mat A, PetscMemType *m)
 {
   PetscBool bound;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscAssertPointer(m,2);
@@ -514,7 +516,6 @@ PetscErrorCode SNESSetUseMFFD(SNES snes,PetscBool flag)
     if (!shell && !python) PetscCall(PCSetType(pc,PCNONE));
   } else PetscCall(SNESSetJacobian(snes,J,0,0,0));
   PetscCall(MatDestroy(&J));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -653,6 +654,7 @@ static
 PetscErrorCode TaoGetVecs(Tao tao, Vec *X, Vec *G, Vec *S)
 {
   PetscBool has_g;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscCall(TaoHasGradientRoutine(tao,&has_g));

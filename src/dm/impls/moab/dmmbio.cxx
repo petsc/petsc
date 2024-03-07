@@ -7,8 +7,8 @@ static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt n
   char  wopts_par[PETSC_MAX_PATH_LEN];
   char  wopts_parid[PETSC_MAX_PATH_LEN];
   char  wopts_dbg[PETSC_MAX_PATH_LEN];
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   PetscCall(PetscMalloc1(PETSC_MAX_PATH_LEN, &wopts));
   PetscCall(PetscMemzero(&wopts_par, PETSC_MAX_PATH_LEN));
   PetscCall(PetscMemzero(&wopts_parid, PETSC_MAX_PATH_LEN));

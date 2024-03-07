@@ -1,24 +1,24 @@
-      0 SNES Function norm 0.995735 
+      0 SNES Function norm 0.995735
       Linear solve converged due to CONVERGED_RTOL iterations 2
-      1 SNES Function norm 0.276938 
+      1 SNES Function norm 0.276938
       Linear solve converged due to CONVERGED_RTOL iterations 2
-      2 SNES Function norm 0.00668678 
+      2 SNES Function norm 0.00668678
       Linear solve converged due to CONVERGED_RTOL iterations 2
-      3 SNES Function norm 4.61503e-06 
+      3 SNES Function norm 4.61503e-06
       Linear solve converged due to CONVERGED_RTOL iterations 2
       4 SNES Function norm < 1.e-11
     Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
-    0 SNES Function norm 0.0763997 
+    0 SNES Function norm 0.0763997
     Linear solve converged due to CONVERGED_RTOL iterations 6
-    1 SNES Function norm 2.68503e-05 
+    1 SNES Function norm 2.68503e-05
     Linear solve converged due to CONVERGED_RTOL iterations 5
-    2 SNES Function norm 6.777e-10 
+    2 SNES Function norm 6.777e-10
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
-  0 SNES Function norm 0.0408394 
+  0 SNES Function norm 0.0408394
   Linear solve converged due to CONVERGED_RTOL iterations 6
-  1 SNES Function norm 9.57612e-07 
+  1 SNES Function norm 9.57612e-07
   Linear solve converged due to CONVERGED_RTOL iterations 4
-  2 SNES Function norm 2.903e-10 
+  2 SNES Function norm 2.903e-10
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 SNES Object: 2 MPI processes
   type: newtonls
@@ -41,7 +41,7 @@ SNES Object: 2 MPI processes
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-05, absolute=-1., divergence=10000.
+    tolerances: relative=1e-05, absolute=-1., divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object: 2 MPI processes
@@ -53,7 +53,7 @@ SNES Object: 2 MPI processes
       KSP Object: (mg_coarse_) 2 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_coarse_) 2 MPI processes
@@ -62,7 +62,7 @@ SNES Object: 2 MPI processes
           KSP Object: (mg_coarse_redundant_) 1 MPI process
             type: preonly
             maximum iterations=10000, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+            tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
           PC Object: (mg_coarse_redundant_) 1 MPI process
@@ -104,12 +104,12 @@ SNES Object: 2 MPI processes
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               happy breakdown tolerance 1e-30
             maximum iterations=10, initial guess is zero
-            tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+            tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
             left preconditioning
             using PRECONDITIONED norm type for convergence test
           estimating eigenvalues using noisy right hand side
         maximum iterations=2, nonzero initial guess
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_levels_1_) 2 MPI processes
@@ -134,12 +134,12 @@ SNES Object: 2 MPI processes
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               happy breakdown tolerance 1e-30
             maximum iterations=10, initial guess is zero
-            tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+            tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
             left preconditioning
             using PRECONDITIONED norm type for convergence test
           estimating eigenvalues using noisy right hand side
         maximum iterations=2, nonzero initial guess
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (mg_levels_2_) 2 MPI processes

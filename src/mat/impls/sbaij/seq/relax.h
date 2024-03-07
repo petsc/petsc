@@ -74,7 +74,7 @@ PetscErrorCode MatMult_SeqSBAIJ_1(Mat A, Vec xx, Vec zz)
 #if defined(PETSC_USE_COMPLEX)
   const int aconj = A->hermitian == PETSC_BOOL3_TRUE;
 #else
-  const int       aconj = 0;
+  const int aconj = 0;
 #endif
 
   PetscFunctionBegin;

@@ -293,13 +293,13 @@ PetscErrorCode PetscFEDestroy(PetscFE *fem)
 {
   PetscFunctionBegin;
   if (!*fem) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*fem), PETSCFE_CLASSID, 1);
+  PetscValidHeaderSpecific(*fem, PETSCFE_CLASSID, 1);
 
-  if (--((PetscObject)(*fem))->refct > 0) {
+  if (--((PetscObject)*fem)->refct > 0) {
     *fem = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  ((PetscObject)(*fem))->refct = 0;
+  ((PetscObject)*fem)->refct = 0;
 
   if ((*fem)->subspaces) {
     PetscInt dim, d;
@@ -321,7 +321,7 @@ PetscErrorCode PetscFEDestroy(PetscFE *fem)
   PetscCallCEED(CeedDestroy(&(*fem)->ceed));
 #endif
 
-  PetscTryTypeMethod((*fem), destroy);
+  PetscTryTypeMethod(*fem, destroy);
   PetscCall(PetscHeaderDestroy(fem));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

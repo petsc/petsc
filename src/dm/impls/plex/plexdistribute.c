@@ -2000,7 +2000,7 @@ PetscErrorCode DMPlexDistributeOverlap_Internal(DM dm, PetscInt overlap, MPI_Com
 
     if (clear_ovlboundary) PetscCall(DMRemoveLabel(dm, ovlboundary, NULL));
     PetscCall(DMHasLabel(*dmOverlap, ovlboundary, &flg));
-    PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing %s label\n", ovlboundary);
+    PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing %s label", ovlboundary);
     PetscCall(DMGetLabel(*dmOverlap, ovlboundary, &label));
     PetscCall(DMPlexMarkBoundaryFaces_Internal(*dmOverlap, 1, 0, label, PETSC_TRUE));
   }

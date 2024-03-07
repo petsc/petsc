@@ -26,13 +26,14 @@ typedef struct {
 /* This function is pure */
 static PetscInt Map(PetscInt i, PetscInt j, PetscInt s)
 {
-  return ((2 * s - j + 1) * j / 2 + i - j);
+  return (2 * s - j + 1) * j / 2 + i - j;
 }
 
 static PetscErrorCode TSEvaluateStep_EIMEX(TS ts, PetscInt order, Vec X, PetscBool *done)
 {
   TS_EIMEX      *ext = (TS_EIMEX *)ts->data;
   const PetscInt ns  = ext->nstages;
+
   PetscFunctionBegin;
   PetscCall(VecCopy(ext->T[Map(ext->row_ind, ext->col_ind, ns)], X));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -133,7 +134,7 @@ static PetscErrorCode TSStep_EIMEX(TS ts)
         /*update ts solution */
         PetscCall(TSEvaluateStep(ts, ext->nstages, ts->vec_sol, NULL));
       } /*end if !accept*/
-    }   /*end while*/
+    } /*end while*/
 
     if (ext->nstages == ext->max_rows) PetscCall(PetscInfo(ts, "Max number of rows has been used\n"));
   } /*end if ext->ord_adapt*/
@@ -151,6 +152,7 @@ static PetscErrorCode TSInterpolate_EIMEX(TS ts, PetscReal itime, Vec X)
   PetscReal       t, a, b;
   Vec             Y0 = ext->VecSolPrev, Y1 = ext->Y, Ydot = ext->Ydot, YdotI = ext->YdotI;
   const PetscReal h = ts->ptime - ts->ptime_prev;
+
   PetscFunctionBegin;
   t = (itime - ts->ptime + h) / h;
   /* YdotI = -f(x)-g(x) */
@@ -166,7 +168,6 @@ static PetscErrorCode TSInterpolate_EIMEX(TS ts, PetscReal itime, Vec X)
   a = -2.0 * t * t * t + 3.0 * t * t;
   b = -(t * t * t - t * t) * h;
   PetscCall(VecAXPBYPCZ(X, a, b, 1.0, Y1, YdotI));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -270,7 +271,6 @@ static PetscErrorCode SNESTSFormFunction_EIMEX(SNES snes, Vec X, Vec G, TS ts)
   PetscCall(VecCopy(G, Ydot));
   ts->dm = dmsave;
   PetscCall(TSEIMEXRestoreVecs(ts, dm, &Z, &Ydot, NULL, NULL));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -282,6 +282,7 @@ static PetscErrorCode SNESTSFormJacobian_EIMEX(SNES snes, Vec X, Mat A, Mat B, T
   TS_EIMEX *ext = (TS_EIMEX *)ts->data;
   Vec       Ydot;
   DM        dm, dmsave;
+
   PetscFunctionBegin;
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(TSEIMEXGetVecs(ts, dm, NULL, &Ydot, NULL, NULL));
@@ -476,6 +477,7 @@ static PetscErrorCode TSEIMEXSetRowCol_EIMEX(TS ts, PetscInt row, PetscInt col)
 static PetscErrorCode TSEIMEXSetOrdAdapt_EIMEX(TS ts, PetscBool flg)
 {
   TS_EIMEX *ext = (TS_EIMEX *)ts->data;
+
   PetscFunctionBegin;
   ext->ord_adapt = flg;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -524,7 +526,6 @@ PETSC_EXTERN PetscErrorCode TSCreate_EIMEX(TS ts)
   TS_EIMEX *ext;
 
   PetscFunctionBegin;
-
   ts->ops->reset          = TSReset_EIMEX;
   ts->ops->destroy        = TSDestroy_EIMEX;
   ts->ops->view           = TSView_EIMEX;

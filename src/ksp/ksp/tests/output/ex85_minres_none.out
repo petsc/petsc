@@ -8,7 +8,7 @@ Iteratively computed extreme singular values: max 27. min 1. max/min 27.
 KSP Object: 1 MPI process
   type: minres
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-14, absolute=1e-14, divergence=10000.
+  tolerances: relative=1e-14, absolute=1e-14, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
 PC Object: 1 MPI process

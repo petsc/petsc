@@ -322,7 +322,6 @@ PetscErrorCode PetscAdolcComputeRHSJacobianP(PetscInt tag, Mat A, const PetscSca
   PetscScalar **J, *concat, **S;
 
   PetscFunctionBegin;
-
   /* Allocate memory and concatenate independent variable values with parameter */
   PetscCall(AdolcMalloc2(m, p, &J));
   PetscCall(PetscMalloc1(n + p, &concat));
@@ -367,7 +366,6 @@ PetscErrorCode PetscAdolcComputeRHSJacobianPLocal(PetscInt tag, Mat A, const Pet
   PetscScalar **J, *concat, **S;
 
   PetscFunctionBegin;
-
   /* Allocate memory and concatenate independent variable values with parameter */
   PetscCall(AdolcMalloc2(m, p, &J));
   PetscCall(PetscMalloc1(n + p, &concat));

@@ -269,7 +269,7 @@ PetscErrorCode MatSetValues_MPIBAIJ(Mat mat, PetscInt m, const PetscInt im[], Pe
 #else
             col = baij->colmap[in[j] / bs] - 1;
 #endif
-            if (col < 0 && !((Mat_SeqBAIJ *)(baij->B->data))->nonew) {
+            if (col < 0 && !((Mat_SeqBAIJ *)baij->B->data)->nonew) {
               PetscCall(MatDisAssemble_MPIBAIJ(mat));
               col = in[j];
               /* Reinitialize the variables required by MatSetValues_SeqBAIJ_B_Private() */
@@ -457,7 +457,7 @@ static PetscErrorCode MatSetValuesBlocked_MPIBAIJ(Mat mat, PetscInt m, const Pet
 #else
             col = (baij->colmap[in[j]] - 1) / bs;
 #endif
-            if (col < 0 && !((Mat_SeqBAIJ *)(baij->B->data))->nonew) {
+            if (col < 0 && !((Mat_SeqBAIJ *)baij->B->data)->nonew) {
               PetscCall(MatDisAssemble_MPIBAIJ(mat));
               col = in[j];
             } else PetscCheck(col >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Inserting a new blocked indexed nonzero block (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", im[i], in[j]);
@@ -480,7 +480,7 @@ static PetscErrorCode MatSetValuesBlocked_MPIBAIJ(Mat mat, PetscInt m, const Pet
 }
 
 #define HASH_KEY             0.6180339887
-#define HASH(size, key, tmp) (tmp = (key)*HASH_KEY, (PetscInt)((size) * (tmp - (PetscInt)tmp)))
+#define HASH(size, key, tmp) (tmp = (key) * HASH_KEY, (PetscInt)((size) * (tmp - (PetscInt)tmp)))
 /* #define HASH(size,key) ((PetscInt)((size)*fmod(((key)*HASH_KEY),1))) */
 /* #define HASH(size,key,tmp) ((PetscInt)((size)*fmod(((key)*HASH_KEY),1))) */
 static PetscErrorCode MatSetValues_MPIBAIJ_HT(Mat mat, PetscInt m, const PetscInt im[], PetscInt n, const PetscInt in[], const PetscScalar v[], InsertMode addv)
@@ -516,20 +516,16 @@ static PetscErrorCode MatSetValues_MPIBAIJ_HT(Mat mat, PetscInt m, const PetscIn
           insert_ct++;
           total_ct++;
           if (HT[idx] != key) {
-            for (idx = h1; (idx < size) && (HT[idx] != key); idx++, total_ct++)
-              ;
+            for (idx = h1; (idx < size) && (HT[idx] != key); idx++, total_ct++);
             if (idx == size) {
-              for (idx = 0; (idx < h1) && (HT[idx] != key); idx++, total_ct++)
-                ;
+              for (idx = 0; (idx < h1) && (HT[idx] != key); idx++, total_ct++);
               PetscCheck(idx != h1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "(%" PetscInt_FMT ",%" PetscInt_FMT ") has no entry in the hash table", row, col);
             }
           }
         } else if (HT[idx] != key) {
-          for (idx = h1; (idx < size) && (HT[idx] != key); idx++)
-            ;
+          for (idx = h1; (idx < size) && (HT[idx] != key); idx++);
           if (idx == size) {
-            for (idx = 0; (idx < h1) && (HT[idx] != key); idx++)
-              ;
+            for (idx = 0; (idx < h1) && (HT[idx] != key); idx++);
             PetscCheck(idx != h1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "(%" PetscInt_FMT ",%" PetscInt_FMT ") has no entry in the hash table", row, col);
           }
         }
@@ -589,20 +585,16 @@ static PetscErrorCode MatSetValuesBlocked_MPIBAIJ_HT(Mat mat, PetscInt m, const 
           total_ct++;
           insert_ct++;
           if (HT[idx] != key) {
-            for (idx = h1; (idx < size) && (HT[idx] != key); idx++, total_ct++)
-              ;
+            for (idx = h1; (idx < size) && (HT[idx] != key); idx++, total_ct++);
             if (idx == size) {
-              for (idx = 0; (idx < h1) && (HT[idx] != key); idx++, total_ct++)
-                ;
+              for (idx = 0; (idx < h1) && (HT[idx] != key); idx++, total_ct++);
               PetscCheck(idx != h1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "(%" PetscInt_FMT ",%" PetscInt_FMT ") has no entry in the hash table", row, col);
             }
           }
         } else if (HT[idx] != key) {
-          for (idx = h1; (idx < size) && (HT[idx] != key); idx++)
-            ;
+          for (idx = h1; (idx < size) && (HT[idx] != key); idx++);
           if (idx == size) {
-            for (idx = 0; (idx < h1) && (HT[idx] != key); idx++)
-              ;
+            for (idx = 0; (idx < h1) && (HT[idx] != key); idx++);
             PetscCheck(idx != h1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "(%" PetscInt_FMT ",%" PetscInt_FMT ") has no entry in the hash table", row, col);
           }
         }
@@ -934,9 +926,9 @@ static PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat, MatAssemblyType mode)
     r2 = a->roworiented;
     r3 = ((Mat_SeqBAIJ *)baij->B->data)->roworiented;
 
-    baij->roworiented                             = PETSC_FALSE;
-    a->roworiented                                = PETSC_FALSE;
-    (((Mat_SeqBAIJ *)baij->B->data))->roworiented = PETSC_FALSE;
+    baij->roworiented                           = PETSC_FALSE;
+    a->roworiented                              = PETSC_FALSE;
+    ((Mat_SeqBAIJ *)baij->B->data)->roworiented = PETSC_FALSE;
     while (1) {
       PetscCall(MatStashScatterGetMesg_Private(&mat->bstash, &n, &row, &col, &val, &flg));
       if (!flg) break;
@@ -997,7 +989,7 @@ static PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat, MatAssemblyType mode)
   baij->rowvalues = NULL;
 
   /* if no new nonzero locations are allowed in matrix then only set the matrix state the first time through */
-  if ((!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) || !((Mat_SeqBAIJ *)(baij->A->data))->nonew) {
+  if ((!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) || !((Mat_SeqBAIJ *)baij->A->data)->nonew) {
     PetscObjectState state = baij->A->nonzerostate + baij->B->nonzerostate;
     PetscCall(MPIU_Allreduce(&state, &mat->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)mat)));
   }
@@ -1118,8 +1110,8 @@ static PetscErrorCode MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat, PetscViewer v
     PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
     if (((PetscObject)mat)->name) PetscCall(PetscObjectGetName((PetscObject)mat, &matname));
     if (rank == 0) {
-      if (((PetscObject)mat)->name) PetscCall(PetscObjectSetName((PetscObject)((Mat_MPIBAIJ *)(A->data))->A, matname));
-      PetscCall(MatView_SeqBAIJ(((Mat_MPIBAIJ *)(A->data))->A, sviewer));
+      if (((PetscObject)mat)->name) PetscCall(PetscObjectSetName((PetscObject)((Mat_MPIBAIJ *)A->data)->A, matname));
+      PetscCall(MatView_SeqBAIJ(((Mat_MPIBAIJ *)A->data)->A, sviewer));
     }
     PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
     PetscCall(MatDestroy(&A));
@@ -1642,8 +1634,7 @@ static PetscErrorCode MatZeroRows_MPIBAIJ(Mat A, PetscInt N, const PetscInt rows
     PetscCall(MatZeroRows_SeqBAIJ(l->A, len, lrows, diag, NULL, NULL));
   } else if (diag != 0.0) {
     PetscCall(MatZeroRows_SeqBAIJ(l->A, len, lrows, 0.0, NULL, NULL));
-    PetscCheck(!((Mat_SeqBAIJ *)l->A->data)->nonew, PETSC_COMM_SELF, PETSC_ERR_SUP, "MatZeroRows() on rectangular matrices cannot be used with the Mat options \n\
-       MAT_NEW_NONZERO_LOCATIONS,MAT_NEW_NONZERO_LOCATION_ERR,MAT_NEW_NONZERO_ALLOCATION_ERR");
+    PetscCheck(!((Mat_SeqBAIJ *)l->A->data)->nonew, PETSC_COMM_SELF, PETSC_ERR_SUP, "MatZeroRows() on rectangular matrices cannot be used with the Mat options MAT_NEW_NONZERO_LOCATIONS, MAT_NEW_NONZERO_LOCATION_ERR, and MAT_NEW_NONZERO_ALLOCATION_ERR");
     for (r = 0; r < len; ++r) {
       const PetscInt row = lrows[r] + A->rmap->rstart;
       PetscCall(MatSetValues(A, 1, &row, 1, &row, &diag, INSERT_VALUES));
@@ -1656,7 +1647,7 @@ static PetscErrorCode MatZeroRows_MPIBAIJ(Mat A, PetscInt N, const PetscInt rows
   PetscCall(PetscFree(lrows));
 
   /* only change matrix nonzero state if pattern was allowed to be changed */
-  if (!((Mat_SeqBAIJ *)(l->A->data))->keepnonzeropattern || !((Mat_SeqBAIJ *)(l->A->data))->nonew) {
+  if (!((Mat_SeqBAIJ *)l->A->data)->keepnonzeropattern || !((Mat_SeqBAIJ *)l->A->data)->nonew) {
     PetscObjectState state = l->A->nonzerostate + l->B->nonzerostate;
     PetscCall(MPIU_Allreduce(&state, &A->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)A)));
   }
@@ -1723,7 +1714,7 @@ static PetscErrorCode MatZeroRowsColumns_MPIBAIJ(Mat A, PetscInt N, const PetscI
   for (i = 0; i < len; ++i) {
     row   = lrows[i];
     count = (baij->i[row / bs + 1] - baij->i[row / bs]) * bs;
-    aa    = ((MatScalar *)(baij->a)) + baij->i[row / bs] * bs2 + (row % bs);
+    aa    = ((MatScalar *)baij->a) + baij->i[row / bs] * bs2 + (row % bs);
     for (k = 0; k < count; ++k) {
       aa[0] = 0.0;
       aa += bs;
@@ -1736,7 +1727,7 @@ static PetscErrorCode MatZeroRowsColumns_MPIBAIJ(Mat A, PetscInt N, const PetscI
       for (k = 0; k < bs; ++k) {
         col = bs * baij->j[j] + k;
         if (PetscAbsScalar(mask[col])) {
-          aa = ((MatScalar *)(baij->a)) + j * bs2 + (i % bs) + bs * k;
+          aa = ((MatScalar *)baij->a) + j * bs2 + (i % bs) + bs * k;
           if (x) bb[i] -= aa[0] * xx[col];
           aa[0] = 0.0;
         }
@@ -1752,7 +1743,7 @@ static PetscErrorCode MatZeroRowsColumns_MPIBAIJ(Mat A, PetscInt N, const PetscI
   PetscCall(PetscFree(lrows));
 
   /* only change matrix nonzero state if pattern was allowed to be changed */
-  if (!((Mat_SeqBAIJ *)(l->A->data))->nonew) {
+  if (!((Mat_SeqBAIJ *)l->A->data)->nonew) {
     PetscObjectState state = l->A->nonzerostate + l->B->nonzerostate;
     PetscCall(MPIU_Allreduce(&state, &A->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)A)));
   }
@@ -3237,7 +3228,7 @@ static PetscErrorCode MatDuplicate_MPIBAIJ(Mat matin, MatDuplicateOption cpvalue
 #endif
     } else a->colmap = NULL;
 
-    if (oldmat->garray && (len = ((Mat_SeqBAIJ *)(oldmat->B->data))->nbs)) {
+    if (oldmat->garray && (len = ((Mat_SeqBAIJ *)oldmat->B->data)->nbs)) {
       PetscCall(PetscMalloc1(len, &a->garray));
       PetscCall(PetscArraycpy(a->garray, oldmat->garray, len));
     } else a->garray = NULL;
@@ -3527,7 +3518,7 @@ PETSC_EXTERN PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin, PetscInt *mi
 #else
             col = (baij->colmap[in[j]] - 1) / bs;
 #endif
-            if (col < 0 && !((Mat_SeqBAIJ *)(baij->A->data))->nonew) {
+            if (col < 0 && !((Mat_SeqBAIJ *)baij->A->data)->nonew) {
               PetscCall(MatDisAssemble_MPIBAIJ(mat));
               col = in[j];
             }

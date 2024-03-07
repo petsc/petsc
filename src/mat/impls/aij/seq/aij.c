@@ -2603,7 +2603,7 @@ PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat A, IS isrow, IS iscol, PetscInt csi
     }
     PetscCall(MatSeqAIJGetArrayRead(A, &aa));
 
-    c = (Mat_SeqAIJ *)(C->data);
+    c = (Mat_SeqAIJ *)C->data;
     PetscCall(MatSeqAIJGetArrayWrite(C, &c_a)); // Not 'c->a', since that raw usage ignores offload state of C
     for (i = 0; i < nrows; i++) {
       row      = irow[i];
@@ -4653,6 +4653,7 @@ PetscErrorCode MatSeqAIJGetMaxRowNonzeros(Mat A, PetscInt *nz)
 static PetscErrorCode MatCOOStructDestroy_SeqAIJ(void *data)
 {
   MatCOOStruct_SeqAIJ *coo = (MatCOOStruct_SeqAIJ *)data;
+
   PetscFunctionBegin;
   PetscCall(PetscFree(coo->perm));
   PetscCall(PetscFree(coo->jmap));
@@ -4669,7 +4670,7 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, PetscInt
   PetscInt            *Ai;                             /* Change to PetscCount once we use it for row pointers */
   PetscInt            *Aj;
   PetscScalar         *Aa;
-  Mat_SeqAIJ          *seqaij = (Mat_SeqAIJ *)(mat->data);
+  Mat_SeqAIJ          *seqaij = (Mat_SeqAIJ *)mat->data;
   MatType              rtype;
   PetscCount          *perm, *jmap;
   PetscContainer       container;
@@ -5422,7 +5423,7 @@ PetscErrorCode MatSetSeqMat_SeqAIJ(Mat C, IS rowemb, IS colemb, MatStructure pat
     PetscCheck(C->cmap->n == B->cmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Input matrix is col-incompatible with the target matrix");
   }
 
-  Baij = (Mat_SeqAIJ *)(B->data);
+  Baij = (Mat_SeqAIJ *)B->data;
   if (pattern == DIFFERENT_NONZERO_PATTERN) {
     PetscCall(PetscMalloc1(B->rmap->n, &nz));
     for (i = 0; i < B->rmap->n; i++) nz[i] = Baij->i[i + 1] - Baij->i[i];

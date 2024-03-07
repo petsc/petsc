@@ -7,7 +7,7 @@ PC Object: (beta_) 2 MPI processes
   KSP Object: (beta_sub_) 1 MPI process
     type: preonly
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using NONE norm type for convergence test
   PC Object: (beta_sub_) 1 MPI process
@@ -85,7 +85,7 @@ PC Object: (beta_) 2 MPI processes
   KSP Object: (beta_sub_) 1 MPI process
     type: preonly
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using NONE norm type for convergence test
   PC Object: (beta_sub_) 1 MPI process

@@ -52,8 +52,8 @@ PetscErrorCode PFDestroy(PF *pf)
 {
   PetscFunctionBegin;
   if (!*pf) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*pf), PF_CLASSID, 1);
-  if (--((PetscObject)(*pf))->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscValidHeaderSpecific(*pf, PF_CLASSID, 1);
+  if (--((PetscObject)*pf)->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PFViewFromOptions(*pf, NULL, "-pf_view"));
   /* if memory was published with SAWs then destroy it */

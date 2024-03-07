@@ -276,6 +276,5 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   PetscCall(DMGetLabel(*dmNew, rgLabel ? rgLabelName : rgName, &rgLabelNew));
   for (c = cStart; c < cEnd; ++c) PetscCall(DMLabelSetValue(rgLabelNew, c, cellTagsNew[c - cStart]));
   PetscCall(PetscFree3(cellsNew, cellTagsNew, requiredCells));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }

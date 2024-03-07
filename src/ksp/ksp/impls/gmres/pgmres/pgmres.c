@@ -16,7 +16,7 @@ static PetscErrorCode KSPSetUp_PGMRES(KSP ksp)
 
 static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount, KSP ksp)
 {
-  KSP_PGMRES *pgmres = (KSP_PGMRES *)(ksp->data);
+  KSP_PGMRES *pgmres = (KSP_PGMRES *)ksp->data;
   PetscReal   res_norm, res, newnorm;
   PetscInt    it     = 0, j, k;
   PetscBool   hapend = PETSC_FALSE;
@@ -194,7 +194,7 @@ static PetscErrorCode KSPPGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest
 {
   PetscScalar tt;
   PetscInt    k, j;
-  KSP_PGMRES *pgmres = (KSP_PGMRES *)(ksp->data);
+  KSP_PGMRES *pgmres = (KSP_PGMRES *)ksp->data;
 
   PetscFunctionBegin;
   /* Solve for solution vector that minimizes the residual */
@@ -232,7 +232,7 @@ static PetscErrorCode KSPPGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
   PetscScalar *hh, *cc, *ss, *rs;
   PetscInt     j;
   PetscReal    hapbnd;
-  KSP_PGMRES  *pgmres = (KSP_PGMRES *)(ksp->data);
+  KSP_PGMRES  *pgmres = (KSP_PGMRES *)ksp->data;
 
   PetscFunctionBegin;
   hh = HH(0, it); /* pointer to beginning of column to update */

@@ -9,7 +9,6 @@ static PetscErrorCode ISGetBlockGlobalIS(IS is, Vec vec, PetscInt bs, IS *isBloc
   PetscLayout     map;
 
   PetscFunctionBegin;
-
   PetscCall(VecGetLayout(vec, &map));
   rstart = map->rstart / bs;
   PetscCall(ISGetLocalSize(is, &n));

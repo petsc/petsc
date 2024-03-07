@@ -37,7 +37,7 @@ PetscErrorCode PetscKokkosInitializeCheck(void)
 #if PETSC_PKG_KOKKOS_VERSION_GE(3, 7, 0)
     auto args = Kokkos::InitializationSettings();
 #else
-    auto args             = Kokkos::InitArguments{}; /* use default constructor */
+    auto args = Kokkos::InitArguments{}; /* use default constructor */
 #endif
 
 #if (defined(KOKKOS_ENABLE_CUDA) && PetscDefined(HAVE_CUDA)) || (defined(KOKKOS_ENABLE_HIP) && PetscDefined(HAVE_HIP)) || (defined(KOKKOS_ENABLE_SYCL) && PetscDefined(HAVE_SYCL))

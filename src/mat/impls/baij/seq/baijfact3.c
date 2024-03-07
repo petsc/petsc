@@ -127,7 +127,7 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat inA, PetscBool natu
       }
     }
 #else
-      inA->ops->lufactornumeric  = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace;
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace;
 #endif
     break;
     case 5:

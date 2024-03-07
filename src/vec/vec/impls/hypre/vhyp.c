@@ -59,7 +59,7 @@ PetscErrorCode VecHYPRE_IJVectorCopy(Vec v, VecHYPRE_IJVector ij)
 */
 #define VecHYPRE_ParVectorReplacePointer(b, newvalue, savedvalue) \
   do { \
-    hypre_ParVector *par_vector   = (hypre_ParVector *)hypre_IJVectorObject(((hypre_IJVector *)b)); \
+    hypre_ParVector *par_vector   = (hypre_ParVector *)hypre_IJVectorObject((hypre_IJVector *)b); \
     hypre_Vector    *local_vector = hypre_ParVectorLocalVector(par_vector); \
     savedvalue                    = local_vector->data; \
     local_vector->data            = newvalue; \

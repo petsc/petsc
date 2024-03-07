@@ -156,7 +156,6 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
   } else {
     PetscCall(DMRestoreNamedLocalVector(dm, "_DMGlobalToLocalSolve_mask", &mask));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -415,7 +415,7 @@ PetscErrorCode DMForestSetAdaptivityForest(DM dm, DM adapt)
   switch (forest->adaptPurpose) {
   case DM_ADAPT_DETERMINE:
     PetscCall(PetscObjectReference((PetscObject)adapt));
-    PetscCall(DMDestroy(&(forest->adapt)));
+    PetscCall(DMDestroy(&forest->adapt));
     forest->adapt = adapt;
     break;
   case DM_ADAPT_REFINE:
@@ -964,7 +964,7 @@ PetscErrorCode DMForestGetAdaptivitySuccess(DM dm, PetscBool *success)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCheck(dm->setupcalled, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DMSetUp() has not been called yet.");
   forest = (DM_Forest *)dm->data;
-  PetscCall((forest->getadaptivitysuccess)(dm, success));
+  PetscCall(forest->getadaptivitysuccess(dm, success));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1008,7 +1008,7 @@ PetscErrorCode DMForestTransferVec(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, Pet
   PetscValidHeaderSpecific(vecOut, VEC_CLASSID, 4);
   forest = (DM_Forest *)dmIn->data;
   PetscCheck(forest->transfervec, PetscObjectComm((PetscObject)dmIn), PETSC_ERR_SUP, "DMForestTransferVec() not implemented");
-  PetscCall((forest->transfervec)(dmIn, vecIn, dmOut, vecOut, useBCs, time));
+  PetscCall(forest->transfervec(dmIn, vecIn, dmOut, vecOut, useBCs, time));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1022,7 +1022,7 @@ PetscErrorCode DMForestTransferVecFromBase(DM dm, Vec vecIn, Vec vecOut)
   PetscValidHeaderSpecific(vecOut, VEC_CLASSID, 3);
   forest = (DM_Forest *)dm->data;
   PetscCheck(forest->transfervecfrombase, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "DMForestTransferVecFromBase() not implemented");
-  PetscCall((forest->transfervecfrombase)(dm, vecIn, vecOut));
+  PetscCall(forest->transfervecfrombase(dm, vecIn, vecOut));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1647,7 +1647,7 @@ PetscErrorCode DMAdaptLabel_Forest(DM dm, PETSC_UNUSED Vec metric, DMLabel label
 static PetscErrorCode DMInitialize_Forest(DM dm)
 {
   PetscFunctionBegin;
-  PetscCall(PetscMemzero(dm->ops, sizeof(*(dm->ops))));
+  PetscCall(PetscMemzero(dm->ops, sizeof(*dm->ops)));
 
   dm->ops->clone          = DMClone_Forest;
   dm->ops->setfromoptions = DMSetFromOptions_Forest;

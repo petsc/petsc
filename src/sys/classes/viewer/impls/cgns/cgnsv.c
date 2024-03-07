@@ -8,6 +8,7 @@
 static PetscErrorCode PetscViewerSetFromOptions_CGNS(PetscViewer v, PetscOptionItems *PetscOptionsObject)
 {
   PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)v->data;
+
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "CGNS Viewer Options");
   PetscOptionsInt("-viewer_cgns_batch_size", "Max number of steps to store in single file when using a template cgns:name-%d.cgns", "", cgv->batch_size, &cgv->batch_size, NULL);
@@ -71,6 +72,7 @@ static PetscErrorCode PetscViewerFileClose_CGNS(PetscViewer viewer)
 PetscErrorCode PetscViewerCGNSFileOpen_Internal(PetscViewer viewer, PetscInt sequence_number)
 {
   PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)viewer->data;
+
   PetscFunctionBegin;
   PetscCheck((cgv->filename == NULL) ^ (sequence_number < 0), PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_INCOMP, "Expect either a template filename or non-negative sequence number");
   if (!cgv->filename) {

@@ -814,7 +814,7 @@ PetscErrorCode MatAppendOptionsPrefixFactor(Mat A, const char prefix[])
   PetscCall(PetscStrlen(A->factorprefix, &len1));
   PetscCall(PetscStrlen(prefix, &len2));
   new_len = len1 + len2 + 1;
-  PetscCall(PetscRealloc(new_len * sizeof(*(A->factorprefix)), &A->factorprefix));
+  PetscCall(PetscRealloc(new_len * sizeof(*A->factorprefix), &A->factorprefix));
   PetscCall(PetscStrncpy(A->factorprefix + len1, prefix, len2 + 1));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1397,7 +1397,7 @@ PetscErrorCode MatDestroy(Mat *A)
   PetscFunctionBegin;
   if (!*A) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*A, MAT_CLASSID, 1);
-  if (--((PetscObject)(*A))->refct > 0) {
+  if (--((PetscObject)*A)->refct > 0) {
     *A = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -5738,7 +5738,7 @@ PetscErrorCode MatAssemblyBegin(Mat mat, MatAssemblyType type)
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidType(mat, 1);
   MatCheckPreallocated(mat, 1);
-  PetscCheck(!mat->factortype, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix.\nDid you forget to call MatSetUnfactored()?");
+  PetscCheck(!mat->factortype, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix. Did you forget to call MatSetUnfactored()?");
   if (mat->assembled) {
     mat->was_assembled = PETSC_TRUE;
     mat->assembled     = PETSC_FALSE;
@@ -10075,7 +10075,7 @@ PetscErrorCode MatPtAP(Mat A, Mat P, MatReuse scall, PetscReal fill, Mat *C)
 
     (*C)->product->api_user = PETSC_TRUE;
     PetscCall(MatProductSetFromOptions(*C));
-    PetscCheck((*C)->ops->productsymbolic, PetscObjectComm((PetscObject)(*C)), PETSC_ERR_SUP, "MatProduct %s not supported for A %s and P %s", MatProductTypes[MATPRODUCT_PtAP], ((PetscObject)A)->type_name, ((PetscObject)P)->type_name);
+    PetscCheck((*C)->ops->productsymbolic, PetscObjectComm((PetscObject)*C), PETSC_ERR_SUP, "MatProduct %s not supported for A %s and P %s", MatProductTypes[MATPRODUCT_PtAP], ((PetscObject)A)->type_name, ((PetscObject)P)->type_name);
     PetscCall(MatProductSymbolic(*C));
   } else { /* scall == MAT_REUSE_MATRIX */
     PetscCall(MatProductReplaceMats(A, P, NULL, *C));
@@ -10130,7 +10130,7 @@ PetscErrorCode MatRARt(Mat A, Mat R, MatReuse scall, PetscReal fill, Mat *C)
 
     (*C)->product->api_user = PETSC_TRUE;
     PetscCall(MatProductSetFromOptions(*C));
-    PetscCheck((*C)->ops->productsymbolic, PetscObjectComm((PetscObject)(*C)), PETSC_ERR_SUP, "MatProduct %s not supported for A %s and R %s", MatProductTypes[MATPRODUCT_RARt], ((PetscObject)A)->type_name, ((PetscObject)R)->type_name);
+    PetscCheck((*C)->ops->productsymbolic, PetscObjectComm((PetscObject)*C), PETSC_ERR_SUP, "MatProduct %s not supported for A %s and R %s", MatProductTypes[MATPRODUCT_RARt], ((PetscObject)A)->type_name, ((PetscObject)R)->type_name);
     PetscCall(MatProductSymbolic(*C));
   } else { /* scall == MAT_REUSE_MATRIX */
     PetscCall(MatProductReplaceMats(A, R, NULL, *C));
@@ -10155,14 +10155,14 @@ static PetscErrorCode MatProduct_Private(Mat A, Mat B, MatReuse scall, PetscReal
   } else { /* scall == MAT_REUSE_MATRIX */
     Mat_Product *product = (*C)->product;
 
-    PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)(*C), &flg, MATSEQDENSE, MATMPIDENSE, ""));
+    PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)*C, &flg, MATSEQDENSE, MATMPIDENSE, ""));
     if (flg && product && product->type != ptype) {
       PetscCall(MatProductClear(*C));
       product = NULL;
     }
     PetscCall(PetscInfo(A, "Calling MatProduct API with MAT_REUSE_MATRIX %s product present and product type %s\n", product ? "with" : "without", MatProductTypes[ptype]));
     if (!product) { /* user provide the dense matrix *C without calling MatProductCreate() or reusing it from previous calls */
-      PetscCheck(flg, PetscObjectComm((PetscObject)(*C)), PETSC_ERR_SUP, "Call MatProductCreate() first");
+      PetscCheck(flg, PetscObjectComm((PetscObject)*C), PETSC_ERR_SUP, "Call MatProductCreate() first");
       PetscCall(MatProductCreate_Private(A, B, NULL, *C));
       product        = (*C)->product;
       product->fill  = fill;
@@ -10360,7 +10360,7 @@ PetscErrorCode MatMatMatMult(Mat A, Mat B, Mat C, MatReuse scall, PetscReal fill
 
     (*D)->product->api_user = PETSC_TRUE;
     PetscCall(MatProductSetFromOptions(*D));
-    PetscCheck((*D)->ops->productsymbolic, PetscObjectComm((PetscObject)(*D)), PETSC_ERR_SUP, "MatProduct %s not supported for A %s, B %s and C %s", MatProductTypes[MATPRODUCT_ABC], ((PetscObject)A)->type_name, ((PetscObject)B)->type_name,
+    PetscCheck((*D)->ops->productsymbolic, PetscObjectComm((PetscObject)*D), PETSC_ERR_SUP, "MatProduct %s not supported for A %s, B %s and C %s", MatProductTypes[MATPRODUCT_ABC], ((PetscObject)A)->type_name, ((PetscObject)B)->type_name,
                ((PetscObject)C)->type_name);
     PetscCall(MatProductSymbolic(*D));
   } else { /* user may change input matrices when REUSE */
@@ -10466,7 +10466,7 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat, PetscInt nsubcomm, MPI_Comm sub
   } else { /* reuse == MAT_REUSE_MATRIX */
     PetscCheck(*matredundant != mat, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "MAT_REUSE_MATRIX means reuse the matrix passed in as the final argument, not the original matrix");
     /* retrieve subcomm */
-    PetscCall(PetscObjectGetComm((PetscObject)(*matredundant), &subcomm));
+    PetscCall(PetscObjectGetComm((PetscObject)*matredundant, &subcomm));
     redund = (*matredundant)->redundant;
     isrow  = redund->isrow;
     iscol  = redund->iscol;
@@ -11170,7 +11170,7 @@ PetscErrorCode MatSetOperation(Mat mat, MatOperation op, void (*f)(void))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  if (op == MATOP_VIEW && !mat->ops->viewnative && f != (void (*)(void))(mat->ops->view)) mat->ops->viewnative = mat->ops->view;
+  if (op == MATOP_VIEW && !mat->ops->viewnative && f != (void (*)(void))mat->ops->view) mat->ops->viewnative = mat->ops->view;
   (((void (**)(void))mat->ops)[op]) = f;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

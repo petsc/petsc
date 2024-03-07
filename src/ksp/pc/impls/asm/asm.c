@@ -302,7 +302,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
 
   /* Convert the types of the submatrices (if needbe) */
   if (osm->sub_mat_type) {
-    for (i = 0; i < osm->n_local_true; i++) PetscCall(MatConvert(osm->pmat[i], osm->sub_mat_type, MAT_INPLACE_MATRIX, &(osm->pmat[i])));
+    for (i = 0; i < osm->n_local_true; i++) PetscCall(MatConvert(osm->pmat[i], osm->sub_mat_type, MAT_INPLACE_MATRIX, &osm->pmat[i]));
   }
 
   if (!pc->setupcalled) {
@@ -788,7 +788,7 @@ static PetscErrorCode PCASMSetTotalSubdomains_ASM(PC pc, PetscInt N, IS *is, IS 
 
   PetscFunctionBegin;
   PetscCheck(N >= 1, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Number of total blocks must be > 0, N = %" PetscInt_FMT, N);
-  PetscCheck(!is && !is_local, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Use PCASMSetLocalSubdomains() to set specific index sets\n\they cannot be set globally yet.");
+  PetscCheck(!is && !is_local, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Use PCASMSetLocalSubdomains() to set specific index sets, they cannot be set globally yet.");
 
   /*
      Split the subdomains equally among all processors

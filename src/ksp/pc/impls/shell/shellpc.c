@@ -55,7 +55,7 @@ PetscErrorCode PCShellGetContext(PC pc, void *ctx)
   PetscAssertPointer(ctx, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCSHELL, &flg));
   if (!flg) *(void **)ctx = NULL;
-  else *(void **)ctx = ((PC_Shell *)(pc->data))->ctx;
+  else *(void **)ctx = ((PC_Shell *)pc->data)->ctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -252,7 +252,6 @@ PetscErrorCode InitialConditions(Vec u, AppCtx *appctx)
      Restore vector
   */
   PetscCall(VecRestoreArray(u, &u_localptr));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* --------------------------------------------------------------------- */
@@ -393,7 +392,6 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec global_in, Vec global_out, vo
   */
   PetscCall(DMLocalToGlobalBegin(da, localwork, INSERT_VALUES, global_out));
   PetscCall(DMLocalToGlobalEnd(da, localwork, INSERT_VALUES, global_out));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* --------------------------------------------------------------------- */
@@ -527,7 +525,6 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec global_in, Mat AA, Mat BB, vo
      to the matrix. If we do, it will generate an error.
   */
   PetscCall(MatSetOption(BB, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

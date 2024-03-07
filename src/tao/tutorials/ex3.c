@@ -191,7 +191,6 @@ PetscErrorCode CreateCtx(DM dm, AppCtx *user)
   PetscErrorCode (**wtf)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
 
   PetscFunctionBeginUser;
-
   /* make the data we seek to match */
   PetscCall(PetscFECreateDefault(PetscObjectComm((PetscObject)dm), dim, 1, PETSC_TRUE, NULL, 4, &fe));
 
@@ -270,14 +269,12 @@ PetscErrorCode CreateCtx(DM dm, AppCtx *user)
   PetscCall(VecDuplicate(user->data, &user->tmp2));
 
   PetscCall(PetscFEDestroy(&fe));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DestroyCtx(AppCtx *user)
 {
   PetscFunctionBeginUser;
-
   PetscCall(MatDestroy(&user->mass));
   PetscCall(MatDestroy(&user->laplace));
   PetscCall(KSPDestroy(&user->ksp_laplace));
@@ -288,7 +285,6 @@ PetscErrorCode DestroyCtx(AppCtx *user)
   PetscCall(VecDestroy(&user->tmp2));
   PetscCall(PetscFree(user->bc_indices));
   PetscCall(PetscFree(user->bc_values));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -299,7 +295,6 @@ PetscErrorCode ReducedFunctionGradient(Tao tao, Vec u, PetscReal *func, Vec g, v
   PetscReal       inner;
 
   PetscFunctionBeginUser;
-
   PetscCall(MatMult(user->mass, u, user->tmp1));
   PetscCall(VecDot(u, user->tmp1, &inner)); /* regularisation contribution to */
   *func = alpha * 0.5 * inner;              /* the functional                 */
@@ -328,7 +323,6 @@ PetscErrorCode ReducedFunctionGradient(Tao tao, Vec u, PetscReal *func, Vec g, v
   /* And bring it home with the gradient. */
   PetscCall(MatMult(user->mass, user->adjoint, user->tmp1));
   PetscCall(VecAXPY(g, 1.0, user->tmp1)); /* adjoint contribution to the gradient */
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

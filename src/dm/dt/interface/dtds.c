@@ -625,13 +625,13 @@ PetscErrorCode PetscDSDestroy(PetscDS *ds)
 
   PetscFunctionBegin;
   if (!*ds) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*ds), PETSCDS_CLASSID, 1);
+  PetscValidHeaderSpecific(*ds, PETSCDS_CLASSID, 1);
 
-  if (--((PetscObject)(*ds))->refct > 0) {
+  if (--((PetscObject)*ds)->refct > 0) {
     *ds = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  ((PetscObject)(*ds))->refct = 0;
+  ((PetscObject)*ds)->refct = 0;
   if ((*ds)->subprobs) {
     PetscInt dim, d;
 
@@ -645,7 +645,7 @@ PetscErrorCode PetscDSDestroy(PetscDS *ds)
   PetscCall(PetscWeakFormDestroy(&(*ds)->wf));
   PetscCall(PetscFree2((*ds)->update, (*ds)->ctx));
   PetscCall(PetscFree4((*ds)->exactSol, (*ds)->exactCtx, (*ds)->exactSol_t, (*ds)->exactCtx_t));
-  PetscTryTypeMethod((*ds), destroy);
+  PetscTryTypeMethod(*ds, destroy);
   PetscCall(PetscDSDestroyBoundary(*ds));
   PetscCall(PetscFree((*ds)->constants));
   for (PetscInt c = 0; c < DM_NUM_POLYTOPES; ++c) {
@@ -3826,7 +3826,7 @@ PetscErrorCode PetscDSCopyBoundary(PetscDS ds, PetscInt numFields, const PetscIn
   PetscValidHeaderSpecific(newds, PETSCDS_CLASSID, 4);
   if (ds == newds) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscDSDestroyBoundary(newds));
-  lastnext = &(newds->boundary);
+  lastnext = &newds->boundary;
   for (b = ds->boundary; b; b = b->next) {
     DSBoundary bNew;
     PetscInt   fieldNew = -1;
@@ -3842,7 +3842,7 @@ PetscErrorCode PetscDSCopyBoundary(PetscDS ds, PetscInt numFields, const PetscIn
     PetscCall(DSBoundaryDuplicate_Internal(b, &bNew));
     bNew->field = fieldNew < 0 ? b->field : fieldNew;
     *lastnext   = bNew;
-    lastnext    = &(bNew->next);
+    lastnext    = &bNew->next;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

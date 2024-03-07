@@ -1,33 +1,33 @@
 lid velocity = 0.0204082, prandtl # = 1., grashof # = 1.
-  0 SNES Function norm 0.146194 
-    0 KSP Residual norm 0.146194 
-    1 KSP Residual norm 0.0479011 
-    2 KSP Residual norm 0.010778 
-    3 KSP Residual norm 0.00272661 
-    4 KSP Residual norm 0.000690594 
-    5 KSP Residual norm 0.000210687 
-    6 KSP Residual norm 0.000105322 
-    7 KSP Residual norm 6.5975e-05 
-    8 KSP Residual norm 2.80726e-05 
-    9 KSP Residual norm 1.87879e-05 
-   10 KSP Residual norm 8.24594e-06 
-   11 KSP Residual norm 1.72955e-06 
-   12 KSP Residual norm 5.17053e-07 
-  1 SNES Function norm 2.5023e-05 
-    0 KSP Residual norm 2.5023e-05 
-    1 KSP Residual norm 5.03001e-06 
-    2 KSP Residual norm 1.40061e-06 
-    3 KSP Residual norm 5.68423e-07 
-    4 KSP Residual norm 1.98909e-07 
-    5 KSP Residual norm 9.6167e-08 
-    6 KSP Residual norm 4.64061e-08 
-    7 KSP Residual norm 9.70042e-09 
-    8 KSP Residual norm 2.76341e-09 
-    9 KSP Residual norm 9.531e-10 
-   10 KSP Residual norm 4.491e-10 
-   11 KSP Residual norm 2.978e-10 
-   12 KSP Residual norm 1.484e-10 
-  2 SNES Function norm 1.483e-10 
+  0 SNES Function norm 0.146194
+    0 KSP Residual norm 0.146194
+    1 KSP Residual norm 0.0479011
+    2 KSP Residual norm 0.010778
+    3 KSP Residual norm 0.00272661
+    4 KSP Residual norm 0.000690594
+    5 KSP Residual norm 0.000210687
+    6 KSP Residual norm 0.000105322
+    7 KSP Residual norm 6.5975e-05
+    8 KSP Residual norm 2.80726e-05
+    9 KSP Residual norm 1.87879e-05
+   10 KSP Residual norm 8.24594e-06
+   11 KSP Residual norm 1.72955e-06
+   12 KSP Residual norm 5.17053e-07
+  1 SNES Function norm 2.5023e-05
+    0 KSP Residual norm 2.5023e-05
+    1 KSP Residual norm 5.03001e-06
+    2 KSP Residual norm 1.40061e-06
+    3 KSP Residual norm 5.68423e-07
+    4 KSP Residual norm 1.98909e-07
+    5 KSP Residual norm 9.6167e-08
+    6 KSP Residual norm 4.64061e-08
+    7 KSP Residual norm 9.70042e-09
+    8 KSP Residual norm 2.76341e-09
+    9 KSP Residual norm 9.531e-10
+   10 KSP Residual norm 4.491e-10
+   11 KSP Residual norm 2.978e-10
+   12 KSP Residual norm 1.484e-10
+  2 SNES Function norm 1.483e-10
 SNES Object: 3 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
@@ -48,7 +48,7 @@ SNES Object: 3 MPI processes
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
     right preconditioning
     using UNPRECONDITIONED norm type for convergence test
   PC Object: 3 MPI processes
@@ -59,7 +59,7 @@ SNES Object: 3 MPI processes
     KSP Object: (fieldsplit_x_velocity_) 3 MPI processes
       type: preonly
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (fieldsplit_x_velocity_) 3 MPI processes
@@ -70,7 +70,7 @@ SNES Object: 3 MPI processes
       KSP Object: (fieldsplit_x_velocity_sub_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (fieldsplit_x_velocity_sub_) 1 MPI process
@@ -105,7 +105,7 @@ SNES Object: 3 MPI processes
     KSP Object: (fieldsplit_y_velocity_) 3 MPI processes
       type: preonly
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (fieldsplit_y_velocity_) 3 MPI processes
@@ -116,7 +116,7 @@ SNES Object: 3 MPI processes
       KSP Object: (fieldsplit_y_velocity_sub_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (fieldsplit_y_velocity_sub_) 1 MPI process
@@ -151,7 +151,7 @@ SNES Object: 3 MPI processes
     KSP Object: (fieldsplit_Omega_) 3 MPI processes
       type: preonly
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (fieldsplit_Omega_) 3 MPI processes
@@ -162,7 +162,7 @@ SNES Object: 3 MPI processes
       KSP Object: (fieldsplit_Omega_sub_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (fieldsplit_Omega_sub_) 1 MPI process
@@ -197,7 +197,7 @@ SNES Object: 3 MPI processes
     KSP Object: (fieldsplit_temperature_) 3 MPI processes
       type: preonly
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (fieldsplit_temperature_) 3 MPI processes
@@ -208,7 +208,7 @@ SNES Object: 3 MPI processes
       KSP Object: (fieldsplit_temperature_sub_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (fieldsplit_temperature_sub_) 1 MPI process

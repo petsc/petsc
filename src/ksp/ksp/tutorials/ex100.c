@@ -13,7 +13,6 @@ PetscErrorCode RunTest(void)
   PC        pc;
 
   PetscFunctionBegin;
-
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-N", &N, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test", &test, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-draw", &draw, NULL));
@@ -60,7 +59,6 @@ PetscErrorCode RunTest(void)
   PetscCall(VecDestroy(&b));
   PetscCall(MatDestroy(&A));
   PetscCall(KSPDestroy(&ksp));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

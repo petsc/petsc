@@ -309,7 +309,6 @@ PetscErrorCode DMSetUp_DA_1D(DM da)
   for (i = 0; i < Xe - IXe; i++) idx[nn++] = -1; /* pad with -1s if needed for ghosted case*/
 
   PetscCall(ISLocalToGlobalMappingCreate(comm, dof, nn, idx, PETSC_OWN_POINTER, &da->ltogmap));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -35,7 +35,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsInt("-ntimes", "How many times do the cycle", EX, options->ntimes, &options->ntimes, NULL));
   PetscOptionsEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
-};
+}
 
 //TODO test DMLabel I/O (not yet working for PETSC_VIEWER_HDF5_XDMF)
 int main(int argc, char **argv)

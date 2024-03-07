@@ -326,7 +326,6 @@ PETSC_FORCE_INLINE static inline PetscErrorCode MatMultTranspose_MatMultTranspos
     PetscFunctionReturn(PETSC_SUCCESS); \
   }
 
-// clang-format off
 MAT_SEQ_MAIJ_INSTANTIATE_MATMULT_MATMULTADD_TEMPLATE(2)
 MAT_SEQ_MAIJ_INSTANTIATE_MATMULT_MATMULTADD_TEMPLATE(3)
 MAT_SEQ_MAIJ_INSTANTIATE_MATMULT_MATMULTADD_TEMPLATE(4)
@@ -339,7 +338,6 @@ MAT_SEQ_MAIJ_INSTANTIATE_MATMULT_MATMULTADD_TEMPLATE(10)
 MAT_SEQ_MAIJ_INSTANTIATE_MATMULT_MATMULTADD_TEMPLATE(11)
 MAT_SEQ_MAIJ_INSTANTIATE_MATMULT_MATMULTADD_TEMPLATE(16)
 MAT_SEQ_MAIJ_INSTANTIATE_MATMULT_MATMULTADD_TEMPLATE(18)
-// clang-format on
 
 #undef MAT_SEQ_MAIJ_INSTANTIATE_MATMULT_MATMULTADD_TEMPLATE
 
@@ -781,7 +779,7 @@ static PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A, Mat PP, PetscReal fi
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* Since these are PETSc arrays, change flags to free them as necessary. */
-  c          = (Mat_SeqAIJ *)(C->data);
+  c          = (Mat_SeqAIJ *)C->data;
   c->free_a  = PETSC_TRUE;
   c->free_ij = PETSC_TRUE;
   c->nonew   = 0;
@@ -811,7 +809,6 @@ PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIMAIJ_allatonce(Mat A, Mat P
   Mat_MPIMAIJ *maij = (Mat_MPIMAIJ *)P->data;
 
   PetscFunctionBegin;
-
   PetscCall(MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(A, maij->A, maij->dof, C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -835,7 +832,6 @@ PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIMAIJ_allatonce_merged(Mat A
   Mat_MPIMAIJ *maij = (Mat_MPIMAIJ *)P->data;
 
   PetscFunctionBegin;
-
   PetscCall(MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(A, maij->A, maij->dof, C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -847,7 +843,6 @@ PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIMAIJ_allatonce_merged(Mat 
   Mat_MPIMAIJ *maij = (Mat_MPIMAIJ *)P->data;
 
   PetscFunctionBegin;
-
   PetscCall(MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce_merged(A, maij->A, maij->dof, fill, C));
   C->ops->ptapnumeric = MatPtAPNumeric_MPIAIJ_MPIMAIJ_allatonce_merged;
   PetscFunctionReturn(PETSC_SUCCESS);

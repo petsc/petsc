@@ -1,19 +1,19 @@
-  0 SNES Function norm 8.32828 
-    0 KSP Residual norm 8.38655 
-    1 KSP Residual norm 3.23184 
-    2 KSP Residual norm 0.630265 
-    3 KSP Residual norm 0.15451 
-    4 KSP Residual norm 0.0374104 
-    5 KSP Residual norm 0.00688704 
-    6 KSP Residual norm 0.00122682 
-    7 KSP Residual norm 0.000212093 
-    8 KSP Residual norm 4.68218e-05 
-    9 KSP Residual norm 3.04171e-06 
-   10 KSP Residual norm 4.21397e-07 
-   11 KSP Residual norm 4.61568e-08 
-   12 KSP Residual norm 7.33045e-09 
+  0 SNES Function norm 8.32828
+    0 KSP Residual norm 8.38655
+    1 KSP Residual norm 3.23184
+    2 KSP Residual norm 0.630265
+    3 KSP Residual norm 0.15451
+    4 KSP Residual norm 0.0374104
+    5 KSP Residual norm 0.00688704
+    6 KSP Residual norm 0.00122682
+    7 KSP Residual norm 0.000212093
+    8 KSP Residual norm 4.68218e-05
+    9 KSP Residual norm 3.04171e-06
+   10 KSP Residual norm 4.21397e-07
+   11 KSP Residual norm 4.61568e-08
+   12 KSP Residual norm 7.33045e-09
   Linear solve converged due to CONVERGED_RTOL iterations 12
-  1 SNES Function norm 3.17797e-08 
+  1 SNES Function norm 3.17797e-08
 L_2 Error: 0.00131794
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI process
@@ -35,7 +35,7 @@ SNES Object: 1 MPI process
       restart=100, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-09, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object: 1 MPI process
@@ -47,7 +47,7 @@ SNES Object: 1 MPI process
     KSP Object: (sub_) 1 MPI process
       type: preonly
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (sub_) 1 MPI process

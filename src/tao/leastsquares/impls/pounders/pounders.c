@@ -551,7 +551,6 @@ static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin, PetscReal c
       if (mfqP->nmodelpoints == mfqP->n) break;
     }
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -1,38 +1,38 @@
-  0 KSP Residual norm 529.43 
-  1 KSP Residual norm 135.942 
-  2 KSP Residual norm 269.201 
-  3 KSP Residual norm 142.532 
-  4 KSP Residual norm 143.986 
-  5 KSP Residual norm 61.5152 
-  6 KSP Residual norm 45.2898 
-  7 KSP Residual norm 22.6601 
-  8 KSP Residual norm 29.096 
-  9 KSP Residual norm 40.9984 
- 10 KSP Residual norm 31.3586 
- 11 KSP Residual norm 30.0529 
- 12 KSP Residual norm 17.2767 
- 13 KSP Residual norm 8.5664 
- 14 KSP Residual norm 8.77142 
- 15 KSP Residual norm 7.24158 
- 16 KSP Residual norm 3.40719 
- 17 KSP Residual norm 1.35954 
- 18 KSP Residual norm 0.784024 
- 19 KSP Residual norm 0.490711 
- 20 KSP Residual norm 0.302938 
- 21 KSP Residual norm 0.213342 
- 22 KSP Residual norm 0.189106 
- 23 KSP Residual norm 0.154914 
- 24 KSP Residual norm 0.187313 
- 25 KSP Residual norm 0.185263 
- 26 KSP Residual norm 0.0865907 
- 27 KSP Residual norm 0.0370298 
- 28 KSP Residual norm 0.0115801 
- 29 KSP Residual norm 0.00441017 
+  0 KSP Residual norm 529.43
+  1 KSP Residual norm 135.942
+  2 KSP Residual norm 269.201
+  3 KSP Residual norm 142.532
+  4 KSP Residual norm 143.986
+  5 KSP Residual norm 61.5152
+  6 KSP Residual norm 45.2898
+  7 KSP Residual norm 22.6601
+  8 KSP Residual norm 29.096
+  9 KSP Residual norm 40.9984
+ 10 KSP Residual norm 31.3586
+ 11 KSP Residual norm 30.0529
+ 12 KSP Residual norm 17.2767
+ 13 KSP Residual norm 8.5664
+ 14 KSP Residual norm 8.77142
+ 15 KSP Residual norm 7.24158
+ 16 KSP Residual norm 3.40719
+ 17 KSP Residual norm 1.35954
+ 18 KSP Residual norm 0.784024
+ 19 KSP Residual norm 0.490711
+ 20 KSP Residual norm 0.302938
+ 21 KSP Residual norm 0.213342
+ 22 KSP Residual norm 0.189106
+ 23 KSP Residual norm 0.154914
+ 24 KSP Residual norm 0.187313
+ 25 KSP Residual norm 0.185263
+ 26 KSP Residual norm 0.0865907
+ 27 KSP Residual norm 0.0370298
+ 28 KSP Residual norm 0.0115801
+ 29 KSP Residual norm 0.00441017
 Linear solve converged due to CONVERGED_RTOL iterations 29
 KSP Object: 8 MPI processes
   type: cg
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
 PC Object: 8 MPI processes
@@ -55,7 +55,7 @@ PC Object: 8 MPI processes
     KSP Object: (mg_coarse_) 8 MPI processes
       type: cg
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using PRECONDITIONED norm type for convergence test
     PC Object: (mg_coarse_) 8 MPI processes
@@ -78,12 +78,12 @@ PC Object: 8 MPI processes
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
           type: cg
           maximum iterations=10, initial guess is zero
-          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+          tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
         estimating eigenvalues using noisy right hand side
       maximum iterations=2, nonzero initial guess
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (mg_levels_1_) 8 MPI processes
@@ -108,12 +108,12 @@ PC Object: 8 MPI processes
         KSP Object: (mg_levels_2_esteig_) 8 MPI processes
           type: cg
           maximum iterations=10, initial guess is zero
-          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+          tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
         estimating eigenvalues using noisy right hand side
       maximum iterations=2, nonzero initial guess
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (mg_levels_2_) 8 MPI processes
@@ -133,7 +133,7 @@ PC Object: 8 MPI processes
       type: richardson
         damping factor=1.
       maximum iterations=2, nonzero initial guess
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (mg_fine_) 8 MPI processes
@@ -154,41 +154,41 @@ PC Object: 8 MPI processes
     total: nonzeros=197568, allocated nonzeros=243000
     total number of mallocs used during MatSetValues calls=0
       using I-node (on process 0) routines: found 125 nodes, limit used is 5
-  0 KSP Residual norm 0.0052943 
-  1 KSP Residual norm 0.00135942 
-  2 KSP Residual norm 0.00269201 
-  3 KSP Residual norm 0.00142532 
-  4 KSP Residual norm 0.00143986 
-  5 KSP Residual norm 0.000615152 
-  6 KSP Residual norm 0.000452898 
-  7 KSP Residual norm 0.000226601 
-  8 KSP Residual norm 0.00029096 
-  9 KSP Residual norm 0.000409984 
- 10 KSP Residual norm 0.000313586 
- 11 KSP Residual norm 0.000300529 
- 12 KSP Residual norm 0.000172767 
- 13 KSP Residual norm 8.5664e-05 
- 14 KSP Residual norm 8.77142e-05 
- 15 KSP Residual norm 7.24158e-05 
- 16 KSP Residual norm 3.40719e-05 
- 17 KSP Residual norm 1.35954e-05 
- 18 KSP Residual norm 7.84024e-06 
- 19 KSP Residual norm 4.90711e-06 
- 20 KSP Residual norm 3.02938e-06 
- 21 KSP Residual norm 2.13342e-06 
- 22 KSP Residual norm 1.89106e-06 
- 23 KSP Residual norm 1.54914e-06 
- 24 KSP Residual norm 1.87313e-06 
- 25 KSP Residual norm 1.85263e-06 
- 26 KSP Residual norm 8.65907e-07 
- 27 KSP Residual norm 3.70298e-07 
- 28 KSP Residual norm 1.15801e-07 
- 29 KSP Residual norm 4.41017e-08 
+  0 KSP Residual norm 0.0052943
+  1 KSP Residual norm 0.00135942
+  2 KSP Residual norm 0.00269201
+  3 KSP Residual norm 0.00142532
+  4 KSP Residual norm 0.00143986
+  5 KSP Residual norm 0.000615152
+  6 KSP Residual norm 0.000452898
+  7 KSP Residual norm 0.000226601
+  8 KSP Residual norm 0.00029096
+  9 KSP Residual norm 0.000409984
+ 10 KSP Residual norm 0.000313586
+ 11 KSP Residual norm 0.000300529
+ 12 KSP Residual norm 0.000172767
+ 13 KSP Residual norm 8.5664e-05
+ 14 KSP Residual norm 8.77142e-05
+ 15 KSP Residual norm 7.24158e-05
+ 16 KSP Residual norm 3.40719e-05
+ 17 KSP Residual norm 1.35954e-05
+ 18 KSP Residual norm 7.84024e-06
+ 19 KSP Residual norm 4.90711e-06
+ 20 KSP Residual norm 3.02938e-06
+ 21 KSP Residual norm 2.13342e-06
+ 22 KSP Residual norm 1.89106e-06
+ 23 KSP Residual norm 1.54914e-06
+ 24 KSP Residual norm 1.87313e-06
+ 25 KSP Residual norm 1.85263e-06
+ 26 KSP Residual norm 8.65907e-07
+ 27 KSP Residual norm 3.70298e-07
+ 28 KSP Residual norm 1.15801e-07
+ 29 KSP Residual norm 4.41017e-08
 Linear solve converged due to CONVERGED_RTOL iterations 29
 KSP Object: 8 MPI processes
   type: cg
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
 PC Object: 8 MPI processes
@@ -211,7 +211,7 @@ PC Object: 8 MPI processes
     KSP Object: (mg_coarse_) 8 MPI processes
       type: cg
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using PRECONDITIONED norm type for convergence test
     PC Object: (mg_coarse_) 8 MPI processes
@@ -235,12 +235,12 @@ PC Object: 8 MPI processes
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
           type: cg
           maximum iterations=10, initial guess is zero
-          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+          tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
         estimating eigenvalues using noisy right hand side
       maximum iterations=2, nonzero initial guess
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (mg_levels_1_) 8 MPI processes
@@ -265,12 +265,12 @@ PC Object: 8 MPI processes
         KSP Object: (mg_levels_2_esteig_) 8 MPI processes
           type: cg
           maximum iterations=10, initial guess is zero
-          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+          tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
         estimating eigenvalues using noisy right hand side
       maximum iterations=2, nonzero initial guess
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (mg_levels_2_) 8 MPI processes
@@ -290,7 +290,7 @@ PC Object: 8 MPI processes
       type: richardson
         damping factor=1.
       maximum iterations=2, nonzero initial guess
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (mg_fine_) 8 MPI processes
@@ -311,41 +311,41 @@ PC Object: 8 MPI processes
     total: nonzeros=197568, allocated nonzeros=243000
     total number of mallocs used during MatSetValues calls=0
       using I-node (on process 0) routines: found 125 nodes, limit used is 5
-  0 KSP Residual norm 0.0052943 
-  1 KSP Residual norm 0.00135942 
-  2 KSP Residual norm 0.00269201 
-  3 KSP Residual norm 0.00142532 
-  4 KSP Residual norm 0.00143986 
-  5 KSP Residual norm 0.000615152 
-  6 KSP Residual norm 0.000452898 
-  7 KSP Residual norm 0.000226601 
-  8 KSP Residual norm 0.00029096 
-  9 KSP Residual norm 0.000409984 
- 10 KSP Residual norm 0.000313586 
- 11 KSP Residual norm 0.000300529 
- 12 KSP Residual norm 0.000172767 
- 13 KSP Residual norm 8.5664e-05 
- 14 KSP Residual norm 8.77142e-05 
- 15 KSP Residual norm 7.24158e-05 
- 16 KSP Residual norm 3.40719e-05 
- 17 KSP Residual norm 1.35954e-05 
- 18 KSP Residual norm 7.84024e-06 
- 19 KSP Residual norm 4.90711e-06 
- 20 KSP Residual norm 3.02938e-06 
- 21 KSP Residual norm 2.13342e-06 
- 22 KSP Residual norm 1.89106e-06 
- 23 KSP Residual norm 1.54914e-06 
- 24 KSP Residual norm 1.87313e-06 
- 25 KSP Residual norm 1.85263e-06 
- 26 KSP Residual norm 8.65907e-07 
- 27 KSP Residual norm 3.70298e-07 
- 28 KSP Residual norm 1.15801e-07 
- 29 KSP Residual norm 4.41017e-08 
+  0 KSP Residual norm 0.0052943
+  1 KSP Residual norm 0.00135942
+  2 KSP Residual norm 0.00269201
+  3 KSP Residual norm 0.00142532
+  4 KSP Residual norm 0.00143986
+  5 KSP Residual norm 0.000615152
+  6 KSP Residual norm 0.000452898
+  7 KSP Residual norm 0.000226601
+  8 KSP Residual norm 0.00029096
+  9 KSP Residual norm 0.000409984
+ 10 KSP Residual norm 0.000313586
+ 11 KSP Residual norm 0.000300529
+ 12 KSP Residual norm 0.000172767
+ 13 KSP Residual norm 8.5664e-05
+ 14 KSP Residual norm 8.77142e-05
+ 15 KSP Residual norm 7.24158e-05
+ 16 KSP Residual norm 3.40719e-05
+ 17 KSP Residual norm 1.35954e-05
+ 18 KSP Residual norm 7.84024e-06
+ 19 KSP Residual norm 4.90711e-06
+ 20 KSP Residual norm 3.02938e-06
+ 21 KSP Residual norm 2.13342e-06
+ 22 KSP Residual norm 1.89106e-06
+ 23 KSP Residual norm 1.54914e-06
+ 24 KSP Residual norm 1.87313e-06
+ 25 KSP Residual norm 1.85263e-06
+ 26 KSP Residual norm 8.65907e-07
+ 27 KSP Residual norm 3.70298e-07
+ 28 KSP Residual norm 1.15801e-07
+ 29 KSP Residual norm 4.41017e-08
 Linear solve converged due to CONVERGED_RTOL iterations 29
 KSP Object: 8 MPI processes
   type: cg
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
 PC Object: 8 MPI processes
@@ -368,7 +368,7 @@ PC Object: 8 MPI processes
     KSP Object: (mg_coarse_) 8 MPI processes
       type: cg
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using PRECONDITIONED norm type for convergence test
     PC Object: (mg_coarse_) 8 MPI processes
@@ -392,12 +392,12 @@ PC Object: 8 MPI processes
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
           type: cg
           maximum iterations=10, initial guess is zero
-          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+          tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
         estimating eigenvalues using noisy right hand side
       maximum iterations=2, nonzero initial guess
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (mg_levels_1_) 8 MPI processes
@@ -422,12 +422,12 @@ PC Object: 8 MPI processes
         KSP Object: (mg_levels_2_esteig_) 8 MPI processes
           type: cg
           maximum iterations=10, initial guess is zero
-          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+          tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
         estimating eigenvalues using noisy right hand side
       maximum iterations=2, nonzero initial guess
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (mg_levels_2_) 8 MPI processes
@@ -447,7 +447,7 @@ PC Object: 8 MPI processes
       type: richardson
         damping factor=1.
       maximum iterations=2, nonzero initial guess
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (mg_fine_) 8 MPI processes

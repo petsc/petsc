@@ -1,50 +1,50 @@
-  0 SNES Function norm 437.426 
-    0 SNES Function norm 437.426 
-    1 SNES Function norm 124.967 
-      0 SNES Function norm 123.957 
-      1 SNES Function norm 55.8605 
-      2 SNES Function norm 69.0578 
-      3 SNES Function norm 17.2709 
-      4 SNES Function norm 2.50333 
-      5 SNES Function norm 0.0362593 
-      6 SNES Function norm 8.67106e-06 
+  0 SNES Function norm 437.426
+    0 SNES Function norm 437.426
+    1 SNES Function norm 124.967
+      0 SNES Function norm 123.957
+      1 SNES Function norm 55.8605
+      2 SNES Function norm 69.0578
+      3 SNES Function norm 17.2709
+      4 SNES Function norm 2.50333
+      5 SNES Function norm 0.0362593
+      6 SNES Function norm 8.67106e-06
       7 SNES Function norm < 1.e-11
-    0 SNES Function norm 68.4529 
-    1 SNES Function norm 20.5996 
-  1 SNES Function norm 20.5996 
-    0 SNES Function norm 20.5996 
-    1 SNES Function norm 6.96932 
-      0 SNES Function norm 4.90654 
-      1 SNES Function norm 1.23848 
-      2 SNES Function norm 0.0505983 
-      3 SNES Function norm 0.000529124 
-      4 SNES Function norm 4.85532e-08 
-    0 SNES Function norm 16.6477 
-    1 SNES Function norm 11.6307 
-  2 SNES Function norm 11.6307 
-    0 SNES Function norm 11.6307 
-    1 SNES Function norm 3.22446 
-      0 SNES Function norm 2.39658 
-      1 SNES Function norm 0.342897 
-      2 SNES Function norm 0.0136105 
-      3 SNES Function norm 2.36185e-05 
-      4 SNES Function norm 7.269e-11 
-    0 SNES Function norm 1.96253 
-    1 SNES Function norm 0.322793 
-  3 SNES Function norm 0.322793 
-    0 SNES Function norm 0.322793 
-    1 SNES Function norm 0.0148152 
-      0 SNES Function norm 0.00758764 
-      1 SNES Function norm 6.45362e-06 
+    0 SNES Function norm 68.4529
+    1 SNES Function norm 20.5996
+  1 SNES Function norm 20.5996
+    0 SNES Function norm 20.5996
+    1 SNES Function norm 6.96932
+      0 SNES Function norm 4.90654
+      1 SNES Function norm 1.23848
+      2 SNES Function norm 0.0505983
+      3 SNES Function norm 0.000529124
+      4 SNES Function norm 4.85532e-08
+    0 SNES Function norm 16.6477
+    1 SNES Function norm 11.6307
+  2 SNES Function norm 11.6307
+    0 SNES Function norm 11.6307
+    1 SNES Function norm 3.22446
+      0 SNES Function norm 2.39658
+      1 SNES Function norm 0.342897
+      2 SNES Function norm 0.0136105
+      3 SNES Function norm 2.36185e-05
+      4 SNES Function norm 7.269e-11
+    0 SNES Function norm 1.96253
+    1 SNES Function norm 0.322793
+  3 SNES Function norm 0.322793
+    0 SNES Function norm 0.322793
+    1 SNES Function norm 0.0148152
+      0 SNES Function norm 0.00758764
+      1 SNES Function norm 6.45362e-06
       2 SNES Function norm < 1.e-11
-    0 SNES Function norm 0.0129681 
-    1 SNES Function norm 1.75916e-05 
-  4 SNES Function norm 1.75916e-05 
-    0 SNES Function norm 1.75916e-05 
-    1 SNES Function norm 5.749e-11 
-      0 SNES Function norm 2.218e-11 
+    0 SNES Function norm 0.0129681
+    1 SNES Function norm 1.75916e-05
+  4 SNES Function norm 1.75916e-05
+    0 SNES Function norm 1.75916e-05
+    1 SNES Function norm 5.749e-11
+      0 SNES Function norm 2.218e-11
       1 SNES Function norm < 1.e-11
-    0 SNES Function norm 5.304e-11 
+    0 SNES Function norm 5.304e-11
     1 SNES Function norm < 1.e-11
   5 SNES Function norm < 1.e-11
 L_2 Error: 0.00433493
@@ -71,7 +71,7 @@ SNES Object: 1 MPI process
           restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
           happy breakdown tolerance 1e-30
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-10, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-10, absolute=1e-50, divergence=10000.
         left preconditioning
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_coarse_) 1 MPI process
@@ -105,7 +105,7 @@ SNES Object: 1 MPI process
           restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
           happy breakdown tolerance 1e-30
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-10, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-10, absolute=1e-50, divergence=10000.
         left preconditioning
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_levels_1_) 1 MPI process

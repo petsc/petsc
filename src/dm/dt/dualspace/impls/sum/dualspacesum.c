@@ -447,7 +447,7 @@ static PetscErrorCode PetscDualSpaceSumCreateMappings(PetscDualSpace sp, PetscBo
         PetscCall(PetscSectionGetDof(subsection, p, &subdof));
         PetscCall(PetscSectionGetOffset(section, p, &off));
         PetscCall(PetscSectionGetDof(section, p, &dof));
-        PetscCheck(subdof * Ns == dof || !interleave_basis, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Basis cannot be interleaved\n");
+        PetscCheck(subdof * Ns == dof || !interleave_basis, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Basis cannot be interleaved");
         stride = interleave_basis ? Ns : 1;
         for (PetscInt k = 0; k < subdof; k++) { rows[suboff + k] = off + roffset[p - pStart] + k * stride; }
         roffset[p - pStart] += interleave_basis ? 1 : subdof;
@@ -810,7 +810,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Sum(PetscDualSpace sp)
 
     PetscCall(DMPlexGetDepth(K, &depth));
     PetscCall(DMPlexGetChart(K, &pStart, &pEnd));
-    PetscCall(PetscCalloc1(pEnd, &(sp->pointSpaces)));
+    PetscCall(PetscCalloc1(pEnd, &sp->pointSpaces));
     PetscCall(PetscMalloc2(depth + 1, &pStratStart, depth + 1, &pStratEnd));
     for (PetscInt d = 0; d <= depth; ++d) PetscCall(DMPlexGetDepthStratum(K, d, &pStratStart[d], &pStratEnd[d]));
 
@@ -1064,6 +1064,7 @@ PetscErrorCode PetscDualSpaceSumSetInterleave(PetscDualSpace sp, PetscBool inter
 static PetscErrorCode PetscDualSpaceSumSetInterleave_Sum(PetscDualSpace sp, PetscBool interleave_basis, PetscBool interleave_components)
 {
   PetscDualSpace_Sum *sum = (PetscDualSpace_Sum *)sp->data;
+
   PetscFunctionBegin;
   sum->interleave_basis      = interleave_basis;
   sum->interleave_components = interleave_components;
@@ -1100,6 +1101,7 @@ PetscErrorCode PetscDualSpaceSumGetInterleave(PetscDualSpace sp, PetscBool *inte
 static PetscErrorCode PetscDualSpaceSumGetInterleave_Sum(PetscDualSpace sp, PetscBool *interleave_basis, PetscBool *interleave_components)
 {
   PetscDualSpace_Sum *sum = (PetscDualSpace_Sum *)sp->data;
+
   PetscFunctionBegin;
   if (interleave_basis) *interleave_basis = sum->interleave_basis;
   if (interleave_components) *interleave_components = sum->interleave_components;

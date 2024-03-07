@@ -1,31 +1,31 @@
   Residual norms for stokes_ solve.
-  0 KSP Residual norm 0.00454925 
-  1 KSP Residual norm 0.00445265 
-  2 KSP Residual norm 0.00390246 
-  3 KSP Residual norm 0.00285626 
-  4 KSP Residual norm 0.00217438 
-  5 KSP Residual norm 0.00137538 
-  6 KSP Residual norm 0.00100592 
-  7 KSP Residual norm 0.000805012 
-  8 KSP Residual norm 0.000703663 
-  9 KSP Residual norm 0.000670825 
- 10 KSP Residual norm 0.000619861 
- 11 KSP Residual norm 0.000548141 
- 12 KSP Residual norm 0.000467674 
- 13 KSP Residual norm 0.00045039 
- 14 KSP Residual norm 0.000428086 
- 15 KSP Residual norm 0.000331618 
- 16 KSP Residual norm 0.00020597 
- 17 KSP Residual norm 0.000115577 
- 18 KSP Residual norm 8.8882e-05 
- 19 KSP Residual norm 6.37702e-05 
- 20 KSP Residual norm 3.59527e-05 
+  0 KSP Residual norm 0.00454925
+  1 KSP Residual norm 0.00445265
+  2 KSP Residual norm 0.00390246
+  3 KSP Residual norm 0.00285626
+  4 KSP Residual norm 0.00217438
+  5 KSP Residual norm 0.00137538
+  6 KSP Residual norm 0.00100592
+  7 KSP Residual norm 0.000805012
+  8 KSP Residual norm 0.000703663
+  9 KSP Residual norm 0.000670825
+ 10 KSP Residual norm 0.000619861
+ 11 KSP Residual norm 0.000548141
+ 12 KSP Residual norm 0.000467674
+ 13 KSP Residual norm 0.00045039
+ 14 KSP Residual norm 0.000428086
+ 15 KSP Residual norm 0.000331618
+ 16 KSP Residual norm 0.00020597
+ 17 KSP Residual norm 0.000115577
+ 18 KSP Residual norm 8.8882e-05
+ 19 KSP Residual norm 6.37702e-05
+ 20 KSP Residual norm 3.59527e-05
 KSP Object: (stokes_) 4 MPI processes
   type: gcr
     restart = 60 
     restarts performed = 1 
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=0.01, absolute=1e-50, divergence=10000.
+  tolerances: relative=0.01, absolute=1e-50, divergence=10000.
   right preconditioning
   using UNPRECONDITIONED norm type for convergence test
 PC Object: (stokes_) 4 MPI processes
@@ -37,7 +37,7 @@ PC Object: (stokes_) 4 MPI processes
     KSP Object: (stokes_mg_coarse_) 4 MPI processes
       type: preonly
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (stokes_mg_coarse_) 4 MPI processes
@@ -46,7 +46,7 @@ PC Object: (stokes_) 4 MPI processes
         KSP Object: (stokes_mg_coarse_redundant_) 1 MPI process
           type: preonly
           maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
         PC Object: (stokes_mg_coarse_redundant_) 1 MPI process
@@ -90,12 +90,12 @@ PC Object: (stokes_) 4 MPI processes
             restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
             happy breakdown tolerance 1e-30
           maximum iterations=10, initial guess is zero
-          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+          tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
         estimating eigenvalues using noisy right hand side
       maximum iterations=1, nonzero initial guess
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (stokes_mg_levels_1_) 4 MPI processes
@@ -106,7 +106,7 @@ PC Object: (stokes_) 4 MPI processes
       KSP Object: (stokes_mg_levels_1_fieldsplit_0_) 4 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (stokes_mg_levels_1_fieldsplit_0_) 4 MPI processes
@@ -123,7 +123,7 @@ PC Object: (stokes_) 4 MPI processes
       KSP Object: (stokes_mg_levels_1_fieldsplit_1_) 4 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (stokes_mg_levels_1_fieldsplit_1_) 4 MPI processes
@@ -157,12 +157,12 @@ PC Object: (stokes_) 4 MPI processes
             restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
             happy breakdown tolerance 1e-30
           maximum iterations=10, initial guess is zero
-          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+          tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
         estimating eigenvalues using noisy right hand side
       maximum iterations=1, nonzero initial guess
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (stokes_mg_levels_2_) 4 MPI processes
@@ -173,7 +173,7 @@ PC Object: (stokes_) 4 MPI processes
       KSP Object: (stokes_mg_levels_2_fieldsplit_0_) 4 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (stokes_mg_levels_2_fieldsplit_0_) 4 MPI processes
@@ -190,7 +190,7 @@ PC Object: (stokes_) 4 MPI processes
       KSP Object: (stokes_mg_levels_2_fieldsplit_1_) 4 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (stokes_mg_levels_2_fieldsplit_1_) 4 MPI processes
@@ -224,12 +224,12 @@ PC Object: (stokes_) 4 MPI processes
             restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
             happy breakdown tolerance 1e-30
           maximum iterations=10, initial guess is zero
-          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+          tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
         estimating eigenvalues using noisy right hand side
       maximum iterations=1, nonzero initial guess
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (stokes_mg_levels_3_) 4 MPI processes
@@ -240,7 +240,7 @@ PC Object: (stokes_) 4 MPI processes
       KSP Object: (stokes_mg_levels_3_fieldsplit_0_) 4 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (stokes_mg_levels_3_fieldsplit_0_) 4 MPI processes
@@ -257,7 +257,7 @@ PC Object: (stokes_) 4 MPI processes
       KSP Object: (stokes_mg_levels_3_fieldsplit_1_) 4 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (stokes_mg_levels_3_fieldsplit_1_) 4 MPI processes

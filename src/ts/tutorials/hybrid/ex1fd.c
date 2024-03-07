@@ -334,7 +334,6 @@ PetscErrorCode FWDRun(TS ts, Vec U0, void *ctx0)
   PetscCall(TSSetTime(ts, 0.0));
 
   PetscCall(TSSolve(ts, U));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

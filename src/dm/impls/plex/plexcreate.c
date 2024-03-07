@@ -3173,8 +3173,8 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
       PetscInt numBlocks, numBlocksPlus;
       const PetscInt A = 0, B = 1, C = 2, D = 3, E = 4, F = 5, G = 6, H = 7, II = 8, J = 9, K = 10, L = 11, M = 12, N = 13, O = 14, P = 15, Q = 16, R = 17, S = 18, T = 19, U = 20, V = 21, W = 22, X = 23, Y = 24, Z = 25, Ap = 26, Bp = 27, Cp = 28, Dp = 29, Ep = 30, Fp = 31, Gp = 32, Hp = 33, Ip = 34, Jp = 35, Kp = 36, Lp = 37, Mp = 38, Np = 39, Op = 40, Pp = 41, Qp = 42, Rp = 43, Sp = 44, Tp = 45, Up = 46, Vp = 47, Wp = 48, Xp = 49, Yp = 50, Zp = 51, Aq = 52, Bq = 53, Cq = 54, Dq = 55;
       const PetscInt pattern[64][4] = {
-  /* face to vertex within the coarse discretization of a single gyroid block */
-  /* layer 0 */
+        /* face to vertex within the coarse discretization of a single gyroid block */
+        /* layer 0 */
         {A,           C,           K,           G          },
         {C,           B,           II,          K          },
         {D,           A,           H,           L          },
@@ -3183,7 +3183,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
         {A + 56 * 2,  E,           N,           H + 56 * 2 },
         {F,           A + 56 * 2,  G + 56 * 2,  M          },
         {B,           F,           M,           II         },
- /* layer 1 */
+        /* layer 1 */
         {G,           K,           Q,           O          },
         {K,           II,          P,           Q          },
         {L,           H,           O + 56 * 1,  R          },
@@ -3192,7 +3192,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
         {H + 56 * 2,  N,           S,           O + 56 * 3 },
         {M,           G + 56 * 2,  O + 56 * 2,  T          },
         {II,          M,           T,           P          },
- /* layer 2 */
+        /* layer 2 */
         {O,           Q,           Y,           U          },
         {Q,           P,           W,           Y          },
         {R,           O + 56 * 1,  U + 56 * 1,  Ap         },
@@ -3201,7 +3201,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
         {O + 56 * 3,  S,           Bp,          V + 56 * 1 },
         {T,           O + 56 * 2,  V,           Z          },
         {P,           T,           Z,           X          },
- /* layer 3 */
+        /* layer 3 */
         {U,           Y,           Ep,          Dp         },
         {Y,           W,           Cp,          Ep         },
         {Ap,          U + 56 * 1,  Dp + 56 * 1, Gp         },
@@ -3210,7 +3210,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
         {V + 56 * 1,  Bp,          Fp,          Dp + 56 * 1},
         {Z,           V,           Dp,          Hp         },
         {X,           Z,           Hp,          Cp + 56 * 2},
- /* layer 4 */
+        /* layer 4 */
         {Dp,          Ep,          Mp,          Kp         },
         {Ep,          Cp,          Ip,          Mp         },
         {Gp,          Dp + 56 * 1, Lp,          Np         },
@@ -3219,7 +3219,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
         {Dp + 56 * 1, Fp,          Pp,          Lp         },
         {Hp,          Dp,          Kp,          Op         },
         {Cp + 56 * 2, Hp,          Op,          Ip + 56 * 2},
- /* layer 5 */
+        /* layer 5 */
         {Kp,          Mp,          Sp,          Rp         },
         {Mp,          Ip,          Qp,          Sp         },
         {Np,          Lp,          Rp,          Tp         },
@@ -3228,7 +3228,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
         {Lp,          Pp,          Up,          Rp         },
         {Op,          Kp,          Rp,          Vp         },
         {Ip + 56 * 2, Op,          Vp,          Qp + 56 * 2},
- /* layer 6 */
+        /* layer 6 */
         {Rp,          Sp,          Aq,          Yp         },
         {Sp,          Qp,          Wp,          Aq         },
         {Tp,          Rp,          Yp,          Cq         },
@@ -3237,7 +3237,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
         {Rp,          Up,          Dq,          Zp         },
         {Vp,          Rp,          Zp,          Bq         },
         {Qp + 56 * 2, Vp,          Bq,          Xp         },
- /* layer 7 (the top is the periodic image of the bottom of layer 0) */
+        /* layer 7 (the top is the periodic image of the bottom of layer 0) */
         {Yp,          Aq,          C + 56 * 4,  A + 56 * 4 },
         {Aq,          Wp,          B + 56 * 4,  C + 56 * 4 },
         {Cq,          Yp,          A + 56 * 4,  D + 56 * 4 },
@@ -4493,7 +4493,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
     DMPlexCoordMap map     = DM_COORD_MAP_NONE;
     PetscPointFunc mapFunc = NULL;
     PetscScalar    params[16];
-    PetscInt       Np = sizeof(params) / sizeof(params[0]), cdim;
+    PetscInt       Np = PETSC_STATIC_ARRAY_LENGTH(params), cdim;
     MPI_Comm       comm;
 
     PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
@@ -4989,7 +4989,7 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
   }
   PetscCall(DMSetPointSF(dm, sfPoint));
   PetscCall(PetscSFDestroy(&sfPoint));
-  if (vertexSF) PetscCall(PetscObjectSetName((PetscObject)(*vertexSF), "Vertex Ownership SF"));
+  if (vertexSF) PetscCall(PetscObjectSetName((PetscObject)*vertexSF, "Vertex Ownership SF"));
   /* Fill in the rest of the topology structure */
   PetscCall(DMPlexSymmetrize(dm));
   PetscCall(DMPlexStratify(dm));
@@ -5718,7 +5718,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
     PetscCall(PetscViewerFileSetName(viewer, filename));
 
     PetscCall(DMCreate(comm, dm));
-    PetscCall(PetscObjectSetName((PetscObject)(*dm), plexname));
+    PetscCall(PetscObjectSetName((PetscObject)*dm, plexname));
     PetscCall(DMSetType(*dm, DMPLEX));
     if (isXDMFHDF5) PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_HDF5_XDMF));
     PetscCall(DMLoad(*dm, viewer));
@@ -5748,7 +5748,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
     PetscCall(DMPlexCreateCellVertexFromFile(comm, filename, interpolate, dm));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot load file %s: unrecognized extension", filename);
   PetscCall(PetscStrlen(plexname, &len));
-  if (len) PetscCall(PetscObjectSetName((PetscObject)(*dm), plexname));
+  if (len) PetscCall(PetscObjectSetName((PetscObject)*dm, plexname));
   PetscCall(PetscLogEventEnd(DMPLEX_CreateFromFile, 0, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

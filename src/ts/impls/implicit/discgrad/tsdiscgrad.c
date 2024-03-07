@@ -270,7 +270,7 @@ static PetscErrorCode TSGetStages_DiscGrad(TS ts, PetscInt *ns, Vec **Y)
 
   PetscFunctionBegin;
   if (ns) *ns = 1;
-  if (Y) *Y = &(dg->X);
+  if (Y) *Y = &dg->X;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -350,7 +350,6 @@ static PetscErrorCode SNESTSFormFunction_DiscGrad(SNES snes, Vec x, Vec y, TS ts
   PetscCall(VecDestroy(&SgF));
   PetscCall(VecDestroy(&G));
   PetscCall(MatDestroy(&S));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

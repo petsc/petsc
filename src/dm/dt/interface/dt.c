@@ -127,8 +127,8 @@ PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *q)
 {
   PetscFunctionBegin;
   if (!*q) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*q), PETSCQUADRATURE_CLASSID, 1);
-  if (--((PetscObject)(*q))->refct > 0) {
+  PetscValidHeaderSpecific(*q, PETSCQUADRATURE_CLASSID, 1);
+  if (--((PetscObject)*q)->refct > 0) {
     *q = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -1556,7 +1556,6 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_Newton_Internal(PetscInt npoi
   PetscInt  k;
 
   PetscFunctionBegin;
-
   a1 = PetscPowReal(2.0, a + b + 1);
 #if defined(PETSC_HAVE_LGAMMA)
   {

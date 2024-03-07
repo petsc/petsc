@@ -205,7 +205,7 @@ static PetscErrorCode MatHYPRE_IJMatrixCopyIJ_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
   if (sameint) {
     PetscCall(PetscArraycpy(hdiag->i, pdiag->i, pA->A->rmap->n + 1));
   } else {
-    for (i = 0; i < pA->A->rmap->n + 1; i++) hdiag->i[i] = (HYPRE_Int)(pdiag->i[i]);
+    for (i = 0; i < pA->A->rmap->n + 1; i++) hdiag->i[i] = (HYPRE_Int)pdiag->i[i];
   }
 
   hjj = hdiag->j;
@@ -218,7 +218,7 @@ static PetscErrorCode MatHYPRE_IJMatrixCopyIJ_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
   if (sameint) {
     PetscCall(PetscArraycpy(hoffd->i, poffd->i, pA->A->rmap->n + 1));
   } else {
-    for (i = 0; i < pA->A->rmap->n + 1; i++) hoffd->i[i] = (HYPRE_Int)(poffd->i[i]);
+    for (i = 0; i < pA->A->rmap->n + 1; i++) hoffd->i[i] = (HYPRE_Int)poffd->i[i];
   }
 
   jj = (PetscInt *)hoffd->j;
@@ -236,7 +236,7 @@ static PetscErrorCode MatHYPRE_IJMatrixCopyIJ_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
 
 static PetscErrorCode MatConvert_HYPRE_IS(Mat A, MatType mtype, MatReuse reuse, Mat *B)
 {
-  Mat_HYPRE             *mhA = (Mat_HYPRE *)(A->data);
+  Mat_HYPRE             *mhA = (Mat_HYPRE *)A->data;
   Mat                    lA;
   ISLocalToGlobalMapping rl2g, cl2g;
   IS                     is;
@@ -348,7 +348,7 @@ static PetscErrorCode MatConvert_HYPRE_IS(Mat A, MatType mtype, MatReuse reuse, 
 
     PetscCall(MatCreateSeqAIJWithArrays(PETSC_COMM_SELF, dr, dc + oc, iptr, jptr, data, &lA));
     /* hack SeqAIJ */
-    a          = (Mat_SeqAIJ *)(lA->data);
+    a          = (Mat_SeqAIJ *)lA->data;
     a->free_a  = PETSC_TRUE;
     a->free_ij = PETSC_TRUE;
     if (lmattype) PetscCall(MatConvert(lA, lmattype, MAT_INPLACE_MATRIX, &lA));
@@ -418,7 +418,7 @@ static PetscErrorCode MatHYPRE_CreateCOOMat(Mat mat)
   #if defined(HYPRE_USING_HIP)
     matType = MATAIJHIPSPARSE;
   #elif defined(HYPRE_USING_CUDA)
-    matType  = MATAIJCUSPARSE;
+    matType = MATAIJCUSPARSE;
   #else
     SETERRQ(comm, PETSC_ERR_SUP, "Do not know the HYPRE device");
   #endif
@@ -745,7 +745,7 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
       PetscCall(PetscFree2(coo_i, coo_j));
 
       /* garray */
-      Mat_MPIAIJ   *aij    = (Mat_MPIAIJ *)(M->data);
+      Mat_MPIAIJ   *aij    = (Mat_MPIAIJ *)M->data;
       HYPRE_BigInt *harray = hypre_ParCSRMatrixColMapOffd(parcsr);
       PetscInt     *garray;
 
@@ -794,7 +794,7 @@ static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
   PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &iship, MATSEQAIJCUSPARSE, MATMPIAIJHIPSPARSE, ""));
   PetscHYPREInitialize();
   if (ismpiaij) {
-    Mat_MPIAIJ *a = (Mat_MPIAIJ *)(A->data);
+    Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data;
 
     diag = (Mat_SeqAIJ *)a->A->data;
     offd = (Mat_SeqAIJ *)a->B->data;
@@ -882,8 +882,8 @@ static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
   hdiag = hypre_ParCSRMatrixDiag(tA);
   if (!sameint) { /* malloc CSR pointers */
     PetscCall(PetscMalloc2(A->rmap->n + 1, &hdi, dnnz, &hdj));
-    for (i = 0; i < A->rmap->n + 1; i++) hdi[i] = (HYPRE_Int)(pdi[i]);
-    for (i = 0; i < dnnz; i++) hdj[i] = (HYPRE_Int)(pdj[i]);
+    for (i = 0; i < A->rmap->n + 1; i++) hdi[i] = (HYPRE_Int)pdi[i];
+    for (i = 0; i < dnnz; i++) hdj[i] = (HYPRE_Int)pdj[i];
   }
   hypre_CSRMatrixI(hdiag)           = hdi;
   hypre_CSRMatrixJ(hdiag)           = hdj;
@@ -897,8 +897,8 @@ static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
   if (offd) {
     if (!sameint) { /* malloc CSR pointers */
       PetscCall(PetscMalloc2(A->rmap->n + 1, &hoi, onnz, &hoj));
-      for (i = 0; i < A->rmap->n + 1; i++) hoi[i] = (HYPRE_Int)(poi[i]);
-      for (i = 0; i < onnz; i++) hoj[i] = (HYPRE_Int)(poj[i]);
+      for (i = 0; i < A->rmap->n + 1; i++) hoi[i] = (HYPRE_Int)poi[i];
+      for (i = 0; i < onnz; i++) hoj[i] = (HYPRE_Int)poj[i];
     }
     hypre_CSRMatrixI(hoffd)           = hoi;
     hypre_CSRMatrixJ(hoffd)           = hoj;
@@ -1753,7 +1753,7 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *parcsr, MatT
   PetscCall(MatCreate(comm, &T));
   PetscCall(MatSetSizes(T, rend - rstart, cend - cstart, M, N));
   PetscCall(MatSetType(T, MATHYPRE));
-  hA = (Mat_HYPRE *)(T->data);
+  hA = (Mat_HYPRE *)T->data;
 
   /* create HYPRE_IJMatrix */
   PetscCallExternal(HYPRE_IJMatrixCreate, hA->comm, rstart, rend - 1, cstart, cend - 1, &hA->ij);

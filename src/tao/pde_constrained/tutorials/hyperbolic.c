@@ -597,7 +597,6 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec C, void *ptr)
 
   PetscCall(Gather_yi(C, user->yiwork, user->yi_scatter, user->nt));
   PetscCall(VecAXPY(C, -1.0, user->q));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

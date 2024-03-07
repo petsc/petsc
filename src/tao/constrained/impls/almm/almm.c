@@ -114,7 +114,6 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao)
     PetscCall(TaoMonitor(tao, tao->niter, auglag->fval, auglag->gnorm, auglag->cnorm, updated));
     PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -278,7 +277,6 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao)
     PetscCall(TaoSetVariableBounds(auglag->subsolver, auglag->PL, auglag->PU));
   }
   PetscCall(TaoSetUp(auglag->subsolver));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

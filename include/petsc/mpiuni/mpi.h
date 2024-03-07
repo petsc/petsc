@@ -143,8 +143,8 @@ typedef ptrdiff_t MPI_Aint;
 typedef long long          MPIUNI_INT64;
 typedef unsigned long long MPIUNI_UINT64;
 #elif defined(PETSC_HAVE___INT64)
-typedef _int64                   MPIUNI_INT64;
-typedef unsigned _int64          MPIUNI_UINT64;
+typedef _int64          MPIUNI_INT64;
+typedef unsigned _int64 MPIUNI_UINT64;
 #else
   #error "Cannot determine MPIUNI_INT64, MPIUNI_UINT64 types"
 #endif
@@ -252,7 +252,7 @@ typedef int MPI_Datatype;
 #define MPI_ORDER_C       0
 #define MPI_ORDER_FORTRAN 1
 
-#define MPI_sizeof_default(datatype) ((((datatype) >> 8) & 0xfff) * ((datatype)&0xff))
+#define MPI_sizeof_default(datatype) ((((datatype) >> 8) & 0xfff) * ((datatype) & 0xff))
 #if defined(PETSC_USE_REAL___FP16)
 MPIUni_PETSC_EXTERN MPI_Datatype MPIU___FP16;
   #define MPI_sizeof(datatype) ((datatype == MPIU___FP16) ? (int)(2 * sizeof(char)) : MPI_sizeof_default(datatype))
@@ -435,7 +435,7 @@ typedef int MPI_Fint;
 #define MPI_Start(request)                                                                      (MPIUNI_ARG(request), MPI_SUCCESS)
 #define MPI_Startall(count, array_of_requests)                                                  (MPIUNI_ARG(count), MPIUNI_ARG(array_of_requests), MPI_SUCCESS)
 #define MPI_Sendrecv(sendbuf, sendcount, sendtype, dest, sendtag, recvbuf, recvcount, recvtype, source, recvtag, comm, status) \
-  (MPIUNI_ARG(dest), MPIUNI_ARG(sendtag), MPIUNI_ARG(recvcount), MPIUNI_ARG(recvtype), MPIUNI_ARG(source), MPIUNI_ARG(recvtag), MPIUNI_ARG(comm), MPIUNI_ARG(status), MPIUNI_Memcpy(recvbuf, sendbuf, (sendcount)*MPI_sizeof(sendtype)))
+  (MPIUNI_ARG(dest), MPIUNI_ARG(sendtag), MPIUNI_ARG(recvcount), MPIUNI_ARG(recvtype), MPIUNI_ARG(source), MPIUNI_ARG(recvtag), MPIUNI_ARG(comm), MPIUNI_ARG(status), MPIUNI_Memcpy(recvbuf, sendbuf, (sendcount) * MPI_sizeof(sendtype)))
 #define MPI_Sendrecv_replace(buf, count, datatype, dest, sendtag, source, recvtag, comm, status) \
   (MPIUNI_ARG(buf), MPIUNI_ARG(count), MPIUNI_ARG(datatype), MPIUNI_ARG(dest), MPIUNI_ARG(sendtag), MPIUNI_ARG(source), MPIUNI_ARG(recvtag), MPIUNI_ARG(comm), MPIUNI_ARG(status), MPI_SUCCESS)
 
@@ -444,7 +444,7 @@ typedef int MPI_Fint;
 #define MPI_COMBINER_CONTIGUOUS 2
 /* 32-bit packing scheme: [combiner:4 | type-index:8 | count:12 | base-bytes:8] */
 #define MPI_Type_dup(oldtype, newtype)                                 (*(newtype) = oldtype, MPI_SUCCESS)
-#define MPI_Type_contiguous(count, oldtype, newtype)                   (*(newtype) = (MPI_COMBINER_CONTIGUOUS << 28) | ((oldtype)&0x0ff00000) | (((oldtype) >> 8 & 0xfff) * (count)) << 8 | ((oldtype)&0xff), MPI_SUCCESS)
+#define MPI_Type_contiguous(count, oldtype, newtype)                   (*(newtype) = (MPI_COMBINER_CONTIGUOUS << 28) | ((oldtype) & 0x0ff00000) | (((oldtype) >> 8 & 0xfff) * (count)) << 8 | ((oldtype) & 0xff), MPI_SUCCESS)
 #define MPI_Type_vector(count, blocklength, stride, oldtype, newtype)  (MPIUNI_ARG(count), MPIUNI_ARG(blocklength), MPIUNI_ARG(stride), MPIUNI_ARG(oldtype), MPIUNI_ARG(newtype), MPIUni_Abort(MPI_COMM_WORLD, 0))
 #define MPI_Type_hvector(count, blocklength, stride, oldtype, newtype) (MPIUNI_ARG(count), MPIUNI_ARG(blocklength), MPIUNI_ARG(stride), MPIUNI_ARG(oldtype), MPIUNI_ARG(newtype), MPIUni_Abort(MPI_COMM_WORLD, 0))
 #define MPI_Type_indexed(count, array_of_blocklengths, array_of_displacements, oldtype, newtype) \
@@ -454,11 +454,11 @@ typedef int MPI_Fint;
 #define MPI_Type_struct(count, array_of_blocklengths, array_of_displacements, array_of_types, newtype) \
   (MPIUNI_ARG(count), MPIUNI_ARG(array_of_blocklengths), MPIUNI_ARG(array_of_displacements), MPIUNI_ARG(array_of_types), MPIUNI_ARG(newtype), MPIUni_Abort(MPI_COMM_WORLD, 0))
 #define MPI_Address(location, address)            (*(address) = (MPI_Aint)((char *)(location)), MPI_SUCCESS)
-#define MPI_Type_size(datatype, size)             (*(size) = MPI_sizeof((datatype)), MPI_SUCCESS)
+#define MPI_Type_size(datatype, size)             (*(size) = MPI_sizeof(datatype), MPI_SUCCESS)
 #define MPI_Type_lb(datatype, lb)                 (MPIUNI_ARG(datatype), *(lb) = 0, MPI_SUCCESS)
-#define MPI_Type_ub(datatype, ub)                 (*(ub) = MPI_sizeof((datatype)), MPI_SUCCESS)
-#define MPI_Type_extent(datatype, extent)         (*(extent) = MPI_sizeof((datatype)), MPI_SUCCESS)
-#define MPI_Type_get_extent(datatype, lb, extent) (*(lb) = 0, *(extent) = MPI_sizeof((datatype)), MPI_SUCCESS)
+#define MPI_Type_ub(datatype, ub)                 (*(ub) = MPI_sizeof(datatype), MPI_SUCCESS)
+#define MPI_Type_extent(datatype, extent)         (*(extent) = MPI_sizeof(datatype), MPI_SUCCESS)
+#define MPI_Type_get_extent(datatype, lb, extent) (*(lb) = 0, *(extent) = MPI_sizeof(datatype), MPI_SUCCESS)
 #define MPI_Type_commit(datatype)                 (MPIUNI_ARG(datatype), MPI_SUCCESS)
 #define MPI_Type_free(datatype)                   (*(datatype) = MPI_DATATYPE_NULL, MPI_SUCCESS)
 #define MPI_Get_elements(status, datatype, count) (MPIUNI_ARG(status), MPIUNI_ARG(datatype), MPIUNI_ARG(count), MPIUni_Abort(MPI_COMM_WORLD, 0))
@@ -469,24 +469,25 @@ typedef int MPI_Fint;
 #define MPI_Pack_size(incount, datatype, comm, size)                                       (MPIUNI_ARG(incount), MPIUNI_ARG(datatype), MPIUNI_ARG(comm), MPIUNI_ARG(size), MPIUni_Abort(MPI_COMM_WORLD, 0))
 #define MPI_Barrier(comm)                                                                  (MPIUNI_ARG(comm), MPI_SUCCESS)
 #define MPI_Bcast(buffer, count, datatype, root, comm)                                     (MPIUNI_ARG(buffer), MPIUNI_ARG(count), MPIUNI_ARG(datatype), MPIUNI_ARG(root), MPIUNI_ARG(comm), MPI_SUCCESS)
-#define MPI_Gather(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, root, comm) (MPIUNI_ARG(recvcount), MPIUNI_ARG(root), MPIUNI_ARG(recvtype), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (sendcount)*MPI_sizeof(sendtype)))
+#define MPI_Gather(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, root, comm) (MPIUNI_ARG(recvcount), MPIUNI_ARG(root), MPIUNI_ARG(recvtype), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (sendcount) * MPI_sizeof(sendtype)))
 #define MPI_Gatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, root, comm) \
-  (MPIUNI_ARG(recvcounts), MPIUNI_ARG(displs), MPIUNI_ARG(recvtype), MPIUNI_ARG(root), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (sendcount)*MPI_sizeof(sendtype)))
+  (MPIUNI_ARG(recvcounts), MPIUNI_ARG(displs), MPIUNI_ARG(recvtype), MPIUNI_ARG(root), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (sendcount) * MPI_sizeof(sendtype)))
 #define MPI_Scatter(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, root, comm) \
-  (MPIUNI_ARG(sendcount), MPIUNI_ARG(sendtype), MPIUNI_ARG(recvbuf), MPIUNI_ARG(recvtype), MPIUNI_ARG(root), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (recvcount)*MPI_sizeof(recvtype)))
+  (MPIUNI_ARG(sendcount), MPIUNI_ARG(sendtype), MPIUNI_ARG(recvbuf), MPIUNI_ARG(recvtype), MPIUNI_ARG(root), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (recvcount) * MPI_sizeof(recvtype)))
 #define MPI_Scatterv(sendbuf, sendcounts, displs, sendtype, recvbuf, recvcount, recvtype, root, comm) \
-  (MPIUNI_ARG(displs), MPIUNI_ARG(sendtype), MPIUNI_ARG(sendcounts), MPIUNI_ARG(root), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (recvcount)*MPI_sizeof(recvtype)))
-#define MPI_Allgather(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, comm)           (MPIUNI_ARG(recvcount), MPIUNI_ARG(recvtype), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (sendcount)*MPI_sizeof(sendtype)))
-#define MPI_Allgatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, comm) (MPIUNI_ARG(recvcounts), MPIUNI_ARG(displs), MPIUNI_ARG(recvtype), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (sendcount)*MPI_sizeof(sendtype)))
-#define MPI_Alltoall(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, comm)            (MPIUNI_ARG(recvcount), MPIUNI_ARG(recvtype), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (sendcount)*MPI_sizeof(sendtype)))
+  (MPIUNI_ARG(displs), MPIUNI_ARG(sendtype), MPIUNI_ARG(sendcounts), MPIUNI_ARG(root), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (recvcount) * MPI_sizeof(recvtype)))
+#define MPI_Allgather(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, comm) (MPIUNI_ARG(recvcount), MPIUNI_ARG(recvtype), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (sendcount) * MPI_sizeof(sendtype)))
+#define MPI_Allgatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, comm) \
+  (MPIUNI_ARG(recvcounts), MPIUNI_ARG(displs), MPIUNI_ARG(recvtype), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (sendcount) * MPI_sizeof(sendtype)))
+#define MPI_Alltoall(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, comm) (MPIUNI_ARG(recvcount), MPIUNI_ARG(recvtype), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (sendcount) * MPI_sizeof(sendtype)))
 #define MPI_Alltoallv(sendbuf, sendcounts, sdispls, sendtype, recvbuf, recvcounts, rdispls, recvtype, comm) \
   (MPIUNI_ARG(sendbuf), MPIUNI_ARG(sendcounts), MPIUNI_ARG(sdispls), MPIUNI_ARG(sendtype), MPIUNI_ARG(recvbuf), MPIUNI_ARG(recvcounts), MPIUNI_ARG(rdispls), MPIUNI_ARG(recvtype), MPIUNI_ARG(comm), MPIUni_Abort(MPI_COMM_WORLD, 0))
 #define MPI_Alltoallw(sendbuf, sendcounts, sdispls, sendtypes, recvbuf, recvcounts, rdispls, recvtypes, comm) \
   (MPIUNI_ARG(sendbuf), MPIUNI_ARG(sendcounts), MPIUNI_ARG(sdispls), MPIUNI_ARG(sendtypes), MPIUNI_ARG(recvbuf), MPIUNI_ARG(recvcount), MPIUNI_ARG(rdispls), MPIUNI_ARG(recvtypes), MPIUNI_ARG(comm), MPIUni_Abort(MPI_COMM_WORLD, 0))
-#define MPI_Reduce(sendbuf, recvbuf, count, datatype, op, root, comm)        (MPIUNI_ARG(op), MPIUNI_ARG(root), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (count)*MPI_sizeof(datatype)))
-#define MPI_Allreduce(sendbuf, recvbuf, count, datatype, op, comm)           (MPIUNI_ARG(op), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (count)*MPI_sizeof(datatype)))
-#define MPI_Iallreduce(sendbuf, recvbuf, count, datatype, op, comm, request) (MPIUNI_ARG(op), MPIUNI_ARG(comm), MPIUNI_ARG(request), MPIUNI_Memcpy(recvbuf, sendbuf, (count)*MPI_sizeof(datatype)))
-#define MPI_Scan(sendbuf, recvbuf, count, datatype, op, comm)                (MPIUNI_ARG(op), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (count)*MPI_sizeof(datatype)))
+#define MPI_Reduce(sendbuf, recvbuf, count, datatype, op, root, comm)        (MPIUNI_ARG(op), MPIUNI_ARG(root), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (count) * MPI_sizeof(datatype)))
+#define MPI_Allreduce(sendbuf, recvbuf, count, datatype, op, comm)           (MPIUNI_ARG(op), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (count) * MPI_sizeof(datatype)))
+#define MPI_Iallreduce(sendbuf, recvbuf, count, datatype, op, comm, request) (MPIUNI_ARG(op), MPIUNI_ARG(comm), MPIUNI_ARG(request), MPIUNI_Memcpy(recvbuf, sendbuf, (count) * MPI_sizeof(datatype)))
+#define MPI_Scan(sendbuf, recvbuf, count, datatype, op, comm)                (MPIUNI_ARG(op), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (count) * MPI_sizeof(datatype)))
 #define MPI_Exscan(sendbuf, recvbuf, count, datatype, op, comm)              (MPIUNI_ARG(sendbuf), MPIUNI_ARG(recvbuf), MPIUNI_ARG(count), MPIUNI_ARG(datatype), MPIUNI_ARG(op), MPIUNI_ARG(comm), MPI_SUCCESS)
 #define MPI_Reduce_scatter(sendbuf, recvbuf, recvcounts, datatype, op, comm) (MPIUNI_ARG(op), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (*recvcounts) * MPI_sizeof(datatype)))
 #define MPI_Op_create(function, commute, op)                                 (MPIUNI_ARG(function), MPIUNI_ARG(commute), MPIUNI_ARG(op), MPI_SUCCESS)
@@ -494,7 +495,7 @@ typedef int MPI_Fint;
 
 #define MPI_Group_size(group, size)                                  (MPIUNI_ARG(group), *(size) = 1, MPI_SUCCESS)
 #define MPI_Group_rank(group, rank)                                  (MPIUNI_ARG(group), *(rank) = 0, MPI_SUCCESS)
-#define MPI_Group_translate_ranks(group1, n, ranks1, group2, ranks2) (MPIUNI_ARG(group1), MPIUNI_ARG(group2), MPIUNI_Memcpy((ranks2), (ranks1), (n)*MPI_sizeof(MPI_INT)))
+#define MPI_Group_translate_ranks(group1, n, ranks1, group2, ranks2) (MPIUNI_ARG(group1), MPIUNI_ARG(group2), MPIUNI_Memcpy((ranks2), (ranks1), (n) * MPI_sizeof(MPI_INT)))
 #define MPI_Group_compare(group1, group2, result)                    (MPIUNI_ARG(group1), MPIUNI_ARG(group2), *(result) = 1, MPI_SUCCESS)
 #define MPI_Group_union(group1, group2, newgroup)                    (MPIUNI_ARG(group1), MPIUNI_ARG(group2), *(newgroup) = 1, MPI_SUCCESS)
 #define MPI_Group_intersection(group1, group2, newgroup)             (MPIUNI_ARG(group1), MPIUNI_ARG(group2), *(newgroup) = 1, MPI_SUCCESS)

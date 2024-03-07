@@ -103,8 +103,8 @@ PetscErrorCode PetscBenchDestroy(PetscBench *bm)
   PetscFunctionBegin;
   PetscAssertPointer(bm, 1);
   if (!*bm) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*bm), BM_CLASSID, 1);
-  if (--((PetscObject)(*bm))->refct > 0) {
+  PetscValidHeaderSpecific(*bm, BM_CLASSID, 1);
+  if (--((PetscObject)*bm)->refct > 0) {
     *bm = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

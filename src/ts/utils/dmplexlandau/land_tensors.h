@@ -19,7 +19,7 @@ PETSC_DEVICE_FUNC_DECL PetscReal polevl_10(PetscReal x, const PetscReal coef[])
   PetscInt  i;
   ans = coef[0];
   for (i = 1; i < 11; i++) ans = ans * x + coef[i];
-  return (ans);
+  return ans;
 }
 PETSC_DEVICE_FUNC_DECL PetscReal polevl_9(PetscReal x, const PetscReal coef[])
 {
@@ -27,7 +27,7 @@ PETSC_DEVICE_FUNC_DECL PetscReal polevl_9(PetscReal x, const PetscReal coef[])
   PetscInt  i;
   ans = coef[0];
   for (i = 1; i < 10; i++) ans = ans * x + coef[i];
-  return (ans);
+  return ans;
 }
 /*
  *      Complete elliptic integral of the second kind

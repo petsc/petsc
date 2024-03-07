@@ -146,8 +146,8 @@ static PetscErrorCode MatConvertToTriples_mpiaij_mpiaij_MKL_CPARDISO(Mat A, MatR
   const PetscScalar *av, *bv;
   PetscScalar       *val;
   Mat_MPIAIJ        *mat = (Mat_MPIAIJ *)A->data;
-  Mat_SeqAIJ        *aa  = (Mat_SeqAIJ *)(mat->A)->data;
-  Mat_SeqAIJ        *bb  = (Mat_SeqAIJ *)(mat->B)->data;
+  Mat_SeqAIJ        *aa  = (Mat_SeqAIJ *)mat->A->data;
+  Mat_SeqAIJ        *bb  = (Mat_SeqAIJ *)mat->B->data;
   PetscInt           colA_start, jB, jcol;
 
   PetscFunctionBegin;
@@ -206,7 +206,6 @@ static PetscErrorCode MatConvertToTriples_mpiaij_mpiaij_MKL_CPARDISO(Mat A, MatR
     }
   }
   row[m] = nz;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -218,8 +217,8 @@ static PetscErrorCode MatConvertToTriples_mpibaij_mpibaij_MKL_CPARDISO(Mat A, Ma
   const PetscScalar *av, *bv;
   PetscScalar       *val;
   Mat_MPIBAIJ       *mat = (Mat_MPIBAIJ *)A->data;
-  Mat_SeqBAIJ       *aa  = (Mat_SeqBAIJ *)(mat->A)->data;
-  Mat_SeqBAIJ       *bb  = (Mat_SeqBAIJ *)(mat->B)->data;
+  Mat_SeqBAIJ       *aa  = (Mat_SeqBAIJ *)mat->A->data;
+  Mat_SeqBAIJ       *bb  = (Mat_SeqBAIJ *)mat->B->data;
   PetscInt           colA_start, jB, jcol;
 
   PetscFunctionBegin;
@@ -280,7 +279,6 @@ static PetscErrorCode MatConvertToTriples_mpibaij_mpibaij_MKL_CPARDISO(Mat A, Ma
     bv += (countB - jB) * bs2;
   }
   row[m] = nz + 1;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -292,8 +290,8 @@ static PetscErrorCode MatConvertToTriples_mpisbaij_mpisbaij_MKL_CPARDISO(Mat A, 
   const PetscScalar *av, *bv;
   PetscScalar       *val;
   Mat_MPISBAIJ      *mat = (Mat_MPISBAIJ *)A->data;
-  Mat_SeqSBAIJ      *aa  = (Mat_SeqSBAIJ *)(mat->A)->data;
-  Mat_SeqBAIJ       *bb  = (Mat_SeqBAIJ *)(mat->B)->data;
+  Mat_SeqSBAIJ      *aa  = (Mat_SeqSBAIJ *)mat->A->data;
+  Mat_SeqBAIJ       *bb  = (Mat_SeqBAIJ *)mat->B->data;
 
   PetscFunctionBegin;
   ai     = aa->i;
@@ -340,7 +338,6 @@ static PetscErrorCode MatConvertToTriples_mpisbaij_mpisbaij_MKL_CPARDISO(Mat A, 
     bv += countB * bs2;
   }
   row[m] = nz + 1;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -555,7 +552,6 @@ static PetscErrorCode PetscInitialize_MKL_CPARDISO(Mat A, Mat_MKL_CPARDISO *mat_
   MPI_Comm    comm;
 
   PetscFunctionBegin;
-
   PetscCallMPI(MPI_Comm_dup(PetscObjectComm((PetscObject)A), &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   mat_mkl_cpardiso->comm_mkl_cpardiso = MPI_Comm_c2f(comm);
@@ -572,13 +568,13 @@ static PetscErrorCode PetscInitialize_MKL_CPARDISO(Mat A, Mat_MKL_CPARDISO *mat_
 #if defined(PETSC_USE_COMPLEX)
   mat_mkl_cpardiso->mtype = 13;
 #else
-  mat_mkl_cpardiso->mtype         = 11;
+  mat_mkl_cpardiso->mtype = 11;
 #endif
 
 #if defined(PETSC_USE_REAL_SINGLE)
   mat_mkl_cpardiso->iparm[27] = 1;
 #else
-  mat_mkl_cpardiso->iparm[27]     = 0;
+  mat_mkl_cpardiso->iparm[27] = 0;
 #endif
 
   mat_mkl_cpardiso->iparm[0]  = 1;  /* Solver default parameters overridden with provided by iparm */

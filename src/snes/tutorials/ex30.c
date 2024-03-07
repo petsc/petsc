@@ -166,7 +166,7 @@ int main(int argc, char **argv)
   user->param = &param;
   user->grid  = &grid;
   PetscCall(DMSetApplicationContext(da, user));
-  PetscCall(DMCreateGlobalVector(da, &(user->Xguess)));
+  PetscCall(DMCreateGlobalVector(da, &user->Xguess));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set up the SNES solver with callback functions.
@@ -349,7 +349,7 @@ static inline PetscScalar Pressure(PetscInt i, PetscInt j, AppCtx *user)
   r  = PetscSqrtReal(x * x + z * z);
   st = z / r;
   ct = x / r;
-  return (-2.0 * (c * ct - d * st) / r);
+  return -2.0 * (c * ct - d * st) / r;
 }
 
 /*  computes the second invariant of the strain rate tensor */
@@ -434,7 +434,7 @@ static inline PetscScalar Viscosity(PetscScalar T, PetscScalar eps, PetscScalar 
     return 1.0;
   } else if (iVisc == VISC_DIFN) {
     /* diffusion creep rheology */
-    result = PetscRealPart((difn.A * PetscExpScalar((difn.Estar + P * difn.Vstar) / R / (T + 273.0)) / param->eta0));
+    result = PetscRealPart(difn.A * PetscExpScalar((difn.Estar + P * difn.Vstar) / R / (T + 273.0)) / param->eta0);
   } else if (iVisc == VISC_DISL) {
     /* dislocation creep rheology */
     strain_power = PetscPowScalar(eps * eps_scale, (1.0 - disl.n) / disl.n);
@@ -770,25 +770,25 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   param->lid_depth   = 35.0;  /* km */
   param->fault_depth = 35.0;  /* km */
 
-  PetscCall(PetscOptionsGetReal(NULL, NULL, "-slab_dip", &(param->slab_dip), NULL));
-  PetscCall(PetscOptionsGetReal(NULL, NULL, "-width", &(param->width), NULL));
-  PetscCall(PetscOptionsGetReal(NULL, NULL, "-depth", &(param->depth), NULL));
-  PetscCall(PetscOptionsGetReal(NULL, NULL, "-lid_depth", &(param->lid_depth), NULL));
-  PetscCall(PetscOptionsGetReal(NULL, NULL, "-fault_depth", &(param->fault_depth), NULL));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-slab_dip", &param->slab_dip, NULL));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-width", &param->width, NULL));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-depth", &param->depth, NULL));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-lid_depth", &param->lid_depth, NULL));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-fault_depth", &param->fault_depth, NULL));
 
   param->slab_dip = param->slab_dip * PETSC_PI / 180.0; /* radians */
 
   /* grid information */
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-jfault", &(grid->jfault), NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-jfault", &grid->jfault, NULL));
   grid->ni = 82;
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-ni", &(grid->ni), NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-ni", &grid->ni, NULL));
 
   grid->dx     = param->width / ((PetscReal)(grid->ni - 2)); /* km */
   grid->dz     = grid->dx * PetscTanReal(param->slab_dip);   /* km */
   grid->nj     = (PetscInt)(param->depth / grid->dz + 3.0);  /* gridpoints*/
   param->depth = grid->dz * (grid->nj - 2);                  /* km */
   grid->inose  = 0;                                          /* gridpoints*/
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-inose", &(grid->inose), NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-inose", &grid->inose, NULL));
   grid->bx            = DM_BOUNDARY_NONE;
   grid->by            = DM_BOUNDARY_NONE;
   grid->stencil       = DMDA_STENCIL_BOX;
@@ -799,7 +799,7 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   /* boundary conditions */
   param->pv_analytic = PETSC_FALSE;
   param->ibound      = BC_NOSTRESS;
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-ibound", &(param->ibound), NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-ibound", &param->ibound, NULL));
 
   /* physical constants */
   param->slab_velocity = 5.0;       /* cm/yr */
@@ -808,11 +808,11 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   param->kappa         = 0.7272e-6; /* m^2/sec */
   param->potentialT    = 1300.0;    /* degrees C */
 
-  PetscCall(PetscOptionsGetReal(NULL, NULL, "-slab_velocity", &(param->slab_velocity), NULL));
-  PetscCall(PetscOptionsGetReal(NULL, NULL, "-slab_age", &(param->slab_age), NULL));
-  PetscCall(PetscOptionsGetReal(NULL, NULL, "-lid_age", &(param->lid_age), NULL));
-  PetscCall(PetscOptionsGetReal(NULL, NULL, "-kappa", &(param->kappa), NULL));
-  PetscCall(PetscOptionsGetReal(NULL, NULL, "-potentialT", &(param->potentialT), NULL));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-slab_velocity", &param->slab_velocity, NULL));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-slab_age", &param->slab_age, NULL));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-lid_age", &param->lid_age, NULL));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-kappa", &param->kappa, NULL));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-potentialT", &param->potentialT, NULL));
 
   /* viscosity */
   param->ivisc        = 3;    /* 0=isovisc, 1=difn creep, 2=disl creep, 3=full */
@@ -832,26 +832,26 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   param->dislocation.Estar = 530e3;    /* J/mol */
   param->dislocation.Vstar = 14e-6;    /* m^3/mol */
 
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-ivisc", &(param->ivisc), NULL));
-  PetscCall(PetscOptionsGetReal(NULL, NULL, "-visc_cutoff", &(param->visc_cutoff), NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-ivisc", &param->ivisc, NULL));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-visc_cutoff", &param->visc_cutoff, NULL));
 
   param->output_ivisc = param->ivisc;
 
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-output_ivisc", &(param->output_ivisc), NULL));
-  PetscCall(PetscOptionsGetReal(NULL, NULL, "-vstar", &(param->dislocation.Vstar), NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-output_ivisc", &param->output_ivisc, NULL));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-vstar", &param->dislocation.Vstar, NULL));
 
   /* output options */
   param->quiet      = PETSC_FALSE;
   param->param_test = PETSC_FALSE;
 
-  PetscCall(PetscOptionsHasName(NULL, NULL, "-quiet", &(param->quiet)));
-  PetscCall(PetscOptionsHasName(NULL, NULL, "-test", &(param->param_test)));
-  PetscCall(PetscOptionsGetString(NULL, NULL, "-file", param->filename, sizeof(param->filename), &(param->output_to_file)));
+  PetscCall(PetscOptionsHasName(NULL, NULL, "-quiet", &param->quiet));
+  PetscCall(PetscOptionsHasName(NULL, NULL, "-test", &param->param_test));
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-file", param->filename, sizeof(param->filename), &param->output_to_file));
 
   /* advection */
   param->adv_scheme = ADVECT_FROMM; /* advection scheme: 0=finite vol, 1=Fromm */
 
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-adv_scheme", &(param->adv_scheme), NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-adv_scheme", &param->adv_scheme, NULL));
 
   /* misc. flags */
   param->stop_solve    = PETSC_FALSE;
@@ -886,7 +886,7 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
                 / param->kappa;                                    /* m^2/sec */
   param->z_scale = param->L * alpha_g_on_cp_units_inverse_km;
   param->skt     = PetscSqrtReal(param->kappa * param->slab_age * SEC_PER_YR);
-  PetscCall(PetscOptionsGetReal(NULL, NULL, "-peclet", &(param->peclet), NULL));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-peclet", &param->peclet, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -898,7 +898,7 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
   PetscFunctionBeginUser;
   PetscCall(PetscGetDate(date, 30));
 
-  if (!(param->quiet)) {
+  if (!param->quiet) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "---------------------BEGIN ex30 PARAM REPORT-------------------\n"));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Domain: \n"));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  Width = %g km,         Depth = %g km\n", (double)param->width, (double)param->depth));
@@ -997,7 +997,6 @@ PetscErrorCode Initialize(DM da)
 
   /* Restore x to Xguess */
   PetscCall(DMDAVecRestoreArray(da, Xguess, (void **)&x));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1036,22 +1035,22 @@ PetscErrorCode DoOutput(SNES snes, PetscInt its)
     if (rank == 0) { /* on processor 0 */
       PetscCall(VecSetSizes(pars, 20, PETSC_DETERMINE));
       PetscCall(VecSetFromOptions(pars));
-      PetscCall(VecSetValue(pars, 0, (PetscScalar)(grid->ni), INSERT_VALUES));
-      PetscCall(VecSetValue(pars, 1, (PetscScalar)(grid->nj), INSERT_VALUES));
-      PetscCall(VecSetValue(pars, 2, (PetscScalar)(grid->dx), INSERT_VALUES));
-      PetscCall(VecSetValue(pars, 3, (PetscScalar)(grid->dz), INSERT_VALUES));
-      PetscCall(VecSetValue(pars, 4, (PetscScalar)(param->L), INSERT_VALUES));
-      PetscCall(VecSetValue(pars, 5, (PetscScalar)(param->V), INSERT_VALUES));
+      PetscCall(VecSetValue(pars, 0, (PetscScalar)grid->ni, INSERT_VALUES));
+      PetscCall(VecSetValue(pars, 1, (PetscScalar)grid->nj, INSERT_VALUES));
+      PetscCall(VecSetValue(pars, 2, (PetscScalar)grid->dx, INSERT_VALUES));
+      PetscCall(VecSetValue(pars, 3, (PetscScalar)grid->dz, INSERT_VALUES));
+      PetscCall(VecSetValue(pars, 4, (PetscScalar)param->L, INSERT_VALUES));
+      PetscCall(VecSetValue(pars, 5, (PetscScalar)param->V, INSERT_VALUES));
       /* skipped 6 intentionally */
-      PetscCall(VecSetValue(pars, 7, (PetscScalar)(param->slab_dip), INSERT_VALUES));
-      PetscCall(VecSetValue(pars, 8, (PetscScalar)(grid->jlid), INSERT_VALUES));
-      PetscCall(VecSetValue(pars, 9, (PetscScalar)(param->lid_depth), INSERT_VALUES));
-      PetscCall(VecSetValue(pars, 10, (PetscScalar)(grid->jfault), INSERT_VALUES));
-      PetscCall(VecSetValue(pars, 11, (PetscScalar)(param->fault_depth), INSERT_VALUES));
-      PetscCall(VecSetValue(pars, 12, (PetscScalar)(param->potentialT), INSERT_VALUES));
-      PetscCall(VecSetValue(pars, 13, (PetscScalar)(param->ivisc), INSERT_VALUES));
-      PetscCall(VecSetValue(pars, 14, (PetscScalar)(param->visc_cutoff), INSERT_VALUES));
-      PetscCall(VecSetValue(pars, 15, (PetscScalar)(param->ibound), INSERT_VALUES));
+      PetscCall(VecSetValue(pars, 7, (PetscScalar)param->slab_dip, INSERT_VALUES));
+      PetscCall(VecSetValue(pars, 8, (PetscScalar)grid->jlid, INSERT_VALUES));
+      PetscCall(VecSetValue(pars, 9, (PetscScalar)param->lid_depth, INSERT_VALUES));
+      PetscCall(VecSetValue(pars, 10, (PetscScalar)grid->jfault, INSERT_VALUES));
+      PetscCall(VecSetValue(pars, 11, (PetscScalar)param->fault_depth, INSERT_VALUES));
+      PetscCall(VecSetValue(pars, 12, (PetscScalar)param->potentialT, INSERT_VALUES));
+      PetscCall(VecSetValue(pars, 13, (PetscScalar)param->ivisc, INSERT_VALUES));
+      PetscCall(VecSetValue(pars, 14, (PetscScalar)param->visc_cutoff, INSERT_VALUES));
+      PetscCall(VecSetValue(pars, 15, (PetscScalar)param->ibound, INSERT_VALUES));
       PetscCall(VecSetValue(pars, 16, (PetscScalar)(its), INSERT_VALUES));
     } else { /* on some other processor */
       PetscCall(VecSetSizes(pars, 0, PETSC_DETERMINE));
@@ -1072,10 +1071,10 @@ PetscErrorCode DoOutput(SNES snes, PetscInt its)
     PetscCall(VecView(res, viewer));
     PetscCall(PetscObjectSetName((PetscObject)user->x, "out"));
     PetscCall(VecView(user->x, viewer));
-    PetscCall(PetscObjectSetName((PetscObject)(user->Xguess), "aux"));
+    PetscCall(PetscObjectSetName((PetscObject)user->Xguess, "aux"));
     PetscCall(VecView(user->Xguess, viewer));
     PetscCall(StressField(da)); /* compute stress fields */
-    PetscCall(PetscObjectSetName((PetscObject)(user->Xguess), "str"));
+    PetscCall(PetscObjectSetName((PetscObject)user->Xguess, "str"));
     PetscCall(VecView(user->Xguess, viewer));
     PetscCall(PetscObjectSetName((PetscObject)pars, "par"));
     PetscCall(VecView(pars, viewer));
@@ -1131,7 +1130,7 @@ PetscErrorCode ViscosityField(DM da, Vec X, Vec V)
       } else {
         TC = T;
       }
-      eps  = PetscRealPart((CalcSecInv(x, i, j, CELL_CENTER, user)));
+      eps  = PetscRealPart(CalcSecInv(x, i, j, CELL_CENTER, user));
       epsC = PetscRealPart(CalcSecInv(x, i, j, CELL_CORNER, user));
 
       v[j][i].u = eps;

@@ -371,7 +371,6 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void 
   PetscCall(DMLocalToGlobalEnd(user->dm, localG, INSERT_VALUES, G));
 
   PetscCall(PetscLogFlops(70.0 * xm * ym));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -767,7 +766,6 @@ static PetscErrorCode MSA_Plate(Vec XL, Vec XU, void *ctx)
     }
   }
   PetscCall(VecRestoreArray(XL, &xl));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

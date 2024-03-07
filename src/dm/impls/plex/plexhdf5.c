@@ -1773,7 +1773,7 @@ static PetscErrorCode DMPlexDistributionLoad_HDF5_Private(DM dm, PetscViewer vie
     PetscCall(PetscFree2(buffer0, buffer1));
     PetscCall(DMCreate(comm, distdm));
     PetscCall(DMSetType(*distdm, DMPLEX));
-    PetscCall(PetscObjectSetName((PetscObject)(*distdm), ((PetscObject)dm)->name));
+    PetscCall(PetscObjectSetName((PetscObject)*distdm, ((PetscObject)dm)->name));
     PetscCall(DMPlexDistributionSetName(*distdm, distribution_name));
     {
       PetscSF migrationSF;

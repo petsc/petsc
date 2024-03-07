@@ -34,12 +34,12 @@ PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y, PetscScalar a)
   }
 
   if (A) {
-    oldValA                          = ((Mat_SeqAIJ *)(A->data))->nonew;
-    ((Mat_SeqAIJ *)(A->data))->nonew = 0; // so that new nonzero locations are allowed
+    oldValA                        = ((Mat_SeqAIJ *)A->data)->nonew;
+    ((Mat_SeqAIJ *)A->data)->nonew = 0; // so that new nonzero locations are allowed
   }
   if (B) {
-    oldValB                          = ((Mat_SeqAIJ *)(B->data))->nonew;
-    ((Mat_SeqAIJ *)(B->data))->nonew = 0;
+    oldValB                        = ((Mat_SeqAIJ *)B->data)->nonew;
+    ((Mat_SeqAIJ *)B->data)->nonew = 0;
   }
 
   PetscCall(MatGetOwnershipRange(Y, &start, &end));
@@ -49,8 +49,8 @@ PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y, PetscScalar a)
   PetscCall(MatAssemblyBegin(Y, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(Y, MAT_FINAL_ASSEMBLY));
   PetscCall(MatSetOption(Y, MAT_NO_OFF_PROC_ENTRIES, prevoption));
-  if (A) ((Mat_SeqAIJ *)(A->data))->nonew = oldValA;
-  if (B) ((Mat_SeqAIJ *)(B->data))->nonew = oldValB;
+  if (A) ((Mat_SeqAIJ *)A->data)->nonew = oldValA;
+  if (B) ((Mat_SeqAIJ *)B->data)->nonew = oldValB;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
