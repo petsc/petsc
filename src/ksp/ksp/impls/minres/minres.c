@@ -824,7 +824,6 @@ PetscErrorCode KSPMINRESGetUseQLP(KSP ksp, PetscBool *qlp)
    QLP variant adapted from: https://stanford.edu/group/SOL/software/minresqlp/minresqlp-matlab/CPS11.zip
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCG`, `KSPCR`, `KSPMINRESGetUseQLP()`, `KSPMINRESSetUseQLP()`, `KSPMINRESSetRadius()`
-          `KSPMINRESGetRadius()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp)
 {
