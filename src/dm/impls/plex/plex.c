@@ -4439,6 +4439,7 @@ PetscErrorCode DMPlexStratify(DM dm)
   PetscCall(PetscLogEventBegin(DMPLEX_Stratify, dm, 0, 0, 0));
 
   // Create depth label
+  PetscCall(DMRemoveLabel(dm, "depth", NULL));
   PetscCall(DMCreateLabel(dm, "depth"));
   PetscCall(DMPlexGetDepthLabel(dm, &label));
 
