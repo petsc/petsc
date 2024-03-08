@@ -95,32 +95,6 @@ CLINKER = ${PCC_LINKER} ${PCC_LINKER_FLAGS} ${${CLANGUAGE}FLAGS}
 FLINKER = ${FC_LINKER} ${FC_LINKER_FLAGS} ${FFLAGS}
 CXXLINKER = ${CXX_LINKER} ${CXX_LINKER_FLAGS} ${CXXFLAGS}
 #
-# Defines all libraries needed for using linear and nonlinear solvers,
-# and all lower level PETSc components (such as vectors and matrices).
-# The order of listing these libraries is important!
-#
-
-PETSC_SYS_LIB_BASIC            = -lpetscsys
-PETSC_VEC_LIB_BASIC            = -lpetscvec ${PETSC_SYS_LIB_BASIC}
-PETSC_MAT_LIB_BASIC            = -lpetscmat ${PETSC_VEC_LIB_BASIC}
-PETSC_DM_LIB_BASIC             = -lpetscdm ${PETSC_MAT_LIB_BASIC}
-PETSC_KSP_LIB_BASIC            = -lpetscksp ${PETSC_DM_LIB_BASIC}
-PETSC_SNES_LIB_BASIC           = -lpetscsnes ${PETSC_KSP_LIB_BASIC}
-PETSC_TS_LIB_BASIC             = -lpetscts ${PETSC_SNES_LIB_BASIC}
-PETSC_TAO_LIB_BASIC            = -lpetsctao ${PETSC_SNES_LIB_BASIC}
-PETSC_LIB_BASIC                = -lpetsctao ${PETSC_TS_LIB_BASIC}
-
-PETSC_SYS_LIB            = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_SYS_LIB_BASIC}  ${PETSC_EXTERNAL_LIB_BASIC}
-PETSC_VEC_LIB            = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_VEC_LIB_BASIC}  ${PETSC_EXTERNAL_LIB_BASIC}
-PETSC_MAT_LIB            = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_MAT_LIB_BASIC}  ${PETSC_EXTERNAL_LIB_BASIC}
-PETSC_DM_LIB             = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_DM_LIB_BASIC}   ${PETSC_EXTERNAL_LIB_BASIC}
-PETSC_KSP_LIB            = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_KSP_LIB_BASIC}  ${PETSC_EXTERNAL_LIB_BASIC}
-PETSC_SNES_LIB           = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_SNES_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
-PETSC_TS_LIB             = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_TS_LIB_BASIC}   ${PETSC_EXTERNAL_LIB_BASIC}
-PETSC_TAO_LIB            = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_TAO_LIB_BASIC}  ${PETSC_EXTERNAL_LIB_BASIC}
-PETSC_LIB                = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_LIB_BASIC}      ${PETSC_EXTERNAL_LIB_BASIC}
-
-#
 #  Escape codes to change the text color on xterms and terminals
 #
 PETSC_TEXT_HILIGHT = "\033[1;31m"

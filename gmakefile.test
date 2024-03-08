@@ -224,7 +224,7 @@ endef
 ifeq ($(libpetscall),)
 PETSC_TEST_LIB = $(PETSC_LIB)
 else
-PETSC_TEST_LIB = $(C_SH_LIB_PATH) $(PETSC_EXTERNAL_LIB_BASIC)
+PETSC_TEST_LIB = $(PETSC_EXTERNAL_LIB_BASIC)
 endif
 
 # manually list some library dependencies to check for circular dependencies

@@ -428,12 +428,8 @@ prepend-path PATH "%s"
           i.include = [i.include]
         includes.extend(i.include)
         self.addMakeMacro(i.PACKAGE.replace('-','_')+'_INCLUDE',self.headers.toStringNoDupes(i.include))
-    if self.framework.argDB['with-single-library']:
-      self.petsclib = '-lpetsc'
-    else:
-      self.petsclib = '-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys'
+
     self.complibs = self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split()
-    self.PETSC_WITH_EXTERNAL_LIB = self.libraries.toStringNoDupes(['-L${PETSC_DIR}/${PETSC_ARCH}/lib', self.petsclib]+self.packagelibs+self.complibs)
     self.PETSC_EXTERNAL_LIB_BASIC = self.libraries.toStringNoDupes(self.packagelibs+self.complibs)
 
     self.addMakeMacro('PETSC_EXTERNAL_LIB_BASIC',self.PETSC_EXTERNAL_LIB_BASIC)
@@ -449,40 +445,35 @@ prepend-path PATH "%s"
       self.addMakeMacro('PETSC_FC_INCLUDES',self.headers.toStringNoDupes(allincludes,modinc(allincludes)))
       self.addMakeMacro('PETSC_FC_INCLUDES_INSTALL',self.headers.toStringNoDupes(allincludes_install,modinc(allincludes_install)))
 
-    self.addDefine('LIB_DIR','"'+os.path.join(self.installdir.dir,'lib')+'"')
+    LIB_DIR = os.path.join(self.installdir.dir,'lib')
+    self.addDefine('LIB_DIR','"'+LIB_DIR+'"')
 
     if self.framework.argDB['with-single-library']:
-      # overrides the values set in conf/variables
+      self.petsclib = '-lpetsc'
+      self.addDefine('USE_SINGLE_LIBRARY', '1')
       self.addMakeMacro('LIBNAME','${INSTALL_LIB_DIR}/libpetsc.${AR_LIB_SUFFIX}')
       self.addMakeMacro('SHLIBS','libpetsc')
-      self.addMakeMacro('PETSC_LIB_BASIC','-lpetsc')
-      self.addMakeMacro('PETSC_KSP_LIB_BASIC','-lpetsc')
-      self.addMakeMacro('PETSC_TS_LIB_BASIC','-lpetsc')
-      self.addMakeMacro('PETSC_TAO_LIB_BASIC','-lpetsc')
-      self.addMakeMacro('PETSC_WITH_EXTERNAL_LIB',self.PETSC_WITH_EXTERNAL_LIB)
-      self.addDefine('USE_SINGLE_LIBRARY', '1')
-      if self.sharedlibraries.useShared:
-        self.addMakeMacro('PETSC_SYS_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
-        self.addMakeMacro('PETSC_VEC_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
-        self.addMakeMacro('PETSC_MAT_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
-        self.addMakeMacro('PETSC_DM_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
-        self.addMakeMacro('PETSC_KSP_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
-        self.addMakeMacro('PETSC_SNES_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
-        self.addMakeMacro('PETSC_TS_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
-        self.addMakeMacro('PETSC_TAO_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
-        self.addMakeMacro('PETSC_CHARACTERISTIC_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
-        self.addMakeMacro('PETSC_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
-      else:
-        self.addMakeMacro('PETSC_SYS_LIB','${PETSC_WITH_EXTERNAL_LIB}')
-        self.addMakeMacro('PETSC_VEC_LIB','${PETSC_WITH_EXTERNAL_LIB}')
-        self.addMakeMacro('PETSC_MAT_LIB','${PETSC_WITH_EXTERNAL_LIB}')
-        self.addMakeMacro('PETSC_DM_LIB','${PETSC_WITH_EXTERNAL_LIB}')
-        self.addMakeMacro('PETSC_KSP_LIB','${PETSC_WITH_EXTERNAL_LIB}')
-        self.addMakeMacro('PETSC_SNES_LIB','${PETSC_WITH_EXTERNAL_LIB}')
-        self.addMakeMacro('PETSC_TS_LIB','${PETSC_WITH_EXTERNAL_LIB}')
-        self.addMakeMacro('PETSC_TAO_LIB','${PETSC_WITH_EXTERNAL_LIB}')
-        self.addMakeMacro('PETSC_CHARACTERISTIC_LIB','${PETSC_WITH_EXTERNAL_LIB}')
-        self.addMakeMacro('PETSC_LIB','${PETSC_WITH_EXTERNAL_LIB}')
+      self.addMakeMacro('PETSC_WITH_EXTERNAL_LIB',self.libraries.toStringNoDupes(['-L'+LIB_DIR, '-lpetsc']+self.packagelibs+self.complibs))
+      self.addMakeMacro('PETSC_SYS_LIB','${PETSC_WITH_EXTERNAL_LIB}')
+      self.addMakeMacro('PETSC_VEC_LIB','${PETSC_WITH_EXTERNAL_LIB}')
+      self.addMakeMacro('PETSC_MAT_LIB','${PETSC_WITH_EXTERNAL_LIB}')
+      self.addMakeMacro('PETSC_DM_LIB','${PETSC_WITH_EXTERNAL_LIB}')
+      self.addMakeMacro('PETSC_KSP_LIB','${PETSC_WITH_EXTERNAL_LIB}')
+      self.addMakeMacro('PETSC_SNES_LIB','${PETSC_WITH_EXTERNAL_LIB}')
+      self.addMakeMacro('PETSC_TS_LIB','${PETSC_WITH_EXTERNAL_LIB}')
+      self.addMakeMacro('PETSC_TAO_LIB','${PETSC_WITH_EXTERNAL_LIB}')
+    else:
+      self.petsclib = '-lpetsctao -lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys'
+      self.addMakeMacro('PETSC_SYS_LIB', self.libraries.toStringNoDupes(['-L'+LIB_DIR,'-lpetscsys']+self.packagelibs+self.complibs))
+      self.addMakeMacro('PETSC_VEC_LIB', self.libraries.toStringNoDupes(['-L'+LIB_DIR,'-lpetscvec','-lpetscsys']+self.packagelibs+self.complibs))
+      self.addMakeMacro('PETSC_MAT_LIB', self.libraries.toStringNoDupes(['-L'+LIB_DIR,'-lpetscmat','-lpetscvec','-lpetscsys']+self.packagelibs+self.complibs))
+      self.addMakeMacro('PETSC_DM_LIB',  self.libraries.toStringNoDupes(['-L'+LIB_DIR,'-lpetscdm','-lpetscmat','-lpetscvec','-lpetscsys']+self.packagelibs+self.complibs))
+      self.addMakeMacro('PETSC_KSP_LIB', self.libraries.toStringNoDupes(['-L'+LIB_DIR,'-lpetscksp','-lpetscdm','-lpetscmat','-lpetscvec','-lpetscsys']+self.packagelibs+self.complibs))
+      self.addMakeMacro('PETSC_SNES_LIB',self.libraries.toStringNoDupes(['-L'+LIB_DIR,'-lpetscsnes','-lpetscksp','-lpetscdm','-lpetscmat','-lpetscvec','-lpetscsys']+self.packagelibs+self.complibs))
+      self.addMakeMacro('PETSC_TS_LIB',  self.libraries.toStringNoDupes(['-L'+LIB_DIR,'-lpetscts','-lpetscsnes','-lpetscksp','-lpetscdm','-lpetscmat','-lpetscvec','-lpetscsys']+self.packagelibs+self.complibs))
+      self.addMakeMacro('PETSC_TAO_LIB', self.libraries.toStringNoDupes(['-L'+LIB_DIR,'-lpetsctao','-lpetscts','-lpetscsnes','-lpetscksp','-lpetscdm','-lpetscmat','-lpetscvec','-lpetscsys']+self.packagelibs+self.complibs))
+    self.addMakeMacro('PETSC_LIB','${PETSC_TAO_LIB}')
+    self.addMakeMacro('PETSC_LIB_BASIC',self.petsclib)
 
     if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib')):
       os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib'))
