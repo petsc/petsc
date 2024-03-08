@@ -71,7 +71,8 @@ static PetscErrorCode PCDestroy_HPDDM(PC pc)
 
 static inline PetscErrorCode PCHPDDMSetAuxiliaryMat_Private(PC pc, IS is, Mat A, PetscBool deflation)
 {
-  PC_HPDDM *data = (PC_HPDDM *)pc->data;
+  PC_HPDDM                   *data = (PC_HPDDM *)pc->data;
+  PCHPDDMCoarseCorrectionType type = data->correction;
 
   PetscFunctionBegin;
   if (is) {
@@ -80,6 +81,7 @@ static inline PetscErrorCode PCHPDDMSetAuxiliaryMat_Private(PC pc, IS is, Mat A,
       PetscCall(PCReset_HPDDM(pc));
       pc->setfromoptionscalled = 0;
       pc->setupcalled          = 0;
+      data->correction         = type;
     }
     PetscCall(ISDestroy(&data->is));
     data->is = is;
@@ -608,8 +610,8 @@ static PetscErrorCode PCView_HPDDM(PC pc, PetscViewer viewer)
 static PetscErrorCode PCPreSolve_HPDDM(PC pc, KSP ksp, Vec, Vec)
 {
   PC_HPDDM *data = (PC_HPDDM *)pc->data;
-  PetscBool flg;
   Mat       A;
+  PetscBool flg;
 
   PetscFunctionBegin;
   if (ksp) {
@@ -617,6 +619,37 @@ static PetscErrorCode PCPreSolve_HPDDM(PC pc, KSP ksp, Vec, Vec)
     if (flg && !data->normal) {
       PetscCall(KSPGetOperators(ksp, &A, nullptr));
       PetscCall(MatCreateVecs(A, nullptr, &data->normal)); /* temporary Vec used in PCApply_HPDDMShell() for coarse grid corrections */
+    } else if (!flg) {
+      PetscCall(PetscObjectTypeCompareAny((PetscObject)ksp, &flg, KSPCG, KSPGROPPCG, KSPPIPECG, KSPPIPECGRR, KSPPIPELCG, KSPPIPEPRCG, KSPPIPECG2, KSPSTCG, KSPFCG, KSPPIPEFCG, KSPMINRES, KSPNASH, KSPSYMMLQ, ""));
+      if (!flg) {
+        PetscCall(PetscObjectTypeCompare((PetscObject)ksp, KSPHPDDM, &flg));
+        if (flg) {
+          KSPHPDDMType type;
+          PetscCall(KSPHPDDMGetType(ksp, &type));
+          flg = (type == KSP_HPDDM_TYPE_CG || type == KSP_HPDDM_TYPE_BCG || type == KSP_HPDDM_TYPE_BFBCG ? PETSC_TRUE : PETSC_FALSE);
+        }
+      }
+    }
+    if (flg) {
+      if (data->correction == PC_HPDDM_COARSE_CORRECTION_DEFLATED) {
+        PetscCall(PetscOptionsHasName(((PetscObject)pc)->options, ((PetscObject)pc)->prefix, "-pc_hpddm_coarse_correction", &flg));
+        PetscCheck(flg, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_INCOMP, "PCHPDDMCoarseCorrectionType %s is known to be not symmetric, but KSPType %s requires a symmetric PC, if you insist on using this configuration, use the additional option -%spc_hpddm_coarse_correction %s, or alternatively, switch to a symmetric PCHPDDMCoarseCorrectionType such as %s",
+                   PCHPDDMCoarseCorrectionTypes[data->correction], ((PetscObject)ksp)->type_name, ((PetscObject)pc)->prefix ? ((PetscObject)pc)->prefix : "", PCHPDDMCoarseCorrectionTypes[data->correction], PCHPDDMCoarseCorrectionTypes[PC_HPDDM_COARSE_CORRECTION_BALANCED]);
+      }
+      for (PetscInt n = 0; n < data->N; ++n) {
+        if (data->levels[n]->pc) {
+          PetscCall(PetscObjectTypeCompare((PetscObject)data->levels[n]->pc, PCASM, &flg));
+          if (flg) {
+            PCASMType type;
+            PetscCall(PCASMGetType(data->levels[n]->pc, &type));
+            if (type == PC_ASM_RESTRICT || type == PC_ASM_INTERPOLATE) {
+              PetscCall(PetscOptionsHasName(((PetscObject)data->levels[n]->pc)->options, ((PetscObject)data->levels[n]->pc)->prefix, "-pc_asm_type", &flg));
+              PetscCheck(flg, PetscObjectComm((PetscObject)data->levels[n]->pc), PETSC_ERR_ARG_INCOMP, "PCASMType %s is known to be not symmetric, but KSPType %s requires a symmetric PC, if you insist on using this configuration, use the additional option -%spc_asm_type %s, or alternatively, switch to a symmetric PCASMType such as %s", PCASMTypes[type],
+                         ((PetscObject)ksp)->type_name, ((PetscObject)data->levels[n]->pc)->prefix, PCASMTypes[type], PCASMTypes[PC_ASM_BASIC]);
+            }
+          }
+        }
+      }
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
