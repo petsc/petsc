@@ -153,7 +153,7 @@ c99-mlib-static-py:
 clang-uni:
   extends: .stage-1
   variables:
-    CONFIG_OPTS: --with-cc=clang --with-cxx=clang++ --with-mpi=0
+    CONFIG_OPTS: --with-cc=clang --with-cxx=clang++ --with-mpi=0 --with-strict-petscerrorcode
     TEST_SEARCH: snes_tutorials-ex48%
 
 petsc4py-install:
