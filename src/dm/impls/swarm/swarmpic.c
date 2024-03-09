@@ -32,10 +32,9 @@
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal min[], PetscReal max[], PetscInt npoints[], InsertMode mode)
 {
-  PetscReal          gmin[] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MAX_REAL};
-  PetscReal          gmax[] = {PETSC_MIN_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
-  PetscInt           i, j, k, N, bs, b, n_estimate, n_curr, n_new_est, p, n_found;
-  Vec                coorlocal;
+  PetscReal          lmin[] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MAX_REAL};
+  PetscReal          lmax[] = {PETSC_MIN_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
+  PetscInt           i, j, k, bs, b, n_estimate, n_curr, n_new_est, p, n_found;
   const PetscScalar *_coor;
   DM                 celldm;
   PetscReal          dx[3];
@@ -50,18 +49,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal 
   PetscFunctionBegin;
   DMSWARMPICVALID(dm);
   PetscCall(DMSwarmGetCellDM(dm, &celldm));
-  PetscCall(DMGetCoordinatesLocal(celldm, &coorlocal));
-  PetscCall(VecGetSize(coorlocal, &N));
-  PetscCall(VecGetBlockSize(coorlocal, &bs));
-  N = N / bs;
-  PetscCall(VecGetArrayRead(coorlocal, &_coor));
-  for (i = 0; i < N; i++) {
-    for (b = 0; b < bs; b++) {
-      gmin[b] = PetscMin(gmin[b], PetscRealPart(_coor[bs * i + b]));
-      gmax[b] = PetscMax(gmax[b], PetscRealPart(_coor[bs * i + b]));
-    }
-  }
-  PetscCall(VecRestoreArrayRead(coorlocal, &_coor));
+  PetscCall(DMGetLocalBoundingBox(celldm, lmin, lmax));
+  PetscCall(DMGetCoordinateDim(celldm, &bs));
 
   for (b = 0; b < bs; b++) {
     if (npoints[b] > 1) {
@@ -86,8 +75,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal 
         ijk[2] = k;
         for (b = 0; b < bs; b++) xp[b] = min[b] + ijk[b] * dx[b];
         for (b = 0; b < bs; b++) {
-          if (xp[b] < gmin[b]) point_inside = PETSC_FALSE;
-          if (xp[b] > gmax[b]) point_inside = PETSC_FALSE;
+          if (xp[b] < lmin[b]) point_inside = PETSC_FALSE;
+          if (xp[b] > lmax[b]) point_inside = PETSC_FALSE;
         }
         if (point_inside) n_estimate++;
       }
@@ -114,8 +103,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal 
         ijk[2] = k;
         for (b = 0; b < bs; b++) xp[b] = min[b] + ijk[b] * dx[b];
         for (b = 0; b < bs; b++) {
-          if (xp[b] < gmin[b]) point_inside = PETSC_FALSE;
-          if (xp[b] > gmax[b]) point_inside = PETSC_FALSE;
+          if (xp[b] < lmin[b]) point_inside = PETSC_FALSE;
+          if (xp[b] > lmax[b]) point_inside = PETSC_FALSE;
         }
         if (point_inside) {
           for (b = 0; b < bs; b++) _pos[bs * n_estimate + b] = xp[b];

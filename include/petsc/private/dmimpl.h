@@ -86,7 +86,7 @@ struct _DMOps {
   PetscErrorCode (*locatepoints)(DM, Vec, DMPointLocationType, PetscSF);
   PetscErrorCode (*getneighbors)(DM, PetscInt *, const PetscMPIInt **);
   PetscErrorCode (*getboundingbox)(DM, PetscReal *, PetscReal *);
-  PetscErrorCode (*getlocalboundingbox)(DM, PetscReal *, PetscReal *);
+  PetscErrorCode (*getlocalboundingbox)(DM, PetscReal[], PetscReal[], PetscInt[], PetscInt[]);
   PetscErrorCode (*locatepointssubdomain)(DM, Vec, PetscMPIInt **);
 
   PetscErrorCode (*projectfunctionlocal)(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **, InsertMode, Vec);
@@ -531,6 +531,7 @@ static inline PetscErrorCode DMGetGlobalFieldOffset_Private(DM dm, PetscInt poin
 }
 
 PETSC_EXTERN PetscErrorCode DMGetCoordinateDegree_Internal(DM, PetscInt *);
+PETSC_INTERN PetscErrorCode DMGetLocalBoundingBox_Coordinates(DM, PetscReal[], PetscReal[], PetscInt[], PetscInt[]);
 
 PETSC_EXTERN PetscErrorCode DMGetBasisTransformDM_Internal(DM, DM *);
 PETSC_EXTERN PetscErrorCode DMGetBasisTransformVec_Internal(DM, Vec *);

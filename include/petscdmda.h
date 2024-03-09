@@ -103,6 +103,7 @@ PETSC_EXTERN PetscErrorCode DMDASetCoordinateName(DM, PetscInt, const char[]);
 PETSC_EXTERN PetscErrorCode DMDAGetCoordinateName(DM, PetscInt, const char **);
 
 PETSC_EXTERN PetscErrorCode DMDASetBoundaryType(DM, DMBoundaryType, DMBoundaryType, DMBoundaryType);
+PETSC_EXTERN PetscErrorCode DMDAGetBoundaryType(DM, DMBoundaryType *, DMBoundaryType *, DMBoundaryType *);
 PETSC_EXTERN PetscErrorCode DMDASetDof(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMDAGetDof(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMDASetOverlap(DM, PetscInt, PetscInt, PetscInt);
