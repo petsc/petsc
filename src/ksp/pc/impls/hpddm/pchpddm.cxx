@@ -1957,6 +1957,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         if (!ctx) {
           if (PetscBool3ToBool(data->Neumann)) sub = &data->aux;
           else {
+            PetscBool flg;
             if (overlap != -1) {
               Harmonic              h;
               Mat                   A0, *a;                           /* with an SVD: [ A_00  A_01       ] */
@@ -1964,7 +1965,6 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               const PetscInt       *i[2], bs = PetscAbs(P->cmap->bs); /* with a GEVP: [ A_00  A_01       ] */
               PetscInt              n[2];                             /*              [ A_10  A_11  A_12 ] */
               std::vector<PetscInt> v[2];                             /*              [       A_21  A_22 ] */
-              PetscBool             flg;
 
               PetscCall(ISDuplicate(data->is, ov));
               if (overlap > 1) PetscCall(MatIncreaseOverlap(P, 1, ov, overlap - 1));
@@ -2126,7 +2126,15 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               PetscCall(MatShellSetOperation(data->aux, MATOP_DESTROY, (void (*)(void))MatDestroy_Harmonic));
               PetscCall(MatDestroySubMatrices(1, &a));
             }
-            if (overlap != 1 || !subdomains) PetscCall(MatCreateSubMatrices(uaux ? uaux : P, 1, is, is, MAT_INITIAL_MATRIX, &sub));
+            if (overlap != 1 || !subdomains) {
+              PetscCall(MatCreateSubMatrices(uaux ? uaux : P, 1, is, is, MAT_INITIAL_MATRIX, &sub));
+              if (ismatis) {
+                PetscCall(MatISGetLocalMat(C, &N));
+                PetscCall(PetscObjectTypeCompare((PetscObject)N, MATSEQSBAIJ, &flg));
+                if (flg) PetscCall(MatConvert(sub[0], MATSEQSBAIJ, MAT_INPLACE_MATRIX, sub));
+                PetscCall(MatISRestoreLocalMat(C, &N));
+              }
+            }
             if (uaux) {
               PetscCall(MatDestroy(&uaux));
               PetscCall(MatConvert(sub[0], MATSEQSBAIJ, MAT_INPLACE_MATRIX, sub));
