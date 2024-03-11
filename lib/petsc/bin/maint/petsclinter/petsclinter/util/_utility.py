@@ -212,10 +212,10 @@ def get_petsc_extra_includes(petsc_dir: Path, petsc_arch: str) -> list[str]:
   mpi_includes   = []
   raw_cxx_flags  = []
   with open(petsc_dir/petsc_arch/'lib'/'petsc'/'conf'/'petscvariables', 'r') as pv:
-    cc_includes_re  = re.compile('^PETSC_CC_INCLUDES\s*=')
-    mpi_includes_re = re.compile('^MPI_INCLUDE\s*=')
-    mpi_show_re     = re.compile('^MPICC_SHOW\s*=')
-    cxx_flags_re    = re.compile('^CXX_FLAGS\s*=')
+    cc_includes_re  = re.compile(r'^PETSC_CC_INCLUDES\s*=')
+    mpi_includes_re = re.compile(r'^MPI_INCLUDE\s*=')
+    mpi_show_re     = re.compile(r'^MPICC_SHOW\s*=')
+    cxx_flags_re    = re.compile(r'^CXX_FLAGS\s*=')
 
     def split_and_strip(line: str) -> list[str]:
       return line.split('=', maxsplit=1)[1].split()
