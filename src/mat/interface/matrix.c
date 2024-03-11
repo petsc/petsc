@@ -1487,14 +1487,16 @@ PetscErrorCode MatSetValues(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt
     PetscInt i, j;
 
     PetscCheck(!mat->factortype, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
-    for (i = 0; i < m; i++) {
-      for (j = 0; j < n; j++) {
-        if (mat->erroriffailure && PetscIsInfOrNanScalar(v[i * n + j]))
+    if (v) {
+      for (i = 0; i < m; i++) {
+        for (j = 0; j < n; j++) {
+          if (mat->erroriffailure && PetscIsInfOrNanScalar(v[i * n + j]))
 #if defined(PETSC_USE_COMPLEX)
-          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_FP, "Inserting %g+i%g at matrix entry (%" PetscInt_FMT ",%" PetscInt_FMT ")", (double)PetscRealPart(v[i * n + j]), (double)PetscImaginaryPart(v[i * n + j]), idxm[i], idxn[j]);
+            SETERRQ(PETSC_COMM_SELF, PETSC_ERR_FP, "Inserting %g+i%g at matrix entry (%" PetscInt_FMT ",%" PetscInt_FMT ")", (double)PetscRealPart(v[i * n + j]), (double)PetscImaginaryPart(v[i * n + j]), idxm[i], idxn[j]);
 #else
-          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_FP, "Inserting %g at matrix entry (%" PetscInt_FMT ",%" PetscInt_FMT ")", (double)v[i * n + j], idxm[i], idxn[j]);
+            SETERRQ(PETSC_COMM_SELF, PETSC_ERR_FP, "Inserting %g at matrix entry (%" PetscInt_FMT ",%" PetscInt_FMT ")", (double)v[i * n + j], idxm[i], idxn[j]);
 #endif
+        }
       }
     }
     for (i = 0; i < m; i++) PetscCheck(idxm[i] < mat->rmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot insert in row %" PetscInt_FMT ", maximum is %" PetscInt_FMT, idxm[i], mat->rmap->N - 1);

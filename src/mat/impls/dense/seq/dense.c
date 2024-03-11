@@ -1213,10 +1213,10 @@ static PetscErrorCode MatSetValues_SeqDense(Mat A, PetscInt m, const PetscInt in
             continue;
           }
           PetscCheck(indexm[i] < A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT, indexm[i], A->rmap->n - 1);
-          av[indexn[j] * mat->lda + indexm[i]] = v[idx++];
+          av[indexn[j] * mat->lda + indexm[i]] = v ? v[idx++] : (idx++, 0.0);
         }
       }
-    } else {
+    } else if (v) {
       for (j = 0; j < n; j++) {
         if (indexn[j] < 0) {
           idx += m;
@@ -1247,10 +1247,10 @@ static PetscErrorCode MatSetValues_SeqDense(Mat A, PetscInt m, const PetscInt in
             continue;
           }
           PetscCheck(indexn[j] < A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT, indexn[j], A->cmap->n - 1);
-          av[indexn[j] * mat->lda + indexm[i]] = v[idx++];
+          av[indexn[j] * mat->lda + indexm[i]] = v ? v[idx++] : (idx++, 0.0);
         }
       }
-    } else {
+    } else if (v) {
       for (i = 0; i < m; i++) {
         if (indexm[i] < 0) {
           idx += n;
