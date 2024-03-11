@@ -103,8 +103,8 @@ public:
   LockGuard lock_guard() noexcept;
 
 private:
-  pool_type pool_{};
-  int       locked_{};
+  pool_type pool_;
+  int       locked_ = 0;
 
   struct AllocationHeader;
 
