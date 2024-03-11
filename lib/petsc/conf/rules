@@ -87,6 +87,7 @@ clean:: clean-legacy
           grep -v "Werror=format-security" | \
           grep -v " -Werror " | \
           grep -v " was built for newer macOS version " | \
+          grep -v "duplicate -rpath" | \
           grep -v "only the last is used because nvcc can only accept a single optimization setting" | \
          grep -E -i '(Error|warning|Can|Unresolved)' >> /dev/null;\
          if [ "$$?" != 1 ]; then \
@@ -136,6 +137,7 @@ clean:: clean-legacy
           grep -v "Werror=format-security" | \
           grep -v " -Werror " | \
           grep -v " was built for newer macOS version " | \
+          grep -v "duplicate -rpath" | \
          grep -E -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \
          if [ "$$?" != 1 ]; then \
           printf ${PETSC_TEXT_HILIGHT}"*******************Error detected during compile or link!*******************\n";\
