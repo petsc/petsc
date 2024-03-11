@@ -915,8 +915,10 @@ static PetscErrorCode adaptToleranceFEM(PetscFE fem, Vec sol, PetscInt type, Pet
     PetscInt  rCellIdx[8], nr = 0, nrmax = (dim == 3) ? 8 : 2;
     PetscReal minRad = PETSC_INFINITY, r;
     for (c = cStart; c < cEnd; c++) {
-      PetscReal tt, v0[LANDAU_MAX_NQND * 3], detJ[LANDAU_MAX_NQND];
-      PetscCall(DMPlexComputeCellGeometryFEM(plex, c, quad, v0, NULL, NULL, detJ));
+      PetscReal tt, v0[LANDAU_MAX_NQND * 3], J[LANDAU_MAX_NQND * 9], invJ[LANDAU_MAX_NQND * 9], detJ[LANDAU_MAX_NQND];
+      PetscCall(DMPlexComputeCellGeometryFEM(plex, c, quad, v0, J, invJ, detJ));
+      (void)J;
+      (void)invJ;
       for (qj = 0; qj < Nq; ++qj) {
         tt = PetscSqr(v0[dim * qj + 0]) + PetscSqr(v0[dim * qj + 1]) + PetscSqr((dim == 3) ? v0[dim * qj + 2] : 0);
         r  = PetscSqrtReal(tt);
