@@ -526,7 +526,7 @@ PetscErrorCode PetscSFLinkSetUp_Host(PetscSF sf, PetscSFLink link, MPI_Datatype 
 #endif
   PetscCall(MPIPetsc_Type_compare(unit, MPI_2INT, &is2Int));
   PetscCall(MPIPetsc_Type_compare(unit, MPIU_2INT, &is2PetscInt));
-  /* TODO: shaell we also handle Fortran MPI_2REAL? */
+  /* TODO: should we also handle Fortran MPI_2REAL? */
   PetscCallMPI(MPI_Type_get_envelope(unit, &ni, &na, &nd, &combiner));
   link->isbuiltin = (combiner == MPI_COMBINER_NAMED) ? PETSC_TRUE : PETSC_FALSE; /* unit is MPI builtin */
   link->bs        = 1;                                                           /* default */

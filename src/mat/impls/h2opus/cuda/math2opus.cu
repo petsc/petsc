@@ -16,8 +16,7 @@
   #include <petscsf.h>
 
 /* math2opusutils */
-PETSC_INTERN PetscErrorCode PetscSFGetVectorSF(PetscSF, PetscInt, PetscInt, PetscInt, PetscSF *);
-PETSC_INTERN PetscErrorCode MatDenseGetH2OpusVectorSF(Mat, PetscSF, PetscSF *);
+PETSC_INTERN PetscErrorCode MatDenseGetH2OpusStridedSF(Mat, PetscSF, PetscSF *);
 PETSC_INTERN PetscErrorCode VecSign(Vec, Vec);
 PETSC_INTERN PetscErrorCode VecSetDelta(Vec, PetscInt);
 PETSC_INTERN PetscErrorCode MatApproximateNorm_Private(Mat, NormType, PetscInt, PetscReal *);
@@ -356,8 +355,8 @@ static PetscErrorCode MatMultNKernel_H2OPUS(Mat A, PetscBool transA, Mat B, Mat 
   if (usesf) {
     PetscInt n;
 
-    PetscCall(MatDenseGetH2OpusVectorSF(B, h2opus->sf, &bsf));
-    PetscCall(MatDenseGetH2OpusVectorSF(C, h2opus->sf, &csf));
+    PetscCall(MatDenseGetH2OpusStridedSF(B, h2opus->sf, &bsf));
+    PetscCall(MatDenseGetH2OpusStridedSF(C, h2opus->sf, &csf));
 
     PetscCall(MatH2OpusResizeBuffers_Private(A, B->cmap->N, C->cmap->N));
     PetscCall(PetscSFGetGraph(h2opus->sf, NULL, &n, NULL, NULL));
@@ -1862,8 +1861,8 @@ PetscErrorCode MatH2OpusLowRankUpdate(Mat A, Mat U, Mat V, PetscScalar s)
     if (usesf) {
       PetscInt n;
 
-      PetscCall(MatDenseGetH2OpusVectorSF(U, a->sf, &usf));
-      PetscCall(MatDenseGetH2OpusVectorSF(V, a->sf, &vsf));
+      PetscCall(MatDenseGetH2OpusStridedSF(U, a->sf, &usf));
+      PetscCall(MatDenseGetH2OpusStridedSF(V, a->sf, &vsf));
       PetscCall(MatH2OpusResizeBuffers_Private(A, U->cmap->N, V->cmap->N));
       PetscCall(PetscSFGetGraph(a->sf, NULL, &n, NULL, NULL));
       ldu = n;
