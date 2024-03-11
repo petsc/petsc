@@ -29,61 +29,6 @@ static PetscErrorCode MatMPISELLSetPreallocation_MPISELLCUDA(Mat B, PetscInt d_r
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMult_MPISELLCUDA(Mat A, Vec xx, Vec yy)
-{
-  Mat_MPISELL *a = (Mat_MPISELL *)A->data;
-  PetscInt     nt;
-
-  PetscFunctionBegin;
-  PetscCall(VecGetLocalSize(xx, &nt));
-  PetscCheck(nt == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible partition of A (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")", A->cmap->n, nt);
-  PetscCall(VecScatterBegin(a->Mvctx, xx, a->lvec, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall((*a->A->ops->mult)(a->A, xx, yy));
-  PetscCall(VecScatterEnd(a->Mvctx, xx, a->lvec, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall((*a->B->ops->multadd)(a->B, a->lvec, yy, yy));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatZeroEntries_MPISELLCUDA(Mat A)
-{
-  Mat_MPISELL *l = (Mat_MPISELL *)A->data;
-
-  PetscFunctionBegin;
-  PetscCall(MatZeroEntries(l->A));
-  PetscCall(MatZeroEntries(l->B));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatMultAdd_MPISELLCUDA(Mat A, Vec xx, Vec yy, Vec zz)
-{
-  Mat_MPISELL *a = (Mat_MPISELL *)A->data;
-  PetscInt     nt;
-
-  PetscFunctionBegin;
-  PetscCall(VecGetLocalSize(xx, &nt));
-  PetscCheck(nt == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible partition of A (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")", A->cmap->n, nt);
-  PetscCall(VecScatterBegin(a->Mvctx, xx, a->lvec, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall((*a->A->ops->multadd)(a->A, xx, yy, zz));
-  PetscCall(VecScatterEnd(a->Mvctx, xx, a->lvec, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall((*a->B->ops->multadd)(a->B, a->lvec, zz, zz));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatMultTranspose_MPISELLCUDA(Mat A, Vec xx, Vec yy)
-{
-  Mat_MPISELL *a = (Mat_MPISELL *)A->data;
-  PetscInt     nt;
-
-  PetscFunctionBegin;
-  PetscCall(VecGetLocalSize(xx, &nt));
-  PetscCheck(nt == A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible partition of A (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")", A->rmap->n, nt);
-  PetscUseTypeMethod(a->B, multtranspose, xx, a->lvec);
-  PetscUseTypeMethod(a->A, multtranspose, xx, yy);
-  PetscCall(VecScatterBegin(a->Mvctx, a->lvec, yy, ADD_VALUES, SCATTER_REVERSE));
-  PetscCall(VecScatterEnd(a->Mvctx, a->lvec, yy, ADD_VALUES, SCATTER_REVERSE));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatSetFromOptions_MPISELLCUDA(Mat, PetscOptionItems *)
 {
   return PETSC_SUCCESS;
@@ -125,12 +70,8 @@ PETSC_INTERN PetscErrorCode MatConvert_MPISELL_MPISELLCUDA(Mat B, MatType, MatRe
   if (a->lvec) PetscCall(VecSetType(a->lvec, VECSEQCUDA));
 
   A->ops->assemblyend    = MatAssemblyEnd_MPISELLCUDA;
-  A->ops->mult           = MatMult_MPISELLCUDA;
-  A->ops->multadd        = MatMultAdd_MPISELLCUDA;
-  A->ops->multtranspose  = MatMultTranspose_MPISELLCUDA;
   A->ops->setfromoptions = MatSetFromOptions_MPISELLCUDA;
   A->ops->destroy        = MatDestroy_MPISELLCUDA;
-  A->ops->zeroentries    = MatZeroEntries_MPISELLCUDA;
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATMPISELLCUDA));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatMPISELLSetPreallocation_C", MatMPISELLSetPreallocation_MPISELLCUDA));

@@ -29,61 +29,6 @@ static PetscErrorCode MatMPISELLSetPreallocation_MPISELLHIP(Mat B, PetscInt d_rl
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMult_MPISELLHIP(Mat A, Vec xx, Vec yy)
-{
-  Mat_MPISELL *a = (Mat_MPISELL *)A->data;
-  PetscInt     nt;
-
-  PetscFunctionBegin;
-  PetscCall(VecGetLocalSize(xx, &nt));
-  PetscCheck(nt == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible partition of A (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")", A->cmap->n, nt);
-  PetscCall(VecScatterBegin(a->Mvctx, xx, a->lvec, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall((*a->A->ops->mult)(a->A, xx, yy));
-  PetscCall(VecScatterEnd(a->Mvctx, xx, a->lvec, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall((*a->B->ops->multadd)(a->B, a->lvec, yy, yy));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatZeroEntries_MPISELLHIP(Mat A)
-{
-  Mat_MPISELL *l = (Mat_MPISELL *)A->data;
-
-  PetscFunctionBegin;
-  PetscCall(MatZeroEntries(l->A));
-  PetscCall(MatZeroEntries(l->B));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatMultAdd_MPISELLHIP(Mat A, Vec xx, Vec yy, Vec zz)
-{
-  Mat_MPISELL *a = (Mat_MPISELL *)A->data;
-  PetscInt     nt;
-
-  PetscFunctionBegin;
-  PetscCall(VecGetLocalSize(xx, &nt));
-  PetscCheck(nt == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible partition of A (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")", A->cmap->n, nt);
-  PetscCall(VecScatterBegin(a->Mvctx, xx, a->lvec, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall((*a->A->ops->multadd)(a->A, xx, yy, zz));
-  PetscCall(VecScatterEnd(a->Mvctx, xx, a->lvec, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall((*a->B->ops->multadd)(a->B, a->lvec, zz, zz));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatMultTranspose_MPISELLHIP(Mat A, Vec xx, Vec yy)
-{
-  Mat_MPISELL *a = (Mat_MPISELL *)A->data;
-  PetscInt     nt;
-
-  PetscFunctionBegin;
-  PetscCall(VecGetLocalSize(xx, &nt));
-  PetscCheck(nt == A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible partition of A (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")", A->rmap->n, nt);
-  PetscUseTypeMethod(a->B, multtranspose, xx, a->lvec);
-  PetscUseTypeMethod(a->A, multtranspose, xx, yy);
-  PetscCall(VecScatterBegin(a->Mvctx, a->lvec, yy, ADD_VALUES, SCATTER_REVERSE));
-  PetscCall(VecScatterEnd(a->Mvctx, a->lvec, yy, ADD_VALUES, SCATTER_REVERSE));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatSetFromOptions_MPISELLHIP(Mat, PetscOptionItems *)
 {
   return PETSC_SUCCESS;
@@ -125,12 +70,8 @@ PETSC_INTERN PetscErrorCode MatConvert_MPISELL_MPISELLHIP(Mat B, MatType, MatReu
   if (a->lvec) PetscCall(VecSetType(a->lvec, VECSEQHIP));
 
   A->ops->assemblyend    = MatAssemblyEnd_MPISELLHIP;
-  A->ops->mult           = MatMult_MPISELLHIP;
-  A->ops->multadd        = MatMultAdd_MPISELLHIP;
-  A->ops->multtranspose  = MatMultTranspose_MPISELLHIP;
   A->ops->setfromoptions = MatSetFromOptions_MPISELLHIP;
   A->ops->destroy        = MatDestroy_MPISELLHIP;
-  A->ops->zeroentries    = MatZeroEntries_MPISELLHIP;
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATMPISELLHIP));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatMPISELLSetPreallocation_C", MatMPISELLSetPreallocation_MPISELLHIP));
