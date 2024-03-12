@@ -4240,8 +4240,8 @@ static PetscErrorCode MatSeqAIJCUSPARSETriFactors_Destroy(Mat_SeqAIJCUSPARSETriF
 struct IJCompare {
   __host__ __device__ inline bool operator()(const thrust::tuple<PetscInt, PetscInt> &t1, const thrust::tuple<PetscInt, PetscInt> &t2)
   {
-    if (t1.get<0>() < t2.get<0>()) return true;
-    if (t1.get<0>() == t2.get<0>()) return t1.get<1>() < t2.get<1>();
+    if (thrust::get<0>(t1) < thrust::get<0>(t2)) return true;
+    if (thrust::get<0>(t1) == thrust::get<0>(t2)) return thrust::get<1>(t1) < thrust::get<1>(t2);
     return false;
   }
 };
@@ -4630,8 +4630,8 @@ PetscErrorCode MatSeqAIJCUSPARSERestoreArrayWrite(Mat A, PetscScalar **a)
 struct IJCompare4 {
   __host__ __device__ inline bool operator()(const thrust::tuple<int, int, PetscScalar, int> &t1, const thrust::tuple<int, int, PetscScalar, int> &t2)
   {
-    if (t1.get<0>() < t2.get<0>()) return true;
-    if (t1.get<0>() == t2.get<0>()) return t1.get<1>() < t2.get<1>();
+    if (thrust::get<0>(t1) < thrust::get<0>(t2)) return true;
+    if (thrust::get<0>(t1) == thrust::get<0>(t2)) return thrust::get<1>(t1) < thrust::get<1>(t2);
     return false;
   }
 };
