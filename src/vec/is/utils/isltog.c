@@ -218,6 +218,20 @@ static PetscErrorCode ISLocalToGlobalMappingDestroy_Hash(ISLocalToGlobalMapping 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode ISLocalToGlobalMappingResetBlockInfo_Private(ISLocalToGlobalMapping mapping)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscFree(mapping->info_procs));
+  PetscCall(PetscFree(mapping->info_numprocs));
+  if (mapping->info_indices) {
+    for (PetscInt i = 0; i < mapping->info_nproc; i++) PetscCall(PetscFree(mapping->info_indices[i]));
+    PetscCall(PetscFree(mapping->info_indices));
+  }
+  if (mapping->info_nodei) PetscCall(PetscFree(mapping->info_nodei[0]));
+  PetscCall(PetscFree2(mapping->info_nodec, mapping->info_nodei));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 #define GTOLTYPE _Basic
 #define GTOLNAME _Basic
 #define GTOLBS   mapping->bs
@@ -336,40 +350,139 @@ PetscErrorCode ISLocalToGlobalMappingViewFromOptions(ISLocalToGlobalMapping A, P
 /*@C
   ISLocalToGlobalMappingView - View a local to global mapping
 
-  Not Collective
+  Collective on viewer
 
   Input Parameters:
 + mapping - local to global mapping
 - viewer  - viewer
 
-  Level: advanced
+  Level: intermediate
 
 .seealso: [](sec_scatter), `PetscViewer`, `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreate()`
 @*/
 PetscErrorCode ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping, PetscViewer viewer)
 {
-  PetscInt    i;
-  PetscMPIInt rank;
-  PetscBool   iascii;
+  PetscBool         iascii, isbinary;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping, IS_LTOGM_CLASSID, 1);
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)mapping), &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
 
-  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)mapping), &rank));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
+  PetscCall(PetscViewerGetFormat(viewer, &format));
   if (iascii) {
-    PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)mapping, viewer));
-    PetscCall(PetscViewerASCIIPushSynchronized(viewer));
-    for (i = 0; i < mapping->n; i++) {
-      PetscInt bs = mapping->bs, g = mapping->indices[i];
-      if (bs == 1) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT " %" PetscInt_FMT "\n", rank, i, g));
-      else PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT ":%" PetscInt_FMT " %" PetscInt_FMT ":%" PetscInt_FMT "\n", rank, i * bs, (i + 1) * bs, g * bs, (g + 1) * bs));
+    if (format == PETSC_VIEWER_ASCII_MATLAB) {
+      const PetscInt *idxs;
+      IS              is;
+      const char     *name = ((PetscObject)mapping)->name;
+      char            iname[PETSC_MAX_PATH_LEN];
+
+      PetscCall(PetscSNPrintf(iname, sizeof(iname), "%sl2g", name ? name : ""));
+      PetscCall(ISLocalToGlobalMappingGetIndices(mapping, &idxs));
+      PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)viewer), mapping->n * mapping->bs, idxs, PETSC_USE_POINTER, &is));
+      PetscCall(PetscObjectSetName((PetscObject)is, iname));
+      PetscCall(ISView(is, viewer));
+      PetscCall(ISLocalToGlobalMappingRestoreIndices(mapping, &idxs));
+      PetscCall(ISDestroy(&is));
+    } else {
+      PetscMPIInt rank;
+
+      PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)mapping), &rank));
+      PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)mapping, viewer));
+      PetscCall(PetscViewerASCIIPushSynchronized(viewer));
+      for (PetscInt i = 0; i < mapping->n; i++) {
+        PetscInt bs = mapping->bs, g = mapping->indices[i];
+        if (bs == 1) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT " %" PetscInt_FMT "\n", rank, i, g));
+        else PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT ":%" PetscInt_FMT " %" PetscInt_FMT ":%" PetscInt_FMT "\n", rank, i * bs, (i + 1) * bs, g * bs, (g + 1) * bs));
+      }
+      PetscCall(PetscViewerFlush(viewer));
+      PetscCall(PetscViewerASCIIPopSynchronized(viewer));
     }
-    PetscCall(PetscViewerFlush(viewer));
-    PetscCall(PetscViewerASCIIPopSynchronized(viewer));
+  } else if (isbinary) {
+    PetscBool skipHeader;
+
+    PetscCall(PetscViewerSetUp(viewer));
+    PetscCall(PetscViewerBinaryGetSkipHeader(viewer, &skipHeader));
+    if (!skipHeader) {
+      PetscMPIInt size;
+      PetscInt    tr[3];
+
+      PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)viewer), &size));
+      tr[0] = IS_LTOGM_FILE_CLASSID;
+      tr[1] = mapping->bs;
+      tr[2] = size;
+      PetscCall(PetscViewerBinaryWrite(viewer, tr, 3, PETSC_INT));
+      PetscCall(PetscViewerBinaryWriteAll(viewer, &mapping->n, 1, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_INT));
+    }
+    /* write block indices */
+    PetscCall(PetscViewerBinaryWriteAll(viewer, mapping->indices, mapping->n, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_INT));
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  ISLocalToGlobalMappingLoad - Loads a local-to-global mapping that has been stored in binary format.
+
+  Collective on viewer
+
+  Input Parameters:
++ mapping - the newly loaded map, this needs to have been created with `ISLocalToGlobalMappingCreate()` or some related function before a call to `ISLocalToGlobalMappingLoad()`
+- viewer  - binary file viewer, obtained from `PetscViewerBinaryOpen()`
+
+  Level: intermediate
+
+.seealso: [](sec_scatter), `PetscViewer`, `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingView()`, `ISLocalToGlobalMappingCreate()`
+@*/
+PetscErrorCode ISLocalToGlobalMappingLoad(ISLocalToGlobalMapping mapping, PetscViewer viewer)
+{
+  PetscBool isbinary, skipHeader;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mapping, IS_LTOGM_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
+  PetscCheck(isbinary, PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Invalid viewer of type %s", ((PetscObject)viewer)->type_name);
+
+  /* reset previous data */
+  PetscCall(ISLocalToGlobalMappingResetBlockInfo_Private(mapping));
+
+  PetscCall(PetscViewerSetUp(viewer));
+  PetscCall(PetscViewerBinaryGetSkipHeader(viewer, &skipHeader));
+
+  /* When skipping header, it assumes bs and n have been already set */
+  if (!skipHeader) {
+    MPI_Comm comm = PetscObjectComm((PetscObject)viewer);
+    PetscInt tr[3], nold = mapping->n, *sizes, nmaps = PETSC_DECIDE, st = 0;
+
+    PetscCall(PetscViewerBinaryRead(viewer, tr, 3, NULL, PETSC_INT));
+    PetscCheck(tr[0] == IS_LTOGM_FILE_CLASSID, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Not a local-to-global map next in file");
+
+    mapping->bs = tr[1];
+    PetscCall(PetscMalloc1(tr[2], &sizes));
+    PetscCall(PetscViewerBinaryRead(viewer, sizes, tr[2], NULL, PETSC_INT));
+
+    /* consume the input, read multiple maps per process if needed */
+    PetscCall(PetscSplitOwnership(comm, &nmaps, &tr[2]));
+    PetscCallMPI(MPI_Exscan(&nmaps, &st, 1, MPIU_INT, MPI_SUM, comm));
+    mapping->n = 0;
+    for (PetscInt i = st; i < st + nmaps; i++) mapping->n += sizes[i];
+    PetscCall(PetscFree(sizes));
+
+    if (nold != mapping->n) {
+      if (mapping->dealloc_indices) PetscCall(PetscFree(mapping->indices));
+      mapping->indices = NULL;
+    }
+  }
+
+  /* read indices */
+  if (mapping->n && !mapping->indices) {
+    PetscCall(PetscMalloc1(mapping->n, &mapping->indices));
+    mapping->dealloc_indices = PETSC_TRUE;
+  }
+  PetscCall(PetscViewerBinaryReadAll(viewer, mapping->indices, mapping->n, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_INT));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -463,20 +576,6 @@ PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf, PetscInt start, ISLoca
   PetscCall(PetscSFBcastEnd(sf, MPIU_INT, globals, ltog, MPI_REPLACE));
   PetscCall(ISLocalToGlobalMappingCreate(comm, 1, maxlocal, ltog, PETSC_OWN_POINTER, mapping));
   PetscCall(PetscFree(globals));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode ISLocalToGlobalMappingResetBlockInfo_Private(ISLocalToGlobalMapping mapping)
-{
-  PetscFunctionBegin;
-  PetscCall(PetscFree(mapping->info_procs));
-  PetscCall(PetscFree(mapping->info_numprocs));
-  if (mapping->info_indices) {
-    for (PetscInt i = 0; i < mapping->info_nproc; i++) PetscCall(PetscFree(mapping->info_indices[i]));
-    PetscCall(PetscFree(mapping->info_indices));
-  }
-  if (mapping->info_nodei) PetscCall(PetscFree(mapping->info_nodei[0]));
-  PetscCall(PetscFree2(mapping->info_nodec, mapping->info_nodei));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

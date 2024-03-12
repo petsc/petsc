@@ -41,6 +41,7 @@ Changes: Development
 .. rubric:: IS:
 
 - Add ``ISLocalToGlobalMappingGetNodeInfo()`` and ``ISLocalToGlobalMappingRestoreNodeInfo()`` to access neighboring information of local indices
+- Add support to load an ``ISLocalToGlobalMapping`` via ``ISLocalToGlobalMappingLoad()`` from data previously stored using ``ISLocalToGlobalMappingView()``
 
 .. rubric:: VecScatter / PetscSF:
 

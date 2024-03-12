@@ -146,6 +146,7 @@ PETSC_EXTERN PetscErrorCode ISCreateStride(MPI_Comm, PetscInt, PetscInt, PetscIn
 PETSC_EXTERN PetscErrorCode ISStrideSetStride(IS, PetscInt, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode ISStrideGetInfo(IS, PetscInt *, PetscInt *);
 
+#define IS_LTOGM_FILE_CLASSID 1211217
 PETSC_EXTERN PetscClassId IS_LTOGM_CLASSID;
 
 /*E
@@ -189,6 +190,7 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF, PetscInt, IS
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingSetFromOptions(ISLocalToGlobalMapping);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingSetUp(ISLocalToGlobalMapping);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingView(ISLocalToGlobalMapping, PetscViewer);
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingLoad(ISLocalToGlobalMapping, PetscViewer);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingViewFromOptions(ISLocalToGlobalMapping, PetscObject, const char[]);
 
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *);
