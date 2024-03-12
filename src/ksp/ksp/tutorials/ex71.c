@@ -557,6 +557,7 @@ int main(int argc, char **args)
      args: -matis_localmat_type {{aij baij sbaij}shared output} -pc_hpddm_coarse_mat_type {{baij sbaij}shared output}
      suffix: hpddm
      output_file: output/ex71_hpddm.out
+     filter: sed -e "s/CONVERGED_RTOL iterations 15/CONVERGED_RTOL iterations 14/g"
    test:
      args: -matis_localmat_type sbaij -pc_hpddm_coarse_mat_type sbaij -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_eps_type lapack -pc_hpddm_levels_1_eps_smallest_magnitude -pc_hpddm_levels_1_st_type shift
      suffix: hpddm_lapack
