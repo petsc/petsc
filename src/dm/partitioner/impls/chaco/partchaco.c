@@ -57,7 +57,7 @@ PETSC_EXTERN int interface(int nvtxs, int *start, int *adjacency, int *vwgts, fl
 extern int FREE_GRAPH;
 #endif
 
-static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *partition)
+static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection edgeSection, PetscSection targetSection, PetscSection partSection, IS *partition)
 {
 #if defined(PETSC_HAVE_CHACO)
   enum {
@@ -130,6 +130,7 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
   }
   #endif
   if (part->usevwgt) PetscCall(PetscInfo(part, "PETSCPARTITIONERCHACO ignores vertex weights\n"));
+  if (part->useewgt) PetscCall(PetscInfo(part, "PETSCPARTITIONERCHACO ignores edge weights\n"));
   err = interface(nvtxs, (int *)start, (int *)adjacency, vwgts, ewgts, x, y, z, outassignname, outfilename, assignment, architecture, ndims_tot, mesh_dims, goal, global_method, local_method, rqi_flag, vmax, ndims, eigtol, seed);
   #if defined(PETSC_HAVE_UNISTD_H)
   {
