@@ -128,7 +128,7 @@ PetscErrorCode MatOrderingRegister(const char sname[], PetscErrorCode (*function
 
   Options Database Key:
 + -mat_view_ordering draw                      - plots matrix nonzero structure in new ordering
-- -pc_factor_mat_ordering_type <nd,natural,..> - ordering to use with `PC`s based on factorization, `MATLU`, `MATILU`, MATCHOLESKY`, `MATICC`
+- -pc_factor_mat_ordering_type <nd,natural,..> - ordering to use with `PC`s based on factorization, `PCLU`, `PCILU`, `PCCHOLESKY`, `PCICC`
 
   Level: intermediate
 
