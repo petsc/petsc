@@ -726,6 +726,11 @@ static PetscErrorCode KSPComputeOperators_SNES(KSP ksp, Mat A, Mat B, void *ctx)
   Note:
   If the matrices do not yet exist it attempts to create them based on options previously set for the `SNES` such as `-snes_mf`
 
+  Developer Note:
+  The functionality of this routine overlaps in a confusing way with the functionality of `SNESSetUpMatrixFree_Private()` which is called by
+  `SNESSetUp()` but sometimes `SNESSetUpMatrices()` is called without `SNESSetUp()` being called. A refactorization to simplify the
+  logic that handles the matrix-free case is desirable.
+
 .seealso: [](ch_snes), `SNES`, `SNESSetUp()`
 @*/
 PetscErrorCode SNESSetUpMatrices(SNES snes)
@@ -736,7 +741,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
   PetscFunctionBegin;
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(DMGetDMSNES(dm, &sdm));
-  if (!snes->jacobian && snes->mf) {
+  if (!snes->jacobian && snes->mf && !snes->mf_operator && !snes->jacobian_pre) {
     Mat   J;
     void *functx;
     PetscCall(MatCreateSNESMF(snes, &J));

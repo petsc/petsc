@@ -159,7 +159,7 @@ struct _p_SNES {
   Vec     *vwork; /* more work vectors for Jacobian approx */
   PetscInt nvwork;
 
-  PetscBool mf;          /* -snes_mf was used on this snes */
+  PetscBool mf;          /* -snes_mf OR -snes_mf_operator was used on this snes */
   PetscBool mf_operator; /* -snes_mf_operator was used on this snes */
   PetscInt  mf_version;  /* The version of snes_mf used */
 
