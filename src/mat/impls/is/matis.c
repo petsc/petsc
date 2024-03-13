@@ -8,6 +8,7 @@
 */
 
 #include <petsc/private/matisimpl.h> /*I "petscmat.h" I*/
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <petsc/private/sfimpl.h>
 #include <petsc/private/vecimpl.h>
 #include <petsc/private/hashseti.h>
@@ -2376,22 +2377,220 @@ static PetscErrorCode MatMultTransposeAdd_IS(Mat A, Vec v1, Vec v2, Vec v3)
 
 static PetscErrorCode MatView_IS(Mat A, PetscViewer viewer)
 {
-  Mat_IS     *a = (Mat_IS *)A->data;
-  PetscViewer sviewer;
-  PetscBool   isascii, view = PETSC_TRUE;
+  Mat_IS                *a = (Mat_IS *)A->data;
+  PetscViewer            sviewer;
+  PetscBool              isascii, isbinary, viewl2g = PETSC_FALSE, native;
+  PetscViewerFormat      format;
+  ISLocalToGlobalMapping rmap, cmap;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
-  if (isascii) {
-    PetscViewerFormat format;
-
-    PetscCall(PetscViewerGetFormat(viewer, &format));
-    if (format == PETSC_VIEWER_ASCII_INFO) view = PETSC_FALSE;
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
+  PetscCall(PetscViewerGetFormat(viewer, &format));
+  native = (PetscBool)(format == PETSC_VIEWER_NATIVE);
+  if (native) {
+    rmap = A->rmap->mapping;
+    cmap = A->cmap->mapping;
+  } else {
+    rmap = a->rmapping;
+    cmap = a->cmapping;
   }
-  if (!view) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
-  PetscCall(MatView(a->A, sviewer));
-  PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
+  if (isascii) {
+    if (format == PETSC_VIEWER_ASCII_INFO) PetscFunctionReturn(PETSC_SUCCESS);
+    if (format == PETSC_VIEWER_ASCII_INFO_DETAIL || format == PETSC_VIEWER_ASCII_MATLAB) viewl2g = PETSC_TRUE;
+  } else if (isbinary) {
+    PetscInt    tr[6], nr, nc;
+    char        lmattype[64] = {'\0'};
+    PetscMPIInt size;
+    PetscBool   skipHeader;
+    IS          is;
+
+    PetscCall(PetscViewerSetUp(viewer));
+    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)viewer), &size));
+    tr[0] = MAT_FILE_CLASSID;
+    tr[1] = A->rmap->N;
+    tr[2] = A->cmap->N;
+    tr[3] = -size; /* AIJ stores nnz here */
+    tr[4] = (PetscInt)(rmap == cmap);
+    tr[5] = a->allow_repeated;
+    PetscCall(PetscSNPrintf(lmattype, sizeof(lmattype), "%s", a->lmattype));
+
+    PetscCall(PetscViewerBinaryWrite(viewer, tr, PETSC_STATIC_ARRAY_LENGTH(tr), PETSC_INT));
+    PetscCall(PetscViewerBinaryWrite(viewer, lmattype, sizeof(lmattype), PETSC_CHAR));
+
+    /* first dump l2g info (we need the header for proper loading on different number of processes) */
+    PetscCall(PetscViewerBinaryGetSkipHeader(viewer, &skipHeader));
+    PetscCall(PetscViewerBinarySetSkipHeader(viewer, PETSC_FALSE));
+    PetscCall(ISLocalToGlobalMappingView(rmap, viewer));
+    if (cmap != rmap) PetscCall(ISLocalToGlobalMappingView(cmap, viewer));
+
+    /* then the sizes of the local matrices */
+    PetscCall(MatGetSize(a->A, &nr, &nc));
+    PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)viewer), 1, &nr, PETSC_USE_POINTER, &is));
+    PetscCall(ISView(is, viewer));
+    PetscCall(ISDestroy(&is));
+    PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)viewer), 1, &nc, PETSC_USE_POINTER, &is));
+    PetscCall(ISView(is, viewer));
+    PetscCall(ISDestroy(&is));
+    PetscCall(PetscViewerBinarySetSkipHeader(viewer, skipHeader));
+  }
+  if (format == PETSC_VIEWER_ASCII_MATLAB) {
+    char        name[64];
+    PetscMPIInt size, rank;
+
+    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)viewer), &size));
+    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank));
+    if (size > 1) PetscCall(PetscSNPrintf(name, sizeof(name), "lmat_%d", rank));
+    else PetscCall(PetscSNPrintf(name, sizeof(name), "lmat"));
+    PetscCall(PetscObjectSetName((PetscObject)a->A, name));
+  }
+
+  /* Dump the local matrices */
+  if (isbinary) { /* ViewerGetSubViewer does not work in parallel */
+    PetscBool   isaij;
+    PetscInt    nr, nc;
+    Mat         lA, B;
+    Mat_MPIAIJ *b;
+
+    /* We create a temporary MPIAIJ matrix that stores the unassembled operator */
+    PetscCall(PetscObjectBaseTypeCompare((PetscObject)a->A, MATAIJ, &isaij));
+    if (!isaij) PetscCall(MatConvert(a->A, MATSEQAIJ, MAT_INITIAL_MATRIX, &lA));
+    else {
+      PetscCall(PetscObjectReference((PetscObject)a->A));
+      lA = a->A;
+    }
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)viewer), &B));
+    PetscCall(MatSetType(B, MATMPIAIJ));
+    PetscCall(MatGetSize(lA, &nr, &nc));
+    PetscCall(MatSetSizes(B, nr, nc, PETSC_DECIDE, PETSC_DECIDE));
+    PetscCall(MatMPIAIJSetPreallocation(B, 0, NULL, 0, NULL));
+
+    b = (Mat_MPIAIJ *)B->data;
+    PetscCall(MatDestroy(&b->A));
+    b->A = lA;
+
+    PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatView(B, viewer));
+    PetscCall(MatDestroy(&B));
+  } else {
+    PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
+    PetscCall(MatView(a->A, sviewer));
+    PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
+  }
+
+  /* with ASCII, we dump the l2gmaps at the end */
+  if (viewl2g) {
+    if (format == PETSC_VIEWER_ASCII_MATLAB) {
+      PetscCall(PetscObjectSetName((PetscObject)rmap, "row"));
+      PetscCall(ISLocalToGlobalMappingView(rmap, viewer));
+      PetscCall(PetscObjectSetName((PetscObject)cmap, "col"));
+      PetscCall(ISLocalToGlobalMappingView(cmap, viewer));
+    } else {
+      PetscCall(ISLocalToGlobalMappingView(rmap, viewer));
+      PetscCall(ISLocalToGlobalMappingView(cmap, viewer));
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatLoad_IS(Mat A, PetscViewer viewer)
+{
+  ISLocalToGlobalMapping rmap, cmap;
+  MPI_Comm               comm = PetscObjectComm((PetscObject)A);
+  PetscBool              isbinary, samel, allow, isbaij;
+  PetscInt               tr[6], M, N, nr, nc, Asize, isn;
+  const PetscInt        *idx;
+  PetscMPIInt            size;
+  char                   lmattype[64];
+  Mat                    dA, lA;
+  IS                     is;
+
+  PetscFunctionBegin;
+  PetscCheckSameComm(A, 1, viewer, 2);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
+  PetscCheck(isbinary, PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Invalid viewer of type %s", ((PetscObject)viewer)->type_name);
+
+  PetscCall(PetscViewerBinaryRead(viewer, tr, PETSC_STATIC_ARRAY_LENGTH(tr), NULL, PETSC_INT));
+  PetscCheck(tr[0] == MAT_FILE_CLASSID, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Not a matrix next in file");
+  PetscCheck(tr[1] >= 0, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Not a IS matrix next in file");
+  PetscCheck(tr[2] >= 0, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Not a IS matrix next in file");
+  PetscCheck(tr[3] < 0, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Not a IS matrix next in file");
+  PetscCheck(tr[4] == 0 || tr[4] == 1, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Not a IS matrix next in file");
+  PetscCheck(tr[5] == 0 || tr[5] == 1, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Not a IS matrix next in file");
+  M     = tr[1];
+  N     = tr[2];
+  Asize = -tr[3];
+  samel = (PetscBool)tr[4];
+  allow = (PetscBool)tr[5];
+  PetscCall(PetscViewerBinaryRead(viewer, lmattype, sizeof(lmattype), NULL, PETSC_CHAR));
+
+  /* if we are loading from a larger set of processes, allow repeated entries */
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)viewer), &size));
+  if (Asize > size) allow = PETSC_TRUE;
+
+  /* set global sizes if not set already */
+  if (A->rmap->N < 0) A->rmap->N = M;
+  if (A->cmap->N < 0) A->cmap->N = N;
+  PetscCall(PetscLayoutSetUp(A->rmap));
+  PetscCall(PetscLayoutSetUp(A->cmap));
+  PetscCheck(M == A->rmap->N, comm, PETSC_ERR_ARG_SIZ, "Matrix rows should be %" PetscInt_FMT ", found %" PetscInt_FMT, M, A->rmap->N);
+  PetscCheck(N == A->cmap->N, comm, PETSC_ERR_ARG_SIZ, "Matrix columns should be %" PetscInt_FMT ", found %" PetscInt_FMT, N, A->cmap->N);
+
+  /* load l2g maps */
+  PetscCall(ISLocalToGlobalMappingCreate(comm, 0, 0, NULL, PETSC_USE_POINTER, &rmap));
+  PetscCall(ISLocalToGlobalMappingLoad(rmap, viewer));
+  if (!samel) {
+    PetscCall(ISLocalToGlobalMappingCreate(comm, 0, 0, NULL, PETSC_USE_POINTER, &cmap));
+    PetscCall(ISLocalToGlobalMappingLoad(cmap, viewer));
+  } else {
+    PetscCall(PetscObjectReference((PetscObject)rmap));
+    cmap = rmap;
+  }
+
+  /* load sizes of local matrices */
+  PetscCall(ISCreate(comm, &is));
+  PetscCall(ISSetType(is, ISGENERAL));
+  PetscCall(ISLoad(is, viewer));
+  PetscCall(ISGetLocalSize(is, &isn));
+  PetscCall(ISGetIndices(is, &idx));
+  nr = 0;
+  for (PetscInt i = 0; i < isn; i++) nr += idx[i];
+  PetscCall(ISRestoreIndices(is, &idx));
+  PetscCall(ISDestroy(&is));
+  PetscCall(ISCreate(comm, &is));
+  PetscCall(ISSetType(is, ISGENERAL));
+  PetscCall(ISLoad(is, viewer));
+  PetscCall(ISGetLocalSize(is, &isn));
+  PetscCall(ISGetIndices(is, &idx));
+  nc = 0;
+  for (PetscInt i = 0; i < isn; i++) nc += idx[i];
+  PetscCall(ISRestoreIndices(is, &idx));
+  PetscCall(ISDestroy(&is));
+
+  /* now load the unassembled operator */
+  PetscCall(MatCreate(comm, &dA));
+  PetscCall(MatSetType(dA, MATMPIAIJ));
+  PetscCall(MatSetSizes(dA, nr, nc, PETSC_DECIDE, PETSC_DECIDE));
+  PetscCall(MatLoad(dA, viewer));
+  PetscCall(MatMPIAIJGetSeqAIJ(dA, &lA, NULL, NULL));
+  PetscCall(PetscObjectReference((PetscObject)lA));
+  PetscCall(MatDestroy(&dA));
+
+  /* and convert to the desired format */
+  PetscCall(PetscStrcmpAny(lmattype, &isbaij, MATSBAIJ, MATSEQSBAIJ, ""));
+  if (isbaij) PetscCall(MatSetOption(lA, MAT_SYMMETRIC, PETSC_TRUE));
+  PetscCall(MatConvert(lA, lmattype, MAT_INPLACE_MATRIX, &lA));
+
+  /* assemble the MATIS object */
+  PetscCall(MatISSetAllowRepeated(A, allow));
+  PetscCall(MatSetLocalToGlobalMapping(A, rmap, cmap));
+  PetscCall(MatISSetLocalMat(A, lA));
+  PetscCall(MatDestroy(&lA));
+  PetscCall(ISLocalToGlobalMappingDestroy(&rmap));
+  PetscCall(ISLocalToGlobalMappingDestroy(&cmap));
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3018,7 +3217,7 @@ static PetscErrorCode MatISSetLocalMat_IS(Mat mat, Mat local)
   if (is->A && !is->islocalref) {
     PetscCall(MatGetSize(is->A, &orows, &ocols));
     PetscCall(MatGetSize(local, &nrows, &ncols));
-    PetscCheck(orows == nrows && ocols == ncols, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Local MATIS matrix should be of size %" PetscInt_FMT "x%" PetscInt_FMT " (you passed a %" PetscInt_FMT "x%" PetscInt_FMT " matrix)", orows, ocols, nrows, ncols);
+    PetscCheck(orows == nrows && ocols == ncols, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Local MATIS matrix should be of size %" PetscInt_FMT "x%" PetscInt_FMT " (passed a %" PetscInt_FMT "x%" PetscInt_FMT " matrix)", orows, ocols, nrows, ncols);
     PetscCall(MatGetType(local, &mtype));
     PetscCall(MatGetType(is->A, &otype));
     PetscCall(PetscStrcmp(mtype, otype, &sametype));
@@ -3517,6 +3716,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   A->ops->assemblybegin           = MatAssemblyBegin_IS;
   A->ops->assemblyend             = MatAssemblyEnd_IS;
   A->ops->view                    = MatView_IS;
+  A->ops->load                    = MatLoad_IS;
   A->ops->zeroentries             = MatZeroEntries_IS;
   A->ops->scale                   = MatScale_IS;
   A->ops->getdiagonal             = MatGetDiagonal_IS;
