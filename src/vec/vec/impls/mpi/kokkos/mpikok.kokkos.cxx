@@ -1,7 +1,7 @@
 /*
    This file contains routines for Parallel vector operations.
  */
-
+#include <petsc_kokkos.hpp>
 #include <petscvec_kokkos.hpp>
 #include <petsc/private/deviceimpl.h>
 #include <petsc/private/vecimpl.h>             /* for struct Vec */
@@ -169,14 +169,14 @@ static PetscErrorCode VecSetValuesCOO_MPIKokkos(Vec x, const PetscScalar v[], In
   }
 
   /* Pack entries to be sent to remote */
-  Kokkos::parallel_for(vecmpi->sendlen, KOKKOS_LAMBDA(const PetscCount i) { sendbuf(i) = vv(Cperm(i)); });
+  Kokkos::parallel_for(Kokkos::RangePolicy<>(PetscGetKokkosExecutionSpace(), 0, vecmpi->sendlen), KOKKOS_LAMBDA(const PetscCount i) { sendbuf(i) = vv(Cperm(i)); });
   PetscCall(PetscSFReduceWithMemTypeBegin(vecmpi->coo_sf, MPIU_SCALAR, PETSC_MEMTYPE_KOKKOS, sendbuf.data(), PETSC_MEMTYPE_KOKKOS, recvbuf.data(), MPI_REPLACE));
 
   if (imode == INSERT_VALUES) PetscCall(VecGetKokkosViewWrite(x, &xv)); /* write vector */
   else PetscCall(VecGetKokkosView(x, &xv));                             /* read & write vector */
 
   Kokkos::parallel_for(
-    m, KOKKOS_LAMBDA(const PetscCount i) {
+    Kokkos::RangePolicy<>(PetscGetKokkosExecutionSpace(), 0, m), KOKKOS_LAMBDA(const PetscCount i) {
       PetscScalar sum = 0.0;
       for (PetscCount k = jmap1(i); k < jmap1(i + 1); k++) sum += vv(perm1(k));
       xv(i) = (imode == INSERT_VALUES ? 0.0 : xv(i)) + sum;
@@ -186,7 +186,7 @@ static PetscErrorCode VecSetValuesCOO_MPIKokkos(Vec x, const PetscScalar v[], In
 
   /* Add received remote entries */
   Kokkos::parallel_for(
-    vecmpi->nnz2, KOKKOS_LAMBDA(PetscCount i) {
+    Kokkos::RangePolicy<>(PetscGetKokkosExecutionSpace(), 0, vecmpi->nnz2), KOKKOS_LAMBDA(PetscCount i) {
       for (PetscCount k = jmap2(i); k < jmap2(i + 1); k++) xv(imap2(i)) += recvbuf(perm2(k));
     });
 
