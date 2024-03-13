@@ -269,7 +269,7 @@ PetscErrorCode PetscGarbageView(MPI_Comm comm, PetscViewer viewer)
   /* Pretty print entries in a table */
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(PetscSynchronizedPrintf(comm, "Rank %i:: ", rank));
-  PetscCall(PetscFormatConvert("Total entries: %D\n", text));
+  PetscCall(PetscFormatConvert("Total entries: %" PetscInt_FMT "\n", text));
   PetscCall(PetscSynchronizedPrintf(comm, text, entries));
   if (entries) {
     PetscCall(PetscSynchronizedPrintf(comm, "| Key   | Type                   | Name                             | Object ID |\n"));
@@ -277,7 +277,7 @@ PetscErrorCode PetscGarbageView(MPI_Comm comm, PetscViewer viewer)
   }
   for (ii = 0; ii < entries; ii++) {
     PetscCall(PetscHMapObjGet(garbage.map, keys[ii], &obj));
-    PetscCall(PetscFormatConvert("| %5" PetscInt64_FMT " | %-22s | %-32s | %6D    |\n", text));
+    PetscCall(PetscFormatConvert("| %5" PetscInt64_FMT " | %-22s | %-32s | %6" PetscInt_FMT "    |\n", text));
     PetscCall(PetscSynchronizedPrintf(comm, text, keys[ii], obj->class_name, obj->description, obj->id));
   }
   PetscCall(PetscSynchronizedFlush(comm, PETSC_STDOUT));

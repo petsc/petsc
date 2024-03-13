@@ -298,8 +298,8 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_Sorted(Mat A, Mat B, Mat C)
     for (j = 0; j < anzi; j++) {
       brow = aj[j];
       bnzi = bi[brow + 1] - bi[brow];
-      bjj  = bj + bi[brow];
-      baj  = ba + bi[brow];
+      bjj  = PetscSafePointerPlusOffset(bj, bi[brow]);
+      baj  = PetscSafePointerPlusOffset(ba, bi[brow]);
       /* perform dense axpy */
       valtmp = aa[j];
       for (k = 0; k < bnzi; k++) ab_dense[bjj[k]] += valtmp * baj[k];

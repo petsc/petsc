@@ -11,7 +11,7 @@ static PetscErrorCode PetscViewerSetFromOptions_CGNS(PetscViewer v, PetscOptionI
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "CGNS Viewer Options");
-  PetscOptionsInt("-viewer_cgns_batch_size", "Max number of steps to store in single file when using a template cgns:name-%d.cgns", "", cgv->batch_size, &cgv->batch_size, NULL);
+  PetscCall(PetscOptionsInt("-viewer_cgns_batch_size", "Max number of steps to store in single file when using a template cgns:name-\%d.cgns", "", cgv->batch_size, &cgv->batch_size, NULL));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }

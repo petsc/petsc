@@ -350,8 +350,8 @@ PetscErrorCode PetscLayoutSetISLocalToGlobalMapping(PetscLayout in, ISLocalToGlo
 
     PetscCall(ISLocalToGlobalMappingGetBlockSize(ltog, &bs));
     PetscCheck(in->bs <= 0 || bs == 1 || in->bs == bs, in->comm, PETSC_ERR_PLIB, "Blocksize of layout %" PetscInt_FMT " must match that of mapping %" PetscInt_FMT " (or the latter must be 1)", in->bs, bs);
-    PetscCall(PetscObjectReference((PetscObject)ltog));
   }
+  PetscCall(PetscObjectReference((PetscObject)ltog));
   PetscCall(ISLocalToGlobalMappingDestroy(&in->mapping));
   in->mapping = ltog;
   PetscFunctionReturn(PETSC_SUCCESS);

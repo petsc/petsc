@@ -140,20 +140,20 @@ static PetscErrorCode MatSetValues_MPIDense(Mat mat, PetscInt m, const PetscInt 
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       if (roworiented) {
-        PetscCall(MatSetValues(A->A, 1, &row, n, idxn, v + i * n, addv));
+        PetscCall(MatSetValues(A->A, 1, &row, n, idxn, v ? v + i * n : NULL, addv));
       } else {
         for (j = 0; j < n; j++) {
           if (idxn[j] < 0) continue;
           PetscCheck(idxn[j] < mat->cmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large");
-          PetscCall(MatSetValues(A->A, 1, &row, 1, &idxn[j], v + i + j * m, addv));
+          PetscCall(MatSetValues(A->A, 1, &row, 1, &idxn[j], v ? v + i + j * m : NULL, addv));
         }
       }
     } else if (!A->donotstash) {
       mat->assembled = PETSC_FALSE;
       if (roworiented) {
-        PetscCall(MatStashValuesRow_Private(&mat->stash, idxm[i], n, idxn, v + i * n, PETSC_FALSE));
+        PetscCall(MatStashValuesRow_Private(&mat->stash, idxm[i], n, idxn, v ? v + i * n : NULL, PETSC_FALSE));
       } else {
-        PetscCall(MatStashValuesCol_Private(&mat->stash, idxm[i], n, idxn, v + i, m, PETSC_FALSE));
+        PetscCall(MatStashValuesCol_Private(&mat->stash, idxm[i], n, idxn, v ? v + i : NULL, m, PETSC_FALSE));
       }
     }
   }

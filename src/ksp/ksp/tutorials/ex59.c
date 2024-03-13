@@ -639,7 +639,7 @@ static PetscErrorCode DomainDecomposition(DomainData *dd)
 
   PetscFunctionBeginUser;
   /* Subdomain index in cartesian coordinates */
-  MPI_Comm_rank(dd->gcomm, &rank);
+  PetscCallMPI(MPI_Comm_rank(dd->gcomm, &rank));
   dd->ipx = rank % dd->npx;
   if (dd->dim > 1) dd->ipz = rank / (dd->npx * dd->npy);
   else dd->ipz = 0;
@@ -702,6 +702,7 @@ static PetscErrorCode DomainDecomposition(DomainData *dd)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
 static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
 {
   GLLData                gll;
