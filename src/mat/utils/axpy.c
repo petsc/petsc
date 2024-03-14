@@ -342,6 +342,7 @@ PetscErrorCode MatDiagonalSet(Mat Y, Vec D, InsertMode is)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Y, MAT_CLASSID, 1);
   PetscValidHeaderSpecific(D, VEC_CLASSID, 2);
+  MatCheckPreallocated(Y, 1);
   PetscCall(MatGetLocalSize(Y, &matlocal, NULL));
   PetscCall(VecGetLocalSize(D, &veclocal));
   PetscCheck(matlocal == veclocal, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Number local rows of matrix %" PetscInt_FMT " does not match that of vector for diagonal %" PetscInt_FMT, matlocal, veclocal);
