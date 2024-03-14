@@ -7511,7 +7511,7 @@ PETSC_INTERN PetscErrorCode DMPlexAnchorsGetSubMatModification(DM dm, PetscSecti
   PetscInt        sStart = -1, sEnd = -1;
   PetscInt        cStart = -1, cEnd = -1;
   const PetscInt *anchors;
-  PetscInt        numFields, f, p;
+  PetscInt        numFields, p;
   PetscInt        newNumPoints = 0, newNumIndices = 0;
   PetscInt       *newPoints, *indices, *newIndices, *tmpIndices, *tmpNewIndices;
   PetscInt        oldOffsets[32];
@@ -7567,7 +7567,7 @@ PETSC_INTERN PetscErrorCode DMPlexAnchorsGetSubMatModification(DM dm, PetscSecti
             newNumPoints += 1;
           }
           newNumIndices += aDof;
-          for (f = 0; f < numFields; ++f) {
+          for (PetscInt f = 0; f < numFields; ++f) {
             PetscInt fDof = 0;
 
             if (a >= sStart && a < sEnd) PetscCall(PetscSectionGetFieldDof(section, a, f, &fDof));
@@ -7578,7 +7578,7 @@ PETSC_INTERN PetscErrorCode DMPlexAnchorsGetSubMatModification(DM dm, PetscSecti
         /* this point is not constrained */
         newNumPoints++;
         newNumIndices += bSecDof;
-        for (f = 0; f < numFields; ++f) {
+        for (PetscInt f = 0; f < numFields; ++f) {
           PetscInt fDof;
 
           PetscCall(PetscSectionGetFieldDof(section, b, f, &fDof));
@@ -7599,12 +7599,12 @@ PETSC_INTERN PetscErrorCode DMPlexAnchorsGetSubMatModification(DM dm, PetscSecti
   if (outNumPoints) *outNumPoints = newNumPoints;
   if (outNumIndices) *outNumIndices = newNumIndices;
 
-  for (f = 0; f < numFields; ++f) newOffsets[f + 1] += newOffsets[f];
-  for (f = 0; f < numFields; ++f) oldOffsets[f + 1] += oldOffsets[f];
+  for (PetscInt f = 0; f < numFields; ++f) newOffsets[f + 1] += newOffsets[f];
+  for (PetscInt f = 0; f < numFields; ++f) oldOffsets[f + 1] += oldOffsets[f];
 
   if (!outPoints && !outMat) {
     if (offsets) {
-      for (f = 0; f <= numFields; f++) offsets[f] = newOffsets[f];
+      for (PetscInt f = 0; f <= numFields; f++) offsets[f] = newOffsets[f];
     }
     if (aSec) PetscCall(ISRestoreIndices(aIS, &anchors));
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -7729,7 +7729,7 @@ PETSC_INTERN PetscErrorCode DMPlexAnchorsGetSubMatModification(DM dm, PetscSecti
   } else {
     PetscCall(DMRestoreWorkArray(dm, 2 * newNumPoints, MPIU_INT, &newPoints));
   }
-  for (f = 0; f <= numFields; f++) offsets[f] = newOffsets[f];
+  for (PetscInt f = 0; f <= numFields; f++) offsets[f] = newOffsets[f];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
