@@ -50,7 +50,7 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
     if (nupdates > 0) stepType = LMVM_STEP_BFGS;
 
     /*  Check for success (descent direction) */
-    PetscCall(VecDot(lmP->D, tao->gradient, &gdx));
+    PetscCall(VecDotRealPart(lmP->D, tao->gradient, &gdx));
     if ((gdx <= 0.0) || PetscIsInfOrNanReal(gdx)) {
       /* Step is not descent or direction produced not a number
          We can assert bfgsUpdates > 1 in this case because

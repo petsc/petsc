@@ -260,7 +260,6 @@ PetscErrorCode MatCreate_LMVMSR1(Mat B)
   PetscCall(MatSetOption(B, MAT_SYMMETRIC, PETSC_TRUE));
   B->ops->setup   = MatSetUp_LMVMSR1;
   B->ops->destroy = MatDestroy_LMVMSR1;
-  B->ops->solve   = MatSolve_LMVMSR1;
 
   lmvm                = (Mat_LMVM *)B->data;
   lmvm->square        = PETSC_TRUE;
@@ -269,6 +268,7 @@ PetscErrorCode MatCreate_LMVMSR1(Mat B)
   lmvm->ops->update   = MatUpdate_LMVMSR1;
   lmvm->ops->mult     = MatMult_LMVMSR1;
   lmvm->ops->copy     = MatCopy_LMVMSR1;
+  lmvm->ops->solve    = MatSolve_LMVMSR1;
 
   PetscCall(PetscNew(&lsr1));
   lmvm->ctx       = (void *)lsr1;
@@ -309,6 +309,7 @@ PetscErrorCode MatCreate_LMVMSR1(Mat B)
 PetscErrorCode MatCreateLMVMSR1(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
 {
   PetscFunctionBegin;
+  PetscCall(KSPInitializePackage());
   PetscCall(MatCreate(comm, B));
   PetscCall(MatSetSizes(*B, n, n, N, N));
   PetscCall(MatSetType(*B, MATLMVMSR1));

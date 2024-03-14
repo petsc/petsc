@@ -380,13 +380,13 @@ PetscErrorCode MatCreate_LMVMDFP(Mat B)
   B->ops->setup          = MatSetUp_LMVMDFP;
   B->ops->destroy        = MatDestroy_LMVMDFP;
   B->ops->setfromoptions = MatSetFromOptions_LMVMDFP;
-  B->ops->solve          = MatSolve_LMVMDFP;
 
   lmvm                = (Mat_LMVM *)B->data;
   lmvm->ops->allocate = MatAllocate_LMVMDFP;
   lmvm->ops->reset    = MatReset_LMVMDFP;
   lmvm->ops->update   = MatUpdate_LMVMDFP;
   lmvm->ops->mult     = MatMult_LMVMDFP;
+  lmvm->ops->solve    = MatSolve_LMVMDFP;
   lmvm->ops->copy     = MatCopy_LMVMDFP;
 
   ldfp        = (Mat_SymBrdn *)lmvm->ctx;
@@ -435,6 +435,7 @@ PetscErrorCode MatCreate_LMVMDFP(Mat B)
 PetscErrorCode MatCreateLMVMDFP(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
 {
   PetscFunctionBegin;
+  PetscCall(KSPInitializePackage());
   PetscCall(MatCreate(comm, B));
   PetscCall(MatSetSizes(*B, n, n, N, N));
   PetscCall(MatSetType(*B, MATLMVMDFP));

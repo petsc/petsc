@@ -80,6 +80,7 @@ Changes: Development
 - Deprecate ``MATIS`` options ``-matis_xxx``. Use ``-mat_is_xxx``
 - Add support for repeated entries in the local part of the local to global map for ``MATIS`` via the routines ``MatISSetAllowRepeated()`` and ``MatISGetAllowRepeated()``.
 - Add support to dump and load a matrix of ``MATIS`` type.
+- Add dense representations of symmetric Broyden matrices ``MATLMVMDBFGS``, ``MATLMVMDDFP``, and ``MATLMVMDQN``.
 
 .. rubric:: MatCoarsen:
 

@@ -986,6 +986,9 @@ PETSC_EXTERN PetscErrorCode MatCreateSchurComplementPmat(Mat, Mat, Mat, Mat, Mat
 
 PETSC_EXTERN PetscErrorCode MatCreateLMVMDFP(MPI_Comm, PetscInt, PetscInt, Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateLMVMBFGS(MPI_Comm, PetscInt, PetscInt, Mat *);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMDBFGS(MPI_Comm, PetscInt, PetscInt, Mat *);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMDDFP(MPI_Comm, PetscInt, PetscInt, Mat *);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMDQN(MPI_Comm, PetscInt, PetscInt, Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateLMVMSR1(MPI_Comm, PetscInt, PetscInt, Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateLMVMBroyden(MPI_Comm, PetscInt, PetscInt, Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateLMVMBadBroyden(MPI_Comm, PetscInt, PetscInt, Mat *);
@@ -1010,10 +1013,24 @@ PETSC_EXTERN PetscErrorCode MatLMVMGetJ0(Mat, Mat *);
 PETSC_EXTERN PetscErrorCode MatLMVMGetJ0PC(Mat, PC *);
 PETSC_EXTERN PetscErrorCode MatLMVMGetJ0KSP(Mat, KSP *);
 PETSC_EXTERN PetscErrorCode MatLMVMSetHistorySize(Mat, PetscInt);
+PETSC_EXTERN PetscErrorCode MatLMVMGetHistorySize(Mat, PetscInt *);
 PETSC_EXTERN PetscErrorCode MatLMVMGetUpdateCount(Mat, PetscInt *);
 PETSC_EXTERN PetscErrorCode MatLMVMGetRejectCount(Mat, PetscInt *);
 PETSC_EXTERN PetscErrorCode MatLMVMSymBroydenSetDelta(Mat, PetscScalar);
 
+/*E
+  MatLMVMSymBroydenScaleType - Scaling type for symmetric Broyden.
+
+  Values:
++ `MAT_LMVM_SYMBROYDEN_SCALE_NONE`     - No scaling
+. `MAT_LMVM_SYMBROYDEN_SCALE_SCALAR`   - scalar scaling
+. `MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL` - diagonal scaling
+- `MAT_LMVM_SYMBROYDEN_SCALE_USER`     - user-provided scale option
+
+  Level: intermediate
+
+.seealso: [](ch_matrices), `MatLMVM`, `MatLMVMSymBroydenSetScaleType()`
+E*/
 typedef enum {
   MAT_LMVM_SYMBROYDEN_SCALE_NONE     = 0,
   MAT_LMVM_SYMBROYDEN_SCALE_SCALAR   = 1,
@@ -1023,6 +1040,25 @@ typedef enum {
 PETSC_EXTERN const char *const MatLMVMSymBroydenScaleTypes[];
 
 PETSC_EXTERN PetscErrorCode MatLMVMSymBroydenSetScaleType(Mat, MatLMVMSymBroydenScaleType);
+
+/*E
+  MatLMVMDenseType - Memory storage strategy for dense variants `MATLMVM`.
+
+  Values:
++ `MAT_LMVM_DENSE_REORDER` - reorders memory to minimize kernel launch
+- `MAT_LMVM_DENSE_INPLACE` - computes inplace to minimize memory movement
+
+  Level: intermediate
+
+.seealso: [](ch_matrices), `MatLMVM`, `MatLMVMDenseSetType()`
+E*/
+typedef enum {
+  MAT_LMVM_DENSE_REORDER,
+  MAT_LMVM_DENSE_INPLACE
+} MatLMVMDenseType;
+PETSC_EXTERN const char *const MatLMVMDenseTypes[];
+
+PETSC_EXTERN PetscErrorCode MatLMVMDenseSetType(Mat, MatLMVMDenseType);
 
 PETSC_EXTERN PetscErrorCode KSPSetDM(KSP, DM);
 PETSC_EXTERN PetscErrorCode KSPSetDMActive(KSP, PetscBool);
