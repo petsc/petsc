@@ -115,6 +115,7 @@ struct _p_PetscSF {
   MPI_Group      ingroup;              /* Group of processes connected to my roots */
   MPI_Group      outgroup;             /* Group of processes connected to my leaves */
   PetscSF        multi;                /* Internal graph used to implement gather and scatter operations */
+  PetscSF        rankssf;              /* Internal graph used to implement communications with root ranks */
   PetscBool      graphset;             /* Flag indicating that the graph has been set, required before calling communication routines */
   PetscBool      setupcalled;          /* Type and communication structures have been set up */
   PetscSFPattern pattern;              /* Pattern of the graph */

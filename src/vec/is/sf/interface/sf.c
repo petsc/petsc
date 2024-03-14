@@ -115,6 +115,8 @@ PetscErrorCode PetscSFReset(PetscSF sf)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscTryTypeMethod(sf, Reset);
+  PetscCall(PetscSFDestroy(&sf->rankssf));
+
   sf->nroots   = -1;
   sf->nleaves  = -1;
   sf->minleaf  = PETSC_MAX_INT;
@@ -130,8 +132,10 @@ PetscErrorCode PetscSFReset(PetscSF sf)
   PetscCall(PetscFree(sf->degree));
   if (sf->ingroup != MPI_GROUP_NULL) PetscCallMPI(MPI_Group_free(&sf->ingroup));
   if (sf->outgroup != MPI_GROUP_NULL) PetscCallMPI(MPI_Group_free(&sf->outgroup));
+
   if (sf->multi) sf->multi->multi = NULL;
   PetscCall(PetscSFDestroy(&sf->multi));
+
   PetscCall(PetscLayoutDestroy(&sf->map));
 
 #if defined(PETSC_HAVE_DEVICE)
@@ -1165,6 +1169,44 @@ PetscErrorCode PetscSFGetGroups(PetscSF sf, MPI_Group *incoming, MPI_Group *outg
     PetscCallMPI(MPI_Group_free(&group));
   }
   *outgoing = sf->outgroup;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscSFGetRanksSF - gets the `PetscSF` to perform communications with root ranks
+
+  Collective
+
+  Input Parameter:
+. sf - star forest
+
+  Output Parameter:
+. rsf - the star forest with a single root per process to perform communications
+
+  Level: developer
+
+.seealso: `PetscSF`, `PetscSFSetGraph()`, `PetscSFGetRootRanks()`
+@*/
+PetscErrorCode PetscSFGetRanksSF(PetscSF sf, PetscSF *rsf)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
+  PetscAssertPointer(rsf, 2);
+  if (!sf->rankssf) {
+    PetscSFNode       *rremotes;
+    const PetscMPIInt *ranks;
+    PetscInt           nranks;
+
+    PetscCall(PetscSFGetRootRanks(sf, &nranks, &ranks, NULL, NULL, NULL));
+    PetscCall(PetscMalloc1(nranks, &rremotes));
+    for (PetscInt i = 0; i < nranks; i++) {
+      rremotes[i].rank  = ranks[i];
+      rremotes[i].index = 0;
+    }
+    PetscCall(PetscSFDuplicate(sf, PETSCSF_DUPLICATE_CONFONLY, &sf->rankssf));
+    PetscCall(PetscSFSetGraph(sf->rankssf, 1, nranks, NULL, PETSC_OWN_POINTER, rremotes, PETSC_OWN_POINTER));
+  }
+  *rsf = sf->rankssf;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

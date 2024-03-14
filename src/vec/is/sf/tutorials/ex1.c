@@ -37,11 +37,11 @@ static PetscErrorCode PetscSFViewCustomLocals_Private(PetscSF sf, const PetscInt
 
 int main(int argc, char **argv)
 {
-  PetscInt     i, nroots, nrootsalloc, nleaves, nleavesalloc, *mine, stride;
+  PetscInt     i, bs = 2, nroots, nrootsalloc, nleaves, nleavesalloc, *mine, stride;
   PetscSFNode *remote;
   PetscMPIInt  rank, size;
-  PetscSF      sf;
-  PetscBool    test_all, test_bcast, test_bcastop, test_reduce, test_degree, test_fetchandop, test_gather, test_scatter, test_embed, test_invert, test_sf_distribute, test_char;
+  PetscSF      sf, vsf;
+  PetscBool    test_all, test_bcast, test_bcastop, test_reduce, test_degree, test_fetchandop, test_gather, test_scatter, test_embed, test_invert, test_sf_distribute, test_char, test_vector = PETSC_FALSE;
   MPI_Op       mop = MPI_OP_NULL; /* initialize to prevent compiler warnings with cxx_quad build */
   char         opstring[256];
   PetscBool    strflg;
@@ -102,6 +102,8 @@ int main(int argc, char **argv)
   test_sf_distribute = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-test_sf_distribute", "Create an SF that 'distributes' to each process, like an alltoall", "", test_sf_distribute, &test_sf_distribute, NULL));
   PetscCall(PetscOptionsString("-test_op", "Designate which MPI_Op to use", "", opstring, opstring, sizeof(opstring), NULL));
+  PetscCall(PetscOptionsInt("-bs", "Block size for vectorial SF", "", bs, &bs, NULL));
+  PetscCall(PetscOptionsBool("-test_vector", "Run tests using the vectorial SF", "", test_vector, &test_vector, NULL));
   PetscOptionsEnd();
 
   if (test_sf_distribute) {
@@ -140,11 +142,26 @@ int main(int argc, char **argv)
     }
   }
 
-  /* Create a star forest for communication. In this example, the leaf space is dense, so we pass NULL. */
+  /* Create a star forest for communication */
   PetscCall(PetscSFCreate(PETSC_COMM_WORLD, &sf));
   PetscCall(PetscSFSetFromOptions(sf));
   PetscCall(PetscSFSetGraph(sf, nrootsalloc, nleaves, mine, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER));
   PetscCall(PetscSFSetUp(sf));
+
+  /* We can also obtain a strided SF to communicate interleaved blocks of data */
+  PetscCall(PetscSFCreateStridedSF(sf, bs, PETSC_DECIDE, PETSC_DECIDE, &vsf));
+  if (test_vector) { /* perform all tests below using the vectorial SF */
+    PetscSF t = sf;
+
+    sf  = vsf;
+    vsf = t;
+
+    nroots *= bs;
+    nleaves *= bs;
+    nrootsalloc *= bs;
+    nleavesalloc *= bs;
+  }
+  PetscCall(PetscSFDestroy(&vsf));
 
   /* View graph, mostly useful for debugging purposes. */
   PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_ASCII_INFO_DETAIL));
@@ -612,5 +629,10 @@ int main(int argc, char **argv)
       suffix: 10_basic
       nsize: 4
       args: -sf_type basic -test_all -test_bcastop 0 -test_fetchandop 0
+
+   test:
+      suffix: 10_basic_vector
+      nsize: 4
+      args: -sf_type basic -test_all -test_bcastop 0 -test_fetchandop 0 -test_vector
 
 TEST*/
