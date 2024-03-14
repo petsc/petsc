@@ -203,12 +203,18 @@ static PetscErrorCode TaoView_LMVM(Tao tao, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  Gradient steps: %" PetscInt_FMT "\n", lm->grad));
+    PetscCall(PetscViewerASCIIPushTab(viewer));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Gradient steps: %" PetscInt_FMT "\n", lm->grad));
     if (lm->recycle) {
-      PetscCall(PetscViewerASCIIPrintf(viewer, "  Recycle: on\n"));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "Recycle: on\n"));
       recycled_its = lm->bfgs + lm->grad;
-      PetscCall(PetscViewerASCIIPrintf(viewer, "  Total recycled iterations: %" PetscInt_FMT "\n", recycled_its));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "Total recycled iterations: %" PetscInt_FMT "\n", recycled_its));
     }
+    PetscCall(PetscViewerASCIIPrintf(viewer, "LMVM Matrix:\n"));
+    PetscCall(PetscViewerASCIIPushTab(viewer));
+    PetscCall(MatView(lm->M, viewer));
+    PetscCall(PetscViewerASCIIPopTab(viewer));
+    PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
