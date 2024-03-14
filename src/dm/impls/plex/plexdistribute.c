@@ -2064,13 +2064,15 @@ PetscErrorCode DMPlexSetOverlap_Plex(DM dm, DM dmSrc, PetscInt overlap)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMPLEX);
-  mesh          = (DM_Plex *)dm->data;
-  mesh->overlap = overlap;
+  mesh = (DM_Plex *)dm->data;
   if (dmSrc) {
     PetscValidHeaderSpecificType(dmSrc, DM_CLASSID, 2, DMPLEX);
-    meshSrc = (DM_Plex *)dmSrc->data;
-    mesh->overlap += meshSrc->overlap;
+    meshSrc       = (DM_Plex *)dmSrc->data;
+    mesh->overlap = meshSrc->overlap;
+  } else {
+    mesh->overlap = 0;
   }
+  mesh->overlap += overlap;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -2932,18 +2932,19 @@ PetscErrorCode DMLocalToGlobalHookAdd(DM dm, PetscErrorCode (*beginhook)(DM glob
 
 static PetscErrorCode DMLocalToGlobalHook_Constraints(DM dm, Vec l, InsertMode mode, Vec g, void *ctx)
 {
-  Mat          cMat;
-  Vec          cVec;
-  PetscSection section, cSec;
-  PetscInt     pStart, pEnd, p, dof;
-
   PetscFunctionBegin;
   (void)g;
   (void)ctx;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(DMGetDefaultConstraints(dm, &cSec, &cMat, NULL));
-  if (cMat && (mode == ADD_VALUES || mode == ADD_ALL_VALUES || mode == ADD_BC_VALUES)) {
-    PetscInt nRows;
+  if (mode == ADD_VALUES || mode == ADD_ALL_VALUES || mode == ADD_BC_VALUES) {
+    Mat          cMat;
+    Vec          cVec;
+    PetscInt     nRows;
+    PetscSection section, cSec;
+    PetscInt     pStart, pEnd, p, dof;
+
+    PetscCall(DMGetDefaultConstraints(dm, &cSec, &cMat, NULL));
+    if (!cMat) PetscFunctionReturn(PETSC_SUCCESS);
 
     PetscCall(MatGetSize(cMat, &nRows, NULL));
     if (nRows <= 0) PetscFunctionReturn(PETSC_SUCCESS);

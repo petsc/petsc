@@ -1,6 +1,7 @@
 #pragma once
 
 #include <petscds.h>
+#include <petscfe.h>
 #include <petsc/private/dmimpl.h>
 #include <petsc/private/dmforestimpl.h>
 #include <petsc/private/dmpleximpl.h>
@@ -4129,6 +4130,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
   comm = PetscObjectComm((PetscObject)dm);
   PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMPFOREST, &isPforest));
   PetscCheck(isPforest, comm, PETSC_ERR_ARG_WRONG, "Expected DM type %s, got %s", DMPFOREST, ((PetscObject)dm)->type_name);
+  PetscCall(DMSetUp(dm));
   PetscCall(DMGetDimension(dm, &dim));
   PetscCheck(dim == P4EST_DIM, comm, PETSC_ERR_ARG_WRONG, "Expected DM dimension %d, got %" PetscInt_FMT, P4EST_DIM, dim);
   forest  = (DM_Forest *)dm->data;
@@ -4137,9 +4139,12 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
   if (base) PetscCall(DMGetLabel(base, "ghost", &ghostLabelBase));
   if (!pforest->plex) {
     PetscMPIInt size;
+    const char *name;
 
     PetscCallMPI(MPI_Comm_size(comm, &size));
     PetscCall(DMCreate(comm, &newPlex));
+    PetscCall(PetscObjectGetName((PetscObject)dm, &name));
+    PetscCall(PetscObjectSetName((PetscObject)newPlex, name));
     PetscCall(DMSetType(newPlex, DMPLEX));
     PetscCall(DMSetMatType(newPlex, dm->mattype));
     /* share labels */
@@ -4307,6 +4312,20 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
       PetscCall(DMSetCoordinateSection(dm, cDim, coordsSec));
       PetscCall(DMGetCoordinatesLocal(newPlex, &coords));
       PetscCall(DMSetCoordinatesLocal(dm, coords));
+      PetscCall(DMGetCoordinateDM(newPlex, &cdm));
+      if (cdm) {
+        PetscFE fe;
+  #if !defined(P4_TO_P8)
+        DMPolytopeType celltype = DM_POLYTOPE_QUADRILATERAL;
+  #else
+        DMPolytopeType celltype = DM_POLYTOPE_HEXAHEDRON;
+  #endif
+
+        PetscCall(PetscFECreateLagrangeByCell(PETSC_COMM_SELF, dim, dim, celltype, 1, PETSC_DEFAULT, &fe));
+        PetscCall(DMSetField(cdm, 0, NULL, (PetscObject)fe));
+        PetscCall(PetscFEDestroy(&fe));
+        PetscCall(DMCreateDS(cdm));
+      }
       PetscCall(DMGetCellCoordinateDM(newPlex, &cdm));
       if (cdm) PetscCall(DMSetCellCoordinateDM(dm, cdm));
       PetscCall(DMGetCellCoordinateSection(newPlex, &coordsSec));
