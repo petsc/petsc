@@ -1,44 +1,28 @@
-const char help[] = "Test Berend's example";
+const char help[] = "Test distribution with overlap using DMForest";
 
 #include <petscdmplex.h>
 #include <petscdmforest.h>
 
 int main(int argc, char **argv)
 {
-  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-  MPI_Comm       comm            = PETSC_COMM_WORLD;
-  PetscInt       dim             = 3;
-  PetscInt       cells_per_dir[] = {3, 3, 3};
-  PetscReal      dir_min[]       = {0.0, 0.0, 0.0};
-  PetscReal      dir_max[]       = {1.0, 1.0, 1.0};
-  PetscInt       overlap         = 1;
-  DMBoundaryType bcs[]           = {DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE};
-  DM             forest, plex;
-  Vec            CoordVec;
+  DM       forest, plex;
+  Vec      CoordVec;
+  MPI_Comm comm;
 
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  comm = PETSC_COMM_WORLD;
   PetscCall(DMCreate(comm, &forest));
+  PetscCall(PetscObjectSetName((PetscObject)forest, "forest"));
   PetscCall(DMSetType(forest, DMP8EST));
   PetscCall(DMSetBasicAdjacency(forest, PETSC_TRUE, PETSC_TRUE));
   {
-    DM dm_base, pdm, idm;
-    PetscCall(DMPlexCreateBoxMesh(comm, dim, PETSC_FALSE /* simplex */
-                                  ,
-                                  cells_per_dir, dir_min, dir_max, bcs, PETSC_TRUE /* interpolate */
-                                  ,
-                                  &dm_base));
-    PetscCall(DMSetBasicAdjacency(dm_base, PETSC_TRUE, PETSC_TRUE));
-    PetscCall(DMPlexDistribute(dm_base, overlap, NULL, &pdm));
-    if (pdm) {
-      PetscCall(DMDestroy(&dm_base));
-      dm_base = pdm;
-    }
-    PetscCall(DMPlexInterpolate(dm_base, &idm));
-    PetscCall(DMDestroy(&dm_base));
-    dm_base = idm;
-    PetscCall(DMLocalizeCoordinates(dm_base));
-    PetscCall(DMPlexDistributeSetDefault(dm_base, PETSC_FALSE));
+    DM dm_base;
+
+    PetscCall(DMCreate(comm, &dm_base));
+    PetscCall(DMSetType(dm_base, DMPLEX));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dm_base, "base_"));
     PetscCall(DMSetFromOptions(dm_base));
-    PetscCall(DMViewFromOptions(dm_base, NULL, "-dm_base_view"));
+    PetscCall(DMViewFromOptions(dm_base, NULL, "-dm_view"));
     PetscCall(DMCopyFields(dm_base, forest));
     PetscCall(DMForestSetBaseDM(forest, dm_base));
     PetscCall(DMDestroy(&dm_base));
@@ -60,8 +44,18 @@ int main(int argc, char **argv)
 
 /*TEST
 
-  test:
+  testset:
     requires: p4est
-    suffix: 0
+    args: -base_dm_plex_dim 3 -base_dm_plex_simplex 0 -base_dm_plex_box_faces 3,3,3 -base_dm_distribute_overlap 1 \
+          -base_dm_plex_adj_cone true -base_dm_plex_adj_closure true \
+          -base_dm_view -dm_forest_view -dm_plex_view
+
+    test:
+      suffix: 0
+
+    test:
+      suffix: 1
+      nsize: 3
+      args: -petscpartitioner_type simple
 
 TEST*/
