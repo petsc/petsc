@@ -96,7 +96,7 @@ static PetscErrorCode DMSwarmMigrate_DMNeighborScatter(DM dm, DM dmcell, PetscBo
 {
   DM_Swarm          *swarm = (DM_Swarm *)dm->data;
   DMSwarmDataEx      de;
-  PetscInt           r, p, npoints, *rankval, n_points_recv;
+  PetscInt           r, p, npoints, *p_cellid, n_points_recv;
   PetscMPIInt        rank, _rank;
   const PetscMPIInt *neighbourranks;
   void              *point_buffer, *recv_points;
@@ -107,7 +107,7 @@ static PetscErrorCode DMSwarmMigrate_DMNeighborScatter(DM dm, DM dmcell, PetscBo
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
   PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &npoints, NULL, NULL));
-  PetscCall(DMSwarmGetField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
+  PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&p_cellid));
   PetscCall(DMSwarmDataExCreate(PetscObjectComm((PetscObject)dm), 0, &de));
   PetscCall(DMGetNeighbors(dmcell, &nneighbors, &neighbourranks));
   PetscCall(DMSwarmDataExTopologyInitialize(de));
@@ -119,7 +119,7 @@ static PetscErrorCode DMSwarmMigrate_DMNeighborScatter(DM dm, DM dmcell, PetscBo
   PetscCall(DMSwarmDataExTopologyGetNeighbours(de, &mynneigh, &myneigh));
   PetscCall(DMSwarmDataExInitializeSendCount(de));
   for (p = 0; p < npoints; p++) {
-    if (rankval[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
+    if (p_cellid[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
       for (r = 0; r < mynneigh; r++) {
         _rank = myneigh[r];
         PetscCall(DMSwarmDataExAddToSendCount(de, _rank, 1));
@@ -130,7 +130,7 @@ static PetscErrorCode DMSwarmMigrate_DMNeighborScatter(DM dm, DM dmcell, PetscBo
   PetscCall(DMSwarmDataBucketCreatePackedArray(swarm->db, &sizeof_dmswarm_point, &point_buffer));
   PetscCall(DMSwarmDataExPackInitialize(de, sizeof_dmswarm_point));
   for (p = 0; p < npoints; p++) {
-    if (rankval[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
+    if (p_cellid[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
       for (r = 0; r < mynneigh; r++) {
         _rank = myneigh[r];
         /* copy point into buffer */
@@ -141,20 +141,20 @@ static PetscErrorCode DMSwarmMigrate_DMNeighborScatter(DM dm, DM dmcell, PetscBo
     }
   }
   PetscCall(DMSwarmDataExPackFinalize(de));
-  PetscCall(DMSwarmRestoreField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
+  PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&p_cellid));
   if (remove_sent_points) {
     DMSwarmDataField PField;
 
-    PetscCall(DMSwarmDataBucketGetDMSwarmDataFieldByName(swarm->db, DMSwarmField_rank, &PField));
-    PetscCall(DMSwarmDataFieldGetEntries(PField, (void **)&rankval));
+    PetscCall(DMSwarmDataBucketGetDMSwarmDataFieldByName(swarm->db, DMSwarmPICField_cellid, &PField));
+    PetscCall(DMSwarmDataFieldGetEntries(PField, (void **)&p_cellid));
     /* remove points which left processor */
     PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &npoints, NULL, NULL));
     for (p = 0; p < npoints; p++) {
-      if (rankval[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
+      if (p_cellid[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
         /* kill point */
         PetscCall(DMSwarmDataBucketRemovePointAtIndex(swarm->db, p));
         PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &npoints, NULL, NULL)); /* you need to update npoints as the list size decreases! */
-        PetscCall(DMSwarmDataFieldGetEntries(PField, (void **)&rankval));      /* update date point increase realloc performed */
+        PetscCall(DMSwarmDataFieldGetEntries(PField, (void **)&p_cellid));     /* update date point increase realloc performed */
         p--;                                                                   /* check replacement point */
       }
     }
@@ -178,7 +178,7 @@ static PetscErrorCode DMSwarmMigrate_DMNeighborScatter(DM dm, DM dmcell, PetscBo
 PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm, PetscBool remove_sent_points)
 {
   DM_Swarm          *swarm = (DM_Swarm *)dm->data;
-  PetscInt           p, npoints, npointsg = 0, npoints2, npoints2g, *rankval, npoints_prior_migration;
+  PetscInt           p, npoints, npointsg = 0, npoints2, npoints2g, *rankval, *p_cellid, npoints_prior_migration;
   PetscSF            sfcell = NULL;
   const PetscSFNode *LA_sfcell;
   DM                 dmcell;
@@ -195,14 +195,12 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm, PetscBool remove_sent_points)
 
 #if 1
   {
-    PetscInt    *p_cellid;
     PetscInt     npoints_curr, range = 0;
     PetscSFNode *sf_cells;
 
     PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &npoints_curr, NULL, NULL));
     PetscCall(PetscMalloc1(npoints_curr, &sf_cells));
 
-    PetscCall(DMSwarmGetField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
     PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&p_cellid));
     for (p = 0; p < npoints_curr; p++) {
       sf_cells[p].rank  = 0;
@@ -210,7 +208,6 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm, PetscBool remove_sent_points)
       if (p_cellid[p] > range) range = p_cellid[p];
     }
     PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&p_cellid));
-    PetscCall(DMSwarmRestoreField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
 
     /* PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)dm),&sfcell)); */
     PetscCall(PetscSFCreate(PETSC_COMM_SELF, &sfcell));
@@ -224,10 +221,16 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm, PetscBool remove_sent_points)
 
   if (error_check) PetscCall(DMSwarmGetSize(dm, &npointsg));
   PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &npoints, NULL, NULL));
+  PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&p_cellid));
   PetscCall(DMSwarmGetField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
   PetscCall(PetscSFGetGraph(sfcell, NULL, NULL, NULL, &LA_sfcell));
-  for (p = 0; p < npoints; p++) rankval[p] = LA_sfcell[p].index;
+
+  for (p = 0; p < npoints; p++) {
+    p_cellid[p] = LA_sfcell[p].index;
+    rankval[p]  = rank;
+  }
   PetscCall(DMSwarmRestoreField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
+  PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&p_cellid));
   PetscCall(PetscSFDestroy(&sfcell));
 
   if (size > 1) {
@@ -237,20 +240,20 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm, PetscBool remove_sent_points)
     PetscInt         npoints_curr;
 
     /* remove points which the domain */
-    PetscCall(DMSwarmDataBucketGetDMSwarmDataFieldByName(swarm->db, DMSwarmField_rank, &PField));
-    PetscCall(DMSwarmDataFieldGetEntries(PField, (void **)&rankval));
+    PetscCall(DMSwarmDataBucketGetDMSwarmDataFieldByName(swarm->db, DMSwarmPICField_cellid, &PField));
+    PetscCall(DMSwarmDataFieldGetEntries(PField, (void **)&p_cellid));
 
     PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &npoints_curr, NULL, NULL));
     for (p = 0; p < npoints_curr; p++) {
-      if (rankval[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
+      if (p_cellid[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
         /* kill point */
         PetscCall(DMSwarmDataBucketRemovePointAtIndex(swarm->db, p));
         PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &npoints_curr, NULL, NULL)); /* you need to update npoints as the list size decreases! */
-        PetscCall(DMSwarmDataFieldGetEntries(PField, (void **)&rankval));           /* update date point increase realloc performed */
+        PetscCall(DMSwarmDataFieldGetEntries(PField, (void **)&p_cellid));          /* update date point in case realloc performed */
         p--;                                                                        /* check replacement point */
       }
     }
-    PetscCall(DMSwarmGetSize(dm, &npoints_prior_migration));
+    PetscCall(DMSwarmGetLocalSize(dm, &npoints_prior_migration));
   }
 
   /* locate points newly received */
@@ -311,35 +314,30 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm, PetscBool remove_sent_points)
 
     PetscCall(PetscSFGetGraph(sfcell, NULL, NULL, NULL, &LA_sfcell));
     PetscCall(DMSwarmGetField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
-    for (p = 0; p < npoints_from_neighbours; p++) rankval[npoints_prior_migration + p] = LA_sfcell[p].index;
+    PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&p_cellid));
+    for (p = 0; p < npoints_from_neighbours; p++) {
+      rankval[npoints_prior_migration + p]  = rank;
+      p_cellid[npoints_prior_migration + p] = LA_sfcell[p].index;
+    }
+
+    PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&p_cellid));
     PetscCall(DMSwarmRestoreField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
     PetscCall(PetscSFDestroy(&sfcell));
 
     /* remove points which left processor */
-    PetscCall(DMSwarmDataBucketGetDMSwarmDataFieldByName(swarm->db, DMSwarmField_rank, &PField));
-    PetscCall(DMSwarmDataFieldGetEntries(PField, (void **)&rankval));
+    PetscCall(DMSwarmDataBucketGetDMSwarmDataFieldByName(swarm->db, DMSwarmPICField_cellid, &PField));
+    PetscCall(DMSwarmDataFieldGetEntries(PField, (void **)&p_cellid));
 
     PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &npoints2, NULL, NULL));
     for (p = npoints_prior_migration; p < npoints2; p++) {
-      if (rankval[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
+      if (p_cellid[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
         /* kill point */
         PetscCall(DMSwarmDataBucketRemovePointAtIndex(swarm->db, p));
         PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &npoints2, NULL, NULL)); /* you need to update npoints as the list size decreases! */
-        PetscCall(DMSwarmDataFieldGetEntries(PField, (void **)&rankval));       /* update date point increase realloc performed */
+        PetscCall(DMSwarmDataFieldGetEntries(PField, (void **)&p_cellid));      /* update date point in case realloc performed */
         p--;                                                                    /* check replacement point */
       }
     }
-  }
-
-  {
-    PetscInt *p_cellid;
-
-    PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &npoints2, NULL, NULL));
-    PetscCall(DMSwarmGetField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
-    PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&p_cellid));
-    for (p = 0; p < npoints2; p++) p_cellid[p] = rankval[p];
-    PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&p_cellid));
-    PetscCall(DMSwarmRestoreField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
   }
 
   /* check for error on removed points */
