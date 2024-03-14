@@ -4139,9 +4139,12 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
   if (base) PetscCall(DMGetLabel(base, "ghost", &ghostLabelBase));
   if (!pforest->plex) {
     PetscMPIInt size;
+    const char *name;
 
     PetscCallMPI(MPI_Comm_size(comm, &size));
     PetscCall(DMCreate(comm, &newPlex));
+    PetscCall(PetscObjectGetName((PetscObject)dm, &name));
+    PetscCall(PetscObjectSetName((PetscObject)newPlex, name));
     PetscCall(DMSetType(newPlex, DMPLEX));
     PetscCall(DMSetMatType(newPlex, dm->mattype));
     /* share labels */
