@@ -546,11 +546,11 @@ static PetscInt PETSC_VIEWER_ASCII_WORLD_fileunit = 0;
   Notes:
   Must be called before `PetscInitialize()`
 
-  This does not work currently with `-log_view` since that (improperly) uses the `fd` directly instead of `PetscViewerASCIIPrintf()`
+  This may not work currently with some viewers that (improperly) use the `fd` directly instead of `PetscViewerASCIIPrintf()`
 
   With this option, for example, `-log_options` results will be saved to the Fortran file
 
-  Any process may call this but only the unit passed on MPI rank zero is used
+  Any process may call this but only the unit passed on the first process is used
 
   Fortran Note:
   Only for Fortran
@@ -684,7 +684,7 @@ static PetscErrorCode PetscFPrintfFortran(PetscInt unit, const char str[])
 #endif
 
 /*@
-  PetscViewerASCIIGetStdout - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all processors
+  PetscViewerASCIIGetStdout - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all processes
   in a communicator. Error returning version of `PETSC_VIEWER_STDOUT_()`
 
   Collective
@@ -995,7 +995,7 @@ static PetscErrorCode PetscViewerView_ASCII(PetscViewer v, PetscViewer viewer)
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII *)v->data;
 
   PetscFunctionBegin;
-  if (ascii->fileunit) PetscCall(PetscViewerASCIIPrintf(viewer, "Fortran FILE UNIT: %d\n", ascii->fileunit));
+  if (ascii->fileunit) PetscCall(PetscViewerASCIIPrintf(viewer, "Fortran FILE UNIT: %" PetscInt_FMT "\n", ascii->fileunit));
   else if (ascii->filename) PetscCall(PetscViewerASCIIPrintf(viewer, "Filename: %s\n", ascii->filename));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
