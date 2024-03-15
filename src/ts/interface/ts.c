@@ -5234,7 +5234,7 @@ PetscErrorCode TSRestartStep(TS ts)
 
   Level: advanced
 
-.seealso: [](ch_ts), `TS`, `TSCreate()`, `TSSetUp()`, `TSDestroy()`, `TSSolve()`, `TSSetPreStep()`, `TSSetPreStage()`, `TSInterpolate()`
+.seealso: [](ch_ts), `TS`, `TSGetStepRollBack()`, `TSCreate()`, `TSSetUp()`, `TSDestroy()`, `TSSolve()`, `TSSetPreStep()`, `TSSetPreStage()`, `TSInterpolate()`
 @*/
 PetscErrorCode TSRollBack(TS ts)
 {
@@ -5248,6 +5248,30 @@ PetscErrorCode TSRollBack(TS ts)
   ts->ptime_prev = ts->ptime_prev_rollback;
   ts->steps--;
   ts->steprollback = PETSC_TRUE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  TSGetStepRollBack - Get the internal flag indicating if you are rolling back a step
+
+  Not collective
+
+  Input Parameter:
+. ts - the `TS` context obtained from `TSCreate()`
+
+  Output Parameter:
+. flg - the rollback flag
+
+  Level: advanced
+
+.seealso: [](ch_ts), `TS`, `TSCreate()`, `TSRollBack()`
+@*/
+PetscErrorCode TSGetStepRollBack(TS ts, PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscAssertPointer(flg, 2);
+  *flg = ts->steprollback;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
