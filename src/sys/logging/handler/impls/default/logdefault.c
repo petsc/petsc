@@ -1191,7 +1191,7 @@ static PetscErrorCode PetscLogViewWarnNoGpuAwareMpi(MPI_Comm comm, FILE *fd)
   PetscBool   deviceInitialized = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)viewer), &size));
   for (int i = PETSC_DEVICE_HOST + 1; i < PETSC_DEVICE_MAX; ++i) {
     const PetscDeviceType dtype = PetscDeviceTypeCast(i);
     if (PetscDeviceInitialized(dtype)) { /* a non-host device was initialized */

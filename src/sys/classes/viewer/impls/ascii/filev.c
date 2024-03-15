@@ -198,6 +198,7 @@ PetscErrorCode PetscViewerASCIIGetPointer(PetscViewer viewer, FILE **fd)
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
 
   PetscFunctionBegin;
+  PetscCheck(!vascii->fileunit, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Cannot request file pointer for viewers that use Fortran files");
   *fd = vascii->fd;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
