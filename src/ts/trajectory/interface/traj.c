@@ -331,7 +331,7 @@ PetscErrorCode TSTrajectoryView(TSTrajectory tj, PetscViewer viewer)
 
   Input Parameters:
 + ctx   - the trajectory context
-- names - the names of the components, final string must be NULL
+- names - the names of the components, final string must be `NULL`
 
   Level: intermediate
 

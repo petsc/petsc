@@ -277,8 +277,8 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
 . numVertices   - Number of vertices in the local part of the graph
 . start         - row pointers for the local part of the graph (CSR style)
 . adjacency     - adjacency list (CSR style)
-. vertexSection - PetscSection describing the absolute weight of each local vertex (can be NULL)
-- targetSection - PetscSection describing the absolute weight of each partition (can be NULL)
+. vertexSection - PetscSection describing the absolute weight of each local vertex (can be `NULL`)
+- targetSection - PetscSection describing the absolute weight of each partition (can be `NULL`)
 
   Output Parameters:
 + partSection - The `PetscSection` giving the division of points by partition

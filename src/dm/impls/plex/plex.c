@@ -2430,7 +2430,7 @@ PetscErrorCode DMPlexCoordinatesLoad(DM dm, PetscViewer viewer, PetscSF globalTo
   Level: advanced
 
   Note:
-  The `PetscSF` argument must not be NULL if the `DM` is distributed, otherwise an error occurs.
+  The `PetscSF` argument must not be `NULL` if the `DM` is distributed, otherwise an error occurs.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMLoad()`, `DMPlexTopologyLoad()`, `DMPlexCoordinatesLoad()`, `DMView()`, `PetscViewerHDF5Open()`, `PetscViewerPushFormat()`,
           `PetscSF`, `PetscViewer`

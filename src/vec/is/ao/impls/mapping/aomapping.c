@@ -215,7 +215,7 @@ PetscErrorCode AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool *hasIndex)
 + comm    - MPI communicator that is to share the `AO`
 . napp    - size of integer arrays
 . myapp   - integer array that defines an ordering
-- mypetsc - integer array that defines another ordering (may be NULL to indicate the identity ordering)
+- mypetsc - integer array that defines another ordering (may be `NULL` to indicate the identity ordering)
 
   Output Parameter:
 . aoout - the new application mapping
@@ -326,7 +326,7 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myap
 
   Input Parameters:
 + isapp   - index set that defines an ordering
-- ispetsc - index set that defines another ordering, maybe NULL for identity `IS`
+- ispetsc - index set that defines another ordering, maybe `NULL` for identity `IS`
 
   Output Parameter:
 . aoout - the new application ordering

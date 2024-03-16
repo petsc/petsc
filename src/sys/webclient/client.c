@@ -160,7 +160,7 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[], const char url[],
   Input Parameters:
 + type     - either "POST" or "GET"
 . url      - URL of request host/path
-. header   - additional header information, may be NULL
+. header   - additional header information, may be `NULL`
 . ctype    - data type of body, for example application/json
 . body     - data to send to server
 . ssl      - obtained with `PetscHTTPSConnect()`
@@ -248,7 +248,7 @@ PetscErrorCode PetscHTTPSRequest(const char type[], const char url[], const char
   Input Parameters:
 + type     - either "POST" or "GET"
 . url      - URL of request host/path
-. header   - additional header information, may be NULL
+. header   - additional header information, may be `NULL`
 . ctype    - data type of body, for example application/json
 . body     - data to send to server
 . sock     - obtained with `PetscOpenSocket()`

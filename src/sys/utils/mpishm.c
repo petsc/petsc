@@ -513,7 +513,7 @@ PetscErrorCode PetscOmpCtrlDestroy(PetscOmpCtrl *pctrl)
 -   is_omp_master    - true if the calling process is an OMP master rank.
 
     Note:
-    Any output parameter can be NULL. The parameter is just ignored.
+    Any output parameter can be `NULL`. The parameter is just ignored.
 
     Level: developer
 

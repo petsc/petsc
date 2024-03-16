@@ -327,7 +327,7 @@ PetscErrorCode PetscSplitReductionGet(MPI_Comm comm, PetscSplitReduction **sr)
   Input Parameters:
 + x      - the first vector
 . y      - the second vector
-- result - where the result will go (can be NULL)
+- result - where the result will go (can be `NULL`)
 
   Level: advanced
 
