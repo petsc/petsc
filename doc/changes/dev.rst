@@ -56,6 +56,7 @@ Changes: Development
 - ``VecScale()`` is now a logically collective operation
 - Add ``VecISShift()`` to shift a part of the vector
 - ``VecISSet()`` does no longer accept NULL as index set
+- ``VecLoad()`` automatically determines whether the file was written using 32-bit or 64-bit indices, and files can read with PETSc built either way
 
 .. rubric:: PetscSection:
 
