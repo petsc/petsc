@@ -727,7 +727,7 @@ static PetscErrorCode KSPViewSingularvalues_Internal(KSP ksp, PetscViewer viewer
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(KSPComputeExtremeSingularValues(ksp, &smax, &smin));
-  if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "Iteratively computed extreme singular values: max %g min %g max/min %g\n", (double)smax, (double)smin, (double)(smax / smin)));
+  if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "Iteratively computed extreme %svalues: max %g min %g max/min %g\n", smin < 0 ? "eigen" : "singular ", (double)smax, (double)smin, (double)(smax / smin)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
