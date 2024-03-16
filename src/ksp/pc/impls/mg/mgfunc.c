@@ -494,7 +494,7 @@ PetscErrorCode PCMGSetInjection(PC pc, PetscInt l, Mat mat)
 - l  - the level (0 is coarsest) to supply [Do not supply 0]
 
   Output Parameter:
-. mat - the restriction matrix (may be NULL if no injection is available).
+. mat - the restriction matrix (may be `NULL` if no injection is available).
 
   Level: advanced
 
