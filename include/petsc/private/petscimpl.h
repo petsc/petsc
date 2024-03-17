@@ -1506,7 +1506,7 @@ static inline PetscErrorCode PetscSpinlockUnlock(PetscSpinlock *spinlock)
   petsc_atomic_flag_clear(spinlock);
   return PETSC_SUCCESS;
 }
-static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *spinlock)
+static inline PetscErrorCode PetscSpinlockDestroy(PETSC_UNUSED PetscSpinlock *spinlock)
 {
   return PETSC_SUCCESS;
 }
