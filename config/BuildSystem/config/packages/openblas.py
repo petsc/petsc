@@ -80,6 +80,8 @@ class Configure(config.package.Package):
       cmdline+=" "+self.argDB['download-openblas-make-options']
     if not self.argDB['with-shared-libraries']:
       cmdline += " NO_SHARED=1 "
+    else:
+      cmdline += " NO_STATIC=1 "
     cmdline += " MAKE_NB_JOBS="+str(self.make.make_np)+" "
     usespthreads = False
     if 'download-openblas-use-pthreads' in self.argDB and self.argDB['download-openblas-use-pthreads']:
@@ -99,7 +101,7 @@ class Configure(config.package.Package):
       else:
         cmdline += " USE_THREAD=0 "
     cmdline += " NO_EXPRECISION=1 "
-    cmdline += " libs netlib re_lapack shared "
+    cmdline += " shared "
 
     self.include = [os.path.join(self.installDir,'include')]
     libdir = self.libDir
