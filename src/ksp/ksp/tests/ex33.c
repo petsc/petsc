@@ -108,7 +108,8 @@ int main(int argc, char **args)
 
   /* Test MatGetInertia() */
   /* if A is symmetric, set its flag -- required by MatGetInertia() */
-  PetscCall(MatIsSymmetric(A, 0.0, &flag));
+  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQBAIJ, &flag));
+  if (!flag) PetscCall(MatIsSymmetric(A, 0.0, &flag));
 
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
   PetscCall(KSPSetType(ksp, KSPPREONLY));
@@ -136,7 +137,7 @@ int main(int argc, char **args)
 /*TEST
 
     test:
-      args: -sigma 2.0
+      args: -sigma 2.0 -mat_type {{aij baij}}
       requires: !complex
       output_file: output/ex33.out
 

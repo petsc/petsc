@@ -14,10 +14,17 @@ PetscErrorCode MatGetInertia_SeqSBAIJ(Mat F, PetscInt *nneg, PetscInt *nzero, Pe
 
   nneg_tmp = 0;
   npos_tmp = 0;
-  for (i = 0; i < mbs; i++) {
-    if (PetscRealPart(dd[*fi]) > 0.0) npos_tmp++;
-    else if (PetscRealPart(dd[*fi]) < 0.0) nneg_tmp++;
-    fi++;
+  if (fi) {
+    for (i = 0; i < mbs; i++) {
+      if (PetscRealPart(dd[*fi]) > 0.0) npos_tmp++;
+      else if (PetscRealPart(dd[*fi]) < 0.0) nneg_tmp++;
+      fi++;
+    }
+  } else {
+    for (i = 0; i < mbs; i++) {
+      if (PetscRealPart(dd[fact->i[i]]) > 0.0) npos_tmp++;
+      else if (PetscRealPart(dd[fact->i[i]]) < 0.0) nneg_tmp++;
+    }
   }
   if (nneg) *nneg = nneg_tmp;
   if (npos) *npos = npos_tmp;
