@@ -6,8 +6,8 @@ Quick usage::
 
   lib/petsc/bin/maint/testparse.py -t src/ksp/ksp/tutorials/ex1.c
 
-From the command line, it prints out the dictionary.  
-This is meant to be used by other scripts, but it is 
+From the command line, it prints out the dictionary.
+This is meant to be used by other scripts, but it is
 useful to debug individual files.
 
 Example language
@@ -45,7 +45,7 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 import inspect
 thisscriptdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 maintdir=os.path.join(os.path.join(os.path.dirname(thisscriptdir),'bin'),'maint')
-sys.path.insert(0,maintdir) 
+sys.path.insert(0,maintdir)
 
 # These are special keys describing build
 buildkeys="requires TODO SKIP depends".split()
@@ -80,7 +80,7 @@ def _stripIndent(block,srcfile,entireBlock=False,fileNums=[]):
     if line.strip().startswith('#'): continue
     if entireBlock:
       var=line.split(":")[0].strip()
-      if not var in ['test','testset','build']: 
+      if not var in ['test','testset','build']:
         raise Exception("Formatting error: Cannot find test in file: "+srcfile+" at line: "+str(lineNum)+"\n")
     nspace=len(line)-len(line.lstrip(stripstr))
     newline=line[nspace:]
@@ -95,7 +95,7 @@ def _stripIndent(block,srcfile,entireBlock=False,fileNums=[]):
     if len(fileNums)>0: lineNum+=1
     line=lline[1:] if lline.startswith("!") else lline
     if not line.strip(): continue
-    if line.strip().startswith('#'): 
+    if line.strip().startswith('#'):
       newTestStr+=line+'\n'
     else:
       newline=line[nspace:]
@@ -106,7 +106,7 @@ def _stripIndent(block,srcfile,entireBlock=False,fileNums=[]):
       if line.strip().startswith('#'): continue
       if not newline.startswith(" "):
         var=newline.split(":")[0].strip()
-        if not var in ['test','testset','build']: 
+        if not var in ['test','testset','build']:
           err="Formatting error in file "+srcfile+" at line: " +line+"\n"
           if len(fileNums)>0:
             raise Exception(err+"Check indentation at line number: "+str(lineNum))
@@ -114,7 +114,7 @@ def _stripIndent(block,srcfile,entireBlock=False,fileNums=[]):
             raise Exception(err)
       else:
         var=line.split(":")[0].strip()
-        if var in ['test','testset','build']: 
+        if var in ['test','testset','build']:
           subnspace=len(line)-len(line.lstrip(stripstr))
           if firstPass:
             firstsubnspace=subnspace
@@ -139,12 +139,12 @@ def parseLoopArgs(varset):
   if not keynm.strip(): keynm='nsize'
   lvars=varset.split('{{')[1].split('}')[0]
   suffx=varset.split('{{')[1].split('}')[1]
-  ftype='separate' if suffx.startswith('separate') else 'shared' 
+  ftype='separate' if suffx.startswith('separate') else 'shared'
   return keynm,lvars,ftype
 
 def _getLoopVars(testDict):
   """
-  Given: dictionary that may have 
+  Given: dictionary that may have
   Return:  Variables that cause a test split
   """
   vals=None
@@ -152,7 +152,7 @@ def _getLoopVars(testDict):
   loopVars['separate']=[]
   loopVars['shared']=[]
   # Check nsize
-  if 'nsize' in testDict: 
+  if 'nsize' in testDict:
     varset=testDict['nsize']
     if '{{' in varset:
       keynm,lvars,ftype=parseLoopArgs(varset)
@@ -172,7 +172,7 @@ def _getLoopVars(testDict):
 def _getNewArgs(args,separate=True):
   """
   Given: String that has args that might have loops in them
-  Return:  All of the arguments/values that do not have 
+  Return:  All of the arguments/values that do not have
              for 'separate output' in for loops
              unless separate=False
   """
@@ -185,7 +185,7 @@ def _getNewArgs(args,separate=True):
          if 'separate' in varset: continue
       else:
          if 'separate' not in varset: continue
-       
+
     newargs+="-"+varset.strip()+" "
 
   return newargs
@@ -207,7 +207,7 @@ def _getVarVals(findvar,testDict):
       if not varset.strip(): continue
       if '{{' not in varset: continue
       keyvar,vals,ftype=parseLoopArgs(varset)
-      if keyvar==findvar: 
+      if keyvar==findvar:
         save_vals=vals
 
   if not save_vals: raise Exception("Could not find separate_testvar: "+findvar)
@@ -267,7 +267,7 @@ def genTestsSeparateTestvars(intests,indicts,final=False):
       testnames+=sep_testnames
       sdicts+=sep_dicts
     else:
-      # These are plain vanilla tests (no subtests, no loops) that 
+      # These are plain vanilla tests (no subtests, no loops) that
       # do not have a suffix.  This makes the targets match up with
       # the output file (testname_1.out)
       if final:
@@ -305,7 +305,7 @@ def genTestsSubtestSuffix(testnames,sdicts):
           # Promote
           for kup in acceptedkeys:
             if kup in appendlist: continue
-            if kup in sdicts[i][stest]: 
+            if kup in sdicts[i][stest]:
               newsdict[kup]=sdicts[i][stest][kup]
           # Cleanup
           for st in sdicts[i]["subtests"]: del newsdict[st]
@@ -339,7 +339,7 @@ def splitTests(testname,sdict):
   testnames,sdicts=genTestsSubtestSuffix(testnames,sdicts)
   testnames,sdicts=genTestsSeparateTestvars(testnames,sdicts,final=True)
 
-  # Because I am altering the list, I do this in passes.  Inelegant 
+  # Because I am altering the list, I do this in passes.  Inelegant
 
   return testnames, sdicts
 
@@ -401,7 +401,7 @@ def parseTest(testStr,srcfile,verbosity):
   testname="run"+getlangsplit(bn)
 
   # Tests that have default everything (so empty effectively)
-  if len(testStr)==0: 
+  if len(testStr)==0:
       if '_' not in testname: testname+='_1'
       return [testname], [{}]
 
@@ -428,9 +428,11 @@ def parseTest(testStr,srcfile,verbosity):
       raise Exception("\n\nError in test harness parsing file: "+srcfile+"\n"+var+" from: "+line+" is not a valid keyword")
     # Start by seeing if we are in a subtest
     if line.startswith(" "):
+      if not 'subtestname' in locals():
+        raise Exception("\n\nError in test harness parsing file: "+srcfile+"\nInvalid indentation at line:"+line)
       if var in subdict[subtestname]:
-        subdict[subtestname][var]+=" "+val 
-      else: 
+        subdict[subtestname][var]+=" "+val
+      else:
         subdict[subtestname][var]=val
       if not indentlevel: indentlevel=indentcount
       #if indentlevel!=indentcount: print("Error in indentation:", ln)
@@ -472,7 +474,7 @@ def parseTests(testStr,srcfile,fileNums,verbosity):
 
   testDict={}
 
-  # The first entry should be test: but it might be indented. 
+  # The first entry should be test: but it might be indented.
   newTestStr=_stripIndent(testStr,srcfile,entireBlock=True,fileNums=fileNums)
   if verbosity>2: print(srcfile)
 
@@ -492,7 +494,7 @@ def parseTests(testStr,srcfile,fileNums,verbosity):
       if 'requires' in testDict['build']:
          addToRunRequirements=testDict['build']['requires']
          # People put datafilespath into build, but it needs to be a runtime
-         if 'datafilespath' in testDict['build']['requires']: 
+         if 'datafilespath' in testDict['build']['requires']:
              newreqs=re.sub('datafilespath','',testDict['build']['requires'])
              testDict['build']['requires']=newreqs.strip()
 
