@@ -691,13 +691,14 @@ PETSC_INTERN PetscErrorCode MatConvert_XAIJ_IS(Mat A, MatType type, MatReuse reu
   } else SETERRQ(comm, PETSC_ERR_SUP, "Type %s", ((PetscObject)A)->type_name);
   PetscCall(MatSeqAIJGetArray(Ad, &dd));
   PetscCall(MatSeqAIJGetArray(Ao, &od));
-  PetscCheck(garray, comm, PETSC_ERR_ARG_WRONGSTATE, "garray not present");
 
   /* access relevant information from MPIAIJ */
   PetscCall(MatGetOwnershipRange(A, &str, NULL));
   PetscCall(MatGetOwnershipRangeColumn(A, &stc, NULL));
   PetscCall(MatGetLocalSize(A, &dr, &dc));
   PetscCall(MatGetLocalSize(Ao, NULL, &oc));
+  PetscCheck(!oc || garray, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "garray not present");
+
   PetscCall(MatGetRowIJ(Ad, 0, PETSC_FALSE, PETSC_FALSE, &i, &di, &dj, &flg));
   PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot get IJ structure");
   PetscCall(MatGetRowIJ(Ao, 0, PETSC_FALSE, PETSC_FALSE, &i, &oi, &oj, &flg));
