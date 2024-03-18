@@ -1,0 +1,87 @@
+ISLocalToGlobalMapping Object: 1 MPI process
+  type not yet set
+[0] 0 0
+[0] 1 1
+[0] 2 2
+[0] 3 3
+[0] 4 1
+[0] 5 4
+[0] 6 3
+[0] 7 5
+[0] 8 2
+[0] 9 3
+[0] 10 6
+[0] 11 7
+[0] 12 3
+[0] 13 5
+[0] 14 7
+[0] 15 8
+GETINFO OUTPUT
+[0] Local NP 1
+[0]   procs[0] = 0, shared 12
+[0]     ids[0] = 1
+[0]     ids[1] = 4
+[0]     ids[2] = 2
+[0]     ids[3] = 8
+[0]     ids[4] = 9
+[0]     ids[5] = 12
+[0]     ids[6] = 6
+[0]     ids[7] = 3
+[0]     ids[8] = 7
+[0]     ids[9] = 13
+[0]     ids[10] = 11
+[0]     ids[11] = 14
+GETNODEINFO OUTPUT
+[0] Local N 16
+[0]   sharedby[0] = 1
+[0]     ids[0] = 0
+[0]   sharedby[1] = 2
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]   sharedby[2] = 2
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]   sharedby[3] = 4
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]     ids[2] = 0
+[0]     ids[3] = 0
+[0]   sharedby[4] = 2
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]   sharedby[5] = 1
+[0]     ids[0] = 0
+[0]   sharedby[6] = 4
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]     ids[2] = 0
+[0]     ids[3] = 0
+[0]   sharedby[7] = 2
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]   sharedby[8] = 2
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]   sharedby[9] = 4
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]     ids[2] = 0
+[0]     ids[3] = 0
+[0]   sharedby[10] = 1
+[0]     ids[0] = 0
+[0]   sharedby[11] = 2
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]   sharedby[12] = 4
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]     ids[2] = 0
+[0]     ids[3] = 0
+[0]   sharedby[13] = 2
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]   sharedby[14] = 2
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]   sharedby[15] = 1
+[0]     ids[0] = 0

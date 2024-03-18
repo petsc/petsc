@@ -1625,7 +1625,7 @@ PetscErrorCode ISView(IS is, PetscViewer viewer)
 }
 
 /*@
-  ISLoad - Loads a vector that has been stored in binary or HDF5 format with `ISView()`.
+  ISLoad - Loads an index set that has been stored in binary or HDF5 format with `ISView()`.
 
   Collective
 

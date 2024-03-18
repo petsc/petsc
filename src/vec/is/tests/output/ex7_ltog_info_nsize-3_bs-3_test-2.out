@@ -1,0 +1,213 @@
+ISLocalToGlobalMapping Object: 3 MPI processes
+  type not yet set
+[0] 0:3 3:6
+[0] 3:6 6:9
+[0] 6:9 9:12
+[0] 9:12 9:12
+[0] 12:15 15:18
+[0] 15:18 24:27
+[0] 18:21 9:12
+[0] 21:24 18:21
+[0] 24:27 6:9
+[2] 0:3 15:18
+[2] 3:6 9:12
+[2] 6:9 3:6
+[2] 9:12 12:15
+GETINFO OUTPUT
+[0] Local NP 2
+[0]   procs[0] = 0, shared 21
+[0]     ids[0] = 0
+[0]     ids[1] = 1
+[0]     ids[2] = 2
+[0]     ids[3] = 3
+[0]     ids[4] = 4
+[0]     ids[5] = 5
+[0]     ids[6] = 24
+[0]     ids[7] = 25
+[0]     ids[8] = 26
+[0]     ids[9] = 9
+[0]     ids[10] = 10
+[0]     ids[11] = 11
+[0]     ids[12] = 18
+[0]     ids[13] = 19
+[0]     ids[14] = 20
+[0]     ids[15] = 6
+[0]     ids[16] = 7
+[0]     ids[17] = 8
+[0]     ids[18] = 12
+[0]     ids[19] = 13
+[0]     ids[20] = 14
+[0]   procs[1] = 2, shared 15
+[0]     ids[0] = 0
+[0]     ids[1] = 1
+[0]     ids[2] = 2
+[0]     ids[3] = 6
+[0]     ids[4] = 7
+[0]     ids[5] = 8
+[0]     ids[6] = 9
+[0]     ids[7] = 10
+[0]     ids[8] = 11
+[0]     ids[9] = 18
+[0]     ids[10] = 19
+[0]     ids[11] = 20
+[0]     ids[12] = 12
+[0]     ids[13] = 13
+[0]     ids[14] = 14
+[1] Local NP 0
+[2] Local NP 2
+[2]   procs[0] = 2, shared 9
+[2]     ids[0] = 6
+[2]     ids[1] = 7
+[2]     ids[2] = 8
+[2]     ids[3] = 3
+[2]     ids[4] = 4
+[2]     ids[5] = 5
+[2]     ids[6] = 0
+[2]     ids[7] = 1
+[2]     ids[8] = 2
+[2]   procs[1] = 0, shared 9
+[2]     ids[0] = 6
+[2]     ids[1] = 7
+[2]     ids[2] = 8
+[2]     ids[3] = 3
+[2]     ids[4] = 4
+[2]     ids[5] = 5
+[2]     ids[6] = 0
+[2]     ids[7] = 1
+[2]     ids[8] = 2
+GETNODEINFO OUTPUT
+[0] Local N 27
+[0]   sharedby[0] = 2
+[0]     ids[0] = 0
+[0]     ids[1] = 2
+[0]   sharedby[1] = 2
+[0]     ids[0] = 0
+[0]     ids[1] = 2
+[0]   sharedby[2] = 2
+[0]     ids[0] = 0
+[0]     ids[1] = 2
+[0]   sharedby[3] = 2
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]   sharedby[4] = 2
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]   sharedby[5] = 2
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]   sharedby[6] = 4
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]     ids[2] = 0
+[0]     ids[3] = 2
+[0]   sharedby[7] = 4
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]     ids[2] = 0
+[0]     ids[3] = 2
+[0]   sharedby[8] = 4
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]     ids[2] = 0
+[0]     ids[3] = 2
+[0]   sharedby[9] = 4
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]     ids[2] = 0
+[0]     ids[3] = 2
+[0]   sharedby[10] = 4
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]     ids[2] = 0
+[0]     ids[3] = 2
+[0]   sharedby[11] = 4
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]     ids[2] = 0
+[0]     ids[3] = 2
+[0]   sharedby[12] = 2
+[0]     ids[0] = 0
+[0]     ids[1] = 2
+[0]   sharedby[13] = 2
+[0]     ids[0] = 0
+[0]     ids[1] = 2
+[0]   sharedby[14] = 2
+[0]     ids[0] = 0
+[0]     ids[1] = 2
+[0]   sharedby[15] = 1
+[0]     ids[0] = 0
+[0]   sharedby[16] = 1
+[0]     ids[0] = 0
+[0]   sharedby[17] = 1
+[0]     ids[0] = 0
+[0]   sharedby[18] = 4
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]     ids[2] = 0
+[0]     ids[3] = 2
+[0]   sharedby[19] = 4
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]     ids[2] = 0
+[0]     ids[3] = 2
+[0]   sharedby[20] = 4
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]     ids[2] = 0
+[0]     ids[3] = 2
+[0]   sharedby[21] = 1
+[0]     ids[0] = 0
+[0]   sharedby[22] = 1
+[0]     ids[0] = 0
+[0]   sharedby[23] = 1
+[0]     ids[0] = 0
+[0]   sharedby[24] = 2
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]   sharedby[25] = 2
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[0]   sharedby[26] = 2
+[0]     ids[0] = 0
+[0]     ids[1] = 0
+[1] Local N 0
+[2] Local N 12
+[2]   sharedby[0] = 2
+[2]     ids[0] = 0
+[2]     ids[1] = 2
+[2]   sharedby[1] = 2
+[2]     ids[0] = 0
+[2]     ids[1] = 2
+[2]   sharedby[2] = 2
+[2]     ids[0] = 0
+[2]     ids[1] = 2
+[2]   sharedby[3] = 4
+[2]     ids[0] = 0
+[2]     ids[1] = 0
+[2]     ids[2] = 0
+[2]     ids[3] = 2
+[2]   sharedby[4] = 4
+[2]     ids[0] = 0
+[2]     ids[1] = 0
+[2]     ids[2] = 0
+[2]     ids[3] = 2
+[2]   sharedby[5] = 4
+[2]     ids[0] = 0
+[2]     ids[1] = 0
+[2]     ids[2] = 0
+[2]     ids[3] = 2
+[2]   sharedby[6] = 2
+[2]     ids[0] = 0
+[2]     ids[1] = 2
+[2]   sharedby[7] = 2
+[2]     ids[0] = 0
+[2]     ids[1] = 2
+[2]   sharedby[8] = 2
+[2]     ids[0] = 0
+[2]     ids[1] = 2
+[2]   sharedby[9] = 1
+[2]     ids[0] = 2
+[2]   sharedby[10] = 1
+[2]     ids[0] = 2
+[2]   sharedby[11] = 1
+[2]     ids[0] = 2
