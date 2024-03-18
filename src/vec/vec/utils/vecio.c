@@ -63,7 +63,8 @@ PetscErrorCode VecView_Binary(Vec vec, PetscViewer viewer)
 static PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
 {
   PetscBool    skipHeader, flg;
-  PetscInt     tr[2], rows, N, n, s, bs;
+  uint32_t     tr[2];
+  PetscInt     token, rows, N, n, s, bs;
   PetscScalar *array;
   PetscLayout  map;
 
@@ -76,11 +77,19 @@ static PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
 
   /* read vector header */
   if (!skipHeader) {
-    PetscCall(PetscViewerBinaryRead(viewer, tr, 2, NULL, PETSC_INT));
-    PetscCheck(tr[0] == VEC_FILE_CLASSID, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Not a vector next in file");
-    PetscCheck(tr[1] >= 0, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Vector size (%" PetscInt_FMT ") in file is negative", tr[1]);
-    PetscCheck(N < 0 || N == tr[1], PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Vector in file different size (%" PetscInt_FMT ") than input vector (%" PetscInt_FMT ")", tr[1], N);
-    rows = tr[1];
+    PetscCall(PetscViewerBinaryRead(viewer, tr, 2, NULL, PETSC_INT32));
+    if (tr[0] == VEC_FILE_CLASSID) { // File was written with 32-bit ints
+      token = tr[0];
+      rows  = tr[1];
+    } else { // Assume file was written with 64-bit ints so reconstruct token and read number of rows
+      PetscInt64 rows64;
+      token = ((uint64_t)tr[0] << 32) + tr[1];
+      PetscCheck(token == VEC_FILE_CLASSID, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Not a vector next in file");
+      PetscCall(PetscViewerBinaryRead(viewer, &rows64, 1, NULL, PETSC_INT64));
+      PetscCall(PetscIntCast(rows64, &rows));
+    }
+    PetscCheck(rows >= 0, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Vector size (%" PetscInt_FMT ") in file is negative", rows);
+    PetscCheck(N < 0 || N == rows, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Vector in file different size (%" PetscInt_FMT ") than input vector (%" PetscInt_FMT ")", rows, N);
   } else {
     PetscCheck(N >= 0, PETSC_COMM_SELF, PETSC_ERR_USER, "Vector binary file header was skipped, thus the user must specify the global size of input vector");
     rows = N;

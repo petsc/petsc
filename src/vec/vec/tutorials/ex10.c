@@ -85,6 +85,9 @@ int main(int argc, char **args)
 
   /* PART 2:  Read in vector in binary format */
 
+  char read_file[PETSC_MAX_PATH_LEN] = "vector.dat";
+  // By default, read the same file we just wrote, but with -read_file, read a different input file.
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-read_file", read_file, sizeof read_file, NULL));
   /* Read new vector in binary format */
   PetscCall(PetscLogEventRegister("Read Vector", VEC_CLASSID, &VECTOR_READ));
   PetscCall(PetscLogEventBegin(VECTOR_READ, 0, 0, 0, 0));
@@ -93,18 +96,18 @@ int main(int argc, char **args)
     PetscCall(PetscOptionsSetValue(NULL, "-viewer_binary_mpiio", ""));
   }
   if (isbinary) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "reading vector in binary from vector.dat ...\n"));
-    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, "vector.dat", FILE_MODE_READ, &viewer));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "reading vector in binary from %s ...\n", read_file));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, read_file, FILE_MODE_READ, &viewer));
     PetscCall(PetscViewerBinarySetFlowControl(viewer, 2));
 #if defined(PETSC_HAVE_HDF5)
   } else if (ishdf5) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "reading vector in hdf5 from vector.dat ...\n"));
-    PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, "vector.dat", FILE_MODE_READ, &viewer));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "reading vector in hdf5 from %s ...\n", read_file));
+    PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, read_file, FILE_MODE_READ, &viewer));
 #endif
 #if defined(PETSC_HAVE_ADIOS)
   } else if (isadios) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "reading vector in adios from vector.dat ...\n"));
-    PetscCall(PetscViewerADIOSOpen(PETSC_COMM_WORLD, "vector.dat", FILE_MODE_READ, &viewer));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "reading vector in adios from %s ...\n", read_file));
+    PetscCall(PetscViewerADIOSOpen(PETSC_COMM_WORLD, read_file, FILE_MODE_READ, &viewer));
 #endif
   }
   PetscCall(VecCreate(PETSC_COMM_WORLD, &u));
@@ -153,6 +156,20 @@ int main(int argc, char **args)
      test:
        nsize: 2
        args: -binary
+
+     test:
+       suffix: binary_i32
+       requires: double !complex
+       nsize: 2
+       args: -binary -read_file ${wPETSC_DIR}/share/petsc/datafiles/vectors/vector-i32.dat
+       filter: sed "s|in binary from .*|in binary from vector-i32.dat ...|"
+
+     test:
+       suffix: binary_i64
+       requires: double !complex
+       nsize: 2
+       args: -binary -read_file ${wPETSC_DIR}/share/petsc/datafiles/vectors/vector-i64.dat
+       filter: sed "s|in binary from .*|in binary from vector-i64.dat ...|"
 
      test:
        suffix: 2
