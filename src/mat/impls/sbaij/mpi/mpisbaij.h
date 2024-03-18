@@ -17,7 +17,6 @@ typedef struct {
   MatScalar *v_loc;
 } Mat_MPISBAIJ;
 
-PETSC_INTERN PetscErrorCode MatLoad_MPISBAIJ(Mat, PetscViewer);
 PETSC_INTERN PetscErrorCode MatMult_MPISBAIJ_Hermitian(Mat, Vec, Vec);
 
 PETSC_INTERN PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat);

@@ -5402,8 +5402,6 @@ PetscErrorCode MatTransposeCheckNonzeroState_Private(Mat A, Mat B)
   Level: intermediate
 
   Notes:
-  Only available for `MATAIJ` matrices.
-
   The sequential algorithm has a running time of the order of the number of nonzeros; the parallel
   test involves parallel copies of the block off-diagonal parts of the matrix.
 
@@ -9314,11 +9312,10 @@ PetscErrorCode MatIsSymmetric(Mat A, PetscReal tol, PetscBool *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscAssertPointer(flg, 3);
-
-  if (A->symmetric == PETSC_BOOL3_TRUE) *flg = PETSC_TRUE;
-  else if (A->symmetric == PETSC_BOOL3_FALSE) *flg = PETSC_FALSE;
+  if (A->symmetric != PETSC_BOOL3_UNKNOWN) *flg = PetscBool3ToBool(A->symmetric);
   else {
-    PetscUseTypeMethod(A, issymmetric, tol, flg);
+    if (A->ops->issymmetric) PetscUseTypeMethod(A, issymmetric, tol, flg);
+    else PetscCall(MatIsTranspose(A, A, tol, flg));
     if (!tol) PetscCall(MatSetOption(A, MAT_SYMMETRIC, *flg));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -9354,11 +9351,10 @@ PetscErrorCode MatIsHermitian(Mat A, PetscReal tol, PetscBool *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscAssertPointer(flg, 3);
-
-  if (A->hermitian == PETSC_BOOL3_TRUE) *flg = PETSC_TRUE;
-  else if (A->hermitian == PETSC_BOOL3_FALSE) *flg = PETSC_FALSE;
+  if (A->hermitian != PETSC_BOOL3_UNKNOWN) *flg = PetscBool3ToBool(A->hermitian);
   else {
-    PetscUseTypeMethod(A, ishermitian, tol, flg);
+    if (A->ops->ishermitian) PetscUseTypeMethod(A, ishermitian, tol, flg);
+    else PetscCall(MatIsHermitianTranspose(A, A, tol, flg));
     if (!tol) PetscCall(MatSetOption(A, MAT_HERMITIAN, *flg));
   }
   PetscFunctionReturn(PETSC_SUCCESS);

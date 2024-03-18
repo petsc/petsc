@@ -1806,6 +1806,8 @@ static PetscErrorCode MatEliminateZeros_MPISBAIJ(Mat A, PetscBool keep)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatLoad_MPISBAIJ(Mat, PetscViewer);
+
 static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
                                        MatGetRow_MPISBAIJ,
                                        MatRestoreRow_MPISBAIJ,
@@ -2556,7 +2558,7 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin, MatDuplicateOption cpvalu
 /* Used for both MPIBAIJ and MPISBAIJ matrices */
 #define MatLoad_MPISBAIJ_Binary MatLoad_MPIBAIJ_Binary
 
-PetscErrorCode MatLoad_MPISBAIJ(Mat mat, PetscViewer viewer)
+static PetscErrorCode MatLoad_MPISBAIJ(Mat mat, PetscViewer viewer)
 {
   PetscBool isbinary;
 
