@@ -204,7 +204,7 @@ int main(int argc, char **argv)
 
   /*
    For linear problems with a time-dependent f(u,t) in the equation
-   u_t = f(u,t), the user provides the discretized right-hand-side
+   u_t = f(u,t), the user provides the discretized right-hand side
    as a time-dependent matrix.
    */
   PetscCall(RHSLaplacian(appctx.ts, 0.0, u, appctx.SEMop.stiff, appctx.SEMop.stiff, &appctx));

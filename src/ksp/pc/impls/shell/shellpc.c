@@ -798,7 +798,7 @@ PetscErrorCode PCShellGetName(PC pc, const char *name[])
 
   Calling sequence of `apply`:
 + pc               - the preconditioner
-. b                - right-hand-side
+. b                - right-hand side
 . x                - current iterate
 . r                - work space
 . rtol             - relative tolerance of residual norm to stop at

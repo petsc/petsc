@@ -165,7 +165,7 @@ static PetscErrorCode ZeroBCSolution(AppCtx *user, const DMDACoor2d *c, PetscSca
 
      f(x,y) = -u_xx - u_yy - lambda exp(u)
 
-  such that u(x,y) is an exact solution with f(x,y) as the right hand side forcing term.
+  such that u(x,y) is an exact solution with f(x,y) as the right-hand side forcing term.
  */
 static PetscErrorCode MMSSolution1(AppCtx *user, const DMDACoor2d *c, PetscScalar *u)
 {

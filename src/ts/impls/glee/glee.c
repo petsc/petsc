@@ -50,7 +50,7 @@ typedef struct {
   Vec         *Y;         /* Solution vector (along with auxiliary solution y~ or eps) */
   Vec         *X;         /* Temporary solution vector */
   Vec         *YStage;    /* Stage values */
-  Vec         *YdotStage; /* Stage right hand side */
+  Vec         *YdotStage; /* Stage right-hand side */
   Vec          W;         /* Right-hand-side for implicit stage solve */
   Vec          Ydot;      /* Work vector holding Ydot during residual evaluation */
   Vec          yGErr;     /* Vector holding the global error after a step is completed */
@@ -524,7 +524,7 @@ static PetscErrorCode TSStep_GLEE(TS ts)
         PetscCall(VecMAXPY(YStage[i], i, ws, YdotStage));
       } else { /* Implicit stage */
         glee->scoeff = 1.0 / A[i * s + i];
-        /* compute right-hand-side */
+        /* compute right-hand side */
         PetscCall(VecZeroEntries(W));
         for (j = 0; j < r; j++) wr[j] = U[i * r + j];
         PetscCall(VecMAXPY(W, r, wr, X));
@@ -1004,7 +1004,7 @@ static PetscErrorCode TSDestroy_GLEE(TS ts)
 /*MC
       TSGLEE - ODE and DAE solver using General Linear with Error Estimation schemes
 
-  The user should provide the right hand side of the equation using `TSSetRHSFunction()`.
+  The user should provide the right-hand side of the equation using `TSSetRHSFunction()`.
 
   Level: beginner
 

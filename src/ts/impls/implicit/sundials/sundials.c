@@ -76,7 +76,7 @@ static int TSPSolve_Sundials_Private(realtype tn, N_Vector y, N_Vector fy, N_Vec
 }
 
 /*
-        TSFunction_Sundials - routine that we provide to SUNDIALS that applies the right hand side.
+        TSFunction_Sundials - routine that we provide to SUNDIALS that applies the right-hand side.
 */
 static int TSFunction_Sundials(realtype t, N_Vector y, N_Vector ydot, void *ctx)
 {
@@ -97,7 +97,7 @@ static int TSFunction_Sundials(realtype t, N_Vector y, N_Vector ydot, void *ctx)
   PetscCallAbort(comm, VecPlaceArray(yy, y_data));
   PetscCallAbort(comm, VecPlaceArray(yyd, ydot_data));
 
-  /* Now compute the right hand side function, via IFunction unless only the more efficient RHSFunction is set */
+  /* Now compute the right-hand side function, via IFunction unless only the more efficient RHSFunction is set */
   PetscCall(TSGetDM(ts, &dm));
   PetscCall(DMGetDMTS(dm, &tsdm));
   PetscCall(DMTSGetIFunction(dm, &ifunction, NULL));
@@ -340,7 +340,7 @@ static PetscErrorCode TSSetUp_Sundials(TS ts)
   if (cvode->maxdt > 0) PetscCallExternal(CVodeSetMaxStep, cvode->mem, (realtype)cvode->maxdt);
 
   /* Call CVodeInit to initialize the integrator memory and specify the
-   * user's right hand side function in u'=f(t,u), the initial time T0, and
+   * user's right-hand side function in u'=f(t,u), the initial time T0, and
    * the initial dependent variable vector cvode->y */
   PetscCallExternal(CVodeInit, cvode->mem, TSFunction_Sundials, ts->ptime, cvode->y);
 

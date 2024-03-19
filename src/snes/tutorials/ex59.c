@@ -84,10 +84,10 @@ int main(int argc, char **argv)
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize application:
-     Store right-hand-side of PDE and exact solution
+     Store right-hand side of PDE and exact solution
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  /* set right hand side and initial guess to be exact solution of continuim problem */
+  /* set right-hand side and initial guess to be exact solution of continuim problem */
 #define SQR(x) ((x) * (x))
   xp = 0.0;
   for (i = 0; i < n; i++) {

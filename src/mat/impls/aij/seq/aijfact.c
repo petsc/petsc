@@ -607,6 +607,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B, Mat A, const MatFactorInfo *info
   C->ops->solvetranspose    = MatSolveTranspose_SeqAIJ;
   C->ops->solvetransposeadd = MatSolveTransposeAdd_SeqAIJ;
   C->ops->matsolve          = MatMatSolve_SeqAIJ;
+  C->ops->matsolvetranspose = MatMatSolveTranspose_SeqAIJ;
   C->assembled              = PETSC_TRUE;
   C->preallocated           = PETSC_TRUE;
 
@@ -749,6 +750,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B, Mat A, const MatFactorIn
   C->ops->solvetranspose    = MatSolveTranspose_SeqAIJ_inplace;
   C->ops->solvetransposeadd = MatSolveTransposeAdd_SeqAIJ_inplace;
   C->ops->matsolve          = MatMatSolve_SeqAIJ_inplace;
+  C->ops->matsolvetranspose = NULL;
 
   C->assembled    = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;
@@ -1121,6 +1123,71 @@ PetscErrorCode MatMatSolve_SeqAIJ(Mat A, Mat B, Mat X)
       PetscSparseDenseMinusDot(sum, tmp, v, vi, nz);
       x[c[i]] = tmp[i] = sum * v[nz]; /* v[nz] = aa[adiag[i]] */
     }
+    b += ldb;
+    x += ldx;
+  }
+  PetscCall(ISRestoreIndices(isrow, &rout));
+  PetscCall(ISRestoreIndices(iscol, &cout));
+  PetscCall(MatDenseRestoreArrayRead(B, &b));
+  PetscCall(MatDenseRestoreArray(X, &x));
+  PetscCall(PetscLogFlops(B->cmap->n * (2.0 * a->nz - n)));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode MatMatSolveTranspose_SeqAIJ(Mat A, Mat B, Mat X)
+{
+  Mat_SeqAIJ        *a     = (Mat_SeqAIJ *)A->data;
+  IS                 iscol = a->col, isrow = a->row;
+  PetscInt           i, n = A->rmap->n, *vi, *ai = a->i, *aj = a->j, *adiag = a->diag, j;
+  PetscInt           nz, neq, ldb, ldx;
+  const PetscInt    *rout, *cout, *r, *c;
+  PetscScalar       *x, *tmp = a->solve_work, s1;
+  const PetscScalar *b, *aa  = a->a, *v;
+  PetscBool          isdense;
+
+  PetscFunctionBegin;
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscObjectTypeCompare((PetscObject)B, MATSEQDENSE, &isdense));
+  PetscCheck(isdense, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "B matrix must be a SeqDense matrix");
+  if (X != B) {
+    PetscCall(PetscObjectTypeCompare((PetscObject)X, MATSEQDENSE, &isdense));
+    PetscCheck(isdense, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "X matrix must be a SeqDense matrix");
+  }
+  PetscCall(MatDenseGetArrayRead(B, &b));
+  PetscCall(MatDenseGetLDA(B, &ldb));
+  PetscCall(MatDenseGetArray(X, &x));
+  PetscCall(MatDenseGetLDA(X, &ldx));
+  tmp = a->solve_work;
+  PetscCall(ISGetIndices(isrow, &rout));
+  r = rout;
+  PetscCall(ISGetIndices(iscol, &cout));
+  c = cout;
+  for (neq = 0; neq < B->cmap->n; neq++) {
+    /* copy the b into temp work space according to permutation */
+    for (i = 0; i < n; i++) tmp[i] = b[c[i]];
+
+    /* forward solve the U^T */
+    for (i = 0; i < n; i++) {
+      v  = aa + adiag[i + 1] + 1;
+      vi = aj + adiag[i + 1] + 1;
+      nz = adiag[i] - adiag[i + 1] - 1;
+      s1 = tmp[i];
+      s1 *= v[nz]; /* multiply by inverse of diagonal entry */
+      for (j = 0; j < nz; j++) tmp[vi[j]] -= s1 * v[j];
+      tmp[i] = s1;
+    }
+
+    /* backward solve the L^T */
+    for (i = n - 1; i >= 0; i--) {
+      v  = aa + ai[i];
+      vi = aj + ai[i];
+      nz = ai[i + 1] - ai[i];
+      s1 = tmp[i];
+      for (j = 0; j < nz; j++) tmp[vi[j]] -= s1 * v[j];
+    }
+
+    /* copy tmp into x according to permutation */
+    for (i = 0; i < n; i++) x[r[i]] = tmp[i];
     b += ldb;
     x += ldx;
   }

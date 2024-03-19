@@ -76,7 +76,7 @@ static PetscErrorCode KSPGuessDestroy_Fischer(KSPGuess guess)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Note: do not change the b right hand side as is done in the publication */
+/* Note: do not change the b right-hand side as is done in the publication */
 static PetscErrorCode KSPGuessFormGuess_Fischer_1(KSPGuess guess, Vec b, Vec x)
 {
   KSPGuessFischer *itg = (KSPGuessFischer *)guess->data;
@@ -132,9 +132,9 @@ static PetscErrorCode KSPGuessUpdate_Fischer_1(KSPGuess guess, Vec b, Vec x)
 }
 
 /*
-  Given a basis generated already this computes a new guess x from the new right hand side b
+  Given a basis generated already this computes a new guess x from the new right-hand side b
   Figures out the components of b in each btilde direction and adds them to x
-  Note: do not change the b right hand side as is done in the publication
+  Note: do not change the b right-hand side as is done in the publication
 */
 static PetscErrorCode KSPGuessFormGuess_Fischer_2(KSPGuess guess, Vec b, Vec x)
 {
@@ -435,7 +435,7 @@ static PetscErrorCode KSPGuessFischerSetModel_Fischer(KSPGuess guess, PetscInt m
     Level: intermediate
 
     Notes:
-    The algorithm is different from Fischer's paper because we do not CHANGE the right hand side of the new
+    The algorithm is different from Fischer's paper because we do not CHANGE the right-hand side of the new
     problem and solve the problem with an initial guess of zero, rather we solve the original problem
     with a nonzero initial guess (this is done so that the linear solver convergence tests are based on
     the original RHS). We use the $xtilde = x - xguess$ as the new direction so that it is not

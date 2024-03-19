@@ -1249,7 +1249,7 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
    [2] `DM` aware setup
    If a `DM` is attached to the `PC`, it is re-partitioned on the sub-communicator c'.
    c' is created via `PetscSubcommCreate()`.
-   Both the Bmat operator and the right hand side vector are permuted into the new DOF ordering defined by the re-partitioned `DM`.
+   Both the Bmat operator and the right-hand side vector are permuted into the new DOF ordering defined by the re-partitioned `DM`.
    Currently only support for re-partitioning a `DMDA` is provided.
    Any explicitly defined nullspace or near nullspace vectors attached to the original Bmat operator (B) are extracted, re-partitioned and set on the re-partitioned Bmat operator (B').
    Currently there is no support define nullspaces via a user supplied method (e.g. as passed to `MatNullSpaceSetFunction()`).

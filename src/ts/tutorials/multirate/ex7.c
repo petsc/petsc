@@ -183,7 +183,7 @@ static PetscErrorCode FVRHSFunction(TS ts, PetscReal time, Vec X, Vec F, void *v
   hf = (ctx->xmax - ctx->xmin) / 2.0 * (1.0 + 1.0 / ctx->hratio) / Mx;
   PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, Xloc)); /* X is solution vector which does not contain ghost points       */
   PetscCall(DMGlobalToLocalEnd(da, X, INSERT_VALUES, Xloc));
-  PetscCall(VecZeroEntries(F)); /* F is the right hand side function corresponds to center points */
+  PetscCall(VecZeroEntries(F)); /* F is the right-hand side function corresponds to center points */
   PetscCall(DMDAVecGetArray(da, Xloc, &x));
   PetscCall(DMDAVecGetArray(da, F, &f));
   PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));
@@ -332,7 +332,7 @@ static PetscErrorCode FVRHSFunctionslow(TS ts, PetscReal time, Vec X, Vec F, voi
   hf = (ctx->xmax - ctx->xmin) / 2.0 * (1.0 + 1.0 / ctx->hratio) / Mx;
   PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, Xloc)); /* X is solution vector which does not contain ghost points       */
   PetscCall(DMGlobalToLocalEnd(da, X, INSERT_VALUES, Xloc));
-  PetscCall(VecZeroEntries(F)); /* F is the right hand side function corresponds to center points */
+  PetscCall(VecZeroEntries(F)); /* F is the right-hand side function corresponds to center points */
   PetscCall(DMDAVecGetArray(da, Xloc, &x));
   PetscCall(VecGetArray(F, &f));
   PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));
@@ -454,7 +454,7 @@ static PetscErrorCode FVRHSFunctionfast(TS ts, PetscReal time, Vec X, Vec F, voi
   hf = (ctx->xmax - ctx->xmin) / 2.0 * (1.0 + 1.0 / ctx->hratio) / Mx;
   PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, Xloc)); /* X is solution vector which does not contain ghost points       */
   PetscCall(DMGlobalToLocalEnd(da, X, INSERT_VALUES, Xloc));
-  PetscCall(VecZeroEntries(F)); /* F is the right hand side function corresponds to center points */
+  PetscCall(VecZeroEntries(F)); /* F is the right-hand side function corresponds to center points */
   PetscCall(DMDAVecGetArray(da, Xloc, &x));
   PetscCall(VecGetArray(F, &f));
   PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));

@@ -518,7 +518,7 @@ static PetscErrorCode SNESComputePicardJacobian_DMDA(SNES snes, Vec X, Mat A, Ma
 }
 
 /*@C
-  DMDASNESSetPicardLocal - set a local right hand side and matrix evaluation function for Picard iteration with `DMDA`
+  DMDASNESSetPicardLocal - set a local right-hand side and matrix evaluation function for Picard iteration with `DMDA`
 
   Logically Collective
 

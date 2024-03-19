@@ -151,7 +151,7 @@ int main(int argc, char **argv)
   if (flg) {
     /*
        For linear problems with a time-dependent f(u,t) in the equation
-       u_t = f(u,t), the user provides the discretized right-hand-side
+       u_t = f(u,t), the user provides the discretized right-hand side
        as a time-dependent matrix.
     */
     PetscCall(TSSetRHSFunction(ts, NULL, TSComputeRHSFunctionLinear, &appctx));
@@ -159,7 +159,7 @@ int main(int argc, char **argv)
   } else {
     /*
        For linear problems with a time-independent f(u) in the equation
-       u_t = f(u), the user provides the discretized right-hand-side
+       u_t = f(u), the user provides the discretized right-hand side
        as a matrix only once, and then sets a null matrix evaluation
        routine.
     */

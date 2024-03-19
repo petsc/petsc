@@ -43,7 +43,7 @@ PetscErrorCode MatrixFreePreconditioner(PC, Vec, Vec);
 */
 typedef struct {
   DM          da;    /* distributed array */
-  Vec         F;     /* right-hand-side of PDE */
+  Vec         F;     /* right-hand side of PDE */
   PetscMPIInt rank;  /* rank of processor */
   PetscMPIInt size;  /* size of communicator */
   PetscReal   h;     /* mesh spacing */
@@ -229,7 +229,7 @@ int main(int argc, char **argv)
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize application:
-     Store right-hand-side of PDE and exact solution
+     Store right-hand side of PDE and exact solution
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /*

@@ -761,7 +761,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerMathematicaPutVector(PetscViewer, Vec);
    Level: advanced
 
    Notes:
-   Temporary construct for handling multiply right hand side solves
+   Temporary construct for handling multiply right-hand side solves
 
    This is faked by storing a single vector that has enough array space for
    n vectors

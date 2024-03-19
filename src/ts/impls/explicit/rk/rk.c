@@ -1459,7 +1459,7 @@ PetscErrorCode TSRKGetMultirate(TS ts, PetscBool *use_multirate)
 /*MC
       TSRK - ODE and DAE solver using Runge-Kutta schemes
 
-  The user should provide the right hand side of the equation
+  The user should provide the right-hand side of the equation
   using `TSSetRHSFunction()`.
 
   Level: beginner

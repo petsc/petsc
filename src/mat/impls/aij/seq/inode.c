@@ -1945,6 +1945,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B, Mat A, const MatFactorInfo
   C->ops->solvetranspose    = MatSolveTranspose_SeqAIJ;
   C->ops->solvetransposeadd = MatSolveTransposeAdd_SeqAIJ;
   C->ops->matsolve          = MatMatSolve_SeqAIJ;
+  C->ops->matsolvetranspose = MatMatSolveTranspose_SeqAIJ;
   C->assembled              = PETSC_TRUE;
   C->preallocated           = PETSC_TRUE;
 

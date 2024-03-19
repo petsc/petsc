@@ -188,7 +188,7 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
     /* Our direction in the Fixed Variable Set is fixed.  Calculate the
        information needed for the step in the Free Variable Set.  To
        do this, we need to know the diagonal perturbation and the
-       right hand side. */
+       right-hand side. */
 
     PetscCall(TaoVecGetSubVec(asls->da, asls->free, tao->subset_type, 0.0, &asls->r1));
     PetscCall(TaoVecGetSubVec(asls->ff, asls->free, tao->subset_type, 0.0, &asls->r2));
@@ -197,7 +197,7 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
     PetscCall(VecPointwiseDivide(asls->r2, asls->r2, asls->r3));
 
     /* r1 is the diagonal perturbation
-       r2 is the right hand side
+       r2 is the right-hand side
        r3 is no longer needed
 
        Now need to modify r2 for our direction choice in the fixed

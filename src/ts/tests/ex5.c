@@ -259,7 +259,7 @@ int main(int argc, char **argv)
      Extract global vectors from DA;
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(DMCreateGlobalVector(da, &T));
-  PetscCall(VecDuplicate(T, &rhs)); /* r: vector to put the computed right hand side */
+  PetscCall(VecDuplicate(T, &rhs)); /* r: vector to put the computed right-hand side */
 
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
   PetscCall(TSSetProblemType(ts, TS_NONLINEAR));

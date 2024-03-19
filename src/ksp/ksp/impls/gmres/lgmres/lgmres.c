@@ -124,7 +124,7 @@ static PetscErrorCode KSPLGMRESCycle(PetscInt *itcount, KSP ksp)
   KSPCheckNorm(ksp, res_norm);
   res = res_norm;
 
-  /* first entry in right-hand-side of hessenberg system is just the initial residual norm */
+  /* first entry in the right-hand side of the Hessenberg system is just the initial residual norm */
   *GRS(0) = res_norm;
 
   /* check for the convergence */
@@ -182,7 +182,7 @@ static PetscErrorCode KSPLGMRESCycle(PetscInt *itcount, KSP ksp)
          not A_AUGVEC and then apply the PC here to the augvec */
     }
 
-    /* update hessenberg matrix and do Gram-Schmidt - new direction is in VEC_VV(1+loc_it)*/
+    /* update Hessenberg matrix and do Gram-Schmidt - new direction is in VEC_VV(1+loc_it)*/
     PetscCall((*lgmres->orthog)(ksp, loc_it));
 
     /* new entry in hessenburg is the 2-norm of our new direction */
@@ -202,7 +202,7 @@ static PetscErrorCode KSPLGMRESCycle(PetscInt *itcount, KSP ksp)
       hapend = PETSC_TRUE;
     }
 
-    /* Now apply rotations to new col of hessenberg (and right side of system),
+    /* apply rotations to the new column of the Hessenberg (and the right-hand side of the system),
        calculate new rotation, and get new residual norm at the same time*/
     PetscCall(KSPLGMRESUpdateHessenberg(ksp, loc_it, hapend, &res));
     if (ksp->reason) break;
@@ -460,7 +460,7 @@ static PetscErrorCode KSPLGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
 
   /*
     compute the new plane rotation, and apply it to:
-     1) the right-hand-side of the Hessenberg system (GRS)
+     1) the right-hand side of the Hessenberg system (GRS)
         note: it affects GRS(it) and GRS(it+1)
      2) the new column of the Hessenberg matrix
         note: it affects HH(it,it) which is currently pointed to

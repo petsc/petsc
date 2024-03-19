@@ -245,14 +245,14 @@ PetscErrorCode DMKSPGetComputeOperators(DM dm, KSPComputeOperatorsFn **func, voi
 }
 
 /*@C
-  DMKSPSetComputeRHS - set `KSP` right hand side evaluation function
+  DMKSPSetComputeRHS - set `KSP` right-hand side evaluation function
 
   Not Collective
 
   Input Parameters:
 + dm   - `DM` used with a `KSP`
-. func - right hand side evaluation function,  for calling sequence see `KSPComputeRHSFn`
-- ctx  - context for right hand side evaluation
+. func - right-hand side evaluation function,  for calling sequence see `KSPComputeRHSFn`
+- ctx  - context for right-hand side evaluation
 
   Level: developer
 
@@ -286,7 +286,7 @@ PetscErrorCode DMKSPSetComputeRHS(DM dm, KSPComputeRHSFn *func, void *ctx)
   Input Parameters:
 + dm   - `DM` to be used with `KSP`
 . func - initial guess evaluation function, for calling sequence see `KSPComputeInitialGuessFn`
-- ctx  - context for right hand side evaluation
+- ctx  - context for initial guess evaluation
 
   Level: developer
 
@@ -309,7 +309,7 @@ PetscErrorCode DMKSPSetComputeInitialGuess(DM dm, KSPComputeInitialGuessFn *func
 }
 
 /*@C
-  DMKSPGetComputeRHS - get `KSP` right hand side evaluation function
+  DMKSPGetComputeRHS - get `KSP` right-hand side evaluation function
 
   Not Collective
 
@@ -317,8 +317,8 @@ PetscErrorCode DMKSPSetComputeInitialGuess(DM dm, KSPComputeInitialGuessFn *func
 . dm - `DM` to be used with `KSP`
 
   Output Parameters:
-+ func - right hand side evaluation function,  for calling sequence see `KSPComputeRHSFn`
-- ctx  - context for right hand side evaluation
++ func - right-hand side evaluation function,  for calling sequence see `KSPComputeRHSFn`
+- ctx  - context for right-hand side evaluation
 
   Level: advanced
 
@@ -346,7 +346,7 @@ PetscErrorCode DMKSPGetComputeRHS(DM dm, KSPComputeRHSFn **func, void *ctx)
 
   Output Parameters:
 + func - initial guess evaluation function, for calling sequence see `KSPComputeInitialGuessFn`
-- ctx  - context for right hand side evaluation
+- ctx  - context for right-hand side evaluation
 
   Level: advanced
 

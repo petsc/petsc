@@ -93,7 +93,7 @@ PetscErrorCode KSPAppendOptionsPrefix(KSP ksp, const char prefix[])
 }
 
 /*@
-  KSPSetUseFischerGuess - Use the Paul Fischer algorithm or its variants to compute initial guesses for a set of solves with related right hand sides
+  KSPSetUseFischerGuess - Use the Paul Fischer algorithm or its variants to compute initial guesses for a set of solves with related right-hand sides
 
   Logically Collective
 
@@ -311,7 +311,7 @@ PETSC_INTERN PetscErrorCode KSPCheckPCMPI(KSP);
 . -ksp_fischer_guess <model,size>                                         - uses the Fischer initial guess generator for repeated linear solves
 . -ksp_constant_null_space                                                - assume the operator (matrix) has the constant vector in its null space
 . -ksp_test_null_space                                                    - tests the null space set with `MatSetNullSpace()` to see if it truly is a null space
-. -ksp_knoll                                                              - compute initial guess by applying the preconditioner to the right hand side
+. -ksp_knoll                                                              - compute initial guess by applying the preconditioner to the right-hand side
 . -ksp_monitor_cancel                                                     - cancel all previous convergene monitor routines set
 . -ksp_monitor                                                            - print residual norm at each iteration
 . -ksp_monitor draw::draw_lg                                              - plot residual norm at each iteration

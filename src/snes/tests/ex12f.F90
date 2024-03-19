@@ -106,7 +106,7 @@
       PetscCallA(MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE,ierr))
       PetscCallA(MatGetType(J,matrixname,ierr))
 
-! Store right-hand-side of PDE and exact solution
+! Store right-hand side of PDE and exact solution
       PetscCallA(VecGetOwnershipRange(x,start,end,ierr))
       xp = h*start
       nn = end - start

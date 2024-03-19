@@ -1025,7 +1025,7 @@ integrator (e.g., ``TSGLEE``) provides this information.
 Handling of discontinuities
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For problems that involve discontinuous right hand sides, one can set an
+For problems that involve discontinuous right-hand sides, one can set an
 “event” function :math:`g(t,u)` for PETSc to detect and locate the times
 of discontinuities (zeros of :math:`g(t,u)`). Events can be defined
 through the event monitoring routine
@@ -1399,7 +1399,7 @@ Using TChem from PETSc
 
 TChem [6]_ is a package originally developed at Sandia National
 Laboratory that can read in CHEMKIN [7]_ data files and compute the
-right hand side function and its Jacobian for a reaction ODE system. To
+right-hand side function and its Jacobian for a reaction ODE system. To
 utilize PETSc’s ODE solvers for these systems, first install PETSc with
 the additional ``configure`` option ``--download-tchem``. We currently
 provide two examples of its use; one for single cell reaction and one

@@ -82,7 +82,7 @@ int main(int argc, char **args)
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
 
-  /* Create right-hand-side and solution vectors */
+  /* Create right-hand side and solution vectors */
   PetscCall(VecCreate(PETSC_COMM_WORLD, &u));
   PetscCall(VecSetSizes(u, PETSC_DECIDE, N));
   PetscCall(VecSetFromOptions(u));
@@ -109,7 +109,7 @@ int main(int argc, char **args)
   PetscCall(VecAssemblyBegin(b));
   PetscCall(VecAssemblyEnd(b));
 
-  /* Modify matrix and right-hand-side for Dirichlet boundary conditions */
+  /* Modify matrix and right-hand side for Dirichlet boundary conditions */
   PetscCall(PetscMalloc1(4 * m, &rows));
   for (i = 0; i < m + 1; i++) {
     rows[i]             = i;               /* bottom */

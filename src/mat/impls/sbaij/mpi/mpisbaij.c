@@ -1034,7 +1034,8 @@ static PetscErrorCode MatView_MPISBAIJ(Mat mat, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMult_MPISBAIJ_Hermitian(Mat A, Vec xx, Vec yy)
+#if defined(PETSC_USE_COMPLEX)
+static PetscErrorCode MatMult_MPISBAIJ_Hermitian(Mat A, Vec xx, Vec yy)
 {
   Mat_MPISBAIJ      *a   = (Mat_MPISBAIJ *)A->data;
   PetscInt           mbs = a->mbs, bs = A->rmap->bs;
@@ -1066,6 +1067,7 @@ PetscErrorCode MatMult_MPISBAIJ_Hermitian(Mat A, Vec xx, Vec yy)
   PetscCall((*a->B->ops->multadd)(a->B, a->slvec1b, a->slvec1a, yy));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+#endif
 
 static PetscErrorCode MatMult_MPISBAIJ(Mat A, Vec xx, Vec yy)
 {
@@ -1807,6 +1809,8 @@ static PetscErrorCode MatEliminateZeros_MPISBAIJ(Mat A, PetscBool keep)
 }
 
 static PetscErrorCode MatLoad_MPISBAIJ(Mat, PetscViewer);
+static PetscErrorCode MatGetRowMaxAbs_MPISBAIJ(Mat, Vec, PetscInt[]);
+static PetscErrorCode MatSOR_MPISBAIJ(Mat, Vec, PetscReal, MatSORType, PetscReal, PetscInt, PetscInt, Vec);
 
 static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
                                        MatGetRow_MPISBAIJ,
@@ -2569,7 +2573,7 @@ static PetscErrorCode MatLoad_MPISBAIJ(Mat mat, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatGetRowMaxAbs_MPISBAIJ(Mat A, Vec v, PetscInt idx[])
+static PetscErrorCode MatGetRowMaxAbs_MPISBAIJ(Mat A, Vec v, PetscInt idx[])
 {
   Mat_MPISBAIJ *a = (Mat_MPISBAIJ *)A->data;
   Mat_SeqBAIJ  *b = (Mat_SeqBAIJ *)a->B->data;
@@ -2652,7 +2656,7 @@ PetscErrorCode MatGetRowMaxAbs_MPISBAIJ(Mat A, Vec v, PetscInt idx[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSOR_MPISBAIJ(Mat matin, Vec bb, PetscReal omega, MatSORType flag, PetscReal fshift, PetscInt its, PetscInt lits, Vec xx)
+static PetscErrorCode MatSOR_MPISBAIJ(Mat matin, Vec bb, PetscReal omega, MatSORType flag, PetscReal fshift, PetscInt its, PetscInt lits, Vec xx)
 {
   Mat_MPISBAIJ      *mat = (Mat_MPISBAIJ *)matin->data;
   PetscInt           mbs = mat->mbs, bs = matin->rmap->bs;

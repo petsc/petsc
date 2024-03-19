@@ -75,7 +75,7 @@ command
 
    KSPSolve(KSP ksp,Vec b,Vec x);
 
-where ``b`` and ``x`` respectively denote the right-hand-side and
+where ``b`` and ``x`` respectively denote the right-hand side and
 solution vectors. On return, the iteration number at which the iterative
 process stopped can be obtained using
 
@@ -461,7 +461,7 @@ Convergence Tests
 The default convergence test, ``KSPConvergedDefault()``, is based on the
 :math:`l_2`-norm of the residual. Convergence (or divergence) is decided
 by three quantities: the decrease of the residual norm relative to the
-norm of the right hand side, ``rtol``, the absolute size of the residual
+norm of the right-hand side, ``rtol``, the absolute size of the residual
 norm, ``atol``, and the relative increase in the residual, ``dtol``.
 Convergence is detected at iteration :math:`k` if
 
@@ -647,7 +647,7 @@ performance of pipelined methods. See :any:`doc_faq_pipelined` for details.
 Other KSP Options
 ^^^^^^^^^^^^^^^^^
 
-To obtain the solution vector and right hand side from a ``KSP``
+To obtain the solution vector and right-hand side from a ``KSP``
 context, one uses
 
 .. code-block::
@@ -2274,11 +2274,11 @@ The ``Amat`` should be the *first* matrix argument used with
 The PETSc solvers will now
 handle the null space during the solution process.
 
-If the right hand side of linear system is not in the range of ``Amat``, that is it is not
+If the right-hand side of linear system is not in the range of ``Amat``, that is it is not
 orthogonal to the null space of ``Amat`` transpose, then the residual
 norm of the Krylov iteration will not converge to zero; it will converge to a non-zero value while the
 solution is converging to the least squares solution of the linear system. One can, if one desires,
-apply ``MatNullSpaceRemove()`` with the null space of ``Amat`` transpose to the right hand side before calling
+apply ``MatNullSpaceRemove()`` with the null space of ``Amat`` transpose to the right-hand side before calling
 ``KSPSolve()``. Then the residual norm will converge to zero.
 
 

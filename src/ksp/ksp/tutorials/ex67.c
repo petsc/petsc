@@ -129,9 +129,9 @@ int main(int argc, char **argv)
 
 /*
 
-     This intentionally includes something in the right hand side that is not in the range of the matrix A.
+     This intentionally includes something in the right-hand side that is not in the range of the matrix A.
      Since MatSetNullSpace() is called and the matrix is symmetric; the Krylov method automatically removes this
-     portion of the right hand side before solving the linear system.
+     portion of the right-hand side before solving the linear system.
 */
 PetscErrorCode FormRightHandSide(Vec f, void *ctx)
 {

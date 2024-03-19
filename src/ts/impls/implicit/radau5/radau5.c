@@ -19,13 +19,13 @@ static void FVPOL(int *N, double *X, double *Y, double *F, double *RPAR, void *I
   PetscCallAbort(PETSC_COMM_SELF, VecPlaceArray(cvode->work, Y));
   PetscCallAbort(PETSC_COMM_SELF, VecPlaceArray(cvode->workf, F));
 
-  /* Now compute the right hand side function, via IFunction unless only the more efficient RHSFunction is set */
+  /* Now compute the right-hand side function, via IFunction unless only the more efficient RHSFunction is set */
   PetscCallAbort(PETSC_COMM_SELF, TSGetDM(ts, &dm));
   PetscCallAbort(PETSC_COMM_SELF, DMGetDMTS(dm, &tsdm));
   PetscCallAbort(PETSC_COMM_SELF, DMTSGetIFunction(dm, &ifunction, NULL));
   if (!ifunction) {
     PetscCallAbort(PETSC_COMM_SELF, TSComputeRHSFunction(ts, *X, cvode->work, cvode->workf));
-  } else { /* If rhsfunction is also set, this computes both parts and scale them to the right hand side */
+  } else { /* If rhsfunction is also set, this computes both parts and scale them to the right-hand side */
     Vec yydot;
 
     PetscCallAbort(PETSC_COMM_SELF, VecDuplicate(cvode->work, &yydot));

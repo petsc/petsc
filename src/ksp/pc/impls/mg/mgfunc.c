@@ -7,7 +7,7 @@
 
   Input Parameters:
 + mat - the matrix
-. b   - the right-hand-side
+. b   - the right-hand side
 - x   - the approximate solution
 
   Output Parameter:
@@ -31,7 +31,7 @@ PetscErrorCode PCMGResidualDefault(Mat mat, Vec b, Vec x, Vec r)
 
   Input Parameters:
 + mat - the matrix
-. b   - the right-hand-side
+. b   - the right-hand side
 - x   - the approximate solution
 
   Output Parameter:
@@ -56,7 +56,7 @@ PetscErrorCode PCMGResidualTransposeDefault(Mat mat, Vec b, Vec x, Vec r)
 
   Input Parameters:
 + mat - the matrix
-. b   - the right-hand-side
+. b   - the right-hand side
 - x   - the approximate solution
 
   Output Parameter:
@@ -81,7 +81,7 @@ PetscErrorCode PCMGMatResidualDefault(Mat mat, Mat b, Mat x, Mat r)
 
   Input Parameters:
 + mat - the matrix
-. b   - the right-hand-side
+. b   - the right-hand side
 - x   - the approximate solution
 
   Output Parameter:

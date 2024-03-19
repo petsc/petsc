@@ -63,7 +63,7 @@ int main(int argc, char **args)
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   /*
      Determine files from which we read the linear system
-     (matrix, right-hand-side and initial guess vector).
+     (matrix, right-hand side and initial guess vector).
   */
   PetscCall(PetscOptionsGetString(NULL, NULL, "-f", file, sizeof(file), NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-truncate", &truncate, NULL));

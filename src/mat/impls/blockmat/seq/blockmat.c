@@ -50,7 +50,7 @@ static PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A, Vec bb, PetscReal omega, 
 
   PetscCall(VecSet(xx, 0.0));
   PetscCall(VecGetArray(xx, &x));
-  /* copy right hand side because it must be modified during iteration */
+  /* copy right-hand side because it must be modified during iteration */
   PetscCall(VecCopy(bb, a->workb));
   PetscCall(VecGetArrayRead(a->workb, &b));
 
@@ -75,7 +75,7 @@ static PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A, Vec bb, PetscReal omega, 
         PetscCall(VecPlaceArray(right, x + i * bs));
         PetscCall(MatSolve(diag[i], left, right));
 
-        /* now adjust right hand side, see MatSOR_SeqSBAIJ */
+        /* now adjust right-hand side, see MatSOR_SeqSBAIJ */
         for (j = 0; j < n; j++) {
           PetscCall(MatMultTranspose(v[j], right, left));
           PetscCall(VecPlaceArray(middle, b + idx[j] * bs));

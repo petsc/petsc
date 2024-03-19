@@ -318,7 +318,7 @@ PetscErrorCode KSPGuessUpdate(KSPGuess guess, Vec rhs, Vec sol)
 
   Input Parameters:
 + guess - the initial guess context
-. rhs   - the current right hand side vector
+. rhs   - the current right-hand side vector
 - sol   - the initial guess vector
 
   Level: developer

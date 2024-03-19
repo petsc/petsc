@@ -1246,7 +1246,7 @@ static PetscErrorCode TSDestroy_MPRK(TS ts)
 /*MC
       TSMPRK - ODE solver using Multirate Partitioned Runge-Kutta schemes
 
-  The user should provide the right hand side of the equation using `TSSetRHSFunction()`.
+  The user should provide the right-hand side of the equation using `TSSetRHSFunction()`.
 
   Level: beginner
 

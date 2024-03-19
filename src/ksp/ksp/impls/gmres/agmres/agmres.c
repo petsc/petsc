@@ -92,7 +92,7 @@ static PetscErrorCode KSPBuildSolution_AGMRES(KSP ksp, Vec ptr, Vec *result)
    One cycle of DGMRES is performed to find the eigenvalues. The same data structures are used since AGMRES extends DGMRES
    Note that when the basis is  to be augmented, then this function computes the harmonic Ritz vectors from this first cycle.
    Input :
-    - The operators (matrix, preconditioners and right hand side) are  normally required.
+    - The operators (matrix, preconditioners and right-hand side) are  normally required.
     - max_k : the size of the (non augmented) basis.
     - neig: The number of eigenvectors to augment, if deflation is needed
    Output :
@@ -358,7 +358,7 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp, PetscInt it)
   /* QR factorize the Hessenberg matrix */
   PetscCallBLAS("LAPACKgeqrf", LAPACKgeqrf_(&lC, &KspSize, agmres->hh_origin, &ldH, agmres->tau, agmres->work, &lwork, &info));
   PetscCheck(!info, PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB, "Error in LAPACK routine XGEQRF INFO=%" PetscBLASInt_FMT, info);
-  /* Update the right hand side of the least square problem */
+  /* Update the right-hand side of the least square problem */
   PetscCall(PetscArrayzero(agmres->nrs, N));
 
   agmres->nrs[0] = ksp->rnorm;
