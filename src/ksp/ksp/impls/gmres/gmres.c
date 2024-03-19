@@ -378,7 +378,7 @@ static PetscErrorCode KSPGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool h
 
   /*
     compute the new plane rotation, and apply it to:
-     1) the right-hand-side of the Hessenberg system
+     1) the right-hand side of the Hessenberg system
      2) the new column of the Hessenberg matrix
     thus obtaining the updated value of the residual
   */

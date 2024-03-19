@@ -364,7 +364,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ptr)
 #endif
   }
 
-  /* force right hand side to be consistent for singular matrix */
+  /* force right-hand side to be consistent for singular matrix */
   /* note this is really a hack, normally the model would provide you with a consistent right handside */
   if (user->bcType == NEUMANN) {
     MatNullSpace nullspace;

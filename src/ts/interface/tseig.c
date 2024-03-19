@@ -31,7 +31,7 @@ struct _n_TSMonitorSPEigCtx {
 . ctx - the context
 
   Options Database Key:
-. -ts_monitor_sp_eig - plot egienvalues of linearized right hand side
+. -ts_monitor_sp_eig - plot egienvalues of linearized right-hand side
 
   Level: intermediate
 

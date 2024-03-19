@@ -206,7 +206,7 @@ static PetscErrorCode MatDestroy_Pastix(Mat A)
 }
 
 /*
-  Gather right-hand-side.
+  Gather right-hand side.
   Call for Solve step.
   Scatter solution.
  */

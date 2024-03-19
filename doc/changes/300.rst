@@ -122,7 +122,7 @@ Changes: 3.0.0
 .. rubric:: SNES:
 
 -  SNESSetRhs() and SNESSetSolution() were removed. Use instead
-   SNESSolve(snes, b, x) to pass right hand side (optional, can be
+   SNESSolve(snes, b, x) to pass right-hand side (optional, can be
    PETSC_NULL) and solution (required).
 -  SNES now takes ownership of user-provided vector for right hand
    side and solution passed to SNESSolve(), and until the next

@@ -78,7 +78,7 @@ static PetscErrorCode KSPFGMRESCycle(PetscInt *itcount, KSP ksp)
   PetscCall(VecNorm(VEC_VV(0), NORM_2, &res_norm));
   KSPCheckNorm(ksp, res_norm);
 
-  /* first entry in right-hand-side of hessenberg system is just
+  /* first entry in right-hand side of hessenberg system is just
      the initial residual norm */
   *RS(0) = res_norm;
 
@@ -326,7 +326,7 @@ static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
 
   /*
     compute the new plane rotation, and apply it to:
-     1) the right-hand-side of the Hessenberg system (RS)
+     1) the right-hand side of the Hessenberg system (RS)
         note: it affects RS(it) and RS(it+1)
      2) the new column of the Hessenberg matrix
         note: it affects HH(it,it) which is currently pointed to

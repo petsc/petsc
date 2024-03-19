@@ -51,7 +51,7 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes, PetscInt ivec, 
   PetscFunctionBegin;
   nu = fMnorm * fMnorm;
 
-  /* construct the right hand side and xi factors */
+  /* construct the right-hand side and xi factors */
   if (l > 0) {
     PetscCall(VecMDotBegin(FM, l, Fdot, xi));
     PetscCall(VecMDotBegin(Fdot[ivec], l, Fdot, beta));

@@ -1145,7 +1145,7 @@ static PetscErrorCode MatZeroRowsColumns_SeqSBAIJ(Mat A, PetscInt is_n, const Pe
   PetscBool         *zeroed, vecs = PETSC_FALSE;
 
   PetscFunctionBegin;
-  /* fix right hand side if needed */
+  /* fix right-hand side if needed */
   if (x && b) {
     PetscCall(VecGetArrayRead(x, &xx));
     PetscCall(VecGetArray(b, &bb));

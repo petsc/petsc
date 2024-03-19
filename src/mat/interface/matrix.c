@@ -3782,7 +3782,7 @@ PetscErrorCode MatMatSolveTranspose(Mat A, Mat B, Mat X)
   Level: developer
 
   Note:
-  For MUMPS, it only supports centralized sparse compressed column format on the host processor for right hand side matrix. User must create `Bt` in sparse compressed row
+  For MUMPS, it only supports centralized sparse compressed column format on the host processor for right-hand side matrix. User must create `Bt` in sparse compressed row
   format on the host processor and call `MatMatTransposeSolve()` to implement MUMPS' `MatMatSolve()`.
 
 .seealso: [](ch_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatMatSolve()`, `MatMatSolveTranspose()`, `MatLUFactor()`, `MatCholeskyFactor()`
@@ -4116,7 +4116,7 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat, Vec b, Vec y, Vec x)
 
   Input Parameters:
 + mat   - the matrix
-. b     - the right hand side
+. b     - the right-hand side
 . omega - the relaxation factor
 . flag  - flag indicating the type of SOR (see below)
 . shift - diagonal shift
@@ -6168,7 +6168,7 @@ PetscErrorCode MatZeroEntries(Mat mat)
 . rows    - the global row indices
 . diag    - value put in the diagonal of the eliminated rows
 . x       - optional vector of the solution for zeroed rows (other entries in vector are not used), these must be set before this call
-- b       - optional vector of the right hand side, that will be adjusted by provided solution entries
+- b       - optional vector of the right-hand side, that will be adjusted by provided solution entries
 
   Level: intermediate
 
@@ -6225,7 +6225,7 @@ PetscErrorCode MatZeroRowsColumns(Mat mat, PetscInt numRows, const PetscInt rows
 . is   - the rows to zero
 . diag - value put in all diagonals of eliminated rows (0.0 will even eliminate diagonal entry)
 . x    - optional vector of solutions for zeroed rows (other entries in vector are not used)
-- b    - optional vector of right hand side, that will be adjusted by provided solution
+- b    - optional vector of right-hand side, that will be adjusted by provided solution
 
   Level: intermediate
 
@@ -6264,7 +6264,7 @@ PetscErrorCode MatZeroRowsColumnsIS(Mat mat, IS is, PetscScalar diag, Vec x, Vec
 . rows    - the global row indices
 . diag    - value put in the diagonal of the zeroed rows
 . x       - optional vector of solutions for zeroed rows (other entries in vector are not used), these must be set before this call
-- b       - optional vector of right hand side, that will be adjusted by provided solution entries
+- b       - optional vector of right-hand side, that will be adjusted by provided solution entries
 
   Level: intermediate
 
@@ -6332,7 +6332,7 @@ PetscErrorCode MatZeroRows(Mat mat, PetscInt numRows, const PetscInt rows[], Pet
 . is   - index set of rows to remove (if `NULL` then no row is removed)
 . diag - value put in all diagonals of eliminated rows
 . x    - optional vector of solutions for zeroed rows (other entries in vector are not used)
-- b    - optional vector of right hand side, that will be adjusted by provided solution
+- b    - optional vector of right-hand side, that will be adjusted by provided solution
 
   Level: intermediate
 
@@ -6372,7 +6372,7 @@ PetscErrorCode MatZeroRowsIS(Mat mat, IS is, PetscScalar diag, Vec x, Vec b)
 . rows    - the grid coordinates (and component number when dof > 1) for matrix rows
 . diag    - value put in all diagonals of eliminated rows (0.0 will even eliminate diagonal entry)
 . x       - optional vector of solutions for zeroed rows (other entries in vector are not used)
-- b       - optional vector of right hand side, that will be adjusted by provided solution
+- b       - optional vector of right-hand side, that will be adjusted by provided solution
 
   Level: intermediate
 
@@ -6453,7 +6453,7 @@ PetscErrorCode MatZeroRowsStencil(Mat mat, PetscInt numRows, const MatStencil ro
 . rows    - the grid coordinates (and component number when dof > 1) for matrix rows
 . diag    - value put in all diagonals of eliminated rows (0.0 will even eliminate diagonal entry)
 . x       - optional vector of solutions for zeroed rows (other entries in vector are not used)
-- b       - optional vector of right hand side, that will be adjusted by provided solution
+- b       - optional vector of right-hand side, that will be adjusted by provided solution
 
   Level: intermediate
 
@@ -6534,7 +6534,7 @@ PetscErrorCode MatZeroRowsColumnsStencil(Mat mat, PetscInt numRows, const MatSte
 . rows    - the local row indices
 . diag    - value put in all diagonals of eliminated rows
 . x       - optional vector of solutions for zeroed rows (other entries in vector are not used)
-- b       - optional vector of right hand side, that will be adjusted by provided solution
+- b       - optional vector of right-hand side, that will be adjusted by provided solution
 
   Level: intermediate
 
@@ -6587,7 +6587,7 @@ PetscErrorCode MatZeroRowsLocal(Mat mat, PetscInt numRows, const PetscInt rows[]
 . is   - index set of rows to remove
 . diag - value put in all diagonals of eliminated rows
 . x    - optional vector of solutions for zeroed rows (other entries in vector are not used)
-- b    - optional vector of right hand side, that will be adjusted by provided solution
+- b    - optional vector of right-hand side, that will be adjusted by provided solution
 
   Level: intermediate
 
@@ -6632,7 +6632,7 @@ PetscErrorCode MatZeroRowsLocalIS(Mat mat, IS is, PetscScalar diag, Vec x, Vec b
 . rows    - the global row indices
 . diag    - value put in all diagonals of eliminated rows
 . x       - optional vector of solutions for zeroed rows (other entries in vector are not used)
-- b       - optional vector of right hand side, that will be adjusted by provided solution
+- b       - optional vector of right-hand side, that will be adjusted by provided solution
 
   Level: intermediate
 
@@ -6681,7 +6681,7 @@ PetscErrorCode MatZeroRowsColumnsLocal(Mat mat, PetscInt numRows, const PetscInt
 . is   - index set of rows to remove
 . diag - value put in all diagonals of eliminated rows
 . x    - optional vector of solutions for zeroed rows (other entries in vector are not used)
-- b    - optional vector of right hand side, that will be adjusted by provided solution
+- b    - optional vector of right-hand side, that will be adjusted by provided solution
 
   Level: intermediate
 
@@ -8986,7 +8986,7 @@ PetscErrorCode MatRestoreNullSpaces(PetscInt n, Mat mat[], MatNullSpace *nullsp[
 
   Overwrites any previous null space that may have been attached. You can remove the null space from the matrix object by calling this routine with an nullsp of `NULL`
 
-  For inconsistent singular systems (linear systems where the right hand side is not in the range of the operator) the `KSP` residuals will not converge to
+  For inconsistent singular systems (linear systems where the right-hand side is not in the range of the operator) the `KSP` residuals will not converge to
   to zero but the linear system will still be solved in a least squares sense.
 
   The fundamental theorem of linear algebra (Gilbert Strang, Introduction to Applied Mathematics, page 72) states that
@@ -9852,7 +9852,7 @@ PetscErrorCode MatFactorRestoreSchurComplement(Mat F, Mat *S, MatFactorSchurStat
 
   Input Parameters:
 + F   - the factored matrix obtained by calling `MatGetFactor()`
-. rhs - location where the right hand side of the Schur complement system is stored
+. rhs - location where the right-hand side of the Schur complement system is stored
 - sol - location where the solution of the Schur complement system has to be returned
 
   Level: advanced
@@ -9896,7 +9896,7 @@ PetscErrorCode MatFactorSolveSchurComplementTranspose(Mat F, Vec rhs, Vec sol)
 
   Input Parameters:
 + F   - the factored matrix obtained by calling `MatGetFactor()`
-. rhs - location where the right hand side of the Schur complement system is stored
+. rhs - location where the right-hand side of the Schur complement system is stored
 - sol - location where the solution of the Schur complement system has to be returned
 
   Level: advanced

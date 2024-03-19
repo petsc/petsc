@@ -74,7 +74,7 @@ PC Object: 8 MPI processes
         PC Object: 8 MPI processes
           type not yet set
           PC has not been set up so information may be incomplete
-        estimating eigenvalues using noisy right hand side
+        estimating eigenvalues using a noisy random number generated right-hand side
       maximum iterations=2, nonzero initial guess
       tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning

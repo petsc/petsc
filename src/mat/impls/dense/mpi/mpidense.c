@@ -439,7 +439,7 @@ static PetscErrorCode MatZeroRows_MPIDense(Mat A, PetscInt n, const PetscInt row
   PetscFunctionBegin;
   /* get locally owned rows */
   PetscCall(PetscLayoutMapLocal(A->rmap, n, rows, &len, &lrows, NULL));
-  /* fix right hand side if needed */
+  /* fix right-hand side if needed */
   if (x && b) {
     const PetscScalar *xx;
     PetscScalar       *bb;

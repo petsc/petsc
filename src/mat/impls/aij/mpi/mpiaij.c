@@ -851,7 +851,7 @@ static PetscErrorCode MatZeroRows_MPIAIJ(Mat A, PetscInt N, const PetscInt rows[
   /* get locally owned rows */
   PetscCall(MatZeroRowsMapLocal_Private(A, N, rows, &len, &lrows));
   PetscCall(MatHasCongruentLayouts(A, &cong));
-  /* fix right hand side if needed */
+  /* fix right-hand side if needed */
   if (x && b) {
     const PetscScalar *xx;
     PetscScalar       *bb;

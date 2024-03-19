@@ -104,7 +104,7 @@ static PetscErrorCode MatZeroRowsColumns_SeqDense(Mat A, PetscInt N, const Petsc
   }
   if (!N) PetscFunctionReturn(PETSC_SUCCESS);
 
-  /* fix right hand side if needed */
+  /* fix right-hand side if needed */
   if (x && b) {
     Vec xt;
 
@@ -2048,7 +2048,7 @@ static PetscErrorCode MatZeroRows_SeqDense(Mat A, PetscInt N, const PetscInt row
   }
   if (!N) PetscFunctionReturn(PETSC_SUCCESS);
 
-  /* fix right hand side if needed */
+  /* fix right-hand side if needed */
   if (x && b) {
     PetscCall(VecGetArrayRead(x, &xx));
     PetscCall(VecGetArray(b, &bb));

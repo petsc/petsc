@@ -1493,7 +1493,7 @@ PetscErrorCode KSPConvergedDefaultSetConvergedMaxits(KSP ksp, PetscBool flg)
 +     `rtol` - relative tolerance,
 .     `abstol` - absolute tolerance.
 .     `dtol` - divergence tolerance,
--     `rnorm_0` - the two norm of the right hand side (or the preconditioned norm, depending on what was set with
+-     `rnorm_0` - the two norm of the right-hand side (or the preconditioned norm, depending on what was set with
   `KSPSetNormType()`. When initial guess is non-zero you
   can call `KSPConvergedDefaultSetUIRNorm()` to use the norm of (b - A*(initial guess))
   as the starting point for relative norm convergence testing, that is as `rnorm_0`.
@@ -1596,7 +1596,7 @@ PetscErrorCode KSPConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSPConv
       if (cctx->initialrtol) {
         PetscCall(PetscInfo(ksp, "Linear solver has converged. Residual norm %14.12e is less than relative tolerance %14.12e times initial residual norm %14.12e at iteration %" PetscInt_FMT "\n", (double)rnorm, (double)ksp->rtol, (double)ksp->rnorm0, n));
       } else {
-        PetscCall(PetscInfo(ksp, "Linear solver has converged. Residual norm %14.12e is less than relative tolerance %14.12e times initial right hand side norm %14.12e at iteration %" PetscInt_FMT "\n", (double)rnorm, (double)ksp->rtol, (double)ksp->rnorm0, n));
+        PetscCall(PetscInfo(ksp, "Linear solver has converged. Residual norm %14.12e is less than relative tolerance %14.12e times initial right-hand side norm %14.12e at iteration %" PetscInt_FMT "\n", (double)rnorm, (double)ksp->rtol, (double)ksp->rnorm0, n));
       }
       *reason = KSP_CONVERGED_RTOL;
     }
@@ -1985,7 +1985,7 @@ PetscErrorCode KSPSetDM(KSP ksp, DM dm)
 }
 
 /*@
-  KSPSetDMActive - Indicates the `DM` should be used to generate the linear system matrix and right hand side vector
+  KSPSetDMActive - Indicates the `DM` should be used to generate the linear system matrix and right-hand side vector
 
   Logically Collective
 

@@ -88,13 +88,13 @@ int main(int argc, char **args)
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
 
-  /* create right hand side and solution */
+  /* create right-hand side and solution */
   PetscCall(MatCreateVecs(C, &u, &b));
   PetscCall(VecDuplicate(u, &ustar));
   PetscCall(VecSet(u, 0.0));
   PetscCall(VecSet(b, 0.0));
 
-  /* assemble the right hand side: only process 0 adds the values, not scalable */
+  /* assemble the right-hand side: only MPI process with rank 0 adds the values, this is not scalable */
   if (rank == 0) {
     for (i = 0; i < M; i++) {
       /* location of lower left corner of element */

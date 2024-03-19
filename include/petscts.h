@@ -822,7 +822,7 @@ PETSC_EXTERN PetscErrorCode DMTSSetIFunctionSerialize(DM, PetscErrorCode (*)(voi
 PETSC_EXTERN PetscErrorCode DMTSSetIJacobianSerialize(DM, PetscErrorCode (*)(void *, PetscViewer), PetscErrorCode (*)(void **, PetscViewer));
 
 /*S
-  DMDATSRHSFunctionLocalFn - A prototype of a local `TS` right hand side residual evaluation function for use with `DMDA` that would be passed to `DMDATSSetRHSFunctionLocal()`
+  DMDATSRHSFunctionLocalFn - A prototype of a local `TS` right-hand side residual evaluation function for use with `DMDA` that would be passed to `DMDATSSetRHSFunctionLocal()`
 
   Calling Sequence:
 + info - defines the subdomain to evaluate the residual on

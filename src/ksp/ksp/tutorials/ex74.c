@@ -206,7 +206,7 @@ int main(int argc, char **argv)
   for (n = 0, time = 0., total_its = 0; n < ctxt.niter; n++) {
     PetscInt its;
 
-    /* compute and set the right hand side */
+    /* compute and set the right-hand side */
     PetscCall(MatMult(R, u, rhs));
 
     /* Solve the system */

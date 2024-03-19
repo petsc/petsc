@@ -37,7 +37,7 @@ int main(int argc, char **args)
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
 
-  /* create right hand side and solution */
+  /* create right-hand side and solution */
   PetscCall(VecCreate(PETSC_COMM_WORLD, &u));
   PetscCall(VecSetSizes(u, PETSC_DECIDE, N));
   PetscCall(VecSetFromOptions(u));

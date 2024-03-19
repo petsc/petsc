@@ -1687,8 +1687,8 @@ Common reasons for KSP not converging are:
   a stern talking-to by the nearest Krylov Subspace Method representative.
 
 - The equations are intentionally singular and ``MatSetNullSpace()`` was used, but the
-  right hand side is not consistent. You may have to call ``MatNullSpaceRemove()`` on the
-  right hand side before calling ``KSPSolve()``. See ``MatSetTransposeNullSpace()``.
+  right-hand side is not consistent. You may have to call ``MatNullSpaceRemove()`` on the
+  right-hand side before calling ``KSPSolve()``. See ``MatSetTransposeNullSpace()``.
 
 - The equations are indefinite so that standard preconditioners don't work. Usually you
   will know this from the physics, but you can check with

@@ -5815,7 +5815,7 @@ PetscErrorCode PCBDDCScatterCoarseDataBegin(PC pc, InsertMode imode, ScatterMode
       PetscCall(VecPlaceArray(from, array));
       PetscCall(VecRestoreArrayRead(tvec, &array));
     }
-  } else { /* from local to global -> put data in coarse right hand side */
+  } else { /* from local to global -> put data in coarse right-hand side */
     from = pcbddc->vec1_P;
     to   = pcbddc->coarse_vec;
   }
@@ -5833,7 +5833,7 @@ PetscErrorCode PCBDDCScatterCoarseDataEnd(PC pc, InsertMode imode, ScatterMode s
   if (smode == SCATTER_REVERSE) { /* from global to local -> get data from coarse solution */
     from = pcbddc->coarse_vec;
     to   = pcbddc->vec1_P;
-  } else { /* from local to global -> put data in coarse right hand side */
+  } else { /* from local to global -> put data in coarse right-hand side */
     from = pcbddc->vec1_P;
     to   = pcbddc->coarse_vec;
   }

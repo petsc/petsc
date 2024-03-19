@@ -88,7 +88,7 @@ int main(int argc, char **argv)
 
   /*
       For linear problems with a time-dependent f(U,t) in the equation
-     u_t = f(u,t), the user provides the discretized right-hand-side
+     u_t = f(u,t), the user provides the discretized right-hand side
       as a time-dependent matrix.
   */
   PetscCall(TSSetRHSFunction(ts, NULL, TSComputeRHSFunctionLinear, &appctx));

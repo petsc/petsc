@@ -869,7 +869,7 @@ PetscErrorCode PCApplyRichardsonExists(PC pc, PetscBool *exists)
 
   Input Parameters:
 + pc        - the preconditioner context
-. b         - the right hand side
+. b         - the right-hand side
 . w         - one work vector
 . rtol      - relative decrease in residual norm convergence criteria
 . abstol    - absolute residual norm convergence criteria
@@ -1552,7 +1552,7 @@ PetscErrorCode PCGetOptionsPrefix(PC pc, const char *prefix[])
 }
 
 /*
-   Indicates the right hand side will be changed by KSPSolve(), this occurs for a few
+   Indicates the right-hand side will be changed by KSPSolve(), this occurs for a few
   preconditioners including BDDC and Eisentat that transform the equations before applying
   the Krylov methods
 */

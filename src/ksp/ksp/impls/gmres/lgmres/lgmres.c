@@ -124,7 +124,7 @@ static PetscErrorCode KSPLGMRESCycle(PetscInt *itcount, KSP ksp)
   KSPCheckNorm(ksp, res_norm);
   res = res_norm;
 
-  /* first entry in right-hand-side of hessenberg system is just the initial residual norm */
+  /* first entry in right-hand side of hessenberg system is just the initial residual norm */
   *GRS(0) = res_norm;
 
   /* check for the convergence */
@@ -460,7 +460,7 @@ static PetscErrorCode KSPLGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
 
   /*
     compute the new plane rotation, and apply it to:
-     1) the right-hand-side of the Hessenberg system (GRS)
+     1) the right-hand side of the Hessenberg system (GRS)
         note: it affects GRS(it) and GRS(it+1)
      2) the new column of the Hessenberg matrix
         note: it affects HH(it,it) which is currently pointed to

@@ -127,7 +127,7 @@ int main(int argc, char **argv)
 
   /* Set optional user-defined monitoring routine */
   PetscCall(TSMonitorSet(ts, Monitor, &appctx, NULL));
-  /* set the right hand side of U_t = RHSfunction(U,t) */
+  /* set the right-hand side of U_t = RHSfunction(U,t) */
   PetscCall(TSSetRHSFunction(ts, NULL, (PetscErrorCode(*)(TS, PetscScalar, Vec, Vec, void *))RHSfunction, &appctx));
 
   if (appctx.useAlhs) {
@@ -507,7 +507,7 @@ PetscErrorCode rhs(AppCtx *obj, PetscScalar *y, PetscInt nz, PetscScalar *z, Pet
   /*  call femBg to set the tri-diagonal b matrix and vector g  */
   PetscCall(femBg(btri, g, nz, z, t));
 
-  /*  setting the entries of the right hand side vector  */
+  /*  setting the entries of the right-hand side vector  */
   for (i = 0; i < nz - 2; i++) {
     val = 0.0;
     js  = 0;
@@ -528,7 +528,7 @@ PetscErrorCode rhs(AppCtx *obj, PetscScalar *y, PetscInt nz, PetscScalar *z, Pet
 }
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%   Function to form the right hand side of the time-stepping problem.                       %%
+%%   Function to form the right-hand side of the time-stepping problem.                       %%
 %% -------------------------------------------------------------------------------------------%%
   if (useAlhs):
     globalout = By+g

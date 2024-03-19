@@ -34,7 +34,7 @@ subroutine MyKSPConverged(ksp,n,rnorm,flag,defaultctx,ierr)
 !     ksp     - linear solver context
 !     ksp      - Krylov subspace method context
 !     pc       - preconditioner context
-!     x, b, u  - approx solution, right-hand-side, exact solution vectors
+!     x, b, u  - approx solution, right-hand side, exact solution vectors
 !     A        - matrix that defines linear system
 !     its      - iterations for convergence
 !     norm     - norm of error in solution

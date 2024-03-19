@@ -8,7 +8,7 @@ static char help[] = "Newton methods to solve u'' + u^{2} = f in parallel. Uses 
 */
 typedef struct {
   DM        da; /* distributed array */
-  Vec       F;  /* right-hand-side of PDE */
+  Vec       F;  /* right-hand side of PDE */
   PetscReal h;  /* mesh spacing */
 } ApplicationCtx;
 

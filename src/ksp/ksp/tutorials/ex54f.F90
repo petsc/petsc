@@ -6,7 +6,7 @@
 !           | 0 epsilon |
 !
 !    rotated by angle 'theta' (-theta <90> in degrees) with anisotropic parameter 'epsilon' (-epsilon <0.0>).
-!    Blob right hand side centered at C (-blob_center C(1),C(2) <0,0>)
+!    Blob right-hand side centered at C (-blob_center C(1),C(2) <0,0>)
 !    Dirichlet BCs on y=-1 face.
 !
 !    -out_matlab will generate binary files for A,x,b and a ex54f.m file that reads them and plots them in matlab.

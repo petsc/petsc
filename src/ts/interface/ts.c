@@ -610,7 +610,7 @@ PetscErrorCode TSComputeRHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B)
 - U  - state vector
 
   Output Parameter:
-. y - right hand side
+. y - right-hand side
 
   Level: developer
 
@@ -784,7 +784,7 @@ PetscErrorCode TSGetRHSMats_Private(TS ts, Mat *Arhs, Mat *Brhs)
 - imex - flag indicates if the method is `TSIMEX` so that the RHSFunction should be kept separate
 
   Output Parameter:
-. Y - right hand side
+. Y - right-hand side
 
   Level: developer
 
@@ -1011,7 +1011,7 @@ PetscErrorCode TSComputeIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal
 
   Input Parameters:
 + ts  - the `TS` context obtained from `TSCreate()`
-. r   - vector to put the computed right hand side (or `NULL` to have it created)
+. r   - vector to put the computed right-hand side (or `NULL` to have it created)
 . f   - routine for evaluating the right-hand-side function
 - ctx - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
@@ -1249,7 +1249,7 @@ PetscErrorCode TSGetIFunction(TS ts, Vec *r, TSIFunctionFn **func, void **ctx)
 }
 
 /*@C
-  TSGetRHSFunction - Returns the vector where the right hand side is stored and the function/context to compute it.
+  TSGetRHSFunction - Returns the vector where the right-hand side is stored and the function/context to compute it.
 
   Not Collective
 
@@ -1257,8 +1257,8 @@ PetscErrorCode TSGetIFunction(TS ts, Vec *r, TSIFunctionFn **func, void **ctx)
 . ts - the `TS` context
 
   Output Parameters:
-+ r    - vector to hold computed right hand side (or `NULL`)
-. func - the function to compute right hand side (or `NULL`)
++ r    - vector to hold computed right-hand side (or `NULL`)
+. func - the function to compute right-hand side (or `NULL`)
 - ctx  - the function context (or `NULL`)
 
   Level: advanced
@@ -4445,7 +4445,7 @@ PetscErrorCode SNESTSFormJacobian(SNES snes, Vec U, Mat A, Mat B, void *ctx)
 }
 
 /*@C
-  TSComputeRHSFunctionLinear - Evaluate the right hand side via the user-provided Jacobian, for linear problems Udot = A U only
+  TSComputeRHSFunctionLinear - Evaluate the right-hand side via the user-provided Jacobian, for linear problems Udot = A U only
 
   Collective
 
@@ -4456,12 +4456,12 @@ PetscErrorCode SNESTSFormJacobian(SNES snes, Vec U, Mat A, Mat B, void *ctx)
 - ctx - context
 
   Output Parameter:
-. F - right hand side
+. F - right-hand side
 
   Level: intermediate
 
   Note:
-  This function is intended to be passed to `TSSetRHSFunction()` to evaluate the right hand side for linear problems.
+  This function is intended to be passed to `TSSetRHSFunction()` to evaluate the right-hand side for linear problems.
   The matrix (and optionally the evaluation context) should be passed to `TSSetRHSJacobian()`.
 
 .seealso: [](ch_ts), `TS`, `TSSetRHSFunction()`, `TSSetRHSJacobian()`, `TSComputeRHSJacobianConstant()`

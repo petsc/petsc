@@ -219,7 +219,7 @@ PetscErrorCode KSPChebyshevEstEigSet(KSP ksp, PetscReal a, PetscReal b, PetscRea
 }
 
 /*@
-  KSPChebyshevEstEigSetUseNoisy - use a noisy right hand side in order to do the estimate of the extreme eigenvalues instead of the given right hand side
+  KSPChebyshevEstEigSetUseNoisy - use a noisy random number generated right-hand side to estimate the extreme eigenvalues instead of the given right-hand side
 
   Logically Collective
 
@@ -228,7 +228,7 @@ PetscErrorCode KSPChebyshevEstEigSet(KSP ksp, PetscReal a, PetscReal b, PetscRea
 - use - `PETSC_TRUE` to use noisy
 
   Options Database Key:
-. -ksp_chebyshev_esteig_noisy <true,false> - Use noisy right hand side for estimate
+. -ksp_chebyshev_esteig_noisy <true,false> - Use noisy right-hand side for estimate
 
   Level: intermediate
 
@@ -376,7 +376,7 @@ static PetscErrorCode KSPSetFromOptions_Chebyshev(KSP ksp, PetscOptionItems *Pet
   if ((cheb->emin == 0. || cheb->emax == 0.) && !cheb->kspest) PetscCall(KSPChebyshevEstEigSet(ksp, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE));
 
   if (cheb->kspest) {
-    PetscCall(PetscOptionsBool("-ksp_chebyshev_esteig_noisy", "Use noisy right hand side for estimate", "KSPChebyshevEstEigSetUseNoisy", cheb->usenoisy, &cheb->usenoisy, NULL));
+    PetscCall(PetscOptionsBool("-ksp_chebyshev_esteig_noisy", "Use noisy random number generated right-hand side for estimate", "KSPChebyshevEstEigSetUseNoisy", cheb->usenoisy, &cheb->usenoisy, NULL));
     PetscCall(KSPSetFromOptions(cheb->kspest));
   }
   PetscOptionsHeadEnd();
@@ -733,7 +733,7 @@ static PetscErrorCode KSPView_Chebyshev(KSP ksp, PetscViewer viewer)
       PetscCall(PetscViewerASCIIPushTab(viewer));
       PetscCall(KSPView(cheb->kspest, viewer));
       PetscCall(PetscViewerASCIIPopTab(viewer));
-      if (cheb->usenoisy) PetscCall(PetscViewerASCIIPrintf(viewer, "  estimating eigenvalues using noisy right hand side\n"));
+      if (cheb->usenoisy) PetscCall(PetscViewerASCIIPrintf(viewer, "  estimating eigenvalues using a noisy random number generated right-hand side\n"));
     } else if (cheb->emax_provided != 0.) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "  eigenvalues provided (min %g, max %g) with transform: [%g %g; %g %g]\n", (double)cheb->emin_provided, (double)cheb->emax_provided, (double)cheb->tform[0], (double)cheb->tform[1], (double)cheb->tform[2],
                                        (double)cheb->tform[3]));
@@ -812,7 +812,7 @@ static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
       } else {
         PetscBool change;
 
-        PetscCheck(ksp->vec_rhs, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Chebyshev must use a noisy right hand side to estimate the eigenvalues when no right hand side is available");
+        PetscCheck(ksp->vec_rhs, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Chebyshev must use a noisy random number generated right-hand side to estimate the eigenvalues when no right-hand side is available");
         PetscCall(PCPreSolveChangeRHS(ksp->pc, &change));
         if (change) {
           B = ksp->work[1];
@@ -881,7 +881,7 @@ static PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
 .   -ksp_chebyshev_esteig <a,b,c,d> - estimate eigenvalues using a Krylov method, then use this
                          transform for Chebyshev eigenvalue bounds (`KSPChebyshevEstEigSet()`)
 .   -ksp_chebyshev_esteig_steps - number of estimation steps
--   -ksp_chebyshev_esteig_noisy - use noisy number generator to create right hand side for eigenvalue estimator
+-   -ksp_chebyshev_esteig_noisy - use a noisy random number generator to create right-hand side for eigenvalue estimator
 
    Level: beginner
 

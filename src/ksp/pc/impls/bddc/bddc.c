@@ -1714,7 +1714,7 @@ static PetscErrorCode PCApply_BDDC(PC pc, Vec r, Vec z)
     PetscCall(VecScatterBegin(pcis->global_to_D, r, pcis->vec1_D, INSERT_VALUES, SCATTER_FORWARD));
     PetscCall(VecScatterEnd(pcis->global_to_D, r, pcis->vec1_D, INSERT_VALUES, SCATTER_FORWARD));
     /*
-      Assembling right hand side for BDDC operator
+      Assembling right-hand side for BDDC operator
       - pcis->vec1_D for the Dirichlet part (if needed, i.e. pcbddc->switch_static == PETSC_TRUE)
       - pcis->vec1_B the interface part of the global vector z
     */
@@ -1869,7 +1869,7 @@ static PetscErrorCode PCApplyTranspose_BDDC(PC pc, Vec r, Vec z)
     PetscCall(VecScatterBegin(pcis->global_to_D, r, pcis->vec1_D, INSERT_VALUES, SCATTER_FORWARD));
     PetscCall(VecScatterEnd(pcis->global_to_D, r, pcis->vec1_D, INSERT_VALUES, SCATTER_FORWARD));
     /*
-      Assembling right hand side for BDDC operator
+      Assembling right-hand side for BDDC operator
       - pcis->vec1_D for the Dirichlet part (if needed, i.e. pcbddc->switch_static == PETSC_TRUE)
       - pcis->vec1_B the interface part of the global vector z
     */

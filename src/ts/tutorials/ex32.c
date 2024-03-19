@@ -1,4 +1,4 @@
-static char help[] = "Solves a time-dependent linear PDE with discontinuous right hand side.\n";
+static char help[] = "Solves a time-dependent linear PDE with discontinuous right-hand side.\n";
 
 /* ------------------------------------------------------------------------
 

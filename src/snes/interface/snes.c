@@ -2318,7 +2318,7 @@ PetscErrorCode SNESSetComputeInitialGuess(SNES snes, SNESInitialGuessFn *func, v
 
 /*@C
   SNESGetRhs - Gets the vector for solving F(x) = `rhs`. If `rhs` is not set
-  it assumes a zero right hand side.
+  it assumes a zero right-hand side.
 
   Logically Collective
 
@@ -2326,7 +2326,7 @@ PetscErrorCode SNESSetComputeInitialGuess(SNES snes, SNESInitialGuessFn *func, v
 . snes - the `SNES` context
 
   Output Parameter:
-. rhs - the right hand side vector or `NULL` if there is no right-hand side vector
+. rhs - the right-hand side vector or `NULL` if there is no right-hand side vector
 
   Level: intermediate
 
@@ -2423,9 +2423,9 @@ PetscErrorCode SNESComputeFunction(SNES snes, Vec x, Vec y)
   `SNESComputeMFFunction()` is used within the matrix-vector products called by the matrix created with `MatCreateSNESMF()`
   so users would not generally call this routine themselves.
 
-  Since this function is intended for use with finite differencing it does not subtract the right hand side vector provided with `SNESSolve()`
+  Since this function is intended for use with finite differencing it does not subtract the right-hand side vector provided with `SNESSolve()`
   while `SNESComputeFunction()` does. As such, this routine cannot be used with  `MatMFFDSetBase()` with a provided F function value even if it applies the
-  same function as `SNESComputeFunction()` if a `SNESSolve()` right hand side vector is use because the two functions difference would include this right hand side function.
+  same function as `SNESComputeFunction()` if a `SNESSolve()` right-hand side vector is use because the two functions difference would include this right hand side function.
 
 .seealso: [](ch_snes), `SNES`, `SNESSetFunction()`, `SNESGetFunction()`, `SNESComputeFunction()`, `MatCreateSNESMF`
 @*/
@@ -4712,7 +4712,7 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x)
 
     if (snes->vec_rhs) PetscCheck(snes->vec_func != snes->vec_rhs, PETSC_COMM_SELF, PETSC_ERR_ARG_IDN, "Right hand side vector cannot be function vector");
     PetscCheck(snes->vec_func != snes->vec_sol, PETSC_COMM_SELF, PETSC_ERR_ARG_IDN, "Solution vector cannot be function vector");
-    PetscCheck(snes->vec_rhs != snes->vec_sol, PETSC_COMM_SELF, PETSC_ERR_ARG_IDN, "Solution vector cannot be right hand side vector");
+    PetscCheck(snes->vec_rhs != snes->vec_sol, PETSC_COMM_SELF, PETSC_ERR_ARG_IDN, "Solution vector cannot be right-hand side vector");
     if (!snes->vec_sol_update /* && snes->vec_sol */) PetscCall(VecDuplicate(snes->vec_sol, &snes->vec_sol_update));
     PetscCall(DMShellSetGlobalVector(dm, snes->vec_sol));
     PetscCall(SNESSetUp(snes));

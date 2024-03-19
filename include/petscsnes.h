@@ -495,7 +495,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESJacobianFn)(SNES snes, Vec u, Ma
   Calling Sequence:
 + snes   - the `SNES` context obtained from `SNESCreate()`
 . u    - the current solution, updated in place
-. b    - the right hand side vector (which may be `NULL`)
+. b    - the right-hand side vector (which may be `NULL`)
 - ctx  - [optional] user-defined context for matrix evaluation routine
 
   Level: beginner

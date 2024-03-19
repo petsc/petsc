@@ -47,7 +47,7 @@ int main(int argc, char **argv)
   /* create explicit matrix preconditioner */
   PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, n, n, 3, NULL, &B));
 
-  /* Store right-hand-side of PDE and exact solution */
+  /* Store right-hand side of PDE and exact solution */
   for (i = 0; i < n; i++) {
     v = 6.0 * xp + PetscPowScalar(xp + 1.e-12, 6.0); /* +1.e-12 is to prevent 0^6 */
     PetscCall(VecSetValues(F, 1, &i, &v, INSERT_VALUES));
