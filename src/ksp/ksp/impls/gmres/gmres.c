@@ -145,7 +145,7 @@ static PetscErrorCode KSPGMRESCycle(PetscInt *itcount, KSP ksp)
     if (gmres->vv_allocated <= it + VEC_OFFSET + 1) PetscCall(KSPGMRESGetNewVectors(ksp, it + 1));
     PetscCall(KSP_PCApplyBAorAB(ksp, VEC_VV(it), VEC_VV(1 + it), VEC_TEMP_MATOP));
 
-    /* update hessenberg matrix and do Gram-Schmidt */
+    /* update Hessenberg matrix and do Gram-Schmidt */
     PetscCall((*gmres->orthog)(ksp, it));
     if (ksp->reason) break;
 
