@@ -3440,15 +3440,15 @@ int main(int argc, char **argv)
       -fetidp_bddc_pc_bddc_detect_disconnected -fetidp_bddc_pc_bddc_symmetric -fetidp_bddc_pc_bddc_vertex_size 3 -fetidp_bddc_pc_bddc_graph_maxcount 2 -fetidp_bddc_pc_bddc_coarse_redundant_pc_type svd -fetidp_bddc_pc_bddc_dirichlet_pc_type svd -fetidp_bddc_pc_bddc_neumann_pc_type svd
     test:
       suffix: aij
-      args: -matis_localmat_type aij
+      args: -mat_is_localmat_type aij
     test:
       requires: viennacl !CUDA_VERSION_11PLUS broken
       suffix: aijviennacl
-      args: -matis_localmat_type aijviennacl
+      args: -mat_is_localmat_type aijviennacl
     test:
       requires: cuda
       suffix: aijcusparse
-      args: -matis_localmat_type aijcusparse
+      args: -mat_is_localmat_type aijcusparse
 
   testset:
     suffix: q2p1fetidp_deluxe
@@ -3464,18 +3464,18 @@ int main(int argc, char **argv)
       -fetidp_bddc_sub_schurs_mat_solver_type mumps -fetidp_bddc_sub_schurs_mat_mumps_icntl_14 500 -fetidp_bddc_pc_bddc_coarse_redundant_pc_type svd
     test:
       suffix: aij
-      args: -matis_localmat_type aij
+      args: -mat_is_localmat_type aij
     test:
       suffix: aij_seqdense
-      args: -matis_localmat_type aij -fetidp_bddc_sub_schurs_schur_mat_type seqdense
+      args: -mat_is_localmat_type aij -fetidp_bddc_sub_schurs_schur_mat_type seqdense
     test:
       requires: viennacl !CUDA_VERSION_11PLUS
       suffix: aijviennacl
-      args: -matis_localmat_type aijviennacl
+      args: -mat_is_localmat_type aijviennacl
     test:
       requires: cuda
       suffix: aijcusparse
-      args: -matis_localmat_type aijcusparse
+      args: -mat_is_localmat_type aijcusparse
 
   testset:
     suffix: q2p1fetidp_deluxe_adaptive
@@ -3491,18 +3491,18 @@ int main(int argc, char **argv)
       -fetidp_bddc_sub_schurs_mat_solver_type mumps -fetidp_bddc_sub_schurs_mat_mumps_icntl_14 500 -fetidp_bddc_pc_bddc_coarse_redundant_pc_type svd
     test:
       suffix: aij
-      args: -matis_localmat_type aij
+      args: -mat_is_localmat_type aij
     test:
       suffix: aij_seqdense
-      args: -matis_localmat_type aij -fetidp_bddc_sub_schurs_schur_mat_type seqdense
+      args: -mat_is_localmat_type aij -fetidp_bddc_sub_schurs_schur_mat_type seqdense
     test:
       requires: viennacl !CUDA_VERSION_11PLUS
       suffix: aijviennacl
-      args: -matis_localmat_type aijviennacl
+      args: -mat_is_localmat_type aijviennacl
     test:
       requires: cuda
       suffix: aijcusparse
-      args: -matis_localmat_type aijcusparse
+      args: -mat_is_localmat_type aijcusparse
 
   test:
     suffix: p2p1fetidp

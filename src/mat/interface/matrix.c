@@ -995,7 +995,7 @@ PetscErrorCode MatViewFromOptions(Mat A, PetscObject obj, const char name[])
 /*@C
   MatView - display information about a matrix in a variety ways
 
-  Collective
+  Collective on viewer
 
   Input Parameters:
 + mat    - the matrix
@@ -1083,10 +1083,9 @@ PetscErrorCode MatView(Mat mat, PetscViewer viewer)
   PetscValidType(mat, 1);
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)mat), &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  PetscCheckSameComm(mat, 1, viewer, 2);
 
   PetscCall(PetscViewerGetFormat(viewer, &format));
-  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)mat), &size));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)viewer), &size));
   if (size == 1 && format == PETSC_VIEWER_LOAD_BALANCE) PetscFunctionReturn(PETSC_SUCCESS);
 
 #if !defined(PETSC_HAVE_THREADSAFETY)
@@ -1095,7 +1094,7 @@ PetscErrorCode MatView(Mat mat, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSAWS, &issaws));
-  PetscCheck((isascii && (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL)) || !mat->factortype, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "No viewers for factored matrix except ASCII, info, or info_detail");
+  PetscCheck((isascii && (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL)) || !mat->factortype, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "No viewers for factored matrix except ASCII, info, or info_detail");
 
   PetscCall(PetscLogEventBegin(MAT_View, mat, viewer, 0, 0));
   if (isascii) {
@@ -1149,7 +1148,7 @@ PetscErrorCode MatView(Mat mat, PetscViewer viewer)
       if (mat->bsizes && format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
         IS tmp;
 
-        PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)mat), mat->nblocks, mat->bsizes, PETSC_USE_POINTER, &tmp));
+        PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)viewer), mat->nblocks, mat->bsizes, PETSC_USE_POINTER, &tmp));
         PetscCall(PetscObjectSetName((PetscObject)tmp, "Block Sizes"));
         PetscCall(PetscViewerASCIIPushTab(viewer));
         PetscCall(ISView(tmp, viewer));

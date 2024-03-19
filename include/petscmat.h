@@ -591,6 +591,7 @@ typedef enum {
   MAT_FLUSH_ASSEMBLY = 1,
   MAT_FINAL_ASSEMBLY = 0
 } MatAssemblyType;
+
 PETSC_EXTERN PetscErrorCode MatAssemblyBegin(Mat, MatAssemblyType);
 PETSC_EXTERN PetscErrorCode MatAssemblyEnd(Mat, MatAssemblyType);
 PETSC_EXTERN PetscErrorCode MatAssembled(Mat, PetscBool *);
@@ -2050,13 +2051,14 @@ PETSC_EXTERN PetscErrorCode MatMPIBAIJSetHashTableFactor(Mat, PetscReal);
 
 PETSC_EXTERN PetscErrorCode MatISSetLocalMatType(Mat, MatType);
 PETSC_EXTERN PetscErrorCode MatISSetPreallocation(Mat, PetscInt, const PetscInt[], PetscInt, const PetscInt[]);
+PETSC_EXTERN PetscErrorCode MatISSetAllowRepeated(Mat, PetscBool);
+PETSC_EXTERN PetscErrorCode MatISGetAllowRepeated(Mat, PetscBool *);
 PETSC_EXTERN PetscErrorCode MatISStoreL2L(Mat, PetscBool);
 PETSC_EXTERN PetscErrorCode MatISFixLocalEmpty(Mat, PetscBool);
 PETSC_EXTERN PetscErrorCode MatISGetLocalMat(Mat, Mat *);
 PETSC_EXTERN PetscErrorCode MatISRestoreLocalMat(Mat, Mat *);
 PETSC_EXTERN PetscErrorCode MatISSetLocalMat(Mat, Mat);
 PETSC_EXTERN PetscErrorCode MatISGetLocalToGlobalMapping(Mat, ISLocalToGlobalMapping *, ISLocalToGlobalMapping *);
-PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 10, 0, "MatConvert()", ) PetscErrorCode MatISGetMPIXAIJ(Mat, MatReuse, Mat *);
 
 /*S
    MatNullSpace - Object that removes a null space from a vector, i.e.
