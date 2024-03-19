@@ -1122,13 +1122,6 @@ static PetscErrorCode MatIsTranspose_MPIAIJ(Mat Amat, Mat Bmat, PetscReal tol, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatIsSymmetric_MPIAIJ(Mat A, PetscReal tol, PetscBool *f)
-{
-  PetscFunctionBegin;
-  PetscCall(MatIsTranspose_MPIAIJ(A, A, tol, f));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatMultTransposeAdd_MPIAIJ(Mat A, Vec xx, Vec yy, Vec zz)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data;
@@ -2804,7 +2797,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        NULL,
                                        NULL,
                                        /*83*/ MatLoad_MPIAIJ,
-                                       MatIsSymmetric_MPIAIJ,
+                                       NULL,
                                        NULL,
                                        NULL,
                                        NULL,

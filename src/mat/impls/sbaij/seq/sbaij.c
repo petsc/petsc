@@ -1089,24 +1089,10 @@ static PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y, PetscScalar a, Mat X, MatStructure
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatIsSymmetric_SeqSBAIJ(Mat A, PetscReal tol, PetscBool *flg)
-{
-  PetscFunctionBegin;
-  *flg = PETSC_TRUE;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatIsStructurallySymmetric_SeqSBAIJ(Mat A, PetscBool *flg)
 {
   PetscFunctionBegin;
   *flg = PETSC_TRUE;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatIsHermitian_SeqSBAIJ(Mat A, PetscReal tol, PetscBool *flg)
-{
-  PetscFunctionBegin;
-  *flg = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1364,8 +1350,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
                                        NULL,
                                        MatGetInertia_SeqSBAIJ,
                                        MatLoad_SeqSBAIJ,
-                                       /* 84*/ MatIsSymmetric_SeqSBAIJ,
-                                       MatIsHermitian_SeqSBAIJ,
+                                       /* 84*/ NULL,
+                                       NULL,
                                        MatIsStructurallySymmetric_SeqSBAIJ,
                                        NULL,
                                        NULL,

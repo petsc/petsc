@@ -2424,20 +2424,6 @@ done:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatIsSymmetric_SeqAIJ(Mat A, PetscReal tol, PetscBool *f)
-{
-  PetscFunctionBegin;
-  PetscCall(MatIsTranspose_SeqAIJ(A, A, tol, f));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatIsHermitian_SeqAIJ(Mat A, PetscReal tol, PetscBool *f)
-{
-  PetscFunctionBegin;
-  PetscCall(MatIsHermitianTranspose_SeqAIJ(A, A, tol, f));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PetscErrorCode MatDiagonalScale_SeqAIJ(Mat A, Vec ll, Vec rr)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;
@@ -3583,8 +3569,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
                                        NULL,
                                        NULL,
                                        MatLoad_SeqAIJ,
-                                       /* 84*/ MatIsSymmetric_SeqAIJ,
-                                       MatIsHermitian_SeqAIJ,
+                                       /* 84*/ NULL,
+                                       NULL,
                                        NULL,
                                        NULL,
                                        NULL,
