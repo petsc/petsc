@@ -114,13 +114,13 @@ class Configure(config.package.Package):
 
     try:
       self.logPrintBox('Compiling OpenBLAS; this may take several minutes')
-      output1,err1,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && make '+cmdline, timeout=2500, log = self.log)
+      output1,err1,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && '+self.make.make+' '+cmdline, timeout=2500, log = self.log)
     except RuntimeError as e:
       self.logPrint('Error running make on '+blasDir+': '+str(e))
       raise RuntimeError('Error running make on '+blasDir)
     try:
       self.logPrintBox('Installing OpenBLAS')
-      output2,err2,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && make PREFIX='+self.installDir+' '+cmdline+' install', timeout=60, log = self.log)
+      output2,err2,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && '+self.make.make+' PREFIX='+self.installDir+' '+cmdline+' install', timeout=60, log = self.log)
     except RuntimeError as e:
       self.logPrint('Error moving '+blasDir+' libraries: '+str(e))
       raise RuntimeError('Error moving '+blasDir+' libraries')
