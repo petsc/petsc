@@ -12,7 +12,8 @@
 */
 #include <petsc/private/pcimpl.h>
 #include <petsc/private/kspimpl.h>
-#include <petsc.h>
+#include <petscts.h>
+#include <petsctao.h>
 
 #define PC_MPI_MAX_RANKS  256
 #define PC_MPI_COMM_WORLD MPI_COMM_WORLD
