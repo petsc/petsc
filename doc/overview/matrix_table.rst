@@ -54,7 +54,7 @@ Summary of Matrix Types Available In PETSc
      - ``MatCreateMAIJ()``
      -
      - Commonly used for identical interpolations on each component of a multi-component vector
-   * - Kronecker product of sparse matrix $A$; $ I \otimes S + A \otimes T $
+   * - Kronecker product of sparse matrix :math:`A`; :math:`I \otimes S + A \otimes T`
      - ``MATKAIJ``
      - ``MatCreateKAIJ()``
      -
@@ -113,7 +113,7 @@ Summary of Matrix Types Available In PETSc
      - ``MATLRC``
      - ``MatCreateLRC()``
      -
-     -  $A + UCV^T$
+     - :math:`A + UCV^T`
    * - FFT
      - ``MATFFTW``
      - ``MatCreateFFT()``
@@ -132,24 +132,24 @@ Summary of Matrix Types Available In PETSc
    * -
      - ``MATH2OPUS``
      - ``MatCreateH2OpusFromMat()``
-     - H_2 matrices
+     - :math:`\mathcal H^2` matrices
      -
-   * - Transpose, virtual
+   * - Transpose, :math:`A^T`, virtual
      - ``MATTRANSPOSEVIRTUAL``
      - ``MatCreateTranspose()``
      -
      -
-   * - Hermitian Transpose, virtual
+   * - Hermitian Transpose, :math:`A^H`, virtual
      - ``MATHERMITIANTRANSPOSEVIRTUAL``
      - ``MatCreateHermitianTranspose()``
      -
      -
-   * - Normal, A'\*A, virtual
+   * - Normal, :math:`A^TA`, virtual
      - ``MATNORMAL``
      - ``MatCreateNormal()``
      -
      -
-   * - Hermitian Normal, A'\*A, virtual
+   * - Hermitian Normal, :math:`A^HA`, virtual
      - ``MATNORMALHERMITIAN``
      - ``MatCreateNormalHermitian()``
      -
@@ -183,7 +183,7 @@ Summary of Matrix Types Available In PETSc
      - ``MATCENTERING``
      - ``MatCreateCentering()``
      -
-     -  I - (1/N) * ones*ones'
+     - :math:`I - \frac{1}{N}e e^T`, :math:`e=[1,\dots,1]^T`
    * - Block matrix
      - ``MATBLOCKMAT``
      - ``MatCreateBlockMat()``
