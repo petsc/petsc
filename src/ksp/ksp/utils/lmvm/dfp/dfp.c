@@ -133,8 +133,8 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
   Mat_LMVM     *dbase;
   Mat_DiagBrdn *dctx;
   PetscInt      old_k, i;
-  PetscReal     curvtol, ststmp;
-  PetscScalar   curvature, ytytmp;
+  PetscReal     curvtol, ytytmp;
+  PetscScalar   curvature, ststmp;
 
   PetscFunctionBegin;
   if (!lmvm->m) PetscFunctionReturn(PETSC_SUCCESS);
@@ -144,9 +144,9 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
     PetscCall(VecAYPX(lmvm->Fprev, -1.0, F));
 
     /* Test if the updates can be accepted */
-    PetscCall(VecDotNorm2(lmvm->Xprev, lmvm->Fprev, &curvature, &ststmp));
-    if (ststmp < lmvm->eps) curvtol = 0.0;
-    else curvtol = lmvm->eps * ststmp;
+    PetscCall(VecDotNorm2(lmvm->Xprev, lmvm->Fprev, &curvature, &ytytmp));
+    if (ytytmp < lmvm->eps) curvtol = 0.0;
+    else curvtol = lmvm->eps * ytytmp;
 
     if (PetscRealPart(curvature) > curvtol) {
       /* Update is good, accept it */
@@ -163,10 +163,10 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
         }
       }
       /* Update history of useful scalars */
-      PetscCall(VecDot(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &ytytmp));
+      PetscCall(VecDot(lmvm->S[lmvm->k], lmvm->S[lmvm->k], &ststmp));
       ldfp->yts[lmvm->k] = PetscRealPart(curvature);
-      ldfp->yty[lmvm->k] = PetscRealPart(ytytmp);
-      ldfp->sts[lmvm->k] = ststmp;
+      ldfp->yty[lmvm->k] = ytytmp;
+      ldfp->sts[lmvm->k] = PetscRealPart(ststmp);
       /* Compute the scalar scale if necessary */
       if (ldfp->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_SCALAR) PetscCall(MatSymBrdnComputeJ0Scalar(B));
     } else {
