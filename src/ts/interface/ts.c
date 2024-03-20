@@ -2576,6 +2576,7 @@ PetscErrorCode TSReset(TS ts)
   PetscCall(MatDestroy(&ts->Brhs));
   PetscCall(VecDestroy(&ts->Frhs));
   PetscCall(VecDestroy(&ts->vec_sol));
+  PetscCall(VecDestroy(&ts->vec_sol0));
   PetscCall(VecDestroy(&ts->vec_dot));
   PetscCall(VecDestroy(&ts->vatol));
   PetscCall(VecDestroy(&ts->vrtol));
@@ -2603,7 +2604,10 @@ PetscErrorCode TSReset(TS ts)
     PetscCall(VecDestroyVecs(ts->tspan->num_span_times, &ts->tspan->vecs_sol));
     PetscCall(PetscFree(ts->tspan));
   }
-  ts->setupcalled = PETSC_FALSE;
+  ts->rhsjacobian.time  = PETSC_MIN_REAL;
+  ts->rhsjacobian.scale = 1.0;
+  ts->ijacobian.shift   = 1.0;
+  ts->setupcalled       = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3373,8 +3377,13 @@ PetscErrorCode TSStep(TS ts)
   PetscCheck(ts->exact_final_time != TS_EXACTFINALTIME_UNSPECIFIED, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSStep()");
   PetscCheck(ts->exact_final_time != TS_EXACTFINALTIME_MATCHSTEP || ts->adapt, PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
 
+  if (!ts->vec_sol0) PetscCall(VecDuplicate(ts->vec_sol, &ts->vec_sol0));
+  PetscCall(VecCopy(ts->vec_sol, ts->vec_sol0));
+  ts->time_step0 = ts->time_step;
+
   if (!ts->steps) ts->ptime_prev = ts->ptime;
-  ptime                   = ts->ptime;
+  ptime = ts->ptime;
+
   ts->ptime_prev_rollback = ts->ptime_prev;
   ts->reason              = TS_CONVERGED_ITERATING;
 
@@ -3387,10 +3396,6 @@ PetscErrorCode TSStep(TS ts)
     ts->steps++;
     ts->steprollback = PETSC_FALSE;
     ts->steprestart  = PETSC_FALSE;
-  }
-  if (!ts->reason) {
-    if (ts->steps >= ts->max_steps) ts->reason = TS_CONVERGED_ITS;
-    else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
   }
 
   if (ts->reason < 0 && ts->errorifstepfailed) {
@@ -3636,6 +3641,7 @@ PetscErrorCode TSComputeExactError(TS ts, Vec u, Vec e)
 
   Input Parameters:
 + ts       - The `TS` context obtained from `TSCreate()`
+. rollback - Whether a resize will restart the step
 . setup    - The setup function
 . transfer - The transfer function
 - ctx      - [optional] The user-defined context
@@ -3656,11 +3662,13 @@ PetscErrorCode TSComputeExactError(TS ts, Vec u, Vec e)
 - ctx     - user defined context
 
   Notes:
-  The `setup` function is called inside `TSSolve()` after `TSPostStep()` at the end of each time step
-  to determine if the problem size has changed.
-  If it is the case, the solver will collect the needed vectors that need to be
-  transferred from the old to the new sizes using `transfer`. These vectors will include the current
-  solution vector, and other vectors needed by the specific solver used.
+  The `setup` function is called inside `TSSolve()` after `TSEventHandler()` or after `TSPostStep()`
+  depending on the `rollback` value: if `rollback` is true, then these callbacks behave as error indicators
+  and will flag the need to remesh and restart the current step. Otherwise, they will simply flag the solver
+  that the size of the discrete problem has changed.
+  In both cases, the solver will collect the needed vectors that will be
+  transferred from the old to the new sizes using the `transfer` callback. These vectors will include the
+  current solution vector, and other vectors needed by the specific solver used.
   For example, `TSBDF` uses previous solutions vectors to solve for the next time step.
   Other application specific objects associated with the solver, i.e. Jacobian matrices and `DM`,
   will be automatically reset if the sizes are changed and they must be specified again by the user
@@ -3673,10 +3681,11 @@ PetscErrorCode TSComputeExactError(TS ts, Vec u, Vec e)
 
 .seealso: [](ch_ts), `TS`, `TSSetDM()`, `TSSetIJacobian()`, `TSSetRHSJacobian()`
 @*/
-PetscErrorCode TSSetResize(TS ts, PetscErrorCode (*setup)(TS ts, PetscInt step, PetscReal time, Vec state, PetscBool *resize, void *ctx), PetscErrorCode (*transfer)(TS ts, PetscInt nv, Vec vecsin[], Vec vecsout[], void *ctx), void *ctx)
+PetscErrorCode TSSetResize(TS ts, PetscBool rollback, PetscErrorCode (*setup)(TS ts, PetscInt step, PetscReal time, Vec state, PetscBool *resize, void *ctx), PetscErrorCode (*transfer)(TS ts, PetscInt nv, Vec vecsin[], Vec vecsout[], void *ctx), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  ts->resizerollback = rollback;
   ts->resizesetup    = setup;
   ts->resizetransfer = transfer;
   ts->resizectx      = ctx;
@@ -3838,6 +3847,7 @@ PetscErrorCode TSResize(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  if (!ts->resizesetup) PetscFunctionReturn(PETSC_SUCCESS);
   if (ts->resizesetup) {
     PetscBool flg = PETSC_FALSE;
 
@@ -3845,6 +3855,10 @@ PetscErrorCode TSResize(TS ts)
     PetscCallBack("TS callback resize setup", (*ts->resizesetup)(ts, ts->steps, ts->ptime, ts->vec_sol, &flg, ts->resizectx));
     PetscCall(VecLockReadPop(ts->vec_sol));
     if (flg) {
+      if (ts->resizerollback) {
+        PetscCall(TSRollBack(ts));
+        ts->time_step = ts->time_step0;
+      }
       PetscCall(TSResizeRegisterVec(ts, solname, ts->vec_sol));
       PetscCall(TSResizeRegisterOrRetrieve(ts, PETSC_TRUE)); /* specific impls register their own objects */
     }
@@ -3857,11 +3871,18 @@ PetscErrorCode TSResize(TS ts)
     /* Reset internal objects */
     PetscCall(TSReset(ts));
 
-    /* Transfer needed vectors (users can call SetJacobian, SetDM here) */
+    /* Transfer needed vectors (users can call SetJacobian, SetDM, etc. here) */
     PetscCall(PetscCalloc1(nv, &vecsout));
     PetscCall(TSResizeTransferVecs(ts, nv, vecsin, vecsout));
     for (PetscInt i = 0; i < nv; i++) {
+      const char *name;
+      char       *oname;
+
+      PetscCall(PetscObjectGetName((PetscObject)vecsin[i], &name));
+      PetscCall(PetscStrallocpy(name, &oname));
       PetscCall(TSResizeRegisterVec(ts, names[i], vecsout[i]));
+      if (vecsout[i]) PetscCall(PetscObjectSetName((PetscObject)vecsout[i], oname));
+      PetscCall(PetscFree(oname));
       PetscCall(VecDestroy(&vecsout[i]));
     }
     PetscCall(PetscFree(vecsout));
@@ -4029,10 +4050,16 @@ PetscErrorCode TSSolve(TS ts, Vec u)
       PetscCall(TSPostEvaluate(ts));
       PetscCall(TSEventHandler(ts)); /* The right-hand side may be changed due to event. Be careful with Any computation using the RHS information after this point. */
       if (ts->steprollback) PetscCall(TSPostEvaluate(ts));
+      if (!ts->steprollback && ts->resizerollback) PetscCall(TSResize(ts));
+      /* check convergence */
+      if (!ts->reason) {
+        if (ts->steps >= ts->max_steps) ts->reason = TS_CONVERGED_ITS;
+        else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
+      }
       if (!ts->steprollback) {
         PetscCall(TSTrajectorySet(ts->trajectory, ts, ts->steps, ts->ptime, ts->vec_sol));
         PetscCall(TSPostStep(ts));
-        PetscCall(TSResize(ts));
+        if (!ts->resizerollback) PetscCall(TSResize(ts));
 
         if (ts->tspan && ts->tspan->spanctr < ts->tspan->num_span_times) {
           PetscCheck(ts->tspan->worktol > 0, PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Unexpected state !(tspan->worktol > 0) in TSSolve()");
@@ -5224,19 +5251,44 @@ PetscErrorCode TSRestartStep(TS ts)
 
   Level: advanced
 
-.seealso: [](ch_ts), `TS`, `TSCreate()`, `TSSetUp()`, `TSDestroy()`, `TSSolve()`, `TSSetPreStep()`, `TSSetPreStage()`, `TSInterpolate()`
+.seealso: [](ch_ts), `TS`, `TSGetStepRollBack()`, `TSCreate()`, `TSSetUp()`, `TSDestroy()`, `TSSolve()`, `TSSetPreStep()`, `TSSetPreStage()`, `TSInterpolate()`
 @*/
 PetscErrorCode TSRollBack(TS ts)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscCheck(!ts->steprollback, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "TSRollBack already called");
-  PetscUseTypeMethod(ts, rollback);
+  PetscTryTypeMethod(ts, rollback);
+  PetscCall(VecCopy(ts->vec_sol0, ts->vec_sol));
   ts->time_step  = ts->ptime - ts->ptime_prev;
   ts->ptime      = ts->ptime_prev;
   ts->ptime_prev = ts->ptime_prev_rollback;
   ts->steps--;
   ts->steprollback = PETSC_TRUE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  TSGetStepRollBack - Get the internal flag indicating if you are rolling back a step
+
+  Not collective
+
+  Input Parameter:
+. ts - the `TS` context obtained from `TSCreate()`
+
+  Output Parameter:
+. flg - the rollback flag
+
+  Level: advanced
+
+.seealso: [](ch_ts), `TS`, `TSCreate()`, `TSRollBack()`
+@*/
+PetscErrorCode TSGetStepRollBack(TS ts, PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscAssertPointer(flg, 2);
+  *flg = ts->steprollback;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

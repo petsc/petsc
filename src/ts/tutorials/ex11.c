@@ -953,8 +953,11 @@ static PetscErrorCode MonitorVTK(TS ts, PetscInt stepnum, PetscReal time, Vec X,
   PetscViewer viewer;
   char        filename[PETSC_MAX_PATH_LEN], *ftable = NULL;
   PetscReal   xnorm;
+  PetscBool   rollback;
 
   PetscFunctionBeginUser;
+  PetscCall(TSGetStepRollBack(ts, &rollback));
+  if (rollback) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectSetName((PetscObject)X, "u"));
   PetscCall(VecGetDM(X, &dm));
   PetscCall(VecNorm(X, NORM_INFINITY, &xnorm));
@@ -1101,7 +1104,7 @@ static PetscErrorCode adaptToleranceFVMSetUp(TS ts, PetscInt nstep, PetscReal ti
   User               user       = tctx->user;
   DM                 dm, gradDM, plex, cellDM, adaptedDM = NULL;
   Vec                cellGeom, faceGeom;
-  PetscBool          isForest, computeGradient;
+  PetscBool          computeGradient;
   Vec                grad, locGrad, locX, errVec;
   PetscInt           cStart, cEnd, c, dim, nRefine, nCoarsen;
   PetscReal          minMaxInd[2] = {PETSC_MAX_REAL, PETSC_MIN_REAL}, minMaxIndGlobal[2];
@@ -1119,7 +1122,6 @@ static PetscErrorCode adaptToleranceFVMSetUp(TS ts, PetscInt nstep, PetscReal ti
   PetscCall(PetscFVSetLimiter(fvm, tctx->noneLimiter));
   PetscCall(PetscFVGetComputeGradients(fvm, &computeGradient));
   PetscCall(PetscFVSetComputeGradients(fvm, PETSC_TRUE));
-  PetscCall(DMIsForest(dm, &isForest));
   PetscCall(DMConvert(dm, DMPLEX, &plex));
   PetscCall(DMPlexGetDataFVM(plex, fvm, &cellGeom, &faceGeom, &gradDM));
   PetscCall(DMCreateLocalVector(plex, &locX));
@@ -1151,7 +1153,7 @@ static PetscErrorCode adaptToleranceFVMSetUp(TS ts, PetscInt nstep, PetscReal ti
     PetscCall(DMPlexPointLocalRead(cellDM, c, pointGeom, &cg));
     PetscCall(DMPlexPointLocalRead(plex, c, pointVals, &pointVal));
 
-    PetscCall(user->model->errorIndicator(dim, cg->volume, user->model->physics->dof, pointVal, pointGrad, &errInd, user->model->errorCtx));
+    PetscCall((*user->model->errorIndicator)(dim, cg->volume, user->model->physics->dof, pointVal, pointGrad, &errInd, user->model->errorCtx));
     errArray[c - cStart] = errInd;
     minMaxInd[0]         = PetscMin(minMaxInd[0], errInd);
     minMaxInd[1]         = PetscMax(minMaxInd[1], errInd);
@@ -1204,12 +1206,8 @@ static PetscErrorCode Transfer(TS ts, PetscInt nv, Vec vecsin[], Vec vecsout[], 
   PetscCall(TSGetTime(ts, &time));
   PetscCheck(tctx->adaptedDM, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "Missing adaptedDM");
   for (PetscInt i = 0; i < nv; i++) {
-    const char *name;
-
     PetscCall(DMCreateGlobalVector(tctx->adaptedDM, &vecsout[i]));
     PetscCall(DMForestTransferVec(dm, vecsin[i], tctx->adaptedDM, vecsout[i], PETSC_TRUE, time));
-    PetscCall(PetscObjectGetName((PetscObject)vecsin[i], &name));
-    PetscCall(PetscObjectSetName((PetscObject)vecsout[i], name));
   }
   PetscCall(DMForestSetAdaptivityForest(tctx->adaptedDM, NULL)); /* clear internal references to the previous dm */
 
@@ -1528,8 +1526,10 @@ int main(int argc, char **argv)
 
   /* When using adaptive mesh refinement
      specify callbacks to refine the solution
-     and interpolate data from old to new mesh */
-  if (useAMR) { PetscCall(TSSetResize(ts, adaptToleranceFVMSetUp, Transfer, &tctx)); }
+     and interpolate data from old to new mesh
+     When mesh adaption is requested, the step will be restarted
+  */
+  if (useAMR) PetscCall(TSSetResize(ts, PETSC_TRUE, adaptToleranceFVMSetUp, Transfer, &tctx));
   PetscCall(TSSetSolution(ts, X));
   PetscCall(VecDestroy(&X));
   PetscCall(TSSolve(ts, NULL));

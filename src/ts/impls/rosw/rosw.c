@@ -979,15 +979,6 @@ unavailable:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TSRollBack_RosW(TS ts)
-{
-  TS_RosW *ros = (TS_RosW *)ts->data;
-
-  PetscFunctionBegin;
-  PetscCall(VecCopy(ros->vec_sol_prev, ts->vec_sol));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode TSStep_RosW(TS ts)
 {
   TS_RosW         *ros = (TS_RosW *)ts->data;
@@ -1083,7 +1074,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
     PetscCall(TSAdaptChoose(adapt, ts, ts->time_step, NULL, &next_time_step, &accept));
     ros->status = accept ? TS_STEP_COMPLETE : TS_STEP_INCOMPLETE;
     if (!accept) { /* Roll back the current step */
-      PetscCall(TSRollBack_RosW(ts));
+      PetscCall(VecCopy(ts->vec_sol0, ts->vec_sol));
       ts->time_step = next_time_step;
       goto reject_step;
     }
@@ -1288,10 +1279,6 @@ static PetscErrorCode DMSubDomainRestrictHook_TSRosW(DM dm, VecScatter gscat, Ve
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-  This defines the nonlinear equation that is to be solved with SNES
-  G(U) = F[t0+Theta*dt, U, (U-U0)*shift] = 0
-*/
 static PetscErrorCode SNESTSFormFunction_RosW(SNES snes, Vec U, Vec F, TS ts)
 {
   TS_RosW  *ros = (TS_RosW *)ts->data;
@@ -1661,7 +1648,6 @@ PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS ts)
   ts->ops->step           = TSStep_RosW;
   ts->ops->interpolate    = TSInterpolate_RosW;
   ts->ops->evaluatestep   = TSEvaluateStep_RosW;
-  ts->ops->rollback       = TSRollBack_RosW;
   ts->ops->setfromoptions = TSSetFromOptions_RosW;
   ts->ops->snesfunction   = SNESTSFormFunction_RosW;
   ts->ops->snesjacobian   = SNESTSFormJacobian_RosW;

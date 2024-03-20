@@ -986,7 +986,7 @@ int main(int argc, char **argv)
   PetscCall(DMSwarmVectorDefineField(sw, "velocity"));
   PetscCall(TSSetComputeInitialCondition(ts, InitializeSolve));
   PetscCall(TSSetComputeExactError(ts, ComputeError));
-  PetscCall(TSSetResize(ts, SetUpMigrateParticles, MigrateParticles, NULL));
+  PetscCall(TSSetResize(ts, PETSC_FALSE, SetUpMigrateParticles, MigrateParticles, NULL));
 
   PetscCall(CreateSolution(ts));
   PetscCall(TSGetSolution(ts, &u));

@@ -1369,43 +1369,6 @@ static PetscErrorCode TSARKIMEXTestMassIdentity(TS ts, PetscBool *id)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TSRollBack_ARKIMEX(TS ts)
-{
-  TS_ARKIMEX      *ark = (TS_ARKIMEX *)ts->data;
-  ARKTableau       tab = ark->tableau;
-  const PetscInt   s   = tab->s;
-  const PetscReal *bt = tab->bt, *b = tab->b;
-  PetscScalar     *w     = ark->work;
-  Vec             *YdotI = ark->YdotI, *YdotRHS = ark->YdotRHS;
-  PetscInt         j;
-  PetscReal        h;
-
-  PetscFunctionBegin;
-  switch (ark->status) {
-  case TS_STEP_INCOMPLETE:
-  case TS_STEP_PENDING:
-    h = ts->time_step;
-    break;
-  case TS_STEP_COMPLETE:
-    h = ts->ptime - ts->ptime_prev;
-    break;
-  default:
-    SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
-  }
-  for (j = 0; j < s; j++) w[j] = -h * bt[j];
-  PetscCall(VecMAXPY(ts->vec_sol, s, w, YdotI));
-  if (tab->additive) {
-    PetscBool hasE;
-
-    PetscCall(TSHasRHSFunction(ts, &hasE));
-    if (hasE) {
-      for (j = 0; j < s; j++) w[j] = -h * b[j];
-      PetscCall(VecMAXPY(ts->vec_sol, s, w, YdotRHS));
-    }
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode TSStep_ARKIMEX(TS ts)
 {
   TS_ARKIMEX      *ark = (TS_ARKIMEX *)ts->data;
@@ -1584,7 +1547,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     PetscCall(TSAdaptChoose(adapt, ts, ts->time_step, NULL, &next_time_step, &accept));
     ark->status = accept ? TS_STEP_COMPLETE : TS_STEP_INCOMPLETE;
     if (!accept) { /* Roll back the current step */
-      PetscCall(TSRollBack_ARKIMEX(ts));
+      PetscCall(VecCopy(ts->vec_sol0, ts->vec_sol));
       ts->time_step = next_time_step;
       goto reject_step;
     }
@@ -2383,7 +2346,6 @@ PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS ts)
   ts->ops->step           = TSStep_ARKIMEX;
   ts->ops->interpolate    = TSInterpolate_ARKIMEX;
   ts->ops->evaluatestep   = TSEvaluateStep_ARKIMEX;
-  ts->ops->rollback       = TSRollBack_ARKIMEX;
   ts->ops->setfromoptions = TSSetFromOptions_ARKIMEX;
   ts->ops->snesfunction   = SNESTSFormFunction_ARKIMEX;
   ts->ops->snesjacobian   = SNESTSFormJacobian_ARKIMEX;
