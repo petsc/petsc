@@ -177,6 +177,7 @@ int main(int argc, char **argv)
   AppCtx            ctx;
   PetscScalar      *u;
   const char *const names[] = {"U1", "U2", "U3", NULL};
+  PetscBool         mf      = PETSC_FALSE;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -185,6 +186,8 @@ int main(int argc, char **argv)
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Only for sequential runs");
+
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-snes_mf_operator", &mf, NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors
@@ -216,7 +219,8 @@ int main(int argc, char **argv)
   PetscCall(TSSetProblemType(ts, TS_NONLINEAR));
   PetscCall(TSSetType(ts, TSROSW));
   PetscCall(TSSetIFunction(ts, NULL, (TSIFunctionFn *)IFunction, &ctx));
-  PetscCall(TSSetIJacobian(ts, A, A, (TSIJacobianFn *)IJacobian, &ctx));
+  if (!mf) PetscCall(TSSetIJacobian(ts, A, A, (TSIJacobianFn *)IJacobian, &ctx));
+  else PetscCall(TSSetIJacobian(ts, NULL, NULL, (TSIJacobianFn *)IJacobian, &ctx));
   PetscCall(TSSetSolutionFunction(ts, (TSSolutionFn *)Solution, &ctx));
 
   {
@@ -275,5 +279,11 @@ int main(int argc, char **argv)
      args: -ts_monitor_lg_error -ts_monitor_lg_solution -ts_view
      requires: x dlsym defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
      output_file: output/ex1_1.out
+
+   test:
+     requires: !single
+     suffix: 3
+     args: -ts_view -snes_mf_operator
+     requires: dlsym defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
 
 TEST*/
