@@ -93,6 +93,7 @@ class Configure(config.base.Configure):
     self.blasLapack    = framework.require('config.packages.BlasLapack',self)
     self.mpi           = framework.require('config.packages.MPI',       self)
     self.fortran       = framework.require('config.compilersFortran',   self)
+    self.ftncmdline    = framework.require('config.utilities.fortranCommandLine',self)
     self.externalpackagesdir = framework.require('PETSc.options.externalpackagesdir',self)
 
     for utility in sorted(os.listdir(os.path.join('config','PETSc','options'))):
@@ -329,6 +330,8 @@ prepend-path PATH "%s"
         if not self.fortran.fortranIsF90:
           raise RuntimeError('Error! Fortran compiler "'+self.compilers.FC+'" does not support F90! PETSc fortran bindings require a F90 compiler')
         self.addDefine('USE_FORTRAN_BINDINGS','1')
+        if not self.ftncmdline.have_command_argument:
+          raise RuntimeError('Error! Fortran compiler "'+self.compilers.FC+'" does not support F2003 GET_COMMAND_ARGUMENT()!')
       self.setCompilers.pushLanguage('FC')
       # need FPPFLAGS in config/setCompilers
       self.addMakeMacro('FPP_FLAGS',self.setCompilers.FPPFLAGS)

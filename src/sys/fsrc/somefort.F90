@@ -33,7 +33,6 @@
 #endif
 
 !  This uses F2003 feature - and is the preferred mode for accessing command line arguments
-#if defined(PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT)
       integer function PetscCommandArgumentCount()
       implicit none
       PetscCommandArgumentCount= command_argument_count()
@@ -47,4 +46,3 @@
       call get_command_argument(n,val)
       return
       end
-#endif
