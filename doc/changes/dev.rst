@@ -42,6 +42,7 @@ Changes: Development
 
 - Add ``ISLocalToGlobalMappingGetNodeInfo()`` and ``ISLocalToGlobalMappingRestoreNodeInfo()`` to access neighboring information of local indices
 - Add support to load an ``ISLocalToGlobalMapping`` via ``ISLocalToGlobalMappingLoad()`` from data previously stored using ``ISLocalToGlobalMappingView()``
+- Add ``ISLocalToGlobalMappingGetBlockMultiLeavesSF()`` to share local block data
 
 .. rubric:: VecScatter / PetscSF:
 
