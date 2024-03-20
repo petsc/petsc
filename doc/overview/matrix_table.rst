@@ -22,7 +22,7 @@ Summary of Matrix Types Available In PETSc
    * -
      - ``MATAIJMKL``
      - ``MatCreateMPIAIJMKL()``
-     - Intel's MKL, OpenOne API
+     - Intel oneAPI MKL
      - OpenMP support
    * -
      - ``MATAIJSELL``
@@ -37,7 +37,7 @@ Summary of Matrix Types Available In PETSc
    * -
      - ``MATAIJCUSPARSE``
      - ``MatCreateAIJCUSPARSE()``
-     - NVIDIA's CuSparse library
+     - NVIDIA cuSPARSE library
      - NVIDIA GPU acceleration
    * -
      - ``MATAIJKOKKOS``
@@ -86,7 +86,7 @@ Summary of Matrix Types Available In PETSc
      - Block cyclic storage
    * -
      - ``MATSCALAPACK``
-     - ``MatCreateScaLAPACK()()``
+     - ``MatCreateScaLAPACK()``
      - ScaLAPACK
      - Block cyclic storage
    * -
@@ -99,12 +99,12 @@ Summary of Matrix Types Available In PETSc
      - ``MatCreateMFFD()``
      -
      - Provides only matrix-vector products
-   * - User provided operations
+   * - User-provided operations
      - ``MATSHELL``
      - ``MatCreateShell()``
      -
      -
-   * - Low rank updates
+   * - Low-rank updates
      - ``MATLMVM``, ``MATLMVMDFP``, ``MATLMVMBFGS``, ``MATLMVMSR1``, ...
      - ``MatCreateLMVM()``
      -
