@@ -1511,13 +1511,7 @@ PetscErrorCode PetscFinalize(void)
   PetscCall(PetscOptionsHasName(NULL, NULL, "-objects_dump", &flg1));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-options_view", &flg2, NULL));
 
-  if (flg2) {
-    PetscViewer viewer;
-    PetscCall(PetscViewerCreate(PETSC_COMM_WORLD, &viewer));
-    PetscCall(PetscViewerSetType(viewer, PETSCVIEWERASCII));
-    PetscCall(PetscOptionsView(NULL, viewer));
-    PetscCall(PetscViewerDestroy(&viewer));
-  }
+  if (flg2) { PetscCall(PetscOptionsView(NULL, PETSC_VIEWER_STDOUT_WORLD)); }
 
   /* to prevent PETSc -options_left from warning */
   PetscCall(PetscOptionsHasName(NULL, NULL, "-nox", &flg1));
@@ -1528,11 +1522,7 @@ PetscErrorCode PetscFinalize(void)
   if (!flg1) flg3 = PETSC_TRUE;
   if (flg3) {
     if (!flg2 && flg1) { /* have not yet printed the options */
-      PetscViewer viewer;
-      PetscCall(PetscViewerCreate(PETSC_COMM_WORLD, &viewer));
-      PetscCall(PetscViewerSetType(viewer, PETSCVIEWERASCII));
-      PetscCall(PetscOptionsView(NULL, viewer));
-      PetscCall(PetscViewerDestroy(&viewer));
+      PetscCall(PetscOptionsView(NULL, PETSC_VIEWER_STDOUT_WORLD));
     }
     PetscCall(PetscOptionsAllUsed(NULL, &nopt));
     if (nopt) {

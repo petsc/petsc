@@ -335,7 +335,7 @@ class SectionManager:
       whether the line is a heading
     """
     def handle_header_with_colon(text: str) -> Verdict:
-      if text.endswith('\:'):
+      if text.endswith(r'\:'):
         return Verdict.NOT_HEADING
 
       textlo = text.casefold()
