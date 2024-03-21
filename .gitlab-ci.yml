@@ -156,6 +156,16 @@ clang-uni:
     CONFIG_OPTS: --with-cc=clang --with-cxx=clang++ --with-mpi=0 --with-strict-petscerrorcode
     TEST_SEARCH: snes_tutorials-ex48%
 
+gcc-lto:
+  extends: .stage-1
+  variables:
+    CONFIG_OPTS: CFLAGS= CXXFLAGS= FFLAGS=
+    MAKE_CFLAGS: -Werror -flto=4 -Werror=odr -Werror=lto-type-mismatch
+    MAKE_CXXFLAGS: -Werror -flto=4 -Werror=odr -Werror=lto-type-mismatch
+    MAKE_FFLAGS: -Werror -flto=4 -Werror=odr -Werror=lto-type-mismatch
+    TEST_SEARCH: snes_tutorials-ex19% snes_tutorials-ex5f%
+    LOAD_MODULES: gcc/12.1.0 mpich/4.1-gcc-12.1.0
+
 petsc4py-install:
   extends: .stage-2
   tags:
