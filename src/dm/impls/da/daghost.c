@@ -5,13 +5,13 @@
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
 /*@C
-  DMDAGetGhostCorners - Returns the global (x,y,z) indices of the lower left
+  DMDAGetGhostCorners - Returns the global (`i`,`j`,`k`) indices of the lower left
   corner and size of the local region, including ghost points.
 
   Not Collective
 
   Input Parameter:
-. da - the distributed array
+. da - the `DMDA`
 
   Output Parameters:
 + x - the corner index for the first dimension
@@ -25,12 +25,13 @@
 
   Note:
   The corner information is independent of the number of degrees of
-  freedom per node set with the `DMDACreateXX()` routine. Thus the `x`, `y`, `z`, and
-  `m`, `n`, `p` can be thought of as coordinates on a logical grid, where each
+  freedom per node set with the `DMDACreateXX()` routine. Thus the `x`, `y`, and `z`
+  can be thought of as the lower left coordinates of the patch of values on process on a logical grid and `m`, `n`, and `p` as the
+  extent of the patch. Where
   grid point has (potentially) several degrees of freedom.
   Any of `y`, `z`, `n`, and `p` can be passed in as `NULL` if not needed.
 
-.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetCorners()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDAGetOwnershipRanges()`, `DMStagGetGhostCorners()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetCorners()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDAGetOwnershipRanges()`, `DMStagGetGhostCorners()`, `DMSTAG`
 @*/
 PetscErrorCode DMDAGetGhostCorners(DM da, PetscInt *x, PetscInt *y, PetscInt *z, PetscInt *m, PetscInt *n, PetscInt *p)
 {

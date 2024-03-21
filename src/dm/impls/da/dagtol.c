@@ -69,7 +69,7 @@ PetscErrorCode DMLocalToGlobalEnd_DA(DM da, Vec l, InsertMode mode, Vec g)
   Collective
 
   Input Parameter:
-. da - the distributed array context
+. da - the `DMDA` context
 
   Level: developer
 
@@ -107,14 +107,14 @@ static PetscErrorCode DMDAGlobalToNatural_Create(DM da)
 }
 
 /*@
-  DMDAGlobalToNaturalBegin - Maps values from the global vector to a global vector
+  DMDAGlobalToNaturalBegin - Maps values from the global vector obtained with `DMCreateGlobalVector()` to a global vector
   in the "natural" grid ordering. Must be followed by
   `DMDAGlobalToNaturalEnd()` to complete the exchange.
 
   Neighbor-wise Collective
 
   Input Parameters:
-+ da   - the distributed array context
++ da   - the `DMDA` context
 . g    - the global vector, see `DMCreateGlobalVector()`
 - mode - one of `INSERT_VALUES` or `ADD_VALUES`
 
@@ -151,13 +151,13 @@ PetscErrorCode DMDAGlobalToNaturalBegin(DM da, Vec g, InsertMode mode, Vec n)
 }
 
 /*@
-  DMDAGlobalToNaturalEnd - Maps values from the global vector to a global vector
+  DMDAGlobalToNaturalEnd - Maps values from the global vector obtained with `DMCreateGlobalVector()` to a global vector
   in the natural ordering. Must be preceded by `DMDAGlobalToNaturalBegin()`.
 
   Neighbor-wise Collective
 
   Input Parameters:
-+ da   - the distributed array context
++ da   - the `DMDA` context
 . g    - the global vector, see `DMCreateGlobalVector()`
 - mode - one of `INSERT_VALUES` or `ADD_VALUES`
 
@@ -166,7 +166,7 @@ PetscErrorCode DMDAGlobalToNaturalBegin(DM da, Vec g, InsertMode mode, Vec n)
 
   Level: advanced
 
-  Notes:
+  Note:
   The global and local vectors used here need not be the same as those
   obtained from `DMCreateGlobalVector()` and `DMDACreateNaturalVector()`, BUT they
   must have the same parallel data layout; they could, for example, be
@@ -195,7 +195,7 @@ PetscErrorCode DMDAGlobalToNaturalEnd(DM da, Vec g, InsertMode mode, Vec n)
   Neighbor-wise Collective
 
   Input Parameters:
-+ da   - the distributed array context
++ da   - the `DMDA` context
 . g    - the global vector in a natural ordering, see `DMDACreateNaturalVector()`
 - mode - one of `INSERT_VALUES` or `ADD_VALUES`
 
@@ -204,7 +204,7 @@ PetscErrorCode DMDAGlobalToNaturalEnd(DM da, Vec g, InsertMode mode, Vec n)
 
   Level: advanced
 
-  Notes:
+  Note:
   The global and natural vectors used here need not be the same as those
   obtained from `DMCreateGlobalVector()` and `DMDACreateNaturalVector()`, BUT they
   must have the same parallel data layout; they could, for example, be
@@ -236,7 +236,7 @@ PetscErrorCode DMDANaturalToGlobalBegin(DM da, Vec n, InsertMode mode, Vec g)
   Neighbor-wise Collective
 
   Input Parameters:
-+ da   - the distributed array context
++ da   - the `DMDA` context
 . g    - the global vector in a natural ordering
 - mode - one of `INSERT_VALUES` or `ADD_VALUES`
 
@@ -245,7 +245,7 @@ PetscErrorCode DMDANaturalToGlobalBegin(DM da, Vec n, InsertMode mode, Vec g)
 
   Level: advanced
 
-  Notes:
+  Note:
   The global and local vectors used here need not be the same as those
   obtained from `DMCreateGlobalVector()` and `DMDACreateNaturalVector()`, BUT they
   must have the same parallel data layout; they could, for example, be

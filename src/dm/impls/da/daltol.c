@@ -10,7 +10,7 @@
    Collective
 
    Input Parameter:
-.  da - the distributed array
+.  da - the `DMDA`
 
 */
 PetscErrorCode DMLocalToLocalCreate_DA(DM da)

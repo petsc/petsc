@@ -48,7 +48,7 @@ PetscErrorCode DMCreateGlobalVector_DA(DM da, Vec *g)
   Collective
 
   Input Parameter:
-. da - the distributed array
+. da - the `DMDA`
 
   Output Parameter:
 . g - the distributed global vector
