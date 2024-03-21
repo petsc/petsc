@@ -378,7 +378,7 @@ static PetscErrorCode SetupProblem(DM dm, DM fdm, AppCtx *user)
   }
 
   /* Iterate on coarser mesh if present */
-  if (!user->p4est) PetscCall(DMGetCoarseDM(dm, &cdm));
+  PetscCall(DMGetCoarseDM(dm, &cdm));
   if (cdm) PetscCall(SetupProblem(cdm, dm, user));
 
   PetscCall(PetscFEDestroy(&fe));
