@@ -1234,23 +1234,26 @@ PetscErrorCode PCASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, K
 +  -pc_asm_blocks <blks>                          - Sets total blocks. Defaults to one block per MPI process.
 .  -pc_asm_overlap <ovl>                          - Sets overlap
 .  -pc_asm_type [basic,restrict,interpolate,none] - Sets `PCASMType`, default is restrict. See `PCASMSetType()`
+.  -pc_asm_dm_subdomains <bool>                   - use subdomains defined by the `DM` with `DMCreateDomainDecomposition()`
 -  -pc_asm_local_type [additive, multiplicative]  - Sets `PCCompositeType`, default is additive. See `PCASMSetLocalType()`
 
    Level: beginner
 
    Notes:
    If you run with, for example, 3 blocks on 1 processor or 3 blocks on 3 processors you
-   will get a different convergence rate due to the default option of -pc_asm_type restrict. Use
-    -pc_asm_type basic to get the same convergence behavior
+   will get a different convergence rate due to the default option of `-pc_asm_type restrict`. Use
+   `-pc_asm_type basic` to get the same convergence behavior
 
    Each processor can have one or more blocks, but a block cannot be shared by more
    than one processor. Use `PCGASM` for subdomains shared by multiple processes.
 
-   To set options on the solvers for each block append -sub_ to all the `KSP`, and `PC`
-   options database keys. For example, -sub_pc_type ilu -sub_pc_factor_levels 1 -sub_ksp_type preonly
+   To set options on the solvers for each block append `-sub_` to all the `KSP`, and `PC`
+   options database keys. For example, `-sub_pc_type ilu -sub_pc_factor_levels 1 -sub_ksp_type preonly`
 
    To set the options on the solvers separate for each block call `PCASMGetSubKSP()`
    and set the options directly on the resulting `KSP` object (you can access its `PC` with `KSPGetPC()`)
+
+   If the `PC` has an associated `DM`, then, by default, `DMCreateDomainDecomposition()` is used to create the subdomains
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCASMType`, `PCCompositeType`,
           `PCBJACOBI`, `PCASMGetSubKSP()`, `PCASMSetLocalSubdomains()`, `PCASMType`, `PCASMGetType()`, `PCASMSetLocalType()`, `PCASMGetLocalType()`
@@ -1698,13 +1701,16 @@ PetscErrorCode PCASMGetLocalSubmatrices(PC pc, PetscInt *n, Mat *mat[])
 - flg - boolean indicating whether to use subdomains defined by the `DM`
 
   Options Database Key:
-. -pc_asm_dm_subdomains <bool> - use subdomains defined by the `DM`
+. -pc_asm_dm_subdomains <bool> - use subdomains defined by the `DM` with `DMCreateDomainDecomposition()`
 
   Level: intermediate
 
   Note:
   `PCASMSetTotalSubdomains()` and `PCASMSetOverlap()` take precedence over `PCASMSetDMSubdomains()`,
   so setting either of the first two effectively turns the latter off.
+
+  Developer Note:
+  This should be `PCASMSetUseDMSubdomains()`, similarly for the options database key
 
 .seealso: [](ch_ksp), `PCASM`, `PCASMGetDMSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`
           `PCASMCreateSubdomains2D()`, `PCASMSetLocalSubdomains()`, `PCASMGetLocalSubdomains()`
@@ -1735,6 +1741,9 @@ PetscErrorCode PCASMSetDMSubdomains(PC pc, PetscBool flg)
 . flg - boolean indicating whether to use subdomains defined by the `DM`
 
   Level: intermediate
+
+  Developer Note:
+  This should be `PCASMSetUseDMSubdomains()`
 
 .seealso: [](ch_ksp), `PCASM`, `PCASMSetDMSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`
           `PCASMCreateSubdomains2D()`, `PCASMSetLocalSubdomains()`, `PCASMGetLocalSubdomains()`

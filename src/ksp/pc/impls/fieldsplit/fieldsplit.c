@@ -3017,7 +3017,10 @@ PetscErrorCode PCFieldSplitGetType(PC pc, PCCompositeType *type)
 
   Level: intermediate
 
-.seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitGetDMSplits()`, `PCFieldSplitSetFields()`, `PCFieldsplitSetIS()`
+  Developer Note:
+  The name should be `PCFieldSplitSetUseDMSplits()`, similar change to options database
+
+.seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitGetDMSplits()`, `DMCreateFieldDecomposition()`, `PCFieldSplitSetFields()`, `PCFieldsplitSetIS()`
 @*/
 PetscErrorCode PCFieldSplitSetDMSplits(PC pc, PetscBool flg)
 {
@@ -3045,7 +3048,10 @@ PetscErrorCode PCFieldSplitSetDMSplits(PC pc, PetscBool flg)
 
   Level: intermediate
 
-.seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitSetDMSplits()`, `PCFieldSplitSetFields()`, `PCFieldsplitSetIS()`
+  Developer Note:
+  The name should be `PCFieldSplitGetUseDMSplits()`
+
+.seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitSetDMSplits()`, `DMCreateFieldDecomposition()`, `PCFieldSplitSetFields()`, `PCFieldsplitSetIS()`
 @*/
 PetscErrorCode PCFieldSplitGetDMSplits(PC pc, PetscBool *flg)
 {
@@ -3133,6 +3139,7 @@ PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc, PetscBool flg)
 .   -pc_fieldsplit_schur_precondition <self,selfp,user,a11,full>                     - default is `a11`; see `PCFieldSplitSetSchurPre()`
 .   -pc_fieldsplit_schur_fact_type <diag,lower,upper,full>                           - set factorization type when using `-pc_fieldsplit_type schur`;
                                                                                      see `PCFieldSplitSetSchurFactType()`
+.   -pc_fieldsplit_dm_splits <true,false> (default is true)                          - Whether to use `DMCreateFieldDecomposition()` for splits
 -   -pc_fieldsplit_detect_saddle_point                                               - automatically finds rows with zero diagonal and uses Schur complement with no preconditioner as the solver
 
      Options prefixes for inner solvers when using the Schur complement preconditioner are `-fieldsplit_0_` and `-fieldsplit_1_` .
@@ -3151,7 +3158,8 @@ PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc, PetscBool flg)
     Use `PCFieldSplitSetFields()` to set splits defined by "strided" entries and `PCFieldSplitSetIS()`
      to define a split by an arbitrary collection of entries.
 
-      If no splits are set the default is used. The splits are defined by entries strided by bs,
+      If no splits are set, the default is used. If a `DM` is associated with the `PC` and it supports
+      `DMCreateFieldDecomposition()`, then that is used for the default. Otherwise, the splits are defined by entries strided by bs,
       beginning at 0 then 1, etc to bs-1. The block size can be set with `PCFieldSplitSetBlockSize()`,
       if this is not called the block size defaults to the blocksize of the second matrix passed
       to `KSPSetOperators()`/`PCSetOperators()`.
