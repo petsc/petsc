@@ -97,7 +97,7 @@ PETSC_EXTERN void petscgetcomm_(PetscMPIInt *);
 */
 #if defined(PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT) /* Fortran 2003  - same as 'else' case */
 PETSC_EXTERN int  iargc_(void);
-PETSC_EXTERN void getarg_(int *, char *, int);
+PETSC_EXTERN void getarg_(int *, char *, PETSC_FORTRAN_CHARLEN_T);
 #elif defined(PETSC_USE_NARGS)
 PETSC_EXTERN short __stdcall NARGS(void);
 PETSC_EXTERN void __stdcall GETARG(short *, char *, int, short *);

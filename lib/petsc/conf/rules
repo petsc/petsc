@@ -84,8 +84,7 @@ clean:: clean-legacy
          grep -v "is being replaced by a real definition" | \
           grep -v "may result in errors or" | \
           grep -v "is deprecated" | \
-          grep -v "Werror=format-security" | \
-          grep -v " -Werror " | \
+          grep -v " -Werror" | \
           grep -v " was built for newer macOS version " | \
           grep -v "only the last is used because nvcc can only accept a single optimization setting" | \
          grep -E -i '(Error|warning|Can|Unresolved)' >> /dev/null;\
@@ -133,8 +132,7 @@ clean:: clean-legacy
          grep -v "is being replaced by a real definition" | \
           grep -v "IPO Error: unresolved" | \
           grep -v "warning multiple definitions of symbol _matdensegetarray_" | \
-          grep -v "Werror=format-security" | \
-          grep -v " -Werror " | \
+          grep -v " -Werror" | \
           grep -v " was built for newer macOS version " | \
          grep -E -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \
          if [ "$$?" != 1 ]; then \
