@@ -102,7 +102,6 @@ static PetscErrorCode PCMGGDSWSetUp(PC pc, PetscInt l, DM dm, KSP smooth, PetscI
 
     PetscCall(MatISGetLocalToGlobalMapping(A, &l2g, NULL));
     PetscCall(MatGetSize(A, &N, NULL));
-    graph->commsizelimit = 0; /* don't use the COMM_SELF variant of the graph */
     PetscCall(PCBDDCGraphInit(graph, l2g, N, PETSC_MAX_INT));
     PetscCall(MatGetRowIJ(lA, 0, PETSC_TRUE, PETSC_FALSE, &graph->nvtxs_csr, (const PetscInt **)&graph->xadj, (const PetscInt **)&graph->adjncy, &flg));
     PetscCall(PCBDDCGraphSetUp(graph, vsize, NULL, NULL, 0, NULL, NULL));

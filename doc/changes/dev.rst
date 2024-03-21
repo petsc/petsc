@@ -43,6 +43,7 @@ Changes: Development
 
 - Add ``ISLocalToGlobalMappingGetNodeInfo()`` and ``ISLocalToGlobalMappingRestoreNodeInfo()`` to access neighboring information of local indices
 - Add support to load an ``ISLocalToGlobalMapping`` via ``ISLocalToGlobalMappingLoad()`` from data previously stored using ``ISLocalToGlobalMappingView()``
+- Add ``ISLocalToGlobalMappingGetBlockMultiLeavesSF()`` to share local block data
 
 .. rubric:: VecScatter / PetscSF:
 
@@ -99,6 +100,7 @@ Changes: Development
 - Add ``PCJacobiSetRowl1Scale()`` and ``-pc_jacobi_rowl1_scale scale`` to access new scale member of PC_Jacobi class, for new row l1 Jacobi
 - Add ``-mg_fine_...`` prefix alias for fine grid options to override ``-mg_levels_...`` options, like ``-mg_coarse_...``
 - The generated sub-matrices in ``PCFIELDSPLIT``, ``PCASM``, and ``PCBJACOBI`` now retain any null space or near null space attached to them even if the non-zero structure of the outer matrix changes
+- Add support for multiple subdomain per MPI process in ``PCBDDC``.
 
 .. rubric:: KSP:
 

@@ -10,26 +10,35 @@
 #define PCBDDCGRAPH_LOCAL_PERIODIC_MARK -3
 #define PCBDDCGRAPH_SPECIAL_MARK        -4
 
-/* Structure for local graph partitioning */
+/* Metadata information on node */
+typedef struct {
+  PetscBool touched;
+  PetscInt  subset;
+  PetscInt  which_dof;
+  PetscInt  special_dof;
+  PetscInt  local_sub;
+  PetscInt  count;
+  PetscInt *neighbours_set;
+  PetscInt  local_groups_count;
+  PetscInt *local_groups;
+} PCBDDCGraphNode;
+
+/* Data structure for local graph partitioning */
 struct _PCBDDCGraph {
   PetscBool setupcalled;
   /* graph information */
   ISLocalToGlobalMapping l2gmap;
   PetscInt               nvtxs;
   PetscInt               nvtxs_global;
-  PetscBT                touched;
-  PetscInt              *count;
-  PetscInt             **neighbours_set;
-  PetscInt              *subset;
-  PetscInt              *which_dof;
-  PetscInt              *special_dof;
+  PCBDDCGraphNode       *nodes;
   PetscInt               custom_minimal_size;
   PetscBool              twodim;
   PetscBool              twodimset;
   PetscBool              has_dirichlet;
+  PetscBool              multi_element;
   IS                     dirdofs;
   IS                     dirdofsB;
-  PetscInt               commsizelimit;
+  PetscBool              seq_graph;
   PetscInt               maxcount;
   /* data for connected components */
   PetscInt  ncc;
@@ -42,9 +51,10 @@ struct _PCBDDCGraph {
   PetscInt **subset_idxs;
   PetscInt  *subset_ncc;
   PetscInt  *subset_ref_node;
-  /* data for periodic dofs */
-  PetscInt  *mirrors;
-  PetscInt **mirrors_set;
+  PetscInt  *gsubset_size;
+  PetscInt  *interface_ref_rsize;
+  PetscSF    interface_ref_sf;
+  PetscSF    interface_subset_sf;
   /* placeholders for connectivity relation between dofs */
   PetscInt  nvtxs_csr;
   PetscInt *xadj;

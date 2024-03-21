@@ -12,3 +12,22 @@ GETNODEINFO OUTPUT
 [2] Local N 0
 [3] Local N 0
 [4] Local N 0
+GETBLOCKINFO OUTPUT
+[0] Local NP 0
+[1] Local NP 0
+[2] Local NP 0
+[3] Local NP 0
+[4] Local NP 0
+GETBLOCKNODEINFO OUTPUT
+[0] Local N 0
+[1] Local N 0
+[2] Local N 0
+[3] Local N 0
+[4] Local N 0
+BLOCK MULTI-LEAVES INPUT
+BLOCK MULTI-LEAVES OUTPUT
+[0] Local N 0
+[1] Local N 0
+[2] Local N 0
+[3] Local N 0
+[4] Local N 0

@@ -3,7 +3,7 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 
-PETSC_INTERN PetscErrorCode MatSetBlockSizes_Default(Mat mat, PetscInt rbs, PetscInt cbs)
+PetscErrorCode MatSetBlockSizes_Default(Mat mat, PetscInt rbs, PetscInt cbs)
 {
   PetscFunctionBegin;
   if (!mat->preallocated) PetscFunctionReturn(PETSC_SUCCESS);
@@ -12,7 +12,7 @@ PETSC_INTERN PetscErrorCode MatSetBlockSizes_Default(Mat mat, PetscInt rbs, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y, PetscScalar a)
+PetscErrorCode MatShift_Basic(Mat Y, PetscScalar a)
 {
   PetscInt    i, start, end, oldValA = 0, oldValB = 0;
   PetscScalar alpha = a;
