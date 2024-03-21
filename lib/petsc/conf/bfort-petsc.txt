@@ -6,6 +6,9 @@ nativeptr AO
 # petscbag.h
 nativeptr PetscBag
 
+# petscdt.h
+native    PetscDTNodeType
+
 # petscdm.h
 native    DMBoundaryType
 native    DMPointLocationType

@@ -7,6 +7,7 @@
 #include "petsc/finclude/petscis.h"
 #include "petsc/finclude/petscvec.h"
 #include "petsc/finclude/petscmat.h"
+#include "petsc/finclude/petscdt.h"
 
 #define DMType character*(80)
 #define DMBoundaryType               PetscEnum
