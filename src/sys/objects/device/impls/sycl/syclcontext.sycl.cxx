@@ -63,7 +63,7 @@ public:
     delete static_cast<PetscDeviceContext_SYCL *>(dctx->data);
     dctx->data = nullptr;
     PetscFunctionReturn(PETSC_SUCCESS);
-  };
+  }
 
   static PetscErrorCode setUp(PetscDeviceContext dctx) noexcept
   {
@@ -76,7 +76,7 @@ public:
     PetscCall(PetscKokkosInitializeCheck());
     static_cast<PetscDeviceContext_SYCL *>(dctx->data)->queue = Kokkos::DefaultExecutionSpace().sycl_queue();
     PetscFunctionReturn(PETSC_SUCCESS);
-  };
+  }
 
   static PetscErrorCode query(PetscDeviceContext dctx, PetscBool *idle) noexcept
   {
@@ -85,7 +85,7 @@ public:
     // *idle = static_cast<PetscDeviceContext_SYCL*>(dctx->data)->queue.empty() ? PETSC_TRUE : PETSC_FALSE;
     *idle = PETSC_FALSE;
     PetscFunctionReturn(PETSC_SUCCESS);
-  };
+  }
 
   static PetscErrorCode synchronize(PetscDeviceContext dctx) noexcept
   {
@@ -96,14 +96,14 @@ public:
     PetscCall(query(dctx, &idle));
     if (!idle) PetscCallCXX(dci->queue.wait());
     PetscFunctionReturn(PETSC_SUCCESS);
-  };
+  }
 
   static PetscErrorCode getStreamHandle(PetscDeviceContext dctx, void **handle) noexcept
   {
     PetscFunctionBegin;
     *reinterpret_cast<::sycl::queue **>(handle) = &(static_cast<PetscDeviceContext_SYCL *>(dctx->data)->queue);
     PetscFunctionReturn(PETSC_SUCCESS);
-  };
+  }
 
   static PetscErrorCode beginTimer(PetscDeviceContext dctx) noexcept
   {
@@ -116,7 +116,7 @@ public:
 #endif
     PetscCallCXX(dci->timeBegin = dci->timer.seconds());
     PetscFunctionReturn(PETSC_SUCCESS);
-  };
+  }
 
   static PetscErrorCode endTimer(PetscDeviceContext dctx, PetscLogDouble *elapsed) noexcept
   {
@@ -130,12 +130,12 @@ public:
     PetscCallCXX(dci->queue.wait());
     PetscCallCXX(*elapsed = dci->timer.seconds() - dci->timeBegin);
     PetscFunctionReturn(PETSC_SUCCESS);
-  };
+  }
 
-  static PetscErrorCode changeStreamType(PetscDeviceContext, PetscStreamType) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
-  static PetscErrorCode waitForContext(PetscDeviceContext, PetscDeviceContext) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
-  static PetscErrorCode getBlasHandle(PetscDeviceContext, void *) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
-  static PetscErrorCode getSolverHandle(PetscDeviceContext, void *) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); };
+  static PetscErrorCode changeStreamType(PetscDeviceContext, PetscStreamType) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); }
+  static PetscErrorCode waitForContext(PetscDeviceContext, PetscDeviceContext) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); }
+  static PetscErrorCode getBlasHandle(PetscDeviceContext, void *) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); }
+  static PetscErrorCode getSolverHandle(PetscDeviceContext, void *) noexcept { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented"); }
 };
 
 } // namespace impl

@@ -285,7 +285,6 @@ PetscErrorCode Fill_mat(PetscReal coeff, PetscInt m, Mat A)
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatSetOption(A, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*---------------------------------------------------------------------------------------------*/

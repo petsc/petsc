@@ -153,8 +153,18 @@ c99-mlib-static-py:
 clang-uni:
   extends: .stage-1
   variables:
-    CONFIG_OPTS: --with-cc=clang --with-cxx=clang++ --with-mpi=0
+    CONFIG_OPTS: --with-cc=clang --with-cxx=clang++ --with-mpi=0 --with-strict-petscerrorcode
     TEST_SEARCH: snes_tutorials-ex48%
+
+gcc-lto:
+  extends: .stage-1
+  variables:
+    CONFIG_OPTS: CFLAGS= CXXFLAGS= FFLAGS=
+    MAKE_CFLAGS: -Werror -flto=4 -Werror=odr -Werror=lto-type-mismatch
+    MAKE_CXXFLAGS: -Werror -flto=4 -Werror=odr -Werror=lto-type-mismatch
+    MAKE_FFLAGS: -Werror -flto=4 -Werror=odr -Werror=lto-type-mismatch
+    TEST_SEARCH: snes_tutorials-ex19% snes_tutorials-ex5f%
+    LOAD_MODULES: gcc/12.1.0 mpich/4.1-gcc-12.1.0
 
 petsc4py-install:
   extends: .stage-2
@@ -218,7 +228,7 @@ checksource:
     - python3 ./configure --with-mpi=0 --with-fc=0 --with-cxx=0 --with-x=0 --with-bison=0 --with-cmake=0 --with-pthread=0 --with-regex=0
     - vermin --version
     - make vermin
-    - PATH=/nfs/gce/projects/petsc/soft/clang+llvm-16.0.0-x86_64-linux-gnu-ubuntu-18.04/bin:$PATH make checkclangformat SHELL=bash
+    - PATH=/nfs/gce/projects/petsc/soft/u22.04/spack-2024-03-06/opt/spack/linux-ubuntu22.04-x86_64/gcc-11.4.0/llvm-18.1.0-7hsf4hzma6aebqsd4ifb5brchcooktkp/bin:$PATH make checkclangformat SHELL=bash
     - make checkbadSource SHELL=bash
     - make checkbadFileChange SHELL=bash
     - make -f gmakefile check_output SHELL=bash
@@ -833,7 +843,7 @@ check-each-commit:
   tags:
     - gce-u22-stage2
   script:
-    - export PATH=/nfs/gce/projects/petsc/soft/clang+llvm-16.0.0-x86_64-linux-gnu-ubuntu-18.04/bin:$PATH
+    - export PATH=/nfs/gce/projects/petsc/soft/u22.04/spack-2024-03-06/opt/spack/linux-ubuntu22.04-x86_64/gcc-11.4.0/llvm-18.1.0-7hsf4hzma6aebqsd4ifb5brchcooktkp/bin:$PATH
     - lib/petsc/bin/maint/check-each-commit.sh
   except:
     variables:

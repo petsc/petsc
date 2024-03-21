@@ -71,7 +71,7 @@
 
 /* define isnan and isinf for ANSI C, if in C99 or above, isnan and isinf has been defined in math.h */
 #ifndef isinf
-  #define isinf(d) (isnan((d - d)) && !isnan(d))
+  #define isinf(d) (isnan(d - d) && !isnan(d))
 #endif
 #ifndef isnan
   #define isnan(d) (d != d)
@@ -438,7 +438,7 @@ static void update_offset(printbuffer *const buffer)
 static cJSON_bool compare_double(double a, double b)
 {
   double maxVal = fabs(a) > fabs(b) ? fabs(a) : fabs(b);
-  return (fabs(a - b) <= maxVal * DBL_EPSILON);
+  return fabs(a - b) <= maxVal * DBL_EPSILON;
 }
 
 /* Render the number nicely from the given item into a string. */
@@ -543,7 +543,7 @@ static unsigned char utf16_literal_to_utf8(const unsigned char *const input_poin
   first_code = parse_hex4(first_sequence + 2);
 
   /* check that the code is valid */
-  if (((first_code >= 0xDC00) && (first_code <= 0xDFFF))) { goto fail; }
+  if ((first_code >= 0xDC00) && (first_code <= 0xDFFF)) { goto fail; }
 
   /* UTF16 surrogate pair */
   if ((first_code >= 0xD800) && (first_code <= 0xDBFF)) {
@@ -1093,7 +1093,7 @@ static cJSON_bool print_value(const cJSON *const item, printbuffer *const output
 
   if ((item == NULL) || (output_buffer == NULL)) { return false; }
 
-  switch ((item->type) & 0xFF) {
+  switch (item->type & 0xFF) {
   case cJSON_NULL:
     output = ensure(output_buffer, 5);
     if (output == NULL) { return false; }
@@ -1172,7 +1172,7 @@ static cJSON_bool parse_array(cJSON *const item, parse_buffer *const input_buffe
   /* loop through the comma separated array elements */
   do {
     /* allocate next item */
-    cJSON *new_item = cJSON_New_Item(&(input_buffer->hooks));
+    cJSON *new_item = cJSON_New_Item(&input_buffer->hooks);
     if (new_item == NULL) { goto fail; /* allocation failure */ }
 
     /* attach next item to list */
@@ -1281,7 +1281,7 @@ static cJSON_bool parse_object(cJSON *const item, parse_buffer *const input_buff
   /* loop through the comma separated array elements */
   do {
     /* allocate next item */
-    cJSON *new_item = cJSON_New_Item(&(input_buffer->hooks));
+    cJSON *new_item = cJSON_New_Item(&input_buffer->hooks);
     if (new_item == NULL) { goto fail; /* allocation failure */ }
 
     /* attach next item to list */
@@ -1454,7 +1454,7 @@ static cJSON *get_object_item(const cJSON *const object, const char *const name,
   if (case_sensitive) {
     while ((current_element != NULL) && (current_element->string != NULL) && (strcmp(name, current_element->string) != 0)) { current_element = current_element->next; }
   } else {
-    while ((current_element != NULL) && (case_insensitive_strcmp((const unsigned char *)name, (const unsigned char *)(current_element->string)) != 0)) { current_element = current_element->next; }
+    while ((current_element != NULL) && (case_insensitive_strcmp((const unsigned char *)name, (const unsigned char *)current_element->string) != 0)) { current_element = current_element->next; }
   }
 
   if ((current_element == NULL) || (current_element->string == NULL)) { return NULL; }

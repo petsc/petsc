@@ -53,7 +53,7 @@ static PetscErrorCode PCSetUp_ROWSCALINGVIENNACL(PC pc)
     SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "No support for complex arithmetic in ROWSCALINGVIENNACL preconditioner");
 #else
     PetscCall(MatViennaCLCopyToGPU(pc->pmat));
-    gpustruct = (Mat_SeqAIJViennaCL *)(pc->pmat->spptr);
+    gpustruct = (Mat_SeqAIJViennaCL *)pc->pmat->spptr;
 
     viennacl::linalg::row_scaling_tag pc_tag(1);
     ViennaCLAIJMatrix                *mat = (ViennaCLAIJMatrix *)gpustruct->mat;
@@ -97,7 +97,7 @@ static PetscErrorCode PCApply_ROWSCALINGVIENNACL(PC pc, Vec x, Vec y)
 #if defined(PETSC_USE_COMPLEX)
 
 #else
-    *yarray                               = *xarray;
+    *yarray = *xarray;
     ilu->ROWSCALINGVIENNACL->apply(*yarray);
 #endif
   } catch (char *ex) {

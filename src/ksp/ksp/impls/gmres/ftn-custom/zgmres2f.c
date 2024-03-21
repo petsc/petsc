@@ -32,12 +32,12 @@ static PetscErrorCode ourorthog(KSP ksp, PetscInt n)
 
 PETSC_EXTERN void kspgmressetorthogonalization_(KSP *ksp, void (*orthog)(KSP *, PetscInt *, PetscErrorCode *), PetscErrorCode *ierr)
 {
-  if ((PetscVoidFunction)orthog == (PetscVoidFunction)kspgmresmodifiedgramschmidtorthogonalization_) {
+  if ((PetscVoidFn *)orthog == (PetscVoidFn *)kspgmresmodifiedgramschmidtorthogonalization_) {
     *ierr = KSPGMRESSetOrthogonalization(*ksp, KSPGMRESModifiedGramSchmidtOrthogonalization);
-  } else if ((PetscVoidFunction)orthog == (PetscVoidFunction)kspgmresclassicalgramschmidtorthogonalization_) {
+  } else if ((PetscVoidFn *)orthog == (PetscVoidFn *)kspgmresclassicalgramschmidtorthogonalization_) {
     *ierr = KSPGMRESSetOrthogonalization(*ksp, KSPGMRESClassicalGramSchmidtOrthogonalization);
   } else {
-    *ierr = PetscObjectSetFortranCallback((PetscObject)*ksp, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.orthog, (PetscVoidFunction)orthog, NULL);
+    *ierr = PetscObjectSetFortranCallback((PetscObject)*ksp, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.orthog, (PetscVoidFn *)orthog, NULL);
     if (*ierr) return;
     *ierr = KSPGMRESSetOrthogonalization(*ksp, ourorthog);
   }

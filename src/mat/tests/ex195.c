@@ -12,13 +12,12 @@ static char help[] = " Demonstrate the use of MatConvert_Nest_AIJ\n";
 int main(int argc, char **args)
 {
   Mat         A1, A2, A3, A4, A5, B, C, C1, nest;
-  Mat         mata[4];
   Mat         aij;
   MPI_Comm    comm;
   PetscInt    m, M, n, istart, iend, ii, i, J, j, K = 10;
   PetscScalar v;
   PetscMPIInt size;
-  PetscBool   equal;
+  PetscBool   equal, test = PETSC_FALSE, test_null = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
@@ -65,12 +64,47 @@ int main(int argc, char **args)
   PetscCall(MatDuplicate(A1, MAT_COPY_VALUES, &A3));
   PetscCall(MatDuplicate(A1, MAT_COPY_VALUES, &A4));
 
-  /*create a nest matrix */
+  /* create a nest matrix */
   PetscCall(MatCreate(comm, &nest));
   PetscCall(MatSetType(nest, MATNEST));
-  mata[0] = A1, mata[1] = A2, mata[2] = A3, mata[3] = A4;
-  PetscCall(MatNestSetSubMats(nest, 2, NULL, 2, NULL, mata));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_null", &test_null, NULL));
+  if (test_null) {
+    IS       is[2];
+    PetscInt st;
+
+    PetscCall(MatGetLocalSize(A1, &m, NULL));
+    PetscCall(MatGetOwnershipRange(A1, &st, NULL));
+    PetscCall(ISCreateStride(comm, m, st, 2, &is[0]));
+    PetscCall(ISCreateStride(comm, m, st + 1, 2, &is[1]));
+    PetscCall(MatNestSetSubMats(nest, 2, is, 2, is, NULL));
+    PetscCall(ISDestroy(&is[0]));
+    PetscCall(ISDestroy(&is[1]));
+  } else {
+    Mat mata[] = {A1, A2, A3, A4};
+
+    PetscCall(MatNestSetSubMats(nest, 2, NULL, 2, NULL, mata));
+  }
   PetscCall(MatSetUp(nest));
+
+  /* test matrix product error messages */
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_nest*nest", &test, NULL));
+  if (test) PetscCall(MatMatMult(nest, nest, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
+
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_matproductsetfromoptions", &test, NULL));
+  if (test) {
+    PetscCall(MatProductCreate(nest, nest, NULL, &C));
+    PetscCall(MatProductSetType(C, MATPRODUCT_AB));
+    PetscCall(MatProductSymbolic(C));
+  }
+
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_matproductsymbolic", &test, NULL));
+  if (test) {
+    PetscCall(MatProductCreate(nest, nest, NULL, &C));
+    PetscCall(MatProductSetType(C, MATPRODUCT_AB));
+    PetscCall(MatProductSetFromOptions(C));
+    PetscCall(MatProductSymbolic(C));
+  }
+
   PetscCall(MatConvert(nest, MATAIJ, MAT_INITIAL_MATRIX, &aij));
   PetscCall(MatView(aij, PETSC_VIEWER_STDOUT_WORLD));
 
@@ -99,25 +133,18 @@ int main(int argc, char **args)
   PetscCall(MatConvert(nest, MATAIJ, MAT_INPLACE_MATRIX, &nest));
   PetscCall(MatEqual(nest, aij, &equal));
   PetscCheck(equal, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Error in aij != nest");
+
+  /* Test with virtual block */
+  PetscCall(MatCreateTranspose(A1, &A5)); /* A1 is symmetric */
+  PetscCall(MatNestSetSubMat(nest, 0, 0, A5));
+  PetscCall(MatMatMult(nest, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C1));
+  PetscCall(MatMatMult(nest, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C1));
+  PetscCall(MatMatMultEqual(nest, B, C1, 10, &equal));
+  PetscCheck(equal, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Error in C1 != C");
+  PetscCall(MatDestroy(&C1));
+  PetscCall(MatDestroy(&A5));
+
   PetscCall(MatDestroy(&nest));
-
-  if (size > 1) {                           /* Do not know why this test fails for size = 1 */
-    PetscCall(MatCreateTranspose(A1, &A5)); /* A1 is symmetric */
-    mata[0] = A5;
-    PetscCall(MatCreate(comm, &nest));
-    PetscCall(MatSetType(nest, MATNEST));
-    PetscCall(MatNestSetSubMats(nest, 2, NULL, 2, NULL, mata));
-    PetscCall(MatSetUp(nest));
-    PetscCall(MatMatMult(nest, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C1));
-    PetscCall(MatMatMult(nest, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C1));
-
-    PetscCall(MatMatMultEqual(nest, B, C1, 10, &equal));
-    PetscCheck(equal, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Error in C1 != C");
-    PetscCall(MatDestroy(&C1));
-    PetscCall(MatDestroy(&A5));
-    PetscCall(MatDestroy(&nest));
-  }
-
   PetscCall(MatDestroy(&C));
   PetscCall(MatDestroy(&B));
   PetscCall(MatDestroy(&aij));
@@ -132,9 +159,23 @@ int main(int argc, char **args)
 /*TEST
 
    test:
+      diff_args: -j
       nsize: 2
+      suffix: 1
 
    test:
+      diff_args: -j
+      nsize: 2
+      suffix: 1_null
+      args: -test_null
+
+   test:
+      diff_args: -j
       suffix: 2
+
+   test:
+      diff_args: -j
+      suffix: 2_null
+      args: -test_null
 
 TEST*/

@@ -23,7 +23,6 @@ PetscErrorCode PumpHeadCurveResidual(SNES snes, Vec X, Vec F, void *ctx)
 
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscCall(VecRestoreArray(F, &f));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

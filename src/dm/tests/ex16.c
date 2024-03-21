@@ -57,20 +57,20 @@ int main(int argc, char **argv)
 
   PetscCall(DMCompositeScatter(packer, global, redundant1, local1, redundant2, local2));
   PetscCall(PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD));
-  PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD, "[%d] My part of redundant1 vector\n", rank));
   PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &sviewer));
+  PetscCall(PetscViewerASCIIPrintf(sviewer, "[%d] My part of redundant1 vector\n", rank));
   PetscCall(VecView(redundant1, sviewer));
   PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &sviewer));
-  PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD, "[%d] My part of da1 vector\n", rank));
   PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &sviewer));
+  PetscCall(PetscViewerASCIIPrintf(sviewer, "[%d] My part of da1 vector\n", rank));
   PetscCall(VecView(local1, sviewer));
   PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &sviewer));
-  PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD, "[%d] My part of redundant2 vector\n", rank));
   PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &sviewer));
+  PetscCall(PetscViewerASCIIPrintf(sviewer, "[%d] My part of redundant2 vector\n", rank));
   PetscCall(VecView(redundant2, sviewer));
   PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &sviewer));
-  PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD, "[%d] My part of da2 vector\n", rank));
   PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &sviewer));
+  PetscCall(PetscViewerASCIIPrintf(sviewer, "[%d] My part of da2 vector\n", rank));
   PetscCall(VecView(local2, sviewer));
   PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &sviewer));
   PetscCall(PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD));

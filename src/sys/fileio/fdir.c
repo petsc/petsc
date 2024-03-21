@@ -17,6 +17,7 @@
 static PetscErrorCode PetscPathJoin(const char dname[], const char fname[], size_t n, char fullname[])
 {
   size_t l1, l2;
+
   PetscFunctionBegin;
   PetscCall(PetscStrlen(dname, &l1));
   PetscCall(PetscStrlen(fname, &l2));

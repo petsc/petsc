@@ -998,8 +998,7 @@ PetscErrorCode DMSNESCheckJacobian(SNES snes, DM dm, Vec u, PetscReal tol, Petsc
     PetscCall(VecDuplicate(u, &r));
     PetscCall(SNESComputeFunction(snes, u, r));
     /* Look at the convergence of our Taylor approximation as we approach u */
-    for (h = hMax, Nv = 0; h >= hMin; h *= hMult, ++Nv)
-      ;
+    for (h = hMax, Nv = 0; h >= hMin; h *= hMult, ++Nv);
     PetscCall(PetscCalloc3(Nv, &es, Nv, &hs, Nv, &errors));
     PetscCall(VecDuplicate(u, &uhat));
     PetscCall(VecDuplicate(u, &rhat));

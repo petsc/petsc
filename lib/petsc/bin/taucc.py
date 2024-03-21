@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-#!/bin/env python
+#!/usr/bin/env python3
 
 # Usage:
 #  taucc -cc=g++ -pdt_parse=/../cxxparse -tau_lib_dir=/.../lib COMPILE_OPTIONS

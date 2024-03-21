@@ -319,7 +319,7 @@ static PetscErrorCode PCSetCoordinates_AGG(PC pc, PetscInt ndm, PetscInt a_nloc,
     PetscCall(PetscFree(pc_gamg->data));
     PetscCall(PetscMalloc1(arrsz + 1, &pc_gamg->data));
   }
-  /* copy data in - column oriented */
+  /* copy data in - column-oriented */
   for (kk = 0; kk < nloc; kk++) {
     const PetscInt M    = nloc * pc_gamg->data_cell_rows; /* stride into data */
     PetscReal     *data = &pc_gamg->data[kk * ndatarows]; /* start of cell */
@@ -512,7 +512,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
           PetscCall(PCGAMGHashTableFind(&fgid_flid, gid1, &flid));
           PetscCheck(flid >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cannot find gid1 in table");
         }
-        /* copy in B_i matrix - column oriented */
+        /* copy in B_i matrix - column-oriented */
         data = &data_in[flid * bs];
         for (ii = 0; ii < bs; ii++) {
           for (jj = 0; jj < N; jj++) {
@@ -535,7 +535,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
       PetscCallBLAS("LAPACKgeqrf", LAPACKgeqrf_(&Mdata, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO));
       PetscCall(PetscFPTrapPop());
       PetscCheck(INFO == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "xGEQRF error");
-      /* get R - column oriented - output B_{i+1} */
+      /* get R - column-oriented - output B_{i+1} */
       {
         PetscReal *data = &out_data[clid * nSAvec];
         for (jj = 0; jj < nSAvec; jj++) {
@@ -547,7 +547,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
         }
       }
 
-      /* get Q - row oriented */
+      /* get Q - row-oriented */
       PetscCallBLAS("LAPACKorgqr", LAPACKorgqr_(&Mdata, &N, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO));
       PetscCheck(INFO == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "xORGQR error arg %" PetscBLASInt_FMT, -INFO);
 
@@ -561,7 +561,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
       PetscCall(PetscFree5(qqc, qqr, TAU, WORK, fids));
       clid++;
     } /* coarse agg */
-  }   /* for all fine nodes */
+  } /* for all fine nodes */
   PetscCall(MatAssemblyBegin(a_Prol, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(a_Prol, MAT_FINAL_ASSEMBLY));
   PetscCall(PCGAMGHashTableDestroy(&fgid_flid));
@@ -933,7 +933,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
         }
       }
     } /* selected/deleted */
-  }   /* node loop */
+  } /* node loop */
 
   if (isMPI) {
     PetscScalar    *cpcol_2_parent, *cpcol_2_gid;
@@ -1002,7 +1002,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
 
           PetscCall(PetscCDGetNextPos(aggs_2, lid, &pos));
         } /* loop over list of deleted */
-      }   /* selected */
+      } /* selected */
     }
     PetscCall(PCGAMGHashTableDestroy(&gid_cpid));
 

@@ -189,7 +189,7 @@ static PetscErrorCode MatCreateSubMatrices_MPIAdj_Private(Mat mat, PetscInt n, c
     if (scall == MAT_INITIAL_MATRIX) {
       PetscCall(MatCreateMPIAdj(scomm_row, irow_n, icol_n, sxadj, sadjncy, svalues, submat[i]));
     } else {
-      Mat         sadj = *(submat[i]);
+      Mat         sadj = *submat[i];
       Mat_MPIAdj *sa   = (Mat_MPIAdj *)((sadj)->data);
       PetscCall(PetscObjectGetComm((PetscObject)sadj, &scomm_mat));
       PetscCallMPI(MPI_Comm_compare(scomm_row, scomm_mat, &issame));
@@ -724,6 +724,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAdj,
                                        NULL,
                                        NULL,
                                        /*150*/ NULL,
+                                       NULL,
                                        NULL};
 
 static PetscErrorCode MatMPIAdjSetPreallocation_MPIAdj(Mat B, PetscInt *i, PetscInt *j, PetscInt *values)
@@ -923,14 +924,15 @@ static PetscErrorCode MatMPIAdjToSeqRankZero_MPIAdj(Mat A, Mat *B)
 . A - original `MATMPIADJ` matrix
 
   Output Parameter:
-. B - matrix on subcommunicator, `NULL` on ranks that owned zero rows of `A`
+. B - matrix on subcommunicator, `NULL` on MPI processes that own zero rows of `A`
 
   Level: developer
 
   Note:
-  This function is mostly useful for internal use by mesh partitioning packages that require that every process owns at least one row.
-
   The matrix `B` should be destroyed with `MatDestroy()`. The arrays are not copied, so `B` should be destroyed before `A` is destroyed.
+
+  Developer Note:
+  This function is mostly useful for internal use by mesh partitioning packages, such as ParMETIS that require that every process owns at least one row.
 
 .seealso: [](ch_matrices), `Mat`, `MATMPIADJ`, `MatCreateMPIAdj()`
 @*/
@@ -943,14 +945,14 @@ PetscErrorCode MatMPIAdjCreateNonemptySubcommMat(Mat A, Mat *B)
 }
 
 /*MC
-   MATMPIADJ - MATMPIADJ = "mpiadj" - A matrix type to be used for distributed adjacency matrices,
-   intended for use constructing orderings and partitionings.
+  MATMPIADJ - MATMPIADJ = "mpiadj" - A matrix type to be used for distributed adjacency matrices,
+  intended for use constructing orderings and partitionings.
 
   Level: beginner
 
   Note:
-    You can provide values to the matrix using `MatMPIAdjSetPreallocation()`, `MatCreateMPIAdj()`, or
-    by calling `MatSetValues()` and `MatAssemblyBegin()` followed by `MatAssemblyEnd()`
+  You can provide values to the matrix using `MatMPIAdjSetPreallocation()`, `MatCreateMPIAdj()`, or
+  by calling `MatSetValues()` and `MatAssemblyBegin()` followed by `MatAssemblyEnd()`
 
 .seealso: [](ch_matrices), `Mat`, `MatCreateMPIAdj()`, `MatMPIAdjSetPreallocation()`, `MatSetValues()`
 M*/
@@ -974,7 +976,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B)
 }
 
 /*@C
-  MatMPIAdjToSeq - Converts an parallel `MATMPIADJ` matrix to complete `MATMPIADJ` on each process (needed by sequential partitioner)
+  MatMPIAdjToSeq - Converts an parallel `MATMPIADJ` matrix to complete `MATMPIADJ` on each process (needed by sequential partitioners)
 
   Logically Collective
 
@@ -996,7 +998,7 @@ PetscErrorCode MatMPIAdjToSeq(Mat A, Mat *B)
 }
 
 /*@C
-  MatMPIAdjToSeqRankZero - Converts an parallel `MATMPIADJ` matrix to complete `MATMPIADJ` on rank zero (needed by sequential partitioner)
+  MatMPIAdjToSeqRankZero - Converts an parallel `MATMPIADJ` matrix to complete `MATMPIADJ` on rank zero (needed by sequential partitioners)
 
   Logically Collective
 
@@ -1031,10 +1033,26 @@ PetscErrorCode MatMPIAdjToSeqRankZero(Mat A, Mat *B)
 + B      - the matrix
 . i      - the indices into `j` for the start of each row
 . j      - the column indices for each row (sorted for each row).
-       The indices in `i` and `j` start with zero (NOT with one).
+           The indices in `i` and `j` start with zero (NOT with one).
 - values - [use `NULL` if not provided] edge weights
 
   Level: intermediate
+
+  Notes:
+  The indices in `i` and `j` start with zero (NOT with one).
+
+  You must NOT free the `i`, `values` and `j` arrays yourself. PETSc will free them
+  when the matrix is destroyed; you must allocate them with `PetscMalloc()`.
+
+  You should not include the matrix diagonal elements.
+
+  If you already have a matrix, you can create its adjacency matrix by a call
+  to `MatConvert()`, specifying a type of `MATMPIADJ`.
+
+  Possible values for `MatSetOption()` - `MAT_STRUCTURALLY_SYMMETRIC`
+
+  Fortran Note:
+  From Fortran the indices and values are copied so the array space need not be provided with `PetscMalloc()`.
 
 .seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateMPIAdj()`, `MatSetValues()`, `MATMPIADJ`
 @*/
@@ -1047,7 +1065,7 @@ PetscErrorCode MatMPIAdjSetPreallocation(Mat B, PetscInt *i, PetscInt *j, PetscI
 
 /*@C
   MatCreateMPIAdj - Creates a sparse matrix representing an adjacency list.
-  The matrix does not have numerical values associated with it, but is
+  The matrix need not have numerical values associated with it, it is
   intended for ordering (to reduce bandwidth etc) and partitioning.
 
   Collective
@@ -1058,7 +1076,7 @@ PetscErrorCode MatMPIAdjSetPreallocation(Mat B, PetscInt *i, PetscInt *j, PetscI
 . N      - number of global columns
 . i      - the indices into `j` for the start of each row
 . j      - the column indices for each row (sorted for each row).
-- values - the values
+- values - the values, optional, use `NULL` if not provided
 
   Output Parameter:
 . A - the matrix
@@ -1069,8 +1087,7 @@ PetscErrorCode MatMPIAdjSetPreallocation(Mat B, PetscInt *i, PetscInt *j, PetscI
   The indices in `i` and `j` start with zero (NOT with one).
 
   You must NOT free the `i`, `values` and `j` arrays yourself. PETSc will free them
-  when the matrix is destroyed; you must allocate them with `PetscMalloc()`. If you
-  call from Fortran you need not create the arrays with `PetscMalloc()`.
+  when the matrix is destroyed; you must allocate them with `PetscMalloc()`.
 
   You should not include the matrix diagonals.
 
@@ -1078,6 +1095,9 @@ PetscErrorCode MatMPIAdjSetPreallocation(Mat B, PetscInt *i, PetscInt *j, PetscI
   to `MatConvert()`, specifying a type of `MATMPIADJ`.
 
   Possible values for `MatSetOption()` - `MAT_STRUCTURALLY_SYMMETRIC`
+
+  Fortran Note:
+  From Fortran the indices and values are copied so the array space need not be provided with `PetscMalloc()`.
 
 .seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatConvert()`, `MatGetOrdering()`, `MATMPIADJ`, `MatMPIAdjSetPreallocation()`
 @*/

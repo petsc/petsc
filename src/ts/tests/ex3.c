@@ -127,7 +127,7 @@ int main(int argc, char **argv)
 
   /* Set optional user-defined monitoring routine */
   PetscCall(TSMonitorSet(ts, Monitor, &appctx, NULL));
-  /* set the right hand side of U_t = RHSfunction(U,t) */
+  /* set the right-hand side of U_t = RHSfunction(U,t) */
   PetscCall(TSSetRHSFunction(ts, NULL, (PetscErrorCode(*)(TS, PetscScalar, Vec, Vec, void *))RHSfunction, &appctx));
 
   if (appctx.useAlhs) {
@@ -405,12 +405,12 @@ PetscErrorCode femBg(PetscScalar btri[][3], PetscScalar *f, PetscInt nz, PetscSc
               /* if (il==0 && j==-1) { */
               /* f[i] += bij*dd*exact(zz,t); */
               /* }*/ /*end if*/
-            }        /*end else*/
-          }          /*end for (iqq)*/
-        }            /*end if (i>0)*/
-      }              /*end for (iq)*/
-    }                /*end for (iquad)*/
-  }                  /*end for (il)*/
+            } /*end else*/
+          } /*end for (iqq)*/
+        } /*end if (i>0)*/
+      } /*end for (iq)*/
+    } /*end for (iquad)*/
+  } /*end for (il)*/
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -479,11 +479,11 @@ PetscErrorCode femA(AppCtx *obj, PetscInt nz, PetscScalar *z)
               add_term = aij * dd;
               PetscCall(MatSetValue(obj->Amat, i, j, add_term, ADD_VALUES));
             } /*endif*/
-          }   /*end for (iqq)*/
-        }     /*end if (i>0)*/
-      }       /*end for (iq)*/
-    }         /*end for (iquad)*/
-  }           /*end for (il)*/
+          } /*end for (iqq)*/
+        } /*end if (i>0)*/
+      } /*end for (iq)*/
+    } /*end for (iquad)*/
+  } /*end for (il)*/
   PetscCall(MatAssemblyBegin(obj->Amat, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(obj->Amat, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -507,7 +507,7 @@ PetscErrorCode rhs(AppCtx *obj, PetscScalar *y, PetscInt nz, PetscScalar *z, Pet
   /*  call femBg to set the tri-diagonal b matrix and vector g  */
   PetscCall(femBg(btri, g, nz, z, t));
 
-  /*  setting the entries of the right hand side vector  */
+  /*  setting the entries of the right-hand side vector  */
   for (i = 0; i < nz - 2; i++) {
     val = 0.0;
     js  = 0;
@@ -528,7 +528,7 @@ PetscErrorCode rhs(AppCtx *obj, PetscScalar *y, PetscInt nz, PetscScalar *z, Pet
 }
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%   Function to form the right hand side of the time-stepping problem.                       %%
+%%   Function to form the right-hand side of the time-stepping problem.                       %%
 %% -------------------------------------------------------------------------------------------%%
   if (useAlhs):
     globalout = By+g

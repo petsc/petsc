@@ -70,7 +70,7 @@ int main(int argc, char **args)
 
   /*
      Fill up the array rho[] with the function rho(x,y) = x; fill the
-     right-hand-side b[] and the solution with a known problem for testing.
+     right-hand side b and the solution with a known problem for testing.
   */
   hx = 1.0 / (m + 1);
   hy = 1.0 / (n + 1);

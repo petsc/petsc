@@ -99,7 +99,7 @@ static int SOCKConnect_Private(int portnumber)
   i = sizeof(struct sockaddr_in);
   if ((t = accept(listenport, (struct sockaddr *)&isa, (socklen_t *)&i)) < 0) PETSC_MEX_ERRORQ("RECEIVE: error from accept\n");
   close(listenport);
-  return (t);
+  return t;
 }
 /*-----------------------------------------------------------------*/
 #define MAXHOSTNAME 100
@@ -150,12 +150,12 @@ int establish(u_short portnum)
 #endif
       close(s);
       PETSC_MEX_ERRORQ("RECEIVE: error from bind\n");
-      return (-1);
+      return -1;
     }
     close(listenport);
   }
   listen(s, 0);
-  return (s);
+  return s;
 }
 
 /*-----------------------------------------------------------------*/

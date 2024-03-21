@@ -141,7 +141,7 @@ ksp.setFromOptions()
 
 # Since the matrix knows its size and parallel distribution, we can retrieve
 # appropriately-scaled vectors using `Mat.createVecs`. PETSc vectors are
-# objects of type `PETSc.Vec`. Here we set the right hand side of our system to
+# objects of type `PETSc.Vec`. Here we set the right-hand side of our system to
 # a vector of ones, and then solve.
 
 x, b = A.createVecs()

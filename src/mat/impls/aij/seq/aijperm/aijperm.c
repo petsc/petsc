@@ -440,8 +440,8 @@ static PetscErrorCode MatMult_SeqAIJPERM(Mat A, Vec xx, Vec yy)
         /* Put results from yp[] into non-permuted result vector y. */
         for (i = 0; i < isize; i++) y[iperm[istart + i]] = yp[i];
       } /* End processing chunk of isize rows of a group. */
-    }   /* End handling matvec for chunk with nz > 1. */
-  }     /* End loop over igroup. */
+    } /* End handling matvec for chunk with nz > 1. */
+  } /* End loop over igroup. */
   PetscCall(PetscLogFlops(PetscMax(2.0 * a->nz - A->rmap->n, 0)));
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArray(yy, &y));
@@ -584,7 +584,7 @@ static PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A, Vec xx, Vec ww, Vec yy)
       } /* End processing chunk of isize rows of a group. */
 
     } /* End handling matvec for chunk with nz > 1. */
-  }   /* End loop over igroup. */
+  } /* End loop over igroup. */
 
   PetscCall(PetscLogFlops(2.0 * a->nz));
   PetscCall(VecRestoreArrayRead(xx, &x));

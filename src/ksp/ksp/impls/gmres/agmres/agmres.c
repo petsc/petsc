@@ -92,7 +92,7 @@ static PetscErrorCode KSPBuildSolution_AGMRES(KSP ksp, Vec ptr, Vec *result)
    One cycle of DGMRES is performed to find the eigenvalues. The same data structures are used since AGMRES extends DGMRES
    Note that when the basis is  to be augmented, then this function computes the harmonic Ritz vectors from this first cycle.
    Input :
-    - The operators (matrix, preconditioners and right hand side) are  normally required.
+    - The operators (matrix, preconditioners and right-hand side) are  normally required.
     - max_k : the size of the (non augmented) basis.
     - neig: The number of eigenvectors to augment, if deflation is needed
    Output :
@@ -101,7 +101,7 @@ static PetscErrorCode KSPBuildSolution_AGMRES(KSP ksp, Vec ptr, Vec *result)
 */
 static PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
 {
-  KSP_AGMRES    *agmres = (KSP_AGMRES *)(ksp->data);
+  KSP_AGMRES    *agmres = (KSP_AGMRES *)ksp->data;
   PetscInt       max_k  = agmres->max_k; /* size of the (non augmented) Krylov subspace */
   PetscInt       Neig   = 0;
   const PetscInt max_it = ksp->max_it;
@@ -216,7 +216,7 @@ static PetscErrorCode KSPAGMRESBuildBasis(KSP ksp)
       Scale[j] = 1.0;
 #else
       PetscCall(VecScale(VEC_V(j), Scale[j - 1])); /* This step can be postponed until all vectors are built */
-      PetscCall(VecNorm(VEC_V(j), NORM_2, &(Scale[j])));
+      PetscCall(VecNorm(VEC_V(j), NORM_2, &Scale[j]));
       Scale[j] = 1.0 / Scale[j];
 #endif
 
@@ -239,7 +239,7 @@ static PetscErrorCode KSPAGMRESBuildBasis(KSP ksp)
       Scale[j] = 1.0;
 #else
       PetscCall(VecScale(VEC_V(j), Scale[j - 1]));
-      PetscCall(VecNorm(VEC_V(j), NORM_2, &(Scale[j])));
+      PetscCall(VecNorm(VEC_V(j), NORM_2, &Scale[j]));
       Scale[j] = 1.0 / Scale[j];
 #endif
       agmres->matvecs += 1;
@@ -260,7 +260,7 @@ static PetscErrorCode KSPAGMRESBuildBasis(KSP ksp)
 #if defined(KSP_AGMRES_NONORM)
       Scale[j] = 1.0;
 #else
-      PetscCall(VecNorm(VEC_V(j), NORM_2, &(Scale[j])));
+      PetscCall(VecNorm(VEC_V(j), NORM_2, &Scale[j]));
       Scale[j] = 1.0 / Scale[j];
 #endif
       agmres->matvecs += 1;
@@ -274,7 +274,7 @@ static PetscErrorCode KSPAGMRESBuildBasis(KSP ksp)
     Scale[j] = 1.0;
 #else
     PetscCall(VecScale(VEC_V(j), Scale[j - 1]));
-    PetscCall(VecNorm(VEC_V(j), NORM_2, &(Scale[j])));
+    PetscCall(VecNorm(VEC_V(j), NORM_2, &Scale[j]));
     Scale[j] = 1.0 / Scale[j];
 #endif
     agmres->matvecs += 1;
@@ -358,7 +358,7 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp, PetscInt it)
   /* QR factorize the Hessenberg matrix */
   PetscCallBLAS("LAPACKgeqrf", LAPACKgeqrf_(&lC, &KspSize, agmres->hh_origin, &ldH, agmres->tau, agmres->work, &lwork, &info));
   PetscCheck(!info, PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB, "Error in LAPACK routine XGEQRF INFO=%" PetscBLASInt_FMT, info);
-  /* Update the right hand side of the least square problem */
+  /* Update the right-hand side of the least square problem */
   PetscCall(PetscArrayzero(agmres->nrs, N));
 
   agmres->nrs[0] = ksp->rnorm;
@@ -397,7 +397,7 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp, PetscInt it)
 */
 static PetscErrorCode KSPAGMRESCycle(PetscInt *itcount, KSP ksp)
 {
-  KSP_AGMRES *agmres = (KSP_AGMRES *)(ksp->data);
+  KSP_AGMRES *agmres = (KSP_AGMRES *)ksp->data;
   PetscReal   res;
   PetscInt    KspSize = KSPSIZE;
 
@@ -459,7 +459,7 @@ static PetscErrorCode KSPSolve_AGMRES(KSP ksp)
 
       agmres->matvecs += 1;
     }
-    PetscCall(VecNormalize(VEC_V(0), &(ksp->rnorm)));
+    PetscCall(VecNormalize(VEC_V(0), &ksp->rnorm));
     KSPCheckNorm(ksp, ksp->rnorm);
     res_old = ksp->rnorm; /* Record the residual norm to test if deflation is needed */
 

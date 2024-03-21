@@ -199,6 +199,7 @@ PetscErrorCode ini_bou(Vec X, AppCtx *user)
 PetscErrorCode adv1(PetscScalar **p, PetscScalar y, PetscInt i, PetscInt j, PetscInt M, PetscScalar *p1, AppCtx *user)
 {
   PetscScalar f, fpos, fneg;
+
   PetscFunctionBegin;
   f    = (y - user->ws);
   fpos = PetscMax(f, 0);
@@ -217,6 +218,7 @@ PetscErrorCode adv1(PetscScalar **p, PetscScalar y, PetscInt i, PetscInt j, Pets
 PetscErrorCode adv2(PetscScalar **p, PetscScalar x, PetscInt i, PetscInt j, PetscInt N, PetscScalar *p2, AppCtx *user)
 {
   PetscScalar f, fpos, fneg;
+
   PetscFunctionBegin;
   f    = (user->ws / (2 * user->H)) * (user->PM_min - user->Pmax * PetscSinScalar(x));
   fpos = PetscMax(f, 0);
@@ -291,7 +293,6 @@ PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
   PetscCall(DMRestoreLocalVector(user->da, &localXdot));
   PetscCall(DMDAVecRestoreArray(user->da, F, &f));
   PetscCall(DMDAVecRestoreArrayRead(cda, gc, &coors));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -362,7 +363,6 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   PetscBool flg;
 
   PetscFunctionBeginUser;
-
   /* Set default parameters */
   user->ws             = 1.0;
   user->H              = 5.0;
@@ -408,7 +408,6 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   PetscCall(PetscOptionsGetEnum(NULL, NULL, "-bx", DMBoundaryTypes, (PetscEnum *)&user->bx, &flg));
   PetscCall(PetscOptionsGetEnum(NULL, NULL, "-by", DMBoundaryTypes, (PetscEnum *)&user->by, &flg));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-nonoiseinitial", &user->nonoiseinitial, &flg));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

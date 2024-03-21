@@ -10,7 +10,7 @@
   Collective
 
   Input Parameters:
-+ da - the distributed array
++ da - the `DMDA`
 . x  - the first physical coordinate
 . y  - the second physical coordinate
 - z  - the third physical coordinate
@@ -85,7 +85,7 @@ PetscErrorCode DMDAGetLogicalCoordinate(DM da, PetscScalar x, PetscScalar y, Pet
   Collective
 
   Input Parameters:
-+ da  - the distributed array
++ da  - the `DMDA`
 . dir - Cartesian direction, either `DM_X`, `DM_Y`, or `DM_Z`
 - gp  - global grid point number in this direction
 
@@ -176,7 +176,7 @@ PetscErrorCode DMDAGetRay(DM da, DMDirection dir, PetscInt gp, Vec *newvec, VecS
   Collective; No Fortran Support
 
   Input Parameters:
-+ da  - the distributed array
++ da  - the `DMDA`
 . dir - Cartesian direction, either `DM_X`, `DM_Y`, or `DM_Z`
 - gp  - global grid point number in this direction
 
@@ -250,7 +250,7 @@ PetscErrorCode DMDAGetProcessorSubset(DM da, DMDirection dir, PetscInt gp, MPI_C
   Collective; No Fortran Support
 
   Input Parameters:
-+ da  - the distributed array
++ da  - the `DMDA`
 - dir - Cartesian direction, either `DM_X`, `DM_Y`, or `DM_Z`
 
   Output Parameter:

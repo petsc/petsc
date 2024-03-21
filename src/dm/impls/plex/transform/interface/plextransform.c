@@ -358,8 +358,8 @@ PetscErrorCode DMPlexTransformDestroy(DMPlexTransform *tr)
 
   PetscFunctionBegin;
   if (!*tr) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*tr), DMPLEXTRANSFORM_CLASSID, 1);
-  if (--((PetscObject)(*tr))->refct > 0) {
+  PetscValidHeaderSpecific(*tr, DMPLEXTRANSFORM_CLASSID, 1);
+  if (--((PetscObject)*tr)->refct > 0) {
     *tr = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -383,7 +383,7 @@ PetscErrorCode DMPlexTransformDestroy(DMPlexTransform *tr)
       PetscInt       *rsize, *rcone, *rornt, Nct, n, r;
 
       if (DMPolytopeTypeGetDim((DMPolytopeType)c) > 0 && c != DM_POLYTOPE_UNKNOWN_CELL && c != DM_POLYTOPE_UNKNOWN_FACE) {
-        PetscCall(DMPlexTransformCellTransform((*tr), (DMPolytopeType)c, 0, NULL, &Nct, &rct, &rsize, &rcone, &rornt));
+        PetscCall(DMPlexTransformCellTransform(*tr, (DMPolytopeType)c, 0, NULL, &Nct, &rct, &rsize, &rcone, &rornt));
         for (n = 0; n < Nct; ++n) {
           if (rct[n] == DM_POLYTOPE_POINT) continue;
           for (r = 0; r < rsize[n]; ++r) PetscCall(PetscFree((*tr)->trSubVerts[c][rct[n]][r]));
@@ -808,7 +808,7 @@ PetscErrorCode DMPlexTransformGetTargetPoint(DMPlexTransform tr, DMPolytopeType 
   PetscInt        newp = ctSN, cind;
 
   PetscFunctionBeginHot;
-  PetscCheck(!(p < ctS) && !(p >= ctE), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %" PetscInt_FMT " is not a %s [%" PetscInt_FMT ", %" PetscInt_FMT ")", p, DMPolytopeTypes[ct], ctS, ctE);
+  PetscCheck(p >= ctS && p < ctE, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %" PetscInt_FMT " is not a %s [%" PetscInt_FMT ", %" PetscInt_FMT ")", p, DMPolytopeTypes[ct], ctS, ctE);
   PetscCall(DMPlexTransformCellTransform(tr, ct, p, &rt, &Nct, &rct, &rsize, &cone, &ornt));
   if (trType) {
     PetscCall(DMLabelGetValueIndex(trType, rt, &cind));

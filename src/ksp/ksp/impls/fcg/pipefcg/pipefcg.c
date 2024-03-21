@@ -63,11 +63,11 @@ static PetscErrorCode KSPSetUp_PIPEFCG(KSP ksp)
   /* Allocated space for pointers to additional work vectors
    note that mmax is the number of previous directions, so we add 1 for the current direction,
    and an extra 1 for the prealloc (which might be empty) */
-  PetscCall(PetscMalloc4(pipefcg->mmax + 1, &(pipefcg->Pvecs), pipefcg->mmax + 1, &(pipefcg->pPvecs), pipefcg->mmax + 1, &(pipefcg->Svecs), pipefcg->mmax + 1, &(pipefcg->pSvecs)));
-  PetscCall(PetscMalloc4(pipefcg->mmax + 1, &(pipefcg->Qvecs), pipefcg->mmax + 1, &(pipefcg->pQvecs), pipefcg->mmax + 1, &(pipefcg->ZETAvecs), pipefcg->mmax + 1, &(pipefcg->pZETAvecs)));
-  PetscCall(PetscMalloc4(pipefcg->mmax + 1, &(pipefcg->Pold), pipefcg->mmax + 1, &(pipefcg->Sold), pipefcg->mmax + 1, &(pipefcg->Qold), pipefcg->mmax + 1, &(pipefcg->ZETAold)));
-  PetscCall(PetscMalloc1(pipefcg->mmax + 1, &(pipefcg->chunksizes)));
-  PetscCall(PetscMalloc3(pipefcg->mmax + 2, &(pipefcg->dots), pipefcg->mmax + 1, &(pipefcg->etas), pipefcg->mmax + 2, &(pipefcg->redux)));
+  PetscCall(PetscMalloc4(pipefcg->mmax + 1, &pipefcg->Pvecs, pipefcg->mmax + 1, &pipefcg->pPvecs, pipefcg->mmax + 1, &pipefcg->Svecs, pipefcg->mmax + 1, &pipefcg->pSvecs));
+  PetscCall(PetscMalloc4(pipefcg->mmax + 1, &pipefcg->Qvecs, pipefcg->mmax + 1, &pipefcg->pQvecs, pipefcg->mmax + 1, &pipefcg->ZETAvecs, pipefcg->mmax + 1, &pipefcg->pZETAvecs));
+  PetscCall(PetscMalloc4(pipefcg->mmax + 1, &pipefcg->Pold, pipefcg->mmax + 1, &pipefcg->Sold, pipefcg->mmax + 1, &pipefcg->Qold, pipefcg->mmax + 1, &pipefcg->ZETAold));
+  PetscCall(PetscMalloc1(pipefcg->mmax + 1, &pipefcg->chunksizes));
+  PetscCall(PetscMalloc3(pipefcg->mmax + 2, &pipefcg->dots, pipefcg->mmax + 1, &pipefcg->etas, pipefcg->mmax + 2, &pipefcg->redux));
 
   /* If the requested number of preallocated vectors is greater than mmax reduce nprealloc */
   if (pipefcg->nprealloc > pipefcg->mmax + 1) PetscCall(PetscInfo(NULL, "Requested nprealloc=%" PetscInt_FMT " is greater than m_max+1=%" PetscInt_FMT ". Resetting nprealloc = m_max+1.\n", pipefcg->nprealloc, pipefcg->mmax + 1));
@@ -91,12 +91,12 @@ static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
      are likely not defined correctly for that case */
   PetscCheck(!PetscDefined(USE_COMPLEX) || PetscDefined(SKIP_COMPLEX), PETSC_COMM_WORLD, PETSC_ERR_SUP, "PIPEFGMRES has not been implemented for use with complex scalars");
 
-#define VecXDot(x, y, a)          (((pipefcg->type) == (KSP_CG_HERMITIAN)) ? VecDot(x, y, a) : VecTDot(x, y, a))
-#define VecXDotBegin(x, y, a)     (((pipefcg->type) == (KSP_CG_HERMITIAN)) ? VecDotBegin(x, y, a) : VecTDotBegin(x, y, a))
-#define VecXDotEnd(x, y, a)       (((pipefcg->type) == (KSP_CG_HERMITIAN)) ? VecDotEnd(x, y, a) : VecTDotEnd(x, y, a))
-#define VecMXDot(x, n, y, a)      (((pipefcg->type) == (KSP_CG_HERMITIAN)) ? VecMDot(x, n, y, a) : VecMTDot(x, n, y, a))
-#define VecMXDotBegin(x, n, y, a) (((pipefcg->type) == (KSP_CG_HERMITIAN)) ? VecMDotBegin(x, n, y, a) : VecMTDotBegin(x, n, y, a))
-#define VecMXDotEnd(x, n, y, a)   (((pipefcg->type) == (KSP_CG_HERMITIAN)) ? VecMDotEnd(x, n, y, a) : VecMTDotEnd(x, n, y, a))
+#define VecXDot(x, y, a)          (pipefcg->type == KSP_CG_HERMITIAN ? VecDot(x, y, a) : VecTDot(x, y, a))
+#define VecXDotBegin(x, y, a)     (pipefcg->type == KSP_CG_HERMITIAN ? VecDotBegin(x, y, a) : VecTDotBegin(x, y, a))
+#define VecXDotEnd(x, y, a)       (pipefcg->type == KSP_CG_HERMITIAN ? VecDotEnd(x, y, a) : VecTDotEnd(x, y, a))
+#define VecMXDot(x, n, y, a)      (pipefcg->type == KSP_CG_HERMITIAN ? VecMDot(x, n, y, a) : VecMTDot(x, n, y, a))
+#define VecMXDotBegin(x, n, y, a) (pipefcg->type == KSP_CG_HERMITIAN ? VecMDotBegin(x, n, y, a) : VecMTDotBegin(x, n, y, a))
+#define VecMXDotEnd(x, n, y, a)   (pipefcg->type == KSP_CG_HERMITIAN ? VecMDotEnd(x, n, y, a) : VecMTDotEnd(x, n, y, a))
 
   pipefcg = (KSP_PIPEFCG *)ksp->data;
   X       = ksp->vec_sol;
@@ -265,7 +265,7 @@ static PetscErrorCode KSPSolve_PIPEFCG(KSP ksp)
   Vec          B, R, Z, X;
   Mat          Amat, Pmat;
 
-#define VecXDot(x, y, a) (((pipefcg->type) == (KSP_CG_HERMITIAN)) ? VecDot(x, y, a) : VecTDot(x, y, a))
+#define VecXDot(x, y, a) (pipefcg->type == KSP_CG_HERMITIAN ? VecDot(x, y, a) : VecTDot(x, y, a))
 
   PetscFunctionBegin;
   PetscCall(PetscCitationsRegister(citation, &cited));

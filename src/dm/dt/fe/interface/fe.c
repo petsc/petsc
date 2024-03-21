@@ -293,13 +293,13 @@ PetscErrorCode PetscFEDestroy(PetscFE *fem)
 {
   PetscFunctionBegin;
   if (!*fem) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*fem), PETSCFE_CLASSID, 1);
+  PetscValidHeaderSpecific(*fem, PETSCFE_CLASSID, 1);
 
-  if (--((PetscObject)(*fem))->refct > 0) {
+  if (--((PetscObject)*fem)->refct > 0) {
     *fem = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  ((PetscObject)(*fem))->refct = 0;
+  ((PetscObject)*fem)->refct = 0;
 
   if ((*fem)->subspaces) {
     PetscInt dim, d;
@@ -321,7 +321,7 @@ PetscErrorCode PetscFEDestroy(PetscFE *fem)
   PetscCallCEED(CeedDestroy(&(*fem)->ceed));
 #endif
 
-  PetscTryTypeMethod((*fem), destroy);
+  PetscTryTypeMethod(*fem, destroy);
   PetscCall(PetscHeaderDestroy(fem));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1110,17 +1110,11 @@ static PetscErrorCode PetscFECreatePointTraceDefault_Internal(PetscFE fe, PetscI
 
 PETSC_EXTERN PetscErrorCode PetscFECreatePointTrace(PetscFE fe, PetscInt refPoint, PetscFE *trFE)
 {
-  PetscErrorCode (*createpointtrace)(PetscFE, PetscInt, PetscFE *);
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fe, PETSCFE_CLASSID, 1);
   PetscAssertPointer(trFE, 3);
-  createpointtrace = fe->ops->createpointtrace;
-  if (createpointtrace) {
-    PetscCall((*createpointtrace)(fe, refPoint, trFE));
-  } else {
-    PetscCall(PetscFECreatePointTraceDefault_Internal(fe, refPoint, trFE));
-  }
+  if (fe->ops->createpointtrace) PetscUseTypeMethod(fe, createpointtrace, refPoint, trFE);
+  else PetscCall(PetscFECreatePointTraceDefault_Internal(fe, refPoint, trFE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

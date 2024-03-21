@@ -198,8 +198,8 @@ static PetscErrorCode PetscDrawStringSetSize_X(PetscDraw draw, PetscReal x, Pets
   int          w, h;
 
   PetscFunctionBegin;
-  w = (int)((XiWin->w) * x * (draw->port_xr - draw->port_xl) / (draw->coor_xr - draw->coor_xl));
-  h = (int)((XiWin->h) * y * (draw->port_yr - draw->port_yl) / (draw->coor_yr - draw->coor_yl));
+  w = (int)(XiWin->w * x * (draw->port_xr - draw->port_xl) / (draw->coor_xr - draw->coor_xl));
+  h = (int)(XiWin->h * y * (draw->port_yr - draw->port_yl) / (draw->coor_yr - draw->coor_yl));
   PetscCall(PetscFree(XiWin->font));
   PetscCall(PetscDrawXiFontFixed(XiWin, w, h, &XiWin->font));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -213,8 +213,8 @@ static PetscErrorCode PetscDrawStringGetSize_X(PetscDraw draw, PetscReal *x, Pet
   PetscFunctionBegin;
   w = XiWin->font->font_w;
   h = XiWin->font->font_h;
-  if (x) *x = w * (draw->coor_xr - draw->coor_xl) / ((XiWin->w) * (draw->port_xr - draw->port_xl));
-  if (y) *y = h * (draw->coor_yr - draw->coor_yl) / ((XiWin->h) * (draw->port_yr - draw->port_yl));
+  if (x) *x = w * (draw->coor_xr - draw->coor_xl) / (XiWin->w * (draw->port_xr - draw->port_xl));
+  if (y) *y = h * (draw->coor_yr - draw->coor_yl) / (XiWin->h * (draw->port_yr - draw->port_yl));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -464,8 +464,7 @@ static PetscErrorCode PetscDrawGetMouseButton_X(PetscDraw draw, PetscDrawButton 
   XDefineCursor(win->disp, win->win, cursor);
   /* wait for mouse button events */
   XSelectInput(win->disp, win->win, ButtonPressMask | ButtonReleaseMask);
-  while (XCheckTypedEvent(win->disp, ButtonPress, &report))
-    ;
+  while (XCheckTypedEvent(win->disp, ButtonPress, &report));
   XMaskEvent(win->disp, ButtonReleaseMask, &report);
   /* get mouse pointer coordinates */
   XQueryPointer(win->disp, report.xmotion.window, &root, &child, &root_x, &root_y, &px, &py, &keys_button);

@@ -257,21 +257,28 @@ static PetscErrorCode ComputeFieldAtParticles_Coulomb(SNES snes, DM sw, PetscRea
 
 static PetscErrorCode ComputeFieldAtParticles_Primal(SNES snes, DM sw, PetscReal E[])
 {
-  DM         dm;
-  PetscDS    ds;
-  PetscFE    fe;
-  Mat        M_p;
-  Vec        phi, locPhi, rho, f;
-  PetscReal *coords, chargeTol = 1e-13;
-  PetscInt   dim, d, cStart, cEnd, c, Np;
+  DM          dm;
+  PetscDS     ds;
+  PetscFE     fe;
+  Mat         M_p;
+  Vec         phi, locPhi, rho, f;
+  PetscReal  *coords, chargeTol = 1e-13;
+  PetscInt    dim, d, cStart, cEnd, c, Np;
+  char        oldField[PETSC_MAX_PATH_LEN];
+  const char *tmp;
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(sw, &dim));
   PetscCall(DMSwarmGetLocalSize(sw, &Np));
+  PetscCall(SNESGetDM(snes, &dm));
+
+  PetscCall(DMSwarmVectorGetField(sw, &tmp));
+  PetscCall(PetscStrncpy(oldField, tmp, PETSC_MAX_PATH_LEN));
+  PetscCall(DMSwarmVectorDefineField(sw, "w_q"));
+  PetscCall(DMCreateMassMatrix(sw, dm, &M_p));
+  PetscCall(DMSwarmVectorDefineField(sw, oldField));
 
   /* Create the charges rho */
-  PetscCall(SNESGetDM(snes, &dm));
-  PetscCall(DMCreateMassMatrix(sw, dm, &M_p));
   PetscCall(DMGetGlobalVector(dm, &rho));
   PetscCall(PetscObjectSetName((PetscObject)rho, "rho"));
   PetscCall(DMSwarmCreateGlobalVectorFromField(sw, "w_q", &f));
@@ -363,6 +370,8 @@ static PetscErrorCode ComputeFieldAtParticles_Mixed(SNES snes, DM sw, PetscReal 
   PetscQuadrature q;
   PetscReal      *coords, chargeTol = 1e-13;
   PetscInt        dim, d, cStart, cEnd, c, Np, fields = 1;
+  char            oldField[PETSC_MAX_PATH_LEN];
+  const char     *tmp;
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(sw, &dim));
@@ -372,9 +381,14 @@ static PetscErrorCode ComputeFieldAtParticles_Mixed(SNES snes, DM sw, PetscReal 
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(DMGetGlobalVector(dm, &rho));
   PetscCall(PetscObjectSetName((PetscObject)rho, "rho"));
-
   PetscCall(DMCreateSubDM(dm, 1, &fields, &potential_IS, &potential_dm));
+
+  PetscCall(DMSwarmVectorGetField(sw, &tmp));
+  PetscCall(PetscStrncpy(oldField, tmp, PETSC_MAX_PATH_LEN));
+  PetscCall(DMSwarmVectorDefineField(sw, "w_q"));
   PetscCall(DMCreateMassMatrix(sw, potential_dm, &M_p));
+  PetscCall(DMSwarmVectorDefineField(sw, oldField));
+
   PetscCall(MatViewFromOptions(M_p, NULL, "-mp_view"));
   PetscCall(DMGetGlobalVector(potential_dm, &temp_rho));
   PetscCall(DMSwarmCreateGlobalVectorFromField(sw, "w_q", &f));
@@ -487,7 +501,6 @@ static PetscErrorCode ComputeFieldAtParticles(SNES snes, DM sw, PetscReal E[])
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No solver for electrostatic model %s", EMTypes[ctx->em]);
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -973,7 +986,7 @@ int main(int argc, char **argv)
   PetscCall(DMSwarmVectorDefineField(sw, "velocity"));
   PetscCall(TSSetComputeInitialCondition(ts, InitializeSolve));
   PetscCall(TSSetComputeExactError(ts, ComputeError));
-  PetscCall(TSSetResize(ts, SetUpMigrateParticles, MigrateParticles, NULL));
+  PetscCall(TSSetResize(ts, PETSC_FALSE, SetUpMigrateParticles, MigrateParticles, NULL));
 
   PetscCall(CreateSolution(ts));
   PetscCall(TSGetSolution(ts, &u));

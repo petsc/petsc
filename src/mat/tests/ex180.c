@@ -1,4 +1,4 @@
-static char help[] = "Tests MatLoad() with blocksize set in in program\n\n";
+static char help[] = "Tests MatLoad() with blocksize set in program\n\n";
 
 #include <petscmat.h>
 

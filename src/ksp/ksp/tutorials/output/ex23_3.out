@@ -10,7 +10,7 @@ KSP Object: 2 MPI processes
     happy breakdown tolerance 1e-30
     shift=1.
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-06, absolute=1e-50, divergence=10000.
+  tolerances: relative=1e-06, absolute=1e-50, divergence=10000.
   right preconditioning
   using UNPRECONDITIONED norm type for convergence test
 PC Object: 2 MPI processes

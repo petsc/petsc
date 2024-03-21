@@ -29,5 +29,5 @@ int luaopen_libpetsc(lua_State *L)
   PetscInitializeNoArguments();
   lua_register(L, "VecCreate", (lua_CFunction)lua_VecCreate);
   lua_register(L, "VecSetSize", (lua_CFunction)lua_VecSetSize);
-  return (0);
+  return 0;
 }

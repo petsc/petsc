@@ -131,8 +131,8 @@ PetscErrorCode KSPView(KSP ksp, PetscViewer viewer)
       PetscCall(PetscViewerASCIIPrintf(viewer, "  maximum iterations=%" PetscInt_FMT ", nonzero initial guess\n", ksp->max_it));
     }
     if (ksp->min_it) PetscCall(PetscViewerASCIIPrintf(viewer, "  minimum iterations=%" PetscInt_FMT "\n", ksp->min_it));
-    if (ksp->guess_knoll) PetscCall(PetscViewerASCIIPrintf(viewer, "  using preconditioner applied to right hand side for initial guess\n"));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  tolerances:  relative=%g, absolute=%g, divergence=%g\n", (double)ksp->rtol, (double)ksp->abstol, (double)ksp->divtol));
+    if (ksp->guess_knoll) PetscCall(PetscViewerASCIIPrintf(viewer, "  using preconditioner applied to right-hand side for initial guess\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  tolerances: relative=%g, absolute=%g, divergence=%g\n", (double)ksp->rtol, (double)ksp->abstol, (double)ksp->divtol));
     if (ksp->pc_side == PC_RIGHT) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "  right preconditioning\n"));
     } else if (ksp->pc_side == PC_SYMMETRIC) {
@@ -459,7 +459,7 @@ PetscErrorCode KSPGetNormType(KSP ksp, KSPNormType *normtype)
 
   If you wish to replace either `Amat` or `Pmat` but leave the other one untouched then
   first call `KSPGetOperators()` to get the one you wish to keep, call `PetscObjectReference()`
-  on it and then pass it back in in your call to `KSPSetOperators()`.
+  on it and then pass it back in your call to `KSPSetOperators()`.
 
   Developer Notes:
   If the operators have NOT been set with `KSPSetOperators()` then the operators

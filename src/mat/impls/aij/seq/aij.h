@@ -171,6 +171,27 @@ typedef struct {
   PetscCount *perm; /* The permutation array in sorting (i,j) by row and then by col */
 } MatCOOStruct_SeqAIJ;
 
+#define MatSeqXAIJGetOptions_Private(A) \
+  { \
+    const PetscBool oldvalues = (PetscBool)(A != PETSC_NULLPTR); \
+    PetscInt        nonew = 0, nounused = 0; \
+    PetscBool       roworiented = PETSC_FALSE; \
+    if (oldvalues) { \
+      nonew       = ((Mat_SeqAIJ *)A->data)->nonew; \
+      nounused    = ((Mat_SeqAIJ *)A->data)->nounused; \
+      roworiented = ((Mat_SeqAIJ *)A->data)->roworiented; \
+    } \
+    (void)0
+
+#define MatSeqXAIJRestoreOptions_Private(A) \
+  if (oldvalues) { \
+    ((Mat_SeqAIJ *)A->data)->nonew       = nonew; \
+    ((Mat_SeqAIJ *)A->data)->nounused    = nounused; \
+    ((Mat_SeqAIJ *)A->data)->roworiented = roworiented; \
+  } \
+  } \
+  (void)0
+
 /*
   Frees the a, i, and j arrays from the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
 */
@@ -200,7 +221,7 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt *
       PetscInt  CHUNKSIZE = 15, new_nz = AI[AM] + CHUNKSIZE, len, *new_i = NULL, *new_j = NULL; \
       datatype *new_a; \
 \
-      PetscCheck(NONEW != -2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check", ROW, COL); \
+      PetscCheck(NONEW != -2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc. Use MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check", ROW, COL); \
       /* malloc new storage space */ \
       PetscCall(PetscMalloc3(BS2 *new_nz, &new_a, new_nz, &new_j, AM + 1, &new_i)); \
 \
@@ -236,7 +257,7 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt *
       /* there is no extra room in row, therefore enlarge */ \
       PetscInt CHUNKSIZE = 15, new_nz = AI[AM] + CHUNKSIZE, len, *new_i = NULL, *new_j = NULL; \
 \
-      PetscCheck(NONEW != -2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check", ROW, COL); \
+      PetscCheck(NONEW != -2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc. Use MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check", ROW, COL); \
       /* malloc new storage space */ \
       PetscCall(PetscMalloc1(new_nz, &new_j)); \
       PetscCall(PetscMalloc1(AM + 1, &new_i)); \
@@ -312,6 +333,7 @@ PETSC_INTERN PetscErrorCode MatSolveTranspose_SeqAIJ(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolveTransposeAdd_SeqAIJ_inplace(Mat, Vec, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat, Vec, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatMatSolve_SeqAIJ(Mat, Mat, Mat);
+PETSC_INTERN PetscErrorCode MatMatSolveTranspose_SeqAIJ(Mat, Mat, Mat);
 PETSC_INTERN PetscErrorCode MatEqual_SeqAIJ(Mat, Mat, PetscBool *);
 PETSC_INTERN PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat, ISColoring, MatFDColoring);
 PETSC_INTERN PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat, ISColoring, MatFDColoring);
@@ -633,7 +655,7 @@ static inline void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum, cons
  */
 #define MatRowMergeMax_SeqAIJ(mat, nrows, ta) \
   do { \
-    if ((mat)) { \
+    if (mat) { \
       for (PetscInt _row = 0; _row < (nrows); _row++) { \
         const PetscInt _nz = (mat)->i[_row + 1] - (mat)->i[_row]; \
         for (PetscInt _j = 0; _j < _nz; _j++) { \

@@ -27,14 +27,14 @@
   Note:
   Use `KSPGMRESSetCGSRefinementType()` to determine if iterative refinement is to be used.
   This is much faster than `KSPGMRESModifiedGramSchmidtOrthogonalization()` but has the small possibility of stability issues
-  that can usually be handled by using a a single step of iterative refinement with `KSPGMRESSetCGSRefinementType()`
+  that can usually be handled by using a single step of iterative refinement with `KSPGMRESSetCGSRefinementType()`
 
 .seealso: [](ch_ksp), `KSPGMRESCGSRefinementType`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESSetCGSRefinementType()`,
            `KSPGMRESGetCGSRefinementType()`, `KSPGMRESGetOrthogonalization()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`
 @*/
 PetscErrorCode KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp, PetscInt it)
 {
-  KSP_GMRES   *gmres = (KSP_GMRES *)(ksp->data);
+  KSP_GMRES   *gmres = (KSP_GMRES *)ksp->data;
   PetscInt     j;
   PetscScalar *hh, *hes, *lhh;
   PetscReal    hnrm, wnrm;

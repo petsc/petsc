@@ -88,7 +88,7 @@ static PetscErrorCode MatLUFactorSymbolic_Essl(Mat B, Mat A, IS r, IS c, const M
   PetscReal   f = 1.0;
 
   PetscFunctionBegin;
-  essl = (Mat_Essl *)(B->data);
+  essl = (Mat_Essl *)B->data;
 
   /* allocate the work arrays required by ESSL */
   f = info->fill;

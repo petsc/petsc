@@ -109,7 +109,6 @@ PETSC_EXTERN PetscErrorCode DMRefineHierarchy_Moab(DM dm, PetscInt nlevels, DM d
   PetscInt i;
 
   PetscFunctionBegin;
-
   PetscCall(DMRefine(dm, PetscObjectComm((PetscObject)dm), &dmf[0]));
   for (i = 1; i < nlevels; i++) PetscCall(DMRefine(dmf[i - 1], PetscObjectComm((PetscObject)dm), &dmf[i]));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -136,7 +135,6 @@ PETSC_EXTERN PetscErrorCode DMCoarsenHierarchy_Moab(DM dm, PetscInt nlevels, DM 
   PetscInt i;
 
   PetscFunctionBegin;
-
   PetscCall(DMCoarsen(dm, PetscObjectComm((PetscObject)dm), &dmc[0]));
   for (i = 1; i < nlevels; i++) PetscCall(DMCoarsen(dmc[i - 1], PetscObjectComm((PetscObject)dm), &dmc[i]));
   PetscFunctionReturn(PETSC_SUCCESS);

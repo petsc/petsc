@@ -6,8 +6,11 @@ PetscErrorCode MatView_Binary_BlockSizes(Mat mat, PetscViewer viewer)
   FILE       *info;
   PetscMPIInt rank;
   PetscInt    rbs, cbs;
+  PetscBool   skip;
 
   PetscFunctionBegin;
+  PetscCall(PetscViewerBinaryGetSkipInfo(viewer, &skip));
+  if (skip) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(MatGetBlockSizes(mat, &rbs, &cbs));
   PetscCall(PetscViewerBinaryGetInfoPointer(viewer, &info));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank));

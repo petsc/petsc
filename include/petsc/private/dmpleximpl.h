@@ -156,8 +156,7 @@ typedef struct {
   DMPlexInterpolatedFlag interpolatedCollective;
 
   /* Ordering */
-  DMPlexReorderDefaultFlag reorderDefault; /* Reorder the DM by default */
-  DMPlexReorderDefaultFlag reorderSection; /* Reorder the local section by default */
+  DMReorderDefaultFlag reorderDefault; /* Reorder the DM by default */
 
   /* Distribution */
   PetscBool distDefault;      /* Distribute the DM by default */
@@ -354,7 +353,9 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateReferenceTree_SetTree(DM, PetscSection, 
 PETSC_EXTERN PetscErrorCode DMPlexCreateReferenceTree_Union(DM, DM, const char *, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeInterpolatorTree(DM, DM, PetscSF, PetscInt *, Mat);
 PETSC_EXTERN PetscErrorCode DMPlexComputeInjectorTree(DM, DM, PetscSF, PetscInt *, Mat);
-PETSC_EXTERN PetscErrorCode DMPlexAnchorsModifyMat(DM, PetscSection, PetscInt, PetscInt, const PetscInt[], const PetscInt ***, const PetscScalar[], PetscInt *, PetscInt *, PetscInt *[], PetscScalar *[], PetscInt[], PetscBool);
+PETSC_INTERN PetscErrorCode DMPlexAnchorsModifyMat(DM, PetscSection, PetscInt, PetscInt, const PetscInt[], const PetscInt ***, const PetscScalar[], PetscInt *, PetscInt *, PetscInt *[], PetscScalar *[], PetscInt[], PetscBool);
+PETSC_INTERN PetscErrorCode DMPlexAnchorsModifyMat_Internal(DM, PetscSection, PetscInt, PetscInt, const PetscInt[], const PetscInt ***, PetscInt, PetscInt, const PetscScalar[], PetscInt *, PetscInt *, PetscInt *[], PetscScalar *[], PetscInt[], PetscBool, PetscBool);
+PETSC_INTERN PetscErrorCode DMPlexAnchorsGetSubMatModification(DM, PetscSection, PetscInt, PetscInt, const PetscInt[], const PetscInt ***, PetscInt *, PetscInt *, PetscInt *[], PetscInt[], PetscScalar *[]);
 PETSC_INTERN PetscErrorCode DMPlexLocatePoint_Internal(DM, PetscInt, const PetscScalar[], PetscInt, PetscInt *);
 /* these two are PETSC_EXTERN just because of src/dm/impls/plex/tests/ex18.c */
 PETSC_EXTERN PetscErrorCode DMPlexOrientInterface_Internal(DM);
@@ -375,12 +376,14 @@ PETSC_INTERN PetscErrorCode DMPlexGetOverlap_Plex(DM, PetscInt *);
 PETSC_INTERN PetscErrorCode DMPlexSetOverlap_Plex(DM, DM, PetscInt);
 PETSC_INTERN PetscErrorCode DMPlexDistributeGetDefault_Plex(DM, PetscBool *);
 PETSC_INTERN PetscErrorCode DMPlexDistributeSetDefault_Plex(DM, PetscBool);
-PETSC_INTERN PetscErrorCode DMPlexReorderGetDefault_Plex(DM, DMPlexReorderDefaultFlag *);
-PETSC_INTERN PetscErrorCode DMPlexReorderSetDefault_Plex(DM, DMPlexReorderDefaultFlag);
+PETSC_INTERN PetscErrorCode DMPlexReorderGetDefault_Plex(DM, DMReorderDefaultFlag *);
+PETSC_INTERN PetscErrorCode DMPlexReorderSetDefault_Plex(DM, DMReorderDefaultFlag);
 PETSC_INTERN PetscErrorCode DMPlexGetUseCeed_Plex(DM, PetscBool *);
 PETSC_INTERN PetscErrorCode DMPlexSetUseCeed_Plex(DM, PetscBool);
-PETSC_INTERN PetscErrorCode DMPlexReorderSectionGetDefault_Plex(DM, DMPlexReorderDefaultFlag *);
-PETSC_INTERN PetscErrorCode DMPlexReorderSectionSetDefault_Plex(DM, DMPlexReorderDefaultFlag);
+PETSC_INTERN PetscErrorCode DMReorderSectionGetDefault_Plex(DM, DMReorderDefaultFlag *);
+PETSC_INTERN PetscErrorCode DMReorderSectionSetDefault_Plex(DM, DMReorderDefaultFlag);
+PETSC_INTERN PetscErrorCode DMReorderSectionGetType_Plex(DM, MatOrderingType *);
+PETSC_INTERN PetscErrorCode DMReorderSectionSetType_Plex(DM, MatOrderingType);
 
 #if 1
 static inline PetscInt DihedralInvert(PetscInt N, PetscInt a)
@@ -843,7 +846,7 @@ PETSC_INTERN PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, const 
 PETSC_INTERN PetscErrorCode DMCreateSuperDM_Plex(DM dms[], PetscInt len, IS **is, DM *superdm);
 PETSC_INTERN PetscErrorCode DMCreateDomainDecompositionScatters_Plex(DM, PetscInt, DM *, VecScatter **, VecScatter **, VecScatter **);
 PETSC_INTERN PetscErrorCode DMCreateDomainDecomposition_Plex(DM, PetscInt *, char ***, IS **, IS **, DM **);
-PETSC_INTERN PetscErrorCode DMPlexCreateSectionPermutation_Internal(DM dm, IS *permutation, PetscBT *blockStarts);
+PETSC_INTERN PetscErrorCode DMCreateSectionPermutation_Plex(DM dm, IS *permutation, PetscBT *blockStarts);
 
 // Coordinate mapping functions
 PETSC_INTERN void coordMap_identity(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);

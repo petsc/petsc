@@ -6,7 +6,7 @@ KSP Object: 8 MPI processes
     KSP Object: (fetidp_) 8 MPI processes
       type: cg
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using PRECONDITIONED norm type for convergence test
     PC Object: (fetidp_) 8 MPI processes
@@ -99,7 +99,7 @@ KSP Object: 8 MPI processes
         KSP Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI process
           type: preonly
           maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
         PC Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI process
@@ -126,7 +126,7 @@ KSP Object: 8 MPI processes
         KSP Object: (fetidp_bddc_pc_bddc_neumann_) 1 MPI process
           type: preonly
           maximum iterations=1000, initial guess is zero
-          tolerances:  relative=1e-10, absolute=1e-10, divergence=10000.
+          tolerances: relative=1e-10, absolute=1e-10, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
         PC Object: (fetidp_bddc_pc_bddc_neumann_) 1 MPI process
@@ -153,7 +153,7 @@ KSP Object: 8 MPI processes
         KSP Object: (fetidp_bddc_pc_bddc_coarse_) 8 MPI processes
           type: preonly
           maximum iterations=1000, initial guess is zero
-          tolerances:  relative=1e-10, absolute=1e-10, divergence=10000.
+          tolerances: relative=1e-10, absolute=1e-10, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
         PC Object: (fetidp_bddc_pc_bddc_coarse_) 8 MPI processes
@@ -162,7 +162,7 @@ KSP Object: 8 MPI processes
             KSP Object: (fetidp_bddc_pc_bddc_coarse_redundant_) 1 MPI process
               type: preonly
               maximum iterations=10000, initial guess is zero
-              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
               left preconditioning
               using NONE norm type for convergence test
             PC Object: (fetidp_bddc_pc_bddc_coarse_redundant_) 1 MPI process
@@ -191,7 +191,7 @@ KSP Object: 8 MPI processes
         total number of mallocs used during MatSetValues calls=0
           has attached null space
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using NONE norm type for convergence test
 PC Object: 8 MPI processes

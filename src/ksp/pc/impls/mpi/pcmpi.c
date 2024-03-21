@@ -2,7 +2,7 @@
     This file creates an MPI parallel KSP from a sequential PC that lives on MPI rank 0.
     It is intended to allow using PETSc MPI parallel linear solvers from non-MPI codes.
 
-    That program may use OpenMP to compute the right hand side and matrix for the linear system
+    That program may use OpenMP to compute the right-hand side and matrix for the linear system
 
     The code uses MPI_COMM_WORLD below but maybe it should be PETSC_COMM_WORLD
 
@@ -12,7 +12,8 @@
 */
 #include <petsc/private/pcimpl.h>
 #include <petsc/private/kspimpl.h>
-#include <petsc.h>
+#include <petscts.h>
+#include <petsctao.h>
 
 #define PC_MPI_MAX_RANKS  256
 #define PC_MPI_COMM_WORLD MPI_COMM_WORLD
@@ -617,7 +618,7 @@ static PetscErrorCode PCDestroy_Seq(PC pc)
 
 /*
      PCSetUp_MPI - Trigger the creation of the MPI parallel PC and copy parts of the matrix and
-     right hand side to the parallel PC
+     right-hand side to the parallel PC
 */
 static PetscErrorCode PCSetUp_MPI(PC pc)
 {
@@ -738,7 +739,7 @@ static PetscErrorCode PCSetFromOptions_MPI(PC pc, PetscOptionItems *PetscOptions
 
    It can be particularly useful for user OpenMP code or potentially user GPU code.
 
-   When the program is running with a single MPI process then it directly uses the provided matrix and right hand side
+   When the program is running with a single MPI process then it directly uses the provided matrix and right-hand side
    and does not need to distribute the matrix and vector to the various MPI processes; thus it incurs no extra overhead over just using the `KSP` directly.
 
    The solver options for actual solving `KSP` and `PC` must be controlled via the options database, calls to set options directly on the user level `KSP` and `PC` have no effect

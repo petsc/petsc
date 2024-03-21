@@ -135,7 +135,6 @@ static PetscErrorCode MatDestroy_Normal(Mat N)
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatProductSetFromOptions_normal_seqdense_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatProductSetFromOptions_normal_mpidense_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatProductSetFromOptions_normal_dense_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatShellSetContext_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -449,7 +448,6 @@ PetscErrorCode MatCreateNormal(Mat A, Mat *N)
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatProductSetFromOptions_normal_seqdense_C", MatProductSetFromOptions_Normal_Dense));
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatProductSetFromOptions_normal_mpidense_C", MatProductSetFromOptions_Normal_Dense));
-  PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatProductSetFromOptions_normal_dense_C", MatProductSetFromOptions_Normal_Dense));
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatShellSetContext_C", MatShellSetContext_Immutable));
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatShellSetContextDestroy_C", MatShellSetContextDestroy_Immutable));
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatShellSetManageScalingShifts_C", MatShellSetManageScalingShifts_Immutable));

@@ -1,0 +1,43 @@
+PetscDeviceContext Object: global root (root_) 1 MPI process
+  type not yet set
+  stream type: default
+  children: 0
+  PetscDevice Object: 1 MPI process
+    type: sycl
+    id: 0
+PetscDeviceContext Object: global root (root_) 1 MPI process
+  type not yet set
+  stream type: default
+  children: 0
+  PetscDevice Object: 1 MPI process
+    type: sycl
+    id: 0
+PetscDeviceContext Object: 1 MPI process
+  type not yet set
+  stream type: default
+  children: 0
+  PetscDevice Object: 1 MPI process
+    type: sycl
+    id: 0
+PetscDeviceContext Object: 1 MPI process
+  type not yet set
+  stream type: default
+  children: 0
+  PetscDevice Object: 1 MPI process
+    type: sycl
+    id: 0
+PetscDeviceContext Object: null context 0 (null_context_0_) 1 MPI process
+  type not yet set
+  stream type: default
+  children: 0
+  PetscDevice Object: 1 MPI process
+    type: sycl
+    id: 0
+PetscDeviceContext Object: null context 0 (null_context_0_) 1 MPI process
+  type not yet set
+  stream type: default
+  children: 0
+  PetscDevice Object: 1 MPI process
+    type: sycl
+    id: 0
+EXIT_SUCCESS

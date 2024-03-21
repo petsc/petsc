@@ -104,9 +104,9 @@ PetscErrorCode TSRHSSplitGetIS(TS ts, const char splitname[], IS *is)
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TS`, `TSRHSFunction`, `IS`, `TSRHSSplitSetIS()`
+.seealso: [](ch_ts), `TS`, `TSRHSFunctionFn`, `IS`, `TSRHSSplitSetIS()`
 @*/
-PetscErrorCode TSRHSSplitSetRHSFunction(TS ts, const char splitname[], Vec r, TSRHSFunction rhsfunc, void *ctx)
+PetscErrorCode TSRHSSplitSetRHSFunction(TS ts, const char splitname[], Vec r, TSRHSFunctionFn *rhsfunc, void *ctx)
 {
   TS_RHSSplitLink isplit;
   DM              dmc;

@@ -104,7 +104,7 @@ static PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat, Vec a, Vec y)
     } else {
       /* Compute error if desired */
       PetscCall(SNESGetIterationNumber(snes, &iter));
-      if ((ctx->need_err) || ((ctx->compute_err_freq) && (ctx->compute_err_iter != iter) && (!((iter - 1) % ctx->compute_err_freq)))) {
+      if (ctx->need_err || (ctx->compute_err_freq && (ctx->compute_err_iter != iter) && (!((iter - 1) % ctx->compute_err_freq)))) {
         /* Use Jorge's method to compute noise */
         PetscCall(SNESDiffParameterCompute_More(snes, ctx->data, U, a, &noise, &h));
 
@@ -256,7 +256,6 @@ PetscErrorCode MatCreateSNESMFMore(SNES snes, Vec x, Mat *J)
   PetscCall(MatShellSetOperation(*J, MATOP_DESTROY, (void (*)(void))SNESMatrixFreeDestroy2_Private));
   PetscCall(MatShellSetOperation(*J, MATOP_VIEW, (void (*)(void))SNESMatrixFreeView2_Private));
   PetscCall(MatSetUp(*J));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

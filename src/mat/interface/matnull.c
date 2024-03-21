@@ -308,8 +308,8 @@ PetscErrorCode MatNullSpaceDestroy(MatNullSpace *sp)
 
   PetscFunctionBegin;
   if (!*sp) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*sp), MAT_NULLSPACE_CLASSID, 1);
-  if (--((PetscObject)(*sp))->refct > 0) {
+  PetscValidHeaderSpecific(*sp, MAT_NULLSPACE_CLASSID, 1);
+  if (--((PetscObject)*sp)->refct > 0) {
     *sp = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -420,7 +420,7 @@ PetscErrorCode MatNullSpaceTest(MatNullSpace sp, Mat mat, PetscBool *isNull)
   }
 
   for (j = 0; j < n; j++) {
-    PetscCall((*mat->ops->mult)(mat, sp->vecs[j], l));
+    PetscUseTypeMethod(mat, mult, sp->vecs[j], l);
     PetscCall(VecNorm(l, NORM_2, &nrm));
     if (nrm >= tol) consistent = PETSC_FALSE;
     if (flg1) {

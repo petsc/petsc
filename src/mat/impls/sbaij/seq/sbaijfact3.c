@@ -51,7 +51,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3(Mat C, Mat A, const MatFactor
             aa[j * 9 + k1] = dk[k1];
           }
         }
-        /* transform columnoriented blocks that lie in the lower triangle to roworiented blocks */
+        /* transform column-oriented blocks that lie in the lower triangle to row-oriented blocks */
         if (i > aj[j]) {
           /* printf("change orientation, row: %d, col: %d\n",i,aj[j]); */
           ap = aa + j * 9;                       /* ptr to the beginning of j-th block of aa */

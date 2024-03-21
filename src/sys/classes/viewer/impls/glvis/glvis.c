@@ -702,6 +702,9 @@ PetscViewer PETSC_VIEWER_GLVIS_(MPI_Comm comm)
     ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_GLVIS_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
     PetscFunctionReturn(NULL);
   }
+
+  ((PetscObject)viewer)->persistent = PETSC_TRUE;
+
   ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
   if (ierr) {
     ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_GLVIS_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");

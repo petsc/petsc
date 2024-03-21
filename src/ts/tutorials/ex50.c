@@ -92,8 +92,6 @@ int main(int argc, char **argv)
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscFunctionBeginUser;
-
-  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
 
   /*initialize parameters */
@@ -175,14 +173,14 @@ int main(int argc, char **argv)
   PetscCall(DMCreateMatrix(appctx.da, &appctx.SEMop.grad));
   /*
    For linear problems with a time-dependent f(u,t) in the equation
-   u_t = f(u,t), the user provides the discretized right-hand-side
+   u_t = f(u,t), the user provides the discretized right-hand side
    as a time-dependent matrix.
    */
   PetscCall(RHSMatrixLaplaciangllDM(appctx.ts, 0.0, appctx.dat.curr_sol, appctx.SEMop.stiff, appctx.SEMop.stiff, &appctx));
   PetscCall(RHSMatrixAdvectiongllDM(appctx.ts, 0.0, appctx.dat.curr_sol, appctx.SEMop.grad, appctx.SEMop.grad, &appctx));
   /*
        For linear problems with a time-dependent f(u,t) in the equation
-       u_t = f(u,t), the user provides the discretized right-hand-side
+       u_t = f(u,t), the user provides the discretized right-hand side
        as a time-dependent matrix.
     */
 

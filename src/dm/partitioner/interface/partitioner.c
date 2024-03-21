@@ -249,19 +249,19 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
 {
   PetscFunctionBegin;
   if (!*part) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*part), PETSCPARTITIONER_CLASSID, 1);
+  PetscValidHeaderSpecific(*part, PETSCPARTITIONER_CLASSID, 1);
 
-  if (--((PetscObject)(*part))->refct > 0) {
+  if (--((PetscObject)*part)->refct > 0) {
     *part = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  ((PetscObject)(*part))->refct = 0;
+  ((PetscObject)*part)->refct = 0;
 
   PetscCall(PetscPartitionerReset(*part));
 
   PetscCall(PetscOptionsRestoreViewer(&(*part)->viewer));
   PetscCall(PetscOptionsRestoreViewer(&(*part)->viewerGraph));
-  PetscTryTypeMethod((*part), destroy);
+  PetscTryTypeMethod(*part, destroy);
   PetscCall(PetscHeaderDestroy(part));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -277,8 +277,8 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
 . numVertices   - Number of vertices in the local part of the graph
 . start         - row pointers for the local part of the graph (CSR style)
 . adjacency     - adjacency list (CSR style)
-. vertexSection - PetscSection describing the absolute weight of each local vertex (can be NULL)
-- targetSection - PetscSection describing the absolute weight of each partition (can be NULL)
+. vertexSection - PetscSection describing the absolute weight of each local vertex (can be `NULL`)
+- targetSection - PetscSection describing the absolute weight of each partition (can be `NULL`)
 
   Output Parameters:
 + partSection - The `PetscSection` giving the division of points by partition

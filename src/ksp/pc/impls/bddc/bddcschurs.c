@@ -1183,7 +1183,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
           PetscCall(MatDenseRestoreArray(S2, &S2_data));
           PetscCall(MatDenseRestoreArray(S3, &S3_data));
         }
-        if (!S_lower_triangular) { /* I need to expand the upper triangular data (column oriented) */
+        if (!S_lower_triangular) { /* I need to expand the upper triangular data (column-oriented) */
           PetscInt k, j;
           for (k = 0; k < size_schur; k++) {
             for (j = k; j < size_schur; j++) S_data[j * size_schur + k] = PetscConj(S_data[k * size_schur + j]);
@@ -1359,7 +1359,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         PetscCall(MatConvert(gdswA[i], MATDENSE, MAT_REUSE_MATRIX, &T));
         PetscCall(MatDestroy(&T));
       } else {
-        if (S_lower_triangular) { /* I need to expand the upper triangular data (column oriented) */
+        if (S_lower_triangular) { /* I need to expand the upper triangular data (column-oriented) */
           PetscInt k;
           for (k = 0; k < subset_size; k++) {
             for (j = k; j < subset_size; j++) {

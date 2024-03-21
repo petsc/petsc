@@ -1,0 +1,55 @@
+%IS Object: map1l2g 2 MPI processes
+%  type: general
+map1l2g_0 = [...
+-2
+-1
+];
+map1l2g_1 = [...
+-2
+];
+%IS Object: l2g 2 MPI processes
+%  type: general
+l2g_0 = [...
+-8
+-7
+-6
+-5
+-4
+-3
+];
+l2g_1 = [...
+-8
+-7
+-6
+];
+View world maps
+ISLocalToGlobalMapping Object: map1 2 MPI processes
+  type not yet set
+[0] 0 -3
+[0] 1 -2
+[1] 0 -3
+ISLocalToGlobalMapping Object: map2 2 MPI processes
+  type not yet set
+[0] 0:3 -9:-6
+[0] 3:6 -6:-3
+[1] 0:3 -9:-6
+View world maps loaded from subcomm
+ISLocalToGlobalMapping Object: 2 MPI processes
+  type not yet set
+[0] 0 -3
+[0] 1 -2
+[1] 0 -3
+ISLocalToGlobalMapping Object: 2 MPI processes
+  type not yet set
+[0] 0:3 -9:-6
+[0] 3:6 -6:-3
+[1] 0:3 -9:-6
+View sequential maps from rank 0 loaded from subcomm
+ISLocalToGlobalMapping Object: 2 MPI processes
+  type not yet set
+[0] 0 -3
+[0] 1 -2
+ISLocalToGlobalMapping Object: 2 MPI processes
+  type not yet set
+[0] 0:3 -9:-6
+[0] 3:6 -6:-3

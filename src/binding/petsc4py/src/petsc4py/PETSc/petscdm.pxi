@@ -46,6 +46,11 @@ cdef extern from * nogil:
         DM_POLYTOPE_UNKNOWN_FACE
         DM_NUM_POLYTOPES
 
+    ctypedef enum PetscDMReorderDefaultFlag "DMReorderDefaultFlag":
+        DM_REORDER_DEFAULT_NOTSET
+        DM_REORDER_DEFAULT_FALSE
+        DM_REORDER_DEFAULT_TRUE
+
     ctypedef PetscErrorCode (*PetscDMCoarsenHook)(PetscDM,
                                        PetscDM,
                                        void*) except PETSC_ERR_PYTHON

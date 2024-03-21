@@ -16,7 +16,7 @@ static PetscErrorCode KSPSetUp_PGMRES(KSP ksp)
 
 static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount, KSP ksp)
 {
-  KSP_PGMRES *pgmres = (KSP_PGMRES *)(ksp->data);
+  KSP_PGMRES *pgmres = (KSP_PGMRES *)ksp->data;
   PetscReal   res_norm, res, newnorm;
   PetscInt    it     = 0, j, k;
   PetscBool   hapend = PETSC_FALSE;
@@ -194,7 +194,7 @@ static PetscErrorCode KSPPGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest
 {
   PetscScalar tt;
   PetscInt    k, j;
-  KSP_PGMRES *pgmres = (KSP_PGMRES *)(ksp->data);
+  KSP_PGMRES *pgmres = (KSP_PGMRES *)ksp->data;
 
   PetscFunctionBegin;
   /* Solve for solution vector that minimizes the residual */
@@ -232,13 +232,13 @@ static PetscErrorCode KSPPGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
   PetscScalar *hh, *cc, *ss, *rs;
   PetscInt     j;
   PetscReal    hapbnd;
-  KSP_PGMRES  *pgmres = (KSP_PGMRES *)(ksp->data);
+  KSP_PGMRES  *pgmres = (KSP_PGMRES *)ksp->data;
 
   PetscFunctionBegin;
   hh = HH(0, it); /* pointer to beginning of column to update */
   cc = CC(0);     /* beginning of cosine rotations */
   ss = SS(0);     /* beginning of sine rotations */
-  rs = RS(0);     /* right hand side of least squares system */
+  rs = RS(0);     /* right-hand side of least squares system */
 
   /* The Hessenberg matrix is now correct through column it, save that form for possible spectral analysis */
   for (j = 0; j <= it + 1; j++) *HES(j, it) = hh[j];
@@ -262,7 +262,7 @@ static PetscErrorCode KSPPGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
 
   /*
     compute the new plane rotation, and apply it to:
-     1) the right-hand-side of the Hessenberg system (RS)
+     1) the right-hand side of the Hessenberg system (RS)
         note: it affects RS(it) and RS(it+1)
      2) the new column of the Hessenberg matrix
         note: it affects HH(it,it) which is currently pointed to

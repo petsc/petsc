@@ -31,7 +31,7 @@ Vec Object: 1 MPI process
 Initial guess
 Vec Object: potential 1 MPI process
   type: seq
-9.06682e-16
+5.71149e-16
 0.666667
 0.666667
 1.33333
@@ -59,6 +59,36 @@ Vec Object: potential 1 MPI process
 0.833333
 0.833333
 L_2 Error: < 1.0e-11
+BdResidual:
+Vec Object: 1 MPI process
+  type: seq
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+-0.222222
+-0.222222
+0.
+-0.111111
+0.
+-0.222222
+-0.111111
+0.
+-0.222222
+0.
+-0.111111
+-0.222222
+-0.111111
+0.
+-0.222222
+-0.111111
+-0.111111
 Residual:
 Vec Object: 1 MPI process
   type: seq
@@ -120,6 +150,36 @@ Vec Object: Residual, Iterate 0 1 MPI process
 -0.111111
 -0.111111
 L_2 Residual: 0.608581
+BdResidual:
+Vec Object: 1 MPI process
+  type: seq
+-0.2
+-0.0666667
+-0.0666667
+-0.0666667
+-0.0666667
+-0.0666667
+-0.0666667
+-0.2
+0.8
+0.266667
+-0.4
+-0.4
+0.266667
+-0.2
+0.266667
+-0.4
+-0.2
+0.266667
+-0.4
+0.266667
+-0.2
+-0.4
+-0.2
+0.266667
+-0.4
+-0.2
+-0.2
 Residual:
 Vec Object: 1 MPI process
   type: seq

@@ -394,7 +394,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Socket(PetscViewer v)
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscViewerBinarySetSkipHeader_C", PetscViewerBinarySetSkipHeader_Socket));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscViewerBinaryGetSkipHeader_C", PetscViewerBinaryGetSkipHeader_Socket));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscViewerBinaryGetFlowControl_C", PetscViewerBinaryGetFlowControl_Binary));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

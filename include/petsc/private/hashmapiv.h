@@ -29,6 +29,7 @@ static inline PetscErrorCode PetscHMapIVAddValue(PetscHMapIV ht, PetscInt key, P
 {
   int      ret;
   khiter_t iter;
+
   PetscFunctionBeginHot;
   PetscAssertPointer(ht, 1);
   iter = kh_put(HMapIV, ht, key, &ret);

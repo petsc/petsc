@@ -74,7 +74,7 @@ TS Object: 1 MPI process
         restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
         happy breakdown tolerance 1e-30
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using PRECONDITIONED norm type for convergence test
     PC Object: 1 MPI process
@@ -86,7 +86,7 @@ TS Object: 1 MPI process
         KSP Object: (mg_coarse_) 1 MPI process
           type: preonly
           maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
         PC Object: (mg_coarse_) 1 MPI process
@@ -121,12 +121,12 @@ TS Object: 1 MPI process
                 restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
                 happy breakdown tolerance 1e-30
               maximum iterations=10, initial guess is zero
-              tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+              tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
               left preconditioning
               using PRECONDITIONED norm type for convergence test
-            estimating eigenvalues using noisy right hand side
+            estimating eigenvalues using a noisy random number generated right-hand side
           maximum iterations=3, nonzero initial guess
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
         PC Object: (mg_levels_1_) 1 MPI process
@@ -151,12 +151,12 @@ TS Object: 1 MPI process
                 restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
                 happy breakdown tolerance 1e-30
               maximum iterations=10, initial guess is zero
-              tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+              tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
               left preconditioning
               using PRECONDITIONED norm type for convergence test
-            estimating eigenvalues using noisy right hand side
+            estimating eigenvalues using a noisy random number generated right-hand side
           maximum iterations=3, nonzero initial guess
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
         PC Object: (mg_levels_2_) 1 MPI process

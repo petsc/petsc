@@ -28,7 +28,7 @@ We use `Sphinx <https://www.sphinx-doc.org/en/master/>`__ to build our web pages
 Building the HTML docs locally
 ------------------------------
 
-We use a a `Python 3 virtual environment <https://docs.python.org/3/tutorial/venv.html>`__  to build the documentation since not all developers can trivially install the needed Python modules directly.
+We use a `Python 3 virtual environment <https://docs.python.org/3/tutorial/venv.html>`__  to build the documentation since not all developers can trivially install the needed Python modules directly.
 
 .. code-block:: console
 

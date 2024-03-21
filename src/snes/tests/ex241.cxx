@@ -74,10 +74,9 @@ PetscErrorCode UserFunction(SNES snes, Vec X, Vec F, void *ptr)
   AppCtx            *user = (AppCtx *)ptr;
   PetscInt           N, i;
   PetscScalar       *f;
-  PetscReal          half;
+  PetscReal          half = 0.5;
   const PetscScalar *x;
 
-  half = 0.5;
   PetscFunctionBeginUser;
   PetscCall(VecGetSize(X, &N));
   PetscCall(VecGetArrayRead(X, &x));

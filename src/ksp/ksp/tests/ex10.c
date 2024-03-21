@@ -51,7 +51,7 @@ int main(int argc, char **args)
   PetscCall(VecAssemblyBegin(u));
   PetscCall(VecAssemblyEnd(u));
 
-  /* Compute right-hand-side */
+  /* Compute right-hand side */
   PetscCall(MatMult(mat, u, b));
 
   /* Solve linear system */

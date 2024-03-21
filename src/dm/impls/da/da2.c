@@ -298,8 +298,8 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
   */
   PetscCheck((x >= s) || ((m <= 1) && (bx != DM_BOUNDARY_PERIODIC)), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local x-width of domain x %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT, x, s);
   PetscCheck((y >= s) || ((n <= 1) && (by != DM_BOUNDARY_PERIODIC)), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local y-width of domain y %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT, y, s);
-  PetscCheck((x > s) || ((bx != DM_BOUNDARY_MIRROR)), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local x-width of domain x %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT " with mirror", x, s);
-  PetscCheck((y > s) || ((by != DM_BOUNDARY_MIRROR)), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local y-width of domain y %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT " with mirror", y, s);
+  PetscCheck((x > s) || (bx != DM_BOUNDARY_MIRROR), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local x-width of domain x %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT " with mirror", x, s);
+  PetscCheck((y > s) || (by != DM_BOUNDARY_MIRROR), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local y-width of domain y %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT " with mirror", y, s);
   xe = xs + x;
   ye = ys + y;
 
@@ -531,14 +531,14 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
   for (i = 1; i <= s_y; i++) {
     if (n0 >= 0) { /* left below */
       x_t = lx[n0 % m];
-      y_t = ly[(n0 / m)];
+      y_t = ly[n0 / m];
       s_t = bases[n0] + x_t * y_t - (s_y - i) * x_t - s_x;
       for (j = 0; j < s_x; j++) idx[nn++] = s_t++;
     }
 
     if (n1 >= 0) { /* directly below */
       x_t = x;
-      y_t = ly[(n1 / m)];
+      y_t = ly[n1 / m];
       s_t = bases[n1] + x_t * y_t - (s_y + 1 - i) * x_t;
       for (j = 0; j < x_t; j++) idx[nn++] = s_t++;
     } else if (by == DM_BOUNDARY_MIRROR) {
@@ -547,7 +547,7 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
 
     if (n2 >= 0) { /* right below */
       x_t = lx[n2 % m];
-      y_t = ly[(n2 / m)];
+      y_t = ly[n2 / m];
       s_t = bases[n2] + x_t * y_t - (s_y + 1 - i) * x_t;
       for (j = 0; j < s_x; j++) idx[nn++] = s_t++;
     }
@@ -578,14 +578,14 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
   for (i = 1; i <= s_y; i++) {
     if (n6 >= 0) { /* left above */
       x_t = lx[n6 % m];
-      /* y_t = ly[(n6/m)]; */
+      /* y_t = ly[n6 / m]; */
       s_t = bases[n6] + (i)*x_t - s_x;
       for (j = 0; j < s_x; j++) idx[nn++] = s_t++;
     }
 
     if (n7 >= 0) { /* directly above */
       x_t = x;
-      /* y_t = ly[(n7/m)]; */
+      /* y_t = ly[n7 / m]; */
       s_t = bases[n7] + (i - 1) * x_t;
       for (j = 0; j < x_t; j++) idx[nn++] = s_t++;
     } else if (by == DM_BOUNDARY_MIRROR) {
@@ -594,7 +594,7 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
 
     if (n8 >= 0) { /* right above */
       x_t = lx[n8 % m];
-      /* y_t = ly[(n8/m)]; */
+      /* y_t = ly[n8 / m]; */
       s_t = bases[n8] + (i - 1) * x_t;
       for (j = 0; j < s_x; j++) idx[nn++] = s_t++;
     }
@@ -612,7 +612,7 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
     n8 = sn8;
   }
 
-  if (((stencil_type == DMDA_STENCIL_STAR) || (bx && bx != DM_BOUNDARY_PERIODIC) || (by && by != DM_BOUNDARY_PERIODIC))) {
+  if ((stencil_type == DMDA_STENCIL_STAR) || (bx && bx != DM_BOUNDARY_PERIODIC) || (by && by != DM_BOUNDARY_PERIODIC)) {
     /*
         Recompute the local to global mappings, this time keeping the
       information about the cross corner processor numbers and any ghosted
@@ -623,7 +623,7 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
     for (i = 1; i <= s_y; i++) {
       if (n0 >= 0) { /* left below */
         x_t = lx[n0 % m];
-        y_t = ly[(n0 / m)];
+        y_t = ly[n0 / m];
         s_t = bases[n0] + x_t * y_t - (s_y - i) * x_t - s_x;
         for (j = 0; j < s_x; j++) idx[nn++] = s_t++;
       } else if (xs - Xs > 0 && ys - Ys > 0) {
@@ -631,7 +631,7 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
       }
       if (n1 >= 0) { /* directly below */
         x_t = x;
-        y_t = ly[(n1 / m)];
+        y_t = ly[n1 / m];
         s_t = bases[n1] + x_t * y_t - (s_y + 1 - i) * x_t;
         for (j = 0; j < x_t; j++) idx[nn++] = s_t++;
       } else if (ys - Ys > 0) {
@@ -643,7 +643,7 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
       }
       if (n2 >= 0) { /* right below */
         x_t = lx[n2 % m];
-        y_t = ly[(n2 / m)];
+        y_t = ly[n2 / m];
         s_t = bases[n2] + x_t * y_t - (s_y + 1 - i) * x_t;
         for (j = 0; j < s_x; j++) idx[nn++] = s_t++;
       } else if (Xe - xe > 0 && ys - Ys > 0) {
@@ -684,7 +684,7 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
     for (i = 1; i <= s_y; i++) {
       if (n6 >= 0) { /* left above */
         x_t = lx[n6 % m];
-        /* y_t = ly[(n6/m)]; */
+        /* y_t = ly[n6 / m]; */
         s_t = bases[n6] + (i)*x_t - s_x;
         for (j = 0; j < s_x; j++) idx[nn++] = s_t++;
       } else if (xs - Xs > 0 && Ye - ye > 0) {
@@ -692,7 +692,7 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
       }
       if (n7 >= 0) { /* directly above */
         x_t = x;
-        /* y_t = ly[(n7/m)]; */
+        /* y_t = ly[n7 / m]; */
         s_t = bases[n7] + (i - 1) * x_t;
         for (j = 0; j < x_t; j++) idx[nn++] = s_t++;
       } else if (Ye - ye > 0) {
@@ -704,7 +704,7 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
       }
       if (n8 >= 0) { /* right above */
         x_t = lx[n8 % m];
-        /* y_t = ly[(n8/m)]; */
+        /* y_t = ly[n8 / m]; */
         s_t = bases[n8] + (i - 1) * x_t;
         for (j = 0; j < s_x; j++) idx[nn++] = s_t++;
       } else if (Xe - xe > 0 && Ye - ye > 0) {
@@ -775,6 +775,9 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
 . -da_grid_y <ny>       - number of grid points in y direction
 . -da_processors_x <nx> - number of processors in x direction
 . -da_processors_y <ny> - number of processors in y direction
+. -da_bd_x <bx>         - boundary type in x direction
+. -da_bd_y <by>         - boundary type in y direction
+. -da_bd_all <bt>       - boundary type in all directions
 . -da_refine_x <rx>     - refinement ratio in x direction
 . -da_refine_y <ry>     - refinement ratio in y direction
 - -da_refine <n>        - refine the `DMDA` n times before creating

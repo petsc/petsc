@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 def generateBatchScript(num, procs, time, *args):
   body = '''\
 #!/bin/bash

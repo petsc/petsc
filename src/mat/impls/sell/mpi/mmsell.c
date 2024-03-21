@@ -73,7 +73,7 @@ PetscErrorCode MatDisAssemble_MPISELL(Mat A)
 PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat)
 {
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
-  Mat_SeqSELL *B    = (Mat_SeqSELL *)(sell->B->data);
+  Mat_SeqSELL *B    = (Mat_SeqSELL *)sell->B->data;
   PetscInt     i, j, *bcolidx = B->colidx, ec = 0, *garray, totalslices;
   IS           from, to;
   Vec          gvec;

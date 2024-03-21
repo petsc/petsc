@@ -82,7 +82,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   }
   PetscCall(PetscOptionsReal("-moment_tol", "Tolerance for moment checks", "ex2.c", options->momentTol, &options->momentTol, NULL));
   PetscOptionsEnd();
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -386,7 +385,7 @@ static PetscErrorCode TestL2ProjectionParticlesToField(DM dm, DM sw, Vec fhat, A
   PetscReal   fmoments[3]; // \int \hat f, \int x \hat f, \int r^2 \hat f
 
   PetscFunctionBeginUser;
-  PetscCall(DMSwarmProjectFields(sw, 1, fieldnames, fields, SCATTER_FORWARD));
+  PetscCall(DMSwarmProjectFields(sw, dm, 1, fieldnames, fields, SCATTER_FORWARD));
 
   /* Check moments of field */
   PetscCall(computeParticleMoments(sw, pmoments, user));
@@ -407,7 +406,7 @@ static PetscErrorCode TestL2ProjectionFieldToParticles(DM dm, DM sw, Vec fhat, A
   PetscReal   fmoments[3]; // \int \hat f, \int x \hat f, \int r^2 \hat f
 
   PetscFunctionBeginUser;
-  PetscCall(DMSwarmProjectFields(sw, 1, fieldnames, fields, SCATTER_REVERSE));
+  PetscCall(DMSwarmProjectFields(sw, dm, 1, fieldnames, fields, SCATTER_REVERSE));
 
   /* Check moments */
   PetscCall(computeParticleMoments(sw, pmoments, user));
@@ -587,7 +586,6 @@ static PetscErrorCode TestFieldGradientProjection(DM dm, DM sw, AppCtx *user)
   PetscCall(DMRestoreGlobalVector(dm, &fhat));
   PetscCall(DMRestoreGlobalVector(dm, &rhs));
   PetscCall(DMRestoreGlobalVector(dm, &grad));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

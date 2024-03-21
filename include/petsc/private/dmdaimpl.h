@@ -120,6 +120,7 @@ PETSC_INTERN PetscErrorCode DMCreateDomainDecomposition_DA(DM, PetscInt *, char 
 PETSC_INTERN PetscErrorCode DMCreateDomainDecompositionScatters_DA(DM, PetscInt, DM *, VecScatter **, VecScatter **, VecScatter **);
 PETSC_INTERN PetscErrorCode DMGetCompatibility_DA(DM, DM, PetscBool *, PetscBool *);
 PETSC_INTERN PetscErrorCode DMLocatePoints_DA_Regular(DM, Vec, DMPointLocationType, PetscSF);
+PETSC_INTERN PetscErrorCode DMGetLocalBoundingBox_DA(DM, PetscReal[], PetscReal[], PetscInt[], PetscInt[]);
 PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject, PetscViewer);
 PETSC_INTERN PetscErrorCode DMLocalToLocalCreate_DA(DM);
 PETSC_INTERN PetscErrorCode DMDAGetNatural_Private(DM, PetscInt *, IS *);

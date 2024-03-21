@@ -19,7 +19,7 @@
   #define petscoptionsrealarray_           PETSCOPTIONSREALARRAY
   #define petscoptionsscalar_              PETSCOPTIONSSCALAR
   #define petscoptionsscalararray_         PETSCOPTIONSSCALARARRAY
-  #define petscoptionsstring               PETSCOPTIONSSTRING
+  #define petscoptionsstring_              PETSCOPTIONSSTRING
   #define petscsubcommview_                PETSCSUBCOMMVIEW
   #define petscsubcommgetparent_           PETSCSUBCOMMGETPARENT
   #define petscsubcommgetcontiguousparent_ PETSCSUBCOMMGETCONTIGUOUSPARENT
@@ -232,7 +232,7 @@ PETSC_EXTERN void petscoptionsreal_(char *opt, char *text, char *man, PetscReal 
     return;
   }
   PetscOptionsObject->count = 1;
-  *ierr                     = PetscOptionsReal_Private(PetscOptionsObject, copt, ctext, cman, *currentvalue, value, set);
+  *ierr                     = PetscOptionsReal_Private(PetscOptionsObject, copt, ctext, cman, *currentvalue, value, set, PETSC_MIN_REAL, PETSC_MAX_REAL);
   if (*ierr) return;
   FREECHAR(opt, copt);
   FREECHAR(text, ctext);

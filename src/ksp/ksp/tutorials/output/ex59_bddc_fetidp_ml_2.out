@@ -1,7 +1,7 @@
 KSP Object: (physical_) 4 MPI processes
   type: cg
   maximum iterations=10, initial guess is zero
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
 PC Object: (physical_) 4 MPI processes
@@ -59,7 +59,7 @@ PC Object: (physical_) 4 MPI processes
     KSP Object: (physical_pc_bddc_dirichlet_) 1 MPI process
       type: preonly
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (physical_pc_bddc_dirichlet_) 1 MPI process
@@ -86,7 +86,7 @@ PC Object: (physical_) 4 MPI processes
     KSP Object: (physical_pc_bddc_neumann_) 1 MPI process
       type: preonly
       maximum iterations=1000, initial guess is zero
-      tolerances:  relative=1e-10, absolute=1e-10, divergence=10000.
+      tolerances: relative=1e-10, absolute=1e-10, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (physical_pc_bddc_neumann_) 1 MPI process
@@ -114,7 +114,7 @@ PC Object: (physical_) 4 MPI processes
       type: richardson
         damping factor=1.
       maximum iterations=1000, initial guess is zero
-      tolerances:  relative=1e-10, absolute=1e-10, divergence=10000.
+      tolerances: relative=1e-10, absolute=1e-10, divergence=10000.
       left preconditioning
       using PRECONDITIONED norm type for convergence test
     PC Object: (physical_pc_bddc_coarse_) 4 MPI processes
@@ -172,7 +172,7 @@ PC Object: (physical_) 4 MPI processes
         KSP Object: (physical_pc_bddc_dirichlet_l1_) 1 MPI process
           type: preonly
           maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
         PC Object: (physical_pc_bddc_dirichlet_l1_) 1 MPI process
@@ -199,7 +199,7 @@ PC Object: (physical_) 4 MPI processes
         KSP Object: (physical_pc_bddc_neumann_l1_) 1 MPI process
           type: preonly
           maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
         PC Object: (physical_pc_bddc_neumann_l1_) 1 MPI process
@@ -232,7 +232,7 @@ PC Object: (physical_) 4 MPI processes
       KSP Object: (physical_pc_bddc_coarse_l1_) 2 MPI processes
         type: preonly
         maximum iterations=1, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (physical_pc_bddc_coarse_l1_) 2 MPI processes
@@ -241,7 +241,7 @@ PC Object: (physical_) 4 MPI processes
           KSP Object: (physical_pc_bddc_coarse_l1_redundant_) 1 MPI process
             type: preonly
             maximum iterations=10000, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+            tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
           PC Object: (physical_pc_bddc_coarse_l1_redundant_) 1 MPI process

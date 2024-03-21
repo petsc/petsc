@@ -6,7 +6,7 @@ static PetscErrorCode PetscSpaceSetFromOptions_Ptrimmed(PetscSpace sp, PetscOpti
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "PetscSpace polynomial options");
-  PetscCall(PetscOptionsInt("-petscspace_ptrimmed_form_degree", "form degree of trimmed space", "PetscSpacePTrimmedSetFormDegree", pt->formDegree, &(pt->formDegree), NULL));
+  PetscCall(PetscOptionsInt("-petscspace_ptrimmed_form_degree", "form degree of trimmed space", "PetscSpacePTrimmedSetFormDegree", pt->formDegree, &pt->formDegree, NULL));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -308,7 +308,7 @@ static PetscErrorCode PetscSpaceGetHeightSubspace_Ptrimmed(PetscSpace sp, PetscI
   PetscFunctionBegin;
   PetscCall(PetscSpaceGetNumVariables(sp, &dim));
   PetscCheck(height <= dim && height >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %" PetscInt_FMT " for dimension %" PetscInt_FMT " space", height, dim);
-  if (!pt->subspaces) PetscCall(PetscCalloc1(dim, &(pt->subspaces)));
+  if (!pt->subspaces) PetscCall(PetscCalloc1(dim, &pt->subspaces));
   if ((dim - height) <= PetscAbsInt(pt->formDegree)) {
     if (!pt->subspaces[height - 1]) {
       PetscInt    Nc, degree, Nf, Ncopies, Nfsub;
@@ -357,10 +357,33 @@ static PetscErrorCode PetscSpaceInitialize_Ptrimmed(PetscSpace sp)
 /*MC
   PETSCSPACEPTRIMMED = "ptrimmed" - A `PetscSpace` object that encapsulates a trimmed polynomial space.
 
+  Trimmed polynomial spaces are defined for $k$-forms, and are defined by
+  $
+  \mathcal{P}^-_r \Lambda^k(\mathbb{R}^n) = mathcal{P}_{r-1} \Lambda^k(\mathbb{R}^n) \oplus \kappa [\mathcal{H}_{r-1} \Lambda^{k+1}(\mathbb{R}^n)],
+  $
+  where $\mathcal{H}_{r-1}$ are homogeneous polynomials and $\kappa$ is the Koszul differential.  This decomposition is detailed in ``Finite element exterior calculus'', Arnold, 2018.
+
   Level: intermediate
 
-  Developer Note:
-  Need a good easy to understand reference for trimmed poynomial spaces
+  Notes:
+  Trimmed polynomial spaces correspond to several common conformal approximation spaces in the de Rham complex:
+
+  In $H^1$ ($\sim k=0$), trimmed polynomial spaces are identical to the standard polynomial spaces, $\mathcal{P}_r^- \sim P_r$.
+
+  In $H(\text{curl})$, ($\sim k=1$), trimmed polynomial spaces are equivalent to $H(\text{curl})$-Nedelec spaces of the first kind and can be written as
+  $
+    \begin{cases}
+      [P_{r-1}(\mathbb{R}^2)]^2 \oplus \mathrm{rot}(\bf{x}) H_{r-1}(\mathbb{R}^2), & n = 2, \\
+      [P_{r-1}(\mathbb{R}^3)]^3 \oplus \bf{x} \times [H_{r-1}(\mathbb{R}^3)]^3, & n = 3.
+    \end{cases}
+  $
+
+  In $H(\text{div})$ ($\sim k=n-1$), trimmed polynomial spaces are equivalent to Raviart-Thomas spaces ($n=2$) and $H(\text{div})$-Nedelec spaces of the first kind ($n=3$), and can be written as
+  $
+    [P_{r-1}(\mathbb{R}^n)]^n \oplus \bf{x} H_{r-1}(\mathbb{R}^n).
+  $
+
+  In $L_2$, ($\sim k=n$), trimmed polynomial spaces are identical to the standar polynomial spaces of one degree less, $\mathcal{P}_r^- \sim P_{r-1}$.
 
 .seealso: `PetscSpace`, `PetscSpaceType`, `PetscSpaceCreate()`, `PetscSpaceSetType()`, `PetscDTPTrimmedEvalJet()`
 M*/

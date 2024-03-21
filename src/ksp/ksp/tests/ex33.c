@@ -136,7 +136,7 @@ int main(int argc, char **args)
 /*TEST
 
     test:
-      args: -sigma 2.0
+      args: -sigma 2.0 -mat_type {{aij baij}}
       requires: !complex
       output_file: output/ex33.out
 

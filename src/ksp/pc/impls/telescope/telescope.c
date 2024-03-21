@@ -732,6 +732,7 @@ static PetscErrorCode PCSetFromOptions_Telescope(PC pc, PetscOptionItems *PetscO
 static PetscErrorCode PCTelescopeGetKSP_Telescope(PC pc, KSP *ksp)
 {
   PC_Telescope red = (PC_Telescope)pc->data;
+
   PetscFunctionBegin;
   if (ksp) *ksp = red->ksp;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -740,6 +741,7 @@ static PetscErrorCode PCTelescopeGetKSP_Telescope(PC pc, KSP *ksp)
 static PetscErrorCode PCTelescopeGetSubcommType_Telescope(PC pc, PetscSubcommType *subcommtype)
 {
   PC_Telescope red = (PC_Telescope)pc->data;
+
   PetscFunctionBegin;
   if (subcommtype) *subcommtype = red->subcommtype;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -758,6 +760,7 @@ static PetscErrorCode PCTelescopeSetSubcommType_Telescope(PC pc, PetscSubcommTyp
 static PetscErrorCode PCTelescopeGetReductionFactor_Telescope(PC pc, PetscInt *fact)
 {
   PC_Telescope red = (PC_Telescope)pc->data;
+
   PetscFunctionBegin;
   if (fact) *fact = red->redfactor;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -779,6 +782,7 @@ static PetscErrorCode PCTelescopeSetReductionFactor_Telescope(PC pc, PetscInt fa
 static PetscErrorCode PCTelescopeGetIgnoreDM_Telescope(PC pc, PetscBool *v)
 {
   PC_Telescope red = (PC_Telescope)pc->data;
+
   PetscFunctionBegin;
   if (v) *v = red->ignore_dm;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -787,6 +791,7 @@ static PetscErrorCode PCTelescopeGetIgnoreDM_Telescope(PC pc, PetscBool *v)
 static PetscErrorCode PCTelescopeSetIgnoreDM_Telescope(PC pc, PetscBool v)
 {
   PC_Telescope red = (PC_Telescope)pc->data;
+
   PetscFunctionBegin;
   red->ignore_dm = v;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -795,6 +800,7 @@ static PetscErrorCode PCTelescopeSetIgnoreDM_Telescope(PC pc, PetscBool v)
 static PetscErrorCode PCTelescopeGetUseCoarseDM_Telescope(PC pc, PetscBool *v)
 {
   PC_Telescope red = (PC_Telescope)pc->data;
+
   PetscFunctionBegin;
   if (v) *v = red->use_coarse_dm;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -803,6 +809,7 @@ static PetscErrorCode PCTelescopeGetUseCoarseDM_Telescope(PC pc, PetscBool *v)
 static PetscErrorCode PCTelescopeSetUseCoarseDM_Telescope(PC pc, PetscBool v)
 {
   PC_Telescope red = (PC_Telescope)pc->data;
+
   PetscFunctionBegin;
   red->use_coarse_dm = v;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -811,6 +818,7 @@ static PetscErrorCode PCTelescopeSetUseCoarseDM_Telescope(PC pc, PetscBool v)
 static PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators_Telescope(PC pc, PetscBool *v)
 {
   PC_Telescope red = (PC_Telescope)pc->data;
+
   PetscFunctionBegin;
   if (v) *v = red->ignore_kspcomputeoperators;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -819,6 +827,7 @@ static PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators_Telescope(PC pc, P
 static PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators_Telescope(PC pc, PetscBool v)
 {
   PC_Telescope red = (PC_Telescope)pc->data;
+
   PetscFunctionBegin;
   red->ignore_kspcomputeoperators = v;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -827,6 +836,7 @@ static PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators_Telescope(PC pc, P
 static PetscErrorCode PCTelescopeGetDM_Telescope(PC pc, DM *dm)
 {
   PC_Telescope red = (PC_Telescope)pc->data;
+
   PetscFunctionBegin;
   *dm = private_PCTelescopeGetSubDM(red);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1239,7 +1249,7 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
    [2] `DM` aware setup
    If a `DM` is attached to the `PC`, it is re-partitioned on the sub-communicator c'.
    c' is created via `PetscSubcommCreate()`.
-   Both the Bmat operator and the right hand side vector are permuted into the new DOF ordering defined by the re-partitioned `DM`.
+   Both the Bmat operator and the right-hand side vector are permuted into the new DOF ordering defined by the re-partitioned `DM`.
    Currently only support for re-partitioning a `DMDA` is provided.
    Any explicitly defined nullspace or near nullspace vectors attached to the original Bmat operator (B) are extracted, re-partitioned and set on the re-partitioned Bmat operator (B').
    Currently there is no support define nullspaces via a user supplied method (e.g. as passed to `MatNullSpaceSetFunction()`).

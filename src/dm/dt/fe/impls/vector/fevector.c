@@ -100,7 +100,6 @@ static PetscErrorCode PetscFESetUp_Vector(PetscFE fe)
     }
   }
   PetscCall(PetscFree2(d, d_mapped));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

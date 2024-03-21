@@ -73,8 +73,8 @@ int main(int argc, char **argv)
   // Project between particles and continuum field
   const char *fieldnames[1] = {"w_q"};
   Vec         fields[1]     = {u_f};
-  PetscCall(DMSwarmProjectFields(sw, 1, fieldnames, fields, SCATTER_FORWARD));
-  PetscCall(DMSwarmProjectFields(sw, 1, fieldnames, fields, SCATTER_REVERSE));
+  PetscCall(DMSwarmProjectFields(sw, NULL, 1, fieldnames, fields, SCATTER_FORWARD));
+  PetscCall(DMSwarmProjectFields(sw, NULL, 1, fieldnames, fields, SCATTER_REVERSE));
 
   // Compute energy
   PetscCall(DMSwarmGetField(sw, "w_q", &bs, &dtype, (void **)&wq));

@@ -233,10 +233,10 @@ static PetscErrorCode MatCreateSubMatrices_Htool(Mat A, PetscInt n, const IS iro
                     }
                   }
                 }
-              }                       /* complete local diagonal block not in IS */
+              } /* complete local diagonal block not in IS */
             } else flg = PETSC_FALSE; /* IS not long enough to store the local diagonal block */
           } else flg = PETSC_FALSE;   /* rmap->rstart not in IS */
-        }                             /* unsorted IS */
+        } /* unsorted IS */
       }
     } else flg = PETSC_FALSE;                                       /* different row and column IS */
     if (!flg) a->wrapper->copy_submatrix(nrow, m, idxr, idxc, ptr); /* reassemble everything */
@@ -512,16 +512,10 @@ static PetscErrorCode MatProductSymbolic_Htool(Mat C)
   A = product->A;
   B = product->B;
   PetscCall(PetscObjectTypeCompareAny((PetscObject)B, &flg, MATSEQDENSE, MATMPIDENSE, ""));
-  PetscCheck(flg, PetscObjectComm((PetscObject)B), PETSC_ERR_SUP, "MatProduct_AB not supported for %s", ((PetscObject)product->B)->type_name);
-  switch (product->type) {
-  case MATPRODUCT_AB:
-    if (C->rmap->n == PETSC_DECIDE || C->cmap->n == PETSC_DECIDE || C->rmap->N == PETSC_DECIDE || C->cmap->N == PETSC_DECIDE) PetscCall(MatSetSizes(C, A->rmap->n, B->cmap->n, A->rmap->N, B->cmap->N));
-    break;
-  case MATPRODUCT_AtB:
-    if (C->rmap->n == PETSC_DECIDE || C->cmap->n == PETSC_DECIDE || C->rmap->N == PETSC_DECIDE || C->cmap->N == PETSC_DECIDE) PetscCall(MatSetSizes(C, A->cmap->n, B->cmap->n, A->cmap->N, B->cmap->N));
-    break;
-  default:
-    SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_SUP, "ProductType %s is not supported", MatProductTypes[product->type]);
+  PetscCheck(flg && (product->type == MATPRODUCT_AB || product->type == MATPRODUCT_AtB), PetscObjectComm((PetscObject)B), PETSC_ERR_SUP, "ProductType %s not supported for %s", MatProductTypes[product->type], ((PetscObject)product->B)->type_name);
+  if (C->rmap->n == PETSC_DECIDE || C->cmap->n == PETSC_DECIDE || C->rmap->N == PETSC_DECIDE || C->cmap->N == PETSC_DECIDE) {
+    if (product->type == MATPRODUCT_AB) PetscCall(MatSetSizes(C, A->rmap->n, B->cmap->n, A->rmap->N, B->cmap->N));
+    else PetscCall(MatSetSizes(C, A->cmap->n, B->cmap->n, A->cmap->N, B->cmap->N));
   }
   PetscCall(MatSetType(C, MATDENSE));
   PetscCall(MatSetUp(C));
@@ -572,7 +566,7 @@ PETSC_EXTERN PetscErrorCode MatHtoolGetHierarchicalMat(Mat A, const htool::Virtu
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatHtoolSetKernel_Htool(Mat A, MatHtoolKernel kernel, void *kernelctx)
+static PetscErrorCode MatHtoolSetKernel_Htool(Mat A, MatHtoolKernelFn *kernel, void *kernelctx)
 {
   Mat_Htool *a = (Mat_Htool *)A->data;
 
@@ -596,13 +590,13 @@ static PetscErrorCode MatHtoolSetKernel_Htool(Mat A, MatHtoolKernel kernel, void
 
 .seealso: [](ch_matrices), `Mat`, `MATHTOOL`, `MatCreateHtoolFromKernel()`
 @*/
-PETSC_EXTERN PetscErrorCode MatHtoolSetKernel(Mat A, MatHtoolKernel kernel, void *kernelctx)
+PETSC_EXTERN PetscErrorCode MatHtoolSetKernel(Mat A, MatHtoolKernelFn *kernel, void *kernelctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   if (!kernelctx) PetscValidFunction(kernel, 2);
   if (!kernel) PetscAssertPointer(kernelctx, 3);
-  PetscTryMethod(A, "MatHtoolSetKernel_C", (Mat, MatHtoolKernel, void *), (A, kernel, kernelctx));
+  PetscTryMethod(A, "MatHtoolSetKernel_C", (Mat, MatHtoolKernelFn *, void *), (A, kernel, kernelctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -837,7 +831,7 @@ static PetscErrorCode MatTranspose_Htool(Mat A, MatReuse reuse, Mat *B)
 
 .seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MATHTOOL`, `PCSetCoordinates()`, `MatHtoolSetKernel()`, `MatHtoolCompressorType`, `MATH2OPUS`, `MatCreateH2OpusFromKernel()`
 @*/
-PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt spacedim, const PetscReal coords_target[], const PetscReal coords_source[], MatHtoolKernel kernel, void *kernelctx, Mat *B)
+PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt spacedim, const PetscReal coords_target[], const PetscReal coords_source[], MatHtoolKernelFn *kernel, void *kernelctx, Mat *B)
 {
   Mat        A;
   Mat_Htool *a;

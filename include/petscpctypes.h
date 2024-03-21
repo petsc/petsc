@@ -120,6 +120,7 @@ typedef enum {
 
    Values:
 +  `PC_JACOBI_DIAGONAL` - use the diagonal entry, if it is zero use one
+.  `PC_JACOBI_ROWL1`    - add sum of absolute values in row i, j != i, to diag_ii
 .  `PC_JACOBI_ROWMAX`   - use the maximum absolute value in the row
 -  `PC_JACOBI_ROWSUM`   - use the sum of the values in the row (not the absolute values)
 
@@ -129,6 +130,7 @@ typedef enum {
 E*/
 typedef enum {
   PC_JACOBI_DIAGONAL,
+  PC_JACOBI_ROWL1,
   PC_JACOBI_ROWMAX,
   PC_JACOBI_ROWSUM
 } PCJacobiType;
@@ -488,7 +490,8 @@ typedef enum {
     Values:
 +   `PC_HPDDM_COARSE_CORRECTION_DEFLATED` (default) - eq. (1) in `PCHPDDMShellApply()`
 .   `PC_HPDDM_COARSE_CORRECTION_ADDITIVE`           - eq. (2)
--   `PC_HPDDM_COARSE_CORRECTION_BALANCED`           - eq. (3)
+.   `PC_HPDDM_COARSE_CORRECTION_BALANCED`           - eq. (3)
+-   `PC_HPDDM_COARSE_CORRECTION_NONE`               - no coarse correction (mostly useful for debugging)
 
     Level: intermediate
 
@@ -497,7 +500,8 @@ E*/
 typedef enum {
   PC_HPDDM_COARSE_CORRECTION_DEFLATED,
   PC_HPDDM_COARSE_CORRECTION_ADDITIVE,
-  PC_HPDDM_COARSE_CORRECTION_BALANCED
+  PC_HPDDM_COARSE_CORRECTION_BALANCED,
+  PC_HPDDM_COARSE_CORRECTION_NONE
 } PCHPDDMCoarseCorrectionType;
 
 /*E

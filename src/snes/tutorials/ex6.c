@@ -109,7 +109,7 @@ int main(int argc, char **argv)
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize application:
-     Store right-hand-side of PDE and exact solution
+     Store right-hand side of PDE and exact solution
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   xp = 0.0;
@@ -178,7 +178,7 @@ PetscErrorCode FormInitialGuess(Vec x)
    The user-defined context can contain any application-specific data
    needed for the function evaluation (such as various parameters, work
    vectors, and grid information).  In this program the context is just
-   a vector containing the right-hand-side of the discretized PDE.
+   a vector containing the right-hand side of the discretized PDE.
  */
 
 PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *ctx)

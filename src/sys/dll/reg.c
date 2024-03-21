@@ -84,24 +84,24 @@ PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void)
     PetscBool found;
   #if defined(PETSC_USE_SINGLE_LIBRARY)
     PetscCall(PetscLoadDynamicLibrary("", &found));
-    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc dynamic library. You cannot move the dynamic libraries!");
   #else
     PetscCall(PetscLoadDynamicLibrary("sys", &found));
-    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc Sys dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc Sys dynamic library. You cannot move the dynamic libraries!");
     PetscCall(PetscLoadDynamicLibrary("vec", &found));
-    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc Vec dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc Vec dynamic library. You cannot move the dynamic libraries!");
     PetscCall(PetscLoadDynamicLibrary("mat", &found));
-    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc Mat dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc Mat dynamic library. You cannot move the dynamic libraries!");
     PetscCall(PetscLoadDynamicLibrary("dm", &found));
-    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc DM dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc DM dynamic library. You cannot move the dynamic libraries!");
     PetscCall(PetscLoadDynamicLibrary("ksp", &found));
-    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc KSP dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc KSP dynamic library. You cannot move the dynamic libraries!");
     PetscCall(PetscLoadDynamicLibrary("snes", &found));
-    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc SNES dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc SNES dynamic library. You cannot move the dynamic libraries!");
     PetscCall(PetscLoadDynamicLibrary("ts", &found));
-    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc TS dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc TS dynamic library. You cannot move the dynamic libraries!");
     PetscCall(PetscLoadDynamicLibrary("tao", &found));
-    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate Tao dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate Tao dynamic library. You cannot move the dynamic libraries!");
   #endif
 #else /* defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES) */
   #if defined(PETSC_USE_SINGLE_LIBRARY)
@@ -129,7 +129,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void)
   {
     PetscBool found;
     PetscCall(PetscLoadDynamicLibrary("bamg", &found));
-    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc BAMG dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc BAMG dynamic library. You cannot move the dynamic libraries!");
   }
 #endif
 
@@ -165,7 +165,7 @@ PETSC_INTERN PetscErrorCode PetscFinalize_DynamicLibraries(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_HASH_MAP(HMapFunc, const char *, PetscVoidFunction, kh_str_hash_func, kh_str_hash_equal, NULL)
+PETSC_HASH_MAP(HMapFunc, const char *, PetscVoidFn *, kh_str_hash_func, kh_str_hash_equal, NULL)
 
 struct _n_PetscFunctionList {
   PetscHMapFunc map;
@@ -222,7 +222,7 @@ static PetscErrorCode PetscFunctionListDLAllPop_Private(PetscFunctionList fl)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscHMapFuncInsert_Private(PetscHMapFunc map, const char name[], PetscVoidFunction fnc)
+static PetscErrorCode PetscHMapFuncInsert_Private(PetscHMapFunc map, const char name[], PetscVoidFn *fnc)
 {
   PetscHashIter it;
   PetscBool     found;
@@ -288,7 +288,7 @@ static PetscErrorCode PetscFunctionListCreate_Private(PetscInt size, PetscFuncti
 .seealso: `PetscFunctionListDestroy()`, `SNESRegister()`, `KSPRegister()`,`PetscFunctionListDuplicate()`
           `PCRegister()`, `TSRegister()`, `PetscFunctionList`, `PetscObjectComposeFunction()`
 M*/
-PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, const char name[], PetscVoidFunction fptr)
+PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, const char name[], PetscVoidFn *fptr)
 {
   PetscFunctionBegin;
   PetscAssertPointer(fl, 1);
@@ -328,8 +328,8 @@ PetscErrorCode PetscFunctionListDestroy(PetscFunctionList *fl)
 \
     PetscHashIterBegin(phmfi_map_, phmfi_iter_); \
     while (!PetscHashIterAtEnd(phmfi_map_, phmfi_iter_)) { \
-      const char *PETSC_UNUSED       __key_name__; \
-      PetscVoidFunction PETSC_UNUSED __val_name__; \
+      const char *PETSC_UNUSED  __key_name__; \
+      PetscVoidFn *PETSC_UNUSED __val_name__; \
 \
       PetscHashIterGetKey(phmfi_map_, phmfi_iter_, __key_name__); \
       PetscHashIterGetVal(phmfi_map_, phmfi_iter_, __val_name__); \
@@ -424,7 +424,7 @@ PetscErrorCode PetscFunctionListPrintNonEmpty(PetscFunctionList fl)
 
 .seealso: `PetscFunctionListAdd()`, `PetscFunctionList`, `PetscObjectQueryFunction()`, `PetscFunctionListDuplicate()`
 M*/
-PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl, const char name[], PetscVoidFunction *fptr)
+PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl, const char name[], PetscVoidFn **fptr)
 {
   PetscFunctionBegin;
   PetscAssertPointer(name, 2);

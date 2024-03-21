@@ -53,11 +53,11 @@ int main(int argc, char *argv[])
   hinfo.dt          = 1.0 / 12; /* a month as a period */
   hinfo.totalNumSim = 1000;
 
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-num_of_stocks", &(hinfo.n), NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-num_of_stocks", &hinfo.n, NULL));
   PetscCheck(hinfo.n >= 1 && hinfo.n <= 31, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only 31 stocks listed in stock.txt. num_of_stocks %" PetscInt_FMT " must between 1 and 31", hinfo.n);
-  PetscCall(PetscOptionsGetReal(NULL, NULL, "-interest_rate", &(hinfo.r), NULL));
-  PetscCall(PetscOptionsGetReal(NULL, NULL, "-time_interval", &(hinfo.dt), NULL));
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-num_of_simulations", &(hinfo.totalNumSim), NULL));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-interest_rate", &hinfo.r, NULL));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-time_interval", &hinfo.dt, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-num_of_simulations", &hinfo.totalNumSim, NULL));
 
   n           = hinfo.n;
   r           = hinfo.r;
@@ -175,7 +175,7 @@ void exchangeVal(PetscReal *a, PetscReal *b)
 
 PetscReal mcVal(PetscReal St, PetscReal r, PetscReal vol, PetscReal dt, PetscReal eps)
 {
-  return (St * PetscExpReal((r - 0.5 * vol * vol) * dt + vol * PetscSqrtReal(dt) * eps));
+  return St * PetscExpReal((r - 0.5 * vol * vol) * dt + vol * PetscSqrtReal(dt) * eps);
 }
 
 PetscInt divWork(PetscMPIInt id, PetscInt num, PetscMPIInt size)

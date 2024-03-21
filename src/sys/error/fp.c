@@ -480,9 +480,9 @@ static const FPNode error_codes[] = {
 void PetscDefaultFPTrap(int sig)
 {
   #if defined(PETSC_HAVE_FE_VALUES)
-  const FPNode  *node;
-  int            code;
-  PetscBool      matched = PETSC_FALSE;
+  const FPNode *node;
+  int           code;
+  PetscBool     matched = PETSC_FALSE;
   #endif
   PetscErrorCode ierr;
 

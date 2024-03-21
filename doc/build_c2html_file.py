@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """ Runs c2html and mapnames on a single source file and cleans up all text"""
 
 import os

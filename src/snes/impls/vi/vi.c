@@ -27,7 +27,7 @@
   to provide the bounds and you need not use this function.
 
 .seealso: [](sec_vi), `SNES`, `SNESVISetVariableBounds()`, `DMSetVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`,
-          `'SNESSetType()`, `PETSC_NINFINITY`, `PETSC_INFINITY`
+          `SNESSetType()`, `PETSC_NINFINITY`, `PETSC_INFINITY`
 @*/
 PetscErrorCode SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*compute)(SNES snes, Vec lower, Vec higher))
 {
@@ -41,7 +41,7 @@ PetscErrorCode SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*comput
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESVISetComputeVariableBounds_VI(SNES snes, SNESVIComputeVariableBoundsFunction compute)
+PetscErrorCode SNESVISetComputeVariableBounds_VI(SNES snes, SNESVIComputeVariableBoundsFn *compute)
 {
   PetscFunctionBegin;
   snes->ops->computevariablebounds = compute;
@@ -88,7 +88,7 @@ static PetscErrorCode SNESMonitorVI(SNES snes, PetscInt its, PetscReal fgnorm, v
 
   rnorm = 0.0;
   for (i = 0; i < n; i++) {
-    if (((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + zerotolerance || (PetscRealPart(f[i]) <= 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - zerotolerance) || PetscRealPart(f[i]) >= 0.0))) rnorm += PetscRealPart(PetscConj(f[i]) * f[i]);
+    if ((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + zerotolerance || (PetscRealPart(f[i]) <= 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - zerotolerance) || PetscRealPart(f[i]) >= 0.0)) rnorm += PetscRealPart(PetscConj(f[i]) * f[i]);
     else if (PetscRealPart(x[i]) <= PetscRealPart(xl[i]) + zerotolerance && PetscRealPart(f[i]) > 0.0) act[0]++;
     else if (PetscRealPart(x[i]) >= PetscRealPart(xu[i]) - zerotolerance && PetscRealPart(f[i]) < 0.0) act[1]++;
     else SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_PLIB, "Can never get here");
@@ -292,7 +292,7 @@ PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES snes, Vec F, Vec X, PetscReal 
   PetscCall(VecGetArrayRead(F, &f));
   rnorm = 0.0;
   for (i = 0; i < n; i++) {
-    if (((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + zerotolerance || (PetscRealPart(f[i]) <= 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - zerotolerance) || PetscRealPart(f[i]) >= 0.0))) rnorm += PetscRealPart(PetscConj(f[i]) * f[i]);
+    if ((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + zerotolerance || (PetscRealPart(f[i]) <= 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - zerotolerance) || PetscRealPart(f[i]) >= 0.0)) rnorm += PetscRealPart(PetscConj(f[i]) * f[i]);
   }
   PetscCall(VecRestoreArrayRead(F, &f));
   PetscCall(VecRestoreArrayRead(snes->xl, &xl));
@@ -410,7 +410,7 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
   `SNESVISetComputeVariableBounds()` can be used to provide a function that computes the bounds. This should be used if you are using, for example, grid
   sequencing and need bounds set for a variety of vectors
 
-.seealso: [](sec_vi), `SNES`, `SNESVIGetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`, `'SNESSetType()`, `PETSC_NINFINITY`, `PETSC_INFINITY`
+.seealso: [](sec_vi), `SNES`, `SNESVIGetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`, `SNESSetType()`, `PETSC_NINFINITY`, `PETSC_INFINITY`
 @*/
 PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
 {
@@ -474,7 +474,7 @@ PetscErrorCode SNESVISetVariableBounds_VI(SNES snes, Vec xl, Vec xu)
   Note:
   These vectors are owned by the `SNESVI` and should not be destroyed by the caller
 
-.seealso: [](sec_vi), `SNES`, `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`, `'SNESSetType()`, `PETSC_NINFINITY`, `PETSC_INFINITY`
+.seealso: [](sec_vi), `SNES`, `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`, `SNESSetType()`, `PETSC_NINFINITY`, `PETSC_INFINITY`
 @*/
 PetscErrorCode SNESVIGetVariableBounds(SNES snes, Vec *xl, Vec *xu)
 {

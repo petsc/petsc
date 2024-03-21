@@ -161,7 +161,7 @@ int main(int argc, char **argv)
 
      test:
         suffix: 2
-        args: -splitreduction_async
+        args: -splitreduction_async -options_left no
 
      test:
         suffix: 2_cuda
@@ -185,7 +185,7 @@ int main(int argc, char **argv)
 
      test:
         suffix: 2_kokkos
-        args: -splitreduction_async -vec_type kokkos
+        args: -splitreduction_async -vec_type kokkos -options_left no
         requires: kokkos_kernels
 
      test:

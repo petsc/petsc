@@ -15,5 +15,5 @@ After 4 iterations Rayleigh quotient of residual is 0.005943
 General setup stage
 Adding candidate vector 2
 After 5 iterations residual norm is 0.000000
-  0 KSP Residual norm 2.8519 
+  0 KSP Residual norm 2.8519
   1 KSP Residual norm < 1.e-11

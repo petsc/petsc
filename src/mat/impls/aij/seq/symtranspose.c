@@ -108,13 +108,13 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A, MatReuse reuse, Mat *B)
   }
   PetscCall(PetscFree(atfill));
   PetscCall(MatSeqAIJRestoreArrayRead(A, &av));
-  if (reuse == MAT_REUSE_MATRIX) PetscCall(PetscObjectStateIncrease((PetscObject)(*B)));
+  if (reuse == MAT_REUSE_MATRIX) PetscCall(PetscObjectStateIncrease((PetscObject)*B));
 
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX || nonzerochange) {
     PetscCall(MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A), an, am, ati, atj, ata, &At));
     PetscCall(MatSetBlockSizes(At, PetscAbs(A->cmap->bs), PetscAbs(A->rmap->bs)));
     PetscCall(MatSetType(At, ((PetscObject)A)->type_name));
-    at          = (Mat_SeqAIJ *)(At->data);
+    at          = (Mat_SeqAIJ *)At->data;
     at->free_a  = PETSC_TRUE;
     at->free_ij = PETSC_TRUE;
     at->nonew   = 0;

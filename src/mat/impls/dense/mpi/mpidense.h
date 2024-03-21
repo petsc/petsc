@@ -38,7 +38,7 @@ typedef struct {
   /* The following variables are used for matrix-vector products */
   Vec       lvec;        /* local vector */
   PetscSF   Mvctx;       /* for mat-mult communications */
-  PetscBool roworiented; /* if true, row oriented input (default) */
+  PetscBool roworiented; /* if true, row-oriented input (default) */
 
   /* Support for MatDenseGetColumnVec and MatDenseGetSubMatrix */
   Mat                cmat;     /* matrix representation of a given subset of columns */

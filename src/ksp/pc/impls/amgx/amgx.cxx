@@ -174,7 +174,6 @@ static void print_callback(const char *msg, int length)
 static PetscErrorCode amgx_output_messages(PC_AMGX *amgx)
 {
   PetscFunctionBegin;
-
   // If AmgX output is enabled and we have a message, output it
   if (amgx->verbose && !amgx_output.empty()) {
     // Only a single rank to output the AmgX messages
@@ -183,7 +182,6 @@ static PetscErrorCode amgx_output_messages(PC_AMGX *amgx)
     // Note that all ranks clear their received output
     amgx_output.clear();
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -502,7 +500,7 @@ static PetscErrorCode PCSetFromOptions_AMGX(PC pc, PetscOptionItems *PetscOption
 
   // Set max levels
   PetscCall(PetscOptionsInt("-pc_amgx_max_levels", "AmgX AMG Max Level Count", "", amgx->max_levels, &amgx->max_levels, NULL));
-  amgx->cfg_contents += "amg:max_levels=100,";
+  amgx->cfg_contents += "amg:max_levels=" + std::to_string(amgx->max_levels) + ",";
 
   // Set dense LU num rows
   PetscCall(PetscOptionsInt("-pc_amgx_dense_lu_num_rows", "AmgX Dense LU Number of Rows", "", amgx->dense_lu_num_rows, &amgx->dense_lu_num_rows, NULL));

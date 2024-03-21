@@ -1,248 +1,248 @@
 0 TS dt 9.53674e-09 time 0.
-    0 SNES Function norm 9.947665379371e+10 
-    1 SNES Function norm 2.086955420507e+05 
-    2 SNES Function norm 2.003444993742e-02 
+    0 SNES Function norm 9.947665379371e+10
+    1 SNES Function norm 2.086955420507e+05
+    2 SNES Function norm 2.003444993742e-02
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 1 TS dt 9.53674e-09 time 9.53674e-09
-    0 SNES Function norm 2.147774905601e+08 
-    1 SNES Function norm 2.556880409818e+02 
-    2 SNES Function norm 8.579036000842e-05 
+    0 SNES Function norm 2.147774905601e+08
+    1 SNES Function norm 2.556880409818e+02
+    2 SNES Function norm 8.579036000842e-05
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 2 TS dt 9.53674e-09 time 1.90735e-08
-    0 SNES Function norm 4.850185001682e+07 
-    1 SNES Function norm 9.219788454882e+01 
-    2 SNES Function norm 3.558228313524e-05 
+    0 SNES Function norm 4.850185001682e+07
+    1 SNES Function norm 9.219788454882e+01
+    2 SNES Function norm 3.558228313524e-05
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 3 TS dt 9.53674e-09 time 2.86102e-08
-    0 SNES Function norm 2.895943650836e+07 
-    1 SNES Function norm 2.454640077898e+01 
-    2 SNES Function norm 5.957892065718e-06 
+    0 SNES Function norm 2.895943650836e+07
+    1 SNES Function norm 2.454640077898e+01
+    2 SNES Function norm 5.957892065718e-06
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 4 TS dt 9.53674e-09 time 3.8147e-08
-    0 SNES Function norm 2.099660738010e+07 
-    1 SNES Function norm 1.327892471854e+01 
-    2 SNES Function norm 5.877171703439e-06 
+    0 SNES Function norm 2.099660738010e+07
+    1 SNES Function norm 1.327892471854e+01
+    2 SNES Function norm 5.877171703439e-06
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 5 TS dt 9.53674e-09 time 4.76837e-08
-    0 SNES Function norm 1.661640794615e+07 
-    1 SNES Function norm 1.036148644900e+01 
-    2 SNES Function norm 2.824782958779e-06 
+    0 SNES Function norm 1.661640794615e+07
+    1 SNES Function norm 1.036148644900e+01
+    2 SNES Function norm 2.824782958779e-06
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 6 TS dt 9.53674e-09 time 5.72204e-08
-    0 SNES Function norm 1.382351119437e+07 
-    1 SNES Function norm 8.052479747199e+00 
-    2 SNES Function norm 2.024510897898e-06 
+    0 SNES Function norm 1.382351119437e+07
+    1 SNES Function norm 8.052479747199e+00
+    2 SNES Function norm 2.024510897898e-06
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 7 TS dt 9.53674e-09 time 6.67572e-08
-    0 SNES Function norm 1.186891061915e+07 
-    1 SNES Function norm 6.354533139517e+00 
-    2 SNES Function norm 1.527933826697e-06 
+    0 SNES Function norm 1.186891061915e+07
+    1 SNES Function norm 6.354533139517e+00
+    2 SNES Function norm 1.527933826697e-06
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 8 TS dt 9.53674e-09 time 7.62939e-08
-    0 SNES Function norm 1.041007671313e+07 
-    1 SNES Function norm 6.598852553085e+00 
-    2 SNES Function norm 1.583828549978e-06 
+    0 SNES Function norm 1.041007671313e+07
+    1 SNES Function norm 6.598852553085e+00
+    2 SNES Function norm 1.583828549978e-06
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 9 TS dt 9.53674e-09 time 8.58307e-08
-    0 SNES Function norm 9.271937514663e+06 
-    1 SNES Function norm 6.334008385245e+00 
-    2 SNES Function norm 6.877962519925e-07 
+    0 SNES Function norm 9.271937514663e+06
+    1 SNES Function norm 6.334008385245e+00
+    2 SNES Function norm 6.877962519925e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 10 TS dt 9.53674e-09 time 9.53674e-08
-    0 SNES Function norm 8.357224642222e+06 
-    1 SNES Function norm 1.434548308131e+00 
-    2 SNES Function norm 3.993899602178e-07 
+    0 SNES Function norm 8.357224642222e+06
+    1 SNES Function norm 1.434548308131e+00
+    2 SNES Function norm 3.993899602178e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 11 TS dt 9.53674e-09 time 1.04904e-07
-    0 SNES Function norm 7.607380759673e+06 
-    1 SNES Function norm 3.721589236927e+00 
-    2 SNES Function norm 1.269472631671e-07 
+    0 SNES Function norm 7.607380759673e+06
+    1 SNES Function norm 3.721589236927e+00
+    2 SNES Function norm 1.269472631671e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 12 TS dt 9.53674e-09 time 1.14441e-07
-    0 SNES Function norm 6.984241662723e+06 
-    1 SNES Function norm 3.939600564011e-02 
+    0 SNES Function norm 6.984241662723e+06
+    1 SNES Function norm 3.939600564011e-02
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 13 TS dt 9.53674e-09 time 1.23978e-07
-    0 SNES Function norm 6.461105801095e+06 
-    1 SNES Function norm 3.581840830123e-01 
-    2 SNES Function norm 1.123908709373e-07 
+    0 SNES Function norm 6.461105801095e+06
+    1 SNES Function norm 3.581840830123e-01
+    2 SNES Function norm 1.123908709373e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 14 TS dt 9.53674e-09 time 1.33514e-07
-    0 SNES Function norm 6.018222870931e+06 
-    1 SNES Function norm 2.067654164840e-02 
+    0 SNES Function norm 6.018222870931e+06
+    1 SNES Function norm 2.067654164840e-02
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 15 TS dt 9.53674e-09 time 1.43051e-07
-    0 SNES Function norm 5.640407331906e+06 
-    1 SNES Function norm 1.388776895299e+00 
-    2 SNES Function norm 2.294700071573e-07 
+    0 SNES Function norm 5.640407331906e+06
+    1 SNES Function norm 1.388776895299e+00
+    2 SNES Function norm 2.294700071573e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 16 TS dt 9.53674e-09 time 1.52588e-07
-    0 SNES Function norm 5.315693785384e+06 
-    1 SNES Function norm 1.275736374625e+00 
-    2 SNES Function norm 2.463880806114e-07 
+    0 SNES Function norm 5.315693785384e+06
+    1 SNES Function norm 1.275736374625e+00
+    2 SNES Function norm 2.463880806114e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 17 TS dt 9.53674e-09 time 1.62125e-07
-    0 SNES Function norm 5.034517421613e+06 
-    1 SNES Function norm 1.205578430046e+00 
-    2 SNES Function norm 2.728252401277e-07 
+    0 SNES Function norm 5.034517421613e+06
+    1 SNES Function norm 1.205578430046e+00
+    2 SNES Function norm 2.728252401277e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 18 TS dt 9.53674e-09 time 1.71661e-07
-    0 SNES Function norm 4.789170959252e+06 
-    1 SNES Function norm 1.073923733153e+00 
-    2 SNES Function norm 1.142276897053e-07 
+    0 SNES Function norm 4.789170959252e+06
+    1 SNES Function norm 1.073923733153e+00
+    2 SNES Function norm 1.142276897053e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 19 TS dt 9.53674e-09 time 1.81198e-07
-    0 SNES Function norm 4.573416983663e+06 
-    1 SNES Function norm 2.484485538110e-01 
-    2 SNES Function norm 1.050635898844e-07 
+    0 SNES Function norm 4.573416983663e+06
+    1 SNES Function norm 2.484485538110e-01
+    2 SNES Function norm 1.050635898844e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 20 TS dt 9.53674e-09 time 1.90735e-07
-    0 SNES Function norm 4.382195381775e+06 
-    1 SNES Function norm 1.054337891901e-01 
-    2 SNES Function norm 1.102819289377e-07 
+    0 SNES Function norm 4.382195381775e+06
+    1 SNES Function norm 1.054337891901e-01
+    2 SNES Function norm 1.102819289377e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 21 TS dt 9.53674e-09 time 2.00272e-07
-    0 SNES Function norm 4.211394537673e+06 
-    1 SNES Function norm 9.454721645518e-02 
-    2 SNES Function norm 1.086366060852e-07 
+    0 SNES Function norm 4.211394537673e+06
+    1 SNES Function norm 9.454721645518e-02
+    2 SNES Function norm 1.086366060852e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 22 TS dt 9.53674e-09 time 2.09808e-07
-    0 SNES Function norm 4.057668823237e+06 
-    1 SNES Function norm 8.433180147299e-01 
-    2 SNES Function norm 1.699131520773e-07 
+    0 SNES Function norm 4.057668823237e+06
+    1 SNES Function norm 8.433180147299e-01
+    2 SNES Function norm 1.699131520773e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 23 TS dt 9.53674e-09 time 2.19345e-07
-    0 SNES Function norm 3.918291656591e+06 
-    1 SNES Function norm 9.090972647348e-01 
-    2 SNES Function norm 1.712395964112e-07 
+    0 SNES Function norm 3.918291656591e+06
+    1 SNES Function norm 9.090972647348e-01
+    2 SNES Function norm 1.712395964112e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 24 TS dt 9.53674e-09 time 2.28882e-07
-    0 SNES Function norm 3.791036809423e+06 
-    1 SNES Function norm 7.671973089364e-01 
-    2 SNES Function norm 2.500848170430e-07 
+    0 SNES Function norm 3.791036809423e+06
+    1 SNES Function norm 7.671973089364e-01
+    2 SNES Function norm 2.500848170430e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 25 TS dt 9.53674e-09 time 2.38418e-07
-    0 SNES Function norm 3.674082512009e+06 
-    1 SNES Function norm 7.743449763252e-01 
-    2 SNES Function norm 2.450849945079e-07 
+    0 SNES Function norm 3.674082512009e+06
+    1 SNES Function norm 7.743449763252e-01
+    2 SNES Function norm 2.450849945079e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 26 TS dt 9.53674e-09 time 2.47955e-07
-    0 SNES Function norm 3.565934058270e+06 
-    1 SNES Function norm 7.989970317548e-01 
-    2 SNES Function norm 1.150856286571e-07 
+    0 SNES Function norm 3.565934058270e+06
+    1 SNES Function norm 7.989970317548e-01
+    2 SNES Function norm 1.150856286571e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 27 TS dt 9.53674e-09 time 2.57492e-07
-    0 SNES Function norm 3.465361423549e+06 
-    1 SNES Function norm 1.826043797599e-01 
-    2 SNES Function norm 1.082344359716e-07 
+    0 SNES Function norm 3.465361423549e+06
+    1 SNES Function norm 1.826043797599e-01
+    2 SNES Function norm 1.082344359716e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 28 TS dt 9.53674e-09 time 2.67029e-07
-    0 SNES Function norm 3.371349036063e+06 
-    1 SNES Function norm 6.225812530477e-01 
-    2 SNES Function norm 1.422021339940e-07 
+    0 SNES Function norm 3.371349036063e+06
+    1 SNES Function norm 6.225812530477e-01
+    2 SNES Function norm 1.422021339940e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 29 TS dt 9.53674e-09 time 2.76565e-07
-    0 SNES Function norm 3.283055357288e+06 
-    1 SNES Function norm 6.182759397147e-01 
-    2 SNES Function norm 1.994084375831e-07 
+    0 SNES Function norm 3.283055357288e+06
+    1 SNES Function norm 6.182759397147e-01
+    2 SNES Function norm 1.994084375831e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 30 TS dt 9.53674e-09 time 2.86102e-07
-    0 SNES Function norm 3.199780356244e+06 
-    1 SNES Function norm 7.380030627300e-01 
-    2 SNES Function norm 2.309213798907e-07 
+    0 SNES Function norm 3.199780356244e+06
+    1 SNES Function norm 7.380030627300e-01
+    2 SNES Function norm 2.309213798907e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 31 TS dt 9.53674e-09 time 2.95639e-07
-    0 SNES Function norm 3.120939322236e+06 
-    1 SNES Function norm 7.524973253224e-01 
-    2 SNES Function norm 1.951524399205e-07 
+    0 SNES Function norm 3.120939322236e+06
+    1 SNES Function norm 7.524973253224e-01
+    2 SNES Function norm 1.951524399205e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 32 TS dt 9.53674e-09 time 3.05176e-07
-    0 SNES Function norm 3.046041759409e+06 
-    1 SNES Function norm 5.270028041672e-01 
-    2 SNES Function norm 1.439120817140e-07 
+    0 SNES Function norm 3.046041759409e+06
+    1 SNES Function norm 5.270028041672e-01
+    2 SNES Function norm 1.439120817140e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 33 TS dt 9.53674e-09 time 3.14712e-07
-    0 SNES Function norm 2.974674352609e+06 
-    1 SNES Function norm 4.945587081197e-01 
-    2 SNES Function norm 1.288061313245e-07 
+    0 SNES Function norm 2.974674352609e+06
+    1 SNES Function norm 4.945587081197e-01
+    2 SNES Function norm 1.288061313245e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 34 TS dt 9.53674e-09 time 3.24249e-07
-    0 SNES Function norm 2.906487194736e+06 
-    1 SNES Function norm 4.981812208161e-01 
-    2 SNES Function norm 1.221346861949e-07 
+    0 SNES Function norm 2.906487194736e+06
+    1 SNES Function norm 4.981812208161e-01
+    2 SNES Function norm 1.221346861949e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 35 TS dt 9.53674e-09 time 3.33786e-07
-    0 SNES Function norm 2.841182628334e+06 
-    1 SNES Function norm 1.506528481805e-01 
-    2 SNES Function norm 1.041347087605e-07 
+    0 SNES Function norm 2.841182628334e+06
+    1 SNES Function norm 1.506528481805e-01
+    2 SNES Function norm 1.041347087605e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 36 TS dt 9.53674e-09 time 3.43323e-07
-    0 SNES Function norm 2.778506184778e+06 
-    1 SNES Function norm 1.927335560342e-01 
-    2 SNES Function norm 1.019945607705e-07 
+    0 SNES Function norm 2.778506184778e+06
+    1 SNES Function norm 1.927335560342e-01
+    2 SNES Function norm 1.019945607705e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 37 TS dt 9.53674e-09 time 3.52859e-07
-    0 SNES Function norm 2.718239208984e+06 
-    1 SNES Function norm 5.140119780126e-01 
-    2 SNES Function norm 1.375678210623e-07 
+    0 SNES Function norm 2.718239208984e+06
+    1 SNES Function norm 5.140119780126e-01
+    2 SNES Function norm 1.375678210623e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 38 TS dt 9.53674e-09 time 3.62396e-07
-    0 SNES Function norm 2.660192840944e+06 
-    1 SNES Function norm 4.292317896499e-01 
-    2 SNES Function norm 1.308695411330e-07 
+    0 SNES Function norm 2.660192840944e+06
+    1 SNES Function norm 4.292317896499e-01
+    2 SNES Function norm 1.308695411330e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 39 TS dt 9.53674e-09 time 3.71933e-07
-    0 SNES Function norm 2.604203091695e+06 
-    1 SNES Function norm 4.165570120814e-01 
-    2 SNES Function norm 1.475295311961e-07 
+    0 SNES Function norm 2.604203091695e+06
+    1 SNES Function norm 4.165570120814e-01
+    2 SNES Function norm 1.475295311961e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 40 TS dt 9.53674e-09 time 3.8147e-07
-    0 SNES Function norm 2.550126804028e+06 
-    1 SNES Function norm 4.201265543726e-01 
-    2 SNES Function norm 1.297315801554e-07 
+    0 SNES Function norm 2.550126804028e+06
+    1 SNES Function norm 4.201265543726e-01
+    2 SNES Function norm 1.297315801554e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 41 TS dt 9.53674e-09 time 3.91006e-07
-    0 SNES Function norm 2.497838330114e+06 
-    1 SNES Function norm 4.025051326051e-01 
-    2 SNES Function norm 1.927566236868e-07 
+    0 SNES Function norm 2.497838330114e+06
+    1 SNES Function norm 4.025051326051e-01
+    2 SNES Function norm 1.927566236868e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 42 TS dt 9.53674e-09 time 4.00543e-07
-    0 SNES Function norm 2.447226791432e+06 
-    1 SNES Function norm 4.263636251092e-01 
-    2 SNES Function norm 1.396439565961e-07 
+    0 SNES Function norm 2.447226791432e+06
+    1 SNES Function norm 4.263636251092e-01
+    2 SNES Function norm 1.396439565961e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 43 TS dt 9.53674e-09 time 4.1008e-07
-    0 SNES Function norm 2.398193812879e+06 
-    1 SNES Function norm 3.738511084610e-01 
-    2 SNES Function norm 1.076771072157e-07 
+    0 SNES Function norm 2.398193812879e+06
+    1 SNES Function norm 3.738511084610e-01
+    2 SNES Function norm 1.076771072157e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 44 TS dt 9.53674e-09 time 4.19617e-07
-    0 SNES Function norm 2.350651643938e+06 
-    1 SNES Function norm 2.011201908542e-02 
+    0 SNES Function norm 2.350651643938e+06
+    1 SNES Function norm 2.011201908542e-02
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 45 TS dt 9.53674e-09 time 4.29153e-07
-    0 SNES Function norm 2.304521596468e+06 
-    1 SNES Function norm 4.331524121334e-02 
-    2 SNES Function norm 1.065898722219e-07 
+    0 SNES Function norm 2.304521596468e+06
+    1 SNES Function norm 4.331524121334e-02
+    2 SNES Function norm 1.065898722219e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 46 TS dt 9.53674e-09 time 4.3869e-07
-    0 SNES Function norm 2.259732743211e+06 
-    1 SNES Function norm 3.261327166481e-01 
-    2 SNES Function norm 9.814828980728e-08 
+    0 SNES Function norm 2.259732743211e+06
+    1 SNES Function norm 3.261327166481e-01
+    2 SNES Function norm 9.814828980728e-08
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 47 TS dt 9.53674e-09 time 4.48227e-07
-    0 SNES Function norm 2.216220827780e+06 
-    1 SNES Function norm 3.999923739451e-02 
-    2 SNES Function norm 9.655004958385e-08 
+    0 SNES Function norm 2.216220827780e+06
+    1 SNES Function norm 3.999923739451e-02
+    2 SNES Function norm 9.655004958385e-08
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 48 TS dt 9.53674e-09 time 4.57764e-07
-    0 SNES Function norm 2.173927353920e+06 
-    1 SNES Function norm 2.886159503486e-01 
-    2 SNES Function norm 1.093751349023e-07 
+    0 SNES Function norm 2.173927353920e+06
+    1 SNES Function norm 2.886159503486e-01
+    2 SNES Function norm 1.093751349023e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 49 TS dt 9.53674e-09 time 4.673e-07
-    0 SNES Function norm 2.132798817926e+06 
-    1 SNES Function norm 2.095994130157e-01 
-    2 SNES Function norm 1.035328260408e-07 
+    0 SNES Function norm 2.132798817926e+06
+    1 SNES Function norm 2.095994130157e-01
+    2 SNES Function norm 1.035328260408e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 50 TS dt 9.53674e-09 time 4.76837e-07

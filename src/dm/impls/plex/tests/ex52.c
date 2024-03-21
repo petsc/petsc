@@ -5,10 +5,10 @@ const char help[] = "Test clearing stale AMR data (example contributed by Berend
 
 PetscErrorCode CloneDMWithNewSection(DM OriginalDM, DM *NewDM, PetscInt NFields)
 {
-  PetscFunctionBegin;
-
   PetscSection section;
   PetscInt    *NumComp, *NumDof;
+
+  PetscFunctionBegin;
   PetscCall(DMClone(OriginalDM, NewDM));
   PetscCall(DMPlexDistributeSetDefault(*NewDM, PETSC_FALSE));
   PetscCall(DMClearDS(*NewDM));
@@ -26,28 +26,26 @@ PetscErrorCode CloneDMWithNewSection(DM OriginalDM, DM *NewDM, PetscInt NFields)
   PetscCall(DMSetField(*NewDM, 0, NULL, (PetscObject)fe));
   PetscCall(PetscFEDestroy(&fe));
   PetscCall(DMCreateDS(*NewDM));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
 {
-  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-  MPI_Comm       comm            = PETSC_COMM_WORLD;
   PetscInt       dim             = 2;
   PetscInt       cells_per_dir[] = {1, 1};
   PetscReal      dir_min[]       = {0.0, 0.0};
   PetscReal      dir_max[]       = {1.0, 1.0};
   DMBoundaryType bcs[]           = {DM_BOUNDARY_NONE, DM_BOUNDARY_NONE};
-  DM             forest;
-  DM             NewDM;
+  DM             forest, plex, NewDM;
   Vec            NewDMVecGlobal, NewDMVecLocal;
 
-  PetscCall(DMCreate(comm, &forest));
+  PetscFunctionBeginUser;
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(DMCreate(PETSC_COMM_WORLD, &forest));
   PetscCall(DMSetType(forest, DMP4EST));
   {
     DM dm_base;
-    PetscCall(DMPlexCreateBoxMesh(comm, dim, /* simplex */ PETSC_FALSE, cells_per_dir, dir_min, dir_max, bcs, /* interpolate */ PETSC_TRUE, &dm_base));
+    PetscCall(DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, /* simplex */ PETSC_FALSE, cells_per_dir, dir_min, dir_max, bcs, /* interpolate */ PETSC_TRUE, &dm_base));
     PetscCall(DMSetFromOptions(dm_base));
     PetscCall(DMViewFromOptions(dm_base, NULL, "-dm_base_view"));
     PetscCall(DMCopyFields(dm_base, forest));
@@ -58,7 +56,6 @@ int main(int argc, char **argv)
   PetscCall(DMSetUp(forest));
 
   PetscCall(DMViewFromOptions(forest, NULL, "-dm_forest_view"));
-  DM plex;
 
   PetscCall(DMConvert(forest, DMPLEX, &plex));
 
@@ -80,7 +77,7 @@ int main(int argc, char **argv)
   PetscCall(PetscSectionDestroy(&section));
 
   PetscFE fe;
-  PetscCall(PetscFECreateDefault(comm, dim, 1, PETSC_FALSE, NULL, PETSC_DEFAULT, &fe));
+  PetscCall(PetscFECreateDefault(PETSC_COMM_WORLD, dim, 1, PETSC_FALSE, NULL, PETSC_DEFAULT, &fe));
   for (PetscInt i = 0; i < numFields; i++) {
     PetscCall(DMSetField(plex, i, NULL, (PetscObject)fe));
     PetscCall(DMSetField(forest, i, NULL, (PetscObject)fe));

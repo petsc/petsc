@@ -127,8 +127,8 @@ PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *q)
 {
   PetscFunctionBegin;
   if (!*q) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*q), PETSCQUADRATURE_CLASSID, 1);
-  if (--((PetscObject)(*q))->refct > 0) {
+  PetscValidHeaderSpecific(*q, PETSCQUADRATURE_CLASSID, 1);
+  if (--((PetscObject)*q)->refct > 0) {
     *q = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -1556,7 +1556,6 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_Newton_Internal(PetscInt npoi
   PetscInt  k;
 
   PetscFunctionBegin;
-
   a1 = PetscPowReal(2.0, a + b + 1);
 #if defined(PETSC_HAVE_LGAMMA)
   {
@@ -2936,7 +2935,7 @@ PetscErrorCode PetscGaussLobattoLegendreIntegrate(PetscInt n, PetscReal *nodes, 
   Notes:
   Destroy this with `PetscGaussLobattoLegendreElementLaplacianDestroy()`
 
-  You can access entries in this array with AA[i][j] but in memory it is stored in contiguous memory, row oriented (the array is symmetric)
+  You can access entries in this array with AA[i][j] but in memory it is stored in contiguous memory, row-oriented (the array is symmetric)
 
 .seealso: `PetscDTGaussLobattoLegendreQuadrature()`, `PetscGaussLobattoLegendreElementLaplacianDestroy()`
 @*/
@@ -3056,7 +3055,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementLaplacianDestroy(PetscInt n, Pets
   Notes:
   Destroy this with `PetscGaussLobattoLegendreElementGradientDestroy()`
 
-  You can access entries in these arrays with AA[i][j] but in memory it is stored in contiguous memory, row oriented
+  You can access entries in these arrays with AA[i][j] but in memory it is stored in contiguous memory, row-oriented
 
 .seealso: `PetscDTGaussLobattoLegendreQuadrature()`, `PetscGaussLobattoLegendreElementLaplacianDestroy()`, `PetscGaussLobattoLegendreElementGradientDestroy()`
 @*/
@@ -3147,7 +3146,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementGradientDestroy(PetscInt n, Petsc
 
   This is the same as the Gradient operator multiplied by the diagonal mass matrix
 
-  You can access entries in this array with AA[i][j] but in memory it is stored in contiguous memory, row oriented
+  You can access entries in this array with AA[i][j] but in memory it is stored in contiguous memory, row-oriented
 
 .seealso: `PetscDTGaussLobattoLegendreQuadrature()`, `PetscGaussLobattoLegendreElementLaplacianCreate()`, `PetscGaussLobattoLegendreElementAdvectionDestroy()`
 @*/

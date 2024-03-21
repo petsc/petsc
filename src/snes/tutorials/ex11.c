@@ -53,7 +53,7 @@ See https://petsc.org/release/manual/fe the and the paper "Achieving High Perfor
 #include <petscsnes.h>
 #include <petscds.h>
 
-/* The f_0 function: we read the right hand side from the first field of the auxiliary data */
+/* The f_0 function: we read the right-hand side from the first field of the auxiliary data */
 static void f_0(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
   const PetscScalar g = a[0];
@@ -378,7 +378,7 @@ static PetscErrorCode SetupProblem(DM dm, DM fdm, AppCtx *user)
   }
 
   /* Iterate on coarser mesh if present */
-  if (!user->p4est) PetscCall(DMGetCoarseDM(dm, &cdm));
+  PetscCall(DMGetCoarseDM(dm, &cdm));
   if (cdm) PetscCall(SetupProblem(cdm, dm, user));
 
   PetscCall(PetscFEDestroy(&fe));

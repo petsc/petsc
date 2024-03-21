@@ -28,7 +28,7 @@ PetscErrorCode MatIncreaseOverlapSplit_Single(Mat mat, IS *is, PetscInt ov)
   /* get a sub communicator before call individual MatIncreaseOverlap
    * since the sub communicator may be changed.
    * */
-  PetscCall(PetscObjectGetComm((PetscObject)(*is), &dcomm));
+  PetscCall(PetscObjectGetComm((PetscObject)*is, &dcomm));
   /* make a copy before the original one is deleted */
   PetscCall(PetscCommDuplicate(dcomm, &scomm, NULL));
   /* get a global communicator, where mat should be a global matrix  */
@@ -160,7 +160,7 @@ PetscErrorCode MatIncreaseOverlapSplit_Single(Mat mat, IS *is, PetscInt ov)
   PetscCall(MatPartitioningSetFromOptions(part));
   PetscCall(MatPartitioningApply(part, &partitioning));
   PetscCall(MatPartitioningDestroy(&part));
-  PetscCall(MatDestroy(&(smat[0])));
+  PetscCall(MatDestroy(&smat[0]));
   PetscCall(PetscFree(smat));
   /* get local rows including  overlap */
   PetscCall(ISBuildTwoSided(partitioning, is_sc, is));

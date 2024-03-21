@@ -47,8 +47,7 @@ static void CholmodErrorHandler(int status, const char *file, int line, const ch
 #define CHOLMOD_OPTION_SIZE_T(name, help) \
   do { \
     PetscReal tmp = (PetscInt)c->name; \
-    PetscCall(PetscOptionsReal("-mat_cholmod_" #name, help, "None", tmp, &tmp, NULL)); \
-    PetscCheck(tmp >= 0, PetscObjectComm((PetscObject)F), PETSC_ERR_ARG_OUTOFRANGE, "value must be positive"); \
+    PetscCall(PetscOptionsBoundedReal("-mat_cholmod_" #name, help, "None", tmp, &tmp, NULL, 0.0)); \
     c->name = (size_t)tmp; \
   } while (0)
 

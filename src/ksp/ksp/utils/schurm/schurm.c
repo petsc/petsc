@@ -805,7 +805,7 @@ static PetscErrorCode MatSchurComplementGetPmat_Basic(Mat S, MatReuse preuse, Ma
   Level: advanced
 
   Notes:
-  The approximation of Sp depends on the the argument passed to to `MatSchurComplementSetAinvType()`
+  The approximation of Sp depends on the argument passed to `MatSchurComplementSetAinvType()`
   `MAT_SCHUR_COMPLEMENT_AINV_DIAG`, `MAT_SCHUR_COMPLEMENT_AINV_LUMP`, `MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG`, or `MAT_SCHUR_COMPLEMENT_AINV_FULL`
   -mat_schur_complement_ainv_type <diag,lump,blockdiag,full>
 

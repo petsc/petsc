@@ -56,7 +56,7 @@ double MPI_Wtime(void)
   dTime = dHigh*(double)FACTOR + (double)CurTime.u.LowPart - (double)StartTime.u.LowPart;
   */
   ptime = (double)SecInTick * dTime;
-  return (ptime);
+  return ptime;
 }
 
 /* ------------------------------------------------------------------

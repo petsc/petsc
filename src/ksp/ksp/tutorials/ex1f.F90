@@ -17,7 +17,8 @@ subroutine MyKSPConverged(ksp,n,rnorm,flag,defaultctx,ierr)
        PetscReal rnorm
 
        ! Must call default convergence test on the 0th iteration
-       call KSPConvergedDefault(ksp, n, rnorm, flag, defaultctx, ierr)
+       PetscCall(KSPConvergedDefault(ksp, n, rnorm, flag, defaultctx, ierr))
+       return
        end subroutine MyKSPConverged
 
       program main
@@ -34,7 +35,7 @@ subroutine MyKSPConverged(ksp,n,rnorm,flag,defaultctx,ierr)
 !     ksp     - linear solver context
 !     ksp      - Krylov subspace method context
 !     pc       - preconditioner context
-!     x, b, u  - approx solution, right-hand-side, exact solution vectors
+!     x, b, u  - approx solution, right-hand side, exact solution vectors
 !     A        - matrix that defines linear system
 !     its      - iterations for convergence
 !     norm     - norm of error in solution
@@ -137,8 +138,8 @@ subroutine MyKSPConverged(ksp,n,rnorm,flag,defaultctx,ierr)
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the preconditioning matrix.
 
-      call KSPConvergedDefaultCreate(defaultctx,ierr)
-      call KSPSetConvergenceTest(ksp, MyKSPConverged, defaultctx, KSPConvergedDefaultDestroy, ierr)
+      PetscCallA(KSPConvergedDefaultCreate(defaultctx, ierr))
+      PetscCallA(KSPSetConvergenceTest(ksp, MyKSPConverged, defaultctx, KSPConvergedDefaultDestroy, ierr))
 
       PetscCallA(KSPSetOperators(ksp,A,A,ierr))
 

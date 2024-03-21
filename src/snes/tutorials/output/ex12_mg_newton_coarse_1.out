@@ -43,7 +43,7 @@ Labels:
           Labels:
             marker: 4 strata with value/size (1 (5), 4 (5), 2 (5), 3 (2))
             depth: 3 strata with value/size (0 (26), 1 (58), 2 (33))
-  0 SNES Function norm 3.538058091867e+00 
+  0 SNES Function norm 3.538058091867e+00
       Residual norms for mg_levels_2_ solve.
       0 KSP none resid norm 6.684008878137e-01 true resid norm 2.369800283865e+00 ||r(i)||/||b|| 6.698025364005e-01
       1 KSP none resid norm 4.919051758707e-01 true resid norm 1.446688201971e+00 ||r(i)||/||b|| 4.088932867712e-01
@@ -191,7 +191,7 @@ KSP Object: 1 MPI process
   type: richardson
     damping factor=1.
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+  tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
 PC Object: 1 MPI process
@@ -203,7 +203,7 @@ PC Object: 1 MPI process
     KSP Object: (mg_coarse_) 1 MPI process
       type: preonly
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (mg_coarse_) 1 MPI process
@@ -239,12 +239,12 @@ PC Object: 1 MPI process
             restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
             happy breakdown tolerance 1e-30
           maximum iterations=10, initial guess is zero
-          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+          tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
-        estimating eigenvalues using noisy right hand side
+        estimating eigenvalues using a noisy random number generated right-hand side
       maximum iterations=2, nonzero initial guess
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (mg_levels_1_) 1 MPI process
@@ -270,12 +270,12 @@ PC Object: 1 MPI process
             restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
             happy breakdown tolerance 1e-30
           maximum iterations=10, initial guess is zero
-          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+          tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
-        estimating eigenvalues using noisy right hand side
+        estimating eigenvalues using a noisy random number generated right-hand side
       maximum iterations=2, nonzero initial guess
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (mg_levels_2_) 1 MPI process
@@ -296,6 +296,6 @@ PC Object: 1 MPI process
     total: nonzeros=28606, allocated nonzeros=28606
     total number of mallocs used during MatSetValues calls=0
       not using I-node routines
-  1 SNES Function norm 4.165180020529e-11 
+  1 SNES Function norm 4.165180020529e-11
 L_2 Error: 1.8925
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1

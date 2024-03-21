@@ -1,8 +1,8 @@
-  0 KSP Residual norm 1.276932087292e+01 
-  1 KSP Residual norm 1.377026454827e-02 
-  2 KSP Residual norm 1.323253225902e-02 
-  3 KSP Residual norm 2.743244389968e-03 
-  4 KSP Residual norm 1.344914988772e-05 
+  0 KSP Residual norm 1.276932087292e+01
+  1 KSP Residual norm 1.377026454827e-02
+  2 KSP Residual norm 1.323253225902e-02
+  3 KSP Residual norm 2.743244389968e-03
+  4 KSP Residual norm 1.344914988772e-05
 PC Object: 4 MPI processes
   type: ksp
     KSP and PC on KSP preconditioner follow
@@ -12,7 +12,7 @@ PC Object: 4 MPI processes
         restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
         happy breakdown tolerance 1e-30
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using PRECONDITIONED norm type for convergence test
     PC Object: 4 MPI processes
@@ -32,7 +32,7 @@ PC Object: 4 MPI processes
             KSP Object: (fieldsplit_1_pc_hpddm_levels_1_) 4 MPI processes
               type: preonly
               maximum iterations=10000, initial guess is zero
-              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
               left preconditioning
               using NONE norm type for convergence test
             PC Object: (fieldsplit_1_pc_hpddm_levels_1_) 4 MPI processes
@@ -60,7 +60,7 @@ PC Object: 4 MPI processes
                 KSP Object: (fieldsplit_1_pc_hpddm_levels_1_sub_) 1 MPI process
                   type: preonly
                   maximum iterations=10000, initial guess is zero
-                  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
                   left preconditioning
                   using NONE norm type for convergence test
                 PC Object: 1 MPI process
@@ -104,7 +104,7 @@ PC Object: 4 MPI processes
               KSP Object: (fieldsplit_1_pc_hpddm_coarse_) 2 MPI processes
                 type: preonly
                 maximum iterations=10000, initial guess is zero
-                tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
                 left preconditioning
                 using NONE norm type for convergence test
               PC Object: (fieldsplit_1_pc_hpddm_coarse_) 2 MPI processes
@@ -113,7 +113,7 @@ PC Object: 4 MPI processes
                   KSP Object: (fieldsplit_1_pc_hpddm_coarse_redundant_) 1 MPI process
                     type: preonly
                     maximum iterations=10000, initial guess is zero
-                    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                    tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
                     left preconditioning
                     using NONE norm type for convergence test
                   PC Object: (fieldsplit_1_pc_hpddm_coarse_redundant_) 1 MPI process

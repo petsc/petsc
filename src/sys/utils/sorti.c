@@ -1068,11 +1068,9 @@ PetscErrorCode PetscMergeMPIIntArray(PetscInt an, const PetscMPIInt aI[], PetscI
   for (ai = 0, bi = 0, k = 0; ai < an || bi < bn;) {
     PetscInt t = -1;
     for (; ai < an && (!bn || aI[ai] <= bI[bi]); ai++) (*L)[k++] = t = aI[ai];
-    for (; bi < bn && bI[bi] == t; bi++)
-      ;
+    for (; bi < bn && bI[bi] == t; bi++);
     for (; bi < bn && (!an || bI[bi] <= aI[ai]); bi++) (*L)[k++] = t = bI[bi];
-    for (; ai < an && aI[ai] == t; ai++)
-      ;
+    for (; ai < an && aI[ai] == t; ai++);
   }
   *n = k;
   PetscFunctionReturn(PETSC_SUCCESS);

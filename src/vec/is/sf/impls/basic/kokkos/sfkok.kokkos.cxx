@@ -213,7 +213,7 @@ static KOKKOS_INLINE_FUNCTION PetscInt MapTidToIndex(const PetscInt *opt, PetscI
   j = (m - k * dx[r] * dy[r]) / dx[r];
   i = m - k * dx[r] * dy[r] - j * dx[r];
 
-  return (start[r] + k * X[r] * Y[r] + j * X[r] + i);
+  return start[r] + k * X[r] * Y[r] + j * X[r] + i;
 }
 
 /*====================================================================================*/
@@ -567,6 +567,7 @@ static PetscErrorCode PetscSFLinkSyncDevice_Kokkos(PetscSFLink PETSC_UNUSED link
 static PetscErrorCode PetscSFLinkSyncStream_Kokkos(PetscSFLink PETSC_UNUSED link)
 {
   DeviceExecutionSpace &exec = PetscGetKokkosExecutionSpace();
+
   PetscFunctionBegin;
   exec.fence();
   PetscFunctionReturn(PETSC_SUCCESS);

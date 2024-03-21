@@ -1182,7 +1182,7 @@ cdef class TAO(Object):
 
         See Also
         --------
-        getMonitor, petsc.TaoSetMonitor
+        getMonitor, petsc.TaoMonitorSet
 
         """
         if monitor is None: return
@@ -1190,7 +1190,7 @@ cdef class TAO(Object):
         if args  is None: args  = ()
         if kargs is None: kargs = {}
         if monitorlist is None:
-            CHKERR( TaoSetMonitor(self.tao, TAO_Monitor, NULL, NULL) )
+            CHKERR( TaoMonitorSet(self.tao, TAO_Monitor, NULL, NULL) )
             self.set_attr('__monitor__',  [(monitor, args, kargs)])
         else:
             monitorlist.append((monitor, args, kargs))

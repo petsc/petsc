@@ -114,15 +114,15 @@
 
 typedef khiter_t PetscHashIter;
 
-#define PetscHashIterAtEnd(ht, i) ((i) == kh_end((ht)))
+#define PetscHashIterAtEnd(ht, i) ((i) == kh_end(ht))
 
-#define PetscHashIterAtBegin(ht, i) ((i) == kh_begin((ht)))
+#define PetscHashIterAtBegin(ht, i) ((i) == kh_begin(ht))
 
 #define PetscHashIterIncContinue(ht, it) (!PetscHashIterAtEnd((ht), (it)) && !kh_exist((ht), (it)))
 
 #define PetscHashIterBegin(ht, i) \
   do { \
-    PetscHashIter phib_it_ = kh_begin((ht)); \
+    PetscHashIter phib_it_ = kh_begin(ht); \
     if (PetscHashIterIncContinue((ht), phib_it_)) PetscHashIterNext((ht), phib_it_); \
     (i) = phib_it_; \
   } while (0)
@@ -132,7 +132,7 @@ typedef khiter_t PetscHashIter;
     ++(i); \
   } while (PetscHashIterIncContinue((ht), (i)))
 
-#define PetscHashIterEnd(ht, i) ((i) = kh_end((ht)))
+#define PetscHashIterEnd(ht, i) ((i) = kh_end(ht))
 
 #define PetscHashIterDecContinue(ht, it) (PetscHashIterAtEnd((ht), (it)) || (!PetscHashIterAtBegin((ht), (it)) && !kh_exist((ht), (it))))
 

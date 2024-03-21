@@ -326,8 +326,7 @@ static PetscErrorCode TSSetFromOptions_BasicSymplectic(TS ts, PetscOptionItems *
     PetscBool                 flg;
     const char              **namelist;
 
-    for (link = BasicSymplecticSchemeList, count = 0; link; link = link->next, count++)
-      ;
+    for (link = BasicSymplecticSchemeList, count = 0; link; link = link->next, count++);
     PetscCall(PetscMalloc1(count, (char ***)&namelist));
     for (link = BasicSymplecticSchemeList, count = 0; link; link = link->next, count++) namelist[count] = link->sch.name;
     PetscCall(PetscOptionsEList("-ts_basicsymplectic_type", "Family of basic symplectic integration method", "TSBasicSymplecticSetType", (const char *const *)namelist, count, bsymp->scheme->name, &choice, &flg));

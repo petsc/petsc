@@ -279,7 +279,6 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
   default:
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid solution type: %d", user->solType);
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -317,45 +316,21 @@ static PetscErrorCode SetupDiscretization(DM dm, PetscInt Nf, const char *names[
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode InitializeParticlesAndWeights(DM sw, AppCtx *user)
+static PetscErrorCode InitializeWeights(DM sw, AppCtx *user)
 {
-  DM           dm;
   PetscScalar *weight;
-  PetscInt     Np, Npc, p, dim, c, cStart, cEnd, q, *cellid;
+  PetscInt     Np;
   PetscReal    weightsum = 0.0;
-  PetscMPIInt  size, rank;
-  Parameter   *param;
 
   PetscFunctionBegin;
-  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)sw), &size));
-  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)sw), &rank));
-  PetscOptionsBegin(PetscObjectComm((PetscObject)sw), "", "DMSwarm Options", "DMSWARM");
-  PetscCall(PetscOptionsInt("-dm_swarm_num_particles", "The target number of particles", "", user->Np, &user->Np, NULL));
-  PetscOptionsEnd();
-
-  Np = user->Np;
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Np = %" PetscInt_FMT "\n", Np));
-  PetscCall(DMGetDimension(sw, &dim));
-  PetscCall(DMSwarmGetCellDM(sw, &dm));
-  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-
-  PetscCall(PetscBagGetData(user->bag, (void **)&param));
-  PetscCall(DMSwarmSetLocalSizes(sw, Np, 0));
-
-  Npc = Np / (cEnd - cStart);
-  PetscCall(DMSwarmGetField(sw, DMSwarmPICField_cellid, NULL, NULL, (void **)&cellid));
-  for (c = 0, p = 0; c < cEnd - cStart; ++c) {
-    for (q = 0; q < Npc; ++q, ++p) cellid[p] = c;
-  }
-  PetscCall(DMSwarmRestoreField(sw, DMSwarmPICField_cellid, NULL, NULL, (void **)&cellid));
-
+  PetscCall(DMSwarmGetLocalSize(sw, &Np));
   PetscCall(DMSwarmGetField(sw, "w_q", NULL, NULL, (void **)&weight));
   PetscCall(DMSwarmSortGetAccess(sw));
-  for (p = 0; p < Np; ++p) {
+  for (PetscInt p = 0; p < Np; ++p) {
     weight[p] = 1.0 / Np;
     weightsum += PetscRealPart(weight[p]);
   }
-
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Np = %" PetscInt_FMT "\n", Np));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "weightsum = %1.10f\n", (double)weightsum));
   PetscCall(DMSwarmSortRestoreAccess(sw));
   PetscCall(DMSwarmRestoreField(sw, "w_q", NULL, NULL, (void **)&weight));
@@ -374,16 +349,15 @@ static PetscErrorCode CreateSwarm(DM dm, AppCtx *user, DM *sw)
   PetscCall(DMSwarmSetType(*sw, DMSWARM_PIC));
   PetscCall(DMSwarmSetCellDM(*sw, dm));
   PetscCall(DMSwarmRegisterPetscDatatypeField(*sw, "w_q", 1, PETSC_SCALAR));
-
+  PetscCall(DMSwarmRegisterPetscDatatypeField(*sw, "species", 1, PETSC_INT));
   PetscCall(DMSwarmFinalizeFieldRegister(*sw));
-
-  PetscCall(InitializeParticlesAndWeights(*sw, user));
-
+  PetscCall(DMSwarmComputeLocalSizeFromOptions(*sw));
+  PetscCall(DMSwarmInitializeCoordinates(*sw));
+  PetscCall(InitializeWeights(*sw, user));
   PetscCall(DMSetFromOptions(*sw));
   PetscCall(DMSetApplicationContext(*sw, user));
   PetscCall(PetscObjectSetName((PetscObject)*sw, "Particles"));
   PetscCall(DMViewFromOptions(*sw, NULL, "-sw_view"));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -600,8 +574,9 @@ int main(int argc, char **argv)
 
     test:
           suffix: particle_hdiv_5
-          requires: !complex
-          args: -dm_swarm_num_particles 100 -particleRHS -sol_type particles \
+          requires: !complex double
+          args: -dm_swarm_num_particles 100 -dm_swarm_coordinate_density constant \
+                -particleRHS -sol_type particles \
                 -fieldsplit_q_pc_type lu -fieldsplit_phi_pc_type svd
 
 TEST*/

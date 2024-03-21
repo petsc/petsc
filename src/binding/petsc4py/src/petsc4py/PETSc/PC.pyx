@@ -132,6 +132,7 @@ class PCHPDDMCoarseCorrectionType(object):
     DEFLATED                 = PC_HPDDM_COARSE_CORRECTION_DEFLATED
     ADDITIVE                 = PC_HPDDM_COARSE_CORRECTION_ADDITIVE
     BALANCED                 = PC_HPDDM_COARSE_CORRECTION_BALANCED
+    NONE                     = PC_HPDDM_COARSE_CORRECTION_NONE
 
 class PCDeflationSpaceType(object):
     """The deflation space subtype."""
@@ -2031,6 +2032,36 @@ cdef class PC(Object):
         CHKERR( PCMGSetR(self.pc, clevel, r.vec) )
 
     # --- BDDC ---
+
+    def setBDDCLocalAdjacency(self, csr: CSRIndicesSpec) -> None:
+        """Provide a custom connectivity graph for local dofs.
+
+        Not Collective.
+
+        Parameters
+        ----------
+        csr
+            Compressed sparse row layout information.
+
+        See Also
+        --------
+        petsc.PCBDDCSetLocalAdjacencyGraph
+
+        """
+        cdef object oi, oj
+        cdef PetscInt ni=0, *i=NULL
+        cdef PetscInt nj=0, *j=NULL
+        oi, oj = csr
+        oi = iarray_i(oi, &ni, &i)
+        oj = iarray_i(oj, &nj, &j)
+        if (i[0] != 0):
+            raise ValueError("I[0] is %d, expected %d" %
+                             (toInt(i[0]), toInt(0)) )
+        if (i[ni-1] != nj):
+            raise ValueError("size(J) is %d, expected %d" %
+                             (toInt(nj), toInt(i[ni-1])) )
+
+        CHKERR( PCBDDCSetLocalAdjacencyGraph(self.pc, ni - 1, i, j, PETSC_COPY_VALUES) )
 
     def setBDDCDivergenceMat(self, Mat div, trans: bool = False, IS l2l=None) -> None:
         """Set the linear operator representing ∫ div(u)•p dx.

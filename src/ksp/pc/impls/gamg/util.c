@@ -13,7 +13,7 @@
   Input Parameters:
 + Gmat    - MPIAIJ matrix for scatters
 . data_sz - number of data terms per node (# cols in output)
-- data_in - column oriented local data of size nloc*data_sz
+- data_in - column-oriented local data of size nloc*data_sz
 
   Output Parameters:
 + a_stride - number of rows of output (locals+ghosts)

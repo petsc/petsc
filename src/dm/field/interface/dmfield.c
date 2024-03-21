@@ -38,12 +38,12 @@ PetscErrorCode DMFieldDestroy(DMField *field)
 {
   PetscFunctionBegin;
   if (!*field) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*field), DMFIELD_CLASSID, 1);
-  if (--((PetscObject)(*field))->refct > 0) {
+  PetscValidHeaderSpecific(*field, DMFIELD_CLASSID, 1);
+  if (--((PetscObject)*field)->refct > 0) {
     *field = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  PetscTryTypeMethod((*field), destroy);
+  PetscTryTypeMethod(*field, destroy);
   PetscCall(DMDestroy(&((*field)->dm)));
   PetscCall(PetscHeaderDestroy(field));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -491,7 +491,7 @@ PetscErrorCode DMFieldCreateFEGeom(DMField field, IS pointIS, PetscQuadrature qu
   PetscCall(PetscFEGeomComplete(g));
   PetscCall(DMFieldGetDegree(field, pointIS, NULL, &maxDegree));
   g->isAffine = (maxDegree <= 1) ? PETSC_TRUE : PETSC_FALSE;
-  if (faceData) PetscCall((*field->ops->computeFaceData)(field, pointIS, quad, g));
+  if (faceData) PetscUseTypeMethod(field, computeFaceData, pointIS, quad, g);
   *geom = g;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

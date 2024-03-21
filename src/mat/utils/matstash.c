@@ -242,12 +242,12 @@ static PetscErrorCode MatStashExpand_Private(MatStash *stash, PetscInt incr)
 }
 /*
   MatStashValuesRow_Private - inserts values into the stash. This function
-  expects the values to be roworiented. Multiple columns belong to the same row
+  expects the values to be row-oriented. Multiple columns belong to the same row
   can be inserted with a single call to this function.
 
   Input Parameters:
   stash  - the stash
-  row    - the global row correspoiding to the values
+  row    - the global row corresponding to the values
   n      - the number of elements inserted. All elements belong to the above row.
   idxn   - the global column indices corresponding to each of the values.
   values - the values inserted
@@ -278,17 +278,17 @@ PetscErrorCode MatStashValuesRow_Private(MatStash *stash, PetscInt row, PetscInt
 
 /*
   MatStashValuesCol_Private - inserts values into the stash. This function
-  expects the values to be columnoriented. Multiple columns belong to the same row
+  expects the values to be column-oriented. Multiple columns belong to the same row
   can be inserted with a single call to this function.
 
   Input Parameters:
   stash   - the stash
-  row     - the global row correspoiding to the values
+  row     - the global row corresponding to the values
   n       - the number of elements inserted. All elements belong to the above row.
   idxn    - the global column indices corresponding to each of the values.
   values  - the values inserted
   stepval - the consecutive values are sepated by a distance of stepval.
-            this happens because the input is columnoriented.
+            this happens because the input is column-oriented.
 */
 PetscErrorCode MatStashValuesCol_Private(MatStash *stash, PetscInt row, PetscInt n, const PetscInt idxn[], const PetscScalar values[], PetscInt stepval, PetscBool ignorezeroentries)
 {
@@ -316,14 +316,14 @@ PetscErrorCode MatStashValuesCol_Private(MatStash *stash, PetscInt row, PetscInt
 
 /*
   MatStashValuesRowBlocked_Private - inserts blocks of values into the stash.
-  This function expects the values to be roworiented. Multiple columns belong
+  This function expects the values to be row-oriented. Multiple columns belong
   to the same block-row can be inserted with a single call to this function.
   This function extracts the sub-block of values based on the dimensions of
   the original input block, and the row,col values corresponding to the blocks.
 
   Input Parameters:
   stash  - the stash
-  row    - the global block-row correspoiding to the values
+  row    - the global block-row corresponding to the values
   n      - the number of elements inserted. All elements belong to the above row.
   idxn   - the global block-column indices corresponding to each of the blocks of
            values. Each block is of size bs*bs.
@@ -347,7 +347,7 @@ PetscErrorCode MatStashValuesRowBlocked_Private(MatStash *stash, PetscInt row, P
   for (i = 0; i < n; i++) {
     space->idx[l] = row;
     space->idy[l] = idxn[i];
-    /* Now copy over the block of values. Store the values column oriented.
+    /* Now copy over the block of values. Store the values column-oriented.
        This enables inserting multiple blocks belonging to a row with a single
        function call */
     array = space->val + bs2 * l;
@@ -367,14 +367,14 @@ PetscErrorCode MatStashValuesRowBlocked_Private(MatStash *stash, PetscInt row, P
 
 /*
   MatStashValuesColBlocked_Private - inserts blocks of values into the stash.
-  This function expects the values to be roworiented. Multiple columns belong
+  This function expects the values to be column-oriented. Multiple columns belong
   to the same block-row can be inserted with a single call to this function.
   This function extracts the sub-block of values based on the dimensions of
   the original input block, and the row,col values corresponding to the blocks.
 
   Input Parameters:
   stash  - the stash
-  row    - the global block-row correspoiding to the values
+  row    - the global block-row corresponding to the values
   n      - the number of elements inserted. All elements belong to the above row.
   idxn   - the global block-column indices corresponding to each of the blocks of
            values. Each block is of size bs*bs.
@@ -398,7 +398,7 @@ PetscErrorCode MatStashValuesColBlocked_Private(MatStash *stash, PetscInt row, P
   for (i = 0; i < n; i++) {
     space->idx[l] = row;
     space->idy[l] = idxn[i];
-    /* Now copy over the block of values. Store the values column oriented.
+    /* Now copy over the block of values. Store the values column-oriented.
      This enables inserting multiple blocks belonging to a row with a single
      function call */
     array = space->val + bs2 * l;
@@ -983,7 +983,6 @@ static PetscErrorCode MatStashScatterEnd_BTS(MatStash *stash)
   PetscCall(PetscMatStashSpaceDestroy(&stash->space_head));
 
   stash->space = NULL;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

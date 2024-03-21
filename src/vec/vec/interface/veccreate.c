@@ -15,7 +15,6 @@ static PetscErrorCode VecCreate_Common_Private(Vec v)
   v->boundtocpu = PETSC_TRUE;
 #endif
   PetscCall(PetscStrallocpy(PETSCRANDER48, &v->defaultrandtype));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

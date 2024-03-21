@@ -61,7 +61,7 @@ PetscDevice host Options:
   -device_view_host: <now FALSE : formerly FALSE> Display device information and assignments (forces eager initialization) (PetscDeviceView())
 Root PetscDeviceContext Options:
   -root_device_context_device_type: <now host : formerly host> Underlying PetscDevice (choose one of) host cuda hip sycl (PetscDeviceContextSetDevice)
-  -root_device_context_stream_type: <now global_blocking : formerly global_blocking> PetscDeviceContext PetscStreamType (choose one of) global_blocking default_blocking global_nonblocking (PetscDeviceContextSetStreamType)
+  -root_device_context_stream_type: <now default : formerly default> PetscDeviceContext PetscStreamType (choose one of) default nonblocking default_with_barrier nonblocking_with_barrier (PetscDeviceContextSetStreamType)
 Matrix (Mat) options:
   -mat_block_size: <now -1 : formerly -1>: Set the blocksize used to store the matrix (MatSetBlockSize)
   -mat_type <now aij : formerly aij>: Matrix type (one of) mpiaijcrl mpiadj seqaij mpibaij composite preallocator mpiaijperm seqsbaij seqmaij seqkaij mffd seqaijsell nest constantdiagonal mpimaij mpiaij mpikaij lrc seqdense dummy is mpisbaij mpiaijsell shell seqsell seqaijperm blockmat maij diagonal kaij mpisell mpidense seqaijcrl scatter seqbaij (MatSetType)
@@ -302,13 +302,13 @@ Viewer (-mat_factor_view) options:
   -mat_factor_view draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
   -mat_factor_view socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
   -mat_factor_view saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
-  0 KSP Residual norm 3.811398540713e+00 
-  1 KSP Residual norm 1.444731352039e+00 
-  2 KSP Residual norm 4.712840878823e-01 
-  3 KSP Residual norm 6.943414362981e-02 
-  4 KSP Residual norm 9.502667693381e-03 
-  5 KSP Residual norm 7.905767061099e-04 
-  6 KSP Residual norm 1.108383257088e-04 
+  0 KSP Residual norm 3.811398540713e+00
+  1 KSP Residual norm 1.444731352039e+00
+  2 KSP Residual norm 4.712840878823e-01
+  3 KSP Residual norm 6.943414362981e-02
+  4 KSP Residual norm 9.502667693381e-03
+  5 KSP Residual norm 7.905767061099e-04
+  6 KSP Residual norm 1.108383257088e-04
 Viewer (-ksp_converged_reason) options:
   -ksp_converged_reason ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
   -ksp_converged_reason binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)

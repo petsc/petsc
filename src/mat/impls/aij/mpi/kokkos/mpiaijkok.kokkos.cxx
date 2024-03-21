@@ -1,3 +1,4 @@
+#include <petsc_kokkos.hpp>
 #include <petscvec_kokkos.hpp>
 #include <petscpkg_version.h>
 #include <petsc/private/sfimpl.h>
@@ -20,7 +21,6 @@ static PetscErrorCode MatAssemblyEnd_MPIAIJKokkos(Mat A, MatAssemblyType mode)
     PetscCall(MatSetType(mpiaij->B, MATSEQAIJKOKKOS));
     PetscCall(VecSetType(mpiaij->lvec, VECSEQKOKKOS));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -716,7 +716,7 @@ static PetscErrorCode MatMPIAIJKokkosReduceBegin(MPI_Comm comm, KokkosCsrMatrix 
 
   // Copy rows in A/B of E to leafBuf, then pass it to rootBuf
   PetscCallCXX(Kokkos::parallel_for(
-    Kokkos::TeamPolicy<>(workSets, teamSize, vectorLength), KOKKOS_LAMBDA(const KokkosTeamMemberType &t) {
+    Kokkos::TeamPolicy<>(PetscGetKokkosExecutionSpace(), workSets, teamSize, vectorLength), KOKKOS_LAMBDA(const KokkosTeamMemberType &t) {
       Kokkos::parallel_for(Kokkos::TeamThreadRange(t, 0, rowsPerTeam), [&](PetscInt k) {
         PetscInt i = t.league_rank() * rowsPerTeam + k; // i-th row in F
         if (i < Em) {
@@ -745,7 +745,6 @@ static PetscErrorCode MatMPIAIJKokkosReduceBegin(MPI_Comm comm, KokkosCsrMatrix 
 // To finish MatMPIAIJKokkosReduce.
 static PetscErrorCode MatMPIAIJKokkosReduceEnd(MPI_Comm comm, KokkosCsrMatrix A, KokkosCsrMatrix B, PetscInt cstart, PetscInt cend, const PetscInt *garray1, PetscSF ownerSF, MatReuse reuse, PetscInt *map, MatMatStruct_AtB *mm)
 {
-  PetscFunctionBegin;
   auto       &leafBuf  = mm->leafBuf;
   auto       &rootBuf  = mm->rootBuf;
   auto       &Fda      = mm->Fd.values;
@@ -758,18 +757,19 @@ static PetscErrorCode MatMPIAIJKokkosReduceEnd(MPI_Comm comm, KokkosCsrMatrix A,
   auto        Fonz     = mm->Fo.nnz();
   PetscSF     reduceSF = mm->sf;
 
+  PetscFunctionBegin;
   PetscCall(PetscSFReduceEnd(reduceSF, MPIU_SCALAR, leafBuf.data(), rootBuf.data(), MPI_REPLACE));
 
   // Reduce data in rootBuf to Fd and Fo
   PetscCallCXX(Kokkos::parallel_for(
-    Fdnz, KOKKOS_LAMBDA(const MatRowMapType i) {
+    Kokkos::RangePolicy<>(PetscGetKokkosExecutionSpace(), 0, Fdnz), KOKKOS_LAMBDA(const MatRowMapType i) {
       PetscScalar sum = 0.0;
       for (MatRowMapType k = Fdjmap(i); k < Fdjmap(i + 1); k++) sum += rootBuf(Fdjperm(k));
       Fda(i) = sum;
     }));
 
   PetscCallCXX(Kokkos::parallel_for(
-    Fonz, KOKKOS_LAMBDA(const MatRowMapType i) {
+    Kokkos::RangePolicy<>(PetscGetKokkosExecutionSpace(), 0, Fonz), KOKKOS_LAMBDA(const MatRowMapType i) {
       PetscScalar sum = 0.0;
       for (MatRowMapType k = Fojmap(i); k < Fojmap(i + 1); k++) sum += rootBuf(Fojperm(k));
       Foa(i) = sum;
@@ -1042,7 +1042,7 @@ static PetscErrorCode MatMPIAIJKokkosBcastBegin(Mat E, PetscSF ownerSF, MatReuse
 
   // Copy rows in A/B of E to rootBuf, then bcast it to leafBuf
   PetscCallCXX(Kokkos::parallel_for(
-    Kokkos::TeamPolicy<>(workSets, teamSize, vectorLength), KOKKOS_LAMBDA(const KokkosTeamMemberType &t) {
+    Kokkos::TeamPolicy<>(PetscGetKokkosExecutionSpace(), workSets, teamSize, vectorLength), KOKKOS_LAMBDA(const KokkosTeamMemberType &t) {
       Kokkos::parallel_for(Kokkos::TeamThreadRange(t, 0, rowsPerTeam), [&](PetscInt k) {
         size_t r = t.league_rank() * rowsPerTeam + k; // r-th entry in irootloc[]
         if (r < irootloc.extent(0)) {
@@ -1093,7 +1093,7 @@ static PetscErrorCode MatMPIAIJKokkosBcastEnd(Mat E, PetscSF ownerSF, MatReuse r
 
   // Update Fda and Foa with new data in leafBuf (as if it is Fa)
   PetscCallCXX(Kokkos::parallel_for(
-    Kokkos::TeamPolicy<>(workSets, teamSize, vectorLength), KOKKOS_LAMBDA(const KokkosTeamMemberType &t) {
+    Kokkos::TeamPolicy<>(PetscGetKokkosExecutionSpace(), workSets, teamSize, vectorLength), KOKKOS_LAMBDA(const KokkosTeamMemberType &t) {
       Kokkos::parallel_for(Kokkos::TeamThreadRange(t, 0, rowsPerTeam), [&](PetscInt k) {
         PetscInt i = t.league_rank() * rowsPerTeam + k; // i-th row in F
         if (i < Fm) {
@@ -1158,6 +1158,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AtB(Mat_Product *product, 
   PetscCallCXX(KokkosSparse::spgemm_numeric(mm->kh3, Aot, false, Bd, false, mm->C3));
   PetscCallCXX(KokkosSparse::spgemm_numeric(mm->kh4, Aot, false, Bo, false, mm->C4));
 #if PETSC_PKG_KOKKOS_KERNELS_VERSION_LT(4, 0, 0)
+
   PetscCallCXX(sort_crs_matrix(mm->C3));
   PetscCallCXX(sort_crs_matrix(mm->C4));
 #endif
@@ -1182,8 +1183,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AtB(Mat_Product *product, 
   // Create C2, which shares a, i arrays with C2_mid, but with new column indices and potentially larger column size
   MatColIdxKokkosView oldj = mm->C2_mid.graph.entries, newj(NoInit("j"), oldj.extent(0));
   PetscIntKokkosView  map  = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), map_h);
-  PetscCallCXX(Kokkos::parallel_for(
-    oldj.extent(0), KOKKOS_LAMBDA(const PetscInt i) { newj(i) = map(oldj(i)); }));
+  PetscCallCXX(Kokkos::parallel_for(Kokkos::RangePolicy<>(PetscGetKokkosExecutionSpace(), 0, oldj.extent(0)), KOKKOS_LAMBDA(const PetscInt i) { newj(i) = map(oldj(i)); }));
   PetscCallCXX(mm->C2 = KokkosCsrMatrix("C2", mm->C2_mid.numRows(), mm->n /*new column size*/, mm->C2_mid.nnz(), mm->C2_mid.values, mm->C2_mid.graph.row_map, newj));
 
   // C = (C1+Fd, C2+Fo)
@@ -1295,8 +1295,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AB(Mat_Product *product, M
   // Create C2, which shares a, i arrays with C2_mid, but with new column indices and potentially larger column size
   MatColIdxKokkosView oldj = mm->C2_mid.graph.entries, newj(NoInit("j"), oldj.extent(0));
   PetscIntKokkosView  map  = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), map_h);
-  PetscCallCXX(Kokkos::parallel_for(
-    oldj.extent(0), KOKKOS_LAMBDA(const PetscInt i) { newj(i) = map(oldj(i)); }));
+  PetscCallCXX(Kokkos::parallel_for(Kokkos::RangePolicy<>(PetscGetKokkosExecutionSpace(), 0, oldj.extent(0)), KOKKOS_LAMBDA(const PetscInt i) { newj(i) = map(oldj(i)); }));
   mm->C2 = KokkosCsrMatrix("C2", mm->C2_mid.numRows(), mm->n /*new column size*/, mm->C2_mid.nnz(), mm->C2_mid.values, mm->C2_mid.graph.row_map, newj);
 
   // C = (Cd, Co) = (C1+C3, C2+C4)
@@ -1663,14 +1662,13 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJKokkos(Mat mat, const PetscScalar v[
 
   PetscCall(PetscLogGpuTimeBegin());
   /* Pack entries to be sent to remote */
-  Kokkos::parallel_for(
-    vsend.extent(0), KOKKOS_LAMBDA(const PetscCount i) { vsend(i) = v1(Cperm1(i)); });
+  Kokkos::parallel_for(Kokkos::RangePolicy<>(PetscGetKokkosExecutionSpace(), 0, vsend.extent(0)), KOKKOS_LAMBDA(const PetscCount i) { vsend(i) = v1(Cperm1(i)); });
 
   /* Send remote entries to their owner and overlap the communication with local computation */
   PetscCall(PetscSFReduceWithMemTypeBegin(coo->sf, MPIU_SCALAR, PETSC_MEMTYPE_KOKKOS, vsend.data(), PETSC_MEMTYPE_KOKKOS, v2.data(), MPI_REPLACE));
   /* Add local entries to A and B in one kernel */
   Kokkos::parallel_for(
-    Annz + Bnnz, KOKKOS_LAMBDA(PetscCount i) {
+    Kokkos::RangePolicy<>(PetscGetKokkosExecutionSpace(), 0, Annz + Bnnz), KOKKOS_LAMBDA(PetscCount i) {
       PetscScalar sum = 0.0;
       if (i < Annz) {
         for (PetscCount k = Ajmap1(i); k < Ajmap1(i + 1); k++) sum += v1(Aperm1(k));
@@ -1685,7 +1683,7 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJKokkos(Mat mat, const PetscScalar v[
 
   /* Add received remote entries to A and B in one kernel */
   Kokkos::parallel_for(
-    Annz2 + Bnnz2, KOKKOS_LAMBDA(PetscCount i) {
+    Kokkos::RangePolicy<>(PetscGetKokkosExecutionSpace(), 0, Annz2 + Bnnz2), KOKKOS_LAMBDA(PetscCount i) {
       if (i < Annz2) {
         for (PetscCount k = Ajmap2(i); k < Ajmap2(i + 1); k++) Aa(Aimap2(i)) += v2(Aperm2(k));
       } else {
@@ -1778,7 +1776,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJKokkos(Mat A, MatType mtype,
 /*MC
    MATAIJKOKKOS - "mpiaijkokkos", a matrix type to be used for CSR sparse matrices with Kokkos
 
-   A matrix type type using Kokkos-Kernels CrsMatrix type for portability across different device types
+   A matrix type using Kokkos-Kernels CrsMatrix type for portability across different device types
 
    Options Database Key:
 .  -mat_type aijkokkos - sets the matrix type to `MATAIJKOKKOS`

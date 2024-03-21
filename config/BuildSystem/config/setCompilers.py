@@ -248,7 +248,7 @@ class Configure(config.base.Configure):
                                                  ]]))
       if not found and Configure.isCrayPEWrapper(compiler,log):
         (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
-        found = any([s in output for s in ['(GCC)']])
+        found = any([s in output for s in ['(GCC)','GNU Fortran','gcc-','g++-']])
       if found:
         if log: log.write('Detected GNU compiler\n')
         return 1
@@ -261,7 +261,8 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 500', log = log, logOutputflg = False)
       output = output + error
-      found = any([s in output for s in ['Emit Clang AST']])
+      found = (any([s in output for s in ['Emit Clang AST']])
+               and not any([s in output for s in ['Intel(R)','Win32 Development Tool Front End']]))
       if found:
         if log: log.write('Detected CLANG compiler\n')
         return 1
@@ -471,9 +472,9 @@ class Configure(config.base.Configure):
   def isIntel(compiler, log):
     '''Returns true if the compiler is a Intel compiler'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 20', log = log)
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 80', log = log)
       output = output + error
-      if 'Intel' in output:
+      if 'Intel(R)' in output:
         if log: log.write('Detected Intel compiler\n')
         return 1
     except RuntimeError:
@@ -563,10 +564,10 @@ class Configure(config.base.Configure):
     '''Returns true if the compiler is a Windows compiler'''
     if cls.isCygwin(log):
       compiler = os.path.basename(compiler)
-      if compiler.startswith('win_'):
-        if log: log.write('Detected Windows compiler\n')
+      if compiler.startswith('win32fe'):
+        if log: log.write('Detected Microsoft Windows native compiler\n')
         return 1
-    if log: log.write('Detected Non-Windows compiler\n')
+    if log: log.write('Detected Non-Microsoft Windows native compiler\n')
     return 0
 
   @classmethod
@@ -651,7 +652,7 @@ class Configure(config.base.Configure):
   @staticmethod
   def isCygwin(log):
     '''Returns true if system is Cygwin'''
-    global isUname_value,sCygwin_value
+    global isUname_value,isCygwin_value
     if not isUname_value: config.setCompilers.Configure.isUname(log)
     return isCygwin_value
 
@@ -1002,7 +1003,12 @@ class Configure(config.base.Configure):
     isGNUish     = bool(isGNUish)
     lang,LANG    = language.lower(),language.upper()
     compiler     = self.getCompiler(lang=language)
-    stdflag_base = '-std:' if self.isMSVC(compiler, self.log) else '-std='
+    if self.isMSVC(compiler, self.log):
+      stdflag_base = '-std:'
+    elif self.isWindows(compiler, self.log) and self.isIntel(compiler, self.log):
+      stdflag_base = '-Qstd='
+    else:
+      stdflag_base = '-std='
     DialectFlags = namedtuple('DialectFlags',['standard','gnu'])
     BaseFlags    = DialectFlags(standard=stdflag_base+'c++',gnu=stdflag_base+'gnu++')
     self.logPrint('checkCxxDialect: checking C++ dialect version for language "{lang}" using compiler "{compiler}"'.format(lang=LANG,compiler=compiler))
@@ -1412,8 +1418,8 @@ class Configure(config.base.Configure):
       yield 'cc'
       yield 'xlc'
       path = os.path.join(os.getcwd(),'lib','petsc','win32fe','bin')
-      yield os.path.join(path,'win_icl')
-      yield os.path.join(path,'win_cl')
+      yield os.path.join(path,'win32fe_icl')
+      yield os.path.join(path,'win32fe_cl')
       yield 'pgcc'
     return
 
@@ -1725,9 +1731,9 @@ class Configure(config.base.Configure):
         yield 'mpxlC'
       else:
         #attempt to match c++ compiler with c compiler
-        if self.CC.find('win_cl') >= 0:
+        if self.CC.find('win32fe_cl') >= 0:
           yield self.CC
-        elif self.CC.find('win_icl') >= 0:
+        elif self.CC.find('win32fe_icl') >= 0:
           yield self.CC
         elif self.CC == 'gcc':
           yield 'g++'
@@ -1749,8 +1755,8 @@ class Configure(config.base.Configure):
         yield 'xlC'
         yield 'ccpc'
         path = os.path.join(os.getcwd(),'lib','petsc','win32fe','bin')
-        yield os.path.join(path,'win_icl')
-        yield os.path.join(path,'win_cl')
+        yield os.path.join(path,'win32fe_icl')
+        yield os.path.join(path,'win32fe_cl')
         yield 'pgCC'
         yield 'CC'
     return
@@ -1868,15 +1874,15 @@ class Configure(config.base.Configure):
           yield 'xlf'
         elif self.CC == 'ncc':
           yield 'nfort'
-        elif self.CC.find('win_icl') >= 0:
-          yield os.path.join(path,'win_ifort')
+        elif self.CC.find('win32fe_icl') >= 0:
+          yield os.path.join(path,'win32fe_ifort')
         yield 'gfortran'
         yield 'g95'
         yield 'xlf90'
         yield 'xlf'
         yield 'f90'
         yield 'lf95'
-        yield os.path.join(path,'win_ifort')
+        yield os.path.join(path,'win32fe_ifort')
         yield 'ifort'
         yield 'ifc'
         yield 'pgf90'
@@ -1955,6 +1961,7 @@ class Configure(config.base.Configure):
                   'unrecognized option','unrecognised option','not recognized',
                   'not recognised','unknown option','unknown warning option',
                   'unknown flag','unknown switch','ignoring option','ignored','argument unused',
+                  'unsupported command line options encountered',
                   'not supported','is unsupported and will be skipped','illegal option',
                   'invalid option','invalid suboption','bad ',' option','petsc error',
                   'unbekannte option','linker input file unused because linking not done',
@@ -1967,10 +1974,12 @@ class Configure(config.base.Configure):
     '''If the output contains evidence that an invalid flag was used, return True'''
     substrings = ('unknown argument', 'ignoring unsupported linker flag', 'unrecognized command line option','unrecognised command line option',
                   'unrecognized option','unrecognised option','unknown option',
-                  'unknown flag',
+                  'unknown flag','unsupported command line options encountered',
                   'not supported','is unsupported and will be skipped','illegal option',
                   'invalid option','invalid suboption',
                   'unbekannte option',
+                  'warning: -commons use_dylibs is no longer supported, using error treatment instead',
+                  'warning: -bind_at_load is deprecated on macOS',
                   'no se reconoce la opci','non reconnue','warning: unsupported linker arg:','ignoring unknown option')
     outlo = output.lower()
     return any(sub.lower() in outlo for sub in substrings)
@@ -2194,18 +2203,18 @@ class Configure(config.base.Configure):
     if defaultRanlib:
       yield ('ar',self.getArchiverFlags('ar'),defaultRanlib)
       path = os.path.join(os.getcwd(),'lib','petsc','bin')
-      war  = os.path.join(path,'win_lib')
+      war  = os.path.join(path,'win32fe_lib')
       yield (war,self.getArchiverFlags(war),defaultRanlib)
       raise RuntimeError('You set --with-ranlib="'+defaultRanlib+'", but '+defaultRanlib+' cannot be used\n')
     if envRanlib:
       yield ('ar',self.getArchiverFlags('ar'),envRanlib)
       path = os.path.join(os.getcwd(),'lib','petsc','bin')
-      war  = os.path.join(path,'win_lib')
+      war  = os.path.join(path,'win32fe_lib')
       yield (war,self.getArchiverFlags('war'),envRanlib)
       raise RuntimeError('You set -RANLIB="'+envRanlib+'" (perhaps in your environment), but '+defaultRanlib+' cannot be used\n')
     if config.setCompilers.Configure.isWindows(self.getCompiler(), self.log):
       path = os.path.join(os.getcwd(),'lib','petsc','bin')
-      war  = os.path.join(path,'win_lib')
+      war  = os.path.join(path,'win32fe_lib')
       yield (war,self.getArchiverFlags(war),'true')
     yield ('ar',self.getArchiverFlags('ar'),'ranlib -c')
     yield ('ar',self.getArchiverFlags('ar'),'ranlib')
@@ -2453,15 +2462,21 @@ class Configure(config.base.Configure):
       languages.append('Cxx')
     if hasattr(self, 'FC'):
       languages.append('FC')
+    ldTestFlags = ['-Wl,-bind_at_load', '-Wl,-commons,use_dylibs', '-Wl,-search_paths_first', '-Wl,-no_compact_unwind']
+    if self.LDFLAGS.find('-Wl,-ld_classic') < 0:
+      ldTestFlags.append('-Wl,-no_warn_duplicate_libraries')
     for language in languages:
       self.pushLanguage(language)
-      for testFlag in ['-Wl,-ld_classic', '-Wl,-bind_at_load', '-Wl,-commons,use_dylibs', '-Wl,-search_paths_first', '-Wl,-no_compact_unwind']:
+      for testFlag in ldTestFlags:
         if self.checkLinkerFlag(testFlag):
           # expand to CC_LINKER_FLAGS or CXX_LINKER_FLAGS or FC_LINKER_FLAGS
           linker_flag_var = langMap[language]+'_LINKER_FLAGS'
           val = getattr(self,linker_flag_var)
           val.append(testFlag)
           setattr(self,linker_flag_var,val)
+          self.logPrint('Accepted macOS linker flag ' + testFlag)
+        else:
+          self.logPrint('Rejected macOS linker flag ' + testFlag)
       self.popLanguage()
     return
 
@@ -2503,8 +2518,11 @@ class Configure(config.base.Configure):
     for language in languages:
       flag = '-L'
       self.pushLanguage(language)
+      if Configure.isCygwin(self.log):
+        self.logPrint('Cygwin detected! disabling -rpath test.')
+        testFlags = []
       # test '-R' before '-rpath' as sun compilers [c,fortran] don't give proper errors with wrong options.
-      if not Configure.isDarwin(self.log):
+      elif not Configure.isDarwin(self.log):
         testFlags = ['-Wl,-rpath,', '-R','-rpath ' , '-Wl,-R,']
       else:
         testFlags = ['-Wl,-rpath,']

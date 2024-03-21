@@ -16,8 +16,7 @@
   #include <petscsf.h>
 
 /* math2opusutils */
-PETSC_INTERN PetscErrorCode PetscSFGetVectorSF(PetscSF, PetscInt, PetscInt, PetscInt, PetscSF *);
-PETSC_INTERN PetscErrorCode MatDenseGetH2OpusVectorSF(Mat, PetscSF, PetscSF *);
+PETSC_INTERN PetscErrorCode MatDenseGetH2OpusStridedSF(Mat, PetscSF, PetscSF *);
 PETSC_INTERN PetscErrorCode VecSign(Vec, Vec);
 PETSC_INTERN PetscErrorCode VecSetDelta(Vec, PetscInt);
 PETSC_INTERN PetscErrorCode MatApproximateNorm_Private(Mat, NormType, PetscInt, PetscReal *);
@@ -102,12 +101,12 @@ public:
 template <class T>
 class PetscFunctionGenerator {
 private:
-  MatH2OpusKernel k;
-  int             dim;
-  void           *ctx;
+  MatH2OpusKernelFn *k;
+  int                dim;
+  void              *ctx;
 
 public:
-  PetscFunctionGenerator(MatH2OpusKernel k, int dim, void *ctx)
+  PetscFunctionGenerator(MatH2OpusKernelFn *k, int dim, void *ctx)
   {
     this->k   = k;
     this->dim = dim;
@@ -143,7 +142,7 @@ typedef struct {
   #if defined(H2OPUS_USE_MPI)
   DistributedHMatrix *dist_hmatrix;
   #else
-  HMatrix       *dist_hmatrix;     /* just to not clutter the code */
+  HMatrix *dist_hmatrix; /* just to not clutter the code */
   #endif
   /* May use permutations */
   PetscSF                           sf;
@@ -158,7 +157,7 @@ typedef struct {
   #if defined(H2OPUS_USE_MPI)
   DistributedHMatrix_GPU *dist_hmatrix_gpu;
   #else
-  HMatrix_GPU   *dist_hmatrix_gpu; /* just to not clutter the code */
+  HMatrix_GPU *dist_hmatrix_gpu; /* just to not clutter the code */
   #endif
   #if defined(PETSC_H2OPUS_USE_GPU)
   thrust::device_vector<PetscScalar> *xx_gpu, *yy_gpu;
@@ -356,8 +355,8 @@ static PetscErrorCode MatMultNKernel_H2OPUS(Mat A, PetscBool transA, Mat B, Mat 
   if (usesf) {
     PetscInt n;
 
-    PetscCall(MatDenseGetH2OpusVectorSF(B, h2opus->sf, &bsf));
-    PetscCall(MatDenseGetH2OpusVectorSF(C, h2opus->sf, &csf));
+    PetscCall(MatDenseGetH2OpusStridedSF(B, h2opus->sf, &bsf));
+    PetscCall(MatDenseGetH2OpusStridedSF(C, h2opus->sf, &csf));
 
     PetscCall(MatH2OpusResizeBuffers_Private(A, B->cmap->N, C->cmap->N));
     PetscCall(PetscSFGetGraph(h2opus->sf, NULL, &n, NULL, NULL));
@@ -719,7 +718,7 @@ static PetscErrorCode MatSetFromOptions_H2OPUS(Mat A, PetscOptionItems *PetscOpt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatH2OpusSetCoords_H2OPUS(Mat, PetscInt, const PetscReal[], PetscBool, MatH2OpusKernel, void *);
+static PetscErrorCode MatH2OpusSetCoords_H2OPUS(Mat, PetscInt, const PetscReal[], PetscBool, MatH2OpusKernelFn *, void *);
 
 static PetscErrorCode MatH2OpusInferCoordinates_Private(Mat A)
 {
@@ -1169,7 +1168,7 @@ static PetscErrorCode MatView_H2OPUS(Mat A, PetscViewer view)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatH2OpusSetCoords_H2OPUS(Mat A, PetscInt spacedim, const PetscReal coords[], PetscBool cdist, MatH2OpusKernel kernel, void *kernelctx)
+static PetscErrorCode MatH2OpusSetCoords_H2OPUS(Mat A, PetscInt spacedim, const PetscReal coords[], PetscBool cdist, MatH2OpusKernelFn *kernel, void *kernelctx)
 {
   Mat_H2OPUS *h2opus = (Mat_H2OPUS *)A->data;
   PetscReal  *gcoords;
@@ -1553,7 +1552,7 @@ PetscErrorCode MatH2OpusSetSamplingMat(Mat A, Mat B, PetscInt bs, PetscReal tol)
   PetscValidType(A, 1);
   if (B) PetscValidHeaderSpecific(B, MAT_CLASSID, 2);
   PetscValidLogicalCollectiveInt(A, bs, 3);
-  PetscValidLogicalCollectiveReal(A, tol, 3);
+  PetscValidLogicalCollectiveReal(A, tol, 4);
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATH2OPUS, &ish2opus));
   if (ish2opus) {
     Mat_H2OPUS *a = (Mat_H2OPUS *)A->data;
@@ -1598,7 +1597,7 @@ PetscErrorCode MatH2OpusSetSamplingMat(Mat A, Mat B, PetscInt bs, PetscReal tol)
 
 .seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`
 @*/
-PetscErrorCode MatCreateH2OpusFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt spacedim, const PetscReal coords[], PetscBool cdist, MatH2OpusKernel kernel, void *kernelctx, PetscReal eta, PetscInt leafsize, PetscInt basisord, Mat *nA)
+PetscErrorCode MatCreateH2OpusFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt spacedim, const PetscReal coords[], PetscBool cdist, MatH2OpusKernelFn *kernel, void *kernelctx, PetscReal eta, PetscInt leafsize, PetscInt basisord, Mat *nA)
 {
   Mat         A;
   Mat_H2OPUS *h2opus;
@@ -1862,8 +1861,8 @@ PetscErrorCode MatH2OpusLowRankUpdate(Mat A, Mat U, Mat V, PetscScalar s)
     if (usesf) {
       PetscInt n;
 
-      PetscCall(MatDenseGetH2OpusVectorSF(U, a->sf, &usf));
-      PetscCall(MatDenseGetH2OpusVectorSF(V, a->sf, &vsf));
+      PetscCall(MatDenseGetH2OpusStridedSF(U, a->sf, &usf));
+      PetscCall(MatDenseGetH2OpusStridedSF(V, a->sf, &vsf));
       PetscCall(MatH2OpusResizeBuffers_Private(A, U->cmap->N, V->cmap->N));
       PetscCall(PetscSFGetGraph(a->sf, NULL, &n, NULL, NULL));
       ldu = n;

@@ -96,7 +96,7 @@ PetscErrorCode VecGetLocalToGlobalMapping(Vec X, ISLocalToGlobalMapping *mapping
   PetscValidHeaderSpecific(X, VEC_CLASSID, 1);
   PetscValidType(X, 1);
   PetscAssertPointer(mapping, 2);
-  if (X->ops->getlocaltoglobalmapping) PetscCall((*X->ops->getlocaltoglobalmapping)(X, mapping));
+  if (X->ops->getlocaltoglobalmapping) PetscUseTypeMethod(X, getlocaltoglobalmapping, mapping);
   else *mapping = X->map->mapping;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -548,7 +548,7 @@ PetscErrorCode VecDuplicate(Vec v, Vec *newv)
     PetscCall(VecBindToCPU(*newv, PETSC_TRUE));
   }
 #endif
-  PetscCall(PetscObjectStateIncrease((PetscObject)(*newv)));
+  PetscCall(PetscObjectStateIncrease((PetscObject)*newv));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -569,8 +569,8 @@ PetscErrorCode VecDestroy(Vec *v)
   PetscFunctionBegin;
   PetscAssertPointer(v, 1);
   if (!*v) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*v), VEC_CLASSID, 1);
-  if (--((PetscObject)(*v))->refct > 0) {
+  PetscValidHeaderSpecific(*v, VEC_CLASSID, 1);
+  if (--((PetscObject)*v)->refct > 0) {
     *v = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -734,7 +734,7 @@ PetscErrorCode VecViewFromOptions(Vec A, PetscObject obj, const char name[])
   In the debugger you can do call `VecView`(v,0) to display the vector. (The same holds for any PETSc object viewer).
 
   Notes for binary viewer:
-  If you pass multiple vectors to a binary viewer you can read them back in in the same order
+  If you pass multiple vectors to a binary viewer you can read them back in the same order
   with `VecLoad()`.
 
   If the blocksize of the vector is greater than one then you must provide a unique prefix to

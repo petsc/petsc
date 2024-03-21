@@ -16,7 +16,7 @@ int main(int argc, char **argv)
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
 
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-dim", &dim, &flg));
-  PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Supply -dim option\n");
+  PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Supply -dim option");
 
   if (dim == 1) PetscCall(DMStagCreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 64, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, &dm));
   else if (dim == 2) PetscCall(DMStagCreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 8, 8, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, NULL, &dm));

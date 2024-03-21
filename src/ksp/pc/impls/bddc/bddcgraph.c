@@ -289,7 +289,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
 
   PetscFunctionBegin;
   /* compute connected components locally */
-  PetscCall(PetscObjectGetComm((PetscObject)(graph->l2gmap), &interface_comm));
+  PetscCall(PetscObjectGetComm((PetscObject)graph->l2gmap, &interface_comm));
   PetscCall(PCBDDCGraphComputeConnectedComponentsLocal(graph));
 
   cornerp = NULL;
@@ -857,7 +857,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     PetscValidHeaderSpecific(custom_primal_vertices, IS_CLASSID, 7);
     PetscCheckSameComm(graph->l2gmap, 1, custom_primal_vertices, 7);
   }
-  PetscCall(PetscObjectGetComm((PetscObject)(graph->l2gmap), &comm));
+  PetscCall(PetscObjectGetComm((PetscObject)graph->l2gmap, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &commsize));
 
   /* custom_minimal_size */
@@ -1156,7 +1156,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   }
 
   /* renumber reference nodes */
-  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)(graph->l2gmap)), graph->ncc, graph->subset_ref_node, PETSC_COPY_VALUES, &subset_n));
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)graph->l2gmap), graph->ncc, graph->subset_ref_node, PETSC_COPY_VALUES, &subset_n));
   PetscCall(ISLocalToGlobalMappingApplyIS(graph->l2gmap, subset_n, &subset));
   PetscCall(ISDestroy(&subset_n));
   PetscCall(ISRenumber(subset, NULL, NULL, &subset_n));

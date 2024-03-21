@@ -146,7 +146,7 @@ static PetscErrorCode MatView_ConstantDiagonal(Mat J, PetscViewer viewer)
 #if defined(PETSC_USE_COMPLEX)
     PetscCall(PetscViewerASCIIPrintf(viewer, "Diagonal value: %g + i %g\n", (double)PetscRealPart(ctx->diag), (double)PetscImaginaryPart(ctx->diag)));
 #else
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Diagonal value: %g\n", (double)(ctx->diag)));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Diagonal value: %g\n", (double)ctx->diag));
 #endif
   }
   PetscFunctionReturn(PETSC_SUCCESS);

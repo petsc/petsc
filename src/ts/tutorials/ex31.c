@@ -52,7 +52,6 @@ PetscErrorCode (*IJacobian)(TS, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *
 PetscErrorCode GetSize(const char *p, PetscInt *sz)
 {
   PetscFunctionBeginUser;
-
   if (!strcmp(p, "hull1972a1") || !strcmp(p, "hull1972a2") || !strcmp(p, "hull1972a3") || !strcmp(p, "hull1972a4") || !strcmp(p, "hull1972a5")) *sz = 1;
   else if (!strcmp(p, "hull1972b1")) *sz = 2;
   else if (!strcmp(p, "hull1972b2") || !strcmp(p, "hull1972b3") || !strcmp(p, "hull1972b4") || !strcmp(p, "hull1972b5")) *sz = 3;
@@ -703,6 +702,7 @@ PetscErrorCode RHSJacobian_Kulikov2013I(TS ts, PetscReal t, Vec Y, Mat A, Mat B,
   PetscInt           row[4] = {0, 1, 2, 3};
   PetscScalar        value[4][4];
   PetscScalar        m1, m2;
+
   PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y, &y));
   m1          = (2. * t * y[3]) / (5. * PetscPowScalar(y[1], 4. / 5.));
@@ -1254,7 +1254,6 @@ PetscErrorCode SolveODE(char *ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   PetscCall(TSDestroy(&ts));
   PetscCall(VecDestroy(&Yex));
   PetscCall(VecDestroy(&Y));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -399,7 +399,7 @@ static PetscErrorCode CreateQFunctionContext_SW(Physics phys, Ceed ceed, CeedQFu
   PetscCallCEED(CeedQFunctionContextSetData(*qfCtx, CEED_MEM_HOST, CEED_USE_POINTER, sizeof(*sw), sw));
   PetscCallCEED(CeedQFunctionContextSetDataDestroy(*qfCtx, CEED_MEM_HOST, FreeContextPetsc));
   PetscCallCEED(CeedQFunctionContextRegisterDouble(*qfCtx, "gravity", offsetof(Physics_SW, gravity), 1, "Accelaration due to gravity"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -454,7 +454,6 @@ static PetscErrorCode PhysicsCreate_SW(Model mod, Physics phys, PetscOptionItems
   PetscCall(ModelFunctionalRegister(mod, "Height", &sw->functional.Height, PhysicsFunctional_SW, phys));
   PetscCall(ModelFunctionalRegister(mod, "Speed", &sw->functional.Speed, PhysicsFunctional_SW, phys));
   PetscCall(ModelFunctionalRegister(mod, "Energy", &sw->functional.Energy, PhysicsFunctional_SW, phys));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -478,6 +477,7 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod, PetscReal time, const Pet
   Physics_Euler *eu   = (Physics_Euler *)phys->data;
   EulerNode     *uu   = (EulerNode *)u;
   PetscReal      p0, gamma, c = 0.;
+
   PetscFunctionBeginUser;
   PetscCheck(time == 0.0, mod->comm, PETSC_ERR_SUP, "No solution known for time %g", (double)time);
 
@@ -528,7 +528,6 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod, PetscReal time, const Pet
   PetscCall(SpeedOfSound_PG(gamma, uu, &c));
   c = (uu->ru[0] / uu->r) + c;
   if (c > phys->maxspeed) phys->maxspeed = c;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -540,6 +539,7 @@ static PetscErrorCode PhysicsBoundary_Euler_Wall(PetscReal time, const PetscReal
   EulerNode       *xG   = (EulerNode *)a_xG;
   Physics          phys = (Physics)ctx;
   Physics_Euler   *eu   = (Physics_Euler *)phys->data;
+
   PetscFunctionBeginUser;
   xG->r = xI->r;                                     /* ghost cell density - same */
   xG->E = xI->E;                                     /* ghost cell energy - same */
@@ -606,7 +606,7 @@ static PetscErrorCode CreateQFunctionContext_Euler(Physics phys, Ceed ceed, Ceed
   PetscCallCEED(CeedQFunctionContextSetData(*qfCtx, CEED_MEM_HOST, CEED_USE_POINTER, sizeof(*eu), eu));
   PetscCallCEED(CeedQFunctionContextSetDataDestroy(*qfCtx, CEED_MEM_HOST, FreeContextPetsc));
   PetscCallCEED(CeedQFunctionContextRegisterDouble(*qfCtx, "gamma", offsetof(Physics_Euler, gamma), 1, "Heat capacity ratio"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -662,8 +662,7 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod, Physics phys, PetscOptionIt
     PetscCall(PetscOptionsReal("-eu_amach", "Shock speed (Mach)", "", eu->amach, &eu->amach, NULL));
     PetscCall(PetscOptionsReal("-eu_rho2", "Density right of discontinuity", "", eu->rhoR, &eu->rhoR, NULL));
     alpha = 60.;
-    PetscCall(PetscOptionsReal("-eu_alpha", "Angle of discontinuity", "", alpha, &alpha, NULL));
-    PetscCheck(alpha > 0. && alpha <= 90., PETSC_COMM_WORLD, PETSC_ERR_SUP, "Alpha bust be > 0 and <= 90 (%g)", (double)alpha);
+    PetscCall(PetscOptionsRangeReal("-eu_alpha", "Angle of discontinuity", "", alpha, &alpha, NULL, 0.0, 90.0));
     eu->itana = 1. / PetscTanReal(alpha * PETSC_PI / 180.0);
     PetscCall(PetscOptionsString("-eu_type", "Type of Euler test", "", type, type, sizeof(type), NULL));
     PetscCall(PetscStrcmp(type, "linear_wave", &is));
@@ -699,7 +698,6 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod, Physics phys, PetscOptionIt
   PetscCall(ModelFunctionalRegister(mod, "Density", &eu->monitor.Density, PhysicsFunctional_Euler, phys));
   PetscCall(ModelFunctionalRegister(mod, "Momentum", &eu->monitor.Momentum, PhysicsFunctional_Euler, phys));
   PetscCall(ModelFunctionalRegister(mod, "Pressure", &eu->monitor.Pressure, PhysicsFunctional_Euler, phys));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -919,6 +917,7 @@ static PetscErrorCode FunctionalLinkDestroy(FunctionalLink *link)
 static PetscErrorCode SolutionFunctional(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *modctx)
 {
   Model mod;
+
   PetscFunctionBeginUser;
   mod = (Model)modctx;
   PetscCall((*mod->solution)(mod, time, x, u, mod->solutionctx));
@@ -954,8 +953,11 @@ static PetscErrorCode MonitorVTK(TS ts, PetscInt stepnum, PetscReal time, Vec X,
   PetscViewer viewer;
   char        filename[PETSC_MAX_PATH_LEN], *ftable = NULL;
   PetscReal   xnorm;
+  PetscBool   rollback;
 
   PetscFunctionBeginUser;
+  PetscCall(TSGetStepRollBack(ts, &rollback));
+  if (rollback) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectSetName((PetscObject)X, "u"));
   PetscCall(VecGetDM(X, &dm));
   PetscCall(VecNorm(X, NORM_INFINITY, &xnorm));
@@ -1102,7 +1104,7 @@ static PetscErrorCode adaptToleranceFVMSetUp(TS ts, PetscInt nstep, PetscReal ti
   User               user       = tctx->user;
   DM                 dm, gradDM, plex, cellDM, adaptedDM = NULL;
   Vec                cellGeom, faceGeom;
-  PetscBool          isForest, computeGradient;
+  PetscBool          computeGradient;
   Vec                grad, locGrad, locX, errVec;
   PetscInt           cStart, cEnd, c, dim, nRefine, nCoarsen;
   PetscReal          minMaxInd[2] = {PETSC_MAX_REAL, PETSC_MIN_REAL}, minMaxIndGlobal[2];
@@ -1120,7 +1122,6 @@ static PetscErrorCode adaptToleranceFVMSetUp(TS ts, PetscInt nstep, PetscReal ti
   PetscCall(PetscFVSetLimiter(fvm, tctx->noneLimiter));
   PetscCall(PetscFVGetComputeGradients(fvm, &computeGradient));
   PetscCall(PetscFVSetComputeGradients(fvm, PETSC_TRUE));
-  PetscCall(DMIsForest(dm, &isForest));
   PetscCall(DMConvert(dm, DMPLEX, &plex));
   PetscCall(DMPlexGetDataFVM(plex, fvm, &cellGeom, &faceGeom, &gradDM));
   PetscCall(DMCreateLocalVector(plex, &locX));
@@ -1152,7 +1153,7 @@ static PetscErrorCode adaptToleranceFVMSetUp(TS ts, PetscInt nstep, PetscReal ti
     PetscCall(DMPlexPointLocalRead(cellDM, c, pointGeom, &cg));
     PetscCall(DMPlexPointLocalRead(plex, c, pointVals, &pointVal));
 
-    PetscCall((user->model->errorIndicator)(dim, cg->volume, user->model->physics->dof, pointVal, pointGrad, &errInd, user->model->errorCtx));
+    PetscCall((*user->model->errorIndicator)(dim, cg->volume, user->model->physics->dof, pointVal, pointGrad, &errInd, user->model->errorCtx));
     errArray[c - cStart] = errInd;
     minMaxInd[0]         = PetscMin(minMaxInd[0], errInd);
     minMaxInd[1]         = PetscMax(minMaxInd[1], errInd);
@@ -1205,12 +1206,8 @@ static PetscErrorCode Transfer(TS ts, PetscInt nv, Vec vecsin[], Vec vecsout[], 
   PetscCall(TSGetTime(ts, &time));
   PetscCheck(tctx->adaptedDM, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "Missing adaptedDM");
   for (PetscInt i = 0; i < nv; i++) {
-    const char *name;
-
     PetscCall(DMCreateGlobalVector(tctx->adaptedDM, &vecsout[i]));
     PetscCall(DMForestTransferVec(dm, vecsin[i], tctx->adaptedDM, vecsout[i], PETSC_TRUE, time));
-    PetscCall(PetscObjectGetName((PetscObject)vecsin[i], &name));
-    PetscCall(PetscObjectSetName((PetscObject)vecsout[i], name));
   }
   PetscCall(DMForestSetAdaptivityForest(tctx->adaptedDM, NULL)); /* clear internal references to the previous dm */
 
@@ -1227,7 +1224,6 @@ static PetscErrorCode Transfer(TS ts, PetscInt nv, Vec vecsin[], Vec vecsout[], 
 
   PetscCall(TSSetDM(ts, tctx->adaptedDM));
   PetscCall(DMDestroy(&tctx->adaptedDM));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1530,8 +1526,10 @@ int main(int argc, char **argv)
 
   /* When using adaptive mesh refinement
      specify callbacks to refine the solution
-     and interpolate data from old to new mesh */
-  if (useAMR) { PetscCall(TSSetResize(ts, adaptToleranceFVMSetUp, Transfer, &tctx)); }
+     and interpolate data from old to new mesh
+     When mesh adaption is requested, the step will be restarted
+  */
+  if (useAMR) PetscCall(TSSetResize(ts, PETSC_TRUE, adaptToleranceFVMSetUp, Transfer, &tctx));
   PetscCall(TSSetSolution(ts, X));
   PetscCall(VecDestroy(&X));
   PetscCall(TSSolve(ts, NULL));
@@ -1769,6 +1767,14 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
       requires: exodusii libceed
       args: -sw_riemann rusanov_ceed -bc_wall 100,101 -ufv_cfl 5 -petsclimiter_type sin \
             -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -dm_plex_use_ceed \
+            -ts_max_time 1 -ts_ssp_type rks2 -ts_ssp_nstages 10 \
+            -monitor height,energy
+
+    test:
+      suffix: sw_ceed_small
+      requires: exodusii libceed
+      args: -sw_riemann rusanov_ceed -bc_wall 1,3 -ufv_cfl 5 -petsclimiter_type sin -dm_plex_use_ceed \
+            -dm_plex_shape annulus -dm_plex_simplex 0 -dm_plex_box_lower 0,1 -dm_plex_box_upper 6.28,3 -dm_plex_box_faces 8,2 \
             -ts_max_time 1 -ts_ssp_type rks2 -ts_ssp_nstages 10 \
             -monitor height,energy
 

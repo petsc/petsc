@@ -38,16 +38,16 @@ static PetscErrorCode TaoBNKComputeSubHessian(Tao tao)
 
 PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
 {
-  TAO_BNK          *bnk = (TAO_BNK *)tao->data;
-  PC                pc;
-  PetscReal         f_min, ftrial, prered, actred, kappa, sigma, resnorm;
-  PetscReal         tau, tau_1, tau_2, tau_max, tau_min, max_radius;
-  PetscBool         is_bfgs, is_jacobi, is_symmetric, sym_set;
-  PetscInt          n, N, nDiff;
-  PetscInt          i_max = 5;
-  PetscInt          j_max = 1;
-  PetscInt          i, j;
-  PetscVoidFunction kspTR;
+  TAO_BNK     *bnk = (TAO_BNK *)tao->data;
+  PC           pc;
+  PetscReal    f_min, ftrial, prered, actred, kappa, sigma, resnorm;
+  PetscReal    tau, tau_1, tau_2, tau_max, tau_min, max_radius;
+  PetscBool    is_bfgs, is_jacobi, is_symmetric, sym_set;
+  PetscInt     n, N, nDiff;
+  PetscInt     i_max = 5;
+  PetscInt     j_max = 1;
+  PetscInt     i, j;
+  PetscVoidFn *kspTR;
 
   PetscFunctionBegin;
   /* Project the current point onto the feasible set */
@@ -408,11 +408,11 @@ PetscErrorCode TaoBNKTakeCGSteps(Tao tao, PetscBool *terminate)
 
 PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *ksp_reason, PetscInt *step_type)
 {
-  TAO_BNK          *bnk         = (TAO_BNK *)tao->data;
-  PetscInt          bfgsUpdates = 0;
-  PetscInt          kspits;
-  PetscBool         is_lmvm;
-  PetscVoidFunction kspTR;
+  TAO_BNK     *bnk         = (TAO_BNK *)tao->data;
+  PetscInt     bfgsUpdates = 0;
+  PetscInt     kspits;
+  PetscBool    is_lmvm;
+  PetscVoidFn *kspTR;
 
   PetscFunctionBegin;
   /* If there are no inactive variables left, save some computation and return an adjusted zero step
@@ -586,7 +586,7 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
 
         /* Initialize the perturbation */
         bnk->pert = PetscMin(bnk->imax, PetscMax(bnk->imin, bnk->imfac * bnk->gnorm));
-        PetscCall(PetscObjectTypeCompare((PetscObject)(tao->ksp), KSPGLTR, &is_gltr));
+        PetscCall(PetscObjectTypeCompare((PetscObject)tao->ksp, KSPGLTR, &is_gltr));
         if (is_gltr) {
           PetscCall(KSPGLTRGetMinEig(tao->ksp, &e_min));
           bnk->pert = PetscMax(bnk->pert, -e_min);
@@ -648,7 +648,7 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
 
           /* Initialize the perturbation */
           bnk->pert = PetscMin(bnk->imax, PetscMax(bnk->imin, bnk->imfac * bnk->gnorm));
-          PetscCall(PetscObjectTypeCompare((PetscObject)(tao->ksp), KSPGLTR, &is_gltr));
+          PetscCall(PetscObjectTypeCompare((PetscObject)tao->ksp, KSPGLTR, &is_gltr));
           if (is_gltr) {
             PetscCall(KSPGLTRGetMinEig(tao->ksp, &e_min));
             bnk->pert = PetscMax(bnk->pert, -e_min);
@@ -692,7 +692,6 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
   default:
     break;
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -731,7 +730,7 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt *stepType, PetscReal *s
 
         /* Initialize the perturbation */
         bnk->pert = PetscMin(bnk->imax, PetscMax(bnk->imin, bnk->imfac * bnk->gnorm));
-        PetscCall(PetscObjectTypeCompare((PetscObject)(tao->ksp), KSPGLTR, &is_gltr));
+        PetscCall(PetscObjectTypeCompare((PetscObject)tao->ksp, KSPGLTR, &is_gltr));
         if (is_gltr) {
           PetscCall(KSPGLTRGetMinEig(tao->ksp, &e_min));
           bnk->pert = PetscMax(bnk->pert, -e_min);
@@ -1020,19 +1019,19 @@ PetscErrorCode TaoSetUp_BNK(Tao tao)
   if (bnk->max_cg_its > 0) {
     /* Ensure that the important common vectors are shared between BNK and embedded BNCG */
     bnk->bncg_ctx = (TAO_BNCG *)bnk->bncg->data;
-    PetscCall(PetscObjectReference((PetscObject)(bnk->unprojected_gradient_old)));
+    PetscCall(PetscObjectReference((PetscObject)bnk->unprojected_gradient_old));
     PetscCall(VecDestroy(&bnk->bncg_ctx->unprojected_gradient_old));
     bnk->bncg_ctx->unprojected_gradient_old = bnk->unprojected_gradient_old;
-    PetscCall(PetscObjectReference((PetscObject)(bnk->unprojected_gradient)));
+    PetscCall(PetscObjectReference((PetscObject)bnk->unprojected_gradient));
     PetscCall(VecDestroy(&bnk->bncg_ctx->unprojected_gradient));
     bnk->bncg_ctx->unprojected_gradient = bnk->unprojected_gradient;
-    PetscCall(PetscObjectReference((PetscObject)(bnk->Gold)));
+    PetscCall(PetscObjectReference((PetscObject)bnk->Gold));
     PetscCall(VecDestroy(&bnk->bncg_ctx->G_old));
     bnk->bncg_ctx->G_old = bnk->Gold;
-    PetscCall(PetscObjectReference((PetscObject)(tao->gradient)));
+    PetscCall(PetscObjectReference((PetscObject)tao->gradient));
     PetscCall(VecDestroy(&bnk->bncg->gradient));
     bnk->bncg->gradient = tao->gradient;
-    PetscCall(PetscObjectReference((PetscObject)(tao->stepdirection)));
+    PetscCall(PetscObjectReference((PetscObject)tao->stepdirection));
     PetscCall(VecDestroy(&bnk->bncg->stepdirection));
     bnk->bncg->stepdirection = tao->stepdirection;
     PetscCall(TaoSetSolution(bnk->bncg, tao->solution));
@@ -1044,10 +1043,10 @@ PetscErrorCode TaoSetUp_BNK(Tao tao)
     PetscCall(TaoSetObjective(bnk->bncg, tao->ops->computeobjective, tao->user_objP));
     PetscCall(TaoSetGradient(bnk->bncg, NULL, tao->ops->computegradient, tao->user_gradP));
     PetscCall(TaoSetObjectiveAndGradient(bnk->bncg, NULL, tao->ops->computeobjectiveandgradient, tao->user_objgradP));
-    PetscCall(PetscObjectCopyFortranFunctionPointers((PetscObject)tao, (PetscObject)(bnk->bncg)));
+    PetscCall(PetscObjectCopyFortranFunctionPointers((PetscObject)tao, (PetscObject)bnk->bncg));
     for (i = 0; i < tao->numbermonitors; ++i) {
-      PetscCall(TaoSetMonitor(bnk->bncg, tao->monitor[i], tao->monitorcontext[i], tao->monitordestroy[i]));
-      PetscCall(PetscObjectReference((PetscObject)(tao->monitorcontext[i])));
+      PetscCall(TaoMonitorSet(bnk->bncg, tao->monitor[i], tao->monitorcontext[i], tao->monitordestroy[i]));
+      PetscCall(PetscObjectReference((PetscObject)tao->monitorcontext[i]));
     }
   }
   bnk->X_inactive    = NULL;
@@ -1155,11 +1154,11 @@ PetscErrorCode TaoSetFromOptions_BNK(Tao tao, PetscOptionItems *PetscOptionsObje
   PetscCall(PetscOptionsInt("-tao_bnk_max_cg_its", "number of BNCG iterations to take for each Newton step", "", bnk->max_cg_its, &bnk->max_cg_its, NULL));
   PetscOptionsHeadEnd();
 
-  PetscCall(TaoSetOptionsPrefix(bnk->bncg, ((PetscObject)(tao))->prefix));
+  PetscCall(TaoSetOptionsPrefix(bnk->bncg, ((PetscObject)tao)->prefix));
   PetscCall(TaoAppendOptionsPrefix(bnk->bncg, "tao_bnk_cg_"));
   PetscCall(TaoSetFromOptions(bnk->bncg));
 
-  PetscCall(KSPSetOptionsPrefix(tao->ksp, ((PetscObject)(tao))->prefix));
+  PetscCall(KSPSetOptionsPrefix(tao->ksp, ((PetscObject)tao)->prefix));
   PetscCall(KSPAppendOptionsPrefix(tao->ksp, "tao_bnk_"));
   PetscCall(KSPSetFromOptions(tao->ksp));
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -324,7 +324,7 @@ PetscErrorCode PetscCommDestroy(MPI_Comm *comm)
       PetscInt entries = 0;
       PetscCall(PetscHMapObjGetSize(garbage.map, &entries));
       if (entries > 0) PetscCall(PetscGarbageCleanup(icomm));
-      PetscCall(PetscHMapObjDestroy(&(garbage.map)));
+      PetscCall(PetscHMapObjDestroy(&garbage.map));
     }
 
     PetscCall(PetscInfo(NULL, "Deleting PETSc MPI_Comm %ld\n", (long)icomm));

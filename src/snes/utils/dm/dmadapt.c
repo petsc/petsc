@@ -76,8 +76,8 @@ PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
 {
   PetscFunctionBegin;
   if (!*adaptor) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*adaptor), DM_CLASSID, 1);
-  if (--((PetscObject)(*adaptor))->refct > 0) {
+  PetscValidHeaderSpecific(*adaptor, DM_CLASSID, 1);
+  if (--((PetscObject)*adaptor)->refct > 0) {
     *adaptor = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

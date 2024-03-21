@@ -166,7 +166,7 @@ Changes: 3.4
 -  Replace -ksp_view_binary with either -ksp_view_mat binary - save
    matrix to the default binary viewer or-ksp_view_pmat binary - save
    matrix to the default binary viewer followed by -ksp_view_rhs
-   binary - save right hand side vector to the default binary viewer.
+   binary - save right-hand side vector to the default binary viewer.
    Also many other combinations are possible.
 
 .. rubric:: SNES:

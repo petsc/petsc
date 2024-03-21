@@ -415,8 +415,8 @@ static PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     /* remove later */
 
     /*
-    PetscCall(VecView(vi->xu,PETSC_VIEWER_BINARY_(((PetscObject)(vi->xu))->comm)));
-    PetscCall(VecView(vi->xl,PETSC_VIEWER_BINARY_(((PetscObject)(vi->xl))->comm)));
+    PetscCall(VecView(vi->xu,PETSC_VIEWER_BINARY_(((PetscObject)vi->xu)->comm)));
+    PetscCall(VecView(vi->xl,PETSC_VIEWER_BINARY_(((PetscObject)vi->xl)->comm)));
     PetscCall(VecView(X,PETSC_VIEWER_BINARY_(PetscObjectComm((PetscObject)X))));
     PetscCall(VecView(F,PETSC_VIEWER_BINARY_(PetscObjectComm((PetscObject)F))));
     PetscCall(ISView(vi->IS_inact,PETSC_VIEWER_BINARY_(PetscObjectComm((PetscObject)vi->IS_inact))));

@@ -7,12 +7,13 @@ class Configure(config.package.CMakePackage):
     self.version          = '6.0.1'
     self.minversion       = '5.2.1' # bugs in 5.2.0 prevent it from functioning
     self.versionname      = 'SUPERLU_MAJOR_VERSION.SUPERLU_MINOR_VERSION.SUPERLU_PATCH_VERSION'
-    self.gitcommit        = 'v'+self.version
+    #self.gitcommit        = 'v'+self.version
+    self.gitcommit        = 'b814567e6cdeba61edffe45839a4043a46215c7a' # master feb-26-2024
     self.download         = ['git://https://github.com/xiaoyeli/superlu','https://github.com/xiaoyeli/superlu/archive/'+self.gitcommit+'.tar.gz']
     self.functions        = ['set_default_options']
     self.includes         = ['slu_ddefs.h']
     self.liblist          = [['libsuperlu.a']]
-    # SuperLU has NO support for 64-bit integers, use SuperLU_Dist if you need that
+    # SuperLU has NO support for 64-bit integers, use SuperLU_DIST if you need that
     self.requires32bitint = 1;  # 1 means that the package will not work with 64-bit integers
     self.excludedDirs     = ['superlu_dist','superlu_mt']
     # SuperLU does not work with --download-fblaslapack with Compaqf90 compiler on windows.

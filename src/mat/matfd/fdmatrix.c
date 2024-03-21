@@ -384,7 +384,7 @@ PetscErrorCode MatFDColoringSetFromOptions(MatFDColoring matfd)
 
   Note:
   It is goofy that the argument type is `MatMFFDType` since the `MatFDColoring` actually computes the matrix entries
-  but the process of computing the entries is the same as as with the `MATMFFD` operation so we should reuse the names instead of
+  but the process of computing the entries is the same as with the `MATMFFD` operation so we should reuse the names instead of
   introducing another one.
 
 .seealso: `Mat`, `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringView()`, `MatFDColoringSetParameters()`

@@ -24,7 +24,7 @@ static PetscErrorCode MatApply_USFFT_Private(Mat A, fftw_plan *plan, int directi
 {
   #if 0
   PetscScalar    *r_array, *y_array;
-  Mat_USFFT* = (Mat_USFFT*)(A->data);
+  Mat_USFFT* = (Mat_USFFT*)A->data;
   #endif
 
   PetscFunctionBegin;
@@ -196,7 +196,7 @@ PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat *A)
   /* TODO: Use the new form of DMDACreate() */
   #if 0
   PetscCall(DMDACreate(comm,usfft->dim, DMDA_NONPERIODIC, DMDA_STENCIL_STAR, usfft->freqSizes[0], usfft->freqSizes[1], usfft->freqSizes[2],
-                       PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, 0, NULL, NULL, NULL,  0, &(usfft->resampleDA)));
+                       PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, 0, NULL, NULL, NULL,  0, &usfft->resampleDA));
   #endif
   PetscCall(DMDAGetVec(usfft->resampleDA, usfft->resample));
 
@@ -226,7 +226,7 @@ PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat *A)
   (*A)->assembled          = PETSC_TRUE;
   (*A)->ops->destroy       = MatDestroy_SeqUSFFT;
   /* get runtime options */
-  PetscOptionsBegin(((PetscObject)(*A))->comm,((PetscObject)(*A))->prefix,"USFFT Options","Mat");
+  PetscOptionsBegin(((PetscObject)*A)->comm,((PetscObject)*A)->prefix,"USFFT Options","Mat");
   PetscCall(PetscOptionsEList("-mat_usfft_fftw_plannerflags","Planner Flags","None",p_flags,4,p_flags[0],&p_flag,&flg));
   if (flg) usfft->p_flag = (unsigned)p_flag;
   PetscOptionsEnd();

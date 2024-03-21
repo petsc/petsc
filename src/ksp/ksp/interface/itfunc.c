@@ -577,7 +577,6 @@ PetscErrorCode KSPConvergedReasonViewFromOptions(KSP ksp)
   PetscInt          i;
 
   PetscFunctionBegin;
-
   /* Call all user-provided reason review routines */
   for (i = 0; i < ksp->numberreasonviews; i++) PetscCall((*ksp->reasonview[i])(ksp, ksp->reasonviewcontext[i]));
 
@@ -728,7 +727,7 @@ static PetscErrorCode KSPViewSingularvalues_Internal(KSP ksp, PetscViewer viewer
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(KSPComputeExtremeSingularValues(ksp, &smax, &smin));
-  if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "Iteratively computed extreme singular values: max %g min %g max/min %g\n", (double)smax, (double)smin, (double)(smax / smin)));
+  if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "Iteratively computed extreme %svalues: max %g min %g max/min %g\n", smin < 0 ? "eigen" : "singular ", (double)smax, (double)smin, (double)(smax / smin)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -929,7 +928,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
   /* diagonal scale solution if called for */
   if (ksp->dscale) {
     PetscCall(VecPointwiseMult(ksp->vec_sol, ksp->vec_sol, ksp->diagonal));
-    /* unscale right hand side and matrix */
+    /* unscale right-hand side and matrix */
     if (ksp->dscalefix) {
       Mat mat, pmat;
 
@@ -1004,7 +1003,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
 
   Input Parameters:
 + ksp - iterative context obtained from `KSPCreate()`
-. b   - the right hand side vector
+. b   - the right-hand side vector
 - x   - the solution (this may be the same vector as `b`, then `b` will be overwritten with answer)
 
   Options Database Keys:
@@ -1012,7 +1011,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
 . -ksp_view_eigenvalues_explicit             - compute the eigenvalues by forming the dense operator and using LAPACK
 . -ksp_view_mat binary                       - save matrix to the default binary viewer
 . -ksp_view_pmat binary                      - save matrix used to build preconditioner to the default binary viewer
-. -ksp_view_rhs binary                       - save right hand side vector to the default binary viewer
+. -ksp_view_rhs binary                       - save right-hand side vector to the default binary viewer
 . -ksp_view_solution binary                  - save computed solution vector to the default binary viewer
                                                (can be read later with src/ksp/tutorials/ex10.c for testing solvers)
 . -ksp_view_mat_explicit                     - for matrix-free operators, computes the matrix entries and views them
@@ -1087,7 +1086,7 @@ PetscErrorCode KSPSolve(KSP ksp, Vec b, Vec x)
 
   Input Parameters:
 + ksp - iterative context obtained from `KSPCreate()`
-. b   - right hand side vector
+. b   - right-hand side vector
 - x   - solution vector
 
   Level: developer
@@ -1449,8 +1448,8 @@ PetscErrorCode KSPDestroy(KSP *ksp)
 
   PetscFunctionBegin;
   if (!*ksp) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*ksp), KSP_CLASSID, 1);
-  if (--((PetscObject)(*ksp))->refct > 0) {
+  PetscValidHeaderSpecific(*ksp, KSP_CLASSID, 1);
+  if (--((PetscObject)*ksp)->refct > 0) {
     *ksp = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -1464,10 +1463,10 @@ PetscErrorCode KSPDestroy(KSP *ksp)
    */
   pc         = (*ksp)->pc;
   (*ksp)->pc = NULL;
-  PetscCall(KSPReset((*ksp)));
+  PetscCall(KSPReset(*ksp));
   PetscCall(KSPResetViewers(*ksp));
   (*ksp)->pc = pc;
-  PetscTryTypeMethod((*ksp), destroy);
+  PetscTryTypeMethod(*ksp, destroy);
 
   if ((*ksp)->transpose.use_explicittranspose) {
     PetscCall(MatDestroy(&(*ksp)->transpose.AT));
@@ -1481,8 +1480,8 @@ PetscErrorCode KSPDestroy(KSP *ksp)
   PetscCall(PetscFree((*ksp)->res_hist_alloc));
   PetscCall(PetscFree((*ksp)->err_hist_alloc));
   if ((*ksp)->convergeddestroy) PetscCall((*(*ksp)->convergeddestroy)((*ksp)->cnvP));
-  PetscCall(KSPMonitorCancel((*ksp)));
-  PetscCall(KSPConvergedReasonViewCancel((*ksp)));
+  PetscCall(KSPMonitorCancel(*ksp));
+  PetscCall(KSPConvergedReasonViewCancel(*ksp));
   PetscCall(PetscHeaderDestroy(ksp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1727,7 +1726,7 @@ PetscErrorCode KSPGetMinimumIterations(KSP ksp, PetscInt *minit)
   Note:
   If this is not called the X vector is zeroed in the call to `KSPSolve()`.
 
-.seealso: [](ch_ksp), `KSPGetInitialGuessNonzero()`, `KSPSetGuessType()`, `KSPGuessType`, `KSP`
+.seealso: [](ch_ksp), `KSPGetInitialGuessNonzero()`, `KSPGuessSetType()`, `KSPGuessType`, `KSP`
 @*/
 PetscErrorCode KSPSetInitialGuessNonzero(KSP ksp, PetscBool flg)
 {
@@ -2475,7 +2474,9 @@ PetscErrorCode KSPSetErrorHistory(KSP ksp, PetscReal a[], PetscInt na, PetscBool
 
   Fortran Note:
   The Fortran version of this routine has a calling sequence
-$   call KSPGetErrorHistory(KSP ksp, integer na, integer ierr)
+.vb
+  call KSPGetErrorHistory(KSP ksp, integer na, integer ierr)
+.ve
   note that you have passed a Fortran array into `KSPSetErrorHistory()` and you need
   to access the residual values from this Fortran array you provided. Only the `na` (number of
   residual norms currently held) is set.
@@ -2809,7 +2810,7 @@ PetscErrorCode KSPBuildResidual(KSP ksp, Vec t, Vec v, Vec *V)
 
 /*@
   KSPSetDiagonalScale - Tells `KSP` to symmetrically diagonally scale the system
-  before solving. This actually CHANGES the matrix (and right hand side).
+  before solving. This actually CHANGES the matrix (and right-hand side).
 
   Logically Collective
 
@@ -2829,7 +2830,7 @@ PetscErrorCode KSPBuildResidual(KSP ksp, Vec t, Vec v, Vec *V)
 
   BE CAREFUL with this routine: it actually scales the matrix and right
   hand side that define the system. After the system is solved the matrix
-  and right hand side remain scaled unless you use `KSPSetDiagonalScaleFix()`
+  and right-hand side remain scaled unless you use `KSPSetDiagonalScaleFix()`
 
   This should NOT be used within the `SNES` solves if you are using a line
   search.
@@ -2850,7 +2851,7 @@ PetscErrorCode KSPSetDiagonalScale(KSP ksp, PetscBool scale)
 }
 
 /*@
-  KSPGetDiagonalScale - Checks if `KSP` solver scales the matrix and right hand side, that is if `KSPSetDiagonalScale()` has been called
+  KSPGetDiagonalScale - Checks if `KSP` solver scales the matrix and right-hand side, that is if `KSPSetDiagonalScale()` has been called
 
   Not Collective
 
@@ -2936,21 +2937,15 @@ PetscErrorCode KSPGetDiagonalScaleFix(KSP ksp, PetscBool *fix)
 
   Input Parameters:
 + ksp  - the `KSP` context
-. func - function to compute the operators
+. func - function to compute the operators, see `KSPComputeOperatorsFn` for the calling sequence
 - ctx  - optional context
-
-  Calling sequence of `func`:
-+ ksp - the `KSP` context
-. A   - the linear operator
-. B   - the matrix from which the preconditioner is built, often `A`
-- ctx - optional user-provided context
 
   Level: beginner
 
   Notes:
   `func()` will be called automatically at the very next call to `KSPSolve()`. It will NOT be called at future `KSPSolve()` calls
   unless either `KSPSetComputeOperators()` or `KSPSetOperators()` is called before that `KSPSolve()` is called. This allows the same system to be solved several times
-  with different right hand side functions but is a confusing API since one might expect it to be called for each `KSPSolve()`
+  with different right-hand side functions but is a confusing API since one might expect it to be called for each `KSPSolve()`
 
   To reuse the same preconditioner for the next `KSPSolve()` and not compute a new one based on the most recently computed matrix call `KSPSetReusePreconditioner()`
 
@@ -2958,9 +2953,9 @@ PetscErrorCode KSPGetDiagonalScaleFix(KSP ksp, PetscBool *fix)
   Perhaps this routine and `KSPSetComputeRHS()` could be combined into a new API that makes clear when new matrices are computing without requiring call this
   routine to indicate when the new matrix should be computed.
 
-.seealso: [](ch_ksp), `KSP`, `KSPSetOperators()`, `KSPSetComputeRHS()`, `DMKSPSetComputeOperators()`, `KSPSetComputeInitialGuess()`
+.seealso: [](ch_ksp), `KSP`, `KSPSetOperators()`, `KSPSetComputeRHS()`, `DMKSPSetComputeOperators()`, `KSPSetComputeInitialGuess()`, `KSPComputeOperatorsFn`
 @*/
-PetscErrorCode KSPSetComputeOperators(KSP ksp, PetscErrorCode (*func)(KSP ksp, Mat A, Mat B, void *ctx), void *ctx)
+PetscErrorCode KSPSetComputeOperators(KSP ksp, KSPComputeOperatorsFn *func, void *ctx)
 {
   DM dm;
 
@@ -2973,28 +2968,23 @@ PetscErrorCode KSPSetComputeOperators(KSP ksp, PetscErrorCode (*func)(KSP ksp, M
 }
 
 /*@C
-  KSPSetComputeRHS - set routine to compute the right hand side of the linear system
+  KSPSetComputeRHS - set routine to compute the right-hand side of the linear system
 
   Logically Collective
 
   Input Parameters:
 + ksp  - the `KSP` context
-. func - function to compute the right hand side
+. func - function to compute the right-hand side, see `KSPComputeRHSFn` for the calling squence
 - ctx  - optional context
-
-  Calling sequence of `func`:
-+ ksp - the `KSP` context
-. b   - right hand side of linear system
-- ctx - optional user-provided context
 
   Level: beginner
 
   Note:
-  The routine you provide will be called EACH you call `KSPSolve()` to prepare the new right hand side for that solve
+  The routine you provide will be called EACH you call `KSPSolve()` to prepare the new right-hand side for that solve
 
-.seealso: [](ch_ksp), `KSP`, `KSPSolve()`, `DMKSPSetComputeRHS()`, `KSPSetComputeOperators()`, `KSPSetOperators()`
+.seealso: [](ch_ksp), `KSP`, `KSPSolve()`, `DMKSPSetComputeRHS()`, `KSPSetComputeOperators()`, `KSPSetOperators()`, `KSPComputeRHSFn`
 @*/
-PetscErrorCode KSPSetComputeRHS(KSP ksp, PetscErrorCode (*func)(KSP ksp, Vec b, void *ctx), void *ctx)
+PetscErrorCode KSPSetComputeRHS(KSP ksp, KSPComputeRHSFn *func, void *ctx)
 {
   DM dm;
 
@@ -3012,13 +3002,8 @@ PetscErrorCode KSPSetComputeRHS(KSP ksp, PetscErrorCode (*func)(KSP ksp, Vec b, 
 
   Input Parameters:
 + ksp  - the `KSP` context
-. func - function to compute the initial guess
+. func - function to compute the initial guess, see `KSPComputeInitialGuessFn` for calling sequence
 - ctx  - optional context
-
-  Calling sequence of `func`:
-+ ksp - the `KSP` context
-. x   - solution vector
-- ctx - optional user-provided context
 
   Level: beginner
 
@@ -3026,9 +3011,10 @@ PetscErrorCode KSPSetComputeRHS(KSP ksp, PetscErrorCode (*func)(KSP ksp, Vec b, 
   This should only be used in conjunction with `KSPSetComputeRHS()` and `KSPSetComputeOperators()`, otherwise
   call `KSPSetInitialGuessNonzero()` and set the initial guess values in the solution vector passed to `KSPSolve()` before calling the solver
 
-.seealso: [](ch_ksp), `KSP`, `KSPSolve()`, `KSPSetComputeRHS()`, `KSPSetComputeOperators()`, `DMKSPSetComputeInitialGuess()`, `KSPSetInitialGuessNonzero()`
+.seealso: [](ch_ksp), `KSP`, `KSPSolve()`, `KSPSetComputeRHS()`, `KSPSetComputeOperators()`, `DMKSPSetComputeInitialGuess()`, `KSPSetInitialGuessNonzero()`,
+          `KSPComputeInitialGuessFn`
 @*/
-PetscErrorCode KSPSetComputeInitialGuess(KSP ksp, PetscErrorCode (*func)(KSP ksp, Vec x, void *ctx), void *ctx)
+PetscErrorCode KSPSetComputeInitialGuess(KSP ksp, KSPComputeInitialGuessFn *func, void *ctx)
 {
   DM dm;
 

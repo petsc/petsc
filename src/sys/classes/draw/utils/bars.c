@@ -112,7 +112,7 @@ PetscErrorCode PetscDrawBarDestroy(PetscDrawBar *bar)
   PetscFunctionBegin;
   if (!*bar) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*bar, PETSC_DRAWBAR_CLASSID, 1);
-  if (--((PetscObject)(*bar))->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
+  if (--((PetscObject)*bar)->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFree((*bar)->values));
   PetscCall(PetscStrArrayDestroy(&(*bar)->labels));

@@ -6,7 +6,7 @@
 PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
 {
   Mat_MPISBAIJ   *sbaij = (Mat_MPISBAIJ *)mat->data;
-  Mat_SeqBAIJ    *B     = (Mat_SeqBAIJ *)(sbaij->B->data);
+  Mat_SeqBAIJ    *B     = (Mat_SeqBAIJ *)sbaij->B->data;
   PetscInt        i, j, *aj = B->j, ec = 0, *garray, *sgarray;
   PetscInt        bs = mat->rmap->bs, *stmp, mbs = sbaij->mbs, vec_size, nt;
   IS              from, to;

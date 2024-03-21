@@ -1108,14 +1108,14 @@ or equivalently,
 
 Note that with all of these for a given assembled matrix it can be only
 called once to update the x and b vector. It cannot be used if one
-wishes to solve multiple right hand side problems for the same matrix
+wishes to solve multiple right-hand side problems for the same matrix
 since the matrix entries needed for updating the b vector are removed in
 its first use.
 
 Once the zeroed rows are removed the new matrix has possibly many rows
 with only a diagonal entry affecting the parallel load balancing. The
 ``PCREDISTRIBUTE`` preconditioner removes all the zeroed rows (and
-associated columns and adjusts the right hand side based on the removed
+associated columns and adjusts the right-hand side based on the removed
 columns) and then rebalances the resulting rows of smaller matrix across
 the processes. Thus one can use ``MatZeroRows()`` to set the Dirichlet
 points and then solve with the preconditioner ``PCREDISTRIBUTE``. Note

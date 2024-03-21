@@ -348,7 +348,6 @@ PetscErrorCode TaoSetResidualRoutine(Tao tao, Vec res, PetscErrorCode (*func)(Ta
   tao->ls_res               = res;
   tao->user_lsresP          = ctx;
   tao->ops->computeresidual = func;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

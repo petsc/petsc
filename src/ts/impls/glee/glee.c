@@ -50,7 +50,7 @@ typedef struct {
   Vec         *Y;         /* Solution vector (along with auxiliary solution y~ or eps) */
   Vec         *X;         /* Temporary solution vector */
   Vec         *YStage;    /* Stage values */
-  Vec         *YdotStage; /* Stage right hand side */
+  Vec         *YdotStage; /* Stage right-hand side */
   Vec          W;         /* Right-hand-side for implicit stage solve */
   Vec          Ydot;      /* Work vector holding Ydot during residual evaluation */
   Vec          yGErr;     /* Vector holding the global error after a step is completed */
@@ -277,7 +277,6 @@ PetscErrorCode TSGLEERegisterAll(void)
                     B[2][9] = {{0.353553390593273786, 0.353553390593273786, 0.292893218813452483, 0, 0, 0, 0, 0, 0}, {-0.471404520791031678, -0.471404520791031678, -0.390524291751269959, 0.235702260395515839, 0.235702260395515839, 0.195262145875634979, 0.235702260395515839, 0.235702260395515839, 0.195262145875634979}}, U[9][2] = {{1, 0}, {1, 0}, {1, 0}, {1, 0.75}, {1, 0.75}, {1, 0.75}, {1, 0.75}, {1, 0.75}, {1, 0.75}}, V[2][2] = {{1, 0}, {0, 1}}, S[2] = {1, 0}, F[2] = {1, 0}, Fembed[2] = {1, 1 - GAMMA}, Ferror[2] = {0, 1}, Serror[2] = {1, 0};
     PetscCall(TSGLEERegister(TSGLEERK285EX, p, s, r, GAMMA, &A[0][0], &B[0][0], &U[0][0], &V[0][0], S, F, NULL, Fembed, Ferror, Serror, 0, NULL));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -431,7 +430,6 @@ static PetscErrorCode TSEvaluateStep_GLEE(TS ts, PetscInt order, Vec X, PetscBoo
   PetscScalar *ws = glee->swork, *wr = glee->rwork;
 
   PetscFunctionBegin;
-
   switch (glee->status) {
   case TS_STEP_INCOMPLETE:
   case TS_STEP_PENDING:
@@ -526,7 +524,7 @@ static PetscErrorCode TSStep_GLEE(TS ts)
         PetscCall(VecMAXPY(YStage[i], i, ws, YdotStage));
       } else { /* Implicit stage */
         glee->scoeff = 1.0 / A[i * s + i];
-        /* compute right-hand-side */
+        /* compute right-hand side */
         PetscCall(VecZeroEntries(W));
         for (j = 0; j < r; j++) wr[j] = U[i * r + j];
         PetscCall(VecMAXPY(W, r, wr, X));
@@ -563,7 +561,7 @@ static PetscErrorCode TSStep_GLEE(TS ts)
       glee->status  = TS_STEP_COMPLETE;
       /* compute and store the global error */
       /* Note: this is not needed if TSAdaptGLEE is not used */
-      PetscCall(TSGetTimeError(ts, 0, &(glee->yGErr)));
+      PetscCall(TSGetTimeError(ts, 0, &glee->yGErr));
       PetscCall(PetscObjectComposedDataSetReal((PetscObject)ts->vec_sol, explicit_stage_time_id, ts->ptime));
       break;
     } else { /* Roll back the current step */
@@ -766,7 +764,6 @@ static PetscErrorCode TSStartingMethod_GLEE(TS ts)
     PetscCall(VecZeroEntries(glee->Y[i]));
     PetscCall(VecAXPY(glee->Y[i], S[i], ts->vec_sol));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -785,8 +782,7 @@ static PetscErrorCode TSSetFromOptions_GLEE(TS ts, PetscOptionItems *PetscOption
     const char    **namelist;
 
     PetscCall(PetscStrncpy(gleetype, TSGLEEDefaultType, sizeof(gleetype)));
-    for (link = GLEETableauList, count = 0; link; link = link->next, count++)
-      ;
+    for (link = GLEETableauList, count = 0; link; link = link->next, count++);
     PetscCall(PetscMalloc1(count, (char ***)&namelist));
     for (link = GLEETableauList, count = 0; link; link = link->next, count++) namelist[count] = link->tab.name;
     PetscCall(PetscOptionsEList("-ts_glee_type", "Family of GLEE method", "TSGLEESetType", (const char *const *)namelist, count, gleetype, &choice, &flg));
@@ -947,7 +943,7 @@ static PetscErrorCode TSGetAuxSolution_GLEE(TS ts, Vec *X)
   PetscFunctionBegin;
   PetscCall(VecZeroEntries(*X));
   for (i = 0; i < r; i++) wr[i] = F[i];
-  PetscCall(VecMAXPY((*X), r, wr, Y));
+  PetscCall(VecMAXPY(*X, r, wr, Y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -965,7 +961,7 @@ static PetscErrorCode TSGetTimeError_GLEE(TS ts, PetscInt n, Vec *X)
   PetscCall(VecZeroEntries(*X));
   if (n == 0) {
     for (i = 0; i < r; i++) wr[i] = F[i];
-    PetscCall(VecMAXPY((*X), r, wr, Y));
+    PetscCall(VecMAXPY(*X, r, wr, Y));
   } else if (n == -1) {
     *X = glee->yGErr;
   }
@@ -1008,7 +1004,7 @@ static PetscErrorCode TSDestroy_GLEE(TS ts)
 /*MC
       TSGLEE - ODE and DAE solver using General Linear with Error Estimation schemes
 
-  The user should provide the right hand side of the equation using `TSSetRHSFunction()`.
+  The user should provide the right-hand side of the equation using `TSSetRHSFunction()`.
 
   Level: beginner
 

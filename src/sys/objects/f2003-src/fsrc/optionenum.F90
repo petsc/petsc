@@ -2,6 +2,7 @@
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::PetscOptionsGetEnum
+!DEC$ ATTRIBUTES DLLEXPORT::PetscOptionsEnum
 #endif
 
 Subroutine PetscOptionsGetEnum(po,pre,name,FArray,opt,set,ierr)

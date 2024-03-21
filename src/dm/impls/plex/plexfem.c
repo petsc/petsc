@@ -1159,7 +1159,7 @@ PetscErrorCode DMPlexInsertBoundaryValues_Plex(DM dm, PetscBool insertEssential,
       switch (type) {
         /* for FEM, there is no insertion to be done for non-essential boundary conditions */
       case DM_BC_ESSENTIAL: {
-        PetscSimplePointFunc func = (PetscSimplePointFunc)bvfunc;
+        PetscSimplePointFn *func = (PetscSimplePointFn *)bvfunc;
 
         if (isZero) func = zero;
         PetscCall(DMPlexLabelAddCells(dm, label));
@@ -1221,7 +1221,7 @@ PetscErrorCode DMPlexInsertTimeDerivativeBoundaryValues_Plex(DM dm, PetscBool in
       switch (type) {
         /* for FEM, there is no insertion to be done for non-essential boundary conditions */
       case DM_BC_ESSENTIAL: {
-        PetscSimplePointFunc func_t = (PetscSimplePointFunc)bvfunc;
+        PetscSimplePointFn *func_t = (PetscSimplePointFn *)bvfunc;
 
         if (isZero) func_t = zero;
         PetscCall(DMPlexLabelAddCells(dm, label));
@@ -2320,13 +2320,13 @@ PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec locX, PetscInt cStart, 
     } else if (id == PETSCFV_CLASSID) {
       PetscInt       foff;
       PetscPointFunc obj_func;
-      PetscScalar    lint;
 
       PetscCall(PetscDSGetObjective(prob, f, &obj_func));
       PetscCall(PetscDSGetFieldOffset(prob, f, &foff));
       if (obj_func) {
         for (c = 0; c < numCells; ++c) {
           PetscScalar *u_x;
+          PetscScalar  lint = 0.;
 
           PetscCall(DMPlexPointLocalRead(dmGrad, c, lgrad, &u_x));
           obj_func(dim, Nf, NfAux, uOff, uOff_x, &u[totDim * c + foff], NULL, u_x, aOff, NULL, &a[totDimAux * c], NULL, NULL, 0.0, cgeomFVM[c].centroid, numConstants, constants, &lint);
@@ -4666,6 +4666,7 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
 {
   DM_Plex        *mesh = (DM_Plex *)dm->data;
   DM              plex = NULL, plexA = NULL;
+  const char     *name = "BdResidual";
   DMEnclosureType encAux;
   PetscDS         prob, probAux       = NULL;
   PetscSection    section, sectionAux = NULL;
@@ -4775,7 +4776,7 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
     for (face = 0; face < numFaces; ++face) {
       const PetscInt point = points[face], *support;
 
-      if (mesh->printFEM > 1) PetscCall(DMPrintCellVector(point, "BdResidual", totDim, &elemVec[face * totDim]));
+      if (mesh->printFEM > 1) PetscCall(DMPrintCellVector(point, name, totDim, &elemVec[face * totDim]));
       PetscCall(DMPlexGetSupport(plex, point, &support));
       PetscCall(DMPlexVecSetClosure(plex, NULL, locF, support[0], &elemVec[face * totDim], ADD_ALL_VALUES));
     }
@@ -4786,6 +4787,23 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
     PetscCall(PetscFree4(u, u_t, elemVec, a));
   }
 end:
+  if (mesh->printFEM) {
+    PetscSection s;
+    Vec          locFbc;
+    PetscInt     pStart, pEnd, maxDof;
+    PetscScalar *zeroes;
+
+    PetscCall(DMGetLocalSection(dm, &s));
+    PetscCall(VecDuplicate(locF, &locFbc));
+    PetscCall(VecCopy(locF, locFbc));
+    PetscCall(PetscSectionGetChart(s, &pStart, &pEnd));
+    PetscCall(PetscSectionGetMaxDof(s, &maxDof));
+    PetscCall(PetscCalloc1(maxDof, &zeroes));
+    for (PetscInt p = pStart; p < pEnd; p++) PetscCall(VecSetValuesSection(locFbc, s, p, zeroes, INSERT_BC_VALUES));
+    PetscCall(PetscFree(zeroes));
+    PetscCall(DMPrintLocalVec(dm, name, mesh->printTol, locFbc));
+    PetscCall(VecDestroy(&locFbc));
+  }
   PetscCall(DMDestroy(&plex));
   PetscCall(DMDestroy(&plexA));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -5525,7 +5543,6 @@ static PetscErrorCode DMPlexComputeBdJacobian_Single_Internal(DM dm, PetscReal t
   PetscBool       hasJac = PETSC_FALSE, hasPrec = PETSC_FALSE, transform;
 
   PetscFunctionBegin;
-  PetscCall(DMConvert(dm, DMPLEX, &plex));
   PetscCall(DMHasBasisTransform(dm, &transform));
   PetscCall(DMGetBasisTransformDM_Internal(dm, &tdm));
   PetscCall(DMGetBasisTransformVec_Internal(dm, &tv));
@@ -5533,8 +5550,10 @@ static PetscErrorCode DMPlexComputeBdJacobian_Single_Internal(DM dm, PetscReal t
   PetscCall(DMGetDS(dm, &ds));
   PetscCall(PetscDSGetNumFields(ds, &Nf));
   PetscCall(PetscDSGetTotalDimension(ds, &totDim));
-  PetscCall(PetscDSHasJacobian(ds, &hasJac));
-  PetscCall(PetscDSHasJacobianPreconditioner(ds, &hasPrec));
+  PetscCall(PetscWeakFormHasBdJacobian(wf, &hasJac));
+  PetscCall(PetscWeakFormHasBdJacobianPreconditioner(wf, &hasPrec));
+  if (!hasJac && !hasPrec) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(DMConvert(dm, DMPLEX, &plex));
   PetscCall(DMGetAuxiliaryVec(dm, label, values[0], 0, &locA));
   if (locA) {
     DM dmAux;
@@ -5606,7 +5625,8 @@ static PetscErrorCode DMPlexComputeBdJacobian_Single_Internal(DM dm, PetscReal t
         PetscCall(DMPlexVecRestoreClosure(plexA, sectionAux, locA, subp, NULL, &x));
       }
     }
-    PetscCall(PetscArrayzero(elemMat, numFaces * totDim * totDim));
+    if (elemMat) PetscCall(PetscArrayzero(elemMat, numFaces * totDim * totDim));
+    if (elemMatP) PetscCall(PetscArrayzero(elemMatP, numFaces * totDim * totDim));
     {
       PetscFE  fe;
       PetscInt Nb;
@@ -5647,18 +5667,19 @@ static PetscErrorCode DMPlexComputeBdJacobian_Single_Internal(DM dm, PetscReal t
 
       /* Transform to global basis before insertion in Jacobian */
       PetscCall(DMPlexGetSupport(plex, point, &support));
-      if (transform) PetscCall(DMPlexBasisTransformPointTensor_Internal(dm, tdm, tv, support[0], PETSC_TRUE, totDim, &elemMat[face * totDim * totDim]));
+      if (hasJac && transform) PetscCall(DMPlexBasisTransformPointTensor_Internal(dm, tdm, tv, support[0], PETSC_TRUE, totDim, &elemMat[face * totDim * totDim]));
+      if (hasPrec && transform) PetscCall(DMPlexBasisTransformPointTensor_Internal(dm, tdm, tv, support[0], PETSC_TRUE, totDim, &elemMatP[face * totDim * totDim]));
       if (hasPrec) {
         if (hasJac) {
           if (mesh->printFEM > 1) PetscCall(DMPrintCellMatrix(point, "BdJacobian", totDim, totDim, &elemMat[face * totDim * totDim]));
-          PetscCall(DMPlexMatSetClosure_Internal(plex, section, globalSection, mesh->useMatClPerm, JacP, support[0], &elemMat[face * totDim * totDim], ADD_VALUES));
+          PetscCall(DMPlexMatSetClosure_Internal(plex, section, globalSection, mesh->useMatClPerm, Jac, support[0], &elemMat[face * totDim * totDim], ADD_VALUES));
         }
         if (mesh->printFEM > 1) PetscCall(DMPrintCellMatrix(point, "BdJacobian", totDim, totDim, &elemMatP[face * totDim * totDim]));
         PetscCall(DMPlexMatSetClosure_Internal(plex, section, globalSection, mesh->useMatClPerm, JacP, support[0], &elemMatP[face * totDim * totDim], ADD_VALUES));
       } else {
         if (hasJac) {
           if (mesh->printFEM > 1) PetscCall(DMPrintCellMatrix(point, "BdJacobian", totDim, totDim, &elemMat[face * totDim * totDim]));
-          PetscCall(DMPlexMatSetClosure_Internal(plex, section, globalSection, mesh->useMatClPerm, JacP, support[0], &elemMat[face * totDim * totDim], ADD_VALUES));
+          PetscCall(DMPlexMatSetClosure_Internal(plex, section, globalSection, mesh->useMatClPerm, Jac, support[0], &elemMat[face * totDim * totDim], ADD_VALUES));
         }
       }
     }
@@ -5870,19 +5891,22 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscFormKey key, IS cellIS
       PetscCall(PetscDSGetFieldOffset(prob, fieldI, &offsetI));
       PetscCall(PetscObjectGetClassId((PetscObject)fv, &id));
       if (id != PETSCFV_CLASSID) continue;
-      /* Put in the identity */
+      /* Put in the weighted identity */
       PetscCall(PetscFVGetNumComponents(fv, &NcI));
       for (c = cStart; c < cEnd; ++c) {
         const PetscInt cind    = c - cStart;
         const PetscInt eOffset = cind * totDim * totDim;
+        PetscReal      vol;
+
+        PetscCall(DMPlexComputeCellGeometryFVM(dm, c, &vol, NULL, NULL));
         for (fc = 0; fc < NcI; ++fc) {
           for (f = 0; f < NbI; ++f) {
             const PetscInt i = offsetI + f * NcI + fc;
             if (hasPrec) {
-              if (hasJac) elemMat[eOffset + i * totDim + i] = 1.0;
-              elemMatP[eOffset + i * totDim + i] = 1.0;
+              if (hasJac) elemMat[eOffset + i * totDim + i] = vol;
+              elemMatP[eOffset + i * totDim + i] = vol;
             } else {
-              elemMat[eOffset + i * totDim + i] = 1.0;
+              elemMat[eOffset + i * totDim + i] = vol;
             }
           }
         }
@@ -5922,7 +5946,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscFormKey key, IS cellIS
   /* Compute boundary integrals */
   PetscCall(DMPlexComputeBdJacobian_Internal(dm, X, X_t, t, X_tShift, Jac, JacP, user));
   /* Assemble matrix */
-end : {
+end: {
   PetscBool assOp = hasJac && hasPrec ? PETSC_TRUE : PETSC_FALSE, gassOp;
 
   PetscCall(MPIU_Allreduce(&assOp, &gassOp, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));

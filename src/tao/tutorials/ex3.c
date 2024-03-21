@@ -191,7 +191,6 @@ PetscErrorCode CreateCtx(DM dm, AppCtx *user)
   PetscErrorCode (**wtf)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
 
   PetscFunctionBeginUser;
-
   /* make the data we seek to match */
   PetscCall(PetscFECreateDefault(PetscObjectComm((PetscObject)dm), dim, 1, PETSC_TRUE, NULL, 4, &fe));
 
@@ -270,14 +269,12 @@ PetscErrorCode CreateCtx(DM dm, AppCtx *user)
   PetscCall(VecDuplicate(user->data, &user->tmp2));
 
   PetscCall(PetscFEDestroy(&fe));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DestroyCtx(AppCtx *user)
 {
   PetscFunctionBeginUser;
-
   PetscCall(MatDestroy(&user->mass));
   PetscCall(MatDestroy(&user->laplace));
   PetscCall(KSPDestroy(&user->ksp_laplace));
@@ -288,7 +285,6 @@ PetscErrorCode DestroyCtx(AppCtx *user)
   PetscCall(VecDestroy(&user->tmp2));
   PetscCall(PetscFree(user->bc_indices));
   PetscCall(PetscFree(user->bc_values));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -299,7 +295,6 @@ PetscErrorCode ReducedFunctionGradient(Tao tao, Vec u, PetscReal *func, Vec g, v
   PetscReal       inner;
 
   PetscFunctionBeginUser;
-
   PetscCall(MatMult(user->mass, u, user->tmp1));
   PetscCall(VecDot(u, user->tmp1, &inner)); /* regularisation contribution to */
   *func = alpha * 0.5 * inner;              /* the functional                 */
@@ -328,7 +323,6 @@ PetscErrorCode ReducedFunctionGradient(Tao tao, Vec u, PetscReal *func, Vec g, v
   /* And bring it home with the gradient. */
   PetscCall(MatMult(user->mass, user->adjoint, user->tmp1));
   PetscCall(VecAXPY(g, 1.0, user->tmp1)); /* adjoint contribution to the gradient */
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -391,7 +385,7 @@ int main(int argc, char **argv)
     test:
       suffix: guess_pod
       requires: double triangle
-      args: -laplace_ksp_type cg -laplace_pc_type gamg -laplace_ksp_monitor_true_residual -laplace_ksp_max_it 8 -laplace_pc_gamg_esteig_ksp_type cg -laplace_pc_gamg_esteig_ksp_max_it 5 -laplace_mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.0 -laplace_ksp_converged_reason -mat_lmvm_ksp_type cg -mat_lmvm_ksp_rtol 1e-5 -mat_lmvm_pc_type gamg -mat_lmvm_pc_gamg_esteig_ksp_type cg -mat_lmvm_pc_gamg_esteig_ksp_max_it 3 -tao_monitor -petscspace_degree 1 -tao_converged_reason -dm_refine 0 -laplace_ksp_guess_type pod -tao_gatol 1e-6 -laplace_pc_gamg_aggressive_coarsening 0
+      args: -laplace_ksp_type cg -laplace_pc_type gamg -laplace_ksp_max_it 8 -laplace_pc_gamg_esteig_ksp_type cg -laplace_pc_gamg_esteig_ksp_max_it 5 -laplace_mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.0 -mat_lmvm_ksp_type cg -mat_lmvm_ksp_rtol 1e-5 -mat_lmvm_pc_type gamg -mat_lmvm_pc_gamg_esteig_ksp_type cg -mat_lmvm_pc_gamg_esteig_ksp_max_it 3 -tao_monitor -petscspace_degree 1 -tao_converged_reason -dm_refine 0 -laplace_ksp_guess_type pod -tao_gatol 1e-6 -laplace_pc_gamg_aggressive_coarsening 0
       filter: sed -e "s/-nan/nan/g" -e "s/-NaN/nan/g" -e "s/NaN/nan/g" -e "s/CONVERGED_RTOL iterations 9/CONVERGED_RTOL iterations 8/g" -e "s/CONVERGED_RTOL iterations 4/CONVERGED_RTOL iterations 3/g"
 
 TEST*/

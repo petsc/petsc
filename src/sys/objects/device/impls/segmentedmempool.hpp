@@ -124,14 +124,11 @@ public:
   PETSC_NODISCARD bool contains(size_type) const noexcept;
 
 private:
-  // clang-format off
-  event_type      event_{};          // event recorded when the chunk was released
-  bool            open_      = true; // is this chunk open?
-  // id of the last stream to use the chunk, populated on release
-  int             stream_id_ = device::DefaultStream::INVALID_ID;
-  size_type       size_      = 0;    // size of the chunk
-  const size_type start_     = 0;    // offset from the start of the owning block
-  // clang-format on
+  event_type      event_{};                                       // event recorded when the chunk was released
+  bool            open_      = true;                              // is this chunk open?
+  int             stream_id_ = device::DefaultStream::INVALID_ID; // id of the last stream to use the chunk, populated on release
+  size_type       size_      = 0;                                 // size of the chunk
+  const size_type start_     = 0;                                 // offset from the start of the owning block
 
   template <typename U>
   PETSC_NODISCARD bool stream_compat_(const device::StreamBase<U> *) const noexcept;

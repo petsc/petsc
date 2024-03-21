@@ -337,7 +337,7 @@ static PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F, Mat A, IS r, IS c, const 
   /************************************************************************/
 
   F->ops->lufactornumeric = MatLUFactorNumeric_LUSOL;
-  lusol                   = (Mat_LUSOL *)(F->spptr);
+  lusol                   = (Mat_LUSOL *)F->spptr;
 
   /************************************************************************/
   /* Initialize parameters                                                */
@@ -424,7 +424,6 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A, MatFactorType ftype
   B->factortype = MAT_FACTOR_LU;
   PetscCall(PetscFree(B->solvertype));
   PetscCall(PetscStrallocpy(MATSOLVERLUSOL, &B->solvertype));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

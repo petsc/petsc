@@ -182,6 +182,5 @@ PetscErrorCode KSPChebyshevGetBetas_Private(KSP ksp)
     cheb->betas[15] = 1.51427891730346;
     break;
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }

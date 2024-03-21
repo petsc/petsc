@@ -129,7 +129,7 @@ PetscErrorCode PetscObjectAppendOptionsPrefix(PetscObject obj, const char prefix
   PetscCall(PetscStrlen(obj->prefix, &len1));
   PetscCall(PetscStrlen(prefix, &len2));
   new_len = len1 + len2 + 1;
-  PetscCall(PetscRealloc(new_len * sizeof(*(obj->prefix)), &obj->prefix));
+  PetscCall(PetscRealloc(new_len * sizeof(*obj->prefix), &obj->prefix));
   PetscCall(PetscStrncpy(obj->prefix + len1, prefix, len2 + 1));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

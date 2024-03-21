@@ -19,10 +19,10 @@ PetscObjectId PetscObjectNewId_Internal(void)
   return idcnt++;
 }
 
-PetscErrorCode PetscHeaderCreate_Function(PetscErrorCode ierr, PetscObject *h, PetscClassId classid, const char class_name[], const char descr[], const char mansec[], MPI_Comm comm, PetscObjectDestroyFunction destroy, PetscObjectViewFunction view)
+PetscErrorCode PetscHeaderCreate_Function(PetscErrorCode ierr, PetscObject *h, PetscClassId classid, const char class_name[], const char descr[], const char mansec[], MPI_Comm comm, PetscObjectDestroyFn *destroy, PetscObjectViewFn *view)
 {
-  if (ierr) return ierr;
   PetscFunctionBegin;
+  if (ierr) PetscFunctionReturn(ierr);
   PetscCall(PetscHeaderCreate_Private(*h, classid, class_name, descr, mansec, comm, destroy, view));
   PetscCall(PetscLogObjectCreate(*h));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -31,7 +31,7 @@ PetscErrorCode PetscHeaderCreate_Function(PetscErrorCode ierr, PetscObject *h, P
 /*
    PetscHeaderCreate_Private - Fills in the default values.
 */
-PetscErrorCode PetscHeaderCreate_Private(PetscObject h, PetscClassId classid, const char class_name[], const char descr[], const char mansec[], MPI_Comm comm, PetscObjectDestroyFunction destroy, PetscObjectViewFunction view)
+PetscErrorCode PetscHeaderCreate_Private(PetscObject h, PetscClassId classid, const char class_name[], const char descr[], const char mansec[], MPI_Comm comm, PetscObjectDestroyFn *destroy, PetscObjectViewFn *view)
 {
   void       *get_tmp;
   PetscInt64 *cidx;
@@ -591,10 +591,12 @@ PetscErrorCode PetscObjectDestroyOptionsHandlers(PetscObject obj)
   Logically Collective
 
   Input Parameter:
-. obj - the PETSc object. This must be cast with (`PetscObject`), for example,
-        `PetscObjectReference`((`PetscObject`)mat);
+. obj - the PETSc object. This must be cast with (`PetscObject`), for example, `PetscObjectReference`((`PetscObject`)mat);
 
   Level: advanced
+
+  Note:
+  If `obj` is `NULL` this function returns without doing anything.
 
 .seealso: `PetscObjectCompose()`, `PetscObjectDereference()`, `PetscObject`
 @*/
@@ -614,7 +616,7 @@ PetscErrorCode PetscObjectReference(PetscObject obj)
 
   Input Parameter:
 . obj - the PETSc object; this must be cast with (`PetscObject`), for example,
-        `PetscObjectGetReference`((`PetscObject`)mat,&cnt);
+        `PetscObjectGetReference`((`PetscObject`)mat,&cnt); `obj` cannot be `NULL`
 
   Output Parameter:
 . cnt - the reference count
@@ -645,8 +647,10 @@ PetscErrorCode PetscObjectGetReference(PetscObject obj, PetscInt *cnt)
 
   Level: advanced
 
-  Note:
+  Notes:
   `PetscObjectDestroy()` sets the `obj` pointer to `NULL` after the call, this routine does not.
+
+  If `obj` is `NULL` this function returns without doing anything.
 
 .seealso: `PetscObjectCompose()`, `PetscObjectReference()`, `PetscObjectDestroy()`, `PetscObject`
 @*/
@@ -917,7 +921,7 @@ PetscErrorCode PetscContainerDestroy(PetscContainer *obj)
   PetscFunctionBegin;
   if (!*obj) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*obj, PETSC_CONTAINER_CLASSID, 1);
-  if (--((PetscObject)(*obj))->refct > 0) {
+  if (--((PetscObject)*obj)->refct > 0) {
     *obj = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

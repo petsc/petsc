@@ -223,14 +223,14 @@ static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts, PetscReal ptime, Vec X, M
   Input Parameters:
 + dm    - `DM` to associate callback with
 . imode - insert mode for the residual
-. func  - local residual evaluation
+. func  - local residual evaluation, see `DMDATSRHSFunctionLocalFn` for the calling sequence
 - ctx   - optional context for local residual evaluation
 
   Level: beginner
 
-.seealso: [](ch_ts), `DMDA`, `DMDATSRHSFunctionLocal`, `TS`, `TSSetRHSFunction()`, `DMTSSetRHSFunction()`, `DMDATSSetRHSJacobianLocal()`, `DMDASNESSetFunctionLocal()`
+.seealso: [](ch_ts), `DMDA`, `DMDATSRHSFunctionLocalFn`, `TS`, `TSSetRHSFunction()`, `DMTSSetRHSFunction()`, `DMDATSSetRHSJacobianLocal()`, `DMDASNESSetFunctionLocal()`
 @*/
-PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm, InsertMode imode, DMDATSRHSFunctionLocal func, void *ctx)
+PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm, InsertMode imode, DMDATSRHSFunctionLocalFn *func, void *ctx)
 {
   DMTS     sdm;
   DMTS_DA *dmdats;
@@ -253,15 +253,15 @@ PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm, InsertMode imode, DMDATSRHSFunct
 
   Input Parameters:
 + dm   - `DM` to associate callback with
-. func - local RHS Jacobian evaluation routine
+. func - local RHS Jacobian evaluation routine, see `DMDATSRHSJacobianLocalFn` for the calling sequence
 - ctx  - optional context for local jacobian evaluation
 
   Level: beginner
 
-.seealso: [](ch_ts), `DMDA`, `DMDATSRHSJacobianLocal`, `DMTSSetRHSJacobian()`,
+.seealso: [](ch_ts), `DMDA`, `DMDATSRHSJacobianLocalFn`, `DMTSSetRHSJacobian()`,
 `DMDATSSetRHSFunctionLocal()`, `DMDASNESSetJacobianLocal()`
 @*/
-PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm, DMDATSRHSJacobianLocal func, void *ctx)
+PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm, DMDATSRHSJacobianLocalFn *func, void *ctx)
 {
   DMTS     sdm;
   DMTS_DA *dmdats;
@@ -284,15 +284,15 @@ PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm, DMDATSRHSJacobianLocal func, voi
   Input Parameters:
 + dm    - `DM` to associate callback with
 . imode - the insert mode of the function
-. func  - local residual evaluation
+. func  - local residual evaluation, see `DMDATSIFunctionLocalFn` for the calling sequence
 - ctx   - optional context for local residual evaluation
 
   Level: beginner
 
-.seealso: [](ch_ts), `DMDA`, `DMDATSIFunctionLocal`, `DMTSSetIFunction()`,
+.seealso: [](ch_ts), `DMDA`, `DMDATSIFunctionLocalFn`, `DMTSSetIFunction()`,
 `DMDATSSetIJacobianLocal()`, `DMDASNESSetFunctionLocal()`
 @*/
-PetscErrorCode DMDATSSetIFunctionLocal(DM dm, InsertMode imode, DMDATSIFunctionLocal func, void *ctx)
+PetscErrorCode DMDATSSetIFunctionLocal(DM dm, InsertMode imode, DMDATSIFunctionLocalFn *func, void *ctx)
 {
   DMTS     sdm;
   DMTS_DA *dmdats;
@@ -315,15 +315,15 @@ PetscErrorCode DMDATSSetIFunctionLocal(DM dm, InsertMode imode, DMDATSIFunctionL
 
   Input Parameters:
 + dm   - `DM` to associate callback with
-. func - local residual evaluation
+. func - local residual evaluation, see `DMDATSIJacobianLocalFn` for the calling sequence
 - ctx  - optional context for local residual evaluation
 
   Level: beginner
 
-.seealso: [](ch_ts), `DMDA`, `DMDATSIJacobianLocal`, `DMTSSetJacobian()`,
+.seealso: [](ch_ts), `DMDA`, `DMDATSIJacobianLocalFn`, `DMTSSetJacobian()`,
 `DMDATSSetIFunctionLocal()`, `DMDASNESSetJacobianLocal()`
 @*/
-PetscErrorCode DMDATSSetIJacobianLocal(DM dm, DMDATSIJacobianLocal func, void *ctx)
+PetscErrorCode DMDATSSetIJacobianLocal(DM dm, DMDATSIJacobianLocalFn *func, void *ctx)
 {
   DMTS     sdm;
   DMTS_DA *dmdats;

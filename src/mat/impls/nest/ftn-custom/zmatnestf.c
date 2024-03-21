@@ -22,7 +22,7 @@ PETSC_EXTERN void matcreatenest_(MPI_Fint *comm, PetscInt *nr, IS is_row[], Pets
   *ierr = PetscMalloc1((*nr) * (*nc), &m);
   if (*ierr) return;
   for (i = 0; i < (*nr) * (*nc); i++) {
-    tmp = &(a[i]);
+    tmp = &a[i];
     CHKFORTRANNULLOBJECT(tmp);
     m[i] = (tmp == NULL ? NULL : a[i]);
   }

@@ -37,7 +37,7 @@ PETSC_NODISCARD static PETSC_DEVICE_INLINE_DECL PetscInt MapTidToIndex(const Pet
   j = (m - k * dx[r] * dy[r]) / dx[r];
   i = m - k * dx[r] * dy[r] - j * dx[r];
 
-  return (start[r] + k * X[r] * Y[r] + j * X[r] + i);
+  return start[r] + k * X[r] * Y[r] + j * X[r] + i;
 }
 
 /*====================================================================================*/
@@ -463,9 +463,7 @@ struct SfInterface<T>::PackInit_IntegerType_Atomic {
 template <device::cupm::DeviceType T>
 template <typename Type, PetscInt BS, PetscInt EQ>
 struct SfInterface<T>::PackInit_IntegerType_Atomic<Type, BS, EQ, 1> {
-  static inline void Init(PetscSFLink)
-  { /* Nothing to leave function pointers NULL */
-  }
+  static inline void Init(PetscSFLink) { /* Nothing to leave function pointers NULL */ }
 };
 
 template <device::cupm::DeviceType T>

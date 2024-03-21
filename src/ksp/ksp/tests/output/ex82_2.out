@@ -5,12 +5,12 @@ row 1: (0, 1.)  (1, 1.)
 row 2: (2, 0.1)  (3, -0.1) 
 row 3: (2, 0.2)  (3, 0.01) 
 row 4: (4, 0.001) 
-  0 KSP Residual norm 8.375635517980e-01 
-  1 KSP Residual norm 6.632542063018e-01 
-  2 KSP Residual norm 4.218810215550e-01 
-  3 KSP Residual norm 4.182947828515e-01 
-  4 KSP Residual norm 3.951305183676e-01 
-  5 KSP Residual norm 6.047263836719e-14 
+  0 KSP Residual norm 8.375635517980e-01
+  1 KSP Residual norm 6.632542063018e-01
+  2 KSP Residual norm 4.218810215550e-01
+  3 KSP Residual norm 4.182947828515e-01
+  4 KSP Residual norm 3.951305183676e-01
+  5 KSP Residual norm 6.047263836719e-14
 % Number of Ritz pairs 5
 % Eigenvalue(s)  0.001 
 % Eigenvector

@@ -8,7 +8,7 @@ static char help[] = "Newton methods to solve u'' + u^{2} = f in parallel. Uses 
 */
 typedef struct {
   DM        da; /* distributed array */
-  Vec       F;  /* right-hand-side of PDE */
+  Vec       F;  /* right-hand side of PDE */
   PetscReal h;  /* mesh spacing */
 } ApplicationCtx;
 
@@ -214,7 +214,6 @@ PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *ctx)
   PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY));
   PetscCall(DMDAVecRestoreArrayRead(da, x, &xx));
   PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

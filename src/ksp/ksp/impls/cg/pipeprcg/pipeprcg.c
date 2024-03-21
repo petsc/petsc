@@ -16,7 +16,6 @@ static PetscErrorCode KSPSetUp_PIPEPRCG(KSP ksp)
   PetscFunctionBegin;
   /* get work vectors needed by PIPEPRCG */
   PetscCall(KSPSetWorkVecs(ksp, 9));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -52,7 +51,6 @@ static PetscErrorCode KSPSolve_PIPEPRCG(KSP ksp)
   gamma_p = &mudelgam[2];
 
   PetscFunctionBegin;
-
   PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
   PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
 
@@ -207,7 +205,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEPRCG(KSP ksp)
   PetscBool       cite = PETSC_FALSE;
 
   PetscFunctionBegin;
-
   PetscCall(PetscCitationsRegister("@article{predict_and_recompute_cg,\n  author = {Tyler Chen and Erin C. Carson},\n  title = {Predict-and-recompute conjugate gradient variants},\n  journal = {},\n  year = {2020},\n  eprint = {1905.01549},\n  "
                                    "archivePrefix = {arXiv},\n  primaryClass = {cs.NA}\n}",
                                    &cite));

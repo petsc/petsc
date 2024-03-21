@@ -86,10 +86,10 @@ template <DeviceType T>
 inline PetscErrorCode CUPMStream<T>::change_type(PetscStreamType newtype) noexcept
 {
   PetscFunctionBegin;
-  if (newtype == PETSC_STREAM_GLOBAL_BLOCKING) {
+  if (newtype == PETSC_STREAM_DEFAULT || newtype == PETSC_STREAM_DEFAULT_WITH_BARRIER) {
     PetscCall(destroy());
-  } else {
-    const flag_type preferred = newtype == PETSC_STREAM_DEFAULT_BLOCKING ? cupmStreamDefault : cupmStreamNonBlocking;
+  } else { // change to a nonblokcing stream
+    const flag_type preferred = cupmStreamNonBlocking;
 
     if (stream_) {
       flag_type flag;

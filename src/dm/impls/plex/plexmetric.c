@@ -847,7 +847,6 @@ static PetscErrorCode DMPlexP1FieldCreate_Private(DM dm, PetscInt f, PetscInt si
   PetscInt dim;
 
   PetscFunctionBegin;
-
   /* Extract metadata from dm */
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCall(DMGetDimension(dm, &dim));
@@ -858,7 +857,6 @@ static PetscErrorCode DMPlexP1FieldCreate_Private(DM dm, PetscInt f, PetscInt si
   PetscCall(DMCreateDS(dm));
   PetscCall(PetscFEDestroy(&fe));
   PetscCall(DMCreateLocalVector(dm, metric));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1136,7 +1134,6 @@ static PetscErrorCode DMPlexMetricModify_Private(PetscInt dim, PetscReal h_min, 
     }
   }
   PetscCall(PetscFree2(Mpos, eigs));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1473,7 +1470,6 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
   PetscScalar *evecs, *sqrtM1, *isqrtM1;
 
   PetscFunctionBegin;
-
   /* Isotropic case */
   if (dim == 1) {
     M2[0] = (PetscScalar)PetscMax(PetscRealPart(M1[0]), PetscRealPart(M2[0]));

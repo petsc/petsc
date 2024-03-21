@@ -1,6 +1,6 @@
-  0 KSP Residual norm 3.16228 
-  1 KSP Residual norm 1.28654 
-  2 KSP Residual norm 0.820783 
+  0 KSP Residual norm 3.16228
+  1 KSP Residual norm 1.28654
+  2 KSP Residual norm 0.820783
   3 KSP Residual norm < 1.e-11
   4 KSP Residual norm < 1.e-11
   5 KSP Residual norm < 1.e-11
@@ -15,7 +15,7 @@ Iteratively computed extreme singular values: max 4.4641 min 1. max/min 4.4641
 KSP Object: 1 MPI process
   type: minres
   maximum iterations=5, initial guess is zero
-  tolerances:  relative=0., absolute=0., divergence=10000.
+  tolerances: relative=0., absolute=0., divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
 PC Object: 1 MPI process

@@ -82,6 +82,38 @@ PetscErrorCode DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
 }
 
 /*@
+  DMDAGetBoundaryType - Gets the type of ghost nodes on domain boundaries.
+
+  Not Collective
+
+  Input Parameter:
+. da - The `DMDA`
+
+  Output Parameters:
++ bx - x boundary type, one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`
+. by - y boundary type, one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`
+- bz - z boundary type, one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`
+
+  Level: intermediate
+
+.seealso: [](sec_struct), `DMDASetBoundaryType()`, `DM`, `DMDA`, `DMDACreate()`, `DMDestroy()`, `DMBoundaryType`, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`
+@*/
+PetscErrorCode DMDAGetBoundaryType(DM da, DMBoundaryType *bx, DMBoundaryType *by, DMBoundaryType *bz)
+{
+  DM_DA *dd = (DM_DA *)da->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
+  if (bx) PetscAssertPointer(bx, 2);
+  if (by) PetscAssertPointer(by, 3);
+  if (bz) PetscAssertPointer(bz, 4);
+  if (bx) *bx = dd->bx;
+  if (by) *by = dd->by;
+  if (bz) *bz = dd->bz;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   DMDASetBoundaryType - Sets the type of ghost nodes on domain boundaries.
 
   Not Collective
@@ -94,7 +126,7 @@ PetscErrorCode DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
 
   Level: intermediate
 
-.seealso: [](sec_struct), `DM`, `DMDA`, `DMDACreate()`, `DMDestroy()`, `DMBoundaryType`, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`
+.seealso: [](sec_struct), `DMDAGetBoundaryType()`, `DM`, `DMDA`, `DMDACreate()`, `DMDestroy()`, `DMBoundaryType`, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`
 @*/
 PetscErrorCode DMDASetBoundaryType(DM da, DMBoundaryType bx, DMBoundaryType by, DMBoundaryType bz)
 {
@@ -423,7 +455,6 @@ PetscErrorCode DMDASetNonOverlappingRegion(DM da, PetscInt xs, PetscInt ys, Pets
   dd->nonxm = xm;
   dd->nonym = ym;
   dd->nonzm = zm;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

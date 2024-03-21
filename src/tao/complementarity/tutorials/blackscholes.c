@@ -25,7 +25,7 @@
        V(0, t) = E for all 0 <= t <= T
        V(s, t) = 0 for all 0 <= t <= T and s->infinity
 
-     where T is the exercise time time and E the strike price (price paid
+     where T is the exercise time and E the strike price (price paid
      for the contract).
 
      An explicit formula for the value of an European option can be
@@ -176,9 +176,9 @@ int main(int argc, char **argv)
   user.ds = user.es / (user.ms - 1);
   user.dt = user.expiry / user.mt;
 
-  PetscCall(PetscMalloc1(gxm, &(user.Vt1)));
-  PetscCall(PetscMalloc1(gxm, &(user.c)));
-  PetscCall(PetscMalloc1(gxm, &(user.d)));
+  PetscCall(PetscMalloc1(gxm, &user.Vt1));
+  PetscCall(PetscMalloc1(gxm, &user.c));
+  PetscCall(PetscMalloc1(gxm, &user.d));
 
   /*
      Calculate the values for the constant.  Vt1 begins with the ending
@@ -285,7 +285,6 @@ PetscErrorCode ComputeVariableBounds(Tao tao, Vec xl, Vec xu, void *ctx)
     xl_array[xm - 1] = 0;
     PetscCall(VecRestoreArray(xu, &xl_array));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* -------------------------------------------------------------------- */

@@ -47,7 +47,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsReal("-hmin", "Min size prescribed by the metric", "ex19.c", options->hmin, &options->hmin, NULL));
   PetscCall(PetscOptionsBool("-do_L2", "Test L2 projection", "ex19.c", options->doL2, &options->doL2, NULL));
   PetscOptionsEnd();
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -64,12 +63,12 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
 
 static PetscErrorCode ComputeMetricSensor(DM dm, AppCtx *user, Vec *metric)
 {
-  PetscSimplePointFunc funcs[1] = {sensor};
-  DM                   dmSensor, dmGrad, dmHess, dmDet;
-  PetscFE              fe;
-  Vec                  f, g, H, determinant;
-  PetscBool            simplex;
-  PetscInt             dim;
+  PetscSimplePointFn *funcs[1] = {sensor};
+  DM                  dmSensor, dmGrad, dmHess, dmDet;
+  PetscFE             fe;
+  Vec                 f, g, H, determinant;
+  PetscBool           simplex;
+  PetscInt            dim;
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));

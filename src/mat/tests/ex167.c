@@ -157,8 +157,8 @@ int main(int argc, char **args)
   PetscCall(MatDestroy(&A));
 
   for (l = 0; l < nsub; ++l) {
-    PetscCall(ISDestroy(&(rowis[l])));
-    PetscCall(ISDestroy(&(colis[l])));
+    PetscCall(ISDestroy(&rowis[l]));
+    PetscCall(ISDestroy(&colis[l]));
   }
   PetscCall(MatDestroySubMatrices(nsub, &S));
   PetscCall(PetscFinalize());

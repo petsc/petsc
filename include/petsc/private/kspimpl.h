@@ -223,12 +223,12 @@ static inline PetscErrorCode KSPLogErrorHistory(KSP ksp)
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   PetscCall(KSPGetDM(ksp, &dm));
   if (dm && ksp->err_hist && ksp->err_hist_max > ksp->err_hist_len) {
-    PetscSimplePointFunc exactSol;
-    void                *exactCtx;
-    PetscDS              ds;
-    Vec                  u;
-    PetscReal            error;
-    PetscInt             Nf;
+    PetscSimplePointFn *exactSol;
+    void               *exactCtx;
+    PetscDS             ds;
+    Vec                 u;
+    PetscReal           error;
+    PetscInt            Nf;
 
     PetscCall(KSPBuildSolution(ksp, NULL, &u));
     /* TODO Was needed to correct for Newton solution, but I just need to set a solution */
@@ -280,13 +280,45 @@ PETSC_INTERN PetscErrorCode KSPPlotEigenContours_Private(KSP, PetscInt, const Pe
 typedef struct _p_DMKSP  *DMKSP;
 typedef struct _DMKSPOps *DMKSPOps;
 struct _DMKSPOps {
-  PetscErrorCode (*computeoperators)(KSP, Mat, Mat, void *);
-  PetscErrorCode (*computerhs)(KSP, Vec, void *);
-  PetscErrorCode (*computeinitialguess)(KSP, Vec, void *);
+  KSPComputeOperatorsFn    *computeoperators;
+  KSPComputeRHSFn          *computerhs;
+  KSPComputeInitialGuessFn *computeinitialguess;
   PetscErrorCode (*destroy)(DMKSP *);
   PetscErrorCode (*duplicate)(DMKSP, DMKSP);
 };
 
+/*S
+   DMKSP - Object held by a `DM` that contains all the callback functions and their contexts needed by a `KSP`
+
+   Level: developer
+
+   Notes:
+   Users provides callback functions and their contexts to `KSP` using, for example, `KSPSetComputeRHS()`. These values are stored
+   in a `DMKSP` that is contained in the `DM` associated with the `KSP`. If no `DM` was provided by
+   the user with `KSPSetDM()` it is automatically created by `KSPGetDM()` with `DMShellCreate()`.
+
+   Users very rarely need to worked directly with the `DMKSP` object, rather they work with the `KSP` and the `DM` they created
+
+   Multiple `DM` can share a single `DMKSP`, often each `DM` is associated with
+   a grid refinement level. `DMGetDMKSP()` returns the `DMKSP` associated with a `DM`. `DMGetDMKSPWrite()` returns a unique
+   `DMKSP` that is only associated with the current `DM`, making a copy of the shared `DMKSP` if needed (copy-on-write).
+
+   Developer Notes:
+   It is rather subtle why `DMKSP`, `DMSNES`, and `DMTS` are needed instead of simply storing the user callback functions and contexts in `DM` or `KSP`, `SNES`, or `TS`.
+   It is to support composable solvers such as geometric multigrid. We want, by default, the same callback functions and contexts for all the levels in the computation,
+   but we need to also support different callbacks and contexts on each level. The copy-on-write approach of `DMGetDMKSPWrite()` makes this possible.
+
+   The `originaldm` inside the `DMKSP` is NOT reference counted (to prevent a reference count loop between a `DM` and a `DMKSP`).
+   The `DM` on which this context was first created is cached here to implement one-way
+   copy-on-write. When `DMGetDMKSPWrite()` sees a request using a different `DM`, it makes a copy of the `TSDM`. Thus, if a user
+   only interacts directly with one level, e.g., using `TSSetIFunction()`, then coarse levels of a multilevel item
+   integrator are built, then the user changes the routine with another call to `TSSetIFunction()`, it automatically
+   propagates to all the levels. If instead, they get out a specific level and set the function on that level,
+   subsequent changes to the original level will no longer propagate to that level.
+
+.seealso: [](ch_ts), `KSP`, `KSPCreate()`, `DM`, `DMGetDMKSPWrite()`, `DMGetDMKSP()`,  `DMSNES`, `DMTS`, `DMKSPSetComputeOperators()`, `DMKSPGetComputeOperators()`,
+          `DMKSPSetComputeRHS()`, `DMKSPSetComputeInitialGuess()`
+S*/
 struct _p_DMKSP {
   PETSCHEADER(struct _DMKSPOps);
   void *operatorsctx;
@@ -294,13 +326,7 @@ struct _p_DMKSP {
   void *initialguessctx;
   void *data;
 
-  /* This is NOT reference counted. The DM on which this context was first created is cached here to implement one-way
-   * copy-on-write. When DMGetDMKSPWrite() sees a request using a different DM, it makes a copy. Thus, if a user
-   * only interacts directly with one level, e.g., using KSPSetComputeOperators(), then coarse levels are constructed by
-   * PCMG, then the user changes the routine with another call to KSPSetComputeOperators(), it automatically propagates
-   * to all the levels. If instead, they get out a specific level and set the routines on that level, subsequent changes
-   * to the original level will no longer propagate to that level.
-   */
+  /* See developer note for `DMKSP` above */
   DM originaldm;
 
   void (*fortran_func_pointers[3])(void); /* Store our own function pointers so they are associated with the DMKSP instead of the DM */

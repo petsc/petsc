@@ -210,11 +210,11 @@ PETSC_INTERN PetscErrorCode AOCreate_Basic(AO ao)
 
     PetscCall(PetscArraycpy(sorted, allpetsc, N));
     PetscCall(PetscSortInt(N, sorted));
-    for (i = 0; i < N; i++) PetscCheck(sorted[i] == i, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "PETSc ordering requires a permutation of numbers 0 to N-1\n it is missing %" PetscInt_FMT " has %" PetscInt_FMT, i, sorted[i]);
+    for (i = 0; i < N; i++) PetscCheck(sorted[i] == i, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "PETSc ordering requires a permutation of numbers 0 to N-1, it is missing %" PetscInt_FMT " has %" PetscInt_FMT, i, sorted[i]);
 
     PetscCall(PetscArraycpy(sorted, allapp, N));
     PetscCall(PetscSortInt(N, sorted));
-    for (i = 0; i < N; i++) PetscCheck(sorted[i] == i, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Application ordering requires a permutation of numbers 0 to N-1\n it is missing %" PetscInt_FMT " has %" PetscInt_FMT, i, sorted[i]);
+    for (i = 0; i < N; i++) PetscCheck(sorted[i] == i, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Application ordering requires a permutation of numbers 0 to N-1, it is missing %" PetscInt_FMT " has %" PetscInt_FMT, i, sorted[i]);
 
     PetscCall(PetscFree(sorted));
   }
@@ -258,7 +258,7 @@ PETSC_INTERN PetscErrorCode AOCreate_Basic(AO ao)
 + comm    - MPI communicator that is to share `AO`
 . napp    - size of integer arrays
 . myapp   - integer array that defines an ordering
-- mypetsc - integer array that defines another ordering (may be NULL to
+- mypetsc - integer array that defines another ordering (may be `NULL` to
              indicate the natural ordering, that is 0,1,2,3,...)
 
   Output Parameter:
@@ -297,7 +297,7 @@ PetscErrorCode AOCreateBasic(MPI_Comm comm, PetscInt napp, const PetscInt myapp[
 
   Input Parameters:
 + isapp   - index set that defines an ordering
-- ispetsc - index set that defines another ordering (may be NULL to use the
+- ispetsc - index set that defines another ordering (may be `NULL` to use the
              natural ordering)
 
   Output Parameter:

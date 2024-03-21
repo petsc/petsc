@@ -225,7 +225,7 @@ typedef struct {
 
 #define FieldSize(ntype)             ((PetscInt)(sizeof(ntype) / sizeof(PetscScalar)))
 #define FieldOffset(ntype, member)   ((PetscInt)(offsetof(ntype, member) / sizeof(PetscScalar)))
-#define FieldIndex(ntype, i, member) ((PetscInt)((i)*FieldSize(ntype) + FieldOffset(ntype, member)))
+#define FieldIndex(ntype, i, member) ((PetscInt)((i) * FieldSize(ntype) + FieldOffset(ntype, member)))
 #define NODE_SIZE                    FieldSize(Node)
 #define PRMNODE_SIZE                 FieldSize(PrmNode)
 
@@ -481,7 +481,7 @@ static PetscErrorCode PRangeMinMax(PRange *p, PetscReal min, PetscReal max)
 static PetscErrorCode THIDestroy(THI *thi)
 {
   PetscFunctionBeginUser;
-  if (--((PetscObject)(*thi))->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
+  if (--((PetscObject)*thi)->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFree((*thi)->units));
   PetscCall(PetscFree((*thi)->mattype));
   PetscCall(PetscFree((*thi)->monitor_basename));

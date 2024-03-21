@@ -105,7 +105,7 @@
 
       PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-testmonitor',flg,ierr))
       if (flg) then
-         PetscCallA(TaoSetMonitor(tao,Monitor,dummy,PETSC_NULL_FUNCTION,ierr))
+         PetscCallA(TaoMonitorSet(tao,Monitor,dummy,PETSC_NULL_FUNCTION,ierr))
       endif
 
       PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-testconvergence',flg, ierr))
@@ -486,12 +486,12 @@
 !      requires: !complex
 !
 !   test:
-!      args: -tao_smonitor -tao_type nls -tao_gttol 1.e-2
+!      args: -tao_monitor_short -tao_type nls -tao_gttol 1.e-2
 !
 !   test:
 !      suffix: 2
 !      nsize: 2
-!      args: -tao_smonitor -tao_type lmvm -tao_gttol 1.e-2
+!      args: -tao_monitor_short -tao_type lmvm -tao_gttol 1.e-2
 !
 !   test:
 !      suffix: 3

@@ -11,55 +11,358 @@ Mat Object: 4 MPI processes
   type: is
   Mat Object: (is_) 1 MPI process
     type: seqaij
-row 0: (0, 2.)  (1, -1.)  (7, -1.) 
-row 1: (0, -2.)  (1, 4.)  (2, -2.) 
-row 2: (1, -3.)  (2, 6.)  (3, -3.) 
-row 3: (2, -4.)  (3, 8.)  (4, -4.) 
-row 4: (3, -5.)  (4, 10.)  (5, -5.) 
-row 5: (4, -6.)  (5, 12.)  (6, -6.) 
-row 6: (5, -7.)  (6, 14.)  (7, -7.) 
-row 7: (0, -8.)  (6, -8.)  (7, 16.) 
+  row 0:   (0, 2.)    (1, -1.)    (7, -1.)   
+  row 1:   (0, -2.)    (1, 4.)    (2, -2.)   
+  row 2:   (1, -3.)    (2, 6.)    (3, -3.)   
+  row 3:   (2, -4.)    (3, 8.)    (4, -4.)   
+  row 4:   (3, -5.)    (4, 10.)    (5, -5.)   
+  row 5:   (4, -6.)    (5, 12.)    (6, -6.)   
+  row 6:   (5, -7.)    (6, 14.)    (7, -7.)   
+  row 7:   (0, -8.)    (6, -8.)    (7, 16.)   
   Mat Object: (is_) 1 MPI process
     type: seqaij
-row 0: (0, 2.)  (1, -1.)  (7, -1.) 
-row 1: (0, -2.)  (1, 4.)  (2, -2.) 
-row 2: (1, -3.)  (2, 6.)  (3, -3.) 
-row 3: (2, -4.)  (3, 8.)  (4, -4.) 
-row 4: (3, -5.)  (4, 10.)  (5, -5.) 
-row 5: (4, -6.)  (5, 12.)  (6, -6.) 
-row 6: (5, -7.)  (6, 14.)  (7, -7.) 
-row 7: (0, -8.)  (6, -8.)  (7, 16.) 
+  row 0:   (0, 2.)    (1, -1.)    (7, -1.)   
+  row 1:   (0, -2.)    (1, 4.)    (2, -2.)   
+  row 2:   (1, -3.)    (2, 6.)    (3, -3.)   
+  row 3:   (2, -4.)    (3, 8.)    (4, -4.)   
+  row 4:   (3, -5.)    (4, 10.)    (5, -5.)   
+  row 5:   (4, -6.)    (5, 12.)    (6, -6.)   
+  row 6:   (5, -7.)    (6, 14.)    (7, -7.)   
+  row 7:   (0, -8.)    (6, -8.)    (7, 16.)   
   Mat Object: (is_) 1 MPI process
     type: seqaij
-row 0: (0, 2.)  (1, -1.)  (7, -1.) 
-row 1: (0, -2.)  (1, 4.)  (2, -2.) 
-row 2: (1, -3.)  (2, 6.)  (3, -3.) 
-row 3: (2, -4.)  (3, 8.)  (4, -4.) 
-row 4: (3, -5.)  (4, 10.)  (5, -5.) 
-row 5: (4, -6.)  (5, 12.)  (6, -6.) 
-row 6: (5, -7.)  (6, 14.)  (7, -7.) 
-row 7: (0, -8.)  (6, -8.)  (7, 16.) 
+  row 0:   (0, 2.)    (1, -1.)    (7, -1.)   
+  row 1:   (0, -2.)    (1, 4.)    (2, -2.)   
+  row 2:   (1, -3.)    (2, 6.)    (3, -3.)   
+  row 3:   (2, -4.)    (3, 8.)    (4, -4.)   
+  row 4:   (3, -5.)    (4, 10.)    (5, -5.)   
+  row 5:   (4, -6.)    (5, 12.)    (6, -6.)   
+  row 6:   (5, -7.)    (6, 14.)    (7, -7.)   
+  row 7:   (0, -8.)    (6, -8.)    (7, 16.)   
   Mat Object: (is_) 1 MPI process
     type: seqaij
-row 0: (0, 2.)  (1, -1.)  (7, -1.) 
-row 1: (0, -2.)  (1, 4.)  (2, -2.) 
-row 2: (1, -3.)  (2, 6.)  (3, -3.) 
-row 3: (2, -4.)  (3, 8.)  (4, -4.) 
-row 4: (3, -5.)  (4, 10.)  (5, -5.) 
-row 5: (4, -6.)  (5, 12.)  (6, -6.) 
-row 6: (5, -7.)  (6, 14.)  (7, -7.) 
-row 7: (0, -8.)  (6, -8.)  (7, 16.) 
+  row 0:   (0, 2.)    (1, -1.)    (7, -1.)   
+  row 1:   (0, -2.)    (1, 4.)    (2, -2.)   
+  row 2:   (1, -3.)    (2, 6.)    (3, -3.)   
+  row 3:   (2, -4.)    (3, 8.)    (4, -4.)   
+  row 4:   (3, -5.)    (4, 10.)    (5, -5.)   
+  row 5:   (4, -6.)    (5, 12.)    (6, -6.)   
+  row 6:   (5, -7.)    (6, 14.)    (7, -7.)   
+  row 7:   (0, -8.)    (6, -8.)    (7, 16.)   
 Mat Object: 4 MPI processes
   type: mpiaij
-row 0: (0, 8.)  (1, -4.)  (7, -4.) 
-row 1: (0, -8.)  (1, 16.)  (2, -8.) 
-row 2: (1, -12.)  (2, 24.)  (3, -12.) 
-row 3: (2, -16.)  (3, 32.)  (4, -16.) 
-row 4: (3, -20.)  (4, 40.)  (5, -20.) 
-row 5: (4, -24.)  (5, 48.)  (6, -24.) 
-row 6: (5, -28.)  (6, 56.)  (7, -28.) 
-row 7: (0, -32.)  (6, -32.)  (7, 64.) 
+  row 0:   (0, 8.)    (1, -4.)    (7, -4.)   
+  row 1:   (0, -8.)    (1, 16.)    (2, -8.)   
+  row 2:   (1, -12.)    (2, 24.)    (3, -12.)   
+  row 3:   (2, -16.)    (3, 32.)    (4, -16.)   
+  row 4:   (3, -20.)    (4, 40.)    (5, -20.)   
+  row 5:   (4, -24.)    (5, 48.)    (6, -24.)   
+  row 6:   (5, -28.)    (6, 56.)    (7, -28.)   
+  row 7:   (0, -32.)    (6, -32.)    (7, 64.)   
 Test CheckMat
+Test MatView on binary world
+Test MatView on binary self
+Test MatView on binary subcomm
+Test MatLoad from world
+Mat Object: 4 MPI processes
+  type: is
+  rows=8, cols=8
+  total: nonzeros=96, allocated nonzeros=96
+  total number of mallocs used during MatSetValues calls=0
+    Mat Object: 1 MPI process
+      type: seqaij
+      rows=8, cols=8
+      total: nonzeros=24, allocated nonzeros=24
+      total number of mallocs used during MatSetValues calls=0
+        not using I-node routines
+    Mat Object: 1 MPI process
+      type: seqaij
+      rows=8, cols=8
+      total: nonzeros=24, allocated nonzeros=24
+      total number of mallocs used during MatSetValues calls=0
+        not using I-node routines
+    Mat Object: 1 MPI process
+      type: seqaij
+      rows=8, cols=8
+      total: nonzeros=24, allocated nonzeros=24
+      total number of mallocs used during MatSetValues calls=0
+        not using I-node routines
+    Mat Object: 1 MPI process
+      type: seqaij
+      rows=8, cols=8
+      total: nonzeros=24, allocated nonzeros=24
+      total number of mallocs used during MatSetValues calls=0
+        not using I-node routines
+    ISLocalToGlobalMapping Object: 4 MPI processes
+      type not yet set
+    [0] 0 0
+    [0] 1 1
+    [0] 2 2
+    [0] 3 3
+    [0] 4 4
+    [0] 5 5
+    [0] 6 6
+    [0] 7 7
+    [1] 0 0
+    [1] 1 1
+    [1] 2 2
+    [1] 3 3
+    [1] 4 4
+    [1] 5 5
+    [1] 6 6
+    [1] 7 7
+    [2] 0 0
+    [2] 1 1
+    [2] 2 2
+    [2] 3 3
+    [2] 4 4
+    [2] 5 5
+    [2] 6 6
+    [2] 7 7
+    [3] 0 0
+    [3] 1 1
+    [3] 2 2
+    [3] 3 3
+    [3] 4 4
+    [3] 5 5
+    [3] 6 6
+    [3] 7 7
+    ISLocalToGlobalMapping Object: 4 MPI processes
+      type not yet set
+    [0] 0 0
+    [0] 1 1
+    [0] 2 2
+    [0] 3 3
+    [0] 4 4
+    [0] 5 5
+    [0] 6 6
+    [0] 7 7
+    [1] 0 0
+    [1] 1 1
+    [1] 2 2
+    [1] 3 3
+    [1] 4 4
+    [1] 5 5
+    [1] 6 6
+    [1] 7 7
+    [2] 0 0
+    [2] 1 1
+    [2] 2 2
+    [2] 3 3
+    [2] 4 4
+    [2] 5 5
+    [2] 6 6
+    [2] 7 7
+    [3] 0 0
+    [3] 1 1
+    [3] 2 2
+    [3] 3 3
+    [3] 4 4
+    [3] 5 5
+    [3] 6 6
+    [3] 7 7
+Test MatLoad from self
+Mat Object: 4 MPI processes
+  type: is
+  rows=8, cols=8
+  total: nonzeros=24, allocated nonzeros=24
+  total number of mallocs used during MatSetValues calls=0
+    Mat Object: 1 MPI process
+      type: seqaij
+      rows=8, cols=8
+      total: nonzeros=24, allocated nonzeros=24
+      total number of mallocs used during MatSetValues calls=0
+        not using I-node routines
+    Mat Object: 1 MPI process
+      type: seqaij
+      rows=0, cols=0
+      total: nonzeros=0, allocated nonzeros=0
+      total number of mallocs used during MatSetValues calls=0
+        not using I-node routines
+    Mat Object: 1 MPI process
+      type: seqaij
+      rows=0, cols=0
+      total: nonzeros=0, allocated nonzeros=0
+      total number of mallocs used during MatSetValues calls=0
+        not using I-node routines
+    Mat Object: 1 MPI process
+      type: seqaij
+      rows=0, cols=0
+      total: nonzeros=0, allocated nonzeros=0
+      total number of mallocs used during MatSetValues calls=0
+        not using I-node routines
+    ISLocalToGlobalMapping Object: 4 MPI processes
+      type not yet set
+    [0] 0 0
+    [0] 1 1
+    [0] 2 2
+    [0] 3 3
+    [0] 4 4
+    [0] 5 5
+    [0] 6 6
+    [0] 7 7
+    ISLocalToGlobalMapping Object: 4 MPI processes
+      type not yet set
+    [0] 0 0
+    [0] 1 1
+    [0] 2 2
+    [0] 3 3
+    [0] 4 4
+    [0] 5 5
+    [0] 6 6
+    [0] 7 7
+Test MatLoad from subcomm
+Mat Object: 4 MPI processes
+  type: is
+  rows=8, cols=8
+  total: nonzeros=48, allocated nonzeros=48
+  total number of mallocs used during MatSetValues calls=0
+    Mat Object: 1 MPI process
+      type: seqaij
+      rows=8, cols=8
+      total: nonzeros=24, allocated nonzeros=24
+      total number of mallocs used during MatSetValues calls=0
+        not using I-node routines
+    Mat Object: 1 MPI process
+      type: seqaij
+      rows=8, cols=8
+      total: nonzeros=24, allocated nonzeros=24
+      total number of mallocs used during MatSetValues calls=0
+        not using I-node routines
+    Mat Object: 1 MPI process
+      type: seqaij
+      rows=0, cols=0
+      total: nonzeros=0, allocated nonzeros=0
+      total number of mallocs used during MatSetValues calls=0
+        not using I-node routines
+    Mat Object: 1 MPI process
+      type: seqaij
+      rows=0, cols=0
+      total: nonzeros=0, allocated nonzeros=0
+      total number of mallocs used during MatSetValues calls=0
+        not using I-node routines
+    ISLocalToGlobalMapping Object: 4 MPI processes
+      type not yet set
+    [0] 0 0
+    [0] 1 1
+    [0] 2 2
+    [0] 3 3
+    [0] 4 4
+    [0] 5 5
+    [0] 6 6
+    [0] 7 7
+    [1] 0 0
+    [1] 1 1
+    [1] 2 2
+    [1] 3 3
+    [1] 4 4
+    [1] 5 5
+    [1] 6 6
+    [1] 7 7
+    ISLocalToGlobalMapping Object: 4 MPI processes
+      type not yet set
+    [0] 0 0
+    [0] 1 1
+    [0] 2 2
+    [0] 3 3
+    [0] 4 4
+    [0] 5 5
+    [0] 6 6
+    [0] 7 7
+    [1] 0 0
+    [1] 1 1
+    [1] 2 2
+    [1] 3 3
+    [1] 4 4
+    [1] 5 5
+    [1] 6 6
+    [1] 7 7
+Test subcomm MatLoad from world
+Mat Object: 2 MPI processes
+  type: is
+  rows=8, cols=8
+  total: nonzeros=96, allocated nonzeros=96
+  total number of mallocs used during MatSetValues calls=0
+    Mat Object: 1 MPI process
+      type: seqaij
+      rows=16, cols=16
+      total: nonzeros=48, allocated nonzeros=48
+      total number of mallocs used during MatSetValues calls=0
+        not using I-node routines
+    Mat Object: 1 MPI process
+      type: seqaij
+      rows=16, cols=16
+      total: nonzeros=48, allocated nonzeros=48
+      total number of mallocs used during MatSetValues calls=0
+        not using I-node routines
+    ISLocalToGlobalMapping Object: 2 MPI processes
+      type not yet set
+    [0] 0 0
+    [0] 1 1
+    [0] 2 2
+    [0] 3 3
+    [0] 4 4
+    [0] 5 5
+    [0] 6 6
+    [0] 7 7
+    [0] 8 0
+    [0] 9 1
+    [0] 10 2
+    [0] 11 3
+    [0] 12 4
+    [0] 13 5
+    [0] 14 6
+    [0] 15 7
+    [1] 0 0
+    [1] 1 1
+    [1] 2 2
+    [1] 3 3
+    [1] 4 4
+    [1] 5 5
+    [1] 6 6
+    [1] 7 7
+    [1] 8 0
+    [1] 9 1
+    [1] 10 2
+    [1] 11 3
+    [1] 12 4
+    [1] 13 5
+    [1] 14 6
+    [1] 15 7
+    ISLocalToGlobalMapping Object: 2 MPI processes
+      type not yet set
+    [0] 0 0
+    [0] 1 1
+    [0] 2 2
+    [0] 3 3
+    [0] 4 4
+    [0] 5 5
+    [0] 6 6
+    [0] 7 7
+    [0] 8 0
+    [0] 9 1
+    [0] 10 2
+    [0] 11 3
+    [0] 12 4
+    [0] 13 5
+    [0] 14 6
+    [0] 15 7
+    [1] 0 0
+    [1] 1 1
+    [1] 2 2
+    [1] 3 3
+    [1] 4 4
+    [1] 5 5
+    [1] 6 6
+    [1] 7 7
+    [1] 8 0
+    [1] 9 1
+    [1] 10 2
+    [1] 11 3
+    [1] 12 4
+    [1] 13 5
+    [1] 14 6
+    [1] 15 7
 Test MatDuplicate and MatAXPY
 Test MatConvert_IS_XAIJ
 Test MatConvert_XAIJ_IS
@@ -214,3 +517,4 @@ Test MatInvertBlockDiagonal blockdiag 8 2 2 1
 Test MatInvertBlockDiagonal blockdiag 8 2 2 2
 Test MatInvertBlockDiagonal blockdiag 8 2 2 3
 Test MatGetDiagonalBlock
+Test MatISSetAllowRepeated(false) with possibly repeated entries

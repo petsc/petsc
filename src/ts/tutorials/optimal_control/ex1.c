@@ -305,9 +305,9 @@ int main(int argc, char **argv)
 
   /* Set sensitivity context */
   PetscCall(TSCreateQuadratureTS(aircraft.ts, PETSC_FALSE, &aircraft.quadts));
-  PetscCall(TSSetRHSFunction(aircraft.quadts, NULL, (TSRHSFunction)CostIntegrand, &aircraft));
+  PetscCall(TSSetRHSFunction(aircraft.quadts, NULL, (TSRHSFunctionFn *)CostIntegrand, &aircraft));
   PetscCall(TSSetRHSJacobian(aircraft.quadts, aircraft.DRDU, aircraft.DRDU, (TSRHSJacobian)DRDUJacobianTranspose, &aircraft));
-  PetscCall(TSSetRHSJacobianP(aircraft.quadts, aircraft.DRDP, (TSRHSJacobianP)DRDPJacobianTranspose, &aircraft));
+  PetscCall(TSSetRHSJacobianP(aircraft.quadts, aircraft.DRDP, (TSRHSJacobianPFn *)DRDPJacobianTranspose, &aircraft));
   PetscCall(MatCreateVecs(aircraft.A, &aircraft.Lambda[0], NULL));
   PetscCall(MatCreateVecs(aircraft.Jacp, &aircraft.Mup[0], NULL));
   if (aircraft.eh) {
@@ -364,7 +364,7 @@ int main(int argc, char **argv)
       PetscCall(MatSetOption(aircraft.H, MAT_SYMMETRIC, PETSC_TRUE));
       PetscCall(TaoSetHessian(tao, aircraft.H, aircraft.H, MatrixFreeObjHessian, (void *)&aircraft));
     } else {
-      PetscCall(MatCreateDense(MPI_COMM_WORLD, PETSC_DETERMINE, PETSC_DETERMINE, 2 * aircraft.nsteps, 2 * aircraft.nsteps, NULL, &(aircraft.H)));
+      PetscCall(MatCreateDense(MPI_COMM_WORLD, PETSC_DETERMINE, PETSC_DETERMINE, 2 * aircraft.nsteps, 2 * aircraft.nsteps, NULL, &aircraft.H));
       PetscCall(MatSetOption(aircraft.H, MAT_SYMMETRIC, PETSC_TRUE));
       PetscCall(TaoSetHessian(tao, aircraft.H, aircraft.H, FormObjHessian, (void *)&aircraft));
     }

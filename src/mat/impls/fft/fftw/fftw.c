@@ -614,7 +614,7 @@ PetscErrorCode MatCreateVecsFFTW_FFTW(Mat A, Vec *fin, Vec *fout, Vec *bout)
       temp                                  = (fftw->dim_fftw)[fftw->ndim_fftw - 1];
       (fftw->dim_fftw)[fftw->ndim_fftw - 1] = temp / 2 + 1;
       alloc_local                           = fftw_mpi_local_size_transposed(fftw->ndim_fftw, fftw->dim_fftw, comm, &local_n0, &local_0_start, &local_n1, &local_1_start);
-      N1                                    = 2 * fft->N * (PetscInt)((fftw->dim_fftw)[fftw->ndim_fftw - 1]) / ((PetscInt)temp);
+      N1                                    = 2 * fft->N * (PetscInt)(fftw->dim_fftw[fftw->ndim_fftw - 1]) / ((PetscInt)temp);
       (fftw->dim_fftw)[fftw->ndim_fftw - 1] = temp;
 
       if (fin) {
@@ -1187,7 +1187,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
     fft->n = fft->N;
 #else
     PetscCall(MatSetSizes(A, tot_dim, tot_dim, tot_dim, tot_dim));
-    fft->n       = tot_dim;
+    fft->n = tot_dim;
 #endif
 #if !PetscDefined(HAVE_MPIUNI)
   } else {
@@ -1264,7 +1264,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
   fftw->ndim_fftw   = (ptrdiff_t)ndim; /* This is dimension of fft */
   fftw->partial_dim = partial_dim;
 
-  PetscCall(PetscMalloc1(ndim, &(fftw->dim_fftw)));
+  PetscCall(PetscMalloc1(ndim, &fftw->dim_fftw));
   if (size == 1) {
 #if defined(PETSC_USE_64BIT_INDICES)
     fftw->iodims = (fftw_iodim64 *)malloc(sizeof(fftw_iodim64) * ndim);

@@ -76,18 +76,18 @@ static int TSPSolve_Sundials_Private(realtype tn, N_Vector y, N_Vector fy, N_Vec
 }
 
 /*
-        TSFunction_Sundials - routine that we provide to SUNDIALS that applies the right hand side.
+        TSFunction_Sundials - routine that we provide to SUNDIALS that applies the right-hand side.
 */
 static int TSFunction_Sundials(realtype t, N_Vector y, N_Vector ydot, void *ctx)
 {
-  TS           ts = (TS)ctx;
-  DM           dm;
-  DMTS         tsdm;
-  TSIFunction  ifunction;
-  MPI_Comm     comm;
-  TS_Sundials *cvode = (TS_Sundials *)ts->data;
-  Vec          yy = cvode->w1, yyd = cvode->w2, yydot = cvode->ydot;
-  PetscScalar *y_data, *ydot_data;
+  TS             ts = (TS)ctx;
+  DM             dm;
+  DMTS           tsdm;
+  TSIFunctionFn *ifunction;
+  MPI_Comm       comm;
+  TS_Sundials   *cvode = (TS_Sundials *)ts->data;
+  Vec            yy = cvode->w1, yyd = cvode->w2, yydot = cvode->ydot;
+  PetscScalar   *y_data, *ydot_data;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)ts, &comm));
@@ -97,7 +97,7 @@ static int TSFunction_Sundials(realtype t, N_Vector y, N_Vector ydot, void *ctx)
   PetscCallAbort(comm, VecPlaceArray(yy, y_data));
   PetscCallAbort(comm, VecPlaceArray(yyd, ydot_data));
 
-  /* Now compute the right hand side function, via IFunction unless only the more efficient RHSFunction is set */
+  /* Now compute the right-hand side function, via IFunction unless only the more efficient RHSFunction is set */
   PetscCall(TSGetDM(ts, &dm));
   PetscCall(DMGetDMTS(dm, &tsdm));
   PetscCall(DMTSGetIFunction(dm, &ifunction, NULL));
@@ -259,7 +259,7 @@ static PetscErrorCode TSDestroy_Sundials(TS ts)
 
   PetscFunctionBegin;
   PetscCall(TSReset_Sundials(ts));
-  PetscCallMPI(MPI_Comm_free(&(cvode->comm_sundials)));
+  PetscCallMPI(MPI_Comm_free(&cvode->comm_sundials));
   PetscCall(PetscFree(ts->data));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSSundialsSetType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSSundialsSetMaxl_C", NULL));
@@ -340,7 +340,7 @@ static PetscErrorCode TSSetUp_Sundials(TS ts)
   if (cvode->maxdt > 0) PetscCallExternal(CVodeSetMaxStep, cvode->mem, (realtype)cvode->maxdt);
 
   /* Call CVodeInit to initialize the integrator memory and specify the
-   * user's right hand side function in u'=f(t,u), the initial time T0, and
+   * user's right-hand side function in u'=f(t,u), the initial time T0, and
    * the initial dependent variable vector cvode->y */
   PetscCallExternal(CVodeInit, cvode->mem, TSFunction_Sundials, ts->ptime, cvode->y);
 
@@ -912,7 +912,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Sundials(TS ts)
   cvode->monitorstep = PETSC_TRUE;
   cvode->use_dense   = PETSC_FALSE;
 
-  PetscCallMPI(MPI_Comm_dup(PetscObjectComm((PetscObject)ts), &(cvode->comm_sundials)));
+  PetscCallMPI(MPI_Comm_dup(PetscObjectComm((PetscObject)ts), &cvode->comm_sundials));
 
   cvode->mindt = -1.;
   cvode->maxdt = -1.;

@@ -235,7 +235,7 @@ static PetscErrorCode MatMult_HYPREStruct(Mat A, Vec x, Vec y)
   PetscScalar       *yy;
   PetscInt           ilower[3], iupper[3];
   HYPRE_Int          hlower[3], hupper[3];
-  Mat_HYPREStruct   *mx = (Mat_HYPREStruct *)(A->data);
+  Mat_HYPREStruct   *mx = (Mat_HYPREStruct *)A->data;
 
   PetscFunctionBegin;
   PetscCall(DMDAGetCorners(mx->da, &ilower[0], &ilower[1], &ilower[2], &iupper[0], &iupper[1], &iupper[2]));
@@ -291,7 +291,7 @@ static PetscErrorCode MatDestroy_HYPREStruct(Mat mat)
   PetscCallExternal(HYPRE_StructVectorDestroy, ex->hx);
   PetscCallExternal(HYPRE_StructVectorDestroy, ex->hb);
   PetscCall(PetscObjectDereference((PetscObject)ex->da));
-  PetscCallMPI(MPI_Comm_free(&(ex->hcomm)));
+  PetscCallMPI(MPI_Comm_free(&ex->hcomm));
   PetscCall(PetscFree(ex));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -316,7 +316,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPREStruct(Mat B)
 
   ex->needsinitialization = PETSC_TRUE;
 
-  PetscCallMPI(MPI_Comm_dup(PetscObjectComm((PetscObject)B), &(ex->hcomm)));
+  PetscCallMPI(MPI_Comm_dup(PetscObjectComm((PetscObject)B), &ex->hcomm));
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATHYPRESTRUCT));
   PetscHYPREInitialize();
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -510,7 +510,7 @@ static PetscErrorCode MatZeroEntries_HYPRESStruct_3d(Mat mat)
   PetscInt          part = 0; /* only one part */
 
   PetscFunctionBegin;
-  size = ((ex->hbox.imax[0]) - (ex->hbox.imin[0]) + 1) * ((ex->hbox.imax[1]) - (ex->hbox.imin[1]) + 1) * ((ex->hbox.imax[2]) - (ex->hbox.imin[2]) + 1);
+  size = (ex->hbox.imax[0] - ex->hbox.imin[0] + 1) * (ex->hbox.imax[1] - ex->hbox.imin[1] + 1) * (ex->hbox.imax[2] - ex->hbox.imin[2] + 1);
   {
     HYPRE_Int      i, *entries, iupper[3], ilower[3];
     HYPRE_Complex *values;
@@ -643,7 +643,7 @@ static PetscErrorCode MatSetUp_HYPRESStruct(Mat mat)
   }
 
   /* create the HYPRE graph */
-  PetscCallExternal(HYPRE_SStructGraphCreate, ex->hcomm, ex->ss_grid, &(ex->ss_graph));
+  PetscCallExternal(HYPRE_SStructGraphCreate, ex->hcomm, ex->ss_grid, &ex->ss_graph);
 
   /* set the stencil graph. Note that each variable has the same graph. This means that each
      variable couples to all the other variable and with the same stencil pattern. */
@@ -706,7 +706,7 @@ static PetscErrorCode MatMult_HYPRESStruct(Mat A, Vec x, Vec y)
   PetscScalar       *yy;
   HYPRE_Int          hlower[3], hupper[3];
   PetscInt           ilower[3], iupper[3];
-  Mat_HYPRESStruct  *mx       = (Mat_HYPRESStruct *)(A->data);
+  Mat_HYPRESStruct  *mx       = (Mat_HYPRESStruct *)A->data;
   PetscInt           ordering = mx->dofs_order;
   PetscInt           nvars    = mx->nvars;
   PetscInt           part     = 0;
@@ -804,7 +804,7 @@ static PetscErrorCode MatDestroy_HYPRESStruct(Mat mat)
   PetscCallExternal(HYPRE_SStructVectorDestroy, ex->ss_x);
   PetscCallExternal(HYPRE_SStructVectorDestroy, ex->ss_b);
   PetscCall(PetscObjectDereference((PetscObject)ex->da));
-  PetscCallMPI(MPI_Comm_free(&(ex->hcomm)));
+  PetscCallMPI(MPI_Comm_free(&ex->hcomm));
   PetscCall(PetscFree(ex));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -829,7 +829,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRESStruct(Mat B)
 
   ex->needsinitialization = PETSC_TRUE;
 
-  PetscCallMPI(MPI_Comm_dup(PetscObjectComm((PetscObject)B), &(ex->hcomm)));
+  PetscCallMPI(MPI_Comm_dup(PetscObjectComm((PetscObject)B), &ex->hcomm));
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATHYPRESSTRUCT));
   PetscHYPREInitialize();
   PetscFunctionReturn(PETSC_SUCCESS);

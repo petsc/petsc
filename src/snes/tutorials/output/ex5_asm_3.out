@@ -1,25 +1,25 @@
-  0 SNES Function norm 0.137187 
-    0 KSP Residual norm 0.102527 
-    1 KSP Residual norm 0.0332683 
-    2 KSP Residual norm 0.0108062 
-    3 KSP Residual norm 0.00351037 
-    4 KSP Residual norm 0.00114035 
-    5 KSP Residual norm 0.000370442 
-    6 KSP Residual norm 0.000120338 
-    7 KSP Residual norm 3.90919e-05 
-    8 KSP Residual norm 1.2699e-05 
-    9 KSP Residual norm 4.12529e-06 
-   10 KSP Residual norm 1.3401e-06 
-   11 KSP Residual norm 4.35333e-07 
-   12 KSP Residual norm 1.41418e-07 
-   13 KSP Residual norm 4.59397e-08 
-   14 KSP Residual norm 1.49235e-08 
-   15 KSP Residual norm 4.84792e-09 
-   16 KSP Residual norm 1.57485e-09 
-   17 KSP Residual norm 5.116e-10 
-   18 KSP Residual norm 1.662e-10 
-   19 KSP Residual norm 5.399e-11 
-  1 SNES Function norm 7.122e-11 
+  0 SNES Function norm 0.137187
+    0 KSP Residual norm 0.102527
+    1 KSP Residual norm 0.0332683
+    2 KSP Residual norm 0.0108062
+    3 KSP Residual norm 0.00351037
+    4 KSP Residual norm 0.00114035
+    5 KSP Residual norm 0.000370442
+    6 KSP Residual norm 0.000120338
+    7 KSP Residual norm 3.90919e-05
+    8 KSP Residual norm 1.2699e-05
+    9 KSP Residual norm 4.12529e-06
+   10 KSP Residual norm 1.3401e-06
+   11 KSP Residual norm 4.35333e-07
+   12 KSP Residual norm 1.41418e-07
+   13 KSP Residual norm 4.59397e-08
+   14 KSP Residual norm 1.49235e-08
+   15 KSP Residual norm 4.84792e-09
+   16 KSP Residual norm 1.57485e-09
+   17 KSP Residual norm 5.116e-10
+   18 KSP Residual norm 1.662e-10
+   19 KSP Residual norm 5.399e-11
+  1 SNES Function norm 7.122e-11
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI process
   type: newtonls
@@ -40,7 +40,7 @@ SNES Object: 1 MPI process
     type: richardson
       damping factor=1.
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-09, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object: 1 MPI process
@@ -52,7 +52,7 @@ SNES Object: 1 MPI process
     KSP Object: (sub_) 1 MPI process
       type: preonly
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (sub_) 1 MPI process

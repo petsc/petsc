@@ -364,8 +364,8 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
     PetscCall(TaoSetMaximumIterations(gn->subsolver, tao->max_it));
     PetscCall(TaoSetMaximumFunctionEvaluations(gn->subsolver, tao->max_funcs));
     for (i = 0; i < tao->numbermonitors; ++i) {
-      PetscCall(TaoSetMonitor(gn->subsolver, tao->monitor[i], tao->monitorcontext[i], tao->monitordestroy[i]));
-      PetscCall(PetscObjectReference((PetscObject)(tao->monitorcontext[i])));
+      PetscCall(TaoMonitorSet(gn->subsolver, tao->monitor[i], tao->monitorcontext[i], tao->monitordestroy[i]));
+      PetscCall(PetscObjectReference((PetscObject)tao->monitorcontext[i]));
     }
     PetscCall(TaoSetUp(gn->subsolver));
   }
@@ -529,6 +529,7 @@ PetscErrorCode TaoBRGNSetL1SmoothEpsilon(Tao tao, PetscReal epsilon)
 PetscErrorCode TaoBRGNSetDictionaryMatrix(Tao tao, Mat dict)
 {
   TAO_BRGN *gn = (TAO_BRGN *)tao->data;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (dict) {

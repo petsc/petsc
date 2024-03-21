@@ -16,7 +16,7 @@ static PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscView
   PetscCall(PetscViewerASCIIPushSynchronized(viewer));
   PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Process %d:\n", rank));
   for (p = 0; p < s->pEnd - s->pStart; ++p) {
-    if ((s->bc) && (s->bc->atlasDof[p] > 0)) {
+    if (s->bc && (s->bc->atlasDof[p] > 0)) {
       PetscInt b;
 
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dim %2" PetscInt_FMT " offset %3" PetscInt_FMT, p + s->pStart, s->atlasDof[p], s->atlasOff[p]));

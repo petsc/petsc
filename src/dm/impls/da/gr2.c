@@ -172,7 +172,7 @@ static PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin, PetscViewer viewer)
     /* create local vector for holding ghosted values used in graphics */
     PetscCall(DMCreateLocalVector(dac, &xlocal));
     if (dac != da) {
-      /* don't keep any public reference of this DMDA, is is only available through xlocal */
+      /* don't keep any public reference of this DMDA, it is only available through xlocal */
       PetscCall(PetscObjectDereference((PetscObject)dac));
     } else {
       /* remove association between xlocal and da, because below we compose in the opposite

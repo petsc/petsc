@@ -248,19 +248,12 @@ static PetscErrorCode MatProductSymbolic_Nest_Dense(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatProductSetFromOptions_Nest_Dense_AB(Mat C)
-{
-  PetscFunctionBegin;
-  C->ops->productsymbolic = MatProductSymbolic_Nest_Dense;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatProductSetFromOptions_Nest_Dense(Mat C)
 {
   Mat_Product *product = C->product;
 
   PetscFunctionBegin;
-  if (product->type == MATPRODUCT_AB) PetscCall(MatProductSetFromOptions_Nest_Dense_AB(C));
+  if (product->type == MATPRODUCT_AB) C->ops->productsymbolic = MatProductSymbolic_Nest_Dense;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -375,7 +368,7 @@ static PetscErrorCode MatTranspose_Nest(Mat A, MatReuse reuse, Mat *B)
   for (i = 0; i < nr; i++) {
     for (j = 0; j < nc; j++) {
       if (bA->m[i][j]) {
-        PetscCall(MatTranspose(bA->m[i][j], reuse, &(bC->m[j][i])));
+        PetscCall(MatTranspose(bA->m[i][j], reuse, &bC->m[j][i]));
       } else {
         bC->m[j][i] = NULL;
       }
@@ -426,8 +419,8 @@ static PetscErrorCode MatReset_Nest(Mat A)
   if (vs->m) {
     for (i = 0; i < vs->nr; i++) {
       for (j = 0; j < vs->nc; j++) PetscCall(MatDestroy(&vs->m[i][j]));
-      PetscCall(PetscFree(vs->m[i]));
     }
+    PetscCall(PetscFree(vs->m[0]));
     PetscCall(PetscFree(vs->m));
   }
 
@@ -459,7 +452,6 @@ static PetscErrorCode MatDestroy_Nest(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_nest_seqdense_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_nest_seqdense_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_nest_mpidense_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_nest_dense_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1100,6 +1092,10 @@ static PetscErrorCode MatNestGetSubMat_Nest(Mat A, PetscInt idxm, PetscInt jdxm,
 PetscErrorCode MatNestGetSubMat(Mat A, PetscInt idxm, PetscInt jdxm, Mat *sub)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscValidLogicalCollectiveInt(A, idxm, 2);
+  PetscValidLogicalCollectiveInt(A, jdxm, 3);
+  PetscAssertPointer(sub, 4);
   PetscUseMethod(A, "MatNestGetSubMat_C", (Mat, PetscInt, PetscInt, Mat *), (A, idxm, jdxm, sub));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1112,14 +1108,16 @@ static PetscErrorCode MatNestSetSubMat_Nest(Mat A, PetscInt idxm, PetscInt jdxm,
   PetscFunctionBegin;
   PetscCheck(idxm < bA->nr, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_OUTOFRANGE, "Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT, idxm, bA->nr - 1);
   PetscCheck(jdxm < bA->nc, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_OUTOFRANGE, "Col too large: row %" PetscInt_FMT " max %" PetscInt_FMT, jdxm, bA->nc - 1);
-  PetscCall(MatGetLocalSize(mat, &m, &n));
-  PetscCall(MatGetSize(mat, &M, &N));
-  PetscCall(ISGetLocalSize(bA->isglobal.row[idxm], &mi));
-  PetscCall(ISGetSize(bA->isglobal.row[idxm], &Mi));
-  PetscCall(ISGetLocalSize(bA->isglobal.col[jdxm], &ni));
-  PetscCall(ISGetSize(bA->isglobal.col[jdxm], &Ni));
-  PetscCheck(M == Mi && N == Ni, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_INCOMP, "Submatrix dimension (%" PetscInt_FMT ",%" PetscInt_FMT ") incompatible with nest block (%" PetscInt_FMT ",%" PetscInt_FMT ")", M, N, Mi, Ni);
-  PetscCheck(m == mi && n == ni, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_INCOMP, "Submatrix local dimension (%" PetscInt_FMT ",%" PetscInt_FMT ") incompatible with nest block (%" PetscInt_FMT ",%" PetscInt_FMT ")", m, n, mi, ni);
+  if (mat) {
+    PetscCall(MatGetLocalSize(mat, &m, &n));
+    PetscCall(MatGetSize(mat, &M, &N));
+    PetscCall(ISGetLocalSize(bA->isglobal.row[idxm], &mi));
+    PetscCall(ISGetSize(bA->isglobal.row[idxm], &Mi));
+    PetscCall(ISGetLocalSize(bA->isglobal.col[jdxm], &ni));
+    PetscCall(ISGetSize(bA->isglobal.col[jdxm], &Ni));
+    PetscCheck(M == Mi && N == Ni, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_INCOMP, "Submatrix dimension (%" PetscInt_FMT ",%" PetscInt_FMT ") incompatible with nest block (%" PetscInt_FMT ",%" PetscInt_FMT ")", M, N, Mi, Ni);
+    PetscCheck(m == mi && n == ni, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_INCOMP, "Submatrix local dimension (%" PetscInt_FMT ",%" PetscInt_FMT ") incompatible with nest block (%" PetscInt_FMT ",%" PetscInt_FMT ")", m, n, mi, ni);
+  }
 
   /* do not increase object state */
   if (mat == bA->m[idxm][jdxm]) PetscFunctionReturn(PETSC_SUCCESS);
@@ -1128,7 +1126,8 @@ static PetscErrorCode MatNestSetSubMat_Nest(Mat A, PetscInt idxm, PetscInt jdxm,
   PetscCall(MatDestroy(&bA->m[idxm][jdxm]));
   bA->m[idxm][jdxm] = mat;
   PetscCall(PetscObjectStateIncrease((PetscObject)A));
-  PetscCall(MatGetNonzeroState(mat, &bA->nnzstate[idxm * bA->nc + jdxm]));
+  if (mat) PetscCall(MatGetNonzeroState(mat, &bA->nnzstate[idxm * bA->nc + jdxm]));
+  else bA->nnzstate[idxm * bA->nc + jdxm] = 0;
   A->nonzerostate++;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1157,7 +1156,11 @@ static PetscErrorCode MatNestSetSubMat_Nest(Mat A, PetscInt idxm, PetscInt jdxm,
 PetscErrorCode MatNestSetSubMat(Mat A, PetscInt idxm, PetscInt jdxm, Mat sub)
 {
   PetscFunctionBegin;
-  PetscUseMethod(A, "MatNestSetSubMat_C", (Mat, PetscInt, PetscInt, Mat), (A, idxm, jdxm, sub));
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscValidLogicalCollectiveInt(A, idxm, 2);
+  PetscValidLogicalCollectiveInt(A, jdxm, 3);
+  if (sub) PetscValidHeaderSpecific(sub, MAT_CLASSID, 4);
+  PetscTryMethod(A, "MatNestSetSubMat_C", (Mat, PetscInt, PetscInt, Mat), (A, idxm, jdxm, sub));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1202,6 +1205,7 @@ $   call MatNestGetSubMats(A, M, N, mat, ierr)
 PetscErrorCode MatNestGetSubMats(Mat A, PetscInt *M, PetscInt *N, Mat ***mat)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscUseMethod(A, "MatNestGetSubMats_C", (Mat, PetscInt *, PetscInt *, Mat ***), (A, M, N, mat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1236,6 +1240,7 @@ static PetscErrorCode MatNestGetSize_Nest(Mat A, PetscInt *M, PetscInt *N)
 PetscErrorCode MatNestGetSize(Mat A, PetscInt *M, PetscInt *N)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscUseMethod(A, "MatNestGetSize_C", (Mat, PetscInt *, PetscInt *), (A, M, N));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1350,6 +1355,7 @@ static PetscErrorCode MatNestSetVecType_Nest(Mat A, VecType vtype)
 PetscErrorCode MatNestSetVecType(Mat A, VecType vtype)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscTryMethod(A, "MatNestSetVecType_C", (Mat, VecType), (A, vtype));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1369,11 +1375,12 @@ static PetscErrorCode MatNestSetSubMats_Nest(Mat A, PetscInt nr, const IS is_row
 
   /* Create space for submatrices */
   PetscCall(PetscMalloc1(nr, &s->m));
-  for (i = 0; i < nr; i++) PetscCall(PetscMalloc1(nc, &s->m[i]));
+  PetscCall(PetscMalloc1(nr * nc, &s->m[0]));
   for (i = 0; i < nr; i++) {
+    s->m[i] = s->m[0] + i * nc;
     for (j = 0; j < nc; j++) {
-      s->m[i][j] = a[i * nc + j];
-      if (a[i * nc + j]) PetscCall(PetscObjectReference((PetscObject)a[i * nc + j]));
+      s->m[i][j] = a ? a[i * nc + j] : NULL;
+      PetscCall(PetscObjectReference((PetscObject)s->m[i][j]));
     }
   }
   PetscCall(MatGetVecType(A, &vtype));
@@ -1383,12 +1390,12 @@ static PetscErrorCode MatNestSetSubMats_Nest(Mat A, PetscInt nr, const IS is_row
     vtype = NULL;
     for (i = 0; i < nr; i++) {
       for (j = 0; j < nc; j++) {
-        if (a[i * nc + j]) {
+        if (s->m[i][j]) {
           if (!vtype) { /* first visited block */
-            PetscCall(MatGetVecType(a[i * nc + j], &vtype));
+            PetscCall(MatGetVecType(s->m[i][j], &vtype));
             sametype = PETSC_TRUE;
           } else if (sametype) {
-            PetscCall(MatGetVecType(a[i * nc + j], &type));
+            PetscCall(MatGetVecType(s->m[i][j], &type));
             PetscCall(PetscStrcmp(vtype, type, &sametype));
           }
         }
@@ -1454,12 +1461,13 @@ static PetscErrorCode MatNestSetSubMats_Nest(Mat A, PetscInt nr, const IS is_row
 . is_row - index sets for each nested row block, or `NULL` to make contiguous
 . nc     - number of nested column blocks
 . is_col - index sets for each nested column block, or `NULL` to make contiguous
-- a      - array of nr*nc submatrices, empty submatrices can be passed using `NULL`
+- a      - array of nr*nc submatrices, or `NULL`
 
   Level: advanced
 
   Notes:
-  This always resets any submatrix information previously set
+  This always resets any block matrix information previously set.
+  Pass `NULL` in the correspoding entry of `a` for an empty block.
 
   In both C and Fortran, `a` must be a row-major order array containing the matrices. See
   `MatCreateNest()` for an example.
@@ -1468,22 +1476,21 @@ static PetscErrorCode MatNestSetSubMats_Nest(Mat A, PetscInt nr, const IS is_row
 @*/
 PetscErrorCode MatNestSetSubMats(Mat A, PetscInt nr, const IS is_row[], PetscInt nc, const IS is_col[], const Mat a[])
 {
-  PetscInt i;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscValidLogicalCollectiveInt(A, nr, 2);
   PetscCheck(nr >= 0, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_OUTOFRANGE, "Number of rows cannot be negative");
   if (nr && is_row) {
     PetscAssertPointer(is_row, 3);
-    for (i = 0; i < nr; i++) PetscValidHeaderSpecific(is_row[i], IS_CLASSID, 3);
+    for (PetscInt i = 0; i < nr; i++) PetscValidHeaderSpecific(is_row[i], IS_CLASSID, 3);
   }
+  PetscValidLogicalCollectiveInt(A, nc, 4);
   PetscCheck(nc >= 0, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_OUTOFRANGE, "Number of columns cannot be negative");
   if (nc && is_col) {
     PetscAssertPointer(is_col, 5);
-    for (i = 0; i < nc; i++) PetscValidHeaderSpecific(is_col[i], IS_CLASSID, 5);
+    for (PetscInt i = 0; i < nc; i++) PetscValidHeaderSpecific(is_col[i], IS_CLASSID, 5);
   }
-  if (nr * nc > 0) PetscAssertPointer(a, 6);
-  PetscUseMethod(A, "MatNestSetSubMats_C", (Mat, PetscInt, const IS[], PetscInt, const IS[], const Mat[]), (A, nr, is_row, nc, is_col, a));
+  PetscTryMethod(A, "MatNestSetSubMats_C", (Mat, PetscInt, const IS[], PetscInt, const IS[], const Mat[]), (A, nr, is_row, nc, is_col, a));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1763,15 +1770,11 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A, PetscInt nr, const IS is_ro
 @*/
 PetscErrorCode MatCreateNest(MPI_Comm comm, PetscInt nr, const IS is_row[], PetscInt nc, const IS is_col[], const Mat a[], Mat *B)
 {
-  Mat A;
-
   PetscFunctionBegin;
-  *B = NULL;
-  PetscCall(MatCreate(comm, &A));
-  PetscCall(MatSetType(A, MATNEST));
-  A->preallocated = PETSC_TRUE;
-  PetscCall(MatNestSetSubMats(A, nr, is_row, nc, is_col, a));
-  *B = A;
+  PetscCall(MatCreate(comm, B));
+  PetscCall(MatSetType(*B, MATNEST));
+  (*B)->preallocated = PETSC_TRUE;
+  PetscCall(MatNestSetSubMats(*B, nr, is_row, nc, is_col, a));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2218,8 +2221,8 @@ static PetscErrorCode MatHasOperation_Nest(Mat mat, MatOperation op, PetscBool *
   MatOperation opAdd;
   PetscInt     i, j, nr = bA->nr, nc = bA->nc;
   PetscBool    flg;
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   *has = PETSC_FALSE;
   if (op == MATOP_MULT || op == MATOP_MULT_ADD || op == MATOP_MULT_TRANSPOSE || op == MATOP_MULT_TRANSPOSE_ADD) {
     opAdd = (op == MATOP_MULT || op == MATOP_MULT_ADD ? MATOP_MULT_ADD : MATOP_MULT_TRANSPOSE_ADD);
@@ -2316,7 +2319,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_nest_seqdense_C", MatConvert_Nest_Dense));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_nest_seqdense_C", MatProductSetFromOptions_Nest_Dense));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_nest_mpidense_C", MatProductSetFromOptions_Nest_Dense));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_nest_dense_C", MatProductSetFromOptions_Nest_Dense));
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATNEST));
   PetscFunctionReturn(PETSC_SUCCESS);

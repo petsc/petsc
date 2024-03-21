@@ -480,7 +480,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat A, MatType type
 /*MC
    MATSEQAIJVIENNACL - MATAIJVIENNACL = "aijviennacl" = "seqaijviennacl" - A matrix type to be used for sparse matrices.
 
-   A matrix type type whose data resides on GPUs. These matrices are in CSR format by
+   A matrix type whose data resides on GPUs. These matrices are in CSR format by
    default. All matrix calculations are performed using the ViennaCL library.
 
    Options Database Keys:

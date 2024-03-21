@@ -252,7 +252,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F, Mat A, const MatFactorIn
        Since SuperLU likes column-oriented matrices,we pass it the transpose,
        and then solve A^T X = B in MatSolve(). */
   if (lu->A_dup) {
-    aa = (Mat_SeqAIJ *)(lu->A_dup)->data;
+    aa = (Mat_SeqAIJ *)lu->A_dup->data;
   } else {
     aa = (Mat_SeqAIJ *)(A)->data;
   }
@@ -393,7 +393,7 @@ static PetscErrorCode MatView_SuperLU(Mat A, PetscViewer viewer)
 
 static PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat F, Mat A, IS r, IS c, const MatFactorInfo *info)
 {
-  Mat_SuperLU *lu = (Mat_SuperLU *)(F->data);
+  Mat_SuperLU *lu = (Mat_SuperLU *)F->data;
   PetscInt     indx;
   PetscBool    flg, set;
   PetscReal    real_input;

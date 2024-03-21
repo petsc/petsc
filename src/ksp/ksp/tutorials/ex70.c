@@ -118,9 +118,8 @@ static void CreateGaussQuadrature(PetscInt *ngp, PetscScalar gp_xi[][2], PetscSc
 
 static PetscErrorCode DMDAGetElementEqnums_up(const PetscInt element[], PetscInt s_u[], PetscInt s_p[])
 {
-  PetscInt i;
   PetscFunctionBeginUser;
-  for (i = 0; i < NODES_PER_EL; i++) {
+  for (PetscInt i = 0; i < NODES_PER_EL; i++) {
     /* velocity */
     s_u[NSD * i + 0] = 3 * element[i];
     s_u[NSD * i + 1] = 3 * element[i] + 1;
@@ -138,7 +137,7 @@ static PetscInt map_wIwDI_uJuDJ(PetscInt wi, PetscInt wd, PetscInt w_NPE, PetscI
   r  = w_dof * wi + wd;
   c  = u_dof * ui + ud;
   ij = r * nc + c;
-  return (ij);
+  return ij;
 }
 
 static void BForm_DivT(PetscScalar Ke[], PetscScalar coords[], PetscScalar eta[])
@@ -325,11 +324,10 @@ static void LForm_MomentumRHS(PetscScalar Fe[], PetscScalar coords[], PetscScala
 
 static PetscErrorCode GetElementCoords(const PetscScalar _coords[], const PetscInt e2n[], PetscScalar el_coords[])
 {
-  PetscInt i, d;
   PetscFunctionBeginUser;
   /* get coords for the element */
-  for (i = 0; i < 4; i++) {
-    for (d = 0; d < NSD; d++) el_coords[NSD * i + d] = _coords[NSD * e2n[i] + d];
+  for (PetscInt i = 0; i < 4; i++) {
+    for (PetscInt d = 0; d < NSD; d++) el_coords[NSD * i + d] = _coords[NSD * e2n[i] + d];
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -456,7 +454,6 @@ static PetscErrorCode AssembleStokes_PC(Mat A, DM stokes_da, DM quadrature)
 
   PetscCall(DMSwarmRestoreField(quadrature, "eta_q", NULL, NULL, (void **)&q_eta));
   PetscCall(VecRestoreArrayRead(coords, &_coords));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -520,7 +517,6 @@ static PetscErrorCode AssembleStokes_RHS(Vec F, DM stokes_da, DM quadrature)
   PetscCall(DMLocalToGlobalBegin(stokes_da, local_F, ADD_VALUES, F));
   PetscCall(DMLocalToGlobalEnd(stokes_da, local_F, ADD_VALUES, F));
   PetscCall(DMRestoreLocalVector(stokes_da, &local_F));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1016,7 +1012,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx, PetscInt my)
     /*
        Fetch the registered data from the material point DMSwarm.
        The fields "eta" and "rho" were registered by this example.
-       The field identified by the the variable DMSwarmPICField_coor
+       The field identified by the variable DMSwarmPICField_coor
        was registered by the DMSwarm implementation when the function
          DMSwarmSetType(dms_mpoint,DMSWARM_PIC)
        was called. The returned array defines the coordinates of each
@@ -1077,7 +1073,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx, PetscInt my)
   /* project the swarm properties */
   PetscCall(DMCreateGlobalVector(dm_coeff, &pfields[0]));
   PetscCall(DMCreateGlobalVector(dm_coeff, &pfields[1]));
-  PetscCall(DMSwarmProjectFields(dms_mpoint, 2, fieldnames, pfields, SCATTER_FORWARD));
+  PetscCall(DMSwarmProjectFields(dms_mpoint, NULL, 2, fieldnames, pfields, SCATTER_FORWARD));
   eta_v = pfields[0];
   rho_v = pfields[1];
   PetscCall(PetscObjectSetName((PetscObject)eta_v, "eta"));
@@ -1212,7 +1208,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx, PetscInt my)
 
     /* update coefficients on quadrature points */
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, ".... project\n"));
-    PetscCall(DMSwarmProjectFields(dms_mpoint, 2, fieldnames, pfields, SCATTER_FORWARD));
+    PetscCall(DMSwarmProjectFields(dms_mpoint, NULL, 2, fieldnames, pfields, SCATTER_FORWARD));
     eta_v = pfields[0];
     rho_v = pfields[1];
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, ".... interp\n"));

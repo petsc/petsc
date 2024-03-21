@@ -35,7 +35,7 @@ PetscErrorCode VecStrideSet(Vec v, PetscInt start, PetscScalar s)
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
-  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n  Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
+  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
   PetscCall(VecGetArray(v, &x));
   for (i = start; i < n; i += bs) x[i] = s;
   PetscCall(VecRestoreArray(v, &x));
@@ -75,7 +75,7 @@ PetscErrorCode VecStrideScale(Vec v, PetscInt start, PetscScalar scale)
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
-  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n  Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
+  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
   PetscCall(VecGetArray(v, &x));
   for (i = start; i < n; i += bs) x[i] *= scale;
   PetscCall(VecRestoreArray(v, &x));
@@ -126,7 +126,7 @@ PetscErrorCode VecStrideNorm(Vec v, PetscInt start, NormType ntype, PetscReal *n
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
-  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
+  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
   PetscCall(VecGetArrayRead(v, &x));
   if (ntype == NORM_2) {
     PetscScalar sum = 0.0;
@@ -191,7 +191,7 @@ PetscErrorCode VecStrideMax(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
-  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
+  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
   PetscCall(VecGetArrayRead(v, &x));
   for (i = start; i < n; i += bs) {
     if (PetscRealPart(x[i]) > max) {
@@ -266,7 +266,7 @@ PetscErrorCode VecStrideMin(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
-  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride\nHave you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
+  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
   PetscCall(VecGetArrayRead(v, &x));
   for (i = start; i < n; i += bs) {
     if (PetscRealPart(x[i]) < min) {
@@ -336,7 +336,7 @@ PetscErrorCode VecStrideSum(Vec v, PetscInt start, PetscScalar *sum)
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
-  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
+  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
   PetscCall(VecGetArrayRead(v, &x));
   for (i = start; i < n; i += bs) local_sum += x[i];
   PetscCall(MPIU_Allreduce(&local_sum, sum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)v)));
@@ -858,7 +858,7 @@ PetscErrorCode VecStrideGather(Vec v, PetscInt start, Vec s, InsertMode addv)
   PetscValidLogicalCollectiveInt(v, start, 2);
   PetscValidHeaderSpecific(s, VEC_CLASSID, 3);
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
-  PetscCheck(start < v->map->bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start,
+  PetscCheck(start < v->map->bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start,
              v->map->bs);
   PetscUseTypeMethod(v, stridegather, start, s, addv);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -898,7 +898,7 @@ PetscErrorCode VecStrideScatter(Vec s, PetscInt start, Vec v, InsertMode addv)
   PetscValidLogicalCollectiveInt(v, start, 2);
   PetscValidHeaderSpecific(v, VEC_CLASSID, 3);
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
-  PetscCheck(start < v->map->bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start,
+  PetscCheck(start < v->map->bs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start,
              v->map->bs);
   PetscCall((*v->ops->stridescatter)(s, start, v, addv));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1205,7 +1205,7 @@ static PetscErrorCode VecApplyUnary_Private(Vec v, PetscDeviceContext dctx, cons
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscScalar ScalarReciprocal_Fn(PetscScalar x)
+static PetscScalar ScalarReciprocal_Function(PetscScalar x)
 {
   const PetscScalar zero = 0.0;
 
@@ -1215,18 +1215,18 @@ static PetscScalar ScalarReciprocal_Fn(PetscScalar x)
 PetscErrorCode VecReciprocalAsync_Private(Vec v, PetscDeviceContext dctx)
 {
   PetscFunctionBegin;
-  PetscCall(VecApplyUnary_Private(v, dctx, VecAsyncFnName(Reciprocal), v->ops->reciprocal, ScalarReciprocal_Fn));
+  PetscCall(VecApplyUnary_Private(v, dctx, VecAsyncFnName(Reciprocal), v->ops->reciprocal, ScalarReciprocal_Function));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecReciprocal_Default(Vec v)
 {
   PetscFunctionBegin;
-  PetscCall(VecApplyUnary_Private(v, NULL, NULL, NULL, ScalarReciprocal_Fn));
+  PetscCall(VecApplyUnary_Private(v, NULL, NULL, NULL, ScalarReciprocal_Function));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscScalar ScalarExp_Fn(PetscScalar x)
+static PetscScalar ScalarExp_Function(PetscScalar x)
 {
   return PetscExpScalar(x);
 }
@@ -1235,7 +1235,7 @@ PetscErrorCode VecExpAsync_Private(Vec v, PetscDeviceContext dctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscCall(VecApplyUnary_Private(v, dctx, VecAsyncFnName(Exp), v->ops->exp, ScalarExp_Fn));
+  PetscCall(VecApplyUnary_Private(v, dctx, VecAsyncFnName(Exp), v->ops->exp, ScalarExp_Function));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1262,7 +1262,7 @@ PetscErrorCode VecExp(Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscScalar ScalarLog_Fn(PetscScalar x)
+static PetscScalar ScalarLog_Function(PetscScalar x)
 {
   return PetscLogScalar(x);
 }
@@ -1271,7 +1271,7 @@ PetscErrorCode VecLogAsync_Private(Vec v, PetscDeviceContext dctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscCall(VecApplyUnary_Private(v, dctx, VecAsyncFnName(Log), v->ops->log, ScalarLog_Fn));
+  PetscCall(VecApplyUnary_Private(v, dctx, VecAsyncFnName(Log), v->ops->log, ScalarLog_Function));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1298,7 +1298,7 @@ PetscErrorCode VecLog(Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscScalar ScalarAbs_Fn(PetscScalar x)
+static PetscScalar ScalarAbs_Function(PetscScalar x)
 {
   return PetscAbsScalar(x);
 }
@@ -1307,7 +1307,7 @@ PetscErrorCode VecAbsAsync_Private(Vec v, PetscDeviceContext dctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscCall(VecApplyUnary_Private(v, dctx, VecAsyncFnName(Abs), v->ops->abs, ScalarAbs_Fn));
+  PetscCall(VecApplyUnary_Private(v, dctx, VecAsyncFnName(Abs), v->ops->abs, ScalarAbs_Function));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1330,7 +1330,7 @@ PetscErrorCode VecAbs(Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscScalar ScalarConjugate_Fn(PetscScalar x)
+static PetscScalar ScalarConjugate_Function(PetscScalar x)
 {
   return PetscConj(x);
 }
@@ -1339,7 +1339,7 @@ PetscErrorCode VecConjugateAsync_Private(Vec v, PetscDeviceContext dctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  if (PetscDefined(USE_COMPLEX)) PetscCall(VecApplyUnary_Private(v, dctx, VecAsyncFnName(Conjugate), v->ops->conjugate, ScalarConjugate_Fn));
+  if (PetscDefined(USE_COMPLEX)) PetscCall(VecApplyUnary_Private(v, dctx, VecAsyncFnName(Conjugate), v->ops->conjugate, ScalarConjugate_Function));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1362,16 +1362,16 @@ PetscErrorCode VecConjugate(Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscScalar ScalarSqrtAbs_Fn(PetscScalar x)
+static PetscScalar ScalarSqrtAbs_Function(PetscScalar x)
 {
-  return PetscSqrtScalar(ScalarAbs_Fn(x));
+  return PetscSqrtScalar(ScalarAbs_Function(x));
 }
 
 PetscErrorCode VecSqrtAbsAsync_Private(Vec v, PetscDeviceContext dctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscCall(VecApplyUnary_Private(v, dctx, VecAsyncFnName(SqrtAbs), v->ops->sqrt, ScalarSqrtAbs_Fn));
+  PetscCall(VecApplyUnary_Private(v, dctx, VecAsyncFnName(SqrtAbs), v->ops->sqrt, ScalarSqrtAbs_Function));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1398,7 +1398,7 @@ PetscErrorCode VecSqrtAbs(Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscScalar ScalarImaginaryPart_Fn(PetscScalar x)
+static PetscScalar ScalarImaginaryPart_Function(PetscScalar x)
 {
   const PetscReal imag = PetscImaginaryPart(x);
 
@@ -1425,11 +1425,11 @@ PetscErrorCode VecImaginaryPart(Vec v)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscCall(VecApplyUnary_Private(v, NULL, NULL, NULL, ScalarImaginaryPart_Fn));
+  PetscCall(VecApplyUnary_Private(v, NULL, NULL, NULL, ScalarImaginaryPart_Function));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscScalar ScalarRealPart_Fn(PetscScalar x)
+static PetscScalar ScalarRealPart_Function(PetscScalar x)
 {
   const PetscReal real = PetscRealPart(x);
 
@@ -1456,7 +1456,7 @@ PetscErrorCode VecRealPart(Vec v)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscCall(VecApplyUnary_Private(v, NULL, NULL, NULL, ScalarRealPart_Fn));
+  PetscCall(VecApplyUnary_Private(v, NULL, NULL, NULL, ScalarRealPart_Function));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1660,10 +1660,9 @@ PetscErrorCode VecShift(Vec v, PetscScalar shift)
 @*/
 PetscErrorCode VecPermute(Vec x, IS row, PetscBool inv)
 {
-  const PetscScalar *array;
-  PetscScalar       *newArray;
-  const PetscInt    *idx;
-  PetscInt           i, rstart, rend;
+  PetscScalar    *array, *newArray;
+  const PetscInt *idx;
+  PetscInt        i, rstart, rend;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
@@ -1671,19 +1670,20 @@ PetscErrorCode VecPermute(Vec x, IS row, PetscBool inv)
   PetscCall(VecSetErrorIfLocked(x, 1));
   PetscCall(VecGetOwnershipRange(x, &rstart, &rend));
   PetscCall(ISGetIndices(row, &idx));
-  PetscCall(VecGetArrayRead(x, &array));
+  PetscCall(VecGetArray(x, &array));
   PetscCall(PetscMalloc1(x->map->n, &newArray));
+  PetscCall(PetscArraycpy(newArray, array, x->map->n));
   if (PetscDefined(USE_DEBUG)) {
     for (i = 0; i < x->map->n; i++) PetscCheck(!(idx[i] < rstart) && !(idx[i] >= rend), PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Permutation index %" PetscInt_FMT " is out of bounds: %" PetscInt_FMT, i, idx[i]);
   }
   if (!inv) {
-    for (i = 0; i < x->map->n; i++) newArray[i] = array[idx[i] - rstart];
+    for (i = 0; i < x->map->n; i++) array[i] = newArray[idx[i] - rstart];
   } else {
-    for (i = 0; i < x->map->n; i++) newArray[idx[i] - rstart] = array[i];
+    for (i = 0; i < x->map->n; i++) array[idx[i] - rstart] = newArray[i];
   }
-  PetscCall(VecRestoreArrayRead(x, &array));
+  PetscCall(VecRestoreArray(x, &array));
   PetscCall(ISRestoreIndices(row, &idx));
-  PetscCall(VecReplaceArray(x, newArray));
+  PetscCall(PetscFree(newArray));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

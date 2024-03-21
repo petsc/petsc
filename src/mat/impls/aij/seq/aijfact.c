@@ -607,6 +607,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B, Mat A, const MatFactorInfo *info
   C->ops->solvetranspose    = MatSolveTranspose_SeqAIJ;
   C->ops->solvetransposeadd = MatSolveTransposeAdd_SeqAIJ;
   C->ops->matsolve          = MatMatSolve_SeqAIJ;
+  C->ops->matsolvetranspose = MatMatSolveTranspose_SeqAIJ;
   C->assembled              = PETSC_TRUE;
   C->preallocated           = PETSC_TRUE;
 
@@ -749,6 +750,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B, Mat A, const MatFactorIn
   C->ops->solvetranspose    = MatSolveTranspose_SeqAIJ_inplace;
   C->ops->solvetransposeadd = MatSolveTransposeAdd_SeqAIJ_inplace;
   C->ops->matsolve          = MatMatSolve_SeqAIJ_inplace;
+  C->ops->matsolvetranspose = NULL;
 
   C->assembled    = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;
@@ -1121,6 +1123,71 @@ PetscErrorCode MatMatSolve_SeqAIJ(Mat A, Mat B, Mat X)
       PetscSparseDenseMinusDot(sum, tmp, v, vi, nz);
       x[c[i]] = tmp[i] = sum * v[nz]; /* v[nz] = aa[adiag[i]] */
     }
+    b += ldb;
+    x += ldx;
+  }
+  PetscCall(ISRestoreIndices(isrow, &rout));
+  PetscCall(ISRestoreIndices(iscol, &cout));
+  PetscCall(MatDenseRestoreArrayRead(B, &b));
+  PetscCall(MatDenseRestoreArray(X, &x));
+  PetscCall(PetscLogFlops(B->cmap->n * (2.0 * a->nz - n)));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode MatMatSolveTranspose_SeqAIJ(Mat A, Mat B, Mat X)
+{
+  Mat_SeqAIJ        *a     = (Mat_SeqAIJ *)A->data;
+  IS                 iscol = a->col, isrow = a->row;
+  PetscInt           i, n = A->rmap->n, *vi, *ai = a->i, *aj = a->j, *adiag = a->diag, j;
+  PetscInt           nz, neq, ldb, ldx;
+  const PetscInt    *rout, *cout, *r, *c;
+  PetscScalar       *x, *tmp = a->solve_work, s1;
+  const PetscScalar *b, *aa  = a->a, *v;
+  PetscBool          isdense;
+
+  PetscFunctionBegin;
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscObjectTypeCompare((PetscObject)B, MATSEQDENSE, &isdense));
+  PetscCheck(isdense, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "B matrix must be a SeqDense matrix");
+  if (X != B) {
+    PetscCall(PetscObjectTypeCompare((PetscObject)X, MATSEQDENSE, &isdense));
+    PetscCheck(isdense, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "X matrix must be a SeqDense matrix");
+  }
+  PetscCall(MatDenseGetArrayRead(B, &b));
+  PetscCall(MatDenseGetLDA(B, &ldb));
+  PetscCall(MatDenseGetArray(X, &x));
+  PetscCall(MatDenseGetLDA(X, &ldx));
+  tmp = a->solve_work;
+  PetscCall(ISGetIndices(isrow, &rout));
+  r = rout;
+  PetscCall(ISGetIndices(iscol, &cout));
+  c = cout;
+  for (neq = 0; neq < B->cmap->n; neq++) {
+    /* copy the b into temp work space according to permutation */
+    for (i = 0; i < n; i++) tmp[i] = b[c[i]];
+
+    /* forward solve the U^T */
+    for (i = 0; i < n; i++) {
+      v  = aa + adiag[i + 1] + 1;
+      vi = aj + adiag[i + 1] + 1;
+      nz = adiag[i] - adiag[i + 1] - 1;
+      s1 = tmp[i];
+      s1 *= v[nz]; /* multiply by inverse of diagonal entry */
+      for (j = 0; j < nz; j++) tmp[vi[j]] -= s1 * v[j];
+      tmp[i] = s1;
+    }
+
+    /* backward solve the L^T */
+    for (i = n - 1; i >= 0; i--) {
+      v  = aa + ai[i];
+      vi = aj + ai[i];
+      nz = ai[i + 1] - ai[i];
+      s1 = tmp[i];
+      for (j = 0; j < nz; j++) tmp[vi[j]] -= s1 * v[j];
+    }
+
+    /* copy tmp into x according to permutation */
+    for (i = 0; i < n; i++) x[r[i]] = tmp[i];
     b += ldb;
     x += ldx;
   }
@@ -1758,7 +1825,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact, Mat A, IS isrow, IS iscol, 
     bjlvl_ptr[i] = current_space_lvl->array;
 
     /* make sure the active row i has diagonal entry */
-    PetscCheck(*(bj_ptr[i] + bdiag[i]) == i, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Row %" PetscInt_FMT " has missing diagonal in factored matrix\ntry running with -pc_factor_nonzeros_along_diagonal or -pc_factor_diagonal_fill", i);
+    PetscCheck(*(bj_ptr[i] + bdiag[i]) == i, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Row %" PetscInt_FMT " has missing diagonal in factored matrix, try running with -pc_factor_nonzeros_along_diagonal or -pc_factor_diagonal_fill", i);
 
     current_space->array += nzi;
     current_space->local_used += nzi;
@@ -1947,7 +2014,7 @@ static PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact, Mat A, IS is
     bjlvl_ptr[i] = current_space_lvl->array;
 
     /* make sure the active row i has diagonal entry */
-    PetscCheck(*(bj_ptr[i] + bdiag[i]) == i, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Row %" PetscInt_FMT " has missing diagonal in factored matrix\ntry running with -pc_factor_nonzeros_along_diagonal or -pc_factor_diagonal_fill", i);
+    PetscCheck(*(bj_ptr[i] + bdiag[i]) == i, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Row %" PetscInt_FMT " has missing diagonal in factored matrix, try running with -pc_factor_nonzeros_along_diagonal or -pc_factor_diagonal_fill", i);
 
     current_space->array += nzi;
     current_space->local_used += nzi;
@@ -3046,7 +3113,7 @@ static PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ_inplace(Mat fact, Mat A, 
 
   #if defined(PETSC_USE_INFO)
   if (ai[am] != 0) {
-    PetscReal af = (PetscReal)(ui[am]) / ((PetscReal)ai[am]);
+    PetscReal af = (PetscReal)ui[am] / (PetscReal)ai[am];
     PetscCall(PetscInfo(A, "Reallocs %" PetscInt_FMT " Fill ratio:given %g needed %g\n", reallocs, (double)fill, (double)af));
     PetscCall(PetscInfo(A, "Run with -pc_factor_fill %g or use \n", (double)af));
     PetscCall(PetscInfo(A, "PCFactorSetFill(pc,%g) for best performance.\n", (double)af));
@@ -3093,7 +3160,7 @@ static PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ_inplace(Mat fact, Mat A, 
   fact->info.factor_mallocs   = reallocs;
   fact->info.fill_ratio_given = fill;
   if (ai[am] != 0) {
-    fact->info.fill_ratio_needed = ((PetscReal)ui[am]) / ((PetscReal)ai[am]);
+    fact->info.fill_ratio_needed = (PetscReal)ui[am] / (PetscReal)ai[am];
   } else {
     fact->info.fill_ratio_needed = 0.0;
   }

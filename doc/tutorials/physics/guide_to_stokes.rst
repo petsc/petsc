@@ -411,7 +411,7 @@ In order to see exactly what solver we have employed, we can use the ``-snes_vie
          restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
          happy breakdown tolerance 1e-30
        maximum iterations=10000, initial guess is zero
-       tolerances:  relative=1e-09, absolute=1e-10, divergence=10000.
+       tolerances: relative=1e-09, absolute=1e-10, divergence=10000.
        left preconditioning
        using PRECONDITIONED norm type for convergence test
      PC Object: 1 MPI process
@@ -427,7 +427,7 @@ In order to see exactly what solver we have employed, we can use the ``-snes_vie
                restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
                happy breakdown tolerance 1e-30
              maximum iterations=10000, initial guess is zero
-             tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+             tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
              left preconditioning
              using PRECONDITIONED norm type for convergence test
            PC Object: (fieldsplit_velocity_) 1 MPI process
@@ -462,7 +462,7 @@ In order to see exactly what solver we have employed, we can use the ``-snes_vie
                restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
                happy breakdown tolerance 1e-30
              maximum iterations=10000, initial guess is zero
-             tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
+             tolerances: relative=1e-09, absolute=1e-50, divergence=10000.
              left preconditioning
              using PRECONDITIONED norm type for convergence test
            PC Object: (fieldsplit_pressure_) 1 MPI process
@@ -558,7 +558,7 @@ For each nonlinear step, we use ``KSPGMRES`` to solve the Newton equation, preco
          restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
          happy breakdown tolerance 1e-30
        maximum iterations=10000, initial guess is zero
-       tolerances:  relative=1e-09, absolute=1e-10, divergence=10000.
+       tolerances: relative=1e-09, absolute=1e-10, divergence=10000.
        left preconditioning
        using PRECONDITIONED norm type for convergence test
      PC Object: 1 MPI process
@@ -586,7 +586,7 @@ The solver for the first block, representing the velocity, is GMRES/LU. Note tha
                restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
                happy breakdown tolerance 1e-30
              maximum iterations=10000, initial guess is zero
-             tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+             tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
              left preconditioning
              using PRECONDITIONED norm type for convergence test
            PC Object: (fieldsplit_velocity_) 1 MPI process
@@ -627,7 +627,7 @@ The solver for the second block, with prefix ``fieldsplit_pressure_``, is also G
                restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
                happy breakdown tolerance 1e-30
              maximum iterations=10000, initial guess is zero
-             tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
+             tolerances: relative=1e-09, absolute=1e-50, divergence=10000.
              left preconditioning
              using PRECONDITIONED norm type for convergence test
            PC Object: (fieldsplit_pressure_) 1 MPI process
@@ -670,7 +670,7 @@ The solver for the second block, with prefix ``fieldsplit_pressure_``, is also G
                        restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
                        happy breakdown tolerance 1e-30
                      maximum iterations=10000, initial guess is zero
-                     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                     tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
                      left preconditioning
                      using PRECONDITIONED norm type for convergence test
                    PC Object: (fieldsplit_velocity_) 1 MPI process

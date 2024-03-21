@@ -4,9 +4,9 @@ static char help[] = "Test DMStagRestrictSimple()\n\n";
 
 int main(int argc, char **argv)
 {
-  DM        dm, dm_coarse;
-  Vec       vec, vec_coarse, vec_local, vec_local_coarse;
-  PetscInt  dim, size_coarse;
+  DM        dmf, dmc;
+  Vec       gf, gc, lf, lc;
+  PetscInt  dim, size;
   PetscReal norm;
 
   PetscFunctionBeginUser;
@@ -15,42 +15,42 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-dim", &dim, NULL));
   switch (dim) {
   case 1:
-    PetscCall(DMStagCreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 8, 2, 3, DMSTAG_STENCIL_BOX, 1, NULL, &dm));
+    PetscCall(DMStagCreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 4, 2, 3, DMSTAG_STENCIL_BOX, 1, NULL, &dmc));
     break;
   case 2:
-    PetscCall(DMStagCreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 8, 16, PETSC_DECIDE, PETSC_DECIDE, 2, 3, 4, DMSTAG_STENCIL_BOX, 1, NULL, NULL, &dm));
+    PetscCall(DMStagCreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 4, 8, PETSC_DECIDE, PETSC_DECIDE, 2, 3, 4, DMSTAG_STENCIL_BOX, 1, NULL, NULL, &dmc));
     break;
   case 3:
-    PetscCall(DMStagCreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 4, 8, 12, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 2, 3, 4, 3, DMSTAG_STENCIL_BOX, 1, NULL, NULL, NULL, &dm));
+    PetscCall(DMStagCreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 2, 4, 6, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 2, 3, 4, 3, DMSTAG_STENCIL_BOX, 1, NULL, NULL, NULL, &dmc));
     break;
   default:
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Not Implemented!");
   }
-  PetscCall(DMSetFromOptions(dm));
-  PetscCall(DMSetUp(dm));
-  PetscCall(DMCoarsen(dm, MPI_COMM_NULL, &dm_coarse));
+  PetscCall(DMSetFromOptions(dmc));
+  PetscCall(DMSetUp(dmc));
+  PetscCall(DMRefine(dmc, MPI_COMM_NULL, &dmf));
 
-  PetscCall(DMCreateGlobalVector(dm, &vec));
-  PetscCall(VecSet(vec, 1.0));
-  PetscCall(DMCreateLocalVector(dm, &vec_local));
-  PetscCall(DMGlobalToLocal(dm, vec, INSERT_VALUES, vec_local));
+  PetscCall(DMCreateGlobalVector(dmf, &gf));
+  PetscCall(VecSet(gf, 1.0));
+  PetscCall(DMCreateLocalVector(dmf, &lf));
+  PetscCall(DMGlobalToLocal(dmf, gf, INSERT_VALUES, lf));
 
-  PetscCall(DMCreateGlobalVector(dm_coarse, &vec_coarse));
-  PetscCall(DMCreateLocalVector(dm_coarse, &vec_local_coarse));
+  PetscCall(DMCreateGlobalVector(dmc, &gc));
+  PetscCall(DMCreateLocalVector(dmc, &lc));
 
-  PetscCall(DMStagRestrictSimple(dm, vec_local, dm_coarse, vec_local_coarse));
+  PetscCall(DMStagRestrictSimple(dmf, lf, dmc, lc));
 
-  PetscCall(DMLocalToGlobal(dm_coarse, vec_local_coarse, INSERT_VALUES, vec_coarse));
+  PetscCall(DMLocalToGlobal(dmc, lc, INSERT_VALUES, gc));
 
-  PetscCall(VecGetSize(vec_coarse, &size_coarse));
-  PetscCall(VecNorm(vec_coarse, NORM_1, &norm));
-  PetscCheck((norm - size_coarse) / ((PetscReal)size_coarse) <= PETSC_MACHINE_EPSILON * 10.0, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Numerical test failed");
-  PetscCall(VecDestroy(&vec_coarse));
-  PetscCall(VecDestroy(&vec));
-  PetscCall(VecDestroy(&vec_local_coarse));
-  PetscCall(VecDestroy(&vec_local));
-  PetscCall(DMDestroy(&dm_coarse));
-  PetscCall(DMDestroy(&dm));
+  PetscCall(VecGetSize(gc, &size));
+  PetscCall(VecNorm(gc, NORM_1, &norm));
+  PetscCheck((norm - size) / (PetscReal)size <= PETSC_MACHINE_EPSILON * 10.0, PetscObjectComm((PetscObject)dmc), PETSC_ERR_PLIB, "Numerical test failed");
+  PetscCall(VecDestroy(&gc));
+  PetscCall(VecDestroy(&gf));
+  PetscCall(VecDestroy(&lc));
+  PetscCall(VecDestroy(&lf));
+  PetscCall(DMDestroy(&dmc));
+  PetscCall(DMDestroy(&dmf));
   PetscCall(PetscFinalize());
   return 0;
 }
@@ -66,28 +66,53 @@ int main(int argc, char **argv)
       suffix: 1d_par
       nsize: 4
       args: -dim 1
+      output_file: output/ex32_1d.out
+
+   test:
+      suffix: 1d_ratio
+      nsize: 1
+      args: -dim 1 -stag_refine_x 3
+      output_file: output/ex32_1d.out
 
    test:
       suffix: 2d
       nsize: 1
       args: -dim 2
+      output_file: output/ex32_1d.out
 
    test:
       suffix: 2d_par
       nsize: 2
       args: -dim 2
+      output_file: output/ex32_1d.out
 
    test:
       suffix: 2d_par_2
       nsize: 8
       args: -dim 2
+      output_file: output/ex32_1d.out
+
+   test:
+      suffix: 2d_ratio
+      nsize: 1
+      args: -dim 2 -stag_refine_x 3 -stag_refine_y 4
+      output_file: output/ex32_1d.out
+
    test:
       suffix: 3d
       nsize: 1
       args: -dim 3
+      output_file: output/ex32_1d.out
 
    test:
       suffix: 3d_par
       nsize: 2
       args: -dim 3
+      output_file: output/ex32_1d.out
+
+   test:
+      suffix: 3d_ratio
+      nsize: 1
+      args: -dim 3 -stag_refine_x 3 -stag_refine_y 4 -stag_refine_z 5
+      output_file: output/ex32_1d.out
 TEST*/

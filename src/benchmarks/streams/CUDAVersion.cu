@@ -604,7 +604,6 @@ PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseG
   PetscCallCUDA(cudaFree(d_a));
   PetscCallCUDA(cudaFree(d_b));
   PetscCallCUDA(cudaFree(d_c));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -817,7 +816,6 @@ PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDo
   PetscCallCUDA(cudaFree(d_a));
   PetscCallCUDA(cudaFree(d_b));
   PetscCallCUDA(cudaFree(d_c));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -834,6 +832,7 @@ PetscErrorCode printResultsReadable(float times[][NTIMES], const size_t bsize) {
   const float    bytes_per_kernel[8] = {2. * bsize * N, 2. * bsize * N, 2. * bsize * N, 2. * bsize * N, 3. * bsize * N, 3. * bsize * N, 3. * bsize * N, 3. * bsize * N};
   double         rate, irate;
   int            rank, size;
+
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &rank));
   PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD, &size));
@@ -864,6 +863,5 @@ PetscErrorCode printResultsReadable(float times[][NTIMES], const size_t bsize) {
       printf("%d %11.4f   Rate (MB/s) %g \n", size, rate, rate / prate);
     }
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }

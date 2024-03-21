@@ -8,7 +8,7 @@
 
 typedef struct {
   Mat       shell, A;
-  Vec       b[2], diag; /* temporary storage for true right hand side */
+  Vec       b[2], diag; /* temporary storage for true right-hand side */
   PetscReal omega;
   PetscBool usediag; /* indicates preconditioner should include diagonal scaling*/
 } PC_Eisenstat;

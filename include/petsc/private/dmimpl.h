@@ -41,6 +41,7 @@ struct _DMOps {
   PetscErrorCode (*setfromoptions)(DM, PetscOptionItems *);
   PetscErrorCode (*setup)(DM);
   PetscErrorCode (*createlocalsection)(DM);
+  PetscErrorCode (*createsectionpermutation)(DM, IS *, PetscBT *);
   PetscErrorCode (*createdefaultconstraints)(DM);
   PetscErrorCode (*createglobalvector)(DM, Vec *);
   PetscErrorCode (*createlocalvector)(DM, Vec *);
@@ -85,7 +86,7 @@ struct _DMOps {
   PetscErrorCode (*locatepoints)(DM, Vec, DMPointLocationType, PetscSF);
   PetscErrorCode (*getneighbors)(DM, PetscInt *, const PetscMPIInt **);
   PetscErrorCode (*getboundingbox)(DM, PetscReal *, PetscReal *);
-  PetscErrorCode (*getlocalboundingbox)(DM, PetscReal *, PetscReal *);
+  PetscErrorCode (*getlocalboundingbox)(DM, PetscReal[], PetscReal[], PetscInt[], PetscInt[]);
   PetscErrorCode (*locatepointssubdomain)(DM, Vec, PetscMPIInt **);
 
   PetscErrorCode (*projectfunctionlocal)(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **, InsertMode, Vec);
@@ -266,10 +267,13 @@ struct _p_DM {
   PetscSF   sfNatural;   /* SF mapping to the "natural" ordering */
   PetscBool useNatural;  /* Create the natural SF */
   /* Allows a non-standard data layout */
-  PetscBool    adjacency[2];  /* [use cone() or support() first, use the transitive closure] */
-  PetscSection localSection;  /* Layout for local vectors */
-  PetscSection globalSection; /* Layout for global vectors */
-  PetscLayout  map;
+  PetscBool            adjacency[2];       /* [use cone() or support() first, use the transitive closure] */
+  PetscSection         localSection;       /* Layout for local vectors */
+  PetscSection         globalSection;      /* Layout for global vectors */
+  PetscLayout          map;                /* Parallel division of unknowns across processes */
+  DMReorderDefaultFlag reorderSection;     /* Reorder the local section by default */
+  MatOrderingType      reorderSectionType; /* The type of reordering */
+
   // Affine transform applied in DMGlobalToLocal
   struct {
     VecScatter affine_to_local;
@@ -305,6 +309,7 @@ struct _p_DM {
   DMSpace     *probs;    /* Array of discrete systems */
   /* Output structures */
   DM        dmBC;              /* The DM with boundary conditions in the global DM */
+  PetscBool ignorePermOutput;  /* Ignore the local section permutation on output */
   PetscInt  outputSequenceNum; /* The current sequence number for output */
   PetscReal outputSequenceVal; /* The current sequence value for output */
   PetscErrorCode (*monitor[MAXDMMONITORS])(DM, void *);
@@ -526,6 +531,7 @@ static inline PetscErrorCode DMGetGlobalFieldOffset_Private(DM dm, PetscInt poin
 }
 
 PETSC_EXTERN PetscErrorCode DMGetCoordinateDegree_Internal(DM, PetscInt *);
+PETSC_INTERN PetscErrorCode DMGetLocalBoundingBox_Coordinates(DM, PetscReal[], PetscReal[], PetscInt[], PetscInt[]);
 
 PETSC_EXTERN PetscErrorCode DMGetBasisTransformDM_Internal(DM, DM *);
 PETSC_EXTERN PetscErrorCode DMGetBasisTransformVec_Internal(DM, Vec *);
@@ -535,6 +541,7 @@ PETSC_INTERN PetscErrorCode DMGetLocalBoundingIndices_DMDA(DM, PetscReal[], Pets
 PETSC_INTERN PetscErrorCode DMSetField_Internal(DM, PetscInt, DMLabel, PetscObject);
 
 PETSC_INTERN PetscErrorCode DMSetLabelValue_Fast(DM, DMLabel *, const char[], PetscInt, PetscInt);
+PETSC_INTERN PetscErrorCode DMGetPoints_Internal(DM, DMLabel, PetscInt, PetscInt, IS *);
 
 PETSC_INTERN PetscErrorCode DMCompleteBCLabels_Internal(DM dm);
 PETSC_EXTERN PetscErrorCode DMUniversalLabelCreate(DM, DMUniversalLabel *);

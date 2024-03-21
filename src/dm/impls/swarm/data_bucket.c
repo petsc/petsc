@@ -716,7 +716,7 @@ PetscErrorCode DMSwarmDataBucketFillPackedArray(DMSwarmDataBucket db, const Pets
     DMSwarmDataField df = db->field[f];
 
     asize  = df->atomic_size;
-    data   = (void *)(df->data);
+    data   = (void *)df->data;
     data_p = (void *)((char *)data + index * asize);
     PetscCall(PetscMemcpy((void *)((char *)buf + offset), data_p, asize));
     offset = offset + asize;

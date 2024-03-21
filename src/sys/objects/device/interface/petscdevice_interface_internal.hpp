@@ -145,7 +145,7 @@ inline PetscErrorCode CxxData::add_mark(PetscObjectId id) noexcept
 #if PETSC_USE_UNORDERED_SET_FOR_MARKED
   PetscCallCXX(marked_objects_.emplace(id));
 #else
-  const auto pair   = get_marked_(id);
+  const auto pair = get_marked_(id);
 
   if (!pair.first) PetscCallCXX(marked_objects_.insert(pair.second, id));
 #endif

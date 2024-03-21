@@ -38,7 +38,6 @@ PetscErrorCode PetscAdolcIJacobianVectorProduct(Mat A_shell, Vec X, Vec Y)
   DMDALocalInfo      info;
 
   PetscFunctionBegin;
-
   /* Get matrix-free context info */
   PetscCall(MatShellGetContext(A_shell, &mctx));
   m = mctx->m;
@@ -121,7 +120,6 @@ PetscErrorCode PetscAdolcIJacobianVectorProductIDMass(Mat A_shell, Vec X, Vec Y)
   DMDALocalInfo      info;
 
   PetscFunctionBegin;
-
   /* Get matrix-free context info */
   PetscCall(MatShellGetContext(A_shell, &mctx));
   m = mctx->m;
@@ -190,7 +188,6 @@ PetscErrorCode PetscAdolcIJacobianTransposeVectorProduct(Mat A_shell, Vec Y, Vec
   DMDALocalInfo      info;
 
   PetscFunctionBegin;
-
   /* Get matrix-free context info */
   PetscCall(MatShellGetContext(A_shell, &mctx));
   m = mctx->m;
@@ -277,7 +274,6 @@ PetscErrorCode PetscAdolcIJacobianTransposeVectorProductIDMass(Mat A_shell, Vec 
   DMDALocalInfo      info;
 
   PetscFunctionBegin;
-
   /* Get matrix-free context info */
   PetscCall(MatShellGetContext(A_shell, &mctx));
   m = mctx->m;

@@ -3,7 +3,7 @@ KSP Object: 2 MPI processes
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     happy breakdown tolerance 1e-30
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=0.000138889, absolute=1e-50, divergence=10000.
+  tolerances: relative=0.000138889, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
 PC Object: 2 MPI processes
@@ -12,7 +12,7 @@ PC Object: 2 MPI processes
     KSP Object: (redundant_) 1 MPI process
       type: preonly
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (redundant_) 1 MPI process
@@ -21,7 +21,7 @@ PC Object: 2 MPI processes
         KSP Object: (redundant_redundant_) 1 MPI process
           type: preonly
           maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
         PC Object: (redundant_redundant_) 1 MPI process
@@ -30,7 +30,7 @@ PC Object: 2 MPI processes
             KSP Object: (redundant_redundant_redundant_) 1 MPI process
               type: preonly
               maximum iterations=10000, initial guess is zero
-              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
               left preconditioning
               using NONE norm type for convergence test
             PC Object: (redundant_redundant_redundant_) 1 MPI process
@@ -39,7 +39,7 @@ PC Object: 2 MPI processes
                 KSP Object: (redundant_redundant_redundant_redundant_) 1 MPI process
                   type: preonly
                   maximum iterations=10000, initial guess is zero
-                  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
                   left preconditioning
                   using NONE norm type for convergence test
                 PC Object: (redundant_redundant_redundant_redundant_) 1 MPI process
@@ -48,7 +48,7 @@ PC Object: 2 MPI processes
                     KSP Object: (redundant_redundant_redundant_redundant_redundant_) 1 MPI process
                       type: preonly
                       maximum iterations=10000, initial guess is zero
-                      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
                       left preconditioning
                       using NONE norm type for convergence test
                     PC Object: (redundant_redundant_redundant_redundant_redundant_) 1 MPI process

@@ -1,19 +1,19 @@
   Residual norms for elas_ solve.
-  0 KSP Residual norm 1.86112 
-  1 KSP Residual norm 0.0374733 
-  2 KSP Residual norm 0.0348124 
-  3 KSP Residual norm 0.0335684 
-  4 KSP Residual norm 0.0329643 
-  5 KSP Residual norm 0.0310698 
-  6 KSP Residual norm 0.0144307 
-  7 KSP Residual norm 0.00933562 
-  8 KSP Residual norm 0.00894835 
+  0 KSP Residual norm 1.86112
+  1 KSP Residual norm 0.0374733
+  2 KSP Residual norm 0.0348124
+  3 KSP Residual norm 0.0335684
+  4 KSP Residual norm 0.0329643
+  5 KSP Residual norm 0.0310698
+  6 KSP Residual norm 0.0144307
+  7 KSP Residual norm 0.00933562
+  8 KSP Residual norm 0.00894835
 KSP Object: (elas_) 1 MPI process
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     happy breakdown tolerance 1e-30
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=0.005, absolute=1e-50, divergence=10000.
+  tolerances: relative=0.005, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
 PC Object: (elas_) 1 MPI process

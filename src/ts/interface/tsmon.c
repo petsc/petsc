@@ -418,7 +418,6 @@ PetscErrorCode TSMonitorSPCtxCreate(MPI_Comm comm, const char host[], const char
 PetscErrorCode TSMonitorSPCtxDestroy(TSMonitorSPCtx *ctx)
 {
   PetscFunctionBegin;
-
   PetscCall(PetscDrawSPDestroy(&(*ctx)->sp));
   PetscCall(PetscFree(*ctx));
   PetscFunctionReturn(PETSC_SUCCESS);

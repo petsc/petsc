@@ -297,7 +297,7 @@ M*/
   error code. Experienced users can set the error handler with `PetscPushErrorHandler()`.
 
   `PetscCall()` cannot be used in functions returning a datatype not convertible to
-  `PetscErrorCode`. For example, `PetscCall()` may not be used in functions returning void, use
+  `PetscErrorCode`. For example, `PetscCall()` may not be used in functions returning `void`, use
   `PetscCallAbort()` or `PetscCallVoid()` in this case.
 
   Example Usage:
@@ -403,11 +403,11 @@ M*/
 M*/
 
 /*MC
-  PetscCallVoid - Like `PetscCall()` but for functions returning `void`
+  PetscCallVoid - Like `PetscCall()` but for use in functions that return `void`
 
   Synopsis:
   #include <petscerror.h>
-  void PetscCall(PetscFunction(args))
+  void PetscCallVoid(PetscFunction(args))
 
   Not Collective; No Fortran Support
 
@@ -423,7 +423,7 @@ M*/
     PetscFunctionBeginUser;
     // OK, properly handles PETSc error codes
     PetscCallVoid(KSPCreate(PETSC_COMM_WORLD, &ksp));
-    PetscFunctionReturn(PETSC_SUCCESS);
+    PetscFunctionReturnVoid();
   }
 
   PetscErrorCode bar()
@@ -451,7 +451,7 @@ M*/
   that the routine returned early due to an error. `PetscCallAbort()` at least ensures that the
   program crashes gracefully.
 
-.seealso: `PetscCall()`, `PetscErrorCode`
+.seealso: `PetscCall()`, `PetscErrorCode`, `PetscCallAbort()`
 M*/
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 void PetscCall(PetscErrorCode);
@@ -1085,7 +1085,7 @@ M*/
 
    By defaults prints location where memory that is corrupted was allocated.
 
-   Use `CHKMEMA` for functions that return void
+   Use `CHKMEMA` for functions that return `void`
 
 .seealso: `PetscTraceBackErrorHandler()`, `PetscPushErrorHandler()`, `PetscError()`, `SETERRQ()`, `PetscMallocValidate()`
 M*/

@@ -145,7 +145,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
   PetscInt               nPl, nPg, nPgl;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectGetComm((PetscObject)(fetidpmat_ctx->pc), &comm));
+  PetscCall(PetscObjectGetComm((PetscObject)fetidpmat_ctx->pc, &comm));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCallMPI(MPI_Comm_size(comm, &size));
 

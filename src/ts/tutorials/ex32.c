@@ -1,4 +1,4 @@
-static char help[] = "Solves a time-dependent linear PDE with discontinuous right hand side.\n";
+static char help[] = "Solves a time-dependent linear PDE with discontinuous right-hand side.\n";
 
 /* ------------------------------------------------------------------------
 
@@ -134,7 +134,6 @@ static PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void
   PetscCall(DMDAVecRestoreArrayRead(da, Ulocal, &u));
   PetscCall(DMDAVecRestoreArray(da, F, &f));
   PetscCall(DMRestoreLocalVector(da, &Ulocal));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -225,8 +224,8 @@ int main(int argc, char **argv)
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
   PetscCall(TSSetProblemType(ts, TS_NONLINEAR));
   PetscCall(TSSetType(ts, TSROSW));
-  PetscCall(TSSetIFunction(ts, NULL, (TSIFunction)IFunction, (void *)&app));
-  PetscCall(TSSetIJacobian(ts, J, J, (TSIJacobian)IJacobian, (void *)&app));
+  PetscCall(TSSetIFunction(ts, NULL, (TSIFunctionFn *)IFunction, (void *)&app));
+  PetscCall(TSSetIJacobian(ts, J, J, (TSIJacobianFn *)IJacobian, (void *)&app));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions

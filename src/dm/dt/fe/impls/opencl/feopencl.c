@@ -50,7 +50,7 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
   char            *string_tail   = *string_buffer;
   char            *end_of_buffer = *string_buffer + buffer_length;
   char             float_str[] = "float", double_str[] = "double";
-  char            *numeric_str    = &(float_str[0]);
+  char            *numeric_str    = &float_str[0];
   PetscInt         op             = ocl->op;
   PetscBool        useField       = PETSC_FALSE;
   PetscBool        useFieldDer    = PETSC_TRUE;
@@ -80,7 +80,7 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
                                     "#  pragma OPENCL EXTENSION cl_amd_fp64: enable\n"
                                     "#endif\n",
                                     &count));
-    numeric_str = &(double_str[0]);
+    numeric_str = &double_str[0];
   }
   /* Kernel API */
   PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
@@ -783,7 +783,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE fem)
   PetscCheck(num_devices, PetscObjectComm((PetscObject)fem), PETSC_ERR_SUP, "No OpenCL device found.");
   ocl->dev_id = device_ids[0];
   /* Create context with one command queue */
-  ocl->ctx_id = clCreateContext(0, 1, &(ocl->dev_id), NULL, NULL, &err);
+  ocl->ctx_id = clCreateContext(0, 1, &ocl->dev_id, NULL, NULL, &err);
   PetscCall(err);
   ocl->queue_id = clCreateCommandQueue(ocl->ctx_id, ocl->dev_id, CL_QUEUE_PROFILING_ENABLE, &err);
   PetscCall(err);

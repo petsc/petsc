@@ -1088,23 +1088,21 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A, MatCreateSubMatrixOption fla
   Mat         B;
   Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data;
   Mat_SeqAIJ *b, *ad = (Mat_SeqAIJ *)a->A->data, *bd = (Mat_SeqAIJ *)a->B->data;
-  PetscMPIInt size, rank, *recvcounts = NULL, *displs = NULL;
-  PetscInt    sendcount, i, *rstarts = A->rmap->range, n, cnt, j;
-  PetscInt    m, *b_sendj, *garray   = a->garray, *lens, *jsendbuf, *a_jsendbuf, *b_jsendbuf;
+  PetscMPIInt size, rank;
+  PetscInt    sendcount, i, *rstarts = A->rmap->range, n, cnt, j, nrecv = 0;
+  PetscInt    m, *b_sendj, *garray = a->garray, *lens, *jsendbuf, *a_jsendbuf, *b_jsendbuf;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank));
   if (scall == MAT_INITIAL_MATRIX) {
     /* Tell every processor the number of nonzeros per row */
-    PetscCall(PetscMalloc1(A->rmap->N, &lens));
+    PetscCall(PetscCalloc1(A->rmap->N, &lens));
     for (i = A->rmap->rstart; i < A->rmap->rend; i++) lens[i] = ad->i[i - A->rmap->rstart + 1] - ad->i[i - A->rmap->rstart] + bd->i[i - A->rmap->rstart + 1] - bd->i[i - A->rmap->rstart];
-    PetscCall(PetscMalloc2(size, &recvcounts, size, &displs));
-    for (i = 0; i < size; i++) {
-      recvcounts[i] = A->rmap->range[i + 1] - A->rmap->range[i];
-      displs[i]     = A->rmap->range[i];
-    }
-    PetscCallMPI(MPI_Allgatherv(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, lens, recvcounts, displs, MPIU_INT, PetscObjectComm((PetscObject)A)));
+
+    /* All MPI processes get the same matrix */
+    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, lens, A->rmap->N, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)A)));
+
     /*     Create the sequential matrix of the same type as the local block diagonal  */
     PetscCall(MatCreate(PETSC_COMM_SELF, &B));
     PetscCall(MatSetSizes(B, A->rmap->N, A->cmap->N, PETSC_DETERMINE, PETSC_DETERMINE));
@@ -1114,6 +1112,13 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A, MatCreateSubMatrixOption fla
     PetscCall(PetscCalloc1(2, Bin));
     **Bin = B;
     b     = (Mat_SeqAIJ *)B->data;
+
+    /* zero column space */
+    nrecv = 0;
+    for (i = 0; i < size; i++) {
+      for (j = A->rmap->range[i]; j < A->rmap->range[i + 1]; j++) nrecv += lens[j];
+    }
+    PetscCall(PetscArrayzero(b->j, nrecv));
 
     /*   Copy my part of matrix column indices over    */
     sendcount  = ad->nz + bd->nz;
@@ -1140,15 +1145,10 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A, MatCreateSubMatrixOption fla
     }
     PetscCheck(cnt == sendcount, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Corrupted PETSc matrix: nz given %" PetscInt_FMT " actual nz %" PetscInt_FMT, sendcount, cnt);
 
-    /*  Gather all column indices to all processors */
-    for (i = 0; i < size; i++) {
-      recvcounts[i] = 0;
-      for (j = A->rmap->range[i]; j < A->rmap->range[i + 1]; j++) recvcounts[i] += lens[j];
-    }
-    displs[0] = 0;
-    for (i = 1; i < size; i++) displs[i] = displs[i - 1] + recvcounts[i - 1];
-    PetscCallMPI(MPI_Allgatherv(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, b->j, recvcounts, displs, MPIU_INT, PetscObjectComm((PetscObject)A)));
-    /*  Assemble the matrix into useable form (note numerical values not yet set) */
+    /* send column indices, b->j was zeroed */
+    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, b->j, nrecv, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)A)));
+
+    /*  Assemble the matrix into useable form (numerical values not yet set) */
     /* set the b->ilen (length of each row) values */
     PetscCall(PetscArraycpy(b->ilen, lens, A->rmap->N));
     /* set the b->i indices */
@@ -1166,7 +1166,10 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A, MatCreateSubMatrixOption fla
   /* Copy my part of matrix numerical values into the values location */
   if (flag == MAT_GET_VALUES) {
     const PetscScalar *ada, *bda, *a_sendbuf, *b_sendbuf;
-    MatScalar         *sendbuf, *recvbuf;
+    MatScalar         *sendbuf;
+
+    /* initialize b->a */
+    PetscCall(PetscArrayzero(b->a, b->nz));
 
     PetscCall(MatSeqAIJGetArrayRead(a->A, &ada));
     PetscCall(MatSeqAIJGetArrayRead(a->B, &bda));
@@ -1199,17 +1202,12 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A, MatCreateSubMatrixOption fla
     }
     PetscCheck(cnt == sendcount, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Corrupted PETSc matrix: nz given %" PetscInt_FMT " actual nz %" PetscInt_FMT, sendcount, cnt);
 
-    /*  Gather all numerical values to all processors  */
-    if (!recvcounts) PetscCall(PetscMalloc2(size, &recvcounts, size, &displs));
-    for (i = 0; i < size; i++) recvcounts[i] = b->i[rstarts[i + 1]] - b->i[rstarts[i]];
-    displs[0] = 0;
-    for (i = 1; i < size; i++) displs[i] = displs[i - 1] + recvcounts[i - 1];
-    recvbuf = b->a;
-    PetscCallMPI(MPI_Allgatherv(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, recvbuf, recvcounts, displs, MPIU_SCALAR, PetscObjectComm((PetscObject)A)));
+    /* send values, b->a was zeroed */
+    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, b->a, b->nz, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)A)));
+
     PetscCall(MatSeqAIJRestoreArrayRead(a->A, &ada));
     PetscCall(MatSeqAIJRestoreArrayRead(a->B, &bda));
   } /* endof (flag == MAT_GET_VALUES) */
-  PetscCall(PetscFree2(recvcounts, displs));
 
   PetscCall(MatPropagateSymmetryOptions(A, B));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1585,7 +1583,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
         row--;
         PetscCheck(row >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "row not found in table");
 #else
-        row = rmap[sbuf1_i[ct1]];      /* the row index in submat */
+        row = rmap[sbuf1_i[ct1]]; /* the row index in submat */
 #endif
         /* Now, store row index of submat in sbuf1_i[ct1] */
         sbuf1_i[ct1] = row;
@@ -3062,7 +3060,7 @@ static PetscErrorCode MatCreateSubMatricesMPI_MPIXAIJ(Mat C, PetscInt ismax, con
          to be done without serializing on the IS list, so, most likely, it is best
          done by rewriting MatCreateSubMatrices_MPIAIJ() directly.
       */
-      PetscCall(ISGetNonlocalIS(iscol[i], &(ciscol[ii])));
+      PetscCall(ISGetNonlocalIS(iscol[i], &ciscol[ii]));
       /* Now we have to
          (a) make sure ciscol[ii] is sorted, since, even if the off-proc indices
              were sorted on each rank, concatenated they might no longer be sorted;

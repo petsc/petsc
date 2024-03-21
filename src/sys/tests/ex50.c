@@ -69,4 +69,9 @@ int main(int argc, char **argv)
       nsize: 4
       args: -viewer
 
+   test:
+      suffix: 2
+      nsize: 4
+      args: -viewer -psubcomm_type interlaced
+
 TEST*/

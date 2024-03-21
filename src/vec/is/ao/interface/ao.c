@@ -84,8 +84,8 @@ PetscErrorCode AODestroy(AO *ao)
 {
   PetscFunctionBegin;
   if (!*ao) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*ao), AO_CLASSID, 1);
-  if (--((PetscObject)(*ao))->refct > 0) {
+  PetscValidHeaderSpecific(*ao, AO_CLASSID, 1);
+  if (--((PetscObject)*ao)->refct > 0) {
     *ao = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -138,7 +138,7 @@ PetscErrorCode AOPetscToApplicationIS(AO ao, IS is)
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
   PetscValidHeaderSpecific(is, IS_CLASSID, 2);
   PetscCall(ISToGeneral(is));
-  /* we cheat because we know the is is general and that we can change the indices */
+  /* we cheat because we know the IS is general and that we can change the indices */
   PetscCall(ISGetIndices(is, (const PetscInt **)&ia));
   PetscCall(ISGetLocalSize(is, &n));
   PetscUseTypeMethod(ao, petsctoapplication, n, ia);
@@ -181,7 +181,7 @@ PetscErrorCode AOApplicationToPetscIS(AO ao, IS is)
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
   PetscValidHeaderSpecific(is, IS_CLASSID, 2);
   PetscCall(ISToGeneral(is));
-  /* we cheat because we know the is is general and that we can change the indices */
+  /* we cheat because we know the IS is general and that we can change the indices */
   PetscCall(ISGetIndices(is, (const PetscInt **)&ia));
   PetscCall(ISGetLocalSize(is, &n));
   PetscUseTypeMethod(ao, applicationtopetsc, n, ia);

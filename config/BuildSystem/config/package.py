@@ -554,17 +554,21 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
     alllibs = []
     if not directory:  # compiler default path - so also check compiler default libs.
       alllibs.insert(0,[])
+    elif directory in self.libraries.sysDirs:
+      self.logPrint('generateLibList: systemDir detected! skipping: '+str(directory))
+      directory = ''
     for libSet in liblist:
       libs = []
-      # add full path only to the first library in the list
-      if len(libSet) > 0:
-        libs.append(os.path.join(directory, libSet[0]))
-      for library in libSet[1:]:
-        # if the library name doesn't start with lib - then add the fullpath
+      use_L = 0
+      for library in libSet:
+        # if the library name starts with 'lib' or uses '-lfoo' then add in -Lpath. Otherwise - add the fullpath
         if library.startswith('-l') or library.startswith('lib'):
           libs.append(library)
+          use_L = 1
         else:
           libs.append(os.path.join(directory, library))
+      if use_L and directory:
+        libs.insert(0,'-L'+directory)
       libs.extend(self.extraLib)
       alllibs.append(libs)
     return alllibs
@@ -611,7 +615,7 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
       if self.argDB['with-'+self.package+'-pkg-config']:
         if path: os.environ['PKG_CONFIG_PATH'] = path
         else: os.environ['PKG_CONFIG_PATH'] = ''
-      yield('pkg-config located libraries and includes '+self.PACKAGE, None, l, i)
+      yield('pkg-config located libraries and includes '+self.PACKAGE, None, l.split(), i)
       raise RuntimeError('pkg-config could not locate correct includes and libraries for '+self.package)
 
 
@@ -1599,7 +1603,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
             self.includeDir   /* subdir of self.installDir */
             self.libDir       /* subdir of self.installDir, defined as self.installDir + self.libDirs[0] */
             self.confDir      /* where packages private to the configure/build process are built, such as --download-make */
-                              /* The subdirectory of this 'conf' is where where the configuration information will be stored for the package */
+                              /* The subdirectory of this 'conf' is where the configuration information will be stored for the package */
             self.packageDir = /* this dir is where the source is unpacked and built */
             self.getDir():
               ...

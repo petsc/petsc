@@ -102,7 +102,7 @@ int main(int argc, char **argv)
 #if PETSC_SCALAR_SIZE == 32
   PetscInt digits = 7;
 #elif PETSC_SCALAR_SIZE == 64
-  PetscInt        digits  = 14;
+  PetscInt digits = 14;
 #else
   PetscInt digits = 14;
 #endif

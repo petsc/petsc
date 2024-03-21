@@ -93,8 +93,8 @@ PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(void *data)
 PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, Mat C)
 {
   Mat_MPIAIJ        *a = (Mat_MPIAIJ *)A->data, *c = (Mat_MPIAIJ *)C->data;
-  Mat_SeqAIJ        *ad = (Mat_SeqAIJ *)(a->A)->data, *ao = (Mat_SeqAIJ *)(a->B)->data;
-  Mat_SeqAIJ        *cd = (Mat_SeqAIJ *)(c->A)->data, *co = (Mat_SeqAIJ *)(c->B)->data;
+  Mat_SeqAIJ        *ad = (Mat_SeqAIJ *)a->A->data, *ao = (Mat_SeqAIJ *)a->B->data;
+  Mat_SeqAIJ        *cd = (Mat_SeqAIJ *)c->A->data, *co = (Mat_SeqAIJ *)c->B->data;
   PetscScalar       *cda = cd->a, *coa = co->a;
   Mat_SeqAIJ        *p_loc, *p_oth;
   PetscScalar       *apa, *ca;
@@ -129,9 +129,9 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, Mat C)
 
   /* 2) compute numeric C_loc = A_loc*P = Ad*P_loc + Ao*P_oth */
   /* get data from symbolic products */
-  p_loc = (Mat_SeqAIJ *)(ptap->P_loc)->data;
+  p_loc = (Mat_SeqAIJ *)ptap->P_loc->data;
   p_oth = NULL;
-  if (size > 1) p_oth = (Mat_SeqAIJ *)(ptap->P_oth)->data;
+  if (size > 1) p_oth = (Mat_SeqAIJ *)ptap->P_oth->data;
 
   /* get apa for storing dense row A[i,:]*P */
   apa = ptap->apa;
@@ -187,7 +187,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, PetscR
   Mat_APMPI         *ptap;
   PetscFreeSpaceList free_space = NULL, current_space = NULL;
   Mat_MPIAIJ        *a  = (Mat_MPIAIJ *)A->data;
-  Mat_SeqAIJ        *ad = (Mat_SeqAIJ *)(a->A)->data, *ao = (Mat_SeqAIJ *)(a->B)->data, *p_loc, *p_oth;
+  Mat_SeqAIJ        *ad = (Mat_SeqAIJ *)a->A->data, *ao = (Mat_SeqAIJ *)a->B->data, *p_loc, *p_oth;
   PetscInt          *pi_loc, *pj_loc, *pi_oth, *pj_oth, *dnz, *onz;
   PetscInt          *adi = ad->i, *adj = ad->j, *aoi = ao->i, *aoj = ao->j, rstart = A->rmap->rstart;
   PetscInt          *lnk, i, pnz, row, *api, *apj, *Jptr, apnz, nspacedouble = 0, j, nzi;
@@ -211,11 +211,11 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, PetscR
   /* get P_loc by taking all local rows of P */
   PetscCall(MatMPIAIJGetLocalMat(P, MAT_INITIAL_MATRIX, &ptap->P_loc));
 
-  p_loc  = (Mat_SeqAIJ *)(ptap->P_loc)->data;
+  p_loc  = (Mat_SeqAIJ *)ptap->P_loc->data;
   pi_loc = p_loc->i;
   pj_loc = p_loc->j;
   if (size > 1) {
-    p_oth  = (Mat_SeqAIJ *)(ptap->P_oth)->data;
+    p_oth  = (Mat_SeqAIJ *)ptap->P_oth->data;
     pi_oth = p_oth->i;
     pj_oth = p_oth->j;
   } else {
@@ -623,8 +623,8 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, Mat C)
 PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C)
 {
   Mat_MPIAIJ        *a = (Mat_MPIAIJ *)A->data, *c = (Mat_MPIAIJ *)C->data;
-  Mat_SeqAIJ        *ad = (Mat_SeqAIJ *)(a->A)->data, *ao = (Mat_SeqAIJ *)(a->B)->data;
-  Mat_SeqAIJ        *cd = (Mat_SeqAIJ *)(c->A)->data, *co = (Mat_SeqAIJ *)(c->B)->data;
+  Mat_SeqAIJ        *ad = (Mat_SeqAIJ *)a->A->data, *ao = (Mat_SeqAIJ *)a->B->data;
+  Mat_SeqAIJ        *cd = (Mat_SeqAIJ *)c->A->data, *co = (Mat_SeqAIJ *)c->B->data;
   PetscInt          *adi = ad->i, *adj, *aoi = ao->i, *aoj;
   PetscScalar       *ada, *aoa, *cda = cd->a, *coa = co->a;
   Mat_SeqAIJ        *p_loc, *p_oth;
@@ -663,12 +663,12 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C)
 
   /* 2) compute numeric C_loc = A_loc*P = Ad*P_loc + Ao*P_oth */
   /* get data from symbolic products */
-  p_loc  = (Mat_SeqAIJ *)(ptap->P_loc)->data;
+  p_loc  = (Mat_SeqAIJ *)ptap->P_loc->data;
   pi_loc = p_loc->i;
   pj_loc = p_loc->j;
   pa_loc = p_loc->a;
   if (size > 1) {
-    p_oth  = (Mat_SeqAIJ *)(ptap->P_oth)->data;
+    p_oth  = (Mat_SeqAIJ *)ptap->P_oth->data;
     pi_oth = p_oth->i;
     pj_oth = p_oth->j;
     pa_oth = p_oth->a;
@@ -772,7 +772,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Ma
   Mat_APMPI         *ptap;
   PetscFreeSpaceList free_space = NULL, current_space = NULL;
   Mat_MPIAIJ        *a  = (Mat_MPIAIJ *)A->data;
-  Mat_SeqAIJ        *ad = (Mat_SeqAIJ *)(a->A)->data, *ao = (Mat_SeqAIJ *)(a->B)->data, *p_loc, *p_oth;
+  Mat_SeqAIJ        *ad = (Mat_SeqAIJ *)a->A->data, *ao = (Mat_SeqAIJ *)a->B->data, *p_loc, *p_oth;
   PetscInt          *pi_loc, *pj_loc, *pi_oth, *pj_oth, *dnz, *onz;
   PetscInt          *adi = ad->i, *adj = ad->j, *aoi = ao->i, *aoj = ao->j, rstart = A->rmap->rstart;
   PetscInt           i, pnz, row, *api, *apj, *Jptr, apnz, nspacedouble = 0, j, nzi, *lnk, apnz_max = 1;
@@ -795,11 +795,11 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Ma
   /* get P_loc by taking all local rows of P */
   PetscCall(MatMPIAIJGetLocalMat(P, MAT_INITIAL_MATRIX, &ptap->P_loc));
 
-  p_loc  = (Mat_SeqAIJ *)(ptap->P_loc)->data;
+  p_loc  = (Mat_SeqAIJ *)ptap->P_loc->data;
   pi_loc = p_loc->i;
   pj_loc = p_loc->j;
   if (size > 1) {
-    p_oth  = (Mat_SeqAIJ *)(ptap->P_oth)->data;
+    p_oth  = (Mat_SeqAIJ *)ptap->P_oth->data;
     pi_oth = p_oth->i;
     pj_oth = p_oth->j;
   } else {
@@ -1010,7 +1010,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   Mat_APMPI         *ptap;
   PetscFreeSpaceList free_space_diag = NULL, current_space = NULL;
   Mat_MPIAIJ        *a  = (Mat_MPIAIJ *)A->data;
-  Mat_SeqAIJ        *ad = (Mat_SeqAIJ *)(a->A)->data, *ao = (Mat_SeqAIJ *)(a->B)->data, *p_loc;
+  Mat_SeqAIJ        *ad = (Mat_SeqAIJ *)a->A->data, *ao = (Mat_SeqAIJ *)a->B->data, *p_loc;
   Mat_MPIAIJ        *p = (Mat_MPIAIJ *)P->data;
   Mat_SeqAIJ        *adpd_seq, *p_off, *aopoth_seq;
   PetscInt           adponz, adpdnz;
@@ -1042,7 +1042,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   /* get P_loc by taking all local rows of P */
   PetscCall(MatMPIAIJGetLocalMat(P, MAT_INITIAL_MATRIX, &ptap->P_loc));
 
-  p_loc  = (Mat_SeqAIJ *)(ptap->P_loc)->data;
+  p_loc  = (Mat_SeqAIJ *)ptap->P_loc->data;
   pi_loc = p_loc->i;
 
   /* Allocate memory for the i arrays of the matrices A*P, A_diag*P_off and A_offd * P */
@@ -1075,7 +1075,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   adpd_seq = (Mat_SeqAIJ *)((adpd)->data);
   adpdi    = adpd_seq->i;
   adpdj    = adpd_seq->j;
-  p_off    = (Mat_SeqAIJ *)((p->B)->data);
+  p_off    = (Mat_SeqAIJ *)p->B->data;
   poff_i   = p_off->i;
   poff_j   = p_off->j;
 
@@ -1346,7 +1346,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat 
   if (nsend) PetscCallMPI(MPI_Waitall(nsend, swaits, sstatus));
 
   /* add received column indices into ta to update Crmax */
-  a_loc = (Mat_SeqAIJ *)(ptap->A_loc)->data;
+  a_loc = (Mat_SeqAIJ *)ptap->A_loc->data;
 
   /* create and initialize a linked list */
   PetscCall(PetscHMapICreateWithSize(an, &ta)); /* for compute Crmax */
@@ -1514,8 +1514,8 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat A
 
   /* 3) C_loc = Rd*A_loc, C_oth = Ro*A_loc */
   A_loc = ptap->A_loc;
-  PetscCall(((ptap->C_loc)->ops->matmultnumeric)(ptap->Rd, A_loc, ptap->C_loc));
-  PetscCall(((ptap->C_oth)->ops->matmultnumeric)(ptap->Ro, A_loc, ptap->C_oth));
+  PetscCall(ptap->C_loc->ops->matmultnumeric(ptap->Rd, A_loc, ptap->C_loc));
+  PetscCall(ptap->C_oth->ops->matmultnumeric(ptap->Ro, A_loc, ptap->C_oth));
   C_loc = ptap->C_loc;
   C_oth = ptap->C_oth;
 
@@ -1557,7 +1557,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P, Mat A, Mat C)
 {
   Mat_Merge_SeqsToMPI *merge;
   Mat_MPIAIJ          *p  = (Mat_MPIAIJ *)P->data;
-  Mat_SeqAIJ          *pd = (Mat_SeqAIJ *)(p->A)->data, *po = (Mat_SeqAIJ *)(p->B)->data;
+  Mat_SeqAIJ          *pd = (Mat_SeqAIJ *)p->A->data, *po = (Mat_SeqAIJ *)p->B->data;
   Mat_APMPI           *ap;
   PetscInt            *adj;
   PetscInt             i, j, k, anz, pnz, row, *cj, nexta;
@@ -1681,7 +1681,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P, Mat A, Mat C)
   PetscCall(PetscMalloc3(merge->nrecv, &buf_ri_k, merge->nrecv, &nextrow, merge->nrecv, &nextci));
   for (k = 0; k < merge->nrecv; k++) {
     buf_ri_k[k] = buf_ri[k]; /* beginning of k-th recved i-structure */
-    nrows       = *(buf_ri_k[k]);
+    nrows       = *buf_ri_k[k];
     nextrow[k]  = buf_ri_k[k] + 1;           /* next row number of k-th recved i-structure */
     nextci[k]   = buf_ri_k[k] + (nrows + 1); /* points to the next i-structure of k-th recved i-structure  */
   }
@@ -1696,8 +1696,8 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P, Mat A, Mat C)
       /* i-th row */
       if (i == *nextrow[k]) {
         cnz    = *(nextci[k] + 1) - *nextci[k];
-        cj     = buf_rj[k] + *(nextci[k]);
-        ca     = abuf_r[k] + *(nextci[k]);
+        cj     = buf_rj[k] + *nextci[k];
+        ca     = abuf_r[k] + *nextci[k];
         nextcj = 0;
         for (j = 0; nextcj < cnz; j++) {
           if (bj_i[j] == cj[nextcj]) { /* bcol == ccol */
@@ -2123,7 +2123,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AB(Mat C)
     "seqmpi",
     "backend",
   };
-  PetscInt    nalg        = 4;
+  PetscInt nalg = 4;
 #endif
   PetscInt  alg = 1; /* set nonscalable algorithm as default */
   PetscBool flg;

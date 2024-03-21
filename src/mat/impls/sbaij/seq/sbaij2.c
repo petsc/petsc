@@ -116,7 +116,6 @@ static PetscErrorCode MatCreateSubMatrix_SeqSBAIJ_Private(Mat A, IS isrow, IS is
   PetscBool       flag;
 
   PetscFunctionBegin;
-
   PetscCall(ISGetIndices(isrow, &irow));
   PetscCall(ISGetIndices(iscol, &icol));
   PetscCall(ISGetLocalSize(isrow, &nrows));
@@ -164,8 +163,8 @@ static PetscErrorCode MatCreateSubMatrix_SeqSBAIJ_Private(Mat A, IS isrow, IS is
       PetscCall(MatSeqBAIJSetPreallocation(C, bs, 0, lens));
     }
   }
-  if (sym) c = (Mat_SeqSBAIJ *)(C->data);
-  else d = (Mat_SeqBAIJ *)(C->data);
+  if (sym) c = (Mat_SeqSBAIJ *)C->data;
+  else d = (Mat_SeqBAIJ *)C->data;
   for (i = 0; i < nrows; i++) {
     row    = irow[i];
     kstart = ai[row];

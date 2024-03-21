@@ -1,31 +1,31 @@
-  0 SNES Function norm 95.2794 
-    0 SNES Function norm 95.2794 
-    1 SNES Function norm 27.7545 
-      0 SNES Function norm 7.72252 
-      1 SNES Function norm 1.53615 
-      2 SNES Function norm 0.109054 
-      3 SNES Function norm 0.000651896 
-      4 SNES Function norm 2.36055e-08 
-    0 SNES Function norm 27.9148 
-    1 SNES Function norm 7.84699 
-  1 SNES Function norm 7.84699 
-    0 SNES Function norm 7.84699 
-    1 SNES Function norm 1.64247 
-      0 SNES Function norm 0.168478 
-      1 SNES Function norm 0.00165933 
-      2 SNES Function norm 1.62594e-07 
+  0 SNES Function norm 95.2794
+    0 SNES Function norm 95.2794
+    1 SNES Function norm 27.7545
+      0 SNES Function norm 7.72252
+      1 SNES Function norm 1.53615
+      2 SNES Function norm 0.109054
+      3 SNES Function norm 0.000651896
+      4 SNES Function norm 2.36055e-08
+    0 SNES Function norm 27.9148
+    1 SNES Function norm 7.84699
+  1 SNES Function norm 7.84699
+    0 SNES Function norm 7.84699
+    1 SNES Function norm 1.64247
+      0 SNES Function norm 0.168478
+      1 SNES Function norm 0.00165933
+      2 SNES Function norm 1.62594e-07
       3 SNES Function norm < 1.e-11
-    0 SNES Function norm 1.69667 
-    1 SNES Function norm 0.163849 
-  2 SNES Function norm 0.163849 
-    0 SNES Function norm 0.163849 
-    1 SNES Function norm 0.00249421 
-      0 SNES Function norm 0.000417676 
-      1 SNES Function norm 1.00749e-08 
+    0 SNES Function norm 1.69667
+    1 SNES Function norm 0.163849
+  2 SNES Function norm 0.163849
+    0 SNES Function norm 0.163849
+    1 SNES Function norm 0.00249421
+      0 SNES Function norm 0.000417676
+      1 SNES Function norm 1.00749e-08
       2 SNES Function norm < 1.e-11
-    0 SNES Function norm 0.00265254 
-    1 SNES Function norm 5.66326e-07 
-  3 SNES Function norm 5.66326e-07 
+    0 SNES Function norm 0.00265254
+    1 SNES Function norm 5.66326e-07
+  3 SNES Function norm 5.66326e-07
 L_2 Error: 0.0198799
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
 SNES Object: 1 MPI process
@@ -50,7 +50,7 @@ SNES Object: 1 MPI process
           restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
           happy breakdown tolerance 1e-30
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-10, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-10, absolute=1e-50, divergence=10000.
         left preconditioning
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_coarse_) 1 MPI process
@@ -84,7 +84,7 @@ SNES Object: 1 MPI process
           restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
           happy breakdown tolerance 1e-30
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-10, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-10, absolute=1e-50, divergence=10000.
         left preconditioning
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_levels_1_) 1 MPI process

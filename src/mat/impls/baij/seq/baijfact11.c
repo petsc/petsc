@@ -1092,8 +1092,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
   Mat             A = C;
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)C->data;
   int             i, j, n = a->mbs;
-  unsigned short *bj = (unsigned short *)(b->j), *bjtmp, *pj;
-  unsigned short *aj = (unsigned short *)(a->j), *ajtmp;
+  unsigned short *bj = (unsigned short *)b->j, *bjtmp, *pj;
+  unsigned short *aj = (unsigned short *)a->j, *ajtmp;
   unsigned int    row;
   int             nz, *bi = b->i;
   int            *diag_offset = b->diag, *ai = a->i;
@@ -1534,7 +1534,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C, Mat A
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)C->data;
   int             i, j, n = a->mbs;
-  unsigned short *bj = (unsigned short *)(b->j), *bjtmp, *pj;
+  unsigned short *bj = (unsigned short *)b->j, *bjtmp, *pj;
   unsigned int    row;
   int            *ajtmpold, nz, *bi = b->i;
   int            *diag_offset = b->diag, *ai = a->i, *aj = a->j;
@@ -1556,7 +1556,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C, Mat A
   /*    if ((unsigned long)bj==(unsigned long)aj) { */
   /*      colscale = 4; */
   /*    } */
-  if ((unsigned long)bj == (unsigned long)aj) return (MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(C));
+  if ((unsigned long)bj == (unsigned long)aj) return MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(C);
 
   for (i = 0; i < n; i++) {
     nz    = bi[i + 1] - bi[i];

@@ -937,13 +937,13 @@ PetscErrorCode PetscWeakFormDestroy(PetscWeakForm *wf)
 
   PetscFunctionBegin;
   if (!*wf) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*wf), PETSCWEAKFORM_CLASSID, 1);
+  PetscValidHeaderSpecific(*wf, PETSCWEAKFORM_CLASSID, 1);
 
-  if (--((PetscObject)(*wf))->refct > 0) {
+  if (--((PetscObject)*wf)->refct > 0) {
     *wf = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  ((PetscObject)(*wf))->refct = 0;
+  ((PetscObject)*wf)->refct = 0;
   PetscCall(PetscChunkBufferDestroy(&(*wf)->funcs));
   for (f = 0; f < PETSC_NUM_WF; ++f) PetscCall(PetscHMapFormDestroy(&(*wf)->form[f]));
   PetscCall(PetscFree((*wf)->form));

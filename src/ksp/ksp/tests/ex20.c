@@ -69,7 +69,7 @@ int main(int argc, char **args)
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
 
-  /* Create right-hand-side and solution vectors */
+  /* Create right-hand side and solution vectors */
   PetscCall(VecCreate(PETSC_COMM_WORLD, &u));
   PetscCall(VecSetSizes(u, PETSC_DECIDE, N));
   PetscCall(VecSetFromOptions(u));
@@ -93,7 +93,7 @@ int main(int argc, char **args)
   */
   PetscCall(MatSetNullSpace(C, nullsp));
   /*
-     The KSP solver will remove from the right hand side any portion in this nullspace, thus making the linear system consistent.
+     The KSP solver will remove from the right-hand side any portion in this nullspace, thus making the linear system consistent.
   */
   PetscCall(MatSetTransposeNullSpace(C, nullsp));
   PetscCall(MatNullSpaceDestroy(&nullsp));

@@ -72,7 +72,7 @@ xyt_ADT XYT_new(void)
   xyt_handle->info = NULL;
   xyt_handle->mvi  = NULL;
 
-  return (xyt_handle);
+  return xyt_handle;
 }
 
 PetscErrorCode XYT_factor(xyt_ADT   xyt_handle,                                           /* prev. allocated xyt  handle */
@@ -741,7 +741,7 @@ static mv_info *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, PetscErr
   /* set xyt communication handle to perform restricted matvec */
   mvi->PCTFS_gs_handle = PCTFS_gs_init(local2global, m, PCTFS_num_nodes);
 
-  return (mvi);
+  return mvi;
 }
 
 static PetscErrorCode do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u)

@@ -117,7 +117,6 @@ PetscErrorCode ShiftGradients(TS ts, Vec U, AppCtx *actx)
   x[0]   = tmp[0] + A2[0];
   x[1]   = tmp[1] + A2[1];
   PetscCall(MatDenseRestoreColumn(sp, &x));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -280,8 +279,8 @@ int main(int argc, char **argv)
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
   PetscCall(TSSetProblemType(ts, TS_NONLINEAR));
   PetscCall(TSSetType(ts, TSCN));
-  PetscCall(TSSetIFunction(ts, NULL, (TSIFunction)IFunction, &app));
-  PetscCall(TSSetIJacobian(ts, A, A, (TSIJacobian)IJacobian, &app));
+  PetscCall(TSSetIFunction(ts, NULL, (TSIFunctionFn *)IFunction, &app));
+  PetscCall(TSSetIJacobian(ts, A, A, (TSIJacobianFn *)IJacobian, &app));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -320,7 +319,7 @@ int main(int argc, char **argv)
   PetscCall(MatDestroy(&Ap));
   PetscCall(MatDestroy(&sp));
   PetscCall(PetscFinalize());
-  return (0);
+  return 0;
 }
 
 /*TEST

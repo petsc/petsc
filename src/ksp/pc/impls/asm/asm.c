@@ -43,9 +43,9 @@ static PetscErrorCode PCView_ASM(PC pc, PetscViewer viewer)
         PetscCall(PetscViewerASCIIPrintf(viewer, "  Use -%sksp_view ::ascii_info_detail to display information for all blocks\n", prefix ? prefix : ""));
         PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
         if (rank == 0) {
-          PetscCall(PetscViewerASCIIPushTab(viewer));
+          PetscCall(PetscViewerASCIIPushTab(sviewer));
           PetscCall(KSPView(osm->ksp[0], sviewer));
-          PetscCall(PetscViewerASCIIPopTab(viewer));
+          PetscCall(PetscViewerASCIIPopTab(sviewer));
         }
         PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
       }
@@ -59,9 +59,9 @@ static PetscErrorCode PCView_ASM(PC pc, PetscViewer viewer)
       PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
       for (i = 0; i < osm->n_local_true; i++) {
         PetscCall(ISGetLocalSize(osm->is[i], &bsz));
-        PetscCall(PetscViewerASCIISynchronizedPrintf(sviewer, "[%d] local block number %" PetscInt_FMT ", size = %" PetscInt_FMT "\n", (int)rank, i, bsz));
+        PetscCall(PetscViewerASCIIPrintf(sviewer, "[%d] local block number %" PetscInt_FMT ", size = %" PetscInt_FMT "\n", (int)rank, i, bsz));
         PetscCall(KSPView(osm->ksp[i], sviewer));
-        PetscCall(PetscViewerASCIISynchronizedPrintf(sviewer, "- - - - - - - - - - - - - - - - - -\n"));
+        PetscCall(PetscViewerASCIIPrintf(sviewer, "- - - - - - - - - - - - - - - - - -\n"));
       }
       PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
       PetscCall(PetscViewerASCIIPopTab(viewer));
@@ -152,16 +152,17 @@ static PetscErrorCode PCASMPrintSubdomains(PC pc)
 
 static PetscErrorCode PCSetUp_ASM(PC pc)
 {
-  PC_ASM     *osm = (PC_ASM *)pc->data;
-  PetscBool   flg;
-  PetscInt    i, m, m_local;
-  MatReuse    scall = MAT_REUSE_MATRIX;
-  IS          isl;
-  KSP         ksp;
-  PC          subpc;
-  const char *prefix, *pprefix;
-  Vec         vec;
-  DM         *domain_dm = NULL;
+  PC_ASM       *osm = (PC_ASM *)pc->data;
+  PetscBool     flg;
+  PetscInt      i, m, m_local;
+  MatReuse      scall = MAT_REUSE_MATRIX;
+  IS            isl;
+  KSP           ksp;
+  PC            subpc;
+  const char   *prefix, *pprefix;
+  Vec           vec;
+  DM           *domain_dm = NULL;
+  MatNullSpace *nullsp    = NULL;
 
   PetscFunctionBegin;
   if (!pc->setupcalled) {
@@ -276,6 +277,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
        Destroy the blocks from the previous iteration
     */
     if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
+      PetscCall(MatGetNullSpaces(osm->n_local_true, osm->pmat, &nullsp));
       PetscCall(MatDestroyMatrices(osm->n_local_true, &osm->pmat));
       scall = MAT_INITIAL_MATRIX;
     }
@@ -283,6 +285,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
 
   /* Destroy previous submatrices of a different type than pc->pmat since MAT_REUSE_MATRIX won't work in that case */
   if (scall == MAT_REUSE_MATRIX && osm->sub_mat_type) {
+    PetscCall(MatGetNullSpaces(osm->n_local_true, osm->pmat, &nullsp));
     if (osm->n_local_true > 0) PetscCall(MatDestroySubMatrices(osm->n_local_true, &osm->pmat));
     scall = MAT_INITIAL_MATRIX;
   }
@@ -294,11 +297,12 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
   if (scall == MAT_INITIAL_MATRIX) {
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject)pc->pmat, &pprefix));
     for (i = 0; i < osm->n_local_true; i++) PetscCall(PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i], pprefix));
+    if (nullsp) PetscCall(MatRestoreNullSpaces(osm->n_local_true, osm->pmat, &nullsp));
   }
 
   /* Convert the types of the submatrices (if needbe) */
   if (osm->sub_mat_type) {
-    for (i = 0; i < osm->n_local_true; i++) PetscCall(MatConvert(osm->pmat[i], osm->sub_mat_type, MAT_INPLACE_MATRIX, &(osm->pmat[i])));
+    for (i = 0; i < osm->n_local_true; i++) PetscCall(MatConvert(osm->pmat[i], osm->sub_mat_type, MAT_INPLACE_MATRIX, &osm->pmat[i]));
   }
 
   if (!pc->setupcalled) {
@@ -347,7 +351,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       PetscCall(VecScatterCreate(osm->ly, isll, osm->y[i], isl, &osm->lrestriction[i]));
       PetscCall(ISDestroy(&isll));
       PetscCall(ISDestroy(&isl));
-      if (osm->lprolongation) { /* generate a scatter from y[i] to ly picking only the the non-overlapping is_local[i] entries */
+      if (osm->lprolongation) { /* generate a scatter from y[i] to ly picking only the non-overlapping is_local[i] entries */
         ISLocalToGlobalMapping ltog;
         IS                     isll, isll_local;
         const PetscInt        *idx_local;
@@ -784,7 +788,7 @@ static PetscErrorCode PCASMSetTotalSubdomains_ASM(PC pc, PetscInt N, IS *is, IS 
 
   PetscFunctionBegin;
   PetscCheck(N >= 1, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Number of total blocks must be > 0, N = %" PetscInt_FMT, N);
-  PetscCheck(!is && !is_local, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Use PCASMSetLocalSubdomains() to set specific index sets\n\they cannot be set globally yet.");
+  PetscCheck(!is && !is_local, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Use PCASMSetLocalSubdomains() to set specific index sets, they cannot be set globally yet.");
 
   /*
      Split the subdomains equally among all processors

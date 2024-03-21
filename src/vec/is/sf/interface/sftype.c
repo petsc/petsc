@@ -53,7 +53,7 @@ PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype a, MPI_Datatype *atype, PetscBo
       /* If the recursive call returns a new type, then that means that atype[0] != types[0] and we're on the hook to
        * free types[0].  Note that this case occurs if combiner(types[0]) is MPI_COMBINER_DUP, so we're safe to
        * directly call MPI_Type_free rather than MPIPetsc_Type_free here. */
-      PetscCallMPI(MPI_Type_free(&(types[0])));
+      PetscCallMPI(MPI_Type_free(&types[0]));
     }
     /* In any case, it's up to the caller to free the returned type in this case. */
     *flg = PETSC_TRUE;
@@ -62,10 +62,10 @@ PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype a, MPI_Datatype *atype, PetscBo
     PetscCallMPI(MPI_Type_get_contents(a, 1, 0, 1, ints, addrs, types));
     if (ints[0] == 1) { /* If a is created by MPI_Type_contiguous(1,..) */
       PetscCall(MPIPetsc_Type_unwrap(types[0], atype, flg));
-      if (*flg) PetscCall(MPIPetsc_Type_free(&(types[0])));
+      if (*flg) PetscCall(MPIPetsc_Type_free(&types[0]));
       *flg = PETSC_TRUE;
     } else {
-      PetscCall(MPIPetsc_Type_free(&(types[0])));
+      PetscCall(MPIPetsc_Type_free(&types[0]));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -118,8 +118,8 @@ PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype a, MPI_Datatype b, PetscBool *
       }
     }
     for (i = 0; i < atypecount; i++) {
-      PetscCall(MPIPetsc_Type_free(&(atypes[i])));
-      PetscCall(MPIPetsc_Type_free(&(btypes[i])));
+      PetscCall(MPIPetsc_Type_free(&atypes[i]));
+      PetscCall(MPIPetsc_Type_free(&btypes[i]));
     }
     PetscCall(PetscFree6(aints, bints, aaddrs, baddrs, atypes, btypes));
     if (same) *match = PETSC_TRUE;
@@ -164,7 +164,7 @@ PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype a, MPI_Datatype b, Pets
       PetscCall(MPIPetsc_Type_compare(atypes[0], btype, &same));
       if (same) *n = aints[0];
     }
-    for (i = 0; i < atypecount; i++) PetscCall(MPIPetsc_Type_free(&(atypes[i])));
+    for (i = 0; i < atypecount; i++) PetscCall(MPIPetsc_Type_free(&atypes[i]));
     PetscCall(PetscFree3(aints, aaddrs, atypes));
   }
 

@@ -1,7 +1,7 @@
 /*
     cgimpl.h defines the simple data structured used to store information
     related to the type of matrix (e.g. complex symmetric) being solved and
-    data used during the optional Lanczo process used to compute eigenvalues
+    data used during the optional Lanczos process used to compute eigenvalues
 */
 #include <../src/ksp/ksp/impls/cg/cgimpl.h> /*I "petscksp.h" I*/
 extern PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP, PetscReal *, PetscReal *);
@@ -26,7 +26,7 @@ static PetscErrorCode KSPSetUp_CGNE(KSP ksp)
   PetscCall(KSPSetWorkVecs(ksp, 4));
 
   /*
-     If user requested computations of eigenvalues then allocate work work space needed
+     If user requested computations of eigenvalues then allocate work space needed
   */
   if (ksp->calc_sings) {
     /* get space to store tridiagonal matrix for Lanczos */
@@ -63,7 +63,7 @@ static PetscErrorCode KSPSolve_CGNE(KSP ksp)
   P             = ksp->work[2];
   T             = ksp->work[3];
 
-#define VecXDot(x, y, a) (((cg->type) == (KSP_CG_HERMITIAN)) ? VecDot(x, y, a) : VecTDot(x, y, a))
+#define VecXDot(x, y, a) (cg->type == KSP_CG_HERMITIAN ? VecDot(x, y, a) : VecTDot(x, y, a))
 
   if (eigs) {
     e    = cg->e;
@@ -207,7 +207,7 @@ static PetscErrorCode KSPSolve_CGNE(KSP ksp)
    Developer Note:
    This object is subclassed off of `KSPCG`, see the source code in src/ksp/ksp/impls/cg for comments on the structure of the code
 
-.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, 'KSPCG', `KSPLSQR', 'KSPCGLS`,
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCG`, `KSPLSQR`, `KSPCGLS`,
           `KSPCGSetType()`, `KSPBICG`, `KSPSetComputeEigenvalues()`, `KSPComputeEigenvalues()`
 M*/
 

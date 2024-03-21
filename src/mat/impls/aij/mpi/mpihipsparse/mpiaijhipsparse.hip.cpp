@@ -553,7 +553,7 @@ PetscErrorCode MatCreateAIJHIPSPARSE(MPI_Comm comm, PetscInt m, PetscInt n, Pets
 /*MC
    MATAIJHIPSPARSE - A matrix type to be used for sparse matrices; it is as same as `MATMPIAIJHIPSPARSE`.
 
-   A matrix type type whose data resides on GPUs. These matrices can be in either
+   A matrix type whose data resides on GPUs. These matrices can be in either
    CSR, ELL, or Hybrid format. All matrix calculations are performed on AMD GPUs using the HIPSPARSE library.
 
    This matrix type is identical to `MATSEQAIJHIPSPARSE` when constructed with a single process communicator,

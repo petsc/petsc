@@ -374,7 +374,7 @@ class generateExamples(Petsc):
     subst['label_suffix']=''
     subst['comments']="\n#".join(subst['comments'].split("\n"))
     if subst['comments']: subst['comments']="#"+subst['comments']
-    subst['exec']="../"+subst['execname']
+    subst['executable']="../"+subst['execname']
     subst['testroot']=self.testroot_dir
     subst['testname']=testname
     dp = self.conf.get('DATAFILESPATH','')

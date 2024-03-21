@@ -249,7 +249,6 @@ PetscErrorCode DMCreateDomainDecomposition_Plex(DM dm, PetscInt *nsub, char ***n
   PetscCall(ISDestroy(&gl_is));
   PetscCall(ISDestroy(&ll_is));
   PetscCall(ISDestroy(&gis));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

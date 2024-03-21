@@ -8,9 +8,9 @@ static BIO *bio_err = NULL;
 #if defined(PETSC_USE_SSL_CERTIFICATE)
 static int password_cb(char *buf, int num, int rwflag, void *userdata)
 {
-  if (num < strlen(PASSWORD) + 1) return (0);
+  if (num < strlen(PASSWORD) + 1) return 0;
   strcpy(buf, PASSWORD);
-  return (strlen(PASSWORD));
+  return strlen(PASSWORD);
 }
 #endif
 
@@ -111,7 +111,7 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[], const char url[],
   PetscFunctionBegin;
   PetscCall(PetscStrallocpy(url, &host));
   PetscCall(PetscStrchr(host, '/', &path));
-  PetscCheck(path, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "url must contain / it is %s", url);
+  PetscCheck(path, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "URL must contain /, it is %s", url);
   *path = 0;
   PetscCall(PetscStrlen(host, &hostlen));
 
@@ -120,7 +120,7 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[], const char url[],
 
   if (header) {
     PetscCall(PetscStrendswith(header, "\r\n", &flg));
-    PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "header must end with \\r\\n");
+    PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Header must end with \\r\\n, it is %s", header);
   }
 
   PetscCall(PetscStrlen(type, &typelen));
@@ -160,7 +160,7 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[], const char url[],
   Input Parameters:
 + type     - either "POST" or "GET"
 . url      - URL of request host/path
-. header   - additional header information, may be NULL
+. header   - additional header information, may be `NULL`
 . ctype    - data type of body, for example application/json
 . body     - data to send to server
 . ssl      - obtained with `PetscHTTPSConnect()`
@@ -248,7 +248,7 @@ PetscErrorCode PetscHTTPSRequest(const char type[], const char url[], const char
   Input Parameters:
 + type     - either "POST" or "GET"
 . url      - URL of request host/path
-. header   - additional header information, may be NULL
+. header   - additional header information, may be `NULL`
 . ctype    - data type of body, for example application/json
 . body     - data to send to server
 . sock     - obtained with `PetscOpenSocket()`

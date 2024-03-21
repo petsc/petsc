@@ -20,10 +20,8 @@ static PetscErrorCode MatCreateColInode_Private(Mat A, PetscInt *size, PetscInt 
 
   min_mn = (m < n) ? m : n;
   if (!ns) {
-    for (count = 0, i = 0; count < min_mn; count += ns_row[i], i++)
-      ;
-    for (; count + 1 < n; count++, i++)
-      ;
+    for (count = 0, i = 0; count < min_mn; count += ns_row[i], i++);
+    for (; count + 1 < n; count++, i++);
     if (count < n) i++;
     *size = i;
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -1947,6 +1945,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B, Mat A, const MatFactorInfo
   C->ops->solvetranspose    = MatSolveTranspose_SeqAIJ;
   C->ops->solvetransposeadd = MatSolveTransposeAdd_SeqAIJ;
   C->ops->matsolve          = MatMatSolve_SeqAIJ;
+  C->ops->matsolvetranspose = MatMatSolveTranspose_SeqAIJ;
   C->assembled              = PETSC_TRUE;
   C->preallocated           = PETSC_TRUE;
 

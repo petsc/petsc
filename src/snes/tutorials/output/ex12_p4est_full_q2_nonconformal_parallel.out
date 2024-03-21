@@ -1,15 +1,15 @@
-  0 SNES Function norm 18.865 
-    0 SNES Function norm 18.865 
-    1 SNES Function norm 0.000140897 
-      0 SNES Function norm 0.000152779 
-      1 SNES Function norm 1.07314e-09 
-        0 SNES Function norm 1.14977e-09 
+  0 SNES Function norm 18.865
+    0 SNES Function norm 18.865
+    1 SNES Function norm 0.000140897
+      0 SNES Function norm 0.000152779
+      1 SNES Function norm 1.07314e-09
+        0 SNES Function norm 1.14977e-09
         1 SNES Function norm < 1.e-11
-      0 SNES Function norm 8.114e-10 
+      0 SNES Function norm 8.114e-10
       1 SNES Function norm < 1.e-11
-    0 SNES Function norm 0.000458332 
-    1 SNES Function norm 3.46405e-09 
-  1 SNES Function norm 3.46405e-09 
+    0 SNES Function norm 0.000458332
+    1 SNES Function norm 3.46405e-09
+  1 SNES Function norm 3.46405e-09
 L_2 Error: 5.26417e-10
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 7 MPI processes
@@ -32,7 +32,7 @@ SNES Object: 7 MPI processes
       KSP Object: (fas_coarse_) 7 MPI processes
         type: cg
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_coarse_) 7 MPI processes
@@ -63,7 +63,7 @@ SNES Object: 7 MPI processes
       KSP Object: (fas_levels_1_) 7 MPI processes
         type: cg
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_levels_1_) 7 MPI processes
@@ -95,7 +95,7 @@ SNES Object: 7 MPI processes
       KSP Object: (fas_levels_2_) 7 MPI processes
         type: cg
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_levels_2_) 7 MPI processes

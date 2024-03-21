@@ -256,8 +256,7 @@ static PetscErrorCode PetscPartitionerPartition_PTScotch(PetscPartitioner part, 
     int                        strat = PTScotch_Strategy(pts->strategy);
     double                     imbal = (double)pts->imbalance;
 
-    for (p = 0; !vtxdist[p + 1] && p < size; ++p)
-      ;
+    for (p = 0; !vtxdist[p + 1] && p < size; ++p);
     if (vtxdist[p + 1] == vtxdist[size]) {
       if (rank == p) PetscCall(PTScotch_PartGraph_Seq(strat, imbal, nvtxs, xadj, adjncy, vwgt, adjwgt, nparts, tpwgts, assignment));
     } else {

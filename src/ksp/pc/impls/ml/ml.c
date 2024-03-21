@@ -73,11 +73,11 @@ static int PetscML_getrow(ML_Operator *ML_data, int N_requested_rows, int reques
   FineGridCtx *ml = (FineGridCtx *)ML_Get_MyGetrowData(ML_data);
   Mat_SeqAIJ  *a  = (Mat_SeqAIJ *)ml->Aloc->data;
 
-  if (MatGetSize(ml->Aloc, &m, NULL)) return (0);
+  if (MatGetSize(ml->Aloc, &m, NULL)) return 0;
   for (i = 0; i < N_requested_rows; i++) {
     row            = requested_rows[i];
     row_lengths[i] = a->ilen[row];
-    if (allocated_space < k + row_lengths[i]) return (0);
+    if (allocated_space < k + row_lengths[i]) return 0;
     if ((row >= 0) || (row <= (m - 1))) {
       aj = a->j + a->i[row];
       aa = a->a + a->i[row];
@@ -87,7 +87,7 @@ static int PetscML_getrow(ML_Operator *ML_data, int N_requested_rows, int reques
       }
     }
   }
-  return (1);
+  return 1;
 }
 
 static PetscErrorCode PetscML_comm(double p[], void *ML_data)
@@ -169,7 +169,7 @@ static PetscErrorCode MatMult_ML(Mat A, Vec x, Vec y)
 static PetscErrorCode MatConvert_MPIAIJ_ML(Mat A, MatType newtype, MatReuse scall, Mat *Aloc)
 {
   Mat_MPIAIJ  *mpimat = (Mat_MPIAIJ *)A->data;
-  Mat_SeqAIJ  *mat, *a = (Mat_SeqAIJ *)(mpimat->A)->data, *b = (Mat_SeqAIJ *)(mpimat->B)->data;
+  Mat_SeqAIJ  *mat, *a = (Mat_SeqAIJ *)mpimat->A->data, *b = (Mat_SeqAIJ *)mpimat->B->data;
   PetscInt    *ai = a->i, *aj = a->j, *bi = b->i, *bj = b->j;
   PetscScalar *aa, *ba, *ca;
   PetscInt     am = A->rmap->n, an = A->cmap->n, i, j, k;
@@ -429,7 +429,7 @@ static PetscErrorCode PCSetCoordinates_ML(PC pc, PetscInt ndm, PetscInt a_nloc, 
     PetscCall(PetscMalloc1(arrsz, &pc_ml->coords));
   }
   for (kk = 0; kk < arrsz; kk++) pc_ml->coords[kk] = -999.;
-  /* copy data in - column oriented */
+  /* copy data in - column-oriented */
   if (nloc == a_nloc) {
     for (kk = 0; kk < nloc; kk++) {
       for (ii = 0; ii < ndm; ii++) pc_ml->coords[ii * nloc + kk] = coords[kk * ndm + ii];
@@ -568,7 +568,7 @@ static PetscErrorCode PCSetUp_ML(PC pc)
         mesh_level     = ml_object->SingleLevel[mesh_level].Rmat->to->levelnum;
 
         /* clean and regenerate A */
-        mlmat = &(ml_object->Amat[mesh_level]);
+        mlmat = &ml_object->Amat[mesh_level];
         PetscStackCallExternalVoid("ML_Operator_Clean", ML_Operator_Clean(mlmat));
         PetscStackCallExternalVoid("ML_Operator_Init", ML_Operator_Init(mlmat, ml_object->comm));
         PetscStackCallExternalVoid("ML_Gen_AmatrixRAP", ML_Gen_AmatrixRAP(ml_object, old_mesh_level, mesh_level));
@@ -577,13 +577,13 @@ static PetscErrorCode PCSetUp_ML(PC pc)
       level = fine_level - 1;
       if (size == 1) { /* convert ML P, R and A into seqaij format */
         for (mllevel = 1; mllevel < Nlevels; mllevel++) {
-          mlmat = &(ml_object->Amat[mllevel]);
+          mlmat = &ml_object->Amat[mllevel];
           PetscCall(MatWrapML_SeqAIJ(mlmat, MAT_REUSE_MATRIX, &gridctx[level].A));
           level--;
         }
       } else { /* convert ML P and R into shell format, ML A into mpiaij format */
         for (mllevel = 1; mllevel < Nlevels; mllevel++) {
-          mlmat = &(ml_object->Amat[mllevel]);
+          mlmat = &ml_object->Amat[mllevel];
           PetscCall(MatWrapML_MPIAIJ(mlmat, MAT_REUSE_MATRIX, &gridctx[level].A));
           level--;
         }
@@ -837,23 +837,23 @@ static PetscErrorCode PCSetUp_ML(PC pc)
   /* TODO: support for GPUs */
   if (size == 1) { /* convert ML P, R and A into seqaij format */
     for (mllevel = 1; mllevel < Nlevels; mllevel++) {
-      mlmat = &(ml_object->Pmat[mllevel]);
+      mlmat = &ml_object->Pmat[mllevel];
       PetscCall(MatWrapML_SeqAIJ(mlmat, MAT_INITIAL_MATRIX, &gridctx[level].P));
-      mlmat = &(ml_object->Rmat[mllevel - 1]);
+      mlmat = &ml_object->Rmat[mllevel - 1];
       PetscCall(MatWrapML_SeqAIJ(mlmat, MAT_INITIAL_MATRIX, &gridctx[level].R));
 
-      mlmat = &(ml_object->Amat[mllevel]);
+      mlmat = &ml_object->Amat[mllevel];
       PetscCall(MatWrapML_SeqAIJ(mlmat, MAT_INITIAL_MATRIX, &gridctx[level].A));
       level--;
     }
   } else { /* convert ML P and R into shell format, ML A into mpiaij format */
     for (mllevel = 1; mllevel < Nlevels; mllevel++) {
-      mlmat = &(ml_object->Pmat[mllevel]);
+      mlmat = &ml_object->Pmat[mllevel];
       PetscCall(MatWrapML_SHELL(mlmat, MAT_INITIAL_MATRIX, &gridctx[level].P));
-      mlmat = &(ml_object->Rmat[mllevel - 1]);
+      mlmat = &ml_object->Rmat[mllevel - 1];
       PetscCall(MatWrapML_SHELL(mlmat, MAT_INITIAL_MATRIX, &gridctx[level].R));
 
-      mlmat = &(ml_object->Amat[mllevel]);
+      mlmat = &ml_object->Amat[mllevel];
       PetscCall(MatWrapML_MPIAIJ(mlmat, MAT_INITIAL_MATRIX, &gridctx[level].A));
       level--;
     }

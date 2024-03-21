@@ -1,4 +1,4 @@
-  0 SNES Function norm 13. 
+  0 SNES Function norm 13.
       Residual norms for mg_levels_2_ solve.
       0 KSP Residual norm < 1.e-11
       1 KSP Residual norm < 1.e-11
@@ -15,7 +15,7 @@
       0 KSP Residual norm < 1.e-11
       1 KSP Residual norm < 1.e-11
       2 KSP Residual norm < 1.e-11
-    0 KSP Residual norm 65.0144 
+    0 KSP Residual norm 65.0144
       Residual norms for mg_levels_2_ solve.
       0 KSP Residual norm < 1.e-11
       1 KSP Residual norm < 1.e-11
@@ -32,7 +32,7 @@
       0 KSP Residual norm < 1.e-11
       1 KSP Residual norm < 1.e-11
       2 KSP Residual norm < 1.e-11
-    1 KSP Residual norm 5.5474 
+    1 KSP Residual norm 5.5474
       Residual norms for mg_levels_2_ solve.
       0 KSP Residual norm < 1.e-11
       1 KSP Residual norm < 1.e-11
@@ -49,7 +49,7 @@
       0 KSP Residual norm < 1.e-11
       1 KSP Residual norm < 1.e-11
       2 KSP Residual norm < 1.e-11
-    2 KSP Residual norm 0.377209 
+    2 KSP Residual norm 0.377209
       Residual norms for mg_levels_2_ solve.
       0 KSP Residual norm < 1.e-11
       1 KSP Residual norm < 1.e-11
@@ -66,7 +66,7 @@
       0 KSP Residual norm < 1.e-11
       1 KSP Residual norm < 1.e-11
       2 KSP Residual norm < 1.e-11
-    3 KSP Residual norm 0.02974 
+    3 KSP Residual norm 0.02974
       Residual norms for mg_levels_2_ solve.
       0 KSP Residual norm < 1.e-11
       1 KSP Residual norm < 1.e-11
@@ -83,7 +83,7 @@
       0 KSP Residual norm < 1.e-11
       1 KSP Residual norm < 1.e-11
       2 KSP Residual norm < 1.e-11
-    4 KSP Residual norm 0.00251186 
+    4 KSP Residual norm 0.00251186
       Residual norms for mg_levels_2_ solve.
       0 KSP Residual norm < 1.e-11
       1 KSP Residual norm < 1.e-11
@@ -100,8 +100,8 @@
       0 KSP Residual norm < 1.e-11
       1 KSP Residual norm < 1.e-11
       2 KSP Residual norm < 1.e-11
-    5 KSP Residual norm 0.000210968 
-  1 SNES Function norm 3.90234e-05 
+    5 KSP Residual norm 0.000210968
+  1 SNES Function norm 3.90234e-05
       Residual norms for mg_levels_2_ solve.
       0 KSP Residual norm < 1.e-11
       1 KSP Residual norm < 1.e-11
@@ -118,7 +118,7 @@
       0 KSP Residual norm < 1.e-11
       1 KSP Residual norm < 1.e-11
       2 KSP Residual norm < 1.e-11
-    0 KSP Residual norm 0.000210968 
+    0 KSP Residual norm 0.000210968
       Residual norms for mg_levels_2_ solve.
       0 KSP Residual norm < 1.e-11
       1 KSP Residual norm < 1.e-11
@@ -135,7 +135,7 @@
       0 KSP Residual norm < 1.e-11
       1 KSP Residual norm < 1.e-11
       2 KSP Residual norm < 1.e-11
-    1 KSP Residual norm 1.7375e-05 
+    1 KSP Residual norm 1.7375e-05
       Residual norms for mg_levels_2_ solve.
       0 KSP Residual norm < 1.e-11
       1 KSP Residual norm < 1.e-11
@@ -152,7 +152,7 @@
       0 KSP Residual norm < 1.e-11
       1 KSP Residual norm < 1.e-11
       2 KSP Residual norm < 1.e-11
-    2 KSP Residual norm 1.40464e-06 
+    2 KSP Residual norm 1.40464e-06
       Residual norms for mg_levels_2_ solve.
       0 KSP Residual norm < 1.e-11
       1 KSP Residual norm < 1.e-11
@@ -169,7 +169,7 @@
       0 KSP Residual norm < 1.e-11
       1 KSP Residual norm < 1.e-11
       2 KSP Residual norm < 1.e-11
-    3 KSP Residual norm 1.12911e-07 
+    3 KSP Residual norm 1.12911e-07
       Residual norms for mg_levels_2_ solve.
       0 KSP Residual norm < 1.e-11
       1 KSP Residual norm < 1.e-11
@@ -186,7 +186,7 @@
       0 KSP Residual norm < 1.e-11
       1 KSP Residual norm < 1.e-11
       2 KSP Residual norm < 1.e-11
-    4 KSP Residual norm 9.24047e-09 
+    4 KSP Residual norm 9.24047e-09
       Residual norms for mg_levels_2_ solve.
       0 KSP Residual norm < 1.e-11
       1 KSP Residual norm < 1.e-11
@@ -203,5 +203,5 @@
       0 KSP Residual norm < 1.e-11
       1 KSP Residual norm < 1.e-11
       2 KSP Residual norm < 1.e-11
-    5 KSP Residual norm 7.873e-10 
-  2 SNES Function norm 1.577e-10 
+    5 KSP Residual norm 7.873e-10
+  2 SNES Function norm 1.577e-10

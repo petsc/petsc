@@ -84,7 +84,7 @@ TS Object: 2 MPI processes
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               happy breakdown tolerance 1e-30
             maximum iterations=10000, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+            tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using PRECONDITIONED norm type for convergence test
           PC Object: (npc_fas_coarse_) 2 MPI processes
@@ -95,7 +95,7 @@ TS Object: 2 MPI processes
             KSP Object: (npc_fas_coarse_sub_) 1 MPI process
               type: preonly
               maximum iterations=10000, initial guess is zero
-              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
               left preconditioning
               using NONE norm type for convergence test
             PC Object: (npc_fas_coarse_sub_) 1 MPI process
@@ -133,7 +133,7 @@ TS Object: 2 MPI processes
           KSP Object: (npc_fas_levels_1_) 2 MPI processes
             type: preonly
             maximum iterations=10000, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+            tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
           PC Object: (npc_fas_levels_1_) 2 MPI processes
@@ -144,7 +144,7 @@ TS Object: 2 MPI processes
             KSP Object: (npc_fas_levels_1_sub_) 1 MPI process
               type: preonly
               maximum iterations=10000, initial guess is zero
-              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
               left preconditioning
               using NONE norm type for convergence test
             PC Object: (npc_fas_levels_1_sub_) 1 MPI process
@@ -183,7 +183,7 @@ TS Object: 2 MPI processes
           KSP Object: (npc_fas_levels_2_) 2 MPI processes
             type: preonly
             maximum iterations=10000, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+            tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
           PC Object: (npc_fas_levels_2_) 2 MPI processes
@@ -194,7 +194,7 @@ TS Object: 2 MPI processes
             KSP Object: (npc_fas_levels_2_sub_) 1 MPI process
               type: preonly
               maximum iterations=10000, initial guess is zero
-              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
               left preconditioning
               using NONE norm type for convergence test
             PC Object: (npc_fas_levels_2_sub_) 1 MPI process

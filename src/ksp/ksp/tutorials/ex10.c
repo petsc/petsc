@@ -24,6 +24,7 @@ PetscErrorCode CheckResult(KSP *ksp, Mat *A, Vec *b, Vec *x, IS *rowperm)
 {
   PetscReal norm; /* norm of solution error */
   PetscInt  its;
+
   PetscFunctionBegin;
   PetscCall(KSPGetTotalIterations(*ksp, &its));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Number of iterations = %" PetscInt_FMT "\n", its));
@@ -121,7 +122,6 @@ PetscErrorCode CreateSystem(const char filename[PETSC_MAX_PATH_LEN], RHSType rhs
   *x_out       = x;
   *A_out       = A;
   *colperm_out = colperm;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

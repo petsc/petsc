@@ -23,7 +23,7 @@ Tao Object: 2 MPI processes
   KSP Object: (tao_nls_) 2 MPI processes
     type: stcg
     maximum iterations=15, initial guess is zero
-    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using UNPRECONDITIONED norm type for convergence test
   PC Object: (tao_nls_) 2 MPI processes
@@ -34,7 +34,7 @@ Tao Object: 2 MPI processes
     KSP Object: (tao_nls_sub_) 1 MPI process
       type: preonly
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (tao_nls_sub_) 1 MPI process

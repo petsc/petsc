@@ -185,7 +185,6 @@ static PetscErrorCode PCMatSetApplyOperation_Mat(PC pc, MatOperation matop)
   PCMatOperation pcmatop;
 
   PetscFunctionBegin;
-
   // clang-format off
 #define MATOP_TO_PCMATOP_CASE(var, OP) case MATOP_##OP: (var) = PCMATOP_##OP; break
   switch (matop) {
