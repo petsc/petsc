@@ -440,14 +440,16 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
 . comm - The communicator for the `DMDA` object
 
   Output Parameter:
-. da - The DMDA object
+. da - the `DMDA` object
 
   Level: advanced
 
-  Developer Note:
-  Since there exists DMDACreate1/2/3d() should this routine even exist?
+  Notes:
+  See [](sec_struct) for details on the construction of a `DMDA`
 
-.seealso: [](sec_struct), `DMDASetSizes()`, `DMClone()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
+  `DMDACreate1d()`, `DMDACreate2d()`, and `DMDACreate3d()` are convenience routines to quickly completely create a `DMDA`
+
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMSetUp()`, `DMDASetSizes()`, `DMClone()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
 PetscErrorCode DMDACreate(MPI_Comm comm, DM *da)
 {

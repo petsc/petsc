@@ -179,8 +179,8 @@ static PetscErrorCode DMDAGetElements_3D(DM dm, PetscInt *nel, PetscInt *nen, co
 }
 
 /*@
-  DMDAGetElementsCorners - Returns the global (x,y,z) indices of the lower left
-  corner of the non-overlapping decomposition identified by `DMDAGetElements()`
+  DMDAGetElementsCorners - Returns the global (i,j,k) indices of the lower left
+  corner of the non-overlapping decomposition of elements identified by `DMDAGetElements()`
 
   Not Collective
 
@@ -188,9 +188,9 @@ static PetscErrorCode DMDAGetElements_3D(DM dm, PetscInt *nel, PetscInt *nen, co
 . da - the `DMDA` object
 
   Output Parameters:
-+ gx - the x index
-. gy - the y index
-- gz - the z index
++ gx - the i index
+. gy - the j index
+- gz - the k index
 
   Level: intermediate
 
@@ -238,7 +238,7 @@ PetscErrorCode DMDAGetElementsCorners(DM da, PetscInt *gx, PetscInt *gy, PetscIn
   Level: intermediate
 
   Note:
-  It returns the same number of elements, irrespective of the `DMDAElementType`
+  Returns the same number of elements, irrespective of the `DMDAElementType`
 
 .seealso: [](sec_struct), `DM`, `DMDA`, `DMDAElementType`, `DMDASetElementType()`, `DMDAGetElements()`, `DMDAGetElementsCorners()`
 @*/
@@ -350,7 +350,7 @@ PetscErrorCode DMDAGetElementType(DM da, DMDAElementType *etype)
 }
 
 /*@C
-  DMDAGetElements - Gets an array containing the indices (in local coordinates)
+  DMDAGetElements - Gets an array containing the indices (in local indexing)
   of all the local elements
 
   Not Collective
@@ -420,7 +420,7 @@ PetscErrorCode DMDAGetElements(DM dm, PetscInt *nel, PetscInt *nen, const PetscI
 }
 
 /*@
-  DMDAGetSubdomainCornersIS - Gets an index set containing the corner indices (in local coordinates)
+  DMDAGetSubdomainCornersIS - Gets an index set containing the corner indices (in local indexing)
   of the non-overlapping decomposition identified by `DMDAGetElements()`
 
   Not Collective

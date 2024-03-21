@@ -10,7 +10,7 @@
   Collective
 
   Input Parameters:
-+ da   - the distributed array object
++ da   - the `DMDA` object
 . xmin - min extreme in the x direction
 . xmax - max extreme in the x direction
 . ymin - min extreme in the y direction (value ignored for 1 dimensional problems)

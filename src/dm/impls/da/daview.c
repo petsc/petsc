@@ -114,16 +114,16 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
   Not Collective
 
   Input Parameter:
-. da - the distributed array
+. da - the `DMDA`
 
   Output Parameters:
-+ dim - dimension of the distributed array (1, 2, or 3)
++ dim - dimension of the `DMDA` (1, 2, or 3)
 . M   - global dimension in first direction of the array
 . N   - global dimension in second direction of the array
 . P   - global dimension in third direction of the array
-. m   - corresponding number of procs in first dimension
-. n   - corresponding number of procs in second dimension
-. p   - corresponding number of procs in third dimension
+. m   - corresponding number of MPI processes in first dimension
+. n   - corresponding number of MPI processes in second dimension
+. p   - corresponding number of MPI processes in third dimension
 . dof - number of degrees of freedom per node
 . s   - stencil width
 . bx  - type of ghost nodes at boundary in first dimension
@@ -170,12 +170,12 @@ PetscErrorCode DMDAGetInfo(DM da, PetscInt *dim, PetscInt *M, PetscInt *N, Petsc
 }
 
 /*@C
-  DMDAGetLocalInfo - Gets information about a given distributed array and this processors location in it
+  DMDAGetLocalInfo - Gets information about a given `DMDA` and this MPI process's location in it
 
   Not Collective
 
   Input Parameter:
-. da - the distributed array
+. da - the `DMDA`
 
   Output Parameters:
 . info - structure containing the information
