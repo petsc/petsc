@@ -71,6 +71,8 @@ Changes: Development
 
 .. rubric:: PetscPartitioner:
 
+- Add edge weights to ``PetscPartitionerPartition()``
+
 .. rubric:: Mat:
 
 - Reset ``MATLMVM`` history vectors if size is changed

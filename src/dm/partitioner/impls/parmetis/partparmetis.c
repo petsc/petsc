@@ -75,7 +75,7 @@ static PetscErrorCode PetscPartitionerSetFromOptions_ParMetis(PetscPartitioner p
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *partition)
+static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection edgeSection, PetscSection targetSection, PetscSection partSection, IS *partition)
 {
 #if defined(PETSC_HAVE_PARMETIS)
   PetscPartitioner_ParMetis *pm = (PetscPartitioner_ParMetis *)part->data;
@@ -147,6 +147,12 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
     for (v = 0; v < nvtxs; ++v) PetscCall(PetscSectionGetDof(vertSection, v, &vwgt[v]));
     wgtflag |= 2; /* have weights on graph vertices */
   }
+  // Weight edges
+  if (edgeSection) {
+    PetscCall(PetscMalloc1(xadj[nvtxs], &adjwgt));
+    for (PetscInt e = 0; e < xadj[nvtxs]; ++e) PetscCall(PetscSectionGetDof(edgeSection, e, &adjwgt[e]));
+    wgtflag |= 1; /* have weights on graph edges */
+  }
 
   for (p = 0; !vtxdist[p + 1] && p < size; ++p);
   if (vtxdist[p + 1] == vtxdist[size]) {
@@ -215,6 +221,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
   PetscCall(ISCreateGeneral(comm, nvtxs, points, PETSC_OWN_POINTER, partition));
   PetscCall(PetscFree4(vtxdist, tpwgts, ubvec, assignment));
   PetscCall(PetscFree(vwgt));
+  PetscCall(PetscFree(adjwgt));
   PetscFunctionReturn(PETSC_SUCCESS);
 #else
   SETERRQ(PetscObjectComm((PetscObject)part), PETSC_ERR_SUP, "Mesh partitioning needs external package support.\nPlease reconfigure with --download-parmetis.");

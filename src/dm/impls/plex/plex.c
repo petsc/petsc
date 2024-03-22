@@ -2798,9 +2798,11 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
         PetscCall(PetscSectionGetDof(sectionGlobal, p, &dof));
         PetscCall(PetscSectionGetOffset(sectionGlobal, p, &offset));
         PetscCall(PetscSectionGetConstraintDof(sectionGlobal, p, &cdof));
-        for (PetscInt i = 0; i < dof - cdof; ++i) pblocks[offset - localStart + i] = dof - cdof;
-        // Signal block concatenation
-        if (dof - cdof && sectionLocal->blockStarts && !PetscBTLookup(sectionLocal->blockStarts, p)) pblocks[offset - localStart] = -(dof - cdof);
+        if (dof > 0) {
+          for (PetscInt i = 0; i < dof - cdof; ++i) pblocks[offset - localStart + i] = dof - cdof;
+          // Signal block concatenation
+          if (dof - cdof && sectionLocal->blockStarts && !PetscBTLookup(sectionLocal->blockStarts, p)) pblocks[offset - localStart] = -(dof - cdof);
+        }
         dof  = dof < 0 ? -(dof + 1) : dof;
         bdof = cdof && (dof - cdof) ? 1 : dof;
         if (dof) {
@@ -2851,8 +2853,9 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
       PetscCall(DMPlexPreallocateOperator(dm, bs, dnz, onz, dnzu, onzu, *J, fillMatrix));
       PetscCall(PetscFree4(dnz, onz, dnzu, onzu));
     }
-    { // Consolidate blocks
+    if (pblocks) { // Consolidate blocks
       PetscInt nblocks = 0;
+      pblocks[0]       = PetscAbs(pblocks[0]);
       for (PetscInt i = 0; i < localSize; i += PetscMax(1, pblocks[i])) {
         if (pblocks[i] == 0) continue;
         // Negative block size indicates the blocks should be concatenated

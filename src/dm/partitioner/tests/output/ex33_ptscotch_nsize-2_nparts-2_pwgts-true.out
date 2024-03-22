@@ -5,6 +5,7 @@ Graph Partitioner: 2 MPI Processes
   edge cut: 0
   balance: 0
   use vertex weights: 1
+  use edge weights: 0
   using partitioning strategy DEFAULT
   using load imbalance ratio 0.01
 PetscSection Object: NULL SECTION 2 MPI processes
@@ -30,6 +31,7 @@ Graph Partitioner: 2 MPI Processes
   edge cut: 0
   balance: 0
   use vertex weights: 1
+  use edge weights: 0
   using partitioning strategy DEFAULT
   using load imbalance ratio 0.01
 PetscSection Object: SEQ SECTION 2 MPI processes
@@ -59,6 +61,7 @@ Graph Partitioner: 2 MPI Processes
   edge cut: 0
   balance: 0
   use vertex weights: 1
+  use edge weights: 0
   using partitioning strategy DEFAULT
   using load imbalance ratio 0.01
 PetscSection Object: PARVOID SECTION 2 MPI processes

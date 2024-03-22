@@ -85,7 +85,7 @@ static PetscErrorCode PetscPartitionerSetFromOptions_MatPartitioning(PetscPartit
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *is)
+static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection edgeSection, PetscSection targetSection, PetscSection partSection, IS *is)
 {
   PetscPartitioner_MatPartitioning *p = (PetscPartitioner_MatPartitioning *)part->data;
   Mat                               matadj;

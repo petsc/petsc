@@ -70,7 +70,7 @@ int main(int argc, char **argv)
   PetscCall(PetscPartitionerReset(p));
 
   /* test partitioning an empty graph */
-  PetscCall(PetscPartitionerPartition(p, nparts, 0, NULL, NULL, vertexSection, targetSection, partSection, &partition));
+  PetscCall(PetscPartitionerPartition(p, nparts, 0, NULL, NULL, vertexSection, NULL, targetSection, partSection, &partition));
   PetscCall(PetscObjectSetName((PetscObject)partSection, "NULL SECTION"));
   PetscCall(PetscSectionView(partSection, NULL));
   PetscCall(ISOnComm(partition, PETSC_COMM_WORLD, PETSC_USE_POINTER, &is));
@@ -84,9 +84,9 @@ int main(int argc, char **argv)
 
   /* test partitioning a graph on one process only (not main) */
   if (rank == size - 1) {
-    PetscCall(PetscPartitionerPartition(p, nparts, nv, vv, vadj, vertexSection, targetSection, partSection, &partition));
+    PetscCall(PetscPartitionerPartition(p, nparts, nv, vv, vadj, vertexSection, NULL, targetSection, partSection, &partition));
   } else {
-    PetscCall(PetscPartitionerPartition(p, nparts, 0, NULL, NULL, vertexSection, targetSection, partSection, &partition));
+    PetscCall(PetscPartitionerPartition(p, nparts, 0, NULL, NULL, vertexSection, NULL, targetSection, partSection, &partition));
   }
   PetscCall(PetscObjectSetName((PetscObject)partSection, "SEQ SECTION"));
   PetscCall(PetscSectionView(partSection, NULL));
@@ -101,7 +101,7 @@ int main(int argc, char **argv)
 
   /* test partitioning a graph on a subset of the processes only */
   if (rank % 2) {
-    PetscCall(PetscPartitionerPartition(p, nparts, 0, NULL, NULL, NULL, targetSection, partSection, &partition));
+    PetscCall(PetscPartitionerPartition(p, nparts, 0, NULL, NULL, NULL, NULL, targetSection, partSection, &partition));
   } else {
     PetscInt i, totv = nv * ((size + 1) / 2), *pvadj;
 
@@ -110,7 +110,7 @@ int main(int argc, char **argv)
       pvadj[2 * i]     = (nv * (rank / 2) + totv + i - 1) % totv;
       pvadj[2 * i + 1] = (nv * (rank / 2) + totv + i + 1) % totv;
     }
-    PetscCall(PetscPartitionerPartition(p, nparts, nv, vv, pvadj, NULL, targetSection, partSection, &partition));
+    PetscCall(PetscPartitionerPartition(p, nparts, nv, vv, pvadj, NULL, NULL, targetSection, partSection, &partition));
     PetscCall(PetscFree(pvadj));
   }
   PetscCall(PetscObjectSetName((PetscObject)partSection, "PARVOID SECTION"));
