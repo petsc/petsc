@@ -240,6 +240,7 @@ PetscErrorCode MatCreate_LMVMBrdn(Mat B)
   lmvm->ops->reset    = MatReset_LMVMBrdn;
   lmvm->ops->mult     = MatMult_LMVMBrdn;
   lmvm->ops->update   = MatUpdate_LMVMBrdn;
+  lmvm->ops->solve    = MatSolve_LMVMBrdn;
   lmvm->ops->copy     = MatCopy_LMVMBrdn;
 
   PetscCall(PetscNew(&lbrdn));
@@ -281,6 +282,7 @@ PetscErrorCode MatCreate_LMVMBrdn(Mat B)
 PetscErrorCode MatCreateLMVMBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
 {
   PetscFunctionBegin;
+  PetscCall(KSPInitializePackage());
   PetscCall(MatCreate(comm, B));
   PetscCall(MatSetSizes(*B, n, n, N, N));
   PetscCall(MatSetType(*B, MATLMVMBROYDEN));

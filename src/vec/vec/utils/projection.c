@@ -716,7 +716,7 @@ PetscErrorCode VecISShift(Vec V, IS S, PetscScalar c)
 
 #if !defined(PETSC_USE_COMPLEX)
 /*@C
-  VecBoundGradientProjection - Projects  vector according to this definition.
+  VecBoundGradientProjection - Projects vector according to this definition.
   If XL[i] < X[i] < XU[i], then GP[i] = G[i];
   If X[i] <= XL[i], then GP[i] = min(G[i],0);
   If X[i] >= XU[i], then GP[i] = max(G[i],0);

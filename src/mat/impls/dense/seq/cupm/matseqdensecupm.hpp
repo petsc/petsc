@@ -65,6 +65,10 @@ private:
   template <typename Solver, bool transpose>
   static PetscErrorCode MatMatSolve_Factored_Dispatch_(Mat, Mat, Mat) noexcept;
   template <bool transpose, bool hermitian>
+  static PetscErrorCode MatMultAddColumnRange_Dispatch_(Mat, Vec, Vec, Vec, PetscInt, PetscInt) noexcept;
+  template <bool transpose, bool hermitian>
+  static PetscErrorCode MatMultColumnRange_Dispatch_(Mat, Vec, Vec, PetscInt, PetscInt) noexcept;
+  template <bool transpose, bool hermitian>
   static PetscErrorCode MatMultAdd_Dispatch_(Mat, Vec, Vec, Vec) noexcept;
 
   template <bool to_host>
@@ -797,10 +801,11 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::MatMatSolve_Factored_Dispatch_(Mat A
 
 template <device::cupm::DeviceType T>
 template <bool transpose, bool hermitian>
-inline PetscErrorCode MatDense_Seq_CUPM<T>::MatMultAdd_Dispatch_(Mat A, Vec xx, Vec yy, Vec zz) noexcept
+inline PetscErrorCode MatDense_Seq_CUPM<T>::MatMultAddColumnRange_Dispatch_(Mat A, Vec xx, Vec yy, Vec zz, PetscInt c_start, PetscInt c_end) noexcept
 {
-  const auto         m = static_cast<cupmBlasInt_t>(A->rmap->n);
-  const auto         n = static_cast<cupmBlasInt_t>(A->cmap->n);
+  const auto         m   = static_cast<cupmBlasInt_t>(A->rmap->n);
+  const auto         n   = static_cast<cupmBlasInt_t>(c_end - c_start);
+  const auto         lda = static_cast<cupmBlasInt_t>(MatIMPLCast(A)->lda);
   cupmBlasHandle_t   handle;
   PetscDeviceContext dctx;
 
@@ -822,10 +827,28 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::MatMultAdd_Dispatch_(Mat A, Vec xx, 
     const auto     dzz  = VecSeq_CUPM::DeviceArrayReadWrite(dctx, zz);
 
     PetscCall(PetscLogGpuTimeBegin());
-    PetscCallCUPMBLAS(cupmBlasXgemv(handle, op, m, n, &one, da.cupmdata(), static_cast<cupmBlasInt_t>(MatIMPLCast(A)->lda), dxx.cupmdata(), 1, (yy ? &one : &zero), dzz.cupmdata(), 1));
+    PetscCallCUPMBLAS(cupmBlasXgemv(handle, op, m, n, &one, da.cupmdata() + c_start * lda, lda, dxx.cupmdata() + (transpose ? 0 : c_start), 1, (yy ? &one : &zero), dzz.cupmdata() + (transpose ? c_start : 0), 1));
     PetscCall(PetscLogGpuTimeEnd());
   }
   PetscCall(PetscLogGpuFlops(2.0 * m * n - (yy ? 0 : m)));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <device::cupm::DeviceType T>
+template <bool transpose, bool hermitian>
+inline PetscErrorCode MatDense_Seq_CUPM<T>::MatMultColumnRange_Dispatch_(Mat A, Vec xx, Vec yy, PetscInt c_start, PetscInt c_end) noexcept
+{
+  PetscFunctionBegin;
+  PetscCall(MatMultAddColumnRange_Dispatch_<transpose, hermitian>(A, xx, nullptr, yy, c_start, c_end));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <device::cupm::DeviceType T>
+template <bool transpose, bool hermitian>
+inline PetscErrorCode MatDense_Seq_CUPM<T>::MatMultAdd_Dispatch_(Mat A, Vec xx, Vec yy, Vec zz) noexcept
+{
+  PetscFunctionBegin;
+  PetscCall(MatMultAddColumnRange_Dispatch_<transpose, hermitian>(A, xx, yy, zz, 0, A->cmap->n));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1035,6 +1058,9 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::BindToCPU(Mat A, PetscBool to_host) 
   MatComposeOp_CUPM(to_host, pobj, "MatDenseGetSubMatrix_C", MatDenseGetSubMatrix_SeqDense, GetSubMatrix);
   MatComposeOp_CUPM(to_host, pobj, "MatDenseRestoreSubMatrix_C", MatDenseRestoreSubMatrix_SeqDense, RestoreSubMatrix);
   MatComposeOp_CUPM(to_host, pobj, "MatQRFactor_C", MatQRFactor_SeqDense, SolveQR::Factor);
+  MatComposeOp_CUPM(to_host, pobj, "MatMultAddColumnRange_C", MatMultAddColumnRange_SeqDense, MatMultAddColumnRange_Dispatch_</* transpose */ false, /* hermitian */ false>);
+  MatComposeOp_CUPM(to_host, pobj, "MatMultHermitianTransposeColumnRange_C", MatMultHermitianTransposeColumnRange_SeqDense, MatMultColumnRange_Dispatch_</* transpose */ true, /* hermitian */ true>);
+  MatComposeOp_CUPM(to_host, pobj, "MatMultHermitianTransposeAddColumnRange_C", MatMultHermitianTransposeAddColumnRange_SeqDense, MatMultAddColumnRange_Dispatch_</* transpose */ true, /* hermitian */ true>);
   // always the same
   PetscCall(PetscObjectComposeFunction(pobj, "MatDenseSetLDA_C", MatDenseSetLDA_SeqDense));
 
