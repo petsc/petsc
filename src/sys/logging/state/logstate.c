@@ -57,6 +57,7 @@ PetscErrorCode PetscLogStateCreate(PetscLogState *state)
 PetscErrorCode PetscLogStateDestroy(PetscLogState *state)
 {
   PetscLogState s;
+
   PetscFunctionBegin;
   s      = *state;
   *state = NULL;
@@ -174,7 +175,7 @@ static PetscErrorCode PetscLogStateResize(PetscLogState state)
     size_t num_chars_old = state->bt_num_stages / PETSC_BITS_PER_BYTE;
     size_t num_chars_new = new_num_stages / PETSC_BITS_PER_BYTE;
 
-    for (PetscInt i = 0; i < state->bt_num_events; i++) { PetscCall(PetscMemcpy(&active_new[i * num_chars_new], &(state->active[i * num_chars_old]), num_chars_old)); }
+    for (PetscInt i = 0; i < state->bt_num_events; i++) { PetscCall(PetscMemcpy(&active_new[i * num_chars_new], &state->active[i * num_chars_old], num_chars_old)); }
   }
   PetscCall(PetscBTDestroy(&state->active));
   state->active        = active_new;
@@ -205,6 +206,7 @@ static PetscErrorCode PetscLogStateResize(PetscLogState state)
 PetscErrorCode PetscLogStateStageRegister(PetscLogState state, const char sname[], PetscLogStage *stage)
 {
   PetscInt s;
+
   PetscFunctionBegin;
   PetscCall(PetscLogRegistryStageRegister(state->registry, sname, stage));
   PetscCall(PetscLogStateResize(state));

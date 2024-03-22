@@ -747,7 +747,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat C, Mat A, const MatFactorI
   PetscFunctionBegin;
   if (bs > 1) { /* convert A to a SBAIJ matrix and apply Cholesky factorization from it */
     if (!a->sbaijMat) PetscCall(MatConvert(A, MATSEQSBAIJ, MAT_INITIAL_MATRIX, &a->sbaijMat));
-    PetscCall((a->sbaijMat)->ops->choleskyfactornumeric(C, a->sbaijMat, info));
+    PetscCall(a->sbaijMat->ops->choleskyfactornumeric(C, a->sbaijMat, info));
     PetscCall(MatDestroy(&a->sbaijMat));
     PetscFunctionReturn(PETSC_SUCCESS);
   }

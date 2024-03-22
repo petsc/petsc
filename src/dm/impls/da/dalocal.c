@@ -135,7 +135,7 @@ PetscErrorCode DMDAGetCellPoint(DM dm, PetscInt i, PetscInt j, PetscInt k, Petsc
   PetscCall(DMDAGetLocalInfo(dm, &info));
   if (dim > 0) PetscCheck(!(i < info.gxs) && !(i >= info.gxs + info.gxm), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "X index %" PetscInt_FMT " not in [%" PetscInt_FMT ", %" PetscInt_FMT ")", i, info.gxs, info.gxs + info.gxm);
   if (dim > 1) PetscCheck(!(j < info.gys) && !(j >= info.gys + info.gym), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Y index %" PetscInt_FMT " not in [%" PetscInt_FMT ", %" PetscInt_FMT ")", j, info.gys, info.gys + info.gym);
-  if (dim > 2) PetscCheck(!(k < info.gzs) && !(k >= info.gzs + info.gzm), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Z index %" PetscInt_FMT PetscInt_FMT " not in [%" PetscInt_FMT ", %" PetscInt_FMT ")", k, info.gzs, info.gzs + info.gzm);
+  if (dim > 2) PetscCheck(!(k < info.gzs) && !(k >= info.gzs + info.gzm), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Z index %" PetscInt_FMT " not in [%" PetscInt_FMT ", %" PetscInt_FMT ")", k, info.gzs, info.gzs + info.gzm);
   *point = i + (dim > 1 ? (j + (dim > 2 ? k * info.gym : 0)) * info.gxm : 0);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -42,7 +42,7 @@ static PetscErrorCode PetscSpaceSetUp_WXY(PetscSpace sp)
 
   PetscFunctionBegin;
   if (wxy->setupCalled) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCheck(sp->degree >= 0, PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Negative degree %" PetscInt_FMT " invalid\n", sp->degree);
+  PetscCheck(sp->degree >= 0, PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Negative degree %" PetscInt_FMT " invalid", sp->degree);
   sp->maxDegree    = sp->degree;
   wxy->setupCalled = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);

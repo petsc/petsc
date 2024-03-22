@@ -259,7 +259,7 @@ general, the user should use the ``KSP`` solvers introduced in the next
 chapter rather than using these factorization and solve routines
 directly.
 
-Some of the factorizations also support solves with multiple right hand sides stored in a ``Mat`` using
+Some of the factorizations also support solves with multiple right-hand sides stored in a ``Mat`` using
 
 .. code-block::
 

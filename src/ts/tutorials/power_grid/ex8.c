@@ -170,11 +170,9 @@ PetscErrorCode ini_bou(Vec X, AppCtx *user)
 /* First advection term */
 PetscErrorCode adv1(PetscScalar **p, PetscScalar y, PetscInt i, PetscInt j, PetscInt M, PetscScalar *p1, AppCtx *user)
 {
-  PetscScalar f, fpos, fneg;
+  PetscScalar f = (y - user->ws), fpos = PetscMax(f, 0), fneg = PetscMin(f, 0);
+
   PetscFunctionBegin;
-  f    = (y - user->ws);
-  fpos = PetscMax(f, 0);
-  fneg = PetscMin(f, 0);
   if (user->st_width == 1) {
     *p1 = fpos * (p[j][i] - p[j][i - 1]) / user->dx + fneg * (p[j][i + 1] - p[j][i]) / user->dx;
   } else if (user->st_width == 2) {
@@ -190,6 +188,7 @@ PetscErrorCode adv1(PetscScalar **p, PetscScalar y, PetscInt i, PetscInt j, Pets
 PetscErrorCode adv2(PetscScalar **p, PetscScalar x, PetscScalar y, PetscInt i, PetscInt j, PetscInt N, PetscScalar *p2, AppCtx *user)
 {
   PetscScalar f, fpos, fneg;
+
   PetscFunctionBegin;
   f    = (user->ws / (2 * user->H)) * (user->PM_min - user->Pmax * PetscSinScalar(x) - user->D * (y - user->ws));
   fpos = PetscMax(f, 0);
@@ -270,7 +269,6 @@ PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
   PetscCall(DMRestoreLocalVector(user->da, &localXdot));
   PetscCall(DMDAVecRestoreArray(user->da, F, &f));
   PetscCall(DMDAVecRestoreArrayRead(cda, gc, &coors));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -295,7 +295,7 @@ xxt assumptions: given n rows of global coarse matrix (E_loc) where
    (note do not zero out upper m-n entries!)
    o mylocmatvec(void *grid_data, double *in, double *out)
 
-ML beliefs/usage: move this to to ML_XXT_factor routine
+ML beliefs/usage: move this to ML_XXT_factor routine
    o my_ml holds address of ML struct associated w/E_loc, grid_data, grid_tag
    o grid_tag, grid_data, my_ml used in
       ML_Set_CSolve(my_ml, grid_tag, grid_data, ML_Do_CoarseDirect);
@@ -396,7 +396,7 @@ xyt assumptions: given n rows of global coarse matrix (E_loc) where
    (note do not zero out upper m-n entries!)
    o mylocmatvec(void *grid_data, double *in, double *out)
 
-ML beliefs/usage: move this to to ML_XYT_factor routine
+ML beliefs/usage: move this to ML_XYT_factor routine
    o my_ml holds address of ML struct associated w/E_loc, grid_data, grid_tag
    o grid_tag, grid_data, my_ml used in
       ML_Set_CSolve(my_ml, grid_tag, grid_data, ML_Do_CoarseDirect);

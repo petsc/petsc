@@ -74,8 +74,6 @@ struct _p_ISLocalToGlobalMapping {
   PetscBool  dealloc_indices; /* should indices be deallocated? */
   PetscInt   globalstart;     /* first global referenced in indices */
   PetscInt   globalend;       /* last + 1 global referenced in indices */
-  PetscBool  info_cached;     /* reuse GetInfo */
-  PetscBool  info_free;
   PetscInt   info_nproc;
   PetscInt  *info_procs;
   PetscInt  *info_numprocs;

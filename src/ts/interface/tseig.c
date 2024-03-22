@@ -31,7 +31,7 @@ struct _n_TSMonitorSPEigCtx {
 . ctx - the context
 
   Options Database Key:
-. -ts_monitor_sp_eig - plot egienvalues of linearized right hand side
+. -ts_monitor_sp_eig - plot egienvalues of linearized right-hand side
 
   Level: intermediate
 
@@ -151,7 +151,7 @@ PetscErrorCode TSMonitorSPEig(TS ts, PetscInt step, PetscReal ptime, Vec v, void
         if (ts->ops->linearstability) {
           PetscReal fr, fi;
           PetscCall(TSComputeLinearStability(ts, r[i], c[i], &fr, &fi));
-          if ((fr * fr + fi * fi) > 1.0) PetscCall(PetscPrintf(ctx->comm, "Linearized Eigenvalue %g + %g i linear stability function %g norm indicates unstable scheme \n", (double)r[i], (double)c[i], (double)(fr * fr + fi * fi)));
+          if ((fr * fr + fi * fi) > 1.0) PetscCall(PetscPrintf(ctx->comm, "Linearized Eigenvalue %g + %g i linear stability function %g norm indicates unstable scheme\n", (double)r[i], (double)c[i], (double)(fr * fr + fi * fi)));
         }
         PetscCall(PetscDrawSPAddPoint(drawsp, r + i, c + i));
       }

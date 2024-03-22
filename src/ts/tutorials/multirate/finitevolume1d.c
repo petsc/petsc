@@ -536,7 +536,7 @@ PetscErrorCode FVRHSFunction(TS ts, PetscReal time, Vec X, Vec F, void *vctx)
   hx = (ctx->xmax - ctx->xmin) / Mx;
   PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, Xloc)); /* X is solution vector which does not contain ghost points */
   PetscCall(DMGlobalToLocalEnd(da, X, INSERT_VALUES, Xloc));
-  PetscCall(VecZeroEntries(F)); /* F is the right hand side function corresponds to center points */
+  PetscCall(VecZeroEntries(F)); /* F is the right-hand side function corresponds to center points */
   PetscCall(DMDAVecGetArray(da, Xloc, &x));
   PetscCall(DMDAVecGetArray(da, F, &f));
   PetscCall(DMDAGetArray(da, PETSC_TRUE, &slope)); /* contains ghost points */

@@ -161,7 +161,7 @@ testsrcs-rel := $(foreach pkg, $(pkgs), $(foreach lang, $(testlangs), $(testsrcs
 testsrcs := $(foreach sfile, $(testsrcs-rel), $(TESTSRCDIR)/$(sfile))
 
 # workaround win32fe failure
-ifneq (,$(findstring win_,$(call quiet,$(cc_name))))
+ifneq (,$(findstring win32fe,$(call quiet,$(cc_name))))
 $(TESTDIR)/ts/tutorials/multirate/ex6: | $(TESTDIR)/ts/tutorials/multirate/ex5
 $(TESTDIR)/ts/tutorials/multirate/ex8: | $(TESTDIR)/ts/tutorials/multirate/ex6
 endif
@@ -227,7 +227,7 @@ else
 PETSC_TEST_LIB = $(C_SH_LIB_PATH) $(PETSC_EXTERNAL_LIB_BASIC)
 endif
 
-# manually list some some library dependencies to check for circular dependencies
+# manually list some library dependencies to check for circular dependencies
 $(TESTDIR)/sys/tests/ex9: PETSC_TEST_LIB = $(PETSC_SYS_LIB)
 $(TESTDIR)/vec/vec/tests/ex1: PETSC_TEST_LIB = $(PETSC_VEC_LIB)
 $(TESTDIR)/mat/tests/ex1: PETSC_TEST_LIB = $(PETSC_MAT_LIB)

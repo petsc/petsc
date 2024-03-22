@@ -40,7 +40,7 @@ class Configure(config.base.Configure):
         os.makedirs(os.path.join(self.dir,'PETScTestDirectory'))
         os.rmdir(os.path.join(self.dir,'PETScTestDirectory'))
       except Exception as e:
-        self.logPrint('Error trying to to test write permissions on directory '+str(e))
+        self.logPrint('Error trying to test write permissions on directory '+str(e))
         self.installSudo = 'sudo '
     else:
       self.dir = os.path.abspath(os.path.join(self.petscdir.dir, self.arch.arch))

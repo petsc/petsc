@@ -201,13 +201,13 @@ static PetscErrorCode PetscParallelRedistribute(PetscLayout map, PetscInt n, Pet
     overlap = oEnd - oStart;
     if (map->range[i] >= myOffset && map->range[i] < nextOffset) {
       /* send first message */
-      PetscCallMPI(MPI_Isend(&arrayin[map->range[i] - myOffset], overlap, MPIU_INT, i, firsttag, map->comm, &(firstreqs[nfirst++])));
+      PetscCallMPI(MPI_Isend(&arrayin[map->range[i] - myOffset], overlap, MPIU_INT, i, firsttag, map->comm, &firstreqs[nfirst++]));
     } else if (overlap > 0) {
       /* send second message */
-      PetscCallMPI(MPI_Isend(&arrayin[oStart - myOffset], overlap, MPIU_INT, i, secondtag, map->comm, &(secondreqs[nsecond++])));
+      PetscCallMPI(MPI_Isend(&arrayin[oStart - myOffset], overlap, MPIU_INT, i, secondtag, map->comm, &secondreqs[nsecond++]));
     } else if (overlap == 0 && myOffset > map->range[i] && myOffset < map->range[i + 1]) {
       /* send empty second message */
-      PetscCallMPI(MPI_Isend(&arrayin[oStart - myOffset], 0, MPIU_INT, i, secondtag, map->comm, &(secondreqs[nsecond++])));
+      PetscCallMPI(MPI_Isend(&arrayin[oStart - myOffset], 0, MPIU_INT, i, secondtag, map->comm, &secondreqs[nsecond++]));
     }
   }
   filled = 0;

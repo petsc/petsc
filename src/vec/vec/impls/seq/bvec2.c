@@ -740,8 +740,8 @@ PetscErrorCode VecDuplicate_Seq(Vec win, Vec *V)
   PetscFunctionBegin;
   PetscCall(VecCreateWithLayout_Private(win->map, V));
   PetscCall(VecSetType(*V, ((PetscObject)win)->type_name));
-  PetscCall(PetscObjectListDuplicate(((PetscObject)win)->olist, &((PetscObject)(*V))->olist));
-  PetscCall(PetscFunctionListDuplicate(((PetscObject)win)->qlist, &((PetscObject)(*V))->qlist));
+  PetscCall(PetscObjectListDuplicate(((PetscObject)win)->olist, &((PetscObject)*V)->olist));
+  PetscCall(PetscFunctionListDuplicate(((PetscObject)win)->qlist, &((PetscObject)*V)->qlist));
 
   (*V)->ops->view          = win->ops->view;
   (*V)->stash.ignorenegidx = win->stash.ignorenegidx;

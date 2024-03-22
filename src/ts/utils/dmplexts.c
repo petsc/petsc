@@ -455,8 +455,7 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
     PetscCall(VecDuplicate(u, &r));
     PetscCall(TSComputeIFunction(ts, t, u, u_t, r, PETSC_FALSE));
     /* Look at the convergence of our Taylor approximation as we approach u */
-    for (h = hMax, Nv = 0; h >= hMin; h *= hMult, ++Nv)
-      ;
+    for (h = hMax, Nv = 0; h >= hMin; h *= hMult, ++Nv);
     PetscCall(PetscCalloc3(Nv, &es, Nv, &hs, Nv, &errors));
     PetscCall(VecDuplicate(u, &uhat));
     PetscCall(VecDuplicate(u, &uhat_t));

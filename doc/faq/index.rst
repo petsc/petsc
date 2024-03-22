@@ -952,7 +952,7 @@ and in the :ref:`users manual <ch_snes>`:
 
 -snes_lag_preconditioner  (``SNESSetLagPreconditioner()``) how often the preconditioner is
                           rebuilt. Note: if you are lagging the Jacobian the system will
-                          know the the matrix has not changed and will not recompute the
+                          know that the matrix has not changed and will not recompute the
                           (same) preconditioner.
 
 -snes_lag_preconditioner_persists  (``SNESSetLagPreconditionerPersists()``) Preconditioner
@@ -975,7 +975,7 @@ the only general purpose way to determine which approach is best for your proble
 .. important::
 
    It is also vital to experiment on your true problem at the scale you will be solving
-   the problem since the performance benefits depend on the exact problem and and problem
+   the problem since the performance benefits depend on the exact problem and the problem
    size!
 
 How can I use Newton's Method Jacobian free? Can I difference a different function than provided with `SNESSetFunction()`?
@@ -1687,8 +1687,8 @@ Common reasons for KSP not converging are:
   a stern talking-to by the nearest Krylov Subspace Method representative.
 
 - The equations are intentionally singular and ``MatSetNullSpace()`` was used, but the
-  right hand side is not consistent. You may have to call ``MatNullSpaceRemove()`` on the
-  right hand side before calling ``KSPSolve()``. See ``MatSetTransposeNullSpace()``.
+  right-hand side is not consistent. You may have to call ``MatNullSpaceRemove()`` on the
+  right-hand side before calling ``KSPSolve()``. See ``MatSetTransposeNullSpace()``.
 
 - The equations are indefinite so that standard preconditioners don't work. Usually you
   will know this from the physics, but you can check with

@@ -1060,7 +1060,7 @@ class PetscDocString(DocBase):
         self.sections._print(ghfe)
         return Verdict.NOT_HEADING
       if ':' in line:
-        mess = f'Line seems to be a section header but doesn\'t directly end with with \':\', did you mean \'{match_title}\'?'
+        mess = f'Line seems to be a section header but doesn\'t directly end with \':\', did you mean \'{match_title}\'?'
       else:
         mess = f'Line seems to be a section header but missing \':\', did you mean \'{match_title}:\'?'
       self.add_diagnostic_from_source_range(

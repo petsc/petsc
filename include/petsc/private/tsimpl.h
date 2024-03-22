@@ -3,6 +3,8 @@
 #include <petscts.h>
 #include <petsc/private/petscimpl.h>
 
+/* SUBMANSEC = TS */
+
 /*
     Timesteping context.
       General DAE: F(t,U,U_t) = 0, required Jacobian is G'(U) where G(U) = F(t,U,U0+a*U)
@@ -159,13 +161,15 @@ struct _p_TS {
   TSEquationType equation_type;
 
   DM          dm;
-  Vec         vec_sol; /* solution vector in first and second order equations */
-  Vec         vec_dot; /* time derivative vector in second order equations */
+  Vec         vec_sol;  /* solution vector in first and second order equations */
+  Vec         vec_sol0; /* solution vector at the beginning of the step */
+  Vec         vec_dot;  /* time derivative vector in second order equations */
   TSAdapt     adapt;
   TSAdaptType default_adapt_type;
   TSEvent     event;
 
   /* ---------------- Resize ---------------------*/
+  PetscBool       resizerollback;
   PetscObjectList resizetransferobjs;
 
   /* ---------------- User (or PETSc) Provided stuff ---------------------*/
@@ -297,6 +301,7 @@ struct _p_TS {
   PetscInt  steps;               /* steps taken so far in all successive calls to TSSolve() */
   PetscReal ptime;               /* time at the start of the current step (stage time is internal if it exists) */
   PetscReal time_step;           /* current time increment */
+  PetscReal time_step0;          /* proposed time increment at the beginning of the step */
   PetscReal ptime_prev;          /* time at the start of the previous step */
   PetscReal ptime_prev_rollback; /* time at the start of the 2nd previous step to recover from rollback */
   PetscReal solvetime;           /* time at the conclusion of TSSolve() */
@@ -370,29 +375,58 @@ struct _p_TSAdapt {
 typedef struct _p_DMTS  *DMTS;
 typedef struct _DMTSOps *DMTSOps;
 struct _DMTSOps {
-  TSRHSFunction rhsfunction;
-  TSRHSJacobian rhsjacobian;
+  TSRHSFunctionFn *rhsfunction;
+  TSRHSJacobianFn *rhsjacobian;
 
-  TSIFunction ifunction;
+  TSIFunctionFn *ifunction;
   PetscErrorCode (*ifunctionview)(void *, PetscViewer);
   PetscErrorCode (*ifunctionload)(void **, PetscViewer);
 
-  TSIJacobian ijacobian;
+  TSIJacobianFn *ijacobian;
   PetscErrorCode (*ijacobianview)(void *, PetscViewer);
   PetscErrorCode (*ijacobianload)(void **, PetscViewer);
 
-  TSI2Function i2function;
-  TSI2Jacobian i2jacobian;
+  TSI2FunctionFn *i2function;
+  TSI2JacobianFn *i2jacobian;
 
-  TSTransientVariable transientvar;
+  TSTransientVariableFn *transientvar;
 
-  TSSolutionFunction solution;
-  TSForcingFunction  forcing;
+  TSSolutionFn *solution;
+  TSForcingFn  *forcing;
 
   PetscErrorCode (*destroy)(DMTS);
   PetscErrorCode (*duplicate)(DMTS, DMTS);
 };
 
+/*S
+   DMTS - Object held by a `DM` that contains all the callback functions and their contexts needed by a `TS`
+
+   Level: developer
+
+   Notes:
+   Users provide callback functions and their contexts to `TS` using, for example, `TSSetIFunction()`. These values are stored
+   in a `DMTS` that is contained in the `DM` associated with the `TS`. If no `DM` was provided by
+   the user with `TSSetDM()` it is automatically created by `TSGetDM()` with `DMShellCreate()`.
+
+   Users very rarely need to worked directly with the `DMTS` object, rather they work with the `TS` and the `DM` they created
+
+   Multiple `DM` can share a single `DMTS`, often each `DM` is associated with
+   a grid refinement level. `DMGetDMTS()` returns the `DMTS` associated with a `DM`. `DMGetDMTSWrite()` returns a unique
+   `DMTS` that is only associated with the current `DM`, making a copy of the shared `DMTS` if needed (copy-on-write).
+
+   See `DMKSP` for details on why there is a needed for `DMTS` instead of simply storing the user callbacks directly in the `DM` or the `TS`
+
+   Developer Note:
+   The original `dm` inside the `DMTS` is NOT reference counted  (to prevent a reference count loop between a `DM` and a `DMSNES`).
+   The `DM` on which this context was first created is cached here to implement one-way
+   copy-on-write. When `DMGetDMTSWrite()` sees a request using a different `DM`, it makes a copy of the `DMTS`.
+
+.seealso: [](ch_ts), `TSCreate()`, `DM`, `DMGetDMTSWrite()`, `DMGetDMTS()`, `TSSetIFunction()`, `DMTSSetRHSFunctionContextDestroy()`,
+          `DMTSSetRHSJacobian()`, `DMTSGetRHSJacobian()`, `DMTSSetRHSJacobianContextDestroy()`, `DMTSSetIFunction()`, `DMTSGetIFunction()`,
+          `DMTSSetIFunctionContextDestroy()`, `DMTSSetIJacobian()`, `DMTSGetIJacobian()`, `DMTSSetIJacobianContextDestroy()`,
+          `DMTSSetI2Function()`, `DMTSGetI2Function()`, `DMTSSetI2FunctionContextDestroy()`, `DMTSSetI2Jacobian()`,
+          `DMTSGetI2Jacobian()`, `DMTSSetI2JacobianContextDestroy()`, `DMKSP`, `DMSNES`
+S*/
 struct _p_DMTS {
   PETSCHEADER(struct _DMTSOps);
   PetscContainer rhsfunctionctxcontainer;
@@ -411,13 +445,7 @@ struct _p_DMTS {
 
   void *data;
 
-  /* This is NOT reference counted. The DM on which this context was first created is cached here to implement one-way
-   * copy-on-write. When DMGetDMTSWrite() sees a request using a different DM, it makes a copy. Thus, if a user
-   * only interacts directly with one level, e.g., using TSSetIFunction(), then coarse levels of a multilevel item
-   * integrator are built, then the user changes the routine with another call to TSSetIFunction(), it automatically
-   * propagates to all the levels. If instead, they get out a specific level and set the function on that level,
-   * subsequent changes to the original level will no longer propagate to that level.
-   */
+  /* See the developer note for DMTS above */
   DM originaldm;
 };
 
@@ -536,8 +564,8 @@ struct _n_TSMonitorEnvelopeCtx {
 */
 static inline PetscErrorCode TSCheckImplicitTerm(TS ts)
 {
-  TSIFunction ifunction;
-  DM          dm;
+  TSIFunctionFn *ifunction;
+  DM             dm;
 
   PetscFunctionBegin;
   PetscCall(TSGetDM(ts, &dm));

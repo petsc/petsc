@@ -15,10 +15,16 @@ Changes: Development
 
 - Add ``--download-blis-use-openmp=0`` to force ``download-blis`` to not build with OpenMP when ``with-openmp`` is provided
 - Add ```PetscBLASSetNumThreads()`` and ``PetscBLASGetNumThreads()`` for controlling how many threads the BLAS routines use
+- Change ``win_cl`` and similar ``win32fe`` compiler wrappers to ``win32fe_cl``
+- Add build support for Intel oneAPI compilers ``icx`` and ``ifx`` on Microsoft Windows with compiler wrappers ``win32fe_icx`` and ``win32fe_ifx`` (only static library build with ``ifx``)
 
 .. rubric:: Sys:
 
 - Add ``PetscBench`` an object class for managing benchmarks in PETSc
+- Deprecate ``PetscVoidFunction``, ``PetscVoidStarFunction``, and ``PetscErrorCodeFunction`` typedefs in favor of
+  ``PetscVoidFn`` and ``PetscErrorCodeFn``
+- Add ``PetscOptionsBoundedReal()`` and ``PetscOptionsRangeReal()``
+- Rename Petsc stream types to ``PETSC_STREAM_DEFAULT``, ``PETSC_STREAM_NONBLOCKING``, ``PETSC_STREAM_DEFAULT_WITH_BARRIER`` and ``PETSC_STREAM_NONBLOCKING_WITH_BARRIER``. The root device context uses ``PETSC_STREAM_DEFAULT`` by default
 
 .. rubric:: Event Logging:
 
@@ -34,9 +40,13 @@ Changes: Development
 
 .. rubric:: IS:
 
+- Add ``ISLocalToGlobalMappingGetNodeInfo()`` and ``ISLocalToGlobalMappingRestoreNodeInfo()`` to access neighboring information of local indices
+- Add support to load an ``ISLocalToGlobalMapping`` via ``ISLocalToGlobalMappingLoad()`` from data previously stored using ``ISLocalToGlobalMappingView()``
+
 .. rubric:: VecScatter / PetscSF:
 
 - Add MPI-4.0 persistent neighborhood collectives support. Use -sf_neighbor_persistent along with -sf_type neighbor to enable it
+- Add ``PetscSFCreateStridedSF()`` to communicate strided blocks of data
 
 .. rubric:: PF:
 
@@ -49,10 +59,13 @@ Changes: Development
 - ``VecScale()`` is now a logically collective operation
 - Add ``VecISShift()`` to shift a part of the vector
 - ``VecISSet()`` does no longer accept NULL as index set
+- ``VecLoad()`` automatically determines whether the file was written using 32-bit or 64-bit indices, and files can read with PETSc built either way
 
 .. rubric:: PetscSection:
 
 - Add ``PetscSectionGetBlockStarts()`` and ``PetscSectionSetBlockStarts()``
+- Add argument to ``PetscSectionCreateGlobalSection()`` that can ignore the local section permutation
+- Add ``PetscSectionCreateComponentSubsection()``
 
 .. rubric:: PetscPartitioner:
 
@@ -62,6 +75,11 @@ Changes: Development
 - Add specific support for ``MatMultHermitianTranspose()`` and ``MatMultHermitianTransposeAdd()`` in ``MATSHELL``, ``MATDENSE``, ``MATNEST``, and ``MATSCALAPACK``
 - Add function ``MatProductGetAlgorithm()``
 - ``MATTRANSPOSEVIRTUAL``, ``MATHERMITIANTRANSPOSEVIRTUAL``, ``MATNORMAL``, ``MATNORMALHERMITIAN``, and ``MATCOMPOSITE`` now derive from ``MATSHELL``. This implies a new behavior for those ``Mat``, as calling ``MatAssemblyBegin()``/``MatAssemblyEnd()`` destroys scalings and shifts for ``MATSHELL``, but it was not previously the case for other ``MatType``
+- Add function ``MatGetRowSumAbs()`` to compute vector of L1 norms of rows ([B]AIJ only)
+- Add partial support for ``MatBackwardSolve()``/``MatForwardSolve()`` with ``MATSOLVERMKL_PARDISO`` and ``MATSOLVERMKL_CPARDISO``
+- Deprecate ``MATIS`` options ``-matis_xxx``. Use ``-mat_is_xxx``
+- Add support for repeated entries in the local part of the local to global map for ``MATIS`` via the routines ``MatISSetAllowRepeated()`` and ``MatISGetAllowRepeated()``.
+- Add support to dump and load a matrix of ``MATIS`` type.
 
 .. rubric:: MatCoarsen:
 
@@ -76,6 +94,10 @@ Changes: Development
 - ``PCMAT`` use ``MatSolve()`` if implemented by the matrix type
 - Add ``PCLMVMSetUpdateVec()`` for the automatic update of the LMVM preconditioner inside a SNES solve
 - Add ``PCGAMGSetInjectionIndex()`` with corresponding option ``-pc_gamg_injection_index i,j,k...``. Inject provided indices of fine grid operator as first coarse grid restriction (sort of p-multigrid for C1 elements)
+- Add ``PC_JACOBI_ROWL1`` to ``PCJacobiType`` to use (scaled) l1 row norms for diagonal approximation with scaling of off-diagonal elements
+- Add ``PCJacobiSetRowl1Scale()`` and ``-pc_jacobi_rowl1_scale scale`` to access new scale member of PC_Jacobi class, for new row l1 Jacobi
+- Add ``-mg_fine_...`` prefix alias for fine grid options to override ``-mg_levels_...`` options, like ``-mg_coarse_...``
+- The generated sub-matrices in ``PCFIELDSPLIT``, ``PCASM``, and ``PCBJACOBI`` now retain any null space or near null space attached to them even if the non-zero structure of the outer matrix changes
 
 .. rubric:: KSP:
 
@@ -84,8 +106,13 @@ Changes: Development
 - Add support for Quasi-Newton models in ``SNESNEWTONTR`` via ``SNESNewtonTRSetQNType``
 - Add support for trust region norm customization in ``SNESNEWTONTR`` via ``SNESNewtonTRSetNormType``
 - Remove default of ``KSPPREONLY`` and ``PCLU`` for ``SNESNASM`` subdomain solves: for ``SNESASPIN`` use ``-npc_sub_ksp_type preonly -npc_sub_pc_type lu``
+- Add function typedefs ``SNESInitialGuessFn``, ``SNESFunctionFn``, ``SNESObjectiveFn``, ``SNESJacobianFn``, and ``SNESNGSFn``
+- Deprecate ``DMDASNESFunction``, ``DMDASNESJacobian``, ``DMDASNESObjective``, ``DMDASNESFunctionVec``, ``DMDASNESJacobianVec``, and ``DMDASNESObjectiveVec``
+  in favor of ``DMDASNESFunctionFn``, ``DMDASNESJacobianFn``, ``DMDASNESObjectiveFn``, ``DMDASNESFunctionVecFn``, ``DMDASNESJacobianVecFn``, and ``DMDASNESObjectiveVecFn``
 
 .. rubric:: SNESLineSearch:
+
+- Deprecate ``SNESLineSearchShellSetUserFunc()`` and ``SNESLineSearchShellGetUserFunc()`` in favor of ``SNESLineSearchShellSetApply()`` and ``SNESLineSearchShellGetApply()``
 
 .. rubric:: TS:
 
@@ -95,16 +122,33 @@ Changes: Development
 - Rename ``TSSetPostEventIntervalStep()`` to ``TSSetPostEventSecondStep()``, controlling the second step after event
 - Rename option ``-ts_event_post_eventinterval_step`` to ``-ts_event_post_event_second_step``
 - Change the (event) indicator functions type from ``PetscScalar[]`` to ``PetscReal[]`` in the user ``indicator()`` callback set by ``TSSetEventHandler()``
+- Add ``TSGetStepRollBack()`` to access the internal rollback flag
+- Add boolean flag to ``TSSetResize()`` to control when to resize
 
 .. rubric:: TAO:
 
 - Deprecate ``TaoCancelMonitors()`` (resp. ``-tao_cancelmonitors``) in favor of ``TaoMonitorCancel()`` (resp. ``-tao_monitor_cancel``)
+- Deprecate ``-tao_view_gradient``, ``-tao_view_ls_residual``, ``-tao_view_solution``, and ``-tao_view_stepdirection`` in favor of
+  ``-tao_monitor_gradient``, ``-tao_monitor_ls_residual``, ``-tao_monitor_solution``, and ``-tao_monitor_step``
+- Deprecate ``-tao_draw_solution``, ``-tao_draw_gradient``, and ``-tao_draw_step`` in favor of ``-tao_monitor_solution_draw``, ``-tao_monitor_gradient_draw``, and ``-tao_monitor_step_draw``
+- Deprecate ``TaoSetMonitor()`` in favor of ``TaoMonitorSet()``
+- Deprecate all of the provided ``Tao`` monitor routine names in favor of the standard PETSc naming conventions
 
 .. rubric:: DM/DA:
 
-- Add MPI reduction inside ``SNESComputeObjective_DMDA()``. No need to call reduction into local callback
+- Add MPI reduction inside ``SNESComputeObjective_DMDA()``. No need to call reduction in local callback
+- Deprecate ``PetscSimplePointFunc`` in favor of ``PetscSimplePointFn``
+- Move ``DMPlexReorderDefaultFlag`` to ``DMReorderDefaultFlag``
+- Add ``DMCreateSectionPermutation()``, ``DMReorderSectionGetType()``, and ``DMReorderSectionSetType()``
+- Add ``DMReorderSectionGetDefault()`` and ``DMReorderSectionSetDefault()`` to allow point permutations when sections are built automatically
+- Change interface to ``DMCreateSectionSubDM()`` to add component specification
+- Add ``DMDAGetBoundaryType()``
 
 .. rubric:: DMSwarm:
+
+- Add continuous ``DM`` argument to ``DMSwarmProjectFields()``
+- Add ``DMSwarmGetFieldInfo()``
+- Add ``DMSwarmVectorGetField()``
 
 .. rubric:: DMPlex:
 
@@ -112,20 +156,24 @@ Changes: Development
 - Change protototype of ``DMPlexSetSNESLocalFEM()``. Now it accepts a single context and a Boolean indicating to use the objective function callback
 - Replace ``DMProjectCoordinates()`` with ``DMSetCoordinateDisc()``
 - Add argument to ``DMPlexCreateCoordinateSpace()``
-- Add ``DMPlexReorderSectionGetDefault()`` and ``DMPlexReorderSectionSetDefault()`` to allow point permutations when sections are built automatically
 - Add ``DMPlexCoordMap`` and some default maps
 - Add Boolean argument to ``DMPlexPartitionLabelCreateSF()`` to sort ranks
 - Add ``DMClearAuxiliaryVec()`` to clear the auxiliary data
+- Add ignoreLabelHalo, sanitizeSubmesh, and ownershipTransferSF arguments to ``DMPlexFilter()``
 
 .. rubric:: FE/FV:
 
 - Add Jacobian type argument to ``PetscFEIntegrateBdJacobian()``
+- Add ``PetscFVClone()``
+- Add ``PetscFVCreateDualSpace()``
 
 .. rubric:: DMNetwork:
 
 .. rubric:: DMStag:
 
 - Add support for ``DMLocalToLocalBegin()`` and ``DMLocalToLocalEnd()``
+- Add ``DMStagSetRefinementFactor()`` and ``DMStagGetRefinementFactor()`` to set and get the refinement ratio
+- Add support for arbitrary refinement ratio and degree of freedom in interpolation and restriction
 
 .. rubric:: DT:
 

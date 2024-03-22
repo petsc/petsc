@@ -267,7 +267,7 @@ static PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C, PetscInt ismax,
   /* Create the submatrices */
   if (scall == MAT_REUSE_MATRIX) {
     for (i = 0; i < ismax; i++) {
-      mat = (Mat_SeqDense *)(submats[i]->data);
+      mat = (Mat_SeqDense *)submats[i]->data;
       PetscCheck(!(submats[i]->rmap->n != nrow[i]) && !(submats[i]->cmap->n != ncol[i]), PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Cannot reuse matrix. wrong size");
       PetscCall(PetscArrayzero(mat->v, submats[i]->rmap->n * submats[i]->cmap->n));
 

@@ -186,7 +186,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
         PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)part), pmat->rmap->n, NDorder, PETSC_OWN_POINTER, &ndis));
       }
       PetscCall(ISSetPermutation(ndis));
-      PetscCall(PetscObjectCompose((PetscObject)(*partitioning), "_petsc_matpartitioning_ndorder", (PetscObject)ndis));
+      PetscCall(PetscObjectCompose((PetscObject)*partitioning, "_petsc_matpartitioning_ndorder", (PetscObject)ndis));
       PetscCall(ISDestroy(&ndis));
     }
   } else {
@@ -200,7 +200,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
         PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)part), 0, NULL, PETSC_COPY_VALUES, &ndis));
       }
       PetscCall(ISSetPermutation(ndis));
-      PetscCall(PetscObjectCompose((PetscObject)(*partitioning), "_petsc_matpartitioning_ndorder", (PetscObject)ndis));
+      PetscCall(PetscObjectCompose((PetscObject)*partitioning, "_petsc_matpartitioning_ndorder", (PetscObject)ndis));
       PetscCall(ISDestroy(&ndis));
     }
   }

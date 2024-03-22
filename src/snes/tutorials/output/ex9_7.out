@@ -1,15 +1,15 @@
 setup done: grid  Mx,My = 21,21  with spacing  dx,dy = 0.2000,0.2000
-  0 SNES Function norm 4.16496 
+  0 SNES Function norm 4.16496
     0 SNES VI Function norm 5.52931 Active lower constraints 69/79 upper constraints 0/0 Percent of total 0.156463 Percent of bounded 0.156463
     1 SNES VI Function norm 0.695513 Active lower constraints 57/69 upper constraints 0/0 Percent of total 0.129252 Percent of bounded 0.129252
     0 SNES VI Function norm 0.695513 Active lower constraints 57/69 upper constraints 0/0 Percent of total 0.129252 Percent of bounded 0.129252
     1 SNES VI Function norm 0.209455 Active lower constraints 49/57 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.111111
-  1 SNES Function norm 0.209455 
+  1 SNES Function norm 0.209455
     0 SNES VI Function norm 0.209455 Active lower constraints 49/57 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.111111
     1 SNES VI Function norm 0.0852096 Active lower constraints 45/49 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.102041
     0 SNES VI Function norm 0.0852096 Active lower constraints 45/49 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.102041
     1 SNES VI Function norm 0.0130673 Active lower constraints 45/45 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.102041
-  2 SNES Function norm 0.0130673 
+  2 SNES Function norm 0.0130673
     0 SNES VI Function norm 0.0130673 Active lower constraints 45/45 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.102041
     1 SNES VI Function norm 5.7e-08 Active lower constraints 45/45 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.102041
     0 SNES VI Function norm 5.7e-08 Active lower constraints 45/45 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.102041

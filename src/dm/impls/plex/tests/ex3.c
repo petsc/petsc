@@ -177,7 +177,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBool("-test_injector", "Test finite element injection", "ex3.c", options->testInjector, &options->testInjector, NULL));
   PetscCall(PetscOptionsRealArray("-constants", "Set the constant values", "ex3.c", options->constants, &n, NULL));
   PetscOptionsEnd();
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -78,4 +78,19 @@ int main(int argc, char **argv)
       nsize: 12
       args: -dim 3 -stag_grid_x 4 -stag_grid_y 4 -stag_grid_z 12
 
+   test:
+      suffix: 7
+      nsize: 3
+      args: -dim 1 -stag_grid_x 9 -stag_refine_x 3
+
+   test:
+      suffix: 8
+      nsize: 6
+      args: -dim 2 -stag_grid_x 9 -stag_grid_y 8 -stag_refine_x 3 -stag_refine_y 4
+
+   test:
+      suffix: 9
+      nsize: 12
+      args: -dim 3 -stag_grid_x 6 -stag_grid_y 12 -stag_grid_z 24 -stag_refine_x 2 -stag_refine_y 3 -stag_refine_z 4
+
 TEST*/

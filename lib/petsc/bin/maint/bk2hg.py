@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Usage bk2hg local-bk-repo local-hg-repo
 #
@@ -144,7 +144,7 @@ def main():
   #now process each revision [ignore the first]
   for rev in revs:
     # rev  - basic string
-    # revq - rev with quotes  [useable with -r]
+    # revq - rev with quotes  [usable with -r]
     # revn - rev number [ 1.234.4 etc..]
     os.chdir(bk_repo)
     revq='"'+rev+'"'

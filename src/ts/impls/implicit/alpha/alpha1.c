@@ -34,17 +34,18 @@ typedef struct {
   TSStepStatus status;
 } TS_Alpha;
 
-/* We need to transfer X0 which will be copied into sol_prev */
 static PetscErrorCode TSResizeRegister_Alpha(TS ts, PetscBool reg)
 {
-  TS_Alpha  *th     = (TS_Alpha *)ts->data;
-  const char name[] = "ts:alpha:X0";
+  TS_Alpha *th = (TS_Alpha *)ts->data;
 
   PetscFunctionBegin;
-  if (reg && th->vec_sol_prev) {
-    PetscCall(TSResizeRegisterVec(ts, name, th->X0));
-  } else if (!reg) {
-    PetscCall(TSResizeRetrieveVec(ts, name, &th->X0));
+  if (reg) {
+    PetscCall(TSResizeRegisterVec(ts, "ts:theta:sol_prev", th->vec_sol_prev));
+    PetscCall(TSResizeRegisterVec(ts, "ts:theta:X0", th->X0));
+  } else {
+    PetscCall(TSResizeRetrieveVec(ts, "ts:theta:sol_prev", &th->vec_sol_prev));
+    PetscCall(PetscObjectReference((PetscObject)th->vec_sol_prev));
+    PetscCall(TSResizeRetrieveVec(ts, "ts:theta:X0", &th->X0));
     PetscCall(PetscObjectReference((PetscObject)th->X0));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -269,15 +270,6 @@ static PetscErrorCode TSEvaluateWLTE_Alpha(TS ts, NormType wnormtype, PetscInt *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TSRollBack_Alpha(TS ts)
-{
-  TS_Alpha *th = (TS_Alpha *)ts->data;
-
-  PetscFunctionBegin;
-  PetscCall(VecCopy(th->X0, ts->vec_sol));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode TSInterpolate_Alpha(TS ts, PetscReal t, Vec X)
 {
   TS_Alpha *th = (TS_Alpha *)ts->data;
@@ -362,8 +354,8 @@ static PetscErrorCode TSSetUp_Alpha(TS ts)
   PetscCall(TSAdaptCandidatesClear(ts->adapt));
   PetscCall(PetscObjectTypeCompare((PetscObject)ts->adapt, TSADAPTNONE, &match));
   if (!match) {
-    PetscCall(VecDuplicate(ts->vec_sol, &th->vec_sol_prev));
-    PetscCall(VecDuplicate(ts->vec_sol, &th->vec_lte_work));
+    if (!th->vec_sol_prev) PetscCall(VecDuplicate(ts->vec_sol, &th->vec_sol_prev));
+    if (!th->vec_lte_work) PetscCall(VecDuplicate(ts->vec_sol, &th->vec_lte_work));
   }
 
   PetscCall(TSGetSNES(ts, &ts->snes));
@@ -458,7 +450,6 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha(TS ts)
   ts->ops->setfromoptions = TSSetFromOptions_Alpha;
   ts->ops->step           = TSStep_Alpha;
   ts->ops->evaluatewlte   = TSEvaluateWLTE_Alpha;
-  ts->ops->rollback       = TSRollBack_Alpha;
   ts->ops->interpolate    = TSInterpolate_Alpha;
   ts->ops->resizeregister = TSResizeRegister_Alpha;
   ts->ops->snesfunction   = SNESTSFormFunction_Alpha;

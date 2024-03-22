@@ -125,7 +125,7 @@ PetscErrorCode PetscCDGetHeadPos(const PetscCoarsenData *ail, PetscInt a_idx, Pe
 PetscErrorCode PetscCDGetNextPos(const PetscCoarsenData *ail, PetscInt l_idx, PetscCDIntNd **pos)
 {
   PetscFunctionBegin;
-  PetscCheck((*pos), PETSC_COMM_SELF, PETSC_ERR_PLIB, "NULL input position.");
+  PetscCheck(*pos, PETSC_COMM_SELF, PETSC_ERR_PLIB, "NULL input position.");
   *pos = (*pos)->next;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -383,7 +383,6 @@ PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData *ail, const PetscInt a
   }
   PetscCheck(*a_sz == kk, PETSC_COMM_SELF, PETSC_ERR_PLIB, "*a_sz %" PetscInt_FMT " != kk %" PetscInt_FMT, *a_sz, kk);
   *a_local_is = is_loc; /* out */
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -792,7 +791,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
           PetscCall(MatSetValues(P, 1, &gid1, 1, &gid0, &one, INSERT_VALUES));
           //PetscCall(PetscPrintf(comm,"\t %d.%d) match active EDGE %d : (%d %d)\n",iter,sub_it, (int)nactive_edges, (int)gid0, (int)gid1));
         } /* matched */
-      }   /* edge loop */
+      } /* edge loop */
       PetscCall(PetscSynchronizedFlush(comm, PETSC_STDOUT));
       if (isMPI) PetscCall(VecRestoreArrayRead(ghostMaxEdge, &lghost_max_ew));
       PetscCall(VecRestoreArrayRead(locMaxEdge, &lid_max_ew));
@@ -1140,7 +1139,6 @@ static PetscErrorCode MatCoarsenApply_HEM(MatCoarsen coarse)
 
   PetscFunctionBegin;
   PetscCall(MatCoarsenApply_HEM_private(mat, coarse->max_it, coarse->threshold, &coarse->agg_lists));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

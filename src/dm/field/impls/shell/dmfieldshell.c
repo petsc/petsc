@@ -13,7 +13,7 @@ PetscErrorCode DMFieldShellGetContext(DMField field, void *ctx)
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   PetscAssertPointer(ctx, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)field, DMFIELDSHELL, &flg));
-  if (flg) *(void **)ctx = ((DMField_Shell *)(field->data))->ctx;
+  if (flg) *(void **)ctx = ((DMField_Shell *)field->data)->ctx;
   else SETERRQ(PetscObjectComm((PetscObject)field), PETSC_ERR_SUP, "Cannot get context from non-shell shield");
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -23,7 +23,7 @@ static PetscErrorCode DMFieldDestroy_Shell(DMField field)
   DMField_Shell *shell = (DMField_Shell *)field->data;
 
   PetscFunctionBegin;
-  if (shell->destroy) PetscCall((*(shell->destroy))(field));
+  if (shell->destroy) PetscCall((*shell->destroy)(field));
   PetscCall(PetscFree(field->data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

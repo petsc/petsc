@@ -24,9 +24,9 @@ PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
   Logically Collective; name must contain a common value
 
   Input Parameters:
-+ da   - the distributed array
++ da   - the `DMDA`
 . nf   - field number for the `DMDA` (0, 1, ... dof-1), where dof indicates the
-        number of degrees of freedom per node within the `DMDA`
+         number of degrees of freedom per node within the `DMDA`
 - name - the name of the field (component)
 
   Level: intermediate
@@ -50,7 +50,7 @@ PetscErrorCode DMDASetFieldName(DM da, PetscInt nf, const char name[])
 }
 
 /*@C
-  DMDAGetFieldNames - Gets the name of each component in the vector associated with the `DMDA`
+  DMDAGetFieldNames - Gets the name of all the components in the vector associated with the `DMDA`
 
   Not Collective; names will contain a common value; No Fortran Support
 
@@ -77,7 +77,7 @@ PetscErrorCode DMDAGetFieldNames(DM da, const char *const **names)
 }
 
 /*@C
-  DMDASetFieldNames - Sets the name of each component in the vector associated with the DMDA
+  DMDASetFieldNames - Sets the name of each component in the vector associated with the `DMDA`
 
   Logically Collective; names must contain a common value; No Fortran Support
 
@@ -118,9 +118,9 @@ PetscErrorCode DMDASetFieldNames(DM da, const char *const *names)
   Not Collective; name will contain a common value
 
   Input Parameters:
-+ da - the distributed array
++ da - the `DMDA`
 - nf - field number for the `DMDA` (0, 1, ... dof-1), where dof indicates the
-        number of degrees of freedom per node within the `DMDA`
+       number of degrees of freedom per node within the `DMDA`
 
   Output Parameter:
 . name - the name of the field (component)
@@ -214,7 +214,7 @@ PetscErrorCode DMDAGetCoordinateName(DM dm, PetscInt nf, const char **name)
   Not Collective
 
   Input Parameter:
-. da - the distributed array
+. da - the `DMDA`
 
   Output Parameters:
 + x - the corner index for the first dimension
@@ -228,12 +228,12 @@ PetscErrorCode DMDAGetCoordinateName(DM dm, PetscInt nf, const char **name)
 
   Note:
   The corner information is independent of the number of degrees of
-  freedom per node set with the `DMDACreateXX()` routine. Thus the `x`, `y`, `z`, and
-  `m`, `n`, `p` can be thought of as coordinates on a logical grid, where each
-  grid point has (potentially) several degrees of freedom.
+  freedom per node set with the `DMDACreateXX()` routine.  Thus the `x`, `y`, and `z`
+  can be thought of as the lower left coordinates of the patch of values on process on a logical grid and `m`, `n`, and `p` as the
+  extent of the patch, where each grid point has (potentially) several degrees of freedom.
   Any of `y`, `z`, `n`, and `p` can be passed in as `NULL` if not needed.
 
-.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetOwnershipRanges()`, `DMStagGetCorners()`
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetOwnershipRanges()`, `DMStagGetCorners()`, `DMSTAG`
 @*/
 PetscErrorCode DMDAGetCorners(DM da, PetscInt *x, PetscInt *y, PetscInt *z, PetscInt *m, PetscInt *n, PetscInt *p)
 {
@@ -284,12 +284,12 @@ PetscErrorCode DMDAGetReducedDMDA(DM da, PetscInt nfields, DM *nda)
 }
 
 /*@
-  DMDACreateCompatibleDMDA - Creates a `DMDA` with the same layout but with fewer or more fields
+  DMDACreateCompatibleDMDA - Creates a `DMDA` with the same layout as given `DMDA` but with fewer or more fields
 
   Collective
 
   Input Parameters:
-+ da      - the distributed array
++ da      - the `DMDA`
 - nfields - number of fields in new `DMDA`
 
   Output Parameter:

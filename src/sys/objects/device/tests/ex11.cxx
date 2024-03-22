@@ -68,8 +68,7 @@ static PetscErrorCode MarkedObjectMapView(PetscViewer vwr, std::size_t nkeys, co
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_ATTRIBUTE_FORMAT(10, 11)
-static PetscErrorCode CheckMarkedObjectMap_Private(PetscBool cond, const char cond_str[], MPI_Comm comm, PetscDeviceContext dctx, std::size_t nkeys, const PetscObjectId *keys, const PetscMemoryAccessMode *modes, const std::size_t *ndeps, const PetscEvent **dependencies, const char *format, ...)
+PETSC_ATTRIBUTE_FORMAT(10, 11) static PetscErrorCode CheckMarkedObjectMap_Private(PetscBool cond, const char cond_str[], MPI_Comm comm, PetscDeviceContext dctx, std::size_t nkeys, const PetscObjectId *keys, const PetscMemoryAccessMode *modes, const std::size_t *ndeps, const PetscEvent **dependencies, const char *format, ...)
 {
   PetscFunctionBegin;
   if (PetscUnlikely(!cond)) {
@@ -245,8 +244,8 @@ int main(int argc, char *argv[])
   const auto         create_container = [&](PetscContainer *c, const char name[], PetscObjectId *id) {
     PetscFunctionBegin;
     PetscCall(PetscContainerCreate(PETSC_COMM_WORLD, c));
-    PetscCall(PetscObjectSetName((PetscObject)(*c), name));
-    PetscCall(PetscObjectGetId((PetscObject)(*c), id));
+    PetscCall(PetscObjectSetName((PetscObject)*c, name));
+    PetscCall(PetscObjectGetId((PetscObject)*c, id));
     if (container_view) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Container '%s' -> id %" PetscInt64_FMT "\n", name, *id));
     PetscFunctionReturn(PETSC_SUCCESS);
   };
@@ -269,7 +268,7 @@ int main(int argc, char *argv[])
 
   PetscCall(PetscDeviceContextCreate(&dctx_a));
   PetscCall(PetscObjectSetName(PetscObjectCast(dctx_a), "dctx_a"));
-  PetscCall(PetscDeviceContextSetStreamType(dctx_a, PETSC_STREAM_DEFAULT_BLOCKING));
+  PetscCall(PetscDeviceContextSetStreamType(dctx_a, PETSC_STREAM_DEFAULT));
   PetscCall(PetscDeviceContextSetFromOptions(PETSC_COMM_WORLD, dctx_a));
   PetscCall(PetscDeviceContextDuplicate(dctx_a, &dctx_b));
   PetscCall(PetscObjectSetName(PetscObjectCast(dctx_b), "dctx_b"));

@@ -217,6 +217,7 @@ struct _MatOps {
   /*150*/
   PetscErrorCode (*transposesymbolic)(Mat, Mat *);
   PetscErrorCode (*eliminatezeros)(Mat, PetscBool);
+  PetscErrorCode (*getrowsumabs)(Mat, Vec);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
@@ -251,6 +252,9 @@ PETSC_INTERN PetscErrorCode MatConvert_Dense_ScaLAPACK(Mat, MatType, MatReuse, M
 #endif
 PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_Basic(Mat, PetscCount, PetscInt[], PetscInt[]);
 PETSC_INTERN PetscErrorCode MatSetValuesCOO_Basic(Mat, const PetscScalar[], InsertMode);
+
+/* This can be moved to the public header after implementing some missing MatProducts */
+PETSC_INTERN PetscErrorCode MatCreateFromISLocalToGlobalMapping(ISLocalToGlobalMapping, Mat, PetscBool, PetscBool, MatType, Mat *);
 
 /* these callbacks rely on the old matrix function pointers for
    matmat operations. They are unsafe, and should be removed.
@@ -440,6 +444,7 @@ typedef struct { /* used by MatProduct() */
   PetscBool      symbolic_used_the_fact_C_is_symmetric; /* MatMatMult(A,B,MAT_REUSE_MATRIX,..&C) is still legitimate), we need to redo symbolic! */
   PetscReal      fill;
   PetscBool      api_user; /* used to distinguish command line options and to indicate the matrix values are ready to be consumed at symbolic phase if needed */
+  PetscBool      setfromoptionscalled;
 
   /* Some products may display the information on the algorithm used */
   PetscErrorCode (*view)(Mat, PetscViewer);

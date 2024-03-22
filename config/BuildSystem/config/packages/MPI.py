@@ -355,7 +355,7 @@ shared libraries and run with --known-mpi-shared-libraries=1')
                   try:
                     (ok, err, ret) = Configure.executeShellCommand(self.host + ' '+ hostname, timeout = 60, log = self.log, threads = 1)
                     self.logPrint("Return code from host: %s\n" % ret)
-                    # host works even with broken VPN is is not a useful test
+                    # host works even with broken VPN it is not a useful test
                   except:
                     self.logPrint("Exception: while running host skipping host check\n")
 
@@ -810,7 +810,7 @@ Unable to run hostname to check the network')
   def findMPIIncludeAndLib(self):
     '''Find MPI include paths and libraries from "mpicc -show" or Cray "cc --cray-print-opts=cflags/libs" and save.'''
     '''When the underlying C++ compiler used by CUDA or HIP is not the same'''
-    '''as the MPICXX compiler (if any), the includes are needed for for compiling with'''
+    '''as the MPICXX compiler (if any), the includes are needed for compiling with'''
     '''the CUDA or HIP compiler or the Kokkos compiler, and the libraries are needed'''
     '''when the Kokkos compiler wrapper is linking a Kokkos application.'''
     needed=False

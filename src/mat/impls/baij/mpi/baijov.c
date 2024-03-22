@@ -687,7 +687,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
   if (scall == MAT_REUSE_MATRIX) {
     /* Assumes new rows are same length as the old rows */
     for (i = 0; i < ismax; i++) {
-      subc = (Mat_SeqBAIJ *)(submats[i]->data);
+      subc = (Mat_SeqBAIJ *)submats[i]->data;
       PetscCheck(subc->mbs == nrow[i] && subc->nbs == ncol[i], PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Cannot reuse matrix. wrong size");
 
       /* Initial matrix as if empty */

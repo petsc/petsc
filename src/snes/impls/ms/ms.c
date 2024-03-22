@@ -418,8 +418,7 @@ static PetscErrorCode SNESSetFromOptions_MS(SNES snes, PetscOptionItems *PetscOp
     PetscBool         norms = PETSC_FALSE;
 
     PetscCall(SNESMSGetType(snes, &mstype));
-    for (link = SNESMSTableauList, count = 0; link; link = link->next, count++)
-      ;
+    for (link = SNESMSTableauList, count = 0; link; link = link->next, count++);
     PetscCall(PetscMalloc1(count, (char ***)&namelist));
     for (link = SNESMSTableauList, count = 0; link; link = link->next, count++) namelist[count] = link->tab.name;
     PetscCall(PetscOptionsEList("-snes_ms_type", "Multistage smoother type", "SNESMSSetType", (const char *const *)namelist, count, mstype, &choice, &flg));

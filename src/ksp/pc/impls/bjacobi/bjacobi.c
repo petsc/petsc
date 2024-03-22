@@ -198,44 +198,39 @@ static PetscErrorCode PCView_BJacobi(PC pc, PetscViewer viewer)
       if (jac->ksp && !jac->psubcomm) {
         PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
         if (rank == 0) {
-          PetscCall(PetscViewerASCIIPushTab(viewer));
+          PetscCall(PetscViewerASCIIPushTab(sviewer));
           PetscCall(KSPView(jac->ksp[0], sviewer));
-          PetscCall(PetscViewerASCIIPopTab(viewer));
+          PetscCall(PetscViewerASCIIPopTab(sviewer));
         }
-        PetscCall(PetscViewerFlush(sviewer));
         PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
         /*  extra call needed because of the two calls to PetscViewerASCIIPushSynchronized() in PetscViewerGetSubViewer() */
         PetscCall(PetscViewerASCIIPopSynchronized(viewer));
       } else if (mpjac && jac->ksp && mpjac->psubcomm) {
         PetscCall(PetscViewerGetSubViewer(viewer, mpjac->psubcomm->child, &sviewer));
         if (!mpjac->psubcomm->color) {
-          PetscCall(PetscViewerASCIIPushTab(viewer));
-          PetscCall(KSPView(*(jac->ksp), sviewer));
-          PetscCall(PetscViewerASCIIPopTab(viewer));
+          PetscCall(PetscViewerASCIIPushTab(sviewer));
+          PetscCall(KSPView(*jac->ksp, sviewer));
+          PetscCall(PetscViewerASCIIPopTab(sviewer));
         }
-        PetscCall(PetscViewerFlush(sviewer));
         PetscCall(PetscViewerRestoreSubViewer(viewer, mpjac->psubcomm->child, &sviewer));
         /*  extra call needed because of the two calls to PetscViewerASCIIPushSynchronized() in PetscViewerGetSubViewer() */
         PetscCall(PetscViewerASCIIPopSynchronized(viewer));
-      } else {
-        PetscCall(PetscViewerFlush(viewer));
       }
     } else {
       PetscInt n_global;
       PetscCall(MPIU_Allreduce(&jac->n_local, &n_global, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)pc)));
       PetscCall(PetscViewerASCIIPushSynchronized(viewer));
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Local solver information for each block is in the following KSP and PC objects:\n"));
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] number of local blocks = %" PetscInt_FMT ", first local block number = %" PetscInt_FMT "\n", rank, jac->n_local, jac->first_local));
       PetscCall(PetscViewerASCIIPushTab(viewer));
       PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
+      PetscCall(PetscViewerASCIIPrintf(sviewer, "[%d] number of local blocks = %" PetscInt_FMT ", first local block number = %" PetscInt_FMT "\n", rank, jac->n_local, jac->first_local));
       for (i = 0; i < jac->n_local; i++) {
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] local block number %" PetscInt_FMT "\n", rank, i));
+        PetscCall(PetscViewerASCIIPrintf(sviewer, "[%d] local block number %" PetscInt_FMT "\n", rank, i));
         PetscCall(KSPView(jac->ksp[i], sviewer));
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "- - - - - - - - - - - - - - - - - -\n"));
+        PetscCall(PetscViewerASCIIPrintf(sviewer, "- - - - - - - - - - - - - - - - - -\n"));
       }
       PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
       PetscCall(PetscViewerASCIIPopTab(viewer));
-      PetscCall(PetscViewerFlush(viewer));
       PetscCall(PetscViewerASCIIPopSynchronized(viewer));
     }
   } else if (isstring) {
@@ -1002,6 +997,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc, Mat mat, Mat pmat)
   IS                     is;
   MatReuse               scall;
   VecType                vectype;
+  MatNullSpace          *nullsp_mat = NULL, *nullsp_pmat = NULL;
 
   PetscFunctionBegin;
   PetscCall(MatGetLocalSize(pc->pmat, &M, &N));
@@ -1087,14 +1083,22 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc, Mat mat, Mat pmat)
        Destroy the blocks from the previous iteration
     */
     if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
+      PetscCall(MatGetNullSpaces(n_local, bjac->pmat, &nullsp_pmat));
       PetscCall(MatDestroyMatrices(n_local, &bjac->pmat));
-      if (pc->useAmat) PetscCall(MatDestroyMatrices(n_local, &bjac->mat));
+      if (pc->useAmat) {
+        PetscCall(MatGetNullSpaces(n_local, bjac->mat, &nullsp_mat));
+        PetscCall(MatDestroyMatrices(n_local, &bjac->mat));
+      }
       scall = MAT_INITIAL_MATRIX;
     } else scall = MAT_REUSE_MATRIX;
   }
 
   PetscCall(MatCreateSubMatrices(pmat, n_local, bjac->is, bjac->is, scall, &bjac->pmat));
-  if (pc->useAmat) PetscCall(MatCreateSubMatrices(mat, n_local, bjac->is, bjac->is, scall, &bjac->mat));
+  if (nullsp_pmat) PetscCall(MatRestoreNullSpaces(n_local, bjac->pmat, &nullsp_pmat));
+  if (pc->useAmat) {
+    PetscCall(MatCreateSubMatrices(mat, n_local, bjac->is, bjac->is, scall, &bjac->mat));
+    if (nullsp_mat) PetscCall(MatRestoreNullSpaces(n_local, bjac->mat, &nullsp_mat));
+  }
   /* Return control to the user so that the submatrices can be modified (e.g., to apply
      different boundary conditions for the submatrices than for the global problem) */
   PetscCall(PCModifySubMatrices(pc, n_local, bjac->is, bjac->is, bjac->pmat, pc->modifysubmatricesP));

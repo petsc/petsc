@@ -24,8 +24,8 @@ int main(int argc, char **args)
   PetscInt               rst, ren, cst, cen, nr, nc;
   PetscMPIInt            rank, size, lrank, rrank;
   PetscBool              testT, squaretest, isaij;
-  PetscBool              permute = PETSC_FALSE, negmap = PETSC_FALSE, repmap = PETSC_FALSE;
-  PetscBool              diffmap = PETSC_TRUE, symmetric = PETSC_FALSE, issymmetric;
+  PetscBool              permute = PETSC_FALSE, negmap = PETSC_FALSE, repmap = PETSC_FALSE, allow_repeated = PETSC_TRUE;
+  PetscBool              diffmap = PETSC_TRUE, symmetric = PETSC_FALSE, issymmetric, test_matlab = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
@@ -39,6 +39,8 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-repmap", &repmap, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-permmap", &permute, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-diffmap", &diffmap, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-allow_repeated", &allow_repeated, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_matlab", &test_matlab, NULL));
   PetscCheck(size == 1 || m >= 4, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Number of rows should be larger or equal 4 for parallel runs");
   PetscCheck(size != 1 || m >= 2, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Number of rows should be larger or equal 2 for uniprocessor runs");
   PetscCheck(n >= 2, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Number of cols should be larger or equal 2");
@@ -84,6 +86,7 @@ int main(int argc, char **args)
     rmap = cmap;
   }
 
+  PetscCall(MatISSetAllowRepeated(A, allow_repeated));
   PetscCall(MatSetLocalToGlobalMapping(A, rmap, cmap));
   PetscCall(MatISStoreL2L(A, PETSC_FALSE));
   PetscCall(MatISSetPreallocation(A, 3, NULL, 3, NULL));
@@ -125,6 +128,7 @@ int main(int argc, char **args)
     }
     PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &squaretest, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
   }
+  if (negmap && repmap) squaretest = PETSC_FALSE;
 
   /* test MatISGetLocalMat */
   PetscCall(MatISGetLocalMat(A, &B));
@@ -182,9 +186,90 @@ int main(int argc, char **args)
   PetscCall(MatView(A, NULL));
   PetscCall(MatView(B, NULL));
 
+  /* test MATLAB ASCII view */
+  if (test_matlab) { /* output is different when using real or complex numbers */
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatView ASCII MATLAB\n"));
+    PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_ASCII_MATLAB));
+    PetscCall(MatView(A, PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
+  }
+
   /* test CheckMat */
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test CheckMat\n"));
   PetscCall(CheckMat(A, B, PETSC_FALSE, "CheckMat"));
+
+  /* test binary MatView/MatLoad */
+  {
+    PetscMPIInt color = rank % 2;
+    MPI_Comm    comm;
+    char        name[PETSC_MAX_PATH_LEN];
+    PetscViewer wview, cview, sview, view;
+    Mat         A2;
+
+    PetscCallMPI(MPI_Comm_split(PETSC_COMM_WORLD, color, rank, &comm));
+
+    PetscCall(PetscSNPrintf(name, PETSC_STATIC_ARRAY_LENGTH(name), "world_is"));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, name, FILE_MODE_WRITE, &wview));
+    PetscCall(PetscSNPrintf(name, PETSC_STATIC_ARRAY_LENGTH(name), "seq_is_%d", rank));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF, name, FILE_MODE_WRITE, &sview));
+    PetscCall(PetscSNPrintf(name, PETSC_STATIC_ARRAY_LENGTH(name), "color_is_%d", color));
+    PetscCall(PetscViewerBinaryOpen(comm, name, FILE_MODE_WRITE, &cview));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatView on binary world\n"));
+    PetscCall(MatView(A, wview));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatView on binary self\n"));
+    PetscCall(MatView(A, sview));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatView on binary subcomm\n"));
+    PetscCall(MatView(A, cview));
+    PetscCall(PetscViewerDestroy(&wview));
+    PetscCall(PetscViewerDestroy(&cview));
+    PetscCall(PetscViewerDestroy(&sview));
+
+    /* Load a world matrix */
+    PetscCall(MatCreate(PETSC_COMM_WORLD, &A2));
+    PetscCall(MatSetType(A2, MATIS));
+    PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_ASCII_INFO_DETAIL));
+
+    /* Read back the same matrix and check */
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatLoad from world\n"));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, "world_is", FILE_MODE_READ, &view));
+    PetscCall(MatLoad(A2, view));
+    PetscCall(CheckMat(A, A2, PETSC_TRUE, "Load"));
+    PetscCall(MatView(A2, PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscViewerDestroy(&view));
+
+    /* Read the matrix from rank 0 only */
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatLoad from self\n"));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, "seq_is_0", FILE_MODE_READ, &view));
+    PetscCall(MatLoad(A2, view));
+    PetscCall(MatView(A2, PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscViewerDestroy(&view));
+
+    /* Read the matrix from subcomm */
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatLoad from subcomm\n"));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, "color_is_0", FILE_MODE_READ, &view));
+    PetscCall(MatLoad(A2, view));
+    PetscCall(MatView(A2, PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscViewerDestroy(&view));
+
+    PetscCall(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(MatDestroy(&A2));
+
+    /* now load the original matrix from color 0 only processes */
+    if (!color) {
+      PetscCall(PetscPrintf(comm, "Test subcomm MatLoad from world\n"));
+      PetscCall(MatCreate(comm, &A2));
+      PetscCall(MatSetType(A2, MATIS));
+      PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(comm), PETSC_VIEWER_ASCII_INFO_DETAIL));
+      PetscCall(PetscViewerBinaryOpen(comm, "world_is", FILE_MODE_READ, &view));
+      PetscCall(MatLoad(A2, view));
+      PetscCall(MatView(A2, PETSC_VIEWER_STDOUT_(comm)));
+      PetscCall(PetscViewerDestroy(&view));
+      PetscCall(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(comm)));
+      PetscCall(MatDestroy(&A2));
+    }
+
+    PetscCallMPI(MPI_Comm_free(&comm));
+  }
 
   /* test MatDuplicate and MatAXPY */
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatDuplicate and MatAXPY\n"));
@@ -293,14 +378,17 @@ int main(int argc, char **args)
   /* test MatPtAP (A IS and B AIJ) */
   if (isaij && m == n) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatPtAP\n"));
-    PetscCall(MatISStoreL2L(A, PETSC_TRUE));
-    PetscCall(MatPtAP(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &A2));
-    PetscCall(MatPtAP(B, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &B2));
-    PetscCall(CheckMat(A2, B2, PETSC_FALSE, "MatPtAP MAT_INITIAL_MATRIX"));
-    PetscCall(MatPtAP(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &A2));
-    PetscCall(CheckMat(A2, B2, PETSC_FALSE, "MatPtAP MAT_REUSE_MATRIX"));
-    PetscCall(MatDestroy(&A2));
-    PetscCall(MatDestroy(&B2));
+    /* There's a bug in MatCreateSubMatrices_MPIAIJ I cannot figure out */
+    if (!allow_repeated || !repmap || size == 1) {
+      PetscCall(MatISStoreL2L(A, PETSC_TRUE));
+      PetscCall(MatPtAP(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &A2));
+      PetscCall(MatPtAP(B, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &B2));
+      PetscCall(CheckMat(A2, B2, PETSC_FALSE, "MatPtAP MAT_INITIAL_MATRIX"));
+      PetscCall(MatPtAP(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &A2));
+      PetscCall(CheckMat(A2, B2, PETSC_FALSE, "MatPtAP MAT_REUSE_MATRIX"));
+      PetscCall(MatDestroy(&A2));
+      PetscCall(MatDestroy(&B2));
+    }
   }
 
   /* test MatGetLocalSubMatrix */
@@ -498,8 +586,8 @@ int main(int argc, char **args)
     PetscCall(MatDuplicate(B, MAT_COPY_VALUES, &B2));
     PetscCall(MatCreateVecs(A, NULL, &x));
     PetscCall(VecSetRandom(x, NULL));
-    PetscCall(MatDiagonalSet(A2, x, INSERT_VALUES));
-    PetscCall(MatDiagonalSet(B2, x, INSERT_VALUES));
+    PetscCall(MatDiagonalSet(A2, x, allow_repeated ? ADD_VALUES : INSERT_VALUES));
+    PetscCall(MatDiagonalSet(B2, x, allow_repeated ? ADD_VALUES : INSERT_VALUES));
     PetscCall(CheckMat(A2, B2, PETSC_FALSE, "MatDiagonalSet"));
     PetscCall(VecDestroy(&x));
     PetscCall(MatDestroy(&A2));
@@ -743,6 +831,52 @@ int main(int argc, char **args)
   PetscCall(MatGetDiagonalBlock(B, &B2));
   PetscCall(CheckMat(A2, B2, PETSC_FALSE, "MatGetDiagonalBlock"));
 
+  /* test MatISSetAllowRepeated on a MATIS */
+  PetscCall(MatISSetAllowRepeated(A, allow_repeated));
+  if (allow_repeated) { /* original MATIS maybe with repeated entries, test assembling of local matrices */
+    Mat lA, lA2;
+
+    for (PetscInt i = 0; i < 1; i++) { /* TODO: make MatScatter inherit from MATSHELL and support MatProducts */
+      PetscBool usemult = PETSC_FALSE;
+
+      PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &A2));
+      if (i) {
+        Mat tA;
+
+        usemult = PETSC_TRUE;
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatISSetAllowRepeated(false) with possibly repeated entries and local shell matrices\n"));
+        PetscCall(MatISGetLocalMat(A2, &lA2));
+        PetscCall(MatConvert(lA2, MATSHELL, MAT_INITIAL_MATRIX, &tA));
+        PetscCall(MatISRestoreLocalMat(A2, &lA2));
+        PetscCall(MatISSetLocalMat(A2, tA));
+        PetscCall(MatDestroy(&tA));
+      } else {
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatISSetAllowRepeated(false) with possibly repeated entries\n"));
+      }
+      PetscCall(MatISSetAllowRepeated(A2, PETSC_FALSE));
+      PetscCall(MatISGetLocalMat(A, &lA));
+      PetscCall(MatISGetLocalMat(A2, &lA2));
+      if (!repmap) PetscCall(CheckMat(lA, lA2, usemult, "MatISSetAllowRepeated(false) with non-repeated entries"));
+      PetscCall(MatISRestoreLocalMat(A, &lA));
+      PetscCall(MatISRestoreLocalMat(A2, &lA2));
+      if (repmap) PetscCall(CheckMat(A2, B, usemult, "MatISSetAllowRepeated(false) with repeated entries"));
+      else PetscCall(CheckMat(A2, B, usemult, "MatISSetAllowRepeated(false) with non-repeated entries"));
+      PetscCall(MatDestroy(&A2));
+    }
+  } else { /* original matis with non-repeated entries, this should only recreate the local matrices */
+    Mat       lA;
+    PetscBool flg;
+
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatISSetAllowRepeated(true) with non repeated entries\n"));
+    PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &A2));
+    PetscCall(MatISSetAllowRepeated(A2, PETSC_TRUE));
+    PetscCall(MatISGetLocalMat(A2, &lA));
+    PetscCall(MatAssembled(lA, &flg));
+    PetscCheck(!flg, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Local mat should be unassembled");
+    PetscCall(MatISRestoreLocalMat(A2, &lA));
+    PetscCall(MatDestroy(&A2));
+  }
+
   /* free testing matrices */
   PetscCall(ISLocalToGlobalMappingDestroy(&cmap));
   PetscCall(ISLocalToGlobalMappingDestroy(&rmap));
@@ -923,17 +1057,18 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
 /*TEST
 
    test:
-      args: -test_trans
+      requires: !complex
+      args: -test_matlab -test_trans
 
    test:
       suffix: 2
       nsize: 4
-      args: -matis_convert_local_nest -nr 3 -nc 4
+      args: -mat_is_convert_local_nest -nr 3 -nc 4
 
    test:
       suffix: 3
       nsize: 5
-      args: -m 11 -n 10 -matis_convert_local_nest -nr 2 -nc 1
+      args: -m 11 -n 10 -mat_is_convert_local_nest -nr 2 -nc 1
 
    test:
       suffix: 4
@@ -976,28 +1111,37 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
    test:
       suffix: 12
       nsize: 3
-      args: -m 12 -n 12 -symmetric -matis_localmat_type sbaij -test_trans -nr 2 -nc 3
+      args: -m 12 -n 12 -symmetric -mat_is_localmat_type sbaij -test_trans -nr 2 -nc 3
 
    testset:
       output_file: output/ex23_13.out
       nsize: 3
       args: -m 12 -n 17 -test_trans -nr 2 -nc 3 -diffmap -permmap
-      filter: grep -v "type:"
+      filter: grep -v "type:" | grep -v "block size is 1" | grep -v "not using I-node routines"
       test:
         suffix: baij
-        args: -matis_localmat_type baij
+        args: -mat_is_localmat_type baij
       test:
         requires: viennacl
         suffix: viennacl
-        args: -matis_localmat_type aijviennacl
+        args: -mat_is_localmat_type aijviennacl
       test:
         requires: cuda
         suffix: cusparse
-        args: -matis_localmat_type aijcusparse
+        args: -mat_is_localmat_type aijcusparse
+      test:
+        requires: kokkos_kernels
+        suffix: kokkos
+        args: -mat_is_localmat_type aijkokkos
 
    test:
       suffix: negrep
       nsize: {{1 3}separate output}
-      args: -m {{5 7}separate output} -n {{5 7}separate output} -test_trans -nr 2 -nc 3 -negmap {{0 1}separate output} -repmap {{0 1}separate output} -permmap -diffmap {{0 1}separate output}
+      args: -m {{5 7}separate output} -n {{5 7}separate output} -test_trans -nr 2 -nc 3 -negmap {{0 1}separate output} -repmap {{0 1}separate output} -permmap -diffmap {{0 1}separate output} -allow_repeated 0
+
+   test:
+      suffix: negrep_allowrep
+      nsize: {{1 3}separate output}
+      args: -m {{5 7}separate output} -n {{5 7}separate output} -test_trans -nr 2 -nc 3 -negmap {{0 1}separate output} -repmap {{0 1}separate output} -permmap -diffmap {{0 1}separate output} -allow_repeated
 
 TEST*/

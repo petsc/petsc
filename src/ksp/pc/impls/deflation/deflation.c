@@ -596,12 +596,12 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
       PetscCall(PCDeflationSetSpace(pcinner, nextDef, transp));
       PetscCall(PCDeflationSetLevels_Deflation(pcinner, def->lvl + 1, def->maxlvl));
       /* inherit options */
-      if (def->prefix) ((PC_Deflation *)(pcinner->data))->prefix = def->prefix;
-      ((PC_Deflation *)(pcinner->data))->init          = def->init;
-      ((PC_Deflation *)(pcinner->data))->ksptype       = def->ksptype;
-      ((PC_Deflation *)(pcinner->data))->correct       = def->correct;
-      ((PC_Deflation *)(pcinner->data))->correctfact   = def->correctfact;
-      ((PC_Deflation *)(pcinner->data))->reductionfact = def->reductionfact;
+      if (def->prefix) ((PC_Deflation *)pcinner->data)->prefix = def->prefix;
+      ((PC_Deflation *)pcinner->data)->init          = def->init;
+      ((PC_Deflation *)pcinner->data)->ksptype       = def->ksptype;
+      ((PC_Deflation *)pcinner->data)->correct       = def->correct;
+      ((PC_Deflation *)pcinner->data)->correctfact   = def->correctfact;
+      ((PC_Deflation *)pcinner->data)->reductionfact = def->reductionfact;
       PetscCall(MatDestroy(&nextDef));
     } else { /* the last level */
       PetscCall(KSPSetType(def->WtAWinv, KSPPREONLY));
@@ -617,7 +617,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
       if (red < 0) {
         PetscCallMPI(MPI_Comm_size(comm, &commsize));
         red = PetscCeilInt(commsize, PetscCeilInt(m, commsize));
-        PetscCall(PetscObjectTypeCompareAny((PetscObject)(def->WtAW), &match, MATSEQDENSE, MATMPIDENSE, MATDENSE, ""));
+        PetscCall(PetscObjectTypeCompareAny((PetscObject)def->WtAW, &match, MATSEQDENSE, MATMPIDENSE, MATDENSE, ""));
         if (match) red = commsize;
         PetscCall(PetscInfo(pc, "Auto choosing reduction factor %" PetscInt_FMT "\n", red));
       }

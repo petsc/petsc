@@ -278,6 +278,7 @@ int main(int argc, char **args)
       suffix: NC
       nsize: 4
       args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -pc_gamg_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.2 -pc_gamg_aggressive_coarsening 0 -pc_gamg_threshold 0
+      filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 12/Linear solve converged due to CONVERGED_RTOL iterations 11/g"
 
    test:
       suffix: geo

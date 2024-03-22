@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """ Adds links in the manual pages to tutorials that utilize the functions"""
 
 import os

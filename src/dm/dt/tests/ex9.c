@@ -77,7 +77,7 @@ static PetscErrorCode testDerivativesLegendre(PetscInt dim, PetscInt deg, PetscI
   PetscCall(PetscMalloc1(npoints, &points1d));
   PetscCall(PetscMalloc1(dim, &B));
   for (d = 0; d < dim; d++) {
-    PetscCall(PetscMalloc1((deg + 1) * npoints, &(B[d])));
+    PetscCall(PetscMalloc1((deg + 1) * npoints, &B[d]));
     /* get this coordinate */
     for (i = 0; i < npoints; i++) points1d[i] = points[i * dim + d];
     PetscCall(PetscDTLegendreEval(npoints, points1d, deg + 1, degrees, B[d], NULL, NULL));
@@ -121,8 +121,8 @@ static PetscErrorCode testDerivativesLegendre(PetscInt dim, PetscInt deg, PetscI
   /* evaluate the 1D jets of the Legendre polynomials */
   PetscCall(PetscMalloc1(dim, &D));
   for (i = 0; i < dim; i++) {
-    PetscCall(PetscMalloc1((deg + 1) * (k + 1), &(D[i])));
-    PetscCall(PetscDTJacobiEvalJet(0., 0., 1, &(point[i]), deg, k, D[i]));
+    PetscCall(PetscMalloc1((deg + 1) * (k + 1), &D[i]));
+    PetscCall(PetscDTJacobiEvalJet(0., 0., 1, &point[i], deg, k, D[i]));
   }
   /* compile the 1D Legendre jets into the tensor Legendre jet */
   for (j = 0; j < Nk; j++) lgndre_jet[j] = 0.;

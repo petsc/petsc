@@ -56,7 +56,6 @@ static PetscErrorCode TaoPounders(AppCtx *user)
   char buf[1024];
 
   PetscFunctionBegin;
-
   /* Set the values for the algorithm options we want to use */
   PetscCall(PetscSNPrintf(buf, PETSC_STATIC_ARRAY_LENGTH(buf), "%d", user->npmax));
   PetscCall(PetscOptionsSetValue(NULL, "-tao_pounders_npmax", buf));
@@ -164,6 +163,6 @@ int main(int argc, char **argv)
 
    test:
       localrunfiles: more_wild_probs TestingInitialize.m TestingFinalize.m ProblemInitialize.m ProblemFinalize.m
-      args: -tao_smonitor -prob_id 5
+      args: -tao_monitor_short -prob_id 5
 
 TEST*/

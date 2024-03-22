@@ -66,8 +66,8 @@ PetscErrorCode TSAdaptHistorySetTSHistory(TSAdapt adapt, TSHistory hist, PetscBo
 - step  - the step number
 
   Output Parameters:
-+ t  - the time corresponding to the requested step (can be NULL)
-- dt - the time step to be taken at the requested step (can be NULL)
++ t  - the time corresponding to the requested step (can be `NULL`)
+- dt - the time step to be taken at the requested step (can be `NULL`)
 
   Level: advanced
 

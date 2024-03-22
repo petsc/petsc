@@ -335,7 +335,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *rdm)
     PetscCall(DMPlexSetRegularRefinement(*rdm, PETSC_TRUE));
     PetscCall(DMPlexGetUseCeed(dm, &useCeed));
     PetscCall(DMPlexSetUseCeed(*rdm, useCeed));
-    PetscCall(DMSetMatType((*rdm), dm->mattype));
+    PetscCall(DMSetMatType(*rdm, dm->mattype));
     PetscCall(DMCopyDisc(dm, *rdm));
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     PetscCall(DMGetCoordinateDM(*rdm, &rcdm));
@@ -406,8 +406,8 @@ PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM rdm[])
       PetscCall(DMSetCoarseDM(rdm[r], cdm));
       PetscCall(DMPlexSetRegularRefinement(rdm[r], PETSC_TRUE));
       if (rdm[r]) {
-        ((DM_Plex *)(rdm[r])->data)->printFEM = ((DM_Plex *)dm->data)->printFEM;
-        ((DM_Plex *)(rdm[r])->data)->printL2  = ((DM_Plex *)dm->data)->printL2;
+        ((DM_Plex *)rdm[r]->data)->printFEM = ((DM_Plex *)dm->data)->printFEM;
+        ((DM_Plex *)rdm[r]->data)->printL2  = ((DM_Plex *)dm->data)->printL2;
       }
       cdm = rdm[r];
       PetscCall(DMPlexTransformDestroy(&tr));
@@ -421,8 +421,8 @@ PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM rdm[])
       if (localized) PetscCall(DMLocalizeCoordinates(rdm[r]));
       PetscCall(DMSetCoarseDM(rdm[r], cdm));
       if (rdm[r]) {
-        ((DM_Plex *)(rdm[r])->data)->printFEM = ((DM_Plex *)dm->data)->printFEM;
-        ((DM_Plex *)(rdm[r])->data)->printL2  = ((DM_Plex *)dm->data)->printL2;
+        ((DM_Plex *)rdm[r]->data)->printFEM = ((DM_Plex *)dm->data)->printFEM;
+        ((DM_Plex *)rdm[r]->data)->printL2  = ((DM_Plex *)dm->data)->printL2;
       }
       cdm = rdm[r];
     }

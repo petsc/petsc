@@ -158,7 +158,6 @@ static PetscErrorCode PCPatchConstruct_Pardecomp(void *vpatch, DM dm, PetscInt p
     }
     PetscCall(PetscFree(htpoints));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -310,6 +309,7 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
 static PetscErrorCode PCPatchGetIgnoreDim(PC pc, PetscInt *dim)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
+
   PetscFunctionBegin;
   *dim = patch->ignoredim;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -319,6 +319,7 @@ static PetscErrorCode PCPatchGetIgnoreDim(PC pc, PetscInt *dim)
 PetscErrorCode PCPatchSetSaveOperators(PC pc, PetscBool flg)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
+
   PetscFunctionBegin;
   patch->save_operators = flg;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -328,6 +329,7 @@ PetscErrorCode PCPatchSetSaveOperators(PC pc, PetscBool flg)
 PetscErrorCode PCPatchGetSaveOperators(PC pc, PetscBool *flg)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
+
   PetscFunctionBegin;
   *flg = patch->save_operators;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -337,6 +339,7 @@ PetscErrorCode PCPatchGetSaveOperators(PC pc, PetscBool *flg)
 PetscErrorCode PCPatchSetPrecomputeElementTensors(PC pc, PetscBool flg)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
+
   PetscFunctionBegin;
   patch->precomputeElementTensors = flg;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -346,6 +349,7 @@ PetscErrorCode PCPatchSetPrecomputeElementTensors(PC pc, PetscBool flg)
 PetscErrorCode PCPatchGetPrecomputeElementTensors(PC pc, PetscBool *flg)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
+
   PetscFunctionBegin;
   *flg = patch->precomputeElementTensors;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -355,6 +359,7 @@ PetscErrorCode PCPatchGetPrecomputeElementTensors(PC pc, PetscBool *flg)
 PetscErrorCode PCPatchSetPartitionOfUnity(PC pc, PetscBool flg)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
+
   PetscFunctionBegin;
   patch->partition_of_unity = flg;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -364,6 +369,7 @@ PetscErrorCode PCPatchSetPartitionOfUnity(PC pc, PetscBool flg)
 PetscErrorCode PCPatchGetPartitionOfUnity(PC pc, PetscBool *flg)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
+
   PetscFunctionBegin;
   *flg = patch->partition_of_unity;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -373,6 +379,7 @@ PetscErrorCode PCPatchGetPartitionOfUnity(PC pc, PetscBool *flg)
 static PetscErrorCode PCPatchSetLocalComposition(PC pc, PCCompositeType type)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
+
   PetscFunctionBegin;
   PetscCheck(type == PC_COMPOSITE_ADDITIVE || type == PC_COMPOSITE_MULTIPLICATIVE, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Only supports additive or multiplicative as the local type");
   patch->local_composition_type = type;
@@ -394,6 +401,7 @@ PetscErrorCode PCPatchSetSubMatType(PC pc, MatType sub_mat_type)
 PetscErrorCode PCPatchGetSubMatType(PC pc, MatType *sub_mat_type)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
+
   PetscFunctionBegin;
   *sub_mat_type = patch->sub_mat_type;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -414,6 +422,7 @@ PetscErrorCode PCPatchSetCellNumbering(PC pc, PetscSection cellNumbering)
 PetscErrorCode PCPatchGetCellNumbering(PC pc, PetscSection *cellNumbering)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
+
   PetscFunctionBegin;
   *cellNumbering = patch->cellNumbering;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1207,7 +1216,6 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
   PetscBool       isNonlinear;
 
   PetscFunctionBegin;
-
   PetscCall(PCGetDM(pc, &dm));
   PetscCall(DMConvert(dm, DMPLEX, &plex));
   dm = plex;
@@ -2313,7 +2321,6 @@ static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc)
   }
   PetscCall(DMDestroy(&dm));
   PetscCall(PetscLogEventEnd(PC_Patch_ComputeOp, pc, 0, 0, 0));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2721,7 +2728,6 @@ static PetscErrorCode PCUpdateMultiplicative_PATCH_Linear(PC pc, PetscInt i, Pet
   PetscInt  n, m;
 
   PetscFunctionBegin;
-
   if (patch->save_operators) {
     multMat = patch->matWithArtificial[i];
   } else {
@@ -2852,7 +2858,6 @@ static PetscErrorCode PCReset_PATCH(PC pc)
   PetscInt  i;
 
   PetscFunctionBegin;
-
   PetscCall(PetscSFDestroy(&patch->sectionSF));
   PetscCall(PetscSectionDestroy(&patch->cellCounts));
   PetscCall(PetscSectionDestroy(&patch->pointCounts));
@@ -3215,6 +3220,5 @@ PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC pc)
   pc->ops->setuponblocks   = PCSetUpOnBlocks_PATCH;
   pc->ops->view            = PCView_PATCH;
   pc->ops->applyrichardson = NULL;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }

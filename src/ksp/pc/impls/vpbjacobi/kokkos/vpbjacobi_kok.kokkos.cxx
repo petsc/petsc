@@ -1,3 +1,4 @@
+#include <petsc_kokkos.hpp>
 #include <petscvec_kokkos.hpp>
 #include <../src/vec/vec/impls/seq/kokkos/veckokkosimpl.hpp>
 #include <petscdevice.h>
@@ -88,7 +89,7 @@ static PetscErrorCode PCApplyOrTranspose_VPBJacobi_Kokkos(PC pc, Vec x, Vec y)
   PetscCall(VecGetKokkosViewWrite(y, &yv));
 #if 0 // TODO: Why the TeamGemv version is 2x worse than the naive one?
   PetscCallCXX(Kokkos::parallel_for(
-    label, Kokkos::TeamPolicy<>(jac->nblocks, Kokkos::AUTO()), KOKKOS_LAMBDA(const KokkosTeamMemberType &team) {
+    label, Kokkos::TeamPolicy<>(PetscGetKokkosExecutionSpace(), jac->nblocks, Kokkos::AUTO()), KOKKOS_LAMBDA(const KokkosTeamMemberType &team) {
       PetscInt           bid  = team.league_rank();    // block id
       PetscInt           n    = bs(bid + 1) - bs(bid); // size of this block
       const PetscScalar *bbuf = &diag(bs2(bid));
@@ -105,7 +106,7 @@ static PetscErrorCode PCApplyOrTranspose_VPBJacobi_Kokkos(PC pc, Vec x, Vec y)
     }));
 #else
   PetscCallCXX(Kokkos::parallel_for(
-    label, pckok->n, KOKKOS_LAMBDA(PetscInt row) {
+    label, Kokkos::RangePolicy<>(PetscGetKokkosExecutionSpace(), 0, pckok->n), KOKKOS_LAMBDA(PetscInt row) {
       const PetscScalar *Bp, *xp;
       PetscScalar       *yp;
       PetscInt           i, j, k, m;
@@ -184,7 +185,7 @@ PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Kokkos(PC pc)
   const auto &bs2    = pckok->bs2_dual.view_device();
   const auto &blkMap = pckok->blkMap_dual.view_device();
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)pc->pmat, MATMPIAIJ, &ismpi));
-  A = ismpi ? static_cast<Mat_MPIAIJ *>((pc->pmat)->data)->A : pc->pmat;
+  A = ismpi ? static_cast<Mat_MPIAIJ *>(pc->pmat->data)->A : pc->pmat;
   PetscCall(MatInvertVariableBlockDiagonal_SeqAIJKokkos(A, bs, bs2, blkMap, pckok->work, pckok->diag));
   pc->ops->apply          = PCApplyOrTranspose_VPBJacobi_Kokkos<PETSC_FALSE>;
   pc->ops->applytranspose = PCApplyOrTranspose_VPBJacobi_Kokkos<PETSC_TRUE>;

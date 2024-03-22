@@ -45,7 +45,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsInt("-verbose", "Verbosity level", EX, options->verbose, &options->verbose, NULL));
   PetscOptionsEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
-};
+}
 
 static PetscErrorCode CreateMesh(AppCtx *options, DM *newdm)
 {

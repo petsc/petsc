@@ -253,7 +253,7 @@ M*/
   #endif
 #endif
 
-#if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
+#if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && (defined(PETSC_HAVE_MPIUNI) || defined(PETSC_HAVE_MPI_INT64_T)) /* MPI_INT64_T is not guaranteed to be a macro */
 typedef int64_t PetscInt64;
 
   #define PETSC_INT64_MIN INT64_MIN
@@ -286,7 +286,7 @@ typedef PetscInt64 PetscInt;
   #define PETSC_INT_MAX PETSC_INT64_MAX
   #define PetscInt_FMT  PetscInt64_FMT
 #else
-typedef int       PetscInt;
+typedef int PetscInt;
 
 enum {
   PETSC_INT_MIN = INT_MIN,
@@ -300,7 +300,7 @@ enum {
 #define PETSC_MAX_INT    PETSC_INT_MAX
 #define PETSC_MAX_UINT16 65535
 
-#if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
+#if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && (defined(PETSC_HAVE_MPIUNI) || defined(PETSC_HAVE_MPI_INT64_T)) /* MPI_INT64_T is not guaranteed to be a macro */
   #define MPIU_INT64     MPI_INT64_T
   #define PetscInt64_FMT PRId64
 #elif (PETSC_SIZEOF_LONG_LONG == 8)
@@ -411,7 +411,7 @@ enum {
 
    Developer Note:
    Why have `PetscBool`, why not use bool in C? The problem is that K and R C, C99 and C++ all have different mechanisms for
-   Boolean values. It is not easy to have a simple macro that that will work properly in all circumstances with all three mechanisms.
+   Boolean values. It is not easy to have a simple macro that will work properly in all circumstances with all three mechanisms.
 
 .seealso: `PETSC_TRUE`, `PETSC_FALSE`, `PetscNot()`, `PetscBool3`
 E*/
@@ -457,7 +457,7 @@ M*/
 #if defined(PETSC_USE_REAL_SINGLE)
 typedef float PetscReal;
 #elif defined(PETSC_USE_REAL_DOUBLE)
-typedef double    PetscReal;
+typedef double PetscReal;
 #elif defined(PETSC_USE_REAL___FLOAT128)
   #if defined(__cplusplus)
 extern "C" {

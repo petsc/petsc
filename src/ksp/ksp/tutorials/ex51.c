@@ -107,7 +107,7 @@ int main(int argc, char **args)
   PetscCall(PetscFree(Me2D));
   PetscCall(PetscFree(Ke2D));
 
-  /* Create right-hand-side and solution vectors */
+  /* Create right-hand side and solution vectors */
   PetscCall(VecCreate(PETSC_COMM_WORLD, &u));
   PetscCall(VecSetSizes(u, PETSC_DECIDE, N));
   PetscCall(VecSetFromOptions(u));
@@ -121,7 +121,7 @@ int main(int argc, char **args)
   PetscCall(VecSet(b, 0.0));
   PetscCall(VecSet(q, 0.0));
 
-  /* Assemble nodal right-hand-side and soln vector  */
+  /* Assemble nodal right-hand side and soln vector  */
   for (i = start; i < end; i++) {
     x    = h * (i % m);
     y    = h * (i / m);
@@ -146,7 +146,7 @@ int main(int argc, char **args)
   /* Get FE right-hand side vector */
   PetscCall(MatMult(Mass, q, b));
 
-  /* Modify matrix and right-hand-side for Dirichlet boundary conditions */
+  /* Modify matrix and right-hand side for Dirichlet boundary conditions */
   PetscCall(PetscMalloc1(4 * p * m, &rows));
   PetscCall(PetscMalloc1(4 * p * m, &rowsx));
   PetscCall(PetscMalloc1(4 * p * m, &rowsy));
@@ -353,7 +353,7 @@ static PetscReal polyBasisFunc(PetscInt order, PetscInt basis, PetscReal *xLocVa
       denominator *= (xLocVal[basis] - xLocVal[i]);
     }
   }
-  return (numerator / denominator);
+  return numerator / denominator;
 }
 
 /* --------------------------------------------------------------------- */
@@ -380,7 +380,7 @@ static PetscReal derivPolyBasisFunc(PetscInt order, PetscInt basis, PetscReal *x
     }
   }
 
-  return (numerator / denominator);
+  return numerator / denominator;
 }
 
 /* --------------------------------------------------------------------- */

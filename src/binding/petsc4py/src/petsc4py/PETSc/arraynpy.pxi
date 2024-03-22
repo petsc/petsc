@@ -75,6 +75,10 @@ cdef inline ndarray arange(start, stop, stride):
 
 # --------------------------------------------------------------------
 
+cdef inline ndarray empty_b(PetscInt size):
+    cdef npy_intp s = <npy_intp> size
+    return PyArray_EMPTY(1, &s, NPY_PETSC_BOOL, 0)
+
 cdef inline ndarray empty_i(PetscInt size):
     cdef npy_intp s = <npy_intp> size
     return PyArray_EMPTY(1, &s, NPY_PETSC_INT, 0)
@@ -166,6 +170,12 @@ cdef inline ndarray oarray(object ob, int typenum):
     if PyArray_ISCONTIGUOUS(ary): return ary
     if PyArray_ISFORTRAN(ary):    return ary
     return PyArray_Copy(ary)
+
+cdef inline ndarray oarray_b(object ob, PetscInt* size, PetscBool** data):
+    cdef ndarray ary = oarray(ob, NPY_PETSC_BOOL)
+    if size != NULL: size[0] = <PetscInt>   PyArray_SIZE(ary)
+    if data != NULL: data[0] = <PetscBool*> PyArray_DATA(ary)
+    return ary
 
 cdef inline ndarray oarray_i(object ob, PetscInt* size, PetscInt** data):
     cdef ndarray ary = oarray(ob, NPY_PETSC_INT)

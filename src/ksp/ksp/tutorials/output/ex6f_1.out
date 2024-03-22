@@ -22,10 +22,10 @@ row 5: (2, -1.)  (4, -1.)  (5, 6.)  (8, -1.)
 row 6: (3, -1.)  (6, 6.)  (7, -1.) 
 row 7: (4, -1.)  (6, -1.)  (7, 6.)  (8, -1.) 
 row 8: (5, -1.)  (7, -1.)  (8, 6.) 
-  0 KSP Residual norm 2.54951 
-  1 KSP Residual norm 0.74957 
-  2 KSP Residual norm 0.138146 
-  3 KSP Residual norm 4.03693e-09 
+  0 KSP Residual norm 2.54951
+  1 KSP Residual norm 0.74957
+  2 KSP Residual norm 0.138146
+  3 KSP Residual norm 4.03693e-09
 next matrix: defines linear system
 Mat Object: 1 MPI process
   type: seqaij
@@ -38,7 +38,7 @@ row 5: (2, -1.)  (4, -1.)  (5, 8.)  (8, -1.)
 row 6: (3, -1.)  (6, 8.)  (7, -1.) 
 row 7: (4, -1.)  (6, -1.)  (7, 8.)  (8, -1.) 
 row 8: (5, -1.)  (7, -1.)  (8, 8.) 
-  0 KSP Residual norm 4.03113 
-  1 KSP Residual norm 0.700889 
-  2 KSP Residual norm 0.0815029 
-  3 KSP Residual norm 1.0926e-08 
+  0 KSP Residual norm 4.03113
+  1 KSP Residual norm 0.700889
+  2 KSP Residual norm 0.0815029
+  3 KSP Residual norm 1.0926e-08

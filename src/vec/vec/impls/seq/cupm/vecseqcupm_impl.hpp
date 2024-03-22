@@ -205,7 +205,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::PointwiseBinary_(BinaryFuncT &&binary, Vec
     );
     // clang-format on
     PetscCall(PetscLogGpuFlops(n));
-    PetscCall(PetscDeviceContextSynchronizeIfGlobalBlocking_Internal(dctx));
+    PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   } else {
     PetscCall(MaybeIncrementEmptyLocalVec(zout));
   }
@@ -261,7 +261,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::PointwiseUnary_(UnaryFuncT &&unary, Vec xi
       PetscCall(apply(DeviceArrayRead(dctx, xinout).data(), DeviceArrayWrite(dctx, yin).data()));
     }
     PetscCall(PetscLogGpuFlops(n));
-    PetscCall(PetscDeviceContextSynchronizeIfGlobalBlocking_Internal(dctx));
+    PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   } else {
     if (inplace) {
       PetscCall(MaybeIncrementEmptyLocalVec(xinout));
@@ -485,7 +485,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::AYPXAsync(Vec yin, PetscScalar alpha, Vec 
     }
     PetscCall(PetscLogGpuFlops((alphaIsOne ? 1 : 2) * n));
   }
-  if (n > 0) PetscCall(PetscDeviceContextSynchronizeIfGlobalBlocking_Internal(dctx));
+  if (n > 0) PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -516,7 +516,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::AXPYAsync(Vec yin, PetscScalar alpha, Vec 
     PetscCallCUPMBLAS(cupmBlasXaxpy(cupmBlasHandle, n, cupmScalarPtrCast(&alpha), DeviceArrayRead(dctx, xin), 1, DeviceArrayReadWrite(dctx, yin), 1));
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(PetscLogGpuFlops(2 * n));
-    if (n > 0) PetscCall(PetscDeviceContextSynchronizeIfGlobalBlocking_Internal(dctx));
+    if (n > 0) PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   } else {
     PetscCall(VecAXPY_Seq(yin, alpha, xin));
   }
@@ -821,7 +821,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::WAXPYAsync(Vec win, PetscScalar alpha, Vec
       PetscCall(PetscLogGpuTimeEnd());
     }
     PetscCall(PetscLogGpuFlops(2 * n));
-    PetscCall(PetscDeviceContextSynchronizeIfGlobalBlocking_Internal(dctx));
+    PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -965,7 +965,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::MAXPYAsync(Vec xin, PetscInt nv, const Pet
     } while (yidx < nv);
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(PetscDeviceFree(dctx, d_alpha));
-    PetscCall(PetscDeviceContextSynchronizeIfGlobalBlocking_Internal(dctx));
+    PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   }
   PetscCall(PetscLogGpuFlops(nv * 2 * n));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1182,8 +1182,8 @@ inline PetscErrorCode VecSeq_CUPM<T>::MDot_(std::false_type, Vec xin, PetscInt n
     // sub. Ideally the parent context should also join in on the fork, but it is extremely
     // fiddly to do so presently
     PetscCall(PetscDeviceContextGetStreamType(dctx, &stype));
-    if (stype == PETSC_STREAM_GLOBAL_BLOCKING) stype = PETSC_STREAM_DEFAULT_BLOCKING;
-    // If we have a globally blocking stream create nonblocking streams instead (as we can
+    if (stype == PETSC_STREAM_DEFAULT || stype == PETSC_STREAM_DEFAULT_WITH_BARRIER) stype = PETSC_STREAM_NONBLOCKING;
+    // If we have a default stream create nonblocking streams instead (as we can
     // locally exploit the parallelism). Otherwise use the prescribed stream type.
     PetscCall(PetscDeviceContextForkWithStreamType(dctx, stype, num_sub_streams, &sub));
     PetscCall(PetscLogGpuTimeBegin());
@@ -1320,7 +1320,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::SetAsync(Vec xin, PetscScalar alpha, Petsc
       PetscCallThrust(THRUST_CALL(thrust::fill, stream, dptr, dptr + n, alpha));
     }
   }
-  if (n > 0) PetscCall(PetscDeviceContextSynchronizeIfGlobalBlocking_Internal(dctx));
+  if (n > 0) PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1350,7 +1350,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::ScaleAsync(Vec xin, PetscScalar alpha, Pet
     PetscCallCUPMBLAS(cupmBlasXscal(cupmBlasHandle, n, cupmScalarPtrCast(&alpha), DeviceArrayReadWrite(dctx, xin), 1));
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(PetscLogGpuFlops(n));
-    PetscCall(PetscDeviceContextSynchronizeIfGlobalBlocking_Internal(dctx));
+    PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   } else {
     PetscCall(MaybeIncrementEmptyLocalVec(xin));
   }
@@ -1449,7 +1449,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::CopyAsync(Vec xin, Vec yout, PetscDeviceCo
     default:
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_GPU, "Unknown cupmMemcpyKind %d", static_cast<int>(mode));
     }
-    PetscCall(PetscDeviceContextSynchronizeIfGlobalBlocking_Internal(dctx));
+    PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   } else {
     PetscCall(MaybeIncrementEmptyLocalVec(yout));
   }
@@ -1479,7 +1479,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::SwapAsync(Vec xin, Vec yin, PetscDeviceCon
     PetscCall(PetscLogGpuTimeBegin());
     PetscCallCUPMBLAS(cupmBlasXswap(cupmBlasHandle, n, DeviceArrayReadWrite(dctx, xin), 1, DeviceArrayReadWrite(dctx, yin), 1));
     PetscCall(PetscLogGpuTimeEnd());
-    PetscCall(PetscDeviceContextSynchronizeIfGlobalBlocking_Internal(dctx));
+    PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   } else {
     PetscCall(MaybeIncrementEmptyLocalVec(xin));
     PetscCall(MaybeIncrementEmptyLocalVec(yin));
@@ -1536,7 +1536,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::AXPBYAsync(Vec yin, PetscScalar alpha, Pet
     }
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(PetscLogGpuFlops((betaIsZero ? 1 : 3) * n));
-    PetscCall(PetscDeviceContextSynchronizeIfGlobalBlocking_Internal(dctx));
+    PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   } else {
     PetscCall(MaybeIncrementEmptyLocalVec(yin));
   }
@@ -1663,13 +1663,13 @@ struct ErrorWNormTransform : ErrorWNormTransformBase<wnormtype> {
 
   PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL result_type operator()(const argument_type &x) const noexcept
   {
-    const auto u     = x.get<0>();
-    const auto y     = x.get<1>();
+    const auto u     = thrust::get<0>(x); // with x.get<0>(), cuda-12.4.0 gives error: class "cuda::std::__4::tuple<PetscScalar, PetscScalar, PetscScalar, PetscScalar>" has no member "get"
+    const auto y     = thrust::get<1>(x);
     const auto au    = PetscAbsScalar(u);
     const auto ay    = PetscAbsScalar(y);
     const auto skip  = au < this->ignore_max_ || ay < this->ignore_max_;
-    const auto tola  = skip ? 0.0 : PetscRealPart(x.get<2>());
-    const auto tolr  = skip ? 0.0 : PetscRealPart(x.get<3>()) * PetscMax(au, ay);
+    const auto tola  = skip ? 0.0 : PetscRealPart(thrust::get<2>(x));
+    const auto tolr  = skip ? 0.0 : PetscRealPart(thrust::get<3>(x)) * PetscMax(au, ay);
     const auto tol   = tola + tolr;
     const auto err   = PetscAbsScalar(u - y);
     const auto tup_a = this->compute_norm_(err, tola);
@@ -1690,13 +1690,13 @@ struct ErrorWNormETransform : ErrorWNormTransformBase<wnormtype> {
 
   PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL result_type operator()(const argument_type &x) const noexcept
   {
-    const auto au    = PetscAbsScalar(x.get<0>());
-    const auto ay    = PetscAbsScalar(x.get<1>());
+    const auto au    = PetscAbsScalar(thrust::get<0>(x));
+    const auto ay    = PetscAbsScalar(thrust::get<1>(x));
     const auto skip  = au < this->ignore_max_ || ay < this->ignore_max_;
-    const auto tola  = skip ? 0.0 : PetscRealPart(x.get<3>());
-    const auto tolr  = skip ? 0.0 : PetscRealPart(x.get<4>()) * PetscMax(au, ay);
+    const auto tola  = skip ? 0.0 : PetscRealPart(thrust::get<3>(x));
+    const auto tolr  = skip ? 0.0 : PetscRealPart(thrust::get<4>(x)) * PetscMax(au, ay);
     const auto tol   = tola + tolr;
-    const auto err   = PetscAbsScalar(x.get<2>());
+    const auto err   = PetscAbsScalar(thrust::get<2>(x));
     const auto tup_a = this->compute_norm_(err, tola);
     const auto tup_r = this->compute_norm_(err, tolr);
     const auto tup_n = this->compute_norm_(err, tol);
@@ -1927,7 +1927,7 @@ struct dotnorm2_mult {
 struct dotnorm2_tuple_plus {
   using value_type = thrust::tuple<PetscScalar, PetscScalar>;
 
-  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL value_type operator()(const value_type &lhs, const value_type &rhs) const noexcept { return {lhs.get<0>() + rhs.get<0>(), lhs.get<1>() + rhs.get<1>()}; }
+  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL value_type operator()(const value_type &lhs, const value_type &rhs) const noexcept { return {thrust::get<0>(lhs) + thrust::get<0>(rhs), thrust::get<1>(lhs) + thrust::get<1>(rhs)}; }
 };
 
 } // namespace detail
@@ -1990,7 +1990,7 @@ namespace detail
 {
 
 struct real_part {
-  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL thrust::tuple<PetscReal, PetscInt> operator()(const thrust::tuple<PetscScalar, PetscInt> &x) const noexcept { return {PetscRealPart(x.get<0>()), x.get<1>()}; }
+  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL thrust::tuple<PetscReal, PetscInt> operator()(const thrust::tuple<PetscScalar, PetscInt> &x) const noexcept { return {PetscRealPart(thrust::get<0>(x)), thrust::get<1>(x)}; }
 
   PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL PetscReal operator()(const PetscScalar &x) const noexcept { return PetscRealPart(x); }
 };
@@ -2005,12 +2005,12 @@ public:
 
   PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL tuple_type operator()(const tuple_type &x, const tuple_type &y) const noexcept
   {
-    if (op_()(y.get<0>(), x.get<0>())) {
+    if (op_()(thrust::get<0>(y), thrust::get<0>(x))) {
       // if y is strictly greater/less than x, return y
       return y;
-    } else if (y.get<0>() == x.get<0>()) {
+    } else if (thrust::get<0>(y) == thrust::get<0>(x)) {
       // if equal, prefer lower index
-      return y.get<1>() < x.get<1>() ? y : x;
+      return thrust::get<1>(y) < thrust::get<1>(x) ? y : x;
     }
     // otherwise return x
     return x;

@@ -55,7 +55,6 @@ static PetscErrorCode MatDestroy_SeqAIJSELL(Mat A)
   Mat_SeqAIJSELL *aijsell = (Mat_SeqAIJSELL *)A->spptr;
 
   PetscFunctionBegin;
-
   /* If MatHeaderMerge() was used, then this SeqAIJSELL matrix will not have an
    * spptr pointer. */
   if (aijsell) {
@@ -99,7 +98,6 @@ PETSC_INTERN PetscErrorCode MatSeqAIJSELL_build_shadow(Mat A)
 
   /* Record the ObjectState so that we can tell when the shadow matrix needs updating */
   PetscCall(PetscObjectStateGet((PetscObject)A, &aijsell->state));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -143,7 +141,6 @@ static PetscErrorCode MatAssemblyEnd_SeqAIJSELL(Mat A, MatAssemblyType mode)
   /* If the user has requested "eager" shadowing, create the SELL shadow matrix (if needed; the function checks).
    * (The default is to take a "lazy" approach, deferring this until something like MatMult() is called.) */
   if (aijsell->eager_shadow) PetscCall(MatSeqAIJSELL_build_shadow(A));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

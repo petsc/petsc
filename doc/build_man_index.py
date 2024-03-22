@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-#!/bin/env python
+#!/usr/bin/env python3
 
 """ Reads in all the generated manual pages, and creates the index
 for the manualpages, ordering the indices into sections based

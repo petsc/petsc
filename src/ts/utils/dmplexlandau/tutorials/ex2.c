@@ -220,13 +220,13 @@ static PetscErrorCode testSpitzer(TS ts, Vec X, PetscInt stepi, PetscReal time, 
   }
 
   ratio = E / J / spit_eta;
-  if (stepi > 10 && !rectx->use_spitzer_eta && ((old_ratio - ratio < 1.e-6))) {
+  if (stepi > 10 && !rectx->use_spitzer_eta && (old_ratio - ratio < 1.e-6)) {
     rectx->pulse_start     = time + 0.98 * dt;
     rectx->use_spitzer_eta = PETSC_TRUE;
   }
   PetscCall(TSGetConvergedReason(ts, &reason));
   PetscCall(TSGetConvergedReason(ts, &reason));
-  if ((rectx->plotting) || stepi == 0 || reason || rectx->pulse_start == time + 0.98 * dt) {
+  if (rectx->plotting || stepi == 0 || reason || rectx->pulse_start == time + 0.98 * dt) {
     PetscCall(PetscPrintf(ctx->comm, "testSpitzer: %4" PetscInt_FMT ") time=%11.4e n_e= %10.3e E= %10.3e J= %10.3e J_re= %10.3e %.3g%% Te_kev= %10.3e Z_eff=%g E/J to eta ratio= %g (diff=%g) %s %s spit_eta=%g\n", stepi, (double)time,
                           (double)(n_e / ctx->n_0), (double)ctx->Ez, (double)J, (double)J_re, (double)(100 * J_re / J), (double)Te_kev, (double)Z, (double)ratio, (double)(old_ratio - ratio), rectx->use_spitzer_eta ? "using Spitzer eta*J E" : "constant E", rectx->pulse_start != time + 0.98 * dt ? "normal" : "transition", (double)spit_eta));
     PetscCheck(rectx->pulse_start != (time + 0.98 * dt), PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Spitzer complete ratio=%g", (double)ratio);

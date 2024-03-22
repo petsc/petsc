@@ -50,8 +50,8 @@ PETSCCLANGFORMAT ?= clang-format
 # Check the version of clang-format matches PETSc requirement
 checkclangformatversion:
 	@version=`${PETSCCLANGFORMAT} --version | cut -d" " -f3 | cut -d"." -f 1` ;\
-         if [ "$$version" == "version" ]; then version=`${PETSCCLANGFORMAT} --version | cut -d" " -f4 | cut -d"." -f 1`; fi;\
-         if [ $$version != 16 ]; then echo "Require clang-format version 16! Currently used ${PETSCCLANGFORMAT} version is $$version" ;false ; fi
+         if [ "$$version" = "version" ]; then version=`${PETSCCLANGFORMAT} --version | cut -d" " -f4 | cut -d"." -f 1`; fi;\
+         if [ $$version -lt 18 ]; then echo "Require clang-format version 18 at least! Currently used ${PETSCCLANGFORMAT} version is $$version" ;false ; fi
 
 # Format all the source code in the given directory and down according to the file $PETSC_DIR/.clang_format
 clangformat: checkclangformatversion
@@ -133,9 +133,21 @@ checkbadSource:
 	-@git --no-pager grep -n -P -E '^(\!){0,1}[ ]*requires:.*,' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- Using PetscInfo() without carriage return --------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'PetscCall\(PetscInfo\(' -- ${GITSRC} | grep -v '\\n' >> checkbadSource.out;true
+	-@echo "----- Using Petsc(Assert|Check)() with carriage return -------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P -E 'Petsc(Assert|Check)\(.*[^\]\\\n' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "----- Extra \"\" after format specifier ending a string --------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P -E '_FMT \"\",' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- First blank line ---------------------------------------------" >> checkbadSource.out
-	@git --no-pager grep -n -P \^\$$ -- ${GITSRC} | grep ':1:' >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 23` ;\
+	-@git --no-pager grep -n -P \^\$$ -- ${GITSRC} | grep ':1:' >> checkbadSource.out;true
+	-@echo "----- Blank line after PetscFunctionBegin and derivatives ----------" >> checkbadSource.out
+	-@git --no-pager grep -n -E -A 1 '  PetscFunctionBegin(User|Hot){0,1};' -- ${GITSRC} | grep -E '\-[0-9]+-$$' | grep -v '^--$$' >> checkbadSource.out;true
+	-@echo "----- Blank line before PetscFunctionReturn ------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -E -B 1 '  PetscFunctionReturn' -- ${GITSRC} | grep -E '\-[0-9]+-$$' | grep -v '^--$$' >> checkbadSource.out;true
+	-@echo "----- No blank line before PetscFunctionBegin and derivatives ------" >> checkbadSource.out
+	-@git --no-pager grep -n -E -B 1 '  PetscFunctionBegin(User|Hot){0,1};' -- ${GITSRC} ':!src/sys/tests/*' ':!src/sys/tutorials/*' | grep -E '\-[0-9]+-.*;' | grep -v '^--$$' | grep -v '\\' >> checkbadSource.out;true
+	-@echo "----- Uneeded parentheses [!&~*](foo[->|.]bar) ---------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P -E '([\!\&\~\*\(]|\)\)|\([^,\*\(]+\**\))\(([a-zA-Z0-9_]+((\.|->)[a-zA-Z0-9_]+|\[[a-zA-Z0-9_ \%\+\*\-]+\])+)\)' -- ${GITSRC} >> checkbadSource.out;true
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 29` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\

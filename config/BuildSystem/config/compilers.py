@@ -36,7 +36,10 @@ class Configure(config.base.Configure):
     if len(self.skipdefaultpaths):
       return self.skipdefaultpaths
     else:
-      self.skipdefaultpaths = ['/usr/lib','/lib','/usr/lib64','/lib64','/usr/lib/x86_64-linux-gnu','/lib/x86_64-linux-gnu','/usr/lib/i386-linux-gnu']
+      self.skipdefaultpaths = ['/usr/lib','/lib','/usr/lib64','/lib64']
+      for loc in ['/usr/lib','/lib']:
+        for arch in ['x86_64','i386','aarch64']:
+          self.skipdefaultpaths.append(os.path.join(loc,arch+'-linux-gnu'))
       conda_sysrt = os.getenv('CONDA_BUILD_SYSROOT')
       if conda_sysrt:
         conda_sysrt = os.path.abspath(conda_sysrt)
@@ -622,6 +625,9 @@ class Configure(config.base.Configure):
             elif arg == '-lLTO' and self.setCompilers.isDarwin(self.log):
               self.logPrint('Skipping -lTO')
               continue
+            elif arg.find('-libpath:')>=0:
+              self.logPrint('Skipping Intel oneAPI icx (on Microsoft Windows) compiler option: '+arg)
+              continue
             elif iscray and (arg == '-lsci_cray_mpi' or arg == '-lsci_cray' or arg == '-lsci_cray_mp'):
               self.logPrint('Skipping CRAY LIBSCI library: '+arg, 4, 'compilers')
               continue
@@ -850,6 +856,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
       fbody = "      subroutine asub()\n      print*,'testing'\n      return\n      end\n"
     self.popLanguage()
     iscray = config.setCompilers.Configure.isCray(self.getCompiler('FC'), self.log)
+    isintel = config.setCompilers.Configure.isIntel(self.getCompiler('C'), self.log)
     try:
       if self.checkCrossLink(fbody,cbody,language1='FC',language2='C'):
         self.logWrite(self.setCompilers.restoreLog())
@@ -858,34 +865,25 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
         skipfortranlibraries = 0
         self.logWrite(self.setCompilers.restoreLog())
         oldLibs = self.setCompilers.LIBS
-        self.setCompilers.LIBS = '-lgfortran '+self.setCompilers.LIBS
-        self.setCompilers.saveLog()
-        if self.checkCrossLink(fbody,cbody,language1='FC',language2='C'):
-          self.logWrite(self.setCompilers.restoreLog())
-          self.logPrint('Fortran requires -lgfortran to link with C compiler', 3, 'compilers')
-          self.setCompilers.LIBS = oldLibs
-          self.flibs.append('-lgfortran')
-          skipfortranlibraries = 1
-        else:
-          self.logWrite(self.setCompilers.restoreLog())
-          self.setCompilers.LIBS = oldLibs
-          self.logPrint('Fortran code cannot directly be linked with C linker, therefore will determine needed Fortran libraries')
-          skipfortranlibraries = 0
-        if iscray:
-          oldLibs = self.setCompilers.LIBS
-          self.setCompilers.LIBS = '-lmpifort_cray '+self.setCompilers.LIBS
+        testlibs = ['-lgfortran']
+        if iscray: testlibs.append('-lmpifort_cray')
+        if isintel: testlibs.append('-fortlib')
+        for testlib in testlibs:
+          self.setCompilers.LIBS = testlib+' '+self.setCompilers.LIBS
           self.setCompilers.saveLog()
           if self.checkCrossLink(fbody,cbody,language1='FC',language2='C'):
             self.logWrite(self.setCompilers.restoreLog())
-            self.logPrint('Fortran requires -lmpifort_cray to link with C compiler', 3, 'compilers')
+            self.logPrint('Fortran requires '+testlib+' to link with C compiler', 3, 'compilers')
             self.setCompilers.LIBS = oldLibs
-            self.flibs.append('-lmpifort_cray')
+            self.flibs.append(testlib)
             skipfortranlibraries = 1
+            break
           else:
             self.logWrite(self.setCompilers.restoreLog())
             self.setCompilers.LIBS = oldLibs
-            self.logPrint('Fortran code cannot directly be linked with C linker, therefore will determine needed Fortran libraries')
             skipfortranlibraries = 0
+        if not skipfortranlibraries:
+          self.logPrint('Fortran code cannot directly be linked with C linker, therefore will determine needed Fortran libraries')
     except RuntimeError as e:
       self.logWrite(self.setCompilers.restoreLog())
       self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
@@ -1061,10 +1059,6 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
           if not lib == '-LLTO' or not self.setCompilers.isDarwin(self.log):
             flibs.append(lib)
           continue
-        # intel windows compilers can use -libpath argument
-        if arg.find('-libpath:')>=0:
-          self.logPrint('Skipping win32 ifort option: '+arg)
-          continue
         # Check for special library arguments
         m = re.match(r'^-l.*$', arg)
         if m:
@@ -1083,6 +1077,9 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
               continue
             elif arg == '-lLTO' and self.setCompilers.isDarwin(self.log):
               self.logPrint('Skipping -lTO')
+            elif arg.find('-libpath:')>=0:
+              self.logPrint('Skipping Intel oneAPI ifort (on Microsoft Windows) compiler option: '+arg)
+              continue
             elif iscray and (arg == '-lsci_cray_mpi' or arg == '-lsci_cray' or arg == '-lsci_cray_mp'):
               self.logPrint('Skipping CRAY LIBSCI library: '+arg, 4, 'compilers')
               continue

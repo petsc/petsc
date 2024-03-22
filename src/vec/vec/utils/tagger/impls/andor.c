@@ -42,13 +42,13 @@ PetscErrorCode VecTaggerSetSubs_AndOr(VecTagger tagger, PetscInt nsubs, VecTagge
   if (subs) {
     for (i = 0; i < nsubs; i++) PetscCall(PetscObjectReference((PetscObject)subs[i]));
   }
-  for (i = 0; i < andOr->nsubs; i++) PetscCall(VecTaggerDestroy(&(andOr->subs[i])));
+  for (i = 0; i < andOr->nsubs; i++) PetscCall(VecTaggerDestroy(&andOr->subs[i]));
   if (andOr->mode == PETSC_OWN_POINTER && andOr->subs != subs) PetscCall(PetscFree(andOr->subs));
   andOr->nsubs = nsubs;
   if (subs) {
     if (mode == PETSC_COPY_VALUES) {
       andOr->mode = PETSC_OWN_POINTER;
-      PetscCall(PetscMalloc1(nsubs, &(andOr->subs)));
+      PetscCall(PetscMalloc1(nsubs, &andOr->subs));
       for (i = 0; i < nsubs; i++) andOr->subs[i] = subs[i];
     } else {
       andOr->subs = subs;
@@ -64,7 +64,7 @@ PetscErrorCode VecTaggerSetSubs_AndOr(VecTagger tagger, PetscInt nsubs, VecTagge
     PetscCall(VecTaggerGetBlockSize(tagger, &bs));
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject)tagger, &prefix));
     andOr->mode = PETSC_OWN_POINTER;
-    PetscCall(PetscMalloc1(nsubs, &(andOr->subs)));
+    PetscCall(PetscMalloc1(nsubs, &andOr->subs));
     for (i = 0; i < nsubs; i++) {
       VecTagger sub;
 

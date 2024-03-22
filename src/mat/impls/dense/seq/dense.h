@@ -13,7 +13,7 @@
 typedef struct {
   PetscScalar  *v;             /* matrix elements */
   PetscScalar  *unplacedarray; /* if one called MatDensePlaceArray(), this is where it stashed the original */
-  PetscBool     roworiented;   /* if true, row oriented input (default) */
+  PetscBool     roworiented;   /* if true, row-oriented input (default) */
   PetscInt      pad;           /* padding */
   PetscBLASInt *pivots;        /* pivots in LU factorization */
   PetscBLASInt  lfwork;        /* length of work array in factorization */

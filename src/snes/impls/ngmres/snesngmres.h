@@ -43,7 +43,7 @@ typedef struct {
   PetscScalar *q;     /* the matrix formed as q_ij = (rdot_i, rdot_j) */
   PetscBLASInt m;     /* matrix dimension */
   PetscBLASInt n;     /* matrix dimension */
-  PetscBLASInt nrhs;  /* the number of right hand sides */
+  PetscBLASInt nrhs;  /* the number of right-hand sides */
   PetscBLASInt lda;   /* the padded matrix dimension */
   PetscBLASInt ldb;   /* the padded vector dimension */
   PetscReal   *s;     /* the singular values */

@@ -113,7 +113,7 @@ static PetscErrorCode MatGetDiagonalBlock_MPIDense(Mat A, Mat *a)
     PetscCall(PetscObjectTypeCompare((PetscObject)mdn->A, MATSEQDENSEHIP, &flg));
     PetscCheck(!flg, PETSC_COMM_SELF, PETSC_ERR_SUP, "Not coded for %s. Send an email to petsc-dev@mcs.anl.gov to request this feature", MATSEQDENSEHIP);
 #endif
-    PetscCall(PetscObjectGetComm((PetscObject)(mdn->A), &comm));
+    PetscCall(PetscObjectGetComm((PetscObject)mdn->A, &comm));
     PetscCall(MatCreate(comm, &B));
     PetscCall(MatSetSizes(B, m, m, m, m));
     PetscCall(MatSetType(B, ((PetscObject)mdn->A)->type_name));
@@ -140,20 +140,20 @@ static PetscErrorCode MatSetValues_MPIDense(Mat mat, PetscInt m, const PetscInt 
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       if (roworiented) {
-        PetscCall(MatSetValues(A->A, 1, &row, n, idxn, v + i * n, addv));
+        PetscCall(MatSetValues(A->A, 1, &row, n, idxn, v ? v + i * n : NULL, addv));
       } else {
         for (j = 0; j < n; j++) {
           if (idxn[j] < 0) continue;
           PetscCheck(idxn[j] < mat->cmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large");
-          PetscCall(MatSetValues(A->A, 1, &row, 1, &idxn[j], v + i + j * m, addv));
+          PetscCall(MatSetValues(A->A, 1, &row, 1, &idxn[j], v ? v + i + j * m : NULL, addv));
         }
       }
     } else if (!A->donotstash) {
       mat->assembled = PETSC_FALSE;
       if (roworiented) {
-        PetscCall(MatStashValuesRow_Private(&mat->stash, idxm[i], n, idxn, v + i * n, PETSC_FALSE));
+        PetscCall(MatStashValuesRow_Private(&mat->stash, idxm[i], n, idxn, v ? v + i * n : NULL, PETSC_FALSE));
       } else {
-        PetscCall(MatStashValuesCol_Private(&mat->stash, idxm[i], n, idxn, v + i, m, PETSC_FALSE));
+        PetscCall(MatStashValuesCol_Private(&mat->stash, idxm[i], n, idxn, v ? v + i : NULL, m, PETSC_FALSE));
       }
     }
   }
@@ -439,7 +439,7 @@ static PetscErrorCode MatZeroRows_MPIDense(Mat A, PetscInt n, const PetscInt row
   PetscFunctionBegin;
   /* get locally owned rows */
   PetscCall(PetscLayoutMapLocal(A->rmap, n, rows, &len, &lrows, NULL));
-  /* fix right hand side if needed */
+  /* fix right-hand side if needed */
   if (x && b) {
     const PetscScalar *xx;
     PetscScalar       *bb;
@@ -507,6 +507,7 @@ static PetscErrorCode MatMultTransposeKernel_MPIDense(Mat A, Vec xx, Vec yy, Pet
   const PetscScalar *ax;
   PetscScalar       *ay;
   PetscMemType       axmtype, aymtype;
+
   PetscFunctionBegin;
   if (!a->Mvctx) PetscCall(MatSetUpMultiply_MPIDense(A));
   PetscCall(VecSet(yy, 0.0));
@@ -761,8 +762,8 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat, PetscViewer 
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
     PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
     if (rank == 0) {
-      PetscCall(PetscObjectSetName((PetscObject)((Mat_MPIDense *)(A->data))->A, ((PetscObject)mat)->name));
-      PetscCall(MatView_SeqDense(((Mat_MPIDense *)(A->data))->A, sviewer));
+      PetscCall(PetscObjectSetName((PetscObject)((Mat_MPIDense *)A->data)->A, ((PetscObject)mat)->name));
+      PetscCall(MatView_SeqDense(((Mat_MPIDense *)A->data)->A, sviewer));
     }
     PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
     PetscCall(MatDestroy(&A));
@@ -1285,6 +1286,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
                                        NULL,
                                        NULL,
                                        /*150*/ NULL,
+                                       NULL,
                                        NULL};
 
 static PetscErrorCode MatMPIDenseSetPreallocation_MPIDense(Mat mat, PetscScalar *data)
@@ -2087,11 +2089,11 @@ static PetscErrorCode MatMatTransposeMultSymbolic_MPIDense_MPIDense(Mat A, Mat B
   case 1: /* alg: "cyclic" */
     for (maxRows = 0, i = 0; i < size; i++) maxRows = PetscMax(maxRows, (B->rmap->range[i + 1] - B->rmap->range[i]));
     bufsiz = A->cmap->N * maxRows;
-    PetscCall(PetscMalloc2(bufsiz, &(abt->buf[0]), bufsiz, &(abt->buf[1])));
+    PetscCall(PetscMalloc2(bufsiz, &abt->buf[0], bufsiz, &abt->buf[1]));
     break;
   default: /* alg: "allgatherv" */
-    PetscCall(PetscMalloc2(B->rmap->n * B->cmap->N, &(abt->buf[0]), B->rmap->N * B->cmap->N, &(abt->buf[1])));
-    PetscCall(PetscMalloc2(size, &(abt->recvcounts), size + 1, &(abt->recvdispls)));
+    PetscCall(PetscMalloc2(B->rmap->n * B->cmap->N, &abt->buf[0], B->rmap->N * B->cmap->N, &abt->buf[1]));
+    PetscCall(PetscMalloc2(size, &abt->recvcounts, size + 1, &abt->recvdispls));
     for (i = 0; i <= size; i++) abt->recvdispls[i] = B->rmap->range[i] * A->cmap->N;
     for (i = 0; i < size; i++) abt->recvcounts[i] = abt->recvdispls[i + 1] - abt->recvdispls[i];
     break;
@@ -2299,7 +2301,7 @@ static PetscErrorCode MatMatMultNumeric_MPIDense_MPIDense(Mat A, Mat B, Mat C)
     }
     PetscCall(MatDenseRestoreArrayWrite(ab->Be, &write));
     PetscCall(MatDenseRestoreArrayRead(B, &read));
-    PetscCall(MatMatMultNumeric_SeqDense_SeqDense(((Mat_MPIDense *)(A->data))->A, ab->Be, ((Mat_MPIDense *)(C->data))->A));
+    PetscCall(MatMatMultNumeric_SeqDense_SeqDense(((Mat_MPIDense *)A->data)->A, ab->Be, ((Mat_MPIDense *)C->data)->A));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2371,8 +2373,8 @@ static PetscErrorCode MatProductSetFromOptions_MPIDense_AB(Mat C)
   const char  *algTypes[2] = {"petsc", "elemental"};
   PetscInt     alg, nalg = PetscDefined(HAVE_ELEMENTAL) ? 2 : 1;
   PetscBool    flg = PETSC_FALSE;
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   /* Set default algorithm */
   alg = 0; /* default is petsc */
   PetscCall(PetscStrcmp(product->alg, "default", &flg));

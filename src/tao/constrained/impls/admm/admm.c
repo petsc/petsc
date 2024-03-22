@@ -282,7 +282,7 @@ static PetscErrorCode SubHessianUpdate(Tao tao, Vec x, Mat H, Mat Hpre, void *pt
     PetscCall(ADMMInternalHessianUpdate(am->subsolverX->hessian, am->ATA, am->xJI, am));
   } else if (am->Hxbool) {
     /* Hessian doesn't get updated. H(x) = c */
-    /* Update Lagrangian only only per TAO call */
+    /* Update Lagrangian only once per TAO call */
     PetscCall(ADMMInternalHessianUpdate(am->subsolverX->hessian, am->ATA, am->xJI, am));
     am->Hxbool = PETSC_FALSE;
   }
@@ -296,14 +296,13 @@ static PetscErrorCode RegHessianUpdate(Tao tao, Vec z, Mat H, Mat Hpre, void *pt
   TAO_ADMM *am     = (TAO_ADMM *)parent->data;
 
   PetscFunctionBegin;
-
   if (am->Hzchange) {
     /* Case where Hessian gets updated with respect to x vector input. */
     PetscCall((*am->ops->reghess)(am->subsolverZ, z, H, Hpre, am->reghessP));
     PetscCall(ADMMInternalHessianUpdate(am->subsolverZ->hessian, am->BTB, am->zJI, am));
   } else if (am->Hzbool) {
     /* Hessian doesn't get updated. H(x) = c */
-    /* Update Lagrangian only only per TAO call */
+    /* Update Lagrangian only once per TAO call */
     PetscCall(ADMMInternalHessianUpdate(am->subsolverZ->hessian, am->BTB, am->zJI, am));
     am->Hzbool = PETSC_FALSE;
   }
@@ -355,11 +354,11 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao)
 
   if (!am->zJI) {
     /* Currently, B is assumed to be a linear system, i.e., not getting updated*/
-    PetscCall(MatTransposeMatMult(am->JB, am->JB, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &(am->BTB)));
+    PetscCall(MatTransposeMatMult(am->JB, am->JB, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &am->BTB));
   }
   if (!am->xJI) {
     /* Currently, A is assumed to be a linear system, i.e., not getting updated*/
-    PetscCall(MatTransposeMatMult(am->subsolverX->jacobian_equality, am->subsolverX->jacobian_equality, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &(am->ATA)));
+    PetscCall(MatTransposeMatMult(am->subsolverX->jacobian_equality, am->subsolverX->jacobian_equality, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &am->ATA));
   }
 
   is_reg_shell = PETSC_FALSE;
@@ -662,7 +661,7 @@ static PetscErrorCode TaoDestroy_ADMM(Tao tao)
 }
 
 /*MC
-  TAOADMM - Alternating direction method of multipliers method fo solving linear problems with
+  TAOADMM - Alternating direction method of multipliers method for solving linear problems with
             constraints. in a $ \min_x f(x) + g(z)$  s.t. $Ax+Bz=c$.
             This algorithm employs two sub Tao solvers, of which type can be specified
             by the user. User need to provide ObjectiveAndGradient routine, and/or HessianRoutine for both subsolvers.

@@ -653,7 +653,7 @@ PetscErrorCode TaoSetStateDesignIS(Tao tao, IS s_is, IS d_is)
   PetscCall(PetscObjectReference((PetscObject)s_is));
   PetscCall(ISDestroy(&tao->state_is));
   tao->state_is = s_is;
-  PetscCall(PetscObjectReference((PetscObject)(d_is)));
+  PetscCall(PetscObjectReference((PetscObject)d_is));
   PetscCall(ISDestroy(&tao->design_is));
   tao->design_is = d_is;
   PetscFunctionReturn(PETSC_SUCCESS);

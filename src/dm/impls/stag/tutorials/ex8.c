@@ -68,7 +68,6 @@ static PetscErrorCode AssembleSystem1DVertexCentered(DM dm, Mat *pA, Vec *pb)
   PetscInt start, n, n_extra, N;
 
   PetscFunctionBeginUser;
-
   PetscCall(DMCreateMatrix(dm, pA));
   A = *pA;
   PetscCall(DMCreateGlobalVector(dm, pb));
@@ -137,7 +136,6 @@ static PetscErrorCode AssembleSystem1DVertexCentered(DM dm, Mat *pA, Vec *pb)
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscCall(VecAssemblyBegin(b));
   PetscCall(VecAssemblyEnd(b));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

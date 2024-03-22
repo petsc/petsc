@@ -8,6 +8,7 @@ PetscErrorCode DMRestrictHook_Coordinates(DM dm, DM dmc, void *ctx)
   DM  dm_coord, dmc_coord;
   Vec coords, ccoords;
   Mat inject;
+
   PetscFunctionBegin;
   PetscCall(DMGetCoordinateDM(dm, &dm_coord));
   PetscCall(DMGetCoordinateDM(dmc, &dmc_coord));
@@ -30,6 +31,7 @@ static PetscErrorCode DMSubDomainHook_Coordinates(DM dm, DM subdm, void *ctx)
   DM          dm_coord, subdm_coord;
   Vec         coords, ccoords, clcoords;
   VecScatter *scat_i, *scat_g;
+
   PetscFunctionBegin;
   PetscCall(DMGetCoordinateDM(dm, &dm_coord));
   PetscCall(DMGetCoordinateDM(subdm, &subdm_coord));
@@ -858,35 +860,29 @@ PetscErrorCode DMSetCoordinateField(DM dm, DMField field)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
-  DMGetLocalBoundingBox - Returns the bounding box for the piece of the `DM` on this process.
-
-  Not Collective
-
-  Input Parameter:
-. dm - the `DM`
-
-  Output Parameters:
-+ lmin - local minimum coordinates (length coord dim, optional)
-- lmax - local maximum coordinates (length coord dim, optional)
-
-  Level: beginner
-
-  Note:
-  If the `DM` is a `DMDA` and has no coordinates, the index bounds are returned instead.
-
-.seealso: `DM`, `DMGetCoordinates()`, `DMGetCoordinatesLocal()`, `DMGetBoundingBox()`
-@*/
-PetscErrorCode DMGetLocalBoundingBox(DM dm, PetscReal lmin[], PetscReal lmax[])
+PetscErrorCode DMGetLocalBoundingBox_Coordinates(DM dm, PetscReal lmin[], PetscReal lmax[], PetscInt cs[], PetscInt ce[])
 {
-  Vec       coords = NULL;
-  PetscReal min[3] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MAX_REAL};
-  PetscReal max[3] = {PETSC_MIN_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
-  PetscInt  cdim, i, j;
+  Vec         coords = NULL;
+  PetscReal   min[3] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MAX_REAL};
+  PetscReal   max[3] = {PETSC_MIN_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
+  PetscInt    cdim, i, j;
+  PetscMPIInt size;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size));
   PetscCall(DMGetCoordinateDim(dm, &cdim));
+  if (size == 1) {
+    const PetscReal *L, *Lstart;
+
+    PetscCall(DMGetPeriodicity(dm, NULL, &Lstart, &L));
+    if (L) {
+      for (PetscInt d = 0; d < cdim; ++d)
+        if (L[d] > 0.0) {
+          min[d] = Lstart[d];
+          max[d] = Lstart[d] + L[d];
+        }
+    }
+  }
   PetscCall(DMGetCoordinatesLocal(dm, &coords));
   if (coords) {
     const PetscScalar *local_coords;
@@ -919,14 +915,36 @@ PetscErrorCode DMGetLocalBoundingBox(DM dm, PetscReal lmin[], PetscReal lmax[])
       }
       PetscCall(VecRestoreArrayRead(coords, &local_coords));
     }
-  } else {
-    PetscBool isda;
-
-    PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMDA, &isda));
-    if (isda) PetscCall(DMGetLocalBoundingIndices_DMDA(dm, min, max));
+    if (lmin) PetscCall(PetscArraycpy(lmin, min, cdim));
+    if (lmax) PetscCall(PetscArraycpy(lmax, max, cdim));
   }
-  if (lmin) PetscCall(PetscArraycpy(lmin, min, cdim));
-  if (lmax) PetscCall(PetscArraycpy(lmax, max, cdim));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMGetLocalBoundingBox - Returns the bounding box for the piece of the `DM` on this process.
+
+  Not Collective
+
+  Input Parameter:
+. dm - the `DM`
+
+  Output Parameters:
++ lmin - local minimum coordinates (length coord dim, optional)
+- lmax - local maximum coordinates (length coord dim, optional)
+
+  Level: beginner
+
+  Note:
+  If the `DM` is a `DMDA` and has no coordinates, the index bounds are returned instead.
+
+.seealso: `DM`, `DMGetCoordinates()`, `DMGetCoordinatesLocal()`, `DMGetBoundingBox()`
+@*/
+PetscErrorCode DMGetLocalBoundingBox(DM dm, PetscReal lmin[], PetscReal lmax[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscUseTypeMethod(dm, getlocalboundingbox, lmin, lmax, NULL, NULL);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -948,9 +966,10 @@ PetscErrorCode DMGetLocalBoundingBox(DM dm, PetscReal lmin[], PetscReal lmax[])
 @*/
 PetscErrorCode DMGetBoundingBox(DM dm, PetscReal gmin[], PetscReal gmax[])
 {
-  PetscReal   lmin[3], lmax[3];
-  PetscInt    cdim;
-  PetscMPIInt count;
+  PetscReal        lmin[3], lmax[3];
+  const PetscReal *L, *Lstart;
+  PetscInt         cdim;
+  PetscMPIInt      count;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -959,6 +978,14 @@ PetscErrorCode DMGetBoundingBox(DM dm, PetscReal gmin[], PetscReal gmax[])
   PetscCall(DMGetLocalBoundingBox(dm, lmin, lmax));
   if (gmin) PetscCall(MPIU_Allreduce(lmin, gmin, count, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)dm)));
   if (gmax) PetscCall(MPIU_Allreduce(lmax, gmax, count, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)dm)));
+  PetscCall(DMGetPeriodicity(dm, NULL, &Lstart, &L));
+  if (L) {
+    for (PetscInt d = 0; d < cdim; ++d)
+      if (L[d] > 0.0) {
+        gmin[d] = Lstart[d];
+        gmax[d] = Lstart[d] + L[d];
+      }
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

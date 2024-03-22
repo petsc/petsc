@@ -5,7 +5,7 @@ petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
 
 configure_options = [
   '--package-prefix-hash='+petsc_hash_pkgs,
-  '--with-mpi-dir=/Users/petsc/soft/mpich-4.1.2',
+  '--with-mpi-dir=/Users/petsc/soft/mpich-4.2.0-p1',
   '--with-64-bit-indices=1',
   '--with-clanguage=cxx',
   'CXXFLAGS=-Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -fno-stack-check -Wno-deprecated -fvisibility=hidden',

@@ -764,7 +764,7 @@ Searching using GNU make's native regexp functionality is kept for people who li
 Query-based searching
 ~~~~~~~~~~~~~~~~~~~~~
 
-Note the the use of glob style matching is also accepted in the value field:
+Note the use of glob style matching is also accepted in the value field:
 
 .. code-block:: console
 

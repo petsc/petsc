@@ -38,6 +38,9 @@ struct _PETSc_DMCEED {
   DMCeed              geom;       // Operator computing geometric data at quadrature points
   CeedElemRestriction erq;        // Map from PETSc local vector to quadrature points
   CeedVector          qd;         // Geometric data at quadrature points used in calculating the qfunction
+  DMCeed              info;       // Mesh information at quadrature points
+  CeedElemRestriction eri;        // Map from PETSc local vector to quadrature points
+  CeedVector          qi;         // Mesh information at quadrature points
 };
 
 #else
@@ -49,4 +52,5 @@ struct _PETSc_DMCEED {
 #endif
 
 PETSC_EXTERN PetscErrorCode DMCeedComputeGeometry(DM, DMCeed);
+PETSC_EXTERN PetscErrorCode DMCeedComputeInfo(DM, DMCeed);
 PETSC_EXTERN PetscErrorCode DMCeedDestroy(DMCeed *);

@@ -1,0 +1,18 @@
+Test sequential save
+rank 0 saving to test_ex30_seq_0.h5
+rank 0 DM refinement level 1
+Test parallel save
+rank 0 saving to test_ex30_par.h5
+rank 0 DM refinement level 1
+Test sequential load from sequential save
+rank 0 loading from test_ex30_seq_0.h5
+rank 0 DM refinement level 2
+Test parallel load from sequential save
+rank 0 loading from test_ex30_seq_0.h5
+rank 0 DM refinement level 2
+Test sequential load from parallel save
+rank 0 loading from test_ex30_par.h5
+rank 0 DM refinement level 2
+Test parallel load from parallel save
+rank 0 loading from test_ex30_par.h5
+rank 0 DM refinement level 2

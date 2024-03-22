@@ -1,7 +1,7 @@
 #include <../src/mat/impls/baij/seq/baij.h>
 #include <petsc/private/kernels/blockinvert.h>
 
-/* Block operations are done by accessing one column at at time */
+/* Block operations are done by accessing one column at a time */
 /* Default MatSolve for block size 14 */
 
 PetscErrorCode MatSolve_SeqBAIJ_14_NaturalOrdering(Mat A, Vec bb, Vec xx)
@@ -127,7 +127,7 @@ PetscErrorCode MatSolve_SeqBAIJ_14_NaturalOrdering(Mat A, Vec bb, Vec xx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Block operations are done by accessing one column at at time */
+/* Block operations are done by accessing one column at a time */
 /* Default MatSolve for block size 13 */
 
 PetscErrorCode MatSolve_SeqBAIJ_13_NaturalOrdering(Mat A, Vec bb, Vec xx)
@@ -248,7 +248,7 @@ PetscErrorCode MatSolve_SeqBAIJ_13_NaturalOrdering(Mat A, Vec bb, Vec xx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Block operations are done by accessing one column at at time */
+/* Block operations are done by accessing one column at a time */
 /* Default MatSolve for block size 12 */
 
 PetscErrorCode MatSolve_SeqBAIJ_12_NaturalOrdering(Mat A, Vec bb, Vec xx)

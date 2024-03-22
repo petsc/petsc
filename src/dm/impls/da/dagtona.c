@@ -10,12 +10,12 @@
 
 /*@
   DMDAGlobalToNaturalAllCreate - Creates a scatter context that maps from a
-  global vector the entire vector to each processor in natural numbering
+  global vector, obtained with `DMCreateGlobalVector()`, to the entire vector to each processor in natural numbering
 
   Collective
 
   Input Parameter:
-. da - the distributed array context
+. da - the `DMDA` context
 
   Output Parameter:
 . scatter - the scatter context
@@ -55,12 +55,12 @@ PetscErrorCode DMDAGlobalToNaturalAllCreate(DM da, VecScatter *scatter)
 
 /*@
   DMDANaturalAllToGlobalCreate - Creates a scatter context that maps from a copy
-  of the entire vector on each processor (in the natural ordering) to its local part in the global vector.
+  of the entire vector on each processor (in the natural ordering) to its local part in the global vector, obtained with `DMCreateGlobalVector()`.
 
   Collective
 
   Input Parameter:
-. da - the distributed array context
+. da - the `DMDA` context
 
   Output Parameter:
 . scatter - the scatter context

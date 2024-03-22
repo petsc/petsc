@@ -323,7 +323,6 @@ static PetscErrorCode PetscLogGlobalNamesCreate_Internal(MPI_Comm comm, PetscInt
   *global_index_to_local_index_p = global_index_to_local_index;
   *local_index_to_global_index_p = local_index_to_global_index;
   *global_names_p                = (const char **)global_names;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

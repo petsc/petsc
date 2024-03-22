@@ -584,7 +584,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
     pP = fetidp->pP;
     if (!pP) { /* first time, need to compute pressure dofs */
       PC_IS                 *pcis  = (PC_IS *)fetidp->innerbddc->data;
-      Mat_IS                *matis = (Mat_IS *)(A->data);
+      Mat_IS                *matis = (Mat_IS *)A->data;
       ISLocalToGlobalMapping l2g;
       IS                     lP = NULL, II, pII, lPall, Pall, is1, is2;
       const PetscInt        *idxs;
@@ -1104,7 +1104,7 @@ static PetscErrorCode KSPSetUp_FETIDP(KSP ksp)
     PetscCall(KSPSetPC(fetidp->innerksp, D));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)D, (PetscObject)fetidp->innerksp, 0));
     PetscCall(KSPSetFromOptions(fetidp->innerksp));
-    PetscCall(MatCreateVecs(F, &(fetidp->innerksp)->vec_rhs, &(fetidp->innerksp)->vec_sol));
+    PetscCall(MatCreateVecs(F, &fetidp->innerksp->vec_rhs, &fetidp->innerksp->vec_sol));
     PetscCall(MatDestroy(&F));
     PetscCall(PCDestroy(&D));
     if (fetidp->check) {

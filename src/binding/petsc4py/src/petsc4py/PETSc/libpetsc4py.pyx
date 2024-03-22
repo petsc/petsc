@@ -2428,7 +2428,6 @@ cdef PetscErrorCode TSSetFromOptions_Python(
     cdef setFromOptions = PyTS(ts).setFromOptions
     if setFromOptions is not None:
         setFromOptions(TS_(ts))
-    CHKERR( SNESSetFromOptions(ts.snes) )
     return FunctionEnd()
 
 cdef PetscErrorCode TSView_Python(

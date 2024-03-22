@@ -58,7 +58,6 @@ int main(int argc, char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-  PetscFunctionBeginUser;
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only!");
 
@@ -119,8 +118,8 @@ int main(int argc, char **argv)
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ctx.ts));
   PetscCall(TSSetProblemType(ctx.ts, TS_NONLINEAR));
   PetscCall(TSSetType(ctx.ts, TSCN));
-  PetscCall(TSSetRHSFunction(ctx.ts, NULL, (TSRHSFunction)RHSFunction, &ctx));
-  PetscCall(TSSetRHSJacobian(ctx.ts, ctx.Jac, ctx.Jac, (TSRHSJacobian)RHSJacobian, &ctx));
+  PetscCall(TSSetRHSFunction(ctx.ts, NULL, (TSRHSFunctionFn *)RHSFunction, &ctx));
+  PetscCall(TSSetRHSJacobian(ctx.ts, ctx.Jac, ctx.Jac, (TSRHSJacobianFn *)RHSJacobian, &ctx));
   PetscCall(TSSetRHSJacobianP(ctx.ts, ctx.Jacp, RHSJacobianP, &ctx));
 
   if (ctx.sa == SA_ADJ) {
@@ -129,8 +128,8 @@ int main(int argc, char **argv)
     PetscCall(TSSetSaveTrajectory(ctx.ts));
     PetscCall(TSSetCostGradients(ctx.ts, 1, lambda, mu));
     PetscCall(TSCreateQuadratureTS(ctx.ts, PETSC_FALSE, &ctx.quadts));
-    PetscCall(TSSetRHSFunction(ctx.quadts, NULL, (TSRHSFunction)CostIntegrand, &ctx));
-    PetscCall(TSSetRHSJacobian(ctx.quadts, ctx.DRDU, ctx.DRDU, (TSRHSJacobian)DRDUJacobianTranspose, &ctx));
+    PetscCall(TSSetRHSFunction(ctx.quadts, NULL, (TSRHSFunctionFn *)CostIntegrand, &ctx));
+    PetscCall(TSSetRHSJacobian(ctx.quadts, ctx.DRDU, ctx.DRDU, (TSRHSJacobianFn *)DRDUJacobianTranspose, &ctx));
     PetscCall(TSSetRHSJacobianP(ctx.quadts, ctx.DRDP, DRDPJacobianTranspose, &ctx));
   }
   if (ctx.sa == SA_TLM) {
@@ -139,8 +138,8 @@ int main(int argc, char **argv)
     PetscCall(TSForwardSetSensitivities(ctx.ts, 1, sp));
     PetscCall(TSCreateQuadratureTS(ctx.ts, PETSC_TRUE, &ctx.quadts));
     PetscCall(TSForwardSetSensitivities(ctx.quadts, 1, qgrad));
-    PetscCall(TSSetRHSFunction(ctx.quadts, NULL, (TSRHSFunction)CostIntegrand, &ctx));
-    PetscCall(TSSetRHSJacobian(ctx.quadts, ctx.DRDU, ctx.DRDU, (TSRHSJacobian)DRDUJacobianTranspose, &ctx));
+    PetscCall(TSSetRHSFunction(ctx.quadts, NULL, (TSRHSFunctionFn *)CostIntegrand, &ctx));
+    PetscCall(TSSetRHSJacobian(ctx.quadts, ctx.DRDU, ctx.DRDU, (TSRHSJacobianFn *)DRDUJacobianTranspose, &ctx));
     PetscCall(TSSetRHSJacobianP(ctx.quadts, ctx.DRDP, DRDPJacobianTranspose, &ctx));
   }
 
@@ -159,7 +158,7 @@ int main(int argc, char **argv)
   /* Create TAO solver and set desired solution method */
   PetscCall(TaoCreate(PETSC_COMM_WORLD, &tao));
   PetscCall(TaoSetType(tao, TAOBLMVM));
-  if (printtofile) PetscCall(TaoSetMonitor(tao, (PetscErrorCode(*)(Tao, void *))monitor, (void *)&ctx, NULL));
+  if (printtofile) PetscCall(TaoMonitorSet(tao, (PetscErrorCode(*)(Tao, void *))monitor, (void *)&ctx, NULL));
   /*
      Optimization starts
   */

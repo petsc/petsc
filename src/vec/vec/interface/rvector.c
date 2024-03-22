@@ -512,7 +512,7 @@ PetscErrorCode VecSetAsync_Private(Vec x, PetscScalar alpha, PetscDeviceContext 
     const PetscInt N   = x->map->N;
 
     if (N == 0) {
-      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_1], 0.0l));
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_1], 0.0));
       PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_INFINITY], 0.0));
       PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_2], 0.0));
       PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_FROBENIUS], 0.0));
@@ -1403,7 +1403,7 @@ PetscErrorCode VecConcatenate(PetscInt nx, const Vec X[], Vec *Y, IS *x_is[])
     PetscCall((*(*X)->ops->concatenate)(nx, X, Y, x_is));
   } else {
     /* loop over vectors and start creating IS */
-    comm = PetscObjectComm((PetscObject)(*X));
+    comm = PetscObjectComm((PetscObject)*X);
     PetscCall(VecGetType(*X, &vec_type));
     PetscCall(PetscMalloc1(nx, &is_tmp));
     for (i = 0; i < nx; i++) {

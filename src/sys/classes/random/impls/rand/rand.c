@@ -7,7 +7,7 @@ static PetscErrorCode PetscRandomSeed_Rand(PetscRandom r)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#define RAND_WRAP ((PetscReal)((rand() / (double)((unsigned int)RAND_MAX + 1))))
+#define RAND_WRAP ((PetscReal)(rand() / (double)((unsigned int)RAND_MAX + 1)))
 static PetscErrorCode PetscRandomGetValue_Rand(PetscRandom r, PetscScalar *val)
 {
   PetscFunctionBegin;

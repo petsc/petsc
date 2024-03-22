@@ -158,7 +158,7 @@ Changes: 3.6
 
 -  HDF5 viewer will save Vecs and DMDA Vecs with a dimension of 1 if
    the bs/dof of the vector is 1. To always include this dimension as
-   a specific dimension in the HDF5 file even if if it is of size 1
+   a specific dimension in the HDF5 file even if it is of size 1
    use PetscViewerHDF5SetBaseDimension2() or
    -viewer_hdf5_base_dimension2 true
 

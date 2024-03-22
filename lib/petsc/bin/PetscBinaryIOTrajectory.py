@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 #    Reads in the output trajectory data -ts_save_trajectory -ts_trajectory_type visualization
 #    Also provides a way to plot the trajectory

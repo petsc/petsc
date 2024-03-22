@@ -79,14 +79,14 @@ PetscInt PCTFS_ct_bits(char *ptr, PetscInt n)
     if (*ptr & 1) tmp++;
     ptr++;
   }
-  return (tmp);
+  return tmp;
 }
 
 /*********************************bit_mask.c***********************************/
 PetscInt PCTFS_div_ceil(PetscInt numer, PetscInt denom)
 {
   if ((numer < 0) || (denom <= 0)) SETERRABORT(PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCTFS_div_ceil() :: numer=%" PetscInt_FMT " ! >=0, denom=%" PetscInt_FMT " ! >0", numer, denom);
-  return (PetscCeilInt(numer, denom));
+  return PetscCeilInt(numer, denom);
 }
 
 /*********************************bit_mask.c***********************************/
@@ -99,7 +99,7 @@ PetscInt PCTFS_len_bit_mask(PetscInt num_items)
   rt_val = PetscCeilInt(num_items, BYTE);
   /* make multiple of sizeof PetscInt */
   if ((tmp = rt_val % sizeof(PetscInt))) rt_val += (sizeof(PetscInt) - tmp);
-  return (rt_val);
+  return rt_val;
 }
 
 /*********************************bit_mask.c***********************************/
@@ -137,5 +137,5 @@ PetscInt PCTFS_len_buf(PetscInt item_size, PetscInt num_items)
 
   /*  double precision align for now ... consider page later */
   if ((tmp = (rt_val % (PetscInt)sizeof(double)))) rt_val += (sizeof(double) - tmp);
-  return (rt_val);
+  return rt_val;
 }

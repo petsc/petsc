@@ -45,6 +45,11 @@ class DMPolytopeType(object):
     UNKNOWN_CELL       = DM_POLYTOPE_UNKNOWN_CELL
     UNKNOWN_FACE       = DM_POLYTOPE_UNKNOWN_FACE
 
+class DMReorderDefaultFlag(object):
+    NOTSET = DM_REORDER_DEFAULT_NOTSET
+    FALSE  = DM_REORDER_DEFAULT_FALSE
+    TRUE   = DM_REORDER_DEFAULT_TRUE
+
 # --------------------------------------------------------------------
 
 cdef class DM(Object):
@@ -55,6 +60,9 @@ cdef class DM(Object):
     Type         = DMType
     BoundaryType = DMBoundaryType
     PolytopeType = DMPolytopeType
+
+    ReorderDefaultFlag = DMReorderDefaultFlag
+    """Flag indicating whether `DM` is reordered by default."""
 
     #
 
@@ -2321,5 +2329,6 @@ cdef class DM(Object):
 del DMType
 del DMBoundaryType
 del DMPolytopeType
+del DMReorderDefaultFlag
 
 # --------------------------------------------------------------------

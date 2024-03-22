@@ -165,7 +165,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsRealArray("-charges", "Species charges", "ex9.c", options->charges, &d, NULL));
   PetscCall(PetscOptionsEnum("-em_type", "Type of electrostatic solver", "ex9.c", EMTypes, (PetscEnum)options->em, (PetscEnum *)&options->em, NULL));
   PetscOptionsEnd();
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -260,7 +259,6 @@ static PetscErrorCode SetupContext(DM dm, DM sw, AppCtx *user)
     PetscCall(PetscDrawAxisSetLabels(axis_Pot, "Particles", "x", "potential"));
     PetscCall(PetscDrawSetSave(user->PotDraw, "ex9_phi_spatial.png"));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1200,12 +1198,19 @@ static PetscErrorCode ComputeFieldAtParticles_Primal(SNES snes, DM sw, PetscReal
   PetscCall(DMSwarmGetLocalSize(sw, &Np));
   PetscCall(DMGetApplicationContext(sw, (void *)&user));
 
-  KSP ksp;
-  Vec rho0;
+  KSP         ksp;
+  Vec         rho0;
+  char        oldField[PETSC_MAX_PATH_LEN];
+  const char *tmp;
+
   /* Create the charges rho */
   PetscCall(SNESGetDM(snes, &dm));
-
+  PetscCall(DMSwarmVectorGetField(sw, &tmp));
+  PetscCall(PetscStrncpy(oldField, tmp, PETSC_MAX_PATH_LEN));
+  PetscCall(DMSwarmVectorDefineField(sw, "w_q"));
   PetscCall(DMCreateMassMatrix(sw, dm, &M_p));
+  PetscCall(DMSwarmVectorDefineField(sw, oldField));
+
   PetscCall(DMCreateMassMatrix(dm, dm, &M));
   PetscCall(DMGetGlobalVector(dm, &rho0));
   PetscCall(PetscObjectSetName((PetscObject)rho0, "Charge density (rho0) from Primal Compute"));
@@ -1329,6 +1334,8 @@ static PetscErrorCode ComputeFieldAtParticles_Mixed(SNES snes, DM sw, PetscReal 
   PetscQuadrature q;
   PetscReal      *coords, *pot;
   PetscInt        dim, d, cStart, cEnd, c, Np, fields = 1;
+  char            oldField[PETSC_MAX_PATH_LEN];
+  const char     *tmp;
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(sw, &dim));
@@ -1341,7 +1348,13 @@ static PetscErrorCode ComputeFieldAtParticles_Mixed(SNES snes, DM sw, PetscReal 
   PetscCall(PetscObjectSetName((PetscObject)rho, "rho"));
 
   PetscCall(DMCreateSubDM(dm, 1, &fields, &potential_IS, &potential_dm));
+
+  PetscCall(DMSwarmVectorGetField(sw, &tmp));
+  PetscCall(PetscStrncpy(oldField, tmp, PETSC_MAX_PATH_LEN));
+  PetscCall(DMSwarmVectorDefineField(sw, "w_q"));
   PetscCall(DMCreateMassMatrix(sw, potential_dm, &M_p));
+  PetscCall(DMSwarmVectorDefineField(sw, oldField));
+
   PetscCall(DMCreateMassMatrix(potential_dm, potential_dm, &M));
   PetscCall(MatViewFromOptions(M_p, NULL, "-mp_view"));
   PetscCall(MatViewFromOptions(M, NULL, "-m_view"));
@@ -1489,7 +1502,6 @@ static PetscErrorCode ComputeFieldAtParticles(SNES snes, DM sw, PetscReal E[])
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No solver for electrostatic model %s", EMTypes[ctx->em]);
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

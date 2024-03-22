@@ -395,8 +395,8 @@ static PetscErrorCode PetscDrawStringSetSize_Win32(PetscDraw draw, PetscReal wid
   int              w, h;
 
   PetscFunctionBegin;
-  w = (int)((windraw->w) * width * (draw->port_xr - draw->port_xl) / (draw->coor_xr - draw->coor_xl));
-  h = (int)((windraw->h) * height * (draw->port_yr - draw->port_yl) / (draw->coor_yr - draw->coor_yl));
+  w = (int)(windraw->w * width * (draw->port_xr - draw->port_xl) / (draw->coor_xr - draw->coor_xl));
+  h = (int)(windraw->h * height * (draw->port_yr - draw->port_yl) / (draw->coor_yr - draw->coor_yl));
   if (h < 1) h = 1;
   if (w < 1) w = 1;
   windraw->stringheight = h;

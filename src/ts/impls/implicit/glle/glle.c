@@ -140,7 +140,7 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p, PetscInt q, PetscInt r, Pet
     for (i = 0; i < r - 1; i++) {
       for (j = 0; j < r - 1; j++) ImV[i + j * r] = 1.0 * (i == j) - v[(i + 1) * r + j + 1];
     }
-    /* Build right hand side for alpha (tp - glm.B(2:end,:)*(glm.c.^(p)./factorial(p))) */
+    /* Build right-hand side for alpha (tp - glm.B(2:end,:)*(glm.c.^(p)./factorial(p))) */
     for (i = 1; i < r; i++) {
       scheme->alpha[i] = 1. / Factorial(p + 1 - i);
       for (j = 0; j < s; j++) scheme->alpha[i] -= b[i * s + j] * CPowF(c[j], p);
@@ -151,7 +151,7 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p, PetscInt q, PetscInt r, Pet
     PetscCheck(info >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Bad argument to GESV");
     PetscCheck(info <= 0, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Bad LU factorization");
 
-    /* Build right hand side for beta (tp1 - glm.B(2:end,:)*(glm.c.^(p+1)./factorial(p+1)) - e.alpha) */
+    /* Build right-hand side for beta (tp1 - glm.B(2:end,:)*(glm.c.^(p+1)./factorial(p+1)) - e.alpha) */
     for (i = 1; i < r; i++) {
       scheme->beta[i] = 1. / Factorial(p + 2 - i) - scheme->alpha[i];
       for (j = 0; j < s; j++) scheme->beta[i] -= b[i * s + j] * CPowF(c[j], p + 1);
@@ -176,7 +176,7 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p, PetscInt q, PetscInt r, Pet
     for (j = 0; j < s; j++) scheme->alpha[0] -= b[0 * s + j] * CPowF(c[j], p);
     for (j = 1; j < r; j++) scheme->alpha[0] += v[0 * r + j] * scheme->alpha[j];
 
-    /* right hand side for gamma (glm.B(2:end,:)*e.xi - e.epsilon*eye(s-1,1)) */
+    /* right-hand side for gamma (glm.B(2:end,:)*e.xi - e.epsilon*eye(s-1,1)) */
     for (i = 1; i < r; i++) {
       scheme->gamma[i] = (i == 1 ? -1. : 0) * scheme->alpha[0];
       for (j = 0; j < s; j++) scheme->gamma[i] += b[i * s + j] * scheme->stage_error[j];
@@ -764,8 +764,8 @@ static PetscErrorCode TSGLLESetType_GLLE(TS ts, TSGLLEType type)
 
 static PetscErrorCode TSGLLESetAcceptType_GLLE(TS ts, TSGLLEAcceptType type)
 {
-  TSGLLEAcceptFunction r;
-  TS_GLLE             *gl = (TS_GLLE *)ts->data;
+  TSGLLEAcceptFn *r;
+  TS_GLLE        *gl = (TS_GLLE *)ts->data;
 
   PetscFunctionBegin;
   PetscCall(PetscFunctionListFind(TSGLLEAcceptList, type, &r));
@@ -861,7 +861,7 @@ static PetscErrorCode TSSolve_GLLE(TS ts)
     ts->ksp_its += lits;
     if (snesreason < 0 && ts->max_snes_failures > 0 && ++ts->num_snes_failures >= ts->max_snes_failures) {
       ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
-      PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", nonlinear solve solve failures %" PetscInt_FMT " greater than current TS allowed, stopping solve\n", ts->steps, ts->num_snes_failures));
+      PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", nonlinear solve failures %" PetscInt_FMT " greater than current TS allowed, stopping solve\n", ts->steps, ts->num_snes_failures));
       PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
@@ -936,7 +936,7 @@ static PetscErrorCode TSSolve_GLLE(TS ts)
         ts->ksp_its += lits;
         if (snesreason < 0 && ts->max_snes_failures > 0 && ++ts->num_snes_failures >= ts->max_snes_failures) {
           ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
-          PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", nonlinear solve solve failures %" PetscInt_FMT " greater than current TS allowed, stopping solve\n", ts->steps, ts->num_snes_failures));
+          PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", nonlinear solve failures %" PetscInt_FMT " greater than current TS allowed, stopping solve\n", ts->steps, ts->num_snes_failures));
           PetscFunctionReturn(PETSC_SUCCESS);
         }
       }
@@ -1233,7 +1233,7 @@ PetscErrorCode TSGLLERegister(const char sname[], PetscErrorCode (*function)(TS)
 
   Input Parameters:
 + sname    - name of user-defined acceptance scheme
-- function - routine to create method context
+- function - routine to create method context, see `TSGLLEAcceptFn` for the calling sequence
 
   Level: advanced
 
@@ -1246,13 +1246,14 @@ PetscErrorCode TSGLLERegister(const char sname[], PetscErrorCode (*function)(TS)
 .ve
 
   Then, your scheme can be chosen with the procedural interface via
-$ TSGLLESetAcceptType(ts, "my_scheme")
-  or at runtime via the option
-$ -ts_gl_accept_type my_scheme
+.vb
+  TSGLLESetAcceptType(ts, "my_scheme")
+.ve
+  or at runtime via the option `-ts_gl_accept_type my_scheme`
 
-.seealso: [](ch_ts), `TSGLLE`, `TSGLLEType`, `TSGLLERegisterAll()`, `TSGLLEAcceptFunction`
+.seealso: [](ch_ts), `TSGLLE`, `TSGLLEType`, `TSGLLERegisterAll()`, `TSGLLEAcceptFn`
 @*/
-PetscErrorCode TSGLLEAcceptRegister(const char sname[], TSGLLEAcceptFunction function)
+PetscErrorCode TSGLLEAcceptRegister(const char sname[], TSGLLEAcceptFn *function)
 {
   PetscFunctionBegin;
   PetscCall(PetscFunctionListAdd(&TSGLLEAcceptList, sname, function));

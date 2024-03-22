@@ -84,9 +84,9 @@ clean:: clean-legacy
          grep -v "is being replaced by a real definition" | \
           grep -v "may result in errors or" | \
           grep -v "is deprecated" | \
-          grep -v "Werror=format-security" | \
-          grep -v " -Werror " | \
+          grep -v " -Werror" | \
           grep -v " was built for newer macOS version " | \
+          grep -v "duplicate -rpath" | \
           grep -v "only the last is used because nvcc can only accept a single optimization setting" | \
          grep -E -i '(Error|warning|Can|Unresolved)' >> /dev/null;\
          if [ "$$?" != 1 ]; then \
@@ -133,9 +133,9 @@ clean:: clean-legacy
          grep -v "is being replaced by a real definition" | \
           grep -v "IPO Error: unresolved" | \
           grep -v "warning multiple definitions of symbol _matdensegetarray_" | \
-          grep -v "Werror=format-security" | \
-          grep -v " -Werror " | \
+          grep -v " -Werror" | \
           grep -v " was built for newer macOS version " | \
+          grep -v "duplicate -rpath" | \
          grep -E -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \
          if [ "$$?" != 1 ]; then \
           printf ${PETSC_TEXT_HILIGHT}"*******************Error detected during compile or link!*******************\n";\
@@ -145,28 +145,28 @@ clean:: clean-legacy
          cat trashz ; fi; ${RM} trashz;
 
 .c.o:
-	${PETSC_COMPILE_SINGLE} `pwd`/$<
+	${PETSC_COMPILE_SINGLE} $<
 
 .cpp.o .cxx.o .cc.o .C.o:
-	${PETSC_CXXCOMPILE_SINGLE} `pwd`/$<
+	${PETSC_CXXCOMPILE_SINGLE} $<
 
 .cu.o:
-	${PETSC_CUCOMPILE_SINGLE} `pwd`/$<
+	${PETSC_CUCOMPILE_SINGLE} $<
 
 .hip.cpp.o:
-	${PETSC_HIPCOMPILE_SINGLE} `pwd`/$<
+	${PETSC_HIPCOMPILE_SINGLE} $<
 
 .kokkos.cxx.o:
-	${PETSC_KOKKOSCOMPILE_SINGLE} `pwd`/$<
+	${PETSC_KOKKOSCOMPILE_SINGLE} $<
 
 .sycl.cxx.o:
-	${PETSC_SYCLCOMPILE_SINGLE} `pwd`/$<
+	${PETSC_SYCLCOMPILE_SINGLE} $<
 
 .raja.cxx.o:
-	${PETSC_RAJACOMPILE_SINGLE} `pwd`/$<
+	${PETSC_RAJACOMPILE_SINGLE} $<
 
 .F.o .F90.o .F95.o:
-	${PETSC_FCOMPILE_SINGLE} `pwd`/$<
+	${PETSC_FCOMPILE_SINGLE} $<
 
 .f.o .f90.o .f95.o:
 	${FC} -c ${FC_FLAGS} ${FFLAGS} -o $@ $<
@@ -239,7 +239,7 @@ endif
 
 ifdef SEPARATE_COMPILE_LINK
 % : %.c
-	${PETSC_COMPILE_SINGLE} `pwd`/$<
+	${PETSC_COMPILE_SINGLE} $<
 	${CLINKER} $(EXEFLAGS) -o $@ $@.o $(filter-out $@.o $<,$^) $(PETSC_LIB)
 endif
 
@@ -252,7 +252,7 @@ endif
 #
 ifneq (,$(findstring emcc,$(CC)))
 % : %.c
-	${PETSC_COMPILE_SINGLE} `pwd`/$<
+	${PETSC_COMPILE_SINGLE} $<
 	${CLINKER} -s MAIN_MODULE -s ASSERTIONS=2 -s SAFE_HEAP=1 -s STACK_OVERFLOW_CHECK=1 -s ALLOW_MEMORY_GROWTH $(EXEFLAGS) -o $@.js $@.o $(PETSC_LIB)
 	-@printf '#!/usr/bin/env sh\nnode --redirect-warnings=/dev/null $@.js $$* | grep -v "Heap resize call from" ' > $@
 	-@chmod u+x $@

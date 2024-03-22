@@ -1,9 +1,9 @@
 atol=1e-50, rtol=1e-08, stol=1e-08, maxit=50, maxf=10000
-  0 SNES Function norm 5.41468 
-  1 SNES Function norm 4.27553 
-  2 SNES Function norm 1.96849 
-  3 SNES Function norm 0.0348357 
-  4 SNES Function norm 6.16133e-06 
+  0 SNES Function norm 5.41468
+  1 SNES Function norm 4.27553
+  2 SNES Function norm 1.96849
+  3 SNES Function norm 0.0348357
+  4 SNES Function norm 6.16133e-06
   5 SNES Function norm < 1.e-11
 SNES Object: 1 MPI process
   type: newtontr
@@ -22,7 +22,7 @@ SNES Object: 1 MPI process
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object: 1 MPI process

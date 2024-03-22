@@ -443,7 +443,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS isrow, IS iscol,
     bjlvl_ptr[i] = current_space_lvl->array;
 
     /* make sure the active row i has diagonal entry */
-    PetscCheck(*(bj_ptr[i] + bdiag[i]) == i, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Row %" PetscInt_FMT " has missing diagonal in factored matrix\ntry running with -pc_factor_nonzeros_along_diagonal or -pc_factor_diagonal_fill", i);
+    PetscCheck(*(bj_ptr[i] + bdiag[i]) == i, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Row %" PetscInt_FMT " has missing diagonal in factored matrix, try running with -pc_factor_nonzeros_along_diagonal or -pc_factor_diagonal_fill", i);
 
     current_space->array += nzi;
     current_space->local_used += nzi;
@@ -672,9 +672,7 @@ static PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact, Mat A, IS i
       fm       = fill[fm];
     }
     /* make sure row has diagonal entry */
-    PetscCheck(ajnew[ainew[prow] + dloc[prow]] == prow, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Row %" PetscInt_FMT " has missing diagonal in factored matrix\n\
-                                                        try running with -pc_factor_nonzeros_along_diagonal or -pc_factor_diagonal_fill",
-               prow);
+    PetscCheck(ajnew[ainew[prow] + dloc[prow]] == prow, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Row %" PetscInt_FMT " has missing diagonal in factored matrix, try running with -pc_factor_nonzeros_along_diagonal or -pc_factor_diagonal_fill", prow);
   }
   PetscCall(PetscFree(ajfill));
   PetscCall(ISRestoreIndices(isrow, &r));

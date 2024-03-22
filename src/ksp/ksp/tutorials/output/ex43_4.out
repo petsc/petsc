@@ -1,41 +1,41 @@
   Residual norms for stokes_ solve.
-  0 KSP Residual norm 0.00337927 
-  1 KSP Residual norm 0.00100033 
-  2 KSP Residual norm 0.00198036 
-  3 KSP Residual norm 0.00138965 
-  4 KSP Residual norm 0.00117457 
-  5 KSP Residual norm 0.000844377 
-  6 KSP Residual norm 0.000464969 
-  7 KSP Residual norm 0.000344846 
-  8 KSP Residual norm 0.000173329 
-  9 KSP Residual norm 0.000138069 
- 10 KSP Residual norm 0.000181073 
- 11 KSP Residual norm 0.000197309 
- 12 KSP Residual norm 0.000122466 
- 13 KSP Residual norm 8.0686e-05 
- 14 KSP Residual norm 0.000129132 
- 15 KSP Residual norm 0.000192349 
- 16 KSP Residual norm 0.000142142 
- 17 KSP Residual norm 6.46078e-05 
- 18 KSP Residual norm 4.28934e-05 
- 19 KSP Residual norm 3.97016e-05 
- 20 KSP Residual norm 2.41842e-05 
- 21 KSP Residual norm 1.28061e-05 
- 22 KSP Residual norm 8.62207e-06 
- 23 KSP Residual norm 4.79149e-06 
- 24 KSP Residual norm 4.08285e-06 
- 25 KSP Residual norm 3.2439e-06 
- 26 KSP Residual norm 2.47285e-06 
- 27 KSP Residual norm 1.70736e-06 
- 28 KSP Residual norm 1.22027e-06 
- 29 KSP Residual norm 6.35357e-07 
- 30 KSP Residual norm 3.67964e-07 
- 31 KSP Residual norm 2.37451e-07 
- 32 KSP Residual norm 1.71305e-07 
- 33 KSP Residual norm 1.10396e-07 
- 34 KSP Residual norm 6.10948e-08 
- 35 KSP Residual norm 3.47249e-08 
- 36 KSP Residual norm 2.72656e-08 
+  0 KSP Residual norm 0.00337927
+  1 KSP Residual norm 0.00100033
+  2 KSP Residual norm 0.00198036
+  3 KSP Residual norm 0.00138965
+  4 KSP Residual norm 0.00117457
+  5 KSP Residual norm 0.000844377
+  6 KSP Residual norm 0.000464969
+  7 KSP Residual norm 0.000344846
+  8 KSP Residual norm 0.000173329
+  9 KSP Residual norm 0.000138069
+ 10 KSP Residual norm 0.000181073
+ 11 KSP Residual norm 0.000197309
+ 12 KSP Residual norm 0.000122466
+ 13 KSP Residual norm 8.0686e-05
+ 14 KSP Residual norm 0.000129132
+ 15 KSP Residual norm 0.000192349
+ 16 KSP Residual norm 0.000142142
+ 17 KSP Residual norm 6.46078e-05
+ 18 KSP Residual norm 4.28934e-05
+ 19 KSP Residual norm 3.97016e-05
+ 20 KSP Residual norm 2.41842e-05
+ 21 KSP Residual norm 1.28061e-05
+ 22 KSP Residual norm 8.62207e-06
+ 23 KSP Residual norm 4.79149e-06
+ 24 KSP Residual norm 4.08285e-06
+ 25 KSP Residual norm 3.2439e-06
+ 26 KSP Residual norm 2.47285e-06
+ 27 KSP Residual norm 1.70736e-06
+ 28 KSP Residual norm 1.22027e-06
+ 29 KSP Residual norm 6.35357e-07
+ 30 KSP Residual norm 3.67964e-07
+ 31 KSP Residual norm 2.37451e-07
+ 32 KSP Residual norm 1.71305e-07
+ 33 KSP Residual norm 1.10396e-07
+ 34 KSP Residual norm 6.10948e-08
+ 35 KSP Residual norm 3.47249e-08
+ 36 KSP Residual norm 2.72656e-08
 KSP Object: (stokes_) 4 MPI processes
   type: pipegcr
     max previous directions = 60
@@ -44,7 +44,7 @@ KSP Object: (stokes_) 4 MPI processes
     w unrolling = TRUE 
     restarts performed = 0 
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using NATURAL norm type for convergence test
 PC Object: (stokes_) 4 MPI processes
@@ -56,7 +56,7 @@ PC Object: (stokes_) 4 MPI processes
     KSP Object: (stokes_mg_coarse_) 4 MPI processes
       type: preonly
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (stokes_mg_coarse_) 4 MPI processes
@@ -65,7 +65,7 @@ PC Object: (stokes_) 4 MPI processes
         KSP Object: (stokes_mg_coarse_redundant_) 1 MPI process
           type: preonly
           maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
         PC Object: (stokes_mg_coarse_redundant_) 1 MPI process
@@ -109,12 +109,12 @@ PC Object: (stokes_) 4 MPI processes
             restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
             happy breakdown tolerance 1e-30
           maximum iterations=10, initial guess is zero
-          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+          tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
-        estimating eigenvalues using noisy right hand side
+        estimating eigenvalues using a noisy random number generated right-hand side
       maximum iterations=1, nonzero initial guess
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (stokes_mg_levels_1_) 4 MPI processes
@@ -125,7 +125,7 @@ PC Object: (stokes_) 4 MPI processes
       KSP Object: (stokes_mg_levels_1_fieldsplit_0_) 4 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (stokes_mg_levels_1_fieldsplit_0_) 4 MPI processes
@@ -142,7 +142,7 @@ PC Object: (stokes_) 4 MPI processes
       KSP Object: (stokes_mg_levels_1_fieldsplit_1_) 4 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (stokes_mg_levels_1_fieldsplit_1_) 4 MPI processes
@@ -176,12 +176,12 @@ PC Object: (stokes_) 4 MPI processes
             restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
             happy breakdown tolerance 1e-30
           maximum iterations=10, initial guess is zero
-          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+          tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
-        estimating eigenvalues using noisy right hand side
+        estimating eigenvalues using a noisy random number generated right-hand side
       maximum iterations=1, nonzero initial guess
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (stokes_mg_levels_2_) 4 MPI processes
@@ -192,7 +192,7 @@ PC Object: (stokes_) 4 MPI processes
       KSP Object: (stokes_mg_levels_2_fieldsplit_0_) 4 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (stokes_mg_levels_2_fieldsplit_0_) 4 MPI processes
@@ -209,7 +209,7 @@ PC Object: (stokes_) 4 MPI processes
       KSP Object: (stokes_mg_levels_2_fieldsplit_1_) 4 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (stokes_mg_levels_2_fieldsplit_1_) 4 MPI processes
@@ -243,12 +243,12 @@ PC Object: (stokes_) 4 MPI processes
             restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
             happy breakdown tolerance 1e-30
           maximum iterations=10, initial guess is zero
-          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+          tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
-        estimating eigenvalues using noisy right hand side
+        estimating eigenvalues using a noisy random number generated right-hand side
       maximum iterations=1, nonzero initial guess
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (stokes_mg_levels_3_) 4 MPI processes
@@ -259,7 +259,7 @@ PC Object: (stokes_) 4 MPI processes
       KSP Object: (stokes_mg_levels_3_fieldsplit_0_) 4 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (stokes_mg_levels_3_fieldsplit_0_) 4 MPI processes
@@ -276,7 +276,7 @@ PC Object: (stokes_) 4 MPI processes
       KSP Object: (stokes_mg_levels_3_fieldsplit_1_) 4 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (stokes_mg_levels_3_fieldsplit_1_) 4 MPI processes

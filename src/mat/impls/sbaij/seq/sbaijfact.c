@@ -14,10 +14,17 @@ PetscErrorCode MatGetInertia_SeqSBAIJ(Mat F, PetscInt *nneg, PetscInt *nzero, Pe
 
   nneg_tmp = 0;
   npos_tmp = 0;
-  for (i = 0; i < mbs; i++) {
-    if (PetscRealPart(dd[*fi]) > 0.0) npos_tmp++;
-    else if (PetscRealPart(dd[*fi]) < 0.0) nneg_tmp++;
-    fi++;
+  if (fi) {
+    for (i = 0; i < mbs; i++) {
+      if (PetscRealPart(dd[*fi]) > 0.0) npos_tmp++;
+      else if (PetscRealPart(dd[*fi]) < 0.0) nneg_tmp++;
+      fi++;
+    }
+  } else {
+    for (i = 0; i < mbs; i++) {
+      if (PetscRealPart(dd[fact->i[i]]) > 0.0) npos_tmp++;
+      else if (PetscRealPart(dd[fact->i[i]]) < 0.0) nneg_tmp++;
+    }
   }
   if (nneg) *nneg = nneg_tmp;
   if (npos) *npos = npos_tmp;
@@ -93,7 +100,7 @@ static PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F, Mat A, IS pe
         q[m]  = vj;
         q[vj] = qm;
       } /* if (vj > k) */
-    }   /* for (j=jmin; j<jmax; j++) */
+    } /* for (j=jmin; j<jmax; j++) */
 
     /* modify nonzero structure of k-th row by computing fill-in
        for each row i to be merged in */
@@ -610,7 +617,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat C, Mat A, const MatFactor
             aa[j * bs2 + k1] = dk[k1];
           }
         }
-        /* transform columnoriented blocks that lie in the lower triangle to roworiented blocks */
+        /* transform column-oriented blocks that lie in the lower triangle to row-oriented blocks */
         if (i > aj[j]) {
           ap = aa + j * bs2;                       /* ptr to the beginning of j-th block of aa */
           for (k = 0; k < bs2; k++) dk[k] = ap[k]; /* dk <- j-th block of aa */
@@ -920,7 +927,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat C, Mat A, const MatFactor
             aa[j * 4 + k1] = dk[k1];
           }
         }
-        /* transform columnoriented blocks that lie in the lower triangle to roworiented blocks */
+        /* transform column-oriented blocks that lie in the lower triangle to row-oriented blocks */
         if (i > aj[j]) {
           ap    = aa + j * 4; /* ptr to the beginning of the block */
           dk[1] = ap[1];      /* swap ap[1] and ap[2] */

@@ -149,7 +149,7 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
   Input Parameters:
 + dm        - the discretization manager object
 . numFields - the total number of fields
-- fields    - the array containing the names of each field (component); Can be NULL.
+- fields    - the array containing the names of each field (component); Can be `NULL`.
 
   Level: intermediate
 

@@ -28,7 +28,7 @@ PetscErrorCode Fibonnaci(PetscInt64 **set, PetscInt n)
                       14930352, 24157817, 39088169, 63245986, 102334155, 165580141, 267914296, 433494437, 701408733, 1134903170, 1836311903, 2971215073, 4807526976, 7778742049, 12586269025};
 
   PetscFunctionBeginUser;
-  PetscAssert((n < 50), PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONGSTATE, "n must be less than 50\n");
+  PetscAssert((n < 50), PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONGSTATE, "n must be less than 50");
   PetscCall(PetscMalloc1(n + 1, set));
   (*set)[0] = (PetscInt64)n;
   for (ii = 0; ii < n; ii++) { (*set)[ii + 1] = fib[ii]; }
@@ -106,7 +106,6 @@ PetscErrorCode test_empty_empty()
   PetscMPIInt length  = 1;
 
   PetscFunctionBeginUser;
-
   PetscCall(PetscMalloc1(1, &set_a));
   PetscCall(PetscMalloc1(1, &set_b));
 
@@ -120,7 +119,6 @@ PetscErrorCode test_empty_empty()
 
   PetscCall(PetscFree(set_a));
   PetscCall(PetscFree(set_b));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -132,7 +130,6 @@ PetscErrorCode test_a_empty()
   PetscMPIInt length  = 1;
 
   PetscFunctionBeginUser;
-
   PetscCall(PetscMalloc1(1, &set_a));
   PetscCall(PetscMalloc1(2, &set_b));
 
@@ -147,7 +144,6 @@ PetscErrorCode test_a_empty()
 
   PetscCall(PetscFree(set_a));
   PetscCall(PetscFree(set_b));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -159,7 +155,6 @@ PetscErrorCode test_b_empty()
   PetscMPIInt length  = 1;
 
   PetscFunctionBeginUser;
-
   PetscCall(PetscMalloc1(2, &set_a));
   PetscCall(PetscMalloc1(1, &set_b));
 
@@ -174,7 +169,6 @@ PetscErrorCode test_b_empty()
 
   PetscCall(PetscFree(set_a));
   PetscCall(PetscFree(set_b));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -186,7 +180,6 @@ PetscErrorCode test_identical()
   PetscMPIInt length  = 4;
 
   PetscFunctionBeginUser;
-
   PetscCall(PetscMalloc1(4, &set_a));
   PetscCall(PetscMalloc1(4, &set_b));
 
@@ -206,7 +199,6 @@ PetscErrorCode test_identical()
 
   PetscCall(PetscFree(set_a));
   PetscCall(PetscFree(set_b));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -218,7 +210,6 @@ PetscErrorCode test_disjoint()
   PetscMPIInt length  = 1;
 
   PetscFunctionBeginUser;
-
   PetscCall(PetscMalloc1(4, &set_a));
   PetscCall(PetscMalloc1(4, &set_b));
 
@@ -238,7 +229,6 @@ PetscErrorCode test_disjoint()
 
   PetscCall(PetscFree(set_a));
   PetscCall(PetscFree(set_b));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -250,7 +240,6 @@ PetscErrorCode test_single_common()
   PetscMPIInt length  = 1;
 
   PetscFunctionBeginUser;
-
   PetscCall(PetscMalloc1(4, &set_a));
   PetscCall(PetscMalloc1(5, &set_b));
 
@@ -271,7 +260,6 @@ PetscErrorCode test_single_common()
 
   PetscCall(PetscFree(set_a));
   PetscCall(PetscFree(set_b));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -283,7 +271,6 @@ PetscErrorCode test_issue_1247()
   PetscMPIInt length  = 1;
 
   PetscFunctionBeginUser;
-
   PetscCall(PetscMalloc1(3, &set_a));
   PetscCall(PetscMalloc1(2, &set_b));
 
@@ -300,7 +287,6 @@ PetscErrorCode test_issue_1247()
 
   PetscCall(PetscFree(set_a));
   PetscCall(PetscFree(set_b));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -312,7 +298,6 @@ PetscErrorCode test_empty_big()
   PetscMPIInt length  = 1;
 
   PetscFunctionBeginUser;
-
   PetscCall(PetscMalloc1(1, &set_a));
   PetscCall(Square(&set_b, 999));
 
@@ -324,7 +309,6 @@ PetscErrorCode test_empty_big()
 
   PetscCall(PetscFree(set_a));
   PetscCall(PetscFree(set_b));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -336,7 +320,6 @@ PetscErrorCode test_small_big()
   PetscMPIInt length  = 1;
 
   PetscFunctionBeginUser;
-
   PetscCall(PetscMalloc1(5, &set_a));
   PetscCall(Square(&set_b, 999));
 
@@ -352,7 +335,6 @@ PetscErrorCode test_small_big()
 
   PetscCall(PetscFree(set_a));
   PetscCall(PetscFree(set_b));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -364,7 +346,6 @@ PetscErrorCode test_moderate_big()
   PetscMPIInt length  = 1;
 
   PetscFunctionBeginUser;
-
   PetscCall(Fibonnaci(&set_a, 49));
   PetscCall(Square(&set_b, 999));
 
@@ -374,7 +355,6 @@ PetscErrorCode test_moderate_big()
 
   PetscCall(PetscFree(set_a));
   PetscCall(PetscFree(set_b));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -386,7 +366,6 @@ PetscErrorCode test_big_big()
   PetscMPIInt length = 1;
 
   PetscFunctionBeginUser;
-
   PetscCall(Cube(&set_a, 999));
   PetscCall(Square(&set_b, 999));
 
@@ -399,7 +378,6 @@ PetscErrorCode test_big_big()
   PetscCall(PetscFree(set_a));
   PetscCall(PetscFree(set_b));
   PetscCall(PetscFree(truth));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -411,7 +389,6 @@ PetscErrorCode test_big_empty()
   PetscMPIInt length  = 1;
 
   PetscFunctionBeginUser;
-
   PetscCall(Cube(&set_a, 999));
   PetscCall(PetscMalloc1(1, &set_b));
 
@@ -423,7 +400,6 @@ PetscErrorCode test_big_empty()
 
   PetscCall(PetscFree(set_a));
   PetscCall(PetscFree(set_b));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -435,7 +411,6 @@ PetscErrorCode test_big_small()
   PetscMPIInt length  = 1;
 
   PetscFunctionBeginUser;
-
   PetscCall(Cube(&set_a, 999));
   PetscCall(PetscMalloc1(5, &set_b));
 
@@ -451,7 +426,6 @@ PetscErrorCode test_big_small()
 
   PetscCall(PetscFree(set_a));
   PetscCall(PetscFree(set_b));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -463,7 +437,6 @@ PetscErrorCode test_big_moderate()
   PetscMPIInt length  = 1;
 
   PetscFunctionBeginUser;
-
   PetscCall(Cube(&set_a, 999));
   PetscCall(Fibonnaci(&set_b, 49));
 
@@ -473,7 +446,6 @@ PetscErrorCode test_big_moderate()
 
   PetscCall(PetscFree(set_a));
   PetscCall(PetscFree(set_b));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -486,7 +458,6 @@ PetscErrorCode test_big_big_reversed()
   PetscMPIInt length = 1;
 
   PetscFunctionBeginUser;
-
   PetscCall(Cube(&set_a, 999));
   PetscCall(Square(&set_b, 999));
 
@@ -499,7 +470,6 @@ PetscErrorCode test_big_big_reversed()
   PetscCall(PetscFree(set_a));
   PetscCall(PetscFree(set_b));
   PetscCall(PetscFree(truth));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -220,7 +220,7 @@ PetscErrorCode FVRHSFunction_2WaySplit(TS ts, PetscReal time, Vec X, Vec F, void
   PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, Xloc)); /* X is solution vector which does not contain ghost points       */
   PetscCall(DMGlobalToLocalEnd(da, X, INSERT_VALUES, Xloc));
 
-  PetscCall(VecZeroEntries(F)); /* F is the right hand side function corresponds to center points */
+  PetscCall(VecZeroEntries(F)); /* F is the right-hand side function corresponds to center points */
 
   PetscCall(DMDAVecGetArray(da, Xloc, &x));
   PetscCall(DMDAVecGetArray(da, F, &f));

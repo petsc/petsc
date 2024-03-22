@@ -162,7 +162,7 @@ int main(int argc, char **argv)
   } else {
     /*
        For linear problems with a time-independent f(u) in the equation
-       u_t = f(u), the user provides the discretized right-hand-side
+       u_t = f(u), the user provides the discretized right-hand side
        as a matrix only once, and then sets a null matrix evaluation
        routine.
     */
@@ -282,7 +282,6 @@ PetscErrorCode InitialConditions(Vec u, AppCtx *appctx)
      Print debugging information if desired
   */
   if (appctx->debug) PetscCall(VecView(u, PETSC_VIEWER_STDOUT_SELF));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* --------------------------------------------------------------------- */
@@ -402,7 +401,6 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal crtime, Vec u, void *ctx)
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error vector\n"));
     PetscCall(VecView(appctx->solution, PETSC_VIEWER_STDOUT_SELF));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* --------------------------------------------------------------------- */
@@ -482,7 +480,6 @@ PetscErrorCode RHSMatrixHeat(TS ts, PetscReal t, Vec X, Mat AA, Mat BB, void *ct
      to the matrix. If we do, it will generate an error.
   */
   PetscCall(MatSetOption(A, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* --------------------------------------------------------------------- */
@@ -505,7 +502,6 @@ PetscErrorCode MyBCRoutine(TS ts, PetscReal t, Vec f, void *ctx)
   fa[m - 1] = 1.0;
   PetscCall(VecRestoreArray(f, &fa));
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "t=%g\n", (double)t));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

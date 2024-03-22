@@ -22,7 +22,7 @@ KSP Object: 1 MPI process
     norm of standard error 0.156557, iterations 3
     using inexact matrix norm
   maximum iterations=10, initial guess is zero
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using UNPRECONDITIONED norm type for convergence test
 PC Object: 1 MPI process

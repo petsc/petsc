@@ -15,11 +15,11 @@ static PetscErrorCode DMInitialize_Plex(DM dm);
 /* This copies internal things in the Plex structure that we generally want when making a new, related Plex */
 PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, PetscBool copyOverlap, DM dmout)
 {
-  const PetscReal         *maxCell, *Lstart, *L;
-  VecType                  vecType;
-  MatType                  matType;
-  PetscBool                dist, useCeed;
-  DMPlexReorderDefaultFlag reorder;
+  const PetscReal     *maxCell, *Lstart, *L;
+  VecType              vecType;
+  MatType              matType;
+  PetscBool            dist, useCeed;
+  DMReorderDefaultFlag reorder;
 
   PetscFunctionBegin;
   PetscCall(DMGetVecType(dmin, &vecType));
@@ -2998,11 +2998,11 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
   PetscMPIInt rank;
   PetscInt    topoDim = 2, spaceDim = 3, numFaces = 0, numVertices = 0, numEdges = 0;
   PetscInt(*edges)[2] = NULL, *edgeSets = NULL;
-  PetscInt            *cells_flat = NULL;
-  PetscReal           *vtxCoords  = NULL;
-  TPSEvaluateFunc      evalFunc   = NULL;
-  PetscSimplePointFunc normalFunc = NULL;
-  DMLabel              label;
+  PetscInt           *cells_flat = NULL;
+  PetscReal          *vtxCoords  = NULL;
+  TPSEvaluateFunc     evalFunc   = NULL;
+  PetscSimplePointFn *normalFunc = NULL;
+  DMLabel             label;
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(DMPLEX_Generate, dm, 0, 0, 0));
@@ -3173,8 +3173,8 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
       PetscInt numBlocks, numBlocksPlus;
       const PetscInt A = 0, B = 1, C = 2, D = 3, E = 4, F = 5, G = 6, H = 7, II = 8, J = 9, K = 10, L = 11, M = 12, N = 13, O = 14, P = 15, Q = 16, R = 17, S = 18, T = 19, U = 20, V = 21, W = 22, X = 23, Y = 24, Z = 25, Ap = 26, Bp = 27, Cp = 28, Dp = 29, Ep = 30, Fp = 31, Gp = 32, Hp = 33, Ip = 34, Jp = 35, Kp = 36, Lp = 37, Mp = 38, Np = 39, Op = 40, Pp = 41, Qp = 42, Rp = 43, Sp = 44, Tp = 45, Up = 46, Vp = 47, Wp = 48, Xp = 49, Yp = 50, Zp = 51, Aq = 52, Bq = 53, Cq = 54, Dq = 55;
       const PetscInt pattern[64][4] = {
-  /* face to vertex within the coarse discretization of a single gyroid block */
-  /* layer 0 */
+        /* face to vertex within the coarse discretization of a single gyroid block */
+        /* layer 0 */
         {A,           C,           K,           G          },
         {C,           B,           II,          K          },
         {D,           A,           H,           L          },
@@ -3183,7 +3183,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
         {A + 56 * 2,  E,           N,           H + 56 * 2 },
         {F,           A + 56 * 2,  G + 56 * 2,  M          },
         {B,           F,           M,           II         },
- /* layer 1 */
+        /* layer 1 */
         {G,           K,           Q,           O          },
         {K,           II,          P,           Q          },
         {L,           H,           O + 56 * 1,  R          },
@@ -3192,7 +3192,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
         {H + 56 * 2,  N,           S,           O + 56 * 3 },
         {M,           G + 56 * 2,  O + 56 * 2,  T          },
         {II,          M,           T,           P          },
- /* layer 2 */
+        /* layer 2 */
         {O,           Q,           Y,           U          },
         {Q,           P,           W,           Y          },
         {R,           O + 56 * 1,  U + 56 * 1,  Ap         },
@@ -3201,7 +3201,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
         {O + 56 * 3,  S,           Bp,          V + 56 * 1 },
         {T,           O + 56 * 2,  V,           Z          },
         {P,           T,           Z,           X          },
- /* layer 3 */
+        /* layer 3 */
         {U,           Y,           Ep,          Dp         },
         {Y,           W,           Cp,          Ep         },
         {Ap,          U + 56 * 1,  Dp + 56 * 1, Gp         },
@@ -3210,7 +3210,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
         {V + 56 * 1,  Bp,          Fp,          Dp + 56 * 1},
         {Z,           V,           Dp,          Hp         },
         {X,           Z,           Hp,          Cp + 56 * 2},
- /* layer 4 */
+        /* layer 4 */
         {Dp,          Ep,          Mp,          Kp         },
         {Ep,          Cp,          Ip,          Mp         },
         {Gp,          Dp + 56 * 1, Lp,          Np         },
@@ -3219,7 +3219,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
         {Dp + 56 * 1, Fp,          Pp,          Lp         },
         {Hp,          Dp,          Kp,          Op         },
         {Cp + 56 * 2, Hp,          Op,          Ip + 56 * 2},
- /* layer 5 */
+        /* layer 5 */
         {Kp,          Mp,          Sp,          Rp         },
         {Mp,          Ip,          Qp,          Sp         },
         {Np,          Lp,          Rp,          Tp         },
@@ -3228,7 +3228,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
         {Lp,          Pp,          Up,          Rp         },
         {Op,          Kp,          Rp,          Vp         },
         {Ip + 56 * 2, Op,          Vp,          Qp + 56 * 2},
- /* layer 6 */
+        /* layer 6 */
         {Rp,          Sp,          Aq,          Yp         },
         {Sp,          Qp,          Wp,          Aq         },
         {Tp,          Rp,          Yp,          Cq         },
@@ -3237,7 +3237,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
         {Rp,          Up,          Dq,          Zp         },
         {Vp,          Rp,          Zp,          Bq         },
         {Qp + 56 * 2, Vp,          Bq,          Xp         },
- /* layer 7 (the top is the periodic image of the bottom of layer 0) */
+        /* layer 7 (the top is the periodic image of the bottom of layer 0) */
         {Yp,          Aq,          C + 56 * 4,  A + 56 * 4 },
         {Aq,          Wp,          B + 56 * 4,  C + 56 * 4 },
         {Cq,          Yp,          A + 56 * 4,  D + 56 * 4 },
@@ -3545,7 +3545,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
   Level: beginner
 
   Notes:
-  This meshes the surface of the Schwarz P or Gyroid surfaces.  Schwarz P is is the simplest member of the triply-periodic minimal surfaces.
+  This meshes the surface of the Schwarz P or Gyroid surfaces.  Schwarz P is the simplest member of the triply-periodic minimal surfaces.
   <https://en.wikipedia.org/wiki/Schwarz_minimal_surface#Schwarz_P_(%22Primitive%22)> and can be cut with "clean" boundaries.
   The Gyroid <https://en.wikipedia.org/wiki/Gyroid> is another triply-periodic minimal surface with applications in additive manufacturing; it is much more difficult to "cut" since there are no planes of symmetry.
   Our implementation creates a very coarse mesh of the surface and refines (by 4-way splitting) as many times as requested.
@@ -3883,7 +3883,6 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   PetscCall(PetscOptionsBool("-dm_plex_reference_cell_domain", "Use a reference cell domain", "", refDomain, &refDomain, NULL));
   PetscCall(PetscOptionsEnum("-dm_plex_shape", "Shape for built-in mesh", "", DMPlexShapes, (PetscEnum)shape, (PetscEnum *)&shape, &flg));
   PetscCall(PetscOptionsBoundedInt("-dm_plex_dim", "Topological dimension of the mesh", "DMGetDimension", dim, &dim, &flg, 0));
-  PetscCheck(dim >= 0, comm, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %" PetscInt_FMT " should be in [0, infinity)", dim);
   PetscCall(PetscOptionsBool("-dm_plex_simplex", "Mesh cell shape", "", simplex, &simplex, &flg));
   PetscCall(PetscOptionsBool("-dm_plex_interpolate", "Flag to create edges and faces automatically", "", interpolate, &interpolate, &flg));
   PetscCall(PetscOptionsBool("-dm_plex_adj_cone", "Set adjacency direction", "DMSetBasicAdjacency", adjCone, &adjCone, &flg));
@@ -4111,6 +4110,7 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM dm, PetscOptionItems *Pets
   DM_Plex  *mesh = (DM_Plex *)dm->data;
   PetscBool flg, flg2;
   char      bdLabel[PETSC_MAX_PATH_LEN];
+  char      method[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   /* Handle viewing */
@@ -4130,8 +4130,10 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM dm, PetscOptionItems *Pets
   /* Partitioning and distribution */
   PetscCall(PetscOptionsBool("-dm_plex_partition_balance", "Attempt to evenly divide points on partition boundary between processes", "DMPlexSetPartitionBalance", PETSC_FALSE, &mesh->partitionBalance, NULL));
   /* Reordering */
-  PetscCall(PetscOptionsBool("-dm_plex_reorder_section", "Compute point permutation for local section", "DMPlexReorderSectionSetDefault", PETSC_FALSE, &flg2, &flg));
-  if (flg) PetscCall(DMPlexReorderSectionSetDefault(dm, flg2 ? DMPLEX_REORDER_DEFAULT_TRUE : DMPLEX_REORDER_DEFAULT_FALSE));
+  PetscCall(PetscOptionsBool("-dm_reorder_section", "Compute point permutation for local section", "DMReorderSectionSetDefault", PETSC_FALSE, &flg2, &flg));
+  if (flg) PetscCall(DMReorderSectionSetDefault(dm, flg2 ? DM_REORDER_DEFAULT_TRUE : DM_REORDER_DEFAULT_FALSE));
+  PetscCall(PetscOptionsString("-dm_reorder_section_type", "Reordering method for local section", "DMReorderSectionSetType", method, method, PETSC_MAX_PATH_LEN, &flg));
+  if (flg) PetscCall(DMReorderSectionSetType(dm, method));
   /* Generation and remeshing */
   PetscCall(PetscOptionsBool("-dm_plex_remesh_bd", "Allow changes to the boundary on remeshing", "DMAdapt", PETSC_FALSE, &mesh->remeshBd, NULL));
   /* Projection behavior */
@@ -4217,12 +4219,12 @@ PetscErrorCode DMSetFromOptions_Overlap_Plex(DM dm, PetscOptionItems *PetscOptio
 
 static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOptionsObject)
 {
-  PetscFunctionList        ordlist;
-  char                     oname[256];
-  char                     sublabelname[PETSC_MAX_PATH_LEN] = "";
-  DMPlexReorderDefaultFlag reorder;
-  PetscReal                volume    = -1.0;
-  PetscInt                 prerefine = 0, refine = 0, r, coarsen = 0, overlap = 0, extLayers = 0, dim;
+  PetscFunctionList    ordlist;
+  char                 oname[256];
+  char                 sublabelname[PETSC_MAX_PATH_LEN] = "";
+  DMReorderDefaultFlag reorder;
+  PetscReal            volume    = -1.0;
+  PetscInt             prerefine = 0, refine = 0, r, coarsen = 0, overlap = 0, extLayers = 0, dim;
   PetscBool uniformOrig = PETSC_FALSE, created = PETSC_FALSE, uniform = PETSC_TRUE, distribute, saveSF = PETSC_FALSE, interpolate = PETSC_TRUE, coordSpace = PETSC_TRUE, remap = PETSC_TRUE, ghostCells = PETSC_FALSE, isHierarchy, ignoreModel = PETSC_FALSE, flg;
 
   PetscFunctionBegin;
@@ -4335,7 +4337,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
   PetscCall(MatGetOrderingList(&ordlist));
   PetscCall(PetscStrncpy(oname, MATORDERINGNATURAL, sizeof(oname)));
   PetscCall(PetscOptionsFList("-dm_plex_reorder", "Set mesh reordering type", "DMPlexGetOrdering", ordlist, MATORDERINGNATURAL, oname, sizeof(oname), &flg));
-  if (reorder == DMPLEX_REORDER_DEFAULT_TRUE || flg) {
+  if (reorder == DM_REORDER_DEFAULT_TRUE || flg) {
     DM pdm;
     IS perm;
 
@@ -4491,7 +4493,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
     DMPlexCoordMap map     = DM_COORD_MAP_NONE;
     PetscPointFunc mapFunc = NULL;
     PetscScalar    params[16];
-    PetscInt       Np = sizeof(params) / sizeof(params[0]), cdim;
+    PetscInt       Np = PETSC_STATIC_ARRAY_LENGTH(params), cdim;
     MPI_Comm       comm;
 
     PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
@@ -4567,7 +4569,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
     PetscCall(DMPlexReplace_Internal(dm, &gdm));
   }
   /* Handle 1D order */
-  if (reorder != DMPLEX_REORDER_DEFAULT_FALSE && dim == 1) {
+  if (reorder != DM_REORDER_DEFAULT_FALSE && dim == 1) {
     DM           cdm, rdm;
     PetscDS      cds;
     PetscObject  obj;
@@ -4679,6 +4681,7 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->clone                     = DMClone_Plex;
   dm->ops->setup                     = DMSetUp_Plex;
   dm->ops->createlocalsection        = DMCreateLocalSection_Plex;
+  dm->ops->createsectionpermutation  = DMCreateSectionPermutation_Plex;
   dm->ops->createdefaultconstraints  = DMCreateDefaultConstraints_Plex;
   dm->ops->createglobalvector        = DMCreateGlobalVector_Plex;
   dm->ops->createlocalvector         = DMCreateLocalVector_Plex;
@@ -4715,6 +4718,7 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->computel2gradientdiff     = DMComputeL2GradientDiff_Plex;
   dm->ops->computel2fielddiff        = DMComputeL2FieldDiff_Plex;
   dm->ops->getneighbors              = DMGetNeighbors_Plex;
+  dm->ops->getlocalboundingbox       = DMGetLocalBoundingBox_Coordinates;
   dm->ops->createdomaindecomposition = DMCreateDomainDecomposition_Plex;
   dm->ops->createddscatters          = DMCreateDomainDecompositionScatters_Plex;
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexInsertBoundaryValues_C", DMPlexInsertBoundaryValues_Plex));
@@ -4725,8 +4729,10 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexDistributeSetDefault_C", DMPlexDistributeSetDefault_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexReorderGetDefault_C", DMPlexReorderGetDefault_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexReorderSetDefault_C", DMPlexReorderSetDefault_Plex));
-  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexReorderSectionGetDefault_C", DMPlexReorderSectionGetDefault_Plex));
-  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexReorderSectionSetDefault_C", DMPlexReorderSectionSetDefault_Plex));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMReorderSectionGetDefault_C", DMReorderSectionGetDefault_Plex));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMReorderSectionSetDefault_C", DMReorderSectionSetDefault_Plex));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMReorderSectionGetType_C", DMReorderSectionGetType_Plex));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMReorderSectionSetType_C", DMReorderSectionSetType_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMInterpolateSolution_C", DMInterpolateSolution_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexGetOverlap_C", DMPlexGetOverlap_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexSetOverlap_C", DMPlexSetOverlap_Plex));
@@ -4794,7 +4800,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   PetscCall(PetscCitationsRegister(PlexCitation, &Plexcite));
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(PetscNew(&mesh));
-  dm->data = mesh;
+  dm->reorderSection = DM_REORDER_DEFAULT_NOTSET;
+  dm->data           = mesh;
 
   mesh->refct = 1;
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm), &mesh->coneSection));
@@ -4802,8 +4809,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   mesh->refinementUniform      = PETSC_TRUE;
   mesh->refinementLimit        = -1.0;
   mesh->distDefault            = PETSC_TRUE;
-  mesh->reorderDefault         = DMPLEX_REORDER_DEFAULT_NOTSET;
-  mesh->reorderSection         = DMPLEX_REORDER_DEFAULT_NOTSET;
+  mesh->reorderDefault         = DM_REORDER_DEFAULT_NOTSET;
   mesh->distributionName       = NULL;
   mesh->interpolated           = DMPLEX_INTERPOLATED_INVALID;
   mesh->interpolatedCollective = DMPLEX_INTERPOLATED_INVALID;
@@ -4984,7 +4990,7 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
   }
   PetscCall(DMSetPointSF(dm, sfPoint));
   PetscCall(PetscSFDestroy(&sfPoint));
-  if (vertexSF) PetscCall(PetscObjectSetName((PetscObject)(*vertexSF), "Vertex Ownership SF"));
+  if (vertexSF) PetscCall(PetscObjectSetName((PetscObject)*vertexSF, "Vertex Ownership SF"));
   /* Fill in the rest of the topology structure */
   PetscCall(DMPlexSymmetrize(dm));
   PetscCall(DMPlexStratify(dm));
@@ -5713,7 +5719,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
     PetscCall(PetscViewerFileSetName(viewer, filename));
 
     PetscCall(DMCreate(comm, dm));
-    PetscCall(PetscObjectSetName((PetscObject)(*dm), plexname));
+    PetscCall(PetscObjectSetName((PetscObject)*dm, plexname));
     PetscCall(DMSetType(*dm, DMPLEX));
     if (isXDMFHDF5) PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_HDF5_XDMF));
     PetscCall(DMLoad(*dm, viewer));
@@ -5743,7 +5749,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
     PetscCall(DMPlexCreateCellVertexFromFile(comm, filename, interpolate, dm));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot load file %s: unrecognized extension", filename);
   PetscCall(PetscStrlen(plexname, &len));
-  if (len) PetscCall(PetscObjectSetName((PetscObject)(*dm), plexname));
+  if (len) PetscCall(PetscObjectSetName((PetscObject)*dm, plexname));
   PetscCall(PetscLogEventEnd(DMPLEX_CreateFromFile, 0, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

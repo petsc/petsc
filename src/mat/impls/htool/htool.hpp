@@ -4,12 +4,12 @@
 #include <htool/misc/petsc.hpp>
 
 class WrapperHtool : public htool::VirtualGenerator<PetscScalar> {
-  PetscInt        dim;
-  MatHtoolKernel &kernel;
-  void           *ctx;
+  PetscInt           dim;
+  MatHtoolKernelFn *&kernel;
+  void              *ctx;
 
 public:
-  WrapperHtool(PetscInt M, PetscInt N, PetscInt sdim, MatHtoolKernel &g, void *kernelctx) : VirtualGenerator(M, N), dim(sdim), kernel(g), ctx(kernelctx) { }
+  WrapperHtool(PetscInt M, PetscInt N, PetscInt sdim, MatHtoolKernelFn *&g, void *kernelctx) : VirtualGenerator(M, N), dim(sdim), kernel(g), ctx(kernelctx) { }
   void copy_submatrix(PetscInt M, PetscInt N, const PetscInt *rows, const PetscInt *cols, PetscScalar *ptr) const
   {
 #if !PetscDefined(HAVE_OPENMP)
@@ -35,14 +35,14 @@ struct Mat_Htool {
   PetscInt                            depth[2];
   MatHtoolCompressorType              compressor;
   MatHtoolClusteringType              clustering;
-  MatHtoolKernel                      kernel;
+  MatHtoolKernelFn                   *kernel;
   void                               *kernelctx;
   WrapperHtool                       *wrapper;
   htool::VirtualHMatrix<PetscScalar> *hmatrix;
 };
 
 struct MatHtoolKernelTranspose {
-  Mat            A;
-  MatHtoolKernel kernel;
-  void          *kernelctx;
+  Mat               A;
+  MatHtoolKernelFn *kernel;
+  void             *kernelctx;
 };

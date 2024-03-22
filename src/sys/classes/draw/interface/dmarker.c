@@ -28,8 +28,8 @@ PetscErrorCode PetscDrawMarker(PetscDraw draw, PetscReal xl, PetscReal yl, int c
       int i, j, k;
       PetscUseTypeMethod(draw, coordinatetopixel, xl, yl, &i, &j);
       for (k = -2; k <= 2; k++) {
-        PetscCall((*draw->ops->pointpixel)(draw, i + k, j + k, cl));
-        PetscCall((*draw->ops->pointpixel)(draw, i + k, j - k, cl));
+        PetscUseTypeMethod(draw, pointpixel, i + k, j + k, cl);
+        PetscUseTypeMethod(draw, pointpixel, i + k, j - k, cl);
       }
     } else PetscUseTypeMethod(draw, string, xl, yl, cl, "x");
   } else if (draw->markertype == PETSC_DRAW_MARKER_PLUS) {
@@ -37,8 +37,8 @@ PetscErrorCode PetscDrawMarker(PetscDraw draw, PetscReal xl, PetscReal yl, int c
       int i, j, k;
       PetscUseTypeMethod(draw, coordinatetopixel, xl, yl, &i, &j);
       for (k = -2; k <= 2; k++) {
-        PetscCall((*draw->ops->pointpixel)(draw, i, j + k, cl));
-        PetscCall((*draw->ops->pointpixel)(draw, i + k, j, cl));
+        PetscUseTypeMethod(draw, pointpixel, i, j + k, cl);
+        PetscUseTypeMethod(draw, pointpixel, i + k, j, cl);
       }
     } else PetscUseTypeMethod(draw, string, xl, yl, cl, "+");
   } else if (draw->markertype == PETSC_DRAW_MARKER_CIRCLE) {
@@ -46,10 +46,10 @@ PetscErrorCode PetscDrawMarker(PetscDraw draw, PetscReal xl, PetscReal yl, int c
       int i, j, k;
       PetscUseTypeMethod(draw, coordinatetopixel, xl, yl, &i, &j);
       for (k = -1; k <= 1; k++) {
-        PetscCall((*draw->ops->pointpixel)(draw, i + 2, j + k, cl));
-        PetscCall((*draw->ops->pointpixel)(draw, i - 2, j + k, cl));
-        PetscCall((*draw->ops->pointpixel)(draw, i + k, j + 2, cl));
-        PetscCall((*draw->ops->pointpixel)(draw, i + k, j - 2, cl));
+        PetscUseTypeMethod(draw, pointpixel, i + 2, j + k, cl);
+        PetscUseTypeMethod(draw, pointpixel, i - 2, j + k, cl);
+        PetscUseTypeMethod(draw, pointpixel, i + k, j + 2, cl);
+        PetscUseTypeMethod(draw, pointpixel, i + k, j - 2, cl);
       }
     } else PetscUseTypeMethod(draw, string, xl, yl, cl, "+");
   } else PetscUseTypeMethod(draw, point, xl, yl, cl);

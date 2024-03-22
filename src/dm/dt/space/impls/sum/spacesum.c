@@ -570,6 +570,7 @@ PetscErrorCode PetscSpaceSumSetInterleave(PetscSpace sp, PetscBool interleave_ba
 static PetscErrorCode PetscSpaceSumSetInterleave_Sum(PetscSpace sp, PetscBool interleave_basis, PetscBool interleave_components)
 {
   PetscSpace_Sum *sum = (PetscSpace_Sum *)sp->data;
+
   PetscFunctionBegin;
   sum->interleave_basis      = interleave_basis;
   sum->interleave_components = interleave_components;
@@ -606,6 +607,7 @@ PetscErrorCode PetscSpaceSumGetInterleave(PetscSpace sp, PetscBool *interleave_b
 static PetscErrorCode PetscSpaceSumGetInterleave_Sum(PetscSpace sp, PetscBool *interleave_basis, PetscBool *interleave_components)
 {
   PetscSpace_Sum *sum = (PetscSpace_Sum *)sp->data;
+
   PetscFunctionBegin;
   if (interleave_basis) *interleave_basis = sum->interleave_basis;
   if (interleave_components) *interleave_components = sum->interleave_components;
@@ -681,6 +683,5 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreateSum(PetscInt numSubspaces, const Pet
   PetscCall(PetscSpaceSetNumComponents(*sumSpace, Nc));
   PetscCall(PetscSpaceSetNumVariables(*sumSpace, Nv));
   PetscCall(PetscSpaceSetUp(*sumSpace));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }

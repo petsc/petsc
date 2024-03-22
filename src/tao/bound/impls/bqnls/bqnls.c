@@ -51,7 +51,7 @@ static PetscErrorCode TaoSetFromOptions_BQNLS(Tao tao, PetscOptionItems *PetscOp
   PetscCall(PetscOptionsInt("-tao_bnk_max_cg_its", "number of BNCG iterations to take for each Newton step", "", bnk->max_cg_its, &bnk->max_cg_its, NULL));
   PetscOptionsHeadEnd();
 
-  PetscCall(TaoSetOptionsPrefix(bnk->bncg, ((PetscObject)(tao))->prefix));
+  PetscCall(TaoSetOptionsPrefix(bnk->bncg, ((PetscObject)tao)->prefix));
   PetscCall(TaoAppendOptionsPrefix(bnk->bncg, "tao_bnk_"));
   PetscCall(TaoSetFromOptions(bnk->bncg));
 

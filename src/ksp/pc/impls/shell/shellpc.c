@@ -55,7 +55,7 @@ PetscErrorCode PCShellGetContext(PC pc, void *ctx)
   PetscAssertPointer(ctx, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCSHELL, &flg));
   if (!flg) *(void **)ctx = NULL;
-  else *(void **)ctx = ((PC_Shell *)(pc->data))->ctx;
+  else *(void **)ctx = ((PC_Shell *)pc->data)->ctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -798,7 +798,7 @@ PetscErrorCode PCShellGetName(PC pc, const char *name[])
 
   Calling sequence of `apply`:
 + pc               - the preconditioner
-. b                - right-hand-side
+. b                - right-hand side
 . x                - current iterate
 . r                - work space
 . rtol             - relative tolerance of residual norm to stop at

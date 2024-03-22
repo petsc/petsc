@@ -67,6 +67,7 @@ PetscErrorCode UserContextCreate(MPI_Comm comm, UserContext **ctx)
 PetscErrorCode CommCoarsen(MPI_Comm comm, PetscInt number, PetscSubcomm *p)
 {
   PetscSubcomm psubcomm;
+
   PetscFunctionBeginUser;
   PetscCall(PetscSubcommCreate(comm, &psubcomm));
   PetscCall(PetscSubcommSetNumber(psubcomm, number));
@@ -369,6 +370,7 @@ PetscErrorCode DMCreateMatrix_ShellDA(DM dm, Mat *A)
 PetscErrorCode DMCreateGlobalVector_ShellDA(DM dm, Vec *x)
 {
   DM da;
+
   PetscFunctionBeginUser;
   PetscCall(DMShellGetContext(dm, &da));
   PetscCall(DMCreateGlobalVector(da, x));
@@ -379,6 +381,7 @@ PetscErrorCode DMCreateGlobalVector_ShellDA(DM dm, Vec *x)
 PetscErrorCode DMCreateLocalVector_ShellDA(DM dm, Vec *x)
 {
   DM da;
+
   PetscFunctionBeginUser;
   PetscCall(DMShellGetContext(dm, &da));
   PetscCall(DMCreateLocalVector(da, x));
@@ -394,7 +397,7 @@ PetscErrorCode DMCoarsen_ShellDA(DM dm, MPI_Comm comm, DM *dmc)
   if (!*dmc) {
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "The coarse DM should never be NULL. The DM hierarchy should have already been defined");
   } else {
-    PetscCall(PetscObjectReference((PetscObject)(*dmc)));
+    PetscCall(PetscObjectReference((PetscObject)*dmc));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -402,6 +405,7 @@ PetscErrorCode DMCoarsen_ShellDA(DM dm, MPI_Comm comm, DM *dmc)
 PetscErrorCode DMCreateInterpolation_ShellDA(DM dm1, DM dm2, Mat *mat, Vec *vec)
 {
   DM da1, da2;
+
   PetscFunctionBeginUser;
   PetscCall(DMShellGetContext(dm1, &da1));
   PetscCall(DMShellGetContext(dm2, &da2));
@@ -516,6 +520,7 @@ PetscErrorCode DMFieldScatter_ShellDA(DM dmf_shell, Vec x, ScatterMode mode, DM 
 PetscErrorCode DMStateScatter_ShellDA(DM dmf_shell, ScatterMode mode, DM dmc_shell)
 {
   PetscMPIInt size_f = 0, size_c = 0;
+
   PetscFunctionBeginUser;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dmf_shell), &size_f));
   if (dmc_shell) PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dmc_shell), &size_c));
@@ -954,7 +959,7 @@ PetscErrorCode ComputeRHS_DMDA(DM da, Vec b, void *ctx)
   PetscCall(VecAssemblyBegin(b));
   PetscCall(VecAssemblyEnd(b));
 
-  /* force right hand side to be consistent for singular matrix */
+  /* force right-hand side to be consistent for singular matrix */
   /* note this is really a hack, normally the model would provide you with a consistent right handside */
   if (user->bcType == NEUMANN) {
     MatNullSpace nullspace;
@@ -1071,6 +1076,7 @@ PetscErrorCode ComputeMatrix_DMDA(DM da, Mat J, Mat jac, void *ctx)
 PetscErrorCode ComputeMatrix_ShellDA(KSP ksp, Mat J, Mat jac, void *ctx)
 {
   DM dm, da;
+
   PetscFunctionBeginUser;
   PetscCall(KSPGetDM(ksp, &dm));
   PetscCall(DMShellGetContext(dm, &da));

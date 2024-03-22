@@ -261,7 +261,7 @@ PetscScalar ComputeForcingFunction(PetscReal coords[3], UserContext *user)
 }
 
 #define BCHECKEPS                   1e-10
-#define BCHECK(coordxyz, truetrace) ((coordxyz < truetrace + BCHECKEPS && coordxyz > truetrace - BCHECKEPS))
+#define BCHECK(coordxyz, truetrace) (coordxyz < truetrace + BCHECKEPS && coordxyz > truetrace - BCHECKEPS)
 
 PetscScalar EvaluateStrongDirichletCondition(PetscReal coords[3], UserContext *user)
 {
@@ -364,7 +364,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ptr)
 #endif
   }
 
-  /* force right hand side to be consistent for singular matrix */
+  /* force right-hand side to be consistent for singular matrix */
   /* note this is really a hack, normally the model would provide you with a consistent right handside */
   if (user->bcType == NEUMANN) {
     MatNullSpace nullspace;

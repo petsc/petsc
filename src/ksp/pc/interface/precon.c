@@ -97,8 +97,8 @@ PetscErrorCode PCDestroy(PC *pc)
 {
   PetscFunctionBegin;
   if (!*pc) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*pc), PC_CLASSID, 1);
-  if (--((PetscObject)(*pc))->refct > 0) {
+  PetscValidHeaderSpecific(*pc, PC_CLASSID, 1);
+  if (--((PetscObject)*pc)->refct > 0) {
     *pc = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -107,7 +107,7 @@ PetscErrorCode PCDestroy(PC *pc)
 
   /* if memory was published with SAWs then destroy it */
   PetscCall(PetscObjectSAWsViewOff((PetscObject)*pc));
-  PetscTryTypeMethod((*pc), destroy);
+  PetscTryTypeMethod(*pc, destroy);
   PetscCall(DMDestroy(&(*pc)->dm));
   PetscCall(PetscHeaderDestroy(pc));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -869,7 +869,7 @@ PetscErrorCode PCApplyRichardsonExists(PC pc, PetscBool *exists)
 
   Input Parameters:
 + pc        - the preconditioner context
-. b         - the right hand side
+. b         - the right-hand side
 . w         - one work vector
 . rtol      - relative decrease in residual norm convergence criteria
 . abstol    - absolute residual norm convergence criteria
@@ -1552,7 +1552,7 @@ PetscErrorCode PCGetOptionsPrefix(PC pc, const char *prefix[])
 }
 
 /*
-   Indicates the right hand side will be changed by KSPSolve(), this occurs for a few
+   Indicates the right-hand side will be changed by KSPSolve(), this occurs for a few
   preconditioners including BDDC and Eisentat that transform the equations before applying
   the Krylov methods
 */
@@ -1606,7 +1606,7 @@ PetscErrorCode PCPreSolve(PC pc, KSP ksp)
   PetscCall(KSPGetRhs(ksp, &rhs));
 
   if (pc->ops->presolve) PetscUseTypeMethod(pc, presolve, ksp, rhs, x);
-  else if (pc->presolve) PetscCall((pc->presolve)(pc, ksp));
+  else if (pc->presolve) PetscCall(pc->presolve(pc, ksp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

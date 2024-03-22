@@ -1,11 +1,11 @@
 lid velocity = 0.0025, prandtl # = 1., grashof # = 1.
-  0 SNES Function norm 5.097713965974e-02 
-    0 KSP Residual norm 4.478159123566e-01 
-    1 KSP Residual norm 4.332482767356e-16 
-  1 SNES Function norm 4.201124545582e-06 
-    0 KSP Residual norm 1.665838611378e-05 
-    1 KSP Residual norm 9.875827661505e-21 
-  2 SNES Function norm 1.711759823120e-14 
+  0 SNES Function norm 5.097713965974e-02
+    0 KSP Residual norm 4.478159123566e-01
+    1 KSP Residual norm 4.332482767356e-16
+  1 SNES Function norm 4.201124545582e-06
+    0 KSP Residual norm 1.665838611378e-05
+    1 KSP Residual norm 9.875827661505e-21
+  2 SNES Function norm 1.711759823120e-14
 SNES Object: 4 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
@@ -26,7 +26,7 @@ SNES Object: 4 MPI processes
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object: 4 MPI processes

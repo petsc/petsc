@@ -58,7 +58,6 @@ int main(int argc, char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-  PetscFunctionBeginUser;
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only!");
 
@@ -96,7 +95,7 @@ int main(int argc, char **argv)
   /* Create TAO solver and set desired solution method */
   PetscCall(TaoCreate(PETSC_COMM_WORLD, &tao));
   PetscCall(TaoSetType(tao, TAOBLMVM));
-  if (printtofile) PetscCall(TaoSetMonitor(tao, (PetscErrorCode(*)(Tao, void *))monitor, (void *)&ctx, NULL));
+  if (printtofile) PetscCall(TaoMonitorSet(tao, (PetscErrorCode(*)(Tao, void *))monitor, (void *)&ctx, NULL));
   PetscCall(TaoSetMaximumIterations(tao, 30));
   /*
      Optimization starts
@@ -193,8 +192,8 @@ PetscErrorCode FormFunction(Tao tao, Vec P, PetscReal *f, void *ctx0)
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
   PetscCall(TSSetProblemType(ts, TS_NONLINEAR));
   PetscCall(TSSetType(ts, TSCN));
-  PetscCall(TSSetIFunction(ts, NULL, (TSIFunction)IFunction, ctx));
-  PetscCall(TSSetIJacobian(ts, A, A, (TSIJacobian)IJacobian, ctx));
+  PetscCall(TSSetIFunction(ts, NULL, (TSIFunctionFn *)IFunction, ctx));
+  PetscCall(TSSetIJacobian(ts, A, A, (TSIJacobianFn *)IJacobian, ctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -214,7 +213,7 @@ PetscErrorCode FormFunction(Tao tao, Vec P, PetscReal *f, void *ctx0)
   PetscCall(TSCreateQuadratureTS(ts, PETSC_TRUE, &quadts));
   PetscCall(TSGetSolution(quadts, &q));
   PetscCall(VecSet(q, 0.0));
-  PetscCall(TSSetRHSFunction(quadts, NULL, (TSRHSFunction)CostIntegrand, ctx));
+  PetscCall(TSSetRHSFunction(quadts, NULL, (TSRHSFunctionFn *)CostIntegrand, ctx));
   PetscCall(TSSetFromOptions(ts));
 
   direction[0] = direction[1] = 1;

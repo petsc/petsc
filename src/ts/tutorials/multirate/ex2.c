@@ -145,11 +145,11 @@ int main(int argc, char **argv)
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
   PetscCall(TSSetType(ts, TSMPRK));
 
-  PetscCall(TSSetRHSFunction(ts, NULL, (TSRHSFunction)RHSFunction, &ctx));
+  PetscCall(TSSetRHSFunction(ts, NULL, (TSRHSFunctionFn *)RHSFunction, &ctx));
   PetscCall(TSRHSSplitSetIS(ts, "slow", iss));
   PetscCall(TSRHSSplitSetIS(ts, "fast", isf));
-  PetscCall(TSRHSSplitSetRHSFunction(ts, "slow", NULL, (TSRHSFunction)RHSFunctionslow, &ctx));
-  PetscCall(TSRHSSplitSetRHSFunction(ts, "fast", NULL, (TSRHSFunction)RHSFunctionfast, &ctx));
+  PetscCall(TSRHSSplitSetRHSFunction(ts, "slow", NULL, (TSRHSFunctionFn *)RHSFunctionslow, &ctx));
+  PetscCall(TSRHSSplitSetRHSFunction(ts, "fast", NULL, (TSRHSFunctionFn *)RHSFunctionfast, &ctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions

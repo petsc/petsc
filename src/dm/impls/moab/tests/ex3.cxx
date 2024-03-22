@@ -46,7 +46,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   PetscCall(PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent));
   PetscFunctionReturn(PETSC_SUCCESS);
-};
+}
 
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user)
 {

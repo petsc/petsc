@@ -28,7 +28,7 @@ typedef struct {
   PetscScalar *h;         /* the matrix formed as q_ij = (rdot_i, rdot_j) */
   PetscScalar *g;         /* the dotproducts of the previous function with the candidate functions */
   PetscBLASInt n;         /* matrix dimension -- nsnes */
-  PetscBLASInt nrhs;      /* the number of right hand sides */
+  PetscBLASInt nrhs;      /* the number of right-hand sides */
   PetscBLASInt lda;       /* the padded matrix dimension */
   PetscBLASInt ldb;       /* the padded vector dimension */
   PetscReal   *s;         /* the singular values */
@@ -367,7 +367,6 @@ static PetscErrorCode SNESSetUp_Composite(SNES snes)
 #endif
     PetscCall(PetscMalloc1(jac->lwork, &jac->work));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -112,6 +112,7 @@ PETSC_EXTERN PetscErrorCode DMStagGetProductCoordinateArraysRead(DM, void *, voi
 PETSC_EXTERN PetscErrorCode DMStagGetProductCoordinateLocationSlot(DM, DMStagStencilLocation, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMStagGetStencilType(DM, DMStagStencilType *);
 PETSC_EXTERN PetscErrorCode DMStagGetStencilWidth(DM, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMStagGetRefinementFactor(DM, PetscInt *, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMStagMatGetValuesStencil(DM, Mat, PetscInt, const DMStagStencil *, PetscInt, const DMStagStencil *, PetscScalar *);
 PETSC_EXTERN PetscErrorCode DMStagMatSetValuesStencil(DM, Mat, PetscInt, const DMStagStencil *, PetscInt, const DMStagStencil *, const PetscScalar *, InsertMode);
 PETSC_EXTERN PetscErrorCode DMStagMigrateVec(DM, Vec, DM, Vec);
@@ -127,6 +128,7 @@ PETSC_EXTERN PetscErrorCode DMStagSetNumRanks(DM, PetscInt, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMStagSetOwnershipRanges(DM, PetscInt const *, PetscInt const *, PetscInt const *);
 PETSC_EXTERN PetscErrorCode DMStagSetStencilType(DM, DMStagStencilType);
 PETSC_EXTERN PetscErrorCode DMStagSetStencilWidth(DM, PetscInt);
+PETSC_EXTERN PetscErrorCode DMStagSetRefinementFactor(DM, PetscInt, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMStagSetUniformCoordinates(DM, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);
 PETSC_EXTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit(DM, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);
 PETSC_EXTERN PetscErrorCode DMStagSetUniformCoordinatesProduct(DM, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);

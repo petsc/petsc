@@ -43,8 +43,8 @@ PETSC_EXTERN PetscLogEvent KSP_AGMRESRoddec;
 #define VEC_TMP_MATOP agmres->vecs[1]
 #define VEC_V(i)      agmres->vecs[VEC_OFFSET + i]
 
-#define MAXKSPSIZE ((agmres->DeflPrecond) ? (agmres->max_k) : (agmres->max_k + agmres->max_neig))
-#define KSPSIZE    ((agmres->DeflPrecond) ? (agmres->max_k) : (agmres->max_k + agmres->r))
+#define MAXKSPSIZE (agmres->DeflPrecond ? agmres->max_k : (agmres->max_k + agmres->max_neig))
+#define KSPSIZE    (agmres->DeflPrecond ? agmres->max_k : (agmres->max_k + agmres->r))
 #define H(a, b)    (agmres->hh_origin + (b) * (MAXKSPSIZE + 2) + (a))
 #define HS(a, b)   (agmres->hes_origin + (b) * (MAXKSPSIZE + 1) + (a))
 #define RLOC(a, b) (agmres->Rloc + (b) * (MAXKSPSIZE + 1) + (a))

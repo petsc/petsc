@@ -61,8 +61,8 @@ int main(int argc, char **argv)
     PetscViewer sviewer;
 
     PetscCall(PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD));
-    PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD, "\nLocal Vector: processor %d\n", rank));
     PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &sviewer));
+    PetscCall(PetscViewerASCIIPrintf(sviewer, "\nLocal Vector: processor %d\n", rank));
     PetscCall(VecView(local, sviewer));
     PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &sviewer));
     PetscCall(PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD));

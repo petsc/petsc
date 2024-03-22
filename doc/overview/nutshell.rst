@@ -13,7 +13,7 @@ PETSc/TAO is a tool for writing, analyzing, and optimizing large-scale numerical
 Algebraic objects
 =================
 
-* :any:`Vectors <ch_vectors>` - containers for simulation solutions, right hand sides of linear systems, etc (``Vec``).
+* :any:`Vectors <ch_vectors>` - containers for simulation solutions, right-hand sides of linear systems, etc (``Vec``).
 
 * :any:`Matrices <ch_matrices>`  - contain Jacobians and operators that define linear systems (``Mat``).
 

@@ -180,7 +180,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
       alpha = PetscSqrtReal(alpha);
       PetscCall(VecScale(Z, 1.0 / alpha));
     }
-    PetscCall(VecScale(V1, 1.0 / alpha)); /* alpha*V1 = Amat^T*U1 - beta*V */
+    if (alpha > 0.) PetscCall(VecScale(V1, 1.0 / alpha)); /* alpha*V1 = Amat^T*U1 - beta*V */
     rho    = PetscSqrtScalar(rhobar * rhobar + beta * beta);
     c      = rhobar / rho;
     s      = beta / rho;

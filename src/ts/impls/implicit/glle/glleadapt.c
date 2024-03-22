@@ -153,11 +153,11 @@ PetscErrorCode TSGLLEAdaptDestroy(TSGLLEAdapt *adapt)
   PetscFunctionBegin;
   if (!*adapt) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*adapt, TSGLLEADAPT_CLASSID, 1);
-  if (--((PetscObject)(*adapt))->refct > 0) {
+  if (--((PetscObject)*adapt)->refct > 0) {
     *adapt = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  PetscTryTypeMethod((*adapt), destroy);
+  PetscTryTypeMethod(*adapt, destroy);
   PetscCall(PetscHeaderDestroy(adapt));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

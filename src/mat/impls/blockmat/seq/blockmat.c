@@ -50,7 +50,7 @@ static PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A, Vec bb, PetscReal omega, 
 
   PetscCall(VecSet(xx, 0.0));
   PetscCall(VecGetArray(xx, &x));
-  /* copy right hand side because it must be modified during iteration */
+  /* copy right-hand side because it must be modified during iteration */
   PetscCall(VecCopy(bb, a->workb));
   PetscCall(VecGetArrayRead(a->workb, &b));
 
@@ -75,7 +75,7 @@ static PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A, Vec bb, PetscReal omega, 
         PetscCall(VecPlaceArray(right, x + i * bs));
         PetscCall(MatSolve(diag[i], left, right));
 
-        /* now adjust right hand side, see MatSOR_SeqSBAIJ */
+        /* now adjust right-hand side, see MatSOR_SeqSBAIJ */
         for (j = 0; j < n; j++) {
           PetscCall(MatMultTranspose(v[j], right, left));
           PetscCall(VecPlaceArray(middle, b + idx[j] * bs));
@@ -313,7 +313,7 @@ static PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
       notdone = PETSC_FALSE;
       nextcol = 1000000000;
       for (j = 0; j < bs; j++) {
-        while ((ilens[j] > 0 && ii[j][0] / bs <= currentcol)) {
+        while (ilens[j] > 0 && ii[j][0] / bs <= currentcol) {
           ii[j]++;
           ilens[j]--;
         }
@@ -350,8 +350,8 @@ static PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
       notdone = PETSC_FALSE;
       nextcol = 1000000000;
       PetscCall(PetscArrayzero(llens, bs));
-      for (j = 0; j < bs; j++) {                                /* loop over rows in block */
-        while ((ilens[j] > 0 && ii[j][0] / bs <= currentcol)) { /* loop over columns in row */
+      for (j = 0; j < bs; j++) {                              /* loop over rows in block */
+        while (ilens[j] > 0 && ii[j][0] / bs <= currentcol) { /* loop over columns in row */
           ii[j]++;
           ilens[j]--;
           llens[j]++;
@@ -820,6 +820,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
                                        NULL,
                                        NULL,
                                        /*150*/ NULL,
+                                       NULL,
                                        NULL};
 
 /*@C

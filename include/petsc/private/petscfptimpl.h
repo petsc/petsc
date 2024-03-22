@@ -9,7 +9,7 @@
 #define PetscCallQ(A) \
   do { \
     PetscErrorCode ierr = A; \
-    if (ierr) return (ierr); \
+    if (ierr) return ierr; \
   } while (0);
 
 typedef struct _n_PetscFPT *PetscFPT;
@@ -69,7 +69,7 @@ static inline PetscErrorCode PetscFPTCreate(PetscInt n)
 static inline unsigned long PetscFPTHashPointer(void *ptr)
 {
 #define PETSC_FPT_HASH_FACT 79943
-  return ((PETSC_FPT_HASH_FACT * ((size_t)ptr)) % PetscFPTData->tablesize);
+  return (PETSC_FPT_HASH_FACT * ((size_t)ptr)) % PetscFPTData->tablesize;
 }
 
 static inline PetscErrorCode PetscFPTAdd(void *key, const char *data)

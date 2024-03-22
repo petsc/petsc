@@ -1,15 +1,15 @@
   Residual norms for stokes_ solve.
-  0 KSP Residual norm 0.0239928 
-  1 KSP Residual norm 0.00018525 
-  2 KSP Residual norm 3.95184e-05 
-  3 KSP Residual norm 8.60318e-07 
-  4 KSP Residual norm 9.54453e-08 
+  0 KSP Residual norm 0.0239928
+  1 KSP Residual norm 0.00018525
+  2 KSP Residual norm 3.95184e-05
+  3 KSP Residual norm 8.60318e-07
+  4 KSP Residual norm 9.54453e-08
 KSP Object: (stokes_) 1 MPI process
   type: fgmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     happy breakdown tolerance 1e-30
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
   right preconditioning
   using UNPRECONDITIONED norm type for convergence test
 PC Object: (stokes_) 1 MPI process
@@ -23,7 +23,7 @@ PC Object: (stokes_) 1 MPI process
   KSP Object: (stokes_fieldsplit_u_) 1 MPI process
     type: preonly
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using NONE norm type for convergence test
   PC Object: (stokes_fieldsplit_u_) 1 MPI process
@@ -57,7 +57,7 @@ PC Object: (stokes_) 1 MPI process
   KSP Object: (stokes_fieldsplit_p_) 1 MPI process
     type: preonly
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using NONE norm type for convergence test
   PC Object: (stokes_fieldsplit_p_) 1 MPI process

@@ -40,7 +40,7 @@ static PetscErrorCode KSPSetUp_FGMRES(KSP ksp)
 
 static PetscErrorCode KSPFGMRESResidual(KSP ksp)
 {
-  KSP_FGMRES *fgmres = (KSP_FGMRES *)(ksp->data);
+  KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data;
   Mat         Amat, Pmat;
 
   PetscFunctionBegin;
@@ -55,7 +55,7 @@ static PetscErrorCode KSPFGMRESResidual(KSP ksp)
 
 static PetscErrorCode KSPFGMRESCycle(PetscInt *itcount, KSP ksp)
 {
-  KSP_FGMRES *fgmres = (KSP_FGMRES *)(ksp->data);
+  KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data;
   PetscReal   res_norm;
   PetscReal   hapbnd, tt;
   PetscBool   hapend = PETSC_FALSE;  /* indicates happy breakdown ending */
@@ -78,7 +78,7 @@ static PetscErrorCode KSPFGMRESCycle(PetscInt *itcount, KSP ksp)
   PetscCall(VecNorm(VEC_VV(0), NORM_2, &res_norm));
   KSPCheckNorm(ksp, res_norm);
 
-  /* first entry in right-hand-side of hessenberg system is just
+  /* The first entry in the right-hand side of the Hessenberg system is just
      the initial residual norm */
   *RS(0) = res_norm;
 
@@ -126,7 +126,7 @@ static PetscErrorCode KSPFGMRESCycle(PetscInt *itcount, KSP ksp)
     /* Multiply preconditioned vector by operator - put in VEC_VV(loc_it+1) */
     PetscCall(KSP_MatMult(ksp, Amat, PREVEC(loc_it), VEC_VV(1 + loc_it)));
 
-    /* update hessenberg matrix and do Gram-Schmidt - new direction is in
+    /* update Hessenberg matrix and do Gram-Schmidt - new direction is in
        VEC_VV(1+loc_it)*/
     PetscCall((*fgmres->orthog)(ksp, loc_it));
 
@@ -157,7 +157,7 @@ static PetscErrorCode KSPFGMRESCycle(PetscInt *itcount, KSP ksp)
        nonsingular (in GMRES, the nonsingularity of A implies the nonsingularity
        of HES). So we should really add a check to verify that HES is nonsingular.*/
 
-    /* Now apply rotations to new col of hessenberg (and right side of system),
+    /* Now apply rotations to the new column of Hessenberg (and the right-hand side of the system),
        calculate new rotation, and get new residual norm at the same time*/
     PetscCall(KSPFGMRESUpdateHessenberg(ksp, loc_it, hapend, &res_norm));
     if (ksp->reason) break;
@@ -258,7 +258,7 @@ static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest
 {
   PetscScalar tt;
   PetscInt    ii, k, j;
-  KSP_FGMRES *fgmres = (KSP_FGMRES *)(ksp->data);
+  KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data;
 
   PetscFunctionBegin;
   /* Solve for solution vector that minimizes the residual */
@@ -303,7 +303,7 @@ static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
 {
   PetscScalar *hh, *cc, *ss, tt;
   PetscInt     j;
-  KSP_FGMRES  *fgmres = (KSP_FGMRES *)(ksp->data);
+  KSP_FGMRES  *fgmres = (KSP_FGMRES *)ksp->data;
 
   PetscFunctionBegin;
   hh = HH(0, it); /* pointer to beginning of column to update - so
@@ -326,7 +326,7 @@ static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
 
   /*
     compute the new plane rotation, and apply it to:
-     1) the right-hand-side of the Hessenberg system (RS)
+     1) the right-hand side of the Hessenberg system (RS)
         note: it affects RS(it) and RS(it+1)
      2) the new column of the Hessenberg matrix
         note: it affects HH(it,it) which is currently pointed to

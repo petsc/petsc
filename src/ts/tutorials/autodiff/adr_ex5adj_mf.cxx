@@ -57,7 +57,6 @@ int main(int argc, char **argv)
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-forwardonly", &forwardonly, NULL));
-  PetscFunctionBeginUser;
   appctx.D1    = 8.0e-5;
   appctx.D2    = 4.0e-5;
   appctx.gamma = .024;
@@ -102,7 +101,7 @@ int main(int argc, char **argv)
   PetscCall(TSSetType(ts, TSCN));
   PetscCall(TSSetDM(ts, da));
   PetscCall(TSSetProblemType(ts, TS_NONLINEAR));
-  PetscCall(DMDATSSetIFunctionLocal(da, INSERT_VALUES, (DMDATSIFunctionLocal)IFunctionLocalPassive, &appctx));
+  PetscCall(DMDATSSetIFunctionLocal(da, INSERT_VALUES, (DMDATSIFunctionLocalFn *)IFunctionLocalPassive, &appctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Some data required for matrix-free context
@@ -254,9 +253,9 @@ PetscErrorCode IFunctionLocalPassive(DMDALocalInfo *info, PetscReal t, Field **u
   PetscScalar uc, uxx, uyy, vc, vxx, vyy;
 
   PetscFunctionBegin;
-  hx = 2.50 / (PetscReal)(info->mx);
+  hx = 2.50 / (PetscReal)info->mx;
   sx = 1.0 / (hx * hx);
-  hy = 2.50 / (PetscReal)(info->my);
+  hy = 2.50 / (PetscReal)info->my;
   sy = 1.0 / (hy * hy);
 
   /* Get local grid boundaries */
@@ -299,9 +298,9 @@ PetscErrorCode IFunctionActive(TS ts, PetscReal ftime, Vec U, Vec Udot, Vec F, v
   PetscCall(TSGetDM(ts, &da));
   PetscCall(DMDAGetLocalInfo(da, &info));
   PetscCall(DMGetLocalVector(da, &localU));
-  hx  = 2.50 / (PetscReal)(info.mx);
+  hx  = 2.50 / (PetscReal)info.mx;
   sx  = 1.0 / (hx * hx);
-  hy  = 2.50 / (PetscReal)(info.my);
+  hy  = 2.50 / (PetscReal)info.my;
   sy  = 1.0 / (hy * hy);
   xs  = info.xs;
   xm  = info.xm;

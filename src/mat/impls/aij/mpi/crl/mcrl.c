@@ -35,7 +35,7 @@ static PetscErrorCode MatDestroy_MPIAIJCRL(Mat A)
 static PetscErrorCode MatMPIAIJCRL_create_aijcrl(Mat A)
 {
   Mat_MPIAIJ  *a   = (Mat_MPIAIJ *)(A)->data;
-  Mat_SeqAIJ  *Aij = (Mat_SeqAIJ *)(a->A->data), *Bij = (Mat_SeqAIJ *)(a->B->data);
+  Mat_SeqAIJ  *Aij = (Mat_SeqAIJ *)a->A->data, *Bij = (Mat_SeqAIJ *)a->B->data;
   Mat_AIJCRL  *aijcrl = (Mat_AIJCRL *)A->spptr;
   PetscInt     m      = A->rmap->n;       /* Number of rows in the matrix. */
   PetscInt     nd     = a->A->cmap->n;    /* number of columns in diagonal portion */
@@ -68,7 +68,7 @@ static PetscErrorCode MatMPIAIJCRL_create_aijcrl(Mat A)
       icols[j * m + i] = (j) ? icols[(j - 1) * m + i] : 0; /* handle case where row is EMPTY */
     }
   }
-  PetscCall(PetscInfo(A, "Percentage of 0's introduced for vectorized multiply %g\n", 1.0 - ((double)(aijcrl->nz)) / ((double)(rmax * m))));
+  PetscCall(PetscInfo(A, "Percentage of 0's introduced for vectorized multiply %g\n", 1.0 - ((double)aijcrl->nz) / ((double)(rmax * m))));
 
   PetscCall(PetscFree(aijcrl->array));
   PetscCall(PetscMalloc1(a->B->cmap->n + nd, &array));
@@ -86,7 +86,7 @@ static PetscErrorCode MatMPIAIJCRL_create_aijcrl(Mat A)
 static PetscErrorCode MatAssemblyEnd_MPIAIJCRL(Mat A, MatAssemblyType mode)
 {
   Mat_MPIAIJ *a   = (Mat_MPIAIJ *)A->data;
-  Mat_SeqAIJ *Aij = (Mat_SeqAIJ *)(a->A->data), *Bij = (Mat_SeqAIJ *)(a->A->data);
+  Mat_SeqAIJ *Aij = (Mat_SeqAIJ *)a->A->data, *Bij = (Mat_SeqAIJ *)a->A->data;
 
   PetscFunctionBegin;
   Aij->inode.use = PETSC_FALSE;

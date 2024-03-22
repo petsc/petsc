@@ -41,7 +41,7 @@ KSP Object: 2 MPI processes
     norm of standard error 4.77552e-05, iterations 35
     using inexact matrix norm
   maximum iterations=200, initial guess is zero
-  tolerances:  relative=0.001, absolute=1e-50, divergence=10000.
+  tolerances: relative=0.001, absolute=1e-50, divergence=10000.
   left preconditioning
   using UNPRECONDITIONED norm type for convergence test
 PC Object: 2 MPI processes

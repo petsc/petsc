@@ -85,6 +85,297 @@ PetscErrorCode DMCreateLocalVector_Section_Private(DM dm, Vec *vec)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode PetscSectionSelectFields_Private(PetscSection s, PetscSection gs, PetscInt numFields, const PetscInt fields[], const PetscInt numComps[], const PetscInt comps[], IS *is)
+{
+  PetscInt *subIndices;
+  PetscInt  bs = 0, bsLocal[2], bsMinMax[2];
+  PetscInt  pStart, pEnd, Nc, subSize = 0, subOff = 0;
+
+  PetscFunctionBegin;
+  PetscCall(PetscSectionGetChart(gs, &pStart, &pEnd));
+  if (numComps) {
+    for (PetscInt f = 0, off = 0; f < numFields; ++f) {
+      PetscInt Nc;
+
+      if (numComps[f] < 0) continue;
+      PetscCall(PetscSectionGetFieldComponents(s, f, &Nc));
+      PetscCheck(numComps[f] <= Nc, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field %" PetscInt_FMT ": Number of selected components %" PetscInt_FMT " > %" PetscInt_FMT " number of field components", f, numComps[f], Nc);
+      for (PetscInt c = 0; c < numComps[f]; ++c, ++off) PetscCheck(comps[off] < Nc, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field %" PetscInt_FMT ": component %" PetscInt_FMT " not in [0, %" PetscInt_FMT ")", f, comps[off], Nc);
+      bs += numComps[f];
+    }
+  } else {
+    for (PetscInt f = 0; f < numFields; ++f) {
+      PetscInt Nc;
+
+      PetscCall(PetscSectionGetFieldComponents(s, fields[f], &Nc));
+      bs += Nc;
+    }
+  }
+  for (PetscInt p = pStart; p < pEnd; ++p) {
+    PetscInt gdof, pSubSize = 0;
+
+    PetscCall(PetscSectionGetDof(gs, p, &gdof));
+    if (gdof > 0) {
+      PetscInt off = 0;
+
+      for (PetscInt f = 0; f < numFields; ++f) {
+        PetscInt fdof, fcdof, sfdof, sfcdof = 0;
+
+        PetscCall(PetscSectionGetFieldComponents(s, f, &Nc));
+        PetscCall(PetscSectionGetFieldDof(s, p, fields[f], &fdof));
+        PetscCall(PetscSectionGetFieldConstraintDof(s, p, fields[f], &fcdof));
+        if (numComps && numComps[f] >= 0) {
+          const PetscInt *ind;
+
+          // Assume sets of dofs on points are of size Nc
+          PetscCheck(!(fdof % Nc), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components %" PetscInt_FMT " should evenly divide the dofs %" PetscInt_FMT " on point %" PetscInt_FMT, Nc, fdof, p);
+          sfdof = (fdof / Nc) * numComps[f];
+          PetscCall(PetscSectionGetFieldConstraintIndices(s, p, fields[f], &ind));
+          for (PetscInt i = 0; i < (fdof / Nc); ++i) {
+            for (PetscInt c = 0, fcc = 0; c < Nc; ++c) {
+              if (c == comps[off + fcc]) {
+                ++fcc;
+                ++sfcdof;
+              }
+            }
+          }
+          pSubSize += sfdof - sfcdof;
+          off += numComps[f];
+        } else {
+          pSubSize += fdof - fcdof;
+        }
+      }
+      subSize += pSubSize;
+      if (pSubSize && bs != pSubSize) {
+        // Layout does not admit a pointwise block size
+        bs = 1;
+      }
+    }
+  }
+  // Must have same blocksize on all procs (some might have no points)
+  bsLocal[0] = bs < 0 ? PETSC_MAX_INT : bs;
+  bsLocal[1] = bs;
+  PetscCall(PetscGlobalMinMaxInt(PetscObjectComm((PetscObject)gs), bsLocal, bsMinMax));
+  if (bsMinMax[0] != bsMinMax[1]) {
+    bs = 1;
+  } else {
+    bs = bsMinMax[0];
+  }
+  PetscCall(PetscMalloc1(subSize, &subIndices));
+  for (PetscInt p = pStart; p < pEnd; ++p) {
+    PetscInt gdof, goff;
+
+    PetscCall(PetscSectionGetDof(gs, p, &gdof));
+    if (gdof > 0) {
+      PetscInt off = 0;
+
+      PetscCall(PetscSectionGetOffset(gs, p, &goff));
+      for (PetscInt f = 0; f < numFields; ++f) {
+        PetscInt fdof, fcdof, poff = 0;
+
+        /* Can get rid of this loop by storing field information in the global section */
+        for (PetscInt f2 = 0; f2 < fields[f]; ++f2) {
+          PetscCall(PetscSectionGetFieldDof(s, p, f2, &fdof));
+          PetscCall(PetscSectionGetFieldConstraintDof(s, p, f2, &fcdof));
+          poff += fdof - fcdof;
+        }
+        PetscCall(PetscSectionGetFieldDof(s, p, fields[f], &fdof));
+        PetscCall(PetscSectionGetFieldConstraintDof(s, p, fields[f], &fcdof));
+
+        if (numComps && numComps[f] >= 0) {
+          const PetscInt *ind;
+
+          // Assume sets of dofs on points are of size Nc
+          PetscCall(PetscSectionGetFieldConstraintIndices(s, p, fields[f], &ind));
+          for (PetscInt i = 0, fcoff = 0, pfoff = 0; i < (fdof / Nc); ++i) {
+            for (PetscInt c = 0, fcc = 0; c < Nc; ++c) {
+              const PetscInt k = i * Nc + c;
+
+              if (ind[fcoff] == k) {
+                ++fcoff;
+                continue;
+              }
+              if (c == comps[off + fcc]) {
+                ++fcc;
+                subIndices[subOff++] = goff + poff + pfoff;
+              }
+              ++pfoff;
+            }
+          }
+          off += numComps[f];
+        } else {
+          for (PetscInt fc = 0; fc < fdof - fcdof; ++fc, ++subOff) subIndices[subOff] = goff + poff + fc;
+        }
+      }
+    }
+  }
+  PetscCheck(subSize == subOff, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "The offset array size %" PetscInt_FMT " != %" PetscInt_FMT " the number of indices", subSize, subOff);
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)gs), subSize, subIndices, PETSC_OWN_POINTER, is));
+  if (bs > 1) {
+    // We need to check that the block size does not come from non-contiguous fields
+    PetscInt set = 1, rset = 1;
+    for (PetscInt i = 0; i < subSize; i += bs) {
+      for (PetscInt j = 0; j < bs; ++j) {
+        if (subIndices[i + j] != subIndices[i] + j) {
+          set = 0;
+          break;
+        }
+      }
+    }
+    PetscCall(MPIU_Allreduce(&set, &rset, 1, MPIU_INT, MPI_PROD, PetscObjectComm((PetscObject)gs)));
+    if (rset) PetscCall(ISSetBlockSize(*is, bs));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMSelectFields_Private(DM dm, PetscSection section, PetscInt numFields, const PetscInt fields[], const PetscInt numComps[], const PetscInt comps[], IS *is, DM *subdm)
+{
+  PetscSection subsection;
+  PetscBool    haveNull = PETSC_FALSE;
+  PetscInt     nf = 0, of = 0;
+
+  PetscFunctionBegin;
+  if (numComps) {
+    const PetscInt field = fields[0];
+
+    PetscCheck(numFields == 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "We only support a single field for component selection right now");
+    PetscCall(PetscSectionCreateComponentSubsection(section, numComps[field], comps, &subsection));
+    PetscCall(DMSetLocalSection(*subdm, subsection));
+    PetscCall(PetscSectionDestroy(&subsection));
+    (*subdm)->nullspaceConstructors[field] = dm->nullspaceConstructors[field];
+    if (dm->probs) {
+      PetscFV  fv, fvNew;
+      PetscInt fnum[1] = {field};
+
+      PetscCall(DMSetNumFields(*subdm, 1));
+      PetscCall(DMGetField(dm, field, NULL, (PetscObject *)&fv));
+      PetscCall(PetscFVClone(fv, &fvNew));
+      PetscCall(PetscFVSetNumComponents(fvNew, numComps[0]));
+      PetscCall(DMSetField(*subdm, 0, NULL, (PetscObject)fvNew));
+      PetscCall(PetscFVDestroy(&fvNew));
+      PetscCall(DMCreateDS(*subdm));
+      if (numComps[0] == 1 && is) {
+        PetscObject disc, space, pmat;
+
+        PetscCall(DMGetField(*subdm, field, NULL, &disc));
+        PetscCall(PetscObjectQuery(disc, "nullspace", &space));
+        if (space) PetscCall(PetscObjectCompose((PetscObject)*is, "nullspace", space));
+        PetscCall(PetscObjectQuery(disc, "nearnullspace", &space));
+        if (space) PetscCall(PetscObjectCompose((PetscObject)*is, "nearnullspace", space));
+        PetscCall(PetscObjectQuery(disc, "pmat", &pmat));
+        if (pmat) PetscCall(PetscObjectCompose((PetscObject)*is, "pmat", pmat));
+      }
+      PetscCall(PetscDSCopyConstants(dm->probs[field].ds, (*subdm)->probs[0].ds));
+      PetscCall(PetscDSCopyBoundary(dm->probs[field].ds, 1, fnum, (*subdm)->probs[0].ds));
+      PetscCall(PetscDSSelectEquations(dm->probs[field].ds, 1, fnum, (*subdm)->probs[0].ds));
+    }
+    if ((*subdm)->nullspaceConstructors[0] && is) {
+      MatNullSpace nullSpace;
+
+      PetscCall((*(*subdm)->nullspaceConstructors[0])(*subdm, 0, 0, &nullSpace));
+      PetscCall(PetscObjectCompose((PetscObject)*is, "nullspace", (PetscObject)nullSpace));
+      PetscCall(MatNullSpaceDestroy(&nullSpace));
+    }
+    if (dm->coarseMesh) PetscCall(DMCreateSubDM(dm->coarseMesh, numFields, fields, NULL, &(*subdm)->coarseMesh));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  PetscCall(PetscSectionCreateSubsection(section, numFields, fields, &subsection));
+  PetscCall(DMSetLocalSection(*subdm, subsection));
+  PetscCall(PetscSectionDestroy(&subsection));
+  for (PetscInt f = 0; f < numFields; ++f) {
+    (*subdm)->nullspaceConstructors[f] = dm->nullspaceConstructors[fields[f]];
+    if ((*subdm)->nullspaceConstructors[f]) {
+      haveNull = PETSC_TRUE;
+      nf       = f;
+      of       = fields[f];
+    }
+  }
+  if (dm->probs) {
+    PetscCall(DMSetNumFields(*subdm, numFields));
+    for (PetscInt f = 0; f < numFields; ++f) {
+      PetscObject disc;
+
+      PetscCall(DMGetField(dm, fields[f], NULL, &disc));
+      PetscCall(DMSetField(*subdm, f, NULL, disc));
+    }
+    // TODO: if only FV, then cut down the components
+    PetscCall(DMCreateDS(*subdm));
+    if (numFields == 1 && is) {
+      PetscObject disc, space, pmat;
+
+      PetscCall(DMGetField(*subdm, 0, NULL, &disc));
+      PetscCall(PetscObjectQuery(disc, "nullspace", &space));
+      if (space) PetscCall(PetscObjectCompose((PetscObject)*is, "nullspace", space));
+      PetscCall(PetscObjectQuery(disc, "nearnullspace", &space));
+      if (space) PetscCall(PetscObjectCompose((PetscObject)*is, "nearnullspace", space));
+      PetscCall(PetscObjectQuery(disc, "pmat", &pmat));
+      if (pmat) PetscCall(PetscObjectCompose((PetscObject)*is, "pmat", pmat));
+    }
+    // Check if DSes record their DM fields
+    if (dm->probs[0].fields) {
+      PetscInt d, e;
+
+      for (d = 0, e = 0; d < dm->Nds && e < (*subdm)->Nds; ++d) {
+        const PetscInt  Nf = dm->probs[d].ds->Nf;
+        const PetscInt *fld;
+        PetscInt        f, g;
+
+        PetscCall(ISGetIndices(dm->probs[d].fields, &fld));
+        for (f = 0; f < Nf; ++f) {
+          for (g = 0; g < numFields; ++g)
+            if (fld[f] == fields[g]) break;
+          if (g < numFields) break;
+        }
+        PetscCall(ISRestoreIndices(dm->probs[d].fields, &fld));
+        if (f == Nf) continue;
+        PetscCall(PetscDSCopyConstants(dm->probs[d].ds, (*subdm)->probs[e].ds));
+        PetscCall(PetscDSCopyBoundary(dm->probs[d].ds, numFields, fields, (*subdm)->probs[e].ds));
+        // Translate DM fields to DS fields
+        {
+          IS              infields, dsfields;
+          const PetscInt *fld, *ofld;
+          PetscInt       *fidx;
+          PetscInt        onf, nf;
+
+          PetscCall(ISCreateGeneral(PETSC_COMM_SELF, numFields, fields, PETSC_USE_POINTER, &infields));
+          PetscCall(ISIntersect(infields, dm->probs[d].fields, &dsfields));
+          PetscCall(ISDestroy(&infields));
+          PetscCall(ISGetLocalSize(dsfields, &nf));
+          PetscCheck(nf, PETSC_COMM_SELF, PETSC_ERR_PLIB, "DS cannot be supported on 0 fields");
+          PetscCall(ISGetIndices(dsfields, &fld));
+          PetscCall(ISGetLocalSize(dm->probs[d].fields, &onf));
+          PetscCall(ISGetIndices(dm->probs[d].fields, &ofld));
+          PetscCall(PetscMalloc1(nf, &fidx));
+          for (PetscInt f = 0, g = 0; f < onf && g < nf; ++f) {
+            if (ofld[f] == fld[g]) fidx[g++] = f;
+          }
+          PetscCall(ISRestoreIndices(dm->probs[d].fields, &ofld));
+          PetscCall(ISRestoreIndices(dsfields, &fld));
+          PetscCall(ISDestroy(&dsfields));
+          PetscCall(PetscDSSelectDiscretizations(dm->probs[0].ds, nf, fidx, (*subdm)->probs[0].ds));
+          PetscCall(PetscDSSelectEquations(dm->probs[0].ds, nf, fidx, (*subdm)->probs[0].ds));
+          PetscCall(PetscFree(fidx));
+        }
+        ++e;
+      }
+    } else {
+      PetscCall(PetscDSCopyConstants(dm->probs[0].ds, (*subdm)->probs[0].ds));
+      PetscCall(PetscDSCopyBoundary(dm->probs[0].ds, PETSC_DETERMINE, NULL, (*subdm)->probs[0].ds));
+      PetscCall(PetscDSSelectDiscretizations(dm->probs[0].ds, numFields, fields, (*subdm)->probs[0].ds));
+      PetscCall(PetscDSSelectEquations(dm->probs[0].ds, numFields, fields, (*subdm)->probs[0].ds));
+    }
+  }
+  if (haveNull && is) {
+    MatNullSpace nullSpace;
+
+    PetscCall((*(*subdm)->nullspaceConstructors[nf])(*subdm, of, nf, &nullSpace));
+    PetscCall(PetscObjectCompose((PetscObject)*is, "nullspace", (PetscObject)nullSpace));
+    PetscCall(MatNullSpaceDestroy(&nullSpace));
+  }
+  if (dm->coarseMesh) PetscCall(DMCreateSubDM(dm->coarseMesh, numFields, fields, NULL, &(*subdm)->coarseMesh));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@C
   DMCreateSectionSubDM - Returns an `IS` and `subDM` containing a `PetscSection` that encapsulates a subproblem defined by a subset of the fields in a `PetscSection` in the `DM`.
 
@@ -93,7 +384,9 @@ PetscErrorCode DMCreateLocalVector_Section_Private(DM dm, Vec *vec)
   Input Parameters:
 + dm        - The `DM` object
 . numFields - The number of fields to incorporate into `subdm`
-- fields    - The field numbers of the selected fields
+. fields    - The field numbers of the selected fields
+. numComps  - The number of components from each field to incorporate into `subdm`, or PETSC_DECIDE for all components
+- comps     - The component numbers of the selected fields (omitted for PTESC_DECIDE fields)
 
   Output Parameters:
 + is    - The global indices for the subproblem or `NULL`
@@ -101,16 +394,15 @@ PetscErrorCode DMCreateLocalVector_Section_Private(DM dm, Vec *vec)
 
   Level: intermediate
 
-  Note:
+  Notes:
   If `is` and `subdm` are both `NULL` this does nothing
 
 .seealso: `DMCreateSubDM()`, `DMGetLocalSection()`, `DMPlexSetMigrationSF()`, `DMView()`
 @*/
-PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
+PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fields[], const PetscInt numComps[], const PetscInt comps[], IS *is, DM *subdm)
 {
   PetscSection section, sectionGlobal;
-  PetscInt    *subIndices;
-  PetscInt     subSize = 0, subOff = 0, Nf, f, pStart, pEnd, p;
+  PetscInt     Nf;
 
   PetscFunctionBegin;
   if (!numFields) PetscFunctionReturn(PETSC_SUCCESS);
@@ -120,181 +412,9 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
   PetscCheck(sectionGlobal, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Must set default global section for DM before splitting fields");
   PetscCall(PetscSectionGetNumFields(section, &Nf));
   PetscCheck(numFields <= Nf, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Number of requested fields %" PetscInt_FMT " greater than number of DM fields %" PetscInt_FMT, numFields, Nf);
-  if (is) {
-    PetscInt bs, bsLocal[2], bsMinMax[2];
 
-    for (f = 0, bs = 0; f < numFields; ++f) {
-      PetscInt Nc;
-
-      PetscCall(PetscSectionGetFieldComponents(section, fields[f], &Nc));
-      bs += Nc;
-    }
-    PetscCall(PetscSectionGetChart(sectionGlobal, &pStart, &pEnd));
-    for (p = pStart; p < pEnd; ++p) {
-      PetscInt gdof, pSubSize = 0;
-
-      PetscCall(PetscSectionGetDof(sectionGlobal, p, &gdof));
-      if (gdof > 0) {
-        for (f = 0; f < numFields; ++f) {
-          PetscInt fdof, fcdof;
-
-          PetscCall(PetscSectionGetFieldDof(section, p, fields[f], &fdof));
-          PetscCall(PetscSectionGetFieldConstraintDof(section, p, fields[f], &fcdof));
-          pSubSize += fdof - fcdof;
-        }
-        subSize += pSubSize;
-        if (pSubSize && bs != pSubSize) {
-          /* Layout does not admit a pointwise block size */
-          bs = 1;
-        }
-      }
-    }
-    /* Must have same blocksize on all procs (some might have no points) */
-    bsLocal[0] = bs < 0 ? PETSC_MAX_INT : bs;
-    bsLocal[1] = bs;
-    PetscCall(PetscGlobalMinMaxInt(PetscObjectComm((PetscObject)dm), bsLocal, bsMinMax));
-    if (bsMinMax[0] != bsMinMax[1]) {
-      bs = 1;
-    } else {
-      bs = bsMinMax[0];
-    }
-    PetscCall(PetscMalloc1(subSize, &subIndices));
-    for (p = pStart; p < pEnd; ++p) {
-      PetscInt gdof, goff;
-
-      PetscCall(PetscSectionGetDof(sectionGlobal, p, &gdof));
-      if (gdof > 0) {
-        PetscCall(PetscSectionGetOffset(sectionGlobal, p, &goff));
-        for (f = 0; f < numFields; ++f) {
-          PetscInt fdof, fcdof, fc, f2, poff = 0;
-
-          /* Can get rid of this loop by storing field information in the global section */
-          for (f2 = 0; f2 < fields[f]; ++f2) {
-            PetscCall(PetscSectionGetFieldDof(section, p, f2, &fdof));
-            PetscCall(PetscSectionGetFieldConstraintDof(section, p, f2, &fcdof));
-            poff += fdof - fcdof;
-          }
-          PetscCall(PetscSectionGetFieldDof(section, p, fields[f], &fdof));
-          PetscCall(PetscSectionGetFieldConstraintDof(section, p, fields[f], &fcdof));
-          for (fc = 0; fc < fdof - fcdof; ++fc, ++subOff) subIndices[subOff] = goff + poff + fc;
-        }
-      }
-    }
-    PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm), subSize, subIndices, PETSC_OWN_POINTER, is));
-    if (bs > 1) {
-      /* We need to check that the block size does not come from non-contiguous fields */
-      PetscInt i, j, set = 1, rset = 1;
-      for (i = 0; i < subSize; i += bs) {
-        for (j = 0; j < bs; ++j) {
-          if (subIndices[i + j] != subIndices[i] + j) {
-            set = 0;
-            break;
-          }
-        }
-      }
-      PetscCall(MPIU_Allreduce(&set, &rset, 1, MPIU_INT, MPI_PROD, PetscObjectComm((PetscObject)dm)));
-      if (rset) PetscCall(ISSetBlockSize(*is, bs));
-    }
-  }
-  if (subdm) {
-    PetscSection subsection;
-    PetscBool    haveNull = PETSC_FALSE;
-    PetscInt     f, nf = 0, of = 0;
-
-    PetscCall(PetscSectionCreateSubsection(section, numFields, fields, &subsection));
-    PetscCall(DMSetLocalSection(*subdm, subsection));
-    PetscCall(PetscSectionDestroy(&subsection));
-    for (f = 0; f < numFields; ++f) {
-      (*subdm)->nullspaceConstructors[f] = dm->nullspaceConstructors[fields[f]];
-      if ((*subdm)->nullspaceConstructors[f]) {
-        haveNull = PETSC_TRUE;
-        nf       = f;
-        of       = fields[f];
-      }
-    }
-    if (dm->probs) {
-      PetscCall(DMSetNumFields(*subdm, numFields));
-      for (f = 0; f < numFields; ++f) {
-        PetscObject disc;
-
-        PetscCall(DMGetField(dm, fields[f], NULL, &disc));
-        PetscCall(DMSetField(*subdm, f, NULL, disc));
-      }
-      PetscCall(DMCreateDS(*subdm));
-      if (numFields == 1 && is) {
-        PetscObject disc, space, pmat;
-
-        PetscCall(DMGetField(*subdm, 0, NULL, &disc));
-        PetscCall(PetscObjectQuery(disc, "nullspace", &space));
-        if (space) PetscCall(PetscObjectCompose((PetscObject)*is, "nullspace", space));
-        PetscCall(PetscObjectQuery(disc, "nearnullspace", &space));
-        if (space) PetscCall(PetscObjectCompose((PetscObject)*is, "nearnullspace", space));
-        PetscCall(PetscObjectQuery(disc, "pmat", &pmat));
-        if (pmat) PetscCall(PetscObjectCompose((PetscObject)*is, "pmat", pmat));
-      }
-      /* Check if DSes record their DM fields */
-      if (dm->probs[0].fields) {
-        PetscInt d, e;
-
-        for (d = 0, e = 0; d < dm->Nds && e < (*subdm)->Nds; ++d) {
-          const PetscInt  Nf = dm->probs[d].ds->Nf;
-          const PetscInt *fld;
-          PetscInt        f, g;
-
-          PetscCall(ISGetIndices(dm->probs[d].fields, &fld));
-          for (f = 0; f < Nf; ++f) {
-            for (g = 0; g < numFields; ++g)
-              if (fld[f] == fields[g]) break;
-            if (g < numFields) break;
-          }
-          PetscCall(ISRestoreIndices(dm->probs[d].fields, &fld));
-          if (f == Nf) continue;
-          PetscCall(PetscDSCopyConstants(dm->probs[d].ds, (*subdm)->probs[e].ds));
-          PetscCall(PetscDSCopyBoundary(dm->probs[d].ds, numFields, fields, (*subdm)->probs[e].ds));
-          /* Translate DM fields to DS fields */
-          {
-            IS              infields, dsfields;
-            const PetscInt *fld, *ofld;
-            PetscInt       *fidx;
-            PetscInt        onf, nf, f, g;
-
-            PetscCall(ISCreateGeneral(PETSC_COMM_SELF, numFields, fields, PETSC_USE_POINTER, &infields));
-            PetscCall(ISIntersect(infields, dm->probs[d].fields, &dsfields));
-            PetscCall(ISDestroy(&infields));
-            PetscCall(ISGetLocalSize(dsfields, &nf));
-            PetscCheck(nf, PETSC_COMM_SELF, PETSC_ERR_PLIB, "DS cannot be supported on 0 fields");
-            PetscCall(ISGetIndices(dsfields, &fld));
-            PetscCall(ISGetLocalSize(dm->probs[d].fields, &onf));
-            PetscCall(ISGetIndices(dm->probs[d].fields, &ofld));
-            PetscCall(PetscMalloc1(nf, &fidx));
-            for (f = 0, g = 0; f < onf && g < nf; ++f) {
-              if (ofld[f] == fld[g]) fidx[g++] = f;
-            }
-            PetscCall(ISRestoreIndices(dm->probs[d].fields, &ofld));
-            PetscCall(ISRestoreIndices(dsfields, &fld));
-            PetscCall(ISDestroy(&dsfields));
-            PetscCall(PetscDSSelectDiscretizations(dm->probs[0].ds, nf, fidx, (*subdm)->probs[0].ds));
-            PetscCall(PetscDSSelectEquations(dm->probs[0].ds, nf, fidx, (*subdm)->probs[0].ds));
-            PetscCall(PetscFree(fidx));
-          }
-          ++e;
-        }
-      } else {
-        PetscCall(PetscDSCopyConstants(dm->probs[0].ds, (*subdm)->probs[0].ds));
-        PetscCall(PetscDSCopyBoundary(dm->probs[0].ds, PETSC_DETERMINE, NULL, (*subdm)->probs[0].ds));
-        PetscCall(PetscDSSelectDiscretizations(dm->probs[0].ds, numFields, fields, (*subdm)->probs[0].ds));
-        PetscCall(PetscDSSelectEquations(dm->probs[0].ds, numFields, fields, (*subdm)->probs[0].ds));
-      }
-    }
-    if (haveNull && is) {
-      MatNullSpace nullSpace;
-
-      PetscCall((*(*subdm)->nullspaceConstructors[nf])(*subdm, of, nf, &nullSpace));
-      PetscCall(PetscObjectCompose((PetscObject)*is, "nullspace", (PetscObject)nullSpace));
-      PetscCall(MatNullSpaceDestroy(&nullSpace));
-    }
-    if (dm->coarseMesh) PetscCall(DMCreateSubDM(dm->coarseMesh, numFields, fields, NULL, &(*subdm)->coarseMesh));
-  }
+  if (is) PetscCall(PetscSectionSelectFields_Private(section, sectionGlobal, numFields, fields, numComps, comps, is));
+  if (subdm) PetscCall(DMSelectFields_Private(dm, section, numFields, fields, numComps, comps, is, subdm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

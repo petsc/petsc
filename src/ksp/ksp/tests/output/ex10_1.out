@@ -1,18 +1,18 @@
 m = 1, N=81
 matrix 1 norm = 34.0627
-  0 KSP Residual norm 85.383 
-  1 KSP Residual norm 34.5131 
-  2 KSP Residual norm 19.2208 
-  3 KSP Residual norm 13.3868 
-  4 KSP Residual norm 7.30229 
-  5 KSP Residual norm 5.9648 
-  6 KSP Residual norm 4.30542 
-  7 KSP Residual norm 3.802 
-  8 KSP Residual norm 2.39612 
-  9 KSP Residual norm 1.63953 
- 10 KSP Residual norm 1.42713 
- 11 KSP Residual norm 1.19941 
- 12 KSP Residual norm 0.976343 
- 13 KSP Residual norm 0.869917 
- 14 KSP Residual norm 0.443911 
+  0 KSP Residual norm 85.383
+  1 KSP Residual norm 34.5131
+  2 KSP Residual norm 19.2208
+  3 KSP Residual norm 13.3868
+  4 KSP Residual norm 7.30229
+  5 KSP Residual norm 5.9648
+  6 KSP Residual norm 4.30542
+  7 KSP Residual norm 3.802
+  8 KSP Residual norm 2.39612
+  9 KSP Residual norm 1.63953
+ 10 KSP Residual norm 1.42713
+ 11 KSP Residual norm 1.19941
+ 12 KSP Residual norm 0.976343
+ 13 KSP Residual norm 0.869917
+ 14 KSP Residual norm 0.443911
 Norm of residual 8.8499 Number of iterations 14

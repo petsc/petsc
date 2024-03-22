@@ -1,0 +1,55 @@
+Linear solve converged due to CONVERGED_RTOL iterations 50
+KSP Object: 1 MPI process
+  type: cg
+  maximum iterations=10000, initial guess is zero
+  tolerances: relative=0.1, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using UNPRECONDITIONED norm type for convergence test
+PC Object: 1 MPI process
+  type: jacobi
+    type ROWL1 (l1-norm off-diagonal scaling 1.000000e+00)
+  linear system matrix = precond matrix:
+  Mat Object: 1 MPI process
+    type: seqbaij
+    rows=12288, cols=12288, bs=3
+    total: nonzeros=876024, allocated nonzeros=876024
+    total number of mallocs used during MatSetValues calls=0
+      has attached near null space
+        block size is 3
+Linear solve converged due to CONVERGED_RTOL iterations 50
+KSP Object: 1 MPI process
+  type: cg
+  maximum iterations=10000, initial guess is zero
+  tolerances: relative=0.1, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using UNPRECONDITIONED norm type for convergence test
+PC Object: 1 MPI process
+  type: jacobi
+    type ROWL1 (l1-norm off-diagonal scaling 1.000000e+00)
+  linear system matrix = precond matrix:
+  Mat Object: 1 MPI process
+    type: seqbaij
+    rows=12288, cols=12288, bs=3
+    total: nonzeros=876024, allocated nonzeros=876024
+    total number of mallocs used during MatSetValues calls=0
+      has attached near null space
+        block size is 3
+Linear solve converged due to CONVERGED_RTOL iterations 50
+KSP Object: 1 MPI process
+  type: cg
+  maximum iterations=10000, initial guess is zero
+  tolerances: relative=0.1, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using UNPRECONDITIONED norm type for convergence test
+PC Object: 1 MPI process
+  type: jacobi
+    type ROWL1 (l1-norm off-diagonal scaling 1.000000e+00)
+  linear system matrix = precond matrix:
+  Mat Object: 1 MPI process
+    type: seqbaij
+    rows=12288, cols=12288, bs=3
+    total: nonzeros=876024, allocated nonzeros=876024
+    total number of mallocs used during MatSetValues calls=0
+      has attached near null space
+        block size is 3
+[0]main |b-Ax|/|b|=8.165280e-02, |b|=4.351790e+00, emax=7.499773e-01

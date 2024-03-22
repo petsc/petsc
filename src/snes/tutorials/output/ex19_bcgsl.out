@@ -1,16 +1,16 @@
 lid velocity = 0.00591716, prandtl # = 1., grashof # = 1.
-    0 KSP Residual norm 0.22318 
-    3 KSP Residual norm 0.0397558 
-    6 KSP Residual norm 0.000417387 
-    9 KSP Residual norm 2.72144e-05 
-   12 KSP Residual norm 2.60861e-06 
-   15 KSP Residual norm 1.0556e-07 
-    0 KSP Residual norm 6.21497e-06 
-    3 KSP Residual norm 4.01807e-07 
-    6 KSP Residual norm 3.02758e-08 
-    9 KSP Residual norm 5.54048e-09 
-   12 KSP Residual norm 1.540e-10 
-   15 KSP Residual norm 2.084e-11 
+    0 KSP Residual norm 0.22318
+    3 KSP Residual norm 0.0397558
+    6 KSP Residual norm 0.000417387
+    9 KSP Residual norm 2.72144e-05
+   12 KSP Residual norm 2.60861e-06
+   15 KSP Residual norm 1.0556e-07
+    0 KSP Residual norm 6.21497e-06
+    3 KSP Residual norm 4.01807e-07
+    6 KSP Residual norm 3.02758e-08
+    9 KSP Residual norm 5.54048e-09
+   12 KSP Residual norm 1.540e-10
+   15 KSP Residual norm 2.084e-11
 SNES Object: 2 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
@@ -31,7 +31,7 @@ SNES Object: 2 MPI processes
       Ell = 3
       Delta = 0.
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object: 2 MPI processes
@@ -42,7 +42,7 @@ SNES Object: 2 MPI processes
     KSP Object: (sub_) 1 MPI process
       type: preonly
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (sub_) 1 MPI process

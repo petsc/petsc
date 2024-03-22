@@ -189,8 +189,8 @@ static PetscErrorCode PetscStageInfoInit(PetscStagePerf *stageInfo)
 {
   PetscFunctionBegin;
   PetscCall(PetscMemzero(stageInfo, sizeof(*stageInfo)));
-  PetscCall(PetscLogEventPerfArrayCreate(128, &(stageInfo->eventLog)));
-  PetscCall(PetscLogClassPerfArrayCreate(128, &(stageInfo->classLog)));
+  PetscCall(PetscLogEventPerfArrayCreate(128, &stageInfo->eventLog));
+  PetscCall(PetscLogClassPerfArrayCreate(128, &stageInfo->classLog));
   PetscCall(PetscEventPerfInfoInit(&stageInfo->perfInfo));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -198,8 +198,8 @@ static PetscErrorCode PetscStageInfoInit(PetscStagePerf *stageInfo)
 static PetscErrorCode PetscStageInfoReset(PetscStagePerf *stageInfo)
 {
   PetscFunctionBegin;
-  PetscCall(PetscLogEventPerfArrayDestroy(&(stageInfo->eventLog)));
-  PetscCall(PetscLogClassPerfArrayDestroy(&(stageInfo->classLog)));
+  PetscCall(PetscLogEventPerfArrayDestroy(&stageInfo->eventLog));
+  PetscCall(PetscLogClassPerfArrayDestroy(&stageInfo->classLog));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -270,9 +270,9 @@ static PetscErrorCode PetscLogHandlerContextCreate_Default(PetscLogHandler_Defau
   PetscFunctionBegin;
   PetscCall(PetscNew(def_p));
   def = *def_p;
-  PetscCall(PetscLogStageInfoArrayCreate(8, &(def->stages)));
-  PetscCall(PetscLogActionArrayCreate(64, &(def->petsc_actions)));
-  PetscCall(PetscLogObjectArrayCreate(64, &(def->petsc_objects)));
+  PetscCall(PetscLogStageInfoArrayCreate(8, &def->stages));
+  PetscCall(PetscLogActionArrayCreate(64, &def->petsc_actions));
+  PetscCall(PetscLogObjectArrayCreate(64, &def->petsc_objects));
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_include_actions", &def->petsc_logActions, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_include_objects", &def->petsc_logObjects, NULL));
@@ -507,7 +507,6 @@ static PetscErrorCode PetscLogGetStageEventPerfInfo_threaded(PetscLogHandler_Def
   PetscHashIJKKey     key;
 
   PetscFunctionBegin;
-
 #if PetscDefined(HAVE_THREADSAFETY)
   key.i = PetscLogGetTid();
 #else
@@ -1654,15 +1653,24 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
           else flopr = 0.0;
           if (fracStageTime > 1.0 || fracStageFlops > 1.0 || fracStageMess > 1.0 || fracStageMessLen > 1.0 || fracStageRed > 1.0)
             PetscCall(PetscFPrintf(comm, fd, "%-16s %7d %3.1f %5.4e %3.1f %3.2e %3.1f %2.1e %2.1e %2.1e %2.0f %2.0f %2.0f %2.0f %2.0f Multiple stages %5.0f", event_name, maxC, ratC, maxt, ratt, maxf, ratf, totm, totml, totr, 100.0 * fracTime, 100.0 * fracFlops, 100.0 * fracMess, 100.0 * fracMessLen, 100.0 * fracRed, PetscAbs(flopr) / 1.0e6));
-          else
-            PetscCall(PetscFPrintf(comm, fd, "%-16s %7d %3.1f %5.4e %3.1f %3.2e %3.1f %2.1e %2.1e %2.1e %2.0f %2.0f %2.0f %2.0f %2.0f %3.0f %2.0f %2.0f %2.0f %2.0f %5.0f", event_name, maxC, ratC, maxt, ratt, maxf, ratf, totm, totml, totr, 100.0 * fracTime, 100.0 * fracFlops, 100.0 * fracMess, 100.0 * fracMessLen, 100.0 * fracRed, 100.0 * fracStageTime, 100.0 * fracStageFlops, 100.0 * fracStageMess, 100.0 * fracStageMessLen, 100.0 * fracStageRed, PetscAbs(flopr) / 1.0e6));
+          else {
+            if (PetscIsNanReal((PetscReal)maxt)) { // when maxt, ratt, flopr are NaN (i.e., run with GPUs but without -log_view_gpu_time), replace the confusing "nan" with "n/a"
+              PetscCall(PetscFPrintf(comm, fd, "%-16s %7d %3.1f  n/a     n/a   %3.2e %3.1f %2.1e %2.1e %2.1e %2.0f %2.0f %2.0f %2.0f %2.0f %3.0f %2.0f %2.0f %2.0f %2.0f  n/a", event_name, maxC, ratC, maxf, ratf, totm, totml, totr, 100.0 * fracTime, 100.0 * fracFlops, 100.0 * fracMess, 100.0 * fracMessLen, 100.0 * fracRed, 100.0 * fracStageTime, 100.0 * fracStageFlops, 100.0 * fracStageMess, 100.0 * fracStageMessLen, 100.0 * fracStageRed));
+            } else {
+              PetscCall(PetscFPrintf(comm, fd, "%-16s %7d %3.1f %5.4e %3.1f %3.2e %3.1f %2.1e %2.1e %2.1e %2.0f %2.0f %2.0f %2.0f %2.0f %3.0f %2.0f %2.0f %2.0f %2.0f %5.0f", event_name, maxC, ratC, maxt, ratt, maxf, ratf, totm, totml, totr, 100.0 * fracTime, 100.0 * fracFlops, 100.0 * fracMess, 100.0 * fracMessLen, 100.0 * fracRed, 100.0 * fracStageTime, 100.0 * fracStageFlops, 100.0 * fracStageMess, 100.0 * fracStageMessLen, 100.0 * fracStageRed, PetscAbs(flopr) / 1.0e6));
+            }
+          }
           if (PetscLogMemory) PetscCall(PetscFPrintf(comm, fd, " %5.0f   %5.0f   %5.0f   %5.0f", mal / 1.0e6, emalmax / 1.0e6, malmax / 1.0e6, mem / 1.0e6));
 #if defined(PETSC_HAVE_DEVICE)
           if (totf != 0.0) fracgflops = gflops / totf;
           else fracgflops = 0.0;
           if (gmaxt != 0.0) gflopr = gflops / gmaxt;
           else gflopr = 0.0;
-          PetscCall(PetscFPrintf(comm, fd, "   %5.0f   %4.0f %3.2e %4.0f %3.2e % 2.0f", PetscAbs(gflopr) / 1.0e6, cct / size, csz / (1.0e6 * size), gct / size, gsz / (1.0e6 * size), 100.0 * fracgflops));
+          if (PetscIsNanReal((PetscReal)gflopr)) {
+            PetscCall(PetscFPrintf(comm, fd, "    n/a    %4.0f %3.2e %4.0f %3.2e % 2.0f", cct / size, csz / (1.0e6 * size), gct / size, gsz / (1.0e6 * size), 100.0 * fracgflops));
+          } else {
+            PetscCall(PetscFPrintf(comm, fd, "   %5.0f   %4.0f %3.2e %4.0f %3.2e % 2.0f", PetscAbs(gflopr) / 1.0e6, cct / size, csz / (1.0e6 * size), gct / size, gsz / (1.0e6 * size), 100.0 * fracgflops));
+          }
 #endif
           PetscCall(PetscFPrintf(comm, fd, "\n"));
         }
@@ -1805,6 +1813,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
 static PetscErrorCode PetscLogHandlerView_Default(PetscLogHandler handler, PetscViewer viewer)
 {
   PetscViewerFormat format;
+
   PetscFunctionBegin;
   PetscCall(PetscViewerGetFormat(viewer, &format));
   if (format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_ASCII_INFO) {

@@ -47,7 +47,7 @@ int main(int argc, char **argv)
   /* create explicit matrix preconditioner */
   PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, n, n, 3, NULL, &B));
 
-  /* Store right-hand-side of PDE and exact solution */
+  /* Store right-hand side of PDE and exact solution */
   for (i = 0; i < n; i++) {
     v = 6.0 * xp + PetscPowScalar(xp + 1.e-12, 6.0); /* +1.e-12 is to prevent 0^6 */
     PetscCall(VecSetValues(F, 1, &i, &v, INSERT_VALUES));
@@ -167,9 +167,8 @@ PetscErrorCode OtherFunctionForDifferencing(void *dummy, Vec x, Vec f)
 
 PetscErrorCode FormInitialGuess(SNES snes, Vec x)
 {
-  PetscScalar pfive = .50;
   PetscFunctionBeginUser;
-  PetscCall(VecSet(x, pfive));
+  PetscCall(VecSet(x, 0.5));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
@@ -237,7 +236,7 @@ PetscErrorCode Monitor(SNES snes, PetscInt its, PetscReal fnorm, void *dummy)
 
   PetscFunctionBeginUser;
   PetscCall(PetscObjectGetComm((PetscObject)snes, &comm));
-  PetscCall(PetscFPrintf(comm, stdout, "iter = %" PetscInt_FMT ", SNES Function norm %g \n", its, (double)fnorm));
+  PetscCall(PetscFPrintf(comm, stdout, "iter = %" PetscInt_FMT ", SNES Function norm %g\n", its, (double)fnorm));
   PetscCall(SNESGetSolution(snes, &x));
   PetscCall(VecView(x, monP->viewer));
   PetscFunctionReturn(PETSC_SUCCESS);

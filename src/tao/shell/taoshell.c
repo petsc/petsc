@@ -60,7 +60,7 @@ PetscErrorCode TaoShellGetContext(Tao tao, void *ctx)
   PetscAssertPointer(ctx, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)tao, TAOSHELL, &flg));
   if (!flg) *(void **)ctx = NULL;
-  else *(void **)ctx = ((Tao_Shell *)(tao->data))->ctx;
+  else *(void **)ctx = ((Tao_Shell *)tao->data)->ctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -99,7 +99,7 @@ static PetscErrorCode TaoSolve_Shell(Tao tao)
   PetscFunctionBegin;
   PetscCheck(shell->solve, PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "Must call TaoShellSetSolve() first");
   tao->reason = TAO_CONVERGED_USER;
-  PetscCall((*(shell->solve))(tao));
+  PetscCall((*shell->solve)(tao));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

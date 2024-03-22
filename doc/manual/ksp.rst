@@ -75,7 +75,7 @@ command
 
    KSPSolve(KSP ksp,Vec b,Vec x);
 
-where ``b`` and ``x`` respectively denote the right-hand-side and
+where ``b`` and ``x`` respectively denote the right-hand side and
 solution vectors. On return, the iteration number at which the iterative
 process stopped can be obtained using
 
@@ -461,7 +461,7 @@ Convergence Tests
 The default convergence test, ``KSPConvergedDefault()``, is based on the
 :math:`l_2`-norm of the residual. Convergence (or divergence) is decided
 by three quantities: the decrease of the residual norm relative to the
-norm of the right hand side, ``rtol``, the absolute size of the residual
+norm of the right-hand side, ``rtol``, the absolute size of the residual
 norm, ``atol``, and the relative increase in the residual, ``dtol``.
 Convergence is detected at iteration :math:`k` if
 
@@ -633,8 +633,8 @@ Pipelined Krylov Methods
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 Standard Krylov methods have one or more global reductions resulting from the computations of inner products or norms in each iteration.
-These reductions need to block until all MPI ranks have received the results. For a large number of MPI ranks (this number is machine dependent
-but can be above 10,000 ranks) this synchronization is very time consuming and can significantly slow the computation. Pipelined Krylov
+These reductions need to block until all MPI processes have received the results. For a large number of MPI processes (this number is machine dependent
+but can be above 10,000 processes) this synchronization is very time consuming and can significantly slow the computation. Pipelined Krylov
 methods overlap the reduction operations with local computations (generally the application of the matrix-vector products and precondtiioners)
 thus effectively "hiding" the time of the reductions. In addition, they may reduce the number of global synchronizations by rearranging the
 computations in a way that some of them can be collapsed, e.g., two or more calls to ``MPI_Allreduce()`` may be combined into one call.
@@ -647,7 +647,7 @@ performance of pipelined methods. See :any:`doc_faq_pipelined` for details.
 Other KSP Options
 ^^^^^^^^^^^^^^^^^
 
-To obtain the solution vector and right hand side from a ``KSP``
+To obtain the solution vector and right-hand side from a ``KSP``
 context, one uses
 
 .. code-block::
@@ -1011,7 +1011,7 @@ preconditioner. Note that one can define initial index sets ``is`` with
 allows PETSc to extend that overlap further if desired.
 
 ``PCGASM`` is an experimental generalization of ``PCASM`` that allows
-the user to specify subdomains that span multiple MPI ranks. This can be
+the user to specify subdomains that span multiple MPI processes. This can be
 useful for problems where small subdomains result in poor convergence.
 To be effective, the multirank subproblems must be solved using a
 sufficient strong subsolver, such as LU, for which ``SuperLU_DIST`` or a
@@ -1026,7 +1026,7 @@ the options database ``-pc_gasm_type`` ``[basic``, ``interpolate``,
 ``restrict``, ``none]``.
 
 Unlike ``PCASM``, however, ``PCGASM`` allows the user to define
-subdomains that span multiple MPI ranks. The simplest way to do this is
+subdomains that span multiple MPI processes. The simplest way to do this is
 using a call to ``PCGASMSetTotalSubdomains(PC pc,PetscInt N)`` with
 the total number of subdomains ``N`` that is smaller than the MPI
 communicator ``size``. In this case ``PCGASM`` will coalesce ``size/N``
@@ -1036,9 +1036,9 @@ to the locally-owned rows of the ``PCGASM`` preconditioning matrix –
 these are the subdomains ``PCASM`` and ``PCGASM`` use by default.
 
 Each of the multirank subdomain subproblems is defined on the
-subcommunicator that contains the coalesced ``PCGASM`` ranks. In general
+subcommunicator that contains the coalesced ``PCGASM`` processes. In general
 this might not result in a very good subproblem if the single-rank
-problems corresponding to the coalesced ranks are not very strongly
+problems corresponding to the coalesced processes are not very strongly
 connected. In the future this will be addressed with a hierarchical
 partitioner that generates well-connected coarse subdomains first before
 subpartitioning them into the single-rank subdomains.
@@ -1060,7 +1060,7 @@ Ordinarily the decomposition specified by the user via
 
 Currently there is no support for increasing the overlap of multi-rank
 subdomains via ``PCGASMSetOverlap()`` – this functionality works only
-for subdomains that fit within a single MPI rank, exactly as in
+for subdomains that fit within a single MPI process, exactly as in
 ``PCASM``.
 
 Examples of the described ``PCGASM`` usage can be found in
@@ -1152,7 +1152,7 @@ GAMG will select the number of active processors by fitting the desired
 number of equation per process (set with
 ``-pc_gamg_process_eq_limit <50>,``) at each level given that size of
 each level. If :math:`P_i < P` processors are desired on a level
-:math:`i` then the first :math:`P_i` ranks are populated with the grid
+:math:`i` then the first :math:`P_i` processes are populated with the grid
 and the remaining are empty on that grid. One can, and probably should,
 repartition the coarse grids with ``-pc_gamg_repartition <true>``,
 otherwise an integer process reduction factor (:math:`q`) is selected
@@ -1186,14 +1186,30 @@ The parallel MIS algorithms requires symmetric weights/matrix. Thus ``PCGAMG``
 will automatically make the graph symmetric if it is not symmetric. Since this
 has additional cost users should indicate the symmetry of the matrices they
 provide by calling
-``MatSetOption``(mat,``MAT_SYMMETRIC``,``PETSC_TRUE`` (or ``PETSC_FALSE``))
+
+.. code-block::
+
+   MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE (or PETSC_FALSE))
+
 or
-``MatSetOption``(mat,``MAT_STRUCTURALLY_SYMMETRIC``,``PETSC_TRUE`` (or ``PETSC_FALSE``))
-. If they know that the matrix will always have symmetry, despite future changes
+
+.. code-block::
+
+   MatSetOption(mat,MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE (or PETSC_FALSE)).
+
+If they know that the matrix will always have symmetry, despite future changes
 to the matrix (with, for example, ``MatSetValues()``) then they should also call
-``MatSetOption``(mat,``MAT_SYMMETRY_ETERNAL``,``PETSC_TRUE`` (or ``PETSC_FALSE``))
+
+.. code-block::
+
+   MatSetOption(mat,MAT_SYMMETRY_ETERNAL,PETSC_TRUE (or PETSC_FALSE))
+
 or
-``MatSetOption``(mat,``MAT_STRUCTURAL_SYMMETRY_ETERNAL``,``PETSC_TRUE`` (or ``PETSC_FALSE``)).
+
+.. code-block::
+
+   MatSetOption(mat,MAT_STRUCTURAL_SYMMETRY_ETERNAL,PETSC_TRUE (or PETSC_FALSE)).
+
 Using this information allows the algorithm to skip the unnecessary computations.
 
 **Trouble shooting algebraic multigrid methods:** If ``PCGAMG``, *ML*, *AMGx* or
@@ -1655,7 +1671,7 @@ is achieved with the ``PCKSP`` type.
 
 .. code-block::
 
-   PCSetType(PC pc,PCKSP PCKSP);
+   PCSetType(PC pc,PCKSP);
    PCKSPGetKSP(pc,&ksp);
     /* set any KSP/PC options */
 
@@ -1976,12 +1992,14 @@ which is implemented [3]_ as
    I   & 0 \\
      0 & \text{ksp}(A_{11},Ap_{11}) \\
    \end{array} \right)
+
+.. math::
+
    \left[
    \left( \begin{array}{cc}
    0   & 0 \\
    0 & I \\
-   \end{array} \right)
-   +
+   \end{array} \right) +
    \left( \begin{array}{cc}
    I   & 0 \\
    -A_{10} & -A_{11} \\
@@ -1991,6 +2009,9 @@ which is implemented [3]_ as
    0 & 0 \\
    \end{array} \right)
    \right]
+
+.. math::
+
    \left( \begin{array}{cc}
      \text{ksp}(A_{00},Ap_{00})   & 0 \\
    0 & I \\
@@ -2126,6 +2147,9 @@ implemented as
    I   & -A_{01} \\
    0 & I \\
    \end{array} \right)
+
+.. math::
+
    \left( \begin{array}{cc}
    I  & 0 \\
      0 & \text{ksp}(\hat{S},\hat{S}p) \\
@@ -2250,11 +2274,11 @@ The ``Amat`` should be the *first* matrix argument used with
 The PETSc solvers will now
 handle the null space during the solution process.
 
-If the right hand side of linear system is not in the range of ``Amat``, that is it is not
+If the right-hand side of linear system is not in the range of ``Amat``, that is it is not
 orthogonal to the null space of ``Amat`` transpose, then the residual
 norm of the Krylov iteration will not converge to zero; it will converge to a non-zero value while the
 solution is converging to the least squares solution of the linear system. One can, if one desires,
-apply ``MatNullSpaceRemove()`` with the null space of ``Amat`` transpose to the right hand side before calling
+apply ``MatNullSpaceRemove()`` with the null space of ``Amat`` transpose to the right-hand side before calling
 ``KSPSolve()``. Then the residual norm will converge to zero.
 
 
@@ -2462,7 +2486,7 @@ Using PETSc's MPI parallel linear solvers from a non-MPI program
 
 Using PETSc's MPI linear solver server it is possible to use multiple MPI processes to solve a
 a linear system when the application code, including the matrix generation, is run on a single
-MPI rank (with or without OpenMP). The application code must be built with MPI and must call
+MPI process (with or without OpenMP). The application code must be built with MPI and must call
 ``PetscInitialize()`` at the very beginning of the program and end with ``PetscFinalize()``. The
 application code may utilize OpenMP.
 The code may create multiple matrices and ``KSP`` objects and call ``KSPSolve()``, similarly the
@@ -2478,7 +2502,7 @@ The option ``-mpi_linear_solver_server_view`` will print
 a summary of all the systems solved by the MPI linear solver server when the program completes. By default the linear solver server
 will only parallelize the linear solve to the extent that it believes is appropriate to obtain speedup for the parallel solve, for example, if the
 matrix has 1,000 rows and columns the solution will not be parallelized by default. One can use the option ``-mpi_linear_solver_server_minimum_count_per_rank 5000``
-to cause the linear solver server to allow as few as 5,000 unknowns per rank in the parallel solve.
+to cause the linear solver server to allow as few as 5,000 unknowns per MPI process in the parallel solve.
 
 See ``PCMPI``, ``PCMPIServerBegin()``, and ``PCMPIServerEnd()`` for more details on the solvers.
 

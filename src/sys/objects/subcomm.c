@@ -77,7 +77,7 @@ PetscErrorCode PetscSubcommSetOptionsPrefix(PetscSubcomm psubcomm, const char pr
   } else {
     PetscCheck(pre[0] != '-', PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Options prefix should not begin with a hyphen");
     PetscCall(PetscFree(psubcomm->subcommprefix));
-    PetscCall(PetscStrallocpy(pre, &(psubcomm->subcommprefix)));
+    PetscCall(PetscStrallocpy(pre, &psubcomm->subcommprefix));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -263,7 +263,7 @@ PetscErrorCode PetscSubcommDestroy(PetscSubcomm *psubcomm)
   PetscCall(PetscCommDestroy(&(*psubcomm)->child));
   PetscCall(PetscFree((*psubcomm)->subsize));
   if ((*psubcomm)->subcommprefix) PetscCall(PetscFree((*psubcomm)->subcommprefix));
-  PetscCall(PetscFree((*psubcomm)));
+  PetscCall(PetscFree(*psubcomm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -327,7 +327,7 @@ PetscErrorCode PetscSubcommGetParent(PetscSubcomm scomm, MPI_Comm *pcomm)
 }
 
 /*@C
-  PetscSubcommGetContiguousParent - Gets a communicator that that is a duplicate of the parent but has the ranks
+  PetscSubcommGetContiguousParent - Gets a communicator that is a duplicate of the parent but has the ranks
   reordered by the order they are in the children
 
   Collective

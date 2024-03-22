@@ -144,7 +144,7 @@ int main(int argc, char **argv)
 
   PetscCall(DMSetApplicationContext(da, &user));
   PetscCall(DMDASNESSetFunctionLocal(da, INSERT_VALUES, (PetscErrorCode(*)(DMDALocalInfo *, void *, void *, void *))FormFunctionLocal, &user));
-  PetscCall(DMDASNESSetJacobianLocal(da, (DMDASNESJacobian)FormJacobianLocal, &user));
+  PetscCall(DMDASNESSetJacobianLocal(da, (DMDASNESJacobianFn *)FormJacobianLocal, &user));
   PetscCall(SNESSetFromOptions(snes));
   PetscCall(FormCoordinates(da, &user));
 
@@ -197,9 +197,9 @@ PetscInt OnBoundary(PetscInt i, PetscInt j, PetscInt k, PetscInt mx, PetscInt my
 void BoundaryValue(PetscInt i, PetscInt j, PetscInt k, PetscInt mx, PetscInt my, PetscInt mz, PetscScalar *val, AppCtx *user)
 {
   /* reference coordinates */
-  PetscReal p_x = ((PetscReal)i) / (((PetscReal)(mx - 1)));
-  PetscReal p_y = ((PetscReal)j) / (((PetscReal)(my - 1)));
-  PetscReal p_z = ((PetscReal)k) / (((PetscReal)(mz - 1)));
+  PetscReal p_x = ((PetscReal)i) / ((PetscReal)(mx - 1));
+  PetscReal p_y = ((PetscReal)j) / ((PetscReal)(my - 1));
+  PetscReal p_z = ((PetscReal)k) / ((PetscReal)(mz - 1));
   PetscReal o_x = p_x;
   PetscReal o_y = p_y;
   PetscReal o_z = p_z;
@@ -923,9 +923,9 @@ PetscErrorCode FormCoordinates(DM da, AppCtx *user)
   for (k = zs; k < zs + zm; k++) {
     for (j = ys; j < ys + ym; j++) {
       for (i = xs; i < xs + xm; i++) {
-        PetscReal cx  = ((PetscReal)i) / (((PetscReal)(mx - 1)));
-        PetscReal cy  = ((PetscReal)j) / (((PetscReal)(my - 1)));
-        PetscReal cz  = ((PetscReal)k) / (((PetscReal)(mz - 1)));
+        PetscReal cx  = ((PetscReal)i) / ((PetscReal)(mx - 1));
+        PetscReal cy  = ((PetscReal)j) / ((PetscReal)(my - 1));
+        PetscReal cz  = ((PetscReal)k) / ((PetscReal)(mz - 1));
         PetscReal rad = user->rad + cy * user->height;
         PetscReal ang = (cx - 0.5) * user->arc;
         x[k][j][i][0] = rad * PetscSinReal(ang);
@@ -955,9 +955,9 @@ PetscErrorCode InitialGuess(DM da, AppCtx *user, Vec X)
     for (j = ys; j < ys + ym; j++) {
       for (i = xs; i < xs + xm; i++) {
         /* reference coordinates */
-        PetscReal p_x = ((PetscReal)i) / (((PetscReal)(mx - 1)));
-        PetscReal p_y = ((PetscReal)j) / (((PetscReal)(my - 1)));
-        PetscReal p_z = ((PetscReal)k) / (((PetscReal)(mz - 1)));
+        PetscReal p_x = ((PetscReal)i) / ((PetscReal)(mx - 1));
+        PetscReal p_y = ((PetscReal)j) / ((PetscReal)(my - 1));
+        PetscReal p_z = ((PetscReal)k) / ((PetscReal)(mz - 1));
         PetscReal o_x = p_x;
         PetscReal o_y = p_y;
         PetscReal o_z = p_z;

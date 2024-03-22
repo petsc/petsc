@@ -207,7 +207,7 @@ dist: cleanblaslapck cleanlib
 
 # 2) Transform fortran source to c from blas and lapack
 
-# Create list of files that won't be be processed by fc2
+# Create list of files that won't be processed by fc2
 # Those functions correspond to extra precision routines and codes with f90 constructs
 cat > ${TMP}/skip.list << EOF
 SXLASRC = sgesvxx.o sgerfsx.o sla_gerfsx_extended.o sla_geamv.o		\

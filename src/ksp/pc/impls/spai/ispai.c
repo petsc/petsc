@@ -123,7 +123,7 @@ static PetscErrorCode PCDestroy_SPAI(PC pc)
 
   PetscFunctionBegin;
   PetscCall(MatDestroy(&ispai->PM));
-  PetscCallMPI(MPI_Comm_free(&(ispai->comm_spai)));
+  PetscCallMPI(MPI_Comm_free(&ispai->comm_spai));
   PetscCall(PetscFree(pc->data));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSPAISetEpsilon_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSPAISetNBSteps_C", NULL));
@@ -508,7 +508,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SPAI(PC pc)
   ispai->verbose    = 0;
 
   ispai->sp = 1;
-  PetscCallMPI(MPI_Comm_dup(PetscObjectComm((PetscObject)pc), &(ispai->comm_spai)));
+  PetscCallMPI(MPI_Comm_dup(PetscObjectComm((PetscObject)pc), &ispai->comm_spai));
 
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSPAISetEpsilon_C", PCSPAISetEpsilon_SPAI));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSPAISetNBSteps_C", PCSPAISetNBSteps_SPAI));

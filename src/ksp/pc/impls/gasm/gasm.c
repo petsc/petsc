@@ -198,8 +198,6 @@ static PetscErrorCode PCView_GASM(PC pc, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Subdomain solver info is as follows:\n"));
     PetscCall(PetscViewerASCIIPushTab(viewer));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  - - - - - - - - - - - - - - - - - -\n"));
-    /* Make sure that everybody waits for the banner to be printed. */
-    PetscCallMPI(MPI_Barrier(PetscObjectComm((PetscObject)viewer)));
     /* Now let subdomains go one at a time in the global numbering order and print their subdomain/solver info. */
     PetscCall(PCGASMComputeGlobalSubdomainNumbering_Private(pc, &numbering, &permutation));
     l = 0;
@@ -214,19 +212,26 @@ static PetscErrorCode PCView_GASM(PC pc, PetscViewer viewer)
           PetscCall(ISGetLocalSize(osm->ois[d], &bsz));
           PetscCall(PetscViewerASCIISynchronizedPrintf(sviewer, "  [%d|%d] (subcomm [%d|%d]) local subdomain number %" PetscInt_FMT ", local size = %" PetscInt_FMT "\n", rank, size, srank, ssize, d, bsz));
           PetscCall(PetscViewerFlush(sviewer));
+          PetscCall(PetscViewerASCIIPushTab(sviewer));
           if (view_subdomains) PetscCall(PCGASMSubdomainView_Private(pc, d, sviewer));
           if (!pc->setupcalled) {
-            PetscCall(PetscViewerASCIIPrintf(sviewer, "  Solver not set up yet: PCSetUp() not yet called\n"));
+            PetscCall(PetscViewerASCIISynchronizedPrintf(sviewer, "  Solver not set up yet: PCSetUp() not yet called\n"));
           } else {
             PetscCall(KSPView(osm->ksp[d], sviewer));
           }
+          PetscCall(PetscViewerASCIIPopTab(sviewer));
           PetscCall(PetscViewerASCIIPrintf(sviewer, "  - - - - - - - - - - - - - - - - - -\n"));
           PetscCall(PetscViewerFlush(sviewer));
           PetscCall(PetscViewerRestoreSubViewer(viewer, ((PetscObject)osm->ois[d])->comm, &sviewer));
           ++l;
+        } else {
+          PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
+          PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
         }
+      } else {
+        PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
+        PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
       }
-      PetscCallMPI(MPI_Barrier(PetscObjectComm((PetscObject)pc)));
     }
     PetscCall(PetscFree2(numbering, permutation));
     PetscCall(PetscViewerASCIIPopTab(viewer));
@@ -275,10 +280,10 @@ static PetscErrorCode PCGASMSetHierarchicalPartitioning(PC pc)
   PetscCall(ISGetLocalSize(fromrows, &fromrows_localsize));
   PetscCall(MatPartitioningDestroy(&part));
   PetscCall(MatCreateVecs(pc->pmat, &outervec, NULL));
-  PetscCall(VecCreateMPI(comm, fromrows_localsize, PETSC_DETERMINE, &(osm->pcx)));
-  PetscCall(VecDuplicate(osm->pcx, &(osm->pcy)));
-  PetscCall(VecScatterCreate(osm->pcx, NULL, outervec, fromrows, &(osm->pctoouter)));
-  PetscCall(MatCreateSubMatrix(pc->pmat, fromrows, fromrows, MAT_INITIAL_MATRIX, &(osm->permutationP)));
+  PetscCall(VecCreateMPI(comm, fromrows_localsize, PETSC_DETERMINE, &osm->pcx));
+  PetscCall(VecDuplicate(osm->pcx, &osm->pcy));
+  PetscCall(VecScatterCreate(osm->pcx, NULL, outervec, fromrows, &osm->pctoouter));
+  PetscCall(MatCreateSubMatrix(pc->pmat, fromrows, fromrows, MAT_INITIAL_MATRIX, &osm->permutationP));
   PetscCall(PetscObjectReference((PetscObject)fromrows));
   osm->permutationIS = fromrows;
   osm->pcmat         = pc->pmat;
@@ -363,7 +368,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
           PetscCall(ISDuplicate(osm->iis[i], (osm->ois) + i));
           PetscCall(ISCopy(osm->iis[i], osm->ois[i]));
         } else {
-          PetscCall(PetscObjectReference((PetscObject)((osm->iis)[i])));
+          PetscCall(PetscObjectReference((PetscObject)osm->iis[i]));
           osm->ois[i] = osm->iis[i];
         }
       }
@@ -428,7 +433,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     PetscCall(VecGetOwnershipRange(osm->gx, &gostart, NULL));
     PetscCall(ISCreateStride(PetscObjectComm((PetscObject)pc), on, gostart, 1, &goid));
     /* gois might indices not on local */
-    PetscCall(VecScatterCreate(x, gois, osm->gx, goid, &(osm->gorestriction)));
+    PetscCall(VecScatterCreate(x, gois, osm->gx, goid, &osm->gorestriction));
     PetscCall(PetscMalloc1(osm->n, &numbering));
     PetscCall(PetscObjectsListGetGlobalNumbering(PetscObjectComm((PetscObject)pc), osm->n, (PetscObject *)osm->ois, NULL, numbering));
     PetscCall(VecDestroy(&x));
@@ -500,8 +505,8 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       PetscCall(ISGetLocalSize(osm->ois[i], &oni));
       /* on a sub communicator */
       PetscCall(ISGetSize(osm->ois[i], &oNi));
-      PetscCall(VecCreateMPIWithArray(((PetscObject)(osm->ois[i]))->comm, 1, oni, oNi, gxarray + on, &osm->x[i]));
-      PetscCall(VecCreateMPIWithArray(((PetscObject)(osm->ois[i]))->comm, 1, oni, oNi, gyarray + on, &osm->y[i]));
+      PetscCall(VecCreateMPIWithArray(((PetscObject)osm->ois[i])->comm, 1, oni, oNi, gxarray + on, &osm->x[i]));
+      PetscCall(VecCreateMPIWithArray(((PetscObject)osm->ois[i])->comm, 1, oni, oNi, gyarray + on, &osm->y[i]));
     }
     PetscCall(VecRestoreArray(osm->gx, &gxarray));
     PetscCall(VecRestoreArray(osm->gy, &gyarray));
@@ -509,7 +514,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     PetscCall(PetscMalloc1(osm->n, &osm->ksp));
     for (i = 0; i < osm->n; i++) {
       char subprefix[PETSC_MAX_PATH_LEN + 1];
-      PetscCall(KSPCreate(((PetscObject)(osm->ois[i]))->comm, &ksp));
+      PetscCall(KSPCreate(((PetscObject)osm->ois[i])->comm, &ksp));
       PetscCall(KSPSetNestLevel(ksp, pc->kspnestlevel));
       PetscCall(KSPSetErrorIfNotConverged(ksp, pc->erroriffailure));
       PetscCall(PetscObjectIncrementTabLevel((PetscObject)ksp, (PetscObject)pc, 1));
@@ -825,11 +830,11 @@ static PetscErrorCode PCReset_GASM(PC pc)
     osm->N    = PETSC_DETERMINE;
     osm->nmax = PETSC_DETERMINE;
   }
-  if (osm->pctoouter) PetscCall(VecScatterDestroy(&(osm->pctoouter)));
-  if (osm->permutationIS) PetscCall(ISDestroy(&(osm->permutationIS)));
-  if (osm->pcx) PetscCall(VecDestroy(&(osm->pcx)));
-  if (osm->pcy) PetscCall(VecDestroy(&(osm->pcy)));
-  if (osm->permutationP) PetscCall(MatDestroy(&(osm->permutationP)));
+  if (osm->pctoouter) PetscCall(VecScatterDestroy(&osm->pctoouter));
+  if (osm->permutationIS) PetscCall(ISDestroy(&osm->permutationIS));
+  if (osm->pcx) PetscCall(VecDestroy(&osm->pcx));
+  if (osm->pcy) PetscCall(VecDestroy(&osm->pcy));
+  if (osm->permutationP) PetscCall(MatDestroy(&osm->permutationP));
   if (osm->pcmat) PetscCall(MatDestroy(&osm->pcmat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1532,7 +1537,7 @@ PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS **iis, IS **ois)
     if (*ois) {
       PetscAssertPointer(*ois, 3);
       for (i = 0; i < n; i++) PetscCall(ISDestroy(&(*ois)[i]));
-      PetscCall(PetscFree((*ois)));
+      PetscCall(PetscFree(*ois));
     }
   }
   if (iis) {
@@ -1540,7 +1545,7 @@ PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS **iis, IS **ois)
     if (*iis) {
       PetscAssertPointer(*iis, 2);
       for (i = 0; i < n; i++) PetscCall(ISDestroy(&(*iis)[i]));
-      PetscCall(PetscFree((*iis)));
+      PetscCall(PetscFree(*iis));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1748,7 +1753,7 @@ PetscErrorCode PCGASMCreateSubdomains2D(PC pc, PetscInt M, PetscInt N, PetscInt 
           PetscCall(ISCreateGeneral(subcomm, nidx, idx, PETSC_OWN_POINTER, (*xis) + s));
           if (split) PetscCallMPI(MPI_Comm_free(&subcomm));
         } /* if (n[0]) */
-      }   /* for (q = 0; q < 2; ++q) */
+      } /* for (q = 0; q < 2; ++q) */
       if (n[0]) ++s;
       xstart += maxwidth;
     } /* for (i = 0; i < Mdomains; ++i) */

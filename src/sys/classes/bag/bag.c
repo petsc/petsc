@@ -57,8 +57,7 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag bag, void *addr, const char *const 
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
   PetscCall(PetscOptionsHasHelp(NULL, &printhelp));
   if (printhelp) {
-    while (list[i++])
-      ;
+    while (list[i++]);
     PetscCall((*PetscHelpPrintf)(bag->bagcomm, "  -%s%s <%s>: (%s) %s (choose one of) ", bag->bagprefix ? bag->bagprefix : "", name, list[mdefault], list[i - 3], help));
     for (i = 0; list[i + 2]; i++) PetscCall((*PetscHelpPrintf)(bag->bagcomm, " %s", list[i]));
     PetscCall((*PetscHelpPrintf)(bag->bagcomm, "\n"));
@@ -610,8 +609,7 @@ PetscErrorCode PetscBagSetFromOptions(PetscBag bag)
     } else if (nitem->dtype == PETSC_ENUM) {
       PetscEnum *value = (PetscEnum *)(((char *)bag) + nitem->offset);
       PetscInt   i     = 0;
-      while (nitem->list[i++])
-        ;
+      while (nitem->list[i++]);
       PetscCall(PetscOptionsEnum(name, nitem->help, nitem->list[i - 3], (const char *const *)nitem->list, *value, value, NULL));
     } else if (nitem->dtype == PETSC_BOOL) {
       PetscBool *value = (PetscBool *)(((char *)bag) + nitem->offset);
@@ -700,15 +698,14 @@ PetscErrorCode PetscBagView(PetscBag bag, PetscViewer view)
         for (i = 0; i < nitem->msize; i++) {
           if (((int)value[i]) == -1) value[i] = PETSC_TRUE;
           /* the checks here with != PETSC_FALSE and PETSC_TRUE is a special case; here we truly demand that the value be 0 or 1 */
-          PetscCheck(value[i] == PETSC_FALSE || value[i] == PETSC_TRUE, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Boolean value for %s %s is corrupt; integer value %" PetscInt_FMT, nitem->name, nitem->help, (PetscInt)(value[i]));
+          PetscCheck(value[i] == PETSC_FALSE || value[i] == PETSC_TRUE, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Boolean value for %s %s is corrupt; integer value %" PetscInt_FMT, nitem->name, nitem->help, (PetscInt)value[i]);
           PetscCall(PetscViewerASCIIPrintf(view, " %s", PetscBools[value[i]]));
         }
         PetscCall(PetscViewerASCIIPrintf(view, "; %s\n", nitem->help));
       } else if (nitem->dtype == PETSC_ENUM) {
         PetscEnum value = *(PetscEnum *)(((char *)bag) + nitem->offset);
         PetscInt  i     = 0;
-        while (nitem->list[i++])
-          ;
+        while (nitem->list[i++]);
         PetscCall(PetscViewerASCIIPrintf(view, "  %s = %s; (%s) %s\n", nitem->name, nitem->list[value], nitem->list[i - 3], nitem->help));
       }
       nitem = nitem->next;
@@ -730,7 +727,7 @@ PetscErrorCode PetscBagView(PetscBag bag, PetscViewer view)
       PetscCall(PetscViewerBinaryWrite(view, nitem->help, PETSC_BAG_HELP_LENGTH, PETSC_CHAR));
       PetscCall(PetscViewerBinaryWrite(view, &nitem->msize, 1, PETSC_INT));
       /* some Fortran compilers use -1 as boolean */
-      if (dtype == PETSC_BOOL && ((*(int *)(((char *)bag) + nitem->offset) == -1))) *(int *)(((char *)bag) + nitem->offset) = PETSC_TRUE;
+      if (dtype == PETSC_BOOL && (*(int *)(((char *)bag) + nitem->offset) == -1)) *(int *)(((char *)bag) + nitem->offset) = PETSC_TRUE;
 
       PetscCall(PetscViewerBinaryWrite(view, (((char *)bag) + nitem->offset), nitem->msize, nitem->dtype));
       if (dtype == PETSC_ENUM) PetscCall(PetscViewerBinaryWriteStringArray(view, (const char *const *)nitem->list));
@@ -1013,7 +1010,7 @@ PetscErrorCode PetscBagSetOptionsPrefix(PetscBag bag, const char pre[])
     PetscAssertPointer(pre, 2);
     PetscCheck(pre[0] != '-', PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Options prefix should not begin with a hyphen");
     PetscCall(PetscFree(bag->bagprefix));
-    PetscCall(PetscStrallocpy(pre, &(bag->bagprefix)));
+    PetscCall(PetscStrallocpy(pre, &bag->bagprefix));
   } else PetscCall(PetscFree(bag->bagprefix));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -30,7 +30,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype, M
         aj++;
         diagcnt++;
         nz--;
-      }                          /* skip diagonal */
+      } /* skip diagonal */
       for (j = 0; j < nz; j++) { /* no. of lower triangular blocks */
         rowlengths[(*aj) * bs]++;
         aj++;
@@ -49,7 +49,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype, M
     PetscCall(MatSetBlockSize(B, A->rmap->bs));
   } else B = *newmat;
 
-  b  = (Mat_SeqAIJ *)(B->data);
+  b  = (Mat_SeqAIJ *)B->data;
   bi = b->i;
   bj = b->j;
   bv = b->a;
@@ -199,7 +199,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat A, MatType newtype, M
   } else B = *newmat;
 
   if (bs == 1 && !miss) {
-    b  = (Mat_SeqSBAIJ *)(B->data);
+    b  = (Mat_SeqSBAIJ *)B->data;
     bi = b->i;
     bj = b->j;
     bv = b->a;
@@ -270,7 +270,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype, 
     PetscCall(MatSeqBAIJSetPreallocation(B, bs, 0, browlengths));
   } else B = *newmat;
 
-  b  = (Mat_SeqBAIJ *)(B->data);
+  b  = (Mat_SeqBAIJ *)B->data;
   bi = b->i;
   bj = b->j;
   bv = b->a;
@@ -360,7 +360,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType newtype, 
     PetscCall(MatSeqSBAIJSetPreallocation(B, bs, 0, browlengths));
   } else B = *newmat;
 
-  b  = (Mat_SeqSBAIJ *)(B->data);
+  b  = (Mat_SeqSBAIJ *)B->data;
   bi = b->i;
   bj = b->j;
   bv = b->a;

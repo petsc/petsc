@@ -71,7 +71,7 @@ static PetscErrorCode bc_func_fv(PetscReal time, const PetscReal *c, const Petsc
 
   PetscFunctionBegin;
   bcCtx = (bc_func_ctx *)ctx;
-  PetscCall((bcCtx->func)(bcCtx->dim, time, c, bcCtx->Nf, xG, bcCtx->ctx));
+  PetscCall(bcCtx->func(bcCtx->dim, time, c, bcCtx->Nf, xG, bcCtx->ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

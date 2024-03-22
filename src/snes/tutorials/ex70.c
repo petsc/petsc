@@ -73,9 +73,9 @@ PetscErrorCode StokesStencilGradientX(Stokes *, PetscInt, PetscInt, PetscInt *, 
 PetscErrorCode StokesStencilGradientY(Stokes *, PetscInt, PetscInt, PetscInt *, PetscInt *, PetscScalar *); /* stencil of the Gradient operator (y-component) */
 
 PetscErrorCode StokesRhs(Stokes *);                                        /* rhs vector */
-PetscErrorCode StokesRhsMomX(Stokes *, PetscInt, PetscInt, PetscScalar *); /* right hand side of velocity (x-component) */
-PetscErrorCode StokesRhsMomY(Stokes *, PetscInt, PetscInt, PetscScalar *); /* right hand side of velocity (y-component) */
-PetscErrorCode StokesRhsMass(Stokes *, PetscInt, PetscInt, PetscScalar *); /* right hand side of pressure */
+PetscErrorCode StokesRhsMomX(Stokes *, PetscInt, PetscInt, PetscScalar *); /* right-hand side of velocity (x-component) */
+PetscErrorCode StokesRhsMomY(Stokes *, PetscInt, PetscInt, PetscScalar *); /* right-hand side of velocity (y-component) */
+PetscErrorCode StokesRhsMass(Stokes *, PetscInt, PetscInt, PetscScalar *); /* right-hand side of pressure */
 
 PetscErrorCode StokesSetupApproxSchur(Stokes *); /* approximation of the Schur complement */
 
@@ -703,7 +703,7 @@ PetscErrorCode StokesCalcError(Stokes *s)
 
   /* total error */
   PetscCall(VecNorm(s->y, NORM_2, &val));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, " discretization error [u,p] = %g\n", (double)PetscRealPart((val / scale))));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, " discretization error [u,p] = %g\n", (double)PetscRealPart(val / scale)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

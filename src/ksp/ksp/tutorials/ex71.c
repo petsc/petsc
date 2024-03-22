@@ -107,6 +107,7 @@ typedef struct {
   PetscInt     dof;
   PetscInt     cells[3];
   PetscBool    useglobal;
+  PetscBool    multi_element;
   PetscBool    dirbc;
   PetscBool    per[3];
   PetscBool    test;
@@ -129,6 +130,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->cells[1]             = 6;
   options->cells[2]             = 4;
   options->useglobal            = PETSC_FALSE;
+  options->multi_element        = PETSC_FALSE;
   options->dirbc                = PETSC_TRUE;
   options->test                 = PETSC_FALSE;
   options->per[0]               = PETSC_FALSE;
@@ -146,8 +148,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsIntArray("-cells", "The mesh division", __FILE__, options->cells, (n = 3, &n), NULL));
   PetscCall(PetscOptionsBoolArray("-periodicity", "The mesh periodicity", __FILE__, options->per, (n = 3, &n), NULL));
   PetscCall(PetscOptionsBool("-use_global", "Test MatSetValues", __FILE__, options->useglobal, &options->useglobal, NULL));
+  PetscCall(PetscOptionsBool("-multi_element", "Use multi-element BDDC", __FILE__, options->multi_element, &options->multi_element, NULL));
   PetscCall(PetscOptionsBool("-dirichlet", "Use dirichlet BC", __FILE__, options->dirbc, &options->dirbc, NULL));
-  PetscCall(PetscOptionsBool("-test_assembly", "Test MATIS assembly", __FILE__, options->test, &options->test, NULL));
   PetscCall(PetscOptionsBool("-use_composite_pc", "Multiplicative composite with BDDC + Richardson/Jacobi", __FILE__, options->use_composite_pc, &options->use_composite_pc, NULL));
   PetscCall(PetscOptionsBool("-random_initial_guess", "Solve A x = 0 with random initial guess, instead of A x = b with random b", __FILE__, options->random_initial_guess, &options->random_initial_guess, NULL));
   PetscCall(PetscOptionsBool("-random_real", "Use real-valued b (or x, if -random_initial_guess) instead of default scalar type", __FILE__, options->random_real, &options->random_real, NULL));
@@ -212,7 +214,7 @@ int main(int argc, char **args)
   const PetscInt        *e_loc;        /* Local indices of element nodes (in local element order) */
   PetscInt              *e_glo = NULL; /* Global indices of element nodes (in local element order) */
   PetscInt               nodes[3];
-  PetscBool              ismatis;
+  PetscBool              ismatis, flg;
   PetscLogStage          stages[2];
 
   PetscFunctionBeginUser;
@@ -268,6 +270,20 @@ int main(int argc, char **args)
     PetscCall(ISLocalToGlobalMappingApplyBlock(map, nen * nel, e_loc, e_glo));
   }
 
+  if (user.multi_element) {
+    ISLocalToGlobalMapping mapn;
+    PetscInt              *e_glo = NULL;
+
+    PetscCall(PetscMalloc1(nel * nen, &e_glo));
+    PetscCall(ISLocalToGlobalMappingApplyBlock(map, nen * nel, e_loc, e_glo));
+    PetscCall(ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)map), user.dof, nen * nel, e_glo, PETSC_OWN_POINTER, &mapn));
+    PetscCall(MatISSetAllowRepeated(A, PETSC_TRUE));
+    PetscCall(MatSetLocalToGlobalMapping(A, mapn, mapn));
+    PetscCall(ISLocalToGlobalMappingViewFromOptions(mapn, NULL, "-multi_view"));
+    PetscCall(MatSetDM(A, NULL));
+    PetscCall(ISLocalToGlobalMappingDestroy(&mapn));
+  }
+
   /* we reorder the indices since the element matrices are given in lexicographic order,
      whereas the elements indices returned by DMDAGetElements follow the usual FEM ordering
      i.e., element matrices     DMDA ordering
@@ -280,8 +296,12 @@ int main(int argc, char **args)
     PetscInt j, idxs[8];
 
     PetscCheck(nen <= 8, PETSC_COMM_WORLD, PETSC_ERR_SUP, "Not coded");
-    if (!e_glo) {
-      for (j = 0; j < nen; j++) idxs[j] = e_loc[i * nen + ord[j]];
+    if (!user.useglobal) {
+      if (user.multi_element) {
+        for (j = 0; j < nen; j++) idxs[j] = i * nen + ord[j];
+      } else {
+        for (j = 0; j < nen; j++) idxs[j] = e_loc[i * nen + ord[j]];
+      }
       PetscCall(MatSetValuesBlockedLocal(A, nen, idxs, nen, idxs, user.elemMat, ADD_VALUES));
     } else {
       for (j = 0; j < nen; j++) idxs[j] = e_glo[i * nen + ord[j]];
@@ -291,6 +311,7 @@ int main(int argc, char **args)
   PetscCall(DMDARestoreElements(da, &nel, &nen, &e_loc));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatViewFromOptions(A, NULL, "-A_mat_view"));
   PetscCall(MatSetOption(A, MAT_SPD, PETSC_TRUE));
   PetscCall(MatSetOption(A, MAT_SPD_ETERNAL, PETSC_TRUE));
 
@@ -353,7 +374,8 @@ int main(int argc, char **args)
     PetscCall(MatSetNullSpace(A, nullsp));
   }
 
-  if (user.test) {
+  PetscCall(PetscOptionsHasName(NULL, NULL, "-assembled_view", &flg));
+  if (flg) {
     Mat AA;
 
     PetscCall(MatConvert(A, MATAIJ, MAT_INITIAL_MATRIX, &AA));
@@ -388,23 +410,26 @@ int main(int argc, char **args)
 
       /* when using a DMDA, the local matrices have an additional local-to-local map
          that maps from the DA local ordering to the ordering induced by the elements */
-      PetscCall(MatCreateVecs(lA, &lc, NULL));
       PetscCall(MatGetLocalToGlobalMapping(lA, &l2l, NULL));
-      PetscCall(VecSetLocalToGlobalMapping(lc, l2l));
-      PetscCall(VecSetOption(lc, VEC_IGNORE_NEGATIVE_INDICES, PETSC_TRUE));
-      PetscCall(VecGetLocalSize(xcoorl, &n));
-      PetscCall(VecGetBlockSize(xcoorl, &bs));
-      PetscCall(ISCreateStride(PETSC_COMM_SELF, n / bs, 0, 1, &is));
-      PetscCall(ISGetIndices(is, &idxs));
-      PetscCall(VecGetArrayRead(xcoorl, &a));
-      PetscCall(VecSetValuesBlockedLocal(lc, n / bs, idxs, a, INSERT_VALUES));
-      PetscCall(VecAssemblyBegin(lc));
-      PetscCall(VecAssemblyEnd(lc));
-      PetscCall(VecRestoreArrayRead(xcoorl, &a));
-      PetscCall(ISRestoreIndices(is, &idxs));
-      PetscCall(ISDestroy(&is));
-      PetscCall(MatNullSpaceCreateRigidBody(lc, &lnullsp));
-      PetscCall(VecDestroy(&lc));
+      if (l2l) {
+        PetscCall(MatCreateVecs(lA, &lc, NULL));
+        PetscCall(VecSetLocalToGlobalMapping(lc, l2l));
+
+        PetscCall(VecSetOption(lc, VEC_IGNORE_NEGATIVE_INDICES, PETSC_TRUE));
+        PetscCall(VecGetLocalSize(xcoorl, &n));
+        PetscCall(VecGetBlockSize(xcoorl, &bs));
+        PetscCall(ISCreateStride(PETSC_COMM_SELF, n / bs, 0, 1, &is));
+        PetscCall(ISGetIndices(is, &idxs));
+        PetscCall(VecGetArrayRead(xcoorl, &a));
+        PetscCall(VecSetValuesBlockedLocal(lc, n / bs, idxs, a, INSERT_VALUES));
+        PetscCall(VecAssemblyBegin(lc));
+        PetscCall(VecAssemblyEnd(lc));
+        PetscCall(VecRestoreArrayRead(xcoorl, &a));
+        PetscCall(ISRestoreIndices(is, &idxs));
+        PetscCall(ISDestroy(&is));
+        PetscCall(MatNullSpaceCreateRigidBody(lc, &lnullsp));
+        PetscCall(VecDestroy(&lc));
+      }
     } else if (user.pde == PDE_POISSON) {
       PetscCall(MatNullSpaceCreate(PETSC_COMM_SELF, PETSC_TRUE, 0, NULL, &lnullsp));
     }
@@ -417,25 +442,26 @@ int main(int argc, char **args)
   PetscCall(KSPSetOperators(ksp, A, A));
   PetscCall(KSPSetType(ksp, KSPCG));
   PetscCall(KSPGetPC(ksp, &pc));
-  if (user.use_composite_pc) {
-    PC  pcksp, pcjacobi;
-    KSP ksprich;
-    PetscCall(PCSetType(pc, PCCOMPOSITE));
-    PetscCall(PCCompositeSetType(pc, PC_COMPOSITE_MULTIPLICATIVE));
-    PetscCall(PCCompositeAddPCType(pc, PCBDDC));
-    PetscCall(PCCompositeAddPCType(pc, PCKSP));
-    PetscCall(PCCompositeGetPC(pc, 1, &pcksp));
-    PetscCall(PCKSPGetKSP(pcksp, &ksprich));
-    PetscCall(KSPSetType(ksprich, KSPRICHARDSON));
-    PetscCall(KSPSetTolerances(ksprich, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 1));
-    PetscCall(KSPSetNormType(ksprich, KSP_NORM_NONE));
-    PetscCall(KSPSetConvergenceTest(ksprich, KSPConvergedSkip, NULL, NULL));
-    PetscCall(KSPGetPC(ksprich, &pcjacobi));
-    PetscCall(PCSetType(pcjacobi, PCJACOBI));
-  } else {
-    PetscCall(PCSetType(pc, PCBDDC));
+  if (ismatis) {
+    if (user.use_composite_pc) {
+      PC  pcksp, pcjacobi;
+      KSP ksprich;
+      PetscCall(PCSetType(pc, PCCOMPOSITE));
+      PetscCall(PCCompositeSetType(pc, PC_COMPOSITE_MULTIPLICATIVE));
+      PetscCall(PCCompositeAddPCType(pc, PCBDDC));
+      PetscCall(PCCompositeAddPCType(pc, PCKSP));
+      PetscCall(PCCompositeGetPC(pc, 1, &pcksp));
+      PetscCall(PCKSPGetKSP(pcksp, &ksprich));
+      PetscCall(KSPSetType(ksprich, KSPRICHARDSON));
+      PetscCall(KSPSetTolerances(ksprich, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 1));
+      PetscCall(KSPSetNormType(ksprich, KSP_NORM_NONE));
+      PetscCall(KSPSetConvergenceTest(ksprich, KSPConvergedSkip, NULL, NULL));
+      PetscCall(KSPGetPC(ksprich, &pcjacobi));
+      PetscCall(PCSetType(pcjacobi, PCJACOBI));
+    } else {
+      PetscCall(PCSetType(pc, PCBDDC));
+    }
   }
-  /* PetscCall(PCBDDCSetDirichletBoundaries(pc,zero)); */
   PetscCall(KSPSetFromOptions(ksp));
   PetscCall(PetscLogStagePush(stages[0]));
   PetscCall(KSPSetUp(ksp));
@@ -554,16 +580,17 @@ int main(int argc, char **args)
    requires: hpddm slepc defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
    args: -pde_type Elasticity -cells 12,12 -dim 2 -ksp_converged_reason -pc_type hpddm -pc_hpddm_coarse_correction balanced -pc_hpddm_levels_1_pc_type asm -pc_hpddm_levels_1_pc_asm_overlap 1 -pc_hpddm_levels_1_pc_asm_type basic -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev 10 -pc_hpddm_levels_1_st_pc_factor_shift_type INBLOCKS
    test:
-     args: -matis_localmat_type {{aij baij sbaij}shared output} -pc_hpddm_coarse_mat_type {{baij sbaij}shared output}
+     args: -mat_is_localmat_type {{aij baij sbaij}shared output} -pc_hpddm_coarse_mat_type {{baij sbaij}shared output}
      suffix: hpddm
      output_file: output/ex71_hpddm.out
+     filter: sed -e "s/CONVERGED_RTOL iterations 15/CONVERGED_RTOL iterations 14/g"
    test:
-     args: -matis_localmat_type sbaij -pc_hpddm_coarse_mat_type sbaij -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_eps_type lapack -pc_hpddm_levels_1_eps_smallest_magnitude -pc_hpddm_levels_1_st_type shift
+     args: -mat_is_localmat_type sbaij -pc_hpddm_coarse_mat_type sbaij -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_eps_type lapack -pc_hpddm_levels_1_eps_smallest_magnitude -pc_hpddm_levels_1_st_type shift
      suffix: hpddm_lapack
      output_file: output/ex71_hpddm.out
  testset:
    nsize: 9
-   args: -test_assembly -assembled_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged
+   args: -assembled_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged
    test:
      args: -dim 1 -cells 12 -pde_type Poisson
      suffix: dmda_matis_poiss_1d_loc
@@ -632,25 +659,25 @@ int main(int argc, char **args)
    suffix: bddc_cusparse
    # no kokkos since it seems kokkos's resource demand is too much with 8 ranks and the test will fail on cuda related initialization.
    requires: cuda !kokkos
-   args: -pde_type Poisson -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_dirichlet_pc_type cholesky -pc_bddc_dirichlet_pc_factor_mat_solver_type cusparse -pc_bddc_dirichlet_pc_factor_mat_ordering_type nd -pc_bddc_neumann_pc_type cholesky -pc_bddc_neumann_pc_factor_mat_solver_type cusparse -pc_bddc_neumann_pc_factor_mat_ordering_type nd -matis_localmat_type aijcusparse
+   args: -pde_type Poisson -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_dirichlet_pc_type cholesky -pc_bddc_dirichlet_pc_factor_mat_solver_type cusparse -pc_bddc_dirichlet_pc_factor_mat_ordering_type nd -pc_bddc_neumann_pc_type cholesky -pc_bddc_neumann_pc_factor_mat_solver_type cusparse -pc_bddc_neumann_pc_factor_mat_ordering_type nd -mat_is_localmat_type aijcusparse
  test:
    nsize: 8
    filter: grep -v "variant HERMITIAN"
    suffix: bddc_elast_deluxe_layers_adapt_cuda
    requires: !complex mumps cuda defined(PETSC_HAVE_CUSOLVERDNDPOTRI)
-   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_converged_reason -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mumps -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers {{1 10}separate_output} -pc_bddc_adaptive_userdefined {{0 1}separate output} -matis_localmat_type seqaijcusparse -sub_schurs_schur_mat_type {{seqdensecuda seqdense}}
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_converged_reason -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mumps -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers {{1 10}separate_output} -pc_bddc_adaptive_userdefined {{0 1}separate output} -mat_is_localmat_type seqaijcusparse -sub_schurs_schur_mat_type {{seqdensecuda seqdense}}
  test:
    nsize: 8
    filter: grep -v "variant HERMITIAN" | grep -v "I-node routines" | sed -e "s/seqaijcusparse/seqaij/g"
    suffix: bddc_elast_deluxe_layers_adapt_cuda_approx
    requires: !complex mumps cuda defined(PETSC_HAVE_CUSOLVERDNDPOTRI)
-   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mumps -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers 1 -matis_localmat_type {{seqaij seqaijcusparse}separate output} -sub_schurs_schur_mat_type {{seqdensecuda seqdense}} -pc_bddc_dirichlet_pc_type gamg -pc_bddc_dirichlet_approximate -pc_bddc_neumann_pc_type gamg -pc_bddc_neumann_approximate -pc_bddc_dirichlet_pc_gamg_esteig_ksp_max_it 10 -pc_bddc_neumann_pc_gamg_esteig_ksp_max_it 10
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mumps -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers 1 -mat_is_localmat_type {{seqaij seqaijcusparse}separate output} -sub_schurs_schur_mat_type {{seqdensecuda seqdense}} -pc_bddc_dirichlet_pc_type gamg -pc_bddc_dirichlet_approximate -pc_bddc_neumann_pc_type gamg -pc_bddc_neumann_approximate -pc_bddc_dirichlet_pc_gamg_esteig_ksp_max_it 10 -pc_bddc_neumann_pc_gamg_esteig_ksp_max_it 10
  test:
    nsize: 8
    suffix: bddc_elast_deluxe_layers_adapt_mkl_pardiso_cuda
    requires: !complex mkl_pardiso cuda defined(PETSC_HAVE_CUSOLVERDNDPOTRI)
    filter: sed -e "s/CONVERGED_RTOL iterations 6/CONVERGED_RTOL iterations 5/g"
-   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_converged_reason -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mkl_pardiso -sub_schurs_mat_mkl_pardiso_65 1 -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers {{1 10}separate_output} -pc_bddc_adaptive_userdefined {{0 1}separate output} -matis_localmat_type seqaijcusparse -sub_schurs_schur_mat_type {{seqdensecuda seqdense}}
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_converged_reason -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mkl_pardiso -sub_schurs_mat_mkl_pardiso_65 1 -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers {{1 10}separate_output} -pc_bddc_adaptive_userdefined {{0 1}separate output} -mat_is_localmat_type seqaijcusparse -sub_schurs_schur_mat_type {{seqdensecuda seqdense}}
 
  testset:
    nsize: 2

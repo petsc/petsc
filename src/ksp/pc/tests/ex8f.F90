@@ -14,7 +14,7 @@
 !
 !  Variables:
 !     ksp     - linear solver context
-!     x, b, u  - approx solution, right-hand-side, exact solution vectors
+!     x, b, u  - approx solution, right-hand side, exact solution vectors
 !     A        - matrix that defines linear system
 !     its      - iterations for convergence
 !     norm     - norm of error in solution

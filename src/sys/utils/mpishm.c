@@ -15,7 +15,7 @@ struct _n_PetscShmComm {
    Note: this is declared extern "C" because it is passed to MPI_Comm_create_keyval()
 
 */
-PETSC_EXTERN PetscMPIInt MPIAPI Petsc_ShmComm_Attr_Delete_Fn(MPI_Comm comm, PetscMPIInt keyval, void *val, void *extra_state)
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_ShmComm_Attr_DeleteFn(MPI_Comm comm, PetscMPIInt keyval, void *val, void *extra_state)
 {
   PetscShmComm p = (PetscShmComm)val;
 
@@ -40,6 +40,7 @@ static MPI_Comm       shmcomm_dupped_comms[MAX_SHMCOMM_DUPPED_COMMS];
 static PetscErrorCode PetscShmCommDestroyDuppedComms(void)
 {
   PetscInt i;
+
   PetscFunctionBegin;
   for (i = 0; i < num_dupped_comms; i++) PetscCall(PetscCommDestroy(&shmcomm_dupped_comms[i]));
   num_dupped_comms = 0; /* reset so that PETSc can be reinitialized */
@@ -512,7 +513,7 @@ PetscErrorCode PetscOmpCtrlDestroy(PetscOmpCtrl *pctrl)
 -   is_omp_master    - true if the calling process is an OMP master rank.
 
     Note:
-    Any output parameter can be NULL. The parameter is just ignored.
+    Any output parameter can be `NULL`. The parameter is just ignored.
 
     Level: developer
 

@@ -190,7 +190,7 @@ PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver2(Mat A, Vec bb, Vec xx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* bs = 15 for PFLOTRAN. Block operations are done by accessing one column at at time */
+/* bs = 15 for PFLOTRAN. Block operations are done by accessing one column at a time */
 /* Default MatSolve for block size 15 */
 
 PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver1(Mat A, Vec bb, Vec xx)

@@ -43,7 +43,7 @@ PetscErrorCode MatrixFreePreconditioner(PC, Vec, Vec);
 */
 typedef struct {
   DM          da;    /* distributed array */
-  Vec         F;     /* right-hand-side of PDE */
+  Vec         F;     /* right-hand side of PDE */
   PetscMPIInt rank;  /* rank of processor */
   PetscMPIInt size;  /* size of communicator */
   PetscReal   h;     /* mesh spacing */
@@ -199,7 +199,7 @@ int main(int argc, char **argv)
   if (post_check) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Activating post step checking routine\n"));
     PetscCall(SNESLineSearchSetPostCheck(linesearch, PostCheck, &checkP));
-    PetscCall(VecDuplicate(x, &(checkP.last_step)));
+    PetscCall(VecDuplicate(x, &checkP.last_step));
 
     checkP.tolerance = 1.0;
     checkP.user      = &ctx;
@@ -229,7 +229,7 @@ int main(int argc, char **argv)
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize application:
-     Store right-hand-side of PDE and exact solution
+     Store right-hand side of PDE and exact solution
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /*
@@ -496,7 +496,6 @@ PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *ctx)
   PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY));
   PetscCall(DMDAVecRestoreArrayRead(da, x, &xx));
   PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

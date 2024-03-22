@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """ A brittle approach to making "Edit this Page" links work on man pages """
 
 import os

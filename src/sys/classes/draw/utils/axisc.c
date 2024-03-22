@@ -9,7 +9,7 @@ PetscClassId PETSC_DRAWAXIS_CLASSID = 0;
   Collective
 
   Input Parameter:
-. draw - `PetscDraw` object where axis to to be made
+. draw - `PetscDraw` object where axis to be made
 
   Output Parameter:
 . axis - the axis datastructure
@@ -69,7 +69,7 @@ PetscErrorCode PetscDrawAxisDestroy(PetscDrawAxis *axis)
   PetscFunctionBegin;
   if (!*axis) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*axis, PETSC_DRAWAXIS_CLASSID, 1);
-  if (--((PetscObject)(*axis))->refct > 0) {
+  if (--((PetscObject)*axis)->refct > 0) {
     *axis = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

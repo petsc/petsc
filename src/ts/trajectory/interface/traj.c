@@ -331,7 +331,7 @@ PetscErrorCode TSTrajectoryView(TSTrajectory tj, PetscViewer viewer)
 
   Input Parameters:
 + ctx   - the trajectory context
-- names - the names of the components, final string must be NULL
+- names - the names of the components, final string must be `NULL`
 
   Level: intermediate
 
@@ -463,11 +463,8 @@ PetscErrorCode TSTrajectorySetType(TSTrajectory tj, TS ts, TSTrajectoryType type
 
   PetscCall(PetscFunctionListFind(TSTrajectoryList, type, &r));
   PetscCheck(r, PetscObjectComm((PetscObject)tj), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TSTrajectory type: %s", type);
-  if (tj->ops->destroy) {
-    PetscCall((*(tj)->ops->destroy)(tj));
-
-    tj->ops->destroy = NULL;
-  }
+  PetscTryTypeMethod(tj, destroy);
+  tj->ops->destroy = NULL;
   PetscCall(PetscMemzero(tj->ops, sizeof(*tj->ops)));
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)tj, type));
@@ -567,8 +564,8 @@ PetscErrorCode TSTrajectoryDestroy(TSTrajectory *tj)
 {
   PetscFunctionBegin;
   if (!*tj) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*tj), TSTRAJECTORY_CLASSID, 1);
-  if (--((PetscObject)(*tj))->refct > 0) {
+  PetscValidHeaderSpecific(*tj, TSTRAJECTORY_CLASSID, 1);
+  if (--((PetscObject)*tj)->refct > 0) {
     *tj = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -581,12 +578,12 @@ PetscErrorCode TSTrajectoryDestroy(TSTrajectory *tj)
   PetscCall(VecDestroy(&(*tj)->Udot));
 
   if ((*tj)->transformdestroy) PetscCall((*(*tj)->transformdestroy)((*tj)->transformctx));
-  PetscTryTypeMethod((*tj), destroy);
+  PetscTryTypeMethod(*tj, destroy);
   if (!((*tj)->keepfiles)) {
     PetscMPIInt rank;
     MPI_Comm    comm;
 
-    PetscCall(PetscObjectGetComm((PetscObject)(*tj), &comm));
+    PetscCall(PetscObjectGetComm((PetscObject)*tj, &comm));
     PetscCallMPI(MPI_Comm_rank(comm, &rank));
     if (rank == 0 && (*tj)->dirname) { /* we own the directory, so we run PetscRMTree on it */
       PetscCall(PetscRMTree((*tj)->dirname));

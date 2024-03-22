@@ -167,7 +167,7 @@ static PetscErrorCode MatSetValues_Elemental(Mat A, PetscInt nr, const PetscInt 
         }
       }
     }
-  } else { /* columnoriented */
+  } else { /* column-oriented */
     for (j = 0; j < nc; j++) {
       if (cols[j] < 0) continue;
       P2RO(A, 1, cols[j], &crank, &cidx);
@@ -1328,6 +1328,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_Elemental,
                                        nullptr,
                                        nullptr,
                                        /*150*/ nullptr,
+                                       nullptr,
                                        nullptr};
 
 /*MC

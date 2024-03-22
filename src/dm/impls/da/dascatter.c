@@ -11,7 +11,7 @@
   Collective
 
   Input Parameter:
-. da - the distributed array
+. da - the `DMDA`
 
   Output Parameters:
 + gtol - global-to-local scatter context (may be `NULL`)

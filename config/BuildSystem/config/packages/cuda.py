@@ -17,7 +17,7 @@ class Configure(config.package.Package):
     # CUDA provides 2 variants of libcuda.so (for access to CUDA driver API):
     # - fully functional compile, runtime libraries installed with the GPU driver
     #    (for ex:) /usr/lib64/libcuda.so (compile), libcuda.so.1 (runtime)
-    # -	stub library - useable only for compiles
+    # -	stub library - usable only for compiles
     # 	 (for ex:) /usr/local/cuda/lib64/stubs/libcuda.so  (without corresponding libcuda.so.1 for runtime)
     # We are preferring this stub library - as it enables compiles on non-GPU nodes (for ex: login nodes).
     # Using RPATH to this stub location is not appropriate - so skipping via libraries.rpathSkipDirs()
@@ -114,9 +114,9 @@ class Configure(config.package.Package):
       raise RuntimeError('clang only supports cuda archs specified as version number(s) (got "'+self.cudaArch+'")')
     return ''.join(' --cuda-gpu-arch=sm_'+gen for gen in self.cudaArchList())
 
-  def cmakeArchProperty(self):
+  def cmakeArch(self):
     # CMake supports 'all', 'all-major', 'native', and a semicolon-separated list of numbers
-    return 'CMAKE_CUDA_ARCHITECTURES="'+self.cudaArch.replace(',', ';')+'"'
+    return self.cudaArch.replace(',', ';')
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)

@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = '4.2.00'
+    self.gitcommit        = '4.2.01'
     self.minversion       = '3.7.01'
     self.versionname      = 'KOKKOSKERNELS_VERSION'
     self.download         = ['git://https://github.com/kokkos/kokkos-kernels.git','https://github.com/kokkos/kokkos-kernels/archive/'+self.gitcommit+'.tar.gz']
@@ -79,6 +79,7 @@ class Configure(config.package.CMakePackage):
       if not self.argDB['with-kokkos-kernels-tpl']:
         args.append('-DKokkosKernels_ENABLE_TPL_CUBLAS=OFF')  # These are turned ON by KK by default when CUDA is enabled
         args.append('-DKokkosKernels_ENABLE_TPL_CUSPARSE=OFF')
+        args.append('-DKokkosKernels_ENABLE_TPL_CUSOLVER=OFF')
     elif self.hip.found:
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
       args.append('-DCMAKE_CXX_COMPILER='+self.getCompiler('HIP'))
@@ -86,6 +87,7 @@ class Configure(config.package.CMakePackage):
       if self.argDB['with-kokkos-kernels-tpl'] and os.path.isdir(self.hip.rocBlasDir) and os.path.isdir(self.hip.rocSparseDir): # TPL is required either by default or by users
         args.append('-DKokkosKernels_ENABLE_TPL_ROCBLAS=ON')
         args.append('-DKokkosKernels_ENABLE_TPL_ROCSPARSE=ON')
+        args.append('-DKokkosKernels_ENABLE_TPL_ROCSOLVER=ON')
         args.append('-DROCBLAS_ROOT='+self.hip.rocBlasDir) # KK-4.0.1 and higher only support these
         args.append('-DROCSPARSE_ROOT='+self.hip.rocSparseDir)
         args.append('-DKokkosKernels_ROCBLAS_ROOT='+self.hip.rocBlasDir) # KK-4.0.0 and lower support these; remove the two lines once self.miniversion >= 4.0.1
@@ -95,6 +97,7 @@ class Configure(config.package.CMakePackage):
       else: # Users turned it off or because rocBlas/rocSparse dirs not found
         args.append('-DKokkosKernels_ENABLE_TPL_ROCBLAS=OFF')
         args.append('-DKokkosKernels_ENABLE_TPL_ROCSPARSE=OFF')
+        args.append('-DKokkosKernels_ENABLE_TPL_ROCSOLVER=OFF')
     elif self.sycl.found:
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
       args.append('-DCMAKE_CXX_COMPILER='+self.getCompiler('SYCL'))

@@ -425,9 +425,9 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
         for (k = 0; k < zm; k++) array[k + xm + ym] = zs + k;
       }
       if (rank == 0) {
-        PetscCall(PetscViewerVTKFWrite(viewer, fp, &(array[0]), xm, MPIU_SCALAR));
-        PetscCall(PetscViewerVTKFWrite(viewer, fp, &(array[xm]), ym, MPIU_SCALAR));
-        PetscCall(PetscViewerVTKFWrite(viewer, fp, &(array[xm + ym]), zm, MPIU_SCALAR));
+        PetscCall(PetscViewerVTKFWrite(viewer, fp, &array[0], xm, MPIU_SCALAR));
+        PetscCall(PetscViewerVTKFWrite(viewer, fp, &array[xm], ym, MPIU_SCALAR));
+        PetscCall(PetscViewerVTKFWrite(viewer, fp, &array[xm + ym], zm, MPIU_SCALAR));
       }
     }
 

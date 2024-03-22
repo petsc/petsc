@@ -89,7 +89,7 @@ static PetscErrorCode SNESDestroy_ASPIN(SNES snes)
     Note that since the Pmat is not used to construct a preconditioner it could be provided in a matrix-free form.
     The code for this implementation is a bit confusing because the Amat of `SNESSetJacobian()` applies the Jacobian of the
     nonlinearly preconditioned function Jacobian while the Pmat provides the Jacobian of the original user provided function.
-    Note that the original `SNES` and nonlinear preconditioner preconditioner (see `SNESGetNPC()`), in this case `SNESNASM`, share
+    Note that the original `SNES` and nonlinear preconditioner (see `SNESGetNPC()`), in this case `SNESNASM`, share
     the same Jacobian matrices. `SNESNASM` computes the needed Jacobian in `SNESNASMComputeFinalJacobian_Private()`.
 
 .seealso: [](ch_snes), `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNASM`, `SNESGetNPC()`, `SNESGetNPCSide()`
@@ -130,6 +130,5 @@ PETSC_EXTERN PetscErrorCode SNESCreate_ASPIN(SNES snes)
 
   snes->ops->destroy = SNESDestroy_ASPIN;
   PetscCall(PetscObjectChangeTypeName((PetscObject)snes, SNESASPIN));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }

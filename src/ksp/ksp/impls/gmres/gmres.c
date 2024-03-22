@@ -100,7 +100,7 @@ PetscErrorCode KSPSetUp_GMRES(KSP ksp)
  */
 static PetscErrorCode KSPGMRESCycle(PetscInt *itcount, KSP ksp)
 {
-  KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
+  KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
   PetscReal  res, hapbnd, tt;
   PetscInt   it = 0, max_k = gmres->max_k;
   PetscBool  hapend = PETSC_FALSE;
@@ -145,7 +145,7 @@ static PetscErrorCode KSPGMRESCycle(PetscInt *itcount, KSP ksp)
     if (gmres->vv_allocated <= it + VEC_OFFSET + 1) PetscCall(KSPGMRESGetNewVectors(ksp, it + 1));
     PetscCall(KSP_PCApplyBAorAB(ksp, VEC_VV(it), VEC_VV(1 + it), VEC_TEMP_MATOP));
 
-    /* update hessenberg matrix and do Gram-Schmidt */
+    /* update Hessenberg matrix and do Gram-Schmidt */
     PetscCall((*gmres->orthog)(ksp, it));
     if (ksp->reason) break;
 
@@ -312,7 +312,7 @@ static PetscErrorCode KSPGMRESBuildSoln(PetscScalar *nrs, Vec vs, Vec vdest, KSP
 {
   PetscScalar tt;
   PetscInt    ii, k, j;
-  KSP_GMRES  *gmres = (KSP_GMRES *)(ksp->data);
+  KSP_GMRES  *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
   /* Solve for solution vector that minimizes the residual */
@@ -360,7 +360,7 @@ static PetscErrorCode KSPGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool h
 {
   PetscScalar *hh, *cc, *ss, tt;
   PetscInt     j;
-  KSP_GMRES   *gmres = (KSP_GMRES *)(ksp->data);
+  KSP_GMRES   *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
   hh = HH(0, it);
@@ -378,7 +378,7 @@ static PetscErrorCode KSPGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool h
 
   /*
     compute the new plane rotation, and apply it to:
-     1) the right-hand-side of the Hessenberg system
+     1) the right-hand side of the Hessenberg system
      2) the new column of the Hessenberg matrix
     thus obtaining the updated value of the residual
   */

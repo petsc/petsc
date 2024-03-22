@@ -98,7 +98,7 @@ PETSC_EXTERN PetscErrorCode PetscFreeAlign(void *ptr, int line, const char func[
 
   #if PetscDefined(HAVE_FREE_RETURN_INT)
   int err = free(ptr);
-  PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_PLIB, "System free returned error %d\n", err);
+  PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_PLIB, "System free returned error %d", err);
   #else
   free(ptr);
   #endif
@@ -153,7 +153,7 @@ PETSC_EXTERN PetscErrorCode PetscReallocAlign(size_t mem, int line, const char f
 #if PetscDefined(HAVE_POSIX_MEMALIGN)
   /* There are no standard guarantees that realloc() maintains the alignment of memalign(), so I think we have to
    * realloc and, if the alignment is wrong, malloc/copy/free. */
-  if (((size_t)(*result)) % PETSC_MEMALIGN) {
+  if (((size_t)*result) % PETSC_MEMALIGN) {
     void *newResult;
   #if PetscDefined(HAVE_MEMKIND)
     {

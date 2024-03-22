@@ -749,7 +749,6 @@ static PetscErrorCode MonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u
   PetscCall(PetscObjectSetName((PetscObject)v, "Exact Solution"));
   PetscCall(VecViewFromOptions(v, NULL, "-exact_vec_view"));
   PetscCall(DMRestoreGlobalVector(dm, &v));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

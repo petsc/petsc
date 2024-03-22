@@ -4685,7 +4685,39 @@ cdef class Mat(Object):
 
     # IS
 
-    def fixISLocalEmpty(self, fix: bool) -> None:
+    def setISAllowRepeated(self, allow: bool = True) -> None:
+        """Allow repeated entries in the local to global map.
+
+        Logically Collective.
+
+        Parameters
+        ----------
+        allow
+            When `True`, local dofs are allowed to map to the same global dof.
+
+        See Also
+        --------
+        getISAllowRepeated, petsc.MatISSetAllowRepeated
+
+        """
+        cdef PetscBool callow = asBool(allow)
+        CHKERR( MatISSetAllowRepeated(self.mat, callow) )
+
+    def getISAllowRepeated(self) -> bool:
+        """Get the flag for repeated entries in the local to global map.
+
+        Not Collective.
+
+        See Also
+        --------
+        setISAllowRepeated, petsc.MatISGetAllowRepeated
+
+        """
+        cdef PetscBool callow
+        CHKERR( MatISGetAllowRepeated(self.mat, &callow) )
+        return asBool(callow)
+
+    def fixISLocalEmpty(self, fix: bool = True) -> None:
         """Compress out zero local rows from the local matrices.
 
         Collective.

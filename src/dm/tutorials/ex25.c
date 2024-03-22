@@ -29,7 +29,7 @@ int main(int argc, char **argv)
   PetscCall(DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
   /* Just as a simple example we use the coordinates as the variables in the vectors we wish to examine. */
   PetscCall(DMGetCoordinates(da, &xy));
-  /* The vector entries are displayed in the "natural" ordering on the two dimensional grid; interlaced x and y with with the x variable increasing more rapidly than the y */
+  /* The vector entries are displayed in the "natural" ordering on the two dimensional grid; interlaced x and y with the x variable increasing more rapidly than the y */
   PetscCall(VecView(xy, 0));
 
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
@@ -52,7 +52,7 @@ int main(int argc, char **argv)
     PetscInt      i, j;
     PetscScalar   sum = 0;
 
-    /* The vector entries of the patch are displayed in the "natural" ordering on the two grid; interlaced x and y with with the x variable increasing more rapidly */
+    /* The vector entries of the patch are displayed in the "natural" ordering on the two grid; interlaced x and y with the x variable increasing more rapidly */
     PetscCall(VecView(sxy, PETSC_VIEWER_STDOUT_SELF));
     /* Compute some trivial statistic of the coordinates */
     PetscCall(DMDAGetLocalInfo(sda, &info));

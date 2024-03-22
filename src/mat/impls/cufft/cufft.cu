@@ -157,7 +157,7 @@ PetscErrorCode MatCreateSeqCUFFT(MPI_Comm comm, PetscInt ndim, const PetscInt di
   (*A)->ops->destroy       = MatDestroy_SeqCUFFT;
 
   /* get runtime options ...what options????? */
-  PetscOptionsBegin(comm, ((PetscObject)(*A))->prefix, "CUFFT Options", "Mat");
+  PetscOptionsBegin(comm, ((PetscObject)*A)->prefix, "CUFFT Options", "Mat");
   PetscOptionsEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }

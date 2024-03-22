@@ -39,7 +39,10 @@ PetscErrorCode MatCreateFromMTX(Mat *A, const char *filein, PetscBool aijonly)
     if ((symmetric && aijonly) || skew) { /* transpose */
       rownz[ia[i]]++;
       if (ja[i] != ia[i]) rownz[ja[i]]++;
-    } else rownz[ia[i]]++;
+    } else {
+      if (symmetric) rownz[ja[i]]++;
+      else rownz[ia[i]]++;
+    }
   }
   PetscCall(PetscFClose(PETSC_COMM_SELF, file));
 
@@ -51,20 +54,21 @@ PetscErrorCode MatCreateFromMTX(Mat *A, const char *filein, PetscBool aijonly)
     PetscCall(MatSetType(*A, MATSEQSBAIJ));
     PetscCall(MatSetFromOptions(*A));
     PetscCall(MatSeqSBAIJSetPreallocation(*A, 1, 0, rownz));
-    PetscCall(PetscObjectTypeCompare((PetscObject)(*A), MATSEQSBAIJ, &sametype));
+    PetscCall(PetscObjectTypeCompare((PetscObject)*A, MATSEQSBAIJ, &sametype));
     PetscCheck(sametype, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Only AIJ and SBAIJ are supported. Your mattype is not supported");
   } else {
     PetscCall(MatSetType(*A, MATSEQAIJ));
     PetscCall(MatSetFromOptions(*A));
     PetscCall(MatSeqAIJSetPreallocation(*A, 0, rownz));
-    PetscCall(PetscObjectTypeCompare((PetscObject)(*A), MATSEQAIJ, &sametype));
+    PetscCall(PetscObjectTypeCompare((PetscObject)*A, MATSEQAIJ, &sametype));
     PetscCheck(sametype, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Only AIJ and SBAIJ are supported. Your mattype is not supported");
   }
   /* Add values to the matrix, these correspond to lower triangular part for symmetric or skew matrices */
-  for (j = 0; j < nz; j++) PetscCall(MatSetValues(*A, 1, &ia[j], 1, &ja[j], &val[j], INSERT_VALUES));
+  if (!(symmetric && !aijonly))
+    for (j = 0; j < nz; j++) PetscCall(MatSetValues(*A, 1, &ia[j], 1, &ja[j], &val[j], INSERT_VALUES));
 
   /* Add values to upper triangular part for some cases */
-  if (symmetric && aijonly) {
+  if (symmetric && !aijonly) {
     /* MatrixMarket matrix stores symm matrix in lower triangular part. Take its transpose */
     for (j = 0; j < nz; j++) PetscCall(MatSetValues(*A, 1, &ja[j], 1, &ia[j], &val[j], INSERT_VALUES));
   }

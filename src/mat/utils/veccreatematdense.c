@@ -20,7 +20,7 @@
 
   Level: advanced
 
-.seealso: [](ch_matrices), `Mat`, `MatCreateDense()'`, `MatCreateDenseCUDA()`, `MatCreateDenseHIP()`, `PetscMemType`
+.seealso: [](ch_matrices), `Mat`, `MatCreateDense()`, `MatCreateDenseCUDA()`, `MatCreateDenseHIP()`, `PetscMemType`
 @*/
 PetscErrorCode MatCreateDenseFromVecType(MPI_Comm comm, VecType vtype, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt lda, PetscScalar *data, Mat *A)
 {
@@ -32,7 +32,7 @@ PetscErrorCode MatCreateDenseFromVecType(MPI_Comm comm, VecType vtype, PetscInt 
   PetscCall(PetscStrcmpAny(vtype, &iscuda, VECCUDA, VECMPICUDA, VECSEQCUDA, ""));
   PetscCall(PetscStrcmpAny(vtype, &iship, VECHIP, VECMPIHIP, VECSEQHIP, ""));
   PetscCall(PetscStrcmpAny(vtype, &iskokkos, VECKOKKOS, VECMPIKOKKOS, VECSEQKOKKOS, ""));
-  PetscCheck(isstd || iscuda || iship || iskokkos, comm, PETSC_ERR_SUP, "Not for type %s\n", vtype);
+  PetscCheck(isstd || iscuda || iship || iskokkos, comm, PETSC_ERR_SUP, "Not for type %s", vtype);
   if (iscuda) root_type = VECCUDA;
   else if (iship) root_type = VECHIP;
   else if (iskokkos) {

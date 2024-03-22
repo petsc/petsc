@@ -35,6 +35,7 @@ PetscErrorCode PetscSFSetGraphLayout(PetscSF sf, PetscLayout layout, PetscInt nl
   PetscSFNode    *remote;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscCall(PetscLayoutSetUp(layout));
   PetscCall(PetscLayoutGetLocalSize(layout, &nroots));
   PetscCall(PetscLayoutGetRanges(layout, &range));
@@ -847,5 +848,113 @@ PetscErrorCode PetscSFMerge(PetscSF sfa, PetscSF sfb, PetscSF *merged)
   PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)sfa), merged));
   PetscCall(PetscSFSetGraph(*merged, aroots, nleaves, clocal, PETSC_COPY_VALUES, cremote, PETSC_COPY_VALUES));
   PetscCall(PetscFree2(clocal, cremote));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscSFCreateStridedSF - Create an `PetscSF` to communicate interleaved blocks of data
+
+  Collective
+
+  Input Parameters:
++ sf  - star forest
+. bs  - stride
+. ldr - leading dimension of root space
+- ldl - leading dimension of leaf space
+
+  Output Parameter:
+. vsf - the new `PetscSF`
+
+  Level: intermediate
+
+  Notes:
+  This can be useful to perform communications on blocks of right-hand sides. For example, the calling sequence
+.vb
+  c_datatype *roots, *leaves;
+  for i in [0,bs) do
+    PetscSFBcastBegin(sf, mpi_datatype, roots + i*ldr, leaves + i*ldl, op)
+    PetscSFBcastEnd(sf, mpi_datatype, roots + i*ldr, leaves + i*ldl, op)
+.ve
+  is equivalent to
+.vb
+  c_datatype *roots, *leaves;
+  PetscSFCreateStridedSF(sf, bs, ldr, ldl, &vsf)
+  PetscSFBcastBegin(vsf, mpi_datatype, roots, leaves, op)
+  PetscSFBcastEnd(vsf, mpi_datatype, roots, leaves, op)
+.ve
+
+  Developer Notes:
+  Should this functionality be handled with a new API instead of creating a new object?
+
+.seealso: `PetscSF`, `PetscSFCreate()`, `PetscSFSetGraph()`
+@*/
+PetscErrorCode PetscSFCreateStridedSF(PetscSF sf, PetscInt bs, PetscInt ldr, PetscInt ldl, PetscSF *vsf)
+{
+  PetscSF            rankssf;
+  const PetscSFNode *iremote, *sfrremote;
+  PetscSFNode       *viremote;
+  const PetscInt    *ilocal;
+  PetscInt          *vilocal = NULL, *ldrs;
+  PetscInt           nranks, nr, nl, vnr, vnl, maxl;
+  PetscMPIInt        rank;
+  MPI_Comm           comm;
+  PetscSFType        sftype;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
+  PetscValidLogicalCollectiveInt(sf, bs, 2);
+  PetscAssertPointer(vsf, 5);
+  if (bs == 1) {
+    PetscCall(PetscObjectReference((PetscObject)sf));
+    *vsf = sf;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  PetscCall(PetscSFSetUp(sf));
+  PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCall(PetscSFGetGraph(sf, &nr, &nl, &ilocal, &iremote));
+  PetscCall(PetscSFGetLeafRange(sf, NULL, &maxl));
+  maxl += 1;
+  if (ldl == PETSC_DECIDE) ldl = maxl;
+  if (ldr == PETSC_DECIDE) ldr = nr;
+  PetscCheck(ldr >= nr, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid leading dimension %" PetscInt_FMT " must be smaller than number of roots %" PetscInt_FMT, ldr, nr);
+  PetscCheck(ldl >= maxl, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid leading dimension %" PetscInt_FMT " must be larger than leaf range %" PetscInt_FMT, ldl, maxl - 1);
+  vnr = nr * bs;
+  vnl = nl * bs;
+  PetscCall(PetscMalloc1(vnl, &viremote));
+  PetscCall(PetscMalloc1(vnl, &vilocal));
+
+  /* Communicate root leading dimensions to leaf ranks */
+  PetscCall(PetscSFGetRanksSF(sf, &rankssf));
+  PetscCall(PetscSFGetGraph(rankssf, NULL, &nranks, NULL, &sfrremote));
+  PetscCall(PetscMalloc1(nranks, &ldrs));
+  PetscCall(PetscSFBcastBegin(rankssf, MPIU_INT, &ldr, ldrs, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(rankssf, MPIU_INT, &ldr, ldrs, MPI_REPLACE));
+
+  for (PetscInt i = 0, rold = -1, lda = -1; i < nl; i++) {
+    const PetscInt r  = iremote[i].rank;
+    const PetscInt ii = iremote[i].index;
+
+    if (r == rank) lda = ldr;
+    else if (rold != r) {
+      PetscInt j;
+
+      for (j = 0; j < nranks; j++)
+        if (sfrremote[j].rank == r) break;
+      PetscCheck(j < nranks, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unable to locate neighbor rank %" PetscInt_FMT, r);
+      lda = ldrs[j];
+    }
+    rold = r;
+    for (PetscInt v = 0; v < bs; v++) {
+      viremote[v * nl + i].rank  = r;
+      viremote[v * nl + i].index = v * lda + ii;
+      vilocal[v * nl + i]        = v * ldl + (ilocal ? ilocal[i] : i);
+    }
+  }
+  PetscCall(PetscFree(ldrs));
+  PetscCall(PetscSFCreate(comm, vsf));
+  PetscCall(PetscSFGetType(sf, &sftype));
+  PetscCall(PetscSFSetType(*vsf, sftype));
+  PetscCall(PetscSFSetGraph(*vsf, vnr, vnl, vilocal, PETSC_OWN_POINTER, viremote, PETSC_OWN_POINTER));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

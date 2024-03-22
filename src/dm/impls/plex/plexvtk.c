@@ -480,7 +480,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
     PetscCall(DMLabelGetStratumIS(label, 0, &vStratumIS));
     PetscCall(DMGetCoordinateSection(dm, &section));                                   /* This section includes all points */
     PetscCall(PetscSectionCreateSubdomainSection(section, vStratumIS, &coordSection)); /* This one includes just vertices */
-    PetscCall(PetscSectionCreateGlobalSection(coordSection, dm->sf, PETSC_FALSE, PETSC_FALSE, &globalCoordSection));
+    PetscCall(PetscSectionCreateGlobalSection(coordSection, dm->sf, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, &globalCoordSection));
     PetscCall(PetscSectionGetPointLayout(comm, globalCoordSection, &vLayout));
     PetscCall(PetscLayoutGetSize(vLayout, &totVertices));
     PetscCall(PetscFPrintf(comm, fp, "POINTS %" PetscInt_FMT " double\n", totVertices));
@@ -573,7 +573,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
         PetscCall(PetscSNPrintf(namebuf, sizeof(namebuf), "%s", name));
       }
       PetscCall(PetscViewerVTKSanitizeName_Internal(namebuf, sizeof(namebuf)));
-      PetscCall(PetscSectionCreateGlobalSection(section, dm->sf, PETSC_FALSE, PETSC_FALSE, &globalSection));
+      PetscCall(PetscSectionCreateGlobalSection(section, dm->sf, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, &globalSection));
       for (l = 0; l < loops_per_scalar; l++) PetscCall(DMPlexVTKWriteField_ASCII(dm, section, globalSection, X, namebuf, fp, enforceDof, PETSC_DETERMINE, 1.0, writeComplex, l));
       PetscCall(PetscSectionDestroy(&globalSection));
       if (newSection) PetscCall(PetscSectionDestroy(&newSection));
@@ -615,7 +615,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
         PetscCall(PetscSNPrintf(namebuf, sizeof(namebuf), "%s", name));
       }
       PetscCall(PetscViewerVTKSanitizeName_Internal(namebuf, sizeof(namebuf)));
-      PetscCall(PetscSectionCreateGlobalSection(section, dm->sf, PETSC_FALSE, PETSC_FALSE, &globalSection));
+      PetscCall(PetscSectionCreateGlobalSection(section, dm->sf, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, &globalSection));
       for (l = 0; l < loops_per_scalar; l++) PetscCall(DMPlexVTKWriteField_ASCII(dm, section, globalSection, X, namebuf, fp, enforceDof, PETSC_DETERMINE, 1.0, writeComplex, l));
       PetscCall(PetscSectionDestroy(&globalSection));
     }

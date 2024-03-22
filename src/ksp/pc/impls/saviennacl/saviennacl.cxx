@@ -52,7 +52,7 @@ static PetscErrorCode PCSetUp_SAVIENNACL(PC pc)
     SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "No support for complex arithmetic in SAVIENNACL preconditioner");
 #else
     PetscCall(MatViennaCLCopyToGPU(pc->pmat));
-    gpustruct = (Mat_SeqAIJViennaCL *)(pc->pmat->spptr);
+    gpustruct = (Mat_SeqAIJViennaCL *)pc->pmat->spptr;
 
     viennacl::linalg::amg_tag amg_tag_sa_pmis;
     amg_tag_sa_pmis.set_coarsening_method(viennacl::linalg::AMG_COARSENING_METHOD_MIS2_AGGREGATION);

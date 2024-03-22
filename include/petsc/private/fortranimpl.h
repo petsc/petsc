@@ -36,7 +36,7 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(PetscBool, const char *, Pe
     if ((a) == PETSC_NULL_CHARACTER_Fortran) { \
       (b) = (a) = NULL; \
     } else { \
-      while (((n) > 0) && ((a)[(n)-1] == ' ')) (n)--; \
+      while (((n) > 0) && ((a)[(n) - 1] == ' ')) (n)--; \
       *ierr = PetscMalloc1((n) + 1, &(b)); \
       if (*ierr) return; \
       *ierr  = PetscMemcpy((b), (a), (n)); \
@@ -274,7 +274,7 @@ typedef PETSC_UINTPTR_T PetscFortranAddr;
   do { \
     void(*func) types, *_ctx; \
     PetscFunctionBegin; \
-    PetscCall(PetscObjectGetFortranCallback((PetscObject)(obj), (cbclass), (cid), (PetscVoidFunction *)&func, &_ctx)); \
+    PetscCall(PetscObjectGetFortranCallback((PetscObject)(obj), (cbclass), (cid), (PetscVoidFn **)&func, &_ctx)); \
     if (func) PetscCallFortranVoidFunction((*func)args); \
     PetscFunctionReturn(PETSC_SUCCESS); \
   } while (0)

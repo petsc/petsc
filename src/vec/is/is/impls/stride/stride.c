@@ -232,7 +232,7 @@ static PetscErrorCode ISUniqueLocal_Stride(IS is, PetscBool *flg)
   IS_Stride *sub = (IS_Stride *)is->data;
 
   PetscFunctionBegin;
-  if (!(is->map->n) || sub->step != 0) *flg = PETSC_TRUE;
+  if (!is->map->n || sub->step != 0) *flg = PETSC_TRUE;
   else *flg = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -242,7 +242,7 @@ static PetscErrorCode ISPermutationLocal_Stride(IS is, PetscBool *flg)
   IS_Stride *sub = (IS_Stride *)is->data;
 
   PetscFunctionBegin;
-  if (!(is->map->n) || (PetscAbsInt(sub->step) == 1 && is->min == 0)) *flg = PETSC_TRUE;
+  if (!is->map->n || (PetscAbsInt(sub->step) == 1 && is->min == 0)) *flg = PETSC_TRUE;
   else *flg = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -252,7 +252,7 @@ static PetscErrorCode ISIntervalLocal_Stride(IS is, PetscBool *flg)
   IS_Stride *sub = (IS_Stride *)is->data;
 
   PetscFunctionBegin;
-  if (!(is->map->n) || sub->step == 1) *flg = PETSC_TRUE;
+  if (!is->map->n || sub->step == 1) *flg = PETSC_TRUE;
   else *flg = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

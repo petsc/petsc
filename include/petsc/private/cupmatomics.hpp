@@ -23,7 +23,7 @@ typedef unsigned long long int ullint;
   unsigned long long int atomicExch(unsigned long long int* address, unsigned long long int val);
   float atomicExch(float* address, float val);
 
-  reads the 32-bit or 64-bit word old located at the address address in global or shared
+  reads the 32-bit or 64-bit word old located at the address in global or shared
   memory and stores val back to memory at the same address. These two operations are
   performed in one atomic transaction. The function returns old.
 
@@ -94,7 +94,7 @@ struct AtomicInsert<PetscComplex> {
   __half2 atomicAdd(__half2 *address, __half2 val);
   __half atomicAdd(__half *address, __half val);
 
-  reads the 16-bit, 32-bit or 64-bit word old located at the address address in global or shared memory, computes (old + val),
+  reads the 16-bit, 32-bit or 64-bit word old located at the address in global or shared memory, computes (old + val),
   and stores the result back to memory at the same address. These three operations are performed in one atomic transaction. The
   function returns old.
 
@@ -236,7 +236,7 @@ struct AtomicMult {
   unsigned int atomicMin(unsigned int* address,unsigned int val);
   unsigned long long int atomicMin(unsigned long long int* address,unsigned long long int val);
 
-  reads the 32-bit or 64-bit word old located at the address address in global or shared
+  reads the 32-bit or 64-bit word old located at the address in global or shared
   memory, computes the minimum of old and val, and stores the result back to memory
   at the same address. These three operations are performed in one atomic transaction.
   The function returns old.
@@ -341,7 +341,7 @@ struct AtomicMax {
   unsigned int atomicAnd(unsigned int* address,unsigned int val);
   unsigned long long int atomicAnd(unsigned long long int* address,unsigned long long int val);
 
-  reads the 32-bit or 64-bit word old located at the address address in global or shared
+  reads the 32-bit or 64-bit word old located at the address in global or shared
   memory, computes (old & val), and stores the result back to memory at the same
   address. These three operations are performed in one atomic transaction.
   The function returns old.
@@ -451,7 +451,7 @@ struct lor {
 };
 template <typename Type>
 struct lxor {
-  __device__ Type operator()(Type x, Type y) { return (!x != !y); }
+  __device__ Type operator()(Type x, Type y) { return !x != !y; }
 };
 
 template <typename Type>
@@ -823,7 +823,7 @@ struct lor {
 };
 template <typename Type>
 struct lxor {
-  __device__ Type operator()(Type x, Type y) { return (!x != !y); }
+  __device__ Type operator()(Type x, Type y) { return !x != !y; }
 };
 
 template <typename Type>

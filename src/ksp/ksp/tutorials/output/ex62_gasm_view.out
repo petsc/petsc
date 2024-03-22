@@ -1,0 +1,470 @@
+KSP Object: 8 MPI processes
+  type: gmres
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 8 MPI processes
+  type: gasm
+    Restriction/interpolation type: RESTRICT
+    user-defined overlap
+    total number of subdomains = 4
+    max number of local subdomains = 4
+    [0|8] number of locally-supported subdomains = 2
+    [1|8] number of locally-supported subdomains = 2
+    [2|8] number of locally-supported subdomains = 2
+    [3|8] number of locally-supported subdomains = 4
+    [4|8] number of locally-supported subdomains = 4
+    [5|8] number of locally-supported subdomains = 2
+    [6|8] number of locally-supported subdomains = 2
+    [7|8] number of locally-supported subdomains = 2
+    Subdomain solver info is as follows:
+      - - - - - - - - - - - - - - - - - -
+      [0|8] (subcomm [0|5]) local subdomain number 0, local size = 20
+      KSP Object: (sub_) 5 MPI processes
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object: (sub_) 5 MPI processes
+        type: bjacobi
+          number of blocks = 5
+          Local solver information for first block is in the following KSP and PC objects on rank 0:
+          Use -sub_ksp_view ::ascii_info_detail to display information for all blocks
+          KSP Object: (sub_sub_) 1 MPI process
+            type: preonly
+            maximum iterations=10000, initial guess is zero
+            tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+            left preconditioning
+            using NONE norm type for convergence test
+          PC Object: (sub_sub_) 1 MPI process
+            type: ilu
+              out-of-place factorization
+              0 levels of fill
+              tolerance for zero pivot 2.22045e-14
+              matrix ordering: natural
+              factor fill ratio given 1., needed 1.
+                Factored matrix follows:
+                  Mat Object: (sub_sub_) 1 MPI process
+                    type: seqaij
+                    rows=20, cols=20
+                    package used to perform factorization: petsc
+                    total: nonzeros=66, allocated nonzeros=66
+                      not using I-node routines
+            linear system matrix = precond matrix:
+            Mat Object: (sub_sub_) 1 MPI process
+              type: seqaij
+              rows=20, cols=20
+              total: nonzeros=66, allocated nonzeros=66
+              total number of mallocs used during MatSetValues calls=0
+                not using I-node routines
+        linear system matrix = precond matrix:
+        Mat Object: (sub_) 5 MPI processes
+          type: mpiaij
+          rows=90, cols=90
+          total: nonzeros=366, allocated nonzeros=366
+          total number of mallocs used during MatSetValues calls=0
+            not using I-node (on process 0) routines
+      - - - - - - - - - - - - - - - - - -
+      [1|8] (subcomm [1|5]) local subdomain number 0, local size = 20
+      [2|8] (subcomm [2|5]) local subdomain number 0, local size = 20
+      [3|8] (subcomm [3|5]) local subdomain number 0, local size = 20
+      [4|8] (subcomm [4|5]) local subdomain number 0, local size = 10
+      [0|8] (subcomm [0|5]) local subdomain number 1, local size = 16
+      KSP Object: (sub_) 5 MPI processes
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object: (sub_) 5 MPI processes
+        type: bjacobi
+          number of blocks = 5
+          Local solver information for first block is in the following KSP and PC objects on rank 0:
+          Use -sub_ksp_view ::ascii_info_detail to display information for all blocks
+          KSP Object: (sub_sub_) 1 MPI process
+            type: preonly
+            maximum iterations=10000, initial guess is zero
+            tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+            left preconditioning
+            using NONE norm type for convergence test
+          PC Object: (sub_sub_) 1 MPI process
+            type: ilu
+              out-of-place factorization
+              0 levels of fill
+              tolerance for zero pivot 2.22045e-14
+              matrix ordering: natural
+              factor fill ratio given 1., needed 1.
+                Factored matrix follows:
+                  Mat Object: (sub_sub_) 1 MPI process
+                    type: seqaij
+                    rows=16, cols=16
+                    package used to perform factorization: petsc
+                    total: nonzeros=56, allocated nonzeros=56
+                      not using I-node routines
+            linear system matrix = precond matrix:
+            Mat Object: (sub_sub_) 1 MPI process
+              type: seqaij
+              rows=16, cols=16
+              total: nonzeros=56, allocated nonzeros=56
+              total number of mallocs used during MatSetValues calls=0
+                not using I-node routines
+        linear system matrix = precond matrix:
+        Mat Object: (sub_) 5 MPI processes
+          type: mpiaij
+          rows=80, cols=80
+          total: nonzeros=320, allocated nonzeros=320
+          total number of mallocs used during MatSetValues calls=0
+            not using I-node (on process 0) routines
+      - - - - - - - - - - - - - - - - - -
+      [1|8] (subcomm [1|5]) local subdomain number 1, local size = 16
+      [2|8] (subcomm [2|5]) local subdomain number 1, local size = 16
+      [3|8] (subcomm [3|5]) local subdomain number 1, local size = 17
+      [4|8] (subcomm [4|5]) local subdomain number 1, local size = 15
+      [3|8] (subcomm [0|5]) local subdomain number 2, local size = 8
+      KSP Object: (sub_) 5 MPI processes
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object: (sub_) 5 MPI processes
+        type: bjacobi
+          number of blocks = 5
+          Local solver information for first block is in the following KSP and PC objects on rank 0:
+          Use -sub_ksp_view ::ascii_info_detail to display information for all blocks
+          KSP Object: (sub_sub_) 1 MPI process
+            type: preonly
+            maximum iterations=10000, initial guess is zero
+            tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+            left preconditioning
+            using NONE norm type for convergence test
+          PC Object: (sub_sub_) 1 MPI process
+            type: ilu
+              out-of-place factorization
+              0 levels of fill
+              tolerance for zero pivot 2.22045e-14
+              matrix ordering: natural
+              factor fill ratio given 1., needed 1.
+                Factored matrix follows:
+                  Mat Object: (sub_sub_) 1 MPI process
+                    type: seqaij
+                    rows=8, cols=8
+                    package used to perform factorization: petsc
+                    total: nonzeros=22, allocated nonzeros=22
+                      not using I-node routines
+            linear system matrix = precond matrix:
+            Mat Object: (sub_sub_) 1 MPI process
+              type: seqaij
+              rows=8, cols=8
+              total: nonzeros=22, allocated nonzeros=22
+              total number of mallocs used during MatSetValues calls=0
+                not using I-node routines
+        linear system matrix = precond matrix:
+        Mat Object: (sub_) 5 MPI processes
+          type: mpiaij
+          rows=81, cols=81
+          total: nonzeros=329, allocated nonzeros=329
+          total number of mallocs used during MatSetValues calls=0
+            not using I-node (on process 0) routines
+      - - - - - - - - - - - - - - - - - -
+      [4|8] (subcomm [1|5]) local subdomain number 2, local size = 19
+      [5|8] (subcomm [2|5]) local subdomain number 0, local size = 18
+      [6|8] (subcomm [3|5]) local subdomain number 0, local size = 18
+      [7|8] (subcomm [4|5]) local subdomain number 0, local size = 18
+      [3|8] (subcomm [0|5]) local subdomain number 3, local size = 1
+      KSP Object: (sub_) 5 MPI processes
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object: (sub_) 5 MPI processes
+        type: bjacobi
+          number of blocks = 5
+          Local solver information for first block is in the following KSP and PC objects on rank 0:
+          Use -sub_ksp_view ::ascii_info_detail to display information for all blocks
+          KSP Object: (sub_sub_) 1 MPI process
+            type: preonly
+            maximum iterations=10000, initial guess is zero
+            tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+            left preconditioning
+            using NONE norm type for convergence test
+          PC Object: (sub_sub_) 1 MPI process
+            type: ilu
+              out-of-place factorization
+              0 levels of fill
+              tolerance for zero pivot 2.22045e-14
+              matrix ordering: natural
+              factor fill ratio given 1., needed 1.
+                Factored matrix follows:
+                  Mat Object: (sub_sub_) 1 MPI process
+                    type: seqaij
+                    rows=1, cols=1
+                    package used to perform factorization: petsc
+                    total: nonzeros=1, allocated nonzeros=1
+                      not using I-node routines
+            linear system matrix = precond matrix:
+            Mat Object: (sub_sub_) 1 MPI process
+              type: seqaij
+              rows=1, cols=1
+              total: nonzeros=1, allocated nonzeros=1
+              total number of mallocs used during MatSetValues calls=0
+                not using I-node routines
+        linear system matrix = precond matrix:
+        Mat Object: (sub_) 5 MPI processes
+          type: mpiaij
+          rows=72, cols=72
+          total: nonzeros=288, allocated nonzeros=288
+          total number of mallocs used during MatSetValues calls=0
+            not using I-node (on process 0) routines
+      - - - - - - - - - - - - - - - - - -
+      [4|8] (subcomm [1|5]) local subdomain number 3, local size = 18
+      [5|8] (subcomm [2|5]) local subdomain number 1, local size = 18
+      [6|8] (subcomm [3|5]) local subdomain number 1, local size = 18
+      [7|8] (subcomm [4|5]) local subdomain number 1, local size = 17
+  linear system matrix = precond matrix:
+  Mat Object: 8 MPI processes
+    type: mpiaij
+    rows=255, cols=255
+    total: nonzeros=1211, allocated nonzeros=1211
+    total number of mallocs used during MatSetValues calls=0
+      not using I-node (on process 0) routines
+KSP Object: 8 MPI processes
+  type: gmres
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 8 MPI processes
+  type: gasm
+    Restriction/interpolation type: RESTRICT
+    user-defined overlap
+    total number of subdomains = 4
+    max number of local subdomains = 4
+    [0|8] number of locally-supported subdomains = 2
+    [1|8] number of locally-supported subdomains = 2
+    [2|8] number of locally-supported subdomains = 2
+    [3|8] number of locally-supported subdomains = 4
+    [4|8] number of locally-supported subdomains = 4
+    [5|8] number of locally-supported subdomains = 2
+    [6|8] number of locally-supported subdomains = 2
+    [7|8] number of locally-supported subdomains = 2
+    Subdomain solver info is as follows:
+      - - - - - - - - - - - - - - - - - -
+      [0|8] (subcomm [0|5]) local subdomain number 0, local size = 20
+      KSP Object: (sub_) 5 MPI processes
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object: (sub_) 5 MPI processes
+        type: bjacobi
+          number of blocks = 5
+          Local solver information for first block is in the following KSP and PC objects on rank 0:
+          Use -sub_ksp_view ::ascii_info_detail to display information for all blocks
+          KSP Object: (sub_sub_) 1 MPI process
+            type: preonly
+            maximum iterations=10000, initial guess is zero
+            tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+            left preconditioning
+            using NONE norm type for convergence test
+          PC Object: (sub_sub_) 1 MPI process
+            type: ilu
+              out-of-place factorization
+              0 levels of fill
+              tolerance for zero pivot 2.22045e-14
+              matrix ordering: natural
+              factor fill ratio given 1., needed 1.
+                Factored matrix follows:
+                  Mat Object: (sub_sub_) 1 MPI process
+                    type: seqaij
+                    rows=20, cols=20
+                    package used to perform factorization: petsc
+                    total: nonzeros=66, allocated nonzeros=66
+                      not using I-node routines
+            linear system matrix = precond matrix:
+            Mat Object: (sub_sub_) 1 MPI process
+              type: seqaij
+              rows=20, cols=20
+              total: nonzeros=66, allocated nonzeros=66
+              total number of mallocs used during MatSetValues calls=0
+                not using I-node routines
+        linear system matrix = precond matrix:
+        Mat Object: (sub_) 5 MPI processes
+          type: mpiaij
+          rows=90, cols=90
+          total: nonzeros=366, allocated nonzeros=366
+          total number of mallocs used during MatSetValues calls=0
+            not using I-node (on process 0) routines
+      - - - - - - - - - - - - - - - - - -
+      [1|8] (subcomm [1|5]) local subdomain number 0, local size = 20
+      [2|8] (subcomm [2|5]) local subdomain number 0, local size = 20
+      [3|8] (subcomm [3|5]) local subdomain number 0, local size = 20
+      [4|8] (subcomm [4|5]) local subdomain number 0, local size = 10
+      [0|8] (subcomm [0|5]) local subdomain number 1, local size = 16
+      KSP Object: (sub_) 5 MPI processes
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object: (sub_) 5 MPI processes
+        type: bjacobi
+          number of blocks = 5
+          Local solver information for first block is in the following KSP and PC objects on rank 0:
+          Use -sub_ksp_view ::ascii_info_detail to display information for all blocks
+          KSP Object: (sub_sub_) 1 MPI process
+            type: preonly
+            maximum iterations=10000, initial guess is zero
+            tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+            left preconditioning
+            using NONE norm type for convergence test
+          PC Object: (sub_sub_) 1 MPI process
+            type: ilu
+              out-of-place factorization
+              0 levels of fill
+              tolerance for zero pivot 2.22045e-14
+              matrix ordering: natural
+              factor fill ratio given 1., needed 1.
+                Factored matrix follows:
+                  Mat Object: (sub_sub_) 1 MPI process
+                    type: seqaij
+                    rows=16, cols=16
+                    package used to perform factorization: petsc
+                    total: nonzeros=56, allocated nonzeros=56
+                      not using I-node routines
+            linear system matrix = precond matrix:
+            Mat Object: (sub_sub_) 1 MPI process
+              type: seqaij
+              rows=16, cols=16
+              total: nonzeros=56, allocated nonzeros=56
+              total number of mallocs used during MatSetValues calls=0
+                not using I-node routines
+        linear system matrix = precond matrix:
+        Mat Object: (sub_) 5 MPI processes
+          type: mpiaij
+          rows=80, cols=80
+          total: nonzeros=320, allocated nonzeros=320
+          total number of mallocs used during MatSetValues calls=0
+            not using I-node (on process 0) routines
+      - - - - - - - - - - - - - - - - - -
+      [1|8] (subcomm [1|5]) local subdomain number 1, local size = 16
+      [2|8] (subcomm [2|5]) local subdomain number 1, local size = 16
+      [3|8] (subcomm [3|5]) local subdomain number 1, local size = 17
+      [4|8] (subcomm [4|5]) local subdomain number 1, local size = 15
+      [3|8] (subcomm [0|5]) local subdomain number 2, local size = 8
+      KSP Object: (sub_) 5 MPI processes
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object: (sub_) 5 MPI processes
+        type: bjacobi
+          number of blocks = 5
+          Local solver information for first block is in the following KSP and PC objects on rank 0:
+          Use -sub_ksp_view ::ascii_info_detail to display information for all blocks
+          KSP Object: (sub_sub_) 1 MPI process
+            type: preonly
+            maximum iterations=10000, initial guess is zero
+            tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+            left preconditioning
+            using NONE norm type for convergence test
+          PC Object: (sub_sub_) 1 MPI process
+            type: ilu
+              out-of-place factorization
+              0 levels of fill
+              tolerance for zero pivot 2.22045e-14
+              matrix ordering: natural
+              factor fill ratio given 1., needed 1.
+                Factored matrix follows:
+                  Mat Object: (sub_sub_) 1 MPI process
+                    type: seqaij
+                    rows=8, cols=8
+                    package used to perform factorization: petsc
+                    total: nonzeros=22, allocated nonzeros=22
+                      not using I-node routines
+            linear system matrix = precond matrix:
+            Mat Object: (sub_sub_) 1 MPI process
+              type: seqaij
+              rows=8, cols=8
+              total: nonzeros=22, allocated nonzeros=22
+              total number of mallocs used during MatSetValues calls=0
+                not using I-node routines
+        linear system matrix = precond matrix:
+        Mat Object: (sub_) 5 MPI processes
+          type: mpiaij
+          rows=81, cols=81
+          total: nonzeros=329, allocated nonzeros=329
+          total number of mallocs used during MatSetValues calls=0
+            not using I-node (on process 0) routines
+      - - - - - - - - - - - - - - - - - -
+      [4|8] (subcomm [1|5]) local subdomain number 2, local size = 19
+      [5|8] (subcomm [2|5]) local subdomain number 0, local size = 18
+      [6|8] (subcomm [3|5]) local subdomain number 0, local size = 18
+      [7|8] (subcomm [4|5]) local subdomain number 0, local size = 18
+      [3|8] (subcomm [0|5]) local subdomain number 3, local size = 1
+      KSP Object: (sub_) 5 MPI processes
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object: (sub_) 5 MPI processes
+        type: bjacobi
+          number of blocks = 5
+          Local solver information for first block is in the following KSP and PC objects on rank 0:
+          Use -sub_ksp_view ::ascii_info_detail to display information for all blocks
+          KSP Object: (sub_sub_) 1 MPI process
+            type: preonly
+            maximum iterations=10000, initial guess is zero
+            tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+            left preconditioning
+            using NONE norm type for convergence test
+          PC Object: (sub_sub_) 1 MPI process
+            type: ilu
+              out-of-place factorization
+              0 levels of fill
+              tolerance for zero pivot 2.22045e-14
+              matrix ordering: natural
+              factor fill ratio given 1., needed 1.
+                Factored matrix follows:
+                  Mat Object: (sub_sub_) 1 MPI process
+                    type: seqaij
+                    rows=1, cols=1
+                    package used to perform factorization: petsc
+                    total: nonzeros=1, allocated nonzeros=1
+                      not using I-node routines
+            linear system matrix = precond matrix:
+            Mat Object: (sub_sub_) 1 MPI process
+              type: seqaij
+              rows=1, cols=1
+              total: nonzeros=1, allocated nonzeros=1
+              total number of mallocs used during MatSetValues calls=0
+                not using I-node routines
+        linear system matrix = precond matrix:
+        Mat Object: (sub_) 5 MPI processes
+          type: mpiaij
+          rows=72, cols=72
+          total: nonzeros=288, allocated nonzeros=288
+          total number of mallocs used during MatSetValues calls=0
+            not using I-node (on process 0) routines
+      - - - - - - - - - - - - - - - - - -
+      [4|8] (subcomm [1|5]) local subdomain number 3, local size = 18
+      [5|8] (subcomm [2|5]) local subdomain number 1, local size = 18
+      [6|8] (subcomm [3|5]) local subdomain number 1, local size = 18
+      [7|8] (subcomm [4|5]) local subdomain number 1, local size = 17
+  linear system matrix = precond matrix:
+  Mat Object: 8 MPI processes
+    type: mpiaij
+    rows=255, cols=255
+    total: nonzeros=1211, allocated nonzeros=1211
+    total number of mallocs used during MatSetValues calls=0
+      not using I-node (on process 0) routines

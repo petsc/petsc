@@ -106,7 +106,7 @@ PetscErrorCode MatColoringCreate(Mat m, MatColoring *mcptr)
 PetscErrorCode MatColoringDestroy(MatColoring *mc)
 {
   PetscFunctionBegin;
-  if (--((PetscObject)(*mc))->refct > 0) {
+  if (--((PetscObject)*mc)->refct > 0) {
     *mc = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -151,10 +151,9 @@ PetscErrorCode MatColoringSetType(MatColoring mc, MatColoringType type)
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFunctionListFind(MatColoringList, type, &r));
   PetscCheck(r, PetscObjectComm((PetscObject)mc), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested MatColoring type %s", type);
-  if (mc->ops->destroy) {
-    PetscCall((*(mc)->ops->destroy)(mc));
-    mc->ops->destroy = NULL;
-  }
+
+  PetscTryTypeMethod(mc, destroy);
+  mc->ops->destroy        = NULL;
   mc->ops->apply          = NULL;
   mc->ops->view           = NULL;
   mc->ops->setfromoptions = NULL;

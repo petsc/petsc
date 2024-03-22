@@ -51,7 +51,7 @@ PetscErrorCode DMDAGetNatural_Private(DM da, PetscInt *outNlocal, IS *isnatural)
   Collective
 
   Input Parameters:
-+ da     - the distributed array
++ da     - the `DMDA`
 - aotype - type of `AO`. `AOType` which can be `AOBASIC`, `AOADVANCED`, `AOMAPPING`, or `AOMEMORYSCALABLE`
 
   Level: intermediate
@@ -91,7 +91,7 @@ PetscErrorCode DMDASetAOType(DM da, AOType aotype)
   Collective
 
   Input Parameter:
-. da - the distributed array
+. da - the `DMDA`
 
   Output Parameter:
 . ao - the application ordering context for `DMDA`

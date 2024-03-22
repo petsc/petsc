@@ -86,7 +86,7 @@ PetscErrorCode VecTaggerSetBox_Simple(VecTagger tagger, VecTaggerBox *box)
 
     PetscCall(VecTaggerGetBlockSize(tagger, &bs));
     PetscCall(PetscFree(smpl->box));
-    PetscCall(PetscMalloc1(bs, &(smpl->box)));
+    PetscCall(PetscMalloc1(bs, &smpl->box));
     for (i = 0; i < bs; i++) smpl->box[i] = box[i];
   }
   PetscFunctionReturn(PETSC_SUCCESS);

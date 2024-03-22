@@ -1,4 +1,4 @@
-static char help[] = "Test vecscatter of different block sizes across processes\n\n";
+static char help[] = "Test VecScatter of different block sizes across processes\n\n";
 
 #include <petscvec.h>
 int main(int argc, char **argv)

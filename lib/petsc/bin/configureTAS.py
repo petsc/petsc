@@ -22,5 +22,9 @@ filePath['defaultGraphs']=''
 
 fieldNames = {}
 fieldNames['ex62'] = {}
+fieldNames['ex76'] = {}
 fieldNames['ex62']['field 0'] = 'Velocity'
 fieldNames['ex62']['field 1'] = 'Pressure'
+fieldNames['ex76']['field 0'] = 'Velocity'
+fieldNames['ex76']['field 1'] = 'Pressure'
+fieldNames['ex76']['field 2'] = 'Temperature'

@@ -976,7 +976,6 @@ static PetscErrorCode AssembleA_Stokes(Mat A, DM stokes_da, CellProperties cell_
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
   PetscCall(DMDAVecRestoreArray(cda, coords, &_coords));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1440,7 +1439,6 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da, Vec FIELD, const char
   PetscScalar *buffer;
 
   PetscFunctionBeginUser;
-
   /* create file name */
   PetscCall(PetscObjectGetComm((PetscObject)da, &comm));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -1536,7 +1534,6 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da, Vec FIELD, const char
     fclose(vtk_fp);
     vtk_fp = NULL;
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -40,7 +40,7 @@ static PetscErrorCode MatSetValues_MPI_Hash(Mat A, PetscInt m, const PetscInt *r
 #else
         if (cols[c] < 0) continue;
 #endif
-        value = values ? ((a->roworiented) ? values[r * n + c] : values[r + m * c]) : 0;
+        value = values ? (a->roworiented ? values[r * n + c] : values[r + m * c]) : 0;
         if (cols[c] >= cStart && cols[c] < cEnd) PetscCall(MatSetValue(a->A, rows[r] - rStart, cols[c] - cStart, value, addv));
         else PetscCall(MatSetValue(a->B, rows[r] - rStart, cols[c], value, addv));
       }

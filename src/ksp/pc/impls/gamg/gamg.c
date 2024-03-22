@@ -753,7 +753,7 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
       if (mat == Gmat) PetscCall(PetscCDClearMat(agg_lists)); // take the Mat away from the list (yuck)
       PetscCall(MatDestroy(&Gmat));
       PetscCall(PetscCDDestroy(agg_lists));
-    }                               /* construct prolongator scope */
+    } /* construct prolongator scope */
     if (level == 0) Aarr[0] = Pmat; /* use Pmat for finest level setup */
     if (!Parr[level1]) {            /* failed to coarsen */
       PetscCall(PetscInfo(pc, "%s: Stop gridding, level %" PetscInt_FMT "\n", ((PetscObject)pc)->prefix, level));
@@ -1475,6 +1475,7 @@ static PetscErrorCode PCGAMGSetThreshold_GAMG(PC pc, PetscReal v[], PetscInt n)
   PC_MG   *mg      = (PC_MG *)pc->data;
   PC_GAMG *pc_gamg = (PC_GAMG *)mg->innerctx;
   PetscInt i;
+
   PetscFunctionBegin;
   for (i = 0; i < PetscMin(n, PETSC_MG_MAXLEVELS); i++) pc_gamg->threshold[i] = v[i];
   for (; i < PETSC_MG_MAXLEVELS; i++) pc_gamg->threshold[i] = pc_gamg->threshold[i - 1] * pc_gamg->threshold_scale;
@@ -1512,6 +1513,7 @@ static PetscErrorCode PCGAMGSetRankReductionFactors_GAMG(PC pc, PetscInt v[], Pe
   PC_MG   *mg      = (PC_MG *)pc->data;
   PC_GAMG *pc_gamg = (PC_GAMG *)mg->innerctx;
   PetscInt i;
+
   PetscFunctionBegin;
   for (i = 0; i < PetscMin(n, PETSC_MG_MAXLEVELS); i++) pc_gamg->level_reduction_factors[i] = v[i];
   for (; i < PETSC_MG_MAXLEVELS; i++) pc_gamg->level_reduction_factors[i] = -1; /* 0 stop putting one process/device on first level */
@@ -1550,6 +1552,7 @@ static PetscErrorCode PCGAMGSetThresholdScale_GAMG(PC pc, PetscReal v)
 {
   PC_MG   *mg      = (PC_MG *)pc->data;
   PC_GAMG *pc_gamg = (PC_GAMG *)mg->innerctx;
+
   PetscFunctionBegin;
   pc_gamg->threshold_scale = v;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1696,10 +1699,11 @@ static PetscErrorCode PCGAMGSetInjectionIndex_GAMG(PC pc, PetscInt n, PetscInt i
 {
   PC_MG   *mg      = (PC_MG *)pc->data;
   PC_GAMG *pc_gamg = (PC_GAMG *)mg->innerctx;
+
   PetscFunctionBegin;
   pc_gamg->injection_index_size = n;
   PetscCheck(n < MAT_COARSEN_STRENGTH_INDEX_SIZE, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_INCOMP, "array size %d larger than max %d", (int)n, MAT_COARSEN_STRENGTH_INDEX_SIZE);
-  for (int iii = 0; iii < n; iii++) pc_gamg->injection_index[iii] = idx[iii];
+  for (PetscInt i = 0; i < n; i++) pc_gamg->injection_index[i] = idx[i];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

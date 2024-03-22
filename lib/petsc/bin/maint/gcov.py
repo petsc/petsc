@@ -267,6 +267,7 @@ def get_branch_diff(merge_branch):
   files_changed_by_branch = subprocess_check_output(
     ['git', 'diff', '--name-only', merge_branch_name + '...']
   ).splitlines()
+  files_changed_by_branch = [f for f in files_changed_by_branch if not f.startswith('share/petsc/datafiles/')]
   for file_name in files_changed_by_branch:
     blame_output = subprocess_run(
       ['git', 'blame', '-s', '--show-name', merge_branch_name + '..', file_name],

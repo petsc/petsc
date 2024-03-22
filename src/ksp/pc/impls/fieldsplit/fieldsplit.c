@@ -445,8 +445,8 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         PetscCall(PetscInfo(pc, "Setting up physics based fieldsplit preconditioner using the embedded DM\n"));
         for (ilink = jac->head, i = 0; ilink; ilink = ilink->next, ++i) {
           const char *prefix;
-          PetscCall(PetscObjectGetOptionsPrefix((PetscObject)(ilink->ksp), &prefix));
-          PetscCall(PetscObjectSetOptionsPrefix((PetscObject)(dms[i]), prefix));
+          PetscCall(PetscObjectGetOptionsPrefix((PetscObject)ilink->ksp, &prefix));
+          PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dms[i], prefix));
           PetscCall(KSPSetDM(ilink->ksp, dms[i]));
           PetscCall(KSPSetDMActive(ilink->ksp, PETSC_FALSE));
           PetscCall(PetscObjectIncrementTabLevel((PetscObject)dms[i], (PetscObject)ilink->ksp, 0));
@@ -680,8 +680,11 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     }
     PetscCall(VecDestroy(&xtmp));
   } else {
-    MatReuse scall;
+    MatReuse      scall;
+    MatNullSpace *nullsp = NULL;
+
     if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
+      PetscCall(MatGetNullSpaces(nsplit, jac->pmat, &nullsp));
       for (i = 0; i < nsplit; i++) PetscCall(MatDestroy(&jac->pmat[i]));
       scall = MAT_INITIAL_MATRIX;
     } else scall = MAT_REUSE_MATRIX;
@@ -694,6 +697,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       if (!pmat) PetscCall(MatCreateSubMatrix(pc->pmat, ilink->is, ilink->is_col, scall, &jac->pmat[i]));
       ilink = ilink->next;
     }
+    if (nullsp) PetscCall(MatRestoreNullSpaces(nsplit, jac->pmat, &nullsp));
   }
   if (jac->diag_use_amat) {
     ilink = jac->head;
@@ -704,8 +708,11 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         ilink = ilink->next;
       }
     } else {
-      MatReuse scall;
+      MatReuse      scall;
+      MatNullSpace *nullsp = NULL;
+
       if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
+        PetscCall(MatGetNullSpaces(nsplit, jac->mat, &nullsp));
         for (i = 0; i < nsplit; i++) PetscCall(MatDestroy(&jac->mat[i]));
         scall = MAT_INITIAL_MATRIX;
       } else scall = MAT_REUSE_MATRIX;
@@ -714,6 +721,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         PetscCall(MatCreateSubMatrix(pc->mat, ilink->is, ilink->is_col, scall, &jac->mat[i]));
         ilink = ilink->next;
       }
+      if (nullsp) PetscCall(MatRestoreNullSpaces(nsplit, jac->mat, &nullsp));
     }
   } else {
     jac->mat = jac->pmat;
@@ -1544,7 +1552,6 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc, Vec x, Vec y)
   PetscCall(VecScatterEnd(ilinkA->sctx, ilinkA->y, y, INSERT_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterBegin(ilinkD->sctx, ilinkD->y, y, INSERT_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(ilinkD->sctx, ilinkD->y, y, INSERT_VALUES, SCATTER_REVERSE));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1731,8 +1738,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc, PetscOptionItems *Petsc
   } else if (jac->type == PC_COMPOSITE_GKB) {
     PetscCall(PetscOptionsReal("-pc_fieldsplit_gkb_tol", "The tolerance for the lower bound stopping criterion", "PCFieldSplitGKBTol", jac->gkbtol, &jac->gkbtol, NULL));
     PetscCall(PetscOptionsInt("-pc_fieldsplit_gkb_delay", "The delay value for lower bound criterion", "PCFieldSplitGKBDelay", jac->gkbdelay, &jac->gkbdelay, NULL));
-    PetscCall(PetscOptionsReal("-pc_fieldsplit_gkb_nu", "Parameter in augmented Lagrangian approach", "PCFieldSplitGKBNu", jac->gkbnu, &jac->gkbnu, NULL));
-    PetscCheck(jac->gkbnu >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "nu cannot be less than 0: value %g", (double)jac->gkbnu);
+    PetscCall(PetscOptionsBoundedReal("-pc_fieldsplit_gkb_nu", "Parameter in augmented Lagrangian approach", "PCFieldSplitGKBNu", jac->gkbnu, &jac->gkbnu, NULL, 0.0));
     PetscCall(PetscOptionsInt("-pc_fieldsplit_gkb_maxit", "Maximum allowed number of iterations", "PCFieldSplitGKBMaxit", jac->gkbmaxit, &jac->gkbmaxit, NULL));
     PetscCall(PetscOptionsBool("-pc_fieldsplit_gkb_monitor", "Prints number of GKB iterations and error", "PCFieldSplitGKB", jac->gkbmonitor, &jac->gkbmonitor, NULL));
   }
@@ -2924,7 +2930,7 @@ static PetscErrorCode PCSetCoordinates_FieldSplit(PC pc, PetscInt dim, PetscInt 
     PetscCall(ISGetIndices(is_coords, &block_dofs_enumeration));
 
     // Allocate coordinates vector and set it directly
-    PetscCall(PetscMalloc1(ndofs_block * dim, &(ilink_current->coords)));
+    PetscCall(PetscMalloc1(ndofs_block * dim, &ilink_current->coords));
     for (PetscInt dof = 0; dof < ndofs_block; ++dof) {
       for (PetscInt d = 0; d < dim; ++d) (ilink_current->coords)[dim * dof + d] = coords[dim * block_dofs_enumeration[dof] + d];
     }

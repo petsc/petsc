@@ -115,6 +115,8 @@ PetscErrorCode PetscSFReset(PetscSF sf)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscTryTypeMethod(sf, Reset);
+  PetscCall(PetscSFDestroy(&sf->rankssf));
+
   sf->nroots   = -1;
   sf->nleaves  = -1;
   sf->minleaf  = PETSC_MAX_INT;
@@ -130,8 +132,10 @@ PetscErrorCode PetscSFReset(PetscSF sf)
   PetscCall(PetscFree(sf->degree));
   if (sf->ingroup != MPI_GROUP_NULL) PetscCallMPI(MPI_Group_free(&sf->ingroup));
   if (sf->outgroup != MPI_GROUP_NULL) PetscCallMPI(MPI_Group_free(&sf->outgroup));
+
   if (sf->multi) sf->multi->multi = NULL;
   PetscCall(PetscSFDestroy(&sf->multi));
+
   PetscCall(PetscLayoutDestroy(&sf->map));
 
 #if defined(PETSC_HAVE_DEVICE)
@@ -227,13 +231,13 @@ PetscErrorCode PetscSFDestroy(PetscSF *sf)
 {
   PetscFunctionBegin;
   if (!*sf) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*sf), PETSCSF_CLASSID, 1);
-  if (--((PetscObject)(*sf))->refct > 0) {
+  PetscValidHeaderSpecific(*sf, PETSCSF_CLASSID, 1);
+  if (--((PetscObject)*sf)->refct > 0) {
     *sf = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscSFReset(*sf));
-  PetscTryTypeMethod((*sf), Destroy);
+  PetscTryTypeMethod(*sf, Destroy);
   PetscCall(PetscSFDestroy(&(*sf)->vscat.lsf));
   if ((*sf)->vscat.bs > 1) PetscCallMPI(MPI_Type_free(&(*sf)->vscat.unit));
 #if defined(PETSC_HAVE_CUDA) && defined(PETSC_HAVE_MPIX_STREAM)
@@ -795,7 +799,7 @@ PetscErrorCode PetscSFGetGraph(PetscSF sf, PetscInt *nroots, PetscInt *nleaves, 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   if (sf->ops->GetGraph) {
-    PetscCall((sf->ops->GetGraph)(sf, nroots, nleaves, ilocal, iremote));
+    PetscCall(sf->ops->GetGraph(sf, nroots, nleaves, ilocal, iremote));
   } else {
     if (nroots) *nroots = sf->nroots;
     if (nleaves) *nleaves = sf->nleaves;
@@ -947,7 +951,7 @@ PetscErrorCode PetscSFGetRootRanks(PetscSF sf, PetscInt *nranks, const PetscMPII
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscCheck(sf->setupcalled, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call PetscSFSetUp() before obtaining ranks");
   if (sf->ops->GetRootRanks) {
-    PetscCall((sf->ops->GetRootRanks)(sf, nranks, ranks, roffset, rmine, rremote));
+    PetscUseTypeMethod(sf, GetRootRanks, nranks, ranks, roffset, rmine, rremote);
   } else {
     /* The generic implementation */
     if (nranks) *nranks = sf->nranks;
@@ -983,7 +987,7 @@ PetscErrorCode PetscSFGetLeafRanks(PetscSF sf, PetscInt *niranks, const PetscMPI
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscCheck(sf->setupcalled, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call PetscSFSetUp() before obtaining ranks");
   if (sf->ops->GetLeafRanks) {
-    PetscCall((sf->ops->GetLeafRanks)(sf, niranks, iranks, ioffset, irootloc));
+    PetscUseTypeMethod(sf, GetLeafRanks, niranks, iranks, ioffset, irootloc);
   } else {
     PetscSFType type;
     PetscCall(PetscSFGetType(sf, &type));
@@ -1165,6 +1169,44 @@ PetscErrorCode PetscSFGetGroups(PetscSF sf, MPI_Group *incoming, MPI_Group *outg
     PetscCallMPI(MPI_Group_free(&group));
   }
   *outgoing = sf->outgroup;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscSFGetRanksSF - gets the `PetscSF` to perform communications with root ranks
+
+  Collective
+
+  Input Parameter:
+. sf - star forest
+
+  Output Parameter:
+. rsf - the star forest with a single root per process to perform communications
+
+  Level: developer
+
+.seealso: `PetscSF`, `PetscSFSetGraph()`, `PetscSFGetRootRanks()`
+@*/
+PetscErrorCode PetscSFGetRanksSF(PetscSF sf, PetscSF *rsf)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
+  PetscAssertPointer(rsf, 2);
+  if (!sf->rankssf) {
+    PetscSFNode       *rremotes;
+    const PetscMPIInt *ranks;
+    PetscInt           nranks;
+
+    PetscCall(PetscSFGetRootRanks(sf, &nranks, &ranks, NULL, NULL, NULL));
+    PetscCall(PetscMalloc1(nranks, &rremotes));
+    for (PetscInt i = 0; i < nranks; i++) {
+      rremotes[i].rank  = ranks[i];
+      rremotes[i].index = 0;
+    }
+    PetscCall(PetscSFDuplicate(sf, PETSCSF_DUPLICATE_CONFONLY, &sf->rankssf));
+    PetscCall(PetscSFSetGraph(sf->rankssf, 1, nranks, NULL, PETSC_OWN_POINTER, rremotes, PETSC_OWN_POINTER));
+  }
+  *rsf = sf->rankssf;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1534,7 +1576,7 @@ PetscErrorCode PetscSFReduceBegin(PetscSF sf, MPI_Datatype unit, const void *lea
   if (!sf->vscat.logging) PetscCall(PetscLogEventBegin(PETSCSF_ReduceBegin, sf, 0, 0, 0));
   PetscCall(PetscGetMemType(rootdata, &rootmtype));
   PetscCall(PetscGetMemType(leafdata, &leafmtype));
-  PetscCall((sf->ops->ReduceBegin)(sf, unit, leafmtype, leafdata, rootmtype, rootdata, op));
+  PetscCall(sf->ops->ReduceBegin(sf, unit, leafmtype, leafdata, rootmtype, rootdata, op));
   if (!sf->vscat.logging) PetscCall(PetscLogEventEnd(PETSCSF_ReduceBegin, sf, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1565,7 +1607,7 @@ PetscErrorCode PetscSFReduceWithMemTypeBegin(PetscSF sf, MPI_Datatype unit, Pets
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscCall(PetscSFSetUp(sf));
   if (!sf->vscat.logging) PetscCall(PetscLogEventBegin(PETSCSF_ReduceBegin, sf, 0, 0, 0));
-  PetscCall((sf->ops->ReduceBegin)(sf, unit, leafmtype, leafdata, rootmtype, rootdata, op));
+  PetscCall(sf->ops->ReduceBegin(sf, unit, leafmtype, leafdata, rootmtype, rootdata, op));
   if (!sf->vscat.logging) PetscCall(PetscLogEventEnd(PETSCSF_ReduceBegin, sf, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

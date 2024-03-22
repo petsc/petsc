@@ -93,7 +93,7 @@ static PetscErrorCode SetupProblem(DM dm)
   PetscFunctionBeginUser;
   PetscCall(DMGetDS(dm, &ds));
   PetscCall(DMGetDimension(dm, &dim));
-  PetscCheck(dim == 2, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Only for 2-D\n");
+  PetscCheck(dim == 2, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Only for 2-D");
   PetscCall(PetscDSSetObjective(ds, 0, objective_2d));
   PetscCall(PetscDSSetResidual(ds, 0, NULL, gradient_1_2d));
   PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, hessian_11_2d));

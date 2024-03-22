@@ -89,7 +89,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
   PetscInt               nt = PETSC_STATIC_ARRAY_LENGTH(tspan);
   TSExactFinalTimeOption eftopt;
   char                   dir[16];
-  TSIFunction            ifun;
+  TSIFunctionFn         *ifun;
   const char            *defaultType;
   char                   typeName[256];
 
@@ -564,9 +564,9 @@ PetscErrorCode TSComputeRHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B)
   PetscObjectId    Uid;
   DM               dm;
   DMTS             tsdm;
-  TSRHSJacobian    rhsjacobianfunc;
+  TSRHSJacobianFn *rhsjacobianfunc;
   void            *ctx;
-  TSRHSFunction    rhsfunction;
+  TSRHSFunctionFn *rhsfunction;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -610,7 +610,7 @@ PetscErrorCode TSComputeRHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B)
 - U  - state vector
 
   Output Parameter:
-. y - right hand side
+. y - right-hand side
 
   Level: developer
 
@@ -622,10 +622,10 @@ PetscErrorCode TSComputeRHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B)
 @*/
 PetscErrorCode TSComputeRHSFunction(TS ts, PetscReal t, Vec U, Vec y)
 {
-  TSRHSFunction rhsfunction;
-  TSIFunction   ifunction;
-  void         *ctx;
-  DM            dm;
+  TSRHSFunctionFn *rhsfunction;
+  TSIFunctionFn   *ifunction;
+  void            *ctx;
+  DM               dm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -666,9 +666,9 @@ PetscErrorCode TSComputeRHSFunction(TS ts, PetscReal t, Vec U, Vec y)
 @*/
 PetscErrorCode TSComputeSolutionFunction(TS ts, PetscReal t, Vec U)
 {
-  TSSolutionFunction solutionfunction;
-  void              *ctx;
-  DM                 dm;
+  TSSolutionFn *solutionfunction;
+  void         *ctx;
+  DM            dm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -696,9 +696,9 @@ PetscErrorCode TSComputeSolutionFunction(TS ts, PetscReal t, Vec U)
 @*/
 PetscErrorCode TSComputeForcingFunction(TS ts, PetscReal t, Vec U)
 {
-  void             *ctx;
-  DM                dm;
-  TSForcingFunction forcing;
+  void        *ctx;
+  DM           dm;
+  TSForcingFn *forcing;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -724,8 +724,8 @@ static PetscErrorCode TSGetRHSVec_Private(TS ts, Vec *Frhs)
 
 PetscErrorCode TSGetRHSMats_Private(TS ts, Mat *Arhs, Mat *Brhs)
 {
-  Mat         A, B;
-  TSIJacobian ijacobian;
+  Mat            A, B;
+  TSIJacobianFn *ijacobian;
 
   PetscFunctionBegin;
   if (Arhs) *Arhs = NULL;
@@ -784,7 +784,7 @@ PetscErrorCode TSGetRHSMats_Private(TS ts, Mat *Arhs, Mat *Brhs)
 - imex - flag indicates if the method is `TSIMEX` so that the RHSFunction should be kept separate
 
   Output Parameter:
-. Y - right hand side
+. Y - right-hand side
 
   Level: developer
 
@@ -792,17 +792,17 @@ PetscErrorCode TSGetRHSMats_Private(TS ts, Mat *Arhs, Mat *Brhs)
   Most users should not need to explicitly call this routine, as it
   is used internally within the nonlinear solvers.
 
-  If the user did did not write their equations in implicit form, this
+  If the user did not write their equations in implicit form, this
   function recasts them in implicit form.
 
 .seealso: [](ch_ts), `TS`, `TSSetIFunction()`, `TSComputeRHSFunction()`
 @*/
 PetscErrorCode TSComputeIFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec Y, PetscBool imex)
 {
-  TSIFunction   ifunction;
-  TSRHSFunction rhsfunction;
-  void         *ctx;
-  DM            dm;
+  TSIFunctionFn   *ifunction;
+  TSRHSFunctionFn *rhsfunction;
+  void            *ctx;
+  DM               dm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -894,10 +894,10 @@ static PetscErrorCode TSRecoverRHSJacobian(TS ts, Mat A, Mat B)
 @*/
 PetscErrorCode TSComputeIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal shift, Mat A, Mat B, PetscBool imex)
 {
-  TSIJacobian   ijacobian;
-  TSRHSJacobian rhsjacobian;
-  DM            dm;
-  void         *ctx;
+  TSIJacobianFn   *ijacobian;
+  TSRHSJacobianFn *rhsjacobian;
+  DM               dm;
+  void            *ctx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -953,7 +953,7 @@ PetscErrorCode TSComputeIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal
     if (Arhs == A) { /* No IJacobian matrix, so we only have the RHS matrix */
       PetscObjectState Ustate;
       PetscObjectId    Uid;
-      TSRHSFunction    rhsfunction;
+      TSRHSFunctionFn *rhsfunction;
 
       PetscCall(DMTSGetRHSFunction(dm, &rhsfunction, NULL));
       PetscCall(PetscObjectStateGet((PetscObject)U, &Ustate));
@@ -1011,7 +1011,7 @@ PetscErrorCode TSComputeIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal
 
   Input Parameters:
 + ts  - the `TS` context obtained from `TSCreate()`
-. r   - vector to put the computed right hand side (or `NULL` to have it created)
+. r   - vector to put the computed right-hand side (or `NULL` to have it created)
 . f   - routine for evaluating the right-hand-side function
 - ctx - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
 
@@ -1020,9 +1020,9 @@ PetscErrorCode TSComputeIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal
   Note:
   You must call this function or `TSSetIFunction()` to define your ODE. You cannot use this function when solving a DAE.
 
-.seealso: [](ch_ts), `TS`, `TSRHSFunction`, `TSSetRHSJacobian()`, `TSSetIJacobian()`, `TSSetIFunction()`
+.seealso: [](ch_ts), `TS`, `TSRHSFunctionFn`, `TSSetRHSJacobian()`, `TSSetIJacobian()`, `TSSetIFunction()`
 @*/
-PetscErrorCode TSSetRHSFunction(TS ts, Vec r, TSRHSFunction f, void *ctx)
+PetscErrorCode TSSetRHSFunction(TS ts, Vec r, TSRHSFunctionFn *f, void *ctx)
 {
   SNES snes;
   Vec  ralloc = NULL;
@@ -1068,9 +1068,9 @@ PetscErrorCode TSSetRHSFunction(TS ts, Vec r, TSRHSFunction f, void *ctx)
 
   For low-dimensional problems solved in serial, such as small discrete systems, `TSMonitorLGError()` can be used to monitor the error history.
 
-.seealso: [](ch_ts), `TS`, `TSSolutionFunction`, `TSSetRHSJacobian()`, `TSSetIJacobian()`, `TSComputeSolutionFunction()`, `TSSetForcingFunction()`, `TSSetSolution()`, `TSGetSolution()`, `TSMonitorLGError()`, `TSMonitorDrawError()`
+.seealso: [](ch_ts), `TS`, `TSSolutionFn`, `TSSetRHSJacobian()`, `TSSetIJacobian()`, `TSComputeSolutionFunction()`, `TSSetForcingFunction()`, `TSSetSolution()`, `TSGetSolution()`, `TSMonitorLGError()`, `TSMonitorDrawError()`
 @*/
-PetscErrorCode TSSetSolutionFunction(TS ts, TSSolutionFunction f, void *ctx)
+PetscErrorCode TSSetSolutionFunction(TS ts, TSSolutionFn *f, void *ctx)
 {
   DM dm;
 
@@ -1106,10 +1106,10 @@ PetscErrorCode TSSetSolutionFunction(TS ts, TSSolutionFunction f, void *ctx)
 
   For low-dimensional problems solved in serial, such as small discrete systems, `TSMonitorLGError()` can be used to monitor the error history.
 
-.seealso: [](ch_ts), `TS`, `TSForcingFunction`, `TSSetRHSJacobian()`, `TSSetIJacobian()`,
+.seealso: [](ch_ts), `TS`, `TSForcingFn`, `TSSetRHSJacobian()`, `TSSetIJacobian()`,
 `TSComputeSolutionFunction()`, `TSSetSolutionFunction()`
 @*/
-PetscErrorCode TSSetForcingFunction(TS ts, TSForcingFunction func, void *ctx)
+PetscErrorCode TSSetForcingFunction(TS ts, TSForcingFn *func, void *ctx)
 {
   DM dm;
 
@@ -1141,14 +1141,14 @@ PetscErrorCode TSSetForcingFunction(TS ts, TSForcingFunction func, void *ctx)
   The `TS` solver may modify the nonzero structure and the entries of the matrices `Amat` and `Pmat` between the calls to `f()`
   You should not assume the values are the same in the next call to f() as you set them in the previous call.
 
-.seealso: [](ch_ts), `TS`, `TSRHSJacobian`, `SNESComputeJacobianDefaultColor()`,
-`TSSetRHSFunction()`, `TSRHSJacobianSetReuse()`, `TSSetIJacobian()`, `TSRHSFunction()`, `TSIFunction()`
+.seealso: [](ch_ts), `TS`, `TSRHSJacobianFn`, `SNESComputeJacobianDefaultColor()`,
+`TSSetRHSFunction()`, `TSRHSJacobianSetReuse()`, `TSSetIJacobian()`, `TSRHSFunctionFn`, `TSIFunctionFn`
 @*/
-PetscErrorCode TSSetRHSJacobian(TS ts, Mat Amat, Mat Pmat, TSRHSJacobian f, void *ctx)
+PetscErrorCode TSSetRHSJacobian(TS ts, Mat Amat, Mat Pmat, TSRHSJacobianFn *f, void *ctx)
 {
-  SNES        snes;
-  DM          dm;
-  TSIJacobian ijacobian;
+  SNES           snes;
+  DM             dm;
+  TSIJacobianFn *ijacobian;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -1191,10 +1191,10 @@ PetscErrorCode TSSetRHSJacobian(TS ts, Mat Amat, Mat Pmat, TSRHSJacobian f, void
   Note:
   The user MUST call either this routine or `TSSetRHSFunction()` to define the ODE.  When solving DAEs you must use this function.
 
-.seealso: [](ch_ts), `TS`, `TSIFunction`, `TSSetRHSJacobian()`, `TSSetRHSFunction()`,
+.seealso: [](ch_ts), `TS`, `TSIFunctionFn`, `TSSetRHSJacobian()`, `TSSetRHSFunction()`,
 `TSSetIJacobian()`
 @*/
-PetscErrorCode TSSetIFunction(TS ts, Vec r, TSIFunction f, void *ctx)
+PetscErrorCode TSSetIFunction(TS ts, Vec r, TSIFunctionFn *f, void *ctx)
 {
   SNES snes;
   Vec  ralloc = NULL;
@@ -1234,7 +1234,7 @@ PetscErrorCode TSSetIFunction(TS ts, Vec r, TSIFunction f, void *ctx)
 
 .seealso: [](ch_ts), `TS`, `TSSetIFunction()`, `SNESGetFunction()`
 @*/
-PetscErrorCode TSGetIFunction(TS ts, Vec *r, TSIFunction *func, void **ctx)
+PetscErrorCode TSGetIFunction(TS ts, Vec *r, TSIFunctionFn **func, void **ctx)
 {
   SNES snes;
   DM   dm;
@@ -1249,7 +1249,7 @@ PetscErrorCode TSGetIFunction(TS ts, Vec *r, TSIFunction *func, void **ctx)
 }
 
 /*@C
-  TSGetRHSFunction - Returns the vector where the right hand side is stored and the function/context to compute it.
+  TSGetRHSFunction - Returns the vector where the right-hand side is stored and the function/context to compute it.
 
   Not Collective
 
@@ -1257,15 +1257,15 @@ PetscErrorCode TSGetIFunction(TS ts, Vec *r, TSIFunction *func, void **ctx)
 . ts - the `TS` context
 
   Output Parameters:
-+ r    - vector to hold computed right hand side (or `NULL`)
-. func - the function to compute right hand side (or `NULL`)
++ r    - vector to hold computed right-hand side (or `NULL`)
+. func - the function to compute right-hand side (or `NULL`)
 - ctx  - the function context (or `NULL`)
 
   Level: advanced
 
 .seealso: [](ch_ts), `TS`, `TSSetRHSFunction()`, `SNESGetFunction()`
 @*/
-PetscErrorCode TSGetRHSFunction(TS ts, Vec *r, TSRHSFunction *func, void **ctx)
+PetscErrorCode TSGetRHSFunction(TS ts, Vec *r, TSRHSFunctionFn **func, void **ctx)
 {
   SNES snes;
   DM   dm;
@@ -1312,10 +1312,10 @@ PetscErrorCode TSGetRHSFunction(TS ts, Vec *r, TSRHSFunction *func, void **ctx)
   The TS solver may modify the nonzero structure and the entries of the matrices `Amat` and `Pmat` between the calls to `f`
   You should not assume the values are the same in the next call to `f` as you set them in the previous call.
 
-.seealso: [](ch_ts), `TS`, `TSIJacobian`, `TSSetIFunction()`, `TSSetRHSJacobian()`,
+.seealso: [](ch_ts), `TS`, `TSIJacobianFn`, `TSSetIFunction()`, `TSSetRHSJacobian()`,
 `SNESComputeJacobianDefaultColor()`, `SNESComputeJacobianDefault()`, `TSSetRHSFunction()`
 @*/
-PetscErrorCode TSSetIJacobian(TS ts, Mat Amat, Mat Pmat, TSIJacobian f, void *ctx)
+PetscErrorCode TSSetIJacobian(TS ts, Mat Amat, Mat Pmat, TSIJacobianFn *f, void *ctx)
 {
   SNES snes;
   DM   dm;
@@ -1336,7 +1336,7 @@ PetscErrorCode TSSetIJacobian(TS ts, Mat Amat, Mat Pmat, TSIJacobian f, void *ct
 }
 
 /*@
-  TSRHSJacobianSetReuse - restore the RHS Jacobian before calling the user-provided `TSRHSJacobian()` function again
+  TSRHSJacobianSetReuse - restore the RHS Jacobian before calling the user-provided `TSRHSJacobianFn` function again
 
   Logically Collective
 
@@ -1374,10 +1374,10 @@ PetscErrorCode TSRHSJacobianSetReuse(TS ts, PetscBool reuse)
 
   Level: beginner
 
-.seealso: [](ch_ts), `TS`, `TSI2Function`, `TSSetI2Jacobian()`, `TSSetIFunction()`,
+.seealso: [](ch_ts), `TS`, `TSI2FunctionFn`, `TSSetI2Jacobian()`, `TSSetIFunction()`,
 `TSCreate()`, `TSSetRHSFunction()`
 @*/
-PetscErrorCode TSSetI2Function(TS ts, Vec F, TSI2Function fun, void *ctx)
+PetscErrorCode TSSetI2Function(TS ts, Vec F, TSI2FunctionFn *fun, void *ctx)
 {
   DM dm;
 
@@ -1407,7 +1407,7 @@ PetscErrorCode TSSetI2Function(TS ts, Vec F, TSI2Function fun, void *ctx)
 
 .seealso: [](ch_ts), `TS`, `TSSetIFunction()`, `SNESGetFunction()`, `TSCreate()`
 @*/
-PetscErrorCode TSGetI2Function(TS ts, Vec *r, TSI2Function *fun, void **ctx)
+PetscErrorCode TSGetI2Function(TS ts, Vec *r, TSI2FunctionFn **fun, void **ctx)
 {
   SNES snes;
   DM   dm;
@@ -1431,7 +1431,7 @@ PetscErrorCode TSGetI2Function(TS ts, Vec *r, TSI2Function *fun, void **ctx)
 + ts  - the `TS` context obtained from `TSCreate()`
 . J   - matrix to hold the Jacobian values
 . P   - matrix for constructing the preconditioner (may be same as `J`)
-. jac - the Jacobian evaluation routine
+. jac - the Jacobian evaluation routine, see `TSI2JacobianFn` for the calling sequence
 - ctx - user-defined context for private data for the Jacobian evaluation routine (may be `NULL`)
 
   Level: beginner
@@ -1444,9 +1444,9 @@ PetscErrorCode TSGetI2Function(TS ts, Vec *r, TSI2Function *fun, void **ctx)
   The time integrator internally approximates U_t by W+v*U and U_tt by W'+a*U  where the positive "shift"
   parameters 'v' and 'a' and vectors W, W' depend on the integration method, step size, and past states.
 
-.seealso: [](ch_ts), `TS`, `TSI2Jacobian`, `TSSetI2Function()`, `TSGetI2Jacobian()`
+.seealso: [](ch_ts), `TS`, `TSI2JacobianFn`, `TSSetI2Function()`, `TSGetI2Jacobian()`
 @*/
-PetscErrorCode TSSetI2Jacobian(TS ts, Mat J, Mat P, TSI2Jacobian jac, void *ctx)
+PetscErrorCode TSSetI2Jacobian(TS ts, Mat J, Mat P, TSI2JacobianFn *jac, void *ctx)
 {
   DM dm;
 
@@ -1481,7 +1481,7 @@ PetscErrorCode TSSetI2Jacobian(TS ts, Mat J, Mat P, TSI2Jacobian jac, void *ctx)
 
 .seealso: [](ch_ts), `TS`, `TSGetTimeStep()`, `TSGetMatrices()`, `TSGetTime()`, `TSGetStepNumber()`, `TSSetI2Jacobian()`, `TSGetI2Function()`, `TSCreate()`
 @*/
-PetscErrorCode TSGetI2Jacobian(TS ts, Mat *J, Mat *P, TSI2Jacobian *jac, void **ctx)
+PetscErrorCode TSGetI2Jacobian(TS ts, Mat *J, Mat *P, TSI2JacobianFn **jac, void **ctx)
 {
   SNES snes;
   DM   dm;
@@ -1520,10 +1520,10 @@ PetscErrorCode TSGetI2Jacobian(TS ts, Mat *J, Mat *P, TSI2Jacobian *jac, void **
 @*/
 PetscErrorCode TSComputeI2Function(TS ts, PetscReal t, Vec U, Vec V, Vec A, Vec F)
 {
-  DM            dm;
-  TSI2Function  I2Function;
-  void         *ctx;
-  TSRHSFunction rhsfunction;
+  DM               dm;
+  TSI2FunctionFn  *I2Function;
+  void            *ctx;
+  TSRHSFunctionFn *rhsfunction;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -1588,10 +1588,10 @@ PetscErrorCode TSComputeI2Function(TS ts, PetscReal t, Vec U, Vec V, Vec A, Vec 
 @*/
 PetscErrorCode TSComputeI2Jacobian(TS ts, PetscReal t, Vec U, Vec V, Vec A, PetscReal shiftV, PetscReal shiftA, Mat J, Mat P)
 {
-  DM            dm;
-  TSI2Jacobian  I2Jacobian;
-  void         *ctx;
-  TSRHSJacobian rhsjacobian;
+  DM               dm;
+  TSI2JacobianFn  *I2Jacobian;
+  void            *ctx;
+  TSRHSJacobianFn *rhsjacobian;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -1631,7 +1631,7 @@ PetscErrorCode TSComputeI2Jacobian(TS ts, PetscReal t, Vec U, Vec V, Vec A, Pets
 
   Input Parameters:
 + ts   - time stepping context on which to change the transient variable
-. tvar - a function that transforms to transient variables
+. tvar - a function that transforms to transient variables, see `TSTransientVariableFn` for the calling sequence
 - ctx  - a context for tvar
 
   Level: advanced
@@ -1646,9 +1646,9 @@ PetscErrorCode TSComputeI2Jacobian(TS ts, PetscReal t, Vec U, Vec V, Vec A, Pets
      dF/dP + shift * dF/dCdot dC/dP.
 .ve
 
-.seealso: [](ch_ts), `TS`, `TSBDF`, `TSTransientVariable`, `DMTSSetTransientVariable()`, `DMTSGetTransientVariable()`, `TSSetIFunction()`, `TSSetIJacobian()`
+.seealso: [](ch_ts), `TS`, `TSBDF`, `TSTransientVariableFn`, `DMTSSetTransientVariable()`, `DMTSGetTransientVariable()`, `TSSetIFunction()`, `TSSetIJacobian()`
 @*/
-PetscErrorCode TSSetTransientVariable(TS ts, TSTransientVariable tvar, void *ctx)
+PetscErrorCode TSSetTransientVariable(TS ts, TSTransientVariableFn *tvar, void *ctx)
 {
   DM dm;
 
@@ -2465,10 +2465,10 @@ PetscErrorCode TSSetUp(TS ts)
   DM dm;
   PetscErrorCode (*func)(SNES, Vec, Vec, void *);
   PetscErrorCode (*jac)(SNES, Vec, Mat, Mat, void *);
-  TSIFunction   ifun;
-  TSIJacobian   ijac;
-  TSI2Jacobian  i2jac;
-  TSRHSJacobian rhsjac;
+  TSIFunctionFn   *ifun;
+  TSIJacobianFn   *ijac;
+  TSI2JacobianFn  *i2jac;
+  TSRHSJacobianFn *rhsjac;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -2576,6 +2576,7 @@ PetscErrorCode TSReset(TS ts)
   PetscCall(MatDestroy(&ts->Brhs));
   PetscCall(VecDestroy(&ts->Frhs));
   PetscCall(VecDestroy(&ts->vec_sol));
+  PetscCall(VecDestroy(&ts->vec_sol0));
   PetscCall(VecDestroy(&ts->vec_dot));
   PetscCall(VecDestroy(&ts->vatol));
   PetscCall(VecDestroy(&ts->vrtol));
@@ -2603,7 +2604,10 @@ PetscErrorCode TSReset(TS ts)
     PetscCall(VecDestroyVecs(ts->tspan->num_span_times, &ts->tspan->vecs_sol));
     PetscCall(PetscFree(ts->tspan));
   }
-  ts->setupcalled = PETSC_FALSE;
+  ts->rhsjacobian.time  = PETSC_MIN_REAL;
+  ts->rhsjacobian.scale = 1.0;
+  ts->ijacobian.shift   = 1.0;
+  ts->setupcalled       = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2627,7 +2631,7 @@ PetscErrorCode TSDestroy(TS *ts)
   PetscFunctionBegin;
   if (!*ts) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*ts, TS_CLASSID, 1);
-  if (--((PetscObject)(*ts))->refct > 0) {
+  if (--((PetscObject)*ts)->refct > 0) {
     *ts = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -2639,7 +2643,7 @@ PetscErrorCode TSDestroy(TS *ts)
 
   /* if memory was published with SAWs then destroy it */
   PetscCall(PetscObjectSAWsViewOff((PetscObject)*ts));
-  PetscTryTypeMethod((*ts), destroy);
+  PetscTryTypeMethod(*ts, destroy);
 
   PetscCall(TSTrajectoryDestroy(&(*ts)->trajectory));
 
@@ -2648,8 +2652,8 @@ PetscErrorCode TSDestroy(TS *ts)
 
   PetscCall(SNESDestroy(&(*ts)->snes));
   PetscCall(DMDestroy(&(*ts)->dm));
-  PetscCall(TSMonitorCancel((*ts)));
-  PetscCall(TSAdjointMonitorCancel((*ts)));
+  PetscCall(TSMonitorCancel(*ts));
+  PetscCall(TSAdjointMonitorCancel(*ts));
 
   PetscCall(TSDestroy(&(*ts)->quadraturets));
   PetscCall(PetscHeaderDestroy(ts));
@@ -3373,8 +3377,13 @@ PetscErrorCode TSStep(TS ts)
   PetscCheck(ts->exact_final_time != TS_EXACTFINALTIME_UNSPECIFIED, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSStep()");
   PetscCheck(ts->exact_final_time != TS_EXACTFINALTIME_MATCHSTEP || ts->adapt, PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
 
+  if (!ts->vec_sol0) PetscCall(VecDuplicate(ts->vec_sol, &ts->vec_sol0));
+  PetscCall(VecCopy(ts->vec_sol, ts->vec_sol0));
+  ts->time_step0 = ts->time_step;
+
   if (!ts->steps) ts->ptime_prev = ts->ptime;
-  ptime                   = ts->ptime;
+  ptime = ts->ptime;
+
   ts->ptime_prev_rollback = ts->ptime_prev;
   ts->reason              = TS_CONVERGED_ITERATING;
 
@@ -3387,10 +3396,6 @@ PetscErrorCode TSStep(TS ts)
     ts->steps++;
     ts->steprollback = PETSC_FALSE;
     ts->steprestart  = PETSC_FALSE;
-  }
-  if (!ts->reason) {
-    if (ts->steps >= ts->max_steps) ts->reason = TS_CONVERGED_ITS;
-    else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
   }
 
   if (ts->reason < 0 && ts->errorifstepfailed) {
@@ -3636,6 +3641,7 @@ PetscErrorCode TSComputeExactError(TS ts, Vec u, Vec e)
 
   Input Parameters:
 + ts       - The `TS` context obtained from `TSCreate()`
+. rollback - Whether a resize will restart the step
 . setup    - The setup function
 . transfer - The transfer function
 - ctx      - [optional] The user-defined context
@@ -3656,11 +3662,13 @@ PetscErrorCode TSComputeExactError(TS ts, Vec u, Vec e)
 - ctx     - user defined context
 
   Notes:
-  The `setup` function is called inside `TSSolve()` after `TSPostStep()` at the end of each time step
-  to determine if the problem size has changed.
-  If it is the case, the solver will collect the needed vectors that need to be
-  transferred from the old to the new sizes using `transfer`. These vectors will include the current
-  solution vector, and other vectors needed by the specific solver used.
+  The `setup` function is called inside `TSSolve()` after `TSEventHandler()` or after `TSPostStep()`
+  depending on the `rollback` value: if `rollback` is true, then these callbacks behave as error indicators
+  and will flag the need to remesh and restart the current step. Otherwise, they will simply flag the solver
+  that the size of the discrete problem has changed.
+  In both cases, the solver will collect the needed vectors that will be
+  transferred from the old to the new sizes using the `transfer` callback. These vectors will include the
+  current solution vector, and other vectors needed by the specific solver used.
   For example, `TSBDF` uses previous solutions vectors to solve for the next time step.
   Other application specific objects associated with the solver, i.e. Jacobian matrices and `DM`,
   will be automatically reset if the sizes are changed and they must be specified again by the user
@@ -3673,10 +3681,11 @@ PetscErrorCode TSComputeExactError(TS ts, Vec u, Vec e)
 
 .seealso: [](ch_ts), `TS`, `TSSetDM()`, `TSSetIJacobian()`, `TSSetRHSJacobian()`
 @*/
-PetscErrorCode TSSetResize(TS ts, PetscErrorCode (*setup)(TS ts, PetscInt step, PetscReal time, Vec state, PetscBool *resize, void *ctx), PetscErrorCode (*transfer)(TS ts, PetscInt nv, Vec vecsin[], Vec vecsout[], void *ctx), void *ctx)
+PetscErrorCode TSSetResize(TS ts, PetscBool rollback, PetscErrorCode (*setup)(TS ts, PetscInt step, PetscReal time, Vec state, PetscBool *resize, void *ctx), PetscErrorCode (*transfer)(TS ts, PetscInt nv, Vec vecsin[], Vec vecsout[], void *ctx), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  ts->resizerollback = rollback;
   ts->resizesetup    = setup;
   ts->resizetransfer = transfer;
   ts->resizectx      = ctx;
@@ -3838,6 +3847,7 @@ PetscErrorCode TSResize(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  if (!ts->resizesetup) PetscFunctionReturn(PETSC_SUCCESS);
   if (ts->resizesetup) {
     PetscBool flg = PETSC_FALSE;
 
@@ -3845,6 +3855,10 @@ PetscErrorCode TSResize(TS ts)
     PetscCallBack("TS callback resize setup", (*ts->resizesetup)(ts, ts->steps, ts->ptime, ts->vec_sol, &flg, ts->resizectx));
     PetscCall(VecLockReadPop(ts->vec_sol));
     if (flg) {
+      if (ts->resizerollback) {
+        PetscCall(TSRollBack(ts));
+        ts->time_step = ts->time_step0;
+      }
       PetscCall(TSResizeRegisterVec(ts, solname, ts->vec_sol));
       PetscCall(TSResizeRegisterOrRetrieve(ts, PETSC_TRUE)); /* specific impls register their own objects */
     }
@@ -3857,11 +3871,18 @@ PetscErrorCode TSResize(TS ts)
     /* Reset internal objects */
     PetscCall(TSReset(ts));
 
-    /* Transfer needed vectors (users can call SetJacobian, SetDM here) */
+    /* Transfer needed vectors (users can call SetJacobian, SetDM, etc. here) */
     PetscCall(PetscCalloc1(nv, &vecsout));
     PetscCall(TSResizeTransferVecs(ts, nv, vecsin, vecsout));
     for (PetscInt i = 0; i < nv; i++) {
+      const char *name;
+      char       *oname;
+
+      PetscCall(PetscObjectGetName((PetscObject)vecsin[i], &name));
+      PetscCall(PetscStrallocpy(name, &oname));
       PetscCall(TSResizeRegisterVec(ts, names[i], vecsout[i]));
+      if (vecsout[i]) PetscCall(PetscObjectSetName((PetscObject)vecsout[i], oname));
+      PetscCall(PetscFree(oname));
       PetscCall(VecDestroy(&vecsout[i]));
     }
     PetscCall(PetscFree(vecsout));
@@ -4029,10 +4050,16 @@ PetscErrorCode TSSolve(TS ts, Vec u)
       PetscCall(TSPostEvaluate(ts));
       PetscCall(TSEventHandler(ts)); /* The right-hand side may be changed due to event. Be careful with Any computation using the RHS information after this point. */
       if (ts->steprollback) PetscCall(TSPostEvaluate(ts));
+      if (!ts->steprollback && ts->resizerollback) PetscCall(TSResize(ts));
+      /* check convergence */
+      if (!ts->reason) {
+        if (ts->steps >= ts->max_steps) ts->reason = TS_CONVERGED_ITS;
+        else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
+      }
       if (!ts->steprollback) {
         PetscCall(TSTrajectorySet(ts->trajectory, ts, ts->steps, ts->ptime, ts->vec_sol));
         PetscCall(TSPostStep(ts));
-        PetscCall(TSResize(ts));
+        if (!ts->resizerollback) PetscCall(TSResize(ts));
 
         if (ts->tspan && ts->tspan->spanctr < ts->tspan->num_span_times) {
           PetscCheck(ts->tspan->worktol > 0, PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Unexpected state !(tspan->worktol > 0) in TSSolve()");
@@ -4249,7 +4276,7 @@ PetscErrorCode TSGetOptionsPrefix(TS ts, const char *prefix[])
 .seealso: [](ch_ts), `TS`, `TSGetTimeStep()`, `TSGetMatrices()`, `TSGetTime()`, `TSGetStepNumber()`
 
 @*/
-PetscErrorCode TSGetRHSJacobian(TS ts, Mat *Amat, Mat *Pmat, TSRHSJacobian *func, void **ctx)
+PetscErrorCode TSGetRHSJacobian(TS ts, Mat *Amat, Mat *Pmat, TSRHSJacobianFn **func, void **ctx)
 {
   DM dm;
 
@@ -4286,7 +4313,7 @@ PetscErrorCode TSGetRHSJacobian(TS ts, Mat *Amat, Mat *Pmat, TSRHSJacobian *func
 
 .seealso: [](ch_ts), `TS`, `TSGetTimeStep()`, `TSGetRHSJacobian()`, `TSGetMatrices()`, `TSGetTime()`, `TSGetStepNumber()`
 @*/
-PetscErrorCode TSGetIJacobian(TS ts, Mat *Amat, Mat *Pmat, TSIJacobian *f, void **ctx)
+PetscErrorCode TSGetIJacobian(TS ts, Mat *Amat, Mat *Pmat, TSIJacobianFn **f, void **ctx)
 {
   DM dm;
 
@@ -4445,7 +4472,7 @@ PetscErrorCode SNESTSFormJacobian(SNES snes, Vec U, Mat A, Mat B, void *ctx)
 }
 
 /*@C
-  TSComputeRHSFunctionLinear - Evaluate the right hand side via the user-provided Jacobian, for linear problems Udot = A U only
+  TSComputeRHSFunctionLinear - Evaluate the right-hand side via the user-provided Jacobian, for linear problems Udot = A U only
 
   Collective
 
@@ -4456,12 +4483,12 @@ PetscErrorCode SNESTSFormJacobian(SNES snes, Vec U, Mat A, Mat B, void *ctx)
 - ctx - context
 
   Output Parameter:
-. F - right hand side
+. F - right-hand side
 
   Level: intermediate
 
   Note:
-  This function is intended to be passed to `TSSetRHSFunction()` to evaluate the right hand side for linear problems.
+  This function is intended to be passed to `TSSetRHSFunction()` to evaluate the right-hand side for linear problems.
   The matrix (and optionally the evaluation context) should be passed to `TSSetRHSJacobian()`.
 
 .seealso: [](ch_ts), `TS`, `TSSetRHSFunction()`, `TSSetRHSJacobian()`, `TSComputeRHSJacobianConstant()`
@@ -4546,7 +4573,7 @@ PetscErrorCode TSComputeIFunctionLinear(TS ts, PetscReal t, Vec U, Vec Udot, Vec
 }
 
 /*@C
-  TSComputeIJacobianConstant - Reuses the matrix previously computed with the provided `TSIJacobian()` for a semi-implicit DAE or ODE
+  TSComputeIJacobianConstant - Reuses the matrix previously computed with the provided `TSIJacobianFn` for a semi-implicit DAE or ODE
 
   Collective
 
@@ -4560,7 +4587,7 @@ PetscErrorCode TSComputeIFunctionLinear(TS ts, PetscReal t, Vec U, Vec Udot, Vec
 
   Output Parameters:
 + A - pointer to operator
-- B - pointer to preconditioning matrix
+- B - pointer to matrix from which the preconditioner is built (often `A`)
 
   Level: advanced
 
@@ -4569,13 +4596,17 @@ PetscErrorCode TSComputeIFunctionLinear(TS ts, PetscReal t, Vec U, Vec Udot, Vec
 
   It is only appropriate for problems of the form
 
-$     M Udot = F(U,t)
+  $$
+  M \dot{U} = F(U,t)
+  $$
 
   where M is constant and F is non-stiff.  The user must pass M to `TSSetIJacobian()`.  The current implementation only
   works with IMEX time integration methods such as `TSROSW` and `TSARKIMEX`, since there is no support for de-constructing
   an implicit operator of the form
 
-$    shift*M + J
+  $$
+  shift*M + J
+  $$
 
   where J is the Jacobian of -F(U).  Support may be added in a future version of PETSc, but for now, the user must store
   a copy of M or reassemble it when requested.
@@ -5220,19 +5251,44 @@ PetscErrorCode TSRestartStep(TS ts)
 
   Level: advanced
 
-.seealso: [](ch_ts), `TS`, `TSCreate()`, `TSSetUp()`, `TSDestroy()`, `TSSolve()`, `TSSetPreStep()`, `TSSetPreStage()`, `TSInterpolate()`
+.seealso: [](ch_ts), `TS`, `TSGetStepRollBack()`, `TSCreate()`, `TSSetUp()`, `TSDestroy()`, `TSSolve()`, `TSSetPreStep()`, `TSSetPreStage()`, `TSInterpolate()`
 @*/
 PetscErrorCode TSRollBack(TS ts)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscCheck(!ts->steprollback, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "TSRollBack already called");
-  PetscUseTypeMethod(ts, rollback);
+  PetscTryTypeMethod(ts, rollback);
+  PetscCall(VecCopy(ts->vec_sol0, ts->vec_sol));
   ts->time_step  = ts->ptime - ts->ptime_prev;
   ts->ptime      = ts->ptime_prev;
   ts->ptime_prev = ts->ptime_prev_rollback;
   ts->steps--;
   ts->steprollback = PETSC_TRUE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  TSGetStepRollBack - Get the internal flag indicating if you are rolling back a step
+
+  Not collective
+
+  Input Parameter:
+. ts - the `TS` context obtained from `TSCreate()`
+
+  Output Parameter:
+. flg - the rollback flag
+
+  Level: advanced
+
+.seealso: [](ch_ts), `TS`, `TSCreate()`, `TSRollBack()`
+@*/
+PetscErrorCode TSGetStepRollBack(TS ts, PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscAssertPointer(flg, 2);
+  *flg = ts->steprollback;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -5542,9 +5598,9 @@ static PetscErrorCode RHSWrapperFunction_TSRHSJacobianTest(void *ctx, Vec x, Vec
 @*/
 PetscErrorCode TSRHSJacobianTest(TS ts, PetscBool *flg)
 {
-  Mat           J, B;
-  TSRHSJacobian func;
-  void         *ctx;
+  Mat              J, B;
+  TSRHSJacobianFn *func;
+  void            *ctx;
 
   PetscFunctionBegin;
   PetscCall(TSGetRHSJacobian(ts, &J, &B, &func, &ctx));
@@ -5576,9 +5632,9 @@ PetscErrorCode TSRHSJacobianTest(TS ts, PetscBool *flg)
 @*/
 PetscErrorCode TSRHSJacobianTestTranspose(TS ts, PetscBool *flg)
 {
-  Mat           J, B;
-  void         *ctx;
-  TSRHSJacobian func;
+  Mat              J, B;
+  void            *ctx;
+  TSRHSJacobianFn *func;
 
   PetscFunctionBegin;
   PetscCall(TSGetRHSJacobian(ts, &J, &B, &func, &ctx));

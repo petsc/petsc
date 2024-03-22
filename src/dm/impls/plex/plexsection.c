@@ -608,7 +608,7 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
     PetscInt d;
     for (d = 1; d < dim; ++d) PetscCheck(numDof[f * (dim + 1) + d] <= 0 || depth >= dim, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
   }
-  PetscCall(DMPlexCreateSectionPermutation_Internal(dm, &permIS, &blockStarts));
+  PetscCall(DMCreateSectionPermutation(dm, &permIS, &blockStarts));
   PetscCall(DMPlexCreateSection(dm, labels, numComp, numDof, numBC, bcFields, bcComps, bcPoints, permIS, &section));
   section->blockStarts = blockStarts;
   PetscCall(ISDestroy(&permIS));

@@ -96,9 +96,9 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     PetscCall(MatCreateSubMatrix(pc->pmat, red->is, red->is, MAT_REUSE_MATRIX, &tmat));
     PetscCall(KSPSetOperators(red->ksp, tmat, tmat));
   } else {
-    PetscInt          NN;
-    PC                ipc;
-    PetscVoidFunction fptr;
+    PetscInt     NN;
+    PC           ipc;
+    PetscVoidFn *fptr;
 
     PetscCall(PetscObjectGetComm((PetscObject)pc, &comm));
     PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -353,8 +353,8 @@ static PetscErrorCode PCApply_Redistribute(PC pc, Vec b, Vec x)
   if (red->zerodiag) {
     for (i = 0; i < dcnt; i++) {
       if (diag[i] == 0.0 && bwork[drows[i]] != 0.0) {
-        PetscCheck(!pc->erroriffailure, PETSC_COMM_SELF, PETSC_ERR_CONV_FAILED, "Linear system is inconsistent, zero matrix row but nonzero right hand side");
-        PetscCall(PetscInfo(pc, "Linear system is inconsistent, zero matrix row but nonzero right hand side\n"));
+        PetscCheck(!pc->erroriffailure, PETSC_COMM_SELF, PETSC_ERR_CONV_FAILED, "Linear system is inconsistent, zero matrix row but nonzero right-hand side");
+        PetscCall(PetscInfo(pc, "Linear system is inconsistent, zero matrix row but nonzero right-hand side\n"));
         PetscCall(VecSetInf(x));
         pc->failedreasonrank = PC_INCONSISTENT_RHS;
       }
@@ -364,7 +364,7 @@ static PetscErrorCode PCApply_Redistribute(PC pc, Vec b, Vec x)
   PetscCall(PetscLogFlops(dcnt));
   PetscCall(VecRestoreArray(red->work, &xwork));
   PetscCall(VecRestoreArrayRead(b, &bwork));
-  /* update the right hand side for the reduced system with diagonal rows (and corresponding columns) removed */
+  /* update the right-hand side for the reduced system with diagonal rows (and corresponding columns) removed */
   PetscCall(MatMult(pc->pmat, x, red->work));
   PetscCall(VecAYPX(red->work, -1.0, b)); /* red->work = b - A x */
 

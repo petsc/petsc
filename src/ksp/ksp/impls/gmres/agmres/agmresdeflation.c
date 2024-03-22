@@ -155,7 +155,7 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
   } else {
     for (j = 0; j < r; j++) select[perm[KspSize - j - 1]] = 1;
   }
-  PetscCallBLAS("LAPACKtgsen", LAPACKtgsen_(&ijob, &wantQ, &wantZ, select, &KspSize, A, &ldA, B, &ldB, wr, wi, beta, Q, &N, Z, &N, &r, NULL, NULL, &(Dif[0]), work, &lwork, iwork, &liwork, &info));
+  PetscCallBLAS("LAPACKtgsen", LAPACKtgsen_(&ijob, &wantQ, &wantZ, select, &KspSize, A, &ldA, B, &ldB, wr, wi, beta, Q, &N, Z, &N, &r, NULL, NULL, &Dif[0], work, &lwork, iwork, &liwork, &info));
   PetscCheck(info != 1, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
   /* Extract the Schur vectors associated to the r smallest eigenvalues */
   PetscCall(PetscArrayzero(Sr, (N + 1) * r));

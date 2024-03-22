@@ -98,7 +98,6 @@ static PetscErrorCode ProcessOptions(DM dm, AppCtx *options)
   PetscOptionsBegin(comm, "", "Helmholtz Problem Options", "DMPLEX");
   PetscCall(PetscOptionsBool("-exact_trig", "Use trigonometric exact solution (better for more complex finite elements)", "ex26.c", options->trig, &options->trig, NULL));
   PetscOptionsEnd();
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -112,7 +111,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(PetscObjectSetName((PetscObject)*dm, "Mesh"));
   PetscCall(DMSetApplicationContext(*dm, user));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

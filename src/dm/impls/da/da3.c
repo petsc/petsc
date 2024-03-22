@@ -360,9 +360,9 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
   }
   z = lz[rank / (m * n)];
 
-  PetscCheck((x > s) || ((bx != DM_BOUNDARY_MIRROR)), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local x-width of domain x %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT " with mirror", x, s);
-  PetscCheck((y > s) || ((by != DM_BOUNDARY_MIRROR)), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local y-width of domain y %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT " with mirror", y, s);
-  PetscCheck((z > s) || ((bz != DM_BOUNDARY_MIRROR)), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local z-width of domain z %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT " with mirror", z, s);
+  PetscCheck((x > s) || (bx != DM_BOUNDARY_MIRROR), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local x-width of domain x %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT " with mirror", x, s);
+  PetscCheck((y > s) || (by != DM_BOUNDARY_MIRROR), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local y-width of domain y %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT " with mirror", y, s);
+  PetscCheck((z > s) || (bz != DM_BOUNDARY_MIRROR), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local z-width of domain z %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT " with mirror", z, s);
 
   /* note this is different than x- and y-, as we will handle as an important special
    case when p=P=1 and DM_BOUNDARY_PERIODIC and s > z.  This is to deal with 2D problems
@@ -1093,7 +1093,7 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
     n26 = sn26;
   }
 
-  if (((stencil_type == DMDA_STENCIL_STAR) || (bx != DM_BOUNDARY_PERIODIC && bx) || (by != DM_BOUNDARY_PERIODIC && by) || (bz != DM_BOUNDARY_PERIODIC && bz))) {
+  if ((stencil_type == DMDA_STENCIL_STAR) || (bx != DM_BOUNDARY_PERIODIC && bx) || (by != DM_BOUNDARY_PERIODIC && by) || (bz != DM_BOUNDARY_PERIODIC && bz)) {
     /*
         Recompute the local to global mappings, this time keeping the
       information about the cross corner processor numbers.
@@ -1475,6 +1475,10 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
 . -da_processors_x <MX> - number of processors in x direction
 . -da_processors_y <MY> - number of processors in y direction
 . -da_processors_z <MZ> - number of processors in z direction
+. -da_bd_x <bx>         - boundary type in x direction
+. -da_bd_y <by>         - boundary type in y direction
+. -da_bd_z <bz>         - boundary type in x direction
+. -da_bd_all <bt>       - boundary type in all directions
 . -da_refine_x <rx>     - refinement ratio in x direction
 . -da_refine_y <ry>     - refinement ratio in y direction
 . -da_refine_z <rz>     - refinement ratio in z directio

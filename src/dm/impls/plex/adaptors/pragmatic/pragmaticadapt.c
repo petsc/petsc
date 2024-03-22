@@ -32,7 +32,6 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric
   PetscMPIInt        numProcs;
 
   PetscFunctionBegin;
-
   /* Check for FEM adjacency flags */
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &numProcs));

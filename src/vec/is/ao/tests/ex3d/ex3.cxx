@@ -48,7 +48,7 @@ int main(int argc, char **argv)
   PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d] has %zu indices.\n", rank, myapp.size()));
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));
 
-  PetscCall(ISCreateGeneral(PETSC_COMM_WORLD, myapp.size(), &(myapp[0]), PETSC_USE_POINTER, &isapp));
+  PetscCall(ISCreateGeneral(PETSC_COMM_WORLD, myapp.size(), &myapp[0], PETSC_USE_POINTER, &isapp));
 
   PetscCall(AOCreate(PETSC_COMM_WORLD, &ao));
   PetscCall(AOSetIS(ao, isapp, NULL));

@@ -7,15 +7,18 @@
   Not Collective
 
   Input Parameters:
-+ dm - the distributed array
-- s  - A `MatStencil` that provides (i,j,k)
++ dm - the `DMDA`
+- s  - a `MatStencil` that provides (i,j,k)
 
   Output Parameter:
 . cell - the local cell or vertext number
 
   Level: developer
 
-.seealso: [](sec_struct), `DM`, `DMDA`
+  Note:
+  The (i,j,k) are in the local numbering of the `DMDA`. That is they are non-negative offsets to the ghost corners returned by `DMDAGetGhostCorners()`
+
+.seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetGhostCorners()`
 @*/
 PetscErrorCode DMDAConvertToCell(DM dm, MatStencil s, PetscInt *cell)
 {
@@ -33,39 +36,115 @@ PetscErrorCode DMDAConvertToCell(DM dm, MatStencil s, PetscInt *cell)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode private_DMDALocatePointsIS_2D_Regular(DM dmregular, Vec pos, IS *iscell)
+PetscErrorCode DMGetLocalBoundingBox_DA(DM da, PetscReal lmin[], PetscReal lmax[], PetscInt cs[], PetscInt ce[])
 {
-  PetscInt           n, bs, p, npoints;
-  PetscInt           xs, xe, Xs, Xe, mxlocal;
-  PetscInt           ys, ye, Ys, Ye, mylocal;
-  PetscInt           d, c0, c1;
-  PetscReal          gmin_l[2], gmax_l[2], dx[2];
-  PetscReal          gmin[2], gmax[2];
-  PetscInt          *cellidx;
-  Vec                coor;
-  const PetscScalar *_coor;
+  PetscInt           xs, xe, Xs, Xe;
+  PetscInt           ys, ye, Ys, Ye;
+  PetscInt           zs, ze, Zs, Ze;
+  PetscInt           dim, M, N, P, c0, c1;
+  PetscReal          gmax[3] = {0., 0., 0.};
+  const PetscReal   *L, *Lstart;
+  Vec                coordinates;
+  const PetscScalar *coor;
+  DMBoundaryType     bx, by, bz;
 
   PetscFunctionBegin;
-  PetscCall(DMDAGetCorners(dmregular, &xs, &ys, NULL, &xe, &ye, NULL));
-  PetscCall(DMDAGetGhostCorners(dmregular, &Xs, &Ys, NULL, &Xe, &Ye, NULL));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xe, &ye, &ze));
+  PetscCall(DMDAGetGhostCorners(da, &Xs, &Ys, &Zs, &Xe, &Ye, &Ze));
+  PetscCall(DMDAGetInfo(da, &dim, &M, &N, &P, NULL, NULL, NULL, NULL, NULL, &bx, &by, &bz, NULL));
+  // Convert from widths to endpoints
   xe += xs;
   Xe += Xs;
   ye += ys;
   Ye += Ys;
+  ze += zs;
+  Ze += Zs;
+  // What is this doing?
   if (xs != Xs && Xs >= 0) xs -= 1;
   if (ys != Ys && Ys >= 0) ys -= 1;
+  if (zs != Zs && Zs >= 0) zs -= 1;
 
-  PetscCall(DMGetCoordinatesLocal(dmregular, &coor));
-  PetscCall(VecGetArrayRead(coor, &_coor));
-  c0 = (xs - Xs) + (ys - Ys) * (Xe - Xs);
-  c1 = (xe - 2 - Xs + 1) + (ye - 2 - Ys + 1) * (Xe - Xs);
+  PetscCall(DMGetCoordinatesLocal(da, &coordinates));
+  if (!coordinates) {
+    PetscCall(DMGetLocalBoundingIndices_DMDA(da, lmin, lmax));
+    for (PetscInt d = 0; d < dim; ++d) {
+      if (cs) cs[d] = lmin[d];
+      if (ce) ce[d] = lmax[d];
+    }
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  PetscCall(VecGetArrayRead(coordinates, &coor));
+  switch (dim) {
+  case 1:
+    c0 = (xs - Xs);
+    c1 = (xe - 2 - Xs + 1);
+    break;
+  case 2:
+    c0 = (xs - Xs) + (ys - Ys) * (Xe - Xs);
+    c1 = (xe - 2 - Xs + 1) + (ye - 2 - Ys + 1) * (Xe - Xs);
+    break;
+  case 3:
+    c0 = (xs - Xs) + (ys - Ys) * (Xe - Xs) + (zs - Zs) * (Xe - Xs) * (Ye - Ys);
+    c1 = (xe - 2 - Xs + 1) + (ye - 2 - Ys + 1) * (Xe - Xs) + (ze - 2 - Zs + 1) * (Xe - Xs) * (Ye - Ys);
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONG, "Invalid dimension %" PetscInt_FMT " for DMDA", dim);
+  }
+  for (PetscInt d = 0; d < dim; ++d) {
+    lmin[d] = PetscRealPart(coor[c0 * dim + d]);
+    lmax[d] = PetscRealPart(coor[c1 * dim + d]);
+  }
+  PetscCall(VecRestoreArrayRead(coordinates, &coor));
 
-  gmin_l[0] = PetscRealPart(_coor[2 * c0 + 0]);
-  gmin_l[1] = PetscRealPart(_coor[2 * c0 + 1]);
+  PetscCall(DMGetPeriodicity(da, NULL, &Lstart, &L));
+  if (L) {
+    for (PetscInt d = 0; d < dim; ++d)
+      if (L[d] > 0.0) gmax[d] = Lstart[d] + L[d];
+  }
+  // Must check for periodic boundary
+  if (bx == DM_BOUNDARY_PERIODIC && xe == M) {
+    lmax[0] = gmax[0];
+    ++xe;
+  }
+  if (by == DM_BOUNDARY_PERIODIC && ye == N) {
+    lmax[1] = gmax[1];
+    ++ye;
+  }
+  if (bz == DM_BOUNDARY_PERIODIC && ze == P) {
+    lmax[2] = gmax[2];
+    ++ze;
+  }
+  if (cs) {
+    cs[0] = xs;
+    if (dim > 1) cs[1] = ys;
+    if (dim > 2) cs[2] = zs;
+  }
+  if (ce) {
+    ce[0] = xe;
+    if (dim > 1) ce[1] = ye;
+    if (dim > 2) ce[2] = ze;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
-  gmax_l[0] = PetscRealPart(_coor[2 * c1 + 0]);
-  gmax_l[1] = PetscRealPart(_coor[2 * c1 + 1]);
-  PetscCall(VecRestoreArrayRead(coor, &_coor));
+static PetscErrorCode private_DMDALocatePointsIS_2D_Regular(DM dmregular, Vec pos, IS *iscell)
+{
+  PetscInt           n, bs, npoints;
+  PetscInt           cs[2], ce[2];
+  PetscInt           xs, xe, mxlocal;
+  PetscInt           ys, ye, mylocal;
+  PetscReal          gmin_l[2], gmax_l[2], dx[2];
+  PetscReal          gmin[2], gmax[2];
+  PetscInt          *cellidx;
+  const PetscScalar *coor;
+
+  PetscFunctionBegin;
+  PetscCall(DMGetLocalBoundingBox_DA(dmregular, gmin_l, gmax_l, cs, ce));
+  xs = cs[0];
+  ys = cs[1];
+  xe = ce[0];
+  ye = ce[1];
+  PetscCall(DMGetBoundingBox(dmregular, gmin, gmax));
 
   mxlocal = xe - xs - 1;
   mylocal = ye - ys - 1;
@@ -73,20 +152,18 @@ static PetscErrorCode private_DMDALocatePointsIS_2D_Regular(DM dmregular, Vec po
   dx[0] = (gmax_l[0] - gmin_l[0]) / ((PetscReal)mxlocal);
   dx[1] = (gmax_l[1] - gmin_l[1]) / ((PetscReal)mylocal);
 
-  PetscCall(DMGetBoundingBox(dmregular, gmin, gmax));
-
   PetscCall(VecGetLocalSize(pos, &n));
   PetscCall(VecGetBlockSize(pos, &bs));
   npoints = n / bs;
 
   PetscCall(PetscMalloc1(npoints, &cellidx));
-  PetscCall(VecGetArrayRead(pos, &_coor));
-  for (p = 0; p < npoints; p++) {
+  PetscCall(VecGetArrayRead(pos, &coor));
+  for (PetscInt p = 0; p < npoints; p++) {
     PetscReal coor_p[2];
     PetscInt  mi[2];
 
-    coor_p[0] = PetscRealPart(_coor[2 * p]);
-    coor_p[1] = PetscRealPart(_coor[2 * p + 1]);
+    coor_p[0] = PetscRealPart(coor[2 * p]);
+    coor_p[1] = PetscRealPart(coor[2 * p + 1]);
 
     cellidx[p] = DMLOCATEPOINT_POINT_NOT_FOUND;
 
@@ -95,7 +172,7 @@ static PetscErrorCode private_DMDALocatePointsIS_2D_Regular(DM dmregular, Vec po
     if (coor_p[1] < gmin_l[1]) continue;
     if (coor_p[1] > gmax_l[1]) continue;
 
-    for (d = 0; d < 2; d++) mi[d] = (PetscInt)((coor_p[d] - gmin[d]) / dx[d]);
+    for (PetscInt d = 0; d < 2; d++) mi[d] = (PetscInt)((coor_p[d] - gmin[d]) / dx[d]);
 
     if (mi[0] < xs) continue;
     if (mi[0] > (xe - 1)) continue;
@@ -107,50 +184,32 @@ static PetscErrorCode private_DMDALocatePointsIS_2D_Regular(DM dmregular, Vec po
 
     cellidx[p] = (mi[0] - xs) + (mi[1] - ys) * mxlocal;
   }
-  PetscCall(VecRestoreArrayRead(pos, &_coor));
+  PetscCall(VecRestoreArrayRead(pos, &coor));
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, npoints, cellidx, PETSC_OWN_POINTER, iscell));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode private_DMDALocatePointsIS_3D_Regular(DM dmregular, Vec pos, IS *iscell)
 {
-  PetscInt           n, bs, p, npoints;
-  PetscInt           xs, xe, Xs, Xe, mxlocal;
-  PetscInt           ys, ye, Ys, Ye, mylocal;
-  PetscInt           zs, ze, Zs, Ze, mzlocal;
-  PetscInt           d, c0, c1;
+  PetscInt           n, bs, npoints;
+  PetscInt           cs[3], ce[3];
+  PetscInt           xs, xe, mxlocal;
+  PetscInt           ys, ye, mylocal;
+  PetscInt           zs, ze, mzlocal;
   PetscReal          gmin_l[3], gmax_l[3], dx[3];
   PetscReal          gmin[3], gmax[3];
   PetscInt          *cellidx;
-  Vec                coor;
-  const PetscScalar *_coor;
+  const PetscScalar *coor;
 
   PetscFunctionBegin;
-  PetscCall(DMDAGetCorners(dmregular, &xs, &ys, &zs, &xe, &ye, &ze));
-  PetscCall(DMDAGetGhostCorners(dmregular, &Xs, &Ys, &Zs, &Xe, &Ye, &Ze));
-  xe += xs;
-  Xe += Xs;
-  ye += ys;
-  Ye += Ys;
-  ze += zs;
-  Ze += Zs;
-  if (xs != Xs && Xs >= 0) xs -= 1;
-  if (ys != Ys && Ys >= 0) ys -= 1;
-  if (zs != Zs && Zs >= 0) zs -= 1;
-
-  PetscCall(DMGetCoordinatesLocal(dmregular, &coor));
-  PetscCall(VecGetArrayRead(coor, &_coor));
-  c0 = (xs - Xs) + (ys - Ys) * (Xe - Xs) + (zs - Zs) * (Xe - Xs) * (Ye - Ys);
-  c1 = (xe - 2 - Xs + 1) + (ye - 2 - Ys + 1) * (Xe - Xs) + (ze - 2 - Zs + 1) * (Xe - Xs) * (Ye - Ys);
-
-  gmin_l[0] = PetscRealPart(_coor[3 * c0 + 0]);
-  gmin_l[1] = PetscRealPart(_coor[3 * c0 + 1]);
-  gmin_l[2] = PetscRealPart(_coor[3 * c0 + 2]);
-
-  gmax_l[0] = PetscRealPart(_coor[3 * c1 + 0]);
-  gmax_l[1] = PetscRealPart(_coor[3 * c1 + 1]);
-  gmax_l[2] = PetscRealPart(_coor[3 * c1 + 2]);
-  PetscCall(VecRestoreArrayRead(coor, &_coor));
+  PetscCall(DMGetLocalBoundingBox_DA(dmregular, gmin_l, gmax_l, cs, ce));
+  xs = cs[0];
+  ys = cs[1];
+  zs = cs[2];
+  xe = ce[0];
+  ye = ce[1];
+  ze = ce[2];
+  PetscCall(DMGetBoundingBox(dmregular, gmin, gmax));
 
   mxlocal = xe - xs - 1;
   mylocal = ye - ys - 1;
@@ -160,21 +219,19 @@ static PetscErrorCode private_DMDALocatePointsIS_3D_Regular(DM dmregular, Vec po
   dx[1] = (gmax_l[1] - gmin_l[1]) / ((PetscReal)mylocal);
   dx[2] = (gmax_l[2] - gmin_l[2]) / ((PetscReal)mzlocal);
 
-  PetscCall(DMGetBoundingBox(dmregular, gmin, gmax));
-
   PetscCall(VecGetLocalSize(pos, &n));
   PetscCall(VecGetBlockSize(pos, &bs));
   npoints = n / bs;
 
   PetscCall(PetscMalloc1(npoints, &cellidx));
-  PetscCall(VecGetArrayRead(pos, &_coor));
-  for (p = 0; p < npoints; p++) {
+  PetscCall(VecGetArrayRead(pos, &coor));
+  for (PetscInt p = 0; p < npoints; p++) {
     PetscReal coor_p[3];
     PetscInt  mi[3];
 
-    coor_p[0] = PetscRealPart(_coor[3 * p]);
-    coor_p[1] = PetscRealPart(_coor[3 * p + 1]);
-    coor_p[2] = PetscRealPart(_coor[3 * p + 2]);
+    coor_p[0] = PetscRealPart(coor[3 * p]);
+    coor_p[1] = PetscRealPart(coor[3 * p + 1]);
+    coor_p[2] = PetscRealPart(coor[3 * p + 2]);
 
     cellidx[p] = DMLOCATEPOINT_POINT_NOT_FOUND;
 
@@ -185,8 +242,9 @@ static PetscErrorCode private_DMDALocatePointsIS_3D_Regular(DM dmregular, Vec po
     if (coor_p[2] < gmin_l[2]) continue;
     if (coor_p[2] > gmax_l[2]) continue;
 
-    for (d = 0; d < 3; d++) mi[d] = (PetscInt)((coor_p[d] - gmin[d]) / dx[d]);
+    for (PetscInt d = 0; d < 3; d++) mi[d] = (PetscInt)((coor_p[d] - gmin[d]) / dx[d]);
 
+    // TODO: Check for periodicity here
     if (mi[0] < xs) continue;
     if (mi[0] > (xe - 1)) continue;
     if (mi[1] < ys) continue;
@@ -200,7 +258,7 @@ static PetscErrorCode private_DMDALocatePointsIS_3D_Regular(DM dmregular, Vec po
 
     cellidx[p] = (mi[0] - xs) + (mi[1] - ys) * mxlocal + (mi[2] - zs) * mxlocal * mylocal;
   }
-  PetscCall(VecRestoreArrayRead(pos, &_coor));
+  PetscCall(VecRestoreArrayRead(pos, &coor));
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, npoints, cellidx, PETSC_OWN_POINTER, iscell));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

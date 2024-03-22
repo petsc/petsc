@@ -85,8 +85,11 @@ PetscErrorCode Transfer(TS ts, PetscInt nv, Vec vecsin[], Vec vecsout[], void *c
 
 PetscErrorCode TransferSetUp(TS ts, PetscInt step, PetscReal time, Vec sol, PetscBool *resize, void *ctx)
 {
+  PetscBool *alreadydone = (PetscBool *)ctx;
+
   PetscFunctionBeginUser;
-  *resize = PETSC_TRUE;
+  *alreadydone = (PetscBool) !(*alreadydone);
+  *resize      = *alreadydone;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -108,16 +111,18 @@ int main(int argc, char **argv)
   Vec         x;
   Mat         A;
   PetscInt    order = 2;
-  PetscScalar results[2][10];
-  /* I would like to use 0 here, but linux-gcc-complex-opt-32bit  errors with arkimex with 1.e-18 errors, macOS clang requires an even larger tolerance */
-  PetscReal tol = 10 * PETSC_MACHINE_EPSILON;
+  PetscScalar results[3][10];
+  /* I would like to use 0 here, but arkimex errors with 1.e-14 discrepancy when using TSRResize without restart on some machines (mostly arm-osx) */
+  PetscReal tol = PETSC_SMALL;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-order", &order, NULL));
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-tol", &tol, NULL));
 
-  for (PetscInt i = 0; i < 2; i++) {
+  for (PetscInt i = 0; i < 3; i++) {
+    PetscBool alreadydone = PETSC_TRUE;
+
     PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
     PetscCall(TSSetProblemType(ts, TS_LINEAR));
 
@@ -134,7 +139,7 @@ int main(int argc, char **argv)
     for (PetscInt j = 0; j < 10; j++) results[i][j] = 0;
     PetscCall(TSMonitorSet(ts, Monitor, results[i], NULL));
     PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_MATCHSTEP));
-    if (i) PetscCall(TSSetResize(ts, TransferSetUp, Transfer, NULL));
+    if (i) PetscCall(TSSetResize(ts, i == 1 ? PETSC_TRUE : PETSC_FALSE, TransferSetUp, Transfer, &alreadydone));
     PetscCall(TSSetTime(ts, 0));
     PetscCall(TSSetTimeStep(ts, 1. / 4.));
     PetscCall(TSSetMaxSteps(ts, 10));
@@ -148,15 +153,23 @@ int main(int argc, char **argv)
   /* Dump errors if any */
   PetscBool flg = PETSC_FALSE;
   for (PetscInt i = 0; i < 10; i++) {
-    PetscReal err = PetscAbsScalar(results[0][i] - results[1][i]);
+    PetscReal err;
+
+    err = PetscAbsScalar(results[0][i] - results[1][i]);
     if (err > tol) {
-      PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error step %" PetscInt_FMT ": %g\n", i, (double)err));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error with restart for step %" PetscInt_FMT ": %g\n", i, (double)err));
+      flg = PETSC_TRUE;
+    }
+    err = PetscAbsScalar(results[0][i] - results[2][i]);
+    if (err > tol) {
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error without restart for step %" PetscInt_FMT ": %g\n", i, (double)err));
       flg = PETSC_TRUE;
     }
   }
   if (flg) {
     PetscCall(PetscScalarView(10, results[0], PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(PetscScalarView(10, results[1], PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscScalarView(10, results[2], PETSC_VIEWER_STDOUT_WORLD));
   }
   PetscCall(PetscFinalize());
   return 0;

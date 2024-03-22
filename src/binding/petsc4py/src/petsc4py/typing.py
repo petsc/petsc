@@ -270,7 +270,7 @@ DMRestrictHookFunction = Callable[[DM, Mat, Vec, Mat, DM], None]
 # --- KSP ---
 
 KSPRHSFunction = Callable[[KSP, Vec], None]
-"""`PETSc.KSP` right hand side function callback."""
+"""`PETSc.KSP` right-hand side function callback."""
 
 KSPOperatorsFunction = Callable[[KSP, Mat, Mat], None]
 """`PETSc.KSP` operators function callback."""
@@ -313,13 +313,13 @@ SNESConvergedFunction = Callable[[SNES, int, tuple[float, float, float]], SNES.C
 # --- TS ---
 
 TSRHSFunction = Callable[[TS, float, Vec, Vec], None]
-"""`TS` right hand side function callback."""
+"""`TS` right-hand side function callback."""
 
 TSRHSJacobian = Callable[[TS, float, Vec, Mat, Mat], None]
-"""`TS` right hand side Jacobian callback."""
+"""`TS` right-hand side Jacobian callback."""
 
 TSRHSJacobianP = Callable[[TS, float, Vec, Mat], None]
-"""`TS` right hand side parameter Jacobian callback."""
+"""`TS` right-hand side parameter Jacobian callback."""
 
 TSIFunction = Callable[[TS, float, Vec, Vec, Vec], None]
 """`TS` implicit function callback."""

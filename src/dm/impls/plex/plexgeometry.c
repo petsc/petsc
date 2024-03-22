@@ -224,7 +224,7 @@ static PetscErrorCode DMPlexGetPlaneSimplexIntersection_Coords_Internal(DM dm, P
     for (PetscInt i = 0; i < cdim; ++i) c[i] = PetscRealPart(coords[v * cdim + i]);
     d[v] = DMPlex_DotRealD_Internal(cdim, normal, c);
 #else
-    d[v]           = DMPlex_DotRealD_Internal(cdim, normal, &coords[v * cdim]);
+    d[v] = DMPlex_DotRealD_Internal(cdim, normal, &coords[v * cdim]);
 #endif
     d[v] -= dp;
   }
@@ -710,7 +710,7 @@ PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash box, PetscInt numPoint
 
       if (dbox == n[d] && PetscAbsReal(PetscRealPart(points[p * dim + d]) - upper[d]) < 1.0e-9) dbox = n[d] - 1;
       if (dbox == -1 && PetscAbsReal(PetscRealPart(points[p * dim + d]) - lower[d]) < 1.0e-9) dbox = 0;
-      PetscCheck(dbox >= 0 && dbox<n[d], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input point %" PetscInt_FMT " (%g, %g, %g) is outside of our bounding box", p, (double)PetscRealPart(points[p * dim + 0]), dim> 1 ? (double)PetscRealPart(points[p * dim + 1]) : 0.0, dim > 2 ? (double)PetscRealPart(points[p * dim + 2]) : 0.0);
+      PetscCheck(dbox >= 0 && dbox < n[d], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input point %" PetscInt_FMT " (%g, %g, %g) is outside of our bounding box", p, (double)PetscRealPart(points[p * dim + 0]), dim > 1 ? (double)PetscRealPart(points[p * dim + 1]) : 0.0, dim > 2 ? (double)PetscRealPart(points[p * dim + 2]) : 0.0);
       dboxes[p * dim + d] = dbox;
     }
     if (boxes)
@@ -1394,8 +1394,8 @@ PetscErrorCode DMPlexComputeProjection3Dto1D(PetscScalar coords[], PetscReal R[]
   PetscReal z    = PetscRealPart(coords[5] - coords[2]);
   PetscReal r    = PetscSqrtReal(x * x + y * y + z * z);
   PetscReal rinv = 1. / r;
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   x *= rinv;
   y *= rinv;
   z *= rinv;
@@ -2734,7 +2734,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
     case DM_POLYTOPE_SEG_PRISM_TENSOR: {
       PetscInt fv[4] = {0, 1, 2, 3};
 
-      /* Side faces for hybrid cells are are stored as tensor products */
+      /* Side faces for hybrid cells are stored as tensor products */
       if (isHybrid && f > 1) {
         fv[2] = 3;
         fv[3] = 2;
@@ -3733,7 +3733,7 @@ PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPo
 }
 
 /*@
-  DMPlexReferenceToCoordinates - Map references coordinates to coordinates in the the mesh for a single element map.
+  DMPlexReferenceToCoordinates - Map references coordinates to coordinates in the mesh for a single element map.
 
   Not Collective
 

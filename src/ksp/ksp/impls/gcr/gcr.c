@@ -279,7 +279,7 @@ static PetscErrorCode KSPGCRGetRestart_GCR(KSP ksp, PetscInt *restart)
   The default value is 30.
 
   Developer Note:
-  The API could be made uniform for all `KSP` methods that have have a restart.
+  The API could be made uniform for all `KSP` methods that have a restart.
 
 .seealso: [](ch_ksp), `KSPGCR`, `KSPSetTolerances()`, `KSPGCRGetRestart()`, `KSPGMRESSetRestart()`
 @*/
@@ -354,7 +354,7 @@ static PetscErrorCode KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
     The GCR Krylov method supports non-symmetric matrices and permits the use of a preconditioner
     which may vary from one iteration to the next.
 
-    Users can can define a method to vary the
+    Users can define a method to vary the
     preconditioner between iterates via `KSPGCRSetModifyPC()`.
 
     Restarts are solves with x0 not equal to zero. When a restart occurs, the initial starting

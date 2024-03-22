@@ -265,6 +265,5 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NM(Tao tao)
   nm->mu_oc = 0.5;
   nm->mu_r  = 1.0;
   nm->mu_e  = 2.0;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }

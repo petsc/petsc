@@ -7,79 +7,7 @@
   #include <thrust/execution_policy.h>
 #endif
 
-PETSC_INTERN PetscErrorCode PetscSFGetVectorSF(PetscSF sf, PetscInt nv, PetscInt ldr, PetscInt ldl, PetscSF *vsf)
-{
-  PetscSF            rankssf;
-  const PetscSFNode *iremote;
-  PetscSFNode       *viremote, *rremotes;
-  const PetscInt    *ilocal;
-  PetscInt          *vilocal = NULL, *ldrs;
-  const PetscMPIInt *ranks;
-  PetscMPIInt       *sranks;
-  PetscInt           nranks, nr, nl, vnr, vnl, i, v, j, maxl;
-  MPI_Comm           comm;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
-  PetscValidLogicalCollectiveInt(sf, nv, 2);
-  PetscAssertPointer(vsf, 5);
-  if (nv == 1) {
-    PetscCall(PetscObjectReference((PetscObject)sf));
-    *vsf = sf;
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
-  PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
-  PetscCall(PetscSFGetGraph(sf, &nr, &nl, &ilocal, &iremote));
-  PetscCall(PetscSFGetLeafRange(sf, NULL, &maxl));
-  maxl += 1;
-  if (ldl == PETSC_DECIDE) ldl = maxl;
-  if (ldr == PETSC_DECIDE) ldr = nr;
-  PetscCheck(ldr >= nr, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid leading dimension %" PetscInt_FMT " < %" PetscInt_FMT, ldr, nr);
-  PetscCheck(ldl >= maxl, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid leading dimension %" PetscInt_FMT " < %" PetscInt_FMT, ldl, maxl);
-  vnr = nr * nv;
-  vnl = nl * nv;
-  PetscCall(PetscMalloc1(vnl, &viremote));
-  if (ilocal) PetscCall(PetscMalloc1(vnl, &vilocal));
-
-  /* TODO: Should this special SF be available, e.g.
-     PetscSFGetRanksSF or similar? */
-  PetscCall(PetscSFGetRootRanks(sf, &nranks, &ranks, NULL, NULL, NULL));
-  PetscCall(PetscMalloc1(nranks, &sranks));
-  PetscCall(PetscArraycpy(sranks, ranks, nranks));
-  PetscCall(PetscSortMPIInt(nranks, sranks));
-  PetscCall(PetscMalloc1(nranks, &rremotes));
-  for (i = 0; i < nranks; i++) {
-    rremotes[i].rank  = sranks[i];
-    rremotes[i].index = 0;
-  }
-  PetscCall(PetscSFDuplicate(sf, PETSCSF_DUPLICATE_CONFONLY, &rankssf));
-  PetscCall(PetscSFSetGraph(rankssf, 1, nranks, NULL, PETSC_OWN_POINTER, rremotes, PETSC_OWN_POINTER));
-  PetscCall(PetscMalloc1(nranks, &ldrs));
-  PetscCall(PetscSFBcastBegin(rankssf, MPIU_INT, &ldr, ldrs, MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(rankssf, MPIU_INT, &ldr, ldrs, MPI_REPLACE));
-  PetscCall(PetscSFDestroy(&rankssf));
-
-  j = -1;
-  for (i = 0; i < nl; i++) {
-    const PetscInt r  = iremote[i].rank;
-    const PetscInt ii = iremote[i].index;
-
-    if (j < 0 || sranks[j] != r) PetscCall(PetscFindMPIInt(r, nranks, sranks, &j));
-    PetscCheck(j >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unable to locate neighbor rank %" PetscInt_FMT, r);
-    for (v = 0; v < nv; v++) {
-      viremote[v * nl + i].rank  = r;
-      viremote[v * nl + i].index = v * ldrs[j] + ii;
-      if (ilocal) vilocal[v * nl + i] = v * ldl + ilocal[i];
-    }
-  }
-  PetscCall(PetscFree(sranks));
-  PetscCall(PetscFree(ldrs));
-  PetscCall(PetscSFCreate(comm, vsf));
-  PetscCall(PetscSFSetGraph(*vsf, vnr, vnl, vilocal, PETSC_OWN_POINTER, viremote, PETSC_OWN_POINTER));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PETSC_INTERN PetscErrorCode MatDenseGetH2OpusVectorSF(Mat A, PetscSF h2sf, PetscSF *osf)
+PETSC_INTERN PetscErrorCode MatDenseGetH2OpusStridedSF(Mat A, PetscSF h2sf, PetscSF *osf)
 {
   PetscSF asf;
 
@@ -87,13 +15,13 @@ PETSC_INTERN PetscErrorCode MatDenseGetH2OpusVectorSF(Mat A, PetscSF h2sf, Petsc
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidHeaderSpecific(h2sf, PETSCSF_CLASSID, 2);
   PetscAssertPointer(osf, 3);
-  PetscCall(PetscObjectQuery((PetscObject)A, "_math2opus_vectorsf", (PetscObject *)&asf));
+  PetscCall(PetscObjectQuery((PetscObject)A, "_math2opus_stridedsf", (PetscObject *)&asf));
   if (!asf) {
     PetscInt lda;
 
     PetscCall(MatDenseGetLDA(A, &lda));
-    PetscCall(PetscSFGetVectorSF(h2sf, A->cmap->N, lda, PETSC_DECIDE, &asf));
-    PetscCall(PetscObjectCompose((PetscObject)A, "_math2opus_vectorsf", (PetscObject)asf));
+    PetscCall(PetscSFCreateStridedSF(h2sf, A->cmap->N, lda, PETSC_DECIDE, &asf));
+    PetscCall(PetscObjectCompose((PetscObject)A, "_math2opus_stridedsf", (PetscObject)asf));
     PetscCall(PetscObjectDereference((PetscObject)asf));
   }
   *osf = asf;

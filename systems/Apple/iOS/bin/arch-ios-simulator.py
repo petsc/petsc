@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # See iosbuilder.py for instructions
 # Note that this "cheats" and runs all the ./configure tests on the Mac NOT on the iPhone
 #     but this is ok because the answers are the same.

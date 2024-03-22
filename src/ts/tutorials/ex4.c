@@ -182,7 +182,7 @@ int main(int argc, char **argv)
   if (flg) {
     /*
        For linear problems with a time-dependent f(u,t) in the equation
-       u_t = f(u,t), the user provides the discretized right-hand-side
+       u_t = f(u,t), the user provides the discretized right-hand side
        as a time-dependent matrix.
     */
     PetscCall(TSSetRHSFunction(ts, NULL, TSComputeRHSFunctionLinear, &appctx));
@@ -190,7 +190,7 @@ int main(int argc, char **argv)
   } else {
     /*
        For linear problems with a time-independent f(u) in the equation
-       u_t = f(u), the user provides the discretized right-hand-side
+       u_t = f(u), the user provides the discretized right-hand side
        as a matrix only once, and then sets a null matrix evaluation
        routine.
     */
@@ -328,7 +328,6 @@ PetscErrorCode InitialConditions(Vec u, AppCtx *appctx)
     PetscCall(PetscPrintf(appctx->comm, "initial guess vector\n"));
     PetscCall(VecView(u, PETSC_VIEWER_STDOUT_WORLD));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* --------------------------------------------------------------------- */
@@ -449,7 +448,6 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec u, void *ctx)
     PetscCall(PetscPrintf(appctx->comm, "Error vector\n"));
     PetscCall(VecView(appctx->solution, PETSC_VIEWER_STDOUT_WORLD));
   }
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -543,7 +541,6 @@ PetscErrorCode RHSMatrixHeat(TS ts, PetscReal t, Vec X, Mat AA, Mat BB, void *ct
      to the matrix. If we do, it will generate an error.
   */
   PetscCall(MatSetOption(A, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

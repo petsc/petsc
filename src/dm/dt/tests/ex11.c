@@ -29,7 +29,7 @@ int main(int argc, char **argv)
   PetscCall(PetscFVDestroy(&fvm));
   PetscCall(PetscFree2(dx, grad));
   PetscCall(PetscFinalize());
-  return (0);
+  return 0;
 }
 
 /*TEST

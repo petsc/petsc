@@ -148,8 +148,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
     wgtflag |= 2; /* have weights on graph vertices */
   }
 
-  for (p = 0; !vtxdist[p + 1] && p < size; ++p)
-    ;
+  for (p = 0; !vtxdist[p + 1] && p < size; ++p);
   if (vtxdist[p + 1] == vtxdist[size]) {
     if (rank == p) {
       int err;

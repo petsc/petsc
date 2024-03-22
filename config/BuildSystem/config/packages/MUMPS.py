@@ -16,6 +16,7 @@ class Configure(config.package.Package):
     self.downloadonWindows= 1
     self.hastests         = 1
     self.hastestsdatafiles= 1
+    self.license          = 'https://mumps-solver.org/index.php?page=dwnld#form'
     return
 
   def setupHelp(self, help):

@@ -755,6 +755,35 @@ PetscErrorCode DMStagGetLocationSlot(DM dm, DMStagStencilLocation loc, PetscInt 
 }
 
 /*@C
+  DMStagGetRefinementFactor - get refinement ratios in each direction
+
+  Not Collective
+
+  Input Parameter:
+. dm - the `DMSTAG` object
+
+  Output Parameters:
++ refine_x - ratio of fine grid to coarse in x-direction (2 by default)
+. refine_y - ratio of fine grid to coarse in y-direction (2 by default)
+- refine_z - ratio of fine grid to coarse in z-direction (2 by default)
+
+  Level: intermediate
+
+.seealso: [](ch_stag), `DMSTAG`, `DMRefine()`, `DMCoarsen()`, `DMStagSetRefinementFactor()`, `DMDASetRefinementFactor()`
+@*/
+PetscErrorCode DMStagGetRefinementFactor(DM dm, PetscInt *refine_x, PetscInt *refine_y, PetscInt *refine_z)
+{
+  DM_Stag *const stag = (DM_Stag *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMSTAG);
+  if (refine_x) *refine_x = stag->refineFactor[0];
+  if (refine_y) *refine_y = stag->refineFactor[1];
+  if (refine_z) *refine_z = stag->refineFactor[2];
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
   DMStagMigrateVec - transfer a vector associated with a `DMSTAG` to a vector associated with a compatible `DMSTAG`
 
   Collective
@@ -1297,6 +1326,36 @@ PetscErrorCode DMStagSetOwnershipRanges(DM dm, PetscInt const *lx, PetscInt cons
       PetscCall(PetscArraycpy(stag->l[d], lin[d], stag->nRanks[d]));
     }
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  DMStagSetRefinementFactor - set refinement ratios in each direction
+
+  Logically Collective
+
+  Input Parameters:
++ dm       - the `DMSTAG` object
+. refine_x - ratio of fine grid to coarse in x-direction (2 by default)
+. refine_y - ratio of fine grid to coarse in y-direction (2 by default)
+- refine_z - ratio of fine grid to coarse in z-direction (2 by default)
+
+  Level: intermediate
+
+  Note:
+  Pass `PETSC_IGNORE` to leave a value unchanged
+
+.seealso: [](ch_stag), `DMSTAG`, `DMRefine()`, `DMCoarsen()`, `DMStagGetRefinementFactor()`, `DMDAGetRefinementFactor()`
+@*/
+PetscErrorCode DMStagSetRefinementFactor(DM dm, PetscInt refine_x, PetscInt refine_y, PetscInt refine_z)
+{
+  DM_Stag *const stag = (DM_Stag *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMSTAG);
+  if (refine_x > 0) stag->refineFactor[0] = refine_x;
+  if (refine_y > 0) stag->refineFactor[1] = refine_y;
+  if (refine_z > 0) stag->refineFactor[2] = refine_z;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

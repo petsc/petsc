@@ -15,7 +15,7 @@ public:
   {
     PetscFunctionBegin;
     PetscCall(PetscArrayzero(dctx, 1));
-    PetscCall(PetscHeaderCreate_Private((PetscObject)dctx, PETSC_DEVICE_CONTEXT_CLASSID, "PetscDeviceContext", "PetscDeviceContext", "Sys", PETSC_COMM_SELF, (PetscObjectDestroyFunction)PetscDeviceContextDestroy, (PetscObjectViewFunction)PetscDeviceContextView));
+    PetscCall(PetscHeaderCreate_Private((PetscObject)dctx, PETSC_DEVICE_CONTEXT_CLASSID, "PetscDeviceContext", "PetscDeviceContext", "Sys", PETSC_COMM_SELF, (PetscObjectDestroyFn *)PetscDeviceContextDestroy, (PetscObjectViewFn *)PetscDeviceContextView));
     PetscCall(PetscLogObjectCreate((PetscObject)dctx));
 
     PetscCallCXX(PetscObjectCast(dctx)->cpp = new CxxData{dctx});
@@ -54,7 +54,7 @@ public:
       PetscCall(CxxDataCast(dctx)->clear());
       PetscCall(CxxDataCast(dctx)->reset_self(dctx));
     }
-    dctx->streamType = PETSC_STREAM_DEFAULT_BLOCKING;
+    dctx->streamType = PETSC_STREAM_DEFAULT;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -442,7 +442,7 @@ static PetscErrorCode PetscDeviceContextDuplicate_Private(PetscDeviceContext dct
 @*/
 PetscErrorCode PetscDeviceContextDuplicate(PetscDeviceContext dctx, PetscDeviceContext *dctxdup)
 {
-  auto stype = PETSC_STREAM_DEFAULT_BLOCKING;
+  auto stype = PETSC_STREAM_DEFAULT;
 
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
@@ -677,7 +677,7 @@ PetscErrorCode PetscDeviceContextForkWithStreamType(PetscDeviceContext dctx, Pet
 @*/
 PetscErrorCode PetscDeviceContextFork(PetscDeviceContext dctx, PetscInt n, PetscDeviceContext **dsub)
 {
-  auto stype = PETSC_STREAM_DEFAULT_BLOCKING;
+  auto stype = PETSC_STREAM_DEFAULT;
 
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
@@ -796,7 +796,7 @@ PetscErrorCode PetscDeviceContextJoin(PetscDeviceContext dctx, PetscInt n, Petsc
       }
     }
     /* gone through the loop but did not find every child */
-    PetscCheck(j == n, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "%" PetscInt_FMT " contexts still remain after destroy, this may be because you are trying to restore to the wrong parent context, or the device contexts are not in the same order as they were checked out out in", n - j);
+    PetscCheck(j == n, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "%" PetscInt_FMT " contexts still remain after destroy, this may be because you are trying to restore to the wrong parent context, or the device contexts are not in the same order as they were checked out in", n - j);
     PetscCall(PetscFree(*dsub));
   } break;
   case PETSC_DEVICE_CONTEXT_JOIN_SYNC:
@@ -900,7 +900,7 @@ static PetscErrorCode PetscDeviceContextGetNullContextForDevice_Private(PetscBoo
         PetscCall(PetscObjectSetName(pobj, name.c_str()));
         PetscCall(PetscObjectSetOptionsPrefix(pobj, prefix.c_str()));
       }
-      PetscCall(PetscDeviceContextSetStreamType(*dctx, PETSC_STREAM_GLOBAL_BLOCKING));
+      PetscCall(PetscDeviceContextSetStreamType(*dctx, PETSC_STREAM_DEFAULT));
       PetscCall(PetscDeviceContextSetDevice_Private(*dctx, device, user_set_device));
       PetscCall(PetscDeviceContextSetUp(*dctx));
       // would use ctxlist.cbegin() but GCC 4.8 can't handle const iterator insert!
@@ -1013,7 +1013,7 @@ PetscErrorCode PetscDeviceContextView(PetscDeviceContext dctx, PetscViewer viewe
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare(PetscObjectCast(viewer), PETSCVIEWERASCII, &iascii));
   if (iascii) {
-    auto        stype = PETSC_STREAM_DEFAULT_BLOCKING;
+    auto        stype = PETSC_STREAM_DEFAULT;
     PetscViewer sub;
 
     PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sub));

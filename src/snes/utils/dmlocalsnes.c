@@ -293,7 +293,6 @@ PetscErrorCode DMSNESSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM dm, Vec X
 
   dmlocalsnes->boundarylocal    = func;
   dmlocalsnes->boundarylocalctx = ctx;
-
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

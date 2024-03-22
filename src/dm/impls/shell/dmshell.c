@@ -543,7 +543,7 @@ PetscErrorCode DMShellSetCreateLocalVector(DM dm, PetscErrorCode (*func)(DM, Vec
 
   Note:
   If these functions are not provided but `DMShellSetGlobalToLocalVecScatter()` is called then
-  `DMGlobalToLocalBeginDefaultShell()`/`DMGlobalToLocalEndDefaultShell()` are used to to perform the transfers
+  `DMGlobalToLocalBeginDefaultShell()`/`DMGlobalToLocalEndDefaultShell()` are used to perform the transfers
 
 .seealso: `DM`, `DMSHELL`, `DMShellSetLocalToGlobal()`, `DMGlobalToLocalBeginDefaultShell()`, `DMGlobalToLocalEndDefaultShell()`
 @*/
@@ -570,7 +570,7 @@ PetscErrorCode DMShellSetGlobalToLocal(DM dm, PetscErrorCode (*begin)(DM, Vec, I
 
   Note:
   If these functions are not provided but `DMShellSetLocalToGlobalVecScatter()` is called then
-  `DMLocalToGlobalBeginDefaultShell()`/`DMLocalToGlobalEndDefaultShell()` are used to to perform the transfers
+  `DMLocalToGlobalBeginDefaultShell()`/`DMLocalToGlobalEndDefaultShell()` are used to perform the transfers
 
 .seealso: `DM`, `DMSHELL`, `DMShellSetGlobalToLocal()`
 @*/
@@ -597,7 +597,7 @@ PetscErrorCode DMShellSetLocalToGlobal(DM dm, PetscErrorCode (*begin)(DM, Vec, I
 
   Note:
   If these functions are not provided but `DMShellSetLocalToLocalVecScatter()` is called then
-  `DMLocalToLocalBeginDefaultShell()`/`DMLocalToLocalEndDefaultShell()` are used to to perform the transfers
+  `DMLocalToLocalBeginDefaultShell()`/`DMLocalToLocalEndDefaultShell()` are used to perform the transfers
 
 .seealso: `DM`, `DMSHELL`, `DMShellSetGlobalToLocal()`, `DMLocalToLocalBeginDefaultShell()`, `DMLocalToLocalEndDefaultShell()`
 @*/
@@ -1115,7 +1115,7 @@ static PetscErrorCode DMCreateSubDM_Shell(DM dm, PetscInt numFields, const Petsc
 {
   PetscFunctionBegin;
   if (subdm) PetscCall(DMShellCreate(PetscObjectComm((PetscObject)dm), subdm));
-  PetscCall(DMCreateSectionSubDM(dm, numFields, fields, is, subdm));
+  PetscCall(DMCreateSectionSubDM(dm, numFields, fields, NULL, NULL, is, subdm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
