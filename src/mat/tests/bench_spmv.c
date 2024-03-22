@@ -146,15 +146,7 @@ PetscErrorCode TimedSpMV(Mat A, Vec b, PetscReal *time, const char *petscmatform
     if (use_gpu) {
       PetscCall(MatDestroy(&A2));
       PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &A2));
-      if (issellcuda) {
-        PetscCall(MatConvert(A2, MATSELL, MAT_INPLACE_MATRIX, &A2));
-        PetscCall(MatConvert(A2, MATSELLCUDA, MAT_INPLACE_MATRIX, &A2));
-      } else if (issellhip) {
-        PetscCall(MatConvert(A2, MATSELL, MAT_INPLACE_MATRIX, &A2));
-        PetscCall(MatConvert(A2, MATSELLHIP, MAT_INPLACE_MATRIX, &A2));
-      } else {
-        PetscCall(MatConvert(A2, petscmatformat, MAT_INPLACE_MATRIX, &A2));
-      }
+      PetscCall(MatSetType(A2, petscmatformat));
       PetscCall(MatSetFromOptions(A2)); // This allows to change parameters such as slice height in SpMV kernels for SELL
     } else A2 = A;
     /* Timing MatMult */
@@ -174,6 +166,7 @@ PetscErrorCode TimedSpMV(Mat A, Vec b, PetscReal *time, const char *petscmatform
 
 PetscErrorCode WarmUpDevice(Mat A, Vec b, const char *petscmatformat)
 {
+  Mat           A2 = NULL;
   PetscLogEvent event;
   Vec           u;
   PetscBool     isaijcusparse, isaijhipsparse, isaijkokkos, issellcuda, issellhip;
@@ -189,12 +182,14 @@ PetscErrorCode WarmUpDevice(Mat A, Vec b, const char *petscmatformat)
   if (isaijkokkos) PetscCall(VecSetType(b, VECKOKKOS));
   if (isaijhipsparse || issellhip) PetscCall(VecSetType(b, VECHIP));
   PetscCall(VecDuplicate(b, &u));
-  PetscCall(MatConvert(A, petscmatformat, MAT_INPLACE_MATRIX, &A));
+  PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &A2));
+  PetscCall(MatSetType(A2, petscmatformat));
   PetscCall(PetscLogEventGetId("MatMult", &event));
   PetscCall(PetscLogEventDeactivatePush(event));
-  PetscCall(MatMult(A, b, u));
+  PetscCall(MatMult(A2, b, u));
   PetscCall(PetscLogEventDeactivatePop(event));
   PetscCall(VecDestroy(&u));
+  PetscCall(MatDestroy(&A2));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
