@@ -1094,11 +1094,11 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     PetscCheck(valid, comm, PETSC_ERR_PLIB, "Initial local subsets are not consistent");
 
     /* Now create SF with each root extended to gsubset_size roots */
-    PetscInt           mss;
+    PetscInt           mss = 0;
     const PetscSFNode *subs_remote;
 
     PetscCall(PetscSFGetGraph(graph->interface_ref_sf, NULL, NULL, NULL, &subs_remote));
-    for (i = 0, mss = 0; i < graph->n_subsets; i++) mss = PetscMax(graph->subset_size[i], mss);
+    for (PetscInt i = 0; i < graph->n_subsets; i++) mss = PetscMax(graph->subset_size[i], mss);
 
     PetscInt nri, nli, *start_rsize, *cum_rsize;
     PetscCall(PetscCalloc1(graph->n_subsets + 1, &start_rsize));
@@ -1109,7 +1109,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
 
     nri          = 0;
     cum_rsize[0] = 0;
-    for (i = 0; i < nr; i++) {
+    for (PetscInt i = 0; i < nr; i++) {
       nri += graph->interface_ref_rsize[i];
       cum_rsize[i + 1] = cum_rsize[i] + graph->interface_ref_rsize[i];
     }
@@ -1126,7 +1126,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     PetscCall(PetscMalloc1(nli, &ilocal));
     PetscCall(PetscMalloc1(nli, &iremote));
     PetscCall(PetscMalloc2(mss, &queue_global_uniq, mss, &touched));
-    for (i = 0, nli = 0; i < graph->n_subsets; i++) {
+    for (PetscInt i = 0, nli = 0; i < graph->n_subsets; i++) {
       const PetscMPIInt rr                = subs_remote[i].rank;
       const PetscInt    start             = start_rsize[i];
       const PetscInt    subset_size       = graph->subset_size[i];
