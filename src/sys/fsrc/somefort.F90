@@ -10,9 +10,7 @@
       implicit none
       MPI_Comm comm
       PetscMPIInt ierr,nierr
-
       call MPI_Abort(comm,ierr,nierr)
-
       return
       end
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
@@ -41,7 +39,7 @@
 
       subroutine PetscGetCommandArgument(n,val)
       implicit none
-      integer n
+      integer, intent(in) :: n
       character(*) val
       call get_command_argument(n,val)
       return
