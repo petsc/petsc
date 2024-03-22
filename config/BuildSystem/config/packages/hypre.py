@@ -90,6 +90,7 @@ class Configure(config.package.GNUPackage):
     if self.hip.found:
       stdflag  = '-std=c++14'
       hipbuild = True
+      args.append('ROCM_PATH="{0}"'.format(self.hip.hipDir))
       args.append('--with-hip')
       if not hasharch:
         if not 'with-hypre-gpu-arch' in self.framework.clArgDB:
