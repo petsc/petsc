@@ -11,6 +11,8 @@ Changes: Development
 
 .. rubric:: General:
 
+- Require Fortran 2003 compiler with GET_COMMAND_ARGUMENT() support for building PETSc with Fortran bindings
+
 .. rubric:: Configure/Build:
 
 - Add ``--download-blis-use-openmp=0`` to force ``download-blis`` to not build with OpenMP when ``with-openmp`` is provided
