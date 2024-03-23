@@ -18,7 +18,6 @@ subroutine MyKSPConverged(ksp,n,rnorm,flag,defaultctx,ierr)
 
        ! Must call default convergence test on the 0th iteration
        PetscCall(KSPConvergedDefault(ksp, n, rnorm, flag, defaultctx, ierr))
-       return
        end subroutine MyKSPConverged
 
       program main

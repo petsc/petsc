@@ -70,7 +70,6 @@
         xx(i) = i*hx
       enddo
       PetscCall(DMDAVecRestoreArrayF90(da,x,xx,ierr))
-      return
       end
 
       subroutine ComputeMatrix(da,J,ierr)
@@ -98,7 +97,6 @@
       enddo
       PetscCall(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY,ierr))
       PetscCall(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY,ierr))
-      return
       end
 
 !/*TEST

@@ -396,7 +396,6 @@
 
         PETSC_COMM_WORLD    = c1
         PETSC_COMM_SELF     = c2
-        return
         end
 
         subroutine PetscGetCOMM(c1)
@@ -405,7 +404,6 @@
         MPI_Comm c1
 
         c1 = PETSC_COMM_WORLD
-        return
         end
 
         subroutine PetscSetModuleBlock()
@@ -419,7 +417,6 @@
      &     PETSC_NULL_DOUBLE,PETSC_NULL_REAL,                           &
      &     PETSC_NULL_BOOL,PETSC_NULL_FUNCTION,PETSC_NULL_MPI_COMM)
 
-        return
         end
 
         subroutine PetscSetModuleBlockMPI(freal,fscalar,fsum,finteger)
@@ -433,7 +430,6 @@
         MPIU_SUM     = fsum
         MPIU_INTEGER = finteger
 
-        return
         end
 
         subroutine PetscSetModuleBlockNumeric(pi,maxreal,minreal,eps,       &
@@ -455,5 +451,4 @@
         PETSC_INFINITY = pinf
         PETSC_NINFINITY = pninf
 
-        return
         end

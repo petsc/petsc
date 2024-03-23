@@ -336,7 +336,6 @@
 
       PetscCallA(VecRestoreArrayF90(X,lx_v,ierr))
 
-      return
       end
 
 !  ApplicationInitialGuess - Computes initial approximation, called by
@@ -389,7 +388,6 @@
  10      continue
  20   continue
 
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -462,7 +460,6 @@
  1000    format(50i4)
          PetscCallA(MatFDColoringRestorePerturbedColumnsF90(fdcoloring,indices,ierr))
       endif
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -524,7 +521,6 @@
  10      continue
  20   continue
 
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -587,7 +583,6 @@
       PetscCallA(MatAssemblyBegin(jac_prec,MAT_FINAL_ASSEMBLY,ierr))
       PetscCallA(MatAssemblyEnd(jac_prec,MAT_FINAL_ASSEMBLY,ierr))
 
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -667,7 +662,6 @@
  10      continue
  20   continue
 
-      return
       end
 
 !

@@ -392,7 +392,6 @@
 
       PetscCall(PetscLogFlops(70.0d0*xm*ym,ierr))
 
-      return
       end  !FormFunctionGradient
 
 ! ----------------------------------------------------------------------------
@@ -628,7 +627,6 @@
 
       PetscCall(PetscLogFlops(199.0d0*xm*ym,ierr))
 
-      return
       end
 
 ! Top,Left,Right,Bottom,bheight,mx,my,bmx,bmy,H, defined in plate2f.h
@@ -784,7 +782,6 @@
          PetscCall(VecScale(Left,scl,ierr))
       endif
 
-      return
       end
 
 ! ----------------------------------------------------------------------------
@@ -843,7 +840,6 @@
 
       PetscCall(VecRestoreArrayF90(xl,xl_v,ierr))
 
-      return
       end
 
 ! ----------------------------------------------------------------------------
@@ -927,7 +923,6 @@
 
       endif
 
-      return
       end
 
 !

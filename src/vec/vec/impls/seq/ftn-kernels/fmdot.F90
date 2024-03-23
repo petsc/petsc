@@ -24,7 +24,6 @@
         sum4 = sum4 + x(i)*PetscConj(y4(i))
  10   continue
 
-      return
       end
 
       subroutine FortranMDot3(x,y1,y2,y3,n,sum1,sum2,sum3)
@@ -44,7 +43,6 @@
         sum3 = sum3 + x(i)*PetscConj(y3(i))
  10   continue
 
-      return
       end
 
       subroutine FortranMDot2(x,y1,y2,n,sum1,sum2)
@@ -61,7 +59,6 @@
         sum2 = sum2 + x(i)*PetscConj(y2(i))
  10   continue
 
-      return
       end
 
       subroutine FortranMDot1(x,y1,n,sum1)
@@ -76,5 +73,4 @@
         sum1 = sum1 + x(i)*PetscConj(y1(i))
  10   continue
 
-      return
       end

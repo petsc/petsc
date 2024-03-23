@@ -268,7 +268,6 @@
       call VecRestoreArrayF90(X,lx_v,ierr)
       CHKERRQ(ierr)
 
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -317,7 +316,6 @@
  10      continue
  20   continue
 
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -387,7 +385,6 @@
       call PetscLogFlops(11.0d0*ym*xm,ierr)
       CHKERRQ(ierr)
 
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -505,7 +502,6 @@
          call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
          CHKERRQ(ierr)
       endif
-      return
       end
 
 !

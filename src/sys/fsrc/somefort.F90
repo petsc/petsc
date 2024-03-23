@@ -11,7 +11,6 @@
       MPI_Comm comm
       PetscMPIInt ierr,nierr
       call MPI_Abort(comm,ierr,nierr)
-      return
       end
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::MPIU_Abort
@@ -24,7 +23,6 @@
       PetscErrorCode ierr
       write(unit=unit, fmt="(A)", advance='no') str
       ierr = 0
-      return
       end
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::PetscFortranPrintToUnit
@@ -34,7 +32,6 @@
       integer function PetscCommandArgumentCount()
       implicit none
       PetscCommandArgumentCount= command_argument_count()
-      return
       end
 
       subroutine PetscGetCommandArgument(n,val)
@@ -42,5 +39,4 @@
       integer, intent(in) :: n
       character(*) val
       call get_command_argument(n,val)
-      return
       end

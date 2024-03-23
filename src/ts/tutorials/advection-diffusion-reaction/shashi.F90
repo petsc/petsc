@@ -143,7 +143,6 @@
       PetscCall(VecRestoreArrayReadF90(x,lx_v,ierr))
       PetscCall(VecRestoreArrayF90(f,lf_v,ierr))
 
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -186,7 +185,6 @@
       PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr))
       PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr))
 
-      return
       end
 
             subroutine ShashiLowerBound(an_r)
@@ -198,7 +196,6 @@
         do i=2,26
            an_r(i) = 1000.0/6.023D+23
         enddo
-        return
         end
 
             subroutine ShashiInitialGuess(an_r)
@@ -294,7 +291,6 @@
       an_r(26) =      6.149551D-18
 #endif
 
-      return
       end
 
       subroutine ShashiFormFunction(an_r,f_eq)
@@ -493,7 +489,6 @@
                  write(44,*)i,f_eq(i)
               enddo
 
-      return
       end
 
       subroutine ShashiFormJacobian(an_r,d_eq)
@@ -1011,7 +1006,6 @@
               enddo
            enddo
 
-        return
         end
 
       subroutine ShashiPostCheck(ls,X,Y,W,c_Y,c_W,dummy)
@@ -1036,5 +1030,4 @@
         endif
       enddo
       PetscCall(VecRestoreArrayF90(W,xx,ierr))
-      return
       end
