@@ -22,7 +22,6 @@
  20     continue
  10   continue
 
-      return
       end
 
       subroutine MSGemvp(bs,ncols,A,x,y)
@@ -39,7 +38,6 @@
  20     continue
  10   continue
 
-      return
       end
 
       subroutine MSGemvm(bs,ncols,A,x,y)
@@ -56,7 +54,6 @@
  20     continue
  10   continue
 
-      return
       end
 
       subroutine MSGemvt(bs,ncols,A,x,y)
@@ -75,7 +72,6 @@
         y(i) = sum
  10   continue
 
-      return
       end
 
       subroutine MSGemm(bs,A,B,C)
@@ -95,7 +91,6 @@
  20     continue
  10   continue
 
-      return
       end
 
       subroutine MSGemmi(bs,A,C,B)
@@ -116,5 +111,4 @@
  20     continue
  10   continue
 
-      return
       end

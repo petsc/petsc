@@ -22,7 +22,6 @@
  20     continue
  10   continue
 
-      return
       end
 
       subroutine FortranMultAIJ(n,x,ii,jj,a,y)
@@ -44,5 +43,4 @@
         y(i) = sum
  10   continue
 
-      return
       end

@@ -165,7 +165,6 @@
 !     Restore vectors
       PetscCall(VecRestoreArrayReadF90(x,x_v,ierr))
       PetscCall(VecRestoreArrayF90(F,f_v,ierr))
-      return
       end
 
       subroutine FormStartingPoint(x)
@@ -180,7 +179,6 @@
       x_v(2) = 0.008
       x_v(3) = 0.01
       PetscCall(VecRestoreArrayF90(x,x_v,ierr))
-      return
       end
 
       subroutine InitializeData()
@@ -403,7 +401,6 @@
       y(i) =    28.9000;  t(i) =   1.7500; i=i+1
       y(i) =    28.9500;  t(i) =   1.7500; i=i+1
 
-      return
       end
 
       subroutine TaskWorker(ierr)
@@ -434,7 +431,6 @@
          end if
       enddo
       ierr = 0
-      return
       end
 
       subroutine RunSimulation(x,i,f,ierr)
@@ -445,7 +441,6 @@
       PetscErrorCode ierr
       f = y(i) - exp(-x(1)*t(i))/(x(2)+x(3)*t(i))
       ierr = 0
-      return
       end
 
       subroutine StopWorkers(ierr)
@@ -469,7 +464,6 @@
          PetscCallMPI(MPI_Send(x,nn,MPIU_SCALAR,source,DIE_TAG,PETSC_COMM_WORLD,ierr))
       enddo
       ierr = 0
-      return
       end
 
 !/*TEST

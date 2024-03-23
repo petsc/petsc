@@ -221,7 +221,6 @@
       PetscCall(VecRestoreArrayF90(f,vff,ierr))
       PetscCall(VecRestoreArrayReadF90(ctx%xl,vxx,ierr))
       PetscCall(VecRestoreArrayF90(ctx%F,vF2,ierr))
-      return
       end
 
 ! --------------------  Form initial approximation -----------------
@@ -237,7 +236,6 @@
 
       five = .5
       PetscCall(VecSet(x,five,ierr))
-      return
       end
 
 ! --------------------  Evaluate Jacobian --------------------
@@ -294,7 +292,6 @@
       PetscCall(VecRestoreArrayReadF90(x,vxx,ierr))
       PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr))
       PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr))
-      return
       end
 
 !/*TEST

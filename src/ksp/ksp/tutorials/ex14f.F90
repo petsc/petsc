@@ -329,7 +329,6 @@
 !     Restore vector
 
        PetscCall(VecRestoreArrayF90(X,xx,ierr))
-       return
        end
 
 ! -------------------------------------------------------------------
@@ -408,7 +407,6 @@
 
        PetscCall(VecRestoreArrayReadF90(localX,xx,ierr))
        PetscCall(VecRestoreArrayF90(F,ff,ierr))
-       return
        end
 
 ! -------------------------------------------------------------------
@@ -525,7 +523,6 @@
       PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr))
       PetscCall(VecRestoreArrayReadF90(localX,xx,ierr))
       PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr))
-      return
       end
 
 ! -------------------------------------------------------------------
@@ -550,7 +547,6 @@
 !     instead write their own matrix-vector product routine
 !
       PetscCall(MatMult(B,X,F,ierr))
-      return
       end
 
 !/*TEST

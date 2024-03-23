@@ -54,7 +54,6 @@
 
       PetscCallA(VecCopy(x,y,ierr))
 
-      return
       end
 
 !/*TEST

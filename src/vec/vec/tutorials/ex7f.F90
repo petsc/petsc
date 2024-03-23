@@ -36,5 +36,4 @@
 !  Now Call a PETSc Routine from Fortran
 !
        PetscCall(VecView(vec,PETSC_VIEWER_STDOUT_WORLD,ierr))
-       return
        end

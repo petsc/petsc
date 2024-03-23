@@ -9,7 +9,6 @@
       integer line
 
       call PetscError(PETSC_COMM_SELF,1,PETSC_ERROR_INITIAL,'My error message')
-      return
       end
 
       subroutine MyErrHandler(comm,line,fun,file,n,p,mess,ctx,ierr)
@@ -22,7 +21,6 @@
 
       write(6,*) 'My error handler ',mess
       call flush(6)
-      return
       end
 
       program main

@@ -14,7 +14,6 @@
       do 10,i=1,n
         y(i) = x(i)
  10   continue
-      return
       end
 
       subroutine FortranZero(n,x)
@@ -26,5 +25,4 @@
       do 10,i=1,n
         x(i) = 0.0
  10   continue
-      return
       end

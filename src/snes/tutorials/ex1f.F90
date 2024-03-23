@@ -199,7 +199,6 @@
       PetscCall(VecRestoreArrayReadF90(x,lx_v,ierr))
       PetscCall(VecRestoreArrayF90(f,lf_v,ierr))
 
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -263,7 +262,6 @@
         PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr))
       endif
 
-      return
       end
 
       subroutine MyLineSearch(linesearch, lctx, ierr)
@@ -289,7 +287,6 @@
       PetscCall(VecNorm(x,NORM_2,xnorm,ierr))
       PetscCall(VecNorm(y,NORM_2,ynorm,ierr))
       PetscCall(SNESLineSearchSetNorms(linesearch, xnorm, gnorm, ynorm,ierr))
-      return
       end
 
 !/*TEST

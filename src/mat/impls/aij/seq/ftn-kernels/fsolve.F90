@@ -40,5 +40,4 @@
  50      continue
          x(i)    = sum * aa(adiag(i))
  40   continue
-      return
       end
