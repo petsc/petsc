@@ -106,6 +106,7 @@ Changes: Development
 - Add ``-mg_fine_...`` prefix alias for fine grid options to override ``-mg_levels_...`` options, like ``-mg_coarse_...``
 - The generated sub-matrices in ``PCFIELDSPLIT``, ``PCASM``, and ``PCBJACOBI`` now retain any null space or near null space attached to them even if the non-zero structure of the outer matrix changes
 - Add support for multiple subdomain per MPI process in ``PCBDDC``.
+- Add `PCJacobiGetDiagonal()` to access the Jacobi inverted matrix diagonal and its square root variant
 
 .. rubric:: KSP:
 
