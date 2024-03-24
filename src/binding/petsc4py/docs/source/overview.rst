@@ -63,14 +63,13 @@ required for many parallel solutions of PDEs.
        structures.
 
 :Mat:  A large suite of data structures and code for the manipulation
-       of parallel sparse matrices. Includes four different parallel
+       of parallel sparse matrices. Includes several different parallel
        matrix data structures, each appropriate for a different class
        of problems.
 
 :PC:   A collection of sequential and parallel preconditioners,
        including (sequential) ILU(k), LU, and (both sequential and
-       parallel) block Jacobi, overlapping additive Schwarz methods
-       and (through BlockSolve95) ILU(0) and ICC(0).
+       parallel) block Jacobi, overlapping additive Schwarz methods.
 
 :KSP:  Parallel implementations of many popular Krylov subspace
        iterative methods, including GMRES, CG, CGS, Bi-CG-Stab, two

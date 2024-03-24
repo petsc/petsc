@@ -28,10 +28,10 @@ The initial description section can contain more information if this is useful.
 In particular, if there is a PETSc manual chapter about a class, then this
 should be referred to from here.
 
-Use double backticks around literals (like strings and numbers). E.g.
+Use double backticks around literals (like strings and numbers), e.g.,
 \`\`2\`\`, \`\`"foo"\`\`.
 
-Reference PETSc functions simply using backticks. eg: `petsc.KSP`. refers to
+Reference PETSc functions simply using backticks, e.g., `petsc.KSP` refers to
 the PETSc C documentation for KSP. Do **not** use URLs in docstrings. Always
 use Intersphinx references.
 
@@ -72,7 +72,7 @@ Any closely related part of the PETSc4py API not already linked in the
 docstring should appear (e.g. setters and getters should cross-refer).
 
 If there is a corresponding C API documentation page, this must be linked from
-the "See also" section. E.g. \`petsc.MatSetValues\`.
+the "See also" section, e.g. \`petsc.MatSetValues\`.
 
 End docstring with an empty line - "closing three quotation marks must be on a
 line by itself, preferably preceded by a blank line"
@@ -97,10 +97,10 @@ Communicators in type signatures must use Python typing instead of c-typing
 can come from ``mpi4py`` and not just the ``petsc4py.PETSc.Comm`` class.
 
 For petsc4py native types that are can be strings, the type is ``argument:
-KSP.Type | str`` (not eg: ``KSPType argument``). If the type is strictly an
+KSP.Type | str`` (not e.g.: ``KSPType argument``). If the type is strictly an
 enum the ``| str`` can be omitted. Full signature example::
 
     def setType(self, ksp_type: KSP.Type | str) -> None:
 
-If a NumPy is returned, use ``ArrayInt``/``ArrayReal``/``ArrayScalar`` as the
+If a NumPy array is returned, use ``ArrayInt``/``ArrayReal``/``ArrayScalar`` as the
 return type.
