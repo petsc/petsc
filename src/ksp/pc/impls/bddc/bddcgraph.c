@@ -796,7 +796,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     PetscSF         sf, multisf;
     PetscInt        n, nmulti, c, *multi_root_subs, *start;
 
-    PetscCheck(graph->local_subs, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing local subdomain information");
+    PetscCheck(!nvtxs || graph->local_subs, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing local subdomain information");
 
     PetscCall(ISLocalToGlobalMappingGetIndices(graph->l2gmap, &idxs));
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, nvtxs, idxs, PETSC_USE_POINTER, &is));

@@ -272,11 +272,12 @@ int main(int argc, char **args)
 
   if (user.multi_element) {
     ISLocalToGlobalMapping mapn;
-    PetscInt              *e_glo = NULL, m, n, M, N;
+    PetscInt              *el_glo = NULL, m, n, M, N, *el_sizes;
+    Mat                    lA;
 
-    PetscCall(PetscMalloc1(nel * nen, &e_glo));
-    PetscCall(ISLocalToGlobalMappingApplyBlock(map, nen * nel, e_loc, e_glo));
-    PetscCall(ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)map), user.dof, nen * nel, e_glo, PETSC_OWN_POINTER, &mapn));
+    PetscCall(PetscMalloc1(nel * nen, &el_glo));
+    PetscCall(ISLocalToGlobalMappingApplyBlock(map, nen * nel, e_loc, el_glo));
+    PetscCall(ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)map), user.dof, nen * nel, el_glo, PETSC_OWN_POINTER, &mapn));
     PetscCall(MatGetLocalSize(A, &m, &n));
     PetscCall(MatGetSize(A, &M, &N));
     PetscCall(MatDestroy(&A));
@@ -289,6 +290,15 @@ int main(int argc, char **args)
     PetscCall(MatISSetPreallocation(A, user.dof * nen, NULL, user.dof * nen, NULL));
     PetscCall(ISLocalToGlobalMappingViewFromOptions(mapn, NULL, "-multi_view"));
     PetscCall(ISLocalToGlobalMappingDestroy(&mapn));
+
+    /* The information set with MatSetVariableBlockSizes on the local mat
+       can be used to detect the local elements instead of having to analyze
+       the sparsity pattern of the local matrix */
+    PetscCall(MatISGetLocalMat(A, &lA));
+    PetscCall(PetscMalloc1(nel, &el_sizes));
+    for (i = 0; i < nel; i++) el_sizes[i] = user.dof * nen;
+    PetscCall(MatSetVariableBlockSizes(lA, nel, el_sizes));
+    PetscCall(PetscFree(el_sizes));
   }
 
   /* we reorder the indices since the element matrices are given in lexicographic order,
