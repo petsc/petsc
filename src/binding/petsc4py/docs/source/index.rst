@@ -28,7 +28,7 @@ PETSc for Python
       * mpi4py_: Python bindings for MPI_,
         the *Message Passing Interface*.
 
-   Other projects depends on petsc4py:
+   Other projects depend on petsc4py:
 
       * slepc4py_: Python bindings for SLEPc_,
         the *Scalable Library for Eigenvalue Problem Computations*.
