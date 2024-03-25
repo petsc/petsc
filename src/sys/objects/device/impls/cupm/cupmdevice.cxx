@@ -99,6 +99,7 @@ PetscErrorCode Device<T>::DeviceInternal::configure() noexcept
   if (cupmSetDevice(id_) != cupmErrorDeviceAlreadyInUse) PetscCallCUPM(cupmGetLastError());
   // need to update the device properties
   PetscCallCUPM(cupmGetDeviceProperties(&dprop_, id_));
+  PetscDeviceCUPMRuntimeArch = dprop_.major * 10 + dprop_.minor;
   PetscCall(PetscInfo(nullptr, "Configured device %d\n", id_));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

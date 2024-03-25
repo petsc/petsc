@@ -374,6 +374,9 @@ class Configure(config.package.Package):
             else:
               self.log.write('petsc-supplied CUDA device query test found the CUDA Capability is '+str(gen)+'\n')
               self.cudaArch = str(gen)
+    # Store min cuda arch at configure time for later error diagnosis
+    if self.cudaArchIsVersionList():
+      self.addDefine('HAVE_CUDA_MIN_ARCH', min(self.cudaArchList()))
 
     # Check flags validity
     if hasattr(self,'cudaArch'):

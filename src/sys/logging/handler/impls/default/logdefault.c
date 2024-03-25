@@ -1299,11 +1299,14 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
   PetscCall(PetscGetProgramName(pname, sizeof(pname)));
   PetscCall(PetscGetDate(date, sizeof(date)));
   PetscCall(PetscGetVersion(version, sizeof(version)));
-  if (size == 1) {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "%s on a %s named %s with %d processor, by %s %s\n", pname, arch, hostname, size, username, date));
-  } else {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "%s on a %s named %s with %d processors, by %s %s\n", pname, arch, hostname, size, username, date));
-  }
+
+#if defined(PETSC_HAVE_CUPM)
+  const char *cupm = PetscDefined(HAVE_CUDA) ? "CUDA" : "HIP";
+  if (PetscDeviceCUPMRuntimeArch) PetscCall(PetscViewerASCIIPrintf(viewer, "%s on a %s named %s with %d processor(s) and %s architecture %d, by %s on %s\n", pname, arch, hostname, size, cupm, PetscDeviceCUPMRuntimeArch, username, date));
+  else
+#endif
+    PetscCall(PetscViewerASCIIPrintf(viewer, "%s on a %s named %s with %d processor(s), by %s on %s\n", pname, arch, hostname, size, username, date));
+
 #if defined(PETSC_HAVE_OPENMP)
   PetscCall(PetscViewerASCIIPrintf(viewer, "Using %" PetscInt_FMT " OpenMP threads\n", PetscNumOMPThreads));
 #endif
