@@ -233,6 +233,7 @@ cdef extern from * nogil:
     PetscErrorCode MatSetSizes(PetscMat,PetscInt,PetscInt,PetscInt,PetscInt)
     PetscErrorCode MatSetBlockSize(PetscMat,PetscInt)
     PetscErrorCode MatSetBlockSizes(PetscMat,PetscInt,PetscInt)
+    PetscErrorCode MatSetVariableBlockSizes(PetscMat,PetscInt,PetscInt[])
     PetscErrorCode MatSetType(PetscMat,PetscMatType)
     PetscErrorCode MatSetVecType(PetscMat,PetscVecType)
     PetscErrorCode MatGetVecType(PetscMat,PetscVecType*)
