@@ -76,6 +76,7 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
   PetscInt *queue_in_global_numbering;
 
   PetscFunctionBegin;
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(graph->seq_graph ? PETSC_COMM_SELF : PetscObjectComm((PetscObject)graph->l2gmap), &viewer));
   PetscCall(PetscViewerASCIIPushSynchronized(viewer));
   PetscCall(PetscViewerASCIIGetTab(viewer, &tabs));
   PetscCall(PetscViewerASCIIPrintf(viewer, "--------------------------------------------------\n"));
