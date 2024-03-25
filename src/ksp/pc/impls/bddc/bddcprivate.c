@@ -1481,7 +1481,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   PetscCall(MatViewFromOptions(T, (PetscObject)pc, "-pc_bddc_nedelec_change_view"));
   if (pcbddc->nedcG) {
     PetscCall(MatAssemblyEnd(pcbddc->nedcG, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatViewFromOptions(pcbddc->nedcG, (PetscObject)pc, "-pc_bddc_nedelec_coarse_hange_view"));
+    PetscCall(MatViewFromOptions(pcbddc->nedcG, (PetscObject)pc, "-pc_bddc_nedelec_coarse_change_view"));
   }
 
   /* set change of basis */
@@ -3401,7 +3401,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
       if (nmin >= subset_size) compute_range = PETSC_FALSE;
 
       if (pcbddc->dbg_flag) {
-        PetscInt nc = 0, c = pcbddc->mat_graph->nodes[idxs[0]].count + 1, w = pcbddc->mat_graph->nodes[idxs[0]].which_dof;
+        PetscInt nc = 0, c = pcbddc->mat_graph->nodes[idxs[0]].count, w = pcbddc->mat_graph->nodes[idxs[0]].which_dof;
 
         if (sub_schurs->change_primal_sub) PetscCall(ISGetLocalSize(sub_schurs->change_primal_sub[i], &nc));
         PetscCall(
