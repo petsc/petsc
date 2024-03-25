@@ -88,14 +88,15 @@ struct _PetscDSOps {
 
 struct _p_PetscDS {
   PETSCHEADER(struct _PetscDSOps);
-  void        *data;       /* Implementation object */
-  PetscDS     *subprobs;   /* The subspaces for each dimension */
-  PetscBool    setup;      /* Flag for setup */
-  PetscInt     dimEmbed;   /* The real space coordinate dimension */
-  PetscInt     Nf;         /* The number of solution fields */
-  PetscObject *disc;       /* The discretization for each solution field (PetscFE, PetscFV, etc.) */
-  PetscBool   *cohesive;   /* Flag for cohesive discretization */
-  PetscBool    isCohesive; /* We are on a cohesive cell, meaning lower dimensional FE used on a 0-volume cell. Normal fields appear on both endcaps, whereas cohesive field only appear once in the middle */
+  void        *data;           /* Implementation object */
+  PetscDS     *subprobs;       /* The subspaces for each dimension */
+  PetscBool    setup;          /* Flag for setup */
+  PetscInt     dimEmbed;       /* The real space coordinate dimension */
+  PetscInt     Nf;             /* The number of solution fields */
+  PetscObject *disc;           /* The discretization for each solution field (PetscFE, PetscFV, etc.) */
+  PetscBool   *cohesive;       /* Flag for cohesive discretization */
+  PetscBool    isCohesive;     /* We are on a cohesive cell, meaning lower dimensional FE used on a 0-volume cell. Normal fields appear on both endcaps, whereas cohesive field only appear once in the middle */
+  PetscInt     printIntegrate; /* Debugging level for kernels */
   /* Quadrature */
   PetscBool forceQuad;                  /* Flag to force matching quadratures in discretizations */
   IS       *quadPerm[DM_NUM_POLYTOPES]; /* qP[ct][o]: q point permutation for orientation o of integ domain */

@@ -350,6 +350,7 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
   }
   PetscCall(PetscOptionsBool("-petscds_jac_pre", "Discrete System", "PetscDSUseJacobianPreconditioner", prob->useJacPre, &prob->useJacPre, &flg));
   PetscCall(PetscOptionsBool("-petscds_force_quad", "Discrete System", "PetscDSSetForceQuad", prob->forceQuad, &prob->forceQuad, &flg));
+  PetscCall(PetscOptionsInt("-petscds_print_integrate", "Discrete System", "", prob->printIntegrate, &prob->printIntegrate, NULL));
   PetscTryTypeMethod(prob, setfromoptions);
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)prob, PetscOptionsObject));
