@@ -7751,7 +7751,7 @@ PetscErrorCode MatInvertVariableBlockEnvelope(Mat A, MatReuse reuse, Mat *C)
 /*@
   MatSetVariableBlockSizes - Sets diagonal point-blocks of the matrix that need not be of the same size
 
-  Logically Collective
+  Not Collective
 
   Input Parameters:
 + mat     - the matrix
@@ -7768,15 +7768,15 @@ PetscErrorCode MatInvertVariableBlockEnvelope(Mat A, MatReuse reuse, Mat *C)
 .seealso: [](ch_matrices), `Mat`, `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`, `MatGetBlockSize()`, `MatSetBlockSizes()`, `MatGetBlockSizes()`, `MatGetVariableBlockSizes()`,
           `MatComputeVariableBlockEnvelope()`, `PCVPBJACOBI`
 @*/
-PetscErrorCode MatSetVariableBlockSizes(Mat mat, PetscInt nblocks, PetscInt *bsizes)
+PetscErrorCode MatSetVariableBlockSizes(Mat mat, PetscInt nblocks, const PetscInt bsizes[])
 {
-  PetscInt i, ncnt = 0, nlocal;
+  PetscInt ncnt = 0, nlocal;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscCall(MatGetLocalSize(mat, &nlocal, NULL));
   PetscCheck(nblocks >= 0 && nblocks <= nlocal, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of local blocks %" PetscInt_FMT " is not in [0, %" PetscInt_FMT "]", nblocks, nlocal);
-  for (i = 0; i < nblocks; i++) ncnt += bsizes[i];
+  for (PetscInt i = 0; i < nblocks; i++) ncnt += bsizes[i];
   PetscCheck(ncnt == nlocal, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Sum of local block sizes %" PetscInt_FMT " does not equal local size of matrix %" PetscInt_FMT, ncnt, nlocal);
   PetscCall(PetscFree(mat->bsizes));
   mat->nblocks = nblocks;
@@ -7788,7 +7788,7 @@ PetscErrorCode MatSetVariableBlockSizes(Mat mat, PetscInt nblocks, PetscInt *bsi
 /*@C
   MatGetVariableBlockSizes - Gets a diagonal blocks of the matrix that need not be of the same size
 
-  Logically Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
   Input Parameter:
 . mat - the matrix
@@ -7801,12 +7801,12 @@ PetscErrorCode MatSetVariableBlockSizes(Mat mat, PetscInt nblocks, PetscInt *bsi
 
 .seealso: [](ch_matrices), `Mat`, `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`, `MatGetBlockSize()`, `MatSetBlockSizes()`, `MatGetBlockSizes()`, `MatSetVariableBlockSizes()`, `MatComputeVariableBlockEnvelope()`
 @*/
-PetscErrorCode MatGetVariableBlockSizes(Mat mat, PetscInt *nblocks, const PetscInt **bsizes)
+PetscErrorCode MatGetVariableBlockSizes(Mat mat, PetscInt *nblocks, const PetscInt *bsizes[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  *nblocks = mat->nblocks;
-  *bsizes  = mat->bsizes;
+  if (nblocks) *nblocks = mat->nblocks;
+  if (bsizes) *bsizes = mat->bsizes;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

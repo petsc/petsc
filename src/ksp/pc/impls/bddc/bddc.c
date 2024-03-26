@@ -2216,6 +2216,9 @@ static PetscErrorCode PCBDDCMatFETIDPGetRHS_BDDC(Mat fetidp_mat, Vec standard_rh
 
   Level: developer
 
+  Note:
+  Most users should employ the `KSP` interface for linear solvers and create a solver of type `KSPFETIDP`.
+
 .seealso: [](ch_ksp), `PCBDDC`, `PCBDDCCreateFETIDPOperators()`, `PCBDDCMatFETIDPGetSolution()`
 @*/
 PetscErrorCode PCBDDCMatFETIDPGetRHS(Mat fetidp_mat, Vec standard_rhs, Vec fetidp_flux_rhs)
@@ -2397,6 +2400,9 @@ static PetscErrorCode PCDestroy_BDDCIPC(PC pc)
 . standard_sol - the solution defined on the physical domain
 
   Level: developer
+
+  Note:
+  Most users should employ the `KSP` interface for linear solvers and create a solver of type `KSPFETIDP`.
 
 .seealso: [](ch_ksp), `PCBDDC`, `PCBDDCCreateFETIDPOperators()`, `PCBDDCMatFETIDPGetRHS()`
 @*/
@@ -2659,10 +2665,11 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
 
   Level: developer
 
-  Note:
-  Currently the only operations provided for FETI-DP matrix are `MatMult()` and `MatMultTranspose()`
+  Notes:
+  Most users should employ the `KSP` interface for linear solvers and create a solver of type `KSPFETIDP`.
+  Currently the only operations provided for the FETI-DP matrix are `MatMult()` and `MatMultTranspose()`
 
-.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCMatFETIDPGetRHS()`, `PCBDDCMatFETIDPGetSolution()`
+.seealso: [](ch_ksp), `KSPFETIDP`, `PCBDDC`, `PCBDDCMatFETIDPGetRHS()`, `PCBDDCMatFETIDPGetSolution()`
 @*/
 PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, const char *prefix, Mat *fetidp_mat, PC *fetidp_pc)
 {
@@ -2701,10 +2708,6 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
    The PETSc implementation also supports multilevel `PCBDDC` {cite}`mandel2008multispace`. Coarse grids are partitioned using a `MatPartitioning` object.
 
    Adaptive selection of primal constraints is supported for SPD systems with high-contrast in the coefficients if MUMPS or MKL_PARDISO are present.
-   Future versions of the code will also consider using PASTIX.
-
-   An experimental interface to the FETI-DP method is available. FETI-DP operators could be created using `PCBDDCCreateFETIDPOperators()`.
-    A stand-alone class for the FETI-DP method will be provided in the next releases.
 
    Options Database Keys:
 +    -pc_bddc_use_vertices <true>         - use or not vertices in primal space
@@ -2746,10 +2749,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
 
    Level: intermediate
 
-   Contributed by:
-   Stefano Zampini
-
-.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MATIS`, `PCLU`, `PCGAMG`, `PC`, `PCBDDCSetLocalAdjacencyGraph()`, `PCBDDCSetDofsSplitting()`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MATIS`, `KSPFETIDP`, `PCLU`, `PCGAMG`, `PC`, `PCBDDCSetLocalAdjacencyGraph()`, `PCBDDCSetDofsSplitting()`,
           `PCBDDCSetDirichletBoundaries()`, `PCBDDCSetNeumannBoundaries()`, `PCBDDCSetPrimalVerticesIS()`, `MatNullSpace`, `MatSetNearNullSpace()`,
           `PCBDDCSetChangeOfBasisMat()`, `PCBDDCCreateFETIDPOperators()`, `PCNN`
 M*/

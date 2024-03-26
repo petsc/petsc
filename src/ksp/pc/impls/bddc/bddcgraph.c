@@ -76,6 +76,7 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
   PetscInt *queue_in_global_numbering;
 
   PetscFunctionBegin;
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(graph->seq_graph ? PETSC_COMM_SELF : PetscObjectComm((PetscObject)graph->l2gmap), &viewer));
   PetscCall(PetscViewerASCIIPushSynchronized(viewer));
   PetscCall(PetscViewerASCIIGetTab(viewer, &tabs));
   PetscCall(PetscViewerASCIIPrintf(viewer, "--------------------------------------------------\n"));
@@ -795,7 +796,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     PetscSF         sf, multisf;
     PetscInt        n, nmulti, c, *multi_root_subs, *start;
 
-    PetscCheck(graph->local_subs, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing local subdomain information");
+    PetscCheck(!nvtxs || graph->local_subs, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing local subdomain information");
 
     PetscCall(ISLocalToGlobalMappingGetIndices(graph->l2gmap, &idxs));
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, nvtxs, idxs, PETSC_USE_POINTER, &is));

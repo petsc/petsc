@@ -607,6 +607,20 @@ cdef class Mat(Object):
         cdef PetscInt cbs = asInt(col_bsize)
         CHKERR( MatSetBlockSizes(self.mat, rbs, cbs) )
 
+    def setVariableBlockSizes(self, blocks: Sequence[int]) -> None:
+        """Set diagonal point-blocks of the matrix.
+
+        Not collective.
+
+        See Also
+        --------
+        setBlockSize, petsc.MatSetVariableBlockSizes
+
+        """
+        cdef PetscInt nb=0, *b=NULL
+        iarray_i(blocks, &nb, &b)
+        CHKERR( MatSetVariableBlockSizes(self.mat, nb, b) )
+
     def setVecType(self, vec_type: Vec.Type | str) -> None:
         """Set the vector type.
 
