@@ -119,6 +119,9 @@ typedef const char *MatType;
 #define MATSELLCUDA                  "sellcuda"
 #define MATSEQSELLCUDA               "seqsellcuda"
 #define MATMPISELLCUDA               "mpisellcuda"
+#define MATSELLHIP                   "sellhip"
+#define MATSEQSELLHIP                "seqsellhip"
+#define MATMPISELLHIP                "mpisellhip"
 #define MATDUMMY                     "dummy"
 #define MATLMVM                      "lmvm"
 #define MATLMVMDFP                   "lmvmdfp"
@@ -2533,6 +2536,8 @@ PETSC_EXTERN PetscErrorCode MatDenseHIPPlaceArray(Mat, const PetscScalar *);
 PETSC_EXTERN PetscErrorCode MatDenseHIPReplaceArray(Mat, const PetscScalar *);
 PETSC_EXTERN PetscErrorCode MatDenseHIPResetArray(Mat);
 PETSC_EXTERN PetscErrorCode MatDenseHIPSetPreallocation(Mat, PetscScalar *);
+PETSC_EXTERN PetscErrorCode MatCreateSeqSELLHIP(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscInt[], Mat *);
+PETSC_EXTERN PetscErrorCode MatCreateSELLHIP(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Mat *);
 #endif
 
 #if defined(PETSC_HAVE_VIENNACL)

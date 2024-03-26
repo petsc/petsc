@@ -986,6 +986,19 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSELL_SeqSELLCUDA(Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*MC
+  MATSEQSELLCUDA - MATSELLCUDA = "(seq)sellcuda" - A matrix type to be used for sparse matrices on NVIDIA GPUs.
+
+  Options Database Keys:
++  -mat_type seqsellcuda - sets the matrix type to "seqsellcuda" during a call to `MatSetFromOptions()`
+.  -mat_sell_spmv_cuda_kernel - selects a spmv kernel for MatSELLCUDA
+-  -mat_sell_spmv_cuda_blocky - sets the y dimension of the block size of the spmv kernels. These kernels use a 2D block with the x dimension being 32
+
+  Level: beginner
+
+.seealso: [](ch_matrices), `Mat`, `MATSELLCUDA`
+M*/
+
 PETSC_EXTERN PetscErrorCode MatCreate_SeqSELLCUDA(Mat B)
 {
   PetscFunctionBegin;
