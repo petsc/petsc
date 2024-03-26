@@ -36,7 +36,6 @@ cdef extern from * nogil:
     PetscErrorCode PetscSpaceTensorGetSubspace(PetscSpace, PetscInt, PetscSpace*)
     PetscErrorCode PetscSpaceTensorSetNumSubspaces(PetscSpace, PetscInt)
     PetscErrorCode PetscSpaceTensorSetSubspace(PetscSpace, PetscInt, PetscSpace)
-    PetscErrorCode PetscSpaceViewFromOptions(PetscSpace, PetscObject, char [])
 
     PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace, PetscBool)
     PetscErrorCode PetscSpacePolynomialGetTensor(PetscSpace, PetscBool*)
@@ -70,7 +69,6 @@ cdef extern from * nogil:
     PetscErrorCode PetscDualSpaceSetOrder(PetscDualSpace, PetscInt)
     PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace, const PetscInt**)
     PetscErrorCode PetscDualSpaceSetUp(PetscDualSpace)
-    PetscErrorCode PetscDualSpaceViewFromOptions(PetscDualSpace,PetscObject, char[])
 
     PetscErrorCode PetscDualSpaceGetFunctional(PetscDualSpace, PetscInt, PetscQuadrature*)
     PetscErrorCode PetscDualSpaceGetInteriorDimension(PetscDualSpace, PetscInt*)

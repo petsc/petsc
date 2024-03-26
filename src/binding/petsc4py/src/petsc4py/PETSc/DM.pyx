@@ -318,29 +318,6 @@ cdef class DM(Object):
         """
         CHKERR( DMSetFromOptions(self.dm) )
 
-    def viewFromOptions(self, name: str, Object obj=None) -> None:
-        """View a `DM` based in the options.
-
-        Collective.
-
-        Parameters
-        ----------
-        name
-            Name used to activate the viewing.
-        obj
-            Object provides the prefix for the options database.
-
-        See Also
-        --------
-        petsc.DMViewFromOptions
-
-        """
-        cdef const char *cname = NULL
-        _ = str2bytes(name, &cname)
-        cdef PetscObject  cobj = NULL
-        if obj is not None: cobj = obj.obj[0]
-        CHKERR( DMViewFromOptions(self.dm, cobj, cname) )
-
     def setUp(self) -> Self:
         """Return the data structure.
 
