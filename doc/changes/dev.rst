@@ -85,9 +85,9 @@ Changes: Development
 - Add function ``MatGetRowSumAbs()`` to compute vector of L1 norms of rows ([B]AIJ only)
 - Add partial support for ``MatBackwardSolve()``/``MatForwardSolve()`` with ``MATSOLVERMKL_PARDISO`` and ``MATSOLVERMKL_CPARDISO``
 - Deprecate ``MATIS`` options ``-matis_xxx``. Use ``-mat_is_xxx``
-- Add support for repeated entries in the local part of the local to global map for ``MATIS`` via the routines ``MatISSetAllowRepeated()`` and ``MatISGetAllowRepeated()``.
-- Add support to dump and load a matrix of ``MATIS`` type.
-- Add dense representations of symmetric Broyden matrices ``MATLMVMDBFGS``, ``MATLMVMDDFP``, and ``MATLMVMDQN``.
+- Add support for repeated entries in the local part of the local to global map for ``MATIS`` via the routines ``MatISSetAllowRepeated()`` and ``MatISGetAllowRepeated()``
+- Add support to dump and load a matrix of ``MATIS`` type
+- Add dense representations of symmetric Broyden matrices ``MATLMVMDBFGS``, ``MATLMVMDDFP``, and ``MATLMVMDQN``
 - Add ``MATSELLHIP`` and the corresponding HIP kernels for matrix-vector multiplication
 
 .. rubric:: MatCoarsen:
@@ -107,7 +107,7 @@ Changes: Development
 - Add ``PCJacobiSetRowl1Scale()`` and ``-pc_jacobi_rowl1_scale scale`` to access new scale member of PC_Jacobi class, for new row l1 Jacobi
 - Add ``-mg_fine_...`` prefix alias for fine grid options to override ``-mg_levels_...`` options, like ``-mg_coarse_...``
 - The generated sub-matrices in ``PCFIELDSPLIT``, ``PCASM``, and ``PCBJACOBI`` now retain any null space or near null space attached to them even if the non-zero structure of the outer matrix changes
-- Add support for multiple subdomain per MPI process in ``PCBDDC``.
+- Add support for multiple subdomain per MPI process in ``PCBDDC``
 - Add `PCJacobiGetDiagonal()` to access the Jacobi inverted matrix diagonal and its square root variant
 
 .. rubric:: KSP:
@@ -128,7 +128,7 @@ Changes: Development
 .. rubric:: TS:
 
 - Add support for custom predictor callbacks in the second-order generalized-alpha method using ``TSAlpha2SetPredictor()``
-- Allow adaptivity to change time step size in first step of second-order generalized-alpha method.
+- Allow adaptivity to change time step size in first step of second-order generalized-alpha method
 - Add ``TSSetPostEventStep()`` to control the first step after event
 - Rename ``TSSetPostEventIntervalStep()`` to ``TSSetPostEventSecondStep()``, controlling the second step after event
 - Rename option ``-ts_event_post_eventinterval_step`` to ``-ts_event_post_event_second_step``
