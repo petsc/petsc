@@ -642,16 +642,28 @@ int main(int argc, char **argv)
             -mg_levels_esteig_ksp_max_it 10 \
             -mg_levels_ksp_chebyshev_esteig 0,0.1,0,1.1 \
             -mg_levels_pc_type jacobi
-  test:
-    suffix: 2d_p1_gmg_fcycle
-    requires: triangle
-    args: -potential_petscspace_degree 1 -dm_plex_box_faces 2,2 -dm_refine_hierarchy 3 \
+  testset:
+    args: -potential_petscspace_degree 1 -dm_refine_hierarchy 3 \
           -ksp_rtol 5e-10 -pc_type mg -pc_mg_type full \
             -mg_levels_ksp_max_it 2 \
             -mg_levels_esteig_ksp_type cg \
             -mg_levels_esteig_ksp_max_it 10 \
             -mg_levels_ksp_chebyshev_esteig 0,0.1,0,1.1 \
             -mg_levels_pc_type jacobi
+    test:
+      suffix: 2d_p1_gmg_fcycle
+      requires: triangle
+      args: -dm_plex_box_faces 2,2
+    test:
+      suffix: 2d_q1_gmg_fcycle
+      args: -dm_plex_simplex 0 -dm_plex_box_faces 2,2
+    test:
+      suffix: 3d_p1_gmg_fcycle
+      requires: ctetgen
+      args: -dm_plex_dim 3 -dm_plex_box_faces 2,2,2
+    test:
+      suffix: 3d_q1_gmg_fcycle
+      args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_faces 2,2,2
   test:
     suffix: 2d_p1_gmg_vcycle_adapt
     requires: triangle
