@@ -17,6 +17,7 @@ class Configure(config.package.Package):
     self.skippackagewithoptions = 1
     self.builtafterpetsc        = 1
     self.noMPIUni               = 1
+    self.precisions             = ['single', 'double']
     return
 
   def setupHelp(self, help):
@@ -35,6 +36,7 @@ class Configure(config.package.Package):
     self.cuda   = framework.require('config.packages.cuda',self)
     self.hip    = framework.require('config.packages.hip',self)
     self.openmp = framework.require('config.packages.openmp',self)
+    self.scalar = framework.require('PETSc.options.scalarTypes',self)
     self.deps   = [self.mpi,self.hypre,self.metis]
     self.odeps  = [self.slepc,self.ceed,self.cuda,self.openmp]
     return
@@ -111,6 +113,8 @@ class Configure(config.package.Package):
       g.write('MFEM_MPIEXEC = '+self.mpi.getMakeMacro('MPIEXEC')+'\n')
       g.write('MFEM_USE_METIS_5 = YES\n')
       g.write('MFEM_USE_METIS = YES\n')
+      if self.scalar.precision == 'single':
+        g.write('MFEM_PRECISION = single\n')
       g.write('MFEM_USE_PETSC = YES\n')
       g.write('HYPRE_OPT = '+self.headers.toString(self.hypre.include)+'\n')
       g.write('HYPRE_LIB = '+self.libraries.toString(self.hypre.lib)+'\n')
@@ -218,6 +222,9 @@ run-config:
              echo "Error installing MFEM. Check ${PETSC_ARCH}/lib/petsc/conf/mfem.log" && \\\n\
              echo "********************************************************************" && \\\n\
              exit 1)'])
+    exampleDirBuild = os.path.join(buildDir, 'examples', 'petsc')
+    self.addMakeRule('mfem-check', '', ['@echo "Running MFEM/PETSc check examples"',\
+                                          '-@cd '+exampleDirBuild+' ; ${OMAKE} ex1p-test-par'])
 
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
       self.addMakeRule('mfem-build','')

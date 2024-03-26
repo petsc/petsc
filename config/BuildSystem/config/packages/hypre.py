@@ -16,10 +16,7 @@ class Configure(config.package.GNUPackage):
     self.includes        = ['HYPRE.h']
     self.liblist         = [['libHYPRE.a']]
     self.buildLanguages  = ['C','Cxx']
-    # Per hypre users guide section 7.5 - install manually on windows for MS compilers.
-    self.precisions        = ['double']
-    # HYPRE is supposed to work with complex number
-    #self.complex           = 0
+    self.precisions        = ['single', 'double', '__float128']
     self.hastests          = 1
     self.hastestsdatafiles = 1
 
@@ -74,6 +71,12 @@ class Configure(config.package.GNUPackage):
     args.append('--with-lapack-lib=" "')
     args.append('--with-blas=no')
     args.append('--with-lapack=no')
+
+    # floating point precisions
+    if self.scalar.precision == 'single':
+      args.append('--enable-single')
+    elif self.scalar.precision == '__float128':
+      args.append('--enable-longdouble')
 
     # HYPRE automatically detects essl symbols and includes essl.h!
     # There are no configure options to disable it programmatically
