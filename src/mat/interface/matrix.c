@@ -5155,7 +5155,7 @@ PetscErrorCode MatGetRowMaxAbs(Mat mat, Vec v, PetscInt idx[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatGetRowSumAbs - Gets the sum value (in absolute value) of each row of the matrix
 
   Logically Collective
