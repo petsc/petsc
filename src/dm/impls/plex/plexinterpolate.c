@@ -495,15 +495,20 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
   DMLabel       ctLabel;
   PetscHMapIJKL faceTable;
   PetscInt      faceTypeNum[DM_NUM_POLYTOPES];
-  PetscInt      depth, pStart, Np, cStart, cEnd, fStart, fEnd;
+  PetscInt      depth, pStart, Np, cStart, cEnd, fStart, fEnd, vStart, vEnd;
   PetscInt      cntFaces, *facesId, minCone;
 
   PetscFunctionBegin;
   PetscCall(DMPlexGetDepth(dm, &depth));
   PetscCall(PetscHMapIJKLCreate(&faceTable));
   PetscCall(PetscArrayzero(faceTypeNum, DM_NUM_POLYTOPES));
+  PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   PetscCall(DMPlexGetDepthStratum(dm, cellDepth, &cStart, &cEnd));
+  // If the range incorporates the vertices, it means we have a non-manifold topology, so choose just cells
+  if (cStart <= vStart && cEnd >= vEnd) cEnd = vStart;
   // Number new faces and save face vertices in hash table
+  //   If depth > cellDepth, meaning we are interpolating faces, put the new (d-1)-faces after them
+  //   otherwise, we are interpolating cells, so put the faces after the vertices
   PetscCall(DMPlexGetDepthStratum(dm, depth > cellDepth ? cellDepth : 0, NULL, &fStart));
   fEnd = fStart;
 
@@ -632,8 +637,12 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
     DMPolytopeType ct;
     PetscInt       coneSize, pStart, pEnd, poff = 0;
 
-    if (d == cellDepth) continue;
     PetscCall(DMPlexGetDepthStratum(dm, d, &pStart, &pEnd));
+    // Check for non-manifold condition
+    if (d == cellDepth) {
+      if (pEnd == cEnd) continue;
+      else pStart = vEnd;
+    }
     // Account for insertion
     if (pStart >= fStart) poff = fEnd - fStart;
     for (PetscInt p = pStart; p < pEnd; ++p) {
@@ -693,8 +702,12 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
       const PetscInt *cone;
       PetscInt        pStart, pEnd, poff = 0, coneSize;
 
-      if (d == cellDepth) continue;
       PetscCall(DMPlexGetDepthStratum(dm, d, &pStart, &pEnd));
+      // Check for non-manifold condition
+      if (d == cellDepth) {
+        if (pEnd == cEnd) continue;
+        else pStart = vEnd;
+      }
       // Account for insertion
       if (pStart >= fStart) poff = fEnd - fStart;
       for (PetscInt p = pStart; p < pEnd; ++p) {
@@ -736,14 +749,14 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
         PetscCall(DMPlexGetCone(idm, f, &fcone));
         if (fcone[0] < 0) PetscCall(DMPlexSetCone(idm, f, face));
         {
-          const PetscInt *fcone;
+          const PetscInt *fcone2;
           PetscInt        ornt;
 
           PetscCall(DMPlexGetConeSize(idm, f, &coneSize));
-          PetscCall(DMPlexGetCone(idm, f, &fcone));
+          PetscCall(DMPlexGetCone(idm, f, &fcone2));
           PetscCheck(coneSize == faceSize, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of face vertices %" PetscInt_FMT " for face %" PetscInt_FMT " should be %" PetscInt_FMT, coneSize, f, faceSize);
           /* Notice that we have to use vertices here because the lower dimensional faces have not been created yet */
-          PetscCall(DMPolytopeGetVertexOrientation(faceType, fcone, face, &ornt));
+          PetscCall(DMPolytopeGetVertexOrientation(faceType, fcone2, face, &ornt));
           PetscCall(DMPlexInsertConeOrientation(idm, c + poff, cf, ornt));
         }
         cntFaces++;
