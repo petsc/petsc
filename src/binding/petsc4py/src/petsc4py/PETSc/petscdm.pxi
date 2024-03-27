@@ -74,7 +74,6 @@ cdef extern from * nogil:
     PetscErrorCode DMGetOptionsPrefix(PetscDM,char*[])
     PetscErrorCode DMAppendOptionsPrefix(PetscDM,char[])
     PetscErrorCode DMSetFromOptions(PetscDM)
-    PetscErrorCode DMViewFromOptions(PetscDM,PetscObject,char[])
     PetscErrorCode DMSetUp(PetscDM)
 
     PetscErrorCode DMGetAdjacency(PetscDM,PetscInt,PetscBool*,PetscBool*)

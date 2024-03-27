@@ -524,29 +524,6 @@ cdef class Space(Object):
         CHKERR( PetscSpacePTrimmedGetFormDegree(self.space, &cformDegree) )
         return toInt(cformDegree)
 
-    def viewFromOptions(self, name: str, Object obj=None) -> None:
-        """View a `Space` based on values in the options database.
-
-        Collective.
-
-        Parameters
-        ----------
-        name
-            Command line option name.
-        obj
-            Optional object that provides the options prefix.
-
-        See Also
-        --------
-        petsc_options, petsc.PetscSpaceViewFromOptions
-
-        """
-        cdef const char *cname = NULL
-        _ = str2bytes(name, &cname)
-        cdef PetscObject  cobj = NULL
-        if obj is not None: cobj = obj.obj[0]
-        CHKERR( PetscSpaceViewFromOptions(self.space, cobj, cname) )
-
 # --------------------------------------------------------------------
 
 class DualSpaceType(object):
@@ -937,29 +914,6 @@ cdef class DualSpace(Object):
         """
         cdef PetscBool ctrimmed = asBool(trimmed)
         CHKERR( PetscDualSpaceLagrangeSetTrimmed(self.dualspace, ctrimmed))
-
-    def viewFromOptions(self, name: str, Object obj=None) -> None:
-        """View a `DualSpace` based on values in the options database.
-
-        Collective.
-
-        Parameters
-        ----------
-        name
-            Command line option name.
-        obj
-            Optional object that provides the options prefix.
-
-        See Also
-        --------
-        petsc_options, petsc.PetscSpaceViewFromOptions
-
-        """
-        cdef const char *cname = NULL
-        _ = str2bytes(name, &cname)
-        cdef PetscObject  cobj = NULL
-        if obj is not None: cobj = obj.obj[0]
-        CHKERR( PetscDualSpaceViewFromOptions(self.dualspace, cobj, cname) )
 
     def setSimpleDimension(self, dim: int) -> None:
         """Set the number of functionals in the dual space basis.
