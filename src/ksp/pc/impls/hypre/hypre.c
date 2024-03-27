@@ -747,7 +747,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc, PetscOptionItems *
   PC_HYPRE   *jac = (PC_HYPRE *)pc->data;
   PetscInt    bs, n, indx, level;
   PetscBool   flg, tmp_truth;
-  double      tmpdbl, twodbl[2];
+  PetscReal   tmpdbl, twodbl[2];
   const char *symtlist[]           = {"nonsymmetric", "SPD", "nonsymmetric,SPD"};
   const char *PCHYPRESpgemmTypes[] = {"cusparse", "hypre"};
 
@@ -848,7 +848,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc, PetscOptionItems *
   }
 
   /* Filter for ILU(k) for Euclid */
-  double droptolerance;
+  PetscReal droptolerance;
   PetscCall(PetscOptionsReal("-pc_hypre_boomeramg_eu_droptolerance", "Drop tolerance for ILU(k) in Euclid smoother", "None", 0, &droptolerance, &flg));
   if (flg && (jac->smoothtype == 3)) {
     jac->eu_droptolerance = droptolerance;
@@ -2389,7 +2389,7 @@ typedef struct {
 
   /* keep copy of PFMG options used so may view them */
   PetscInt  its;
-  double    tol;
+  PetscReal tol;
   PetscInt  relax_type;
   PetscInt  rap_type;
   PetscInt  num_pre_relax, num_post_relax;
@@ -2616,10 +2616,10 @@ typedef struct {
   HYPRE_SStructSolver ss_solver;
 
   /* keep copy of SYSPFMG options used so may view them */
-  PetscInt its;
-  double   tol;
-  PetscInt relax_type;
-  PetscInt num_pre_relax, num_post_relax;
+  PetscInt  its;
+  PetscReal tol;
+  PetscInt  relax_type;
+  PetscInt  num_pre_relax, num_post_relax;
 } PC_SysPFMG;
 
 static PetscErrorCode PCDestroy_SysPFMG(PC pc)
@@ -2848,7 +2848,7 @@ typedef struct {
   MPI_Comm           hcomm; /* does not share comm with HYPRE_StructMatrix because need to create solver before getting matrix */
   HYPRE_StructSolver hsolver;
   PetscInt           its; /* keep copy of SMG options used so may view them */
-  double             tol;
+  PetscReal          tol;
   PetscBool          print_statistics;
   PetscInt           num_pre_relax, num_post_relax;
 } PC_SMG;

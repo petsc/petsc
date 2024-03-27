@@ -1478,6 +1478,7 @@ int main(int argc, char **argv)
     args: -test_restart -dm_plex_box_faces 3,3 -ksp_type preonly -pc_type mg -mg_levels_pc_type svd -c_petscspace_degree 1 -p_petscspace_degree 1 -petscpartitioner_type simple -test_restart
 
     test:
+      requires: !single
       suffix: restart
       nsize: {{1 2}separate output}
       args: -dm_refine_hierarchy {{0 1}separate output} -dm_plex_simplex 0
@@ -1489,6 +1490,7 @@ int main(int argc, char **argv)
       args: -dm_refine_hierarchy {{0 1}separate output} -dm_plex_simplex 1
 
     test:
+      requires: !single
       suffix: restart_refonly
       nsize: {{1 2}separate output}
       args: -dm_refine 1 -dm_plex_simplex 0

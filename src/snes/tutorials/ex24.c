@@ -352,7 +352,7 @@ int main(int argc, char **argv)
   test:
     nsize: 4
     suffix: 2d_bdm1_p0_bddc
-    requires: triangle
+    requires: triangle !single
     args: -sol_type linear \
           -field_petscspace_degree 1 -field_petscdualspace_type bdm -dm_refine 1 \
           -dmsnes_check .001 -snes_error_if_not_converged \
@@ -364,6 +364,7 @@ int main(int argc, char **argv)
 
   test:
     nsize: 9
+    requires: !single
     suffix: 2d_rt1_p0_bddc
     args: -sol_type quadratic \
           -potential_petscspace_degree 0 \

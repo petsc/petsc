@@ -217,6 +217,9 @@ check_build:
 	+@if [ "${SLEPC}" = "yes" ]; then \
            ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} slepc-check; \
          fi;
+	+@if [ "${MFEM}" = "yes" ]; then \
+           ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} mfem-check; \
+         fi;
 	-@echo "Completed PETSc check examples"
 
 # ********* Rules for make install *******************************************************************************************************************

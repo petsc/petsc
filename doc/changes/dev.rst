@@ -11,6 +11,7 @@ Changes: Development
 
 .. rubric:: General:
 
+- Add single precision support for using HYPRE and MFEM
 - Require Fortran 2003 compiler with GET_COMMAND_ARGUMENT() support for building PETSc with Fortran bindings
 
 .. rubric:: Configure/Build:

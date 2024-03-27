@@ -2278,7 +2278,7 @@ static PetscErrorCode DumpSolution(Ctx ctx, PetscInt level, Vec x)
 
    test:
       suffix: direct_mumps
-      requires: mumps !complex
+      requires: mumps !complex !single
       nsize: 9
       args: -dim 2 -coefficients layers -nondimensional 0 -stag_grid_x 13 -stag_grid_y 8 -pc_type lu -pc_factor_mat_solver_type mumps -ksp_converged_reason
 
