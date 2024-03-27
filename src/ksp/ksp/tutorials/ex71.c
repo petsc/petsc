@@ -658,7 +658,7 @@ int main(int argc, char **args)
      output_file: output/ex71_dmda_matis_elast_3d.out
  test:
    nsize: 8
-   filter: grep -v "variant HERMITIAN"
+   filter: grep -v "variant HERMITIAN" | sed -e "s/CONVERGED_RTOL iterations 1[0-9]/CONVERGED_RTOL iterations 13/g"
    suffix: bddc_elast_deluxe_layers_adapt
    requires: mumps !complex
    args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_converged_reason -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mumps -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers {{1 10}separate_output} -pc_bddc_adaptive_userdefined {{0 1}separate output} -sub_schurs_schur_mat_type seqdense

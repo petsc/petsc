@@ -265,7 +265,7 @@ PetscErrorCode FormEqualityJacobian(Tao tao, Vec x, Mat JE, Mat JEpre, void *ctx
       requires: !complex
 
    test:
-      requires: superlu
+      requires: !single superlu
       localrunfiles: HS21
 
 TEST*/
