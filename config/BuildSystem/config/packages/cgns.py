@@ -5,9 +5,10 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.version = '4.3.0'
-    self.gitcommit = 'v' + self.version
-    self.download = ['git://https://github.com/cgns/cgns', 'https://github.com/cgns/cgns/archive/{}.tar.gz'.format(self.gitcommit)]
+    #self.version    = '4.3.0'
+    #self.gitcommit  = 'v' + self.version
+    self.gitcommit  = '30157c3a893074f0ff28cddff9d746ab613c84ba'  # develop Mar-5-2024 (v4.4.0+)
+    self.download   = ['git://https://github.com/cgns/cgns', 'https://github.com/cgns/cgns/archive/{}.tar.gz'.format(self.gitcommit)]
     self.functions  = ['cgp_close']
     self.includes   = ['cgnslib.h']
     self.liblist    = [['libcgns.a'],
@@ -30,3 +31,12 @@ class Configure(config.package.CMakePackage):
     if self.hdf5.directory:
       args.append('-DHDF5_ROOT:PATH={}'.format(self.hdf5.directory))
     return args
+
+  def configureLibrary(self):
+    config.package.Package.configureLibrary(self)
+    oldFlags = self.compilers.CPPFLAGS
+    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+    if not self.checkCompile('#include "cgnslib.h"', '#if (CG_SIZEOF_SIZE < '+str(self.getDefaultIndexSize())+')\n#error incompatible CG_SIZEOF_SIZE\n#endif\n'):
+      raise RuntimeError('CGNS specified is incompatible!\n--with-64-bit-indices option requires CGNS built with CGNS_ENABLE_64BIT.\nSuggest using --download-cgns for a compatible CGNS')
+    self.compilers.CPPFLAGS = oldFlags
+    return
