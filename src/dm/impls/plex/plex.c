@@ -5242,7 +5242,7 @@ PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 {
   DM_Plex *mesh = (DM_Plex *)dm->data;
   DMLabel  label;
-  PetscInt d = 0;
+  PetscInt d = -1;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -5251,8 +5251,9 @@ PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
     PetscCall(DMPlexTransformGetDepth(mesh->tr, depth));
   } else {
     PetscCall(DMPlexGetDepthLabel(dm, &label));
-    if (label) PetscCall(DMLabelGetNumValues(label, &d));
-    *depth = d - 1;
+    // Allow missing depths
+    if (label) PetscCall(DMLabelGetValueBounds(label, NULL, &d));
+    *depth = d;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
