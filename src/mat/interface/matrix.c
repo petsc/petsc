@@ -2017,8 +2017,9 @@ PetscErrorCode MatSetValuesBlocked(Mat mat, PetscInt m, const PetscInt idxm[], P
     PetscInt rbs, cbs, M, N, i;
     PetscCall(MatGetBlockSizes(mat, &rbs, &cbs));
     PetscCall(MatGetSize(mat, &M, &N));
-    for (i = 0; i < m; i++) PetscCheck(idxm[i] * rbs < M, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row block index %" PetscInt_FMT " (index %" PetscInt_FMT ") greater than row length %" PetscInt_FMT, i, idxm[i], M);
-    for (i = 0; i < n; i++) PetscCheck(idxn[i] * cbs < N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column block index %" PetscInt_FMT " (index %" PetscInt_FMT ") great than column length %" PetscInt_FMT, i, idxn[i], N);
+    for (i = 0; i < m; i++) PetscCheck(idxm[i] * rbs < M, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row block %" PetscInt_FMT " contains an index %" PetscInt_FMT "*%" PetscInt_FMT " greater than row length %" PetscInt_FMT, i, idxm[i], rbs, M);
+    for (i = 0; i < n; i++)
+      PetscCheck(idxn[i] * cbs < N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column block %" PetscInt_FMT " contains an index %" PetscInt_FMT "*%" PetscInt_FMT " greater than column length %" PetscInt_FMT, i, idxn[i], cbs, N);
   }
   if (mat->assembled) {
     mat->was_assembled = PETSC_TRUE;
