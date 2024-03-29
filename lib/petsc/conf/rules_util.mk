@@ -145,7 +145,7 @@ checkbadSource:
 	-@git --no-pager grep -n -E -B 1 '  PetscFunctionReturn' -- ${GITSRC} | grep -E '\-[0-9]+-$$' | grep -v '^--$$' >> checkbadSource.out;true
 	-@echo "----- No blank line before PetscFunctionBegin and derivatives ------" >> checkbadSource.out
 	-@git --no-pager grep -n -E -B 1 '  PetscFunctionBegin(User|Hot){0,1};' -- ${GITSRC} ':!src/sys/tests/*' ':!src/sys/tutorials/*' | grep -E '\-[0-9]+-.*;' | grep -v '^--$$' | grep -v '\\' >> checkbadSource.out;true
-	-@echo "----- Uneeded parentheses [!&~*](foo[->|.]bar) ---------------------" >> checkbadSource.out
+	-@echo "----- Unneeded parentheses [!&~*](foo[->|.]bar) --------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -E '([\!\&\~\*\(]|\)\)|\([^,\*\(]+\**\))\(([a-zA-Z0-9_]+((\.|->)[a-zA-Z0-9_]+|\[[a-zA-Z0-9_ \%\+\*\-]+\])+)\)' -- ${GITSRC} >> checkbadSource.out;true
 	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 29` ;\
          if [ $$l -gt 0 ] ; then \
