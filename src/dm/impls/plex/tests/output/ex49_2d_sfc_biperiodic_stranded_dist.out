@@ -200,10 +200,6 @@ Label 'celltype':
 [1]: 1 (4)
 [1]: 2 (4)
 Label 'Face Sets':
-[0]: 14 (4)
-[0]: 16 (4)
-[1]: 16 (2)
-[1]: 19 (2)
 PetscSF Object: 2 MPI processes
   type: basic
   [0] Number of roots=21, leaves=7, remote ranks=1
@@ -227,6 +223,18 @@ PetscSF Object: 2 MPI processes
   [1] Roots referenced by my leaves, by rank
   MultiSF sort=rank-order
 PetscSF Object: Migrated Isoperiodic Faces #0 2 MPI processes
+  type: basic
+  [0] Number of roots=21, leaves=0, remote ranks=0
+  [1] Number of roots=21, leaves=2, remote ranks=1
+  [1] 16 <- (0,14)
+  [1] 19 <- (0,16)
+  [0] Roots referenced by my leaves, by rank
+  [1] Roots referenced by my leaves, by rank
+  [1] 0: 2 edges
+  [1]    16 <- 14
+  [1]    19 <- 16
+  MultiSF sort=rank-order
+PetscSF Object: Migrated Isoperiodic Faces #1 2 MPI processes
   type: basic
   [0] Number of roots=21, leaves=1, remote ranks=1
   [0] 15 <- (0,11)

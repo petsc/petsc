@@ -238,14 +238,20 @@ int main(int argc, char **argv)
     args: -dm_plex_simplex 0 -dm_plex_dim 2 -dm_plex_shape zbox -dm_plex_box_faces 4,3 -dm_distribute 0 -petscspace_degree 1 -dm_plex_box_bd periodic,none -dm_view ::ascii_info_detail
 
   testset:
-    args: -dm_plex_simplex 0 -dm_plex_dim 2 -dm_plex_shape zbox -dm_plex_box_faces 3,2 -petscspace_degree 1 -dm_plex_box_bd none,periodic -dm_view ::ascii_info_detail -closure_tensor
+    args: -dm_plex_simplex 0 -dm_plex_dim 2 -dm_plex_shape zbox -dm_plex_box_faces 3,2 -petscspace_degree 1 -dm_view ::ascii_info_detail -closure_tensor
     nsize: 2
     test:
       suffix: 2d_sfc_periodic_stranded
-      args: -dm_distribute 0
+      args: -dm_distribute 0 -dm_plex_box_bd none,periodic
     test:
       suffix: 2d_sfc_periodic_stranded_dist
-      args: -dm_distribute 1 -petscpartitioner_type simple
+      args: -dm_distribute 1 -petscpartitioner_type simple -dm_plex_box_bd none,periodic
+    test:
+      suffix: 2d_sfc_biperiodic_stranded
+      args: -dm_distribute 0 -dm_plex_box_bd periodic,periodic
+    test:
+      suffix: 2d_sfc_biperiodic_stranded_dist
+      args: -dm_distribute 1 -petscpartitioner_type simple -dm_plex_box_bd periodic,periodic
 
   test:
     suffix: fv_0

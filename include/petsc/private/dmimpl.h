@@ -276,8 +276,9 @@ struct _p_DM {
 
   // Affine transform applied in DMGlobalToLocal
   struct {
-    VecScatter affine_to_local;
-    Vec        affine;
+    PetscInt    num_affines;
+    VecScatter *affine_to_local;
+    Vec        *affine;
     PetscErrorCode (*setup)(DM);
   } periodic;
   /* Constraints */

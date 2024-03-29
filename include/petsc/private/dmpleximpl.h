@@ -216,11 +216,12 @@ typedef struct {
   // Periodicity
   struct {
     // Specified by the user
-    PetscScalar transform[4][4]; // geometric transform
-    PetscSF     face_sf;         // root(donor faces) <-- leaf(local faces)
+    PetscInt num_face_sfs;          // number of face_sfs
+    PetscSF *face_sfs;              // root(donor faces) <-- leaf(local faces)
+    PetscScalar (*transform)[4][4]; // geometric transform
     // Created eagerly (depends on points)
     PetscSF composed_sf; // root(non-periodic global points) <-- leaf(local points)
-    IS      periodic_points;
+    IS     *periodic_points;
   } periodic;
 
   /* Projection */

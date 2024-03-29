@@ -171,6 +171,7 @@ Changes: Development
 - Add Boolean argument to ``DMPlexPartitionLabelCreateSF()`` to sort ranks
 - Add ``DMClearAuxiliaryVec()`` to clear the auxiliary data
 - Add ignoreLabelHalo, sanitizeSubmesh, and ownershipTransferSF arguments to ``DMPlexFilter()``
+- Change ``DMPlexSetIsoperiodicFaceSF()``, ``DMPlexGetIsoperiodicFaceSF()``, and ``DMPlexSetIsoperiodicFaceTransform()`` to accept multiple values for different periodic pairings
 
 .. rubric:: FE/FV:
 
