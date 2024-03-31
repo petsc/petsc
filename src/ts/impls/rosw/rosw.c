@@ -140,6 +140,19 @@ M*/
 M*/
 
 /*MC
+     TSROSWRODASPR - Six stage fourth order L-stable Rosenbrock scheme {cite}`rang2015improved`
+
+     By default, the Jacobian is only recomputed once per step.
+
+     Both the fourth order and embedded third order methods are stiffly accurate and L-stable.
+     The method is B_{PR} consistent of order 3, which ensures convergence order for non-stiff, medium stiff, and stiff problems.
+
+     Level: intermediate
+
+.seealso: [](ch_ts), `TSROSW`, `TSROSWSANDU3`
+M*/
+
+/*MC
      TSROSWSANDU3 - Three stage third order L-stable Rosenbrock scheme {cite}`sandu_1997`
 
      By default, the Jacobian is only recomputed once per step.
@@ -407,6 +420,29 @@ PetscErrorCode TSRosWRegisterAll(void)
     const PetscReal b2[4] = {0.75, -0.25, 0.5, 0};
 
     PetscCall(TSRosWRegister(TSROSWRODAS3, 3, 4, &A[0][0], &Gamma[0][0], b, b2, 0, NULL));
+  }
+  {
+    /* const PetscReal g = 0.25;       Directly written in-place below */
+    const PetscReal A[6][6] = {
+      {0,                       0,                       0,                       0,                       0,    0},
+      {0.75,                    0,                       0,                       0,                       0,    0},
+      {7.5162877593868457e-02,  2.4837122406131545e-02,  0,                       0,                       0,    0},
+      {1.6532708886396510e+00,  2.1545706385445562e-01,  -1.3157488872766792e+00, 0,                       0,    0},
+      {1.9385003738039885e+01,  1.2007117225835324e+00,  -1.9337924059522791e+01, -2.4779140110062559e-01, 0,    0},
+      {-7.3844531665375115e+00, -3.0593419030174646e-01, 7.8622074209377981e+00,  5.7817993590145966e-01,  0.25, 0}
+    };
+    const PetscReal Gamma[6][6] = {
+      {0.25,                    0,                       0,                       0,                       0,                       0   },
+      {-7.5000000000000000e-01, 0.25,                    0,                       0,                       0,                       0   },
+      {-8.8644359075349941e-02, -2.8688974257983398e-02, 0.25,                    0,                       0,                       0   },
+      {-4.8470034585330284e+00, -3.1583244269672095e-01, 4.9536568360123221e+00,  0.25,                    0,                       0   },
+      {-2.6769456904577400e+01, -1.5066459128852787e+00, 2.7200131480460591e+01,  8.2597133700208525e-01,  0.25,                    0   },
+      {6.5876206496361416e+00,  3.6807059172993878e-01,  -6.7423520694658121e+00, -1.0619631475741095e-01, -3.5714285714285715e-01, 0.25}
+    };
+    const PetscReal b[6]  = {-7.9683251690137014e-01, 6.2136401428192344e-02, 1.1198553514719862e+00, 4.7198362114404874e-01, -1.0714285714285714e-01, 0.25};
+    const PetscReal b2[6] = {-7.3844531665375115e+00, -3.0593419030174646e-01, 7.8622074209377981e+00, 5.7817993590145966e-01, 0.25, 0.0};
+
+    PetscCall(TSRosWRegister(TSROSWRODASPR, 4, 6, &A[0][0], &Gamma[0][0], b, b2, 0, NULL));
   }
   {
     /*const PetscReal g = 0.43586652150845899941601945119356;       Directly written in-place below */
