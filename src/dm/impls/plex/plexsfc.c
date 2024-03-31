@@ -998,7 +998,7 @@ PetscErrorCode DMPlexSetIsoperiodicFaceSF(DM dm, PetscInt num_face_sfs, PetscSF 
   Input Parameter:
 . dm - The `DMPLEX` for which to obtain periodic relation
 
-  Output Parameter:
+  Output Parameters:
 + num_face_sfs - Number of `PetscSF`s in the array
 - face_sfs     - Array of `PetscSF` in which roots are (owned) donor faces and leaves are faces that must be matched to a (possibly remote) donor face.
 

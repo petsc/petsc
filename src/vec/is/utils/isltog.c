@@ -1113,7 +1113,7 @@ PetscErrorCode ISLocalToGlobalMappingGetBlockInfo(ISLocalToGlobalMapping mapping
   Input Parameter:
 . mapping - the mapping from local to global indexing
 
-  Output Parameter:
+  Output Parameters:
 + n       - number of local block nodes
 . n_procs - an array storing the number of processes for each local block node (including self)
 - procs   - the processes' rank for each local block node (sorted, self is first)
