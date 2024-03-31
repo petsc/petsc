@@ -4151,7 +4151,7 @@ PetscErrorCode DMPlexReorderCohesiveSupports(DM dm)
 . ignoreLabelHalo - The flag indicating if labeled points that are in the halo are ignored
 - sanitizeSubmesh - The flag indicating if a subpoint is forced to be owned by a rank that owns a subcell that contains that point in its closure
 
-  Output Parameter:
+  Output Parameters:
 + ownershipTransferSF - The `PetscSF` representing the ownership transfers between parent local meshes due to submeshing.
 - subdm               - The new mesh
 

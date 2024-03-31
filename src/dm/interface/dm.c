@@ -4398,7 +4398,7 @@ PetscErrorCode DMSetLocalSection(DM dm, PetscSection section)
   Input Parameter:
 . dm - The `DM`
 
-  Output Parameter:
+  Output Parameters:
 + perm        - A permutation of the mesh points in the chart
 - blockStarts - A high bit is set for the point that begins every block, or NULL for default blocking
 

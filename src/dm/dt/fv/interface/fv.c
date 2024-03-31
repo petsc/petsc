@@ -1476,7 +1476,7 @@ PetscErrorCode PetscFVGetQuadrature(PetscFV fvm, PetscQuadrature *q)
 
   Not Collective
 
-  Input Parameter:
+  Input Parameters:
 + fvm - The `PetscFV` object
 - ct  - The `DMPolytopeType` for the cell
 
