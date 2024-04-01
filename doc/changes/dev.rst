@@ -49,6 +49,8 @@ Changes: Development
 
 .. rubric:: TS:
 
+- Add Rosenbrock-W methods from :cite:`rang2015improved` with :math:`B_{PR}` stability: ``TSROSWR34PRW``, ``TSROSWR3PRL2``, ``TSROSWRODASPR``, and ``TSROSWRODASPR2``
+
 .. rubric:: TAO:
 
 .. rubric:: DM/DA:
