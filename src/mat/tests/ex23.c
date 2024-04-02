@@ -21,7 +21,7 @@ int main(int argc, char **args)
   MatType                lmtype;
   PetscScalar            diag = 2.;
   PetscInt               n, m, i, lm, ln;
-  PetscInt               rst, ren, cst, cen, nr, nc;
+  PetscInt               rst, ren, cst, cen, nr, nc, rbs = 1, cbs = 1;
   PetscMPIInt            rank, size, lrank, rrank;
   PetscBool              testT, squaretest, isaij;
   PetscBool              permute = PETSC_FALSE, negmap = PETSC_FALSE, repmap = PETSC_FALSE, allow_repeated = PETSC_TRUE;
@@ -41,6 +41,8 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-diffmap", &diffmap, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-allow_repeated", &allow_repeated, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_matlab", &test_matlab, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-rbs", &rbs, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-cbs", &cbs, NULL));
   PetscCheck(size == 1 || m >= 4, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Number of rows should be larger or equal 4 for parallel runs");
   PetscCheck(size != 1 || m >= 2, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Number of rows should be larger or equal 2 for uniprocessor runs");
   PetscCheck(n >= 2, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Number of cols should be larger or equal 2");
@@ -88,6 +90,7 @@ int main(int argc, char **args)
 
   PetscCall(MatISSetAllowRepeated(A, allow_repeated));
   PetscCall(MatSetLocalToGlobalMapping(A, rmap, cmap));
+  PetscCall(MatSetBlockSizes(A, rbs, cbs));
   PetscCall(MatISStoreL2L(A, PETSC_FALSE));
   PetscCall(MatISSetPreallocation(A, 3, NULL, 3, NULL));
   PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, (PetscBool) !(repmap || negmap))); /* I do not want to precompute the pattern */
@@ -155,6 +158,7 @@ int main(int argc, char **args)
   /* Create a MPIAIJ matrix, same as A */
   PetscCall(MatCreate(PETSC_COMM_WORLD, &B));
   PetscCall(MatSetSizes(B, PETSC_DECIDE, PETSC_DECIDE, m, n));
+  PetscCall(MatSetBlockSizes(B, rbs, cbs));
   PetscCall(MatSetType(B, MATAIJ));
   PetscCall(MatSetFromOptions(B));
   PetscCall(MatSetLocalToGlobalMapping(B, rmap, cmap));
@@ -1068,7 +1072,7 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
    test:
       suffix: 3
       nsize: 5
-      args: -m 11 -n 10 -mat_is_convert_local_nest -nr 2 -nc 1
+      args: -m 11 -n 10 -mat_is_convert_local_nest -nr 2 -nc 1 -cbs 2
 
    test:
       suffix: 4
@@ -1078,11 +1082,11 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
    test:
       suffix: 5
       nsize: 6
-      args: -m 12 -n 12 -test_trans -nr 3 -nc 1
+      args: -m 12 -n 12 -test_trans -nr 3 -nc 1 -rbs 2
 
    test:
       suffix: 6
-      args: -m 12 -n 12 -test_trans -nr 2 -nc 3 -diffmap
+      args: -m 12 -n 12 -test_trans -nr 2 -nc 3 -diffmap -rbs 6 -cbs 3
 
    test:
       suffix: 7
