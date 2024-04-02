@@ -218,10 +218,10 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::SetPreallocation_(Mat m, PetscDevice
     mcu->d_user_alloc = PETSC_TRUE;
     mcu->d_v          = user_device_array;
   } else {
-    PetscInt size;
+    std::size_t size;
 
     mcu->d_user_alloc = PETSC_FALSE;
-    PetscCall(PetscIntMultError(lda, ncols, &size));
+    size              = lda * ncols;
     PetscCall(PetscCUPMMallocAsync(&mcu->d_v, size, stream));
     PetscCall(PetscCUPMMemsetAsync(mcu->d_v, 0, size, stream));
   }
