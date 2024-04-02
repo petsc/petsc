@@ -749,9 +749,14 @@ int main(int argc, char **args)
      args: -pde_type Elasticity -mg_levels_gdsw_tolerance 0.01 -ksp_monitor_singular_value -mg_levels_gdsw_userdefined {{0 1}separate output}
 
 # Multi-Element tests
- testset:
+ test:
    nsize: {{1 2 3}}
    suffix: bddc_multi_element
    args: -cells 3,3,3 -dim 3 -ksp_error_if_not_converged -multi_element -pde_type {{Poisson Elasticity}} -ksp_converged_reason
+
+ test:
+   suffix: bddc_multi_square
+   output_file: output/ex71_bddc_multi_element.out
+   args: -cells 2,2 -dim 2 -ksp_error_if_not_converged -multi_element -pc_bddc_local_mat_graph_square 4 -ksp_converged_reason
 
 TEST*/

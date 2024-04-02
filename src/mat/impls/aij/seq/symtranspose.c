@@ -98,12 +98,22 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A, MatReuse reuse, Mat *B)
   PetscCall(PetscArraycpy(atfill, ati, an));
 
   /* Walk through A row-wise and mark nonzero entries of A^T. */
-  for (i = 0; i < am; i++) {
-    anzj = ai[i + 1] - ai[i];
-    for (j = 0; j < anzj; j++) {
-      atj[atfill[*aj]] = i;
-      ata[atfill[*aj]] = *aa++;
-      atfill[*aj++] += 1;
+  if (aa) {
+    for (i = 0; i < am; i++) {
+      anzj = ai[i + 1] - ai[i];
+      for (j = 0; j < anzj; j++) {
+        atj[atfill[*aj]] = i;
+        ata[atfill[*aj]] = *aa++;
+        atfill[*aj++] += 1;
+      }
+    }
+  } else {
+    for (i = 0; i < am; i++) {
+      anzj = ai[i + 1] - ai[i];
+      for (j = 0; j < anzj; j++) {
+        atj[atfill[*aj]] = i;
+        atfill[*aj++] += 1;
+      }
     }
   }
   PetscCall(PetscFree(atfill));
