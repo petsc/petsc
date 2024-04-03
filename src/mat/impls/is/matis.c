@@ -2889,10 +2889,10 @@ static PetscErrorCode MatSetValuesBlocked_IS(Mat mat, PetscInt m, const PetscInt
   PetscFunctionBegin;
   PetscCall(ISGlobalToLocalMappingApplyBlock(is->rmapping, IS_GTOLM_MASK, m, rows, &m, rows_l));
   if (m != n || rows != cols || is->cmapping != is->rmapping) {
-    PetscCall(ISGlobalToLocalMappingApply(is->cmapping, IS_GTOLM_MASK, n, cols, &n, cols_l));
+    PetscCall(ISGlobalToLocalMappingApplyBlock(is->cmapping, IS_GTOLM_MASK, n, cols, &n, cols_l));
     PetscCall(MatSetValuesBlocked(is->A, m, rows_l, n, cols_l, values, addv));
   } else {
-    PetscCall(MatSetValuesBlocked(is->A, m, rows_l, n, rows_l, values, addv));
+    PetscCall(MatSetValuesBlocked(is->A, m, rows_l, m, rows_l, values, addv));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
