@@ -16,6 +16,7 @@ class Configure(config.package.Package):
     self.buildLanguages   = ['C','FC']
     self.hastests         = 1
     self.hastestsdatafiles= 1
+    self.requirekandr     = 1
     return
 
 

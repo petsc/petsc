@@ -20,6 +20,7 @@ class Configure(config.package.CMakePackage):
     self.makerulename     = 'scalapack'
     self.minCmakeVersion  = (3,9,0)
     self.libDirs          = ['lib',os.path.join('lib','intel64')]
+    self.requirekandr     = 1
     return
 
   def setupDependencies(self, framework):

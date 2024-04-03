@@ -2132,6 +2132,15 @@ class Configure(config.base.Configure):
       self.popLanguage()
     return
 
+  def checkKandRFlags(self):
+    '''Check C compiler flags that allow compiling K and R code (needed for some external packages)'''
+    self.KandRFlags = []
+    with self.Language('C'):
+      if config.setCompilers.Configure.isGNU(self.getCompiler(), self.log) or config.setCompilers.Configure.isClang(self.getCompiler(), self.log) :
+        for f in ['-Wno-implicit-int', '-Wno-int-conversion', '-Wno-implicit-function-declaration', '-Wno-deprecated-non-prototype', '-fno-common']:
+          if self.checkCompilerFlag(f, compilerOnly = 1):
+            self.KandRFlags.append(f)
+
   def checkLargeFileIO(self):
     '''check for large file support with 64-bit offset'''
     if not self.argDB['with-large-file-io']:
@@ -2851,6 +2860,7 @@ if (dlclose(handle)) {
     if Configure.isCygwin(self.log):
       self.executeTest(self.checkLinkerWindows)
     self.executeTest(self.checkPIC)
+    self.executeTest(self.checkKandRFlags)
     self.executeTest(self.checkSharedLinkerPaths)
     self.executeTest(self.checkLibC)
     self.executeTest(self.checkDynamicLinker)
