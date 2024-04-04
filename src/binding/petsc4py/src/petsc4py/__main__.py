@@ -28,9 +28,11 @@ def help(args=None):
         args = shlex.split(args)
     else:
         args = [str(a) for a in args]
+    if '-help' not in args:
+        args.append('-help')
     # import and initialize
     import petsc4py
-    petsc4py.init([prog, '-help'] + args)
+    petsc4py.init([prog] + args)
     from petsc4py import PETSc
     # help dispatcher
     COMM = PETSc.COMM_SELF

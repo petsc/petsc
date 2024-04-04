@@ -54,10 +54,10 @@ from distutils.errors import DistutilsError
 try:
     from setuptools import modified
 except ImportError:
-  try:
-      from setuptools import dep_util as modified
-  except ImportError:
-      from distutils import dep_util as modified
+    try:
+        from setuptools import dep_util as modified
+    except ImportError:
+        from distutils import dep_util as modified
 
 try:
     from packaging.version import Version
@@ -311,9 +311,13 @@ class PetscConfig:
         if sys.platform != 'win32':
             # if DESTDIR is set, then we're building against PETSc in a staging
             # directory, but rpath needs to point to final install directory.
-            rpath = strip_prefix(self.DESTDIR, self['PETSC_LIB_DIR'])
-            petsc_lib['runtime_library_dirs'].append(rpath)
-
+            rpath = [strip_prefix(self.DESTDIR, self['PETSC_LIB_DIR'])]
+            if sys.modules.get('petsc') is not None:
+                if sys.platform == 'darwin':
+                    rpath = ['@loader_path/../../petsc/lib']
+                else:
+                    rpath = ['$ORIGIN/../../petsc/lib']
+            petsc_lib['runtime_library_dirs'].extend(rpath)
         # Link in extra libraries on static builds
         if self['BUILDSHAREDLIB'] != 'yes':
             petsc_ext_lib = split_quoted(self['PETSC_EXTERNAL_LIB_BASIC'])
@@ -377,14 +381,6 @@ class PetscConfig:
             linker_so    = PLD_SHARED,
             )
         compiler.shared_lib_extension = so_ext
-        #
-        if sys.platform == 'darwin':
-            for attr in ('preprocessor',
-                         'compiler', 'compiler_cxx', 'compiler_so',
-                         'linker_so', 'linker_exe'):
-                compiler_cmd = getattr(compiler, attr, [])
-                while '-mno-fused-madd' in compiler_cmd:
-                    compiler_cmd.remove('-mno-fused-madd')
 
     def log_info(self):
         PETSC_DIR  = self['PETSC_DIR']
@@ -600,26 +596,6 @@ class build_ext(_build_ext):
         self.set_undefined_options('build',
                                    ('petsc_dir',  'petsc_dir'),
                                    ('petsc_arch', 'petsc_arch'))
-        if ((sys.platform.startswith('linux') or
-             sys.platform.startswith('gnu') or
-             sys.platform.startswith('sunos')) and
-            sysconfig.get_config_var('Py_ENABLE_SHARED')):
-            py_version = sysconfig.get_python_version()
-            bad_pylib_dir = os.path.join(sys.prefix, "lib",
-                                         "python" + py_version,
-                                         "config")
-            try:
-                self.library_dirs.remove(bad_pylib_dir)
-            except ValueError:
-                pass
-            pylib_dir = sysconfig.get_config_var("LIBDIR")
-            if pylib_dir not in self.library_dirs:
-                self.library_dirs.append(pylib_dir)
-            if pylib_dir not in self.rpath:
-                self.rpath.append(pylib_dir)
-            if sys.exec_prefix == '/usr':
-                self.library_dirs.remove(pylib_dir)
-                self.rpath.remove(pylib_dir)
 
     def _copy_ext(self, ext):
         extclass = ext.__class__
@@ -781,7 +757,7 @@ def setup(**attrs):
         version = cython_req()
         if not cython_chk(version, verbose=False):
             reqs = attrs.setdefault('setup_requires', [])
-            reqs += ['Cython=='+version]
+            reqs += ['Cython>='+version]
     return _setup(**attrs)
 
 # --------------------------------------------------------------------
