@@ -16,6 +16,7 @@ class Configure(config.package.Package):
     self.functionsDefine  = ['SCOTCH_ParMETIS_V3_NodeND']
     self.includes         = ['ptscotch.h']
     self.hastests         = 1
+    self.requirekandr     = 1
     return
 
   def setupDependencies(self, framework):

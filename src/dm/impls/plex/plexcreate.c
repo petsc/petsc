@@ -1436,7 +1436,7 @@ static PetscErrorCode DMPlexCreateWedgeBoxMesh_Internal(DM dm, const PetscInt fa
 }
 
 /*@
-  DMPlexCreateWedgeBoxMesh - Creates a 3-D mesh tesselating the (x,y) plane and extruding in the third direction using wedge cells.
+  DMPlexCreateWedgeBoxMesh - Creates a 3-D mesh tessellating the (x,y) plane and extruding in the third direction using wedge cells.
 
   Collective
 

@@ -172,7 +172,7 @@ class Configure(config.package.Package):
       # To avoid a bug related to MPI_IN_PLACE and old MPICH releases, see MR 4410
       self.avoid_mpi_in_place = 0
       if 'download-mumps-avoid-mpi-in-place' in self.framework.clArgDB: # user-provided value takes precedence
-        self.avoid_mpi_in_place = self.clArgDB['download-mumps-avoid-mpi-in-place']
+        self.avoid_mpi_in_place = self.framework.clArgDB['download-mumps-avoid-mpi-in-place']
       elif hasattr(self.mpi, 'mpich_numversion') and int(self.mpi.mpich_numversion) < 40000101:
         self.avoid_mpi_in_place = 1
       if self.avoid_mpi_in_place:

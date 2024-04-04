@@ -2431,8 +2431,7 @@ PetscErrorCode PCFieldSplitSchurGetSubKSP(PC pc, PetscInt *n, KSP *subksp[])
 +     a11 - the preconditioner for the Schur complement is generated from the block diagonal part of the preconditioner
   matrix associated with the Schur complement (i.e. A11), not the Schur complement matrix
 .     self - the preconditioner for the Schur complement is generated from the symbolic representation of the Schur complement matrix:
-  The only preconditioner that currently works with this symbolic representation matrix object is the `PCLSC`
-  preconditioner
+  The only preconditioners that currently work with this symbolic representation matrix object are `PCLSC` and `PCHPDDM`
 .     user - the preconditioner for the Schur complement is generated from the user provided matrix (pre argument
   to this function).
 .     selfp - the preconditioning for the Schur complement is generated from an explicitly-assembled approximation Sp = A11 - A10 inv(diag(A00)) A01
@@ -2447,7 +2446,7 @@ PetscErrorCode PCFieldSplitSchurGetSubKSP(PC pc, PetscInt *n, KSP *subksp[])
   `-fieldsplit_1_pc_type lsc` which uses the least squares commutator to compute a preconditioner for the Schur complement.
 
 .seealso: [](sec_block_matrices), `PC`, `PCFieldSplitGetSchurPre()`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSchurPreType`,
-          `MatSchurComplementSetAinvType()`, `PCLSC`,
+          `MatSchurComplementSetAinvType()`, `PCLSC`
 
 @*/
 PetscErrorCode PCFieldSplitSetSchurPre(PC pc, PCFieldSplitSchurPreType ptype, Mat pre)

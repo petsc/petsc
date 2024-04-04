@@ -17,15 +17,15 @@ int main(int argc, char **args)
   IS                    *rows, *cols;
   IS                     irow[2], icol[2];
   PetscLayout            rlayout, clayout;
-  const PetscInt        *rrange, *crange;
+  const PetscInt        *rrange, *crange, *idxs1, *idxs2;
   MatType                lmtype;
-  PetscScalar            diag = 2.;
+  PetscScalar            diag = 2., *vals;
   PetscInt               n, m, i, lm, ln;
-  PetscInt               rst, ren, cst, cen, nr, nc;
+  PetscInt               rst, ren, cst, cen, nr, nc, rbs = 1, cbs = 1;
   PetscMPIInt            rank, size, lrank, rrank;
   PetscBool              testT, squaretest, isaij;
   PetscBool              permute = PETSC_FALSE, negmap = PETSC_FALSE, repmap = PETSC_FALSE, allow_repeated = PETSC_TRUE;
-  PetscBool              diffmap = PETSC_TRUE, symmetric = PETSC_FALSE, issymmetric, test_matlab = PETSC_FALSE;
+  PetscBool              diffmap = PETSC_TRUE, symmetric = PETSC_FALSE, issymmetric, test_matlab = PETSC_FALSE, test_setvalues = PETSC_TRUE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
@@ -41,6 +41,9 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-diffmap", &diffmap, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-allow_repeated", &allow_repeated, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_matlab", &test_matlab, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_setvalues", &test_setvalues, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-rbs", &rbs, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-cbs", &cbs, NULL));
   PetscCheck(size == 1 || m >= 4, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Number of rows should be larger or equal 4 for parallel runs");
   PetscCheck(size != 1 || m >= 2, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Number of rows should be larger or equal 2 for uniprocessor runs");
   PetscCheck(n >= 2, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Number of cols should be larger or equal 2");
@@ -88,6 +91,7 @@ int main(int argc, char **args)
 
   PetscCall(MatISSetAllowRepeated(A, allow_repeated));
   PetscCall(MatSetLocalToGlobalMapping(A, rmap, cmap));
+  PetscCall(MatSetBlockSizes(A, rbs, cbs));
   PetscCall(MatISStoreL2L(A, PETSC_FALSE));
   PetscCall(MatISSetPreallocation(A, 3, NULL, 3, NULL));
   PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, (PetscBool) !(repmap || negmap))); /* I do not want to precompute the pattern */
@@ -118,8 +122,6 @@ int main(int argc, char **args)
     PetscCall(ISLocalToGlobalMappingGetSize(cmap, &nc));
     if (nr != nc) squaretest = PETSC_FALSE;
     else {
-      const PetscInt *idxs1, *idxs2;
-
       PetscCall(ISLocalToGlobalMappingGetIndices(rmap, &idxs1));
       PetscCall(ISLocalToGlobalMappingGetIndices(cmap, &idxs2));
       PetscCall(PetscArraycmp(idxs1, idxs2, nr, &squaretest));
@@ -155,6 +157,7 @@ int main(int argc, char **args)
   /* Create a MPIAIJ matrix, same as A */
   PetscCall(MatCreate(PETSC_COMM_WORLD, &B));
   PetscCall(MatSetSizes(B, PETSC_DECIDE, PETSC_DECIDE, m, n));
+  PetscCall(MatSetBlockSizes(B, rbs, cbs));
   PetscCall(MatSetType(B, MATAIJ));
   PetscCall(MatSetFromOptions(B));
   PetscCall(MatSetLocalToGlobalMapping(B, rmap, cmap));
@@ -726,7 +729,6 @@ int main(int argc, char **args)
     Mat                    Abd, Bbd;
     IS                     is, bis;
     const PetscScalar     *isbd, *aijbd;
-    PetscScalar           *vals;
     const PetscInt        *sts, *idxs;
     PetscInt              *idxs2, diff, perm, nl, bs, st, en, in;
     PetscBool              ok;
@@ -875,6 +877,48 @@ int main(int argc, char **args)
     PetscCheck(!flg, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Local mat should be unassembled");
     PetscCall(MatISRestoreLocalMat(A2, &lA));
     PetscCall(MatDestroy(&A2));
+  }
+
+  /* Test MatZeroEntries */
+  PetscCall(MatZeroEntries(A));
+  PetscCall(MatZeroEntries(B));
+  PetscCall(CheckMat(A, B, PETSC_FALSE, "MatZeroEntries"));
+
+  /* Test MatSetValues and MatSetValuesBlocked */
+  if (test_setvalues) {
+    PetscCall(PetscMalloc1(lm * ln, &vals));
+    for (i = 0; i < lm * ln; i++) vals[i] = i + 1.0;
+    PetscCall(MatGetLocalSize(A, NULL, &ln));
+    PetscCall(MatISSetPreallocation(A, ln, NULL, n - ln, NULL));
+    PetscCall(MatSeqAIJSetPreallocation(B, ln, NULL));
+    PetscCall(MatMPIAIJSetPreallocation(B, ln, NULL, n - ln, NULL));
+    PetscCall(ISLocalToGlobalMappingGetSize(rmap, &lm));
+    PetscCall(ISLocalToGlobalMappingGetSize(cmap, &ln));
+
+    PetscCall(ISLocalToGlobalMappingGetIndices(rmap, &idxs1));
+    PetscCall(ISLocalToGlobalMappingGetIndices(cmap, &idxs2));
+    PetscCall(MatSetValues(A, lm, idxs1, ln, idxs2, vals, ADD_VALUES));
+    PetscCall(MatSetValues(B, lm, idxs1, ln, idxs2, vals, ADD_VALUES));
+    PetscCall(ISLocalToGlobalMappingRestoreIndices(rmap, &idxs1));
+    PetscCall(ISLocalToGlobalMappingRestoreIndices(cmap, &idxs2));
+    PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
+    PetscCall(CheckMat(A, B, PETSC_FALSE, "MatSetValues"));
+
+    PetscCall(ISLocalToGlobalMappingGetBlockIndices(rmap, &idxs1));
+    PetscCall(ISLocalToGlobalMappingGetBlockIndices(cmap, &idxs2));
+    PetscCall(MatSetValuesBlocked(A, lm / rbs, idxs1, ln / cbs, idxs2, vals, ADD_VALUES));
+    PetscCall(MatSetValuesBlocked(B, lm / rbs, idxs1, ln / cbs, idxs2, vals, ADD_VALUES));
+    PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(rmap, &idxs1));
+    PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(cmap, &idxs2));
+    PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
+    PetscCall(CheckMat(A, B, PETSC_FALSE, "MatSetValuesBlocked"));
+    PetscCall(PetscFree(vals));
   }
 
   /* free testing matrices */
@@ -1068,7 +1112,7 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
    test:
       suffix: 3
       nsize: 5
-      args: -m 11 -n 10 -mat_is_convert_local_nest -nr 2 -nc 1
+      args: -m 11 -n 10 -mat_is_convert_local_nest -nr 2 -nc 1 -cbs 2
 
    test:
       suffix: 4
@@ -1078,11 +1122,11 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
    test:
       suffix: 5
       nsize: 6
-      args: -m 12 -n 12 -test_trans -nr 3 -nc 1
+      args: -m 12 -n 12 -test_trans -nr 3 -nc 1 -rbs 2
 
    test:
       suffix: 6
-      args: -m 12 -n 12 -test_trans -nr 2 -nc 3 -diffmap
+      args: -m 12 -n 12 -test_trans -nr 2 -nc 3 -diffmap -rbs 6 -cbs 3
 
    test:
       suffix: 7
@@ -1111,7 +1155,7 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
    test:
       suffix: 12
       nsize: 3
-      args: -m 12 -n 12 -symmetric -mat_is_localmat_type sbaij -test_trans -nr 2 -nc 3
+      args: -m 12 -n 12 -symmetric -mat_is_localmat_type sbaij -test_trans -nr 2 -nc 3 -test_setvalues 0
 
    testset:
       output_file: output/ex23_13.out
