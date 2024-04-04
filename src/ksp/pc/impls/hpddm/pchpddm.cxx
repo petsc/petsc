@@ -2782,7 +2782,7 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
    It may be viewed as an alternative to spectral
    AMGe or `PCBDDC` with adaptive selection of constraints. The interface is explained in details in {cite}`jolivetromanzampini2020`
 
-   The matrix to be preconditioned (Pmat) may be unassembled (`MATIS`), assembled (`MATAIJ`, `MATBAIJ`, or `MATSBAIJ`), hierarchical (`MATHTOOL`), or `MATNORMAL`.
+   The matrix used for building the preconditioner (Pmat) may be unassembled (`MATIS`), assembled (`MATAIJ`, `MATBAIJ`, or `MATSBAIJ`), hierarchical (`MATHTOOL`), `MATNORMAL`, `MATNORMALHERMITIAN`, or `MATSCHURCOMPLEMENT` (when `PCHPDDM` is used as part of an outer `PCFIELDSPLIT`).
 
    For multilevel preconditioning, when using an assembled or hierarchical Pmat, one must provide an auxiliary local `Mat` (unassembled local operator for GenEO) using
    `PCHPDDMSetAuxiliaryMat()`. Calling this routine is not needed when using a `MATIS` Pmat, assembly is done internally using `MatConvert()`.
