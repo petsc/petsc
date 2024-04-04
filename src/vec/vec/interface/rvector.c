@@ -1525,10 +1525,12 @@ PetscErrorCode VecGetSubVectorThroughVecScatter_Private(Vec X, IS is, PetscInt b
 
   Notes:
   The subvector `Y` should be returned with `VecRestoreSubVector()`.
-  `X` and must be defined on the same communicator
+  `X` and `is` must be defined on the same communicator
+
+  Changes to the subvector will be reflected in the `X` vector on the call to `VecRestoreSubVector()`.
 
   This function may return a subvector without making a copy, therefore it is not safe to use the original vector while
-  modifying the subvector.  Other non-overlapping subvectors can still be obtained from X using this function.
+  modifying the subvector.  Other non-overlapping subvectors can still be obtained from `X` using this function.
 
   The resulting subvector inherits the block size from `is` if greater than one. Otherwise, the block size is guessed from the block size of the original `X`.
 
