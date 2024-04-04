@@ -48,6 +48,7 @@ class Package(config.base.Configure):
     self.foundversion     = ''   # version of the package actually found
     self.version_tuple    = ''   # version of the package actually found (tuple)
     self.requiresversion  = 0    # error if the version information is not found
+    self.requirekandr     = 0    # package requires KandR compiler flags to build
 
     # These are specified for the package
     self.required               = 0    # 1 means the package is required
@@ -407,11 +408,8 @@ class Package(config.base.Configure):
     outflags = self.removeVisibilityFlag(flags.split())
     outflags = self.removeWarningFlags(outflags)
     outflags = self.removeCoverageFlag(outflags)
-    with self.Language('C'):
-      if config.setCompilers.Configure.isClang(self.getCompiler(), self.log):
-        outflags.append('-Wno-implicit-function-declaration')
-        if config.setCompilers.Configure.isDarwin(self.log):
-          outflags.append('-fno-common')
+    if self.requirekandr:
+      outflags += self.setCompilers.KandRFlags
     return ' '.join(outflags)
 
   def updatePackageFFlags(self,flags):
