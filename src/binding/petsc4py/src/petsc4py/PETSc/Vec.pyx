@@ -1921,29 +1921,193 @@ cdef class Vec(Object):
         CHKERR( VecTDotEnd(self.vec, vec.vec, &sval) )
         return toScalar(sval)
 
-    def mDot(self, vecs, out=None) -> None:
-        """Not implemented."""
-        raise NotImplementedError
+    def mDot(self, vecs: Sequence[Vec], out: ArrayScalar | None = None) -> ArrayScalar:
+        """Compute Xᴴ·y with X an array of vectors.
 
-    def mDotBegin(self, vecs, out=None) -> None:
-        """Not implemented."""
-        raise NotImplementedError
+        Collective.
 
-    def mDotEnd(self, vecs, out=None) -> None:
-        """Not implemented."""
-        raise NotImplementedError
+        Parameters
+        ----------
+        vecs
+            Array of vectors.
+        out
+            Optional placeholder for the result.
 
-    def mtDot(self, vecs, out=None) -> None:
-        """Not implemented."""
-        raise NotImplementedError
+        See Also
+        --------
+        dot, tDot, mDotBegin, mDotEnd, petsc.VecMDot
 
-    def mtDotBegin(self, vecs, out=None) -> None:
-        """Not implemented."""
-        raise NotImplementedError
+        """
+        cdef PetscInt nv=len(vecs), no=0
+        cdef PetscVec *v=NULL
+        cdef PetscScalar *val=NULL
+        cdef Py_ssize_t i=0
+        cdef object tmp = oarray_p(empty_p(nv), NULL, <void**>&v)
+        for i from 0 <= i < nv:
+            v[i] = (<Vec?>(vecs[i])).vec
+        if out is None:
+            out = empty_s(nv)
+        out = oarray_s(out, &no, &val)
+        if (nv != no): raise ValueError(
+            ("incompatible array sizes: "
+             "nv=%d, no=%d") % (toInt(nv), toInt(no)))
+        CHKERR( VecMDot(self.vec, nv, v, val) )
+        return out
 
-    def mtDotEnd(self, vecs, out=None) -> None:
-        """Not implemented."""
-        raise NotImplementedError
+    def mDotBegin(self, vecs: Sequence[Vec], out: ArrayScalar) -> None:
+        """Starts a split phase multiple dot product computation.
+
+        Collective.
+
+        Parameters
+        ----------
+        vecs
+            Array of vectors.
+        out
+            Placeholder for the result.
+
+        See Also
+        --------
+        mDot, mDotEnd, petsc.VecMDotBegin
+
+        """
+        cdef PetscInt nv=len(vecs), no=0
+        cdef PetscVec *v=NULL
+        cdef PetscScalar *val=NULL
+        cdef Py_ssize_t i=0
+        cdef object tmp = oarray_p(empty_p(nv), NULL, <void**>&v)
+        for i from 0 <= i < nv:
+            v[i] = (<Vec?>(vecs[i])).vec
+        out = oarray_s(out, &no, &val)
+        if (nv != no): raise ValueError(
+            ("incompatible array sizes: "
+             "nv=%d, no=%d") % (toInt(nv), toInt(no)))
+        CHKERR( VecMDotBegin(self.vec, nv, v, val) )
+
+    def mDotEnd(self, vecs: Sequence[Vec], out: ArrayScalar) -> ArrayScalar:
+        """Ends a split phase multiple dot product computation.
+
+        Collective.
+
+        Parameters
+        ----------
+        vecs
+            Array of vectors.
+        out
+            Placeholder for the result.
+
+        See Also
+        --------
+        mDot, mDotBegin, petsc.VecMDotEnd
+
+        """
+        cdef PetscInt nv=len(vecs), no=0
+        cdef PetscVec *v=NULL
+        cdef PetscScalar *val=NULL
+        cdef Py_ssize_t i=0
+        cdef object tmp = oarray_p(empty_p(nv), NULL, <void**>&v)
+        for i from 0 <= i < nv:
+            v[i] = (<Vec?>(vecs[i])).vec
+        out = oarray_s(out, &no, &val)
+        if (nv != no): raise ValueError(
+            ("incompatible array sizes: "
+             "nv=%d, no=%d") % (toInt(nv), toInt(no)))
+        CHKERR( VecMDotEnd(self.vec, nv, v, val) )
+        return out
+
+    def mtDot(self, vecs: Sequence[Vec], out: ArrayScalar | None = None) -> ArrayScalar:
+        """Compute Xᵀ·y with X an array of vectors.
+
+        Collective.
+
+        Parameters
+        ----------
+        vecs
+            Array of vectors.
+        out
+            Optional placeholder for the result.
+
+        See Also
+        --------
+        tDot, mDot, mtDotBegin, mtDotEnd, petsc.VecMTDot
+
+        """
+        cdef PetscInt nv=len(vecs), no=0
+        cdef PetscVec *v=NULL
+        cdef PetscScalar *val=NULL
+        cdef Py_ssize_t i=0
+        cdef object tmp = oarray_p(empty_p(nv), NULL, <void**>&v)
+        for i from 0 <= i < nv:
+            v[i] = (<Vec?>(vecs[i])).vec
+        if out is None:
+            out = empty_s(nv)
+        out = oarray_s(out, &no, &val)
+        if (nv != no): raise ValueError(
+            ("incompatible array sizes: "
+             "nv=%d, no=%d") % (toInt(nv), toInt(no)))
+        CHKERR( VecMTDot(self.vec, nv, v, val) )
+        return out
+
+    def mtDotBegin(self, vecs: Sequence[Vec], out: ArrayScalar) -> None:
+        """Starts a split phase transpose multiple dot product computation.
+
+        Collective.
+
+        Parameters
+        ----------
+        vecs
+            Array of vectors.
+        out
+            Placeholder for the result.
+
+        See Also
+        --------
+        mtDot, mtDotEnd, petsc.VecMTDotBegin
+
+        """
+        cdef PetscInt nv=len(vecs), no=0
+        cdef PetscVec *v=NULL
+        cdef PetscScalar *val=NULL
+        cdef Py_ssize_t i=0
+        cdef object tmp = oarray_p(empty_p(nv), NULL, <void**>&v)
+        for i from 0 <= i < nv:
+            v[i] = (<Vec?>(vecs[i])).vec
+        out = oarray_s(out, &no, &val)
+        if (nv != no): raise ValueError(
+            ("incompatible array sizes: "
+             "nv=%d, no=%d") % (toInt(nv), toInt(no)))
+        CHKERR( VecMTDotBegin(self.vec, nv, v, val) )
+
+    def mtDotEnd(self, vecs: Sequence[Vec], out: ArrayScalar) -> ArrayScalar:
+        """Ends a split phase transpose multiple dot product computation.
+
+        Collective.
+
+        Parameters
+        ----------
+        vecs
+            Array of vectors.
+        out
+            Placeholder for the result.
+
+        See Also
+        --------
+        mtDot, mtDotBegin, petsc.VecMTDotEnd
+
+        """
+        cdef PetscInt nv=len(vecs), no=0
+        cdef PetscVec *v=NULL
+        cdef PetscScalar *val=NULL
+        cdef Py_ssize_t i=0
+        cdef object tmp = oarray_p(empty_p(nv), NULL, <void**>&v)
+        for i from 0 <= i < nv:
+            v[i] = (<Vec?>(vecs[i])).vec
+        out = oarray_s(out, &no, &val)
+        if (nv != no): raise ValueError(
+            ("incompatible array sizes: "
+             "nv=%d, no=%d") % (toInt(nv), toInt(no)))
+        CHKERR( VecMTDotEnd(self.vec, nv, v, val) )
+        return out
 
     def norm(
         self,
