@@ -223,14 +223,17 @@ def run_setup():
         setup_args['version'] = "%d.%d.0.dev0" %(x, y+1)
     if setuptools:
         setup_args['zip_safe'] = False
+        setup_args['setup_requires'] = ['numpy']
         setup_args['install_requires'] = ['numpy']
         for pkg in map(str.lower, PLIST):
             PKG_DIR = os.environ.get(pkg.upper() + '_DIR')
             if not (PKG_DIR and os.path.isdir(PKG_DIR)):
                 package = requires(pkg, x, y, release)
+                setup_args['setup_requires'] += [package]
                 setup_args['install_requires'] += [package]
         if F('{pyname}') != 'petsc4py':
             package = requires('petsc4py', x, y, release)
+            setup_args['setup_requires'] += [package]
             setup_args['install_requires'] += [package]
         setup_args.update(metadata_extra)
     #

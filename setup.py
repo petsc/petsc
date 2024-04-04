@@ -12,11 +12,11 @@ all message-passing communication.
 
 .. note::
 
-   To install ``PETSc`` and ``petsc4py`` (``mpi4py`` is optional
-   but highly recommended) use::
+   To install the ``PETSc`` and ``petsc4py`` packages
+   (``mpi4py`` is optional but highly recommended) use::
 
-     $ python -m pip install numpy mpi4py  (or pip install numpy mpi4py)
-     $ python -m pip install petsc petsc4py (or pip install petsc petsc4py)
+     $ python -m pip install numpy mpi4py
+     $ python -m pip install petsc petsc4py
 
 .. tip::
 
@@ -25,21 +25,22 @@ all message-passing communication.
     $ python -m pip install Cython numpy mpi4py
     $ python -m pip install --no-deps https://gitlab.com/petsc/petsc/-/archive/main/petsc-main.tar.gz
 
-  To set the MPI compilers use the environmental variables ``MPICC``, ``MPICXX``, ``MPIF90``.
-
   Provide any ``PETSc`` ./configure options using the environmental variable ``PETSC_CONFIGURE_OPTIONS``.
 
   Do not use the ``PETSc`` ``./configure`` options ``--with-cc``, ``--with-cxx``, ``--with-fc``, or ``--with-mpi-dir``.
-
-  If ``mpi4py`` is installed the compilers will obtained from that installation and ``MPICC``, ``MPICXX``, ``MPIF90`` will be ignored.
+  To set the MPI compilers use the environmental variables ``MPICC``, ``MPICXX``, ``MPIFORT``.
+  If ``mpi4py`` is installed the compilers will be obtained from that installation and ``MPICC``, ``MPICXX``, ``MPIFORT`` will be ignored.
 
 """
 
-import sys, os
+import re
+import os
+import sys
+import shlex
+import shutil
 from setuptools import setup
+from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 from setuptools.command.install import install as _install
-from distutils.util import get_platform, split_quoted
-from distutils.spawn import find_executable
 from distutils import log
 
 init_py = """\
@@ -50,10 +51,24 @@ def get_petsc_dir():
     import os
     return os.path.dirname(__file__)
 
+
 def get_config():
     conf = {}
     conf['PETSC_DIR'] = get_petsc_dir()
     return conf
+"""
+
+main_py = """\
+# Author:  PETSc Team
+# Contact: petsc-maint@mcs.anl.gov
+
+if __name__ == "__main__":
+    import sys
+    if "--prefix" in sys.argv:
+        from . import get_petsc_dir
+        print(get_petsc_dir())
+        del get_petsc_dir
+    del sys
 """
 
 metadata = {
@@ -63,34 +78,38 @@ metadata = {
 
 CONFIGURE_OPTIONS = []
 
+
 def bootstrap():
     # Set PETSC_DIR and PETSC_ARCH
     PETSC_DIR  = os.path.abspath(os.getcwd())
-    PETSC_ARCH = 'arch-python-' + get_platform()
+    PETSC_ARCH = 'arch-python'
     os.environ['PETSC_DIR']  = PETSC_DIR
     os.environ['PETSC_ARCH'] = PETSC_ARCH
     sys.path.insert(0, os.path.join(PETSC_DIR, 'config'))
     sys.path.insert(0, os.path.join(PETSC_DIR, 'lib','petsc','conf'))
-    # Generate package __init__.py file
-    from distutils.dir_util import mkpath
+
+    # Generate package __init__.py and __main__.py files
     pkgdir = os.path.join('config', 'pypi')
-    if not os.path.exists(pkgdir): mkpath(pkgdir)
-    pkgfile = os.path.join(pkgdir, '__init__.py')
-    fh = open(pkgfile, 'w')
-    fh.write(init_py)
-    fh.close()
+    os.makedirs(pkgdir, exist_ok=True)
+    for pyfile, contents in (
+        ('__init__.py', init_py),
+        ('__main__.py', main_py),
+    ):
+        with open(os.path.join(pkgdir, pyfile), 'w') as fh:
+            fh.write(contents)
+
     # Configure options
     options = os.environ.get('PETSC_CONFIGURE_OPTIONS', '')
-    CONFIGURE_OPTIONS.extend(split_quoted(options))
+    CONFIGURE_OPTIONS.extend(shlex.split(options))
     for i in CONFIGURE_OPTIONS:
         if i.startswith('--with-mpi-dir='):
-            raise RuntimeError("Do not use --with-mpi-dir, use the environmental variables MPICC, MPICXX, MPIF90")
+            raise RuntimeError("Do not use --with-mpi-dir, use the environmental variables MPICC, MPICXX, MPIFORT")
         if i.startswith('--with-cc='):
             raise RuntimeError("Do not use --with-cc, use the environmental variable MPICC")
         if i.startswith('--with-cxx=') and i != "--with-cxx=0":
             raise RuntimeError("Do not use --with-cxx, use the environmental variable MPICXX")
         if i.startswith('--with-fc=') and i != "--with-fc=0":
-            raise RuntimeError("Do not use --with-fc, use the environmental variable MPIF90")
+            raise RuntimeError("Do not use --with-fc, use the environmental variable MPIFORT")
 
     if '--with-mpi=0' not in CONFIGURE_OPTIONS:
         # Simple-minded lookup for MPI and mpi4py
@@ -102,11 +121,12 @@ def bootstrap():
         except ImportError: # mpi4py is not installed
             mpi4py = None
             mpicc = (os.environ.get('MPICC') or
-                     find_executable('mpicc'))
+                     shutil.which('mpicc'))
         except AttributeError: # mpi4py is too old
             pass
         if not mpi4py and mpicc:
             metadata['install_requires'] = ['mpi4py>=1.2.2']
+
 
 def config(prefix, dry_run=False):
     log.info('PETSc: configure')
@@ -125,11 +145,13 @@ def config(prefix, dry_run=False):
             conf = mpi4py.get_config()
             mpicc  = conf.get('mpicc')
             mpicxx = conf.get('mpicxx')
-            mpif90 = conf.get('mpif90')
+            mpifort = conf.get('mpifort') or conf.get('mpif90')
         except (ImportError, AttributeError):
-            mpicc  = os.environ.get('MPICC')  or find_executable('mpicc')
-            mpicxx = os.environ.get('MPICXX') or find_executable('mpicxx')
-            mpif90 = os.environ.get('MPIF90') or find_executable('mpif90')
+            mpicc  = os.environ.get('MPICC') or shutil.which('mpicc')
+            mpicxx = os.environ.get('MPICXX') or shutil.which('mpicxx')
+            mpifort = os.environ.get('MPIFORT') or os.environ.get('MPIF90')
+            mpifort = mpifort or shutil.which('mpifort')
+            mpifort = mpifort or shutil.which('mpif90')
         if mpicc:
             options.append('--with-cc='+mpicc)
             if '--with-cxx=0' not in CONFIGURE_OPTIONS:
@@ -138,8 +160,8 @@ def config(prefix, dry_run=False):
                 else:
                     options.append('--with-cxx=0')
             if '--with-fc=0' not in CONFIGURE_OPTIONS:
-                if mpif90:
-                    options.append('--with-fc='+mpif90)
+                if mpifort:
+                    options.append('--with-fc='+mpifort)
                 else:
                     options.append('--with-fc=0')
                     options.append('--with-sowing=0')
@@ -151,7 +173,8 @@ def config(prefix, dry_run=False):
     for opt in options:
         log.info(' '*4 + opt)
     # Run PETSc configure
-    if dry_run: return
+    if dry_run:
+        return
     use_config_py = False
     if use_config_py:
         import configure
@@ -162,12 +185,36 @@ def config(prefix, dry_run=False):
         python = sys.executable
         command = [python, './configure'] + options
         status = os.system(" ".join(command))
-        if status != 0: raise RuntimeError(status)
+        if status != 0:
+            raise RuntimeError(status)
+    # Fix PETSc configuration
+    if os.environ.get('PEP517_BUILD_BACKEND'):
+        pdir = os.environ['PETSC_DIR']
+        parch = os.environ['PETSC_ARCH']
+        include = os.path.join(pdir, parch, 'include')
+        for filename in (
+            'petscconf.h',
+            'petscconfiginfo.h',
+            'petscmachineinfo.h',
+        ):
+            filename = os.path.join(include, filename)
+            with open(filename, 'r') as old_fh:
+                contents = old_fh.read()
+            contents = contents.replace(prefix, '${PETSC_DIR}')
+            contents = re.sub(
+                r'^(#define PETSC_PYTHON_EXE) "(.*)"$',
+                r'\1 "python%d"' % sys.version_info[0],
+                contents, flags=re.MULTILINE,
+            )
+            with open(filename, 'w') as new_fh:
+                new_fh.write(contents)
+
 
 def build(dry_run=False):
     log.info('PETSc: build')
     # Run PETSc build
-    if dry_run: return
+    if dry_run:
+        return
     use_builder_py = False
     if use_builder_py:
         import builder
@@ -175,15 +222,18 @@ def build(dry_run=False):
         import logger
         logger.Logger.defaultLog = None
     else:
-        make = find_executable('make')
+        make = shutil.which('make')
         command = [make, 'all']
         status = os.system(" ".join(command))
-        if status != 0: raise RuntimeError(status)
+        if status != 0:
+            raise RuntimeError(status)
+
 
 def install(dry_run=False):
     log.info('PETSc: install')
     # Run PETSc installer
-    if dry_run: return
+    if dry_run:
+        return
     use_install_py = False
     if use_install_py:
         import install
@@ -191,10 +241,12 @@ def install(dry_run=False):
         import logger
         logger.Logger.defaultLog = None
     else:
-        make = find_executable('make')
+        make = shutil.which('make')
         command = [make, 'install']
         status = os.system(" ".join(command))
-        if status != 0: raise RuntimeError(status)
+        if status != 0:
+            raise RuntimeError(status)
+
 
 class context(object):
     def __init__(self):
@@ -209,11 +261,11 @@ class context(object):
         sys.argv[:] = self.sys_argv
         os.chdir(self.wdir)
 
+
 class cmd_install(_install):
 
     def initialize_options(self):
         _install.initialize_options(self)
-        self.optimize = 1
 
     def finalize_options(self):
         _install.finalize_options(self)
@@ -245,8 +297,20 @@ class cmd_install(_install):
         outputs += _install.get_outputs(self)
         return outputs
 
+
+class cmd_bdist_wheel(_bdist_wheel):
+
+    def finalize_options(self):
+        super().finalize_options()
+        self.root_is_pure = False
+        self.build_number = None
+
+    def get_tag(self):
+        plat_tag = super().get_tag()[-1]
+        return (self.python_tag, "none", plat_tag)
+
+
 def version():
-    import re
     version_re = {
         'major'  : re.compile(r"#define\s+PETSC_VERSION_MAJOR\s+(\d+)"),
         'minor'  : re.compile(r"#define\s+PETSC_VERSION_MINOR\s+(\d+)"),
@@ -265,13 +329,18 @@ def version():
         v = "%d.%d.0.dev%d" % (major, minor+1, 0)
     return v
 
+
 def tarball():
     VERSION = version()
-    if '.dev' in VERSION: return None
+    if '.dev' in VERSION:
+        return None
     return ('https://web.cels.anl.gov/projects/petsc/download/release-snapshots/'
             'petsc-%s.tar.gz#egg=petsc-%s' % (VERSION, VERSION))
 
-description = __doc__.split('\n')[1:-1]; del description[1:3]
+
+description = __doc__.split('\n')[1:-1]
+del description[1:3]
+
 classifiers = """
 Development Status :: 5 - Production/Stable
 Intended Audience :: Developers
@@ -286,29 +355,31 @@ Topic :: Scientific/Engineering
 Topic :: Software Development :: Libraries
 """
 
-if 'bdist_wheel' in sys.argv:
-    sys.stderr.write("petsc: this package cannot be built as a wheel\n")
-    sys.exit(1)
-
 bootstrap()
-setup(name='petsc',
-      version=version(),
-      description=description.pop(0),
-      long_description='\n'.join(description),
-      classifiers= classifiers.split('\n')[1:-1],
-      keywords = ['PETSc', 'MPI'],
-      platforms=['POSIX'],
-      license='BSD',
+setup(
+    name='petsc',
+    version=version(),
+    description=description.pop(0),
+    long_description='\n'.join(description),
+    long_description_content_type='text/x-rst',
+    classifiers=classifiers.split('\n')[1:-1],
+    keywords = ['PETSc', 'MPI'],
+    platforms=['POSIX'],
+    license='BSD-2-Clause',
 
-      url='https://petsc.org/',
-      download_url=tarball(),
+    url='https://petsc.org/',
+    download_url=tarball(),
 
-      author='PETSc Team',
-      author_email='petsc-maint@mcs.anl.gov',
-      maintainer='Lisandro Dalcin',
-      maintainer_email='dalcinl@gmail.com',
+    author='PETSc Team',
+    author_email='petsc-maint@mcs.anl.gov',
+    maintainer='Lisandro Dalcin',
+    maintainer_email='dalcinl@gmail.com',
 
-      packages = ['petsc'],
-      package_dir = {'petsc': 'config/pypi'},
-      cmdclass={'install': cmd_install},
-      **metadata)
+    packages=['petsc'],
+    package_dir= {'petsc': 'config/pypi'},
+    cmdclass={
+        'install': cmd_install,
+        'bdist_wheel': cmd_bdist_wheel,
+    },
+    **metadata
+)
