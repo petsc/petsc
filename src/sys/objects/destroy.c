@@ -93,6 +93,15 @@ PetscErrorCode PetscObjectView(PetscObject obj, PetscViewer viewer)
   Level: developer
 
   Notes:
+  The argument has the following form
+.vb
+    type:filename:format:filemode
+.ve
+  where all parts are optional, but you need to include the colon to access the next part. For example, to read from an HDF5 file, use
+.vb
+    hdf5:sol.h5::read
+.ve
+
 .vb
     If no value is provided ascii:stdout is used
        ascii[:[filename][:[format][:append]]]    defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab,
