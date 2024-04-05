@@ -176,6 +176,8 @@ PETSC_EXTERN PetscErrorCode DMLocalizeCoordinate(DM, const PetscScalar[], PetscB
 PETSC_EXTERN PetscErrorCode DMLocalizeCoordinates(DM);
 PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocalized(DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocalizedLocal(DM, PetscBool *);
+PETSC_EXTERN PetscErrorCode DMGetSparseLocalize(DM, PetscBool *);
+PETSC_EXTERN PetscErrorCode DMSetSparseLocalize(DM, PetscBool);
 
 /* block hook interface */
 PETSC_EXTERN PetscErrorCode DMSubDomainHookAdd(DM, PetscErrorCode (*)(DM, DM, void *), PetscErrorCode (*)(DM, VecScatter, VecScatter, DM, void *), void *);
