@@ -221,7 +221,7 @@ petsc4py-pip:
     - mkdir -p "${PIP_WHEEL_DIR}"
     - python -m pip wheel .
     - python -m pip wheel src/binding/petsc4py
-    - python -m pip install petsc4py
+    - python -m pip install --pre --no-index --no-cache-dir petsc4py
     - python -m pip list
     - python -m petsc --prefix
     - python -m petsc4py
