@@ -63,7 +63,7 @@ static PetscErrorCode MatGetRowMaxAbs_MPIBAIJ(Mat A, Vec v, PetscInt idx[])
   const PetscScalar *vb;
 
   PetscFunctionBegin;
-  PetscCall(VecCreateSeq(PETSC_COMM_SELF, m, &vA));
+  PetscCall(MatCreateVecs(a->A, NULL, &vA));
   PetscCall(MatGetRowMaxAbs(a->A, vA, idx));
 
   PetscCall(VecGetArrayWrite(vA, &va));
@@ -73,7 +73,7 @@ static PetscErrorCode MatGetRowMaxAbs_MPIBAIJ(Mat A, Vec v, PetscInt idx[])
     }
   }
 
-  PetscCall(VecCreateSeq(PETSC_COMM_SELF, m, &vB));
+  PetscCall(MatCreateVecs(a->B, NULL, &vB));
   PetscCall(PetscMalloc1(m, &idxb));
   PetscCall(MatGetRowMaxAbs(a->B, vB, idxb));
 
@@ -94,6 +94,23 @@ static PetscErrorCode MatGetRowMaxAbs_MPIBAIJ(Mat A, Vec v, PetscInt idx[])
   PetscCall(PetscFree(idxb));
   PetscCall(VecDestroy(&vA));
   PetscCall(VecDestroy(&vB));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatGetRowSumAbs_MPIBAIJ(Mat A, Vec v)
+{
+  Mat_MPIBAIJ *a = (Mat_MPIBAIJ *)A->data;
+  Vec          vB, vA;
+
+  PetscFunctionBegin;
+  PetscCall(MatCreateVecs(a->A, NULL, &vA));
+  PetscCall(MatGetRowSumAbs(a->A, vA));
+  PetscCall(MatCreateVecs(a->B, NULL, &vB));
+  PetscCall(MatGetRowSumAbs(a->B, vB));
+  PetscCall(VecAXPY(vA, 1.0, vB));
+  PetscCall(VecDestroy(&vB));
+  PetscCall(VecCopy(vA, v));
+  PetscCall(VecDestroy(&vA));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2565,7 +2582,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                        NULL,
                                        /*150*/ NULL,
                                        MatEliminateZeros_MPIBAIJ,
-                                       NULL};
+                                       MatGetRowSumAbs_MPIBAIJ};
 
 PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatConvert_XAIJ_IS(Mat, MatType, MatReuse, Mat *);
