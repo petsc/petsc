@@ -128,15 +128,18 @@ int main(int argc, char **argv)
     PetscCall(ISDestroy(&valueIS));
   }
   if (view_coord) {
-    DM       cdm;
-    Vec      X;
-    PetscInt cdim;
+    DM        cdm, cell_dm;
+    Vec       X;
+    PetscInt  cdim;
+    PetscBool sparseLocalize;
 
     PetscCall(DMGetCoordinatesLocalSetUp(dm));
     PetscCall(DMGetCoordinateDim(dm, &cdim));
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     PetscCall(PetscObjectSetName((PetscObject)cdm, "coords"));
     if (tensor) PetscCall(DMPlexSetClosurePermutationTensor(cdm, PETSC_DETERMINE, NULL));
+    PetscCall(DMLocalizeCoordinates(dm));
+    PetscCall(DMGetSparseLocalize(dm, &sparseLocalize));
     for (c = cStart; c < cEnd; ++c) {
       const PetscScalar *array;
       PetscScalar       *x = NULL;
@@ -152,6 +155,12 @@ int main(int argc, char **argv)
     PetscCall(ViewOffsets(dm, NULL));
     PetscCall(DMGetCoordinatesLocal(dm, &X));
     PetscCall(ViewOffsets(cdm, X));
+    PetscCall(DMGetCellCoordinateDM(dm, &cell_dm));
+    PetscCall(PetscObjectSetName((PetscObject)cell_dm, "cell coords"));
+    if (cell_dm && !sparseLocalize) {
+      PetscCall(DMGetCellCoordinatesLocal(dm, &X));
+      PetscCall(ViewOffsets(cell_dm, X));
+    }
   }
   PetscCall(DMDestroy(&dm));
   PetscCall(PetscFinalize());
@@ -202,10 +211,17 @@ int main(int argc, char **argv)
     suffix: 1d_q1_periodic
     requires: !complex
     args: -dm_plex_dim 1 -petscspace_degree 1 -dm_plex_simplex 0 -dm_plex_box_faces 3 -dm_plex_box_bd periodic -dm_view -view_coord
-  test:
+  testset:
     suffix: 2d_q1_periodic
     requires: !complex
-    args: -dm_plex_dim 2 -petscspace_degree 1 -dm_plex_simplex 0 -dm_plex_box_faces 3,2 -dm_plex_box_bd periodic,none -dm_view -view_coord
+    args: -dm_plex_dim 2 -dm_plex_simplex 0 -dm_plex_box_faces 3,2 -dm_plex_box_bd periodic,none \
+          -petscspace_degree 1 -dm_view -view_coord
+
+    test:
+    test:
+      suffix: sparse
+      args: -dm_sparse_localize false -dm_localize 0
+
   test:
     suffix: 3d_q1_periodic
     requires: !complex
