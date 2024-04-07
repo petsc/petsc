@@ -2974,7 +2974,7 @@ PetscErrorCode KSPSetComputeOperators(KSP ksp, KSPComputeOperatorsFn *func, void
 
   Input Parameters:
 + ksp  - the `KSP` context
-. func - function to compute the right-hand side, see `KSPComputeRHSFn` for the calling squence
+. func - function to compute the right-hand side, see `KSPComputeRHSFn` for the calling sequence
 - ctx  - optional context
 
   Level: beginner

@@ -1467,7 +1467,7 @@ static PetscErrorCode MatNestSetSubMats_Nest(Mat A, PetscInt nr, const IS is_row
 
   Notes:
   This always resets any block matrix information previously set.
-  Pass `NULL` in the correspoding entry of `a` for an empty block.
+  Pass `NULL` in the corresponding entry of `a` for an empty block.
 
   In both C and Fortran, `a` must be a row-major order array containing the matrices. See
   `MatCreateNest()` for an example.

@@ -770,7 +770,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
         }
         PetscReal e1_max_w = (ghost1_idx == -1 ? PetscRealPart(lid_max_ew[lid0]) : PetscRealPart(lghost_max_ew[ghost1_idx]));
         if (print)
-          PetscCall(PetscSynchronizedPrintf(comm, "\t[%d] MATCHING (%d %d) e1 max weight = %e, e1 wight diff %e, %s. isOK = %d\n", rank, (int)gid0, (int)gid1, (double)e1_max_w, (double)(e1_max_w - e->weight), ghost1_idx == -1 ? "local" : "ghost", isOK));
+          PetscCall(PetscSynchronizedPrintf(comm, "\t[%d] MATCHING (%d %d) e1 max weight = %e, e1 weight diff %e, %s. isOK = %d\n", rank, (int)gid0, (int)gid1, (double)e1_max_w, (double)(e1_max_w - e->weight), ghost1_idx == -1 ? "local" : "ghost", isOK));
         /* do it */
         if (isOK) {
           if (ghost1_idx == -1) {
