@@ -294,6 +294,7 @@ PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, const char na
   PetscAssertPointer(fl, 1);
   if (name) PetscAssertPointer(name, 2);
   if (fptr) PetscValidFunction(fptr, 3);
+  if (!fptr && !*fl) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFunctionListCreate_Private(0, fl));
   PetscCall(PetscHMapFuncInsert_Private((*fl)->map, name, fptr));
   PetscFunctionReturn(PETSC_SUCCESS);
