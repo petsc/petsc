@@ -1616,6 +1616,7 @@ cdef class Mat(Object):
         CHKERR( MatSetSizes(self.mat, m, n, M, N) )
         CHKERR( MatSetType(self.mat, MATPYTHON) )
         CHKERR( MatPythonSetContext(self.mat, <void*>context) )
+        CHKERR( MatSetUp(self.mat) )
         return self
 
     def setPythonContext(self, context: Any) -> None:
