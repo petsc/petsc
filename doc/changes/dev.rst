@@ -55,6 +55,8 @@ Changes: Development
 
 .. rubric:: DM/DA:
 
+- Add ``DMGetSparseLocalize()`` and ``DMSetSparseLocalize()``
+
 .. rubric:: DMSwarm:
 
 .. rubric:: DMPlex:

@@ -4381,7 +4381,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
     PetscInt  degree = 1, deg;
     PetscInt  height = 0;
     DM        cdm;
-    PetscBool flg;
+    PetscBool flg, localize = PETSC_TRUE, sparseLocalize = PETSC_TRUE;
 
     PetscCall(PetscOptionsBool("-dm_coord_space", "Use an FEM space for coordinates", "", coordSpace, &coordSpace, &flg));
     PetscCall(PetscOptionsInt("-dm_coord_petscspace_degree", "FEM degree for coordinate space", "", degree, &degree, NULL));
@@ -4407,10 +4407,12 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
       }
       mesh->coordFunc = NULL;
     }
-    PetscCall(PetscOptionsBool("-dm_sparse_localize", "Localize only necessary cells", "", dm->sparseLocalize, &dm->sparseLocalize, &flg));
+    PetscCall(PetscOptionsBool("-dm_localize", "Localize mesh coordinates", "", localize, &localize, NULL));
+    PetscCall(PetscOptionsBool("-dm_sparse_localize", "Localize only necessary cells", "DMSetSparseLocalize", sparseLocalize, &sparseLocalize, &flg));
+    if (flg) PetscCall(DMSetSparseLocalize(dm, sparseLocalize));
     PetscCall(PetscOptionsInt("-dm_localize_height", "Localize edges and faces in addition to cells", "", height, &height, &flg));
     if (flg) PetscCall(DMPlexSetMaxProjectionHeight(cdm, height));
-    PetscCall(DMLocalizeCoordinates(dm));
+    if (localize) PetscCall(DMLocalizeCoordinates(dm));
   }
   /* Handle DMPlex refinement */
   remap = PETSC_TRUE;
@@ -4774,6 +4776,8 @@ PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm)
 . -dm_distribute                     - Distribute mesh across processes
 . -dm_distribute_overlap             - Number of cells to overlap for distribution
 . -dm_refine                         - Refine mesh after distribution
+. -dm_localize <bool>                - Whether to localize coordinates for periodic meshes
+. -dm_sparse_localize <bool>         - Whether to only localize cells on the periodic boundary
 . -dm_plex_hash_location             - Use grid hashing for point location
 . -dm_plex_hash_box_faces <n,m,p>    - The number of divisions in each direction of the grid hash
 . -dm_plex_partition_balance         - Attempt to evenly divide points on partition boundary between processes
