@@ -33,6 +33,8 @@ class Configure(config.package.CMakePackage):
     return
 
   def formCMakeConfigureArgs(self):
+    if '++' in self.externalPackagesDir:
+      raise RuntimeError('Cannot build ml in a folder containing "++"')
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DTrilinos_ENABLE_ALL_OPTIONAL_PACKAGES=OFF')
     args.append('-DTrilinos_ENABLE_ALL_PACKAGES=OFF')
