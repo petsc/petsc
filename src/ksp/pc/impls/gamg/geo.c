@@ -624,7 +624,7 @@ static PetscErrorCode PCGAMGProlongator_GEO(PC pc, Mat Amat, PetscCoarsenData *a
   PetscCheck((Iend - Istart) % bs == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "(Iend %" PetscInt_FMT " - Istart %" PetscInt_FMT ") %% bs %" PetscInt_FMT, Iend, Istart, bs);
 
   /* get 'nLocalSelected' */
-  PetscCall(PetscCDGetMat(agg_lists, &Gmat)); // get auxilary matrix for ghost edges
+  PetscCall(PetscCDGetMat(agg_lists, &Gmat)); // get auxiliary matrix for ghost edges
   PetscCall(PetscCDGetNonemptyIS(agg_lists, &selected_1));
   PetscCall(ISGetSize(selected_1, &jj));
   PetscCall(PetscMalloc1(jj, &clid_flid));

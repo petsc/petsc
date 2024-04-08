@@ -88,7 +88,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     options->func = x2_x4;
     break;
   default:
-    PetscCheck(flg, comm, PETSC_ERR_ARG_WRONG, "Cannnot handle function \"%s\"", FunctionTypes[func]);
+    PetscCheck(flg, comm, PETSC_ERR_ARG_WRONG, "Cannot handle function \"%s\"", FunctionTypes[func]);
   }
   PetscOptionsEnd();
   PetscFunctionReturn(PETSC_SUCCESS);

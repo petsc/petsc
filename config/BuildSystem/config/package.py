@@ -1244,7 +1244,7 @@ const char *ver = "petscpkgver(" PetscXstr_({y}) ")";
     if mid: # if mid is not empty, then it should be 'petscpkgver', meaning we found the version string
       verLine = right.split(';',1)[0] # get the string before the first ';'. Preprocessor might dump multiline result.
       self.log.write('Found the raw version string: ' + verLine +'\n')
-      # strip backslashs, spaces and quotes. Note Mumps' version macro has "" around it, giving output: (" "\"5.4.1\"" ")";
+      # strip backslashes, spaces, and quotes. Note MUMPS' version macro has "" around it, giving output: (" "\"5.4.1\"" ")";
       for char in ['\\', ' ', '"']:
           verLine = verLine.replace(char, '')
       # get the string between the outer ()

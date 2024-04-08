@@ -4393,7 +4393,7 @@ PetscErrorCode DMSetLocalSection(DM dm, PetscSection section)
 }
 
 /*@C
-  DMCreateSectionPermutation - Create a permutation of the `PetscSection` chart and optionally a blokc structure.
+  DMCreateSectionPermutation - Create a permutation of the `PetscSection` chart and optionally a block structure.
 
   Input Parameter:
 . dm - The `DM`

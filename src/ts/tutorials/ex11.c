@@ -398,7 +398,7 @@ static PetscErrorCode CreateQFunctionContext_SW(Physics phys, Ceed ceed, CeedQFu
   PetscCallCEED(CeedQFunctionContextCreate(ceed, qfCtx));
   PetscCallCEED(CeedQFunctionContextSetData(*qfCtx, CEED_MEM_HOST, CEED_USE_POINTER, sizeof(*sw), sw));
   PetscCallCEED(CeedQFunctionContextSetDataDestroy(*qfCtx, CEED_MEM_HOST, FreeContextPetsc));
-  PetscCallCEED(CeedQFunctionContextRegisterDouble(*qfCtx, "gravity", offsetof(Physics_SW, gravity), 1, "Accelaration due to gravity"));
+  PetscCallCEED(CeedQFunctionContextRegisterDouble(*qfCtx, "gravity", offsetof(Physics_SW, gravity), 1, "Acceleration due to gravity"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
