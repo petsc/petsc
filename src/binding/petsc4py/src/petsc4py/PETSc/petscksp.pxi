@@ -113,6 +113,16 @@ cdef extern from * nogil:
                                                PetscMat,
                                                void*) except PETSC_ERR_PYTHON
 
+    ctypedef PetscErrorCode (*PetscKSPPreSolveFunction)(PetscKSP,
+                                               PetscVec,
+                                               PetscVec,
+                                               void*) except PETSC_ERR_PYTHON
+
+    ctypedef PetscErrorCode (*PetscKSPPostSolveFunction)(PetscKSP,
+                                               PetscVec,
+                                               PetscVec,
+                                               void*) except PETSC_ERR_PYTHON
+
     PetscErrorCode KSPCreate(MPI_Comm,PetscKSP*)
     PetscErrorCode KSPDestroy(PetscKSP*)
     PetscErrorCode KSPView(PetscKSP,PetscViewer)
@@ -174,6 +184,8 @@ cdef extern from * nogil:
     PetscErrorCode KSPSetUp(PetscKSP)
     PetscErrorCode KSPReset(PetscKSP)
     PetscErrorCode KSPSetUpOnBlocks(PetscKSP)
+    PetscErrorCode KSPSetPreSolve(PetscKSP,PetscKSPPreSolveFunction,void*)
+    PetscErrorCode KSPSetPostSolve(PetscKSP,PetscKSPPostSolveFunction,void*)
     PetscErrorCode KSPSolve(PetscKSP,PetscVec,PetscVec)
     PetscErrorCode KSPSolveTranspose(PetscKSP,PetscVec,PetscVec)
     PetscErrorCode KSPMatSolve(PetscKSP,PetscMat,PetscMat)
@@ -289,6 +301,40 @@ cdef PetscErrorCode KSP_ComputeOps(
     assert context is not None and type(context) is tuple # sanity check
     (computeops, args, kargs) = context
     computeops(Ksp, Amat, Bmat, *args, **kargs)
+    return PETSC_SUCCESS
+
+# -----------------------------------------------------------------------------
+
+cdef PetscErrorCode KSP_PreSolve(
+    PetscKSP ksp,
+    PetscVec rhs,
+    PetscVec x,
+    void* ctx,
+    ) except PETSC_ERR_PYTHON with gil:
+    cdef KSP Ksp = ref_KSP(ksp)
+    cdef Vec Rhs = ref_Vec(rhs)
+    cdef Vec X = ref_Vec(x)
+    cdef object context = Ksp.get_attr('__presolve__')
+    if context is None and ctx != NULL: context = <object>ctx
+    assert context is not None and type(context) is tuple
+    (presolve, args, kargs) = context
+    presolve(Ksp, Rhs, X, *args, **kargs)
+    return PETSC_SUCCESS
+
+cdef PetscErrorCode KSP_PostSolve(
+    PetscKSP ksp,
+    PetscVec rhs,
+    PetscVec x,
+    void* ctx,
+    ) except PETSC_ERR_PYTHON with gil:
+    cdef KSP Ksp = ref_KSP(ksp)
+    cdef Vec Rhs = ref_Vec(rhs)
+    cdef Vec X = ref_Vec(x)
+    cdef object context = Ksp.get_attr('__postsolve__')
+    if context is None and ctx != NULL: context = <object>ctx
+    assert context is not None and type(context) is tuple
+    (postsolve, args, kargs) = context
+    postsolve(Ksp, Rhs, X, *args, **kargs)
     return PETSC_SUCCESS
 
 # -----------------------------------------------------------------------------

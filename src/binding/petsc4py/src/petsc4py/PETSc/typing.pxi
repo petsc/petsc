@@ -51,6 +51,8 @@ cdef KSPRHSFunction
 cdef KSPOperatorsFunction
 cdef KSPConvergenceTestFunction
 cdef KSPMonitorFunction
+cdef KSPPreSolveFunction
+cdef KSPPostSolveFunction
 
 # --- TS ---
 

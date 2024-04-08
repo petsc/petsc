@@ -1629,6 +1629,74 @@ cdef class KSP(Object):
         """
         CHKERR( KSPSetUpOnBlocks(self.ksp) )
 
+    def setPreSolve(
+        self,
+        presolve: KSPPreSolveFunction | None,
+        args: tuple[Any, ...] | None = None,
+        kargs: dict[str, Any] | None = None
+    ) -> None:
+        """Set the function that is called at the beginning of each `KSP.solve`.
+
+        Logically Collective.
+
+        Parameters
+        ----------
+        presolve
+            The callback function.
+        args
+            Positional arguments for the callback function.
+        kargs
+            Keyword arguments for the callback function.
+
+        See Also
+        --------
+        solve, petsc.KSPSetPreSolve, petsc.KSPSetPostSolve
+
+        """
+        if presolve is not None:
+            if args is None: args = ()
+            if kargs is None: kargs = {}
+            context = (presolve, args, kargs)
+            self.set_attr('__presolve__', context)
+            CHKERR( KSPSetPreSolve(self.ksp, KSP_PreSolve, <void*>context) )
+        else:
+            self.set_attr('__presolve__', None)
+            CHKERR( KSPSetPreSolve(self.ksp, NULL, NULL) )
+
+    def setPostSolve(
+        self,
+        postsolve: KSPPostSolveFunction | None,
+        args: tuple[Any, ...] | None = None,
+        kargs: dict[str, Any] | None = None
+    ) -> None:
+        """Set the function that is called at the end of each `KSP.solve`.
+
+        Logically Collective.
+
+        Parameters
+        ----------
+        postsolve
+            The callback function.
+        args
+            Positional arguments for the callback function.
+        kargs
+            Keyword arguments for the callback function.
+
+        See Also
+        --------
+        solve, petsc.KSPSetPreSolve, petsc.KSPSetPostSolve
+
+        """
+        if postsolve is not None:
+            if args is None: args = ()
+            if kargs is None: kargs = {}
+            context = (postsolve, args, kargs)
+            self.set_attr('__postsolve__', context)
+            CHKERR( KSPSetPostSolve(self.ksp, KSP_PostSolve, <void*>context) )
+        else:
+            self.set_attr('__postsolve__', None)
+            CHKERR( KSPSetPostSolve(self.ksp, NULL, NULL) )
+
     def solve(self, Vec b, Vec x) -> None:
         """Solve the linear system.
 
