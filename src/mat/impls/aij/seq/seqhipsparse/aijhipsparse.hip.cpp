@@ -3546,7 +3546,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJHIPSPARSE(Mat B)
 .seealso: [](ch_matrices), `Mat`, `MatCreateSeqAIJHIPSPARSE()`, `MATAIJHIPSPARSE`, `MatCreateAIJHIPSPARSE()`, `MatHIPSPARSESetFormat()`, `MatHIPSPARSEStorageFormat`, `MatHIPSPARSEFormatOperation`
 M*/
 
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_HIPSPARSE(void)
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_HIPSPARSE(void)
 {
   PetscFunctionBegin;
   PetscCall(MatSolverTypeRegister(MATSOLVERHIPSPARSE, MATSEQAIJHIPSPARSE, MAT_FACTOR_LU, MatGetFactor_seqaijhipsparse_hipsparse));

@@ -630,7 +630,7 @@ static PetscErrorCode MatGetFactor_seqsell_superlu(Mat A, MatFactorType ftype, M
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU(void)
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_SuperLU(void)
 {
   PetscFunctionBegin;
   PetscCall(MatSolverTypeRegister(MATSOLVERSUPERLU, MATSEQAIJ, MAT_FACTOR_LU, MatGetFactor_seqaij_superlu));

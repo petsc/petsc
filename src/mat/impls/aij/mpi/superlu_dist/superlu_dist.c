@@ -990,7 +990,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A, MatFactorType ftype, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void)
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void)
 {
   PetscFunctionBegin;
   PetscCall(MatSolverTypeRegister(MATSOLVERSUPERLU_DIST, MATMPIAIJ, MAT_FACTOR_LU, MatGetFactor_aij_superlu_dist));

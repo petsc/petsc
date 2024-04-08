@@ -775,7 +775,7 @@ static PetscErrorCode MatGetFactor_elemental_elemental(Mat A, MatFactorType ftyp
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Elemental(void)
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_Elemental(void)
 {
   PetscFunctionBegin;
   PetscCall(MatSolverTypeRegister(MATSOLVERELEMENTAL, MATELEMENTAL, MAT_FACTOR_LU, MatGetFactor_elemental_elemental));

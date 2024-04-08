@@ -925,7 +925,7 @@ static PetscErrorCode MatGetFactor_mpiaij_mkl_cpardiso(Mat A, MatFactorType ftyp
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MKL_CPardiso(void)
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_MKL_CPardiso(void)
 {
   PetscFunctionBegin;
   PetscCall(MatSolverTypeRegister(MATSOLVERMKL_CPARDISO, MATMPIAIJ, MAT_FACTOR_LU, MatGetFactor_mpiaij_mkl_cpardiso));

@@ -66,55 +66,55 @@ PETSC_INTERN PetscErrorCode MatSolverTypeRegister_DENSEHIP(void);
 #endif
 
 #if defined(PETSC_HAVE_MUMPS)
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MUMPS(void);
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_MUMPS(void);
 #endif
 #if defined(PETSC_HAVE_CUDA)
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_CUSPARSE(void);
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_CUSPARSE(void);
 #endif
 #if defined(PETSC_HAVE_HIP)
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_HIPSPARSE(void);
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_HIPSPARSE(void);
 #endif
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_KOKKOS(void);
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_KOKKOS(void);
 #endif
 #if defined(PETSC_HAVE_VIENNACL)
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_ViennaCL(void);
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_ViennaCL(void);
 #endif
 #if defined(PETSC_HAVE_ELEMENTAL)
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Elemental(void);
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_Elemental(void);
 #endif
 #if defined(PETSC_HAVE_SCALAPACK)
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_ScaLAPACK(void);
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_ScaLAPACK(void);
 #endif
 #if defined(PETSC_HAVE_MATLAB)
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Matlab(void);
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_Matlab(void);
 #endif
 #if defined(PETSC_HAVE_ESSL)
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Essl(void);
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_Essl(void);
 #endif
 #if defined(PETSC_HAVE_SUPERLU)
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU(void);
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_SuperLU(void);
 #endif
 #if defined(PETSC_HAVE_STRUMPACK)
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_STRUMPACK(void);
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_STRUMPACK(void);
 #endif
 #if defined(PETSC_HAVE_PASTIX)
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Pastix(void);
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_Pastix(void);
 #endif
 #if defined(PETSC_HAVE_SUPERLU_DIST)
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void);
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void);
 #endif
 #if defined(PETSC_HAVE_MKL_PARDISO)
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MKL_Pardiso(void);
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_MKL_Pardiso(void);
 #endif
 #if defined(PETSC_HAVE_MKL_CPARDISO)
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MKL_CPardiso(void);
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_MKL_CPardiso(void);
 #endif
 #if defined(PETSC_HAVE_SUITESPARSE)
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuiteSparse(void);
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_SuiteSparse(void);
 #endif
 #if defined(PETSC_HAVE_LUSOL)
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Lusol(void);
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_Lusol(void);
 #endif
 
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_petsc(Mat, MatFactorType, Mat *);
