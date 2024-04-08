@@ -493,7 +493,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat A, MatType type
 .seealso: `MatCreateSeqAIJViennaCL()`, `MATAIJVIENNACL`, `MatCreateAIJViennaCL()`
 M*/
 
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_ViennaCL(void)
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_ViennaCL(void)
 {
   PetscFunctionBegin;
   PetscCall(MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJVIENNACL, MAT_FACTOR_LU, MatGetFactor_seqaij_petsc));

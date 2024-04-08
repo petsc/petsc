@@ -890,7 +890,7 @@ static PetscErrorCode MatGetFactor_scalapack_scalapack(Mat A, MatFactorType ftyp
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_ScaLAPACK(void)
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_ScaLAPACK(void)
 {
   PetscFunctionBegin;
   PetscCall(MatSolverTypeRegister(MATSOLVERSCALAPACK, MATSCALAPACK, MAT_FACTOR_LU, MatGetFactor_scalapack_scalapack));

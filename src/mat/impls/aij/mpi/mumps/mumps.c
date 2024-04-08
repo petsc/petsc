@@ -3802,7 +3802,7 @@ static PetscErrorCode MatGetFactor_nest_mumps(Mat A, MatFactorType ftype, Mat *F
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MUMPS(void)
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_MUMPS(void)
 {
   PetscFunctionBegin;
   PetscCall(MatSolverTypeRegister(MATSOLVERMUMPS, MATMPIAIJ, MAT_FACTOR_LU, MatGetFactor_aij_mumps));

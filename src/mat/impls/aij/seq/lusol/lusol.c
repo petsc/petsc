@@ -427,7 +427,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A, MatFactorType ftype
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Lusol(void)
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_Lusol(void)
 {
   PetscFunctionBegin;
   PetscCall(MatSolverTypeRegister(MATSOLVERLUSOL, MATSEQAIJ, MAT_FACTOR_LU, MatGetFactor_seqaij_lusol));

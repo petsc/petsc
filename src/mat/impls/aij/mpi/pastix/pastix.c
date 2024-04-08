@@ -616,7 +616,7 @@ static PetscErrorCode MatGetFactor_mpisbaij_pastix(Mat A, MatFactorType ftype, M
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Pastix(void)
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_Pastix(void)
 {
   PetscFunctionBegin;
   PetscCall(MatSolverTypeRegister(MATSOLVERPASTIX, MATMPIAIJ, MAT_FACTOR_LU, MatGetFactor_mpiaij_pastix));
