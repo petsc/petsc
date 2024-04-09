@@ -427,7 +427,7 @@ static PetscErrorCode DMProjectPoint_BdField_Private(DM dm, PetscDS ds, DM dmIn,
 
       if (isCohesiveIn) {
         // These points are not integration quadratures, but dual space quadratures
-        // If they had multiple points we should match them from both sides, simmilar to hybrid residual eval
+        // If they had multiple points we should match them from both sides, similar to hybrid residual eval
         qpt[0] = qpt[1] = q;
       }
       if (isAffine) {

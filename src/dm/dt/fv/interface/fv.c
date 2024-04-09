@@ -1740,7 +1740,7 @@ PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV fvm, PetscDS prob, PetscInt f
 }
 
 /*@
-  PetscFVClone - Create a shallow copy of a `PetscFV` object that jsut references the internal objects.
+  PetscFVClone - Create a shallow copy of a `PetscFV` object that just references the internal objects.
 
   Input Parameter:
 . fv - The initial `PetscFV`

@@ -223,8 +223,14 @@ def run_setup():
         setup_args['version'] = "%d.%d.0.dev0" %(x, y+1)
     if setuptools:
         setup_args['zip_safe'] = False
+        try:
+            import numpy
+            major = int(numpy.__version__.partition('.')[0])
+            numpy_pin = 'numpy>=%d,<%d' % (major, major + 1)
+        except ImportError:
+            numpy_pin = 'numpy'
         setup_args['setup_requires'] = ['numpy']
-        setup_args['install_requires'] = ['numpy']
+        setup_args['install_requires'] = [numpy_pin]
         for pkg in map(str.lower, PLIST):
             PKG_DIR = os.environ.get(pkg.upper() + '_DIR')
             if not (PKG_DIR and os.path.isdir(PKG_DIR)):

@@ -105,10 +105,10 @@ static PetscErrorCode AppCtxCreate(MPI_Comm comm, AppCtx *ctx)
   PetscCall(PetscOptionsInt("-n", "Rosenbrock problem size", NULL, user->n, &user->n, NULL));
   PetscCall(PetscOptionsInt("-bs", "Rosenbrock block size (2 <= bs <= n)", NULL, user->problem.bs, &user->problem.bs, NULL));
   PetscCall(PetscOptionsReal("-alpha", "Rosenbrock off-diagonal coefficient", NULL, user->problem.alpha, &user->problem.alpha, NULL));
-  PetscCall(PetscOptionsBool("-test_lmvm", "Test LMVM solve againt LMVM mult", NULL, user->test_lmvm, &user->test_lmvm, NULL));
+  PetscCall(PetscOptionsBool("-test_lmvm", "Test LMVM solve against LMVM mult", NULL, user->test_lmvm, &user->test_lmvm, NULL));
   PetscOptionsEnd();
   PetscCheck(user->problem.bs >= 1, comm, PETSC_ERR_ARG_INCOMP, "Block size %" PetscInt_FMT " is not bigger than 1", user->problem.bs);
-  PetscCheck((user->n % user->problem.bs) == 0, comm, PETSC_ERR_ARG_INCOMP, "Block size %" PetscInt_FMT " doest not divide problem size % " PetscInt_FMT, user->problem.bs, user->n);
+  PetscCheck((user->n % user->problem.bs) == 0, comm, PETSC_ERR_ARG_INCOMP, "Block size %" PetscInt_FMT " does not divide problem size % " PetscInt_FMT, user->problem.bs, user->n);
   PetscCall(PetscLogEventRegister("Rbock_Obj", TAO_CLASSID, &user->event_f));
   PetscCall(PetscLogEventRegister("Rbock_Grad", TAO_CLASSID, &user->event_g));
   PetscCall(PetscLogEventRegister("Rbock_ObjGrad", TAO_CLASSID, &user->event_fg));
@@ -494,7 +494,7 @@ static PetscErrorCode FormObjective(Tao tao, Vec X, PetscReal *f, void *ptr)
     PetscCall(VecSum(user->fvector, &f_scalar));
     *f = PetscRealPart(f_scalar);
 #endif
-  } else SETERRQ(user->comm, PETSC_ERR_SUP, "Unsuported memtype %d", (int)memtype_x);
+  } else SETERRQ(user->comm, PETSC_ERR_SUP, "Unsupported memtype %d", (int)memtype_x);
   PetscCall(VecRestoreArrayReadAndMemType(X, &x));
   PetscCall(VecRestoreArrayReadAndMemType(user->off_process_values, &o));
   PetscCall(PetscLogEventEnd(user->event_f, tao, NULL, NULL, NULL));
@@ -528,7 +528,7 @@ static PetscErrorCode FormGradient(Tao tao, Vec X, Vec G, void *ptr)
     PetscCall(PetscDeviceContextGetStreamHandle(dctx, (void **)&stream));
     PetscCall(RosenbrockGradient_Device(*stream, user->problem, x, o, g));
 #endif
-  } else SETERRQ(user->comm, PETSC_ERR_SUP, "Unsuported memtype %d", (int)memtype_x);
+  } else SETERRQ(user->comm, PETSC_ERR_SUP, "Unsupported memtype %d", (int)memtype_x);
   PetscCall(VecRestoreArrayWriteAndMemType(user->gvalues, &g));
   PetscCall(VecRestoreArrayReadAndMemType(X, &x));
   PetscCall(VecRestoreArrayReadAndMemType(user->off_process_values, &o));
@@ -591,7 +591,7 @@ static PetscErrorCode FormObjectiveGradient(Tao tao, Vec X, PetscReal *f, Vec G,
     PetscCall(VecSum(user->fvector, &f_scalar));
     *f = PetscRealPart(f_scalar);
 #endif
-  } else SETERRQ(user->comm, PETSC_ERR_SUP, "Unsuported memtype %d", (int)memtype_x);
+  } else SETERRQ(user->comm, PETSC_ERR_SUP, "Unsupported memtype %d", (int)memtype_x);
 
   PetscCall(VecRestoreArrayWriteAndMemType(user->gvalues, &g));
   PetscCall(VecRestoreArrayReadAndMemType(X, &x));
@@ -644,7 +644,7 @@ static PetscErrorCode FormHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *ptr)
     PetscCall(PetscDeviceContextGetStreamHandle(dctx, (void **)&stream));
     PetscCall(RosenbrockHessian_Device(*stream, user->problem, x, o, h));
 #endif
-  } else SETERRQ(user->comm, PETSC_ERR_SUP, "Unsuported memtype %d", (int)memtype_x);
+  } else SETERRQ(user->comm, PETSC_ERR_SUP, "Unsupported memtype %d", (int)memtype_x);
 
   PetscCall(MatSetValuesCOO(H, h, INSERT_VALUES));
   PetscCall(VecRestoreArrayWriteAndMemType(user->Hvalues, &h));

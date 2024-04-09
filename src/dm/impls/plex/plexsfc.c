@@ -487,7 +487,7 @@ static PetscErrorCode DMPlexCreateIsoperiodicPointSF_Private(DM dm, PetscInt num
       PetscCall(PetscSFMerge(point_sf, csf, closure_sf));
       PetscCall(PetscSFDestroy(&csf));
     }
-    if (f > 0) PetscCall(PetscSFDestroy(&point_sf)); // Only destory if point_sf is from previous calls to PetscSFMerge
+    if (f > 0) PetscCall(PetscSFDestroy(&point_sf)); // Only destroy if point_sf is from previous calls to PetscSFMerge
     point_sf = *closure_sf;                          // Use combined point + isoperiodic SF to define point ownership for further face_sf
   }
   PetscCall(PetscObjectSetName((PetscObject)*closure_sf, "Composed Periodic Points"));

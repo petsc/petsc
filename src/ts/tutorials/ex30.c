@@ -697,7 +697,7 @@ static PetscErrorCode ProjectSource(DM dm, PetscReal time, AppCtx *ctx)
     ctxs[P_FIELD_ID]  = NULL;
     break;
   default:
-    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unknwon source");
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unknown source");
   }
   funcs[C_FIELD_ID] = zerof;
   ctxs[C_FIELD_ID]  = NULL;
@@ -1002,7 +1002,7 @@ static PetscErrorCode SetInitialConditionsAndTolerances(TS ts, PetscInt nv, Vec 
         funcs[C_FIELD_ID] = initial_conditions_C_2;
         break;
       default:
-        SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "Unknwon IC");
+        SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "Unknown IC");
       }
       funcs[P_FIELD_ID] = zerof;
       PetscCall(DMProjectFunction(dm, t, funcs, NULL, INSERT_ALL_VALUES, u));
