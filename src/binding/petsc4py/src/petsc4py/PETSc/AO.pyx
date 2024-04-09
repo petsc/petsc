@@ -1,12 +1,14 @@
 # --------------------------------------------------------------------
 
 class AOType(object):
+    """The application ordering types."""
     BASIC          = S_(AOBASIC)
     ADVANCED       = S_(AOADVANCED)
     MAPPING        = S_(AOMAPPING)
     MEMORYSCALABLE = S_(AOMEMORYSCALABLE)
 
 # --------------------------------------------------------------------
+
 
 cdef class AO(Object):
     """Application ordering object."""
@@ -33,7 +35,7 @@ cdef class AO(Object):
         """
         cdef PetscViewer cviewer = NULL
         if viewer is not None: cviewer = viewer.vwr
-        CHKERR( AOView(self.ao, cviewer) )
+        CHKERR(AOView(self.ao, cviewer))
 
     def destroy(self) -> Self:
         """Destroy the application ordering.
@@ -45,15 +47,14 @@ cdef class AO(Object):
         petsc.AODestroy
 
         """
-        CHKERR( AODestroy(&self.ao) )
+        CHKERR(AODestroy(&self.ao))
         return self
 
     def createBasic(
         self,
         app: Sequence[int] | IS,
         petsc: Sequence[int] | IS | None = None,
-        comm: Comm | None = None,
-    ) -> Self:
+        comm: Comm | None = None) -> Self:
         """Return a basic application ordering using two orderings.
 
         Collective.
@@ -88,22 +89,21 @@ cdef class AO(Object):
             isapp = (<IS>app).iset
             if petsc is not None:
                 ispetsc = (<IS?>petsc).iset
-            CHKERR( AOCreateBasicIS(isapp, ispetsc, &newao) )
+            CHKERR(AOCreateBasicIS(isapp, ispetsc, &newao))
         else:
             app = iarray_i(app, &napp, &idxapp)
             if petsc is not None:
                 petsc = iarray_i(petsc, &npetsc, &idxpetsc)
                 assert napp == npetsc, "incompatible array sizes"
-            CHKERR( AOCreateBasic(ccomm, napp, idxapp, idxpetsc, &newao) )
-        CHKERR( PetscCLEAR(self.obj) ); self.ao = newao
+            CHKERR(AOCreateBasic(ccomm, napp, idxapp, idxpetsc, &newao))
+        CHKERR(PetscCLEAR(self.obj)); self.ao = newao
         return self
 
     def createMemoryScalable(
         self,
         app: Sequence[int] | IS,
         petsc: Sequence[int] | IS | None = None,
-        comm: Comm | None = None,
-    ) -> Self:
+        comm: Comm | None = None) -> Self:
         """Return a memory scalable application ordering using two orderings.
 
         Collective.
@@ -141,22 +141,21 @@ cdef class AO(Object):
             isapp = (<IS>app).iset
             if petsc is not None:
                 ispetsc = (<IS?>petsc).iset
-            CHKERR( AOCreateMemoryScalableIS(isapp, ispetsc, &newao) )
+            CHKERR(AOCreateMemoryScalableIS(isapp, ispetsc, &newao))
         else:
             app = iarray_i(app, &napp, &idxapp)
             if petsc is not None:
                 petsc = iarray_i(petsc, &npetsc, &idxpetsc)
                 assert napp == npetsc, "incompatible array sizes"
-            CHKERR( AOCreateMemoryScalable(ccomm, napp, idxapp, idxpetsc, &newao) )
-        CHKERR( PetscCLEAR(self.obj) ); self.ao = newao
+            CHKERR(AOCreateMemoryScalable(ccomm, napp, idxapp, idxpetsc, &newao))
+        CHKERR(PetscCLEAR(self.obj)); self.ao = newao
         return self
 
     def createMapping(
         self,
         app: Sequence[int] | IS,
         petsc: Sequence[int] | IS | None = None,
-        comm: Comm | None = None,
-    ) -> Self:
+        comm: Comm | None = None) -> Self:
         """Return an application mapping using two orderings.
 
         Collective.
@@ -188,14 +187,14 @@ cdef class AO(Object):
             isapp = (<IS>app).iset
             if petsc is not None:
                 ispetsc = (<IS?>petsc).iset
-            CHKERR( AOCreateMappingIS(isapp, ispetsc, &newao) )
+            CHKERR(AOCreateMappingIS(isapp, ispetsc, &newao))
         else:
             app = iarray_i(app, &napp, &idxapp)
             if petsc is not None:
                 petsc = iarray_i(petsc, &npetsc, &idxpetsc)
                 assert napp == npetsc, "incompatible array sizes"
-            CHKERR( AOCreateMapping(ccomm, napp, idxapp, idxpetsc, &newao) )
-        CHKERR( PetscCLEAR(self.obj) ); self.ao = newao
+            CHKERR(AOCreateMapping(ccomm, napp, idxapp, idxpetsc, &newao))
+        CHKERR(PetscCLEAR(self.obj)); self.ao = newao
         return self
 
     def getType(self) -> str:
@@ -209,7 +208,7 @@ cdef class AO(Object):
 
         """
         cdef PetscAOType cval = NULL
-        CHKERR( AOGetType(self.ao, &cval) )
+        CHKERR(AOGetType(self.ao, &cval))
         return bytes2str(cval)
 
     def app2petsc(self, indices: Sequence[int] | IS) -> Sequence[int] | IS:
@@ -240,10 +239,10 @@ cdef class AO(Object):
         cdef PetscInt nidx = 0, *idx = NULL
         if isinstance(indices, IS):
             iset = (<IS>indices).iset
-            CHKERR( AOApplicationToPetscIS(self.ao, iset) )
+            CHKERR(AOApplicationToPetscIS(self.ao, iset))
         else:
             indices = oarray_i(indices, &nidx, &idx)
-            CHKERR( AOApplicationToPetsc(self.ao, nidx, idx) )
+            CHKERR(AOApplicationToPetsc(self.ao, nidx, idx))
         return indices
 
     def petsc2app(self, indices: Sequence[int] | IS) -> Sequence[int] | IS:
@@ -274,10 +273,10 @@ cdef class AO(Object):
         cdef PetscInt nidx = 0, *idx = NULL
         if isinstance(indices, IS):
             iset = (<IS>indices).iset
-            CHKERR( AOPetscToApplicationIS(self.ao, iset) )
+            CHKERR(AOPetscToApplicationIS(self.ao, iset))
         else:
             indices = oarray_i(indices, &nidx, &idx)
-            CHKERR( AOPetscToApplication(self.ao, nidx, idx) )
+            CHKERR(AOPetscToApplication(self.ao, nidx, idx))
         return indices
 
 # --------------------------------------------------------------------

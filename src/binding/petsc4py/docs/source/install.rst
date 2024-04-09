@@ -26,18 +26,50 @@ The installation of :mod:`petsc4py` supports multiple `PETSC_ARCH
   $ PETSC_ARCH='arch-0:...:arch-N' python -m pip install src/binding/petsc4py
 
 If you are cross-compiling, and the :mod:`numpy` module cannot be loaded on
-your build host, then before invoking :file:`pip`, set the
+your build host, then before invoking :program:`pip`, set the
 :envvar:`NUMPY_INCLUDE` environment variable to the path that would be returned
 by :samp:`import numpy; numpy.get_include()`::
 
   $ export NUMPY_INCLUDE=/usr/lib/pythonX/site-packages/numpy/core/include
 
+Running the testing suite
+-------------------------
+
+When installing from source, the petsc4py complete testsuite can be run as::
+
+  $ cd src/binding/petsc4py
+  $ python test/runtests.py
+
+or via the makefile rule ``test``::
+
+  $ make test -C src/binding/petsc4py
+
+Specific tests can be run using the command-line option ``-k``, e.g.::
+
+  $ python test/runtests.py -k test_optdb
+
+to run all the tests provided in :file:`tests/test_optdb.py`.
+
+For other command-line options, run::
+
+  $ python test/runtests.py --help
+
+If not otherwise specified, all tests will be run in sequential mode.
+To run all the tests with the same number of MPI processes, for example
+``4``, run::
+
+  $ mpiexec -n 4 python test/runtests.py
+
+or::
+
+  $ make test-4 -C src/binding/petsc4py
+
 Building the documentation
 --------------------------
 
-Install the documentation dependencies using the ``[doc]`` extra::
+Install the documentation dependencies::
 
-  $ python -m pip install "src/binding/petsc4py[doc]"
+  $ python -m pip install -r src/binding/petsc4py/conf/requirements-docs.txt
 
 Then::
 
@@ -49,8 +81,3 @@ The resulting HTML files will be in :file:`_build/html`.
 .. note::
 
   Building the documentation requires Python 3.11 or later.
-
-.. note::
-
-  All new code must include documentation in accordance with the `documentation
-  standard <documentation_standards>`

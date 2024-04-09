@@ -21,6 +21,7 @@ environmental variable, or a configuration file.
 
 # --------------------------------------------------------------------
 
+
 def ImportPETSc(arch=None):
     """
     Import the PETSc extension module for a given configuration name.
@@ -34,12 +35,15 @@ def getPathArchPETSc(arch=None):
     Undocumented.
     """
     import os
+
     path = os.path.abspath(os.path.dirname(__file__))
-    rcvar, rcfile  =  'PETSC_ARCH', 'petsc.cfg'
+    rcvar, rcfile = 'PETSC_ARCH', 'petsc.cfg'
     path, arch = getPathArch(path, arch, rcvar, rcfile)
     return (path, arch)
 
+
 # --------------------------------------------------------------------
+
 
 def Import(pkg, name, path, arch):
     """
@@ -59,11 +63,10 @@ def Import(pkg, name, path, arch):
     def get_ext_suffix():
         if importlib:
             return importlib.machinery.EXTENSION_SUFFIXES[0]
-        else:
-            return imp.get_suffixes()[0][0]
+        return imp.get_suffixes()[0][0]
 
     def import_module(pkg, name, path, arch):
-        fullname = '{}.{}'.format(pkg, name)
+        fullname = f'{pkg}.{name}'
         pathlist = [os.path.join(path, arch)]
         if importlib:
             finder = importlib.machinery.PathFinder()
@@ -72,25 +75,24 @@ def Import(pkg, name, path, arch):
             sys.modules[fullname] = module
             spec.loader.exec_module(module)
             return module
-        else:
-            f, fn, info = imp.find_module(name, pathlist)
-            with f:
-                return imp.load_module(fullname, f, fn, info)
+        f, fn, info = imp.find_module(name, pathlist)
+        with f:
+            return imp.load_module(fullname, f, fn, info)
 
     # test if extension module was already imported
-    module = sys.modules.get('{}.{}'.format(pkg, name))
+    module = sys.modules.get(f'{pkg}.{name}')
     filename = getattr(module, '__file__', '')
     if filename.endswith(get_ext_suffix()):
         # if 'arch' is None, do nothing; otherwise this
         # call may be invalid if extension module for
         # other 'arch' has been already imported.
         if arch is not None and arch != module.__arch__:
-            raise ImportError("%s already imported" % module)
+            raise ImportError('%s already imported' % module)
         return module
 
     # silence annoying Cython warning
-    warnings.filterwarnings("ignore", message="numpy.dtype size changed")
-    warnings.filterwarnings("ignore", message="numpy.ndarray size changed")
+    warnings.filterwarnings('ignore', message='numpy.dtype size changed')
+    warnings.filterwarnings('ignore', message='numpy.ndarray size changed')
     # import extension module from 'path/arch' directory
     module = import_module(pkg, name, path, arch)
     module.__arch__ = arch  # save arch value
@@ -104,6 +106,7 @@ def getPathArch(path, arch, rcvar='PETSC_ARCH', rcfile='petsc.cfg'):
     """
     import os
     import warnings
+
     # path
     if not path:
         path = '.'
@@ -114,16 +117,17 @@ def getPathArch(path, arch, rcvar='PETSC_ARCH', rcfile='petsc.cfg'):
     # arch
     if arch is not None:
         if not isinstance(arch, str):
-            raise TypeError( "arch argument must be string")
+            raise TypeError('arch argument must be string')
         if not os.path.isdir(os.path.join(path, arch)):
             raise TypeError("invalid arch value: '%s'" % arch)
         return (path, arch)
+
     # helper function
     def arch_list(arch):
         arch = arch.strip().split(os.path.pathsep)
         arch = [a.strip() for a in arch if a]
-        arch = [a for a in arch if a]
-        return arch
+        return [a for a in arch if a]
+
     # try to get arch from the environment
     arch_env = arch_list(os.environ.get(rcvar, ''))
     for arch in arch_env:
@@ -135,6 +139,7 @@ def getPathArch(path, arch, rcvar='PETSC_ARCH', rcfile='petsc.cfg'):
         if not os.path.isfile(rcfile):
             # now point to continue
             return (path, '')
+
     # helper function
     def parse_rc(rcfile):
         with open(rcfile) as f:
@@ -144,6 +149,7 @@ def getPathArch(path, arch, rcvar='PETSC_ARCH', rcfile='petsc.cfg'):
         entries = [ln.split('=') for ln in lines if ln]
         entries = [(k.strip(), v.strip()) for k, v in entries]
         return dict(entries)
+
     # try to get arch from data in config file
     configrc = parse_rc(rcfile)
     arch_cfg = arch_list(configrc.get(rcvar, ''))
@@ -153,8 +159,9 @@ def getPathArch(path, arch, rcvar='PETSC_ARCH', rcfile='petsc.cfg'):
         if os.path.isdir(os.path.join(path, arch)):
             if arch_env:
                 warnings.warn(
-                    "ignored arch: '%s', using: '%s'" % \
-                    (os.path.pathsep.join(arch_env), arch))
+                    f"ignored arch: '{os.path.pathsep.join(arch_env)}', using: '{arch}'",
+                    stacklevel=2,
+                )
             return (path, arch)
     # nothing good found
     return (path, '')
@@ -166,6 +173,7 @@ def getInitArgs(args):
     """
     import shlex
     import sys
+
     if args is None:
         args = []
     elif isinstance(args, str):
@@ -176,13 +184,12 @@ def getInitArgs(args):
     if args and args[0].startswith('-'):
         sys_argv = getattr(sys, 'argv', None)
         sys_exec = getattr(sys, 'executable', 'python')
-        if (sys_argv and
-            sys_argv[0] and
-            sys_argv[0] != '-c'):
+        if sys_argv and sys_argv[0] and sys_argv[0] != '-c':
             prog_name = sys_argv[0]
         else:
             prog_name = sys_exec
         args.insert(0, prog_name)
     return args
+
 
 # --------------------------------------------------------------------

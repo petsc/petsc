@@ -11,7 +11,7 @@ PETSc for Python
 
 .. topic:: Abstract
 
-   This document describes petsc4py_, a Python_ wrapper to the PETSc_
+   This document describes :mod:`petsc4py`, a Python_ wrapper to the PETSc_
    libraries.
 
    PETSc_ (the Portable, Extensible Toolkit for Scientific
@@ -42,6 +42,7 @@ PETSc for Python
 
    overview
    install
+   contributing
    citing
 
 .. toctree::

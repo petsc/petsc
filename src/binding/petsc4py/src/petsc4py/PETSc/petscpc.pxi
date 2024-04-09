@@ -140,178 +140,174 @@ cdef extern from * nogil:
         PC_FACTOR_OTHER
         PC_SUBPC_ERROR
 
-    PetscErrorCode PCCreate(MPI_Comm,PetscPC*)
+    PetscErrorCode PCCreate(MPI_Comm, PetscPC*)
     PetscErrorCode PCDestroy(PetscPC*)
-    PetscErrorCode PCView(PetscPC,PetscViewer)
+    PetscErrorCode PCView(PetscPC, PetscViewer)
 
-    PetscErrorCode PCSetType(PetscPC,PetscPCType)
-    PetscErrorCode PCGetType(PetscPC,PetscPCType*)
+    PetscErrorCode PCSetType(PetscPC, PetscPCType)
+    PetscErrorCode PCGetType(PetscPC, PetscPCType*)
 
-    PetscErrorCode PCSetOptionsPrefix(PetscPC,char[])
-    PetscErrorCode PCAppendOptionsPrefix(PetscPC,char[])
-    PetscErrorCode PCGetOptionsPrefix(PetscPC,char*[])
+    PetscErrorCode PCSetOptionsPrefix(PetscPC, char[])
+    PetscErrorCode PCAppendOptionsPrefix(PetscPC, char[])
+    PetscErrorCode PCGetOptionsPrefix(PetscPC, char*[])
     PetscErrorCode PCSetFromOptions(PetscPC)
 
-    PetscErrorCode PCSetFailedReason(PetscPC,PetscPCFailedReason)
-    PetscErrorCode PCGetFailedReason(PetscPC,PetscPCFailedReason*)
-    PetscErrorCode PCGetFailedReasonRank(PetscPC,PetscPCFailedReason*)
+    PetscErrorCode PCSetFailedReason(PetscPC, PetscPCFailedReason)
+    PetscErrorCode PCGetFailedReason(PetscPC, PetscPCFailedReason*)
+    PetscErrorCode PCGetFailedReasonRank(PetscPC, PetscPCFailedReason*)
 
     PetscErrorCode PCSetUp(PetscPC)
     PetscErrorCode PCReset(PetscPC)
     PetscErrorCode PCSetUpOnBlocks(PetscPC)
 
-    PetscErrorCode PCApply(PetscPC,PetscVec,PetscVec)
-    PetscErrorCode PCMatApply(PetscPC,PetscMat,PetscMat)
-    PetscErrorCode PCApplyTranspose(PetscPC,PetscVec,PetscVec)
-    PetscErrorCode PCApplySymmetricLeft(PetscPC,PetscVec,PetscVec)
-    PetscErrorCode PCApplySymmetricRight(PetscPC,PetscVec,PetscVec)
-    PetscErrorCode PCApplyRichardson(PetscPC,PetscVec,PetscVec,PetscVec,PetscReal,PetscReal,PetscReal,PetscInt)
-    PetscErrorCode PCApplyBAorAB(PetscPC,PetscPCSide,PetscVec,PetscVec,PetscVec)
-    PetscErrorCode PCApplyBAorABTranspose(PetscPC,PetscPCSide,PetscVec,PetscVec,PetscVec)
+    PetscErrorCode PCApply(PetscPC, PetscVec, PetscVec)
+    PetscErrorCode PCMatApply(PetscPC, PetscMat, PetscMat)
+    PetscErrorCode PCApplyTranspose(PetscPC, PetscVec, PetscVec)
+    PetscErrorCode PCApplySymmetricLeft(PetscPC, PetscVec, PetscVec)
+    PetscErrorCode PCApplySymmetricRight(PetscPC, PetscVec, PetscVec)
+    PetscErrorCode PCApplyRichardson(PetscPC, PetscVec, PetscVec, PetscVec, PetscReal, PetscReal, PetscReal, PetscInt)
+    PetscErrorCode PCApplyBAorAB(PetscPC, PetscPCSide, PetscVec, PetscVec, PetscVec)
+    PetscErrorCode PCApplyBAorABTranspose(PetscPC, PetscPCSide, PetscVec, PetscVec, PetscVec)
 
-    #int PCApplyTransposeExists(PetscPC,PetscBool*)
-    #int PCApplyRichardsonExists(PetscPC,PetscBool*)
+    PetscErrorCode PCGetDM(PetscPC, PetscDM*)
+    PetscErrorCode PCSetDM(PetscPC, PetscDM)
 
-    PetscErrorCode PCGetDM(PetscPC,PetscDM*)
-    PetscErrorCode PCSetDM(PetscPC,PetscDM)
+    PetscErrorCode PCSetOperators(PetscPC, PetscMat, PetscMat)
+    PetscErrorCode PCGetOperators(PetscPC, PetscMat*, PetscMat*)
+    PetscErrorCode PCGetOperatorsSet(PetscPC, PetscBool*, PetscBool*)
+    PetscErrorCode PCSetCoordinates(PetscPC, PetscInt, PetscInt, PetscReal[])
+    PetscErrorCode PCSetUseAmat(PetscPC, PetscBool)
+    PetscErrorCode PCGetUseAmat(PetscPC, PetscBool*)
 
-    PetscErrorCode PCSetOperators(PetscPC,PetscMat,PetscMat)
-    PetscErrorCode PCGetOperators(PetscPC,PetscMat*,PetscMat*)
-    PetscErrorCode PCGetOperatorsSet(PetscPC,PetscBool*,PetscBool*)
-    PetscErrorCode PCSetCoordinates(PetscPC,PetscInt,PetscInt,PetscReal[])
-    PetscErrorCode PCSetUseAmat(PetscPC,PetscBool)
-    PetscErrorCode PCGetUseAmat(PetscPC,PetscBool*)
+    PetscErrorCode PCComputeExplicitOperator(PetscPC, PetscMat*)
 
-    PetscErrorCode PCComputeExplicitOperator(PetscPC,PetscMat*)
+    PetscErrorCode PCDiagonalScale(PetscPC, PetscBool*)
+    PetscErrorCode PCDiagonalScaleLeft(PetscPC, PetscVec, PetscVec)
+    PetscErrorCode PCDiagonalScaleRight(PetscPC, PetscVec, PetscVec)
+    PetscErrorCode PCDiagonalScaleSet(PetscPC, PetscVec)
 
-    PetscErrorCode PCDiagonalScale(PetscPC,PetscBool*)
-    PetscErrorCode PCDiagonalScaleLeft(PetscPC,PetscVec,PetscVec)
-    PetscErrorCode PCDiagonalScaleRight(PetscPC,PetscVec,PetscVec)
-    PetscErrorCode PCDiagonalScaleSet(PetscPC,PetscVec)
+    PetscErrorCode PCASMSetType(PetscPC, PetscPCASMType)
+    PetscErrorCode PCASMSetOverlap(PetscPC, PetscInt)
+    PetscErrorCode PCASMSetLocalSubdomains(PetscPC, PetscInt, PetscIS[], PetscIS[])
+    PetscErrorCode PCASMSetTotalSubdomains(PetscPC, PetscInt, PetscIS[], PetscIS[])
+    PetscErrorCode PCASMGetSubKSP(PetscPC, PetscInt*, PetscInt*, PetscKSP*[])
+    PetscErrorCode PCASMSetSortIndices(PetscPC, PetscBool)
 
-    PetscErrorCode PCASMSetType(PetscPC,PetscPCASMType)
-    PetscErrorCode PCASMSetOverlap(PetscPC,PetscInt)
-    PetscErrorCode PCASMSetLocalSubdomains(PetscPC,PetscInt,PetscIS[],PetscIS[])
-    PetscErrorCode PCASMSetTotalSubdomains(PetscPC,PetscInt,PetscIS[],PetscIS[])
-    PetscErrorCode PCASMGetSubKSP(PetscPC,PetscInt*,PetscInt*,PetscKSP*[])
-    PetscErrorCode PCASMSetSortIndices(PetscPC,PetscBool)
+    PetscErrorCode PCGASMSetType(PetscPC, PetscPCGASMType)
+    PetscErrorCode PCGASMSetOverlap(PetscPC, PetscInt)
 
-    PetscErrorCode PCGASMSetType(PetscPC,PetscPCGASMType)
-    PetscErrorCode PCGASMSetOverlap(PetscPC,PetscInt)
+    PetscErrorCode PCGAMGSetType(PetscPC, PetscPCGAMGType)
+    PetscErrorCode PCGAMGSetNlevels(PetscPC, PetscInt)
+    PetscErrorCode PCGAMGSetNSmooths(PetscPC, PetscInt)
 
-    PetscErrorCode PCGAMGSetType(PetscPC,PetscPCGAMGType)
-    PetscErrorCode PCGAMGSetNlevels(PetscPC,PetscInt)
-    PetscErrorCode PCGAMGSetNSmooths(PetscPC,PetscInt)
+    PetscErrorCode PCHYPREGetType(PetscPC, PetscPCHYPREType*)
+    PetscErrorCode PCHYPRESetType(PetscPC, PetscPCHYPREType)
+    PetscErrorCode PCHYPRESetDiscreteCurl(PetscPC, PetscMat)
+    PetscErrorCode PCHYPRESetDiscreteGradient(PetscPC, PetscMat)
+    PetscErrorCode PCHYPRESetAlphaPoissonMatrix(PetscPC, PetscMat)
+    PetscErrorCode PCHYPRESetBetaPoissonMatrix(PetscPC, PetscMat)
+    PetscErrorCode PCHYPRESetEdgeConstantVectors(PetscPC, PetscVec, PetscVec, PetscVec)
+    PetscErrorCode PCHYPRESetInterpolations(PetscPC, PetscInt, PetscMat, PetscMat[], PetscMat, PetscMat[])
+    PetscErrorCode PCHYPREAMSSetInteriorNodes(PetscPC, PetscVec)
 
-    PetscErrorCode PCHYPREGetType(PetscPC,PetscPCHYPREType*)
-    PetscErrorCode PCHYPRESetType(PetscPC,PetscPCHYPREType)
-    PetscErrorCode PCHYPRESetDiscreteCurl(PetscPC,PetscMat);
-    PetscErrorCode PCHYPRESetDiscreteGradient(PetscPC,PetscMat);
-    PetscErrorCode PCHYPRESetAlphaPoissonMatrix(PetscPC,PetscMat);
-    PetscErrorCode PCHYPRESetBetaPoissonMatrix(PetscPC,PetscMat);
-    PetscErrorCode PCHYPRESetEdgeConstantVectors(PetscPC,PetscVec,PetscVec,PetscVec);
-    PetscErrorCode PCHYPRESetInterpolations(PetscPC, PetscInt, PetscMat, PetscMat[], PetscMat, PetscMat[]);
-    PetscErrorCode PCHYPREAMSSetInteriorNodes(PetscPC, PetscVec);
-
-    PetscErrorCode PCFactorGetMatrix(PetscPC,PetscMat*)
-    PetscErrorCode PCFactorSetZeroPivot(PetscPC,PetscReal)
-    PetscErrorCode PCFactorSetShiftType(PetscPC,PetscMatFactorShiftType)
-    PetscErrorCode PCFactorSetShiftAmount(PetscPC,PetscReal)
-    PetscErrorCode PCFactorSetMatSolverType(PetscPC,PetscMatSolverType)
-    PetscErrorCode PCFactorGetMatSolverType(PetscPC,PetscMatSolverType*)
+    PetscErrorCode PCFactorGetMatrix(PetscPC, PetscMat*)
+    PetscErrorCode PCFactorSetZeroPivot(PetscPC, PetscReal)
+    PetscErrorCode PCFactorSetShiftType(PetscPC, PetscMatFactorShiftType)
+    PetscErrorCode PCFactorSetShiftAmount(PetscPC, PetscReal)
+    PetscErrorCode PCFactorSetMatSolverType(PetscPC, PetscMatSolverType)
+    PetscErrorCode PCFactorGetMatSolverType(PetscPC, PetscMatSolverType*)
     PetscErrorCode PCFactorSetUpMatSolverType(PetscPC)
-    PetscErrorCode PCFactorSetFill(PetscPC,PetscReal)
-    PetscErrorCode PCFactorSetColumnPivot(PetscPC,PetscReal)
-    PetscErrorCode PCFactorReorderForNonzeroDiagonal(PetscPC,PetscReal)
-    PetscErrorCode PCFactorSetMatOrderingType(PetscPC,PetscMatOrderingType)
-    PetscErrorCode PCFactorSetReuseOrdering(PetscPC,PetscBool )
-    PetscErrorCode PCFactorSetReuseFill(PetscPC,PetscBool )
+    PetscErrorCode PCFactorSetFill(PetscPC, PetscReal)
+    PetscErrorCode PCFactorSetColumnPivot(PetscPC, PetscReal)
+    PetscErrorCode PCFactorReorderForNonzeroDiagonal(PetscPC, PetscReal)
+    PetscErrorCode PCFactorSetMatOrderingType(PetscPC, PetscMatOrderingType)
+    PetscErrorCode PCFactorSetReuseOrdering(PetscPC, PetscBool)
+    PetscErrorCode PCFactorSetReuseFill(PetscPC, PetscBool)
     PetscErrorCode PCFactorSetUseInPlace(PetscPC)
     PetscErrorCode PCFactorSetAllowDiagonalFill(PetscPC)
-    PetscErrorCode PCFactorSetPivotInBlocks(PetscPC,PetscBool )
-    PetscErrorCode PCFactorSetLevels(PetscPC,PetscInt)
-    PetscErrorCode PCFactorSetDropTolerance(PetscPC,PetscReal,PetscReal,PetscInt)
+    PetscErrorCode PCFactorSetPivotInBlocks(PetscPC, PetscBool)
+    PetscErrorCode PCFactorSetLevels(PetscPC, PetscInt)
+    PetscErrorCode PCFactorSetDropTolerance(PetscPC, PetscReal, PetscReal, PetscInt)
 
-    PetscErrorCode PCFieldSplitSetType(PetscPC,PetscPCCompositeType)
-    PetscErrorCode PCFieldSplitSetBlockSize(PetscPC,PetscInt)
-    PetscErrorCode PCFieldSplitSetFields(PetscPC,char[],PetscInt,PetscInt*,PetscInt*)
-    PetscErrorCode PCFieldSplitSetIS(PetscPC,char[],PetscIS)
-    PetscErrorCode PCFieldSplitGetSubKSP(PetscPC,PetscInt*,PetscKSP*[])
-    PetscErrorCode PCFieldSplitSchurGetSubKSP(PetscPC,PetscInt*,PetscKSP*[])
-    PetscErrorCode PCFieldSplitSetSchurPre(PetscPC,PetscPCFieldSplitSchurPreType,PetscMat)
-    PetscErrorCode PCFieldSplitSetSchurFactType(PetscPC,PetscPCFieldSplitSchurFactType)
-    #int PCFieldSplitGetSchurBlocks(PetscPC,PetscMat*,PetscMat*,PetscMat*,PetscMat*)
+    PetscErrorCode PCFieldSplitSetType(PetscPC, PetscPCCompositeType)
+    PetscErrorCode PCFieldSplitSetBlockSize(PetscPC, PetscInt)
+    PetscErrorCode PCFieldSplitSetFields(PetscPC, char[], PetscInt, PetscInt*, PetscInt*)
+    PetscErrorCode PCFieldSplitSetIS(PetscPC, char[], PetscIS)
+    PetscErrorCode PCFieldSplitGetSubKSP(PetscPC, PetscInt*, PetscKSP*[])
+    PetscErrorCode PCFieldSplitSchurGetSubKSP(PetscPC, PetscInt*, PetscKSP*[])
+    PetscErrorCode PCFieldSplitSetSchurPre(PetscPC, PetscPCFieldSplitSchurPreType, PetscMat)
+    PetscErrorCode PCFieldSplitSetSchurFactType(PetscPC, PetscPCFieldSplitSchurFactType)
 
-    PetscErrorCode PCCompositeSetType(PetscPC,PetscPCCompositeType)
-    PetscErrorCode PCCompositeGetPC(PetscPC,PetscInt,PetscPC*)
-    PetscErrorCode PCCompositeAddPCType(PetscPC,PetscPCType)
-    PetscErrorCode PCCompositeAddPC(PetscPC,PetscPC)
+    PetscErrorCode PCCompositeSetType(PetscPC, PetscPCCompositeType)
+    PetscErrorCode PCCompositeGetPC(PetscPC, PetscInt, PetscPC*)
+    PetscErrorCode PCCompositeAddPCType(PetscPC, PetscPCType)
+    PetscErrorCode PCCompositeAddPC(PetscPC, PetscPC)
 
-    PetscErrorCode PCKSPGetKSP(PetscPC,PetscKSP*)
+    PetscErrorCode PCKSPGetKSP(PetscPC, PetscKSP*)
 
-    PetscErrorCode PCSetReusePreconditioner(PetscPC,PetscBool)
+    PetscErrorCode PCSetReusePreconditioner(PetscPC, PetscBool)
 
     # --- MG ---
-    PetscErrorCode PCMGSetType(PetscPC,PetscPCMGType)
-    PetscErrorCode PCMGGetType(PetscPC,PetscPCMGType*)
-    PetscErrorCode PCMGSetInterpolation(PetscPC,PetscInt,PetscMat)
-    PetscErrorCode PCMGGetInterpolation(PetscPC,PetscInt,PetscMat*)
-    PetscErrorCode PCMGSetRestriction(PetscPC,PetscInt,PetscMat)
-    PetscErrorCode PCMGGetRestriction(PetscPC,PetscInt,PetscMat*)
-    PetscErrorCode PCMGSetRScale(PetscPC,PetscInt,PetscVec)
-    PetscErrorCode PCMGGetRScale(PetscPC,PetscInt,PetscVec*)
-    PetscErrorCode PCMGGetSmoother(PetscPC,PetscInt,PetscKSP*)
-    PetscErrorCode PCMGGetSmootherUp(PetscPC,PetscInt,PetscKSP*)
-    PetscErrorCode PCMGGetSmootherDown(PetscPC,PetscInt,PetscKSP*)
-    PetscErrorCode PCMGGetCoarseSolve(PetscPC,PetscKSP*)
-    PetscErrorCode PCMGSetRhs(PetscPC,PetscInt,PetscVec)
-    PetscErrorCode PCMGSetX(PetscPC,PetscInt,PetscVec)
-    PetscErrorCode PCMGSetR(PetscPC,PetscInt,PetscVec)
-    PetscErrorCode PCMGSetLevels(PetscPC,PetscInt,MPI_Comm*)
-    PetscErrorCode PCMGGetLevels(PetscPC,PetscInt*)
-    PetscErrorCode PCMGSetCycleType(PetscPC,PetscPCMGCycleType)
-    PetscErrorCode PCMGSetCycleTypeOnLevel(PetscPC,PetscInt,PetscPCMGCycleType)
+    PetscErrorCode PCMGSetType(PetscPC, PetscPCMGType)
+    PetscErrorCode PCMGGetType(PetscPC, PetscPCMGType*)
+    PetscErrorCode PCMGSetInterpolation(PetscPC, PetscInt, PetscMat)
+    PetscErrorCode PCMGGetInterpolation(PetscPC, PetscInt, PetscMat*)
+    PetscErrorCode PCMGSetRestriction(PetscPC, PetscInt, PetscMat)
+    PetscErrorCode PCMGGetRestriction(PetscPC, PetscInt, PetscMat*)
+    PetscErrorCode PCMGSetRScale(PetscPC, PetscInt, PetscVec)
+    PetscErrorCode PCMGGetRScale(PetscPC, PetscInt, PetscVec*)
+    PetscErrorCode PCMGGetSmoother(PetscPC, PetscInt, PetscKSP*)
+    PetscErrorCode PCMGGetSmootherUp(PetscPC, PetscInt, PetscKSP*)
+    PetscErrorCode PCMGGetSmootherDown(PetscPC, PetscInt, PetscKSP*)
+    PetscErrorCode PCMGGetCoarseSolve(PetscPC, PetscKSP*)
+    PetscErrorCode PCMGSetRhs(PetscPC, PetscInt, PetscVec)
+    PetscErrorCode PCMGSetX(PetscPC, PetscInt, PetscVec)
+    PetscErrorCode PCMGSetR(PetscPC, PetscInt, PetscVec)
+    PetscErrorCode PCMGSetLevels(PetscPC, PetscInt, MPI_Comm*)
+    PetscErrorCode PCMGGetLevels(PetscPC, PetscInt*)
+    PetscErrorCode PCMGSetCycleType(PetscPC, PetscPCMGCycleType)
+    PetscErrorCode PCMGSetCycleTypeOnLevel(PetscPC, PetscInt, PetscPCMGCycleType)
 
     # --- BDDC ---
-    PetscErrorCode PCBDDCSetDiscreteGradient(PetscPC,PetscMat,PetscInt,PetscInt,PetscBool,PetscBool)
-    PetscErrorCode PCBDDCSetDivergenceMat(PetscPC,PetscMat,PetscBool,PetscIS)
-    PetscErrorCode PCBDDCSetChangeOfBasisMat(PetscPC,PetscMat,PetscBool)
-    PetscErrorCode PCBDDCSetPrimalVerticesIS(PetscPC,PetscIS)
-    PetscErrorCode PCBDDCSetPrimalVerticesLocalIS(PetscPC,PetscIS)
-    PetscErrorCode PCBDDCSetCoarseningRatio(PetscPC,PetscInt)
-    PetscErrorCode PCBDDCSetLevels(PetscPC,PetscInt)
-    PetscErrorCode PCBDDCSetDirichletBoundaries(PetscPC,PetscIS)
-    PetscErrorCode PCBDDCSetDirichletBoundariesLocal(PetscPC,PetscIS)
-    PetscErrorCode PCBDDCSetNeumannBoundaries(PetscPC,PetscIS)
-    PetscErrorCode PCBDDCSetNeumannBoundariesLocal(PetscPC,PetscIS)
-    PetscErrorCode PCBDDCSetDofsSplitting(PetscPC,PetscInt,PetscIS[])
-    PetscErrorCode PCBDDCSetDofsSplittingLocal(PetscPC,PetscInt,PetscIS[])
-    PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PetscPC,PetscInt,const PetscInt*,const PetscInt*,PetscCopyMode)
+    PetscErrorCode PCBDDCSetDiscreteGradient(PetscPC, PetscMat, PetscInt, PetscInt, PetscBool, PetscBool)
+    PetscErrorCode PCBDDCSetDivergenceMat(PetscPC, PetscMat, PetscBool, PetscIS)
+    PetscErrorCode PCBDDCSetChangeOfBasisMat(PetscPC, PetscMat, PetscBool)
+    PetscErrorCode PCBDDCSetPrimalVerticesIS(PetscPC, PetscIS)
+    PetscErrorCode PCBDDCSetPrimalVerticesLocalIS(PetscPC, PetscIS)
+    PetscErrorCode PCBDDCSetCoarseningRatio(PetscPC, PetscInt)
+    PetscErrorCode PCBDDCSetLevels(PetscPC, PetscInt)
+    PetscErrorCode PCBDDCSetDirichletBoundaries(PetscPC, PetscIS)
+    PetscErrorCode PCBDDCSetDirichletBoundariesLocal(PetscPC, PetscIS)
+    PetscErrorCode PCBDDCSetNeumannBoundaries(PetscPC, PetscIS)
+    PetscErrorCode PCBDDCSetNeumannBoundariesLocal(PetscPC, PetscIS)
+    PetscErrorCode PCBDDCSetDofsSplitting(PetscPC, PetscInt, PetscIS[])
+    PetscErrorCode PCBDDCSetDofsSplittingLocal(PetscPC, PetscInt, PetscIS[])
+    PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PetscPC, PetscInt, const PetscInt*, const PetscInt*, PetscCopyMode)
 
     # --- Patch ---
     ctypedef PetscErrorCode (*PetscPCPatchComputeOperator)(PetscPC,
-                                                PetscInt,
-                                                PetscVec,
-                                                PetscMat,
-                                                PetscIS,
-                                                PetscInt,
-                                                const PetscInt*,
-                                                const PetscInt*,
-                                                void*) except PETSC_ERR_PYTHON
+                                                           PetscInt,
+                                                           PetscVec,
+                                                           PetscMat,
+                                                           PetscIS,
+                                                           PetscInt,
+                                                           const PetscInt*,
+                                                           const PetscInt*,
+                                                           void*) except PETSC_ERR_PYTHON
     ctypedef PetscErrorCode (*PetscPCPatchComputeFunction)(PetscPC,
-                                                PetscInt,
-                                                PetscVec,
-                                                PetscVec,
-                                                PetscIS,
-                                                PetscInt,
-                                                const PetscInt*,
-                                                const PetscInt*,
-                                                void*) except PETSC_ERR_PYTHON
+                                                           PetscInt,
+                                                           PetscVec,
+                                                           PetscVec,
+                                                           PetscIS,
+                                                           PetscInt,
+                                                           const PetscInt*,
+                                                           const PetscInt*,
+                                                           void*) except PETSC_ERR_PYTHON
     ctypedef PetscErrorCode (*PetscPCPatchConstructOperator)(PetscPC,
-                                                  PetscInt*,
-                                                  PetscIS**,
-                                                  PetscIS*,
-                                                  void*) except PETSC_ERR_PYTHON
+                                                             PetscInt*,
+                                                             PetscIS**,
+                                                             PetscIS*,
+                                                             void*) except PETSC_ERR_PYTHON
     PetscErrorCode PCPatchSetCellNumbering(PetscPC, PetscSection)
     PetscErrorCode PCPatchSetDiscretisationInfo(PetscPC, PetscInt, PetscDM*, PetscInt*, PetscInt*, const PetscInt**, const PetscInt*, PetscInt, const PetscInt*, PetscInt, const PetscInt*)
     PetscErrorCode PCPatchSetComputeOperator(PetscPC, PetscPCPatchComputeOperator, void*)
@@ -322,52 +318,52 @@ cdef extern from * nogil:
 
     # --- HPDDM ---
     ctypedef PetscErrorCode (*PetscPCHPDDMAuxiliaryMat)(PetscMat,
-                                             PetscReal,
-                                             PetscVec,
-                                             PetscVec,
-                                             PetscReal,
-                                             PetscIS,
-                                             void*) except PETSC_ERR_PYTHON
-    PetscErrorCode PCHPDDMSetAuxiliaryMat(PetscPC,PetscIS,PetscMat,PetscPCHPDDMAuxiliaryMat,void*)
-    PetscErrorCode PCHPDDMSetRHSMat(PetscPC,PetscMat)
-    PetscErrorCode PCHPDDMHasNeumannMat(PetscPC,PetscBool)
-    PetscErrorCode PCHPDDMSetCoarseCorrectionType(PetscPC,PetscPCHPDDMCoarseCorrectionType)
-    PetscErrorCode PCHPDDMGetCoarseCorrectionType(PetscPC,PetscPCHPDDMCoarseCorrectionType*)
-    PetscErrorCode PCHPDDMGetSTShareSubKSP(PetscPC,PetscBool*)
-    PetscErrorCode PCHPDDMSetDeflationMat(PetscPC,PetscIS,PetscMat)
+                                                        PetscReal,
+                                                        PetscVec,
+                                                        PetscVec,
+                                                        PetscReal,
+                                                        PetscIS,
+                                                        void*) except PETSC_ERR_PYTHON
+    PetscErrorCode PCHPDDMSetAuxiliaryMat(PetscPC, PetscIS, PetscMat, PetscPCHPDDMAuxiliaryMat, void*)
+    PetscErrorCode PCHPDDMSetRHSMat(PetscPC, PetscMat)
+    PetscErrorCode PCHPDDMHasNeumannMat(PetscPC, PetscBool)
+    PetscErrorCode PCHPDDMSetCoarseCorrectionType(PetscPC, PetscPCHPDDMCoarseCorrectionType)
+    PetscErrorCode PCHPDDMGetCoarseCorrectionType(PetscPC, PetscPCHPDDMCoarseCorrectionType*)
+    PetscErrorCode PCHPDDMGetSTShareSubKSP(PetscPC, PetscBool*)
+    PetscErrorCode PCHPDDMSetDeflationMat(PetscPC, PetscIS, PetscMat)
 
     # --- SPAI ---
-    PetscErrorCode PCSPAISetEpsilon(PetscPC,PetscReal)
-    PetscErrorCode PCSPAISetNBSteps(PetscPC,PetscInt)
-    PetscErrorCode PCSPAISetMax(PetscPC,PetscInt)
-    PetscErrorCode PCSPAISetMaxNew(PetscPC,PetscInt)
-    PetscErrorCode PCSPAISetBlockSize(PetscPC,PetscInt)
-    PetscErrorCode PCSPAISetCacheSize(PetscPC,PetscInt)
-    PetscErrorCode PCSPAISetVerbose(PetscPC,PetscInt)
-    PetscErrorCode PCSPAISetSp(PetscPC,PetscInt)
+    PetscErrorCode PCSPAISetEpsilon(PetscPC, PetscReal)
+    PetscErrorCode PCSPAISetNBSteps(PetscPC, PetscInt)
+    PetscErrorCode PCSPAISetMax(PetscPC, PetscInt)
+    PetscErrorCode PCSPAISetMaxNew(PetscPC, PetscInt)
+    PetscErrorCode PCSPAISetBlockSize(PetscPC, PetscInt)
+    PetscErrorCode PCSPAISetCacheSize(PetscPC, PetscInt)
+    PetscErrorCode PCSPAISetVerbose(PetscPC, PetscInt)
+    PetscErrorCode PCSPAISetSp(PetscPC, PetscInt)
 
     # --- DEFLATION ---
-    PetscErrorCode PCDeflationSetInitOnly(PetscPC,PetscBool)
-    PetscErrorCode PCDeflationSetLevels(PetscPC,PetscInt)
-    PetscErrorCode PCDeflationSetReductionFactor(PetscPC,PetscInt)
-    PetscErrorCode PCDeflationSetCorrectionFactor(PetscPC,PetscScalar)
-    PetscErrorCode PCDeflationSetSpaceToCompute(PetscPC,PetscPCDeflationSpaceType,PetscInt)
-    PetscErrorCode PCDeflationSetSpace(PetscPC,PetscMat,PetscBool)
-    PetscErrorCode PCDeflationSetProjectionNullSpaceMat(PetscPC,PetscMat)
-    PetscErrorCode PCDeflationSetCoarseMat(PetscPC,PetscMat)
-    PetscErrorCode PCDeflationGetCoarseKSP(PetscPC,PetscKSP*)
-    PetscErrorCode PCDeflationGetPC(PetscPC,PetscPC*)
+    PetscErrorCode PCDeflationSetInitOnly(PetscPC, PetscBool)
+    PetscErrorCode PCDeflationSetLevels(PetscPC, PetscInt)
+    PetscErrorCode PCDeflationSetReductionFactor(PetscPC, PetscInt)
+    PetscErrorCode PCDeflationSetCorrectionFactor(PetscPC, PetscScalar)
+    PetscErrorCode PCDeflationSetSpaceToCompute(PetscPC, PetscPCDeflationSpaceType, PetscInt)
+    PetscErrorCode PCDeflationSetSpace(PetscPC, PetscMat, PetscBool)
+    PetscErrorCode PCDeflationSetProjectionNullSpaceMat(PetscPC, PetscMat)
+    PetscErrorCode PCDeflationSetCoarseMat(PetscPC, PetscMat)
+    PetscErrorCode PCDeflationGetCoarseKSP(PetscPC, PetscKSP*)
+    PetscErrorCode PCDeflationGetPC(PetscPC, PetscPC*)
 
     # --- PYTHON ---
-    PetscErrorCode PCPythonSetType(PetscPC,char[])
-    PetscErrorCode PCPythonGetType(PetscPC,char*[])
+    PetscErrorCode PCPythonSetType(PetscPC, char[])
+    PetscErrorCode PCPythonGetType(PetscPC, char*[])
 
 # --------------------------------------------------------------------
 
 cdef inline PC ref_PC(PetscPC pc):
     cdef PC ob = <PC> PC()
     ob.pc = pc
-    CHKERR( PetscINCREF(ob.obj) )
+    CHKERR(PetscINCREF(ob.obj))
     return ob
 
 cdef PetscErrorCode PCPatch_ComputeOperator(
@@ -489,7 +485,7 @@ cdef PetscErrorCode PCPatch_UserConstructOperator(
     CHKERR(PetscMalloc(<size_t>n[0]*sizeof(PetscIS), userIS))
     for i in range(n[0]):
         userIS[0][i] = (<IS?>patches[i]).iset
-        CHKERR( PetscINCREF(<PetscObject*>&(userIS[0][i])) )
+        CHKERR(PetscINCREF(<PetscObject*>&(userIS[0][i])))
     userIterationSet[0] = (<IS?>iterationSet).iset
-    CHKERR( PetscINCREF(<PetscObject*>&(userIterationSet[0])) )
+    CHKERR(PetscINCREF(<PetscObject*>&(userIterationSet[0])))
     return PETSC_SUCCESS

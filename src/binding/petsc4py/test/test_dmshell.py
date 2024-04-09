@@ -4,7 +4,6 @@ import numpy as np
 
 
 class TestDMShell(unittest.TestCase):
-
     COMM = PETSc.COMM_WORLD
 
     def setUp(self):
@@ -30,6 +29,7 @@ class TestDMShell(unittest.TestCase):
             v.setSizes((10, None))
             v.setUp()
             return v
+
         self.dm.setCreateGlobalVector(create_vec)
         gvec = self.dm.createGlobalVector()
         self.assertEqual(gvec.comm, self.dm.comm)
@@ -37,7 +37,7 @@ class TestDMShell(unittest.TestCase):
 
     def testSetLocalVector(self):
         vec = PETSc.Vec().create(comm=PETSc.COMM_SELF)
-        vec.setSizes((1 + 10*self.COMM.rank, None))
+        vec.setSizes((1 + 10 * self.COMM.rank, None))
         vec.setUp()
         self.dm.setLocalVector(vec)
         lvec = self.dm.createLocalVector()
@@ -49,14 +49,15 @@ class TestDMShell(unittest.TestCase):
     def testSetCreateLocalVector(self):
         def create_vec(dm):
             v = PETSc.Vec().create(comm=PETSc.COMM_SELF)
-            v.setSizes((1 + 10*dm.comm.rank, None))
+            v.setSizes((1 + 10 * dm.comm.rank, None))
             v.setUp()
             return v
+
         self.dm.setCreateLocalVector(create_vec)
         lvec = self.dm.createLocalVector()
         lsize, gsize = lvec.getSizes()
         self.assertEqual(lsize, gsize)
-        self.assertEqual(lsize, 1 + 10*self.dm.comm.rank)
+        self.assertEqual(lsize, 1 + 10 * self.dm.comm.rank)
         self.assertEqual(lvec.comm, PETSc.COMM_SELF)
 
     def testSetMatrix(self):
@@ -74,6 +75,7 @@ class TestDMShell(unittest.TestCase):
             mat.setSizes(((10, None), (2, None)))
             mat.setUp()
             return mat
+
         self.dm.setCreateMatrix(create_mat)
         nmat = self.dm.createMatrix()
         self.assertEqual(nmat.getSizes(), create_mat(self.dm).getSizes())
@@ -84,8 +86,10 @@ class TestDMShell(unittest.TestCase):
                 ovec[...] = ivec[...]
             elif mode == PETSc.InsertMode.ADD_VALUES:
                 ovec[...] += ivec[...]
+
         def end(dm, ivec, mode, ovec):
             pass
+
         vec = PETSc.Vec().create(comm=self.COMM)
         vec.setSizes((10, None))
         vec.setUp()
@@ -97,7 +101,7 @@ class TestDMShell(unittest.TestCase):
         self.dm.globalToLocal(vec, ovec, addv=PETSc.InsertMode.INSERT_VALUES)
         self.assertTrue(np.allclose(vec.getArray(), ovec.getArray()))
         self.dm.globalToLocal(vec, ovec, addv=PETSc.InsertMode.ADD_VALUES)
-        self.assertTrue(np.allclose(2*vec.getArray(), ovec.getArray()))
+        self.assertTrue(np.allclose(2 * vec.getArray(), ovec.getArray()))
 
     def testLocalToGlobal(self):
         def begin(dm, ivec, mode, ovec):
@@ -105,8 +109,10 @@ class TestDMShell(unittest.TestCase):
                 ovec[...] = ivec[...]
             elif mode == PETSc.InsertMode.ADD_VALUES:
                 ovec[...] += ivec[...]
+
         def end(dm, ivec, mode, ovec):
             pass
+
         vec = PETSc.Vec().create(comm=PETSc.COMM_SELF)
         vec.setSizes((10, None))
         vec.setUp()
@@ -118,7 +124,7 @@ class TestDMShell(unittest.TestCase):
         self.dm.localToGlobal(vec, ovec, addv=PETSc.InsertMode.INSERT_VALUES)
         self.assertTrue(np.allclose(vec.getArray(), ovec.getArray()))
         self.dm.localToGlobal(vec, ovec, addv=PETSc.InsertMode.ADD_VALUES)
-        self.assertTrue(np.allclose(2*vec.getArray(), ovec.getArray()))
+        self.assertTrue(np.allclose(2 * vec.getArray(), ovec.getArray()))
 
     def testLocalToLocal(self):
         def begin(dm, ivec, mode, ovec):
@@ -126,8 +132,10 @@ class TestDMShell(unittest.TestCase):
                 ovec[...] = ivec[...]
             elif mode == PETSc.InsertMode.ADD_VALUES:
                 ovec[...] += ivec[...]
+
         def end(dm, ivec, mode, ovec):
             pass
+
         vec = PETSc.Vec().create(comm=PETSc.COMM_SELF)
         vec.setSizes((10, None))
         vec.setUp()
@@ -137,18 +145,7 @@ class TestDMShell(unittest.TestCase):
         self.dm.localToLocal(vec, ovec, addv=PETSc.InsertMode.INSERT_VALUES)
         self.assertTrue(np.allclose(vec.getArray(), ovec.getArray()))
         self.dm.localToLocal(vec, ovec, addv=PETSc.InsertMode.ADD_VALUES)
-        self.assertTrue(np.allclose(2*vec.getArray(), ovec.getArray()))
-
-    def testGlobalToLocalVecScatter(self):
-        vec = PETSc.Vec().create()
-        vec.setSizes((10, None))
-        vec.setUp()
-        sct, ovec = PETSc.Scatter.toAll(vec)
-        self.dm.setGlobalToLocalVecScatter(sct)
-
-        self.dm.globalToLocal(vec, ovec, addv=PETSc.InsertMode.INSERT_VALUES)
-
-        self.assertTrue(np.allclose(vec.getArray(), ovec.getArray()))
+        self.assertTrue(np.allclose(2 * vec.getArray(), ovec.getArray()))
 
     def testGlobalToLocalVecScatter(self):
         vec = PETSc.Vec().create()
@@ -176,10 +173,13 @@ class TestDMShell(unittest.TestCase):
 
     def testCoarsenRefine(self):
         cdm = PETSc.DMShell().create(comm=self.COMM)
+
         def coarsen(dm, comm):
             return cdm
+
         def refine(dm, comm):
             return self.dm
+
         cdm.setRefine(refine)
         self.dm.setCoarsen(coarsen)
         coarsened = self.dm.coarsen()
@@ -194,8 +194,10 @@ class TestDMShell(unittest.TestCase):
         vec = PETSc.Vec().create()
         vec.setSizes((10, None))
         vec.setUp()
+
         def create_interp(dm, dmf):
             return mat, vec
+
         self.dm.setCreateInterpolation(create_interp)
         m, v = self.dm.createInterpolation(self.dm)
         self.assertEqual(m, mat)
@@ -205,8 +207,10 @@ class TestDMShell(unittest.TestCase):
         mat = PETSc.Mat().create()
         mat.setSizes(((10, None), (10, None)))
         mat.setUp()
+
         def create_inject(dm, dmf):
             return mat
+
         self.dm.setCreateInjection(create_inject)
         m = self.dm.createInjection(self.dm)
         self.assertEqual(m, mat)

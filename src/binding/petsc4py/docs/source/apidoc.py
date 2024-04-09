@@ -3,18 +3,16 @@ import sys
 import inspect
 import textwrap
 from sphinx.util import logging
+
 logger = logging.getLogger(__name__)
+
 
 def is_cyfunction(obj):
     return type(obj).__name__ == 'cython_function_or_method'
 
 
 def is_function(obj):
-    return (
-        inspect.isbuiltin(obj)
-        or is_cyfunction(obj)
-        or type(obj) is type(ord)
-    )
+    return inspect.isbuiltin(obj) or is_cyfunction(obj) or type(obj) is type(ord)
 
 
 def is_method(obj):
@@ -22,7 +20,8 @@ def is_method(obj):
         inspect.ismethoddescriptor(obj)
         or inspect.ismethod(obj)
         or is_cyfunction(obj)
-        or type(obj) in (
+        or type(obj)
+        in (
             type(str.index),
             type(str.__add__),
             type(str.__new__),
@@ -31,24 +30,19 @@ def is_method(obj):
 
 
 def is_classmethod(obj):
-    return (
-        inspect.isbuiltin(obj)
-        or type(obj).__name__ in (
-            'classmethod',
-            'classmethod_descriptor',
-        )
+    return inspect.isbuiltin(obj) or type(obj).__name__ in (
+        'classmethod',
+        'classmethod_descriptor',
     )
 
 
 def is_staticmethod(obj):
-    return (
-        type(obj).__name__ in (
-            'staticmethod',
-        )
-    )
+    return type(obj).__name__ in ('staticmethod',)
+
 
 def is_constant(obj):
     return isinstance(obj, (int, float, str, dict))
+
 
 def is_datadescr(obj):
     return inspect.isdatadescriptor(obj) and not hasattr(obj, 'fget')
@@ -62,9 +56,12 @@ def is_class(obj):
     return inspect.isclass(obj) or type(obj) is type(int)
 
 
-class Lines(list):
+def is_hidden(obj):
+    return obj.__qualname__.startswith('_')
 
-    INDENT = " " * 4
+
+class Lines(list):
+    INDENT = ' ' * 4
     level = 0
 
     @property
@@ -82,16 +79,22 @@ class Lines(list):
             self.append(indent + line)
 
 
-def signature(obj):
+def signature(obj, fail=True):
     doc = obj.__doc__
-    doc = doc or f"{obj.__name__}: Any"  # FIXME remove line
+    if not doc:
+        if fail and not is_hidden(obj):
+            logger.warning(f'Missing signature for {obj}')
+        doc = f'{obj.__name__}: Any'
     sig = doc.partition('\n')[0].split('.', 1)[-1]
     return sig or None
 
 
-def docstring(obj):
+def docstring(obj, fail=True):
     doc = obj.__doc__
-    doc = doc or '' # FIXME
+    if not doc:
+        if fail and not is_hidden(obj):
+            logger.warning(f'Missing docstring for {obj}')
+        doc = ''
     link = None
     sig = None
     cl = is_class(obj)
@@ -104,23 +107,36 @@ def docstring(obj):
     summary, _, docbody = doc.partition('\n')
     summary = summary.strip()
     docbody = textwrap.dedent(docbody).strip()
-    if docbody and sig:
+
+    # raise warning if docstring is not provided for a method
+    if not summary and not is_function(obj) and is_method(obj):
+        logger.warning(f'docstring: Missing summary for {obj}')
+
+    # warnings for docstrings that are not compliant
+    if len(summary) > 79:
+        logger.warning(f'Summary for {obj} too long.')
+    if docbody:
         if not summary.endswith('.'):
-            logger.warning(f'Summary for {sig} does not end with period.')
-        if len(summary) > 79:
-            logger.warning(f'Summary for {sig} too long.')
+            logger.warning(f'Summary for {obj} does not end with period.')
         # FIXME
         lines = docbody.split('\n')
-        for i,l in enumerate(lines):
-            if len(l) > 79:
-                logger.warning(f'Line {i} for {sig} too long.')
-        #init = ("Collective.", "Not collective.", "Logically collective.", "Neighborwise collective.")
-        #if lines[0] not in init:
-        #   logger.warning(f'Unexpected collectiveness specification for {sig}\nFound {lines[0]}')
+        for i, line in enumerate(lines):
+            if len(line) > 79:
+                logger.warning(f'Line {i} for documentation of {obj} too long.')
+        if not cl:
+            init = (
+                'Collective.',
+                'Not collective.',
+                'Logically collective.',
+                'Neighborwise collective.',
+                'Collective the first time it is called.',
+            )
+            if lines[0] not in init:
+                logger.warning(f'Unexpected collectiveness for {sig}\nFound {lines[0]}')
 
     if link:
         linktxt, _, link = link.rpartition(' ')
-        linkloc = link.replace(':','#L')
+        linkloc = link.replace(':', '#L')
         # FIXME do we want to use a special section?
         # section = f'References\n----------`'
         section = '\n'
@@ -135,66 +151,65 @@ def docstring(obj):
         doc = f'"""{summary}\n\n{docbody}\n\n"""'
     else:
         doc = f'"""{summary}"""'
-    doc = textwrap.indent(doc, Lines.INDENT)
-    return doc
+    return textwrap.indent(doc, Lines.INDENT)
 
 
 def visit_data(constant):
     name, value = constant
     typename = type(value).__name__
-    kind = "Constant" if isinstance(value, int) else "Object"
+    kind = 'Constant' if isinstance(value, int) else 'Object'
     init = f"_def({typename}, '{name}')"
-    doc = f"#: {kind} ``{name}`` of type :class:`{typename}`"
-    return f"{name}: {typename} = {init}  {doc}\n"
+    doc = f'#: {kind} ``{name}`` of type :class:`{typename}`'
+    return f'{name}: {typename} = {init}  {doc}\n'
 
 
 def visit_function(function):
     sig = signature(function)
     doc = docstring(function)
-    body = Lines.INDENT + "..."
-    return f"def {sig}:\n{doc}\n{body}\n"
+    body = Lines.INDENT + '...'
+    return f'def {sig}:\n{doc}\n{body}\n'
 
 
 def visit_method(method):
     sig = signature(method)
     doc = docstring(method)
-    body = Lines.INDENT + "..."
-    return f"def {sig}:\n{doc}\n{body}\n"
+    body = Lines.INDENT + '...'
+    return f'def {sig}:\n{doc}\n{body}\n'
 
 
 def visit_datadescr(datadescr, name=None):
     sig = signature(datadescr)
     doc = docstring(datadescr)
     name = sig.partition(':')[0].strip() or datadescr.__name__
-    type = sig.partition(':')[2].strip() or 'Any'
-    sig = f"{name}(self) -> {type}"
-    body = Lines.INDENT + "..."
-    return f"@property\ndef {sig}:\n{doc}\n{body}\n"
+    rtype = sig.partition(':')[2].strip() or 'Any'
+    sig = f'{name}(self) -> {rtype}'
+    body = Lines.INDENT + '...'
+    return f'@property\ndef {sig}:\n{doc}\n{body}\n'
 
 
 def visit_property(prop, name=None):
     sig = signature(prop.fget)
     name = name or prop.fget.__name__
-    type = sig.rsplit('->', 1)[-1].strip()
-    sig = f"{name}(self) -> {type}"
+    rtype = sig.rsplit('->', 1)[-1].strip()
+    sig = f'{name}(self) -> {rtype}'
     doc = f'"""{prop.__doc__}"""'
     doc = textwrap.indent(doc, Lines.INDENT)
-    body = Lines.INDENT + "..."
-    return f"@property\ndef {sig}:\n{doc}\n{body}\n"
+    body = Lines.INDENT + '...'
+    return f'@property\ndef {sig}:\n{doc}\n{body}\n'
 
 
 def visit_constructor(cls, name='__init__', args=None):
-    init = (name == '__init__')
+    init = name == '__init__'
     argname = cls.__mro__[-2].__name__.lower()
     argtype = cls.__name__
-    initarg = args or f"{argname}: Optional[{argtype}] = None"
+    initarg = args or f'{argname}: Optional[{argtype}] = None'
     selfarg = 'self' if init else 'cls'
     rettype = 'None' if init else argtype
-    arglist = f"{selfarg}, {initarg}"
-    sig = f"{name}({arglist}) -> {rettype}"
+    arglist = f'{selfarg}, {initarg}'
+    sig = f'{name}({arglist}) -> {rettype}'
     ret = '...' if init else 'return super().__new__(cls)'
     body = Lines.INDENT + ret
-    return f"def {sig}:\n{body}"
+    return f'def {sig}:\n{body}'
 
 
 def visit_class(cls, outer=None, done=None):
@@ -209,29 +224,25 @@ def visit_class(cls, outer=None, done=None):
         '__ge__',
         '__gt__',
         '__enum2str',  # FIXME refactor implementation
-        '_traceback_', # FIXME maybe refactor?
+        '_traceback_',  # FIXME maybe refactor?
     }
     special = {
-        '__len__': "__len__(self) -> int",
-        '__bool__': "__bool__(self) -> bool",
-        '__hash__': "__hash__(self) -> int",
-        '__int__': "__int__(self) -> int",
-        '__index__': "__int__(self) -> int",
-        '__str__': "__str__(self) -> str",
-        '__repr__': "__repr__(self) -> str",
-        '__eq__': "__eq__(self, other: object) -> bool",
-        '__ne__': "__ne__(self, other: object) -> bool",
+        '__len__': '__len__(self) -> int',
+        '__bool__': '__bool__(self) -> bool',
+        '__hash__': '__hash__(self) -> int',
+        '__int__': '__int__(self) -> int',
+        '__index__': '__int__(self) -> int',
+        '__str__': '__str__(self) -> str',
+        '__repr__': '__repr__(self) -> str',
+        '__eq__': '__eq__(self, other: object) -> bool',
+        '__ne__': '__ne__(self, other: object) -> bool',
     }
-    constructor = (
-        '__new__',
-        '__init__',
-    )
 
     qualname = cls.__name__
     cls_name = cls.__name__
     if outer is not None and cls_name.startswith(outer):
-        cls_name = cls_name[len(outer):]
-        qualname = f"{outer}.{cls_name}"
+        cls_name = cls_name[len(outer) :]
+        qualname = f'{outer}.{cls_name}'
 
     override = OVERRIDE.get(qualname, {})
     done = set() if done is None else done
@@ -239,9 +250,9 @@ def visit_class(cls, outer=None, done=None):
 
     base = cls.__base__
     if base is object:
-        lines.add = f"class {cls_name}:"
+        lines.add = f'class {cls_name}:'
     else:
-        lines.add = f"class {cls_name}({base.__name__}):"
+        lines.add = f'class {cls_name}({base.__name__}):'
     lines.level += 1
 
     lines.add = docstring(cls)
@@ -276,7 +287,6 @@ def visit_class(cls, outer=None, done=None):
             continue
 
     for name in members(keys):
-
         if name in override:
             done.add(name)
             lines.add = override[name]
@@ -285,7 +295,7 @@ def visit_class(cls, outer=None, done=None):
         if name in special:
             done.add(name)
             sig = special[name]
-            lines.add = f"def {sig}: ..."
+            lines.add = f'def {sig}: ...'
             continue
 
         attr = getattr(cls, name)
@@ -295,12 +305,10 @@ def visit_class(cls, outer=None, done=None):
             if name == attr.__name__:
                 obj = dct[name]
                 if is_classmethod(obj):
-                    lines.add = "@classmethod"
+                    lines.add = '@classmethod'
                 elif is_staticmethod(obj):
-                    lines.add = "@staticmethod"
+                    lines.add = '@staticmethod'
                 lines.add = visit_method(attr)
-            elif False:
-                lines.add = f"{name} = {attr.__name__}"
             continue
 
         if is_datadescr(attr):
@@ -318,10 +326,9 @@ def visit_class(cls, outer=None, done=None):
             lines.add = visit_data((name, attr))
             continue
 
-    leftovers = [name for name in keys if
-                 name not in done and name not in skip]
+    leftovers = [name for name in keys if name not in done and name not in skip]
     if leftovers:
-        raise RuntimeError(f"leftovers: {leftovers}")
+        raise RuntimeError(f'leftovers: {leftovers}')
 
     lines.level -= 1
     return lines
@@ -344,14 +351,17 @@ def visit_module(module, done=None):
     lines = Lines()
 
     keys = list(module.__dict__.keys())
-    keys.sort(key=lambda name: name.startswith("_"))
+    keys.sort(key=lambda name: name.startswith('_'))
 
     constants = [
-        (name, getattr(module, name)) for name in keys
-        if all((
-            name not in done and name not in skip,
-            is_constant(getattr(module, name)),
-        ))
+        (name, getattr(module, name))
+        for name in keys
+        if all(
+            (
+                name not in done and name not in skip,
+                is_constant(getattr(module, name)),
+            )
+        )
     ]
     for _, value in constants:
         cls = type(value)
@@ -361,7 +371,7 @@ def visit_module(module, done=None):
         if cls.__module__ == module.__name__:
             done.add(name)
             lines.add = visit_class(cls)
-            lines.add = ""
+            lines.add = ''
     for attr in constants:
         name, value = attr
         done.add(name)
@@ -370,7 +380,7 @@ def visit_module(module, done=None):
         else:
             lines.add = visit_data((name, value))
     if constants:
-        lines.add = ""
+        lines.add = ''
 
     for name in keys:
         if name in done or name in skip:
@@ -384,19 +394,22 @@ def visit_module(module, done=None):
             if value.__module__ != module.__name__:
                 continue
             lines.add = visit_class(value)
-            lines.add = ""
+            lines.add = ''
             instances = [
-                (k, getattr(module, k)) for k in keys
-                if all((
-                    k not in done and k not in skip,
-                    type(getattr(module, k)) is value,
-                ))
+                (k, getattr(module, k))
+                for k in keys
+                if all(
+                    (
+                        k not in done and k not in skip,
+                        type(getattr(module, k)) is value,
+                    )
+                )
             ]
             for attrname, attrvalue in instances:
                 done.add(attrname)
                 lines.add = visit_data((attrname, attrvalue))
             if instances:
-                lines.add = ""
+                lines.add = ''
             continue
 
         if is_function(value):
@@ -404,10 +417,10 @@ def visit_module(module, done=None):
             if name == value.__name__:
                 lines.add = visit_function(value)
             else:
-                lines.add = f"{name} = {value.__name__}"
+                lines.add = f'{name} = {value.__name__}'
             continue
 
-    lines.add = ""
+    lines.add = ''
     for name in keys:
         if name in done or name in skip:
             continue
@@ -418,10 +431,9 @@ def visit_module(module, done=None):
         else:
             lines.add = visit_data((name, value))
 
-    leftovers = [name for name in keys if
-                 name not in done and name not in skip]
+    leftovers = [name for name in keys if name not in done and name not in skip]
     if leftovers:
-        raise RuntimeError(f"leftovers: {leftovers}")
+        raise RuntimeError(f'leftovers: {leftovers}')
     return lines
 
 
@@ -498,8 +510,7 @@ def _def(cls, name):
     return obj
 """
 
-OVERRIDE = {
-}
+OVERRIDE = {}
 
 TYPING = """
 from .typing import *
@@ -508,14 +519,15 @@ from .typing import *
 
 def visit_petsc4py_PETSc(done=None):
     from petsc4py import PETSc
+
     lines = Lines()
     lines.add = f'"""{PETSc.__doc__}"""'
     lines.add = IMPORTS
-    lines.add = ""
+    lines.add = ''
     lines.add = HELPERS
-    lines.add = ""
+    lines.add = ''
     lines.add = visit_module(PETSc)
-    lines.add = ""
+    lines.add = ''
     lines.add = TYPING
     return lines
 
@@ -530,8 +542,7 @@ def generate(filename):
 
 def load_module(filename, name=None):
     if name is None:
-        name, _ = os.path.splitext(
-            os.path.basename(filename))
+        name, _ = os.path.splitext(os.path.basename(filename))
     module = type(sys)(name)
     module.__file__ = filename
     module.__package__ = name.rsplit('.', 1)[0]
@@ -547,7 +558,8 @@ _sys_modules = {}
 
 def replace_module(module):
     name = module.__name__
-    assert name not in _sys_modules
+    if name in _sys_modules:
+        raise RuntimeError(f'{name} in modules')
     _sys_modules[name] = sys.modules[name]
     sys.modules[name] = module
     return _sys_modules[name]
@@ -555,7 +567,8 @@ def replace_module(module):
 
 def restore_module(module):
     name = module.__name__
-    assert name in _sys_modules
+    if name not in _sys_modules:
+        raise RuntimeError(f'{name} not in modules')
     sys.modules[name] = _sys_modules[name]
     del _sys_modules[name]
 

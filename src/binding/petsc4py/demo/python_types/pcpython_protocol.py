@@ -7,8 +7,8 @@ from petsc4py.PETSc import Viewer
 
 # A template class with the Python methods supported by PCPYTHON
 
-class PCPythonProtocol:
 
+class PCPythonProtocol:
     def apply(self, pc: PC, b: Vec, x: Vec) -> None:
         """Apply the preconditioner on vector b, return in x."""
         ...
@@ -43,6 +43,7 @@ class PCPythonProtocol:
         This method is allowed to modify the right-hand side b and the solution x.
 
         """
+
     def view(self, pc: PC, viewer: Viewer) -> None:
         """View the preconditioner."""
         ...
@@ -58,4 +59,3 @@ class PCPythonProtocol:
     def reset(self, pc: PC) -> None:
         """Reset the preconditioner."""
         ...
-

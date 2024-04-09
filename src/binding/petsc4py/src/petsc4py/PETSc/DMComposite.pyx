@@ -20,8 +20,9 @@ cdef class DMComposite(DM):
         """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscDM newdm = NULL
-        CHKERR( DMCompositeCreate(ccomm, &newdm) )
-        CHKERR( PetscCLEAR(self.obj) ); self.dm = newdm
+        CHKERR(DMCompositeCreate(ccomm, &newdm))
+        CHKERR(PetscCLEAR(self.obj))
+        self.dm = newdm
         return self
 
     def addDM(self, DM dm, *args: DM) -> None:
@@ -41,11 +42,11 @@ cdef class DMComposite(DM):
         petsc.DMCompositeAddDM
 
         """
-        CHKERR( DMCompositeAddDM(self.dm, dm.dm) )
+        CHKERR(DMCompositeAddDM(self.dm, dm.dm))
         cdef object item
         for item in args:
             dm = <DM?> item
-            CHKERR( DMCompositeAddDM(self.dm, dm.dm) )
+            CHKERR(DMCompositeAddDM(self.dm, dm.dm))
 
     def getNumber(self) -> int:
         """Get number of sub-DMs contained in the composite.
@@ -58,7 +59,7 @@ cdef class DMComposite(DM):
 
         """
         cdef PetscInt n = 0
-        CHKERR( DMCompositeGetNumberDM(self.dm, &n) )
+        CHKERR(DMCompositeGetNumberDM(self.dm, &n))
         return toInt(n)
     getNumberDM = getNumber
 
@@ -74,15 +75,15 @@ cdef class DMComposite(DM):
         """
         cdef PetscInt i, n = 0
         cdef PetscDM *cdms = NULL
-        CHKERR( DMCompositeGetNumberDM(self.dm, &n) )
-        cdef object tmp = oarray_p(empty_p(n), NULL, <void**>&cdms)
-        CHKERR( DMCompositeGetEntriesArray(self.dm, cdms) )
+        CHKERR(DMCompositeGetNumberDM(self.dm, &n))
+        cdef object unused = oarray_p(empty_p(n), NULL, <void**>&cdms)
+        CHKERR(DMCompositeGetEntriesArray(self.dm, cdms))
         cdef DM entry = None
         cdef list entries = []
         for i from 0 <= i < n:
             entry = subtype_DM(cdms[i])()
             entry.dm = cdms[i]
-            CHKERR( PetscINCREF(entry.obj) )
+            CHKERR(PetscINCREF(entry.obj))
             entries.append(entry)
         return entries
 
@@ -104,12 +105,12 @@ cdef class DMComposite(DM):
 
         """
         cdef PetscInt i, n = 0
-        CHKERR( DMCompositeGetNumberDM(self.dm, &n) )
+        CHKERR(DMCompositeGetNumberDM(self.dm, &n))
         cdef PetscVec *clvecs = NULL
-        cdef object tmp = oarray_p(empty_p(n), NULL, <void**>&clvecs)
+        cdef object unused = oarray_p(empty_p(n), NULL, <void**>&clvecs)
         for i from 0 <= i < n:
             clvecs[i] = (<Vec?>lvecs[<Py_ssize_t>i]).vec
-        CHKERR( DMCompositeScatterArray(self.dm, gvec.vec, clvecs) )
+        CHKERR(DMCompositeScatterArray(self.dm, gvec.vec, clvecs))
 
     def gather(self, Vec gvec, imode: InsertModeSpec, lvecs: Sequence[Vec]) -> None:
         """Gather split local vectors into a coupled global vector.
@@ -132,12 +133,12 @@ cdef class DMComposite(DM):
         """
         cdef PetscInsertMode cimode = insertmode(imode)
         cdef PetscInt i, n = 0
-        CHKERR( DMCompositeGetNumberDM(self.dm, &n) )
+        CHKERR(DMCompositeGetNumberDM(self.dm, &n))
         cdef PetscVec *clvecs = NULL
-        cdef object tmp = oarray_p(empty_p(n), NULL, <void**>&clvecs)
+        cdef object unused = oarray_p(empty_p(n), NULL, <void**>&clvecs)
         for i from 0 <= i < n:
             clvecs[i] = (<Vec?>lvecs[<Py_ssize_t>i]).vec
-        CHKERR( DMCompositeGatherArray(self.dm, cimode, gvec.vec, clvecs) )
+        CHKERR(DMCompositeGatherArray(self.dm, cimode, gvec.vec, clvecs))
 
     def getGlobalISs(self) -> list[IS]:
         """Return the index sets for each composed object in the composite.
@@ -158,12 +159,12 @@ cdef class DMComposite(DM):
         """
         cdef PetscInt i, n = 0
         cdef PetscIS *cis = NULL
-        CHKERR( DMCompositeGetNumberDM(self.dm, &n) )
-        CHKERR( DMCompositeGetGlobalISs(self.dm, &cis) )
+        CHKERR(DMCompositeGetNumberDM(self.dm, &n))
+        CHKERR(DMCompositeGetGlobalISs(self.dm, &cis))
         cdef object isets = [ref_IS(cis[i]) for i from 0 <= i < n]
         for i from 0 <= i < n:
-            CHKERR( ISDestroy(&cis[i]) )
-        CHKERR( PetscFree(cis) )
+            CHKERR(ISDestroy(&cis[i]))
+        CHKERR(PetscFree(cis))
         return isets
 
     def getLocalISs(self) -> list[IS]:
@@ -184,12 +185,12 @@ cdef class DMComposite(DM):
         """
         cdef PetscInt i, n = 0
         cdef PetscIS *cis = NULL
-        CHKERR( DMCompositeGetNumberDM(self.dm, &n) )
-        CHKERR( DMCompositeGetLocalISs(self.dm, &cis) )
+        CHKERR(DMCompositeGetNumberDM(self.dm, &n))
+        CHKERR(DMCompositeGetLocalISs(self.dm, &cis))
         cdef object isets = [ref_IS(cis[i]) for i from 0 <= i < n]
         for i from 0 <= i < n:
-            CHKERR( ISDestroy(&cis[i]) )
-        CHKERR( PetscFree(cis) )
+            CHKERR(ISDestroy(&cis[i]))
+        CHKERR(PetscFree(cis))
         return isets
 
     def getLGMaps(self) -> list[LGMap]:
@@ -207,12 +208,12 @@ cdef class DMComposite(DM):
         """
         cdef PetscInt i, n = 0
         cdef PetscLGMap *clgm = NULL
-        CHKERR( DMCompositeGetNumberDM(self.dm, &n) )
-        CHKERR( DMCompositeGetISLocalToGlobalMappings(self.dm, &clgm) )
+        CHKERR(DMCompositeGetNumberDM(self.dm, &n))
+        CHKERR(DMCompositeGetISLocalToGlobalMappings(self.dm, &clgm))
         cdef object lgms = [ref_LGMap(clgm[i]) for i from 0 <= i < n]
         for i from 0 <= i < n:
-            CHKERR( ISLocalToGlobalMappingDestroy(&clgm[i]) )
-        CHKERR( PetscFree(clgm) )
+            CHKERR(ISLocalToGlobalMappingDestroy(&clgm[i]))
+        CHKERR(PetscFree(clgm))
         return lgms
 
     def getAccess(self, Vec gvec, locs: Sequence[int] | None = None) -> Any:

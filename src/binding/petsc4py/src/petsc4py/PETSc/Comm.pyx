@@ -30,7 +30,7 @@ cdef class Comm:
 
     def __dealloc__(self):
         if self.isdup:
-            CHKERR( PetscCommDEALLOC(&self.comm) )
+            CHKERR(PetscCommDEALLOC(&self.comm))
         self.comm = MPI_COMM_NULL
         self.isdup = 0
         self.base = None
@@ -46,7 +46,7 @@ cdef class Comm:
         cdef MPI_Comm comm2 = o.comm
         cdef int flag = 0
         if comm1 != MPI_COMM_NULL and comm2 != MPI_COMM_NULL:
-            CHKERR( <PetscErrorCode>MPI_Comm_compare(comm1, comm2, &flag) )
+            CHKERR(<PetscErrorCode>MPI_Comm_compare(comm1, comm2, &flag))
             if eq: return (flag==<int>MPI_IDENT or  flag==<int>MPI_CONGRUENT)
             else:  return (flag!=<int>MPI_IDENT and flag!=<int>MPI_CONGRUENT)
         else:
@@ -71,7 +71,7 @@ cdef class Comm:
         if self.comm == MPI_COMM_NULL: return
         if not self.isdup:
             raise ValueError("communicator not owned")
-        CHKERR( PetscCommDestroy(&self.comm) )
+        CHKERR(PetscCommDestroy(&self.comm))
         self.comm = MPI_COMM_NULL
         self.isdup = 0
         self.base = None
@@ -89,7 +89,7 @@ cdef class Comm:
         if self.comm == MPI_COMM_NULL:
             raise ValueError("null communicator")
         cdef MPI_Comm newcomm = MPI_COMM_NULL
-        CHKERR( PetscCommDuplicate(self.comm, &newcomm, NULL) )
+        CHKERR(PetscCommDuplicate(self.comm, &newcomm, NULL))
         cdef Comm comm = type(self)()
         comm.comm  = newcomm
         comm.isdup = 1
@@ -105,7 +105,7 @@ cdef class Comm:
         if self.comm == MPI_COMM_NULL:
             raise ValueError("null communicator")
         cdef int size=0
-        CHKERRMPI( MPI_Comm_size(self.comm, &size) )
+        CHKERRMPI(MPI_Comm_size(self.comm, &size))
         return size
 
     def getRank(self) -> int:
@@ -117,7 +117,7 @@ cdef class Comm:
         if self.comm == MPI_COMM_NULL:
             raise ValueError("null communicator")
         cdef int rank=0
-        CHKERRMPI( MPI_Comm_rank(self.comm, &rank) )
+        CHKERRMPI(MPI_Comm_rank(self.comm, &rank))
         return rank
 
     def barrier(self) -> None:
@@ -128,7 +128,7 @@ cdef class Comm:
         """
         if self.comm == MPI_COMM_NULL:
             raise ValueError("null communicator")
-        CHKERRMPI( MPI_Barrier(self.comm) )
+        CHKERRMPI(MPI_Barrier(self.comm))
 
     # --- properties ---
 
@@ -191,9 +191,9 @@ cdef MPI_Comm PETSC_COMM_DEFAULT = MPI_COMM_NULL
 cdef MPI_Comm GetComm(
     object comm, MPI_Comm defv,
 ) except? MPI_COMM_NULL:
-     return def_Comm(comm, defv)
+    return def_Comm(comm, defv)
 
 cdef MPI_Comm GetCommDefault():
-     return PETSC_COMM_DEFAULT
+    return PETSC_COMM_DEFAULT
 
 # --------------------------------------------------------------------

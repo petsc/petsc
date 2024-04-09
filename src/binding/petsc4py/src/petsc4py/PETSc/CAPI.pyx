@@ -1,13 +1,13 @@
-#---------------------------------------------------------------------
+# ---------------------------------------------------------------------
 
 cdef inline int setref(void *d, void *s) except -1:
-    cdef PetscObject *dest  = <PetscObject*> d
-    cdef PetscObject source = <PetscObject>  s
-    CHKERR( PetscINCREF(&source) )
+    cdef PetscObject *dest = <PetscObject*> d
+    cdef PetscObject source = <PetscObject> s
+    CHKERR(PetscINCREF(&source))
     dest[0] = source
     return 0
 
-#---------------------------------------------------------------------
+# ---------------------------------------------------------------------
 
 # -- Error --
 
@@ -401,5 +401,4 @@ cdef api PetscDualSpace PyPetscDualSpace_Get(object arg) except ? NULL:
     retv = ob.dualspace
     return retv
 
-
-#---------------------------------------------------------------------
+# ---------------------------------------------------------------------

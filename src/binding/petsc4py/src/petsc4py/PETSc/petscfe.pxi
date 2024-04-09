@@ -31,4 +31,3 @@ cdef extern from * nogil:
     PetscErrorCode PetscFESetUp(PetscFE)
 
     PetscErrorCode PetscFEView(PetscFE, PetscViewer)
-

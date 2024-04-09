@@ -24,6 +24,7 @@ from sphinx.ext.napoleon.docstring import NumpyDocstring
 sys.path.insert(0, os.path.abspath('.'))
 _today = datetime.datetime.now()
 
+# FIXME: allow building from build?
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -31,7 +32,8 @@ _today = datetime.datetime.now()
 package = 'petsc4py'
 
 docdir = os.path.abspath(os.path.dirname(__file__))
-topdir = os.path.abspath(os.path.join(docdir, *[os.path.pardir]*2))
+topdir = os.path.abspath(os.path.join(docdir, *[os.path.pardir] * 2))
+
 
 def pkg_version():
     with open(os.path.join(topdir, 'src', package, '__init__.py')) as f:
@@ -42,20 +44,20 @@ def pkg_version():
 def get_doc_branch():
     release = 1
     if topdir.endswith(os.path.join(os.path.sep, 'src', 'binding', package)):
-        rootdir = os.path.abspath(os.path.join(topdir, *[os.path.pardir]*3))
+        rootdir = os.path.abspath(os.path.join(topdir, *[os.path.pardir] * 3))
         rootname = package.replace('4py', '')
         version_h = os.path.join(rootdir, 'include', f'{rootname}version.h')
         if os.path.exists(version_h) and os.path.isfile(version_h):
             release_macro = f'{rootname.upper()}_VERSION_RELEASE'
-            version_re = re.compile(rf"#define\s+{release_macro}\s+([-]*\d+)")
+            version_re = re.compile(rf'#define\s+{release_macro}\s+([-]*\d+)')
             with open(version_h, 'r') as f:
                 release = int(version_re.search(f.read()).groups()[0])
     return 'release' if release else 'main'
 
 
-project = 'PETSc for Python'
-author = 'Lisandro Dalcin'
-copyright = f'{_today.year}, {author}'
+__project__ = 'PETSc for Python'
+__author__ = 'Lisandro Dalcin'
+__copyright__ = f'{_today.year}, {__author__}'
 
 release = pkg_version()
 version = release.rsplit('.', 1)[0]
@@ -111,12 +113,13 @@ autosummary_context = {
 
 # Links depends on the actual branch -> release or main
 www = f'https://gitlab.com/petsc/petsc/-/tree/{get_doc_branch()}'
-extlinks = {'sources': (f'{www}/src/binding/petsc4py/src/%s','')}
+extlinks = {'sources': (f'{www}/src/binding/petsc4py/src/%s', '%s')}
 
 napoleon_preprocess_types = True
 
 try:
     import sphinx_rtd_theme
+
     if 'sphinx_rtd_theme' not in extensions:
         extensions.append('sphinx_rtd_theme')
 except ImportError:
@@ -131,6 +134,7 @@ intersphinx_mapping = {
     'dlpack': ('https://dmlc.github.io/dlpack/latest/', None),
     'petsc': ('https://petsc.org/release/', None),
 }
+
 
 def _mangle_petsc_intersphinx():
     """Preprocess the keys in PETSc's intersphinx inventory.
@@ -148,25 +152,26 @@ def _mangle_petsc_intersphinx():
 
     website = intersphinx_mapping['petsc'][0].partition('/release/')[0]
     branch = get_doc_branch()
-    doc_url = f"{website}/{branch}/"
-    if 'LOC' in os.environ and os.path.isfile(os.path.join(os.environ['LOC'],'objects.inv')):
-      inventory_url=f"file://" + os.path.join(os.environ['LOC'],'objects.inv')
+    doc_url = f'{website}/{branch}/'
+    if 'LOC' in os.environ and os.path.isfile(
+        os.path.join(os.environ['LOC'], 'objects.inv')
+    ):
+        inventory_url = 'file://' + os.path.join(os.environ['LOC'], 'objects.inv')
     else:
-      inventory_url=f"{doc_url}objects.inv"
-    print("Using PETSC inventory from "+inventory_url)
+        inventory_url = f'{doc_url}objects.inv'
+    print('Using PETSC inventory from ' + inventory_url)
     inventory = sphobjinv.Inventory(url=inventory_url)
     print(inventory)
 
     for obj in inventory.objects:
-        if obj.name.startswith("manualpages"):
-            obj.name = "petsc." + "/".join(obj.name.split("/")[2:])
-            obj.role = "class"
-            obj.domain = "py"
+        if obj.name.startswith('manualpages'):
+            obj.name = 'petsc.' + '/'.join(obj.name.split('/')[2:])
+            obj.role = 'class'
+            obj.domain = 'py'
 
-    new_inventory_filename = "petsc_objects.inv"
+    new_inventory_filename = 'petsc_objects.inv'
     sphobjinv.writebytes(
-        new_inventory_filename,
-        sphobjinv.compress(inventory.data_file(contract=True))
+        new_inventory_filename, sphobjinv.compress(inventory.data_file(contract=True))
     )
     intersphinx_mapping['petsc'] = (doc_url, new_inventory_filename)
 
@@ -192,6 +197,7 @@ def _setup_mpi4py_typing():
 
 def _patch_domain_python():
     from sphinx.domains.python import PythonDomain
+
     PythonDomain.object_types['data'].roles += ('class',)
 
 
@@ -226,7 +232,6 @@ def _setup_autodoc(app):
     #
 
     class ClassDocumenterMixin:
-
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             if self.config.autodoc_class_signature == 'separated':
@@ -263,13 +268,12 @@ def _monkey_patch_returns():
     this we swap ``:class:`` for ``:any:``.
 
     """
-    _parse_returns_section = \
-        NumpyDocstring._parse_returns_section
+    _parse_returns_section = NumpyDocstring._parse_returns_section
 
     @functools.wraps(NumpyDocstring._parse_returns_section)
     def wrapper(*args, **kwargs):
         out = _parse_returns_section(*args, **kwargs)
-        return [line.replace(":class:", ":any:") for line in out]
+        return [line.replace(':class:', ':any:') for line in out]
 
     NumpyDocstring._parse_returns_section = wrapper
 
@@ -280,13 +284,12 @@ def _monkey_patch_see_also():
     Napoleon uses :obj: for all names found in "see also" sections but we
     need :all: so that references to labels work."""
 
-    _parse_numpydoc_see_also_section = \
-        NumpyDocstring._parse_numpydoc_see_also_section
+    _parse_numpydoc_see_also_section = NumpyDocstring._parse_numpydoc_see_also_section
 
     @functools.wraps(NumpyDocstring._parse_numpydoc_see_also_section)
     def wrapper(*args, **kwargs):
         out = _parse_numpydoc_see_also_section(*args, **kwargs)
-        return [line.replace(":obj:", ":any:") for line in out]
+        return [line.replace(':obj:', ':any:') for line in out]
 
     NumpyDocstring._parse_numpydoc_see_also_section = wrapper
 
@@ -304,26 +307,27 @@ def _process_demos(*demos):
     # Convert demo .py files to rst. Also copy the .py file so it can be
     # linked from the demo rst file.
     try:
-        os.mkdir("demo")
+        os.mkdir('demo')
     except FileExistsError:
         pass
     for demo in demos:
-        demo_dir = os.path.join("demo", os.path.dirname(demo))
-        demo_src = os.path.join(os.pardir, os.pardir, "demo", demo)
+        demo_dir = os.path.join('demo', os.path.dirname(demo))
+        demo_src = os.path.join(os.pardir, os.pardir, 'demo', demo)
         try:
             os.mkdir(demo_dir)
         except FileExistsError:
             pass
-        with open(demo_src, "r") as infile:
-            with open(os.path.join(
-                os.path.join("demo", os.path.splitext(demo)[0] + ".rst")), "w"
+        with open(demo_src, 'r') as infile:
+            with open(
+                os.path.join(os.path.join('demo', os.path.splitext(demo)[0] + '.rst')),
+                'w',
             ) as outfile:
                 converter = pylit.Code2Text(infile)
                 outfile.write(str(converter))
         demo_copy_name = os.path.join(demo_dir, os.path.basename(demo))
         shutil.copyfile(demo_src, demo_copy_name)
         html_static_path.append(demo_copy_name)
-    with open(os.path.join("demo", "demo.rst"), "w") as demofile:
+    with open(os.path.join('demo', 'demo.rst'), 'w') as demofile:
         demofile.write("""
 petsc4py demos
 ==============
@@ -332,13 +336,12 @@ petsc4py demos
 
 """)
         for demo in demos:
-            demofile.write("    " + os.path.splitext(demo)[0] + "\n")
-        demofile.write("\n")
+            demofile.write('    ' + os.path.splitext(demo)[0] + '\n')
+        demofile.write('\n')
 
-html_static_path=[]
-_process_demos(
-    "poisson2d/poisson2d.py"
-)
+
+html_static_path = []
+_process_demos('poisson2d/poisson2d.py')
 
 
 def setup(app):
@@ -358,6 +361,7 @@ def setup(app):
     sys_dwb = sys.dont_write_bytecode
     sys.dont_write_bytecode = True
     import apidoc
+
     sys.dont_write_bytecode = sys_dwb
 
     name = PETSc.__name__
@@ -387,8 +391,10 @@ def setup(app):
     typing.overload = typing_overload
 
     from petsc4py import typing as tp
+
     for attr in tp.__all__:
         autodoc_type_aliases[attr] = f'~petsc4py.typing.{attr}'
+
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
@@ -397,9 +403,7 @@ def setup(app):
 # a list of builtin themes.
 html_theme = 'pydata_sphinx_theme'
 
-html_theme_options = {
-    "navigation_with_keys":True
-}
+html_theme_options = {'navigation_with_keys': True}
 
 # -- Options for HTMLHelp output ------------------------------------------
 
@@ -412,7 +416,7 @@ htmlhelp_basename = f'{package}-man'
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ('index', f'{package}.tex', project, author, 'howto'),
+    ('index', f'{package}.tex', __project__, __author__, 'howto'),
 ]
 
 latex_elements = {
@@ -423,9 +427,7 @@ latex_elements = {
 # -- Options for manual page output ---------------------------------------
 
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    ('index', package, project, [author], 3)
-]
+man_pages = [('index', package, __project__, [__author__], 3)]
 
 
 # -- Options for Texinfo output -------------------------------------------
@@ -433,8 +435,15 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', package, project, author,
-     package, f'{project}.', 'Miscellaneous'),
+    (
+        'index',
+        package,
+        __project__,
+        __author__,
+        package,
+        f'{__project__}.',
+        'Miscellaneous',
+    ),
 ]
 
 

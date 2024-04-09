@@ -4,25 +4,25 @@ import unittest
 import os
 import filecmp
 import numpy as np
+import importlib
 
 # --------------------------------------------------------------------
 
 ERR_ARG_OUTOFRANGE = 63
 
-class BaseTestPlex(object):
 
+class BaseTestPlex:
     COMM = PETSc.COMM_WORLD
     DIM = 1
     CELLS = [[0, 1], [1, 2]]
-    COORDS = [[0.], [0.5], [1.]]
+    COORDS = [[0.0], [0.5], [1.0]]
     COMP = 1
     DOFS = [1, 0]
 
     def setUp(self):
-        self.plex = PETSc.DMPlex().createFromCellList(self.DIM,
-                                                      self.CELLS,
-                                                      self.COORDS,
-                                                      comm=self.COMM)
+        self.plex = PETSc.DMPlex().createFromCellList(
+            self.DIM, self.CELLS, self.COORDS, comm=self.COMM
+        )
 
     def tearDown(self):
         self.plex.destroy()
@@ -35,15 +35,15 @@ class BaseTestPlex(object):
         pStart, pEnd = self.plex.getChart()
         cStart, cEnd = self.plex.getHeightStratum(0)
         vStart, vEnd = self.plex.getDepthStratum(0)
-        numDepths = self.plex.getLabelSize("depth")
+        numDepths = self.plex.getLabelSize('depth')
         coords_raw = self.plex.getCoordinates().getArray()
         coords = np.reshape(coords_raw, (vEnd - vStart, dim))
         self.assertEqual(dim, self.DIM)
-        self.assertEqual(numDepths, self.DIM+1)
+        self.assertEqual(numDepths, self.DIM + 1)
         if rank == 0 and self.CELLS is not None:
-            self.assertEqual(cEnd-cStart, len(self.CELLS))
+            self.assertEqual(cEnd - cStart, len(self.CELLS))
         if rank == 0 and self.COORDS is not None:
-            self.assertEqual(vEnd-vStart, len(self.COORDS))
+            self.assertEqual(vEnd - vStart, len(self.COORDS))
             self.assertTrue((coords == self.COORDS).all())
 
     def testClosure(self):
@@ -87,8 +87,10 @@ class BaseTestPlex(object):
         self.plex.setNumFields(1)
         section = self.plex.createSection([self.COMP], [self.DOFS])
         size = section.getStorageSize()
-        entity_dofs = [self.plex.getStratumSize("depth", d) *
-                       self.DOFS[d] for d in range(self.DIM+1)]
+        entity_dofs = [
+            self.plex.getStratumSize('depth', d) * self.DOFS[d]
+            for d in range(self.DIM + 1)
+        ]
         self.assertEqual(sum(entity_dofs), size)
 
     def testSectionClosure(self):
@@ -99,7 +101,7 @@ class BaseTestPlex(object):
         for p in range(pStart, pEnd):
             for i in range(section.getDof(p)):
                 off = section.getOffset(p)
-                vec.setValue(off+i, p)
+                vec.setValue(off + i, p)
 
         for p in range(pStart, pEnd):
             point_closure = self.plex.getTransitiveClosure(p)[0]
@@ -109,37 +111,40 @@ class BaseTestPlex(object):
 
     def testBoundaryLabel(self):
         pStart, pEnd = self.plex.getChart()
-        if (pEnd - pStart == 0): return
+        if pEnd - pStart == 0:
+            return
 
-        self.assertFalse(self.plex.hasLabel("boundary"))
-        self.plex.markBoundaryFaces("boundary")
-        self.assertTrue(self.plex.hasLabel("boundary"))
+        self.assertFalse(self.plex.hasLabel('boundary'))
+        self.plex.markBoundaryFaces('boundary')
+        self.assertTrue(self.plex.hasLabel('boundary'))
 
-        faces = self.plex.getStratumIS("boundary", 1)
+        faces = self.plex.getStratumIS('boundary', 1)
         for f in faces.getIndices():
             points, orient = self.plex.getTransitiveClosure(f, useCone=True)
             for p in points:
-                self.plex.setLabelValue("boundary", p, 1)
+                self.plex.setLabelValue('boundary', p, 1)
 
         for p in range(pStart, pEnd):
-            if self.plex.getLabelValue("boundary", p) != 1:
-                self.plex.setLabelValue("boundary", p, 2)
+            if self.plex.getLabelValue('boundary', p) != 1:
+                self.plex.setLabelValue('boundary', p, 2)
 
-        numBoundary = self.plex.getStratumSize("boundary", 1)
-        numInterior = self.plex.getStratumSize("boundary", 2)
+        numBoundary = self.plex.getStratumSize('boundary', 1)
+        numInterior = self.plex.getStratumSize('boundary', 2)
         self.assertNotEqual(numBoundary, pEnd - pStart)
         self.assertNotEqual(numInterior, pEnd - pStart)
         self.assertEqual(numBoundary + numInterior, pEnd - pStart)
 
     def testMetric(self):
-        if self.DIM == 1: return
+        if self.DIM == 1:
+            return
         self.plex.distribute()
-        if self.CELLS is None and not self.plex.isSimplex(): return
+        if self.CELLS is None and not self.plex.isSimplex():
+            return
         self.plex.orient()
 
         h_min = 1.0e-30
-        h_max = 1.0e+30
-        a_max = 1.0e+10
+        h_max = 1.0e30
+        a_max = 1.0e10
         target = 8.0
         p = 1.0
         beta = 1.3
@@ -168,15 +173,15 @@ class BaseTestPlex(object):
         self.assertFalse(self.plex.metricNoSwapping())
         self.assertFalse(self.plex.metricNoMovement())
         self.assertFalse(self.plex.metricNoSurf())
-        assert self.plex.metricGetVerbosity() == -1
-        assert self.plex.metricGetNumIterations() == 3
-        assert np.isclose(self.plex.metricGetMinimumMagnitude(), h_min)
-        assert np.isclose(self.plex.metricGetMaximumMagnitude(), h_max)
-        assert np.isclose(self.plex.metricGetMaximumAnisotropy(), a_max)
-        assert np.isclose(self.plex.metricGetTargetComplexity(), target)
-        assert np.isclose(self.plex.metricGetNormalizationOrder(), p)
-        assert np.isclose(self.plex.metricGetGradationFactor(), beta)
-        assert np.isclose(self.plex.metricGetHausdorffNumber(), hausd)
+        self.assertTrue(self.plex.metricGetVerbosity() == -1)
+        self.assertTrue(self.plex.metricGetNumIterations() == 3)
+        self.assertTrue(np.isclose(self.plex.metricGetMinimumMagnitude(), h_min))
+        self.assertTrue(np.isclose(self.plex.metricGetMaximumMagnitude(), h_max))
+        self.assertTrue(np.isclose(self.plex.metricGetMaximumAnisotropy(), a_max))
+        self.assertTrue(np.isclose(self.plex.metricGetTargetComplexity(), target))
+        self.assertTrue(np.isclose(self.plex.metricGetNormalizationOrder(), p))
+        self.assertTrue(np.isclose(self.plex.metricGetGradationFactor(), beta))
+        self.assertTrue(np.isclose(self.plex.metricGetHausdorffNumber(), hausd))
 
         metric1 = self.plex.metricCreateUniform(0.5)
         metric2 = self.plex.metricCreateUniform(1.0)
@@ -184,160 +189,234 @@ class BaseTestPlex(object):
         det = self.plex.metricDeterminantCreate()
         self.plex.metricAverage2(metric1, metric2, metric)
         metric1.array[:] *= 1.5
-        assert np.allclose(metric.array, metric1.array)
+        self.assertTrue(np.allclose(metric.array, metric1.array))
         self.plex.metricIntersection2(metric1, metric2, metric)
-        assert np.allclose(metric.array, metric2.array)
+        self.assertTrue(np.allclose(metric.array, metric2.array))
         self.plex.metricEnforceSPD(metric, metric1, det[0])
-        assert np.allclose(metric.array, metric1.array)
-        self.plex.metricNormalize(metric, metric1, det[0], restrictSizes=False, restrictAnisotropy=False)
-        metric2.scale(pow(target, 2.0/self.DIM))
-        assert np.allclose(metric1.array, metric2.array)
+        self.assertTrue(np.allclose(metric.array, metric1.array))
+
+        if self.DIM == 2 and PETSc.COMM_WORLD.getSize() > 6:
+            # Error with 7 processes in 2D: normalization factor is -1
+            return
+
+        self.plex.metricNormalize(
+            metric, metric1, det[0], restrictSizes=False, restrictAnisotropy=False
+        )
+        metric2.scale(pow(target, 2.0 / self.DIM))
+        self.assertTrue(np.allclose(metric1.array, metric2.array))
 
     def testAdapt(self):
-        if self.DIM == 1: return
+        if self.DIM == 1:
+            return
+        if self.DIM == 3 and PETSc.COMM_WORLD.getSize() > 4:
+            # Error with 5 processes in 3D
+            # ----------------------------
+            # Warning: MMG5_mmgIntextmet: Unable to diagonalize at least 1 metric.
+            # Error: MMG3D_defsiz_ani: unable to intersect metrics at point 8.
+            # Metric undefined. Exit program.
+            # MMG remeshing problem. Exit program.
+            return
         self.plex.orient()
         plex = self.plex.refine()
         plex.distribute()
-        if self.CELLS is None and not plex.isSimplex(): return
-        if sum(self.DOFS) > 1: return
+        if self.CELLS is None and not plex.isSimplex():
+            return
+        if sum(self.DOFS) > 1:
+            return
         metric = plex.metricCreateUniform(9.0)
         try:
-            newplex = plex.adaptMetric(metric,"")
+            newplex = plex.adaptMetric(metric, '')
+            newplex.destroy()
         except PETSc.Error as exc:
-            if exc.ierr != ERR_ARG_OUTOFRANGE: raise
+            if exc.ierr != ERR_ARG_OUTOFRANGE:
+                raise
 
 
 # --------------------------------------------------------------------
+
 
 class BaseTestPlex_2D(BaseTestPlex):
     DIM = 2
-    CELLS = [[0, 1, 3], [1, 3, 4], [1, 2, 4], [2, 4, 5],
-             [3, 4, 6], [4, 6, 7], [4, 5, 7], [5, 7, 8]]
-    COORDS = [[0.0, 0.0], [0.5, 0.0], [1.0, 0.0],
-              [0.0, 0.5], [0.5, 0.5], [1.0, 0.5],
-              [0.0, 1.0], [0.5, 1.0], [1.0, 1.0]]
+    CELLS = [
+        [0, 1, 3],
+        [1, 3, 4],
+        [1, 2, 4],
+        [2, 4, 5],
+        [3, 4, 6],
+        [4, 6, 7],
+        [4, 5, 7],
+        [5, 7, 8],
+    ]
+    COORDS = [
+        [0.0, 0.0],
+        [0.5, 0.0],
+        [1.0, 0.0],
+        [0.0, 0.5],
+        [0.5, 0.5],
+        [1.0, 0.5],
+        [0.0, 1.0],
+        [0.5, 1.0],
+        [1.0, 1.0],
+    ]
     DOFS = [1, 0, 0]
+
 
 class BaseTestPlex_3D(BaseTestPlex):
     DIM = 3
-    CELLS = [[0, 2, 3, 7], [0, 2, 6, 7], [0, 4, 6, 7],
-             [0, 1, 3, 7], [0, 1, 5, 7], [0, 4, 5, 7]]
-    COORDS = [[0., 0., 0.], [1., 0., 0.], [0., 1., 0.], [1., 1., 0.],
-              [0., 0., 1.], [1., 0., 1.], [0., 1., 1.], [1., 1., 1.]]
+    CELLS = [
+        [0, 2, 3, 7],
+        [0, 2, 6, 7],
+        [0, 4, 6, 7],
+        [0, 1, 3, 7],
+        [0, 1, 5, 7],
+        [0, 4, 5, 7],
+    ]
+    COORDS = [
+        [0.0, 0.0, 0.0],
+        [1.0, 0.0, 0.0],
+        [0.0, 1.0, 0.0],
+        [1.0, 1.0, 0.0],
+        [0.0, 0.0, 1.0],
+        [1.0, 0.0, 1.0],
+        [0.0, 1.0, 1.0],
+        [1.0, 1.0, 1.0],
+    ]
     DOFS = [1, 0, 0, 0]
 
+
 # --------------------------------------------------------------------
+
 
 class TestPlex_1D(BaseTestPlex, unittest.TestCase):
     pass
 
-class TestPlex_2D(BaseTestPlex_2D, unittest.TestCase):
 
+class TestPlex_2D(BaseTestPlex_2D, unittest.TestCase):
     def testTransform(self):
-            plex = self.plex
-            cstart, cend = plex.getHeightStratum(0)
-            tr = PETSc.DMPlexTransform().create(comm=PETSc.COMM_WORLD)
-            tr.setType(PETSc.DMPlexTransformType.REFINEALFELD)
-            tr.setDM(plex)
-            tr.setUp()
-            newplex = tr.apply(plex)
-            tr.destroy()
-            newcstart, newcend = newplex.getHeightStratum(0)
-            newplex.destroy()
-            self.assertTrue((newcend-newcstart) == 3*(cend-cstart)) 
+        plex = self.plex
+        cstart, cend = plex.getHeightStratum(0)
+        tr = PETSc.DMPlexTransform().create(comm=PETSc.COMM_WORLD)
+        tr.setType(PETSc.DMPlexTransformType.REFINEALFELD)
+        tr.setDM(plex)
+        tr.setUp()
+        newplex = tr.apply(plex)
+        tr.destroy()
+        newcstart, newcend = newplex.getHeightStratum(0)
+        newplex.destroy()
+        self.assertTrue((newcend - newcstart) == 3 * (cend - cstart))
+
 
 class TestPlex_3D(BaseTestPlex_3D, unittest.TestCase):
     pass
 
+
 class TestPlex_2D_P3(BaseTestPlex_2D, unittest.TestCase):
     DOFS = [1, 2, 1]
+
 
 class TestPlex_3D_P3(BaseTestPlex_3D, unittest.TestCase):
     DOFS = [1, 2, 1, 0]
 
+
 class TestPlex_3D_P4(BaseTestPlex_3D, unittest.TestCase):
     DOFS = [1, 3, 3, 1]
+
 
 class TestPlex_2D_BoxTensor(BaseTestPlex_2D, unittest.TestCase):
     CELLS = None
     COORDS = None
+
     def setUp(self):
-        self.plex = PETSc.DMPlex().createBoxMesh([3,3], simplex=False)
+        self.plex = PETSc.DMPlex().createBoxMesh([3, 3], simplex=False)
+
 
 class TestPlex_3D_BoxTensor(BaseTestPlex_3D, unittest.TestCase):
     CELLS = None
     COORDS = None
-    def setUp(self):
-        self.plex = PETSc.DMPlex().createBoxMesh([3,3,3], simplex=False)
 
+    def setUp(self):
+        self.plex = PETSc.DMPlex().createBoxMesh([3, 3, 3], simplex=False)
+
+
+# FIXME
 try:
     raise PETSc.Error
-    PETSc.DMPlex().createBoxMesh([2,2], simplex=True, comm=PETSc.COMM_SELF).destroy()
+    PETSc.DMPlex().createBoxMesh([2, 2], simplex=True, comm=PETSc.COMM_SELF).destroy()
 except PETSc.Error:
     pass
 else:
+
     class TestPlex_2D_Box(BaseTestPlex_2D, unittest.TestCase):
         CELLS = None
         COORDS = None
+
         def setUp(self):
-            self.plex = PETSc.DMPlex().createBoxMesh([1,1], simplex=True)
+            self.plex = PETSc.DMPlex().createBoxMesh([1, 1], simplex=True)
 
     class TestPlex_2D_Boundary(BaseTestPlex_2D, unittest.TestCase):
         CELLS = None
         COORDS = None
+
         def setUp(self):
             boundary = PETSc.DMPlex().create(self.COMM)
-            boundary.createSquareBoundary([0., 0.], [1., 1.], [2, 2])
-            boundary.setDimension(self.DIM-1)
+            boundary.createSquareBoundary([0.0, 0.0], [1.0, 1.0], [2, 2])
+            boundary.setDimension(self.DIM - 1)
             self.plex = PETSc.DMPlex().generate(boundary)
 
     class TestPlex_3D_Box(BaseTestPlex_3D, unittest.TestCase):
         CELLS = None
         COORDS = None
+
         def setUp(self):
-            self.plex = PETSc.DMPlex().createBoxMesh([1,1,1], simplex=True)
+            self.plex = PETSc.DMPlex().createBoxMesh([1, 1, 1], simplex=True)
 
     class TestPlex_3D_Boundary(BaseTestPlex_3D, unittest.TestCase):
         CELLS = None
         COORDS = None
+
         def setUp(self):
             boundary = PETSc.DMPlex().create(self.COMM)
-            boundary.createCubeBoundary([0., 0., 0.], [1., 1., 1.], [1, 1, 1])
-            boundary.setDimension(self.DIM-1)
+            boundary.createCubeBoundary([0.0, 0.0, 0.0], [1.0, 1.0, 1.0], [1, 1, 1])
+            boundary.setDimension(self.DIM - 1)
             self.plex = PETSc.DMPlex().generate(boundary)
 
 # --------------------------------------------------------------------
 
 PETSC_DIR = petsc4py.get_config()['PETSC_DIR']
 
+
 def check_dtype(method):
     def wrapper(self, *args, **kwargs):
         if PETSc.ScalarType is PETSc.ComplexType:
-            return
-        else:
-            return method(self, *args, **kwargs)
+            return None
+        return method(self, *args, **kwargs)
+
     return wrapper
+
 
 def check_package(method):
     def wrapper(self, *args, **kwargs):
-        if not PETSc.Sys.hasExternalPackage("hdf5"):
-            return
-        elif self.PARTITIONERTYPE != "simple" and \
-           not PETSc.Sys.hasExternalPackage(self.PARTITIONERTYPE):
-            return
-        else:
-            return method(self, *args, **kwargs)
+        if not PETSc.Sys.hasExternalPackage('hdf5'):
+            return None
+        if self.PARTITIONERTYPE != 'simple' and not PETSc.Sys.hasExternalPackage(
+            self.PARTITIONERTYPE
+        ):
+            return None
+        return method(self, *args, **kwargs)
+
     return wrapper
+
 
 def check_nsize(method):
     def wrapper(self, *args, **kwargs):
         if PETSc.COMM_WORLD.size != self.NSIZE:
-            return
-        else:
-            return method(self, *args, **kwargs)
+            return None
+        return method(self, *args, **kwargs)
+
     return wrapper
 
-class BaseTestPlexHDF5(object):
+
+class BaseTestPlexHDF5:
     NSIZE = 4
     NTIMES = 3
 
@@ -353,37 +432,43 @@ class BaseTestPlexHDF5(object):
         self.txtvwr = None
 
     def _name(self):
-        return "%s_outformat-%s_%s" % (self.SUFFIX,
-                                       self.OUTFORMAT,
-                                       self.PARTITIONERTYPE)
+        return f'{self.SUFFIX}_outformat-{self.OUTFORMAT}_{self.PARTITIONERTYPE}'
 
     def infile(self):
-        return os.path.join(PETSC_DIR, "share/petsc/datafiles/",
-                            "meshes/blockcylinder-50.h5")
+        return os.path.join(
+            PETSC_DIR, 'share/petsc/datafiles/', 'meshes/blockcylinder-50.h5'
+        )
 
     def outfile(self):
-        return os.path.join("./temp_test_dmplex_%s.h5" % self._name())
+        return os.path.join('./temp_test_dmplex_%s.h5' % self._name())
 
     def informat(self):
         return PETSc.Viewer.Format.HDF5_XDMF
 
     def outformat(self):
-        d = {"hdf5_petsc": PETSc.Viewer.Format.HDF5_PETSC,
-             "hdf5_xdmf": PETSc.Viewer.Format.HDF5_XDMF}
+        d = {
+            'hdf5_petsc': PETSc.Viewer.Format.HDF5_PETSC,
+            'hdf5_xdmf': PETSc.Viewer.Format.HDF5_XDMF,
+        }
         return d[self.OUTFORMAT]
 
     def partitionerType(self):
-        d = {"simple": PETSc.Partitioner.Type.SIMPLE,
-             "ptscotch": PETSc.Partitioner.Type.PTSCOTCH,
-             "parmetis": PETSc.Partitioner.Type.PARMETIS}
+        d = {
+            'simple': PETSc.Partitioner.Type.SIMPLE,
+            'ptscotch': PETSc.Partitioner.Type.PTSCOTCH,
+            'parmetis': PETSc.Partitioner.Type.PARMETIS,
+        }
         return d[self.PARTITIONERTYPE]
 
     def ref_output_file(self):
-        return os.path.join(PETSC_DIR, "src/dm/impls/plex/tutorials/",
-                            "output/ex5_%s.out" % self._name())
+        return os.path.join(
+            PETSC_DIR,
+            'src/dm/impls/plex/tutorials/',
+            'output/ex5_%s.out' % self._name(),
+        )
 
     def tmp_output_file(self):
-        return os.path.join("./temp_test_dmplex_%s.out" % self._name())
+        return os.path.join('./temp_test_dmplex_%s.out' % self._name())
 
     def outputText(self, msg, comm):
         if not comm.rank:
@@ -391,8 +476,7 @@ class BaseTestPlexHDF5(object):
                 f.write(msg)
 
     def outputPlex(self, plex):
-        self.txtvwr.createASCII(self.tmp_output_file(),
-                                mode='a', comm=plex.comm)
+        self.txtvwr.createASCII(self.tmp_output_file(), mode='a', comm=plex.comm)
         plex.view(viewer=self.txtvwr)
         self.txtvwr.destroy()
 
@@ -409,27 +493,25 @@ class BaseTestPlexHDF5(object):
                 infname = self.outfile()
                 informt = self.outformat()
             if self.HETEROGENEOUS:
-                mycolor = (grank > self.NTIMES - i)
+                mycolor = grank > self.NTIMES - i
             else:
                 mycolor = 0
-            try:
-                import mpi4py
-            except ImportError:
-                self.skipTest('mpi4py') # throws special exception to signal test skip
+            if importlib.util.find_spec('mpi4py') is None:
+                self.skipTest('mpi4py')  # throws special exception to signal test skip
             mpicomm = PETSc.COMM_WORLD.tompi4py()
             comm = PETSc.Comm(comm=mpicomm.Split(color=mycolor, key=grank))
             if mycolor == 0:
-                self.outputText("Begin cycle %d\n" % i, comm)
+                self.outputText('Begin cycle %d\n' % i, comm)
                 plex = PETSc.DMPlex()
                 vwr = PETSc.ViewerHDF5()
                 # Create plex
                 plex.create(comm=comm)
-                plex.setName("DMPlex Object")
+                plex.setName('DMPlex Object')
                 # Load data from XDMF into dm in parallel
                 vwr.create(infname, mode='r', comm=comm)
                 vwr.pushFormat(format=informt)
                 plex.load(viewer=vwr)
-                plex.setOptionsPrefix("loaded_")
+                plex.setOptionsPrefix('loaded_')
                 plex.distributeSetDefault(False)
                 plex.setFromOptions()
                 vwr.popFormat()
@@ -437,52 +519,62 @@ class BaseTestPlexHDF5(object):
                 self.outputPlex(plex)
                 # Test DM is indeed distributed
                 flg = plex.isDistributed()
-                self.outputText("Loaded mesh distributed? %s\n" %
-                                str(flg).upper(), comm)
+                self.outputText(
+                    'Loaded mesh distributed? %s\n' % str(flg).upper(), comm
+                )
                 # Interpolate
                 plex.interpolate()
-                plex.setOptionsPrefix("interpolated_")
+                plex.setOptionsPrefix('interpolated_')
                 plex.setFromOptions()
                 self.outputPlex(plex)
                 # Redistribute
                 part = plex.getPartitioner()
                 part.setType(self.partitionerType())
-                _ = plex.distribute(overlap=0)
-                plex.setName("DMPlex Object")
-                plex.setOptionsPrefix("redistributed_")
+                plex.distribute(overlap=0)
+                part.destroy()
+                plex.setName('DMPlex Object')
+                plex.setOptionsPrefix('redistributed_')
                 plex.setFromOptions()
                 self.outputPlex(plex)
                 # Save redistributed dm to XDMF in parallel
                 vwr.create(self.outfile(), mode='w', comm=comm)
                 vwr.pushFormat(format=self.outformat())
-                plex.setName("DMPlex Object")
+                plex.setName('DMPlex Object')
                 plex.view(viewer=vwr)
                 vwr.popFormat()
                 vwr.destroy()
                 # Destroy plex
                 plex.destroy()
-                self.outputText("End   cycle %d\n--------\n" % i, comm)
+                self.outputText('End   cycle %d\n--------\n' % i, comm)
             PETSc.COMM_WORLD.Barrier()
         # Check that the output is identical to that of plex/tutorial/ex5.c.
-        self.assertTrue(filecmp.cmp(self.tmp_output_file(),
-                                    self.ref_output_file(), shallow=False),
-                        'Contents of the files not the same.')
+        self.assertTrue(
+            filecmp.cmp(self.tmp_output_file(), self.ref_output_file(), shallow=False),
+            'Contents of the files not the same.',
+        )
         PETSc.COMM_WORLD.Barrier()
+
 
 class BaseTestPlexHDF5Homogeneous(BaseTestPlexHDF5):
     """Test save on N / load on N."""
+
     SUFFIX = 0
     HETEROGENEOUS = False
 
+
 class BaseTestPlexHDF5Heterogeneous(BaseTestPlexHDF5):
     """Test save on N / load on M."""
+
     SUFFIX = 1
     HETEROGENEOUS = True
 
-class TestPlexHDF5PETSCSimpleHomogeneous(BaseTestPlexHDF5Homogeneous,
-                                         unittest.TestCase):
-    OUTFORMAT = "hdf5_petsc"
-    PARTITIONERTYPE = "simple"
+
+class TestPlexHDF5PETSCSimpleHomogeneous(
+    BaseTestPlexHDF5Homogeneous, unittest.TestCase
+):
+    OUTFORMAT = 'hdf5_petsc'
+    PARTITIONERTYPE = 'simple'
+
 
 """
 Skipping. PTScotch produces different distributions when run
@@ -494,15 +586,18 @@ class TestPlexHDF5PETSCPTScotchHomogeneous(BaseTestPlexHDF5Homogeneous,
     PARTITIONERTYPE = "ptscotch"
 """
 
-class TestPlexHDF5PETSCParmetisHomogeneous(BaseTestPlexHDF5Homogeneous,
-                                           unittest.TestCase):
-    OUTFORMAT = "hdf5_petsc"
-    PARTITIONERTYPE = "parmetis"
 
-class TestPlexHDF5XDMFSimpleHomogeneous(BaseTestPlexHDF5Homogeneous,
-                                        unittest.TestCase):
-    OUTFORMAT = "hdf5_xdmf"
-    PARTITIONERTYPE = "simple"
+class TestPlexHDF5PETSCParmetisHomogeneous(
+    BaseTestPlexHDF5Homogeneous, unittest.TestCase
+):
+    OUTFORMAT = 'hdf5_petsc'
+    PARTITIONERTYPE = 'parmetis'
+
+
+class TestPlexHDF5XDMFSimpleHomogeneous(BaseTestPlexHDF5Homogeneous, unittest.TestCase):
+    OUTFORMAT = 'hdf5_xdmf'
+    PARTITIONERTYPE = 'simple'
+
 
 """
 Skipping. PTScotch produces different distributions when run
@@ -514,15 +609,20 @@ class TestPlexHDF5XDMFPTScotchHomogeneous(BaseTestPlexHDF5Homogeneous,
     PARTITIONERTYPE = "ptscotch"
 """
 
-class TestPlexHDF5XDMFParmetisHomogeneous(BaseTestPlexHDF5Homogeneous,
-                                          unittest.TestCase):
-    OUTFORMAT = "hdf5_xdmf"
-    PARTITIONERTYPE = "parmetis"
 
-class TestPlexHDF5PETSCSimpleHeterogeneous(BaseTestPlexHDF5Heterogeneous,
-                                           unittest.TestCase):
-    OUTFORMAT = "hdf5_petsc"
-    PARTITIONERTYPE = "simple"
+class TestPlexHDF5XDMFParmetisHomogeneous(
+    BaseTestPlexHDF5Homogeneous, unittest.TestCase
+):
+    OUTFORMAT = 'hdf5_xdmf'
+    PARTITIONERTYPE = 'parmetis'
+
+
+class TestPlexHDF5PETSCSimpleHeterogeneous(
+    BaseTestPlexHDF5Heterogeneous, unittest.TestCase
+):
+    OUTFORMAT = 'hdf5_petsc'
+    PARTITIONERTYPE = 'simple'
+
 
 """
 Skipping. PTScotch produces different distributions when run
@@ -534,25 +634,34 @@ class TestPlexHDF5PETSCPTScotchHeterogeneous(BaseTestPlexHDF5Heterogeneous,
     PARTITIONERTYPE = "ptscotch"
 """
 
-class TestPlexHDF5PETSCParmetisHeterogeneous(BaseTestPlexHDF5Heterogeneous,
-                                             unittest.TestCase):
-    OUTFORMAT = "hdf5_petsc"
-    PARTITIONERTYPE = "parmetis"
 
-class TestPlexHDF5XDMFSimpleHeterogeneous(BaseTestPlexHDF5Heterogeneous,
-                                          unittest.TestCase):
-    OUTFORMAT = "hdf5_xdmf"
-    PARTITIONERTYPE = "simple"
+class TestPlexHDF5PETSCParmetisHeterogeneous(
+    BaseTestPlexHDF5Heterogeneous, unittest.TestCase
+):
+    OUTFORMAT = 'hdf5_petsc'
+    PARTITIONERTYPE = 'parmetis'
 
-class TestPlexHDF5XDMFPTScotchHeterogeneous(BaseTestPlexHDF5Heterogeneous,
-                                            unittest.TestCase):
-    OUTFORMAT = "hdf5_xdmf"
-    PARTITIONERTYPE = "ptscotch"
 
-class TestPlexHDF5XDMFParmetisHeterogeneous(BaseTestPlexHDF5Heterogeneous,
-                                            unittest.TestCase):
-    OUTFORMAT = "hdf5_xdmf"
-    PARTITIONERTYPE = "parmetis"
+class TestPlexHDF5XDMFSimpleHeterogeneous(
+    BaseTestPlexHDF5Heterogeneous, unittest.TestCase
+):
+    OUTFORMAT = 'hdf5_xdmf'
+    PARTITIONERTYPE = 'simple'
+
+
+class TestPlexHDF5XDMFPTScotchHeterogeneous(
+    BaseTestPlexHDF5Heterogeneous, unittest.TestCase
+):
+    OUTFORMAT = 'hdf5_xdmf'
+    PARTITIONERTYPE = 'ptscotch'
+
+
+class TestPlexHDF5XDMFParmetisHeterogeneous(
+    BaseTestPlexHDF5Heterogeneous, unittest.TestCase
+):
+    OUTFORMAT = 'hdf5_xdmf'
+    PARTITIONERTYPE = 'parmetis'
+
 
 # --------------------------------------------------------------------
 

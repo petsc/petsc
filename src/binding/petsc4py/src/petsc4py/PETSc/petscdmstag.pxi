@@ -37,48 +37,46 @@ cdef extern from * nogil:
         DMSTAG_FRONT_UP
         DMSTAG_FRONT_UP_RIGHT
 
+    PetscErrorCode DMStagCreate1d(MPI_Comm, PetscDMBoundaryType, PetscInt, PetscInt, PetscInt, PetscDMStagStencilType, PetscInt, const PetscInt[], PetscDM*)
+    PetscErrorCode DMStagCreate2d(MPI_Comm, PetscDMBoundaryType, PetscDMBoundaryType, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, PetscDMStagStencilType, PetscInt, const PetscInt[], const PetscInt[], PetscDM*)
+    PetscErrorCode DMStagCreate3d(MPI_Comm, PetscDMBoundaryType, PetscDMBoundaryType, PetscDMBoundaryType, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, PetscDMStagStencilType, PetscInt, const PetscInt[], const PetscInt[], const PetscInt[], PetscDM*)
 
-    PetscErrorCode DMStagCreate1d(MPI_Comm,PetscDMBoundaryType,PetscInt,PetscInt,PetscInt,PetscDMStagStencilType,PetscInt,const PetscInt[],PetscDM*)
-    PetscErrorCode DMStagCreate2d(MPI_Comm,PetscDMBoundaryType,PetscDMBoundaryType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscDMStagStencilType,PetscInt,const PetscInt[],const PetscInt[],PetscDM*)
-    PetscErrorCode DMStagCreate3d(MPI_Comm,PetscDMBoundaryType,PetscDMBoundaryType,PetscDMBoundaryType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscDMStagStencilType,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],PetscDM*)
+    PetscErrorCode DMStagGetCorners(PetscDM, PetscInt*, PetscInt*, PetscInt*, PetscInt*, PetscInt*, PetscInt*, PetscInt*, PetscInt*, PetscInt*)
+    PetscErrorCode DMStagGetGhostCorners(PetscDM, PetscInt*, PetscInt*, PetscInt*, PetscInt*, PetscInt*, PetscInt*)
+    PetscErrorCode DMStagGetLocalSizes(PetscDM, PetscInt*, PetscInt*, PetscInt*)
+    PetscErrorCode DMStagGetEntriesPerElement(PetscDM, PetscInt*)
 
+    PetscErrorCode DMStagGetDOF(PetscDM, PetscInt*, PetscInt*, PetscInt*, PetscInt*)
+    PetscErrorCode DMStagGetNumRanks(PetscDM, PetscInt*, PetscInt*, PetscInt*)
+    PetscErrorCode DMStagGetGlobalSizes(PetscDM, PetscInt*, PetscInt*, PetscInt*)
+    PetscErrorCode DMStagGetBoundaryTypes(PetscDM, PetscDMBoundaryType*, PetscDMBoundaryType*, PetscDMBoundaryType*)
+    PetscErrorCode DMStagGetStencilWidth(PetscDM, PetscInt*)
+    PetscErrorCode DMStagGetStencilType(PetscDM, PetscDMStagStencilType*)
+    PetscErrorCode DMStagGetOwnershipRanges(PetscDM, const PetscInt*[], const PetscInt*[], const PetscInt*[])
 
-    PetscErrorCode DMStagGetCorners(PetscDM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*)
-    PetscErrorCode DMStagGetGhostCorners(PetscDM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*)
-    PetscErrorCode DMStagGetLocalSizes(PetscDM,PetscInt*,PetscInt*,PetscInt*)
-    PetscErrorCode DMStagGetEntriesPerElement(PetscDM,PetscInt*)
+    PetscErrorCode DMStagSetDOF(PetscDM, PetscInt, PetscInt, PetscInt, PetscInt)
+    PetscErrorCode DMStagSetNumRanks(PetscDM, PetscInt, PetscInt, PetscInt)
+    PetscErrorCode DMStagSetGlobalSizes(PetscDM, PetscInt, PetscInt, PetscInt)
+    PetscErrorCode DMStagSetBoundaryTypes(PetscDM, PetscDMBoundaryType, PetscDMBoundaryType, PetscDMBoundaryType)
+    PetscErrorCode DMStagSetStencilWidth(PetscDM, PetscInt)
+    PetscErrorCode DMStagSetStencilType(PetscDM, PetscDMStagStencilType)
+    PetscErrorCode DMStagSetOwnershipRanges(PetscDM, const PetscInt[], const PetscInt[], const PetscInt[])
 
-    PetscErrorCode DMStagGetDOF(PetscDM,PetscInt*,PetscInt*,PetscInt*,PetscInt*)
-    PetscErrorCode DMStagGetNumRanks(PetscDM,PetscInt*,PetscInt*,PetscInt*)
-    PetscErrorCode DMStagGetGlobalSizes(PetscDM,PetscInt*,PetscInt*,PetscInt*)
-    PetscErrorCode DMStagGetBoundaryTypes(PetscDM,PetscDMBoundaryType*,PetscDMBoundaryType*,PetscDMBoundaryType*)
-    PetscErrorCode DMStagGetStencilWidth(PetscDM,PetscInt*)
-    PetscErrorCode DMStagGetStencilType(PetscDM,PetscDMStagStencilType*)
-    PetscErrorCode DMStagGetOwnershipRanges(PetscDM,const PetscInt*[],const PetscInt*[],const PetscInt*[])
+    PetscErrorCode DMStagGetLocationSlot(PetscDM, PetscDMStagStencilLocation, PetscInt, PetscInt*)
+    PetscErrorCode DMStagGetLocationDOF(PetscDM, PetscDMStagStencilLocation, PetscInt*)
+    PetscErrorCode DMStagGetProductCoordinateLocationSlot(PetscDM, PetscDMStagStencilLocation, PetscInt*)
 
-    PetscErrorCode DMStagSetDOF(PetscDM,PetscInt,PetscInt,PetscInt,PetscInt)
-    PetscErrorCode DMStagSetNumRanks(PetscDM,PetscInt,PetscInt,PetscInt)
-    PetscErrorCode DMStagSetGlobalSizes(PetscDM,PetscInt,PetscInt,PetscInt)
-    PetscErrorCode DMStagSetBoundaryTypes(PetscDM,PetscDMBoundaryType,PetscDMBoundaryType,PetscDMBoundaryType)
-    PetscErrorCode DMStagSetStencilWidth(PetscDM,PetscInt)
-    PetscErrorCode DMStagSetStencilType(PetscDM,PetscDMStagStencilType)
-    PetscErrorCode DMStagSetOwnershipRanges(PetscDM,const PetscInt[],const PetscInt[],const PetscInt[])
+    PetscErrorCode DMStagGetIsFirstRank(PetscDM, PetscBool*, PetscBool*, PetscBool*)
+    PetscErrorCode DMStagGetIsLastRank(PetscDM, PetscBool*, PetscBool*, PetscBool*)
 
-    PetscErrorCode DMStagGetLocationSlot(PetscDM,PetscDMStagStencilLocation,PetscInt,PetscInt*)
-    PetscErrorCode DMStagGetLocationDOF(PetscDM,PetscDMStagStencilLocation,PetscInt*)
-    PetscErrorCode DMStagGetProductCoordinateLocationSlot(PetscDM,PetscDMStagStencilLocation,PetscInt*)
+    PetscErrorCode DMStagSetUniformCoordinatesExplicit(PetscDM, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal)
+    PetscErrorCode DMStagSetUniformCoordinatesProduct(PetscDM, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal)
+    PetscErrorCode DMStagSetCoordinateDMType(PetscDM, PetscDMType)
+    PetscErrorCode DMStagSetUniformCoordinates(PetscDM, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal)
 
-    PetscErrorCode DMStagGetIsFirstRank(PetscDM,PetscBool*,PetscBool*,PetscBool*)
-    PetscErrorCode DMStagGetIsLastRank(PetscDM,PetscBool*,PetscBool*,PetscBool*)
-
-    PetscErrorCode DMStagSetUniformCoordinatesExplicit(PetscDM,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal)
-    PetscErrorCode DMStagSetUniformCoordinatesProduct(PetscDM,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal)
-    PetscErrorCode DMStagSetCoordinateDMType(PetscDM,PetscDMType)
-    PetscErrorCode DMStagSetUniformCoordinates(PetscDM,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal)
-
-    PetscErrorCode DMStagCreateCompatibleDMStag(PetscDM,PetscInt,PetscInt,PetscInt,PetscInt,PetscDM*)
-    PetscErrorCode DMStagVecSplitToDMDA(PetscDM,PetscVec,PetscDMStagStencilLocation,PetscInt,PetscDM*,PetscVec*)
-    PetscErrorCode DMStagMigrateVec(PetscDM,PetscVec,PetscDM,PetscVec)
+    PetscErrorCode DMStagCreateCompatibleDMStag(PetscDM, PetscInt, PetscInt, PetscInt, PetscInt, PetscDM*)
+    PetscErrorCode DMStagVecSplitToDMDA(PetscDM, PetscVec, PetscDMStagStencilLocation, PetscInt, PetscDM*, PetscVec*)
+    PetscErrorCode DMStagMigrateVec(PetscDM, PetscVec, PetscDM, PetscVec)
 
 # --------------------------------------------------------------------
 
@@ -132,9 +130,9 @@ cdef inline PetscDMStagStencilLocation asStagStencilLocation(object stencil_loca
 
 
 cdef inline PetscInt asStagDims(dims,
-                            PetscInt *_M,
-                            PetscInt *_N,
-                            PetscInt *_P) except? -1:
+                                PetscInt *_M,
+                                PetscInt *_N,
+                                PetscInt *_P) except? -1:
     cdef PetscInt dim = PETSC_DECIDE
     cdef object M=None, N=None, P=None
     dims = tuple(dims)
@@ -149,9 +147,9 @@ cdef inline PetscInt asStagDims(dims,
     return dim
 
 cdef inline tuple toStagDims(PetscInt dim,
-                         PetscInt M,
-                         PetscInt N,
-                         PetscInt P):
+                             PetscInt M,
+                             PetscInt N,
+                             PetscInt P):
     if   dim == 0: return ()
     elif dim == 1: return (toInt(M),)
     elif dim == 2: return (toInt(M), toInt(N))
@@ -185,11 +183,11 @@ cdef inline tuple toDofs(PetscInt ndofs,
     elif ndofs == 4: return (toInt(dof0), toInt(dof1), toInt(dof2), toInt(dof3))
 
 cdef inline tuple asStagOwnershipRanges(object ownership_ranges,
-                                    PetscInt dim,
-                                    PetscInt *m, PetscInt *n, PetscInt *p,
-                                    PetscInt **_x,
-                                    PetscInt **_y,
-                                    PetscInt **_z):
+                                        PetscInt dim,
+                                        PetscInt *m, PetscInt *n, PetscInt *p,
+                                        PetscInt **_x,
+                                        PetscInt **_y,
+                                        PetscInt **_z):
     cdef object ranges = list(ownership_ranges)
     cdef PetscInt rdim = <PetscInt>len(ranges)
     cdef PetscInt nlx=0, nly=0, nlz=0
@@ -214,15 +212,15 @@ cdef inline tuple asStagOwnershipRanges(object ownership_ranges,
         if p[0] == PETSC_DECIDE: p[0] = nlz
         elif p[0] != nlz: raise ValueError(
             "ownership range size %d and number or processors %d" %
-             (toInt(nlz), toInt(p[0])))
+            (toInt(nlz), toInt(p[0])))
     return tuple(ranges)
 
 
 cdef inline tuple toStagOwnershipRanges(PetscInt dim,
-                                    PetscInt m, PetscInt n, PetscInt p,
-                                    const PetscInt *lx,
-                                    const PetscInt *ly,
-                                    const PetscInt *lz):
+                                        PetscInt m, PetscInt n, PetscInt p,
+                                        const PetscInt *lx,
+                                        const PetscInt *ly,
+                                        const PetscInt *lz):
     # Returns tuple of arrays containing ownership ranges as Python arrays
     ranges = [array_i(m, lx)]
     if dim > 1:
@@ -237,7 +235,7 @@ cdef inline object toStagBoundary(PetscDMBoundaryType btype):
     elif btype == DM_BOUNDARY_GHOSTED:    return "ghosted"
 
 cdef inline tuple toStagBoundaryTypes(PetscInt dim, PetscDMBoundaryType btx, PetscDMBoundaryType bty, PetscDMBoundaryType btz):
-    if dim == 1: return (toStagBoundary(btx), )
+    if dim == 1: return (toStagBoundary(btx),)
     if dim == 2: return (toStagBoundary(btx), toStagBoundary(bty))
     if dim == 3: return (toStagBoundary(btx), toStagBoundary(bty), toStagBoundary(btz))
 
