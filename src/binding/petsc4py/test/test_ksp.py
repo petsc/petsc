@@ -181,6 +181,30 @@ class BaseTestKSP(object):
         self.ksp.setConvergenceTest(None)
         self.assertEqual(getrefcount(converged), refcnt)
 
+    def testSetPreSolveTest(self):
+        check = {'val': 0}
+        def presolve(ksp, rhs, x):
+            check['val'] = 1
+        refcnt = getrefcount(presolve)
+        self.ksp.setPreSolve(presolve)
+        self.assertEqual(getrefcount(presolve), refcnt + 1)
+        self.testSolve()
+        self.assertEqual(check['val'], 1)
+        self.ksp.setPreSolve(None)
+        self.assertEqual(getrefcount(presolve), refcnt)
+
+    def testSetPostSolveTest(self):
+        check = {'val': 0}
+        def postsolve(ksp, rhs, x):
+            check['val'] = 1
+        refcnt = getrefcount(postsolve)
+        self.ksp.setPostSolve(postsolve)
+        self.assertEqual(getrefcount(postsolve), refcnt + 1)
+        self.testSolve()
+        self.assertEqual(check['val'], 1)
+        self.ksp.setPostSolve(None)
+        self.assertEqual(getrefcount(postsolve), refcnt)
+
 # --------------------------------------------------------------------
 
 class TestKSPPREONLY(BaseTestKSP, unittest.TestCase):
