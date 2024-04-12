@@ -15,6 +15,7 @@ typedef const char *DMPlexTransformType;
 #define DMPLEXREFINETOSIMPLEX     "refine_tosimplex"
 #define DMPLEXREFINE1D            "refine_1d"
 #define DMPLEXEXTRUDE             "extrude"
+#define DMPLEXCOHESIVEEXTRUDE     "cohesive_extrude"
 #define DMPLEXTRANSFORMFILTER     "transform_filter"
 
 PETSC_EXTERN PetscFunctionList DMPlexTransformList;
@@ -76,5 +77,8 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformExtrudeGetNormal(DMPlexTransform, Pet
 PETSC_EXTERN PetscErrorCode DMPlexTransformExtrudeSetNormal(DMPlexTransform, const PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMPlexTransformExtrudeSetNormalFunction(DMPlexTransform, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *));
 PETSC_EXTERN PetscErrorCode DMPlexTransformExtrudeSetThicknesses(DMPlexTransform, PetscInt, const PetscReal[]);
+
+PETSC_EXTERN PetscErrorCode DMPlexTransformCohesiveExtrudeGetTensor(DMPlexTransform, PetscBool *);
+PETSC_EXTERN PetscErrorCode DMPlexTransformCohesiveExtrudeSetTensor(DMPlexTransform, PetscBool);
 
 PETSC_EXTERN PetscErrorCode DMPlexCreateEphemeral(DMPlexTransform, const char[], DM *);
