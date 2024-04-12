@@ -4079,6 +4079,11 @@ PetscErrorCode DMPlexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, 
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (numPoints) PetscAssertPointer(numPoints, 4);
   if (points) PetscAssertPointer(points, 5);
+  if (PetscDefined(USE_DEBUG)) {
+    PetscInt pStart, pEnd;
+    PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+    PetscCheck(p >= pStart && p < pEnd, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " is not in [%" PetscInt_FMT ", %" PetscInt_FMT ")", p, pStart, pEnd);
+  }
   PetscCall(DMPlexGetTransitiveClosure_Internal(dm, p, 0, useCone, numPoints, points));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
