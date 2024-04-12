@@ -61,6 +61,7 @@ PETSC_EXTERN PetscErrorCode DMPlexStratify(DM);
 PETSC_EXTERN PetscErrorCode DMPlexEqual(DM, DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexOrientPoint(DM, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexOrient(DM);
+PETSC_EXTERN PetscErrorCode DMPlexOrientLabel(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexPreallocateOperator(DM, PetscInt, PetscInt[], PetscInt[], PetscInt[], PetscInt[], Mat, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexGetPointLocal(DM, PetscInt, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexPointLocalRead(DM, PetscInt, const PetscScalar *, void *);

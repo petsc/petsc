@@ -62,6 +62,7 @@ Changes: Development
 .. rubric:: DMPlex:
 
 - Add ``DMLabelGetValueBounds()``
+- Add ``DMPlexOrientLabel()``
 
 .. rubric:: FE/FV:
 
