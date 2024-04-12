@@ -280,7 +280,7 @@ PETSC_EXTERN PetscErrorCode DMGetEnclosureRelation(DM, DM, DMEnclosureType *);
 PETSC_EXTERN PetscErrorCode DMGetEnclosurePoint(DM, DM, DMEnclosureType, PetscInt, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode DMPlexLabelComplete(DM, DMLabel);
-PETSC_EXTERN PetscErrorCode DMPlexLabelCohesiveComplete(DM, DMLabel, DMLabel, PetscInt, PetscBool, DM);
+PETSC_EXTERN PetscErrorCode DMPlexLabelCohesiveComplete(DM, DMLabel, DMLabel, PetscInt, PetscBool, PetscBool, DM);
 PETSC_EXTERN PetscErrorCode DMPlexLabelAddCells(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexLabelAddFaceCells(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexLabelClearCells(DM, DMLabel);

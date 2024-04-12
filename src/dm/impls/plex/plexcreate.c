@@ -4189,7 +4189,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
         PetscCall(DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &clSize, &closure));
       }
       PetscCall(DMPlexOrientLabel(dm, label));
-      PetscCall(DMPlexLabelCohesiveComplete(dm, label, NULL, 1, PETSC_FALSE, NULL));
+      PetscCall(DMPlexLabelCohesiveComplete(dm, label, NULL, 1, PETSC_FALSE, PETSC_FALSE, NULL));
     }
   }
   PetscCall(PetscLogEventEnd(DMPLEX_CreateFromOptions, dm, 0, 0, 0));

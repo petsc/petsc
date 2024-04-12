@@ -2011,15 +2011,17 @@ static PetscErrorCode GetSurfaceSide_Static(DM dm, DM subdm, PetscInt numSubpoin
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode CheckFaultEdge_Private(DM dm, DMLabel label)
+static PetscErrorCode CheckFaultEdge_Private(DM dm, DMLabel label, PetscBool split)
 {
   IS              facePosIS, faceNegIS, dimIS;
   const PetscInt *points;
-  PetscInt        dim, numPoints, p, shift = 100, shift2 = 200;
+  PetscInt       *closure = NULL, *inclosure = NULL;
+  PetscInt        dim, numPoints, shift = 100, shift2 = 200, debug = 0;
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
-  /* If any faces touching the fault divide cells on either side, split them */
+  // If any faces touching the fault divide cells on either side,
+  //   either split them, or unsplit the connection
   PetscCall(DMLabelGetStratumIS(label, shift + dim - 1, &facePosIS));
   PetscCall(DMLabelGetStratumIS(label, -(shift + dim - 1), &faceNegIS));
   if (!facePosIS || !faceNegIS) {
@@ -2032,7 +2034,7 @@ static PetscErrorCode CheckFaultEdge_Private(DM dm, DMLabel label)
   PetscCall(ISDestroy(&faceNegIS));
   PetscCall(ISGetLocalSize(dimIS, &numPoints));
   PetscCall(ISGetIndices(dimIS, &points));
-  for (p = 0; p < numPoints; ++p) {
+  for (PetscInt p = 0; p < numPoints; ++p) {
     const PetscInt  point = points[p];
     const PetscInt *support;
     PetscInt        supportSize, valA, valB;
@@ -2044,51 +2046,80 @@ static PetscErrorCode CheckFaultEdge_Private(DM dm, DMLabel label)
     PetscCall(DMLabelGetValue(label, support[1], &valB));
     if ((valA == -1) || (valB == -1)) continue;
     if (valA * valB > 0) continue;
-    /* Check that this face is not incident on only unsplit faces, meaning has at least one split face */
+    // Check that this face is not incident on only unsplit faces,
+    //   meaning has at least one split face
     {
-      PetscInt *closure = NULL;
-      PetscBool split   = PETSC_FALSE;
-      PetscInt  closureSize, cl;
+      PetscBool split = PETSC_FALSE;
+      PetscInt  Ncl, val;
 
-      PetscCall(DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure));
-      for (cl = 0; cl < closureSize * 2; cl += 2) {
-        PetscCall(DMLabelGetValue(label, closure[cl], &valA));
-        if ((valA >= 0) && (valA <= dim)) {
+      PetscCall(DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &Ncl, &closure));
+      for (PetscInt cl = 0; cl < Ncl * 2; cl += 2) {
+        PetscCall(DMLabelGetValue(label, closure[cl], &val));
+        if ((val >= 0) && (val <= dim)) {
           split = PETSC_TRUE;
           break;
         }
       }
-      PetscCall(DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure));
       if (!split) continue;
     }
-    /* Split the face */
-    PetscCall(DMLabelGetValue(label, point, &valA));
-    PetscCall(DMLabelClearValue(label, point, valA));
-    PetscCall(DMLabelSetValue(label, point, dim - 1));
-    /* Label its closure:
-      unmarked: label as unsplit
-      incident: relabel as split
-      split:    do nothing
-    */
-    {
-      PetscInt *closure = NULL;
-      PetscInt  closureSize, cl, dep;
+    if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Point %" PetscInt_FMT " is impinging (%" PetscInt_FMT ":%" PetscInt_FMT ", %" PetscInt_FMT ":%" PetscInt_FMT ")\n", point, support[0], valA, support[1], valB));
+    if (split) {
+      // Split the face
+      PetscCall(DMLabelGetValue(label, point, &valA));
+      PetscCall(DMLabelClearValue(label, point, valA));
+      PetscCall(DMLabelSetValue(label, point, dim - 1));
+      /* Label its closure:
+        unmarked: label as unsplit
+        incident: relabel as split
+        split:    do nothing */
+      {
+        PetscInt closureSize, cl, dep;
 
-      PetscCall(DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure));
-      for (cl = 0; cl < closureSize * 2; cl += 2) {
-        PetscCall(DMLabelGetValue(label, closure[cl], &valA));
-        if (valA == -1) { /* Mark as unsplit */
-          PetscCall(DMPlexGetPointDepth(dm, closure[cl], &dep));
-          PetscCall(DMLabelSetValue(label, closure[cl], shift2 + dep));
-        } else if (((valA >= shift) && (valA < shift2)) || ((valA <= -shift) && (valA > -shift2))) {
-          PetscCall(DMPlexGetPointDepth(dm, closure[cl], &dep));
-          PetscCall(DMLabelClearValue(label, closure[cl], valA));
-          PetscCall(DMLabelSetValue(label, closure[cl], dep));
+        PetscCall(DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure));
+        for (cl = 0; cl < closureSize * 2; cl += 2) {
+          PetscCall(DMLabelGetValue(label, closure[cl], &valA));
+          if (valA == -1) { /* Mark as unsplit */
+            PetscCall(DMPlexGetPointDepth(dm, closure[cl], &dep));
+            PetscCall(DMLabelSetValue(label, closure[cl], shift2 + dep));
+          } else if (((valA >= shift) && (valA < shift2)) || ((valA <= -shift) && (valA > -shift2))) {
+            PetscCall(DMPlexGetPointDepth(dm, closure[cl], &dep));
+            PetscCall(DMLabelClearValue(label, closure[cl], valA));
+            PetscCall(DMLabelSetValue(label, closure[cl], dep));
+          }
         }
       }
-      PetscCall(DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure));
+    } else {
+      // Unsplit the incident faces and their closures
+      PetscInt Ncl, dep, val;
+
+      PetscCall(DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &Ncl, &closure));
+      for (PetscInt cl = 0; cl < Ncl * 2; cl += 2) {
+        PetscCall(DMLabelGetValue(label, closure[cl], &val));
+        if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Point %" PetscInt_FMT ":%" PetscInt_FMT "\n", closure[cl], val));
+        if ((val >= 0) && (val <= dim)) {
+          PetscInt Nincl, inval, indep;
+
+          if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Point %" PetscInt_FMT " is being unsplit\n", closure[cl]));
+          PetscCall(DMPlexGetPointDepth(dm, closure[cl], &dep));
+          PetscCall(DMLabelClearValue(label, closure[cl], val));
+          PetscCall(DMLabelSetValue(label, closure[cl], shift2 + dep));
+
+          PetscCall(DMPlexGetTransitiveClosure(dm, closure[cl], PETSC_TRUE, &Nincl, &inclosure));
+          for (PetscInt incl = 0; incl < Nincl * 2; incl += 2) {
+            PetscCall(DMLabelGetValue(label, inclosure[cl], &inval));
+            if ((inval >= 0) && (inval <= dim)) {
+              if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "    Point %" PetscInt_FMT " is being unsplit\n", inclosure[incl]));
+              PetscCall(DMPlexGetPointDepth(dm, inclosure[incl], &indep));
+              PetscCall(DMLabelClearValue(label, inclosure[incl], inval));
+              PetscCall(DMLabelSetValue(label, inclosure[incl], shift2 + indep));
+            }
+          }
+        }
+      }
     }
   }
+  PetscCall(DMPlexRestoreTransitiveClosure(dm, 0, PETSC_TRUE, NULL, &inclosure));
+  PetscCall(DMPlexRestoreTransitiveClosure(dm, 0, PETSC_TRUE, NULL, &closure));
   PetscCall(ISRestoreIndices(dimIS, &points));
   PetscCall(ISDestroy(&dimIS));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2104,6 +2135,7 @@ static PetscErrorCode CheckFaultEdge_Private(DM dm, DMLabel label)
 . blabel - A `DMLabel` marking the vertices on the boundary which will not be duplicated, or `NULL` to find them automatically
 . bvalue - Value of `DMLabel` marking the vertices on the boundary
 . flip   - Flag to flip the submesh normal and replace points on the other side
+. split  - Split faces impinging on the surface, rather than clamping the surface boundary
 - subdm  - The `DM` associated with the label, or `NULL`
 
   Output Parameter:
@@ -2116,13 +2148,13 @@ static PetscErrorCode CheckFaultEdge_Private(DM dm, DMLabel label)
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexConstructCohesiveCells()`, `DMPlexLabelComplete()`
 @*/
-PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel, PetscInt bvalue, PetscBool flip, DM subdm)
+PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel, PetscInt bvalue, PetscBool flip, PetscBool split, DM subdm)
 {
   DMLabel         depthLabel;
   IS              dimIS, subpointIS = NULL;
   const PetscInt *points, *subpoints;
   const PetscInt  rev   = flip ? -1 : 1;
-  PetscInt        shift = 100, shift2 = 200, shift3 = 300, dim, depth, numPoints, numSubpoints, p, val;
+  PetscInt        shift = 100, shift2 = 200, shift3 = split ? 300 : 0, dim, depth, numPoints, numSubpoints, p, val;
 
   PetscFunctionBegin;
   PetscCall(DMPlexGetDepth(dm, &depth));
@@ -2295,7 +2327,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
 divide:
   if (subpointIS) PetscCall(ISRestoreIndices(subpointIS, &subpoints));
   PetscCall(DMPlexLabelFaultHalo(dm, label));
-  PetscCall(CheckFaultEdge_Private(dm, label));
+  PetscCall(CheckFaultEdge_Private(dm, label, split));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2407,7 +2439,7 @@ PetscErrorCode DMPlexCreateHybridMesh(DM dm, DMLabel label, DMLabel bdlabel, Pet
     PetscCall(PetscStrlcat(sname, " split", sizeof(sname)));
     PetscCall(DMLabelCreate(PETSC_COMM_SELF, sname, &slabel));
   }
-  PetscCall(DMPlexLabelCohesiveComplete(dm, hlabel, bdlabel, bdvalue, PETSC_FALSE, idm));
+  PetscCall(DMPlexLabelCohesiveComplete(dm, hlabel, bdlabel, bdvalue, PETSC_FALSE, PETSC_TRUE, idm));
   if (dmInterface) {
     *dmInterface = idm;
   } else PetscCall(DMDestroy(&idm));
