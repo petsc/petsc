@@ -7,6 +7,11 @@
 #include <petsc/private/kernels/blockmatmult.h>
 #include <petsc/private/kernels/blockinvert.h>
 
+#ifdef PETSC_HAVE_UNISTD_H
+  #include <unistd.h>
+#endif
+#include <errno.h>
+
 PetscLogEvent DMPLEX_CreateFromFile, DMPLEX_CreateFromOptions, DMPLEX_BuildFromCellList, DMPLEX_BuildCoordinatesFromCellList;
 
 /* External function declarations here */
@@ -66,6 +71,12 @@ PetscErrorCode DMPlexReplace_Internal(DM dm, DM *ndm)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   dm->setupcalled = dmNew->setupcalled;
+  if (!dm->hdr.name) {
+    const char *name;
+
+    PetscCall(PetscObjectGetName((PetscObject)*ndm, &name));
+    PetscCall(PetscObjectSetName((PetscObject)dm, name));
+  }
   PetscCall(DMGetDimension(dmNew, &dim));
   PetscCall(DMSetDimension(dm, dim));
   PetscCall(DMGetCoordinateDim(dmNew, &cdim));
@@ -3869,7 +3880,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   DMPolytopeType cell    = DM_POLYTOPE_TRIANGLE;
   PetscInt       dim     = 2;
   PetscBool      simplex = PETSC_TRUE, interpolate = PETSC_TRUE, adjCone = PETSC_FALSE, adjClosure = PETSC_TRUE, refDomain = PETSC_FALSE;
-  PetscBool      flg, flg2, fflg, bdfflg, nameflg;
+  PetscBool      flg, flg2, fflg, strflg, bdfflg, nameflg;
   MPI_Comm       comm;
   char           filename[PETSC_MAX_PATH_LEN]   = "<unspecified>";
   char           bdFilename[PETSC_MAX_PATH_LEN] = "<unspecified>";
@@ -3881,6 +3892,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   /* TODO Turn this into a registration interface */
   PetscCall(PetscOptionsString("-dm_plex_filename", "File containing a mesh", "DMPlexCreateFromFile", filename, filename, sizeof(filename), &fflg));
+  PetscCall(PetscOptionsString("-dm_plex_file_contents", "Contents of a file format in a string", "DMPlexCreateFromFile", filename, filename, sizeof(filename), &strflg));
   PetscCall(PetscOptionsString("-dm_plex_boundary_filename", "File containing a mesh boundary", "DMPlexCreateFromFile", bdFilename, bdFilename, sizeof(bdFilename), &bdfflg));
   PetscCall(PetscOptionsString("-dm_plex_name", "Name of the mesh in the file", "DMPlexCreateFromFile", plexname, plexname, sizeof(plexname), &nameflg));
   PetscCall(PetscOptionsEnum("-dm_plex_cell", "Cell shape", "", DMPolytopeTypes, (PetscEnum)cell, (PetscEnum *)&cell, NULL));
@@ -3924,6 +3936,38 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
     PetscCall(DMSetFromOptions(bdm));
     PetscCall(DMPlexGenerate(bdm, NULL, interpolate, &dmnew));
     PetscCall(DMDestroy(&bdm));
+    PetscCall(DMPlexCopy_Internal(dm, PETSC_FALSE, PETSC_FALSE, dmnew));
+    PetscCall(DMPlexReplace_Internal(dm, &dmnew));
+  } else if (strflg) {
+    DM            dmnew;
+    PetscViewer   viewer;
+    const char   *contents;
+    char         *strname;
+    char          tmpdir[PETSC_MAX_PATH_LEN];
+    char          tmpfilename[PETSC_MAX_PATH_LEN];
+    char          name[PETSC_MAX_PATH_LEN];
+    PetscObjectId id;
+    MPI_Comm      comm;
+    PetscMPIInt   rank;
+
+    PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+    PetscCallMPI(MPI_Comm_rank(comm, &rank));
+    PetscCall(PetscStrchr(filename, ':', &strname));
+    PetscCheck(strname, comm, PETSC_ERR_ARG_WRONG, "File contents must have the form \"ext:string_name\", not %s", filename);
+    strname[0] = '\0';
+    ++strname;
+    PetscCall(PetscDLSym(NULL, strname, (void **)&contents));
+    PetscCheck(contents, comm, PETSC_ERR_ARG_WRONG, "Could not locate mesh string %s", strname);
+    PetscCall(PetscGetTmp(comm, tmpdir, PETSC_MAX_PATH_LEN));
+    PetscCall(PetscObjectGetId((PetscObject)dm, &id));
+    PetscCall(PetscSNPrintf(tmpfilename, PETSC_MAX_PATH_LEN, "%s/mesh_%d.%s", tmpdir, (int)id, filename));
+    PetscCall(PetscViewerASCIIOpen(comm, tmpfilename, &viewer));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "%s\n", contents));
+    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(DMPlexCreateFromFile(PetscObjectComm((PetscObject)dm), tmpfilename, plexname, interpolate, &dmnew));
+    if (!rank) PetscCheck(!unlink(tmpfilename), comm, PETSC_ERR_FILE_UNEXPECTED, "Could not delete file: %s due to \"%s\"", tmpfilename, strerror(errno));
+    PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "%s Mesh", strname));
+    PetscCall(PetscObjectSetName((PetscObject)dm, name));
     PetscCall(DMPlexCopy_Internal(dm, PETSC_FALSE, PETSC_FALSE, dmnew));
     PetscCall(DMPlexReplace_Internal(dm, &dmnew));
   } else {
@@ -5445,10 +5489,10 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
   Note:
   The format is the simplest possible:
 .vb
-  Ne
-  v0 v1 ... vk
-  Nv
-  x y z marker
+  dim Ne Nv Nc Nl
+  v_1 v_2 ... v_Nc
+  ...
+  x y z marker_1 ... marker_Nl
 .ve
 
   Developer Note:
@@ -5464,9 +5508,9 @@ static PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char f
   PetscSection coordSection;
   PetscScalar *coords;
   char         line[PETSC_MAX_PATH_LEN];
-  PetscInt     dim = 3, cdim = 3, coordSize, v, c, d;
+  PetscInt     cdim, coordSize, v, c, d;
   PetscMPIInt  rank;
-  int          snum, Nv, Nc, Ncn, Nl;
+  int          snum, dim, Nv, Nc, Ncn, Nl;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -5475,16 +5519,18 @@ static PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char f
   PetscCall(PetscViewerFileSetMode(viewer, FILE_MODE_READ));
   PetscCall(PetscViewerFileSetName(viewer, filename));
   if (rank == 0) {
-    PetscCall(PetscViewerRead(viewer, line, 4, NULL, PETSC_STRING));
-    snum = sscanf(line, "%d %d %d %d", &Nc, &Nv, &Ncn, &Nl);
-    PetscCheck(snum == 4, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse cell-vertex file: %s", line);
+    PetscCall(PetscViewerRead(viewer, line, 5, NULL, PETSC_STRING));
+    snum = sscanf(line, "%d %d %d %d %d", &dim, &Nc, &Nv, &Ncn, &Nl);
+    PetscCheck(snum == 5, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse cell-vertex file: %s", line);
   } else {
     Nc = Nv = Ncn = Nl = 0;
   }
+  PetscCallMPI(MPI_Bcast(&dim, 1, MPI_INT, 0, comm));
+  cdim = (PetscInt)dim;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMPlexSetChart(*dm, 0, Nc + Nv));
-  PetscCall(DMSetDimension(*dm, dim));
+  PetscCall(DMSetDimension(*dm, (PetscInt)dim));
   PetscCall(DMSetCoordinateDim(*dm, cdim));
   /* Read topology */
   if (rank == 0) {
