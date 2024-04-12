@@ -51,13 +51,31 @@ static PetscErrorCode PetscPartitionerView_Shell(PetscPartitioner part, PetscVie
 
 static PetscErrorCode PetscPartitionerSetFromOptions_Shell(PetscPartitioner part, PetscOptionItems *PetscOptionsObject)
 {
-  PetscBool random = PETSC_FALSE, set;
+  PetscInt    sizes[16], points[1024];
+  PetscInt    Npart = 16, Npoints = 1024;
+  PetscBool   random = PETSC_FALSE, set, flgSizes, flgPoints;
+  PetscMPIInt rank;
 
   PetscFunctionBegin;
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)part), &rank));
   PetscOptionsHeadBegin(PetscOptionsObject, "PetscPartitioner Shell Options");
   PetscCall(PetscPartitionerShellGetRandom(part, &random));
   PetscCall(PetscOptionsBool("-petscpartitioner_shell_random", "Use a random partition", "PetscPartitionerView", PETSC_FALSE, &random, &set));
   if (set) PetscCall(PetscPartitionerShellSetRandom(part, random));
+  PetscCall(PetscOptionsIntArray("-petscpartitioner_shell_sizes", "The size of each partition on rank 0", "PetscPartitionerShellSetPartition", sizes, &Npart, &flgSizes));
+  PetscCall(PetscOptionsIntArray("-petscpartitioner_shell_points", "The points in each partition on rank 0", "PetscPartitionerShellSetPartition", points, &Npoints, &flgPoints));
+  PetscCheck(!(flgSizes ^ flgPoints), PetscObjectComm((PetscObject)part), PETSC_ERR_ARG_WRONG, "Must specify both the partition sizes and points");
+  if (flgSizes) {
+    PetscInt Np = 0;
+
+    for (PetscInt i = 0; i < Npart; ++i) Np += sizes[i];
+    PetscCheck(Np == Npoints, PetscObjectComm((PetscObject)part), PETSC_ERR_ARG_WRONG, "Number of input points %" PetscInt_FMT " != %" PetscInt_FMT " sum of partition sizes", Npoints, Np);
+    if (!rank) PetscCall(PetscPartitionerShellSetPartition(part, Npart, sizes, points));
+    else {
+      PetscCall(PetscArrayzero(sizes, Npart));
+      PetscCall(PetscPartitionerShellSetPartition(part, Npart, sizes, points));
+    }
+  }
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
