@@ -12,8 +12,8 @@ PC Object: 4 MPI processes
     FieldSplit with Schur preconditioner, blocksize = 1, factorization FULL
     Preconditioner for the Schur complement formed from S itself
     Split info:
-    Split number 0 Defined by IS
-    Split number 1 Defined by IS
+    Split number 0 Fields 0
+    Split number 1 Fields 1
     KSP solver for A00 block
       KSP Object: (fieldsplit_0_) 4 MPI processes
         type: preonly

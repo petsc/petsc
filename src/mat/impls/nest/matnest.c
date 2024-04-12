@@ -1234,6 +1234,9 @@ static PetscErrorCode MatNestGetSize_Nest(Mat A, PetscInt *M, PetscInt *N)
 
   Level: developer
 
+  Note:
+  `size` refers to the number of submatrices in the row and column directions of the nested matrix
+
 .seealso: [](ch_matrices), `Mat`, `MATNEST`, `MatNestGetSubMat()`, `MatNestGetSubMats()`, `MatCreateNest()`, `MatNestGetLocalISs()`,
           `MatNestGetISs()`
 @*/
