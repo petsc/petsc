@@ -34,7 +34,7 @@ int main(int argc, char **argv)
     PetscCall(MatSetValue(A, 4, 4, 6.0, INSERT_VALUES));
     PetscCall(MatSetValue(A, 4, 5, -1.0, INSERT_VALUES));
     PetscCall(MatSetValue(A, 5, 5, 7.0, INSERT_VALUES));
-    PetscCall(MatSetValue(A, 5, 4, -1, INSERT_VALUES));
+    PetscCall(MatSetValue(A, 5, 4, -0.5, INSERT_VALUES));
   }
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
@@ -72,7 +72,13 @@ int main(int argc, char **argv)
   PetscCall(PCRedistributeGetKSP(pc, &kspred));
   PetscCall(KSPSetInitialGuessNonzero(kspred, PETSC_TRUE));
   PetscCall(KSPSolve(ksp, b, x));
-
+  PetscCall(PetscOptionsClearValue(NULL, "-ksp_view"));
+  if (rank == 0) PetscCall(MatSetValue(A, 1, 2, 0.0, INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetOption(A, MAT_STRUCTURALLY_SYMMETRIC, PETSC_TRUE));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSolveTranspose(ksp, b, x));
   PetscCall(KSPDestroy(&ksp));
   PetscCall(VecDestroy(&b));
   PetscCall(VecDestroy(&x));
