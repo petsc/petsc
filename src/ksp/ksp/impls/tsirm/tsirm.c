@@ -75,9 +75,10 @@ static PetscErrorCode KSPSolve_TSIRM(KSP ksp)
   KSPCheckNorm(ksp, norm);
   ksp->its = 0;
   PetscCall(KSPConvergedDefault(ksp, ksp->its, norm, &ksp->reason, ksp->cnvP));
+  PetscCall(KSPMonitor(ksp, ksp->its, norm));
   PetscCall(KSPSetInitialGuessNonzero(sub_ksp, PETSC_TRUE));
   do {
-    for (col = 0; col < tsirm->size_ls && ksp->reason == 0; col++) {
+    for (col = 0; col < tsirm->size_ls && ksp->reason == KSP_CONVERGED_ITERATING; col++) {
       /* Solve (inner iteration) */
       PetscCall(KSPSolve(sub_ksp, b, x));
       PetscCall(KSPGetIterationNumber(sub_ksp, &its));
@@ -96,7 +97,7 @@ static PetscErrorCode KSPSolve_TSIRM(KSP ksp)
     }
 
     /* Minimization step */
-    if (!ksp->reason) {
+    if (ksp->reason == KSP_CONVERGED_ITERATING) {
       PetscCall(MatAssemblyBegin(tsirm->S, MAT_FINAL_ASSEMBLY));
       PetscCall(MatAssemblyEnd(tsirm->S, MAT_FINAL_ASSEMBLY));
       if (first_iteration) {
