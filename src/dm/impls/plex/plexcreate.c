@@ -4149,6 +4149,49 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
     PetscCall(PetscOptionsGetIntArray(NULL, ((PetscObject)dm)->prefix, fulloption, points, &n, NULL));
     for (PetscInt p = 0; p < n; ++p) PetscCall(DMLabelSetValue(label, points[p], 1));
   }
+  // Allow cohesive label creation
+  //   Faces are input, completed, and all points are marked with their depth
+  PetscCall(PetscOptionsFindPairPrefix_Private(NULL, ((PetscObject)dm)->prefix, "-dm_plex_cohesive_label_", &option, NULL, &flg));
+  if (flg) {
+    DMLabel  label;
+    PetscInt points[1024], n, pStart, pEnd, Nl = 1;
+    char     fulloption[PETSC_MAX_PATH_LEN];
+    char     name[PETSC_MAX_PATH_LEN];
+    size_t   len;
+
+    PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+    PetscCall(PetscStrncpy(name, &option[23], PETSC_MAX_PATH_LEN));
+    PetscCall(PetscStrlen(name, &len));
+    if (name[len - 1] == '0') Nl = 10;
+    for (PetscInt l = 0; l < Nl; ++l) {
+      if (l > 0) name[len - 1] = '0' + l;
+      fulloption[0] = 0;
+      PetscCall(PetscStrlcat(fulloption, "-dm_plex_cohesive_label_", 32));
+      PetscCall(PetscStrlcat(fulloption, name, PETSC_MAX_PATH_LEN - 32));
+      n = 1024;
+      PetscCall(PetscOptionsGetIntArray(NULL, ((PetscObject)dm)->prefix, fulloption, points, &n, &flg));
+      if (!flg) break;
+      PetscCall(DMCreateLabel(dm, name));
+      PetscCall(DMGetLabel(dm, name, &label));
+      if (pStart >= pEnd) n = 0;
+      for (PetscInt p = 0; p < n; ++p) {
+        const PetscInt point   = points[p];
+        PetscInt      *closure = NULL;
+        PetscInt       clSize, pdepth;
+
+        PetscCall(DMPlexGetPointDepth(dm, point, &pdepth));
+        PetscCall(DMLabelSetValue(label, point, pdepth));
+        PetscCall(DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &clSize, &closure));
+        for (PetscInt cl = 0; cl < clSize * 2; cl += 2) {
+          PetscCall(DMPlexGetPointDepth(dm, closure[cl], &pdepth));
+          PetscCall(DMLabelSetValue(label, closure[cl], pdepth));
+        }
+        PetscCall(DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &clSize, &closure));
+      }
+      PetscCall(DMPlexOrientLabel(dm, label));
+      PetscCall(DMPlexLabelCohesiveComplete(dm, label, NULL, 1, PETSC_FALSE, NULL));
+    }
+  }
   PetscCall(PetscLogEventEnd(DMPLEX_CreateFromOptions, dm, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
