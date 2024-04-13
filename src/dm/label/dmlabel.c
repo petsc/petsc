@@ -1214,6 +1214,43 @@ PetscErrorCode DMLabelGetValueIS(DMLabel label, IS *values)
 }
 
 /*@
+  DMLabelGetValueBounds - Return the smallest and largest value in the label
+
+  Not Collective
+
+  Input Parameter:
+. label - the `DMLabel`
+
+  Output Parameters:
++ minValue - The smallest value
+- maxValue - The largest value
+
+  Level: intermediate
+
+.seealso: `DMLabel`, `DM`, `DMLabelGetBounds()`, `DMLabelGetValue()`, `DMLabelSetValue()`
+@*/
+PetscErrorCode DMLabelGetValueBounds(DMLabel label, PetscInt *minValue, PetscInt *maxValue)
+{
+  PetscInt min = PETSC_MAX_INT, max = PETSC_MIN_INT;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
+  for (PetscInt v = 0; v < label->numStrata; ++v) {
+    min = PetscMin(min, label->stratumValues[v]);
+    max = PetscMax(max, label->stratumValues[v]);
+  }
+  if (minValue) {
+    PetscAssertPointer(minValue, 2);
+    *minValue = min;
+  }
+  if (maxValue) {
+    PetscAssertPointer(maxValue, 3);
+    *maxValue = max;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   DMLabelGetNonEmptyStratumValuesIS - Get an `IS` of all values that the `DMlabel` takes
 
   Not Collective

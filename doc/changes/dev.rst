@@ -61,6 +61,8 @@ Changes: Development
 
 .. rubric:: DMPlex:
 
+- Add ``DMLabelGetValueBounds()``
+
 .. rubric:: FE/FV:
 
 .. rubric:: DMNetwork:
