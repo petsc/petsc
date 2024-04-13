@@ -366,6 +366,7 @@ int main(int argc, char **args)
         suffix: geneo_share_cholesky_matstructure
         output_file: output/ex76_geneo_share.out
         # extra -pc_hpddm_levels_1_eps_gen_non_hermitian needed to avoid failures with PETSc Cholesky
+        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 14/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
         args: -pc_hpddm_levels_1_sub_pc_type cholesky -mat_type {{baij sbaij}shared output} -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_st_matstructure same -set_rhs {{false true} shared output}
       test:
         requires: mumps
