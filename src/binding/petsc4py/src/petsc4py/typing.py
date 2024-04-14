@@ -281,6 +281,12 @@ KSPConvergenceTestFunction = Callable[[KSP, int, float], KSP.ConvergedReason]
 KSPMonitorFunction = Callable[[KSP, int, float], None]
 """`PETSc.KSP` monitor callback."""
 
+KSPPreSolveFunction = Callable[[KSP, Vec, Vec], None]
+"""`PETSc.KSP` pre solve callback."""
+
+KSPPostSolveFunction = Callable[[KSP, Vec, Vec], None]
+"""`PETSc.KSP` post solve callback."""
+
 # --- SNES ---
 
 SNESMonitorFunction = Callable[[SNES, int, float], None]

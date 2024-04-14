@@ -769,7 +769,7 @@ cdef class Mat(Object):
     def createSBAIJ(
         self,
         size: MatSizeSpec,
-        bsize: int,
+        bsize: MatBlockSizeSpec,
         nnz: NNZSpec | None = None,
         csr: CSRIndicesSpec | None = None,
         comm: Comm | None = None,
@@ -1477,6 +1477,7 @@ cdef class Mat(Object):
     def createIS(
         self,
         size: MatSizeSpec,
+        bsize: MatBlockSizeSpec | None = None,
         LGMap lgmapr = None,
         LGMap lgmapc = None,
         comm: Comm | None = None,
@@ -1489,6 +1490,8 @@ cdef class Mat(Object):
         ----------
         size
             Matrix size.
+        bsize
+            Matrix block size. If `None`, a block size of ``1`` is set.
         lgmapr
             Optional local-to-global mapping for the rows.
             If `None`, the local row space matches the global row space.
@@ -1510,7 +1513,7 @@ cdef class Mat(Object):
         cdef PetscLGMap lgmc = NULL
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt rbs = 0, cbs = 0, m = 0, n = 0, M = 0, N = 0
-        Mat_Sizes(size, None, &rbs, &cbs, &m, &n, &M, &N)
+        Mat_Sizes(size, bsize, &rbs, &cbs, &m, &n, &M, &N)
         Sys_Layout(ccomm, rbs, &m, &M)
         Sys_Layout(ccomm, cbs, &n, &N)
         # create matrix

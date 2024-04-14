@@ -1077,6 +1077,9 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
               continue
             elif arg == '-lLTO' and self.setCompilers.isDarwin(self.log):
               self.logPrint('Skipping -lTO')
+            elif arg == '-lnvc':
+              self.logPrint('Skipping -lnvc: https://forums.developer.nvidia.com/t/failed-cuda-device-detection-when-explicitly-linking-libnvc/203225')
+              continue
             elif arg.find('-libpath:')>=0:
               self.logPrint('Skipping Intel oneAPI ifort (on Microsoft Windows) compiler option: '+arg)
               continue
