@@ -76,7 +76,7 @@ PetscErrorCode PetscGetTmp(MPI_Comm comm, char dir[], size_t len)
 
 // "Unknown section 'Environmental Variables'"
 // PetscClangLinter pragma disable: -fdoc-section-header-unknown
-/*@C
+/*@
   PetscSharedTmp - Determines if all processors in a communicator share a
   tmp directory or have different ones.
 
@@ -201,7 +201,7 @@ PetscErrorCode PetscSharedTmp(MPI_Comm comm, PetscBool *shared)
 
 // "Unknown section 'Environmental Variables'"
 // PetscClangLinter pragma disable: -fdoc-section-header-unknown
-/*@C
+/*@
   PetscSharedWorkingDirectory - Determines if all processors in a communicator share a working directory or have different ones.
 
   Collective

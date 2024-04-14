@@ -628,7 +628,7 @@ PetscErrorCode PetscStrreplace(MPI_Comm comm, const char aa[], char b[], size_t 
 /*@C
   PetscStrcmpAny - Determines whether a string matches any of a list of strings.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + src - pointer to input the string

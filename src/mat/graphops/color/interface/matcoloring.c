@@ -7,7 +7,7 @@ const char *const MatColoringWeightTypes[]     = {"RANDOM", "LEXICAL", "LF", "SL
 /*@C
   MatColoringRegister - Adds a new sparse matrix coloring to the  matrix package.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of Coloring (for example `MATCOLORINGSL`)
@@ -116,7 +116,7 @@ PetscErrorCode MatColoringDestroy(MatColoring *mc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatColoringSetType - Sets the type of coloring algorithm used
 
   Collective

@@ -1850,7 +1850,7 @@ static PetscErrorCode MatHYPREGetParCSR_HYPRE(Mat A, hypre_ParCSRMatrix **parcsr
 /*@C
   MatHYPREGetParCSR - Gets the pointer to the ParCSR matrix
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . A - the `MATHYPRE` object

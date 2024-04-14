@@ -7,7 +7,7 @@
 PetscFunctionList DMLabelList              = NULL;
 PetscBool         DMLabelRegisterAllCalled = PETSC_FALSE;
 
-/*@C
+/*@
   DMLabelCreate - Create a `DMLabel` object, which is a multimap
 
   Collective
@@ -51,7 +51,7 @@ PetscErrorCode DMLabelCreate(MPI_Comm comm, const char name[], DMLabel *label)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMLabelSetUp - SetUp a `DMLabel` object
 
   Collective
@@ -2305,7 +2305,7 @@ PetscErrorCode DMLabelRegisterDestroy(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMLabelSetType - Sets the particular implementation for a label.
 
   Collective
@@ -2342,7 +2342,7 @@ PetscErrorCode DMLabelSetType(DMLabel label, DMLabelType method)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMLabelGetType - Gets the type name (as a string) from the label.
 
   Not Collective

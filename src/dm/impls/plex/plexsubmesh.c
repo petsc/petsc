@@ -1032,7 +1032,7 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexConstructGhostCells - Construct ghost cells which connect to every boundary face
 
   Collective
@@ -4078,7 +4078,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexCreateCohesiveSubmesh - Extract from a mesh with cohesive cells the hypersurface defined by one face of the cells. Optionally, a label can be given to restrict the cells.
 
   Input Parameters:

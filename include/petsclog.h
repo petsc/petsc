@@ -426,6 +426,9 @@ static inline PETSC_UNUSED PetscErrorCode PetscLogObjectDestroy(PetscObject o)
    To limit the chance of integer overflow when multiplying by a constant, represent the constant as a double,
    not an integer. Use `PetscLogFlops`(4.0*n) not `PetscLogFlops`(4*n)
 
+   Developer Note:
+   Currently Fortran stub generator cannot run through files in include
+
 .seealso: [](ch_profiling), `PetscLogView()`, `PetscLogGpuFlops()`
 @*/
 static inline PetscErrorCode PetscLogFlops(PetscLogDouble n)
@@ -722,7 +725,7 @@ PETSC_EXTERN PetscErrorCode PetscLogGpuTime(void);
 PETSC_EXTERN PetscErrorCode PetscLogGpuTimeBegin(void);
 PETSC_EXTERN PetscErrorCode PetscLogGpuTimeEnd(void);
 
-/*@C
+/*@
    PetscLogGpuFlops - Log how many flops are performed in a calculation on the device
 
    Input Parameter:
@@ -736,6 +739,9 @@ PETSC_EXTERN PetscErrorCode PetscLogGpuTimeEnd(void);
 
    The values are also added to the total flop count for the MPI rank that is set with `PetscLogFlops()`; hence the number of flops
    just on the CPU would be the value from set from `PetscLogFlops()` minus the value set from `PetscLogGpuFlops()`
+
+   Developer Note:
+   Currently Fortran stub generator cannot run through files in include
 
 .seealso: [](ch_profiling), `PetscLogView()`, `PetscLogFlops()`, `PetscLogGpuTimeBegin()`, `PetscLogGpuTimeEnd()`
 @*/

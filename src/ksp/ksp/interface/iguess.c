@@ -6,7 +6,7 @@ static PetscBool  KSPGuessRegisterAllCalled;
 /*@C
   KSPGuessRegister -  Registers a method for initial guess computation in Krylov subspace solver package.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of a new user-defined solver
@@ -224,7 +224,7 @@ PetscErrorCode KSPGuessCreate(MPI_Comm comm, KSPGuess *guess)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPGuessSetType - Sets the type of a `KSPGuess`
 
   Logically Collective
@@ -263,7 +263,7 @@ PetscErrorCode KSPGuessSetType(KSPGuess guess, KSPGuessType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPGuessGetType - Gets the `KSPGuessType` as a string from the `KSPGuess` object.
 
   Not Collective

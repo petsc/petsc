@@ -9,7 +9,7 @@ PetscBool         MatCoarsenRegisterAllCalled = PETSC_FALSE;
 /*@C
   MatCoarsenRegister - Adds a new sparse matrix coarsening algorithm to the matrix package.
 
-  Logically Collective
+  Logically Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of coarsen (for example `MATCOARSENMIS`)
@@ -34,7 +34,7 @@ PetscErrorCode MatCoarsenRegister(const char sname[], PetscErrorCode (*function)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCoarsenGetType - Gets the Coarsen method type and name (as a string)
   from the coarsen context.
 
@@ -243,7 +243,7 @@ PetscErrorCode MatCoarsenView(MatCoarsen agg, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCoarsenSetType - Sets the type of aggregator to use
 
   Collective
@@ -284,7 +284,7 @@ PetscErrorCode MatCoarsenSetType(MatCoarsen coarser, MatCoarsenType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCoarsenSetGreedyOrdering - Sets the ordering of the vertices to use with a greedy coarsening method
 
   Logically Collective
@@ -311,7 +311,7 @@ PetscErrorCode MatCoarsenSetGreedyOrdering(MatCoarsen coarser, const IS perm)
 /*@C
   MatCoarsenGetData - Gets the weights for vertices for a coarsener.
 
-  Logically Collective
+  Logically Collective, No Fortran Support
 
   Input Parameter:
 . coarser - the coarsen context

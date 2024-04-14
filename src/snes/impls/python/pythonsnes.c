@@ -1,6 +1,6 @@
 #include <petsc/private/snesimpl.h> /*I "petscsnes.h" I*/
 
-/*@C
+/*@
    SNESPythonSetType - Initialize a `SNES` object implemented in Python.
 
    Collective
@@ -25,7 +25,7 @@ PetscErrorCode SNESPythonSetType(SNES snes, const char pyname[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
    SNESPythonGetType - Get the type of a `SNES` object implemented in Python set with `SNESPythonSetType()`
 
    Not Collective

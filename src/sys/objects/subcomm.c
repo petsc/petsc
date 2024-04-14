@@ -56,7 +56,7 @@ PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm psubcomm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSubcommSetOptionsPrefix - Sets the prefix used for searching for options in the options database for this object
 
   Logically Collective

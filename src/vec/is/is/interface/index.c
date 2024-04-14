@@ -1228,7 +1228,7 @@ PetscErrorCode ISGetIndices(IS is, const PetscInt *ptr[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISGetMinMax - Gets the minimum and maximum values in an `IS`
 
   Not Collective

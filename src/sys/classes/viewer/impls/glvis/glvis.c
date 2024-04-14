@@ -585,7 +585,7 @@ static PetscErrorCode PetscViewerFileSetName_GLVis(PetscViewer viewer, const cha
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerGLVisOpen - Opens a `PETSCVIEWERGLVIS` `PetscViewer`
 
   Collective; No Fortran Support

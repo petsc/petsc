@@ -142,7 +142,7 @@ static char      PetscPythonExe[PETSC_MAX_PATH_LEN] = {0};
 static char      PetscPythonLib[PETSC_MAX_PATH_LEN] = {0};
 static PetscBool PetscBeganPython                   = PETSC_FALSE;
 
-/*@C
+/*@
   PetscPythonFinalize - Finalize PETSc for use with Python.
 
   Level: intermediate
@@ -159,7 +159,7 @@ PetscErrorCode PetscPythonFinalize(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscPythonInitialize - Initialize Python for use with PETSc and import petsc4py.
 
    Input Parameters:

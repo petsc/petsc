@@ -1508,7 +1508,7 @@ PetscErrorCode DMPlexInflateToGeomModel(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexCreateEGADSFromFile - Create a `DMPLEX` mesh from an EGADS, IGES, or STEP file.
 
   Collective

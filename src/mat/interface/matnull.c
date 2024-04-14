@@ -50,7 +50,7 @@ PetscErrorCode MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(Ma
 
 .seealso: [](ch_matrices), `Mat`, `MatNullSpace`, `MatNullSpaceCreate()`, `MatGetNullSpace()`, `MatGetNearNullSpace()`
 @*/
-PetscErrorCode MatNullSpaceGetVecs(MatNullSpace sp, PetscBool *has_const, PetscInt *n, const Vec **vecs)
+PetscErrorCode MatNullSpaceGetVecs(MatNullSpace sp, PetscBool *has_const, PetscInt *n, const Vec *vecs[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, MAT_NULLSPACE_CLASSID, 1);

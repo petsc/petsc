@@ -3,8 +3,6 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define petscviewersetformat_        PETSCVIEWERSETFORMAT
-  #define petscviewersettype_          PETSCVIEWERSETTYPE
-  #define petscviewergettype_          PETSCVIEWERGETTYPE
   #define petscviewerpushformat_       PETSCVIEWERPUSHFORMAT
   #define petscviewerpopformat_        PETSCVIEWERPOPFORMAT
   #define petscviewerandformatcreate_  PETSCVIEWERANDFORMATCREATE
@@ -15,8 +13,6 @@
   #define petscviewerflush_            PETSCVIEWERFLUSH
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define petscviewersetformat_        petscviewersetformat
-  #define petscviewersettype_          petscviewersettype
-  #define petscviewergettype_          petscviewergettype
   #define petscviewerpushformat_       petscviewerpushformat
   #define petscviewerpopformat_        petscviewerpopformat
   #define petscviewerandformatcreate_  petscviewerandformatcreate
@@ -67,25 +63,6 @@ PETSC_EXTERN void petscviewersetformat_(PetscViewer *vin, PetscViewerFormat *for
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin, v);
   *ierr = PetscViewerSetFormatDeprecated(v, *format);
-}
-
-PETSC_EXTERN void petscviewersettype_(PetscViewer *x, char *type_name, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-
-  FIXCHAR(type_name, len, t);
-  *ierr = PetscViewerSetType(*x, t);
-  if (*ierr) return;
-  FREECHAR(type_name, t);
-}
-
-PETSC_EXTERN void petscviewergettype_(PetscViewer *viewer, char *type, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  const char *c1;
-
-  *ierr = PetscViewerGetType(*viewer, &c1);
-  *ierr = PetscStrncpy(type, c1, len);
-  FIXRETURNCHAR(PETSC_TRUE, type, len);
 }
 
 PETSC_EXTERN void petscviewerpushformat_(PetscViewer *vin, PetscViewerFormat *format, PetscErrorCode *ierr)

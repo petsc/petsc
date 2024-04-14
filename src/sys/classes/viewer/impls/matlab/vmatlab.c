@@ -1,5 +1,5 @@
-#include <petsc/private/viewerimpl.h>
-#include <mat.h>
+#include <petsc/private/viewerimpl.h> /*I    "petscviewer.h"   I*/
+#include <mat.h>                      /*I    "petscmat.h"      I*/
 
 typedef struct {
   MATFile      *ep;
@@ -195,7 +195,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerMatlabOpen - Opens a MATLAB .mat file for output
 
   Collective

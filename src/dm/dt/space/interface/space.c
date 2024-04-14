@@ -9,7 +9,7 @@ PetscBool         PetscSpaceRegisterAllCalled = PETSC_FALSE;
 /*@C
   PetscSpaceRegister - Adds a new `PetscSpace` implementation
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - The name of a new user-defined creation routine
@@ -45,7 +45,7 @@ PetscErrorCode PetscSpaceRegister(const char sname[], PetscErrorCode (*function)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSpaceSetType - Builds a particular `PetscSpace`
 
   Collective
@@ -84,7 +84,7 @@ PetscErrorCode PetscSpaceSetType(PetscSpace sp, PetscSpaceType name)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSpaceGetType - Gets the `PetscSpaceType` (as a string) from the object.
 
   Not Collective
@@ -216,7 +216,7 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSpaceSetUp - Construct data structures for the `PetscSpace`
 
   Collective
@@ -459,7 +459,7 @@ PetscErrorCode PetscSpaceGetNumVariables(PetscSpace sp, PetscInt *n)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSpaceEvaluate - Evaluate the basis functions and their derivatives (jet) at each point
 
   Input Parameters:

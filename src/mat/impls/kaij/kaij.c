@@ -26,7 +26,7 @@
 #include <../src/mat/utils/freespace.h>
 #include <petsc/private/vecimpl.h>
 
-/*@C
+/*@
   MatKAIJGetAIJ - Get the `MATAIJ` matrix describing the blockwise action of the `MATKAIJ` matrix
 
   Not Collective, but if the `MATKAIJ` matrix is parallel, the `MATAIJ` matrix is also parallel
@@ -323,7 +323,7 @@ PetscErrorCode MatKAIJSetAIJ(Mat A, Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatKAIJSetS - Set the `S` matrix describing the shift action of the `MATKAIJ` matrix
 
   Logically Collective; the entire `S` is stored independently on all processes.
@@ -359,7 +359,7 @@ PetscErrorCode MatKAIJSetS(Mat A, PetscInt p, PetscInt q, const PetscScalar S[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatKAIJGetScaledIdentity - Check if both `S` and `T` are scaled identities.
 
   Logically Collective.
@@ -400,7 +400,7 @@ PetscErrorCode MatKAIJGetScaledIdentity(Mat A, PetscBool *identity)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatKAIJSetT - Set the transformation matrix `T` associated with the `MATKAIJ` matrix
 
   Logically Collective; the entire `T` is stored independently on all processes.

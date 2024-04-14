@@ -1415,11 +1415,9 @@ PETSC_EXTERN PetscErrorCode PetscHelpPrintfDefault(MPI_Comm, const char[], ...) 
 PETSC_EXTERN PetscErrorCode PetscFormatConvertGetSize(const char *, size_t *);
 PETSC_EXTERN PetscErrorCode PetscFormatConvert(const char *, char *);
 
-#if defined(PETSC_HAVE_POPEN)
 PETSC_EXTERN PetscErrorCode PetscPOpen(MPI_Comm, const char[], const char[], const char[], FILE **);
 PETSC_EXTERN PetscErrorCode PetscPClose(MPI_Comm, FILE *);
 PETSC_EXTERN PetscErrorCode PetscPOpenSetMachine(const char[]);
-#endif
 
 PETSC_EXTERN PetscErrorCode PetscSynchronizedPrintf(MPI_Comm, const char[], ...) PETSC_ATTRIBUTE_FORMAT(2, 3);
 PETSC_EXTERN PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm, FILE *, const char[], ...) PETSC_ATTRIBUTE_FORMAT(3, 4);

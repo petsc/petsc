@@ -3,7 +3,7 @@
 #include <petsc/private/taoimpl.h>
 #include <../src/tao/matrix/submatfree.h>
 
-/*@C
+/*@
   TaoVecGetSubVec - Gets a subvector using the `IS`
 
   Input Parameters:
@@ -88,7 +88,7 @@ PetscErrorCode TaoVecGetSubVec(Vec vfull, IS is, TaoSubsetType reduced_type, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoMatGetSubMat - Gets a submatrix using the `IS`
 
   Input Parameters:
@@ -321,7 +321,7 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoBoundStep - Ensures the correct zero or adjusted step direction values for active
   variables.
 
@@ -383,7 +383,7 @@ PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_up
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoBoundSolution - Ensures that the solution vector is snapped into the bounds within a given tolerance.
 
   Collective

@@ -277,7 +277,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat A)
 }
 
 #include <petsc/private/sfimpl.h>
-/*@C
+/*@
   MatCreateScatter - Creates a new matrix of `MatType` `MATSCATTER`, based on a VecScatter
 
   Collective

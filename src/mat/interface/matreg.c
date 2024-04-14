@@ -85,7 +85,7 @@ PetscErrorCode MatGetMPIMatType_Private(Mat mat, MatType *MPIType)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSetType - Builds matrix object for a particular matrix type
 
   Collective
@@ -181,7 +181,7 @@ PetscErrorCode MatSetType(Mat mat, MatType matype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatGetType - Gets the matrix type as a string from the matrix object.
 
   Not Collective
@@ -257,7 +257,7 @@ PetscErrorCode MatSetVecType(Mat mat, VecType vtype)
 /*@C
   MatRegister -  - Adds a new matrix type implementation
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of a new user-defined matrix type
@@ -288,7 +288,7 @@ PetscErrorCode MatRegister(const char sname[], PetscErrorCode (*function)(Mat))
 
 MatRootName MatRootNameList = NULL;
 
-/*@C
+/*@
   MatRegisterRootName - Registers a name that can be used for either a sequential or its corresponding parallel matrix type.
 
   Input Parameters:

@@ -1,7 +1,7 @@
 /* Routines to convert between a (subset of) DMStag and DMDA */
 
-#include <petscdmda.h>
-#include <petsc/private/dmstagimpl.h>
+#include <petscdmda.h>                /*I  "petscdmda.h"   I*/
+#include <petsc/private/dmstagimpl.h> /*I  "petscdmstag.h"   I*/
 #include <petscdmdatypes.h>
 
 static PetscErrorCode DMStagCreateCompatibleDMDA(DM dm, DMStagStencilLocation loc, PetscInt c, DM *dmda)
@@ -407,7 +407,7 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag, DMStagStencilLo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagVecSplitToDMDA - create a `DMDA` and `Vec` from a subgrid of a `DMSTAG` and its `Vec`
 
   Collective

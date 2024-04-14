@@ -243,7 +243,7 @@ PetscErrorCode PetscViewerAppendOptionsPrefix(PetscViewer viewer, const char pre
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerGetOptionsPrefix - Gets the prefix used for searching for
   `PetscViewer` options in the database during `PetscViewerSetFromOptions()`.
 

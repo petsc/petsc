@@ -2196,7 +2196,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE(PC pc, PetscOptionItems *PetscOptio
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCHYPRESetType - Sets which hypre preconditioner you wish to use
 
   Input Parameters:
@@ -2219,7 +2219,7 @@ PetscErrorCode PCHYPRESetType(PC pc, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCHYPREGetType - Gets which hypre preconditioner you are using
 
   Input Parameter:
@@ -2241,7 +2241,7 @@ PetscErrorCode PCHYPREGetType(PC pc, const char *name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCMGGalerkinSetMatProductAlgorithm - Set type of SpGEMM for hypre to use on GPUs
 
   Logically Collective
@@ -2268,7 +2268,7 @@ PetscErrorCode PCMGGalerkinSetMatProductAlgorithm(PC pc, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCMGGalerkinGetMatProductAlgorithm - Get type of SpGEMM for hypre to use on GPUs
 
   Not Collective

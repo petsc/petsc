@@ -54,7 +54,7 @@ static PetscErrorCode PFSetFromOptions_String(PF pf, PetscOptionItems *PetscOpti
 
 .seealso: `PFSetFromOptions()`
 @*/
-PetscErrorCode PFStringSetFunction(PF pf, const char *string)
+PetscErrorCode PFStringSetFunction(PF pf, const char string[])
 {
   char      task[1024], tmp[PETSC_MAX_PATH_LEN], lib[PETSC_MAX_PATH_LEN];
   PetscBool tmpshared, wdshared, keeptmpfiles = PETSC_FALSE;

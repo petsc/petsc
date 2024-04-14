@@ -15,7 +15,7 @@
 /*@C
   PetscIgnoreErrorHandler - Deprecated, use `PetscReturnErrorHandler()`. Ignores the error, allows program to continue as if error did not occur
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + comm - communicator over which error occurred
@@ -152,7 +152,7 @@ static PETSC_TLS PetscBool petsc_traceback_error_silent = PETSC_FALSE;
   PetscTraceBackErrorHandler - Default error handler routine that generates
   a traceback on error detection.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + comm - communicator over which error occurred

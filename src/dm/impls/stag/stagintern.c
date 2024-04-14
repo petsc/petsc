@@ -1,7 +1,6 @@
-/* DMStag dimension-independent internal functions. If added to the public API,
-   these would move to stagutils.c */
+/* DMStag dimension-independent internal functions. If added to the public API, these would move to stagutils.c */
 
-#include <petsc/private/dmstagimpl.h>
+#include <petsc/private/dmstagimpl.h> /*I  "petscdmstag.h"   I*/
 
 /*
   DMStagDuplicateWithoutSetup - duplicate a `DMSTAG` object without setting it up

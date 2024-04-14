@@ -791,7 +791,7 @@ PetscErrorCode DMDASetRefinementFactor(DM da, PetscInt refine_x, PetscInt refine
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDAGetRefinementFactor - Gets the ratios that the `DMDA` grid is refined
 
   Not Collective

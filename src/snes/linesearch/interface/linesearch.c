@@ -920,7 +920,7 @@ PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESLineSearchGetType - Gets the `SNESLinesearchType` of a `SNESLineSearch`
 
   Logically Collective
@@ -944,7 +944,7 @@ PetscErrorCode SNESLineSearchGetType(SNESLineSearch linesearch, SNESLineSearchTy
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESLineSearchSetType - Sets the `SNESLinesearchType` of a `SNESLineSearch`
 
   Logically Collective
@@ -1547,7 +1547,7 @@ PetscErrorCode SNESLineSearchSetVecs(SNESLineSearch linesearch, Vec X, Vec F, Ve
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESLineSearchAppendOptionsPrefix - Appends to the prefix used for searching for all
   `SNESLineSearch` options in the database.
 
@@ -1573,7 +1573,7 @@ PetscErrorCode SNESLineSearchAppendOptionsPrefix(SNESLineSearch linesearch, cons
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESLineSearchGetOptionsPrefix - Gets the prefix used for searching for all
   SNESLineSearch options in the database.
 
@@ -1730,6 +1730,8 @@ PetscErrorCode SNESLineSearchGetVIFunctions(SNESLineSearch linesearch, SNESLineS
 
 /*@C
   SNESLineSearchRegister - register a line search type `SNESLineSearchType`
+
+  Logically Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of the `SNESLineSearchType()`

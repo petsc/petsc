@@ -312,7 +312,7 @@ PetscErrorCode DMSetUp_DA_1D(DM da)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDACreate1d - Creates an object that will manage the communication of  one-dimensional
   regular array data that is distributed across one or mpre MPI processes.
 

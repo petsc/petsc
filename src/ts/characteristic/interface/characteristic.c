@@ -106,7 +106,7 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   CharacteristicSetType - Builds Characteristic for a particular solver.
 
   Logically Collective
@@ -197,7 +197,7 @@ PetscErrorCode CharacteristicSetUp(Characteristic c)
 /*@C
   CharacteristicRegister -  Adds a solver to the method of characteristics package.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of a new user-defined solver

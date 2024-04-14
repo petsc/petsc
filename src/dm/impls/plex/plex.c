@@ -3059,7 +3059,7 @@ PetscErrorCode DMPlexGetCone(DM dm, PetscInt p, const PetscInt *cone[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetConeTuple - Return the points on the in-edges of several points in the DAG
 
   Not Collective
@@ -5046,7 +5046,7 @@ PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt point
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexEqual - Determine if two `DM` have the same topology
 
   Not Collective
@@ -5109,7 +5109,7 @@ PetscErrorCode DMPlexEqual(DM dmA, DM dmB, PetscBool *equal)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetNumFaceVertices - Returns the number of vertices on a face
 
   Not Collective
@@ -5582,7 +5582,7 @@ PetscErrorCode DMCreateCoordinateField_Plex(DM dm, DMField *field)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetConeSection - Return a section which describes the layout of cone data
 
   Not Collective
@@ -5607,7 +5607,7 @@ PetscErrorCode DMPlexGetConeSection(DM dm, PetscSection *section)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetSupportSection - Return a section which describes the layout of support data
 
   Not Collective
@@ -8545,7 +8545,7 @@ PetscErrorCode DMPlexMatGetClosureIndicesRefined(DM dmf, PetscSection fsection, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetVTKCellHeight - Returns the height in the DAG used to determine which points are cells (normally 0)
 
   Input Parameter:
@@ -8569,7 +8569,7 @@ PetscErrorCode DMPlexGetVTKCellHeight(DM dm, PetscInt *cellHeight)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexSetVTKCellHeight - Sets the height in the DAG used to determine which points are cells (normally 0)
 
   Input Parameters:

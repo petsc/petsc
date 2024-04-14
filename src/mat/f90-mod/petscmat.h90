@@ -79,21 +79,6 @@
        end subroutine
       End Interface
 
-      Interface
-      subroutine MatCreateFromOptions(a,b,c,d,e,f,g,h,z)
-      import tMat
-       MPI_Comm a
-       character(*) b
-       PetscInt c
-       PetscInt d
-       PetscInt e
-       PetscInt f
-       PetscInt g
-       Mat h
-       PetscErrorCode z
-       end subroutine
-      End Interface
-
       interface MatNullSpaceCreate
       subroutine MatNullSpaceCreate1(a,b,c,d,e,z)
        import tVec,tMatNullSpace
@@ -980,15 +965,6 @@
       End Interface
 
       Interface
-      subroutine MatSetType(a,b,z)
-      import tMat
-       Mat a
-       character(*) b
-       PetscErrorCode z
-       end subroutine
-      end Interface
-
-      Interface
       subroutine MatView(a,b,z)
       import tMat,tPetscViewer
        Mat a
@@ -1046,47 +1022,6 @@
        Mat,intent(in) :: a ! Mat
        PetscInt,dimension(:) :: b,c ! PetscInt
        PetscErrorCode,intent(out) :: ierr
-      end subroutine
-      end interface
-
-      interface
-      subroutine MatGetFactor(m,t,ft,f,ierr)
-      import tMat
-       Mat, intent(in) ::  m
-       character(*), intent(in) :: t
-       MatFactorType,intent(in) :: ft
-       Mat, intent(out) ::  f
-       PetscErrorCode,intent(out) :: ierr
-      end subroutine
-
-      subroutine MatPartitioningCreate(a,b,ierr)
-       MPI_Comm, intent(in) :: a ! MPI_comm
-       MatPartitioning, intent(out) ::  b
-       PetscErrorCode,intent(out) :: ierr
-      end subroutine
-
-      subroutine MatPartitioningDestroy(a,ierr)
-       MatPartitioning, intent(in) ::  a
-       PetscErrorCode,intent(out) :: ierr
-      end subroutine
-
-      subroutine MatPartitioningSetAdjacency(a,b,ierr)
-      import tMat
-       MatPartitioning, intent(in) ::  a
-       Mat, intent(in) ::  b
-       PetscErrorCode,intent(out) :: ierr
-      end subroutine
-
-      subroutine MatPartitioningSetFromOptions(a,ierr)
-       MatPartitioning, intent(in) ::  a
-       PetscErrorCode,intent(out) :: ierr
-      end subroutine
-
-      subroutine MatPartitioningApply(a,b,ierr)
-       import tIS
-       MatPartitioning, intent(in) ::  a
-       IS, intent(out) :: b
-       PetscErrorCode :: ierr
       end subroutine
 
       subroutine MatDestroy(m,ierr)

@@ -4612,7 +4612,7 @@ PetscErrorCode MatSeqAIJGetCSRAndMemType(Mat mat, const PetscInt **i, const Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqAIJGetMaxRowNonzeros - returns the maximum number of nonzeros in any row
 
   Not Collective
@@ -5488,7 +5488,7 @@ PetscErrorCode MatEliminateZeros_SeqAIJ(Mat A, PetscBool keep)
 
 PetscFunctionList MatSeqAIJList = NULL;
 
-/*@C
+/*@
   MatSeqAIJSetType - Converts a `MATSEQAIJ` matrix to a subtype
 
   Collective
@@ -5523,7 +5523,7 @@ PetscErrorCode MatSeqAIJSetType(Mat mat, MatType matype)
 /*@C
   MatSeqAIJRegister -  - Adds a new sub-matrix type for sequential `MATSEQAIJ` matrices
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of a new user-defined matrix type, for example `MATSEQAIJCRL`

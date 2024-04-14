@@ -363,7 +363,7 @@ static PetscErrorCode TSComputeLinearStability_BasicSymplectic(TS ts, PetscReal 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSBasicSymplecticSetType - Set the type of the basic symplectic method
 
   Logically Collective
@@ -392,7 +392,7 @@ PetscErrorCode TSBasicSymplecticSetType(TS ts, TSBasicSymplecticType bsymptype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSBasicSymplecticGetType - Get the type of the basic symplectic method
 
   Logically Collective

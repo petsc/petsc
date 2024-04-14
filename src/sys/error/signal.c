@@ -181,7 +181,7 @@ PetscErrorCode PetscSignalHandlerDefault(int sig, void *ptr)
   PetscPushSignalHandler - Catches the usual fatal errors and
   calls a user-provided routine.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + routine - routine to call when a signal is received

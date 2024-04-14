@@ -415,7 +415,7 @@ PetscErrorCode PCFactorReorderForNonzeroDiagonal(PC pc, PetscReal rtol)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCFactorSetMatSolverType - sets the solver package that is used to perform the factorization
 
   Logically Collective
@@ -445,7 +445,7 @@ PetscErrorCode PCFactorSetMatSolverType(PC pc, MatSolverType stype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCFactorGetMatSolverType - gets the solver package that is used to perform the factorization
 
   Not Collective

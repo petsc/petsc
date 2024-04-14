@@ -48,7 +48,7 @@ PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw, PetscReal xmin, PetscR
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawCoordinateToPixel - given a coordinate in a `PetscDraw` returns the pixel location
 
   Not Collective
@@ -74,7 +74,7 @@ PetscErrorCode PetscDrawCoordinateToPixel(PetscDraw draw, PetscReal x, PetscReal
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawPixelToCoordinate - given a pixel in a `PetscDraw` returns the coordinate
 
   Not Collective

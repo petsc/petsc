@@ -1078,7 +1078,7 @@ static PetscErrorCode PCBJKOKKOSSetKSP_BJKOKKOS(PC pc, KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCBJKOKKOSSetKSP - Sets the `KSP` context for `PCBJKOKKOS`
 
   Collective
@@ -1116,7 +1116,7 @@ static PetscErrorCode PCBJKOKKOSGetKSP_BJKOKKOS(PC pc, KSP *ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCBJKOKKOSGetKSP - Gets the `KSP` context for the `PCBJKOKKOS` preconditioner
 
   Not Collective but `KSP` returned is parallel if `PC` was parallel

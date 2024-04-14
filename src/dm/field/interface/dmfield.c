@@ -86,7 +86,7 @@ PetscErrorCode DMFieldView(DMField field, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMFieldSetType - set the `DMField` implementation
 
   Collective
@@ -129,7 +129,7 @@ PetscErrorCode DMFieldSetType(DMField field, DMFieldType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMFieldGetType - Gets the `DMFieldType` name (as a string) from the `DMField`.
 
   Not Collective

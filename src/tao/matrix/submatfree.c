@@ -1,7 +1,7 @@
 #include <petsctao.h> /*I "petsctao.h" I*/
 #include <../src/tao/matrix/submatfree.h>
 
-/*@C
+/*@
   MatCreateSubMatrixFree - Creates a reduced matrix by masking a
   full matrix.
 

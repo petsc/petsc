@@ -2,9 +2,9 @@
     Defines the operations for the X PetscDraw implementation.
 */
 
-#include <../src/sys/classes/draw/impls/x/ximpl.h> /*I  "petscsys.h" I*/
+#include <../src/sys/classes/draw/impls/x/ximpl.h> /*I  "petscdraw.h" I*/
 
-/*@C
+/*@
   PetscDrawOpenX - Opens an X-window for use with the `PetscDraw` routines.
 
   Collective

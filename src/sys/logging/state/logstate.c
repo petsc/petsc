@@ -184,7 +184,7 @@ static PetscErrorCode PetscLogStateResize(PetscLogState state)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogStateStageRegister - Register a new stage with a logging state
 
   Not collective
@@ -223,7 +223,7 @@ PetscErrorCode PetscLogStateStageRegister(PetscLogState state, const char sname[
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogStateEventRegister - Register a new event with a logging state
 
   Not collective
@@ -517,7 +517,7 @@ PetscErrorCode PetscLogStateGetEventFromName(PetscLogState state, const char nam
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogStateGetStageFromName - Get a `PetscLogStage` from the name it was registered with.
 
   Not collective
@@ -540,7 +540,7 @@ PetscErrorCode PetscLogStateGetStageFromName(PetscLogState state, const char nam
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogStateGetClassFromName - Get a `PetscLogClass` from the name of the class it was registered with.
 
   Not collective

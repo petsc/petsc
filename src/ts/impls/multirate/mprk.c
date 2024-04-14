@@ -434,7 +434,7 @@ PetscErrorCode TSMPRKFinalizePackage(void)
 /*@C
   TSMPRKRegister - register a `TSMPRK` scheme by providing the entries in the Butcher tableau
 
-  Not Collective, but the same schemes should be registered on all processes on which they will be used
+  Not Collective, but the same schemes should be registered on all processes on which they will be used, No Fortran Support
 
   Input Parameters:
 + name   - identifier for method
@@ -1139,7 +1139,7 @@ static PetscErrorCode TSLoad_MPRK(TS ts, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMPRKSetType - Set the type of `TSMPRK` scheme
 
   Not Collective
@@ -1164,7 +1164,7 @@ PetscErrorCode TSMPRKSetType(TS ts, TSMPRKType mprktype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMPRKGetType - Get the type of `TSMPRK` scheme
 
   Not Collective

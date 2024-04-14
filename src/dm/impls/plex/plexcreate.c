@@ -1,8 +1,8 @@
 #define PETSCDM_DLL
 #include <petsc/private/dmpleximpl.h> /*I   "petscdmplex.h"   I*/
-#include <petsc/private/hashseti.h>   /*I   "petscdmplex.h"   I*/
+#include <petsc/private/hashseti.h>
 #include <petscsf.h>
-#include <petscdmplextransform.h>
+#include <petscdmplextransform.h> /*I   "petscdmplextransform.h"   I*/
 #include <petscdmlabelephemeral.h>
 #include <petsc/private/kernels/blockmatmult.h>
 #include <petsc/private/kernels/blockinvert.h>
@@ -1725,7 +1725,7 @@ PetscErrorCode DMPlexCreateHypercubicMesh(MPI_Comm comm, PetscInt dim, const Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexSetOptionsPrefix - Sets the prefix used for searching for all `DM` options in the database.
 
   Logically Collective
@@ -5094,7 +5094,7 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexBuildCoordinatesFromCellListParallel - Build `DM` coordinates from a list of coordinates for each owned vertex (common mesh generator output)
 
   Collective; No Fortran Support
@@ -5226,7 +5226,7 @@ PetscErrorCode DMPlexCreateFromCellListParallelPetsc(MPI_Comm comm, PetscInt dim
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexBuildFromCellList - Build `DMPLEX` topology from a list of vertices for each cell (common mesh generator output)
 
   Collective; No Fortran Support
@@ -5312,10 +5312,10 @@ PetscErrorCode DMPlexBuildFromCellList(DM dm, PetscInt numCells, PetscInt numVer
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexBuildCoordinatesFromCellList - Build `DM` coordinates from a list of coordinates for each owned vertex (common mesh generator output)
 
-  Collective; No Fortran Support
+  Collective
 
   Input Parameters:
 + dm           - The `DM`
@@ -5702,7 +5702,7 @@ static PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char f
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexCreateFromFile - This takes a filename and produces a `DM`
 
   Collective
@@ -5852,7 +5852,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexCreateEphemeral - This takes a `DMPlexTransform` and a base `DMPlex` and produces an ephemeral `DM`, meaning one that is created on the fly in response to queries.
 
   Input Parameters:

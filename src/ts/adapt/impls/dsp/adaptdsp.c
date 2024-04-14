@@ -294,7 +294,7 @@ static PetscErrorCode TSAdaptSetFromOptions_DSP(TSAdapt adapt, PetscOptionItems 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSAdaptDSPSetFilter - Sets internal parameters corresponding to the named filter {cite}`soderlind2006adaptive` {cite}`soderlind2003digital`
 
   Collective
@@ -318,7 +318,7 @@ static PetscErrorCode TSAdaptSetFromOptions_DSP(TSAdapt adapt, PetscOptionItems 
 
 .seealso: [](ch_ts), `TSADAPTDSP`, `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptDSPSetPID()`
 @*/
-PetscErrorCode TSAdaptDSPSetFilter(TSAdapt adapt, const char *name)
+PetscErrorCode TSAdaptDSPSetFilter(TSAdapt adapt, const char name[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);

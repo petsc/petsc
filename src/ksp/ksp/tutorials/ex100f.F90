@@ -11,6 +11,7 @@
       KSP            ksp
       PC             pc
       PetscErrorCode ierr
+      character*80   mattype
 
       N    = 100
       draw = .FALSE.
@@ -28,6 +29,8 @@
       PetscCallA(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N,ierr))
       PetscCallA(MatSetType(A,'python',ierr))
       PetscCallA(MatPythonSetType(A,'example100.py:Laplace1D',ierr))
+      PetscCallA(MatPythonGetType(A,mattype,ierr))
+      PetscCheckA(mattype == 'example100.py:Laplace1D',PETSC_COMM_WORLD,PETSC_ERR_PLIB,'Error')
       PetscCallA(MatSetUp(A,ierr))
 
       PetscCallA(MatCreateVecs(A,x,b,ierr))

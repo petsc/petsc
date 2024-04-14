@@ -1,7 +1,7 @@
 /* Functions specific to the 3-dimensional implementation of DMStag */
-#include <petsc/private/dmstagimpl.h>
+#include <petsc/private/dmstagimpl.h> /*I  "petscdmstag.h"   I*/
 
-/*@C
+/*@
   DMStagCreate3d - Create an object to manage data living on the elements, faces, edges, and vertices of a parallelized regular 3D grid.
 
   Collective
@@ -52,7 +52,7 @@
 
 .seealso: [](ch_stag), `DMSTAG`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMLocalToGlobalBegin()`, `DMDACreate3d()`
 @*/
-PETSC_EXTERN PetscErrorCode DMStagCreate3d(MPI_Comm comm, DMBoundaryType bndx, DMBoundaryType bndy, DMBoundaryType bndz, PetscInt M, PetscInt N, PetscInt P, PetscInt m, PetscInt n, PetscInt p, PetscInt dof0, PetscInt dof1, PetscInt dof2, PetscInt dof3, DMStagStencilType stencilType, PetscInt stencilWidth, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[], DM *dm)
+PetscErrorCode DMStagCreate3d(MPI_Comm comm, DMBoundaryType bndx, DMBoundaryType bndy, DMBoundaryType bndz, PetscInt M, PetscInt N, PetscInt P, PetscInt m, PetscInt n, PetscInt p, PetscInt dof0, PetscInt dof1, PetscInt dof2, PetscInt dof3, DMStagStencilType stencilType, PetscInt stencilWidth, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[], DM *dm)
 {
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, dm));

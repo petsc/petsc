@@ -3,7 +3,7 @@
 PetscFunctionList PetscRandomList              = NULL;
 PetscBool         PetscRandomRegisterAllCalled = PETSC_FALSE;
 
-/*@C
+/*@
   PetscRandomSetType - Builds a context for generating a particular type of random numbers.
 
   Collective
@@ -46,7 +46,7 @@ PetscErrorCode PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscRandomGetType - Gets the type name (as a string) from the `PetscRandom`.
 
   Not Collective
@@ -73,7 +73,7 @@ PetscErrorCode PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
 /*@C
   PetscRandomRegister -  Adds a new `PetscRandom` implementation
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - The name of a new user-defined creation routine

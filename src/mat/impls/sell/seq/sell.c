@@ -2038,7 +2038,7 @@ static PetscErrorCode MatSeqSELLSetSliceHeight_SeqSELL(Mat A, PetscInt sliceheig
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqSELLGetFillRatio - returns a ratio that indicates the irregularity of the matrix.
 
   Not Collective
@@ -2060,7 +2060,7 @@ PetscErrorCode MatSeqSELLGetFillRatio(Mat A, PetscReal *ratio)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqSELLGetMaxSliceWidth - returns the maximum slice width.
 
   Not Collective
@@ -2082,7 +2082,7 @@ PetscErrorCode MatSeqSELLGetMaxSliceWidth(Mat A, PetscInt *slicewidth)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqSELLGetAvgSliceWidth - returns the average slice width.
 
   Not Collective
@@ -2104,7 +2104,7 @@ PetscErrorCode MatSeqSELLGetAvgSliceWidth(Mat A, PetscReal *slicewidth)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqSELLSetSliceHeight - sets the slice height.
 
   Not Collective
@@ -2129,7 +2129,7 @@ PetscErrorCode MatSeqSELLSetSliceHeight(Mat A, PetscInt sliceheight)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqSELLGetVarSliceSize - returns the variance of the slice size.
 
   Not Collective

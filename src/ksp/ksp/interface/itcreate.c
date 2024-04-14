@@ -761,7 +761,7 @@ PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPSetType - Builds the `KSP` data structure for a particular `KSPType`
 
   Logically Collective
@@ -828,7 +828,7 @@ PetscErrorCode KSPSetType(KSP ksp, KSPType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPGetType - Gets the `KSP` type as a string from the `KSP` object.
 
   Not Collective
@@ -855,7 +855,7 @@ PetscErrorCode KSPGetType(KSP ksp, KSPType *type)
 /*@C
   KSPRegister -  Adds a method, `KSPType`, to the Krylov subspace solver package.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of a new user-defined solver

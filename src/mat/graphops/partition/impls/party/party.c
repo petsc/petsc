@@ -149,7 +149,7 @@ static PetscErrorCode MatPartitioningView_Party(MatPartitioning part, PetscViewe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatPartitioningPartySetGlobal - Set global method for Party partitioner.
 
   Collective
@@ -191,7 +191,7 @@ static PetscErrorCode MatPartitioningPartySetGlobal_Party(MatPartitioning part, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatPartitioningPartySetLocal - Set local method used by the Party partitioner.
 
   Collective

@@ -15,7 +15,7 @@ static PetscErrorCode TSRHSSplitGetRHSSplit(TS ts, const char splitname[], TS_RH
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRHSSplitSetIS - Set the index set for the specified split
 
   Logically Collective
@@ -61,7 +61,7 @@ PetscErrorCode TSRHSSplitSetIS(TS ts, const char splitname[], IS is)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRHSSplitGetIS - Retrieves the elements for a split as an `IS`
 
   Logically Collective
@@ -143,7 +143,7 @@ PetscErrorCode TSRHSSplitSetRHSFunction(TS ts, const char splitname[], Vec r, TS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRHSSplitGetSubTS - Get the sub-`TS` by split name.
 
   Logically Collective

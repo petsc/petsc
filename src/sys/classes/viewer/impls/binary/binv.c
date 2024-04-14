@@ -831,7 +831,7 @@ static PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerBinaryOpen - Opens a file for binary input/output.
 
   Collective
@@ -1162,7 +1162,7 @@ PetscErrorCode PetscViewerBinaryWriteAll(PetscViewer viewer, const void *data, P
           `VecView()`, `MatView()`, `VecLoad()`, `MatLoad()`, `PetscViewerBinaryGetDescriptor()`,
           `PetscViewerBinaryGetInfoPointer()`, `PetscFileMode`, `PetscViewer`, `PetscViewerBinaryRead()`
 @*/
-PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer viewer, const char *const *data)
+PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer viewer, const char *const data[])
 {
   PetscInt i, n = 0, *sizes;
   size_t   len;

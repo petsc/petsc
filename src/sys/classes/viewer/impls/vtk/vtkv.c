@@ -233,7 +233,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerVTKOpen - Opens a `PETSCVIEWERVTK` viewer file.
 
   Collective

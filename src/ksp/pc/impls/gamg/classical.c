@@ -10,7 +10,7 @@ typedef struct {
   PetscInt  nsmooths; /* number of jacobi smoothings on the prolongator */
 } PC_GAMG_Classical;
 
-/*@C
+/*@
   PCGAMGClassicalSetType - Sets the type of classical interpolation to use with `PCGAMG`
 
   Collective
@@ -34,7 +34,7 @@ PetscErrorCode PCGAMGClassicalSetType(PC pc, PCGAMGClassicalType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCGAMGClassicalGetType - Gets the type of classical interpolation to use with `PCGAMG`
 
   Collective

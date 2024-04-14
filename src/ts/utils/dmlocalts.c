@@ -434,7 +434,7 @@ PetscErrorCode DMTSSetRHSFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscRe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSCreateRHSMassMatrix - This creates the mass matrix associated with the given `DM`, and a solver to invert it, and stores them in the `DM` context.
 
   Collective
@@ -469,7 +469,7 @@ PetscErrorCode DMTSCreateRHSMassMatrix(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSCreateRHSMassMatrixLumped - This creates the lumped mass matrix associated with the given `DM`, and a solver to invert it, and stores them in the `DM` context.
 
   Collective
@@ -500,7 +500,7 @@ PetscErrorCode DMTSCreateRHSMassMatrixLumped(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSDestroyRHSMassMatrix - Destroys the mass matrix and solver stored in the `DM` context, if they exist.
 
   Logically Collective

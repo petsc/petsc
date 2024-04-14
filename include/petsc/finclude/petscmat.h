@@ -12,6 +12,7 @@
 #define Mat type(tMat)
 #define MatNullSpace type(tMatNullSpace)
 #define MatFDColoring type(tMatFDColoring)
+#define MatTransposeColoring type(tMatTransposeColoring)
 
 #define MatColoring PetscFortranAddr
 #define MatPartitioning PetscFortranAddr

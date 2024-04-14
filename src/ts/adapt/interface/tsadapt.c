@@ -16,7 +16,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_History(TSAdapt);
 /*@C
   TSAdaptRegister -  adds a TSAdapt implementation
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of user-defined adaptivity scheme
@@ -106,7 +106,7 @@ PetscErrorCode TSAdaptInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSAdaptSetType - sets the approach used for the error adapter
 
   Logicially Collective
@@ -141,7 +141,7 @@ PetscErrorCode TSAdaptSetType(TSAdapt adapt, TSAdaptType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSAdaptGetType - gets the `TS` adapter method type (as a string).
 
   Not Collective

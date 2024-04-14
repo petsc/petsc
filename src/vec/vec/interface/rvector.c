@@ -328,6 +328,9 @@ PetscErrorCode VecNormalize(Vec x, PetscReal *val)
 
   Returns the smallest index with the maximum value
 
+  Developer Note:
+  The Nag Fortran compiler does not like the symbol name VecMax
+
 .seealso: [](ch_vectors), `Vec`, `VecNorm()`, `VecMin()`
 @*/
 PetscErrorCode VecMax(Vec x, PetscInt *p, PetscReal *val)
@@ -364,6 +367,9 @@ PetscErrorCode VecMax(Vec x, PetscInt *p, PetscReal *val)
   Returns the value `PETSC_MAX_REAL` and negative `p` if the vector is of length 0.
 
   This returns the smallest index with the minimum value
+
+  Developer Note:
+  The Nag Fortran compiler does not like the symbol name VecMin
 
 .seealso: [](ch_vectors), `Vec`, `VecMax()`
 @*/
@@ -4011,7 +4017,7 @@ PetscErrorCode VecLockReadPop(Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecLockWriteSet  - Lock or unlock a vector for exclusive read/write access
 
   Logically Collective

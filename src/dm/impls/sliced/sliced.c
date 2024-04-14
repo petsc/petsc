@@ -65,7 +65,7 @@ static PetscErrorCode DMCreateMatrix_Sliced(DM dm, Mat *J)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSlicedSetGhosts - Sets the global indices of other processes elements that will
   be ghosts on this process
 
@@ -97,7 +97,7 @@ PetscErrorCode DMSlicedSetGhosts(DM dm, PetscInt bs, PetscInt nlocal, PetscInt N
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSlicedSetPreallocation - sets the matrix memory preallocation for matrices computed by `DMSLICED`
 
   Not Collective
@@ -163,7 +163,7 @@ static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs, const PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSlicedSetBlockFills - Sets the fill pattern in each block for a multi-component problem
   of the matrix returned by `DMSlicedGetMatrix()`.
 
@@ -182,7 +182,7 @@ static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs, const PetscInt 
 
 .seealso: `DM`, `DMSLICED`, `DMSlicedGetMatrix()`, `DMDASetBlockFills()`
 @*/
-PetscErrorCode DMSlicedSetBlockFills(DM dm, const PetscInt *dfill, const PetscInt *ofill)
+PetscErrorCode DMSlicedSetBlockFills(DM dm, const PetscInt dfill[], const PetscInt ofill[])
 {
   DM_Sliced *slice = (DM_Sliced *)dm->data;
 
@@ -268,7 +268,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM p)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSlicedCreate - Creates a `DM` object, used to manage data for a unstructured problem
 
   Collective

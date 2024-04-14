@@ -161,7 +161,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner part)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscPartitionerShellSetPartition - Set an artificial partition for a mesh
 
   Collective

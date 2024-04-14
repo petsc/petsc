@@ -1271,7 +1271,7 @@ PetscErrorCode DMForestGetCellSF(DM dm, PetscSF *cellSF)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMForestSetAdaptivityLabel - During the pre-setup phase, set the label of the pre-adaptation forest (see
   `DMForestGetAdaptivityForest()`) that holds the adaptation flags (refinement, coarsening, or some combination).
 
@@ -1303,7 +1303,7 @@ PetscErrorCode DMForestSetAdaptivityLabel(DM dm, DMLabel adaptLabel)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMForestGetAdaptivityLabel - Get the label of the pre-adaptation forest (see `DMForestGetAdaptivityForest()`) that
   holds the adaptation flags (refinement, coarsening, or some combination).
 

@@ -5,7 +5,7 @@
 #include <petsc/private/kspimpl.h> /*I "petscksp.h" I*/
 #include <petscdraw.h>
 
-/*@C
+/*@
   KSPSetOptionsPrefix - Sets the prefix used for searching for all
   `KSP` options in the database.
 
@@ -64,7 +64,7 @@ PetscErrorCode KSPSetOptionsPrefix(KSP ksp, const char prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPAppendOptionsPrefix - Appends to the prefix used for searching for all
   `KSP` options in the database.
 
@@ -187,7 +187,7 @@ PetscErrorCode KSPGetGuess(KSP ksp, KSPGuess *guess)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPGetOptionsPrefix - Gets the prefix used for searching for all
   `KSP` options in the database.
 

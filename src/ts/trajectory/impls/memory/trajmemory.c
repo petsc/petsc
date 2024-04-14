@@ -1882,7 +1882,7 @@ PETSC_UNUSED static PetscErrorCode TSTrajectorySetUseDRAM(TSTrajectory tj, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSTrajectoryMemorySetType - sets the software that is used to generate the checkpointing schedule.
 
   Logically Collective
@@ -1905,7 +1905,7 @@ PetscErrorCode TSTrajectoryMemorySetType(TSTrajectory tj, TSTrajectoryMemoryType
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSTrajectorySetMaxCpsRAM - Set maximum number of checkpoints in RAM
 
   Logically Collective
@@ -1927,7 +1927,7 @@ PetscErrorCode TSTrajectorySetMaxCpsRAM(TSTrajectory tj, PetscInt max_cps_ram)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSTrajectorySetMaxCpsDisk - Set maximum number of checkpoints on disk
 
   Logically Collective
@@ -1949,7 +1949,7 @@ PetscErrorCode TSTrajectorySetMaxCpsDisk(TSTrajectory tj, PetscInt max_cps_disk)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSTrajectorySetMaxUnitsRAM - Set maximum number of checkpointing units in RAM
 
   Logically Collective
@@ -1971,7 +1971,7 @@ PetscErrorCode TSTrajectorySetMaxUnitsRAM(TSTrajectory tj, PetscInt max_units_ra
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSTrajectorySetMaxUnitsDisk - Set maximum number of checkpointing units on disk
 
   Logically Collective

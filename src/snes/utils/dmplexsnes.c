@@ -778,7 +778,7 @@ PetscErrorCode DMPlexSetSNESLocalFEM(DM dm, PetscBool use_obj, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSNESCheckDiscretization - Check the discretization error of the exact solution
 
   Input Parameters:
@@ -870,7 +870,7 @@ PetscErrorCode DMSNESCheckDiscretization(SNES snes, DM dm, PetscReal t, Vec u, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSNESCheckResidual - Check the residual of the exact solution
 
   Input Parameters:
@@ -917,7 +917,7 @@ PetscErrorCode DMSNESCheckResidual(SNES snes, DM dm, Vec u, PetscReal tol, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSNESCheckJacobian - Check the Jacobian of the exact solution against the residual using the Taylor Test
 
   Input Parameters:
@@ -1048,7 +1048,7 @@ PetscErrorCode DMSNESCheck_Internal(SNES snes, DM dm, Vec u)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSNESCheckFromOptions - Check the residual and Jacobian functions using the exact solution by outputting some diagnostic information
 
   Input Parameters:

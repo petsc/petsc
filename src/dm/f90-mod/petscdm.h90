@@ -1,20 +1,4 @@
       Interface
-       subroutine DMGetStratumIS(d,str,v,i,ierr)
-          import tDM,tIS
-          type(tDM),      intent(in)  :: d
-          character(*),   intent(in)  :: str
-          PetscInt,       intent(in)  :: v
-          type(tIS),      intent(out) :: i
-          PetscErrorCode, intent(out) :: ierr
-       end Subroutine DMGetStratumIS
-       subroutine DMGetStratumSize(d,str,v,s,ierr)
-          import tDM
-          type(tDM),      intent(in)  :: d
-          character(*),   intent(in)  :: str
-          PetscInt,       intent(in)  :: v
-          PetscInt,       intent(out) :: s
-          PetscErrorCode, intent(out) :: ierr
-       end Subroutine DMGetStratumSize
        subroutine DMDestroy(a,ierr)
           import tDM
           DM a

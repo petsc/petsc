@@ -36,7 +36,7 @@ FILE *PETSC_STDERR = NULL;
 
 .seealso: `PetscFormatConvert()`, `PetscVSNPrintf()`, `PetscVFPrintf()`
 @*/
-PetscErrorCode PetscFormatConvertGetSize(const char *format, size_t *size)
+PetscErrorCode PetscFormatConvertGetSize(const char format[], size_t *size)
 {
   size_t   sz = 0;
   PetscInt i  = 0;
@@ -98,7 +98,7 @@ PetscErrorCode PetscFormatConvertGetSize(const char *format, size_t *size)
 
 .seealso: `PetscFormatConvertGetSize()`, `PetscVSNPrintf()`, `PetscVFPrintf()`
 @*/
-PetscErrorCode PetscFormatConvert(const char *format, char *newformat)
+PetscErrorCode PetscFormatConvert(const char format[], char newformat[])
 {
   PetscInt i = 0, j = 0;
 
@@ -151,6 +151,8 @@ PetscErrorCode PetscFormatConvert(const char *format, char *newformat)
 /*@C
   PetscVSNPrintf - The PETSc version of `vsnprintf()`. Ensures that all `%g` formatted arguments' output contains the decimal point (which is used by the test harness)
 
+  No Fortran Support
+
   Input Parameters:
 + str    - location to put result
 . len    - the length of `str`
@@ -170,7 +172,7 @@ PetscErrorCode PetscFormatConvert(const char *format, char *newformat)
 
 .seealso: `PetscFormatConvert()`, `PetscFormatConvertGetSize()`, `PetscErrorPrintf()`, `PetscVPrintf()`
 @*/
-PetscErrorCode PetscVSNPrintf(char *str, size_t len, const char *format, size_t *fullLength, va_list Argp)
+PetscErrorCode PetscVSNPrintf(char str[], size_t len, const char format[], size_t *fullLength, va_list Argp)
 {
   char  *newformat = NULL;
   char   formatbuf[PETSCDEFAULTBUFFERSIZE];
@@ -279,6 +281,9 @@ PetscErrorCode PetscVSNPrintf(char *str, size_t len, const char *format, size_t 
   If `fd` is `NULL`, all open output streams are flushed, including ones not directly
   accessible to the program.
 
+  Fortran Note:
+  Use `PetscFlush()`
+
 .seealso: `PetscPrintf()`, `PetscFPrintf()`, `PetscVFPrintf()`, `PetscVSNPrintf()`
 @*/
 PetscErrorCode PetscFFlush(FILE *fd)
@@ -294,6 +299,8 @@ PetscErrorCode PetscFFlush(FILE *fd)
 /*@C
   PetscVFPrintfDefault -  All PETSc standard out and error messages are sent through this function; so, in theory, this can
   can be replaced with something that does not simply write to a file.
+
+  No Fortran Support
 
   Input Parameters:
 + fd     - the file descriptor to write to
@@ -333,7 +340,7 @@ PetscErrorCode PetscFFlush(FILE *fd)
 
 .seealso: `PetscVSNPrintf()`, `PetscErrorPrintf()`, `PetscFFlush()`
 @*/
-PetscErrorCode PetscVFPrintfDefault(FILE *fd, const char *format, va_list Argp)
+PetscErrorCode PetscVFPrintfDefault(FILE *fd, const char format[], va_list Argp)
 {
   char   str[PETSCDEFAULTBUFFERSIZE];
   char  *buff = str;
@@ -377,7 +384,7 @@ PetscErrorCode PetscVFPrintfDefault(FILE *fd, const char *format, va_list Argp)
 /*@C
   PetscSNPrintf - Prints to a string of given length
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + len    - the length of `str`
@@ -392,7 +399,7 @@ PetscErrorCode PetscVFPrintfDefault(FILE *fd, const char *format, va_list Argp)
           `PetscPrintf()`, `PetscViewerASCIIPrintf()`, `PetscViewerASCIISynchronizedPrintf()`,
           `PetscVFPrintf()`, `PetscFFlush()`
 @*/
-PetscErrorCode PetscSNPrintf(char *str, size_t len, const char format[], ...)
+PetscErrorCode PetscSNPrintf(char str[], size_t len, const char format[], ...)
 {
   size_t  fullLength;
   va_list Argp;
@@ -407,7 +414,7 @@ PetscErrorCode PetscSNPrintf(char *str, size_t len, const char format[], ...)
 /*@C
   PetscSNPrintfCount - Prints to a string of given length, returns count of characters printed
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + len    - the length of `str`
@@ -423,7 +430,7 @@ PetscErrorCode PetscSNPrintf(char *str, size_t len, const char format[], ...)
 .seealso: `PetscSynchronizedFlush()`, `PetscSynchronizedFPrintf()`, `PetscFPrintf()`, `PetscVSNPrintf()`,
           `PetscPrintf()`, `PetscViewerASCIIPrintf()`, `PetscViewerASCIISynchronizedPrintf()`, `PetscSNPrintf()`, `PetscVFPrintf()`
 @*/
-PetscErrorCode PetscSNPrintfCount(char *str, size_t len, const char format[], size_t *countused, ...)
+PetscErrorCode PetscSNPrintfCount(char str[], size_t len, const char format[], size_t *countused, ...)
 {
   va_list Argp;
 
@@ -518,7 +525,7 @@ static inline PetscErrorCode PetscSynchronizedFPrintf_Private(MPI_Comm comm, FIL
   REQUIRES a call to `PetscSynchronizedFlush()` by all the processes after the completion of the calls to `PetscSynchronizedPrintf()` for the information
   from all the processors to be printed.
 
-  Fortran Notes:
+  Fortran Note:
   The call sequence is `PetscSynchronizedPrintf`(`MPI_Comm`, `character`(*), `PetscErrorCode` ierr).
   That is, you can only pass a single character string from Fortran.
 
@@ -546,7 +553,7 @@ PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm, const char format[], ...)
 
   Input Parameters:
 + comm   - the MPI communicator
-. fp     - the file pointer
+. fp     - the file pointer, `PETSC_STDOUT` or value obtained from `PetscFOpen()`
 - format - the usual `printf()` format string
 
   Level: intermediate
@@ -554,6 +561,10 @@ PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm, const char format[], ...)
   Note:
   REQUIRES a intervening call to `PetscSynchronizedFlush()` for the information
   from all the processors to be printed.
+
+  Fortran Note:
+  The call sequence is `PetscSynchronizedPrintf`(`MPI_Comm`, fp, `character`(*), `PetscErrorCode` ierr).
+  That is, you can only pass a single character string from Fortran.
 
 .seealso: `PetscSynchronizedPrintf()`, `PetscSynchronizedFlush()`, `PetscFPrintf()`,
           `PetscFOpen()`, `PetscViewerASCIISynchronizedPrintf()`, `PetscViewerASCIIPrintf()`,
@@ -585,9 +596,6 @@ PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm, FILE *fp, const char form
   Note:
   If `PetscSynchronizedPrintf()` and/or `PetscSynchronizedFPrintf()` are called with
   different MPI communicators there must be an intervening call to `PetscSynchronizedFlush()` between the calls with different MPI communicators.
-
-  Fortran Notes:
-  Pass `PETSC_STDOUT` if the flush is for standard out; otherwise pass a value obtained from `PetscFOpen()`
 
 .seealso: `PetscSynchronizedPrintf()`, `PetscFPrintf()`, `PetscPrintf()`, `PetscViewerASCIIPrintf()`,
           `PetscViewerASCIISynchronizedPrintf()`
@@ -644,14 +652,18 @@ PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm, FILE *fd)
   PetscFPrintf - Prints to a file, only from the first
   MPI process in the communicator.
 
-  Not Collective; No Fortran Support
+  Not Collective
 
   Input Parameters:
 + comm   - the MPI communicator
-. fd     - the file pointer
+. fd     - the file pointer, `PETSC_STDOUT` or value obtained from `PetscFOpen()`
 - format - the usual `printf()` format string
 
   Level: intermediate
+
+  Fortran Note:
+  The call sequence is `PetscFPrintf`(`MPI_Comm`, fp, `character`(*), `PetscErrorCode` ierr).
+  That is, you can only pass a single character string from Fortran.
 
   Developer Notes:
   This maybe, and is, called from PETSc error handlers and `PetscMallocValidate()` hence it does not use `PetscCallMPI()` which

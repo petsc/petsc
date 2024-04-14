@@ -1,7 +1,7 @@
 /* Additional functions in the DMProduct API, which are not part of the general DM API. */
-#include <petsc/private/dmproductimpl.h>
+#include <petsc/private/dmproductimpl.h> /*I  "petsc/private/dmproductimpl.h"    I*/
 
-/*@C
+/*@
   DMProductGetDM - Get sub-`DM` associated with a given slot of a `DMPRODUCT`
 
   Not Collective
@@ -17,7 +17,7 @@
 
 .seealso: `DMPRODUCT`, `DMProductSetDM()`
 @*/
-PETSC_EXTERN PetscErrorCode DMProductGetDM(DM dm, PetscInt slot, DM *subdm)
+PetscErrorCode DMProductGetDM(DM dm, PetscInt slot, DM *subdm)
 {
   DM_Product *product = (DM_Product *)dm->data;
   PetscInt    dim;
@@ -30,7 +30,7 @@ PETSC_EXTERN PetscErrorCode DMProductGetDM(DM dm, PetscInt slot, DM *subdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMProductSetDM - Set sub-`DM` associated with a given slot of `DMPRODUCT`
 
   Not Collective
@@ -47,7 +47,7 @@ PETSC_EXTERN PetscErrorCode DMProductGetDM(DM dm, PetscInt slot, DM *subdm)
 
 .seealso: `DMPRODUCT`, `DMProductGetDM()`, `DMProductSetDimensionIndex()`
 @*/
-PETSC_EXTERN PetscErrorCode DMProductSetDM(DM dm, PetscInt slot, DM subdm)
+PetscErrorCode DMProductSetDM(DM dm, PetscInt slot, DM subdm)
 {
   DM_Product *product = (DM_Product *)dm->data;
   PetscInt    dim;
@@ -62,7 +62,7 @@ PETSC_EXTERN PetscErrorCode DMProductSetDM(DM dm, PetscInt slot, DM subdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMProductSetDimensionIndex - Set the dimension index associated with a given slot/sub-`DM`
 
   Not Collective
@@ -76,7 +76,7 @@ PETSC_EXTERN PetscErrorCode DMProductSetDM(DM dm, PetscInt slot, DM subdm)
 
 .seealso: `DMPRODUCT`
 @*/
-PETSC_EXTERN PetscErrorCode DMProductSetDimensionIndex(DM dm, PetscInt slot, PetscInt idx)
+PetscErrorCode DMProductSetDimensionIndex(DM dm, PetscInt slot, PetscInt idx)
 {
   DM_Product *product = (DM_Product *)dm->data;
   PetscInt    dim;

@@ -6,7 +6,7 @@
 /*@C
   PetscGetMemType - Query the `PetscMemType` of a pointer
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . ptr - The pointer to query (may be `NULL`)

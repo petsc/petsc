@@ -182,7 +182,7 @@ static PetscErrorCode PetscSortStrWithPermutation_Private(const char *v[], Petsc
   PetscSortStrWithPermutation - Computes the permutation of strings that gives
   a sorted sequence.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + n   - number of values to sort

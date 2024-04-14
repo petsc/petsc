@@ -111,7 +111,7 @@ PetscErrorCode PetscDrawAxisSetColors(PetscDrawAxis axis, int ac, int tc, int cc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawAxisSetLabels -  Sets the x and y axis labels.
 
   Logically Collective

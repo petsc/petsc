@@ -1,7 +1,7 @@
 #include <petsc/private/dmpleximpl.h> /*I      "petscdmplex.h"   I*/
 #include <petscdmplextransform.h>
 
-/*@C
+/*@
   DMPlexExtrude - Extrude a volumetric mesh from the input surface mesh
 
   Input Parameters:

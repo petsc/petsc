@@ -82,6 +82,9 @@
 #define PetscLogStage PetscFortranInt
 #define PetscVoid PetscFortranAddr
 !
+#define PetscDeviceType PetscEnum
+#define PetscDevice PetscFortranAddr
+!
 #define PetscCopyMode PetscEnum
 !
 #define PetscDataType PetscEnum

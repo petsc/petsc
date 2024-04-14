@@ -41,7 +41,7 @@ static PetscErrorCode PetscSegBufferAlloc_Private(PetscSegBuffer seg, size_t cou
 /*@C
   PetscSegBufferCreate - create a segmented buffer
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + unitbytes - number of bytes that each entry will contain
@@ -73,7 +73,7 @@ PetscErrorCode PetscSegBufferCreate(size_t unitbytes, size_t expected, PetscSegB
 /*@C
   PetscSegBufferGet - get new buffer space from a segmented buffer
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + seg   - `PetscSegBuffer` buffer
@@ -103,7 +103,7 @@ PetscErrorCode PetscSegBufferGet(PetscSegBuffer seg, size_t count, void *buf)
 /*@C
   PetscSegBufferDestroy - destroy segmented buffer
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . seg - address of segmented buffer object
@@ -130,7 +130,7 @@ PetscErrorCode PetscSegBufferDestroy(PetscSegBuffer *seg)
 /*@C
   PetscSegBufferExtractTo - extract contiguous data to provided buffer and reset segmented buffer
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + seg    - segmented buffer
@@ -169,7 +169,7 @@ PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer seg, void *contig)
 /*@C
   PetscSegBufferExtractAlloc - extract contiguous data to new allocation and reset segmented buffer
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . seg - `PetscSegBuffer` buffer
@@ -202,7 +202,7 @@ PetscErrorCode PetscSegBufferExtractAlloc(PetscSegBuffer seg, void *contiguous)
 /*@C
   PetscSegBufferExtractInPlace - extract in-place contiguous representation of data and reset segmented buffer for reuse
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . seg - `PetscSegBuffer` object
@@ -238,7 +238,7 @@ PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer seg, void *contig)
 /*@C
   PetscSegBufferGetSize - get currently used size of a `PetscSegBuffer`
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . seg - `PetscSegBuffer` object
@@ -260,7 +260,7 @@ PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer seg, size_t *usedsize)
 /*@C
   PetscSegBufferUnuse - return some unused entries obtained with an overzealous `PetscSegBufferGet()`
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + seg    - `PetscSegBuffer` object

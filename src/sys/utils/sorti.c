@@ -866,7 +866,7 @@ PetscErrorCode PetscSortIntWithScalarArray(PetscInt n, PetscInt X[], PetscScalar
   changes a second array to match the sorted first INTEGER array.  Unlike other sort routines, the user must
   provide workspace (the size of an element in the data array) to use when sorting.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + n    - number of values
@@ -1079,7 +1079,7 @@ PetscErrorCode PetscMergeMPIIntArray(PetscInt an, const PetscMPIInt aI[], PetscI
 /*@C
   PetscProcessTree - Prepares tree data to be displayed graphically
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + n        - number of values

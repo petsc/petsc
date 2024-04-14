@@ -169,15 +169,6 @@
       End Interface
 
       Interface
-      subroutine ISSetType(a,b,z)
-       import tIS
-       IS a
-       character(*) b
-       integer z
-       end subroutine
-      end Interface
-
-      Interface
       subroutine ISView(a,b,z)
        import tIS,tPetscViewer
        IS a

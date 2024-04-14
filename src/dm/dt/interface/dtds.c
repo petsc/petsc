@@ -56,7 +56,7 @@ PetscErrorCode PetscDSRegister(const char sname[], PetscErrorCode (*function)(Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSSetType - Builds a particular `PetscDS`
 
   Collective; No Fortran Support
@@ -94,7 +94,7 @@ PetscErrorCode PetscDSSetType(PetscDS prob, PetscDSType name)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSGetType - Gets the `PetscDSType` name (as a string) from the `PetscDS`
 
   Not Collective; No Fortran Support
@@ -359,7 +359,7 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSSetUp - Construct data structures for the `PetscDS`
 
   Collective
@@ -1582,7 +1582,7 @@ PetscErrorCode PetscDSSetRHSResidual(PetscDS ds, PetscInt f, void (*f0)(PetscInt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSHasJacobian - Checks that the Jacobian functions have been set
 
   Not Collective
@@ -1731,7 +1731,7 @@ PetscErrorCode PetscDSSetJacobian(PetscDS ds, PetscInt f, PetscInt g, void (*g0)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSUseJacobianPreconditioner - Set whether to construct a Jacobian preconditioner
 
   Not Collective
@@ -1741,6 +1741,9 @@ PetscErrorCode PetscDSSetJacobian(PetscDS ds, PetscInt f, PetscInt g, void (*g0)
 - useJacPre - flag that enables construction of a Jacobian preconditioner
 
   Level: intermediate
+
+  Developer Note:
+  Should be called `PetscDSSetUseJacobianPreconditioner()`
 
 .seealso: `PetscDS`, `PetscDSGetJacobianPreconditioner()`, `PetscDSSetJacobianPreconditioner()`, `PetscDSGetJacobian()`
 @*/
@@ -1752,7 +1755,7 @@ PetscErrorCode PetscDSUseJacobianPreconditioner(PetscDS prob, PetscBool useJacPr
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSHasJacobianPreconditioner - Checks if a Jacobian preconditioner matrix has been set
 
   Not Collective
@@ -1901,7 +1904,7 @@ PetscErrorCode PetscDSSetJacobianPreconditioner(PetscDS ds, PetscInt f, PetscInt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSHasDynamicJacobian - Signals that a dynamic Jacobian, dF/du_t, has been set
 
   Not Collective

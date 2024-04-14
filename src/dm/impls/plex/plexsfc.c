@@ -1043,7 +1043,7 @@ PetscErrorCode DMPlexGetIsoperiodicFaceSF(DM dm, PetscInt *num_face_sfs, const P
 
 .seealso: [](ch_unstructured), `DMPLEX`, `DMGetGlobalSection()`, `DMPlexSetIsoperiodicFaceSF()`
 @*/
-PetscErrorCode DMPlexSetIsoperiodicFaceTransform(DM dm, PetscInt n, const PetscScalar *t)
+PetscErrorCode DMPlexSetIsoperiodicFaceTransform(DM dm, PetscInt n, const PetscScalar t[])
 {
   DM_Plex *plex = (DM_Plex *)dm->data;
 

@@ -45,7 +45,7 @@ static PetscErrorCode PetscLogHandlerRegisterAll(void)
 /*@C
   PetscLogHandlerRegister - Register a new `PetscLogHandler`
 
-  Not collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - The name of a new user-defined creation routine

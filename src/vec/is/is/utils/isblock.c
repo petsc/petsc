@@ -106,7 +106,7 @@ PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISExpandIndicesGeneral - convert the indices of an array `IS` into non-block indices in an array of `ISGENERAL`
 
   Input Parameters:

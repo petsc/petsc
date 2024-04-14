@@ -209,6 +209,8 @@ PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = NULL;
   PetscSetHelpVersionFunctions - Sets functions that print help and version information
   before the PETSc help and version information is printed.
 
+  No Fortran Support
+
   Input Parameters:
 + help    - the help function (may be `NULL`)
 - version - the version function (may be `NULL`)

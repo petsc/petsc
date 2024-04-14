@@ -1879,7 +1879,7 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints, PetscReal a, PetscReal b
 .seealso: `PetscDTGaussQuadrature()`, `PetscGaussLobattoLegendreCreateType`
 
 @*/
-PetscErrorCode PetscDTGaussLobattoLegendreQuadrature(PetscInt npoints, PetscGaussLobattoLegendreCreateType type, PetscReal *x, PetscReal *w)
+PetscErrorCode PetscDTGaussLobattoLegendreQuadrature(PetscInt npoints, PetscGaussLobattoLegendreCreateType type, PetscReal x[], PetscReal w[])
 {
   PetscBool newton;
 
@@ -2846,7 +2846,7 @@ static PetscErrorCode PetscDTLegendreIntegrate(PetscInt ninterval, const PetscRe
 
 .seealso: `PetscDTLegendreEval()`
 @*/
-PetscErrorCode PetscDTReconstructPoly(PetscInt degree, PetscInt nsource, const PetscReal *sourcex, PetscInt ntarget, const PetscReal *targetx, PetscReal *R)
+PetscErrorCode PetscDTReconstructPoly(PetscInt degree, PetscInt nsource, const PetscReal sourcex[], PetscInt ntarget, const PetscReal targetx[], PetscReal R[])
 {
   PetscInt     i, j, k, *bdegrees, worksize;
   PetscReal    xmin, xmax, center, hscale, *sourcey, *targety, *Bsource, *Bsinv, *Btarget;
@@ -2889,7 +2889,7 @@ PetscErrorCode PetscDTReconstructPoly(PetscInt degree, PetscInt nsource, const P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGaussLobattoLegendreIntegrate - Compute the L2 integral of a function on the GLL points
 
   Not Collective
@@ -2907,7 +2907,7 @@ PetscErrorCode PetscDTReconstructPoly(PetscInt degree, PetscInt nsource, const P
 
 .seealso: `PetscDTGaussLobattoLegendreQuadrature()`
 @*/
-PetscErrorCode PetscGaussLobattoLegendreIntegrate(PetscInt n, PetscReal *nodes, PetscReal *weights, const PetscReal *f, PetscReal *in)
+PetscErrorCode PetscGaussLobattoLegendreIntegrate(PetscInt n, PetscReal nodes[], PetscReal weights[], const PetscReal f[], PetscReal *in)
 {
   PetscInt i;
 
@@ -2939,7 +2939,7 @@ PetscErrorCode PetscGaussLobattoLegendreIntegrate(PetscInt n, PetscReal *nodes, 
 
 .seealso: `PetscDTGaussLobattoLegendreQuadrature()`, `PetscGaussLobattoLegendreElementLaplacianDestroy()`
 @*/
-PetscErrorCode PetscGaussLobattoLegendreElementLaplacianCreate(PetscInt n, PetscReal *nodes, PetscReal *weights, PetscReal ***AA)
+PetscErrorCode PetscGaussLobattoLegendreElementLaplacianCreate(PetscInt n, PetscReal nodes[], PetscReal weights[], PetscReal ***AA)
 {
   PetscReal      **A;
   const PetscReal *gllnodes = nodes;
@@ -3027,7 +3027,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementLaplacianCreate(PetscInt n, Petsc
 
 .seealso: `PetscDTGaussLobattoLegendreQuadrature()`, `PetscGaussLobattoLegendreElementLaplacianCreate()`
 @*/
-PetscErrorCode PetscGaussLobattoLegendreElementLaplacianDestroy(PetscInt n, PetscReal *nodes, PetscReal *weights, PetscReal ***AA)
+PetscErrorCode PetscGaussLobattoLegendreElementLaplacianDestroy(PetscInt n, PetscReal nodes[], PetscReal weights[], PetscReal ***AA)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree((*AA)[0]));
@@ -3059,7 +3059,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementLaplacianDestroy(PetscInt n, Pets
 
 .seealso: `PetscDTGaussLobattoLegendreQuadrature()`, `PetscGaussLobattoLegendreElementLaplacianDestroy()`, `PetscGaussLobattoLegendreElementGradientDestroy()`
 @*/
-PetscErrorCode PetscGaussLobattoLegendreElementGradientCreate(PetscInt n, PetscReal *nodes, PetscReal *weights, PetscReal ***AA, PetscReal ***AAT)
+PetscErrorCode PetscGaussLobattoLegendreElementGradientCreate(PetscInt n, PetscReal nodes[], PetscReal weights[], PetscReal ***AA, PetscReal ***AAT)
 {
   PetscReal      **A, **AT = NULL;
   const PetscReal *gllnodes = nodes;
@@ -3150,7 +3150,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementGradientDestroy(PetscInt n, Petsc
 
 .seealso: `PetscDTGaussLobattoLegendreQuadrature()`, `PetscGaussLobattoLegendreElementLaplacianCreate()`, `PetscGaussLobattoLegendreElementAdvectionDestroy()`
 @*/
-PetscErrorCode PetscGaussLobattoLegendreElementAdvectionCreate(PetscInt n, PetscReal *nodes, PetscReal *weights, PetscReal ***AA)
+PetscErrorCode PetscGaussLobattoLegendreElementAdvectionCreate(PetscInt n, PetscReal nodes[], PetscReal weights[], PetscReal ***AA)
 {
   PetscReal      **D;
   const PetscReal *gllweights = weights;

@@ -259,7 +259,7 @@ PetscErrorCode PetscDeviceView(PetscDevice device, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDeviceGetType - Get the type of device
 
   Not Collective

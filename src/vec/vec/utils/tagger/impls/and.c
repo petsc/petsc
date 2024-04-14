@@ -17,7 +17,7 @@
 
 .seealso: `VecTagger`, `VecTaggerAndSetSubs()`
 @*/
-PetscErrorCode VecTaggerAndGetSubs(VecTagger tagger, PetscInt *nsubs, VecTagger **subs)
+PetscErrorCode VecTaggerAndGetSubs(VecTagger tagger, PetscInt *nsubs, VecTagger *subs[])
 {
   PetscFunctionBegin;
   PetscCall(VecTaggerGetSubs_AndOr(tagger, nsubs, subs));
@@ -39,7 +39,7 @@ PetscErrorCode VecTaggerAndGetSubs(VecTagger tagger, PetscInt *nsubs, VecTagger 
 
 .seealso: `VecTagger`
 @*/
-PetscErrorCode VecTaggerAndSetSubs(VecTagger tagger, PetscInt nsubs, VecTagger *subs, PetscCopyMode mode)
+PetscErrorCode VecTaggerAndSetSubs(VecTagger tagger, PetscInt nsubs, VecTagger subs[], PetscCopyMode mode)
 {
   PetscFunctionBegin;
   PetscCall(VecTaggerSetSubs_AndOr(tagger, nsubs, subs, mode));
