@@ -4683,7 +4683,7 @@ PetscErrorCode TSSetEquationType(TS ts, TSEquationType equation_type)
   Note:
   Can only be called after the call to `TSSolve()` is complete.
 
-.seealso: [](ch_ts), `TS`, `TSSolve()`, `TSSetConvergenceTest()`, `TSConvergedReason`
+.seealso: [](ch_ts), `TS`, `TSSolve()`, `TSConvergedReason`
 @*/
 PetscErrorCode TSGetConvergedReason(TS ts, TSConvergedReason *reason)
 {
@@ -4735,7 +4735,7 @@ PetscErrorCode TSSetConvergedReason(TS ts, TSConvergedReason reason)
   Note:
   Can only be called after the call to `TSSolve()` is complete.
 
-.seealso: [](ch_ts), `TS`, `TSSolve()`, `TSSetConvergenceTest()`, `TSConvergedReason`
+.seealso: [](ch_ts), `TS`, `TSSolve()`, `TSConvergedReason`
 @*/
 PetscErrorCode TSGetSolveTime(TS ts, PetscReal *ftime)
 {
