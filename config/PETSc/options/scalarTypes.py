@@ -80,6 +80,11 @@ class Configure(config.base.Configure):
     self.popLanguage()
     return
 
+  def checkNoFiniteMathOnly(self):
+    '''Check if attribute for ignoring finite-math-only optimization is valid, for isnan() and isinf()'''
+    if self.checkCompile('','__attribute__((optimize ("no-finite-math-only"))) int foo(void);'):
+      self.addDefine('HAVE_NO_FINITE_MATH_ONLY',1)
+
   def configurePrecision(self):
     '''Set the default real number precision for PETSc objects'''
     self.log.write('Checking C compiler works with __float128\n')
@@ -157,4 +162,5 @@ class Configure(config.base.Configure):
   def configure(self):
     self.executeTest(self.configureScalarType)
     self.executeTest(self.configurePrecision)
+    self.executeTest(self.checkNoFiniteMathOnly)
     return
