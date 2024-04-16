@@ -5,6 +5,16 @@
 
 PETSC_EXTERN PetscClassId DMPLEXTRANSFORM_CLASSID;
 
+/*J
+   DMPlexTransformType - String with the name of a PETSc DMPlexTransform type
+
+   Level: beginner
+
+   Note:
+   [](plex_transform_table) for a table of available matrix types
+
+.seealso: [](plex_transform_table), [](ch_unstructured), `DMPlexTransformCreate()`, `DMPlexTransform`, `DMPlexTransformRegister()`
+J*/
 typedef const char *DMPlexTransformType;
 #define DMPLEXREFINEREGULAR       "refine_regular"
 #define DMPLEXREFINEALFELD        "refine_alfeld"

@@ -123,6 +123,8 @@ PetscErrorCode DMPlexTransformRegisterAll(void)
 /*@C
   DMPlexTransformRegisterDestroy - This function destroys the registered `DMPlexTransformType`. It is called from `PetscFinalize()`.
 
+  Not collective
+
   Level: developer
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMRegisterAll()`, `DMPlexTransformType`, `PetscInitialize()`
@@ -516,6 +518,16 @@ static PetscErrorCode DMPlexTransformCreateOffset_Internal(DMPlexTransform tr, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexTransformSetUp - Create the tables that drive the transform
+
+  Input Parameter:
+. tr - The `DMPlexTransform` object
+
+  Level: intermediate
+
+.seealso: [](plex_transform_table), [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformApply()`, `DMPlexTransformCreate()`
+@*/
 PetscErrorCode DMPlexTransformSetUp(DMPlexTransform tr)
 {
   DM             dm;
@@ -616,6 +628,19 @@ PetscErrorCode DMPlexTransformSetUp(DMPlexTransform tr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexTransformGetDM - Get the base `DM` for the transform
+
+  Input Parameter:
+. tr - The `DMPlexTransform` object
+
+  Output Parameter:
+. dm - The original `DM` which will be transformed
+
+  Level: intermediate
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformSetDM()`, `DMPlexTransformApply()`, `DMPlexTransformCreate()`
+@*/
 PetscErrorCode DMPlexTransformGetDM(DMPlexTransform tr, DM *dm)
 {
   PetscFunctionBegin;
@@ -625,6 +650,20 @@ PetscErrorCode DMPlexTransformGetDM(DMPlexTransform tr, DM *dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexTransformSetDM - Set the base `DM` for the transform
+
+  Input Parameters:
++ tr - The `DMPlexTransform` object
+- dm - The original `DM` which will be transformed
+
+  Level: intermediate
+
+  Note:
+  The user does not typically call this, as it is called by `DMPlexTransformApply()`.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformGetDM()`, `DMPlexTransformApply()`, `DMPlexTransformCreate()`
+@*/
 PetscErrorCode DMPlexTransformSetDM(DMPlexTransform tr, DM dm)
 {
   PetscFunctionBegin;
@@ -636,6 +675,19 @@ PetscErrorCode DMPlexTransformSetDM(DMPlexTransform tr, DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexTransformGetActive - Get the `DMLabel` marking the active points for the transform
+
+  Input Parameter:
+. tr - The `DMPlexTransform` object
+
+  Output Parameter:
+. active - The `DMLabel` indicating which points will be transformed
+
+  Level: intermediate
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformSetActive()`, `DMPlexTransformApply()`, `DMPlexTransformCreate()`
+@*/
 PetscErrorCode DMPlexTransformGetActive(DMPlexTransform tr, DMLabel *active)
 {
   PetscFunctionBegin;
@@ -645,6 +697,20 @@ PetscErrorCode DMPlexTransformGetActive(DMPlexTransform tr, DMLabel *active)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexTransformSetActive - Set the `DMLabel` marking the active points for the transform
+
+  Input Parameters:
++ tr     - The `DMPlexTransform` object
+- active - The original `DM` which will be transformed
+
+  Level: intermediate
+
+  Note:
+  This only applies to transforms that can operator on a subset of the mesh, listed in [](plex_transform_table).
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformGetDM()`, `DMPlexTransformApply()`, `DMPlexTransformCreate()`
+@*/
 PetscErrorCode DMPlexTransformSetActive(DMPlexTransform tr, DMLabel active)
 {
   PetscFunctionBegin;
@@ -2145,6 +2211,22 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexTransformApply - Execute the transformation, producing another `DM`
+
+  Collective
+
+  Input Parameters:
++ tr - The `DMPlexTransform` object
+- dm - The original `DM`
+
+  Output Parameter:
+. tdm - The transformed `DM`
+
+  Level: intermediate
+
+.seealso: [](plex_transform_table), [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformCreate()`, `DMPlexTransformSetDM()`
+@*/
 PetscErrorCode DMPlexTransformApply(DMPlexTransform tr, DM dm, DM *tdm)
 {
   DM                     rdm;
