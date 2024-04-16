@@ -19,10 +19,11 @@ typedef struct {
   Mat                        StBS;
   Mat                        J;
   Mat                        temp_mat;
+  Vec                       *PQ; /* P for BFGS, Q for DFP */
   Vec                        diag_vec;
   Vec                        diag_vec_recycle_order;
   Vec                        inv_diag_vec;
-  Vec                        column_work, rwork1, rwork2, rwork3;
+  Vec                        column_work, column_work2, rwork1, rwork2, rwork3;
   Vec                        rwork2_local, rwork3_local;
   Vec                        local_work_vec, local_work_vec_copy;
   Vec                        cyclic_work_vec;
@@ -30,9 +31,11 @@ typedef struct {
   MatLMVMDenseType           strategy;
   MatLMVMSymBroydenScaleType scale_type;
 
+  PetscReal       *ytq, *stp, *yts;
+  PetscScalar     *workscalar;
   PetscInt         S_count, St_count, Y_count, Yt_count;
-  PetscInt         watchdog, max_seq_rejects; /* tracker to reset after a certain # of consecutive rejects */
-  PetscBool        allocated;
+  PetscInt         watchdog, max_seq_rejects;        /* tracker to reset after a certain # of consecutive rejects */
+  PetscBool        allocated, use_recursive, needPQ; /* P for BFGS, Q for DFP */
   Vec              Fprev_ref;
   PetscObjectState Fprev_state;
 } Mat_DQN;
