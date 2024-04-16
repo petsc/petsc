@@ -490,6 +490,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     if output.find('warning: ISO C90 does not support') >= 0: return output
     if output.find('warning: ISO C does not support') >= 0: return output
     if output.find('warning #2650: attributes ignored here') >= 0: return output
+    if output.find('warning #3175: unrecognized gcc optimization level') >= 0: return output
+    if output.find('warning: unknown attribute') >= 0: return output
     if output.find('Warning: attribute visibility is unsupported and will be skipped') >= 0: return output
     if output.find('(E) Invalid statement found within an interface block. Executable statement, statement function or syntax error encountered.') >= 0: return output
     elif self.argDB['ignoreCompileOutput'] and not filterAlways:

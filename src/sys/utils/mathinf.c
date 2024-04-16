@@ -37,6 +37,12 @@ PetscBool PetscIsNormalReal(PetscReal a)
 }
 #endif
 
+#if defined(PETSC_HAVE_NO_FINITE_MATH_ONLY)
+  #define PETSC_FORCE_NO_FINITE_MATH_ONLY __attribute__((optimize("no-finite-math-only")))
+#else
+  #define PETSC_FORCE_NO_FINITE_MATH_ONLY
+#endif
+
 /*@C
       PetscIsInfReal - Returns whether the `PetscReal` input is an infinity value.
 
@@ -58,7 +64,7 @@ PetscBool PetscIsInfReal(PetscReal a)
   return isinfq(a) ? PETSC_TRUE : PETSC_FALSE;
 }
 #elif defined(PETSC_HAVE_ISINF)
-PetscBool PetscIsInfReal(PetscReal a)
+PETSC_FORCE_NO_FINITE_MATH_ONLY PetscBool PetscIsInfReal(PetscReal a)
 {
   return isinf(a) ? PETSC_TRUE : PETSC_FALSE;
 }
@@ -102,7 +108,7 @@ PetscBool PetscIsNanReal(PetscReal a)
   return isnanq(a) ? PETSC_TRUE : PETSC_FALSE;
 }
 #elif defined(PETSC_HAVE_ISNAN)
-PetscBool PetscIsNanReal(PetscReal a)
+PETSC_FORCE_NO_FINITE_MATH_ONLY PetscBool PetscIsNanReal(PetscReal a)
 {
   return isnan(a) ? PETSC_TRUE : PETSC_FALSE;
 }
