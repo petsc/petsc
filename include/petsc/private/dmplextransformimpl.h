@@ -72,6 +72,15 @@ typedef struct {
 } DMPlexTransform_Extrude;
 
 typedef struct {
+  PetscBool        useTensor; // Flag to create tensor cells
+  PetscInt        *Nt;        // The array of the number of target types
+  DMPolytopeType **target;    // The array of target types
+  PetscInt       **size;      // The array of the number of each target type
+  PetscInt       **cone;      // The array of cones for each target cell
+  PetscInt       **ornt;      // The array of orientation for each target cell
+} DMPlexTransform_Cohesive;
+
+typedef struct {
   PetscInt dummy;
 } DMPlexRefine_Regular;
 
