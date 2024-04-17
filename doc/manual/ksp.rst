@@ -315,7 +315,7 @@ can be used by the options database command
 
   * - Method
     - KSPType
-    - Options Database Name
+    - Options Database
   * - Richardson
     - ``KSPRICHARDSON``
     - ``richardson``
@@ -437,8 +437,8 @@ can be used by the options database command
     - ``KSPPYTHON``
     - ``python``
   * - Shell for no ``KSP`` method
-    - ``KSPPREONLY`` (or ``KSPNONE``)
-    - ``preonly`` (or ``none``)
+    - ``KSPNONE``
+    - ``none``
 
 
 Note: the bi-conjugate gradient method requires application of both the
@@ -709,7 +709,7 @@ iterative linear solvers.
 
    * - Method
      - PCType
-     - Options Database Name
+     - Options Database
    * - Jacobi
      - ``PCJACOBI``
      - ``jacobi``
