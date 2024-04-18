@@ -1,22 +1,29 @@
 # --------------------------------------------------------------------
 
 class DMSwarmType(object):
+    """Swarm types."""
     BASIC = DMSWARM_BASIC
     PIC = DMSWARM_PIC
 
+
 class DMSwarmMigrateType(object):
+    """Swarm migration types."""
     MIGRATE_BASIC = DMSWARM_MIGRATE_BASIC
     MIGRATE_DMCELLNSCATTER = DMSWARM_MIGRATE_DMCELLNSCATTER
     MIGRATE_DMCELLEXACT = DMSWARM_MIGRATE_DMCELLEXACT
     MIGRATE_USER = DMSWARM_MIGRATE_USER
 
+
 class DMSwarmCollectType(object):
+    """Swarm collection types."""
     COLLECT_BASIC = DMSWARM_COLLECT_BASIC
     COLLECT_DMDABOUNDINGBOX = DMSWARM_COLLECT_DMDABOUNDINGBOX
     COLLECT_GENERAL = DMSWARM_COLLECT_GENERAL
     COLLECT_USER = DMSWARM_COLLECT_USER
 
+
 class DMSwarmPICLayoutType(object):
+    """Swarm PIC layout types."""
     LAYOUT_REGULAR = DMSWARMPIC_LAYOUT_REGULAR
     LAYOUT_GAUSS = DMSWARMPIC_LAYOUT_GAUSS
     LAYOUT_SUBDIVISION = DMSWARMPIC_LAYOUT_SUBDIVISION
@@ -50,9 +57,9 @@ cdef class DMSwarm(DM):
         """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscDM newdm = NULL
-        CHKERR( DMCreate(ccomm, &newdm) )
-        CHKERR( PetscCLEAR(self.obj) ); self.dm = newdm
-        CHKERR( DMSetType(self.dm, DMSWARM) )
+        CHKERR(DMCreate(ccomm, &newdm))
+        CHKERR(PetscCLEAR(self.obj)); self.dm = newdm
+        CHKERR(DMSetType(self.dm, DMSWARM))
         return self
 
     def createGlobalVectorFromField(self, fieldname: str) -> Vec:
@@ -76,7 +83,7 @@ cdef class DMSwarm(DM):
         cdef const char *cfieldname = NULL
         cdef Vec vg = Vec()
         fieldname = str2bytes(fieldname, &cfieldname)
-        CHKERR( DMSwarmCreateGlobalVectorFromField(self.dm, cfieldname, &vg.vec) )
+        CHKERR(DMSwarmCreateGlobalVectorFromField(self.dm, cfieldname, &vg.vec))
         return vg
 
     def destroyGlobalVectorFromField(self, fieldname: str) -> None:
@@ -97,7 +104,7 @@ cdef class DMSwarm(DM):
         cdef const char *cfieldname = NULL
         cdef PetscVec vec = NULL
         fieldname = str2bytes(fieldname, &cfieldname)
-        CHKERR( DMSwarmDestroyGlobalVectorFromField(self.dm, cfieldname, &vec) )
+        CHKERR(DMSwarmDestroyGlobalVectorFromField(self.dm, cfieldname, &vec))
 
     def createLocalVectorFromField(self, fieldname: str) -> Vec:
         """Create a local `Vec` object associated with a given field.
@@ -120,7 +127,7 @@ cdef class DMSwarm(DM):
         cdef const char *cfieldname = NULL
         cdef Vec vl = Vec()
         fieldname = str2bytes(fieldname, &cfieldname)
-        CHKERR( DMSwarmCreateLocalVectorFromField(self.dm, cfieldname, &vl.vec) )
+        CHKERR(DMSwarmCreateLocalVectorFromField(self.dm, cfieldname, &vl.vec))
         return vl
 
     def destroyLocalVectorFromField(self, fieldname: str) -> None:
@@ -139,9 +146,9 @@ cdef class DMSwarm(DM):
 
         """
         cdef const char *cfieldname = NULL
-        cdef PetscVec vec
+        cdef PetscVec vec = NULL
         fieldname = str2bytes(fieldname, &cfieldname)
-        CHKERR( DMSwarmDestroyLocalVectorFromField(self.dm, cfieldname, &vec) )
+        CHKERR(DMSwarmDestroyLocalVectorFromField(self.dm, cfieldname, &vec))
 
     def initializeFieldRegister(self) -> None:
         """Initiate the registration of fields to a `DMSwarm`.
@@ -155,7 +162,7 @@ cdef class DMSwarm(DM):
         finalizeFieldRegister, petsc.DMSwarmInitializeFieldRegister
 
         """
-        CHKERR( DMSwarmInitializeFieldRegister(self.dm) )
+        CHKERR(DMSwarmInitializeFieldRegister(self.dm))
 
     def finalizeFieldRegister(self) -> None:
         """Finalize the registration of fields to a `DMSwarm`.
@@ -167,7 +174,7 @@ cdef class DMSwarm(DM):
         initializeFieldRegister, petsc.DMSwarmFinalizeFieldRegister
 
         """
-        CHKERR( DMSwarmFinalizeFieldRegister(self.dm) )
+        CHKERR(DMSwarmFinalizeFieldRegister(self.dm))
 
     def setLocalSizes(self, nlocal: int, buffer: int) -> Self:
         """Set the length of all registered fields on the `DMSwarm`.
@@ -188,7 +195,7 @@ cdef class DMSwarm(DM):
         """
         cdef PetscInt cnlocal = asInt(nlocal)
         cdef PetscInt cbuffer = asInt(buffer)
-        CHKERR( DMSwarmSetLocalSizes(self.dm, cnlocal, cbuffer) )
+        CHKERR(DMSwarmSetLocalSizes(self.dm, cnlocal, cbuffer))
         return self
 
     def registerField(self, fieldname: str, blocksize: int, dtype: dtype = ScalarType) -> None:
@@ -219,7 +226,7 @@ cdef class DMSwarm(DM):
         if dtype == ComplexType: ctype = PETSC_COMPLEX
         assert ctype != PETSC_DATATYPE_UNKNOWN
         fieldname = str2bytes(fieldname, &cfieldname)
-        CHKERR( DMSwarmRegisterPetscDatatypeField(self.dm, cfieldname, cblocksize, ctype) )
+        CHKERR(DMSwarmRegisterPetscDatatypeField(self.dm, cfieldname, cblocksize, ctype))
 
     def getField(self, fieldname: str) -> Sequence[int | float | complex]:
         """Return arrays storing all entries associated with a field.
@@ -253,8 +260,8 @@ cdef class DMSwarm(DM):
         cdef PetscReal *data = NULL
         cdef PetscInt nlocal = 0
         fieldname = str2bytes(fieldname, &cfieldname)
-        CHKERR( DMSwarmGetField(self.dm, cfieldname, &blocksize, &ctype, <void**> &data) )
-        CHKERR( DMSwarmGetLocalSize(self.dm, &nlocal) )
+        CHKERR(DMSwarmGetField(self.dm, cfieldname, &blocksize, &ctype, <void**> &data))
+        CHKERR(DMSwarmGetLocalSize(self.dm, &nlocal))
         cdef int typenum = -1
         if ctype == PETSC_INT:     typenum = NPY_PETSC_INT
         if ctype == PETSC_REAL:    typenum = NPY_PETSC_REAL
@@ -283,7 +290,7 @@ cdef class DMSwarm(DM):
         cdef PetscInt blocksize = 0
         cdef PetscDataType ctype = PETSC_DATATYPE_UNKNOWN
         fieldname = str2bytes(fieldname, &cfieldname)
-        CHKERR( DMSwarmRestoreField(self.dm, cfieldname, &blocksize, &ctype, <void**> 0) )
+        CHKERR(DMSwarmRestoreField(self.dm, cfieldname, &blocksize, &ctype, <void**> 0))
 
     def vectorDefineField(self, fieldname: str) -> None:
         """Set the field from which to define a `Vec` object.
@@ -305,7 +312,7 @@ cdef class DMSwarm(DM):
         """
         cdef const char *cval = NULL
         fieldname = str2bytes(fieldname, &cval)
-        CHKERR( DMSwarmVectorDefineField(self.dm, cval) )
+        CHKERR(DMSwarmVectorDefineField(self.dm, cval))
 
     def addPoint(self) -> None:
         """Add space for one new point in the `DMSwarm`.
@@ -317,7 +324,7 @@ cdef class DMSwarm(DM):
         petsc.DMSwarmAddPoint
 
         """
-        CHKERR( DMSwarmAddPoint(self.dm) )
+        CHKERR(DMSwarmAddPoint(self.dm))
 
     def addNPoints(self, npoints: int) -> None:
         """Add space for a number of new points in the `DMSwarm`.
@@ -335,7 +342,7 @@ cdef class DMSwarm(DM):
 
         """
         cdef PetscInt cnpoints = asInt(npoints)
-        CHKERR( DMSwarmAddNPoints(self.dm, cnpoints) )
+        CHKERR(DMSwarmAddNPoints(self.dm, cnpoints))
 
     def removePoint(self) -> None:
         """Remove the last point from the `DMSwarm`.
@@ -347,7 +354,7 @@ cdef class DMSwarm(DM):
         petsc.DMSwarmRemovePoint
 
         """
-        CHKERR( DMSwarmRemovePoint(self.dm) )
+        CHKERR(DMSwarmRemovePoint(self.dm))
 
     def removePointAtIndex(self, index: int) -> None:
         """Remove a specific point from the `DMSwarm`.
@@ -365,7 +372,7 @@ cdef class DMSwarm(DM):
 
         """
         cdef PetscInt cindex = asInt(index)
-        CHKERR( DMSwarmRemovePointAtIndex(self.dm, cindex) )
+        CHKERR(DMSwarmRemovePointAtIndex(self.dm, cindex))
 
     def copyPoint(self, pi: int, pj: int) -> None:
         """Copy point pi to point pj in the `DMSwarm`.
@@ -386,7 +393,7 @@ cdef class DMSwarm(DM):
         """
         cdef PetscInt cpi = asInt(pi)
         cdef PetscInt cpj = asInt(pj)
-        CHKERR( DMSwarmCopyPoint(self.dm, cpi, cpj) )
+        CHKERR(DMSwarmCopyPoint(self.dm, cpi, cpj))
 
     def getLocalSize(self) -> int:
         """Return the local length of fields registered.
@@ -399,7 +406,7 @@ cdef class DMSwarm(DM):
 
         """
         cdef PetscInt size = asInt(0)
-        CHKERR( DMSwarmGetLocalSize(self.dm, &size) )
+        CHKERR(DMSwarmGetLocalSize(self.dm, &size))
         return toInt(size)
 
     def getSize(self) -> int:
@@ -413,7 +420,7 @@ cdef class DMSwarm(DM):
 
         """
         cdef PetscInt size = asInt(0)
-        CHKERR( DMSwarmGetSize(self.dm, &size) )
+        CHKERR(DMSwarmGetSize(self.dm, &size))
         return toInt(size)
 
     def migrate(self, remove_sent_points: bool = False) -> None:
@@ -433,7 +440,7 @@ cdef class DMSwarm(DM):
 
         """
         cdef PetscBool remove_pts = asBool(remove_sent_points)
-        CHKERR( DMSwarmMigrate(self.dm, remove_pts) )
+        CHKERR(DMSwarmMigrate(self.dm, remove_pts))
 
     def collectViewCreate(self) -> None:
         """Apply a collection method and gather points in neighbor ranks.
@@ -445,7 +452,7 @@ cdef class DMSwarm(DM):
         collectViewDestroy, petsc.DMSwarmCollectViewCreate
 
         """
-        CHKERR( DMSwarmCollectViewCreate(self.dm) )
+        CHKERR(DMSwarmCollectViewCreate(self.dm))
 
     def collectViewDestroy(self) -> None:
         """Reset the `DMSwarm` to the size prior to calling `collectViewCreate`.
@@ -457,7 +464,7 @@ cdef class DMSwarm(DM):
         collectViewCreate, petsc.DMSwarmCollectViewDestroy
 
         """
-        CHKERR( DMSwarmCollectViewDestroy(self.dm) )
+        CHKERR(DMSwarmCollectViewDestroy(self.dm))
 
     def setCellDM(self, DM dm) -> None:
         """Attach a `DM` to a `DMSwarm`.
@@ -474,7 +481,7 @@ cdef class DMSwarm(DM):
         getCellDM, petsc.DMSwarmSetCellDM
 
         """
-        CHKERR( DMSwarmSetCellDM(self.dm, dm.dm) )
+        CHKERR(DMSwarmSetCellDM(self.dm, dm.dm))
 
     def getCellDM(self) -> DM:
         """Return `DM` cell attached to `DMSwarm`.
@@ -487,10 +494,10 @@ cdef class DMSwarm(DM):
 
         """
         cdef PetscDM newdm = NULL
-        CHKERR( DMSwarmGetCellDM(self.dm, &newdm) )
+        CHKERR(DMSwarmGetCellDM(self.dm, &newdm))
         cdef DM dm = subtype_DM(newdm)()
         dm.dm = newdm
-        CHKERR( PetscINCREF(dm.obj) )
+        CHKERR(PetscINCREF(dm.obj))
         return dm
 
     def setType(self, dmswarm_type: Type | str) -> None:
@@ -509,15 +516,14 @@ cdef class DMSwarm(DM):
 
         """
         cdef PetscDMSwarmType cval = dmswarm_type
-        CHKERR( DMSwarmSetType(self.dm, cval) )
+        CHKERR(DMSwarmSetType(self.dm, cval))
 
     def setPointsUniformCoordinates(
         self,
         min: Sequence[float],
         max: Sequence[float],
         npoints: Sequence[int],
-        mode: InsertMode | None = None,
-    ) -> Self:
+        mode: InsertMode | None = None) -> Self:
         """Set point coordinates in a `DMSwarm` on a regular (ijk) grid.
 
         Collective.
@@ -542,7 +548,7 @@ cdef class DMSwarm(DM):
 
         """
         cdef PetscInt dim = asInt(0)
-        CHKERR( DMGetDimension(self.dm, &dim) )
+        CHKERR(DMGetDimension(self.dm, &dim))
         cdef PetscReal cmin[3]
         cmin[0] = cmin[1] = cmin[2] = asReal(0.)
         for i from 0 <= i < dim: cmin[i] = min[i]
@@ -553,15 +559,14 @@ cdef class DMSwarm(DM):
         cnpoints[0] = cnpoints[1] = cnpoints[2] = asInt(0)
         for i from 0 <= i < dim: cnpoints[i] = npoints[i]
         cdef PetscInsertMode cmode = insertmode(mode)
-        CHKERR( DMSwarmSetPointsUniformCoordinates(self.dm, cmin, cmax, cnpoints, cmode) )
+        CHKERR(DMSwarmSetPointsUniformCoordinates(self.dm, cmin, cmax, cnpoints, cmode))
         return self
 
     def setPointCoordinates(
         self,
         coordinates: Sequence[float],
         redundant: bool = False,
-        mode: InsertMode | None = None
-    ) -> None:
+        mode: InsertMode | None = None) -> None:
         """Set point coordinates in a `DMSwarm` from a user-defined list.
 
         Collective.
@@ -586,12 +591,12 @@ cdef class DMSwarm(DM):
         if PyArray_ISFORTRAN(xyz): xyz = PyArray_Copy(xyz)
         if PyArray_NDIM(xyz) != 2: raise ValueError(
             ("coordinates must have two dimensions: "
-             "coordinates.ndim=%d") % (PyArray_NDIM(xyz)) )
+             "coordinates.ndim=%d") % (PyArray_NDIM(xyz)))
         cdef PetscInt cnpoints = <PetscInt> PyArray_DIM(xyz, 0)
         cdef PetscBool credundant = asBool(redundant)
         cdef PetscInsertMode cmode = insertmode(mode)
         cdef PetscReal *coords = <PetscReal*> PyArray_DATA(xyz)
-        CHKERR( DMSwarmSetPointCoordinates(self.dm, cnpoints, coords, credundant, cmode) )
+        CHKERR(DMSwarmSetPointCoordinates(self.dm, cnpoints, coords, credundant, cmode))
 
     def insertPointUsingCellDM(self, layoutType: PICLayoutType, fill_param: int) -> None:
         """Insert point coordinates within each cell.
@@ -613,7 +618,7 @@ cdef class DMSwarm(DM):
         """
         cdef PetscDMSwarmPICLayoutType clayoutType = layoutType
         cdef PetscInt cfill_param = asInt(fill_param)
-        CHKERR( DMSwarmInsertPointsUsingCellDM(self.dm, clayoutType, cfill_param) )
+        CHKERR(DMSwarmInsertPointsUsingCellDM(self.dm, clayoutType, cfill_param))
 
     def setPointCoordinatesCellwise(self, coordinates: Sequence[float]) -> None:
         """Insert point coordinates within each cell.
@@ -637,10 +642,10 @@ cdef class DMSwarm(DM):
         if PyArray_ISFORTRAN(xyz): xyz = PyArray_Copy(xyz)
         if PyArray_NDIM(xyz) != 2: raise ValueError(
             ("coordinates must have two dimensions: "
-             "coordinates.ndim=%d") % (PyArray_NDIM(xyz)) )
+             "coordinates.ndim=%d") % (PyArray_NDIM(xyz)))
         cdef PetscInt cnpoints = <PetscInt> PyArray_DIM(xyz, 0)
         cdef PetscReal *coords = <PetscReal*> PyArray_DATA(xyz)
-        CHKERR( DMSwarmSetPointCoordinatesCellwise(self.dm, cnpoints, coords) )
+        CHKERR(DMSwarmSetPointCoordinatesCellwise(self.dm, cnpoints, coords))
 
     def viewFieldsXDMF(self, filename: str, fieldnames: Sequence[str]) -> None:
         """Write a selection of `DMSwarm` fields to an XDMF3 file.
@@ -664,12 +669,12 @@ cdef class DMSwarm(DM):
         filename = str2bytes(filename, &cfilename)
         cdef PetscInt cnfields = <PetscInt> len(fieldnames)
         cdef const char** cfieldnames = NULL
-        cdef object tmp = oarray_p(empty_p(cnfields), NULL, <void**>&cfieldnames)
+        cdef object unused = oarray_p(empty_p(cnfields), NULL, <void**>&cfieldnames)
         fieldnames = list(fieldnames)
         for i from 0 <= i < cnfields:
             fieldnames[i] = str2bytes(fieldnames[i], &cval)
             cfieldnames[i] = cval
-        CHKERR( DMSwarmViewFieldsXDMF(self.dm, cfilename, cnfields, cfieldnames ) )
+        CHKERR(DMSwarmViewFieldsXDMF(self.dm, cfilename, cnfields, cfieldnames))
 
     def viewXDMF(self, filename: str) -> None:
         """Write this `DMSwarm` fields to an XDMF3 file.
@@ -688,7 +693,7 @@ cdef class DMSwarm(DM):
         """
         cdef const char *cval = NULL
         filename = str2bytes(filename, &cval)
-        CHKERR( DMSwarmViewXDMF(self.dm, cval) )
+        CHKERR(DMSwarmViewXDMF(self.dm, cval))
 
     def sortGetAccess(self) -> None:
         """Setup up a `DMSwarm` point sort context.
@@ -706,7 +711,7 @@ cdef class DMSwarm(DM):
         sortRestoreAccess, petsc.DMSwarmSortGetAccess
 
         """
-        CHKERR( DMSwarmSortGetAccess(self.dm) )
+        CHKERR(DMSwarmSortGetAccess(self.dm))
 
     def sortRestoreAccess(self) -> None:
         """Invalidate the `DMSwarm` point sorting context.
@@ -718,7 +723,7 @@ cdef class DMSwarm(DM):
         sortGetAccess, petsc.DMSwarmSortRestoreAccess
 
         """
-        CHKERR( DMSwarmSortRestoreAccess(self.dm) )
+        CHKERR(DMSwarmSortRestoreAccess(self.dm))
 
     def sortGetPointsPerCell(self, e: int) -> list[int]:
         """Create an array of point indices for all points in a cell.
@@ -739,7 +744,7 @@ cdef class DMSwarm(DM):
         cdef PetscInt cnpoints = asInt(0)
         cdef PetscInt *cpidlist = NULL
         cdef list pidlist = []
-        CHKERR( DMSwarmSortGetPointsPerCell(self.dm, ce, &cnpoints, &cpidlist) )
+        CHKERR(DMSwarmSortGetPointsPerCell(self.dm, ce, &cnpoints, &cpidlist))
         npoints = asInt(cnpoints)
         for i from 0 <= i < npoints: pidlist.append(asInt(cpidlist[i]))
         return pidlist
@@ -761,7 +766,7 @@ cdef class DMSwarm(DM):
         """
         cdef PetscInt ce = asInt(e)
         cdef PetscInt npoints = asInt(0)
-        CHKERR( DMSwarmSortGetNumberOfPointsPerCell(self.dm, ce, &npoints) )
+        CHKERR(DMSwarmSortGetNumberOfPointsPerCell(self.dm, ce, &npoints))
         return toInt(npoints)
 
     def sortGetIsValid(self) -> bool:
@@ -777,7 +782,7 @@ cdef class DMSwarm(DM):
 
         """
         cdef PetscBool isValid = asBool(False)
-        CHKERR( DMSwarmSortGetIsValid(self.dm, &isValid) )
+        CHKERR(DMSwarmSortGetIsValid(self.dm, &isValid))
         return toBool(isValid)
 
     def sortGetSizes(self) -> tuple[int, int]:
@@ -799,7 +804,7 @@ cdef class DMSwarm(DM):
         """
         cdef PetscInt ncells = asInt(0)
         cdef PetscInt npoints = asInt(0)
-        CHKERR( DMSwarmSortGetSizes(self.dm, &ncells, &npoints) )
+        CHKERR(DMSwarmSortGetSizes(self.dm, &ncells, &npoints))
         return (toInt(ncells), toInt(npoints))
 
     def projectFields(self, DM dm, fieldnames: Sequence[str], vecs: Sequence[Vec], mode: ScatterModeSpec = None) -> None:
@@ -822,16 +827,16 @@ cdef class DMSwarm(DM):
         cdef const char *cval = NULL
         cdef PetscInt cnfields = <PetscInt> len(fieldnames)
         cdef const char** cfieldnames = NULL
-        cdef object tmp = oarray_p(empty_p(cnfields), NULL, <void**>&cfieldnames)
-        cdef PetscVec *cfieldvecs
-        cdef object tmp2 = oarray_p(empty_p(cnfields), NULL, <void**>&cfieldvecs)
+        cdef object unused = oarray_p(empty_p(cnfields), NULL, <void**>&cfieldnames)
+        cdef PetscVec *cfieldvecs = NULL
+        cdef object unused2 = oarray_p(empty_p(cnfields), NULL, <void**>&cfieldvecs)
         cdef PetscScatterMode cmode = scattermode(mode)
         fieldnames = list(fieldnames)
         for i from 0 <= i < cnfields:
             fieldnames[i] = str2bytes(fieldnames[i], &cval)
             cfieldnames[i] = cval
             cfieldvecs[i] = (<Vec?>(vecs[i])).vec
-        CHKERR( DMSwarmProjectFields(self.dm, dm.dm, cnfields, cfieldnames, cfieldvecs, cmode) )
+        CHKERR(DMSwarmProjectFields(self.dm, dm.dm, cnfields, cfieldnames, cfieldvecs, cmode))
         return
 
 

@@ -240,6 +240,7 @@ checksource:
     - make checkbadFileChange SHELL=bash
     - make -f gmakefile check_output SHELL=bash
     - make check_petsc4py_rst
+    - make -C src/binding/petsc4py lint
   artifacts:
     name: "$CI_JOB_NAME"
     when: always

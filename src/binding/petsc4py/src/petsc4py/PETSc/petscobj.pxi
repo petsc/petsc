@@ -4,43 +4,43 @@ cdef extern from * nogil:
 
     ctypedef int PetscClassId
     ctypedef int PetscObjectState
-    PetscErrorCode PetscObjectView(PetscObject,PetscViewer)
+    PetscErrorCode PetscObjectView(PetscObject, PetscViewer)
     PetscErrorCode PetscObjectDestroy(PetscObject*)
-    PetscErrorCode PetscObjectGetReference(PetscObject,PetscInt*)
+    PetscErrorCode PetscObjectGetReference(PetscObject, PetscInt*)
     PetscErrorCode PetscObjectReference(PetscObject)
     PetscErrorCode PetscObjectDereference(PetscObject)
 
-    PetscErrorCode PetscObjectSetOptionsPrefix(PetscObject,char[])
-    PetscErrorCode PetscObjectAppendOptionsPrefix(PetscObject,char[])
-    PetscErrorCode PetscObjectGetOptionsPrefix(PetscObject,char*[])
+    PetscErrorCode PetscObjectSetOptionsPrefix(PetscObject, char[])
+    PetscErrorCode PetscObjectAppendOptionsPrefix(PetscObject, char[])
+    PetscErrorCode PetscObjectGetOptionsPrefix(PetscObject, char*[])
     PetscErrorCode PetscObjectSetFromOptions(PetscObject)
-    PetscErrorCode PetscObjectViewFromOptions(PetscObject,PetscObject,char[])
+    PetscErrorCode PetscObjectViewFromOptions(PetscObject, PetscObject, char[])
 
-    PetscErrorCode PetscObjectGetComm(PetscObject,MPI_Comm*)
-    PetscErrorCode PetscObjectGetClassId(PetscObject,PetscClassId*)
-    PetscErrorCode PetscObjectGetType(PetscObject,char*[])
-    PetscErrorCode PetscObjectGetClassName(PetscObject,char*[])
-    PetscErrorCode PetscObjectSetName(PetscObject,char[])
-    PetscErrorCode PetscObjectGetName(PetscObject,char*[])
+    PetscErrorCode PetscObjectGetComm(PetscObject, MPI_Comm*)
+    PetscErrorCode PetscObjectGetClassId(PetscObject, PetscClassId*)
+    PetscErrorCode PetscObjectGetType(PetscObject, char*[])
+    PetscErrorCode PetscObjectGetClassName(PetscObject, char*[])
+    PetscErrorCode PetscObjectSetName(PetscObject, char[])
+    PetscErrorCode PetscObjectGetName(PetscObject, char*[])
 
     PetscErrorCode PetscObjectStateIncrease(PetscObject)
-    PetscErrorCode PetscObjectStateSet(PetscObject,PetscObjectState)
-    PetscErrorCode PetscObjectStateGet(PetscObject,PetscObjectState*)
-    PetscErrorCode PetscObjectTypeCompare(PetscObject,char[],PetscBool*)
-    PetscErrorCode PetscObjectChangeTypeName(PetscObject,char[])
-    PetscErrorCode PetscObjectCompose(PetscObject,char[],PetscObject)
-    PetscErrorCode PetscObjectQuery(PetscObject,char[],PetscObject*)
+    PetscErrorCode PetscObjectStateSet(PetscObject, PetscObjectState)
+    PetscErrorCode PetscObjectStateGet(PetscObject, PetscObjectState*)
+    PetscErrorCode PetscObjectTypeCompare(PetscObject, char[], PetscBool*)
+    PetscErrorCode PetscObjectChangeTypeName(PetscObject, char[])
+    PetscErrorCode PetscObjectCompose(PetscObject, char[], PetscObject)
+    PetscErrorCode PetscObjectQuery(PetscObject, char[], PetscObject*)
 
     ctypedef void (*PetscVoidFunction)()
-    PetscErrorCode PetscObjectComposeFunction(PetscObject,char[],PetscVoidFunction)
-    PetscErrorCode PetscObjectQueryFunction(PetscObject,char[],PetscVoidFunction*)
+    PetscErrorCode PetscObjectComposeFunction(PetscObject, char[], PetscVoidFunction)
+    PetscErrorCode PetscObjectQueryFunction(PetscObject, char[], PetscVoidFunction*)
 
-    PetscErrorCode PetscObjectIncrementTabLevel(PetscObject,PetscObject,PetscInt)
-    PetscErrorCode PetscObjectGetTabLevel(PetscObject,PetscInt*)
-    PetscErrorCode PetscObjectSetTabLevel(PetscObject,PetscInt)
+    PetscErrorCode PetscObjectIncrementTabLevel(PetscObject, PetscObject, PetscInt)
+    PetscErrorCode PetscObjectGetTabLevel(PetscObject, PetscInt*)
+    PetscErrorCode PetscObjectSetTabLevel(PetscObject, PetscInt)
 
 cdef extern from * nogil: # custom.h
-    PetscErrorCode PetscObjectGetDeviceId(PetscObject,PetscInt*)
+    PetscErrorCode PetscObjectGetDeviceId(PetscObject, PetscInt*)
 
 cdef extern from "<petsc/private/garbagecollector.h>" nogil:
     PetscErrorCode PetscObjectDelayedDestroy(PetscObject*)
@@ -150,17 +150,17 @@ cdef inline type subtype_DM(PetscDM dm):
     if obj == NULL: return DM
     # ---
     cdef PetscBool match = PETSC_FALSE
-    CHKERR( PetscObjectTypeCompare(obj, b"da", &match) )
+    CHKERR(PetscObjectTypeCompare(obj, b"da", &match))
     if match == PETSC_TRUE: return DMDA
-    CHKERR( PetscObjectTypeCompare(obj, b"plex", &match) )
+    CHKERR(PetscObjectTypeCompare(obj, b"plex", &match))
     if match == PETSC_TRUE: return DMPlex
-    CHKERR( PetscObjectTypeCompare(obj, b"composite", &match) )
+    CHKERR(PetscObjectTypeCompare(obj, b"composite", &match))
     if match == PETSC_TRUE: return DMComposite
-    CHKERR( PetscObjectTypeCompare(obj, b"shell", &match) )
+    CHKERR(PetscObjectTypeCompare(obj, b"shell", &match))
     if match == PETSC_TRUE: return DMShell
-    CHKERR( PetscObjectTypeCompare(obj, b"stag", &match) )
+    CHKERR(PetscObjectTypeCompare(obj, b"stag", &match))
     if match == PETSC_TRUE: return DMStag
-    CHKERR( PetscObjectTypeCompare(obj, b"swarm", &match) )
+    CHKERR(PetscObjectTypeCompare(obj, b"swarm", &match))
     if match == PETSC_TRUE: return DMSwarm
     # ---
     return DM
@@ -169,7 +169,7 @@ cdef inline type subtype_Object(PetscObject obj):
     cdef type klass = Object
     if obj == NULL: return klass
     cdef PetscClassId classid = 0
-    CHKERR( PetscObjectGetClassId(obj,&classid) )
+    CHKERR(PetscObjectGetClassId(obj, &classid))
     if classid == PETSC_DM_CLASSID:
         klass = subtype_DM(<PetscDM>obj)
     else:

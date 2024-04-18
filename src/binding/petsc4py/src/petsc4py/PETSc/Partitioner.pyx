@@ -1,6 +1,7 @@
 # --------------------------------------------------------------------
 
 class PartitionerType(object):
+    """The partitioner types."""
     PARMETIS        = S_(PETSCPARTITIONERPARMETIS)
     PTSCOTCH        = S_(PETSCPARTITIONERPTSCOTCH)
     CHACO           = S_(PETSCPARTITIONERCHACO)
@@ -10,6 +11,7 @@ class PartitionerType(object):
     MATPARTITIONING = S_(PETSCPARTITIONERMATPARTITIONING)
 
 # --------------------------------------------------------------------
+
 
 cdef class Partitioner(Object):
     """A graph partitioner."""
@@ -37,7 +39,7 @@ cdef class Partitioner(Object):
         """
         cdef PetscViewer vwr = NULL
         if viewer is not None: vwr = viewer.vwr
-        CHKERR( PetscPartitionerView(self.part, vwr) )
+        CHKERR(PetscPartitionerView(self.part, vwr))
 
     def destroy(self) -> Self:
         """Destroy the partitioner object.
@@ -49,7 +51,7 @@ cdef class Partitioner(Object):
         petsc.PetscPartitionerDestroy
 
         """
-        CHKERR( PetscPartitionerDestroy(&self.part) )
+        CHKERR(PetscPartitionerDestroy(&self.part))
         return self
 
     def create(self, comm: Comm | None = None) -> Self:
@@ -71,8 +73,8 @@ cdef class Partitioner(Object):
         """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscPartitioner newpart = NULL
-        CHKERR( PetscPartitionerCreate(ccomm, &newpart) )
-        CHKERR( PetscCLEAR(self.obj) ); self.part = newpart
+        CHKERR(PetscPartitionerCreate(ccomm, &newpart))
+        CHKERR(PetscCLEAR(self.obj)); self.part = newpart
         return self
 
     def setType(self, part_type: Type | str) -> None:
@@ -92,7 +94,7 @@ cdef class Partitioner(Object):
         """
         cdef PetscPartitionerType cval = NULL
         part_type = str2bytes(part_type, &cval)
-        CHKERR( PetscPartitionerSetType(self.part, cval) )
+        CHKERR(PetscPartitionerSetType(self.part, cval))
 
     def getType(self) -> Type:
         """Return the partitioner type.
@@ -105,7 +107,7 @@ cdef class Partitioner(Object):
 
         """
         cdef PetscPartitionerType cval = NULL
-        CHKERR( PetscPartitionerGetType(self.part, &cval) )
+        CHKERR(PetscPartitionerGetType(self.part, &cval))
         return bytes2str(cval)
 
     def setFromOptions(self) -> None:
@@ -118,7 +120,7 @@ cdef class Partitioner(Object):
         petsc_options, petsc.PetscPartitionerSetFromOptions
 
         """
-        CHKERR( PetscPartitionerSetFromOptions(self.part) )
+        CHKERR(PetscPartitionerSetFromOptions(self.part))
 
     def setUp(self) -> None:
         """Construct data structures for the partitioner.
@@ -130,7 +132,7 @@ cdef class Partitioner(Object):
         petsc.PetscPartitionerSetUp
 
         """
-        CHKERR( PetscPartitionerSetUp(self.part) )
+        CHKERR(PetscPartitionerSetUp(self.part))
 
     def reset(self) -> None:
         """Reset data structures of the partitioner.
@@ -142,14 +144,13 @@ cdef class Partitioner(Object):
         petsc.PetscPartitionerReset
 
         """
-        CHKERR( PetscPartitionerReset(self.part) )
+        CHKERR(PetscPartitionerReset(self.part))
 
     def setShellPartition(
         self,
         numProcs: int,
         sizes: Sequence[int] | None = None,
-        points: Sequence[int] | None = None,
-    ) -> None:
+        points: Sequence[int] | None = None) -> None:
         """Set a custom partition for a mesh.
 
         Collective.
@@ -181,8 +182,8 @@ cdef class Partitioner(Object):
                 raise ValueError("Must provide both sizes and points arrays")
         if points is not None:
             points = iarray_i(points, NULL, &cpoints)
-        CHKERR( PetscPartitionerShellSetPartition(self.part, cnumProcs,
-                                                  csizes, cpoints) )
+        CHKERR(PetscPartitionerShellSetPartition(self.part, cnumProcs,
+                                                 csizes, cpoints))
 
 # --------------------------------------------------------------------
 

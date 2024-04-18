@@ -3,7 +3,9 @@
 Working with PETSc options
 ==========================
 
-A very powerful feature of PETSc is that objects can be configured via command-line options. In this way, one can choose the method to be used or set different parameters.
+A very powerful feature of PETSc is that objects can be configured via command-line options.
+In this way, one can choose the method to be used or set different parameters without changing the source code.
+See the PETSc `manual <petsc:the-options-database-1>` for additional information.
 
 In order to use command-line options in a petsc4py program, it is important to initialize the module as follows:
 
@@ -16,19 +18,19 @@ In order to use command-line options in a petsc4py program, it is important to i
   # Import the PETSc module
   from petsc4py import PETSc
 
-Then one can provide command-line options when running the script:
+Then one can provide command-line options when running a script:
 
 .. code-block:: console
 
-  $ python ex1.py -ksp_type gmres -ksp_gmres_restart 100 -ksp_view
+  $ python foo.py -ksp_type gmres -ksp_gmres_restart 100 -ksp_view
 
-Note that in order to configure a given object from the command-line options, the ``setFromOptions()`` method must be called, that is:
+When the above initialization method is not possible, PETSc options can be also specified via environment variables or configuration files, e.g.:
 
-.. code-block:: python
+.. code-block:: console
 
-  ksp.setFromOptions()
+  $ PETSC_OPTIONS='-ksp_type gmres -ksp_gmres_restart 100 -ksp_view' python foo.py
 
-It is also possible to add new, user-defined options, via the ``Options`` class. For instance:
+Command-line options can be read via an instance of the ``Options`` class. For instance:
 
 .. code-block:: python
 
@@ -37,14 +39,17 @@ It is also possible to add new, user-defined options, via the ``Options`` class.
   eta   = OptDB.getReal('eta', 0.014)
   alpha = OptDB.getScalar('alpha', -12.3)
 
-In this way, if the program is run with the following options, ``n`` and ``alpha`` will get the values ``50`` and ``8.8``, respectively, while ``eta`` will be assigned the value specified as default, ``0.014``.
+In this way, if the script is run with
 
 .. code-block:: console
 
-  $ python ex1.py -n 50 -alpha 8.8
+  $ python foo.py -n 50 -alpha 8.8
 
-The options database is accessible also as a Python dictionary, so that one can for instance override an option or insert a new option:
+the options, ``n`` and ``alpha`` will get the values ``50`` and ``8.8``, respectively, while ``eta`` will be assigned the value specified as default, ``0.014``.
+
+The options database is accessible also as a Python dictionary, so that one can for instance override, insert or delete an option:
 
 .. code-block:: python
 
   OptDB['draw_pause'] = 1
+  del OptDB['draw_pause']

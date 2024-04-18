@@ -1,0 +1,41 @@
+include = ["*.py", "src/*.py"]
+exclude = ["demo/legacy", "*env"]
+
+[lint]
+select = [
+  "A",
+  "B",
+  "C",
+  # "D",
+  "E",
+  "F",
+  "G",
+  # "I",
+  "S",
+  "W",
+  "UP",
+  # "ARG",
+  # "ISC",
+  "PIE",
+  # "PTH",
+  "PYI",
+  "RET",
+  # "RUF",
+  # "TRY",
+  "YTT",
+]
+
+ignore = [
+  "E501",  # Line too long
+  "E731",  # Do not assign a `lambda` expression, use a `def`
+  "G004",  # Logging statement uses f-string
+  "S110",  # `try`-`except`-`pass` detected, consider logging the exception
+  "UP015", # [*] Unnecessary open mode parameters
+  "C901",  # `function` is too complex
+]
+
+[format]
+quote-style = "single"
+
+[lint.per-file-ignores]
+"demo/*" = ["E402", "PIE790",]

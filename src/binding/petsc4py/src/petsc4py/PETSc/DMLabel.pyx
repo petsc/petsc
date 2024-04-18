@@ -15,7 +15,7 @@ cdef class DMLabel(Object):
         petsc.DMLabelDestroy
 
         """
-        CHKERR( DMLabelDestroy(&self.dmlabel) )
+        CHKERR(DMLabelDestroy(&self.dmlabel))
         return self
 
     def view(self, Viewer viewer=None) -> None:
@@ -35,7 +35,7 @@ cdef class DMLabel(Object):
         """
         cdef PetscViewer vwr = NULL
         if viewer is not None: vwr = viewer.vwr
-        CHKERR( DMLabelView(self.dmlabel, vwr) )
+        CHKERR(DMLabelView(self.dmlabel, vwr))
 
     def create(self, name: str, comm: Comm | None = None) -> Self:
         """Create a `DMLabel` object, which is a multimap.
@@ -58,8 +58,8 @@ cdef class DMLabel(Object):
         cdef PetscDMLabel newdmlabel = NULL
         cdef const char *cname = NULL
         name = str2bytes(name, &cname)
-        CHKERR( DMLabelCreate(ccomm, cname, &newdmlabel) )
-        CHKERR( PetscCLEAR(self.obj) ); self.dmlabel = newdmlabel
+        CHKERR(DMLabelCreate(ccomm, cname, &newdmlabel))
+        CHKERR(PetscCLEAR(self.obj)); self.dmlabel = newdmlabel
         return self
 
     def duplicate(self) -> DMLabel:
@@ -73,7 +73,7 @@ cdef class DMLabel(Object):
 
         """
         cdef DMLabel new = DMLabel()
-        CHKERR( DMLabelDuplicate(self.dmlabel, &new.dmlabel) )
+        CHKERR(DMLabelDuplicate(self.dmlabel, &new.dmlabel))
         return new
 
     def reset(self) -> None:
@@ -86,7 +86,7 @@ cdef class DMLabel(Object):
         petsc.DMLabelReset
 
         """
-        CHKERR( DMLabelReset(self.dmlabel) )
+        CHKERR(DMLabelReset(self.dmlabel))
 
     def insertIS(self, IS iset, value: int) -> Self:
         """Set all points in the `IS` to a value.
@@ -106,7 +106,7 @@ cdef class DMLabel(Object):
 
         """
         cdef PetscInt cvalue = asInt(value)
-        CHKERR( DMLabelInsertIS(self.dmlabel, iset.iset, cvalue) )
+        CHKERR(DMLabelInsertIS(self.dmlabel, iset.iset, cvalue))
         return self
 
     def setValue(self, point: int, value: int) -> None:
@@ -132,7 +132,7 @@ cdef class DMLabel(Object):
         """
         cdef PetscInt cpoint = asInt(point)
         cdef PetscInt cvalue = asInt(value)
-        CHKERR( DMLabelSetValue(self.dmlabel, cpoint, cvalue) )
+        CHKERR(DMLabelSetValue(self.dmlabel, cpoint, cvalue))
 
     def getValue(self, point: int) -> int:
         """Return the value a label assigns to a point.
@@ -155,7 +155,7 @@ cdef class DMLabel(Object):
         """
         cdef PetscInt cpoint = asInt(point)
         cdef PetscInt cvalue = 0
-        CHKERR( DMLabelGetValue(self.dmlabel, cpoint, &cvalue) )
+        CHKERR(DMLabelGetValue(self.dmlabel, cpoint, &cvalue))
         return toInt(cvalue)
 
     def getDefaultValue(self) -> int:
@@ -172,7 +172,7 @@ cdef class DMLabel(Object):
 
         """
         cdef PetscInt cvalue = 0
-        CHKERR( DMLabelGetDefaultValue(self.dmlabel, &cvalue) )
+        CHKERR(DMLabelGetDefaultValue(self.dmlabel, &cvalue))
         return toInt(cvalue)
 
     def setDefaultValue(self, value: int) -> None:
@@ -194,7 +194,7 @@ cdef class DMLabel(Object):
 
         """
         cdef PetscInt cvalue = asInt(value)
-        CHKERR( DMLabelSetDefaultValue(self.dmlabel, cvalue) )
+        CHKERR(DMLabelSetDefaultValue(self.dmlabel, cvalue))
 
     def clearValue(self, point: int, value: int) -> None:
         """Clear the value a label assigns to a point.
@@ -215,10 +215,12 @@ cdef class DMLabel(Object):
         """
         cdef PetscInt cpoint = asInt(point)
         cdef PetscInt cvalue = asInt(value)
-        CHKERR( DMLabelClearValue(self.dmlabel, cpoint, cvalue) )
+        CHKERR(DMLabelClearValue(self.dmlabel, cpoint, cvalue))
 
     def addStratum(self, value: int) -> None:
         """Add a new stratum value in a `DMLabel`.
+
+        Not collective.
 
         Parameters
         ----------
@@ -231,7 +233,7 @@ cdef class DMLabel(Object):
 
         """
         cdef PetscInt cvalue = asInt(value)
-        CHKERR( DMLabelAddStratum(self.dmlabel, cvalue) )
+        CHKERR(DMLabelAddStratum(self.dmlabel, cvalue))
 
     def addStrata(self, strata: Sequence[int]) -> None:
         """Add new stratum values in a `DMLabel`.
@@ -250,8 +252,8 @@ cdef class DMLabel(Object):
         """
         cdef PetscInt *istrata = NULL
         cdef PetscInt numStrata = 0
-        fields = iarray_i(strata, &numStrata, &istrata)
-        CHKERR( DMLabelAddStrata(self.dmlabel, numStrata, istrata) )
+        strata = iarray_i(strata, &numStrata, &istrata)
+        CHKERR(DMLabelAddStrata(self.dmlabel, numStrata, istrata))
 
     def addStrataIS(self, IS iset) -> None:
         """Add new stratum values in a `DMLabel`.
@@ -268,7 +270,7 @@ cdef class DMLabel(Object):
         addStrata, addStratum, petsc.DMLabelAddStrataIS
 
         """
-        CHKERR( DMLabelAddStrataIS(self.dmlabel, iset.iset) )
+        CHKERR(DMLabelAddStrataIS(self.dmlabel, iset.iset))
 
     def getNumValues(self) -> int:
         """Return the number of values that the `DMLabel` takes.
@@ -281,7 +283,7 @@ cdef class DMLabel(Object):
 
         """
         cdef PetscInt numValues = 0
-        CHKERR( DMLabelGetNumValues(self.dmlabel, &numValues) )
+        CHKERR(DMLabelGetNumValues(self.dmlabel, &numValues))
         return toInt(numValues)
 
     def getValueIS(self) -> IS:
@@ -295,7 +297,7 @@ cdef class DMLabel(Object):
 
         """
         cdef IS iset = IS()
-        CHKERR( DMLabelGetValueIS(self.dmlabel, &iset.iset) )
+        CHKERR(DMLabelGetValueIS(self.dmlabel, &iset.iset))
         return iset
 
     def stratumHasPoint(self, value: int, point: int) -> bool:
@@ -318,7 +320,7 @@ cdef class DMLabel(Object):
         cdef PetscInt cpoint = asInt(point)
         cdef PetscInt cvalue = asInt(value)
         cdef PetscBool ccontains = PETSC_FALSE
-        CHKERR( DMLabelStratumHasPoint(self.dmlabel, cvalue, cpoint, &ccontains) )
+        CHKERR(DMLabelStratumHasPoint(self.dmlabel, cvalue, cpoint, &ccontains))
         return toBool(ccontains)
 
     def hasStratum(self, value: int) -> bool:
@@ -338,7 +340,7 @@ cdef class DMLabel(Object):
         """
         cdef PetscInt cvalue = asInt(value)
         cdef PetscBool cexists = PETSC_FALSE
-        CHKERR( DMLabelHasStratum(self.dmlabel, cvalue, &cexists) )
+        CHKERR(DMLabelHasStratum(self.dmlabel, cvalue, &cexists))
         return toBool(cexists)
 
     def getStratumSize(self, stratum: int) -> int:
@@ -358,7 +360,7 @@ cdef class DMLabel(Object):
         """
         cdef PetscInt cstratum = asInt(stratum)
         cdef PetscInt csize = 0
-        CHKERR( DMLabelGetStratumSize(self.dmlabel, cstratum, &csize) )
+        CHKERR(DMLabelGetStratumSize(self.dmlabel, cstratum, &csize))
         return toInt(csize)
 
     def getStratumIS(self, stratum: int) -> IS:
@@ -378,7 +380,7 @@ cdef class DMLabel(Object):
         """
         cdef PetscInt cstratum = asInt(stratum)
         cdef IS iset = IS()
-        CHKERR( DMLabelGetStratumIS(self.dmlabel, cstratum, &iset.iset) )
+        CHKERR(DMLabelGetStratumIS(self.dmlabel, cstratum, &iset.iset))
         return iset
 
     def setStratumIS(self, stratum: int, IS iset) -> None:
@@ -399,7 +401,7 @@ cdef class DMLabel(Object):
 
         """
         cdef PetscInt cstratum = asInt(stratum)
-        CHKERR( DMLabelSetStratumIS(self.dmlabel, cstratum, iset.iset) )
+        CHKERR(DMLabelSetStratumIS(self.dmlabel, cstratum, iset.iset))
 
     def clearStratum(self, stratum: int) -> None:
         """Remove a stratum.
@@ -417,7 +419,7 @@ cdef class DMLabel(Object):
 
         """
         cdef PetscInt cstratum = asInt(stratum)
-        CHKERR( DMLabelClearStratum(self.dmlabel, cstratum) )
+        CHKERR(DMLabelClearStratum(self.dmlabel, cstratum))
 
     def computeIndex(self) -> None:
         """Create an index structure for membership determination.
@@ -431,7 +433,7 @@ cdef class DMLabel(Object):
         petsc.DMLabelComputeIndex
 
         """
-        CHKERR( DMLabelComputeIndex(self.dmlabel) )
+        CHKERR(DMLabelComputeIndex(self.dmlabel))
 
     def createIndex(self, pStart: int, pEnd: int) -> None:
         """Create an index structure for membership determination.
@@ -451,7 +453,7 @@ cdef class DMLabel(Object):
 
         """
         cdef PetscInt cpstart = asInt(pStart), cpend = asInt(pEnd)
-        CHKERR( DMLabelCreateIndex(self.dmlabel, cpstart, cpend) )
+        CHKERR(DMLabelCreateIndex(self.dmlabel, cpstart, cpend))
 
     def destroyIndex(self) -> None:
         """Destroy the index structure.
@@ -463,7 +465,7 @@ cdef class DMLabel(Object):
         createIndex, petsc.DMLabelDestroyIndex
 
         """
-        CHKERR( DMLabelDestroyIndex(self.dmlabel) )
+        CHKERR(DMLabelDestroyIndex(self.dmlabel))
 
     def hasValue(self, value: int) -> bool:
         """Determine whether a label assigns the value to any point.
@@ -482,7 +484,7 @@ cdef class DMLabel(Object):
         """
         cdef PetscInt cvalue = asInt(value)
         cdef PetscBool cexists = PETSC_FALSE
-        CHKERR( DMLabelHasValue(self.dmlabel, cvalue, &cexists) )
+        CHKERR(DMLabelHasValue(self.dmlabel, cvalue, &cexists))
         return toBool(cexists)
 
     def hasPoint(self, point: int) -> bool:
@@ -504,7 +506,7 @@ cdef class DMLabel(Object):
         """
         cdef PetscInt cpoint = asInt(point)
         cdef PetscBool cexists = PETSC_FALSE
-        CHKERR( DMLabelHasPoint(self.dmlabel, cpoint, &cexists) )
+        CHKERR(DMLabelHasPoint(self.dmlabel, cpoint, &cexists))
         return toBool(cexists)
 
     def getBounds(self) -> tuple[int, int]:
@@ -520,7 +522,7 @@ cdef class DMLabel(Object):
 
         """
         cdef PetscInt cpstart = 0, cpend = 0
-        CHKERR( DMLabelGetBounds(self.dmlabel, &cpstart, &cpend) )
+        CHKERR(DMLabelGetBounds(self.dmlabel, &cpstart, &cpend))
         return toInt(cpstart), toInt(cpend)
 
     def filter(self, start: int, end: int) -> None:
@@ -541,7 +543,7 @@ cdef class DMLabel(Object):
 
         """
         cdef PetscInt cstart = asInt(start), cend = asInt(end)
-        CHKERR( DMLabelFilter(self.dmlabel, cstart, cend) )
+        CHKERR(DMLabelFilter(self.dmlabel, cstart, cend))
 
     def permute(self, IS permutation) -> DMLabel:
         """Create a new label with permuted points.
@@ -559,7 +561,7 @@ cdef class DMLabel(Object):
 
         """
         cdef DMLabel new = DMLabel()
-        CHKERR( DMLabelPermute(self.dmlabel, permutation.iset, &new.dmlabel) )
+        CHKERR(DMLabelPermute(self.dmlabel, permutation.iset, &new.dmlabel))
         return new
 
     def distribute(self, SF sf) -> DMLabel:
@@ -578,7 +580,7 @@ cdef class DMLabel(Object):
 
         """
         cdef DMLabel new = DMLabel()
-        CHKERR( DMLabelDistribute(self.dmlabel, sf.sf, &new.dmlabel) )
+        CHKERR(DMLabelDistribute(self.dmlabel, sf.sf, &new.dmlabel))
         return new
 
     def gather(self, SF sf) -> DMLabel:
@@ -599,7 +601,7 @@ cdef class DMLabel(Object):
 
         """
         cdef DMLabel new = DMLabel()
-        CHKERR( DMLabelGather(self.dmlabel, sf.sf, &new.dmlabel) )
+        CHKERR(DMLabelGather(self.dmlabel, sf.sf, &new.dmlabel))
         return new
 
     def convertToSection(self) -> tuple[Section, IS]:
@@ -614,7 +616,7 @@ cdef class DMLabel(Object):
         """
         cdef Section section = Section()
         cdef IS iset = IS()
-        CHKERR( DMLabelConvertToSection(self.dmlabel, &section.sec, &iset.iset) )
+        CHKERR(DMLabelConvertToSection(self.dmlabel, &section.sec, &iset.iset))
         return section, iset
 
     def getNonEmptyStratumValuesIS(self) -> IS:
@@ -628,5 +630,5 @@ cdef class DMLabel(Object):
 
         """
         cdef IS iset = IS()
-        CHKERR( DMLabelGetNonEmptyStratumValuesIS(self.dmlabel, &iset.iset) )
+        CHKERR(DMLabelGetNonEmptyStratumValuesIS(self.dmlabel, &iset.iset))
         return iset

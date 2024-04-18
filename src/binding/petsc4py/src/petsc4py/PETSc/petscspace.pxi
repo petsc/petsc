@@ -17,7 +17,6 @@ cdef extern from * nogil:
     PetscErrorCode PetscSpaceView(PetscSpace, PetscViewer)
     PetscErrorCode PetscSpaceSetType(PetscSpace, PetscSpaceType)
     PetscErrorCode PetscSpaceGetType(PetscSpace, PetscSpaceType*)
-    #int PetscSpaceEvaluate(PetscSpace, PetscInt, const PetscReal [], PetscReal [], PetscReal [])
     PetscErrorCode PetscSpaceGetDimension(PetscSpace, PetscInt*)
     PetscErrorCode PetscSpaceGetDegree(PetscSpace, PetscInt*, PetscInt*)
     PetscErrorCode PetscSpaceGetNumVariables(PetscSpace, PetscInt*)
@@ -31,7 +30,7 @@ cdef extern from * nogil:
     PetscErrorCode PetscSpaceSumGetNumSubspaces(PetscSpace, PetscInt*)
     PetscErrorCode PetscSpaceSumGetSubspace(PetscSpace, PetscInt, PetscSpace*)
     PetscErrorCode PetscSpaceSumSetNumSubspaces(PetscSpace, PetscInt)
-    PetscErrorCode PetscSpaceSumSetSubspace(PetscSpace,PetscInt, PetscSpace)
+    PetscErrorCode PetscSpaceSumSetSubspace(PetscSpace, PetscInt, PetscSpace)
     PetscErrorCode PetscSpaceTensorGetNumSubspaces(PetscSpace, PetscInt*)
     PetscErrorCode PetscSpaceTensorGetSubspace(PetscSpace, PetscInt, PetscSpace*)
     PetscErrorCode PetscSpaceTensorSetNumSubspaces(PetscSpace, PetscInt)
@@ -82,14 +81,3 @@ cdef extern from * nogil:
     PetscErrorCode PetscDualSpaceSimpleSetFunctional(PetscDualSpace, PetscInt, PetscQuadrature)
     PetscErrorCode PetscDualSpaceGetType(PetscDualSpace, PetscDualSpaceType*)
     PetscErrorCode PetscDualSpaceSetType(PetscDualSpace, PetscDualSpaceType)
-
-    #int PetscDualSpaceSetFromOptions(PetscDualSpace)
-
-
-    #int PetscDualSpaceRefinedSetCellSpaces(PetscDualSpace, const PetscDualSpace [])
-
-    # Advanced
-    #int PetscDualSpaceCreateAllDataDefault(PetscDualSpace, PetscQuadrature*, PetscMat*)
-    #int PetscDualSpaceCreateInteriorDataDefault(PetscDualSpace, PetscQuadrature*, PetscMat*)
-    #int PetscDualSpaceEqual(PetscDualSpace, PetscDualSpace, PetscBool*)
-    #int PetscDualSpaceGetAllData(PetscDualSpace, PetscQuadrature*, PetscMat*)

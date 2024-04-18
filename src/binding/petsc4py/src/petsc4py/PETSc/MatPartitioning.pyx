@@ -1,6 +1,7 @@
 # --------------------------------------------------------------------
 
 class MatPartitioningType(object):
+    """The partitioning types."""
     PARTITIONINGCURRENT  = S_(MATPARTITIONINGCURRENT)
     PARTITIONINGAVERAGE  = S_(MATPARTITIONINGAVERAGE)
     PARTITIONINGSQUARE   = S_(MATPARTITIONINGSQUARE)
@@ -11,6 +12,7 @@ class MatPartitioningType(object):
     PARTITIONINGHIERARCH = S_(MATPARTITIONINGHIERARCH)
 
 # --------------------------------------------------------------------
+
 
 cdef class MatPartitioning(Object):
     """Object for managing the partitioning of a matrix or graph."""
@@ -42,7 +44,7 @@ cdef class MatPartitioning(Object):
         assert self.obj != NULL
         cdef PetscViewer vwr = NULL
         if viewer is not None: vwr = viewer.vwr
-        CHKERR( MatPartitioningView(self.part, vwr) )
+        CHKERR(MatPartitioningView(self.part, vwr))
 
     def destroy(self) -> Self:
         """Destroy the partitioning context.
@@ -54,7 +56,7 @@ cdef class MatPartitioning(Object):
         create, petsc.MatPartitioningDestroy
 
         """
-        CHKERR( MatPartitioningDestroy(&self.part) )
+        CHKERR(MatPartitioningDestroy(&self.part))
         return self
 
     def create(self, comm: Comm | None = None) -> Self:
@@ -73,7 +75,7 @@ cdef class MatPartitioning(Object):
 
         """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        CHKERR( MatPartitioningCreate(ccomm, &self.part) )
+        CHKERR(MatPartitioningCreate(ccomm, &self.part))
         return self
 
     def setType(self, matpartitioning_type: Type | str) -> None:
@@ -93,7 +95,7 @@ cdef class MatPartitioning(Object):
         """
         cdef PetscMatPartitioningType cval = NULL
         matpartitioning_type = str2bytes(matpartitioning_type, &cval)
-        CHKERR( MatPartitioningSetType(self.part, cval) )
+        CHKERR(MatPartitioningSetType(self.part, cval))
 
     def getType(self) -> str:
         """Return the partitioning method.
@@ -106,7 +108,7 @@ cdef class MatPartitioning(Object):
 
         """
         cdef PetscMatPartitioningType cval = NULL
-        CHKERR( MatPartitioningGetType(self.part, &cval) )
+        CHKERR(MatPartitioningGetType(self.part, &cval))
         return bytes2str(cval)
 
     def setFromOptions(self) -> None:
@@ -119,7 +121,7 @@ cdef class MatPartitioning(Object):
         petsc_options, petsc.MatPartitioningSetFromOptions
 
         """
-        CHKERR( MatPartitioningSetFromOptions(self.part) )
+        CHKERR(MatPartitioningSetFromOptions(self.part))
 
     def setAdjacency(self, Mat adj) -> None:
         """Set the adjacency graph (matrix) of the thing to be partitioned.
@@ -137,7 +139,7 @@ cdef class MatPartitioning(Object):
         petsc.MatPartitioningSetAdjacency
 
         """
-        CHKERR( MatPartitioningSetAdjacency(self.part, adj.mat) )
+        CHKERR(MatPartitioningSetAdjacency(self.part, adj.mat))
 
     def apply(self, IS partitioning) -> None:
         """Return a partitioning for the graph represented by a sparse matrix.
@@ -152,7 +154,7 @@ cdef class MatPartitioning(Object):
         petsc.MatPartitioningApply
 
         """
-        CHKERR( MatPartitioningApply(self.part, &partitioning.iset) )
+        CHKERR(MatPartitioningApply(self.part, &partitioning.iset))
 
 # --------------------------------------------------------------------
 

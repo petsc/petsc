@@ -9,8 +9,8 @@ from petsc4py.PETSc import Viewer
 
 # A template class with the Python methods supported by MATPYTHON
 
-class MatPythonProtocol:
 
+class MatPythonProtocol:
     def mult(self, A: Mat, x: Vec, y: Vec) -> None:
         """Matrix vector multiplication: y = A @ x."""
         ...
@@ -62,7 +62,7 @@ class MatPythonProtocol:
     def createSubMatrix(self, A: Mat, r: IS, c: IS, out: Mat) -> Mat:
         """Return the submatrix corresponding to r rows and c columns.
 
-           Matrix out must be reused if not None.
+        Matrix out must be reused if not None.
 
         """
         ...
@@ -70,7 +70,7 @@ class MatPythonProtocol:
     def zeroRowsColumns(self, A: Mat, r: IS, diag: Scalar, x: Vec, b: Vec) -> None:
         """Zero rows and columns of the matrix corresponding to the index set r.
 
-           Insert diag on the diagonal and modify vectors x and b accordingly if not None.
+        Insert diag on the diagonal and modify vectors x and b accordingly if not None.
 
         """
         ...
@@ -111,15 +111,21 @@ class MatPythonProtocol:
         """Copy the matrix: B = A."""
         ...
 
-    def productSetFromOptions(self, A: Mat, prodtype: str, X: Mat, Y: Mat, Z: Mat) -> bool:
+    def productSetFromOptions(
+        self, A: Mat, prodtype: str, X: Mat, Y: Mat, Z: Mat
+    ) -> bool:
         """The boolean flag indicating if the matrix supports prodtype."""
         ...
 
-    def productSymbolic(self, A: Mat, product: Mat, producttype: str, X: Mat, Y: Mat, Z: Mat) -> None:
+    def productSymbolic(
+        self, A: Mat, product: Mat, producttype: str, X: Mat, Y: Mat, Z: Mat
+    ) -> None:
         """Perform the symbolic stage of the requested matrix product."""
         ...
 
-    def productNumeric(self, A: Mat, product: Mat, producttype: str, X: Mat, Y: Mat, Z: Mat) -> None:
+    def productNumeric(
+        self, A: Mat, product: Mat, producttype: str, X: Mat, Y: Mat, Z: Mat
+    ) -> None:
         """Perform the numeric stage of the requested matrix product."""
         ...
 
@@ -147,8 +153,17 @@ class MatPythonProtocol:
         """Solve the equation: x = inv(A)^T y + z."""
         ...
 
-    def SOR(self, A: Mat, b: Vec, omega: float, sortype: Mat.SORType,
-            shift: float, its: int, lits: int, x: Vec) -> None:
+    def SOR(
+        self,
+        A: Mat,
+        b: Vec,
+        omega: float,
+        sortype: Mat.SORType,
+        shift: float,
+        its: int,
+        lits: int,
+        x: Vec,
+    ) -> None:
         """Perform SOR iterations."""
         ...
 
@@ -160,6 +175,6 @@ class MatPythonProtocol:
         """Set real part to zero. A = imag(A)."""
         ...
 
-    def realPart(self, A: sMat) -> None:
+    def realPart(self, A: Mat) -> None:
         """Set imaginary part to zero. A = real(A)."""
         ...

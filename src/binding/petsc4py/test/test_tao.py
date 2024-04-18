@@ -2,32 +2,38 @@
 
 from petsc4py import PETSc
 import unittest
+import numpy
+
 
 # --------------------------------------------------------------------
 class Objective:
     def __call__(self, tao, x):
-        return (x[0] - 2.0)**2 + (x[1] - 2.0)**2 - 2.0*(x[0] + x[1])
+        return (x[0] - 2.0) ** 2 + (x[1] - 2.0) ** 2 - 2.0 * (x[0] + x[1])
+
 
 class Gradient:
     def __call__(self, tao, x, g):
-        g[0] = 2.0*(x[0] - 2.0) - 2.0
-        g[1] = 2.0*(x[1] - 2.0) - 2.0
+        g[0] = 2.0 * (x[0] - 2.0) - 2.0
+        g[1] = 2.0 * (x[1] - 2.0) - 2.0
         g.assemble()
+
 
 class EqConstraints:
     def __call__(self, tao, x, c):
-        c[0] = x[0]**2 + x[1] - 2.0
+        c[0] = x[0] ** 2 + x[1] - 2.0
         c.assemble()
+
 
 class EqJacobian:
     def __call__(self, tao, x, J, P):
-        P[0,0] = 2.0*x[0]
-        P[0,1] = 1.0
+        P[0, 0] = 2.0 * x[0]
+        P[0, 1] = 1.0
         P.assemble()
-        if J != P: J.assemble()
+        if J != P:
+            J.assemble()
 
-class BaseTestTAO(object):
 
+class BaseTestTAO:
     COMM = None
 
     def setUp(self):
@@ -43,9 +49,9 @@ class BaseTestTAO(object):
         constraint, varbounds = None, None
         hessian, jacobian = None, None
         tao.setObjective(objective)
-        tao.setGradient(gradient,None)
+        tao.setGradient(gradient, None)
         tao.setVariableBounds(varbounds)
-        tao.setObjectiveGradient(objgrad,None)
+        tao.setObjectiveGradient(objgrad, None)
         tao.setConstraints(constraint)
         tao.setHessian(hessian)
         tao.setJacobian(jacobian)
@@ -54,11 +60,21 @@ class BaseTestTAO(object):
         tao = self.tao
         x = tao.getSolution()
         (g, _) = tao.getGradient()
-        l, u = tao.getVariableBounds()
-        r = None#tao.getConstraintVec()
-        H, HP = None,None#tao.getHessianMat()
-        J, JP = None,None#tao.getJacobianMat()
-        for o in [x, g, r, l, u ,H, HP, J, JP,]:
+        low, up = tao.getVariableBounds()
+        r = None  # tao.getConstraintVec()
+        H, HP = None, None  # tao.getHessianMat()
+        J, JP = None, None  # tao.getJacobianMat()
+        for o in [
+            x,
+            g,
+            r,
+            low,
+            up,
+            H,
+            HP,
+            J,
+            JP,
+        ]:
             self.assertFalse(o)
 
     def testGetKSP(self):
@@ -82,15 +98,15 @@ class BaseTestTAO(object):
         J.setUp()
 
         tao.setObjective(Objective())
-        tao.setGradient(Gradient(),None)
-        tao.setEqualityConstraints(EqConstraints(),c)
-        tao.setJacobianEquality(EqJacobian(),J,J)
+        tao.setGradient(Gradient(), None)
+        tao.setEqualityConstraints(EqConstraints(), c)
+        tao.setJacobianEquality(EqJacobian(), J, J)
         tao.setSolution(x)
         tao.setType(PETSc.TAO.Type.ALMM)
-        tao.setTolerances(gatol=1.e-4)
+        tao.setTolerances(gatol=1.0e-4)
         tao.setFromOptions()
         tao.solve()
-        self.assertAlmostEqual(abs(x[0]**2 + x[1] - 2.0), 0.0, places=4)
+        self.assertAlmostEqual(abs(x[0] ** 2 + x[1] - 2.0), 0.0, places=4)
 
     def testBNCG(self):
         if self.tao.getComm().Get_size() > 1:
@@ -108,12 +124,12 @@ class BaseTestTAO(object):
         xu.setType('standard')
         xu.setSizes(2)
         xu.set(2.0)
-        tao.setVariableBounds((xl,xu))
+        tao.setVariableBounds((xl, xu))
         tao.setObjective(Objective())
-        tao.setGradient(Gradient(),None)
+        tao.setGradient(Gradient(), None)
         tao.setSolution(x)
         tao.setType(PETSc.TAO.Type.BNCG)
-        tao.setTolerances(gatol=1.e-4)
+        tao.setTolerances(gatol=1.0e-4)
         ls = tao.getLineSearch()
         ls.setType(PETSc.TAOLineSearch.Type.UNIT)
         tao.setFromOptions()
@@ -121,17 +137,21 @@ class BaseTestTAO(object):
         self.assertAlmostEqual(x[0], 2.0, places=4)
         self.assertAlmostEqual(x[1], 2.0, places=4)
 
+
 # --------------------------------------------------------------------
+
 
 class TestTAOSelf(BaseTestTAO, unittest.TestCase):
     COMM = PETSc.COMM_SELF
 
+
 class TestTAOWorld(BaseTestTAO, unittest.TestCase):
     COMM = PETSc.COMM_WORLD
 
+
 # --------------------------------------------------------------------
 
-import numpy
+
 if numpy.iscomplexobj(PETSc.ScalarType()):
     del BaseTestTAO
     del TestTAOSelf

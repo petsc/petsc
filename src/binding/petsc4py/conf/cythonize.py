@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Run Cython with custom options."""
+
 import os
 import sys
 
@@ -48,5 +49,5 @@ def main():
     sys.exit(cythonize(args))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

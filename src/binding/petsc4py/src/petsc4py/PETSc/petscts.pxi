@@ -26,231 +26,231 @@ cdef extern from * nogil:
     PetscTSType TSDISCGRAD
 
     ctypedef enum PetscTSProblemType "TSProblemType":
-      TS_LINEAR
-      TS_NONLINEAR
+        TS_LINEAR
+        TS_NONLINEAR
 
     ctypedef enum PetscTSEquationType "TSEquationType":
-      TS_EQ_UNSPECIFIED
-      TS_EQ_EXPLICIT
-      TS_EQ_ODE_EXPLICIT
-      TS_EQ_DAE_SEMI_EXPLICIT_INDEX1
-      TS_EQ_DAE_SEMI_EXPLICIT_INDEX2
-      TS_EQ_DAE_SEMI_EXPLICIT_INDEX3
-      TS_EQ_DAE_SEMI_EXPLICIT_INDEXHI
-      TS_EQ_IMPLICIT
-      TS_EQ_ODE_IMPLICIT
-      TS_EQ_DAE_IMPLICIT_INDEX1
-      TS_EQ_DAE_IMPLICIT_INDEX2
-      TS_EQ_DAE_IMPLICIT_INDEX3
-      TS_EQ_DAE_IMPLICIT_INDEXHI
+        TS_EQ_UNSPECIFIED
+        TS_EQ_EXPLICIT
+        TS_EQ_ODE_EXPLICIT
+        TS_EQ_DAE_SEMI_EXPLICIT_INDEX1
+        TS_EQ_DAE_SEMI_EXPLICIT_INDEX2
+        TS_EQ_DAE_SEMI_EXPLICIT_INDEX3
+        TS_EQ_DAE_SEMI_EXPLICIT_INDEXHI
+        TS_EQ_IMPLICIT
+        TS_EQ_ODE_IMPLICIT
+        TS_EQ_DAE_IMPLICIT_INDEX1
+        TS_EQ_DAE_IMPLICIT_INDEX2
+        TS_EQ_DAE_IMPLICIT_INDEX3
+        TS_EQ_DAE_IMPLICIT_INDEXHI
 
     ctypedef enum PetscTSConvergedReason "TSConvergedReason":
-      # iterating
-      TS_CONVERGED_ITERATING
-      # converged
-      TS_CONVERGED_TIME
-      TS_CONVERGED_ITS
-      TS_CONVERGED_USER
-      TS_CONVERGED_EVENT
-      # diverged
-      TS_DIVERGED_NONLINEAR_SOLVE
-      TS_DIVERGED_STEP_REJECTED
+        # iterating
+        TS_CONVERGED_ITERATING
+        # converged
+        TS_CONVERGED_TIME
+        TS_CONVERGED_ITS
+        TS_CONVERGED_USER
+        TS_CONVERGED_EVENT
+        # diverged
+        TS_DIVERGED_NONLINEAR_SOLVE
+        TS_DIVERGED_STEP_REJECTED
 
     ctypedef enum PetscTSExactFinalTimeOption "TSExactFinalTimeOption":
-      TS_EXACTFINALTIME_UNSPECIFIED
-      TS_EXACTFINALTIME_STEPOVER
-      TS_EXACTFINALTIME_INTERPOLATE
-      TS_EXACTFINALTIME_MATCHSTEP
+        TS_EXACTFINALTIME_UNSPECIFIED
+        TS_EXACTFINALTIME_STEPOVER
+        TS_EXACTFINALTIME_INTERPOLATE
+        TS_EXACTFINALTIME_MATCHSTEP
 
     ctypedef PetscErrorCode PetscTSCtxDel(void*)
 
     ctypedef PetscErrorCode (*PetscTSFunctionFunction)(PetscTS,
-                                            PetscReal,
-                                            PetscVec,
-                                            PetscVec,
-                                            void*) except PETSC_ERR_PYTHON
+                                                       PetscReal,
+                                                       PetscVec,
+                                                       PetscVec,
+                                                       void*) except PETSC_ERR_PYTHON
 
     ctypedef PetscErrorCode (*PetscTSJacobianFunction)(PetscTS,
-                                            PetscReal,
-                                            PetscVec,
-                                            PetscMat,
-                                            PetscMat,
-                                            void*) except PETSC_ERR_PYTHON
+                                                       PetscReal,
+                                                       PetscVec,
+                                                       PetscMat,
+                                                       PetscMat,
+                                                       void*) except PETSC_ERR_PYTHON
 
     ctypedef PetscErrorCode (*PetscTSIFunctionFunction)(PetscTS,
-                                             PetscReal,
-                                             PetscVec,
-                                             PetscVec,
-                                             PetscVec,
-                                             void*) except PETSC_ERR_PYTHON
+                                                        PetscReal,
+                                                        PetscVec,
+                                                        PetscVec,
+                                                        PetscVec,
+                                                        void*) except PETSC_ERR_PYTHON
     ctypedef PetscErrorCode (*PetscTSIJacobianFunction)(PetscTS,
-                                             PetscReal,
-                                             PetscVec,
-                                             PetscVec,
-                                             PetscReal,
-                                             PetscMat,
-                                             PetscMat,
-                                             void*) except PETSC_ERR_PYTHON
+                                                        PetscReal,
+                                                        PetscVec,
+                                                        PetscVec,
+                                                        PetscReal,
+                                                        PetscMat,
+                                                        PetscMat,
+                                                        void*) except PETSC_ERR_PYTHON
 
     ctypedef PetscErrorCode (*PetscTSIJacobianPFunction)(PetscTS,
-                                             PetscReal,
-                                             PetscVec,
-                                             PetscVec,
-                                             PetscReal,
-                                             PetscMat,
-                                             void*) except PETSC_ERR_PYTHON
+                                                         PetscReal,
+                                                         PetscVec,
+                                                         PetscVec,
+                                                         PetscReal,
+                                                         PetscMat,
+                                                         void*) except PETSC_ERR_PYTHON
 
     ctypedef PetscErrorCode (*PetscTSI2FunctionFunction)(PetscTS,
-                                              PetscReal,
-                                              PetscVec,
-                                              PetscVec,
-                                              PetscVec,
-                                              PetscVec,
-                                              void*) except PETSC_ERR_PYTHON
+                                                         PetscReal,
+                                                         PetscVec,
+                                                         PetscVec,
+                                                         PetscVec,
+                                                         PetscVec,
+                                                         void*) except PETSC_ERR_PYTHON
     ctypedef PetscErrorCode (*PetscTSI2JacobianFunction)(PetscTS,
-                                              PetscReal,
-                                              PetscVec,
-                                              PetscVec,
-                                              PetscVec,
-                                              PetscReal,
-                                              PetscReal,
-                                              PetscMat,
-                                              PetscMat,
-                                              void*) except PETSC_ERR_PYTHON
+                                                         PetscReal,
+                                                         PetscVec,
+                                                         PetscVec,
+                                                         PetscVec,
+                                                         PetscReal,
+                                                         PetscReal,
+                                                         PetscMat,
+                                                         PetscMat,
+                                                         void*) except PETSC_ERR_PYTHON
 
     ctypedef PetscErrorCode (*PetscTSMonitorFunction)(PetscTS,
-                                           PetscInt,
-                                           PetscReal,
-                                           PetscVec,
-                                           void*) except PETSC_ERR_PYTHON
+                                                      PetscInt,
+                                                      PetscReal,
+                                                      PetscVec,
+                                                      void*) except PETSC_ERR_PYTHON
 
     ctypedef PetscErrorCode (*PetscTSPreStepFunction)  (PetscTS) except PETSC_ERR_PYTHON
     ctypedef PetscErrorCode (*PetscTSPostStepFunction) (PetscTS) except PETSC_ERR_PYTHON
 
-    PetscErrorCode TSCreate(MPI_Comm comm,PetscTS*)
-    PetscErrorCode TSClone(PetscTS,PetscTS*)
+    PetscErrorCode TSCreate(MPI_Comm comm, PetscTS*)
+    PetscErrorCode TSClone(PetscTS, PetscTS*)
     PetscErrorCode TSDestroy(PetscTS*)
-    PetscErrorCode TSView(PetscTS,PetscViewer)
-    PetscErrorCode TSLoad(PetscTS,PetscViewer)
+    PetscErrorCode TSView(PetscTS, PetscViewer)
+    PetscErrorCode TSLoad(PetscTS, PetscViewer)
 
-    PetscErrorCode TSSetProblemType(PetscTS,PetscTSProblemType)
-    PetscErrorCode TSGetProblemType(PetscTS,PetscTSProblemType*)
-    PetscErrorCode TSSetEquationType(PetscTS,PetscTSEquationType)
-    PetscErrorCode TSGetEquationType(PetscTS,PetscTSEquationType*)
-    PetscErrorCode TSSetType(PetscTS,PetscTSType)
-    PetscErrorCode TSGetType(PetscTS,PetscTSType*)
+    PetscErrorCode TSSetProblemType(PetscTS, PetscTSProblemType)
+    PetscErrorCode TSGetProblemType(PetscTS, PetscTSProblemType*)
+    PetscErrorCode TSSetEquationType(PetscTS, PetscTSEquationType)
+    PetscErrorCode TSGetEquationType(PetscTS, PetscTSEquationType*)
+    PetscErrorCode TSSetType(PetscTS, PetscTSType)
+    PetscErrorCode TSGetType(PetscTS, PetscTSType*)
 
-    PetscErrorCode TSSetOptionsPrefix(PetscTS,char[])
-    PetscErrorCode TSAppendOptionsPrefix(PetscTS,char[])
-    PetscErrorCode TSGetOptionsPrefix(PetscTS,char*[])
+    PetscErrorCode TSSetOptionsPrefix(PetscTS, char[])
+    PetscErrorCode TSAppendOptionsPrefix(PetscTS, char[])
+    PetscErrorCode TSGetOptionsPrefix(PetscTS, char*[])
     PetscErrorCode TSSetFromOptions(PetscTS)
 
-    PetscErrorCode TSSetSolution(PetscTS,PetscVec)
-    PetscErrorCode TSGetSolution(PetscTS,PetscVec*)
-    PetscErrorCode TS2SetSolution(PetscTS,PetscVec,PetscVec)
-    PetscErrorCode TS2GetSolution(PetscTS,PetscVec*,PetscVec*)
+    PetscErrorCode TSSetSolution(PetscTS, PetscVec)
+    PetscErrorCode TSGetSolution(PetscTS, PetscVec*)
+    PetscErrorCode TS2SetSolution(PetscTS, PetscVec, PetscVec)
+    PetscErrorCode TS2GetSolution(PetscTS, PetscVec*, PetscVec*)
 
-    PetscErrorCode TSGetRHSFunction(PetscTS,PetscVec*,PetscTSFunctionFunction*,void*)
-    PetscErrorCode TSGetRHSJacobian(PetscTS,PetscMat*,PetscMat*,PetscTSJacobianFunction*,void**)
-    PetscErrorCode TSSetRHSFunction(PetscTS,PetscVec,PetscTSFunctionFunction,void*)
-    PetscErrorCode TSSetRHSJacobian(PetscTS,PetscMat,PetscMat,PetscTSJacobianFunction,void*)
-    PetscErrorCode TSSetIFunction(PetscTS,PetscVec,PetscTSIFunctionFunction,void*)
-    PetscErrorCode TSSetIJacobian(PetscTS,PetscMat,PetscMat,PetscTSIJacobianFunction,void*)
-    PetscErrorCode TSSetIJacobianP(PetscTS,PetscMat,PetscTSIJacobianPFunction,void*)
-    PetscErrorCode TSGetIFunction(PetscTS,PetscVec*,PetscTSIFunctionFunction*,void*)
-    PetscErrorCode TSGetIJacobian(PetscTS,PetscMat*,PetscMat*,PetscTSIJacobianFunction*,void**)
-    PetscErrorCode TSSetI2Function(PetscTS,PetscVec,PetscTSI2FunctionFunction,void*)
-    PetscErrorCode TSSetI2Jacobian(PetscTS,PetscMat,PetscMat,PetscTSI2JacobianFunction,void*)
-    PetscErrorCode TSGetI2Function(PetscTS,PetscVec*,PetscTSI2FunctionFunction*,void**)
-    PetscErrorCode TSGetI2Jacobian(PetscTS,PetscMat*,PetscMat*,PetscTSI2JacobianFunction*,void**)
+    PetscErrorCode TSGetRHSFunction(PetscTS, PetscVec*, PetscTSFunctionFunction*, void*)
+    PetscErrorCode TSGetRHSJacobian(PetscTS, PetscMat*, PetscMat*, PetscTSJacobianFunction*, void**)
+    PetscErrorCode TSSetRHSFunction(PetscTS, PetscVec, PetscTSFunctionFunction, void*)
+    PetscErrorCode TSSetRHSJacobian(PetscTS, PetscMat, PetscMat, PetscTSJacobianFunction, void*)
+    PetscErrorCode TSSetIFunction(PetscTS, PetscVec, PetscTSIFunctionFunction, void*)
+    PetscErrorCode TSSetIJacobian(PetscTS, PetscMat, PetscMat, PetscTSIJacobianFunction, void*)
+    PetscErrorCode TSSetIJacobianP(PetscTS, PetscMat, PetscTSIJacobianPFunction, void*)
+    PetscErrorCode TSGetIFunction(PetscTS, PetscVec*, PetscTSIFunctionFunction*, void*)
+    PetscErrorCode TSGetIJacobian(PetscTS, PetscMat*, PetscMat*, PetscTSIJacobianFunction*, void**)
+    PetscErrorCode TSSetI2Function(PetscTS, PetscVec, PetscTSI2FunctionFunction, void*)
+    PetscErrorCode TSSetI2Jacobian(PetscTS, PetscMat, PetscMat, PetscTSI2JacobianFunction, void*)
+    PetscErrorCode TSGetI2Function(PetscTS, PetscVec*, PetscTSI2FunctionFunction*, void**)
+    PetscErrorCode TSGetI2Jacobian(PetscTS, PetscMat*, PetscMat*, PetscTSI2JacobianFunction*, void**)
 
-    PetscErrorCode TSGetKSP(PetscTS,PetscKSP*)
-    PetscErrorCode TSGetSNES(PetscTS,PetscSNES*)
+    PetscErrorCode TSGetKSP(PetscTS, PetscKSP*)
+    PetscErrorCode TSGetSNES(PetscTS, PetscSNES*)
 
-    PetscErrorCode TSGetDM(PetscTS,PetscDM*)
-    PetscErrorCode TSSetDM(PetscTS,PetscDM)
+    PetscErrorCode TSGetDM(PetscTS, PetscDM*)
+    PetscErrorCode TSSetDM(PetscTS, PetscDM)
 
-    PetscErrorCode TSComputeRHSFunction(PetscTS,PetscReal,PetscVec,PetscVec)
-    PetscErrorCode TSComputeRHSFunctionLinear(PetscTS,PetscReal,PetscVec,PetscVec,void*)
-    PetscErrorCode TSComputeRHSJacobian(PetscTS,PetscReal,PetscVec,PetscMat,PetscMat)
-    PetscErrorCode TSComputeRHSJacobianConstant(PetscTS,PetscReal,PetscVec,PetscMat,PetscMat,void*)
-    PetscErrorCode TSComputeIFunction(PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,PetscBool)
-    PetscErrorCode TSComputeIJacobian(PetscTS,PetscReal,PetscVec,PetscVec,PetscReal,PetscMat,PetscMat,PetscBool)
-    PetscErrorCode TSComputeIJacobianP(PetscTS,PetscReal,PetscVec,PetscVec,PetscReal,PetscMat,PetscBool)
-    PetscErrorCode TSComputeI2Function(PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,PetscVec)
-    PetscErrorCode TSComputeI2Jacobian(PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,PetscReal,PetscReal,PetscMat,PetscMat)
+    PetscErrorCode TSComputeRHSFunction(PetscTS, PetscReal, PetscVec, PetscVec)
+    PetscErrorCode TSComputeRHSFunctionLinear(PetscTS, PetscReal, PetscVec, PetscVec, void*)
+    PetscErrorCode TSComputeRHSJacobian(PetscTS, PetscReal, PetscVec, PetscMat, PetscMat)
+    PetscErrorCode TSComputeRHSJacobianConstant(PetscTS, PetscReal, PetscVec, PetscMat, PetscMat, void*)
+    PetscErrorCode TSComputeIFunction(PetscTS, PetscReal, PetscVec, PetscVec, PetscVec, PetscBool)
+    PetscErrorCode TSComputeIJacobian(PetscTS, PetscReal, PetscVec, PetscVec, PetscReal, PetscMat, PetscMat, PetscBool)
+    PetscErrorCode TSComputeIJacobianP(PetscTS, PetscReal, PetscVec, PetscVec, PetscReal, PetscMat, PetscBool)
+    PetscErrorCode TSComputeI2Function(PetscTS, PetscReal, PetscVec, PetscVec, PetscVec, PetscVec)
+    PetscErrorCode TSComputeI2Jacobian(PetscTS, PetscReal, PetscVec, PetscVec, PetscVec, PetscReal, PetscReal, PetscMat, PetscMat)
 
-    PetscErrorCode TSSetTime(PetscTS,PetscReal)
-    PetscErrorCode TSGetTime(PetscTS,PetscReal*)
-    PetscErrorCode TSGetPrevTime(PetscTS,PetscReal*)
-    PetscErrorCode TSGetSolveTime(PetscTS,PetscReal*)
-    PetscErrorCode TSSetTimeStep(PetscTS,PetscReal)
-    PetscErrorCode TSGetTimeStep(PetscTS,PetscReal*)
-    PetscErrorCode TSSetStepNumber(PetscTS,PetscInt)
-    PetscErrorCode TSGetStepNumber(PetscTS,PetscInt*)
-    PetscErrorCode TSSetMaxSteps(PetscTS,PetscInt)
-    PetscErrorCode TSGetMaxSteps(PetscTS,PetscInt*)
-    PetscErrorCode TSSetMaxTime(PetscTS,PetscReal)
-    PetscErrorCode TSGetMaxTime(PetscTS,PetscReal*)
-    PetscErrorCode TSSetExactFinalTime(PetscTS,PetscTSExactFinalTimeOption)
-    PetscErrorCode TSSetTimeSpan(PetscTS,PetscInt,PetscReal*)
-    PetscErrorCode TSGetTimeSpan(PetscTS,PetscInt*,const PetscReal**)
-    PetscErrorCode TSGetTimeSpanSolutions(PetscTS,PetscInt*,PetscVec**)
+    PetscErrorCode TSSetTime(PetscTS, PetscReal)
+    PetscErrorCode TSGetTime(PetscTS, PetscReal*)
+    PetscErrorCode TSGetPrevTime(PetscTS, PetscReal*)
+    PetscErrorCode TSGetSolveTime(PetscTS, PetscReal*)
+    PetscErrorCode TSSetTimeStep(PetscTS, PetscReal)
+    PetscErrorCode TSGetTimeStep(PetscTS, PetscReal*)
+    PetscErrorCode TSSetStepNumber(PetscTS, PetscInt)
+    PetscErrorCode TSGetStepNumber(PetscTS, PetscInt*)
+    PetscErrorCode TSSetMaxSteps(PetscTS, PetscInt)
+    PetscErrorCode TSGetMaxSteps(PetscTS, PetscInt*)
+    PetscErrorCode TSSetMaxTime(PetscTS, PetscReal)
+    PetscErrorCode TSGetMaxTime(PetscTS, PetscReal*)
+    PetscErrorCode TSSetExactFinalTime(PetscTS, PetscTSExactFinalTimeOption)
+    PetscErrorCode TSSetTimeSpan(PetscTS, PetscInt, PetscReal*)
+    PetscErrorCode TSGetTimeSpan(PetscTS, PetscInt*, const PetscReal**)
+    PetscErrorCode TSGetTimeSpanSolutions(PetscTS, PetscInt*, PetscVec**)
 
-    PetscErrorCode TSSetConvergedReason(PetscTS,PetscTSConvergedReason)
-    PetscErrorCode TSGetConvergedReason(PetscTS,PetscTSConvergedReason*)
-    PetscErrorCode TSGetSNESIterations(PetscTS,PetscInt*)
-    PetscErrorCode TSGetKSPIterations(PetscTS,PetscInt*)
-    PetscErrorCode TSGetStepRejections(PetscTS,PetscInt*)
-    PetscErrorCode TSSetMaxStepRejections(PetscTS,PetscInt)
-    PetscErrorCode TSGetSNESFailures(PetscTS,PetscInt*)
-    PetscErrorCode TSSetMaxSNESFailures(PetscTS,PetscInt)
-    PetscErrorCode TSSetErrorIfStepFails(PetscTS,PetscBool)
-    PetscErrorCode TSSetTolerances(PetscTS,PetscReal,PetscVec,PetscReal,PetscVec)
-    PetscErrorCode TSGetTolerances(PetscTS,PetscReal*,PetscVec*,PetscReal*,PetscVec*)
+    PetscErrorCode TSSetConvergedReason(PetscTS, PetscTSConvergedReason)
+    PetscErrorCode TSGetConvergedReason(PetscTS, PetscTSConvergedReason*)
+    PetscErrorCode TSGetSNESIterations(PetscTS, PetscInt*)
+    PetscErrorCode TSGetKSPIterations(PetscTS, PetscInt*)
+    PetscErrorCode TSGetStepRejections(PetscTS, PetscInt*)
+    PetscErrorCode TSSetMaxStepRejections(PetscTS, PetscInt)
+    PetscErrorCode TSGetSNESFailures(PetscTS, PetscInt*)
+    PetscErrorCode TSSetMaxSNESFailures(PetscTS, PetscInt)
+    PetscErrorCode TSSetErrorIfStepFails(PetscTS, PetscBool)
+    PetscErrorCode TSSetTolerances(PetscTS, PetscReal, PetscVec, PetscReal, PetscVec)
+    PetscErrorCode TSGetTolerances(PetscTS, PetscReal*, PetscVec*, PetscReal*, PetscVec*)
 
-    PetscErrorCode TSMonitorSet(PetscTS,PetscTSMonitorFunction,void*,PetscTSCtxDel*)
+    PetscErrorCode TSMonitorSet(PetscTS, PetscTSMonitorFunction, void*, PetscTSCtxDel*)
     PetscErrorCode TSMonitorCancel(PetscTS)
-    PetscErrorCode TSMonitor(PetscTS,PetscInt,PetscReal,PetscVec)
+    PetscErrorCode TSMonitor(PetscTS, PetscInt, PetscReal, PetscVec)
 
-    ctypedef PetscErrorCode (*PetscTSIndicator)(PetscTS,PetscReal,PetscVec,PetscReal[],void*) except PETSC_ERR_PYTHON
-    ctypedef PetscErrorCode (*PetscTSPostEvent)(PetscTS,PetscInt,PetscInt[],PetscReal,PetscVec, PetscBool, void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode (*PetscTSIndicator)(PetscTS, PetscReal, PetscVec, PetscReal[], void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode (*PetscTSPostEvent)(PetscTS, PetscInt, PetscInt[], PetscReal, PetscVec, PetscBool, void*) except PETSC_ERR_PYTHON
 
     PetscErrorCode TSSetEventHandler(PetscTS, PetscInt, PetscInt[], PetscBool[], PetscTSIndicator, PetscTSPostEvent, void*)
     PetscErrorCode TSSetEventTolerances(PetscTS, PetscReal, PetscReal[])
     PetscErrorCode TSGetNumEvents(PetscTS, PetscInt*)
 
-    ctypedef PetscErrorCode (*PetscTSAdjointR)(PetscTS,PetscReal,PetscVec,PetscVec,void*) except PETSC_ERR_PYTHON
-    ctypedef PetscErrorCode (*PetscTSAdjointDRDY)(PetscTS,PetscReal,PetscVec,PetscVec[],void*) except PETSC_ERR_PYTHON
-    ctypedef PetscErrorCode (*PetscTSAdjointDRDP)(PetscTS,PetscReal,PetscVec,PetscVec[],void*) except PETSC_ERR_PYTHON
-    ctypedef PetscErrorCode (*PetscTSRHSJacobianP)(PetscTS,PetscReal,PetscVec,PetscMat,void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode (*PetscTSAdjointR)(PetscTS, PetscReal, PetscVec, PetscVec, void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode (*PetscTSAdjointDRDY)(PetscTS, PetscReal, PetscVec, PetscVec[], void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode (*PetscTSAdjointDRDP)(PetscTS, PetscReal, PetscVec, PetscVec[], void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode (*PetscTSRHSJacobianP)(PetscTS, PetscReal, PetscVec, PetscMat, void*) except PETSC_ERR_PYTHON
 
     PetscErrorCode TSSetSaveTrajectory(PetscTS)
     PetscErrorCode TSRemoveTrajectory(PetscTS)
-    PetscErrorCode TSSetCostGradients(PetscTS,PetscInt,PetscVec*,PetscVec*)
-    PetscErrorCode TSGetCostGradients(PetscTS,PetscInt*,PetscVec**,PetscVec**)
-    PetscErrorCode TSCreateQuadratureTS(PetscTS,PetscBool,PetscTS*)
-    PetscErrorCode TSGetQuadratureTS(PetscTS,PetscBool*,PetscTS*)
-    PetscErrorCode TSGetCostIntegral(PetscTS,PetscVec*)
+    PetscErrorCode TSSetCostGradients(PetscTS, PetscInt, PetscVec*, PetscVec*)
+    PetscErrorCode TSGetCostGradients(PetscTS, PetscInt*, PetscVec**, PetscVec**)
+    PetscErrorCode TSCreateQuadratureTS(PetscTS, PetscBool, PetscTS*)
+    PetscErrorCode TSGetQuadratureTS(PetscTS, PetscBool*, PetscTS*)
+    PetscErrorCode TSGetCostIntegral(PetscTS, PetscVec*)
 
-    PetscErrorCode TSSetRHSJacobianP(PetscTS,PetscMat,PetscTSRHSJacobianP,void*)
-    PetscErrorCode TSComputeRHSJacobianP(PetscTS,PetscReal,PetscVec,PetscMat)
+    PetscErrorCode TSSetRHSJacobianP(PetscTS, PetscMat, PetscTSRHSJacobianP, void*)
+    PetscErrorCode TSComputeRHSJacobianP(PetscTS, PetscReal, PetscVec, PetscMat)
 
     PetscErrorCode TSAdjointSolve(PetscTS)
-    PetscErrorCode TSAdjointSetSteps(PetscTS,PetscInt)
+    PetscErrorCode TSAdjointSetSteps(PetscTS, PetscInt)
     PetscErrorCode TSAdjointStep(PetscTS)
     PetscErrorCode TSAdjointSetUp(PetscTS)
     PetscErrorCode TSAdjointReset(PetscTS)
-    PetscErrorCode TSAdjointComputeDRDPFunction(PetscTS,PetscReal,PetscVec,PetscVec*)
-    PetscErrorCode TSAdjointComputeDRDYFunction(PetscTS,PetscReal,PetscVec,PetscVec*)
+    PetscErrorCode TSAdjointComputeDRDPFunction(PetscTS, PetscReal, PetscVec, PetscVec*)
+    PetscErrorCode TSAdjointComputeDRDYFunction(PetscTS, PetscReal, PetscVec, PetscVec*)
     PetscErrorCode TSAdjointCostIntegral(PetscTS)
 
-    PetscErrorCode TSForwardSetSensitivities(PetscTS,PetscInt,PetscVec*,PetscInt,PetscVec*)
-    PetscErrorCode TSForwardGetSensitivities(PetscTS,PetscInt*,PetscVec**,PetscInt*,PetscVec**)
-    PetscErrorCode TSForwardSetIntegralGradients(PetscTS,PetscInt,PetscVec *,PetscVec *)
-    PetscErrorCode TSForwardGetIntegralGradients(PetscTS,PetscInt*,PetscVec **,PetscVec **)
-    PetscErrorCode TSForwardSetRHSJacobianP(PetscTS,PetscVec*,PetscTSCostIntegrandFunction,void*)
-    PetscErrorCode TSForwardComputeRHSJacobianP(PetscTS,PetscReal,PetscVec,PetscVec*)
+    PetscErrorCode TSForwardSetSensitivities(PetscTS, PetscInt, PetscVec*, PetscInt, PetscVec*)
+    PetscErrorCode TSForwardGetSensitivities(PetscTS, PetscInt*, PetscVec**, PetscInt*, PetscVec**)
+    PetscErrorCode TSForwardSetIntegralGradients(PetscTS, PetscInt, PetscVec *, PetscVec *)
+    PetscErrorCode TSForwardGetIntegralGradients(PetscTS, PetscInt*, PetscVec **, PetscVec **)
+    PetscErrorCode TSForwardSetRHSJacobianP(PetscTS, PetscVec*, PetscTSCostIntegrandFunction, void*)
+    PetscErrorCode TSForwardComputeRHSJacobianP(PetscTS, PetscReal, PetscVec, PetscVec*)
     PetscErrorCode TSForwardSetUp(PetscTS)
     PetscErrorCode TSForwardCostIntegral(PetscTS)
     PetscErrorCode TSForwardStep(PetscTS)
@@ -263,19 +263,19 @@ cdef extern from * nogil:
     PetscErrorCode TSStep(PetscTS)
     PetscErrorCode TSRestartStep(PetscTS)
     PetscErrorCode TSRollBack(PetscTS)
-    PetscErrorCode TSSolve(PetscTS,PetscVec)
-    PetscErrorCode TSInterpolate(PetscTS,PetscReal,PetscVec)
-    PetscErrorCode TSPreStage(PetscTS,PetscReal)
-    PetscErrorCode TSPostStage(PetscTS,PetscReal,PetscInt,PetscVec*)
+    PetscErrorCode TSSolve(PetscTS, PetscVec)
+    PetscErrorCode TSInterpolate(PetscTS, PetscReal, PetscVec)
+    PetscErrorCode TSPreStage(PetscTS, PetscReal)
+    PetscErrorCode TSPostStage(PetscTS, PetscReal, PetscInt, PetscVec*)
 
-    PetscErrorCode TSThetaSetTheta(PetscTS,PetscReal)
-    PetscErrorCode TSThetaGetTheta(PetscTS,PetscReal*)
-    PetscErrorCode TSThetaSetEndpoint(PetscTS,PetscBool)
-    PetscErrorCode TSThetaGetEndpoint(PetscTS,PetscBool*)
+    PetscErrorCode TSThetaSetTheta(PetscTS, PetscReal)
+    PetscErrorCode TSThetaGetTheta(PetscTS, PetscReal*)
+    PetscErrorCode TSThetaSetEndpoint(PetscTS, PetscBool)
+    PetscErrorCode TSThetaGetEndpoint(PetscTS, PetscBool*)
 
-    PetscErrorCode TSAlphaSetRadius(PetscTS,PetscReal)
-    PetscErrorCode TSAlphaSetParams(PetscTS,PetscReal,PetscReal,PetscReal)
-    PetscErrorCode TSAlphaGetParams(PetscTS,PetscReal*,PetscReal*,PetscReal*)
+    PetscErrorCode TSAlphaSetRadius(PetscTS, PetscReal)
+    PetscErrorCode TSAlphaSetParams(PetscTS, PetscReal, PetscReal, PetscReal)
+    PetscErrorCode TSAlphaGetParams(PetscTS, PetscReal*, PetscReal*, PetscReal*)
 
     ctypedef const char* PetscTSRKType "TSRKType"
     PetscTSRKType TSRK1FE
@@ -291,8 +291,8 @@ cdef extern from * nogil:
     PetscTSRKType TSRK7VR
     PetscTSRKType TSRK8VR
 
-    PetscErrorCode TSRKGetType(PetscTS,PetscTSRKType*)
-    PetscErrorCode TSRKSetType(PetscTS,PetscTSRKType)
+    PetscErrorCode TSRKGetType(PetscTS, PetscTSRKType*)
+    PetscErrorCode TSRKSetType(PetscTS, PetscTSRKType)
 
     ctypedef const char* PetscTSARKIMEXType "TSARKIMEXType"
     PetscTSARKIMEXType TSARKIMEX1BEE
@@ -309,9 +309,9 @@ cdef extern from * nogil:
     PetscTSARKIMEXType TSARKIMEX4
     PetscTSARKIMEXType TSARKIMEX5
 
-    PetscErrorCode TSARKIMEXGetType(PetscTS,PetscTSRKType*)
-    PetscErrorCode TSARKIMEXSetType(PetscTS,PetscTSRKType)
-    PetscErrorCode TSARKIMEXSetFullyImplicit(PetscTS,PetscBool)
+    PetscErrorCode TSARKIMEXGetType(PetscTS, PetscTSRKType*)
+    PetscErrorCode TSARKIMEXSetType(PetscTS, PetscTSRKType)
+    PetscErrorCode TSARKIMEXSetFullyImplicit(PetscTS, PetscBool)
 
     ctypedef const char* PetscTSDIRKType "TSDIRKType"
     PetscTSDIRKType TSDIRKS212
@@ -331,29 +331,29 @@ cdef extern from * nogil:
     PetscTSDIRKType TSDIRK8616SAL
     PetscTSDIRKType TSDIRKES8516SAL
 
-    PetscErrorCode TSDIRKGetType(PetscTS,PetscTSDIRKType*)
-    PetscErrorCode TSDIRKSetType(PetscTS,PetscTSDIRKType)
+    PetscErrorCode TSDIRKGetType(PetscTS, PetscTSDIRKType*)
+    PetscErrorCode TSDIRKSetType(PetscTS, PetscTSDIRKType)
 
-    PetscErrorCode TSPythonSetType(PetscTS,char[])
-    PetscErrorCode TSPythonGetType(PetscTS,char*[])
+    PetscErrorCode TSPythonSetType(PetscTS, char[])
+    PetscErrorCode TSPythonGetType(PetscTS, char*[])
 
 cdef extern from * nogil:
     struct _p_TSAdapt
     ctypedef _p_TSAdapt *PetscTSAdapt "TSAdapt"
-    PetscErrorCode TSGetAdapt(PetscTS,PetscTSAdapt*)
-    PetscErrorCode TSAdaptGetStepLimits(PetscTSAdapt,PetscReal*,PetscReal*)
-    PetscErrorCode TSAdaptSetStepLimits(PetscTSAdapt,PetscReal,PetscReal)
-    PetscErrorCode TSAdaptCheckStage(PetscTSAdapt,PetscTS,PetscReal,PetscVec,PetscBool*)
+    PetscErrorCode TSGetAdapt(PetscTS, PetscTSAdapt*)
+    PetscErrorCode TSAdaptGetStepLimits(PetscTSAdapt, PetscReal*, PetscReal*)
+    PetscErrorCode TSAdaptSetStepLimits(PetscTSAdapt, PetscReal, PetscReal)
+    PetscErrorCode TSAdaptCheckStage(PetscTSAdapt, PetscTS, PetscReal, PetscVec, PetscBool*)
 
 cdef extern from * nogil: # custom.h
-    PetscErrorCode TSSetTimeStepNumber(PetscTS,PetscInt)
+    PetscErrorCode TSSetTimeStepNumber(PetscTS, PetscInt)
 
 # -----------------------------------------------------------------------------
 
 cdef inline TS ref_TS(PetscTS ts):
     cdef TS ob = <TS> TS()
     ob.ts = ts
-    CHKERR( PetscINCREF(ob.obj) )
+    CHKERR(PetscINCREF(ob.obj))
     return ob
 
 # -----------------------------------------------------------------------------
@@ -363,8 +363,8 @@ cdef PetscErrorCode TS_RHSFunction(
     PetscReal t,
     PetscVec  x,
     PetscVec  f,
-    void*     ctx,
-    ) except PETSC_ERR_PYTHON with gil:
+    void      *ctx,
+   ) except PETSC_ERR_PYTHON with gil:
     cdef TS  Ts   = ref_TS(ts)
     cdef Vec Xvec = ref_Vec(x)
     cdef Vec Fvec = ref_Vec(f)
@@ -381,8 +381,8 @@ cdef PetscErrorCode TS_RHSJacobian(
     PetscVec  x,
     PetscMat  J,
     PetscMat  P,
-    void*     ctx,
-    ) except PETSC_ERR_PYTHON with gil:
+    void      *ctx,
+   ) except PETSC_ERR_PYTHON with gil:
     cdef TS  Ts   = ref_TS(ts)
     cdef Vec Xvec = ref_Vec(x)
     cdef Mat Jmat = ref_Mat(J)
@@ -399,8 +399,8 @@ cdef PetscErrorCode TS_RHSJacobianP(
     PetscReal t,
     PetscVec  x,
     PetscMat  J,
-    void*     ctx,
-    ) except PETSC_ERR_PYTHON with gil:
+    void      *ctx,
+   ) except PETSC_ERR_PYTHON with gil:
     cdef TS  Ts   = ref_TS(ts)
     cdef Vec Xvec = ref_Vec(x)
     cdef Mat Jmat = ref_Mat(J)
@@ -419,8 +419,8 @@ cdef PetscErrorCode TS_IFunction(
     PetscVec  x,
     PetscVec  xdot,
     PetscVec  f,
-    void*     ctx,
-    ) except PETSC_ERR_PYTHON with gil:
+    void      *ctx,
+   ) except PETSC_ERR_PYTHON with gil:
     cdef TS  Ts    = ref_TS(ts)
     cdef Vec Xvec  = ref_Vec(x)
     cdef Vec XDvec = ref_Vec(xdot)
@@ -440,8 +440,8 @@ cdef PetscErrorCode TS_IJacobian(
     PetscReal a,
     PetscMat  J,
     PetscMat  P,
-    void*     ctx,
-    ) except PETSC_ERR_PYTHON with gil:
+    void      *ctx,
+   ) except PETSC_ERR_PYTHON with gil:
     cdef TS   Ts    = ref_TS(ts)
     cdef Vec  Xvec  = ref_Vec(x)
     cdef Vec  XDvec = ref_Vec(xdot)
@@ -461,8 +461,8 @@ cdef PetscErrorCode TS_IJacobianP(
     PetscVec  xdot,
     PetscReal a,
     PetscMat  J,
-    void*     ctx,
-    ) except PETSC_ERR_PYTHON with gil:
+    void      *ctx,
+   ) except PETSC_ERR_PYTHON with gil:
     cdef TS   Ts    = ref_TS(ts)
     cdef Vec  Xvec  = ref_Vec(x)
     cdef Vec  XDvec = ref_Vec(xdot)
@@ -481,8 +481,8 @@ cdef PetscErrorCode TS_I2Function(
     PetscVec  xdot,
     PetscVec  xdotdot,
     PetscVec  f,
-    void*     ctx,
-    ) except PETSC_ERR_PYTHON with gil:
+    void      *ctx,
+   ) except PETSC_ERR_PYTHON with gil:
     cdef TS  Ts    = ref_TS(ts)
     cdef Vec Xvec  = ref_Vec(x)
     cdef Vec XDvec = ref_Vec(xdot)
@@ -505,8 +505,8 @@ cdef PetscErrorCode TS_I2Jacobian(
     PetscReal a,
     PetscMat  J,
     PetscMat  P,
-    void*     ctx,
-    ) except PETSC_ERR_PYTHON with gil:
+    void      *ctx,
+   ) except PETSC_ERR_PYTHON with gil:
     cdef TS   Ts    = ref_TS(ts)
     cdef Vec  Xvec  = ref_Vec(x)
     cdef Vec  XDvec = ref_Vec(xdot)
@@ -527,8 +527,8 @@ cdef PetscErrorCode TS_Monitor(
     PetscInt  step,
     PetscReal time,
     PetscVec  u,
-    void*     ctx,
-    ) except PETSC_ERR_PYTHON with gil:
+    void      *ctx,
+   ) except PETSC_ERR_PYTHON with gil:
     cdef TS  Ts = ref_TS(ts)
     cdef Vec Vu = ref_Vec(u)
     cdef object monitorlist = Ts.get_attr('__monitor__')
@@ -540,19 +540,19 @@ cdef PetscErrorCode TS_Monitor(
 # -----------------------------------------------------------------------------
 
 cdef PetscErrorCode TS_Indicator(
-    PetscTS     ts,
-    PetscReal   time,
-    PetscVec    u,
-    PetscReal   fvalue[],
-    void*       ctx,
-    ) except PETSC_ERR_PYTHON with gil:
+    PetscTS   ts,
+    PetscReal time,
+    PetscVec  u,
+    PetscReal fvalue[],
+    void      *ctx,
+   ) except PETSC_ERR_PYTHON with gil:
     cdef TS  Ts = ref_TS(ts)
     cdef Vec Vu = ref_Vec(u)
     cdef object context = Ts.get_attr('__indicator__')
     if context is None: return PETSC_SUCCESS
     (indicator, args, kargs) = context
     cdef PetscInt nevents = 0
-    CHKERR( TSGetNumEvents(ts, &nevents) )
+    CHKERR(TSGetNumEvents(ts, &nevents))
     cdef npy_intp s = <npy_intp> nevents
     fvalue_array = PyArray_SimpleNewFromData(1, &s, NPY_PETSC_REAL, fvalue)
     indicator(Ts, toReal(time), Vu, fvalue_array, *args, **kargs)
@@ -565,8 +565,8 @@ cdef PetscErrorCode TS_PostEvent(
     PetscReal time,
     PetscVec  u,
     PetscBool forward,
-    void*     ctx,
-    ) except PETSC_ERR_PYTHON with gil:
+    void      *ctx,
+   ) except PETSC_ERR_PYTHON with gil:
     cdef TS  Ts = ref_TS(ts)
     cdef Vec Vu = ref_Vec(u)
     cdef object context = Ts.get_attr('__postevent__')
@@ -579,7 +579,7 @@ cdef PetscErrorCode TS_PostEvent(
 
 cdef PetscErrorCode TS_PreStep(
     PetscTS ts,
-    ) except PETSC_ERR_PYTHON with gil:
+   ) except PETSC_ERR_PYTHON with gil:
     cdef TS Ts = ref_TS(ts)
     (prestep, args, kargs) = Ts.get_attr('__prestep__')
     prestep(Ts, *args, **kargs)
@@ -587,7 +587,7 @@ cdef PetscErrorCode TS_PreStep(
 
 cdef PetscErrorCode TS_PostStep(
     PetscTS ts,
-    ) except PETSC_ERR_PYTHON with gil:
+   ) except PETSC_ERR_PYTHON with gil:
     cdef TS Ts = ref_TS(ts)
     (poststep, args, kargs) = Ts.get_attr('__poststep__')
     poststep(Ts, *args, **kargs)

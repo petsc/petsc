@@ -1,17 +1,21 @@
 import unittest
 from petsc4py import PETSc
 from sys import getrefcount
+import numpy
+
 
 # --------------------------------------------------------------------
 class Objective:
     def __call__(self, tao, x):
-        return (x[0] - 1.0)**2 + (x[1] - 2.0)**2
+        return (x[0] - 1.0) ** 2 + (x[1] - 2.0) ** 2
+
 
 class Gradient:
     def __call__(self, tao, x, g):
-        g[0] = 2.0*(x[0] - 1.0)
-        g[1] = 2.0*(x[1] - 2.0)
+        g[0] = 2.0 * (x[0] - 1.0)
+        g[1] = 2.0 * (x[1] - 2.0)
         g.assemble()
+
 
 class MyTao:
     def __init__(self):
@@ -41,7 +45,7 @@ class MyTao:
 
     def step(self, tao, x, g, s):
         self._log('step')
-        tao.computeGradient(x,g)
+        tao.computeGradient(x, g)
         g.copy(s)
         s.scale(-1.0)
 
@@ -54,13 +58,13 @@ class MyTao:
     def monitor(self, tao):
         self._log('monitor')
 
-class TestTaoPython(unittest.TestCase):
 
+class TestTaoPython(unittest.TestCase):
     def setUp(self):
         self.tao = PETSc.TAO()
         self.tao.createPython(MyTao(), comm=PETSc.COMM_SELF)
         ctx = self.tao.getPythonContext()
-        self.assertEqual(getrefcount(ctx),  3)
+        self.assertEqual(getrefcount(ctx), 3)
         self.assertEqual(ctx.log['create'], 1)
         self.nsolve = 0
 
@@ -72,11 +76,11 @@ class TestTaoPython(unittest.TestCase):
         self.tao = None
         PETSc.garbage_cleanup()
         self.assertEqual(ctx.log['destroy'], 1)
-        self.assertEqual(getrefcount(ctx),   2)
+        self.assertEqual(getrefcount(ctx), 2)
 
     def testGetType(self):
         ctx = self.tao.getPythonContext()
-        pytype = "{0}.{1}".format(ctx.__module__, type(ctx).__name__)
+        pytype = f'{ctx.__module__}.{type(ctx).__name__}'
         self.assertTrue(self.tao.getPythonType() == pytype)
 
     def testSolve(self):
@@ -88,7 +92,7 @@ class TestTaoPython(unittest.TestCase):
         y1 = x.duplicate()
         y2 = x.duplicate()
         tao.setObjective(Objective())
-        tao.setGradient(Gradient(),None)
+        tao.setGradient(Gradient(), None)
         tao.setMonitor(ctx.monitor)
         tao.setFromOptions()
         tao.setMaximumIterations(3)
@@ -117,18 +121,18 @@ class TestTaoPython(unittest.TestCase):
         x.copy(y2)
 
         self.assertTrue(y1.equal(y2))
-        self.assertTrue(ctx.log['monitor'] == 2*(n+1))
-        self.assertTrue(ctx.log['preStep'] == 2*n)
-        self.assertTrue(ctx.log['postStep'] == 2*n)
+        self.assertTrue(ctx.log['monitor'] == 2 * (n + 1))
+        self.assertTrue(ctx.log['preStep'] == 2 * n)
+        self.assertTrue(ctx.log['postStep'] == 2 * n)
         self.assertTrue(ctx.log['solve'] == 1)
         self.assertTrue(ctx.log['setUp'] == 1)
         self.assertTrue(ctx.log['setFromOptions'] == 1)
         self.assertTrue(ctx.log['step'] == n)
         tao.cancelMonitor()
 
+
 # --------------------------------------------------------------------
 
-import numpy
 if numpy.iscomplexobj(PETSc.ScalarType()):
     del TestTaoPython
 
