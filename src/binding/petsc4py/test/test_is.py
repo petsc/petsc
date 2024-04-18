@@ -4,8 +4,8 @@ import random
 
 # --------------------------------------------------------------------
 
-class BaseTestIS(object):
 
+class BaseTestIS:
     TYPE = None
 
     def tearDown(self):
@@ -50,8 +50,8 @@ class BaseTestIS(object):
         self.iset.sort()
         nmin = self.iset.getIndices().min()
         nmax = self.iset.getIndices().max()
-        iset = self.iset.complement(nmin, nmax+1)
-        iset.complement(nmin, nmax+1)
+        iset = self.iset.complement(nmin, nmax + 1)
+        iset.complement(nmin, nmax + 1)
         del iset
 
     def testSum(self):
@@ -70,35 +70,43 @@ class BaseTestIS(object):
         del iset
 
     def testRenumber(self):
-        (n1,is1) = self.iset.renumber()
-        (n2,is2) = self.iset.renumber(self.iset)
+        (n1, is1) = self.iset.renumber()
+        (n2, is2) = self.iset.renumber(self.iset)
         del is1
         del is2
 
     def testProperties(self):
-        proplist = ['sizes', 'size', 'local_size', 'indices',
-                    'permutation', 'identity', 'sorted']
+        proplist = [
+            'sizes',
+            'size',
+            'local_size',
+            'indices',
+            'permutation',
+            'identity',
+            'sorted',
+        ]
         for prop in proplist:
             self.assertTrue(hasattr(self.iset, prop))
 
     def testArray(self):
         import numpy
+
         refs = self.iset.getRefCount()
         arr1 = numpy.asarray(self.iset)
-        self.assertEqual(self.iset.getRefCount(), refs+1)
+        self.assertEqual(self.iset.getRefCount(), refs + 1)
         arr2 = self.iset.array
-        self.assertEqual(self.iset.getRefCount(), refs+2)
+        self.assertEqual(self.iset.getRefCount(), refs + 2)
         self.assertTrue((arr1 == arr2).all())
         del arr2
-        self.assertEqual(self.iset.getRefCount(), refs+1)
+        self.assertEqual(self.iset.getRefCount(), refs + 1)
         del arr1
         self.assertEqual(self.iset.getRefCount(), refs)
 
 
 # --------------------------------------------------------------------
 
-class TestISGeneral(BaseTestIS, unittest.TestCase):
 
+class TestISGeneral(BaseTestIS, unittest.TestCase):
     TYPE = PETSc.IS.Type.GENERAL
 
     def setUp(self):
@@ -112,7 +120,6 @@ class TestISGeneral(BaseTestIS, unittest.TestCase):
 
 
 class TestISStride(BaseTestIS, unittest.TestCase):
-
     TYPE = PETSc.IS.Type.STRIDE
 
     def setUp(self):
@@ -122,7 +129,7 @@ class TestISStride(BaseTestIS, unittest.TestCase):
 
     def testGetIndices(self):
         size, start, step = self.info
-        indices = [start+i*step for i in range(size)]
+        indices = [start + i * step for i in range(size)]
         self.assertEqual(list(self.iset.getIndices()), indices)
 
     def testToGeneral(self):
@@ -131,19 +138,18 @@ class TestISStride(BaseTestIS, unittest.TestCase):
 
 
 class TestISBlock(BaseTestIS, unittest.TestCase):
-
     TYPE = PETSc.IS.Type.BLOCK
 
     def setUp(self):
         self.bsize = 3
-        self.index = list(range(0,10,2))
+        self.index = list(range(0, 10, 2))
         random.shuffle(self.index)
         self.iset = PETSc.IS().createBlock(self.bsize, self.index)
         self.assertEqual(self.iset.getType(), PETSc.IS.Type.BLOCK)
 
     def testGetSize(self):
         lsize = self.iset.getLocalSize()
-        self.assertEqual(lsize/self.bsize, len(self.index))
+        self.assertEqual(lsize / self.bsize, len(self.index))
 
     def testGetBlockSize(self):
         bs = self.iset.getBlockSize()
@@ -158,9 +164,9 @@ class TestISBlock(BaseTestIS, unittest.TestCase):
         idx = []
         for i in self.iset.getBlockIndices():
             for j in range(bs):
-                idx.append(i*bs+j)
+                idx.append(i * bs + j)
         index = list(self.iset.getIndices())
-        #self.assertEqual(index, idx)
+        self.assertEqual(index, idx)
 
 
 # --------------------------------------------------------------------

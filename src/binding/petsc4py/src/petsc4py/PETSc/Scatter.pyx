@@ -19,6 +19,7 @@ class ScatterType(object):
 
 # --------------------------------------------------------------------
 
+
 cdef class Scatter(Object):
     """Scatter object.
 
@@ -30,7 +31,6 @@ cdef class Scatter(Object):
     Vec, SF, petsc.VecScatter
 
     """
-
 
     Type = ScatterType
     Mode = ScatterMode
@@ -72,7 +72,7 @@ cdef class Scatter(Object):
         """
         cdef PetscViewer vwr = NULL
         if viewer is not None: vwr = viewer.vwr
-        CHKERR( VecScatterView(self.sct, vwr) )
+        CHKERR(VecScatterView(self.sct, vwr))
 
     def destroy(self) -> Self:
         """Destroy the scatter.
@@ -84,7 +84,7 @@ cdef class Scatter(Object):
         petsc.VecScatterDestroy
 
         """
-        CHKERR( VecScatterDestroy(&self.sct) )
+        CHKERR(VecScatterDestroy(&self.sct))
         return self
 
     def create(
@@ -92,8 +92,7 @@ cdef class Scatter(Object):
         Vec vec_from,
         IS is_from or None,
         Vec vec_to,
-        IS is_to or None,
-    ) -> Self:
+        IS is_to or None) -> Self:
         """Create a scatter object.
 
         Collective.
@@ -139,9 +138,9 @@ cdef class Scatter(Object):
         if is_from is not None: cisfrom = is_from.iset
         if is_to   is not None: cisto   = is_to.iset
         cdef PetscScatter newsct = NULL
-        CHKERR( VecScatterCreate(
-                vec_from.vec, cisfrom, vec_to.vec, cisto, &newsct) )
-        CHKERR( PetscCLEAR(self.obj) ); self.sct = newsct
+        CHKERR(VecScatterCreate(
+                vec_from.vec, cisfrom, vec_to.vec, cisto, &newsct))
+        CHKERR(PetscCLEAR(self.obj)); self.sct = newsct
         return self
 
     def setType(self, scatter_type: Type | str) -> None:
@@ -155,8 +154,8 @@ cdef class Scatter(Object):
 
         """
         cdef PetscScatterType cval = NULL
-        vec_type = str2bytes(scatter_type, &cval)
-        CHKERR( VecScatterSetType(self.sct, cval) )
+        scatter_type = str2bytes(scatter_type, &cval)
+        CHKERR(VecScatterSetType(self.sct, cval))
 
     def getType(self) -> str:
         """Return the type of the scatter.
@@ -169,7 +168,7 @@ cdef class Scatter(Object):
 
         """
         cdef PetscScatterType cval = NULL
-        CHKERR( VecScatterGetType(self.sct, &cval) )
+        CHKERR(VecScatterGetType(self.sct, &cval))
         return bytes2str(cval)
 
     def setFromOptions(self) -> None:
@@ -182,7 +181,7 @@ cdef class Scatter(Object):
         petsc_options, petsc.VecScatterSetFromOptions
 
         """
-        CHKERR( VecScatterSetFromOptions(self.sct) )
+        CHKERR(VecScatterSetFromOptions(self.sct))
 
     def setUp(self) -> Self:
         """Set up the internal data structures for using the scatter.
@@ -194,13 +193,13 @@ cdef class Scatter(Object):
         petsc.VecScatterSetUp
 
         """
-        CHKERR( VecScatterSetUp(self.sct) )
+        CHKERR(VecScatterSetUp(self.sct))
         return self
 
     def copy(self) -> Scatter:
         """Return a copy of the scatter."""
         cdef Scatter scatter = Scatter()
-        CHKERR( VecScatterCopy(self.sct, &scatter.sct) )
+        CHKERR(VecScatterCopy(self.sct, &scatter.sct))
         return scatter
 
     @classmethod
@@ -227,8 +226,8 @@ cdef class Scatter(Object):
         """
         cdef Scatter scatter = Scatter()
         cdef Vec ovec = Vec()
-        CHKERR( VecScatterCreateToAll(
-            vec.vec, &scatter.sct, &ovec.vec) )
+        CHKERR(VecScatterCreateToAll(
+            vec.vec, &scatter.sct, &ovec.vec))
         return (scatter, ovec)
 
     @classmethod
@@ -255,8 +254,8 @@ cdef class Scatter(Object):
         """
         cdef Scatter scatter = Scatter()
         cdef Vec ovec = Vec()
-        CHKERR( VecScatterCreateToZero(
-            vec.vec, &scatter.sct, &ovec.vec) )
+        CHKERR(VecScatterCreateToZero(
+            vec.vec, &scatter.sct, &ovec.vec))
         return (scatter, ovec)
     #
 
@@ -265,8 +264,7 @@ cdef class Scatter(Object):
         Vec vec_from,
         Vec vec_to,
         addv: InsertModeSpec = None,
-        mode: ScatterModeSpec = None,
-    ) -> None:
+        mode: ScatterModeSpec = None) -> None:
         """Begin a generalized scatter from one vector into another.
 
         Collective.
@@ -281,16 +279,15 @@ cdef class Scatter(Object):
         """
         cdef PetscInsertMode  caddv = insertmode(addv)
         cdef PetscScatterMode csctm = scattermode(mode)
-        CHKERR( VecScatterBegin(self.sct, vec_from.vec, vec_to.vec,
-                                caddv, csctm) )
+        CHKERR(VecScatterBegin(self.sct, vec_from.vec, vec_to.vec,
+                               caddv, csctm))
 
     def end(
         self,
         Vec vec_from,
         Vec vec_to,
         addv: InsertModeSpec = None,
-        mode: ScatterModeSpec = None,
-    ) -> None:
+        mode: ScatterModeSpec = None) -> None:
         """Complete a generalized scatter from one vector into another.
 
         Collective.
@@ -305,16 +302,15 @@ cdef class Scatter(Object):
         """
         cdef PetscInsertMode  caddv = insertmode(addv)
         cdef PetscScatterMode csctm = scattermode(mode)
-        CHKERR( VecScatterEnd(self.sct, vec_from.vec, vec_to.vec,
-                              caddv, csctm) )
+        CHKERR(VecScatterEnd(self.sct, vec_from.vec, vec_to.vec,
+                             caddv, csctm))
 
     def scatter(
         self,
         Vec vec_from,
         Vec vec_to,
         addv: InsertModeSpec = None,
-        mode: ScatterModeSpec = None,
-    ) -> None:
+        mode: ScatterModeSpec = None) -> None:
         """Perform a generalized scatter from one vector into another.
 
         Collective.
@@ -337,10 +333,10 @@ cdef class Scatter(Object):
         """
         cdef PetscInsertMode  caddv = insertmode(addv)
         cdef PetscScatterMode csctm = scattermode(mode)
-        CHKERR( VecScatterBegin(self.sct, vec_from.vec, vec_to.vec,
-                                caddv, csctm) )
-        CHKERR( VecScatterEnd(self.sct, vec_from.vec, vec_to.vec,
-                              caddv, csctm) )
+        CHKERR(VecScatterBegin(self.sct, vec_from.vec, vec_to.vec,
+                               caddv, csctm))
+        CHKERR(VecScatterEnd(self.sct, vec_from.vec, vec_to.vec,
+                             caddv, csctm))
 
     scatterBegin = begin
     scatterEnd = end

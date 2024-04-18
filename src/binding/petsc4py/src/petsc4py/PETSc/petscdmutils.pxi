@@ -15,8 +15,3 @@ cdef extern from * nogil:
     PetscErrorCode DMInterpolationSetDim(PetscDMInterpolation, PetscInt)
     PetscErrorCode DMInterpolationSetDof(PetscDMInterpolation, PetscInt)
     PetscErrorCode DMInterpolationSetUp(PetscDMInterpolation, PetscDM, PetscBool, PetscBool)
-
-
-
-
-

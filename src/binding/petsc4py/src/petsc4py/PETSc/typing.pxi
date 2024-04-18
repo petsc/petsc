@@ -105,4 +105,3 @@ cdef TAOLSObjectiveGradientFunction
 cdef Intracomm
 cdef Datatype
 cdef Op
-

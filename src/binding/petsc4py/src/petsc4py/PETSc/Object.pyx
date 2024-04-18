@@ -1,7 +1,13 @@
 # --------------------------------------------------------------------
 
 cdef class Object:
+    """Base class wrapping a PETSc object.
 
+    See Also
+    --------
+    petsc.PetscObject
+
+    """
     # --- special methods ---
 
     def __cinit__(self):
@@ -9,7 +15,7 @@ cdef class Object:
         self.obj = &self.oval
 
     def __dealloc__(self):
-        CHKERR( PetscDEALLOC(&self.obj[0]) )
+        CHKERR(PetscDEALLOC(&self.obj[0]))
         self.obj = NULL
 
     def __richcmp__(self, other, int op):
@@ -27,7 +33,7 @@ cdef class Object:
         cdef Object obj = type(self)()
         cdef PetscObject o = self.obj[0]
         if o != NULL:
-            CHKERR( PetscObjectReference(o) )
+            CHKERR(PetscObjectReference(o))
         obj.obj[0] = o
         return obj
 
@@ -53,207 +59,481 @@ cdef class Object:
 
     #
 
-    def view(self, Viewer viewer=None):
+    def view(self, Viewer viewer=None) -> None:
+        """Display the object.
+
+        Collective.
+
+        Parameters
+        ----------
+        viewer
+            A `Viewer` instance or `None` for the default viewer.
+
+        See Also
+        --------
+        petsc.PetscObjectView
+
+        """
         cdef PetscViewer vwr = NULL
         if viewer is not None: vwr = viewer.vwr
-        CHKERR( PetscObjectView(self.obj[0], vwr) )
+        CHKERR(PetscObjectView(self.obj[0], vwr))
 
-    def destroy(self):
-        CHKERR( PetscObjectDestroy(&self.obj[0]) )
+    def destroy(self) -> Self:
+        """Destroy the object.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.PetscObjectDestroy
+
+        """
+        CHKERR(PetscObjectDestroy(&self.obj[0]))
         return self
 
-    def getType(self):
+    def getType(self) -> str:
+        """Return the object type name.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.PetscObjectGetType
+
+        """
         cdef const char *cval = NULL
-        CHKERR( PetscObjectGetType(self.obj[0], &cval) )
+        CHKERR(PetscObjectGetType(self.obj[0], &cval))
         return bytes2str(cval)
 
     #
 
-    def setOptionsPrefix(self, prefix):
+    def setOptionsPrefix(self, prefix : str | None) -> None:
+        """Set the prefix used for searching for options in the database.
+
+        Logically collective.
+
+        See Also
+        --------
+        petsc_options, getOptionsPrefix, petsc.PetscObjectSetOptionsPrefix
+
+        """
         cdef const char *cval = NULL
         prefix = str2bytes(prefix, &cval)
-        CHKERR( PetscObjectSetOptionsPrefix(self.obj[0], cval) )
+        CHKERR(PetscObjectSetOptionsPrefix(self.obj[0], cval))
 
-    def getOptionsPrefix(self):
+    def getOptionsPrefix(self) -> str:
+        """Return the prefix used for searching for options in the database.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc_options, setOptionsPrefix, petsc.PetscObjectGetOptionsPrefix
+
+        """
         cdef const char *cval = NULL
-        CHKERR( PetscObjectGetOptionsPrefix(self.obj[0], &cval) )
+        CHKERR(PetscObjectGetOptionsPrefix(self.obj[0], &cval))
         return bytes2str(cval)
 
-    def appendOptionsPrefix(self, prefix):
+    def appendOptionsPrefix(self, prefix: str | None) -> None:
+        """Append to the prefix used for searching for options in the database.
+
+        Logically collective.
+
+        See Also
+        --------
+        petsc_options, setOptionsPrefix, petsc.PetscObjectAppendOptionsPrefix
+
+        """
         cdef const char *cval = NULL
         prefix = str2bytes(prefix, &cval)
-        CHKERR( PetscObjectAppendOptionsPrefix(self.obj[0], cval) )
+        CHKERR(PetscObjectAppendOptionsPrefix(self.obj[0], cval))
 
-    def setFromOptions(self):
-        CHKERR( PetscObjectSetFromOptions(self.obj[0]) )
+    def setFromOptions(self) -> None:
+        """Configure the object from the options database.
 
-    def viewFromOptions(self, name, Object prefix=None):
+        Collective.
+
+        See Also
+        --------
+        petsc_options, petsc.PetscObjectSetFromOptions
+
+        """
+        CHKERR(PetscObjectSetFromOptions(self.obj[0]))
+
+    def viewFromOptions(self, name : str, Object objpre=None) -> None:
+        """View the object via command line options.
+
+        Collective.
+
+        Parameters
+        ----------
+        name
+            The command line option.
+        objpre
+            Optional object that provides prefix.
+
+        See Also
+        --------
+        petsc_options, petsc.PetscObjectViewFromOptions
+
+        """
         cdef PetscObject pobj = NULL
         cdef const char *cval = NULL
-        pobj = prefix.obj[0] if prefix is not None else NULL
+        pobj = objpre.obj[0] if objpre is not None else NULL
         name = str2bytes(name, &cval)
-        CHKERR( PetscObjectViewFromOptions(self.obj[0], pobj, cval) )
+        CHKERR(PetscObjectViewFromOptions(self.obj[0], pobj, cval))
 
     #
 
-    def getComm(self):
+    def getComm(self) -> Comm:
+        """Return the communicator of the object.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.PetscObjectGetComm
+
+        """
         cdef Comm comm = Comm()
-        CHKERR( PetscObjectGetComm(self.obj[0], &comm.comm) )
+        CHKERR(PetscObjectGetComm(self.obj[0], &comm.comm))
         return comm
 
-    def getName(self):
+    def getName(self) -> str:
+        """Return the name of the object.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.PetscObjectGetName
+
+        """
         cdef const char *cval = NULL
-        CHKERR( PetscObjectGetName(self.obj[0], &cval) )
+        CHKERR(PetscObjectGetName(self.obj[0], &cval))
         return bytes2str(cval)
 
-    def setName(self, name):
+    def setName(self, name : str | None) -> None:
+        """Associate a name to the object.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.PetscObjectSetName
+
+        """
         cdef const char *cval = NULL
         name = str2bytes(name, &cval)
-        CHKERR( PetscObjectSetName(self.obj[0], cval) )
+        CHKERR(PetscObjectSetName(self.obj[0], cval))
 
-    def getClassId(self):
+    def getClassId(self) -> int:
+        """Return the class identifier of the object.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.PetscObjectGetClassId
+
+        """
         cdef PetscClassId classid = 0
-        CHKERR( PetscObjectGetClassId(self.obj[0], &classid) )
+        CHKERR(PetscObjectGetClassId(self.obj[0], &classid))
         return <long>classid
 
-    def getClassName(self):
+    def getClassName(self) -> str:
+        """Return the class name of the object.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.PetscObjectGetClassName
+
+        """
         cdef const char *cval = NULL
-        CHKERR( PetscObjectGetClassName(self.obj[0], &cval) )
+        CHKERR(PetscObjectGetClassName(self.obj[0], &cval))
         return bytes2str(cval)
 
-    def getRefCount(self):
+    def getRefCount(self) -> int:
+        """Return the reference count of the object.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.PetscObjectGetReference
+
+        """
         if self.obj[0] == NULL: return 0
         cdef PetscInt refcnt = 0
-        CHKERR( PetscObjectGetReference(self.obj[0], &refcnt) )
+        CHKERR(PetscObjectGetReference(self.obj[0], &refcnt))
         return toInt(refcnt)
 
     # --- general support ---
 
-    def compose(self, name, Object obj or None):
+    def compose(self, name : str | None, Object obj or None) -> None:
+        """Associate a PETSc object using a key string.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        name
+            The string identifying the object to be composed.
+        obj
+            The object to be composed.
+
+        See Also
+        --------
+        query, petsc.PetscObjectCompose
+
+        """
         cdef const char *cval = NULL
         cdef PetscObject cobj = NULL
         name = str2bytes(name, &cval)
         if obj is not None: cobj = obj.obj[0]
-        CHKERR( PetscObjectCompose(self.obj[0], cval, cobj) )
+        CHKERR(PetscObjectCompose(self.obj[0], cval, cobj))
 
-    def query(self, name):
+    def query(self, name: str) -> Object:
+        """Query for the PETSc object associated with a key string.
+
+        Not collective.
+
+        See Also
+        --------
+        compose, petsc.PetscObjectQuery
+
+        """
         cdef const char *cval = NULL
         cdef PetscObject cobj = NULL
         name = str2bytes(name, &cval)
-        CHKERR( PetscObjectQuery(self.obj[0], cval, &cobj) )
+        CHKERR(PetscObjectQuery(self.obj[0], cval, &cobj))
         if cobj == NULL: return None
         cdef Object obj = subtype_Object(cobj)()
         obj.obj[0] = cobj
-        CHKERR( PetscINCREF(obj.obj) )
+        CHKERR(PetscINCREF(obj.obj))
         return obj
 
-    def incRef(self):
-        cdef PetscObject obj = self.obj[0]
-        cdef PetscInt refct = 0
-        if obj != NULL:
-            CHKERR( PetscObjectReference(obj) )
-            CHKERR( PetscObjectGetReference(obj, &refct) )
-        return (<long>refct)
+    def incRef(self) -> int:
+        """Increment the object reference count.
 
-    def decRef(self):
+        Logically collective.
+
+        See Also
+        --------
+        getRefCount, petsc.PetscObjectReference
+
+        """
         cdef PetscObject obj = self.obj[0]
         cdef PetscInt refct = 0
         if obj != NULL:
-            CHKERR( PetscObjectGetReference(obj, &refct) )
-            CHKERR( PetscObjectDereference(obj) )
+            CHKERR(PetscObjectReference(obj))
+            CHKERR(PetscObjectGetReference(obj, &refct))
+        return toInt(refct)
+
+    def decRef(self) -> int:
+        """Decrement the object reference count.
+
+        Logically collective.
+
+        See Also
+        --------
+        getRefCount, petsc.PetscObjectDereference
+
+        """
+        cdef PetscObject obj = self.obj[0]
+        cdef PetscInt refct = 0
+        if obj != NULL:
+            CHKERR(PetscObjectGetReference(obj, &refct))
+            CHKERR(PetscObjectDereference(obj))
             if refct == 1: self.obj[0] = NULL
             refct -= 1
-        return (<long>refct)
+        return toInt(refct)
 
-    def getAttr(self, name):
+    def getAttr(self, name : str) -> object:
+        """Return the attribute associated with a given name.
+
+        Not collective.
+
+        See Also
+        --------
+        setAttr, getDict
+
+        """
         cdef const char *cval = NULL
         name = str2bytes(name, &cval)
         return self.get_attr(<char*>cval)
 
-    def setAttr(self, name, attr):
+    def setAttr(self, name : str, attr : object) -> None:
+        """Set an the attribute associated with a given name.
+
+        Not collective.
+
+        See Also
+        --------
+        getAttr, getDict
+
+        """
         cdef const char *cval = NULL
         name = str2bytes(name, &cval)
         self.set_attr(<char*>cval, attr)
 
-    def getDict(self):
+    def getDict(self) -> dict:
+        """Return the dictionary of attributes.
+
+        Not collective.
+
+        See Also
+        --------
+        setAttr, getAttr
+
+        """
         return self.get_dict()
 
     # --- state manipulation ---
-    def stateIncrease(self):
+    def stateIncrease(self) -> None:
+        """Increment the PETSc object state.
+
+        Logically collective.
+
+        See Also
+        --------
+        stateGet, stateSet, petsc.PetscObjectStateIncrease
+
+        """
         PetscINCSTATE(self.obj)
 
-    def stateGet(self):
-        cdef PetscObjectState state = 0
-        CHKERR( PetscObjectStateGet(self.obj[0], &state) )
-        return toInt(state)
+    def stateGet(self) -> int:
+        """Return the PETSc object state.
 
-    def stateSet(self, state):
+        Not collective.
+
+        See Also
+        --------
+        stateSet, stateIncrease, petsc.PetscObjectStateGet
+
+        """
+        cdef PetscObjectState state = 0
+        CHKERR(PetscObjectStateGet(self.obj[0], &state))
+        return <long>state
+
+    def stateSet(self, state : int) -> None:
+        """Set the PETSc object state.
+
+        Logically collective.
+
+        See Also
+        --------
+        stateIncrease, stateGet, petsc.PetscObjectStateSet
+
+        """
         cdef PetscObjectState cstate = asInt(state)
-        CHKERR( PetscObjectStateSet(self.obj[0], cstate) )
+        CHKERR(PetscObjectStateSet(self.obj[0], cstate))
 
     # --- tab level ---
 
-    def incrementTabLevel(self, tab, Object parent=None):
+    def incrementTabLevel(self, tab : int, Object parent=None) -> None:
+        """Increment the PETSc object tab level.
+
+        Logically collective.
+
+        See Also
+        --------
+        setTabLevel, getTabLevel, petsc.PetscObjectIncrementTabLevel
+
+        """
         cdef PetscInt ctab = asInt(tab)
         cdef PetscObject cobj = <PetscObject> NULL if parent is None else parent.obj[0]
-        CHKERR( PetscObjectIncrementTabLevel(self.obj[0], cobj, ctab) )
+        CHKERR(PetscObjectIncrementTabLevel(self.obj[0], cobj, ctab))
 
-    def setTabLevel(self, level):
+    def setTabLevel(self, level : int) -> None:
+        """Set the PETSc object tab level.
+
+        Logically collective.
+
+        See Also
+        --------
+        incrementTabLevel, getTabLevel, petsc.PetscObjectSetTabLevel
+
+        """
         cdef PetscInt clevel = asInt(level)
-        CHKERR( PetscObjectSetTabLevel(self.obj[0], clevel) )
+        CHKERR(PetscObjectSetTabLevel(self.obj[0], clevel))
 
-    def getTabLevel(self):
+    def getTabLevel(self) -> None:
+        """Return the PETSc object tab level.
+
+        Not collective.
+
+        See Also
+        --------
+        setTabLevel, incrementTabLevel, petsc.PetscObjectGetTabLevel
+
+        """
         cdef PetscInt clevel = 0
-        CHKERR( PetscObjectGetTabLevel(self.obj[0], &clevel) )
+        CHKERR(PetscObjectGetTabLevel(self.obj[0], &clevel))
         return toInt(clevel)
 
     # --- properties ---
 
     property type:
-        def __get__(self):
+        """Object type."""
+        def __get__(self) -> str:
             return self.getType()
+
         def __set__(self, value):
             self.setType(value)
 
     property prefix:
-        def __get__(self):
+        """Options prefix."""
+        def __get__(self) -> str:
             return self.getOptionsPrefix()
+
         def __set__(self, value):
             self.setOptionsPrefix(value)
 
     property comm:
-        def __get__(self):
+        """The object communicator."""
+        def __get__(self) -> Comm:
             return self.getComm()
 
     property name:
-        def __get__(self):
+        """The object name."""
+        def __get__(self) -> str:
             return self.getName()
+
         def __set__(self, value):
             self.setName(value)
 
     property classid:
-        def __get__(self):
+        """The class identifier."""
+        def __get__(self) -> int:
             return self.getClassId()
 
     property klass:
-        def __get__(self):
+        """The class name."""
+        def __get__(self) -> str:
             return self.getClassName()
 
     property refcount:
-        def __get__(self):
+        """Reference count."""
+        def __get__(self) -> int:
             return self.getRefCount()
 
     # --- ctypes support  ---
 
     property handle:
-        def __get__(self):
+        """Handle for ctypes support."""
+        def __get__(self) -> int:
             cdef PetscObject obj = self.obj[0]
             return PyLong_FromVoidPtr(<void*>obj)
 
     # --- Fortran support  ---
 
     property fortran:
-        def __get__(self):
+        """Fortran handle."""
+        def __get__(self) -> int:
             cdef PetscObject obj = self.obj[0]
             return Object_toFortran(obj)
 
@@ -261,7 +541,7 @@ cdef class Object:
 
 include "cyclicgc.pxi"
 
-cdef dict type_registry = { 0 : None }
+cdef dict type_registry = {0 : None}
 __type_registry__ = type_registry
 
 cdef int PyPetscType_Register(int classid, type cls) except -1:
@@ -278,7 +558,7 @@ cdef int PyPetscType_Register(int classid, type cls) except -1:
         value = type_registry[key]
         if cls is not value:
             raise ValueError(
-                "key: %d, cannot register: %s, " \
+                "key: %d, cannot register: %s, "
                 "already registered: %s" % (key, cls, value))
     return 0
 

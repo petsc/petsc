@@ -27,8 +27,8 @@ cdef class DMInterpolation:
         """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_SELF)
         cdef PetscDMInterpolation newdminterp = NULL
-        CHKERR( DMInterpolationCreate(ccomm, &newdminterp) )
-        CHKERR( DMInterpolationDestroy(&self.dminterp))
+        CHKERR(DMInterpolationCreate(ccomm, &newdminterp))
+        CHKERR(DMInterpolationDestroy(&self.dminterp))
         self.dminterp = newdminterp
         return self
 
@@ -42,7 +42,7 @@ cdef class DMInterpolation:
         create, petsc.DMInterpolationDestroy
 
         """
-        CHKERR( DMInterpolationDestroy(&self.dminterp))
+        CHKERR(DMInterpolationDestroy(&self.dminterp))
         return self
 
     def evaluate(self, DM dm, Vec x, Vec v=None) -> Vec:
@@ -67,8 +67,8 @@ cdef class DMInterpolation:
         if v is None:
             v = Vec()
         if v.vec == NULL:
-            CHKERR( DMInterpolationGetVector(self.dminterp, &v.vec ) )
-        CHKERR( DMInterpolationEvaluate(self.dminterp, dm.dm, x.vec, v.vec ) )
+            CHKERR(DMInterpolationGetVector(self.dminterp, &v.vec))
+        CHKERR(DMInterpolationEvaluate(self.dminterp, dm.dm, x.vec, v.vec))
         return v
 
     def getCoordinates(self) -> Vec:
@@ -85,8 +85,8 @@ cdef class DMInterpolation:
 
         """
         cdef Vec coords = Vec()
-        CHKERR( DMInterpolationGetCoordinates(self.dminterp, &coords.vec) )
-        CHKERR( PetscINCREF(coords.obj) )
+        CHKERR(DMInterpolationGetCoordinates(self.dminterp, &coords.vec))
+        CHKERR(PetscINCREF(coords.obj))
         return coords
 
     def getDim(self) -> int:
@@ -100,7 +100,7 @@ cdef class DMInterpolation:
 
         """
         cdef PetscInt cdim = 0
-        CHKERR( DMInterpolationGetDim(self.dminterp, &cdim) )
+        CHKERR(DMInterpolationGetDim(self.dminterp, &cdim))
         return toInt(cdim)
 
     def getDof(self) -> int:
@@ -114,7 +114,7 @@ cdef class DMInterpolation:
 
         """
         cdef PetscInt cdof = 0
-        CHKERR( DMInterpolationGetDof(self.dminterp, &cdof) )
+        CHKERR(DMInterpolationGetDof(self.dminterp, &cdof))
         return toInt(cdof)
 
     def setDim(self, dim: int) -> None:
@@ -133,7 +133,7 @@ cdef class DMInterpolation:
 
         """
         cdef PetscInt cdim = asInt(dim)
-        CHKERR( DMInterpolationSetDim(self.dminterp, cdim) )
+        CHKERR(DMInterpolationSetDim(self.dminterp, cdim))
 
     def setDof(self, dof: int) -> None:
         """Set the number of fields interpolated at a point.
@@ -151,14 +151,13 @@ cdef class DMInterpolation:
 
         """
         cdef PetscInt cdof = asInt(dof)
-        CHKERR( DMInterpolationSetDof(self.dminterp, cdof) )
+        CHKERR(DMInterpolationSetDof(self.dminterp, cdof))
 
     def setUp(
         self,
         DM dm,
         redundantPoints: bool = False,
-        ignoreOutsideDomain: bool = False,
-    ) -> None:
+        ignoreOutsideDomain: bool = False) -> None:
         """Compute spatial indices for point location during interpolation.
 
         Collective.
@@ -181,7 +180,7 @@ cdef class DMInterpolation:
         """
         cdef PetscBool credundantPoints = asBool(redundantPoints)
         cdef PetscBool cignoreOutsideDomain = asBool(ignoreOutsideDomain)
-        CHKERR( DMInterpolationSetUp(self.dminterp, dm.dm, credundantPoints, cignoreOutsideDomain) )
+        CHKERR(DMInterpolationSetUp(self.dminterp, dm.dm, credundantPoints, cignoreOutsideDomain))
 
     def getVector(self) -> Vec:
         """Return a `Vec` which can hold all the interpolated field values.
@@ -196,7 +195,7 @@ cdef class DMInterpolation:
 
         """
         cdef Vec vec = Vec()
-        CHKERR( DMInterpolationGetVector(self.dminterp, &vec.vec))
+        CHKERR(DMInterpolationGetVector(self.dminterp, &vec.vec))
         return vec
 
     def restoreVector(self, Vec vec) -> None:
@@ -214,4 +213,4 @@ cdef class DMInterpolation:
         getVector, petsc.DMInterpolationRestoreVector
 
         """
-        CHKERR( DMInterpolationRestoreVector(self.dminterp, &vec.vec) )
+        CHKERR(DMInterpolationRestoreVector(self.dminterp, &vec.vec))

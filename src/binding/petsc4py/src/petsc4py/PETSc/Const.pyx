@@ -34,6 +34,7 @@ More constants:
 
 # ------------------------------------------------------------------------------
 
+
 class InsertMode(object):
     """Insertion mode.
 
@@ -71,6 +72,7 @@ class InsertMode(object):
 
 # ------------------------------------------------------------------------------
 
+
 class ScatterMode(object):
     """Scatter mode.
 
@@ -99,6 +101,7 @@ class ScatterMode(object):
     REVERSE_LOCAL = SCATTER_REVERSE_LOCAL
 
 # ------------------------------------------------------------------------------
+
 
 class NormType(object):
     """Norm type.

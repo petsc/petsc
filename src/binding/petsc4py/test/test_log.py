@@ -1,8 +1,10 @@
 # --------------------------------------------------------------------
 
-if __name__ == "__main__":
-    import sys, petsc4py
-    petsc4py.init(sys.argv+['-log_view'])
+if __name__ == '__main__':
+    import sys
+    import petsc4py
+
+    petsc4py.init(sys.argv + ['-log_view'])
 
 # --------------------------------------------------------------------
 
@@ -11,10 +13,10 @@ import unittest
 
 # --------------------------------------------------------------------
 
-class TestLog(unittest.TestCase):
 
+class TestLog(unittest.TestCase):
     def setUp(self):
-        #PETSc.Log.begin()
+        # PETSc.Log.begin()
         # register stages
         self.stage1 = PETSc.Log.Stage('Stage 1')
         self.stage2 = PETSc.Log.Stage('Stage 2')
@@ -22,8 +24,8 @@ class TestLog(unittest.TestCase):
         self.klassA = PETSc.Log.Class('Class A')
         self.klassB = PETSc.Log.Class('Class B')
         # register events
-        self.event1 = PETSc.Log.Event('Event 1') # no class
-        self.event2 = PETSc.Log.Event('Event 2') # no class
+        self.event1 = PETSc.Log.Event('Event 1')  # no class
+        self.event2 = PETSc.Log.Event('Event 2')  # no class
         self.eventA = PETSc.Log.Event('Event A', self.klassA)
         self.eventB = PETSc.Log.Event('Event B', self.klassB)
 
@@ -39,14 +41,14 @@ class TestLog(unittest.TestCase):
 
     def testLogBeginEnd(self):
         # -----
-        self._run_events() # in main stage
-        self._run_stages() # in user stages
+        self._run_events()  # in main stage
+        self._run_stages()  # in user stages
         # -----
         for event in self._get_events():
             event.deactivate()
             event.setActive(False)
             event.active = False
-        self._run_events() # should not be logged
+        self._run_events()  # should not be logged
         for event in self._get_events():
             event.activate()
             event.setActive(True)
@@ -56,7 +58,7 @@ class TestLog(unittest.TestCase):
             klass.deactivate()
             klass.setActive(False)
             klass.active = False
-        self._run_events() # A and B should not be logged
+        self._run_events()  # A and B should not be logged
         for klass in self._get_classes():
             klass.activate()
             klass.setActive(True)
@@ -70,7 +72,7 @@ class TestLog(unittest.TestCase):
             active = stage.getActive()
             self.assertFalse(active)
             self.assertFalse(stage.active)
-        self._run_stages() # should not be logged
+        self._run_stages()  # should not be logged
         for stage in self._get_stages():
             stage.setActive(True)
             stage.active = True
@@ -92,8 +94,7 @@ class TestLog(unittest.TestCase):
         return (self.klassA, self.klassB)
 
     def _get_events(self):
-        return (self.event1, self.event2,
-                self.eventA, self.eventB)
+        return (self.event1, self.event2, self.eventA, self.eventB)
 
     def _run_events(self, stage=None):
         if stage is not None:
@@ -116,4 +117,3 @@ class TestLog(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

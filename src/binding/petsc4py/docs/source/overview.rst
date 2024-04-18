@@ -1,5 +1,5 @@
-Overview
-========
+PETSc Overview
+==============
 
 PETSc_ is a suite of data structures and routines for the
 scalable (parallel) solution of scientific applications modeled by

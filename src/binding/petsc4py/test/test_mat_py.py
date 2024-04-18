@@ -1,10 +1,11 @@
 from petsc4py import PETSc
-import unittest, numpy
+import unittest
+import numpy
 from sys import getrefcount
 # --------------------------------------------------------------------
 
-class Matrix(object):
 
+class Matrix:
     def __init__(self):
         pass
 
@@ -14,8 +15,8 @@ class Matrix(object):
     def destroy(self, mat):
         pass
 
-class ScaledIdentity(Matrix):
 
+class ScaledIdentity(Matrix):
     s = 2.0
 
     def scale(self, mat, s):
@@ -33,8 +34,8 @@ class ScaledIdentity(Matrix):
         dctx = ScaledIdentity()
         dmat.createPython(mat.getSizes(), dctx, comm=mat.getComm())
         if op == PETSc.Mat.DuplicateOption.COPY_VALUES:
-          dctx.s = self.s
-          dmat.setUp()
+            dctx.s = self.s
+            dmat.setUp()
         return dmat
 
     def getDiagonal(self, mat, vd):
@@ -45,13 +46,13 @@ class ScaledIdentity(Matrix):
 
     def productSymbolic(self, mat, product, producttype, A, B, C):
         if producttype == 'AB':
-            if mat is A: # product = identity * B
+            if mat is A:  # product = identity * B
                 product.setType(B.getType())
                 product.setSizes(B.getSizes())
                 product.setUp()
                 product.assemble()
                 B.copy(product)
-            elif mat is B: # product = A * identity
+            elif mat is B:  # product = A * identity
                 product.setType(A.getType())
                 product.setSizes(A.getSizes())
                 product.setUp()
@@ -60,13 +61,13 @@ class ScaledIdentity(Matrix):
             else:
                 raise RuntimeError('wrong configuration')
         elif producttype == 'AtB':
-            if mat is A: # product = identity^T * B
+            if mat is A:  # product = identity^T * B
                 product.setType(B.getType())
                 product.setSizes(B.getSizes())
                 product.setUp()
                 product.assemble()
                 B.copy(product)
-            elif mat is B: # product = A^T * identity
+            elif mat is B:  # product = A^T * identity
                 tmp = PETSc.Mat()
                 A.transpose(tmp)
                 product.setType(tmp.getType())
@@ -77,7 +78,7 @@ class ScaledIdentity(Matrix):
             else:
                 raise RuntimeError('wrong configuration')
         elif producttype == 'ABt':
-            if mat is A: # product = identity * B^T
+            if mat is A:  # product = identity * B^T
                 tmp = PETSc.Mat()
                 B.transpose(tmp)
                 product.setType(tmp.getType())
@@ -85,7 +86,7 @@ class ScaledIdentity(Matrix):
                 product.setUp()
                 product.assemble()
                 tmp.copy(product)
-            elif mat is B: # product = A * identity^T
+            elif mat is B:  # product = A * identity^T
                 product.setType(A.getType())
                 product.setSizes(A.getSizes())
                 product.setUp()
@@ -94,7 +95,7 @@ class ScaledIdentity(Matrix):
             else:
                 raise RuntimeError('wrong configuration')
         elif producttype == 'PtAP':
-            if mat is A: # product = P^T * identity * P
+            if mat is A:  # product = P^T * identity * P
                 self.tmp = PETSc.Mat()
                 B.transposeMatMult(B, self.tmp)
                 product.setType(self.tmp.getType())
@@ -102,7 +103,7 @@ class ScaledIdentity(Matrix):
                 product.setUp()
                 product.assemble()
                 self.tmp.copy(product)
-            elif mat is B: # product = identity^T * A * identity
+            elif mat is B:  # product = identity^T * A * identity
                 product.setType(A.getType())
                 product.setSizes(A.getSizes())
                 product.setUp()
@@ -111,7 +112,7 @@ class ScaledIdentity(Matrix):
             else:
                 raise RuntimeError('wrong configuration')
         elif producttype == 'RARt':
-            if mat is A: # product = R * identity * R^t
+            if mat is A:  # product = R * identity * R^t
                 self.tmp = PETSc.Mat()
                 B.matTransposeMult(B, self.tmp)
                 product.setType(self.tmp.getType())
@@ -119,7 +120,7 @@ class ScaledIdentity(Matrix):
                 product.setUp()
                 product.assemble()
                 self.tmp.copy(product)
-            elif mat is B: # product = identity * A * identity^T
+            elif mat is B:  # product = identity * A * identity^T
                 product.setType(A.getType())
                 product.setSizes(A.getSizes())
                 product.setUp()
@@ -128,7 +129,7 @@ class ScaledIdentity(Matrix):
             else:
                 raise RuntimeError('wrong configuration')
         elif producttype == 'ABC':
-            if mat is A: # product = identity * B * C
+            if mat is A:  # product = identity * B * C
                 self.tmp = PETSc.Mat()
                 B.matMult(C, self.tmp)
                 product.setType(self.tmp.getType())
@@ -136,7 +137,7 @@ class ScaledIdentity(Matrix):
                 product.setUp()
                 product.assemble()
                 self.tmp.copy(product)
-            elif mat is B: # product = A * identity * C
+            elif mat is B:  # product = A * identity * C
                 self.tmp = PETSc.Mat()
                 A.matMult(C, self.tmp)
                 product.setType(self.tmp.getType())
@@ -144,7 +145,7 @@ class ScaledIdentity(Matrix):
                 product.setUp()
                 product.assemble()
                 self.tmp.copy(product)
-            elif mat is C: # product = A * B * identity
+            elif mat is C:  # product = A * B * identity
                 self.tmp = PETSc.Mat()
                 A.matMult(B, self.tmp)
                 product.setType(self.tmp.getType())
@@ -155,82 +156,82 @@ class ScaledIdentity(Matrix):
             else:
                 raise RuntimeError('wrong configuration')
         else:
-            raise RuntimeError('Product {} not implemented'.format(producttype))
+            raise RuntimeError(f'Product {producttype} not implemented')
         product.zeroEntries()
 
     def productNumeric(self, mat, product, producttype, A, B, C):
         if producttype == 'AB':
-            if mat is A: # product = identity * B
+            if mat is A:  # product = identity * B
                 B.copy(product, structure=True)
-            elif mat is B: # product = A * identity
+            elif mat is B:  # product = A * identity
                 A.copy(product, structure=True)
             else:
                 raise RuntimeError('wrong configuration')
             product.scale(self.s)
         elif producttype == 'AtB':
-            if mat is A: # product = identity^T * B
+            if mat is A:  # product = identity^T * B
                 B.copy(product, structure=True)
-            elif mat is B: # product = A^T * identity
+            elif mat is B:  # product = A^T * identity
                 A.setTransposePrecursor(product)
                 A.transpose(product)
             else:
                 raise RuntimeError('wrong configuration')
             product.scale(self.s)
         elif producttype == 'ABt':
-            if mat is A: # product = identity * B^T
+            if mat is A:  # product = identity * B^T
                 B.setTransposePrecursor(product)
                 B.transpose(product)
-            elif mat is B: # product = A * identity^T
+            elif mat is B:  # product = A * identity^T
                 A.copy(product, structure=True)
             else:
                 raise RuntimeError('wrong configuration')
             product.scale(self.s)
         elif producttype == 'PtAP':
-            if mat is A: # product = P^T * identity * P
+            if mat is A:  # product = P^T * identity * P
                 B.transposeMatMult(B, self.tmp)
                 self.tmp.copy(product, structure=True)
                 product.scale(self.s)
-            elif mat is B: # product = identity^T * A * identity
+            elif mat is B:  # product = identity^T * A * identity
                 A.copy(product, structure=True)
                 product.scale(self.s**2)
             else:
                 raise RuntimeError('wrong configuration')
         elif producttype == 'RARt':
-            if mat is A: # product = R * identity * R^t
+            if mat is A:  # product = R * identity * R^t
                 B.matTransposeMult(B, self.tmp)
                 self.tmp.copy(product, structure=True)
                 product.scale(self.s)
-            elif mat is B: # product = identity * A * identity^T
+            elif mat is B:  # product = identity * A * identity^T
                 A.copy(product, structure=True)
                 product.scale(self.s**2)
             else:
                 raise RuntimeError('wrong configuration')
         elif producttype == 'ABC':
-            if mat is A: # product = identity * B * C
+            if mat is A:  # product = identity * B * C
                 B.matMult(C, self.tmp)
                 self.tmp.copy(product, structure=True)
-            elif mat is B: # product = A * identity * C
+            elif mat is B:  # product = A * identity * C
                 A.matMult(C, self.tmp)
                 self.tmp.copy(product, structure=True)
-            elif mat is C: # product = A * B * identity
+            elif mat is C:  # product = A * B * identity
                 A.matMult(B, self.tmp)
                 self.tmp.copy(product, structure=True)
             else:
                 raise RuntimeError('wrong configuration')
             product.scale(self.s)
         else:
-            raise RuntimeError('Product {} not implemented'.format(producttype))
+            raise RuntimeError(f'Product {producttype} not implemented')
+
 
 class Diagonal(Matrix):
-
     def create(self, mat):
-        super(Diagonal,self).create(mat)
+        super().create(mat)
         mat.setUp()
         self.D = mat.createVecLeft()
 
     def destroy(self, mat):
         self.D.destroy()
-        super(Diagonal,self).destroy(mat)
+        super().destroy(mat)
 
     def scale(self, mat, a):
         self.D.scale(a)
@@ -250,15 +251,15 @@ class Diagonal(Matrix):
         dmat.createPython(mat.getSizes(), dctx, comm=mat.getComm())
         dctx.D = self.D.duplicate()
         if op == PETSc.Mat.DuplicateOption.COPY_VALUES:
-          self.D.copy(dctx.D)
-          dmat.setUp()
+            self.D.copy(dctx.D)
+            dmat.setUp()
         return dmat
 
     def getDiagonal(self, mat, vd):
         self.D.copy(vd)
 
     def setDiagonal(self, mat, vd, im):
-        if isinstance (im, bool):
+        if isinstance(im, bool):
             addv = im
             if addv:
                 self.D.axpy(1, vd)
@@ -269,16 +270,19 @@ class Diagonal(Matrix):
         elif im == PETSc.InsertMode.ADD_VALUES:
             self.D.axpy(1, vd)
         else:
-            raise ValueError('wrong InsertMode %d'% im)
+            raise ValueError('wrong InsertMode %d' % im)
 
     def diagonalScale(self, mat, vl, vr):
-        if vl: self.D.pointwiseMult(self.D, vl)
-        if vr: self.D.pointwiseMult(self.D, vr)
+        if vl:
+            self.D.pointwiseMult(self.D, vl)
+        if vr:
+            self.D.pointwiseMult(self.D, vr)
+
 
 # --------------------------------------------------------------------
 
-class TestMatrix(unittest.TestCase):
 
+class TestMatrix(unittest.TestCase):
     COMM = PETSc.COMM_WORLD
     PYMOD = __name__
     PYCLS = 'Matrix'
@@ -289,19 +293,19 @@ class TestMatrix(unittest.TestCase):
     def setUp(self):
         N = self.N = 13
         self.A = PETSc.Mat()
-        if 0: # command line way
+        if 0:  # command line way
             self.A.create(self.COMM)
-            self.A.setSizes([N,N])
+            self.A.setSizes([N, N])
             self.A.setType('python')
             OptDB = PETSc.Options(self.A)
-            OptDB['mat_python_type'] = '%s.%s' % (self.PYMOD,self.PYCLS)
+            OptDB['mat_python_type'] = f'{self.PYMOD}.{self.PYCLS}'
             self.A.setFromOptions()
             self.A.setUp()
             del OptDB['mat_python_type']
             self.assertTrue(self._getCtx() is not None)
-        else: # python way
+        else:  # python way
             context = globals()[self.PYCLS]()
-            self.A.createPython([N,N], context, comm=self.COMM)
+            self.A.createPython([N, N], context, comm=self.COMM)
             self.A.setUp()
             self.assertTrue(self._getCtx() is context)
             self.assertEqual(getrefcount(context), 3)
@@ -311,11 +315,11 @@ class TestMatrix(unittest.TestCase):
     def tearDown(self):
         ctx = self.A.getPythonContext()
         self.assertEqual(getrefcount(ctx), 3)
-        self.A.destroy() # XXX
+        self.A.destroy()  # XXX
         self.A = None
         PETSc.garbage_cleanup()
         self.assertEqual(getrefcount(ctx), 2)
-        #import gc,pprint; pprint.pprint(gc.get_referrers(ctx))
+        # import gc,pprint; pprint.pprint(gc.get_referrers(ctx))
 
     def testBasic(self):
         ctx = self.A.getPythonContext()
@@ -323,37 +327,37 @@ class TestMatrix(unittest.TestCase):
         self.assertEqual(getrefcount(ctx), 3)
 
     def testZeroEntries(self):
-        f = lambda : self.A.zeroEntries()
+        f = lambda: self.A.zeroEntries()
         self.assertRaises(Exception, f)
 
     def testMult(self):
         x, y = self.A.createVecs()
-        f = lambda : self.A.mult(x, y)
+        f = lambda: self.A.mult(x, y)
         self.assertRaises(Exception, f)
 
     def testMultTranspose(self):
         x, y = self.A.createVecs()
-        f = lambda : self.A.multTranspose(x, y)
+        f = lambda: self.A.multTranspose(x, y)
         self.assertRaises(Exception, f)
 
     def testGetDiagonal(self):
         d = self.A.createVecLeft()
-        f = lambda : self.A.getDiagonal(d)
+        f = lambda: self.A.getDiagonal(d)
         self.assertRaises(Exception, f)
 
     def testSetDiagonal(self):
         d = self.A.createVecLeft()
-        f = lambda : self.A.setDiagonal(d)
+        f = lambda: self.A.setDiagonal(d)
         self.assertRaises(Exception, f)
 
     def testDiagonalScale(self):
         x, y = self.A.createVecs()
-        f = lambda : self.A.diagonalScale(x, y)
+        f = lambda: self.A.diagonalScale(x, y)
         self.assertRaises(Exception, f)
 
     def testDuplicate(self):
-        f1 = lambda : self.A.duplicate(x, True)
-        f2 = lambda : self.A.duplicate(x, False)
+        f1 = lambda: self.A.duplicate(True)
+        f2 = lambda: self.A.duplicate(False)
         self.assertRaises(Exception, f1)
         self.assertRaises(Exception, f2)
 
@@ -362,7 +366,7 @@ class TestMatrix(unittest.TestCase):
         self.assertTrue('mpi' == self.A.getVecType())
 
     def testH2Opus(self):
-        if not PETSc.Sys.hasExternalPackage("h2opus"):
+        if not PETSc.Sys.hasExternalPackage('h2opus'):
             return
         if self.A.getComm().Get_size() > 1:
             return
@@ -370,37 +374,38 @@ class TestMatrix(unittest.TestCase):
 
         # need matrix vector and its transpose for norm estimation
         AA = self.A.getPythonContext()
-        if not hasattr(AA,'mult'):
+        if not hasattr(AA, 'mult'):
             return
         AA.multTranspose = AA.mult
 
         # without coordinates
-        h.createH2OpusFromMat(self.A,leafsize=2)
+        h.createH2OpusFromMat(self.A, leafsize=2)
         h.assemble()
         h.destroy()
 
         # with coordinates
-        coords = numpy.linspace((1,2,3),(10,20,30),self.A.getSize()[0],dtype=PETSc.RealType)
-        h.createH2OpusFromMat(self.A,coords,leafsize=2)
+        coords = numpy.linspace(
+            (1, 2, 3), (10, 20, 30), self.A.getSize()[0], dtype=PETSc.RealType
+        )
+        h.createH2OpusFromMat(self.A, coords, leafsize=2)
         h.assemble()
 
         # test API
         h.H2OpusOrthogonalize()
-        h.H2OpusCompress(1.e-1)
+        h.H2OpusCompress(1.0e-1)
 
         # Low-rank update
         U = PETSc.Mat()
-        U.createDense([h.getSizes()[0],3],comm=h.getComm())
+        U.createDense([h.getSizes()[0], 3], comm=h.getComm())
         U.setUp()
         U.setRandom()
 
         he = PETSc.Mat()
-        h.convert('dense',he)
+        h.convert('dense', he)
         he.axpy(1.0, U.matTransposeMult(U))
 
         h.H2OpusLowRankUpdate(U)
         self.assertTrue(he.equal(h))
-
 
         h.destroy()
 
@@ -408,29 +413,29 @@ class TestMatrix(unittest.TestCase):
 
     def testGetType(self):
         ctx = self.A.getPythonContext()
-        pytype = "{0}.{1}".format(ctx.__module__, type(ctx).__name__)
+        pytype = f'{ctx.__module__}.{type(ctx).__name__}'
         self.assertTrue(self.A.getPythonType() == pytype)
 
-class TestScaledIdentity(TestMatrix):
 
+class TestScaledIdentity(TestMatrix):
     PYCLS = 'ScaledIdentity'
 
     def testMult(self):
         s = self._getCtx().s
         x, y = self.A.createVecs()
         x.setRandom()
-        self.A.mult(x,y)
-        self.assertTrue(y.equal(s*x))
+        self.A.mult(x, y)
+        self.assertTrue(y.equal(s * x))
 
     def testMultTransposeSymmKnown(self):
         s = self._getCtx().s
         x, y = self.A.createVecs()
         x.setRandom()
         self.A.setOption(PETSc.Mat.Option.SYMMETRIC, True)
-        self.A.multTranspose(x,y)
-        self.assertTrue(y.equal(s*x))
+        self.A.multTranspose(x, y)
+        self.assertTrue(y.equal(s * x))
         self.A.setOption(PETSc.Mat.Option.SYMMETRIC, False)
-        f = lambda : self.A.multTranspose(x, y)
+        f = lambda: self.A.multTranspose(x, y)
         self.assertRaises(Exception, f)
 
     def testMultTransposeNewMeth(self):
@@ -439,9 +444,9 @@ class TestScaledIdentity(TestMatrix):
         x.setRandom()
         AA = self.A.getPythonContext()
         AA.multTranspose = AA.mult
-        self.A.multTranspose(x,y)
+        self.A.multTranspose(x, y)
         del AA.multTranspose
-        self.assertTrue(y.equal(s*x))
+        self.assertTrue(y.equal(s * x))
 
     def testGetDiagonal(self):
         s = self._getCtx().s
@@ -471,28 +476,34 @@ class TestScaledIdentity(TestMatrix):
         B.setType(PETSc.Mat.Type.AIJ)
         B.setPreallocationNNZ(None)
         B.setRandom(R)
-        I = PETSc.Mat().create(self.COMM)
-        I.setSizes(self.A.getSizes())
-        I.setType(PETSc.Mat.Type.AIJ)
-        I.setUp()
-        I.assemble()
-        I.shift(s)
+        Id = PETSc.Mat().create(self.COMM)
+        Id.setSizes(self.A.getSizes())
+        Id.setType(PETSc.Mat.Type.AIJ)
+        Id.setUp()
+        Id.assemble()
+        Id.shift(s)
 
-        self.assertTrue(self.A.matMult(A).equal(I.matMult(A)))
-        self.assertTrue(A.matMult(self.A).equal(A.matMult(I)))
+        self.assertTrue(self.A.matMult(A).equal(Id.matMult(A)))
+        self.assertTrue(A.matMult(self.A).equal(A.matMult(Id)))
         if self.A.getComm().Get_size() == 1:
-            self.assertTrue(self.A.matTransposeMult(A).equal(I.matTransposeMult(A)))
-            self.assertTrue(A.matTransposeMult(self.A).equal(A.matTransposeMult(I)))
-        self.assertTrue(self.A.transposeMatMult(A).equal(I.transposeMatMult(A)))
-        self.assertTrue(A.transposeMatMult(self.A).equal(A.transposeMatMult(I)))
-        self.assertAlmostEqual((self.A.ptap(A) - I.ptap(A)).norm(), 0.0, places=5)
-        self.assertAlmostEqual((A.ptap(self.A) - A.ptap(I)).norm(), 0.0, places=5)
+            self.assertTrue(self.A.matTransposeMult(A).equal(Id.matTransposeMult(A)))
+            self.assertTrue(A.matTransposeMult(self.A).equal(A.matTransposeMult(Id)))
+        self.assertTrue(self.A.transposeMatMult(A).equal(Id.transposeMatMult(A)))
+        self.assertTrue(A.transposeMatMult(self.A).equal(A.transposeMatMult(Id)))
+        self.assertAlmostEqual((self.A.ptap(A) - Id.ptap(A)).norm(), 0.0, places=5)
+        self.assertAlmostEqual((A.ptap(self.A) - A.ptap(Id)).norm(), 0.0, places=5)
         if self.A.getComm().Get_size() == 1:
-            self.assertAlmostEqual((self.A.rart(A) - I.rart(A)).norm(), 0.0, places=5)
-            self.assertAlmostEqual((A.rart(self.A) - A.rart(I)).norm(), 0.0, places=5)
-        self.assertAlmostEqual((self.A.matMatMult(A,B)-I.matMatMult(A,B)).norm(), 0.0, places=5)
-        self.assertAlmostEqual((A.matMatMult(self.A,B)-A.matMatMult(I,B)).norm(), 0.0, places=5)
-        self.assertAlmostEqual((A.matMatMult(B,self.A)-A.matMatMult(B,I)).norm(), 0.0, places=5)
+            self.assertAlmostEqual((self.A.rart(A) - Id.rart(A)).norm(), 0.0, places=5)
+            self.assertAlmostEqual((A.rart(self.A) - A.rart(Id)).norm(), 0.0, places=5)
+        self.assertAlmostEqual(
+            (self.A.matMatMult(A, B) - Id.matMatMult(A, B)).norm(), 0.0, places=5
+        )
+        self.assertAlmostEqual(
+            (A.matMatMult(self.A, B) - A.matMatMult(Id, B)).norm(), 0.0, places=5
+        )
+        self.assertAlmostEqual(
+            (A.matMatMult(B, self.A) - A.matMatMult(B, Id)).norm(), 0.0, places=5
+        )
 
     def testShift(self):
         sold = self._getCtx().s
@@ -508,19 +519,21 @@ class TestScaledIdentity(TestMatrix):
 
     def testDiagonalMat(self):
         s = self._getCtx().s
-        B = PETSc.Mat().createConstantDiagonal(self.A.getSizes(), s, comm=self.A.getComm())
+        B = PETSc.Mat().createConstantDiagonal(
+            self.A.getSizes(), s, comm=self.A.getComm()
+        )
         self.assertTrue(self.A.equal(B))
 
-class TestDiagonal(TestMatrix):
 
+class TestDiagonal(TestMatrix):
     PYCLS = 'Diagonal'
 
     def setUp(self):
-        super(TestDiagonal, self).setUp()
+        super().setUp()
         D = self.A.createVecLeft()
         s, e = D.getOwnershipRange()
         for i in range(s, e):
-            D[i] = i+1
+            D[i] = i + 1
         D.assemble()
         self.A.setDiagonal(D)
 
@@ -532,17 +545,17 @@ class TestDiagonal(TestMatrix):
     def testMult(self):
         x, y = self.A.createVecs()
         x.set(1)
-        self.A.mult(x,y)
+        self.A.mult(x, y)
         self.assertTrue(y.equal(self._getCtx().D))
 
     def testMultTransposeSymmKnown(self):
         x, y = self.A.createVecs()
         x.set(1)
         self.A.setOption(PETSc.Mat.Option.SYMMETRIC, True)
-        self.A.multTranspose(x,y)
+        self.A.multTranspose(x, y)
         self.assertTrue(y.equal(self._getCtx().D))
         self.A.setOption(PETSc.Mat.Option.SYMMETRIC, False)
-        f = lambda : self.A.multTranspose(x, y)
+        f = lambda: self.A.multTranspose(x, y)
         self.assertRaises(Exception, f)
 
     def testMultTransposeNewMeth(self):
@@ -550,7 +563,7 @@ class TestDiagonal(TestMatrix):
         x.set(1)
         AA = self.A.getPythonContext()
         AA.multTranspose = AA.mult
-        self.A.multTranspose(x,y)
+        self.A.multTranspose(x, y)
         del AA.multTranspose
         self.assertTrue(y.equal(self._getCtx().D))
 
@@ -577,7 +590,7 @@ class TestDiagonal(TestMatrix):
         old = self._getCtx().D.copy()
         self.A.diagonalScale(x, y)
         D = self._getCtx().D
-        self.assertTrue(D.equal(old*6))
+        self.assertTrue(D.equal(old * 6))
 
     def testCreateTranspose(self):
         A = self.A
@@ -600,22 +613,22 @@ class TestDiagonal(TestMatrix):
         del A
 
     def testConvert(self):
-        self.assertTrue(self.A.convert(PETSc.Mat.Type.AIJ,PETSc.Mat()).equal(self.A))
-        self.assertTrue(self.A.convert(PETSc.Mat.Type.BAIJ,PETSc.Mat()).equal(self.A))
-        self.assertTrue(self.A.convert(PETSc.Mat.Type.SBAIJ,PETSc.Mat()).equal(self.A))
-        self.assertTrue(self.A.convert(PETSc.Mat.Type.DENSE,PETSc.Mat()).equal(self.A))
+        self.assertTrue(self.A.convert(PETSc.Mat.Type.AIJ, PETSc.Mat()).equal(self.A))
+        self.assertTrue(self.A.convert(PETSc.Mat.Type.BAIJ, PETSc.Mat()).equal(self.A))
+        self.assertTrue(self.A.convert(PETSc.Mat.Type.SBAIJ, PETSc.Mat()).equal(self.A))
+        self.assertTrue(self.A.convert(PETSc.Mat.Type.DENSE, PETSc.Mat()).equal(self.A))
 
     def testShift(self):
         old = self._getCtx().D.copy()
         self.A.shift(-0.5)
         D = self._getCtx().D
-        self.assertTrue(D.equal(old-0.5))
+        self.assertTrue(D.equal(old - 0.5))
 
     def testScale(self):
         old = self._getCtx().D.copy()
         self.A.scale(-0.5)
         D = self._getCtx().D
-        self.assertTrue(D.equal(-0.5*old))
+        self.assertTrue(D.equal(-0.5 * old))
 
     def testDiagonalMat(self):
         D = self._getCtx().D.copy()

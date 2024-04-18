@@ -8,11 +8,7 @@ def is_cyfunction(obj):
 
 
 def is_function(obj):
-    return (
-        inspect.isbuiltin(obj)
-        or is_cyfunction(obj)
-        or type(obj) is type(ord)
-    )
+    return inspect.isbuiltin(obj) or is_cyfunction(obj) or type(obj) is type(ord)
 
 
 def is_method(obj):
@@ -20,7 +16,8 @@ def is_method(obj):
         inspect.ismethoddescriptor(obj)
         or inspect.ismethod(obj)
         or is_cyfunction(obj)
-        or type(obj) in (
+        or type(obj)
+        in (
             type(str.index),
             type(str.__add__),
             type(str.__new__),
@@ -29,21 +26,14 @@ def is_method(obj):
 
 
 def is_classmethod(obj):
-    return (
-        inspect.isbuiltin(obj)
-        or type(obj).__name__ in (
-            'classmethod',
-            'classmethod_descriptor',
-        )
+    return inspect.isbuiltin(obj) or type(obj).__name__ in (
+        'classmethod',
+        'classmethod_descriptor',
     )
 
 
 def is_staticmethod(obj):
-    return (
-        type(obj).__name__ in (
-            'staticmethod',
-        )
-    )
+    return type(obj).__name__ in ('staticmethod',)
 
 
 def is_constant(obj):
@@ -63,8 +53,7 @@ def is_class(obj):
 
 
 class Lines(list):
-
-    INDENT = " " * 4
+    INDENT = ' ' * 4
     level = 0
 
     @property
@@ -76,7 +65,7 @@ class Lines(list):
         if lines is None:
             return
         if isinstance(lines, str):
-            lines = textwrap.dedent(lines).strip().split("\n")
+            lines = textwrap.dedent(lines).strip().split('\n')
         indent = self.INDENT * self.level
         for line in lines:
             self.append(indent + line)
@@ -84,47 +73,49 @@ class Lines(list):
 
 def signature(obj):
     doc = obj.__doc__
-    doc = doc or f"{obj.__name__}: Any"  # FIXME remove line
+    doc = doc or f'{obj.__name__}: Any'  # FIXME remove line
     sig = doc.split('\n', 1)[0].split('.', 1)[-1]
     return sig or None
 
+
 def visit_constant(constant):
     name, value = constant
-    return f"{name}: Final[{type(value).__name__}] = ..."
+    return f'{name}: Final[{type(value).__name__}] = ...'
 
 
 def visit_function(function):
     sig = signature(function)
-    return f"def {sig}: ..."
+    return f'def {sig}: ...'
 
 
 def visit_method(method):
     sig = signature(method)
-    return f"def {sig}: ..."
+    return f'def {sig}: ...'
 
 
 def visit_datadescr(datadescr):
     sig = signature(datadescr)
-    return f"{sig}"
+    return f'{sig}'
 
 
 def visit_property(prop, name=None):
     sig = signature(prop.fget)
     pname = name or prop.fget.__name__
     ptype = sig.rsplit('->', 1)[-1].strip()
-    return f"{pname}: {ptype}"
+    return f'{pname}: {ptype}'
 
 
 def visit_constructor(cls, name='__init__', args=None):
-    init = (name == '__init__')
+    init = name == '__init__'
     argname = cls.__name__.lower()
     argtype = cls.__name__
-    initarg = args or f"{argname}: Optional[{argtype}] = None"
+    initarg = args or f'{argname}: Optional[{argtype}] = None'
     selfarg = 'self' if init else 'cls'
     rettype = 'None' if init else argtype
-    arglist = f"{selfarg}, {initarg}"
-    sig = f"{name}({arglist}) -> {rettype}"
-    return f"def {sig}: ..."
+    arglist = f'{selfarg}, {initarg}'
+    sig = f'{name}({arglist}) -> {rettype}'
+    return f'def {sig}: ...'
+
 
 def visit_class(cls, outer=None, done=None):
     skip = {
@@ -134,22 +125,22 @@ def visit_class(cls, outer=None, done=None):
         '__weakref__',
         '__pyx_vtable__',
         '__enum2str',  # FIXME refactor implementation
-        '_traceback_', # FIXME maybe refactor?
+        '_traceback_',  # FIXME maybe refactor?
         '__lt__',
         '__le__',
         '__ge__',
         '__gt__',
     }
     special = {
-        '__len__':   "__len__(self) -> int",
-        '__bool__':  "__bool__(self) -> bool",
-        '__hash__':  "__hash__(self) -> int",
-        '__int__':   "__int__(self) -> int",
-        '__index__': "__int__(self) -> int",
-        '__str__':   "__str__(self) -> str",
-        '__repr__':  "__repr__(self) -> str",
-        '__eq__':    "__eq__(self, other: object) -> bool",
-        '__ne__':    "__ne__(self, other: object) -> bool",
+        '__len__': '__len__(self) -> int',
+        '__bool__': '__bool__(self) -> bool',
+        '__hash__': '__hash__(self) -> int',
+        '__int__': '__int__(self) -> int',
+        '__index__': '__int__(self) -> int',
+        '__str__': '__str__(self) -> str',
+        '__repr__': '__repr__(self) -> str',
+        '__eq__': '__eq__(self, other: object) -> bool',
+        '__ne__': '__ne__(self, other: object) -> bool',
     }
     constructor = (
         '__new__',
@@ -159,26 +150,28 @@ def visit_class(cls, outer=None, done=None):
     qualname = cls.__name__
     cls_name = cls.__name__
     if outer is not None and cls_name.startswith(outer):
-        cls_name = cls_name[len(outer):]
-        qualname = f"{outer}.{cls_name}"
+        cls_name = cls_name[len(outer) :]
+        qualname = f'{outer}.{cls_name}'
 
     override = OVERRIDE.get(qualname, {})
     done = set() if done is None else done
     lines = Lines()
 
     try:
+
         class sub(cls):
             pass
+
         final = False
     except TypeError:
         final = True
     if final:
-        lines.add = "@final"
+        lines.add = '@final'
     base = cls.__base__
     if base is object:
-        lines.add = f"class {cls_name}:"
+        lines.add = f'class {cls_name}:'
     else:
-        lines.add = f"class {cls_name}({base.__name__}):"
+        lines.add = f'class {cls_name}({base.__name__}):'
     lines.level += 1
     start = len(lines)
 
@@ -216,7 +209,6 @@ def visit_class(cls, outer=None, done=None):
             continue
 
     for name in members(keys):
-
         if name in override:
             done.add(name)
             lines.add = override[name]
@@ -225,7 +217,7 @@ def visit_class(cls, outer=None, done=None):
         if name in special:
             done.add(name)
             sig = special[name]
-            lines.add = f"def {sig}: ..."
+            lines.add = f'def {sig}: ...'
             continue
 
         attr = getattr(cls, name)
@@ -235,12 +227,12 @@ def visit_class(cls, outer=None, done=None):
             if name == attr.__name__:
                 obj = dct[name]
                 if is_classmethod(obj):
-                    lines.add = "@classmethod"
+                    lines.add = '@classmethod'
                 elif is_staticmethod(obj):
-                    lines.add = "@staticmethod"
+                    lines.add = '@staticmethod'
                 lines.add = visit_method(attr)
             elif True:
-                lines.add = f"{name} = {attr.__name__}"
+                lines.add = f'{name} = {attr.__name__}'
             continue
 
         if is_datadescr(attr):
@@ -258,13 +250,12 @@ def visit_class(cls, outer=None, done=None):
             lines.add = visit_constant((name, attr))
             continue
 
-    leftovers = [name for name in keys if
-                 name not in done and name not in skip]
+    leftovers = [name for name in keys if name not in done and name not in skip]
     if leftovers:
-        raise RuntimeError(f"leftovers: {leftovers}")
+        raise RuntimeError(f'leftovers: {leftovers}')
 
     if len(lines) == start:
-        lines.add = "pass"
+        lines.add = 'pass'
     lines.level -= 1
     return lines
 
@@ -285,14 +276,17 @@ def visit_module(module, done=None):
     lines = Lines()
 
     keys = list(module.__dict__.keys())
-    keys.sort(key=lambda name: name.startswith("_"))
+    keys.sort(key=lambda name: name.startswith('_'))
 
     constants = [
-        (name, getattr(module, name)) for name in keys
-        if all((
-            name not in done and name not in skip,
-            isinstance(getattr(module, name), int),
-        ))
+        (name, getattr(module, name))
+        for name in keys
+        if all(
+            (
+                name not in done and name not in skip,
+                isinstance(getattr(module, name), int),
+            )
+        )
     ]
     for name, value in constants:
         done.add(name)
@@ -301,7 +295,7 @@ def visit_module(module, done=None):
         else:
             lines.add = visit_constant((name, value))
     if constants:
-        lines.add = ""
+        lines.add = ''
 
     for name in keys:
         if name in done or name in skip:
@@ -313,19 +307,22 @@ def visit_module(module, done=None):
             if value.__module__ != module.__name__:
                 continue
             lines.add = visit_class(value)
-            lines.add = ""
+            lines.add = ''
             instances = [
-                (k, getattr(module, k)) for k in keys
-                if all((
-                    k not in done and k not in skip,
-                    type(getattr(module, k)) is value,
-                ))
+                (k, getattr(module, k))
+                for k in keys
+                if all(
+                    (
+                        k not in done and k not in skip,
+                        type(getattr(module, k)) is value,
+                    )
+                )
             ]
             for attrname, attrvalue in instances:
                 done.add(attrname)
                 lines.add = visit_constant((attrname, attrvalue))
             if instances:
-                lines.add = ""
+                lines.add = ''
             continue
 
         if is_function(value):
@@ -333,10 +330,10 @@ def visit_module(module, done=None):
             if name == value.__name__:
                 lines.add = visit_function(value)
             else:
-                lines.add = f"{name} = {value.__name__}"
+                lines.add = f'{name} = {value.__name__}'
             continue
 
-    lines.add = ""
+    lines.add = ''
     for name in keys:
         if name in done or name in skip:
             continue
@@ -347,10 +344,9 @@ def visit_module(module, done=None):
         else:
             lines.add = visit_constant((name, value))
 
-    leftovers = [name for name in keys if
-                 name not in done and name not in skip]
+    leftovers = [name for name in keys if name not in done and name not in skip]
     if leftovers:
-        raise RuntimeError(f"leftovers: {leftovers}")
+        raise RuntimeError(f'leftovers: {leftovers}')
     return lines
 
 
@@ -410,10 +406,9 @@ ScalarType: numpy.dtype = ...
 """
 
 OVERRIDE = {
-    'Error': {
-    },
-    '__pyx_capi__': "__pyx_capi__: Final[Dict[str, Any]] = ...",
-    '__type_registry__': "__type_registry__: Final[Dict[int, type[Object]]] = ...",
+    'Error': {},
+    '__pyx_capi__': '__pyx_capi__: Final[Dict[str, Any]] = ...',
+    '__type_registry__': '__type_registry__: Final[Dict[int, type[Object]]] = ...',
 }
 
 TYPING = """
@@ -422,9 +417,10 @@ TYPING = """
 
 def visit_petsc4py_PETSc(done=None):
     from petsc4py import PETSc as module
+
     lines = Lines()
     lines.add = IMPORTS
-    lines.add = ""
+    lines.add = ''
     lines.add = visit_module(module)
     lines.add = TYPING
     return lines

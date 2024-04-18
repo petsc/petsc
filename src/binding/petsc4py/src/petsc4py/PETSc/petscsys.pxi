@@ -8,50 +8,50 @@ cdef extern from * nogil:
         PETSC_DATATYPE_UNKNOWN
 
     const char PETSC_AUTHOR_INFO[]
-    PetscErrorCode PetscGetVersion(char[],size_t)
-    PetscErrorCode PetscGetVersionNumber(PetscInt*,PetscInt*,PetscInt*,PetscInt*)
+    PetscErrorCode PetscGetVersion(char[], size_t)
+    PetscErrorCode PetscGetVersionNumber(PetscInt*, PetscInt*, PetscInt*, PetscInt*)
 
-    PetscErrorCode PetscInitialize(int*,char***,char[],char[])
+    PetscErrorCode PetscInitialize(int*, char***, char[], char[])
     PetscErrorCode PetscInitializeNoArguments()
     PetscErrorCode PetscFinalize()
     PetscBool PetscInitializeCalled
     PetscBool PetscFinalizeCalled
 
     ctypedef PetscErrorCode (*PetscErrorHandlerFunction)(
-        MPI_Comm,int,char*,char*,int,PetscErrorType,char*,void*)
+        MPI_Comm, int, char*, char*, int, PetscErrorType, char*, void*)
     PetscErrorHandlerFunction PetscAttachDebuggerErrorHandler
     PetscErrorHandlerFunction PetscEmacsClientErrorHandler
     PetscErrorHandlerFunction PetscTraceBackErrorHandler
     PetscErrorHandlerFunction PetscMPIAbortErrorHandler
     PetscErrorHandlerFunction PetscAbortErrorHandler
     PetscErrorHandlerFunction PetscIgnoreErrorHandler
-    PetscErrorCode PetscPushErrorHandler(PetscErrorHandlerFunction,void*)
+    PetscErrorCode PetscPushErrorHandler(PetscErrorHandlerFunction, void*)
     PetscErrorCode PetscPopErrorHandler()
     PetscErrorCode PetscPopSignalHandler()
     PetscErrorCode PetscInfoAllow(PetscBool)
-    PetscErrorCode PetscInfoSetFile(char*,char*)
+    PetscErrorCode PetscInfoSetFile(char*, char*)
 
-    PetscErrorCode PetscErrorMessage(int,char*[],char**)
+    PetscErrorCode PetscErrorMessage(int, char*[], char**)
 
-    PetscErrorCode PetscSplitOwnership(MPI_Comm,PetscInt*,PetscInt*)
-    PetscErrorCode PetscSplitOwnershipBlock(MPI_Comm,PetscInt,PetscInt*,PetscInt*)
+    PetscErrorCode PetscSplitOwnership(MPI_Comm, PetscInt*, PetscInt*)
+    PetscErrorCode PetscSplitOwnershipBlock(MPI_Comm, PetscInt, PetscInt*, PetscInt*)
 
     FILE *PETSC_STDOUT
     FILE *PETSC_STDERR
 
-    PetscErrorCode PetscPrintf(MPI_Comm,char[],...)
-    PetscErrorCode PetscVSNPrintf(char*,size_t,const char[],size_t *,va_list)
-    PetscErrorCode PetscVFPrintfDefault(FILE*,const char[],va_list)
-    PetscErrorCode PetscSynchronizedPrintf(MPI_Comm,char[],...)
-    PetscErrorCode PetscSynchronizedFlush(MPI_Comm,FILE*)
+    PetscErrorCode PetscPrintf(MPI_Comm, char[], ...)
+    PetscErrorCode PetscVSNPrintf(char*, size_t, const char[], size_t *, va_list)
+    PetscErrorCode PetscVFPrintfDefault(FILE*, const char[], va_list)
+    PetscErrorCode PetscSynchronizedPrintf(MPI_Comm, char[], ...)
+    PetscErrorCode PetscSynchronizedFlush(MPI_Comm, FILE*)
 
-    PetscErrorCode PetscSequentialPhaseBegin(MPI_Comm,int)
-    PetscErrorCode PetscSequentialPhaseEnd(MPI_Comm,int)
+    PetscErrorCode PetscSequentialPhaseBegin(MPI_Comm, int)
+    PetscErrorCode PetscSequentialPhaseEnd(MPI_Comm, int)
     PetscErrorCode PetscSleep(PetscReal)
 
-    PetscErrorCode PetscCitationsRegister(const char[],PetscBool*)
+    PetscErrorCode PetscCitationsRegister(const char[], PetscBool*)
 
-    PetscErrorCode PetscHasExternalPackage(const char[],PetscBool*)
+    PetscErrorCode PetscHasExternalPackage(const char[], PetscBool*)
 
 
 cdef inline PetscErrorCode Sys_Sizes(
@@ -59,7 +59,7 @@ cdef inline PetscErrorCode Sys_Sizes(
     PetscInt *_b,
     PetscInt *_n,
     PetscInt *_N,
-    ) except PETSC_ERR_PYTHON:
+   ) except PETSC_ERR_PYTHON:
     # get block size
     cdef PetscInt bs=PETSC_DECIDE, b=PETSC_DECIDE
     if bsize is not None: bs = b = asInt(bsize)
@@ -80,10 +80,10 @@ cdef inline PetscErrorCode Sys_Sizes(
         "local and global sizes cannot be both 'DECIDE'")
     if (n > 0) and (n % bs): raise ValueError(
         "local size %d not divisible by block size %d" %
-        (toInt(n), toInt(bs)) )
+        (toInt(n), toInt(bs)))
     if (N > 0) and (N % bs): raise ValueError(
         "global size %d not divisible by block size %d" %
-        (toInt(N), toInt(bs)) )
+        (toInt(N), toInt(bs)))
     # return result to the caller
     if _b != NULL: _b[0] = b
     if _n != NULL: _n[0] = n
@@ -95,13 +95,13 @@ cdef inline PetscErrorCode Sys_Layout(
     PetscInt bs,
     PetscInt *_n,
     PetscInt *_N,
-    ) except PETSC_ERR_PYTHON:
+   ) except PETSC_ERR_PYTHON:
     cdef PetscInt n = _n[0]
     cdef PetscInt N = _N[0]
     if bs < 0: bs = 1
     if n  > 0: n = n // bs
     if N  > 0: N = N // bs
-    CHKERR( PetscSplitOwnership(comm, &n, &N) )
+    CHKERR(PetscSplitOwnership(comm, &n, &N))
     _n[0] = n * bs
     _N[0] = N * bs
     return PETSC_SUCCESS
