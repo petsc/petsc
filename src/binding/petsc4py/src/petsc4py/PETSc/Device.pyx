@@ -248,13 +248,26 @@ cdef class DeviceContext(Object):
 
         See Also
         --------
-        Device, petsc.PetscDeviceContextCreate
+        destroy, Device, petsc.PetscDeviceContextCreate
 
         """
         cdef DeviceContext dctx = cls()
 
         CHKERR(PetscDeviceContextCreate(&dctx.dctx))
         return dctx
+
+    def destroy(self) -> Self:
+        """Destroy a device context.
+
+        Not collective.
+
+        See Also
+        --------
+        create, petsc.PetscDeviceContextDestroy
+
+        """
+        CHKERR(PetscDeviceContextDestroy(&self.dctx))
+        return self
 
     def getStreamType(self) -> str:
         """Return the `StreamType`.
