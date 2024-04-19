@@ -355,10 +355,10 @@ cdef class DeviceContext(Object):
         create, petsc.PetscDeviceContextDuplicate
 
         """
-        cdef PetscDeviceContext octx = NULL
+        cdef DeviceContext octx = type(self)()
 
-        CHKERR(PetscDeviceContextDuplicate(self.dctx, &octx))
-        return PyPetscDeviceContext_New(octx)
+        CHKERR(PetscDeviceContextDuplicate(self.dctx, &octx.dctx))
+        return octx
 
     def idle(self) -> bool:
         """Return whether the underlying stream for the device context is idle.
