@@ -237,9 +237,6 @@ cdef class DeviceContext(Object):
         self.obj  = <PetscObject*> &self.dctx
         self.dctx = NULL
 
-    def __dealloc__(self):
-        self.destroy()
-
     def create(self) -> Self:
         """Create an empty DeviceContext.
 
@@ -411,23 +408,42 @@ cdef class DeviceContext(Object):
         stream_type
             The type of stream of the forked device context.
 
+        Examples
+        --------
+        The device contexts created must be destroyed using `join`.
+
+        >>> dctx = PETSc.DeviceContext().getCurrent()
+        >>> dctxs = dctx.fork(4)
+        >>> ... # perform computations
+        >>> # we can mix various join modes
+        >>> dctx.join(PETSc.DeviceContext.JoinMode.SYNC, dctxs[0:2])
+        >>> dctx.join(PETSc.DeviceContext.JoinMode.SYNC, dctxs[2:])
+        >>> ... # some more computations and joins
+        >>> # dctxs must be all destroyed with joinMode.DESTROY
+        >>> dctx.join(PETSc.DeviceContext.JoinMode.DESTROY, dctxs)
+
         See Also
         --------
         join, waitFor, petsc.PetscDeviceContextFork
 
         """
-        cdef PetscDeviceContext *subctx       = NULL
-        cdef PetscStreamType     cstream_type = PETSC_STREAM_DEFAULT
+        cdef PetscDeviceContext *csubctxs = NULL
+        cdef PetscStreamType cstream_type = PETSC_STREAM_DEFAULT
         cdef PetscInt cn = asInt(n)
-        try:
-            if stream_type is None:
-                CHKERR(PetscDeviceContextFork(self.dctx, cn, &subctx))
-            else:
-                cstream_type = asStreamType(stream_type)
-                CHKERR(PetscDeviceContextForkWithStreamType(self.dctx, cstream_type, cn, &subctx))
-                return [PyPetscDeviceContext_New(subctx[i]) for i in range(cn)]
-        finally:
-            CHKERR(PetscFree(subctx))
+        cdef list subctxs = []
+        if stream_type is None:
+            CHKERR(PetscDeviceContextFork(self.dctx, cn, &csubctxs))
+        else:
+            cstream_type = asStreamType(stream_type)
+            CHKERR(PetscDeviceContextForkWithStreamType(self.dctx, cstream_type, cn, &csubctxs))
+        # FIXME: without CXX compiler, csubctxs is NULL
+        if csubctxs:
+            subctxs = [None] * cn
+            for i from 0 <= i < cn:
+                subctxs[i] = DeviceContext()
+                (<DeviceContext?>subctxs[i]).dctx = csubctxs[i]
+            CHKERR(PetscFree(csubctxs))
+        return subctxs
 
     def join(self, join_mode: DeviceJoinMode | str, py_sub_ctxs: list[DeviceContext]) -> None:
         """Join a set of device contexts on this one.
@@ -446,22 +462,23 @@ cdef class DeviceContext(Object):
         fork, waitFor, petsc.PetscDeviceContextJoin
 
         """
-        cdef PetscDeviceContext         *np_subctx_copy = NULL
-        cdef PetscDeviceContext         *np_subctx      = NULL
-        cdef PetscInt                    nsub           = 0
-        cdef PetscDeviceContextJoinMode  cjoin_mode     = asJoinMode(join_mode)
+        cdef PetscDeviceContext *np_subctx = NULL
+        cdef PetscDeviceContextJoinMode cjoin_mode = asJoinMode(join_mode)
+        cdef Py_ssize_t nctxs = len(py_sub_ctxs)
 
-        cdef object unused = oarray_p(py_sub_ctxs, &nsub, <void**>&np_subctx)
-        try:
-            CHKERR(PetscMalloc(<size_t>(nsub) * sizeof(PetscDeviceContext *), &np_subctx_copy))
-            CHKERR(PetscMemcpy(np_subctx_copy, np_subctx, <size_t>(nsub) * sizeof(PetscDeviceContext *)))
-            CHKERR(PetscDeviceContextJoin(self.dctx, nsub, cjoin_mode, &np_subctx_copy))
-        finally:
-            CHKERR(PetscFree(np_subctx_copy))
+        CHKERR(PetscMalloc(<size_t>(nctxs) * sizeof(PetscDeviceContext *), &np_subctx))
+        for i from 0 <= i < nctxs:
+            dctx = py_sub_ctxs[i]
+            np_subctx[i] = (<DeviceContext?>dctx).dctx if dctx is not None else NULL
+        CHKERR(PetscDeviceContextJoin(self.dctx, nctxs, cjoin_mode, &np_subctx))
 
         if cjoin_mode == PETSC_DEVICE_CONTEXT_JOIN_DESTROY:
-            for i in range(nsub):
-                py_sub_ctxs[i] = None
+            # in this case, PETSc destroys the contexts and frees the array
+            for i in range(nctxs):
+                (<DeviceContext?>py_sub_ctxs[i]).dctx = NULL
+        else:
+            # we need to free the temporary array
+            CHKERR(PetscFree(np_subctx))
 
     def synchronize(self) -> None:
         """Synchronize a device context.
