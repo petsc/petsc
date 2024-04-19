@@ -15,6 +15,7 @@ cdef Mapping
 cdef PathLike
 
 cdef Scalar
+cdef ArrayBool
 cdef ArrayInt
 cdef ArrayReal
 cdef ArrayComplex
