@@ -240,8 +240,7 @@ cdef class DeviceContext(Object):
     def __dealloc__(self):
         self.destroy()
 
-    @classmethod
-    def create(cls) -> DeviceContext:
+    def create(self) -> Self:
         """Create an empty DeviceContext.
 
         Not collective.
@@ -251,10 +250,10 @@ cdef class DeviceContext(Object):
         destroy, Device, petsc.PetscDeviceContextCreate
 
         """
-        cdef DeviceContext dctx = cls()
-
-        CHKERR(PetscDeviceContextCreate(&dctx.dctx))
-        return dctx
+        cdef PetscDeviceContext dctx = NULL
+        CHKERR(PetscDeviceContextCreate(&dctx))
+        CHKERR(PetscCLEAR(self.obj)); self.dctx = dctx
+        return self
 
     def destroy(self) -> Self:
         """Destroy a device context.
