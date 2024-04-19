@@ -922,7 +922,7 @@ cdef class ViewerHDF5(Viewer):
     def create(
         self,
         name: str,
-        mode: FileMode | str | None = None,
+        mode: Viewer.FileMode | str | None = None,
         comm: Comm | None = None,
        ) -> Self:
         """Create a viewer of type `Type.HDF5`.
