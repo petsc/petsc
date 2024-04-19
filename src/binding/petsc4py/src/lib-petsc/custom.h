@@ -10,6 +10,7 @@
 #include <petsc/private/snesimpl.h>
 #include <petsc/private/tsimpl.h>
 #include <petsc/private/taoimpl.h>
+#include <petsc/private/deviceimpl.h>
 
 /* ---------------------------------------------------------------- */
 
@@ -708,6 +709,14 @@ PetscErrorCode DMDACreateND(MPI_Comm comm,
   PetscCall(DMDASetStencilType(da,stencil_type));
   PetscCall(DMDASetStencilWidth(da,stencil_width));
   *dm = (DM)da;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static
+PetscErrorCode PetscDeviceReference(PetscDevice device)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscDeviceReference_Internal(device));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
