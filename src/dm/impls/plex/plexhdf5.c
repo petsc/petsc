@@ -812,6 +812,7 @@ PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM dm, IS globalPointNumbers, Pe
 
   PetscFunctionBegin;
   PetscCall(PetscViewerHDF5GetDMPlexStorageVersionWriting(viewer, &version));
+  PetscCall(PetscInfo(dm, "Writing DM %s storage version %d.%d.%d\n", dm->hdr.name, version->major, version->minor, version->subminor));
   PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
   if (DMPlexStorageVersionGE(version, 2, 0, 0)) {
     PetscCall(PetscSNPrintf(group, sizeof(group), "topologies/%s", topologydm_name));
@@ -1851,6 +1852,7 @@ static PetscErrorCode DMPlexDistributionLoad_HDF5_Private(DM dm, PetscViewer vie
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// Serial load of topology
 static PetscErrorCode DMPlexTopologyLoad_HDF5_Legacy_Private(DM dm, PetscViewer viewer, PetscSF *sf)
 {
   MPI_Comm        comm;
@@ -1881,6 +1883,7 @@ static PetscErrorCode DMPlexTopologyLoad_HDF5_Legacy_Private(DM dm, PetscViewer 
   PetscCall(DMSetDimension(dm, dim));
   {
     /* Force serial load */
+    PetscCall(PetscInfo(dm, "Loading DM %s in serial\n", dm->hdr.name));
     PetscCall(PetscViewerHDF5ReadSizes(viewer, pointsName, NULL, &Np));
     PetscCall(PetscLayoutSetLocalSize(pointsIS->map, rank == 0 ? Np : 0));
     PetscCall(PetscLayoutSetSize(pointsIS->map, Np));
@@ -1989,6 +1992,7 @@ static PetscErrorCode PlexLayerCreate_Private(PlexLayer *layer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// Parallel load of a depth stratum
 static PetscErrorCode PlexLayerLoad_Private(PlexLayer layer, PetscViewer viewer, PetscInt d, PetscLayout pointsLayout)
 {
   char         path[128];
@@ -2343,6 +2347,7 @@ static PetscErrorCode PlexLayerConcatenateSFs_Private(MPI_Comm comm, PetscInt de
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// Parallel load of topology
 static PetscErrorCode DMPlexTopologyLoad_HDF5_Private(DM dm, PetscViewer viewer, PetscSF *sfXC)
 {
   PlexLayer  *layers;
@@ -2362,6 +2367,7 @@ static PetscErrorCode DMPlexTopologyLoad_HDF5_Private(DM dm, PetscViewer viewer,
   }
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
 
+  PetscCall(PetscInfo(dm, "Loading DM %s in parallel\n", dm->hdr.name));
   {
     IS spOnComm;
 
@@ -2567,6 +2573,7 @@ PetscErrorCode DMPlexLoad_HDF5_Internal(DM dm, PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCall(PetscViewerHDF5GetDMPlexStorageVersionReading(viewer, &version));
+  PetscCall(PetscInfo(dm, "Loading DM %s storage version %d.%d.%d\n", dm->hdr.name, version->major, version->minor, version->subminor));
   if (!DMPlexStorageVersionGE(version, 2, 0, 0)) {
     PetscCall(DMPlexTopologyLoad_HDF5_Internal(dm, viewer, NULL));
     PetscCall(DMPlexLabelsLoad_HDF5_Internal(dm, viewer, NULL));

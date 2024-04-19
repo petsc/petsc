@@ -3965,7 +3965,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
     PetscCall(PetscViewerASCIIPrintf(viewer, "%s\n", contents));
     PetscCall(PetscViewerDestroy(&viewer));
     PetscCall(DMPlexCreateFromFile(PetscObjectComm((PetscObject)dm), tmpfilename, plexname, interpolate, &dmnew));
-    if (!rank) PetscCheck(!unlink(tmpfilename), comm, PETSC_ERR_FILE_UNEXPECTED, "Could not delete file: %s due to \"%s\"", tmpfilename, strerror(errno));
+    if (!rank && !unlink(tmpfilename)) PetscCall(PetscInfo(dm, "Could not delete file: %s due to \"%s\"\n", tmpfilename, strerror(errno)));
     PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "%s Mesh", strname));
     PetscCall(PetscObjectSetName((PetscObject)dm, name));
     PetscCall(DMPlexCopy_Internal(dm, PETSC_FALSE, PETSC_FALSE, dmnew));
