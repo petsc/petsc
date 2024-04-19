@@ -4171,8 +4171,8 @@ PetscErrorCode MatMPIAIJSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d_
 
   Notes:
   The `i`, `j`, and `a` arrays ARE copied by this routine into the internal format used by PETSc;
-  thus you CANNOT change the matrix entries by changing the values of a[] after you have
-  called this routine. Use `MatCreateMPIAIJWithSplitArray()` to avoid needing to copy the arrays.
+  thus you CANNOT change the matrix entries by changing the values of `a[]` after you have
+  called this routine. Use `MatCreateMPIAIJWithSplitArrays()` to avoid needing to copy the arrays.
 
   The `i` and `j` indices are 0 based, and `i` indices are indices corresponding to the local `j` array.
 
@@ -4182,7 +4182,7 @@ PetscErrorCode MatMPIAIJSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d_
   `MatUpdateMPIAIJWithArrays()`, the column indices **must** be sorted.
 
   The format which is used for the sparse matrix input, is equivalent to a
-  row-major ordering.. i.e for the following matrix, the input data expected is
+  row-major ordering, i.e., for the following matrix, the input data expected is
   as shown
 .vb
         1 0 0
@@ -4201,7 +4201,7 @@ PetscErrorCode MatMPIAIJSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d_
         v =  {4,5,6}  [size = 3]
 .ve
 
-.seealso: [](ch_matrices), `Mat`, `MATMPIAIK`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
           `MATMPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`, `MatUpdateMPIAIJWithArray()`, `MatSetPreallocationCOO()`, `MatSetValuesCOO()`
 @*/
 PetscErrorCode MatCreateMPIAIJWithArrays(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, const PetscInt i[], const PetscInt j[], const PetscScalar a[], Mat *mat)
