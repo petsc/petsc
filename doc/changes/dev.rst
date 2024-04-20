@@ -41,6 +41,9 @@ Changes: Development
 
 .. rubric:: PC:
 
+- Add support in ``PCFieldSplitSetFields()`` including with ``-pc_fieldsplit_%d_fields fields`` for ``MATNEST``,  making it possible to
+  utilize multiple levels of ``PCFIELDSPLIT`` with ``MATNEST`` from the command line
+
 .. rubric:: KSP:
 
 .. rubric:: SNES:
