@@ -10,6 +10,7 @@ if __name__ == '__main__':
     '--with-cxx=icx',
     '--with-fc=ifx',
     '--with-shared-libraries=0',
+    'FPPFLAGS=-I/cygdrive/c/PROGRA~2/Intel/oneAPI/mpi/latest/include/mpi',
     '--with-mpi-include=/cygdrive/c/PROGRA~2/Intel/oneAPI/mpi/latest/include',
     '--with-mpi-lib=/cygdrive/c/PROGRA~2/Intel/oneAPI/mpi/latest/lib/impi.lib',
     '--with-mpiexec=/cygdrive/c/PROGRA~2/Intel/oneAPI/mpi/latest//bin/mpiexec -localonly',
