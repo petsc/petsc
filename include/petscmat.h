@@ -373,6 +373,7 @@ PETSC_EXTERN PetscErrorCode MatSetOptionsPrefixFactor(Mat, const char[]);
 PETSC_EXTERN PetscErrorCode MatAppendOptionsPrefixFactor(Mat, const char[]);
 PETSC_EXTERN PetscErrorCode MatAppendOptionsPrefix(Mat, const char[]);
 PETSC_EXTERN PetscErrorCode MatGetOptionsPrefix(Mat, const char *[]);
+PETSC_EXTERN PetscErrorCode MatGetState(Mat, PetscObjectState *);
 PETSC_EXTERN PetscErrorCode MatSetErrorIfFailure(Mat, PetscBool);
 
 PETSC_EXTERN PetscFunctionList MatList;

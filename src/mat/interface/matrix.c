@@ -874,6 +874,35 @@ PetscErrorCode MatGetOptionsPrefix(Mat A, const char *prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  MatGetState - Gets the state of a `Mat`.
+
+  Not Collective
+
+  Input Parameter:
+. A - the matrix
+
+  Output Parameter:
+. state - the object state
+
+  Level: advanced
+
+  Note:
+  Object state is an integer which gets increased every time
+  the object is changed. By saving and later querying the object state
+  one can determine whether information about the object is still current.
+
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `PetscObjectStateGet()`
+@*/
+PetscErrorCode MatGetState(Mat A, PetscObjectState *state)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscAssertPointer(state, 2);
+  PetscCall(PetscObjectStateGet((PetscObject)A, state));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   MatResetPreallocation - Reset matrix to use the original nonzero pattern provided by the user.
 
