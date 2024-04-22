@@ -734,7 +734,7 @@ cdef class SNES(Object):
         setFunction, petsc.SNESGetFunction
 
         """
-        cdef PetscErrorCode(*fun)(PetscSNES, PetscVec, PetscVec, void*)
+        cdef PetscErrorCode(*fun)(PetscSNES, PetscVec, PetscVec, void*) except PETSC_ERR_PYTHON nogil
         cdef Vec f = Vec()
         cdef void* ctx = NULL
         fun = SNES_Function

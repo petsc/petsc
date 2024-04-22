@@ -31,6 +31,6 @@ class Configure(config.package.CMakePackage):
       args.append('-DCMAKE_BUILD_TYPE=RelWithTraces')
     #args.append('-DCMAKE_CXX_FLAGS="-O3"')
     #args.append('-DCMAKE_C_FLAGS="-O3"')
-    args.append('-DCMAKE_CUDA_ARCHITECTURES:STRING="{}"'.format(self.cuda.cmakeArch()))
+    args.extend(self.cuda.getCmakeCUDAArchFlag())
     args.append('-DCUDAToolkit_ROOT=' + self.cuda.cudaDir)
     return args
