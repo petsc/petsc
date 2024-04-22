@@ -1613,6 +1613,35 @@ PetscErrorCode VecGetOptionsPrefix(Vec v, const char *prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  VecGetState - Gets the state of a `Vec`.
+
+  Not Collective
+
+  Input Parameter:
+. v - the `Vec` context
+
+  Output Parameter:
+. state - the object state
+
+  Level: advanced
+
+  Note:
+  Object state is an integer which gets increased every time
+  the object is changed. By saving and later querying the object state
+  one can determine whether information about the object is still current.
+
+.seealso: [](ch_vectors), `Vec`, `VecCreate()`, `PetscObjectStateGet()`
+@*/
+PetscErrorCode VecGetState(Vec v, PetscObjectState *state)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
+  PetscAssertPointer(state, 2);
+  PetscCall(PetscObjectStateGet((PetscObject)v, state));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   VecSetUp - Sets up the internal vector data structures for the later use.
 
