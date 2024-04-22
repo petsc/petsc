@@ -75,6 +75,9 @@ class Configure(config.package.Package):
     a list of the given cuda arch numbers.
     raises RuntimeError if cuda arch is not a list of version numbers
     '''
+    if not hasattr(self,'cudaArch'):
+      raise RuntimeError('cudaArch is not set') from None
+
     arch_list = self.cudaArch.split(',')
 
     try:
@@ -114,9 +117,12 @@ class Configure(config.package.Package):
       raise RuntimeError('clang only supports cuda archs specified as version number(s) (got "'+self.cudaArch+'")')
     return ''.join(' --cuda-gpu-arch=sm_'+gen for gen in self.cudaArchList())
 
-  def cmakeArch(self):
+  def getCmakeCUDAArchFlag(self):
     # CMake supports 'all', 'all-major', 'native', and a semicolon-separated list of numbers
-    return self.cudaArch.replace(',', ';')
+    if hasattr(self,'cudaArch'):
+      return ['-DCMAKE_CUDA_ARCHITECTURES:STRING="{}"'.format(self.cudaArch.replace(',', ';'))]
+    else:
+      return []
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
