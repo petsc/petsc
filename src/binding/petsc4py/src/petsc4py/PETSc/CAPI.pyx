@@ -82,6 +82,7 @@ cdef api PetscRandom PyPetscRandom_Get(object arg) except ? NULL:
 
 cdef api Device PyPetscDevice_New(PetscDevice arg):
     cdef Device ret = Device()
+    CHKERR(PetscDeviceReference(arg))
     ret.device = arg
     return ret
 

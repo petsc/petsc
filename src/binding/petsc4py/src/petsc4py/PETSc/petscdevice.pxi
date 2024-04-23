@@ -64,6 +64,9 @@ cdef extern from * nogil:
     PetscErrorCode PetscDeviceContextGetCurrentContext(PetscDeviceContext *)
     PetscErrorCode PetscDeviceContextSetCurrentContext(PetscDeviceContext)
 
+cdef extern from * nogil: # custom.h
+    PetscErrorCode PetscDeviceReference(PetscDevice)
+
 cdef inline PetscDeviceType asDeviceType(object dtype) except <PetscDeviceType>(-1):
     if isinstance(dtype, str):
         dtype = dtype.upper()
