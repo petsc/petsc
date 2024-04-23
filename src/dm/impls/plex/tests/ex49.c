@@ -183,6 +183,36 @@ static PetscErrorCode CheckOffsets(DM dm, AppCtx *user, const char *domain_name,
     PetscCall(PetscFree(offsets));
     PetscCall(DMGetLocalToGlobalMapping(cdm, &ltog));
     PetscCall(ISLocalToGlobalMappingViewFromOptions(ltog, NULL, "-coord_ltog_view"));
+    {
+      DM                 clonedm;
+      Vec                cloneX, X;
+      PetscInt           clone_num_x, num_x;
+      const PetscScalar *clonex, *x;
+
+      PetscCall(DMClone(dm, &clonedm));
+      { // Force recreation of local coordinate vector
+        Vec X_global;
+
+        PetscCall(DMGetCoordinates(dm, &X_global));
+        PetscCall(DMSetCoordinates(clonedm, X_global));
+      }
+      PetscCall(DMGetCoordinatesLocal(dm, &X));
+      PetscCall(DMGetCoordinatesLocal(clonedm, &cloneX));
+      PetscCall(VecGetLocalSize(X, &num_x));
+      PetscCall(VecGetLocalSize(cloneX, &clone_num_x));
+      PetscCheck(num_x == clone_num_x, PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "Cloned DM coordinate size (%" PetscInt_FMT ") different from original DM coordinate size (%" PetscInt_FMT ")", clone_num_x, num_x);
+
+      PetscCall(VecGetArrayRead(X, &x));
+      PetscCall(VecGetArrayRead(cloneX, &clonex));
+
+      for (PetscInt i = 0; i < num_x; i++) {
+        PetscCheck(PetscIsCloseAtTolScalar(x[i], clonex[i], 1e-13, 1e-13), PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Original coordinate (%4.2f) and cloned coordinate (%4.2f) are different", (double)PetscRealPart(x[i]), (double)PetscRealPart(clonex[i]));
+      }
+
+      PetscCall(VecRestoreArrayRead(X, &x));
+      PetscCall(VecRestoreArrayRead(cloneX, &clonex));
+      PetscCall(DMDestroy(&clonedm));
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

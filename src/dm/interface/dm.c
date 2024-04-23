@@ -179,6 +179,10 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
         PetscCall(DMClone(dm->coordinates[i].dm, &ncdm));
         PetscCall(DMCopyDisc(dm->coordinates[i].dm, ncdm));
         PetscCall(DMSetLocalSection(ncdm, cs));
+        if (dm->coordinates[i].dm->periodic.setup) {
+          ncdm->periodic.setup = dm->coordinates[i].dm->periodic.setup;
+          PetscCall(ncdm->periodic.setup(ncdm));
+        }
         if (i) PetscCall(DMSetCellCoordinateDM(*newdm, ncdm));
         else PetscCall(DMSetCoordinateDM(*newdm, ncdm));
         PetscCall(DMDestroy(&ncdm));
