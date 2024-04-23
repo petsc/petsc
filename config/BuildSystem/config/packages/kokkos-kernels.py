@@ -80,6 +80,10 @@ class Configure(config.package.CMakePackage):
         args.append('-DKokkosKernels_ENABLE_TPL_CUBLAS=OFF')  # These are turned ON by KK by default when CUDA is enabled
         args.append('-DKokkosKernels_ENABLE_TPL_CUSPARSE=OFF')
         args.append('-DKokkosKernels_ENABLE_TPL_CUSOLVER=OFF')
+      elif hasattr(self.cuda, 'math_libs_dir'): # KK-4.3+ failed to locate nvhpc math_libs on Perlmutter@NERSC, so we set them explicitly
+        args.append('-DCUBLAS_ROOT='+self.cuda.math_libs_dir)
+        args.append('-DCUSPARSE_ROOT='+self.cuda.math_libs_dir)
+        args.append('-DCUSOLVER_ROOT='+self.cuda.math_libs_dir)
     elif self.hip.found:
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
       args.append('-DCMAKE_CXX_COMPILER='+self.getCompiler('HIP'))
