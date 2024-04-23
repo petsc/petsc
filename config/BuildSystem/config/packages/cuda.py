@@ -225,6 +225,7 @@ class Configure(config.package.Package):
       stubliblist  = config.package.Package.generateLibList(self, nvhpcStubLibDir)
       liblist.append(mathliblist[0]+cudaliblist[0]+stubliblist[0])
       liblist.append(mathliblist[1]+cudaliblist[1]+stubliblist[1])
+      self.math_libs_dir = os.path.join(nvhpcDir,'math_libs') # might be used by Kokkos-Kernels
 
     # 'directory' is in format D, and we peel 'directory' three times.
     # We preserve the version info in case a NVHPC installation provides multiple cuda versions and we'd like to respect user's choice
@@ -243,6 +244,7 @@ class Configure(config.package.Package):
       stubliblist  = config.package.Package.generateLibList(self, nvhpcStubVerLibDir)
       liblist.append(mathliblist[0]+cudaliblist[0]+stubliblist[0])
       liblist.append(mathliblist[1]+cudaliblist[1]+stubliblist[1])
+      self.math_libs_dir = os.path.join(nvhpcDir,'math_libs',ver)
     return liblist
 
   def checkSizeofVoidP(self):
@@ -308,11 +310,13 @@ class Configure(config.package.Package):
       else:
         nvccDir = os.path.dirname(self.systemNvcc) # /path/bin
         d = os.path.dirname(nvccDir) # /path
+        # d might be /to/Linux_x86_64/21.7/cuda or /to/Linux_x86_64/21.7/cuda/12.2, check if math_libs exist. If yes, we are using NVHPC
+        if os.path.exists(os.path.join(d,'..','math_libs')) or os.path.exists(os.path.join(d,'..','..','math_libs')):
+          self.isnvhpc = 1
         if os.path.exists(os.path.join(d,'include','cuda.h')): # CUDAToolkit with a structure /path/{bin/nvcc, include/cuda.h}
           self.cudaDir = d
-        elif os.path.exists(os.path.normpath(os.path.join(d,'..','cuda','include','cuda.h'))): # NVHPC, see above
+        elif os.path.exists(os.path.normpath(os.path.join(d,'..','cuda','include','cuda.h'))): # could be NVHPC
           self.cudaDir = os.path.normpath(os.path.join(d,'..','cuda')) # get rid of .. in path, getting /path/Linux_x86_64/21.5/cuda
-          self.isnvhpc = 1
     if not hasattr(self, 'cudaDir'):
       raise RuntimeError('CUDA directory not found!')
 
