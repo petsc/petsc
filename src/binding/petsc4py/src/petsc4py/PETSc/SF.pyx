@@ -28,10 +28,6 @@ cdef class SF(Object):
         self.obj = <PetscObject*> &self.sf
         self.sf  = NULL
 
-    def __dealloc__(self):
-        CHKERR(PetscSFDestroy(&self.sf))
-        self.sf = NULL
-
     def view(self, Viewer viewer=None) -> None:
         """View a star forest.
 
