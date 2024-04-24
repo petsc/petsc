@@ -1,5 +1,5 @@
 original matrix nonzeros = 16, allocated nonzeros = 16
-original: Frobenious norm = 79.8499, one norm = 72., infinity norm = 126.
+original: Frobenius norm = 79.8499, one norm = 72., infinity norm = 126.
 Mat Object: 1 MPI process
   type: seqaij
 row 0: (0, 0.)  (1, 1.)  (2, 2.)  (3, 3.) 
@@ -7,7 +7,7 @@ row 1: (0, 10.)  (1, 11.)  (2, 12.)  (3, 13.)
 row 2: (0, 20.)  (1, 21.)  (2, 22.)  (3, 23.) 
 row 3: (0, 30.)  (1, 31.)  (2, 32.)  (3, 33.) 
 transpose matrix nonzeros = 16, allocated nonzeros = 16
-transpose: Frobenious norm = 79.8499, one norm = 126., infinity norm = 72.
+transpose: Frobenius norm = 79.8499, one norm = 126., infinity norm = 72.
 Mat Object: 1 MPI process
   type: seqaij
 row 0: (0, 0.)  (1, 10.)  (2, 20.)  (3, 30.) 

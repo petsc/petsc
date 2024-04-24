@@ -1,5 +1,6 @@
 #include <../src/mat/impls/nest/matnestimpl.h> /*I   "petscmat.h"   I*/
 #include <../src/mat/impls/aij/seq/aij.h>
+#include <../src/mat/impls/shell/shell.h>
 #include <petscsf.h>
 
 static PetscErrorCode MatSetUp_NestIS_Private(Mat, PetscInt, const IS[], PetscInt, const IS[]);
@@ -1876,18 +1877,23 @@ static PetscErrorCode MatConvert_Nest_SeqAIJ_fast(Mat A, MatType newtype, MatReu
     PetscCall(ISGetLocalSize(nest->isglobal.row[i], &ncr));
     for (j = 0; j < nest->nc; ++j) {
       if (aii[i * nest->nc + j]) {
-        PetscScalar *nvv = avv[i * nest->nc + j];
+        PetscScalar *nvv = avv[i * nest->nc + j], vscale = 1.0, vshift = 0.0;
         PetscInt    *nii = aii[i * nest->nc + j];
         PetscInt    *njj = ajj[i * nest->nc + j];
         PetscInt     ir, cst;
 
+        if (trans[i * nest->nc + j]) {
+          vscale = ((Mat_Shell *)nest->m[i][j]->data)->vscale;
+          vshift = ((Mat_Shell *)nest->m[i][j]->data)->vshift;
+        }
         PetscCall(ISStrideGetInfo(nest->isglobal.col[j], &cst, NULL));
         for (ir = rst; ir < ncr + rst; ++ir) {
           PetscInt ij, rsize = nii[1] - nii[0], ist = ii[ir] + ci[ir];
 
           for (ij = 0; ij < rsize; ij++) {
             jj[ist + ij] = *njj + cst;
-            vv[ist + ij] = *nvv;
+            vv[ist + ij] = vscale * *nvv;
+            if (PetscUnlikely(vshift != 0.0 && *njj == ir - rst)) vv[ist + ij] += vshift;
             njj++;
             nvv++;
           }
@@ -2044,6 +2050,7 @@ static PetscErrorCode MatConvert_Nest_AIJ(Mat A, MatType newtype, MatReuse reuse
                 PetscCall(PetscObjectTypeCompare((PetscObject)Bt, MATSEQAIJ, &fast));
               }
             }
+            if (fast) fast = (PetscBool)(!((Mat_Shell *)B->data)->zrows && !((Mat_Shell *)B->data)->zcols && !((Mat_Shell *)B->data)->axpy && !((Mat_Shell *)B->data)->left && !((Mat_Shell *)B->data)->right && !((Mat_Shell *)B->data)->dshift);
           }
         }
       }
