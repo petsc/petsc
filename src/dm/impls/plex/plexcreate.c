@@ -3939,16 +3939,15 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
     PetscCall(DMPlexCopy_Internal(dm, PETSC_FALSE, PETSC_FALSE, dmnew));
     PetscCall(DMPlexReplace_Internal(dm, &dmnew));
   } else if (strflg) {
-    DM            dmnew;
-    PetscViewer   viewer;
-    const char   *contents;
-    char         *strname;
-    char          tmpdir[PETSC_MAX_PATH_LEN];
-    char          tmpfilename[PETSC_MAX_PATH_LEN];
-    char          name[PETSC_MAX_PATH_LEN];
-    PetscObjectId id;
-    MPI_Comm      comm;
-    PetscMPIInt   rank;
+    DM          dmnew;
+    PetscViewer viewer;
+    const char *contents;
+    char       *strname;
+    char        tmpdir[PETSC_MAX_PATH_LEN];
+    char        tmpfilename[PETSC_MAX_PATH_LEN];
+    char        name[PETSC_MAX_PATH_LEN];
+    MPI_Comm    comm;
+    PetscMPIInt rank;
 
     PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
     PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -3959,13 +3958,14 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
     PetscCall(PetscDLSym(NULL, strname, (void **)&contents));
     PetscCheck(contents, comm, PETSC_ERR_ARG_WRONG, "Could not locate mesh string %s", strname);
     PetscCall(PetscGetTmp(comm, tmpdir, PETSC_MAX_PATH_LEN));
-    PetscCall(PetscObjectGetId((PetscObject)dm, &id));
-    PetscCall(PetscSNPrintf(tmpfilename, PETSC_MAX_PATH_LEN, "%s/mesh_%d.%s", tmpdir, (int)id, filename));
+    PetscCall(PetscStrlcat(tmpdir, "/meshXXXXXX", PETSC_MAX_PATH_LEN));
+    PetscCall(PetscMkdtemp(tmpdir));
+    PetscCall(PetscSNPrintf(tmpfilename, PETSC_MAX_PATH_LEN, "%s/mesh.%s", tmpdir, filename));
     PetscCall(PetscViewerASCIIOpen(comm, tmpfilename, &viewer));
     PetscCall(PetscViewerASCIIPrintf(viewer, "%s\n", contents));
     PetscCall(PetscViewerDestroy(&viewer));
     PetscCall(DMPlexCreateFromFile(PetscObjectComm((PetscObject)dm), tmpfilename, plexname, interpolate, &dmnew));
-    if (!rank && !unlink(tmpfilename)) PetscCall(PetscInfo(dm, "Could not delete file: %s due to \"%s\"\n", tmpfilename, strerror(errno)));
+    PetscCall(PetscRMTree(tmpdir));
     PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "%s Mesh", strname));
     PetscCall(PetscObjectSetName((PetscObject)dm, name));
     PetscCall(DMPlexCopy_Internal(dm, PETSC_FALSE, PETSC_FALSE, dmnew));
