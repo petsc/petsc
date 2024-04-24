@@ -675,7 +675,7 @@ PetscErrorCode DMSwarmComputeLocalSize(DM sw, PetscInt N, PetscProbFunc density)
     const PetscInt cell = c + cStart;
     PetscReal      v0[3], J[9], invJ[9], detJ, detJp = 2. / (gmax[0] - gmin[0]), xr[3], den;
 
-    /*Have to transform quadrature points/weights to cell domain*/
+    /* Have to transform quadrature points/weights to cell domain */
     PetscCall(DMPlexComputeCellGeometryFEM(dm, cell, NULL, v0, J, invJ, &detJ));
     PetscCall(PetscArrayzero(n_int, Ns));
     for (q = 0; q < Nq; ++q) {
