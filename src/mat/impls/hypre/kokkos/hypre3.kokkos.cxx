@@ -1,4 +1,4 @@
-#include <HYPRE_utilities.h>
+#include <petsc/private/petschypre.h>
 #include <Kokkos_Core.hpp>
 #include <../src/mat/impls/hypre/mhypre.h>
 
