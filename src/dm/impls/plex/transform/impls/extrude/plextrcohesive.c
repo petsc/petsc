@@ -357,83 +357,94 @@ static PetscErrorCode DMPlexTransformCohesiveExtrudeSetUp_Triangle(DMPlexTransfo
   PetscInt rt, Nc, No, coff, ooff;
 
   PetscFunctionBegin;
+  // No unsplit triangles
   // Split triangles
-  rt         = (DM_POLYTOPE_TRIANGLE * 2 + 1) * 100 + 0;
-  ex->Nt[rt] = 2;
-  Nc         = 12 * 2 + 18;
-  No         = 3 * 2 + 5;
-  PetscCall(PetscMalloc4(ex->Nt[rt], &ex->target[rt], ex->Nt[rt], &ex->size[rt], Nc, &ex->cone[rt], No, &ex->ornt[rt]));
-  ex->target[rt][0] = DM_POLYTOPE_TRIANGLE;
-  ex->target[rt][1] = ex->useTensor ? DM_POLYTOPE_TRI_PRISM_TENSOR : DM_POLYTOPE_TRI_PRISM;
-  ex->size[rt][0]   = 2;
-  ex->size[rt][1]   = 1;
-  //   cones for triangles
-  for (PetscInt i = 0; i < 2; ++i) {
-    ex->cone[rt][12 * i + 0]  = DM_POLYTOPE_SEGMENT;
-    ex->cone[rt][12 * i + 1]  = 1;
-    ex->cone[rt][12 * i + 2]  = 0;
-    ex->cone[rt][12 * i + 3]  = i; // TODO: This depends on whether the segment was split
-    ex->cone[rt][12 * i + 4]  = DM_POLYTOPE_SEGMENT;
-    ex->cone[rt][12 * i + 5]  = 1;
-    ex->cone[rt][12 * i + 6]  = 1;
-    ex->cone[rt][12 * i + 7]  = i; // TODO: This depends on whether the segment was split
-    ex->cone[rt][12 * i + 8]  = DM_POLYTOPE_SEGMENT;
-    ex->cone[rt][12 * i + 9]  = 1;
-    ex->cone[rt][12 * i + 10] = 2;
-    ex->cone[rt][12 * i + 11] = i; // TODO: This depends on whether the segment was split
-  }
-  for (PetscInt i = 0; i < 3 * 2; ++i) ex->ornt[rt][i] = 0;
-  //   cone for triangular prism/tensor triangular prism
-  coff = 12 * 2;
-  ooff = 3 * 2;
-  if (ex->useTensor) {
-    ex->cone[rt][coff + 0]  = DM_POLYTOPE_TRIANGLE;
-    ex->cone[rt][coff + 1]  = 0;
-    ex->cone[rt][coff + 2]  = 0;
-    ex->cone[rt][coff + 3]  = DM_POLYTOPE_TRIANGLE;
-    ex->cone[rt][coff + 4]  = 0;
-    ex->cone[rt][coff + 5]  = 1;
-    ex->cone[rt][coff + 6]  = DM_POLYTOPE_SEG_PRISM_TENSOR;
-    ex->cone[rt][coff + 7]  = 1;
-    ex->cone[rt][coff + 8]  = 0;
-    ex->cone[rt][coff + 9]  = 0;
-    ex->cone[rt][coff + 10] = DM_POLYTOPE_SEG_PRISM_TENSOR;
-    ex->cone[rt][coff + 11] = 1;
-    ex->cone[rt][coff + 12] = 1;
-    ex->cone[rt][coff + 13] = 0;
-    ex->cone[rt][coff + 14] = DM_POLYTOPE_SEG_PRISM_TENSOR;
-    ex->cone[rt][coff + 15] = 1;
-    ex->cone[rt][coff + 16] = 2;
-    ex->cone[rt][coff + 17] = 0;
-    ex->ornt[rt][ooff + 0]  = 0;
-    ex->ornt[rt][ooff + 1]  = 0;
-    ex->ornt[rt][ooff + 2]  = 0;
-    ex->ornt[rt][ooff + 3]  = 0;
-    ex->ornt[rt][ooff + 4]  = 0;
-  } else {
-    ex->cone[rt][coff + 0]  = DM_POLYTOPE_TRIANGLE;
-    ex->cone[rt][coff + 1]  = 0;
-    ex->cone[rt][coff + 2]  = 0;
-    ex->cone[rt][coff + 3]  = DM_POLYTOPE_TRIANGLE;
-    ex->cone[rt][coff + 4]  = 0;
-    ex->cone[rt][coff + 5]  = 1;
-    ex->cone[rt][coff + 6]  = DM_POLYTOPE_QUADRILATERAL;
-    ex->cone[rt][coff + 7]  = 1;
-    ex->cone[rt][coff + 8]  = 0;
-    ex->cone[rt][coff + 9]  = 0;
-    ex->cone[rt][coff + 10] = DM_POLYTOPE_QUADRILATERAL;
-    ex->cone[rt][coff + 11] = 1;
-    ex->cone[rt][coff + 12] = 1;
-    ex->cone[rt][coff + 13] = 0;
-    ex->cone[rt][coff + 14] = DM_POLYTOPE_QUADRILATERAL;
-    ex->cone[rt][coff + 15] = 1;
-    ex->cone[rt][coff + 16] = 2;
-    ex->cone[rt][coff + 17] = 0;
-    ex->ornt[rt][ooff + 0]  = -2;
-    ex->ornt[rt][ooff + 1]  = 0;
-    ex->ornt[rt][ooff + 2]  = 0;
-    ex->ornt[rt][ooff + 3]  = 0;
-    ex->ornt[rt][ooff + 4]  = 0;
+  //   0: no unsplit edge
+  //   1: unsplit edge 0
+  //   2: unsplit edge 1
+  //   3: unsplit edge 0 1
+  //   4: unsplit edge 2
+  //   5: unsplit edge 0 2
+  //   6: unsplit edge 1 2
+  //   7: all edges unsplit (impossible)
+  for (PetscInt s = 0; s < 7; ++s) {
+    rt         = (DM_POLYTOPE_TRIANGLE * 2 + 1) * 100 + s;
+    ex->Nt[rt] = 2;
+    Nc         = 12 * 2 + 18;
+    No         = 3 * 2 + 5;
+    PetscCall(PetscMalloc4(ex->Nt[rt], &ex->target[rt], ex->Nt[rt], &ex->size[rt], Nc, &ex->cone[rt], No, &ex->ornt[rt]));
+    ex->target[rt][0] = DM_POLYTOPE_TRIANGLE;
+    ex->target[rt][1] = ex->useTensor ? DM_POLYTOPE_TRI_PRISM_TENSOR : DM_POLYTOPE_TRI_PRISM;
+    ex->size[rt][0]   = 2;
+    ex->size[rt][1]   = 1;
+    //   cones for triangles
+    for (PetscInt i = 0; i < 2; ++i) {
+      ex->cone[rt][12 * i + 0]  = DM_POLYTOPE_SEGMENT;
+      ex->cone[rt][12 * i + 1]  = 1;
+      ex->cone[rt][12 * i + 2]  = 0;
+      ex->cone[rt][12 * i + 3]  = s & 1 ? 0 : i;
+      ex->cone[rt][12 * i + 4]  = DM_POLYTOPE_SEGMENT;
+      ex->cone[rt][12 * i + 5]  = 1;
+      ex->cone[rt][12 * i + 6]  = 1;
+      ex->cone[rt][12 * i + 7]  = s & 2 ? 0 : i;
+      ex->cone[rt][12 * i + 8]  = DM_POLYTOPE_SEGMENT;
+      ex->cone[rt][12 * i + 9]  = 1;
+      ex->cone[rt][12 * i + 10] = 2;
+      ex->cone[rt][12 * i + 11] = s & 4 ? 0 : i;
+    }
+    for (PetscInt i = 0; i < 3 * 2; ++i) ex->ornt[rt][i] = 0;
+    //   cone for triangular prism/tensor triangular prism
+    coff = 12 * 2;
+    ooff = 3 * 2;
+    if (ex->useTensor) {
+      ex->cone[rt][coff + 0]  = DM_POLYTOPE_TRIANGLE;
+      ex->cone[rt][coff + 1]  = 0;
+      ex->cone[rt][coff + 2]  = 0;
+      ex->cone[rt][coff + 3]  = DM_POLYTOPE_TRIANGLE;
+      ex->cone[rt][coff + 4]  = 0;
+      ex->cone[rt][coff + 5]  = 1;
+      ex->cone[rt][coff + 6]  = DM_POLYTOPE_SEG_PRISM_TENSOR;
+      ex->cone[rt][coff + 7]  = 1;
+      ex->cone[rt][coff + 8]  = 0;
+      ex->cone[rt][coff + 9]  = 0;
+      ex->cone[rt][coff + 10] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+      ex->cone[rt][coff + 11] = 1;
+      ex->cone[rt][coff + 12] = 1;
+      ex->cone[rt][coff + 13] = 0;
+      ex->cone[rt][coff + 14] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+      ex->cone[rt][coff + 15] = 1;
+      ex->cone[rt][coff + 16] = 2;
+      ex->cone[rt][coff + 17] = 0;
+      ex->ornt[rt][ooff + 0]  = 0;
+      ex->ornt[rt][ooff + 1]  = 0;
+      ex->ornt[rt][ooff + 2]  = 0;
+      ex->ornt[rt][ooff + 3]  = 0;
+      ex->ornt[rt][ooff + 4]  = 0;
+    } else {
+      ex->cone[rt][coff + 0]  = DM_POLYTOPE_TRIANGLE;
+      ex->cone[rt][coff + 1]  = 0;
+      ex->cone[rt][coff + 2]  = 0;
+      ex->cone[rt][coff + 3]  = DM_POLYTOPE_TRIANGLE;
+      ex->cone[rt][coff + 4]  = 0;
+      ex->cone[rt][coff + 5]  = 1;
+      ex->cone[rt][coff + 6]  = DM_POLYTOPE_QUADRILATERAL;
+      ex->cone[rt][coff + 7]  = 1;
+      ex->cone[rt][coff + 8]  = 0;
+      ex->cone[rt][coff + 9]  = 0;
+      ex->cone[rt][coff + 10] = DM_POLYTOPE_QUADRILATERAL;
+      ex->cone[rt][coff + 11] = 1;
+      ex->cone[rt][coff + 12] = 1;
+      ex->cone[rt][coff + 13] = 0;
+      ex->cone[rt][coff + 14] = DM_POLYTOPE_QUADRILATERAL;
+      ex->cone[rt][coff + 15] = 1;
+      ex->cone[rt][coff + 16] = 2;
+      ex->cone[rt][coff + 17] = 0;
+      ex->ornt[rt][ooff + 0]  = -2;
+      ex->ornt[rt][ooff + 1]  = 0;
+      ex->ornt[rt][ooff + 2]  = 0;
+      ex->ornt[rt][ooff + 3]  = 0;
+      ex->ornt[rt][ooff + 4]  = 0;
+    }
   }
   // Impinging triangles
   //   0: no splits (impossible)
@@ -479,97 +490,116 @@ static PetscErrorCode DMPlexTransformCohesiveExtrudeSetUp_Quadrilateral(DMPlexTr
   PetscInt rt, Nc, No, coff, ooff;
 
   PetscFunctionBegin;
+  // No unsplit quadrilaterals
   // Split quadrilateral
-  rt         = (DM_POLYTOPE_QUADRILATERAL * 2 + 1) * 100 + 0;
-  ex->Nt[rt] = 2;
-  Nc         = 16 * 2 + 22;
-  No         = 4 * 2 + 6;
-  PetscCall(PetscMalloc4(ex->Nt[rt], &ex->target[rt], ex->Nt[rt], &ex->size[rt], Nc, &ex->cone[rt], No, &ex->ornt[rt]));
-  ex->target[rt][0] = DM_POLYTOPE_QUADRILATERAL;
-  ex->target[rt][1] = ex->useTensor ? DM_POLYTOPE_QUAD_PRISM_TENSOR : DM_POLYTOPE_HEXAHEDRON;
-  ex->size[rt][0]   = 2;
-  ex->size[rt][1]   = 1;
-  //   cones for quads
-  for (PetscInt i = 0; i < 2; ++i) {
-    ex->cone[rt][16 * i + 0]  = DM_POLYTOPE_SEGMENT;
-    ex->cone[rt][16 * i + 1]  = 1;
-    ex->cone[rt][16 * i + 2]  = 0;
-    ex->cone[rt][16 * i + 3]  = i; // TODO: This depends on whether the segment was split
-    ex->cone[rt][16 * i + 4]  = DM_POLYTOPE_SEGMENT;
-    ex->cone[rt][16 * i + 5]  = 1;
-    ex->cone[rt][16 * i + 6]  = 1;
-    ex->cone[rt][16 * i + 7]  = i; // TODO: This depends on whether the segment was split
-    ex->cone[rt][16 * i + 8]  = DM_POLYTOPE_SEGMENT;
-    ex->cone[rt][16 * i + 9]  = 1;
-    ex->cone[rt][16 * i + 10] = 2;
-    ex->cone[rt][16 * i + 11] = i; // TODO: This depends on whether the segment was split
-    ex->cone[rt][16 * i + 12] = DM_POLYTOPE_SEGMENT;
-    ex->cone[rt][16 * i + 13] = 1;
-    ex->cone[rt][16 * i + 14] = 3;
-    ex->cone[rt][16 * i + 15] = i; // TODO: This depends on whether the segment was split
-  }
-  for (PetscInt i = 0; i < 4 * 2; ++i) ex->ornt[rt][i] = 0;
-  //   cones for hexes/tensor hexes
-  coff = 16 * 2;
-  ooff = 4 * 2;
-  if (ex->useTensor) {
-    ex->cone[rt][coff + 0]  = DM_POLYTOPE_QUADRILATERAL;
-    ex->cone[rt][coff + 1]  = 0;
-    ex->cone[rt][coff + 2]  = 0;
-    ex->cone[rt][coff + 3]  = DM_POLYTOPE_QUADRILATERAL;
-    ex->cone[rt][coff + 4]  = 0;
-    ex->cone[rt][coff + 5]  = 1;
-    ex->cone[rt][coff + 6]  = DM_POLYTOPE_SEG_PRISM_TENSOR;
-    ex->cone[rt][coff + 7]  = 1;
-    ex->cone[rt][coff + 8]  = 0;
-    ex->cone[rt][coff + 9]  = 0;
-    ex->cone[rt][coff + 10] = DM_POLYTOPE_SEG_PRISM_TENSOR;
-    ex->cone[rt][coff + 11] = 1;
-    ex->cone[rt][coff + 12] = 1;
-    ex->cone[rt][coff + 13] = 0;
-    ex->cone[rt][coff + 14] = DM_POLYTOPE_SEG_PRISM_TENSOR;
-    ex->cone[rt][coff + 15] = 1;
-    ex->cone[rt][coff + 16] = 2;
-    ex->cone[rt][coff + 17] = 0;
-    ex->cone[rt][coff + 18] = DM_POLYTOPE_SEG_PRISM_TENSOR;
-    ex->cone[rt][coff + 19] = 1;
-    ex->cone[rt][coff + 20] = 3;
-    ex->cone[rt][coff + 21] = 0;
-    ex->ornt[rt][ooff + 0]  = 0;
-    ex->ornt[rt][ooff + 1]  = 0;
-    ex->ornt[rt][ooff + 2]  = 0;
-    ex->ornt[rt][ooff + 3]  = 0;
-    ex->ornt[rt][ooff + 4]  = 0;
-    ex->ornt[rt][ooff + 5]  = 0;
-  } else {
-    ex->cone[rt][coff + 0]  = DM_POLYTOPE_QUADRILATERAL;
-    ex->cone[rt][coff + 1]  = 0;
-    ex->cone[rt][coff + 2]  = 0;
-    ex->cone[rt][coff + 3]  = DM_POLYTOPE_QUADRILATERAL;
-    ex->cone[rt][coff + 4]  = 0;
-    ex->cone[rt][coff + 5]  = 1;
-    ex->cone[rt][coff + 6]  = DM_POLYTOPE_QUADRILATERAL;
-    ex->cone[rt][coff + 7]  = 1;
-    ex->cone[rt][coff + 8]  = 0;
-    ex->cone[rt][coff + 9]  = 0;
-    ex->cone[rt][coff + 10] = DM_POLYTOPE_QUADRILATERAL;
-    ex->cone[rt][coff + 11] = 1;
-    ex->cone[rt][coff + 12] = 2;
-    ex->cone[rt][coff + 13] = 0;
-    ex->cone[rt][coff + 14] = DM_POLYTOPE_QUADRILATERAL;
-    ex->cone[rt][coff + 15] = 1;
-    ex->cone[rt][coff + 16] = 1;
-    ex->cone[rt][coff + 17] = 0;
-    ex->cone[rt][coff + 18] = DM_POLYTOPE_QUADRILATERAL;
-    ex->cone[rt][coff + 19] = 1;
-    ex->cone[rt][coff + 20] = 3;
-    ex->cone[rt][coff + 21] = 0;
-    ex->ornt[rt][ooff + 0]  = -2;
-    ex->ornt[rt][ooff + 1]  = 0;
-    ex->ornt[rt][ooff + 2]  = 0;
-    ex->ornt[rt][ooff + 3]  = 0;
-    ex->ornt[rt][ooff + 4]  = 0;
-    ex->ornt[rt][ooff + 5]  = 1;
+  //   0: no unsplit edge
+  //   1: unsplit edge 0
+  //   2: unsplit edge 1
+  //   3: unsplit edge 0 1
+  //   4: unsplit edge 2
+  //   5: unsplit edge 0 2
+  //   6: unsplit edge 1 2
+  //   7: unsplit edge 0 1 2
+  //   8: unsplit edge 3
+  //   9: unsplit edge 0 3
+  //  10: unsplit edge 1 3
+  //  11: unsplit edge 0 1 3
+  //  12: unsplit edge 2 3
+  //  13: unsplit edge 0 2 3
+  //  14: unsplit edge 1 2 3
+  //  15: all edges unsplit (impossible)
+  for (PetscInt s = 0; s < 15; ++s) {
+    rt         = (DM_POLYTOPE_QUADRILATERAL * 2 + 1) * 100 + s;
+    ex->Nt[rt] = 2;
+    Nc         = 16 * 2 + 22;
+    No         = 4 * 2 + 6;
+    PetscCall(PetscMalloc4(ex->Nt[rt], &ex->target[rt], ex->Nt[rt], &ex->size[rt], Nc, &ex->cone[rt], No, &ex->ornt[rt]));
+    ex->target[rt][0] = DM_POLYTOPE_QUADRILATERAL;
+    ex->target[rt][1] = ex->useTensor ? DM_POLYTOPE_QUAD_PRISM_TENSOR : DM_POLYTOPE_HEXAHEDRON;
+    ex->size[rt][0]   = 2;
+    ex->size[rt][1]   = 1;
+    //   cones for quads
+    for (PetscInt i = 0; i < 2; ++i) {
+      ex->cone[rt][16 * i + 0]  = DM_POLYTOPE_SEGMENT;
+      ex->cone[rt][16 * i + 1]  = 1;
+      ex->cone[rt][16 * i + 2]  = 0;
+      ex->cone[rt][16 * i + 3]  = s & 1 ? 0 : i;
+      ex->cone[rt][16 * i + 4]  = DM_POLYTOPE_SEGMENT;
+      ex->cone[rt][16 * i + 5]  = 1;
+      ex->cone[rt][16 * i + 6]  = 1;
+      ex->cone[rt][16 * i + 7]  = s & 2 ? 0 : i;
+      ex->cone[rt][16 * i + 8]  = DM_POLYTOPE_SEGMENT;
+      ex->cone[rt][16 * i + 9]  = 1;
+      ex->cone[rt][16 * i + 10] = 2;
+      ex->cone[rt][16 * i + 11] = s & 4 ? 0 : i;
+      ex->cone[rt][16 * i + 12] = DM_POLYTOPE_SEGMENT;
+      ex->cone[rt][16 * i + 13] = 1;
+      ex->cone[rt][16 * i + 14] = 3;
+      ex->cone[rt][16 * i + 15] = s & 8 ? 0 : i;
+    }
+    for (PetscInt i = 0; i < 4 * 2; ++i) ex->ornt[rt][i] = 0;
+    //   cones for hexes/tensor hexes
+    coff = 16 * 2;
+    ooff = 4 * 2;
+    if (ex->useTensor) {
+      ex->cone[rt][coff + 0]  = DM_POLYTOPE_QUADRILATERAL;
+      ex->cone[rt][coff + 1]  = 0;
+      ex->cone[rt][coff + 2]  = 0;
+      ex->cone[rt][coff + 3]  = DM_POLYTOPE_QUADRILATERAL;
+      ex->cone[rt][coff + 4]  = 0;
+      ex->cone[rt][coff + 5]  = 1;
+      ex->cone[rt][coff + 6]  = DM_POLYTOPE_SEG_PRISM_TENSOR;
+      ex->cone[rt][coff + 7]  = 1;
+      ex->cone[rt][coff + 8]  = 0;
+      ex->cone[rt][coff + 9]  = 0;
+      ex->cone[rt][coff + 10] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+      ex->cone[rt][coff + 11] = 1;
+      ex->cone[rt][coff + 12] = 1;
+      ex->cone[rt][coff + 13] = 0;
+      ex->cone[rt][coff + 14] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+      ex->cone[rt][coff + 15] = 1;
+      ex->cone[rt][coff + 16] = 2;
+      ex->cone[rt][coff + 17] = 0;
+      ex->cone[rt][coff + 18] = DM_POLYTOPE_SEG_PRISM_TENSOR;
+      ex->cone[rt][coff + 19] = 1;
+      ex->cone[rt][coff + 20] = 3;
+      ex->cone[rt][coff + 21] = 0;
+      ex->ornt[rt][ooff + 0]  = 0;
+      ex->ornt[rt][ooff + 1]  = 0;
+      ex->ornt[rt][ooff + 2]  = 0;
+      ex->ornt[rt][ooff + 3]  = 0;
+      ex->ornt[rt][ooff + 4]  = 0;
+      ex->ornt[rt][ooff + 5]  = 0;
+    } else {
+      ex->cone[rt][coff + 0]  = DM_POLYTOPE_QUADRILATERAL;
+      ex->cone[rt][coff + 1]  = 0;
+      ex->cone[rt][coff + 2]  = 0;
+      ex->cone[rt][coff + 3]  = DM_POLYTOPE_QUADRILATERAL;
+      ex->cone[rt][coff + 4]  = 0;
+      ex->cone[rt][coff + 5]  = 1;
+      ex->cone[rt][coff + 6]  = DM_POLYTOPE_QUADRILATERAL;
+      ex->cone[rt][coff + 7]  = 1;
+      ex->cone[rt][coff + 8]  = 0;
+      ex->cone[rt][coff + 9]  = 0;
+      ex->cone[rt][coff + 10] = DM_POLYTOPE_QUADRILATERAL;
+      ex->cone[rt][coff + 11] = 1;
+      ex->cone[rt][coff + 12] = 2;
+      ex->cone[rt][coff + 13] = 0;
+      ex->cone[rt][coff + 14] = DM_POLYTOPE_QUADRILATERAL;
+      ex->cone[rt][coff + 15] = 1;
+      ex->cone[rt][coff + 16] = 1;
+      ex->cone[rt][coff + 17] = 0;
+      ex->cone[rt][coff + 18] = DM_POLYTOPE_QUADRILATERAL;
+      ex->cone[rt][coff + 19] = 1;
+      ex->cone[rt][coff + 20] = 3;
+      ex->cone[rt][coff + 21] = 0;
+      ex->ornt[rt][ooff + 0]  = -2;
+      ex->ornt[rt][ooff + 1]  = 0;
+      ex->ornt[rt][ooff + 2]  = 0;
+      ex->ornt[rt][ooff + 3]  = 0;
+      ex->ornt[rt][ooff + 4]  = 0;
+      ex->ornt[rt][ooff + 5]  = 1;
+    }
   }
   // Impinging quadrilaterals
   //   0:  no splits (impossible)
@@ -596,7 +626,7 @@ static PetscErrorCode DMPlexTransformCohesiveExtrudeSetUp_Quadrilateral(DMPlexTr
     PetscCall(PetscMalloc4(ex->Nt[rt], &ex->target[rt], ex->Nt[rt], &ex->size[rt], Nc, &ex->cone[rt], No, &ex->ornt[rt]));
     ex->target[rt][0] = DM_POLYTOPE_QUADRILATERAL;
     ex->size[rt][0]   = 1;
-    //   cone for triangle
+    //   cone for quadrilateral
     ex->cone[rt][0]  = DM_POLYTOPE_SEGMENT;
     ex->cone[rt][1]  = 1;
     ex->cone[rt][2]  = 0;
@@ -614,6 +644,105 @@ static PetscErrorCode DMPlexTransformCohesiveExtrudeSetUp_Quadrilateral(DMPlexTr
     ex->cone[rt][14] = 3;
     ex->cone[rt][15] = s & 8 ? 1 : 0;
     for (PetscInt i = 0; i < 4; ++i) ex->ornt[rt][i] = 0;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMPlexTransformCohesiveExtrudeSetUp_Tetrahedron(DMPlexTransform_Cohesive *ex)
+{
+  PetscInt rt, Nc, No;
+
+  PetscFunctionBegin;
+  // Impinging tetrahedra
+  //   0:  no splits (impossible)
+  //   1:  split face 0
+  //   2:  split face 1
+  //   3:  split faces 0 and 1
+  //   4:  split face 2
+  //   5:  split faces 0 and 2
+  //   6:  split faces 1 and 2
+  //   7:  split faces 0, 1, and 2
+  //   8:  split face 3
+  //   9:  split faces 0 and 3
+  //   10: split faces 1 and 3
+  //   11: split faces 0, 1, and 3
+  //   12: split faces 2 and 3
+  //   13: split faces 0, 2, and 3
+  //   14: split faces 1, 2, and 3
+  //   15: split all faces (impossible)
+  for (PetscInt s = 1; s < 15; ++s) {
+    rt         = (DM_POLYTOPE_TETRAHEDRON * 2 + 0) * 100 + s;
+    ex->Nt[rt] = 1;
+    Nc         = 16;
+    No         = 4;
+    PetscCall(PetscMalloc4(ex->Nt[rt], &ex->target[rt], ex->Nt[rt], &ex->size[rt], Nc, &ex->cone[rt], No, &ex->ornt[rt]));
+    ex->target[rt][0] = DM_POLYTOPE_TETRAHEDRON;
+    ex->size[rt][0]   = 1;
+    //   cone for triangle
+    ex->cone[rt][0]  = DM_POLYTOPE_TRIANGLE;
+    ex->cone[rt][1]  = 1;
+    ex->cone[rt][2]  = 0;
+    ex->cone[rt][3]  = s & 1 ? 1 : 0;
+    ex->cone[rt][4]  = DM_POLYTOPE_TRIANGLE;
+    ex->cone[rt][5]  = 1;
+    ex->cone[rt][6]  = 1;
+    ex->cone[rt][7]  = s & 2 ? 1 : 0;
+    ex->cone[rt][8]  = DM_POLYTOPE_TRIANGLE;
+    ex->cone[rt][9]  = 1;
+    ex->cone[rt][10] = 2;
+    ex->cone[rt][11] = s & 4 ? 1 : 0;
+    ex->cone[rt][12] = DM_POLYTOPE_TRIANGLE;
+    ex->cone[rt][13] = 1;
+    ex->cone[rt][14] = 3;
+    ex->cone[rt][15] = s & 8 ? 1 : 0;
+    for (PetscInt i = 0; i < 4; ++i) ex->ornt[rt][i] = 0;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMPlexTransformCohesiveExtrudeSetUp_Hexahedron(DMPlexTransform_Cohesive *ex)
+{
+  PetscInt rt, Nc, No;
+
+  PetscFunctionBegin;
+  // Impinging hexahedra
+  //   0:  no splits (impossible)
+  //   bit is set if the face is split
+  //   63: split all faces (impossible)
+  for (PetscInt s = 1; s < 63; ++s) {
+    rt         = (DM_POLYTOPE_HEXAHEDRON * 2 + 0) * 100 + s;
+    ex->Nt[rt] = 1;
+    Nc         = 24;
+    No         = 6;
+    PetscCall(PetscMalloc4(ex->Nt[rt], &ex->target[rt], ex->Nt[rt], &ex->size[rt], Nc, &ex->cone[rt], No, &ex->ornt[rt]));
+    ex->target[rt][0] = DM_POLYTOPE_HEXAHEDRON;
+    ex->size[rt][0]   = 1;
+    //   cone for hexahedron
+    ex->cone[rt][0]  = DM_POLYTOPE_QUADRILATERAL;
+    ex->cone[rt][1]  = 1;
+    ex->cone[rt][2]  = 0;
+    ex->cone[rt][3]  = s & 1 ? 1 : 0;
+    ex->cone[rt][4]  = DM_POLYTOPE_QUADRILATERAL;
+    ex->cone[rt][5]  = 1;
+    ex->cone[rt][6]  = 1;
+    ex->cone[rt][7]  = s & 2 ? 1 : 0;
+    ex->cone[rt][8]  = DM_POLYTOPE_QUADRILATERAL;
+    ex->cone[rt][9]  = 1;
+    ex->cone[rt][10] = 2;
+    ex->cone[rt][11] = s & 4 ? 1 : 0;
+    ex->cone[rt][12] = DM_POLYTOPE_QUADRILATERAL;
+    ex->cone[rt][13] = 1;
+    ex->cone[rt][14] = 3;
+    ex->cone[rt][15] = s & 8 ? 1 : 0;
+    ex->cone[rt][16] = DM_POLYTOPE_QUADRILATERAL;
+    ex->cone[rt][17] = 1;
+    ex->cone[rt][18] = 4;
+    ex->cone[rt][19] = s & 16 ? 1 : 0;
+    ex->cone[rt][20] = DM_POLYTOPE_QUADRILATERAL;
+    ex->cone[rt][21] = 1;
+    ex->cone[rt][22] = 5;
+    ex->cone[rt][23] = s & 32 ? 1 : 0;
+    for (PetscInt i = 0; i < 6; ++i) ex->ornt[rt][i] = 0;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -687,6 +816,8 @@ static PetscErrorCode DMPlexTransformSetUp_Cohesive(DMPlexTransform tr)
   PetscCall(DMPlexTransformCohesiveExtrudeSetUp_Segment(ex));
   PetscCall(DMPlexTransformCohesiveExtrudeSetUp_Triangle(ex));
   PetscCall(DMPlexTransformCohesiveExtrudeSetUp_Quadrilateral(ex));
+  PetscCall(DMPlexTransformCohesiveExtrudeSetUp_Tetrahedron(ex));
+  PetscCall(DMPlexTransformCohesiveExtrudeSetUp_Hexahedron(ex));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
