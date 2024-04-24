@@ -1,4 +1,4 @@
-#include <HYPRE_utilities.h>
+#include <petsc/private/petschypre.h>
 #include <petscdevice_cuda.h>
 #include <../src/mat/impls/hypre/mhypre_kernels.hpp>
 
