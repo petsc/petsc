@@ -102,11 +102,11 @@ typedef enum {
 #define PC_SIDE_MAX (PC_SYMMETRIC + 1)
 
 /*E
-    PCRichardsonConvergedReason - reason a `PCRICHARDSON` `PCApplyRichardson()` method terminated
+    PCRichardsonConvergedReason - reason a `PCApplyRichardson()` method terminated
 
    Level: advanced
 
-.seealso: [](sec_pc), `PCRICHARDSON`, `PC`, `PCApplyRichardson()`
+.seealso: [](sec_pc), `KSPRICHARDSON`, `PC`, `PCApplyRichardson()`
 E*/
 typedef enum {
   PCRICHARDSON_CONVERGED_RTOL = 2,
