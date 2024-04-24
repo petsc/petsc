@@ -22,10 +22,7 @@ PetscBool         MatCoarsenRegisterAllCalled = PETSC_FALSE;
    MatCoarsenRegister("my_agg", MyAggCreate);
 .ve
 
-  Then, your aggregator can be chosen with the procedural interface via
-$     MatCoarsenSetType(agg, "my_agg")
-  or at runtime via the option
-$     -mat_coarsen_type my_agg
+  Then, your aggregator can be chosen with the procedural interface via `MatCoarsenSetType(agg, "my_agg")` or at runtime via the option `-mat_coarsen_type my_agg`
 
 .seealso: `MatCoarsen`, `MatCoarsenType`, `MatCoarsenSetType()`, `MatCoarsenCreate()`, `MatCoarsenRegisterDestroy()`, `MatCoarsenRegisterAll()`
 @*/

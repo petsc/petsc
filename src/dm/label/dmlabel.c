@@ -628,6 +628,9 @@ PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
 
   The communicator needs to be specified because currently `DMLabel` can live on `PETSC_COMM_SELF` even if the underlying `DM` is parallel.
 
+  Developer Note:
+  Fortran stub cannot be generated automatically because `message` must be freed with `PetscFree()`
+
 .seealso: `DMLabel`, `DM`, `DMCompareLabels()`, `DMLabelGetNumValues()`, `DMLabelGetDefaultValue()`, `DMLabelGetNonEmptyStratumValuesIS()`, `DMLabelGetStratumIS()`
 @*/
 PetscErrorCode DMLabelCompare(MPI_Comm comm, DMLabel l0, DMLabel l1, PetscBool *equal, char **message)

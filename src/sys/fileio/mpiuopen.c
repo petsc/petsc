@@ -195,7 +195,7 @@ PetscErrorCode PetscPOpen(MPI_Comm comm, const char machine[], const char progra
 /*@C
   PetscPOpenSetMachine - Sets the name of the default machine to run `PetscPOpen()` calls on
 
-  Logically Collective, but only MPI rank 0 runs the command
+  Logically Collective, but only the MPI process with rank 0 runs the command
 
   Input Parameter:
 . machine - machine to run command on or `NULL` for the current machine

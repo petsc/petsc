@@ -4285,10 +4285,10 @@ PetscErrorCode MatCopy(Mat A, Mat B, MatStructure str)
   Input Parameters:
 + mat     - the matrix
 . newtype - new matrix type.  Use `MATSAME` to create a new matrix of the
-   same type as the original matrix.
+            same type as the original matrix.
 - reuse   - denotes if the destination matrix is to be created or reused.
-   Use `MAT_INPLACE_MATRIX` for inplace conversion (that is when you want the input mat to be changed to contain the matrix in the new format), otherwise use
-   `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX` (can only be used after the first call was made with `MAT_INITIAL_MATRIX`, causes the matrix space in M to be reused).
+            Use `MAT_INPLACE_MATRIX` for inplace conversion (that is when you want the input mat to be changed to contain the matrix in the new format), otherwise use
+            `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX` (can only be used after the first call was made with `MAT_INITIAL_MATRIX`, causes the matrix space in M to be reused).
 
   Output Parameter:
 . M - pointer to place new matrix
@@ -4472,7 +4472,7 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype, MatReuse reuse, Mat *M)
   Level: intermediate
 
   Fortran Note:
-  Pass in an empty string and the package name will be copied into it. Make sure the string is long enough.
+  Pass in an empty string that is long enough and the package name will be copied into it.
 
 .seealso: [](ch_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatSolverType`, `MatCopy()`, `MatDuplicate()`, `MatGetFactorAvailable()`
 @*/
@@ -4983,7 +4983,7 @@ PetscErrorCode MatGetDiagonal(Mat mat, Vec v)
 
   Output Parameters:
 + v   - the vector for storing the maximums
-- idx - the indices of the column found for each row (optional)
+- idx - the indices of the column found for each row (optional, pass `NULL` if not needed)
 
   Level: intermediate
 
@@ -5076,7 +5076,7 @@ PetscErrorCode MatGetRowMinAbs(Mat mat, Vec v, PetscInt idx[])
 
   Output Parameters:
 + v   - the vector for storing the maximums
-- idx - the indices of the column found for each row (optional)
+- idx - the indices of the column found for each row (optional, otherwise pass `NULL`)
 
   Level: intermediate
 
@@ -7281,7 +7281,7 @@ PetscErrorCode MatDestroySubMatrices(PetscInt n, Mat *mat[])
 . mat - the matrix
 
   Output Parameter:
-. matstruct - the sequential matrix with the nonzero structure of mat
+. matstruct - the sequential matrix with the nonzero structure of `mat`
 
   Level: developer
 
@@ -7309,13 +7309,12 @@ PetscErrorCode MatGetSeqNonzeroStructure(Mat mat, Mat *matstruct)
   Collective
 
   Input Parameter:
-. mat - the matrix (this is a pointer to the array of matrices, just to match the calling
-                       sequence of `MatGetSeqNonzeroStructure()`)
+. mat - the matrix
 
   Level: advanced
 
   Note:
-  Frees not only the matrices, but also the array that contains the matrices
+  This is not needed, one can just call `MatDestroy()`
 
 .seealso: [](ch_matrices), `Mat`, `MatGetSeqNonzeroStructure()`
 @*/

@@ -13,7 +13,7 @@ const char *const DMStagStencilLocations[] = {"NONE", "BACK_DOWN_LEFT", "BACK_DO
   Collective
 
   Input Parameters:
-+ dm        - the `DMStag` object
++ dm        - the `DMSTAG` object
 . n_stencil - the number of stencils provided
 - stencils  - an array of `DMStagStencil` objects (`i`, `j`, and `k` are ignored)
 

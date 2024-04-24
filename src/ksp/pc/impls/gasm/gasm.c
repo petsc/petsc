@@ -1053,7 +1053,7 @@ static PetscErrorCode PCGASMGetSubKSP_GASM(PC pc, PetscInt *n, PetscInt *first, 
 . n   - the number of subdomains for this MPI rank
 . iis - the index sets that define the inner subdomains (or `NULL` for PETSc to determine subdomains)
 - ois - the index sets that define the outer subdomains (or `NULL` to use the same as `iis`, or to construct by expanding `iis` by
-          the requested overlap)
+        the requested overlap)
 
   Level: advanced
 
@@ -1526,7 +1526,7 @@ PetscErrorCode PCGASMCreateSubdomains(Mat A, PetscInt N, PetscInt *n, IS *iis[])
 
 .seealso: [](ch_ksp), `PCGASM`, `PCGASMCreateSubdomains()`, `PCGASMSetSubdomains()`
 @*/
-PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS **iis, IS **ois)
+PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS *iis[], IS *ois[])
 {
   PetscInt i;
 
@@ -1610,7 +1610,7 @@ PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS **iis, IS **ois)
 .seealso: [](ch_ksp), `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMGetSubKSP()`, `PCGASMSetOverlap()`, `PCASMCreateSubdomains2D()`,
           `PCGASMDestroySubdomains()`
 @*/
-PetscErrorCode PCGASMCreateSubdomains2D(PC pc, PetscInt M, PetscInt N, PetscInt Mdomains, PetscInt Ndomains, PetscInt dof, PetscInt overlap, PetscInt *nsub, IS **iis, IS **ois)
+PetscErrorCode PCGASMCreateSubdomains2D(PC pc, PetscInt M, PetscInt N, PetscInt Mdomains, PetscInt Ndomains, PetscInt dof, PetscInt overlap, PetscInt *nsub, IS *iis[], IS *ois[])
 {
   PetscMPIInt size, rank;
   PetscInt    i, j;

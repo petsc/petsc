@@ -16,10 +16,10 @@
 . dof1         - number of degrees of freedom per element/1-cell
 . stencilType  - ghost/halo region type: `DMSTAG_STENCIL_BOX` or `DMSTAG_STENCIL_NONE`
 . stencilWidth - width, in elements, of halo/ghost region
-- lx           - array of local sizes, of length equal to the comm size, summing to M
+- lx           - array of local sizes, of length equal to the comm size, summing to `M` or `NULL`
 
   Output Parameter:
-. dm - the new DMStag object
+. dm - the new `DMSTAG` object
 
   Options Database Keys:
 + -dm_view                                      - calls `DMViewFromOptions()` at the conclusion of `DMSetUp()`

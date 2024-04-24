@@ -438,7 +438,7 @@ PETSC_INTERN PetscErrorCode PetscLogTypeBegin(PetscLogHandlerType type)
 
   Options Database Key:
 . -log_view [viewertype:filename:viewerformat] - Prints summary of flop and timing information to the
-                  screen (for code configured with --with-log=1 (which is the default))
+                                                 screen (for code configured with --with-log=1 (which is the default))
 
   Example Usage:
 .vb

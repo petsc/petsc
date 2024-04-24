@@ -387,7 +387,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM dm, const char filename[], 
   Note:
   Only fields user registered with data type `PETSC_DOUBLE` or `PETSC_INT` will be written into the file
 
-  Developer Notes:
+  Developer Note:
   This should be removed and replaced with the standard use of `PetscViewer`
 
 .seealso: `DM`, `DMSWARM`, `DMSwarmViewFieldsXDMF()`

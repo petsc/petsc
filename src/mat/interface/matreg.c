@@ -273,10 +273,8 @@ PetscErrorCode MatSetVecType(Mat mat, VecType vtype)
    MatRegister("my_mat", MyMatCreate);
 .ve
 
-  Then, your solver can be chosen with the procedural interface via
-$     MatSetType(Mat, "my_mat")
-  or at runtime via the option
-$     -mat_type my_mat
+  Then, your solver can be chosen with the procedural interface via `MatSetType(Mat, "my_mat")` or at runtime via the option
+  `-mat_type my_mat`
 
 .seealso: [](ch_matrices), `Mat`, `MatType`, `MatSetType()`, `MatRegisterAll()`
 @*/

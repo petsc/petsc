@@ -169,6 +169,9 @@ static PetscErrorCode MatPartitioningView_Party(MatPartitioning part, PetscViewe
   alternatively a string describing the method. Two or more methods can be
   combined like "gbf,gcf". Check the Party Library Users Manual for details.
 
+  Developer Note:
+  Should be `MatPartitioningPartySetGlobalType()` and all uses of method should be changed to type
+
 .seealso: `MATPARTITIONINGPARTY`, `MatPartitioningPartySetLocal()`
 @*/
 PetscErrorCode MatPartitioningPartySetGlobal(MatPartitioning part, const char *global)
@@ -205,6 +208,9 @@ static PetscErrorCode MatPartitioningPartySetGlobal_Party(MatPartitioning part, 
   Note:
   The method may be one of `MP_PARTY_HELPFUL_SETS`, `MP_PARTY_KERNIGHAN_LIN`, or
   `MP_PARTY_NONE`. Check the Party Library Users Manual for details.
+
+  Developer Note:
+  Should be `MatPartitioningPartySetLocalType()` and all uses of method should be changed to type
 
 .seealso: `MATPARTITIONINGPARTY`, `MatPartitioningPartySetGlobal()`
 @*/

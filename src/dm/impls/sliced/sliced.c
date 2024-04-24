@@ -105,15 +105,15 @@ PetscErrorCode DMSlicedSetGhosts(DM dm, PetscInt bs, PetscInt nlocal, PetscInt N
   Input Parameters:
 + dm    - the `DM` object
 . d_nz  - number of block nonzeros per block row in diagonal portion of local
-           submatrix  (same for all local rows)
+          submatrix  (same for all local rows)
 . d_nnz - array containing the number of block nonzeros in the various block rows
-           of the in diagonal portion of the local (possibly different for each block
-           row) or `NULL`.
+          of the in diagonal portion of the local (possibly different for each block
+          row) or `NULL`.
 . o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
-           submatrix (same for all local rows).
+          submatrix (same for all local rows).
 - o_nnz - array containing the number of nonzeros in the various block rows of the
-           off-diagonal portion of the local submatrix (possibly different for
-           each block row) or `NULL`.
+          off-diagonal portion of the local submatrix (possibly different for
+          each block row) or `NULL`.
 
   Level: advanced
 

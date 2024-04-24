@@ -25,7 +25,7 @@
 
   Notes:
   When using mode = `INSERT_VALUES`, this method will reset the number of particles in the `DMSWARM`
-  to be npoints[0]*npoints[1] (2D) or npoints[0]*npoints[1]*npoints[2] (3D). When using mode = `ADD_VALUES`,
+  to be `npoints[0]` x `npoints[1]` (2D) or `npoints[0]` x `npoints[1]` x `npoints[2]` (3D). When using mode = `ADD_VALUES`,
   new points will be appended to any already existing in the `DMSWARM`
 
 .seealso: `DM`, `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`

@@ -468,14 +468,14 @@ PetscErrorCode PetscSpaceGetNumVariables(PetscSpace sp, PetscInt *n)
 - points  - The point coordinates
 
   Output Parameters:
-+ B - The function evaluations in a npoints x nfuncs array
-. D - The derivative evaluations in a npoints x nfuncs x dim array
-- H - The second derivative evaluations in a npoints x nfuncs x dim x dim array
++ B - The function evaluations in a `npoints` x `nfuncs` array
+. D - The derivative evaluations in a `npoints` x `nfuncs` x `dim` array
+- H - The second derivative evaluations in a `npoints` x `nfuncs` x `dim` x `dim` array
 
   Level: beginner
 
   Note:
-  Above nfuncs is the dimension of the space, and dim is the spatial dimension. The coordinates are given
+  Above `nfuncs` is the dimension of the space, and `dim` is the spatial dimension. The coordinates are given
   on the reference cell, not in real space.
 
 .seealso: `PetscSpace`, `PetscFECreateTabulation()`, `PetscFEGetCellTabulation()`, `PetscSpaceCreate()`

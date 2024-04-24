@@ -68,14 +68,14 @@ PetscErrorCode PetscDrawBarCreate(PetscDraw draw, PetscDrawBar *bar)
 + bar    - The bar graph context.
 . bins   - number of items
 . data   - values of each item
-- labels - optional label for each bar, NULL terminated array of strings
+- labels - optional label for each bar, `NULL` terminated array of strings
 
   Level: intermediate
 
   Notes:
   Call `PetscDrawBarDraw()` after this call to display the new plot
 
-  The data is ignored on all ranks except zero
+  The data is ignored on all MPI processes except rank zero
 
 .seealso: `PetscDrawBar`, `PetscDrawBarCreate()`, `PetscDrawBarDraw()`
 @*/

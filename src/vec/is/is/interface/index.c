@@ -1237,8 +1237,8 @@ PetscErrorCode ISGetIndices(IS is, const PetscInt *ptr[])
 . is - the index set
 
   Output Parameters:
-+ min - the minimum value
-- max - the maximum value
++ min - the minimum value, you may pass `NULL`
+- max - the maximum value, you may pass `NULL`
 
   Level: intermediate
 

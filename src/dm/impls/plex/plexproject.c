@@ -547,7 +547,7 @@ static PetscErrorCode PetscDualSpaceGetAllPointsUnion(PetscInt Nf, PetscDualSpac
 
   Output Parameters:
 + point - the first labeled point
-- ds    - the ds corresponding to the first labeled point
+- ds    - the `PetscDS` corresponding to the first labeled point
 
   Level: developer
 

@@ -176,10 +176,8 @@ PetscBool         MatPartitioningRegisterAllCalled = PETSC_FALSE;
    MatPartitioningRegister("my_part", MyPartCreate);
 .ve
 
-  Then, your partitioner can be chosen with the procedural interface via
-$     MatPartitioningSetType(part, "my_part")
-  or at runtime via the option
-$     -mat_partitioning_type my_part
+  Then, your partitioner can be chosen with the procedural interface via `MatPartitioningSetType(part, "my_part")` or at runtime via the option
+  `-mat_partitioning_type my_part`
 
 .seealso: [](ch_matrices), `Mat`, `MatPartitioning`, `MatPartitioningType`, `MatPartitioningCreate()`, `MatPartitioningRegisterDestroy()`, `MatPartitioningRegisterAll()`
 @*/
@@ -467,7 +465,7 @@ PetscErrorCode MatPartitioningDestroy(MatPartitioning *part)
   Input Parameters:
 + part    - the partitioning context
 - weights - the weights, on each process this array must have the same size as the number of local rows times the value passed with `MatPartitioningSetNumberVertexWeights()` or
-             1 if that is not provided
+            1 if that is not provided
 
   Level: beginner
 
@@ -527,8 +525,8 @@ PetscErrorCode MatPartitioningSetPartitionWeights(MatPartitioning part, const Pe
   Input Parameters:
 + part             - the partitioning context
 - use_edge_weights - the flag indicateing whether or not to use edge weights. By default no edge weights will be used,
-                      that is, use_edge_weights is set to FALSE. If set use_edge_weights to TRUE, users need to make sure legal
-                      edge weights are stored in an ADJ matrix.
+                     that is, use_edge_weights is set to FALSE. If set use_edge_weights to TRUE, users need to make sure legal
+                     edge weights are stored in an ADJ matrix.
 
   Options Database Key:
 . -mat_partitioning_use_edge_weights - (true or false)

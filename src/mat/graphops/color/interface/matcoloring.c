@@ -20,10 +20,8 @@ const char *const MatColoringWeightTypes[]     = {"RANDOM", "LEXICAL", "LF", "SL
    MatColoringRegister("my_color", MyColor);
 .ve
 
-  Then, your partitioner can be chosen with the procedural interface via
-$     MatColoringSetType(part, "my_color")
-  or at runtime via the option
-$     -mat_coloring_type my_color
+  Then, your partitioner can be chosen with the procedural interface via `MatColoringSetType(part, "my_color")`  or at runtime via the option
+  `-mat_coloring_type my_color`
 
 .seealso: `MatColoringType`, `MatColoringRegisterDestroy()`, `MatColoringRegisterAll()`
 @*/
