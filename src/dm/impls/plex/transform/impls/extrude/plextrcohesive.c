@@ -55,6 +55,7 @@ static PetscErrorCode DMPlexTransformSetFromOptions_Cohesive(DMPlexTransform tr,
   PetscOptionsHeadBegin(PetscOptionsObject, "DMPlexTransform Cohesive Extrusion Options");
   PetscCall(PetscOptionsBool("-dm_plex_transform_extrude_use_tensor", "Create tensor cells", "", ex->useTensor, &tensor, &flg));
   if (flg) PetscCall(DMPlexTransformCohesiveExtrudeSetTensor(tr, tensor));
+  PetscCall(PetscOptionsInt("-dm_plex_transform_cohesive_debug", "Det debugging level", "", ex->debug, &ex->debug, NULL));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -668,6 +669,10 @@ static PetscErrorCode DMPlexTransformSetUp_Cohesive(DMPlexTransform tr)
         PetscCall(DMLabelSetValue(tr->trType, p, (ct * 2 + 1) * 100 + funsplit));
       }
     }
+  }
+  if (ex->debug) {
+    PetscCall(DMLabelView(active, NULL));
+    PetscCall(DMLabelView(tr->trType, NULL));
   }
   numRt = DM_NUM_POLYTOPES * 2 * 100;
   PetscCall(PetscMalloc5(numRt, &ex->Nt, numRt, &ex->target, numRt, &ex->size, numRt, &ex->cone, numRt, &ex->ornt));
