@@ -12,16 +12,6 @@ static PetscErrorCode KSPSetUp_TSIRM(KSP ksp)
   KSP_TSIRM *tsirm = (KSP_TSIRM *)ksp->data;
 
   PetscFunctionBegin;
-  /* Initialization */
-#if defined(PETSC_USE_REAL_SINGLE)
-  tsirm->tol_ls = 1e-25;
-#else
-  tsirm->tol_ls = 1e-50;
-#endif
-  tsirm->size_ls    = 12;
-  tsirm->maxiter_ls = 15;
-  tsirm->cgls       = 0;
-
   /* Matrix of the system */
   PetscCall(KSPGetOperators(ksp, &tsirm->A, NULL));    /* Matrix of the system   */
   PetscCall(MatGetSize(tsirm->A, &tsirm->size, NULL)); /* Size of the system     */
@@ -198,6 +188,14 @@ PETSC_EXTERN PetscErrorCode KSPCreate_TSIRM(KSP ksp)
   PetscFunctionBegin;
   PetscCall(PetscNew(&tsirm));
   ksp->data = (void *)tsirm;
+#if defined(PETSC_USE_REAL_SINGLE)
+  tsirm->tol_ls = 1e-25;
+#else
+  tsirm->tol_ls = 1e-50;
+#endif
+  tsirm->size_ls    = 12;
+  tsirm->maxiter_ls = 15;
+  tsirm->cgls       = 0;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_RIGHT, 1));
   ksp->ops->setup          = KSPSetUp_TSIRM;

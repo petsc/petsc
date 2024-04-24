@@ -77,3 +77,20 @@ or if you already have a local clone of petsc git repository
 More details on contributing to PETSc development are at :any:`ch_contributing`. The development version of
 the documentation, which is largely the same as the release documentation is `available <https://petsc.org/main>`__.
 
+
+Release Schedule
+================
+
+We intend to provide new releases every 6 months, and patch updates to current release every month.
+
+New releases (for example: 3.20.0, 3.21.0, 3.22.0, etc.):
+
+- March (end of the month)
+- September (end of the month)
+
+New patch updates (for example: 3.21.1, 2.21.2, 3.21.3, etc.):
+
+- Last week of every month (or first week on next month - if delayed)
+
+And with a new release of PETSc the old version will no longer get patch updates. I.e., when 3.22.0 is released, bug fixes
+and any updates will go to 3.22.x - and petsc-3.21, petsc-3.20, etc., will not get any additional patch updates.

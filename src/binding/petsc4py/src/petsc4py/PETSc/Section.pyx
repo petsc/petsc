@@ -7,10 +7,6 @@ cdef class Section(Object):
         self.obj = <PetscObject*> &self.sec
         self.sec  = NULL
 
-    def __dealloc__(self):
-        CHKERR(PetscSectionDestroy(&self.sec))
-        self.sec = NULL
-
     def view(self, Viewer viewer=None) -> None:
         """View the section.
 
