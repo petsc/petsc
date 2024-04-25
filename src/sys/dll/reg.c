@@ -495,8 +495,7 @@ PetscErrorCode PetscFunctionListView(PetscFunctionList list, PetscViewer viewer)
   Level: developer
 
   Note:
-  This allocates the array so that must be freed. BUT the individual entries are
-  not copied so should not be freed.
+  This allocates the array so that must be freed with `PetscFree()`. BUT the individual entries should not be freed.
 
 .seealso: `PetscFunctionListAdd()`, `PetscFunctionList`
 @*/

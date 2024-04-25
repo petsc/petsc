@@ -1426,7 +1426,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
         }
       }
     }
-    /*How many local dofs in this patch? */
+    /* How many local dofs in this patch? */
     if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
       PetscCall(PetscHMapIGetSize(htWithArtificial, &dof));
       PetscCall(PetscSectionSetDof(gtolCountsWithArtificial, v, dof));

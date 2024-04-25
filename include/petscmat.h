@@ -2195,26 +2195,28 @@ PETSC_EXTERN PetscErrorCode PetscViewerMathematicaPutCSRMatrix(PetscViewer, Pets
 #ifdef PETSC_HAVE_H2OPUS
 PETSC_EXTERN_TYPEDEF typedef PetscScalar(MatH2OpusKernelFn)(PetscInt, PetscReal[], PetscReal[], void *);
 PETSC_EXTERN_TYPEDEF typedef MatH2OpusKernelFn *MatH2OpusKernel;
-PETSC_EXTERN PetscErrorCode                     MatCreateH2OpusFromKernel(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscReal[], PetscBool, MatH2OpusKernelFn *, void *, PetscReal, PetscInt, PetscInt, Mat *);
-PETSC_EXTERN PetscErrorCode                     MatCreateH2OpusFromMat(Mat, PetscInt, const PetscReal[], PetscBool, PetscReal, PetscInt, PetscInt, PetscInt, PetscReal, Mat *);
-PETSC_EXTERN PetscErrorCode                     MatH2OpusSetSamplingMat(Mat, Mat, PetscInt, PetscReal);
-PETSC_EXTERN PetscErrorCode                     MatH2OpusOrthogonalize(Mat);
-PETSC_EXTERN PetscErrorCode                     MatH2OpusCompress(Mat, PetscReal);
-PETSC_EXTERN PetscErrorCode                     MatH2OpusSetNativeMult(Mat, PetscBool);
-PETSC_EXTERN PetscErrorCode                     MatH2OpusGetNativeMult(Mat, PetscBool *);
-PETSC_EXTERN PetscErrorCode                     MatH2OpusGetIndexMap(Mat, IS *);
-PETSC_EXTERN PetscErrorCode                     MatH2OpusMapVec(Mat, PetscBool, Vec, Vec *);
-PETSC_EXTERN PetscErrorCode                     MatH2OpusLowRankUpdate(Mat, Mat, Mat, PetscScalar);
+
+PETSC_EXTERN PetscErrorCode MatCreateH2OpusFromKernel(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscReal[], PetscBool, MatH2OpusKernelFn *, void *, PetscReal, PetscInt, PetscInt, Mat *);
+PETSC_EXTERN PetscErrorCode MatCreateH2OpusFromMat(Mat, PetscInt, const PetscReal[], PetscBool, PetscReal, PetscInt, PetscInt, PetscInt, PetscReal, Mat *);
+PETSC_EXTERN PetscErrorCode MatH2OpusSetSamplingMat(Mat, Mat, PetscInt, PetscReal);
+PETSC_EXTERN PetscErrorCode MatH2OpusOrthogonalize(Mat);
+PETSC_EXTERN PetscErrorCode MatH2OpusCompress(Mat, PetscReal);
+PETSC_EXTERN PetscErrorCode MatH2OpusSetNativeMult(Mat, PetscBool);
+PETSC_EXTERN PetscErrorCode MatH2OpusGetNativeMult(Mat, PetscBool *);
+PETSC_EXTERN PetscErrorCode MatH2OpusGetIndexMap(Mat, IS *);
+PETSC_EXTERN PetscErrorCode MatH2OpusMapVec(Mat, PetscBool, Vec, Vec *);
+PETSC_EXTERN PetscErrorCode MatH2OpusLowRankUpdate(Mat, Mat, Mat, PetscScalar);
 #endif
 
 #ifdef PETSC_HAVE_HTOOL
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(MatHtoolKernelFn)(PetscInt, PetscInt, PetscInt, const PetscInt *, const PetscInt *, PetscScalar *, void *);
 PETSC_EXTERN_TYPEDEF typedef MatHtoolKernelFn *MatHtoolKernel;
-PETSC_EXTERN PetscErrorCode                    MatCreateHtoolFromKernel(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscReal[], const PetscReal[], MatHtoolKernelFn *, void *, Mat *);
-PETSC_EXTERN PetscErrorCode                    MatHtoolSetKernel(Mat, MatHtoolKernelFn *, void *);
-PETSC_EXTERN PetscErrorCode                    MatHtoolGetPermutationSource(Mat, IS *);
-PETSC_EXTERN PetscErrorCode                    MatHtoolGetPermutationTarget(Mat, IS *);
-PETSC_EXTERN PetscErrorCode                    MatHtoolUsePermutation(Mat, PetscBool);
+
+PETSC_EXTERN PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscReal[], const PetscReal[], MatHtoolKernelFn *, void *, Mat *);
+PETSC_EXTERN PetscErrorCode MatHtoolSetKernel(Mat, MatHtoolKernelFn *, void *);
+PETSC_EXTERN PetscErrorCode MatHtoolGetPermutationSource(Mat, IS *);
+PETSC_EXTERN PetscErrorCode MatHtoolGetPermutationTarget(Mat, IS *);
+PETSC_EXTERN PetscErrorCode MatHtoolUsePermutation(Mat, PetscBool);
 
 /*E
    MatHtoolCompressorType - Indicates the type of compressor used by a `MATHTOOL`

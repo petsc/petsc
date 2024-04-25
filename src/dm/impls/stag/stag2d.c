@@ -20,8 +20,8 @@
 . dof2         - number of degrees of freedom per element/2-cell
 . stencilType  - ghost/halo region type: `DMSTAG_STENCIL_NONE`, `DMSTAG_STENCIL_BOX`, or `DMSTAG_STENCIL_STAR`
 . stencilWidth - width, in elements, of halo/ghost region
-. lx           - array of local x element counts, of length equal to `m`, summing to `M`
-- ly           - array of local y element counts, of length equal to `n`, summing to `N`
+. lx           - array of local x element counts, of length equal to `m`, summing to `M`, or `NULL`
+- ly           - array of local y element counts, of length equal to `n`, summing to `N`, or `NULL`
 
   Output Parameter:
 . dm - the new `DMSTAG` object

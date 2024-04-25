@@ -4,19 +4,19 @@
 
 #include <petscsys.h>
 /*@C
-      PetscIsNormalReal - Returns `PETSC_TRUE` if the input value satisfies `isnormal()`
+  PetscIsNormalReal - Returns `PETSC_TRUE` if the input value satisfies `isnormal()`
 
-    Input Parameter:
-.     a - the `PetscReal` Value
+  Input Parameter:
+. a - the `PetscReal` Value
 
-     Level: beginner
+  Level: beginner
 
-    Developer Notes:
-    Uses the C99 standard `isnormal()` on systems where they exist.
+  Developer Notes:
+  Uses the C99 standard `isnormal()` on systems where they exist.
 
-    Uses `isnormalq()` with `__float128`
+  Uses `isnormalq()` with `__float128`
 
-    Otherwise always returns true
+  Otherwise always returns true
 
 .seealso: `PetscIsInfReal()`, `PetscIsNanReal()`
 @*/
@@ -44,17 +44,17 @@ PetscBool PetscIsNormalReal(PetscReal a)
 #endif
 
 /*@C
-      PetscIsInfReal - Returns whether the `PetscReal` input is an infinity value.
+  PetscIsInfReal - Returns whether the `PetscReal` input is an infinity value.
 
-    Input Parameter:
-.     a - the floating point number
+  Input Parameter:
+. a - the floating point number
 
-     Level: beginner
+  Level: beginner
 
-    Developer Notes:
-    Uses the C99 standard `isinf()` on systems where it exists.
+  Developer Notes:
+  Uses the C99 standard `isinf()` on systems where it exists.
 
-    Otherwise uses (a && a/2 == a), note that some optimizing compilers compile out this form, thus removing the check.
+  Otherwise uses (a && a/2 == a), note that some optimizing compilers compile out this form, thus removing the check.
 
 .seealso: `PetscIsNormalReal()`, `PetscIsNanReal()`
 @*/
@@ -87,18 +87,18 @@ PetscBool PetscIsInfReal(PetscReal a)
 #endif
 
 /*@C
-      PetscIsNanReal - Returns whether the `PetscReal` input is a Not-a-Number (NaN) value.
+  PetscIsNanReal - Returns whether the `PetscReal` input is a Not-a-Number (NaN) value.
 
-    Input Parameter:
-.     a - the floating point number
+  Input Parameter:
+. a - the floating point number
 
-     Level: beginner
+  Level: beginner
 
-    Developer Notes:
-    Uses the C99 standard `isnan()` on systems where it exists.
+  Developer Notes:
+  Uses the C99 standard `isnan()` on systems where it exists.
 
-    Otherwise uses (a != a), note that some optimizing compilers compile
-    out this form, thus removing the check.
+  Otherwise uses (a != a), note that some optimizing compilers compile
+  out this form, thus removing the check.
 
 .seealso: `PetscIsNormalReal()`, `PetscIsInfReal()`
 @*/

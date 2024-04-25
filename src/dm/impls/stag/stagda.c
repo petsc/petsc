@@ -414,7 +414,7 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag, DMStagStencilLo
 
   Input Parameters:
 + dm  - the `DMSTAG` object
-. vec - Vec object associated with `dm`
+. vec - `Vec` object associated with `dm`
 . loc - which subgrid to extract (see `DMStagStencilLocation`)
 - c   - which component to extract (see note below)
 

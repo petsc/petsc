@@ -250,7 +250,7 @@ PETSC_EXTERN PetscErrorCode DMStagGetProductCoordinateLocationSlot(DM dm, DMStag
   Level: beginner
 
   Notes:
-  Arguments corresponding to higher dimensions are ignored for 1D and 2D grids. These arguments may be set to NULL in this case.
+  Arguments corresponding to higher dimensions are ignored for 1D and 2D grids. These arguments may be set to `NULL` in this case.
 
   The number of extra partial elements is either 1 or 0.
   The value is 1 on right, top, and front non-periodic domain ("physical") boundaries,
@@ -1099,7 +1099,7 @@ PetscErrorCode DMStagSetBoundaryTypes(DM dm, DMBoundaryType boundaryType0, DMBou
 
   Input Parameters:
 + dm     - the `DMSTAG` object
-- dmtype - DMtype for coordinates, either `DMSTAG` or `DMPRODUCT`
+- dmtype - `DMtype` for coordinates, either `DMSTAG` or `DMPRODUCT`
 
   Level: advanced
 
@@ -1295,9 +1295,9 @@ PetscErrorCode DMStagSetGlobalSizes(DM dm, PetscInt N0, PetscInt N1, PetscInt N2
 
   Input Parameters:
 + dm - the `DMSTAG` object
-. lx - element counts for each rank in the x direction
-. ly - element counts for each rank in the y direction
-- lz - element counts for each rank in the z direction
+. lx - element counts for each rank in the x direction, may be `NULL`
+. ly - element counts for each rank in the y direction, may be `NULL`
+- lz - element counts for each rank in the z direction, may be `NULL`
 
   Level: developer
 
@@ -1416,7 +1416,7 @@ PetscErrorCode DMStagSetUniformCoordinates(DM dm, PetscReal xmin, PetscReal xmax
   Input Parameters:
 + dm   - the `DMSTAG` object
 . xmin - minimum global coordinate value in the x direction
-. xmax - maximum global coordinate values in the x direction
+. xmax - maximum global coordinate value in the x direction
 . ymin - minimum global coordinate value in the y direction
 . ymax - maximum global coordinate value in the y direction
 . zmin - minimum global coordinate value in the z direction
@@ -1475,7 +1475,7 @@ PetscErrorCode DMStagSetUniformCoordinatesExplicit(DM dm, PetscReal xmin, PetscR
   Input Parameters:
 + dm   - the `DMSTAG` object
 . xmin - minimum global coordinate value in the x direction
-. xmax - maximum global coordinate values in the x direction
+. xmax - maximum global coordinate value in the x direction
 . ymin - minimum global coordinate value in the y direction
 . ymax - maximum global coordinate value in the y direction
 . zmin - minimum global coordinate value in the z direction

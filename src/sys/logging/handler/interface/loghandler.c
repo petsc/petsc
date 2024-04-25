@@ -346,7 +346,7 @@ PetscErrorCode PetscLogHandlerView(PetscLogHandler h, PetscViewer viewer)
 /*@C
   PetscLogHandlerGetEventPerfInfo - Get a direct reference to the `PetscEventPerfInfo` of a stage and event
 
-  Not collective
+  Not collective, No Fortran Support
 
   Input Parameters:
 + handler - a `PetscLogHandler`
@@ -355,8 +355,8 @@ PetscErrorCode PetscLogHandlerView(PetscLogHandler h, PetscViewer viewer)
 
   Output Parameter:
 . event_info - a pointer to a performance log for `event` during `stage` (or `NULL` if this handler does not use
-               `PetscEventPerfInfo` to record performance data); writing to `event_info` will change the record in
-               `handler`
+              `PetscEventPerfInfo` to record performance data); writing to `event_info` will change the record in
+              `handler`
 
   Level: developer
 
@@ -375,7 +375,7 @@ PetscErrorCode PetscLogHandlerGetEventPerfInfo(PetscLogHandler handler, PetscLog
 /*@C
   PetscLogHandlerGetStagePerfInfo - Get a direct reference to the `PetscEventPerfInfo` of a stage
 
-  Not collective
+  Not collective, No Fortran Support
 
   Input Parameters:
 + handler - a `PetscLogHandler`
@@ -467,7 +467,7 @@ PetscErrorCode PetscLogHandlerLogObjectState_Internal(PetscLogHandler handler, P
 /*@C
   PetscLogHandlerLogObjectState - Record information about an object with the default log handler
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + handler - a `PetscLogHandler`

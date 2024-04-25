@@ -11,8 +11,8 @@
 . tensor      - Flag to create tensor produt cells
 . symmetric   - Flag to extrude symmetrically about the surface
 . periodic    - Flag to extrude periodically
-. normal      - Surface normal vector, or NULL
-- thicknesses - Thickness of each layer, or NULL
+. normal      - Surface normal vector, or `NULL`
+- thicknesses - Thickness of each layer, or `NULL`
 
   Output Parameter:
 . edm - The volumetric mesh

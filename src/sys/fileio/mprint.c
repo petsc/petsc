@@ -84,7 +84,7 @@ PetscErrorCode PetscFormatConvertGetSize(const char *format, size_t *size)
 . format - the PETSc format string
 
   Output Parameter:
-. newformat - the formatted string
+. newformat - the formatted string, must be long enough to hold result
 
   Level: developer
 
@@ -578,7 +578,7 @@ PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm, FILE *fp, const char form
 
   Input Parameters:
 + comm - the MPI communicator
-- fd   - the file pointer (valid on MPI rank 0 of the communicator)
+- fd   - the file pointer (valid on MPI rank 0 of the communicator), `PETSC_STDOUT` or value obtained from `PetscFOpen()`
 
   Level: intermediate
 

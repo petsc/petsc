@@ -2,15 +2,15 @@
 #include "err.h"
 
 /*@C
-  PetscMPIAbortErrorHandler - Calls PETSCABORT and exits.
+  PetscMPIAbortErrorHandler - Calls `PETSCABORT()` and exits.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + comm - communicator over which error occurred
-. line - the line number of the error (indicated by __LINE__)
+. line - the line number of the error (indicated by `__LINE__`)
 . fun  - the function name
-. file - the file in which the error was detected (indicated by __FILE__)
+. file - the file in which the error was detected (indicated by `__FILE__`)
 . mess - an error text string, usually just printed to the screen
 . n    - the generic error number
 . p    - `PETSC_ERROR_INITIAL` if error just detected, otherwise `PETSC_ERROR_REPEAT`

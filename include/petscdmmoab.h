@@ -2,8 +2,8 @@
 
 #include <petscvec.h> /*I      "petscvec.h"    I*/
 #include <petscmat.h> /*I      "petscmat.h"    I*/
-#include <petscdm.h>  /*I      "petscdm.h"    I*/
-#include <petscdt.h>  /*I "petscdt.h" I*/
+#include <petscdm.h>  /*I      "petscdm.h"     I*/
+#include <petscdt.h>  /*I      "petscdt.h"     I*/
 
 #include <string>
 #include <moab/Core.hpp> /*I      "moab/Core.hpp"    I*/

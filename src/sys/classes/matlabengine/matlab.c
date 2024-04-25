@@ -399,7 +399,7 @@ PetscErrorCode PetscMatlabEnginePutArray(PetscMatlabEngine mengine, int m, int n
 + mengine - the MATLAB engine
 . m       - the x dimension of the array
 . n       - the y dimension of the array
-. array   - the array (represented in one dimension)
+. array   - the array (represented in one dimension), much be large enough to hold all the data
 - name    - the name of the array
 
   Level: advanced

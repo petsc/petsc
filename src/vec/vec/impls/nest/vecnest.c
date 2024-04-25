@@ -883,7 +883,7 @@ static PetscErrorCode VecNestGetSubVecs_Nest(Vec X, PetscInt *N, Vec **sx)
 
   Output Parameters:
 + N  - number of nested vecs
-- sx - array of vectors
+- sx - array of vectors, can pass in `NULL`
 
   Level: developer
 

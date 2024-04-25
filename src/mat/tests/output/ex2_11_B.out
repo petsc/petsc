@@ -1,4 +1,4 @@
-original A: Frobenious norm = 228.44, one norm = 245., infinity norm = 315.
+original A: Frobenius norm = 228.44, one norm = 245., infinity norm = 315.
   type: seqaij
 row 0: (0, 1.)  (1, 2.)  (2, 3.)  (3, 4.)  (4, 5.) 
 row 1: (0, 11.)  (1, 12.)  (2, 13.)  (3, 14.)  (4, 15.) 
@@ -7,7 +7,7 @@ row 3: (0, 31.)  (1, 32.)  (2, 33.)  (3, 34.)  (4, 35.)
 row 4: (0, 41.)  (1, 42.)  (2, 43.)  (3, 44.)  (4, 45.) 
 row 5: (0, 51.)  (1, 52.)  (2, 53.)  (3, 54.)  (4, 55.) 
 row 6: (0, 61.)  (1, 62.)  (2, 63.)  (3, 64.)  (4, 65.) 
-B = A^T: Frobenious norm = 228.44, one norm = 315., infinity norm = 245.
+B = A^T: Frobenius norm = 228.44, one norm = 315., infinity norm = 245.
   type: seqaij
 row 0: (0, 1.)  (1, 11.)  (2, 21.)  (3, 31.)  (4, 41.)  (5, 51.)  (6, 61.) 
 row 1: (0, 2.)  (1, 12.)  (2, 22.)  (3, 32.)  (4, 42.)  (5, 52.)  (6, 62.) 

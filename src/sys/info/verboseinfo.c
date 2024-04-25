@@ -82,13 +82,10 @@ PetscErrorCode PetscInfoAllow(PetscBool flag)
   Not Collective
 
   Input Parameters:
-+ filename - Name of the file where `PetscInfo()` will print to
++ filename - Name of the file where `PetscInfo()` will print to, use `NULL` to write to `PETSC_STDOUT`.
 - mode     - Write mode passed to `PetscFOpen()`
 
   Level: advanced
-
-  Note:
-  Use `filename = NULL` to set `PetscInfo()` to write to `PETSC_STDOUT`.
 
 .seealso: [](sec_PetscInfo), `PetscInfo()`, `PetscInfoGetFile()`, `PetscInfoSetFromOptions()`, `PetscFOpen()`
 @*/
@@ -137,7 +134,7 @@ PetscErrorCode PetscInfoSetFile(const char filename[], const char mode[])
 
   Note:
   This routine allocates and copies the `filename` so that the `filename` survives `PetscInfoDestroy()`. The user is
-  therefore responsible for freeing the allocated `filename` pointer afterwards.
+  therefore responsible for freeing the allocated `filename` pointer with `PetscFree()`
 
 .seealso: [](sec_PetscInfo), `PetscInfo()`, `PetscInfoSetFile()`, `PetscInfoSetFromOptions()`, `PetscInfoDestroy()`
 @*/

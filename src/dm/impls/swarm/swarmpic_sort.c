@@ -112,9 +112,11 @@ PetscErrorCode DMSwarmSortDestroy(DMSwarmSort *_ctx)
   Not Collective
 
   Input Parameters:
-+ dm      - a `DMSWARM` objects
-. e       - the index of the cell
-- npoints - the number of points in the cell
++ dm - a `DMSWARM` objects
+- e  - the index of the cell
+
+  Output Parameter:
+. npoints - the number of points in the cell
 
   Level: advanced
 

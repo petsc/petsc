@@ -848,7 +848,7 @@ PetscErrorCode PCApplyBAorABTranspose(PC pc, PCSide side, Vec x, Vec y, Vec work
 
   Level: developer
 
-.seealso: [](ch_ksp), `PC`, `PCRICHARDSON`, `PCApplyRichardson()`
+.seealso: [](ch_ksp), `PC`, `KSPRICHARDSON`, `PCApplyRichardson()`
 @*/
 PetscErrorCode PCApplyRichardsonExists(PC pc, PetscBool *exists)
 {

@@ -187,12 +187,12 @@ static PetscErrorCode PetscSortStrWithPermutation_Private(const char *v[], Petsc
   Input Parameters:
 + n   - number of values to sort
 . i   - values to sort
-- idx - permutation array.  Must be initialized to 0:n-1 on input.
+- idx - permutation array.  Must be initialized to `0:n-1` on input.
 
   Level: intermediate
 
   Note:
-  i is unchanged on output.
+  `i` is unchanged on output.
 
 .seealso: `PetscSortInt()`, `PetscSortRealWithPermutation()`
  @*/

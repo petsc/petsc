@@ -2550,6 +2550,7 @@ PetscErrorCode TaoSetConvergenceHistory(Tao tao, PetscReal obj[], PetscReal resi
 .vb
    call TaoGetConvergenceHistory(Tao tao, PetscInt nhist, PetscErrorCode ierr)
 .ve
+  In other words this gets the current number of entries in the history. Access the history through the array you passed to `TaoSetConvergenceHistory()`
 
 .seealso: [](ch_tao), `Tao`, `TaoSolve()`, `TaoSetConvergenceHistory()`
 @*/

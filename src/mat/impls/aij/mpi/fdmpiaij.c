@@ -723,7 +723,6 @@ PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFD
 }
 
 /*@C
-
   MatFDColoringSetValues - takes a matrix in compressed color format and enters the matrix into a PETSc `Mat`
 
   Collective
@@ -731,8 +730,8 @@ PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFD
   Input Parameters:
 + J        - the sparse matrix
 . coloring - created with `MatFDColoringCreate()` and a local coloring
-- y        - column major storage of matrix values with one color of values per column, the number of rows of y should match
-         the number of local rows of `J` and the number of columns is the number of colors.
+- y        - column major storage of matrix values with one color of values per column, the number of rows of `y` should match
+             the number of local rows of `J` and the number of columns is the number of colors.
 
   Level: intermediate
 
@@ -743,7 +742,7 @@ PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFD
 
 .seealso: [](ch_matrices), `Mat`, `MatFDColoringCreate()`, `ISColoring`, `ISColoringCreate()`, `ISColoringSetType()`, `IS_COLORING_LOCAL`, `MatFDColoringSetBlockSize()`
 @*/
-PetscErrorCode MatFDColoringSetValues(Mat J, MatFDColoring coloring, const PetscScalar *y)
+PetscErrorCode MatFDColoringSetValues(Mat J, MatFDColoring coloring, const PetscScalar y[])
 {
   MatEntry2      *Jentry2;
   PetscInt        row, i, nrows_k, l, ncolors, nz = 0, bcols, nbcols = 0;

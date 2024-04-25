@@ -2846,7 +2846,7 @@ PetscErrorCode PetscDSGetConstants(PetscDS prob, PetscInt *numConstants, const P
   Input Parameters:
 + prob         - The `PetscDS` object
 . numConstants - The number of constants
-- constants    - The array of constants, NULL if there are none
+- constants    - The array of constants, `NULL` if there are none
 
   Level: intermediate
 
