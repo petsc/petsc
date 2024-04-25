@@ -221,7 +221,7 @@ PetscErrorCode DMCompositeGetAccess(DM dm, Vec gvec, ...)
 + dm      - the `DMCOMPOSITE`
 . pvec    - packed vector
 . nwanted - number of vectors wanted
-- wanted  - sorted array of vectors wanted, or NULL to get all vectors
+- wanted  - sorted array of vectors wanted, or `NULL` to get all vectors
 
   Output Parameter:
 . vecs - array of requested global vectors (must be allocated)

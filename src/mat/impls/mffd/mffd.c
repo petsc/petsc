@@ -187,10 +187,8 @@ static PetscErrorCode MatMFFDResetHHistory_MFFD(Mat J)
    MatMFFDRegister("my_h", MyHCreate);
 .ve
 
-  Then, your solver can be chosen with the procedural interface via
-$     `MatMFFDSetType`(mfctx, "my_h")
-  or at runtime via the option
-$     -mat_mffd_type my_h
+  Then, your solver can be chosen with the procedural interface via `MatMFFDSetType`(mfctx, "my_h")` or at runtime via the option
+  `-mat_mffd_type my_h`
 
 .seealso: [](ch_matrices), `Mat`, `MATMFFD`, `MatMFFDRegisterAll()`, `MatMFFDRegisterDestroy()`
  @*/

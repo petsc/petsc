@@ -30,7 +30,7 @@
   Level: developer
 
   Notes:
-  rpath is assumed to be of length `PETSC_MAX_PATH_LEN`.
+  `rpath` is assumed to be of length `PETSC_MAX_PATH_LEN`.
 
   Systems that use the automounter often generate absolute paths
   of the form "/tmp_mnt....".  However, the automounter will fail to

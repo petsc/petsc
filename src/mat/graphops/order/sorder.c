@@ -87,12 +87,10 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_RowLength(Mat mat, MatOrderingType ty
    MatOrderingRegister("my_order", MyOrder);
 .ve
 
-  Then, your partitioner can be chosen with the procedural interface via
-$     MatOrderingSetType(part, "my_order)
-  or at runtime via the option
-$     -pc_factor_mat_ordering_type my_order
+  Then, your partitioner can be chosen with the procedural interface via `MatOrderingSetType(part, "my_order)` or at runtime via the option
+  `-pc_factor_mat_ordering_type my_order`
 
-.seealso: `MatOrderingRegisterAll()`, `MatGetOrdering()`
+.seealso: `Mat`, `MatOrderingType`, `MatOrderingRegisterAll()`, `MatGetOrdering()`
 @*/
 PetscErrorCode MatOrderingRegister(const char sname[], PetscErrorCode (*function)(Mat, MatOrderingType, IS *, IS *))
 {

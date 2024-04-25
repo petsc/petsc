@@ -69,7 +69,7 @@ PetscErrorCode DMGenerateRegisterAll(void)
 /*@C
   DMGenerateRegister -  Adds a grid generator to `DM`
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname - name of a new user-defined grid generator
@@ -202,7 +202,7 @@ PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
 - rgLabel - Label for cell tags, which will be preserved in the output mesh. `rgLabel` should be `NULL` if there is no such label, and should be different from "_regions_".
 
   Output Parameter:
-. dmAdapt - Pointer to the DM object containing the adapted mesh
+. dmAdapt - Pointer to the `DM` object containing the adapted mesh
 
   Note:
   The label in the adapted mesh will be registered under the name of the input `DMLabel` object

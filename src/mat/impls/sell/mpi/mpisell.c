@@ -1404,26 +1404,26 @@ M*/
   Input Parameters:
 + comm      - MPI communicator
 . m         - number of local rows (or `PETSC_DECIDE` to have calculated if M is given)
-           This value should be the same as the local size used in creating the
-           y vector for the matrix-vector product y = Ax.
+              This value should be the same as the local size used in creating the
+              y vector for the matrix-vector product y = Ax.
 . n         - This value should be the same as the local size used in creating the
-       x vector for the matrix-vector product y = Ax. (or `PETSC_DECIDE` to have
-       calculated if `N` is given) For square matrices n is almost always `m`.
+              x vector for the matrix-vector product y = Ax. (or `PETSC_DECIDE` to have
+              calculated if `N` is given) For square matrices n is almost always `m`.
 . M         - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
 . N         - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
 . d_rlenmax - max number of nonzeros per row in DIAGONAL portion of local submatrix
-               (same value is used for all local rows)
+             (same value is used for all local rows)
 . d_rlen    - array containing the number of nonzeros in the various rows of the
-            DIAGONAL portion of the local submatrix (possibly different for each row)
-            or `NULL`, if d_rlenmax is used to specify the nonzero structure.
-            The size of this array is equal to the number of local rows, i.e `m`.
+              DIAGONAL portion of the local submatrix (possibly different for each row)
+              or `NULL`, if d_rlenmax is used to specify the nonzero structure.
+              The size of this array is equal to the number of local rows, i.e `m`.
 . o_rlenmax - max number of nonzeros per row in the OFF-DIAGONAL portion of local
-               submatrix (same value is used for all local rows).
+              submatrix (same value is used for all local rows).
 - o_rlen    - array containing the number of nonzeros in the various rows of the
-            OFF-DIAGONAL portion of the local submatrix (possibly different for
-            each row) or `NULL`, if `o_rlenmax` is used to specify the nonzero
-            structure. The size of this array is equal to the number
-            of local rows, i.e `m`.
+              OFF-DIAGONAL portion of the local submatrix (possibly different for
+              each row) or `NULL`, if `o_rlenmax` is used to specify the nonzero
+              structure. The size of this array is equal to the number
+              of local rows, i.e `m`.
 
   Output Parameter:
 . A - the matrix

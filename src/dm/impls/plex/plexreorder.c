@@ -51,7 +51,7 @@ static PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoin
   Collective
 
   Input Parameters:
-+ dm    - The DMPlex object
++ dm    - The `DMPLEX` object
 . otype - type of reordering, see `MatOrderingType`
 - label - [Optional] Label used to segregate ordering into sets, or `NULL`
 

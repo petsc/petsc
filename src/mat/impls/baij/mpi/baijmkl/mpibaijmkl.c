@@ -37,24 +37,24 @@ static PetscErrorCode MatConvert_MPIBAIJ_MPIBAIJMKL(Mat A, MatType type, MatReus
 . bs    - size of block, the blocks are ALWAYS square. One can use `MatSetBlockSizes()` to set a different row and column blocksize but the row
           blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with `MatCreateVecs()`
 . m     - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
-           This value should be the same as the local size used in creating the
-           y vector for the matrix-vector product y = Ax.
+          This value should be the same as the local size used in creating the
+          y vector for the matrix-vector product y = Ax.
 . n     - number of local columns (or `PETSC_DECIDE` to have calculated if `N` is given)
-           This value should be the same as the local size used in creating the
-           x vector for the matrix-vector product y = Ax.
+          This value should be the same as the local size used in creating the
+          x vector for the matrix-vector product y = Ax.
 . M     - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
 . N     - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
 . d_nz  - number of nonzero blocks per block row in diagonal portion of local
-           submatrix  (same for all local rows)
+          submatrix  (same for all local rows)
 . d_nnz - array containing the number of nonzero blocks in the various block rows
-           of the in diagonal portion of the local (possibly different for each block
-           row) or `NULL`.  If you plan to factor the matrix you must leave room for the diagonal entry
-           and set it even if it is zero.
+          of the in diagonal portion of the local (possibly different for each block
+          row) or `NULL`.  If you plan to factor the matrix you must leave room for the diagonal entry
+          and set it even if it is zero.
 . o_nz  - number of nonzero blocks per block row in the off-diagonal portion of local
-           submatrix (same for all local rows).
+          submatrix (same for all local rows).
 - o_nnz - array containing the number of nonzero blocks in the various block rows of the
-           off-diagonal portion of the local submatrix (possibly different for
-           each block row) or `NULL`.
+          off-diagonal portion of the local submatrix (possibly different for
+          each block row) or `NULL`.
 
   Output Parameter:
 . A - the matrix

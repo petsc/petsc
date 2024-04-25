@@ -20,6 +20,9 @@
   Note:
   The caller is responsible for destroying the input objects after matrix J has been destroyed.
 
+  Developer Note:
+  This should be moved/supported in `Mat`
+
 .seealso: `MatCreate()`
 @*/
 PetscErrorCode MatCreateSubMatrixFree(Mat mat, IS Rows, IS Cols, Mat *J)

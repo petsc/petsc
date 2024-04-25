@@ -8,10 +8,8 @@
 
   Input Parameters:
 + comm         - MPI communicator
-. bndx         - x boundary type, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or
-`DM_BOUNDARY_GHOSTED`
-. bndy         - y boundary type, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or
-`DM_BOUNDARY_GHOSTED`
+. bndx         - x boundary type, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or `DM_BOUNDARY_GHOSTED`
+. bndy         - y boundary type, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or `DM_BOUNDARY_GHOSTED`
 . bndz         - z boundary type, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or `DM_BOUNDARY_GHOSTED`
 . M            - global number of elements in x direction
 . N            - global number of elements in y direction
@@ -25,9 +23,9 @@
 . dof3         - number of degrees of freedom per element/3-cell
 . stencilType  - ghost/halo region type: `DMSTAG_STENCIL_NONE`, `DMSTAG_STENCIL_BOX`, or `DMSTAG_STENCIL_STAR`
 . stencilWidth - width, in elements, of halo/ghost region
-. lx           - array of local x  element counts, of length equal to `m`, summing to `M`
-. ly           - arrays of local y element counts, of length equal to `n`, summing to `N`
-- lz           - arrays of local z element counts, of length equal to `p`, summing to `P`
+. lx           - array of local x  element counts, of length equal to `m`, summing to `M`, or `NULL`
+. ly           - arrays of local y element counts, of length equal to `n`, summing to `N`, or `NULL`
+- lz           - arrays of local z element counts, of length equal to `p`, summing to `P`, or `NULL`
 
   Output Parameter:
 . dm - the new `DMSTAG` object

@@ -5145,7 +5145,7 @@ PetscErrorCode DMPlexCreateFromCellListParallelPetsc(MPI_Comm comm, PetscInt dim
 . numCells    - The number of cells owned by this process
 . numVertices - The number of vertices owned by this process, or `PETSC_DETERMINE`
 . numCorners  - The number of vertices for each cell
-- cells       - An array of numCells*numCorners numbers, the global vertex numbers for each cell
+- cells       - An array of `numCells` x `numCorners` numbers, the global vertex numbers for each cell
 
   Level: advanced
 

@@ -912,10 +912,9 @@ static PetscErrorCode PCASMSetSubMatType_ASM(PC pc, MatType sub_mat_type)
   Input Parameters:
 + pc       - the preconditioner context
 . n        - the number of subdomains for this processor (default value = 1)
-. is       - the index set that defines the subdomains for this processor
-         (or `NULL` for PETSc to determine subdomains)
+. is       - the index set that defines the subdomains for this processor (or `NULL` for PETSc to determine subdomains)
 - is_local - the index sets that define the local part of the subdomains for this processor, not used unless PCASMType is PC_ASM_RESTRICT
-         (or `NULL` to not provide these)
+             (or `NULL` to not provide these)
 
   Options Database Key:
 . -pc_asm_local_blocks <blks> - Sets number of local blocks
@@ -923,16 +922,16 @@ static PetscErrorCode PCASMSetSubMatType_ASM(PC pc, MatType sub_mat_type)
   Level: advanced
 
   Notes:
-  The `IS` numbering is in the parallel, global numbering of the vector for both is and is_local
+  The `IS` numbering is in the parallel, global numbering of the vector for both `is` and `is_local`
 
   By default the `PCASM` preconditioner uses 1 block per processor.
 
   Use `PCASMSetTotalSubdomains()` to set the subdomains for all processors.
 
-  If is_local is provided and `PCASMType` is `PC_ASM_RESTRICT` then the solution only over the is_local region is interpolated
-  back to form the global solution (this is the standard restricted additive Schwarz method)
+  If `is_local` is provided and `PCASMType` is `PC_ASM_RESTRICT` then the solution only over the `is_local` region is interpolated
+  back to form the global solution (this is the standard restricted additive Schwarz method, RASM)
 
-  If the is_local is provided and `PCASMType` is `PC_ASM_INTERPOLATE` or `PC_ASM_NONE` then an error is generated since there is
+  If `is_local` is provided and `PCASMType` is `PC_ASM_INTERPOLATE` or `PC_ASM_NONE` then an error is generated since there is
   no code to handle that case.
 
 .seealso: [](ch_ksp), `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
@@ -955,10 +954,8 @@ PetscErrorCode PCASMSetLocalSubdomains(PC pc, PetscInt n, IS is[], IS is_local[]
   Input Parameters:
 + pc       - the preconditioner context
 . N        - the number of subdomains for all processors
-. is       - the index sets that define the subdomains for all processors
-         (or `NULL` to ask PETSc to determine the subdomains)
-- is_local - the index sets that define the local part of the subdomains for this processor
-         (or `NULL` to not provide this information)
+. is       - the index sets that define the subdomains for all processors (or `NULL` to ask PETSc to determine the subdomains)
+- is_local - the index sets that define the local part of the subdomains for this processor (or `NULL` to not provide this information)
 
   Options Database Key:
 . -pc_asm_blocks <blks> - Sets total blocks
@@ -966,7 +963,7 @@ PetscErrorCode PCASMSetLocalSubdomains(PC pc, PetscInt n, IS is[], IS is_local[]
   Level: advanced
 
   Notes:
-  Currently you cannot use this to set the actual subdomains with the argument is or is_local.
+  Currently you cannot use this to set the actual subdomains with the argument `is` or `is_local`.
 
   By default the `PCASM` preconditioner uses 1 block per processor.
 
@@ -1200,9 +1197,8 @@ PetscErrorCode PCASMSetSortIndices(PC pc, PetscBool doSort)
 . pc - the preconditioner context
 
   Output Parameters:
-+ n_local     - the number of blocks on this processor or NULL
-. first_local - the global number of the first block on this processor or NULL,
-                 all processors must request or all must pass NULL
++ n_local     - the number of blocks on this processor or `NULL`
+. first_local - the global number of the first block on this processor or `NULL`, all processors must request or all must pass `NULL`
 - ksp         - the array of `KSP` contexts
 
   Level: advanced

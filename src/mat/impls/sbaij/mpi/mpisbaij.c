@@ -2268,20 +2268,20 @@ M*/
 . bs    - size of block, the blocks are ALWAYS square. One can use MatSetBlockSizes() to set a different row and column blocksize but the row
           blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with MatCreateVecs()
 . d_nz  - number of block nonzeros per block row in diagonal portion of local
-           submatrix  (same for all local rows)
+          submatrix  (same for all local rows)
 . d_nnz - array containing the number of block nonzeros in the various block rows
-           in the upper triangular and diagonal part of the in diagonal portion of the local
-           (possibly different for each block row) or `NULL`.  If you plan to factor the matrix you must leave room
-           for the diagonal entry and set a value even if it is zero.
+          in the upper triangular and diagonal part of the in diagonal portion of the local
+          (possibly different for each block row) or `NULL`.  If you plan to factor the matrix you must leave room
+          for the diagonal entry and set a value even if it is zero.
 . o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
-           submatrix (same for all local rows).
+          submatrix (same for all local rows).
 - o_nnz - array containing the number of nonzeros in the various block rows of the
-           off-diagonal portion of the local submatrix that is right of the diagonal
-           (possibly different for each block row) or `NULL`.
+          off-diagonal portion of the local submatrix that is right of the diagonal
+          (possibly different for each block row) or `NULL`.
 
   Options Database Keys:
 + -mat_no_unroll  - uses code that does not unroll the loops in the
-                     block calculations (much slower)
+                    block calculations (much slower)
 - -mat_block_size - size of the blocks to use
 
   Level: intermediate

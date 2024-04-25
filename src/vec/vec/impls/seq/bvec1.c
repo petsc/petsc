@@ -100,21 +100,19 @@ PetscErrorCode VecAXPBY_Seq(Vec yin, PetscScalar a, PetscScalar b, Vec xin)
   } else {
     const PetscInt     n = yin->map->n;
     const PetscScalar *xx;
-    PetscInt           flops;
     PetscScalar       *yy;
 
     PetscCall(VecGetArrayRead(xin, &xx));
     PetscCall(VecGetArray(yin, &yy));
     if (b == (PetscScalar)0.0) {
-      flops = n;
       for (PetscInt i = 0; i < n; ++i) yy[i] = a * xx[i];
+      PetscCall(PetscLogFlops(n));
     } else {
-      flops = 3 * n;
       for (PetscInt i = 0; i < n; ++i) yy[i] = a * xx[i] + b * yy[i];
+      PetscCall(PetscLogFlops(3.0 * n));
     }
     PetscCall(VecRestoreArrayRead(xin, &xx));
     PetscCall(VecRestoreArray(yin, &yy));
-    PetscCall(PetscLogFlops(flops));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

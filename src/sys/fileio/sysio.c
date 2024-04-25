@@ -543,7 +543,7 @@ PetscErrorCode PetscBinaryClose(int fd)
   Input Parameters:
 + fd     - the file
 . off    - number of bytes to move. Use `PETSC_BINARY_INT_SIZE`, `PETSC_BINARY_SCALAR_SIZE`,
-            etc. in your calculation rather than `sizeof()` to compute byte lengths.
+           etc. in your calculation rather than `sizeof()` to compute byte lengths.
 - whence - see `PetscBinarySeekType` for possible values
 
   Output Parameter:

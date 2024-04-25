@@ -1185,8 +1185,8 @@ static PetscErrorCode MatNestGetSubMats_Nest(Mat A, PetscInt *M, PetscInt *N, Ma
 . A - nest matrix
 
   Output Parameters:
-+ M   - number of rows in the nest matrix
-. N   - number of cols in the nest matrix
++ M   - number of submatrix rows in the nest matrix
+. N   - number of submatrix columns in the nest matrix
 - mat - array of matrices
 
   Level: developer
@@ -1195,8 +1195,7 @@ static PetscErrorCode MatNestGetSubMats_Nest(Mat A, PetscInt *M, PetscInt *N, Ma
   The user should not free the array `mat`.
 
   Fortran Notes:
-  This routine has a calling sequence
-$   call MatNestGetSubMats(A, M, N, mat, ierr)
+  This routine has a calling sequence `call MatNestGetSubMats(A, M, N, mat, ierr)`
   where the space allocated for the optional argument `mat` is assumed large enough (if provided).
   Matrices in `mat` are returned in row-major order, see `MatCreateNest()` for an example.
 
@@ -1268,8 +1267,8 @@ static PetscErrorCode MatNestGetISs_Nest(Mat A, IS rows[], IS cols[])
 . A - `MATNEST` matrix
 
   Output Parameters:
-+ rows - array of row index sets
-- cols - array of column index sets
++ rows - array of row index sets (pass `NULL` to ignore)
+- cols - array of column index sets (pass `NULL` to ignore)
 
   Level: advanced
 
@@ -1309,8 +1308,8 @@ static PetscErrorCode MatNestGetLocalISs_Nest(Mat A, IS rows[], IS cols[])
 . A - `MATNEST` matrix
 
   Output Parameters:
-+ rows - array of row index sets (or `NULL` to ignore)
-- cols - array of column index sets (or `NULL` to ignore)
++ rows - array of row index sets (pass `NULL` to ignore)
+- cols - array of column index sets (pass `NULL` to ignore)
 
   Level: advanced
 

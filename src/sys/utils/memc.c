@@ -53,15 +53,15 @@ PetscErrorCode PetscMemcmp(const void *str1, const void *str2, size_t len, Petsc
   #include <hwloc.h>
 
 /*@C
-     PetscProcessPlacementView - display the MPI rank placement by core
+  PetscProcessPlacementView - display the MPI rank placement by core
 
   Input Parameter:
-.   viewer - `PETSCVIEWERASCII` to display the results on
+. viewer - `PETSCVIEWERASCII` to display the results on
 
   Level: intermediate
 
   Note:
-    Requires that PETSc be installed with hwloc, for example using --download-hwloc
+  Requires that PETSc be installed with hwloc, for example using `--download-hwloc`
 @*/
 PetscErrorCode PetscProcessPlacementView(PetscViewer viewer)
 {
