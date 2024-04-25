@@ -16,7 +16,7 @@ struct complexscalelw : public thrust::unary_function<thrust::tuple<PetscReal, s
     iw = PetscImaginaryPart(width);
   }
 
-  __host__ __device__ PetscReal operator()(thrust::tuple<PetscReal, size_t> x) { return x.get<1>() % 2 ? x.get<0>() * iw + il : x.get<0>() * rw + rl; }
+  __host__ __device__ PetscReal operator()(thrust::tuple<PetscReal, size_t> x) { return thrust::get<1>(x) % 2 ? thrust::get<0>(x) * iw + il : thrust::get<0>(x) * rw + rl; }
 };
 #endif
 
