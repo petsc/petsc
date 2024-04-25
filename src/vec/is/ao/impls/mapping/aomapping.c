@@ -226,7 +226,7 @@ PetscErrorCode AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool *hasIndex)
   Level: beginner
 
   Note:
-  The arrays myapp and mypetsc need NOT contain the all the integers 0 to napp-1, that is there CAN be "holes"  in the indices.
+  The arrays `myapp` and `mypetsc` need NOT contain the all the integers 0 to `napp`-1, that is there CAN be "holes"  in the indices.
   Use `AOCreateBasic()` or `AOCreateBasicIS()` if they do not have holes for better performance.
 
 .seealso: [](sec_ao), `AOCreateBasic()`, `AOCreateMappingIS()`, `AODestroy()`
