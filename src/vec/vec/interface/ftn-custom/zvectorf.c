@@ -38,10 +38,8 @@
   #define vecgetownershiprange2_   VECGETOWNERSHIPRANGE2
   #define vecgetownershiprange3_   VECGETOWNERSHIPRANGE3
   #define vecgetownershipranges_   VECGETOWNERSHIPRANGES
-  #define vecsetoptionsprefix_     VECSETOPTIONSPREFIX
   #define vecviewfromoptions_      VECVIEWFROMOPTIONS
   #define vecstashviewfromoptions_ VECSTASHVIEWFROMOPTIONS
-  #define veccreatefromoptions_    VECCREATEFROMOPTIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define vecsetrandom_            vecsetrandom
   #define vecsetvalueslocal0_      vecsetvalueslocal0
@@ -79,21 +77,9 @@
   #define vecgetownershiprange2_   vecgetownershiprange2
   #define vecgetownershiprange3_   vecgetownershiprange3
   #define vecgetownershipranges_   vecgetownershipranges
-  #define vecsetoptionsprefix_     vecsetoptionsprefix
   #define vecviewfromoptions_      vecviewfromoptions
   #define vecstashviewfromoptions_ vecstashviewfromoptions
-  #define veccreatefromoptions_    veccreatefromoptions
 #endif
-
-PETSC_EXTERN void veccreatefromoptions_(MPI_Fint *comm, char *prefix, PetscInt *bs, PetscInt *m, PetscInt *n, Vec *vec, int *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *fprefix;
-
-  FIXCHAR(prefix, len, fprefix);
-  *ierr = VecCreateFromOptions(MPI_Comm_f2c(*(comm)), fprefix, *bs, *m, *n, vec);
-  if (*ierr) return;
-  FREECHAR(prefix, fprefix);
-}
 
 PETSC_EXTERN void vecsetvalueslocal_(Vec *x, PetscInt *ni, PetscInt ix[], PetscScalar y[], InsertMode *iora, int *ierr)
 {
@@ -395,15 +381,6 @@ PETSC_EXTERN void vecgetownershipranges_(Vec *x, PetscInt *range, PetscErrorCode
   *ierr = PetscArraycpy(range, r, size + 1);
 }
 
-PETSC_EXTERN void vecsetoptionsprefix_(Vec *v, char *prefix, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-
-  FIXCHAR(prefix, len, t);
-  *ierr = VecSetOptionsPrefix(*v, t);
-  if (*ierr) return;
-  FREECHAR(prefix, t);
-}
 PETSC_EXTERN void vecviewfromoptions_(Vec *ao, PetscObject obj, char *type, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;

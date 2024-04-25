@@ -381,7 +381,7 @@ static PetscErrorCode TSView_EIMEX(TS ts, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSEIMEXSetMaxRows - Set the maximum number of rows for `TSEIMEX` schemes
 
   Logically Collective
@@ -402,7 +402,7 @@ PetscErrorCode TSEIMEXSetMaxRows(TS ts, PetscInt nrows)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSEIMEXSetRowCol - Set the number of rows and the number of columns for the tableau that represents the T solution in the `TSEIMEX` scheme
 
   Logically Collective
@@ -424,7 +424,7 @@ PetscErrorCode TSEIMEXSetRowCol(TS ts, PetscInt row, PetscInt col)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSEIMEXSetOrdAdapt - Set the order adaptativity for the `TSEIMEX` schemes
 
   Logically Collective

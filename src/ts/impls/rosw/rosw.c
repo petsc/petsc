@@ -1588,7 +1588,7 @@ static PetscErrorCode TSLoad_RosW(TS ts, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRosWSetType - Set the type of Rosenbrock-W, `TSROSW`, scheme
 
   Logically Collective
@@ -1610,7 +1610,7 @@ PetscErrorCode TSRosWSetType(TS ts, TSRosWType roswtype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRosWGetType - Get the type of Rosenbrock-W scheme
 
   Logically Collective
@@ -1633,7 +1633,7 @@ PetscErrorCode TSRosWGetType(TS ts, TSRosWType *rostype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRosWSetRecomputeJacobian - Set whether to recompute the Jacobian at each stage. The default is to update the Jacobian once per step.
 
   Logically Collective

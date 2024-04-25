@@ -29,7 +29,7 @@ PetscErrorCode DMFieldRegisterAll(void)
 /*@C
   DMFieldRegister  - Adds an implementation of the `DMField` object.
 
-  Not collective
+  Not collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of a new user-defined implementation

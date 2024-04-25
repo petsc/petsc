@@ -29,6 +29,8 @@
 #define SNESNGMRESSelectType PetscEnum
 #define SNESNewtonTRFallbackType PetscEnum
 #define SNESNewtonTRQNType PetscEnum
+#define SNESCompositeType PetscEnum
+#define SNESFunctionType PetscEnum
 
 !
 !  SNESType

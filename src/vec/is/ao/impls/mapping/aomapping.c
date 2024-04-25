@@ -120,7 +120,7 @@ static const struct _AOOps AOps = {
   PetscDesignatedInitializer(applicationtopetsc, AOApplicationToPetsc_Mapping),
 };
 
-/*@C
+/*@
   AOMappingHasApplicationIndex - Checks if an `AO` has a requested application index.
 
   Not Collective
@@ -208,7 +208,7 @@ PetscErrorCode AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool *hasIndex)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   AOCreateMapping - Creates an application mapping using two integer arrays.
 
   Input Parameters:
@@ -321,7 +321,7 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myap
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   AOCreateMappingIS - Creates an application mapping using two index sets.
 
   Input Parameters:

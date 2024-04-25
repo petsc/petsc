@@ -3,14 +3,14 @@
       Some PETSc utility routines to add simple parallel IO capabilities
 */
 #include <petscsys.h>
-#include <petsc/private/logimpl.h>
+#include <petsc/private/logimpl.h> /*I   "petscsys.h"    I*/
 #include <errno.h>
 
 /*@C
   PetscFOpen - Has the first process in the MPI communicator open a file;
   all others do nothing.
 
-  Logically Collective; No Fortran Support
+  Logically Collective
 
   Input Parameters:
 + comm - the MPI communicator
@@ -61,7 +61,7 @@ PetscErrorCode PetscFOpen(MPI_Comm comm, const char name[], const char mode[], F
   PetscFClose - Has MPI rank 0 in the communicator close a
   file (usually obtained with `PetscFOpen()`; all others do nothing.
 
-  Logically Collective; No Fortran Support
+  Logically Collective
 
   Input Parameters:
 + comm - the MPI communicator
@@ -85,7 +85,6 @@ PetscErrorCode PetscFClose(MPI_Comm comm, FILE *fd)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_POPEN)
 static char PetscPOpenMachine[128] = "";
 
 /*@C
@@ -106,15 +105,21 @@ static char PetscPOpenMachine[128] = "";
 @*/
 PetscErrorCode PetscPClose(MPI_Comm comm, FILE *fd)
 {
+#if defined(PETSC_HAVE_POPEN)
   PetscMPIInt rank;
+#endif
 
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_POPEN)
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) {
     char buf[1024];
     while (fgets(buf, 1024, fd)); /* wait till it prints everything */
     (void)pclose(fd);
   }
+#else
+  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "pclose() - routine is unavailable.");
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -150,12 +155,15 @@ PetscErrorCode PetscPClose(MPI_Comm comm, FILE *fd)
 @*/
 PetscErrorCode PetscPOpen(MPI_Comm comm, const char machine[], const char program[], const char mode[], FILE **fp)
 {
+#if defined(PETSC_HAVE_POPEN)
   PetscMPIInt rank;
   size_t      i, len, cnt;
   char        commandt[PETSC_MAX_PATH_LEN], command[PETSC_MAX_PATH_LEN];
   FILE       *fd;
+#endif
 
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_POPEN)
   /* all processors have to do the string manipulation because PetscStrreplace() is a collective operation */
   if (PetscPOpenMachine[0] || (machine && machine[0])) {
     PetscCall(PetscStrncpy(command, "ssh ", sizeof(command)));
@@ -189,10 +197,13 @@ PetscErrorCode PetscPOpen(MPI_Comm comm, const char machine[], const char progra
     PetscCheck((fd = popen(commandt, mode)), PETSC_COMM_SELF, PETSC_ERR_LIB, "Cannot run command %s", commandt);
     if (fp) *fp = fd;
   }
+#else
+  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "popen() - system routine is unavailable.");
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscPOpenSetMachine - Sets the name of the default machine to run `PetscPOpen()` calls on
 
   Logically Collective, but only the MPI process with rank 0 runs the command
@@ -217,5 +228,3 @@ PetscErrorCode PetscPOpenSetMachine(const char machine[])
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-#endif

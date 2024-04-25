@@ -139,13 +139,6 @@
           PetscErrorCode, intent(out) :: ierr
         End Subroutine PetscOptionsView
 
-      subroutine PetscRandomSetType(a,b,ierr)
-       import tPetscRandom
-       PetscRandom a
-       character(*) b
-       PetscErrorCode ierr
-       end subroutine
-
 #if defined(PETSC_HAVE_FORTRAN_FREE_LINE_LENGTH_NONE)
       subroutine PetscErrorf(ierr,line,file)
        PetscErrorCode, intent(in) :: ierr
@@ -215,19 +208,6 @@
       PetscErrorCode,intent(in) ::  ierr
       end subroutine
 
-      subroutine PetscLogEventRegister(name,classid,event,ierr)
-       character(len=*), intent(in) :: name
-       PetscClassId, intent(in) :: classid
-       PetscLogEvent, intent(in) :: event
-       PetscErrorCode, intent(out) :: ierr
-      end subroutine PetscLogEventRegister
-
-      subroutine PetscLogStageRegister(name,stage,ierr)
-       character(len=*), intent(in) :: name
-       PetscLogStage, intent(out) :: stage
-       PetscErrorCode, intent(out) :: ierr
-      end subroutine PetscLogStageRegister
-
       subroutine PetscLogEventBegin(event,ierr)
         PetscLogEvent, intent(in) :: event
         PetscErrorCode, intent(out) :: ierr
@@ -237,15 +217,6 @@
         PetscLogEvent, intent(in) :: event
         PetscErrorCode, intent(out) :: ierr
       end subroutine PetscLogEventEnd
-
-      subroutine PetscLogStagePop(ierr)
-        PetscErrorCode, intent(out) :: ierr
-      end subroutine PetscLogStagePop
-
-      subroutine PetscLogStagePush(s,ierr)
-       PetscLogStage, intent(in) :: s
-       PetscErrorCode, intent(out) :: ierr
-      end subroutine PetscLogStagePush
       end Interface
 
       Interface

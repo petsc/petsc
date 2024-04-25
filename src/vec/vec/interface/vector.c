@@ -1533,7 +1533,7 @@ PetscErrorCode VecGetBlockSize(Vec v, PetscInt *bs)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecSetOptionsPrefix - Sets the prefix used for searching for all
   `Vec` options in the database.
 
@@ -1559,7 +1559,7 @@ PetscErrorCode VecSetOptionsPrefix(Vec v, const char prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecAppendOptionsPrefix - Appends to the prefix used for searching for all
   `Vec` options in the database.
 
@@ -1585,7 +1585,7 @@ PetscErrorCode VecAppendOptionsPrefix(Vec v, const char prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetOptionsPrefix - Sets the prefix used for searching for all
   Vec options in the database.
 

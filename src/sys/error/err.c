@@ -25,7 +25,7 @@ static EH eh = NULL;
   PetscEmacsClientErrorHandler - Error handler that uses the emacsclient program to
   load the file where the error occurred. Then calls the "previous" error handler.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + comm - communicator over which error occurred
@@ -87,7 +87,7 @@ PetscErrorCode PetscEmacsClientErrorHandler(MPI_Comm comm, int line, const char 
 /*@C
   PetscPushErrorHandler - Sets a routine to be called on detection of errors.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + handler - error handler routine
@@ -159,7 +159,7 @@ PetscErrorCode PetscPopErrorHandler(void)
 /*@C
   PetscReturnErrorHandler - Error handler that causes a return without printing an error message.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + comm - communicator over which error occurred
@@ -251,7 +251,7 @@ static const char *PetscErrorStrings[] = {
 /*@C
   PetscErrorMessage - Returns the text string associated with a PETSc error code.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . errnum - the error code
@@ -267,7 +267,7 @@ static const char *PetscErrorStrings[] = {
 `PetscError()`, `SETERRQ()`, `PetscCall()` `PetscAbortErrorHandler()`,
 `PetscTraceBackErrorHandler()`
 @*/
-PetscErrorCode PetscErrorMessage(PetscErrorCode errnum, const char *text[], char **specific)
+PetscErrorCode PetscErrorMessage(PetscErrorCode errnum, const char *text[], char *specific[])
 {
   PetscFunctionBegin;
   if (text) {
@@ -938,6 +938,8 @@ PETSC_EXTERN const char *PetscHIPSolverGetErrorName(hipsolverStatus_t status)
 /*@C
   PetscMPIErrorString - Given an MPI error code returns the `MPI_Error_string()` appropriately
   formatted for displaying with the PETSc error handlers.
+
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . err - the MPI error code

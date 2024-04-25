@@ -348,7 +348,7 @@ PetscErrorCode TSGLEEFinalizePackage(void)
 /*@C
   TSGLEERegister - register a new `TSGLEE` scheme by providing the entries in the Butcher tableau
 
-  Not Collective, but the same schemes should be registered on all processes on which they will be used
+  Not Collective, but the same schemes should be registered on all processes on which they will be used, No Fortran Support
 
   Input Parameters:
 + name    - identifier for method
@@ -829,7 +829,7 @@ static PetscErrorCode TSLoad_GLEE(TS ts, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGLEESetType - Set the type of `TSGLEE` scheme
 
   Logically Collective
@@ -851,7 +851,7 @@ PetscErrorCode TSGLEESetType(TS ts, TSGLEEType gleetype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGLEEGetType - Get the type of `TSGLEE` scheme
 
   Logically Collective

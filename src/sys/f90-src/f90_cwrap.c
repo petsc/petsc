@@ -4,7 +4,7 @@
 
    PetscMPIFortranDatatypeToC - Converts a `MPI_Fint` that contains a Fortran `MPI_Datatype` to its C `MPI_Datatype` equivalent
 
-   Not Collective
+   Not Collective, No Fortran Support
 
    Input Parameter:
 .  unit - The Fortran `MPI_Datatype`
@@ -15,7 +15,7 @@
    Level: developer
 
    Developer Note:
-    The MPI documentation in multiple places says that one can never us
+   The MPI documentation in multiple places says that one can never us
    Fortran `MPI_Datatype`s in C (or vice-versa) but this is problematic since users could never
    call C routines from Fortran that have `MPI_Datatype` arguments. Jed states that the Fortran
    `MPI_Datatype`s will always be available in C if the MPI was built to support Fortran. This function

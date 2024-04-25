@@ -54,7 +54,7 @@ PetscErrorCode VecCreate(MPI_Comm comm, Vec *vec)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecCreateFromOptions - Creates a vector whose type is set from the options database
 
   Collective

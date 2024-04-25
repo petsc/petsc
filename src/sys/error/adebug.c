@@ -17,7 +17,7 @@ static PetscBool UseDebugTerminal    = PETSC_TRUE;
 PetscBool        petscwaitonerrorflg = PETSC_FALSE;
 PetscBool        petscindebugger     = PETSC_FALSE;
 
-/*@C
+/*@
   PetscSetDebugTerminal - Sets the terminal to use for debugging.
 
   Not Collective; No Fortran Support
@@ -55,7 +55,7 @@ PetscErrorCode PetscSetDebugTerminal(const char terminal[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSetDebugger - Sets options associated with the debugger.
 
   Not Collective; No Fortran Support
@@ -85,7 +85,7 @@ PetscErrorCode PetscSetDebugger(const char debugger[], PetscBool usedebugtermina
 /*@C
   PetscSetDefaultDebugger - Causes PETSc to use its default debugger and output terminal
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Level: developer
 
@@ -121,7 +121,7 @@ static PetscErrorCode PetscCheckDebugger_Private(const char defaultDbg[], const 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSetDebuggerFromString - Set the complete path for the
   debugger for PETSc to use.
 
@@ -134,7 +134,7 @@ static PetscErrorCode PetscCheckDebugger_Private(const char defaultDbg[], const 
 
 .seealso: `PetscSetDebugger()`, `PetscSetDefaultDebugger()`, `PetscAttachDebugger()`
 @*/
-PetscErrorCode PetscSetDebuggerFromString(const char *string)
+PetscErrorCode PetscSetDebuggerFromString(const char string[])
 {
   const char *debugger    = NULL;
   PetscBool   useterminal = PETSC_TRUE;
@@ -464,7 +464,7 @@ PetscErrorCode PetscAttachDebugger(void)
   a debugger to a running process when an error is detected.
   This routine is useful for examining variables, etc.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + comm - communicator over which error occurred
@@ -529,7 +529,7 @@ PetscErrorCode PetscAttachDebuggerErrorHandler(MPI_Comm comm, int line, const ch
   attach to the process with the debugger and then waits for the
   debugger to attach.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Options Database Key:
 . -stop_for_debugger - will stop for you to attach the debugger when `PetscInitialize()` is called

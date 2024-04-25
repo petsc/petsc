@@ -1338,7 +1338,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexComputeProjection2Dto1D - Rewrite coordinates to be the 1D projection of the 2D coordinates
 
   Not Collective
@@ -1369,7 +1369,7 @@ PetscErrorCode DMPlexComputeProjection2Dto1D(PetscScalar coords[], PetscReal R[]
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexComputeProjection3Dto1D - Rewrite coordinates to be the 1D projection of the 3D coordinates
 
   Not Collective
@@ -1426,6 +1426,7 @@ PetscErrorCode DMPlexComputeProjection3Dto1D(PetscScalar coords[], PetscReal R[]
   }
   coords[0] = 0.0;
   coords[1] = r;
+  coords[2] = 0.0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2983,7 +2984,7 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetMinRadius - Returns the minimum distance from any cell centroid to a face
 
   Not Collective
@@ -3007,7 +3008,7 @@ PetscErrorCode DMPlexGetMinRadius(DM dm, PetscReal *minradius)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexSetMinRadius - Sets the minimum distance from the cell centroid to a face
 
   Logically Collective
@@ -3972,7 +3973,7 @@ PetscErrorCode DMPlexRemapGeometry(DM dm, PetscReal time, void (*func)(PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexShearGeometry - This shears the domain, meaning adds a multiple of the shear coordinate to all other coordinates.
 
   Not Collective

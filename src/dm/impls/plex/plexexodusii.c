@@ -1320,7 +1320,7 @@ PetscErrorCode PetscViewerExodusIIGetOrder(PetscViewer viewer, PetscInt *order)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerExodusIIOpen - Opens a file for ExodusII input/output.
 
   Collective
@@ -1354,7 +1354,7 @@ PetscErrorCode PetscViewerExodusIIOpen(MPI_Comm comm, const char name[], PetscFi
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexCreateExodusFromFile - Create a `DMPLEX` mesh from an ExodusII file.
 
   Collective

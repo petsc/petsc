@@ -195,7 +195,7 @@ PetscBool              petscsetmallocvisited = PETSC_FALSE;
 /*@C
   PetscMallocSet - Sets the underlying allocation routines used by `PetscMalloc()` and `PetscFree()`
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + imalloc - the routine that provides the `malloc()` implementation (also provides `calloc()`, which is used depending on the second argument)
@@ -221,7 +221,7 @@ PetscErrorCode PetscMallocSet(PetscErrorCode (*imalloc)(size_t, PetscBool, int, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscMallocClear - Resets the routines used by `PetscMalloc()` and `PetscFree()`
 
   Not Collective
@@ -266,7 +266,7 @@ static PetscErrorCode (*PetscTrMallocOld)(size_t, PetscBool, int, const char[], 
 static PetscErrorCode (*PetscTrReallocOld)(size_t, int, const char[], const char[], void **)           = PetscReallocAlign;
 static PetscErrorCode (*PetscTrFreeOld)(void *, int, const char[], const char[])                       = PetscFreeAlign;
 
-/*@C
+/*@
   PetscMallocSetDRAM - Set `PetscMalloc()` to use DRAM.
   If memkind is available, change the memkind type. Otherwise, switch the
   current malloc and free routines to the `PetscMallocAlign()` and
@@ -302,7 +302,7 @@ PetscErrorCode PetscMallocSetDRAM(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscMallocResetDRAM - Reset the changes made by `PetscMallocSetDRAM()`
 
   Not Collective
@@ -334,7 +334,7 @@ static PetscBool petscmalloccoalesce =
   PETSC_FALSE;
 #endif
 
-/*@C
+/*@
   PetscMallocSetCoalesce - Use coalesced `PetscMalloc()` when allocating groups of objects, that is when using `PetscMallocN()`
 
   Not Collective
@@ -366,7 +366,7 @@ PetscErrorCode PetscMallocSetCoalesce(PetscBool coalesce)
 /*@C
   PetscMallocA - Allocate and optionally clear one or more memory locations, possibly using coalesced malloc
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + n        - number of objects to allocate (at least 1)
@@ -426,7 +426,7 @@ PetscErrorCode PetscMallocA(int n, PetscBool clear, int lineno, const char *func
 /*@C
   PetscFreeA - Free one or more memory locations, possibly allocated using coalesced `PetscMallocN()`
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + n        - number of objects to free (at least 1)

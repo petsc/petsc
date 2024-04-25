@@ -168,7 +168,7 @@ PetscErrorCode DMPlexTransformCreate(MPI_Comm comm, DMPlexTransform *tr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexTransformSetType - Sets the particular implementation for a transform.
 
   Collective
@@ -205,7 +205,7 @@ PetscErrorCode DMPlexTransformSetType(DMPlexTransform tr, DMPlexTransformType me
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexTransformGetType - Gets the type name (as a string) from the transform.
 
   Not Collective
@@ -344,7 +344,7 @@ PetscErrorCode DMPlexTransformSetFromOptions(DMPlexTransform tr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexTransformDestroy - Destroys a `DMPlexTransform`
 
   Collective

@@ -288,7 +288,7 @@ struct _n_PetscLayout {
   PetscInt               oldbs;        /* And again */
 };
 
-/*@C
+/*@
    PetscLayoutFindOwner - Find the owning MPI process for a global index
 
    Not Collective; No Fortran Support
@@ -322,7 +322,7 @@ static inline PetscErrorCode PetscLayoutFindOwner(PetscLayout map, PetscInt idx,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
     PetscLayoutFindOwnerIndex - Find the owning MPI process and the local index on that process for a global index
 
     Not Collective; No Fortran Support

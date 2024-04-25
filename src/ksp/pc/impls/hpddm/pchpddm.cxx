@@ -454,22 +454,21 @@ static PetscErrorCode PCMatApply_HPDDM(PC pc, Mat X, Mat Y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
-     PCHPDDMGetComplexities - Computes the grid and operator complexities.
+/*@
+  PCHPDDMGetComplexities - Computes the grid and operator complexities.
 
-   Input Parameter:
-.     pc - preconditioner context
+  Input Parameter:
+. pc - preconditioner context
 
-   Output Parameters:
-+     gc - grid complexity = sum_i(m_i) / m_1
--     oc - operator complexity = sum_i(nnz_i) / nnz_1
+  Output Parameters:
++ gc - grid complexity $ \sum_i m_i / m_1 $
+- oc - operator complexity $ \sum_i nnz_i / nnz_1 $
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ksp), `PCMGGetGridComplexity()`, `PCHPDDM`, `PCHYPRE`, `PCGAMG`
 @*/
-static PetscErrorCode PCHPDDMGetComplexities(PC pc, PetscReal *gc, PetscReal *oc)
+PetscErrorCode PCHPDDMGetComplexities(PC pc, PetscReal *gc, PetscReal *oc)
 {
   PC_HPDDM      *data = (PC_HPDDM *)pc->data;
   MatInfo        info;

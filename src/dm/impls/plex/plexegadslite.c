@@ -618,7 +618,7 @@ static PetscErrorCode DMPlexEGADSLitePrintModel_Internal(ego model)
 }
 #endif
 
-/*@C
+/*@
   DMPlexCreateEGADSLiteFromFile - Create a DMPlex mesh from an EGADSLite file.
 
   Collective

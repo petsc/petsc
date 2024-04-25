@@ -27,7 +27,7 @@ PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscRea
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSetPeriodicity - Set the description of mesh periodicity
 
   Input Parameters:

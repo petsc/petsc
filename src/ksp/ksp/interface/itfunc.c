@@ -2110,7 +2110,7 @@ PETSC_INTERN PetscErrorCode PCCreate_MPI(PC);
 /*@C
    KSPCheckPCMPI - Checks if `-mpi_linear_solver_server` is active and the `PC` should be changed to `PCMPI`
 
-   Collective
+   Collective, No Fortran Support
 
    Input Parameter:
 .  ksp - iterative context obtained from `KSPCreate()`

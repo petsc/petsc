@@ -259,7 +259,7 @@ PetscErrorCode MatCreateSNESMFMore(SNES snes, Vec x, Mat *J)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSNESMFMoreSetParameters - Sets the parameters for the approximation of
   matrix-vector products using finite differences, see  `MatCreateSNESMFMore()`
 

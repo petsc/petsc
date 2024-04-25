@@ -213,7 +213,7 @@ PetscErrorCode TaoTestHessian(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoComputeHessian - Computes the Hessian matrix that has been
   set with `TaoSetHessian()`.
 
@@ -266,7 +266,7 @@ PetscErrorCode TaoComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoComputeJacobian - Computes the Jacobian matrix that has been
   set with TaoSetJacobianRoutine().
 
@@ -307,7 +307,7 @@ PetscErrorCode TaoComputeJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoComputeResidualJacobian - Computes the least-squares residual Jacobian matrix that has been
   set with `TaoSetJacobianResidual()`.
 
@@ -348,7 +348,7 @@ PetscErrorCode TaoComputeResidualJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoComputeJacobianState - Computes the Jacobian matrix that has been
   set with `TaoSetJacobianStateRoutine()`.
 
@@ -386,7 +386,7 @@ PetscErrorCode TaoComputeJacobianState(Tao tao, Vec X, Mat J, Mat Jpre, Mat Jinv
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoComputeJacobianDesign - Computes the Jacobian matrix that has been
   set with `TaoSetJacobianDesignRoutine()`.
 
@@ -659,7 +659,7 @@ PetscErrorCode TaoSetStateDesignIS(Tao tao, IS s_is, IS d_is)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoComputeJacobianEquality - Computes the Jacobian matrix that has been
   set with `TaoSetJacobianEqualityRoutine()`.
 
@@ -696,7 +696,7 @@ PetscErrorCode TaoComputeJacobianEquality(Tao tao, Vec X, Mat J, Mat Jpre)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoComputeJacobianInequality - Computes the Jacobian matrix that has been
   set with `TaoSetJacobianInequalityRoutine()`.
 

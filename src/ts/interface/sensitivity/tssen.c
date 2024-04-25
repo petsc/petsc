@@ -150,7 +150,7 @@ PetscErrorCode TSSetIJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS ts, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSComputeIJacobianP - Runs the user-defined IJacobianP function.
 
   Collective
@@ -284,7 +284,7 @@ PetscErrorCode TSSetCostIntegrand(TS ts, PetscInt numcost, Vec costintegral, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGetCostIntegral - Returns the values of the integral term in the cost functions.
   It is valid to call the routine after a backward run.
 
@@ -312,7 +312,7 @@ PetscErrorCode TSGetCostIntegral(TS ts, Vec *v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSComputeCostIntegrand - Evaluates the integral function in the cost functions.
 
   Input Parameters:
@@ -346,7 +346,7 @@ PetscErrorCode TSComputeCostIntegrand(TS ts, PetscReal t, Vec U, Vec Q)
 }
 
 // PetscClangLinter pragma disable: -fdoc-*
-/*@C
+/*@
   TSComputeDRDUFunction - Deprecated, use `TSGetQuadratureTS()` then `TSComputeRHSJacobian()`
 
   Level: deprecated
@@ -364,7 +364,7 @@ PetscErrorCode TSComputeDRDUFunction(TS ts, PetscReal t, Vec U, Vec *DRDU)
 }
 
 // PetscClangLinter pragma disable: -fdoc-*
-/*@C
+/*@
   TSComputeDRDPFunction - Deprecated, use `TSGetQuadratureTS()` then `TSComputeRHSJacobianP()`
 
   Level: deprecated
@@ -444,7 +444,7 @@ PetscErrorCode TSSetIHessianProduct(TS ts, Vec *ihp1, PetscErrorCode (*ihessianp
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSComputeIHessianProductFunctionUU - Runs the user-defined vector-Hessian-vector product function for Fuu.
 
   Collective
@@ -467,7 +467,7 @@ PetscErrorCode TSSetIHessianProduct(TS ts, Vec *ihp1, PetscErrorCode (*ihessianp
 
 .seealso: [](ch_ts), `TSSetIHessianProduct()`
 @*/
-PetscErrorCode TSComputeIHessianProductFunctionUU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
+PetscErrorCode TSComputeIHessianProductFunctionUU(TS ts, PetscReal t, Vec U, Vec Vl[], Vec Vr, Vec VHV[])
 {
   PetscFunctionBegin;
   if (!VHV) PetscFunctionReturn(PETSC_SUCCESS);
@@ -485,7 +485,7 @@ PetscErrorCode TSComputeIHessianProductFunctionUU(TS ts, PetscReal t, Vec U, Vec
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSComputeIHessianProductFunctionUP - Runs the user-defined vector-Hessian-vector product function for Fup.
 
   Collective
@@ -508,7 +508,7 @@ PetscErrorCode TSComputeIHessianProductFunctionUU(TS ts, PetscReal t, Vec U, Vec
 
 .seealso: [](ch_ts), `TSSetIHessianProduct()`
 @*/
-PetscErrorCode TSComputeIHessianProductFunctionUP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
+PetscErrorCode TSComputeIHessianProductFunctionUP(TS ts, PetscReal t, Vec U, Vec Vl[], Vec Vr, Vec VHV[])
 {
   PetscFunctionBegin;
   if (!VHV) PetscFunctionReturn(PETSC_SUCCESS);
@@ -526,7 +526,7 @@ PetscErrorCode TSComputeIHessianProductFunctionUP(TS ts, PetscReal t, Vec U, Vec
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSComputeIHessianProductFunctionPU - Runs the user-defined vector-Hessian-vector product function for Fpu.
 
   Collective
@@ -549,7 +549,7 @@ PetscErrorCode TSComputeIHessianProductFunctionUP(TS ts, PetscReal t, Vec U, Vec
 
 .seealso: [](ch_ts), `TSSetIHessianProduct()`
 @*/
-PetscErrorCode TSComputeIHessianProductFunctionPU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
+PetscErrorCode TSComputeIHessianProductFunctionPU(TS ts, PetscReal t, Vec U, Vec Vl[], Vec Vr, Vec VHV[])
 {
   PetscFunctionBegin;
   if (!VHV) PetscFunctionReturn(PETSC_SUCCESS);
@@ -590,7 +590,7 @@ PetscErrorCode TSComputeIHessianProductFunctionPU(TS ts, PetscReal t, Vec U, Vec
 
 .seealso: [](ch_ts), `TSSetIHessianProduct()`
 @*/
-PetscErrorCode TSComputeIHessianProductFunctionPP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
+PetscErrorCode TSComputeIHessianProductFunctionPP(TS ts, PetscReal t, Vec U, Vec Vl[], Vec Vr, Vec VHV[])
 {
   PetscFunctionBegin;
   if (!VHV) PetscFunctionReturn(PETSC_SUCCESS);
@@ -675,7 +675,7 @@ PetscErrorCode TSSetRHSHessianProduct(TS ts, Vec *rhshp1, PetscErrorCode (*rhshe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSComputeRHSHessianProductFunctionUU - Runs the user-defined vector-Hessian-vector product function for Guu.
 
   Collective
@@ -698,7 +698,7 @@ PetscErrorCode TSSetRHSHessianProduct(TS ts, Vec *rhshp1, PetscErrorCode (*rhshe
 
 .seealso: [](ch_ts), `TS`, `TSSetRHSHessianProduct()`
 @*/
-PetscErrorCode TSComputeRHSHessianProductFunctionUU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
+PetscErrorCode TSComputeRHSHessianProductFunctionUU(TS ts, PetscReal t, Vec U, Vec Vl[], Vec Vr, Vec VHV[])
 {
   PetscFunctionBegin;
   if (!VHV) PetscFunctionReturn(PETSC_SUCCESS);
@@ -709,7 +709,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionUU(TS ts, PetscReal t, Vec U, V
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSComputeRHSHessianProductFunctionUP - Runs the user-defined vector-Hessian-vector product function for Gup.
 
   Collective
@@ -732,7 +732,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionUU(TS ts, PetscReal t, Vec U, V
 
 .seealso: [](ch_ts), `TS`, `TSSetRHSHessianProduct()`
 @*/
-PetscErrorCode TSComputeRHSHessianProductFunctionUP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
+PetscErrorCode TSComputeRHSHessianProductFunctionUP(TS ts, PetscReal t, Vec U, Vec Vl[], Vec Vr, Vec VHV[])
 {
   PetscFunctionBegin;
   if (!VHV) PetscFunctionReturn(PETSC_SUCCESS);
@@ -743,7 +743,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionUP(TS ts, PetscReal t, Vec U, V
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSComputeRHSHessianProductFunctionPU - Runs the user-defined vector-Hessian-vector product function for Gpu.
 
   Collective
@@ -766,7 +766,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionUP(TS ts, PetscReal t, Vec U, V
 
 .seealso: [](ch_ts), `TSSetRHSHessianProduct()`
 @*/
-PetscErrorCode TSComputeRHSHessianProductFunctionPU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
+PetscErrorCode TSComputeRHSHessianProductFunctionPU(TS ts, PetscReal t, Vec U, Vec Vl[], Vec Vr, Vec VHV[])
 {
   PetscFunctionBegin;
   if (!VHV) PetscFunctionReturn(PETSC_SUCCESS);
@@ -777,7 +777,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionPU(TS ts, PetscReal t, Vec U, V
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSComputeRHSHessianProductFunctionPP - Runs the user-defined vector-Hessian-vector product function for Gpp.
 
   Collective
@@ -800,7 +800,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionPU(TS ts, PetscReal t, Vec U, V
 
 .seealso: [](ch_ts), `TSSetRHSHessianProduct()`
 @*/
-PetscErrorCode TSComputeRHSHessianProductFunctionPP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
+PetscErrorCode TSComputeRHSHessianProductFunctionPP(TS ts, PetscReal t, Vec U, Vec Vl[], Vec Vr, Vec VHV[])
 {
   PetscFunctionBegin;
   if (!VHV) PetscFunctionReturn(PETSC_SUCCESS);

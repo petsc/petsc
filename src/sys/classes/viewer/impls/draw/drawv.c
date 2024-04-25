@@ -344,7 +344,7 @@ PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v, const char *title[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerDrawOpen - Opens a `PetscDraw` window for use as a `PetscViewer` with type
   `PETSCVIEWERDRAW`.
 
@@ -850,7 +850,7 @@ PetscErrorCode PetscViewerDrawSetBounds(PetscViewer viewer, PetscInt nbounds, co
 
 .seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawGetLG()`, `PetscViewerDrawGetAxis()`, `PetscViewerDrawOpen()`, `PetscViewerDrawSetBounds()`
 @*/
-PetscErrorCode PetscViewerDrawGetBounds(PetscViewer viewer, PetscInt *nbounds, const PetscReal **bounds)
+PetscErrorCode PetscViewerDrawGetBounds(PetscViewer viewer, PetscInt *nbounds, const PetscReal *bounds[])
 {
   PetscViewer_Draw *vdraw;
   PetscBool         isdraw;

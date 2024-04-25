@@ -662,7 +662,7 @@ static PetscErrorCode DMPlexFillMatrix_Static(DM dm, PetscLayout rLayout, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexPreallocateOperator - Calculate the matrix nonzero pattern based upon the information in the `DM`,
   the `PetscDS` it contains, and the default `PetscSection`.
 

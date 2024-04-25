@@ -50,7 +50,7 @@ PETSC_EXTERN PetscErrorCode PetscBagRegisterBoolArray(PetscBag, void *, PetscInt
 PETSC_EXTERN PetscErrorCode PetscBagGetNames(PetscBag, const char *[]);
 
 PETSC_EXTERN PetscErrorCode PetscBagSetFromOptions(PetscBag);
-PETSC_EXTERN PetscErrorCode PetscBagGetName(PetscBag, char **);
+PETSC_EXTERN PetscErrorCode PetscBagGetName(PetscBag, const char **);
 PETSC_EXTERN PetscErrorCode PetscBagSetName(PetscBag, const char *, const char *);
 PETSC_EXTERN PetscErrorCode PetscBagSetOptionsPrefix(PetscBag, const char *);
 

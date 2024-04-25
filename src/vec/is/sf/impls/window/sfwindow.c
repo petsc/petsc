@@ -118,7 +118,7 @@ static PetscErrorCode PetscSFWindowGetDataTypes(PetscSF sf, MPI_Datatype unit, c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFWindowSetFlavorType - Set flavor type for `MPI_Win` creation
 
   Logically Collective
@@ -176,7 +176,7 @@ static PetscErrorCode PetscSFWindowSetFlavorType_Window(PetscSF sf, PetscSFWindo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFWindowGetFlavorType - Get  `PETSCSFWINDOW` flavor type for `PetscSF` communication
 
   Logically Collective
@@ -209,7 +209,7 @@ static PetscErrorCode PetscSFWindowGetFlavorType_Window(PetscSF sf, PetscSFWindo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFWindowSetSyncType - Set synchronization type for `PetscSF` communication of type  `PETSCSFWINDOW`
 
   Logically Collective
@@ -243,7 +243,7 @@ static PetscErrorCode PetscSFWindowSetSyncType_Window(PetscSF sf, PetscSFWindowS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFWindowGetSyncType - Get synchronization type for `PetscSF` communication of type `PETSCSFWINDOW`
 
   Logically Collective

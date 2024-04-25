@@ -270,6 +270,9 @@ PetscErrorCode PetscByteSwap(void *data, PetscDataType pdtype, PetscInt count)
   file as 64-bit integers, this means they can only be read back in when the option `--with-64-bit-indices`
   is used.
 
+  Fortran Note:
+  There are different functions for each datatype, for example `PetscBinaryReadInt()`
+
 .seealso: `PetscBinaryWrite()`, `PetscBinaryOpen()`, `PetscBinaryClose()`, `PetscViewerBinaryGetDescriptor()`, `PetscBinarySynchronizedWrite()`,
           `PetscBinarySynchronizedRead()`, `PetscBinarySynchronizedSeek()`
 @*/
@@ -386,6 +389,9 @@ PetscErrorCode PetscBinaryRead(int fd, void *data, PetscInt num, PetscInt *count
 
   Because byte-swapping may be done on the values in data it cannot be declared const
 
+  Fortran Note:
+  There are different functions for each datatype, for example `PetscBinaryWriteInt()`
+
 .seealso: `PetscBinaryRead()`, `PetscBinaryOpen()`, `PetscBinaryClose()`, `PetscViewerBinaryGetDescriptor()`, `PetscBinarySynchronizedWrite()`,
           `PetscBinarySynchronizedRead()`, `PetscBinarySynchronizedSeek()`
 @*/
@@ -478,7 +484,7 @@ PetscErrorCode PetscBinaryWrite(int fd, const void *p, PetscInt n, PetscDataType
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBinaryOpen - Opens a PETSc binary file.
 
   Not Collective
@@ -538,7 +544,7 @@ PetscErrorCode PetscBinaryClose(int fd)
 /*@C
   PetscBinarySeek - Moves the file pointer on a PETSc binary file.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + fd     - the file
@@ -576,7 +582,7 @@ PetscErrorCode PetscBinarySeek(int fd, off_t off, PetscBinarySeekType whence, of
 /*@C
   PetscBinarySynchronizedRead - Reads from a binary file, all MPI processes get the same values
 
-  Collective
+  Collective, No Fortran Support
 
   Input Parameters:
 + comm - the MPI communicator
@@ -651,7 +657,7 @@ PetscErrorCode PetscBinarySynchronizedRead(MPI_Comm comm, int fd, void *data, Pe
 /*@C
   PetscBinarySynchronizedWrite - writes to a binary file.
 
-  Collective
+  Collective, No Fortran Support
 
   Input Parameters:
 + comm - the MPI communicator
@@ -691,6 +697,8 @@ PetscErrorCode PetscBinarySynchronizedWrite(MPI_Comm comm, int fd, const void *p
 
 /*@C
   PetscBinarySynchronizedSeek - Moves the file pointer on a PETSc binary file.
+
+  No Fortran Support
 
   Input Parameters:
 + comm   - the communicator to read with

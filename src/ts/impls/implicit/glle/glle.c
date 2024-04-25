@@ -605,7 +605,7 @@ static PetscErrorCode TSGLLECreate_IRKS(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGLLESetType - sets the class of general linear method, `TSGLLE` to use for time-stepping
 
   Collective
@@ -671,7 +671,7 @@ PetscErrorCode TSGLLESetAcceptType(TS ts, TSGLLEAcceptType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGLLEGetAdapt - gets the `TSGLLEAdapt` object from the `TS`
 
   Not Collective
@@ -1195,7 +1195,7 @@ static PetscErrorCode TSView_GLLE(TS ts, PetscViewer viewer)
 /*@C
   TSGLLERegister -  adds a `TSGLLE` implementation
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of user-defined general linear scheme

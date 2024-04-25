@@ -5063,7 +5063,7 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm, Mat seqmat, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateMPIAIJSumSeqAIJ - Creates a `MATMPIAIJ` matrix by adding sequential
   matrices from each processor
 

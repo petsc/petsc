@@ -385,6 +385,8 @@ PetscErrorCode PetscFunctionListPrintAll(void)
 /*@C
   PetscFunctionListPrintNonEmpty - Print composed names for non `NULL` function pointers
 
+  Logically Collective, No Fortran Support
+
   Input Parameter:
 . fl - the function list
 
@@ -409,6 +411,8 @@ PetscErrorCode PetscFunctionListPrintNonEmpty(PetscFunctionList fl)
 
 /*MC
   PetscFunctionListFind - Find function registered under given name
+
+  Not Collective, No Fortran Support
 
   Synopsis:
   #include <petscsys.h>
@@ -483,7 +487,7 @@ PetscErrorCode PetscFunctionListView(PetscFunctionList list, PetscViewer viewer)
   PetscFunctionListGet - Gets an array the contains the entries in `PetscFunctionList`, this is used
   by help etc.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . list - list of types
@@ -521,7 +525,7 @@ PetscErrorCode PetscFunctionListGet(PetscFunctionList list, const char ***array,
 /*@C
   PetscFunctionListPrintTypes - Prints the methods available in a list of functions
 
-  Collective
+  Collective, No Fortran Support
 
   Input Parameters:
 + comm   - the communicator (usually `MPI_COMM_WORLD`)

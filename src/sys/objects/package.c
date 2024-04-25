@@ -1,6 +1,6 @@
 #include <petsc/private/petscimpl.h> /*I    "petscsys.h"   I*/
 
-/*@C
+/*@
   PetscHasExternalPackage - Determine whether PETSc has been configured with the given package
 
   Not Collective

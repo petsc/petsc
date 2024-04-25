@@ -5,12 +5,10 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define matpartitioningsetvertexweights_ MATPARTITIONINGSETVERTEXWEIGHTS
   #define matpartitioningview_             MATPARTITIONINGVIEW
-  #define matpartitioningsettype_          MATPARTITIONINGSETTYPE
   #define matpartitioningviewfromoptions_  MATPARTITIONINGVIEWFROMOPTIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define matpartitioningsetvertexweights_ matpartitioningsetvertexweights
   #define matpartitioningview_             matpartitioningview
-  #define matpartitioningsettype_          matpartitioningsettype
   #define matpartitioningviewfromoptions_  matpartitioningviewfromoptions
 #endif
 
@@ -33,14 +31,6 @@ PETSC_EXTERN void matpartitioningview_(MatPartitioning *part, PetscViewer *viewe
   *ierr = MatPartitioningView(*part, v);
 }
 
-PETSC_EXTERN void matpartitioningsettype_(MatPartitioning *part, char *type, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-  FIXCHAR(type, len, t);
-  *ierr = MatPartitioningSetType(*part, t);
-  if (*ierr) return;
-  FREECHAR(type, t);
-}
 PETSC_EXTERN void matpartitioningviewfromoptions_(MatPartitioning *ao, PetscObject obj, char *type, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;

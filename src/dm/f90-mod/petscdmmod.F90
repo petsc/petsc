@@ -56,7 +56,6 @@
         module petscdmlabel
         use petscdmlabeldef
         use petscdmdef
-#include <../src/dm/f90-mod/petscdmlabel.h90>
         interface
 #include <../src/dm/f90-mod/ftn-auto-interfaces/petscdmlabel.h90>
         end interface

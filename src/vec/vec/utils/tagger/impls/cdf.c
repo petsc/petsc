@@ -415,7 +415,7 @@ static PetscErrorCode VecTaggerSetFromOptions_CDF(VecTagger tagger, PetscOptionI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecTaggerCDFSetMethod - Set the method used to compute absolute boxes from CDF boxes
 
   Logically Collective
@@ -439,7 +439,7 @@ PetscErrorCode VecTaggerCDFSetMethod(VecTagger tagger, VecTaggerCDFMethod method
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecTaggerCDFGetMethod - Get the method used to compute absolute boxes from CDF boxes
 
   Logically Collective
@@ -496,7 +496,7 @@ PetscErrorCode VecTaggerCDFIterativeSetTolerances(VecTagger tagger, PetscInt max
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecTaggerCDFIterativeGetTolerances - Get the tolerances for iterative computation of absolute boxes from CDF boxes.
 
   Logically Collective
@@ -539,7 +539,7 @@ PetscErrorCode VecTaggerCDFIterativeGetTolerances(VecTagger tagger, PetscInt *ma
 
 .seealso: `VecTagger`, `VecTaggerCDFGetBox()`, `VecTaggerBox`
 @*/
-PetscErrorCode VecTaggerCDFSetBox(VecTagger tagger, VecTaggerBox *box)
+PetscErrorCode VecTaggerCDFSetBox(VecTagger tagger, VecTaggerBox box[])
 {
   PetscFunctionBegin;
   PetscCall(VecTaggerSetBox_Simple(tagger, box));
@@ -562,7 +562,7 @@ PetscErrorCode VecTaggerCDFSetBox(VecTagger tagger, VecTaggerBox *box)
 
 .seealso: `VecTagger`, `VecTaggerCDFSetBox()`, `VecTaggerBox`
 @*/
-PetscErrorCode VecTaggerCDFGetBox(VecTagger tagger, const VecTaggerBox **box)
+PetscErrorCode VecTaggerCDFGetBox(VecTagger tagger, const VecTaggerBox *box[])
 {
   PetscFunctionBegin;
   PetscCall(VecTaggerGetBox_Simple(tagger, box));

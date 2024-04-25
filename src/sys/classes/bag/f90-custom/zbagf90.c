@@ -18,8 +18,6 @@
   #define petscbagregisterrealarray_ PETSCBAGREGISTERREALARRAY
   #define petscbagregisterbool_      PETSCBAGREGISTERBOOL
   #define petscbagregisterboolarray_ PETSCBAGREGISTERBOOLARRAY
-  #define petscbagsetname_           PETSCBAGSETNAME
-  #define petscbagsetoptionsprefix_  PETSCBAGSETOPTIONSPREFIX
   #define petscbagcreate_            PETSCBAGCREATE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define petscbagdestroy_           petscbagdestroy
@@ -35,8 +33,6 @@
   #define petscbagregisterrealarray_ petscbagregisterrealarray
   #define petscbagregisterbool_      petscbagregisterbool
   #define petscbagregisterboolarray_ petscbagregisterboolarray
-  #define petscbagsetname_           petscbagsetname
-  #define petscbagsetoptionsprefix_  petscbagsetoptionsprefix
   #define petscbagcreate_            petscbagcreate
 #endif
 
@@ -174,24 +170,4 @@ PETSC_EXTERN void petscbagregisterstring_(PetscBag *bag, char *p, char *cs1, cha
 PETSC_EXTERN void petscbaggetdata_(PetscBag *bag, void **data, PetscErrorCode *ierr)
 {
   *ierr = PetscBagGetData(*bag, data);
-}
-
-PETSC_EXTERN void petscbagsetname_(PetscBag *bag, char *ns, char *hs, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T nl, PETSC_FORTRAN_CHARLEN_T hl)
-{
-  char *nt, *ht;
-  FIXCHAR(ns, nl, nt);
-  FIXCHAR(hs, hl, ht);
-  *ierr = PetscBagSetName(*bag, nt, ht);
-  if (*ierr) return;
-  FREECHAR(ns, nt);
-  FREECHAR(hs, ht);
-}
-
-PETSC_EXTERN void petscbagsetoptionsprefix_(PetscBag *bag, char *pre, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-  FIXCHAR(pre, len, t);
-  *ierr = PetscBagSetOptionsPrefix(*bag, t);
-  if (*ierr) return;
-  FREECHAR(pre, t);
 }

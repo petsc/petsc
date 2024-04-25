@@ -124,7 +124,7 @@ PetscErrorCode MatCreate(MPI_Comm comm, Mat *A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateFromOptions - Creates a matrix whose type is set from the options database
 
   Collective

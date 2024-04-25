@@ -677,7 +677,6 @@ PetscErrorCode PCPatchSetComputeOperator(PC pc, PetscErrorCode (*func)(PC pc, Pe
 }
 
 /*@C
-
   PCPatchSetComputeOperatorInteriorFacets - Set the callback function used to compute facet integrals for patch matrices
 
   Logically Collective

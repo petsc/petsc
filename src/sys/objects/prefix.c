@@ -134,7 +134,7 @@ PetscErrorCode PetscObjectAppendOptionsPrefix(PetscObject obj, const char prefix
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectGetOptionsPrefix - Gets the prefix of the `PetscObject` used for searching in the options database
 
   Input Parameter:

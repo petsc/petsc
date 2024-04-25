@@ -746,7 +746,7 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDACreate2d -  Creates an object that will manage the communication of two-dimensional
   regular array data that is distributed across one or more MPI processes.
 

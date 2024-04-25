@@ -203,7 +203,7 @@ PetscErrorCode PetscHeaderReset_Internal(PetscObject obj)
 /*@C
   PetscObjectCopyFortranFunctionPointers - Copy function pointers to another object
 
-  Logically Collective
+  Logically Collective, No Fortran Support
 
   Input Parameters:
 + src  - source object
@@ -246,7 +246,7 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src, PetscObje
 /*@C
   PetscObjectSetFortranCallback - set Fortran callback function pointer and context
 
-  Logically Collective
+  Logically Collective, No Fortran Support
 
   Input Parameters:
 + obj    - object on which to set callback
@@ -289,7 +289,7 @@ PetscErrorCode PetscObjectSetFortranCallback(PetscObject obj, PetscFortranCallba
 /*@C
   PetscObjectGetFortranCallback - get Fortran callback function pointer and context
 
-  Logically Collective
+  Logically Collective, No Fortran Support
 
   Input Parameters:
 + obj    - object on which to get callback
@@ -425,7 +425,7 @@ PetscErrorCode PetscObjectsView(PetscViewer viewer)
 
 .seealso: `PetscObject`
 @*/
-PetscErrorCode PetscObjectsGetObject(const char *name, PetscObject *obj, char **classname)
+PetscErrorCode PetscObjectsGetObject(const char name[], PetscObject *obj, char **classname)
 {
   PetscInt    i;
   PetscObject h;
@@ -836,7 +836,7 @@ struct _p_PetscContainer {
   PetscContainerUserDestroyDefault - Default destroy routine for user-provided data that simply calls `PetscFree()` in the data
   provided with `PetscContainerSetPointer()`
 
-  Logically Collective on the `PetscContainer` containing the user data
+  Logically Collective on the `PetscContainer` containing the user data, No Fortran Support
 
   Input Parameter:
 . ctx - pointer to user-provided data
@@ -855,7 +855,7 @@ PetscErrorCode PetscContainerUserDestroyDefault(void *ctx)
 /*@C
   PetscContainerGetPointer - Gets the pointer value contained in the container that was provided with `PetscContainerSetPointer()`
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . obj - the object created with `PetscContainerCreate()`
@@ -880,7 +880,7 @@ PetscErrorCode PetscContainerGetPointer(PetscContainer obj, void **ptr)
 /*@C
   PetscContainerSetPointer - Sets the pointer value contained in the container.
 
-  Logically Collective
+  Logically Collective, No Fortran Support
 
   Input Parameters:
 + obj - the object created with `PetscContainerCreate()`
@@ -903,7 +903,7 @@ PetscErrorCode PetscContainerSetPointer(PetscContainer obj, void *ptr)
 /*@C
   PetscContainerDestroy - Destroys a PETSc container object.
 
-  Collective
+  Collective, No Fortran Support
 
   Input Parameter:
 . obj - an object that was created with `PetscContainerCreate()`
@@ -933,7 +933,7 @@ PetscErrorCode PetscContainerDestroy(PetscContainer *obj)
 /*@C
   PetscContainerSetUserDestroy - Sets name of the user destroy function for the data provided to the `PetscContainer` with `PetscContainerSetPointer()`
 
-  Logically Collective
+  Logically Collective, No Fortran Support
 
   Input Parameters:
 + obj - an object that was created with `PetscContainerCreate()`
@@ -959,7 +959,7 @@ PetscClassId PETSC_CONTAINER_CLASSID;
 /*@C
   PetscContainerCreate - Creates a PETSc object that has room to hold a single pointer.
 
-  Collective
+  Collective, No Fortran Support
 
   Input Parameter:
 . comm - MPI communicator that shares the object

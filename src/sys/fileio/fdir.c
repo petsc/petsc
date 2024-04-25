@@ -28,7 +28,7 @@ static PetscErrorCode PetscPathJoin(const char dname[], const char fname[], size
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscMkdir - Create a directory
 
   Not Collective
@@ -57,7 +57,7 @@ PetscErrorCode PetscMkdir(const char dir[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscMkdtemp - Create a directory with a unique name given a name template.
 
   Input Parameter:
@@ -138,7 +138,7 @@ PetscErrorCode PetscRMTree(const char dir[])
   #include <unistd.h>
   #include <errno.h>
 
-/*@C
+/*@
   PetscRMTree - delete a directory and all of its children
 
   Input Parameter:

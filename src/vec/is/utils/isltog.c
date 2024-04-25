@@ -45,7 +45,7 @@ typedef struct {
 
 .seealso: [](sec_scatter), `IS`, `ISRestorePointRange()`, `ISGetPointSubrange()`, `ISGetIndices()`, `ISCreateStride()`
 @*/
-PetscErrorCode ISGetPointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd, const PetscInt **points)
+PetscErrorCode ISGetPointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd, const PetscInt *points[])
 {
   PetscInt  numCells, step = 1;
   PetscBool isStride;
@@ -76,7 +76,7 @@ PetscErrorCode ISGetPointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd, con
 
 .seealso: [](sec_scatter), `IS`, `ISGetPointRange()`, `ISGetPointSubrange()`, `ISGetIndices()`, `ISCreateStride()`
 @*/
-PetscErrorCode ISRestorePointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd, const PetscInt **points)
+PetscErrorCode ISRestorePointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd, const PetscInt *points[])
 {
   PetscInt  step = 1;
   PetscBool isStride;
@@ -88,7 +88,7 @@ PetscErrorCode ISRestorePointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISGetPointSubrange - Configures the input `IS` to be a subrange for the traversal information given
 
   Not Collective
@@ -109,7 +109,7 @@ PetscErrorCode ISRestorePointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd,
 
 .seealso: [](sec_scatter), `IS`, `ISGetPointRange()`, `ISRestorePointRange()`, `ISGetIndices()`, `ISCreateStride()`
 @*/
-PetscErrorCode ISGetPointSubrange(IS subpointIS, PetscInt pStart, PetscInt pEnd, const PetscInt *points)
+PetscErrorCode ISGetPointSubrange(IS subpointIS, PetscInt pStart, PetscInt pEnd, const PetscInt points[])
 {
   PetscFunctionBeginHot;
   if (points) {
@@ -533,7 +533,7 @@ PetscErrorCode ISLocalToGlobalMappingCreateIS(IS is, ISLocalToGlobalMapping *map
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISLocalToGlobalMappingCreateSF - Creates a mapping between a local (0 to n) ordering and a global parallel ordering induced by a star forest.
 
   Collective
@@ -1649,7 +1649,7 @@ M*/
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingRestoreIndices()`,
           `ISLocalToGlobalMappingGetBlockIndices()`, `ISLocalToGlobalMappingRestoreBlockIndices()`
 @*/
-PetscErrorCode ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog, const PetscInt **array)
+PetscErrorCode ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog, const PetscInt *array[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog, IS_LTOGM_CLASSID, 1);
@@ -1683,7 +1683,7 @@ PetscErrorCode ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog, con
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingGetIndices()`
 @*/
-PetscErrorCode ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog, const PetscInt **array)
+PetscErrorCode ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog, const PetscInt *array[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog, IS_LTOGM_CLASSID, 1);
@@ -1708,7 +1708,7 @@ PetscErrorCode ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog,
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingRestoreBlockIndices()`
 @*/
-PetscErrorCode ISLocalToGlobalMappingGetBlockIndices(ISLocalToGlobalMapping ltog, const PetscInt **array)
+PetscErrorCode ISLocalToGlobalMappingGetBlockIndices(ISLocalToGlobalMapping ltog, const PetscInt *array[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog, IS_LTOGM_CLASSID, 1);
@@ -1730,7 +1730,7 @@ PetscErrorCode ISLocalToGlobalMappingGetBlockIndices(ISLocalToGlobalMapping ltog
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingGetIndices()`
 @*/
-PetscErrorCode ISLocalToGlobalMappingRestoreBlockIndices(ISLocalToGlobalMapping ltog, const PetscInt **array)
+PetscErrorCode ISLocalToGlobalMappingRestoreBlockIndices(ISLocalToGlobalMapping ltog, const PetscInt *array[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog, IS_LTOGM_CLASSID, 1);
@@ -1740,7 +1740,7 @@ PetscErrorCode ISLocalToGlobalMappingRestoreBlockIndices(ISLocalToGlobalMapping 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISLocalToGlobalMappingConcatenate - Create a new mapping that concatenates a list of mappings
 
   Not Collective
@@ -1840,7 +1840,7 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreate_Hash(ISLocalToGlobalMap
 /*@C
   ISLocalToGlobalMappingRegister -  Registers a method for applying a global to local mapping with an `ISLocalToGlobalMapping`
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of a new method
@@ -1872,7 +1872,7 @@ PetscErrorCode ISLocalToGlobalMappingRegister(const char sname[], PetscErrorCode
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISLocalToGlobalMappingSetType - Sets the implementation type `ISLocalToGlobalMapping` will use
 
   Logically Collective
@@ -1925,7 +1925,7 @@ PetscErrorCode ISLocalToGlobalMappingSetType(ISLocalToGlobalMapping ltog, ISLoca
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISLocalToGlobalMappingGetType - Get the type of the `ISLocalToGlobalMapping`
 
   Not Collective

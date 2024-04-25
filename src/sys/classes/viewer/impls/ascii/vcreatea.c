@@ -146,7 +146,7 @@ PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm comm, PetscMPIInt keyval, void *attr
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerASCIIOpen - Opens an ASCII file for writing as a `PETSCVIEWERASCII` `PetscViewer`.
 
   Collective

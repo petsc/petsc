@@ -1550,7 +1550,7 @@ static PetscErrorCode PCMGGetAdaptCR_MG(PC pc, PetscBool *cr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCMGSetAdaptCoarseSpaceType - Set the type of adaptive coarse space.
 
   Adapts or creates the interpolator based upon a vector space which should be accurately captured by the next coarser mesh, and thus accurately interpolated.
@@ -1578,7 +1578,7 @@ PetscErrorCode PCMGSetAdaptCoarseSpaceType(PC pc, PCMGCoarseSpaceType ctype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCMGGetAdaptCoarseSpaceType - Get the type of adaptive coarse space.
 
   Not Collective
@@ -1829,7 +1829,7 @@ static PetscErrorCode PCGetCoarseOperators_MG(PC pc, PetscInt *num_levels, Mat *
 /*@C
   PCMGRegisterCoarseSpaceConstructor -  Adds a method to the `PCMG` package for coarse space construction.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + name     - name of the constructor
@@ -1862,7 +1862,7 @@ PetscErrorCode PCMGRegisterCoarseSpaceConstructor(const char name[], PetscErrorC
 /*@C
   PCMGGetCoarseSpaceConstructor -  Returns the given coarse space construction method.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . name - name of the constructor

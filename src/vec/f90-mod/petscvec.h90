@@ -142,19 +142,6 @@
        end subroutine
       end Interface
 
-      Interface
-      subroutine VecCreateFromOptions(a,b,c,d,e,f,z)
-      import tVec
-       MPI_Comm a
-       character(*) b
-       PetscInt c
-       PetscInt d
-       PetscInt e
-       Vec f
-       PetscErrorCode z
-       end subroutine
-      End Interface
-
       Interface VecCreateSeqWithArray
         subroutine VecCreateSeqWithArray0(a,b,c,d,e,z)
           import tVec
@@ -383,13 +370,6 @@
           Vec a
           PetscErrorCode ierr
         End Subroutine
-
-        subroutine VecSetType(a,b,ierr)
-         import tVec
-         Vec a
-         character(*) b
-         PetscErrorCode ierr
-       end subroutine
 
        subroutine VecView(a,b,ierr)
          import tVec,tPetscViewer

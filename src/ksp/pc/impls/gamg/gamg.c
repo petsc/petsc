@@ -1558,7 +1558,7 @@ static PetscErrorCode PCGAMGSetThresholdScale_GAMG(PC pc, PetscReal v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCGAMGSetType - Set the type of algorithm `PCGAMG` should use
 
   Collective
@@ -1582,7 +1582,7 @@ PetscErrorCode PCGAMGSetType(PC pc, PCGAMGType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCGAMGGetType - Get the type of algorithm `PCGAMG` will use
 
   Collective
@@ -1984,7 +1984,7 @@ PetscErrorCode PCGAMGRegister(PCGAMGType type, PetscErrorCode (*create)(PC))
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCGAMGCreateGraph - Creates a graph that is used by the ``PCGAMGType`` in the coarsening process
 
   Input Parameters:

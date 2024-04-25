@@ -634,7 +634,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_AMGX(PC pc)
 /*@C
   PCAmgXGetResources - get AMGx's internal resource object
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . pc - the PC

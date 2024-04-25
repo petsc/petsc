@@ -11,7 +11,7 @@ PetscBool PCRegisterAllCalled = PETSC_FALSE;
 */
 PetscFunctionList PCList = NULL;
 
-/*@C
+/*@
   PCSetType - Builds `PC` for a particular preconditioner type
 
   Collective
@@ -76,7 +76,7 @@ PetscErrorCode PCSetType(PC pc, PCType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCGetType - Gets the `PCType` (as a string) from the `PC`
   context.
 

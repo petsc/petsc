@@ -1,9 +1,9 @@
 /*
    Functions specific to the 1-dimensional implementation of DMStag
 */
-#include <petsc/private/dmstagimpl.h>
+#include <petsc/private/dmstagimpl.h> /*I  "petscdmstag.h"   I*/
 
-/*@C
+/*@
   DMStagCreate1d - Create an object to manage data living on the elements and vertices of a parallelized regular 1D grid.
 
   Collective
@@ -36,7 +36,7 @@
 
 .seealso: [](ch_stag), `DMSTAG`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMLocalToGlobalBegin()`, `DMDACreate1d()`
 @*/
-PETSC_EXTERN PetscErrorCode DMStagCreate1d(MPI_Comm comm, DMBoundaryType bndx, PetscInt M, PetscInt dof0, PetscInt dof1, DMStagStencilType stencilType, PetscInt stencilWidth, const PetscInt lx[], DM *dm)
+PetscErrorCode DMStagCreate1d(MPI_Comm comm, DMBoundaryType bndx, PetscInt M, PetscInt dof0, PetscInt dof1, DMStagStencilType stencilType, PetscInt stencilWidth, const PetscInt lx[], DM *dm)
 {
   PetscMPIInt size;
 

@@ -626,7 +626,7 @@ PetscErrorCode PetscMallocPopMaximumUsage(int event, PetscLogDouble *mu)
 /*@C
   PetscMallocGetStack - returns a pointer to the stack for the location in the program a call to `PetscMalloc()` was used to obtain that memory
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . ptr - the memory location

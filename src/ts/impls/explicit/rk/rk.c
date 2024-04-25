@@ -409,7 +409,7 @@ PetscErrorCode TSRKFinalizePackage(void)
 /*@C
   TSRKRegister - register an `TSRK` scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
 
-  Not Collective, but the same schemes should be registered on all processes on which they will be used
+  Not Collective, but the same schemes should be registered on all processes on which they will be used, No Fortran Support
 
   Input Parameters:
 + name    - identifier for method
@@ -1253,7 +1253,7 @@ PetscErrorCode TSRKGetOrder(TS ts, PetscInt *order)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRKSetType - Set the type of the `TSRK` scheme
 
   Logically Collective
@@ -1278,7 +1278,7 @@ PetscErrorCode TSRKSetType(TS ts, TSRKType rktype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRKGetType - Get the type of `TSRK` scheme
 
   Not Collective
@@ -1408,7 +1408,7 @@ static PetscErrorCode SNESTSFormJacobian_RK(SNES snes, Vec x, Mat A, Mat B, TS t
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRKSetMultirate - Use the interpolation-based multirate `TSRK` method
 
   Logically Collective
@@ -1434,7 +1434,7 @@ PetscErrorCode TSRKSetMultirate(TS ts, PetscBool use_multirate)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRKGetMultirate - Gets whether to use the interpolation-based multirate `TSRK` method
 
   Not Collective

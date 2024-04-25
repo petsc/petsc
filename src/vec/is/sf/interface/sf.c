@@ -146,7 +146,7 @@ PetscErrorCode PetscSFReset(PetscSF sf)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFSetType - Set the `PetscSF` communication implementation
 
   Collective
@@ -191,7 +191,7 @@ PetscErrorCode PetscSFSetType(PetscSF sf, PetscSFType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFGetType - Get the `PetscSF` communication implementation
 
   Not Collective

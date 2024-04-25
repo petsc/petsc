@@ -157,7 +157,7 @@ PetscErrorCode SNESMSFinalizePackage(void)
 /*@C
   SNESMSRegister - register a multistage scheme for `SNESMS`
 
-  Logically Collective
+  Logically Collective, No Fortran Support
 
   Input Parameters:
 + name       - identifier for method
@@ -470,7 +470,7 @@ static PetscErrorCode SNESMSSetType_MS(SNES snes, SNESMSType mstype)
   SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_UNKNOWN_TYPE, "Could not find '%s'", mstype);
 }
 
-/*@C
+/*@
   SNESMSGetType - Get the type of multistage smoother `SNESMS`
 
   Not Collective
@@ -494,7 +494,7 @@ PetscErrorCode SNESMSGetType(SNES snes, SNESMSType *mstype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESMSSetType - Set the type of multistage smoother `SNESMS`
 
   Logically Collective

@@ -33,7 +33,7 @@ PetscErrorCode VecTaggerRegisterAll(void)
 /*@C
   VecTaggerRegister  - Adds an implementation of the `VecTagger` communication protocol.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of a new user-defined implementation

@@ -1,6 +1,6 @@
 #include <petsc/private/partitionerimpl.h> /*I "petscpartitioner.h" I*/
 
-/*@C
+/*@
   PetscPartitionerSetType - Builds a particular `PetscPartitioner`
 
   Collective
@@ -47,7 +47,7 @@ PetscErrorCode PetscPartitionerSetType(PetscPartitioner part, PetscPartitionerTy
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscPartitionerGetType - Gets the PetscPartitioner type name (as a string) from the object.
 
   Not Collective

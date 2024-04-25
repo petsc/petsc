@@ -529,7 +529,7 @@ PetscErrorCode PetscViewerCreate(MPI_Comm comm, PetscViewer *inviewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerSetType - Builds `PetscViewer` for a particular implementation.
 
   Collective
@@ -577,7 +577,7 @@ PetscErrorCode PetscViewerSetType(PetscViewer viewer, PetscViewerType type)
 /*@C
   PetscViewerRegister - Adds a viewer to those available for use with `PetscViewerSetType()`
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of a new user-defined viewer

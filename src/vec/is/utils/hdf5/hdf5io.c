@@ -208,7 +208,7 @@ static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5R
 .seealso: `PetscViewer`, `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5OpenGroup()`, `PetscViewerHDF5ReadSizes()`,
           `VecLoad()`, `ISLoad()`, `PetscLayout`
 @*/
-PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLayout map, hid_t datatype, void **newarr)
+PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char name[], PetscLayout map, hid_t datatype, void **newarr)
 {
   PetscBool   has;
   char       *group;

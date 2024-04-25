@@ -130,7 +130,7 @@ PetscErrorCode PetscSequentialPhaseEnd(MPI_Comm comm, int ng)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGlobalMinMaxInt - Get the global min/max from local min/max input
 
   Collective
@@ -160,7 +160,7 @@ PetscErrorCode PetscGlobalMinMaxInt(MPI_Comm comm, const PetscInt minMaxVal[2], 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGlobalMinMaxReal - Get the global min/max from local min/max input
 
   Collective

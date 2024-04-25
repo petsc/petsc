@@ -9,7 +9,7 @@
 #include <petsc/private/petscfeimpl.h> /* For CoordinatesRefToReal() */
 
 /* Coordinate insertition/addition API */
-/*@C
+/*@
   DMSwarmSetPointsUniformCoordinates - Set point coordinates in a `DMSWARM` on a regular (ijk) grid
 
   Collective
@@ -30,7 +30,7 @@
 
 .seealso: `DM`, `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal min[], PetscReal max[], PetscInt npoints[], InsertMode mode)
+PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal min[], PetscReal max[], PetscInt npoints[], InsertMode mode)
 {
   PetscReal          lmin[] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MAX_REAL};
   PetscReal          lmax[] = {PETSC_MIN_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
@@ -156,7 +156,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmSetPointCoordinates - Set point coordinates in a `DMSWARM` from a user defined list
 
   Collective
@@ -177,7 +177,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal 
 
 .seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`, `DMSwarmSetPointsUniformCoordinates()`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM dm, PetscInt npoints, PetscReal coor[], PetscBool redundant, InsertMode mode)
+PetscErrorCode DMSwarmSetPointCoordinates(DM dm, PetscInt npoints, PetscReal coor[], PetscBool redundant, InsertMode mode)
 {
   PetscReal          gmin[] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MAX_REAL};
   PetscReal          gmax[] = {PETSC_MIN_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
@@ -313,7 +313,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM dm, PetscInt npoints, 
 extern PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA(DM, DM, DMSwarmPICLayoutType, PetscInt);
 extern PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM, DM, DMSwarmPICLayoutType, PetscInt);
 
-/*@C
+/*@
   DMSwarmInsertPointsUsingCellDM - Insert point coordinates within each cell
 
   Not Collective
@@ -339,7 +339,7 @@ extern PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM, DM, DMSwar
 
 .seealso: `DMSWARM`, `DMSwarmPICLayoutType`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmInsertPointsUsingCellDM(DM dm, DMSwarmPICLayoutType layout_type, PetscInt fill_param)
+PetscErrorCode DMSwarmInsertPointsUsingCellDM(DM dm, DMSwarmPICLayoutType layout_type, PetscInt fill_param)
 {
   DM        celldm;
   PetscBool isDA, isPLEX;
@@ -384,7 +384,7 @@ extern PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM, DM, Pe
 
 .seealso: `DMSWARM`, `DMSwarmSetCellDM()`, `DMSwarmInsertPointsUsingCellDM()`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinatesCellwise(DM dm, PetscInt npoints, PetscReal xi[])
+PetscErrorCode DMSwarmSetPointCoordinatesCellwise(DM dm, PetscInt npoints, PetscReal xi[])
 {
   DM        celldm;
   PetscBool isDA, isPLEX;
@@ -401,7 +401,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinatesCellwise(DM dm, PetscInt n
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmCreatePointPerCellCount - Count the number of points within all cells in the cell DM
 
   Not Collective
@@ -420,7 +420,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinatesCellwise(DM dm, PetscInt n
 
 .seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmCreatePointPerCellCount(DM dm, PetscInt *ncells, PetscInt **count)
+PetscErrorCode DMSwarmCreatePointPerCellCount(DM dm, PetscInt *ncells, PetscInt **count)
 {
   PetscBool isvalid;
   PetscInt  nel;

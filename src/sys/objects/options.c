@@ -266,7 +266,7 @@ PetscErrorCode PetscOptionsDestroyDefault(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsValidKey - PETSc Options database keys must begin with one or two dashes (-) followed by a letter.
 
   Not Collective

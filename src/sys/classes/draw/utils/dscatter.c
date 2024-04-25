@@ -9,7 +9,7 @@
 
 PetscClassId PETSC_DRAWSP_CLASSID = 0;
 
-/*@C
+/*@
   PetscDrawSPCreate - Creates a scatter plot data structure.
 
   Collective
@@ -239,7 +239,7 @@ PetscErrorCode PetscDrawSPAddPoint(PetscDrawSP sp, PetscReal *x, PetscReal *y)
 
 .seealso: `PetscDrawSPAddPoint()`, `PetscDrawSP`, `PetscDrawSPCreate()`, `PetscDrawSPReset()`, `PetscDrawSPDraw()`, `PetscDrawSPAddPointColorized()`
 @*/
-PetscErrorCode PetscDrawSPAddPoints(PetscDrawSP sp, int n, PetscReal **xx, PetscReal **yy)
+PetscErrorCode PetscDrawSPAddPoints(PetscDrawSP sp, int n, PetscReal *xx[], PetscReal *yy[])
 {
   PetscInt   i, j, k;
   PetscReal *x, *y;

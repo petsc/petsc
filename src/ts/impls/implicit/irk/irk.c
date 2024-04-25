@@ -159,7 +159,7 @@ static PetscErrorCode TSIRKCreate_Gauss(TS ts)
 /*@C
   TSIRKRegister -  adds a `TSIRK` implementation
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of user-defined IRK scheme
@@ -661,7 +661,7 @@ static PetscErrorCode TSLoad_IRK(TS ts, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSIRKSetType - Set the type of `TSIRK` scheme to use
 
   Logically Collective
@@ -686,7 +686,7 @@ PetscErrorCode TSIRKSetType(TS ts, TSIRKType irktype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSIRKGetType - Get the type of `TSIRK` IMEX scheme being used
 
   Logically Collective
@@ -709,7 +709,7 @@ PetscErrorCode TSIRKGetType(TS ts, TSIRKType *irktype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSIRKSetNumStages - Set the number of stages of `TSIRK` scheme to use
 
   Logically Collective
@@ -733,7 +733,7 @@ PetscErrorCode TSIRKSetNumStages(TS ts, PetscInt nstages)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSIRKGetNumStages - Get the number of stages of `TSIRK` scheme
 
   Logically Collective

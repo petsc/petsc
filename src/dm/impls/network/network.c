@@ -1957,7 +1957,7 @@ PetscErrorCode DMNetworkDistribute(DM *dm, PetscInt overlap)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFGetSubSF - Returns an `PetscSF` for a specific subset of points. Leaves are re-numbered to reflect the new ordering
 
   Collective

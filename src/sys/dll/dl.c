@@ -49,7 +49,7 @@ PetscErrorCode PetscDLLibraryPrintPath(PetscDLLibrary libs)
 
 .seealso: `PetscFileRetrieve()`
 @*/
-PetscErrorCode PetscDLLibraryRetrieve(MPI_Comm comm, const char libname[], char *lname, size_t llen, PetscBool *found)
+PetscErrorCode PetscDLLibraryRetrieve(MPI_Comm comm, const char libname[], char lname[], size_t llen, PetscBool *found)
 {
   char  *buf, *par2, *gz = NULL, *so = NULL;
   size_t len, blen;
@@ -99,7 +99,7 @@ PetscErrorCode PetscDLLibraryRetrieve(MPI_Comm comm, const char libname[], char 
 /*@C
   PetscDLLibraryOpen - Opens a PETSc dynamic link library
 
-  Collective
+  Collective, No Fortran Support
 
   Input Parameters:
 + comm - MPI processes that are opening the library
@@ -190,7 +190,7 @@ PetscErrorCode PetscDLLibraryOpen(MPI_Comm comm, const char path[], PetscDLLibra
 /*@C
   PetscDLLibrarySym - Load a symbol from a list of dynamic link libraries.
 
-  Collective
+  Collective, No Fortran Support
 
   Input Parameters:
 + comm     - the MPI communicator that will load the symbol
@@ -292,7 +292,7 @@ PetscErrorCode PetscDLLibrarySym(MPI_Comm comm, PetscDLLibrary *outlist, const c
 /*@C
   PetscDLLibraryAppend - Appends another dynamic link library to the end  of the search list
 
-  Collective
+  Collective, No Fortran Support
 
   Input Parameters:
 + comm - MPI communicator
@@ -377,7 +377,7 @@ PetscErrorCode PetscDLLibraryAppend(MPI_Comm comm, PetscDLLibrary *outlist, cons
 /*@C
   PetscDLLibraryPrepend - Add another dynamic library to search for symbols to the beginning of the search list
 
-  Collective
+  Collective, No Fortran Support
 
   Input Parameters:
 + comm - MPI communicator
@@ -467,7 +467,7 @@ PetscErrorCode PetscDLLibraryPrepend(MPI_Comm comm, PetscDLLibrary *outlist, con
 /*@C
   PetscDLLibraryClose - Destroys the search path of dynamic libraries and closes the libraries.
 
-  Collective
+  Collective, No Fortran Support
 
   Input Parameter:
 . list - library list

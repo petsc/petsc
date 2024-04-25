@@ -48,6 +48,7 @@
       Mat             A
       KSP             ksp
       PetscRandom     rctx
+      character*80    ksptype
 
 !  These variables are not currently used.
 !      PC          pc
@@ -195,6 +196,8 @@
       PetscCallA(KSPSetOperators(ksp,A,A,ierr))
 
       PetscCallA(KSPSetType(ksp,KSPPREONLY,ierr))
+      PetscCallA(KSPGetType(ksp,ksptype,ierr))
+      PetscCheckA(ksptype == KSPPREONLY,PETSC_COMM_WORLD,PETSC_ERR_PLIB,'Error')
       PetscCallA(KSPGetPC(ksp,pc,ierr))
       PetscCallA(PCSetType(pc,PCCHOLESKY,ierr))
 #ifdef PETSC_HAVE_MUMPS
