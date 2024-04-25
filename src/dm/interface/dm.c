@@ -1198,7 +1198,7 @@ PetscErrorCode DMGetBlockSize(DM dm, PetscInt *bs)
 
   Output Parameters:
 + mat - the interpolation
-- vec - the scaling (optional), see `DMCreateInterpolationScale()`
+- vec - the scaling (optional, pass `NULL` if not needed), see `DMCreateInterpolationScale()`
 
   Level: developer
 
@@ -2097,8 +2097,8 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
 - fields    - The field numbers of the selected fields
 
   Output Parameters:
-+ is    - The global indices for all the degrees of freedom in the new sub `DM`
-- subdm - The `DM` for the subproblem
++ is    - The global indices for all the degrees of freedom in the new sub `DM`, use `NULL` if not needed
+- subdm - The `DM` for the subproblem, use `NULL` if not needed
 
   Level: intermediate
 
@@ -4404,7 +4404,7 @@ PetscErrorCode DMSetLocalSection(DM dm, PetscSection section)
 
   Output Parameters:
 + perm        - A permutation of the mesh points in the chart
-- blockStarts - A high bit is set for the point that begins every block, or NULL for default blocking
+- blockStarts - A high bit is set for the point that begins every block, or `NULL` for default blocking
 
   Level: developer
 
@@ -4753,7 +4753,8 @@ PetscErrorCode DMSetSectionSF(DM dm, PetscSF sf)
   Developer Note:
   Since this routine has for arguments the two sections from the `DM` and puts the resulting `PetscSF`
   directly into the `DM`, perhaps this function should not take the local and global sections as
-  input and should just obtain them from the `DM`?
+  input and should just obtain them from the `DM`? Plus PETSc creation functions return the thing
+  they create, this returns nothing
 
 .seealso: [](ch_dmbase), `DM`, `DMGetSectionSF()`, `DMSetSectionSF()`, `DMGetLocalSection()`, `DMGetGlobalSection()`
 @*/
@@ -6887,7 +6888,7 @@ PetscErrorCode DMGetLabelIdIS(DM dm, const char name[], IS *ids)
 
   Input Parameters:
 + dm    - The `DM` object
-. name  - The label name
+. name  - The label name of the stratum
 - value - The stratum value
 
   Output Parameter:
