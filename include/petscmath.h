@@ -708,7 +708,7 @@ M*/
 
    Level: beginner
 
-.seealso: `PetscMax()`, `PetscMin()`, `PetscAbsInt()`, `PetscSqr()`
+.seealso: `PetscReal`, `PetscMax()`, `PetscMin()`, `PetscAbsInt()`, `PetscSqr()`
 M*/
 #if defined(PETSC_USE_REAL_SINGLE)
   #define PetscAbsReal(a) fabsf(a)
@@ -741,6 +741,33 @@ M*/
 M*/
 #define PetscSqr(a) ((a) * (a))
 
+/*MC
+   PetscRealConstant - a compile time macro that ensures a given constant real number is properly represented in the configured
+   precision of `PetscReal` be it half, single, double or 128-bit representation
+
+   Synopsis:
+   #include <petscmath.h>
+   PetscReal PetscRealConstant(real_number)
+
+   Not Collective
+
+   Input Parameter:
+.   v1 - the real number, for example 1.5
+
+   Level: beginner
+
+   Note:
+   For example, if PETSc is configured with `--with-precision=__float128` and one writes
+.vb
+   PetscReal d = 1.5;
+.ve
+   the result is 1.5 in double precision extended to 128 represention, meaning it is very far from the correct value. Hence, one should write
+.vb
+   PetscReal d = PetscRealConstant(1.5);
+.ve
+
+.seealso: `PetscReal`
+M*/
 #if defined(PETSC_USE_REAL_SINGLE)
   #define PetscRealConstant(constant) constant##F
 #elif defined(PETSC_USE_REAL_DOUBLE)
@@ -754,9 +781,98 @@ M*/
 /*
      Basic constants
 */
+/*MC
+  PETSC_PI - the value of $ \pi$ to the correct precision of `PetscReal`.
+
+  Level: beginner
+
+.seealso: `PetscReal`, `PETSC_PHI`, `PETSC_SQRT2`
+M*/
+
+/*MC
+  PETSC_PHI - the value of $ \phi$, the Golden Ratio, to the correct precision of `PetscReal`.
+
+  Level: beginner
+
+.seealso: `PetscReal`, `PETSC_PI`, `PETSC_SQRT2`
+M*/
+
+/*MC
+  PETSC_SQRT2 - the value of $ \sqrt{2} $ to the correct precision of `PetscReal`.
+
+  Level: beginner
+
+.seealso: `PetscReal`, `PETSC_PI`, `PETSC_PHI`
+M*/
+
 #define PETSC_PI    PetscRealConstant(3.1415926535897932384626433832795029)
 #define PETSC_PHI   PetscRealConstant(1.6180339887498948482045868343656381)
 #define PETSC_SQRT2 PetscRealConstant(1.4142135623730950488016887242096981)
+
+/*MC
+  PETSC_MAX_REAL - the largest real value that can be stored in a `PetscReal`
+
+  Level: beginner
+
+.seealso: `PETSC_MIN_REAL`, `PETSC_REAL_MIN`, `PETSC_MACHINE_EPSILON`, `PETSC_SQRT_MACHINE_EPSILON`, `PETSC_SMALL`
+M*/
+
+/*MC
+  PETSC_MIN_REAL - the smallest real value that can be stored in a `PetscReal`, generally this is - `PETSC_MAX_REAL`
+
+  Level: beginner
+
+.seealso `PETSC_MAX_REAL`, `PETSC_REAL_MIN`, `PETSC_MACHINE_EPSILON`, `PETSC_SQRT_MACHINE_EPSILON`, `PETSC_SMALL`
+M*/
+
+/*MC
+  PETSC_REAL_MIN - the smallest positive normalized real value that can be stored in a `PetscReal`.
+
+  Level: beginner
+
+  Note:
+  See <https://en.wikipedia.org/wiki/Subnormal_number> for a discussion of normalized and subnormal floating point numbers
+
+  Developer Note:
+  The naming is confusing as there is both a `PETSC_REAL_MIN` and `PETSC_MIN_REAL` with different meanings.
+
+.seealso `PETSC_MAX_REAL`, `PETSC_MIN_REAL`, `PETSC_MACHINE_EPSILON`, `PETSC_SQRT_MACHINE_EPSILON`, `PETSC_SMALL`
+M*/
+
+/*MC
+  PETSC_MACHINE_EPSILON - the machine epsilon for the precision of `PetscReal`
+
+  Level: beginner
+
+  Note:
+  See <https://en.wikipedia.org/wiki/Machine_epsilon>
+
+.seealso `PETSC_MAX_REAL`, `PETSC_MIN_REAL`, `PETSC_REAL_MIN`, `PETSC_SQRT_MACHINE_EPSILON`, `PETSC_SMALL`
+M*/
+
+/*MC
+  PETSC_SQRT_MACHINE_EPSILON - the square root of the machine epsilon for the precision of `PetscReal`
+
+  Level: beginner
+
+  Note:
+  See `PETSC_MACHINE_EPSILON`
+
+.seealso `PETSC_MAX_REAL`, `PETSC_MIN_REAL`, `PETSC_REAL_MIN`, `PETSC_MACHINE_EPSILON`, `PETSC_SMALL`
+M*/
+
+/*MC
+  PETSC_SMALL - an arbitrary "small" number which depends on the precision of `PetscReal` used in some PETSc examples
+  and in `PetscApproximateLTE()` and `PetscApproximateGTE()` to determine if a computation was successful.
+
+  Level: beginner
+
+  Note:
+  See `PETSC_MACHINE_EPSILON`
+
+.seealso `PetscApproximateLTE()`, `PetscApproximateGTE()`, `PETSC_MAX_REAL`, `PETSC_MIN_REAL`, `PETSC_REAL_MIN`, `PETSC_MACHINE_EPSILON`,
+         `PETSC_SQRT_MACHINE_EPSILON`
+M*/
 
 #if defined(PETSC_USE_REAL_SINGLE)
   #define PETSC_MAX_REAL             3.40282346638528860e+38F
