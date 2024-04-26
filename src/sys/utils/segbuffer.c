@@ -85,7 +85,7 @@ PetscErrorCode PetscSegBufferCreate(size_t unitbytes, size_t expected, PetscSegB
   Level: developer
 
 .seealso: `PetscSegBufferCreate()`, `PetscSegBufferExtractAlloc()`, `PetscSegBufferExtractTo()`, `PetscSegBufferExtractInPlace()`, `PetscSegBufferDestroy()`,
-          `PetscSegBuffer`
+          `PetscSegBuffer`, `PetscSegBufferGetInts()`
 @*/
 PetscErrorCode PetscSegBufferGet(PetscSegBuffer seg, size_t count, void *buf)
 {
