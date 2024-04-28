@@ -21,6 +21,8 @@
 #echo "(6) tag the new release with git and make a new clone for the release"
 #echo "(7) got the users manual CLEARED by ANL publications for release"
 
+set -e
+
 # If version specified on the commandline, set the version
 echo "Starting date: `date +'%a, %d %b %Y %H:%M:%S %z'`"
 
