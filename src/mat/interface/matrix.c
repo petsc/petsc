@@ -981,7 +981,7 @@ PetscErrorCode MatSetUp(Mat A)
 static PetscInt insidematview = 0;
 #endif
 
-/*@C
+/*@
   MatViewFromOptions - View properties of the matrix based on options set in the options database
 
   Collective
@@ -1021,7 +1021,7 @@ PetscErrorCode MatViewFromOptions(Mat A, PetscObject obj, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatView - display information about a matrix in a variety ways
 
   Collective on viewer
@@ -1232,7 +1232,7 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
 }
 #endif
 
-/*@C
+/*@
   MatLoad - Loads a matrix that has been stored in binary/HDF5 format
   with `MatView()`.  The matrix format is determined from the options database.
   Generates a parallel MPI matrix if the communicator has more than one

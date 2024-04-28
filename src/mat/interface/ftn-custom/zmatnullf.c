@@ -6,12 +6,10 @@
   #define matnullspacecreate0_ MATNULLSPACECREATE0
   #define matnullspacecreate1_ MATNULLSPACECREATE1
   #define matnullspacegetvecs_ MATNULLSPACEGETVECS
-  #define matnullspaceview_    MATNULLSPACEVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define matnullspacecreate0_ matnullspacecreate0
   #define matnullspacecreate1_ matnullspacecreate1
   #define matnullspacegetvecs_ matnullspacegetvecs
-  #define matnullspaceview_    matnullspaceview
 #endif
 
 PETSC_EXTERN void matnullspacecreate0_(MPI_Fint *comm, PetscBool *has_cnst, PetscInt *n, Vec vecs[], MatNullSpace *SP, PetscErrorCode *ierr)
@@ -41,11 +39,4 @@ PETSC_EXTERN void matnullspacegetvecs_(MatNullSpace *sp, PetscBool *HAS_CNST, Pe
   if (VECS) {
     for (i = 0; i < n; i++) { VECS[i] = vecs[i]; }
   }
-}
-
-PETSC_EXTERN void matnullspaceview_(MatNullSpace *sp, PetscViewer *vin, PetscErrorCode *ierr)
-{
-  PetscViewer v;
-  PetscPatchDefaultViewers_Fortran(vin, v);
-  *ierr = MatNullSpaceView(*sp, v);
 }

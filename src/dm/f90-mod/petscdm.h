@@ -3,9 +3,7 @@
 !
 #include "petsc/finclude/petscdm.h"
 
-      type tDM
-        sequence
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      type, extends(tPetscObject) :: tDM
       end type tDM
 
       DM, parameter :: PETSC_NULL_DM = tDM(0)

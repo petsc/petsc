@@ -3,23 +3,22 @@
 !
 #include "petsc/finclude/petscis.h"
 
-      type tIS
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      type, extends(tPetscObject) :: tIS
       end type tIS
-      type tISColoring
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+
+      type, extends(tPetscObject) :: tISColoring
       end type tISColoring
-      type tPetscSection
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+
+      type, extends(tPetscObject) :: tPetscSection
       end type tPetscSection
-      type tPetscSectionSym
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+
+      type, extends(tPetscObject) :: tPetscSectionSym
       end type tPetscSectionSym
-      type tPetscSF
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+
+      type, extends(tPetscObject) :: tPetscSF
       end type tPetscSF
+
       type PetscSFNode
-        sequence
         PetscInt    rank
         PetscInt    index
       end type PetscSFNode

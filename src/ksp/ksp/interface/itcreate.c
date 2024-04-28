@@ -23,7 +23,7 @@ PetscFunctionList KSPMonitorCreateList        = NULL;
 PetscFunctionList KSPMonitorDestroyList       = NULL;
 PetscBool         KSPMonitorRegisterAllCalled = PETSC_FALSE;
 
-/*@C
+/*@
   KSPLoad - Loads a `KSP` that has been stored in a `PETSCVIEWERBINARY`  with `KSPView()`.
 
   Collective
@@ -67,7 +67,7 @@ PetscErrorCode KSPLoad(KSP newdm, PetscViewer viewer)
 #if defined(PETSC_HAVE_SAWS)
   #include <petscviewersaws.h>
 #endif
-/*@C
+/*@
   KSPView - Prints the `KSP` data structure.
 
   Collective
@@ -212,7 +212,7 @@ PetscErrorCode KSPView(KSP ksp, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPViewFromOptions - View a `KSP` object based on values in the options database
 
   Collective

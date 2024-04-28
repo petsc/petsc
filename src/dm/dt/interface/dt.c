@@ -609,7 +609,7 @@ static PetscErrorCode PetscQuadratureView_Ascii(PetscQuadrature quad, PetscViewe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscQuadratureView - View a `PetscQuadrature` object
 
   Collective

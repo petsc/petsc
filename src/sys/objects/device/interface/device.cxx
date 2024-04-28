@@ -201,7 +201,7 @@ PetscErrorCode PetscDeviceConfigure(PetscDevice device)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDeviceView - View a `PetscDevice`
 
   Collective on viewer

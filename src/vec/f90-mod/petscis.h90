@@ -169,15 +169,6 @@
       End Interface
 
       Interface
-      subroutine ISView(a,b,z)
-       import tIS,tPetscViewer
-       IS a
-       PetscViewer b
-       PetscErrorCode z
-       end subroutine
-      end Interface
-
-      Interface
         subroutine ISDestroy(a,z)
           import tIS
           IS a

@@ -542,7 +542,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoViewFromOptions - View a `Tao` object based on values in the options database
 
   Collective
@@ -564,7 +564,7 @@ PetscErrorCode TaoViewFromOptions(Tao A, PetscObject obj, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoView - Prints information about the `Tao` object
 
   Collective

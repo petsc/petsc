@@ -19,11 +19,9 @@
   #define taosetvariableboundsroutine_        TAOSETVARIABLEBOUNDSROUTINE
   #define taosetconstraintsroutine_           TAOSETCONSTRAINTSROUTINE
   #define taomonitorset_                      TAOMONITORSET
-  #define taoview_                            TAOVIEW
   #define taogetconvergencehistory_           TAOGETCONVERGENCEHISTORY
   #define taosetconvergencetest_              TAOSETCONVERGENCETEST
   #define taosetupdate_                       TAOSETUPDATE
-  #define taoviewfromoptions_                 TAOVIEWFROMOPTIONS
   #define taodestroy_                         TAODESTROY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define taosetobjective_                    taosetobjective
@@ -42,11 +40,9 @@
   #define taosetvariableboundsroutine_        taosetvariableboundsroutine
   #define taosetconstraintsroutine_           taosetconstraintsroutine
   #define taomonitorset_                      taomonitorset
-  #define taoview_                            taoview
   #define taogetconvergencehistory_           taogetconvergencehistory
   #define taosetconvergencetest_              taosetconvergencetest
   #define taosetupdate_                       taosetupdate
-  #define taoviewfromoptions_                 taoviewfromoptions
   #define taodestroy_                         taodestroy
 #endif
 
@@ -266,13 +262,6 @@ PETSC_EXTERN void taosetconstraintsroutine_(Tao *tao, Vec *C, void (*func)(Tao *
   if (!*ierr) *ierr = TaoSetConstraintsRoutine(*tao, *C, ourtaoconstraintsroutine, ctx);
 }
 
-PETSC_EXTERN void taoview_(Tao *tao, PetscViewer *viewer, PetscErrorCode *ierr)
-{
-  PetscViewer v;
-  PetscPatchDefaultViewers_Fortran(viewer, v);
-  *ierr = TaoView(*tao, v);
-}
-
 PETSC_EXTERN void taogetconvergencehistory_(Tao *tao, PetscInt *nhist, PetscErrorCode *ierr)
 {
   *ierr = TaoGetConvergenceHistory(*tao, NULL, NULL, NULL, NULL, nhist);
@@ -311,17 +300,6 @@ PETSC_EXTERN void taosetupdate_(Tao *tao, void (*func)(Tao *, PetscInt *, PetscE
   CHKFORTRANNULLFUNCTION(func);
   *ierr = PetscObjectSetFortranCallback((PetscObject)*tao, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.update, (PetscVoidFn *)func, ctx);
   if (!*ierr) *ierr = TaoSetUpdate(*tao, ourtaoupdateroutine, ctx);
-}
-
-PETSC_EXTERN void taoviewfromoptions_(Tao *ao, PetscObject obj, char *type, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-
-  FIXCHAR(type, len, t);
-  CHKFORTRANNULLOBJECT(obj);
-  *ierr = TaoViewFromOptions(*ao, obj, t);
-  if (*ierr) return;
-  FREECHAR(type, t);
 }
 
 PETSC_EXTERN void taodestroy_(Tao *x, int *ierr)

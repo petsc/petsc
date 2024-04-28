@@ -296,7 +296,7 @@ PetscErrorCode PetscViewerSetUp(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerViewFromOptions - View from the viewer based on options in the options database
 
   Collective
@@ -321,7 +321,7 @@ PetscErrorCode PetscViewerViewFromOptions(PetscViewer A, PetscObject obj, const 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerView - Visualizes a viewer object.
 
   Collective

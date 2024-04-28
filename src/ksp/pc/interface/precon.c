@@ -1676,7 +1676,7 @@ PetscErrorCode PCPostSolve(PC pc, KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCLoad - Loads a `PC` that has been stored in binary  with `PCView()`.
 
   Collective
@@ -1718,7 +1718,7 @@ PetscErrorCode PCLoad(PC newdm, PetscViewer viewer)
   #include <petscviewersaws.h>
 #endif
 
-/*@C
+/*@
   PCViewFromOptions - View from the `PC` based on options in the options database
 
   Collective
@@ -1740,7 +1740,7 @@ PetscErrorCode PCViewFromOptions(PC A, PetscObject obj, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCView - Prints information about the `PC`
 
   Collective

@@ -835,7 +835,7 @@ PetscErrorCode PetscSFGetLeafRange(PetscSF sf, PetscInt *minleaf, PetscInt *maxl
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFViewFromOptions - View a `PetscSF` based on arguments in the options database
 
   Collective
@@ -860,7 +860,7 @@ PetscErrorCode PetscSFViewFromOptions(PetscSF A, PetscObject obj, const char nam
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFView - view a star forest
 
   Collective

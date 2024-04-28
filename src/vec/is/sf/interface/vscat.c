@@ -438,7 +438,6 @@ PetscErrorCode VecScatterRegister(const char sname[], PetscErrorCode (*function)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------------*/
 /*@
   VecScatterGetMerged - Returns true if the scatter is completed in the `VecScatterBegin()`
   and the `VecScatterEnd()` does nothing
@@ -505,7 +504,7 @@ PetscErrorCode VecScatterCopy(VecScatter sf, VecScatter *newsf)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecScatterViewFromOptions - View a `VecScatter` object based on values in the options database
 
   Collective
@@ -530,8 +529,7 @@ PetscErrorCode VecScatterViewFromOptions(VecScatter sf, PetscObject obj, const c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------------*/
-/*@C
+/*@
   VecScatterView - Views a vector scatter context.
 
   Collective

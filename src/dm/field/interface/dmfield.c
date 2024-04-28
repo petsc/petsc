@@ -49,7 +49,7 @@ PetscErrorCode DMFieldDestroy(DMField *field)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMFieldView - view a `DMField`
 
   Collective

@@ -2456,7 +2456,7 @@ static PetscErrorCode PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionViewFromOptions - View the `PetscSection` based on values in the options database
 
   Collective
@@ -2481,7 +2481,7 @@ PetscErrorCode PetscSectionViewFromOptions(PetscSection A, PetscObject obj, cons
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionView - Views a `PetscSection`
 
   Collective
@@ -2534,7 +2534,7 @@ PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionLoad - Loads a `PetscSection`
 
   Collective
@@ -3404,7 +3404,7 @@ PetscErrorCode PetscSectionSymDestroy(PetscSectionSym *sym)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionSymView - Displays a section symmetry
 
   Collective

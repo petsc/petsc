@@ -1,7 +1,7 @@
 #include <petsc/private/petscimpl.h> /*I    "petscsys.h"   I*/
 #include <petscviewer.h>
 
-/*@C
+/*@
   PetscObjectSetName - Sets a string name for a PETSc object.
 
   Not Collective
@@ -27,7 +27,7 @@ PetscErrorCode PetscObjectSetName(PetscObject obj, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectPrintClassNamePrefixType - used in the `XXXView()` methods to display information about the class, name, prefix and type of an object
 
   Input Parameters:
@@ -76,7 +76,7 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj, PetscViewer 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectName - Gives `obj` a name if it does not have one
 
   Collective

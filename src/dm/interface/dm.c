@@ -918,7 +918,7 @@ PetscErrorCode DMSetFromOptions(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMViewFromOptions - View a `DM` in a particular way based on a request in the options database
 
   Collective
@@ -943,7 +943,7 @@ PetscErrorCode DMViewFromOptions(DM dm, PetscObject obj, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMView - Views a `DM`. Depending on the `PetscViewer` and its `PetscViewerFormat` it may print some ASCII information about the `DM` to the screen or a file or
   save the `DM` in a binary file to be loaded later or create a visualization of the `DM`
 
@@ -1186,7 +1186,7 @@ PetscErrorCode DMGetBlockSize(DM dm, PetscInt *bs)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCreateInterpolation - Gets the interpolation matrix between two `DM` objects. The resulting matrix map degrees of freedom in the vector obtained by
   `DMCreateGlobalVector()` on the coarse `DM` to similar vectors on the fine grid `DM`.
 
@@ -4117,7 +4117,7 @@ PetscErrorCode DMRegister(const char sname[], PetscErrorCode (*function)(DM))
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMLoad - Loads a DM that has been stored in binary  with `DMView()`.
 
   Collective
@@ -5024,7 +5024,7 @@ PetscErrorCode DMSetField_Internal(DM dm, PetscInt f, DMLabel label, PetscObject
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSetField - Set the discretization object for a given `DM` field. Usually one would call `DMAddField()` which automatically handles
   the field numbering.
 
@@ -5053,7 +5053,7 @@ PetscErrorCode DMSetField(DM dm, PetscInt f, DMLabel label, PetscObject disc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMAddField - Add a field to a `DM` object. A field is a function space defined by of a set of discretization points (geometric entities)
   and a discretization object that defines the function space associated with those points.
 

@@ -927,7 +927,7 @@ static PetscBool PetscCIOption(const char *name)
   PetscOptionsView - Prints the options that have been loaded. This is
   useful for debugging purposes.
 
-  Logically Collective
+  Logically Collective, No Fortran Support
 
   Input Parameters:
 + options - options database, use `NULL` for default global database

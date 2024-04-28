@@ -47,7 +47,7 @@ PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer, PetscObject dm, PetscE
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerVTKGetDM - get the `DM` associated with the `PETSCVIEWERVTK` viewer
 
   Collective

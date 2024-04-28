@@ -200,7 +200,7 @@ PetscErrorCode PFApply(PF pf, PetscInt n, const PetscScalar *x, PetscScalar *y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PFViewFromOptions - View a `PF` based on options set in the options database
 
   Collective

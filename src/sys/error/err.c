@@ -425,7 +425,7 @@ PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char 
   return ierr;
 }
 
-/*@C
+/*@
   PetscIntView - Prints an array of integers; useful for debugging.
 
   Collective
@@ -522,7 +522,7 @@ PetscErrorCode PetscIntView(PetscInt N, const PetscInt idx[], PetscViewer viewer
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscRealView - Prints an array of doubles; useful for debugging.
 
   Collective
@@ -627,7 +627,7 @@ PetscErrorCode PetscRealView(PetscInt N, const PetscReal idx[], PetscViewer view
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscScalarView - Prints an array of `PetscScalar`; useful for debugging.
 
   Collective

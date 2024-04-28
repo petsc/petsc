@@ -606,7 +606,7 @@ PetscErrorCode MatPartitioningCreate(MPI_Comm comm, MatPartitioning *newp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatPartitioningViewFromOptions - View a partitioning context from the options database
 
   Collective
@@ -643,7 +643,7 @@ PetscErrorCode MatPartitioningViewFromOptions(MatPartitioning A, PetscObject obj
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatPartitioningView - Prints the partitioning data structure.
 
   Collective

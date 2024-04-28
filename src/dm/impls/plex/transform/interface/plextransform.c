@@ -276,7 +276,7 @@ static PetscErrorCode DMPlexTransformView_Ascii(DMPlexTransform tr, PetscViewer 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexTransformView - Views a `DMPlexTransform`
 
   Collective

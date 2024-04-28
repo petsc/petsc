@@ -8,7 +8,7 @@ PetscClassId TAOLINESEARCH_CLASSID = 0;
 PetscLogEvent TAOLINESEARCH_Apply;
 PetscLogEvent TAOLINESEARCH_Eval;
 
-/*@C
+/*@
   TaoLineSearchViewFromOptions - View a `TaoLineSearch` object based on values in the options database
 
   Collective
@@ -33,7 +33,7 @@ PetscErrorCode TaoLineSearchViewFromOptions(TaoLineSearch A, PetscObject obj, co
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoLineSearchView - Prints information about the `TaoLineSearch`
 
   Collective

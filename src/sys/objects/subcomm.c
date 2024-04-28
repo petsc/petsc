@@ -82,7 +82,7 @@ PetscErrorCode PetscSubcommSetOptionsPrefix(PetscSubcomm psubcomm, const char pr
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSubcommView - Views a `PetscSubcomm`
 
   Collective

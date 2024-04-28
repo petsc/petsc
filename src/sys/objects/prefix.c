@@ -61,7 +61,7 @@ PetscErrorCode PetscObjectSetOptions(PetscObject obj, PetscOptions options)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectSetOptionsPrefix - Sets the prefix used for searching for all
   options for the given object in the database.
 
@@ -96,7 +96,7 @@ PetscErrorCode PetscObjectSetOptionsPrefix(PetscObject obj, const char prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectAppendOptionsPrefix - Appends to the prefix used for searching for options for the given object in the database.
 
   Input Parameters:

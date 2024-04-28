@@ -545,7 +545,7 @@ PetscErrorCode MatProductSetFromOptions(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatProductView - View the private matrix-matrix algorithm object within a matrix
 
   Logically Collective
@@ -555,6 +555,9 @@ PetscErrorCode MatProductSetFromOptions(Mat mat)
 - viewer - where the information on the matrix-matrix algorithm of `mat` should be reviewed
 
   Level: intermediate
+
+  Developer Note:
+  Shouldn't this information be printed from an approriate `MatView()` with perhaps certain formats set?
 
 .seealso: [](ch_matrices), `MatProductType`, `Mat`, `MatProductSetFromOptions()`, `MatView()`, `MatProductCreate()`, `MatProductCreateWithMat()`
 @*/

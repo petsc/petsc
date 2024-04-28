@@ -117,7 +117,7 @@ PetscErrorCode PetscLimiterGetType(PetscLimiter lim, PetscLimiterType *name)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLimiterViewFromOptions - View a `PetscLimiter` based on values in the options database
 
   Collective
@@ -139,7 +139,7 @@ PetscErrorCode PetscLimiterViewFromOptions(PetscLimiter A, PetscObject obj, cons
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLimiterView - Views a `PetscLimiter`
 
   Collective
@@ -991,7 +991,7 @@ PetscErrorCode PetscFVGetType(PetscFV fvm, PetscFVType *name)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFVViewFromOptions - View a `PetscFV` based on values in the options database
 
   Collective
@@ -1013,7 +1013,7 @@ PetscErrorCode PetscFVViewFromOptions(PetscFV A, PetscObject obj, const char nam
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFVView - Views a `PetscFV`
 
   Collective

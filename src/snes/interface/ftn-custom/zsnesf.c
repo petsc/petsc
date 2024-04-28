@@ -4,7 +4,6 @@
 #include <petsc/private/f90impl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-  #define snesconvergedreasonview_         SNESCONVERGEDREASONVIEW
   #define snessetpicard_                   SNESSETPICARD
   #define matmffdcomputejacobian_          MATMFFDCOMPUTEJACOBIAN
   #define snessolve_                       SNESSOLVE
@@ -21,7 +20,6 @@
   #define snessetconvergencetest_          SNESSETCONVERGENCETEST
   #define snesconvergeddefault_            SNESCONVERGEDDEFAULT
   #define snesconvergedskip_               SNESCONVERGEDSKIP
-  #define snesview_                        SNESVIEW
   #define snesgetconvergencehistory_       SNESGETCONVERGENCEHISTORY
   #define snesgetjacobian_                 SNESGETJACOBIAN
   #define snesmonitordefault_              SNESMONITORDEFAULT
@@ -32,9 +30,7 @@
   #define snesnewtontrsetpostcheck_        SNESNEWTONTRSETPOSTCHECK
   #define snesnewtontrdcsetprecheck_       SNESNEWTONTRDCSETPRECHECK
   #define snesnewtontrdcsetpostcheck_      SNESNEWTONTRDCSETPOSTCHECK
-  #define snesviewfromoptions_             SNESVIEWFROMOPTIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define snesconvergedreasonview_         snesconvergedreasonview
   #define snessetpicard_                   snessetpicard
   #define matmffdcomputejacobian_          matmffdcomputejacobian
   #define snessolve_                       snessolve
@@ -51,7 +47,6 @@
   #define snessetconvergencetest_          snessetconvergencetest
   #define snesconvergeddefault_            snesconvergeddefault
   #define snesconvergedskip_               snesconvergedskip
-  #define snesview_                        snesview
   #define snesgetjacobian_                 snesgetjacobian
   #define snesgetconvergencehistory_       snesgetconvergencehistory
   #define snesmonitordefault_              snesmonitordefault
@@ -62,7 +57,6 @@
   #define snesnewtontrsetpostcheck_        snesnewtontrsetpostcheck
   #define snesnewtontrdcsetprecheck_       snesnewtontrdcsetprecheck
   #define snesnewtontrdcsetpostcheck_      snesnewtontrdcsetpostcheck
-  #define snesviewfromoptions_             snesviewfromoptions
 #endif
 
 static struct {
@@ -328,13 +322,6 @@ PETSC_EXTERN void snessetconvergencetest_(SNES *snes, void (*func)(SNES *, Petsc
   }
 }
 
-PETSC_EXTERN void snesview_(SNES *snes, PetscViewer *viewer, PetscErrorCode *ierr)
-{
-  PetscViewer v;
-  PetscPatchDefaultViewers_Fortran(viewer, v);
-  *ierr = SNESView(*snes, v);
-}
-
 /*  func is currently ignored from Fortran */
 PETSC_EXTERN void snesgetjacobian_(SNES *snes, Mat *A, Mat *B, int *func, void **ctx, PetscErrorCode *ierr)
 {
@@ -382,22 +369,4 @@ PETSC_EXTERN void snesmonitorset_(SNES *snes, void (*func)(SNES *, PetscInt *, P
     if (*ierr) return;
     *ierr = SNESMonitorSet(*snes, oursnesmonitor, *snes, ourmondestroy);
   }
-}
-
-PETSC_EXTERN void snesviewfromoptions_(SNES *ao, PetscObject obj, char *type, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-
-  FIXCHAR(type, len, t);
-  CHKFORTRANNULLOBJECT(obj);
-  *ierr = SNESViewFromOptions(*ao, obj, t);
-  if (*ierr) return;
-  FREECHAR(type, t);
-}
-
-PETSC_EXTERN void snesconvergedreasonview_(SNES *snes, PetscViewer *viewer, PetscErrorCode *ierr)
-{
-  PetscViewer v;
-  PetscPatchDefaultViewers_Fortran(viewer, v);
-  *ierr = SNESConvergedReasonView(*snes, v);
 }

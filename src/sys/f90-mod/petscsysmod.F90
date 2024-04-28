@@ -55,6 +55,7 @@
 
         module petscsysdef
         use petscsysdefdummy
+
         interface operator(.ne.)
           function petscviewernotequal(A,B)
             import tPetscViewer
@@ -229,36 +230,6 @@
           end subroutine
         end Interface
 
-        Interface petscintview
-        subroutine petscintview(N,idx,viewer,ierr)
-          use petscsysdefdummy, only: tPetscViewer
-          PetscInt N
-          PetscInt idx(*)
-          PetscViewer viewer
-          PetscErrorCode ierr
-        end subroutine
-        end Interface
-
-        Interface petscscalarview
-        subroutine petscscalarview(N,s,viewer,ierr)
-          use petscsysdefdummy, only: tPetscViewer
-          PetscInt N
-          PetscScalar s(*)
-          PetscViewer viewer
-          PetscErrorCode ierr
-        end subroutine
-        end Interface
-
-        Interface petscrealview
-        subroutine petscrealview(N,s,viewer,ierr)
-          use petscsysdefdummy, only: tPetscViewer
-          PetscInt N
-          PetscReal s(*)
-          PetscViewer viewer
-          PetscErrorCode ierr
-        end subroutine
-        end Interface
-
         end module
 
         function petscviewernotequal(A,B)
@@ -407,9 +378,9 @@
         end
 
         subroutine PetscSetModuleBlock()
-        use petscsys, only: PETSC_NULL_CHARACTER,PETSC_NULL_INTEGER,&
-             PETSC_NULL_SCALAR,PETSC_NULL_DOUBLE,PETSC_NULL_REAL,&
-             PETSC_NULL_BOOL,PETSC_NULL_FUNCTION,PETSC_NULL_MPI_COMM
+        use petscsys!, only: PETSC_NULL_CHARACTER,PETSC_NULL_INTEGER,&
+           !  PETSC_NULL_SCALAR,PETSC_NULL_DOUBLE,PETSC_NULL_REAL,&
+           !  PETSC_NULL_BOOL,PETSC_NULL_FUNCTION,PETSC_NULL_MPI_COMM
         implicit none
 
         call PetscSetFortranBasePointers(PETSC_NULL_CHARACTER,            &

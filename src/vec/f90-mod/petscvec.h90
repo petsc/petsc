@@ -371,25 +371,11 @@
           PetscErrorCode ierr
         End Subroutine
 
-       subroutine VecView(a,b,ierr)
-         import tVec,tPetscViewer
-         Vec a
-         PetscViewer b
-         PetscErrorCode ierr
-       end subroutine
-
        subroutine VecScatterRemap(a,b,c,ierr)
          import tVecScatter
          VecScatter a ! VecScatter
          PetscInt b (*) ! PetscInt
          PetscInt c (*) ! PetscInt
-         PetscErrorCode ierr
-       end subroutine
-
-       subroutine VecLoad(a,b,ierr)
-         import tVec,tPetscViewer
-         Vec a
-         PetscViewer b
          PetscErrorCode ierr
        end subroutine
 

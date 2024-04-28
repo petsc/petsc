@@ -203,7 +203,7 @@ static PetscErrorCode PetscDualSpaceView_ASCII(PetscDualSpace sp, PetscViewer v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDualSpaceViewFromOptions - View a `PetscDualSpace` based on values in the options database
 
   Collective

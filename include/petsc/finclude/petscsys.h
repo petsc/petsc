@@ -83,7 +83,8 @@
 #define PetscVoid PetscFortranAddr
 !
 #define PetscDeviceType PetscEnum
-#define PetscDevice PetscFortranAddr
+#define PetscDevice type(tPetscDevice)
+#define PetscDeviceContext type(tPetscDeviceContext)
 !
 #define PetscCopyMode PetscEnum
 !
@@ -166,7 +167,7 @@
 !     that are not used in the numerical computations, but rather in logging,
 !     timing etc.
 !
-#define PetscObject PetscFortranAddr
+#define PetscObject type(tPetscObject)
 #define PetscLogDouble PetscFortranDouble
 !
 !     Macros for error checking
@@ -220,4 +221,5 @@
 #define PetscFunctionList PetscFortranAddr
 
 #define PetscInfoCommFlag PetscEnum
+
 #endif

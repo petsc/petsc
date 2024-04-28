@@ -5,7 +5,7 @@ const char *const PetscViewerFormats[] = {"DEFAULT", "ASCII_MATLAB", "ASCII_MATH
 /*@C
   PetscViewerSetFormat - Sets the format for a `PetscViewer`.
 
-  Logically Collective
+  Logically Collective, No Fortran Support
 
   This routine is deprecated, you should use `PetscViewerPushFormat()`/`PetscViewerPopFormat()`
 

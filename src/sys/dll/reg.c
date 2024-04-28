@@ -300,7 +300,7 @@ PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, const char na
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscFunctionListDestroy - Destroys a list of registered routines.
 
   Input Parameter:
@@ -341,7 +341,7 @@ PetscErrorCode PetscFunctionListDestroy(PetscFunctionList *fl)
     } /* end while */ \
   } while (0)
 
-/*@
+/*@C
   PetscFunctionListClear - Clear a `PetscFunctionList`
 
   Not Collective
@@ -439,7 +439,7 @@ PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl, const char na
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscFunctionListView - prints out contents of a `PetscFunctionList`
 
   Collective
@@ -557,7 +557,7 @@ PetscErrorCode PetscFunctionListPrintTypes(MPI_Comm comm, FILE *fd, const char p
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscFunctionListDuplicate - Creates a new list from a given function list `PetscFunctionList`.
 
   Input Parameter:

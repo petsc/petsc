@@ -198,7 +198,7 @@ PetscErrorCode PetscRandomSetFromOptions(PetscRandom rnd)
   #include <petscviewersaws.h>
 #endif
 
-/*@C
+/*@
   PetscRandomViewFromOptions - View a `PetscRandom` object based on the options database
 
   Collective
@@ -220,7 +220,7 @@ PetscErrorCode PetscRandomViewFromOptions(PetscRandom A, PetscObject obj, const 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscRandomView - Views a random number generator object.
 
   Collective

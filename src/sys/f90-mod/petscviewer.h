@@ -3,8 +3,7 @@
 !
 #include "petsc/finclude/petscviewer.h"
 
-      type tPetscViewer
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      type, extends(tPetscObject) :: tPetscViewer
       end type tPetscViewer
 
       PetscViewer, parameter :: PETSC_NULL_VIEWER = tPetscViewer(0)

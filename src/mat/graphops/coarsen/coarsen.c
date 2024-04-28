@@ -170,7 +170,7 @@ PetscErrorCode MatCoarsenDestroy(MatCoarsen *agg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCoarsenViewFromOptions - View the coarsener from the options database
 
   Collective
@@ -207,7 +207,7 @@ PetscErrorCode MatCoarsenViewFromOptions(MatCoarsen A, PetscObject obj, const ch
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCoarsenView - Prints the coarsen data structure.
 
   Collective

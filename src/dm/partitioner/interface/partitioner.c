@@ -71,7 +71,7 @@ PetscErrorCode PetscPartitionerGetType(PetscPartitioner part, PetscPartitionerTy
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscPartitionerViewFromOptions - View a `PetscPartitioner` object based on options in the options database
 
   Collective

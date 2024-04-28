@@ -206,6 +206,52 @@ typedef PETSC_UINTPTR_T PetscFortranAddr;
 #define PETSC_VIEWER_MATLAB_WORLD_FORTRAN 14
 #define PETSC_VIEWER_MATLAB_SELF_FORTRAN  15
 
+#include <petscviewer.h>
+
+static inline PetscViewer PetscPatchDefaultViewers(PetscViewer *v)
+{
+  if (!v) return NULL;
+  if (*(void **)v == (void *)0) return NULL;
+  switch ((*(PetscFortranAddr *)v)) {
+  case PETSC_VIEWER_DRAW_WORLD_FORTRAN:
+    return PETSC_VIEWER_DRAW_WORLD;
+  case PETSC_VIEWER_DRAW_SELF_FORTRAN:
+    return PETSC_VIEWER_DRAW_SELF;
+
+  case PETSC_VIEWER_STDOUT_WORLD_FORTRAN:
+    return PETSC_VIEWER_STDOUT_WORLD;
+  case PETSC_VIEWER_STDOUT_SELF_FORTRAN:
+    return PETSC_VIEWER_STDOUT_SELF;
+
+  case PETSC_VIEWER_STDERR_WORLD_FORTRAN:
+    return PETSC_VIEWER_STDERR_WORLD;
+  case PETSC_VIEWER_STDERR_SELF_FORTRAN:
+    return PETSC_VIEWER_STDERR_SELF;
+
+  case PETSC_VIEWER_BINARY_WORLD_FORTRAN:
+    return PETSC_VIEWER_BINARY_WORLD;
+  case PETSC_VIEWER_BINARY_SELF_FORTRAN:
+    return PETSC_VIEWER_BINARY_SELF;
+
+#if defined(PETSC_HAVE_MATLAB)
+  case PETSC_VIEWER_MATLAB_SELF_FORTRAN:
+    return PETSC_VIEWER_MATLAB_SELF;
+  case PETSC_VIEWER_MATLAB_WORLD_FORTRAN:
+    return PETSC_VIEWER_MATLAB_WORLD;
+#endif
+
+#if defined(PETSC_USE_SOCKET_VIEWER)
+  case PETSC_VIEWER_SOCKET_WORLD_FORTRAN:
+    return PETSC_VIEWER_SOCKET_WORLD;
+  case PETSC_VIEWER_SOCKET_SELF_FORTRAN:
+    return PETSC_VIEWER_SOCKET_SELF;
+#endif
+
+  default:
+    return *v;
+  }
+}
+
 #if defined(PETSC_USE_SOCKET_VIEWER)
   #define PetscPatchDefaultViewers_Fortran_Socket(vin, v) \
     } \

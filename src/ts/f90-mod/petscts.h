@@ -3,17 +3,13 @@
 !
 #include "petsc/finclude/petscts.h"
 
-      type tTS
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      type, extends(tPetscObject) :: tTS
       end type tTS
-      type tTSAdapt
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      type, extends(tPetscObject) :: tTSAdapt
       end type tTSAdapt
-      type tTSTrajectory
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      type, extends(tPetscObject) :: tTSTrajectory
       end type tTSTrajectory
-      type tTSGLLEAdapt
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      type, extends(tPetscObject) :: tTSGLLEAdapt
       end type tTSGLLEAdapt
 
       TS, parameter :: PETSC_NULL_TS = tTS(0)

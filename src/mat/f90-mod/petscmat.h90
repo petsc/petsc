@@ -964,15 +964,6 @@
          end subroutine
       End Interface
 
-      Interface
-      subroutine MatView(a,b,z)
-      import tMat,tPetscViewer
-       Mat a
-       PetscViewer b
-       PetscErrorCode z
-       end subroutine
-      end Interface
-
       Interface MatZeroRowsLocal
       subroutine MatZeroRowsLocal0(a,b,c,d,e,f,z)
       import tMat,tVec
