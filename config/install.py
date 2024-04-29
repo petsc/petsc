@@ -571,7 +571,11 @@ Before use - please copy/install over to specified prefix: %s
 
   def runfix(self):
     self.fixConf()
-    if os.environ.get('PEP517_BUILD_BACKEND'):
+    using_build_backend = any(
+      os.environ.get(prefix + '_BUILD_BACKEND')
+      for prefix in ('_PYPROJECT_HOOKS', 'PEP517')
+    )
+    if using_build_backend:
       self.fixPythonWheel()
     return
 
