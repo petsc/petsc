@@ -21,6 +21,8 @@
 #echo "(6) tag the new release with git and make a new clone for the release"
 #echo "(7) got the users manual CLEARED by ANL publications for release"
 
+set -e
+
 # If version specified on the commandline, set the version
 echo "Starting date: `date +'%a, %d %b %Y %H:%M:%S %z'`"
 
@@ -110,9 +112,9 @@ python3 -m venv $VENV
 source $VENV/bin/activate
 cd $PETSC_DIR/doc
 python3 -m pip install -r requirements.txt
-PETSCBUIDTARBALL=1 make html BUILDDIR="../docs" SPHINXOPTS="-T -E -j 6"
+PETSCBUIDTARBALL=1 make html BUILDDIR="../docs" SPHINXOPTS="-T -E -j 1"
 mv ../docs/html/* ../docs/html/.[!.]* ../docs
-make latexpdf SPHINXOPTS="-j 6" && cp _build/latex/manual.pdf ../docs/manual/
+make latexpdf SPHINXOPTS="-j 1" && cp _build/latex/manual.pdf ../docs/manual/
 
 # Build fortranstubs
 cd $PETSC_DIR/
