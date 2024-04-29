@@ -761,7 +761,7 @@ M*/
 .vb
    PetscReal d = 1.5;
 .ve
-   the result is 1.5 in double precision extended to 128 represention, meaning it is very far from the correct value. Hence, one should write
+   the result is 1.5 in double precision extended to 128 bit representation, meaning it is very far from the correct value. Hence, one should write
 .vb
    PetscReal d = PetscRealConstant(1.5);
 .ve
