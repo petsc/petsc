@@ -121,5 +121,13 @@ class Configure(config.package.CMakePackage):
     return args
 
   def configureLibrary(self):
+    needRestore = False
     self.buildLanguages= self.kokkos.buildLanguages
+    if self.cuda.found and not self.cuda.cudaclang:
+        oldFlags = self.setCompilers.CUDAPPFLAGS
+        self.setCompilers.CUDAPPFLAGS += " -ccbin " + self.getCompiler('Cxx')
+        needRestore = True
+
     config.package.CMakePackage.configureLibrary(self)
+
+    if needRestore: self.setCompilers.CUDAPPFLAGS = oldFlags
