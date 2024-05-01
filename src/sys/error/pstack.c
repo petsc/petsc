@@ -88,6 +88,7 @@ PetscErrorCode PetscStackReset(void)
   return PETSC_SUCCESS;
 }
 
+// PetscClangLinter pragma disable: -fdoc-sowing-chars
 /*
   PetscStackView - Print the current (default) PETSc stack to an ASCII file
 
@@ -185,6 +186,7 @@ PetscErrorCode PetscStackCopy(PetscStack *sint, PetscStack *sout)
   return PETSC_SUCCESS;
 }
 
+// PetscClangLinter pragma disable: -fdoc-sowing-chars
 /*
   PetscStackPrint - Prints a given PETSc stack to an ASCII file
 
@@ -192,7 +194,7 @@ PetscErrorCode PetscStackCopy(PetscStack *sint, PetscStack *sout)
 
   Input Parameters:
 + sint - the PETSc stack to print
-- file - the file pointer
+- fp   - the file pointer
 
   Level: developer
 
