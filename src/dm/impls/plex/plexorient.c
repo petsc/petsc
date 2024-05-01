@@ -825,6 +825,7 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
         if (l >= 0) continue;
         locSupp[Ns++] = supp[s];
       }
+      PetscCheck(Ns < maxSuppSize, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Index %" PetscInt_FMT " exceeds array size %" PetscInt_FMT, Ns, maxSuppSize);
       if (Ns != 1) continue;
       neighbor = locSupp[0];
       nind     = GetPointIndex(neighbor, cStart, cEnd, cells);

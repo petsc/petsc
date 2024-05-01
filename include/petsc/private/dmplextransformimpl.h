@@ -72,6 +72,7 @@ typedef struct {
 } DMPlexTransform_Extrude;
 
 typedef struct {
+  PetscInt         debug;     // Debugging level
   PetscBool        useTensor; // Flag to create tensor cells
   PetscInt        *Nt;        // The array of the number of target types
   DMPolytopeType **target;    // The array of target types
