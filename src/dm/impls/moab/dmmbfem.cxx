@@ -49,7 +49,7 @@ static inline PetscReal DMatrix_Determinant_4x4_Internal(PetscReal inmat[4 * 4])
   return inmat[0 + 0 * 4] * (inmat[1 + 1 * 4] * (inmat[2 + 2 * 4] * inmat[3 + 3 * 4] - inmat[2 + 3 * 4] * inmat[3 + 2 * 4]) - inmat[1 + 2 * 4] * (inmat[2 + 1 * 4] * inmat[3 + 3 * 4] - inmat[2 + 3 * 4] * inmat[3 + 1 * 4]) + inmat[1 + 3 * 4] * (inmat[2 + 1 * 4] * inmat[3 + 2 * 4] - inmat[2 + 2 * 4] * inmat[3 + 1 * 4])) - inmat[0 + 1 * 4] * (inmat[1 + 0 * 4] * (inmat[2 + 2 * 4] * inmat[3 + 3 * 4] - inmat[2 + 3 * 4] * inmat[3 + 2 * 4]) - inmat[1 + 2 * 4] * (inmat[2 + 0 * 4] * inmat[3 + 3 * 4] - inmat[2 + 3 * 4] * inmat[3 + 0 * 4]) + inmat[1 + 3 * 4] * (inmat[2 + 0 * 4] * inmat[3 + 2 * 4] - inmat[2 + 2 * 4] * inmat[3 + 0 * 4])) + inmat[0 + 2 * 4] * (inmat[1 + 0 * 4] * (inmat[2 + 1 * 4] * inmat[3 + 3 * 4] - inmat[2 + 3 * 4] * inmat[3 + 1 * 4]) - inmat[1 + 1 * 4] * (inmat[2 + 0 * 4] * inmat[3 + 3 * 4] - inmat[2 + 3 * 4] * inmat[3 + 0 * 4]) + inmat[1 + 3 * 4] * (inmat[2 + 0 * 4] * inmat[3 + 1 * 4] - inmat[2 + 1 * 4] * inmat[3 + 0 * 4])) - inmat[0 + 3 * 4] * (inmat[1 + 0 * 4] * (inmat[2 + 1 * 4] * inmat[3 + 2 * 4] - inmat[2 + 2 * 4] * inmat[3 + 1 * 4]) - inmat[1 + 1 * 4] * (inmat[2 + 0 * 4] * inmat[3 + 2 * 4] - inmat[2 + 2 * 4] * inmat[3 + 0 * 4]) + inmat[1 + 2 * 4] * (inmat[2 + 0 * 4] * inmat[3 + 1 * 4] - inmat[2 + 1 * 4] * inmat[3 + 0 * 4]));
 }
 
-static inline PetscErrorCode DMatrix_Invert_4x4_Internal(PetscReal *inmat, PetscReal *outmat, PetscScalar *determinant)
+static inline PETSC_UNUSED PetscErrorCode DMatrix_Invert_4x4_Internal(PetscReal *inmat, PetscReal *outmat, PetscScalar *determinant)
 {
   PetscReal det = DMatrix_Determinant_4x4_Internal(inmat);
   if (outmat) {

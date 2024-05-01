@@ -30,7 +30,7 @@ configure_options = [
   '--download-chaco=1',
   '--download-spai=1',
   '--download-netcdf=1',
-  '--download-moab=1',
+  #'--download-moab=1', # moab-5.5: OS freebsd12.1 is not supported # if needed, use https://web.cels.anl.gov/projects/petsc/download/externalpackages/moab-5.0.0.tar.gz
   '--download-saws',
   '--download-ks',
   '--download-codipack=1',
