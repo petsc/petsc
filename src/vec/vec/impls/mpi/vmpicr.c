@@ -25,8 +25,12 @@
   Use `VecDuplicate()` or `VecDuplicateVecs()` to form additional vectors of the
   same type as an existing vector.
 
+  If `n` is not `PETSC_DECIDE`, then the value determines the `PetscLayout` of the vector and the ranges returned by
+  `VecGetOwnershipRange()` and `VecGetOwnershipRanges()`
+
 .seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreateSeq()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`,
-          `VecCreateMPIWithArray()`, `VecCreateGhostWithArray()`, `VecMPISetGhost()`
+          `VecCreateMPIWithArray()`, `VecCreateGhostWithArray()`, `VecMPISetGhost()`, `PetscLayout`,
+          `VecGetOwnershipRange()`, `VecGetOwnershipRanges()`
 @*/
 PetscErrorCode VecCreateMPI(MPI_Comm comm, PetscInt n, PetscInt N, Vec *v)
 {
