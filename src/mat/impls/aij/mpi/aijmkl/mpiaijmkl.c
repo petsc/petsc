@@ -54,14 +54,17 @@
   The user MUST specify either the local or global matrix dimensions
   (possibly both).
 
-  The parallel matrix is partitioned such that the first m0 rows belong to
-  process 0, the next m1 rows belong to process 1, the next m2 rows belong
-  to process 2 etc.. where m0,m1,m2... are the input parameter `m`.
+  If `m` and `n` are not `PETSC_DECIDE`, then the values determine the `PetscLayout` of the matrix and the ranges returned by
+  `MatGetOwnershipRange()`, `MatGetOwnershipRanges()`, `MatGetOwnershipRangeColumn()`, and `MatGetOwnershipRangesColumn()`.
+
+  The parallel matrix is partitioned such that the first `m0` rows belong to
+  process 0, the next `m1` rows belong to process 1, the next `m2` rows belong
+  to process 2, etc., where `m0`, `m1`, `m2`... are the input parameter `m` on each MPI process.
 
   The DIAGONAL portion of the local submatrix of a processor can be defined
   as the submatrix which is obtained by extraction the part corresponding
-  to the rows r1-r2 and columns r1-r2 of the global matrix, where r1 is the
-  first row that belongs to the processor, and r2 is the last row belonging
+  to the rows `r1` - `r2` and columns `r1` - `r2` of the global matrix, where `r1` is the
+  first row that belongs to the processor, and `r2` is the last row belonging
   to the this processor. This is a square mxm matrix. The remaining portion
   of the local submatrix (mxN) constitute the OFF-DIAGONAL portion.
 
@@ -76,7 +79,9 @@
   MatMPIAIJSetPreallocation(A,...);
 .ve
 
-.seealso: [](ch_matrices), `Mat`, [Sparse Matrix Creation](sec_matsparse), `MATMPIAIJMKL`, `MatCreate()`, `MatCreateSeqAIJMKL()`, `MatSetValues()`
+.seealso: [](ch_matrices), `Mat`, [Sparse Matrix Creation](sec_matsparse), `MATMPIAIJMKL`, `MatCreate()`, `MatCreateSeqAIJMKL()`,
+          `MatSetValues()`, `MatGetOwnershipRange()`, `MatGetOwnershipRanges()`, `MatGetOwnershipRangeColumn()`,
+          `MatGetOwnershipRangesColumn()`, `PetscLayout`
 @*/
 PetscErrorCode MatCreateMPIAIJMKL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[], Mat *A)
 {

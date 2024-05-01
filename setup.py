@@ -188,7 +188,11 @@ def config(prefix, dry_run=False):
         if status != 0:
             raise RuntimeError(status)
     # Fix PETSc configuration
-    if os.environ.get('PEP517_BUILD_BACKEND'):
+    using_build_backend = any(
+        os.environ.get(prefix + '_BUILD_BACKEND')
+        for prefix in ('_PYPROJECT_HOOKS', 'PEP517')
+    )
+    if using_build_backend:
         pdir = os.environ['PETSC_DIR']
         parch = os.environ['PETSC_ARCH']
         include = os.path.join(pdir, parch, 'include')

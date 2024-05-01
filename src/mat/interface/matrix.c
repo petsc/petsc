@@ -4263,7 +4263,7 @@ PetscErrorCode MatCopy_Basic(Mat A, Mat B, MatStructure str)
   Level: intermediate
 
   Notes:
-  If you use `SAME_NONZERO_PATTERN` then the two matrices must have the same nonzero pattern or the routine will crash.
+  If you use `SAME_NONZERO_PATTERN`, then the two matrices must have the same nonzero pattern or the routine will crash.
 
   `MatCopy()` copies the matrix entries of a matrix to another existing
   matrix (after first zeroing the second matrix).  A related routine is
@@ -4603,7 +4603,7 @@ PetscErrorCode MatSolverTypeRegister(MatSolverType package, MatType mtype, MatFa
   MatSolverTypeGet - Gets the function that creates the factor matrix if it exist
 
   Input Parameters:
-+ type  - name of the package, for example petsc or superlu, if this is 'NULL' then the first result that satisfies the other criteria is returned
++ type  - name of the package, for example petsc or superlu, if this is 'NULL', then the first result that satisfies the other criteria is returned
 . ftype - the type of factorization supported by the type
 - mtype - the matrix type that works with this type
 
@@ -4771,7 +4771,7 @@ PetscErrorCode MatFactorGetPreferredOrdering(Mat mat, MatFactorType ftype, MatOr
 
   Input Parameters:
 + mat   - the matrix
-. type  - name of solver type, for example, superlu, petsc (to use PETSc's solver if it is available), if this is 'NULL' then the first result that satisfies
+. type  - name of solver type, for example, superlu, petsc (to use PETSc's solver if it is available), if this is 'NULL', then the first result that satisfies
           the other criteria is returned
 - ftype - factor type, `MAT_FACTOR_LU`, `MAT_FACTOR_CHOLESKY`, `MAT_FACTOR_ICC`, `MAT_FACTOR_ILU`, `MAT_FACTOR_QR`
 
@@ -5065,7 +5065,7 @@ PetscErrorCode MatGetRowMin(Mat mat, Vec v, PetscInt idx[])
   Level: intermediate
 
   Notes:
-  if a row is completely empty or has only 0.0 values then the `idx` value for that
+  if a row is completely empty or has only 0.0 values, then the `idx` value for that
   row is 0 (the first column).
 
   This code is only implemented for a couple of matrix formats.
@@ -5157,7 +5157,7 @@ PetscErrorCode MatGetRowMax(Mat mat, Vec v, PetscInt idx[])
   Level: intermediate
 
   Notes:
-  if a row is completely empty or has only 0.0 values then the `idx` value for that
+  if a row is completely empty or has only 0.0 values, then the `idx` value for that
   row is 0 (the first column).
 
   This code is only implemented for a couple of matrix formats.
@@ -5954,17 +5954,17 @@ PetscErrorCode MatAssemblyEnd(Mat mat, MatAssemblyType type)
   ignored.  Thus, if memory has not already been allocated for this particular
   data, then the insertion is ignored. For dense matrices, in which
   the entire array is allocated, no entries are ever ignored.
-  Set after the first `MatAssemblyEnd()`. If this option is set then the `MatAssemblyBegin()`/`MatAssemblyEnd()` processes has one less global reduction
+  Set after the first `MatAssemblyEnd()`. If this option is set, then the `MatAssemblyBegin()`/`MatAssemblyEnd()` processes has one less global reduction
 
   `MAT_NEW_NONZERO_LOCATION_ERR` set to PETSC_TRUE indicates that any add or insertion
   that would generate a new entry in the nonzero structure instead produces
-  an error. (Currently supported for `MATAIJ` and `MATBAIJ` formats only.) If this option is set then the `MatAssemblyBegin()`/`MatAssemblyEnd()` processes has one less global reduction
+  an error. (Currently supported for `MATAIJ` and `MATBAIJ` formats only.) If this option is set, then the `MatAssemblyBegin()`/`MatAssemblyEnd()` processes has one less global reduction
 
   `MAT_NEW_NONZERO_ALLOCATION_ERR` set to `PETSC_TRUE` indicates that any add or insertion
   that would generate a new entry that has not been preallocated will
   instead produce an error. (Currently supported for `MATAIJ` and `MATBAIJ` formats
   only.) This is a useful flag when debugging matrix memory preallocation.
-  If this option is set then the `MatAssemblyBegin()`/`MatAssemblyEnd()` processes has one less global reduction
+  If this option is set, then the `MatAssemblyBegin()`/`MatAssemblyEnd()` processes has one less global reduction
 
   `MAT_IGNORE_OFF_PROC_ENTRIES` set to `PETSC_TRUE` indicates entries destined for
   other processors should be dropped, rather than stashed.
@@ -6817,11 +6817,20 @@ PetscErrorCode MatGetLocalSize(Mat mat, PetscInt *m, PetscInt *n)
 
   Level: developer
 
-  Note:
+  Notes:
+  If the `Mat` was obtained from a `DM` with `DMCreateMatrix()`, then the range values are determined by the specific `DM`.
+
+  If the `Mat` was created directly the range values are determined by the local size passed to `MatSetSizes()` or `MatCreateAIJ()`.
+  If `PETSC_DECIDE` was passed as the local size, then the vector uses default values for the range using `PetscSplitOwnership()`.
+
+  For certain `DM`, such as `DMDA`, it is better to use `DM` specific routines, such as `DMDAGetGhostCorners()`, to determine
+  the local values in the matrix.
+
   Returns the columns of the "diagonal block" for most sparse matrix formats. See [Matrix
   Layouts](sec_matlayout) for details on matrix layouts.
 
-.seealso: [](ch_matrices), `Mat`, `MatGetOwnershipRange()`, `MatGetOwnershipRanges()`, `MatGetOwnershipRangesColumn()`, `PetscLayout`
+.seealso: [](ch_matrices), `Mat`, `MatGetOwnershipRange()`, `MatGetOwnershipRanges()`, `MatGetOwnershipRangesColumn()`, `PetscLayout`,
+          `MatSetSizes()`, `MatCreateAIJ()`, `DMDAGetGhostCorners()`, `DM`
 @*/
 PetscErrorCode MatGetOwnershipRangeColumn(Mat mat, PetscInt *m, PetscInt *n)
 {
@@ -6851,13 +6860,23 @@ PetscErrorCode MatGetOwnershipRangeColumn(Mat mat, PetscInt *m, PetscInt *n)
 
   Level: beginner
 
-  Note:
+  Notes:
+  If the `Mat` was obtained from a `DM` with `DMCreateMatrix()`, then the range values are determined by the specific `DM`.
+
+  If the `Mat` was created directly the range values are determined by the local size passed to `MatSetSizes()` or `MatCreateAIJ()`.
+  If `PETSC_DECIDE` was passed as the local size, then the vector uses default values for the range using `PetscSplitOwnership()`.
+
+  For certain `DM`, such as `DMDA`, it is better to use `DM` specific routines, such as `DMDAGetGhostCorners()`, to determine
+  the local values in the matrix.
+
+  The high argument is one more than the last element stored locally.
+
   For all matrices  it returns the range of matrix rows associated with rows of a vector that
   would contain the result of a matrix vector product with this matrix. See [Matrix
   Layouts](sec_matlayout) for details on matrix layouts.
 
-.seealso: [](ch_matrices), `Mat`, `MatGetOwnershipRanges()`, `MatGetOwnershipRangeColumn()`, `MatGetOwnershipRangesColumn()`, `PetscSplitOwnership()`, `PetscSplitOwnershipBlock()`,
-          `PetscLayout`
+.seealso: [](ch_matrices), `Mat`, `MatGetOwnershipRanges()`, `MatGetOwnershipRangeColumn()`, `MatGetOwnershipRangesColumn()`, `PetscSplitOwnership()`,
+          `PetscSplitOwnershipBlock()`, `PetscLayout`, `MatSetSizes()`, `MatCreateAIJ()`, `DMDAGetGhostCorners()`, `DM`
 @*/
 PetscErrorCode MatGetOwnershipRange(Mat mat, PetscInt *m, PetscInt *n)
 {
@@ -6886,12 +6905,22 @@ PetscErrorCode MatGetOwnershipRange(Mat mat, PetscInt *m, PetscInt *n)
 
   Level: beginner
 
-  Note:
+  Notes:
+  If the `Mat` was obtained from a `DM` with `DMCreateMatrix()`, then the range values are determined by the specific `DM`.
+
+  If the `Mat` was created directly the range values are determined by the local size passed to `MatSetSizes()` or `MatCreateAIJ()`.
+  If `PETSC_DECIDE` was passed as the local size, then the vector uses default values for the range using `PetscSplitOwnership()`.
+
+  For certain `DM`, such as `DMDA`, it is better to use `DM` specific routines, such as `DMDAGetGhostCorners()`, to determine
+  the local values in the matrix.
+
   For all matrices  it returns the ranges of matrix rows associated with rows of a vector that
   would contain the result of a matrix vector product with this matrix. See [Matrix
   Layouts](sec_matlayout) for details on matrix layouts.
 
-.seealso: [](ch_matrices), `Mat`, `MatGetOwnershipRange()`, `MatGetOwnershipRangeColumn()`, `MatGetOwnershipRangesColumn()`, `PetscLayout`
+.seealso: [](ch_matrices), `Mat`, `MatGetOwnershipRange()`, `MatGetOwnershipRangeColumn()`, `MatGetOwnershipRangesColumn()`, `PetscLayout`,
+          `PetscSplitOwnership()`, `PetscSplitOwnershipBlock()`, `MatSetSizes()`, `MatCreateAIJ()`,
+          `DMDAGetGhostCorners()`, `DM`
 @*/
 PetscErrorCode MatGetOwnershipRanges(Mat mat, const PetscInt *ranges[])
 {
@@ -6917,11 +6946,21 @@ PetscErrorCode MatGetOwnershipRanges(Mat mat, const PetscInt *ranges[])
 
   Level: beginner
 
-  Note:
+  Notes:
+  If the `Mat` was obtained from a `DM` with `DMCreateMatrix()`, then the range values are determined by the specific `DM`.
+
+  If the `Mat` was created directly the range values are determined by the local size passed to `MatSetSizes()` or `MatCreateAIJ()`.
+  If `PETSC_DECIDE` was passed as the local size, then the vector uses default values for the range using `PetscSplitOwnership()`.
+
+  For certain `DM`, such as `DMDA`, it is better to use `DM` specific routines, such as `DMDAGetGhostCorners()`, to determine
+  the local values in the matrix.
+
   Returns the columns of the "diagonal blocks", for most sparse matrix formats. See [Matrix
   Layouts](sec_matlayout) for details on matrix layouts.
 
-.seealso: [](ch_matrices), `Mat`, `MatGetOwnershipRange()`, `MatGetOwnershipRangeColumn()`, `MatGetOwnershipRanges()`
+.seealso: [](ch_matrices), `Mat`, `MatGetOwnershipRange()`, `MatGetOwnershipRangeColumn()`, `MatGetOwnershipRanges()`,
+          `PetscSplitOwnership()`, `PetscSplitOwnershipBlock()`, `PetscLayout`, `MatSetSizes()`, `MatCreateAIJ()`,
+          `DMDAGetGhostCorners()`, `DM`
 @*/
 PetscErrorCode MatGetOwnershipRangesColumn(Mat mat, const PetscInt *ranges[])
 {
@@ -6953,7 +6992,7 @@ PetscErrorCode MatGetOwnershipRangesColumn(Mat mat, const PetscInt *ranges[])
   `MATSCALAPACK` the ownership is more complicated. See [Matrix Layouts](sec_matlayout) for
   details on matrix layouts.
 
-.seealso: [](ch_matrices), `Mat`, `MatGetOwnershipRange()`, `MatGetOwnershipRangeColumn()`, `MatSetValues()`, ``MATELEMENTAL``, ``MATSCALAPACK``
+.seealso: [](ch_matrices), `Mat`, `MatGetOwnershipRanges()`, `MatGetOwnershipRangeColumns()`, `MatSetValues()`, ``MATELEMENTAL``, ``MATSCALAPACK``
 @*/
 PetscErrorCode MatGetOwnershipIS(Mat A, IS *rows, IS *cols)
 {
@@ -8451,7 +8490,7 @@ M*/
 
   If `iscol` is `NULL` then all columns are obtained (not supported in Fortran).
 
-  If `isrow` and `iscol` have a nontrivial block-size then the resulting matrix has this block-size as well. This feature
+  If `isrow` and `iscol` have a nontrivial block-size, then the resulting matrix has this block-size as well. This feature
   is used by `PCFIELDSPLIT` to allow easy nesting of its use.
 
   Example usage:
@@ -10976,8 +11015,7 @@ PetscErrorCode MatTransposeColoringCreate(Mat mat, ISColoring iscoloring, MatTra
 
 /*@
   MatGetNonzeroState - Returns a 64-bit integer representing the current state of nonzeros in the matrix. If the
-  matrix has had no new nonzero locations added to (or removed from) the matrix since the previous call then the value will be the
-  same, otherwise it will be larger
+  matrix has had new nonzero locations added to (or removed from) the matrix since the previous call, the value will be larger.
 
   Not Collective
 

@@ -3444,7 +3444,7 @@ cdef class DMPlex(DM):
 
 
 class DMPlexTransformType(object):
-    """Transormation types."""
+    """Transformation types."""
     REFINEREGULAR = S_(DMPLEXREFINEREGULAR)
     REFINEALFELD = S_(DMPLEXREFINEALFELD)
     REFINEPOWELLSABIN = S_(DMPLEXREFINEPOWELLSABIN)

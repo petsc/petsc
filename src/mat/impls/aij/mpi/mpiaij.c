@@ -4366,26 +4366,26 @@ PetscErrorCode MatUpdateMPIAIJWithArray(Mat mat, const PetscScalar v[])
   Input Parameters:
 + comm  - MPI communicator
 . m     - number of local rows (or `PETSC_DECIDE` to have calculated if M is given)
-           This value should be the same as the local size used in creating the
-           y vector for the matrix-vector product y = Ax.
+          This value should be the same as the local size used in creating the
+          y vector for the matrix-vector product y = Ax.
 . n     - This value should be the same as the local size used in creating the
-       x vector for the matrix-vector product y = Ax. (or `PETSC_DECIDE` to have
-       calculated if N is given) For square matrices n is almost always m.
+          x vector for the matrix-vector product y = Ax. (or `PETSC_DECIDE` to have
+          calculated if N is given) For square matrices n is almost always m.
 . M     - number of global rows (or `PETSC_DETERMINE` to have calculated if m is given)
 . N     - number of global columns (or `PETSC_DETERMINE` to have calculated if n is given)
 . d_nz  - number of nonzeros per row in DIAGONAL portion of local submatrix
-           (same value is used for all local rows)
+          (same value is used for all local rows)
 . d_nnz - array containing the number of nonzeros in the various rows of the
-           DIAGONAL portion of the local submatrix (possibly different for each row)
-           or `NULL`, if `d_nz` is used to specify the nonzero structure.
-           The size of this array is equal to the number of local rows, i.e 'm'.
+          DIAGONAL portion of the local submatrix (possibly different for each row)
+          or `NULL`, if `d_nz` is used to specify the nonzero structure.
+          The size of this array is equal to the number of local rows, i.e 'm'.
 . o_nz  - number of nonzeros per row in the OFF-DIAGONAL portion of local
-           submatrix (same value is used for all local rows).
+          submatrix (same value is used for all local rows).
 - o_nnz - array containing the number of nonzeros in the various rows of the
-           OFF-DIAGONAL portion of the local submatrix (possibly different for
-           each row) or `NULL`, if `o_nz` is used to specify the nonzero
-           structure. The size of this array is equal to the number
-           of local rows, i.e 'm'.
+          OFF-DIAGONAL portion of the local submatrix (possibly different for
+          each row) or `NULL`, if `o_nz` is used to specify the nonzero
+          structure. The size of this array is equal to the number
+          of local rows, i.e 'm'.
 
   Output Parameter:
 . A - the matrix
@@ -4394,8 +4394,8 @@ PetscErrorCode MatUpdateMPIAIJWithArray(Mat mat, const PetscScalar v[])
 + -mat_no_inode                     - Do not use inodes
 . -mat_inode_limit <limit>          - Sets inode limit (max limit=5)
 - -matmult_vecscatter_view <viewer> - View the vecscatter (i.e., communication pattern) used in `MatMult()` of sparse parallel matrices.
-        See viewer types in manual of `MatView()`. Of them, ascii_matlab, draw or binary cause the vecscatter be viewed as a matrix.
-        Entry (i,j) is the size of message (in bytes) rank i sends to rank j in one `MatMult()` call.
+                                      See viewer types in manual of `MatView()`. Of them, ascii_matlab, draw or binary cause the `VecScatter`
+                                      to be viewed as a matrix. Entry (i,j) is the size of message (in bytes) rank i sends to rank j in one `MatMult()` call.
 
   Level: intermediate
 
@@ -4414,13 +4414,16 @@ PetscErrorCode MatUpdateMPIAIJWithArray(Mat mat, const PetscScalar v[])
   processor than it must be used on all processors that share the object for
   that argument.
 
+  If `m` and `n` are not `PETSC_DECIDE`, then the values determine the `PetscLayout` of the matrix and the ranges returned by
+  `MatGetOwnershipRange()`, `MatGetOwnershipRanges()`, `MatGetOwnershipRangeColumn()`, and `MatGetOwnershipRangesColumn()`.
+
   The user MUST specify either the local or global matrix dimensions
   (possibly both).
 
   The parallel matrix is partitioned across processors such that the
-  first m0 rows belong to process 0, the next m1 rows belong to
-  process 1, the next m2 rows belong to process 2 etc.. where
-  m0,m1,m2,.. are the input parameter 'm'. i.e each processor stores
+  first `m0` rows belong to process 0, the next `m1` rows belong to
+  process 1, the next `m2` rows belong to process 2, etc., where
+  `m0`, `m1`, `m2`... are the input parameter `m` on each MPI process. I.e., each MPI process stores
   values corresponding to [m x N] submatrix.
 
   The columns are logically partitioned with the n0 columns belonging
@@ -4525,7 +4528,8 @@ PetscErrorCode MatUpdateMPIAIJWithArray(Mat mat, const PetscScalar v[])
   hence pre-allocation is perfect.
 
 .seealso: [](ch_matrices), `Mat`, [Sparse Matrix Creation](sec_matsparse), `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
-          `MATMPIAIJ`, `MatCreateMPIAIJWithArrays()`
+          `MATMPIAIJ`, `MatCreateMPIAIJWithArrays()`, `MatGetOwnershipRange()`, `MatGetOwnershipRanges()`, `MatGetOwnershipRangeColumn()`,
+          `MatGetOwnershipRangesColumn()`, `PetscLayout`
 @*/
 PetscErrorCode MatCreateAIJ(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[], Mat *A)
 {

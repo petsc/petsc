@@ -1167,6 +1167,20 @@ PETSC_EXTERN PetscErrorCode SNESNASMGetSNES(SNES, PetscInt, SNES *);
 PETSC_EXTERN PetscErrorCode SNESNASMGetNumber(SNES, PetscInt *);
 PETSC_EXTERN PetscErrorCode SNESNASMSetWeight(SNES, Vec);
 
+/*E
+  SNESCompositeType - Determines how two or more preconditioners are composed with the `SNESType` of `SNESCOMPOSITE`
+
+  Values:
++ `SNES_COMPOSITE_ADDITIVE`        - results from application of all preconditioners are added together
+. `SNES_COMPOSITE_MULTIPLICATIVE`  - preconditioners are applied sequentially to the residual freshly
+                                     computed after the previous preconditioner application
+- `SNES_COMPOSITE_ADDITIVEOPTIMAL` - uses a linear combination of the solutions obtained with each preconditioner that approximately minimize the function
+                                     value at the new iteration.
+
+   Level: beginner
+
+.seealso: [](sec_pc), `PCCOMPOSITE`, `PCFIELDSPLIT`, `PC`, `PCCompositeSetType()`, `PCCompositeType`
+E*/
 typedef enum {
   SNES_COMPOSITE_ADDITIVE,
   SNES_COMPOSITE_MULTIPLICATIVE,

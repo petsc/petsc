@@ -216,11 +216,15 @@ PetscErrorCode MatSetErrorIfFailure(Mat mat, PetscBool flg)
   Likewise, the `n` used must match that used as the local size in
   `VecCreateMPI()` for 'x'.
 
+  If `m` and `n` are not `PETSC_DECIDE`, then the values determine the `PetscLayout` of the matrix and the ranges returned by
+  `MatGetOwnershipRange()`,  `MatGetOwnershipRanges()`, `MatGetOwnershipRangeColumn()`, and `MatGetOwnershipRangesColumn()`.
+
   You cannot change the sizes once they have been set.
 
   The sizes must be set before `MatSetUp()` or MatXXXSetPreallocation() is called.
 
-.seealso: [](ch_matrices), `Mat`, `MatGetSize()`, `PetscSplitOwnership()`
+.seealso: [](ch_matrices), `Mat`, `MatGetSize()`, `PetscSplitOwnership()`, `MatGetOwnershipRange()`, `MatGetOwnershipRanges()`,
+          `MatGetOwnershipRangeColumn()`, `MatGetOwnershipRangesColumn()`, `PetscLayout`, `VecSetSizes()`
 @*/
 PetscErrorCode MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt N)
 {

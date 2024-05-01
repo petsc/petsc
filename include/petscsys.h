@@ -278,16 +278,32 @@ M*/
 /*MC
    PETSC_MPI_THREAD_REQUIRED - the required threading support used if PETSc initializes MPI with `MPI_Init_thread()`.
 
+   No Fortran Support
+
    Level: beginner
 
    Note:
-   By default `PETSC_MPI_THREAD_REQUIRED` equals `MPI_THREAD_FUNNELED` when the MPI implementation provides MPI_Init_thread(), otherwise it equals `MPI_THREAD_SINGLE`
+   By default `PETSC_MPI_THREAD_REQUIRED` equals `MPI_THREAD_FUNNELED` when the MPI implementation provides `MPI_Init_thread()`, otherwise it equals `MPI_THREAD_SINGLE`
 
 .seealso: `PetscInitialize()`
 M*/
 PETSC_EXTERN PetscMPIInt PETSC_MPI_THREAD_REQUIRED;
 
+/*MC
+   PetscBeganMPI - indicates if PETSc initialized MPI during `PetscInitialize()` or if MPI was already initialized.
+
+   Synopsis:
+   #include <petscsys.h>
+   PetscBool PetscBeganMPI;
+
+   No Fortran Support
+
+   Level: developer
+
+.seealso: `PetscInitialize()`, `PetscInitializeCalled()`
+M*/
 PETSC_EXTERN PetscBool PetscBeganMPI;
+
 PETSC_EXTERN PetscBool PetscErrorHandlingInitialized;
 PETSC_EXTERN PetscBool PetscInitializeCalled;
 PETSC_EXTERN PetscBool PetscFinalizeCalled;
@@ -2094,6 +2110,19 @@ PETSC_EXTERN PetscErrorCode PetscMkdir(const char[]);
 PETSC_EXTERN PetscErrorCode PetscMkdtemp(char[]);
 PETSC_EXTERN PetscErrorCode PetscRMTree(const char[]);
 
+/*MC
+   PetscBinaryBigEndian - indicates if values in memory are stored with big endian format
+
+   Synopsis:
+   #include <petscsys.h>
+   PetscBool PetscBinaryBigEndian(void);
+
+   No Fortran Support
+
+   Level: developer
+
+.seealso: `PetscInitialize()`, `PetscFinalize()`, `PetscInitializeCalled`
+M*/
 static inline PetscBool PetscBinaryBigEndian(void)
 {
   long _petsc_v = 1;
@@ -2210,9 +2239,32 @@ PETSC_EXTERN PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer, void *)
 PETSC_EXTERN PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer, size_t *);
 PETSC_EXTERN PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer, size_t);
 
-/* Type-safe wrapper to encourage use of PETSC_RESTRICT. Does not use PetscFunctionBegin because the error handling
- * prevents the compiler from completely erasing the stub. This is called in inner loops so it has to be as fast as
- * possible. */
+/*MC
+  PetscSegBufferGetInts - access an array of `PetscInt` from a `PetscSegBuffer`
+
+  Synopsis:
+  #include <petscsys.h>
+  PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg, size_t count, PetscInt *PETSC_RESTRICT *slot);
+
+  No Fortran Support
+
+  Input Parameters:
++ seg   - `PetscSegBuffer` buffer
+- count - number of entries needed
+
+  Output Parameter:
+. buf - address of new buffer for contiguous data
+
+  Level: intermediate
+
+  Developer Note:
+  Type-safe wrapper to encourage use of PETSC_RESTRICT. Does not use PetscFunctionBegin because the error handling
+  prevents the compiler from completely erasing the stub. This is called in inner loops so it has to be as fast as
+  possible.
+
+.seealso: `PetscSegBuffer`, `PetscSegBufferGet()`, `PetscInitialize()`, `PetscFinalize()`, `PetscInitializeCalled`
+M*/
+/* */
 static inline PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg, size_t count, PetscInt *PETSC_RESTRICT *slot)
 {
   return PetscSegBufferGet(seg, count, (void **)slot);
