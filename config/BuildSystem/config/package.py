@@ -1200,44 +1200,43 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
     setattr(self.compilers, flagsArg, oldFlags+extraFlags+' '+self.headers.toString(self.dinclude))
     self.compilers.saveLog()
 
-    # X.py uses a weird list of two headers.
+    # Multiple headers are tried in order
     if not isinstance(self.versioninclude,list):
       headerList = [self.versioninclude]
     else:
       headerList = self.versioninclude
 
-    includeLines = ''
     for header in headerList:
-      includeLines += '#include "'+header+'"\n'
-    try:
-      # We once used '#include "'+self.versioninclude+'"\npetscpkgver('+self.versionname+');\n',
-      # but some preprocessors are picky (ex. dpcpp -E), reporting errors on the code above even
-      # it is just supposed to do preprocessing:
-      #
-      #  error: C++ requires a type specifier for all declarations
-      #  petscpkgver(__SYCL_COMPILER_VERSION);
-      #  ^
-      #
-      # So we instead use this compilable code.
-      output = self.outputPreprocess(
+      try:
+        # We once used '#include "'+self.versioninclude+'"\npetscpkgver('+self.versionname+');\n',
+        # but some preprocessors are picky (ex. dpcpp -E), reporting errors on the code above even
+        # it is just supposed to do preprocessing:
+        #
+        #  error: C++ requires a type specifier for all declarations
+        #  petscpkgver(__SYCL_COMPILER_VERSION);
+        #  ^
+        #
+        # So we instead use this compilable code.
+        output = self.outputPreprocess(
 '''
-{x}
+#include "{x}"
 #define  PetscXstr_(s) PetscStr_(s)
 #define  PetscStr_(s)  #s
 const char *ver = "petscpkgver(" PetscXstr_({y}) ")";
-'''.format(x=includeLines, y=self.versionname))
-       # Ex. char *ver = "petscpkgver(" "20211206" ")";
-       # But after stripping spaces, quotes etc below, it becomes char*ver=petscpkgver(20211206);
+'''.format(x=header, y=self.versionname))
+         # Ex. char *ver = "petscpkgver(" "20211206" ")";
+         # But after stripping spaces, quotes etc below, it becomes char*ver=petscpkgver(20211206);
+      except:
+        output = None
       self.logWrite(self.compilers.restoreLog())
-    except:
-      self.log.write('For '+self.package+' unable to run preprocessor to obtain version information, skipping version check\n')
-      self.logWrite(self.compilers.restoreLog())
-      self.popLanguage()
-      setattr(self.compilers, flagsArg,oldFlags)
-      self.version = ''
-      return
+      if output:
+        break
     self.popLanguage()
     setattr(self.compilers, flagsArg,oldFlags)
+    if not output:
+        self.log.write('For '+self.package+' unable to run preprocessor to obtain version information, skipping version check\n')
+        self.version = ''
+        return
     # the preprocessor output might be very long, but the petscpkgver line should be at the end. Therefore, we partition it backwards
     [mid, right] = output.rpartition('petscpkgver')[1:]
     version = ''
