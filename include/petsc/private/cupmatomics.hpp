@@ -493,7 +493,7 @@ __device__ static double atomicExch(double *address, double val)
 }
   #endif
 
-__device__ static llint atomicExch(llint *address, llint val)
+__device__ static inline llint atomicExch(llint *address, llint val)
 {
   return (llint)(atomicExch((ullint *)address, (ullint)val));
 }
@@ -534,7 +534,7 @@ struct AtomicInsert<PetscComplex> {
   Atomic add operations
 
 */
-__device__ static llint atomicAdd(llint *address, llint val)
+__device__ static inline llint atomicAdd(llint *address, llint val)
 {
   return (llint)atomicAdd((ullint *)address, (ullint)val);
 }
@@ -583,7 +583,7 @@ struct AtomicAdd<PetscComplex> {
   HIP has no atomicMult at all, so we build our own with atomicCAS
  */
   #if defined(PETSC_USE_REAL_DOUBLE)
-__device__ static double atomicMult(double *address, double val)
+__device__ static inline double atomicMult(double *address, double val)
 {
   ullint *address_as_ull = (ullint *)(address);
   ullint  old            = *address_as_ull, assumed;
@@ -607,7 +607,7 @@ __device__ static float atomicMult(float *address, float val)
 }
   #endif
 
-__device__ static int atomicMult(int *address, int val)
+__device__ static inline int atomicMult(int *address, int val)
 {
   int *address_as_int = (int *)(address);
   int  old            = *address_as_int, assumed;
@@ -618,7 +618,7 @@ __device__ static int atomicMult(int *address, int val)
   return (int)old;
 }
 
-__device__ static llint atomicMult(llint *address, llint val)
+__device__ static inline llint atomicMult(llint *address, llint val)
 {
   ullint *address_as_ull = (ullint *)(address);
   ullint  old            = *address_as_ull, assumed;
@@ -725,7 +725,7 @@ struct AtomicMax {
   As of ROCm 3.10, the llint atomicAnd/Or/Xor(llint*, llint) is not supported
 */
 
-__device__ static llint atomicAnd(llint *address, llint val)
+__device__ static inline llint atomicAnd(llint *address, llint val)
 {
   ullint *address_as_ull = (ullint *)(address);
   ullint  old            = *address_as_ull, assumed;
@@ -735,7 +735,7 @@ __device__ static llint atomicAnd(llint *address, llint val)
   } while (assumed != old);
   return (llint)old;
 }
-__device__ static llint atomicOr(llint *address, llint val)
+__device__ static inline llint atomicOr(llint *address, llint val)
 {
   ullint *address_as_ull = (ullint *)(address);
   ullint  old            = *address_as_ull, assumed;
@@ -746,7 +746,7 @@ __device__ static llint atomicOr(llint *address, llint val)
   return (llint)old;
 }
 
-__device__ static llint atomicXor(llint *address, llint val)
+__device__ static inline llint atomicXor(llint *address, llint val)
 {
   ullint *address_as_ull = (ullint *)(address);
   ullint  old            = *address_as_ull, assumed;
