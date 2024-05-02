@@ -363,6 +363,7 @@ cdef public PetscErrorCode MatPythonSetContext(PetscMat mat, void *ctx) \
     except PETSC_ERR_PYTHON:
     FunctionBegin(b"MatPythonSetContext")
     PyMat(mat).setcontext(ctx, Mat_(mat))
+    mat.preallocated = PETSC_FALSE
     return FunctionEnd()
 
 cdef PetscErrorCode MatPythonSetType_PYTHON(PetscMat mat, const char *name) \

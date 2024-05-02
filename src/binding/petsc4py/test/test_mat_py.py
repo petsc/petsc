@@ -6,6 +6,8 @@ from sys import getrefcount
 
 
 class Matrix:
+    setupcalled = 0
+
     def __init__(self):
         pass
 
@@ -15,6 +17,8 @@ class Matrix:
     def destroy(self, mat):
         pass
 
+    def setUp(self, mat):
+        self.setupcalled += 1
 
 class ScaledIdentity(Matrix):
     s = 2.0
@@ -286,6 +290,7 @@ class TestMatrix(unittest.TestCase):
     COMM = PETSc.COMM_WORLD
     PYMOD = __name__
     PYCLS = 'Matrix'
+    CREATE_WITH_NONE = False
 
     def _getCtx(self):
         return self.A.getPythonContext()
@@ -300,13 +305,16 @@ class TestMatrix(unittest.TestCase):
             OptDB = PETSc.Options(self.A)
             OptDB['mat_python_type'] = f'{self.PYMOD}.{self.PYCLS}'
             self.A.setFromOptions()
-            self.A.setUp()
             del OptDB['mat_python_type']
             self.assertTrue(self._getCtx() is not None)
         else:  # python way
             context = globals()[self.PYCLS]()
-            self.A.createPython([N, N], context, comm=self.COMM)
-            self.A.setUp()
+            if self.CREATE_WITH_NONE:  # test passing None as context
+                self.A.createPython([N, N], None, comm=self.COMM)
+                self.A.setPythonContext(context)
+                self.A.setUp()
+            else:
+                self.A.createPython([N, N], context, comm=self.COMM)
             self.assertTrue(self._getCtx() is context)
             self.assertEqual(getrefcount(context), 3)
             del context
@@ -319,12 +327,20 @@ class TestMatrix(unittest.TestCase):
         self.A = None
         PETSc.garbage_cleanup()
         self.assertEqual(getrefcount(ctx), 2)
-        # import gc,pprint; pprint.pprint(gc.get_referrers(ctx))
 
     def testBasic(self):
         ctx = self.A.getPythonContext()
         self.assertTrue(self._getCtx() is ctx)
         self.assertEqual(getrefcount(ctx), 3)
+
+    def testSetUp(self):
+        ctx = self.A.getPythonContext()
+        setupcalled = ctx.setupcalled
+        self.A.setUp()
+        self.assertEqual(setupcalled, ctx.setupcalled)
+        self.A.setPythonContext(ctx)
+        self.A.setUp()
+        self.assertEqual(setupcalled + 1, ctx.setupcalled)
 
     def testZeroEntries(self):
         f = lambda: self.A.zeroEntries()
@@ -527,6 +543,7 @@ class TestScaledIdentity(TestMatrix):
 
 class TestDiagonal(TestMatrix):
     PYCLS = 'Diagonal'
+    CREATE_WITH_NONE = True
 
     def setUp(self):
         super().setUp()

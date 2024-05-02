@@ -1624,17 +1624,23 @@ cdef class Mat(Object):
         CHKERR(MatSetSizes(self.mat, m, n, M, N))
         CHKERR(MatSetType(self.mat, MATPYTHON))
         CHKERR(MatPythonSetContext(self.mat, <void*>context))
-        CHKERR(MatSetUp(self.mat))
+        if context:
+            CHKERR(MatSetUp(self.mat))
         return self
 
     def setPythonContext(self, context: Any) -> None:
         """Set the instance of the class implementing the required Python methods.
 
-        Not collective.
+        Logically collective.
+
+        Notes
+        -----
+        In order to use the matrix, `Mat.setUp` must be called after having set
+        the context. Pass `None` to reset the matrix to its initial state.
 
         See Also
         --------
-        petsc_python_mat, getPythonContext
+        petsc_python_mat, getPythonContext, setPythonType
 
         """
         CHKERR(MatPythonSetContext(self.mat, <void*>context))
@@ -1658,6 +1664,11 @@ cdef class Mat(Object):
         """Set the fully qualified Python name of the class to be used.
 
         Collective.
+
+        Notes
+        -----
+        In order to use the matrix, `Mat.setUp` must be called after having set
+        the type.
 
         See Also
         --------

@@ -283,7 +283,8 @@ PetscErrorCode PetscOptionsDestroyDefault(void)
 @*/
 PetscErrorCode PetscOptionsValidKey(const char key[], PetscBool *valid)
 {
-  char *ptr;
+  char               *ptr;
+  PETSC_UNUSED double d;
 
   PetscFunctionBegin;
   if (key) PetscAssertPointer(key, 1);
@@ -293,7 +294,7 @@ PetscErrorCode PetscOptionsValidKey(const char key[], PetscBool *valid)
   if (key[0] != '-') PetscFunctionReturn(PETSC_SUCCESS);
   if (key[1] == '-') key++;
   if (!isalpha((int)key[1])) PetscFunctionReturn(PETSC_SUCCESS);
-  (void)strtod(key, &ptr);
+  d = strtod(key, &ptr);
   if (ptr != key && !(*ptr == '_' || isalnum((int)*ptr))) PetscFunctionReturn(PETSC_SUCCESS);
   *valid = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
