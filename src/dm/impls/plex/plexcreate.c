@@ -3921,17 +3921,21 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   }
 
   if (fflg) {
-    DM dmnew;
+    DM          dmnew;
+    const char *name;
 
-    PetscCall(DMPlexCreateFromFile(PetscObjectComm((PetscObject)dm), filename, plexname, interpolate, &dmnew));
+    PetscCall(PetscObjectGetName((PetscObject)dm, &name));
+    PetscCall(DMPlexCreateFromFile(PetscObjectComm((PetscObject)dm), filename, nameflg ? plexname : name, interpolate, &dmnew));
     PetscCall(DMPlexCopy_Internal(dm, PETSC_FALSE, PETSC_FALSE, dmnew));
     PetscCall(DMPlexReplace_Internal(dm, &dmnew));
   } else if (refDomain) {
     PetscCall(DMPlexCreateReferenceCell_Internal(dm, cell));
   } else if (bdfflg) {
-    DM bdm, dmnew;
+    DM          bdm, dmnew;
+    const char *name;
 
-    PetscCall(DMPlexCreateFromFile(PetscObjectComm((PetscObject)dm), bdFilename, plexname, interpolate, &bdm));
+    PetscCall(PetscObjectGetName((PetscObject)dm, &name));
+    PetscCall(DMPlexCreateFromFile(PetscObjectComm((PetscObject)dm), bdFilename, nameflg ? plexname : name, interpolate, &bdm));
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject)bdm, "bd_"));
     PetscCall(DMSetFromOptions(bdm));
     PetscCall(DMPlexGenerate(bdm, NULL, interpolate, &dmnew));
