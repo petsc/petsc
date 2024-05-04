@@ -1,5 +1,6 @@
 -include ../../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_HYPRE_DEVICE'
+#requirespackage 'PETSC_HAVE_HIP'
 
 MANSEC    = Mat
 
