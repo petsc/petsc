@@ -39,7 +39,7 @@ namespace
 // regular versions would be an enormous pain to square with the templated types...
 // ==========================================================================================
 template <DeviceType T>
-class UseCUPMHostAllocGuard : Interface<T> {
+class PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL UseCUPMHostAllocGuard : Interface<T> {
 public:
   PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(T);
 
@@ -115,7 +115,7 @@ inline bool UseCUPMHostAllocGuard<T>::value() const noexcept
 } // anonymous namespace
 
 template <DeviceType T, PetscMemType MemoryType, PetscMemoryAccessMode AccessMode>
-class RestoreableArray : Interface<T> {
+class PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL RestoreableArray : Interface<T> {
 public:
   PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(T);
 
@@ -189,7 +189,7 @@ inline RestoreableArray<T, MT, MA>::operator cupm_pointer_type() const noexcept
 }
 
 template <DeviceType T>
-class CUPMObject : SolverInterface<T> {
+class PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL CUPMObject : SolverInterface<T> {
 protected:
   PETSC_CUPMSOLVER_INHERIT_INTERFACE_TYPEDEFS_USING(T);
 

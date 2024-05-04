@@ -59,7 +59,7 @@ namespace impl
 // ==========================================================================================
 
 template <device::cupm::DeviceType T>
-class MatDense_CUPM_Base : protected device::cupm::impl::CUPMObject<T> {
+class PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL MatDense_CUPM_Base : protected device::cupm::impl::CUPMObject<T> {
 public:
   PETSC_CUPMOBJECT_HEADER(T);
 
@@ -152,7 +152,7 @@ class MatDense_MPI_CUPM;
 // ==========================================================================================
 
 template <device::cupm::DeviceType T, typename Derived>
-class MatDense_CUPM : protected MatDense_CUPM_Base<T> {
+class PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL MatDense_CUPM : protected MatDense_CUPM_Base<T> {
 private:
   static PetscErrorCode CheckSaneSequentialMatSizes_(Mat) noexcept;
 
@@ -190,7 +190,7 @@ protected:
 
 template <device::cupm::DeviceType T, typename D>
 template <PetscMemType MT, PetscMemoryAccessMode MA>
-class MatDense_CUPM<T, D>::MatrixArray : public device::cupm::impl::RestoreableArray<T, MT, MA> {
+class PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL MatDense_CUPM<T, D>::MatrixArray : public device::cupm::impl::RestoreableArray<T, MT, MA> {
   using base_type = device::cupm::impl::RestoreableArray<T, MT, MA>;
 
 public:

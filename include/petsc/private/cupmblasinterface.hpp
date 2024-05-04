@@ -231,7 +231,7 @@ private:
   #define PETSC_CUPMBLAS_FP_INPUT_TYPE  PETSC_CUPMBLAS_FP_INPUT_TYPE_U
   #define PETSC_CUPMBLAS_FP_RETURN_TYPE PETSC_CUPMBLAS_FP_RETURN_TYPE_L
 template <>
-struct BlasInterfaceImpl<DeviceType::CUDA> : Interface<DeviceType::CUDA> {
+struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL BlasInterfaceImpl<DeviceType::CUDA> : Interface<DeviceType::CUDA> {
   // typedefs
   using cupmBlasHandle_t      = cupmBlasHandleWrapper<cublasHandle_t, 0>;
   using cupmBlasError_t       = cublasStatus_t;
@@ -299,7 +299,7 @@ struct BlasInterfaceImpl<DeviceType::CUDA> : Interface<DeviceType::CUDA> {
   #define PETSC_CUPMBLAS_FP_INPUT_TYPE  PETSC_CUPMBLAS_FP_INPUT_TYPE_U
   #define PETSC_CUPMBLAS_FP_RETURN_TYPE PETSC_CUPMBLAS_FP_RETURN_TYPE_L
 template <>
-struct BlasInterfaceImpl<DeviceType::HIP> : Interface<DeviceType::HIP> {
+struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL BlasInterfaceImpl<DeviceType::HIP> : Interface<DeviceType::HIP> {
   // typedefs
   using cupmBlasHandle_t      = cupmBlasHandleWrapper<hipblasHandle_t, 0>;
   using cupmBlasError_t       = hipblasStatus_t;
