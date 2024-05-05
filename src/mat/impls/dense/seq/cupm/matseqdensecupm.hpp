@@ -27,7 +27,7 @@ namespace impl
 {
 
 template <device::cupm::DeviceType T>
-class MatDense_Seq_CUPM : MatDense_CUPM<T, MatDense_Seq_CUPM<T>> {
+class PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL MatDense_Seq_CUPM : MatDense_CUPM<T, MatDense_Seq_CUPM<T>> {
 public:
   MATDENSECUPM_HEADER(T, MatDense_Seq_CUPM<T>);
 

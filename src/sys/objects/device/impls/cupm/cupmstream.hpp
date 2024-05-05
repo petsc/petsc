@@ -21,7 +21,7 @@ namespace cupm
 // Address of the objects does not suffice since cupmStreams are very likely internally reused.
 
 template <DeviceType T>
-class CUPMStream : public StreamBase<CUPMStream<T>>, impl::Interface<T> {
+class PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL CUPMStream : public StreamBase<CUPMStream<T>>, impl::Interface<T> {
   using crtp_base_type = StreamBase<CUPMStream<T>>;
   friend crtp_base_type;
 
