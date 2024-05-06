@@ -542,3 +542,15 @@ PETSC_EXTERN PetscErrorCode DMPlexPointQueueFront(DMPlexPointQueue, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexPointQueueBack(DMPlexPointQueue, PetscInt *);
 PETSC_EXTERN PetscBool      DMPlexPointQueueEmpty(DMPlexPointQueue);
 PETSC_EXTERN PetscErrorCode DMPlexPointQueueEmptyCollective(PetscObject, DMPlexPointQueue, PetscBool *);
+
+#if defined(PETSC_HAVE_HDF5)
+struct _n_DMPlexStorageVersion {
+  int major, minor, subminor;
+};
+typedef struct _n_DMPlexStorageVersion *DMPlexStorageVersion;
+
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetDMPlexStorageVersionReading(PetscViewer, DMPlexStorageVersion *);
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetDMPlexStorageVersionReading(PetscViewer, DMPlexStorageVersion);
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetDMPlexStorageVersionWriting(PetscViewer, DMPlexStorageVersion *);
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetDMPlexStorageVersionWriting(PetscViewer, DMPlexStorageVersion);
+#endif
