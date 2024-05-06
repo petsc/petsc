@@ -109,7 +109,7 @@ class Configure(config.package.CMakePackage):
           trequires = 1
       if trequires:
         if bf.find('(Dev)') > -1:
-          self.requirespath = 0
+          self.requiresrpath = 0
       bf = fd.readline()
     fd.close()
 
