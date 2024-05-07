@@ -236,6 +236,7 @@ checksource:
     - vermin --version
     - make vermin
     - PATH=/nfs/gce/projects/petsc/soft/u22.04/spack-2024-03-06/opt/spack/linux-ubuntu22.04-x86_64/gcc-11.4.0/llvm-18.1.0-7hsf4hzma6aebqsd4ifb5brchcooktkp/bin:$PATH make checkclangformat SHELL=bash
+    - PATH=/nfs/gce/projects/petsc/soft/u22.04/spack-2024-03-06/opt/spack/linux-ubuntu22.04-x86_64/gcc-11.4.0/llvm-18.1.5-ug2n4c7cb3xrf3dxn7fkffuvcgfdzzpk/bin:$PATH make checkclangformat SHELL=bash
     - make checkbadSource SHELL=bash
     - make checkbadFileChange SHELL=bash
     - make -f gmakefile check_output SHELL=bash
