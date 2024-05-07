@@ -117,10 +117,9 @@ typedef struct {
   int *(*lexorder)(void);
 } GmshCellInfo;
 
-#define GmshCellEntry(cellType, polytope, dim, order) \
-  { \
-    cellType, GMSH_##polytope, dim, order, GmshNumNodes_##polytope(1), GmshNumNodes_##polytope(order), GmshLexOrder_##polytope##_##order \
-  }
+// clang-format off
+#define GmshCellEntry(cellType, polytope, dim, order) {cellType, GMSH_##polytope, dim, order, GmshNumNodes_##polytope(1), GmshNumNodes_##polytope(order), GmshLexOrder_##polytope##_##order}
+// clang-format on
 
 static const GmshCellInfo GmshCellTable[] = {
   GmshCellEntry(15, VTX, 0, 0),
