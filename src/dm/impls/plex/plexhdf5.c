@@ -361,7 +361,32 @@ static PetscErrorCode DMPlexGetHDF5Name_Private(DM dm, const char *name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMSequenceView_HDF5(DM dm, const char *seqname, PetscInt seqnum, PetscScalar value, PetscViewer viewer)
+PetscErrorCode DMSequenceGetLength_HDF5_Internal(DM dm, const char seqname[], PetscInt *seqlen, PetscViewer viewer)
+{
+  hid_t     file, group, dset, dspace;
+  hsize_t   rdim, *dims;
+  char     *groupname;
+  PetscBool has;
+
+  PetscFunctionBegin;
+  PetscCall(PetscViewerHDF5GetGroup(viewer, NULL, &groupname));
+  PetscCall(PetscViewerHDF5HasDataset(viewer, seqname, &has));
+  PetscCheck(has, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Object (dataset) \"%s\" not stored in group %s", seqname, groupname);
+
+  PetscCall(PetscViewerHDF5OpenGroup(viewer, NULL, &file, &group));
+  PetscCallHDF5Return(dset, H5Dopen2, (group, seqname, H5P_DEFAULT));
+  PetscCallHDF5Return(dspace, H5Dget_space, (dset));
+  PetscCallHDF5Return(rdim, H5Sget_simple_extent_dims, (dspace, NULL, NULL));
+  PetscCall(PetscMalloc1(rdim, &dims));
+  PetscCallHDF5Return(rdim, H5Sget_simple_extent_dims, (dspace, dims, NULL));
+  *seqlen = dims[0];
+  PetscCall(PetscFree(dims));
+  PetscCallHDF5(H5Dclose, (dset));
+  PetscCallHDF5(H5Gclose, (group));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMSequenceView_HDF5(DM dm, const char seqname[], PetscInt seqnum, PetscScalar value, PetscViewer viewer)
 {
   Vec         stamp;
   PetscMPIInt rank;
@@ -395,7 +420,7 @@ static PetscErrorCode DMSequenceView_HDF5(DM dm, const char *seqname, PetscInt s
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMSequenceLoad_HDF5_Internal(DM dm, const char *seqname, PetscInt seqnum, PetscScalar *value, PetscViewer viewer)
+PetscErrorCode DMSequenceLoad_HDF5_Internal(DM dm, const char seqname[], PetscInt seqnum, PetscScalar *value, PetscViewer viewer)
 {
   Vec         stamp;
   PetscMPIInt rank;

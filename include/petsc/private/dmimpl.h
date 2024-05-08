@@ -414,7 +414,8 @@ PETSC_EXTERN PetscErrorCode DMView_GLVis(DM, PetscViewer, PetscErrorCode (*)(DM,
 */
 
 #if defined(PETSC_HAVE_HDF5)
-PETSC_EXTERN PetscErrorCode DMSequenceLoad_HDF5_Internal(DM, const char *, PetscInt, PetscScalar *, PetscViewer);
+PETSC_EXTERN PetscErrorCode DMSequenceLoad_HDF5_Internal(DM, const char[], PetscInt, PetscScalar *, PetscViewer);
+PETSC_EXTERN PetscErrorCode DMSequenceGetLength_HDF5_Internal(DM, const char[], PetscInt *, PetscViewer);
 #endif
 
 static inline PetscErrorCode DMGetLocalOffset_Private(DM dm, PetscInt point, PetscInt *start, PetscInt *end)
