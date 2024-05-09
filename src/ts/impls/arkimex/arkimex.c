@@ -11,60 +11,15 @@
 */
 #include <petsc/private/tsimpl.h> /*I   "petscts.h"   I*/
 #include <petscdm.h>
+#include <../src/ts/impls/arkimex/arkimex.h>
+#include <../src/ts/impls/arkimex/fsarkimex.h>
 
+static ARKTableauLink ARKTableauList;
 static TSARKIMEXType  TSARKIMEXDefault = TSARKIMEX3;
 static TSDIRKType     TSDIRKDefault    = TSDIRKES213SAL;
 static PetscBool      TSARKIMEXRegisterAllCalled;
 static PetscBool      TSARKIMEXPackageInitialized;
 static PetscErrorCode TSExtrapolate_ARKIMEX(TS, PetscReal, Vec);
-
-typedef struct _ARKTableau *ARKTableau;
-struct _ARKTableau {
-  char      *name;
-  PetscBool  additive;             /* If False, it is a DIRK method */
-  PetscInt   order;                /* Classical approximation order of the method */
-  PetscInt   s;                    /* Number of stages */
-  PetscBool  stiffly_accurate;     /* The implicit part is stiffly accurate */
-  PetscBool  FSAL_implicit;        /* The implicit part is FSAL */
-  PetscBool  explicit_first_stage; /* The implicit part has an explicit first stage */
-  PetscInt   pinterp;              /* Interpolation order */
-  PetscReal *At, *bt, *ct;         /* Stiff tableau */
-  PetscReal *A, *b, *c;            /* Non-stiff tableau */
-  PetscReal *bembedt, *bembed;     /* Embedded formula of order one less (order-1) */
-  PetscReal *binterpt, *binterp;   /* Dense output formula */
-  PetscReal  ccfl;                 /* Placeholder for CFL coefficient relative to forward Euler */
-};
-typedef struct _ARKTableauLink *ARKTableauLink;
-struct _ARKTableauLink {
-  struct _ARKTableau tab;
-  ARKTableauLink     next;
-};
-static ARKTableauLink ARKTableauList;
-
-typedef struct {
-  ARKTableau   tableau;
-  Vec         *Y;            /* States computed during the step */
-  Vec         *YdotI;        /* Time derivatives for the stiff part */
-  Vec         *YdotRHS;      /* Function evaluations for the non-stiff part */
-  Vec         *Y_prev;       /* States computed during the previous time step */
-  Vec         *YdotI_prev;   /* Time derivatives for the stiff part for the previous time step*/
-  Vec         *YdotRHS_prev; /* Function evaluations for the non-stiff part for the previous time step*/
-  Vec          Ydot0;        /* Holds the slope from the previous step in FSAL case */
-  Vec          Ydot;         /* Work vector holding Ydot during residual evaluation */
-  Vec          Z;            /* Ydot = shift(Y-Z) */
-  IS           alg_is;       /* Index set for algebraic variables, needed when restarting with DIRK */
-  PetscScalar *work;         /* Scalar work */
-  PetscReal    scoeff;       /* shift = scoeff/dt */
-  PetscReal    stage_time;
-  PetscBool    imex;
-  PetscBool    extrapolate; /* Extrapolate initial guess from previous time-step stage values */
-  TSStepStatus status;
-
-  /* context for sensitivity analysis */
-  Vec *VecsDeltaLam;   /* Increment of the adjoint sensitivity w.r.t IC at stage */
-  Vec *VecsSensiTemp;  /* Vectors to be multiplied with Jacobian transpose */
-  Vec *VecsSensiPTemp; /* Temporary Vectors to store JacobianP-transpose-vector product */
-} TS_ARKIMEX;
 
 /*MC
      TSARKIMEXARS122 - Second order ARK IMEX scheme, {cite}`ascher_1997`
@@ -455,7 +410,7 @@ M*/
 .seealso: [](ch_ts), `TSDIRK`, `TSDIRKType`, `TSDIRKSetType()`
 M*/
 
-static PetscErrorCode TSHasRHSFunction(TS ts, PetscBool *has)
+PetscErrorCode TSHasRHSFunction(TS ts, PetscBool *has)
 {
   TSRHSFunctionFn *func;
 
@@ -1808,11 +1763,15 @@ static PetscErrorCode TSReset_ARKIMEX(TS ts)
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
 
   PetscFunctionBegin;
-  PetscCall(TSARKIMEXTableauReset(ts));
-  PetscCall(VecDestroy(&ark->Ydot));
-  PetscCall(VecDestroy(&ark->Ydot0));
-  PetscCall(VecDestroy(&ark->Z));
-  PetscCall(ISDestroy(&ark->alg_is));
+  if (ark->fastslowsplit) {
+    PetscTryMethod(ts, "TSReset_ARKIMEX_FastSlowSplit_C", (TS), (ts));
+  } else {
+    PetscCall(TSARKIMEXTableauReset(ts));
+    PetscCall(VecDestroy(&ark->Ydot));
+    PetscCall(VecDestroy(&ark->Ydot0));
+    PetscCall(VecDestroy(&ark->Z));
+    PetscCall(ISDestroy(&ark->alg_is));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1834,12 +1793,12 @@ static PetscErrorCode TSARKIMEXGetVecs(TS ts, DM dm, Vec *Z, Vec *Ydot)
 
   PetscFunctionBegin;
   if (Z) {
-    if (dm && dm != ts->dm) {
+    if (dm && dm != ts->dm && !ax->fastslowsplit) {
       PetscCall(DMGetNamedGlobalVector(dm, "TSARKIMEX_Z", Z));
     } else *Z = ax->Z;
   }
   if (Ydot) {
-    if (dm && dm != ts->dm) {
+    if (dm && dm != ts->dm && !ax->fastslowsplit) {
       PetscCall(DMGetNamedGlobalVector(dm, "TSARKIMEX_Ydot", Ydot));
     } else *Ydot = ax->Ydot;
   }
@@ -1848,12 +1807,14 @@ static PetscErrorCode TSARKIMEXGetVecs(TS ts, DM dm, Vec *Z, Vec *Ydot)
 
 static PetscErrorCode TSARKIMEXRestoreVecs(TS ts, DM dm, Vec *Z, Vec *Ydot)
 {
+  TS_ARKIMEX *ax = (TS_ARKIMEX *)ts->data;
+
   PetscFunctionBegin;
   if (Z) {
-    if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSARKIMEX_Z", Z));
+    if (dm && dm != ts->dm && !ax->fastslowsplit) PetscCall(DMRestoreNamedGlobalVector(dm, "TSARKIMEX_Z", Z));
   }
   if (Ydot) {
-    if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSARKIMEX_Ydot", Ydot));
+    if (dm && dm != ts->dm && !ax->fastslowsplit) PetscCall(DMRestoreNamedGlobalVector(dm, "TSARKIMEX_Ydot", Ydot));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1918,8 +1879,9 @@ static PetscErrorCode SNESTSFormFunction_ARKIMEX(SNES snes, Vec X, Vec F, TS ts)
 {
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
   DM          dm, dmsave;
-  Vec         Z, Ydot;
+  Vec         Z, Ydot, Y = ark->Y_snes;
   IS          alg_is;
+  TS          subts = ark->subts_fast ? ark->subts_fast : ts;
 
   PetscFunctionBegin;
   PetscCall(SNESGetDM(snes, &dm));
@@ -1938,12 +1900,16 @@ static PetscErrorCode SNESTSFormFunction_ARKIMEX(SNES snes, Vec X, Vec F, TS ts)
       PetscCall(PetscObjectDereference((PetscObject)alg_is));
       PetscCall(ISViewFromOptions(alg_is, (PetscObject)snes, "-ts_arkimex_algebraic_is_view"));
     }
-    PetscCall(TSComputeIFunction(ts, ark->stage_time, Z, X, F, ark->imex));
+    if (ark->fastslowsplit && ark->is_slow) PetscCall(VecISCopy(Y, ark->is_fast, SCATTER_FORWARD, Z));
+    else Y = Z;
+    PetscCall(TSComputeIFunction(subts, ark->stage_time, Y, X, F, ark->imex));
     PetscCall(VecISSet(F, alg_is, 0.0));
   } else {
     PetscReal shift = ark->scoeff / ts->time_step;
     PetscCall(VecAXPBYPCZ(Ydot, -shift, shift, 0, Z, X)); /* Ydot = shift*(X-Z) */
-    PetscCall(TSComputeIFunction(ts, ark->stage_time, X, Ydot, F, ark->imex));
+    if (ark->fastslowsplit && ark->is_slow) PetscCall(VecISCopy(Y, ark->is_fast, SCATTER_FORWARD, X));
+    else Y = X;
+    PetscCall(TSComputeIFunction(subts, ark->stage_time, Y, Ydot, F, ark->imex));
   }
 
   ts->dm = dmsave;
@@ -1955,9 +1921,10 @@ static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes, Vec X, Mat A, Mat B,
 {
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
   DM          dm, dmsave;
-  Vec         Ydot, Z;
+  Vec         Ydot, Z, Y = ark->Y_snes;
   PetscReal   shift;
   IS          alg_is;
+  TS          subts = ark->subts_fast ? ark->subts_fast : ts;
 
   PetscFunctionBegin;
   PetscCall(SNESGetDM(snes, &dm));
@@ -1975,7 +1942,9 @@ static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes, Vec X, Mat A, Mat B,
     /* We are solving F(t_n,x_n,xdot) = 0 to start the method
        We compute with a very large shift and then scale back the matrix */
     shift = 1.0 / PETSC_MACHINE_EPSILON;
-    PetscCall(TSComputeIJacobian(ts, ark->stage_time, Z, X, shift, A, B, ark->imex));
+    if (ark->fastslowsplit && ark->is_slow) PetscCall(VecISCopy(Y, ark->is_fast, SCATTER_FORWARD, Z));
+    else Y = Z;
+    PetscCall(TSComputeIJacobian(subts, ark->stage_time, Y, X, shift, A, B, ark->imex));
     PetscCall(MatScale(B, PETSC_MACHINE_EPSILON));
     PetscCall(MatHasOperation(B, MATOP_ZERO_ROWS, &hasZeroRows));
     if (hasZeroRows) {
@@ -1988,7 +1957,9 @@ static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes, Vec X, Mat A, Mat B,
     if (A != B) PetscCall(MatScale(A, PETSC_MACHINE_EPSILON));
   } else {
     shift = ark->scoeff / ts->time_step;
-    PetscCall(TSComputeIJacobian(ts, ark->stage_time, X, Ydot, shift, A, B, ark->imex));
+    if (ark->fastslowsplit && ark->is_slow) PetscCall(VecISCopy(Y, ark->is_fast, SCATTER_FORWARD, X));
+    else Y = X;
+    PetscCall(TSComputeIJacobian(subts, ark->stage_time, Y, Ydot, shift, A, B, ark->imex));
   }
   ts->dm = dmsave;
   PetscCall(TSARKIMEXRestoreVecs(ts, dm, &Z, &Ydot));
@@ -2074,14 +2045,19 @@ static PetscErrorCode TSSetUp_ARKIMEX(TS ts)
   SNES        snes;
 
   PetscFunctionBegin;
-  PetscCall(TSARKIMEXTableauSetUp(ts));
-  PetscCall(VecDuplicate(ts->vec_sol, &ark->Ydot));
-  PetscCall(VecDuplicate(ts->vec_sol, &ark->Ydot0));
-  PetscCall(VecDuplicate(ts->vec_sol, &ark->Z));
-  PetscCall(TSGetDM(ts, &dm));
-  PetscCall(DMCoarsenHookAdd(dm, DMCoarsenHook_TSARKIMEX, DMRestrictHook_TSARKIMEX, ts));
-  PetscCall(DMSubDomainHookAdd(dm, DMSubDomainHook_TSARKIMEX, DMSubDomainRestrictHook_TSARKIMEX, ts));
-  PetscCall(TSGetSNES(ts, &snes));
+  if (ark->fastslowsplit) {
+    PetscTryMethod(ts, "TSSetUp_ARKIMEX_FastSlowSplit_C", (TS), (ts));
+  } else {
+    PetscCall(TSARKIMEXTableauSetUp(ts));
+    PetscCall(VecDuplicate(ts->vec_sol, &ark->Ydot));
+    PetscCall(VecDuplicate(ts->vec_sol, &ark->Ydot0));
+    PetscCall(VecDuplicate(ts->vec_sol, &ark->Z));
+    PetscCall(TSGetDM(ts, &dm));
+    PetscCall(DMCoarsenHookAdd(dm, DMCoarsenHook_TSARKIMEX, DMRestrictHook_TSARKIMEX, ts));
+    PetscCall(DMSubDomainHookAdd(dm, DMSubDomainHook_TSARKIMEX, DMSubDomainRestrictHook_TSARKIMEX, ts));
+    PetscCall(TSGetSNES(ts, &snes));
+    PetscCall(SNESSetDM(snes, dm));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2128,11 +2104,14 @@ static PetscErrorCode TSSetFromOptions_ARKIMEX(TS ts, PetscOptionItems *PetscOpt
       PetscCall(PetscOptionsEList("-ts_dirk_type", "Family of DIRK method", "TSDIRKSetType", (const char *const *)namelist, count, ark->tableau->name, &choice, &flg));
       if (flg) PetscCall(TSDIRKSetType(ts, namelist[choice]));
     } else {
+      PetscBool fastslowsplit;
       PetscCall(PetscOptionsEList("-ts_arkimex_type", "Family of ARK IMEX method", "TSARKIMEXSetType", (const char *const *)namelist, count, ark->tableau->name, &choice, &flg));
       if (flg) PetscCall(TSARKIMEXSetType(ts, namelist[choice]));
       flg = (PetscBool)!ark->imex;
       PetscCall(PetscOptionsBool("-ts_arkimex_fully_implicit", "Solve the problem fully implicitly", "TSARKIMEXSetFullyImplicit", flg, &flg, NULL));
       ark->imex = (PetscBool)!flg;
+      PetscCall(PetscOptionsBool("-ts_arkimex_fastslowsplit", "Use ARK IMEX for fast-slow systems", "TSARKIMEXSetFastSlowSplit", ark->fastslowsplit, &fastslowsplit, &flg));
+      if (flg) PetscCall(TSARKIMEXSetFastSlowSplit(ts, fastslowsplit));
     }
     PetscCall(PetscFree(namelist));
     PetscCall(PetscOptionsBool("-ts_arkimex_initial_guess_extrapolate", "Extrapolate the initial guess for the stage solution from stage values of the previous time step", "", ark->extrapolate, &ark->extrapolate, NULL));
@@ -2362,6 +2341,10 @@ static PetscErrorCode TSDestroy_ARKIMEX(TS ts)
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSARKIMEXSetType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSARKIMEXSetFullyImplicit_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSARKIMEXGetFullyImplicit_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSARKIMEXSetFastSlowSplit_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSARKIMEXGetFastSlowSplit_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSSetUp_ARKIMEX_FastSlowSplit_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSReset_ARKIMEX_FastSlowSplit_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2428,6 +2411,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS ts)
   if (!dirk) {
     PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSARKIMEXSetType_C", TSARKIMEXSetType_ARKIMEX));
     PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSARKIMEXSetFullyImplicit_C", TSARKIMEXSetFullyImplicit_ARKIMEX));
+    PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSARKIMEXSetFastSlowSplit_C", TSARKIMEXSetFastSlowSplit_ARKIMEX));
+    PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSARKIMEXGetFastSlowSplit_C", TSARKIMEXGetFastSlowSplit_ARKIMEX));
     PetscCall(TSARKIMEXSetType(ts, TSARKIMEXDefault));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2519,5 +2504,50 @@ PETSC_EXTERN PetscErrorCode TSCreate_DIRK(TS ts)
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDIRKGetType_C", TSARKIMEXGetType_ARKIMEX));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDIRKSetType_C", TSDIRKSetType_DIRK));
   PetscCall(TSDIRKSetType(ts, TSDIRKDefault));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  TSARKIMEXSetFastSlowSplit - Use `TSARKIMEX` for solving a fast-slow system
+
+  Logically Collective
+
+  Input Parameters:
++ ts       - timestepping context
+- fastslow - `PETSC_TRUE` enables the `TSARKIMEX` solver for a fast-slow system where the RHS is split component-wise.
+
+  Options Database Key:
+. -ts_arkimex_fastslowsplit - <true,false>
+
+  Level: intermediate
+
+.seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXGetFastSlowSplit()`
+@*/
+PetscErrorCode TSARKIMEXSetFastSlowSplit(TS ts, PetscBool fastslow)
+{
+  PetscFunctionBegin;
+  PetscTryMethod(ts, "TSARKIMEXSetFastSlowSplit_C", (TS, PetscBool), (ts, fastslow));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  TSARKIMEXGetFastSlowSplit - Gets whether to use `TSARKIMEX` for a fast-slow system
+
+  Not Collective
+
+  Input Parameter:
+. ts - timestepping context
+
+  Output Parameter:
+. fastslow - `PETSC_TRUE` if `TSARKIMEX` will be used for solving a fast-slow system, `PETSC_FALSE` otherwise
+
+  Level: intermediate
+
+.seealso: [](ch_ts), `TSARKIMEX`, `TSARKIMEXSetFastSlowSplit()`
+@*/
+PetscErrorCode TSARKIMEXGetFastSlowSplit(TS ts, PetscBool *fastslow)
+{
+  PetscFunctionBegin;
+  PetscUseMethod(ts, "TSARKIMEXGetFastSlowSplit_C", (TS, PetscBool *), (ts, fastslow));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

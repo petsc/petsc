@@ -143,7 +143,108 @@ PetscErrorCode TSRHSSplitSetRHSFunction(TS ts, const char splitname[], Vec r, TS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
+  TSRHSSplitSetIFunction - Set the split implicit function for `TSARKIMEX`
+
+  Logically Collective
+
+  Input Parameters:
++ ts        - the `TS` context obtained from `TSCreate()`
+. splitname - name of this split
+. r         - vector to hold the residual (or `NULL` to have it created internally)
+. ifunc     - the implicit function evaluation routine
+- ctx       - user-defined context for private data for the split function evaluation routine (may be `NULL`)
+
+  Level: intermediate
+
+.seealso: [](ch_ts), `TS`, `TSIFunctionFn`, `IS`, `TSRHSSplitSetIS()`, `TSARKIMEX`
+@*/
+PetscErrorCode TSRHSSplitSetIFunction(TS ts, const char splitname[], Vec r, TSIFunctionFn *ifunc, void *ctx)
+{
+  TS_RHSSplitLink isplit;
+  DM              dmc;
+  Vec             subvec, ralloc = NULL;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  if (r) PetscValidHeaderSpecific(r, VEC_CLASSID, 3);
+
+  /* look up the split */
+  PetscCall(TSRHSSplitGetRHSSplit(ts, splitname, &isplit));
+  PetscCheck(isplit, PETSC_COMM_SELF, PETSC_ERR_USER, "The split %s is not created, check the split name or call TSRHSSplitSetIS() to create one", splitname);
+
+  if (!r && ts->vec_sol) {
+    PetscCall(VecGetSubVector(ts->vec_sol, isplit->is, &subvec));
+    PetscCall(VecDuplicate(subvec, &ralloc));
+    r = ralloc;
+    PetscCall(VecRestoreSubVector(ts->vec_sol, isplit->is, &subvec));
+  }
+
+  if (ts->dm) {
+    PetscInt dim;
+
+    PetscCall(DMGetDimension(ts->dm, &dim));
+    if (dim != -1) {
+      PetscCall(DMClone(ts->dm, &dmc));
+      PetscCall(TSSetDM(isplit->ts, dmc));
+      PetscCall(DMDestroy(&dmc));
+    }
+  }
+
+  PetscCall(TSSetIFunction(isplit->ts, r, ifunc, ctx));
+  PetscCall(VecDestroy(&ralloc));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  TSRHSSplitSetIJacobian - Set the Jacobian for the split implicit function with `TSARKIMEX`
+
+  Logically Collective
+
+  Input Parameters:
++ ts        - the `TS` context obtained from `TSCreate()`
+. splitname - name of this split
+. Amat      - (approximate) matrix to store Jacobian entries computed by `f`
+. Pmat      - matrix used to compute preconditioner (usually the same as `Amat`)
+. ijac      - the Jacobian evaluation routine
+- ctx       - user-defined context for private data for the split function evaluation routine (may be `NULL`)
+
+  Level: intermediate
+
+.seealso: [](ch_ts), `TS`, `TSRHSSplitSetIFunction`, `TSIJacobianFn`, `IS`, `TSRHSSplitSetIS()`
+@*/
+PetscErrorCode TSRHSSplitSetIJacobian(TS ts, const char splitname[], Mat Amat, Mat Pmat, TSIJacobianFn *ijac, void *ctx)
+{
+  TS_RHSSplitLink isplit;
+  DM              dmc;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  if (Amat) PetscValidHeaderSpecific(Amat, MAT_CLASSID, 3);
+  if (Pmat) PetscValidHeaderSpecific(Pmat, MAT_CLASSID, 4);
+  if (Amat) PetscCheckSameComm(ts, 1, Amat, 3);
+  if (Pmat) PetscCheckSameComm(ts, 1, Pmat, 4);
+
+  /* look up the split */
+  PetscCall(TSRHSSplitGetRHSSplit(ts, splitname, &isplit));
+  PetscCheck(isplit, PETSC_COMM_SELF, PETSC_ERR_USER, "The split %s is not created, check the split name or call TSRHSSplitSetIS() to create one", splitname);
+
+  if (ts->dm) {
+    PetscInt dim;
+
+    PetscCall(DMGetDimension(ts->dm, &dim));
+    if (dim != -1) {
+      PetscCall(DMClone(ts->dm, &dmc));
+      PetscCall(TSSetDM(isplit->ts, dmc));
+      PetscCall(DMDestroy(&dmc));
+    }
+  }
+
+  PetscCall(TSSetIJacobian(isplit->ts, Amat, Pmat, ijac, ctx));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
   TSRHSSplitGetSubTS - Get the sub-`TS` by split name.
 
   Logically Collective
