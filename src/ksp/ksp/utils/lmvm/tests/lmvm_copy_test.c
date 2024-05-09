@@ -37,6 +37,19 @@ static PetscErrorCode testMatEqual(PetscRandom rand, Mat A, Mat B, PetscBool *fl
     PetscCall(MatSolve(A, x, y_A));
     PetscCall(MatSolve(B, x, y_B));
     PetscCall(VecEqual(y_A, y_B, flg));
+    if (*flg == PETSC_FALSE) {
+      PetscReal norm;
+
+      PetscCall(VecAXPY(y_A, -1.0, y_B));
+      PetscCall(VecNorm(y_A, NORM_INFINITY, &norm));
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "MatSolve() norm error %g\n", (double)norm));
+    }
+  } else {
+    PetscReal norm;
+
+    PetscCall(VecAXPY(y_A, -1.0, y_B));
+    PetscCall(VecNorm(y_A, NORM_INFINITY, &norm));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "MatMult() norm error %g\n", (double)norm));
   }
   PetscCall(VecDestroy(&y_B));
   PetscCall(VecDestroy(&y_A));
