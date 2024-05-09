@@ -119,7 +119,7 @@ PetscErrorCode PetscSetDisplay(void)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-x_virtual", &flag, NULL));
   if (flag) {
     /*  this is a crude hack, but better than nothing */
-    PetscCall(PetscPOpen(PETSC_COMM_WORLD, NULL, "pkill -9 Xvfb", "r", NULL));
+    PetscCall(PetscPOpen(PETSC_COMM_WORLD, NULL, "pkill -15 Xvfb", "r", NULL));
     PetscCall(PetscSleep(1));
     PetscCall(PetscPOpen(PETSC_COMM_WORLD, NULL, "Xvfb :15 -screen 0 1600x1200x24", "r", NULL));
     PetscCall(PetscSleep(5));

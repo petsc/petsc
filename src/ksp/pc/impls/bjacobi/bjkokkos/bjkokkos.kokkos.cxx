@@ -573,7 +573,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
     // get x
     PetscCall(VecGetArrayAndMemType(xout, &glb_xdata, &mtype));
 #if defined(PETSC_HAVE_CUDA)
-    PetscCheck(PetscMemTypeDevice(mtype), PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "No GPU data for x %" PetscInt_FMT " != %" PetscInt_FMT, mtype, PETSC_MEMTYPE_DEVICE);
+    PetscCheck(PetscMemTypeDevice(mtype), PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "No GPU data for x %d != %d", static_cast<int>(mtype), static_cast<int>(PETSC_MEMTYPE_DEVICE));
 #endif
     PetscCall(VecGetArrayReadAndMemType(bvec, &glb_bdata, &mtype));
 #if defined(PETSC_HAVE_CUDA)
