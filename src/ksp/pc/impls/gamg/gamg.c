@@ -624,8 +624,7 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
   /* Get A_i and R_i */
   for (level = 0, Aarr[0] = Pmat, nactivepe = size; level < (pc_gamg->Nlevels - 1) && (level == 0 || M > pc_gamg->coarse_eq_limit); level++) {
     pc_gamg->current_level = level;
-    PetscCheck(level < PETSC_MG_MAXLEVELS - 2, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Too many levels %" PetscInt_FMT, level + 1);
-    level1 = level + 1;
+    level1                 = level + 1;
 #if defined(GAMG_STAGES)
     if (!gamg_stages[level]) {
       char str[32];
@@ -766,6 +765,7 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
     PetscCheck(!is_last, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Is last ?");
     if (N <= pc_gamg->coarse_eq_limit) is_last = PETSC_TRUE;
     if (level1 == pc_gamg->Nlevels - 1) is_last = PETSC_TRUE;
+    if (level == PETSC_MG_MAXLEVELS - 2) is_last = PETSC_TRUE;
     PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_LEVEL], 0, 0, 0, 0));
     PetscCall(pc_gamg->ops->createlevel(pc, Aarr[level], cr_bs, &Parr[level1], &Aarr[level1], &nactivepe, NULL, is_last));
     PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_LEVEL], 0, 0, 0, 0));
@@ -783,6 +783,10 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
     /* stop if one node or one proc -- could pull back for singular problems */
     if ((pc_gamg->data_cell_cols && M / pc_gamg->data_cell_cols < 2) || (!pc_gamg->data_cell_cols && M / bs < 2)) {
       PetscCall(PetscInfo(pc, "%s: HARD stop of coarsening on level %" PetscInt_FMT ".  Grid too small: %" PetscInt_FMT " block nodes\n", ((PetscObject)pc)->prefix, level, M / bs));
+      level++;
+      break;
+    } else if (level == PETSC_MG_MAXLEVELS - 2) { /* stop if we are limited by PC_MG_MAXLEVELS */
+      PetscCall(PetscInfo(pc, "%s: HARD stop of coarsening on level %" PetscInt_FMT ".  PC_MG_MAXLEVELS reached\n", ((PetscObject)pc)->prefix, level));
       level++;
       break;
     }
