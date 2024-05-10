@@ -469,3 +469,11 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecWAXPYAsync_Private(Vec, PetscScala
       PetscUseTypeMethod(v, name, __VA_ARGS__); \
     } \
   } while (0)
+
+// return in lda the vector's local size aligned to <alignment> bytes, where lda is an integer pointer
+#define VecGetLocalSizeAligned(v, alignment, lda) \
+  do { \
+    PetscInt     n = (v)->map->n; \
+    const size_t s = (alignment) / sizeof(PetscScalar); \
+    *(lda)         = ((n + s - 1) / s) * s; \
+  } while (0)
