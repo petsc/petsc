@@ -1816,9 +1816,7 @@ static PetscErrorCode VecDuplicateVecs_SeqKokkos_GEMV(Vec w, PetscInt m, Vec *V[
   PetscCall(PetscKokkosInitializeCheck()); // as we'll call kokkos_malloc()
   PetscCall(PetscMalloc1(m, V));
   PetscCall(VecGetLayout(w, &map));
-  lda = map->n;
-  lda = ((lda + 31) / 32) * 32; // make every vector 32-elements aligned
-
+  VecGetLocalSizeAligned(w, 64, &lda); // get in lda the 64-bytes aligned local size
   // allocate raw arrays on host and device for the whole m vectors
   PetscCall(PetscCalloc1(m * lda, &array_h));
 #if defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_HOST)
