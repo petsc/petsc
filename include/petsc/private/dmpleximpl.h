@@ -233,7 +233,6 @@ typedef struct {
   PetscReal scale[NUM_PETSC_UNITS]; /* The scale for each SI unit */
 
   /* Geometry */
-  PetscBool     ignoreModel;                      /* Ignore the geometry model during refinement */
   PetscReal     minradius;                        /* Minimum distance from cell centroid to face */
   PetscBool     useHashLocation;                  /* Use grid hashing for point location */
   PetscGridHash lbox;                             /* Local box for searching */
