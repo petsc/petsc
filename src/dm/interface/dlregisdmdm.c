@@ -175,6 +175,8 @@ PetscErrorCode DMInitializePackage(void)
 
   PetscCall(DMGenerateRegisterAll());
   PetscCall(PetscRegisterFinalize(DMGenerateRegisterDestroy));
+  PetscCall(DMGeomModelRegisterAll());
+  PetscCall(PetscRegisterFinalize(DMGeomModelRegisterDestroy));
   PetscCall(DMPlexTransformRegisterAll());
   PetscCall(PetscRegisterFinalize(DMPlexTransformRegisterDestroy));
   PetscCall(DMLabelRegisterAll());

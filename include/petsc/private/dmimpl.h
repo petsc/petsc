@@ -88,6 +88,7 @@ struct _DMOps {
   PetscErrorCode (*getboundingbox)(DM, PetscReal *, PetscReal *);
   PetscErrorCode (*getlocalboundingbox)(DM, PetscReal[], PetscReal[], PetscInt[], PetscInt[]);
   PetscErrorCode (*locatepointssubdomain)(DM, Vec, PetscMPIInt **);
+  PetscErrorCode (*snaptogeommodel)(DM, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
 
   PetscErrorCode (*projectfunctionlocal)(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **, InsertMode, Vec);
   PetscErrorCode (*projectfunctionlabellocal)(DM, PetscReal, DMLabel, PetscInt, const PetscInt[], PetscInt, const PetscInt[], PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **, InsertMode, Vec);

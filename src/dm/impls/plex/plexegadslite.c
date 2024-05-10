@@ -4,7 +4,7 @@
 #ifdef PETSC_HAVE_EGADS
   #include <egads_lite.h>
 
-PetscErrorCode DMPlexSnapToGeomModel_EGADSLite_Internal(DM dm, PetscInt p, PetscInt dE, ego model, PetscInt bodyID, PetscInt faceID, PetscInt edgeID, const PetscScalar mcoords[], PetscScalar gcoords[])
+PetscErrorCode DMSnapToGeomModel_EGADSLite_Internal(DM dm, PetscInt p, PetscInt dE, ego model, PetscInt bodyID, PetscInt faceID, PetscInt edgeID, const PetscScalar mcoords[], PetscScalar gcoords[])
 {
   DM   cdm;
   ego *bodies;

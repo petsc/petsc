@@ -539,6 +539,7 @@ PetscErrorCode DMPlexTransformSetUp(DMPlexTransform tr)
   if (tr->setupcalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscTryTypeMethod(tr, setup);
   PetscCall(DMPlexTransformGetDM(tr, &dm));
+  PetscCall(DMSetSnapToGeomModel(dm, NULL));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   if (pEnd > pStart) {
     PetscCall(DMPlexGetCellType(dm, 0, &ctCell));
@@ -2141,7 +2142,7 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
           PetscCall(DMPlexTransformGetTargetPoint(tr, ct, rct[n], p, r, &vNew));
           PetscCall(PetscSectionGetOffset(coordSectionNew, vNew, &off));
           PetscCall(DMPlexTransformMapCoordinates(tr, ct, rct[n], p, r, Nv, dEo, icoords, vcoords));
-          PetscCall(DMPlexSnapToGeomModel(dm, p, dE, vcoords, &coordsNew[off]));
+          PetscCall(DMSnapToGeomModel(dm, p, dE, vcoords, &coordsNew[off]));
         }
       }
       PetscCall(DMPlexRestoreCellCoordinates(dm, p, &isDG, &Nc, &array, &pcoords));
