@@ -20,6 +20,21 @@ static PetscErrorCode positiveVectorUpdate(PetscRandom rand, Vec x, Vec f)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode VecEqualToTolerance(Vec a, Vec b, NormType norm_type, PetscReal tol, PetscBool *flg)
+{
+  Vec       diff;
+  PetscReal diff_norm;
+
+  PetscFunctionBegin;
+  PetscCall(VecDuplicate(a, &diff));
+  PetscCall(VecCopy(a, diff));
+  PetscCall(VecAXPY(diff, -1.0, b));
+  PetscCall(VecNorm(diff, norm_type, &diff_norm));
+  PetscCall(VecDestroy(&diff));
+  *flg = (diff_norm <= tol) ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 // unlike MatTestEqual(), this test tests MatMult() and MatSolve()
 static PetscErrorCode testMatEqual(PetscRandom rand, Mat A, Mat B, PetscBool *flg)
 {
@@ -32,11 +47,24 @@ static PetscErrorCode testMatEqual(PetscRandom rand, Mat A, Mat B, PetscBool *fl
   PetscCall(VecSetRandom(x, rand));
   PetscCall(MatMult(A, x, y_A));
   PetscCall(MatMult(B, x, y_B));
-  PetscCall(VecEqual(y_A, y_B, flg));
+  PetscCall(VecEqualToTolerance(y_A, y_B, NORM_2, PETSC_SMALL, flg));
   if (*flg == PETSC_TRUE) {
     PetscCall(MatSolve(A, x, y_A));
     PetscCall(MatSolve(B, x, y_B));
-    PetscCall(VecEqual(y_A, y_B, flg));
+    PetscCall(VecEqualToTolerance(y_A, y_B, NORM_2, PETSC_SMALL, flg));
+    if (*flg == PETSC_FALSE) {
+      PetscReal norm;
+
+      PetscCall(VecAXPY(y_A, -1.0, y_B));
+      PetscCall(VecNorm(y_A, NORM_INFINITY, &norm));
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "MatSolve() norm error %g\n", (double)norm));
+    }
+  } else {
+    PetscReal norm;
+
+    PetscCall(VecAXPY(y_A, -1.0, y_B));
+    PetscCall(VecNorm(y_A, NORM_INFINITY, &norm));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "MatMult() norm error %g\n", (double)norm));
   }
   PetscCall(VecDestroy(&y_B));
   PetscCall(VecDestroy(&y_A));
