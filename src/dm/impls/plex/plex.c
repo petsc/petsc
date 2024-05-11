@@ -9434,6 +9434,42 @@ PetscErrorCode DMPlexCheckPointSF(DM dm, PetscSF pointSF, PetscBool allowExtraRo
 }
 
 /*@
+  DMPlexCheckOrphanVertices - Check that no vertices are disconnected from the mesh, unless the mesh only consists of disconnected vertices.
+
+  Collective
+
+  Input Parameter:
+. dm - The `DMPLEX` object
+
+  Level: developer
+
+  Notes:
+  This is mainly intended for debugging/testing purposes.
+
+  Other cell types which are disconnected would be caught by the symmetry and face checks.
+
+  For the complete list of DMPlexCheck* functions, see `DMSetFromOptions()`.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCheck()`, `DMSetFromOptions()`
+@*/
+PetscErrorCode DMPlexCheckOrphanVertices(DM dm)
+{
+  PetscInt pStart, pEnd, vStart, vEnd;
+
+  PetscFunctionBegin;
+  PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+  PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+  if (pStart == vStart && pEnd == vEnd) PetscFunctionReturn(PETSC_SUCCESS);
+  for (PetscInt v = vStart; v < vEnd; ++v) {
+    PetscInt suppSize;
+
+    PetscCall(DMPlexGetSupportSize(dm, v, &suppSize));
+    PetscCheck(suppSize, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Vertex %" PetscInt_FMT " is disconnected from the mesh", v);
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   DMPlexCheck - Perform various checks of `DMPLEX` sanity
 
   Input Parameter:
@@ -9462,6 +9498,7 @@ PetscErrorCode DMPlexCheck(DM dm)
   PetscCall(DMPlexCheckGeometry(dm));
   PetscCall(DMPlexCheckPointSF(dm, NULL, PETSC_FALSE));
   PetscCall(DMPlexCheckInterfaceCones(dm));
+  PetscCall(DMPlexCheckOrphanVertices(dm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
