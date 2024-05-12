@@ -47,14 +47,15 @@ int main(int argc, char **args)
   PetscScalar val, Ke[16], r[4];
   PetscReal   x, y, h, norm;
   PetscInt    idx[4], count, *rows;
-  Vec         u, ustar, b;
+  Vec         u, ustar, b, build_sol;
   KSP         ksp;
-  PetscBool   viewkspest = PETSC_FALSE;
+  PetscBool   viewkspest = PETSC_FALSE, testbuildsolution = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-ksp_est_view", &viewkspest, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_build_solution", &testbuildsolution, NULL));
   N = (m + 1) * (m + 1); /* dimension of matrix */
   M = m * m;             /* number of elements */
   h = 1.0 / m;           /* mesh width */
@@ -148,6 +149,16 @@ int main(int argc, char **args)
   PetscCall(KSPSetInitialGuessNonzero(ksp, PETSC_TRUE));
   PetscCall(KSPSolve(ksp, b, u));
 
+  if (testbuildsolution) {
+    PetscBool ok;
+
+    PetscCall(VecDuplicate(u, &build_sol));
+    PetscCall(KSPBuildSolution(ksp, build_sol, NULL));
+    PetscCall(VecEqual(u, build_sol, &ok));
+    PetscCheck(ok, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "KSPBuildSolution() returned incorrect solution");
+    PetscCall(VecDestroy(&build_sol));
+  }
+
   if (viewkspest) {
     KSP kspest;
 
@@ -213,5 +224,11 @@ int main(int argc, char **args)
       suffix: gamg_provided_not_ok
       filter: grep -v "variant HERMITIAN" | sed -e "s/Iterations 4/Iterations 5/g"
       args: -pc_type gamg -mg_levels_pc_type sor -mg_levels_esteig_ksp_type cg -ksp_view
+
+    test:
+      suffix: build_solution
+      requires: !complex
+      filter: grep -v Norm
+      args: -ksp_type {{chebyshev cg groppcg pipecg pipecgrr pipelcg pipeprcg cgne nash stcg gltr fcg pipefcg gmres fgmres lgmres dgmres pgmres tcqmr bcgs ibcgs qmrcgs fbcgs fbcgsr bcgsl pipebcgs cgs tfqmr cr pipecr bicg minres lcd gcr cgls richardson}}
 
 TEST*/
