@@ -2048,8 +2048,7 @@ PetscErrorCode KSPGetRhs(KSP ksp, Vec *r)
 
 /*@
   KSPGetSolution - Gets the location of the solution for the
-  linear system to be solved.  Note that this may not be where the solution
-  is stored during the iterative process; see `KSPBuildSolution()`.
+  linear system to be solved.
 
   Not Collective
 
@@ -2060,6 +2059,10 @@ PetscErrorCode KSPGetRhs(KSP ksp, Vec *r)
 . v - solution vector
 
   Level: developer
+
+  Note:
+  If this is called during a `KSPSolve()` the vector's values may not represent the solution
+  to the linear system.
 
 .seealso: [](ch_ksp), `KSPGetRhs()`, `KSPBuildSolution()`, `KSPSolve()`, `KSP`
 @*/
@@ -2754,8 +2757,8 @@ PetscErrorCode KSPGetConvergenceContext(KSP ksp, void *ctx)
   methods, such as `KSPCG`, the second case requires a copy of the solution,
   while in the first case the call is essentially free since it simply
   returns the vector where the solution already is stored. For some methods
-  like `KSPGMRES` this is a reasonably expensive operation and should only be
-  used in truly needed.
+  like `KSPGMRES` during the solve this is a reasonably expensive operation and should only be
+  used if truly needed.
 
 .seealso: [](ch_ksp), `KSPGetSolution()`, `KSPBuildResidual()`, `KSP`
 @*/
@@ -2765,7 +2768,12 @@ PetscErrorCode KSPBuildSolution(KSP ksp, Vec v, Vec *V)
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscCheck(V || v, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_WRONG, "Must provide either v or V");
   if (!V) V = &v;
-  PetscUseTypeMethod(ksp, buildsolution, v, V);
+  if (ksp->reason != KSP_CONVERGED_ITERATING) {
+    if (!v) PetscCall(KSPGetSolution(ksp, V));
+    else PetscCall(VecCopy(ksp->vec_sol, v));
+  } else {
+    PetscUseTypeMethod(ksp, buildsolution, v, V);
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
