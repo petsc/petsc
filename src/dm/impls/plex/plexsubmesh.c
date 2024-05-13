@@ -1032,7 +1032,7 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   DMPlexConstructGhostCells - Construct ghost cells which connect to every boundary face
 
   Collective
