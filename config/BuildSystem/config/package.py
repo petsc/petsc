@@ -571,11 +571,11 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
       alllibs.append(libs)
     return alllibs
 
-  def getIncludeDirs(self, prefix, includeDir):
-    if isinstance(includeDir, list):
-      iDirs = [inc for inc in includeDir if os.path.isabs(inc)] + [os.path.join(prefix, inc) for inc in includeDir if not os.path.isabs(inc)]
-      return [inc for inc in iDirs if os.path.exists(inc)]
-    return os.path.join(prefix, includeDir)
+  def getIncludeDirs(self, prefix, includeDirs):
+    if not isinstance(includeDirs, list):
+      includeDirs = [includeDirs]
+    iDirs = [inc for inc in includeDirs if os.path.isabs(inc)] + [os.path.join(prefix, inc) for inc in includeDirs if not os.path.isabs(inc)]
+    return [inc for inc in iDirs if os.path.exists(inc)]
 
   def addToArgs(self,args,key,value):
     found = 0
