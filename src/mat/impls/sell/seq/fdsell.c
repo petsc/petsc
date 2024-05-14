@@ -16,16 +16,17 @@ PetscErrorCode MatGetColumnIJ_SeqSELL_Color(Mat A, PetscInt oshift, PetscBool sy
   PetscBool    isnonzero;
 
   PetscFunctionBegin;
+  PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected cmap->n %" PetscInt_FMT " >= 0", n);
   *nn = n;
   if (!ia) PetscFunctionReturn(PETSC_SUCCESS);
 
-  PetscCall(PetscCalloc1(n + 1, &collengths));
+  PetscCall(PetscCalloc1(n, &collengths));
   PetscCall(PetscMalloc1(n + 1, &cia));
   PetscCall(PetscMalloc1(a->nz + 1, &cja));
   PetscCall(PetscMalloc1(a->nz + 1, &cspidx));
 
-  totalslices = A->rmap->n / 8 + ((A->rmap->n & 0x07) ? 1 : 0); /* floor(n/8) */
-  for (i = 0; i < totalslices; i++) {                           /* loop over slices */
+  totalslices = PetscCeilInt(A->rmap->n, 8);
+  for (i = 0; i < totalslices; i++) { /* loop over slices */
     for (j = a->sliidx[i], row = 0; j < a->sliidx[i + 1]; j++, row = ((row + 1) & 0x07)) {
       isnonzero = (PetscBool)((j - a->sliidx[i]) / 8 < a->rlen[8 * i + row]);
       if (isnonzero) collengths[a->colidx[j]]++;

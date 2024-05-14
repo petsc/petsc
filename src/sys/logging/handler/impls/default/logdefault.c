@@ -1302,10 +1302,11 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
 
 #if defined(PETSC_HAVE_CUPM)
   const char *cupm = PetscDefined(HAVE_CUDA) ? "CUDA" : "HIP";
-  if (PetscDeviceCUPMRuntimeArch) PetscCall(PetscViewerASCIIPrintf(viewer, "%s on a %s named %s with %d processor(s) and %s architecture %d, by %s on %s\n", pname, arch, hostname, size, cupm, PetscDeviceCUPMRuntimeArch, username, date));
+  if (PetscDeviceCUPMRuntimeArch)
+    PetscCall(PetscViewerASCIIPrintf(viewer, "%s on a %s named %s with %d process%s and %s architecture %d, by %s on %s\n", pname, arch, hostname, size, size > 1 ? "es" : "", cupm, PetscDeviceCUPMRuntimeArch, username, date));
   else
 #endif
-    PetscCall(PetscViewerASCIIPrintf(viewer, "%s on a %s named %s with %d processor(s), by %s on %s\n", pname, arch, hostname, size, username, date));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "%s on a %s named %s with %d process%s, by %s on %s\n", pname, arch, hostname, size, size > 1 ? "es" : "", username, date));
 
 #if defined(PETSC_HAVE_OPENMP)
   PetscCall(PetscViewerASCIIPrintf(viewer, "Using %" PetscInt_FMT " OpenMP threads\n", PetscNumOMPThreads));

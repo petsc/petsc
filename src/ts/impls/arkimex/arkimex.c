@@ -1152,6 +1152,7 @@ PetscErrorCode TSARKIMEXRegister(TSARKIMEXType name, PetscInt order, PetscInt s,
   PetscInt       i, j;
 
   PetscFunctionBegin;
+  PetscCheck(s > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Expected number of stages s %" PetscInt_FMT " > 0", s);
   PetscCall(TSARKIMEXInitializePackage());
   for (link = ARKTableauList; link; link = link->next) {
     PetscBool match;
