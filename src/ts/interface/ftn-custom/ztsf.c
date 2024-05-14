@@ -14,9 +14,6 @@
   #define tssetijacobian_               TSSETIJACOBIAN
   #define tsgetijacobian_               TSGETIJACOBIAN
   #define tsview_                       TSVIEW
-  #define tssetoptionsprefix_           TSSETOPTIONSPREFIX
-  #define tsgetoptionsprefix_           TSGETOPTIONSPREFIX
-  #define tsappendoptionsprefix_        TSAPPENDOPTIONSPREFIX
   #define tsmonitorset_                 TSMONITORSET
   #define tscomputerhsfunctionlinear_   TSCOMPUTERHSFUNCTIONLINEAR
   #define tscomputerhsjacobianconstant_ TSCOMPUTERHSJACOBIANCONSTANT
@@ -37,9 +34,6 @@
   #define tssetijacobian_               tssetijacobian
   #define tsgetijacobian_               tsgetijacobian
   #define tsview_                       tsview
-  #define tssetoptionsprefix_           tssetoptionsprefix
-  #define tsgetoptionsprefix_           tsgetoptionsprefix
-  #define tsappendoptionsprefix_        tsappendoptionsprefix
   #define tsmonitorset_                 tsmonitorset
   #define tscomputerhsfunctionlinear_   tscomputerhsfunctionlinear
   #define tscomputerhsjacobianconstant_ tscomputerhsjacobianconstant
@@ -277,31 +271,6 @@ PETSC_EXTERN void tsview_(TS *ts, PetscViewer *viewer, PetscErrorCode *ierr)
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer, v);
   *ierr = TSView(*ts, v);
-}
-
-PETSC_EXTERN void tssetoptionsprefix_(TS *ts, char *prefix, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-  FIXCHAR(prefix, len, t);
-  *ierr = TSSetOptionsPrefix(*ts, t);
-  if (*ierr) return;
-  FREECHAR(prefix, t);
-}
-PETSC_EXTERN void tsgetoptionsprefix_(TS *ts, char *prefix, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  const char *tname;
-
-  *ierr = TSGetOptionsPrefix(*ts, &tname);
-  *ierr = PetscStrncpy(prefix, tname, len);
-  FIXRETURNCHAR(PETSC_TRUE, prefix, len);
-}
-PETSC_EXTERN void tsappendoptionsprefix_(TS *ts, char *prefix, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-  FIXCHAR(prefix, len, t);
-  *ierr = TSAppendOptionsPrefix(*ts, t);
-  if (*ierr) return;
-  FREECHAR(prefix, t);
 }
 
 PETSC_EXTERN void tsviewfromoptions_(TS *ao, PetscObject obj, char *type, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)

@@ -51,7 +51,7 @@ static PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoin
   Collective
 
   Input Parameters:
-+ dm    - The DMPlex object
++ dm    - The `DMPLEX` object
 . otype - type of reordering, see `MatOrderingType`
 - label - [Optional] Label used to segregate ordering into sets, or `NULL`
 
@@ -489,6 +489,35 @@ static PetscErrorCode DMCreateSectionPermutation_Plex_Cohesive(DM dm, IS *permut
         if (!PetscBTLookupSet(bt, q)) {
           perm[i++] = q;
           s         = suppSize;
+          // At T-junctions, we can have an unsplit point at the other end, so also order that loop
+          {
+            const PetscInt *qsupp, *qcone;
+            PetscInt        qsuppSize;
+
+            PetscCall(DMPlexGetSupport(dm, q, &qsupp));
+            PetscCall(DMPlexGetSupportSize(dm, q, &qsuppSize));
+            for (PetscInt qs = 0; qs < qsuppSize; ++qs) {
+              DMPolytopeType qsct;
+
+              PetscCall(DMPlexGetCellType(dm, qsupp[qs], &qsct));
+              switch (qsct) {
+              case DM_POLYTOPE_POINT_PRISM_TENSOR:
+              case DM_POLYTOPE_SEG_PRISM_TENSOR:
+              case DM_POLYTOPE_TRI_PRISM_TENSOR:
+              case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+                PetscCall(DMPlexGetCone(dm, qsupp[qs], &qcone));
+                if (qcone[0] == qcone[1]) {
+                  if (!PetscBTLookupSet(bt, qsupp[qs])) {
+                    perm[i++] = qsupp[qs];
+                    qs        = qsuppSize;
+                  }
+                }
+                break;
+              default:
+                break;
+              }
+            }
+          }
         }
         if (!PetscBTLookupSet(bt, qq)) {
           perm[i++] = qq;
@@ -499,6 +528,9 @@ static PetscErrorCode DMCreateSectionPermutation_Plex_Cohesive(DM dm, IS *permut
         break;
       }
     }
+  }
+  if (PetscDefined(USE_DEBUG)) {
+    for (PetscInt p = pStart; p < pEnd; ++p) PetscCheck(PetscBTLookup(bt, p), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Index %" PetscInt_FMT " missed in permutation of [%" PetscInt_FMT ", %" PetscInt_FMT ")", p, pStart, pEnd);
   }
   PetscCall(PetscBTDestroy(&bt));
   PetscCheck(i == pEnd - pStart, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Number of points in permutation %" PetscInt_FMT " does not match chart size %" PetscInt_FMT, i, pEnd - pStart);

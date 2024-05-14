@@ -99,6 +99,7 @@ PetscErrorCode Device<T>::DeviceInternal::configure() noexcept
   if (cupmSetDevice(id_) != cupmErrorDeviceAlreadyInUse) PetscCallCUPM(cupmGetLastError());
   // need to update the device properties
   PetscCallCUPM(cupmGetDeviceProperties(&dprop_, id_));
+  PetscDeviceCUPMRuntimeArch = dprop_.major * 10 + dprop_.minor;
   PetscCall(PetscInfo(nullptr, "Configured device %d\n", id_));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -274,16 +275,16 @@ PetscErrorCode Device<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, P
 template <DeviceType T>
 PetscErrorCode Device<T>::init_device_id_(PetscInt *inid) const noexcept
 {
-  const auto id   = *inid == PETSC_DECIDE ? defaultDevice_ : *inid;
+  const auto id   = *inid == PETSC_DECIDE ? defaultDevice_ : (int)*inid;
   const auto cerr = static_cast<cupmError_t>(-defaultDevice_);
 
   PetscFunctionBegin;
   PetscCheck(defaultDevice_ != PETSC_CUPM_DEVICE_NONE, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Trying to retrieve a %s PetscDevice when it has been disabled", cupmName());
   PetscCheck(defaultDevice_ >= 0, PETSC_COMM_SELF, PETSC_ERR_GPU, "Cannot lazily initialize PetscDevice: %s error %d (%s) : %s", cupmName(), static_cast<PetscErrorCode>(cerr), cupmGetErrorName(cerr), cupmGetErrorString(cerr));
-  PetscAssert(static_cast<decltype(devices_.size())>(id) < devices_.size(), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Only supports %zu number of devices but trying to get device with id %" PetscInt_FMT, devices_.size(), id);
+  PetscAssert(static_cast<decltype(devices_.size())>(id) < devices_.size(), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Only supports %zu number of devices but trying to get device with id %d", devices_.size(), id);
 
   if (!devices_[id]) devices_[id] = util::make_unique<DeviceInternal>(id);
-  PetscAssert(id == devices_[id]->id(), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Entry %" PetscInt_FMT " contains device with mismatching id %d", id, devices_[id]->id());
+  PetscAssert(id == devices_[id]->id(), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Entry %d contains device with mismatching id %d", id, devices_[id]->id());
   PetscCall(devices_[id]->initialize());
   *inid = id;
   PetscFunctionReturn(PETSC_SUCCESS);

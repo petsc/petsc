@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version          = '5.2.3'
+    self.version          = '5.2.3-p1'
     self.versionname      = 'PASTIX_MAJOR_VERSION.PASTIX_MEDIUM_VERSION.PASTIX_MINOR_VERSION'
     # 'https://gforge.inria.fr/frs/download.php/file/36212/pastix_'+self.version+'.tar.bz2',
     self.download         = ['https://web.cels.anl.gov/projects/petsc/download/externalpackages/pastix_'+self.version+'.tar.bz2']
@@ -16,6 +16,7 @@ class Configure(config.package.Package):
     self.buildLanguages   = ['C','FC']
     self.hastests         = 1
     self.hastestsdatafiles= 1
+    self.requirekandr     = 1
     return
 
 

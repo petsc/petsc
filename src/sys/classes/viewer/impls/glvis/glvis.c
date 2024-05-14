@@ -585,7 +585,7 @@ static PetscErrorCode PetscViewerFileSetName_GLVis(PetscViewer viewer, const cha
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerGLVisOpen - Opens a `PETSCVIEWERGLVIS` `PetscViewer`
 
   Collective; No Fortran Support
@@ -603,7 +603,7 @@ static PetscErrorCode PetscViewerFileSetName_GLVis(PetscViewer viewer, const cha
 + -glvis_precision <precision> - Sets number of digits for floating point values
 . -glvis_size <width,height>   - Sets the window size (in pixels)
 . -glvis_pause <pause>         - Sets time (in seconds) that the program pauses after each visualization
-       (0 is default, -1 implies every visualization)
+                                 (0 is default, -1 implies every visualization)
 . -glvis_keys                  - Additional keys to configure visualization
 - -glvis_exec                  - Additional commands to configure visualization
 

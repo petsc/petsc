@@ -194,7 +194,6 @@
       userctx%m = m
       userctx%n = n
 
-      return
       end
 ! -----------------------------------------------------------------------
 
@@ -322,7 +321,6 @@
 
       PetscCall(VecResetArray(x,ierr))
       PetscCall(VecResetArray(b,ierr))
-      return
       end
 
 ! ------------------------------------------------------------------------
@@ -343,7 +341,6 @@
       PetscCall(VecDestroy(userctx%b,ierr))
       PetscCall(MatDestroy(userctx%A,ierr))
       PetscCall(KSPDestroy(userctx%ksp,ierr))
-      return
       end
 
 !

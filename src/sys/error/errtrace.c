@@ -8,10 +8,14 @@
 #include "err.h"
 #include <petsc/private/logimpl.h> // PETSC_TLS
 
+#if defined(PETSC_HAVE_CUPM)
+  #include <petsc/private/deviceimpl.h>
+#endif
+
 /*@C
   PetscIgnoreErrorHandler - Deprecated, use `PetscReturnErrorHandler()`. Ignores the error, allows program to continue as if error did not occur
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + comm - communicator over which error occurred
@@ -148,7 +152,7 @@ static PETSC_TLS PetscBool petsc_traceback_error_silent = PETSC_FALSE;
   PetscTraceBackErrorHandler - Default error handler routine that generates
   a traceback on error detection.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + comm - communicator over which error occurred
@@ -219,6 +223,14 @@ PetscErrorCode PetscTraceBackErrorHandler(MPI_Comm comm, int line, const char *f
         if (text) ierr = (*PetscErrorPrintf)("%s\n", text);
       }
       if (mess) ierr = (*PetscErrorPrintf)("%s\n", mess);
+#if defined(PETSC_HAVE_CUDA_MIN_ARCH)
+      int confCudaArch = PETSC_HAVE_CUDA_MIN_ARCH;   // if PETSc was configured with numbered CUDA arches, get the min arch.
+      int runCudaArch  = PetscDeviceCUPMRuntimeArch; // 0 indicates the code has never initialized a cuda device.
+      if (runCudaArch && confCudaArch > runCudaArch) {
+        ierr = (*PetscErrorPrintf)("WARNING! Run on a CUDA device with GPU architecture %d, but PETSc was configured with a minimal GPU architecture %d.\n", runCudaArch, confCudaArch);
+        ierr = (*PetscErrorPrintf)("If it is a cudaErrorNoKernelImageForDevice error, you may need to reconfigure PETSc with --with-cuda-arch=%d or --with-cuda-arch=%d,%d\n", runCudaArch, runCudaArch, confCudaArch);
+      }
+#endif
       ierr = PetscOptionsLeftError();
       ierr = (*PetscErrorPrintf)("See https://petsc.org/release/faq/ for trouble shooting.\n");
       if (!PetscCIEnabledPortableErrorOutput) {

@@ -12,5 +12,4 @@
       do 10,i=1,n
          z(i) = x(i) * y(i)
   10  continue
-      return
       end

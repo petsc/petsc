@@ -736,7 +736,7 @@ PetscErrorCode PCShellSetPostSolve(PC pc, PetscErrorCode (*postsolve)(PC pc, KSP
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCShellSetName - Sets an optional name to associate with a `PCSHELL`
   preconditioner.
 
@@ -761,7 +761,7 @@ PetscErrorCode PCShellSetName(PC pc, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCShellGetName - Gets an optional name that the user has set for a `PCSHELL` with `PCShellSetName()`
   preconditioner.
 

@@ -4,13 +4,18 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version     = '3.83'
+    self.version     = '3.901'
     self.versionname = 'ZOLTAN_VERSION_NUMBER'
     self.download    = ['https://web.cels.anl.gov/projects/petsc/download/externalpackages/zoltan_distrib_v'+self.version+'.tar.gz']
     self.functions   = ['Zoltan_LB_Partition']
     self.includes    = ['zoltan.h']
     self.liblist     = [['libzoltan.a']]
     self.buildLanguages = ['C','Cxx']
+
+  def setupHelp(self, help):
+    config.package.GNUPackage.setupHelp(self,help)
+    import nargs
+    help.addArgument('ZOLTAN', '-with-zoltan-fortran-bindings', nargs.ArgBool(None, 0, 'Use/build Zoltan Fortran interface'))
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
@@ -28,9 +33,13 @@ class Configure(config.package.GNUPackage):
     args.append('--enable-mpi')
     args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.dinclude)+'"')
     args.append('LIBS="'+self.libraries.toStringNoDupes(self.dlib)+'"')
-    if hasattr(self.compilers, 'FC'):
-      args.append('--enable-f90interface')
-      self.addToArgs(args,'FCFLAGS',self.headers.toStringNoDupes(self.dinclude))
+    if self.argDB['with-zoltan-fortran-bindings']:
+      if hasattr(self.compilers, 'FC'):
+        args.append('--enable-f90interface')
+        self.addToArgs(args,'FCFLAGS',self.headers.toStringNoDupes(self.dinclude))
+      else:
+        raise RuntimeError('Cannot build Zoltan Fortran bindings --with-fc=0 or with a malfunctioning Fortran compiler.')
+
     if self.parmetis.found:
       args.append('--with-parmetis')
     if self.ptscotch.found:
@@ -41,6 +50,8 @@ class Configure(config.package.GNUPackage):
     '''Zoltan does not have a make clean'''
     packageDir = os.path.join(self.packageDir,'petsc-build')
     args = self.formGNUConfigureArgs()
+    if self.download and self.argDB['download-'+self.downloadname.lower()+'-configure-arguments']:
+       args.append(self.argDB['download-'+self.downloadname.lower()+'-configure-arguments'])
     args = ' '.join(args)
     conffile = os.path.join(self.packageDir,self.package+'.petscconf')
     fd = open(conffile, 'w')

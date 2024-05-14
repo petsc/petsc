@@ -12,6 +12,7 @@
 #define TaoADMMRegularizerType PetscEnum
 #define TaoALMMType PetscEnum
 #define TaoBNCGType PetscEnum
+#define TaoSubsetType PetscEnum
 
 #define TAOLMVM     'lmvm'
 #define TAONLS      'nls'

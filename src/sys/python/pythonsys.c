@@ -69,7 +69,7 @@ static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[], char python
     PetscCall(PetscPythonFindLibraryName(pythonexe, cmdlines[i], pythonlib, pl, &found));
     if (found) break;
   }
-  PetscCall(PetscInfo(NULL, "Python library  %s found %d\n", pythonlib, found));
+  PetscCall(PetscInfo(NULL, "Python library %s found %d\n", pythonlib, found));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -142,7 +142,7 @@ static char      PetscPythonExe[PETSC_MAX_PATH_LEN] = {0};
 static char      PetscPythonLib[PETSC_MAX_PATH_LEN] = {0};
 static PetscBool PetscBeganPython                   = PETSC_FALSE;
 
-/*@C
+/*@
   PetscPythonFinalize - Finalize PETSc for use with Python.
 
   Level: intermediate
@@ -159,7 +159,7 @@ PetscErrorCode PetscPythonFinalize(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscPythonInitialize - Initialize Python for use with PETSc and import petsc4py.
 
    Input Parameters:
@@ -199,11 +199,11 @@ PetscErrorCode PetscPythonInitialize(const char pyexe[], const char pylib[])
     char             path[PETSC_MAX_PATH_LEN] = {0};
 
     /* initialize Python. Py_InitializeEx() prints an error and EXITS the program if it is not successful! */
-    PetscCall(PetscInfo(NULL, "Calling Py_InitializeEx(0);\n"));
-    Py_InitializeEx(0); /* 0: do not install signal handlers */
-    PetscCall(PetscInfo(NULL, "Py_InitializeEx(0) called successfully;\n"));
+    PetscCall(PetscInfo(NULL, "Calling Py_InitializeEx(0)\n"));
+    PetscStackCallExternalVoid("Py_InitializeEx", Py_InitializeEx(0)); /* 0: do not install signal handlers */
+    PetscCall(PetscInfo(NULL, "Py_InitializeEx(0) called successfully\n"));
 
-    /*  build 'sys.argv' list */
+    /* build 'sys.argv' list */
     py_version = Py_GetVersion();
     if (py_version[0] == '2') {
       int   argc    = 0;
@@ -235,15 +235,18 @@ PetscErrorCode PetscPythonInitialize(const char pyexe[], const char pylib[])
       registered = PETSC_TRUE;
     }
     PetscBeganPython = PETSC_TRUE;
-    PetscCall(PetscInfo(NULL, "Python initialize completed.\n"));
+    PetscCall(PetscInfo(NULL, "Python initialize completed\n"));
   }
   /* import 'petsc4py.PETSc' module */
-  module = PyImport_ImportModule("petsc4py.PETSc");
+  PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
+  PetscStackCallExternalVoid("PyImport_ImportModule", module = PyImport_ImportModule("petsc4py.PETSc"));
+  PetscCall(PetscFPTrapPop());
   if (module) {
-    PetscCall(PetscInfo(NULL, "Python: successfully imported  module 'petsc4py.PETSc'\n"));
+    PetscCall(PetscInfo(NULL, "Python: successfully imported module 'petsc4py.PETSc'\n"));
     Py_DecRef(module);
     module = NULL;
   } else {
+    PetscCall(PetscInfo(NULL, "Python: error when importing module 'petsc4py.PETSc'\n"));
     PetscCall(PetscPythonPrintError());
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Python: could not import module 'petsc4py.PETSc', perhaps your PYTHONPATH does not contain it");
   }

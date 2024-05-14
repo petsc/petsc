@@ -52,6 +52,12 @@
       PetscEnum, parameter :: SNES_NORM_FINAL_ONLY             =  3
       PetscEnum, parameter :: SNES_NORM_INITIAL_FINAL_ONLY     =  4
 !
+!  SNESFunctionType
+!
+      PetscEnum, parameter :: SNES_FUNCTION_DEFAULT          = -1
+      PetscEnum, parameter :: SNES_FUNCTION_UNPRECONDITIONED = 0
+      PetscEnum, parameter :: SNES_FUNCTION_PRECONDITIONED   = 1
+!
 !  Some PETSc Fortran functions that the user might pass as arguments
 !
       external SNESCOMPUTEJACOBIANDEFAULT

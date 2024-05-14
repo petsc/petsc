@@ -1982,7 +1982,7 @@ PetscErrorCode TaoDefaultConvergenceTest(Tao tao, void *dummy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoSetOptionsPrefix - Sets the prefix used for searching for all
   Tao options in the database.
 
@@ -2023,7 +2023,7 @@ PetscErrorCode TaoSetOptionsPrefix(Tao tao, const char p[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoAppendOptionsPrefix - Appends to the prefix used for searching for all Tao options in the database.
 
   Logically Collective
@@ -2050,7 +2050,7 @@ PetscErrorCode TaoAppendOptionsPrefix(Tao tao, const char p[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoGetOptionsPrefix - Gets the prefix used for searching for all
   Tao options in the database
 
@@ -2077,7 +2077,7 @@ PetscErrorCode TaoGetOptionsPrefix(Tao tao, const char *p[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoSetType - Sets the `TaoType` for the minimization solver.
 
   Collective
@@ -2128,7 +2128,7 @@ PetscErrorCode TaoSetType(Tao tao, TaoType type)
 /*@C
   TaoRegister - Adds a method to the Tao package for minimization.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname - name of a new user-defined solver
@@ -2397,7 +2397,7 @@ PetscErrorCode TaoGetSolutionStatus(Tao tao, PetscInt *its, PetscReal *f, PetscR
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoGetType - Gets the current `TaoType` being used in the `Tao` object
 
   Not Collective
@@ -2550,6 +2550,7 @@ PetscErrorCode TaoSetConvergenceHistory(Tao tao, PetscReal obj[], PetscReal resi
 .vb
    call TaoGetConvergenceHistory(Tao tao, PetscInt nhist, PetscErrorCode ierr)
 .ve
+  In other words this gets the current number of entries in the history. Access the history through the array you passed to `TaoSetConvergenceHistory()`
 
 .seealso: [](ch_tao), `Tao`, `TaoSolve()`, `TaoSetConvergenceHistory()`
 @*/
@@ -2660,7 +2661,7 @@ PetscErrorCode TaoGetGradientNorm(Tao tao, Mat *M)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoGradientNorm - Compute the norm using the `NormType`, the user has selected
 
   Collective

@@ -876,12 +876,64 @@ int main(int argc, char **args)
          suffix: hpddm_gen_non_hermitian
          output_file: output/ex72_2.out
          nsize: 4
-         args: -f0 ${DATAFILESPATH}/matrices/arco1 -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 10 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_coarse_mat_type baij -pc_hpddm_block_splitting -pc_hpddm_levels_1_eps_threshold 0.7 -pc_hpddm_coarse_pc_type lu -ksp_pc_side right
+         args: -f0 ${DATAFILESPATH}/matrices/arco1 -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 10 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_coarse_mat_type baij -pc_hpddm_block_splitting -pc_hpddm_levels_1_eps_threshold 0.7 -ksp_pc_side right
       test:
          requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) mumps !defined(PETSCTEST_VALGRIND)
          suffix: hpddm_gen_non_hermitian_baij
          output_file: output/ex72_10.out
          nsize: 4
          timeoutfactor: 2
-         args: -f0 ${DATAFILESPATH}/matrices/arco6 -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_coarse_mat_type baij -pc_hpddm_block_splitting -pc_hpddm_levels_1_eps_threshold 0.8 -pc_hpddm_coarse_pc_type lu -ksp_pc_side right -mat_type baij -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type mumps -pc_hpddm_levels_1_eps_tol 1.0e-2 -ksp_monitor_short
+         args: -f0 ${DATAFILESPATH}/matrices/arco6 -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_coarse_mat_type baij -pc_hpddm_block_splitting -pc_hpddm_levels_1_eps_threshold 0.8 -ksp_pc_side right -mat_type baij -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type mumps -pc_hpddm_levels_1_eps_tol 1.0e-2 -ksp_monitor_short
+
+   # BDDC multiple subdomains per process tests
+   test:
+     requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
+     suffix: matis_bddc_multisub_3d
+     nsize: {{1 2 3 4 5 6 7 8}}
+     args: -f ${DATAFILESPATH}/matrices/matis/poisson_DMDA_9x9x9_3x3x3.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -pc_bddc_use_faces
+
+   test:
+     requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
+     suffix: matis_bddc_multisub_2d
+     nsize: {{1 2 3 4 5 6 7 8}}
+     args: -f ${DATAFILESPATH}/matrices/matis/poisson_DMDA_9x9_3x3.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is
+
+   test:
+     requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
+     suffix: matis_bddc_multisub_plex_2d
+     nsize: {{1 2 3 4 5 6 7 8}}
+     args: -f ${DATAFILESPATH}/matrices/matis/poisson_DMPLEX_32x32_16.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is
+
+   test:
+     requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
+     suffix: matis_bddc_multisub_plex_3d
+     nsize: {{1 2 3 4 5 6 7 8}}
+     args: -f ${DATAFILESPATH}/matrices/matis/poisson_DMPLEX_16x16x16_16.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is
+
+   test:
+     requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
+     suffix: matis_bddc_multisub_hcurl_2d
+     nsize: {{1 2 3 4 5 6 7 8}}
+     args: -f ${DATAFILESPATH}/matrices/matis/hcurl_mfem_amrquad2_16.dat -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_hcurl_mfem_amrquad2_16.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -pc_bddc_local_mat_graph_square 1
+
+   test:
+     requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
+     suffix: matis_bddc_multisub_hdiv_3d
+     nsize: {{1 2 3 4 5 6 7 8}}
+     args: -f ${DATAFILESPATH}/matrices/matis/hdiv_mfem_inlinehex2_16.dat -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_hdiv_mfem_inlinehex2_16.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -pc_bddc_use_local_mat_graph 0
+
+   # These two tests slightly depend on the number of processes since the
+   # the Nedelec 3D support is not completely independent on the decomposition
+   test:
+     requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
+     suffix: matis_bddc_multisub_hcurl_3d
+     nsize: {{1 3 4 8}separate output}
+     args: -f ${DATAFILESPATH}/matrices/matis/hcurl_mfem_inlinehex_16.dat -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_hcurl_mfem_inlinehex_16.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -pc_bddc_local_mat_graph_square 1
+
+   test:
+     requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
+     suffix: matis_bddc_multisub_hcurl_3d_amr
+     nsize: {{1 3 4 8}separate output}
+     args: -f ${DATAFILESPATH}/matrices/matis/hcurl_mfem_amrhex_16.dat -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_hcurl_mfem_amrhex_16.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -pc_bddc_local_mat_graph_square 1
+
 TEST*/

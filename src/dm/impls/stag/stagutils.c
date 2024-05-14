@@ -1,6 +1,6 @@
 /* Additional functions in the DMStag API, which are not part of the general DM API. */
-#include <petsc/private/dmstagimpl.h>
-#include <petscdmproduct.h>
+#include <petsc/private/dmstagimpl.h> /*I  "petscdmstag.h"   I*/
+#include <petscdmproduct.h>           /*I  "petscdmproduct.h"   I*/
 
 PetscErrorCode DMRestrictHook_Coordinates(DM, DM, void *);
 
@@ -228,7 +228,7 @@ PETSC_EXTERN PetscErrorCode DMStagGetProductCoordinateLocationSlot(DM dm, DMStag
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagGetCorners - return global element indices of the local region (excluding ghost points)
 
   Not Collective
@@ -250,7 +250,7 @@ PETSC_EXTERN PetscErrorCode DMStagGetProductCoordinateLocationSlot(DM dm, DMStag
   Level: beginner
 
   Notes:
-  Arguments corresponding to higher dimensions are ignored for 1D and 2D grids. These arguments may be set to NULL in this case.
+  Arguments corresponding to higher dimensions are ignored for 1D and 2D grids. These arguments may be set to `NULL` in this case.
 
   The number of extra partial elements is either 1 or 0.
   The value is 1 on right, top, and front non-periodic domain ("physical") boundaries,
@@ -276,7 +276,7 @@ PetscErrorCode DMStagGetCorners(DM dm, PetscInt *x, PetscInt *y, PetscInt *z, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagGetDOF - get number of DOF associated with each stratum of the grid
 
   Not Collective
@@ -307,7 +307,7 @@ PetscErrorCode DMStagGetDOF(DM dm, PetscInt *dof0, PetscInt *dof1, PetscInt *dof
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagGetGhostCorners - return global element indices of the local region, including ghost points
 
   Not Collective
@@ -345,7 +345,7 @@ PetscErrorCode DMStagGetGhostCorners(DM dm, PetscInt *x, PetscInt *y, PetscInt *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagGetGlobalSizes - get global element counts
 
   Not Collective
@@ -441,7 +441,7 @@ PetscErrorCode DMStagGetIsLastRank(DM dm, PetscBool *isLastRank0, PetscBool *isL
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagGetLocalSizes - get local elementwise sizes
 
   Not Collective
@@ -473,7 +473,7 @@ PetscErrorCode DMStagGetLocalSizes(DM dm, PetscInt *m, PetscInt *n, PetscInt *p)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagGetNumRanks - get number of ranks in each direction in the global grid decomposition
 
   Not Collective
@@ -502,7 +502,7 @@ PetscErrorCode DMStagGetNumRanks(DM dm, PetscInt *nRanks0, PetscInt *nRanks1, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagGetEntries - get number of native entries in the global representation
 
   Not Collective
@@ -533,7 +533,7 @@ PetscErrorCode DMStagGetEntries(DM dm, PetscInt *entries)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagGetEntriesLocal - get number of entries in the local representation
 
   Not Collective
@@ -564,7 +564,7 @@ PetscErrorCode DMStagGetEntriesLocal(DM dm, PetscInt *entries)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagGetEntriesPerElement - get number of entries per element in the local representation
 
   Not Collective
@@ -593,7 +593,7 @@ PetscErrorCode DMStagGetEntriesPerElement(DM dm, PetscInt *entriesPerElement)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagGetStencilType - get elementwise ghost/halo stencil type
 
   Not Collective
@@ -618,7 +618,7 @@ PetscErrorCode DMStagGetStencilType(DM dm, DMStagStencilType *stencilType)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagGetStencilWidth - get elementwise stencil width
 
   Not Collective
@@ -680,7 +680,7 @@ PetscErrorCode DMStagGetOwnershipRanges(DM dm, const PetscInt *lx[], const Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagCreateCompatibleDMStag - create a compatible `DMSTAG` with different dof/stratum
 
   Collective
@@ -716,7 +716,7 @@ PetscErrorCode DMStagCreateCompatibleDMStag(DM dm, PetscInt dof0, PetscInt dof1,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagGetLocationSlot - get index to use in accessing raw local arrays
 
   Not Collective
@@ -754,7 +754,7 @@ PetscErrorCode DMStagGetLocationSlot(DM dm, DMStagStencilLocation loc, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagGetRefinementFactor - get refinement ratios in each direction
 
   Not Collective
@@ -783,7 +783,7 @@ PetscErrorCode DMStagGetRefinementFactor(DM dm, PetscInt *refine_x, PetscInt *re
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagMigrateVec - transfer a vector associated with a `DMSTAG` to a vector associated with a compatible `DMSTAG`
 
   Collective
@@ -903,7 +903,7 @@ PetscErrorCode DMStagMigrateVec(DM dm, Vec vec, DM dmTo, Vec vecTo)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagPopulateLocalToGlobalInjective - populate an internal 1-to-1 local-to-global map
 
   Collective
@@ -1056,7 +1056,7 @@ PetscErrorCode DMStagRestoreProductCoordinateArraysRead(DM dm, void *arrX, void 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagSetBoundaryTypes - set `DMSTAG` boundary types
 
   Logically Collective; boundaryType0, boundaryType1, and boundaryType2 must contain common values
@@ -1099,7 +1099,7 @@ PetscErrorCode DMStagSetBoundaryTypes(DM dm, DMBoundaryType boundaryType0, DMBou
 
   Input Parameters:
 + dm     - the `DMSTAG` object
-- dmtype - DMtype for coordinates, either `DMSTAG` or `DMPRODUCT`
+- dmtype - `DMtype` for coordinates, either `DMSTAG` or `DMPRODUCT`
 
   Level: advanced
 
@@ -1116,7 +1116,7 @@ PetscErrorCode DMStagSetCoordinateDMType(DM dm, DMType dmtype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagSetDOF - set dof/stratum
 
   Logically Collective; `dof0`, `dof1`, `dof2`, and `dof3` must contain common values
@@ -1159,7 +1159,7 @@ PetscErrorCode DMStagSetDOF(DM dm, PetscInt dof0, PetscInt dof1, PetscInt dof2, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagSetNumRanks - set ranks in each direction in the global rank grid
 
   Logically Collective; `nRanks0`, `nRanks1`, and `nRanks2` must contain common values
@@ -1198,7 +1198,7 @@ PetscErrorCode DMStagSetNumRanks(DM dm, PetscInt nRanks0, PetscInt nRanks1, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagSetStencilType - set elementwise ghost/halo stencil type
 
   Logically Collective; `stencilType` must contain common value
@@ -1223,7 +1223,7 @@ PetscErrorCode DMStagSetStencilType(DM dm, DMStagStencilType stencilType)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagSetStencilWidth - set elementwise stencil width
 
   Logically Collective; `stencilWidth` must contain common value
@@ -1252,7 +1252,7 @@ PetscErrorCode DMStagSetStencilWidth(DM dm, PetscInt stencilWidth)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagSetGlobalSizes - set global element counts in each direction
 
   Logically Collective; `N0`, `N1`, and `N2` must contain common values
@@ -1288,16 +1288,16 @@ PetscErrorCode DMStagSetGlobalSizes(DM dm, PetscInt N0, PetscInt N1, PetscInt N2
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagSetOwnershipRanges - set elements per rank in each direction
 
   Logically Collective; `lx`, `ly`, and `lz` must contain common values
 
   Input Parameters:
 + dm - the `DMSTAG` object
-. lx - element counts for each rank in the x direction
-. ly - element counts for each rank in the y direction
-- lz - element counts for each rank in the z direction
+. lx - element counts for each rank in the x direction, may be `NULL`
+. ly - element counts for each rank in the y direction, may be `NULL`
+- lz - element counts for each rank in the z direction, may be `NULL`
 
   Level: developer
 
@@ -1306,7 +1306,7 @@ PetscErrorCode DMStagSetGlobalSizes(DM dm, PetscInt N0, PetscInt N1, PetscInt N2
 
 .seealso: [](ch_stag), `DMSTAG`, `DMStagSetGlobalSizes()`, `DMStagGetOwnershipRanges()`, `DMDASetOwnershipRanges()`
 @*/
-PetscErrorCode DMStagSetOwnershipRanges(DM dm, PetscInt const *lx, PetscInt const *ly, PetscInt const *lz)
+PetscErrorCode DMStagSetOwnershipRanges(DM dm, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[])
 {
   DM_Stag *const  stag = (DM_Stag *)dm->data;
   const PetscInt *lin[3];
@@ -1329,7 +1329,7 @@ PetscErrorCode DMStagSetOwnershipRanges(DM dm, PetscInt const *lx, PetscInt cons
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagSetRefinementFactor - set refinement ratios in each direction
 
   Logically Collective
@@ -1359,7 +1359,7 @@ PetscErrorCode DMStagSetRefinementFactor(DM dm, PetscInt refine_x, PetscInt refi
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagSetUniformCoordinates - set `DMSTAG` coordinates to be a uniform grid
 
   Collective
@@ -1408,7 +1408,7 @@ PetscErrorCode DMStagSetUniformCoordinates(DM dm, PetscReal xmin, PetscReal xmax
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagSetUniformCoordinatesExplicit - set `DMSTAG` coordinates to be a uniform grid, storing all values
 
   Collective
@@ -1416,7 +1416,7 @@ PetscErrorCode DMStagSetUniformCoordinates(DM dm, PetscReal xmin, PetscReal xmax
   Input Parameters:
 + dm   - the `DMSTAG` object
 . xmin - minimum global coordinate value in the x direction
-. xmax - maximum global coordinate values in the x direction
+. xmax - maximum global coordinate value in the x direction
 . ymin - minimum global coordinate value in the y direction
 . ymax - maximum global coordinate value in the y direction
 . zmin - minimum global coordinate value in the z direction
@@ -1465,7 +1465,7 @@ PetscErrorCode DMStagSetUniformCoordinatesExplicit(DM dm, PetscReal xmin, PetscR
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagSetUniformCoordinatesProduct - create uniform coordinates, as a product of 1D arrays
 
   Set the coordinate `DM` to be a `DMPRODUCT` of 1D `DMSTAG` objects, each of which have a coordinate `DM` (also a 1d `DMSTAG`) holding uniform coordinates.
@@ -1475,7 +1475,7 @@ PetscErrorCode DMStagSetUniformCoordinatesExplicit(DM dm, PetscReal xmin, PetscR
   Input Parameters:
 + dm   - the `DMSTAG` object
 . xmin - minimum global coordinate value in the x direction
-. xmax - maximum global coordinate values in the x direction
+. xmax - maximum global coordinate value in the x direction
 . ymin - minimum global coordinate value in the y direction
 . ymax - maximum global coordinate value in the y direction
 . zmin - minimum global coordinate value in the z direction

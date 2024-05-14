@@ -4,6 +4,7 @@ from sys import getrefcount
 
 # --------------------------------------------------------------------
 
+
 class MyODE:
     """
     du/dt + u**2 = 0;
@@ -14,24 +15,25 @@ class MyODE:
         self.function_calls = 0
         self.jacobian_calls = 0
 
-    def function(self,ts,t,u,du,F):
-        #print 'MyODE.function()'
+    def function(self, ts, t, u, du, F):
+        # print 'MyODE.function()'
         self.function_calls += 1
         f = du + u * u
         f.copy(F)
 
-    def jacobian(self,ts,t,u,du,a,J,P):
-        #print 'MyODE.jacobian()'
+    def jacobian(self, ts, t, u, du, a, J, P):
+        # print 'MyODE.jacobian()'
         self.jacobian_calls += 1
         P.zeroEntries()
         diag = a + 2 * u
         P.setDiagonal(diag)
         P.assemble()
-        if J != P: J.assemble()
-        return False # same_nz
+        if J != P:
+            J.assemble()
+        return False  # same_nz
 
-class MyTS(object):
 
+class MyTS:
     def __init__(self):
         self.log = {}
 
@@ -67,14 +69,13 @@ class MyTS(object):
 
 
 class TestTSPython(unittest.TestCase):
-
     def setUp(self):
         self.ts = PETSc.TS()
         self.ts.createPython(MyTS(), comm=PETSc.COMM_SELF)
         eft = PETSc.TS.ExactFinalTime.STEPOVER
         self.ts.setExactFinalTime(eft)
         ctx = self.ts.getPythonContext()
-        self.assertEqual(getrefcount(ctx),  3)
+        self.assertEqual(getrefcount(ctx), 3)
         self.assertEqual(ctx.log['create'], 1)
         self.nsolve = 0
 
@@ -82,15 +83,15 @@ class TestTSPython(unittest.TestCase):
         ctx = self.ts.getPythonContext()
         self.assertEqual(getrefcount(ctx), 3)
         self.assertTrue('destroy' not in ctx.log)
-        self.ts.destroy() # XXX
+        self.ts.destroy()  # XXX
         self.ts = None
         PETSc.garbage_cleanup()
         self.assertEqual(ctx.log['destroy'], 1)
-        self.assertEqual(getrefcount(ctx),   2)
+        self.assertEqual(getrefcount(ctx), 2)
 
     def testGetType(self):
         ctx = self.ts.getPythonContext()
-        pytype = "{0}.{1}".format(ctx.__module__, type(ctx).__name__)
+        pytype = f'{ctx.__module__}.{type(ctx).__name__}'
         self.assertTrue(self.ts.getPythonType() == pytype)
 
     def testSolve(self):
@@ -98,7 +99,7 @@ class TestTSPython(unittest.TestCase):
         ts.setProblemType(ts.ProblemType.NONLINEAR)
         ode = MyODE()
         J = PETSc.Mat().create(ts.comm)
-        J.setSizes(3);
+        J.setSizes(3)
         J.setFromOptions()
         J.setUp()
         u, f = J.createVecs()
@@ -109,7 +110,7 @@ class TestTSPython(unittest.TestCase):
         ts.snes.ksp.pc.setType('none')
 
         T0, dT, nT = 0.0, 0.1, 10
-        T = T0 + nT*dT
+        T = T0 + nT * dT
         ts.setTime(T0)
         ts.setTimeStep(dT)
         ts.setMaxTime(T)
@@ -117,7 +118,7 @@ class TestTSPython(unittest.TestCase):
         ts.setFromOptions()
         u[0], u[1], u[2] = 1, 2, 3
         ts.solve(u)
-        self.nsolve +=1
+        self.nsolve += 1
 
         self.assertTrue(ode.function_calls > 0)
         self.assertTrue(ode.jacobian_calls > 0)
@@ -129,7 +130,7 @@ class TestTSPython(unittest.TestCase):
         del ctx
 
         dct = self.ts.getDict()
-        self.assertTrue('__appctx__'    in dct)
+        self.assertTrue('__appctx__' in dct)
         self.assertTrue('__ifunction__' in dct)
         self.assertTrue('__ijacobian__' in dct)
 
@@ -139,7 +140,8 @@ class TestTSPython(unittest.TestCase):
         ts.setProblemType(ts.ProblemType.NONLINEAR)
         ode = MyODE()
         J = PETSc.Mat().create(ts.comm)
-        J.setSizes(5); J.setType('aij');
+        J.setSizes(5)
+        J.setType('aij')
         J.setPreallocationNNZ(1)
         J.setFromOptions()
         u, f = J.createVecs()
@@ -149,7 +151,7 @@ class TestTSPython(unittest.TestCase):
         ts.setIJacobian(ode.jacobian, J, J)
 
         T0, dT, nT = 0.00, 0.1, 10
-        T = T0 + nT*dT
+        T = T0 + nT * dT
         ts.setTime(T0)
         ts.setTimeStep(dT)
         ts.setMaxTime(T)
@@ -158,10 +160,10 @@ class TestTSPython(unittest.TestCase):
         u[:] = 1, 2, 3, 4, 5
 
         ts.setSolution(u)
-        ode.jacobian(ts,0.0,u,u,1.0,J,J)
+        ode.jacobian(ts, 0.0, u, u, 1.0, J, J)
         ts.snes.setUseFD(True)
         ts.solve(u)
-        self.nsolve +=1
+        self.nsolve += 1
 
     def testResetAndSolve(self):
         self.ts.reset()
@@ -180,6 +182,7 @@ class TestTSPython(unittest.TestCase):
         hmin, hmax = self.ts.getStepLimits()
         self.assertEqual(1.0, hmin)
         self.assertEqual(2.0, hmax)
+
 
 # --------------------------------------------------------------------
 

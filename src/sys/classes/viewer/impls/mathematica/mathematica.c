@@ -299,7 +299,7 @@ PetscErrorCode PetscViewerMathematicaSetLinkMode(PetscViewer v, LinkMode mode)
 }
 
 /*----------------------------------------- Public Functions --------------------------------------------------------*/
-/*@C
+/*@
   PetscViewerMathematicaOpen - Communicates with Mathemtica using MathLink.
 
   Collective

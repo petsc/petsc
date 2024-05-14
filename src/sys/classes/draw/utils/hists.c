@@ -28,7 +28,7 @@ struct _p_PetscDrawHG {
 
 #define CHUNKSIZE 100
 
-/*@C
+/*@
   PetscDrawHGCreate - Creates a histogram data structure.
 
   Collective

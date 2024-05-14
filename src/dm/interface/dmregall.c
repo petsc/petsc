@@ -135,7 +135,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE);
 PETSC_EXTERN PetscErrorCode PetscFECreate_Vector(PetscFE);
 
 /*@C
-  PetscFERegisterAll - Registers all of the PetscFE components in the PetscFE package.
+  PetscFERegisterAll - Registers all of the PetscFE components in the `PetscFE` package.
 
   Not Collective
 
@@ -169,7 +169,7 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Superbee(PetscLimiter);
 PETSC_EXTERN PetscErrorCode PetscLimiterCreate_MC(PetscLimiter);
 
 /*@C
-  PetscLimiterRegisterAll - Registers all of the PetscLimiter components in the PetscFV package.
+  PetscLimiterRegisterAll - Registers all of the `PetscLimiter` components in the `PetscFV` package.
 
   Not Collective
 
@@ -198,7 +198,7 @@ PETSC_EXTERN PetscErrorCode PetscFVCreate_Upwind(PetscFV);
 PETSC_EXTERN PetscErrorCode PetscFVCreate_LeastSquares(PetscFV);
 
 /*@C
-  PetscFVRegisterAll - Registers all of the PetscFV components in the PetscFV package.
+  PetscFVRegisterAll - Registers all of the `PetscFV` components in the `PetscFV` package.
 
   Not Collective
 
@@ -221,7 +221,7 @@ PetscErrorCode PetscFVRegisterAll(void)
 PETSC_EXTERN PetscErrorCode PetscDSCreate_Basic(PetscDS);
 
 /*@C
-  PetscDSRegisterAll - Registers all of the PetscDS components in the PetscDS package.
+  PetscDSRegisterAll - Registers all of the `PetscDS` components in the `PetscDS` package.
 
   Not Collective
 

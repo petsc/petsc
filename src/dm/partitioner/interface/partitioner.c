@@ -1,6 +1,6 @@
 #include <petsc/private/partitionerimpl.h> /*I "petscpartitioner.h" I*/
 
-/*@C
+/*@
   PetscPartitionerSetType - Builds a particular `PetscPartitioner`
 
   Collective
@@ -47,7 +47,7 @@ PetscErrorCode PetscPartitionerSetType(PetscPartitioner part, PetscPartitionerTy
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscPartitionerGetType - Gets the PetscPartitioner type name (as a string) from the object.
 
   Not Collective
@@ -125,6 +125,7 @@ PetscErrorCode PetscPartitionerView(PetscPartitioner part, PetscViewer v)
     PetscCall(PetscViewerASCIIPrintf(v, "  edge cut: %" PetscInt_FMT "\n", part->edgeCut));
     PetscCall(PetscViewerASCIIPrintf(v, "  balance: %.2g\n", (double)part->balance));
     PetscCall(PetscViewerASCIIPrintf(v, "  use vertex weights: %d\n", part->usevwgt));
+    PetscCall(PetscViewerASCIIPrintf(v, "  use edge weights: %d\n", part->useewgt));
   }
   PetscTryTypeMethod(part, view, v);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -182,6 +183,7 @@ PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
   PetscCall(PetscOptionsFList("-petscpartitioner_type", "Graph partitioner", "PetscPartitionerSetType", PetscPartitionerList, currentType, name, sizeof(name), &flg));
   if (flg) PetscCall(PetscPartitionerSetType(part, name));
   PetscCall(PetscOptionsBool("-petscpartitioner_use_vertex_weights", "Use vertex weights", "", part->usevwgt, &part->usevwgt, NULL));
+  PetscCall(PetscOptionsBool("-petscpartitioner_use_edge_weights", "Use edge weights", "", part->useewgt, &part->useewgt, NULL));
   PetscTryTypeMethod(part, setfromoptions, PetscOptionsObject);
   PetscCall(PetscOptionsRestoreViewer(&part->viewer));
   PetscCall(PetscOptionsRestoreViewer(&part->viewerGraph));
@@ -278,6 +280,7 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
 . start         - row pointers for the local part of the graph (CSR style)
 . adjacency     - adjacency list (CSR style)
 . vertexSection - PetscSection describing the absolute weight of each local vertex (can be `NULL`)
+. edgeSection   - PetscSection describing the absolute weight of each local edge (can be `NULL`)
 - targetSection - PetscSection describing the absolute weight of each partition (can be `NULL`)
 
   Output Parameters:
@@ -296,7 +299,7 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
 
 .seealso: `PetscPartitionerCreate()`, `PetscPartitionerSetType()`, `PetscSectionCreate()`, `PetscSectionSetChart()`, `PetscSectionSetDof()`
 @*/
-PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertexSection, PetscSection targetSection, PetscSection partSection, IS *partition)
+PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertexSection, PetscSection edgeSection, PetscSection targetSection, PetscSection partSection, IS *partition)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
@@ -315,22 +318,29 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
     PetscCall(PetscSectionGetChart(vertexSection, &s, &e));
     PetscCheck(s <= 0 && e >= numVertices, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid vertexSection chart [%" PetscInt_FMT ",%" PetscInt_FMT ")", s, e);
   }
+  if (edgeSection) {
+    PetscInt s, e;
+
+    PetscValidHeaderSpecific(edgeSection, PETSC_SECTION_CLASSID, 7);
+    PetscCall(PetscSectionGetChart(edgeSection, &s, &e));
+    PetscCheck(s <= 0 && e >= start[numVertices], PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid edgeSection chart [%" PetscInt_FMT ",%" PetscInt_FMT ")", s, e);
+  }
   if (targetSection) {
     PetscInt s, e;
 
-    PetscValidHeaderSpecific(targetSection, PETSC_SECTION_CLASSID, 7);
+    PetscValidHeaderSpecific(targetSection, PETSC_SECTION_CLASSID, 8);
     PetscCall(PetscSectionGetChart(targetSection, &s, &e));
     PetscCheck(s <= 0 && e >= nparts, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid targetSection chart [%" PetscInt_FMT ",%" PetscInt_FMT ")", s, e);
   }
-  PetscValidHeaderSpecific(partSection, PETSC_SECTION_CLASSID, 8);
-  PetscAssertPointer(partition, 9);
+  PetscValidHeaderSpecific(partSection, PETSC_SECTION_CLASSID, 9);
+  PetscAssertPointer(partition, 10);
 
   PetscCall(PetscSectionReset(partSection));
   PetscCall(PetscSectionSetChart(partSection, 0, nparts));
   if (nparts == 1) { /* quick */
     PetscCall(PetscSectionSetDof(partSection, 0, numVertices));
     PetscCall(ISCreateStride(PetscObjectComm((PetscObject)part), numVertices, 0, 1, partition));
-  } else PetscUseTypeMethod(part, partition, nparts, numVertices, start, adjacency, vertexSection, targetSection, partSection, partition);
+  } else PetscUseTypeMethod(part, partition, nparts, numVertices, start, adjacency, vertexSection, edgeSection, targetSection, partSection, partition);
   PetscCall(PetscSectionSetUp(partSection));
   if (part->viewerGraph) {
     PetscViewer viewer = part->viewerGraph;

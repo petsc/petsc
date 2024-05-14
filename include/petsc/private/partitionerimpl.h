@@ -14,7 +14,7 @@ struct _PetscPartitionerOps {
   PetscErrorCode (*reset)(PetscPartitioner);
   PetscErrorCode (*view)(PetscPartitioner, PetscViewer);
   PetscErrorCode (*destroy)(PetscPartitioner);
-  PetscErrorCode (*partition)(PetscPartitioner, PetscInt, PetscInt, PetscInt[], PetscInt[], PetscSection, PetscSection, PetscSection, IS *);
+  PetscErrorCode (*partition)(PetscPartitioner, PetscInt, PetscInt, PetscInt[], PetscInt[], PetscSection, PetscSection, PetscSection, PetscSection, IS *);
 };
 
 struct _p_PetscPartitioner {
@@ -28,4 +28,5 @@ struct _p_PetscPartitioner {
   PetscBool   viewGraph;
   PetscBool   noGraph; /* if true, the partitioner does not need the connectivity graph, only the number of local vertices */
   PetscBool   usevwgt; /* if true, the partitioner looks at the local section vertSection to weight the vertices of the graph */
+  PetscBool   useewgt; /* if true, the partitioner looks at the topology to weight the edges of the graph */
 };

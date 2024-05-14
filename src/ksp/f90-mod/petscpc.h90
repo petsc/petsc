@@ -65,50 +65,10 @@
       end Interface
 
       Interface
-      subroutine PCSetType(a,b,z)
-      import tPC
-       PC a
-       character(*) b
-       PetscErrorCode z
-       end subroutine
-      end Interface
-
-      Interface
       subroutine PCView(a,b,z)
       import tPC,tPetscViewer
        PC a
        PetscViewer b
-       PetscErrorCode z
-       end subroutine
-      end Interface
-
-      Interface
-      subroutine PCFieldSplitSetIS(a,b,c,z)
-      import tPC,tIS
-       PC a
-       character(*)  b
-       IS c
-       PetscErrorCode z
-       end subroutine
-      end Interface
-
-      Interface
-      subroutine PCFieldSplitGetIS(a,b,c,z)
-      import tPC,tIS
-       PC a
-       character(*)  b
-       IS c
-       PetscErrorCode z
-       end subroutine
-      end Interface
-
-      Interface
-      subroutine PCFieldSplitSetFields(a,b,c,d,e,z)
-      import tPC,tIS
-       PC a
-       character(*)  b
-       PetscInt c
-       PetscInt d(*),e(*)
        PetscErrorCode z
        end subroutine
       end Interface
@@ -119,16 +79,4 @@
           PC a
           PetscErrorCode z
         end subroutine
-      end Interface
-
-      Interface
-         subroutine PCBDDCCreateFETIDPOperators(a,b,c,d,e,z)
-         import tMat,tPC
-         PC a
-         PetscBool b
-         character(*) c
-         Mat d
-         PC e
-         PetscErrorCode z
-       end subroutine
       end Interface

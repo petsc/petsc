@@ -1550,7 +1550,7 @@ static PetscErrorCode PCMGGetAdaptCR_MG(PC pc, PetscBool *cr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCMGSetAdaptCoarseSpaceType - Set the type of adaptive coarse space.
 
   Adapts or creates the interpolator based upon a vector space which should be accurately captured by the next coarser mesh, and thus accurately interpolated.
@@ -1563,7 +1563,7 @@ static PetscErrorCode PCMGGetAdaptCR_MG(PC pc, PetscBool *cr)
 
   Options Database Keys:
 + -pc_mg_adapt_interp_n <int>             - The number of modes to use
-- -pc_mg_adapt_interp_coarse_space <type> - The type of coarse space: none, polynomial, harmonic, eigenvector, generalized_eigenvector, gdsw
+- -pc_mg_adapt_interp_coarse_space <type> - The type of coarse space: none, `polynomial`, `harmonic`, `eigenvector`, `generalized_eigenvector`, `gdsw`
 
   Level: intermediate
 
@@ -1578,7 +1578,7 @@ PetscErrorCode PCMGSetAdaptCoarseSpaceType(PC pc, PCMGCoarseSpaceType ctype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCMGGetAdaptCoarseSpaceType - Get the type of adaptive coarse space.
 
   Not Collective
@@ -1829,7 +1829,7 @@ static PetscErrorCode PCGetCoarseOperators_MG(PC pc, PetscInt *num_levels, Mat *
 /*@C
   PCMGRegisterCoarseSpaceConstructor -  Adds a method to the `PCMG` package for coarse space construction.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + name     - name of the constructor
@@ -1862,7 +1862,7 @@ PetscErrorCode PCMGRegisterCoarseSpaceConstructor(const char name[], PetscErrorC
 /*@C
   PCMGGetCoarseSpaceConstructor -  Returns the given coarse space construction method.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . name - name of the constructor
@@ -1886,17 +1886,17 @@ PetscErrorCode PCMGGetCoarseSpaceConstructor(const char name[], PetscErrorCode (
     information about the coarser grid matrices and restriction/interpolation operators.
 
    Options Database Keys:
-+  -pc_mg_levels <nlevels> - number of levels including finest
-.  -pc_mg_cycle_type <v,w> - provide the cycle desired
++  -pc_mg_levels <nlevels>                            - number of levels including finest
+.  -pc_mg_cycle_type <v,w>                            - provide the cycle desired
 .  -pc_mg_type <additive,multiplicative,full,kaskade> - multiplicative is the default
-.  -pc_mg_log - log information about time spent on each level of the solver
-.  -pc_mg_distinct_smoothup - configure up (after interpolation) and down (before restriction) smoothers separately (with different options prefixes)
-.  -pc_mg_galerkin <both,pmat,mat,none> - use Galerkin process to compute coarser operators, i.e. Acoarse = R A R'
-.  -pc_mg_multiplicative_cycles - number of cycles to use as the preconditioner (defaults to 1)
-.  -pc_mg_dump_matlab - dumps the matrices for each level and the restriction/interpolation matrices
-                        to the Socket viewer for reading from MATLAB.
--  -pc_mg_dump_binary - dumps the matrices for each level and the restriction/interpolation matrices
-                        to the binary output file called binaryoutput
+.  -pc_mg_log                                         - log information about time spent on each level of the solver
+.  -pc_mg_distinct_smoothup                           - configure up (after interpolation) and down (before restriction) smoothers separately (with different options prefixes)
+.  -pc_mg_galerkin <both,pmat,mat,none>               - use Galerkin process to compute coarser operators, i.e. Acoarse = R A R'
+.  -pc_mg_multiplicative_cycles                        - number of cycles to use as the preconditioner (defaults to 1)
+.  -pc_mg_dump_matlab                                  - dumps the matrices for each level and the restriction/interpolation matrices
+                                                         to a `PETSCVIEWERSOCKET` for reading from MATLAB.
+-  -pc_mg_dump_binary                                  -dumps the matrices for each level and the restriction/interpolation matrices
+                                                        to the binary output file called binaryoutput
 
    Level: intermediate
 

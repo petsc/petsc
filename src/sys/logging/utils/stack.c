@@ -3,7 +3,7 @@
 /*@C
   PetscIntStackDestroy - This function destroys a stack.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . stack - The stack
@@ -24,7 +24,7 @@ PetscErrorCode PetscIntStackDestroy(PetscIntStack stack)
 /*@C
   PetscIntStackEmpty - This function determines whether any items have been pushed.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . stack - The stack
@@ -48,7 +48,7 @@ PetscErrorCode PetscIntStackEmpty(PetscIntStack stack, PetscBool *empty)
 /*@C
   PetscIntStackTop - This function returns the top of the stack.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . stack - The stack
@@ -72,7 +72,7 @@ PetscErrorCode PetscIntStackTop(PetscIntStack stack, int *top)
 /*@C
   PetscIntStackPush - This function pushes an integer on the stack.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + stack - The stack
@@ -97,7 +97,7 @@ PetscErrorCode PetscIntStackPush(PetscIntStack stack, int item)
 /*@C
   PetscIntStackPop - This function pops an integer from the stack.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . stack - The stack
@@ -125,7 +125,7 @@ PetscErrorCode PetscIntStackPop(PetscIntStack stack, int *item)
 /*@C
   PetscIntStackCreate - This function creates a stack.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Output Parameter:
 . stack - The stack

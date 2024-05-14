@@ -4,7 +4,7 @@
 /*@C
   PetscGatherNumberOfMessages -  Computes the number of messages an MPI rank expects to receive during a neighbor communication
 
-  Collective
+  Collective, No Fortran Support
 
   Input Parameters:
 + comm     - Communicator
@@ -60,7 +60,7 @@ PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm, const PetscMPIInt ifla
   PetscGatherMessageLengths - Computes information about messages that an MPI rank will receive,
   including (from-id,length) pairs for each message.
 
-  Collective
+  Collective, No Fortran Support
 
   Input Parameters:
 + comm     - Communicator
@@ -208,7 +208,7 @@ PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm comm, PetscMPIInt nsen
   including (from-id,length) pairs for each message. Same functionality as `PetscGatherMessageLengths()`
   except it takes TWO ilenths and output TWO olengths.
 
-  Collective
+  Collective, No Fortran Support
 
   Input Parameters:
 + comm      - Communicator

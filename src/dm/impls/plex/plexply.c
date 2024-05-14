@@ -1,7 +1,7 @@
 #define PETSCDM_DLL
 #include <petsc/private/dmpleximpl.h> /*I   "petscdmplex.h"   I*/
 
-/*@C
+/*@
   DMPlexCreatePLYFromFile - Create a `DMPLEX` mesh from a PLY <https://en.wikipedia.org/wiki/PLY_(file_format)> file.
 
   Input Parameters:

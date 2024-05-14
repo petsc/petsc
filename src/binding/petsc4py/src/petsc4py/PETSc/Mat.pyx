@@ -82,7 +82,10 @@ class MatType(object):
     DUMMY           = S_(MATDUMMY)
     LMVM            = S_(MATLMVM)
     LMVMDFP         = S_(MATLMVMDFP)
+    LMVMDDFP        = S_(MATLMVMDDFP)
     LMVMBFGS        = S_(MATLMVMBFGS)
+    LMVMDBFGS       = S_(MATLMVMDBFGS)
+    LMVMDQN         = S_(MATLMVMDQN)
     LMVMSR1         = S_(MATLMVMSR1)
     LMVMBROYDEN     = S_(MATLMVMBROYDEN)
     LMVMBADBROYDEN  = S_(MATLMVMBADBROYDEN)
@@ -92,6 +95,7 @@ class MatType(object):
     CONSTANTDIAGONAL = S_(MATCONSTANTDIAGONAL)
     DIAGONAL         = S_(MATDIAGONAL)
     H2OPUS           = S_(MATH2OPUS)
+
 
 class MatOption(object):
     """Matrix option.
@@ -129,6 +133,7 @@ class MatOption(object):
     SORTED_FULL                 = MAT_SORTED_FULL
     OPTION_MAX                  = MAT_OPTION_MAX
 
+
 class MatAssemblyType(object):
     """Matrix assembly type.
 
@@ -144,11 +149,13 @@ class MatAssemblyType(object):
     FINAL = FINAL_ASSEMBLY
     FLUSH = FLUSH_ASSEMBLY
 
+
 class MatInfoType(object):
     """Matrix info type."""
     LOCAL = MAT_LOCAL
     GLOBAL_MAX = MAT_GLOBAL_MAX
     GLOBAL_SUM = MAT_GLOBAL_SUM
+
 
 class MatStructure(object):
     """Matrix modification structure.
@@ -169,6 +176,7 @@ class MatStructure(object):
     DIFFERENT = DIFFERENT_NZ = DIFFERENT_NONZERO_PATTERN
     UNKNOWN   = UNKNOWN_NZ   = UNKNOWN_NONZERO_PATTERN
 
+
 class MatDuplicateOption(object):
     """Matrix duplicate option.
 
@@ -180,6 +188,7 @@ class MatDuplicateOption(object):
     DO_NOT_COPY_VALUES    = MAT_DO_NOT_COPY_VALUES
     COPY_VALUES           = MAT_COPY_VALUES
     SHARE_NONZERO_PATTERN = MAT_SHARE_NONZERO_PATTERN
+
 
 class MatOrderingType(object):
     """Factored matrix ordering type.
@@ -199,6 +208,7 @@ class MatOrderingType(object):
     SPECTRAL    = S_(MATORDERINGSPECTRAL)
     AMD         = S_(MATORDERINGAMD)
     METISND     = S_(MATORDERINGMETISND)
+
 
 class MatSolverType(object):
     """Factored matrix solver type.
@@ -229,6 +239,7 @@ class MatSolverType(object):
     CUDA            = S_(MATSOLVERCUDA)
     SPQR            = S_(MATSOLVERSPQR)
 
+
 class MatFactorShiftType(object):
     """Factored matrix shift type.
 
@@ -245,6 +256,7 @@ class MatFactorShiftType(object):
     # aliases
     NZ = MAT_SHIFT_NONZERO
     PD = MAT_SHIFT_POSITIVE_DEFINITE
+
 
 class MatSORType(object):
     """Matrix SOR type.
@@ -265,6 +277,7 @@ class MatSORType(object):
     APPLY_UPPER           = SOR_APPLY_UPPER
     APPLY_LOWER           = SOR_APPLY_LOWER
 
+
 @cython.internal
 cdef class MatStencil:
     """Associate structured grid coordinates with matrix indices.
@@ -281,6 +294,7 @@ cdef class MatStencil:
         "First logical grid coordinate."
         def __get__(self) -> int:
             return toInt(self.stencil.i)
+
         def __set__(self, value: int) -> None:
             self.stencil.i = asInt(value)
 
@@ -288,6 +302,7 @@ cdef class MatStencil:
         "Second logical grid coordinate."
         def __get__(self) -> int:
             return toInt(self.stencil.j)
+
         def __set__(self, value: int) -> None:
             self.stencil.j = asInt(value)
 
@@ -295,6 +310,7 @@ cdef class MatStencil:
         "Third logical grid coordinate."
         def __get__(self) -> int:
             return toInt(self.stencil.k)
+
         def __set__(self, value: int) -> None:
             self.stencil.k = asInt(value)
 
@@ -302,6 +318,7 @@ cdef class MatStencil:
         "Field component."
         def __get__(self) -> int:
             return toInt(self.stencil.c)
+
         def __set__(self, value: int) -> None:
             self.stencil.c = asInt(value)
 
@@ -310,6 +327,7 @@ cdef class MatStencil:
         def __get__(self) -> tuple[int, int, int]:
             cdef PetscMatStencil *s = &self.stencil
             return toInt(s.i), toInt(s.j), toInt(s.k)
+
         def __set__(self, value: Sequence[int]) -> None:
             cdef PetscMatStencil *s = &self.stencil
             s.i = s.j = s.k = 0
@@ -320,6 +338,7 @@ cdef class MatStencil:
         def __get__(self) -> int:
             cdef PetscMatStencil *s = &self.stencil
             return toInt(s.c)
+
         def __set__(self, value: int) -> None:
             cdef PetscMatStencil *s = &self.stencil
             s.c = asInt(value)
@@ -451,7 +470,7 @@ cdef class Mat(Object):
         """
         cdef PetscViewer vwr = NULL
         if viewer is not None: vwr = viewer.vwr
-        CHKERR( MatView(self.mat, vwr) )
+        CHKERR(MatView(self.mat, vwr))
 
     def destroy(self) -> Self:
         """Destroy the matrix.
@@ -463,7 +482,7 @@ cdef class Mat(Object):
         create, petsc.MatDestroy
 
         """
-        CHKERR( MatDestroy(&self.mat) )
+        CHKERR(MatDestroy(&self.mat))
         return self
 
     def create(self, comm: Comm | None = None) -> Self:
@@ -488,8 +507,8 @@ cdef class Mat(Object):
         """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscMat newmat = NULL
-        CHKERR( MatCreate(ccomm, &newmat) )
-        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
+        CHKERR(MatCreate(ccomm, &newmat))
+        CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
         return self
 
     def setType(self, mat_type: Type | str) -> None:
@@ -509,13 +528,12 @@ cdef class Mat(Object):
         """
         cdef PetscMatType cval = NULL
         mat_type = str2bytes(mat_type, &cval)
-        CHKERR( MatSetType(self.mat, cval) )
+        CHKERR(MatSetType(self.mat, cval))
 
     def setSizes(
         self,
         size: MatSizeSpec,
-        bsize: MatBlockSizeSpec | None = None,
-    ) -> None:
+        bsize: MatBlockSizeSpec | None = None) -> None:
         """Set the local, global and block sizes.
 
         Collective.
@@ -558,12 +576,12 @@ cdef class Mat(Object):
         """
         cdef PetscInt rbs = 0, cbs = 0, m = 0, n = 0, M = 0, N = 0
         Mat_Sizes(size, bsize, &rbs, &cbs, &m, &n, &M, &N)
-        CHKERR( MatSetSizes(self.mat, m, n, M, N) )
+        CHKERR(MatSetSizes(self.mat, m, n, M, N))
         if rbs != PETSC_DECIDE:
             if cbs != PETSC_DECIDE:
-                CHKERR( MatSetBlockSizes(self.mat, rbs, cbs) )
+                CHKERR(MatSetBlockSizes(self.mat, rbs, cbs))
             else:
-                CHKERR( MatSetBlockSize(self.mat, rbs) )
+                CHKERR(MatSetBlockSize(self.mat, rbs))
 
     def setBlockSize(self, bsize: int) -> None:
         """Set the matrix block size (same for rows and columns).
@@ -581,7 +599,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscInt bs = asInt(bsize)
-        CHKERR( MatSetBlockSize(self.mat, bs) )
+        CHKERR(MatSetBlockSize(self.mat, bs))
 
     def setBlockSizes(self, row_bsize: int, col_bsize: int) -> None:
         """Set the row and column block sizes.
@@ -602,7 +620,21 @@ cdef class Mat(Object):
         """
         cdef PetscInt rbs = asInt(row_bsize)
         cdef PetscInt cbs = asInt(col_bsize)
-        CHKERR( MatSetBlockSizes(self.mat, rbs, cbs) )
+        CHKERR(MatSetBlockSizes(self.mat, rbs, cbs))
+
+    def setVariableBlockSizes(self, blocks: Sequence[int]) -> None:
+        """Set diagonal point-blocks of the matrix.
+
+        Not collective.
+
+        See Also
+        --------
+        setBlockSize, petsc.MatSetVariableBlockSizes
+
+        """
+        cdef PetscInt nb=0, *b=NULL
+        iarray_i(blocks, &nb, &b)
+        CHKERR(MatSetVariableBlockSizes(self.mat, nb, b))
 
     def setVecType(self, vec_type: Vec.Type | str) -> None:
         """Set the vector type.
@@ -621,7 +653,7 @@ cdef class Mat(Object):
         """
         cdef PetscVecType cval = NULL
         vec_type = str2bytes(vec_type, &cval)
-        CHKERR( MatSetVecType(self.mat, cval) )
+        CHKERR(MatSetVecType(self.mat, cval))
 
     def getVecType(self) -> str:
         """Return the vector type used by the matrix.
@@ -634,7 +666,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscVecType cval = NULL
-        CHKERR( MatGetVecType(self.mat, &cval) )
+        CHKERR(MatGetVecType(self.mat, &cval))
         return bytes2str(cval)
 
     def setNestVecType(self, vec_type: Vec.Type | str) -> None:
@@ -654,7 +686,7 @@ cdef class Mat(Object):
         """
         cdef PetscVecType cval = NULL
         vec_type = str2bytes(vec_type, &cval)
-        CHKERR( MatNestSetVecType(self.mat, cval) )
+        CHKERR(MatNestSetVecType(self.mat, cval))
 
     #
 
@@ -664,8 +696,7 @@ cdef class Mat(Object):
         bsize: MatBlockSizeSpec | None = None,
         nnz: NNZSpec | None = None,
         csr: CSRIndicesSpec | None = None,
-        comm: Comm | None = None,
-    ) -> Self:
+        comm: Comm | None = None) -> Self:
         """Create a sparse `Type.AIJ` matrix, optionally preallocating.
 
         Collective.
@@ -699,7 +730,7 @@ cdef class Mat(Object):
         # create matrix
         cdef PetscMat newmat = NULL
         Mat_Create(MATAIJ, comm, size, bsize, &newmat)
-        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
+        CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
         # preallocate matrix
         Mat_AllocAIJ(self.mat, nnz, csr)
         return self
@@ -710,8 +741,7 @@ cdef class Mat(Object):
         bsize: MatBlockSizeSpec,
         nnz: NNZSpec | None = None,
         csr: CSRIndicesSpec | None = None,
-        comm: Comm | None = None,
-    ) -> Self:
+        comm: Comm | None = None) -> Self:
         """Create a sparse blocked `Type.BAIJ` matrix, optionally preallocating.
 
         Collective.
@@ -744,7 +774,7 @@ cdef class Mat(Object):
         # create matrix
         cdef PetscMat newmat = NULL
         Mat_Create(MATBAIJ, comm, size, bsize, &newmat)
-        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
+        CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
         # preallocate matrix
         Mat_AllocAIJ(self.mat, nnz, csr)
         return self
@@ -752,11 +782,10 @@ cdef class Mat(Object):
     def createSBAIJ(
         self,
         size: MatSizeSpec,
-        bsize: int,
+        bsize: MatBlockSizeSpec,
         nnz: NNZSpec | None = None,
         csr: CSRIndicesSpec | None = None,
-        comm: Comm | None = None,
-    ) -> Self:
+        comm: Comm | None = None) -> Self:
         """Create a sparse `Type.SBAIJ` matrix in symmetric block format.
 
         Collective.
@@ -789,7 +818,7 @@ cdef class Mat(Object):
         # create matrix
         cdef PetscMat newmat = NULL
         Mat_Create(MATSBAIJ, comm, size, bsize, &newmat)
-        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
+        CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
         # preallocate matrix
         Mat_AllocAIJ(self.mat, nnz, csr)
         return self
@@ -800,8 +829,7 @@ cdef class Mat(Object):
         bsize: MatBlockSizeSpec | None = None,
         nnz: NNZSpec | None = None,
         csr: CSRIndicesSpec | None = None,
-        comm: Comm | None = None,
-    ) -> Self:
+        comm: Comm | None = None) -> Self:
         """Create a sparse `Type.AIJCRL` matrix.
 
         Collective.
@@ -837,7 +865,7 @@ cdef class Mat(Object):
         # create matrix
         cdef PetscMat newmat = NULL
         Mat_Create(MATAIJCRL, comm, size, bsize, &newmat)
-        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
+        CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
         # preallocate matrix
         Mat_AllocAIJ(self.mat, nnz, csr)
         return self
@@ -863,7 +891,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscBool done = PETSC_FALSE
-        CHKERR( MatIsPreallocated(self.mat, &done) )
+        CHKERR(MatIsPreallocated(self.mat, &done))
         # if done: raise Error(PETSC_ERR_ORDER)
         Mat_AllocAIJ_NNZ(self.mat, nnz)
         return self
@@ -897,7 +925,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscBool done = PETSC_FALSE
-        CHKERR( MatIsPreallocated(self.mat, &done) )
+        CHKERR(MatIsPreallocated(self.mat, &done))
         # if done: raise Error(PETSC_ERR_ORDER)
         Mat_AllocAIJ_CSR(self.mat, csr)
         return self
@@ -907,8 +935,7 @@ cdef class Mat(Object):
         size: MatSizeSpec,
         csr: CSRSpec | tuple[CSRSpec, CSRSpec],
         bsize: MatBlockSizeSpec | None = None,
-        comm: Comm | None = None,
-    ) -> Self:
+        comm: Comm | None = None) -> Self:
         """Create a sparse `Type.AIJ` matrix with data in CSR format.
 
         Collective.
@@ -974,21 +1001,21 @@ cdef class Mat(Object):
         # create matrix
         cdef PetscMat newmat = NULL
         if comm_size(ccomm) == 1:
-            CHKERR( MatCreateSeqAIJWithArrays(
-                ccomm, m, n, i, j, v, &newmat) )
+            CHKERR(MatCreateSeqAIJWithArrays(
+                ccomm, m, n, i, j, v, &newmat))
             csr = (pi, pj, pv)
         else:
             # if off-diagonal components are provided then SplitArrays can be
             # used (and not cause a copy).
             if oi != NULL and oj != NULL and ov != NULL:
-                CHKERR( MatCreateMPIAIJWithSplitArrays(
-                    ccomm, m, n, M, N, i, j, v, oi, oj, ov, &newmat) )
+                CHKERR(MatCreateMPIAIJWithSplitArrays(
+                    ccomm, m, n, M, N, i, j, v, oi, oj, ov, &newmat))
                 csr = ((pi, pj, pv), (poi, poj, pov))
             else:
-                CHKERR( MatCreateMPIAIJWithArrays(
-                    ccomm, m, n, M, N, i, j, v, &newmat) )
+                CHKERR(MatCreateMPIAIJWithArrays(
+                    ccomm, m, n, M, N, i, j, v, &newmat))
                 csr = None
-        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
+        CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
         self.set_attr('__csr__', csr)
         return self
 
@@ -999,8 +1026,7 @@ cdef class Mat(Object):
         size: MatSizeSpec,
         bsize: MatBlockSizeSpec | None = None,
         array: Sequence[Scalar] | None = None,
-        comm: Comm | None = None
-    ) -> Self:
+        comm: Comm | None = None) -> Self:
         """Create a `Type.DENSE` matrix.
 
         Collective.
@@ -1024,7 +1050,7 @@ cdef class Mat(Object):
         # create matrix
         cdef PetscMat newmat = NULL
         Mat_Create(MATDENSE, comm, size, bsize, &newmat)
-        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
+        CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
         # preallocate matrix
         if array is not None:
             array = Mat_AllocDense(self.mat, array)
@@ -1037,8 +1063,7 @@ cdef class Mat(Object):
         bsize: MatBlockSizeSpec | None = None,
         array: Sequence[Scalar] | None = None,
         cudahandle: int | None = None,
-        comm: Comm | None = None,
-    ) -> Self:
+        comm: Comm | None = None) -> Self:
         """Create a `Type.DENSECUDA` matrix with optional host and device data.
 
         Collective.
@@ -1078,15 +1103,15 @@ cdef class Mat(Object):
             Sys_Layout(ccomm, rbs, &m, &M)
             Sys_Layout(ccomm, cbs, &n, &N)
             # create matrix and set sizes
-            CHKERR( MatCreateDenseCUDA(ccomm, m, n, M, N, <PetscScalar*>(<Py_uintptr_t>cudahandle), &newmat) )
+            CHKERR(MatCreateDenseCUDA(ccomm, m, n, M, N, <PetscScalar*>(<Py_uintptr_t>cudahandle), &newmat))
             # Does block size make sense for MATDENSE?
-            CHKERR( MatSetBlockSizes(newmat, rbs, cbs) )
+            CHKERR(MatSetBlockSizes(newmat, rbs, cbs))
         else:
             Mat_Create(MATDENSECUDA, comm, size, bsize, &newmat)
             if array is not None:
                 array = Mat_AllocDense(self.mat, array)
                 self.set_attr('__array__', array)
-        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
+        CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
         return self
 
     def setPreallocationDense(self, array: Sequence[Scalar]) -> Self:
@@ -1105,7 +1130,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscBool done = PETSC_FALSE
-        CHKERR( MatIsPreallocated(self.mat, &done) )
+        CHKERR(MatIsPreallocated(self.mat, &done))
         # if done: raise Error(PETSC_ERR_ORDER)
         array = Mat_AllocDense(self.mat, array)
         self.set_attr('__array__', array)
@@ -1133,8 +1158,8 @@ cdef class Mat(Object):
         if comm is None: comm = scatter.getComm()
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscMat newmat = NULL
-        CHKERR( MatCreateScatter(ccomm, scatter.sct, &newmat) )
-        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
+        CHKERR(MatCreateScatter(ccomm, scatter.sct, &newmat))
+        CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
         return self
 
     def createNormal(self, Mat mat) -> Self:
@@ -1158,8 +1183,8 @@ cdef class Mat(Object):
 
         """
         cdef PetscMat newmat = NULL
-        CHKERR( MatCreateNormal(mat.mat, &newmat) )
-        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
+        CHKERR(MatCreateNormal(mat.mat, &newmat))
+        CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
         return self
 
     def createTranspose(self, Mat mat) -> Self:
@@ -1183,8 +1208,8 @@ cdef class Mat(Object):
 
         """
         cdef PetscMat newmat = NULL
-        CHKERR( MatCreateTranspose(mat.mat, &newmat) )
-        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
+        CHKERR(MatCreateTranspose(mat.mat, &newmat))
+        CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
         return self
 
     def createNormalHermitian(self, Mat mat) -> Self:
@@ -1208,8 +1233,8 @@ cdef class Mat(Object):
 
         """
         cdef PetscMat newmat = NULL
-        CHKERR( MatCreateNormalHermitian(mat.mat, &newmat) )
-        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
+        CHKERR(MatCreateNormalHermitian(mat.mat, &newmat))
+        CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
         return self
 
     def createHermitianTranspose(self, Mat mat) -> Self:
@@ -1233,8 +1258,8 @@ cdef class Mat(Object):
 
         """
         cdef PetscMat newmat = NULL
-        CHKERR( MatCreateHermitianTranspose(mat.mat, &newmat) )
-        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
+        CHKERR(MatCreateHermitianTranspose(mat.mat, &newmat))
+        CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
         return self
 
     def createLRC(self, Mat A, Mat U, Vec c, Mat V) -> Self:
@@ -1280,8 +1305,8 @@ cdef class Mat(Object):
         if A is not None: Amat = A.mat
         if c is not None: cvec = c.vec
         if V is not None: Vmat = V.mat
-        CHKERR( MatCreateLRC(Amat, Umat, cvec, Vmat, &newmat) )
-        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
+        CHKERR(MatCreateLRC(Amat, Umat, cvec, Vmat, &newmat))
+        CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
         return self
 
     def createSubMatrixVirtual(self, Mat A, IS isrow, IS iscol=None) -> Self:
@@ -1305,8 +1330,8 @@ cdef class Mat(Object):
         """
         if iscol is None: iscol = isrow
         cdef PetscMat newmat = NULL
-        CHKERR( MatCreateSubMatrixVirtual(A.mat, isrow.iset, iscol.iset, &newmat) )
-        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
+        CHKERR(MatCreateSubMatrixVirtual(A.mat, isrow.iset, iscol.iset, &newmat))
+        CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
         return self
 
     def createNest(
@@ -1314,8 +1339,7 @@ cdef class Mat(Object):
         mats: Sequence[Sequence[Mat]],
         isrows: Sequence[IS] | None = None,
         iscols: Sequence[IS] | None = None,
-        comm: Comm | None = None,
-    ) -> Self:
+        comm: Comm | None = None) -> Self:
         """Create a `Type.NEST` matrix containing multiple submatrices.
 
         Collective.
@@ -1360,21 +1384,21 @@ cdef class Mat(Object):
         cdef PetscMat *cmats   = NULL
         cdef PetscIS  *cisrows = NULL
         cdef PetscIS  *ciscols = NULL
-        cdef object tmp1, tmp2, tmp3
-        tmp1 = oarray_p(empty_p(nr*nc), NULL, <void**>&cmats)
+        cdef object unused1, unused2, unused3
+        unused1 = oarray_p(empty_p(nr*nc), NULL, <void**>&cmats)
         for i from 0 <= i < mr:
             for j from 0 <= j < mc:
                 mat = mats[i][j]
                 cmats[i*mc+j] = (<Mat?>mat).mat if mat is not None else NULL
         if isrows is not None:
-            tmp2 = oarray_p(empty_p(nr), NULL, <void**>&cisrows)
+            unused2 = oarray_p(empty_p(nr), NULL, <void**>&cisrows)
             for i from 0 <= i < mr: cisrows[i] = (<IS?>isrows[i]).iset
         if iscols is not None:
-            tmp3 = oarray_p(empty_p(nc), NULL, <void**>&ciscols)
+            unused3 = oarray_p(empty_p(nc), NULL, <void**>&ciscols)
             for j from 0 <= j < mc: ciscols[j] = (<IS?>iscols[j]).iset
         cdef PetscMat newmat = NULL
-        CHKERR( MatCreateNest(ccomm, nr, cisrows, nc, ciscols, cmats, &newmat) )
-        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
+        CHKERR(MatCreateNest(ccomm, nr, cisrows, nc, ciscols, cmats, &newmat))
+        CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
         return self
 
     def createH2OpusFromMat(
@@ -1386,9 +1410,10 @@ cdef class Mat(Object):
         leafsize: int | None = None,
         maxrank: int | None = None,
         bs: int | None = None,
-        rtol: float | None = None,
-    ) -> Self:
+        rtol: float | None = None) -> Self:
         """Create a hierarchical `Type.H2OPUS` matrix sampling from a provided operator.
+
+        Collective.
 
         Parameters
         ----------
@@ -1443,27 +1468,27 @@ cdef class Mat(Object):
             if PyArray_ISFORTRAN(xyz): xyz = PyArray_Copy(xyz)
             if PyArray_NDIM(xyz) != 2: raise ValueError(
                 ("coordinates must have two dimensions: "
-                 "coordinates.ndim=%d") % (PyArray_NDIM(xyz)) )
+                 "coordinates.ndim=%d") % (PyArray_NDIM(xyz)))
             nvtx = <PetscInt> PyArray_DIM(xyz, 0)
-            CHKERR( MatGetLocalSize(A.mat, &rl, &cl) )
+            CHKERR(MatGetLocalSize(A.mat, &rl, &cl))
             if cl != rl: raise ValueError("Not for rectangular matrices")
             if nvtx < rl: raise ValueError(
-                ("coordinates size must be at least %d" % rl ))
+                ("coordinates size must be at least %d" % rl))
             cdim = <PetscInt> PyArray_DIM(xyz, 1)
             coords = <PetscReal*> PyArray_DATA(xyz)
 
         cdef PetscMat newmat = NULL
-        CHKERR( MatCreateH2OpusFromMat(A.mat, cdim, coords, cdist, peta, lsize, maxr, pbs, tol, &newmat) )
-        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
+        CHKERR(MatCreateH2OpusFromMat(A.mat, cdim, coords, cdist, peta, lsize, maxr, pbs, tol, &newmat))
+        CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
         return self
 
     def createIS(
         self,
         size: MatSizeSpec,
+        bsize: MatBlockSizeSpec | None = None,
         LGMap lgmapr = None,
         LGMap lgmapc = None,
-        comm: Comm | None = None,
-        ) -> Self:
+        comm: Comm | None = None) -> Self:
         """Create a `Type.IS` matrix representing globally unassembled operators.
 
         Collective.
@@ -1472,6 +1497,8 @@ cdef class Mat(Object):
         ----------
         size
             Matrix size.
+        bsize
+            Matrix block size. If `None`, a block size of ``1`` is set.
         lgmapr
             Optional local-to-global mapping for the rows.
             If `None`, the local row space matches the global row space.
@@ -1493,7 +1520,7 @@ cdef class Mat(Object):
         cdef PetscLGMap lgmc = NULL
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt rbs = 0, cbs = 0, m = 0, n = 0, M = 0, N = 0
-        Mat_Sizes(size, None, &rbs, &cbs, &m, &n, &M, &N)
+        Mat_Sizes(size, bsize, &rbs, &cbs, &m, &n, &M, &N)
         Sys_Layout(ccomm, rbs, &m, &M)
         Sys_Layout(ccomm, cbs, &n, &N)
         # create matrix
@@ -1501,19 +1528,18 @@ cdef class Mat(Object):
         cdef PetscInt bs = 1
         if rbs == cbs: bs = rbs
         if lgmapr is not None:
-           lgmr = lgmapr.lgm
+            lgmr = lgmapr.lgm
         if lgmapc is not None:
-           lgmc = lgmapc.lgm
-        CHKERR( MatCreateIS(ccomm, bs, m, n, M, N, lgmr, lgmc, &newmat) )
-        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
+            lgmc = lgmapc.lgm
+        CHKERR(MatCreateIS(ccomm, bs, m, n, M, N, lgmr, lgmc, &newmat))
+        CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
         return self
 
     def createConstantDiagonal(
         self,
         size: MatSizeSpec,
         diag: float,
-        comm: Comm | None = None,
-        ) -> Self:
+        comm: Comm | None = None) -> Self:
         """Create a diagonal matrix of type `Type.CONSTANTDIAGONAL`.
 
         Collective.
@@ -1538,14 +1564,13 @@ cdef class Mat(Object):
         Sys_Layout(ccomm, rbs, &m, &M)
         Sys_Layout(ccomm, cbs, &n, &N)
         cdef PetscMat newmat = NULL
-        CHKERR( MatCreateConstantDiagonal(ccomm, m, n, M, N, diag, &newmat) )
-        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
+        CHKERR(MatCreateConstantDiagonal(ccomm, m, n, M, N, diag, &newmat))
+        CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
         return self
 
     def createDiagonal(
         self,
-        Vec diag,
-        ) -> Self:
+        Vec diag) -> Self:
         """Create a diagonal matrix of type `Type.DIAGONAL`.
 
         Collective.
@@ -1562,8 +1587,8 @@ cdef class Mat(Object):
         """
         cdef PetscVec dvec = diag.vec
         cdef PetscMat newmat = NULL
-        CHKERR( MatCreateDiagonal(dvec, &newmat) )
-        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
+        CHKERR(MatCreateDiagonal(dvec, &newmat))
+        CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
         return self
 
     def createPython(self, size: MatSizeSpec, context: Any = None, comm: Comm | None = None) -> Self:
@@ -1594,24 +1619,31 @@ cdef class Mat(Object):
         # create matrix
         # FIXME: propagate block sizes?
         cdef PetscMat newmat = NULL
-        CHKERR( MatCreate(ccomm, &newmat) )
-        CHKERR( PetscCLEAR(self.obj) ); self.mat = newmat
-        CHKERR( MatSetSizes(self.mat, m, n, M, N) )
-        CHKERR( MatSetType(self.mat, MATPYTHON) )
-        CHKERR( MatPythonSetContext(self.mat, <void*>context) )
+        CHKERR(MatCreate(ccomm, &newmat))
+        CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
+        CHKERR(MatSetSizes(self.mat, m, n, M, N))
+        CHKERR(MatSetType(self.mat, MATPYTHON))
+        CHKERR(MatPythonSetContext(self.mat, <void*>context))
+        if context:
+            CHKERR(MatSetUp(self.mat))
         return self
 
     def setPythonContext(self, context: Any) -> None:
         """Set the instance of the class implementing the required Python methods.
 
-        Not collective.
+        Logically collective.
+
+        Notes
+        -----
+        In order to use the matrix, `Mat.setUp` must be called after having set
+        the context. Pass `None` to reset the matrix to its initial state.
 
         See Also
         --------
-        petsc_python_mat, getPythonContext
+        petsc_python_mat, getPythonContext, setPythonType
 
         """
-        CHKERR( MatPythonSetContext(self.mat, <void*>context) )
+        CHKERR(MatPythonSetContext(self.mat, <void*>context))
 
     def getPythonContext(self) -> Any:
         """Return the instance of the class implementing the required Python methods.
@@ -1624,7 +1656,7 @@ cdef class Mat(Object):
 
         """
         cdef void *context = NULL
-        CHKERR( MatPythonGetContext(self.mat, &context) )
+        CHKERR(MatPythonGetContext(self.mat, &context))
         if context == NULL: return None
         else: return <object> context
 
@@ -1632,6 +1664,11 @@ cdef class Mat(Object):
         """Set the fully qualified Python name of the class to be used.
 
         Collective.
+
+        Notes
+        -----
+        In order to use the matrix, `Mat.setUp` must be called after having set
+        the type.
 
         See Also
         --------
@@ -1641,7 +1678,7 @@ cdef class Mat(Object):
         """
         cdef const char *cval = NULL
         py_type = str2bytes(py_type, &cval)
-        CHKERR( MatPythonSetType(self.mat, cval) )
+        CHKERR(MatPythonSetType(self.mat, cval))
 
     def getPythonType(self) -> str:
         """Return the fully qualified Python name of the class used by the matrix.
@@ -1655,12 +1692,12 @@ cdef class Mat(Object):
 
         """
         cdef const char *cval = NULL
-        CHKERR( MatPythonGetType(self.mat, &cval) )
+        CHKERR(MatPythonGetType(self.mat, &cval))
         return bytes2str(cval)
 
     #
 
-    def setOptionsPrefix(self, prefix: str) -> None:
+    def setOptionsPrefix(self, prefix: str | None = None) -> None:
         """Set the prefix used for searching for options in the database.
 
         Logically collective.
@@ -1672,7 +1709,7 @@ cdef class Mat(Object):
         """
         cdef const char *cval = NULL
         prefix = str2bytes(prefix, &cval)
-        CHKERR( MatSetOptionsPrefix(self.mat, cval) )
+        CHKERR(MatSetOptionsPrefix(self.mat, cval))
 
     def getOptionsPrefix(self) -> str:
         """Return the prefix used for searching for options in the database.
@@ -1685,10 +1722,10 @@ cdef class Mat(Object):
 
         """
         cdef const char *cval = NULL
-        CHKERR( MatGetOptionsPrefix(self.mat, &cval) )
+        CHKERR(MatGetOptionsPrefix(self.mat, &cval))
         return bytes2str(cval)
 
-    def appendOptionsPrefix(self, prefix: str) -> None:
+    def appendOptionsPrefix(self, prefix: str | None = None) -> None:
         """Append to the prefix used for searching for options in the database.
 
         Logically collective.
@@ -1700,7 +1737,7 @@ cdef class Mat(Object):
         """
         cdef const char *cval = NULL
         prefix = str2bytes(prefix, &cval)
-        CHKERR( MatAppendOptionsPrefix(self.mat, cval) )
+        CHKERR(MatAppendOptionsPrefix(self.mat, cval))
 
     def setFromOptions(self) -> None:
         """Configure the matrix from the options database.
@@ -1712,9 +1749,9 @@ cdef class Mat(Object):
         petsc_options, petsc.MatSetFromOptions
 
         """
-        CHKERR( MatSetFromOptions(self.mat) )
+        CHKERR(MatSetFromOptions(self.mat))
 
-    def setUp(self) -> None:
+    def setUp(self) -> Self:
         """Set up the internal data structures for using the matrix.
 
         Collective.
@@ -1724,7 +1761,7 @@ cdef class Mat(Object):
         petsc.MatSetUp
 
         """
-        CHKERR( MatSetUp(self.mat) )
+        CHKERR(MatSetUp(self.mat))
         return self
 
     def setOption(self, option: Option, flag: bool) -> None:
@@ -1737,7 +1774,7 @@ cdef class Mat(Object):
         getOption, petsc.MatSetOption
 
         """
-        CHKERR( MatSetOption(self.mat, option, flag) )
+        CHKERR(MatSetOption(self.mat, option, flag))
 
     def getOption(self, option: Option) -> bool:
         """Return the option value.
@@ -1750,7 +1787,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscBool flag = PETSC_FALSE
-        CHKERR( MatGetOption(self.mat, option, &flag) )
+        CHKERR(MatGetOption(self.mat, option, &flag))
         return toBool(flag)
 
     def getType(self) -> str:
@@ -1764,7 +1801,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscMatType cval = NULL
-        CHKERR( MatGetType(self.mat, &cval) )
+        CHKERR(MatGetType(self.mat, &cval))
         return bytes2str(cval)
 
     def getSize(self) -> tuple[int, int]:
@@ -1778,7 +1815,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscInt M = 0, N = 0
-        CHKERR( MatGetSize(self.mat, &M, &N) )
+        CHKERR(MatGetSize(self.mat, &M, &N))
         return (toInt(M), toInt(N))
 
     def getLocalSize(self) -> tuple[int, int]:
@@ -1792,7 +1829,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscInt m = 0, n = 0
-        CHKERR( MatGetLocalSize(self.mat, &m, &n) )
+        CHKERR(MatGetLocalSize(self.mat, &m, &n))
         return (toInt(m), toInt(n))
 
     def getSizes(self) -> tuple[LayoutSizeSpec, LayoutSizeSpec]:
@@ -1807,8 +1844,8 @@ cdef class Mat(Object):
         """
         cdef PetscInt m = 0, n = 0
         cdef PetscInt M = 0, N = 0
-        CHKERR( MatGetLocalSize(self.mat, &m, &n) )
-        CHKERR( MatGetSize(self.mat, &M, &N) )
+        CHKERR(MatGetLocalSize(self.mat, &m, &n))
+        CHKERR(MatGetSize(self.mat, &M, &N))
         return ((toInt(m), toInt(M)), (toInt(n), toInt(N)))
 
     def getBlockSize(self) -> int:
@@ -1822,7 +1859,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscInt bs = 0
-        CHKERR( MatGetBlockSize(self.mat, &bs) )
+        CHKERR(MatGetBlockSize(self.mat, &bs))
         return toInt(bs)
 
     def getBlockSizes(self) -> tuple[int, int]:
@@ -1836,7 +1873,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscInt rbs = 0, cbs = 0
-        CHKERR( MatGetBlockSizes(self.mat, &rbs, &cbs) )
+        CHKERR(MatGetBlockSizes(self.mat, &rbs, &cbs))
         return (toInt(rbs), toInt(cbs))
 
     def getOwnershipRange(self) -> tuple[int, int]:
@@ -1850,7 +1887,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscInt ival1 = 0, ival2 = 0
-        CHKERR( MatGetOwnershipRange(self.mat, &ival1, &ival2) )
+        CHKERR(MatGetOwnershipRange(self.mat, &ival1, &ival2))
         return (toInt(ival1), toInt(ival2))
 
     def getOwnershipRanges(self) -> ArrayInt:
@@ -1866,11 +1903,11 @@ cdef class Mat(Object):
 
         """
         cdef const PetscInt *rowrng = NULL
-        CHKERR( MatGetOwnershipRanges(self.mat, &rowrng) )
+        CHKERR(MatGetOwnershipRanges(self.mat, &rowrng))
         cdef MPI_Comm comm = MPI_COMM_NULL
-        CHKERR( PetscObjectGetComm(<PetscObject>self.mat, &comm) )
+        CHKERR(PetscObjectGetComm(<PetscObject>self.mat, &comm))
         cdef int size = -1
-        CHKERR( <PetscErrorCode>MPI_Comm_size(comm, &size) )
+        CHKERR(<PetscErrorCode>MPI_Comm_size(comm, &size))
         return array_i(size+1, rowrng)
 
     def getOwnershipRangeColumn(self) -> tuple[int, int]:
@@ -1885,7 +1922,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscInt ival1 = 0, ival2 = 0
-        CHKERR( MatGetOwnershipRangeColumn(self.mat, &ival1, &ival2) )
+        CHKERR(MatGetOwnershipRangeColumn(self.mat, &ival1, &ival2))
         return (toInt(ival1), toInt(ival2))
 
     def getOwnershipRangesColumn(self) -> ArrayInt:
@@ -1899,11 +1936,11 @@ cdef class Mat(Object):
 
         """
         cdef const PetscInt *colrng = NULL
-        CHKERR( MatGetOwnershipRangesColumn(self.mat, &colrng) )
+        CHKERR(MatGetOwnershipRangesColumn(self.mat, &colrng))
         cdef MPI_Comm comm = MPI_COMM_NULL
-        CHKERR( PetscObjectGetComm(<PetscObject>self.mat, &comm) )
+        CHKERR(PetscObjectGetComm(<PetscObject>self.mat, &comm))
         cdef int size = -1
-        CHKERR( <PetscErrorCode>MPI_Comm_size(comm, &size) )
+        CHKERR(<PetscErrorCode>MPI_Comm_size(comm, &size))
         return array_i(size+1, colrng)
 
     def getOwnershipIS(self) -> tuple[IS, IS]:
@@ -1918,7 +1955,7 @@ cdef class Mat(Object):
         """
         cdef IS rows = IS()
         cdef IS cols = IS()
-        CHKERR( MatGetOwnershipIS(self.mat, &rows.iset, &cols.iset) )
+        CHKERR(MatGetOwnershipIS(self.mat, &rows.iset, &cols.iset))
         return (rows, cols)
 
     def getInfo(self, info: InfoType = None) -> dict[str, float]:
@@ -1938,7 +1975,7 @@ cdef class Mat(Object):
         """
         cdef PetscMatInfoType itype = infotype(info)
         cdef PetscMatInfo cinfo
-        CHKERR( MatGetInfo(self.mat, itype, &cinfo) )
+        CHKERR(MatGetInfo(self.mat, itype, &cinfo))
         return cinfo
 
     def duplicate(self, copy: bool = False) -> Mat:
@@ -1960,7 +1997,7 @@ cdef class Mat(Object):
         if copy: flag = MAT_COPY_VALUES
         if copy > MAT_COPY_VALUES: flag = MAT_SHARE_NONZERO_PATTERN
         cdef Mat mat = type(self)()
-        CHKERR( MatDuplicate(self.mat, flag, &mat.mat) )
+        CHKERR(MatDuplicate(self.mat, flag, &mat.mat))
         return mat
 
     def copy(self, Mat result=None, structure: Structure | None = None) -> Mat:
@@ -1985,9 +2022,9 @@ cdef class Mat(Object):
         if result is None:
             result = type(self)()
         if result.mat == NULL:
-            CHKERR( MatDuplicate(self.mat, copy, &result.mat) )
+            CHKERR(MatDuplicate(self.mat, copy, &result.mat))
         else:
-            CHKERR( MatCopy(self.mat, result.mat, mstr) )
+            CHKERR(MatCopy(self.mat, result.mat, mstr))
         return result
 
     def load(self, Viewer viewer) -> Self:
@@ -2003,9 +2040,9 @@ cdef class Mat(Object):
         cdef MPI_Comm comm = MPI_COMM_NULL
         cdef PetscObject obj = <PetscObject>(viewer.vwr)
         if self.mat == NULL:
-            CHKERR( PetscObjectGetComm(obj, &comm) )
-            CHKERR( MatCreate(comm, &self.mat) )
-        CHKERR( MatLoad(self.mat, viewer.vwr) )
+            CHKERR(PetscObjectGetComm(obj, &comm))
+            CHKERR(MatCreate(comm, &self.mat))
+        CHKERR(MatLoad(self.mat, viewer.vwr))
         return self
 
     def convert(self, mat_type: Type | str = None, Mat out=None) -> Mat:
@@ -2037,7 +2074,7 @@ cdef class Mat(Object):
             reuse = MAT_INITIAL_MATRIX
         else:
             reuse = MAT_REUSE_MATRIX
-        CHKERR( MatConvert(self.mat, mtype, reuse, &out.mat) )
+        CHKERR(MatConvert(self.mat, mtype, reuse, &out.mat))
         return out
 
     def transpose(self, Mat out=None) -> Mat:
@@ -2064,18 +2101,20 @@ cdef class Mat(Object):
             reuse = MAT_INITIAL_MATRIX
         else:
             reuse = MAT_REUSE_MATRIX
-        CHKERR( MatTranspose(self.mat, reuse, &out.mat) )
+        CHKERR(MatTranspose(self.mat, reuse, &out.mat))
         return out
 
     def setTransposePrecursor(self, Mat out) -> None:
         """Set transpose precursor.
+
+        Logically collective.
 
         See Also
         --------
         petsc.MatTransposeSetPrecursor
 
         """
-        CHKERR( MatTransposeSetPrecursor(self.mat, out.mat) )
+        CHKERR(MatTransposeSetPrecursor(self.mat, out.mat))
 
     def hermitianTranspose(self, Mat out=None) -> Mat:
         """Return the transposed Hermitian matrix.
@@ -2101,7 +2140,7 @@ cdef class Mat(Object):
             reuse = MAT_INITIAL_MATRIX
         else:
             reuse = MAT_REUSE_MATRIX
-        CHKERR( MatHermitianTranspose(self.mat, reuse, &out.mat) )
+        CHKERR(MatHermitianTranspose(self.mat, reuse, &out.mat))
         return out
 
     def realPart(self, Mat out=None) -> Mat:
@@ -2123,8 +2162,8 @@ cdef class Mat(Object):
         if out is None:
             out = self
         elif out.mat == NULL:
-            CHKERR( MatDuplicate(self.mat, MAT_COPY_VALUES, &out.mat) )
-        CHKERR( MatRealPart(out.mat) )
+            CHKERR(MatDuplicate(self.mat, MAT_COPY_VALUES, &out.mat))
+        CHKERR(MatRealPart(out.mat))
         return out
 
     def imagPart(self, Mat out=None) -> Mat:
@@ -2146,8 +2185,8 @@ cdef class Mat(Object):
         if out is None:
             out = self
         elif out.mat == NULL:
-            CHKERR( MatDuplicate(self.mat, MAT_COPY_VALUES, &out.mat) )
-        CHKERR( MatImaginaryPart(out.mat) )
+            CHKERR(MatDuplicate(self.mat, MAT_COPY_VALUES, &out.mat))
+        CHKERR(MatImaginaryPart(out.mat))
         return out
 
     def conjugate(self, Mat out=None) -> Mat:
@@ -2169,8 +2208,8 @@ cdef class Mat(Object):
         if out is None:
             out = self
         elif out.mat == NULL:
-            CHKERR( MatDuplicate(self.mat, MAT_COPY_VALUES, &out.mat) )
-        CHKERR( MatConjugate(out.mat) )
+            CHKERR(MatDuplicate(self.mat, MAT_COPY_VALUES, &out.mat))
+        CHKERR(MatConjugate(out.mat))
         return out
 
     def permute(self, IS row, IS col) -> Mat:
@@ -2191,7 +2230,7 @@ cdef class Mat(Object):
 
         """
         cdef Mat mat = Mat()
-        CHKERR( MatPermute(self.mat, row.iset, col.iset, &mat.mat) )
+        CHKERR(MatPermute(self.mat, row.iset, col.iset, &mat.mat))
         return mat
 
     def equal(self, Mat mat) -> bool:
@@ -2205,7 +2244,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscBool flag = PETSC_FALSE
-        CHKERR( MatEqual(self.mat, mat.mat, &flag) )
+        CHKERR(MatEqual(self.mat, mat.mat, &flag))
         return toBool(flag)
 
     def isTranspose(self, Mat mat=None, tol: float = 0) -> bool:
@@ -2228,7 +2267,7 @@ cdef class Mat(Object):
         if mat is None: mat = self
         cdef PetscReal rval = asReal(tol)
         cdef PetscBool flag = PETSC_FALSE
-        CHKERR( MatIsTranspose(self.mat, mat.mat, rval, &flag) )
+        CHKERR(MatIsTranspose(self.mat, mat.mat, rval, &flag))
         return toBool(flag)
 
     def isSymmetric(self, tol: float = 0) -> bool:
@@ -2248,7 +2287,7 @@ cdef class Mat(Object):
         """
         cdef PetscReal rval = asReal(tol)
         cdef PetscBool flag = PETSC_FALSE
-        CHKERR( MatIsSymmetric(self.mat, rval, &flag) )
+        CHKERR(MatIsSymmetric(self.mat, rval, &flag))
         return toBool(flag)
 
     def isSymmetricKnown(self) -> tuple[bool, bool]:
@@ -2263,7 +2302,7 @@ cdef class Mat(Object):
         """
         cdef PetscBool flag1 = PETSC_FALSE
         cdef PetscBool flag2 = PETSC_FALSE
-        CHKERR( MatIsSymmetricKnown(self.mat, &flag1, &flag2) )
+        CHKERR(MatIsSymmetricKnown(self.mat, &flag1, &flag2))
         return (toBool(flag1), toBool(flag2))
 
     def isHermitian(self, tol: float = 0) -> bool:
@@ -2283,7 +2322,7 @@ cdef class Mat(Object):
         """
         cdef PetscReal rval = asReal(tol)
         cdef PetscBool flag = PETSC_FALSE
-        CHKERR( MatIsHermitian(self.mat, rval, &flag) )
+        CHKERR(MatIsHermitian(self.mat, rval, &flag))
         return toBool(flag)
 
     def isHermitianKnown(self) -> tuple[bool, bool]:
@@ -2298,13 +2337,21 @@ cdef class Mat(Object):
         """
         cdef PetscBool flag1 = PETSC_FALSE
         cdef PetscBool flag2 = PETSC_FALSE
-        CHKERR( MatIsHermitianKnown(self.mat, &flag1, &flag2) )
+        CHKERR(MatIsHermitianKnown(self.mat, &flag1, &flag2))
         return (toBool(flag1), toBool(flag2))
 
     def isStructurallySymmetric(self) -> bool:
-        """Return the boolean indicating if the matrix is structurally symmetric."""
+        """Return the boolean indicating if the matrix is structurally symmetric.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.MatIsStructurallySymmetric
+
+        """
         cdef PetscBool flag = PETSC_FALSE
-        CHKERR( MatIsStructurallySymmetric(self.mat, &flag) )
+        CHKERR(MatIsStructurallySymmetric(self.mat, &flag))
         return toBool(flag)
 
     def zeroEntries(self) -> None:
@@ -2317,10 +2364,10 @@ cdef class Mat(Object):
         petsc.MatZeroEntries
 
         """
-        CHKERR( MatZeroEntries(self.mat) )
+        CHKERR(MatZeroEntries(self.mat))
 
     def getValue(self, row, col) -> Scalar:
-        """Return the value in the (row,col) position.
+        """Return the value in the (row, col) position.
 
         Not collective.
 
@@ -2332,11 +2379,11 @@ cdef class Mat(Object):
         cdef PetscInt    ival1 = asInt(row)
         cdef PetscInt    ival2 = asInt(col)
         cdef PetscScalar sval  = 0
-        CHKERR( MatGetValues(self.mat, 1, &ival1, 1, &ival2, &sval) )
+        CHKERR(MatGetValues(self.mat, 1, &ival1, 1, &ival2, &sval))
         return toScalar(sval)
 
     def getValues(self, rows: Sequence[int], cols: Sequence[int], values: ArrayScalar = None) -> ArrayScalar:
-        """Return the values in the ``zip(rows,cols)`` positions.
+        """Return the values in the ``zip(rows, cols)`` positions.
 
         Not collective.
 
@@ -2368,7 +2415,7 @@ cdef class Mat(Object):
         """
         # row ownership
         cdef PetscInt rstart=0, rend=0, nrows=0
-        CHKERR( MatGetOwnershipRange(self.mat, &rstart, &rend) )
+        CHKERR(MatGetOwnershipRange(self.mat, &rstart, &rend))
         nrows = rend - rstart
         # first pass: row pointer array
         cdef PetscInt *AI = NULL
@@ -2376,9 +2423,9 @@ cdef class Mat(Object):
         cdef PetscInt irow=0, ncols=0
         AI[0] = 0
         for irow from 0 <= irow < nrows:
-            CHKERR( MatGetRow(self.mat, irow+rstart, &ncols, NULL, NULL) )
+            CHKERR(MatGetRow(self.mat, irow+rstart, &ncols, NULL, NULL))
             AI[irow+1] = AI[irow] + ncols
-            CHKERR( MatRestoreRow(self.mat, irow+rstart, &ncols, NULL, NULL) )
+            CHKERR(MatRestoreRow(self.mat, irow+rstart, &ncols, NULL, NULL))
         # second pass: column indices and values
         cdef PetscInt *AJ = NULL
         cdef ndarray aj = oarray_i(empty_i(AI[nrows]), NULL, &AJ)
@@ -2387,10 +2434,10 @@ cdef class Mat(Object):
         cdef const PetscInt *cols = NULL
         cdef const PetscScalar *vals = NULL
         for irow from 0 <= irow < nrows:
-            CHKERR( MatGetRow(self.mat, irow+rstart, &ncols, &cols, &vals) )
-            CHKERR( PetscMemcpy(AJ+AI[irow], cols, <size_t>ncols*sizeof(PetscInt)) )
-            CHKERR( PetscMemcpy(AV+AI[irow], vals, <size_t>ncols*sizeof(PetscScalar)) )
-            CHKERR( MatRestoreRow(self.mat, irow+rstart, &ncols, &cols, &vals) )
+            CHKERR(MatGetRow(self.mat, irow+rstart, &ncols, &cols, &vals))
+            CHKERR(PetscMemcpy(AJ+AI[irow], cols, <size_t>ncols*sizeof(PetscInt)))
+            CHKERR(PetscMemcpy(AV+AI[irow], vals, <size_t>ncols*sizeof(PetscScalar)))
+            CHKERR(MatRestoreRow(self.mat, irow+rstart, &ncols, &cols, &vals))
         #
         return (ai, aj, av)
 
@@ -2408,10 +2455,10 @@ cdef class Mat(Object):
         cdef PetscInt ncols = 0
         cdef const PetscInt *icols=NULL
         cdef const PetscScalar *svals=NULL
-        CHKERR( MatGetRow(self.mat, irow, &ncols, &icols, &svals) )
+        CHKERR(MatGetRow(self.mat, irow, &ncols, &icols, &svals))
         cdef object cols = array_i(ncols, icols)
         cdef object vals = array_s(ncols, svals)
-        CHKERR( MatRestoreRow(self.mat, irow, &ncols, &icols, &svals) )
+        CHKERR(MatRestoreRow(self.mat, irow, &ncols, &icols, &svals))
         return (cols, vals)
 
     def getRowIJ(self, symmetric: bool = False, compressed: bool = False) -> tuple[ArrayInt, ArrayInt]:
@@ -2438,11 +2485,11 @@ cdef class Mat(Object):
         cdef const PetscInt *ia=NULL
         cdef const PetscInt *ja=NULL
         cdef PetscBool done=PETSC_FALSE
-        CHKERR( MatGetRowIJ(self.mat, shift, symm, bcmp, &n, &ia, &ja, &done) )
+        CHKERR(MatGetRowIJ(self.mat, shift, symm, bcmp, &n, &ia, &ja, &done))
         cdef object ai=None, aj=None
-        if done != PETSC_FALSE: ai = array_i(  n+1, ia)
+        if done != PETSC_FALSE: ai = array_i(n+1, ia)
         if done != PETSC_FALSE: aj = array_i(ia[n], ja)
-        CHKERR( MatRestoreRowIJ(self.mat, shift, symm, bcmp, &n, &ia, &ja, &done) )
+        CHKERR(MatRestoreRowIJ(self.mat, shift, symm, bcmp, &n, &ia, &ja, &done))
         return (ai, aj)
 
     def getColumnIJ(self, symmetric: bool = False, compressed: bool = False) -> tuple[ArrayInt, ArrayInt]:
@@ -2468,11 +2515,11 @@ cdef class Mat(Object):
         cdef const PetscInt *ia=NULL
         cdef const PetscInt *ja=NULL
         cdef PetscBool done=PETSC_FALSE
-        CHKERR( MatGetColumnIJ(self.mat, shift, symm, bcmp, &n, &ia, &ja, &done) )
+        CHKERR(MatGetColumnIJ(self.mat, shift, symm, bcmp, &n, &ia, &ja, &done))
         cdef object ai=None, aj=None
-        if done != PETSC_FALSE: ai = array_i(  n+1, ia)
+        if done != PETSC_FALSE: ai = array_i(n+1, ia)
         if done != PETSC_FALSE: aj = array_i(ia[n], ja)
-        CHKERR( MatRestoreColumnIJ(self.mat, shift, symm, bcmp, &n, &ia, &ja, &done) )
+        CHKERR(MatRestoreColumnIJ(self.mat, shift, symm, bcmp, &n, &ia, &ja, &done))
         return (ai, aj)
 
     def setValue(
@@ -2480,8 +2527,7 @@ cdef class Mat(Object):
         row: int,
         col: int,
         value: Scalar,
-        addv: InsertModeSpec = None,
-        ) -> None:
+        addv: InsertModeSpec = None) -> None:
         """Set a value to the ``(row, col)`` entry of the matrix.
 
         Not collective.
@@ -2506,15 +2552,14 @@ cdef class Mat(Object):
         cdef PetscInt    ival2 = asInt(col)
         cdef PetscScalar sval  = asScalar(value)
         cdef PetscInsertMode caddv = insertmode(addv)
-        CHKERR( MatSetValues(self.mat, 1, &ival1, 1, &ival2, &sval, caddv) )
+        CHKERR(MatSetValues(self.mat, 1, &ival1, 1, &ival2, &sval, caddv))
 
     def setValues(
         self,
         rows: Sequence[int],
         cols: Sequence[int],
         values: Sequence[Scalar],
-        addv: InsertModeSpec = None,
-        ) -> None:
+        addv: InsertModeSpec = None) -> None:
         """Set values to the rows ⊗ cols entries of the matrix.
 
         Not collective.
@@ -2547,8 +2592,7 @@ cdef class Mat(Object):
         J: Sequence[int],
         V: Sequence[Scalar],
         addv: InsertModeSpec = None,
-        rowmap: Sequence[int] = None,
-        ) -> None:
+        rowmap: Sequence[int] = None) -> None:
         """Set a subset of values stored in CSR format.
 
         Not collective.
@@ -2578,8 +2622,7 @@ cdef class Mat(Object):
         I: Sequence[int],
         J: Sequence[int],
         V: Sequence[Scalar],
-        addv: InsertModeSpec = None,
-        ) -> None:
+        addv: InsertModeSpec = None) -> None:
         """Set values stored in CSR format.
 
         Not collective.
@@ -2607,8 +2650,7 @@ cdef class Mat(Object):
         rows: Sequence[int],
         cols: Sequence[int],
         values: Sequence[Scalar],
-        addv: InsertModeSpec = None,
-        ) -> None:
+        addv: InsertModeSpec = None) -> None:
         """Set values to the rows ⊗ col block entries of the matrix.
 
         Not collective.
@@ -2643,8 +2685,7 @@ cdef class Mat(Object):
         J: Sequence[int],
         V: Sequence[Scalar],
         addv: InsertModeSpec = None,
-        rowmap: Sequence[int] = None,
-        ) -> None:
+        rowmap: Sequence[int] = None) -> None:
         """Set a subset of values stored in block CSR format.
 
         Not collective.
@@ -2674,8 +2715,7 @@ cdef class Mat(Object):
         I: Sequence[int],
         J: Sequence[int],
         V: Sequence[Scalar],
-        addv: InsertModeSpec = None,
-        ) -> None:
+        addv: InsertModeSpec = None) -> None:
         """Set values stored in block CSR format.
 
         Not collective.
@@ -2716,7 +2756,7 @@ cdef class Mat(Object):
 
         """
         if cmap is None: cmap = rmap
-        CHKERR( MatSetLocalToGlobalMapping(self.mat, rmap.lgm, cmap.lgm) )
+        CHKERR(MatSetLocalToGlobalMapping(self.mat, rmap.lgm, cmap.lgm))
 
     def getLGMap(self) -> tuple[LGMap, LGMap]:
         """Return the local-to-global mappings.
@@ -2730,9 +2770,9 @@ cdef class Mat(Object):
         """
         cdef LGMap cmap = LGMap()
         cdef LGMap rmap = LGMap()
-        CHKERR( MatGetLocalToGlobalMapping(self.mat, &rmap.lgm, &cmap.lgm) )
-        CHKERR( PetscINCREF(cmap.obj) )
-        CHKERR( PetscINCREF(rmap.obj) )
+        CHKERR(MatGetLocalToGlobalMapping(self.mat, &rmap.lgm, &cmap.lgm))
+        CHKERR(PetscINCREF(cmap.obj))
+        CHKERR(PetscINCREF(rmap.obj))
         return (rmap, cmap)
 
     def setValueLocal(
@@ -2740,8 +2780,7 @@ cdef class Mat(Object):
         row: int,
         col: int,
         value: Scalar,
-        addv: InsertModeSpec = None,
-        ) -> None:
+        addv: InsertModeSpec = None) -> None:
         """Set a value to the ``(row, col)`` entry of the matrix in local ordering.
 
         Not collective.
@@ -2766,16 +2805,15 @@ cdef class Mat(Object):
         cdef PetscInt    ival2 = asInt(col)
         cdef PetscScalar sval  = asScalar(value)
         cdef PetscInsertMode caddv = insertmode(addv)
-        CHKERR( MatSetValuesLocal(
-                self.mat, 1, &ival1, 1, &ival2, &sval, caddv) )
+        CHKERR(MatSetValuesLocal(
+                self.mat, 1, &ival1, 1, &ival2, &sval, caddv))
 
     def setValuesLocal(
         self,
         rows: Sequence[int],
         cols: Sequence[int],
         values: Sequence[Scalar],
-        addv: InsertModeSpec = None,
-        ) -> None:
+        addv: InsertModeSpec = None) -> None:
         """Set values to the rows ⊗ col entries of the matrix in local ordering.
 
         Not collective.
@@ -2808,8 +2846,7 @@ cdef class Mat(Object):
         J: Sequence[int],
         V: Sequence[Scalar],
         addv: InsertModeSpec = None,
-        rowmap: Sequence[int] = None,
-        ) -> None:
+        rowmap: Sequence[int] = None) -> None:
         """Set a subset of values stored in CSR format.
 
         Not collective.
@@ -2839,8 +2876,7 @@ cdef class Mat(Object):
         I: Sequence[int],
         J: Sequence[int],
         V: Sequence[Scalar],
-        addv: InsertModeSpec = None,
-        ) -> None:
+        addv: InsertModeSpec = None) -> None:
         """Set values stored in CSR format.
 
         Not collective.
@@ -2868,8 +2904,7 @@ cdef class Mat(Object):
         rows: Sequence[int],
         cols: Sequence[int],
         values: Sequence[Scalar],
-        addv: InsertModeSpec = None,
-        ) -> None:
+        addv: InsertModeSpec = None) -> None:
         """Set values to the rows ⊗ col block entries of the matrix in local ordering.
 
         Not collective.
@@ -2904,8 +2939,7 @@ cdef class Mat(Object):
         J: Sequence[int],
         V: Sequence[Scalar],
         addv: InsertModeSpec = None,
-        rowmap: Sequence[int] = None,
-        ) -> None:
+        rowmap: Sequence[int] = None) -> None:
         """Set a subset of values stored in block CSR format.
 
         Not collective.
@@ -2935,8 +2969,7 @@ cdef class Mat(Object):
         I: Sequence[int],
         J: Sequence[int],
         V: Sequence[Scalar],
-        addv: InsertModeSpec = None,
-        ) -> None:
+        addv: InsertModeSpec = None) -> None:
         """Set values stored in block CSR format.
 
         Not collective.
@@ -2981,15 +3014,14 @@ cdef class Mat(Object):
         ndof = asInt(dof)
         if starts is not None:
             asDims(dims, &cstarts[0], &cstarts[1], &cstarts[2])
-        CHKERR( MatSetStencil(self.mat, ndim, cdims, cstarts, ndof) )
+        CHKERR(MatSetStencil(self.mat, ndim, cdims, cstarts, ndof))
 
     def setValueStencil(
         self,
         MatStencil row: Stencil,
         MatStencil col: Stencil,
         value: Sequence[Scalar],
-        addv: InsertModeSpec = None,
-        ) -> None:
+        addv: InsertModeSpec = None) -> None:
         """Set a value to row and col stencil.
 
         Not collective.
@@ -3023,8 +3055,7 @@ cdef class Mat(Object):
         row: Stencil,
         col: Stencil,
         value: Sequence[Scalar],
-        addv: InsertModeSpec = None,
-        ) -> None:
+        addv: InsertModeSpec = None) -> None:
         """Set a block of values to row and col stencil.
 
         Not collective.
@@ -3081,10 +3112,10 @@ cdef class Mat(Object):
         if x is not None: xvec = x.vec
         if b is not None: bvec = b.vec
         if isinstance(rows, IS):
-            CHKERR( MatZeroRowsIS(self.mat, (<IS>rows).iset, sval, xvec, bvec) )
+            CHKERR(MatZeroRowsIS(self.mat, (<IS>rows).iset, sval, xvec, bvec))
         else:
             rows = iarray_i(rows, &ni, &i)
-            CHKERR( MatZeroRows(self.mat, ni, i, sval, xvec, bvec) )
+            CHKERR(MatZeroRows(self.mat, ni, i, sval, xvec, bvec))
 
     def zeroRowsLocal(self, rows: IS | Sequence[int], diag: Scalar = 1, Vec x=None, Vec b=None) -> None:
         """Zero selected rows of the matrix in local ordering.
@@ -3114,10 +3145,10 @@ cdef class Mat(Object):
         if x is not None: xvec = x.vec
         if b is not None: bvec = b.vec
         if isinstance(rows, IS):
-            CHKERR( MatZeroRowsLocalIS(self.mat, (<IS>rows).iset, sval, xvec, bvec) )
+            CHKERR(MatZeroRowsLocalIS(self.mat, (<IS>rows).iset, sval, xvec, bvec))
         else:
             rows = iarray_i(rows, &ni, &i)
-            CHKERR( MatZeroRowsLocal(self.mat, ni, i, sval, xvec, bvec) )
+            CHKERR(MatZeroRowsLocal(self.mat, ni, i, sval, xvec, bvec))
 
     def zeroRowsColumns(self, rows: IS | Sequence[int], diag: Scalar = 1, Vec x=None, Vec b=None) -> None:
         """Zero selected rows and columns of the matrix.
@@ -3148,10 +3179,10 @@ cdef class Mat(Object):
         if x is not None: xvec = x.vec
         if b is not None: bvec = b.vec
         if isinstance(rows, IS):
-            CHKERR( MatZeroRowsColumnsIS(self.mat, (<IS>rows).iset, sval, xvec, bvec) )
+            CHKERR(MatZeroRowsColumnsIS(self.mat, (<IS>rows).iset, sval, xvec, bvec))
         else:
             rows = iarray_i(rows, &ni, &i)
-            CHKERR( MatZeroRowsColumns(self.mat, ni, i, sval, xvec, bvec) )
+            CHKERR(MatZeroRowsColumns(self.mat, ni, i, sval, xvec, bvec))
 
     def zeroRowsColumnsLocal(self, rows: IS | Sequence[int], diag: Scalar = 1, Vec x=None, Vec b=None) -> None:
         """Zero selected rows and columns of the matrix in local ordering.
@@ -3182,10 +3213,10 @@ cdef class Mat(Object):
         if x is not None: xvec = x.vec
         if b is not None: bvec = b.vec
         if isinstance(rows, IS):
-            CHKERR( MatZeroRowsColumnsLocalIS(self.mat, (<IS>rows).iset, sval, xvec, bvec) )
+            CHKERR(MatZeroRowsColumnsLocalIS(self.mat, (<IS>rows).iset, sval, xvec, bvec))
         else:
             rows = iarray_i(rows, &ni, &i)
-            CHKERR( MatZeroRowsColumnsLocal(self.mat, ni, i, sval, xvec, bvec) )
+            CHKERR(MatZeroRowsColumnsLocal(self.mat, ni, i, sval, xvec, bvec))
 
     def zeroRowsColumnsStencil(self, rows: Sequence[Stencil], diag: Scalar = 1, Vec x=None, Vec b=None) -> None:
         """Zero selected rows and columns of the matrix.
@@ -3211,18 +3242,17 @@ cdef class Mat(Object):
         """
         cdef PetscScalar sval = asScalar(diag)
         cdef PetscInt nrows = asInt(len(rows))
-        cdef PetscMatStencil st
-        cdef MatStencil r
+        cdef MatStencil r = 0
         cdef PetscMatStencil *crows = NULL
-        CHKERR( PetscMalloc(<size_t>(nrows+1)*sizeof(st), &crows) )
+        CHKERR(PetscMalloc(<size_t>(nrows+1)*sizeof(PetscMatStencil), &crows))
         for i in range(nrows):
             r = rows[i]
             crows[i] = r.stencil
         cdef PetscVec xvec = NULL, bvec = NULL
         if x is not None: xvec = x.vec
         if b is not None: bvec = b.vec
-        CHKERR( MatZeroRowsColumnsStencil(self.mat, nrows, crows, sval, xvec, bvec) )
-        CHKERR( PetscFree( crows ) )
+        CHKERR(MatZeroRowsColumnsStencil(self.mat, nrows, crows, sval, xvec, bvec))
+        CHKERR(PetscFree(crows))
 
     def storeValues(self) -> None:
         """Stash a copy of the matrix values.
@@ -3234,7 +3264,7 @@ cdef class Mat(Object):
         retrieveValues, petsc.MatStoreValues
 
         """
-        CHKERR( MatStoreValues(self.mat) )
+        CHKERR(MatStoreValues(self.mat))
 
     def retrieveValues(self) -> None:
         """Retrieve a copy of the matrix values previously stored with `storeValues`.
@@ -3246,7 +3276,7 @@ cdef class Mat(Object):
         storeValues, petsc.MatRetrieveValues
 
         """
-        CHKERR( MatRetrieveValues(self.mat) )
+        CHKERR(MatRetrieveValues(self.mat))
 
     def assemblyBegin(self, assembly: MatAssemblySpec = None) -> None:
         """Begin an assembling stage of the matrix.
@@ -3264,7 +3294,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscMatAssemblyType flag = assemblytype(assembly)
-        CHKERR( MatAssemblyBegin(self.mat, flag) )
+        CHKERR(MatAssemblyBegin(self.mat, flag))
 
     def assemblyEnd(self, assembly: MatAssemblySpec = None) -> None:
         """Complete an assembling stage of the matrix initiated with `assemblyBegin`.
@@ -3282,7 +3312,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscMatAssemblyType flag = assemblytype(assembly)
-        CHKERR( MatAssemblyEnd(self.mat, flag) )
+        CHKERR(MatAssemblyEnd(self.mat, flag))
 
     def assemble(self, assembly: MatAssemblySpec = None) -> None:
         """Assemble the matrix.
@@ -3300,8 +3330,8 @@ cdef class Mat(Object):
 
         """
         cdef PetscMatAssemblyType flag = assemblytype(assembly)
-        CHKERR( MatAssemblyBegin(self.mat, flag) )
-        CHKERR( MatAssemblyEnd(self.mat, flag) )
+        CHKERR(MatAssemblyBegin(self.mat, flag))
+        CHKERR(MatAssemblyEnd(self.mat, flag))
 
     def isAssembled(self) -> bool:
         """The boolean flag indicating if the matrix is assembled.
@@ -3314,7 +3344,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscBool flag = PETSC_FALSE
-        CHKERR( MatAssembled(self.mat, &flag) )
+        CHKERR(MatAssembled(self.mat, &flag))
         return toBool(flag)
 
     def findZeroRows(self) -> IS:
@@ -3328,13 +3358,12 @@ cdef class Mat(Object):
 
         """
         cdef IS zerorows = IS()
-        CHKERR( MatFindZeroRows(self.mat, &zerorows.iset) )
+        CHKERR(MatFindZeroRows(self.mat, &zerorows.iset))
         return zerorows
 
     def createVecs(
         self,
-        side: Literal['r', 'R', 'right', 'Right', 'RIGHT', 'l', 'L', 'left', 'Left', 'LEFT'] | None = None,
-        ) -> Vec | tuple[Vec, Vec]:
+        side: Literal['r', 'R', 'right', 'Right', 'RIGHT', 'l', 'L', 'left', 'Left', 'LEFT'] | None = None) -> Vec | tuple[Vec, Vec]:
         """Return vectors that can be used in matrix vector products.
 
         Collective.
@@ -3357,16 +3386,16 @@ cdef class Mat(Object):
         """
         cdef Vec vecr, vecl
         if side is None:
-            vecr = Vec(); vecl = Vec();
-            CHKERR( MatCreateVecs(self.mat, &vecr.vec, &vecl.vec) )
+            vecr = Vec(); vecl = Vec()
+            CHKERR(MatCreateVecs(self.mat, &vecr.vec, &vecl.vec))
             return (vecr, vecl)
         elif side in ('r', 'R', 'right', 'Right', 'RIGHT'):
             vecr = Vec()
-            CHKERR( MatCreateVecs(self.mat, &vecr.vec, NULL) )
+            CHKERR(MatCreateVecs(self.mat, &vecr.vec, NULL))
             return vecr
         elif side in ('l', 'L', 'left',  'Left', 'LEFT'):
             vecl = Vec()
-            CHKERR( MatCreateVecs(self.mat, NULL, &vecl.vec) )
+            CHKERR(MatCreateVecs(self.mat, NULL, &vecl.vec))
             return vecl
         else:
             raise ValueError("side '%r' not understood" % side)
@@ -3382,7 +3411,7 @@ cdef class Mat(Object):
 
         """
         cdef Vec vecr = Vec()
-        CHKERR( MatCreateVecs(self.mat, &vecr.vec, NULL) )
+        CHKERR(MatCreateVecs(self.mat, &vecr.vec, NULL))
         return vecr
 
     def createVecLeft(self) -> Vec:
@@ -3396,7 +3425,7 @@ cdef class Mat(Object):
 
         """
         cdef Vec vecl = Vec()
-        CHKERR( MatCreateVecs(self.mat, NULL, &vecl.vec) )
+        CHKERR(MatCreateVecs(self.mat, NULL, &vecl.vec))
         return vecl
 
     getVecs = createVecs
@@ -3426,12 +3455,14 @@ cdef class Mat(Object):
         if result is None:
             result = Vec()
         if result.vec == NULL:
-            CHKERR( MatCreateVecs(self.mat, NULL, &result.vec) )
-        CHKERR( MatGetColumnVector(self.mat, result.vec, ival) )
+            CHKERR(MatCreateVecs(self.mat, NULL, &result.vec))
+        CHKERR(MatGetColumnVector(self.mat, result.vec, ival))
         return result
 
     def getRedundantMatrix(self, nsubcomm: int, subcomm: Comm | None = None, Mat out=None) -> Mat:
         """Return redundant matrices on subcommunicators.
+
+        Collective.
 
         Parameters
         ----------
@@ -3455,7 +3486,7 @@ cdef class Mat(Object):
         cdef PetscMatReuse reuse  = MAT_INITIAL_MATRIX
         if out is None: out       = Mat()
         if out.mat != NULL: reuse = MAT_REUSE_MATRIX
-        CHKERR( MatCreateRedundantMatrix(self.mat, _nsubcomm, _subcomm, reuse, &out.mat))
+        CHKERR(MatCreateRedundantMatrix(self.mat, _nsubcomm, _subcomm, reuse, &out.mat))
         return out
 
     def getDiagonal(self, Vec result=None) -> Vec:
@@ -3476,8 +3507,8 @@ cdef class Mat(Object):
         if result is None:
             result = Vec()
         if result.vec == NULL:
-            CHKERR( MatCreateVecs(self.mat, NULL, &result.vec) )
-        CHKERR( MatGetDiagonal(self.mat, result.vec) )
+            CHKERR(MatCreateVecs(self.mat, NULL, &result.vec))
+        CHKERR(MatGetDiagonal(self.mat, result.vec))
         return result
 
     def getRowSum(self, Vec result=None) -> Vec:
@@ -3498,8 +3529,8 @@ cdef class Mat(Object):
         if result is None:
             result = Vec()
         if result.vec == NULL:
-            CHKERR( MatCreateVecs(self.mat, NULL, &result.vec) )
-        CHKERR( MatGetRowSum(self.mat, result.vec) )
+            CHKERR(MatCreateVecs(self.mat, NULL, &result.vec))
+        CHKERR(MatGetRowSum(self.mat, result.vec))
         return result
 
     def setDiagonal(self, Vec diag, addv: InsertModeSpec = None) -> None:
@@ -3520,7 +3551,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscInsertMode caddv = insertmode(addv)
-        CHKERR( MatDiagonalSet(self.mat, diag.vec, caddv) )
+        CHKERR(MatDiagonalSet(self.mat, diag.vec, caddv))
 
     def diagonalScale(self, Vec L=None, Vec R=None) -> None:
         """Perform left and/or right diagonal scaling of the matrix.
@@ -3542,7 +3573,7 @@ cdef class Mat(Object):
         cdef PetscVec vecl=NULL, vecr=NULL
         if L is not None: vecl = L.vec
         if R is not None: vecr = R.vec
-        CHKERR( MatDiagonalScale(self.mat, vecl, vecr) )
+        CHKERR(MatDiagonalScale(self.mat, vecl, vecr))
 
     def invertBlockDiagonal(self) -> ArrayScalar:
         """Return the inverse of the block-diagonal entries.
@@ -3556,9 +3587,9 @@ cdef class Mat(Object):
         """
         cdef PetscInt bs = 0, m = 0
         cdef const PetscScalar *cibdiag = NULL
-        CHKERR( MatGetBlockSize(self.mat, &bs) )
-        CHKERR( MatGetLocalSize(self.mat, &m, NULL) )
-        CHKERR( MatInvertBlockDiagonal(self.mat, &cibdiag) )
+        CHKERR(MatGetBlockSize(self.mat, &bs))
+        CHKERR(MatGetLocalSize(self.mat, &m, NULL))
+        CHKERR(MatInvertBlockDiagonal(self.mat, &cibdiag))
         cdef ndarray ibdiag = array_s(m*bs, cibdiag)
         ibdiag.shape = (toInt(m//bs), toInt(bs), toInt(bs))
         return ibdiag.transpose(0, 2, 1)
@@ -3575,7 +3606,7 @@ cdef class Mat(Object):
         getNullSpace, petsc.MatSetNullSpace
 
         """
-        CHKERR( MatSetNullSpace(self.mat, nsp.nsp) )
+        CHKERR(MatSetNullSpace(self.mat, nsp.nsp))
 
     def getNullSpace(self) -> NullSpace:
         """Return the nullspace.
@@ -3588,8 +3619,8 @@ cdef class Mat(Object):
 
         """
         cdef NullSpace nsp = NullSpace()
-        CHKERR( MatGetNullSpace(self.mat, &nsp.nsp) )
-        CHKERR( PetscINCREF(nsp.obj) )
+        CHKERR(MatGetNullSpace(self.mat, &nsp.nsp))
+        CHKERR(PetscINCREF(nsp.obj))
         return nsp
 
     def setTransposeNullSpace(self, NullSpace nsp) -> None:
@@ -3602,7 +3633,7 @@ cdef class Mat(Object):
         setNullSpace, getTransposeNullSpace, petsc.MatSetTransposeNullSpace
 
         """
-        CHKERR( MatSetTransposeNullSpace(self.mat, nsp.nsp) )
+        CHKERR(MatSetTransposeNullSpace(self.mat, nsp.nsp))
 
     def getTransposeNullSpace(self) -> NullSpace:
         """Return the transpose nullspace.
@@ -3615,8 +3646,8 @@ cdef class Mat(Object):
 
         """
         cdef NullSpace nsp = NullSpace()
-        CHKERR( MatGetTransposeNullSpace(self.mat, &nsp.nsp) )
-        CHKERR( PetscINCREF(nsp.obj) )
+        CHKERR(MatGetTransposeNullSpace(self.mat, &nsp.nsp))
+        CHKERR(PetscINCREF(nsp.obj))
         return nsp
 
     def setNearNullSpace(self, NullSpace nsp) -> None:
@@ -3629,7 +3660,7 @@ cdef class Mat(Object):
         setNullSpace, getNearNullSpace, petsc.MatSetNearNullSpace
 
         """
-        CHKERR( MatSetNearNullSpace(self.mat, nsp.nsp) )
+        CHKERR(MatSetNearNullSpace(self.mat, nsp.nsp))
 
     def getNearNullSpace(self) -> NullSpace:
         """Return the near-nullspace.
@@ -3642,8 +3673,8 @@ cdef class Mat(Object):
 
         """
         cdef NullSpace nsp = NullSpace()
-        CHKERR( MatGetNearNullSpace(self.mat, &nsp.nsp) )
-        CHKERR( PetscINCREF(nsp.obj) )
+        CHKERR(MatGetNearNullSpace(self.mat, &nsp.nsp))
+        CHKERR(PetscINCREF(nsp.obj))
         return nsp
 
     # matrix-vector product
@@ -3665,7 +3696,7 @@ cdef class Mat(Object):
         petsc.MatMult
 
         """
-        CHKERR( MatMult(self.mat, x.vec, y.vec) )
+        CHKERR(MatMult(self.mat, x.vec, y.vec))
 
     def multAdd(self, Vec x, Vec v, Vec y) -> None:
         """Perform the matrix vector product with addition y = A @ x + v.
@@ -3686,7 +3717,7 @@ cdef class Mat(Object):
         petsc.MatMultAdd
 
         """
-        CHKERR( MatMultAdd(self.mat, x.vec, v.vec, y.vec) )
+        CHKERR(MatMultAdd(self.mat, x.vec, v.vec, y.vec))
 
     def multTranspose(self, Vec x, Vec y) -> None:
         """Perform the transposed matrix vector product y = A^T @ x.
@@ -3705,7 +3736,7 @@ cdef class Mat(Object):
         petsc.MatMultTranspose
 
         """
-        CHKERR( MatMultTranspose(self.mat, x.vec, y.vec) )
+        CHKERR(MatMultTranspose(self.mat, x.vec, y.vec))
 
     def multTransposeAdd(self, Vec x, Vec v, Vec y) -> None:
         """Perform the transposed matrix vector product with addition y = A^T @ x + v.
@@ -3726,7 +3757,7 @@ cdef class Mat(Object):
         petsc.MatMultTransposeAdd
 
         """
-        CHKERR( MatMultTransposeAdd(self.mat, x.vec, v.vec, y.vec) )
+        CHKERR(MatMultTransposeAdd(self.mat, x.vec, v.vec, y.vec))
 
     def multHermitian(self, Vec x, Vec y) -> None:
         """Perform the Hermitian matrix vector product y = A^H @ x.
@@ -3745,7 +3776,7 @@ cdef class Mat(Object):
         petsc.MatMultHermitianTranspose
 
         """
-        CHKERR( MatMultHermitian(self.mat, x.vec, y.vec) )
+        CHKERR(MatMultHermitian(self.mat, x.vec, y.vec))
 
     def multHermitianAdd(self, Vec x, Vec v, Vec y) -> None:
         """Perform the Hermitian matrix vector product with addition y = A^H @ x + v.
@@ -3766,7 +3797,7 @@ cdef class Mat(Object):
         petsc.MatMultHermitianTransposeAdd
 
         """
-        CHKERR( MatMultHermitianAdd(self.mat, x.vec, v.vec, y.vec) )
+        CHKERR(MatMultHermitianAdd(self.mat, x.vec, v.vec, y.vec))
 
     # SOR
 
@@ -3774,12 +3805,11 @@ cdef class Mat(Object):
         self,
         Vec b,
         Vec x,
-        omega:float = 1.0,
-        sortype:SORType | None = None,
-        shift:float = 0.0,
-        its:int = 1,
-        lits:int = 1,
-        ) -> None:
+        omega: float = 1.0,
+        sortype: SORType | None = None,
+        shift: float = 0.0,
+        its: int = 1,
+        lits: int = 1) -> None:
         """Compute relaxation (SOR, Gauss-Seidel) sweeps.
 
         Neighborwise collective.
@@ -3796,7 +3826,7 @@ cdef class Mat(Object):
         cdef PetscReal cshift = asReal(shift)
         cdef PetscInt cits = asInt(its)
         cdef PetscInt clits = asInt(lits)
-        CHKERR( MatSOR(self.mat, b.vec, comega, csortype, cshift, cits, clits, x.vec) )
+        CHKERR(MatSOR(self.mat, b.vec, comega, csortype, cshift, cits, clits, x.vec))
 
     #
 
@@ -3811,8 +3841,8 @@ cdef class Mat(Object):
 
         """
         cdef Mat submat = Mat()
-        CHKERR( MatGetDiagonalBlock(self.mat, &submat.mat) )
-        CHKERR( PetscINCREF(submat.obj) )
+        CHKERR(MatGetDiagonalBlock(self.mat, &submat.mat))
+        CHKERR(PetscINCREF(submat.obj))
         return submat
 
     def increaseOverlap(self, IS iset, overlap: int = 1) -> None:
@@ -3826,7 +3856,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscInt ival = asInt(overlap)
-        CHKERR( MatIncreaseOverlap(self.mat, 1, &iset.iset, ival) )
+        CHKERR(MatIncreaseOverlap(self.mat, 1, &iset.iset, ival))
 
     def createSubMatrix(self, IS isrow, IS iscol=None, Mat submat=None) -> Mat:
         """Return a submatrix.
@@ -3854,16 +3884,15 @@ cdef class Mat(Object):
         if iscol is not None: ciscol = iscol.iset
         if submat is None: submat = Mat()
         if submat.mat != NULL: reuse = MAT_REUSE_MATRIX
-        CHKERR( MatCreateSubMatrix(self.mat, isrow.iset, ciscol,
-                                reuse, &submat.mat) )
+        CHKERR(MatCreateSubMatrix(self.mat, isrow.iset, ciscol,
+                                  reuse, &submat.mat))
         return submat
 
     def createSubMatrices(
         self,
         isrows: IS | Sequence[IS],
         iscols: IS | Sequence[IS] = None,
-        submats: Mat | Sequence[Mat] = None,
-        ) -> Sequence[Mat]:
+        submats: Mat | Sequence[Mat] = None) -> Sequence[Mat]:
         """Return several sequential submatrices.
 
         Collective.
@@ -3893,26 +3922,25 @@ cdef class Mat(Object):
         cdef PetscIS  *cisrows = NULL
         cdef PetscIS  *ciscols = NULL
         cdef PetscMat *cmats   = NULL
-        cdef object tmp1, tmp2
         cdef Mat mat
-        tmp1 = oarray_p(empty_p(n), NULL, <void**>&cisrows)
+        cdef object unused1 = oarray_p(empty_p(n), NULL, <void**>&cisrows)
         for i from 0 <= i < n: cisrows[i] = (<IS?>isrows[i]).iset
-        tmp2 = oarray_p(empty_p(n), NULL, <void**>&ciscols)
+        cdef object unused2 = oarray_p(empty_p(n), NULL, <void**>&ciscols)
         for i from 0 <= i < n: ciscols[i] = (<IS?>iscols[i]).iset
         if submats is not None:
             reuse = MAT_REUSE_MATRIX
             submats = list(submats)
             assert len(submats) == len(isrows)
-            CHKERR( PetscMalloc(<size_t>(n+1)*sizeof(PetscMat), &cmats) )
+            CHKERR(PetscMalloc(<size_t>(n+1)*sizeof(PetscMat), &cmats))
             for i from 0 <= i < n: cmats[i] = (<Mat?>submats[i]).mat
-        CHKERR( MatCreateSubMatrices(self.mat, <PetscInt>n, cisrows, ciscols, reuse, &cmats) )
-        for i from 0 <= i < n: CHKERR( PetscINCREF(<PetscObject*>&cmats[i]) )
+        CHKERR(MatCreateSubMatrices(self.mat, <PetscInt>n, cisrows, ciscols, reuse, &cmats))
+        for i from 0 <= i < n: CHKERR(PetscINCREF(<PetscObject*>&cmats[i]))
         if reuse == MAT_INITIAL_MATRIX:
             submats = [None] * n
             for i from 0 <= i < n:
                 submats[i] = mat = Mat()
                 mat.mat = cmats[i]
-        CHKERR( MatDestroyMatrices(<PetscInt>n, &cmats) )
+        CHKERR(MatDestroyMatrices(<PetscInt>n, &cmats))
         return submats
 
     #
@@ -3939,11 +3967,11 @@ cdef class Mat(Object):
 
         """
         if submat is None: submat = Mat()
-        else: CHKERR( MatDestroy(&submat.mat) )
-        CHKERR( MatGetLocalSubMatrix(self.mat, isrow.iset, iscol.iset, &submat.mat) )
+        else: CHKERR(MatDestroy(&submat.mat))
+        CHKERR(MatGetLocalSubMatrix(self.mat, isrow.iset, iscol.iset, &submat.mat))
         return submat
 
-    def restoreLocalSubMatrix(self, IS isrow, IS iscol, Mat submat):
+    def restoreLocalSubMatrix(self, IS isrow, IS iscol, Mat submat) -> None:
         """Restore a reference to a submatrix obtained with `getLocalSubMatrix`.
 
         Collective.
@@ -3962,14 +3990,13 @@ cdef class Mat(Object):
         getLocalSubMatrix, petsc.MatRestoreLocalSubMatrix
 
         """
-        CHKERR( MatRestoreLocalSubMatrix(self.mat, isrow.iset, iscol.iset, &submat.mat) )
+        CHKERR(MatRestoreLocalSubMatrix(self.mat, isrow.iset, iscol.iset, &submat.mat))
 
     #
 
     def norm(
         self,
-        norm_type: NormTypeSpec = None,
-    ) -> float | tuple[float, float]:
+        norm_type: NormTypeSpec = None) -> float | tuple[float, float]:
         """Compute the requested matrix norm.
 
         Collective.
@@ -3985,7 +4012,7 @@ cdef class Mat(Object):
         cdef PetscNormType ntype = PETSC_NORM_FROBENIUS
         if norm_type is not None: ntype = norm_type
         cdef PetscReal rval[2]
-        CHKERR( MatNorm(self.mat, ntype, rval) )
+        CHKERR(MatNorm(self.mat, ntype, rval))
         if ntype != norm_1_2: return toReal(rval[0])
         else: return (toReal(rval[0]), toReal(rval[1]))
 
@@ -4000,7 +4027,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscScalar sval = asScalar(alpha)
-        CHKERR( MatScale(self.mat, sval) )
+        CHKERR(MatScale(self.mat, sval))
 
     def shift(self, alpha: Scalar) -> None:
         """Shift the matrix.
@@ -4013,7 +4040,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscScalar sval = asScalar(alpha)
-        CHKERR( MatShift(self.mat, sval) )
+        CHKERR(MatShift(self.mat, sval))
 
     def chop(self, tol: float) -> None:
         """Set entries smallest of tol (in absolute values) to zero.
@@ -4026,7 +4053,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscReal rval = asReal(tol)
-        CHKERR( MatFilter(self.mat, rval, PETSC_FALSE, PETSC_FALSE) )
+        CHKERR(MatFilter(self.mat, rval, PETSC_FALSE, PETSC_FALSE))
 
     def setRandom(self, Random random=None) -> None:
         """Set random values in the matrix.
@@ -4045,7 +4072,7 @@ cdef class Mat(Object):
         """
         cdef PetscRandom rnd = NULL
         if random is not None: rnd = random.rnd
-        CHKERR( MatSetRandom(self.mat, rnd) )
+        CHKERR(MatSetRandom(self.mat, rnd))
 
     def axpy(self, alpha: Scalar, Mat X, structure: Structure = None) -> None:
         """Perform the matrix summation ``self`` + = ɑ·X.
@@ -4068,7 +4095,7 @@ cdef class Mat(Object):
         """
         cdef PetscScalar sval = asScalar(alpha)
         cdef PetscMatStructure flag = matstructure(structure)
-        CHKERR( MatAXPY(self.mat, sval, X.mat, flag) )
+        CHKERR(MatAXPY(self.mat, sval, X.mat, flag))
 
     def aypx(self, alpha: Scalar, Mat X, structure: Structure = None) -> None:
         """Perform the matrix summation ``self`` = ɑ·``self`` + X.
@@ -4091,7 +4118,7 @@ cdef class Mat(Object):
         """
         cdef PetscScalar sval = asScalar(alpha)
         cdef PetscMatStructure flag = matstructure(structure)
-        CHKERR( MatAYPX(self.mat, sval, X.mat, flag) )
+        CHKERR(MatAYPX(self.mat, sval, X.mat, flag))
 
     # matrix-matrix product
 
@@ -4099,8 +4126,7 @@ cdef class Mat(Object):
         self,
         Mat mat,
         Mat result=None,
-        fill: float | None = None
-    ) -> Mat:
+        fill: float | None = None) -> Mat:
         """Perform matrix-matrix multiplication C=AB.
 
         Neighborwise collective.
@@ -4140,15 +4166,14 @@ cdef class Mat(Object):
         elif result.mat != NULL:
             reuse = MAT_REUSE_MATRIX
         if fill is not None: rval = asReal(fill)
-        CHKERR( MatMatMult(self.mat, mat.mat, reuse, rval, &result.mat) )
+        CHKERR(MatMatMult(self.mat, mat.mat, reuse, rval, &result.mat))
         return result
 
     def matTransposeMult(
         self,
         Mat mat,
         Mat result=None,
-        fill: float | None = None
-    ):
+        fill: float | None = None) -> Mat:
         """Perform matrix-matrix multiplication C=ABᵀ.
 
         Neighborwise collective.
@@ -4188,15 +4213,14 @@ cdef class Mat(Object):
         elif result.mat != NULL:
             reuse = MAT_REUSE_MATRIX
         if fill is not None: rval = asReal(fill)
-        CHKERR( MatMatTransposeMult(self.mat, mat.mat, reuse, rval, &result.mat) )
+        CHKERR(MatMatTransposeMult(self.mat, mat.mat, reuse, rval, &result.mat))
         return result
 
     def transposeMatMult(
         self,
         Mat mat,
         Mat result=None,
-        fill: float | None = None
-    ):
+        fill: float | None = None) -> Mat:
         """Perform matrix-matrix multiplication C=AᵀB.
 
         Neighborwise collective.
@@ -4236,15 +4260,14 @@ cdef class Mat(Object):
         elif result.mat != NULL:
             reuse = MAT_REUSE_MATRIX
         if fill is not None: rval = asReal(fill)
-        CHKERR( MatTransposeMatMult(self.mat, mat.mat, reuse, rval, &result.mat) )
+        CHKERR(MatTransposeMatMult(self.mat, mat.mat, reuse, rval, &result.mat))
         return result
 
     def ptap(
         self,
         Mat P,
         Mat result=None,
-        fill: float | None = None
-    ) -> Mat:
+        fill: float | None = None) -> Mat:
         """Creates the matrix product C = PᵀAP.
 
         Neighborwise collective.
@@ -4288,15 +4311,14 @@ cdef class Mat(Object):
         elif result.mat != NULL:
             reuse = MAT_REUSE_MATRIX
         if fill is not None: cfill = asReal(fill)
-        CHKERR( MatPtAP(self.mat, P.mat, reuse, cfill, &result.mat) )
+        CHKERR(MatPtAP(self.mat, P.mat, reuse, cfill, &result.mat))
         return result
 
     def rart(
         self,
         Mat R,
         Mat result=None,
-        fill: float | None = None
-    ) -> Mat:
+        fill: float | None = None) -> Mat:
         """Create the matrix product C = RARᵀ.
 
         Neighborwise collective.
@@ -4336,7 +4358,7 @@ cdef class Mat(Object):
         elif result.mat != NULL:
             reuse = MAT_REUSE_MATRIX
         if fill is not None: cfill = asReal(fill)
-        CHKERR( MatRARt(self.mat, R.mat, reuse, cfill, &result.mat) )
+        CHKERR(MatRARt(self.mat, R.mat, reuse, cfill, &result.mat))
         return result
 
     def matMatMult(
@@ -4344,8 +4366,7 @@ cdef class Mat(Object):
         Mat B,
         Mat C,
         Mat result=None,
-        fill: float | None = None
-    ) -> Mat:
+        fill: float | None = None) -> Mat:
         """Perform matrix-matrix-matrix multiplication D=ABC.
 
         Neighborwise collective.
@@ -4382,15 +4403,16 @@ cdef class Mat(Object):
         elif result.mat != NULL:
             reuse = MAT_REUSE_MATRIX
         if fill is not None: cfill = asReal(fill)
-        CHKERR( MatMatMatMult(self.mat, B.mat, C.mat, reuse, cfill, &result.mat) )
+        CHKERR(MatMatMatMult(self.mat, B.mat, C.mat, reuse, cfill, &result.mat))
         return result
 
     def kron(
         self,
         Mat mat,
-        Mat result=None
-    ) -> Mat:
+        Mat result=None) -> Mat:
         """Compute C, the Kronecker product of A and B.
+
+        Collective.
 
         Parameters
         ----------
@@ -4416,11 +4438,13 @@ cdef class Mat(Object):
             result = Mat()
         elif result.mat != NULL:
             reuse = MAT_REUSE_MATRIX
-        CHKERR( MatSeqAIJKron(self.mat, mat.mat, reuse, &result.mat) )
+        CHKERR(MatSeqAIJKron(self.mat, mat.mat, reuse, &result.mat))
         return result
 
     def bindToCPU(self, flg: bool) -> None:
         """Mark a matrix to temporarily stay on the CPU.
+
+        Collective.
 
         Once marked, perform computations on the CPU.
 
@@ -4435,10 +4459,12 @@ cdef class Mat(Object):
 
         """
         cdef PetscBool bindFlg = asBool(flg)
-        CHKERR( MatBindToCPU(self.mat, bindFlg) )
+        CHKERR(MatBindToCPU(self.mat, bindFlg))
 
     def boundToCPU(self) -> bool:
         """Query if a matrix is bound to the CPU.
+
+        Not collective.
 
         See Also
         --------
@@ -4446,7 +4472,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscBool flg = PETSC_TRUE
-        CHKERR( MatBoundToCPU(self.mat, &flg) )
+        CHKERR(MatBoundToCPU(self.mat, &flg))
         return toBool(flg)
 
     # XXX factorization
@@ -4476,15 +4502,14 @@ cdef class Mat(Object):
         cdef PetscMatOrderingType cval = NULL
         ord_type = str2bytes(ord_type, &cval)
         cdef IS rp = IS(), cp = IS()
-        CHKERR( MatGetOrdering(self.mat, cval, &rp.iset, &cp.iset) )
+        CHKERR(MatGetOrdering(self.mat, cval, &rp.iset, &cp.iset))
         return (rp, cp)
 
     def reorderForNonzeroDiagonal(
         self,
         IS isrow,
         IS iscol,
-        atol: float = 0
-        ) -> None:
+        atol: float = 0) -> None:
         """Change a matrix ordering to remove zeros from the diagonal.
 
         Collective.
@@ -4506,14 +4531,13 @@ cdef class Mat(Object):
         """
         cdef PetscReal rval = asReal(atol)
         cdef PetscIS rp = isrow.iset, cp = iscol.iset
-        CHKERR( MatReorderForNonzeroDiagonal(self.mat, rval, rp, cp) )
+        CHKERR(MatReorderForNonzeroDiagonal(self.mat, rval, rp, cp))
 
     def factorLU(
         self,
         IS isrow,
         IS iscol,
-        options: dict[str, Any] | None = None,
-        ) -> None:
+        options: dict[str, Any] | None = None) -> None:
         """Perform an in-place LU factorization.
 
         Collective.
@@ -4537,7 +4561,7 @@ cdef class Mat(Object):
         """
         cdef PetscMatFactorInfo info
         matfactorinfo(PETSC_FALSE, PETSC_FALSE, options, &info)
-        CHKERR( MatLUFactor(self.mat, isrow.iset, iscol.iset, &info) )
+        CHKERR(MatLUFactor(self.mat, isrow.iset, iscol.iset, &info))
 
     def factorSymbolicLU(self, Mat mat, IS isrow, IS iscol, options=None) -> None:
         """Not implemented."""
@@ -4551,8 +4575,7 @@ cdef class Mat(Object):
         self,
         IS isrow,
         IS iscol,
-        options: dict[str, Any] | None = None,
-        ) -> None:
+        options: dict[str, Any] | None = None) -> None:
         """Perform an in-place ILU factorization.
 
         Collective.
@@ -4576,7 +4599,7 @@ cdef class Mat(Object):
         """
         cdef PetscMatFactorInfo info
         matfactorinfo(PETSC_TRUE, PETSC_FALSE, options, &info)
-        CHKERR( MatILUFactor(self.mat, isrow.iset, iscol.iset, &info) )
+        CHKERR(MatILUFactor(self.mat, isrow.iset, iscol.iset, &info))
 
     def factorSymbolicILU(self, IS isrow, IS iscol, options=None) -> None:
         """Not implemented."""
@@ -4585,8 +4608,7 @@ cdef class Mat(Object):
     def factorCholesky(
         self,
         IS isperm,
-        options: dict[str, Any] | None = None,
-        ) -> None:
+        options: dict[str, Any] | None = None) -> None:
         """Perform an in-place Cholesky factorization.
 
         Collective.
@@ -4606,7 +4628,7 @@ cdef class Mat(Object):
         """
         cdef PetscMatFactorInfo info
         matfactorinfo(PETSC_FALSE, PETSC_TRUE, options, &info)
-        CHKERR( MatCholeskyFactor(self.mat, isperm.iset, &info) )
+        CHKERR(MatCholeskyFactor(self.mat, isperm.iset, &info))
 
     def factorSymbolicCholesky(self, IS isperm, options=None) -> None:
         """Not implemented."""
@@ -4619,8 +4641,7 @@ cdef class Mat(Object):
     def factorICC(
         self,
         IS isperm,
-        options: dict[str, Any] | None = None,
-        ) -> None:
+        options: dict[str, Any] | None = None) -> None:
         """Perform an in-place an incomplete Cholesky factorization.
 
         Collective.
@@ -4640,7 +4661,7 @@ cdef class Mat(Object):
         """
         cdef PetscMatFactorInfo info
         matfactorinfo(PETSC_TRUE, PETSC_TRUE, options, &info)
-        CHKERR( MatICCFactor(self.mat, isperm.iset, &info) )
+        CHKERR(MatICCFactor(self.mat, isperm.iset, &info))
 
     def factorSymbolicICC(self, IS isperm, options=None) -> None:
         """Not implemented."""
@@ -4668,7 +4689,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscInt ival1 = 0, ival2 = 0, ival3 = 0
-        CHKERR( MatGetInertia(self.mat, &ival1, &ival2, &ival3) )
+        CHKERR(MatGetInertia(self.mat, &ival1, &ival2, &ival3))
         return (toInt(ival1), toInt(ival2), toInt(ival3))
 
     def setUnfactored(self) -> None:
@@ -4681,14 +4702,14 @@ cdef class Mat(Object):
         petsc.MatSetUnfactored
 
         """
-        CHKERR( MatSetUnfactored(self.mat) )
+        CHKERR(MatSetUnfactored(self.mat))
 
     # IS
 
     def setISAllowRepeated(self, allow: bool = True) -> None:
         """Allow repeated entries in the local to global map.
 
-        Logically Collective.
+        Logically collective.
 
         Parameters
         ----------
@@ -4701,20 +4722,20 @@ cdef class Mat(Object):
 
         """
         cdef PetscBool callow = asBool(allow)
-        CHKERR( MatISSetAllowRepeated(self.mat, callow) )
+        CHKERR(MatISSetAllowRepeated(self.mat, callow))
 
     def getISAllowRepeated(self) -> bool:
         """Get the flag for repeated entries in the local to global map.
 
-        Not Collective.
+        Not collective.
 
         See Also
         --------
         setISAllowRepeated, petsc.MatISGetAllowRepeated
 
         """
-        cdef PetscBool callow
-        CHKERR( MatISGetAllowRepeated(self.mat, &callow) )
+        cdef PetscBool callow = PETSC_FALSE
+        CHKERR(MatISGetAllowRepeated(self.mat, &callow))
         return asBool(callow)
 
     def fixISLocalEmpty(self, fix: bool = True) -> None:
@@ -4734,10 +4755,12 @@ cdef class Mat(Object):
 
         """
         cdef PetscBool cfix = asBool(fix)
-        CHKERR( MatISFixLocalEmpty(self.mat, cfix) )
+        CHKERR(MatISFixLocalEmpty(self.mat, cfix))
 
     def getISLocalMat(self) -> Mat:
         """Return the local matrix stored inside a `Type.IS` matrix.
+
+        Not collective.
 
         See Also
         --------
@@ -4745,12 +4768,14 @@ cdef class Mat(Object):
 
         """
         cdef Mat local = Mat()
-        CHKERR( MatISGetLocalMat(self.mat, &local.mat) )
-        CHKERR( PetscINCREF(local.obj) )
+        CHKERR(MatISGetLocalMat(self.mat, &local.mat))
+        CHKERR(PetscINCREF(local.obj))
         return local
 
     def restoreISLocalMat(self, Mat local not None) -> None:
         """Restore the local matrix obtained with `getISLocalMat`.
+
+        Not collective.
 
         Parameters
         ----------
@@ -4762,10 +4787,12 @@ cdef class Mat(Object):
         petsc.MatISRestoreLocalMat
 
         """
-        CHKERR( MatISRestoreLocalMat(self.mat, &local.mat) )
+        CHKERR(MatISRestoreLocalMat(self.mat, &local.mat))
 
     def setISLocalMat(self, Mat local not None) -> None:
         """Set the local matrix stored inside a `Type.IS`.
+
+        Not collective.
 
         Parameters
         ----------
@@ -4777,14 +4804,15 @@ cdef class Mat(Object):
         petsc.MatISSetLocalMat
 
         """
-        CHKERR( MatISSetLocalMat(self.mat, local.mat) )
+        CHKERR(MatISSetLocalMat(self.mat, local.mat))
 
     def setISPreallocation(
         self,
         nnz: Sequence[int],
-        onnz: Sequence[int],
-        ) -> Self:
+        onnz: Sequence[int]) -> Self:
         """Preallocate memory for a `Type.IS` parallel matrix.
+
+        Collective.
 
         Parameters
         ----------
@@ -4806,7 +4834,7 @@ cdef class Mat(Object):
         cdef PetscInt *connz = NULL
         nnz = iarray_i(nnz, NULL, &cnnz)
         onnz = iarray_i(onnz, NULL, &connz)
-        CHKERR( MatISSetPreallocation(self.mat, 0, cnnz, 0, connz) )
+        CHKERR(MatISSetPreallocation(self.mat, 0, cnnz, 0, connz))
         return self
 
     # LRC
@@ -4836,14 +4864,14 @@ cdef class Mat(Object):
         cdef Mat U = Mat()
         cdef Vec c = Vec()
         cdef Mat V = Mat()
-        CHKERR( MatLRCGetMats(self.mat, &A.mat, &U.mat, &c.vec, &V.mat) )
-        CHKERR( PetscINCREF(A.obj) )
-        CHKERR( PetscINCREF(U.obj) )
-        CHKERR( PetscINCREF(c.obj) )
-        CHKERR( PetscINCREF(V.obj) )
+        CHKERR(MatLRCGetMats(self.mat, &A.mat, &U.mat, &c.vec, &V.mat))
+        CHKERR(PetscINCREF(A.obj))
+        CHKERR(PetscINCREF(U.obj))
+        CHKERR(PetscINCREF(c.obj))
+        CHKERR(PetscINCREF(V.obj))
         return (A, U, c, V)
 
-    def setLRCMats(self, Mat A, Mat U, Vec c=None, Mat V=None):
+    def setLRCMats(self, Mat A, Mat U, Vec c=None, Mat V=None) -> None:
         """Set the constituents of a `Type.LRC` matrix.
 
         Logically collective.
@@ -4868,23 +4896,27 @@ cdef class Mat(Object):
         cdef PetscMat Amat = A.mat if A is not None else <PetscMat>NULL
         cdef PetscVec cvec = c.vec if c is not None else <PetscVec>NULL
         cdef PetscMat Vmat = V.mat if V is not None else <PetscMat>NULL
-        CHKERR( MatLRCSetMats(self.mat, Amat, U.mat, cvec, Vmat) )
+        CHKERR(MatLRCSetMats(self.mat, Amat, U.mat, cvec, Vmat))
 
     # H2Opus
 
     def H2OpusOrthogonalize(self) -> Self:
         """Orthogonalize the basis tree of a hierarchical matrix.
 
+        Collective.
+
         See Also
         --------
         petsc.MatH2OpusOrthogonalize
 
         """
-        CHKERR( MatH2OpusOrthogonalize(self.mat) )
+        CHKERR(MatH2OpusOrthogonalize(self.mat))
         return self
 
-    def H2OpusCompress(self, tol: float):
+    def H2OpusCompress(self, tol: float) -> Self:
         """Compress a hierarchical matrix.
+
+        Collective.
 
         Parameters
         ----------
@@ -4897,11 +4929,13 @@ cdef class Mat(Object):
 
         """
         cdef PetscReal _tol = asReal(tol)
-        CHKERR( MatH2OpusCompress(self.mat, _tol) )
+        CHKERR(MatH2OpusCompress(self.mat, _tol))
         return self
 
-    def H2OpusLowRankUpdate(self, Mat U, Mat V=None, s: float = 1.0):
+    def H2OpusLowRankUpdate(self, Mat U, Mat V=None, s: float = 1.0) -> Self:
         """Perform a low-rank update of the form ``self`` += sUVᵀ.
+
+        Collective.
 
         Parameters
         ----------
@@ -4921,7 +4955,7 @@ cdef class Mat(Object):
         cdef PetscMat vmat = NULL
         if V is not None:
             vmat = V.mat
-        CHKERR( MatH2OpusLowRankUpdate(self.mat, U.mat, vmat, _s) )
+        CHKERR(MatH2OpusLowRankUpdate(self.mat, U.mat, vmat, _s))
         return self
 
     # MUMPS
@@ -4945,7 +4979,7 @@ cdef class Mat(Object):
         """
         cdef PetscInt _icntl = asInt(icntl)
         cdef PetscInt _ival = asInt(ival)
-        CHKERR( MatMumpsSetIcntl(self.mat, _icntl, _ival) );
+        CHKERR(MatMumpsSetIcntl(self.mat, _icntl, _ival))
 
     def getMumpsIcntl(self, icntl: int) -> int:
         """Return the MUMPS parameter, ``ICNTL[icntl]``.
@@ -4959,10 +4993,10 @@ cdef class Mat(Object):
         """
         cdef PetscInt _icntl = asInt(icntl)
         cdef PetscInt ival = 0
-        CHKERR( MatMumpsGetIcntl(self.mat, _icntl, &ival) );
+        CHKERR(MatMumpsGetIcntl(self.mat, _icntl, &ival))
         return toInt(ival)
 
-    def setMumpsCntl(self, icntl: int, val: float):
+    def setMumpsCntl(self, icntl: int, val: float) -> None:
         """Set a MUMPS parameter, ``CNTL[icntl] = val``.
 
         Logically collective.
@@ -4981,7 +5015,7 @@ cdef class Mat(Object):
         """
         cdef PetscInt _icntl = asInt(icntl)
         cdef PetscReal _val = asReal(val)
-        CHKERR( MatMumpsSetCntl(self.mat, _icntl, _val) );
+        CHKERR(MatMumpsSetCntl(self.mat, _icntl, _val))
 
     def getMumpsCntl(self, icntl: int) -> float:
         """Return the MUMPS parameter, ``CNTL[icntl]``.
@@ -4995,7 +5029,7 @@ cdef class Mat(Object):
         """
         cdef PetscInt _icntl = asInt(icntl)
         cdef PetscReal val = 0
-        CHKERR( MatMumpsGetCntl(self.mat, _icntl, &val) );
+        CHKERR(MatMumpsGetCntl(self.mat, _icntl, &val))
         return toReal(val)
 
     def getMumpsInfo(self, icntl: int) -> int:
@@ -5015,7 +5049,7 @@ cdef class Mat(Object):
         """
         cdef PetscInt _icntl = asInt(icntl)
         cdef PetscInt ival = 0
-        CHKERR( MatMumpsGetInfo(self.mat, _icntl, &ival) );
+        CHKERR(MatMumpsGetInfo(self.mat, _icntl, &ival))
         return toInt(ival)
 
     def getMumpsInfog(self, icntl: int) -> int:
@@ -5035,7 +5069,7 @@ cdef class Mat(Object):
         """
         cdef PetscInt _icntl = asInt(icntl)
         cdef PetscInt ival = 0
-        CHKERR( MatMumpsGetInfog(self.mat, _icntl, &ival) );
+        CHKERR(MatMumpsGetInfog(self.mat, _icntl, &ival))
         return toInt(ival)
 
     def getMumpsRinfo(self, icntl: int) -> float:
@@ -5055,7 +5089,7 @@ cdef class Mat(Object):
         """
         cdef PetscInt _icntl = asInt(icntl)
         cdef PetscReal val = 0
-        CHKERR( MatMumpsGetRinfo(self.mat, _icntl, &val) );
+        CHKERR(MatMumpsGetRinfo(self.mat, _icntl, &val))
         return toReal(val)
 
     def getMumpsRinfog(self, icntl: int) -> float:
@@ -5075,7 +5109,7 @@ cdef class Mat(Object):
         """
         cdef PetscInt _icntl = asInt(icntl)
         cdef PetscReal val = 0
-        CHKERR( MatMumpsGetRinfog(self.mat, _icntl, &val) );
+        CHKERR(MatMumpsGetRinfog(self.mat, _icntl, &val))
         return toReal(val)
 
     # solve
@@ -5097,7 +5131,7 @@ cdef class Mat(Object):
         petsc.MatForwardSolve
 
         """
-        CHKERR( MatForwardSolve(self.mat, b.vec, x.vec) )
+        CHKERR(MatForwardSolve(self.mat, b.vec, x.vec))
 
     def solveBackward(self, Vec b, Vec x) -> None:
         """Solve Ux=b, given a factored matrix A=LU.
@@ -5116,7 +5150,7 @@ cdef class Mat(Object):
         petsc.MatBackwardSolve
 
         """
-        CHKERR( MatBackwardSolve(self.mat, b.vec, x.vec) )
+        CHKERR(MatBackwardSolve(self.mat, b.vec, x.vec))
 
     def solve(self, Vec b, Vec x) -> None:
         """Solve Ax=b, given a factored matrix.
@@ -5139,7 +5173,7 @@ cdef class Mat(Object):
         KSP.create, solveTranspose, petsc.MatSolve
 
         """
-        CHKERR(MatSolve(self.mat, b.vec, x.vec) )
+        CHKERR(MatSolve(self.mat, b.vec, x.vec))
 
     def solveTranspose(self, Vec b, Vec x) -> None:
         """Solve Aᵀx=b, given a factored matrix.
@@ -5160,7 +5194,7 @@ cdef class Mat(Object):
         KSP.create, petsc.MatSolve, petsc.MatSolveTranspose
 
         """
-        CHKERR( MatSolveTranspose(self.mat, b.vec, x.vec) )
+        CHKERR(MatSolveTranspose(self.mat, b.vec, x.vec))
 
     def solveAdd(self, Vec b, Vec y, Vec x) -> None:
         """Solve x=y+A⁻¹b, given a factored matrix.
@@ -5183,7 +5217,7 @@ cdef class Mat(Object):
         KSP.create, petsc.MatSolve, petsc.MatSolveAdd
 
         """
-        CHKERR( MatSolveAdd(self.mat, b.vec, y.vec, x.vec) )
+        CHKERR(MatSolveAdd(self.mat, b.vec, y.vec, x.vec))
 
     def solveTransposeAdd(self, Vec b, Vec y, Vec x) -> None:
         """Solve x=y+A⁻ᵀb, given a factored matrix.
@@ -5206,7 +5240,7 @@ cdef class Mat(Object):
         KSP.create, petsc.MatSolve, petsc.MatSolveTransposeAdd
 
         """
-        CHKERR( MatSolveTransposeAdd(self.mat, b.vec, y.vec, x.vec) )
+        CHKERR(MatSolveTransposeAdd(self.mat, b.vec, y.vec, x.vec))
 
     def matSolve(self, Mat B, Mat X) -> None:
         """Solve AX=B, given a factored matrix A.
@@ -5226,7 +5260,7 @@ cdef class Mat(Object):
         KSP.create, petsc.MatMatSolve
 
         """
-        CHKERR( MatMatSolve(self.mat, B.mat, X.mat) )
+        CHKERR(MatMatSolve(self.mat, B.mat, X.mat))
 
     # dense matrices
 
@@ -5246,7 +5280,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscInt _ilda = asInt(lda)
-        CHKERR( MatDenseSetLDA(self.mat, _ilda) )
+        CHKERR(MatDenseSetLDA(self.mat, _ilda))
 
     def getDenseLDA(self) -> int:
         """Return the leading dimension of the array used by the dense matrix.
@@ -5259,7 +5293,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscInt lda=0
-        CHKERR( MatDenseGetLDA(self.mat, &lda) )
+        CHKERR(MatDenseGetLDA(self.mat, &lda))
         return toInt(lda)
 
     def getDenseArray(self, readonly: bool = False) -> ArrayScalar:
@@ -5279,25 +5313,25 @@ cdef class Mat(Object):
         """
         cdef PetscInt m=0, N=0, lda=0
         cdef PetscScalar *data = NULL
-        CHKERR( MatGetLocalSize(self.mat, &m, NULL) )
-        CHKERR( MatGetSize(self.mat, NULL, &N) )
-        CHKERR( MatDenseGetLDA(self.mat, &lda) )
+        CHKERR(MatGetLocalSize(self.mat, &m, NULL))
+        CHKERR(MatGetSize(self.mat, NULL, &N))
+        CHKERR(MatDenseGetLDA(self.mat, &lda))
         if readonly:
-            CHKERR( MatDenseGetArrayRead(self.mat, <const PetscScalar**>&data) )
+            CHKERR(MatDenseGetArrayRead(self.mat, <const PetscScalar**>&data))
         else:
-            CHKERR( MatDenseGetArray(self.mat, &data) )
+            CHKERR(MatDenseGetArray(self.mat, &data))
         cdef int typenum = NPY_PETSC_SCALAR
         cdef int itemsize = <int>sizeof(PetscScalar)
         cdef int flags = NPY_ARRAY_FARRAY
         cdef npy_intp dims[2], strides[2]
-        dims[0] = <npy_intp>m; strides[0] = <npy_intp>sizeof(PetscScalar);
-        dims[1] = <npy_intp>N; strides[1] = <npy_intp>(lda*sizeof(PetscScalar));
+        dims[0] = <npy_intp>m; strides[0] = <npy_intp>sizeof(PetscScalar)
+        dims[1] = <npy_intp>N; strides[1] = <npy_intp>(lda*sizeof(PetscScalar))
         array = <object>PyArray_New(<PyTypeObject*>ndarray, 2, dims, typenum,
                                     strides, data, itemsize, flags, NULL)
         if readonly:
-            CHKERR( MatDenseRestoreArrayRead(self.mat, <const PetscScalar**>&data) )
+            CHKERR(MatDenseRestoreArrayRead(self.mat, <const PetscScalar**>&data))
         else:
-            CHKERR( MatDenseRestoreArray(self.mat, &data) )
+            CHKERR(MatDenseRestoreArray(self.mat, &data))
         return array
 
     def getDenseLocalMatrix(self) -> Mat:
@@ -5311,8 +5345,8 @@ cdef class Mat(Object):
 
         """
         cdef Mat mat = type(self)()
-        CHKERR( MatDenseGetLocalMatrix(self.mat, &mat.mat) )
-        CHKERR( PetscINCREF(mat.obj) )
+        CHKERR(MatDenseGetLocalMatrix(self.mat, &mat.mat))
+        CHKERR(PetscINCREF(mat.obj))
         return mat
 
     def getDenseColumnVec(self, i: int, mode: AccessModeSpec = 'rw') -> Vec:
@@ -5339,12 +5373,12 @@ cdef class Mat(Object):
         cdef Vec v = Vec()
         cdef PetscInt _i = asInt(i)
         if mode == 'rw':
-            CHKERR( MatDenseGetColumnVec(self.mat, _i, &v.vec) )
+            CHKERR(MatDenseGetColumnVec(self.mat, _i, &v.vec))
         elif mode == 'r':
-            CHKERR( MatDenseGetColumnVecRead(self.mat, _i, &v.vec) )
+            CHKERR(MatDenseGetColumnVecRead(self.mat, _i, &v.vec))
         else:
-            CHKERR( MatDenseGetColumnVecWrite(self.mat, _i, &v.vec) )
-        CHKERR( PetscINCREF(v.obj) )
+            CHKERR(MatDenseGetColumnVecWrite(self.mat, _i, &v.vec))
+        CHKERR(PetscINCREF(v.obj))
         return v
 
     def restoreDenseColumnVec(self, i: int, mode: AccessModeSpec = 'rw') -> None:
@@ -5367,11 +5401,11 @@ cdef class Mat(Object):
         """
         cdef PetscInt _i = asInt(i)
         if mode == 'rw':
-            CHKERR( MatDenseRestoreColumnVec(self.mat, _i, NULL) )
+            CHKERR(MatDenseRestoreColumnVec(self.mat, _i, NULL))
         elif mode == 'r':
-            CHKERR( MatDenseRestoreColumnVecRead(self.mat, _i, NULL) )
+            CHKERR(MatDenseRestoreColumnVecRead(self.mat, _i, NULL))
         else:
-            CHKERR( MatDenseRestoreColumnVecWrite(self.mat, _i, NULL) )
+            CHKERR(MatDenseRestoreColumnVecWrite(self.mat, _i, NULL))
 
     # Nest
 
@@ -5385,8 +5419,8 @@ cdef class Mat(Object):
         petsc.MatNestGetSize
 
         """
-        cdef PetscInt nrows, ncols
-        CHKERR( MatNestGetSize(self.mat, &nrows, &ncols) )
+        cdef PetscInt nrows = 0, ncols = 0
+        CHKERR(MatNestGetSize(self.mat, &nrows, &ncols))
         return toInt(nrows), toInt(ncols)
 
     def getNestISs(self) -> tuple[list[IS], list[IS]]:
@@ -5399,15 +5433,15 @@ cdef class Mat(Object):
         petsc.MatNestGetISs
 
         """
-        cdef PetscInt i, nrows =0, ncols = 0
+        cdef PetscInt nrows = 0, ncols = 0
         cdef PetscIS *cisrows = NULL
         cdef PetscIS *ciscols = NULL
-        CHKERR( MatNestGetSize(self.mat, &nrows, &ncols) )
-        cdef object tmpr = oarray_p(empty_p(nrows), NULL, <void**>&cisrows)
-        cdef object tmpc = oarray_p(empty_p(ncols), NULL, <void**>&ciscols)
-        CHKERR( MatNestGetISs(self.mat, cisrows, ciscols) )
-        cdef object isetsrows = [ref_IS(cisrows[i]) for i from 0 <= i < nrows]
-        cdef object isetscols = [ref_IS(ciscols[i]) for i from 0 <= i < ncols]
+        CHKERR(MatNestGetSize(self.mat, &nrows, &ncols))
+        cdef object unusedr = oarray_p(empty_p(nrows), NULL, <void**>&cisrows)
+        cdef object unusedc = oarray_p(empty_p(ncols), NULL, <void**>&ciscols)
+        CHKERR(MatNestGetISs(self.mat, cisrows, ciscols))
+        isetsrows = [ref_IS(cisrows[i]) for i from 0 <= i < nrows]
+        isetscols = [ref_IS(ciscols[i]) for i from 0 <= i < ncols]
         return isetsrows, isetscols
 
     def getNestLocalISs(self) -> tuple[list[IS], list[IS]]:
@@ -5420,15 +5454,15 @@ cdef class Mat(Object):
         petsc.MatNestGetLocalISs
 
         """
-        cdef PetscInt i, nrows =0, ncols = 0
+        cdef PetscInt nrows = 0, ncols = 0
         cdef PetscIS *cisrows = NULL
         cdef PetscIS *ciscols = NULL
-        CHKERR( MatNestGetSize(self.mat, &nrows, &ncols) )
-        cdef object tmpr = oarray_p(empty_p(nrows), NULL, <void**>&cisrows)
-        cdef object tmpc = oarray_p(empty_p(ncols), NULL, <void**>&ciscols)
-        CHKERR( MatNestGetLocalISs(self.mat, cisrows, ciscols) )
-        cdef object isetsrows = [ref_IS(cisrows[i]) for i from 0 <= i < nrows]
-        cdef object isetscols = [ref_IS(ciscols[i]) for i from 0 <= i < ncols]
+        CHKERR(MatNestGetSize(self.mat, &nrows, &ncols))
+        cdef object unusedr = oarray_p(empty_p(nrows), NULL, <void**>&cisrows)
+        cdef object unusedc = oarray_p(empty_p(ncols), NULL, <void**>&ciscols)
+        CHKERR(MatNestGetLocalISs(self.mat, cisrows, ciscols))
+        isetsrows = [ref_IS(cisrows[i]) for i from 0 <= i < nrows]
+        isetscols = [ref_IS(ciscols[i]) for i from 0 <= i < ncols]
         return isetsrows, isetscols
 
     def getNestSubMatrix(self, i: int, j: int) -> Mat:
@@ -5451,8 +5485,8 @@ cdef class Mat(Object):
         cdef Mat submat = Mat()
         cdef PetscInt idxm = asInt(i)
         cdef PetscInt jdxm = asInt(j)
-        CHKERR( MatNestGetSubMat(self.mat, idxm, jdxm, &submat.mat) )
-        CHKERR( PetscINCREF(submat.obj) )
+        CHKERR(MatNestGetSubMat(self.mat, idxm, jdxm, &submat.mat))
+        CHKERR(PetscINCREF(submat.obj))
         return submat
 
     # DM
@@ -5468,10 +5502,10 @@ cdef class Mat(Object):
 
         """
         cdef PetscDM newdm = NULL
-        CHKERR( MatGetDM(self.mat, &newdm) )
+        CHKERR(MatGetDM(self.mat, &newdm))
         cdef DM dm = subtype_DM(newdm)()
         dm.dm = newdm
-        CHKERR( PetscINCREF(dm.obj) )
+        CHKERR(PetscINCREF(dm.obj))
         return dm
 
     def setDM(self, DM dm) -> None:
@@ -5489,7 +5523,7 @@ cdef class Mat(Object):
         petsc.MatSetDM
 
         """
-        CHKERR( MatSetDM(self.mat, dm.dm) )
+        CHKERR(MatSetDM(self.mat, dm.dm))
 
     # backward compatibility
 
@@ -5501,6 +5535,7 @@ cdef class Mat(Object):
         """Matrix local and global sizes."""
         def __get__(self) -> tuple[tuple[int, int], tuple[int, int]]:
             return self.getSizes()
+
         def __set__(self, value):
             self.setSizes(value)
 
@@ -5584,25 +5619,25 @@ cdef class Mat(Object):
         # By restoring now, we guarantee the sanity of the ObjectState
         if mode == 'w':
             if hostmem:
-                CHKERR( MatDenseGetArrayWrite(self.mat, <PetscScalar**>&a) )
-                CHKERR( MatDenseRestoreArrayWrite(self.mat, NULL) )
+                CHKERR(MatDenseGetArrayWrite(self.mat, <PetscScalar**>&a))
+                CHKERR(MatDenseRestoreArrayWrite(self.mat, NULL))
             else:
-                CHKERR( MatDenseCUDAGetArrayWrite(self.mat, <PetscScalar**>&a) )
-                CHKERR( MatDenseCUDARestoreArrayWrite(self.mat, NULL) )
+                CHKERR(MatDenseCUDAGetArrayWrite(self.mat, <PetscScalar**>&a))
+                CHKERR(MatDenseCUDARestoreArrayWrite(self.mat, NULL))
         elif mode == 'r':
             if hostmem:
-                CHKERR( MatDenseGetArrayRead(self.mat, <const PetscScalar**>&a) )
-                CHKERR( MatDenseRestoreArrayRead(self.mat, NULL) )
+                CHKERR(MatDenseGetArrayRead(self.mat, <const PetscScalar**>&a))
+                CHKERR(MatDenseRestoreArrayRead(self.mat, NULL))
             else:
-                CHKERR( MatDenseCUDAGetArrayRead(self.mat, <const PetscScalar**>&a) )
-                CHKERR( MatDenseCUDARestoreArrayRead(self.mat, NULL) )
+                CHKERR(MatDenseCUDAGetArrayRead(self.mat, <const PetscScalar**>&a))
+                CHKERR(MatDenseCUDARestoreArrayRead(self.mat, NULL))
         else:
             if hostmem:
-                CHKERR( MatDenseGetArray(self.mat, <PetscScalar**>&a) )
-                CHKERR( MatDenseRestoreArray(self.mat, NULL) )
+                CHKERR(MatDenseGetArray(self.mat, <PetscScalar**>&a))
+                CHKERR(MatDenseRestoreArray(self.mat, NULL))
             else:
-                CHKERR( MatDenseCUDAGetArray(self.mat, <PetscScalar**>&a) )
-                CHKERR( MatDenseCUDARestoreArray(self.mat, NULL) )
+                CHKERR(MatDenseCUDAGetArray(self.mat, <PetscScalar**>&a))
+                CHKERR(MatDenseCUDARestoreArray(self.mat, NULL))
         dl_tensor.data = <void *>a
 
         cdef DLContext* ctx = &dl_tensor.ctx
@@ -5627,7 +5662,7 @@ cdef class Mat(Object):
             raise ValueError('Unsupported PetscScalar type')
         dtype.lanes = <uint16_t>1
         dlm_tensor.manager_ctx = <void *>self.mat
-        CHKERR( PetscObjectReference(<PetscObject>self.mat) )
+        CHKERR(PetscObjectReference(<PetscObject>self.mat))
         dlm_tensor.manager_deleter = manager_deleter
         dlm_tensor.del_obj = <dlpack_manager_del_obj>PetscDEALLOC
         return PyCapsule_New(dlm_tensor, 'dltensor', pycapsule_deleter)
@@ -5670,7 +5705,7 @@ cdef class NullSpace(Object):
         """
         cdef PetscViewer vwr = NULL
         if viewer is not None: vwr = viewer.vwr
-        CHKERR( MatNullSpaceView(self.nsp, vwr) )
+        CHKERR(MatNullSpaceView(self.nsp, vwr))
 
     def destroy(self) -> Self:
         """Destroy the null space.
@@ -5682,15 +5717,14 @@ cdef class NullSpace(Object):
         create, petsc.MatNullSpaceDestroy
 
         """
-        CHKERR( MatNullSpaceDestroy(&self.nsp) )
+        CHKERR(MatNullSpaceDestroy(&self.nsp))
         return self
 
     def create(
         self,
         constant: bool = False,
         vectors: Sequence[Vec] = (),
-        comm=None
-        ) -> Self:
+        comm=None) -> Self:
         """Create the null space.
 
         Collective.
@@ -5714,12 +5748,12 @@ cdef class NullSpace(Object):
         if constant: has_const = PETSC_TRUE
         cdef PetscInt i = 0, nv = <PetscInt>len(vectors)
         cdef PetscVec *v = NULL
-        cdef object tmp2 = oarray_p(empty_p(nv), NULL, <void**>&v)
+        cdef object unused2 = oarray_p(empty_p(nv), NULL, <void**>&v)
         for i from 0 <= i < nv:
             v[i] = (<Vec?>(vectors[<Py_ssize_t>i])).vec
         cdef PetscNullSpace newnsp = NULL
-        CHKERR( MatNullSpaceCreate(ccomm, has_const, nv, v, &newnsp) )
-        CHKERR( PetscCLEAR(self.obj) ); self.nsp = newnsp
+        CHKERR(MatNullSpaceCreate(ccomm, has_const, nv, v, &newnsp))
+        CHKERR(PetscCLEAR(self.obj)); self.nsp = newnsp
         return self
 
     def createRigidBody(self, Vec coords) -> Self:
@@ -5739,16 +5773,15 @@ cdef class NullSpace(Object):
 
         """
         cdef PetscNullSpace newnsp = NULL
-        CHKERR( MatNullSpaceCreateRigidBody(coords.vec, &newnsp) )
-        CHKERR( PetscCLEAR(self.obj) ); self.nsp = newnsp
+        CHKERR(MatNullSpaceCreateRigidBody(coords.vec, &newnsp))
+        CHKERR(PetscCLEAR(self.obj)); self.nsp = newnsp
         return self
 
     def setFunction(
         self,
         function: MatNullFunction,
         args: tuple[Any, ...] | None = None,
-        kargs: dict[str, Any] | None = None,
-        ) -> None:
+        kargs: dict[str, Any] | None = None) -> None:
         """Set the callback to remove the nullspace.
 
         Logically collective.
@@ -5768,13 +5801,13 @@ cdef class NullSpace(Object):
 
         """
         if function is not None:
-            CHKERR( MatNullSpaceSetFunction(
-                    self.nsp, NullSpace_Function, NULL) )
+            CHKERR(MatNullSpaceSetFunction(
+                    self.nsp, NullSpace_Function, NULL))
             if args is None: args = ()
             if kargs is None: kargs = {}
             self.set_attr('__function__', (function, args, kargs))
         else:
-            CHKERR( MatNullSpaceSetFunction(self.nsp, NULL, NULL) )
+            CHKERR(MatNullSpaceSetFunction(self.nsp, NULL, NULL))
             self.set_attr('__function__', None)
     #
 
@@ -5789,7 +5822,7 @@ cdef class NullSpace(Object):
 
         """
         cdef PetscBool flag = PETSC_FALSE
-        CHKERR( MatNullSpaceGetVecs(self.nsp, &flag, NULL, NULL) )
+        CHKERR(MatNullSpaceGetVecs(self.nsp, &flag, NULL, NULL))
         return toBool(flag)
 
     def getVecs(self) -> list[Vec]:
@@ -5804,13 +5837,13 @@ cdef class NullSpace(Object):
         """
         cdef PetscInt i = 0, nv = 0
         cdef const PetscVec *v = NULL
-        CHKERR( MatNullSpaceGetVecs(self.nsp, NULL, &nv, &v) )
+        CHKERR(MatNullSpaceGetVecs(self.nsp, NULL, &nv, &v))
         cdef Vec vec = None
         cdef list vectors = []
         for i from 0 <= i < nv:
             vec = Vec()
             vec.vec = v[i]
-            CHKERR( PetscINCREF(vec.obj) )
+            CHKERR(PetscINCREF(vec.obj))
             vectors.append(vec)
         return vectors
 
@@ -5843,7 +5876,7 @@ cdef class NullSpace(Object):
         petsc.MatNullSpaceRemove
 
         """
-        CHKERR( MatNullSpaceRemove(self.nsp, vec.vec) )
+        CHKERR(MatNullSpaceRemove(self.nsp, vec.vec))
 
     def test(self, Mat mat) -> bool:
         """Return if the claimed null space is valid for a matrix.
@@ -5861,7 +5894,7 @@ cdef class NullSpace(Object):
 
         """
         cdef PetscBool flag = PETSC_FALSE
-        CHKERR( MatNullSpaceTest(self.nsp, mat.mat, &flag) )
+        CHKERR(MatNullSpaceTest(self.nsp, mat.mat, &flag))
         return toBool(flag)
 
 # --------------------------------------------------------------------

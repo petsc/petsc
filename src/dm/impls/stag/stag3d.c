@@ -1,17 +1,15 @@
 /* Functions specific to the 3-dimensional implementation of DMStag */
-#include <petsc/private/dmstagimpl.h>
+#include <petsc/private/dmstagimpl.h> /*I  "petscdmstag.h"   I*/
 
-/*@C
+/*@
   DMStagCreate3d - Create an object to manage data living on the elements, faces, edges, and vertices of a parallelized regular 3D grid.
 
   Collective
 
   Input Parameters:
 + comm         - MPI communicator
-. bndx         - x boundary type, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or
-`DM_BOUNDARY_GHOSTED`
-. bndy         - y boundary type, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or
-`DM_BOUNDARY_GHOSTED`
+. bndx         - x boundary type, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or `DM_BOUNDARY_GHOSTED`
+. bndy         - y boundary type, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or `DM_BOUNDARY_GHOSTED`
 . bndz         - z boundary type, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or `DM_BOUNDARY_GHOSTED`
 . M            - global number of elements in x direction
 . N            - global number of elements in y direction
@@ -25,9 +23,9 @@
 . dof3         - number of degrees of freedom per element/3-cell
 . stencilType  - ghost/halo region type: `DMSTAG_STENCIL_NONE`, `DMSTAG_STENCIL_BOX`, or `DMSTAG_STENCIL_STAR`
 . stencilWidth - width, in elements, of halo/ghost region
-. lx           - array of local x  element counts, of length equal to `m`, summing to `M`
-. ly           - arrays of local y element counts, of length equal to `n`, summing to `N`
-- lz           - arrays of local z element counts, of length equal to `p`, summing to `P`
+. lx           - array of local x  element counts, of length equal to `m`, summing to `M`, or `NULL`
+. ly           - arrays of local y element counts, of length equal to `n`, summing to `N`, or `NULL`
+- lz           - arrays of local z element counts, of length equal to `p`, summing to `P`, or `NULL`
 
   Output Parameter:
 . dm - the new `DMSTAG` object
@@ -54,7 +52,7 @@
 
 .seealso: [](ch_stag), `DMSTAG`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMLocalToGlobalBegin()`, `DMDACreate3d()`
 @*/
-PETSC_EXTERN PetscErrorCode DMStagCreate3d(MPI_Comm comm, DMBoundaryType bndx, DMBoundaryType bndy, DMBoundaryType bndz, PetscInt M, PetscInt N, PetscInt P, PetscInt m, PetscInt n, PetscInt p, PetscInt dof0, PetscInt dof1, PetscInt dof2, PetscInt dof3, DMStagStencilType stencilType, PetscInt stencilWidth, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[], DM *dm)
+PetscErrorCode DMStagCreate3d(MPI_Comm comm, DMBoundaryType bndx, DMBoundaryType bndy, DMBoundaryType bndz, PetscInt M, PetscInt N, PetscInt P, PetscInt m, PetscInt n, PetscInt p, PetscInt dof0, PetscInt dof1, PetscInt dof2, PetscInt dof3, DMStagStencilType stencilType, PetscInt stencilWidth, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[], DM *dm)
 {
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, dm));

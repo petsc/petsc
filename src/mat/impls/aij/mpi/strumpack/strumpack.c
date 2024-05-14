@@ -1237,7 +1237,7 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A, MatFactorType ftype, Mat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_STRUMPACK(void)
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_STRUMPACK(void)
 {
   PetscFunctionBegin;
   PetscCall(MatSolverTypeRegister(MATSOLVERSTRUMPACK, MATMPIAIJ, MAT_FACTOR_LU, MatGetFactor_aij_strumpack));

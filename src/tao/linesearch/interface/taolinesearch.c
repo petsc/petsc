@@ -353,7 +353,7 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoLineSearchSetType - Sets the algorithm used in a line search
 
   Collective
@@ -509,7 +509,7 @@ PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoLineSearchGetType - Gets the current line search algorithm
 
   Not Collective
@@ -763,7 +763,7 @@ PetscErrorCode TaoLineSearchSetObjectiveAndGTSRoutine(TaoLineSearch ls, PetscErr
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoLineSearchUseTaoRoutines - Informs the `TaoLineSearch` to use the
   objective and gradient evaluation routines from the given `Tao` object. The default.
 
@@ -1149,7 +1149,7 @@ PetscErrorCode TaoLineSearchGetStepLength(TaoLineSearch ls, PetscReal *s)
 /*@C
   TaoLineSearchRegister - Adds a line-search algorithm to the registry
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname - name of a new user-defined solver
@@ -1180,7 +1180,7 @@ PetscErrorCode TaoLineSearchRegister(const char sname[], PetscErrorCode (*func)(
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoLineSearchAppendOptionsPrefix - Appends to the prefix used for searching
   for all `TaoLineSearch` options in the database.
 
@@ -1205,7 +1205,7 @@ PetscErrorCode TaoLineSearchAppendOptionsPrefix(TaoLineSearch ls, const char p[]
   return PetscObjectAppendOptionsPrefix((PetscObject)ls, p);
 }
 
-/*@C
+/*@
   TaoLineSearchGetOptionsPrefix - Gets the prefix used for searching for all
   `TaoLineSearch` options in the database
 
@@ -1230,7 +1230,7 @@ PetscErrorCode TaoLineSearchGetOptionsPrefix(TaoLineSearch ls, const char *p[])
   return PetscObjectGetOptionsPrefix((PetscObject)ls, p);
 }
 
-/*@C
+/*@
   TaoLineSearchSetOptionsPrefix - Sets the prefix used for searching for all
   `TaoLineSearch` options in the database.
 

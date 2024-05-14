@@ -6,6 +6,13 @@ import sys
 import glob
 import copy
 import warnings
+from distutils import log
+from distutils import sysconfig
+from distutils.util import execute
+from distutils.util import split_quoted
+from distutils.errors import DistutilsError
+from distutils.text_file import TextFile
+
 
 try:
     from cStringIO import StringIO
@@ -26,38 +33,37 @@ else:
     from distutils.core import Extension as _Extension
     from distutils.core import Command
 
+
 def import_command(cmd):
     try:
         from importlib import import_module
     except ImportError:
+
         def import_module(n):
             return __import__(n, fromlist=[None])
+
     try:
-        if not setuptools: raise ImportError
+        if not setuptools:
+            raise ImportError
         mod = import_module('setuptools.command.' + cmd)
         return getattr(mod, cmd)
     except ImportError:
         mod = import_module('distutils.command.' + cmd)
         return getattr(mod, cmd)
 
-_config    = import_command('config')
-_build     = import_command('build')
-_build_ext = import_command('build_ext')
-_install   = import_command('install')
 
-from distutils import log
-from distutils import sysconfig
-from distutils.util import execute
-from distutils.util import split_quoted
-from distutils.errors import DistutilsError
+_config = import_command('config')
+_build = import_command('build')
+_build_ext = import_command('build_ext')
+_install = import_command('install')
 
 try:
     from setuptools import modified
 except ImportError:
-  try:
-      from setuptools import dep_util as modified
-  except ImportError:
-      from distutils import dep_util as modified
+    try:
+        from setuptools import dep_util as modified
+    except ImportError:
+        from distutils import dep_util as modified
 
 try:
     from packaging.version import Version
@@ -73,53 +79,62 @@ except ImportError:
 
 CYTHON = '3.0.0'
 
+
 def cython_req():
     return CYTHON
+
 
 def cython_chk(VERSION, verbose=True):
     #
     def warn(message):
-        if not verbose: return
-        ruler, ws, nl = "*"*80, " " ,"\n"
+        if not verbose:
+            return
+        ruler, ws, nl = '*' * 80, ' ', '\n'
         pyexe = sys.executable
-        advise = "$ %s -m pip install --upgrade cython" % pyexe
-        def printer(*s): sys.stderr.write(" ".join(s)+"\n")
+        advise = '$ %s -m pip install --upgrade cython' % pyexe
+
+        def printer(*s):
+            sys.stderr.write(' '.join(s) + '\n')
+
         printer(ruler, nl)
         printer(ws, message, nl)
         printer(ws, ws, advise, nl)
         printer(ruler)
+
     #
     try:
         import Cython
     except ImportError:
-        warn("You need Cython to generate C source files.")
+        warn('You need Cython to generate C source files.')
         return False
     #
     CYTHON_VERSION = Cython.__version__
-    m = re.match(r"(\d+\.\d+(?:\.\d+)?).*", CYTHON_VERSION)
+    m = re.match(r'(\d+\.\d+(?:\.\d+)?).*', CYTHON_VERSION)
     if not m:
-        warn("Cannot parse Cython version string {0!r}"
-             .format(CYTHON_VERSION))
+        warn(f'Cannot parse Cython version string {CYTHON_VERSION!r}')
         return False
     REQUIRED = Version(VERSION)
     PROVIDED = Version(m.groups()[0])
     if PROVIDED < REQUIRED:
-        warn("You need Cython >= {0} (you have version {1})"
-             .format(VERSION, CYTHON_VERSION))
+        warn(f'You need Cython >= {VERSION} (you have version {CYTHON_VERSION})')
         return False
     #
     if verbose:
-        log.info("using Cython %s" % CYTHON_VERSION)
+        log.info('using Cython %s' % CYTHON_VERSION)
     return True
 
+
 def cython_run(
-    source, target=None,
-    depends=(), includes=(),
-    workdir=None, force=False,
-    VERSION="0.0",
+    source,
+    target=None,
+    depends=(),
+    includes=(),
+    workdir=None,
+    force=False,
+    VERSION='0.0',
 ):
     if target is None:
-        target = os.path.splitext(source)[0]+'.c'
+        target = os.path.splitext(source)[0] + '.c'
     cwd = os.getcwd()
     try:
         if workdir:
@@ -128,8 +143,7 @@ def cython_run(
         for dep in depends:
             alldeps += glob.glob(dep)
         if not (force or modified.newer_group(alldeps, target)):
-            log.debug("skipping '%s' -> '%s' (up-to-date)",
-                      source, target)
+            log.debug("skipping '%s' -> '%s' (up-to-date)", source, target)
             return
     finally:
         os.chdir(cwd)
@@ -137,7 +151,7 @@ def cython_run(
     if setuptools and not cython_chk(VERSION, verbose=False):
         if sys.modules.get('Cython'):
             removed = getattr(sys.modules['Cython'], '__version__', '')
-            log.info("removing Cython %s from sys.modules" % removed)
+            log.info('removing Cython %s from sys.modules' % removed)
             pkgname = re.compile(r'cython(\.|$)', re.IGNORECASE)
             for modname in list(sys.modules.keys()):
                 if pkgname.match(modname):
@@ -149,7 +163,7 @@ def cython_run(
                     category = setuptools.SetuptoolsDeprecationWarning
                     warnings.simplefilter('ignore', category)
                 log.info("fetching build requirement '%s'" % require)
-                install_setup_requires(dict(setup_requires=[require]))
+                install_setup_requires({'setup_requires': [require]})
         except Exception:
             log.info("failed to fetch build requirement '%s'" % require)
     if not cython_chk(VERSION):
@@ -157,6 +171,7 @@ def cython_run(
     #
     log.info("cythonizing '%s' -> '%s'", source, target)
     from cythonize import cythonize
+
     args = []
     if workdir:
         args += ['--working', workdir]
@@ -165,12 +180,11 @@ def cython_run(
         args += ['--output-file', target]
     err = cythonize(args)
     if err:
-        raise DistutilsError(
-            "Cython failure: '%s' -> '%s'" % (source, target)
-        )
+        raise DistutilsError(f"Cython failure: '{source}' -> '{target}'")
 
 
 # --------------------------------------------------------------------
+
 
 def fix_config_vars(names, values):
     values = list(values)
@@ -193,43 +207,32 @@ def fix_config_vars(names, values):
                 values[i] = flag
     return values
 
+
 def get_config_vars(*names):
     # Core Python configuration
     values = sysconfig.get_config_vars(*names)
     # Do any distutils flags fixup right now
-    values = fix_config_vars(names, values)
-    return values
+    return fix_config_vars(names, values)
 
-from distutils.unixccompiler import UnixCCompiler
-rpath_option_orig = UnixCCompiler.runtime_library_dir_option
-def rpath_option(compiler, dir):
-    option = rpath_option_orig(compiler, dir)
-    if sys.platform[:5] == 'linux':
-        if option.startswith('-R'):
-            option =  option.replace('-R', '-Wl,-rpath,', 1)
-        elif option.startswith('-Wl,-R'):
-            option =  option.replace('-Wl,-R', '-Wl,-rpath,', 1)
-    return option
-UnixCCompiler.runtime_library_dir_option = rpath_option
 
 # --------------------------------------------------------------------
 
-class PetscConfig:
 
+class PetscConfig:
     def __init__(self, petsc_dir, petsc_arch, dest_dir=None):
         if dest_dir is None:
             dest_dir = os.environ.get('DESTDIR')
-        self.configdict = { }
+        self.configdict = {}
         if not petsc_dir:
-            raise DistutilsError("PETSc not found")
+            raise DistutilsError('PETSc not found')
         if not os.path.isdir(petsc_dir):
-            raise DistutilsError("invalid PETSC_DIR: %s" % petsc_dir)
-        self.version    = self._get_petsc_version(petsc_dir)
+            raise DistutilsError('invalid PETSC_DIR: %s' % petsc_dir)
+        self.version = self._get_petsc_version(petsc_dir)
         self.configdict = self._get_petsc_config(petsc_dir, petsc_arch)
-        self.PETSC_DIR  = self['PETSC_DIR']
+        self.PETSC_DIR = self['PETSC_DIR']
         self.PETSC_ARCH = self['PETSC_ARCH']
         self.DESTDIR = dest_dir
-        language_map = {'CONLY':'c', 'CXXONLY':'c++'}
+        language_map = {'CONLY': 'c', 'CXXONLY': 'c++'}
         self.language = language_map[self['PETSC_LANGUAGE']]
 
     def __getitem__(self, item):
@@ -245,23 +248,26 @@ class PetscConfig:
 
     def _get_petsc_version(self, petsc_dir):
         import re
+
         version_re = {
-            'major'  : re.compile(r"#define\s+PETSC_VERSION_MAJOR\s+(\d+)"),
-            'minor'  : re.compile(r"#define\s+PETSC_VERSION_MINOR\s+(\d+)"),
-            'micro'  : re.compile(r"#define\s+PETSC_VERSION_SUBMINOR\s+(\d+)"),
-            'release': re.compile(r"#define\s+PETSC_VERSION_RELEASE\s+(-*\d+)"),
-            }
+            'major': re.compile(r'#define\s+PETSC_VERSION_MAJOR\s+(\d+)'),
+            'minor': re.compile(r'#define\s+PETSC_VERSION_MINOR\s+(\d+)'),
+            'micro': re.compile(r'#define\s+PETSC_VERSION_SUBMINOR\s+(\d+)'),
+            'release': re.compile(r'#define\s+PETSC_VERSION_RELEASE\s+(-*\d+)'),
+        }
         petscversion_h = os.path.join(petsc_dir, 'include', 'petscversion.h')
-        with open(petscversion_h, 'rt') as f: data = f.read()
+        with open(petscversion_h, 'rt') as f:
+            data = f.read()
         major = int(version_re['major'].search(data).groups()[0])
         minor = int(version_re['minor'].search(data).groups()[0])
         micro = int(version_re['micro'].search(data).groups()[0])
         release = int(version_re['release'].search(data).groups()[0])
-        return  (major, minor, micro), (release == 1)
+        return (major, minor, micro), (release == 1)
 
     def _get_petsc_config(self, petsc_dir, petsc_arch):
         from os.path import join, isdir, exists
-        PETSC_DIR  = petsc_dir
+
+        PETSC_DIR = petsc_dir
         PETSC_ARCH = petsc_arch
         #
         confdir = join('lib', 'petsc', 'conf')
@@ -273,7 +279,7 @@ class PetscConfig:
         #
         variables = join(PETSC_DIR, confdir, 'variables')
         if not exists(variables):
-            variables  = join(PETSC_DIR, PETSC_ARCH, confdir, 'variables')
+            variables = join(PETSC_DIR, PETSC_ARCH, confdir, 'variables')
         petscvariables = join(PETSC_DIR, PETSC_ARCH, confdir, 'petscvariables')
         #
         with open(variables) as f:
@@ -281,11 +287,10 @@ class PetscConfig:
         with open(petscvariables) as f:
             contents += f.read()
         #
-        confstr  = 'PETSC_DIR  = %s\n' % PETSC_DIR
+        confstr = 'PETSC_DIR  = %s\n' % PETSC_DIR
         confstr += 'PETSC_ARCH = %s\n' % PETSC_ARCH
         confstr += contents
-        confdict = makefile(StringIO(confstr))
-        return confdict
+        return makefile(StringIO(confstr))
 
     def _configure_ext(self, ext, dct, append=False):
         extdict = ext.__dict__
@@ -304,16 +309,22 @@ class PetscConfig:
         # we might be building against PETSc in staging location (DESTDIR) when
         # DESTDIR is set, so append DESTDIR (if nonempty) to those paths
         petsc_inc = flaglist(prepend_to_flags(self.DESTDIR, self['PETSC_CC_INCLUDES']))
-        lib_flags = prepend_to_flags(self.DESTDIR, '-L%s %s' % \
-                (self['PETSC_LIB_DIR'], self['PETSC_LIB_BASIC']))
+        lib_flags = prepend_to_flags(
+            self.DESTDIR,
+            '-L{} {}'.format(self['PETSC_LIB_DIR'], self['PETSC_LIB_BASIC']),
+        )
         petsc_lib = flaglist(lib_flags)
         # runtime_library_dirs is not supported on Windows
         if sys.platform != 'win32':
             # if DESTDIR is set, then we're building against PETSc in a staging
             # directory, but rpath needs to point to final install directory.
-            rpath = strip_prefix(self.DESTDIR, self['PETSC_LIB_DIR'])
-            petsc_lib['runtime_library_dirs'].append(rpath)
-
+            rpath = [strip_prefix(self.DESTDIR, self['PETSC_LIB_DIR'])]
+            if sys.modules.get('petsc') is not None:
+                if sys.platform == 'darwin':
+                    rpath = ['@loader_path/../../petsc/lib']
+                else:
+                    rpath = ['$ORIGIN/../../petsc/lib']
+            petsc_lib['runtime_library_dirs'].extend(rpath)
         # Link in extra libraries on static builds
         if self['BUILDSHAREDLIB'] != 'yes':
             petsc_ext_lib = split_quoted(self['PETSC_EXTERNAL_LIB_BASIC'])
@@ -322,26 +333,31 @@ class PetscConfig:
         self._configure_ext(extension, petsc_lib)
 
     def configure_compiler(self, compiler):
-        if compiler.compiler_type != 'unix': return
+        if compiler.compiler_type != 'unix':
+            return
         getenv = os.environ.get
         # distutils C/C++ compiler
-        (cc, cflags, ccshared, cxx) = get_config_vars(
-            'CC', 'CFLAGS',  'CCSHARED', 'CXX')
+        (cc, cflags, ccshared, cxx) = get_config_vars('CC', 'CFLAGS', 'CCSHARED', 'CXX')
         ccshared = getenv('CCSHARED', ccshared or '')
         cflags = getenv('CFLAGS', cflags or '')
         cflags = cflags.replace('-Wstrict-prototypes', '')
         # distutils linker
-        (ldflags, ldshared, so_ext) = get_config_vars(
-            'LDFLAGS', 'LDSHARED', 'SO')
+        (ldflags, ldshared, so_ext) = get_config_vars('LDFLAGS', 'LDSHARED', 'SO')
         ld = cc
         ldshared = getenv('LDSHARED', ldshared)
         ldflags = getenv('LDFLAGS', cflags + ' ' + (ldflags or ''))
         ldcmd = split_quoted(ld) + split_quoted(ldflags)
-        ldshared = [flg for flg in split_quoted(ldshared) if flg not in ldcmd and (flg.find('/lib/spack/env')<0)]
+        ldshared = [
+            flg
+            for flg in split_quoted(ldshared)
+            if flg not in ldcmd and (flg.find('/lib/spack/env') < 0)
+        ]
         ldshared = str.join(' ', ldshared)
+
         #
         def get_flags(cmd):
-            if not cmd: return ''
+            if not cmd:
+                return ''
             cmd = split_quoted(cmd)
             if os.path.basename(cmd[0]) == 'xcrun':
                 del cmd[0]
@@ -354,11 +370,12 @@ class PetscConfig:
                         continue
                     break
             return ' '.join(cmd[1:])
+
         # PETSc C compiler
         PCC = self['PCC']
         PCC_FLAGS = get_flags(cc) + ' ' + self['PCC_FLAGS']
         PCC_FLAGS = PCC_FLAGS.replace('-fvisibility=hidden', '')
-        PCC = getenv('PCC', PCC) + ' ' +  getenv('PCCFLAGS', PCC_FLAGS)
+        PCC = getenv('PCC', PCC) + ' ' + getenv('PCCFLAGS', PCC_FLAGS)
         PCC_SHARED = str.join(' ', (PCC, ccshared, cflags))
         # PETSc C++ compiler
         PCXX = PCC if self.language == 'c++' else self.get('CXX', cxx)
@@ -370,36 +387,28 @@ class PetscConfig:
         PLD_SHARED = str.join(' ', (PLD, ldshared, ldflags))
         #
         compiler.set_executables(
-            compiler     = PCC,
-            compiler_cxx = PCXX,
-            linker_exe   = PLD,
-            compiler_so  = PCC_SHARED,
-            linker_so    = PLD_SHARED,
-            )
+            compiler=PCC,
+            compiler_cxx=PCXX,
+            linker_exe=PLD,
+            compiler_so=PCC_SHARED,
+            linker_so=PLD_SHARED,
+        )
         compiler.shared_lib_extension = so_ext
-        #
-        if sys.platform == 'darwin':
-            for attr in ('preprocessor',
-                         'compiler', 'compiler_cxx', 'compiler_so',
-                         'linker_so', 'linker_exe'):
-                compiler_cmd = getattr(compiler, attr, [])
-                while '-mno-fused-madd' in compiler_cmd:
-                    compiler_cmd.remove('-mno-fused-madd')
 
     def log_info(self):
-        PETSC_DIR  = self['PETSC_DIR']
+        PETSC_DIR = self['PETSC_DIR']
         PETSC_ARCH = self['PETSC_ARCH']
-        version = ".".join([str(i) for i in self.version[0]])
-        release = ("development", "release")[self.version[1]]
+        version = '.'.join([str(i) for i in self.version[0]])
+        release = ('development', 'release')[self.version[1]]
         version_info = version + ' ' + release
         integer_size = '%s-bit' % self['PETSC_INDEX_SIZE']
-        scalar_type  = self['PETSC_SCALAR']
-        precision    = self['PETSC_PRECISION']
-        language     = self['PETSC_LANGUAGE']
-        compiler     = self['PCC']
-        linker       = self['PCC_LINKER']
-        log.info('PETSC_DIR:    %s' % PETSC_DIR )
-        log.info('PETSC_ARCH:   %s' % PETSC_ARCH )
+        scalar_type = self['PETSC_SCALAR']
+        precision = self['PETSC_PRECISION']
+        language = self['PETSC_LANGUAGE']
+        compiler = self['PCC']
+        linker = self['PCC_LINKER']
+        log.info('PETSC_DIR:    %s' % PETSC_DIR)
+        log.info('PETSC_ARCH:   %s' % PETSC_ARCH)
         log.info('version:      %s' % version_info)
         log.info('integer-size: %s' % integer_size)
         log.info('scalar-type:  %s' % scalar_type)
@@ -408,30 +417,30 @@ class PetscConfig:
         log.info('compiler:     %s' % compiler)
         log.info('linker:       %s' % linker)
 
+
 # --------------------------------------------------------------------
+
 
 class Extension(_Extension):
     pass
 
+
 # --------------------------------------------------------------------
 
 cmd_petsc_opts = [
-    ('petsc-dir=', None,
-     "define PETSC_DIR, overriding environmental variables"),
-    ('petsc-arch=', None,
-     "define PETSC_ARCH, overriding environmental variables"),
-    ]
+    ('petsc-dir=', None, 'define PETSC_DIR, overriding environmental variables'),
+    ('petsc-arch=', None, 'define PETSC_ARCH, overriding environmental variables'),
+]
 
 
 class config(_config):
-
     Configure = PetscConfig
 
     user_options = _config.user_options + cmd_petsc_opts
 
     def initialize_options(self):
         _config.initialize_options(self)
-        self.petsc_dir  = None
+        self.petsc_dir = None
         self.petsc_arch = None
 
     def get_config_arch(self, arch):
@@ -440,22 +449,23 @@ class config(_config):
     def run(self):
         _config.run(self)
         self.petsc_dir = config.get_petsc_dir(self.petsc_dir)
-        if self.petsc_dir is None: return
+        if self.petsc_dir is None:
+            return
         petsc_arch = config.get_petsc_arch(self.petsc_dir, self.petsc_arch)
         log.info('-' * 70)
         log.info('PETSC_DIR:   %s' % self.petsc_dir)
         arch_list = petsc_arch
-        if not arch_list :
-            arch_list = [ None ]
+        if not arch_list:
+            arch_list = [None]
         for arch in arch_list:
             conf = self.get_config_arch(arch)
-            archname    = conf.PETSC_ARCH or conf['PETSC_ARCH']
+            archname = conf.PETSC_ARCH or conf['PETSC_ARCH']
             scalar_type = conf['PETSC_SCALAR']
-            precision   = conf['PETSC_PRECISION']
-            language    = conf['PETSC_LANGUAGE']
-            compiler    = conf['PCC']
-            linker      = conf['PCC_LINKER']
-            log.info('-'*70)
+            precision = conf['PETSC_PRECISION']
+            language = conf['PETSC_LANGUAGE']
+            compiler = conf['PCC']
+            linker = conf['PCC_LINKER']
+            log.info('-' * 70)
             log.info('PETSC_ARCH:  %s' % archname)
             log.info(' * scalar-type: %s' % scalar_type)
             log.info(' * precision:   %s' % precision)
@@ -464,35 +474,40 @@ class config(_config):
             log.info(' * linker:      %s' % linker)
         log.info('-' * 70)
 
-    #@staticmethod
+    # @staticmethod
     def get_petsc_dir(petsc_dir):
-        if not petsc_dir: return None
+        if not petsc_dir:
+            return None
         petsc_dir = os.path.expandvars(petsc_dir)
         if not petsc_dir or '$PETSC_DIR' in petsc_dir:
             try:
                 import petsc
+
                 petsc_dir = petsc.get_petsc_dir()
             except ImportError:
-                log.warn("PETSC_DIR not specified")
+                log.warn('PETSC_DIR not specified')
                 return None
         petsc_dir = os.path.expanduser(petsc_dir)
         petsc_dir = os.path.abspath(petsc_dir)
         return config.chk_petsc_dir(petsc_dir)
+
     get_petsc_dir = staticmethod(get_petsc_dir)
 
-    #@staticmethod
+    # @staticmethod
     def chk_petsc_dir(petsc_dir):
         if not os.path.isdir(petsc_dir):
             log.error('invalid PETSC_DIR: %s (ignored)' % petsc_dir)
             return None
         return petsc_dir
+
     chk_petsc_dir = staticmethod(chk_petsc_dir)
 
-    #@staticmethod
+    # @staticmethod
     def get_petsc_arch(petsc_dir, petsc_arch):
-        if not petsc_dir: return None
+        if not petsc_dir:
+            return None
         petsc_arch = os.path.expandvars(petsc_arch)
-        if (not petsc_arch or '$PETSC_ARCH' in petsc_arch):
+        if not petsc_arch or '$PETSC_ARCH' in petsc_arch:
             petsc_arch = ''
             petsc_conf = os.path.join(petsc_dir, 'lib', 'petsc', 'conf')
             if os.path.isdir(petsc_conf):
@@ -504,9 +519,10 @@ class config(_config):
         petsc_arch = unique(petsc_arch)
         petsc_arch = [arch for arch in petsc_arch if arch]
         return config.chk_petsc_arch(petsc_dir, petsc_arch)
+
     get_petsc_arch = staticmethod(get_petsc_arch)
 
-    #@staticmethod
+    # @staticmethod
     def chk_petsc_arch(petsc_dir, petsc_arch):
         valid_archs = []
         for arch in petsc_arch:
@@ -514,20 +530,22 @@ class config(_config):
             if os.path.isdir(arch_path):
                 valid_archs.append(arch)
             else:
-                log.warn("invalid PETSC_ARCH: %s (ignored)" % arch)
+                log.warn('invalid PETSC_ARCH: %s (ignored)' % arch)
         return valid_archs
+
     chk_petsc_arch = staticmethod(chk_petsc_arch)
 
 
 class build(_build):
-
     user_options = _build.user_options
-    user_options += [(
-        'inplace',
-        'i',
-        "ignore build-lib and put compiled extensions into the source "
-        "directory alongside your pure Python modules",
-    )]
+    user_options += [
+        (
+            'inplace',
+            'i',
+            'ignore build-lib and put compiled extensions into the source '
+            'directory alongside your pure Python modules',
+        )
+    ]
     user_options += cmd_petsc_opts
 
     boolean_options = _build.boolean_options
@@ -536,32 +554,28 @@ class build(_build):
     def initialize_options(self):
         _build.initialize_options(self)
         self.inplace = None
-        self.petsc_dir  = None
+        self.petsc_dir = None
         self.petsc_arch = None
 
     def finalize_options(self):
         _build.finalize_options(self)
         if self.inplace is None:
             self.inplace = False
-        self.set_undefined_options('config',
-                                   ('petsc_dir',  'petsc_dir'),
-                                   ('petsc_arch', 'petsc_arch'))
-        self.petsc_dir  = config.get_petsc_dir(self.petsc_dir)
-        self.petsc_arch = config.get_petsc_arch(self.petsc_dir,
-                                                self.petsc_arch)
+        self.set_undefined_options(
+            'config', ('petsc_dir', 'petsc_dir'), ('petsc_arch', 'petsc_arch')
+        )
+        self.petsc_dir = config.get_petsc_dir(self.petsc_dir)
+        self.petsc_arch = config.get_petsc_arch(self.petsc_dir, self.petsc_arch)
 
-    sub_commands = \
-        [('build_src', lambda *args: True)] + \
-        _build.sub_commands
+    sub_commands = [('build_src', lambda *args: True)] + _build.sub_commands
 
 
 class build_src(Command):
-    description = "build C sources from Cython files"
+    description = 'build C sources from Cython files'
 
     user_options = [
-        ('force', 'f',
-         "forcibly build everything (ignore file timestamps)"),
-        ]
+        ('force', 'f', 'forcibly build everything (ignore file timestamps)'),
+    ]
 
     boolean_options = ['force']
 
@@ -569,57 +583,33 @@ class build_src(Command):
         self.force = False
 
     def finalize_options(self):
-        self.set_undefined_options('build',
-                                   ('force', 'force'),
-                                   )
+        self.set_undefined_options(
+            'build',
+            ('force', 'force'),
+        )
 
     def run(self):
         sources = getattr(self, 'sources', [])
         for source in sources:
-            cython_run(
-                force=self.force,
-                VERSION=cython_req(),
-                **source
-            )
+            cython_run(force=self.force, VERSION=cython_req(), **source)
 
 
 class build_ext(_build_ext):
-
     user_options = _build_ext.user_options + cmd_petsc_opts
 
     def initialize_options(self):
         _build_ext.initialize_options(self)
         self.inplace = None
-        self.petsc_dir  = None
+        self.petsc_dir = None
         self.petsc_arch = None
         self._outputs = []
 
     def finalize_options(self):
         _build_ext.finalize_options(self)
         self.set_undefined_options('build', ('inplace', 'inplace'))
-        self.set_undefined_options('build',
-                                   ('petsc_dir',  'petsc_dir'),
-                                   ('petsc_arch', 'petsc_arch'))
-        if ((sys.platform.startswith('linux') or
-             sys.platform.startswith('gnu') or
-             sys.platform.startswith('sunos')) and
-            sysconfig.get_config_var('Py_ENABLE_SHARED')):
-            py_version = sysconfig.get_python_version()
-            bad_pylib_dir = os.path.join(sys.prefix, "lib",
-                                         "python" + py_version,
-                                         "config")
-            try:
-                self.library_dirs.remove(bad_pylib_dir)
-            except ValueError:
-                pass
-            pylib_dir = sysconfig.get_config_var("LIBDIR")
-            if pylib_dir not in self.library_dirs:
-                self.library_dirs.append(pylib_dir)
-            if pylib_dir not in self.rpath:
-                self.rpath.append(pylib_dir)
-            if sys.exec_prefix == '/usr':
-                self.library_dirs.remove(pylib_dir)
-                self.rpath.remove(pylib_dir)
+        self.set_undefined_options(
+            'build', ('petsc_dir', 'petsc_dir'), ('petsc_arch', 'petsc_arch')
+        )
 
     def _copy_ext(self, ext):
         extclass = ext.__class__
@@ -635,14 +625,14 @@ class build_ext(_build_ext):
 
     def _build_ext_arch(self, ext, pkgpath, arch):
         build_temp = self.build_temp
-        build_lib  = self.build_lib
+        build_lib = self.build_lib
         try:
             self.build_temp = os.path.join(build_temp, arch)
-            self.build_lib  = os.path.join(build_lib, pkgpath, arch)
+            self.build_lib = os.path.join(build_lib, pkgpath, arch)
             _build_ext.build_extension(self, ext)
         finally:
             self.build_temp = build_temp
-            self.build_lib  = build_lib
+            self.build_lib = build_lib
 
     def get_config_arch(self, arch):
         return config.Configure(self.petsc_dir, arch)
@@ -652,7 +642,7 @@ class build_ext(_build_ext):
             return _build_ext.build_extension(self, ext)
         petsc_arch = self.petsc_arch
         if not petsc_arch:
-            petsc_arch = [ None ]
+            petsc_arch = [None]
         for arch in petsc_arch:
             config = self.get_config_arch(arch)
             ARCH = arch or config['PETSC_ARCH']
@@ -664,6 +654,7 @@ class build_ext(_build_ext):
             pkgpath, newext = self._copy_ext(ext)
             config.configure(newext, self.compiler)
             self._build_ext_arch(newext, pkgpath, ARCH)
+        return None
 
     def run(self):
         self.build_sources()
@@ -675,8 +666,9 @@ class build_ext(_build_ext):
 
     def build_extensions(self, *args, **kargs):
         self.PETSC_ARCH_LIST = []
-        _build_ext.build_extensions(self, *args,**kargs)
-        if not self.PETSC_ARCH_LIST: return
+        _build_ext.build_extensions(self, *args, **kargs)
+        if not self.PETSC_ARCH_LIST:
+            return
         self.build_configuration(self.PETSC_ARCH_LIST)
 
     def build_configuration(self, arch_list):
@@ -684,27 +676,39 @@ class build_ext(_build_ext):
         template, variables = self.get_config_data(arch_list)
         config_data = template % variables
         #
-        build_lib   = self.build_lib
-        dist_name   = self.distribution.get_name()
-        config_file = os.path.join(build_lib, dist_name, 'lib',
-                                   dist_name.replace('4py', '') + '.cfg')
+        build_lib = self.build_lib
+        dist_name = self.distribution.get_name()
+        config_file = os.path.join(
+            build_lib, dist_name, 'lib', dist_name.replace('4py', '') + '.cfg'
+        )
+
         #
         def write_file(filename, data):
             with open(filename, 'w') as fh:
                 fh.write(config_data)
-        execute(write_file, (config_file, config_data),
-                msg='writing %s' % config_file,
-                verbose=self.verbose, dry_run=self.dry_run)
+
+        execute(
+            write_file,
+            (config_file, config_data),
+            msg='writing %s' % config_file,
+            verbose=self.verbose,
+            dry_run=self.dry_run,
+        )
 
     def get_config_data(self, arch_list):
         DESTDIR = self.DESTDIR
-        template = "\n".join([
-            "PETSC_DIR  = %(PETSC_DIR)s",
-            "PETSC_ARCH = %(PETSC_ARCH)s",
-        ]) + "\n"
+        template = (
+            '\n'.join(
+                [
+                    'PETSC_DIR  = %(PETSC_DIR)s',
+                    'PETSC_ARCH = %(PETSC_ARCH)s',
+                ]
+            )
+            + '\n'
+        )
         variables = {
-            'PETSC_DIR'  : strip_prefix(DESTDIR, self.petsc_dir),
-            'PETSC_ARCH' : os.path.pathsep.join(arch_list),
+            'PETSC_DIR': strip_prefix(DESTDIR, self.petsc_dir),
+            'PETSC_ARCH': os.path.pathsep.join(arch_list),
         }
         return template, variables
 
@@ -745,12 +749,10 @@ class build_ext(_build_ext):
             else:
                 outfile = os.path.join(self.build_lib, filename)
                 outputs.append(outfile)
-        outputs = list(set(outputs))
-        return outputs
+        return list(set(outputs))
 
 
 class install(_install):
-
     def initialize_options(self):
         with warnings.catch_warnings():
             if setuptools:
@@ -771,6 +773,7 @@ cmdclass_list = [
 
 # --------------------------------------------------------------------
 
+
 def setup(**attrs):
     cmdclass = attrs.setdefault('cmdclass', {})
     for cmd in cmdclass_list:
@@ -781,15 +784,18 @@ def setup(**attrs):
         version = cython_req()
         if not cython_chk(version, verbose=False):
             reqs = attrs.setdefault('setup_requires', [])
-            reqs += ['Cython=='+version]
+            reqs += ['Cython>=' + version]
     return _setup(**attrs)
+
 
 # --------------------------------------------------------------------
 
 if setuptools:
     try:
         from setuptools.command import egg_info as mod_egg_info
+
         _FileList = mod_egg_info.FileList
+
         class FileList(_FileList):
             def process_template_line(self, line):
                 level = log.set_threshold(log.ERROR)
@@ -797,15 +803,18 @@ if setuptools:
                     _FileList.process_template_line(self, line)
                 finally:
                     log.set_threshold(level)
+
         mod_egg_info.FileList = FileList
     except (ImportError, AttributeError):
         pass
 
 # --------------------------------------------------------------------
 
+
 def append(seq, item):
     if item not in seq:
         seq.append(item)
+
 
 def append_dict(conf, dct):
     for key, values in dct.items():
@@ -813,6 +822,8 @@ def append_dict(conf, dct):
             for value in values:
                 if value not in conf[key]:
                     conf[key].append(value)
+
+
 def unique(seq):
     res = []
     for item in seq:
@@ -820,22 +831,20 @@ def unique(seq):
             res.append(item)
     return res
 
+
 def flaglist(flags):
-
     conf = {
-        'define_macros'       : [],
-        'undef_macros'        : [],
-        'include_dirs'        : [],
-
-        'libraries'           : [],
-        'library_dirs'        : [],
+        'define_macros': [],
+        'undef_macros': [],
+        'include_dirs': [],
+        'libraries': [],
+        'library_dirs': [],
         'runtime_library_dirs': [],
+        'extra_compile_args': [],
+        'extra_link_args': [],
+    }
 
-        'extra_compile_args'  : [],
-        'extra_link_args'     : [],
-        }
-
-    if type(flags) is str:
+    if isinstance(flags, str):
         flags = flags.split()
 
     switch = '-Wl,'
@@ -854,7 +863,6 @@ def flaglist(flags):
     append_next_word = None
 
     for word in flags:
-
         if append_next_word is not None:
             append(append_next_word, word)
             append_next_word = None
@@ -862,39 +870,41 @@ def flaglist(flags):
 
         switch, value = word[0:2], word[2:]
 
-        if switch == "-I":
+        if switch == '-I':
             append(conf['include_dirs'], value)
-        elif switch == "-D":
+        elif switch == '-D':
             try:
-                idx = value.index("=")
-                macro = (value[:idx], value[idx+1:])
+                idx = value.index('=')
+                macro = (value[:idx], value[idx + 1 :])
             except ValueError:
                 macro = (value, None)
             append(conf['define_macros'], macro)
-        elif switch == "-U":
+        elif switch == '-U':
             append(conf['undef_macros'], value)
-        elif switch == "-l":
+        elif switch == '-l':
             append(conf['libraries'], value)
-        elif switch == "-L":
+        elif switch == '-L':
             append(conf['library_dirs'], value)
-        elif switch == "-R":
+        elif switch == '-R':
             append(conf['runtime_library_dirs'], value)
-        elif word.startswith("-Wl"):
+        elif word.startswith('-Wl'):
             linkopts = word.split(',')
             append_dict(conf, flaglist(linkopts[1:]))
-        elif word == "-rpath":
+        elif word == '-rpath':
             append_next_word = conf['runtime_library_dirs']
-        elif word == "-Xlinker":
+        elif word == '-Xlinker':
             append_next_word = conf['extra_link_args']
         else:
-            #log.warn("unrecognized flag '%s'" % word)
+            # log.warn("unrecognized flag '%s'" % word)
             pass
     return conf
+
 
 def prepend_to_flags(path, flags):
     """Prepend a path to compiler flags with absolute paths"""
     if not path:
         return flags
+
     def append_path(m):
         switch = m.group(1)
         open_quote = m.group(4)
@@ -904,23 +914,23 @@ def prepend_to_flags(path, flags):
             moded_path = os.path.normpath(path + os.path.sep + old_path)
             return switch + open_quote + moded_path + close_quote
         return m.group(0)
-    return re.sub(r'((^|\s+)(-I|-L))(\s*["\']?)(\S+)(["\']?)',
-            append_path, flags)
+
+    return re.sub(r'((^|\s+)(-I|-L))(\s*["\']?)(\S+)(["\']?)', append_path, flags)
+
 
 def strip_prefix(prefix, string):
     if not prefix:
         return string
     return re.sub(r'^' + prefix, '', string)
 
+
 # --------------------------------------------------------------------
 
-from distutils.text_file import TextFile
-
 # Regexes needed for parsing Makefile-like syntaxes
-import re as _re
-_variable_rx = _re.compile(r"([a-zA-Z][a-zA-Z0-9_]+)\s*=\s*(.*)")
-_findvar1_rx = _re.compile(r"\$\(([A-Za-z][A-Za-z0-9_]*)\)")
-_findvar2_rx = _re.compile(r"\${([A-Za-z][A-Za-z0-9_]*)}")
+_variable_rx = re.compile(r'([a-zA-Z][a-zA-Z0-9_]+)\s*=\s*(.*)')
+_findvar1_rx = re.compile(r'\$\(([A-Za-z][A-Za-z0-9_]*)\)')
+_findvar2_rx = re.compile(r'\${([A-Za-z][A-Za-z0-9_]*)}')
+
 
 def makefile(fileobj, dct=None):
     """Parse a Makefile-style file.
@@ -929,10 +939,7 @@ def makefile(fileobj, dct=None):
     optional dictionary is passed in as the second argument, it is
     used instead of a new dictionary.
     """
-    fp = TextFile(file=fileobj,
-                  strip_comments=1,
-                  skip_blanks=1,
-                  join_lines=1)
+    fp = TextFile(file=fileobj, strip_comments=1, skip_blanks=1, join_lines=1)
 
     if dct is None:
         dct = {}
@@ -941,20 +948,24 @@ def makefile(fileobj, dct=None):
 
     while 1:
         line = fp.readline()
-        if line is None: # eof
+        if line is None:  # eof
             break
         m = _variable_rx.match(line)
         if m:
             n, v = m.group(1, 2)
             v = str.strip(v)
-            if "$" in v:
+            if '$' in v:
                 notdone[n] = v
             else:
-                try: v = int(v)
-                except ValueError: pass
+                try:
+                    v = int(v)
+                except ValueError:
+                    pass
                 done[n] = v
-                try: del notdone[n]
-                except KeyError: pass
+                try:
+                    del notdone[n]
+                except KeyError:
+                    pass
     fp.close()
 
     # do variable interpolation here
@@ -971,14 +982,15 @@ def makefile(fileobj, dct=None):
                     # get it on a subsequent round
                     found = False
                 else:
-                    done[n] = item = ""
+                    done[n] = item = ''
                 if found:
-                    after = value[m.end():]
-                    value = value[:m.start()] + item + after
-                    if "$" in after:
+                    after = value[m.end() :]
+                    value = value[: m.start()] + item + after
+                    if '$' in after:
                         notdone[name] = value
                     else:
-                        try: value = int(value)
+                        try:
+                            value = int(value)
                         except ValueError:
                             done[name] = str.strip(value)
                         else:
@@ -991,5 +1003,6 @@ def makefile(fileobj, dct=None):
     # save the results in the global dictionary
     dct.update(done)
     return dct
+
 
 # --------------------------------------------------------------------

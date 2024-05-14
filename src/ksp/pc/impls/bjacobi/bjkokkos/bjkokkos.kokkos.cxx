@@ -573,7 +573,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
     // get x
     PetscCall(VecGetArrayAndMemType(xout, &glb_xdata, &mtype));
 #if defined(PETSC_HAVE_CUDA)
-    PetscCheck(PetscMemTypeDevice(mtype), PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "No GPU data for x %" PetscInt_FMT " != %" PetscInt_FMT, mtype, PETSC_MEMTYPE_DEVICE);
+    PetscCheck(PetscMemTypeDevice(mtype), PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "No GPU data for x %d != %d", static_cast<int>(mtype), static_cast<int>(PETSC_MEMTYPE_DEVICE));
 #endif
     PetscCall(VecGetArrayReadAndMemType(bvec, &glb_bdata, &mtype));
 #if defined(PETSC_HAVE_CUDA)
@@ -1078,7 +1078,7 @@ static PetscErrorCode PCBJKOKKOSSetKSP_BJKOKKOS(PC pc, KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCBJKOKKOSSetKSP - Sets the `KSP` context for `PCBJKOKKOS`
 
   Collective
@@ -1116,7 +1116,7 @@ static PetscErrorCode PCBJKOKKOSGetKSP_BJKOKKOS(PC pc, KSP *ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCBJKOKKOSGetKSP - Gets the `KSP` context for the `PCBJKOKKOS` preconditioner
 
   Not Collective but `KSP` returned is parallel if `PC` was parallel

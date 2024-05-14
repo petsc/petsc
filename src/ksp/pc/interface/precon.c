@@ -113,7 +113,7 @@ PetscErrorCode PCDestroy(PC *pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCGetDiagonalScale - Indicates if the preconditioner applies an additional left and right
   scaling as needed by certain time-stepping codes.
 
@@ -848,7 +848,7 @@ PetscErrorCode PCApplyBAorABTranspose(PC pc, PCSide side, Vec x, Vec y, Vec work
 
   Level: developer
 
-.seealso: [](ch_ksp), `PC`, `PCRICHARDSON`, `PCApplyRichardson()`
+.seealso: [](ch_ksp), `PC`, `KSPRICHARDSON`, `PCApplyRichardson()`
 @*/
 PetscErrorCode PCApplyRichardsonExists(PC pc, PetscBool *exists)
 {
@@ -1468,7 +1468,7 @@ PetscErrorCode PCFactorGetMatrix(PC pc, Mat *mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCSetOptionsPrefix - Sets the prefix used for searching for all
   `PC` options in the database.
 
@@ -1495,7 +1495,7 @@ PetscErrorCode PCSetOptionsPrefix(PC pc, const char prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCAppendOptionsPrefix - Appends to the prefix used for searching for all
   `PC` options in the database.
 
@@ -1522,7 +1522,7 @@ PetscErrorCode PCAppendOptionsPrefix(PC pc, const char prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCGetOptionsPrefix - Gets the prefix used for searching for all
   PC options in the database.
 
@@ -1873,7 +1873,7 @@ PetscErrorCode PCView(PC pc, PetscViewer viewer)
 /*@C
   PCRegister -  Adds a method (`PCType`) to the preconditioner package.
 
-  Not collective
+  Not collective. No Fortran Support
 
   Input Parameters:
 + sname    - name of a new user-defined solver

@@ -92,7 +92,7 @@ static PetscErrorCode VecView_Swarm(Vec v, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmVectorGetField - Gets the field from which to define a `Vec` object
   when `DMCreateLocalVector()`, or `DMCreateGlobalVector()` is called
 
@@ -117,7 +117,7 @@ PetscErrorCode DMSwarmVectorGetField(DM dm, const char *fieldname[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmVectorDefineField - Sets the field from which to define a `Vec` object
   when `DMCreateLocalVector()`, or `DMCreateGlobalVector()` is called
 
@@ -666,7 +666,7 @@ static PetscErrorCode DMSwarmComputeMassMatrixSquare_Private(DM dmc, DM dmf, Mat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmCreateMassMatrixSquare - Creates the block-diagonal of the square, M^T_p M_p, of the particle mass matrix M_p
 
   Collective
@@ -703,7 +703,7 @@ PetscErrorCode DMSwarmCreateMassMatrixSquare(DM dmCoarse, DM dmFine, Mat *mass)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmCreateGlobalVectorFromField - Creates a `Vec` object sharing the array associated with a given field
 
   Collective
@@ -717,7 +717,7 @@ PetscErrorCode DMSwarmCreateMassMatrixSquare(DM dmCoarse, DM dmFine, Mat *mass)
 
   Level: beginner
 
-  Notes:
+  Note:
   The vector must be returned using a matching call to `DMSwarmDestroyGlobalVectorFromField()`.
 
 .seealso: `DM`, `DMSWARM`, `DMSwarmRegisterPetscDatatypeField()`, `DMSwarmDestroyGlobalVectorFromField()`
@@ -732,7 +732,7 @@ PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm, const char fieldname[],
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmDestroyGlobalVectorFromField - Destroys the `Vec` object which share the array associated with a given field
 
   Collective
@@ -756,7 +756,7 @@ PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM dm, const char fieldname[]
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmCreateLocalVectorFromField - Creates a `Vec` object sharing the array associated with a given field
 
   Collective
@@ -784,7 +784,7 @@ PetscErrorCode DMSwarmCreateLocalVectorFromField(DM dm, const char fieldname[], 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmDestroyLocalVectorFromField - Destroys the `Vec` object which share the array associated with a given field
 
   Collective
@@ -808,7 +808,7 @@ PetscErrorCode DMSwarmDestroyLocalVectorFromField(DM dm, const char fieldname[],
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmInitializeFieldRegister - Initiates the registration of fields to a `DMSWARM`
 
   Collective
@@ -991,7 +991,7 @@ PetscErrorCode DMSwarmGetSize(DM dm, PetscInt *n)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmRegisterPetscDatatypeField - Register a field to a `DMSWARM` with a native PETSc data type
 
   Collective
@@ -1101,7 +1101,7 @@ PetscErrorCode DMSwarmRegisterUserDatatypeField(DM dm, const char fieldname[], s
 /*@C
   DMSwarmGetField - Get access to the underlying array storing all entries associated with a registered field
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + dm        - a `DMSWARM`
@@ -1138,7 +1138,7 @@ PetscErrorCode DMSwarmGetField(DM dm, const char fieldname[], PetscInt *blocksiz
 /*@C
   DMSwarmRestoreField - Restore access to the underlying array storing all entries associated with a registered field
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + dm        - a `DMSWARM`
@@ -1724,7 +1724,7 @@ static PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmGetCellSwarm - Extracts a single cell from the `DMSWARM` object, returns it as a single cell `DMSWARM`.
   The cell `DM` is filtered for fields of that cell, and the filtered `DM` is used as the cell `DM` of the new swarm object.
 
@@ -1746,7 +1746,7 @@ static PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
 
 .seealso: `DM`, `DMSWARM`, `DMSwarmRestoreCellSwarm()`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmGetCellSwarm(DM sw, PetscInt cellID, DM cellswarm)
+PetscErrorCode DMSwarmGetCellSwarm(DM sw, PetscInt cellID, DM cellswarm)
 {
   DM_Swarm *original = (DM_Swarm *)sw->data;
   DMLabel   label;
@@ -1777,7 +1777,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetCellSwarm(DM sw, PetscInt cellID, DM cells
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmRestoreCellSwarm - Restores a `DMSWARM` object obtained with `DMSwarmGetCellSwarm()`. All fields are copied back into the parent swarm.
 
   Noncollective
@@ -1794,7 +1794,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetCellSwarm(DM sw, PetscInt cellID, DM cells
 
 .seealso: `DM`, `DMSWARM`, `DMSwarmGetCellSwarm()`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmRestoreCellSwarm(DM sw, PetscInt cellID, DM cellswarm)
+PetscErrorCode DMSwarmRestoreCellSwarm(DM sw, PetscInt cellID, DM cellswarm)
 {
   DM        dmc;
   PetscInt *pids, particles, p;
@@ -1865,7 +1865,6 @@ PETSC_INTERN PetscErrorCode DMClone_Swarm(DM dm, DM *newdm)
 }
 
 /*MC
-
  DMSWARM = "swarm" - A `DM` object used to represent arrays of data (fields) of arbitrary data type.
  This implementation was designed for particle methods in which the underlying
  data required to be represented is both (i) dynamic in length, (ii) and of arbitrary data type.
@@ -1917,6 +1916,7 @@ PETSC_INTERN PetscErrorCode DMClone_Swarm(DM dm, DM *newdm)
 
 .seealso: `DM`, `DMSWARM`, `DMType`, `DMCreate()`, `DMSetType()`
 M*/
+
 PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM dm)
 {
   DM_Swarm *swarm;

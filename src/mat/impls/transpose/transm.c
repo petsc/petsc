@@ -186,12 +186,21 @@ static PetscErrorCode MatCopy_Transpose(Mat A, Mat B, MatStructure str)
 
 static PetscErrorCode MatConvert_Transpose(Mat N, MatType newtype, MatReuse reuse, Mat *newmat)
 {
-  Mat       A;
-  PetscBool flg;
+  Mat         A;
+  PetscScalar vscale = 1.0, vshift = 0.0;
+  PetscBool   flg;
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(N, &A));
   PetscCall(MatHasOperation(A, MATOP_TRANSPOSE, &flg));
+  if (flg || N->ops->getrow) { /* if this condition is false, MatConvert_Shell() will be called in MatConvert_Basic(), so the following checks are not needed */
+    PetscCheck(!((Mat_Shell *)N->data)->zrows && !((Mat_Shell *)N->data)->zcols, PetscObjectComm((PetscObject)N), PETSC_ERR_SUP, "Cannot call MatConvert() if MatZeroRows() or MatZeroRowsColumns() has been called on the input Mat");
+    PetscCheck(!((Mat_Shell *)N->data)->axpy, PetscObjectComm((PetscObject)N), PETSC_ERR_SUP, "Cannot call MatConvert() if MatAXPY() has been called on the input Mat");
+    PetscCheck(!((Mat_Shell *)N->data)->left && !((Mat_Shell *)N->data)->right, PetscObjectComm((PetscObject)N), PETSC_ERR_SUP, "Cannot call MatConvert() if MatDiagonalScale() has been called on the input Mat");
+    PetscCheck(!((Mat_Shell *)N->data)->dshift, PetscObjectComm((PetscObject)N), PETSC_ERR_SUP, "Cannot call MatConvert() if MatDiagonalSet() has been called on the input Mat");
+    vscale = ((Mat_Shell *)N->data)->vscale;
+    vshift = ((Mat_Shell *)N->data)->vshift;
+  }
   if (flg) {
     Mat B;
 
@@ -204,7 +213,12 @@ static PetscErrorCode MatConvert_Transpose(Mat N, MatType newtype, MatReuse reus
       PetscCall(MatHeaderReplace(N, &B));
     }
   } else { /* use basic converter as fallback */
+    flg = (PetscBool)(N->ops->getrow != NULL);
     PetscCall(MatConvert_Basic(N, newtype, reuse, newmat));
+  }
+  if (flg) {
+    PetscCall(MatScale(*newmat, vscale));
+    PetscCall(MatShift(*newmat, vshift));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

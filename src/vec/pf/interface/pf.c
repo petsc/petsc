@@ -307,7 +307,7 @@ PetscErrorCode PFRegister(const char sname[], PetscErrorCode (*function)(PF, voi
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PFGetType - Gets the `PFType` name (as a string) from the `PF`
   context.
 
@@ -332,7 +332,7 @@ PetscErrorCode PFGetType(PF pf, PFType *type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PFSetType - Builds `PF` for a particular function
 
   Collective

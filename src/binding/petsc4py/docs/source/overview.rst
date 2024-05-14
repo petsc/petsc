@@ -1,5 +1,5 @@
-Overview
-========
+PETSc Overview
+==============
 
 PETSc_ is a suite of data structures and routines for the
 scalable (parallel) solution of scientific applications modeled by
@@ -29,7 +29,7 @@ communication and computation.
   D. May, L. Curfman McInnes, R. Mills, L. Mitchell, T. Munson,
   J. Roman, K. Rupp, P. Sanan, J Sarich, B. Smith,
   S. Zampini, H. Zhang, and H. Zhang, J. Zhang,
-  *PETSc/TAO Users Manual*, ANL-21/39 - Revision 3.20, 2023.
+  *PETSc/TAO Users Manual*, ANL-21/39 - Revision 3.21, 2024.
   http://dx.doi.org/10.2172/2205494,
   https://petsc.org/release/docs/manual/manual.pdf
 
@@ -63,14 +63,13 @@ required for many parallel solutions of PDEs.
        structures.
 
 :Mat:  A large suite of data structures and code for the manipulation
-       of parallel sparse matrices. Includes four different parallel
+       of parallel sparse matrices. Includes several different parallel
        matrix data structures, each appropriate for a different class
        of problems.
 
 :PC:   A collection of sequential and parallel preconditioners,
        including (sequential) ILU(k), LU, and (both sequential and
-       parallel) block Jacobi, overlapping additive Schwarz methods
-       and (through BlockSolve95) ILU(0) and ICC(0).
+       parallel) block Jacobi, overlapping additive Schwarz methods.
 
 :KSP:  Parallel implementations of many popular Krylov subspace
        iterative methods, including GMRES, CG, CGS, Bi-CG-Stab, two

@@ -1,14 +1,14 @@
 Citations
 =========
 
-If PETSc for Python been significant to a project that leads to an
+If PETSc for Python has been significant to a project that leads to an
 academic publication, please acknowledge that fact by citing the
 project.
 
 * L. Dalcin, P. Kler, R. Paz, and A. Cosimo,
   *Parallel Distributed Computing using Python*,
   Advances in Water Resources, 34(9):1124-1139, 2011.
-  http://dx.doi.org/10.1016/j.advwatres.2011.04.013
+  https://doi.org/10.1016/j.advwatres.2011.04.013
 
 * S. Balay, S. Abhyankar, M. Adams, S. Benson, J. Brown,
   P. Brune, K. Buschelman, E. Constantinescu, L. Dalcin, A. Dener,
@@ -17,6 +17,6 @@ project.
   D. May, L. Curfman McInnes, R. Mills, L. Mitchell, T. Munson,
   J. Roman, K. Rupp, P. Sanan, J Sarich, B. Smith,
   S. Zampini, H. Zhang, and H. Zhang, J. Zhang,
-  *PETSc/TAO Users Manual*, ANL-21/39 - Revision 3.20, 2023.
-  http://dx.doi.org/10.2172/2205494,
+  *PETSc/TAO Users Manual*, ANL-21/39 - Revision 3.21, 2024.
+  https://doi.org/10.2172/2205494,
   https://petsc.org/release/docs/manual/manual.pdf

@@ -241,7 +241,7 @@ PetscErrorCode PetscFEGeomGetCellPoint(PetscFEGeom *geom, PetscInt c, PetscInt p
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscFEGeomComplete - Calculate derived quantities from base geometry specification
 
   Input Parameter:

@@ -161,6 +161,7 @@
 #define BLASgemv_     PETSCBLAS(gemv, GEMV)
 #define LAPACKgetrs_  PETSCBLAS(getrs, GETRS)
 #define BLAStrmv_     PETSCBLAS(trmv, TRMV)
+#define BLAStrsv_     PETSCBLAS(trsv, TRSV)
 #define BLASgemm_     PETSCBLAS(gemm, GEMM)
 #define BLASsymm_     PETSCBLAS(symm, SYMM)
 #define BLASsyrk_     PETSCBLAS(syrk, SYRK)

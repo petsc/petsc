@@ -4,6 +4,7 @@ dist
 MANIFEST
 .tox
 **/__pycache__
+*env/
 
 docs/*.html
 docs/*.info

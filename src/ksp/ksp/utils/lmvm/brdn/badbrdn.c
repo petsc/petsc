@@ -245,6 +245,7 @@ PetscErrorCode MatCreate_LMVMBadBrdn(Mat B)
   lmvm->ops->allocate = MatAllocate_LMVMBadBrdn;
   lmvm->ops->reset    = MatReset_LMVMBadBrdn;
   lmvm->ops->mult     = MatMult_LMVMBadBrdn;
+  lmvm->ops->solve    = MatSolve_LMVMBadBrdn;
   lmvm->ops->update   = MatUpdate_LMVMBadBrdn;
   lmvm->ops->copy     = MatCopy_LMVMBadBrdn;
 
@@ -295,6 +296,7 @@ PetscErrorCode MatCreate_LMVMBadBrdn(Mat B)
 PetscErrorCode MatCreateLMVMBadBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
 {
   PetscFunctionBegin;
+  PetscCall(KSPInitializePackage());
   PetscCall(MatCreate(comm, B));
   PetscCall(MatSetSizes(*B, n, n, N, N));
   PetscCall(MatSetType(*B, MATLMVMBADBROYDEN));

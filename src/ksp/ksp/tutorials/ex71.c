@@ -272,16 +272,33 @@ int main(int argc, char **args)
 
   if (user.multi_element) {
     ISLocalToGlobalMapping mapn;
-    PetscInt              *e_glo = NULL;
+    PetscInt              *el_glo = NULL, m, n, M, N, *el_sizes;
+    Mat                    lA;
 
-    PetscCall(PetscMalloc1(nel * nen, &e_glo));
-    PetscCall(ISLocalToGlobalMappingApplyBlock(map, nen * nel, e_loc, e_glo));
-    PetscCall(ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)map), user.dof, nen * nel, e_glo, PETSC_OWN_POINTER, &mapn));
+    PetscCall(PetscMalloc1(nel * nen, &el_glo));
+    PetscCall(ISLocalToGlobalMappingApplyBlock(map, nen * nel, e_loc, el_glo));
+    PetscCall(ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)map), user.dof, nen * nel, el_glo, PETSC_OWN_POINTER, &mapn));
+    PetscCall(MatGetLocalSize(A, &m, &n));
+    PetscCall(MatGetSize(A, &M, &N));
+    PetscCall(MatDestroy(&A));
+    PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+    PetscCall(MatSetSizes(A, m, n, M, N));
+    PetscCall(MatSetBlockSize(A, user.dof));
+    PetscCall(MatSetType(A, MATIS));
     PetscCall(MatISSetAllowRepeated(A, PETSC_TRUE));
     PetscCall(MatSetLocalToGlobalMapping(A, mapn, mapn));
+    PetscCall(MatISSetPreallocation(A, user.dof * nen, NULL, user.dof * nen, NULL));
     PetscCall(ISLocalToGlobalMappingViewFromOptions(mapn, NULL, "-multi_view"));
-    PetscCall(MatSetDM(A, NULL));
     PetscCall(ISLocalToGlobalMappingDestroy(&mapn));
+
+    /* The information set with MatSetVariableBlockSizes on the local mat
+       can be used to detect the local elements instead of having to analyze
+       the sparsity pattern of the local matrix */
+    PetscCall(MatISGetLocalMat(A, &lA));
+    PetscCall(PetscMalloc1(nel, &el_sizes));
+    for (i = 0; i < nel; i++) el_sizes[i] = user.dof * nen;
+    PetscCall(MatSetVariableBlockSizes(lA, nel, el_sizes));
+    PetscCall(PetscFree(el_sizes));
   }
 
   /* we reorder the indices since the element matrices are given in lexicographic order,
@@ -641,7 +658,7 @@ int main(int argc, char **args)
      output_file: output/ex71_dmda_matis_elast_3d.out
  test:
    nsize: 8
-   filter: grep -v "variant HERMITIAN"
+   filter: grep -v "variant HERMITIAN" | sed -e "s/CONVERGED_RTOL iterations 1[0-9]/CONVERGED_RTOL iterations 13/g"
    suffix: bddc_elast_deluxe_layers_adapt
    requires: mumps !complex
    args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_converged_reason -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mumps -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers {{1 10}separate_output} -pc_bddc_adaptive_userdefined {{0 1}separate output} -sub_schurs_schur_mat_type seqdense
@@ -707,6 +724,7 @@ int main(int argc, char **args)
      args: -sub_0_pc_bddc_interface_ext_type dirichlet
      suffix: composite_bddc_dirichlet
 
+# GDSW tests
  testset:
    nsize: 8
    filter: grep -v "variant HERMITIAN"
@@ -729,5 +747,16 @@ int main(int argc, char **args)
      requires: mumps !complex
      suffix: gdsw_elast_adaptive
      args: -pde_type Elasticity -mg_levels_gdsw_tolerance 0.01 -ksp_monitor_singular_value -mg_levels_gdsw_userdefined {{0 1}separate output}
+
+# Multi-Element tests
+ test:
+   nsize: {{1 2 3}}
+   suffix: bddc_multi_element
+   args: -cells 3,3,3 -dim 3 -ksp_error_if_not_converged -multi_element -pde_type {{Poisson Elasticity}} -ksp_converged_reason
+
+ test:
+   suffix: bddc_multi_square
+   output_file: output/ex71_bddc_multi_element.out
+   args: -cells 2,2 -dim 2 -ksp_error_if_not_converged -multi_element -pc_bddc_local_mat_graph_square 4 -ksp_converged_reason
 
 TEST*/

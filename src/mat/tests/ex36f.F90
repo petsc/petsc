@@ -67,7 +67,6 @@
 
 !  Clean up
       PetscCall(MatDestroy(A,ierr))
-      return
       end
 
 ! -----------------------------------------------------------------
@@ -101,7 +100,6 @@
 
 !  Clean up
       PetscCall(MatDestroy(A,ierr))
-      return
       end
 
 ! -----------------------------------------------------------------
@@ -115,5 +113,4 @@
           X(i,j) = 1.0/real(i+j-1)
  20     continue
  10   continue
-      return
       end

@@ -20,6 +20,7 @@ typedef struct {
   PetscFE  fe;            /* The finite element */
   /* Testing space */
   PetscInt  porder;         /* Order of polynomials to test */
+  PetscBool RT;             /* Test for Raviart-Thomas elements */
   PetscBool convergence;    /* Test for order of convergence */
   PetscBool convRefine;     /* Test for convergence using refinement, otherwise use coarsening */
   PetscBool constraints;    /* Test local constraints */
@@ -30,6 +31,10 @@ typedef struct {
   PetscInt  treeCell;       /* Cell to refine in tree test */
   PetscReal constants[3];   /* Constant values for each dimension */
 } AppCtx;
+
+/*
+Derivatives are set as n_i \partial u_j / \partial x_i
+*/
 
 /* u = 1 */
 PetscErrorCode constant(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nf, PetscScalar *u, void *ctx)
@@ -46,11 +51,29 @@ PetscErrorCode constantDer(PetscInt dim, PetscReal time, const PetscReal coords[
   return PETSC_SUCCESS;
 }
 
-/* u = x */
+/* RT_0: u = (1 + x, 1 + y) or (1 + x, 1 + y, 1 + z) */
+PetscErrorCode rt0(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nf, PetscScalar *u, void *ctx)
+{
+  PetscInt d;
+  for (d = 0; d < dim; ++d) u[d] = 1.0 + coords[d];
+  return PETSC_SUCCESS;
+}
+
+PetscErrorCode rt0Der(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx)
+{
+  PetscInt d, e;
+  for (d = 0; d < dim; ++d) {
+    u[d] = 0.0;
+    for (e = 0; e < dim; ++e) u[d] += (d == e ? 1.0 : 0.0) * n[e];
+  }
+  return PETSC_SUCCESS;
+}
+
+/* u = (x + y, y + x) or (x + z, 2y, z + x) */
 PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   PetscInt d;
-  for (d = 0; d < dim; ++d) u[d] = coords[d];
+  for (d = 0; d < dim; ++d) u[d] = coords[d] + coords[dim - d - 1];
   return PETSC_SUCCESS;
 }
 PetscErrorCode linearDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx)
@@ -58,7 +81,34 @@ PetscErrorCode linearDer(PetscInt dim, PetscReal time, const PetscReal coords[],
   PetscInt d, e;
   for (d = 0; d < dim; ++d) {
     u[d] = 0.0;
-    for (e = 0; e < dim; ++e) u[d] += (d == e ? 1.0 : 0.0) * n[e];
+    for (e = 0; e < dim; ++e) u[d] += ((d == e ? 1. : 0.) + (d == (dim - e - 1) ? 1. : 0.)) * n[e];
+  }
+  return PETSC_SUCCESS;
+}
+
+/* RT_1: u = (1 + x + y + x^2 + xy, 1 + x + y + xy + y^2) or (1 + x + y + z + x^2 + xy + xz, 1 + x + y + z + xy + y^2 + yz, 1 + x + y + z + xz + yz + z^2) */
+PetscErrorCode rt1(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nf, PetscScalar *u, void *ctx)
+{
+  if (dim > 2) {
+    u[0] = 1.0 + coords[0] + coords[1] + coords[2] + coords[0] * coords[0] + coords[0] * coords[1] + coords[0] * coords[2];
+    u[1] = 1.0 + coords[0] + coords[1] + coords[2] + coords[0] * coords[1] + coords[1] * coords[1] + coords[1] * coords[2];
+    u[2] = 1.0 + coords[0] + coords[1] + coords[2] + coords[0] * coords[2] + coords[1] * coords[2] + coords[2] * coords[2];
+  } else if (dim > 1) {
+    u[0] = 1.0 + coords[0] + coords[1] + coords[0] * coords[0] + coords[0] * coords[1];
+    u[1] = 1.0 + coords[0] + coords[1] + coords[0] * coords[1] + coords[1] * coords[1];
+  }
+  return PETSC_SUCCESS;
+}
+
+PetscErrorCode rt1Der(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx)
+{
+  if (dim > 2) {
+    u[0] = (1.0 + 2.0 * coords[0] + coords[1] + coords[2]) * n[0] + (1.0 + coords[0]) * n[1] + (1.0 + coords[0]) * n[2];
+    u[1] = (1.0 + coords[1]) * n[0] + (1.0 + coords[0] + 2.0 * coords[1] + coords[2]) * n[1] + (1.0 + coords[1]) * n[2];
+    u[2] = (1.0 + coords[2]) * n[0] + (1.0 + coords[2]) * n[1] + (1.0 + coords[0] + coords[1] + 2.0 * coords[2]) * n[2];
+  } else if (dim > 1) {
+    u[0] = (1.0 + 2.0 * coords[0] + coords[1]) * n[0] + (1.0 + coords[0]) * n[1];
+    u[1] = (1.0 + coords[1]) * n[0] + (1.0 + coords[0] + 2.0 * coords[1]) * n[1];
   }
   return PETSC_SUCCESS;
 }
@@ -148,6 +198,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->qorder          = 0;
   options->numComponents   = PETSC_DEFAULT;
   options->porder          = 0;
+  options->RT              = PETSC_FALSE;
   options->convergence     = PETSC_FALSE;
   options->convRefine      = PETSC_TRUE;
   options->constraints     = PETSC_FALSE;
@@ -167,6 +218,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBoundedInt("-qorder", "The quadrature order", "ex3.c", options->qorder, &options->qorder, NULL, 0));
   PetscCall(PetscOptionsBoundedInt("-num_comp", "The number of field components", "ex3.c", options->numComponents, &options->numComponents, NULL, PETSC_DEFAULT));
   PetscCall(PetscOptionsBoundedInt("-porder", "The order of polynomials to test", "ex3.c", options->porder, &options->porder, NULL, 0));
+  PetscCall(PetscOptionsBool("-RT", "Use the Raviart-Thomas elements", "ex3.c", options->RT, &options->RT, NULL));
   PetscCall(PetscOptionsBool("-convergence", "Check the convergence rate", "ex3.c", options->convergence, &options->convergence, NULL));
   PetscCall(PetscOptionsBool("-conv_refine", "Use refinement for the convergence rate", "ex3.c", options->convRefine, &options->convRefine, NULL));
   PetscCall(PetscOptionsBool("-constraints", "Test local constraints (serial only)", "ex3.c", options->constraints, &options->constraints, NULL));
@@ -703,12 +755,22 @@ static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
   /* Setup functions to approximate */
   switch (order) {
   case 0:
-    exactFuncs[0]    = constant;
-    exactFuncDers[0] = constantDer;
+    if (user->RT) {
+      exactFuncs[0]    = rt0;
+      exactFuncDers[0] = rt0Der;
+    } else {
+      exactFuncs[0]    = constant;
+      exactFuncDers[0] = constantDer;
+    }
     break;
   case 1:
-    exactFuncs[0]    = linear;
-    exactFuncDers[0] = linearDer;
+    if (user->RT) {
+      exactFuncs[0]    = rt1;
+      exactFuncDers[0] = rt1Der;
+    } else {
+      exactFuncs[0]    = linear;
+      exactFuncDers[0] = linearDer;
+    }
     break;
   case 2:
     exactFuncs[0]    = quadratic;
@@ -1318,6 +1380,45 @@ int main(int argc, char **argv)
           -petscdualspace_form_degree 0 \
           -petscdualspace_order 1 \
           -petscdualspace_components 3
+
+  # 2D RT_0 on a triangle
+  test:
+    suffix: rt0_2d_tri
+    requires: triangle
+    args: -qorder 1 -porder 0 -RT \
+          -petscspace_type ptrimmed \
+          -petscspace_components 2 \
+          -petscspace_ptrimmed_form_degree -1 \
+          -petscdualspace_order 1 \
+          -petscdualspace_form_degree -1 \
+          -petscdualspace_lagrange_trimmed true
+
+  # 2D RT_0 on a quadrilateral
+  test:
+    suffix: rt0_2d_quad
+    requires: triangle
+    args: -dm_plex_simplex 0 -qorder 1 -porder 0 -RT \
+          -petscspace_degree 1 \
+          -petscspace_type sum \
+          -petscspace_variables 2 \
+          -petscspace_components 2 \
+          -petscspace_sum_spaces 2 \
+          -petscspace_sum_concatenate true \
+          -sumcomp_0_petscspace_variables 2 \
+          -sumcomp_0_petscspace_type tensor \
+          -sumcomp_0_petscspace_tensor_spaces 2 \
+          -sumcomp_0_petscspace_tensor_uniform false \
+          -sumcomp_0_tensorcomp_0_petscspace_degree 1 \
+          -sumcomp_0_tensorcomp_1_petscspace_degree 0 \
+          -sumcomp_1_petscspace_variables 2 \
+          -sumcomp_1_petscspace_type tensor \
+          -sumcomp_1_petscspace_tensor_spaces 2 \
+          -sumcomp_1_petscspace_tensor_uniform false \
+          -sumcomp_1_tensorcomp_0_petscspace_degree 0 \
+          -sumcomp_1_tensorcomp_1_petscspace_degree 1 \
+          -petscdualspace_form_degree -1 \
+          -petscdualspace_order 1 \
+          -petscdualspace_lagrange_trimmed true
 
 TEST*/
 

@@ -499,7 +499,6 @@ subroutine  MyMult(A,X,F,ierr)
 
   PetscCall(MatMult(Jmat,X,F,ierr))
 
-  return
 end subroutine MyMult
 
 !

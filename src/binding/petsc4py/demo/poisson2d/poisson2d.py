@@ -49,13 +49,15 @@ OptDB = PETSc.Options()
 n = OptDB.getInt('n', 5)
 h = 1.0 / (n + 1)
 
-# Sparse matrices are represented by `PETSc.Mat` objects.
-#
+# Matrices are instances of the `PETSc.Mat` class.
+
+A = PETSc.Mat()
+
+# Create the underlying PETSc C Mat object.
 # You can omit the ``comm`` argument if your objects live on
 # `PETSc.COMM_WORLD` but it is a dangerous choice to rely on default values
 # for such important arguments.
 
-A = PETSc.Mat()
 A.create(comm=PETSc.COMM_WORLD)
 
 # Specify global matrix shape with a tuple.
@@ -70,7 +72,8 @@ A.setSizes((n * n, n * n))
 #
 #     A.setSizes(((PETSc.DECIDE, n * n), (PETSc.DECIDE, n * n)))
 
-# Various `sparse matrix formats <petsc4py.PETSc.Mat.Type>` can be selected:
+# Here we use a sparse matrix of AIJ type
+# Various `matrix formats <petsc4py.PETSc.Mat.Type>` can be selected:
 
 A.setType(PETSc.Mat.Type.AIJ)
 
@@ -112,7 +115,7 @@ for row in range(rstart, rend):
         column = row + 1
         A[row, column] = -1.0 / h**2
 
-# At this stage, any parallel synchronization required in the matrix assembly
+# At this stage, any exchange of information required in the matrix assembly
 # process has not occurred. We achieve this by calling `Mat.assemblyBegin` and
 # then `Mat.assemblyEnd`.
 

@@ -340,6 +340,59 @@ int main(int argc, char **argv)
 /*TEST
 
   test:
+    suffix:2d_rt0_tri
+    requires: triangle
+    args: -sol_type linear -dmsnes_check 0.001 \
+          -potential_petscspace_degree 0 \
+          -potential_petscdualspace_lagrange_continuity 0 \
+          -field_petscspace_type ptrimmed \
+          -field_petscspace_components 2 \
+          -field_petscspace_ptrimmed_form_degree -1 \
+          -field_petscdualspace_order 1 \
+          -field_petscdualspace_form_degree -1 \
+          -field_petscdualspace_lagrange_trimmed true \
+          -field_petscfe_default_quadrature_order 2 \
+          -snes_error_if_not_converged \
+          -ksp_rtol 1e-10 -ksp_error_if_not_converged \
+          -pc_type fieldsplit -pc_fieldsplit_type schur \
+            -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full \
+            -fieldsplit_field_pc_type lu \
+            -fieldsplit_potential_ksp_rtol 1e-10 -fieldsplit_potential_pc_type lu
+
+  test:
+    suffix:2d_rt0_quad
+    requires: triangle
+    args: -dm_plex_simplex 0 -sol_type linear -dmsnes_check 0.001 \
+          -potential_petscspace_degree 0 \
+          -potential_petscdualspace_lagrange_continuity 0 \
+          -field_petscspace_degree 1 \
+          -field_petscspace_type sum \
+          -field_petscspace_variables 2 \
+          -field_petscspace_components 2 \
+          -field_petscspace_sum_spaces 2 \
+          -field_petscspace_sum_concatenate true \
+          -field_sumcomp_0_petscspace_variables 2 \
+          -field_sumcomp_0_petscspace_type tensor \
+          -field_sumcomp_0_petscspace_tensor_spaces 2 \
+          -field_sumcomp_0_petscspace_tensor_uniform false \
+          -field_sumcomp_0_tensorcomp_0_petscspace_degree 1 \
+          -field_sumcomp_0_tensorcomp_1_petscspace_degree 0 \
+          -field_sumcomp_1_petscspace_variables 2 \
+          -field_sumcomp_1_petscspace_type tensor \
+          -field_sumcomp_1_petscspace_tensor_spaces 2 \
+          -field_sumcomp_1_petscspace_tensor_uniform false \
+          -field_sumcomp_1_tensorcomp_0_petscspace_degree 0 \
+          -field_sumcomp_1_tensorcomp_1_petscspace_degree 1 \
+          -field_petscdualspace_form_degree -1 \
+          -field_petscdualspace_order 1 \
+          -field_petscdualspace_lagrange_trimmed true \
+          -field_petscfe_default_quadrature_order 2 \
+          -pc_type fieldsplit -pc_fieldsplit_type schur \
+            -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full \
+            -fieldsplit_field_pc_type lu \
+            -fieldsplit_potential_ksp_rtol 1e-10 -fieldsplit_potential_pc_type lu
+
+  test:
     suffix: 2d_bdm1_p0
     requires: triangle
     args: -sol_type linear \
@@ -352,7 +405,7 @@ int main(int argc, char **argv)
   test:
     nsize: 4
     suffix: 2d_bdm1_p0_bddc
-    requires: triangle
+    requires: triangle !single
     args: -sol_type linear \
           -field_petscspace_degree 1 -field_petscdualspace_type bdm -dm_refine 1 \
           -dmsnes_check .001 -snes_error_if_not_converged \
@@ -364,6 +417,7 @@ int main(int argc, char **argv)
 
   test:
     nsize: 9
+    requires: !single
     suffix: 2d_rt1_p0_bddc
     args: -sol_type quadratic \
           -potential_petscspace_degree 0 \

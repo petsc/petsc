@@ -27,7 +27,7 @@ PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscRea
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSetPeriodicity - Set the description of mesh periodicity
 
   Input Parameters:
@@ -268,6 +268,52 @@ PetscErrorCode DMGetCoordinatesLocalized(DM dm, PetscBool *areLocalized)
 }
 
 /*@
+  DMGetSparseLocalize - Check if the `DM` coordinates should be localized only for cells near the periodic boundary.
+
+  Not collective
+
+  Input Parameter:
+. dm - The `DM`
+
+  Output Parameter:
+. sparse - `PETSC_TRUE` if ony cells near the periodic boundary are localized
+
+  Level: intermediate
+
+.seealso: `DMSetSparseLocalize()`, `DMLocalizeCoordinates()`, `DMSetPeriodicity()`
+@*/
+PetscErrorCode DMGetSparseLocalize(DM dm, PetscBool *sparse)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscAssertPointer(sparse, 2);
+  *sparse = dm->sparseLocalize;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMSetSparseLocalize - Set the flag indicating that `DM` coordinates should be localized only for cells near the periodic boundary.
+
+  Logically collective
+
+  Input Parameters:
++ dm     - The `DM`
+- sparse - `PETSC_TRUE` if ony cells near the periodic boundary are localized
+
+  Level: intermediate
+
+.seealso: `DMGetSparseLocalize()`, `DMLocalizeCoordinates()`, `DMSetPeriodicity()`
+@*/
+PetscErrorCode DMSetSparseLocalize(DM dm, PetscBool sparse)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidLogicalCollectiveBool(dm, sparse, 2);
+  dm->sparseLocalize = sparse;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   DMLocalizeCoordinates - If a mesh is periodic, create local coordinates for cells having periodic faces
 
   Collective
@@ -287,7 +333,7 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
   PetscScalar     *coordsDG, *anchor, *localized;
   const PetscReal *Lstart, *L;
   PetscInt         Nc, vStart, vEnd, sStart, sEnd, newStart = PETSC_MAX_INT, newEnd = PETSC_MIN_INT, bs, coordSize;
-  PetscBool        isLocalized, sparseLocalize = dm->sparseLocalize, useDG = PETSC_FALSE, useDGGlobal;
+  PetscBool        isLocalized, sparseLocalize, useDG = PETSC_FALSE, useDGGlobal;
   PetscInt         maxHeight = 0, h;
   PetscInt        *pStart = NULL, *pEnd = NULL;
   MPI_Comm         comm;
@@ -295,6 +341,7 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMGetPeriodicity(dm, NULL, &Lstart, &L));
+  PetscCall(DMGetSparseLocalize(dm, &sparseLocalize));
   /* Cannot automatically localize without L and maxCell right now */
   if (!L) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));

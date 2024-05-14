@@ -294,6 +294,7 @@ PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, const char na
   PetscAssertPointer(fl, 1);
   if (name) PetscAssertPointer(name, 2);
   if (fptr) PetscValidFunction(fptr, 3);
+  if (!fptr && !*fl) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFunctionListCreate_Private(0, fl));
   PetscCall(PetscHMapFuncInsert_Private((*fl)->map, name, fptr));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -384,6 +385,8 @@ PetscErrorCode PetscFunctionListPrintAll(void)
 /*@C
   PetscFunctionListPrintNonEmpty - Print composed names for non `NULL` function pointers
 
+  Logically Collective, No Fortran Support
+
   Input Parameter:
 . fl - the function list
 
@@ -408,6 +411,8 @@ PetscErrorCode PetscFunctionListPrintNonEmpty(PetscFunctionList fl)
 
 /*MC
   PetscFunctionListFind - Find function registered under given name
+
+  Not Collective, No Fortran Support
 
   Synopsis:
   #include <petscsys.h>
@@ -482,7 +487,7 @@ PetscErrorCode PetscFunctionListView(PetscFunctionList list, PetscViewer viewer)
   PetscFunctionListGet - Gets an array the contains the entries in `PetscFunctionList`, this is used
   by help etc.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . list - list of types
@@ -494,8 +499,7 @@ PetscErrorCode PetscFunctionListView(PetscFunctionList list, PetscViewer viewer)
   Level: developer
 
   Note:
-  This allocates the array so that must be freed. BUT the individual entries are
-  not copied so should not be freed.
+  This allocates the array so that must be freed with `PetscFree()`. BUT the individual entries should not be freed.
 
 .seealso: `PetscFunctionListAdd()`, `PetscFunctionList`
 @*/
@@ -521,7 +525,7 @@ PetscErrorCode PetscFunctionListGet(PetscFunctionList list, const char ***array,
 /*@C
   PetscFunctionListPrintTypes - Prints the methods available in a list of functions
 
-  Collective
+  Collective, No Fortran Support
 
   Input Parameters:
 + comm   - the communicator (usually `MPI_COMM_WORLD`)

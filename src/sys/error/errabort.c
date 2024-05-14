@@ -9,7 +9,7 @@
   This routine is very useful when running in the debugger, because the
   user can look directly at the stack frames and the variables where the error occurred
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + comm - communicator over which error occurred

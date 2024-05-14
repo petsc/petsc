@@ -2,7 +2,7 @@
 #define PETSCDM_DLL
 #include <petsc/private/dmpleximpl.h> /*I   "petscdmplex.h"   I*/
 
-/*@C
+/*@
   DMPlexCreateFluentFromFile - Create a `DMPLEX` mesh from a Fluent mesh file
 
   Collective

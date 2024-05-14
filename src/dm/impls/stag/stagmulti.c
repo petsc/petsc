@@ -1,7 +1,7 @@
 /* Internal and DMStag-specific functions related to multigrid */
-#include <petsc/private/dmstagimpl.h>
+#include <petsc/private/dmstagimpl.h> /*I  "petscdmstag.h"   I*/
 
-/*@C
+/*@
   DMStagRestrictSimple - restricts data from a fine to a coarse `DMSTAG`, in the simplest way
 
   Values on coarse cells are averages of all fine cells that they cover.

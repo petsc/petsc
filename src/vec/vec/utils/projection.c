@@ -714,9 +714,8 @@ PetscErrorCode VecISShift(Vec V, IS S, PetscScalar c)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if !defined(PETSC_USE_COMPLEX)
-/*@C
-  VecBoundGradientProjection - Projects  vector according to this definition.
+/*@
+  VecBoundGradientProjection - Projects vector according to this definition.
   If XL[i] < X[i] < XU[i], then GP[i] = G[i];
   If X[i] <= XL[i], then GP[i] = min(G[i],0);
   If X[i] >= XU[i], then GP[i] = max(G[i],0);
@@ -735,14 +734,16 @@ PetscErrorCode VecISShift(Vec V, IS S, PetscScalar c)
   Note:
   `GP` may be the same vector as `G`
 
+  For complex numbers only the real part is used in the bounds.
+
 .seealso: `Vec`
 @*/
 PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
 {
-  PetscInt         n, i;
-  const PetscReal *xptr, *xlptr, *xuptr;
-  PetscReal       *gptr, *gpptr;
-  PetscReal        xval, gpval;
+  PetscInt           n, i;
+  const PetscScalar *xptr, *xlptr, *xuptr;
+  PetscScalar       *gptr, *gpptr;
+  PetscScalar        xval, gpval;
 
   /* Project variables at the lower and upper bound */
   PetscFunctionBegin;
@@ -766,9 +767,9 @@ PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
   for (i = 0; i < n; ++i) {
     gpval = gptr[i];
     xval  = xptr[i];
-    if (gpval > 0.0 && xval <= xlptr[i]) {
+    if (PetscRealPart(gpval) > 0.0 && PetscRealPart(xval) <= PetscRealPart(xlptr[i])) {
       gpval = 0.0;
-    } else if (gpval < 0.0 && xval >= xuptr[i]) {
+    } else if (PetscRealPart(gpval) < 0.0 && PetscRealPart(xval) >= PetscRealPart(xuptr[i])) {
       gpval = 0.0;
     }
     gpptr[i] = gpval;
@@ -780,7 +781,6 @@ PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
   PetscCall(VecRestoreArrayPair(G, GP, &gptr, &gpptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-#endif
 
 /*@
   VecStepMaxBounded - See below

@@ -645,8 +645,8 @@ static PetscErrorCode DMPlexCreateGridHash(DM dm, PetscGridHash *box)
 
   Input Parameters:
 + box - The grid hash object
-. n   - The number of boxes in each dimension, or `PETSC_DETERMINE`
-- h   - The box size in each dimension, only used if n[d] == `PETSC_DETERMINE`
+. n   - The number of boxes in each dimension, may use `PETSC_DETERMINE` for the entries
+- h   - The box size in each dimension, only used if n[d] == `PETSC_DETERMINE`, if not needed you can pass in `NULL`
 
   Level: developer
 
@@ -684,8 +684,8 @@ PetscErrorCode PetscGridHashSetGrid(PetscGridHash box, const PetscInt n[], const
 - points    - The input point coordinates
 
   Output Parameters:
-+ dboxes - An array of numPoints*dim integers expressing the enclosing box as (i_0, i_1, ..., i_dim)
-- boxes  - An array of numPoints integers expressing the enclosing box as single number, or NULL
++ dboxes - An array of `numPoints` x `dim` integers expressing the enclosing box as (i_0, i_1, ..., i_dim)
+- boxes  - An array of `numPoints` integers expressing the enclosing box as single number, or `NULL`
 
   Level: developer
 
@@ -1338,16 +1338,16 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexComputeProjection2Dto1D - Rewrite coordinates to be the 1D projection of the 2D coordinates
 
   Not Collective
 
   Input/Output Parameter:
-. coords - The coordinates of a segment, on output the new y-coordinate, and 0 for x
+. coords - The coordinates of a segment, on output the new y-coordinate, and 0 for x, an array of size 4, last two entries are unchanged
 
   Output Parameter:
-. R - The rotation which accomplishes the projection
+. R - The rotation which accomplishes the projection, array of size 4
 
   Level: developer
 
@@ -1369,16 +1369,16 @@ PetscErrorCode DMPlexComputeProjection2Dto1D(PetscScalar coords[], PetscReal R[]
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexComputeProjection3Dto1D - Rewrite coordinates to be the 1D projection of the 3D coordinates
 
   Not Collective
 
   Input/Output Parameter:
-. coords - The coordinates of a segment; on output, the new y-coordinate, and 0 for x and z
+. coords - The coordinates of a segment; on output, the new y-coordinate, and 0 for x and z, an array of size 6, the other entries are unchanged
 
   Output Parameter:
-. R - The rotation which accomplishes the projection
+. R - The rotation which accomplishes the projection, an array of size 9
 
   Level: developer
 
@@ -1426,6 +1426,7 @@ PetscErrorCode DMPlexComputeProjection3Dto1D(PetscScalar coords[], PetscReal R[]
   }
   coords[0] = 0.0;
   coords[1] = r;
+  coords[2] = 0.0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2983,7 +2984,7 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetMinRadius - Returns the minimum distance from any cell centroid to a face
 
   Not Collective
@@ -3007,7 +3008,7 @@ PetscErrorCode DMPlexGetMinRadius(DM dm, PetscReal *minradius)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexSetMinRadius - Sets the minimum distance from the cell centroid to a face
 
   Logically Collective
@@ -3972,19 +3973,19 @@ PetscErrorCode DMPlexRemapGeometry(DM dm, PetscReal time, void (*func)(PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexShearGeometry - This shears the domain, meaning adds a multiple of the shear coordinate to all other coordinates.
 
   Not Collective
 
   Input Parameters:
 + dm          - The `DMPLEX`
-. direction   - The shear coordinate direction, e.g. 0 is the x-axis
+. direction   - The shear coordinate direction, e.g. `DM_X` is the x-axis
 - multipliers - The multiplier m for each direction which is not the shear direction
 
   Level: intermediate
 
-.seealso: `DMPLEX`, `DMPlexRemapGeometry()`
+.seealso: `DMPLEX`, `DMPlexRemapGeometry()`, `DMDirection`, `DM_X`, `DM_Y`, `DM_Z`
 @*/
 PetscErrorCode DMPlexShearGeometry(DM dm, DMDirection direction, PetscReal multipliers[])
 {

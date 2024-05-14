@@ -297,7 +297,7 @@ int main(int argc, char **argv)
     testset:
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
       nsize: 4
-      args: -f ${DATAFILESPATH}/matrices/underworld32.gz -test_fs false -prefix_push fc_ -ksp_converged_reason -ksp_max_it 100 -ksp_pc_side right -pc_type hpddm -pc_hpddm_levels_1_svd_nsv 100 -pc_hpddm_levels_1_svd_relative_threshold 1e-6 -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_coarse_pc_type cholesky -pc_hpddm_levels_1_sub_pc_factor_shift_type inblocks -prefix_pop
+      args: -f ${DATAFILESPATH}/matrices/underworld32.gz -test_fs false -prefix_push fc_ -ksp_converged_reason -ksp_max_it 100 -ksp_pc_side right -pc_type hpddm -pc_hpddm_levels_1_svd_nsv 100 -pc_hpddm_levels_1_svd_relative_threshold 1e-6 -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_sub_pc_factor_shift_type inblocks -prefix_pop
       test:
         suffix: harmonic_overlap_1
         filter: grep -v "WARNING! " | grep -v "There are 2 unused database options" | grep -v "Option left: name:-fc_pc_hpddm_levels_1_svd_pc_"

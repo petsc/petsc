@@ -11,7 +11,7 @@ PetscErrorCode ISColoringReference(ISColoring coloring)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISColoringSetType - indicates if the coloring is for the local representation (including ghost points) or the global representation of a `Mat`
 
   Collective
@@ -36,8 +36,7 @@ PetscErrorCode ISColoringSetType(ISColoring coloring, ISColoringType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
-
+/*@
   ISColoringGetType - gets if the coloring is for the local representation (including ghost points) or the global representation
 
   Collective
@@ -731,7 +730,7 @@ PetscErrorCode ISAllGather(IS is, IS *isout)
 
 .seealso: `ISCOloringValue`, `ISColoring()`, `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlock()`, `ISAllGather()`
 @*/
-PetscErrorCode ISAllGatherColors(MPI_Comm comm, PetscInt n, ISColoringValue *lindices, PetscInt *outN, ISColoringValue *outindices[])
+PetscErrorCode ISAllGatherColors(MPI_Comm comm, PetscInt n, ISColoringValue lindices[], PetscInt *outN, ISColoringValue *outindices[])
 {
   ISColoringValue *indices;
   PetscInt         i, N;

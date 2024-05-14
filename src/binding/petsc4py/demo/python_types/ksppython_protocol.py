@@ -1,13 +1,12 @@
 from petsc4py.PETSc import KSP
-from petsc4py.PETSc import Mat
 from petsc4py.PETSc import Vec
 from petsc4py.PETSc import Viewer
 
 
 # A template class with the Python methods supported by KSPPYTHON
 
-class KSPPythonProtocol:
 
+class KSPPythonProtocol:
     def solve(self, ksp: KSP, b: Vec, x: Vec) -> None:
         """Solve the linear system with right-hand side b. Return solution in x."""
         ...
@@ -39,4 +38,3 @@ class KSPPythonProtocol:
     def reset(self, ksp: KSP) -> None:
         """Reset the Krylov solver."""
         ...
-

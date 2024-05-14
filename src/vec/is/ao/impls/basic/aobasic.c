@@ -249,7 +249,7 @@ PETSC_INTERN PetscErrorCode AOCreate_Basic(AO ao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   AOCreateBasic - Creates a basic application ordering using two integer arrays.
 
   Collective
@@ -259,7 +259,7 @@ PETSC_INTERN PetscErrorCode AOCreate_Basic(AO ao)
 . napp    - size of integer arrays
 . myapp   - integer array that defines an ordering
 - mypetsc - integer array that defines another ordering (may be `NULL` to
-             indicate the natural ordering, that is 0,1,2,3,...)
+            indicate the natural ordering, that is 0,1,2,3,...)
 
   Output Parameter:
 . aoout - the new application ordering
@@ -267,7 +267,7 @@ PETSC_INTERN PetscErrorCode AOCreate_Basic(AO ao)
   Level: beginner
 
   Note:
-  The arrays myapp and mypetsc must contain the all the integers 0 to napp-1 with no duplicates; that is there cannot be any "holes"
+  The arrays `myapp` and `mypetsc` must contain the all the integers 0 to `napp`-1 with no duplicates; that is there cannot be any "holes"
   in the indices. Use `AOCreateMapping()` or `AOCreateMappingIS()` if you wish to have "holes" in the indices.
 
 .seealso: [](sec_ao), [](sec_scatter), `AO`, `AOCreateBasicIS()`, `AODestroy()`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
@@ -297,8 +297,7 @@ PetscErrorCode AOCreateBasic(MPI_Comm comm, PetscInt napp, const PetscInt myapp[
 
   Input Parameters:
 + isapp   - index set that defines an ordering
-- ispetsc - index set that defines another ordering (may be `NULL` to use the
-             natural ordering)
+- ispetsc - index set that defines another ordering (may be `NULL` to use the natural ordering)
 
   Output Parameter:
 . aoout - the new application ordering
@@ -306,7 +305,7 @@ PetscErrorCode AOCreateBasic(MPI_Comm comm, PetscInt napp, const PetscInt myapp[
   Level: beginner
 
   Note:
-  The index sets isapp and ispetsc must contain the all the integers 0 to napp-1 (where napp is the length of the index sets) with no duplicates;
+  The index sets `isapp` and `ispetsc` must contain the all the integers 0 to napp-1 (where napp is the length of the index sets) with no duplicates;
   that is there cannot be any "holes"
 
 .seealso: [](sec_ao), [](sec_scatter), `IS`, `AO`, `AOCreateBasic()`, `AODestroy()`

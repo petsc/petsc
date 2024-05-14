@@ -192,15 +192,24 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingSetUp(ISLocalToGlobalMapping);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingView(ISLocalToGlobalMapping, PetscViewer);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingLoad(ISLocalToGlobalMapping, PetscViewer);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingViewFromOptions(ISLocalToGlobalMapping, PetscObject, const char[]);
-
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingConcatenate(MPI_Comm, PetscInt, const ISLocalToGlobalMapping[], ISLocalToGlobalMapping *);
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingDuplicate(ISLocalToGlobalMapping, ISLocalToGlobalMapping *);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *);
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping, PetscInt *);
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping, const PetscInt **);
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping, const PetscInt **);
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetBlockIndices(ISLocalToGlobalMapping, const PetscInt **);
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRestoreBlockIndices(ISLocalToGlobalMapping, const PetscInt **);
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetBlockSize(ISLocalToGlobalMapping, PetscInt *);
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping, PetscInt);
+
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping, PetscInt, const PetscInt[], PetscInt[]);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingApplyBlock(ISLocalToGlobalMapping, PetscInt, const PetscInt[], PetscInt[]);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping, IS, IS *);
 PETSC_EXTERN PetscErrorCode ISGlobalToLocalMappingApply(ISLocalToGlobalMapping, ISGlobalToLocalMappingMode, PetscInt, const PetscInt[], PetscInt *, PetscInt[]);
 PETSC_EXTERN PetscErrorCode ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping, ISGlobalToLocalMappingMode, PetscInt, const PetscInt[], PetscInt *, PetscInt[]);
 PETSC_EXTERN PetscErrorCode ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping, ISGlobalToLocalMappingMode, IS, IS *);
-PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping, PetscInt *);
+
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetNodeInfo(ISLocalToGlobalMapping, PetscInt *, PetscInt *[], PetscInt **[]);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRestoreNodeInfo(ISLocalToGlobalMapping, PetscInt *, PetscInt *[], PetscInt **[]);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping, PetscInt *, PetscInt *[], PetscInt *[], PetscInt **[]);
@@ -209,14 +218,7 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetBlockNodeInfo(ISLocalToGlob
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRestoreBlockNodeInfo(ISLocalToGlobalMapping, PetscInt *, PetscInt *[], PetscInt **[]);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetBlockInfo(ISLocalToGlobalMapping, PetscInt *, PetscInt *[], PetscInt *[], PetscInt **[]);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRestoreBlockInfo(ISLocalToGlobalMapping, PetscInt *, PetscInt *[], PetscInt *[], PetscInt **[]);
-PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping, const PetscInt **);
-PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping, const PetscInt **);
-PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetBlockIndices(ISLocalToGlobalMapping, const PetscInt **);
-PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRestoreBlockIndices(ISLocalToGlobalMapping, const PetscInt **);
-PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingConcatenate(MPI_Comm, PetscInt, const ISLocalToGlobalMapping[], ISLocalToGlobalMapping *);
-PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetBlockSize(ISLocalToGlobalMapping, PetscInt *);
-PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping, PetscInt);
-PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingDuplicate(ISLocalToGlobalMapping, ISLocalToGlobalMapping *);
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetBlockMultiLeavesSF(ISLocalToGlobalMapping, PetscSF *);
 
 /*E
    ISColoringType - determines if the coloring is for the entire parallel grid/graph/matrix
@@ -286,7 +288,7 @@ struct _n_PetscLayout {
   PetscInt               oldbs;        /* And again */
 };
 
-/*@C
+/*@
    PetscLayoutFindOwner - Find the owning MPI process for a global index
 
    Not Collective; No Fortran Support
@@ -320,7 +322,7 @@ static inline PetscErrorCode PetscLayoutFindOwner(PetscLayout map, PetscInt idx,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
     PetscLayoutFindOwnerIndex - Find the owning MPI process and the local index on that process for a global index
 
     Not Collective; No Fortran Support

@@ -462,9 +462,9 @@ class FunctionParameterList(ParameterList):
     for arg in fnargs:
       kind = self._get_deref_pointer_cursor_type(arg).kind
 
-      if kind in clx_char_type_kinds:
-        requires_c.append((arg, 'char pointer'))
-      elif kind in clx_function_type_kinds:
+      #if kind in clx_char_type_kinds:
+      #  requires_c.append((arg, 'char pointer'))
+      if kind in clx_function_type_kinds:
         requires_c.append((arg, 'function pointer'))
 
     if len(requires_c):

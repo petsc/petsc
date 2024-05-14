@@ -84,7 +84,7 @@ extern PetscInt PetscNumBLASThreads;
 /*@C
   PetscInitializeNoPointers - Calls PetscInitialize() from C/C++ without the pointers to argc and args
 
-  Collective
+  Collective, No Fortran Support
 
   Input Parameters:
 + argc     - number of args
@@ -96,7 +96,7 @@ extern PetscInt PetscNumBLASThreads;
 
   Notes:
   this is called only by the PETSc Julia interface. Even though it might start MPI it sets the flag to
-  indicate that it did NOT start MPI so that the PetscFinalize() does not end MPI, thus allowing PetscInitialize() to
+  indicate that it did NOT start MPI so that the `PetscFinalize()` does not end MPI, thus allowing `PetscInitialize()` to
   be called multiple times from Julia without the problem of trying to initialize MPI more than once.
 
   Developer Notes:
@@ -448,10 +448,10 @@ PetscErrorCode PetscCitationsInitialize(void)
     and Jose~E. Roman and Karl Rupp and Patrick Sanan and Jason Sarich and Barry~F. Smith\n\
     and Stefano Zampini and Hong Zhang and Hong Zhang and Junchao Zhang},\n\
   Title = {{PETSc/TAO} Users Manual},\n\
-  Number = {ANL-21/39 - Revision 3.20},\n\
+  Number = {ANL-21/39 - Revision 3.21},\n\
   Doi = {10.2172/2205494},\n\
   Institution = {Argonne National Laboratory},\n\
-  Year = {2023}\n}\n",
+  Year = {2024}\n}\n",
                                    NULL));
 
   PetscCall(PetscCitationsRegister("@InProceedings{petsc-efficient,\n\
@@ -501,7 +501,7 @@ PetscErrorCode PetscGetProgramName(char name[], size_t len)
   PetscGetArgs - Allows you to access the raw command line arguments anywhere
   after PetscInitialize() is called but before `PetscFinalize()`.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Output Parameters:
 + argc - count of number of command line arguments
@@ -530,7 +530,7 @@ PetscErrorCode PetscGetArgs(int *argc, char ***args)
   PetscGetArguments - Allows you to access the  command line arguments anywhere
   after `PetscInitialize()` is called but before `PetscFinalize()`.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Output Parameter:
 . args - the command line arguments
@@ -561,7 +561,7 @@ PetscErrorCode PetscGetArguments(char ***args)
 /*@C
   PetscFreeArguments - Frees the memory obtained with `PetscGetArguments()`
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Output Parameter:
 . args - the command line arguments
@@ -1454,7 +1454,7 @@ PetscErrorCode PetscFinalize(void)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-x_virtual", &flg1, NULL));
   if (flg1) {
     /*  this is a crude hack, but better than nothing */
-    PetscCall(PetscPOpen(PETSC_COMM_WORLD, NULL, "pkill -9 Xvfb", "r", NULL));
+    PetscCall(PetscPOpen(PETSC_COMM_WORLD, NULL, "pkill -15 Xvfb", "r", NULL));
   }
 #endif
 
@@ -1511,13 +1511,7 @@ PetscErrorCode PetscFinalize(void)
   PetscCall(PetscOptionsHasName(NULL, NULL, "-objects_dump", &flg1));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-options_view", &flg2, NULL));
 
-  if (flg2) {
-    PetscViewer viewer;
-    PetscCall(PetscViewerCreate(PETSC_COMM_WORLD, &viewer));
-    PetscCall(PetscViewerSetType(viewer, PETSCVIEWERASCII));
-    PetscCall(PetscOptionsView(NULL, viewer));
-    PetscCall(PetscViewerDestroy(&viewer));
-  }
+  if (flg2) { PetscCall(PetscOptionsView(NULL, PETSC_VIEWER_STDOUT_WORLD)); }
 
   /* to prevent PETSc -options_left from warning */
   PetscCall(PetscOptionsHasName(NULL, NULL, "-nox", &flg1));
@@ -1528,11 +1522,7 @@ PetscErrorCode PetscFinalize(void)
   if (!flg1) flg3 = PETSC_TRUE;
   if (flg3) {
     if (!flg2 && flg1) { /* have not yet printed the options */
-      PetscViewer viewer;
-      PetscCall(PetscViewerCreate(PETSC_COMM_WORLD, &viewer));
-      PetscCall(PetscViewerSetType(viewer, PETSCVIEWERASCII));
-      PetscCall(PetscOptionsView(NULL, viewer));
-      PetscCall(PetscViewerDestroy(&viewer));
+      PetscCall(PetscOptionsView(NULL, PETSC_VIEWER_STDOUT_WORLD));
     }
     PetscCall(PetscOptionsAllUsed(NULL, &nopt));
     if (nopt) {

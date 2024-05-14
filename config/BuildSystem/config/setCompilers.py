@@ -262,7 +262,7 @@ class Configure(config.base.Configure):
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 500', log = log, logOutputflg = False)
       output = output + error
       found = (any([s in output for s in ['Emit Clang AST']])
-               and not any([s in output for s in ['Intel(R)','Win32 Development Tool Front End']]))
+               and not any([s in output for s in ['Win32 Development Tool Front End']]))
       if found:
         if log: log.write('Detected CLANG compiler\n')
         return 1
@@ -277,6 +277,19 @@ class Configure(config.base.Configure):
       output = output + error
       if 'HIP version:' in output:
         if log: log.write('Detected HIP compiler\n')
+        return 1
+    except RuntimeError:
+      pass
+
+  @staticmethod
+  def isOneAPI(compiler, log):
+    '''Returns true if the compiler is an Intel oneAPI compiler'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
+      output = output + error
+      found = any([s in output for s in ['Intel(R) oneAPI']])
+      if found:
+        if log: log.write('Detected Intel oneAPI compiler\n')
         return 1
     except RuntimeError:
       pass
@@ -2132,6 +2145,15 @@ class Configure(config.base.Configure):
       self.popLanguage()
     return
 
+  def checkKandRFlags(self):
+    '''Check C compiler flags that allow compiling K and R code (needed for some external packages)'''
+    self.KandRFlags = []
+    with self.Language('C'):
+      if config.setCompilers.Configure.isGNU(self.getCompiler(), self.log) or config.setCompilers.Configure.isClang(self.getCompiler(), self.log):
+        for f in ['-Wno-implicit-int', '-Wno-int-conversion', '-Wno-implicit-function-declaration', '-Wno-deprecated-non-prototype', '-fno-common']:
+          if self.checkCompilerFlag(f, compilerOnly = 1):
+            self.KandRFlags.append(f)
+
   def checkLargeFileIO(self):
     '''check for large file support with 64-bit offset'''
     if not self.argDB['with-large-file-io']:
@@ -2851,6 +2873,7 @@ if (dlclose(handle)) {
     if Configure.isCygwin(self.log):
       self.executeTest(self.checkLinkerWindows)
     self.executeTest(self.checkPIC)
+    self.executeTest(self.checkKandRFlags)
     self.executeTest(self.checkSharedLinkerPaths)
     self.executeTest(self.checkLibC)
     self.executeTest(self.checkDynamicLinker)

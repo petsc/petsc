@@ -136,7 +136,6 @@
       PetscCall(VecRestoreArrayF90(X,x_v,ierr))
       PetscCall(VecRestoreArrayF90(F,f_v,ierr))
 
-      return
       end
 
       subroutine FormStartingPoint(x)
@@ -151,7 +150,6 @@
       x_v(2) = 0.008
       x_v(3) = 0.01
       PetscCall(VecRestoreArrayF90(x,x_v,ierr))
-      return
       end
 
       subroutine InitializeData()
@@ -374,7 +372,6 @@
       y(i) =    28.9000;  t(i) =   1.7500; i=i+1
       y(i) =    28.9500;  t(i) =   1.7500; i=i+1
 
-      return
       end
 
 !/*TEST

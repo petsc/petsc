@@ -136,6 +136,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
   PetscScalar    *array, *scaling_factors, *vals_B_delta;
   PetscScalar   **all_factors;
   PetscInt       *aux_local_numbering_2;
+  PetscInt       *count, **neighbours_set;
   PetscLayout     llay;
 
   /* saddlepoint */
@@ -223,10 +224,9 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
   n_local_lambda  = 0;
   partial_sum     = 0;
   n_boundary_dofs = 0;
-  s               = 0;
 
   /* Get Vertices used to define the BDDC */
-  PetscCall(PCBDDCGraphGetCandidatesIS(pcbddc->mat_graph, NULL, NULL, NULL, NULL, &isvert));
+  PetscCall(PCBDDCGraphGetCandidatesIS(mat_graph, NULL, NULL, NULL, NULL, &isvert));
   PetscCall(ISGetLocalSize(isvert, &n_vertices));
   PetscCall(ISGetIndices(isvert, &vertex_indices));
 
@@ -235,9 +235,30 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
   PetscCall(PetscMalloc1(dual_size, &aux_local_numbering_1));
   PetscCall(PetscMalloc1(dual_size, &aux_local_numbering_2));
 
-  PetscCall(VecGetArray(pcis->vec1_N, &array));
+  /* the code below does not support multiple subdomains per process
+     error out in this case
+     TODO: I guess I can use PetscSFGetMultiSF and the code will be easier and more general */
+  PetscCall(PetscMalloc2(pcis->n, &count, pcis->n, &neighbours_set));
+  for (i = 0, j = 0; i < pcis->n; i++) j += mat_graph->nodes[i].count;
+  if (pcis->n) PetscCall(PetscMalloc1(j, &neighbours_set[0]));
   for (i = 0; i < pcis->n; i++) {
-    j = mat_graph->count[i]; /* RECALL: mat_graph->count[i] does not count myself */
+    PCBDDCGraphNode *node = &mat_graph->nodes[i];
+
+    count[i] = 0;
+    for (j = 0; j < node->count; j++) {
+      if (node->neighbours_set[j] == rank) continue;
+      neighbours_set[i][count[i]++] = node->neighbours_set[j];
+    }
+    PetscCheck(count[i] == node->count - 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Multiple subdomains per process not supported");
+    s = count[i];
+    PetscCall(PetscSortRemoveDupsInt(count + i, neighbours_set[i]));
+    PetscCheck(s == count[i], PETSC_COMM_SELF, PETSC_ERR_SUP, "Multiple subdomains per process not supported");
+    if (i != pcis->n - 1) neighbours_set[i + 1] = neighbours_set[i] + count[i];
+  }
+
+  PetscCall(VecGetArray(pcis->vec1_N, &array));
+  for (i = 0, s = 0; i < pcis->n; i++) {
+    j = count[i]; /* RECALL: count[i] does not count myself */
     if (j > 0) n_boundary_dofs++;
     skip_node = PETSC_FALSE;
     if (s < n_vertices && vertex_indices[s] == i) { /* it works for a sorted set of vertices */
@@ -245,7 +266,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
       s++;
     }
     if (j < 1) skip_node = PETSC_TRUE;
-    if (mat_graph->special_dof[i] == PCBDDCGRAPH_DIRICHLET_MARK) skip_node = PETSC_TRUE;
+    if (mat_graph->nodes[i].special_dof == PCBDDCGRAPH_DIRICHLET_MARK) skip_node = PETSC_TRUE;
     if (!skip_node) {
       if (fully_redundant) {
         /* fully redundant set of lagrange multipliers */
@@ -265,7 +286,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
   }
   PetscCall(VecRestoreArray(pcis->vec1_N, &array));
   PetscCall(ISRestoreIndices(isvert, &vertex_indices));
-  PetscCall(PCBDDCGraphRestoreCandidatesIS(pcbddc->mat_graph, NULL, NULL, NULL, NULL, &isvert));
+  PetscCall(PCBDDCGraphRestoreCandidatesIS(mat_graph, NULL, NULL, NULL, NULL, &isvert));
   dual_size = partial_sum;
 
   /* compute global ordering of lagrange multipliers and associate l2g map */
@@ -305,7 +326,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
     PetscCall(PetscMalloc1(partial_sum, &recv_buffer));
     PetscCall(PetscMalloc1(partial_sum, &all_factors[0]));
     for (i = 0; i < pcis->n - 1; i++) {
-      j                  = mat_graph->count[i];
+      j                  = count[i];
       all_factors[i + 1] = all_factors[i] + j;
     }
 
@@ -328,7 +349,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
       for (j = 0; j < pcis->n_shared[i]; j++) {
         k              = pcis->shared[i][j];
         neigh_position = 0;
-        while (mat_graph->neighbours_set[k][neigh_position] != pcis->neigh[i]) neigh_position++;
+        while (neighbours_set[k][neigh_position] != pcis->neigh[i]) { neigh_position++; }
         all_factors[k][neigh_position] = recv_buffer[ptrs_buffer[i - 1] + j];
       }
     }
@@ -356,12 +377,12 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
   cum         = 0;
   for (i = 0; i < dual_size; i++) {
     n_global_lambda = aux_global_numbering[cum];
-    j               = mat_graph->count[aux_local_numbering_1[i]];
+    j               = count[aux_local_numbering_1[i]];
     aux_sums[0]     = 0;
     for (s = 1; s < j; s++) aux_sums[s] = aux_sums[s - 1] + j - s + 1;
     if (all_factors) array = all_factors[aux_local_numbering_1[i]];
     n_neg_values = 0;
-    while (n_neg_values < j && mat_graph->neighbours_set[aux_local_numbering_1[i]][n_neg_values] < rank) n_neg_values++;
+    while (n_neg_values < j && neighbours_set[aux_local_numbering_1[i]][n_neg_values] < rank) { n_neg_values++; }
     n_pos_values = j - n_neg_values;
     if (fully_redundant) {
       for (s = 0; s < n_neg_values; s++) {
@@ -418,6 +439,8 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
     PetscCall(PetscFree(all_factors[0]));
     PetscCall(PetscFree(all_factors));
   }
+  if (pcis->n) PetscCall(PetscFree(neighbours_set[0]));
+  PetscCall(PetscFree2(count, neighbours_set));
 
   /* Create local part of B_delta */
   PetscCall(MatCreate(PETSC_COMM_SELF, &fetidpmat_ctx->B_delta));

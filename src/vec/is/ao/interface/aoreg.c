@@ -62,7 +62,7 @@ PetscErrorCode AOInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   AOSetType - Builds an application ordering for a particular `AOType`
 
   Collective
@@ -103,7 +103,7 @@ PetscErrorCode AOSetType(AO ao, AOType method)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   AOGetType - Gets the `AO` type name (as a string) from the AO.
 
   Not Collective
@@ -135,7 +135,7 @@ PetscFunctionList AOList = NULL;
 /*@C
   AORegister - Register  an application ordering method
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - the name (`AOType`) of the `AO` scheme

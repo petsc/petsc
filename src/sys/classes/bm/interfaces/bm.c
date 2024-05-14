@@ -43,7 +43,7 @@ PetscErrorCode PetscBenchInitializePackage(void)
 /*@C
   PetscBenchRegister -  Adds a benchmark test, `PetscBenchType`, to the `PetscBench` package
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of a new benchmark
@@ -64,7 +64,7 @@ PetscErrorCode PetscBenchRegister(const char sname[], PetscErrorCode (*function)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBenchReset - removes all the intermediate data structures in a `PetscBench`
 
   Collective
@@ -242,7 +242,7 @@ PetscErrorCode PetscBenchViewFromOptions(PetscBench bm, PetscObject bobj, const 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBenchCreate - Create a PETSc benchmark `PetscBench` object
 
   Collective
@@ -269,7 +269,7 @@ PetscErrorCode PetscBenchCreate(MPI_Comm comm, PetscBench *bm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBenchSetOptionsPrefix - Sets the prefix used for searching for all `PetscBench` items in the options database.
 
   Logically Collective
@@ -291,7 +291,7 @@ PetscErrorCode PetscBenchSetOptionsPrefix(PetscBench bm, const char pre[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBenchSetSize - Sets the size of the `PetscBench` benchmark to run
 
   Logically Collective
@@ -318,7 +318,7 @@ PetscErrorCode PetscBenchSetSize(PetscBench bm, PetscInt n)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBenchGetSize - Gets the size of the `PetscBench` benchmark to run
 
   Logically Collective
@@ -343,7 +343,7 @@ PetscErrorCode PetscBenchGetSize(PetscBench bm, PetscInt *n)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBenchSetType - set the type of `PetscBench` benchmark to run
 
   Collective
@@ -391,7 +391,7 @@ PetscErrorCode PetscBenchSetType(PetscBench bm, PetscBenchType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBenchGetType - Gets the `PetscBenchType` (as a string) from the `PetscBench`
   context.
 

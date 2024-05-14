@@ -596,7 +596,7 @@ static inline PetscErrorCode PetscStrbeginswith(const char a[], const char b[], 
    beginning at location `a`. Copying  between regions that overlap will
    take place correctly. Use `PetscMemcpy()` if the locations do not overlap
 
-   Not Collective
+   Not Collective, No Fortran Support
 
    Input Parameters:
 +  b - pointer to initial memory space
@@ -650,7 +650,7 @@ static inline PetscErrorCode PetscMemmove(void *a, const void *b, size_t n)
    beginning at location `a`. The two memory regions CANNOT overlap, use
    `PetscMemmove()` in that case.
 
-   Not Collective
+   Not Collective, No Fortran Support
 
    Input Parameters:
 +  b - pointer to initial memory space
@@ -712,7 +712,7 @@ static inline PetscErrorCode PetscMemcpy(void *a, const void *b, size_t n)
 /*@C
    PetscMemzero - Zeros the specified memory.
 
-   Not Collective
+   Not Collective, No Fortran Support
 
    Input Parameters:
 +  a - pointer to beginning memory location

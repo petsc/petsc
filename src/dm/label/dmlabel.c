@@ -7,7 +7,7 @@
 PetscFunctionList DMLabelList              = NULL;
 PetscBool         DMLabelRegisterAllCalled = PETSC_FALSE;
 
-/*@C
+/*@
   DMLabelCreate - Create a `DMLabel` object, which is a multimap
 
   Collective
@@ -51,7 +51,7 @@ PetscErrorCode DMLabelCreate(MPI_Comm comm, const char name[], DMLabel *label)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMLabelSetUp - SetUp a `DMLabel` object
 
   Collective
@@ -627,6 +627,9 @@ PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
   For the comparison, we ignore the order of stratum values, and strata with no points.
 
   The communicator needs to be specified because currently `DMLabel` can live on `PETSC_COMM_SELF` even if the underlying `DM` is parallel.
+
+  Developer Note:
+  Fortran stub cannot be generated automatically because `message` must be freed with `PetscFree()`
 
 .seealso: `DMLabel`, `DM`, `DMCompareLabels()`, `DMLabelGetNumValues()`, `DMLabelGetDefaultValue()`, `DMLabelGetNonEmptyStratumValuesIS()`, `DMLabelGetStratumIS()`
 @*/
@@ -1210,6 +1213,43 @@ PetscErrorCode DMLabelGetValueIS(DMLabel label, IS *values)
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
   PetscAssertPointer(values, 2);
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, label->numStrata, label->stratumValues, PETSC_USE_POINTER, values));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMLabelGetValueBounds - Return the smallest and largest value in the label
+
+  Not Collective
+
+  Input Parameter:
+. label - the `DMLabel`
+
+  Output Parameters:
++ minValue - The smallest value
+- maxValue - The largest value
+
+  Level: intermediate
+
+.seealso: `DMLabel`, `DM`, `DMLabelGetBounds()`, `DMLabelGetValue()`, `DMLabelSetValue()`
+@*/
+PetscErrorCode DMLabelGetValueBounds(DMLabel label, PetscInt *minValue, PetscInt *maxValue)
+{
+  PetscInt min = PETSC_MAX_INT, max = PETSC_MIN_INT;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
+  for (PetscInt v = 0; v < label->numStrata; ++v) {
+    min = PetscMin(min, label->stratumValues[v]);
+    max = PetscMax(max, label->stratumValues[v]);
+  }
+  if (minValue) {
+    PetscAssertPointer(minValue, 2);
+    *minValue = min;
+  }
+  if (maxValue) {
+    PetscAssertPointer(maxValue, 3);
+    *maxValue = max;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2265,7 +2305,7 @@ PetscErrorCode DMLabelRegisterDestroy(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMLabelSetType - Sets the particular implementation for a label.
 
   Collective
@@ -2302,7 +2342,7 @@ PetscErrorCode DMLabelSetType(DMLabel label, DMLabelType method)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMLabelGetType - Gets the type name (as a string) from the label.
 
   Not Collective

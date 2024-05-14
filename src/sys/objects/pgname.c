@@ -8,7 +8,7 @@
   Input Parameters:
 + obj  - the PETSc variable. It must be cast with a (`PetscObject`), for example,
          `PetscObjectGetName`((`PetscObject`)mat,&name);
-- name - the name associated with `obj`
+- name - the name associated with `obj`, do not free
 
   Level: intermediate
 

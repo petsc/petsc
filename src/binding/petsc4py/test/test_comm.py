@@ -3,17 +3,17 @@ import unittest
 
 # --------------------------------------------------------------------
 
-class TestComm(unittest.TestCase):
 
+class TestComm(unittest.TestCase):
     def testInit(self):
-        comm_null1  = PETSc.Comm()
-        comm_null2  = PETSc.Comm(PETSc.COMM_NULL)
+        comm_null1 = PETSc.Comm()
+        comm_null2 = PETSc.Comm(PETSc.COMM_NULL)
         comm_world = PETSc.Comm(PETSc.COMM_WORLD)
-        comm_self  = PETSc.Comm(PETSc.COMM_SELF)
+        comm_self = PETSc.Comm(PETSc.COMM_SELF)
         self.assertEqual(comm_null1, PETSc.COMM_NULL)
         self.assertEqual(comm_null2, PETSc.COMM_NULL)
         self.assertEqual(comm_world, PETSc.COMM_WORLD)
-        self.assertEqual(comm_self,  PETSc.COMM_SELF)
+        self.assertEqual(comm_self, PETSc.COMM_SELF)
 
     def testDupDestr(self):
         self.assertRaises(ValueError, PETSc.COMM_NULL.duplicate)
@@ -42,14 +42,10 @@ class TestComm(unittest.TestCase):
         self.assertTrue(PETSc.COMM_WORLD.getRank() >= 0)
 
     def testProperties(self):
-        self.assertEqual(PETSc.COMM_SELF.getSize(),
-                         PETSc.COMM_SELF.size)
-        self.assertEqual(PETSc.COMM_SELF.getRank(),
-                         PETSc.COMM_SELF.rank)
-        self.assertEqual(PETSc.COMM_WORLD.getSize(),
-                         PETSc.COMM_WORLD.size)
-        self.assertEqual(PETSc.COMM_WORLD.getRank(),
-                         PETSc.COMM_WORLD.rank)
+        self.assertEqual(PETSc.COMM_SELF.getSize(), PETSc.COMM_SELF.size)
+        self.assertEqual(PETSc.COMM_SELF.getRank(), PETSc.COMM_SELF.rank)
+        self.assertEqual(PETSc.COMM_WORLD.getSize(), PETSc.COMM_WORLD.size)
+        self.assertEqual(PETSc.COMM_WORLD.getRank(), PETSc.COMM_WORLD.rank)
 
     def testCompatMPI4PY(self):
         try:
@@ -75,7 +71,7 @@ class TestComm(unittest.TestCase):
         self.assertTrue(isinstance(cw, MPI.Intracomm))
         self.assertEqual(cw.Get_size(), PETSc.COMM_WORLD.getSize())
         self.assertEqual(cw.Get_rank(), PETSc.COMM_WORLD.getRank())
-        
+
 
 # --------------------------------------------------------------------
 

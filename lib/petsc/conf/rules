@@ -240,7 +240,7 @@ endif
 ifdef SEPARATE_COMPILE_LINK
 % : %.c
 	${PETSC_COMPILE_SINGLE} $<
-	${CLINKER} $(EXEFLAGS) -o $@ $@.o $(filter-out $@.o $<,$^) $(PETSC_LIB)
+	${CLINKER} $(LOADLIBES) -o $@ $@.o $(filter-out $@.o $<,$^) $(LDLIBS)
 endif
 
 # We don't have % : %.cu target as we can't use nvcc as linker - due to difference in linker options [wrt CLINKER etc.]. For example, nvcc does not accept -Wl,-rpath

@@ -24,7 +24,7 @@ PETSC_EXTERN PetscErrorCode TSGLLEAdaptCreate_Both(TSGLLEAdapt);
 /*@C
   TSGLLEAdaptRegister -  adds a `TSGLLEAdapt` implementation
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of user-defined adaptivity scheme

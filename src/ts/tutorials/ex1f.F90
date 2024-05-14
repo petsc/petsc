@@ -222,7 +222,6 @@
  20     continue
  10   continue
       PetscCall(VecRestoreArrayF90(X,xx,ierr))
-      return
       end
 !
 !  --------------------  Evaluate Function F(x) ---------------------
@@ -279,7 +278,6 @@
 
       PetscCall(VecRestoreArrayReadF90(X,xx,ierr))
       PetscCall(VecRestoreArrayF90(F,ff,ierr))
-      return
       end
 !
 !  --------------------  Evaluate Jacobian of F(x) --------------------
@@ -347,7 +345,6 @@
       PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr))
       PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr))
       PetscCall(VecRestoreArrayF90(X,xx,ierr))
-      return
       end
 
 !/*TEST

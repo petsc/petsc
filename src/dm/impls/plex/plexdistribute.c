@@ -732,7 +732,7 @@ PetscErrorCode DMPlexCreateOverlapLabelFromLabels(DM dm, PetscInt numLabels, con
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexCreateOverlapMigrationSF - Create a `PetscSF` describing the new mesh distribution to make the overlap described by the input `PetscSF`
 
   Collective
@@ -1470,7 +1470,7 @@ static void MPIAPI MaxLocCarry(void *in_, void *inout_, PetscMPIInt *len_, MPI_D
   }
 }
 
-/*@C
+/*@
   DMPlexCreatePointSF - Build a point `PetscSF` from an `PetscSF` describing a point migration
 
   Input Parameters:
@@ -1602,7 +1602,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexMigrate  - Migrates internal `DM` data over the supplied star forest
 
   Collective
@@ -2352,7 +2352,7 @@ PetscErrorCode DMPlexIsDistributed(DM dm, PetscBool *distributed)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexDistributionSetName - Set the name of the specific parallel distribution
 
   Input Parameters:
@@ -2381,7 +2381,7 @@ PetscErrorCode DMPlexDistributionSetName(DM dm, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexDistributionGetName - Retrieve the name of the specific parallel distribution
 
   Input Parameter:

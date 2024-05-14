@@ -7,7 +7,7 @@ const char *const MatColoringWeightTypes[]     = {"RANDOM", "LEXICAL", "LF", "SL
 /*@C
   MatColoringRegister - Adds a new sparse matrix coloring to the  matrix package.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of Coloring (for example `MATCOLORINGSL`)
@@ -20,10 +20,8 @@ const char *const MatColoringWeightTypes[]     = {"RANDOM", "LEXICAL", "LF", "SL
    MatColoringRegister("my_color", MyColor);
 .ve
 
-  Then, your partitioner can be chosen with the procedural interface via
-$     MatColoringSetType(part, "my_color")
-  or at runtime via the option
-$     -mat_coloring_type my_color
+  Then, your partitioner can be chosen with the procedural interface via `MatColoringSetType(part, "my_color")`  or at runtime via the option
+  `-mat_coloring_type my_color`
 
 .seealso: `MatColoringType`, `MatColoringRegisterDestroy()`, `MatColoringRegisterAll()`
 @*/
@@ -118,7 +116,7 @@ PetscErrorCode MatColoringDestroy(MatColoring *mc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatColoringSetType - Sets the type of coloring algorithm used
 
   Collective

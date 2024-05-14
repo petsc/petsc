@@ -752,8 +752,9 @@ typedef struct {
 } MatParentState;
 
 PETSC_EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
-PETSC_INTERN PetscErrorCode MatShift_Basic(Mat, PetscScalar);
 PETSC_INTERN PetscErrorCode MatSetBlockSizes_Default(Mat, PetscInt, PetscInt);
+
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatShift_Basic(Mat, PetscScalar);
 
 static inline PetscErrorCode MatPivotCheck_nz(PETSC_UNUSED Mat mat, const MatFactorInfo *info, FactorShiftCtx *sctx, PETSC_UNUSED PetscInt row)
 {
@@ -1755,3 +1756,4 @@ PETSC_EXTERN PetscLogEvent MAT_H2Opus_Compress;
 PETSC_EXTERN PetscLogEvent MAT_H2Opus_Orthog;
 PETSC_EXTERN PetscLogEvent MAT_H2Opus_LR;
 PETSC_EXTERN PetscLogEvent MAT_CUDACopyToGPU;
+PETSC_EXTERN PetscLogEvent MAT_HIPCopyToGPU;

@@ -1,5 +1,6 @@
 -include ../../../../../petscdir.mk
 #requirespackage   'PETSC_HAVE_CUDA'
+#requirespackage 'PETSC_HAVE_H2OPUS'
 
 MANSEC    = Mat
 

@@ -85,7 +85,7 @@ PetscErrorCode MatGetMPIMatType_Private(Mat mat, MatType *MPIType)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSetType - Builds matrix object for a particular matrix type
 
   Collective
@@ -148,6 +148,14 @@ PetscErrorCode MatSetType(Mat mat, MatType matype)
     PetscCall(MatConvert(mat, matype, MAT_INPLACE_MATRIX, &mat));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
+  if (names && mat->assembled) {
+    PetscCall(PetscStrbeginswith(names->rname, "sell", &sametype));
+    if (sametype) {                                                  /* mattype is MATSELL or its subclass */
+      PetscCall(MatConvert(mat, MATSELL, MAT_INPLACE_MATRIX, &mat)); /* convert to matsell first */
+      PetscCall(MatConvert(mat, matype, MAT_INPLACE_MATRIX, &mat));
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
+  }
   PetscTryTypeMethod(mat, destroy);
   mat->ops->destroy = NULL;
 
@@ -173,7 +181,7 @@ PetscErrorCode MatSetType(Mat mat, MatType matype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatGetType - Gets the matrix type as a string from the matrix object.
 
   Not Collective
@@ -249,7 +257,7 @@ PetscErrorCode MatSetVecType(Mat mat, VecType vtype)
 /*@C
   MatRegister -  - Adds a new matrix type implementation
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of a new user-defined matrix type
@@ -265,10 +273,8 @@ PetscErrorCode MatSetVecType(Mat mat, VecType vtype)
    MatRegister("my_mat", MyMatCreate);
 .ve
 
-  Then, your solver can be chosen with the procedural interface via
-$     MatSetType(Mat, "my_mat")
-  or at runtime via the option
-$     -mat_type my_mat
+  Then, your solver can be chosen with the procedural interface via `MatSetType(Mat, "my_mat")` or at runtime via the option
+  `-mat_type my_mat`
 
 .seealso: [](ch_matrices), `Mat`, `MatType`, `MatSetType()`, `MatRegisterAll()`
 @*/
@@ -282,7 +288,7 @@ PetscErrorCode MatRegister(const char sname[], PetscErrorCode (*function)(Mat))
 
 MatRootName MatRootNameList = NULL;
 
-/*@C
+/*@
   MatRegisterRootName - Registers a name that can be used for either a sequential or its corresponding parallel matrix type.
 
   Input Parameters:

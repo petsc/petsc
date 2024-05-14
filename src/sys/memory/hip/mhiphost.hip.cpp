@@ -22,7 +22,7 @@ static PetscErrorCode (*PetscMallocOld)(size_t, PetscBool, int, const char[], co
 static PetscErrorCode (*PetscReallocOld)(size_t, int, const char[], const char[], void **);
 static PetscErrorCode (*PetscFreeOld)(void *, int, const char[], const char[]);
 
-/*@C
+/*@
   PetscMallocSetHIPHost - Set `PetscMalloc()` to use `HIPHostMalloc()`
   Switch the current malloc and free routines to the HIP malloc and free routines
 
@@ -49,7 +49,7 @@ PETSC_EXTERN PetscErrorCode PetscMallocSetHIPHost(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscMallocResetHIPHost - Reset the changes made by `PetscMallocSetHIPHost()`
 
   Not Collective

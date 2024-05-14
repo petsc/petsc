@@ -370,7 +370,7 @@ PetscErrorCode VecScatterSetUp(VecScatter sf)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecScatterSetType - Builds a vector scatter, for a particular vector scatter implementation.
 
   Collective
@@ -396,7 +396,7 @@ PetscErrorCode VecScatterSetType(VecScatter sf, VecScatterType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecScatterGetType - Gets the vector scatter type name (as a string) from the `VecScatter`.
 
   Not Collective
@@ -551,7 +551,7 @@ PetscErrorCode VecScatterView(VecScatter sf, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecScatterRemap - Remaps the "from" and "to" indices in a
   vector scatter context.
 

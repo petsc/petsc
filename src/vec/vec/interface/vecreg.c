@@ -26,7 +26,7 @@ static inline PetscErrorCode VecTypeCompareAny_Private(VecType srcType, PetscBoo
 
 #define PETSC_MAX_VECTYPE_LEN 64
 
-/*@C
+/*@
   VecSetType - Builds a vector, for a particular vector implementation.
 
   Collective
@@ -166,7 +166,7 @@ newvec:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetType - Gets the vector type name (as a string) from a `Vec`.
 
   Not Collective
@@ -221,7 +221,7 @@ PetscErrorCode VecGetRootType_Private(Vec vec, VecType *vtype)
 /*@C
   VecRegister -  Adds a new vector component implementation
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - The name of a new user-defined creation routine

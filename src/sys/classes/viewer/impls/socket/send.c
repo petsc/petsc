@@ -1,4 +1,4 @@
-#include <petscsys.h>
+#include <petscsys.h> /*I  "petscviewer.h"  I*/
 
 #if defined(PETSC_NEEDS_UTYPE_TYPEDEFS)
 /* Some systems have inconsistent include files that use but do not
@@ -77,7 +77,7 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOpenSocket - handles connected to an open port where someone is waiting.
 
   Input Parameters:
@@ -255,7 +255,7 @@ static PetscErrorCode PetscSocketListen(int listenport, int *t)
 
 // "Unknown section 'Environmental Variables'"
 // PetscClangLinter pragma disable: -fdoc-section-header-unknown
-/*@C
+/*@
   PetscViewerSocketOpen - Opens a connection to a MATLAB or other socket based server.
 
   Collective
@@ -466,40 +466,39 @@ PetscErrorCode PetscViewerSocketSetConnection(PetscViewer v, const char machine[
 PetscMPIInt Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
 
 /*@C
-     PETSC_VIEWER_SOCKET_ - Creates a socket viewer shared by all processors in a communicator.
+   PETSC_VIEWER_SOCKET_ - Creates a socket viewer shared by all processors in a communicator.
 
-     Collective
+   Collective
 
-     Input Parameter:
-.    comm - the MPI communicator to share the  `PETSCVIEWERSOCKET` `PetscViewer`
+   Input Parameter:
+.  comm - the MPI communicator to share the  `PETSCVIEWERSOCKET` `PetscViewer`
 
-     Level: intermediate
+   Level: intermediate
 
    Options Database Keys:
    For use with the default `PETSC_VIEWER_SOCKET_WORLD` or if
-    `NULL` is passed for machine or `PETSC_DEFAULT` is passed for port
-+    -viewer_socket_machine <machine> - machine to connect to
--    -viewer_socket_port <port> - port to connect to
+   `NULL` is passed for machine or `PETSC_DEFAULT` is passed for port
++  -viewer_socket_machine <machine> - machine to connect to
+-  -viewer_socket_port <port> - port to connect to
 
    Environmental variables:
-+   `PETSC_VIEWER_SOCKET_PORT` - portnumber
--   `PETSC_VIEWER_SOCKET_MACHINE` - machine name
++  `PETSC_VIEWER_SOCKET_PORT` - portnumber
+-  `PETSC_VIEWER_SOCKET_MACHINE` - machine name
 
-     Notes:
-     This object is destroyed in `PetscFinalize()`, `PetscViewerDestroy()` should never be called on it
+   Notes:
+   This object is destroyed in `PetscFinalize()`, `PetscViewerDestroy()` should never be called on it
 
-     Unlike almost all other PETSc routines, `PETSC_VIEWER_SOCKET_()` does not return
-     an error code, it returns NULL if it fails. The  `PETSCVIEWERSOCKET`  `PetscViewer` is usually used in the form
-$       XXXView(XXX object, PETSC_VIEWER_SOCKET_(comm));
+   Unlike almost all other PETSc routines, `PETSC_VIEWER_SOCKET_()` does not return
+   an error code, it returns `NULL` if it fails. The  `PETSCVIEWERSOCKET`  `PetscViewer` is usually used in the form `XXXView(XXX object, PETSC_VIEWER_SOCKET_(comm))`
 
-     Currently the only socket client available is MATLAB. See
-     src/dm/tests/ex12.c and ex12.m for an example of usage.
+   Currently the only socket client available is MATLAB. See
+   src/dm/tests/ex12.c and ex12.m for an example of usage.
 
-     Connects to a waiting socket and stays connected until `PetscViewerDestroy()` is called.
+   Connects to a waiting socket and stays connected until `PetscViewerDestroy()` is called.
 
-     Use this for communicating with an interactive MATLAB session, see `PETSC_VIEWER_MATLAB_()` for writing output to a
-     .mat file. Use `PetscMatlabEngineCreate()` or `PETSC_MATLAB_ENGINE_()`, `PETSC_MATLAB_ENGINE_SELF`, or `PETSC_MATLAB_ENGINE_WORLD`
-     for communicating with a MATLAB Engine
+   Use this for communicating with an interactive MATLAB session, see `PETSC_VIEWER_MATLAB_()` for writing output to a
+   .mat file. Use `PetscMatlabEngineCreate()` or `PETSC_MATLAB_ENGINE_()`, `PETSC_MATLAB_ENGINE_SELF`, or `PETSC_MATLAB_ENGINE_WORLD`
+   for communicating with a MATLAB Engine
 
 .seealso: [](sec_viewers), `PETSCVIEWERMATLAB`, `PETSCVIEWERSOCKET`, `PETSC_VIEWER_SOCKET_WORLD`, `PETSC_VIEWER_SOCKET_SELF`, `PetscViewerSocketOpen()`, `PetscViewerCreate()`,
           `PetscViewerSocketSetConnection()`, `PetscViewerDestroy()`, `PETSC_VIEWER_SOCKET_()`, `PetscViewerBinaryWrite()`, `PetscViewerBinaryRead()`,

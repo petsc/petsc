@@ -1,15 +1,6 @@
 
 
       Interface
-      subroutine KSPSetType(a,b,z)
-      import tKSP
-       KSP a
-       character(*) b
-       PetscErrorCode z
-       end subroutine
-      end Interface
-
-      Interface
       subroutine KSPView(a,b,z)
       import tKSP,tPetscViewer
        KSP a

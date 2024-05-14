@@ -608,7 +608,7 @@ static inline PetscReal TSEvent_dt_cap(TS ts, PetscReal t, PetscReal dt, PetscBo
 {
   PetscReal res = dt;
   if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP) {
-    PetscReal maxdt    = ts->max_time - t; // this may be overriden by tspan
+    PetscReal maxdt    = ts->max_time - t; // this may be overridden by tspan
     PetscBool cut_made = PETSC_FALSE;
     PetscReal eps      = 10 * PETSC_MACHINE_EPSILON;
     if (ts->tspan) {

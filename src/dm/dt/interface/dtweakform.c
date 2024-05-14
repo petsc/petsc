@@ -329,7 +329,7 @@ static PetscErrorCode PetscWeakFormRewriteKeys_Internal(PetscWeakForm wf, PetscH
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormRewriteKeys - Change any key on the given label to use the new set of label values
 
   Not Collective
@@ -407,7 +407,7 @@ static PetscErrorCode PetscWeakFormReplaceLabel_Internal(PetscWeakForm wf, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormReplaceLabel - Change any key on a label of the same name to use the new label
 
   Not Collective

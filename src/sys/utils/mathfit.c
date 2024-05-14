@@ -1,7 +1,7 @@
 #include <petsc/private/petscimpl.h>
 #include <petscblaslapack.h>
 
-/*@C
+/*@
   PetscLinearRegression - Gives the best least-squares linear fit to some x-y data points
 
   Input Parameters:

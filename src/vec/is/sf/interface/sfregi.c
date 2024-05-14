@@ -48,7 +48,7 @@ PetscErrorCode PetscSFRegisterAll(void)
 /*@C
   PetscSFRegister  - Adds an implementation of the `PetscSF` communication protocol.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + name   - name of a new user-defined implementation

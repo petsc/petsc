@@ -62,7 +62,6 @@
       h    = 1.0/real((mx-1)*(my-1)*(mz-1))
 
       PetscCall(VecSet(b,h,ierr))
-      return
       end
 
       subroutine ComputeMatrix(ksp,JJ,jac,ctx,ierr)
@@ -139,7 +138,6 @@
 
       PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr))
       PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr))
-      return
       end
 
 !/*TEST

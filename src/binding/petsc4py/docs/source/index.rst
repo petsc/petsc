@@ -11,7 +11,7 @@ PETSc for Python
 
 .. topic:: Abstract
 
-   This document describes petsc4py_, a Python_ wrapper to the PETSc_
+   This document describes :mod:`petsc4py`, a Python_ wrapper to the PETSc_
    libraries.
 
    PETSc_ (the Portable, Extensible Toolkit for Scientific
@@ -28,7 +28,7 @@ PETSc for Python
       * mpi4py_: Python bindings for MPI_,
         the *Message Passing Interface*.
 
-   Other projects depends on petsc4py:
+   Other projects depend on petsc4py:
 
       * slepc4py_: Python bindings for SLEPc_,
         the *Scalable Library for Eigenvalue Problem Computations*.
@@ -42,6 +42,7 @@ PETSc for Python
 
    overview
    install
+   contributing
    citing
 
 .. toctree::

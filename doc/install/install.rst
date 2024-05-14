@@ -568,10 +568,10 @@ configure time. For example:
 
 .. code-block:: console
 
-   $ ./configure --prefix=/opt/petsc/petsc-3.20.0-mpich --with-mpi-dir=/opt/mpich
+   $ ./configure --prefix=/opt/petsc/petsc-3.21.0-mpich --with-mpi-dir=/opt/mpich
    $ make
    $ make install [DESTDIR=/tmp/petsc-pkg]
-   $ ./configure --prefix=/opt/petsc/petsc-3.20.0-openmpi --with-mpi-dir=/opt/openmpi
+   $ ./configure --prefix=/opt/petsc/petsc-3.21.0-openmpi --with-mpi-dir=/opt/openmpi
    $ make
    $ make install [DESTDIR=/tmp/petsc-pkg]
 

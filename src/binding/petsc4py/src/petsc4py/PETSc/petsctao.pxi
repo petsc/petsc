@@ -36,7 +36,7 @@ cdef extern from * nogil:
     PetscTAOType TAOPYTHON
 
     ctypedef enum PetscTAOConvergedReason "TaoConvergedReason":
-        #iterating
+        # iterating
         TAO_CONTINUE_ITERATING
         # converged
         TAO_CONVERGED_GATOL
@@ -54,24 +54,24 @@ cdef extern from * nogil:
         TAO_DIVERGED_USER
 
     ctypedef PetscErrorCode (*PetscTaoMonitorDestroy)(void**)
-    ctypedef PetscErrorCode PetscTaoConvergenceTest(PetscTAO,void*) except PETSC_ERR_PYTHON
-    ctypedef PetscErrorCode PetscTaoMonitor(PetscTAO,void*) except PETSC_ERR_PYTHON
-    ctypedef PetscErrorCode PetscTaoObjective(PetscTAO,PetscVec,PetscReal*,void*) except PETSC_ERR_PYTHON
-    ctypedef PetscErrorCode PetscTaoResidual(PetscTAO,PetscVec,PetscVec,void*) except PETSC_ERR_PYTHON
-    ctypedef PetscErrorCode PetscTaoGradient(PetscTAO,PetscVec,PetscVec,void*) except PETSC_ERR_PYTHON
-    ctypedef PetscErrorCode PetscTaoObjGrad(PetscTAO,PetscVec,PetscReal*,PetscVec,void*) except PETSC_ERR_PYTHON
-    ctypedef PetscErrorCode PetscTaoRegularizerObjGrad(PetscTAO,PetscVec,PetscReal*,PetscVec,void*) except PETSC_ERR_PYTHON
-    ctypedef PetscErrorCode PetscTaoVarBounds(PetscTAO,PetscVec,PetscVec,void*) except PETSC_ERR_PYTHON
-    ctypedef PetscErrorCode PetscTaoConstraints(PetscTAO,PetscVec,PetscVec,void*) except PETSC_ERR_PYTHON
-    ctypedef PetscErrorCode PetscTaoEqualityConstraints(PetscTAO,PetscVec,PetscVec,void*) except PETSC_ERR_PYTHON
-    ctypedef PetscErrorCode PetscTaoHessian(PetscTAO,PetscVec,PetscMat,PetscMat,void*) except PETSC_ERR_PYTHON
-    ctypedef PetscErrorCode PetscTaoRegularizerHessian(PetscTAO,PetscVec,PetscMat,void*) except PETSC_ERR_PYTHON
-    ctypedef PetscErrorCode PetscTaoJacobian(PetscTAO,PetscVec,PetscMat,PetscMat,void*) except PETSC_ERR_PYTHON
-    ctypedef PetscErrorCode PetscTaoJacobianResidual(PetscTAO,PetscVec,PetscMat,PetscMat,void*) except PETSC_ERR_PYTHON
-    ctypedef PetscErrorCode PetscTaoJacobianState(PetscTAO,PetscVec,PetscMat,PetscMat,PetscMat,void*) except PETSC_ERR_PYTHON
-    ctypedef PetscErrorCode PetscTaoJacobianDesign(PetscTAO,PetscVec,PetscMat,void*) except PETSC_ERR_PYTHON
-    ctypedef PetscErrorCode PetscTaoJacobianEquality(PetscTAO,PetscVec,PetscMat,PetscMat,void*) except PETSC_ERR_PYTHON
-    ctypedef PetscErrorCode PetscTaoUpdateFunction(PetscTAO,PetscInt,void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscTaoConvergenceTest(PetscTAO, void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscTaoMonitor(PetscTAO, void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscTaoObjective(PetscTAO, PetscVec, PetscReal*, void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscTaoResidual(PetscTAO, PetscVec, PetscVec, void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscTaoGradient(PetscTAO, PetscVec, PetscVec, void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscTaoObjGrad(PetscTAO, PetscVec, PetscReal*, PetscVec, void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscTaoRegularizerObjGrad(PetscTAO, PetscVec, PetscReal*, PetscVec, void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscTaoVarBounds(PetscTAO, PetscVec, PetscVec, void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscTaoConstraints(PetscTAO, PetscVec, PetscVec, void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscTaoEqualityConstraints(PetscTAO, PetscVec, PetscVec, void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscTaoHessian(PetscTAO, PetscVec, PetscMat, PetscMat, void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscTaoRegularizerHessian(PetscTAO, PetscVec, PetscMat, void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscTaoJacobian(PetscTAO, PetscVec, PetscMat, PetscMat, void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscTaoJacobianResidual(PetscTAO, PetscVec, PetscMat, PetscMat, void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscTaoJacobianState(PetscTAO, PetscVec, PetscMat, PetscMat, PetscMat, void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscTaoJacobianDesign(PetscTAO, PetscVec, PetscMat, void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscTaoJacobianEquality(PetscTAO, PetscVec, PetscMat, PetscMat, void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscTaoUpdateFunction(PetscTAO, PetscInt, void*) except PETSC_ERR_PYTHON
 
     ctypedef enum PetscTAOBNCGType "TaoBNCGType":
         TAO_BNCG_GD
@@ -88,111 +88,111 @@ cdef extern from * nogil:
         TAO_BNCG_SSML_DFP
         TAO_BNCG_SSML_BRDN
 
-    PetscErrorCode TaoMonitor(PetscTAO,PetscInt,PetscReal,PetscReal,PetscReal,PetscReal)
-    PetscErrorCode TaoView(PetscTAO,PetscViewer)
+    PetscErrorCode TaoMonitor(PetscTAO, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal)
+    PetscErrorCode TaoView(PetscTAO, PetscViewer)
     PetscErrorCode TaoDestroy(PetscTAO*)
-    PetscErrorCode TaoCreate(MPI_Comm,PetscTAO*)
-    PetscErrorCode TaoSetOptionsPrefix(PetscTAO,char[])
-    PetscErrorCode TaoAppendOptionsPrefix(PetscTAO,char[])
-    PetscErrorCode TaoGetOptionsPrefix(PetscTAO,char*[])
+    PetscErrorCode TaoCreate(MPI_Comm, PetscTAO*)
+    PetscErrorCode TaoSetOptionsPrefix(PetscTAO, char[])
+    PetscErrorCode TaoAppendOptionsPrefix(PetscTAO, char[])
+    PetscErrorCode TaoGetOptionsPrefix(PetscTAO, char*[])
     PetscErrorCode TaoSetFromOptions(PetscTAO)
-    PetscErrorCode TaoSetType(PetscTAO,PetscTAOType)
-    PetscErrorCode TaoGetType(PetscTAO,PetscTAOType*)
+    PetscErrorCode TaoSetType(PetscTAO, PetscTAOType)
+    PetscErrorCode TaoGetType(PetscTAO, PetscTAOType*)
 
     PetscErrorCode TaoSetUp(PetscTAO)
     PetscErrorCode TaoSolve(PetscTAO)
 
-    PetscErrorCode TaoSetTolerances(PetscTAO,PetscReal,PetscReal,PetscReal)
-    PetscErrorCode TaoGetTolerances(PetscTAO,PetscReal*,PetscReal*,PetscReal*)
-    PetscErrorCode TaoSetConstraintTolerances(PetscTAO,PetscReal,PetscReal)
-    PetscErrorCode TaoGetConstraintTolerances(PetscTAO,PetscReal*,PetscReal*)
+    PetscErrorCode TaoSetTolerances(PetscTAO, PetscReal, PetscReal, PetscReal)
+    PetscErrorCode TaoGetTolerances(PetscTAO, PetscReal*, PetscReal*, PetscReal*)
+    PetscErrorCode TaoSetConstraintTolerances(PetscTAO, PetscReal, PetscReal)
+    PetscErrorCode TaoGetConstraintTolerances(PetscTAO, PetscReal*, PetscReal*)
 
-    PetscErrorCode TaoSetFunctionLowerBound(PetscTAO,PetscReal)
-    PetscErrorCode TaoSetMaximumIterations(PetscTAO,PetscInt)
-    PetscErrorCode TaoGetMaximumIterations(PetscTAO,PetscInt*)
-    PetscErrorCode TaoSetMaximumFunctionEvaluations(PetscTAO,PetscInt)
-    PetscErrorCode TaoGetMaximumFunctionEvaluations(PetscTAO,PetscInt*)
-    PetscErrorCode TaoSetIterationNumber(PetscTAO,PetscInt)
-    PetscErrorCode TaoGetIterationNumber(PetscTAO,PetscInt*)
+    PetscErrorCode TaoSetFunctionLowerBound(PetscTAO, PetscReal)
+    PetscErrorCode TaoSetMaximumIterations(PetscTAO, PetscInt)
+    PetscErrorCode TaoGetMaximumIterations(PetscTAO, PetscInt*)
+    PetscErrorCode TaoSetMaximumFunctionEvaluations(PetscTAO, PetscInt)
+    PetscErrorCode TaoGetMaximumFunctionEvaluations(PetscTAO, PetscInt*)
+    PetscErrorCode TaoSetIterationNumber(PetscTAO, PetscInt)
+    PetscErrorCode TaoGetIterationNumber(PetscTAO, PetscInt*)
 
-    PetscErrorCode TaoSetTrustRegionTolerance(PetscTAO,PetscReal)
-    PetscErrorCode TaoGetInitialTrustRegionRadius(PetscTAO,PetscReal*)
-    PetscErrorCode TaoGetTrustRegionRadius(PetscTAO,PetscReal*)
-    PetscErrorCode TaoSetTrustRegionRadius(PetscTAO,PetscReal)
+    PetscErrorCode TaoSetTrustRegionTolerance(PetscTAO, PetscReal)
+    PetscErrorCode TaoGetInitialTrustRegionRadius(PetscTAO, PetscReal*)
+    PetscErrorCode TaoGetTrustRegionRadius(PetscTAO, PetscReal*)
+    PetscErrorCode TaoSetTrustRegionRadius(PetscTAO, PetscReal)
 
-    PetscErrorCode TaoDefaultConvergenceTest(PetscTAO,void*) except PETSC_ERR_PYTHON
-    PetscErrorCode TaoSetConvergenceTest(PetscTAO,PetscTaoConvergenceTest*, void*)
-    PetscErrorCode TaoSetConvergedReason(PetscTAO,PetscTAOConvergedReason)
-    PetscErrorCode TaoGetConvergedReason(PetscTAO,PetscTAOConvergedReason*)
-    PetscErrorCode TaoLogConvergenceHistory(PetscTAO,PetscReal,PetscReal,PetscReal,PetscInt)
-    PetscErrorCode TaoGetSolutionStatus(PetscTAO,PetscInt*,
-                                        PetscReal*,PetscReal*,
-                                        PetscReal*,PetscReal*,
+    PetscErrorCode TaoDefaultConvergenceTest(PetscTAO, void*) except PETSC_ERR_PYTHON
+    PetscErrorCode TaoSetConvergenceTest(PetscTAO, PetscTaoConvergenceTest*, void*)
+    PetscErrorCode TaoSetConvergedReason(PetscTAO, PetscTAOConvergedReason)
+    PetscErrorCode TaoGetConvergedReason(PetscTAO, PetscTAOConvergedReason*)
+    PetscErrorCode TaoLogConvergenceHistory(PetscTAO, PetscReal, PetscReal, PetscReal, PetscInt)
+    PetscErrorCode TaoGetSolutionStatus(PetscTAO, PetscInt*,
+                                        PetscReal*, PetscReal*,
+                                        PetscReal*, PetscReal*,
                                         PetscTAOConvergedReason*)
 
-    PetscErrorCode TaoMonitorSet(PetscTAO,PetscTaoMonitor,void*,PetscTaoMonitorDestroy)
+    PetscErrorCode TaoMonitorSet(PetscTAO, PetscTaoMonitor, void*, PetscTaoMonitorDestroy)
     PetscErrorCode TaoMonitorCancel(PetscTAO)
 
-    PetscErrorCode TaoComputeObjective(PetscTAO,PetscVec,PetscReal*)
-    PetscErrorCode TaoComputeResidual(PetscTAO,PetscVec,PetscVec)
-    PetscErrorCode TaoComputeGradient(PetscTAO,PetscVec,PetscVec)
-    PetscErrorCode TaoComputeObjectiveAndGradient(PetscTAO,PetscVec,PetscReal*,PetscVec)
-    PetscErrorCode TaoComputeConstraints(PetscTAO,PetscVec,PetscVec)
-    PetscErrorCode TaoComputeDualVariables(PetscTAO,PetscVec,PetscVec)
+    PetscErrorCode TaoComputeObjective(PetscTAO, PetscVec, PetscReal*)
+    PetscErrorCode TaoComputeResidual(PetscTAO, PetscVec, PetscVec)
+    PetscErrorCode TaoComputeGradient(PetscTAO, PetscVec, PetscVec)
+    PetscErrorCode TaoComputeObjectiveAndGradient(PetscTAO, PetscVec, PetscReal*, PetscVec)
+    PetscErrorCode TaoComputeConstraints(PetscTAO, PetscVec, PetscVec)
+    PetscErrorCode TaoComputeDualVariables(PetscTAO, PetscVec, PetscVec)
     PetscErrorCode TaoComputeVariableBounds(PetscTAO)
-    PetscErrorCode TaoComputeHessian(PetscTAO,PetscVec,PetscMat,PetscMat)
-    PetscErrorCode TaoComputeJacobian(PetscTAO,PetscVec,PetscMat,PetscMat)
+    PetscErrorCode TaoComputeHessian(PetscTAO, PetscVec, PetscMat, PetscMat)
+    PetscErrorCode TaoComputeJacobian(PetscTAO, PetscVec, PetscMat, PetscMat)
 
-    PetscErrorCode TaoSetSolution(PetscTAO,PetscVec)
-    PetscErrorCode TaoSetConstraintsVec(PetscTAO,PetscVec)
-    PetscErrorCode TaoSetVariableBounds(PetscTAO,PetscVec,PetscVec)
+    PetscErrorCode TaoSetSolution(PetscTAO, PetscVec)
+    PetscErrorCode TaoSetConstraintsVec(PetscTAO, PetscVec)
+    PetscErrorCode TaoSetVariableBounds(PetscTAO, PetscVec, PetscVec)
 
-    PetscErrorCode TaoGetSolution(PetscTAO,PetscVec*)
-    PetscErrorCode TaoSetGradientNorm(PetscTAO,PetscMat)
-    PetscErrorCode TaoGetGradientNorm(PetscTAO,PetscMat*)
-    PetscErrorCode TaoLMVMSetH0(PetscTAO,PetscMat)
-    PetscErrorCode TaoLMVMGetH0(PetscTAO,PetscMat*)
-    PetscErrorCode TaoLMVMGetH0KSP(PetscTAO,PetscKSP*)
-    PetscErrorCode TaoBNCGGetType(PetscTAO,PetscTAOBNCGType*)
-    PetscErrorCode TaoBNCGSetType(PetscTAO,PetscTAOBNCGType)
-    PetscErrorCode TaoGetVariableBounds(PetscTAO,PetscVec*,PetscVec*)
+    PetscErrorCode TaoGetSolution(PetscTAO, PetscVec*)
+    PetscErrorCode TaoSetGradientNorm(PetscTAO, PetscMat)
+    PetscErrorCode TaoGetGradientNorm(PetscTAO, PetscMat*)
+    PetscErrorCode TaoLMVMSetH0(PetscTAO, PetscMat)
+    PetscErrorCode TaoLMVMGetH0(PetscTAO, PetscMat*)
+    PetscErrorCode TaoLMVMGetH0KSP(PetscTAO, PetscKSP*)
+    PetscErrorCode TaoBNCGGetType(PetscTAO, PetscTAOBNCGType*)
+    PetscErrorCode TaoBNCGSetType(PetscTAO, PetscTAOBNCGType)
+    PetscErrorCode TaoGetVariableBounds(PetscTAO, PetscVec*, PetscVec*)
 
-    PetscErrorCode TaoSetObjective(PetscTAO,PetscTaoObjective*,void*)
-    PetscErrorCode TaoSetGradient(PetscTAO,PetscVec,PetscTaoGradient*,void*)
-    PetscErrorCode TaoSetObjectiveAndGradient(PetscTAO,PetscVec,PetscTaoObjGrad*,void*)
-    PetscErrorCode TaoSetHessian(PetscTAO,PetscMat,PetscMat,PetscTaoHessian*,void*)
-    PetscErrorCode TaoGetObjective(PetscTAO,PetscTaoObjective**,void**)
-    PetscErrorCode TaoGetGradient(PetscTAO,PetscVec*,PetscTaoGradient**,void**)
-    PetscErrorCode TaoGetObjectiveAndGradient(PetscTAO,PetscVec*,PetscTaoObjGrad**,void**)
-    PetscErrorCode TaoGetHessian(PetscTAO,PetscMat*,PetscMat*,PetscTaoHessian**,void**)
-    PetscErrorCode TaoSetResidualRoutine(PetscTAO,PetscVec,PetscTaoResidual,void*)
-    PetscErrorCode TaoSetVariableBoundsRoutine(PetscTAO,PetscTaoVarBounds*,void*)
-    PetscErrorCode TaoSetConstraintsRoutine(PetscTAO,PetscVec,PetscTaoConstraints*,void*)
-    PetscErrorCode TaoSetJacobianRoutine(PetscTAO,PetscMat,PetscMat,PetscTaoJacobian*,void*)
-    PetscErrorCode TaoSetJacobianResidualRoutine(PetscTAO,PetscMat,PetscMat,PetscTaoJacobianResidual*,void*)
-    PetscErrorCode TaoSetStateDesignIS(PetscTAO,PetscIS,PetscIS)
-    PetscErrorCode TaoSetJacobianStateRoutine(PetscTAO,PetscMat,PetscMat,PetscMat,PetscTaoJacobianState*,void*)
-    PetscErrorCode TaoSetJacobianDesignRoutine(PetscTAO,PetscMat,PetscTaoJacobianDesign*,void*)
+    PetscErrorCode TaoSetObjective(PetscTAO, PetscTaoObjective*, void*)
+    PetscErrorCode TaoSetGradient(PetscTAO, PetscVec, PetscTaoGradient*, void*)
+    PetscErrorCode TaoSetObjectiveAndGradient(PetscTAO, PetscVec, PetscTaoObjGrad*, void*)
+    PetscErrorCode TaoSetHessian(PetscTAO, PetscMat, PetscMat, PetscTaoHessian*, void*)
+    PetscErrorCode TaoGetObjective(PetscTAO, PetscTaoObjective**, void**)
+    PetscErrorCode TaoGetGradient(PetscTAO, PetscVec*, PetscTaoGradient**, void**)
+    PetscErrorCode TaoGetObjectiveAndGradient(PetscTAO, PetscVec*, PetscTaoObjGrad**, void**)
+    PetscErrorCode TaoGetHessian(PetscTAO, PetscMat*, PetscMat*, PetscTaoHessian**, void**)
+    PetscErrorCode TaoSetResidualRoutine(PetscTAO, PetscVec, PetscTaoResidual, void*)
+    PetscErrorCode TaoSetVariableBoundsRoutine(PetscTAO, PetscTaoVarBounds*, void*)
+    PetscErrorCode TaoSetConstraintsRoutine(PetscTAO, PetscVec, PetscTaoConstraints*, void*)
+    PetscErrorCode TaoSetJacobianRoutine(PetscTAO, PetscMat, PetscMat, PetscTaoJacobian*, void*)
+    PetscErrorCode TaoSetJacobianResidualRoutine(PetscTAO, PetscMat, PetscMat, PetscTaoJacobianResidual*, void*)
+    PetscErrorCode TaoSetStateDesignIS(PetscTAO, PetscIS, PetscIS)
+    PetscErrorCode TaoSetJacobianStateRoutine(PetscTAO, PetscMat, PetscMat, PetscMat, PetscTaoJacobianState*, void*)
+    PetscErrorCode TaoSetJacobianDesignRoutine(PetscTAO, PetscMat, PetscTaoJacobianDesign*, void*)
 
-    PetscErrorCode TaoSetEqualityConstraintsRoutine(PetscTAO,PetscVec,PetscTaoEqualityConstraints*,void*)
-    PetscErrorCode TaoSetJacobianEqualityRoutine(PetscTAO,PetscMat,PetscMat,PetscTaoJacobianEquality*,void*)
-    PetscErrorCode TaoSetUpdate(PetscTAO,PetscTaoUpdateFunction*,void*)
+    PetscErrorCode TaoSetEqualityConstraintsRoutine(PetscTAO, PetscVec, PetscTaoEqualityConstraints*, void*)
+    PetscErrorCode TaoSetJacobianEqualityRoutine(PetscTAO, PetscMat, PetscMat, PetscTaoJacobianEquality*, void*)
+    PetscErrorCode TaoSetUpdate(PetscTAO, PetscTaoUpdateFunction*, void*)
 
-    PetscErrorCode TaoSetInitialTrustRegionRadius(PetscTAO,PetscReal)
+    PetscErrorCode TaoSetInitialTrustRegionRadius(PetscTAO, PetscReal)
 
-    PetscErrorCode TaoGetKSP(PetscTAO,PetscKSP*)
-    PetscErrorCode TaoGetLineSearch(PetscTAO,PetscTAOLineSearch*)
+    PetscErrorCode TaoGetKSP(PetscTAO, PetscKSP*)
+    PetscErrorCode TaoGetLineSearch(PetscTAO, PetscTAOLineSearch*)
 
-    PetscErrorCode TaoBRGNGetSubsolver(PetscTAO,PetscTAO*)
-    PetscErrorCode TaoBRGNSetRegularizerObjectiveAndGradientRoutine(PetscTAO,PetscTaoRegularizerObjGrad*,void*)
-    PetscErrorCode TaoBRGNSetRegularizerHessianRoutine(PetscTAO,PetscMat,PetscTaoRegularizerHessian*,void*)
-    PetscErrorCode TaoBRGNSetRegularizerWeight(PetscTAO,PetscReal)
-    PetscErrorCode TaoBRGNSetL1SmoothEpsilon(PetscTAO,PetscReal)
-    PetscErrorCode TaoBRGNSetDictionaryMatrix(PetscTAO,PetscMat)
-    PetscErrorCode TaoBRGNGetDampingVector(PetscTAO,PetscVec*)
+    PetscErrorCode TaoBRGNGetSubsolver(PetscTAO, PetscTAO*)
+    PetscErrorCode TaoBRGNSetRegularizerObjectiveAndGradientRoutine(PetscTAO, PetscTaoRegularizerObjGrad*, void*)
+    PetscErrorCode TaoBRGNSetRegularizerHessianRoutine(PetscTAO, PetscMat, PetscTaoRegularizerHessian*, void*)
+    PetscErrorCode TaoBRGNSetRegularizerWeight(PetscTAO, PetscReal)
+    PetscErrorCode TaoBRGNSetL1SmoothEpsilon(PetscTAO, PetscReal)
+    PetscErrorCode TaoBRGNSetDictionaryMatrix(PetscTAO, PetscMat)
+    PetscErrorCode TaoBRGNGetDampingVector(PetscTAO, PetscVec*)
 
-    PetscErrorCode TaoPythonSetType(PetscTAO,char[])
-    PetscErrorCode TaoPythonGetType(PetscTAO,char*[])
+    PetscErrorCode TaoPythonSetType(PetscTAO, char[])
+    PetscErrorCode TaoPythonGetType(PetscTAO, char*[])
 
     ctypedef const char* PetscTAOLineSearchType "TaoLineSearchType"
     PetscTAOLineSearchType TAOLINESEARCHUNIT
@@ -220,39 +220,39 @@ cdef extern from * nogil:
         TAOLINESEARCH_HALTED_RTOL
         TAOLINESEARCH_HALTED_USER
 
-    ctypedef PetscErrorCode PetscTaoLineSearchObjective(PetscTAOLineSearch,PetscVec,PetscReal*,void*) except PETSC_ERR_PYTHON
-    ctypedef PetscErrorCode PetscTaoLineSearchGradient(PetscTAOLineSearch,PetscVec,PetscVec,void*) except PETSC_ERR_PYTHON
-    ctypedef PetscErrorCode PetscTaoLineSearchObjGrad(PetscTAOLineSearch,PetscVec,PetscReal*,PetscVec,void*) except PETSC_ERR_PYTHON
-    ctypedef PetscErrorCode PetscTaoLineSearchObjGTS(PetscTaoLineSearch,PetscVec,PetscVec,PetscReal*,PetscReal*,void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscTaoLineSearchObjective(PetscTAOLineSearch, PetscVec, PetscReal*, void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscTaoLineSearchGradient(PetscTAOLineSearch, PetscVec, PetscVec, void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscTaoLineSearchObjGrad(PetscTAOLineSearch, PetscVec, PetscReal*, PetscVec, void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscTaoLineSearchObjGTS(PetscTaoLineSearch, PetscVec, PetscVec, PetscReal*, PetscReal*, void*) except PETSC_ERR_PYTHON
 
-    PetscErrorCode TaoLineSearchCreate(MPI_Comm,PetscTAOLineSearch*)
+    PetscErrorCode TaoLineSearchCreate(MPI_Comm, PetscTAOLineSearch*)
     PetscErrorCode TaoLineSearchDestroy(PetscTAOLineSearch*)
-    PetscErrorCode TaoLineSearchView(PetscTAOLineSearch,PetscViewer)
-    PetscErrorCode TaoLineSearchSetType(PetscTAOLineSearch,PetscTAOLineSearchType)
-    PetscErrorCode TaoLineSearchGetType(PetscTAOLineSearch,PetscTAOLineSearchType*)
-    PetscErrorCode TaoLineSearchSetOptionsPrefix(PetscTAOLineSearch,char[])
-    PetscErrorCode TaoLineSearchGetOptionsPrefix(PetscTAOLineSearch,char*[])
+    PetscErrorCode TaoLineSearchView(PetscTAOLineSearch, PetscViewer)
+    PetscErrorCode TaoLineSearchSetType(PetscTAOLineSearch, PetscTAOLineSearchType)
+    PetscErrorCode TaoLineSearchGetType(PetscTAOLineSearch, PetscTAOLineSearchType*)
+    PetscErrorCode TaoLineSearchSetOptionsPrefix(PetscTAOLineSearch, char[])
+    PetscErrorCode TaoLineSearchGetOptionsPrefix(PetscTAOLineSearch, char*[])
     PetscErrorCode TaoLineSearchSetFromOptions(PetscTAOLineSearch)
     PetscErrorCode TaoLineSearchSetUp(PetscTAOLineSearch)
-    PetscErrorCode TaoLineSearchUseTaoRoutines(PetscTAOLineSearch,PetscTAO)
-    PetscErrorCode TaoLineSearchSetObjectiveRoutine(PetscTAOLineSearch,PetscTaoLineSearchObjective,void*)
-    PetscErrorCode TaoLineSearchSetGradientRoutine(PetscTAOLineSearch,PetscTaoLineSearchGradient,void*)
-    PetscErrorCode TaoLineSearchSetObjectiveAndGradientRoutine(PetscTAOLineSearch,PetscTaoLineSearchObjGrad,void*)
-    PetscErrorCode TaoLineSearchApply(PetscTAOLineSearch,PetscVec,PetscReal*,PetscVec,PetscVec,PetscReal*,PetscTAOLineSearchConvergedReason*)
+    PetscErrorCode TaoLineSearchUseTaoRoutines(PetscTAOLineSearch, PetscTAO)
+    PetscErrorCode TaoLineSearchSetObjectiveRoutine(PetscTAOLineSearch, PetscTaoLineSearchObjective, void*)
+    PetscErrorCode TaoLineSearchSetGradientRoutine(PetscTAOLineSearch, PetscTaoLineSearchGradient, void*)
+    PetscErrorCode TaoLineSearchSetObjectiveAndGradientRoutine(PetscTAOLineSearch, PetscTaoLineSearchObjGrad, void*)
+    PetscErrorCode TaoLineSearchApply(PetscTAOLineSearch, PetscVec, PetscReal*, PetscVec, PetscVec, PetscReal*, PetscTAOLineSearchConvergedReason*)
 
 # --------------------------------------------------------------------
 
 cdef inline TAO ref_TAO(PetscTAO tao):
     cdef TAO ob = <TAO> TAO()
     ob.tao = tao
-    CHKERR( PetscINCREF(ob.obj) )
+    CHKERR(PetscINCREF(ob.obj))
     return ob
 
 # --------------------------------------------------------------------
 
 cdef PetscErrorCode TAO_Objective(PetscTAO _tao,
-                       PetscVec _x, PetscReal *_f,
-                       void *ctx) except PETSC_ERR_PYTHON with gil:
+                                  PetscVec _x, PetscReal *_f,
+                                  void *ctx) except PETSC_ERR_PYTHON with gil:
 
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec x   = ref_Vec(_x)
@@ -265,8 +265,8 @@ cdef PetscErrorCode TAO_Objective(PetscTAO _tao,
     return PETSC_SUCCESS
 
 cdef PetscErrorCode TAO_Residual(PetscTAO _tao,
-                      PetscVec _x, PetscVec _r,
-                      void *ctx) except PETSC_ERR_PYTHON with gil:
+                                 PetscVec _x, PetscVec _r,
+                                 void *ctx) except PETSC_ERR_PYTHON with gil:
 
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec x   = ref_Vec(_x)
@@ -279,8 +279,8 @@ cdef PetscErrorCode TAO_Residual(PetscTAO _tao,
     return PETSC_SUCCESS
 
 cdef PetscErrorCode TAO_Gradient(PetscTAO _tao,
-                      PetscVec _x, PetscVec _g,
-                      void *ctx) except PETSC_ERR_PYTHON with gil:
+                                 PetscVec _x, PetscVec _g,
+                                 void *ctx) except PETSC_ERR_PYTHON with gil:
 
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec x   = ref_Vec(_x)
@@ -293,8 +293,8 @@ cdef PetscErrorCode TAO_Gradient(PetscTAO _tao,
     return PETSC_SUCCESS
 
 cdef PetscErrorCode TAO_ObjGrad(PetscTAO _tao,
-                     PetscVec _x, PetscReal *_f, PetscVec _g,
-                     void *ctx) except PETSC_ERR_PYTHON with gil:
+                                PetscVec _x, PetscReal *_f, PetscVec _g,
+                                void *ctx) except PETSC_ERR_PYTHON with gil:
 
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec x   = ref_Vec(_x)
@@ -309,8 +309,8 @@ cdef PetscErrorCode TAO_ObjGrad(PetscTAO _tao,
 
 
 cdef PetscErrorCode TAO_BRGNRegObjGrad(PetscTAO _tao,
-                     PetscVec _x, PetscReal *_f, PetscVec _g,
-                     void *ctx) except PETSC_ERR_PYTHON with gil:
+                                       PetscVec _x, PetscReal *_f, PetscVec _g,
+                                       void *ctx) except PETSC_ERR_PYTHON with gil:
 
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec x   = ref_Vec(_x)
@@ -324,8 +324,8 @@ cdef PetscErrorCode TAO_BRGNRegObjGrad(PetscTAO _tao,
     return PETSC_SUCCESS
 
 cdef PetscErrorCode TAO_Constraints(PetscTAO _tao,
-                         PetscVec _x, PetscVec _r,
-                         void *ctx) except PETSC_ERR_PYTHON with gil:
+                                    PetscVec _x, PetscVec _r,
+                                    void *ctx) except PETSC_ERR_PYTHON with gil:
 
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec x   = ref_Vec(_x)
@@ -338,8 +338,8 @@ cdef PetscErrorCode TAO_Constraints(PetscTAO _tao,
     return PETSC_SUCCESS
 
 cdef PetscErrorCode TAO_VarBounds(PetscTAO _tao,
-                       PetscVec _xl, PetscVec _xu,
-                       void *ctx) except PETSC_ERR_PYTHON with gil:
+                                  PetscVec _xl, PetscVec _xu,
+                                  void *ctx) except PETSC_ERR_PYTHON with gil:
 
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec xl  = ref_Vec(_xl)
@@ -352,10 +352,10 @@ cdef PetscErrorCode TAO_VarBounds(PetscTAO _tao,
     return PETSC_SUCCESS
 
 cdef PetscErrorCode TAO_Hessian(PetscTAO _tao,
-                     PetscVec _x,
-                     PetscMat _H,
-                     PetscMat _P,
-                     void* ctx) except PETSC_ERR_PYTHON with gil:
+                                PetscVec _x,
+                                PetscMat _H,
+                                PetscMat _P,
+                                void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec x   = ref_Vec(_x)
     cdef Mat H   = ref_Mat(_H)
@@ -368,9 +368,9 @@ cdef PetscErrorCode TAO_Hessian(PetscTAO _tao,
     return PETSC_SUCCESS
 
 cdef PetscErrorCode TAO_BRGNRegHessian(PetscTAO _tao,
-                     PetscVec  _x,
-                     PetscMat  _H,
-                     void* ctx) except PETSC_ERR_PYTHON with gil:
+                                       PetscVec  _x,
+                                       PetscMat  _H,
+                                       void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec x   = ref_Vec(_x)
     cdef Mat H   = ref_Mat(_H)
@@ -382,10 +382,10 @@ cdef PetscErrorCode TAO_BRGNRegHessian(PetscTAO _tao,
     return PETSC_SUCCESS
 
 cdef PetscErrorCode TAO_Jacobian(PetscTAO _tao,
-                      PetscVec  _x,
-                      PetscMat  _J,
-                      PetscMat  _P,
-                      void* ctx) except PETSC_ERR_PYTHON with gil:
+                                 PetscVec  _x,
+                                 PetscMat  _J,
+                                 PetscMat  _P,
+                                 void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec x   = ref_Vec(_x)
     cdef Mat J   = ref_Mat(_J)
@@ -398,10 +398,10 @@ cdef PetscErrorCode TAO_Jacobian(PetscTAO _tao,
     return PETSC_SUCCESS
 
 cdef PetscErrorCode TAO_JacobianResidual(PetscTAO _tao,
-                      PetscVec  _x,
-                      PetscMat  _J,
-                      PetscMat  _P,
-                      void* ctx) except PETSC_ERR_PYTHON with gil:
+                                         PetscVec  _x,
+                                         PetscMat  _J,
+                                         PetscMat  _P,
+                                         void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec x   = ref_Vec(_x)
     cdef Mat J   = ref_Mat(_J)
@@ -414,27 +414,27 @@ cdef PetscErrorCode TAO_JacobianResidual(PetscTAO _tao,
     return PETSC_SUCCESS
 
 cdef PetscErrorCode TAO_JacobianState(PetscTAO _tao,
-                           PetscVec  _x,
-                           PetscMat  _J,
-                           PetscMat  _P,
-                           PetscMat  _I,
-                           void* ctx) except PETSC_ERR_PYTHON with gil:
+                                      PetscVec  _x,
+                                      PetscMat  _J,
+                                      PetscMat  _Jp,
+                                      PetscMat  _Ji,
+                                      void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec x   = ref_Vec(_x)
     cdef Mat J   = ref_Mat(_J)
-    cdef Mat P   = ref_Mat(_P)
-    cdef Mat I   = ref_Mat(_I)
+    cdef Mat Jp  = ref_Mat(_Jp)
+    cdef Mat Ji  = ref_Mat(_Ji)
     context = tao.get_attr("__jacobian_state__")
     if context is None and ctx != NULL: context = <object>ctx
     assert context is not None and type(context) is tuple # sanity check
     (jacobian, args, kargs) = context
-    jacobian(tao, x, J, P, I, *args, **kargs)
+    jacobian(tao, x, J, Jp, Ji, *args, **kargs)
     return PETSC_SUCCESS
 
 cdef PetscErrorCode TAO_JacobianDesign(PetscTAO _tao,
-                            PetscVec  _x,
-                            PetscMat  _J,
-                            void* ctx) except PETSC_ERR_PYTHON with gil:
+                                       PetscVec  _x,
+                                       PetscMat  _J,
+                                       void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec x   = ref_Vec(_x)
     cdef Mat J   = ref_Mat(_J)
@@ -446,9 +446,9 @@ cdef PetscErrorCode TAO_JacobianDesign(PetscTAO _tao,
     return PETSC_SUCCESS
 
 cdef PetscErrorCode TAO_EqualityConstraints(PetscTAO _tao,
-                                 PetscVec  _x,
-                                 PetscVec  _c,
-                                 void* ctx) except PETSC_ERR_PYTHON with gil:
+                                            PetscVec  _x,
+                                            PetscVec  _c,
+                                            void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec x   = ref_Vec(_x)
     cdef Vec c   = ref_Vec(_c)
@@ -460,10 +460,10 @@ cdef PetscErrorCode TAO_EqualityConstraints(PetscTAO _tao,
     return PETSC_SUCCESS
 
 cdef PetscErrorCode TAO_JacobianEquality(PetscTAO _tao,
-                              PetscVec  _x,
-                              PetscMat  _J,
-                              PetscMat  _P,
-                              void* ctx) except PETSC_ERR_PYTHON with gil:
+                                         PetscVec  _x,
+                                         PetscMat  _J,
+                                         PetscMat  _P,
+                                         void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec x   = ref_Vec(_x)
     cdef Mat J   = ref_Mat(_J)
@@ -486,9 +486,9 @@ cdef PetscErrorCode TAO_Update(
     return PETSC_SUCCESS
 
 cdef PetscErrorCode TAO_Converged(PetscTAO _tao,
-                       void* ctx) except PETSC_ERR_PYTHON with gil:
+                                  void* ctx) except PETSC_ERR_PYTHON with gil:
     # call first the default convergence test
-    CHKERR( TaoDefaultConvergenceTest(_tao, NULL) )
+    CHKERR(TaoDefaultConvergenceTest(_tao, NULL))
     # call next the user-provided convergence test
     cdef TAO tao = ref_TAO(_tao)
     (converged, args, kargs) = tao.get_attr('__converged__')
@@ -504,11 +504,11 @@ cdef PetscErrorCode TAO_Converged(PetscTAO _tao,
         creason = reason
         assert creason >= TAO_DIVERGED_USER
         assert creason <= TAO_CONVERGED_USER
-    CHKERR( TaoSetConvergedReason(_tao, creason) )
+    CHKERR(TaoSetConvergedReason(_tao, creason))
     return PETSC_SUCCESS
 
 cdef PetscErrorCode TAO_Monitor(PetscTAO _tao,
-                     void* ctx) except PETSC_ERR_PYTHON with gil:
+                                void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef TAO tao = ref_TAO(_tao)
     cdef object monitorlist = tao.get_attr('__monitor__')
     if monitorlist is None: return PETSC_SUCCESS
@@ -521,7 +521,7 @@ cdef PetscErrorCode TAO_Monitor(PetscTAO _tao,
 cdef inline TAOLineSearch ref_TAOLS(PetscTAOLineSearch taols):
     cdef TAOLineSearch ob = <TAOLineSearch> TAOLineSearch()
     ob.taols = taols
-    CHKERR( PetscINCREF(ob.obj) )
+    CHKERR(PetscINCREF(ob.obj))
     return ob
 
 # --------------------------------------------------------------------

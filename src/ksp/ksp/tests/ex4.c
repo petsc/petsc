@@ -169,6 +169,23 @@ int main(int argc, char **args)
   PetscCall(KSPGetIterationNumber(ksp, &its));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error %g Iterations %" PetscInt_FMT "\n", (double)(norm * h), its));
 
+  { // Test getting Jacobi diag
+    PC        pc;
+    PetscBool is_pcjacobi;
+
+    PetscCall(KSPGetPC(ksp, &pc));
+    PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCJACOBI, &is_pcjacobi));
+    if (is_pcjacobi) {
+      Vec diag;
+
+      PetscCall(MatCreateVecs(C, &diag, NULL));
+      PetscCall(PCJacobiGetDiagonal(pc, diag, NULL));
+      PetscCall(VecNorm(diag, NORM_2, &norm));
+      PetscCheck(norm > 0, PETSC_COMM_WORLD, PETSC_ERR_USER, "Jacobi preconditioner should have norm greater than 0");
+      PetscCall(VecDestroy(&diag));
+    }
+  }
+
   PetscCall(KSPDestroy(&ksp));
   PetscCall(VecDestroy(&ustar));
   PetscCall(VecDestroy(&u));

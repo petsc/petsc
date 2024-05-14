@@ -221,7 +221,7 @@ PetscErrorCode DMCompositeGetAccess(DM dm, Vec gvec, ...)
 + dm      - the `DMCOMPOSITE`
 . pvec    - packed vector
 . nwanted - number of vectors wanted
-- wanted  - sorted array of vectors wanted, or NULL to get all vectors
+- wanted  - sorted array of vectors wanted, or `NULL` to get all vectors
 
   Output Parameter:
 . vecs - array of requested global vectors (must be allocated)
@@ -233,7 +233,7 @@ PetscErrorCode DMCompositeGetAccess(DM dm, Vec gvec, ...)
 
 .seealso: `DMCOMPOSITE`, `DM`, `DMCompositeGetAccess()`, `DMCompositeGetEntries()`, `DMCompositeScatter()`, `DMCompositeGather()`
 @*/
-PetscErrorCode DMCompositeGetAccessArray(DM dm, Vec pvec, PetscInt nwanted, const PetscInt *wanted, Vec *vecs)
+PetscErrorCode DMCompositeGetAccessArray(DM dm, Vec pvec, PetscInt nwanted, const PetscInt *wanted, Vec vecs[])
 {
   struct DMCompositeLink *link;
   PetscInt                i, wnum;
@@ -295,7 +295,7 @@ PetscErrorCode DMCompositeGetAccessArray(DM dm, Vec pvec, PetscInt nwanted, cons
 .seealso: `DMCOMPOSITE`, `DM`, `DMCompositeRestoreLocalAccessArray()`, `DMCompositeGetAccess()`,
           `DMCompositeGetEntries()`, `DMCompositeScatter()`, `DMCompositeGather()`
 @*/
-PetscErrorCode DMCompositeGetLocalAccessArray(DM dm, Vec pvec, PetscInt nwanted, const PetscInt *wanted, Vec *vecs)
+PetscErrorCode DMCompositeGetLocalAccessArray(DM dm, Vec pvec, PetscInt nwanted, const PetscInt *wanted, Vec vecs[])
 {
   struct DMCompositeLink *link;
   PetscInt                i, wnum;
@@ -403,7 +403,7 @@ PetscErrorCode DMCompositeRestoreAccess(DM dm, Vec gvec, ...)
 
 .seealso: `DMCOMPOSITE`, `DM`, `DMCompositeRestoreAccess()`, `DMCompositeRestoreEntries()`, `DMCompositeScatter()`, `DMCompositeGather()`
 @*/
-PetscErrorCode DMCompositeRestoreAccessArray(DM dm, Vec pvec, PetscInt nwanted, const PetscInt *wanted, Vec *vecs)
+PetscErrorCode DMCompositeRestoreAccessArray(DM dm, Vec pvec, PetscInt nwanted, const PetscInt *wanted, Vec vecs[])
 {
   struct DMCompositeLink *link;
   PetscInt                i, wnum;
@@ -860,7 +860,7 @@ static PetscErrorCode DMCreateLocalVector_Composite(DM dm, Vec *lvec)
          `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetAccess()`, `DMCompositeScatter()`,
          `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors()`, `DMCompositeGetEntries()`
 @*/
-PetscErrorCode DMCompositeGetISLocalToGlobalMappings(DM dm, ISLocalToGlobalMapping **ltogs)
+PetscErrorCode DMCompositeGetISLocalToGlobalMappings(DM dm, ISLocalToGlobalMapping *ltogs[])
 {
   PetscInt                i, *idx, n, cnt;
   struct DMCompositeLink *next;
@@ -948,7 +948,7 @@ PetscErrorCode DMCompositeGetISLocalToGlobalMappings(DM dm, ISLocalToGlobalMappi
 
 .seealso: `DMCOMPOSITE`, `DM`, `DMCompositeGetGlobalISs()`, `DMCompositeGetISLocalToGlobalMappings()`, `MatGetLocalSubMatrix()`, `MatCreateLocalRef()`
 @*/
-PetscErrorCode DMCompositeGetLocalISs(DM dm, IS **is)
+PetscErrorCode DMCompositeGetLocalISs(DM dm, IS *is[])
 {
   DM_Composite           *com = (DM_Composite *)dm->data;
   struct DMCompositeLink *link;
@@ -1237,7 +1237,7 @@ PetscErrorCode DMCompositeGetEntries(DM dm, ...)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCompositeGetEntriesArray - Gets the DM for each entry in a `DMCOMPOSITE`
 
   Not Collective

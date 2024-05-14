@@ -102,7 +102,7 @@ PetscErrorCode PetscDrawViewFromOptions(PetscDraw A, PetscObject obj, const char
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawCreate - Creates a graphics context.
 
   Collective
@@ -182,7 +182,7 @@ PetscErrorCode PetscDrawCreate(MPI_Comm comm, const char display[], const char t
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawSetType - Builds graphics object for a particular implementation
 
   Collective
@@ -259,7 +259,7 @@ PetscErrorCode PetscDrawSetType(PetscDraw draw, PetscDrawType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawGetType - Gets the `PetscDraw` type as a string from the `PetscDraw` object.
 
   Not Collective
@@ -286,7 +286,7 @@ PetscErrorCode PetscDrawGetType(PetscDraw draw, PetscDrawType *type)
 /*@C
   PetscDrawRegister - Adds a method to the graphics package.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of a new user-defined graphics class
@@ -317,7 +317,7 @@ PetscErrorCode PetscDrawRegister(const char *sname, PetscErrorCode (*function)(P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawSetOptionsPrefix - Sets the prefix used for searching for all
   `PetscDraw` options in the database.
 

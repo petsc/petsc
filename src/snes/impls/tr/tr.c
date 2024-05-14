@@ -35,15 +35,16 @@ static PetscErrorCode SNESTR_KSPConverged_Private(KSP ksp, PetscInt n, PetscReal
   PetscReal                 nrm;
 
   PetscFunctionBegin;
-  PetscCall((*ctx->convtest)(ksp, n, rnorm, reason, ctx->convctx));
-  if (*reason) PetscCall(PetscInfo(snes, "Default or user provided convergence test KSP iterations=%" PetscInt_FMT ", rnorm=%g\n", n, (double)rnorm));
   /* Determine norm of solution */
   PetscCall(KSPBuildSolution(ksp, NULL, &x));
   PetscCall(VecNorm(x, neP->norm, &nrm));
   if (nrm >= neP->delta) {
-    PetscCall(PetscInfo(snes, "Ending linear iteration early, delta=%g, length=%g\n", (double)neP->delta, (double)nrm));
+    PetscCall(PetscInfo(snes, "Ending linear iteration early due to exiting trust region, delta=%g, length=%g\n", (double)neP->delta, (double)nrm));
     *reason = KSP_CONVERGED_STEP_LENGTH;
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
+  PetscCall((*ctx->convtest)(ksp, n, rnorm, reason, ctx->convctx));
+  if (*reason) PetscCall(PetscInfo(snes, "Default or user provided convergence test KSP iterations=%" PetscInt_FMT ", rnorm=%g\n", n, (double)rnorm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

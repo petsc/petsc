@@ -12,6 +12,7 @@
 #define Mat type(tMat)
 #define MatNullSpace type(tMatNullSpace)
 #define MatFDColoring type(tMatFDColoring)
+#define MatTransposeColoring type(tMatTransposeColoring)
 
 #define MatColoring PetscFortranAddr
 #define MatPartitioning PetscFortranAddr
@@ -164,7 +165,10 @@
 #define MATDUMMY           'dummy'
 #define MATLMVM            'lmvm'
 #define MATLMVMDFP         'lmvmdfp'
+#define MATLMVMDDFP        'lmvmddfp'
 #define MATLMVMBFGS        'lmvmbfgs'
+#define MATLMVMDBFGS       'lmvmdbfgs'
+#define MATLMVMDQN         'lmvmdqn'
 #define MATLMVMSR1         'lmvmsr1'
 #define MATLMVMBROYDEN     'lmvmbroyden'
 #define MATLMVMBADBROYDEN  'lmvmbadbroyden'

@@ -13,7 +13,7 @@ configure_options = [
   '--download-mpich-device=ch3:sock',
   '--download-mpich-configure-arguments=--enable-error-messages=all --enable-g', # note --enable-g=memit - used by --with-debugging=1 does not help
   '--download-openblas=1',
-  '--download-openblas-make-options=TARGET=GENERIC',
+  #'--download-openblas-make-options=TARGET=GENERIC',
   '--download-hypre=1',
   '--download-cmake=1',
   '--download-metis=1',

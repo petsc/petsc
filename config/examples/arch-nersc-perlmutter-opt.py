@@ -2,7 +2,7 @@
 
 # Example configure script for Perlmutter, the HPE Cray EX system at NERSC/LBNL equipped with
 # AMD EPYC CPUS and NVIDIA A100 GPUS. Here we target the GPU compute nodes and builds with
-# support for the CUDA/cuSPARSE, Kokkos, and ViennaCL back-ends. 
+# support for the CUDA/cuSPARSE, Kokkos, and ViennaCL back-ends.
 #
 # Currently, configuring PETSc on the system does not require loading many , if any, non-default modules.
 # As documented at https://docs.nersc.gov/systems/perlmutter/software/#mpi, typical settings might be
@@ -41,24 +41,12 @@ if __name__ == '__main__':
     '--CUDAFLAGS=   -g -O3',
     '--with-debugging=0',  # Disable debugging for production builds; use '--with-debugging=1' for development work.
 
-    # Set sowing-cc and sowing-cxx explicitly, as this prevents errors caused by compiling sowing with GCC when a
-    # programming environment other than PrgEnv-gnu has been loaded. If there is this compiler mismatch, we will see
-    # errors like
-    # 
-    #   /opt/nvidia/hpc_sdk/Linux_x86_64/22.5/compilers/include/bits/floatn.h:60:17: error: two or more data types in declaration specifiers
-    #   typedef float _Float32;
-    #                 ^~~~~~~~
-    '--download-sowing-cc=cc', # Note that sowing is only needed when Fortran bindings are required.
-    '--download-sowing-cc=CC',
-
-
     # Build with support for CUDA/cuSPARSE, Kokkos/Kokkos Kernels, and ViennaCL back-ends:
     '--with-cuda=1',
     '--with-cuda-arch=80',
     '--download-viennacl',
     '--download-kokkos',
     '--download-kokkos-kernels',
-    '--with-kokkos-kernels-tpl=0', # Use native Kokkos kernels, rather than NVIDIA-provided ones.
 
     # Download and build a few commonly-used packages:
     '--download-hypre',

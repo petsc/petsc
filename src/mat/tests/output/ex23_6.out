@@ -46,7 +46,7 @@ Mat Object: 1 MPI process
   total number of mallocs used during MatSetValues calls=0
     Mat Object: 1 MPI process
       type: seqaij
-      rows=12, cols=12
+      rows=12, cols=12, rbs=6, cbs=3
       total: nonzeros=36, allocated nonzeros=36
       total number of mallocs used during MatSetValues calls=0
         not using I-node routines
@@ -86,7 +86,7 @@ Mat Object: 1 MPI process
   total number of mallocs used during MatSetValues calls=0
     Mat Object: 1 MPI process
       type: seqaij
-      rows=12, cols=12
+      rows=12, cols=12, rbs=6, cbs=3
       total: nonzeros=36, allocated nonzeros=36
       total number of mallocs used during MatSetValues calls=0
         not using I-node routines
@@ -126,7 +126,7 @@ Mat Object: 1 MPI process
   total number of mallocs used during MatSetValues calls=0
     Mat Object: 1 MPI process
       type: seqaij
-      rows=12, cols=12
+      rows=12, cols=12, rbs=6, cbs=3
       total: nonzeros=36, allocated nonzeros=36
       total number of mallocs used during MatSetValues calls=0
         not using I-node routines
@@ -166,7 +166,7 @@ Mat Object: 1 MPI process
   total number of mallocs used during MatSetValues calls=0
     Mat Object: 1 MPI process
       type: seqaij
-      rows=12, cols=12
+      rows=12, cols=12, rbs=6, cbs=3
       total: nonzeros=36, allocated nonzeros=36
       total number of mallocs used during MatSetValues calls=0
         not using I-node routines

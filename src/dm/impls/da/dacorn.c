@@ -17,7 +17,7 @@ PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDASetFieldName - Sets the names of individual field components in multicomponent
   vectors associated with a `DMDA`.
 
@@ -111,7 +111,7 @@ PetscErrorCode DMDASetFieldNames(DM da, const char *const *names)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDAGetFieldName - Gets the names of individual field components in multicomponent
   vectors associated with a `DMDA`.
 
@@ -132,7 +132,7 @@ PetscErrorCode DMDASetFieldNames(DM da, const char *const *names)
 
 .seealso: [](sec_struct), `DM`, `DMDA`, `DMDASetFieldName()`, `DMDASetCoordinateName()`, `DMDAGetCoordinateName()`, `DMSetUp()`
 @*/
-PetscErrorCode DMDAGetFieldName(DM da, PetscInt nf, const char **name)
+PetscErrorCode DMDAGetFieldName(DM da, PetscInt nf, const char *name[])
 {
   DM_DA *dd = (DM_DA *)da->data;
 
@@ -145,7 +145,7 @@ PetscErrorCode DMDAGetFieldName(DM da, PetscInt nf, const char **name)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDASetCoordinateName - Sets the name of the coordinate directions associated with a `DMDA`, for example "x" or "y"
 
   Logically Collective; name must contain a common value; No Fortran Support
@@ -175,7 +175,7 @@ PetscErrorCode DMDASetCoordinateName(DM dm, PetscInt nf, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDAGetCoordinateName - Gets the name of a coordinate direction associated with a `DMDA`.
 
   Not Collective; name will contain a common value; No Fortran Support
@@ -194,7 +194,7 @@ PetscErrorCode DMDASetCoordinateName(DM dm, PetscInt nf, const char name[])
 
 .seealso: [](sec_struct), `DM`, `DMDA`, `DMDASetCoordinateName()`, `DMDASetFieldName()`, `DMDAGetFieldName()`, `DMSetUp()`
 @*/
-PetscErrorCode DMDAGetCoordinateName(DM dm, PetscInt nf, const char **name)
+PetscErrorCode DMDAGetCoordinateName(DM dm, PetscInt nf, const char *name[])
 {
   DM_DA *dd = (DM_DA *)dm->data;
 

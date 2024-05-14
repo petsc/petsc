@@ -179,7 +179,6 @@
       end do
       PetscCall(VecAssemblyBegin(X,ierr))
       PetscCall(VecAssemblyEnd(X,ierr))
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -357,7 +356,6 @@
 !  Sum function contributions from all processes
       PetscCallMPI(MPI_Allreduce(floc,f,1,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD,ierr))
       PetscCall(PetscLogFlops(20.0d0*(ye-ysm)*(xe-xsm)+16.0d0*(xep-xs)*(yep-ys),ierr))
-      return
       end
 
       subroutine ComputeHessian(tao, X, H, Hpre, dummy, ierr)
@@ -433,7 +431,6 @@
       PetscCall(PetscLogFlops(9.0d0*xm*ym + 49.0d0*xm,ierr))
 
       ierr = 0
-      return
       end
 
       subroutine Monitor(tao, dummy, ierr)
@@ -455,7 +452,6 @@
 
       ierr = 0
 
-      return
       end
 
       subroutine ConvergenceTest(tao, dummy, ierr)
@@ -477,7 +473,6 @@
 
       ierr = 0
 
-      return
       end
 
 !/*TEST

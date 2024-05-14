@@ -151,7 +151,6 @@
       Mat A
       Vec b,x,r
       integer ierr
-      return
       end
 
 !/*TEST

@@ -277,7 +277,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat A)
 }
 
 #include <petsc/private/sfimpl.h>
-/*@C
+/*@
   MatCreateScatter - Creates a new matrix of `MatType` `MATSCATTER`, based on a VecScatter
 
   Collective
@@ -291,14 +291,15 @@ PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat A)
 
   Level: intermediate
 
-   PETSc requires that matrices and vectors being used for certain
-   operations are partitioned accordingly.  For example, when
-   creating a scatter matrix, A, that supports parallel matrix-vector
-   products using `MatMult`(A,x,y) the user should set the number
-   of local matrix rows to be the number of local elements of the
-   corresponding result vector, y. Note that this is information is
-   required for use of the matrix interface routines, even though
-   the scatter matrix may not actually be physically partitioned.
+  Notes:
+  PETSc requires that matrices and vectors being used for certain
+  operations are partitioned accordingly.  For example, when
+  creating a scatter matrix, A, that supports parallel matrix-vector
+  products using `MatMult`(A,x,y) the user should set the number
+  of local matrix rows to be the number of local elements of the
+  corresponding result vector, y. Note that this is information is
+  required for use of the matrix interface routines, even though
+  the scatter matrix may not actually be physically partitioned.
 
   Developer Notes:
   This directly accesses information inside the `VecScatter` associated with the matrix-vector product

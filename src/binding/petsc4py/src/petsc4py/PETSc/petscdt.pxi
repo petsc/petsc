@@ -16,18 +16,17 @@ cdef extern from * nogil:
     PetscErrorCode PetscQuadratureGetData(PetscQuadrature, PetscInt*, PetscInt*, PetscInt*, const PetscReal *[], const PetscReal *[])
     PetscErrorCode PetscQuadratureSetData(PetscQuadrature, PetscInt, PetscInt, PetscInt, const PetscReal [], const PetscReal [])
 
-
     PetscErrorCode PetscQuadratureView(PetscQuadrature, PetscViewer)
     PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *)
 
     PetscErrorCode PetscQuadratureExpandComposite(PetscQuadrature, PetscInt, const PetscReal[], const PetscReal[], PetscQuadrature *)
 
-    PetscErrorCode PetscDTLegendreEval(PetscInt,const PetscReal*,PetscInt,const PetscInt*,PetscReal*,PetscReal*,PetscReal*)
-    PetscErrorCode PetscDTGaussQuadrature(PetscInt,PetscReal,PetscReal,PetscReal*,PetscReal*)
-    PetscErrorCode PetscDTGaussLobattoLegendreQuadrature(PetscInt,PetscGaussLobattoLegendreCreateType,PetscReal*,PetscReal*)
-    PetscErrorCode PetscDTReconstructPoly(PetscInt,PetscInt,const PetscReal*,PetscInt,const PetscReal*,PetscReal*)
-    PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt,PetscInt,PetscInt,PetscReal,PetscReal,PetscQuadrature*)
-    PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt,PetscInt,PetscInt,PetscReal,PetscReal,PetscQuadrature*)
+    PetscErrorCode PetscDTLegendreEval(PetscInt, const PetscReal*, PetscInt, const PetscInt*, PetscReal*, PetscReal*, PetscReal*)
+    PetscErrorCode PetscDTGaussQuadrature(PetscInt, PetscReal, PetscReal, PetscReal*, PetscReal*)
+    PetscErrorCode PetscDTGaussLobattoLegendreQuadrature(PetscInt, PetscGaussLobattoLegendreCreateType, PetscReal*, PetscReal*)
+    PetscErrorCode PetscDTReconstructPoly(PetscInt, PetscInt, const PetscReal*, PetscInt, const PetscReal*, PetscReal*)
+    PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt, PetscInt, PetscInt, PetscReal, PetscReal, PetscQuadrature*)
+    PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt, PetscInt, PetscInt, PetscReal, PetscReal, PetscQuadrature*)
 
     PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt, PetscInt, PetscReal, PetscReal, PetscQuadrature *)
     PetscErrorCode PetscDTTanhSinhIntegrate(void (*)(PetscReal *, void *, PetscReal *), PetscReal, PetscReal, PetscInt, PetscReal *)

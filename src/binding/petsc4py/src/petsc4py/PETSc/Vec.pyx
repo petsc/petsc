@@ -20,12 +20,15 @@ class VecType(object):
     MPIKOKKOS  = S_(VECMPIKOKKOS)
     KOKKOS     = S_(VECKOKKOS)
 
+
 class VecOption(object):
     """Vector assembly option."""
     IGNORE_OFF_PROC_ENTRIES = VEC_IGNORE_OFF_PROC_ENTRIES
     IGNORE_NEGATIVE_INDICES = VEC_IGNORE_NEGATIVE_INDICES
 
 # --------------------------------------------------------------------
+
+
 cdef class Vec(Object):
     """A vector object.
 
@@ -106,12 +109,6 @@ cdef class Vec(Object):
 
     def __matmul__(self, other):
         return vec_matmul(self, other)
-    #
-
-    #def __len__(self):
-    #    cdef PetscInt size = 0
-    #    CHKERR( VecGetSize(self.vec, &size) )
-    #    return <Py_ssize_t>size
 
     def __getitem__(self, i):
         return vec_getitem(self, i)
@@ -161,7 +158,7 @@ cdef class Vec(Object):
         """
         cdef PetscViewer vwr = NULL
         if viewer is not None: vwr = viewer.vwr
-        CHKERR( VecView(self.vec, vwr) )
+        CHKERR(VecView(self.vec, vwr))
 
     def destroy(self) -> Self:
         """Destroy the vector.
@@ -173,7 +170,7 @@ cdef class Vec(Object):
         create, petsc.VecDestroy
 
         """
-        CHKERR( VecDestroy(&self.vec) )
+        CHKERR(VecDestroy(&self.vec))
         return self
 
     def create(self, comm: Comm | None = None) -> Self:
@@ -195,8 +192,8 @@ cdef class Vec(Object):
         """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscVec newvec = NULL
-        CHKERR( VecCreate(ccomm, &newvec) )
-        CHKERR( PetscCLEAR(self.obj) ); self.vec = newvec
+        CHKERR(VecCreate(ccomm, &newvec))
+        CHKERR(PetscCLEAR(self.obj)); self.vec = newvec
         return self
 
     def setType(self, vec_type: Type | str) -> None:
@@ -216,13 +213,12 @@ cdef class Vec(Object):
         """
         cdef PetscVecType cval = NULL
         vec_type = str2bytes(vec_type, &cval)
-        CHKERR( VecSetType(self.vec, cval) )
+        CHKERR(VecSetType(self.vec, cval))
 
     def setSizes(
         self,
         size: LayoutSizeSpec,
-        bsize: int | None = None,
-    ) -> None:
+        bsize: int | None = None) -> None:
         """Set the local and global sizes of the vector.
 
         Collective.
@@ -241,9 +237,9 @@ cdef class Vec(Object):
         """
         cdef PetscInt bs=0, n=0, N=0
         Vec_Sizes(size, bsize, &bs, &n, &N)
-        CHKERR( VecSetSizes(self.vec, n, N) )
+        CHKERR(VecSetSizes(self.vec, n, N))
         if bs != PETSC_DECIDE:
-            CHKERR( VecSetBlockSize(self.vec, bs) )
+            CHKERR(VecSetBlockSize(self.vec, bs))
 
     #
 
@@ -252,8 +248,7 @@ cdef class Vec(Object):
         self,
         size: LayoutSizeSpec,
         bsize: int | None = None,
-        comm: Comm | None = None,
-    ) -> Self:
+        comm: Comm | None = None) -> Self:
         """Create a sequential `Type.SEQ` vector.
 
         Collective.
@@ -278,19 +273,18 @@ cdef class Vec(Object):
         Sys_Layout(ccomm, bs, &n, &N)
         if bs == PETSC_DECIDE: bs = 1
         cdef PetscVec newvec = NULL
-        CHKERR( VecCreate(ccomm,&newvec) )
-        CHKERR( VecSetSizes(newvec, n, N) )
-        CHKERR( VecSetBlockSize(newvec, bs) )
-        CHKERR( VecSetType(newvec, VECSEQ) )
-        CHKERR( PetscCLEAR(self.obj) ); self.vec = newvec
+        CHKERR(VecCreate(ccomm, &newvec))
+        CHKERR(VecSetSizes(newvec, n, N))
+        CHKERR(VecSetBlockSize(newvec, bs))
+        CHKERR(VecSetType(newvec, VECSEQ))
+        CHKERR(PetscCLEAR(self.obj)); self.vec = newvec
         return self
 
     def createMPI(
         self,
         size: LayoutSizeSpec,
         bsize: int | None = None,
-        comm: Comm | None = None,
-    ) -> Self:
+        comm: Comm | None = None) -> Self:
         """Create a parallel `Type.MPI` vector.
 
         Collective.
@@ -315,11 +309,11 @@ cdef class Vec(Object):
         Sys_Layout(ccomm, bs, &n, &N)
         if bs == PETSC_DECIDE: bs = 1
         cdef PetscVec newvec = NULL
-        CHKERR( VecCreate(ccomm, &newvec) )
-        CHKERR( VecSetSizes(newvec, n, N) )
-        CHKERR( VecSetBlockSize(newvec, bs) )
-        CHKERR( VecSetType(newvec, VECMPI) )
-        CHKERR( PetscCLEAR(self.obj) ); self.vec = newvec
+        CHKERR(VecCreate(ccomm, &newvec))
+        CHKERR(VecSetSizes(newvec, n, N))
+        CHKERR(VecSetBlockSize(newvec, bs))
+        CHKERR(VecSetType(newvec, VECMPI))
+        CHKERR(PetscCLEAR(self.obj)); self.vec = newvec
         return self
 
     def createWithArray(
@@ -327,8 +321,7 @@ cdef class Vec(Object):
         array: Sequence[Scalar],
         size: LayoutSizeSpec | None = None,
         bsize: int | None = None,
-        comm: Comm | None = None,
-    ) -> Self:
+        comm: Comm | None = None) -> Self:
         """Create a vector using a provided array.
 
         Collective.
@@ -367,10 +360,10 @@ cdef class Vec(Object):
             (toInt(na), toInt(n), toInt(bs)))
         cdef PetscVec newvec = NULL
         if comm_size(ccomm) == 1:
-            CHKERR( VecCreateSeqWithArray(ccomm,bs,N,sa,&newvec) )
+            CHKERR(VecCreateSeqWithArray(ccomm, bs, N, sa, &newvec))
         else:
-            CHKERR( VecCreateMPIWithArray(ccomm,bs,n,N,sa,&newvec) )
-        CHKERR( PetscCLEAR(self.obj) ); self.vec = newvec
+            CHKERR(VecCreateMPIWithArray(ccomm, bs, n, N, sa, &newvec))
+        CHKERR(PetscCLEAR(self.obj)); self.vec = newvec
         self.set_attr('__array__', array)
         return self
 
@@ -380,8 +373,7 @@ cdef class Vec(Object):
         cudahandle: Any | None = None,  # FIXME What type is appropriate here?
         size: LayoutSizeSpec | None = None,
         bsize: int | None = None,
-        comm: Comm | None = None,
-    ) -> Self:
+        comm: Comm | None = None) -> Self:
         """Create a `Type.CUDA` vector with optional arrays.
 
         Collective.
@@ -424,10 +416,10 @@ cdef class Vec(Object):
             (toInt(na), toInt(n), toInt(bs)))
         cdef PetscVec newvec = NULL
         if comm_size(ccomm) == 1:
-            CHKERR( VecCreateSeqCUDAWithArrays(ccomm,bs,N,sa,gpuarray,&newvec) )
+            CHKERR(VecCreateSeqCUDAWithArrays(ccomm, bs, N, sa, gpuarray, &newvec))
         else:
-            CHKERR( VecCreateMPICUDAWithArrays(ccomm,bs,n,N,sa,gpuarray,&newvec) )
-        CHKERR( PetscCLEAR(self.obj) ); self.vec = newvec
+            CHKERR(VecCreateMPICUDAWithArrays(ccomm, bs, n, N, sa, gpuarray, &newvec))
+        CHKERR(PetscCLEAR(self.obj)); self.vec = newvec
 
         if cpuarray is not None:
             self.set_attr('__array__', cpuarray)
@@ -439,8 +431,7 @@ cdef class Vec(Object):
         hiphandle: Any | None = None,  # FIXME What type is appropriate here?
         size: LayoutSizeSpec | None = None,
         bsize: int | None = None,
-        comm: Comm | None = None,
-    ) -> Self:
+        comm: Comm | None = None) -> Self:
         """Create a `Type.HIP` vector with optional arrays.
 
         Collective.
@@ -483,10 +474,10 @@ cdef class Vec(Object):
             (toInt(na), toInt(n), toInt(bs)))
         cdef PetscVec newvec = NULL
         if comm_size(ccomm) == 1:
-            CHKERR( VecCreateSeqHIPWithArrays(ccomm,bs,N,sa,gpuarray,&newvec) )
+            CHKERR(VecCreateSeqHIPWithArrays(ccomm, bs, N, sa, gpuarray, &newvec))
         else:
-            CHKERR( VecCreateMPIHIPWithArrays(ccomm,bs,n,N,sa,gpuarray,&newvec) )
-        CHKERR( PetscCLEAR(self.obj) ); self.vec = newvec
+            CHKERR(VecCreateMPIHIPWithArrays(ccomm, bs, n, N, sa, gpuarray, &newvec))
+        CHKERR(PetscCLEAR(self.obj)); self.vec = newvec
 
         if cpuarray is not None:
             self.set_attr('__array__', cpuarray)
@@ -498,8 +489,7 @@ cdef class Vec(Object):
         viennaclvechandle: Any | None = None,  # FIXME What type is appropriate here?
         size: LayoutSizeSpec | None = None,
         bsize: int | None = None,
-        comm: Comm | None = None,
-    ) -> Self:
+        comm: Comm | None = None) -> Self:
         """Create a `Type.VIENNACL` vector with optional arrays.
 
         Collective.
@@ -539,13 +529,13 @@ cdef class Vec(Object):
         Sys_Layout(ccomm, bs, &n, &N)
         if bs == PETSC_DECIDE: bs = 1
         if na < n:
-            raise ValueError( "array size %d and vector local size %d block size %d" % (toInt(na), toInt(n), toInt(bs)))
+            raise ValueError("array size %d and vector local size %d block size %d" % (toInt(na), toInt(n), toInt(bs)))
         cdef PetscVec newvec = NULL
         if comm_size(ccomm) == 1:
-            CHKERR( VecCreateSeqViennaCLWithArrays(ccomm,bs,N,sa,vclvec,&newvec) )
+            CHKERR(VecCreateSeqViennaCLWithArrays(ccomm, bs, N, sa, vclvec, &newvec))
         else:
-            CHKERR( VecCreateMPIViennaCLWithArrays(ccomm,bs,n,N,sa,vclvec,&newvec) )
-        CHKERR( PetscCLEAR(self.obj) ); self.vec = newvec
+            CHKERR(VecCreateMPIViennaCLWithArrays(ccomm, bs, n, N, sa, vclvec, &newvec))
+        CHKERR(PetscCLEAR(self.obj)); self.vec = newvec
 
         if cpuarray is not None:
             self.set_attr('__array__', cpuarray)
@@ -557,8 +547,7 @@ cdef class Vec(Object):
         object dltensor,
         size: LayoutSizeSpec | None = None,
         bsize: int | None = None,
-        comm: Comm | None = None
-    ) -> Self:
+        comm: Comm | None = None) -> Self:
         """Create a vector wrapping a DLPack object, sharing the same memory.
 
         Collective.
@@ -592,8 +581,7 @@ cdef class Vec(Object):
         cdef int64_t* shape = NULL
         cdef int64_t* strides = NULL
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef PetscInt bs = 0,n = 0,N = 0
-        cdef DLContext* ctx = NULL
+        cdef PetscInt bs = 0, n = 0, N = 0
 
         if not PyCapsule_CheckExact(dltensor):
             dltensor = dltensor.__dlpack__()
@@ -620,25 +608,25 @@ cdef class Vec(Object):
             (toInt(nz), toInt(n), toInt(bs)))
         cdef PetscVec newvec = NULL
         cdef PetscDLDeviceType dltype = ptr.dl_tensor.ctx.device_type
-        if dltype in [kDLCUDA,kDLCUDAManaged]:
+        if dltype in [kDLCUDA, kDLCUDAManaged]:
             if comm_size(ccomm) == 1:
-                CHKERR( VecCreateSeqCUDAWithArray(ccomm,bs,N,<PetscScalar*>(ptr.dl_tensor.data),&newvec) )
+                CHKERR(VecCreateSeqCUDAWithArray(ccomm, bs, N, <PetscScalar*>(ptr.dl_tensor.data), &newvec))
             else:
-                CHKERR( VecCreateMPICUDAWithArray(ccomm,bs,n,N,<PetscScalar*>(ptr.dl_tensor.data),&newvec) )
-        elif dltype in [kDLCPU,kDLCUDAHost,kDLROCMHost]:
+                CHKERR(VecCreateMPICUDAWithArray(ccomm, bs, n, N, <PetscScalar*>(ptr.dl_tensor.data), &newvec))
+        elif dltype in [kDLCPU, kDLCUDAHost, kDLROCMHost]:
             if comm_size(ccomm) == 1:
-                CHKERR( VecCreateSeqWithArray(ccomm,bs,N,<PetscScalar*>(ptr.dl_tensor.data),&newvec) )
+                CHKERR(VecCreateSeqWithArray(ccomm, bs, N, <PetscScalar*>(ptr.dl_tensor.data), &newvec))
             else:
-                CHKERR( VecCreateMPIWithArray(ccomm,bs,n,N,<PetscScalar*>(ptr.dl_tensor.data),&newvec) )
+                CHKERR(VecCreateMPIWithArray(ccomm, bs, n, N, <PetscScalar*>(ptr.dl_tensor.data), &newvec))
         elif dltype == kDLROCM:
             if comm_size(ccomm) == 1:
-                CHKERR( VecCreateSeqHIPWithArray(ccomm,bs,N,<PetscScalar*>(ptr.dl_tensor.data),&newvec) )
+                CHKERR(VecCreateSeqHIPWithArray(ccomm, bs, N, <PetscScalar*>(ptr.dl_tensor.data), &newvec))
             else:
-                CHKERR( VecCreateMPIHIPWithArray(ccomm,bs,n,N,<PetscScalar*>(ptr.dl_tensor.data),&newvec) )
+                CHKERR(VecCreateMPIHIPWithArray(ccomm, bs, n, N, <PetscScalar*>(ptr.dl_tensor.data), &newvec))
         else:
             raise TypeError("Device type {} not supported".format(dltype))
 
-        CHKERR( PetscCLEAR(self.obj) ); self.vec = newvec
+        CHKERR(PetscCLEAR(self.obj)); self.vec = newvec
         self.set_attr('__array__', dltensor)
         cdef int64_t* shape_arr = NULL
         cdef int64_t* strides_arr = NULL
@@ -655,8 +643,7 @@ cdef class Vec(Object):
     def attachDLPackInfo(
         self,
         Vec vec=None,
-        object dltensor=None
-    ) -> Self:
+        object dltensor=None) -> Self:
         """Attach tensor information from another vector or DLPack tensor.
 
         Logically collective.
@@ -681,7 +668,7 @@ cdef class Vec(Object):
         clearDLPackInfo, createWithDLPack
 
         """
-        cdef object ctx0 = self.get_attr('__dltensor_ctx__'), ctx = None
+        cdef object ctx = None
         cdef DLManagedTensor* ptr = NULL
         cdef int64_t* shape_arr = NULL
         cdef int64_t* strides_arr = NULL
@@ -781,25 +768,25 @@ cdef class Vec(Object):
         # By restoring now, we guarantee the sanity of the ObjectState
         if mode == 'w':
             if hostmem:
-                CHKERR( VecGetArrayWrite(self.vec, <PetscScalar**>&a) )
-                CHKERR( VecRestoreArrayWrite(self.vec, NULL) )
+                CHKERR(VecGetArrayWrite(self.vec, <PetscScalar**>&a))
+                CHKERR(VecRestoreArrayWrite(self.vec, NULL))
             else:
-                CHKERR( VecGetArrayWriteAndMemType(self.vec, <PetscScalar**>&a, NULL) )
-                CHKERR( VecRestoreArrayWriteAndMemType(self.vec, NULL) )
+                CHKERR(VecGetArrayWriteAndMemType(self.vec, <PetscScalar**>&a, NULL))
+                CHKERR(VecRestoreArrayWriteAndMemType(self.vec, NULL))
         elif mode == 'r':
             if hostmem:
-                CHKERR( VecGetArrayRead(self.vec, <const PetscScalar**>&a) )
-                CHKERR( VecRestoreArrayRead(self.vec, NULL) )
+                CHKERR(VecGetArrayRead(self.vec, <const PetscScalar**>&a))
+                CHKERR(VecRestoreArrayRead(self.vec, NULL))
             else:
-                CHKERR( VecGetArrayReadAndMemType(self.vec, <const PetscScalar**>&a, NULL) )
-                CHKERR( VecRestoreArrayReadAndMemType(self.vec, NULL) )
+                CHKERR(VecGetArrayReadAndMemType(self.vec, <const PetscScalar**>&a, NULL))
+                CHKERR(VecRestoreArrayReadAndMemType(self.vec, NULL))
         else:
             if hostmem:
-                CHKERR( VecGetArray(self.vec, <PetscScalar**>&a) )
-                CHKERR( VecRestoreArray(self.vec, NULL) )
+                CHKERR(VecGetArray(self.vec, <PetscScalar**>&a))
+                CHKERR(VecRestoreArray(self.vec, NULL))
             else:
-                CHKERR( VecGetArrayAndMemType(self.vec, <PetscScalar**>&a, NULL) )
-                CHKERR( VecRestoreArrayAndMemType(self.vec, NULL) )
+                CHKERR(VecGetArrayAndMemType(self.vec, <PetscScalar**>&a, NULL))
+                CHKERR(VecRestoreArrayAndMemType(self.vec, NULL))
         dl_tensor.data = <void *>a
 
         cdef DLContext* ctx = &dl_tensor.ctx
@@ -824,7 +811,7 @@ cdef class Vec(Object):
             raise ValueError('Unsupported PetscScalar type')
         dtype.lanes = <uint16_t>1
         dlm_tensor.manager_ctx = <void *>self.vec
-        CHKERR( PetscObjectReference(<PetscObject>self.vec) )
+        CHKERR(PetscObjectReference(<PetscObject>self.vec))
         dlm_tensor.manager_deleter = manager_deleter
         dlm_tensor.del_obj = <dlpack_manager_del_obj>PetscDEALLOC
         return PyCapsule_New(dlm_tensor, 'dltensor', pycapsule_deleter)
@@ -834,8 +821,7 @@ cdef class Vec(Object):
         ghosts: Sequence[int],
         size: LayoutSizeSpec,
         bsize: int | None = None,
-        comm: Comm | None = None,
-    ) -> Self:
+        comm: Comm | None = None) -> Self:
         """Create a parallel vector with ghost padding on each processor.
 
         Collective.
@@ -864,12 +850,12 @@ cdef class Vec(Object):
         Sys_Layout(ccomm, bs, &n, &N)
         cdef PetscVec newvec = NULL
         if bs == PETSC_DECIDE:
-            CHKERR( VecCreateGhost(
-                    ccomm, n, N, ng, ig, &newvec) )
+            CHKERR(VecCreateGhost(
+                    ccomm, n, N, ng, ig, &newvec))
         else:
-            CHKERR( VecCreateGhostBlock(
-                    ccomm, bs, n, N, ng, ig, &newvec) )
-        CHKERR( PetscCLEAR(self.obj) ); self.vec = newvec
+            CHKERR(VecCreateGhostBlock(
+                    ccomm, bs, n, N, ng, ig, &newvec))
+        CHKERR(PetscCLEAR(self.obj)); self.vec = newvec
         return self
 
     def createGhostWithArray(
@@ -878,8 +864,7 @@ cdef class Vec(Object):
         array: Sequence[Scalar],
         size: LayoutSizeSpec | None = None,
         bsize: int | None = None,
-        comm: Comm | None = None,
-    ) -> Self:
+        comm: Comm | None = None) -> Self:
         """Create a parallel vector with ghost padding and provided arrays.
 
         Collective.
@@ -921,12 +906,12 @@ cdef class Vec(Object):
             (toInt(ng), toInt(na), toInt(n), toInt(b)))
         cdef PetscVec newvec = NULL
         if bs == PETSC_DECIDE:
-            CHKERR( VecCreateGhostWithArray(
-                    ccomm, n, N, ng, ig, sa, &newvec) )
+            CHKERR(VecCreateGhostWithArray(
+                    ccomm, n, N, ng, ig, sa, &newvec))
         else:
-            CHKERR( VecCreateGhostBlockWithArray(
-                    ccomm, bs, n, N, ng, ig, sa, &newvec) )
-        CHKERR( PetscCLEAR(self.obj) ); self.vec = newvec
+            CHKERR(VecCreateGhostBlockWithArray(
+                    ccomm, bs, n, N, ng, ig, sa, &newvec))
+        CHKERR(PetscCLEAR(self.obj)); self.vec = newvec
         self.set_attr('__array__', array)
         return self
 
@@ -934,8 +919,7 @@ cdef class Vec(Object):
         self,
         size: LayoutSizeSpec,
         bsize: int | None = None,
-        comm: Comm | None = None,
-    ) -> Self:
+        comm: Comm | None = None) -> Self:
         """Create a `Type.SHARED` vector that uses shared memory.
 
         Collective.
@@ -959,18 +943,17 @@ cdef class Vec(Object):
         Vec_Sizes(size, bsize, &bs, &n, &N)
         Sys_Layout(ccomm, bs, &n, &N)
         cdef PetscVec newvec = NULL
-        CHKERR( VecCreateShared(ccomm, n, N, &newvec) )
-        CHKERR( PetscCLEAR(self.obj) ); self.vec = newvec
+        CHKERR(VecCreateShared(ccomm, n, N, &newvec))
+        CHKERR(PetscCLEAR(self.obj)); self.vec = newvec
         if bs != PETSC_DECIDE:
-            CHKERR( VecSetBlockSize(self.vec, bs) )
+            CHKERR(VecSetBlockSize(self.vec, bs))
         return self
 
     def createNest(
         self,
         vecs: Sequence[Vec],
         isets: Sequence[IS] = None,
-        comm: Comm | None = None,
-    ) -> Self:
+        comm: Comm | None = None) -> Self:
         """Create a `Type.NEST` vector containing multiple nested subvectors.
 
         Collective.
@@ -1001,20 +984,20 @@ cdef class Vec(Object):
         cdef PetscInt n = <PetscInt>m
         cdef PetscVec *cvecs  = NULL
         cdef PetscIS  *cisets = NULL
-        cdef object tmp1, tmp2
-        tmp1 = oarray_p(empty_p(n), NULL, <void**>&cvecs)
+        cdef object unused1, unused2
+        unused1 = oarray_p(empty_p(n), NULL, <void**>&cvecs)
         for i from 0 <= i < m: cvecs[i] = (<Vec?>vecs[i]).vec
         if isets is not None:
-            tmp2 = oarray_p(empty_p(n), NULL, <void**>&cisets)
+            unused2 = oarray_p(empty_p(n), NULL, <void**>&cisets)
             for i from 0 <= i < m: cisets[i] = (<IS?>isets[i]).iset
         cdef PetscVec newvec = NULL
-        CHKERR( VecCreateNest(ccomm, n, cisets, cvecs,&newvec) )
-        CHKERR( PetscCLEAR(self.obj) ); self.vec = newvec
+        CHKERR(VecCreateNest(ccomm, n, cisets, cvecs, &newvec))
+        CHKERR(PetscCLEAR(self.obj)); self.vec = newvec
         return self
 
     #
 
-    def setOptionsPrefix(self, prefix: str) -> None:
+    def setOptionsPrefix(self, prefix: str | None) -> None:
         """Set the prefix used for searching for options in the database.
 
         Logically collective.
@@ -1026,7 +1009,7 @@ cdef class Vec(Object):
         """
         cdef const char *cval = NULL
         prefix = str2bytes(prefix, &cval)
-        CHKERR( VecSetOptionsPrefix(self.vec, cval) )
+        CHKERR(VecSetOptionsPrefix(self.vec, cval))
 
     def getOptionsPrefix(self) -> str:
         """Return the prefix used for searching for options in the database.
@@ -1039,10 +1022,10 @@ cdef class Vec(Object):
 
         """
         cdef const char *cval = NULL
-        CHKERR( VecGetOptionsPrefix(self.vec, &cval) )
+        CHKERR(VecGetOptionsPrefix(self.vec, &cval))
         return bytes2str(cval)
 
-    def appendOptionsPrefix(self, prefix: str) -> None:
+    def appendOptionsPrefix(self, prefix: str | None) -> None:
         """Append to the prefix used for searching for options in the database.
 
         Logically collective.
@@ -1054,7 +1037,7 @@ cdef class Vec(Object):
         """
         cdef const char *cval = NULL
         prefix = str2bytes(prefix, &cval)
-        CHKERR( VecAppendOptionsPrefix(self.vec, cval) )
+        CHKERR(VecAppendOptionsPrefix(self.vec, cval))
 
     def setFromOptions(self) -> None:
         """Configure the vector from the options database.
@@ -1066,7 +1049,7 @@ cdef class Vec(Object):
         petsc_options, petsc.VecSetFromOptions
 
         """
-        CHKERR( VecSetFromOptions(self.vec) )
+        CHKERR(VecSetFromOptions(self.vec))
 
     def setUp(self) -> Self:
         """Set up the internal data structures for using the vector.
@@ -1078,7 +1061,7 @@ cdef class Vec(Object):
         create, destroy, petsc.VecSetUp
 
         """
-        CHKERR( VecSetUp(self.vec) )
+        CHKERR(VecSetUp(self.vec))
         return self
 
     def setOption(self, option: Option, flag: bool) -> None:
@@ -1091,7 +1074,7 @@ cdef class Vec(Object):
         petsc.VecSetOption
 
         """
-        CHKERR( VecSetOption(self.vec, option, flag) )
+        CHKERR(VecSetOption(self.vec, option, flag))
 
     def getType(self) -> str:
         """Return the type of the vector.
@@ -1104,7 +1087,7 @@ cdef class Vec(Object):
 
         """
         cdef PetscVecType cval = NULL
-        CHKERR( VecGetType(self.vec, &cval) )
+        CHKERR(VecGetType(self.vec, &cval))
         return bytes2str(cval)
 
     def getSize(self) -> int:
@@ -1118,7 +1101,7 @@ cdef class Vec(Object):
 
         """
         cdef PetscInt N = 0
-        CHKERR( VecGetSize(self.vec, &N) )
+        CHKERR(VecGetSize(self.vec, &N))
         return toInt(N)
 
     def getLocalSize(self) -> int:
@@ -1132,7 +1115,7 @@ cdef class Vec(Object):
 
         """
         cdef PetscInt n = 0
-        CHKERR( VecGetLocalSize(self.vec, &n) )
+        CHKERR(VecGetLocalSize(self.vec, &n))
         return toInt(n)
 
     def getSizes(self) -> LayoutSizeSpec:
@@ -1146,8 +1129,8 @@ cdef class Vec(Object):
 
         """
         cdef PetscInt n = 0, N = 0
-        CHKERR( VecGetLocalSize(self.vec, &n) )
-        CHKERR( VecGetSize(self.vec, &N) )
+        CHKERR(VecGetLocalSize(self.vec, &n))
+        CHKERR(VecGetSize(self.vec, &N))
         return (toInt(n), toInt(N))
 
     def setBlockSize(self, bsize: int) -> None:
@@ -1161,7 +1144,7 @@ cdef class Vec(Object):
 
         """
         cdef PetscInt bs = asInt(bsize)
-        CHKERR( VecSetBlockSize(self.vec, bs) )
+        CHKERR(VecSetBlockSize(self.vec, bs))
 
     def getBlockSize(self) -> int:
         """Return the block size of the vector.
@@ -1174,7 +1157,7 @@ cdef class Vec(Object):
 
         """
         cdef PetscInt bs=0
-        CHKERR( VecGetBlockSize(self.vec, &bs) )
+        CHKERR(VecGetBlockSize(self.vec, &bs))
         return toInt(bs)
 
     def getOwnershipRange(self) -> tuple[int, int]:
@@ -1195,7 +1178,7 @@ cdef class Vec(Object):
 
         """
         cdef PetscInt low=0, high=0
-        CHKERR( VecGetOwnershipRange(self.vec, &low, &high) )
+        CHKERR(VecGetOwnershipRange(self.vec, &low, &high))
         return (toInt(low), toInt(high))
 
     def getOwnershipRanges(self) -> ArrayInt:
@@ -1211,11 +1194,11 @@ cdef class Vec(Object):
 
         """
         cdef const PetscInt *rng = NULL
-        CHKERR( VecGetOwnershipRanges(self.vec, &rng) )
+        CHKERR(VecGetOwnershipRanges(self.vec, &rng))
         cdef MPI_Comm comm = MPI_COMM_NULL
-        CHKERR( PetscObjectGetComm(<PetscObject>self.vec, &comm) )
+        CHKERR(PetscObjectGetComm(<PetscObject>self.vec, &comm))
         cdef int size = -1
-        CHKERR( <PetscErrorCode>MPI_Comm_size(comm, &size) )
+        CHKERR(<PetscErrorCode>MPI_Comm_size(comm, &size))
         return array_i(size+1, rng)
 
     def createLocalVector(self) -> Vec:
@@ -1234,7 +1217,7 @@ cdef class Vec(Object):
 
         """
         lvec = Vec()
-        CHKERR( VecCreateLocalVector(self.vec, &lvec.vec) )
+        CHKERR(VecCreateLocalVector(self.vec, &lvec.vec))
         return lvec
 
     def getLocalVector(self, Vec lvec, readonly: bool = False) -> None:
@@ -1256,9 +1239,9 @@ cdef class Vec(Object):
 
         """
         if readonly:
-            CHKERR( VecGetLocalVectorRead(self.vec, lvec.vec) )
+            CHKERR(VecGetLocalVectorRead(self.vec, lvec.vec))
         else:
-            CHKERR( VecGetLocalVector(self.vec, lvec.vec) )
+            CHKERR(VecGetLocalVector(self.vec, lvec.vec))
 
     def restoreLocalVector(self, Vec lvec, readonly: bool = False) -> None:
         """Unmap a local access obtained with `getLocalVector`.
@@ -1279,9 +1262,9 @@ cdef class Vec(Object):
 
         """
         if readonly:
-            CHKERR( VecRestoreLocalVectorRead(self.vec, lvec.vec) )
+            CHKERR(VecRestoreLocalVectorRead(self.vec, lvec.vec))
         else:
-            CHKERR( VecRestoreLocalVector(self.vec, lvec.vec) )
+            CHKERR(VecRestoreLocalVector(self.vec, lvec.vec))
 
     # FIXME Return type should be more specific
     def getBuffer(self, readonly: bool = False) -> Any:
@@ -1327,7 +1310,7 @@ cdef class Vec(Object):
         else:
             return vec_getbuffer_w(self)
 
-    def getArray(self, readonly: bool=False) -> ArrayScalar:
+    def getArray(self, readonly: bool = False) -> ArrayScalar:
         """Return local portion of the vector as an `ndarray`.
 
         Logically collective.
@@ -1372,12 +1355,12 @@ cdef class Vec(Object):
         cdef PetscInt nv=0
         cdef PetscInt na=0
         cdef PetscScalar *a = NULL
-        CHKERR( VecGetLocalSize(self.vec, &nv) )
+        CHKERR(VecGetLocalSize(self.vec, &nv))
         array = oarray_s(array, &na, &a)
         if (na != nv): raise ValueError(
             "cannot place input array size %d, vector size %d" %
             (toInt(na), toInt(nv)))
-        CHKERR( VecPlaceArray(self.vec, a) )
+        CHKERR(VecPlaceArray(self.vec, a))
         self.set_attr('__placed_array__', array)
 
     def resetArray(self, force: bool = False) -> ArrayScalar | None:
@@ -1406,7 +1389,7 @@ cdef class Vec(Object):
         cdef object array = None
         array = self.get_attr('__placed_array__')
         if array is None and not force: return None
-        CHKERR( VecResetArray(self.vec) )
+        CHKERR(VecResetArray(self.vec))
         self.set_attr('__placed_array__', None)
         return array
 
@@ -1421,7 +1404,7 @@ cdef class Vec(Object):
 
         """
         cdef PetscBool bindFlg = asBool(flg)
-        CHKERR( VecBindToCPU(self.vec, bindFlg) )
+        CHKERR(VecBindToCPU(self.vec, bindFlg))
 
     def boundToCPU(self) -> bool:
         """Return whether the vector has been bound to the CPU.
@@ -1434,13 +1417,12 @@ cdef class Vec(Object):
 
         """
         cdef PetscBool flg = PETSC_TRUE
-        CHKERR( VecBoundToCPU(self.vec, &flg) )
+        CHKERR(VecBoundToCPU(self.vec, &flg))
         return toBool(flg)
 
     def getCUDAHandle(
         self,
-        mode: AccessModeSpec = 'rw',
-    ) -> Any:  # FIXME What is the right return type?
+        mode: AccessModeSpec = 'rw') -> Any:  # FIXME What is the right return type?
         """Return a pointer to the device buffer.
 
         Not collective.
@@ -1468,11 +1450,11 @@ cdef class Vec(Object):
         cdef const char *m = NULL
         if mode is not None: mode = str2bytes(mode, &m)
         if m == NULL or (m[0] == c'r' and m[1] == c'w'):
-            CHKERR( VecCUDAGetArray(self.vec, &hdl) )
+            CHKERR(VecCUDAGetArray(self.vec, &hdl))
         elif m[0] == c'r':
-            CHKERR( VecCUDAGetArrayRead(self.vec, <const PetscScalar**>&hdl) )
+            CHKERR(VecCUDAGetArrayRead(self.vec, <const PetscScalar**>&hdl))
         elif m[0] == c'w':
-            CHKERR( VecCUDAGetArrayWrite(self.vec, &hdl) )
+            CHKERR(VecCUDAGetArrayWrite(self.vec, &hdl))
         else:
             raise ValueError("Invalid mode: expected 'rw', 'r', or 'w'")
         return <Py_uintptr_t>hdl
@@ -1480,8 +1462,7 @@ cdef class Vec(Object):
     def restoreCUDAHandle(
         self,
         handle: Any,  # FIXME What type hint is appropriate?
-        mode: AccessModeSpec = 'rw',
-    ) -> None:
+        mode: AccessModeSpec = 'rw') -> None:
         """Restore a pointer to the device buffer obtained with `getCUDAHandle`.
 
         Not collective.
@@ -1503,18 +1484,17 @@ cdef class Vec(Object):
         cdef const char *m = NULL
         if mode is not None: mode = str2bytes(mode, &m)
         if m == NULL or (m[0] == c'r' and m[1] == c'w'):
-            CHKERR( VecCUDARestoreArray(self.vec, &hdl) )
+            CHKERR(VecCUDARestoreArray(self.vec, &hdl))
         elif m[0] == c'r':
-            CHKERR( VecCUDARestoreArrayRead(self.vec, <const PetscScalar**>&hdl) )
+            CHKERR(VecCUDARestoreArrayRead(self.vec, <const PetscScalar**>&hdl))
         elif m[0] == c'w':
-            CHKERR( VecCUDARestoreArrayWrite(self.vec, &hdl) )
+            CHKERR(VecCUDARestoreArrayWrite(self.vec, &hdl))
         else:
             raise ValueError("Invalid mode: expected 'rw', 'r', or 'w'")
 
     def getHIPHandle(
         self,
-        mode: AccessModeSpec = 'rw',
-    ) -> Any:  # FIXME What is the right return type?
+        mode: AccessModeSpec = 'rw') -> Any:  # FIXME What is the right return type?
         """Return a pointer to the device buffer.
 
         Not collective.
@@ -1542,11 +1522,11 @@ cdef class Vec(Object):
         cdef const char *m = NULL
         if mode is not None: mode = str2bytes(mode, &m)
         if m == NULL or (m[0] == c'r' and m[1] == c'w'):
-            CHKERR( VecHIPGetArray(self.vec, &hdl) )
+            CHKERR(VecHIPGetArray(self.vec, &hdl))
         elif m[0] == c'r':
-            CHKERR( VecHIPGetArrayRead(self.vec, <const PetscScalar**>&hdl) )
+            CHKERR(VecHIPGetArrayRead(self.vec, <const PetscScalar**>&hdl))
         elif m[0] == c'w':
-            CHKERR( VecHIPGetArrayWrite(self.vec, &hdl) )
+            CHKERR(VecHIPGetArrayWrite(self.vec, &hdl))
         else:
             raise ValueError("Invalid mode: expected 'rw', 'r', or 'w'")
         return <Py_uintptr_t>hdl
@@ -1554,8 +1534,7 @@ cdef class Vec(Object):
     def restoreHIPHandle(
         self,
         handle: Any,  # FIXME What type hint is appropriate?
-        mode: AccessModeSpec = 'rw',
-    ) -> None:
+        mode: AccessModeSpec = 'rw') -> None:
         """Restore a pointer to the device buffer obtained with `getHIPHandle`.
 
         Not collective.
@@ -1577,11 +1556,11 @@ cdef class Vec(Object):
         cdef const char *m = NULL
         if mode is not None: mode = str2bytes(mode, &m)
         if m == NULL or (m[0] == c'r' and m[1] == c'w'):
-            CHKERR( VecHIPRestoreArray(self.vec, &hdl) )
+            CHKERR(VecHIPRestoreArray(self.vec, &hdl))
         elif m[0] == c'r':
-            CHKERR( VecHIPRestoreArrayRead(self.vec, <const PetscScalar**>&hdl) )
+            CHKERR(VecHIPRestoreArrayRead(self.vec, <const PetscScalar**>&hdl))
         elif m[0] == c'w':
-            CHKERR( VecHIPRestoreArrayWrite(self.vec, &hdl) )
+            CHKERR(VecHIPRestoreArrayWrite(self.vec, &hdl))
         else:
             raise ValueError("Invalid mode: expected 'rw', 'r', or 'w'")
 
@@ -1607,8 +1586,8 @@ cdef class Vec(Object):
         petsc.VecGetOffloadMask, petsc.PetscOffloadMask
 
         """
-        cdef PetscOffloadMask mask
-        CHKERR( VecGetOffloadMask(self.vec, &mask) )
+        cdef PetscOffloadMask mask = PETSC_OFFLOAD_UNALLOCATED
+        CHKERR(VecGetOffloadMask(self.vec, &mask))
         return mask
 
     def getCLContextHandle(self) -> int:
@@ -1628,7 +1607,7 @@ cdef class Vec(Object):
 
         """
         cdef Py_uintptr_t ctxhdl = 0
-        CHKERR( VecViennaCLGetCLContext(self.vec, &ctxhdl) )
+        CHKERR(VecViennaCLGetCLContext(self.vec, &ctxhdl))
         return ctxhdl
 
     def getCLQueueHandle(self) -> int:
@@ -1648,13 +1627,12 @@ cdef class Vec(Object):
 
         """
         cdef Py_uintptr_t queuehdl = 0
-        CHKERR( VecViennaCLGetCLQueue(self.vec, &queuehdl) )
+        CHKERR(VecViennaCLGetCLQueue(self.vec, &queuehdl))
         return queuehdl
 
     def getCLMemHandle(
         self,
-        mode: AccessModeSpec = 'rw',
-    ) -> int:
+        mode: AccessModeSpec = 'rw') -> int:
         """Return the OpenCL buffer associated with the vector.
 
         Not collective.
@@ -1680,11 +1658,11 @@ cdef class Vec(Object):
         cdef const char *m = NULL
         mode = str2bytes(mode, &m)
         if m == NULL or (m[0] == c'r' and m[1] == c'w'):
-            CHKERR( VecViennaCLGetCLMem(self.vec, &memhdl) )
+            CHKERR(VecViennaCLGetCLMem(self.vec, &memhdl))
         elif m[0] == c'r':
-            CHKERR( VecViennaCLGetCLMemRead(self.vec, &memhdl) )
+            CHKERR(VecViennaCLGetCLMemRead(self.vec, &memhdl))
         elif m[0] == c'w':
-            CHKERR( VecViennaCLGetCLMemWrite(self.vec, &memhdl) )
+            CHKERR(VecViennaCLGetCLMemWrite(self.vec, &memhdl))
         else:
             raise ValueError("Invalid mode: expected 'r', 'w' or 'rw'")
         return memhdl
@@ -1699,7 +1677,7 @@ cdef class Vec(Object):
         getCLMemHandle, petsc.VecViennaCLRestoreCLMemWrite
 
         """
-        CHKERR( VecViennaCLRestoreCLMemWrite(self.vec) )
+        CHKERR(VecViennaCLRestoreCLMemWrite(self.vec))
 
     def duplicate(self, array: Sequence[Scalar] | None = None) -> Vec:
         """Create a new vector with the same type, optionally with data.
@@ -1717,7 +1695,7 @@ cdef class Vec(Object):
 
         """
         cdef Vec vec = type(self)()
-        CHKERR( VecDuplicate(self.vec, &vec.vec) )
+        CHKERR(VecDuplicate(self.vec, &vec.vec))
         # duplicate tensor context
         cdef object ctx0 = self.get_attr('__dltensor_ctx__')
         if ctx0 is not None:
@@ -1747,8 +1725,8 @@ cdef class Vec(Object):
         if result is None:
             result = type(self)()
         if result.vec == NULL:
-            CHKERR( VecDuplicate(self.vec, &result.vec) )
-        CHKERR( VecCopy(self.vec, result.vec) )
+            CHKERR(VecDuplicate(self.vec, &result.vec))
+        CHKERR(VecCopy(self.vec, result.vec))
         return result
 
     def chop(self, tol: float) -> None:
@@ -1767,7 +1745,7 @@ cdef class Vec(Object):
 
         """
         cdef PetscReal rval = asReal(tol)
-        CHKERR( VecFilter(self.vec, rval) )
+        CHKERR(VecFilter(self.vec, rval))
 
     def load(self, Viewer viewer) -> Self:
         """Load a vector.
@@ -1782,9 +1760,9 @@ cdef class Vec(Object):
         cdef MPI_Comm comm = MPI_COMM_NULL
         cdef PetscObject obj = <PetscObject>(viewer.vwr)
         if self.vec == NULL:
-            CHKERR( PetscObjectGetComm(obj, &comm) )
-            CHKERR( VecCreate(comm, &self.vec) )
-        CHKERR( VecLoad(self.vec, viewer.vwr) )
+            CHKERR(PetscObjectGetComm(obj, &comm))
+            CHKERR(VecCreate(comm, &self.vec))
+        CHKERR(VecLoad(self.vec, viewer.vwr))
         return self
 
     def equal(self, Vec vec) -> bool:
@@ -1803,7 +1781,7 @@ cdef class Vec(Object):
 
         """
         cdef PetscBool flag = PETSC_FALSE
-        CHKERR( VecEqual(self.vec, vec.vec, &flag) )
+        CHKERR(VecEqual(self.vec, vec.vec, &flag))
         return toBool(flag)
 
     def dot(self, Vec vec) -> Scalar:
@@ -1828,7 +1806,7 @@ cdef class Vec(Object):
 
         """
         cdef PetscScalar sval = 0
-        CHKERR( VecDot(self.vec, vec.vec, &sval) )
+        CHKERR(VecDot(self.vec, vec.vec, &sval))
         return toScalar(sval)
 
     def dotBegin(self, Vec vec) -> None:
@@ -1849,7 +1827,7 @@ cdef class Vec(Object):
 
         """
         cdef PetscScalar sval = 0
-        CHKERR( VecDotBegin(self.vec, vec.vec, &sval) )
+        CHKERR(VecDotBegin(self.vec, vec.vec, &sval))
 
     def dotEnd(self, Vec vec) -> Scalar:
         """Finish computing the dot product initiated with `dotBegin`.
@@ -1862,7 +1840,7 @@ cdef class Vec(Object):
 
         """
         cdef PetscScalar sval = 0
-        CHKERR( VecDotEnd(self.vec, vec.vec, &sval) )
+        CHKERR(VecDotEnd(self.vec, vec.vec, &sval))
         return toScalar(sval)
 
     def tDot(self, Vec vec) -> Scalar:
@@ -1884,7 +1862,7 @@ cdef class Vec(Object):
 
         """
         cdef PetscScalar sval = 0
-        CHKERR( VecTDot(self.vec, vec.vec, &sval) )
+        CHKERR(VecTDot(self.vec, vec.vec, &sval))
         return toScalar(sval)
 
     def tDotBegin(self, Vec vec) -> None:
@@ -1905,7 +1883,7 @@ cdef class Vec(Object):
 
         """
         cdef PetscScalar sval = 0
-        CHKERR( VecTDotBegin(self.vec, vec.vec, &sval) )
+        CHKERR(VecTDotBegin(self.vec, vec.vec, &sval))
 
     def tDotEnd(self, Vec vec) -> Scalar:
         """Finish computing the indefinite dot product initiated with `tDotBegin`.
@@ -1918,37 +1896,200 @@ cdef class Vec(Object):
 
         """
         cdef PetscScalar sval = 0
-        CHKERR( VecTDotEnd(self.vec, vec.vec, &sval) )
+        CHKERR(VecTDotEnd(self.vec, vec.vec, &sval))
         return toScalar(sval)
 
-    def mDot(self, vecs, out=None) -> None:
-        """Not implemented."""
-        raise NotImplementedError
+    def mDot(self, vecs: Sequence[Vec], out: ArrayScalar | None = None) -> ArrayScalar:
+        """Compute Xᴴ·y with X an array of vectors.
 
-    def mDotBegin(self, vecs, out=None) -> None:
-        """Not implemented."""
-        raise NotImplementedError
+        Collective.
 
-    def mDotEnd(self, vecs, out=None) -> None:
-        """Not implemented."""
-        raise NotImplementedError
+        Parameters
+        ----------
+        vecs
+            Array of vectors.
+        out
+            Optional placeholder for the result.
 
-    def mtDot(self, vecs, out=None) -> None:
-        """Not implemented."""
-        raise NotImplementedError
+        See Also
+        --------
+        dot, tDot, mDotBegin, mDotEnd, petsc.VecMDot
 
-    def mtDotBegin(self, vecs, out=None) -> None:
-        """Not implemented."""
-        raise NotImplementedError
+        """
+        cdef PetscInt nv=len(vecs), no=0
+        cdef PetscVec *v=NULL
+        cdef PetscScalar *val=NULL
+        cdef Py_ssize_t i=0
+        cdef object unused = oarray_p(empty_p(nv), NULL, <void**>&v)
+        for i from 0 <= i < nv:
+            v[i] = (<Vec?>(vecs[i])).vec
+        if out is None:
+            out = empty_s(nv)
+        out = oarray_s(out, &no, &val)
+        if (nv != no): raise ValueError(
+            ("incompatible array sizes: "
+             "nv=%d, no=%d") % (toInt(nv), toInt(no)))
+        CHKERR(VecMDot(self.vec, nv, v, val))
+        return out
 
-    def mtDotEnd(self, vecs, out=None) -> None:
-        """Not implemented."""
-        raise NotImplementedError
+    def mDotBegin(self, vecs: Sequence[Vec], out: ArrayScalar) -> None:
+        """Starts a split phase multiple dot product computation.
+
+        Collective.
+
+        Parameters
+        ----------
+        vecs
+            Array of vectors.
+        out
+            Placeholder for the result.
+
+        See Also
+        --------
+        mDot, mDotEnd, petsc.VecMDotBegin
+
+        """
+        cdef PetscInt nv=len(vecs), no=0
+        cdef PetscVec *v=NULL
+        cdef PetscScalar *val=NULL
+        cdef Py_ssize_t i=0
+        cdef object unused = oarray_p(empty_p(nv), NULL, <void**>&v)
+        for i from 0 <= i < nv:
+            v[i] = (<Vec?>(vecs[i])).vec
+        out = oarray_s(out, &no, &val)
+        if (nv != no): raise ValueError(
+            ("incompatible array sizes: "
+             "nv=%d, no=%d") % (toInt(nv), toInt(no)))
+        CHKERR(VecMDotBegin(self.vec, nv, v, val))
+
+    def mDotEnd(self, vecs: Sequence[Vec], out: ArrayScalar) -> ArrayScalar:
+        """Ends a split phase multiple dot product computation.
+
+        Collective.
+
+        Parameters
+        ----------
+        vecs
+            Array of vectors.
+        out
+            Placeholder for the result.
+
+        See Also
+        --------
+        mDot, mDotBegin, petsc.VecMDotEnd
+
+        """
+        cdef PetscInt nv=len(vecs), no=0
+        cdef PetscVec *v=NULL
+        cdef PetscScalar *val=NULL
+        cdef Py_ssize_t i=0
+        cdef object unused = oarray_p(empty_p(nv), NULL, <void**>&v)
+        for i from 0 <= i < nv:
+            v[i] = (<Vec?>(vecs[i])).vec
+        out = oarray_s(out, &no, &val)
+        if (nv != no): raise ValueError(
+            ("incompatible array sizes: "
+             "nv=%d, no=%d") % (toInt(nv), toInt(no)))
+        CHKERR(VecMDotEnd(self.vec, nv, v, val))
+        return out
+
+    def mtDot(self, vecs: Sequence[Vec], out: ArrayScalar | None = None) -> ArrayScalar:
+        """Compute Xᵀ·y with X an array of vectors.
+
+        Collective.
+
+        Parameters
+        ----------
+        vecs
+            Array of vectors.
+        out
+            Optional placeholder for the result.
+
+        See Also
+        --------
+        tDot, mDot, mtDotBegin, mtDotEnd, petsc.VecMTDot
+
+        """
+        cdef PetscInt nv=len(vecs), no=0
+        cdef PetscVec *v=NULL
+        cdef PetscScalar *val=NULL
+        cdef Py_ssize_t i=0
+        cdef object unused = oarray_p(empty_p(nv), NULL, <void**>&v)
+        for i from 0 <= i < nv:
+            v[i] = (<Vec?>(vecs[i])).vec
+        if out is None:
+            out = empty_s(nv)
+        out = oarray_s(out, &no, &val)
+        if (nv != no): raise ValueError(
+            ("incompatible array sizes: "
+             "nv=%d, no=%d") % (toInt(nv), toInt(no)))
+        CHKERR(VecMTDot(self.vec, nv, v, val))
+        return out
+
+    def mtDotBegin(self, vecs: Sequence[Vec], out: ArrayScalar) -> None:
+        """Starts a split phase transpose multiple dot product computation.
+
+        Collective.
+
+        Parameters
+        ----------
+        vecs
+            Array of vectors.
+        out
+            Placeholder for the result.
+
+        See Also
+        --------
+        mtDot, mtDotEnd, petsc.VecMTDotBegin
+
+        """
+        cdef PetscInt nv=len(vecs), no=0
+        cdef PetscVec *v=NULL
+        cdef PetscScalar *val=NULL
+        cdef Py_ssize_t i=0
+        cdef object unused = oarray_p(empty_p(nv), NULL, <void**>&v)
+        for i from 0 <= i < nv:
+            v[i] = (<Vec?>(vecs[i])).vec
+        out = oarray_s(out, &no, &val)
+        if (nv != no): raise ValueError(
+            ("incompatible array sizes: "
+             "nv=%d, no=%d") % (toInt(nv), toInt(no)))
+        CHKERR(VecMTDotBegin(self.vec, nv, v, val))
+
+    def mtDotEnd(self, vecs: Sequence[Vec], out: ArrayScalar) -> ArrayScalar:
+        """Ends a split phase transpose multiple dot product computation.
+
+        Collective.
+
+        Parameters
+        ----------
+        vecs
+            Array of vectors.
+        out
+            Placeholder for the result.
+
+        See Also
+        --------
+        mtDot, mtDotBegin, petsc.VecMTDotEnd
+
+        """
+        cdef PetscInt nv=len(vecs), no=0
+        cdef PetscVec *v=NULL
+        cdef PetscScalar *val=NULL
+        cdef Py_ssize_t i=0
+        cdef object unused = oarray_p(empty_p(nv), NULL, <void**>&v)
+        for i from 0 <= i < nv:
+            v[i] = (<Vec?>(vecs[i])).vec
+        out = oarray_s(out, &no, &val)
+        if (nv != no): raise ValueError(
+            ("incompatible array sizes: "
+             "nv=%d, no=%d") % (toInt(nv), toInt(no)))
+        CHKERR(VecMTDotEnd(self.vec, nv, v, val))
+        return out
 
     def norm(
         self,
-        norm_type: NormTypeSpec = None,
-    ) -> float | tuple[float, float]:
+        norm_type: NormTypeSpec = None) -> float | tuple[float, float]:
         """Compute the vector norm.
 
         Collective.
@@ -1964,14 +2105,13 @@ cdef class Vec(Object):
         cdef PetscNormType ntype = PETSC_NORM_2
         if norm_type is not None: ntype = norm_type
         cdef PetscReal rval[2]
-        CHKERR( VecNorm(self.vec, ntype, rval) )
+        CHKERR(VecNorm(self.vec, ntype, rval))
         if ntype != norm_1_2: return toReal(rval[0])
         else: return (toReal(rval[0]), toReal(rval[1]))
 
     def normBegin(
         self,
-        norm_type: NormTypeSpec = None,
-    ) -> None:
+        norm_type: NormTypeSpec = None) -> None:
         """Begin computing the vector norm.
 
         Collective.
@@ -1986,12 +2126,11 @@ cdef class Vec(Object):
         cdef PetscNormType ntype = PETSC_NORM_2
         if norm_type is not None: ntype = norm_type
         cdef PetscReal dummy[2]
-        CHKERR( VecNormBegin(self.vec, ntype, dummy) )
+        CHKERR(VecNormBegin(self.vec, ntype, dummy))
 
     def normEnd(
         self,
-        norm_type: NormTypeSpec = None,
-    ) -> float | tuple[float, float]:
+        norm_type: NormTypeSpec = None) -> float | tuple[float, float]:
         """Finish computations initiated with `normBegin`.
 
         Collective.
@@ -2005,7 +2144,7 @@ cdef class Vec(Object):
         cdef PetscNormType ntype = PETSC_NORM_2
         if norm_type is not None: ntype = norm_type
         cdef PetscReal rval[2]
-        CHKERR( VecNormEnd(self.vec, ntype, rval) )
+        CHKERR(VecNormEnd(self.vec, ntype, rval))
         if ntype != norm_1_2: return toReal(rval[0])
         else: return (toReal(rval[0]), toReal(rval[1]))
 
@@ -2021,7 +2160,7 @@ cdef class Vec(Object):
         """
         cdef PetscScalar sval = 0
         cdef PetscReal rval = 0
-        CHKERR( VecDotNorm2(self.vec, vec.vec, &sval, &rval) )
+        CHKERR(VecDotNorm2(self.vec, vec.vec, &sval, &rval))
         return toScalar(sval), toReal(float)
 
     def sum(self) -> Scalar:
@@ -2035,7 +2174,7 @@ cdef class Vec(Object):
 
         """
         cdef PetscScalar sval = 0
-        CHKERR( VecSum(self.vec, &sval) )
+        CHKERR(VecSum(self.vec, &sval))
         return toScalar(sval)
 
     def min(self) -> tuple[int, float]:
@@ -2058,7 +2197,7 @@ cdef class Vec(Object):
         """
         cdef PetscInt  ival = 0
         cdef PetscReal rval = 0
-        CHKERR( VecMin(self.vec, &ival, &rval) )
+        CHKERR(VecMin(self.vec, &ival, &rval))
         return (toInt(ival), toReal(rval))
 
     def max(self) -> tuple[int, float]:
@@ -2081,7 +2220,7 @@ cdef class Vec(Object):
         """
         cdef PetscInt  ival = 0
         cdef PetscReal rval = 0
-        CHKERR( VecMax(self.vec, &ival, &rval) )
+        CHKERR(VecMax(self.vec, &ival, &rval))
         return (toInt(ival), toReal(rval))
 
     def normalize(self) -> float:
@@ -2100,7 +2239,7 @@ cdef class Vec(Object):
 
         """
         cdef PetscReal rval = 0
-        CHKERR( VecNormalize(self.vec, &rval) )
+        CHKERR(VecNormalize(self.vec, &rval))
         return toReal(rval)
 
     def reciprocal(self) -> None:
@@ -2113,7 +2252,7 @@ cdef class Vec(Object):
         petsc.VecReciprocal
 
         """
-        CHKERR( VecReciprocal(self.vec) )
+        CHKERR(VecReciprocal(self.vec))
 
     def exp(self) -> None:
         """Replace each entry (xₙ) in the vector by exp(xₙ).
@@ -2125,7 +2264,7 @@ cdef class Vec(Object):
         log, petsc.VecExp
 
         """
-        CHKERR( VecExp(self.vec) )
+        CHKERR(VecExp(self.vec))
 
     def log(self) -> None:
         """Replace each entry in the vector by its natural logarithm.
@@ -2137,7 +2276,7 @@ cdef class Vec(Object):
         exp, petsc.VecLog
 
         """
-        CHKERR( VecLog(self.vec) )
+        CHKERR(VecLog(self.vec))
 
     def sqrtabs(self) -> None:
         """Replace each entry (xₙ) in the vector by √|xₙ|.
@@ -2149,7 +2288,7 @@ cdef class Vec(Object):
         petsc.VecSqrtAbs
 
         """
-        CHKERR( VecSqrtAbs(self.vec) )
+        CHKERR(VecSqrtAbs(self.vec))
 
     def abs(self) -> None:
         """Replace each entry (xₙ) in the vector by abs|xₙ|.
@@ -2161,9 +2300,9 @@ cdef class Vec(Object):
         petsc.VecAbs
 
         """
-        CHKERR( VecAbs(self.vec) )
+        CHKERR(VecAbs(self.vec))
 
-    def conjugate(self):
+    def conjugate(self) -> None:
         """Conjugate the vector.
 
         Logically collective.
@@ -2173,7 +2312,7 @@ cdef class Vec(Object):
         petsc.VecConjugate
 
         """
-        CHKERR( VecConjugate(self.vec) )
+        CHKERR(VecConjugate(self.vec))
 
     def setRandom(self, Random random=None) -> None:
         """Set all components of the vector to random numbers.
@@ -2193,7 +2332,7 @@ cdef class Vec(Object):
         """
         cdef PetscRandom rnd = NULL
         if random is not None: rnd = random.rnd
-        CHKERR( VecSetRandom(self.vec, rnd) )
+        CHKERR(VecSetRandom(self.vec, rnd))
 
     def permute(self, IS order, invert: bool = False) -> None:
         """Permute the vector in-place with a provided ordering.
@@ -2214,7 +2353,7 @@ cdef class Vec(Object):
         """
         cdef PetscBool cinvert = PETSC_FALSE
         if invert: cinvert = PETSC_TRUE
-        CHKERR( VecPermute(self.vec, order.iset, cinvert) )
+        CHKERR(VecPermute(self.vec, order.iset, cinvert))
 
     def zeroEntries(self) -> None:
         """Set all entries in the vector to zero.
@@ -2226,7 +2365,7 @@ cdef class Vec(Object):
         set, petsc.VecZeroEntries
 
         """
-        CHKERR( VecZeroEntries(self.vec) )
+        CHKERR(VecZeroEntries(self.vec))
 
     def set(self, alpha: Scalar) -> None:
         """Set all components of the vector to the same value.
@@ -2239,7 +2378,7 @@ cdef class Vec(Object):
 
         """
         cdef PetscScalar sval = asScalar(alpha)
-        CHKERR( VecSet(self.vec, sval) )
+        CHKERR(VecSet(self.vec, sval))
 
     def isset(self, IS idx, alpha: Scalar) -> None:
         """Set specific elements of the vector to the same value.
@@ -2259,7 +2398,7 @@ cdef class Vec(Object):
 
         """
         cdef PetscScalar aval = asScalar(alpha)
-        CHKERR( VecISSet(self.vec, idx.iset, aval) )
+        CHKERR(VecISSet(self.vec, idx.iset, aval))
 
     def scale(self, alpha: Scalar) -> None:
         """Scale all entries of the vector.
@@ -2279,7 +2418,7 @@ cdef class Vec(Object):
 
         """
         cdef PetscScalar sval = asScalar(alpha)
-        CHKERR( VecScale(self.vec, sval) )
+        CHKERR(VecScale(self.vec, sval))
 
     def shift(self, alpha: Scalar) -> None:
         """Shift all entries in the vector.
@@ -2299,7 +2438,7 @@ cdef class Vec(Object):
 
         """
         cdef PetscScalar sval = asScalar(alpha)
-        CHKERR( VecShift(self.vec, sval) )
+        CHKERR(VecShift(self.vec, sval))
 
     def swap(self, Vec vec) -> None:
         """Swap the content of two vectors.
@@ -2316,7 +2455,7 @@ cdef class Vec(Object):
         petsc.VecSwap
 
         """
-        CHKERR( VecSwap(self.vec, vec.vec) )
+        CHKERR(VecSwap(self.vec, vec.vec))
 
     def axpy(self, alpha: Scalar, Vec x) -> None:
         """Compute and store y = ɑ·x + y.
@@ -2336,7 +2475,7 @@ cdef class Vec(Object):
 
         """
         cdef PetscScalar sval = asScalar(alpha)
-        CHKERR( VecAXPY(self.vec, sval, x.vec) )
+        CHKERR(VecAXPY(self.vec, sval, x.vec))
 
     def isaxpy(self, IS idx, alpha: Scalar, Vec x) -> None:
         """Add a scaled reduced-space vector to a subset of the vector.
@@ -2360,7 +2499,7 @@ cdef class Vec(Object):
 
         """
         cdef PetscScalar sval = asScalar(alpha)
-        CHKERR( VecISAXPY(self.vec, idx.iset, sval, x.vec) )
+        CHKERR(VecISAXPY(self.vec, idx.iset, sval, x.vec))
 
     def aypx(self, alpha: Scalar, Vec x) -> None:
         """Compute and store y = x + ɑ·y.
@@ -2380,7 +2519,7 @@ cdef class Vec(Object):
 
         """
         cdef PetscScalar sval = asScalar(alpha)
-        CHKERR( VecAYPX(self.vec, sval, x.vec) )
+        CHKERR(VecAYPX(self.vec, sval, x.vec))
 
     def axpby(self, alpha: Scalar, beta: Scalar, Vec x) -> None:
         """Compute and store y = ɑ·x + β·y.
@@ -2403,7 +2542,7 @@ cdef class Vec(Object):
         """
         cdef PetscScalar sval1 = asScalar(alpha)
         cdef PetscScalar sval2 = asScalar(beta)
-        CHKERR( VecAXPBY(self.vec, sval1, sval2, x.vec) )
+        CHKERR(VecAXPBY(self.vec, sval1, sval2, x.vec))
 
     def waxpy(self, alpha: Scalar, Vec x, Vec y) -> None:
         """Compute and store w = ɑ·x + y.
@@ -2425,7 +2564,7 @@ cdef class Vec(Object):
 
         """
         cdef PetscScalar sval = asScalar(alpha)
-        CHKERR( VecWAXPY(self.vec, sval, x.vec, y.vec) )
+        CHKERR(VecWAXPY(self.vec, sval, x.vec, y.vec))
 
     def maxpy(self, alphas: Sequence[Scalar], vecs: Sequence[Vec]) -> None:
         """Compute and store y = Σₙ(ɑₙ·Xₙ) + y with X an array of vectors.
@@ -2449,13 +2588,13 @@ cdef class Vec(Object):
         cdef PetscInt n = 0
         cdef PetscScalar *a = NULL
         cdef PetscVec *v = NULL
-        cdef object tmp1 = iarray_s(alphas, &n, &a)
-        cdef object tmp2 = oarray_p(empty_p(n),NULL, <void**>&v)
+        cdef object unused1 = iarray_s(alphas, &n, &a)
+        cdef object unused2 = oarray_p(empty_p(n), NULL, <void**>&v)
         assert n == len(vecs)
         cdef Py_ssize_t i=0
         for i from 0 <= i < n:
             v[i] = (<Vec?>(vecs[i])).vec
-        CHKERR( VecMAXPY(self.vec, n, a, v) )
+        CHKERR(VecMAXPY(self.vec, n, a, v))
 
     def pointwiseMult(self, Vec x, Vec y) -> None:
         """Compute and store the component-wise multiplication of two vectors.
@@ -2474,7 +2613,7 @@ cdef class Vec(Object):
         pointwiseDivide, petsc.VecPointwiseMult
 
         """
-        CHKERR( VecPointwiseMult(self.vec, x.vec, y.vec) )
+        CHKERR(VecPointwiseMult(self.vec, x.vec, y.vec))
 
     def pointwiseDivide(self, Vec x, Vec y) -> None:
         """Compute and store the component-wise division of two vectors.
@@ -2495,7 +2634,7 @@ cdef class Vec(Object):
         pointwiseMult, petsc.VecPointwiseDivide
 
         """
-        CHKERR( VecPointwiseDivide(self.vec, x.vec, y.vec) )
+        CHKERR(VecPointwiseDivide(self.vec, x.vec, y.vec))
 
     def pointwiseMin(self, Vec x, Vec y) -> None:
         """Compute and store the component-wise minimum of two vectors.
@@ -2514,7 +2653,7 @@ cdef class Vec(Object):
         pointwiseMax, pointwiseMaxAbs, petsc.VecPointwiseMin
 
         """
-        CHKERR( VecPointwiseMin(self.vec, x.vec, y.vec) )
+        CHKERR(VecPointwiseMin(self.vec, x.vec, y.vec))
 
     def pointwiseMax(self, Vec x, Vec y) -> None:
         """Compute and store the component-wise maximum of two vectors.
@@ -2533,7 +2672,7 @@ cdef class Vec(Object):
         pointwiseMin, pointwiseMaxAbs, petsc.VecPointwiseMax
 
         """
-        CHKERR( VecPointwiseMax(self.vec, x.vec, y.vec) )
+        CHKERR(VecPointwiseMax(self.vec, x.vec, y.vec))
 
     def pointwiseMaxAbs(self, Vec x, Vec y) -> None:
         """Compute and store the component-wise maximum absolute values.
@@ -2552,7 +2691,7 @@ cdef class Vec(Object):
         pointwiseMin, pointwiseMax, petsc.VecPointwiseMaxAbs
 
         """
-        CHKERR( VecPointwiseMaxAbs(self.vec, x.vec, y.vec) )
+        CHKERR(VecPointwiseMaxAbs(self.vec, x.vec, y.vec))
 
     def maxPointwiseDivide(self, Vec vec) -> float:
         """Return the maximum of the component-wise absolute value division.
@@ -2575,7 +2714,7 @@ cdef class Vec(Object):
 
         """
         cdef PetscReal rval = 0
-        CHKERR( VecMaxPointwiseDivide(self.vec, vec.vec, &rval) )
+        CHKERR(VecMaxPointwiseDivide(self.vec, vec.vec, &rval))
         return toReal(rval)
 
     def getValue(self, index: int) -> Scalar:
@@ -2597,14 +2736,13 @@ cdef class Vec(Object):
         """
         cdef PetscInt    ival = asInt(index)
         cdef PetscScalar sval = 0
-        CHKERR( VecGetValues(self.vec, 1, &ival, &sval) )
+        CHKERR(VecGetValues(self.vec, 1, &ival, &sval))
         return toScalar(sval)
 
     def getValues(
         self,
         indices: Sequence[int],
-        values: Sequence[Scalar] | None = None,
-    ) -> ArrayScalar:
+        values: Sequence[Scalar] | None = None) -> ArrayScalar:
         """Return values from certain locations in the vector.
 
         Not collective.
@@ -2634,8 +2772,7 @@ cdef class Vec(Object):
         self,
         index: int,
         value: Scalar,
-        addv: InsertModeSpec = None,
-    ) -> None:
+        addv: InsertModeSpec = None) -> None:
         """Insert or add a single value in the vector.
 
         Not collective.
@@ -2666,14 +2803,13 @@ cdef class Vec(Object):
         cdef PetscInt    ival = asInt(index)
         cdef PetscScalar sval = asScalar(value)
         cdef PetscInsertMode caddv = insertmode(addv)
-        CHKERR( VecSetValues(self.vec, 1, &ival, &sval, caddv) )
+        CHKERR(VecSetValues(self.vec, 1, &ival, &sval, caddv))
 
     def setValues(
         self,
         indices: Sequence[int],
         values: Sequence[Scalar],
-        addv: InsertModeSpec = None,
-    ) -> None:
+        addv: InsertModeSpec = None) -> None:
         """Insert or add multiple values in the vector.
 
         Not collective.
@@ -2707,8 +2843,7 @@ cdef class Vec(Object):
         self,
         indices: Sequence[int],
         values: Sequence[Scalar],
-        addv: InsertModeSpec = None,
-    ) -> None:
+        addv: InsertModeSpec = None) -> None:
         """Insert or add blocks of values in the vector.
 
         Not collective.
@@ -2759,7 +2894,7 @@ cdef class Vec(Object):
         setValues, setValuesLocal, getLGMap, petsc.VecSetLocalToGlobalMapping
 
         """
-        CHKERR( VecSetLocalToGlobalMapping(self.vec, lgmap.lgm) )
+        CHKERR(VecSetLocalToGlobalMapping(self.vec, lgmap.lgm))
 
     def getLGMap(self) -> LGMap:
         """Return the local-to-global mapping.
@@ -2772,16 +2907,15 @@ cdef class Vec(Object):
 
         """
         cdef LGMap cmap = LGMap()
-        CHKERR( VecGetLocalToGlobalMapping(self.vec, &cmap.lgm) )
-        CHKERR( PetscINCREF(cmap.obj) )
+        CHKERR(VecGetLocalToGlobalMapping(self.vec, &cmap.lgm))
+        CHKERR(PetscINCREF(cmap.obj))
         return cmap
 
     def setValueLocal(
         self,
         index: int,
         value: Scalar,
-        addv: InsertModeSpec = None,
-    ):
+        addv: InsertModeSpec = None) -> None:
         """Insert or add a single value in the vector using a local numbering.
 
         Not collective.
@@ -2812,14 +2946,13 @@ cdef class Vec(Object):
         cdef PetscInt    ival = asInt(index)
         cdef PetscScalar sval = asScalar(value)
         cdef PetscInsertMode caddv = insertmode(addv)
-        CHKERR( VecSetValuesLocal(self.vec, 1, &ival, &sval, caddv) )
+        CHKERR(VecSetValuesLocal(self.vec, 1, &ival, &sval, caddv))
 
     def setValuesLocal(
         self,
         indices: Sequence[int],
         values: Sequence[Scalar],
-        addv: InsertModeSpec = None,
-    ) -> None:
+        addv: InsertModeSpec = None) -> None:
         """Insert or add multiple values in the vector with a local numbering.
 
         Not collective.
@@ -2853,8 +2986,7 @@ cdef class Vec(Object):
         self,
         indices: Sequence[int],
         values: Sequence[Scalar],
-        addv: InsertModeSpec = None,
-    ) -> None:
+        addv: InsertModeSpec = None) -> None:
         """Insert or add blocks of values in the vector with a local numbering.
 
         Not collective.
@@ -2898,7 +3030,7 @@ cdef class Vec(Object):
         assemblyEnd, petsc.VecAssemblyBegin
 
         """
-        CHKERR( VecAssemblyBegin(self.vec) )
+        CHKERR(VecAssemblyBegin(self.vec))
 
     def assemblyEnd(self) -> None:
         """Finish the assembling stage initiated with `assemblyBegin`.
@@ -2910,7 +3042,7 @@ cdef class Vec(Object):
         assemblyBegin, petsc.VecAssemblyEnd
 
         """
-        CHKERR( VecAssemblyEnd(self.vec) )
+        CHKERR(VecAssemblyEnd(self.vec))
 
     def assemble(self) -> None:
         """Assemble the vector.
@@ -2922,8 +3054,8 @@ cdef class Vec(Object):
         assemblyBegin, assemblyEnd
 
         """
-        CHKERR( VecAssemblyBegin(self.vec) )
-        CHKERR( VecAssemblyEnd(self.vec) )
+        CHKERR(VecAssemblyBegin(self.vec))
+        CHKERR(VecAssemblyEnd(self.vec))
 
     # --- methods for strided vectors ---
 
@@ -2946,7 +3078,7 @@ cdef class Vec(Object):
         """
         cdef PetscInt    ival = asInt(field)
         cdef PetscScalar sval = asScalar(alpha)
-        CHKERR( VecStrideScale(self.vec, ival, sval) )
+        CHKERR(VecStrideScale(self.vec, ival, sval))
 
     def strideSum(self, field: int) -> Scalar:
         """Sum subvector entries.
@@ -2968,7 +3100,7 @@ cdef class Vec(Object):
         """
         cdef PetscInt    ival = asInt(field)
         cdef PetscScalar sval = 0
-        CHKERR( VecStrideSum(self.vec, ival, &sval) )
+        CHKERR(VecStrideSum(self.vec, ival, &sval))
         return toScalar(sval)
 
     def strideMin(self, field: int) -> tuple[int, float]:
@@ -2999,7 +3131,7 @@ cdef class Vec(Object):
         cdef PetscInt  ival1 = asInt(field)
         cdef PetscInt  ival2 = 0
         cdef PetscReal rval  = 0
-        CHKERR( VecStrideMin(self.vec, ival1, &ival2, &rval) )
+        CHKERR(VecStrideMin(self.vec, ival1, &ival2, &rval))
         return (toInt(ival2), toReal(rval))
 
     def strideMax(self, field: int) -> tuple[int, float]:
@@ -3030,14 +3162,13 @@ cdef class Vec(Object):
         cdef PetscInt  ival1 = asInt(field)
         cdef PetscInt  ival2 = 0
         cdef PetscReal rval  = 0
-        CHKERR( VecStrideMax(self.vec, ival1, &ival2, &rval) )
+        CHKERR(VecStrideMax(self.vec, ival1, &ival2, &rval))
         return (toInt(ival2), toReal(rval))
 
     def strideNorm(
         self,
         field: int,
-        norm_type: NormTypeSpec = None,
-    ) -> float | tuple[float, float]:
+        norm_type: NormTypeSpec = None) -> float | tuple[float, float]:
         """Return the norm of entries in a subvector.
 
         Collective.
@@ -3062,7 +3193,7 @@ cdef class Vec(Object):
         cdef PetscNormType ntype = PETSC_NORM_2
         if norm_type is not None: ntype = norm_type
         cdef PetscReal rval[2]
-        CHKERR( VecStrideNorm(self.vec, ival, ntype, rval) )
+        CHKERR(VecStrideNorm(self.vec, ival, ntype, rval))
         if ntype != norm_1_2: return toReal(rval[0])
         else: return (toReal(rval[0]), toReal(rval[1]))
 
@@ -3070,8 +3201,7 @@ cdef class Vec(Object):
         self,
         field: int,
         Vec vec,
-        addv: InsertModeSpec = None,
-    ) -> None:
+        addv: InsertModeSpec = None) -> None:
         """Scatter entries into a component of another vector.
 
         Collective.
@@ -3096,14 +3226,13 @@ cdef class Vec(Object):
         """
         cdef PetscInt ival = asInt(field)
         cdef PetscInsertMode caddv = insertmode(addv)
-        CHKERR( VecStrideScatter(self.vec, ival, vec.vec, caddv) )
+        CHKERR(VecStrideScatter(self.vec, ival, vec.vec, caddv))
 
     def strideGather(
         self,
         field: int,
         Vec vec,
-        addv: InsertModeSpec = None,
-    ) -> None:
+        addv: InsertModeSpec = None) -> None:
         """Insert component values into a single-component vector.
 
         Collective.
@@ -3128,7 +3257,7 @@ cdef class Vec(Object):
         """
         cdef PetscInt ival = asInt(field)
         cdef PetscInsertMode caddv = insertmode(addv)
-        CHKERR( VecStrideGather(self.vec, ival, vec.vec, caddv) )
+        CHKERR(VecStrideGather(self.vec, ival, vec.vec, caddv))
 
     # --- methods for vectors with ghost values ---
 
@@ -3168,8 +3297,7 @@ cdef class Vec(Object):
     def ghostUpdateBegin(
         self,
         addv: InsertModeSpec = None,
-        mode: ScatterModeSpec = None,
-    ) -> None:
+        mode: ScatterModeSpec = None) -> None:
         """Begin updating ghosted vector entries.
 
         Neighborwise collective.
@@ -3181,13 +3309,12 @@ cdef class Vec(Object):
         """
         cdef PetscInsertMode  caddv = insertmode(addv)
         cdef PetscScatterMode csctm = scattermode(mode)
-        CHKERR( VecGhostUpdateBegin(self.vec, caddv, csctm) )
+        CHKERR(VecGhostUpdateBegin(self.vec, caddv, csctm))
 
     def ghostUpdateEnd(
         self,
         addv: InsertModeSpec = None,
-        mode: ScatterModeSpec = None,
-    ) -> None:
+        mode: ScatterModeSpec = None) -> None:
         """Finish updating ghosted vector entries initiated with `ghostUpdateBegin`.
 
         Neighborwise collective.
@@ -3199,13 +3326,12 @@ cdef class Vec(Object):
         """
         cdef PetscInsertMode  caddv = insertmode(addv)
         cdef PetscScatterMode csctm = scattermode(mode)
-        CHKERR( VecGhostUpdateEnd(self.vec, caddv, csctm) )
+        CHKERR(VecGhostUpdateEnd(self.vec, caddv, csctm))
 
     def ghostUpdate(
         self,
         addv: InsertModeSpec = None,
-        mode: ScatterModeSpec = None,
-    ) -> None:
+        mode: ScatterModeSpec = None) -> None:
         """Update ghosted vector entries.
 
         Neighborwise collective.
@@ -3234,8 +3360,8 @@ cdef class Vec(Object):
         """
         cdef PetscInsertMode  caddv = insertmode(addv)
         cdef PetscScatterMode csctm = scattermode(mode)
-        CHKERR( VecGhostUpdateBegin(self.vec, caddv, csctm) )
-        CHKERR( VecGhostUpdateEnd(self.vec, caddv, csctm) )
+        CHKERR(VecGhostUpdateBegin(self.vec, caddv, csctm))
+        CHKERR(VecGhostUpdateEnd(self.vec, caddv, csctm))
 
     def setMPIGhost(self, ghosts: Sequence[int]) -> None:
         """Set the ghost points for a ghosted vector.
@@ -3254,7 +3380,7 @@ cdef class Vec(Object):
         """
         cdef PetscInt ng=0, *ig=NULL
         ghosts = iarray_i(ghosts, &ng, &ig)
-        CHKERR( VecMPISetGhost(self.vec, ng, ig) )
+        CHKERR(VecMPISetGhost(self.vec, ng, ig))
 
     #
 
@@ -3280,8 +3406,8 @@ cdef class Vec(Object):
 
         """
         if subvec is None: subvec = Vec()
-        else: CHKERR( VecDestroy(&subvec.vec) )
-        CHKERR( VecGetSubVector(self.vec, iset.iset, &subvec.vec) )
+        else: CHKERR(VecDestroy(&subvec.vec))
+        CHKERR(VecGetSubVector(self.vec, iset.iset, &subvec.vec))
         return subvec
 
     def restoreSubVector(self, IS iset, Vec subvec) -> None:
@@ -3301,7 +3427,7 @@ cdef class Vec(Object):
         getSubVector, petsc.VecRestoreSubVector
 
         """
-        CHKERR( VecRestoreSubVector(self.vec, iset.iset, &subvec.vec) )
+        CHKERR(VecRestoreSubVector(self.vec, iset.iset, &subvec.vec))
 
     def getNestSubVecs(self) -> list[Vec]:
         """Return all the vectors contained in the nested vector.
@@ -3315,21 +3441,20 @@ cdef class Vec(Object):
         """
         cdef PetscInt N=0
         cdef PetscVec* sx=NULL
-        CHKERR( VecNestGetSubVecs(self.vec, &N, &sx) )
+        CHKERR(VecNestGetSubVecs(self.vec, &N, &sx))
         output = []
         for i in range(N):
-          pyvec = Vec()
-          pyvec.vec = sx[i]
-          CHKERR( PetscObjectReference(<PetscObject> pyvec.vec) )
-          output.append(pyvec)
+            pyvec = Vec()
+            pyvec.vec = sx[i]
+            CHKERR(PetscObjectReference(<PetscObject> pyvec.vec))
+            output.append(pyvec)
 
         return output
 
     def setNestSubVecs(
         self,
         sx: Sequence[Vec],
-        idxm: Sequence[int] | None = None,
-    ) -> None:
+        idxm: Sequence[int] | None = None) -> None:
         """Set the component vectors at specified indices in the nested vector.
 
         Not collective.
@@ -3353,10 +3478,10 @@ cdef class Vec(Object):
         idxm = iarray_i(idxm, &N, &cidxm)
 
         cdef PetscVec* csx = NULL
-        tmp = oarray_p(empty_p(N), NULL, <void**>&csx)
+        cdef object unused = oarray_p(empty_p(N), NULL, <void**>&csx)
         for i from 0 <= i < N: csx[i] = (<Vec?>sx[i]).vec
 
-        CHKERR( VecNestSetSubVecs(self.vec, N, cidxm, csx) )
+        CHKERR(VecNestSetSubVecs(self.vec, N, cidxm, csx))
 
     #
 
@@ -3370,7 +3495,7 @@ cdef class Vec(Object):
         getDM, petsc.VecSetDM
 
         """
-        CHKERR( VecSetDM(self.vec, dm.dm) )
+        CHKERR(VecSetDM(self.vec, dm.dm))
 
     def getDM(self) -> DM:
         """Return the `DM` associated to the vector.
@@ -3383,7 +3508,7 @@ cdef class Vec(Object):
 
         """
         cdef DM dm = DM()
-        CHKERR( VecGetDM(self.vec, &dm.dm) )
+        CHKERR(VecGetDM(self.vec, &dm.dm))
         return dm
 
     #
@@ -3392,6 +3517,7 @@ cdef class Vec(Object):
         """The local and global vector sizes."""
         def __get__(self) -> LayoutSizeSpec:
             return self.getSizes()
+
         def __set__(self, value):
             self.setSizes(value)
 
@@ -3434,6 +3560,7 @@ cdef class Vec(Object):
         """Writeable `ndarray` containing the local portion of the vector."""
         def __get__(self) -> ArrayScalar:
             return self.getArray()
+
         def __set__(self, value):
             cdef buf = self.getBuffer()
             with buf as array: array[:] = value
@@ -3452,6 +3579,7 @@ cdef class Vec(Object):
         """Alias for `array_w`."""
         def __get__(self) -> ArrayScalar:
             return self.array_w
+
         def __set__(self, value):
             self.array_w = value
 

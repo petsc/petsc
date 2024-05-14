@@ -203,7 +203,7 @@ static PetscErrorCode PetscTrMallocDefault(size_t a, PetscBool clear, int lineno
 #if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
   PetscCall(PetscStackCopy(&petscstack, &head->stack));
   /* fix the line number to where PetscTrMallocDefault() was called, not the PetscFunctionBegin; */
-  head->stack.line[head->stack.currentsize - 2] = lineno;
+  head->stack.line[PetscMax(head->stack.currentsize - 2, 0)] = lineno;
   head->stack.currentsize--;
   #if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE)
   if (!clear && TRdebugIinitializenan) {
@@ -413,7 +413,7 @@ static PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char f
 #if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
   PetscCall(PetscStackCopy(&petscstack, &head->stack));
   /* fix the line number to where the malloc() was called, not the PetscFunctionBegin; */
-  head->stack.line[head->stack.currentsize - 2] = lineno;
+  head->stack.line[PetscMax(head->stack.currentsize - 2, 0)] = lineno;
 #endif
 
   /*
@@ -626,7 +626,7 @@ PetscErrorCode PetscMallocPopMaximumUsage(int event, PetscLogDouble *mu)
 /*@C
   PetscMallocGetStack - returns a pointer to the stack for the location in the program a call to `PetscMalloc()` was used to obtain that memory
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . ptr - the memory location

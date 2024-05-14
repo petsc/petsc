@@ -15,6 +15,10 @@
 
 using namespace Petsc::device;
 
+#if defined(PETSC_HAVE_CUPM)
+int PetscDeviceCUPMRuntimeArch = 0;
+#endif
+
 namespace
 {
 
@@ -255,7 +259,7 @@ PetscErrorCode PetscDeviceView(PetscDevice device, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDeviceGetType - Get the type of device
 
   Not Collective

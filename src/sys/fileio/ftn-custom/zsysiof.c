@@ -1,7 +1,6 @@
 #include <petsc/private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-  #define petscbinaryopen_            PETSCBINARYOPEN
   #define petsctestfile_              PETSCTESTFILE
   #define petscbinaryreadint_         PETSCBINARYREADINT
   #define petscbinaryreadreal_        PETSCBINARYREADREAL
@@ -22,7 +21,6 @@
   #define petscbinarywritereal1_      PETSCBINARYWRITEREAL1
   #define petscbinarywritecomplex1_   PETSCBINARYWRITECOMPLEX1
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define petscbinaryopen_            petscbinaryopen
   #define petsctestfile_              petsctestfile
   #define petscbinaryreadint_         petscbinaryreadint
   #define petscbinaryreadreal_        petscbinaryreadreal
@@ -77,16 +75,6 @@ PETSC_EXTERN void petscbinarywritereal1_(int *fd, void *p, PetscInt *n, PetscDat
 PETSC_EXTERN void petscbinarywritecomplex1_(int *fd, void *p, PetscInt *n, PetscDataType *type, int *ierr)
 {
   *ierr = PetscBinaryWrite(*fd, p, *n, *type);
-}
-
-PETSC_EXTERN void petscbinaryopen_(char *name, PetscFileMode *type, int *fd, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *c1;
-
-  FIXCHAR(name, len, c1);
-  *ierr = PetscBinaryOpen(c1, *type, fd);
-  if (*ierr) return;
-  FREECHAR(name, c1);
 }
 
 PETSC_EXTERN void petscbinaryreadint_(int *fd, void *data, PetscInt *num, PetscInt *count, PetscDataType *type, int *ierr)

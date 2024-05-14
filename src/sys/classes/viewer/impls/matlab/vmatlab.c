@@ -1,5 +1,5 @@
-#include <petsc/private/viewerimpl.h>
-#include <mat.h>
+#include <petsc/private/viewerimpl.h> /*I    "petscviewer.h"   I*/
+#include <mat.h>                      /*I    "petscmat.h"      I*/
 
 typedef struct {
   MATFile      *ep;
@@ -195,7 +195,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerMatlabOpen - Opens a MATLAB .mat file for output
 
   Collective
@@ -241,30 +241,29 @@ PetscErrorCode PetscViewerMatlabOpen(MPI_Comm comm, const char name[], PetscFile
 static PetscMPIInt Petsc_Viewer_Matlab_keyval = MPI_KEYVAL_INVALID;
 
 /*@C
-     PETSC_VIEWER_MATLAB_ - Creates a `PETSCVIEWERMATLAB` `PetscViewer` shared by all processors
-                     in a communicator.
+   PETSC_VIEWER_MATLAB_ - Creates a `PETSCVIEWERMATLAB` `PetscViewer` shared by all processors
+   in a communicator.
 
-     Collective
+   Collective
 
-     Input Parameter:
-.    comm - the MPI communicator to share the MATLAB `PetscViewer`
+   Input Parameter:
+.  comm - the MPI communicator to share the MATLAB `PetscViewer`
 
    Options Database Key:
 .    -viewer_matlab_filename <name> - name of the MATLAB file
 
    Environmental variable:
-.   `PETSC_VIEWER_MATLAB_FILENAME` - name of the MATLAB file
+.  `PETSC_VIEWER_MATLAB_FILENAME` - name of the MATLAB file
 
-     Level: intermediate
+   Level: intermediate
 
-     Notes:
-     This object is destroyed in `PetscFinalize()`, `PetscViewerDestroy()` should never be called on it
+   Notes:
+   This object is destroyed in `PetscFinalize()`, `PetscViewerDestroy()` should never be called on it
 
-     Unlike almost all other PETSc routines, `PETSC_VIEWER_MATLAB_()` does not return
-     an error code.  The MATLAB `PetscViewer` is usually used in the form
-$       XXXView(XXX object, PETSC_VIEWER_MATLAB_(comm));
+   Unlike almost all other PETSc routines, `PETSC_VIEWER_MATLAB_()` does not return
+   an error code.  The MATLAB `PetscViewer` is usually used in the form `XXXView(XXX object, PETSC_VIEWER_MATLAB_(comm))`
 
-     Use `PETSC_VIEWER_SOCKET_()` or `PetscViewerSocketOpen()` to communicator with an interactive MATLAB session.
+   Use `PETSC_VIEWER_SOCKET_()` or `PetscViewerSocketOpen()` to communicator with an interactive MATLAB session.
 
 .seealso: `PETSC_VIEWER_MATLAB_WORLD`, `PETSC_VIEWER_MATLAB_SELF`, `PetscViewerMatlabOpen()`, `PetscViewerCreate()`,
           `PetscViewerDestroy()`

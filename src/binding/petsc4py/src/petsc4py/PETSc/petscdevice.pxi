@@ -64,47 +64,50 @@ cdef extern from * nogil:
     PetscErrorCode PetscDeviceContextGetCurrentContext(PetscDeviceContext *)
     PetscErrorCode PetscDeviceContextSetCurrentContext(PetscDeviceContext)
 
+cdef extern from * nogil: # custom.h
+    PetscErrorCode PetscDeviceReference(PetscDevice)
+
 cdef inline PetscDeviceType asDeviceType(object dtype) except <PetscDeviceType>(-1):
-  if isinstance(dtype, str):
-    dtype = dtype.upper()
-    try:
-      return getattr(Device.Type, dtype)
-    except AttributeError:
-      raise ValueError("unknown device type: %s" % dtype)
-  return dtype
+    if isinstance(dtype, str):
+        dtype = dtype.upper()
+        try:
+            return getattr(Device.Type, dtype)
+        except AttributeError:
+            raise ValueError("unknown device type: %s" % dtype)
+    return dtype
 
 cdef inline str toDeviceType(PetscDeviceType dtype):
-  try:
-    return Device.Type.__enum2str[dtype]
-  except KeyError:
-    raise NotImplementedError("unhandled PetscDeviceType %d" % <int>dtype)
+    try:
+        return Device.Type.__enum2str[dtype]
+    except KeyError:
+        raise NotImplementedError("unhandled PetscDeviceType %d" % <int>dtype)
 
 cdef inline PetscStreamType asStreamType(object stype) except <PetscStreamType>(-1):
-  if isinstance(stype, str):
-    stype = stype.upper()
-    try:
-      return getattr(DeviceContext.StreamType, stype)
-    except AttributeError:
-      raise ValueError("unknown stream type: %s" % stype)
-  return stype
+    if isinstance(stype, str):
+        stype = stype.upper()
+        try:
+            return getattr(DeviceContext.StreamType, stype)
+        except AttributeError:
+            raise ValueError("unknown stream type: %s" % stype)
+    return stype
 
 cdef inline str toStreamType(PetscStreamType stype):
-  try:
-    return DeviceContext.StreamType.__enum2str[stype]
-  except KeyError:
-    raise NotImplementedError("unhandled PetscStreamType %d" % <int>stype)
+    try:
+        return DeviceContext.StreamType.__enum2str[stype]
+    except KeyError:
+        raise NotImplementedError("unhandled PetscStreamType %d" % <int>stype)
 
 cdef inline PetscDeviceContextJoinMode asJoinMode(object jmode) except <PetscDeviceContextJoinMode>(-1):
-  if isinstance(jmode, str):
-    jmode = jmode.upper()
-    try:
-      return getattr(DeviceContext.JoinMode, jmode)
-    except AttributeError:
-      raise ValueError("unknown join mode: %s" % jmode)
-  return jmode
+    if isinstance(jmode, str):
+        jmode = jmode.upper()
+        try:
+            return getattr(DeviceContext.JoinMode, jmode)
+        except AttributeError:
+            raise ValueError("unknown join mode: %s" % jmode)
+    return jmode
 
 cdef inline str toJoinMode(PetscDeviceContextJoinMode jmode):
-  try:
-    return DeviceContext.JoinMode.__enum2str[jmode]
-  except KeyError:
-    raise NotImplementedError("unhandled PetscDeviceContextJoinMode %d" % <int>jmode)
+    try:
+        return DeviceContext.JoinMode.__enum2str[jmode]
+    except KeyError:
+        raise NotImplementedError("unhandled PetscDeviceContextJoinMode %d" % <int>jmode)

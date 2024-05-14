@@ -381,6 +381,15 @@ static PetscErrorCode PetscOptionsGetViewers_Internal(MPI_Comm comm, PetscOption
   Level: intermediate
 
   Notes:
+  The argument has the following form
+.vb
+    type:filename:format:filemode
+.ve
+  where all parts are optional, but you need to include the colon to access the next part. The mode argument must a valid `PetscFileMode`, i.e. read, write, append, update, or append_update. For example, to read from an HDF5 file, use
+.vb
+    hdf5:sol.h5::read
+.ve
+
   If no value is provided ascii:stdout is used
 +       ascii[:[filename][:[format][:append]]]  -  defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab,
   for example ascii::ascii_info prints just the information about the object not all details
@@ -520,7 +529,7 @@ PetscErrorCode PetscViewerCreate(MPI_Comm comm, PetscViewer *inviewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerSetType - Builds `PetscViewer` for a particular implementation.
 
   Collective
@@ -568,7 +577,7 @@ PetscErrorCode PetscViewerSetType(PetscViewer viewer, PetscViewerType type)
 /*@C
   PetscViewerRegister - Adds a viewer to those available for use with `PetscViewerSetType()`
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of a new user-defined viewer

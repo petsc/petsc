@@ -1,13 +1,11 @@
 #include <petsc/private/fortranimpl.h>
 #include <petscvec.h>
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-  #define vecscatterremap_        VECSCATTERREMAP
   #define vecscatterview_         VECSCATTERVIEW
   #define vecscattercreatetoall_  VECSCATTERCREATETOALL
   #define vecscattercreatetozero_ VECSCATTERCREATETOZERO
   #define vecscatterdestroy_      VECSCATTERDESTROY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define vecscatterremap_        vecscatterremap
   #define vecscatterview_         vecscatterview
   #define vecscattercreatetoall_  vecscattercreatetoall
   #define vecscattercreatetozero_ vecscattercreatetozero
@@ -31,13 +29,6 @@ PETSC_EXTERN void vecscatterview_(VecScatter *vecscatter, PetscViewer *viewer, P
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer, v);
   *ierr = VecScatterView(*vecscatter, v);
-}
-
-PETSC_EXTERN void vecscatterremap_(VecScatter *scat, PetscInt *rto, PetscInt *rfrom, PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLINTEGER(rto);
-  CHKFORTRANNULLINTEGER(rfrom);
-  *ierr = VecScatterRemap(*scat, rto, rfrom);
 }
 
 PETSC_EXTERN void vecscatterdestroy_(VecScatter *x, int *ierr)

@@ -145,7 +145,7 @@ checkbadSource:
 	-@git --no-pager grep -n -E -B 1 '  PetscFunctionReturn' -- ${GITSRC} | grep -E '\-[0-9]+-$$' | grep -v '^--$$' >> checkbadSource.out;true
 	-@echo "----- No blank line before PetscFunctionBegin and derivatives ------" >> checkbadSource.out
 	-@git --no-pager grep -n -E -B 1 '  PetscFunctionBegin(User|Hot){0,1};' -- ${GITSRC} ':!src/sys/tests/*' ':!src/sys/tutorials/*' | grep -E '\-[0-9]+-.*;' | grep -v '^--$$' | grep -v '\\' >> checkbadSource.out;true
-	-@echo "----- Uneeded parentheses [!&~*](foo[->|.]bar) ---------------------" >> checkbadSource.out
+	-@echo "----- Unneeded parentheses [!&~*](foo[->|.]bar) --------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -E '([\!\&\~\*\(]|\)\)|\([^,\*\(]+\**\))\(([a-zA-Z0-9_]+((\.|->)[a-zA-Z0-9_]+|\[[a-zA-Z0-9_ \%\+\*\-]+\])+)\)' -- ${GITSRC} >> checkbadSource.out;true
 	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 29` ;\
          if [ $$l -gt 0 ] ; then \
@@ -164,6 +164,16 @@ checkbadSource:
 	   ${RM} -f badSourceChar.out;\
          fi
 	@test ! -s badSourceChar.out
+
+#  Run a linter in a Python virtual environment to check (and fix) the formatting of PETSc manual pages
+#     V=1        verbose
+#     REPLACE=1  replace ill-formatted docs with correctly formatted docs
+env-lint:
+	@if [[ `which llvm-config` == "" ]]; then echo "llvm-config for version 14 must be in your path"; exit 1; fi
+	@if [ `llvm-config --version | cut -f1 -d"."` != 14 ]; then echo "llvm-config for version 14 must be in your path"; exit 1; fi
+	@python3 -m venv petsc-lint-env
+	@source petsc-lint-env/bin/activate && python3 -m pip install --quiet -r lib/petsc/bin/maint/petsclinter/requirements.txt && \
+          python3 ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter --verbose=${V} --apply-patches=${REPLACE} --clang_lib=`llvm-config --libdir`/libclang.dylib --werror 1 ./src ; deactivate
 
 #  Run a linter to check (and fix) the formatting of PETSc manual pages
 lint:

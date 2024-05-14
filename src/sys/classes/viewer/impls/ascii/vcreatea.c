@@ -6,50 +6,6 @@
 */
 PetscMPIInt Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
 
-/*@
-  PetscViewerASCIIGetStdout - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all processors
-  in a communicator. Error returning version of `PETSC_VIEWER_STDOUT_()`
-
-  Collective
-
-  Input Parameter:
-. comm - the MPI communicator to share the `PetscViewer`
-
-  Output Parameter:
-. viewer - the viewer
-
-  Level: beginner
-
-  Note:
-  This object is destroyed in `PetscFinalize()`, `PetscViewerDestroy()` should never be called on it
-
-  Developer Note:
-  This should be used in all PETSc source code instead of `PETSC_VIEWER_STDOUT_()` since it allows error checking
-
-.seealso: [](sec_viewers), `PETSC_VIEWER_DRAW_()`, `PetscViewerASCIIOpen()`, `PETSC_VIEWER_STDERR_`, `PETSC_VIEWER_STDOUT_WORLD`,
-          `PETSC_VIEWER_STDOUT_SELF`
-@*/
-PetscErrorCode PetscViewerASCIIGetStdout(MPI_Comm comm, PetscViewer *viewer)
-{
-  PetscBool flg;
-  MPI_Comm  ncomm;
-
-  PetscFunctionBegin;
-  PetscCall(PetscSpinlockLock(&PetscViewerASCIISpinLockStdout));
-  PetscCall(PetscCommDuplicate(comm, &ncomm, NULL));
-  if (Petsc_Viewer_Stdout_keyval == MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_Stdout_keyval, NULL));
-  PetscCallMPI(MPI_Comm_get_attr(ncomm, Petsc_Viewer_Stdout_keyval, (void **)viewer, (PetscMPIInt *)&flg));
-  if (!flg) { /* PetscViewer not yet created */
-    PetscCall(PetscViewerASCIIOpen(ncomm, "stdout", viewer));
-    ((PetscObject)*viewer)->persistent = PETSC_TRUE;
-    PetscCall(PetscObjectRegisterDestroy((PetscObject)*viewer));
-    PetscCallMPI(MPI_Comm_set_attr(ncomm, Petsc_Viewer_Stdout_keyval, (void *)*viewer));
-  }
-  PetscCall(PetscCommDestroy(&ncomm));
-  PetscCall(PetscSpinlockUnlock(&PetscViewerASCIISpinLockStdout));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*@C
    PETSC_VIEWER_STDOUT_ - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all MPI processes
                     in a communicator.
@@ -190,7 +146,7 @@ PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm comm, PetscMPIInt keyval, void *attr
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerASCIIOpen - Opens an ASCII file for writing as a `PETSCVIEWERASCII` `PetscViewer`.
 
   Collective

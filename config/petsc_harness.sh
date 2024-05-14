@@ -311,7 +311,7 @@ function petsc_mpiexec_cudamemcheck() {
   # cuda-memcheck command
   re="${executable}"
   for i in "$@"; do
-    # first occurence of the presence of petsc_arch is the executable,
+    # first occurrence of the presence of petsc_arch is the executable,
     # except when we install MPI ourselves
     if [[ $i =~ ${re} ]]; then
       # found it, put cuda memcheck command in

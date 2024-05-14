@@ -9,7 +9,7 @@ PetscBool         PetscSpaceRegisterAllCalled = PETSC_FALSE;
 /*@C
   PetscSpaceRegister - Adds a new `PetscSpace` implementation
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - The name of a new user-defined creation routine
@@ -45,7 +45,7 @@ PetscErrorCode PetscSpaceRegister(const char sname[], PetscErrorCode (*function)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSpaceSetType - Builds a particular `PetscSpace`
 
   Collective
@@ -84,7 +84,7 @@ PetscErrorCode PetscSpaceSetType(PetscSpace sp, PetscSpaceType name)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSpaceGetType - Gets the `PetscSpaceType` (as a string) from the object.
 
   Not Collective
@@ -207,7 +207,7 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
   }
   PetscCall(PetscOptionsBoundedInt("-petscspace_degree", "The (maximally included) polynomial degree", "PetscSpaceSetDegree", sp->degree, &sp->degree, NULL, 0));
   PetscCall(PetscOptionsBoundedInt("-petscspace_variables", "The number of different variables, e.g. x and y", "PetscSpaceSetNumVariables", sp->Nv, &sp->Nv, NULL, 0));
-  PetscCall(PetscOptionsBoundedInt("-petscspace_components", "The number of components", "PetscSpaceSetNumComponents", sp->Nc, &sp->Nc, NULL, 0));
+  PetscCall(PetscOptionsBoundedInt("-petscspace_components", "The number of components", "PetscSpaceSetNumComponents", sp->Nc, &sp->Nc, NULL, -1));
   PetscTryTypeMethod(sp, setfromoptions, PetscOptionsObject);
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)sp, PetscOptionsObject));
@@ -216,7 +216,7 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSpaceSetUp - Construct data structures for the `PetscSpace`
 
   Collective
@@ -459,7 +459,7 @@ PetscErrorCode PetscSpaceGetNumVariables(PetscSpace sp, PetscInt *n)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSpaceEvaluate - Evaluate the basis functions and their derivatives (jet) at each point
 
   Input Parameters:
@@ -468,14 +468,14 @@ PetscErrorCode PetscSpaceGetNumVariables(PetscSpace sp, PetscInt *n)
 - points  - The point coordinates
 
   Output Parameters:
-+ B - The function evaluations in a npoints x nfuncs array
-. D - The derivative evaluations in a npoints x nfuncs x dim array
-- H - The second derivative evaluations in a npoints x nfuncs x dim x dim array
++ B - The function evaluations in a `npoints` x `nfuncs` array
+. D - The derivative evaluations in a `npoints` x `nfuncs` x `dim` array
+- H - The second derivative evaluations in a `npoints` x `nfuncs` x `dim` x `dim` array
 
   Level: beginner
 
   Note:
-  Above nfuncs is the dimension of the space, and dim is the spatial dimension. The coordinates are given
+  Above `nfuncs` is the dimension of the space, and `dim` is the spatial dimension. The coordinates are given
   on the reference cell, not in real space.
 
 .seealso: `PetscSpace`, `PetscFECreateTabulation()`, `PetscFEGetCellTabulation()`, `PetscSpaceCreate()`

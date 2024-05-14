@@ -45,7 +45,7 @@ typedef struct {
 
 .seealso: [](sec_scatter), `IS`, `ISRestorePointRange()`, `ISGetPointSubrange()`, `ISGetIndices()`, `ISCreateStride()`
 @*/
-PetscErrorCode ISGetPointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd, const PetscInt **points)
+PetscErrorCode ISGetPointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd, const PetscInt *points[])
 {
   PetscInt  numCells, step = 1;
   PetscBool isStride;
@@ -76,7 +76,7 @@ PetscErrorCode ISGetPointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd, con
 
 .seealso: [](sec_scatter), `IS`, `ISGetPointRange()`, `ISGetPointSubrange()`, `ISGetIndices()`, `ISCreateStride()`
 @*/
-PetscErrorCode ISRestorePointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd, const PetscInt **points)
+PetscErrorCode ISRestorePointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd, const PetscInt *points[])
 {
   PetscInt  step = 1;
   PetscBool isStride;
@@ -88,7 +88,7 @@ PetscErrorCode ISRestorePointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISGetPointSubrange - Configures the input `IS` to be a subrange for the traversal information given
 
   Not Collective
@@ -109,7 +109,7 @@ PetscErrorCode ISRestorePointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd,
 
 .seealso: [](sec_scatter), `IS`, `ISGetPointRange()`, `ISRestorePointRange()`, `ISGetIndices()`, `ISCreateStride()`
 @*/
-PetscErrorCode ISGetPointSubrange(IS subpointIS, PetscInt pStart, PetscInt pEnd, const PetscInt *points)
+PetscErrorCode ISGetPointSubrange(IS subpointIS, PetscInt pStart, PetscInt pEnd, const PetscInt points[])
 {
   PetscFunctionBeginHot;
   if (points) {
@@ -229,6 +229,7 @@ static PetscErrorCode ISLocalToGlobalMappingResetBlockInfo_Private(ISLocalToGlob
   }
   if (mapping->info_nodei) PetscCall(PetscFree(mapping->info_nodei[0]));
   PetscCall(PetscFree2(mapping->info_nodec, mapping->info_nodei));
+  PetscCall(PetscSFDestroy(&mapping->multileaves_sf));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -532,9 +533,8 @@ PetscErrorCode ISLocalToGlobalMappingCreateIS(IS is, ISLocalToGlobalMapping *map
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
-  ISLocalToGlobalMappingCreateSF - Creates a mapping between a local (0 to n)
-  ordering and a global parallel ordering.
+/*@
+  ISLocalToGlobalMappingCreateSF - Creates a mapping between a local (0 to n) ordering and a global parallel ordering induced by a star forest.
 
   Collective
 
@@ -1091,7 +1091,7 @@ PetscErrorCode ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping mapping, 
   Level: advanced
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreateIS()`, `ISLocalToGlobalMappingCreate()`,
-          `ISLocalToGlobalMappingRestoreBlockInfo()`
+          `ISLocalToGlobalMappingRestoreBlockInfo()`, `ISLocalToGlobalMappingGetBlockMultiLeavesSF()`
 @*/
 PetscErrorCode ISLocalToGlobalMappingGetBlockInfo(ISLocalToGlobalMapping mapping, PetscInt *nproc, PetscInt *procs[], PetscInt *numprocs[], PetscInt **indices[])
 {
@@ -1113,7 +1113,7 @@ PetscErrorCode ISLocalToGlobalMappingGetBlockInfo(ISLocalToGlobalMapping mapping
   Input Parameter:
 . mapping - the mapping from local to global indexing
 
-  Output Parameter:
+  Output Parameters:
 + n       - number of local block nodes
 . n_procs - an array storing the number of processes for each local block node (including self)
 - procs   - the processes' rank for each local block node (sorted, self is first)
@@ -1166,9 +1166,53 @@ PetscErrorCode ISLocalToGlobalMappingRestoreBlockNodeInfo(ISLocalToGlobalMapping
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  ISLocalToGlobalMappingGetBlockMultiLeavesSF - Get the star-forest to communicate multi-leaf block data
+
+  Collective the first time it is called
+
+  Input Parameter:
+. mapping - the mapping from local to global indexing
+
+  Output Parameter:
+. mlsf - the `PetscSF`
+
+  Level: advanced
+
+  Notes:
+  The returned star forest is suitable to exchange local information with other processes sharing the same global block index.
+  For example, suppose a mapping with two processes has been created with
+.vb
+    rank 0 global block indices: [0, 1, 2]
+    rank 1 global block indices: [2, 3, 4]
+.ve
+  and we want to share the local information
+.vb
+    rank 0 data: [-1, -2, -3]
+    rank 1 data: [1, 2, 3]
+.ve
+  then, the broadcasting action of `mlsf` will allow to collect
+.vb
+    rank 0 mlleafdata: [-1, -2, -3, 3]
+    rank 1 mlleafdata: [-3, 3, 1, 2]
+.ve
+  Use ``ISLocalToGlobalMappingGetBlockNodeInfo()`` to index into the multi-leaf data.
+
+.seealso: [](sec_scatter), `ISLocalToGlobalMappingGetBlockNodeInfo()`, `PetscSF`
+@*/
+PetscErrorCode ISLocalToGlobalMappingGetBlockMultiLeavesSF(ISLocalToGlobalMapping mapping, PetscSF *mlsf)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mapping, IS_LTOGM_CLASSID, 1);
+  PetscAssertPointer(mlsf, 2);
+  PetscCall(ISLocalToGlobalMappingSetUpBlockInfo_Private(mapping));
+  *mlsf = mapping->multileaves_sf;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode ISLocalToGlobalMappingSetUpBlockInfo_Private(ISLocalToGlobalMapping mapping)
 {
-  PetscSF            sf;
+  PetscSF            sf, sf2, imsf, msf;
   MPI_Comm           comm;
   const PetscSFNode *sfnode;
   PetscSFNode       *newsfnode;
@@ -1182,7 +1226,7 @@ static PetscErrorCode ISLocalToGlobalMappingSetUpBlockInfo_Private(ISLocalToGlob
   PetscMPIInt        rank, size;
 
   PetscFunctionBegin;
-  if (mapping->info_numprocs) PetscFunctionReturn(PETSC_SUCCESS);
+  if (mapping->multileaves_sf) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectGetComm((PetscObject)mapping, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -1243,14 +1287,15 @@ static PetscErrorCode ISLocalToGlobalMappingSetUpBlockInfo_Private(ISLocalToGlob
   PetscCall(PetscSFGatherBegin(sf, MPIU_INT, leafdata, mrootdata));
   PetscCall(PetscSFGatherEnd(sf, MPIU_INT, leafdata, mrootdata));
 
-  /* set new multi-leaves graph into the SF */
-  PetscCall(PetscSFSetGraph(sf, mnroots, newnleaves, NULL, PETSC_OWN_POINTER, newsfnode, PETSC_OWN_POINTER));
-  PetscCall(PetscSFSetUp(sf));
+  /* from multi-roots to multi-leaves */
+  PetscCall(PetscSFCreate(comm, &sf2));
+  PetscCall(PetscSFSetGraph(sf2, mnroots, newnleaves, NULL, PETSC_OWN_POINTER, newsfnode, PETSC_OWN_POINTER));
+  PetscCall(PetscSFSetUp(sf2));
 
   /* broadcast multi-root data to multi-leaves */
   PetscCall(PetscMalloc1(newnleaves, &newleafdata));
-  PetscCall(PetscSFBcastBegin(sf, MPIU_INT, mrootdata, newleafdata, MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(sf, MPIU_INT, mrootdata, newleafdata, MPI_REPLACE));
+  PetscCall(PetscSFBcastBegin(sf2, MPIU_INT, mrootdata, newleafdata, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sf2, MPIU_INT, mrootdata, newleafdata, MPI_REPLACE));
 
   /* sort sharing ranks */
   for (i = 0, m = 0; i < nleaves; i++) {
@@ -1277,9 +1322,9 @@ static PetscErrorCode ISLocalToGlobalMappingSetUpBlockInfo_Private(ISLocalToGlob
   PetscCall(PetscHMapIDestroy(&neighs));
 
   /* collect info data */
-  PetscCall(PetscMalloc1(mapping->info_nproc + 1, &mapping->info_numprocs));
-  PetscCall(PetscMalloc1(mapping->info_nproc + 1, &mapping->info_indices));
-  for (i = 0; i < mapping->info_nproc + 1; i++) mapping->info_indices[i] = NULL;
+  PetscCall(PetscMalloc1(mapping->info_nproc, &mapping->info_numprocs));
+  PetscCall(PetscMalloc1(mapping->info_nproc, &mapping->info_indices));
+  for (i = 0; i < mapping->info_nproc; i++) mapping->info_indices[i] = NULL;
 
   PetscCall(PetscMalloc1(nleaves, &mask));
   PetscCall(PetscMalloc1(nleaves, &tmpg));
@@ -1316,10 +1361,17 @@ static PetscErrorCode ISLocalToGlobalMappingSetUpBlockInfo_Private(ISLocalToGlob
   for (i = 0; i < nleaves - 1; i++) mapping->info_nodei[i + 1] = mapping->info_nodei[i] + mapping->info_nodec[i];
   PetscCall(PetscArraycpy(mapping->info_nodei[0], newleafdata, newnleaves));
 
+  /* Create SF from leaves to multi-leaves */
+  PetscCall(PetscSFGetMultiSF(sf, &msf));
+  PetscCall(PetscSFCreateInverseSF(msf, &imsf));
+  PetscCall(PetscSFCompose(imsf, sf2, &mapping->multileaves_sf));
+  PetscCall(PetscSFDestroy(&imsf));
+  PetscCall(PetscSFDestroy(&sf));
+  PetscCall(PetscSFDestroy(&sf2));
+
   PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(mapping, &gidxs));
   PetscCall(PetscFree(tmpg));
   PetscCall(PetscFree(mask));
-  PetscCall(PetscSFDestroy(&sf));
   PetscCall(PetscFree3(mrootdata, leafdata, leafrd));
   PetscCall(PetscFree(newleafdata));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1597,7 +1649,7 @@ M*/
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingRestoreIndices()`,
           `ISLocalToGlobalMappingGetBlockIndices()`, `ISLocalToGlobalMappingRestoreBlockIndices()`
 @*/
-PetscErrorCode ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog, const PetscInt **array)
+PetscErrorCode ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog, const PetscInt *array[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog, IS_LTOGM_CLASSID, 1);
@@ -1631,7 +1683,7 @@ PetscErrorCode ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog, con
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingGetIndices()`
 @*/
-PetscErrorCode ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog, const PetscInt **array)
+PetscErrorCode ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog, const PetscInt *array[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog, IS_LTOGM_CLASSID, 1);
@@ -1656,7 +1708,7 @@ PetscErrorCode ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog,
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingRestoreBlockIndices()`
 @*/
-PetscErrorCode ISLocalToGlobalMappingGetBlockIndices(ISLocalToGlobalMapping ltog, const PetscInt **array)
+PetscErrorCode ISLocalToGlobalMappingGetBlockIndices(ISLocalToGlobalMapping ltog, const PetscInt *array[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog, IS_LTOGM_CLASSID, 1);
@@ -1678,7 +1730,7 @@ PetscErrorCode ISLocalToGlobalMappingGetBlockIndices(ISLocalToGlobalMapping ltog
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingGetIndices()`
 @*/
-PetscErrorCode ISLocalToGlobalMappingRestoreBlockIndices(ISLocalToGlobalMapping ltog, const PetscInt **array)
+PetscErrorCode ISLocalToGlobalMappingRestoreBlockIndices(ISLocalToGlobalMapping ltog, const PetscInt *array[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog, IS_LTOGM_CLASSID, 1);
@@ -1688,7 +1740,7 @@ PetscErrorCode ISLocalToGlobalMappingRestoreBlockIndices(ISLocalToGlobalMapping 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISLocalToGlobalMappingConcatenate - Create a new mapping that concatenates a list of mappings
 
   Not Collective
@@ -1788,7 +1840,7 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreate_Hash(ISLocalToGlobalMap
 /*@C
   ISLocalToGlobalMappingRegister -  Registers a method for applying a global to local mapping with an `ISLocalToGlobalMapping`
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of a new method
@@ -1820,7 +1872,7 @@ PetscErrorCode ISLocalToGlobalMappingRegister(const char sname[], PetscErrorCode
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISLocalToGlobalMappingSetType - Sets the implementation type `ISLocalToGlobalMapping` will use
 
   Logically Collective
@@ -1873,7 +1925,7 @@ PetscErrorCode ISLocalToGlobalMappingSetType(ISLocalToGlobalMapping ltog, ISLoca
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISLocalToGlobalMappingGetType - Get the type of the `ISLocalToGlobalMapping`
 
   Not Collective

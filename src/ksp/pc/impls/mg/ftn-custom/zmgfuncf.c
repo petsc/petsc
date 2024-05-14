@@ -17,10 +17,7 @@ static PetscErrorCode ourresidualfunction(Mat mat, Vec b, Vec x, Vec R)
   return PETSC_SUCCESS;
 }
 
-PETSC_EXTERN void pcmgresidualdefault_(Mat *mat, Vec *b, Vec *x, Vec *r, PetscErrorCode *ierr)
-{
-  *ierr = PCMGResidualDefault(*mat, *b, *x, *r);
-}
+PETSC_EXTERN void pcmgresidualdefault_(Mat *, Vec *, Vec *, Vec *, PetscErrorCode *);
 
 PETSC_EXTERN void pcmgsetresidual_(PC *pc, PetscInt *l, PetscErrorCode (*residual)(Mat *, Vec *, Vec *, Vec *, PetscErrorCode *), Mat *mat, PetscErrorCode *ierr)
 {

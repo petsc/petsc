@@ -57,4 +57,3 @@ cdef inline PetscScatterMode scattermode(object mode) \
         if mode == 'reverse': return PETSC_SCATTER_REVERSE
         else: raise ValueError("unknown scatter mode: %s" % mode)
     return mode
-

@@ -747,7 +747,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc, PetscOptionItems *
   PC_HYPRE   *jac = (PC_HYPRE *)pc->data;
   PetscInt    bs, n, indx, level;
   PetscBool   flg, tmp_truth;
-  double      tmpdbl, twodbl[2];
+  PetscReal   tmpdbl, twodbl[2];
   const char *symtlist[]           = {"nonsymmetric", "SPD", "nonsymmetric,SPD"};
   const char *PCHYPRESpgemmTypes[] = {"cusparse", "hypre"};
 
@@ -848,7 +848,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc, PetscOptionItems *
   }
 
   /* Filter for ILU(k) for Euclid */
-  double droptolerance;
+  PetscReal droptolerance;
   PetscCall(PetscOptionsReal("-pc_hypre_boomeramg_eu_droptolerance", "Drop tolerance for ILU(k) in Euclid smoother", "None", 0, &droptolerance, &flg));
   if (flg && (jac->smoothtype == 3)) {
     jac->eu_droptolerance = droptolerance;
@@ -2196,7 +2196,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE(PC pc, PetscOptionItems *PetscOptio
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCHYPRESetType - Sets which hypre preconditioner you wish to use
 
   Input Parameters:
@@ -2219,7 +2219,7 @@ PetscErrorCode PCHYPRESetType(PC pc, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCHYPREGetType - Gets which hypre preconditioner you are using
 
   Input Parameter:
@@ -2241,7 +2241,7 @@ PetscErrorCode PCHYPREGetType(PC pc, const char *name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCMGGalerkinSetMatProductAlgorithm - Set type of SpGEMM for hypre to use on GPUs
 
   Logically Collective
@@ -2268,7 +2268,7 @@ PetscErrorCode PCMGGalerkinSetMatProductAlgorithm(PC pc, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCMGGalerkinGetMatProductAlgorithm - Get type of SpGEMM for hypre to use on GPUs
 
   Not Collective
@@ -2389,7 +2389,7 @@ typedef struct {
 
   /* keep copy of PFMG options used so may view them */
   PetscInt  its;
-  double    tol;
+  PetscReal tol;
   PetscInt  relax_type;
   PetscInt  rap_type;
   PetscInt  num_pre_relax, num_post_relax;
@@ -2616,10 +2616,10 @@ typedef struct {
   HYPRE_SStructSolver ss_solver;
 
   /* keep copy of SYSPFMG options used so may view them */
-  PetscInt its;
-  double   tol;
-  PetscInt relax_type;
-  PetscInt num_pre_relax, num_post_relax;
+  PetscInt  its;
+  PetscReal tol;
+  PetscInt  relax_type;
+  PetscInt  num_pre_relax, num_post_relax;
 } PC_SysPFMG;
 
 static PetscErrorCode PCDestroy_SysPFMG(PC pc)
@@ -2848,7 +2848,7 @@ typedef struct {
   MPI_Comm           hcomm; /* does not share comm with HYPRE_StructMatrix because need to create solver before getting matrix */
   HYPRE_StructSolver hsolver;
   PetscInt           its; /* keep copy of SMG options used so may view them */
-  double             tol;
+  PetscReal          tol;
   PetscBool          print_statistics;
   PetscInt           num_pre_relax, num_post_relax;
 } PC_SMG;

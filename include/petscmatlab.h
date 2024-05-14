@@ -29,7 +29,7 @@ typedef struct _p_PetscMatlabEngine *PetscMatlabEngine;
 PETSC_EXTERN PetscErrorCode PetscMatlabEngineCreate(MPI_Comm, const char[], PetscMatlabEngine *);
 PETSC_EXTERN PetscErrorCode PetscMatlabEngineDestroy(PetscMatlabEngine *);
 PETSC_EXTERN PetscErrorCode PetscMatlabEngineEvaluate(PetscMatlabEngine, const char[], ...);
-PETSC_EXTERN PetscErrorCode PetscMatlabEngineGetOutput(PetscMatlabEngine, char **);
+PETSC_EXTERN PetscErrorCode PetscMatlabEngineGetOutput(PetscMatlabEngine, const char **);
 PETSC_EXTERN PetscErrorCode PetscMatlabEnginePrintOutput(PetscMatlabEngine, FILE *);
 PETSC_EXTERN PetscErrorCode PetscMatlabEnginePut(PetscMatlabEngine, PetscObject);
 PETSC_EXTERN PetscErrorCode PetscMatlabEngineGet(PetscMatlabEngine, PetscObject);

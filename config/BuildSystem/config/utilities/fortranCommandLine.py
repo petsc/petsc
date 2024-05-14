@@ -6,6 +6,7 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
+    self.have_command_argument = False
     return
 
   def __str__(self):
@@ -30,72 +31,12 @@ class Configure(config.base.Configure):
 
     self.libraries.pushLanguage('FC')
     self.libraries.saveLog()
-    if self.libraries.check('','', call = '      integer i\n      character*(80) arg\n       i = command_argument_count()\n       call get_command_argument(i,arg)'):
+    if self.libraries.check('','', call = '      integer i\n      character(len=80) arg\n      i = command_argument_count()\n      call get_command_argument(i,arg)'):
       self.logWrite(self.libraries.restoreLog())
       self.libraries.popLanguage()
-      self.addDefine('HAVE_FORTRAN_GET_COMMAND_ARGUMENT',1)
-      return
-
-    # These are for when the routines are called from C
-    # We should unify the naming conventions of these.
-    self.pushLanguage('C')
-    self.libraries.saveLog()
-    self.functions.saveLog()
-    if self.functions.check('ipxfargc_', libraries = self.compilers.flibs):
-      self.logWrite(self.functions.restoreLog())
-      self.logWrite(self.libraries.restoreLog())
-      self.popLanguage()
-      self.addDefine('HAVE_PXFGETARG_NEW',1)
-      return
-
-    self.pushLanguage('C')
-    self.libraries.saveLog()
-    self.functions.saveLog()
-    if self.functions.check('f90_unix_MP_iargc', libraries = self.compilers.flibs):
-      self.logWrite(self.functions.restoreLog())
-      self.logWrite(self.libraries.restoreLog())
-      self.popLanguage()
-      self.addDefine('HAVE_NAGF90',1)
-      return
-
-    self.pushLanguage('C')
-    self.libraries.saveLog()
-    self.functions.saveLog()
-    if self.functions.check('PXFGETARG', libraries = self.compilers.flibs):
-      self.logWrite(self.functions.restoreLog())
-      self.logWrite(self.libraries.restoreLog())
-      self.popLanguage()
-      self.addDefine('HAVE_PXFGETARG',1)
-      return
-
-    self.pushLanguage('C')
-    self.libraries.saveLog()
-    self.functions.saveLog()
-    if self.functions.check('iargc_', libraries = self.compilers.flibs):
-      self.logWrite(self.functions.restoreLog())
-      self.logWrite(self.libraries.restoreLog())
-      self.popLanguage()
-      self.addDefine('HAVE_BGL_IARGC',1)
-      return
-
-    self.pushLanguage('C')
-    self.libraries.saveLog()
-    self.functions.saveLog()
-    if self.functions.check('GETARG@16', libraries = self.compilers.flibs):
-      self.logWrite(self.functions.restoreLog())
-      self.logWrite(self.libraries.restoreLog())
-      self.popLanguage()
-      self.addDefine('USE_NARGS',1)
-      self.addDefine('HAVE_IARG_COUNT_PROGNAME',1)
-      return
-
-    self.pushLanguage('C')
-    self.libraries.saveLog()
-    self.functions.saveLog()
-    self.functions.check('_gfortran_iargc', libraries = self.compilers.flibs)
-    self.logWrite(self.functions.restoreLog())
-    self.logWrite(self.libraries.restoreLog())
-    self.popLanguage()
+      self.have_command_argument = True
+    else:
+      self.logPrint("Missing GET_COMMAND_ARGUMENT() support in Fortran!")
     return
 
   def configure(self):

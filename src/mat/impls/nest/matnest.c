@@ -1,5 +1,6 @@
 #include <../src/mat/impls/nest/matnestimpl.h> /*I   "petscmat.h"   I*/
 #include <../src/mat/impls/aij/seq/aij.h>
+#include <../src/mat/impls/shell/shell.h>
 #include <petscsf.h>
 
 static PetscErrorCode MatSetUp_NestIS_Private(Mat, PetscInt, const IS[], PetscInt, const IS[]);
@@ -1184,8 +1185,8 @@ static PetscErrorCode MatNestGetSubMats_Nest(Mat A, PetscInt *M, PetscInt *N, Ma
 . A - nest matrix
 
   Output Parameters:
-+ M   - number of rows in the nest matrix
-. N   - number of cols in the nest matrix
++ M   - number of submatrix rows in the nest matrix
+. N   - number of submatrix columns in the nest matrix
 - mat - array of matrices
 
   Level: developer
@@ -1194,8 +1195,7 @@ static PetscErrorCode MatNestGetSubMats_Nest(Mat A, PetscInt *M, PetscInt *N, Ma
   The user should not free the array `mat`.
 
   Fortran Notes:
-  This routine has a calling sequence
-$   call MatNestGetSubMats(A, M, N, mat, ierr)
+  This routine has a calling sequence `call MatNestGetSubMats(A, M, N, mat, ierr)`
   where the space allocated for the optional argument `mat` is assumed large enough (if provided).
   Matrices in `mat` are returned in row-major order, see `MatCreateNest()` for an example.
 
@@ -1234,6 +1234,9 @@ static PetscErrorCode MatNestGetSize_Nest(Mat A, PetscInt *M, PetscInt *N)
 
   Level: developer
 
+  Note:
+  `size` refers to the number of submatrices in the row and column directions of the nested matrix
+
 .seealso: [](ch_matrices), `Mat`, `MATNEST`, `MatNestGetSubMat()`, `MatNestGetSubMats()`, `MatCreateNest()`, `MatNestGetLocalISs()`,
           `MatNestGetISs()`
 @*/
@@ -1267,8 +1270,8 @@ static PetscErrorCode MatNestGetISs_Nest(Mat A, IS rows[], IS cols[])
 . A - `MATNEST` matrix
 
   Output Parameters:
-+ rows - array of row index sets
-- cols - array of column index sets
++ rows - array of row index sets (pass `NULL` to ignore)
+- cols - array of column index sets (pass `NULL` to ignore)
 
   Level: advanced
 
@@ -1308,8 +1311,8 @@ static PetscErrorCode MatNestGetLocalISs_Nest(Mat A, IS rows[], IS cols[])
 . A - `MATNEST` matrix
 
   Output Parameters:
-+ rows - array of row index sets (or `NULL` to ignore)
-- cols - array of column index sets (or `NULL` to ignore)
++ rows - array of row index sets (pass `NULL` to ignore)
+- cols - array of column index sets (pass `NULL` to ignore)
 
   Level: advanced
 
@@ -1467,7 +1470,7 @@ static PetscErrorCode MatNestSetSubMats_Nest(Mat A, PetscInt nr, const IS is_row
 
   Notes:
   This always resets any block matrix information previously set.
-  Pass `NULL` in the correspoding entry of `a` for an empty block.
+  Pass `NULL` in the corresponding entry of `a` for an empty block.
 
   In both C and Fortran, `a` must be a row-major order array containing the matrices. See
   `MatCreateNest()` for an example.
@@ -1876,18 +1879,23 @@ static PetscErrorCode MatConvert_Nest_SeqAIJ_fast(Mat A, MatType newtype, MatReu
     PetscCall(ISGetLocalSize(nest->isglobal.row[i], &ncr));
     for (j = 0; j < nest->nc; ++j) {
       if (aii[i * nest->nc + j]) {
-        PetscScalar *nvv = avv[i * nest->nc + j];
+        PetscScalar *nvv = avv[i * nest->nc + j], vscale = 1.0, vshift = 0.0;
         PetscInt    *nii = aii[i * nest->nc + j];
         PetscInt    *njj = ajj[i * nest->nc + j];
         PetscInt     ir, cst;
 
+        if (trans[i * nest->nc + j]) {
+          vscale = ((Mat_Shell *)nest->m[i][j]->data)->vscale;
+          vshift = ((Mat_Shell *)nest->m[i][j]->data)->vshift;
+        }
         PetscCall(ISStrideGetInfo(nest->isglobal.col[j], &cst, NULL));
         for (ir = rst; ir < ncr + rst; ++ir) {
           PetscInt ij, rsize = nii[1] - nii[0], ist = ii[ir] + ci[ir];
 
           for (ij = 0; ij < rsize; ij++) {
             jj[ist + ij] = *njj + cst;
-            vv[ist + ij] = *nvv;
+            vv[ist + ij] = vscale * *nvv;
+            if (PetscUnlikely(vshift != 0.0 && *njj == ir - rst)) vv[ist + ij] += vshift;
             njj++;
             nvv++;
           }
@@ -2044,6 +2052,7 @@ static PetscErrorCode MatConvert_Nest_AIJ(Mat A, MatType newtype, MatReuse reuse
                 PetscCall(PetscObjectTypeCompare((PetscObject)Bt, MATSEQAIJ, &fast));
               }
             }
+            if (fast) fast = (PetscBool)(!((Mat_Shell *)B->data)->zrows && !((Mat_Shell *)B->data)->zcols && !((Mat_Shell *)B->data)->axpy && !((Mat_Shell *)B->data)->left && !((Mat_Shell *)B->data)->right && !((Mat_Shell *)B->data)->dshift);
           }
         }
       }

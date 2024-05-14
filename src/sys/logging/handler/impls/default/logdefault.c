@@ -1147,51 +1147,51 @@ static PetscErrorCode PetscLogHandlerView_Default_CSV(PetscLogHandler handler, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscLogViewWarnSync(MPI_Comm comm, FILE *fd)
+static PetscErrorCode PetscLogViewWarnSync(PetscViewer viewer)
 {
   PetscFunctionBegin;
   if (!PetscLogSyncOn) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCall(PetscFPrintf(comm, fd, "\n\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      ##########################################################\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #                       WARNING!!!                       #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   This program was run with logging synchronization.   #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   This option provides more meaningful imbalance       #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   figures at the expense of slowing things down and    #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   providing a distorted view of the overall runtime.   #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      ##########################################################\n\n\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "\n\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      ##########################################################\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #                                                        #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #                       WARNING!!!                       #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #                                                        #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #   This program was run with logging synchronization.   #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #   This option provides more meaningful imbalance       #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #   figures at the expense of slowing things down and    #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #   providing a distorted view of the overall runtime.   #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #                                                        #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      ##########################################################\n\n\n"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscLogViewWarnDebugging(MPI_Comm comm, FILE *fd)
+static PetscErrorCode PetscLogViewWarnDebugging(PetscViewer viewer)
 {
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) {
-    PetscCall(PetscFPrintf(comm, fd, "\n\n"));
-    PetscCall(PetscFPrintf(comm, fd, "      ##########################################################\n"));
-    PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-    PetscCall(PetscFPrintf(comm, fd, "      #                       WARNING!!!                       #\n"));
-    PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-    PetscCall(PetscFPrintf(comm, fd, "      #   This code was compiled with a debugging option.      #\n"));
-    PetscCall(PetscFPrintf(comm, fd, "      #   To get timing results run ./configure                #\n"));
-    PetscCall(PetscFPrintf(comm, fd, "      #   using --with-debugging=no, the performance will      #\n"));
-    PetscCall(PetscFPrintf(comm, fd, "      #   be generally two or three times faster.              #\n"));
-    PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-    PetscCall(PetscFPrintf(comm, fd, "      ##########################################################\n\n\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "\n\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "      ##########################################################\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "      #                                                        #\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "      #                       WARNING!!!                       #\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "      #                                                        #\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "      #   This code was compiled with a debugging option.      #\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "      #   To get timing results run ./configure                #\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "      #   using --with-debugging=no, the performance will      #\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "      #   be generally two or three times faster.              #\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "      #                                                        #\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "      ##########################################################\n\n\n"));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscLogViewWarnNoGpuAwareMpi(MPI_Comm comm, FILE *fd)
+static PetscErrorCode PetscLogViewWarnNoGpuAwareMpi(PetscViewer viewer)
 {
 #if defined(PETSC_HAVE_DEVICE)
   PetscMPIInt size;
   PetscBool   deviceInitialized = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)viewer), &size));
   for (int i = PETSC_DEVICE_HOST + 1; i < PETSC_DEVICE_MAX; ++i) {
     const PetscDeviceType dtype = PetscDeviceTypeCast(i);
     if (PetscDeviceInitialized(dtype)) { /* a non-host device was initialized */
@@ -1201,43 +1201,43 @@ static PetscErrorCode PetscLogViewWarnNoGpuAwareMpi(MPI_Comm comm, FILE *fd)
   }
   /* the last condition says petsc is configured with device but it is a pure CPU run, so don't print misleading warnings */
   if (use_gpu_aware_mpi || size == 1 || !deviceInitialized) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCall(PetscFPrintf(comm, fd, "\n\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      ##########################################################\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #                       WARNING!!!                       #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   This code was compiled with GPU support and you've   #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   created PETSc/GPU objects, but you intentionally     #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   used -use_gpu_aware_mpi 0, requiring PETSc to copy   #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   additional data between the GPU and CPU. To obtain   #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   meaningful timing results on multi-rank runs, use    #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   GPU-aware MPI instead.                               #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      ##########################################################\n\n\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "\n\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      ##########################################################\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #                                                        #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #                       WARNING!!!                       #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #                                                        #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #   This code was compiled with GPU support and you've   #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #   created PETSc/GPU objects, but you intentionally     #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #   used -use_gpu_aware_mpi 0, requiring PETSc to copy   #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #   additional data between the GPU and CPU. To obtain   #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #   meaningful timing results on multi-rank runs, use    #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #   GPU-aware MPI instead.                               #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #                                                        #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      ##########################################################\n\n\n"));
   PetscFunctionReturn(PETSC_SUCCESS);
 #else
   return PETSC_SUCCESS;
 #endif
 }
 
-static PetscErrorCode PetscLogViewWarnGpuTime(MPI_Comm comm, FILE *fd)
+static PetscErrorCode PetscLogViewWarnGpuTime(PetscViewer viewer)
 {
 #if defined(PETSC_HAVE_DEVICE)
 
   PetscFunctionBegin;
   if (!PetscLogGpuTimeFlag || petsc_gflops == 0) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCall(PetscFPrintf(comm, fd, "\n\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      ##########################################################\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #                       WARNING!!!                       #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   This code was run with -log_view_gpu_time            #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   This provides accurate timing within the GPU kernels #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   but can slow down the entire computation by a        #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   measurable amount. For fastest runs we recommend     #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #   not using this option.                               #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      ##########################################################\n\n\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "\n\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      ##########################################################\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #                                                        #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #                       WARNING!!!                       #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #                                                        #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #   This code was run with -log_view_gpu_time            #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #   This provides accurate timing within the GPU kernels #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #   but can slow down the entire computation by a        #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #   measurable amount. For fastest runs we recommend     #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #   not using this option.                               #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      #                                                        #\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      ##########################################################\n\n\n"));
   PetscFunctionReturn(PETSC_SUCCESS);
 #else
   return PETSC_SUCCESS;
@@ -1246,7 +1246,6 @@ static PetscErrorCode PetscLogViewWarnGpuTime(MPI_Comm comm, FILE *fd)
 
 static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, PetscViewer viewer)
 {
-  FILE                   *fd;
   PetscLogHandler_Default def = (PetscLogHandler_Default)handler->data;
   char                    arch[128], hostname[128], username[128], pname[PETSC_MAX_PATH_LEN], date[128];
   PetscLogDouble          locTotalTime, TotalTime, TotalFlops;
@@ -1280,42 +1279,45 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
   PetscCall(PetscLogHandlerGetState(handler, &state));
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
   PetscCall(PetscObjectGetComm((PetscObject)viewer, &comm));
-  PetscCall(PetscViewerASCIIGetPointer(viewer, &fd));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   /* Get the total elapsed time */
   PetscCall(PetscTime(&locTotalTime));
   locTotalTime -= petsc_BaseTime;
 
-  PetscCall(PetscFPrintf(comm, fd, "****************************************************************************************************************************************************************\n"));
-  PetscCall(PetscFPrintf(comm, fd, "***                                WIDEN YOUR WINDOW TO 160 CHARACTERS.  Use 'enscript -r -fCourier9' to print this document                                 ***\n"));
-  PetscCall(PetscFPrintf(comm, fd, "****************************************************************************************************************************************************************\n"));
-  PetscCall(PetscFPrintf(comm, fd, "\n------------------------------------------------------------------ PETSc Performance Summary: ------------------------------------------------------------------\n\n"));
-  PetscCall(PetscLogViewWarnSync(comm, fd));
-  PetscCall(PetscLogViewWarnDebugging(comm, fd));
-  PetscCall(PetscLogViewWarnNoGpuAwareMpi(comm, fd));
-  PetscCall(PetscLogViewWarnGpuTime(comm, fd));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "****************************************************************************************************************************************************************\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "***                                WIDEN YOUR WINDOW TO 160 CHARACTERS.  Use 'enscript -r -fCourier9' to print this document                                 ***\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "****************************************************************************************************************************************************************\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "\n------------------------------------------------------------------ PETSc Performance Summary: ------------------------------------------------------------------\n\n"));
+  PetscCall(PetscLogViewWarnSync(viewer));
+  PetscCall(PetscLogViewWarnDebugging(viewer));
+  PetscCall(PetscLogViewWarnNoGpuAwareMpi(viewer));
+  PetscCall(PetscLogViewWarnGpuTime(viewer));
   PetscCall(PetscGetArchType(arch, sizeof(arch)));
   PetscCall(PetscGetHostName(hostname, sizeof(hostname)));
   PetscCall(PetscGetUserName(username, sizeof(username)));
   PetscCall(PetscGetProgramName(pname, sizeof(pname)));
   PetscCall(PetscGetDate(date, sizeof(date)));
   PetscCall(PetscGetVersion(version, sizeof(version)));
-  if (size == 1) {
-    PetscCall(PetscFPrintf(comm, fd, "%s on a %s named %s with %d processor, by %s %s\n", pname, arch, hostname, size, username, date));
-  } else {
-    PetscCall(PetscFPrintf(comm, fd, "%s on a %s named %s with %d processors, by %s %s\n", pname, arch, hostname, size, username, date));
-  }
-#if defined(PETSC_HAVE_OPENMP)
-  PetscCall(PetscFPrintf(comm, fd, "Using %" PetscInt_FMT " OpenMP threads\n", PetscNumOMPThreads));
+
+#if defined(PETSC_HAVE_CUPM)
+  const char *cupm = PetscDefined(HAVE_CUDA) ? "CUDA" : "HIP";
+  if (PetscDeviceCUPMRuntimeArch)
+    PetscCall(PetscViewerASCIIPrintf(viewer, "%s on a %s named %s with %d process%s and %s architecture %d, by %s on %s\n", pname, arch, hostname, size, size > 1 ? "es" : "", cupm, PetscDeviceCUPMRuntimeArch, username, date));
+  else
 #endif
-  PetscCall(PetscFPrintf(comm, fd, "Using %s\n", version));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "%s on a %s named %s with %d process%s, by %s on %s\n", pname, arch, hostname, size, size > 1 ? "es" : "", username, date));
+
+#if defined(PETSC_HAVE_OPENMP)
+  PetscCall(PetscViewerASCIIPrintf(viewer, "Using %" PetscInt_FMT " OpenMP threads\n", PetscNumOMPThreads));
+#endif
+  PetscCall(PetscViewerASCIIPrintf(viewer, "Using %s\n", version));
 
   /* Must preserve reduction count before we go on */
   red = petsc_allreduce_ct + petsc_gather_ct + petsc_scatter_ct;
 
   /* Calculate summary information */
-  PetscCall(PetscFPrintf(comm, fd, "\n                         Max       Max/Min     Avg       Total\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "\n                         Max       Max/Min     Avg       Total\n"));
   /*   Time */
   PetscCall(MPIU_Allreduce(&locTotalTime, &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
   PetscCall(MPIU_Allreduce(&locTotalTime, &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
@@ -1323,7 +1325,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
   avg = tot / ((PetscLogDouble)size);
   if (min != 0.0) ratio = max / min;
   else ratio = 0.0;
-  PetscCall(PetscFPrintf(comm, fd, "Time (sec):           %5.3e   %7.3f   %5.3e\n", max, ratio, avg));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "Time (sec):           %5.3e   %7.3f   %5.3e\n", max, ratio, avg));
   TotalTime = tot;
   /*   Objects */
   {
@@ -1338,7 +1340,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
   avg = tot / ((PetscLogDouble)size);
   if (min != 0.0) ratio = max / min;
   else ratio = 0.0;
-  PetscCall(PetscFPrintf(comm, fd, "Objects:              %5.3e   %7.3f   %5.3e\n", max, ratio, avg));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "Objects:              %5.3e   %7.3f   %5.3e\n", max, ratio, avg));
   /*   Flops */
   PetscCall(MPIU_Allreduce(&petsc_TotalFlops, &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
   PetscCall(MPIU_Allreduce(&petsc_TotalFlops, &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
@@ -1346,7 +1348,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
   avg = tot / ((PetscLogDouble)size);
   if (min != 0.0) ratio = max / min;
   else ratio = 0.0;
-  PetscCall(PetscFPrintf(comm, fd, "Flops:                %5.3e   %7.3f   %5.3e  %5.3e\n", max, ratio, avg, tot));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "Flops:                %5.3e   %7.3f   %5.3e  %5.3e\n", max, ratio, avg, tot));
   TotalFlops = tot;
   /*   Flops/sec -- Must talk to Barry here */
   if (locTotalTime != 0.0) flops = petsc_TotalFlops / locTotalTime;
@@ -1357,7 +1359,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
   avg = tot / ((PetscLogDouble)size);
   if (min != 0.0) ratio = max / min;
   else ratio = 0.0;
-  PetscCall(PetscFPrintf(comm, fd, "Flops/sec:            %5.3e   %7.3f   %5.3e  %5.3e\n", max, ratio, avg, tot));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "Flops/sec:            %5.3e   %7.3f   %5.3e  %5.3e\n", max, ratio, avg, tot));
   /*   Memory */
   PetscCall(PetscMallocGetMaximumUsage(&mem));
   if (mem > 0.0) {
@@ -1367,7 +1369,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
     avg = tot / ((PetscLogDouble)size);
     if (min != 0.0) ratio = max / min;
     else ratio = 0.0;
-    PetscCall(PetscFPrintf(comm, fd, "Memory (bytes):       %5.3e   %7.3f   %5.3e  %5.3e\n", max, ratio, avg, tot));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Memory (bytes):       %5.3e   %7.3f   %5.3e  %5.3e\n", max, ratio, avg, tot));
   }
   /*   Messages */
   mess = 0.5 * (petsc_irecv_ct + petsc_isend_ct + petsc_recv_ct + petsc_send_ct);
@@ -1377,7 +1379,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
   avg = tot / ((PetscLogDouble)size);
   if (min != 0.0) ratio = max / min;
   else ratio = 0.0;
-  PetscCall(PetscFPrintf(comm, fd, "MPI Msg Count:        %5.3e   %7.3f   %5.3e  %5.3e\n", max, ratio, avg, tot));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "MPI Msg Count:        %5.3e   %7.3f   %5.3e  %5.3e\n", max, ratio, avg, tot));
   numMessages = tot;
   /*   Message Lengths */
   mess = 0.5 * (petsc_irecv_len + petsc_isend_len + petsc_recv_len + petsc_send_len);
@@ -1388,7 +1390,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
   else avg = 0.0;
   if (min != 0.0) ratio = max / min;
   else ratio = 0.0;
-  PetscCall(PetscFPrintf(comm, fd, "MPI Msg Len (bytes):  %5.3e   %7.3f   %5.3e  %5.3e\n", max, ratio, avg, tot));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "MPI Msg Len (bytes):  %5.3e   %7.3f   %5.3e  %5.3e\n", max, ratio, avg, tot));
   messageLength = tot;
   /*   Reductions */
   PetscCall(MPIU_Allreduce(&red, &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
@@ -1396,11 +1398,11 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
   PetscCall(MPIU_Allreduce(&red, &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
   if (min != 0.0) ratio = max / min;
   else ratio = 0.0;
-  PetscCall(PetscFPrintf(comm, fd, "MPI Reductions:       %5.3e   %7.3f\n", max, ratio));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "MPI Reductions:       %5.3e   %7.3f\n", max, ratio));
   numReductions = red; /* wrong because uses count from process zero */
-  PetscCall(PetscFPrintf(comm, fd, "\nFlop counting convention: 1 flop = 1 real number operation of type (multiply/divide/add/subtract)\n"));
-  PetscCall(PetscFPrintf(comm, fd, "                            e.g., VecAXPY() for real vectors of length N --> 2N flops\n"));
-  PetscCall(PetscFPrintf(comm, fd, "                            and VecAXPY() for complex vectors of length N --> 8N flops\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "\nFlop counting convention: 1 flop = 1 real number operation of type (multiply/divide/add/subtract)\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "                            e.g., VecAXPY() for real vectors of length N --> 2N flops\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "                            and VecAXPY() for complex vectors of length N --> 8N flops\n"));
 
   PetscCall(PetscLogRegistryCreateGlobalStageNames(comm, state->registry, &global_stages));
   PetscCall(PetscLogRegistryCreateGlobalEventNames(comm, state->registry, &global_events));
@@ -1431,8 +1433,8 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
     PetscCall(MPIU_Allreduce(localStageVisible, stageVisible, numStages, MPIU_BOOL, MPI_LAND, comm));
     for (stage = 0; stage < numStages; stage++) {
       if (stageUsed[stage] && stageVisible[stage]) {
-        PetscCall(PetscFPrintf(comm, fd, "\nSummary of Stages:   ----- Time ------  ----- Flop ------  --- Messages ---  -- Message Lengths --  -- Reductions --\n"));
-        PetscCall(PetscFPrintf(comm, fd, "                        Avg     %%Total     Avg     %%Total    Count   %%Total     Avg         %%Total    Count   %%Total\n"));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "\nSummary of Stages:   ----- Time ------  ----- Flop ------  --- Messages ---  -- Message Lengths --  -- Reductions --\n"));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "                        Avg     %%Total     Avg     %%Total    Count   %%Total     Avg         %%Total    Count   %%Total\n"));
         break;
       }
     }
@@ -1472,63 +1474,63 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
       else fracLength = 0.0;
       if (numReductions != 0.0) fracReductions = red / numReductions;
       else fracReductions = 0.0;
-      PetscCall(PetscFPrintf(comm, fd, "%2d: %15s: %6.4e %5.1f%%  %6.4e %5.1f%%  %5.3e %5.1f%%  %5.3e      %5.1f%%  %5.3e %5.1f%%\n", stage, stage_name, stageTime / size, 100.0 * fracTime, flops, 100.0 * fracFlops, mess, 100.0 * fracMessages, avgMessLen, 100.0 * fracLength, red, 100.0 * fracReductions));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "%2d: %15s: %6.4e %5.1f%%  %6.4e %5.1f%%  %5.3e %5.1f%%  %5.3e      %5.1f%%  %5.3e %5.1f%%\n", stage, stage_name, stageTime / size, 100.0 * fracTime, flops, 100.0 * fracFlops, mess, 100.0 * fracMessages, avgMessLen, 100.0 * fracLength, red, 100.0 * fracReductions));
     }
   }
 
-  PetscCall(PetscFPrintf(comm, fd, "\n------------------------------------------------------------------------------------------------------------------------\n"));
-  PetscCall(PetscFPrintf(comm, fd, "See the 'Profiling' chapter of the users' manual for details on interpreting output.\n"));
-  PetscCall(PetscFPrintf(comm, fd, "Phase summary info:\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   Count: number of times phase was executed\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   Time and Flop: Max - maximum over all processors\n"));
-  PetscCall(PetscFPrintf(comm, fd, "                  Ratio - ratio of maximum to minimum over all processors\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   Mess: number of messages sent\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   AvgLen: average message length (bytes)\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   Reduct: number of global reductions\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   Global: entire computation\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   Stage: stages of a computation. Set stages with PetscLogStagePush() and PetscLogStagePop().\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      %%T - percent time in this phase         %%F - percent flop in this phase\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      %%M - percent messages in this phase     %%L - percent message lengths in this phase\n"));
-  PetscCall(PetscFPrintf(comm, fd, "      %%R - percent reductions in this phase\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   Total Mflop/s: 10e-6 * (sum of flop over all processors)/(max time over all processors)\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "\n------------------------------------------------------------------------------------------------------------------------\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "See the 'Profiling' chapter of the users' manual for details on interpreting output.\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "Phase summary info:\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   Count: number of times phase was executed\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   Time and Flop: Max - maximum over all processors\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "                  Ratio - ratio of maximum to minimum over all processors\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   Mess: number of messages sent\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   AvgLen: average message length (bytes)\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   Reduct: number of global reductions\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   Global: entire computation\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   Stage: stages of a computation. Set stages with PetscLogStagePush() and PetscLogStagePop().\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      %%T - percent time in this phase         %%F - percent flop in this phase\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      %%M - percent messages in this phase     %%L - percent message lengths in this phase\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      %%R - percent reductions in this phase\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   Total Mflop/s: 10e-6 * (sum of flop over all processors)/(max time over all processors)\n"));
   if (PetscLogMemory) {
-    PetscCall(PetscFPrintf(comm, fd, "   Memory usage is summed over all MPI processes, it is given in mega-bytes\n"));
-    PetscCall(PetscFPrintf(comm, fd, "   Malloc Mbytes: Memory allocated and kept during event (sum over all calls to event). May be negative\n"));
-    PetscCall(PetscFPrintf(comm, fd, "   EMalloc Mbytes: extra memory allocated during event and then freed (maximum over all calls to events). Never negative\n"));
-    PetscCall(PetscFPrintf(comm, fd, "   MMalloc Mbytes: Increase in high water mark of allocated memory (sum over all calls to event). Never negative\n"));
-    PetscCall(PetscFPrintf(comm, fd, "   RMI Mbytes: Increase in resident memory (sum over all calls to event)\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "   Memory usage is summed over all MPI processes, it is given in mega-bytes\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "   Malloc Mbytes: Memory allocated and kept during event (sum over all calls to event). May be negative\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "   EMalloc Mbytes: extra memory allocated during event and then freed (maximum over all calls to events). Never negative\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "   MMalloc Mbytes: Increase in high water mark of allocated memory (sum over all calls to event). Never negative\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "   RMI Mbytes: Increase in resident memory (sum over all calls to event)\n"));
   }
 #if defined(PETSC_HAVE_DEVICE)
-  PetscCall(PetscFPrintf(comm, fd, "   GPU Mflop/s: 10e-6 * (sum of flop on GPU over all processors)/(max GPU time over all processors)\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   CpuToGpu Count: total number of CPU to GPU copies per processor\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   CpuToGpu Size (Mbytes): 10e-6 * (total size of CPU to GPU copies per processor)\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   GpuToCpu Count: total number of GPU to CPU copies per processor\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   GpuToCpu Size (Mbytes): 10e-6 * (total size of GPU to CPU copies per processor)\n"));
-  PetscCall(PetscFPrintf(comm, fd, "   GPU %%F: percent flops on GPU in this event\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   GPU Mflop/s: 10e-6 * (sum of flop on GPU over all processors)/(max GPU time over all processors)\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   CpuToGpu Count: total number of CPU to GPU copies per processor\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   CpuToGpu Size (Mbytes): 10e-6 * (total size of CPU to GPU copies per processor)\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   GpuToCpu Count: total number of GPU to CPU copies per processor\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   GpuToCpu Size (Mbytes): 10e-6 * (total size of GPU to CPU copies per processor)\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   GPU %%F: percent flops on GPU in this event\n"));
 #endif
-  PetscCall(PetscFPrintf(comm, fd, "------------------------------------------------------------------------------------------------------------------------\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "------------------------------------------------------------------------------------------------------------------------\n"));
 
-  PetscCall(PetscLogViewWarnDebugging(comm, fd));
+  PetscCall(PetscLogViewWarnDebugging(viewer));
 
   /* Report events */
-  PetscCall(PetscFPrintf(comm, fd, "Event                Count      Time (sec)     Flop                              --- Global ---  --- Stage ----  Total"));
-  if (PetscLogMemory) PetscCall(PetscFPrintf(comm, fd, "  Malloc EMalloc MMalloc RMI"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "Event                Count      Time (sec)     Flop                              --- Global ---  --- Stage ----  Total"));
+  if (PetscLogMemory) PetscCall(PetscViewerASCIIPrintf(viewer, "  Malloc EMalloc MMalloc RMI"));
 #if defined(PETSC_HAVE_DEVICE)
-  PetscCall(PetscFPrintf(comm, fd, "   GPU    - CpuToGpu -   - GpuToCpu - GPU"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   GPU    - CpuToGpu -   - GpuToCpu - GPU"));
 #endif
-  PetscCall(PetscFPrintf(comm, fd, "\n"));
-  PetscCall(PetscFPrintf(comm, fd, "                   Max Ratio  Max     Ratio   Max  Ratio  Mess   AvgLen  Reduct  %%T %%F %%M %%L %%R  %%T %%F %%M %%L %%R Mflop/s"));
-  if (PetscLogMemory) PetscCall(PetscFPrintf(comm, fd, " Mbytes Mbytes Mbytes Mbytes"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "                   Max Ratio  Max     Ratio   Max  Ratio  Mess   AvgLen  Reduct  %%T %%F %%M %%L %%R  %%T %%F %%M %%L %%R Mflop/s"));
+  if (PetscLogMemory) PetscCall(PetscViewerASCIIPrintf(viewer, " Mbytes Mbytes Mbytes Mbytes"));
 #if defined(PETSC_HAVE_DEVICE)
-  PetscCall(PetscFPrintf(comm, fd, " Mflop/s Count   Size   Count   Size  %%F"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, " Mflop/s Count   Size   Count   Size  %%F"));
 #endif
-  PetscCall(PetscFPrintf(comm, fd, "\n"));
-  PetscCall(PetscFPrintf(comm, fd, "------------------------------------------------------------------------------------------------------------------------"));
-  if (PetscLogMemory) PetscCall(PetscFPrintf(comm, fd, "-----------------------------"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "------------------------------------------------------------------------------------------------------------------------"));
+  if (PetscLogMemory) PetscCall(PetscViewerASCIIPrintf(viewer, "-----------------------------"));
 #if defined(PETSC_HAVE_DEVICE)
-  PetscCall(PetscFPrintf(comm, fd, "---------------------------------------"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "---------------------------------------"));
 #endif
-  PetscCall(PetscFPrintf(comm, fd, "\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
 
 #if defined(PETSC_HAVE_DEVICE)
   /* this indirect way of accessing these values is needed when PETSc is build with multiple libraries since the symbols are not in libpetscsys */
@@ -1546,7 +1548,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
     if (!(stageVisible[stage] && stageUsed[stage])) continue;
     PetscCall(PetscLogGlobalNamesGlobalGetLocal(global_stages, stage, &stage_id));
     PetscCall(PetscLogGlobalNamesGlobalGetName(global_stages, stage, &stage_name));
-    PetscCall(PetscFPrintf(comm, fd, "\n--- Event Stage %d: %s\n\n", stage, stage_name));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "\n--- Event Stage %d: %s\n\n", stage, stage_name));
     stage_info = &zero_info;
     if (localStageUsed[stage]) {
       PetscStagePerf *stage_perf_info;
@@ -1602,7 +1604,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
         PetscCall(MPIU_Allreduce(&event_info->GpuTime, &gmaxt, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
 #endif
         if (mint < 0.0) {
-          PetscCall(PetscFPrintf(comm, fd, "WARNING!!! Minimum time %g over all processors for %s is negative! This happens\n on some machines whose times cannot handle too rapid calls.!\n artificially changing minimum to zero.\n", mint, event_name));
+          PetscCall(PetscViewerASCIIPrintf(viewer, "WARNING!!! Minimum time %g over all processors for %s is negative! This happens\n on some machines whose times cannot handle too rapid calls.!\n artificially changing minimum to zero.\n", mint, event_name));
           mint = 0;
         }
         PetscCheck(minf >= 0.0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Minimum flop %g over all processors for %s is negative! Not possible!", minf, event_name);
@@ -1652,52 +1654,52 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
           if (maxt != 0.0) flopr = totf / maxt;
           else flopr = 0.0;
           if (fracStageTime > 1.0 || fracStageFlops > 1.0 || fracStageMess > 1.0 || fracStageMessLen > 1.0 || fracStageRed > 1.0)
-            PetscCall(PetscFPrintf(comm, fd, "%-16s %7d %3.1f %5.4e %3.1f %3.2e %3.1f %2.1e %2.1e %2.1e %2.0f %2.0f %2.0f %2.0f %2.0f Multiple stages %5.0f", event_name, maxC, ratC, maxt, ratt, maxf, ratf, totm, totml, totr, 100.0 * fracTime, 100.0 * fracFlops, 100.0 * fracMess, 100.0 * fracMessLen, 100.0 * fracRed, PetscAbs(flopr) / 1.0e6));
+            PetscCall(PetscViewerASCIIPrintf(viewer, "%-16s %7d %3.1f %5.4e %3.1f %3.2e %3.1f %2.1e %2.1e %2.1e %2.0f %2.0f %2.0f %2.0f %2.0f Multiple stages %5.0f", event_name, maxC, ratC, maxt, ratt, maxf, ratf, totm, totml, totr, 100.0 * fracTime, 100.0 * fracFlops, 100.0 * fracMess, 100.0 * fracMessLen, 100.0 * fracRed, PetscAbs(flopr) / 1.0e6));
           else {
             if (PetscIsNanReal((PetscReal)maxt)) { // when maxt, ratt, flopr are NaN (i.e., run with GPUs but without -log_view_gpu_time), replace the confusing "nan" with "n/a"
-              PetscCall(PetscFPrintf(comm, fd, "%-16s %7d %3.1f  n/a     n/a   %3.2e %3.1f %2.1e %2.1e %2.1e %2.0f %2.0f %2.0f %2.0f %2.0f %3.0f %2.0f %2.0f %2.0f %2.0f  n/a", event_name, maxC, ratC, maxf, ratf, totm, totml, totr, 100.0 * fracTime, 100.0 * fracFlops, 100.0 * fracMess, 100.0 * fracMessLen, 100.0 * fracRed, 100.0 * fracStageTime, 100.0 * fracStageFlops, 100.0 * fracStageMess, 100.0 * fracStageMessLen, 100.0 * fracStageRed));
+              PetscCall(PetscViewerASCIIPrintf(viewer, "%-16s %7d %3.1f  n/a     n/a   %3.2e %3.1f %2.1e %2.1e %2.1e %2.0f %2.0f %2.0f %2.0f %2.0f %3.0f %2.0f %2.0f %2.0f %2.0f  n/a", event_name, maxC, ratC, maxf, ratf, totm, totml, totr, 100.0 * fracTime, 100.0 * fracFlops, 100.0 * fracMess, 100.0 * fracMessLen, 100.0 * fracRed, 100.0 * fracStageTime, 100.0 * fracStageFlops, 100.0 * fracStageMess, 100.0 * fracStageMessLen, 100.0 * fracStageRed));
             } else {
-              PetscCall(PetscFPrintf(comm, fd, "%-16s %7d %3.1f %5.4e %3.1f %3.2e %3.1f %2.1e %2.1e %2.1e %2.0f %2.0f %2.0f %2.0f %2.0f %3.0f %2.0f %2.0f %2.0f %2.0f %5.0f", event_name, maxC, ratC, maxt, ratt, maxf, ratf, totm, totml, totr, 100.0 * fracTime, 100.0 * fracFlops, 100.0 * fracMess, 100.0 * fracMessLen, 100.0 * fracRed, 100.0 * fracStageTime, 100.0 * fracStageFlops, 100.0 * fracStageMess, 100.0 * fracStageMessLen, 100.0 * fracStageRed, PetscAbs(flopr) / 1.0e6));
+              PetscCall(PetscViewerASCIIPrintf(viewer, "%-16s %7d %3.1f %5.4e %3.1f %3.2e %3.1f %2.1e %2.1e %2.1e %2.0f %2.0f %2.0f %2.0f %2.0f %3.0f %2.0f %2.0f %2.0f %2.0f %5.0f", event_name, maxC, ratC, maxt, ratt, maxf, ratf, totm, totml, totr, 100.0 * fracTime, 100.0 * fracFlops, 100.0 * fracMess, 100.0 * fracMessLen, 100.0 * fracRed, 100.0 * fracStageTime, 100.0 * fracStageFlops, 100.0 * fracStageMess, 100.0 * fracStageMessLen, 100.0 * fracStageRed, PetscAbs(flopr) / 1.0e6));
             }
           }
-          if (PetscLogMemory) PetscCall(PetscFPrintf(comm, fd, " %5.0f   %5.0f   %5.0f   %5.0f", mal / 1.0e6, emalmax / 1.0e6, malmax / 1.0e6, mem / 1.0e6));
+          if (PetscLogMemory) PetscCall(PetscViewerASCIIPrintf(viewer, " %5.0f   %5.0f   %5.0f   %5.0f", mal / 1.0e6, emalmax / 1.0e6, malmax / 1.0e6, mem / 1.0e6));
 #if defined(PETSC_HAVE_DEVICE)
           if (totf != 0.0) fracgflops = gflops / totf;
           else fracgflops = 0.0;
           if (gmaxt != 0.0) gflopr = gflops / gmaxt;
           else gflopr = 0.0;
           if (PetscIsNanReal((PetscReal)gflopr)) {
-            PetscCall(PetscFPrintf(comm, fd, "    n/a    %4.0f %3.2e %4.0f %3.2e % 2.0f", cct / size, csz / (1.0e6 * size), gct / size, gsz / (1.0e6 * size), 100.0 * fracgflops));
+            PetscCall(PetscViewerASCIIPrintf(viewer, "    n/a    %4.0f %3.2e %4.0f %3.2e % 2.0f", cct / size, csz / (1.0e6 * size), gct / size, gsz / (1.0e6 * size), 100.0 * fracgflops));
           } else {
-            PetscCall(PetscFPrintf(comm, fd, "   %5.0f   %4.0f %3.2e %4.0f %3.2e % 2.0f", PetscAbs(gflopr) / 1.0e6, cct / size, csz / (1.0e6 * size), gct / size, gsz / (1.0e6 * size), 100.0 * fracgflops));
+            PetscCall(PetscViewerASCIIPrintf(viewer, "   %5.0f   %4.0f %3.2e %4.0f %3.2e % 2.0f", PetscAbs(gflopr) / 1.0e6, cct / size, csz / (1.0e6 * size), gct / size, gsz / (1.0e6 * size), 100.0 * fracgflops));
           }
 #endif
-          PetscCall(PetscFPrintf(comm, fd, "\n"));
+          PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
         }
       }
     }
   }
 
   /* Memory usage and object creation */
-  PetscCall(PetscFPrintf(comm, fd, "------------------------------------------------------------------------------------------------------------------------"));
-  if (PetscLogMemory) PetscCall(PetscFPrintf(comm, fd, "-----------------------------"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "------------------------------------------------------------------------------------------------------------------------"));
+  if (PetscLogMemory) PetscCall(PetscViewerASCIIPrintf(viewer, "-----------------------------"));
 #if defined(PETSC_HAVE_DEVICE)
-  PetscCall(PetscFPrintf(comm, fd, "---------------------------------------"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "---------------------------------------"));
 #endif
-  PetscCall(PetscFPrintf(comm, fd, "\n"));
-  PetscCall(PetscFPrintf(comm, fd, "\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
 
   /* Right now, only stages on the first processor are reported here, meaning only objects associated with
      the global communicator, or MPI_COMM_SELF for proc 1. We really should report global stats and then
      stats for stages local to processor sets.
   */
   /* We should figure out the longest object name here (now 20 characters) */
-  PetscCall(PetscFPrintf(comm, fd, "Object Type          Creations   Destructions. Reports information only for process 0.\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "Object Type          Creations   Destructions. Reports information only for process 0.\n"));
   for (stage = 0; stage < numStages; stage++) {
     const char *stage_name;
 
     PetscCall(PetscLogGlobalNamesGlobalGetName(global_stages, stage, &stage_name));
-    PetscCall(PetscFPrintf(comm, fd, "\n--- Event Stage %d: %s\n\n", stage, stage_name));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "\n--- Event Stage %d: %s\n\n", stage, stage_name));
     if (localStageUsed[stage]) {
       PetscInt num_classes;
 
@@ -1714,7 +1716,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
           if (stage == 0 && oclass == num_classes - 1) {
             PetscCall(PetscStrcmp(class_reg_info.name, "Viewer", &flg));
             PetscCheck(flg && class_perf_info->creations == 1 && class_perf_info->destructions == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "The last PetscObject type of the main PetscLogStage should be PetscViewer with a single creation and no destruction");
-          } else PetscCall(PetscFPrintf(comm, fd, "%20s %5d          %5d\n", class_reg_info.name, class_perf_info->creations, class_perf_info->destructions));
+          } else PetscCall(PetscViewerASCIIPrintf(viewer, "%20s %5d          %5d\n", class_reg_info.name, class_perf_info->creations, class_perf_info->destructions));
         }
       }
     }
@@ -1728,7 +1730,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
   PetscCall(PetscLogGlobalNamesDestroy(&global_events));
 
   /* Information unrelated to this particular run */
-  PetscCall(PetscFPrintf(comm, fd, "========================================================================================================================\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "========================================================================================================================\n"));
   PetscCall(PetscTime(&y));
   PetscCall(PetscTime(&x));
   PetscCall(PetscTime(&y));
@@ -1741,7 +1743,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
   PetscCall(PetscTime(&y));
   PetscCall(PetscTime(&y));
   PetscCall(PetscTime(&y));
-  PetscCall(PetscFPrintf(comm, fd, "Average time to get PetscTime(): %g\n", (y - x) / 10.0));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "Average time to get PetscTime(): %g\n", (y - x) / 10.0));
   /* MPI information */
   if (size > 1) {
     MPI_Status  status;
@@ -1756,7 +1758,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
     PetscCallMPI(MPI_Barrier(comm));
     PetscCallMPI(MPI_Barrier(comm));
     PetscCall(PetscTime(&y));
-    PetscCall(PetscFPrintf(comm, fd, "Average time for MPI_Barrier(): %g\n", (y - x) / 5.0));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Average time for MPI_Barrier(): %g\n", (y - x) / 5.0));
     PetscCall(PetscCommDuplicate(comm, &newcomm, &tag));
     PetscCallMPI(MPI_Barrier(comm));
     if (rank) {
@@ -1767,7 +1769,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
       PetscCallMPI(MPI_Send(NULL, 0, MPI_INT, 1, tag, newcomm));
       PetscCallMPI(MPI_Recv(NULL, 0, MPI_INT, size - 1, tag, newcomm, &status));
       PetscCall(PetscTime(&y));
-      PetscCall(PetscFPrintf(comm, fd, "Average time for zero size MPI_Send(): %g\n", (y - x) / size));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "Average time for zero size MPI_Send(): %g\n", (y - x) / size));
     }
     PetscCall(PetscCommDestroy(&newcomm));
   }
@@ -1775,37 +1777,37 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
 
   /* Machine and compile information */
   if (PetscDefined(USE_FORTRAN_KERNELS)) {
-    PetscCall(PetscFPrintf(comm, fd, "Compiled with FORTRAN kernels\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Compiled with FORTRAN kernels\n"));
   } else {
-    PetscCall(PetscFPrintf(comm, fd, "Compiled without FORTRAN kernels\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Compiled without FORTRAN kernels\n"));
   }
   if (PetscDefined(USE_64BIT_INDICES)) {
-    PetscCall(PetscFPrintf(comm, fd, "Compiled with 64-bit PetscInt\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Compiled with 64-bit PetscInt\n"));
   } else if (PetscDefined(USE___FLOAT128)) {
-    PetscCall(PetscFPrintf(comm, fd, "Compiled with 32-bit PetscInt\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Compiled with 32-bit PetscInt\n"));
   }
   if (PetscDefined(USE_REAL_SINGLE)) {
-    PetscCall(PetscFPrintf(comm, fd, "Compiled with single precision PetscScalar and PetscReal\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Compiled with single precision PetscScalar and PetscReal\n"));
   } else if (PetscDefined(USE___FLOAT128)) {
-    PetscCall(PetscFPrintf(comm, fd, "Compiled with 128 bit precision PetscScalar and PetscReal\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Compiled with 128 bit precision PetscScalar and PetscReal\n"));
   }
   if (PetscDefined(USE_REAL_MAT_SINGLE)) {
-    PetscCall(PetscFPrintf(comm, fd, "Compiled with single precision matrices\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Compiled with single precision matrices\n"));
   } else {
-    PetscCall(PetscFPrintf(comm, fd, "Compiled with full precision matrices (default)\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Compiled with full precision matrices (default)\n"));
   }
-  PetscCall(PetscFPrintf(comm, fd, "sizeof(short) %d sizeof(int) %d sizeof(long) %d sizeof(void*) %d sizeof(PetscScalar) %d sizeof(PetscInt) %d\n", (int)sizeof(short), (int)sizeof(int), (int)sizeof(long), (int)sizeof(void *), (int)sizeof(PetscScalar), (int)sizeof(PetscInt)));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "sizeof(short) %d sizeof(int) %d sizeof(long) %d sizeof(void*) %d sizeof(PetscScalar) %d sizeof(PetscInt) %d\n", (int)sizeof(short), (int)sizeof(int), (int)sizeof(long), (int)sizeof(void *), (int)sizeof(PetscScalar), (int)sizeof(PetscInt)));
 
-  PetscCall(PetscFPrintf(comm, fd, "Configure options: %s", petscconfigureoptions));
-  PetscCall(PetscFPrintf(comm, fd, "%s", petscmachineinfo));
-  PetscCall(PetscFPrintf(comm, fd, "%s", petsccompilerinfo));
-  PetscCall(PetscFPrintf(comm, fd, "%s", petsccompilerflagsinfo));
-  PetscCall(PetscFPrintf(comm, fd, "%s", petsclinkerinfo));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "Configure options: %s", petscconfigureoptions));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "%s", petscmachineinfo));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "%s", petsccompilerinfo));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "%s", petsccompilerflagsinfo));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "%s", petsclinkerinfo));
 
   /* Cleanup */
-  PetscCall(PetscFPrintf(comm, fd, "\n"));
-  PetscCall(PetscLogViewWarnNoGpuAwareMpi(comm, fd));
-  PetscCall(PetscLogViewWarnDebugging(comm, fd));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
+  PetscCall(PetscLogViewWarnNoGpuAwareMpi(viewer));
+  PetscCall(PetscLogViewWarnDebugging(viewer));
   PetscCall(PetscFPTrapPop());
   PetscFunctionReturn(PETSC_SUCCESS);
 }

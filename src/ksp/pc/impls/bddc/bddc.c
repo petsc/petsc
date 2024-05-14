@@ -37,11 +37,21 @@ static PetscErrorCode PCApply_BDDC(PC, Vec, Vec);
 
 static PetscErrorCode PCSetFromOptions_BDDC(PC pc, PetscOptionItems *PetscOptionsObject)
 {
-  PC_BDDC *pcbddc = (PC_BDDC *)pc->data;
-  PetscInt nt, i;
+  PC_BDDC  *pcbddc = (PC_BDDC *)pc->data;
+  PetscInt  nt, i;
+  char      load[PETSC_MAX_PATH_LEN] = {'\0'};
+  PetscBool flg;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "BDDC options");
+  /* Load customization from binary file (debugging) */
+  PetscCall(PetscOptionsString("-pc_bddc_load", "Load customization from file (intended for debug)", "none", load, load, sizeof(load), &flg));
+  if (flg) {
+    size_t len;
+
+    PetscCall(PetscStrlen(load, &len));
+    PetscCall(PCBDDCLoadOrViewCustomization(pc, PETSC_TRUE, len ? load : NULL));
+  }
   /* Verbose debugging */
   PetscCall(PetscOptionsInt("-pc_bddc_check_level", "Verbose output for PCBDDC (intended for debug)", "none", pcbddc->dbg_flag, &pcbddc->dbg_flag, NULL));
   /* Approximate solvers */
@@ -57,6 +67,7 @@ static PetscErrorCode PCSetFromOptions_BDDC(PC pc, PetscOptionItems *PetscOption
   PetscCall(PetscOptionsBool("-pc_bddc_neumann_approximate_scale", "Inform PCBDDC that we need to scale the Neumann solve", "none", pcbddc->NullSpace_corr[3], &pcbddc->NullSpace_corr[3], NULL));
   /* Primal space customization */
   PetscCall(PetscOptionsBool("-pc_bddc_use_local_mat_graph", "Use or not adjacency graph of local mat for interface analysis", "none", pcbddc->use_local_adj, &pcbddc->use_local_adj, NULL));
+  PetscCall(PetscOptionsInt("-pc_bddc_local_mat_graph_square", "Square adjacency graph of local mat for interface analysis", "none", pcbddc->local_adj_square, &pcbddc->local_adj_square, NULL));
   PetscCall(PetscOptionsInt("-pc_bddc_graph_maxcount", "Maximum number of shared subdomains for a connected component", "none", pcbddc->graphmaxcount, &pcbddc->graphmaxcount, NULL));
   PetscCall(PetscOptionsBool("-pc_bddc_corner_selection", "Activates face-based corner selection", "none", pcbddc->corner_selection, &pcbddc->corner_selection, NULL));
   PetscCall(PetscOptionsBool("-pc_bddc_use_vertices", "Use or not corner dofs in coarse space", "none", pcbddc->use_vertices, &pcbddc->use_vertices, NULL));
@@ -1672,6 +1683,19 @@ static PetscErrorCode PCSetUp_BDDC(PC pc)
     PetscCall(PetscViewerASCIISubtractTab(pcbddc->dbg_viewer, 2 * pcbddc->current_level));
     PetscCall(PetscViewerASCIIPopSynchronized(pcbddc->dbg_viewer));
   }
+
+  { /* Dump customization */
+    PetscBool flg;
+    char      save[PETSC_MAX_PATH_LEN] = {'\0'};
+
+    PetscCall(PetscOptionsGetString(NULL, ((PetscObject)pc)->prefix, "-pc_bddc_save", save, sizeof(save), &flg));
+    if (flg) {
+      size_t len;
+
+      PetscCall(PetscStrlen(save, &len));
+      PetscCall(PCBDDCLoadOrViewCustomization(pc, PETSC_FALSE, len ? save : NULL));
+    }
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2192,6 +2216,9 @@ static PetscErrorCode PCBDDCMatFETIDPGetRHS_BDDC(Mat fetidp_mat, Vec standard_rh
 
   Level: developer
 
+  Note:
+  Most users should employ the `KSP` interface for linear solvers and create a solver of type `KSPFETIDP`.
+
 .seealso: [](ch_ksp), `PCBDDC`, `PCBDDCCreateFETIDPOperators()`, `PCBDDCMatFETIDPGetSolution()`
 @*/
 PetscErrorCode PCBDDCMatFETIDPGetRHS(Mat fetidp_mat, Vec standard_rhs, Vec fetidp_flux_rhs)
@@ -2373,6 +2400,9 @@ static PetscErrorCode PCDestroy_BDDCIPC(PC pc)
 . standard_sol - the solution defined on the physical domain
 
   Level: developer
+
+  Note:
+  Most users should employ the `KSP` interface for linear solvers and create a solver of type `KSPFETIDP`.
 
 .seealso: [](ch_ksp), `PCBDDC`, `PCBDDCCreateFETIDPOperators()`, `PCBDDCMatFETIDPGetRHS()`
 @*/
@@ -2635,10 +2665,11 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
 
   Level: developer
 
-  Note:
-  Currently the only operations provided for FETI-DP matrix are `MatMult()` and `MatMultTranspose()`
+  Notes:
+  Most users should employ the `KSP` interface for linear solvers and create a solver of type `KSPFETIDP`.
+  Currently the only operations provided for the FETI-DP matrix are `MatMult()` and `MatMultTranspose()`
 
-.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCMatFETIDPGetRHS()`, `PCBDDCMatFETIDPGetSolution()`
+.seealso: [](ch_ksp), `KSPFETIDP`, `PCBDDC`, `PCBDDCMatFETIDPGetRHS()`, `PCBDDCMatFETIDPGetSolution()`
 @*/
 PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, const char *prefix, Mat *fetidp_mat, PC *fetidp_pc)
 {
@@ -2677,10 +2708,6 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
    The PETSc implementation also supports multilevel `PCBDDC` {cite}`mandel2008multispace`. Coarse grids are partitioned using a `MatPartitioning` object.
 
    Adaptive selection of primal constraints is supported for SPD systems with high-contrast in the coefficients if MUMPS or MKL_PARDISO are present.
-   Future versions of the code will also consider using PASTIX.
-
-   An experimental interface to the FETI-DP method is available. FETI-DP operators could be created using `PCBDDCCreateFETIDPOperators()`.
-    A stand-alone class for the FETI-DP method will be provided in the next releases.
 
    Options Database Keys:
 +    -pc_bddc_use_vertices <true>         - use or not vertices in primal space
@@ -2722,10 +2749,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
 
    Level: intermediate
 
-   Contributed by:
-   Stefano Zampini
-
-.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MATIS`, `PCLU`, `PCGAMG`, `PC`, `PCBDDCSetLocalAdjacencyGraph()`, `PCBDDCSetDofsSplitting()`,
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MATIS`, `KSPFETIDP`, `PCLU`, `PCGAMG`, `PC`, `PCBDDCSetLocalAdjacencyGraph()`, `PCBDDCSetDofsSplitting()`,
           `PCBDDCSetDirichletBoundaries()`, `PCBDDCSetNeumannBoundaries()`, `PCBDDCSetPrimalVerticesIS()`, `MatNullSpace`, `MatSetNearNullSpace()`,
           `PCBDDCSetChangeOfBasisMat()`, `PCBDDCCreateFETIDPOperators()`, `PCNN`
 M*/

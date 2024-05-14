@@ -3,12 +3,12 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version          = '5.6.2'
+    self.version          = '5.7.1'
     self.minversion       = '5.2.1'
     self.versionname      = 'MUMPS_VERSION'
     self.requiresversion  = 1
     self.gitcommit        = 'v'+self.version
-    self.download         = ['https://graal.ens-lyon.fr/MUMPS/MUMPS_'+self.version+'.tar.gz',
+    self.download         = ['https://mumps-solver.org/MUMPS_'+self.version+'.tar.gz',
                              'https://web.cels.anl.gov/projects/petsc/download/externalpackages/MUMPS_'+self.version+'.tar.gz']
     self.downloaddirnames = ['petsc-pkg-mumps','MUMPS']
     self.buildLanguages   = ['C','FC']
@@ -172,7 +172,7 @@ class Configure(config.package.Package):
       # To avoid a bug related to MPI_IN_PLACE and old MPICH releases, see MR 4410
       self.avoid_mpi_in_place = 0
       if 'download-mumps-avoid-mpi-in-place' in self.framework.clArgDB: # user-provided value takes precedence
-        self.avoid_mpi_in_place = self.clArgDB['download-mumps-avoid-mpi-in-place']
+        self.avoid_mpi_in_place = self.framework.clArgDB['download-mumps-avoid-mpi-in-place']
       elif hasattr(self.mpi, 'mpich_numversion') and int(self.mpi.mpich_numversion) < 40000101:
         self.avoid_mpi_in_place = 1
       if self.avoid_mpi_in_place:

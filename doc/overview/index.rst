@@ -21,6 +21,7 @@ managing parallel PDE discretizations including parallel matrix and vector assem
    integrator_table
    tao_solve_table
    discrete_table
+   plex_transform_table
    ../manual/index
    ../manualpages/index
    ../changes/index

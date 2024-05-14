@@ -54,7 +54,7 @@ static PetscErrorCode PetscShmCommDestroyDuppedComms(void)
   Collective.
 
   Input Parameter:
-. globcomm - `MPI_Comm`, which can be a user MPI_Comm or a PETSc inner MPI_Comm
+. globcomm - `MPI_Comm`, which can be a user `MPI_Comm` or a PETSc inner `MPI_Comm`
 
   Output Parameter:
 . pshmcomm - the PETSc shared memory communicator object
@@ -62,7 +62,7 @@ static PetscErrorCode PetscShmCommDestroyDuppedComms(void)
   Level: developer
 
   Note:
-  When used with MPICH, MPICH must be configured with --download-mpich-device=ch3:nemesis
+  When used with MPICH, MPICH must be configured with `--download-mpich-device=ch3:nemesis`
 
 .seealso: `PetscShmCommGlobalToLocal()`, `PetscShmCommLocalToGlobal()`, `PetscShmCommGetMpiShmComm()`
 @*/

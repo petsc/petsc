@@ -8,24 +8,24 @@ from Cython.Compiler.AutoDocTransforms import (
     ExpressionWriter as BaseExpressionWriter,
     AnnotationWriter as BaseAnnotationWriter,
 )
+from Cython.Compiler.Errors import error
 
 
 class ExpressionWriter(BaseExpressionWriter):
-
     def visit_IndexNode(self, node):
         self.visit(node.base)
-        self.put(u"[")
+        self.put('[')
         if isinstance(node.index, TupleNode):
             if node.index.subexpr_nodes():
                 self.emit_sequence(node.index)
             else:
-                self.put(u"()")
+                self.put('()')
         else:
             self.visit(node.index)
-        self.put(u"]")
+        self.put(']')
 
     def visit_UnicodeNode(self, node):
-        self.emit_string(node, "")
+        self.emit_string(node, '')
 
 
 class AnnotationWriter(ExpressionWriter, BaseAnnotationWriter):
@@ -33,7 +33,6 @@ class AnnotationWriter(ExpressionWriter, BaseAnnotationWriter):
 
 
 class EmbedSignature(CythonTransform):
-
     def __init__(self, context):
         super(EmbedSignature, self).__init__(context)
         self.class_name = None
@@ -44,15 +43,11 @@ class EmbedSignature(CythonTransform):
 
     def _fmt_expr(self, node):
         writer = ExpressionWriter()
-        result = writer.write(node)
-        # print(type(node).__name__, '-->', result)
-        return result
+        return writer.write(node)
 
     def _fmt_annotation(self, node):
         writer = AnnotationWriter()
-        result = writer.write(node)
-        # print(type(node).__name__, '-->', result)
-        return result
+        return writer.write(node)
 
     def _fmt_arg(self, arg):
         annotation = None
@@ -88,10 +83,16 @@ class EmbedSignature(CythonTransform):
             arg_doc = arg_doc + (': %s' % annotation)
         return arg_doc
 
-    def _fmt_arglist(self, args,
-                     npoargs=0, npargs=0, pargs=None,
-                     nkargs=0, kargs=None,
-                     hide_self=False):
+    def _fmt_arglist(
+        self,
+        args,
+        npoargs=0,
+        npargs=0,
+        pargs=None,
+        nkargs=0,
+        kargs=None,
+        hide_self=False,
+    ):
         arglist = []
         for arg in args:
             if not hide_self or not arg.entry.is_self_arg:
@@ -112,18 +113,26 @@ class EmbedSignature(CythonTransform):
     def _fmt_ret_type(self, ret):
         if ret is PyrexTypes.py_object_type:
             return None
-        else:
-            return ret.declaration_code("", for_display=1)
+        return ret.declaration_code('', for_display=1)
 
-    def _fmt_signature(self, cls_name, func_name, args,
-                       npoargs=0, npargs=0, pargs=None,
-                       nkargs=0, kargs=None,
-                       return_expr=None,
-                       return_type=None, hide_self=False):
-        arglist = self._fmt_arglist(args,
-                                    npoargs, npargs, pargs,
-                                    nkargs, kargs,
-                                    hide_self=hide_self)
+    def _fmt_signature(
+        self,
+        node,
+        cls_name,
+        func_name,
+        args,
+        npoargs=0,
+        npargs=0,
+        pargs=None,
+        nkargs=0,
+        kargs=None,
+        return_expr=None,
+        return_type=None,
+        hide_self=False,
+    ):
+        arglist = self._fmt_arglist(
+            args, npoargs, npargs, pargs, nkargs, kargs, hide_self=hide_self
+        )
         arglist_doc = ', '.join(arglist)
         func_doc = '%s(%s)' % (func_name, arglist_doc)
         if cls_name:
@@ -137,25 +146,31 @@ class EmbedSignature(CythonTransform):
         if ret_doc:
             docfmt = self._select_format('%s -> %s', '%s -> (%s)')
             func_doc = docfmt % (func_doc, ret_doc)
+        else:
+            if not func_doc.startswith('_') and not func_name.startswith('_'):
+                error(
+                    node.pos,
+                    f'cyautodoc._fmt_signature: missing return type for {func_doc}',
+                )
         return func_doc
 
     def _fmt_relative_position(self, pos):
-        return 'Source code at ' + ':'.join((str(pos[0].get_filenametable_entry()), str(pos[1])))
+        return 'Source code at ' + ':'.join(
+            (str(pos[0].get_filenametable_entry()), str(pos[1]))
+        )
 
     def _embed_signature(self, signature, pos, node_doc):
         pos = self._fmt_relative_position(pos)
         if node_doc:
-            docfmt = self._select_format("%s\n%s\n%s", "%s\n--\n\n%s")
+            docfmt = self._select_format('%s\n%s\n%s', '%s\n--\n\n%s')
             return docfmt % (signature, node_doc, pos)
-        else:
-            docfmt = self._select_format("%s\n%s", "%s\n--\n\n%s")
-            return docfmt % (signature, pos)
+        docfmt = self._select_format('%s\n%s', '%s\n--\n\n%s')
+        return docfmt % (signature, pos)
 
     def __call__(self, node):
         if not Options.docstrings:
             return node
-        else:
-            return super(EmbedSignature, self).__call__(node)
+        return super(EmbedSignature, self).__call__(node)
 
     def visit_ClassDefNode(self, node):
         oldname = self.class_name
@@ -180,41 +195,40 @@ class EmbedSignature(CythonTransform):
         if not self.current_directives['embedsignature']:
             return node
 
-        is_constructor = False
         hide_self = False
         if node.entry.is_special:
-            is_constructor = self.class_node and node.name == '__init__'
-            if not is_constructor:
-                return node
-            class_name, func_name = None, self.class_name
-            hide_self = True
-        else:
-            class_name, func_name = self.class_name, node.name
+            return node
+        class_name, func_name = self.class_name, node.name
 
         npoargs = getattr(node, 'num_posonly_args', 0)
         nkargs = getattr(node, 'num_kwonly_args', 0)
         npargs = len(node.args) - nkargs - npoargs
         signature = self._fmt_signature(
-            class_name, func_name, node.args,
-            npoargs, npargs, node.star_arg,
-            nkargs, node.starstar_arg,
+            node,
+            class_name,
+            func_name,
+            node.args,
+            npoargs,
+            npargs,
+            node.star_arg,
+            nkargs,
+            node.starstar_arg,
             return_expr=node.return_type_annotation,
-            return_type=None, hide_self=hide_self)
+            return_type=None,
+            hide_self=hide_self,
+        )
         if signature:
-            if is_constructor:
-                doc_holder = self.class_node.entry.type.scope
-            else:
-                doc_holder = node.entry
+            doc_holder = node.entry
 
             if doc_holder.doc is not None:
                 old_doc = doc_holder.doc
-            elif not is_constructor and getattr(node, 'py_func', None) is not None:
+            elif getattr(node, 'py_func', None) is not None:
                 old_doc = node.py_func.entry.doc
             else:
                 old_doc = None
             new_doc = self._embed_signature(signature, node.pos, old_doc)
             doc_holder.doc = EncodedString(new_doc)
-            if not is_constructor and getattr(node, 'py_func', None) is not None:
+            if getattr(node, 'py_func', None) is not None:
                 node.py_func.entry.doc = EncodedString(new_doc)
         return node
 
@@ -225,9 +239,12 @@ class EmbedSignature(CythonTransform):
             return node
 
         signature = self._fmt_signature(
-            self.class_name, node.declarator.base.name,
+            node,
+            self.class_name,
+            node.declarator.base.name,
             node.declarator.args,
-            return_type=node.return_type)
+            return_type=node.return_type,
+        )
         if signature:
             if node.entry.doc is not None:
                 old_doc = node.entry.doc
@@ -252,7 +269,7 @@ class EmbedSignature(CythonTransform):
         type_name = None
         if entry.visibility == 'public':
             # property synthesised from a cdef public attribute
-            type_name = entry.type.declaration_code("", for_display=1)
+            type_name = entry.type.declaration_code('', for_display=1)
             if not entry.type.is_pyobject:
                 type_name = "'%s'" % type_name
             elif entry.type.is_extension_type:
@@ -278,23 +295,28 @@ class EmbedSignature(CythonTransform):
 # Monkeypatch AutoDocTransforms.EmbedSignature
 try:
     from Cython.Compiler import AutoDocTransforms
+
     AutoDocTransforms.EmbedSignature = EmbedSignature
 except Exception as exc:
     import logging
+
     logging.Logger(__name__).exception(exc)
 
 # Monkeypatch Nodes.raise_utility_code
 try:
     from Cython.Compiler.Nodes import raise_utility_code
+
     code = raise_utility_code.impl
     try:
-        ipos = code.index("if (tb) {\n#if CYTHON_COMPILING_IN_PYPY\n")
+        ipos = code.index('if (tb) {\n#if CYTHON_COMPILING_IN_PYPY\n')
     except ValueError:
         ipos = None
     else:
         raise_utility_code.impl = code[:ipos] + code[ipos:].replace(
-            'CYTHON_COMPILING_IN_PYPY', '!CYTHON_FAST_THREAD_STATE', 1)
+            'CYTHON_COMPILING_IN_PYPY', '!CYTHON_FAST_THREAD_STATE', 1
+        )
     del raise_utility_code, code, ipos
 except Exception as exc:
     import logging
+
     logging.Logger(__name__).exception(exc)

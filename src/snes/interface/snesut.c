@@ -813,7 +813,7 @@ PetscErrorCode SNESConvergedSkip(SNES snes, PetscInt it, PetscReal xnorm, PetscR
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESSetWorkVecs - Allocates a number of work vectors to be used internally by `SNES` solvers
 
   Input Parameters:

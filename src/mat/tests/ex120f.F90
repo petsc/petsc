@@ -14,7 +14,6 @@
       tw = 12
       PetscCallA(VecCreateSeq(PETSC_COMM_SELF,tw,x,ierr))
       PetscCallA(VecCreateSeq(PETSC_COMM_SELF,tw,y,ierr))
-      return
       end
 
       program main

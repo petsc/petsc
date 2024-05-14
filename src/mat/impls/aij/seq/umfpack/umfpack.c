@@ -399,7 +399,7 @@ static PetscErrorCode MatFactorGetSolverType_seqaij_umfpack(Mat A, MatSolverType
 .seealso: [](ch_matrices), `Mat`, `PCLU`, `MATSOLVERSUPERLU`, `MATSOLVERMUMPS`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/
 
-PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A, MatFactorType ftype, Mat *F)
+static PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A, MatFactorType ftype, Mat *F)
 {
   Mat          B;
   Mat_UMFPACK *lu;
@@ -447,7 +447,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat, MatFactorType, Ma
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat, MatFactorType, Mat *);
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_spqr(Mat, MatFactorType, Mat *);
 
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuiteSparse(void)
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_SuiteSparse(void)
 {
   PetscFunctionBegin;
   PetscCall(MatSolverTypeRegister(MATSOLVERUMFPACK, MATSEQAIJ, MAT_FACTOR_LU, MatGetFactor_seqaij_umfpack));

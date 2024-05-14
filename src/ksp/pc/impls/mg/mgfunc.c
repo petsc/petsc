@@ -1,6 +1,6 @@
 #include <petsc/private/pcmgimpl.h> /*I "petscksp.h" I*/
 
-/*@C
+/*@
   PCMGResidualDefault - Default routine to calculate the residual.
 
   Collective
@@ -24,7 +24,7 @@ PetscErrorCode PCMGResidualDefault(Mat mat, Vec b, Vec x, Vec r)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCMGResidualTransposeDefault - Default routine to calculate the residual of the transposed linear system
 
   Collective
@@ -49,7 +49,7 @@ PetscErrorCode PCMGResidualTransposeDefault(Mat mat, Vec b, Vec x, Vec r)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCMGMatResidualDefault - Default routine to calculate the residual.
 
   Collective
@@ -74,7 +74,7 @@ PetscErrorCode PCMGMatResidualDefault(Mat mat, Mat b, Mat x, Mat r)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCMGMatResidualTransposeDefault - Default routine to calculate the residual of the transposed linear system
 
   Collective

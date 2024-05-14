@@ -2064,7 +2064,7 @@ PetscErrorCode SNESGetSolutionNorm(SNES snes, PetscReal *xnorm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESSetFunctionType - Sets the `SNESFunctionType`
   of the `SNES` method.
 
@@ -2094,7 +2094,7 @@ PetscErrorCode SNESSetFunctionType(SNES snes, SNESFunctionType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESGetFunctionType - Gets the `SNESFunctionType` used in convergence and monitoring set with `SNESSetFunctionType()`
   of the SNES method.
 
@@ -4459,7 +4459,7 @@ PetscErrorCode SNESConvergedReasonView(SNES snes, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isAscii));
   if (isAscii) {
     PetscCall(PetscViewerGetFormat(viewer, &format));
-    PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)snes)->tablevel));
+    PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)snes)->tablevel + 1));
     if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       DM       dm;
       Vec      u;
@@ -4493,7 +4493,7 @@ PetscErrorCode SNESConvergedReasonView(SNES snes, PetscViewer viewer)
         PetscCall(PetscViewerASCIIPrintf(viewer, "Nonlinear solve did not converge due to %s iterations %" PetscInt_FMT "\n", SNESConvergedReasons[snes->reason], snes->iter));
       }
     }
-    PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)snes)->tablevel));
+    PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)snes)->tablevel + 1));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4783,7 +4783,7 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x)
 
 /* --------- Internal routines for SNES Package --------- */
 
-/*@C
+/*@
   SNESSetType - Sets the method for the nonlinear solver.
 
   Collective
@@ -4856,7 +4856,7 @@ PetscErrorCode SNESSetType(SNES snes, SNESType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESGetType - Gets the `SNES` method type and name (as a string).
 
   Not Collective
@@ -5028,7 +5028,7 @@ PetscErrorCode SNESGetNGS(SNES snes, SNESNGSFn **f, void **ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESSetOptionsPrefix - Sets the prefix used for searching for all
   `SNES` options in the database.
 
@@ -5060,7 +5060,7 @@ PetscErrorCode SNESSetOptionsPrefix(SNES snes, const char prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESAppendOptionsPrefix - Appends to the prefix used for searching for all
   `SNES` options in the database.
 
@@ -5092,7 +5092,7 @@ PetscErrorCode SNESAppendOptionsPrefix(SNES snes, const char prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESGetOptionsPrefix - Gets the prefix used for searching for all
   `SNES` options in the database.
 

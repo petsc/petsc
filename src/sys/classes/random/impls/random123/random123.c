@@ -96,6 +96,58 @@ static PetscErrorCode PetscRandomGetValueReal_Random123(PetscRandom r, PetscReal
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode PetscRandomGetValuesReal_Random123(PetscRandom r, PetscInt n, PetscReal vals[])
+{
+  PetscRandom123 *r123 = (PetscRandom123 *)r->data;
+  PetscInt        peel_start;
+  PetscInt        rem, lim;
+  PetscReal       scale = ((PetscReal)1.) / (UINT64_MAX + ((PetscReal)1.));
+  PetscReal       shift = .5 * scale;
+  PetscRandom123  r123_copy;
+
+  PetscFunctionBegin;
+  peel_start = (4 - (r123->count % 4)) % 4;
+  peel_start = PetscMin(n, peel_start);
+  for (PetscInt i = 0; i < peel_start; i++) PetscCall(PetscRandomGetValueReal(r, &vals[i]));
+  PetscAssert((r123->count % 4) == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Bad modular arithmetic");
+  n -= peel_start;
+  vals += peel_start;
+  rem = (n % 4);
+  lim = n - rem;
+  if (r->iset) {
+    scale *= PetscRealPart(r->width);
+    shift *= PetscRealPart(r->width);
+    shift += PetscRealPart(r->low);
+  }
+  r123_copy = *r123;
+  for (PetscInt i = 0; i < lim; i += 4, vals += 4) {
+    vals[0] = r123_copy.result.v[0] * scale + shift;
+    vals[1] = r123_copy.result.v[1] * scale + shift;
+    vals[2] = r123_copy.result.v[2] * scale + shift;
+    vals[3] = r123_copy.result.v[3] * scale + shift;
+    r123_copy.counter.v[0] += 4;
+    r123_copy.counter.v[1] += 4;
+    r123_copy.counter.v[2] += 4;
+    r123_copy.counter.v[3] += 4;
+    r123_copy.result = threefry4x64(r123->counter, r123->key);
+  }
+  r123_copy.count += lim;
+  *r123 = r123_copy;
+  for (PetscInt i = 0; i < rem; i++) PetscCall(PetscRandomGetValueReal(r, &vals[i]));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PetscRandomGetValues_Random123(PetscRandom r, PetscInt n, PetscScalar vals[])
+{
+  PetscFunctionBegin;
+#if PetscDefined(USE_COMPLEX)
+  for (PetscInt i = 0; i < n; i++) PetscCall(PetscRandomGetValue_Random123(r, n, &vals[i]));
+#else
+  PetscCall(PetscRandomGetValuesReal_Random123(r, n, vals));
+#endif
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode PetscRandomDestroy_Random123(PetscRandom r)
 {
   PetscFunctionBegin;
@@ -104,12 +156,14 @@ static PetscErrorCode PetscRandomDestroy_Random123(PetscRandom r)
 }
 
 static struct _PetscRandomOps PetscRandomOps_Values = {
+  // clang-format off
   PetscDesignatedInitializer(seed, PetscRandomSeed_Random123),
   PetscDesignatedInitializer(getvalue, PetscRandomGetValue_Random123),
   PetscDesignatedInitializer(getvaluereal, PetscRandomGetValueReal_Random123),
-  PetscDesignatedInitializer(getvalues, NULL),
-  PetscDesignatedInitializer(getvaluesreal, NULL),
+  PetscDesignatedInitializer(getvalues, PetscRandomGetValues_Random123),
+  PetscDesignatedInitializer(getvaluesreal, PetscRandomGetValuesReal_Random123),
   PetscDesignatedInitializer(destroy, PetscRandomDestroy_Random123),
+  // clang-format on
 };
 
 /*MC

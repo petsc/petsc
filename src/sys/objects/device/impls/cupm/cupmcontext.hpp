@@ -24,7 +24,7 @@ namespace impl
 {
 
 template <DeviceType T>
-class DeviceContext : SolverInterface<T> {
+class PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL DeviceContext : SolverInterface<T> {
 public:
   PETSC_CUPMSOLVER_INHERIT_INTERFACE_TYPEDEFS_USING(T);
 

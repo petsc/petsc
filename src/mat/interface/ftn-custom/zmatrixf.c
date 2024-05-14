@@ -46,13 +46,8 @@
   #define matsetvalueslocal111_        MATSETVALUESLOCAL111
   #define matsetvalueslocal1n_         MATSETVALUESLOCAL1N
   #define matsetvalueslocaln1_         MATSETVALUESLOCALN1
-  #define matgetrowmin_                MATGETROWMIN
-  #define matgetrowminabs_             MATGETROWMINABS
-  #define matgetrowmax_                MATGETROWMAX
-  #define matgetrowmaxabs_             MATGETROWMAXABS
   #define matdestroymatrices_          MATDESTROYMATRICES
   #define matdestroysubmatrices_       MATDESTROYSUBMATRICES
-  #define matgetfactor_                MATGETFACTOR
   #define matfactorgetsolverpackage_   MATFACTORGETSOLVERPACKAGE
   #define matgetrowij_                 MATGETROWIJ
   #define matrestorerowij_             MATRESTOREROWIJ
@@ -66,7 +61,6 @@
   #define matdensegetarrayread_        MATDENSEGETARRAYREAD
   #define matdenserestorearray_        MATDENSERESTOREARRAY
   #define matdenserestorearrayread_    MATDENSERESTOREARRAYREAD
-  #define matconvert_                  MATCONVERT
   #define matcreatesubmatrices_        MATCREATESUBMATRICES
   #define matcreatesubmatricesmpi_     MATCREATESUBMATRICESMPI
   #define matzerorowscolumns_          MATZEROROWSCOLUMNS
@@ -81,7 +75,6 @@
   #define matzerorowslocalis_          MATZEROROWSLOCALIS
   #define matzerorowscolumnslocal_     MATZEROROWSCOLUMNSLOCAL
   #define matzerorowscolumnslocalis_   MATZEROROWSCOLUMNSLOCALIS
-  #define matsetoptionsprefix_         MATSETOPTIONSPREFIX
   #define matcreatevecs_               MATCREATEVECS
   #define matnullspaceremove_          MATNULLSPACEREMOVE
   #define matgetinfo_                  MATGETINFO
@@ -113,10 +106,8 @@
   #define matgetownershiprange01_      MATGETOWNERSHIPRANGE01
   #define matgetownershiprange11_      MATGETOWNERSHIPRANGE11
   #define matgetownershipis_           MATGETOWNERSHIPIS
-  #define matgetownershiprangecolumn_  MATGETOWNERSHIPRANGECOLUMN
   #define matviewfromoptions_          MATVIEWFROMOPTIONS
   #define matdestroy_                  MATDESTROY
-  #define matcreatefromoptions_        MATCREATEFROMOPTIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define matsetvalues_                matsetvalues
   #define matsetvaluesnnnn_            matsetvaluesnnnn
@@ -145,13 +136,8 @@
   #define matsetvaluesblockedlocal111_ matsetvaluesblockedlocal111
   #define matsetvaluesblockedlocal1n_  matsetvaluesblockedlocal1n
   #define matsetvaluesblockedlocaln1_  matsetvaluesblockedlocaln1
-  #define matgetrowmin_                matgetrowmin
-  #define matgetrowminabs_             matgetrowminabs
-  #define matgetrowmax_                matgetrowmax
-  #define matgetrowmaxabs_             matgetrowmaxabs
   #define matdestroymatrices_          matdestroymatrices
   #define matdestroysubmatrices_       matdestroysubmatrices
-  #define matgetfactor_                matgetfactor
   #define matfactorgetsolverpackage_   matfactorgetsolverpackage
   #define matcreatevecs_               matcreatevecs
   #define matgetrowij_                 matgetrowij
@@ -166,7 +152,6 @@
   #define matdensegetarrayread_        matdensegetarrayread
   #define matdenserestorearray_        matdenserestorearray
   #define matdenserestorearrayread_    matdenserestorearrayread
-  #define matconvert_                  matconvert
   #define matcreatesubmatrices_        matcreatesubmatrices
   #define matcreatesubmatricesmpi_     matcreatesubmatricesmpi
   #define matzerorowscolumns_          matzerorowscolumns
@@ -179,7 +164,6 @@
   #define matzerorowslocalis_          matzerorowslocalis
   #define matzerorowscolumnslocal_     matzerorowscolumnslocal
   #define matzerorowscolumnslocalis_   matzerorowscolumnslocalis
-  #define matsetoptionsprefix_         matsetoptionsprefix
   #define matnullspaceremove_          matnullspaceremove
   #define matgetinfo_                  matgetinfo
   #define matlufactor_                 matlufactor
@@ -225,20 +209,9 @@
   #define matgetownershiprange01_      matgetownershiprange01
   #define matgetownershiprange11_      matgetownershiprange11
   #define matgetownershipis_           matgetownershipis
-  #define matgetownershiprangecolumn_  matgetownershiprangecolumn
   #define matviewfromoptions_          matviewfromoptions
   #define matdestroy_                  matdestroy
-  #define matcreatefromoptions_        matcreatefromoptions
 #endif
-
-PETSC_EXTERN void matcreatefromoptions_(MPI_Fint *comm, char *prefix, PetscInt *bs, PetscInt *m, PetscInt *n, PetscInt *M, PetscInt *N, Mat *A, int *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *fprefix;
-  FIXCHAR(prefix, len, fprefix);
-  *ierr = MatCreateFromOptions(MPI_Comm_f2c(*(comm)), fprefix, *bs, *m, *n, *M, *N, A);
-  if (*ierr) return;
-  FREECHAR(prefix, fprefix);
-}
 
 PETSC_EXTERN void matgetvalues_(Mat *mat, PetscInt *m, PetscInt idxm[], PetscInt *n, PetscInt idxn[], PetscScalar v[], int *ierr)
 {
@@ -360,13 +333,6 @@ PETSC_EXTERN void matgetownershipis_(Mat *mat, IS *m, IS *n, int *ierr)
   CHKFORTRANNULLOBJECT(m);
   CHKFORTRANNULLOBJECT(n);
   *ierr = MatGetOwnershipIS(*mat, m, n);
-}
-
-PETSC_EXTERN void matgetownershiprangecolumn_(Mat *mat, PetscInt *m, PetscInt *n, int *ierr)
-{
-  CHKFORTRANNULLINTEGER(m);
-  CHKFORTRANNULLINTEGER(n);
-  *ierr = MatGetOwnershipRangeColumn(*mat, m, n);
 }
 
 PETSC_EXTERN void matgetsize_(Mat *mat, PetscInt *m, PetscInt *n, int *ierr)
@@ -549,30 +515,6 @@ PETSC_EXTERN void matsetvalueslocal1n_(Mat *mat, PetscInt *nrow, PetscInt irow[]
 PETSC_EXTERN void matsetvalueslocaln1_(Mat *mat, PetscInt *nrow, PetscInt irow[], PetscInt *ncol, PetscInt icol[], PetscScalar y[], InsertMode *addv, int *ierr)
 {
   matsetvalueslocal_(mat, nrow, irow, ncol, icol, y, addv, ierr);
-}
-
-PETSC_EXTERN void matgetrowmin_(Mat *mat, Vec *v, PetscInt idx[], int *ierr)
-{
-  CHKFORTRANNULLINTEGER(idx);
-  *ierr = MatGetRowMin(*mat, *v, idx);
-}
-
-PETSC_EXTERN void matgetrowminabs_(Mat *mat, Vec *v, PetscInt idx[], int *ierr)
-{
-  CHKFORTRANNULLINTEGER(idx);
-  *ierr = MatGetRowMinAbs(*mat, *v, idx);
-}
-
-PETSC_EXTERN void matgetrowmax_(Mat *mat, Vec *v, PetscInt idx[], int *ierr)
-{
-  CHKFORTRANNULLINTEGER(idx);
-  *ierr = MatGetRowMax(*mat, *v, idx);
-}
-
-PETSC_EXTERN void matgetrowmaxabs_(Mat *mat, Vec *v, PetscInt idx[], int *ierr)
-{
-  CHKFORTRANNULLINTEGER(idx);
-  *ierr = MatGetRowMaxAbs(*mat, *v, idx);
 }
 
 static PetscErrorCode ournullfunction(MatNullSpace sp, Vec x, void *ctx)
@@ -777,24 +719,6 @@ PETSC_EXTERN void matfactorgetsolverpackage_(Mat *mat, char *name, PetscErrorCod
   FIXRETURNCHAR(PETSC_TRUE, name, len);
 }
 
-PETSC_EXTERN void matgetfactor_(Mat *mat, char *outtype, MatFactorType *ftype, Mat *M, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-  FIXCHAR(outtype, len, t);
-  *ierr = MatGetFactor(*mat, t, *ftype, M);
-  if (*ierr) return;
-  FREECHAR(outtype, t);
-}
-
-PETSC_EXTERN void matconvert_(Mat *mat, char *outtype, MatReuse *reuse, Mat *M, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-  FIXCHAR(outtype, len, t);
-  *ierr = MatConvert(*mat, t, *reuse, M);
-  if (*ierr) return;
-  FREECHAR(outtype, t);
-}
-
 /*
     MatCreateSubmatrices() is slightly different from C since the
     Fortran provides the array to hold the submatrix objects,while in C that
@@ -879,16 +803,6 @@ PETSC_EXTERN void matdestroy_(Mat *x, int *ierr)
   *ierr = MatDestroy(x);
   if (*ierr) return;
   PETSC_FORTRAN_OBJECT_C_NULL_TO_F_DESTROYED(x);
-}
-
-PETSC_EXTERN void matsetoptionsprefix_(Mat *mat, char *prefix, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-
-  FIXCHAR(prefix, len, t);
-  *ierr = MatSetOptionsPrefix(*mat, t);
-  if (*ierr) return;
-  FREECHAR(prefix, t);
 }
 
 PETSC_EXTERN void matnullspaceremove_(MatNullSpace *sp, Vec *vec, PetscErrorCode *ierr)

@@ -5,7 +5,7 @@
 #include <petsc/private/kspimpl.h> /*I "petscksp.h" I*/
 #include <petscdraw.h>
 
-/*@C
+/*@
   KSPSetOptionsPrefix - Sets the prefix used for searching for all
   `KSP` options in the database.
 
@@ -64,7 +64,7 @@ PetscErrorCode KSPSetOptionsPrefix(KSP ksp, const char prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPAppendOptionsPrefix - Appends to the prefix used for searching for all
   `KSP` options in the database.
 
@@ -187,7 +187,7 @@ PetscErrorCode KSPGetGuess(KSP ksp, KSPGuess *guess)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPGetOptionsPrefix - Gets the prefix used for searching for all
   `KSP` options in the database.
 
@@ -351,10 +351,6 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
 
   PetscCall(PetscObjectGetComm((PetscObject)ksp, &comm));
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)ksp, &prefix));
-  if (!ksp->skippcsetfromoptions) {
-    if (!ksp->pc) PetscCall(KSPGetPC(ksp, &ksp->pc));
-    PetscCall(PCSetFromOptions(ksp->pc));
-  }
 
   PetscCall(KSPRegisterAll());
   PetscObjectOptionsBegin((PetscObject)ksp);
@@ -364,6 +360,11 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
     Set the type if it was never set.
   */
   if (!((PetscObject)ksp)->type_name) PetscCall(KSPSetType(ksp, KSPGMRES));
+
+  if (!ksp->skippcsetfromoptions) {
+    if (!ksp->pc) PetscCall(KSPGetPC(ksp, &ksp->pc));
+    PetscCall(PCSetFromOptions(ksp->pc));
+  }
 
   PetscCall(KSPResetViewers(ksp));
 

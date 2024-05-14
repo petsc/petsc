@@ -1,7 +1,7 @@
 #include <petsc/private/dmpleximpl.h>  /*I      "petscdmplex.h"   I*/
 #include <petsc/private/petscfeimpl.h> /* For PetscFEInterpolate_Static() */
 
-#include <petscdmplextransform.h>
+#include <petscdmplextransform.h> /*I      "petscdmplextransform.h"   I*/
 #include <petscsf.h>
 
 /*@

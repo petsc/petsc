@@ -1,4 +1,4 @@
-original A: Frobenious norm = 320.617, one norm = 273., infinity norm = 585.
+original A: Frobenius norm = 320.617, one norm = 273., infinity norm = 585.
 Mat Object: 2 MPI processes
   type: mpiaijcusparse
 row 0: (0, 1.)  (1, 2.)  (2, 3.)  (3, 4.)  (4, 5.)  (5, 6.)  (6, 7.)  (7, 8.)  (8, 9.) 
@@ -8,7 +8,7 @@ row 3: (0, 31.)  (1, 32.)  (2, 33.)  (3, 34.)  (4, 35.)  (5, 36.)  (6, 37.)  (7,
 row 4: (0, 41.)  (1, 42.)  (2, 43.)  (3, 44.)  (4, 45.)  (5, 46.)  (6, 47.)  (7, 48.)  (8, 49.) 
 row 5: (0, 51.)  (1, 52.)  (2, 53.)  (3, 54.)  (4, 55.)  (5, 56.)  (6, 57.)  (7, 58.)  (8, 59.) 
 row 6: (0, 61.)  (1, 62.)  (2, 63.)  (3, 64.)  (4, 65.)  (5, 66.)  (6, 67.)  (7, 68.)  (8, 69.) 
-B = A^T: Frobenious norm = 320.617, one norm = 585., infinity norm = 273.
+B = A^T: Frobenius norm = 320.617, one norm = 585., infinity norm = 273.
 Mat Object: 2 MPI processes
   type: mpiaijcusparse
 row 0: (0, 1.)  (1, 11.)  (2, 21.)  (3, 31.)  (4, 41.)  (5, 51.)  (6, 61.) 

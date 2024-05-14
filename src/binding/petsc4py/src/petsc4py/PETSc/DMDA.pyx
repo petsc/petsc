@@ -1,18 +1,24 @@
 # --------------------------------------------------------------------
 
 class DMDAStencilType(object):
+    """Stencil types."""
     STAR = DMDA_STENCIL_STAR
     BOX  = DMDA_STENCIL_BOX
 
+
 class DMDAInterpolationType(object):
+    """Interpolation types."""
     Q0 = DMDA_INTERPOLATION_Q0
     Q1 = DMDA_INTERPOLATION_Q1
 
+
 class DMDAElementType(object):
+    """Element types."""
     P1 = DMDA_ELEMENT_P1
     Q1 = DMDA_ELEMENT_Q1
 
 # --------------------------------------------------------------------
+
 
 cdef class DMDA(DM):
     """A DM object that is used to manage data for a structured grid."""
@@ -34,8 +40,7 @@ cdef class DMDA(DM):
         stencil_width: int | None = None,
         bint setup: bool = True,
         ownership_ranges: tuple[Sequence[int], ...] | None = None,
-        comm: Comm | None = None,
-    ) -> Self:
+        comm: Comm | None = None) -> Self:
         """Create a ``DMDA`` object.
 
         Collective.
@@ -132,12 +137,12 @@ cdef class DMDA(DM):
         # create the DMDA object
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscDM newda = NULL
-        CHKERR( DMDACreateND(ccomm, ndim, ndof,
-                             M, N, P, m, n, p, lx, ly, lz,
-                             btx, bty, btz, stype, swidth,
-                             &newda) )
-        if setup and ndim > 0: CHKERR( DMSetUp(newda) )
-        CHKERR( PetscCLEAR(self.obj) ); self.dm = newda
+        CHKERR(DMDACreateND(ccomm, ndim, ndof,
+                            M, N, P, m, n, p, lx, ly, lz,
+                            btx, bty, btz, stype, swidth,
+                            &newda))
+        if setup and ndim > 0: CHKERR(DMSetUp(newda))
+        CHKERR(PetscCLEAR(self.obj)); self.dm = newda
         return self
 
     def duplicate(
@@ -145,8 +150,7 @@ cdef class DMDA(DM):
         dof: int | None = None,
         boundary_type: tuple[DM.BoundaryType | int | str | bool, ...] | None = None,
         stencil_type: StencilType | None = None,
-        stencil_width: int | None = None,
-    ) -> DMDA:
+        stencil_width: int | None = None) -> DMDA:
         """Duplicate a DMDA.
 
         Collective.
@@ -179,17 +183,17 @@ cdef class DMDA(DM):
         cdef PetscDMBoundaryType btz = DM_BOUNDARY_NONE
         cdef PetscDMDAStencilType  stype  = DMDA_STENCIL_BOX
         cdef PetscInt              swidth = PETSC_DECIDE
-        CHKERR( DMDAGetInfo(self.dm,
-                          &ndim,
-                          &M, &N, &P,
-                          &m, &n, &p,
-                          &ndof, &swidth,
-                          &btx, &bty, &btz,
-                          &stype) )
+        CHKERR(DMDAGetInfo(self.dm,
+                           &ndim,
+                           &M, &N, &P,
+                           &m, &n, &p,
+                           &ndof, &swidth,
+                           &btx, &bty, &btz,
+                           &stype))
         cdef const PetscInt *lx = NULL, *ly = NULL, *lz = NULL
-        CHKERR( DMDAGetOwnershipRanges(self.dm, &lx, &ly, &lz) )
+        CHKERR(DMDAGetOwnershipRanges(self.dm, &lx, &ly, &lz))
         cdef MPI_Comm comm = MPI_COMM_NULL
-        CHKERR( PetscObjectGetComm(<PetscObject>self.dm, &comm) )
+        CHKERR(PetscObjectGetComm(<PetscObject>self.dm, &comm))
         #
         if dof is not None:
             ndof = asInt(dof)
@@ -201,11 +205,11 @@ cdef class DMDA(DM):
             swidth = asInt(stencil_width)
         #
         cdef DMDA da = DMDA()
-        CHKERR( DMDACreateND(comm, ndim, ndof,
-                             M, N, P, m, n, p, lx, ly, lz,
-                             btx, bty, btz, stype, swidth,
-                             &da.dm) )
-        CHKERR( DMSetUp(da.dm) )
+        CHKERR(DMDACreateND(comm, ndim, ndof,
+                            M, N, P, m, n, p, lx, ly, lz,
+                            btx, bty, btz, stype, swidth,
+                            &da.dm))
+        CHKERR(DMSetUp(da.dm))
         return da
 
     #
@@ -255,7 +259,7 @@ cdef class DMDA(DM):
 
         """
         cdef PetscInt ndof = asInt(dof)
-        CHKERR( DMDASetDof(self.dm, ndof) )
+        CHKERR(DMDASetDof(self.dm, ndof))
 
     def getDof(self) -> int:
         """Return the number of degrees of freedom per node.
@@ -268,13 +272,13 @@ cdef class DMDA(DM):
 
         """
         cdef PetscInt dof = 0
-        CHKERR( DMDAGetInfo(self.dm,
-                            NULL,
-                            NULL, NULL, NULL,
-                            NULL, NULL, NULL,
-                            &dof, NULL,
-                            NULL, NULL, NULL,
-                            NULL) )
+        CHKERR(DMDAGetInfo(self.dm,
+                           NULL,
+                           NULL, NULL, NULL,
+                           NULL, NULL, NULL,
+                           &dof, NULL,
+                           NULL, NULL, NULL,
+                           NULL))
         return toInt(dof)
 
     def setSizes(self, sizes: DimsSpec) -> None:
@@ -299,10 +303,10 @@ cdef class DMDA(DM):
         cdef PetscInt P = 1
         gdim = asDims(gsizes, &M, &N, &P)
         cdef PetscInt dim = PETSC_DECIDE
-        CHKERR( DMDAGetDim(self.dm, &dim) )
+        CHKERR(DMDAGetDim(self.dm, &dim))
         if dim == PETSC_DECIDE:
-            CHKERR( DMSetDimension(self.dm, gdim) )
-        CHKERR( DMDASetSizes(self.dm, M, N, P) )
+            CHKERR(DMSetDimension(self.dm, gdim))
+        CHKERR(DMDASetSizes(self.dm, M, N, P))
 
     def getSizes(self) -> tuple[int, ...]:
         """Return the number of grid points in each dimension.
@@ -318,13 +322,13 @@ cdef class DMDA(DM):
         cdef PetscInt M = PETSC_DECIDE
         cdef PetscInt N = PETSC_DECIDE
         cdef PetscInt P = PETSC_DECIDE
-        CHKERR( DMDAGetInfo(self.dm,
-                            &dim,
-                            &M, &N, &P,
-                            NULL, NULL, NULL,
-                            NULL, NULL,
-                            NULL, NULL, NULL,
-                            NULL) )
+        CHKERR(DMDAGetInfo(self.dm,
+                           &dim,
+                           &M, &N, &P,
+                           NULL, NULL, NULL,
+                           NULL, NULL,
+                           NULL, NULL, NULL,
+                           NULL))
         return toDims(dim, M, N, P)
 
     def setProcSizes(self, proc_sizes: DimsSpec) -> None:
@@ -349,10 +353,10 @@ cdef class DMDA(DM):
         cdef PetscInt p = PETSC_DECIDE
         pdim = asDims(psizes, &m, &n, &p)
         cdef PetscInt dim = PETSC_DECIDE
-        CHKERR( DMDAGetDim(self.dm, &dim) )
+        CHKERR(DMDAGetDim(self.dm, &dim))
         if dim == PETSC_DECIDE:
-            CHKERR( DMSetDimension(self.dm, pdim) )
-        CHKERR( DMDASetNumProcs(self.dm, m, n, p) )
+            CHKERR(DMSetDimension(self.dm, pdim))
+        CHKERR(DMDASetNumProcs(self.dm, m, n, p))
 
     def getProcSizes(self) -> tuple[int, ...]:
         """Return the number of processes in each dimension.
@@ -368,19 +372,18 @@ cdef class DMDA(DM):
         cdef PetscInt m = PETSC_DECIDE
         cdef PetscInt n = PETSC_DECIDE
         cdef PetscInt p = PETSC_DECIDE
-        CHKERR( DMDAGetInfo(self.dm,
-                            &dim,
-                            NULL, NULL, NULL,
-                            &m, &n, &p,
-                            NULL, NULL,
-                            NULL, NULL, NULL,
-                            NULL) )
+        CHKERR(DMDAGetInfo(self.dm,
+                           &dim,
+                           NULL, NULL, NULL,
+                           &m, &n, &p,
+                           NULL, NULL,
+                           NULL, NULL, NULL,
+                           NULL))
         return toDims(dim, m, n, p)
 
     def setBoundaryType(
         self,
-        boundary_type: tuple[DM.BoundaryType | int | str | bool, ...],
-    ) -> None:
+        boundary_type: tuple[DM.BoundaryType | int | str | bool, ...]) -> None:
         """Set the type of ghost nodes on domain boundaries.
 
         Not collective.
@@ -399,7 +402,7 @@ cdef class DMDA(DM):
         cdef PetscDMBoundaryType bty = DM_BOUNDARY_NONE
         cdef PetscDMBoundaryType btz = DM_BOUNDARY_NONE
         asBoundary(boundary_type, &btx, &bty, &btz)
-        CHKERR( DMDASetBoundaryType(self.dm, btx, bty, btz) )
+        CHKERR(DMDASetBoundaryType(self.dm, btx, bty, btz))
 
     def getBoundaryType(self) -> tuple[DM.BoundaryType, ...]:
         """Return the type of ghost nodes at boundary in each dimension.
@@ -415,13 +418,13 @@ cdef class DMDA(DM):
         cdef PetscDMBoundaryType btx = DM_BOUNDARY_NONE
         cdef PetscDMBoundaryType bty = DM_BOUNDARY_NONE
         cdef PetscDMBoundaryType btz = DM_BOUNDARY_NONE
-        CHKERR( DMDAGetInfo(self.dm,
-                          &dim,
-                          NULL, NULL, NULL,
-                          NULL, NULL, NULL,
-                          NULL, NULL,
-                          &btx, &bty, &btz,
-                          NULL) )
+        CHKERR(DMDAGetInfo(self.dm,
+                           &dim,
+                           NULL, NULL, NULL,
+                           NULL, NULL, NULL,
+                           NULL, NULL,
+                           &btx, &bty, &btz,
+                           NULL))
         return toDims(dim, btx, bty, btz)
 
     def setStencilType(self, stencil_type: StencilType) -> None:
@@ -440,7 +443,7 @@ cdef class DMDA(DM):
 
         """
         cdef PetscDMDAStencilType stype = asStencil(stencil_type)
-        CHKERR( DMDASetStencilType(self.dm, stype) )
+        CHKERR(DMDASetStencilType(self.dm, stype))
 
     def getStencilType(self) -> StencilType:
         """Return the stencil type.
@@ -453,13 +456,13 @@ cdef class DMDA(DM):
 
         """
         cdef PetscDMDAStencilType stype = DMDA_STENCIL_BOX
-        CHKERR( DMDAGetInfo(self.dm,
-                          NULL,
-                          NULL, NULL, NULL,
-                          NULL, NULL, NULL,
-                          NULL, NULL,
-                          NULL, NULL, NULL,
-                          &stype) )
+        CHKERR(DMDAGetInfo(self.dm,
+                           NULL,
+                           NULL, NULL, NULL,
+                           NULL, NULL, NULL,
+                           NULL, NULL,
+                           NULL, NULL, NULL,
+                           &stype))
         return stype
 
     def setStencilWidth(self, stencil_width: int) -> None:
@@ -478,7 +481,7 @@ cdef class DMDA(DM):
 
         """
         cdef PetscInt swidth = asInt(stencil_width)
-        CHKERR( DMDASetStencilWidth(self.dm, swidth) )
+        CHKERR(DMDASetStencilWidth(self.dm, swidth))
 
     def getStencilWidth(self) -> int:
         """Return the stencil width.
@@ -491,20 +494,19 @@ cdef class DMDA(DM):
 
         """
         cdef PetscInt swidth = 0
-        CHKERR( DMDAGetInfo(self.dm,
-                            NULL,
-                            NULL, NULL, NULL,
-                            NULL, NULL, NULL,
-                            NULL, &swidth,
-                            NULL, NULL, NULL,
-                            NULL) )
+        CHKERR(DMDAGetInfo(self.dm,
+                           NULL,
+                           NULL, NULL, NULL,
+                           NULL, NULL, NULL,
+                           NULL, &swidth,
+                           NULL, NULL, NULL,
+                           NULL))
         return toInt(swidth)
 
     def setStencil(
         self,
         stencil_type: StencilType,
-        stencil_width: int,
-    ) -> None:
+        stencil_width: int) -> None:
         """Set the stencil type and width.
 
         Not collective.
@@ -524,8 +526,8 @@ cdef class DMDA(DM):
         """
         cdef PetscDMDAStencilType stype = asStencil(stencil_type)
         cdef PetscInt swidth = asInt(stencil_width)
-        CHKERR( DMDASetStencilType(self.dm, stype) )
-        CHKERR( DMDASetStencilWidth(self.dm, swidth) )
+        CHKERR(DMDASetStencilType(self.dm, stype))
+        CHKERR(DMDASetStencilWidth(self.dm, swidth))
 
     def getStencil(self) -> tuple[StencilType, int]:
         """Return the stencil type and width.
@@ -539,13 +541,13 @@ cdef class DMDA(DM):
         """
         cdef PetscDMDAStencilType stype = DMDA_STENCIL_BOX
         cdef PetscInt swidth = 0
-        CHKERR( DMDAGetInfo(self.dm,
-                            NULL,
-                            NULL, NULL, NULL,
-                            NULL, NULL, NULL,
-                            NULL, &swidth,
-                            NULL, NULL, NULL,
-                            &stype) )
+        CHKERR(DMDAGetInfo(self.dm,
+                           NULL,
+                           NULL, NULL, NULL,
+                           NULL, NULL, NULL,
+                           NULL, &swidth,
+                           NULL, NULL, NULL,
+                           &stype))
         return (toStencil(stype), toInt(swidth))
 
     #
@@ -564,10 +566,10 @@ cdef class DMDA(DM):
 
         """
         cdef PetscInt dim=0, x=0, y=0, z=0, m=0, n=0, p=0
-        CHKERR( DMDAGetDim(self.dm, &dim) )
-        CHKERR( DMDAGetCorners(self.dm,
-                               &x, &y, &z,
-                               &m, &n, &p) )
+        CHKERR(DMDAGetDim(self.dm, &dim))
+        CHKERR(DMDAGetCorners(self.dm,
+                              &x, &y, &z,
+                              &m, &n, &p))
         return ((toInt(x), toInt(x+m)),
                 (toInt(y), toInt(y+n)),
                 (toInt(z), toInt(z+p)))[:<Py_ssize_t>dim]
@@ -584,10 +586,10 @@ cdef class DMDA(DM):
 
         """
         cdef PetscInt dim=0, x=0, y=0, z=0, m=0, n=0, p=0
-        CHKERR( DMDAGetDim(self.dm, &dim) )
-        CHKERR( DMDAGetGhostCorners(self.dm,
-                                    &x, &y, &z,
-                                    &m, &n, &p) )
+        CHKERR(DMDAGetDim(self.dm, &dim))
+        CHKERR(DMDAGetGhostCorners(self.dm,
+                                   &x, &y, &z,
+                                   &m, &n, &p))
         return ((toInt(x), toInt(x+m)),
                 (toInt(y), toInt(y+n)),
                 (toInt(z), toInt(z+p)))[:<Py_ssize_t>dim]
@@ -607,14 +609,14 @@ cdef class DMDA(DM):
         """
         cdef PetscInt dim=0, m=0, n=0, p=0
         cdef const PetscInt *lx = NULL, *ly = NULL, *lz = NULL
-        CHKERR( DMDAGetInfo(self.dm,
-                            &dim,
-                            NULL, NULL, NULL,
-                            &m, &n, &p,
-                            NULL, NULL,
-                            NULL, NULL, NULL,
-                            NULL) )
-        CHKERR( DMDAGetOwnershipRanges(self.dm, &lx, &ly, &lz) )
+        CHKERR(DMDAGetInfo(self.dm,
+                           &dim,
+                           NULL, NULL, NULL,
+                           &m, &n, &p,
+                           NULL, NULL,
+                           NULL, NULL, NULL,
+                           NULL))
+        CHKERR(DMDAGetOwnershipRanges(self.dm, &lx, &ly, &lz))
         return toOwnershipRanges(dim, m, n, p, lx, ly, lz)
 
     def getCorners(self) -> tuple[tuple[int, ...], tuple[int, ...]]:
@@ -639,10 +641,10 @@ cdef class DMDA(DM):
 
         """
         cdef PetscInt dim=0, x=0, y=0, z=0, m=0, n=0, p=0
-        CHKERR( DMDAGetDim(self.dm, &dim) )
-        CHKERR( DMDAGetCorners(self.dm,
-                               &x, &y, &z,
-                               &m, &n, &p) )
+        CHKERR(DMDAGetDim(self.dm, &dim))
+        CHKERR(DMDAGetCorners(self.dm,
+                              &x, &y, &z,
+                              &m, &n, &p))
         return ((toInt(x), toInt(y), toInt(z))[:<Py_ssize_t>dim],
                 (toInt(m), toInt(n), toInt(p))[:<Py_ssize_t>dim])
 
@@ -661,10 +663,10 @@ cdef class DMDA(DM):
 
         """
         cdef PetscInt dim=0, x=0, y=0, z=0, m=0, n=0, p=0
-        CHKERR( DMDAGetDim(self.dm, &dim) )
-        CHKERR( DMDAGetGhostCorners(self.dm,
-                                    &x, &y, &z,
-                                    &m, &n, &p) )
+        CHKERR(DMDAGetDim(self.dm, &dim))
+        CHKERR(DMDAGetGhostCorners(self.dm,
+                                   &x, &y, &z,
+                                   &m, &n, &p))
         return ((toInt(x), toInt(y), toInt(z))[:<Py_ssize_t>dim],
                 (toInt(m), toInt(n), toInt(p))[:<Py_ssize_t>dim])
 
@@ -692,7 +694,7 @@ cdef class DMDA(DM):
         cdef PetscInt ival = asInt(field)
         cdef const char *cval = NULL
         name = str2bytes(name, &cval)
-        CHKERR( DMDASetFieldName(self.dm, ival, cval) )
+        CHKERR(DMDASetFieldName(self.dm, ival, cval))
 
     def getFieldName(self, field: int) -> str:
         """Return the name of an individual field component.
@@ -713,7 +715,7 @@ cdef class DMDA(DM):
         """
         cdef PetscInt ival = asInt(field)
         cdef const char *cval = NULL
-        CHKERR( DMDAGetFieldName(self.dm, ival, &cval) )
+        CHKERR(DMDAGetFieldName(self.dm, ival, &cval))
         return bytes2str(cval)
 
     #
@@ -742,8 +744,7 @@ cdef class DMDA(DM):
         ymin: float = 0,
         ymax: float = 1,
         zmin: float = 0,
-        zmax: float = 1,
-    ) -> None:
+        zmax: float = 1) -> None:
         """Set the DMDA coordinates to be a uniform grid.
 
         Collective.
@@ -775,10 +776,10 @@ cdef class DMDA(DM):
         cdef PetscReal _xmin = asReal(xmin), _xmax = asReal(xmax)
         cdef PetscReal _ymin = asReal(ymin), _ymax = asReal(ymax)
         cdef PetscReal _zmin = asReal(zmin), _zmax = asReal(zmax)
-        CHKERR( DMDASetUniformCoordinates(self.dm,
-                                          _xmin, _xmax,
-                                          _ymin, _ymax,
-                                          _zmin, _zmax) )
+        CHKERR(DMDASetUniformCoordinates(self.dm,
+                                         _xmin, _xmax,
+                                         _ymin, _ymax,
+                                         _zmin, _zmax))
 
     def setCoordinateName(self, index: int, name: str) -> None:
         """Set the name of the coordinate dimension.
@@ -800,7 +801,7 @@ cdef class DMDA(DM):
         cdef PetscInt ival = asInt(index)
         cdef const char *cval = NULL
         name = str2bytes(name, &cval)
-        CHKERR( DMDASetCoordinateName(self.dm, ival, cval) )
+        CHKERR(DMDASetCoordinateName(self.dm, ival, cval))
 
     def getCoordinateName(self, index: int) -> str:
         """Return the name of a coordinate dimension.
@@ -819,7 +820,7 @@ cdef class DMDA(DM):
         """
         cdef PetscInt ival = asInt(index)
         cdef const char *cval = NULL
-        CHKERR( DMDAGetCoordinateName(self.dm, ival, &cval) )
+        CHKERR(DMDAGetCoordinateName(self.dm, ival, &cval))
         return bytes2str(cval)
 
     #
@@ -838,15 +839,14 @@ cdef class DMDA(DM):
 
         """
         cdef Vec vn = Vec()
-        CHKERR( DMDACreateNaturalVector(self.dm, &vn.vec) )
+        CHKERR(DMDACreateNaturalVector(self.dm, &vn.vec))
         return vn
 
     def globalToNatural(
         self,
         Vec vg,
         Vec vn,
-        addv: InsertMode | None = None,
-    ) -> None:
+        addv: InsertMode | None = None) -> None:
         """Map values to the "natural" grid ordering.
 
         Neighborwise collective.
@@ -869,15 +869,14 @@ cdef class DMDA(DM):
 
         """
         cdef PetscInsertMode im = insertmode(addv)
-        CHKERR( DMDAGlobalToNaturalBegin(self.dm, vg.vec, im, vn.vec) )
-        CHKERR( DMDAGlobalToNaturalEnd  (self.dm, vg.vec, im, vn.vec) )
+        CHKERR(DMDAGlobalToNaturalBegin(self.dm, vg.vec, im, vn.vec))
+        CHKERR(DMDAGlobalToNaturalEnd(self.dm, vg.vec, im, vn.vec))
 
     def naturalToGlobal(
         self,
         Vec vn,
         Vec vg,
-        addv: InsertMode | None = None,
-    ) -> None:
+        addv: InsertMode | None = None) -> None:
         """Map values the to grid ordering.
 
         Neighborwise collective.
@@ -898,8 +897,8 @@ cdef class DMDA(DM):
 
         """
         cdef PetscInsertMode im = insertmode(addv)
-        CHKERR( DMDANaturalToGlobalBegin(self.dm, vn.vec, im, vg.vec) )
-        CHKERR( DMDANaturalToGlobalEnd  (self.dm, vn.vec, im, vg.vec) )
+        CHKERR(DMDANaturalToGlobalBegin(self.dm, vn.vec, im, vg.vec))
+        CHKERR(DMDANaturalToGlobalEnd(self.dm, vn.vec, im, vg.vec))
 
     #
 
@@ -920,8 +919,8 @@ cdef class DMDA(DM):
 
         """
         cdef AO ao = AO()
-        CHKERR( DMDAGetAO(self.dm, &ao.ao) )
-        CHKERR( PetscINCREF(ao.obj) )
+        CHKERR(DMDAGetAO(self.dm, &ao.ao))
+        CHKERR(PetscINCREF(ao.obj))
         return ao
 
     def getScatter(self) -> tuple[Scatter, Scatter]:
@@ -936,9 +935,9 @@ cdef class DMDA(DM):
         """
         cdef Scatter l2g = Scatter()
         cdef Scatter g2l = Scatter()
-        CHKERR( DMDAGetScatter(self.dm, &l2g.sct, &g2l.sct) )
-        CHKERR( PetscINCREF(l2g.obj) )
-        CHKERR( PetscINCREF(g2l.obj) )
+        CHKERR(DMDAGetScatter(self.dm, &l2g.sct, &g2l.sct))
+        CHKERR(PetscINCREF(l2g.obj))
+        CHKERR(PetscINCREF(g2l.obj))
         return (l2g, g2l)
 
     #
@@ -947,8 +946,7 @@ cdef class DMDA(DM):
         self,
         refine_x: int = 2,
         refine_y: int = 2,
-        refine_z: int = 2,
-    ) -> None:
+        refine_z: int = 2) -> None:
         """Set the ratios for the DMDA grid refinement.
 
         Logically collective.
@@ -971,10 +969,10 @@ cdef class DMDA(DM):
         refine[0] = asInt(refine_x)
         refine[1] = asInt(refine_y)
         refine[2] = asInt(refine_z)
-        CHKERR( DMDASetRefinementFactor(self.dm,
-                                      refine[0],
-                                      refine[1],
-                                      refine[2]) )
+        CHKERR(DMDASetRefinementFactor(self.dm,
+                                       refine[0],
+                                       refine[1],
+                                       refine[2]))
 
     def getRefinementFactor(self) -> tuple[int, ...]:
         """Return the ratios that the DMDA grid is refined in each dimension.
@@ -986,12 +984,12 @@ cdef class DMDA(DM):
         setRefinementFactor, petsc.DMDAGetRefinementFactor
 
         """
-        cdef PetscInt i, dim = 0, refine[3]
-        CHKERR( DMDAGetDim(self.dm, &dim) )
-        CHKERR( DMDAGetRefinementFactor(self.dm,
-                                      &refine[0],
-                                      &refine[1],
-                                      &refine[2]) )
+        cdef PetscInt dim = 0, refine[3]
+        CHKERR(DMDAGetDim(self.dm, &dim))
+        CHKERR(DMDAGetRefinementFactor(self.dm,
+                                       &refine[0],
+                                       &refine[1],
+                                       &refine[2]))
         return tuple([toInt(refine[i]) for 0 <= i < dim])
 
     def setInterpolationType(self, interp_type: InterpolationType) -> None:
@@ -1013,7 +1011,7 @@ cdef class DMDA(DM):
 
         """
         cdef PetscDMDAInterpolationType ival = dainterpolationtype(interp_type)
-        CHKERR( DMDASetInterpolationType(self.dm, ival) )
+        CHKERR(DMDASetInterpolationType(self.dm, ival))
 
     def getInterpolationType(self) -> InterpolationType:
         """Return the type of interpolation.
@@ -1026,7 +1024,7 @@ cdef class DMDA(DM):
 
         """
         cdef PetscDMDAInterpolationType ival = DMDA_INTERPOLATION_Q0
-        CHKERR( DMDAGetInterpolationType(self.dm, &ival) )
+        CHKERR(DMDAGetInterpolationType(self.dm, &ival))
         return <long>ival
 
     #
@@ -1042,7 +1040,7 @@ cdef class DMDA(DM):
 
         """
         cdef PetscDMDAElementType ival = daelementtype(elem_type)
-        CHKERR( DMDASetElementType(self.dm, ival) )
+        CHKERR(DMDASetElementType(self.dm, ival))
 
     # FIXME: Return type
     def getElementType(self) -> ElementType:
@@ -1056,7 +1054,7 @@ cdef class DMDA(DM):
 
         """
         cdef PetscDMDAElementType ival = DMDA_ELEMENT_Q1
-        CHKERR( DMDAGetElementType(self.dm, &ival) )
+        CHKERR(DMDAGetElementType(self.dm, &ival))
         return <long>ival
 
     def getElements(self, elem_type: ElementType | None = None) -> ArrayInt:
@@ -1084,16 +1082,16 @@ cdef class DMDA(DM):
         cdef PetscInt nel=0, nen=0
         cdef const PetscInt *elems=NULL
         cdef object elements
-        CHKERR( DMDAGetDim(self.dm, &dim) )
+        CHKERR(DMDAGetDim(self.dm, &dim))
         if elem_type is not None:
             etype = daelementtype(elem_type)
-            CHKERR( DMDASetElementType(self.dm, etype) )
+            CHKERR(DMDASetElementType(self.dm, etype))
         try:
-            CHKERR( DMDAGetElements(self.dm, &nel, &nen, &elems) )
+            CHKERR(DMDAGetElements(self.dm, &nel, &nen, &elems))
             elements = array_i(nel*nen, elems)
             elements.shape = (toInt(nel), toInt(nen))
         finally:
-            CHKERR( DMDARestoreElements(self.dm, &nel, &nen, &elems) )
+            CHKERR(DMDARestoreElements(self.dm, &nel, &nen, &elems))
         return elements
 
     #

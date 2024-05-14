@@ -1,5 +1,5 @@
 /* Functions concerning getting and setting Vec and Mat values with DMStagStencil */
-#include <petsc/private/dmstagimpl.h>
+#include <petsc/private/dmstagimpl.h> /*I  "petscdmstag.h"   I*/
 
 /* Strings corresponding to the types defined in $PETSC_DIR/include/petscdmstag.h */
 const char *const DMStagStencilTypes[] = {"NONE", "STAR", "BOX", "DMStagStencilType", "DM_STAG_STENCIL_", NULL};
@@ -13,7 +13,7 @@ const char *const DMStagStencilLocations[] = {"NONE", "BACK_DOWN_LEFT", "BACK_DO
   Collective
 
   Input Parameters:
-+ dm        - the `DMStag` object
++ dm        - the `DMSTAG` object
 . n_stencil - the number of stencils provided
 - stencils  - an array of `DMStagStencil` objects (`i`, `j`, and `k` are ignored)
 

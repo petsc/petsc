@@ -1,7 +1,5 @@
-#include <petscdm.h>
-#include <petscdmda.h>
-#include <petscdmswarm.h>
-#include <petsc/private/dmswarmimpl.h>
+#include <petscdmda.h>                 /*I  "petscdmda.h"  I*/
+#include <petsc/private/dmswarmimpl.h> /*I  "petscdmswarm.h"  I*/
 #include "../src/dm/impls/swarm/data_bucket.h"
 
 static PetscErrorCode private_PetscViewerCreate_XDMF(MPI_Comm comm, const char filename[], PetscViewer *v)
@@ -334,7 +332,7 @@ static PetscErrorCode private_ISView_Swarm_XDMF(IS is, PetscViewer viewer)
 
 .seealso: `DM`, `DMSWARM`, `DMSwarmViewXDMF()`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM dm, const char filename[], PetscInt nfields, const char *field_name_list[])
+PetscErrorCode DMSwarmViewFieldsXDMF(DM dm, const char filename[], PetscInt nfields, const char *field_name_list[])
 {
   Vec         dvec;
   PetscInt    f, N;
@@ -373,7 +371,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM dm, const char filename[], 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmViewXDMF - Write `DMSWARM` fields to an XDMF3 file
 
   Collective
@@ -387,12 +385,12 @@ PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM dm, const char filename[], 
   Note:
   Only fields user registered with data type `PETSC_DOUBLE` or `PETSC_INT` will be written into the file
 
-  Developer Notes:
+  Developer Note:
   This should be removed and replaced with the standard use of `PetscViewer`
 
 .seealso: `DM`, `DMSWARM`, `DMSwarmViewFieldsXDMF()`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmViewXDMF(DM dm, const char filename[])
+PetscErrorCode DMSwarmViewXDMF(DM dm, const char filename[])
 {
   DM_Swarm   *swarm = (DM_Swarm *)dm->data;
   Vec         dvec;

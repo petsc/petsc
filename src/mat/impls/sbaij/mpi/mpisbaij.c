@@ -2268,20 +2268,20 @@ M*/
 . bs    - size of block, the blocks are ALWAYS square. One can use MatSetBlockSizes() to set a different row and column blocksize but the row
           blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with MatCreateVecs()
 . d_nz  - number of block nonzeros per block row in diagonal portion of local
-           submatrix  (same for all local rows)
+          submatrix  (same for all local rows)
 . d_nnz - array containing the number of block nonzeros in the various block rows
-           in the upper triangular and diagonal part of the in diagonal portion of the local
-           (possibly different for each block row) or `NULL`.  If you plan to factor the matrix you must leave room
-           for the diagonal entry and set a value even if it is zero.
+          in the upper triangular and diagonal part of the in diagonal portion of the local
+          (possibly different for each block row) or `NULL`.  If you plan to factor the matrix you must leave room
+          for the diagonal entry and set a value even if it is zero.
 . o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
-           submatrix (same for all local rows).
+          submatrix (same for all local rows).
 - o_nnz - array containing the number of nonzeros in the various block rows of the
-           off-diagonal portion of the local submatrix that is right of the diagonal
-           (possibly different for each block row) or `NULL`.
+          off-diagonal portion of the local submatrix that is right of the diagonal
+          (possibly different for each block row) or `NULL`.
 
   Options Database Keys:
 + -mat_no_unroll  - uses code that does not unroll the loops in the
-                     block calculations (much slower)
+                    block calculations (much slower)
 - -mat_block_size - size of the blocks to use
 
   Level: intermediate
@@ -2360,35 +2360,35 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, co
 . bs    - size of block, the blocks are ALWAYS square. One can use `MatSetBlockSizes()` to set a different row and column blocksize but the row
           blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with `MatCreateVecs()`
 . m     - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
-           This value should be the same as the local size used in creating the
-           y vector for the matrix-vector product y = Ax.
+          This value should be the same as the local size used in creating the
+          y vector for the matrix-vector product y = Ax.
 . n     - number of local columns (or `PETSC_DECIDE` to have calculated if `N` is given)
-           This value should be the same as the local size used in creating the
-           x vector for the matrix-vector product y = Ax.
+          This value should be the same as the local size used in creating the
+          x vector for the matrix-vector product y = Ax.
 . M     - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
 . N     - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
 . d_nz  - number of block nonzeros per block row in diagonal portion of local
-           submatrix (same for all local rows)
+          submatrix (same for all local rows)
 . d_nnz - array containing the number of block nonzeros in the various block rows
-           in the upper triangular portion of the in diagonal portion of the local
-           (possibly different for each block block row) or `NULL`.
-           If you plan to factor the matrix you must leave room for the diagonal entry and
-           set its value even if it is zero.
+          in the upper triangular portion of the in diagonal portion of the local
+          (possibly different for each block block row) or `NULL`.
+          If you plan to factor the matrix you must leave room for the diagonal entry and
+          set its value even if it is zero.
 . o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
-           submatrix (same for all local rows).
+          submatrix (same for all local rows).
 - o_nnz - array containing the number of nonzeros in the various block rows of the
-           off-diagonal portion of the local submatrix (possibly different for
-           each block row) or `NULL`.
+          off-diagonal portion of the local submatrix (possibly different for
+          each block row) or `NULL`.
 
   Output Parameter:
 . A - the matrix
 
   Options Database Keys:
 + -mat_no_unroll  - uses code that does not unroll the loops in the
-                     block calculations (much slower)
+                    block calculations (much slower)
 . -mat_block_size - size of the blocks to use
 - -mat_mpi        - use the parallel matrix data structures even on one processor
-               (defaults to using SeqBAIJ format on one processor)
+                    (defaults to using SeqBAIJ format on one processor)
 
   Level: intermediate
 
@@ -2405,6 +2405,9 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, co
 
   If `PETSC_DECIDE` or `PETSC_DETERMINE` is used for a particular argument on one processor
   than it must be used on all processors that share the object for that argument.
+
+  If `m` and `n` are not `PETSC_DECIDE`, then the values determines the `PetscLayout` of the matrix and the ranges returned by
+  `MatGetOwnershipRange()`,  `MatGetOwnershipRanges()`, `MatGetOwnershipRangeColumn()`, and `MatGetOwnershipRangesColumn()`.
 
   If the *_nnz parameter is given then the *_nz parameter is ignored
 
@@ -2443,7 +2446,8 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, co
   In general, for PDE problems in which most nonzeros are near the diagonal,
   one expects `d_nz` >> `o_nz`.
 
-.seealso: [](ch_matrices), `Mat`, `MATSBAIJ`, `MatCreate()`, `MatCreateSeqSBAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`
+.seealso: [](ch_matrices), `Mat`, `MATSBAIJ`, `MatCreate()`, `MatCreateSeqSBAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`,
+          `MatGetOwnershipRange()`,  `MatGetOwnershipRanges()`, `MatGetOwnershipRangeColumn()`, `MatGetOwnershipRangesColumn()`, `PetscLayout`
 @*/
 PetscErrorCode MatCreateSBAIJ(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[], Mat *A)
 {

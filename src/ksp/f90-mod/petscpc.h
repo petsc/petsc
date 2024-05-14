@@ -100,6 +100,14 @@
       PetscEnum, parameter :: PC_EXOTIC_FACE=0
       PetscEnum, parameter :: PC_EXOTIC_WIREBASKET=1
 
+! PCMGCoarseSpaceType
+      PetscEnum, parameter :: PCMG_ADAPT_NONE = 0
+      PetscEnum, parameter :: PCMG_ADAPT_POLYNOMIAL = 1
+      PetscEnum, parameter :: PCMG_ADAPT_HARMONIC = 2
+      PetscEnum, parameter :: PCMG_ADAPT_EIGENVECTOR = 3
+      PetscEnum, parameter :: PCMG_ADAPT_GENERALIZED_EIGENVECTOR = 4
+      PetscEnum, parameter :: PCMG_ADAPT_GDSW = 5
+
 ! PCDeflationSpaceType
       PetscEnum, parameter :: PC_DEFLATION_SPACE_HAAR = 0
       PetscEnum, parameter :: PC_DEFLATION_SPACE_DB2  = 1
@@ -129,4 +137,3 @@
       PetscEnum, parameter :: PC_INCONSISTENT_RHS=5
       PetscEnum, parameter :: PC_SUBPC_ERROR=6
 
-      external  PCMGRESIDUALDEFAULT

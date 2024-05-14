@@ -12,23 +12,13 @@ static PetscErrorCode KSPSetUp_TSIRM(KSP ksp)
   KSP_TSIRM *tsirm = (KSP_TSIRM *)ksp->data;
 
   PetscFunctionBegin;
-  /* Initialization */
-#if defined(PETSC_USE_REAL_SINGLE)
-  tsirm->tol_ls = 1e-25;
-#else
-  tsirm->tol_ls = 1e-50;
-#endif
-  tsirm->size_ls    = 12;
-  tsirm->maxiter_ls = 15;
-  tsirm->cgls       = 0;
-
   /* Matrix of the system */
   PetscCall(KSPGetOperators(ksp, &tsirm->A, NULL));    /* Matrix of the system   */
   PetscCall(MatGetSize(tsirm->A, &tsirm->size, NULL)); /* Size of the system     */
   PetscCall(MatGetOwnershipRange(tsirm->A, &tsirm->Istart, &tsirm->Iend));
 
   /* Matrix S of residuals */
-  PetscCall(MatCreate(PETSC_COMM_WORLD, &tsirm->S));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)ksp), &tsirm->S));
   PetscCall(MatSetSizes(tsirm->S, tsirm->Iend - tsirm->Istart, PETSC_DECIDE, tsirm->size, tsirm->size_ls));
   PetscCall(MatSetType(tsirm->S, MATDENSE));
   PetscCall(MatSetUp(tsirm->S));
@@ -48,7 +38,6 @@ static PetscErrorCode KSPSolve_TSIRM(KSP ksp)
   PetscScalar *array;
   PetscReal    norm = 20;
   PetscInt     i, *ind_row, first_iteration = 1, its = 0, total = 0, col = 0;
-  PetscInt     restart = 30;
   KSP          ksp_min; /* KSP for minimization */
   PC           pc_min;  /* PC for minimization */
   PetscBool    isksp;
@@ -66,7 +55,6 @@ static PetscErrorCode KSPSolve_TSIRM(KSP ksp)
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCKSP, &isksp));
   PetscCheck(isksp, PetscObjectComm((PetscObject)pc), PETSC_ERR_USER, "PC must be of type PCKSP");
   PetscCall(PCKSPGetKSP(pc, &sub_ksp));
-  PetscCall(KSPSetTolerances(sub_ksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, restart));
 
   /* previously it seemed good but with SNES it seems not good... */
   PetscCall(KSP_MatMult(sub_ksp, tsirm->A, x, tsirm->r));
@@ -75,9 +63,10 @@ static PetscErrorCode KSPSolve_TSIRM(KSP ksp)
   KSPCheckNorm(ksp, norm);
   ksp->its = 0;
   PetscCall(KSPConvergedDefault(ksp, ksp->its, norm, &ksp->reason, ksp->cnvP));
+  PetscCall(KSPMonitor(ksp, ksp->its, norm));
   PetscCall(KSPSetInitialGuessNonzero(sub_ksp, PETSC_TRUE));
   do {
-    for (col = 0; col < tsirm->size_ls && ksp->reason == 0; col++) {
+    for (col = 0; col < tsirm->size_ls && ksp->reason == KSP_CONVERGED_ITERATING; col++) {
       /* Solve (inner iteration) */
       PetscCall(KSPSolve(sub_ksp, b, x));
       PetscCall(KSPGetIterationNumber(sub_ksp, &its));
@@ -96,7 +85,7 @@ static PetscErrorCode KSPSolve_TSIRM(KSP ksp)
     }
 
     /* Minimization step */
-    if (!ksp->reason) {
+    if (ksp->reason == KSP_CONVERGED_ITERATING) {
       PetscCall(MatAssemblyBegin(tsirm->S, MAT_FINAL_ASSEMBLY));
       PetscCall(MatAssemblyEnd(tsirm->S, MAT_FINAL_ASSEMBLY));
       if (first_iteration) {
@@ -107,7 +96,7 @@ static PetscErrorCode KSPSolve_TSIRM(KSP ksp)
       }
 
       /* CGLS or LSQR method to minimize the residuals*/
-      PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp_min));
+      PetscCall(KSPCreate(PetscObjectComm((PetscObject)ksp), &ksp_min));
       if (tsirm->cgls) {
         PetscCall(KSPSetType(ksp_min, KSPCGLS));
       } else {
@@ -173,12 +162,14 @@ static PetscErrorCode KSPDestroy_TSIRM(KSP ksp)
    Notes:
    `KSPTSIRM` is a two-stage iteration method for solving large sparse linear systems of the form $Ax=b$. The main idea behind this new
    method is the use a least-squares residual minimization to improve the convergence of Krylov based iterative methods, typically those of GMRES variants.
-   The principle of TSIRM algorithm  is to build an outer iteration over a Krylov method, called the inner solver, and to frequently store the current residual
+   The principle of `TSIRM` algorithm  is to build an outer iteration over a Krylov method, called the inner solver, and to frequently store the current residual
    computed by the given Krylov method in a matrix of residuals S. After a few outer iterations, a least-squares minimization step is applied on the matrix
    composed by the saved residuals, in order to compute a better solution and to make new iterations if required.
    The minimization step consists in solving the least-squares problem $\min||b-ASa||$ to find 'a' which minimizes the
    residuals $(b-AS)$. The minimization step is performed using two solvers of linear least-squares problems: `KSPCGLS` or `KSPLSQR`. A new solution x with
    a minimal residual is computed with $x=Sa$.
+
+   Defaults to 30 iterations for the inner solve, use option `-ksp_ksp_max_it <it>` to change it.
 
    Contributed by:
    Lilia Ziane Khodja
@@ -191,10 +182,20 @@ M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_TSIRM(KSP ksp)
 {
   KSP_TSIRM *tsirm;
+  PC         pc;
+  KSP        sub_ksp;
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&tsirm));
   ksp->data = (void *)tsirm;
+#if defined(PETSC_USE_REAL_SINGLE)
+  tsirm->tol_ls = 1e-25;
+#else
+  tsirm->tol_ls = 1e-50;
+#endif
+  tsirm->size_ls    = 12;
+  tsirm->maxiter_ls = 15;
+  tsirm->cgls       = 0;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_RIGHT, 1));
   ksp->ops->setup          = KSPSetUp_TSIRM;
@@ -204,6 +205,11 @@ PETSC_EXTERN PetscErrorCode KSPCreate_TSIRM(KSP ksp)
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setfromoptions = KSPSetFromOptions_TSIRM;
   ksp->ops->view           = NULL;
+
+  PetscCall(KSPGetPC(ksp, &pc));
+  PetscCall(PCSetType(pc, PCKSP));
+  PetscCall(PCKSPGetKSP(pc, &sub_ksp));
+  PetscCall(KSPSetTolerances(sub_ksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 30));
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "This is not supported for complex numbers");
 #else

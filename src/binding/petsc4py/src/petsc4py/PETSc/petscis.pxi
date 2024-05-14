@@ -5,57 +5,57 @@ cdef extern from * nogil:
     PetscISType ISSTRIDE
     PetscISType ISBLOCK
 
-    PetscErrorCode ISView(PetscIS,PetscViewer)
+    PetscErrorCode ISView(PetscIS, PetscViewer)
     PetscErrorCode ISDestroy(PetscIS*)
-    PetscErrorCode ISCreate(MPI_Comm,PetscIS*)
-    PetscErrorCode ISSetType(PetscIS,PetscISType)
-    PetscErrorCode ISGetType(PetscIS,PetscISType*)
+    PetscErrorCode ISCreate(MPI_Comm, PetscIS*)
+    PetscErrorCode ISSetType(PetscIS, PetscISType)
+    PetscErrorCode ISGetType(PetscIS, PetscISType*)
 
-    PetscErrorCode ISCreateGeneral(MPI_Comm,PetscInt,PetscInt[],PetscCopyMode,PetscIS*)
-    PetscErrorCode ISCreateBlock(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscCopyMode,PetscIS*)
-    PetscErrorCode ISCreateStride(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscIS*)
+    PetscErrorCode ISCreateGeneral(MPI_Comm, PetscInt, PetscInt[], PetscCopyMode, PetscIS*)
+    PetscErrorCode ISCreateBlock(MPI_Comm, PetscInt, PetscInt, PetscInt[], PetscCopyMode, PetscIS*)
+    PetscErrorCode ISCreateStride(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscIS*)
 
-    PetscErrorCode ISLoad(PetscIS,PetscViewer)
-    PetscErrorCode ISDuplicate(PetscIS,PetscIS*)
-    PetscErrorCode ISCopy(PetscIS,PetscIS)
-    PetscErrorCode ISAllGather(PetscIS,PetscIS*)
-    PetscErrorCode ISInvertPermutation(PetscIS,PetscInt,PetscIS*)
+    PetscErrorCode ISLoad(PetscIS, PetscViewer)
+    PetscErrorCode ISDuplicate(PetscIS, PetscIS*)
+    PetscErrorCode ISCopy(PetscIS, PetscIS)
+    PetscErrorCode ISAllGather(PetscIS, PetscIS*)
+    PetscErrorCode ISInvertPermutation(PetscIS, PetscInt, PetscIS*)
 
-    PetscErrorCode ISGetSize(PetscIS,PetscInt*)
-    PetscErrorCode ISGetLocalSize(PetscIS,PetscInt*)
-    PetscErrorCode ISGetBlockSize(PetscIS,PetscInt*)
-    PetscErrorCode ISSetBlockSize(PetscIS,PetscInt)
-    PetscErrorCode ISGetIndices(PetscIS,const PetscInt*[])
-    PetscErrorCode ISRestoreIndices(PetscIS,const PetscInt*[])
+    PetscErrorCode ISGetSize(PetscIS, PetscInt*)
+    PetscErrorCode ISGetLocalSize(PetscIS, PetscInt*)
+    PetscErrorCode ISGetBlockSize(PetscIS, PetscInt*)
+    PetscErrorCode ISSetBlockSize(PetscIS, PetscInt)
+    PetscErrorCode ISGetIndices(PetscIS, const PetscInt*[])
+    PetscErrorCode ISRestoreIndices(PetscIS, const PetscInt*[])
 
-    PetscErrorCode ISEqual(PetscIS,PetscIS,PetscBool*)
+    PetscErrorCode ISEqual(PetscIS, PetscIS, PetscBool*)
 
     PetscErrorCode ISSetPermutation(PetscIS)
-    PetscErrorCode ISPermutation(PetscIS,PetscBool*)
+    PetscErrorCode ISPermutation(PetscIS, PetscBool*)
     PetscErrorCode ISSetIdentity(PetscIS)
-    PetscErrorCode ISIdentity(PetscIS,PetscBool*)
+    PetscErrorCode ISIdentity(PetscIS, PetscBool*)
 
     PetscErrorCode ISSort(PetscIS)
-    PetscErrorCode ISSorted(PetscIS,PetscBool*)
+    PetscErrorCode ISSorted(PetscIS, PetscBool*)
 
-    PetscErrorCode ISSum(PetscIS,PetscIS,PetscIS*)
-    PetscErrorCode ISExpand(PetscIS,PetscIS,PetscIS*)
-    PetscErrorCode ISDifference(PetscIS,PetscIS,PetscIS*)
-    PetscErrorCode ISComplement(PetscIS,PetscInt,PetscInt,PetscIS*)
-    PetscErrorCode ISEmbed(PetscIS,PetscIS,PetscBool,PetscIS*)
-    PetscErrorCode ISRenumber(PetscIS,PetscIS,PetscInt*,PetscIS*)
+    PetscErrorCode ISSum(PetscIS, PetscIS, PetscIS*)
+    PetscErrorCode ISExpand(PetscIS, PetscIS, PetscIS*)
+    PetscErrorCode ISDifference(PetscIS, PetscIS, PetscIS*)
+    PetscErrorCode ISComplement(PetscIS, PetscInt, PetscInt, PetscIS*)
+    PetscErrorCode ISEmbed(PetscIS, PetscIS, PetscBool, PetscIS*)
+    PetscErrorCode ISRenumber(PetscIS, PetscIS, PetscInt*, PetscIS*)
 
-    PetscErrorCode ISGeneralSetIndices(PetscIS,PetscInt,PetscInt[],PetscCopyMode)
+    PetscErrorCode ISGeneralSetIndices(PetscIS, PetscInt, PetscInt[], PetscCopyMode)
 
-    PetscErrorCode ISBlockSetIndices(PetscIS,PetscInt,PetscInt,PetscInt[],PetscCopyMode)
-    PetscErrorCode ISBlockGetIndices(PetscIS,const PetscInt*[])
-    PetscErrorCode ISBlockRestoreIndices(PetscIS,const PetscInt*[])
+    PetscErrorCode ISBlockSetIndices(PetscIS, PetscInt, PetscInt, PetscInt[], PetscCopyMode)
+    PetscErrorCode ISBlockGetIndices(PetscIS, const PetscInt*[])
+    PetscErrorCode ISBlockRestoreIndices(PetscIS, const PetscInt*[])
 
-    PetscErrorCode ISStrideSetStride(PetscIS,PetscInt,PetscInt,PetscInt)
-    PetscErrorCode ISStrideGetInfo(PetscIS,PetscInt*,PetscInt*)
+    PetscErrorCode ISStrideSetStride(PetscIS, PetscInt, PetscInt, PetscInt)
+    PetscErrorCode ISStrideGetInfo(PetscIS, PetscInt*, PetscInt*)
 
     PetscErrorCode ISToGeneral(PetscIS)
-    PetscErrorCode ISBuildTwoSided(PetscIS,PetscIS,PetscIS*)
+    PetscErrorCode ISBuildTwoSided(PetscIS, PetscIS, PetscIS*)
 
 
 cdef extern from * nogil:
@@ -68,28 +68,28 @@ cdef extern from * nogil:
         PETSC_IS_GTOLM_MASK "IS_GTOLM_MASK"
         PETSC_IS_GTOLM_DROP "IS_GTOLM_DROP"
 
-    PetscErrorCode ISLocalToGlobalMappingCreate(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscCopyMode,PetscLGMap*)
-    PetscErrorCode ISLocalToGlobalMappingCreateIS(PetscIS,PetscLGMap*)
-    PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF,PetscInt,PetscLGMap*)
-    PetscErrorCode ISLocalToGlobalMappingSetType(PetscLGMap,PetscISLocalToGlobalMappingType)
+    PetscErrorCode ISLocalToGlobalMappingCreate(MPI_Comm, PetscInt, PetscInt, PetscInt[], PetscCopyMode, PetscLGMap*)
+    PetscErrorCode ISLocalToGlobalMappingCreateIS(PetscIS, PetscLGMap*)
+    PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF, PetscInt, PetscLGMap*)
+    PetscErrorCode ISLocalToGlobalMappingSetType(PetscLGMap, PetscISLocalToGlobalMappingType)
     PetscErrorCode ISLocalToGlobalMappingSetFromOptions(PetscLGMap)
-    PetscErrorCode ISLocalToGlobalMappingView(PetscLGMap,PetscViewer)
+    PetscErrorCode ISLocalToGlobalMappingView(PetscLGMap, PetscViewer)
     PetscErrorCode ISLocalToGlobalMappingDestroy(PetscLGMap*)
-    PetscErrorCode ISLocalToGlobalMappingGetSize(PetscLGMap,PetscInt*)
-    PetscErrorCode ISLocalToGlobalMappingGetBlockSize(PetscLGMap,PetscInt*)
-    PetscErrorCode ISLocalToGlobalMappingGetIndices(PetscLGMap,const PetscInt*[])
-    PetscErrorCode ISLocalToGlobalMappingRestoreIndices(PetscLGMap,const PetscInt*[])
-    PetscErrorCode ISLocalToGlobalMappingGetBlockIndices(PetscLGMap,const PetscInt*[])
-    PetscErrorCode ISLocalToGlobalMappingRestoreBlockIndices(PetscLGMap,const PetscInt*[])
-    PetscErrorCode ISLocalToGlobalMappingGetInfo(PetscLGMap,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[])
-    PetscErrorCode ISLocalToGlobalMappingRestoreInfo(PetscLGMap,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[])
-    PetscErrorCode ISLocalToGlobalMappingGetBlockInfo(PetscLGMap,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[])
-    PetscErrorCode ISLocalToGlobalMappingRestoreBlockInfo(PetscLGMap,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[])
-    PetscErrorCode ISLocalToGlobalMappingApply(PetscLGMap,PetscInt,PetscInt[],PetscInt[])
-    PetscErrorCode ISLocalToGlobalMappingApplyBlock(PetscLGMap,PetscInt,PetscInt[],PetscInt[])
-    PetscErrorCode ISLocalToGlobalMappingApplyIS(PetscLGMap,PetscIS,PetscIS*)
-    PetscErrorCode ISGlobalToLocalMappingApply(PetscLGMap,PetscGLMapMode,PetscInt,PetscInt[],PetscInt*,PetscInt[])
-    PetscErrorCode ISGlobalToLocalMappingApplyBlock(PetscLGMap,PetscGLMapMode,PetscInt,PetscInt[],PetscInt*,PetscInt[])
+    PetscErrorCode ISLocalToGlobalMappingGetSize(PetscLGMap, PetscInt*)
+    PetscErrorCode ISLocalToGlobalMappingGetBlockSize(PetscLGMap, PetscInt*)
+    PetscErrorCode ISLocalToGlobalMappingGetIndices(PetscLGMap, const PetscInt*[])
+    PetscErrorCode ISLocalToGlobalMappingRestoreIndices(PetscLGMap, const PetscInt*[])
+    PetscErrorCode ISLocalToGlobalMappingGetBlockIndices(PetscLGMap, const PetscInt*[])
+    PetscErrorCode ISLocalToGlobalMappingRestoreBlockIndices(PetscLGMap, const PetscInt*[])
+    PetscErrorCode ISLocalToGlobalMappingGetInfo(PetscLGMap, PetscInt*, PetscInt*[], PetscInt*[], PetscInt**[])
+    PetscErrorCode ISLocalToGlobalMappingRestoreInfo(PetscLGMap, PetscInt*, PetscInt*[], PetscInt*[], PetscInt**[])
+    PetscErrorCode ISLocalToGlobalMappingGetBlockInfo(PetscLGMap, PetscInt*, PetscInt*[], PetscInt*[], PetscInt**[])
+    PetscErrorCode ISLocalToGlobalMappingRestoreBlockInfo(PetscLGMap, PetscInt*, PetscInt*[], PetscInt*[], PetscInt**[])
+    PetscErrorCode ISLocalToGlobalMappingApply(PetscLGMap, PetscInt, PetscInt[], PetscInt[])
+    PetscErrorCode ISLocalToGlobalMappingApplyBlock(PetscLGMap, PetscInt, PetscInt[], PetscInt[])
+    PetscErrorCode ISLocalToGlobalMappingApplyIS(PetscLGMap, PetscIS, PetscIS*)
+    PetscErrorCode ISGlobalToLocalMappingApply(PetscLGMap, PetscGLMapMode, PetscInt, PetscInt[], PetscInt*, PetscInt[])
+    PetscErrorCode ISGlobalToLocalMappingApplyBlock(PetscLGMap, PetscGLMapMode, PetscInt, PetscInt[], PetscInt*, PetscInt[])
 
 
 # --------------------------------------------------------------------
@@ -97,13 +97,13 @@ cdef extern from * nogil:
 cdef inline IS ref_IS(PetscIS iset):
     cdef IS ob = <IS> IS()
     ob.iset = iset
-    CHKERR( PetscINCREF(ob.obj) )
+    CHKERR(PetscINCREF(ob.obj))
     return ob
 
 cdef inline LGMap ref_LGMap(PetscLGMap lgm):
     cdef LGMap ob = <LGMap> LGMap()
     ob.lgm = lgm
-    CHKERR( PetscINCREF(ob.obj) )
+    CHKERR(PetscINCREF(ob.obj))
     return ob
 
 # --------------------------------------------------------------------
@@ -117,7 +117,7 @@ cdef class _IS_buffer:
 
     def __cinit__(self, IS iset):
         cdef PetscIS i = iset.iset
-        CHKERR( PetscINCREF(<PetscObject*>&i) )
+        CHKERR(PetscINCREF(<PetscObject*>&i))
         self.iset = i
         self.size = 0
         self.data = NULL
@@ -125,22 +125,22 @@ cdef class _IS_buffer:
 
     def __dealloc__(self):
         if self.hasarray and self.iset != NULL:
-            CHKERR( ISRestoreIndices(self.iset, &self.data) )
-        CHKERR( ISDestroy(&self.iset) )
+            CHKERR(ISRestoreIndices(self.iset, &self.data))
+        CHKERR(ISDestroy(&self.iset))
 
     #
 
     cdef int acquire(self) except -1:
         if not self.hasarray and self.iset != NULL:
-            CHKERR( ISGetLocalSize(self.iset, &self.size) )
-            CHKERR( ISGetIndices(self.iset, &self.data) )
+            CHKERR(ISGetLocalSize(self.iset, &self.size))
+            CHKERR(ISGetIndices(self.iset, &self.data))
             self.hasarray = 1
         return 0
 
     cdef int release(self) except -1:
         if self.hasarray and self.iset != NULL:
             self.size = 0
-            CHKERR( ISRestoreIndices(self.iset, &self.data) )
+            CHKERR(ISRestoreIndices(self.iset, &self.data))
             self.hasarray = 0
             self.data = NULL
         return 0
@@ -190,7 +190,7 @@ cdef class _IS_buffer:
             p[0] = <void*>self.data
             n = self.size
         elif self.iset != NULL:
-            CHKERR( ISGetLocalSize(self.iset, &n) )
+            CHKERR(ISGetLocalSize(self.iset, &n))
         return <Py_ssize_t>(<size_t>n*sizeof(PetscInt))
 
     def __getsegcount__(self, Py_ssize_t *lenp):
@@ -209,7 +209,7 @@ cdef class _IS_buffer:
         def __get__(self):
             cdef PetscInt n = 0
             if self.iset != NULL:
-                CHKERR( ISGetLocalSize(self.iset, &n) )
+                CHKERR(ISGetLocalSize(self.iset, &n))
             cdef object size = toInt(n)
             cdef dtype descr = PyArray_DescrFromType(NPY_PETSC_INT)
             cdef str typestr = "=%c%d" % (descr.kind, descr.itemsize)

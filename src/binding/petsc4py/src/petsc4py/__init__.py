@@ -15,8 +15,8 @@ communications.
 
 """
 
-__author__  = 'Lisandro Dalcin'
-__version__ = '3.20.5'
+__author__ = 'Lisandro Dalcin'
+__version__ = '3.21.1'
 __credits__ = 'PETSc Team <petsc-maint@mcs.anl.gov>'
 
 
@@ -38,8 +38,9 @@ def init(args=None, arch=None, comm=None):
     beginning of the bootstrap script of an application.
     """
     import petsc4py.lib
+
     PETSc = petsc4py.lib.ImportPETSc(arch)
-    args  = petsc4py.lib.getInitArgs(args)
+    args = petsc4py.lib.getInitArgs(args)
     PETSc._initialize(args, comm)
 
 
@@ -59,6 +60,7 @@ def get_include():
 
     """
     from os.path import dirname, join
+
     return join(dirname(__file__), 'include')
 
 
@@ -66,6 +68,7 @@ def get_config():
     """Return a dictionary with information about PETSc."""
     import os
     import sys
+
     if sys.version_info[0] >= 3:
         from io import StringIO
         from configparser import ConfigParser
@@ -75,7 +78,7 @@ def get_config():
     pgkdir = os.path.dirname(__file__)
     filename = os.path.join(pgkdir, 'lib', 'petsc.cfg')
     with open(filename) as fp:
-        stream = StringIO("[petsc]\n"+fp.read())
+        stream = StringIO('[petsc]\n' + fp.read())
     parser = ConfigParser()
     parser.optionxform = str
     if sys.version_info[0] >= 3:

@@ -11,7 +11,7 @@ struct _p_PetscMatlabEngine {
 
 PetscClassId MATLABENGINE_CLASSID = -1;
 
-/*@C
+/*@
   PetscMatlabEngineCreate - Creates a MATLAB engine object
 
   Not Collective
@@ -181,7 +181,7 @@ PetscErrorCode PetscMatlabEngineEvaluate(PetscMatlabEngine mengine, const char s
           `PetscMatlabEngineEvaluate()`, `PetscMatlabEngineCreate()`, `PetscMatlabEnginePrintOutput()`,
           `PETSC_MATLAB_ENGINE_()`, `PetscMatlabEnginePutArray()`, `PetscMatlabEngineGetArray()`, `PetscMatlabEngine`
 @*/
-PetscErrorCode PetscMatlabEngineGetOutput(PetscMatlabEngine mengine, char **string)
+PetscErrorCode PetscMatlabEngineGetOutput(PetscMatlabEngine mengine, const char *string[])
 {
   PetscFunctionBegin;
   PetscCheck(mengine, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Null argument: probably PETSC_MATLAB_ENGINE_() failed");
@@ -352,7 +352,7 @@ PetscMatlabEngine PETSC_MATLAB_ENGINE_(MPI_Comm comm)
   PetscFunctionReturn(mengine);
 }
 
-/*@C
+/*@
   PetscMatlabEnginePutArray - Puts an array into the MATLAB space, treating it as a Fortran style (column major ordering) array. For parallel objects,
   each processors part is put in a separate  MATLAB process.
 
@@ -371,7 +371,7 @@ PetscMatlabEngine PETSC_MATLAB_ENGINE_(MPI_Comm comm)
           `PetscMatlabEngineEvaluate()`, `PetscMatlabEngineGetOutput()`, `PetscMatlabEnginePrintOutput()`,
           `PETSC_MATLAB_ENGINE_()`, `PetscMatlabEnginePut()`, `PetscMatlabEngineGetArray()`, `PetscMatlabEngine`
 @*/
-PetscErrorCode PetscMatlabEnginePutArray(PetscMatlabEngine mengine, int m, int n, const PetscScalar *array, const char name[])
+PetscErrorCode PetscMatlabEnginePutArray(PetscMatlabEngine mengine, int m, int n, const PetscScalar array[], const char name[])
 {
   mxArray *mat;
 
@@ -390,7 +390,7 @@ PetscErrorCode PetscMatlabEnginePutArray(PetscMatlabEngine mengine, int m, int n
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscMatlabEngineGetArray - Gets a variable from MATLAB into an array
 
   Not Collective
@@ -399,7 +399,7 @@ PetscErrorCode PetscMatlabEnginePutArray(PetscMatlabEngine mengine, int m, int n
 + mengine - the MATLAB engine
 . m       - the x dimension of the array
 . n       - the y dimension of the array
-. array   - the array (represented in one dimension)
+. array   - the array (represented in one dimension), much be large enough to hold all the data
 - name    - the name of the array
 
   Level: advanced
@@ -408,7 +408,7 @@ PetscErrorCode PetscMatlabEnginePutArray(PetscMatlabEngine mengine, int m, int n
           `PetscMatlabEngineEvaluate()`, `PetscMatlabEngineGetOutput()`, `PetscMatlabEnginePrintOutput()`,
           `PETSC_MATLAB_ENGINE_()`, `PetscMatlabEnginePutArray()`, `PetscMatlabEngineGet()`, `PetscMatlabEngine`
 @*/
-PetscErrorCode PetscMatlabEngineGetArray(PetscMatlabEngine mengine, int m, int n, PetscScalar *array, const char name[])
+PetscErrorCode PetscMatlabEngineGetArray(PetscMatlabEngine mengine, int m, int n, PetscScalar array[], const char name[])
 {
   mxArray *mat;
 

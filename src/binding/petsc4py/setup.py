@@ -16,10 +16,9 @@ sys.path.insert(0, os.path.join(topdir, 'conf'))
 
 pyver = sys.version_info[:2]
 if pyver < (2, 6) or (3, 0) <= pyver < (3, 2):
-    raise RuntimeError("Python version 2.6, 2.7 or >= 3.2 required")
+    raise RuntimeError('Python version 2.6, 2.7 or >= 3.2 required')
 if pyver == (2, 6) or pyver == (3, 2):
-    sys.stderr.write(
-        "WARNING: Python %d.%d is not supported.\n" % pyver)
+    sys.stderr.write('WARNING: Python %d.%d is not supported.\n' % pyver)
 
 PNAME = 'PETSc'
 EMAIL = 'petsc-maint@mcs.anl.gov'
@@ -29,15 +28,18 @@ PLIST = [PNAME]
 # Metadata
 # --------------------------------------------------------------------
 
+
 def F(string):
     return string.format(
         Name=PNAME,
         name=PNAME.lower(),
-        pyname=PNAME.lower()+'4py',
+        pyname=PNAME.lower() + '4py',
     )
+
 
 def get_name():
     return F('{pyname}')
+
 
 def get_version():
     try:
@@ -51,17 +53,20 @@ def get_version():
     get_version.result = version
     return version
 
+
 def description():
     return F('{Name} for Python')
+
 
 def long_description():
     with open(os.path.join(topdir, 'DESCRIPTION.rst')) as f:
         return f.read()
 
-url      = F('https://gitlab.com/{name}/{name}')
+
+url = F('https://gitlab.com/{name}/{name}')
 pypiroot = F('https://pypi.io/packages/source')
 pypislug = F('{pyname}')[0] + F('/{pyname}')
-tarball  = F('{pyname}-%s.tar.gz' % get_version())
+tarball = F('{pyname}-%s.tar.gz' % get_version())
 download = '/'.join([pypiroot, pypislug, tarball])
 
 classifiers = """
@@ -95,24 +100,26 @@ FreeBSD
 """.strip().split('\n')
 
 metadata = {
-    'name'             : get_name(),
-    'version'          : get_version(),
-    'description'      : description(),
-    'long_description' : long_description(),
-    'url'              : url,
-    'download_url'     : download,
-    'classifiers'      : classifiers,
-    'keywords'         : keywords + PLIST,
-    'license'          : 'BSD-2-Clause',
-    'platforms'        : platforms,
-    'author'           : 'Lisandro Dalcin',
-    'author_email'     : 'dalcinl@gmail.com',
-    'maintainer'       : F('{Name} Team'),
-    'maintainer_email' : EMAIL,
+    'name': get_name(),
+    'version': get_version(),
+    'description': description(),
+    'long_description': long_description(),
+    'url': url,
+    'download_url': download,
+    'classifiers': classifiers,
+    'keywords': keywords + PLIST,
+    'license': 'BSD-2-Clause',
+    'platforms': platforms,
+    'author': 'Lisandro Dalcin',
+    'author_email': 'dalcinl@gmail.com',
+    'maintainer': F('{Name} Team'),
+    'maintainer_email': EMAIL,
 }
-metadata.update({
-    'requires': ['numpy'],
-})
+metadata.update(
+    {
+        'requires': ['numpy'],
+    }
+)
 
 metadata_extra = {
     'long_description_content_type': 'text/x-rst',
@@ -122,33 +129,36 @@ metadata_extra = {
 # Extension modules
 # --------------------------------------------------------------------
 
+
 def sources():
-    src = dict(
-        source=F('{pyname}/{Name}.pyx'),
-        depends=[
+    src = {
+        'source': F('{pyname}/{Name}.pyx'),
+        'depends': [
             F('{pyname}/*.pyx'),
             F('{pyname}/*.pxd'),
             F('{pyname}/{Name}/*.pyx'),
             F('{pyname}/{Name}/*.pxd'),
             F('{pyname}/{Name}/*.pxi'),
         ],
-        workdir='src',
-    )
+        'workdir': 'src',
+    }
     return [src]
+
 
 def extensions():
     from os import walk
     from glob import glob
     from os.path import join
+
     #
     depends = []
     glob_join = lambda *args: glob(join(*args))
-    for pth, dirs, files in walk('src'):
+    for pth, _, _ in walk('src'):
         depends += glob_join(pth, '*.h')
         depends += glob_join(pth, '*.c')
     for pkg in map(str.lower, reversed(PLIST)):
-        if (pkg.upper()+'_DIR') in os.environ:
-            pd = os.environ[pkg.upper()+'_DIR']
+        if (pkg.upper() + '_DIR') in os.environ:
+            pd = os.environ[pkg.upper() + '_DIR']
             pa = os.environ.get('PETSC_ARCH', '')
             depends += glob_join(pd, 'include', '*.h')
             depends += glob_join(pd, 'include', pkg, 'private', '*.h')
@@ -161,6 +171,7 @@ def extensions():
     else:
         try:
             import numpy
+
             numpy_includes = [numpy.get_include()]
         except ImportError:
             numpy_includes = []
@@ -168,51 +179,57 @@ def extensions():
     if F('{pyname}') != 'petsc4py':
         try:
             import petsc4py
+
             petsc4py_includes = [petsc4py.get_include()]
         except ImportError:
             petsc4py_includes = []
         include_dirs.extend(petsc4py_includes)
     #
-    ext = dict(
-        name=F('{pyname}.lib.{Name}'),
-        sources=[F('src/{pyname}/{Name}.c')],
-        depends=depends,
-        include_dirs=[
+    ext = {
+        'name': F('{pyname}.lib.{Name}'),
+        'sources': [F('src/{pyname}/{Name}.c')],
+        'depends': depends,
+        'include_dirs': [
             'src',
             F('src/{pyname}/include'),
-        ] + include_dirs,
-        define_macros=[
+        ]
+        + include_dirs,
+        'define_macros': [
             ('MPICH_SKIP_MPICXX', 1),
             ('OMPI_SKIP_MPICXX', 1),
             ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION'),
         ],
-    )
+    }
     return [ext]
+
 
 # --------------------------------------------------------------------
 # Setup
 # --------------------------------------------------------------------
+
 
 def get_release():
     suffix = os.path.join('src', 'binding', F('{pyname}'))
     if not topdir.endswith(os.path.join(os.path.sep, suffix)):
         return True
     release = 1
-    rootdir = os.path.abspath(os.path.join(topdir, *[os.path.pardir]*3))
+    rootdir = os.path.abspath(os.path.join(topdir, *[os.path.pardir] * 3))
     version_h = os.path.join(rootdir, 'include', F('{name}version.h'))
     release_macro = '%s_VERSION_RELEASE' % F('{name}').upper()
-    version_re = re.compile(r"#define\s+%s\s+([-]*\d+)" % release_macro)
+    version_re = re.compile(r'#define\s+%s\s+([-]*\d+)' % release_macro)
     if os.path.exists(version_h) and os.path.isfile(version_h):
         with open(version_h, 'r') as f:
             release = int(version_re.search(f.read()).groups()[0])
     return bool(release)
 
+
 def requires(pkgname, major, minor, release=True):
     minor = minor + int(not release)
     devel = '' if release else '.dev0'
-    vmin = "%s.%s%s" % (major, minor, devel)
-    vmax = "%s.%s" % (major, minor + 1)
-    return "%s>=%s,<%s" % (pkgname, vmin, vmax)
+    vmin = f'{major}.{minor}{devel}'
+    vmax = f'{major}.{minor+1}'
+    return f'{pkgname}>={vmin},<{vmax}'
+
 
 def run_setup():
     setup_args = metadata.copy()
@@ -220,17 +237,27 @@ def run_setup():
     x, y = tuple(map(int, vstr))
     release = get_release()
     if not release:
-        setup_args['version'] = "%d.%d.0.dev0" %(x, y+1)
+        setup_args['version'] = '%d.%d.0.dev0' % (x, y + 1)
     if setuptools:
         setup_args['zip_safe'] = False
-        setup_args['install_requires'] = ['numpy']
+        try:
+            import numpy
+
+            major = int(numpy.__version__.partition('.')[0])
+            numpy_pin = 'numpy>=%d,<%d' % (major, major + 1)
+        except ImportError:
+            numpy_pin = 'numpy'
+        setup_args['setup_requires'] = ['numpy']
+        setup_args['install_requires'] = [numpy_pin]
         for pkg in map(str.lower, PLIST):
             PKG_DIR = os.environ.get(pkg.upper() + '_DIR')
             if not (PKG_DIR and os.path.isdir(PKG_DIR)):
                 package = requires(pkg, x, y, release)
+                setup_args['setup_requires'] += [package]
                 setup_args['install_requires'] += [package]
         if F('{pyname}') != 'petsc4py':
             package = requires('petsc4py', x, y, release)
+            setup_args['setup_requires'] += [package]
             setup_args['install_requires'] += [package]
         setup_args.update(metadata_extra)
     #
@@ -240,7 +267,7 @@ def run_setup():
             F('{pyname}'),
             F('{pyname}.lib'),
         ],
-        package_dir={'' : 'src'},
+        package_dir={'': 'src'},
         package_data={
             F('{pyname}'): [
                 F('{Name}.pxd'),
@@ -255,19 +282,18 @@ def run_setup():
                 F('{name}.cfg'),
             ],
         },
-        cython_sources=[
-            src for src in sources()
-        ],
-        ext_modules=[
-            conf.Extension(**ext) for ext in extensions()
-        ],
-        **setup_args
+        cython_sources=[src for src in sources()],  # noqa: C416
+        ext_modules=[conf.Extension(**ext) for ext in extensions()],
+        **setup_args,
     )
+
 
 # --------------------------------------------------------------------
 
+
 def main():
     run_setup()
+
 
 if __name__ == '__main__':
     main()

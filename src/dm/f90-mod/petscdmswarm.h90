@@ -21,23 +21,3 @@
           PetscErrorCode ierr
         End Subroutine
       End Interface
-
-      Interface
-        Subroutine DMSwarmCreateGlobalVectorFromField(dm,fieldname,vec,ierr)
-          import tDM,tVec
-          DM dm
-          character(len=*) :: fieldname
-          Vec vec
-          PetscErrorCode ierr
-        End Subroutine
-      End Interface
-
-      Interface
-        Subroutine DMSwarmDestroyGlobalVectorFromField(dm,fieldname,vec,ierr)
-          import tDM,tVec
-          DM dm
-          character(len=*) :: fieldname
-          Vec vec
-          PetscErrorCode ierr
-        End Subroutine
-      End Interface

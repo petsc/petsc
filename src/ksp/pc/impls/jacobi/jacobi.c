@@ -141,6 +141,21 @@ static PetscErrorCode PCJacobiGetFixDiagonal_Jacobi(PC pc, PetscBool *flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode PCJacobiGetDiagonal_Jacobi(PC pc, Vec diag, Vec diagsqrt)
+{
+  PC_Jacobi *j    = (PC_Jacobi *)pc->data;
+  MPI_Comm   comm = PetscObjectComm((PetscObject)pc);
+
+  PetscFunctionBegin;
+  PetscCheck(j->diag || j->diagsqrt, comm, PETSC_ERR_ARG_WRONGSTATE, "Jacobi diagonal has not been created yet. Use PCApply to force creation");
+  PetscCheck(!diag || (diag && j->diag), comm, PETSC_ERR_ARG_WRONGSTATE, "Jacobi diagonal not available. Check if PC is non-symmetric");
+  PetscCheck(!diagsqrt || (diagsqrt && j->diagsqrt), comm, PETSC_ERR_ARG_WRONGSTATE, "Jacobi diagonal squareroot not available. Check if PC is symmetric");
+
+  if (diag) PetscCall(VecCopy(j->diag, diag));
+  if (diagsqrt) PetscCall(VecCopy(j->diagsqrt, diagsqrt));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
    PCSetUp_Jacobi - Prepares for the use of the Jacobi preconditioner
                     by setting data structures and options.
@@ -188,6 +203,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
   if (diag) {
     PetscBool isset, isspd;
 
+    PetscCall(VecLockReadPop(diag));
     switch (jac->type) {
     case PC_JACOBI_DIAGONAL:
       PetscCall(MatGetDiagonal(pc->pmat, diag));
@@ -248,9 +264,12 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
       }
       PetscCall(VecRestoreArray(diag, &x));
     }
+    PetscCall(VecLockReadPush(diag));
   }
   if (diagsqrt) {
     PetscScalar *x;
+
+    PetscCall(VecLockReadPop(diagsqrt));
     switch (jac->type) {
     case PC_JACOBI_DIAGONAL:
       PetscCall(MatGetDiagonal(pc->pmat, diagsqrt));
@@ -276,6 +295,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
       }
     }
     PetscCall(VecRestoreArray(diagsqrt, &x));
+    PetscCall(VecLockReadPush(diagsqrt));
   }
   if (zeroflag) PetscCall(PetscInfo(pc, "Zero detected in diagonal of matrix, using 1 at those locations\n"));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -295,6 +315,7 @@ static PetscErrorCode PCSetUp_Jacobi_Symmetric(PC pc)
 
   PetscFunctionBegin;
   PetscCall(MatCreateVecs(pc->pmat, &jac->diagsqrt, NULL));
+  PetscCall(VecLockReadPush(jac->diagsqrt));
   PetscCall(PCSetUp_Jacobi(pc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -313,6 +334,7 @@ static PetscErrorCode PCSetUp_Jacobi_NonSymmetric(PC pc)
 
   PetscFunctionBegin;
   PetscCall(MatCreateVecs(pc->pmat, &jac->diag, NULL));
+  PetscCall(VecLockReadPush(jac->diag));
   PetscCall(PCSetUp_Jacobi(pc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -367,6 +389,8 @@ static PetscErrorCode PCReset_Jacobi(PC pc)
   PC_Jacobi *jac = (PC_Jacobi *)pc->data;
 
   PetscFunctionBegin;
+  if (jac->diag) PetscCall(VecLockReadPop(jac->diag));
+  if (jac->diagsqrt) PetscCall(VecLockReadPop(jac->diagsqrt));
   PetscCall(VecDestroy(&jac->diag));
   PetscCall(VecDestroy(&jac->diagsqrt));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -393,6 +417,7 @@ static PetscErrorCode PCDestroy_Jacobi(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCJacobiGetRowl1Scale_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCJacobiSetFixDiagonal_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCJacobiGetFixDiagonal_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCJacobiGetDiagonal_C", NULL));
 
   /*
       Free the private data structure that was hanging off the PC
@@ -530,6 +555,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCJacobiGetUseAbs_C", PCJacobiGetUseAbs_Jacobi));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCJacobiSetFixDiagonal_C", PCJacobiSetFixDiagonal_Jacobi));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCJacobiGetFixDiagonal_C", PCJacobiGetFixDiagonal_Jacobi));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCJacobiGetDiagonal_C", PCJacobiGetDiagonal_Jacobi));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -683,6 +709,30 @@ PetscErrorCode PCJacobiGetFixDiagonal(PC pc, PetscBool *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscUseMethod(pc, "PCJacobiGetFixDiagonal_C", (PC, PetscBool *), (pc, flg));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PCJacobiGetDiagonal - Returns copy of the diagonal and/or diagonal squareroot `Vec`
+
+  Logically Collective
+
+  Input Parameter:
+. pc - the preconditioner context
+
+  Output Parameters:
++ diagonal      - Copy of `Vec` of the inverted diagonal
+- diagonal_sqrt - Copy of `Vec` of the inverted square root diagonal
+
+  Level: developer
+
+.seealso: [](ch_ksp), `PCJACOBI`, `PCJacobiSetType()`
+@*/
+PetscErrorCode PCJacobiGetDiagonal(PC pc, Vec diagonal, Vec diagonal_sqrt)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  PetscUseMethod(pc, "PCJacobiGetDiagonal_C", (PC, Vec, Vec), (pc, diagonal, diagonal_sqrt));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

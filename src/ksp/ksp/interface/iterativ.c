@@ -1834,7 +1834,7 @@ PetscErrorCode KSPCreateVecs(KSP ksp, PetscInt rightn, Vec **right, PetscInt lef
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPSetWorkVecs - Sets a number of work vectors into a `KSP` object
 
   Collective

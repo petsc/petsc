@@ -1,18 +1,40 @@
 
 ---- Minimum Surface Area Problem -----
-mx: 10     my: 8   
+mx: 10     my: 8
 
-iter =   0, Function value 1.45591, Residual: 0.21372 
-iter =   1, Function value 1.43049, Residual: 0.132023 
-iter =   2, Function value 1.42069, Residual: 0.0887699 
-iter =   3, Function value 1.41857, Residual: 0.0676407 
-iter =   4, Function value 1.41781, Residual: 0.0161113 
-iter =   5, Function value 1.41776, Residual: 0.00313094 
-iter =   6, Function value 1.41776, Residual: 0.00280956 
-iter =   7, Function value 1.41776, Residual: 0.000935101 
+iter =   0, Function value 1.45591, Residual: 0.21372
+iter =   1, Function value 1.43049, Residual: 0.132023
+iter =   2, Function value 1.42069, Residual: 0.0887699
+iter =   3, Function value 1.41857, Residual: 0.0676407
+iter =   4, Function value 1.41781, Residual: 0.0161113
+iter =   5, Function value 1.41776, Residual: 0.00313094
+iter =   6, Function value 1.41776, Residual: 0.00280956
+iter =   7, Function value 1.41776, Residual: 0.000935101
 Tao Object: 1 MPI process
   type: lmvm
     Gradient steps: 1
+    LMVM Matrix:
+      Mat Object: (tao_lmvm_) 1 MPI process
+        type: lmvmbfgs
+        Scale type: DIAGONAL
+        Scale history: 1
+        Scale params: alpha=1., beta=0.5, rho=1.
+        Convex factors: phi=0., theta=0.125
+        Max. storage: 5
+        Used storage: 5
+        Number of updates: 6
+        Number of rejects: 0
+        Number of resets: 1
+        Mat Object: (tao_lmvm_J0_) 1 MPI process
+          type: lmvmdiagbroyden
+          Scale history: 1
+          Scale params: alpha=1., beta=0.5, rho=1.
+          Convex factor: theta=0.125
+          Max. storage: 1
+          Used storage: 1
+          Number of updates: 6
+          Number of rejects: 0
+          Number of resets: 1
   TaoLineSearch Object: 1 MPI process
     type: more-thuente
     maximum function evaluations=30

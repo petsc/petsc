@@ -903,7 +903,7 @@ PetscErrorCode PetscBagCreate(MPI_Comm comm, size_t bagsize, PetscBag *bag)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagSetName - Sets the name of a bag of values
 
   Not Collective
@@ -947,7 +947,7 @@ PetscErrorCode PetscBagSetName(PetscBag bag, const char *name, const char *help)
           `PetscBagRegisterReal()`, `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
           `PetscBagSetFromOptions()`, `PetscBagCreate()`, `PetscBagDestroy()`, `PetscBagRegisterEnum()`
 @*/
-PetscErrorCode PetscBagGetName(PetscBag bag, char **name)
+PetscErrorCode PetscBagGetName(PetscBag bag, const char **name)
 {
   PetscFunctionBegin;
   PetscAssertPointer(bag, 1);
@@ -984,7 +984,7 @@ PetscErrorCode PetscBagGetData(PetscBag bag, void **data)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagSetOptionsPrefix - Sets the prefix used for searching for all
   `PetscBag` items in the options database.
 

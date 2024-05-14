@@ -9,14 +9,12 @@ typedef struct _p_SNES *SNES;
   #define matfdcoloringsetfunctionts_              MATFDCOLORINGSETFUNCTIONTS
   #define matfdcoloringsetfunction_                MATFDCOLORINGSETFUNCTION
   #define matfdcoloringview_                       MATFDCOLORINGVIEW
-  #define matfdcoloingsettype_                     MATFDCOLORINGSETTYPE
   #define matfdcoloringgetperturbedcolumnsf90_     MATFDCOLORINGGETPERTURBEDCOLUMNSF90
   #define matfdcoloringrestoreperturbedcolumnsf90_ MATFDCOLORINGRESTOREPERTURBEDCOLUMNSF90
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define matfdcoloringsetfunctionts_              matfdcoloringsetfunctionts
   #define matfdcoloringsetfunction_                matfdcoloringsetfunction
   #define matfdcoloringview_                       matfdcoloringview
-  #define matfdcoloingsettype_                     matfdcoloringsettype
   #define matfdcoloringgetperturbedcolumnsf90_     matfdcoloringgetperturbedcolumnsf90
   #define matfdcoloringrestoreperturbedcolumnsf90_ matfdcoloringrestoreperturbedcolumnsf90
 #endif
@@ -80,14 +78,4 @@ PETSC_EXTERN void matfdcoloringview_(MatFDColoring *c, PetscViewer *vin, PetscEr
 
   PetscPatchDefaultViewers_Fortran(vin, v);
   *ierr = MatFDColoringView(*c, v);
-}
-
-PETSC_EXTERN void matfdcoloringsettype_(MatFDColoring *matfdcoloring, char *type, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-
-  FIXCHAR(type, len, t);
-  *ierr = MatFDColoringSetType(*matfdcoloring, t);
-  if (*ierr) return;
-  FREECHAR(type, t);
 }

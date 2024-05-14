@@ -68,6 +68,8 @@ static const char *Err_MSG_CPardiso(int errNo)
   }
 }
 
+#define PetscCallCluster(f) PetscStackCallExternalVoid("cluster_sparse_solver", f);
+
 /*
  *  Internal data structure.
  *  For more information check mkl_cpardiso manual.
@@ -354,10 +356,9 @@ static PetscErrorCode MatDestroy_MKL_CPARDISO(Mat A)
   if (mat_mkl_cpardiso->CleanUp) {
     mat_mkl_cpardiso->phase = JOB_RELEASE_OF_ALL_MEMORY;
 
-    cluster_sparse_solver(mat_mkl_cpardiso->pt, &mat_mkl_cpardiso->maxfct, &mat_mkl_cpardiso->mnum, &mat_mkl_cpardiso->mtype, &mat_mkl_cpardiso->phase, &mat_mkl_cpardiso->n, NULL, NULL, NULL, mat_mkl_cpardiso->perm, &mat_mkl_cpardiso->nrhs,
-                          mat_mkl_cpardiso->iparm, &mat_mkl_cpardiso->msglvl, NULL, NULL, &mat_mkl_cpardiso->comm_mkl_cpardiso, (PetscInt *)&mat_mkl_cpardiso->err);
+    PetscCallCluster(cluster_sparse_solver(mat_mkl_cpardiso->pt, &mat_mkl_cpardiso->maxfct, &mat_mkl_cpardiso->mnum, &mat_mkl_cpardiso->mtype, &mat_mkl_cpardiso->phase, &mat_mkl_cpardiso->n, NULL, NULL, NULL, mat_mkl_cpardiso->perm, &mat_mkl_cpardiso->nrhs,
+                                           mat_mkl_cpardiso->iparm, &mat_mkl_cpardiso->msglvl, NULL, NULL, &mat_mkl_cpardiso->comm_mkl_cpardiso, (PetscInt *)&mat_mkl_cpardiso->err));
   }
-
   if (mat_mkl_cpardiso->ConvertToTriples != MatCopy_seqaij_seqaij_MKL_CPARDISO) PetscCall(PetscFree3(mat_mkl_cpardiso->ia, mat_mkl_cpardiso->ja, mat_mkl_cpardiso->a));
   comm = MPI_Comm_f2c(mat_mkl_cpardiso->comm_mkl_cpardiso);
   PetscCallMPI(MPI_Comm_free(&comm));
@@ -385,9 +386,8 @@ static PetscErrorCode MatSolve_MKL_CPARDISO(Mat A, Vec b, Vec x)
 
   /* solve phase */
   mat_mkl_cpardiso->phase = JOB_SOLVE_ITERATIVE_REFINEMENT;
-  cluster_sparse_solver(mat_mkl_cpardiso->pt, &mat_mkl_cpardiso->maxfct, &mat_mkl_cpardiso->mnum, &mat_mkl_cpardiso->mtype, &mat_mkl_cpardiso->phase, &mat_mkl_cpardiso->n, mat_mkl_cpardiso->a, mat_mkl_cpardiso->ia, mat_mkl_cpardiso->ja,
-                        mat_mkl_cpardiso->perm, &mat_mkl_cpardiso->nrhs, mat_mkl_cpardiso->iparm, &mat_mkl_cpardiso->msglvl, (void *)barray, (void *)xarray, &mat_mkl_cpardiso->comm_mkl_cpardiso, (PetscInt *)&mat_mkl_cpardiso->err);
-
+  PetscCallCluster(cluster_sparse_solver(mat_mkl_cpardiso->pt, &mat_mkl_cpardiso->maxfct, &mat_mkl_cpardiso->mnum, &mat_mkl_cpardiso->mtype, &mat_mkl_cpardiso->phase, &mat_mkl_cpardiso->n, mat_mkl_cpardiso->a, mat_mkl_cpardiso->ia, mat_mkl_cpardiso->ja,
+                                         mat_mkl_cpardiso->perm, &mat_mkl_cpardiso->nrhs, mat_mkl_cpardiso->iparm, &mat_mkl_cpardiso->msglvl, (void *)barray, (void *)xarray, &mat_mkl_cpardiso->comm_mkl_cpardiso, (PetscInt *)&mat_mkl_cpardiso->err));
   PetscCheck(mat_mkl_cpardiso->err >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by MKL Cluster PARDISO: err=%d, msg = \"%s\". Please check manual", mat_mkl_cpardiso->err, Err_MSG_CPardiso(mat_mkl_cpardiso->err));
 
   PetscCall(VecRestoreArray(x, &xarray));
@@ -409,9 +409,8 @@ static PetscErrorCode MatForwardSolve_MKL_CPARDISO(Mat A, Vec b, Vec x)
 
   /* solve phase */
   mat_mkl_cpardiso->phase = JOB_SOLVE_FORWARD_SUBSTITUTION;
-  cluster_sparse_solver(mat_mkl_cpardiso->pt, &mat_mkl_cpardiso->maxfct, &mat_mkl_cpardiso->mnum, &mat_mkl_cpardiso->mtype, &mat_mkl_cpardiso->phase, &mat_mkl_cpardiso->n, mat_mkl_cpardiso->a, mat_mkl_cpardiso->ia, mat_mkl_cpardiso->ja,
-                        mat_mkl_cpardiso->perm, &mat_mkl_cpardiso->nrhs, mat_mkl_cpardiso->iparm, &mat_mkl_cpardiso->msglvl, (void *)barray, (void *)xarray, &mat_mkl_cpardiso->comm_mkl_cpardiso, (PetscInt *)&mat_mkl_cpardiso->err);
-
+  PetscCallCluster(cluster_sparse_solver(mat_mkl_cpardiso->pt, &mat_mkl_cpardiso->maxfct, &mat_mkl_cpardiso->mnum, &mat_mkl_cpardiso->mtype, &mat_mkl_cpardiso->phase, &mat_mkl_cpardiso->n, mat_mkl_cpardiso->a, mat_mkl_cpardiso->ia, mat_mkl_cpardiso->ja,
+                                         mat_mkl_cpardiso->perm, &mat_mkl_cpardiso->nrhs, mat_mkl_cpardiso->iparm, &mat_mkl_cpardiso->msglvl, (void *)barray, (void *)xarray, &mat_mkl_cpardiso->comm_mkl_cpardiso, (PetscInt *)&mat_mkl_cpardiso->err));
   PetscCheck(mat_mkl_cpardiso->err >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by MKL Cluster PARDISO: err=%d, msg = \"%s\". Please check manual", mat_mkl_cpardiso->err, Err_MSG_CPardiso(mat_mkl_cpardiso->err));
 
   PetscCall(VecRestoreArray(x, &xarray));
@@ -433,9 +432,8 @@ static PetscErrorCode MatBackwardSolve_MKL_CPARDISO(Mat A, Vec b, Vec x)
 
   /* solve phase */
   mat_mkl_cpardiso->phase = JOB_SOLVE_BACKWARD_SUBSTITUTION;
-  cluster_sparse_solver(mat_mkl_cpardiso->pt, &mat_mkl_cpardiso->maxfct, &mat_mkl_cpardiso->mnum, &mat_mkl_cpardiso->mtype, &mat_mkl_cpardiso->phase, &mat_mkl_cpardiso->n, mat_mkl_cpardiso->a, mat_mkl_cpardiso->ia, mat_mkl_cpardiso->ja,
-                        mat_mkl_cpardiso->perm, &mat_mkl_cpardiso->nrhs, mat_mkl_cpardiso->iparm, &mat_mkl_cpardiso->msglvl, (void *)barray, (void *)xarray, &mat_mkl_cpardiso->comm_mkl_cpardiso, (PetscInt *)&mat_mkl_cpardiso->err);
-
+  PetscCallCluster(cluster_sparse_solver(mat_mkl_cpardiso->pt, &mat_mkl_cpardiso->maxfct, &mat_mkl_cpardiso->mnum, &mat_mkl_cpardiso->mtype, &mat_mkl_cpardiso->phase, &mat_mkl_cpardiso->n, mat_mkl_cpardiso->a, mat_mkl_cpardiso->ia, mat_mkl_cpardiso->ja,
+                                         mat_mkl_cpardiso->perm, &mat_mkl_cpardiso->nrhs, mat_mkl_cpardiso->iparm, &mat_mkl_cpardiso->msglvl, (void *)barray, (void *)xarray, &mat_mkl_cpardiso->comm_mkl_cpardiso, (PetscInt *)&mat_mkl_cpardiso->err));
   PetscCheck(mat_mkl_cpardiso->err >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by MKL Cluster PARDISO: err=%d, msg = \"%s\". Please check manual", mat_mkl_cpardiso->err, Err_MSG_CPardiso(mat_mkl_cpardiso->err));
 
   PetscCall(VecRestoreArray(x, &xarray));
@@ -476,8 +474,8 @@ static PetscErrorCode MatMatSolve_MKL_CPARDISO(Mat A, Mat B, Mat X)
 
     /* solve phase */
     mat_mkl_cpardiso->phase = JOB_SOLVE_ITERATIVE_REFINEMENT;
-    cluster_sparse_solver(mat_mkl_cpardiso->pt, &mat_mkl_cpardiso->maxfct, &mat_mkl_cpardiso->mnum, &mat_mkl_cpardiso->mtype, &mat_mkl_cpardiso->phase, &mat_mkl_cpardiso->n, mat_mkl_cpardiso->a, mat_mkl_cpardiso->ia, mat_mkl_cpardiso->ja,
-                          mat_mkl_cpardiso->perm, &mat_mkl_cpardiso->nrhs, mat_mkl_cpardiso->iparm, &mat_mkl_cpardiso->msglvl, (void *)barray, (void *)xarray, &mat_mkl_cpardiso->comm_mkl_cpardiso, (PetscInt *)&mat_mkl_cpardiso->err);
+    PetscCallCluster(cluster_sparse_solver(mat_mkl_cpardiso->pt, &mat_mkl_cpardiso->maxfct, &mat_mkl_cpardiso->mnum, &mat_mkl_cpardiso->mtype, &mat_mkl_cpardiso->phase, &mat_mkl_cpardiso->n, mat_mkl_cpardiso->a, mat_mkl_cpardiso->ia, mat_mkl_cpardiso->ja,
+                                           mat_mkl_cpardiso->perm, &mat_mkl_cpardiso->nrhs, mat_mkl_cpardiso->iparm, &mat_mkl_cpardiso->msglvl, (void *)barray, (void *)xarray, &mat_mkl_cpardiso->comm_mkl_cpardiso, (PetscInt *)&mat_mkl_cpardiso->err));
     PetscCheck(mat_mkl_cpardiso->err >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by MKL Cluster PARDISO: err=%d, msg = \"%s\". Please check manual", mat_mkl_cpardiso->err, Err_MSG_CPardiso(mat_mkl_cpardiso->err));
     PetscCall(MatDenseRestoreArrayRead(B, &barray));
     PetscCall(MatDenseRestoreArray(X, &xarray));
@@ -498,8 +496,8 @@ static PetscErrorCode MatFactorNumeric_MKL_CPARDISO(Mat F, Mat A, const MatFacto
   PetscCall((*mat_mkl_cpardiso->ConvertToTriples)(A, MAT_REUSE_MATRIX, &mat_mkl_cpardiso->nz, &mat_mkl_cpardiso->ia, &mat_mkl_cpardiso->ja, &mat_mkl_cpardiso->a));
 
   mat_mkl_cpardiso->phase = JOB_NUMERICAL_FACTORIZATION;
-  cluster_sparse_solver(mat_mkl_cpardiso->pt, &mat_mkl_cpardiso->maxfct, &mat_mkl_cpardiso->mnum, &mat_mkl_cpardiso->mtype, &mat_mkl_cpardiso->phase, &mat_mkl_cpardiso->n, mat_mkl_cpardiso->a, mat_mkl_cpardiso->ia, mat_mkl_cpardiso->ja,
-                        mat_mkl_cpardiso->perm, &mat_mkl_cpardiso->nrhs, mat_mkl_cpardiso->iparm, &mat_mkl_cpardiso->msglvl, NULL, NULL, &mat_mkl_cpardiso->comm_mkl_cpardiso, &mat_mkl_cpardiso->err);
+  PetscCallCluster(cluster_sparse_solver(mat_mkl_cpardiso->pt, &mat_mkl_cpardiso->maxfct, &mat_mkl_cpardiso->mnum, &mat_mkl_cpardiso->mtype, &mat_mkl_cpardiso->phase, &mat_mkl_cpardiso->n, mat_mkl_cpardiso->a, mat_mkl_cpardiso->ia, mat_mkl_cpardiso->ja,
+                                         mat_mkl_cpardiso->perm, &mat_mkl_cpardiso->nrhs, mat_mkl_cpardiso->iparm, &mat_mkl_cpardiso->msglvl, NULL, NULL, &mat_mkl_cpardiso->comm_mkl_cpardiso, &mat_mkl_cpardiso->err));
   PetscCheck(mat_mkl_cpardiso->err >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by MKL Cluster PARDISO: err=%d, msg = \"%s\". Please check manual", mat_mkl_cpardiso->err, Err_MSG_CPardiso(mat_mkl_cpardiso->err));
 
   mat_mkl_cpardiso->matstruc = SAME_NONZERO_PATTERN;
@@ -679,9 +677,8 @@ static PetscErrorCode MatLUFactorSymbolic_AIJMKL_CPARDISO(Mat F, Mat A, IS r, IS
   /* analysis phase */
   mat_mkl_cpardiso->phase = JOB_ANALYSIS;
 
-  cluster_sparse_solver(mat_mkl_cpardiso->pt, &mat_mkl_cpardiso->maxfct, &mat_mkl_cpardiso->mnum, &mat_mkl_cpardiso->mtype, &mat_mkl_cpardiso->phase, &mat_mkl_cpardiso->n, mat_mkl_cpardiso->a, mat_mkl_cpardiso->ia, mat_mkl_cpardiso->ja,
-                        mat_mkl_cpardiso->perm, &mat_mkl_cpardiso->nrhs, mat_mkl_cpardiso->iparm, &mat_mkl_cpardiso->msglvl, NULL, NULL, &mat_mkl_cpardiso->comm_mkl_cpardiso, (PetscInt *)&mat_mkl_cpardiso->err);
-
+  PetscCallCluster(cluster_sparse_solver(mat_mkl_cpardiso->pt, &mat_mkl_cpardiso->maxfct, &mat_mkl_cpardiso->mnum, &mat_mkl_cpardiso->mtype, &mat_mkl_cpardiso->phase, &mat_mkl_cpardiso->n, mat_mkl_cpardiso->a, mat_mkl_cpardiso->ia, mat_mkl_cpardiso->ja,
+                                         mat_mkl_cpardiso->perm, &mat_mkl_cpardiso->nrhs, mat_mkl_cpardiso->iparm, &mat_mkl_cpardiso->msglvl, NULL, NULL, &mat_mkl_cpardiso->comm_mkl_cpardiso, (PetscInt *)&mat_mkl_cpardiso->err));
   PetscCheck(mat_mkl_cpardiso->err >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by MKL Cluster PARDISO: err=%d, msg = \"%s\".Check manual", mat_mkl_cpardiso->err, Err_MSG_CPardiso(mat_mkl_cpardiso->err));
 
   mat_mkl_cpardiso->CleanUp = PETSC_TRUE;
@@ -714,9 +711,8 @@ static PetscErrorCode MatCholeskyFactorSymbolic_AIJMKL_CPARDISO(Mat F, Mat A, IS
   /* analysis phase */
   mat_mkl_cpardiso->phase = JOB_ANALYSIS;
 
-  cluster_sparse_solver(mat_mkl_cpardiso->pt, &mat_mkl_cpardiso->maxfct, &mat_mkl_cpardiso->mnum, &mat_mkl_cpardiso->mtype, &mat_mkl_cpardiso->phase, &mat_mkl_cpardiso->n, mat_mkl_cpardiso->a, mat_mkl_cpardiso->ia, mat_mkl_cpardiso->ja,
-                        mat_mkl_cpardiso->perm, &mat_mkl_cpardiso->nrhs, mat_mkl_cpardiso->iparm, &mat_mkl_cpardiso->msglvl, NULL, NULL, &mat_mkl_cpardiso->comm_mkl_cpardiso, (PetscInt *)&mat_mkl_cpardiso->err);
-
+  PetscCallCluster(cluster_sparse_solver(mat_mkl_cpardiso->pt, &mat_mkl_cpardiso->maxfct, &mat_mkl_cpardiso->mnum, &mat_mkl_cpardiso->mtype, &mat_mkl_cpardiso->phase, &mat_mkl_cpardiso->n, mat_mkl_cpardiso->a, mat_mkl_cpardiso->ia, mat_mkl_cpardiso->ja,
+                                         mat_mkl_cpardiso->perm, &mat_mkl_cpardiso->nrhs, mat_mkl_cpardiso->iparm, &mat_mkl_cpardiso->msglvl, NULL, NULL, &mat_mkl_cpardiso->comm_mkl_cpardiso, (PetscInt *)&mat_mkl_cpardiso->err));
   PetscCheck(mat_mkl_cpardiso->err >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by MKL Cluster PARDISO: err=%d, msg = \"%s\".Check manual", mat_mkl_cpardiso->err, Err_MSG_CPardiso(mat_mkl_cpardiso->err));
 
   mat_mkl_cpardiso->CleanUp     = PETSC_TRUE;
@@ -925,7 +921,7 @@ static PetscErrorCode MatGetFactor_mpiaij_mkl_cpardiso(Mat A, MatFactorType ftyp
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MKL_CPardiso(void)
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_MKL_CPardiso(void)
 {
   PetscFunctionBegin;
   PetscCall(MatSolverTypeRegister(MATSOLVERMKL_CPARDISO, MATMPIAIJ, MAT_FACTOR_LU, MatGetFactor_mpiaij_mkl_cpardiso));

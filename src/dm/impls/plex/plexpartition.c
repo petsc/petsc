@@ -746,7 +746,7 @@ PetscErrorCode PetscPartitionerDMPlexPartition(PetscPartitioner part, DM dm, Pet
 {
   PetscMPIInt  size;
   PetscBool    isplex;
-  PetscSection vertSection = NULL;
+  PetscSection vertSection = NULL, edgeSection = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
@@ -836,7 +836,24 @@ PetscErrorCode PetscPartitionerDMPlexPartition(PetscPartitioner part, DM dm, Pet
       if (clPoints) PetscCall(ISRestoreIndices(clPoints, &clIdx));
       PetscCall(PetscSectionSetUp(vertSection));
     }
-    PetscCall(PetscPartitionerPartition(part, size, numVertices, start, adjacency, vertSection, targetSection, partSection, partition));
+    if (part->useewgt) {
+      const PetscInt numEdges = start[numVertices];
+
+      PetscCall(PetscSectionCreate(PETSC_COMM_SELF, &edgeSection));
+      PetscCall(PetscSectionSetChart(edgeSection, 0, numEdges));
+      for (PetscInt e = 0; e < start[numVertices]; ++e) PetscCall(PetscSectionSetDof(edgeSection, e, 1));
+      for (PetscInt v = 0; v < numVertices; ++v) {
+        DMPolytopeType ct;
+
+        // Assume v is the cell number
+        PetscCall(DMPlexGetCellType(dm, v, &ct));
+        if (ct != DM_POLYTOPE_POINT_PRISM_TENSOR && ct != DM_POLYTOPE_SEG_PRISM_TENSOR && ct != DM_POLYTOPE_TRI_PRISM_TENSOR && ct != DM_POLYTOPE_QUAD_PRISM_TENSOR) continue;
+
+        for (PetscInt e = start[v]; e < start[v + 1]; ++e) PetscCall(PetscSectionSetDof(edgeSection, e, 3));
+      }
+      PetscCall(PetscSectionSetUp(edgeSection));
+    }
+    PetscCall(PetscPartitionerPartition(part, size, numVertices, start, adjacency, vertSection, edgeSection, targetSection, partSection, partition));
     PetscCall(PetscFree(start));
     PetscCall(PetscFree(adjacency));
     if (globalNumbering) { /* partition is wrt global unique numbering: change this to be wrt local numbering */
@@ -866,6 +883,7 @@ PetscErrorCode PetscPartitionerDMPlexPartition(PetscPartitioner part, DM dm, Pet
     }
   } else SETERRQ(PetscObjectComm((PetscObject)part), PETSC_ERR_ARG_OUTOFRANGE, "Invalid height %" PetscInt_FMT " for points to partition", part->height);
   PetscCall(PetscSectionDestroy(&vertSection));
+  PetscCall(PetscSectionDestroy(&edgeSection));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

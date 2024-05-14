@@ -182,7 +182,7 @@ PetscErrorCode PetscDataTypeGetSize(PetscDataType ptype, size_t *size)
 
 .seealso: `PetscDataType`, `PetscDataTypeToMPIDataType()`, `PetscDataTypeGetSize()`
 @*/
-PetscErrorCode PetscDataTypeFromString(const char *name, PetscDataType *ptype, PetscBool *found)
+PetscErrorCode PetscDataTypeFromString(const char name[], PetscDataType *ptype, PetscBool *found)
 {
   PetscFunctionBegin;
   PetscCall(PetscEnumFind(PetscDataTypes, name, (PetscEnum *)ptype, found));

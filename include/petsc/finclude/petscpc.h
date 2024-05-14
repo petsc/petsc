@@ -1,5 +1,4 @@
 !
-!
 !  Include file for Fortran use of the PC (preconditioner) package in PETSc
 !
 #if !defined (PETSCPCDEF_H)
@@ -10,13 +9,17 @@
 
 #define PC type(tPC)
 
+#define PCType character*(80)
 #define PCSide PetscEnum
 #define PCJacobiType PetscEnum
 #define PCASMType PetscEnum
 #define PCGASMType PetscEnum
+#define PCMGType PetscEnum
+#define PCMGCycleType PetscEnum
+#define PCMGGalerkinType PetscEnum
+#define PCMGCoarseSpaceType PetscEnum
 #define PCCompositeType PetscEnum
 #define PCRichardsonConvergedReason PetscEnum
-#define PCType character*(80)
 #define PCFieldSplitSchurPreType PetscEnum
 #define PCPARMSGlobalType PetscEnum
 #define PCPARMSLocalType PetscEnum
@@ -26,6 +29,10 @@
 #define PCGAMGClassicalType character*(80)
 #define PCGAMGLayoutType PetscEnum
 #define PCHPDDMCoarseCorrectionType PetscEnum
+#define PCExoticType PetscEnum
+#define PCDeflationSpaceType PetscEnum
+#define PCBDDCInterfaceExtType PetscEnum
+#define PCFailedReason PetscEnum
 !
 ! GAMG types
 !
@@ -37,7 +44,6 @@
 !
 #define PCGAMGCLASSICALDIRECT   'direct'
 #define PCGAMGCLASSICALSTANDARD 'standard'
-
 !
 ! Various preconditioners
 !
@@ -94,12 +100,4 @@
 #define PCH2OPUS 'h2opus'
 #define PCMPI 'mpi'
 
-#define PCMGType PetscEnum
-#define PCMGCycleType PetscEnum
-#define PCMGGalerkinType PetscEnum
-#define PCExoticType PetscEnum
-#define PCDeflationSpaceType PetscEnum
-#define PCBDDCInterfaceExtType PetscEnum
-#define PCHPDDMCoarseCorrectionType PetscEnum
-#define PCFailedReason PetscEnum
 #endif

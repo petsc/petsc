@@ -13,6 +13,7 @@ configure_options = [
   '--download-superlu_dist',
   '--download-metis',
   '--download-parmetis',
+  '--download-hypre',
   '--download-cmake',  # needed by metis/parmetis
   '--with-strict-petscerrorcode',
 ]

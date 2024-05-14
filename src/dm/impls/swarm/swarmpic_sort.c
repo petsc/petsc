@@ -1,8 +1,6 @@
-#include <petscdm.h>
-#include <petscdmda.h>
-#include <petscdmplex.h>
-#include <petscdmswarm.h>
-#include <petsc/private/dmswarmimpl.h>
+#include <petscdmda.h>                 /*I  "petscdmda.h"      I*/
+#include <petscdmplex.h>               /*I  "petscdmplex.h"    I*/
+#include <petsc/private/dmswarmimpl.h> /*I  "petscdmswarm.h"   I*/
 
 static int sort_CompareSwarmPoint(const void *dataA, const void *dataB)
 {
@@ -106,15 +104,17 @@ PetscErrorCode DMSwarmSortDestroy(DMSwarmSort *_ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmSortGetNumberOfPointsPerCell - Returns the number of points in a cell
 
   Not Collective
 
   Input Parameters:
-+ dm      - a `DMSWARM` objects
-. e       - the index of the cell
-- npoints - the number of points in the cell
++ dm - a `DMSWARM` objects
+- e  - the index of the cell
+
+  Output Parameter:
+. npoints - the number of points in the cell
 
   Level: advanced
 
@@ -160,7 +160,7 @@ PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(DM dm, PetscInt e, PetscInt *
 
 .seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSortGetAccess()`, `DMSwarmSortGetNumberOfPointsPerCell()`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmSortGetPointsPerCell(DM dm, PetscInt e, PetscInt *npoints, PetscInt **pidlist)
+PetscErrorCode DMSwarmSortGetPointsPerCell(DM dm, PetscInt e, PetscInt *npoints, PetscInt **pidlist)
 {
   DM_Swarm   *swarm = (DM_Swarm *)dm->data;
   PetscInt    points_per_cell;
@@ -183,7 +183,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetPointsPerCell(DM dm, PetscInt e, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmSortGetAccess - Setups up a `DMSWARM` point sort context for efficient traversal of points within a cell
 
   Not Collective
@@ -222,7 +222,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetPointsPerCell(DM dm, PetscInt e, Petsc
 
 .seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSortRestoreAccess()`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmSortGetAccess(DM dm)
+PetscErrorCode DMSwarmSortGetAccess(DM dm)
 {
   DM_Swarm *swarm = (DM_Swarm *)dm->data;
   PetscInt  ncells;
@@ -265,8 +265,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetAccess(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
-  DMSwarmSortRestoreAccess - Invalidates the `DMSWARM` point sorting context
+/*@
+  DMSwarmSortRestoreAccess - Invalidates the `DMSWARM` point sorting context previously computed with `DMSwarmSortGetAccess()`
 
   Not Collective
 
@@ -280,7 +280,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetAccess(DM dm)
 
 .seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSortGetAccess()`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmSortRestoreAccess(DM dm)
+PetscErrorCode DMSwarmSortRestoreAccess(DM dm)
 {
   DM_Swarm *swarm = (DM_Swarm *)dm->data;
 
@@ -291,7 +291,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortRestoreAccess(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmSortGetIsValid - Gets the isvalid flag associated with a `DMSWARM` point sorting context
 
   Not Collective
@@ -306,7 +306,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortRestoreAccess(DM dm)
 
 .seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSortGetAccess()`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmSortGetIsValid(DM dm, PetscBool *isvalid)
+PetscErrorCode DMSwarmSortGetIsValid(DM dm, PetscBool *isvalid)
 {
   DM_Swarm *swarm = (DM_Swarm *)dm->data;
 
@@ -319,7 +319,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetIsValid(DM dm, PetscBool *isvalid)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmSortGetSizes - Gets the sizes associated with a `DMSWARM` point sorting context
 
   Not Collective
@@ -335,7 +335,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetIsValid(DM dm, PetscBool *isvalid)
 
 .seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSortGetAccess()`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmSortGetSizes(DM dm, PetscInt *ncells, PetscInt *npoints)
+PetscErrorCode DMSwarmSortGetSizes(DM dm, PetscInt *ncells, PetscInt *npoints)
 {
   DM_Swarm *swarm = (DM_Swarm *)dm->data;
 

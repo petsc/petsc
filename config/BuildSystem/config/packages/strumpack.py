@@ -90,7 +90,7 @@ class Configure(config.package.CMakePackage):
     # https://portal.nersc.gov/project/sparse/strumpack/master/GPU_Support.html
     if self.cuda.found:
       args.append('-DSTRUMPACK_USE_CUDA=ON')
-      args.append('-DCMAKE_CUDA_ARCHITECTURES:STRING="{}"'.format(self.cuda.cmakeArch()))
+      args.extend(self.cuda.getCmakeCUDAArchFlag())
     elif self.hip.found:
       args.append('-DSTRUMPACK_USE_HIP=ON')
       # Not using -DHIP_HIPCC_FLAGS=--amdgpu-target=gfx906 as mentioned in the doc, because we prefer standardized cmake options

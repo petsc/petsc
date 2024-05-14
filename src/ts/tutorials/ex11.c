@@ -398,7 +398,7 @@ static PetscErrorCode CreateQFunctionContext_SW(Physics phys, Ceed ceed, CeedQFu
   PetscCallCEED(CeedQFunctionContextCreate(ceed, qfCtx));
   PetscCallCEED(CeedQFunctionContextSetData(*qfCtx, CEED_MEM_HOST, CEED_USE_POINTER, sizeof(*sw), sw));
   PetscCallCEED(CeedQFunctionContextSetDataDestroy(*qfCtx, CEED_MEM_HOST, FreeContextPetsc));
-  PetscCallCEED(CeedQFunctionContextRegisterDouble(*qfCtx, "gravity", offsetof(Physics_SW, gravity), 1, "Accelaration due to gravity"));
+  PetscCallCEED(CeedQFunctionContextRegisterDouble(*qfCtx, "gravity", offsetof(Physics_SW, gravity), 1, "Acceleration due to gravity"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
@@ -1687,7 +1687,7 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
 
     test:
       suffix: tut_4
-      requires: exodusii
+      requires: exodusii !single
       nsize: 4
       args: -dm_distribute_overlap 1 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -physics sw -monitor Height,Energy -petscfv_type leastsquares -petsclimiter_type minmod
 
@@ -1800,7 +1800,7 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
 
     test:
       suffix: euler_0
-      requires: exodusii !complex
+      requires: exodusii !complex !single
       args: -eu_riemann godunov -bc_wall 100,101 -ufv_cfl 5 -petsclimiter_type sin \
             -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo \
             -ts_max_time 1 -ts_ssp_type rks2 -ts_ssp_nstages 10

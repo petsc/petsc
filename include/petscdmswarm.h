@@ -141,6 +141,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmInitializeCoordinates(DM);
 PETSC_EXTERN PetscErrorCode DMSwarmInitializeVelocities(DM, PetscProbFunc, const PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMSwarmInitializeVelocitiesFromOptions(DM, const PetscReal[]);
 
+PETSC_EXTERN PetscErrorCode DMSwarmCreatePointPerCellCount(DM, PetscInt *, PetscInt **);
+
 // Interface to internal storage
 PETSC_EXTERN PetscErrorCode DMSwarmDataFieldGetEntries(const DMSwarmDataField, void **);
 PETSC_EXTERN PetscErrorCode DMSwarmDataFieldRestoreEntries(const DMSwarmDataField, void **);

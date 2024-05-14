@@ -145,6 +145,7 @@ PETSC_EXTERN PetscErrorCode VecZeroEntries(Vec);
 PETSC_EXTERN PetscErrorCode VecSetOptionsPrefix(Vec, const char[]);
 PETSC_EXTERN PetscErrorCode VecAppendOptionsPrefix(Vec, const char[]);
 PETSC_EXTERN PetscErrorCode VecGetOptionsPrefix(Vec, const char *[]);
+PETSC_EXTERN PetscErrorCode VecGetState(Vec, PetscObjectState *);
 
 PETSC_EXTERN PetscErrorCode VecSetSizes(Vec, PetscInt, PetscInt);
 

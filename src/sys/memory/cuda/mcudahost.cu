@@ -22,7 +22,7 @@ static PetscErrorCode (*PetscMallocOld)(size_t, PetscBool, int, const char[], co
 static PetscErrorCode (*PetscReallocOld)(size_t, int, const char[], const char[], void **);
 static PetscErrorCode (*PetscFreeOld)(void *, int, const char[], const char[]);
 
-/*@C
+/*@
   PetscMallocSetCUDAHost - Set `PetscMalloc()` to use `CUDAHostMalloc()`
   Switch the current malloc and free routines to the CUDA malloc and free routines
 
@@ -49,7 +49,7 @@ PetscErrorCode PetscMallocSetCUDAHost(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscMallocResetCUDAHost - Reset the changes made by `PetscMallocSetCUDAHost()`
 
   Not Collective

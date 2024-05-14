@@ -70,7 +70,6 @@
          enddo
       enddo
 
-      return
       end
 
 !/*TEST

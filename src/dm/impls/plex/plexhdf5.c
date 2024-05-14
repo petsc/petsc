@@ -15,6 +15,14 @@ static PetscErrorCode PetscViewerGetAttachedVersion_Private(PetscViewer, const c
 
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 
+static PetscErrorCode PetscViewerPrintVersion_Private(PetscViewer viewer, DMPlexStorageVersion version, char str[], size_t len)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscViewerCheckVersion_Private(viewer, version));
+  PetscCall(PetscSNPrintf(str, len, "%d.%d.%d", version->major, version->minor, version->subminor));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode PetscViewerParseVersion_Private(PetscViewer viewer, const char str[], DMPlexStorageVersion *version)
 {
   PetscToken           t;
@@ -128,6 +136,84 @@ static inline PetscBool DMPlexStorageVersionGE(DMPlexStorageVersion version, int
   return (PetscBool)((version->major == major && version->minor == minor && version->subminor >= subminor) || (version->major == major && version->minor > minor) || (version->major > major));
 }
 
+/*@C
+  PetscViewerHDF5SetDMPlexStorageVersionWriting - Set the storage version for writing
+
+  Logically collective
+
+  Input Parameters:
++ viewer  - The `PetscViewer`
+- version - The storage format version
+
+  Level: advanced
+
+  Note:
+  The version has major, minor, and subminor integers. Parallel operations are only available for version 3.0.0.
+
+.seealso: [](ch_dmbase), `DM`, `PetscViewerHDF5GetDMPlexStorageVersionWriting()`, `PetscViewerHDF5GetDMPlexStorageVersionReading()`, `PetscViewerHDF5SetDMPlexStorageVersionReading()`
+@*/
+PetscErrorCode PetscViewerHDF5SetDMPlexStorageVersionWriting(PetscViewer viewer, DMPlexStorageVersion version)
+{
+  const char           ATTR_NAME[] = "dmplex_storage_version";
+  DMPlexStorageVersion viewerVersion;
+  PetscBool            fileHasVersion;
+  char                 fileVersion[16], versionStr[16], viewerVersionStr[16];
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(viewer, PETSC_VIEWER_CLASSID, 1, PETSCVIEWERHDF5);
+  PetscAssertPointer(version, 2);
+  PetscCall(PetscViewerPrintVersion_Private(viewer, version, versionStr, 16));
+  PetscCall(PetscViewerGetAttachedVersion_Private(viewer, DMPLEX_STORAGE_VERSION_WRITING_KEY, &viewerVersion));
+  if (viewerVersion) {
+    PetscBool flg;
+
+    PetscCall(PetscViewerPrintVersion_Private(viewer, viewerVersion, viewerVersionStr, 16));
+    PetscCall(PetscStrcmp(versionStr, viewerVersionStr, &flg));
+    PetscCheck(flg, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "User requested DMPlex storage version %s but viewer already has version %s - cannot mix versions", versionStr, viewerVersionStr);
+  }
+
+  PetscCall(PetscViewerHDF5HasAttribute(viewer, NULL, ATTR_NAME, &fileHasVersion));
+  if (fileHasVersion) {
+    PetscBool flg;
+    char     *tmp;
+
+    PetscCall(PetscViewerHDF5ReadAttribute(viewer, "/", ATTR_NAME, PETSC_STRING, NULL, &tmp));
+    PetscCall(PetscStrncpy(fileVersion, tmp, sizeof(fileVersion)));
+    PetscCall(PetscFree(tmp));
+    PetscCall(PetscStrcmp(fileVersion, versionStr, &flg));
+    PetscCheck(flg, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "User requested DMPlex storage version %s but file already has version %s - cannot mix versions", versionStr, fileVersion);
+  } else {
+    PetscCall(PetscViewerHDF5WriteAttribute(viewer, "/", ATTR_NAME, PETSC_STRING, versionStr));
+  }
+  PetscCall(PetscNew(&viewerVersion));
+  viewerVersion->major    = version->major;
+  viewerVersion->minor    = version->minor;
+  viewerVersion->subminor = version->subminor;
+  PetscCall(PetscViewerAttachVersion_Private(viewer, DMPLEX_STORAGE_VERSION_WRITING_KEY, viewerVersion));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  PetscViewerHDF5GetDMPlexStorageVersionWriting - Get the storage version for writing
+
+  Logically collective
+
+  Input Parameter:
+. viewer - The `PetscViewer`
+
+  Output Parameter:
+. version - The storage format version
+
+  Options Database Keys:
+. -dm_plex_view_hdf5_storage_version <num> - Overrides the storage format version
+
+  Level: advanced
+
+  Note:
+  The version has major, minor, and subminor integers. Parallel operations are only available for version 3.0.0.
+
+.seealso: [](ch_dmbase), `DM`, `PetscViewerHDF5SetDMPlexStorageVersionWriting()`, `PetscViewerHDF5GetDMPlexStorageVersionReading()`, `PetscViewerHDF5SetDMPlexStorageVersionReading()`
+@*/
 PetscErrorCode PetscViewerHDF5GetDMPlexStorageVersionWriting(PetscViewer viewer, DMPlexStorageVersion *version)
 {
   const char ATTR_NAME[] = "dmplex_storage_version";
@@ -167,6 +253,81 @@ PetscErrorCode PetscViewerHDF5GetDMPlexStorageVersionWriting(PetscViewer viewer,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscViewerHDF5SetDMPlexStorageVersionReading - Set the storage version for reading
+
+  Logically collective
+
+  Input Parameters:
++ viewer  - The `PetscViewer`
+- version - The storage format version
+
+  Level: advanced
+
+  Note:
+  The version has major, minor, and subminor integers. Parallel operations are only available for version 3.0.0.
+
+.seealso: [](ch_dmbase), `DM`, `PetscViewerHDF5GetDMPlexStorageVersionReading()`, `PetscViewerHDF5GetDMPlexStorageVersionWriting()`, `PetscViewerHDF5SetDMPlexStorageVersionWriting()`
+@*/
+PetscErrorCode PetscViewerHDF5SetDMPlexStorageVersionReading(PetscViewer viewer, DMPlexStorageVersion version)
+{
+  const char           ATTR_NAME[] = "dmplex_storage_version";
+  DMPlexStorageVersion viewerVersion;
+  PetscBool            fileHasVersion;
+  char                 versionStr[16], viewerVersionStr[16];
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(viewer, PETSC_VIEWER_CLASSID, 1, PETSCVIEWERHDF5);
+  PetscAssertPointer(version, 2);
+  PetscCall(PetscViewerPrintVersion_Private(viewer, version, versionStr, 16));
+  PetscCall(PetscViewerGetAttachedVersion_Private(viewer, DMPLEX_STORAGE_VERSION_READING_KEY, &viewerVersion));
+  if (viewerVersion) {
+    PetscBool flg;
+
+    PetscCall(PetscViewerPrintVersion_Private(viewer, viewerVersion, viewerVersionStr, 16));
+    PetscCall(PetscStrcmp(versionStr, viewerVersionStr, &flg));
+    PetscCheck(flg, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "User requested DMPlex storage version %s but viewer already has version %s - cannot mix versions", versionStr, viewerVersionStr);
+  }
+
+  PetscCall(PetscViewerHDF5HasAttribute(viewer, NULL, ATTR_NAME, &fileHasVersion));
+  if (fileHasVersion) {
+    char     *fileVersion;
+    PetscBool flg;
+
+    PetscCall(PetscViewerHDF5ReadAttribute(viewer, "/", ATTR_NAME, PETSC_STRING, NULL, &fileVersion));
+    PetscCall(PetscStrcmp(fileVersion, versionStr, &flg));
+    PetscCheck(flg, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "User requested DMPlex storage version %s but file already has version %s - cannot mix versions", versionStr, fileVersion);
+    PetscCall(PetscFree(fileVersion));
+  }
+  PetscCall(PetscNew(&viewerVersion));
+  viewerVersion->major    = version->major;
+  viewerVersion->minor    = version->minor;
+  viewerVersion->subminor = version->subminor;
+  PetscCall(PetscViewerAttachVersion_Private(viewer, DMPLEX_STORAGE_VERSION_READING_KEY, viewerVersion));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  PetscViewerHDF5GetDMPlexStorageVersionReading - Get the storage version for reading
+
+  Logically collective
+
+  Input Parameter:
+. viewer - The `PetscViewer`
+
+  Output Parameter:
+. version - The storage format version
+
+  Options Database Keys:
+. -dm_plex_view_hdf5_storage_version <num> - Overrides the storage format version
+
+  Level: advanced
+
+  Note:
+  The version has major, minor, and subminor integers. Parallel operations are only available for version 3.0.0.
+
+.seealso: [](ch_dmbase), `DM`, `PetscViewerHDF5SetDMPlexStorageVersionReading()`, `PetscViewerHDF5GetDMPlexStorageVersionWriting()`, `PetscViewerHDF5SetDMPlexStorageVersionWriting()`
+@*/
 PetscErrorCode PetscViewerHDF5GetDMPlexStorageVersionReading(PetscViewer viewer, DMPlexStorageVersion *version)
 {
   const char ATTR_NAME[] = "dmplex_storage_version";
@@ -200,7 +361,32 @@ static PetscErrorCode DMPlexGetHDF5Name_Private(DM dm, const char *name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMSequenceView_HDF5(DM dm, const char *seqname, PetscInt seqnum, PetscScalar value, PetscViewer viewer)
+PetscErrorCode DMSequenceGetLength_HDF5_Internal(DM dm, const char seqname[], PetscInt *seqlen, PetscViewer viewer)
+{
+  hid_t     file, group, dset, dspace;
+  hsize_t   rdim, *dims;
+  char     *groupname;
+  PetscBool has;
+
+  PetscFunctionBegin;
+  PetscCall(PetscViewerHDF5GetGroup(viewer, NULL, &groupname));
+  PetscCall(PetscViewerHDF5HasDataset(viewer, seqname, &has));
+  PetscCheck(has, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Object (dataset) \"%s\" not stored in group %s", seqname, groupname);
+
+  PetscCall(PetscViewerHDF5OpenGroup(viewer, NULL, &file, &group));
+  PetscCallHDF5Return(dset, H5Dopen2, (group, seqname, H5P_DEFAULT));
+  PetscCallHDF5Return(dspace, H5Dget_space, (dset));
+  PetscCallHDF5Return(rdim, H5Sget_simple_extent_dims, (dspace, NULL, NULL));
+  PetscCall(PetscMalloc1(rdim, &dims));
+  PetscCallHDF5Return(rdim, H5Sget_simple_extent_dims, (dspace, dims, NULL));
+  *seqlen = dims[0];
+  PetscCall(PetscFree(dims));
+  PetscCallHDF5(H5Dclose, (dset));
+  PetscCallHDF5(H5Gclose, (group));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMSequenceView_HDF5(DM dm, const char seqname[], PetscInt seqnum, PetscScalar value, PetscViewer viewer)
 {
   Vec         stamp;
   PetscMPIInt rank;
@@ -234,7 +420,7 @@ static PetscErrorCode DMSequenceView_HDF5(DM dm, const char *seqname, PetscInt s
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMSequenceLoad_HDF5_Internal(DM dm, const char *seqname, PetscInt seqnum, PetscScalar *value, PetscViewer viewer)
+PetscErrorCode DMSequenceLoad_HDF5_Internal(DM dm, const char seqname[], PetscInt seqnum, PetscScalar *value, PetscViewer viewer)
 {
   Vec         stamp;
   PetscMPIInt rank;
@@ -812,6 +998,7 @@ PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM dm, IS globalPointNumbers, Pe
 
   PetscFunctionBegin;
   PetscCall(PetscViewerHDF5GetDMPlexStorageVersionWriting(viewer, &version));
+  PetscCall(PetscInfo(dm, "Writing DM %s storage version %d.%d.%d\n", dm->hdr.name, version->major, version->minor, version->subminor));
   PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
   if (DMPlexStorageVersionGE(version, 2, 0, 0)) {
     PetscCall(PetscSNPrintf(group, sizeof(group), "topologies/%s", topologydm_name));
@@ -1851,6 +2038,7 @@ static PetscErrorCode DMPlexDistributionLoad_HDF5_Private(DM dm, PetscViewer vie
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// Serial load of topology
 static PetscErrorCode DMPlexTopologyLoad_HDF5_Legacy_Private(DM dm, PetscViewer viewer, PetscSF *sf)
 {
   MPI_Comm        comm;
@@ -1881,6 +2069,7 @@ static PetscErrorCode DMPlexTopologyLoad_HDF5_Legacy_Private(DM dm, PetscViewer 
   PetscCall(DMSetDimension(dm, dim));
   {
     /* Force serial load */
+    PetscCall(PetscInfo(dm, "Loading DM %s in serial\n", dm->hdr.name));
     PetscCall(PetscViewerHDF5ReadSizes(viewer, pointsName, NULL, &Np));
     PetscCall(PetscLayoutSetLocalSize(pointsIS->map, rank == 0 ? Np : 0));
     PetscCall(PetscLayoutSetSize(pointsIS->map, Np));
@@ -1989,6 +2178,7 @@ static PetscErrorCode PlexLayerCreate_Private(PlexLayer *layer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// Parallel load of a depth stratum
 static PetscErrorCode PlexLayerLoad_Private(PlexLayer layer, PetscViewer viewer, PetscInt d, PetscLayout pointsLayout)
 {
   char         path[128];
@@ -2343,6 +2533,7 @@ static PetscErrorCode PlexLayerConcatenateSFs_Private(MPI_Comm comm, PetscInt de
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// Parallel load of topology
 static PetscErrorCode DMPlexTopologyLoad_HDF5_Private(DM dm, PetscViewer viewer, PetscSF *sfXC)
 {
   PlexLayer  *layers;
@@ -2362,6 +2553,7 @@ static PetscErrorCode DMPlexTopologyLoad_HDF5_Private(DM dm, PetscViewer viewer,
   }
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
 
+  PetscCall(PetscInfo(dm, "Loading DM %s in parallel\n", dm->hdr.name));
   {
     IS spOnComm;
 
@@ -2567,6 +2759,7 @@ PetscErrorCode DMPlexLoad_HDF5_Internal(DM dm, PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCall(PetscViewerHDF5GetDMPlexStorageVersionReading(viewer, &version));
+  PetscCall(PetscInfo(dm, "Loading DM %s storage version %d.%d.%d\n", dm->hdr.name, version->major, version->minor, version->subminor));
   if (!DMPlexStorageVersionGE(version, 2, 0, 0)) {
     PetscCall(DMPlexTopologyLoad_HDF5_Internal(dm, viewer, NULL));
     PetscCall(DMPlexLabelsLoad_HDF5_Internal(dm, viewer, NULL));

@@ -26,7 +26,7 @@
   parallel object. For example `PCView()` on a `PCBJACOBI` could use this to obtain a
   `PetscViewer` that is used with the sequential `KSP` on one block of the preconditioner.
 
-  `PetscViewerFlush()` is run automatically at the begining of `PetscViewerGetSubViewer()` and with `PetscViewerRestoreSubViewer()`
+  `PetscViewerFlush()` is run automatically at the beginning of `PetscViewerGetSubViewer()` and with `PetscViewerRestoreSubViewer()`
   for `PETSCVIEWERASCII`
 
   `PETSCVIEWERDRAW` and `PETSCVIEWERBINARY` only support returning a singleton viewer on MPI rank 0,

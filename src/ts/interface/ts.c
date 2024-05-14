@@ -2395,7 +2395,7 @@ PetscErrorCode TSSetProblemType(TS ts, TSProblemType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGetProblemType - Gets the type of problem to be solved.
 
   Not collective
@@ -3759,7 +3759,7 @@ static PetscErrorCode TSResizeTransferVecs(TS ts, PetscInt cnt, Vec vecsin[], Ve
 
 .seealso: [](ch_ts), `TS`, `TSSetResize()`, `TSResize()`, `TSResizeRetrieveVec()`
 @*/
-PetscErrorCode TSResizeRegisterVec(TS ts, const char *name, Vec vec)
+PetscErrorCode TSResizeRegisterVec(TS ts, const char name[], Vec vec)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -3787,7 +3787,7 @@ PetscErrorCode TSResizeRegisterVec(TS ts, const char *name, Vec vec)
 
 .seealso: [](ch_ts), `TS`, `TSSetResize()`, `TSResize()`, `TSResizeRegisterVec()`
 @*/
-PetscErrorCode TSResizeRetrieveVec(TS ts, const char *name, Vec *vec)
+PetscErrorCode TSResizeRetrieveVec(TS ts, const char name[], Vec *vec)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -4163,7 +4163,7 @@ PetscErrorCode TSSetTime(TS ts, PetscReal t)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSSetOptionsPrefix - Sets the prefix used for searching for all
   TS options in the database.
 
@@ -4194,7 +4194,7 @@ PetscErrorCode TSSetOptionsPrefix(TS ts, const char prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSAppendOptionsPrefix - Appends to the prefix used for searching for all
   TS options in the database.
 
@@ -4225,7 +4225,7 @@ PetscErrorCode TSAppendOptionsPrefix(TS ts, const char prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGetOptionsPrefix - Sets the prefix used for searching for all
   `TS` options in the database.
 
@@ -4683,7 +4683,7 @@ PetscErrorCode TSSetEquationType(TS ts, TSEquationType equation_type)
   Note:
   Can only be called after the call to `TSSolve()` is complete.
 
-.seealso: [](ch_ts), `TS`, `TSSolve()`, `TSSetConvergenceTest()`, `TSConvergedReason`
+.seealso: [](ch_ts), `TS`, `TSSolve()`, `TSConvergedReason`
 @*/
 PetscErrorCode TSGetConvergedReason(TS ts, TSConvergedReason *reason)
 {
@@ -4735,7 +4735,7 @@ PetscErrorCode TSSetConvergedReason(TS ts, TSConvergedReason reason)
   Note:
   Can only be called after the call to `TSSolve()` is complete.
 
-.seealso: [](ch_ts), `TS`, `TSSolve()`, `TSSetConvergenceTest()`, `TSConvergedReason`
+.seealso: [](ch_ts), `TS`, `TSSolve()`, `TSConvergedReason`
 @*/
 PetscErrorCode TSGetSolveTime(TS ts, PetscReal *ftime)
 {
@@ -5467,7 +5467,7 @@ PetscErrorCode TSFunctionDomainError(TS ts, PetscReal stagetime, Vec Y, PetscBoo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSClone - This function clones a time step `TS` object.
 
   Collective
@@ -5609,7 +5609,7 @@ PetscErrorCode TSRHSJacobianTest(TS ts, PetscBool *flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRHSJacobianTestTranspose - Compares the multiply transpose routine provided to the `MATSHELL` with differencing on the `TS` given RHS function.
 
   Logically Collective
@@ -5787,7 +5787,7 @@ PetscErrorCode TSSetTimeSpan(TS ts, PetscInt n, PetscReal *span_times)
 
 .seealso: [](ch_ts), `TS`, `TSSetTimeSpan()`, `TSGetTimeSpanSolutions()`
  @*/
-PetscErrorCode TSGetTimeSpan(TS ts, PetscInt *n, const PetscReal **span_times)
+PetscErrorCode TSGetTimeSpan(TS ts, PetscInt *n, const PetscReal *span_times[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -5839,7 +5839,7 @@ PetscErrorCode TSGetTimeSpanSolutions(TS ts, PetscInt *nsol, Vec **Sols)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSPruneIJacobianColor - Remove nondiagonal zeros in the Jacobian matrix and update the `MatMFFD` coloring information.
 
   Collective

@@ -328,6 +328,9 @@ PetscErrorCode VecNormalize(Vec x, PetscReal *val)
 
   Returns the smallest index with the maximum value
 
+  Developer Note:
+  The Nag Fortran compiler does not like the symbol name VecMax
+
 .seealso: [](ch_vectors), `Vec`, `VecNorm()`, `VecMin()`
 @*/
 PetscErrorCode VecMax(Vec x, PetscInt *p, PetscReal *val)
@@ -364,6 +367,9 @@ PetscErrorCode VecMax(Vec x, PetscInt *p, PetscReal *val)
   Returns the value `PETSC_MAX_REAL` and negative `p` if the vector is of length 0.
 
   This returns the smallest index with the minimum value
+
+  Developer Note:
+  The Nag Fortran compiler does not like the symbol name VecMin
 
 .seealso: [](ch_vectors), `Vec`, `VecMax()`
 @*/
@@ -1525,10 +1531,12 @@ PetscErrorCode VecGetSubVectorThroughVecScatter_Private(Vec X, IS is, PetscInt b
 
   Notes:
   The subvector `Y` should be returned with `VecRestoreSubVector()`.
-  `X` and must be defined on the same communicator
+  `X` and `is` must be defined on the same communicator
+
+  Changes to the subvector will be reflected in the `X` vector on the call to `VecRestoreSubVector()`.
 
   This function may return a subvector without making a copy, therefore it is not safe to use the original vector while
-  modifying the subvector.  Other non-overlapping subvectors can still be obtained from X using this function.
+  modifying the subvector.  Other non-overlapping subvectors can still be obtained from `X` using this function.
 
   The resulting subvector inherits the block size from `is` if greater than one. Otherwise, the block size is guessed from the block size of the original `X`.
 
@@ -4009,7 +4017,7 @@ PetscErrorCode VecLockReadPop(Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecLockWriteSet  - Lock or unlock a vector for exclusive read/write access
 
   Logically Collective

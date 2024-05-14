@@ -463,6 +463,11 @@ static PetscErrorCode MatZeroRows_MPIDense(Mat A, PetscInt n, const PetscInt row
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PETSC_INTERN PetscErrorCode MatMult_SeqDense(Mat, Vec, Vec);
+PETSC_INTERN PetscErrorCode MatMultAdd_SeqDense(Mat, Vec, Vec, Vec);
+PETSC_INTERN PetscErrorCode MatMultTranspose_SeqDense(Mat, Vec, Vec);
+PETSC_INTERN PetscErrorCode MatMultTransposeAdd_SeqDense(Mat, Vec, Vec, Vec);
+
 static PetscErrorCode MatMult_MPIDense(Mat mat, Vec xx, Vec yy)
 {
   Mat_MPIDense      *mdn = (Mat_MPIDense *)mat->data;
@@ -479,6 +484,25 @@ static PetscErrorCode MatMult_MPIDense(Mat mat, Vec xx, Vec yy)
   PetscCall(VecRestoreArrayAndMemType(mdn->lvec, &ay));
   PetscCall(VecRestoreArrayReadAndMemType(xx, &ax));
   PetscCall((*mdn->A->ops->mult)(mdn->A, mdn->lvec, yy));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatMultAddColumnRange_MPIDense(Mat mat, Vec xx, Vec yy, Vec zz, PetscInt c_start, PetscInt c_end)
+{
+  Mat_MPIDense      *mdn = (Mat_MPIDense *)mat->data;
+  const PetscScalar *ax;
+  PetscScalar       *ay;
+  PetscMemType       axmtype, aymtype;
+
+  PetscFunctionBegin;
+  if (!mdn->Mvctx) PetscCall(MatSetUpMultiply_MPIDense(mat));
+  PetscCall(VecGetArrayReadAndMemType(xx, &ax, &axmtype));
+  PetscCall(VecGetArrayAndMemType(mdn->lvec, &ay, &aymtype));
+  PetscCall(PetscSFBcastWithMemTypeBegin(mdn->Mvctx, MPIU_SCALAR, axmtype, ax, aymtype, ay, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(mdn->Mvctx, MPIU_SCALAR, ax, ay, MPI_REPLACE));
+  PetscCall(VecRestoreArrayAndMemType(mdn->lvec, &ay));
+  PetscCall(VecRestoreArrayReadAndMemType(xx, &ax));
+  PetscUseMethod(mdn->A, "MatMultAddColumnRange_C", (Mat, Vec, Vec, Vec, PetscInt, PetscInt), (mdn->A, mdn->lvec, yy, zz, c_start, c_end));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -501,6 +525,26 @@ static PetscErrorCode MatMultAdd_MPIDense(Mat mat, Vec xx, Vec yy, Vec zz)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatMultHermitianTransposeColumnRange_MPIDense(Mat A, Vec xx, Vec yy, PetscInt c_start, PetscInt c_end)
+{
+  Mat_MPIDense      *a = (Mat_MPIDense *)A->data;
+  const PetscScalar *ax;
+  PetscScalar       *ay;
+  PetscMemType       axmtype, aymtype;
+
+  PetscFunctionBegin;
+  if (!a->Mvctx) PetscCall(MatSetUpMultiply_MPIDense(A));
+  PetscCall(VecSet(yy, 0.0));
+  PetscUseMethod(a->A, "MatMultHermitianTransposeColumnRange_C", (Mat, Vec, Vec, PetscInt, PetscInt), (a->A, xx, a->lvec, c_start, c_end));
+  PetscCall(VecGetArrayReadAndMemType(a->lvec, &ax, &axmtype));
+  PetscCall(VecGetArrayAndMemType(yy, &ay, &aymtype));
+  PetscCall(PetscSFReduceWithMemTypeBegin(a->Mvctx, MPIU_SCALAR, axmtype, ax, aymtype, ay, MPIU_SUM));
+  PetscCall(PetscSFReduceEnd(a->Mvctx, MPIU_SCALAR, ax, ay, MPIU_SUM));
+  PetscCall(VecRestoreArrayReadAndMemType(a->lvec, &ax));
+  PetscCall(VecRestoreArrayAndMemType(yy, &ay));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatMultTransposeKernel_MPIDense(Mat A, Vec xx, Vec yy, PetscBool herm)
 {
   Mat_MPIDense      *a = (Mat_MPIDense *)A->data;
@@ -519,6 +563,28 @@ static PetscErrorCode MatMultTransposeKernel_MPIDense(Mat A, Vec xx, Vec yy, Pet
   PetscCall(PetscSFReduceEnd(a->Mvctx, MPIU_SCALAR, ax, ay, MPIU_SUM));
   PetscCall(VecRestoreArrayReadAndMemType(a->lvec, &ax));
   PetscCall(VecRestoreArrayAndMemType(yy, &ay));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatMultHermitianTransposeAddColumnRange_MPIDense(Mat A, Vec xx, Vec yy, Vec zz, PetscInt c_start, PetscInt c_end)
+{
+  Mat_MPIDense      *a = (Mat_MPIDense *)A->data;
+  const PetscScalar *ax;
+  PetscScalar       *ay;
+  PetscMemType       axmtype, aymtype;
+
+  PetscFunctionBegin;
+  if (!a->Mvctx) PetscCall(MatSetUpMultiply_MPIDense(A));
+  PetscCall(VecCopy(yy, zz));
+  PetscMPIInt rank;
+  PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &rank));
+  PetscUseMethod(a->A, "MatMultHermitianTransposeColumnRange_C", (Mat, Vec, Vec, PetscInt, PetscInt), (a->A, xx, a->lvec, c_start, c_end));
+  PetscCall(VecGetArrayReadAndMemType(a->lvec, &ax, &axmtype));
+  PetscCall(VecGetArrayAndMemType(zz, &ay, &aymtype));
+  PetscCall(PetscSFReduceWithMemTypeBegin(a->Mvctx, MPIU_SCALAR, axmtype, ax, aymtype, ay, MPIU_SUM));
+  PetscCall(PetscSFReduceEnd(a->Mvctx, MPIU_SCALAR, ax, ay, MPIU_SUM));
+  PetscCall(VecRestoreArrayReadAndMemType(a->lvec, &ax));
+  PetscCall(VecRestoreArrayAndMemType(zz, &ay));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -589,7 +655,7 @@ PetscErrorCode MatGetDiagonal_MPIDense(Mat A, Vec v)
   PetscCall(MatDenseGetLDA(a->A, &lda));
   for (i = 0; i < len; i++) x[i] = av[radd + i * lda + i];
   PetscCall(MatDenseRestoreArrayRead(a->A, &av));
-  PetscCall(PetscArrayzero(x + i, nl - i));
+  if (nl - i > 0) PetscCall(PetscArrayzero(x + i, nl - i));
   PetscCall(VecRestoreArray(v, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -684,6 +750,9 @@ static PetscErrorCode MatDestroy_MPIDense(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseRestoreColumnVecWrite_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseGetSubMatrix_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseRestoreSubMatrix_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMultAddColumnRange_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMultHermitianTransposeColumnRange_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMultHermitianTransposeAddColumnRange_C", NULL));
 
   PetscCall(PetscObjectCompose((PetscObject)mat, "DiagonalBlock", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1695,6 +1764,9 @@ PetscErrorCode MatCreate_MPIDense(Mat mat)
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseGetColumn_C", MatDenseGetColumn_MPIDense));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseRestoreColumn_C", MatDenseRestoreColumn_MPIDense));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMultAddColumnRange_C", MatMultAddColumnRange_MPIDense));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMultHermitianTransposeColumnRange_C", MatMultHermitianTransposeColumnRange_MPIDense));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMultHermitianTransposeAddColumnRange_C", MatMultHermitianTransposeAddColumnRange_MPIDense));
   PetscCall(PetscObjectChangeTypeName((PetscObject)mat, MATMPIDENSE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

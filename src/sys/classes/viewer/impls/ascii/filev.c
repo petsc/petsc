@@ -198,6 +198,7 @@ PetscErrorCode PetscViewerASCIIGetPointer(PetscViewer viewer, FILE **fd)
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
 
   PetscFunctionBegin;
+  PetscCheck(!vascii->fileunit, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Cannot request file pointer for viewers that use Fortran files");
   *fd = vascii->fd;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -506,11 +507,13 @@ PetscErrorCode PetscViewerASCIIUseTabs(PetscViewer viewer, PetscBool flg)
 
   #if defined(PETSC_HAVE_FORTRAN_CAPS)
     #define petscviewerasciiopenwithfileunit_ PETSCVIEWERASCIIOPENWITHFILEUNIT
-    #define petscviewerasciisetfilefileunit_  PETSCVIEWERASCIISETFILEUNIT
+    #define petscviewerasciisetfileunit_      PETSCVIEWERASCIISETFILEUNIT
+    #define petscviewerasciiworldsetfileunit_ PETSCVIEWERASCIIWORLDSETFILEUNIT
     #define petscfortranprinttounit_          PETSCFORTRANPRINTTOUNIT
   #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
     #define petscviewerasciiopenwithfileunit_ petscviewerasciiopenwithfileunit
     #define petscviewerasciisetfileunit_      petscviewerasciisetfileunit
+    #define petscviewerasciiworldsetfileunit_ petscviewerasciiworldsetfileunit
     #define petscfortranprinttounit_          petscfortranprinttounit
   #endif
 
@@ -521,6 +524,48 @@ extern void petscfortranprinttounit_(PetscInt *, const char *, PetscErrorCode *,
   #endif
 
   #define PETSCDEFAULTBUFFERSIZE 8 * 1024
+
+static PetscInt PETSC_VIEWER_ASCII_WORLD_fileunit = 0;
+
+// PetscClangLinter pragma disable: -fdoc-synopsis-macro-explicit-synopsis-valid-header
+/*MC
+  PetscViewerASCIIWORLDSetFileUnit - sets `PETSC_VIEWER_STDOUT_WORLD` to write to a Fortran IO unit
+
+  Synopsis:
+  #include <petscviewer.h>
+  void PetscViewerASCIIWORLDSetFileUnit(PetscInt unit, PetscErrorCode ierr)
+
+  Input Parameter:
+. unit - the unit number
+
+  Output Parameter:
+. ierr - the error code
+
+  Level: intermediate
+
+  Notes:
+  Must be called before `PetscInitialize()`
+
+  This may not work currently with some viewers that (improperly) use the `fd` directly instead of `PetscViewerASCIIPrintf()`
+
+  With this option, for example, `-log_options` results will be saved to the Fortran file
+
+  Any process may call this but only the unit passed on the first process is used
+
+  Fortran Note:
+  Only for Fortran
+
+  Developer Note:
+  `PetscViewerASCIIWORLDSetFilename()` could be added in the future
+
+.seealso: `PetscViewerASCIISetFILE()`, `PETSCVIEWERASCII`, `PetscViewerASCIIOpenWithFileUnit()`, `PetscViewerASCIIWORLDSetFileUnit()`
+M*/
+PETSC_EXTERN void petscviewerasciiworldsetfileunit_(PetscInt *unit, PetscErrorCode *ierr)
+{
+  PETSC_VIEWER_ASCII_WORLD_fileunit = *unit;
+}
+
+  #include <petsc/private/fortranimpl.h>
 
 // PetscClangLinter pragma disable: -fdoc-synopsis-macro-explicit-synopsis-valid-header
 /*MC
@@ -545,12 +590,15 @@ extern void petscfortranprinttounit_(PetscInt *, const char *, PetscErrorCode *,
   Fortran Notes:
   Only for Fortran, use  `PetscViewerASCIISetFILE()` for C
 
-.seealso: `PetscViewerASCIISetFILE()`, `PETSCVIEWERASCII`, `PetscViewerASCIIOpenWithFileUnit()`
+.seealso: `PetscViewerASCIISetFILE()`, `PETSCVIEWERASCII`, `PetscViewerASCIIOpenWithFileUnit()`, `PetscViewerASCIIWORLDSetFileUnit()`
 M*/
 PETSC_EXTERN void petscviewerasciisetfileunit_(PetscViewer *lab, PetscInt *unit, PetscErrorCode *ierr)
 {
-  PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)(*lab)->data;
+  PetscViewer_ASCII *vascii;
+  PetscViewer        v;
 
+  PetscPatchDefaultViewers_Fortran(lab, v);
+  vascii = (PetscViewer_ASCII *)v->data;
   if (vascii->mode == FILE_MODE_READ) {
     *ierr = PETSC_ERR_ARG_WRONGSTATE;
     return;
@@ -634,6 +682,62 @@ static PetscErrorCode PetscFPrintfFortran(PetscInt unit, const char str[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
+
+/*@
+  PetscViewerASCIIGetStdout - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all processes
+  in a communicator. Error returning version of `PETSC_VIEWER_STDOUT_()`
+
+  Collective
+
+  Input Parameter:
+. comm - the MPI communicator to share the `PetscViewer`
+
+  Output Parameter:
+. viewer - the viewer
+
+  Level: beginner
+
+  Note:
+  This object is destroyed in `PetscFinalize()`, `PetscViewerDestroy()` should never be called on it
+
+  Developer Note:
+  This should be used in all PETSc source code instead of `PETSC_VIEWER_STDOUT_()` since it allows error checking
+
+.seealso: [](sec_viewers), `PETSC_VIEWER_DRAW_()`, `PetscViewerASCIIOpen()`, `PETSC_VIEWER_STDERR_`, `PETSC_VIEWER_STDOUT_WORLD`,
+          `PETSC_VIEWER_STDOUT_SELF`
+@*/
+PetscErrorCode PetscViewerASCIIGetStdout(MPI_Comm comm, PetscViewer *viewer)
+{
+  PetscBool flg;
+  MPI_Comm  ncomm;
+
+  PetscFunctionBegin;
+  PetscCall(PetscSpinlockLock(&PetscViewerASCIISpinLockStdout));
+  PetscCall(PetscCommDuplicate(comm, &ncomm, NULL));
+  if (Petsc_Viewer_Stdout_keyval == MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_Stdout_keyval, NULL));
+  PetscCallMPI(MPI_Comm_get_attr(ncomm, Petsc_Viewer_Stdout_keyval, (void **)viewer, (PetscMPIInt *)&flg));
+  if (!flg) { /* PetscViewer not yet created */
+#if defined(PETSC_USE_FORTRAN_BINDINGS)
+    PetscMPIInt size, gsize;
+
+    PetscCallMPI(MPI_Comm_size(comm, &size));
+    PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &gsize));
+    if (size == gsize) { PetscCallMPI(MPI_Bcast(&PETSC_VIEWER_ASCII_WORLD_fileunit, 1, MPIU_INT, 0, comm)); }
+    if (PETSC_VIEWER_ASCII_WORLD_fileunit) {
+      PetscErrorCode ierr;
+
+      petscviewerasciiopenwithfileunit_(&ncomm, &PETSC_VIEWER_ASCII_WORLD_fileunit, viewer, &ierr);
+    } else
+#endif
+      PetscCall(PetscViewerASCIIOpen(ncomm, "stdout", viewer));
+    ((PetscObject)*viewer)->persistent = PETSC_TRUE;
+    PetscCall(PetscObjectRegisterDestroy((PetscObject)*viewer));
+    PetscCallMPI(MPI_Comm_set_attr(ncomm, Petsc_Viewer_Stdout_keyval, (void *)*viewer));
+  }
+  PetscCall(PetscCommDestroy(&ncomm));
+  PetscCall(PetscSpinlockUnlock(&PetscViewerASCIISpinLockStdout));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 /*@C
   PetscViewerASCIIPrintf - Prints to a file, only from the first
@@ -891,7 +995,8 @@ static PetscErrorCode PetscViewerView_ASCII(PetscViewer v, PetscViewer viewer)
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII *)v->data;
 
   PetscFunctionBegin;
-  if (ascii->filename) PetscCall(PetscViewerASCIIPrintf(viewer, "Filename: %s\n", ascii->filename));
+  if (ascii->fileunit) PetscCall(PetscViewerASCIIPrintf(viewer, "Fortran FILE UNIT: %" PetscInt_FMT "\n", ascii->fileunit));
+  else if (ascii->filename) PetscCall(PetscViewerASCIIPrintf(viewer, "Filename: %s\n", ascii->filename));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

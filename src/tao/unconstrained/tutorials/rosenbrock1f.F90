@@ -153,7 +153,6 @@
       f = ff
       PetscCall(PetscLogFlops(15.0d0*nn,ierr))
 
-      return
       end
 
 !
@@ -236,7 +235,6 @@
 
       PetscCall(PetscLogFlops(9.0d0*nn,ierr))
 
-      return
       end
 
 !

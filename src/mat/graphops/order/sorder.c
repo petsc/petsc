@@ -74,7 +74,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_RowLength(Mat mat, MatOrderingType ty
 /*@C
   MatOrderingRegister - Adds a new sparse matrix ordering to the matrix package.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of ordering (for example `MATORDERINGND`)
@@ -87,12 +87,10 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_RowLength(Mat mat, MatOrderingType ty
    MatOrderingRegister("my_order", MyOrder);
 .ve
 
-  Then, your partitioner can be chosen with the procedural interface via
-$     MatOrderingSetType(part, "my_order)
-  or at runtime via the option
-$     -pc_factor_mat_ordering_type my_order
+  Then, your partitioner can be chosen with the procedural interface via `MatOrderingSetType(part, "my_order)` or at runtime via the option
+  `-pc_factor_mat_ordering_type my_order`
 
-.seealso: `MatOrderingRegisterAll()`, `MatGetOrdering()`
+.seealso: `Mat`, `MatOrderingType`, `MatOrderingRegisterAll()`, `MatGetOrdering()`
 @*/
 PetscErrorCode MatOrderingRegister(const char sname[], PetscErrorCode (*function)(Mat, MatOrderingType, IS *, IS *))
 {
@@ -103,7 +101,7 @@ PetscErrorCode MatOrderingRegister(const char sname[], PetscErrorCode (*function
 }
 
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
-/*@C
+/*@
   MatGetOrdering - Gets a reordering for a matrix to reduce fill or to
   improve numerical stability of LU factorization.
 

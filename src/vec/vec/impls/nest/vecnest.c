@@ -883,7 +883,7 @@ static PetscErrorCode VecNestGetSubVecs_Nest(Vec X, PetscInt *N, Vec **sx)
 
   Output Parameters:
 + N  - number of nested vecs
-- sx - array of vectors
+- sx - array of vectors, can pass in `NULL`
 
   Level: developer
 
@@ -895,7 +895,7 @@ static PetscErrorCode VecNestGetSubVecs_Nest(Vec X, PetscInt *N, Vec **sx)
 
 .seealso: `VECNEST`,  [](ch_vectors), `Vec`, `VecType`, `VecNestGetSize()`, `VecNestGetSubVec()`
 @*/
-PetscErrorCode VecNestGetSubVecs(Vec X, PetscInt *N, Vec **sx)
+PetscErrorCode VecNestGetSubVecs(Vec X, PetscInt *N, Vec *sx[])
 {
   PetscFunctionBegin;
   PetscUseMethod(X, "VecNestGetSubVecs_C", (Vec, PetscInt *, Vec **), (X, N, sx));
@@ -1012,7 +1012,7 @@ static PetscErrorCode VecNestSetSubVecs_Nest(Vec X, PetscInt N, PetscInt *idxm, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecNestSetSubVecs - Sets the component vectors at the specified indices in a nest vector.
 
   Not Collective
@@ -1031,7 +1031,7 @@ static PetscErrorCode VecNestSetSubVecs_Nest(Vec X, PetscInt N, PetscInt *idxm, 
 
 .seealso: `VECNEST`,  [](ch_vectors), `Vec`, `VecType`, `VecNestGetSize()`, `VecNestGetSubVec()`
 @*/
-PetscErrorCode VecNestSetSubVecs(Vec X, PetscInt N, PetscInt *idxm, Vec *sx)
+PetscErrorCode VecNestSetSubVecs(Vec X, PetscInt N, PetscInt idxm[], Vec sx[])
 {
   PetscFunctionBegin;
   PetscUseMethod(X, "VecNestSetSubVecs_C", (Vec, PetscInt, PetscInt *, Vec *), (X, N, idxm, sx));

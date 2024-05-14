@@ -108,7 +108,6 @@
 
 !      PetscCall(VecView(X,PETSC_VIEWER_STDOUT_WORLD,ierr))
 !      PetscCall(VecView(F,PETSC_VIEWER_STDOUT_WORLD,ierr))
-      return
       end subroutine formfunction
       end module ex5f90tmodule
 
@@ -361,7 +360,6 @@
 
 !  Insert values into global vector
 
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -412,7 +410,6 @@
  10      continue
  20   continue
 
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -468,7 +465,6 @@
  10      continue
  20   continue
       ierr = 0
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -567,7 +563,6 @@
 
       PetscCallA(MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE,ierr))
 
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -668,7 +663,6 @@
             endif
  10      continue
  20   continue
-      return
       end
 
 !/*TEST

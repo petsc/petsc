@@ -12,10 +12,14 @@
       type tTSTrajectory
         PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tTSTrajectory
+      type tTSGLLEAdapt
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      end type tTSGLLEAdapt
 
       TS, parameter :: PETSC_NULL_TS = tTS(0)
       TSAdapt, parameter :: PETSC_NULL_TSADAPT = tTSAdapt(0)
-      TSTrajectory, parameter :: PETSC_NULL_TSTrajectory = tTSTrajectory(0)
+      TSTrajectory, parameter :: PETSC_NULL_TSTRAJECTORY = tTSTrajectory(0)
+      TSGLLEAdapt, parameter :: PETSC_NULL_TSGLLEAdapt = tTSGLLEAdapt(0)
 
 !
 !  Convergence flags

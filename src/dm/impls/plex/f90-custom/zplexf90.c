@@ -21,6 +21,7 @@
   #define dmplexgetmeet_                  DMPLEXGETMEET
   #define dmplexgetfullmeet_              DMPLEXGETFULLMEET
   #define dmplexrestoremeet_              DMPLEXRESTOREMEET
+  #define dmplexconstructghostcells_      DMPLEXCONSTRUCTGHOSTCELLS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
   #define dmplexgetcone_                  dmplexgetcone
   #define dmplexrestorecone_              dmplexrestorecone
@@ -40,9 +41,19 @@
   #define dmplexgetmeet_                  dmplexgetmeet
   #define dmplexgetfullmeet_              dmplexgetfullmeet
   #define dmplexrestoremeet_              dmplexrestoremeet
+  #define dmplexconstructghostcells_      dmplexconstructghostcells
 #endif
 
-/* Definitions of Fortran Wrapper routines */
+PETSC_EXTERN void dmplexconstructghostcells_(DM *dm, char *name, PetscInt *numGhostCells, DM *dmGhosted, int *ierr, PETSC_FORTRAN_CHARLEN_T lenN)
+{
+  char *labelname;
+
+  FIXCHAR(name, lenN, labelname);
+  CHKFORTRANNULLINTEGER(numGhostCells);
+  *ierr = DMPlexConstructGhostCells(*dm, labelname, numGhostCells, dmGhosted);
+  if (*ierr) return;
+  FREECHAR(name, labelname);
+}
 
 PETSC_EXTERN void dmplexgetcone_(DM *dm, PetscInt *p, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {

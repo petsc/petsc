@@ -15,6 +15,7 @@ cdef Mapping
 cdef PathLike
 
 cdef Scalar
+cdef ArrayBool
 cdef ArrayInt
 cdef ArrayReal
 cdef ArrayComplex
@@ -51,6 +52,8 @@ cdef KSPRHSFunction
 cdef KSPOperatorsFunction
 cdef KSPConvergenceTestFunction
 cdef KSPMonitorFunction
+cdef KSPPreSolveFunction
+cdef KSPPostSolveFunction
 
 # --- TS ---
 
@@ -103,4 +106,3 @@ cdef TAOLSObjectiveGradientFunction
 cdef Intracomm
 cdef Datatype
 cdef Op
-

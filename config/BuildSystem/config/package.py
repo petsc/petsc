@@ -48,6 +48,7 @@ class Package(config.base.Configure):
     self.foundversion     = ''   # version of the package actually found
     self.version_tuple    = ''   # version of the package actually found (tuple)
     self.requiresversion  = 0    # error if the version information is not found
+    self.requirekandr     = 0    # package requires KandR compiler flags to build
 
     # These are specified for the package
     self.required               = 0    # 1 means the package is required
@@ -407,11 +408,8 @@ class Package(config.base.Configure):
     outflags = self.removeVisibilityFlag(flags.split())
     outflags = self.removeWarningFlags(outflags)
     outflags = self.removeCoverageFlag(outflags)
-    with self.Language('C'):
-      if config.setCompilers.Configure.isClang(self.getCompiler(), self.log):
-        outflags.append('-Wno-implicit-function-declaration')
-        if config.setCompilers.Configure.isDarwin(self.log):
-          outflags.append('-fno-common')
+    if self.requirekandr:
+      outflags += self.setCompilers.KandRFlags
     return ' '.join(outflags)
 
   def updatePackageFFlags(self,flags):
@@ -1202,51 +1200,50 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
     setattr(self.compilers, flagsArg, oldFlags+extraFlags+' '+self.headers.toString(self.dinclude))
     self.compilers.saveLog()
 
-    # X.py uses a weird list of two headers.
+    # Multiple headers are tried in order
     if not isinstance(self.versioninclude,list):
       headerList = [self.versioninclude]
     else:
       headerList = self.versioninclude
 
-    includeLines = ''
     for header in headerList:
-      includeLines += '#include "'+header+'"\n'
-    try:
-      # We once used '#include "'+self.versioninclude+'"\npetscpkgver('+self.versionname+');\n',
-      # but some preprocessors are picky (ex. dpcpp -E), reporting errors on the code above even
-      # it is just supposed to do preprocessing:
-      #
-      #  error: C++ requires a type specifier for all declarations
-      #  petscpkgver(__SYCL_COMPILER_VERSION);
-      #  ^
-      #
-      # So we instead use this compilable code.
-      output = self.outputPreprocess(
+      try:
+        # We once used '#include "'+self.versioninclude+'"\npetscpkgver('+self.versionname+');\n',
+        # but some preprocessors are picky (ex. dpcpp -E), reporting errors on the code above even
+        # it is just supposed to do preprocessing:
+        #
+        #  error: C++ requires a type specifier for all declarations
+        #  petscpkgver(__SYCL_COMPILER_VERSION);
+        #  ^
+        #
+        # So we instead use this compilable code.
+        output = self.outputPreprocess(
 '''
-{x}
+#include "{x}"
 #define  PetscXstr_(s) PetscStr_(s)
 #define  PetscStr_(s)  #s
 const char *ver = "petscpkgver(" PetscXstr_({y}) ")";
-'''.format(x=includeLines, y=self.versionname))
-       # Ex. char *ver = "petscpkgver(" "20211206" ")";
-       # But after stripping spaces, quotes etc below, it becomes char*ver=petscpkgver(20211206);
+'''.format(x=header, y=self.versionname))
+         # Ex. char *ver = "petscpkgver(" "20211206" ")";
+         # But after stripping spaces, quotes etc below, it becomes char*ver=petscpkgver(20211206);
+      except:
+        output = None
       self.logWrite(self.compilers.restoreLog())
-    except:
-      self.log.write('For '+self.package+' unable to run preprocessor to obtain version information, skipping version check\n')
-      self.logWrite(self.compilers.restoreLog())
-      self.popLanguage()
-      setattr(self.compilers, flagsArg,oldFlags)
-      self.version = ''
-      return
+      if output:
+        break
     self.popLanguage()
     setattr(self.compilers, flagsArg,oldFlags)
+    if not output:
+        self.log.write('For '+self.package+' unable to run preprocessor to obtain version information, skipping version check\n')
+        self.version = ''
+        return
     # the preprocessor output might be very long, but the petscpkgver line should be at the end. Therefore, we partition it backwards
     [mid, right] = output.rpartition('petscpkgver')[1:]
     version = ''
     if mid: # if mid is not empty, then it should be 'petscpkgver', meaning we found the version string
       verLine = right.split(';',1)[0] # get the string before the first ';'. Preprocessor might dump multiline result.
       self.log.write('Found the raw version string: ' + verLine +'\n')
-      # strip backslashs, spaces and quotes. Note Mumps' version macro has "" around it, giving output: (" "\"5.4.1\"" ")";
+      # strip backslashes, spaces, and quotes. Note MUMPS' version macro has "" around it, giving output: (" "\"5.4.1\"" ")";
       for char in ['\\', ' ', '"']:
           verLine = verLine.replace(char, '')
       # get the string between the outer ()

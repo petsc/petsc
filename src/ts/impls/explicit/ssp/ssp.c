@@ -239,7 +239,7 @@ static PetscErrorCode TSDestroy_SSP(TS ts)
 }
 /*------------------------------------------------------------*/
 
-/*@C
+/*@
   TSSSPSetType - set the `TSSSP` time integration scheme to use
 
   Logically Collective
@@ -265,7 +265,7 @@ PetscErrorCode TSSSPSetType(TS ts, TSSSPType ssptype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSSSPGetType - get the `TSSSP` time integration scheme
 
   Logically Collective

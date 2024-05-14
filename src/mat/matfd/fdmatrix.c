@@ -368,7 +368,7 @@ PetscErrorCode MatFDColoringSetFromOptions(MatFDColoring matfd)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatFDColoringSetType - Sets the approach for computing the finite difference parameter
 
   Collective

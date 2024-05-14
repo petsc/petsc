@@ -32,7 +32,7 @@ typedef void *dlsymbol_t;
 /*@C
   PetscDLOpen - opens a dynamic library
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + name - name of library
@@ -128,7 +128,7 @@ PetscErrorCode PetscDLOpen(const char name[], PetscDLMode mode, PetscDLHandle *h
 /*@C
   PetscDLClose -  closes a dynamic library
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . handle - the handle for the library obtained with `PetscDLOpen()`
@@ -193,7 +193,7 @@ PetscErrorCode PetscDLClose(PetscDLHandle *handle)
 /*@C
   PetscDLSym - finds a symbol in a dynamic library
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + handle - obtained with `PetscDLOpen()` or `NULL`
@@ -308,7 +308,7 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
 /*@C
   PetscDLAddr - find the name of a symbol in a dynamic library
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 . func - pointer to the function, `NULL` if not found

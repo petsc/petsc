@@ -91,7 +91,7 @@ PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_Trace(PetscLogHandler handler)
 /*@C
   PetscLogHandlerCreateTrace - Create a logger that traces events and stages to a given file descriptor
 
-  Collective
+  Collective, No Fortran Support
 
   Input Parameters:
 + comm - an MPI communicator

@@ -104,6 +104,7 @@ CMakeLists.txt
 petsc-doc-env
 doc/manualpages
 src/binding/petsc4py/.eggs
+src/binding/petsc4py/petsc4py.egg-info
 src/binding/petsc4py/src/include/petsc4py/petsc4py.PETSc.h
 src/binding/petsc4py/src/include/petsc4py/petsc4py.PETSc_api.h
 src/binding/petsc4py/src/libpetsc4py/libpetsc4py.c

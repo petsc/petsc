@@ -100,7 +100,8 @@ static PetscBool petsc_sse_local_is_untested  = PETSC_TRUE;
 static PetscBool petsc_sse_enabled_local      = PETSC_FALSE;
 static PetscBool petsc_sse_global_is_untested = PETSC_TRUE;
 static PetscBool petsc_sse_enabled_global     = PETSC_FALSE;
-/*@C
+
+/*@
   PetscSSEIsEnabled - Determines if Intel Streaming SIMD Extensions (SSE) to the x86 instruction
   set can be used.  Some operating systems do not allow the use of these instructions despite
   hardware availability.

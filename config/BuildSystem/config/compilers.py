@@ -249,11 +249,15 @@ class Configure(config.base.Configure):
         # Intel 11 has a bogus -long_double option
         if arg == '-long_double':
           continue
-        # if options of type -L foobar
         if arg == '-lto_library':
           lib = next(argIter)
           self.logPrint('Skipping Apple LLVM linker option -lto_library '+lib)
           continue
+        # ASan
+        if arg in ['-lasan', '-lubsan']:
+          self.logPrint('Skipping ASan libraries')
+          continue
+        # if options of type -L foobar
         if arg == '-L':
           lib = next(argIter)
           self.logPrint('Found -L '+lib, 4, 'compilers')
@@ -581,6 +585,10 @@ class Configure(config.base.Configure):
         if arg == '-long_double':
           continue
 
+        # ASan
+        if arg in ['-lasan', '-lubsan']:
+          self.logPrint('Skipping ASan libraries')
+          continue
         # if options of type -L foobar
         if arg == '-L':
           lib = next(argIter)
@@ -982,6 +990,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
       while 1:
         arg = next(argIter)
         self.logPrint( 'Checking arg '+arg, 4, 'compilers')
+
         # Intel compiler sometimes puts " " around an option like "-lsomething"
         if arg.startswith('"') and arg.endswith('"'):
           arg = arg[1:-1]
@@ -990,6 +999,10 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
         if arg.endswith('"') and arg[:-1].find('"') == -1:
           arg = arg[:-1]
 
+        # ASan
+        if arg in ['-lasan', '-lubsan']:
+          self.logPrint('Skipping ASan libraries')
+          continue
         if arg == '-lto_library':
           lib = next(argIter)
           self.logPrint('Skipping Apple LLVM linker option -lto_library '+lib)
@@ -1077,6 +1090,9 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
               continue
             elif arg == '-lLTO' and self.setCompilers.isDarwin(self.log):
               self.logPrint('Skipping -lTO')
+            elif arg == '-lnvc':
+              self.logPrint('Skipping -lnvc: https://forums.developer.nvidia.com/t/failed-cuda-device-detection-when-explicitly-linking-libnvc/203225')
+              continue
             elif arg.find('-libpath:')>=0:
               self.logPrint('Skipping Intel oneAPI ifort (on Microsoft Windows) compiler option: '+arg)
               continue
