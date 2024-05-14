@@ -6552,7 +6552,7 @@ PetscErrorCode DMSetOutputSequenceNumber(DM dm, PetscInt num, PetscReal val)
 
   Input Parameters:
 + dm     - The original `DM`
-. viewer - The viewer to get it from
+. viewer - The `PetscViewer` to get it from
 . name   - The sequence name
 - num    - The output sequence number
 
@@ -6570,13 +6570,14 @@ PetscErrorCode DMSetOutputSequenceNumber(DM dm, PetscInt num, PetscReal val)
 
 .seealso: [](ch_dmbase), `DM`, `DMGetOutputSequenceNumber()`, `DMSetOutputSequenceNumber()`, `VecView()`
 @*/
-PetscErrorCode DMOutputSequenceLoad(DM dm, PetscViewer viewer, const char *name, PetscInt num, PetscReal *val)
+PetscErrorCode DMOutputSequenceLoad(DM dm, PetscViewer viewer, const char name[], PetscInt num, PetscReal *val)
 {
   PetscBool ishdf5;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  PetscAssertPointer(name, 3);
   PetscAssertPointer(val, 5);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
   if (ishdf5) {
@@ -6585,6 +6586,46 @@ PetscErrorCode DMOutputSequenceLoad(DM dm, PetscViewer viewer, const char *name,
 
     PetscCall(DMSequenceLoad_HDF5_Internal(dm, name, num, &value, viewer));
     *val = PetscRealPart(value);
+#endif
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid viewer; open viewer with PetscViewerHDF5Open()");
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMGetOutputSequenceLength - Retrieve the number of sequence values from a `PetscViewer`
+
+  Input Parameters:
++ dm     - The original `DM`
+. viewer - The `PetscViewer` to get it from
+- name   - The sequence name
+
+  Output Parameter:
+. len - The length of the output sequence
+
+  Level: intermediate
+
+  Note:
+  This is intended for output that should appear in sequence, for instance
+  a set of timesteps in an `PETSCVIEWERHDF5` file, or a set of realizations of a stochastic system.
+
+  Developer Note:
+  It is unclear at the user API level why a `DM` is needed as input
+
+.seealso: [](ch_dmbase), `DM`, `DMGetOutputSequenceNumber()`, `DMSetOutputSequenceNumber()`, `VecView()`
+@*/
+PetscErrorCode DMGetOutputSequenceLength(DM dm, PetscViewer viewer, const char name[], PetscInt *len)
+{
+  PetscBool ishdf5;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  PetscAssertPointer(name, 3);
+  PetscAssertPointer(len, 4);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
+  if (ishdf5) {
+#if defined(PETSC_HAVE_HDF5)
+    PetscCall(DMSequenceGetLength_HDF5_Internal(dm, name, len, viewer));
 #endif
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid viewer; open viewer with PetscViewerHDF5Open()");
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -300,7 +300,8 @@ PETSC_EXTERN PetscErrorCode DMSetDefaultConstraints(DM, PetscSection, Mat, Vec);
 PETSC_EXTERN PetscErrorCode DMGetOutputDM(DM, DM *);
 PETSC_EXTERN PetscErrorCode DMGetOutputSequenceNumber(DM, PetscInt *, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMSetOutputSequenceNumber(DM, PetscInt, PetscReal);
-PETSC_EXTERN PetscErrorCode DMOutputSequenceLoad(DM, PetscViewer, const char *, PetscInt, PetscReal *);
+PETSC_EXTERN PetscErrorCode DMOutputSequenceLoad(DM, PetscViewer, const char[], PetscInt, PetscReal *);
+PETSC_EXTERN PetscErrorCode DMGetOutputSequenceLength(DM, PetscViewer, const char[], PetscInt *);
 
 PETSC_EXTERN PetscErrorCode DMGetNumFields(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMSetNumFields(DM, PetscInt);
