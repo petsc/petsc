@@ -1805,7 +1805,7 @@ static void snapToCylinder(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Pets
   f0[2] = u[2];
 }
 
-static PetscErrorCode DMPlexCreateHexCylinderMesh_Internal(DM dm, DMBoundaryType periodicZ)
+static PetscErrorCode DMPlexCreateHexCylinderMesh_Internal(DM dm, DMBoundaryType periodicZ, PetscInt Nr)
 {
   const PetscInt dim = 3;
   PetscInt       numCells, numVertices;
@@ -2141,7 +2141,7 @@ static PetscErrorCode DMPlexCreateHexCylinderMesh_Internal(DM dm, DMBoundaryType
     PetscDS     cds;
     PetscScalar c[2] = {1.0, 1.0};
 
-    PetscCall(DMPlexCreateCoordinateSpace(dm, 1, PETSC_TRUE, snapToCylinder));
+    PetscCall(DMPlexCreateCoordinateSpace(dm, 1, PETSC_TRUE, NULL));
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     PetscCall(DMGetDS(cdm, &cds));
     PetscCall(PetscDSSetConstants(cds, 2, c));
@@ -2150,6 +2150,46 @@ static PetscErrorCode DMPlexCreateHexCylinderMesh_Internal(DM dm, DMBoundaryType
 
   /* Wait for coordinate creation before doing in-place modification */
   PetscCall(DMPlexInterpolateInPlace_Internal(dm));
+
+  char        oldprefix[PETSC_MAX_PATH_LEN];
+  const char *prefix;
+
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm, &prefix));
+  PetscCall(PetscStrncpy(oldprefix, prefix, PETSC_MAX_PATH_LEN));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dm, "petsc_cyl_ref_"));
+  for (PetscInt r = 0; r < PetscMax(0, Nr); ++r) {
+    DM rdm;
+
+    PetscCall(DMRefine(dm, PetscObjectComm((PetscObject)dm), &rdm));
+    PetscCall(DMPlexReplace_Internal(dm, &rdm));
+  }
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dm, oldprefix));
+  PetscCall(DMPlexRemapGeometry(dm, 0.0, snapToCylinder));
+
+  DMLabel         bdlabel, edgelabel;
+  IS              faceIS;
+  const PetscInt *faces;
+  PetscInt        Nf;
+
+  PetscCall(DMCreateLabel(dm, "marker"));
+  PetscCall(DMGetLabel(dm, "marker", &bdlabel));
+  PetscCall(DMCreateLabel(dm, "generatrix"));
+  PetscCall(DMGetLabel(dm, "generatrix", &edgelabel));
+  PetscCall(DMPlexMarkBoundaryFaces(dm, PETSC_DETERMINE, bdlabel));
+  // Remove faces on top and bottom
+  PetscCall(DMLabelGetStratumIS(bdlabel, 1, &faceIS));
+  PetscCall(ISGetLocalSize(faceIS, &Nf));
+  PetscCall(ISGetIndices(faceIS, &faces));
+  for (PetscInt f = 0; f < Nf; ++f) {
+    PetscReal vol, normal[3];
+
+    PetscCall(DMPlexComputeCellGeometryFVM(dm, faces[f], &vol, NULL, normal));
+    if (PetscAbsReal(normal[2]) < PETSC_SMALL) PetscCall(DMLabelSetValue(edgelabel, faces[f], 1));
+  }
+  PetscCall(ISRestoreIndices(faceIS, &faces));
+  PetscCall(ISDestroy(&faceIS));
+  PetscCall(DMPlexLabelComplete(dm, bdlabel));
+  PetscCall(DMPlexLabelComplete(dm, edgelabel));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2160,7 +2200,8 @@ static PetscErrorCode DMPlexCreateHexCylinderMesh_Internal(DM dm, DMBoundaryType
 
   Input Parameters:
 + comm      - The communicator for the `DM` object
-- periodicZ - The boundary type for the Z direction
+. periodicZ - The boundary type for the Z direction
+- Nr        - The number of refinements to carry out
 
   Output Parameter:
 . dm - The `DM` object
@@ -2203,13 +2244,13 @@ static PetscErrorCode DMPlexCreateHexCylinderMesh_Internal(DM dm, DMBoundaryType
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateBoxMesh()`, `DMSetType()`, `DMCreate()`
 @*/
-PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, DMBoundaryType periodicZ, DM *dm)
+PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, DMBoundaryType periodicZ, PetscInt Nr, DM *dm)
 {
   PetscFunctionBegin;
-  PetscAssertPointer(dm, 3);
+  PetscAssertPointer(dm, 4);
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
-  PetscCall(DMPlexCreateHexCylinderMesh_Internal(*dm, periodicZ));
+  PetscCall(DMPlexCreateHexCylinderMesh_Internal(*dm, periodicZ, Nr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -4067,15 +4108,17 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
     case DM_SHAPE_CYLINDER: {
       DMBoundaryType bdt = DM_BOUNDARY_NONE;
       PetscInt       Nw  = 6;
+      PetscInt       Nr  = 0;
 
       PetscCall(PetscOptionsEnum("-dm_plex_cylinder_bd", "Boundary type in the z direction", "", DMBoundaryTypes, (PetscEnum)bdt, (PetscEnum *)&bdt, NULL));
       PetscCall(PetscOptionsInt("-dm_plex_cylinder_num_wedges", "Number of wedges around the cylinder", "", Nw, &Nw, NULL));
+      PetscCall(PetscOptionsInt("-dm_plex_cylinder_num_refine", "Number of refinements before projection", "", Nr, &Nr, NULL));
       switch (cell) {
       case DM_POLYTOPE_TRI_PRISM_TENSOR:
         PetscCall(DMPlexCreateWedgeCylinderMesh_Internal(dm, Nw, interpolate));
         break;
       default:
-        PetscCall(DMPlexCreateHexCylinderMesh_Internal(dm, bdt));
+        PetscCall(DMPlexCreateHexCylinderMesh_Internal(dm, bdt, Nr));
         break;
       }
     } break;
@@ -4321,7 +4364,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
   DMReorderDefaultFlag reorder;
   PetscReal            volume    = -1.0;
   PetscInt             prerefine = 0, refine = 0, r, coarsen = 0, overlap = 0, extLayers = 0, dim;
-  PetscBool uniformOrig = PETSC_FALSE, created = PETSC_FALSE, uniform = PETSC_TRUE, distribute, saveSF = PETSC_FALSE, interpolate = PETSC_TRUE, coordSpace = PETSC_TRUE, remap = PETSC_TRUE, ghostCells = PETSC_FALSE, isHierarchy, ignoreModel = PETSC_FALSE, flg;
+  PetscBool            uniformOrig = PETSC_FALSE, created = PETSC_FALSE, uniform = PETSC_TRUE, distribute, saveSF = PETSC_FALSE, interpolate = PETSC_TRUE, coordSpace = PETSC_TRUE, remap = PETSC_TRUE, ghostCells = PETSC_FALSE, isHierarchy, flg;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "DMPlex Options");
@@ -4388,8 +4431,6 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
     PetscCall(DMSetFromOptions_NonRefinement_Plex(dm, PetscOptionsObject));
   }
   /* Handle DMPlex refinement before distribution */
-  PetscCall(PetscOptionsBool("-dm_refine_ignore_model", "Flag to ignore the geometry model when refining", "DMCreate", ignoreModel, &ignoreModel, &flg));
-  if (flg) ((DM_Plex *)dm->data)->ignoreModel = ignoreModel;
   PetscCall(DMPlexGetRefinementUniform(dm, &uniformOrig));
   PetscCall(PetscOptionsBoundedInt("-dm_refine_pre", "The number of refinements before distribution", "DMCreate", prerefine, &prerefine, NULL, 0));
   PetscCall(PetscOptionsBool("-dm_refine_remap_pre", "Flag to control coordinate remapping", "DMCreate", remap, &remap, NULL));

@@ -19,10 +19,10 @@
 */
 
 #ifdef PETSC_HAVE_EGADS
-PETSC_INTERN PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM, PetscInt, ego, PetscInt, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
-PETSC_INTERN PetscErrorCode DMPlexSnapToGeomModel_EGADSLite_Internal(DM, PetscInt, ego, PetscInt, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
+PETSC_INTERN PetscErrorCode DMSnapToGeomModel_EGADS_Internal(DM, PetscInt, ego, PetscInt, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
+PETSC_INTERN PetscErrorCode DMSnapToGeomModel_EGADSLite_Internal(DM, PetscInt, ego, PetscInt, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
 
-PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model, PetscInt bodyID, PetscInt faceID, PetscInt edgeID, const PetscScalar mcoords[], PetscScalar gcoords[])
+PetscErrorCode DMSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model, PetscInt bodyID, PetscInt faceID, PetscInt edgeID, const PetscScalar mcoords[], PetscScalar gcoords[])
 {
   DM   cdm;
   ego *bodies;
@@ -101,73 +101,62 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model
 }
 #endif
 
-/*@
-  DMPlexSnapToGeomModel - Given a coordinate point 'mcoords' on the mesh point 'p', return the closest coordinate point 'gcoords' on the geometry model associated with that point.
-
-  Not Collective
-
-  Input Parameters:
-+ dm      - The `DMPLEX` object
-. p       - The mesh point
-. dE      - The coordinate dimension
-- mcoords - A coordinate point lying on the mesh point
-
-  Output Parameter:
-. gcoords - The closest coordinate point on the geometry model associated with 'p' to the given point
-
-  Level: intermediate
-
-  Note:
-  Returns the original coordinates if no geometry model is found. Right now the only supported geometry model is EGADS.
-
-  The coordinate dimension may be different from the coordinate dimension of the `dm`, for example if the transformation is extrusion.
-
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMRefine()`, `DMPlexCreate()`, `DMPlexSetRefinementUniform()`
-@*/
-PetscErrorCode DMPlexSnapToGeomModel(DM dm, PetscInt p, PetscInt dE, const PetscScalar mcoords[], PetscScalar gcoords[])
+PetscErrorCode DMSnapToGeomModel_EGADSLite(DM dm, PetscInt p, PetscInt dE, const PetscScalar mcoords[], PetscScalar gcoords[])
 {
-  PetscInt d;
-
   PetscFunctionBeginHot;
 #ifdef PETSC_HAVE_EGADS
-  {
-    DM_Plex       *plex = (DM_Plex *)dm->data;
-    DMLabel        bodyLabel, faceLabel, edgeLabel;
-    PetscInt       bodyID, faceID, edgeID;
-    PetscContainer modelObj;
-    ego            model;
-    PetscBool      islite = PETSC_FALSE;
+  DMLabel        bodyLabel, faceLabel, edgeLabel;
+  PetscInt       bodyID, faceID, edgeID;
+  PetscContainer modelObj;
+  ego            model;
 
-    PetscCall(DMGetLabel(dm, "EGADS Body ID", &bodyLabel));
-    PetscCall(DMGetLabel(dm, "EGADS Face ID", &faceLabel));
-    PetscCall(DMGetLabel(dm, "EGADS Edge ID", &edgeLabel));
-    if (!bodyLabel || !faceLabel || !edgeLabel || plex->ignoreModel) {
-      for (d = 0; d < dE; ++d) gcoords[d] = mcoords[d];
-      PetscFunctionReturn(PETSC_SUCCESS);
-    }
-    PetscCall(PetscObjectQuery((PetscObject)dm, "EGADS Model", (PetscObject *)&modelObj));
-    if (!modelObj) {
-      PetscCall(PetscObjectQuery((PetscObject)dm, "EGADSLite Model", (PetscObject *)&modelObj));
-      islite = PETSC_TRUE;
-    }
-    if (!modelObj) {
-      for (d = 0; d < dE; ++d) gcoords[d] = mcoords[d];
-      PetscFunctionReturn(PETSC_SUCCESS);
-    }
-    PetscCall(PetscContainerGetPointer(modelObj, (void **)&model));
-    PetscCall(DMLabelGetValue(bodyLabel, p, &bodyID));
-    PetscCall(DMLabelGetValue(faceLabel, p, &faceID));
-    PetscCall(DMLabelGetValue(edgeLabel, p, &edgeID));
-    /* Allows for "Connective" Plex Edges present in models with multiple non-touching Entities */
-    if (bodyID < 0) {
-      for (d = 0; d < dE; ++d) gcoords[d] = mcoords[d];
-      PetscFunctionReturn(PETSC_SUCCESS);
-    }
-    if (islite) PetscCall(DMPlexSnapToGeomModel_EGADSLite_Internal(dm, p, model, bodyID, faceID, edgeID, mcoords, gcoords));
-    else PetscCall(DMPlexSnapToGeomModel_EGADS_Internal(dm, p, model, bodyID, faceID, edgeID, mcoords, gcoords));
+  PetscCall(DMGetLabel(dm, "EGADS Body ID", &bodyLabel));
+  PetscCall(DMGetLabel(dm, "EGADS Face ID", &faceLabel));
+  PetscCall(DMGetLabel(dm, "EGADS Edge ID", &edgeLabel));
+  PetscCheck(bodyLabel && faceLabel && edgeLabel, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "EGADSLite meshes must have body, face, and edge labels defined");
+  PetscCall(PetscObjectQuery((PetscObject)dm, "EGADSLite Model", (PetscObject *)&modelObj));
+  PetscCheck(modelObj, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "EGADSLite mesh missing model object");
+
+  PetscCall(PetscContainerGetPointer(modelObj, (void **)&model));
+  PetscCall(DMLabelGetValue(bodyLabel, p, &bodyID));
+  PetscCall(DMLabelGetValue(faceLabel, p, &faceID));
+  PetscCall(DMLabelGetValue(edgeLabel, p, &edgeID));
+  /* Allows for "Connective" Plex Edges present in models with multiple non-touching Entities */
+  if (bodyID < 0) {
+    for (PetscInt d = 0; d < dE; ++d) gcoords[d] = mcoords[d];
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
-#else
-  for (d = 0; d < dE; ++d) gcoords[d] = mcoords[d];
+  PetscCall(DMSnapToGeomModel_EGADSLite_Internal(dm, p, model, bodyID, faceID, edgeID, mcoords, gcoords));
+#endif
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode DMSnapToGeomModel_EGADS(DM dm, PetscInt p, PetscInt dE, const PetscScalar mcoords[], PetscScalar gcoords[])
+{
+  PetscFunctionBeginHot;
+#ifdef PETSC_HAVE_EGADS
+  DMLabel        bodyLabel, faceLabel, edgeLabel;
+  PetscInt       bodyID, faceID, edgeID;
+  PetscContainer modelObj;
+  ego            model;
+
+  PetscCall(DMGetLabel(dm, "EGADS Body ID", &bodyLabel));
+  PetscCall(DMGetLabel(dm, "EGADS Face ID", &faceLabel));
+  PetscCall(DMGetLabel(dm, "EGADS Edge ID", &edgeLabel));
+  PetscCheck(bodyLabel && faceLabel && edgeLabel, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "EGADS meshes must have body, face, and edge labels defined");
+  PetscCall(PetscObjectQuery((PetscObject)dm, "EGADS Model", (PetscObject *)&modelObj));
+  PetscCheck(modelObj, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "EGADS mesh missing model object");
+
+  PetscCall(PetscContainerGetPointer(modelObj, (void **)&model));
+  PetscCall(DMLabelGetValue(bodyLabel, p, &bodyID));
+  PetscCall(DMLabelGetValue(faceLabel, p, &faceID));
+  PetscCall(DMLabelGetValue(edgeLabel, p, &edgeID));
+  /* Allows for "Connective" Plex Edges present in models with multiple non-touching Entities */
+  if (bodyID < 0) {
+    for (PetscInt d = 0; d < dE; ++d) gcoords[d] = mcoords[d];
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  PetscCall(DMSnapToGeomModel_EGADS_Internal(dm, p, model, bodyID, faceID, edgeID, mcoords, gcoords));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }

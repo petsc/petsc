@@ -59,6 +59,7 @@ Changes: Development
 .. rubric:: DM/DA:
 
 - Add ``DMGetSparseLocalize()`` and ``DMSetSparseLocalize()``
+- Add ``DMGeomModelRegister()``, ``DMGeomModelRegisterAll()``, ``DMGeomModelRegisterDestroy()``, ``DMSnapToGeomModel()``, ``DMSetSnapToGeomModel()`` to support registering geometric models
 
 .. rubric:: DMSwarm:
 
@@ -67,6 +68,8 @@ Changes: Development
 - Add ``DMLabelGetValueBounds()``
 - Add ``DMPlexOrientLabel()``
 - Add an argument to ``DMPlexLabelCohesiveComplete()`` in order to change behavior at surface boundary
+- Remove ``DMPlexSnapToGeomModel()``
+- Add refinement argument to ``DMPlexCreateHexCylinderMesh()``
 
 .. rubric:: FE/FV:
 

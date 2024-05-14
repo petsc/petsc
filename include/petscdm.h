@@ -46,6 +46,7 @@ PETSC_EXTERN const char *const       DMBoundaryConditionTypes[];
 PETSC_EXTERN const char *const       DMBlockingTypes[];
 PETSC_EXTERN PetscFunctionList       DMList;
 PETSC_EXTERN DMGeneratorFunctionList DMGenerateList;
+PETSC_EXTERN PetscFunctionList       DMGeomModelList;
 PETSC_EXTERN PetscErrorCode          DMCreate(MPI_Comm, DM *);
 PETSC_EXTERN PetscErrorCode          DMClone(DM, DM *);
 PETSC_EXTERN PetscErrorCode          DMSetType(DM, DMType);
@@ -112,6 +113,9 @@ PETSC_EXTERN PetscErrorCode DMGenerate(DM, const char[], PetscBool, DM *);
 PETSC_EXTERN PetscErrorCode DMGenerateRegister(const char[], PetscErrorCode (*)(DM, PetscBool, DM *), PetscErrorCode (*)(DM, PetscReal *, DM *), PetscErrorCode (*)(DM, Vec, DMLabel, DMLabel, DM *), PetscInt);
 PETSC_EXTERN PetscErrorCode DMGenerateRegisterAll(void);
 PETSC_EXTERN PetscErrorCode DMGenerateRegisterDestroy(void);
+PETSC_EXTERN PetscErrorCode DMGeomModelRegister(const char[], PetscErrorCode (*)(DM, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]));
+PETSC_EXTERN PetscErrorCode DMGeomModelRegisterAll(void);
+PETSC_EXTERN PetscErrorCode DMGeomModelRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode DMAdaptLabel(DM, DMLabel, DM *);
 PETSC_EXTERN PetscErrorCode DMAdaptMetric(DM, Vec, DMLabel, DMLabel, DM *);
 
@@ -168,6 +172,8 @@ PETSC_EXTERN PetscErrorCode DMGetLocalBoundingBox(DM, PetscReal[], PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMGetBoundingBox(DM, PetscReal[], PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMSetCoordinateDisc(DM, PetscFE, PetscBool);
 PETSC_EXTERN PetscErrorCode DMLocatePoints(DM, Vec, DMPointLocationType, PetscSF *);
+PETSC_EXTERN PetscErrorCode DMSnapToGeomModel(DM, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
+PETSC_EXTERN PetscErrorCode DMSetSnapToGeomModel(DM, const char[]);
 
 /* Periodicity support */
 PETSC_EXTERN PetscErrorCode DMGetPeriodicity(DM, const PetscReal *[], const PetscReal *[], const PetscReal *[]);

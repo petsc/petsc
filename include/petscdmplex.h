@@ -172,7 +172,7 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm, PetscInt, PetscBool, c
 PETSC_EXTERN PetscErrorCode DMPlexCreateBoxSurfaceMesh(MPI_Comm, PetscInt, const PetscInt[], const PetscReal[], const PetscReal[], PetscBool, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm, PetscInt, PetscBool, PetscReal, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateBallMesh(MPI_Comm, PetscInt, PetscReal, DM *);
-PETSC_EXTERN PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm, DMBoundaryType, DM *);
+PETSC_EXTERN PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm, DMBoundaryType, PetscInt, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateTPSMesh(MPI_Comm, DMPlexTPSType, const PetscInt[], const DMBoundaryType[], PetscBool, PetscInt, PetscInt, PetscReal, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateWedgeCylinderMesh(MPI_Comm, PetscInt, PetscBool, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateWedgeBoxMesh(MPI_Comm, const PetscInt[], const PetscReal[], const PetscReal[], const DMBoundaryType[], PetscBool, PetscBool, DM *);
@@ -191,6 +191,7 @@ PETSC_EXTERN PetscErrorCode DMPlexCheckFaces(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexCheckGeometry(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckPointSF(DM, PetscSF, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexCheckInterfaceCones(DM);
+PETSC_EXTERN PetscErrorCode DMPlexCheckOrphanVertices(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckCellShape(DM, PetscBool, PetscReal);
 PETSC_EXTERN PetscErrorCode DMPlexComputeOrthogonalQuality(DM, PetscFV, PetscReal, Vec *, DMLabel *);
 
@@ -458,7 +459,6 @@ PETSC_EXTERN PetscErrorCode DMPlexNaturalToGlobalEnd(DM, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexCreateNaturalVector(DM, Vec *);
 
 /* mesh adaptation */
-PETSC_EXTERN PetscErrorCode DMPlexSnapToGeomModel(DM, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
 PETSC_EXTERN PetscErrorCode DMPlexMetricSetFromOptions(DM);
 PETSC_EXTERN PetscErrorCode DMPlexMetricSetIsotropic(DM, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexMetricIsIsotropic(DM, PetscBool *);
