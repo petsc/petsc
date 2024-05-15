@@ -926,13 +926,14 @@ int main(int argc, char **argv)
   }
 
   if (user.bdIntegral) {
-    DMLabel     label;
-    PetscInt    id    = 1;
-    PetscScalar bdInt = 0.0;
-    PetscReal   exact = 3.3333333333;
+    DMLabel          label;
+    PetscBdPointFunc func[1] = {bd_integral_2d};
+    PetscInt         id      = 1;
+    PetscScalar      bdInt   = 0.0;
+    PetscReal        exact   = 3.3333333333;
 
     PetscCall(DMGetLabel(dm, "marker", &label));
-    PetscCall(DMPlexComputeBdIntegral(dm, u, label, 1, &id, bd_integral_2d, &bdInt, NULL));
+    PetscCall(DMPlexComputeBdIntegral(dm, u, label, 1, &id, func, &bdInt, NULL));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Solution boundary integral: %.4g\n", (double)PetscAbsScalar(bdInt)));
     PetscCheck(PetscAbsReal(PetscAbsScalar(bdInt) - exact) <= PETSC_SQRT_MACHINE_EPSILON, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Invalid boundary integral %g != %g", (double)PetscAbsScalar(bdInt), (double)exact);
   }

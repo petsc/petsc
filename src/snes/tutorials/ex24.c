@@ -409,7 +409,7 @@ int main(int argc, char **argv)
     args: -sol_type linear \
           -field_petscspace_degree 1 -field_petscdualspace_type bdm -dm_refine 1 \
           -dmsnes_check .001 -snes_error_if_not_converged \
-          -ksp_error_if_not_converged -ksp_type cg \
+          -ksp_error_if_not_converged -ksp_type cg -ksp_norm_type natural -ksp_divtol 1e10 \
           -petscpartitioner_type simple -dm_mat_type is \
           -pc_type bddc -pc_bddc_use_local_mat_graph 0 \
           -pc_bddc_benign_trick -pc_bddc_nonetflux -pc_bddc_detect_disconnected -pc_bddc_use_qr_single \

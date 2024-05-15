@@ -74,7 +74,7 @@ Changes: Development
 - Add an argument to ``DMPlexLabelCohesiveComplete()`` in order to change behavior at surface boundary
 - Remove ``DMPlexSnapToGeomModel()``
 - Add refinement argument to ``DMPlexCreateHexCylinderMesh()``
-- Add ``DMPlexTransformCohesiveExtrudeGetWidth()`` and ``DMPlexTransformCohesiveExtrudeSetWidth()``
+- Now ``DMPlexComputeBdIntegral()`` takes one function per field
 
 .. rubric:: FE/FV:
 
