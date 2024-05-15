@@ -10,20 +10,31 @@
 !    The following block allows one to write constants that match the
 !    precision of PetscReal as, for example,  x = .7_PETSC_REAL_KIND
 !
-       PetscReal,Parameter :: PetscReal_Private = 1.0
-       Integer,Parameter   :: PETSC_REAL_KIND = Selected_Real_Kind(Precision(PetscReal_Private))
+      PetscReal,Parameter :: PetscReal_Private = 1.0
+      Integer,Parameter   :: PETSC_REAL_KIND = Selected_Real_Kind(Precision(PetscReal_Private))
 
-      type tPetscOptions
+      type :: tPetscObject
         PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
-      end type tPetscOptions
+      end type tPetscObject
+      PetscObject, parameter :: PETSC_NULL_OBJECT = tPetscObject(0)
 
+      type, extends(tPetscObject) :: tPetscOptions
+      end type tPetscOptions
       PetscOptions, parameter :: PETSC_NULL_OPTIONS = tPetscOptions(0)
 
-      type tPetscBench
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      type, extends(tPetscObject) :: tPetscBench
       end type tPetscBench
-
       PetscBench, parameter :: PETSC_NULL_BM = tPetscBench(0)
+
+      type :: tPetscDevice
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      end type tPetscDevice
+      PetscDevice, parameter :: PETSC_NULL_DEVICE = tPetscDevice(0)
+
+      type, extends(tPetscObject) :: tPetscDeviceContext
+      end type tPetscDeviceContext
+      PetscDeviceContext, parameter :: PETSC_NULL_DEVICE_CONTEXT = tPetscDeviceContext(0)
+
 ! ------------------------------------------------------------------------
 !     Non Common block Stuff declared first
 !
@@ -122,9 +133,7 @@
 !
 !     Random numbers
 !
-      type tPetscRandom
-        sequence
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      type, extends(tPetscObject) :: tPetscRandom
       end type tPetscRandom
 
       PetscRandom, parameter :: PETSC_NULL_RANDOM = tPetscRandom(0)
@@ -156,7 +165,6 @@
       PetscEnum, parameter :: PETSC_BUILDTWOSIDED_REDSCATTER = 2
 
       type tPetscSubcomm
-        sequence
         PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tPetscSubcomm
 

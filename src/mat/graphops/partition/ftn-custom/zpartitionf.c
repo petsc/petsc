@@ -4,12 +4,8 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define matpartitioningsetvertexweights_ MATPARTITIONINGSETVERTEXWEIGHTS
-  #define matpartitioningview_             MATPARTITIONINGVIEW
-  #define matpartitioningviewfromoptions_  MATPARTITIONINGVIEWFROMOPTIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define matpartitioningsetvertexweights_ matpartitioningsetvertexweights
-  #define matpartitioningview_             matpartitioningview
-  #define matpartitioningviewfromoptions_  matpartitioningviewfromoptions
 #endif
 
 PETSC_EXTERN void matpartitioningsetvertexweights_(MatPartitioning *part, const PetscInt weights[], PetscErrorCode *ierr)
@@ -23,21 +19,4 @@ PETSC_EXTERN void matpartitioningsetvertexweights_(MatPartitioning *part, const 
   *ierr = PetscArraycpy(array, weights, len);
   if (*ierr) return;
   *ierr = MatPartitioningSetVertexWeights(*part, array);
-}
-PETSC_EXTERN void matpartitioningview_(MatPartitioning *part, PetscViewer *viewer, PetscErrorCode *ierr)
-{
-  PetscViewer v;
-  PetscPatchDefaultViewers_Fortran(viewer, v);
-  *ierr = MatPartitioningView(*part, v);
-}
-
-PETSC_EXTERN void matpartitioningviewfromoptions_(MatPartitioning *ao, PetscObject obj, char *type, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-
-  FIXCHAR(type, len, t);
-  CHKFORTRANNULLOBJECT(obj);
-  *ierr = MatPartitioningViewFromOptions(*ao, obj, t);
-  if (*ierr) return;
-  FREECHAR(type, t);
 }

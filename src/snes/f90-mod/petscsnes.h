@@ -3,12 +3,10 @@
 !
 #include "petsc/finclude/petscsnes.h"
 
-      type tSNES
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      type, extends(tPetscObject) :: tSNES
       end type tSNES
 
-      type tPetscConvEst
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      type, extends(tPetscObject) :: tPetscConvEst
       end type tPetscConvEst
 
       SNES, parameter :: PETSC_NULL_SNES = tSNES(0)

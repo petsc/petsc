@@ -109,7 +109,7 @@ PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSpaceViewFromOptions - View a `PetscSpace` based on values in the options database
 
   Collective
@@ -131,7 +131,7 @@ PetscErrorCode PetscSpaceViewFromOptions(PetscSpace A, PetscObject obj, const ch
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSpaceView - Views a `PetscSpace`
 
   Collective

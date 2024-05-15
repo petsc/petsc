@@ -45,7 +45,7 @@ def FixFile(filename):
   data = re.subn('\nvoid ','\nPETSC_EXTERN void ',data)[0]
   data = re.subn('\nPetscErrorCode ','\nPETSC_EXTERN void ',data)[0]
   data = re.subn(r'Petsc([ToRm]*)Pointer\(int\)','Petsc\\1Pointer(void*)',data)[0]
-  data = re.subn(r'PetscToPointer\(a\) \(a\)','PetscToPointer(a) (*(PetscFortranAddr *)(a))',data)[0]
+  data = re.subn(r'PetscToPointer\(a\) \(a\)','PetscToPointer(a) (a ? *(PetscFortranAddr *)(a) : 0)',data)[0]
   data = re.subn(r'PetscFromPointer\(a\) \(int\)\(a\)','PetscFromPointer(a) (PetscFortranAddr)(a)',data)[0]
   data = re.subn(r'PetscToPointer\( \*\(int\*\)','PetscToPointer(',data)[0]
   data = re.subn('MPI_Comm comm','MPI_Comm *comm',data)[0]
@@ -250,11 +250,15 @@ def processf90interfaces(petscdir,petscarch,verbose):
           for sfile in os.listdir(tmpDir):
             if verbose: print('  Copying in '+sfile)
             with open(os.path.join(tmpDir,sfile),'r') as fdr:
-              for ibuf in fdr.read().split('      subroutine')[1:]:
+              buf =  fdr.read()
+              if buf.startswith('#if defined(PETSC_HAVE_FORTRAN_TYPE_STAR)'):
+                fd.write('#if defined(PETSC_HAVE_FORTRAN_TYPE_STAR)\n')
+              for ibuf in buf.split('      subroutine')[1:]:
                 ibuf = '      subroutine'+ibuf
                 ibuf = ibuf.replace('integer z','PetscErrorCode z')
                 ibuf = ibuf.replace('integer a ! MPI_Comm','MPI_Comm a ! MPI_Comm')
                 plist = [p for p in ptypes if ' '+p[1:]+' ' in ibuf]
+                if 'PetscObject' in ibuf: plist.append('tPetscObject')
                 if plist: ibuf = ibuf.replace(')',')\n       import '+','.join(set(plist)),1)
                 fd.write(ibuf)
         shutil.rmtree(tmpDir)

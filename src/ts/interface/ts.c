@@ -1786,7 +1786,7 @@ PetscErrorCode TS2GetSolution(TS ts, Vec *u, Vec *v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSLoad - Loads a `TS` that has been stored in binary  with `TSView()`.
 
   Collective
@@ -1837,7 +1837,7 @@ PetscErrorCode TSLoad(TS ts, PetscViewer viewer)
   #include <petscviewersaws.h>
 #endif
 
-/*@C
+/*@
   TSViewFromOptions - View a `TS` based on values in the options database
 
   Collective
@@ -1859,7 +1859,7 @@ PetscErrorCode TSViewFromOptions(TS ts, PetscObject obj, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSView - Prints the `TS` data structure.
 
   Collective

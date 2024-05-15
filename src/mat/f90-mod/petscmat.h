@@ -3,21 +3,13 @@
 !
 #include "petsc/finclude/petscmat.h"
 
-      type tMat
-        sequence
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      type, extends(tPetscObject) :: tMat
       end type tMat
-      type tMatNullSpace
-        sequence
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      type, extends(tPetscObject) :: tMatNullSpace
       end type tMatNullSpace
-      type tMatFDColoring
-        sequence
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      type, extends(tPetscObject) :: tMatFDColoring
       end type tMatFDColoring
-      type tMatTransposeColoring
-        sequence
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      type, extends(tPetscObject) :: tMatTransposeColoring
       end type tMatTransposeColoring
 
       Mat, parameter :: PETSC_NULL_MAT = tMat(0)

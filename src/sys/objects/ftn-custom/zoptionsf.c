@@ -20,7 +20,6 @@
   #define petscoptionsscalar_              PETSCOPTIONSSCALAR
   #define petscoptionsscalararray_         PETSCOPTIONSSCALARARRAY
   #define petscoptionsstring_              PETSCOPTIONSSTRING
-  #define petscsubcommview_                PETSCSUBCOMMVIEW
   #define petscsubcommgetparent_           PETSCSUBCOMMGETPARENT
   #define petscsubcommgetcontiguousparent_ PETSCSUBCOMMGETCONTIGUOUSPARENT
   #define petscsubcommgetchild_            PETSCSUBCOMMGETCHILD
@@ -44,7 +43,6 @@
   #define petscoptionsinsertstring_        PETSCOPTIONSINSERTSTRING
   #define petscoptionsview_                PETSCOPTIONSVIEW
   #define petscoptionsleft_                PETSCOPTIONSLEFT
-  #define petscobjectviewfromoptions_      PETSCOBJECTVIEWFROMOPTIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define petscoptionsbegin_               petscoptionsbegin
   #define petscoptionsend_                 petscoptionsend
@@ -58,7 +56,6 @@
   #define petscoptionsscalar_              petscoptionsscalar
   #define petscoptionsscalararray_         petscoptionsscalararray
   #define petscoptionsstring_              petscoptionsstring
-  #define petscsubcommview_                petscsubcommview
   #define petscsubcommgetparent_           petscsubcommgetparent
   #define petscsubcommgetcontiguousparent_ petscsubcommgetcontiguousparent
   #define petscsubcommgetchild_            petscsubcommgetchild
@@ -82,7 +79,6 @@
   #define petscoptionsinsertstring_        petscoptionsinsertstring
   #define petscoptionsview_                petscoptionsview
   #define petscoptionsleft_                petscoptionsleft
-  #define petscobjectviewfromoptions_      petscobjectviewfromoptions
 #endif
 
 static PetscOptionItems PetscOptionsObjectBase, *PetscOptionsObject = NULL;
@@ -544,17 +540,6 @@ PETSC_EXTERN void petscoptionsview_(PetscOptions *options, PetscViewer *vin, Pet
   *ierr = PetscOptionsView(*options, v);
 }
 
-PETSC_EXTERN void petscobjectviewfromoptions_(PetscObject *obj, PetscObject *bobj, char *option, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T loption)
-{
-  char *o;
-
-  FIXCHAR(option, loption, o);
-  CHKFORTRANNULLOBJECT(obj);
-  *ierr = PetscObjectViewFromOptions(*obj, *bobj, o);
-  if (*ierr) return;
-  FREECHAR(option, o);
-}
-
 PETSC_EXTERN void petscsubcommgetparent_(PetscSubcomm *scomm, MPI_Fint *pcomm, int *ierr)
 {
   MPI_Comm tcomm;
@@ -574,11 +559,4 @@ PETSC_EXTERN void petscsubcommgetchild_(PetscSubcomm *scomm, MPI_Fint *ccomm, in
   MPI_Comm tcomm;
   *ierr  = PetscSubcommGetChild(*scomm, &tcomm);
   *ccomm = MPI_Comm_c2f(tcomm);
-}
-
-PETSC_EXTERN void petscsubcommview_(PetscSubcomm *psubcomm, PetscViewer *viewer, int *ierr)
-{
-  PetscViewer v;
-  PetscPatchDefaultViewers_Fortran(viewer, v);
-  *ierr = PetscSubcommView(*psubcomm, v);
 }

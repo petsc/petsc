@@ -157,7 +157,7 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords, MatNullSpace *sp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatNullSpaceView - Visualizes a null space object.
 
   Collective; No Fortran Support

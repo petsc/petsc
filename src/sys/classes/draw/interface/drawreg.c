@@ -12,7 +12,7 @@
 */
 PetscFunctionList PetscDrawList = NULL;
 
-/*@C
+/*@
   PetscDrawView - Prints the `PetscDraw` data structure.
 
   Collective
@@ -80,7 +80,7 @@ PetscErrorCode PetscDrawView(PetscDraw indraw, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawViewFromOptions - View a `PetscDraw` from the option database
 
   Collective

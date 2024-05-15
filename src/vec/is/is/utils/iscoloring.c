@@ -92,7 +92,7 @@ PetscErrorCode ISColoringDestroy(ISColoring *iscoloring)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISColoringViewFromOptions - Processes command line options to determine if/how an `ISColoring` object is to be viewed.
 
   Collective
@@ -128,7 +128,7 @@ PetscErrorCode ISColoringViewFromOptions(ISColoring obj, PetscObject bobj, const
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISColoringView - Views an `ISColoring` coloring context.
 
   Collective

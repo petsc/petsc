@@ -200,10 +200,10 @@ PetscErrorCode PetscHeaderReset_Internal(PetscObject obj)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectCopyFortranFunctionPointers - Copy function pointers to another object
 
-  Logically Collective, No Fortran Support
+  Logically Collective
 
   Input Parameters:
 + src  - source object
@@ -559,7 +559,7 @@ PetscErrorCode PetscObjectProcessOptionsHandlers(PetscObject obj, PetscOptionIte
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectDestroyOptionsHandlers - Destroys all the option handlers attached to an object
 
   Not Collective
@@ -583,7 +583,7 @@ PetscErrorCode PetscObjectDestroyOptionsHandlers(PetscObject obj)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectReference - Indicates to a `PetscObject` that it is being
   referenced by another `PetscObject`. This increases the reference
   count for that object by one.
@@ -609,7 +609,7 @@ PetscErrorCode PetscObjectReference(PetscObject obj)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectGetReference - Gets the current reference count for a PETSc object.
 
   Not Collective
@@ -634,7 +634,7 @@ PetscErrorCode PetscObjectGetReference(PetscObject obj, PetscInt *cnt)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectDereference - Indicates to any `PetscObject` that it is being
   referenced by one less `PetscObject`. This decreases the reference
   count for that object by one.
@@ -676,7 +676,7 @@ PetscErrorCode PetscObjectRemoveReference(PetscObject obj, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectCompose - Associates another PETSc object with a given PETSc object.
 
   Not Collective
@@ -726,7 +726,7 @@ PetscErrorCode PetscObjectCompose(PetscObject obj, const char name[], PetscObjec
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectQuery  - Gets a PETSc object associated with a given object that was composed with `PetscObjectCompose()`
 
   Not Collective

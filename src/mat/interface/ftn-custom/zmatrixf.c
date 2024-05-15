@@ -53,8 +53,6 @@
   #define matrestorerowij_             MATRESTOREROWIJ
   #define matgetrow_                   MATGETROW
   #define matrestorerow_               MATRESTOREROW
-  #define matload_                     MATLOAD
-  #define matview_                     MATVIEW
   #define matseqaijgetarray_           MATSEQAIJGETARRAY
   #define matseqaijrestorearray_       MATSEQAIJRESTOREARRAY
   #define matdensegetarray_            MATDENSEGETARRAY
@@ -106,7 +104,6 @@
   #define matgetownershiprange01_      MATGETOWNERSHIPRANGE01
   #define matgetownershiprange11_      MATGETOWNERSHIPRANGE11
   #define matgetownershipis_           MATGETOWNERSHIPIS
-  #define matviewfromoptions_          MATVIEWFROMOPTIONS
   #define matdestroy_                  MATDESTROY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define matsetvalues_                matsetvalues
@@ -144,8 +141,6 @@
   #define matrestorerowij_             matrestorerowij
   #define matgetrow_                   matgetrow
   #define matrestorerow_               matrestorerow
-  #define matview_                     matview
-  #define matload_                     matload
   #define matseqaijgetarray_           matseqaijgetarray
   #define matseqaijrestorearray_       matseqaijrestorearray
   #define matdensegetarray_            matdensegetarray
@@ -209,7 +204,6 @@
   #define matgetownershiprange01_      matgetownershiprange01
   #define matgetownershiprange11_      matgetownershiprange11
   #define matgetownershipis_           matgetownershipis
-  #define matviewfromoptions_          matviewfromoptions
   #define matdestroy_                  matdestroy
 #endif
 
@@ -614,20 +608,6 @@ PETSC_EXTERN void matrestorerow_(Mat *mat, PetscInt *row, PetscInt *ncols, Petsc
   matgetrowactive = 0;
 }
 
-PETSC_EXTERN void matview_(Mat *mat, PetscViewer *vin, PetscErrorCode *ierr)
-{
-  PetscViewer v;
-  PetscPatchDefaultViewers_Fortran(vin, v);
-  *ierr = MatView(*mat, v);
-}
-
-PETSC_EXTERN void matload_(Mat *mat, PetscViewer *vin, PetscErrorCode *ierr)
-{
-  PetscViewer v;
-  PetscPatchDefaultViewers_Fortran(vin, v);
-  *ierr = MatLoad(*mat, v);
-}
-
 PETSC_EXTERN void matseqaijgetarray_(Mat *mat, PetscScalar *fa, size_t *ia, PetscErrorCode *ierr)
 {
   PetscScalar *mm;
@@ -893,14 +873,4 @@ PETSC_EXTERN void matzerorowslocal0_(Mat *mat, PetscInt *numRows, PetscInt rows[
 PETSC_EXTERN void matzerorowslocal1_(Mat *mat, PetscInt *numRows, PetscInt rows[], PetscScalar *diag, Vec *x, Vec *b, int *ierr)
 {
   matzerorowslocal_(mat, numRows, rows, diag, x, b, ierr);
-}
-PETSC_EXTERN void matviewfromoptions_(Mat *ao, PetscObject obj, char *type, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-
-  FIXCHAR(type, len, t);
-  CHKFORTRANNULLOBJECT(obj);
-  *ierr = MatViewFromOptions(*ao, obj, t);
-  if (*ierr) return;
-  FREECHAR(type, t);
 }

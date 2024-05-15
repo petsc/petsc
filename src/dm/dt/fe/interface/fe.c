@@ -156,7 +156,7 @@ PetscErrorCode PetscFEGetType(PetscFE fem, PetscFEType *name)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFEViewFromOptions - View from a `PetscFE` based on values in the options database
 
   Collective
@@ -178,7 +178,7 @@ PetscErrorCode PetscFEViewFromOptions(PetscFE A, PetscObject obj, const char nam
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFEView - Views a `PetscFE`
 
   Collective

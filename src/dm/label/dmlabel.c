@@ -454,7 +454,7 @@ static PetscErrorCode DMLabelView_Concrete(DMLabel label, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMLabelView - View the label
 
   Collective

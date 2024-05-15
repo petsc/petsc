@@ -667,7 +667,7 @@ PetscErrorCode VecDestroyVecs(PetscInt m, Vec *vv[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecViewFromOptions - View a vector based on values in the options database
 
   Collective
@@ -692,7 +692,7 @@ PetscErrorCode VecViewFromOptions(Vec A, PetscObject obj, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecView - Views a vector object.
 
   Collective
@@ -1089,7 +1089,7 @@ PetscErrorCode VecResetArray(Vec vec)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecLoad - Loads a vector that has been stored in binary or HDF5 format
   with `VecView()`.
 
@@ -1853,7 +1853,7 @@ PetscErrorCode VecSwap(Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecStashViewFromOptions - Processes command line options to determine if/how a `VecStash` object is to be viewed.
 
   Collective

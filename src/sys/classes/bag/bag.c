@@ -626,7 +626,7 @@ PetscErrorCode PetscBagSetFromOptions(PetscBag bag)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagView - Views a bag of values as either ASCII text or a binary file
 
   Collective
@@ -747,7 +747,7 @@ PetscErrorCode PetscBagView(PetscBag bag, PetscViewer view)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagViewFromOptions - Processes command line options to determine if/how a `PetscBag` is to be viewed.
 
   Collective
@@ -787,7 +787,7 @@ PetscErrorCode PetscBagViewFromOptions(PetscBag bag, PetscObject bobj, const cha
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagLoad - Loads a bag of values from a binary file
 
   Collective

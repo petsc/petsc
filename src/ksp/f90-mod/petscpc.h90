@@ -65,15 +65,6 @@
       end Interface
 
       Interface
-      subroutine PCView(a,b,z)
-      import tPC,tPetscViewer
-       PC a
-       PetscViewer b
-       PetscErrorCode z
-       end subroutine
-      end Interface
-
-      Interface
         subroutine PCDestroy(a,z)
           import tPC
           PC a

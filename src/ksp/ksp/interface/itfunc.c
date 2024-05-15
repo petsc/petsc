@@ -428,7 +428,7 @@ PetscErrorCode KSPSetUp(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPConvergedReasonView - Displays the reason a `KSP` solve converged or diverged to a viewer
 
   Collective
@@ -591,7 +591,7 @@ PetscErrorCode KSPConvergedReasonViewFromOptions(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPConvergedRateView - Displays the convergence rate <https://en.wikipedia.org/wiki/Coefficient_of_determination> of `KSPSolve()` to a viewer
 
   Collective

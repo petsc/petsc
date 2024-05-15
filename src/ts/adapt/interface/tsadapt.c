@@ -173,7 +173,7 @@ PetscErrorCode TSAdaptSetOptionsPrefix(TSAdapt adapt, const char prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSAdaptLoad - Loads a TSAdapt that has been stored in binary with `TSAdaptView()`.
 
   Collective

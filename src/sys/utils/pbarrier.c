@@ -3,7 +3,7 @@
 /* Logging support */
 PetscLogEvent PETSC_Barrier;
 
-/*@C
+/*@
   PetscBarrier - Blocks until this routine is executed by all processors owning the object `obj`.
 
   Input Parameter:

@@ -9,7 +9,6 @@
   #define petscviewerandformatdestroy_ PETSCVIEWERANDFORMATDESTROY
   #define petscviewergetsubviewer_     PETSCVIEWERGETSUBVIEWER
   #define petscviewerrestoresubviewer_ PETSCVIEWERRESTORESUBVIEWER
-  #define petscviewierview_            PETSCVIEWERVIEW
   #define petscviewerflush_            PETSCVIEWERFLUSH
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define petscviewersetformat_        petscviewersetformat
@@ -19,7 +18,6 @@
   #define petscviewerandformatdestroy_ petscviewerandformatdestroy
   #define petscviewergetsubviewer_     petscviewergetsubviewer
   #define petscviewerrestoresubviewer_ petscviewerrestoresubviewer
-  #define petscviewierview_            petscviewerview
   #define petscviewerflush_            petscviewerflush
 #endif
 
@@ -44,8 +42,6 @@ PETSC_EXTERN void petscviewerrestoresubviewer_(PetscViewer *vin, MPI_Fint *comm,
   *ierr = PetscViewerRestoreSubViewer(v, MPI_Comm_f2c(*(comm)), outviewer);
 }
 
-PETSC_EXTERN PetscErrorCode PetscViewerSetFormatDeprecated(PetscViewer, PetscViewerFormat);
-
 PETSC_EXTERN void petscviewerandformatcreate_(PetscViewer *vin, PetscViewerFormat *format, PetscViewerAndFormat **vf, PetscErrorCode *ierr)
 {
   PetscViewer v;
@@ -56,13 +52,6 @@ PETSC_EXTERN void petscviewerandformatcreate_(PetscViewer *vin, PetscViewerForma
 PETSC_EXTERN void petscviewerandformatdestroy_(PetscViewerAndFormat **vf, PetscErrorCode *ierr)
 {
   *ierr = PetscViewerAndFormatDestroy(vf);
-}
-
-PETSC_EXTERN void petscviewersetformat_(PetscViewer *vin, PetscViewerFormat *format, PetscErrorCode *ierr)
-{
-  PetscViewer v;
-  PetscPatchDefaultViewers_Fortran(vin, v);
-  *ierr = PetscViewerSetFormatDeprecated(v, *format);
 }
 
 PETSC_EXTERN void petscviewerpushformat_(PetscViewer *vin, PetscViewerFormat *format, PetscErrorCode *ierr)
@@ -77,12 +66,4 @@ PETSC_EXTERN void petscviewerpopformat_(PetscViewer *vin, PetscErrorCode *ierr)
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin, v);
   *ierr = PetscViewerPopFormat(v);
-}
-
-PETSC_EXTERN void petscviewerview_(PetscViewer *vin, PetscViewer *viewerin, PetscErrorCode *ierr)
-{
-  PetscViewer v, viewer;
-  PetscPatchDefaultViewers_Fortran(vin, v);
-  PetscPatchDefaultViewers_Fortran(viewerin, viewer);
-  *ierr = PetscViewerView(v, viewer);
 }

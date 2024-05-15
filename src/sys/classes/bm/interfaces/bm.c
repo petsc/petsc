@@ -196,7 +196,7 @@ PetscErrorCode PetscBenchSetFromOptions(PetscBench bm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBenchView - Views a PETSc benchmark `PetscBench`
 
   Collective
@@ -219,7 +219,7 @@ PetscErrorCode PetscBenchView(PetscBench bm, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBenchViewFromOptions - Processes command line options to determine if/how a `PetscBench` is to be viewed.
 
   Collective

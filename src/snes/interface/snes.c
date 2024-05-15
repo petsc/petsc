@@ -271,7 +271,7 @@ PetscErrorCode SNESGetJacobianDomainError(SNES snes, PetscBool *domainerror)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESLoad - Loads a `SNES` that has been stored in `PETSCVIEWERBINARY` with `SNESView()`.
 
   Collective
@@ -321,7 +321,7 @@ PetscErrorCode SNESLoad(SNES snes, PetscViewer viewer)
   #include <petscviewersaws.h>
 #endif
 
-/*@C
+/*@
   SNESViewFromOptions - View a `SNES` based on values in the options database
 
   Collective
@@ -345,7 +345,7 @@ PetscErrorCode SNESViewFromOptions(SNES A, PetscObject obj, const char name[])
 
 PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES, Vec, Mat, Mat, void *);
 
-/*@C
+/*@
   SNESView - Prints or visualizes the `SNES` data structure.
 
   Collective
@@ -4425,7 +4425,7 @@ PetscErrorCode SNESSetUpdate(SNES snes, PetscErrorCode (*func)(SNES snes, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESConvergedReasonView - Displays the reason a `SNES` solve converged or diverged to a viewer
 
   Collective

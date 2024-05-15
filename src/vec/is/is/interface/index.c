@@ -1571,7 +1571,7 @@ PetscErrorCode ISRestoreNonlocalIS(IS is, IS *complement)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISViewFromOptions - View an `IS` based on options in the options database
 
   Collective
@@ -1596,7 +1596,7 @@ PetscErrorCode ISViewFromOptions(IS A, PetscObject obj, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISView - Displays an index set.
 
   Collective

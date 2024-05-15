@@ -1055,7 +1055,7 @@ static PetscErrorCode PetscWeakFormView_Ascii(PetscWeakForm wf, PetscViewer view
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormView - Views a `PetscWeakForm`
 
   Collective

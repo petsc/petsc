@@ -3,9 +3,7 @@
 !
 #include "petsc/finclude/petscpc.h"
 
-      type tPC
-        sequence
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      type, extends(tPetscObject) :: tPC
       end type tPC
 
       PC, parameter :: PETSC_NULL_PC = tPC(0)

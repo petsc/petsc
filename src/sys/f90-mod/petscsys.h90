@@ -1,35 +1,3 @@
-#if defined(PETSC_HAVE_FORTRAN_TYPE_STAR)
-      Interface
-       subroutine PetscObjectReference(obj,ierr)
-          type(*) :: obj
-          PetscErrorCode :: ierr
-       end Subroutine PetscObjectReference
-       subroutine PetscObjectDereference(obj,ierr)
-          type(*) :: obj
-          PetscErrorCode :: ierr
-        end Subroutine PetscObjectDereference
-       subroutine PetscObjectGetReference(obj,c,ierr)
-          type(*) :: obj
-          PetscInt c
-          PetscErrorCode :: ierr
-        end Subroutine PetscObjectGetReference
-       subroutine PetscObjectCompose(obj,str,obj2,ierr)
-          type(*) :: obj,obj2
-          character(*) :: str
-          PetscErrorCode :: ierr
-        end Subroutine PetscObjectCompose
-       subroutine PetscObjectQuery(obj,str,obj2,ierr)
-          type(*) :: obj,obj2
-          character(*) :: str
-          PetscErrorCode :: ierr
-        end Subroutine PetscObjectQuery
-      subroutine PetscBarrier(a,z)
-       type(*) :: a
-       PetscErrorCode :: z
-       end subroutine
-      end Interface
-#endif
-
       Interface
        Subroutine PetscPrintf(m,c,ierr)
           MPI_Comm :: m
@@ -165,25 +133,12 @@
        PetscErrorCode, intent(out) :: ierr
       end Subroutine PetscFinalize
 
-      subroutine PetscRandomView(a,b,ierr)
-       import tPetscRandom,tPetscViewer
-       PetscRandom a
-       PetscViewer b
-       PetscErrorCode ierr
-       end subroutine
-
       subroutine PetscRandomDestroy(a,z)
        import tPetscRandom
        PetscRandom a
        PetscErrorCode z
       end subroutine
 
-      subroutine PetscSubcommView(a,b,z)
-       import tPetscSubcomm,tPetscViewer
-       PetscSubcomm a ! PetscSubcomm
-       PetscViewer b ! PetscViewer
-       PetscErrorCode z
-      end subroutine
       subroutine PetscSubcommGetParent(a,b,z)
        import tPetscSubcomm
        PetscSubcomm a ! PetscSubcomm

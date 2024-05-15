@@ -3,14 +3,12 @@
 !
 #include "petsc/finclude/petscksp.h"
 
-      type tKSP
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      type, extends(tPetscObject) :: tKSP
       end type tKSP
 
       KSP, parameter :: PETSC_NULL_KSP = tKSP(0)
 
-      type tKSPGuess
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      type, extends(tPetscObject) :: tKSPGuess
       end type tKSPGuess
 
       KSPGuess, parameter :: PETSC_NULL_KSPGuess = tKSPGuess(0)

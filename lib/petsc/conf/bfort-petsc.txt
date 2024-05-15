@@ -209,6 +209,9 @@ native    PetscOffset
 native    PetscFortranAddr
 native    PetscCount
 
+nativeptr PetscDevice
+nativeptr PetscDeviceContext
+
 native    PetscInt
 native    PetscInt64
 native    PetscObjectState
@@ -241,7 +244,7 @@ native    PetscReal
 
 
 native    MatScalar
-native    PetscObject
+nativeptr PetscObject
 native    PetscLogDouble
 
 nativeptr PetscMatlabEngine

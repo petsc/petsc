@@ -135,8 +135,11 @@ class Configure(config.base.Configure):
 
   def checkFortranTypeStar(self):
     '''Determine whether the Fortran compiler handles type(*)'''
+    '''Newer nvfortran support (*) but they introduce extra arguments at the end that interfere with char * lengths'''
+    '''So it cannot be used in interface definitions'''
+    '''Not using type(*) :: b(:) prevents this compiler from certifying it has (*)'''
     self.pushLanguage('FC')
-    if self.checkCompile(body = '      interface\n      subroutine a(b)\n      type(*) :: b(:)\n      end subroutine\n      end interface\n'):
+    if self.checkCompile(body = '      interface\n      subroutine a(b)\n      type(*)  b\n      end subroutine\n      end interface\n'):
       self.addDefine('HAVE_FORTRAN_TYPE_STAR', 1)
       self.logPrint('Fortran compiler supports type(*)')
     else:

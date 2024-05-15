@@ -231,7 +231,7 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSViewFromOptions - View a `PetscDS` based on values in the options database
 
   Collective
@@ -253,7 +253,7 @@ PetscErrorCode PetscDSViewFromOptions(PetscDS A, PetscObject obj, const char nam
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSView - Views a `PetscDS`
 
   Collective

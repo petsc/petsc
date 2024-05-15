@@ -231,3 +231,5 @@ PETSC_EXTERN PetscErrorCode DMDAConvertToCell(DM, MatStencil, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMDASetVertexCoordinates(DM, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);
 PETSC_EXTERN PetscErrorCode DMDASetPreallocationCenterDimension(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMDAGetPreallocationCenterDimension(DM, PetscInt *);
+
+PETSC_EXTERN PetscErrorCode DMDAVTKWriteAll(PetscObject, PetscViewer);

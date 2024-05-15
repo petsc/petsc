@@ -252,7 +252,7 @@ PetscErrorCode TSTrajectoryGetVecs(TSTrajectory tj, TS ts, PetscInt stepnum, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSTrajectoryViewFromOptions - View a `TSTrajectory` based on values in the options database
 
   Collective
@@ -274,7 +274,7 @@ PetscErrorCode TSTrajectoryViewFromOptions(TSTrajectory A, PetscObject obj, cons
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSTrajectoryView - Prints information about the trajectory object
 
   Collective

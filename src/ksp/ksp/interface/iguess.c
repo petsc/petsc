@@ -144,7 +144,7 @@ PetscErrorCode KSPGuessDestroy(KSPGuess *guess)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPGuessView - View the `KSPGuess` object
 
   Logically Collective

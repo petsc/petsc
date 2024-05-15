@@ -17,9 +17,7 @@
       PetscEnum, parameter :: DMPLEX_TPS_SCHWARZ_P = 0
       PetscEnum, parameter :: DMPLEX_TPS_GYROID = 1
 
-      type tDMPlexTransform
-        sequence
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      type, extends(tPetscObject) :: tDMPlexTransform
       end type tDMPlexTransform
 
       DMPlexTransform, parameter :: PETSC_NULL_DMPLEXTRANSFORM = tDMPlexTransform(0)

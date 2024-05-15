@@ -166,10 +166,10 @@ PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor, const char *name, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
-  DMNetworkMonitorView - Monitor function for `TSMonitorSet()`
+/*@C
+  DMNetworkMonitorView - A `DMNETWORK` specific monitor function for `TSMonitorSet()`
 
-  Collective
+  Collective, No Fortran support
 
   Input Parameters:
 + monitor - `DMNetworkMonitor` object
@@ -177,7 +177,7 @@ PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor, const char *name, P
 
   Level: intermediate
 
-.seealso: `DM`, `DMNETWORK`, `DMNetworkMonitorCreate()`, `DMNetworkMonitorDestroy()`, `DMNetworkMonitorAdd()`
+.seealso: `DM`, `DMNETWORK`, `DMNetworkMonitor`, `DMNetworkMonitorCreate()`, `DMNetworkMonitorDestroy()`, `DMNetworkMonitorAdd()`
 @*/
 PetscErrorCode DMNetworkMonitorView(DMNetworkMonitor monitor, Vec x)
 {
