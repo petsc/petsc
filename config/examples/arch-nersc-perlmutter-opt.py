@@ -11,6 +11,7 @@
 #   module load cudatoolkit
 #   module load PrgEnv-gnu
 #   module load craype-accel-nvidia80
+#   module load cray-python
 #
 # The above are currently present in the default environment. Users may wish to 'module load' a
 # different programming environment (which will generally force a reload of certain related modules,
@@ -23,7 +24,9 @@ if __name__ == '__main__':
   import configure
   configure_options = [
     '--with-make-np=8', # Must limit size of parallel build to stay within resource limitations imposed by the center
-    '--with-mpiexec=srun -G4', # '-G4' requests all four GPUs present on a Perlmutter GPU compute node.
+    # '-G4' requests all four GPUs present on a Perlmutter GPU compute node.
+    # --gpu-bind=none to avoid the gpu-aware mpi runtime error: (GTL DEBUG: 0) cuIpcOpenMemHandle: invalid argument, CUDA_ERROR_INVALID_VALUE, line no 360
+    '--with-mpiexec=srun -G4 --gpu-bind=none',
     '--with-batch=0',
 
     # Use the Cray compiler wrappers, regardless of the underlying compilers loaded by the programming environment module:
