@@ -818,6 +818,8 @@ PETSC_INTERN PetscErrorCode DMCreateNeumannOverlap_Plex(DM, IS *, Mat *, PetscEr
 PETSC_INTERN PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM, PetscInt, PetscInt, DMLabel, PetscBool);
 PETSC_INTERN PetscErrorCode DMPlexDistributeOverlap_Internal(DM, PetscInt, MPI_Comm, const char *, PetscSF *, DM *);
 
+PETSC_INTERN PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM, DMLabel, PetscInt, PetscBool, PetscBool, DMLabel, DM);
+
 PETSC_INTERN PetscErrorCode DMPeriodicCoordinateSetUp_Internal(DM);
 
 /* Functions in the vtable */
