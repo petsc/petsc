@@ -1,5 +1,7 @@
 #include <petsc/private/dmplextransformimpl.h> /*I "petscdmplextransform.h" I*/
 
+#include <petsc/private/dmlabelimpl.h> // For DMLabelMakeAllInvalid_Internal()
+
 /*
   The cohesive transformation extrudes cells into a mesh from faces along an internal boundary.
 
@@ -769,6 +771,7 @@ static PetscErrorCode DMPlexTransformSetUp_Cohesive(DMPlexTransform tr)
   PetscCall(DMPlexGetCellTypeLabel(dm, &celltype));
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, "Refine Type", &tr->trType));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+  PetscCall(DMLabelMakeAllInvalid_Internal(active));
   for (PetscInt p = pStart; p < pEnd; ++p) {
     PetscInt ct, val;
 
