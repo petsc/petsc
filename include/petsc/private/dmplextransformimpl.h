@@ -74,6 +74,7 @@ typedef struct {
 typedef struct {
   PetscInt         debug;     // Debugging level
   PetscBool        useTensor; // Flag to create tensor cells
+  PetscReal        width;     // The width of a cohesive cell
   PetscInt        *Nt;        // The array of the number of target types
   DMPolytopeType **target;    // The array of target types
   PetscInt       **size;      // The array of the number of each target type
