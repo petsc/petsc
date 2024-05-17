@@ -259,7 +259,6 @@
 !
       subroutine SampleShellPCSetUp(pc,ierr)
       use ex15fmodule
-      use petscksp
       implicit none
 
       PC      pc

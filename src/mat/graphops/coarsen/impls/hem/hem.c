@@ -1151,22 +1151,27 @@ static PetscErrorCode MatCoarsenView_HEM(MatCoarsen coarse, PetscViewer viewer)
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)coarse), &rank));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
-    PetscCDIntNd *pos, *pos2;
+    PetscCDIntNd     *pos, *pos2;
+    PetscViewerFormat format;
+
     PetscCall(PetscViewerASCIIPrintf(viewer, "%d matching steps with threshold = %g\n", (int)coarse->max_it, (double)coarse->threshold));
-    PetscCall(PetscViewerASCIIPushSynchronized(viewer));
-    for (PetscInt kk = 0; kk < coarse->agg_lists->size; kk++) {
-      PetscCall(PetscCDGetHeadPos(coarse->agg_lists, kk, &pos));
-      if ((pos2 = pos)) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "selected local %d: ", (int)kk));
-      while (pos) {
-        PetscInt gid1;
-        PetscCall(PetscCDIntNdGetID(pos, &gid1));
-        PetscCall(PetscCDGetNextPos(coarse->agg_lists, kk, &pos));
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %d ", (int)gid1));
+    PetscCall(PetscViewerGetFormat(viewer, &format));
+    if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+      PetscCall(PetscViewerASCIIPushSynchronized(viewer));
+      for (PetscInt kk = 0; kk < coarse->agg_lists->size; kk++) {
+        PetscCall(PetscCDGetHeadPos(coarse->agg_lists, kk, &pos));
+        if ((pos2 = pos)) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "selected local %d: ", (int)kk));
+        while (pos) {
+          PetscInt gid1;
+          PetscCall(PetscCDIntNdGetID(pos, &gid1));
+          PetscCall(PetscCDGetNextPos(coarse->agg_lists, kk, &pos));
+          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %d ", (int)gid1));
+        }
+        if (pos2) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
       }
-      if (pos2) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
+      PetscCall(PetscViewerFlush(viewer));
+      PetscCall(PetscViewerASCIIPopSynchronized(viewer));
     }
-    PetscCall(PetscViewerFlush(viewer));
-    PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

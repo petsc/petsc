@@ -286,13 +286,15 @@ static PetscErrorCode MatCoarsenApply_MIS(MatCoarsen coarse)
 
 static PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse, PetscViewer viewer)
 {
-  PetscMPIInt rank;
-  PetscBool   iascii;
+  PetscMPIInt       rank;
+  PetscBool         iascii;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)coarse), &rank));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscViewerGetFormat(viewer, &format));
+  if (iascii && format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
     PetscCall(PetscViewerASCIIPushSynchronized(viewer));
     PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  [%d] MIS aggregator\n", rank));
     if (!rank) {

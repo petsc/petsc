@@ -48,6 +48,8 @@ Changes: Development
 - Add support in ``PCFieldSplitSetFields()`` including with ``-pc_fieldsplit_%d_fields fields`` for ``MATNEST``,  making it possible to
   utilize multiple levels of ``PCFIELDSPLIT`` with ``MATNEST`` from the command line
 
+- Change the option database keys for coarsening for ``PCGAMG`` to use the prefix ``-pc_gamg_``, for example ``-pc_gamg_mat_coarsen_type``
+
 .. rubric:: KSP:
 
 .. rubric:: SNES:

@@ -436,13 +436,13 @@
 !   requires: !single
 !   test:
 !      suffix: misk
-!      args: -mat_coarsen_type misk -pc_gamg_aggressive_coarsening 0 -ksp_monitor_short
+!      args: -pc_gamg_mat_coarsen_type misk -pc_gamg_aggressive_coarsening 0 -ksp_monitor_short
 !   test:
 !      suffix: mis
-!      args: -mat_coarsen_type mis -ksp_monitor_short
+!      args: -pc_gamg_mat_coarsen_type mis -ksp_monitor_short
 !   test:
 !      suffix: hem
-!      args: -mat_coarsen_type hem -ksp_converged_reason
+!      args: -pc_gamg_mat_coarsen_type hem -ksp_converged_reason
 !      filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[2-3]/Linear solve converged due to CONVERGED_RTOL iterations 11/g"
 !
 !TEST*/
