@@ -75,6 +75,14 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(PetscBool, const char *, Pe
 #define FORTRANNULLOBJECT(a)    (*(void **)(PETSC_UINTPTR_T)a == (void *)0)
 #define FORTRANNULLMPICOMM(a)   (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_MPI_COMM_Fortran)
 
+/*
+    A Fortran object with a value of (void*) 0 corresponds to a NULL object in C and is indicated in Fortran by PETSC_NULL_XXXX
+    A Fortran object with a value of (void*) -2 is an object that was never created or was destroyed (see checkFortranTypeInitialize()).
+
+    This is needed because Fortran always uses pass by reference so one cannot pass a NULL address, only an address with special
+    values at the location.
+*/
+
 #define CHKFORTRANNULLINTEGER(a) \
   do { \
     if (FORTRANNULLINTEGER(a)) { \
@@ -113,7 +121,7 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(PetscBool, const char *, Pe
     if (FORTRANNULLREAL(a)) { \
       a = NULL; \
     } else if (FORTRANNULLINTEGER(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLSCALAR(a) || FORTRANNULLBOOL(a) || FORTRANNULLFUNCTION(a) || FORTRANNULLCHARACTER(a) || FORTRANNULLMPICOMM(a)) { \
-      *ierr = PetscError(PETSC_COMM_SELF, __LINE__, "fortran_interface_unknown_file", __FILE__, PETSC_ERR_ARG_WRONG, PETSC_ERROR_INITIAL, "Use PETSC_NULL_REAL"); \
+      *ierr = PetscError(PETSC_COMM_SELF, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_ARG_WRONG, PETSC_ERROR_INITIAL, "Use PETSC_NULL_REAL"); \
       *ierr = PETSC_ERR_ARG_BADPTR; \
       return; \
     } \
@@ -124,7 +132,7 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(PetscBool, const char *, Pe
     if (*(void **)a == (void *)0) { \
       a = NULL; \
     } else if (FORTRANNULLINTEGER(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLSCALAR(a) || FORTRANNULLREAL(a) || FORTRANNULLBOOL(a) || FORTRANNULLFUNCTION(a) || FORTRANNULLCHARACTER(a) || FORTRANNULLMPICOMM(a)) { \
-      *ierr = PetscError(PETSC_COMM_SELF, __LINE__, "fortran_interface_unknown_file", __FILE__, PETSC_ERR_ARG_WRONG, PETSC_ERROR_INITIAL, "Use PETSC_NULL_XXX where XXX is the name of a particular object class"); \
+      *ierr = PetscError(PETSC_COMM_SELF, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_ARG_WRONG, PETSC_ERROR_INITIAL, "Use PETSC_NULL_XXX where XXX is the name of a particular object class"); \
       *ierr = PETSC_ERR_ARG_BADPTR; \
       return; \
     } \
@@ -135,7 +143,7 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(PetscBool, const char *, Pe
     if (FORTRANNULLBOOL(a)) { \
       a = NULL; \
     } else if (FORTRANNULLSCALAR(a) || FORTRANNULLINTEGER(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLSCALAR(a) || FORTRANNULLREAL(a) || FORTRANNULLFUNCTION(a) || FORTRANNULLCHARACTER(a) || FORTRANNULLMPICOMM(a)) { \
-      *ierr = PetscError(PETSC_COMM_SELF, __LINE__, "fortran_interface_unknown_file", __FILE__, PETSC_ERR_ARG_WRONG, PETSC_ERROR_INITIAL, "Use PETSC_NULL_BOOL"); \
+      *ierr = PetscError(PETSC_COMM_SELF, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_ARG_WRONG, PETSC_ERROR_INITIAL, "Use PETSC_NULL_BOOL"); \
       *ierr = PETSC_ERR_ARG_BADPTR; \
       return; \
     } \
@@ -146,7 +154,7 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(PetscBool, const char *, Pe
     if (FORTRANNULLFUNCTION(a)) { \
       a = NULL; \
     } else if (FORTRANNULLOBJECT(a) || FORTRANNULLSCALAR(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLREAL(a) || FORTRANNULLINTEGER(a) || FORTRANNULLBOOL(a) || FORTRANNULLCHARACTER(a) || FORTRANNULLMPICOMM(a)) { \
-      *ierr = PetscError(PETSC_COMM_SELF, __LINE__, "fortran_interface_unknown_file", __FILE__, PETSC_ERR_ARG_WRONG, PETSC_ERROR_INITIAL, "Use PETSC_NULL_FUNCTION"); \
+      *ierr = PetscError(PETSC_COMM_SELF, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_ARG_WRONG, PETSC_ERROR_INITIAL, "Use PETSC_NULL_FUNCTION"); \
       *ierr = PETSC_ERR_ARG_BADPTR; \
       return; \
     } \
@@ -157,20 +165,20 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(PetscBool, const char *, Pe
     if (FORTRANNULLMPICOMM(a)) { \
       a = NULL; \
     } else if (FORTRANNULLINTEGER(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLSCALAR(a) || FORTRANNULLREAL(a) || FORTRANNULLBOOL(a) || FORTRANNULLFUNCTION(a) || FORTRANNULLCHARACTER(a)) { \
-      *ierr = PetscError(PETSC_COMM_SELF, __LINE__, "fortran_interface_unknown_file", __FILE__, PETSC_ERR_ARG_WRONG, PETSC_ERROR_INITIAL, "Use PETSC_NULL_MPI_COMM"); \
+      *ierr = PetscError(PETSC_COMM_SELF, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_ARG_WRONG, PETSC_ERROR_INITIAL, "Use PETSC_NULL_MPI_COMM"); \
       *ierr = PETSC_ERR_ARG_BADPTR; \
       return; \
     } \
   } while (0)
 
-/* The two macros are used at the beginning and end of PETSc object Fortran destroy routines XxxDestroy(). -2 is in consistent with
-   the one used in checkFortranTypeInitialize() at compilersFortran.py.
- */
-
 /* In the beginning of Fortran XxxDestroy(a), if the input object was destroyed, change it to a petsc C NULL object so that it won't crash C XxxDestory() */
 #define PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL(a) \
   do { \
-    if (*((void **)(a)) == (void *)-2) *(a) = NULL; \
+    if (*((void **)(a)) == (void *)0) { \
+      *ierr = PetscError(PETSC_COMM_SELF, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_ARG_WRONG, PETSC_ERROR_INITIAL, "Cannot destroy PETSC_NULL_XXX object"); \
+      *ierr = PETSC_ERR_ARG_WRONG; \
+      return; \
+    } else if (*((void **)(a)) == (void *)-2) *(a) = NULL; \
   } while (0)
 
 /* After C XxxDestroy(a) is called, change a's state from NULL to destroyed, so that it can be used/destroyed again by Fortran.
