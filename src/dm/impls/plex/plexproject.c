@@ -274,7 +274,9 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS ds, DM dmIn, D
       }
       continue;
     }
+    const PetscInt ***perms;
     PetscCall(PetscDualSpaceGetDM(sp[f], &dm));
+    PetscCall(PetscDualSpaceGetSymmetries(sp[f], &perms, NULL));
     PetscCall(PetscDualSpaceGetAllData(sp[f], &allPoints, NULL));
     PetscCall(PetscQuadratureGetData(allPoints, &dim, NULL, &numPoints, &points, NULL));
     PetscCall(DMGetWorkArray(dm, numPoints * Nc[f], MPIU_SCALAR, &pointEval));
@@ -282,8 +284,8 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS ds, DM dmIn, D
       PetscInt qpt[2];
 
       if (isCohesiveIn) {
-        PetscCall(PetscDSPermuteQuadPoint(dsIn, ornt[0], f, q, &qpt[0]));
-        PetscCall(PetscDSPermuteQuadPoint(dsIn, DMPolytopeTypeComposeOrientationInv(qct, ornt[1], 0), f, q, &qpt[1]));
+        qpt[0] = perms ? perms[0][ornt[0]][q] : q;
+        qpt[1] = perms ? perms[0][DMPolytopeTypeComposeOrientationInv(qct, ornt[1], 0)][q] : q;
       }
       if (isAffine) {
         CoordinatesRefToReal(dE, cgeom->dim, fegeom.xi, cgeom->v, fegeom.J, &points[q * dim], x);
