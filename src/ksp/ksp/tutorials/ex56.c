@@ -14,7 +14,7 @@ static PetscErrorCode MaybeLogStagePush(PetscLogStage stage)
   return log_stages ? PetscLogStagePush(stage) : PETSC_SUCCESS;
 }
 
-static PetscErrorCode MaybeLogStagePop()
+static PetscErrorCode MaybeLogStagePop(void)
 {
   return log_stages ? PetscLogStagePop() : PETSC_SUCCESS;
 }
