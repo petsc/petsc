@@ -215,7 +215,7 @@ PetscErrorCode TaoSetUp(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoDestroy - Destroys the `Tao` context that was created with `TaoCreate()`
 
   Collective

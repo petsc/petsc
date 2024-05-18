@@ -1,6 +1,7 @@
 
       Interface
         Subroutine PetscQuadratureGetData(q,dim,nc,np,p,w,ierr)
+          import tPetscQuadrature
           PetscInt     dim, nc, np
           PetscReal, pointer :: p(:)
           PetscReal, pointer :: w(:)
@@ -11,6 +12,7 @@
 
       Interface
         Subroutine PetscQuadratureRestoreData(q,dim,nc,np,p,w,ierr)
+          import tPetscQuadrature
           PetscInt     dim, nc, np
           PetscReal, pointer :: p(:)
           PetscReal, pointer :: w(:)
@@ -21,6 +23,7 @@
 
       Interface
         Subroutine PetscQuadratureSetData(q,dim,nc,np,p,w,ierr)
+          import tPetscQuadrature
           PetscInt     dim, nc, np
           PetscReal, pointer :: p(:)
           PetscReal, pointer :: w(:)
@@ -31,6 +34,7 @@
 
       Interface
         Subroutine PetscDSGetTabulation(prob,f,b,bDer,ierr)
+          import tPetscDS
           PetscInt     f
           PetscReal, pointer :: b(:)
           PetscReal, pointer :: bDer(:)
@@ -41,6 +45,7 @@
 
       Interface
         Subroutine PetscDSRestoreTabulation(prob,f,b,bDer,ierr)
+          import tPetscDS
           PetscInt     f
           PetscReal, pointer :: b(:)
           PetscReal, pointer :: bDer(:)
@@ -51,6 +56,7 @@
 
       Interface
         Subroutine PetscFECreateDefault(c,d,n,i,str,o,f,ierr)
+          import tPetscFE
           MPI_Comm, intent(in) :: c
           PetscInt, intent(in) :: d,n
           PetscBool, intent(in) :: i

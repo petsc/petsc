@@ -517,7 +517,7 @@ PetscErrorCode PetscBagRegisterBool(PetscBag bag, void *addr, PetscBool mdefault
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagDestroy - Destroys a `PetscBag`
 
   Collective

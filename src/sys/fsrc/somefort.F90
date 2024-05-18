@@ -9,8 +9,14 @@
       subroutine MPIU_Abort(comm,ierr)
       implicit none
       MPI_Comm comm
-      PetscMPIInt ierr,nierr
-      call MPI_Abort(comm,ierr,nierr)
+      PetscMPIInt ierr, nierr, ciportable
+      call PetscCIEnabledPortableErrorOutput(ciportable)
+      if (ciportable == 1) then
+        call MPI_Finalize(nierr)
+        stop 0
+      else
+        call MPI_Abort(comm,ierr,nierr)
+      endif
       end
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::MPIU_Abort

@@ -133,12 +133,6 @@
        PetscErrorCode, intent(out) :: ierr
       end Subroutine PetscFinalize
 
-      subroutine PetscRandomDestroy(a,z)
-       import tPetscRandom
-       PetscRandom a
-       PetscErrorCode z
-      end subroutine
-
       subroutine PetscSubcommGetParent(a,b,z)
        import tPetscSubcomm
        PetscSubcomm a ! PetscSubcomm

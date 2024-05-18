@@ -1012,7 +1012,7 @@ PetscErrorCode ISSetPermutation(IS is)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISDestroy - Destroys an index set.
 
   Collective

@@ -9,12 +9,23 @@
       end type tMatNullSpace
       type, extends(tPetscObject) :: tMatFDColoring
       end type tMatFDColoring
+      type, extends(tPetscObject) :: tMatColoring
+      end type tMatColoring
       type, extends(tPetscObject) :: tMatTransposeColoring
       end type tMatTransposeColoring
+      type, extends(tPetscObject) :: tMatPartitioning
+      end type tMatPartitioning
+      type, extends(tPetscObject) :: tMatCoarsen
+      end type tMatCoarsen
 
       Mat, parameter :: PETSC_NULL_MAT = tMat(0)
-      MatFDColoring, parameter :: PETSC_NULL_MATFDCOLORING = tMatFDColoring(0)
       MatNullSpace, parameter :: PETSC_NULL_MATNULLSPACE = tMatNullSpace(0)
+      MatFDColoring, parameter :: PETSC_NULL_MATFDCOLORING = tMatFDColoring(0)
+      MatColoring, parameter :: PETSC_NULL_COLORING = tMatColoring(0)
+      MatTransposeColoring, parameter :: PETSC_NULL_TRANSPOSECOLORING = tMatTransposeColoring(0)
+      MatPartitioning, parameter :: PETSC_NULL_PARTITIONING = tMatPartitioning(0)
+      MatCoarsen, parameter :: PETSC_NULL_COARSEN = tMatCoarsen(0)
+!
 !
 !  Flag for matrix assembly
 !

@@ -3390,7 +3390,7 @@ PetscErrorCode SNESConvergedReasonViewCancel(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESDestroy - Destroys the nonlinear solver context that was created
   with `SNESCreate()`.
 

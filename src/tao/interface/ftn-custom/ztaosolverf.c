@@ -22,7 +22,6 @@
   #define taogetconvergencehistory_           TAOGETCONVERGENCEHISTORY
   #define taosetconvergencetest_              TAOSETCONVERGENCETEST
   #define taosetupdate_                       TAOSETUPDATE
-  #define taodestroy_                         TAODESTROY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define taosetobjective_                    taosetobjective
   #define taosetgradient_                     taosetgradient
@@ -43,7 +42,6 @@
   #define taogetconvergencehistory_           taogetconvergencehistory
   #define taosetconvergencetest_              taosetconvergencetest
   #define taosetupdate_                       taosetupdate
-  #define taodestroy_                         taodestroy
 #endif
 
 static struct {
@@ -165,8 +163,6 @@ static PetscErrorCode ourtaoupdateroutine(Tao tao, PetscInt iter, void *ctx)
 {
   PetscObjectUseFortranCallback(tao, _cb.update, (Tao *, PetscInt *, void *), (&tao, &iter, _ctx));
 }
-
-EXTERN_C_BEGIN
 
 PETSC_EXTERN void taosetobjective_(Tao *tao, void (*func)(Tao *, Vec *, PetscReal *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
@@ -301,13 +297,3 @@ PETSC_EXTERN void taosetupdate_(Tao *tao, void (*func)(Tao *, PetscInt *, PetscE
   *ierr = PetscObjectSetFortranCallback((PetscObject)*tao, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.update, (PetscVoidFn *)func, ctx);
   if (!*ierr) *ierr = TaoSetUpdate(*tao, ourtaoupdateroutine, ctx);
 }
-
-PETSC_EXTERN void taodestroy_(Tao *x, int *ierr)
-{
-  PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL(x);
-  *ierr = TaoDestroy(x);
-  if (*ierr) return;
-  PETSC_FORTRAN_OBJECT_C_NULL_TO_F_DESTROYED(x);
-}
-
-EXTERN_C_END

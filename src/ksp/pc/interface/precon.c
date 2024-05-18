@@ -81,7 +81,7 @@ PetscErrorCode PCReset(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCDestroy - Destroys `PC` context that was created with `PCCreate()`.
 
   Collective

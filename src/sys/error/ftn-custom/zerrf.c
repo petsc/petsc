@@ -97,7 +97,6 @@ PETSC_EXTERN void petscerrorf_(PetscErrorCode *err, int *line, char *file, PETSC
   FIXCHAR(file, len, tfile);
   *err = PetscError(PETSC_COMM_SELF, *line, NULL, tfile, *err, PETSC_ERROR_REPEAT, NULL);
   FREECHAR(file, tfile);
-  if (PetscCIEnabledPortableErrorOutput) exit(0);
 }
 
 PETSC_EXTERN void petscerrormpi_(PetscErrorCode *err, int *line, char *file, PETSC_FORTRAN_CHARLEN_T len)
