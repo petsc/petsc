@@ -945,7 +945,7 @@ PetscErrorCode PCSetFailedReason(PC pc, PCFailedReason reason)
   a call `KSPCheckDot()` or  `KSPCheckNorm()` inside a `KSPSolve()` or `PCReduceFailedReason()`.
   It is not valid immediately after a `PCSetUp()` or `PCApply()`, then use `PCGetFailedReasonRank()`
 
-.seealso: [](ch_ksp), `PC`, ``PCCreate()`, `PCApply()`, `PCDestroy()`, `PCGetFailedReasonRank()`, `PCSetFailedReason()`
+.seealso: [](ch_ksp), `PC`, `PCCreate()`, `PCApply()`, `PCDestroy()`, `PCGetFailedReasonRank()`, `PCSetFailedReason()`
 @*/
 PetscErrorCode PCGetFailedReason(PC pc, PCFailedReason *reason)
 {

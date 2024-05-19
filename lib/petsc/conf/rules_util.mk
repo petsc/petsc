@@ -121,6 +121,8 @@ checkbadSource:
 	-@git --no-pager grep -n -P 'PetscFunctionReturn(ierr)' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- .seealso with leading white spaces ---------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -E '^[ ]+.seealso:' -- ${GITSRC} ':!src/sys/tests/linter/*' >> checkbadSource.out;true
+	-@echo "----- .seealso with double backticks -------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P -E '^.seealso:.*\`\`' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- Defining a returning macro without PetscMacroReturns() -------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'define .*\w+;\s+do' -- ${GITSRC} | grep -E -v '(PetscMacroReturns|PetscDrawCollectiveBegin|MatPreallocateBegin|PetscOptionsBegin|PetscObjectOptionsBegin|PetscOptionsHeadEnd)' >> checkbadSource.out;true
 	-@echo "----- Defining an error checking macro using CHKERR style ----------" >> checkbadSource.out
@@ -147,7 +149,7 @@ checkbadSource:
 	-@git --no-pager grep -n -E -B 1 '  PetscFunctionBegin(User|Hot){0,1};' -- ${GITSRC} ':!src/sys/tests/*' ':!src/sys/tutorials/*' | grep -E '\-[0-9]+-.*;' | grep -v '^--$$' | grep -v '\\' >> checkbadSource.out;true
 	-@echo "----- Unneeded parentheses [!&~*](foo[->|.]bar) --------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -E '([\!\&\~\*\(]|\)\)|\([^,\*\(]+\**\))\(([a-zA-Z0-9_]+((\.|->)[a-zA-Z0-9_]+|\[[a-zA-Z0-9_ \%\+\*\-]+\])+)\)' -- ${GITSRC} >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 29` ;\
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 30` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\

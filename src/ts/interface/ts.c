@@ -4106,7 +4106,7 @@ PetscErrorCode TSSolve(TS ts, Vec u)
   When called during time step evaluation (e.g. during residual evaluation or via hooks set using `TSSetPreStep()`,
   `TSSetPreStage()`, `TSSetPostStage()`, or `TSSetPostStep()`), the time is the time at the start of the step being evaluated.
 
-.seealso: [](ch_ts), `TS`, ``TSGetSolveTime()`, `TSSetTime()`, `TSGetTimeStep()`, `TSGetStepNumber()`
+.seealso: [](ch_ts), `TS`, `TSGetSolveTime()`, `TSSetTime()`, `TSGetTimeStep()`, `TSGetStepNumber()`
 @*/
 PetscErrorCode TSGetTime(TS ts, PetscReal *t)
 {
@@ -4130,7 +4130,7 @@ PetscErrorCode TSGetTime(TS ts, PetscReal *t)
 
   Level: beginner
 
-.seealso: [](ch_ts), `TS`, ``TSGetTime()`, `TSGetSolveTime()`, `TSGetTimeStep()`
+.seealso: [](ch_ts), `TS`, `TSGetTime()`, `TSGetSolveTime()`, `TSGetTimeStep()`
 @*/
 PetscErrorCode TSGetPrevTime(TS ts, PetscReal *t)
 {

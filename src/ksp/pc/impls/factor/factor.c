@@ -172,7 +172,7 @@ PetscErrorCode PCFactorSetShiftType(PC pc, MatFactorShiftType shifttype)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `PCCHOLESKY`, `PCLU`, ``PCFactorSetZeroPivot()`, `PCFactorSetShiftType()`
+.seealso: [](ch_ksp), `PCCHOLESKY`, `PCLU`, `PCFactorSetZeroPivot()`, `PCFactorSetShiftType()`
 @*/
 PetscErrorCode PCFactorSetShiftAmount(PC pc, PetscReal shiftamount)
 {
