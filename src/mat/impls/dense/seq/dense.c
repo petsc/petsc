@@ -1235,7 +1235,7 @@ static PetscErrorCode MatSetValues_SeqDense(Mat A, PetscInt m, const PetscInt in
             continue;
           }
           PetscCheck(indexm[i] < A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT, indexm[i], A->rmap->n - 1);
-          av[indexn[j] * mat->lda + indexm[i]] = v[idx++];
+          av[indexn[j] * mat->lda + indexm[i]] = v ? v[idx++] : (idx++, 0.0);
         }
       }
     } else {
@@ -1251,7 +1251,7 @@ static PetscErrorCode MatSetValues_SeqDense(Mat A, PetscInt m, const PetscInt in
             continue;
           }
           PetscCheck(indexm[i] < A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT, indexm[i], A->rmap->n - 1);
-          av[indexn[j] * mat->lda + indexm[i]] += v[idx++];
+          av[indexn[j] * mat->lda + indexm[i]] += v ? v[idx++] : (idx++, 0.0);
         }
       }
     }
@@ -1269,7 +1269,7 @@ static PetscErrorCode MatSetValues_SeqDense(Mat A, PetscInt m, const PetscInt in
             continue;
           }
           PetscCheck(indexn[j] < A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT, indexn[j], A->cmap->n - 1);
-          av[indexn[j] * mat->lda + indexm[i]] = v[idx++];
+          av[indexn[j] * mat->lda + indexm[i]] = v ? v[idx++] : (idx++, 0.0);
         }
       }
     } else {
@@ -1285,7 +1285,7 @@ static PetscErrorCode MatSetValues_SeqDense(Mat A, PetscInt m, const PetscInt in
             continue;
           }
           PetscCheck(indexn[j] < A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT, indexn[j], A->cmap->n - 1);
-          av[indexn[j] * mat->lda + indexm[i]] += v[idx++];
+          av[indexn[j] * mat->lda + indexm[i]] += v ? v[idx++] : (idx++, 0.0);
         }
       }
     }
