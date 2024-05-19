@@ -4,9 +4,6 @@
 #include <petsc/private/pcimpl.h>
 #include <petsc/private/dmimpl.h> /* this must be included after petschpddm.h so that DM_MAX_WORK_VECTORS is not defined  */
                                   /* otherwise, it is assumed that one is compiling libhpddm_petsc => circular dependency */
-#if PetscDefined(USE_FORTRAN_BINDINGS)
-  #include <petsc/private/fortranimpl.h>
-#endif
 
 static PetscErrorCode (*loadedSym)(HPDDM::Schwarz<PetscScalar> *const, IS, Mat, Mat, Mat, std::vector<Vec>, PC_HPDDM_Level **const) = nullptr;
 
