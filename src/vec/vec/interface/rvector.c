@@ -3894,10 +3894,8 @@ PetscErrorCode VecRestoreArray4dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_USE_DEBUG)
-
 /*@
-  VecLockGet  - Gets the current lock status of a vector
+  VecLockGet - Get the current lock status of a vector
 
   Logically Collective
 
@@ -3916,6 +3914,7 @@ PetscErrorCode VecLockGet(Vec x, PetscInt *state)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
+  PetscAssertPointer(state, 2);
   *state = x->lock;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3927,25 +3926,24 @@ PetscErrorCode VecLockGetLocation(Vec x, const char *file[], const char *func[],
   PetscAssertPointer(file, 2);
   PetscAssertPointer(func, 3);
   PetscAssertPointer(line, 4);
-  #if !PetscDefined(HAVE_THREADSAFETY)
+#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
   {
     const int index = x->lockstack.currentsize - 1;
 
-    PetscCheck(index >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Corrupted vec lock stack, have negative index %d", index);
-    *file = x->lockstack.file[index];
-    *func = x->lockstack.function[index];
-    *line = x->lockstack.line[index];
+    *file = index < 0 ? NULL : x->lockstack.file[index];
+    *func = index < 0 ? NULL : x->lockstack.function[index];
+    *line = index < 0 ? 0 : x->lockstack.line[index];
   }
-  #else
+#else
   *file = NULL;
   *func = NULL;
   *line = 0;
-  #endif
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-  VecLockReadPush  - Pushes a read-only lock on a vector to prevent it from being written to
+  VecLockReadPush - Push a read-only lock on a vector to prevent it from being written to
 
   Logically Collective
 
@@ -3967,31 +3965,30 @@ PetscErrorCode VecLockReadPush(Vec x)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscCheck(x->lock++ >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Vector is already locked for exclusive write access but you want to read it");
-  #if !PetscDefined(HAVE_THREADSAFETY)
+#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
   {
     const char *file, *func;
     int         index, line;
 
-    if ((index = petscstack.currentsize - 2) == -1) {
+    if ((index = petscstack.currentsize - 2) < 0) {
       // vec was locked "outside" of petsc, either in user-land or main. the error message will
       // now show this function as the culprit, but it will include the stacktrace
       file = "unknown user-file";
       func = "unknown_user_function";
       line = 0;
     } else {
-      PetscCheck(index >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unexpected petscstack, have negative index %d", index);
       file = petscstack.file[index];
       func = petscstack.function[index];
       line = petscstack.line[index];
     }
     PetscStackPush_Private(x->lockstack, file, func, line, petscstack.petscroutine[index], PETSC_FALSE);
   }
-  #endif
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-  VecLockReadPop  - Pops a read-only lock from a vector
+  VecLockReadPop - Pop a read-only lock from a vector
 
   Logically Collective
 
@@ -4007,18 +4004,18 @@ PetscErrorCode VecLockReadPop(Vec x)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscCheck(--x->lock >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Vector has been unlocked from read-only access too many times");
-  #if !PetscDefined(HAVE_THREADSAFETY)
+#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
   {
     const char *previous = x->lockstack.function[x->lockstack.currentsize - 1];
 
     PetscStackPop_Private(x->lockstack, previous);
   }
-  #endif
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-  VecLockWriteSet  - Lock or unlock a vector for exclusive read/write access
+  VecLockWriteSet - Lock or unlock a vector for exclusive read/write access
 
   Logically Collective
 
@@ -4063,35 +4060,3 @@ PetscErrorCode VecLockWriteSet(Vec x, PetscBool flg)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-// PetscClangLinter pragma disable: -fdoc-param-list-func-parameter-documentation
-/*@
-  VecLockPush  - Pushes a read-only lock on a vector to prevent it from being written to
-
-  Level: deprecated
-
-.seealso: [](ch_vectors), `Vec`, `VecLockReadPush()`
-@*/
-PetscErrorCode VecLockPush(Vec x)
-{
-  PetscFunctionBegin;
-  PetscCall(VecLockReadPush(x));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-// PetscClangLinter pragma disable: -fdoc-param-list-func-parameter-documentation
-/*@
-  VecLockPop  - Pops a read-only lock from a vector
-
-  Level: deprecated
-
-.seealso: [](ch_vectors), `Vec`, `VecLockReadPop()`
-@*/
-PetscErrorCode VecLockPop(Vec x)
-{
-  PetscFunctionBegin;
-  PetscCall(VecLockReadPop(x));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-#endif
