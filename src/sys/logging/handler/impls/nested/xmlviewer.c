@@ -7,7 +7,6 @@
  *************************************************************************************/
 #include <petscviewer.h>
 #include <petsc/private/logimpl.h>
-#include <petsc/private/fortranimpl.h>
 #include "xmlviewer.h"
 #include "lognested.h"
 

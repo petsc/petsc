@@ -8038,7 +8038,6 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmet
 /*
     Special version for direct calls from Fortran
 */
-#include <petsc/private/fortranimpl.h>
 
 /* Change these macros so can be used in void function */
 /* Identical to PetscCallVoid, except it assigns to *_ierr */
