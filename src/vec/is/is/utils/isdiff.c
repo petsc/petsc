@@ -119,18 +119,14 @@ PetscErrorCode ISDifference(IS is1, IS is2, IS *isout)
 @*/
 PetscErrorCode ISSum(IS is1, IS is2, IS *is3)
 {
-  MPI_Comm        comm;
   PetscBool       f;
-  PetscMPIInt     size;
   const PetscInt *i1, *i2;
   PetscInt        n1, n2, n3, p1, p2, *iout;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is1, IS_CLASSID, 1);
   PetscValidHeaderSpecific(is2, IS_CLASSID, 2);
-  PetscCall(PetscObjectGetComm((PetscObject)(is1), &comm));
-  PetscCallMPI(MPI_Comm_size(comm, &size));
-  PetscCheck(size <= 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Currently only for uni-processor IS");
+  PetscCheckSameComm(is1, 1, is2, 2);
 
   PetscCall(ISSorted(is1, &f));
   PetscCheck(f, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Arg 1 is not sorted");
@@ -239,7 +235,7 @@ PetscErrorCode ISSum(IS is1, IS is2, IS *is3)
 
   PetscCall(ISRestoreIndices(is1, &i1));
   PetscCall(ISRestoreIndices(is2, &i2));
-  PetscCall(ISCreateGeneral(comm, n3, iout, PETSC_OWN_POINTER, is3));
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)is1), n3, iout, PETSC_OWN_POINTER, is3));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

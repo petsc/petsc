@@ -31,6 +31,8 @@ Changes: Development
 
 .. rubric:: Vec:
 
+- The ``IS`` passed to ``VecISAXPY()``, ``VecISCopy()``. ``VecISSet()``, and ``VecISShift()`` must have the same communicator of the vectors used
+
 .. rubric:: PetscSection:
 
 .. rubric:: PetscPartitioner:
