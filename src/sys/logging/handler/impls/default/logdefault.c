@@ -273,6 +273,7 @@ static PetscErrorCode PetscLogHandlerContextCreate_Default(PetscLogHandler_Defau
   PetscCall(PetscLogStageInfoArrayCreate(8, &def->stages));
   PetscCall(PetscLogActionArrayCreate(64, &def->petsc_actions));
   PetscCall(PetscLogObjectArrayCreate(64, &def->petsc_objects));
+  PetscCall(PetscSpinlockCreate(&def->lock));
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_include_actions", &def->petsc_logActions, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_include_objects", &def->petsc_logObjects, NULL));
@@ -289,6 +290,7 @@ static PetscErrorCode PetscLogHandlerDestroy_Default(PetscLogHandler h)
   PetscCall(PetscLogStageInfoArrayDestroy(&def->stages));
   PetscCall(PetscLogActionArrayDestroy(&def->petsc_actions));
   PetscCall(PetscLogObjectArrayDestroy(&def->petsc_objects));
+  PetscCall(PetscSpinlockDestroy(&def->lock));
   if (def->eventInfoMap_th) {
     PetscEventPerfInfo **array;
     PetscInt             n, off = 0;
