@@ -2281,7 +2281,7 @@ PetscErrorCode PCMGGalerkinSetMatProductAlgorithm(PC pc, const char name[])
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `PCHYPRE`, ``PCMGGalerkinSetMatProductAlgorithm()`
+.seealso: [](ch_ksp), `PCHYPRE`, `PCMGGalerkinSetMatProductAlgorithm()`
 @*/
 PetscErrorCode PCMGGalerkinGetMatProductAlgorithm(PC pc, const char *name[])
 {

@@ -1257,7 +1257,7 @@ PetscErrorCode PetscDSGetJetDegree(PetscDS ds, PetscInt f, PetscInt *k)
 
   Level: developer
 
-.seealso: ``PetscDS`, `PetscDSGetJetDegree()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSGetJetDegree()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSSetJetDegree(PetscDS ds, PetscInt f, PetscInt k)
 {

@@ -536,7 +536,7 @@ PetscErrorCode PCMGGetInjection(PC pc, PetscInt l, Mat *mat)
 
   Level: advanced
 
-.seealso: [](ch_ksp), `PCMG`, ``PCMGGetSmootherUp()`, `PCMGGetSmootherDown()`, `PCMGGetCoarseSolve()`
+.seealso: [](ch_ksp), `PCMG`, `PCMGGetSmootherUp()`, `PCMGGetSmootherDown()`, `PCMGGetCoarseSolve()`
 @*/
 PetscErrorCode PCMGGetSmoother(PC pc, PetscInt l, KSP *ksp)
 {
