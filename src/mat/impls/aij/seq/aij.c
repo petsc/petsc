@@ -5591,7 +5591,6 @@ PetscErrorCode MatSeqAIJRegisterAll(void)
 /*
     Special version for direct calls from Fortran
 */
-#include <petsc/private/fortranimpl.h>
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define matsetvaluesseqaij_ MATSETVALUESSEQAIJ
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)

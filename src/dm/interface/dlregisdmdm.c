@@ -407,6 +407,7 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscdm(void)
   PetscCall(PetscFEInitializePackage());
   PetscCall(PetscFVInitializePackage());
   PetscCall(DMFieldInitializePackage());
+  PetscCall(PetscDSInitializePackage());
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -251,23 +251,29 @@ public:
 
   PetscErrorCode destroy(value_type *ptr) const noexcept
   {
+    const Derived &underlying = this->underlying();
+
     PetscFunctionBegin;
-    PetscCall(this->underlying().destroy_(ptr));
+    PetscCall(underlying.destroy_(ptr));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   template <typename... Args>
   PetscErrorCode reset(value_type *val, Args &&...args) const noexcept
   {
+    const Derived &underlying = this->underlying();
+
     PetscFunctionBegin;
-    PetscCall(this->underlying().reset_(val, std::forward<Args>(args)...));
+    PetscCall(underlying.reset_(val, std::forward<Args>(args)...));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscErrorCode invalidate(value_type *ptr) const noexcept
   {
+    const Derived &underlying = this->underlying();
+
     PetscFunctionBegin;
-    PetscCall(this->underlying().invalidate_(ptr));
+    PetscCall(underlying.invalidate_(ptr));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 

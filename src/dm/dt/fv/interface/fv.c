@@ -171,7 +171,7 @@ PetscErrorCode PetscLimiterView(PetscLimiter lim, PetscViewer v)
 
   Level: intermediate
 
-.seealso: `PetscLimiter`, ``PetscLimiterView()`
+.seealso: `PetscLimiter`, `PetscLimiterView()`
 @*/
 PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter lim)
 {
@@ -210,7 +210,7 @@ PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter lim)
 
   Level: intermediate
 
-.seealso: `PetscLimiter`, ``PetscLimiterView()`, `PetscLimiterDestroy()`
+.seealso: `PetscLimiter`, `PetscLimiterView()`, `PetscLimiterDestroy()`
 @*/
 PetscErrorCode PetscLimiterSetUp(PetscLimiter lim)
 {
@@ -1335,7 +1335,7 @@ PetscErrorCode PetscFVGetComponentName(PetscFV fvm, PetscInt comp, const char *n
 
   Level: intermediate
 
-.seealso: `PetscFV`, ``PetscFVGetSpatialDimension()`
+.seealso: `PetscFV`, `PetscFVGetSpatialDimension()`
 @*/
 PetscErrorCode PetscFVSetSpatialDimension(PetscFV fvm, PetscInt dim)
 {
