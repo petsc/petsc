@@ -13,6 +13,7 @@ PetscErrorCode PetscKokkosFinalize_Private(void)
 {
   PetscFunctionBegin;
   PetscCallCXX(delete PetscKokkosExecutionSpacePtr);
+  PetscKokkosExecutionSpacePtr = nullptr;
   PetscCallCXX(Kokkos::kokkos_free(PetscScalarPool));
   PetscScalarPoolSize = 0;
   if (PetscBeganKokkos) {
