@@ -692,7 +692,11 @@ static PetscErrorCode KSPComputeOperators_SNES(KSP ksp, Mat A, Mat B, void *ctx)
   PetscCall(KSPGetDM(ksp, &snes->dm));
   if (dmsave == snes->dm) X = snes->vec_sol; /* We are on the finest level */
   else {
+    PetscBool has;
+
     /* We are on a coarser level, this vec was initialized using a DM restrict hook */
+    PetscCall(DMHasNamedGlobalVector(snes->dm, "SNESVecSol", &has));
+    PetscCheck(has, PetscObjectComm((PetscObject)snes->dm), PETSC_ERR_PLIB, "Missing SNESVecSol");
     PetscCall(DMGetNamedGlobalVector(snes->dm, "SNESVecSol", &Xnamed));
     X = Xnamed;
     PetscCall(SNESGetJacobian(snes, NULL, NULL, &jac, &ctxsave));
