@@ -159,9 +159,9 @@ struct _p_Vec {
   PetscBool   array_gotten;
   VecStash    stash, bstash; /* used for storing off-proc values during assembly */
   PetscBool   petscnative;   /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
+  PetscInt    lock;          /* lock state. vector can be free (=0), locked for read (>0) or locked for write(<0) */
 #if PetscDefined(USE_DEBUG)
   PetscStack lockstack; /* the file,func,line of where locks are added */
-  PetscInt   lock;      /* lock state. vector can be free (=0), locked for read (>0) or locked for write(<0) */
 #endif
   PetscOffloadMask offloadmask; /* a mask which indicates where the valid vector data is (GPU, CPU or both) */
 #if defined(PETSC_HAVE_DEVICE)

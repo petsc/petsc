@@ -639,12 +639,12 @@ static inline PetscErrorCode VecRestoreArrayPair(Vec x, Vec y, PetscScalar **xv,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if PetscDefined(USE_DEBUG)
-PETSC_EXTERN PetscErrorCode  VecLockReadPush(Vec);
-PETSC_EXTERN PetscErrorCode  VecLockReadPop(Vec);
-PETSC_EXTERN PetscErrorCode  VecLockWriteSet(Vec, PetscBool);
-PETSC_EXTERN PetscErrorCode  VecLockGet(Vec, PetscInt *);
-PETSC_EXTERN PetscErrorCode  VecLockGetLocation(Vec, const char *[], const char *[], int *);
+PETSC_EXTERN PetscErrorCode VecLockReadPush(Vec);
+PETSC_EXTERN PetscErrorCode VecLockReadPop(Vec);
+PETSC_EXTERN PetscErrorCode VecLockWriteSet(Vec, PetscBool);
+PETSC_EXTERN PetscErrorCode VecLockGet(Vec, PetscInt *);
+PETSC_EXTERN PetscErrorCode VecLockGetLocation(Vec, const char *[], const char *[], int *);
+
 static inline PetscErrorCode VecSetErrorIfLocked(Vec x, PetscInt arg)
 {
   PetscInt state;
@@ -661,21 +661,19 @@ static inline PetscErrorCode VecSetErrorIfLocked(Vec x, PetscInt arg)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
 /* The three are deprecated */
-PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 11, 0, "VecLockReadPush()", ) PetscErrorCode VecLockPush(Vec);
-PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 11, 0, "VecLockReadPop()", ) PetscErrorCode VecLockPop(Vec);
-  #define VecLocked(x, arg) VecSetErrorIfLocked(x, arg) PETSC_DEPRECATED_MACRO(3, 11, 0, "VecSetErrorIfLocked()", )
-#else
-  #define VecLockReadPush(x)          PETSC_SUCCESS
-  #define VecLockReadPop(x)           PETSC_SUCCESS
-  #define VecLockGet(x, s)            (*(s) = 0, PETSC_SUCCESS)
-  #define VecSetErrorIfLocked(x, arg) PETSC_SUCCESS
-  #define VecLockWriteSet(x, flg)     PETSC_SUCCESS
-  /* The three are deprecated */
-  #define VecLockPush(x)              PETSC_SUCCESS
-  #define VecLockPop(x)               PETSC_SUCCESS
-  #define VecLocked(x, arg)           PETSC_SUCCESS
-#endif
+PETSC_DEPRECATED_FUNCTION(3, 11, 0, "VecLockReadPush()", ) static inline PetscErrorCode VecLockPush(Vec v)
+{
+  return VecLockReadPush(v);
+}
+
+PETSC_DEPRECATED_FUNCTION(3, 11, 0, "VecLockReadPop()", ) static inline PetscErrorCode VecLockPop(Vec v)
+{
+  return VecLockReadPop(v);
+}
+
+#define VecLocked(x, arg) VecSetErrorIfLocked(x, arg) PETSC_DEPRECATED_MACRO(3, 11, 0, "VecSetErrorIfLocked()", )
 
 /*E
   VecOperation - Enumeration of overide-able methods in the `Vec` implementation function-table.
