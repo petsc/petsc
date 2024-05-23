@@ -7866,7 +7866,7 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmet
           AA[k / bs] = val;
         }
         grow = Istart / bs + brow / bs;
-        PetscCall(MatSetValues(Gmat, 1, &grow, n / bs, AJ, AA, INSERT_VALUES));
+        PetscCall(MatSetValues(Gmat, 1, &grow, n / bs, AJ, AA, ADD_VALUES));
       }
       // off-diag
       if (ismpiaij) {
@@ -7908,7 +7908,7 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmet
             }
           }
           grow = Istart / bs + brow / bs;
-          PetscCall(MatSetValues(Gmat, 1, &grow, nc, AJ, AA, INSERT_VALUES));
+          PetscCall(MatSetValues(Gmat, 1, &grow, nc, AJ, AA, ADD_VALUES));
         }
       }
       PetscCall(MatAssemblyBegin(Gmat, MAT_FINAL_ASSEMBLY));
