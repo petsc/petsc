@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download          = ['https://web.cels.anl.gov/projects/petsc/download/externalpackages/moab-5.0.0.tar.gz']
+    self.download          = ['https://web.cels.anl.gov/projects/sigma/downloads/moab/moab-5.5.0.tar.gz']
     self.downloaddirnames  = ['moab']
     # Check for moab::Core and includes/libraries to verify build
     self.functions         = ['Core']
@@ -11,7 +11,6 @@ class Configure(config.package.GNUPackage):
     self.includes          = ['moab/Core.hpp']
     self.liblist           = [['libiMesh.a', 'libMOAB.a'],['libMOAB.a']]
     self.buildLanguages    = ['Cxx']
-    self.maxCxxVersion     = 'c++14'
     self.precisions        = ['single','double']
     self.hastests          = 1
     self.useddirectly      = 0
