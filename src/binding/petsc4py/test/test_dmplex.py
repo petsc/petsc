@@ -226,8 +226,10 @@ class BaseTestPlex:
         metric = plex.metricCreateUniform(9.0)
         try:
             newplex = plex.adaptMetric(metric, '')
+            plex.destroy()
             newplex.destroy()
         except PETSc.Error as exc:
+            plex.destroy()
             if exc.ierr != ERR_ARG_OUTOFRANGE:
                 raise
 
@@ -420,16 +422,12 @@ class BaseTestPlexHDF5:
     NSIZE = 4
     NTIMES = 3
 
-    def setUp(self):
-        self.txtvwr = PETSc.Viewer()
-
     def tearDown(self):
         if not PETSc.COMM_WORLD.rank:
             if os.path.exists(self.outfile()):
                 os.remove(self.outfile())
             if os.path.exists(self.tmp_output_file()):
                 os.remove(self.tmp_output_file())
-        self.txtvwr = None
 
     def _name(self):
         return f'{self.SUFFIX}_outformat-{self.OUTFORMAT}_{self.PARTITIONERTYPE}'
@@ -476,14 +474,18 @@ class BaseTestPlexHDF5:
                 f.write(msg)
 
     def outputPlex(self, plex):
-        self.txtvwr.createASCII(self.tmp_output_file(), mode='a', comm=plex.comm)
-        plex.view(viewer=self.txtvwr)
-        self.txtvwr.destroy()
+        txtvwr = PETSc.Viewer().createASCII(
+            self.tmp_output_file(), mode='a', comm=plex.comm
+        )
+        plex.view(viewer=txtvwr)
+        txtvwr.destroy()
 
     @check_dtype
     @check_package
     @check_nsize
     def testViewLoadCycle(self):
+        if importlib.util.find_spec('mpi4py') is None:
+            self.skipTest('mpi4py')  # throws special exception to signal test skip
         grank = PETSc.COMM_WORLD.rank
         for i in range(self.NTIMES):
             if i == 0:
@@ -496,8 +498,6 @@ class BaseTestPlexHDF5:
                 mycolor = grank > self.NTIMES - i
             else:
                 mycolor = 0
-            if importlib.util.find_spec('mpi4py') is None:
-                self.skipTest('mpi4py')  # throws special exception to signal test skip
             mpicomm = PETSc.COMM_WORLD.tompi4py()
             comm = PETSc.Comm(comm=mpicomm.Split(color=mycolor, key=grank))
             if mycolor == 0:
@@ -530,7 +530,9 @@ class BaseTestPlexHDF5:
                 # Redistribute
                 part = plex.getPartitioner()
                 part.setType(self.partitionerType())
-                plex.distribute(overlap=0)
+                sf = plex.distribute(overlap=0)
+                if sf:
+                    sf.destroy()
                 part.destroy()
                 plex.setName('DMPlex Object')
                 plex.setOptionsPrefix('redistributed_')
@@ -546,6 +548,7 @@ class BaseTestPlexHDF5:
                 # Destroy plex
                 plex.destroy()
                 self.outputText('End   cycle %d\n--------\n' % i, comm)
+            comm.tompi4py().Free()
             PETSc.COMM_WORLD.Barrier()
         # Check that the output is identical to that of plex/tutorial/ex5.c.
         self.assertTrue(
