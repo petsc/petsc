@@ -1479,6 +1479,14 @@ PetscErrorCode PetscFinalize(void)
     if (flg1) PetscCall(PetscLogMPEDump(mname[0] ? mname : NULL));
   }
 
+#if defined(PETSC_HAVE_KOKKOS)
+  // Free petsc/kokkos stuff before the potentially non-null petsc default gpu stream is destroyed by PetscObjectRegisterDestroyAll
+  if (PetscKokkosInitialized) {
+    PetscCall(PetscKokkosFinalize_Private());
+    PetscKokkosInitialized = PETSC_FALSE;
+  }
+#endif
+
   // Free all objects registered with PetscObjectRegisterDestroy() such as PETSC_VIEWER_XXX_().
   PetscCall(PetscObjectRegisterDestroyAll());
 
@@ -1647,13 +1655,6 @@ PetscErrorCode PetscFinalize(void)
 
   PetscGlobalArgc = 0;
   PetscGlobalArgs = NULL;
-
-#if defined(PETSC_HAVE_KOKKOS)
-  if (PetscKokkosInitialized) {
-    PetscCall(PetscKokkosFinalize_Private());
-    PetscKokkosInitialized = PETSC_FALSE;
-  }
-#endif
 
 #if defined(PETSC_HAVE_NVSHMEM)
   if (PetscBeganNvshmem) {

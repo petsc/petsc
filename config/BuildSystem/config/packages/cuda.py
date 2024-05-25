@@ -361,10 +361,16 @@ class Configure(config.package.Package):
                     #include <cuda_runtime.h>
                     #include <cuda_runtime_api.h>
                     #include <cuda_device_runtime_api.h>'''
-        body = '''int cerr;
+        body = '''cudaError_t cerr;
                 cudaDeviceProp dp;
                 cerr = cudaGetDeviceProperties(&dp, 0);
-                if (cerr) printf("Error calling cudaGetDeviceProperties\\n");
+                if (cerr) {
+              #if (CUDART_VERSION >= 8000)
+                  printf("Error calling cudaGetDeviceProperties with CUDA error %d (%s) : %s\\n", (int)cerr, cudaGetErrorName(cerr), cudaGetErrorString(cerr));
+              #else
+                  printf("Error calling cudaGetDeviceProperties with CUDA error %d\\n", (int)cerr);
+              #endif
+                }
                 else printf("%d\\n",10*dp.major+dp.minor);
                 return(cerr);'''
         self.pushLanguage('CUDA')
