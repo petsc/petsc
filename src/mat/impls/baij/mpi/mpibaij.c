@@ -440,22 +440,11 @@ static PetscErrorCode MatSetValuesBlocked_MPIBAIJ(Mat mat, PetscInt m, const Pet
           if (mat->was_assembled) {
             if (!baij->colmap) PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
 
-#if defined(PETSC_USE_DEBUG)
-  #if defined(PETSC_USE_CTABLE)
-            {
-              PetscInt data;
-              PetscCall(PetscHMapIGetWithDefault(baij->colmap, in[j] + 1, 0, &data));
-              PetscCheck((data - 1) % bs == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect colmap");
-            }
-  #else
-            PetscCheck((baij->colmap[in[j]] - 1) % bs == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect colmap");
-  #endif
-#endif
 #if defined(PETSC_USE_CTABLE)
             PetscCall(PetscHMapIGetWithDefault(baij->colmap, in[j] + 1, 0, &col));
-            col = (col - 1) / bs;
+            col = col < 1 ? -1 : (col - 1) / bs;
 #else
-            col = (baij->colmap[in[j]] - 1) / bs;
+            col = baij->colmap[in[j]] < 1 ? -1 : (baij->colmap[in[j]] - 1) / bs;
 #endif
             if (col < 0 && !((Mat_SeqBAIJ *)baij->B->data)->nonew) {
               PetscCall(MatDisAssemble_MPIBAIJ(mat));
