@@ -234,7 +234,6 @@ static PetscErrorCode MatRetrieveValues_MPISBAIJ(Mat mat)
     PetscCall(PetscArrayzero(ap + bs2 * _i, bs2)); \
     rp[_i]                          = bcol; \
     ap[bs2 * _i + bs * cidx + ridx] = value; \
-    A->nonzerostate++; \
   a_noinsert:; \
     ailen[brow] = nrow; \
   } while (0)
@@ -275,7 +274,6 @@ static PetscErrorCode MatRetrieveValues_MPISBAIJ(Mat mat)
     PetscCall(PetscArrayzero(ap + bs2 * _i, bs2)); \
     rp[_i]                          = bcol; \
     ap[bs2 * _i + bs * cidx + ridx] = value; \
-    B->nonzerostate++; \
   b_noinsert:; \
     bilen[brow] = nrow; \
   } while (0)
