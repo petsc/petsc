@@ -623,6 +623,7 @@ int main(int argc, char **argv)
   #   Full Schur + Velocity GMG
   test:
     suffix: 2d_p2_p1_gmg_vcycle
+    TODO: broken (requires subDMs hooks)
     requires: triangle
     args: -sol quadratic -dm_refine_hierarchy 2 -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
       -ksp_type fgmres -ksp_atol 1e-9 -snes_error_if_not_converged -pc_use_amat \

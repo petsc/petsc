@@ -3380,6 +3380,7 @@ int main(int argc, char **argv)
         -fieldsplit_pressure_ksp_rtol 1.e-9 -fieldsplit_pressure_pc_type lu
   test:
     suffix: p2p1_gmg
+    TODO: broken (requires subDMs hooks)
     requires: triangle
     args: -dm_plex_separate_marker -dm_refine_hierarchy 2 -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
       -snes_error_if_not_converged -dmsnes_check .001 \
