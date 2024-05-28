@@ -42,6 +42,9 @@ static inline PetscErrorCode PetscSetDefaultCUPMStreamFromDeviceContext(PetscDev
     PetscDefaultHipStream = *static_cast<hipStream_t *>(handle);
   }
 #endif
+#if !PetscDefined(HAVE_CUDA) && !PetscDefined(HAVE_HIP)
+  (void)dctx, (void)dtype;
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
