@@ -1713,6 +1713,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
         for (v = 0; v < faceSize; ++v, ++voff) faceVertices[v] = fs_vertex_list[voff] + numCells - 1;
         PetscCall(DMPlexGetFullJoin(*dm, faceSize, faceVertices, &numFaces, &faces));
         PetscCheck(numFaces == 1, comm, PETSC_ERR_ARG_WRONG, "Invalid ExodusII side %d in set %d maps to %" PetscInt_FMT " faces", f, fs, numFaces);
+        PetscCheck(dim == 1 || faces[0] >= numCells + numVertices, comm, PETSC_ERR_ARG_WRONG, "Invalid ExodusII side %d in set %d maps to point %" PetscInt_FMT " which is not a face", f, fs, faces[0]);
         PetscCall(DMSetLabelValue_Fast(*dm, &faceSets, "Face Sets", faces[0], fs_id[fs]));
         /* Only add the label if one has been detected for this side set. */
         if (!fs_name_err) PetscCall(DMSetLabelValue(*dm, fs_name, faces[0], fs_id[fs]));
