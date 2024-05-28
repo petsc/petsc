@@ -205,7 +205,7 @@ PetscErrorCode MatGetType(Mat mat, MatType *type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatGetVecType - Gets the vector type the matrix will return with `MatCreateVecs()`
 
   Not Collective
@@ -229,7 +229,7 @@ PetscErrorCode MatGetVecType(Mat mat, VecType *vtype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSetVecType - Set the vector type the matrix will return with `MatCreateVecs()`
 
   Collective
