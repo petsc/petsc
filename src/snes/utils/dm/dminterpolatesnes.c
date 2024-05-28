@@ -840,7 +840,7 @@ static inline PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, 
   Input Parameters:
 + ctx - The `DMInterpolationInfo` context obtained with `DMInterpolationCreate()`
 . dm  - The `DM`
-- x   - The local vector containing the field to be interpolated, obtained with `DMInterpolationGetCoordinates()`
+- x   - The local vector containing the field to be interpolated, can be created with `DMCreateGlobalVector()`
 
   Output Parameter:
 . v - The vector containing the interpolated values, obtained with `DMInterpolationGetVector()`
