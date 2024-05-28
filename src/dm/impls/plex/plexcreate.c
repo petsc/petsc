@@ -5920,7 +5920,7 @@ PetscErrorCode DMPlexCreateEphemeral(DMPlexTransform tr, const char prefix[], DM
   DM           bdm, bcdm, cdm;
   Vec          coordinates, coordinatesNew;
   PetscSection cs;
-  PetscInt     dim, cdim, Nl;
+  PetscInt     cdim, Nl;
 
   PetscFunctionBegin;
   PetscCall(DMCreate(PetscObjectComm((PetscObject)tr), dm));
@@ -5928,10 +5928,8 @@ PetscErrorCode DMPlexCreateEphemeral(DMPlexTransform tr, const char prefix[], DM
   ((DM_Plex *)(*dm)->data)->interpolated = DMPLEX_INTERPOLATED_FULL;
   // Handle coordinates
   PetscCall(DMPlexTransformGetDM(tr, &bdm));
-  PetscCall(DMGetCoordinateDim(bdm, &cdim));
-  PetscCall(DMSetCoordinateDim(*dm, cdim));
-  PetscCall(DMGetDimension(bdm, &dim));
-  PetscCall(DMSetDimension(*dm, dim));
+  PetscCall(DMPlexTransformSetDimensions(tr, bdm, *dm));
+  PetscCall(DMGetCoordinateDim(*dm, &cdim));
   PetscCall(DMGetCoordinateDM(bdm, &bcdm));
   PetscCall(DMGetCoordinateDM(*dm, &cdm));
   PetscCall(DMCopyDisc(bcdm, cdm));
