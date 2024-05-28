@@ -3092,7 +3092,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     PetscCall(PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, stokes_momentum_vel_J_cx));
     PetscCall(PetscDSSetJacobian(prob, 0, 1, NULL, NULL, stokes_momentum_pres_J, NULL));
     PetscCall(PetscDSSetJacobian(prob, 1, 0, NULL, stokes_mass_J, NULL, NULL));
-    PetscCall(PetscDSSetJacobianPreconditioner(prob, 0, 0, NULL, NULL, NULL, stokes_momentum_vel_J_kx));
+    PetscCall(PetscDSSetJacobianPreconditioner(prob, 0, 0, NULL, NULL, NULL, stokes_momentum_vel_J_cx));
     PetscCall(PetscDSSetJacobianPreconditioner(prob, 1, 1, stokes_identity_J_cx, NULL, NULL, NULL));
     break;
   default:
