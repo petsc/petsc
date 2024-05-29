@@ -82,6 +82,24 @@
       End Interface SNESGetApplicationContext
       end module ex73f90tmodule_interfaces
 
+      subroutine MyObjective(snes, x, result, ctx, ierr )
+#include <petsc/finclude/petsc.h>
+        use petsc
+        implicit none
+        PetscInt ctx
+        Vec            x, f
+        SNES           snes
+        PetscErrorCode ierr
+        PetscScalar    result
+        PetscReal      fnorm
+
+        PetscCall(VecDuplicate(x,f,ierr))
+        PetscCall(SNESComputeFunction(snes,x,f,ierr))
+        PetscCall(VecNorm(f,NORM_2,fnorm,ierr))
+        result = .5*fnorm*fnorm
+        PetscCall(VecDestroy(f,ierr))
+      end subroutine MyObjective
+
       program main
 #include <petsc/finclude/petscdm.h>
 #include <petsc/finclude/petscsnes.h>
@@ -116,10 +134,11 @@
       PetscReal lambda_max,lambda_min
       type(ex73f90tmodule_type)  solver
       PetscScalar      bval(1),cval(1),one
+      PetscBool        useobjective
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
-      external FormInitialGuess,FormJacobian,FormFunction
+      external FormInitialGuess,FormJacobian,FormFunction,MyObjective
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Initialize program
@@ -134,8 +153,10 @@
       ione = 1
       nfour = 4
       itwo = 2
+      useobjective = PETSC_FALSE
       PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par', solver%lambda,flg,ierr))
       PetscCheckA(solver%lambda .le. lambda_max .and. solver%lambda .ge. lambda_min,PETSC_COMM_SELF,PETSC_ERR_USER,'Lambda provided with -par is out of range')
+      PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-objective', useobjective,flg,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create vector data structures; set function evaluation routine
@@ -304,8 +325,10 @@
       PetscCallA(SNESSetDM(mysnes,solver%da,ierr))
 
 !  Set function evaluation routine and vector
-      PetscCallA(SNESSetFunction(mysnes,r,FormFunction,solver,ierr))
-
+      PetscCallA(SNESSetFunction(mysnes, r, FormFunction, solver,ierr))
+      if (useobjective .eqv. PETSC_TRUE) then
+         PetscCallA(SNESSetObjective(mysnes, MyObjective, solver, ierr))
+      endif
       PetscCallA(SNESSetJacobian(mysnes,KKTmat,KKTmat,FormJacobian,solver,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -719,5 +742,11 @@
 !   test:
 !      nsize: 4
 !      args: -par 5.0 -da_grid_x 10 -da_grid_y 10 -snes_monitor_short -snes_linesearch_type basic -snes_converged_reason -ksp_type fgmres -ksp_norm_type unpreconditioned -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type upper -ksp_monitor_short -fieldsplit_lambda_ksp_type preonly -fieldsplit_lambda_pc_type jacobi -fieldsplit_phi_pc_type gamg -fieldsplit_phi_pc_gamg_esteig_ksp_type cg -fieldsplit_phi_pc_gamg_esteig_ksp_max_it 10 -fieldsplit_phi_pc_gamg_agg_nsmooths 1 -fieldsplit_phi_pc_gamg_threshold 0.
+!
+!   test:
+!      args: -snes_linesearch_type {{l2 cp}separate output} -objective {{false true}shared output}
+!
+!   test:
+!      args: -snes_linesearch_type bt -objective {{false true}separate output}
 !
 !TEST*/
