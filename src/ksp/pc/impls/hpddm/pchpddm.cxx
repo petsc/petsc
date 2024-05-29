@@ -1,3 +1,4 @@
+#include <petscsf.h>
 #include <petsc/private/vecimpl.h>
 #include <petsc/private/matimpl.h>
 #include <petsc/private/petschpddm.h> /*I "petscpc.h" I*/
@@ -135,14 +136,14 @@ static inline PetscErrorCode PCHPDDMSetAuxiliaryMatNormal_Private(PC pc, Mat A, 
     if (diagonal) {
       PetscCall(VecNorm(*diagonal, NORM_INFINITY, &norm));
       if (norm > PETSC_SMALL) {
-        VecScatter scatter;
-        PetscInt   n;
+        PetscSF  scatter;
+        PetscInt n;
         PetscCall(ISGetLocalSize(*cols, &n));
         PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)pc), n, PETSC_DECIDE, &d));
         PetscCall(VecScatterCreate(*diagonal, *cols, d, nullptr, &scatter));
         PetscCall(VecScatterBegin(scatter, *diagonal, d, INSERT_VALUES, SCATTER_FORWARD));
         PetscCall(VecScatterEnd(scatter, *diagonal, d, INSERT_VALUES, SCATTER_FORWARD));
-        PetscCall(VecScatterDestroy(&scatter));
+        PetscCall(PetscSFDestroy(&scatter));
         PetscCall(MatScale(aux, -1.0));
         PetscCall(MatDiagonalSet(aux, d, ADD_VALUES));
         PetscCall(VecDestroy(&d));
@@ -919,7 +920,7 @@ static PetscErrorCode PCDestroy_HPDDMShell(PC pc)
   PetscCall(MatDestroy(ctx->V + 1));
   PetscCall(MatDestroy(ctx->V + 2));
   PetscCall(VecDestroy(&ctx->D));
-  PetscCall(VecScatterDestroy(&ctx->scatter));
+  PetscCall(PetscSFDestroy(&ctx->scatter));
   PetscCall(PCDestroy(&ctx->pc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1382,7 +1383,7 @@ static PetscErrorCode PCDestroy_Nest(PC pc)
 template <bool T = false>
 static PetscErrorCode MatMult_Schur(Mat A, Vec x, Vec y)
 {
-  std::tuple<Mat, VecScatter, Vec[2]> *ctx;
+  std::tuple<Mat, PetscSF, Vec[2]> *ctx;
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &ctx));
@@ -1398,7 +1399,7 @@ static PetscErrorCode MatMult_Schur(Mat A, Vec x, Vec y)
 
 static PetscErrorCode MatDestroy_Schur(Mat A)
 {
-  std::tuple<Mat, VecScatter, Vec[2]> *ctx;
+  std::tuple<Mat, PetscSF, Vec[2]> *ctx;
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &ctx));
@@ -1707,7 +1708,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
             else norm = 0.0;
             PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &norm, 1, MPIU_REAL, MPI_MAX, PetscObjectComm((PetscObject)P)));
             if (norm < PETSC_MACHINE_EPSILON * static_cast<PetscReal>(10.0)) { /* if A11 is near zero, e.g., Stokes equation, build a diagonal auxiliary (Neumann) Mat which is just a small diagonal weighted by the inverse of the multiplicity */
-              VecScatter         scatter;
+              PetscSF            scatter;
               Vec                x;
               const PetscScalar *read;
               PetscScalar       *write;
@@ -2450,9 +2451,9 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           PetscCall(PCShellSetApply(spc, PCApply_HPDDMShell));
           PetscCall(PCShellSetMatApply(spc, PCMatApply_HPDDMShell));
           if (ctx && n == 0) {
-            Mat                                  Amat, Pmat;
-            PetscInt                             m, M;
-            std::tuple<Mat, VecScatter, Vec[2]> *ctx;
+            Mat                               Amat, Pmat;
+            PetscInt                          m, M;
+            std::tuple<Mat, PetscSF, Vec[2]> *ctx;
 
             PetscCall(KSPGetOperators(data->levels[n]->ksp, nullptr, &Pmat));
             PetscCall(MatGetLocalSize(Pmat, &m, nullptr));
@@ -2522,7 +2523,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         PetscCall(MatDestroy(data->levels[n]->V + 1));
         PetscCall(MatDestroy(data->levels[n]->V + 2));
         PetscCall(VecDestroy(&data->levels[n]->D));
-        PetscCall(VecScatterDestroy(&data->levels[n]->scatter));
+        PetscCall(PetscSFDestroy(&data->levels[n]->scatter));
       }
     }
     if (reused) {
