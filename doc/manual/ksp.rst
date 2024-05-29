@@ -1077,20 +1077,20 @@ Algebraic Multigrid (AMG) Preconditioners
 
 PETSc has a native algebraic multigrid preconditioner ``PCGAMG`` –
 *gamg* – and interfaces to three external AMG packages: *hypre*, *ML*
-and *AMGx* (CUDA platforms only), that can be downloaded in the
-configuration phase (eg, ``--download-hypre`` ) and used by
-specifiying that command line parameter (eg, ``-pc_type hypre``).
+and *AMGx* (CUDA platforms only) that can be downloaded in the
+configuration phase (e.g., ``--download-hypre`` ) and used by
+specifying that command line parameter (e.g., ``-pc_type hypre``).
 *Hypre* is relatively monolithic in that a PETSc matrix is converted into a hypre
-matrix and then *hypre* is called to do the entire solve. *ML* is more
-modular in that PETSc only has *ML* generate the coarse grid spaces
-(columns of the prolongation operator), which is core of an AMG method,
+matrix, and then *hypre* is called to solve the entire problem. *ML* is more
+modular because PETSc only has *ML* generate the coarse grid spaces
+(columns of the prolongation operator), which is the core of an AMG method,
 and then constructs a ``PCMG`` with Galerkin coarse grid operator
 construction. ``PCGAMG`` is designed from the beginning to be modular, to
 allow for new components to be added easily and also populates a
 multigrid preconditioner ``PCMG`` so generic multigrid parameters are
 used (see :any:`sec_mg`). PETSc provides a fully supported (smoothed) aggregation AMG, but supports the addition of new methods
 (``-pc_type gamg -pc_gamg_type agg`` or ``PCSetType(pc,PCGAMG)`` and
-``PCGAMGSetType(pc,PCGAMGAGG)``. Examples of extension are a reference implementations of
+``PCGAMGSetType(pc, PCGAMGAGG)``. Examples of extension are reference implementations of
 a classical AMG method (``-pc_gamg_type classical``), a (2D) hybrid geometric
 AMG method (``-pc_gamg_type geo``) that are not supported. A 2.5D AMG method DofColumns
 :cite:`isaacstadlerghattas2015` supports 2D coarsenings extruded in the third dimension. ``PCGAMG`` does require the use
@@ -1099,31 +1099,116 @@ can use ``MATAIJ`` instead of ``MATBAIJ`` without changing any code other than t
 constructor (or the ``-mat_type`` from the command line). For instance,
 ``MatSetValuesBlocked`` works with ``MATAIJ`` matrices.
 
+**Important parameters for ``PCGAMGAGG``**
+
+* Control the generation of the coarse grid
+
+   * ``-pc_gamg_aggressive_coarsening`` <n:int:1> Use aggressive coarsening on the finest n levels to construct the coarser mesh.
+     See `PCGAMGAGGSetNSmooths()`. The larger value produces a faster preconditioner to create and solve, but the convergence may be slower.
+
+   * ``-pc_gamg_low_memory_threshold_filter`` <bool:false> Filter small matrix entries before coarsening the mesh.
+     See ``PCGAMGSetLowMemoryFilter()``.
+
+   * ``-pc_gamg_threshold``` <tol:real:0.0> The threshold of small values to drop when  ``-pc_gamg_low_memory_threshold_filter`` is used. A
+     negative value means keeping even the locations with 0.0. See ``PCGAMGSetThreshold()``
+
+   * ``-pc_gamg_threshold_scale`` <v>:real:1.0> Set a scale factor applied to each coarser level when ``-pc_gamg_low_memory_threshold_filter``  is used.
+     See ``PCGAMGSetThresholdScale()``.
+
+   * ``-pc_gamg_mat_coarsen_type`` <mis|hem|misk:misk> Algorithm used to coarsen the matrix graph. See ``MatCoarsenSetType()``.
+
+   * ``-pc_gamg_mat_coarsen_max_it`` <it:int:4> Maximum HEM iterations to use. See ``MatCoarsenSetMaximumIterations()``.
+
+   * ``-pc_gamg_aggressive_mis_k`` <k:int:2> k distance in MIS coarsening (>2 is 'aggressive') to use in coarsening.
+     See `PCGAMGMISkSetAggressive()`. The larger value produces a preconditioner that is faster to create and solve with but the convergence may be slower.
+     This option and the previous option work to determine how aggressively the grids are coarsened.
+
+   * ``-pc_gamg_mis_k_minimum_degree_ordering`` <bool:true> Use a minimum degree ordering in the greedy MIS algorithm used to coarsen.
+     See ``PCGAMGMISkSetMinDegreeOrdering()``
+
+* Control the generation of the prolongation for ``PCGAMGAGG``
+
+   * ``-pc_gamg_agg_nsmooths`` <n:int:1> Number of smoothing steps to be used in constructing the prolongation. For symmetric problems,
+     generally, one or more is best. For some strongly nonsymmetric problems, 0 may be best. See ``PCGAMGSetNSmooths()``.
+
+* Control the amount of parallelism on the levels
+
+   * ``-pc_gamg_process_eq_limit`` <n:int:50> Sets the minimum number of equations allowed per process when coarsening (otherwise, fewer MPI processes
+     are used for the coarser mesh). A larger value will cause the coarser problems to be run on fewer MPI processes, resulting
+     in less communication and possibly a faster time to solution. See ``PCGAMGSetProcEqLim()``.
+
+   * ``-pc_gamg_rank_reduction_factors`` <rn,rn-1,...,r1:int> Set a schedule for MPI rank reduction on coarse grids. ``See PCGAMGSetRankReductionFactors()``
+     This overrides the lessening of processes that would arise from ``-pc_gamg_process_eq_limit``.
+
+   * ``-pc_gamg_repartition`` <bool:false> Run a partitioner on each coarser mesh generated rather than using the default partition arising from the
+     finer mesh. See ``PCGAMGSetRepartition()``. This increases the preconditioner setup time but will result in less time per
+     iteration of the solver.
+
+   * ``-pc_gamg_parallel_coarse_grid_solver`` <bool:false> Allow the coarse grid solve to run in parallel, depending on the value of ``-pc_gamg_coarse_eq_limit``.
+     See ``PCGAMGSetParallelCoarseGridSolve()``. If the coarse grid problem is large then this can
+     improve the time to solution.
+
+     * ``-pc_gamg_coarse_eq_limit`` <n:int:50> Sets the minimum number of equations allowed per process on the coarsest level  when coarsening
+       (otherwise fewer MPI processes will be used). A larger value will cause the coarse problems to be run on fewer MPI processes.
+       This only applies if ``-pc_gamg_parallel_coarse_grid_solver`` is set to true. See ``PCGAMGSetCoarseEqLim()``.
+
+* Control the smoothers
+
+   * ``-pc_mg_levels`` <n:int> Set the maximum number of levels to use.
+
+   * ``-mg_levels_ksp_type`` <KSPType:chebyshev> If ``KSPCHEBYSHEV`` or ``KSPRICHARDSON`` is not used, then the Krylov
+     method for the entire multigrid solve has to be a flexible method such as ``KSPFGMRES``. Generally, the
+     stronger the Krylov method the faster the convergence, but with more cost per iteration. See ``KSPSetType()``.
+
+   * ``-mg_levels_ksp_max_it`` <its:int:2> Sets the number of iterations to run the smoother on each level. Generally, the more iterations
+     , the faster the convergence, but with more cost per multigrid iteration. See ``PCMGSetNumberSmooth()``.
+
+   * ``-mg_levels_ksp_xxx`` Sets options for the ``KSP`` in the smoother on the levels.
+
+   * ``-mg_levels_pc_type`` <PCType:jacobi> Sets the smoother to use on each level. See ``PCSetType()``. Generally, the
+     stronger the preconditioner the faster the convergence, but with more cost per iteration.
+
+   * ``-mg_levels_pc_xxx`` Sets options for the ``PC`` in the smoother on the levels.
+
+   * ``-mg_coarse_ksp_type`` <KSPType:none> Sets the solver ``KSPType`` to use on the coarsest level.
+
+   * ``-mg_coarse_pc_type`` <PCType:lu> Sets the solver ``PCType`` to use on the coarsest level.
+
+   * ``-pc_gamg_asm_use_agg`` <bool:false> Use ``PCASM`` as the smoother on each level with the aggregates defined by the coarsening process are
+     the subdomains. This option automatically switches the smoother on the levels to be ``PCASM``.
+
+   * ``-mg_levels_pc_asm_overlap`` <n:int:0> Use non-zero overlap with ``-pc_gamg_asm_use_agg``. See ``PCASMSetOverlap()``.
+
+* Control the multigrid algorithm
+
+   * ``-pc_mg_type`` <additive|multiplicative|full|kaskade:multiplicative> The type of multigrid to use. Usually, multiplicative is the fastest.
+
+   * ``-pc_mg_cycle_type`` <v|w:v> Use V- or W-cycle with ``-pc_mg_type`` ``multiplicative``
+
 ``PCGAMG`` provides unsmoothed aggregation (``-pc_gamg_agg_nsmooths 0``) and
 smoothed aggregation (``-pc_gamg_agg_nsmooths 1`` or
-``PCGAMGSetNSmooths(pc,1)``). Smoothed aggregation (SA) is recommended
+``PCGAMGSetNSmooths(pc,1)``). Smoothed aggregation (SA), :cite:`vanek1996algebraic`, :cite:`vanek2001convergence`,  is recommended
 for symmetric positive definite systems. Unsmoothed aggregation can be
-useful for asymmetric problems and problems where highest eigen
-estimates are problematic. If poor convergence rates are observed using
-the smoothed version one can test unsmoothed aggregation.
+useful for asymmetric problems and problems where the highest eigenestimates are problematic. If poor convergence rates are observed using
+the smoothed version, one can test unsmoothed aggregation.
 
 **Eigenvalue estimates:** The parameters for the KSP eigen estimator,
 used for SA, can be set with ``-pc_gamg_esteig_ksp_max_it`` and
-``-pc_gamg_esteig_ksp_type``. For example CG generally converges to the
-highest eigenvalue fast than GMRES (the default for KSP) if your problem
+``-pc_gamg_esteig_ksp_type``. For example, CG generally converges to the
+highest eigenvalue faster than GMRES (the default for KSP) if your problem
 is symmetric positive definite. One can specify CG with
 ``-pc_gamg_esteig_ksp_type cg``. The default for
 ``-pc_gamg_esteig_ksp_max_it`` is 10, which we have found is pretty safe
 with a (default) safety factor of 1.1. One can specify the range of real
-eigenvalues, in the same way that one can for Chebyshev KSP solvers
+eigenvalues in the same way as with Chebyshev KSP solvers
 (smoothers), with ``-pc_gamg_eigenvalues <emin,emax>``. GAMG sets the MG
 smoother type to chebyshev by default. By default, GAMG uses its eigen
 estimate, if it has one, for Chebyshev smoothers if the smoother uses
 Jacobi preconditioning. This can be overridden with
 ``-pc_gamg_use_sa_esteig  <true,false>``.
 
-AMG methods requires knowledge of the number of degrees of freedom per
-vertex, the default is one (a scalar problem). Vector problems like
+AMG methods require knowledge of the number of degrees of freedom per
+vertex; the default is one (a scalar problem). Vector problems like
 elasticity should set the block size of the matrix appropriately with
 ``-mat_block_size bs`` or ``MatSetBlockSize(mat,bs)``. Equations must be
 ordered in “vertex-major” ordering (e.g.,
@@ -1132,59 +1217,59 @@ ordered in “vertex-major” ordering (e.g.,
 **Near null space:** Smoothed aggregation requires an explicit
 representation of the (near) null space of the operator for optimal
 performance. One can provide an orthonormal set of null space vectors
-with ``MatSetNearNullSpace()``. The vector of all ones is the default,
+with ``MatSetNearNullSpace()``. The vector of all ones is the default
 for each variable given by the block size (e.g., the translational rigid
 body modes). For elasticity, where rotational rigid body modes are
-required to complete the near null space you can use
+required to complete the near null-space you can use
 ``MatNullSpaceCreateRigidBody()`` to create the null space vectors and
 then ``MatSetNearNullSpace()``.
 
 **Coarse grid data model:** The GAMG framework provides for reducing the
 number of active processes on coarse grids to reduce communication costs
 when there is not enough parallelism to keep relative communication
-costs down. Most AMG solver reduce to just one active process on the
+costs down. Most AMG solvers reduce to just one active process on the
 coarsest grid (the PETSc MG framework also supports redundantly solving
-the coarse grid on all processes to potentially reduce communication
-costs), although this forcing to one process can be overridden if one
+the coarse grid on all processes to reduce communication
+costs potentially). However, this forcing to one process can be overridden if one
 wishes to use a parallel coarse grid solver. GAMG generalizes this by
-reducing the active number of processes on other coarse grids as well.
+reducing the active number of processes on other coarse grids.
 GAMG will select the number of active processors by fitting the desired
-number of equation per process (set with
+number of equations per process (set with
 ``-pc_gamg_process_eq_limit <50>,``) at each level given that size of
 each level. If :math:`P_i < P` processors are desired on a level
-:math:`i` then the first :math:`P_i` processes are populated with the grid
+:math:`i`, then the first :math:`P_i` processes are populated with the grid
 and the remaining are empty on that grid. One can, and probably should,
 repartition the coarse grids with ``-pc_gamg_repartition <true>``,
 otherwise an integer process reduction factor (:math:`q`) is selected
 and the equations on the first :math:`q` processes are moved to process
-0, and so on. As mentioned multigrid generally coarsens the problem
-until it is small enough to be solved with an exact solver (eg, LU or
-SVD) in a relatively small time. GAMG will stop coarsening when the
-number of equation on a grid falls below at threshold give by
+0, and so on. As mentioned, multigrid generally coarsens the problem
+until it is small enough to be solved with an exact solver (e.g., LU or
+SVD) in a relatively short time. GAMG will stop coarsening when the
+number of the equation on a grid falls below the threshold given by
 ``-pc_gamg_coarse_eq_limit <50>,``.
 
 **Coarse grid parameters:** There are several options to provide
 parameters to the coarsening algorithm and parallel data layout. Run a
-code that uses ``PCGAMG`` with ``-help`` to get full listing of GAMG
-parameters with short parameter descriptions. The rate of coarsening is
+code using ``PCGAMG`` with ``-help`` to get a full listing of GAMG
+parameters with short descriptions. The rate of coarsening is
 critical in AMG performance – too slow coarsening will result in an
 overly expensive solver per iteration and too fast coarsening will
 result in decrease in the convergence rate. ``-pc_gamg_threshold <-1>``
 and ``-pc_gamg_aggressive_coarsening <N>`` are the primary parameters that
 control coarsening rates, which is very important for AMG performance. A
 greedy maximal independent set (MIS) algorithm is used in coarsening.
-Squaring the graph implements so called MIS-2, the root vertex in an
-aggregate is more than two edges away from another root vertex, instead
+Squaring the graph implements MIS-2; the root vertex in an
+aggregate is more than two edges away from another root vertex instead
 of more than one in MIS. The threshold parameter sets a normalized
 threshold for which edges are removed from the MIS graph, thereby
 coarsening slower. Zero will keep all non-zero edges, a negative number
-will keep zero edges, a positive number will drop small edges. Typical
+will keep zero edges, and a positive number will drop small edges. Typical
 finite threshold values are in the range of :math:`0.01 - 0.05`. There
 are additional parameters for changing the weights on coarse grids.
 
-The parallel MIS algorithms requires symmetric weights/matrix. Thus ``PCGAMG``
+The parallel MIS algorithms require symmetric weights/matrices. Thus ``PCGAMG``
 will automatically make the graph symmetric if it is not symmetric. Since this
-has additional cost users should indicate the symmetry of the matrices they
+has additional cost, users should indicate the symmetry of the matrices they
 provide by calling
 
 .. code-block::
@@ -1197,7 +1282,7 @@ or
 
    MatSetOption(mat,MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE (or PETSC_FALSE)).
 
-If they know that the matrix will always have symmetry, despite future changes
+If they know that the matrix will always have symmetry despite future changes
 to the matrix (with, for example, ``MatSetValues()``) then they should also call
 
 .. code-block::
@@ -1210,11 +1295,11 @@ or
 
    MatSetOption(mat,MAT_STRUCTURAL_SYMMETRY_ETERNAL,PETSC_TRUE (or PETSC_FALSE)).
 
-Using this information allows the algorithm to skip the unnecessary computations.
+Using this information allows the algorithm to skip unnecessary computations.
 
-**Trouble shooting algebraic multigrid methods:** If ``PCGAMG``, *ML*, *AMGx* or
-*hypre* does not perform well the first thing to try is one of the other
-methods. Often the default parameters or just the strengths of different
+**Troubleshooting algebraic multigrid methods:** If ``PCGAMG``, *ML*, *AMGx* or
+*hypre* does not perform well; the first thing to try is one of the other
+methods. Often, the default parameters or just the strengths of different
 algorithms can fix performance problems or provide useful information to
 guide further debugging. There are several sources of poor performance
 of AMG solvers and often special purpose methods must be developed to
@@ -1223,8 +1308,8 @@ performance degradation that may not be fixed with parameters in PETSc
 currently: non-elliptic operators, curl/curl operators, highly stretched
 grids or highly anisotropic problems, large jumps in material
 coefficients with complex geometry (AMG is particularly well suited to
-jumps in coefficients but it is not a perfect solution), highly
-incompressible elasticity, not to mention ill-posed problems, and many
+jumps in coefficients, but it is not a perfect solution), highly
+incompressible elasticity, not to mention ill-posed problems and many
 others. For Grad-Div and Curl-Curl operators, you may want to try the
 Auxiliary-space Maxwell Solver (AMS,
 ``-pc_type hypre -pc_hypre_type ams``) or the Auxiliary-space Divergence
@@ -1237,9 +1322,9 @@ operator, which can be set using ``PCHYPRESetDiscreteCurl()``.
 
 **I am converging slowly, what do I do?** AMG methods are sensitive to
 coarsening rates and methods; for GAMG use ``-pc_gamg_threshold <x>``
-or ``PCGAMGSetThreshold()`` to regulate coarsening rates, higher values decrease
+or ``PCGAMGSetThreshold()`` to regulate coarsening rates; higher values decrease
 coarsening rate. Squaring the graph is the second mechanism for
-increasing coarsening rate. Use ``-pc_gamg_aggressive_coarsening <N>``, or
+increasing the coarsening rate. Use ``-pc_gamg_aggressive_coarsening <N>``, or
 ``PCGAMGSetAggressiveLevels(pc,N)``, to aggressive ly coarsen (MIS-2) the graph on the finest N
 levels. A high threshold (e.g., :math:`x=0.08`) will result in an
 expensive but potentially powerful preconditioner, and a low threshold
@@ -1248,60 +1333,60 @@ cheaper solves, and generally worse convergence rates.
 
 One can run with ``-info :pc`` and grep for ``PCGAMG`` to get statistics on
 each level, which can be used to see if you are coarsening at an
-appropriate rate. With smoothed aggregation you generally want to coarse
-at about a rate of 3:1 in each dimension. Coarsening too slow will
+appropriate rate. With smoothed aggregation, you generally want to coarse
+at about a rate of 3:1 in each dimension. Coarsening too slowly will
 result in large numbers of non-zeros per row on coarse grids (this is
 reported). The number of non-zeros can go up very high, say about 300
-(times the degrees-of-freedom per vertex) on a 3D hex mesh. One can also
+(times the degrees of freedom per vertex) on a 3D hex mesh. One can also
 look at the grid complexity, which is also reported (the ratio of the
 total number of matrix entries for all levels to the number of matrix
 entries on the fine level). Grid complexity should be well under 2.0 and
 preferably around :math:`1.3` or lower. If convergence is poor and the
 Galerkin coarse grid construction is much smaller than the time for each
-solve then one can safely decrease the coarsening rate.
+solve, one can safely decrease the coarsening rate.
 ``-pc_gamg_threshold`` :math:`-1.0` is the simplest and most robust
-option, and is recommended if poor convergence rates are observed, at
-least until the source of the problem is discovered. In conclusion, if
-convergence is slow then decreasing the coarsening rate (increasing the
-threshold) should be tried.
+option and is recommended if poor convergence rates are observed, at
+least until the source of the problem is discovered. In conclusion, decreasing the coarsening rate (increasing the
+threshold) should be tried if convergence is slow.
 
 **A note on Chebyshev smoothers.** Chebyshev solvers are attractive as
 multigrid smoothers because they can target a specific interval of the
-spectrum which is the purpose of a smoother. The spectral bounds for
+spectrum, which is the purpose of a smoother. The spectral bounds for
 Chebyshev solvers are simple to compute because they rely on the highest
 eigenvalue of your (diagonally preconditioned) operator, which is
 conceptually simple to compute. However, if this highest eigenvalue
-estimate is not accurate (too low) then the solvers can fail with and
+estimate is not accurate (too low), the solvers can fail with an
 indefinite preconditioner message. One can run with ``-info`` and grep
 for ``PCGAMG`` to get these estimates or use ``-ksp_view``. These highest
 eigenvalues are generally between 1.5-3.0. For symmetric positive
-definite systems CG is a better eigenvalue estimator
-``-mg_levels_esteig_ksp_type cg``. Indefinite matrix messages are often
-caused by bad Eigen estimates. Explicitly damped Jacobi or Krylov
-smoothers can provide an alternative to Chebyshev and *hypre* has
+definite systems, CG is a better eigenvalue estimator
+``-mg_levels_esteig_ksp_type cg``. Bad Eigen estimates often cause indefinite matrix messages. Explicitly damped Jacobi or Krylov
+smoothers can provide an alternative to Chebyshev, and *hypre* has
 alternative smoothers.
 
-**Now am I solving alright, can I expect better?** If you find that you
+**Now, am I solving alright? Can I expect better?** If you find that you
 are getting nearly one digit in reduction of the residual per iteration
 and are using a modest number of point smoothing steps (e.g., 1-4
 iterations of SOR), then you may be fairly close to textbook multigrid
-efficiency. Although you also need to check the setup costs. This can be
+efficiency. However, you also need to check the setup costs. This can be
 determined by running with ``-log_view`` and check that the time for the
 Galerkin coarse grid construction (``MatPtAP()``) is not (much) more than
 the time spent in each solve (``KSPSolve()``). If the ``MatPtAP()`` time is
-too large then one can increase the coarsening rate by decreasing the
+too large, then one can increase the coarsening rate by decreasing the
 threshold and using aggressive coarsening 
 (``-pc_gamg_aggressive_coarsening <N>``, squares the graph on the finest N
-levels). Likewise if your ``MatPtAP()`` time is small and your convergence
-rate is not ideal then you could decrease the coarsening rate.
+levels). Likewise, if your ``MatPtAP()`` time is short and your convergence
+If the rate is not ideal, you could decrease the coarsening rate.
 
-PETSc’s AMG solver is constructed as a framework for developers to
-easily add AMG capabilities, like a new AMG methods or an AMG component
+PETSc’s AMG solver is a framework for developers to
+easily add AMG capabilities, like new AMG methods or an AMG component
 like a matrix triple product. Contact us directly if you are interested
 in contributing.
 
-It is possible but not recommended to use algebraic multigrid as a "standalone" solver, that is not accelerating it with a Krylov method. Use a ``KSPType`` of ``KSPRICHARDSON``
-(or equivalently `-ksp_type richardson`) to achieve this. Using ``KSPPREONLY`` will not work since it only applies a single cycle of multigrid.
+Using algebraic multigrid as a "standalone" solver is possible but not recommended, as it does not accelerate it with a Krylov method.
+Use a ``KSPType`` of ``KSPRICHARDSON``
+(or equivalently `-ksp_type richardson`) to achieve this. Using ``KSPPREONLY`` will not work since it only applies a single multigrid cycle.
+
 
 Adaptive Interpolation
 ``````````````````````
@@ -1854,18 +1939,16 @@ the incomplete factorization.
 
 .. _sec_block_matrices:
 
-Solving Block Matrices
-~~~~~~~~~~~~~~~~~~~~~~
+Solving Block Matrices with PCFIELDSPLIT
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Block matrices represent an important class of problems in numerical
 linear algebra and offer the possibility of far more efficient iterative
-solvers than just treating the entire matrix as black box. In this
-section we use the common linear algebra definition of block matrices
-where matrices are divided in a small, problem-size independent (two,
-three or so) number of very large blocks. These blocks arise naturally
-from the underlying physics or discretization of the problem, for
-example, the velocity and pressure. Under a certain numbering of
-unknowns the matrix can be written as
+solvers than just treating the entire matrix as a black box. In this
+section, we use the common linear algebra definition of block matrices, where matrices are divided into a small, problem-size independent (two,
+three, or so) number of very large blocks. These blocks arise naturally
+from the underlying physics or discretization of the problem, such as the velocity and pressure. Under a certain numbering of
+unknowns, the matrix can be written as
 
 .. math::
 
@@ -1876,10 +1959,9 @@ unknowns the matrix can be written as
    A_{30}   & A_{31} & A_{32} & A_{33} \\
    \end{array} \right),
 
-where each :math:`A_{ij}` is an entire block. On a parallel computer the
-matrices are not explicitly stored this way. Instead, each process will
-own some of the rows of :math:`A_{0*}`, :math:`A_{1*}` etc. On a
-process, the blocks may be stored one block followed by another
+where each :math:`A_{ij}` is an entire block. The matrices on a parallel computer are not explicitly stored this way. Instead, each process will
+own some rows of :math:`A_{0*}`, :math:`A_{1*}` etc. On a
+process, the blocks may be stored in one block followed by another
 
 .. math::
 
@@ -1893,7 +1975,7 @@ process, the blocks may be stored one block followed by another
    ... \\
    \end{array} \right)
 
-or interlaced, for example with two blocks
+or interlaced, for example, with two blocks
 
 .. math::
 
@@ -1906,35 +1988,110 @@ or interlaced, for example with two blocks
    ...
    \end{array} \right).
 
-Note that for interlaced storage the number of rows/columns of each
+Note that for interlaced storage, the number of rows/columns of each
 block must be the same size. Matrices obtained with ``DMCreateMatrix()``
 where the ``DM`` is a ``DMDA`` are always stored interlaced. Block
-matrices can also be stored using the ``MATNEST`` format which holds
+matrices can also be stored using the ``MATNEST`` format, which holds
 separate assembled blocks. Each of these nested matrices is itself
 distributed in parallel. It is more efficient to use ``MATNEST`` with
 the methods described in this section because there are fewer copies and
-better formats (e.g. ``MATBAIJ`` or ``MATSBAIJ``) can be used for the
+better formats (e.g., ``MATBAIJ`` or ``MATSBAIJ``) can be used for the
 components, but it is not possible to use many other methods with
 ``MATNEST``. See :any:`sec_matnest` for more on assembling
 block matrices without depending on a specific matrix format.
 
-The PETSc ``PCFIELDSPLIT`` preconditioner is used to implement the
-“block” solvers in PETSc. There are three ways to provide the
+The PETSc ``PCFIELDSPLIT`` preconditioner implements the
+“block” solvers in PETSc, :cite:`elman2008tcp`. There are three ways to provide the
 information that defines the blocks. If the matrices are stored as
 interlaced then ``PCFieldSplitSetFields()`` can be called repeatedly to
 indicate which fields belong to each block. More generally
 ``PCFieldSplitSetIS()`` can be used to indicate exactly which
-rows/columns of the matrix belong to a particular block. You can provide
-names for each block with these routines, if you do not provide names
-they are numbered from 0. With these two approaches the blocks may
-overlap (though generally they will not). If only one block is defined
+rows/columns of the matrix belong to a particular block (field). You can provide
+names for each block with these routines; if you do not, they are numbered from 0. With these two approaches, the blocks may
+overlap (though they generally will not overlap). If only one block is defined,
 then the complement of the matrices is used to define the other block.
-Finally the option ``-pc_fieldsplit_detect_saddle_point`` causes two
+Finally, the option ``-pc_fieldsplit_detect_saddle_point`` causes two
 diagonal blocks to be found, one associated with all rows/columns that
 have zeros on the diagonals and the rest.
 
-For simplicity in the rest of the section we restrict our matrices to
-two-by-two blocks. So the matrix is
+**Important parameters for ``PCFIELDSPLIT``**
+
+- Control the fields used
+
+  - ``-pc_fieldsplit_detect_saddle_point`` <bool:false> Generate two fields, the first consists of all rows with a nonzero on the diagonal, and the second will be all rows
+    with zero on the diagonal. See ``PCFieldSplitSetDetectSaddlePoint()``.
+
+  - ``-pc_fieldsplit_dm_splits`` <bool:true> Use the ``DM`` attached to the preconditioner to determine the fields. See ``PCFieldSplitSetDMSplits()`` and
+    ``DMCreateFieldDecomposition()``.
+
+  - ``-pc_fieldsplit_%d_fields`` <f1,f2,...:int> Use f1, f2, .. to define field `d`. The `fn` are in the range of 0, ..., bs-1 where bs is the block size
+    of the matrix or set with ``PCFieldSplitSetBlockSize()``. See ``PCFieldSplitSetFields()``.
+
+    - ``-pc_fieldsplit_default`` <bool:true> Automatically add any fields needed that have not been supplied explicitly by ``-pc_fieldsplit_%d_fields``.
+
+  - ``DMFieldsplitSetIS()`` Provide the ``IS`` that defines a particular field.
+
+- Control the type of the block preconditioner
+
+  - ``-pc_fieldsplit_type`` <additive|multiplicative|symmetric_multiplicative|schur|gkb:multiplicative> The order in which the field solves are applied.
+    For symmetric problems where ``KSPCG`` is used ``symmetric_multiplicative`` must be used instead of ``multiplicative``. ``additive`` is the least expensive
+    to apply but provides the worst convergence. ``schur`` requires either a good preconditioner for the Schur complement or a naturally well-conditioned
+    Schur complement, but when it works well can be extremely effective. See ``PCFieldSplitSetType()``. ``gkb`` is for symmetric saddle-point problems (the lower-right
+    the block is zero).
+
+  - ``-pc_fieldsplit_diag_use_amat`` <bool:false> Use the first matrix that is passed to ``KSPSetJacobian()`` to construct the block-diagonal sub-matrices used in the algorithms,
+    by default, the second matrix is used.
+
+  - Options for Schur preconditioner: ``-pc_fieldsplit_type``
+    ``schur``
+
+    - ``-pc_fieldsplit_schur_fact_type`` <diag|lower|upper|full:diag> See ``PCFieldSplitSetSchurFactType()``. ``full`` reduces the iterations but each iteration requires additional
+      field solves.
+
+    - ``-pc_fieldsplit_schur_precondition`` <self|selfp|user|a11|full:user> How the Schur complement is preconditioned. See ``PCFieldSplitSetSchurPre()``.
+
+      - ``-fieldsplit_1_mat_schur_complement_ainv_type`` <diag|lump:diag> Use the lumped diagonal of :math:`A_{00}` when ``-pc_fieldsplit_schur_precondition``
+        ``selfp`` is used.
+
+    - ``-pc_fieldsplit_schur_scale`` <scale:real:-1.0> Controls the sign flip of S for ``-pc_fieldsplit_schur_fact_type`` ``diag``.
+      See ``PCFieldSplitSetSchurScale()``
+
+    - ``fieldsplit_1_xxx`` controls the solver for the Schur complement system.
+      If a ``DM`` provided the fields, use the second field name set in the ``DM`` instead of 1.
+
+      - ``-fieldsplit_1_pc_type`` ``lsc`` ``-fieldsplit_1_lsc_pc_xxx`` use
+        the least squares commutators :cite:`elmanhowleshadidshuttleworthtuminaro2006` :cite:`silvester2001efficient`
+        preconditioner for the Schur complement with any preconditioner for the least-squares matrix, see ``PCLSC``.
+        If a ``DM`` provided the fields, use the second field name set in the ``DM`` instead of 1.
+
+    - ``-fieldsplit_upper_xxx`` Set options for the solver in the upper solver when ``-pc_fieldsplit_schur_fact_type``
+      ``upper`` or ``full`` is used. Defaults to
+      using the solver as provided with ``-fieldsplit_0_xxx``.
+
+    - ``-fieldsplit_1_inner_xxx`` Set the options for the solver inside the application of the Schur complement;
+      defaults to using the solver as provided with ``-fieldsplit_0_xxx``. If a ``DM`` provides the fields use the name of the second field name set in the ``DM`` instead of 1.
+
+  - Options for GKB preconditioner: ``-pc_fieldsplit_type`` gkb
+
+    - ``-pc_fieldsplit_gkb_tol`` <tol:real:1e-5> See ``PCFieldSplitSetGKBTol()``.
+
+    - ``-pc_fieldsplit_gkb_delay`` <delay:int:5> See ``PCFieldSplitSetGKBDelay()``.
+
+    - ``-pc_fieldsplit_gkb_nu`` <nu:real:1.0> See ``PCFieldSplitSetGKBNu()``.
+
+    - ``-pc_fieldsplit_gkb_maxit`` <maxit:int:100> See ``PCFieldSplitSetGKBMaxit()``.
+
+    - ``-pc_fieldsplit_gkb_monitor`` <bool:false> Monitor the convergence of the inner solver.
+
+- Options for additive and multiplication field solvers:
+
+    - ``-fieldsplit_%d_xxx`` Set options for the solver for field number `d`. For  example, ``-fieldsplit_0_pc_type``
+      ``jacobi``. When the fields are obtained from a ``DM`` use the
+      field name instead of `d`.
+
+
+
+For simplicity, we restrict our matrices to two-by-two blocks in the rest of the section. So the matrix is
 
 .. math::
 
@@ -1943,7 +2100,7 @@ two-by-two blocks. So the matrix is
    A_{10}   & A_{11} \\
    \end{array} \right).
 
-On occasion the user may provide another matrix that is used to
+On occasion, the user may provide another matrix that is used to
 construct parts of the preconditioner
 
 .. math::
@@ -1954,10 +2111,10 @@ construct parts of the preconditioner
    \end{array} \right).
 
 For notational simplicity define :math:`\text{ksp}(A,Ap)` to mean
-approximately solving a linear system using ``KSP`` with operator
+approximately solving a linear system using ``KSP`` with the operator
 :math:`A` and preconditioner built from matrix :math:`Ap`.
 
-For matrices defined with any number of blocks there are three “block”
+For matrices defined with any number of blocks, there are three “block”
 algorithms available: block Jacobi,
 
 .. math::
@@ -2049,7 +2206,7 @@ internal KSPs are given by ``-fieldsplit_name_``.
 
 By default blocks :math:`A_{00}, A_{01}` and so on are extracted out of
 ``Pmat``, the matrix that the ``KSP`` uses to build the preconditioner,
-and not out of ``Amat`` (i.e., :math:`A` itself). As discussed above in
+and not out of ``Amat`` (i.e., :math:`A` itself). As discussed above, in
 :any:`sec_combining-pcs`, however, it is
 possible to use ``Amat`` instead of ``Pmat`` by calling
 ``PCSetUseAmat(pc)`` or using ``-pc_use_amat`` on the command line.
@@ -2061,7 +2218,7 @@ argument ``-pc_fieldsplit_diag_use_amat``. Similarly,
 ``-pc_fieldsplit_off_diag_use_amat`` will cause the off-diagonal blocks
 :math:`A_{01},A_{10}` etc. to be extracted out of ``Amat``.
 
-For two-by-two blocks only, there is another family of solvers, based on
+For two-by-two blocks only, there is another family of solvers based on
 Schur complements. The inverse of the Schur complement factorization is
 
 .. math::
@@ -2134,7 +2291,7 @@ Schur complements. The inverse of the Schur complement factorization is
    0 & I \\
    \end{array} \right).
 
-The preconditioner is accessed with ``-pc_fieldsplit_type schur`` and is
+The preconditioner is accessed with ``-pc_fieldsplit_type`` ``schur`` and is
 implemented as
 
 .. math::
@@ -2164,7 +2321,7 @@ Where
 the approximate Schur complement.
 
 There are several variants of the Schur complement preconditioner
-obtained by dropping some of the terms, these can be obtained with
+obtained by dropping some of the terms; these can be obtained with
 ``-pc_fieldsplit_schur_fact_type <diag,lower,upper,full>`` or the
 function ``PCFieldSplitSetSchurFactType()``. Note that the ``diag`` form
 uses the preconditioner
@@ -2177,19 +2334,19 @@ uses the preconditioner
    \end{array} \right).
 
 This is done to ensure the preconditioner is positive definite for a
-common class of problems, saddle points with a positive definite
-:math:`A_{00}`: for these the Schur complement is negative definite.
+a common class of problems, saddle points with a positive definite
+:math:`A_{00}`: for these, the Schur complement is negative definite.
 
 The effectiveness of the Schur complement preconditioner depends on the
 availability of a good preconditioner :math:`\hat Sp` for the Schur
 complement matrix. In general, you are responsible for supplying
 :math:`\hat Sp` via
 ``PCFieldSplitSetSchurPre(pc,PC_FIELDSPLIT_SCHUR_PRE_USER,Sp)``.
-In the absence of a good problem-specific :math:`\hat Sp`, you can use
-some of the built-in options.
+Without a good problem-specific :math:`\hat Sp`, you can use
+some built-in options.
 
 Using ``-pc_fieldsplit_schur_precondition user`` on the command line
-activates the matrix supplied programmatically as explained above.
+activates the matrix supplied programmatically, as explained above.
 
 With ``-pc_fieldsplit_schur_precondition a11`` (default)
 :math:`\hat Sp = A_{11}` is used to build a preconditioner for
@@ -2200,10 +2357,10 @@ Otherwise, ``-pc_fieldsplit_schur_precondition self`` will set
 build the preconditioner.
 
 The problem with the last approach is that :math:`\hat S` is used in
-unassembled, matrix-free form, and many preconditioners (e.g., ILU)
+the unassembled, matrix-free form, and many preconditioners (e.g., ILU)
 cannot be built out of such matrices. Instead, you can *assemble* an
 approximation to :math:`\hat S` by inverting :math:`A_{00}`, but only
-approximately, so as to ensure the sparsity of :math:`\hat Sp` as much
+approximately, to ensure the sparsity of :math:`\hat Sp` as much
 as possible. Specifically, using
 ``-pc_fieldsplit_schur_precondition selfp`` will assemble
 :math:`\hat Sp = A_{11} - A_{10} \text{inv}(A_{00}) A_{01}`.
@@ -2224,10 +2381,10 @@ This uses for the preconditioner to :math:`\hat{S}` the operator
 
 .. math:: \text{ksp}(A_{10} A_{01},A_{10} A_{01}) A_{10} A_{00} A_{01} \text{ksp}(A_{10} A_{01},A_{10} A_{01})
 
-which, of course, introduces two additional inner solves for each
+Which, of course, introduces two additional inner solves for each
 application of the Schur complement. The options prefix for this inner
 ``KSP`` is ``-fieldsplit_1_lsc_``. Instead of constructing the matrix
-:math:`A_{10} A_{01}` the user can provide their own matrix. This is
+:math:`A_{10} A_{01}`, users can provide their own matrix. This is
 done by attaching the matrix/matrices to the :math:`Sp` matrix they
 provide with
 
