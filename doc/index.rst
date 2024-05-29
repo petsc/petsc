@@ -18,10 +18,6 @@ PETSc is developed as :ref:`open-source <doc_license>`, :any:`requests <doc_cree
   .. image:: /images/community/numfocus.png
      :align: center
 
-.. admonition:: News: PETSc 2024 Annual Meeting
-
-  The :any:`2024 Annual Meeting <meetings>` will take place May 23, 24 in Cologne, Germany.
-
 .. admonition:: News: Book on numerical methods using PETSc
 
   **PETSc for Partial Differential Equations: Numerical Solutions in C and Python**, by Ed Bueler.
