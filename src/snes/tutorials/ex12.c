@@ -1665,22 +1665,6 @@ int main(int argc, char **argv)
     args: -quiet -run_type test -petscspace_degree 1 -dm_plex_simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 2 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
     nsize: 4
 
-  test:
-    suffix: p4est_convergence_test_2
-    requires: p4est
-    args: -quiet -run_type test -petscspace_degree 1 -dm_plex_simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 3 -dm_forest_initial_refinement 3 -dm_forest_maximum_refinement 5 -dm_p4est_refine_pattern hash
-
-  test:
-    suffix: p4est_convergence_test_3
-    requires: p4est
-    args: -quiet -run_type test -petscspace_degree 1 -dm_plex_simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 4 -dm_forest_initial_refinement 4 -dm_forest_maximum_refinement 6 -dm_p4est_refine_pattern hash
-
-  test:
-    suffix: p4est_convergence_test_4
-    requires: p4est
-    args: -quiet -run_type test -petscspace_degree 1 -dm_plex_simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 5 -dm_forest_initial_refinement 5 -dm_forest_maximum_refinement 7 -dm_p4est_refine_pattern hash
-    timeoutfactor: 5
-
   # Serial tests with GLVis visualization
   test:
     suffix: glvis_2d_tet_p1

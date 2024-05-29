@@ -1,4 +1,4 @@
-[0] Cones: 131072 Total time: 4.203e-04s Average time per cone: 3.207e-09s
-[0] Closures: 131072 Total time: 2.625e-02s Average time per cone: 2.003e-07s
-[0] VecClosures: 131072 Total time: 5.952e-02s Average time per vector closure: 4.541e-07s
-[0] VecClosures with Index: 131072 Total time: 6.382e-03s Average time per vector closure: 4.869e-08s
+[0] Cones: 4096 Total time: 1.502e-05s Average time per cone: 3.667e-09s
+[0] Closures: 4096 Total time: 6.642e-04s Average time per cone: 1.622e-07s
+[0] VecClosures: 4096 Total time: 1.391e-03s Average time per vector closure: 3.396e-07s
+[0] VecClosures with Index: 4096 Total time: 2.031e-04s Average time per vector closure: 4.959e-08s

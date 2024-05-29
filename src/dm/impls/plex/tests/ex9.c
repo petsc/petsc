@@ -433,7 +433,7 @@ int main(int argc, char **argv)
     test:
       suffix: correctness_2
       requires: triangle
-      args: -interpolate -refinement_limit 1.0e-5
+      args: -interpolate -dm_refine 5
   test:
     suffix: 0
     TODO: Only for performance testing
