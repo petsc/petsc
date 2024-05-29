@@ -2482,7 +2482,7 @@ PetscErrorCode DMPlexComputeCellwiseIntegralFEM(DM dm, Vec X, Vec F, void *user)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS pointIS, void (*func)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscScalar *fintegral, void *user)
+static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS pointIS, void (**funcs)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscScalar *fintegral, void *user)
 {
   DM                 plex = NULL, plexA = NULL;
   DMEnclosureType    encAux;
@@ -2543,6 +2543,22 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
     PetscCall(ISGetIndices(pointIS, &points));
     PetscCall(PetscCalloc2(numFaces * totDim, &u, locA ? numFaces * totDimAux : 0, &a));
     PetscCall(DMFieldGetDegree(coordField, pointIS, NULL, &maxDegree));
+    for (face = 0; face < numFaces; ++face) {
+      const PetscInt point = points[face], *support;
+      PetscScalar   *x     = NULL;
+
+      PetscCall(DMPlexGetSupport(dm, point, &support));
+      PetscCall(DMPlexVecGetClosure(plex, section, locX, support[0], NULL, &x));
+      for (PetscInt i = 0; i < totDim; ++i) u[face * totDim + i] = x[i];
+      PetscCall(DMPlexVecRestoreClosure(plex, section, locX, support[0], NULL, &x));
+      if (locA) {
+        PetscInt subp;
+        PetscCall(DMGetEnclosurePoint(plexA, dm, encAux, support[0], &subp));
+        PetscCall(DMPlexVecGetClosure(plexA, sectionAux, locA, subp, NULL, &x));
+        for (PetscInt i = 0; i < totDimAux; ++i) a[f * totDimAux + i] = x[i];
+        PetscCall(DMPlexVecRestoreClosure(plexA, sectionAux, locA, subp, NULL, &x));
+      }
+    }
     for (field = 0; field < Nf; ++field) {
       PetscFE fe;
 
@@ -2554,23 +2570,6 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
       }
       PetscCall(PetscQuadratureGetData(qGeom, NULL, NULL, &Nq, NULL, NULL));
       PetscCall(DMPlexGetFEGeom(coordField, pointIS, qGeom, PETSC_TRUE, &fgeom));
-      for (face = 0; face < numFaces; ++face) {
-        const PetscInt point = points[face], *support;
-        PetscScalar   *x     = NULL;
-        PetscInt       i;
-
-        PetscCall(DMPlexGetSupport(dm, point, &support));
-        PetscCall(DMPlexVecGetClosure(plex, section, locX, support[0], NULL, &x));
-        for (i = 0; i < totDim; ++i) u[face * totDim + i] = x[i];
-        PetscCall(DMPlexVecRestoreClosure(plex, section, locX, support[0], NULL, &x));
-        if (locA) {
-          PetscInt subp;
-          PetscCall(DMGetEnclosurePoint(plexA, dm, encAux, support[0], &subp));
-          PetscCall(DMPlexVecGetClosure(plexA, sectionAux, locA, subp, NULL, &x));
-          for (i = 0; i < totDimAux; ++i) a[f * totDimAux + i] = x[i];
-          PetscCall(DMPlexVecRestoreClosure(plexA, sectionAux, locA, subp, NULL, &x));
-        }
-      }
       /* Get blocking */
       {
         PetscQuadrature q;
@@ -2592,18 +2591,18 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
       /* Do integration for each field */
       for (chunk = 0; chunk < numChunks; ++chunk) {
         PetscCall(PetscFEGeomGetChunk(fgeom, chunk * chunkSize, (chunk + 1) * chunkSize, &chunkGeom));
-        PetscCall(PetscFEIntegrateBd(prob, field, func, chunkSize, chunkGeom, u, probAux, a, fintegral));
+        PetscCall(PetscFEIntegrateBd(prob, field, funcs[field], chunkSize, chunkGeom, &u[chunk * chunkSize * totDim], probAux, PetscSafePointerPlusOffset(a, chunk * chunkSize * totDimAux), &fintegral[chunk * chunkSize * Nf]));
         PetscCall(PetscFEGeomRestoreChunk(fgeom, 0, offset, &chunkGeom));
       }
       PetscCall(PetscFEGeomGetChunk(fgeom, offset, numFaces, &chunkGeom));
-      PetscCall(PetscFEIntegrateBd(prob, field, func, Nr, chunkGeom, &u[offset * totDim], probAux, PetscSafePointerPlusOffset(a, offset * totDimAux), &fintegral[offset * Nf]));
+      PetscCall(PetscFEIntegrateBd(prob, field, funcs[field], Nr, chunkGeom, &u[offset * totDim], probAux, PetscSafePointerPlusOffset(a, offset * totDimAux), &fintegral[offset * Nf]));
       PetscCall(PetscFEGeomRestoreChunk(fgeom, offset, numFaces, &chunkGeom));
       /* Cleanup data arrays */
       PetscCall(DMPlexRestoreFEGeom(coordField, pointIS, qGeom, PETSC_TRUE, &fgeom));
       PetscCall(PetscQuadratureDestroy(&qGeom));
-      PetscCall(PetscFree2(u, a));
-      PetscCall(ISRestoreIndices(pointIS, &points));
     }
+    PetscCall(PetscFree2(u, a));
+    PetscCall(ISRestoreIndices(pointIS, &points));
   }
   if (plex) PetscCall(DMDestroy(&plex));
   if (plexA) PetscCall(DMDestroy(&plexA));
@@ -2619,7 +2618,7 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
 . label   - The boundary `DMLabel`
 . numVals - The number of label values to use, or `PETSC_DETERMINE` for all values
 . vals    - The label values to use, or NULL for all values
-. func    - The function to integrate along the boundary
+. funcs   - The functions to integrate along the boundary for each field
 - user    - The user context
 
   Output Parameter:
@@ -2629,7 +2628,7 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexComputeIntegralFEM()`, `DMPlexComputeBdResidualFEM()`
 @*/
-PetscErrorCode DMPlexComputeBdIntegral(DM dm, Vec X, DMLabel label, PetscInt numVals, const PetscInt vals[], void (*func)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscScalar *integral, void *user)
+PetscErrorCode DMPlexComputeBdIntegral(DM dm, Vec X, DMLabel label, PetscInt numVals, const PetscInt vals[], void (**funcs)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscScalar *integral, void *user)
 {
   Vec          locX;
   PetscSection section;
@@ -2673,7 +2672,7 @@ PetscErrorCode DMPlexComputeBdIntegral(DM dm, Vec X, DMLabel label, PetscInt num
     }
     PetscCall(ISGetLocalSize(pointIS, &numFaces));
     PetscCall(PetscCalloc1(numFaces * Nf, &fintegral));
-    PetscCall(DMPlexComputeBdIntegral_Internal(dm, locX, pointIS, func, fintegral, user));
+    PetscCall(DMPlexComputeBdIntegral_Internal(dm, locX, pointIS, funcs, fintegral, user));
     /* Sum point contributions into integral */
     for (f = 0; f < Nf; ++f)
       for (face = 0; face < numFaces; ++face) integral[f] += fintegral[face * Nf + f];

@@ -37,7 +37,8 @@ PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm, Vec *vec)
     }
   }
 
-  in[0] = blockSize < 0 ? PETSC_MIN_INT : -blockSize;
+  // You cannot negate PETSC_MIN_INT
+  in[0] = blockSize < 0 ? -PETSC_MAX_INT : -blockSize;
   in[1] = blockSize;
   PetscCall(MPIU_Allreduce(in, out, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
   /* -out[0] = min(blockSize), out[1] = max(blockSize) */

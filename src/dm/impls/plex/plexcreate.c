@@ -3912,6 +3912,35 @@ static void boxToAnnulus(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscI
   f0[1] = r * PetscSinReal(th);
 }
 
+// Insert vertices and their joins, marked by depth
+static PetscErrorCode ProcessCohesiveLabel_Vertices(DM dm, DMLabel label, DMLabel vlabel, PetscInt val, PetscInt n, const PetscInt vertices[])
+{
+  PetscFunctionBegin;
+  PetscCall(DMPlexMarkSubmesh_Interpolated(dm, vlabel, val, PETSC_FALSE, PETSC_FALSE, label, NULL));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// Insert faces and their closures, marked by depth
+static PetscErrorCode ProcessCohesiveLabel_Faces(DM dm, DMLabel label, PetscInt n, const PetscInt faces[])
+{
+  PetscFunctionBegin;
+  for (PetscInt p = 0; p < n; ++p) {
+    const PetscInt point   = faces[p];
+    PetscInt      *closure = NULL;
+    PetscInt       clSize, pdepth;
+
+    PetscCall(DMPlexGetPointDepth(dm, point, &pdepth));
+    PetscCall(DMLabelSetValue(label, point, pdepth));
+    PetscCall(DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &clSize, &closure));
+    for (PetscInt cl = 0; cl < clSize * 2; cl += 2) {
+      PetscCall(DMPlexGetPointDepth(dm, closure[cl], &pdepth));
+      PetscCall(DMLabelSetValue(label, closure[cl], pdepth));
+    }
+    PetscCall(DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &clSize, &closure));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions, const char pre[], const char name[], const char *option[], const char *value[], PetscBool *flg);
 
 const char *const DMPlexShapes[] = {"box", "box_surface", "ball", "sphere", "cylinder", "schwarz_p", "gyroid", "doublet", "annulus", "hypercubic", "zbox", "unknown", "DMPlexShape", "DM_SHAPE_", NULL};
@@ -4201,11 +4230,12 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   //   Faces are input, completed, and all points are marked with their depth
   PetscCall(PetscOptionsFindPairPrefix_Private(NULL, ((PetscObject)dm)->prefix, "-dm_plex_cohesive_label_", &option, NULL, &flg));
   if (flg) {
-    DMLabel  label;
-    PetscInt points[1024], n, pStart, pEnd, Nl = 1;
-    char     fulloption[PETSC_MAX_PATH_LEN];
-    char     name[PETSC_MAX_PATH_LEN];
-    size_t   len;
+    DMLabel   label;
+    PetscInt  points[1024], n, pStart, pEnd, Nl = 1;
+    PetscBool noCreate = PETSC_FALSE;
+    char      fulloption[PETSC_MAX_PATH_LEN];
+    char      name[PETSC_MAX_PATH_LEN];
+    size_t    len;
 
     PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
     PetscCall(PetscStrncpy(name, &option[23], PETSC_MAX_PATH_LEN));
@@ -4219,27 +4249,38 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
       n = 1024;
       PetscCall(PetscOptionsGetIntArray(NULL, ((PetscObject)dm)->prefix, fulloption, points, &n, &flg));
       if (!flg) break;
-      PetscCall(DMCreateLabel(dm, name));
-      PetscCall(DMGetLabel(dm, name, &label));
-      if (pStart >= pEnd) n = 0;
-      for (PetscInt p = 0; p < n; ++p) {
-        const PetscInt point   = points[p];
-        PetscInt      *closure = NULL;
-        PetscInt       clSize, pdepth;
+      PetscCall(DMHasLabel(dm, name, &noCreate));
+      if (noCreate) {
+        DMLabel         inlabel;
+        IS              pointIS;
+        const PetscInt *lpoints;
+        PetscInt        pdep, ln, inval = points[0];
+        char            newname[PETSC_MAX_PATH_LEN];
 
-        PetscCall(DMPlexGetPointDepth(dm, point, &pdepth));
-        PetscCall(DMLabelSetValue(label, point, pdepth));
-        PetscCall(DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &clSize, &closure));
-        for (PetscInt cl = 0; cl < clSize * 2; cl += 2) {
-          PetscCall(DMPlexGetPointDepth(dm, closure[cl], &pdepth));
-          PetscCall(DMLabelSetValue(label, closure[cl], pdepth));
-        }
-        PetscCall(DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &clSize, &closure));
+        PetscCheck(n == 1, comm, PETSC_ERR_ARG_WRONG, "Must specify a label value with this option");
+        PetscCall(DMGetLabel(dm, name, &inlabel));
+        PetscCall(DMLabelGetStratumIS(inlabel, inval, &pointIS));
+        PetscCall(ISGetLocalSize(pointIS, &ln));
+        PetscCall(ISGetIndices(pointIS, &lpoints));
+        PetscCall(DMPlexGetPointDepth(dm, lpoints[0], &pdep));
+        PetscCall(PetscSNPrintf(newname, PETSC_MAX_PATH_LEN, "%s%" PetscInt_FMT, name, points[0]));
+        PetscCall(DMCreateLabel(dm, newname));
+        PetscCall(DMGetLabel(dm, newname, &label));
+        if (!pdep) PetscCall(ProcessCohesiveLabel_Vertices(dm, label, inlabel, inval, ln, lpoints));
+        else PetscCall(ProcessCohesiveLabel_Faces(dm, label, ln, lpoints));
+        PetscCall(ISRestoreIndices(pointIS, &lpoints));
+        PetscCall(ISDestroy(&pointIS));
+      } else {
+        PetscCall(DMCreateLabel(dm, name));
+        PetscCall(DMGetLabel(dm, name, &label));
+        if (pStart >= pEnd) n = 0;
+        PetscCall(ProcessCohesiveLabel_Faces(dm, label, n, points));
       }
       PetscCall(DMPlexOrientLabel(dm, label));
       PetscCall(DMPlexLabelCohesiveComplete(dm, label, NULL, 1, PETSC_FALSE, PETSC_FALSE, NULL));
     }
   }
+  PetscCall(DMViewFromOptions(dm, NULL, "-created_dm_view"));
   PetscCall(PetscLogEventEnd(DMPLEX_CreateFromOptions, dm, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

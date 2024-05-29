@@ -1853,17 +1853,17 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
       requires: exodusii
       args: -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -bc_inflow 100,101,200 -bc_outflow 201
 
+    # Run with -dm_forest_maximum_refinement 6 -ts_max_time 0.5 instead to get the full movie
     test:
       suffix: shock_0
       requires: p4est !single !complex
       args: -dm_plex_box_faces 2,1 -grid_bounds -1,1.,0.,1 -grid_skew_60 \
-      -dm_type p4est -dm_forest_partition_overlap 1 -dm_forest_maximum_refinement 6 -dm_forest_minimum_refinement 2 -dm_forest_initial_refinement 2 \
+      -dm_type p4est -dm_forest_partition_overlap 1 -dm_forest_maximum_refinement 2 -dm_forest_minimum_refinement 2 -dm_forest_initial_refinement 2 \
       -ufv_use_amr -refine_vec_tagger_box 0.5,inf -coarsen_vec_tagger_box 0,1.e-2 -refine_tag_view -coarsen_tag_view \
       -bc_wall 1,2,3,4 -physics euler -eu_type iv_shock -ufv_cfl 10 -eu_alpha 60. -eu_gamma 1.4 -eu_amach 2.02 -eu_rho2 3. \
       -petscfv_type leastsquares -petsclimiter_type minmod -petscfv_compute_gradients 0 \
-      -ts_max_time 0.5 -ts_ssp_type rks2 -ts_ssp_nstages 10 \
+      -ts_max_steps 3 -ts_ssp_type rks2 -ts_ssp_nstages 10 \
       -ufv_vtk_basename ${wPETSC_DIR}/ex11 -ufv_vtk_interval 0 -monitor density,energy
-      timeoutfactor: 3
 
     # Test GLVis visualization of PetscFV fields
     test:
