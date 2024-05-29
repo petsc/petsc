@@ -28,12 +28,12 @@ simulations by scientists and engineers.
 Upcoming Meetings
 =================
 
-- `The 2024 user meeting will take place May 23-24 in Cologne, Germany. <https://cds.uni-koeln.de/en/workshops/petsc-2024/home>`__
-- The 2025 user meeting will take place in North America. Suggestions for a meeting location?
+- The 2025 user meeting will take place in Buffalo, New York, USA.
 
 Previous Meetings
 =================
 
+- `Cologne, Germany; May 23-24, 2024 <https://cds.uni-koeln.de/en/workshops/petsc-2024/home>`__
 - :any:`Chicago, Illinois, USA; June 5-7, 2023 <2023_meeting>`
 - `Atlanta, Georgia, USA; June 5-7, 2019 <https://petsc.gitlab.io/annual-meetings/2019/index.html>`__
 - `London, UK; June 4-6, 2018 <https://petsc.gitlab.io/annual-meetings/2018/index.html>`__
