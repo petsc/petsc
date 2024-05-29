@@ -238,4 +238,12 @@ int main(int argc, char *argv[])
           -first_dm_plex_transform_type refine_boundary_layer -first_dm_plex_transform_bl_splits 4 \
           -ref_dm_view
 
+  # Tests for extrusion
+  test:
+    suffix: sphere_extruded
+    args: -dm_plex_shape sphere \
+          -first_dm_plex_transform_type extrude \
+          -first_dm_plex_transform_extrude_layers 3 \
+          -first_dm_plex_transform_extrude_use_tensor 0
+
 TEST*/
