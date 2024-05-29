@@ -51,6 +51,7 @@ PetscErrorCode SNESLineSearchBTGetAlpha(SNESLineSearch linesearch, PetscReal *al
 
 static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
 {
+  SNESLineSearch_BT *bt = (SNESLineSearch_BT *)linesearch->data;
   PetscBool          changed_y, changed_w;
   Vec                X, F, Y, W, G;
   SNES               snes;
@@ -61,10 +62,9 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
   PetscReal          g, gprev;
   PetscViewer        monitor;
   PetscInt           max_its, count;
-  SNESLineSearch_BT *bt = (SNESLineSearch_BT *)linesearch->data;
   Mat                jac;
+  SNESObjectiveFn   *objective;
   const char *const  ordStr[] = {"Linear", "Quadratic", "Cubic"};
-  PetscErrorCode (*objective)(SNES, Vec, PetscReal *, void *);
 
   PetscFunctionBegin;
   PetscCall(SNESLineSearchGetVecs(linesearch, &X, &F, &Y, &W, &G));

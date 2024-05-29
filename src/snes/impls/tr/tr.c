@@ -468,9 +468,8 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   PetscBool                 clear_converged_test, rho_satisfied, has_objective;
   SNES_TR_KSPConverged_Ctx *ctx;
   void                     *convctx;
-
+  SNESObjectiveFn          *objective;
   PetscErrorCode (*convtest)(KSP, PetscInt, PetscReal, KSPConvergedReason *, void *), (*convdestroy)(void *);
-  PetscErrorCode (*objective)(SNES, Vec, PetscReal *, void *);
 
   PetscFunctionBegin;
   PetscCall(SNESGetObjective(snes, &objective, NULL));

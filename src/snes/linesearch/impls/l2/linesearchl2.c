@@ -3,22 +3,22 @@
 
 static PetscErrorCode SNESLineSearchApply_L2(SNESLineSearch linesearch)
 {
-  PetscBool   changed_y, changed_w;
-  Vec         X;
-  Vec         F;
-  Vec         Y;
-  Vec         W;
-  SNES        snes;
-  PetscReal   gnorm;
-  PetscReal   ynorm;
-  PetscReal   xnorm;
-  PetscReal   steptol, maxstep, rtol, atol, ltol;
-  PetscViewer monitor;
-  PetscReal   lambda, lambda_old, lambda_mid, lambda_update, delLambda;
-  PetscReal   fnrm, fnrm_old, fnrm_mid;
-  PetscReal   delFnrm, delFnrm_old, del2Fnrm;
-  PetscInt    i, max_its;
-  PetscErrorCode (*objective)(SNES, Vec, PetscReal *, void *);
+  PetscBool        changed_y, changed_w;
+  Vec              X;
+  Vec              F;
+  Vec              Y;
+  Vec              W;
+  SNES             snes;
+  PetscReal        gnorm;
+  PetscReal        ynorm;
+  PetscReal        xnorm;
+  PetscReal        steptol, maxstep, rtol, atol, ltol;
+  PetscViewer      monitor;
+  PetscReal        lambda, lambda_old, lambda_mid, lambda_update, delLambda;
+  PetscReal        fnrm, fnrm_old, fnrm_mid;
+  PetscReal        delFnrm, delFnrm_old, del2Fnrm;
+  PetscInt         i, max_its;
+  SNESObjectiveFn *objective;
 
   PetscFunctionBegin;
   PetscCall(SNESLineSearchGetVecs(linesearch, &X, &F, &Y, &W, NULL));
