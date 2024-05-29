@@ -8,7 +8,7 @@
 #include <petsc/private/kspimpl.h>
 
 typedef struct {
-  PetscInt   nsmooths;
+  PetscInt   nsmooths;                     // number of smoothing steps to construct prolongation
   PetscInt   aggressive_coarsening_levels; // number of aggressive coarsening levels (square or MISk)
   PetscInt   aggressive_mis_k;             // the k in MIS-k
   PetscBool  use_aggressive_square_graph;
@@ -18,7 +18,7 @@ typedef struct {
 } PC_GAMG_AGG;
 
 /*@
-  PCGAMGSetNSmooths - Set number of smoothing steps (1 is typical) used for multigrid on all the levels
+  PCGAMGSetNSmooths - Set number of smoothing steps (1 is typical) used to construct the prolongation operator
 
   Logically Collective
 
@@ -27,11 +27,18 @@ typedef struct {
 - n  - the number of smooths
 
   Options Database Key:
-. -pc_gamg_agg_nsmooths <nsmooth, default=1> - number of smoothing steps to use with smooth aggregation
+. -pc_gamg_agg_nsmooths <nsmooth, default=1> - number of smoothing steps to use
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `PCMG`, `PCGAMG`
+  Note:
+  This is a different concept from the number smoothing steps used during the linear solution process which
+  can be set with `-mg_levels_ksp_max_it`
+
+  Developer Note:
+  This should be named `PCGAMGAGGSetNSmooths()`.
+
+.seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCMG`, `PCGAMG`
 @*/
 PetscErrorCode PCGAMGSetNSmooths(PC pc, PetscInt n)
 {
@@ -63,11 +70,11 @@ static PetscErrorCode PCGAMGSetNSmooths_AGG(PC pc, PetscInt n)
 - n  - 0, 1 or more
 
   Options Database Key:
-. -pc_gamg_aggressive_coarsening <n,default = 1> - Number of levels to square the graph on before aggregating it
+. -pc_gamg_aggressive_coarsening <n,default = 1> - Number of levels on which to square the graph on before aggregating it
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGMISkSetAggressive()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGMISkSetMinDegreeOrdering()`, `PCGAMGSetLowMemoryFilter()`
+.seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGMISkSetAggressive()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGMISkSetMinDegreeOrdering()`, `PCGAMGSetLowMemoryFilter()`
 @*/
 PetscErrorCode PCGAMGSetAggressiveLevels(PC pc, PetscInt n)
 {
@@ -92,7 +99,7 @@ PetscErrorCode PCGAMGSetAggressiveLevels(PC pc, PetscInt n)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGMISkSetMinDegreeOrdering()`, `PCGAMGSetLowMemoryFilter()`
+.seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGMISkSetMinDegreeOrdering()`, `PCGAMGSetLowMemoryFilter()`
 @*/
 PetscErrorCode PCGAMGMISkSetAggressive(PC pc, PetscInt n)
 {
@@ -117,7 +124,7 @@ PetscErrorCode PCGAMGMISkSetAggressive(PC pc, PetscInt n)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGMISkSetAggressive()`, `PCGAMGMISkSetMinDegreeOrdering()`, `PCGAMGSetLowMemoryFilter()`
+.seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGMISkSetAggressive()`, `PCGAMGMISkSetMinDegreeOrdering()`, `PCGAMGSetLowMemoryFilter()`
 @*/
 PetscErrorCode PCGAMGSetAggressiveSquareGraph(PC pc, PetscBool b)
 {
@@ -142,7 +149,7 @@ PetscErrorCode PCGAMGSetAggressiveSquareGraph(PC pc, PetscBool b)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGMISkSetAggressive()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGSetLowMemoryFilter()`
+.seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGMISkSetAggressive()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGSetLowMemoryFilter()`
 @*/
 PetscErrorCode PCGAMGMISkSetMinDegreeOrdering(PC pc, PetscBool b)
 {
@@ -167,7 +174,8 @@ PetscErrorCode PCGAMGMISkSetMinDegreeOrdering(PC pc, PetscBool b)
 
   Level: intermediate
 
-.seealso: `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGMISkSetAggressive()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGMISkSetMinDegreeOrdering()`
+.seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`,
+  `PCGAMGMISkSetAggressive()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGMISkSetMinDegreeOrdering()`
 @*/
 PetscErrorCode PCGAMGSetLowMemoryFilter(PC pc, PetscBool b)
 {
@@ -243,7 +251,7 @@ static PetscErrorCode PCSetFromOptions_GAMG_AGG(PC pc, PetscOptionItems *PetscOp
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "GAMG-AGG options");
-  PetscCall(PetscOptionsInt("-pc_gamg_agg_nsmooths", "smoothing steps for smoothed aggregation, usually 1", "PCGAMGSetNSmooths", pc_gamg_agg->nsmooths, &pc_gamg_agg->nsmooths, NULL));
+  PetscCall(PetscOptionsInt("-pc_gamg_agg_nsmooths", "number of smoothing steps to construct prolongation, usually 1", "PCGAMGSetNSmooths", pc_gamg_agg->nsmooths, &pc_gamg_agg->nsmooths, NULL));
   // aggressive coarsening logic with deprecated -pc_gamg_square_graph
   PetscCall(PetscOptionsInt("-pc_gamg_aggressive_coarsening", "Number of aggressive coarsening (MIS-2) levels from finest", "PCGAMGSetAggressiveLevels", pc_gamg_agg->aggressive_coarsening_levels, &pc_gamg_agg->aggressive_coarsening_levels, &n_aggressive_flg));
   if (!n_aggressive_flg)
@@ -1409,12 +1417,32 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc, Mat Amat, Mat *a_P)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   PCCreateGAMG_AGG
+/*MC
+  PCGAMGAGG - Smooth aggregation, {cite}`vanek1996algebraic`, {cite}`vanek2001convergence`, variant of PETSc's algebraic multigrid (`PCGAMG`) preconditioner
 
-  Input Parameter:
-   . pc -
-*/
+  Options Database Keys:
++ -pc_gamg_agg_nsmooths <nsmooth, default=1> - number of smoothing steps to use with smooth aggregation to construct prolongation
+. -pc_gamg_aggressive_coarsening <n,default=1> - number of aggressive coarsening (MIS-2) levels from finest.
+. -pc_gamg_aggressive_square_graph <bool,default=false> - Use square graph (A'A) or MIS-k (k=2) for aggressive coarsening
+. -pc_gamg_mis_k_minimum_degree_ordering <bool,default=true> - Use minimum degree ordering in greedy MIS algorithm
+. -pc_gamg_pc_gamg_asm_hem_aggs <n,default=0> - Number of HEM aggregation steps for ASM smoother
+- -pc_gamg_aggressive_mis_k <n,default=2> - Number (k) distance in MIS coarsening (>2 is 'aggressive')
+
+  Level: intermediate
+
+  Notes:
+  To obtain good performance for `PCGAMG` for vector valued problems you must
+  call `MatSetBlockSize()` to indicate the number of degrees of freedom per grid point.
+  Call `MatSetNearNullSpace()` (or `PCSetCoordinates()` if solving the equations of elasticity) to indicate the near null space of the operator
+
+  The many options for `PCMG` and `PCGAMG` such as controlling the smoothers on each level etc. also work for `PCGAMGAGG`
+
+.seealso: `PCGAMG`, [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCCreate()`, `PCSetType()`,
+          `MatSetBlockSize()`, `PCMGType`, `PCSetCoordinates()`, `MatSetNearNullSpace()`, `PCGAMGSetType()`,
+          `PCGAMGAGG`, `PCGAMGGEO`, `PCGAMGCLASSICAL`, `PCGAMGSetProcEqLim()`, `PCGAMGSetCoarseEqLim()`, `PCGAMGSetRepartition()`, `PCGAMGRegister()`,
+          `PCGAMGSetReuseInterpolation()`, `PCGAMGASMSetUseAggs()`, `PCGAMGSetParallelCoarseGridSolve()`, `PCGAMGSetNlevels()`, `PCGAMGSetThreshold()`,
+          `PCGAMGGetType()`, `PCGAMGSetUseSAEstEig()`
+M*/
 PetscErrorCode PCCreateGAMG_AGG(PC pc)
 {
   PC_MG       *mg      = (PC_MG *)pc->data;
