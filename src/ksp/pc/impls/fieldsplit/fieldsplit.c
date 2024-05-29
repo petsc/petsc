@@ -1776,10 +1776,10 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc, PetscOptionItems *Petsc
     PetscCall(PetscOptionsEnum("-pc_fieldsplit_schur_precondition", "How to build preconditioner for Schur complement", "PCFieldSplitSetSchurPre", PCFieldSplitSchurPreTypes, (PetscEnum)jac->schurpre, (PetscEnum *)&jac->schurpre, NULL));
     PetscCall(PetscOptionsScalar("-pc_fieldsplit_schur_scale", "Scale Schur complement", "PCFieldSplitSetSchurScale", jac->schurscale, &jac->schurscale, NULL));
   } else if (jac->type == PC_COMPOSITE_GKB) {
-    PetscCall(PetscOptionsReal("-pc_fieldsplit_gkb_tol", "The tolerance for the lower bound stopping criterion", "PCFieldSplitGKBTol", jac->gkbtol, &jac->gkbtol, NULL));
-    PetscCall(PetscOptionsInt("-pc_fieldsplit_gkb_delay", "The delay value for lower bound criterion", "PCFieldSplitGKBDelay", jac->gkbdelay, &jac->gkbdelay, NULL));
-    PetscCall(PetscOptionsBoundedReal("-pc_fieldsplit_gkb_nu", "Parameter in augmented Lagrangian approach", "PCFieldSplitGKBNu", jac->gkbnu, &jac->gkbnu, NULL, 0.0));
-    PetscCall(PetscOptionsInt("-pc_fieldsplit_gkb_maxit", "Maximum allowed number of iterations", "PCFieldSplitGKBMaxit", jac->gkbmaxit, &jac->gkbmaxit, NULL));
+    PetscCall(PetscOptionsReal("-pc_fieldsplit_gkb_tol", "The tolerance for the lower bound stopping criterion", "PCFieldSplitSetGKBTol", jac->gkbtol, &jac->gkbtol, NULL));
+    PetscCall(PetscOptionsInt("-pc_fieldsplit_gkb_delay", "The delay value for lower bound criterion", "PCFieldSplitSetGKBDelay", jac->gkbdelay, &jac->gkbdelay, NULL));
+    PetscCall(PetscOptionsBoundedReal("-pc_fieldsplit_gkb_nu", "Parameter in augmented Lagrangian approach", "PCFieldSplitSetGKBNu", jac->gkbnu, &jac->gkbnu, NULL, 0.0));
+    PetscCall(PetscOptionsInt("-pc_fieldsplit_gkb_maxit", "Maximum allowed number of iterations", "PCFieldSplitSetGKBMaxit", jac->gkbmaxit, &jac->gkbmaxit, NULL));
     PetscCall(PetscOptionsBool("-pc_fieldsplit_gkb_monitor", "Prints number of GKB iterations and error", "PCFieldSplitGKB", jac->gkbmonitor, &jac->gkbmonitor, NULL));
   }
   /*
@@ -2476,7 +2476,7 @@ PetscErrorCode PCFieldSplitSchurGetSubKSP(PC pc, PetscInt *n, KSP *subksp[])
   The only preconditioners that currently work with this symbolic representation matrix object are `PCLSC` and `PCHPDDM`
 .     user - the preconditioner for the Schur complement is generated from the user provided matrix (pre argument
   to this function).
-.     selfp - the preconditioning for the Schur complement is generated from an explicitly-assembled approximation Sp = A11 - A10 inv(diag(A00)) A01
+.     selfp - the preconditioning for the Schur complement is generated from an explicitly-assembled approximation $ Sp = A11 - A10 inv(diag(A00)) A01 $
   This is only a good preconditioner when diag(A00) is a good preconditioner for A00. Optionally, A00 can be
   lumped before extracting the diagonal using the additional option `-fieldsplit_1_mat_schur_complement_ainv_type lump`
 -     full - the preconditioner for the Schur complement is generated from the exact Schur complement matrix representation
@@ -2484,12 +2484,14 @@ PetscErrorCode PCFieldSplitSchurGetSubKSP(PC pc, PetscInt *n, KSP *subksp[])
   useful mostly as a test that the Schur complement approach can work for your problem
 
   When solving a saddle point problem, where the A11 block is identically zero, using `a11` as the ptype only makes sense
-  with the additional option `-fieldsplit_1_pc_type none`. Usually for saddle point problems one would use a ptype of self and
+  with the additional option `-fieldsplit_1_pc_type none`. Usually for saddle point problems one would use a `ptype` of `self` and
   `-fieldsplit_1_pc_type lsc` which uses the least squares commutator to compute a preconditioner for the Schur complement.
 
-.seealso: [](sec_block_matrices), `PC`, `PCFieldSplitGetSchurPre()`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSchurPreType`,
-          `MatSchurComplementSetAinvType()`, `PCLSC`
+  Developer Note:
+  The name of this function and the option `-pc_fieldsplit_schur_precondition` are inconsistent; precondition should be used everywhere.
 
+.seealso: [](sec_block_matrices), `PC`, `PCFieldSplitGetSchurPre()`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSchurPreType`,
+          `MatSchurComplementSetAinvType()`, `PCLSC`, `PCFieldSplitSetSchurFactType()`
 @*/
 PetscErrorCode PCFieldSplitSetSchurPre(PC pc, PCFieldSplitSchurPreType ptype, Mat pre)
 {
@@ -2520,7 +2522,6 @@ PetscErrorCode PCFieldSplitSchurPrecondition(PC pc, PCFieldSplitSchurPreType pty
   Level: intermediate
 
 .seealso: [](sec_block_matrices), `PC`, `PCFieldSplitSetSchurPre()`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSchurPreType`, `PCLSC`
-
 @*/
 PetscErrorCode PCFieldSplitGetSchurPre(PC pc, PCFieldSplitSchurPreType *ptype, Mat *pre)
 {
@@ -2636,30 +2637,40 @@ static PetscErrorCode PCFieldSplitGetSchurPre_FieldSplit(PC pc, PCFieldSplitSchu
 
   Notes:
   The FULL factorization is
-.vb
-  (A   B)  = (1       0) (A   0) (1  Ainv*B)  = L D U
-  (C   E)    (C*Ainv  1) (0   S) (0       1)
-.vb
-  where S = E - C*Ainv*B. In practice, the full factorization is applied via block triangular solves with the grouping $L*(D*U)$. UPPER uses $D*U$, LOWER uses $L*D$,
-  and DIAG is the diagonal part with the sign of S flipped (because this makes the preconditioner positive definite for many formulations,
-  thus allowing the use of `KSPMINRES)`. Sign flipping of S can be turned off with `PCFieldSplitSetSchurScale()`.
 
-  If A and S are solved exactly
-.vb
-  *) FULL factorization is a direct solver.
-  *) The preconditioned operator with LOWER or UPPER has all eigenvalues equal to 1 and minimal polynomial of degree 2, so `KSPGMRES` converges in 2 iterations.
-  *) With DIAG, the preconditioned operator has three distinct nonzero eigenvalues and minimal polynomial of degree at most 4, so `KSPGMRES` converges in at most 4 iterations.
-.ve
+  ```{math}
+  \left(\begin{array}{cc} A & B \\
+  C & E \\
+  \end{array}\right) =
+  \left(\begin{array}{cc} 1 & 0 \\
+  C*A^{-1} & I \\
+  \end{array}\right)
+  \left(\begin{array}{cc} A & 0 \\
+  0 & S \\
+  \end{array}\right)
+  \left(\begin{array}{cc} I & A^{-1}B \\
+  0 & I \\
+  \end{array}\right) = L D U.
+  ```
+
+  where $ S = E - C*A^{-1}*B $. In practice, the full factorization is applied via block triangular solves with the grouping $L*(D*U)$. UPPER uses $D*U$, LOWER uses $L*D$,
+  and DIAG is the diagonal part with the sign of $ S $ flipped (because this makes the preconditioner positive definite for many formulations,
+  thus allowing the use of `KSPMINRES)`. Sign flipping of $ S $ can be turned off with `PCFieldSplitSetSchurScale()`.
+
+  If $A$ and $S$ are solved exactly
++  1 - FULL factorization is a direct solver.
+.  2 - The preconditioned operator with LOWER or UPPER has all eigenvalues equal to 1 and minimal polynomial of degree 2, so `KSPGMRES` converges in 2 iterations.
+-  3 -  With DIAG, the preconditioned operator has three distinct nonzero eigenvalues and minimal polynomial of degree at most 4, so `KSPGMRES` converges in at most 4 iterations.
 
   If the iteration count is very low, consider using `KSPFGMRES` or `KSPGCR` which can use one less preconditioner
   application in this case. Note that the preconditioned operator may be highly non-normal, so such fast convergence may not be observed in practice.
 
-  For symmetric problems in which A is positive definite and S is negative definite, DIAG can be used with `KSPMINRES`.
+  For symmetric problems in which $A$ is positive definite and $S$ is negative definite, DIAG can be used with `KSPMINRES`.
 
   A flexible method like `KSPFGMRES` or `KSPGCR`, [](sec_flexibleksp), must be used if the fieldsplit preconditioner is nonlinear (e.g. a few iterations of a Krylov method is used to solve with A or S).
 
 .seealso: [](sec_block_matrices), `PC`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSchurPreType`, `PCFieldSplitSetSchurScale()`,
-          [](sec_flexibleksp)
+          [](sec_flexibleksp), `PCFieldSplitSetSchurPre()`
 @*/
 PetscErrorCode PCFieldSplitSetSchurFactType(PC pc, PCFieldSplitSchurFactType ftype)
 {
@@ -2999,7 +3010,8 @@ static PetscErrorCode PCSetCoordinates_FieldSplit(PC pc, PetscInt dim, PetscInt 
 
   Input Parameters:
 + pc   - the preconditioner context
-- type - `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE` (default), `PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE`, `PC_COMPOSITE_SPECIAL`, `PC_COMPOSITE_SCHUR`
+- type - `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE` (default), `PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE`, `PC_COMPOSITE_SPECIAL`, `PC_COMPOSITE_SCHUR`,
+         `PC_COMPOSITE_GKB`
 
   Options Database Key:
 . -pc_fieldsplit_type <one of multiplicative, additive, symmetric_multiplicative, special, schur> - Sets fieldsplit preconditioner type
@@ -3007,7 +3019,7 @@ static PetscErrorCode PCSetCoordinates_FieldSplit(PC pc, PetscInt dim, PetscInt 
   Level: intermediate
 
 .seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCCompositeType`, `PCCompositeGetType()`, `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE`,
-          `PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE`, `PC_COMPOSITE_SPECIAL`, `PC_COMPOSITE_SCHUR`
+          `PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE`, `PC_COMPOSITE_SPECIAL`, `PC_COMPOSITE_SCHUR`, `PCFieldSplitSetSchurFactType()`
 @*/
 PetscErrorCode PCFieldSplitSetType(PC pc, PCCompositeType type)
 {

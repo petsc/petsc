@@ -1520,6 +1520,7 @@ static PetscErrorCode PCMGSetAdaptCoarseSpaceType_MG(PC pc, PCMGCoarseSpaceType 
   PetscFunctionBegin;
   mg->adaptInterpolation = ctype != PCMG_ADAPT_NONE ? PETSC_TRUE : PETSC_FALSE;
   mg->coarseSpaceType    = ctype;
+  PetscCall(PCMGSetGalerkin(pc, PC_MG_GALERKIN_BOTH));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1567,7 +1568,10 @@ static PetscErrorCode PCMGGetAdaptCR_MG(PC pc, PetscBool *cr)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `PCMG`, `PCMGCoarseSpaceType`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetGalerkin()`, `PCMGSetAdaptInterpolation()`
+  Note:
+  Requires a `DM` with specific functionality be attached to the `PC`.
+
+.seealso: [](ch_ksp), `PCMG`, `PCMGCoarseSpaceType`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetGalerkin()`, `PCMGSetAdaptInterpolation()`, `DM`
 @*/
 PetscErrorCode PCMGSetAdaptCoarseSpaceType(PC pc, PCMGCoarseSpaceType ctype)
 {

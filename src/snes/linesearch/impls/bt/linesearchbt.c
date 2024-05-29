@@ -395,14 +395,14 @@ static PetscErrorCode SNESLineSearchSetFromOptions_BT(SNESLineSearch linesearch,
    This line search finds the minimum of a polynomial fitting of the L2 norm of the
    function or the objective function if it is provided with `SNESSetObjective()`.
    If this fit does not satisfy the conditions for progress, the interval shrinks
-   and the fit is reattempted at most max_it times or until lambda is below minlambda.
+   and the fit is reattempted at most `max_it` times or until $\lambda$ is below `minlambda`.
 
    Options Database Keys:
 +  -snes_linesearch_alpha <1e\-4>      - slope descent parameter
-.  -snes_linesearch_damping <1.0>      - initial step length
+.  -snes_linesearch_damping <1.0>      - scaling of initial step length on entry to the line search
 .  -snes_linesearch_maxstep <length>   - if the length the initial step is larger than this then the
                                          step is scaled back to be of this length at the beginning of the line search
-.  -snes_linesearch_max_it <40>        - maximum number of shrinking step
+.  -snes_linesearch_max_it <40>        - maximum number of shrinking steps
 .  -snes_linesearch_minlambda <1e\-12> - minimum step length allowed
 -  -snes_linesearch_order <1,2,3>      - order of the approximation. With order 1, it performs a simple backtracking without any curve fitting
 

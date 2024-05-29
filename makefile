@@ -134,7 +134,7 @@ check:
            echo "*mpiexec not found*. cannot run make check"; \
         else \
           ${RM} -f check_error;\
-          ${RUN_TEST} PETSC_OPTIONS="${PETSC_OPTIONS} ${PETSC_TEST_OPTIONS}" PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" check_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc/conf/check.log; \
+          ${RUN_TEST} OMP_NUM_THREADS=1 PETSC_OPTIONS="${PETSC_OPTIONS} ${PETSC_TEST_OPTIONS}" PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" check_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc/conf/check.log; \
           if [ -f check_error ]; then \
             echo "Error while running make check"; \
             ${RM} -f check_error;\

@@ -6992,7 +6992,7 @@ PetscErrorCode MatGetOwnershipRangesColumn(Mat mat, const PetscInt *ranges[])
   `MATSCALAPACK` the ownership is more complicated. See [Matrix Layouts](sec_matlayout) for
   details on matrix layouts.
 
-.seealso: [](ch_matrices), `Mat`, `MatGetOwnershipRanges()`, `MatGetOwnershipRangeColumns()`, `MatSetValues()`, `MATELEMENTAL`, `MATSCALAPACK`
+.seealso: [](ch_matrices), `Mat`, `MatGetOwnershipRanges()`, `MatSetValues()`, `MATELEMENTAL`, `MATSCALAPACK`
 @*/
 PetscErrorCode MatGetOwnershipIS(Mat A, IS *rows, IS *cols)
 {

@@ -382,7 +382,7 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
 }
 
 /*@
-  MatCoarsenSetMaximumIterations - Max HEM iterations
+  MatCoarsenSetMaximumIterations - Maximum HEM iterations to use
 
   Logically Collective
 
@@ -448,7 +448,7 @@ static PetscErrorCode MatCoarsenSetStrengthIndex_MATCOARSEN(MatCoarsen coarse, P
 }
 
 /*@
-  MatCoarsenSetThreshold - Max HEM iterations
+  MatCoarsenSetThreshold - Set the threshold for HEM
 
   Logically Collective
 
@@ -457,9 +457,12 @@ static PetscErrorCode MatCoarsenSetStrengthIndex_MATCOARSEN(MatCoarsen coarse, P
 - b      - threshold value
 
   Options Database Key:
-. -mat_coarsen_threshold <-1> - Max HEM iterations
+. -mat_coarsen_threshold <-1> - threshold
 
   Level: intermediate
+
+  Note:
+  It is not documented how this threshold is used
 
 .seealso: `MatCoarsen`, `MatCoarsenType`, `MatCoarsenApply()`, `MatCoarsenCreate()`, `MatCoarsenSetType()`
 @*/
@@ -494,7 +497,6 @@ static PetscErrorCode MatCoarsenSetThreshold_MATCOARSEN(MatCoarsen coarse, Petsc
 
 .seealso: `MatCoarsen`, `MatCoarsenSetType()`, `MatCoarsenApply()`, `MatCoarsenDestroy()`,
           `MatCoarsenSetAdjacency()`, `MatCoarsenGetData()`
-
 @*/
 PetscErrorCode MatCoarsenCreate(MPI_Comm comm, MatCoarsen *newcrs)
 {
