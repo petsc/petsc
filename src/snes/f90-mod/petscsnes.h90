@@ -42,11 +42,3 @@
       end Interface
 #endif
 
-      interface
-        subroutine SNESDestroy(a,z)
-          import tSNES
-          SNES a
-          PetscErrorCode z
-        end subroutine
-      end interface
-

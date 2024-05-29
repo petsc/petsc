@@ -638,7 +638,7 @@ static PetscErrorCode DMDestroyCoordinates_Private(DMCoordinates *c)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDestroy - Destroys a `DM`.
 
   Collective

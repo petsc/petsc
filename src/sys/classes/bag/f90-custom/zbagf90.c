@@ -5,7 +5,6 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-  #define petscbagdestroy_           PETSCBAGDESTROY
   #define petscbaggetdata_           PETSCBAGGETDATA
   #define petscbagregisterint_       PETSCBAGREGISTERINT
   #define petscbagregisterint64_     PETSCBAGREGISTERINT64
@@ -18,7 +17,6 @@
   #define petscbagregisterboolarray_ PETSCBAGREGISTERBOOLARRAY
   #define petscbagcreate_            PETSCBAGCREATE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define petscbagdestroy_           petscbagdestroy
   #define petscbaggetdata_           petscbaggetdata
   #define petscbagregisterint_       petscbagregisterint
   #define petscbagregisterint64_     petscbagregisterint64
@@ -35,11 +33,6 @@
 PETSC_EXTERN void petscbagcreate_(MPI_Fint *comm, size_t *bagsize, PetscBag *bag, PetscErrorCode *ierr)
 {
   *ierr = PetscBagCreate(MPI_Comm_f2c(*(comm)), *bagsize, bag);
-}
-
-PETSC_EXTERN void petscbagdestroy_(PetscBag *bag, PetscErrorCode *ierr)
-{
-  *ierr = PetscBagDestroy(bag);
 }
 
 PETSC_EXTERN void petscbagregisterint_(PetscBag *bag, void *ptr, PetscInt *def, char *s1, char *s2, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T l1, PETSC_FORTRAN_CHARLEN_T l2)

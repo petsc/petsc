@@ -1,15 +1,22 @@
 #include <petsc/private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-  #define chkmemfortran_            CHKMEMFORTRAN
-  #define petscoffsetfortran_       PETSCOFFSETFORTRAN
-  #define petscobjectstateincrease_ PETSCOBJECTSTATEINCREASE
+  #define chkmemfortran_                     CHKMEMFORTRAN
+  #define petscoffsetfortran_                PETSCOFFSETFORTRAN
+  #define petscobjectstateincrease_          PETSCOBJECTSTATEINCREASE
+  #define petsccienabledportableerroroutput_ PETSCCIENABLEDPORTABLEERROROUTPUT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define petscoffsetfortran_       petscoffsetfortran
-  #define chkmemfortran_            chkmemfortran
-  #define flush__                   flush_
-  #define petscobjectstateincrease_ petscobjectstateincrease
+  #define petscoffsetfortran_                petscoffsetfortran
+  #define chkmemfortran_                     chkmemfortran
+  #define flush__                            flush_
+  #define petscobjectstateincrease_          petscobjectstateincrease
+  #define petsccienabledportableerroroutput_ petsccienabledportableerroroutput
 #endif
+
+PETSC_EXTERN void petsccienabledportableerroroutput_(PetscMPIInt *cienabled)
+{
+  *cienabled = PetscCIEnabledPortableErrorOutput ? 1 : 0;
+}
 
 PETSC_EXTERN void petscobjectstateincrease_(PetscObject *obj, PetscErrorCode *ierr)
 {

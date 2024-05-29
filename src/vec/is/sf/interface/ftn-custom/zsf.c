@@ -8,7 +8,6 @@
   #define petscsfreducebegin_   PETSCSFREDUCEBEGIN
   #define petscsfreduceend_     PETSCSFREDUCEEND
   #define f90arraysfnodecreate_ F90ARRAYSFNODECREATE
-  #define petscsfdestroy_       PETSCSFDESTROY
   #define petscsfsetgraph_      PETSCSFSETGRAPH
   #define petscsfgetleafranks_  PETSCSFGETLEAFRANKS
   #define petscsfgetrootranks_  PETSCSFGETROOTRANKS
@@ -19,7 +18,6 @@
   #define petscsfreducebegin_   petscsfreducebegin
   #define petscsfreduceend_     petscsfreduceend
   #define f90arraysfnodecreate_ f90arraysfnodecreate
-  #define petscsfdestroy_       petscsfdestroy
   #define petscsfsetgraph_      petscsfsetgraph
   #define petscsfgetleafranks_  petscsfgetleafranks
   #define petscsfgetrootranks_  petscsfgetrootranks
@@ -189,13 +187,4 @@ PETSC_EXTERN void petscsfreduceend_(PetscSF *sf, MPI_Fint *unit, F90Array1d *lpt
   if (*ierr) return;
   *ierr = PetscSFReduceEnd(*sf, dtype, leafdata, rootdata, cop);
 }
-
-PETSC_EXTERN void petscsfdestroy_(PetscSF *x, int *ierr)
-{
-  PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL(x);
-  *ierr = PetscSFDestroy(x);
-  if (*ierr) return;
-  PETSC_FORTRAN_OBJECT_C_NULL_TO_F_DESTROYED(x);
-}
-
 #endif

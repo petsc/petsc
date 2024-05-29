@@ -230,7 +230,7 @@
 
       Interface
         Subroutine DMPlexComputeCellGeometryFEM(m,c,fe,v0,J,iJ,dJ,er)
-          import tDM
+          import tDM, tPetscFE
           PetscInt   c
           PetscReal, pointer :: v0(:)
           PetscReal, pointer :: J(:)

@@ -17,7 +17,7 @@
 /* Logging support */
 PetscClassId PETSC_RANDOM_CLASSID;
 
-/*@C
+/*@
   PetscRandomDestroy - Destroys a `PetscRandom` object that was created by `PetscRandomCreate()`.
 
   Collective

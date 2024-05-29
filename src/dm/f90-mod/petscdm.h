@@ -5,8 +5,41 @@
 
       type, extends(tPetscObject) :: tDM
       end type tDM
+      type, extends(tPetscObject) :: tDMAdaptor
+      end type tDMAdaptor
+      type, extends(tPetscObject) :: tDMField
+      end type tDMField
+      type, extends(tPetscObject) :: tPetscQuadrature
+      end type tPetscQuadrature
+      type, extends(tPetscObject) :: tPetscWeakForm
+      end type tPetscWeakForm
+      type, extends(tPetscObject) :: tPetscDS
+      end type tPetscDS
+      type, extends(tPetscObject) :: tPetscFE
+      end type tPetscFE
+      type, extends(tPetscObject) :: tPetscSpace
+      end type tPetscSpace
+      type, extends(tPetscObject) :: tPetscDualSpace
+      end type tPetscDualSpace
+      type, extends(tPetscObject) :: tPetscFV
+      end type tPetscFV
+      type, extends(tPetscObject) :: tPetscLimiter
+      end type tPetscLimiter
+      type, extends(tPetscObject) :: tPetscPartitioner
+      end type tPetscPartitioner
 
       DM, parameter :: PETSC_NULL_DM = tDM(0)
+      DMAdaptor, parameter :: PETSC_NULL_DMADAPTOR = tDMAdaptor(0)
+      DMField, parameter :: PETSC_NULL_DMFIELD = tDMField(0)
+      PetscQuadrature, parameter :: PETSC_NULL_QUADRATURE = tPetscQuadrature(0)
+      PetscWeakForm, parameter :: PETSC_NULL_WEAKFORM = tPetscWeakForm(0)
+      PetscDS, parameter :: PETSC_NULL_DS = tPetscDS(0)
+      PetscFE, parameter :: PETSC_NULL_FE = tPetscFE(0)
+      PetscSpace, parameter :: PETSC_NULL_SPACE = tPetscSpace(0)
+      PetscDualSpace, parameter :: PETSC_NULL_DUALSPACE = tPetscDualSpace(0)
+      PetscFV, parameter :: PETSC_NULL_FV = tPetscFV(0)
+      PetscLimiter, parameter :: PETSC_NULL_LIMITER = tPetscLimiter(0)
+      PetscPartitioner, parameter :: PETSC_NULL_PARTITIONER = tPetscPartitioner(0)
 !
 !  Types of periodicity
 !

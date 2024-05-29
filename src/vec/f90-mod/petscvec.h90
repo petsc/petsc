@@ -365,12 +365,6 @@
           PetscErrorCode ierr
         End Subroutine
 
-        Subroutine VecDestroy(a,ierr)
-          import tVec
-          Vec a
-          PetscErrorCode ierr
-        End Subroutine
-
        subroutine VecScatterRemap(a,b,c,ierr)
          import tVecScatter
          VecScatter a ! VecScatter

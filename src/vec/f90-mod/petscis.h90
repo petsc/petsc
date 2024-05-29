@@ -169,14 +169,6 @@
       End Interface
 
       Interface
-        subroutine ISDestroy(a,z)
-          import tIS
-          IS a
-          PetscErrorCode z
-        end subroutine
-      end Interface
-
-      Interface
         Subroutine PetscSFDistributeSectionF90(sf,rootsection,array,leafsection,ierr)
           import tPetscSection
           import tPetscSF

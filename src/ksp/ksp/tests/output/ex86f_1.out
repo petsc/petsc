@@ -1,0 +1,6 @@
+[0]PETSC ERROR: --------------------- Error Message --------------------------------------------------------------
+[0]PETSC ERROR: Null argument, when expecting valid pointer
+[0]PETSC ERROR: Null Pointer: Parameter # 1
+[0]PETSC ERROR: See https://petsc.org/release/faq/ for trouble shooting.
+[0]PETSC ERROR: #1 KSPSolve() at itfunc.c:0
+[0]PETSC ERROR: #2 ex86f.F90:0

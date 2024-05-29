@@ -1386,7 +1386,12 @@ PetscErrorCode DMSwarmMigrate_GlobalToLocal_Basic(DM dm, PetscInt *globalsize);
   Notes:
   Users should call `DMSwarmCollectViewDestroy()` after
   they have finished computations associated with the collected points
+
   Different collect methods are supported. See `DMSwarmSetCollectType()`.
+
+  Developer Note:
+  Create and Destroy routines create new objects that can get destroyed, they do not change the state
+  of the current object.
 
 .seealso: `DM`, `DMSWARM`, `DMSwarmCollectViewDestroy()`, `DMSwarmSetCollectType()`
 @*/
@@ -1426,6 +1431,10 @@ PetscErrorCode DMSwarmCollectViewCreate(DM dm)
   Users should call `DMSwarmCollectViewCreate()` before this function is called.
 
   Level: advanced
+
+  Developer Note:
+  Create and Destroy routines create new objects that can get destroyed, they do not change the state
+  of the current object.
 
 .seealso: `DM`, `DMSWARM`, `DMSwarmCollectViewCreate()`, `DMSwarmSetCollectType()`
 @*/

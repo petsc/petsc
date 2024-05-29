@@ -104,7 +104,6 @@
   #define matgetownershiprange01_      MATGETOWNERSHIPRANGE01
   #define matgetownershiprange11_      MATGETOWNERSHIPRANGE11
   #define matgetownershipis_           MATGETOWNERSHIPIS
-  #define matdestroy_                  MATDESTROY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define matsetvalues_                matsetvalues
   #define matsetvaluesnnnn_            matsetvaluesnnnn
@@ -204,7 +203,6 @@
   #define matgetownershiprange01_      matgetownershiprange01
   #define matgetownershiprange11_      matgetownershiprange11
   #define matgetownershipis_           matgetownershipis
-  #define matdestroy_                  matdestroy
 #endif
 
 PETSC_EXTERN void matgetvalues_(Mat *mat, PetscInt *m, PetscInt idxm[], PetscInt *n, PetscInt idxn[], PetscScalar v[], int *ierr)
@@ -762,27 +760,24 @@ PETSC_EXTERN void matdestroymatrices_(PetscInt *n, Mat *smat, PetscErrorCode *ie
     MatDestroySubMatrices() is slightly different from C since the
     Fortran provides the array to hold the submatrix objects, while in C that
     array is allocated by the MatCreateSubmatrices()
+
+    An extra matrix may be stored at the end of the array, hence the check see
+    MatDestroySubMatrices_Dummy()
 */
 PETSC_EXTERN void matdestroysubmatrices_(PetscInt *n, Mat *smat, PetscErrorCode *ierr)
 {
   Mat     *lsmat;
   PetscInt i;
 
+  if (*n == 0) return;
   *ierr = PetscMalloc1(*n + 1, &lsmat);
+  if (!smat[*n]) smat[*n] = (Mat)-2;
   for (i = 0; i <= *n; i++) {
     PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL(&smat[i]);
     lsmat[i] = smat[i];
   }
   *ierr = MatDestroySubMatrices(*n, &lsmat);
   for (i = 0; i <= *n; i++) { PETSC_FORTRAN_OBJECT_C_NULL_TO_F_DESTROYED(&smat[i]); }
-}
-
-PETSC_EXTERN void matdestroy_(Mat *x, int *ierr)
-{
-  PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL(x);
-  *ierr = MatDestroy(x);
-  if (*ierr) return;
-  PETSC_FORTRAN_OBJECT_C_NULL_TO_F_DESTROYED(x);
 }
 
 PETSC_EXTERN void matnullspaceremove_(MatNullSpace *sp, Vec *vec, PetscErrorCode *ierr)

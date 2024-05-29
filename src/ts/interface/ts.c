@@ -2613,7 +2613,7 @@ PetscErrorCode TSReset(TS ts)
 
 static PetscErrorCode TSResizeReset(TS);
 
-/*@C
+/*@
   TSDestroy - Destroys the timestepper context that was created
   with `TSCreate()`.
 
