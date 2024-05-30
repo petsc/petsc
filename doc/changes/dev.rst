@@ -33,6 +33,7 @@ Changes: Development
 
 - The ``IS`` passed to ``VecISAXPY()``, ``VecISCopy()``. ``VecISSet()``, and ``VecISShift()`` must have the same communicator of the vectors used
 - Make ``VecLock`` API active in optimized mode
+- ``VecNestSetSubVec()`` and ``VecNestSetSubVecs()`` now take references to input vectors rather than creating duplicates
 
 .. rubric:: PetscSection:
 
