@@ -43,7 +43,7 @@
 !   - Each processor needs to insert only elements that it owns locally.
       do 100 i=istart,iend-1
          v = 1.0*real(i)
-         PetscCallA(VecSetValues(x,ione,i,v,INSERT_VALUES,ierr))
+         PetscCallA(VecSetValues(x,ione,[i],[v],INSERT_VALUES,ierr))
  100  continue
 
 !  Assemble vector, using the 2-step process:

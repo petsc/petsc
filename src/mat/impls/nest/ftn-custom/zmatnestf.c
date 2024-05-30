@@ -3,11 +3,9 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define matcreatenest_     MATCREATENEST
-  #define matnestgetiss_     MATNESTGETISS
   #define matnestgetsubmats_ MATNESTGETSUBMATS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define matcreatenest_     matcreatenest
-  #define matnestgetiss_     matnestgetiss
   #define matnestgetsubmats_ matnestgetsubmats
 #endif
 
@@ -29,13 +27,6 @@ PETSC_EXTERN void matcreatenest_(MPI_Fint *comm, PetscInt *nr, IS is_row[], Pets
   *ierr = MatCreateNest(MPI_Comm_f2c(*comm), *nr, is_row, *nc, is_col, m, B);
   if (*ierr) return;
   *ierr = PetscFree(m);
-}
-
-PETSC_EXTERN void matnestgetiss_(Mat *A, IS rows[], IS cols[], int *ierr)
-{
-  CHKFORTRANNULLOBJECT(rows);
-  CHKFORTRANNULLOBJECT(cols);
-  *ierr = MatNestGetISs(*A, rows, cols);
 }
 
 PETSC_EXTERN void matnestgetsubmats_(Mat *A, PetscInt *M, PetscInt *N, Mat *sub, int *ierr)

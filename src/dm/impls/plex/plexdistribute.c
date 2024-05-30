@@ -1720,7 +1720,7 @@ PetscErrorCode DMPlexRemapMigrationSF(PetscSF sfOverlap, PetscSF sfMigration, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexDistribute - Distributes the mesh and any associated sections.
 
   Collective
@@ -2008,7 +2008,7 @@ PetscErrorCode DMPlexDistributeOverlap_Internal(DM dm, PetscInt overlap, MPI_Com
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexDistributeOverlap - Add partition overlap to a distributed non-overlapping `DM`.
 
   Collective

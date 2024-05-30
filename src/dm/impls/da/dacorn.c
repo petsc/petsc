@@ -207,7 +207,7 @@ PetscErrorCode DMDAGetCoordinateName(DM dm, PetscInt nf, const char *name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDAGetCorners - Returns the global (`x`,`y`,`z`) indices of the lower left
   corner and size of the local region, excluding ghost points.
 

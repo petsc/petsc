@@ -116,22 +116,22 @@
         j = II - i*n
         if (i.gt.0) then
           JJ = II - n
-          PetscCallA(MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr))
+          PetscCallA(MatSetValues(A,ione,[II],ione,[JJ],[v],INSERT_VALUES,ierr))
         endif
         if (i.lt.m-1) then
           JJ = II + n
-          PetscCallA(MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr))
+          PetscCallA(MatSetValues(A,ione,[II],ione,[JJ],[v],INSERT_VALUES,ierr))
         endif
         if (j.gt.0) then
           JJ = II - 1
-          PetscCallA(MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr))
+          PetscCallA(MatSetValues(A,ione,[II],ione,[JJ],[v],INSERT_VALUES,ierr))
         endif
         if (j.lt.n-1) then
           JJ = II + 1
-          PetscCallA(MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr))
+          PetscCallA(MatSetValues(A,ione,[II],ione,[JJ],[v],INSERT_VALUES,ierr))
         endif
         v = 4.0
-        PetscCallA( MatSetValues(A,ione,II,ione,II,v,INSERT_VALUES,ierr))
+        PetscCallA( MatSetValues(A,ione,[II],ione,[II],[v],INSERT_VALUES,ierr))
  10   continue
       PetscCallA(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr))
       PetscCallA(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr))

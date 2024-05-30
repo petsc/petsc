@@ -3,7 +3,7 @@
 */
 #include <petsc/private/petscimpl.h> /*I   "petscsys.h"    I*/
 
-/*@C
+/*@
   PetscObjectGetOptions - Gets the options database used by the object that has been set with `PetscObjectSetOptions()`
 
   Collective
@@ -33,7 +33,7 @@ PetscErrorCode PetscObjectGetOptions(PetscObject obj, PetscOptions *options)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectSetOptions - Sets the options database used by the object. Call immediately after creating the object.
 
   Collective
@@ -157,7 +157,7 @@ PetscErrorCode PetscObjectGetOptionsPrefix(PetscObject obj, const char *prefix[]
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectPrependOptionsPrefix - Sets the prefix used for searching for options of for this object in the database.
 
   Input Parameters:

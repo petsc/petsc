@@ -174,7 +174,8 @@ PetscErrorCode PetscOptionsInsertStringYAML_Private(PetscOptions options, const 
   yaml_parser_delete(&parser);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/*@C
+
+/*@
   PetscOptionsInsertStringYAML - Inserts YAML-formatted options into the options database from a string
 
   Logically Collective
@@ -199,7 +200,7 @@ PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options, const char in_
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsInsertFileYAML - Insert a YAML-formatted file in the options database
 
   Collective

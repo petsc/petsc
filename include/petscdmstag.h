@@ -16,6 +16,9 @@
   The order of the enum entries is significant, as it corresponds to the canonical numbering
   of DOFs, and the fact that the numbering starts at 0 may also be used by the implementation.
 
+  Fortran Note:
+  Currently there is no Fortran support, it could be easily added.
+
 .seealso: [](ch_stag), `DMSTAG`, `DMDA`, `DMStagStencil`, `DMStagGetLocationSlot()`, `DMStagStencilType`
 E*/
 typedef enum {
@@ -59,8 +62,10 @@ PETSC_EXTERN const char *const DMStagStencilLocations[]; /* Corresponding string
 
   Level: beginner
 
-  Note:
+  Notes:
   The component (c) field must always be set, even if there is a single component at a given location (in which case c should be set to 0).
+
+  This is a struct, not a `PetscObject`.
 
 .seealso: [](ch_stag), `DMSTAG`, `DMDA`, `DMStagMatSetValuesStencil()`, `DMStagVecSetValuesStencil()`, `DMStagStencilLocation`, `DMStagSetStencilWidth()`,
           `DMStagSetStencilType()`, `DMStagVecGetValuesStencil()`, `DMStagStencilLocation`

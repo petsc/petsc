@@ -26,6 +26,8 @@
       PetscCall(PetscBagSetName(bag,"MyParameters"));
       PetscCall(PetscBagRegisterInt(bag,&params.height,22,"height","Height of the water tower"));
 .ve
+   Note:
+  `PetscBag` is a C struct, it is not a `PetscObject`
 
 .seealso: `PetscBagSetName()`, `PetscBagGetName()`, `PetscBagView()`, `PetscBagLoad()`, `PetscBagGetData()`
           `PetscBagRegisterReal()`, `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`

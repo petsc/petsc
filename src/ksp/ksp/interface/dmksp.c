@@ -153,7 +153,7 @@ PetscErrorCode DMGetDMKSPWrite(DM dm, DMKSP *kspdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCopyDMKSP - copies a `DM` `DMKSP` context to a new `DM`
 
   Logically Collective

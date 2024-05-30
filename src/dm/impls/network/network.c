@@ -131,7 +131,7 @@ PetscErrorCode DMNetworkSetNumSubNetworks(DM dm, PetscInt nsubnet, PetscInt Nsub
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMNetworkAddSubnetwork - Add a subnetwork
 
   Collective
@@ -302,7 +302,7 @@ PetscErrorCode DMNetworkAddSubnetwork(DM dm, const char *name, PetscInt ne, Pets
 
 .seealso: `DM`, `DMNETWORK`, `DMNetworkGetSharedVertices()`
 @*/
-PetscErrorCode DMNetworkSharedVertexGetInfo(DM dm, PetscInt v, PetscInt *gidx, PetscInt *n, const PetscInt **sv)
+PetscErrorCode DMNetworkSharedVertexGetInfo(DM dm, PetscInt v, PetscInt *gidx, PetscInt *n, const PetscInt *sv[])
 {
   DM_Network *network = (DM_Network *)dm->data;
   SVtx       *svtx    = network->cloneshared->svtx;
@@ -813,7 +813,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
 
 .seealso: `DM`, `DMNETWORK`, `DMNetworkCreate()`, `DMNetworkAddSubnetwork()`, `DMNetworkLayoutSetUp()`
 @*/
-PetscErrorCode DMNetworkGetSubnetwork(DM dm, PetscInt netnum, PetscInt *nv, PetscInt *ne, const PetscInt **vtx, const PetscInt **edge)
+PetscErrorCode DMNetworkGetSubnetwork(DM dm, PetscInt netnum, PetscInt *nv, PetscInt *ne, const PetscInt *vtx[], const PetscInt *edge[])
 {
   DM_Network *network = (DM_Network *)dm->data;
 
@@ -888,7 +888,7 @@ PetscErrorCode DMNetworkAddSharedVertices(DM dm, PetscInt anetnum, PetscInt bnet
 
 .seealso: `DM`, `DMNETWORK`, `DMNetworkGetSubnetwork()`, `DMNetworkLayoutSetUp()`, `DMNetworkAddSharedVertices()`
 @*/
-PetscErrorCode DMNetworkGetSharedVertices(DM dm, PetscInt *nsv, const PetscInt **svtx)
+PetscErrorCode DMNetworkGetSharedVertices(DM dm, PetscInt *nsv, const PetscInt *svtx[])
 {
   DM_Network *net = (DM_Network *)dm->data;
 

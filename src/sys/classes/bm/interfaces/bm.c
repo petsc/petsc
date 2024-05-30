@@ -86,7 +86,7 @@ PetscErrorCode PetscBenchReset(PetscBench bm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBenchDestroy - Destroys a `PetscBench`
 
   Collective

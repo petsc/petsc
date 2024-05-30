@@ -893,7 +893,7 @@ PetscErrorCode PetscBagCreate(MPI_Comm comm, size_t bagsize, PetscBag *bag)
 
   PetscFunctionBegin;
   PetscAssertPointer(bag, 3);
-  PetscIntCast((PetscInt64)totalsize, NULL);
+  PetscCall(PetscIntCast((PetscInt64)totalsize, NULL));
 
   PetscCall(PetscInfo(NULL, "Creating Bag with total size %d\n", (int)totalsize));
   PetscCall(PetscCalloc(totalsize, bag));

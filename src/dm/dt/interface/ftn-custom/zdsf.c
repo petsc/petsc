@@ -23,7 +23,7 @@ static void ourriemannsolver(PetscInt dim, PetscInt Nf, const PetscReal x[], con
 
 PETSC_EXTERN void petscdssetcontext_(PetscDS *prob, PetscInt *f, void *ctx, PetscErrorCode *ierr)
 {
-  *ierr = PetscDSSetContext(*prob, *f, *prob);
+  *ierr = PetscDSSetContext(*prob, *f, ctx);
   if (*ierr) return;
 }
 

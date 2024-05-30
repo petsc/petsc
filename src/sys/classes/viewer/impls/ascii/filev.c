@@ -350,7 +350,7 @@ PetscErrorCode PetscViewerASCIISubtractTab(PetscViewer viewer, PetscInt tabs)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerASCIIPushSynchronized - Allows calls to `PetscViewerASCIISynchronizedPrintf()` for this viewer
 
   Collective
@@ -380,7 +380,7 @@ PetscErrorCode PetscViewerASCIIPushSynchronized(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerASCIIPopSynchronized - Undoes most recent `PetscViewerASCIIPushSynchronized()` for this viewer
 
   Collective
@@ -413,7 +413,7 @@ PetscErrorCode PetscViewerASCIIPopSynchronized(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerASCIIPushTab - Adds one more tab to the amount that `PetscViewerASCIIPrintf()`
   lines are tabbed.
 
@@ -440,7 +440,7 @@ PetscErrorCode PetscViewerASCIIPushTab(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerASCIIPopTab - Removes one tab from the amount that `PetscViewerASCIIPrintf()` lines are tabbed that was provided by
   `PetscViewerASCIIPushTab()`
 
@@ -807,7 +807,7 @@ PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer, const char format[], .
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerFileSetName - Sets the name of the file the `PetscViewer` should use.
 
   Collective
@@ -854,7 +854,7 @@ PetscErrorCode PetscViewerFileSetName(PetscViewer viewer, const char name[])
 
 .seealso: [](sec_viewers), `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `PetscViewerFileSetName()`
 @*/
-PetscErrorCode PetscViewerFileGetName(PetscViewer viewer, const char **name)
+PetscErrorCode PetscViewerFileGetName(PetscViewer viewer, const char *name[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);

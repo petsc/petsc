@@ -337,7 +337,7 @@ PetscErrorCode MatSetFromOptions(Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatXAIJSetPreallocation - set preallocation for serial and parallel `MATAIJ`, `MATBAIJ`, and `MATSBAIJ` matrices and their unassembled versions.
 
   Collective

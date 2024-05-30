@@ -571,7 +571,7 @@ PetscErrorCode PCFactorGetUseInPlace(PC pc, PetscBool *flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCFactorSetMatOrderingType - Sets the ordering routine (to reduce fill) to
   be used in the `PCLU`, `PCCHOLESKY`, `PCILU`,  or `PCICC` preconditioners
 

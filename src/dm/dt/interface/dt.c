@@ -1852,7 +1852,7 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints, PetscReal a, PetscReal b
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDTGaussLobattoLegendreQuadrature - creates a set of the locations and weights of the Gauss-Lobatto-Legendre
   nodes of a given size on the domain $[-1,1]$
 

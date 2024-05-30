@@ -6,16 +6,17 @@
 #if !defined (PETSCDRAWDEF_H)
 #define PETSCDRAWDEF_H
 
-#define PetscDraw PetscFortranAddr
-#define PetscDrawLG PetscFortranAddr
-#define PetscDrawAxis PetscFortranAddr
-#define PetscDrawSP PetscFortranAddr
-#define PetscDrawHG PetscFortranAddr
-#define PetscDrawMesh PetscFortranAddr
+#define PetscDraw type(tPetscDraw)
+#define PetscDrawLG type(tPetscDrawLG)
+#define PetscDrawAxis type(tPetscDrawAxis)
+#define PetscDrawSP type(tPetscDrawSP)
+#define PetscDrawHG type(tPetscDrawHG)
+#define PetscDrawMesh type(tPetscDrawMesh)
+#define PetscDrawBar type(tPetscDrawBar)
 #define PetscDrawButton PetscEnum
 #define PetscDrawType character*(80)
 #define PetscDrawMarkerType PetscEnum
-#define PetscDrawBar PetscFortranAddr
+
 !
 !  types of draw context
 !

@@ -72,7 +72,7 @@
      !   contributions will be added together.
 
   do i=0,ng-1
-   PetscCallA(VecSetValuesLocal(x,one,i,sone,ADD_VALUES,ierr))
+   PetscCallA(VecSetValuesLocal(x,one,[i],[sone],ADD_VALUES,ierr))
   end do
 
   !

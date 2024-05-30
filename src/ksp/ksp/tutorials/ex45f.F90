@@ -16,7 +16,7 @@
 
        PetscCallA(PetscInitialize(ierr))
        PetscCallA(KSPCreate(PETSC_COMM_WORLD,ksp,ierr))
-       PetscCallA(DMDACreate2D(PETSC_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_STAR,three,three,PETSC_DECIDE,PETSC_DECIDE,one,one, PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, dm, ierr))
+       PetscCallA(DMDACreate2D(PETSC_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_STAR,three,three,PETSC_DECIDE,PETSC_DECIDE,one,one, PETSC_NULL_INTEGER_ARRAY,PETSC_NULL_INTEGER_ARRAY, dm, ierr))
        PetscCallA(DMSetFromOptions(dm,ierr))
        PetscCallA(DMSetUp(dm,ierr))
        PetscCallA(KSPSetDM(ksp,dm,ierr))

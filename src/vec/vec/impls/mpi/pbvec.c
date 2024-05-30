@@ -657,7 +657,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecCreateMPIWithArray - Creates a parallel, array-style vector,
   where the user provides the array space to store the vector values.
 
@@ -701,7 +701,7 @@ PetscErrorCode VecCreateMPIWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecCreateGhostWithArray - Creates a parallel vector with ghost padding on each processor;
   the caller allocates the array space.
 
@@ -898,8 +898,7 @@ PetscErrorCode VecMPISetGhost(Vec vv, PetscInt nghost, const PetscInt ghosts[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------------------------------------*/
-/*@C
+/*@
   VecCreateGhostBlockWithArray - Creates a parallel vector with ghost padding on each processor;
   the caller allocates the array space. Indices in the ghost region are based on blocks.
 

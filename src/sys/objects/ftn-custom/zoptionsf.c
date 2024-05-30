@@ -28,9 +28,6 @@
   #define petscoptionsgetbool_             PETSCOPTIONSGETBOOL
   #define petscoptionsgetboolarray_        PETSCOPTIONSGETBOOLARRAY
   #define petscoptionsgetintarray_         PETSCOPTIONSGETINTARRAY
-  #define petscoptionssetvalue_            PETSCOPTIONSSETVALUE
-  #define petscoptionsclearvalue_          PETSCOPTIONSCLEARVALUE
-  #define petscoptionshasname_             PETSCOPTIONSHASNAME
   #define petscoptionsgetint_              PETSCOPTIONSGETINT
   #define petscoptionsgetreal_             PETSCOPTIONSGETREAL
   #define petscoptionsgetscalar_           PETSCOPTIONSGETSCALAR
@@ -38,11 +35,6 @@
   #define petscoptionsgetrealarray_        PETSCOPTIONSGETREALARRAY
   #define petscoptionsgetstring_           PETSCOPTIONSGETSTRING
   #define petscgetprogramname              PETSCGETPROGRAMNAME
-  #define petscoptionsinsertfile_          PETSCOPTIONSINSERTFILE
-  #define petscoptionsclear_               PETSCOPTIONSCLEAR
-  #define petscoptionsinsertstring_        PETSCOPTIONSINSERTSTRING
-  #define petscoptionsview_                PETSCOPTIONSVIEW
-  #define petscoptionsleft_                PETSCOPTIONSLEFT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define petscoptionsbegin_               petscoptionsbegin
   #define petscoptionsend_                 petscoptionsend
@@ -63,9 +55,6 @@
   #define petscoptionsgetenumprivate_      petscoptionsgetenumprivate
   #define petscoptionsgetbool_             petscoptionsgetbool
   #define petscoptionsgetboolarray_        petscoptionsgetboolarray
-  #define petscoptionssetvalue_            petscoptionssetvalue
-  #define petscoptionsclearvalue_          petscoptionsclearvalue
-  #define petscoptionshasname_             petscoptionshasname
   #define petscoptionsgetint_              petscoptionsgetint
   #define petscoptionsgetreal_             petscoptionsgetreal
   #define petscoptionsgetscalar_           petscoptionsgetscalar
@@ -74,11 +63,6 @@
   #define petscoptionsgetstring_           petscoptionsgetstring
   #define petscoptionsgetintarray_         petscoptionsgetintarray
   #define petscgetprogramname_             petscgetprogramname
-  #define petscoptionsinsertfile_          petscoptionsinsertfile
-  #define petscoptionsclear_               petscoptionsclear
-  #define petscoptionsinsertstring_        petscoptionsinsertstring
-  #define petscoptionsview_                petscoptionsview
-  #define petscoptionsleft_                petscoptionsleft
 #endif
 
 static PetscOptionItems PetscOptionsObjectBase, *PetscOptionsObject = NULL;
@@ -318,65 +302,6 @@ PETSC_EXTERN void petscoptionsstring_(char *opt, char *text, char *man, char *cu
   FIXRETURNCHAR(flag, value, lenvalue);
 }
 
-PETSC_EXTERN void petscoptionsinsertstring_(PetscOptions *options, char *file, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *c1;
-
-  FIXCHAR(file, len, c1);
-  *ierr = PetscOptionsInsertString(*options, c1);
-  if (*ierr) return;
-  FREECHAR(file, c1);
-}
-
-PETSC_EXTERN void petscoptionsinsertfile_(MPI_Fint *comm, PetscOptions *options, char *file, PetscBool *require, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *c1;
-
-  FIXCHAR(file, len, c1);
-  *ierr = PetscOptionsInsertFile(MPI_Comm_f2c(*comm), *options, c1, *require);
-  if (*ierr) return;
-  FREECHAR(file, c1);
-}
-
-PETSC_EXTERN void petscoptionssetvalue_(PetscOptions *options, char *name, char *value, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len1, PETSC_FORTRAN_CHARLEN_T len2)
-{
-  char *c1, *c2;
-
-  FIXCHAR(name, len1, c1);
-  FIXCHAR(value, len2, c2);
-  *ierr = PetscOptionsSetValue(*options, c1, c2);
-  if (*ierr) return;
-  FREECHAR(name, c1);
-  FREECHAR(value, c2);
-}
-
-PETSC_EXTERN void petscoptionsclear_(PetscOptions *options, PetscErrorCode *ierr)
-{
-  *ierr = PetscOptionsClear(*options);
-}
-
-PETSC_EXTERN void petscoptionsclearvalue_(PetscOptions *options, char *name, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *c1;
-
-  FIXCHAR(name, len, c1);
-  *ierr = PetscOptionsClearValue(*options, c1);
-  if (*ierr) return;
-  FREECHAR(name, c1);
-}
-
-PETSC_EXTERN void petscoptionshasname_(PetscOptions *options, char *pre, char *name, PetscBool *flg, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len1, PETSC_FORTRAN_CHARLEN_T len2)
-{
-  char *c1, *c2;
-
-  FIXCHAR(pre, len1, c1);
-  FIXCHAR(name, len2, c2);
-  *ierr = PetscOptionsHasName(*options, c1, c2, flg);
-  if (*ierr) return;
-  FREECHAR(pre, c1);
-  FREECHAR(name, c2);
-}
-
 PETSC_EXTERN void petscoptionsgetint_(PetscOptions *opt, char *pre, char *name, PetscInt *ivalue, PetscBool *flg, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len1, PETSC_FORTRAN_CHARLEN_T len2)
 {
   char     *c1, *c2;
@@ -530,14 +455,6 @@ PETSC_EXTERN void petscgetprogramname_(char *name, PetscErrorCode *ierr, PETSC_F
   len   = len_in - 1;
   *ierr = PetscGetProgramName(tmp, len);
   FIXRETURNCHAR(PETSC_TRUE, name, len_in);
-}
-
-PETSC_EXTERN void petscoptionsview_(PetscOptions *options, PetscViewer *vin, PetscErrorCode *ierr)
-{
-  PetscViewer v;
-
-  PetscPatchDefaultViewers_Fortran(vin, v);
-  *ierr = PetscOptionsView(*options, v);
 }
 
 PETSC_EXTERN void petscsubcommgetparent_(PetscSubcomm *scomm, MPI_Fint *pcomm, int *ierr)

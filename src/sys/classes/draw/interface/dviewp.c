@@ -149,7 +149,7 @@ PetscErrorCode PetscDrawSplitViewPort(PetscDraw draw)
 
 .seealso: `PetscDrawSplitViewPort()`, `PetscDrawSetViewPort()`, `PetscDrawViewPortsSet()`, `PetscDrawViewPortsDestroy()`
 @*/
-PetscErrorCode PetscDrawViewPortsCreate(PetscDraw draw, PetscInt nports, PetscDrawViewPorts **newports)
+PetscErrorCode PetscDrawViewPortsCreate(PetscDraw draw, PetscInt nports, PetscDrawViewPorts *newports[])
 {
   PetscDrawViewPorts *ports;
   PetscInt            i, n;
@@ -233,7 +233,7 @@ PetscErrorCode PetscDrawViewPortsCreate(PetscDraw draw, PetscInt nports, PetscDr
 
 .seealso: `PetscDrawSplitViewPort()`, `PetscDrawSetViewPort()`, `PetscDrawViewPortsSet()`, `PetscDrawViewPortsDestroy()`, `PetscDrawViewPorts`
 @*/
-PetscErrorCode PetscDrawViewPortsCreateRect(PetscDraw draw, PetscInt nx, PetscInt ny, PetscDrawViewPorts **newports)
+PetscErrorCode PetscDrawViewPortsCreateRect(PetscDraw draw, PetscInt nx, PetscInt ny, PetscDrawViewPorts *newports[])
 {
   PetscDrawViewPorts *ports;
   PetscReal          *xl, *xr, *yl, *yr, hx, hy;

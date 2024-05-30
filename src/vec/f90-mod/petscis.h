@@ -5,28 +5,43 @@
 
       type, extends(tPetscObject) :: tIS
       end type tIS
+      IS, parameter :: PETSC_NULL_IS = tIS(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_IS
+#endif
 
       type, extends(tPetscObject) :: tISColoring
       end type tISColoring
+      IS, parameter :: PETSC_NULL_IS_COLORING = tIS(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_IS_COLORING
+#endif
 
       type, extends(tPetscObject) :: tPetscSection
       end type tPetscSection
+      PetscSection, parameter :: PETSC_NULL_SECTION = tPetscSection(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_SECTION
+#endif
 
       type, extends(tPetscObject) :: tPetscSectionSym
       end type tPetscSectionSym
+      PetscSectionSym, parameter :: PETSC_NULL_SECTION_SYM = tPetscSectionSym(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_SECTION_SYM
+#endif
 
       type, extends(tPetscObject) :: tPetscSF
       end type tPetscSF
+      PetscSF, parameter :: PETSC_NULL_SF = tPetscSF(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_SF
+#endif
 
       type PetscSFNode
         PetscInt    rank
         PetscInt    index
       end type PetscSFNode
-
-      IS, parameter :: PETSC_NULL_IS = tIS(0)
-      PetscSF, parameter :: PETSC_NULL_SF = tPetscSF(0)
-      PetscSection, parameter :: PETSC_NULL_SECTION = tPetscSection(0)
-      PetscSectionSym, parameter :: PETSC_NULL_SECTIONSYM = tPetscSectionSym(0)
 
       PetscEnum, parameter :: IS_COLORING_GLOBAL = 0
       PetscEnum, parameter :: IS_COLORING_LOCAL = 1
@@ -54,10 +69,6 @@
       PetscEnum, parameter :: IS_GLOBAL = 1
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
-!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_IS
-!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_SF
-!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_SECTION
-!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_SECTIONSYM
 !DEC$ ATTRIBUTES DLLEXPORT::IS_COLORING_GLOBAL
 !DEC$ ATTRIBUTES DLLEXPORT::IS_COLORING_LOCAL
 !DEC$ ATTRIBUTES DLLEXPORT::IS_GENERAL

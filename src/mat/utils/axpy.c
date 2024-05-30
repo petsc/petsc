@@ -375,7 +375,7 @@ PetscErrorCode MatAYPX(Mat Y, PetscScalar a, Mat X, MatStructure str)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatComputeOperator - Computes the explicit matrix
 
   Collective
@@ -405,7 +405,7 @@ PetscErrorCode MatComputeOperator(Mat inmat, MatType mattype, Mat *mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatComputeOperatorTranspose - Computes the explicit matrix representation of
   a give matrix that can apply `MatMultTranspose()`
 

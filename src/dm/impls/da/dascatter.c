@@ -4,7 +4,7 @@
 
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
-/*@C
+/*@
   DMDAGetScatter - Gets the global-to-local, and
   local-to-local vector scatter contexts for a `DMDA` distributed array.
 

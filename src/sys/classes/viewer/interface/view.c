@@ -164,7 +164,7 @@ PetscErrorCode PetscViewerAndFormatDestroy(PetscViewerAndFormat **vf)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerGetType - Returns the type of a `PetscViewer`.
 
   Not Collective
@@ -191,7 +191,7 @@ PetscErrorCode PetscViewerGetType(PetscViewer viewer, PetscViewerType *type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerSetOptionsPrefix - Sets the prefix used for searching for
   `PetscViewer` options in the database during `PetscViewerSetFromOptions()`.
 
@@ -217,7 +217,7 @@ PetscErrorCode PetscViewerSetOptionsPrefix(PetscViewer viewer, const char prefix
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerAppendOptionsPrefix - Appends to the prefix used for searching for
   `PetscViewer` options in the database during `PetscViewerSetFromOptions()`.
 

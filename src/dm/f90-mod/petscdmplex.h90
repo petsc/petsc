@@ -329,17 +329,6 @@
       End Interface
 
       Interface
-        Subroutine DMPlexDistribute(m,o,sf,mp,ierr)
-          import tDM,tPetscSF
-          DM, intent(in) :: m
-          PetscInt, intent(in) :: o
-          PetscSF :: sf
-          DM, intent(out) :: mp
-          PetscErrorCode, intent(out):: ierr
-        End Subroutine
-      End Interface
-
-      Interface
         Subroutine DMPlexCreateDefault(m,ierr)
           import tDM
           DM, intent(out) :: m

@@ -3,7 +3,7 @@
 #include <../src/mat/impls/mffd/mffdimpl.h>
 #include <petsc/private/matimpl.h>
 
-/*@C
+/*@
   MatMFFDComputeJacobian - Tells the matrix-free Jacobian object the new location at which
   Jacobian matrix-vector products will be computed at, i.e. J(x) * a. The x is obtained
   from the `SNES` object (using `SNESGetSolution()`).

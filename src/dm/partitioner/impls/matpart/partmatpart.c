@@ -14,16 +14,16 @@ static PetscErrorCode PetscPartitionerMatPartitioningGetMatPartitioning_MatParti
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
-  PetscPartitionerMatPartitioningGetMatPartitioning - Get a MatPartitioning instance wrapped by this PetscPartitioner.
+/*@
+  PetscPartitionerMatPartitioningGetMatPartitioning - Get a `MatPartitioning` instance wrapped by this `PetscPartitioner`.
 
   Not Collective
 
   Input Parameter:
-. part - The PetscPartitioner
+. part - The `PetscPartitioner`
 
   Output Parameter:
-. mp - The MatPartitioning
+. mp - The `MatPartitioning`
 
   Level: developer
 

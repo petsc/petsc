@@ -13,6 +13,7 @@
       PetscViewer   v
       Vec           rowmax
       PetscBool flg
+      IS isrow, iscol
       character*(256)  f
 
       PetscCallA(PetscInitialize(ierr))
@@ -33,17 +34,22 @@
       PetscCallA(VecSetSizes(rowmax,M,M,ierr))
       PetscCallA(VecSetFromOptions(rowmax,ierr))
 
-      PetscCallA(MatGetRowMaxAbs(A,rowmax,PETSC_NULL_INTEGER,ierr))
+      PetscCallA(MatGetRowMaxAbs(A,rowmax,PETSC_NULL_INTEGER_ARRAY,ierr))
       PetscCallA(VecView(rowmax,PETSC_VIEWER_STDOUT_WORLD,ierr))
 
-      PetscCallA(MatGetRowMax(A,rowmax,PETSC_NULL_INTEGER,ierr))
+      PetscCallA(MatGetRowMax(A,rowmax,PETSC_NULL_INTEGER_ARRAY,ierr))
       PetscCallA(VecView(rowmax,PETSC_VIEWER_STDOUT_WORLD,ierr))
 
-      PetscCallA(MatGetRowMinAbs(A,rowmax,PETSC_NULL_INTEGER,ierr))
+      PetscCallA(MatGetRowMinAbs(A,rowmax,PETSC_NULL_INTEGER_ARRAY,ierr))
       PetscCallA(VecView(rowmax,PETSC_VIEWER_STDOUT_WORLD,ierr))
 
-      PetscCallA(MatGetRowMin(A,rowmax,PETSC_NULL_INTEGER,ierr))
+      PetscCallA(MatGetRowMin(A,rowmax,PETSC_NULL_INTEGER_ARRAY,ierr))
       PetscCallA(VecView(rowmax,PETSC_VIEWER_STDOUT_WORLD,ierr))
+
+      PetscCallA(MatGetOwnershipIS(A,isrow,iscol,ierr))
+      PetscCallA(ISDestroy(isrow,ierr))
+      PetscCallA(ISDestroy(iscol,ierr))
+      PetscCallA(MatGetOwnershipIS(A,PETSC_NULL_IS,PETSC_NULL_IS,ierr))
 
       PetscCallA(MatDestroy(A,ierr))
       PetscCallA(PetscViewerDestroy(v,ierr))

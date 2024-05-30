@@ -166,7 +166,7 @@ PetscErrorCode PetscDataTypeGetSize(PetscDataType ptype, size_t *size)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDataTypeFromString - Gets the enum value of a PETSc datatype represented as a string
 
   Not Collective

@@ -1334,7 +1334,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Internal(DM dm, DMPlexShape shape, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexCreateBoxMesh - Creates a mesh on the tensor product of unit intervals (box) using simplices or tensor cells (hexahedra).
 
   Collective

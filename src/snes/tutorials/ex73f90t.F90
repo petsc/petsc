@@ -163,10 +163,10 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !     just get size
-      PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,ione,ione,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,daphi,ierr))
+      PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,ione,ione,PETSC_NULL_INTEGER_ARRAY,PETSC_NULL_INTEGER_ARRAY,daphi,ierr))
       PetscCallA(DMSetFromOptions(daphi,ierr))
       PetscCallA(DMSetUp(daphi,ierr))
-      PetscCallA(DMDAGetInfo(daphi,PETSC_NULL_INTEGER,solver%mx,solver%my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr))
+      PetscCallA(DMDAGetInfo(daphi,PETSC_NULL_INTEGER,solver%mx,solver%my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_ENUM,PETSC_NULL_ENUM,PETSC_NULL_ENUM,PETSC_NULL_ENUM,ierr))
       N1 = solver%my*solver%mx
       N2 = solver%my
       flg = .false.
@@ -418,7 +418,7 @@
       itwo = 2
       ierr = 0
       PetscCall(SNESGetApplicationContext(mysnes,solver,ierr))
-      PetscCall(DMCompositeGetAccessArray(solver%da,Xnest,itwo,PETSC_NULL_INTEGER,Xsub,ierr))
+      PetscCall(DMCompositeGetAccessArray(solver%da,Xnest,itwo,PETSC_NULL_INTEGER_ARRAY,Xsub,ierr))
 
       PetscCall(InitialGuessLocal(solver,Xsub(1),ierr))
       PetscCall(VecAssemblyBegin(Xsub(1),ierr))
@@ -426,7 +426,7 @@
 
 !     zero out lambda
       PetscCall(VecZeroEntries(Xsub(2),ierr))
-      PetscCall(DMCompositeRestoreAccessArray(solver%da,Xnest,itwo,PETSC_NULL_INTEGER,Xsub,ierr))
+      PetscCall(DMCompositeRestoreAccessArray(solver%da,Xnest,itwo,PETSC_NULL_INTEGER_ARRAY,Xsub,ierr))
 
       end subroutine FormInitialGuess
 
@@ -479,7 +479,7 @@
          else
             v = temp1 * sqrt(min(min(i,solver%mx-i+1)*hx,temp))
          endif
-         PetscCall(VecSetValues(X1,ione,row,v,INSERT_VALUES,ierr))
+         PetscCall(VecSetValues(X1,ione,[row],[v],INSERT_VALUES,ierr))
  20   continue
 
       end subroutine InitialGuessLocal
@@ -517,14 +517,14 @@
 
       ione = 1
 
-      PetscCall(DMCompositeGetAccessArray(solver%da,X,ione,PETSC_NULL_INTEGER,Xsub,ierr))
+      PetscCall(DMCompositeGetAccessArray(solver%da,X,ione,PETSC_NULL_INTEGER_ARRAY,Xsub,ierr))
 
 !     Compute entries for the locally owned part of the Jacobian preconditioner.
       PetscCall(MatCreateSubMatrix(jac_prec,solver%isPhi,solver%isPhi,MAT_INITIAL_MATRIX,Amat,ierr))
 
       PetscCall(FormJacobianLocal(Xsub(1),Amat,solver,.true.,ierr))
       PetscCall(MatDestroy(Amat,ierr)) ! discard our reference
-      PetscCall(DMCompositeRestoreAccessArray(solver%da,X,ione,PETSC_NULL_INTEGER,Xsub,ierr))
+      PetscCall(DMCompositeRestoreAccessArray(solver%da,X,ione,PETSC_NULL_INTEGER_ARRAY,Xsub,ierr))
 
       ! the rest of the matrix is not touched
       PetscCall(MatAssemblyBegin(jac_prec,MAT_FINAL_ASSEMBLY,ierr))
@@ -659,8 +659,8 @@
 !  be done while messages are in transition.
 
       itwo = 2
-      PetscCall(DMCompositeGetAccessArray(solver%da,X,itwo,PETSC_NULL_INTEGER,Xsub,ierr))
-      PetscCall(DMCompositeGetAccessArray(solver%da,F,itwo,PETSC_NULL_INTEGER,Fsub,ierr))
+      PetscCall(DMCompositeGetAccessArray(solver%da,X,itwo,PETSC_NULL_INTEGER_ARRAY,Xsub,ierr))
+      PetscCall(DMCompositeGetAccessArray(solver%da,F,itwo,PETSC_NULL_INTEGER_ARRAY,Fsub,ierr))
 
       PetscCall(FormFunctionNLTerm( Xsub(1), Fsub(1), solver, ierr))
       PetscCall(MatMultAdd( solver%AmatLin, Xsub(1), Fsub(1), Fsub(1), ierr))
@@ -670,8 +670,8 @@
       PetscCall(MatMultAdd( solver%Bmat, Xsub(2), Fsub(1), Fsub(1), ierr))
       PetscCall(MatMultAdd( solver%Dmat, Xsub(2), Fsub(2), Fsub(2), ierr))
 
-      PetscCall(DMCompositeRestoreAccessArray(solver%da,X,itwo,PETSC_NULL_INTEGER,Xsub,ierr))
-      PetscCall(DMCompositeRestoreAccessArray(solver%da,F,itwo,PETSC_NULL_INTEGER,Fsub,ierr))
+      PetscCall(DMCompositeRestoreAccessArray(solver%da,X,itwo,PETSC_NULL_INTEGER_ARRAY,Xsub,ierr))
+      PetscCall(DMCompositeRestoreAccessArray(solver%da,F,itwo,PETSC_NULL_INTEGER_ARRAY,Fsub,ierr))
       end subroutine formfunction
 
 ! ---------------------------------------------------------------------

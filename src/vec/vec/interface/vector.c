@@ -910,7 +910,7 @@ PetscErrorCode VecGetLocalSize(Vec x, PetscInt *size)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetOwnershipRange - Returns the range of indices owned by
   this process. The vector is laid out with the
   first `n1` elements on the first processor, next `n2` elements on the

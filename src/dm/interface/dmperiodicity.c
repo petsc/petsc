@@ -17,7 +17,7 @@
 
 .seealso: `DM`
 @*/
-PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscReal **Lstart, const PetscReal **L)
+PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal *maxCell[], const PetscReal *Lstart[], const PetscReal *L[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);

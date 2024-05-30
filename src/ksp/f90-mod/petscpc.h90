@@ -15,18 +15,6 @@
       end Interface
 
       Interface
-      subroutine PCGASMSetSubdomains(p,a,h,i,z)
-       import tIS
-       import tPC
-       PC p
-       PetscInt a
-       IS h(*)
-       IS i(*)
-       PetscErrorCode z
-       end subroutine PCGASMSetSubdomains
-      end Interface
-
-      Interface
       subroutine PCGASMDestroySubdomains(a,h,i,z)
        import tIS
        PetscInt a

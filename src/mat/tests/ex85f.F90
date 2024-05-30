@@ -23,7 +23,7 @@
       value = 3.0
       i     = 4
       one   = 1
-      PetscCallA(MatSetValues(m,one,i,one,i,value,INSERT_VALUES,ierr))
+      PetscCallA(MatSetValues(m,one,[i],one,[i],[value],INSERT_VALUES,ierr))
       PetscCallA(MatAssemblyBegin(m,MAT_FINAL_ASSEMBLY,ierr))
       PetscCallA(MatAssemblyEnd(m,MAT_FINAL_ASSEMBLY,ierr))
 

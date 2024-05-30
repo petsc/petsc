@@ -10,8 +10,6 @@
   #define pcasmgetsubksp6_          PCASMGETSUBKSP6
   #define pcasmgetsubksp7_          PCASMGETSUBKSP7
   #define pcasmgetsubksp8_          PCASMGETSUBKSP8
-  #define pcasmsetlocalsubdomains_  PCASMSETLOCALSUBDOMAINS
-  #define pcasmsetglobalsubdomains_ PCASMSETGLOBALSUBDOMAINS
   #define pcasmgetlocalsubmatrices_ PCASMGETLOCALSUBMATRICES
   #define pcasmgetlocalsubdomains_  PCASMGETLOCALSUBDOMAINS
   #define pcasmcreatesubdomains_    PCASMCREATESUBDOMAINS
@@ -26,8 +24,6 @@
   #define pcasmgetsubksp6_          pcasmgetsubksp6
   #define pcasmgetsubksp7_          pcasmgetsubksp7
   #define pcasmgetsubksp8_          pcasmgetsubksp8
-  #define pcasmsetlocalsubdomains_  pcasmsetlocalsubdomains
-  #define pcasmsetglobalsubdomains_ pcasmsetglobalsubdomains
   #define pcasmgetlocalsubmatrices_ pcasmgetlocalsubmatrices
   #define pcasmgetlocalsubdomains_  pcasmgetlocalsubdomains
   #define pcasmcreatesubdomains_    pcasmcreatesubdomains
@@ -119,20 +115,6 @@ PETSC_EXTERN void pcasmgetsubksp7_(PC *pc, PetscInt *n_local, PetscInt *first_lo
 PETSC_EXTERN void pcasmgetsubksp8_(PC *pc, PetscInt *n_local, PetscInt *first_local, KSP *ksp, PetscErrorCode *ierr)
 {
   pcasmgetsubksp1_(pc, n_local, first_local, ksp, ierr);
-}
-
-PETSC_EXTERN void pcasmsetlocalsubdomains_(PC *pc, PetscInt *n, IS *is, IS *is_local, PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLOBJECT(is);
-  CHKFORTRANNULLOBJECT(is_local);
-  *ierr = PCASMSetLocalSubdomains(*pc, *n, is, is_local);
-}
-
-PETSC_EXTERN void pcasmsettotalsubdomains_(PC *pc, PetscInt *N, IS *is, IS *is_local, PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLOBJECT(is);
-  CHKFORTRANNULLOBJECT(is_local);
-  *ierr = PCASMSetTotalSubdomains(*pc, *N, is, is_local);
 }
 
 PETSC_EXTERN void pcasmgetlocalsubmatrices_(PC *pc, PetscInt *n, Mat *mat, PetscErrorCode *ierr)

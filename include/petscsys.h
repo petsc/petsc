@@ -1302,7 +1302,7 @@ PETSC_EXTERN PetscErrorCode PetscMallocGetStack(void *, PetscStack **);
 
 PETSC_EXTERN PetscErrorCode PetscObjectsDump(FILE *, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscObjectsView(PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscObjectsGetObject(const char *, PetscObject *, char **);
+PETSC_EXTERN PetscErrorCode PetscObjectsGetObject(const char *, PetscObject *, const char **);
 PETSC_EXTERN PetscErrorCode PetscObjectListDestroy(PetscObjectList *);
 PETSC_EXTERN PetscErrorCode PetscObjectListFind(PetscObjectList, const char[], PetscObject *);
 PETSC_EXTERN PetscErrorCode PetscObjectListReverseFind(PetscObjectList, PetscObject, char **, PetscBool *);
@@ -2280,7 +2280,7 @@ PETSC_EXTERN                PetscErrorCode (*PetscVFPrintf)(FILE *, const char[]
 
 PETSC_EXTERN PetscSegBuffer PetscCitationsList;
 
-/*@C
+/*@
      PetscCitationsRegister - Register a bibtex item to obtain credit for an implemented algorithm used in the code.
 
      Not Collective; No Fortran Support

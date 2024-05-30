@@ -90,7 +90,7 @@
       PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
 
 ! Set up data structures
-      PetscCallA(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,N,i1,i1,PETSC_NULL_INTEGER,ctx%da,ierr))
+      PetscCallA(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,N,i1,i1,PETSC_NULL_INTEGER_ARRAY,ctx%da,ierr))
       PetscCallA(DMSetFromOptions(ctx%da,ierr))
       PetscCallA(DMSetUp(ctx%da,ierr))
       PetscCallA(DMCreateGlobalVector(ctx%da,x,ierr))
@@ -102,7 +102,7 @@
       PetscCallA(VecDuplicate(x,U,ierr))
       PetscCallA(PetscObjectSetName(U,'Exact Solution',ierr))
 
-      PetscCallA(MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,i3,PETSC_NULL_INTEGER,i0,PETSC_NULL_INTEGER,J,ierr))
+      PetscCallA(MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,i3,PETSC_NULL_INTEGER_ARRAY,i0,PETSC_NULL_INTEGER_ARRAY,J,ierr))
       PetscCallA(MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE,ierr))
       PetscCallA(MatGetType(J,matrixname,ierr))
 
@@ -114,8 +114,8 @@
       do 10, i=0,nn-1
         FF = 6.0*xp + (xp+1.e-12)**6.e0
         UU = xp*xp*xp
-        PetscCallA(VecSetValues(ctx%F,i1,ii,FF,INSERT_VALUES,ierr))
-        PetscCallA(VecSetValues(U,i1,ii,UU,INSERT_VALUES,ierr))
+        PetscCallA(VecSetValues(ctx%F,i1,[ii],[FF],INSERT_VALUES,ierr))
+        PetscCallA(VecSetValues(U,i1,[ii],[UU],INSERT_VALUES,ierr))
         xp = xp + h
         ii = ii + 1
  10   continue
@@ -267,7 +267,7 @@
 
       if (rank .eq. 0) then
         A = 1.0
-        PetscCall(MatSetValues(jac,i1,start,i1,start,A,INSERT_VALUES,ierr))
+        PetscCall(MatSetValues(jac,i1,[start],i1,[start],[A],INSERT_VALUES,ierr))
         istart = 1
       else
         istart = 0
@@ -275,7 +275,7 @@
       if (rank .eq. size-1) then
         i = INT(ctx%N-1)
         A = 1.0
-        PetscCall(MatSetValues(jac,i1,i,i1,i,A,INSERT_VALUES,ierr))
+        PetscCall(MatSetValues(jac,i1,[i],i1,[i],[A],INSERT_VALUES,ierr))
         iend = n-1
       else
         iend = n
@@ -283,11 +283,11 @@
       do 10 i=istart,iend-1
         ii = i + start
         j = start + i - 1
-        PetscCall(MatSetValues(jac,i1,ii,i1,j,d,INSERT_VALUES,ierr))
+        PetscCall(MatSetValues(jac,i1,[ii],i1,[j],[d],INSERT_VALUES,ierr))
         j = start + i + 1
-        PetscCall(MatSetValues(jac,i1,ii,i1,j,d,INSERT_VALUES,ierr))
+        PetscCall(MatSetValues(jac,i1,[ii],i1,[j],[d],INSERT_VALUES,ierr))
         A = -2.0*d + 2.0*vxx(i+1)
-        PetscCall(MatSetValues(jac,i1,ii,i1,ii,A,INSERT_VALUES,ierr))
+        PetscCall(MatSetValues(jac,i1,[ii],i1,[ii],[A],INSERT_VALUES,ierr))
  10   continue
       PetscCall(VecRestoreArrayReadF90(x,vxx,ierr))
       PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr))

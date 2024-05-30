@@ -354,7 +354,7 @@ static PetscErrorCode PetscOptionsInsertString_Private(PetscOptions options, con
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsInsertString - Inserts options into the database from a string
 
   Logically Collective
@@ -595,7 +595,7 @@ static PetscErrorCode PetscOptionsInsertFilePetsc(MPI_Comm comm, PetscOptions op
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsInsertFile - Inserts options into the database from a file.
 
   Collective
@@ -923,7 +923,7 @@ static PetscBool PetscCIOption(const char *name)
   return found;
 }
 
-/*@C
+/*@
   PetscOptionsView - Prints the options that have been loaded. This is
   useful for debugging purposes.
 
@@ -1032,7 +1032,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsViewError(void)
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscOptionsPrefixPush - Designate a prefix to be used by all options insertions to follow.
 
   Logically Collective
@@ -1085,7 +1085,7 @@ PetscErrorCode PetscOptionsPrefixPush(PetscOptions options, const char prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsPrefixPop - Remove the latest options prefix, see `PetscOptionsPrefixPush()` for details
 
   Logically Collective on the `MPI_Comm` used when called `PetscOptionsPrefixPush()`
@@ -1110,7 +1110,7 @@ PetscErrorCode PetscOptionsPrefixPop(PetscOptions options)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsClear - Removes all options form the database leaving it empty.
 
   Logically Collective
@@ -1172,7 +1172,7 @@ PetscErrorCode PetscOptionsClear(PetscOptions options)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsSetAlias - Makes a key and alias for another key
 
   Logically Collective
@@ -1238,7 +1238,7 @@ PetscErrorCode PetscOptionsSetAlias(PetscOptions options, const char newname[], 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsSetValue - Sets an option name-value pair in the options
   database, overriding whatever is already present.
 
@@ -1395,7 +1395,7 @@ setvalue:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsClearValue - Clears an option name-value pair in the options
   database, overriding whatever is already present.
 
@@ -1677,7 +1677,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions opti
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsReject - Generates an error if a certain option is given.
 
   Not Collective
@@ -1710,7 +1710,7 @@ PetscErrorCode PetscOptionsReject(PetscOptions options, const char pre[], const 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsHasHelp - Determines whether the "-help" option is in the database.
 
   Not Collective
@@ -1743,7 +1743,7 @@ PetscErrorCode PetscOptionsHasHelpIntro_Internal(PetscOptions options, PetscBool
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsHasName - Determines whether a certain option is given in the database. This returns true whether the option is a number, string or Boolean, even
   if its value is set to false.
 
@@ -1833,7 +1833,7 @@ PetscErrorCode PetscOptionsGetAll(PetscOptions options, char *copts[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsUsed - Indicates if PETSc has used a particular option set in the database
 
   Not Collective

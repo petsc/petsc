@@ -56,6 +56,7 @@
         module petscsysdef
         use petscsysdefdummy
 
+        ! These will eventually be automatically generated
         interface operator(.ne.)
           function petscviewernotequal(A,B)
             import tPetscViewer
@@ -68,6 +69,21 @@
             import tPetscViewer
             logical petscviewerequals
             type(tPetscViewer), intent(in) :: A,B
+          end function
+        end interface operator (.eq.)
+
+        interface operator(.ne.)
+          function petscdrawnotequal(A,B)
+            import tPetscDraw
+            logical petscdrawnotequal
+            type(tPetscDraw), intent(in) :: A,B
+          end function
+        end interface operator (.ne.)
+        interface operator(.eq.)
+          function petscdrawequals(A,B)
+            import tPetscDraw
+            logical petscdrawequals
+            type(tPetscDraw), intent(in) :: A,B
           end function
         end interface operator (.eq.)
 
@@ -236,30 +252,70 @@
           use petscsysdefdummy, only: tPetscViewer
           logical petscviewernotequal
           type(tPetscViewer), intent(in) :: A,B
+          if (A%v .eq. 0 .or. B%v .eq. 0) then
+            print*, 'PETSc Error: Cannot compare with PETSC_NULL_VIEWER, use PetscObjectIsNull()'
+            ! stop PETSC_ERR_SUP won't compile
+            stop 55
+          endif
           petscviewernotequal = (A%v .ne. B%v)
         end function
         function petscviewerequals(A,B)
           use petscsysdefdummy, only: tPetscViewer
           logical petscviewerequals
           type(tPetscViewer), intent(in) :: A,B
+          if (A%v .eq. 0 .or. B%v .eq. 0) then
+            print*, 'PETSc Error: Cannot compare with PETSC_NULL_VIEWER, use PetscObjectIsNull()'
+            stop 55
+         endif
           petscviewerequals = (A%v .eq. B%v)
         end function
 
-        function petscrandomnotequal(A,B)
+        function petscdrawnotequal(A,B)
+          use petscsysdefdummy, only: tPetscDraw
+          logical petscdrawnotequal
+          type(tPetscDraw), intent(in) :: A,B
+          if (A%v .eq. 0 .or. B%v .eq. 0) then
+            print*, 'PETSc Error: Cannot compare with PETSC_NULL_DRAW, use PetscObjectIsNull()'
+            stop 55
+         endif
+          petscdrawnotequal = (A%v .ne. B%v)
+        end function
+        function petscdrawequals(A,B)
+          use petscsysdefdummy, only: tPetscDraw
+          logical petscdrawequals
+          type(tPetscDraw), intent(in) :: A,B
+          if (A%v .eq. 0 .or. B%v .eq. 0) then
+            print*, 'PETSc Error: Cannot compare with PETSC_NULL_DRAW, use PetscObjectIsNull()'
+            stop 55
+         endif
+          petscdrawequals = (A%v .eq. B%v)
+        end function
+
+       function petscrandomnotequal(A,B)
           use petscsysdefdummy, only: tPetscRandom
           logical petscrandomnotequal
           type(tPetscRandom), intent(in) :: A,B
+          if (A%v .eq. 0 .or. B%v .eq. 0) then
+            print*, 'PETSc Error: Cannot compare with PETSC_NULL_RANDOM, use PetscObjectIsNull()'
+            stop 55
+         endif
           petscrandomnotequal = (A%v .ne. B%v)
         end function
         function petscrandomequals(A,B)
           use petscsysdefdummy, only: tPetscRandom
           logical petscrandomequals
           type(tPetscRandom), intent(in) :: A,B
+          if (A%v .eq. 0 .or. B%v .eq. 0) then
+            print*, 'PETSc Error: Cannot compare with PETSC_NULL_RANDOM, use PetscObjectIsNull()'
+            stop 55
+          endif
           petscrandomequals = (A%v .eq. B%v)
         end function
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::petscviewernotequal
 !DEC$ ATTRIBUTES DLLEXPORT::petscviewerequals
+!DEC$ ATTRIBUTES DLLEXPORT::petscdrawnotequal
+!DEC$ ATTRIBUTES DLLEXPORT::petscdrawequals
 !DEC$ ATTRIBUTES DLLEXPORT::petscrandomnotequal
 !DEC$ ATTRIBUTES DLLEXPORT::petscrandomequals
 #endif
@@ -267,15 +323,13 @@
         use,intrinsic :: iso_c_binding
         use petscsysdef
         PetscChar(80) PETSC_NULL_CHARACTER = ''
-        PetscInt PETSC_NULL_INTEGER(1)
-        PetscFortranDouble PETSC_NULL_DOUBLE(1)
-        PetscScalar PETSC_NULL_SCALAR(1)
-        PetscReal PETSC_NULL_REAL(1)
+        PetscInt PETSC_NULL_INTEGER, PETSC_NULL_INTEGER_ARRAY(1)
+        PetscFortranDouble PETSC_NULL_DOUBLE
+        PetscScalar PETSC_NULL_SCALAR, PETSC_NULL_SCALAR_ARRAY(1)
+        PetscReal PETSC_NULL_REAL, PETSC_NULL_REAL_ARRAY(1)
         PetscBool PETSC_NULL_BOOL
+        PetscEnum PETSC_NULL_ENUM
         MPI_Comm  PETSC_NULL_MPI_COMM(1)
-!
-!
-!
 !
 !     Basic math constants
 !
@@ -291,10 +345,14 @@
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_CHARACTER
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_INTEGER
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_INTEGER_ARRAY
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_DOUBLE
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_SCALAR
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_SCALAR_ARRAY
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_REAL
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_REAL_ARRAY
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_BOOL
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_ENUM
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_MPI_COMM
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_PI
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_MAX_REAL
@@ -383,11 +441,13 @@
            !  PETSC_NULL_BOOL,PETSC_NULL_FUNCTION,PETSC_NULL_MPI_COMM
         implicit none
 
-        call PetscSetFortranBasePointers(PETSC_NULL_CHARACTER,            &
+        call PetscSetFortranBasePointers(PETSC_NULL_CHARACTER,          &
      &     PETSC_NULL_INTEGER,PETSC_NULL_SCALAR,                        &
      &     PETSC_NULL_DOUBLE,PETSC_NULL_REAL,                           &
-     &     PETSC_NULL_BOOL,PETSC_NULL_FUNCTION,PETSC_NULL_MPI_COMM)
-
+     &     PETSC_NULL_BOOL,PETSC_NULL_ENUM,PETSC_NULL_FUNCTION,         &
+     &     PETSC_NULL_MPI_COMM,                                         &
+     &     PETSC_NULL_INTEGER_ARRAY,PETSC_NULL_SCALAR_ARRAY,            &
+     &     PETSC_NULL_REAL_ARRAY)
         end
 
         subroutine PetscSetModuleBlockMPI(freal,fscalar,fsum,finteger)

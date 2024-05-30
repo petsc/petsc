@@ -60,50 +60,6 @@
         End Subroutine
       End Interface
 
-      Interface DMCompositeGetAccessArray
-        Subroutine DMCompositeGetAccessArray(a,b,c,d,e,z)
-          import tDM,tVec
-          DM a
-          Vec b
-          PetscInt c,d(*)
-          Vec e(*)
-          PetscErrorCode z
-        End Subroutine
-      End Interface
-
-      Interface DMCompositeRestoreAccessArray
-        Subroutine DMCompositeRestoreAccessArray(a,b,c,d,e,z)
-          import tDM,tVec
-          DM a
-          Vec b
-          PetscInt c,d(*)
-          Vec e(*)
-          PetscErrorCode z
-        End Subroutine
-      End Interface
-
-      Interface DMCompositeGetLocalAccessArray
-        Subroutine DMCompositeGetLocalAccessArray(a,b,c,d,e,z)
-          import tDM,tVec
-          DM a
-          Vec b
-          PetscInt c,d(*)
-          Vec e(*)
-          PetscErrorCode z
-        End Subroutine
-      End Interface
-
-      Interface DMCompositeRestoreLocalAccessArray
-        Subroutine DMCompositeRestoreLocalAccessArray(a,b,c,d,e,z)
-          import tDM,tVec
-          DM a
-          Vec b
-          PetscInt c,d(*)
-          Vec e(*)
-          PetscErrorCode z
-        End Subroutine
-      End Interface
-
       Interface DMCompositeGetGlobalISs
         Subroutine DMCompositeGetGlobalISs(a,b,z)
           import tDM,tIS

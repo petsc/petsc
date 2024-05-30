@@ -83,7 +83,7 @@ PetscErrorCode MatKAIJGetAIJ(Mat A, Mat *B)
 
 .seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
 @*/
-PetscErrorCode MatKAIJGetS(Mat A, PetscInt *m, PetscInt *n, PetscScalar **S)
+PetscErrorCode MatKAIJGetS(Mat A, PetscInt *m, PetscInt *n, PetscScalar *S[])
 {
   Mat_SeqKAIJ *b = (Mat_SeqKAIJ *)A->data;
 
@@ -114,7 +114,7 @@ PetscErrorCode MatKAIJGetS(Mat A, PetscInt *m, PetscInt *n, PetscScalar **S)
 
 .seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
 @*/
-PetscErrorCode MatKAIJGetSRead(Mat A, PetscInt *m, PetscInt *n, const PetscScalar **S)
+PetscErrorCode MatKAIJGetSRead(Mat A, PetscInt *m, PetscInt *n, const PetscScalar *S[])
 {
   Mat_SeqKAIJ *b = (Mat_SeqKAIJ *)A->data;
 
@@ -142,7 +142,7 @@ PetscErrorCode MatKAIJGetSRead(Mat A, PetscInt *m, PetscInt *n, const PetscScala
 
 .seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetS()`, `MatKAIJGetSRead()`, `MatKAIJRestoreSRead()`
 @*/
-PetscErrorCode MatKAIJRestoreS(Mat A, PetscScalar **S)
+PetscErrorCode MatKAIJRestoreS(Mat A, PetscScalar *S[])
 {
   PetscFunctionBegin;
   if (S) *S = NULL;
@@ -167,7 +167,7 @@ PetscErrorCode MatKAIJRestoreS(Mat A, PetscScalar **S)
 
 .seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetS()`, `MatKAIJGetSRead()`
 @*/
-PetscErrorCode MatKAIJRestoreSRead(Mat A, const PetscScalar **S)
+PetscErrorCode MatKAIJRestoreSRead(Mat A, const PetscScalar *S[])
 {
   PetscFunctionBegin;
   if (S) *S = NULL;
@@ -194,7 +194,7 @@ PetscErrorCode MatKAIJRestoreSRead(Mat A, const PetscScalar **S)
 
 .seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
 @*/
-PetscErrorCode MatKAIJGetT(Mat A, PetscInt *m, PetscInt *n, PetscScalar **T)
+PetscErrorCode MatKAIJGetT(Mat A, PetscInt *m, PetscInt *n, PetscScalar *T[])
 {
   Mat_SeqKAIJ *b = (Mat_SeqKAIJ *)A->data;
 
@@ -225,7 +225,7 @@ PetscErrorCode MatKAIJGetT(Mat A, PetscInt *m, PetscInt *n, PetscScalar **T)
 
 .seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
 @*/
-PetscErrorCode MatKAIJGetTRead(Mat A, PetscInt *m, PetscInt *n, const PetscScalar **T)
+PetscErrorCode MatKAIJGetTRead(Mat A, PetscInt *m, PetscInt *n, const PetscScalar *T[])
 {
   Mat_SeqKAIJ *b = (Mat_SeqKAIJ *)A->data;
 
@@ -253,7 +253,7 @@ PetscErrorCode MatKAIJGetTRead(Mat A, PetscInt *m, PetscInt *n, const PetscScala
 
 .seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetT()`, `MatKAIJGetTRead()`, `MatKAIJRestoreTRead()`
 @*/
-PetscErrorCode MatKAIJRestoreT(Mat A, PetscScalar **T)
+PetscErrorCode MatKAIJRestoreT(Mat A, PetscScalar *T[])
 {
   PetscFunctionBegin;
   if (T) *T = NULL;
@@ -278,7 +278,7 @@ PetscErrorCode MatKAIJRestoreT(Mat A, PetscScalar **T)
 
 .seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetT()`, `MatKAIJGetTRead()`
 @*/
-PetscErrorCode MatKAIJRestoreTRead(Mat A, const PetscScalar **T)
+PetscErrorCode MatKAIJRestoreTRead(Mat A, const PetscScalar *T[])
 {
   PetscFunctionBegin;
   if (T) *T = NULL;

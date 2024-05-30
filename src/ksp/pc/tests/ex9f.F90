@@ -58,18 +58,18 @@
          col(1) = i-1
          col(2) = i
          col(3) = i+1
-         PetscCallA(MatSetValues(A,i1,i,i3,col,value,INSERT_VALUES,ierr))
+         PetscCallA(MatSetValues(A,i1,[i],i3,col,value,INSERT_VALUES,ierr))
   50  continue
       i = n - 1
       col(1) = n - 2
       col(2) = n - 1
-      PetscCallA(MatSetValues(A,i1,i,i2,col,value,INSERT_VALUES,ierr))
+      PetscCallA(MatSetValues(A,i1,[i],i2,col,value,INSERT_VALUES,ierr))
       i = 0
       col(1) = 0
       col(2) = 1
       value(1) = 2.0
       value(2) = -1.0
-      PetscCallA(MatSetValues(A,i1,i,i2,col,value,INSERT_VALUES,ierr))
+      PetscCallA(MatSetValues(A,i1,[i],i2,col,value,INSERT_VALUES,ierr))
       PetscCallA(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr))
       PetscCallA(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr))
 

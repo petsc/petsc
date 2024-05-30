@@ -7,7 +7,7 @@
 
 #include "petsc/finclude/petscis.h"
 
-#define AO PetscFortranAddr
+#define AO type(tPetscAO)
 #define AOType character*(80)
 
 #define AOBASIC           'basic'

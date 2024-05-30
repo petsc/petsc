@@ -139,7 +139,7 @@ PetscErrorCode PetscDrawCreate(MPI_Comm comm, const char display[], const char t
   PetscBool flag;
 
   PetscFunctionBegin;
-  PetscAssertPointer(indraw, 2);
+  PetscAssertPointer(indraw, 8);
   PetscCall(PetscDrawInitializePackage());
 
   PetscCall(PetscHeaderCreate(draw, PETSC_DRAW_CLASSID, "Draw", "Graphics", "Draw", comm, PetscDrawDestroy, PetscDrawView));

@@ -377,7 +377,7 @@ static PetscErrorCode DMSelectFields_Private(DM dm, PetscSection section, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCreateSectionSubDM - Returns an `IS` and `subDM` containing a `PetscSection` that encapsulates a subproblem defined by a subset of the fields in a `PetscSection` in the `DM`.
 
   Not Collective
@@ -436,7 +436,7 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
 
 .seealso: `DMCreateSuperDM()`, `DMGetLocalSection()`, `DMPlexSetMigrationSF()`, `DMView()`
 @*/
-PetscErrorCode DMCreateSectionSuperDM(DM dms[], PetscInt len, IS **is, DM *superdm)
+PetscErrorCode DMCreateSectionSuperDM(DM dms[], PetscInt len, IS *is[], DM *superdm)
 {
   MPI_Comm     comm;
   PetscSection supersection, *sections, *sectionGlobals;

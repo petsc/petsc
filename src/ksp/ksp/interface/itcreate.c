@@ -546,7 +546,7 @@ PetscErrorCode KSPGetOperators(KSP ksp, Mat *Amat, Mat *Pmat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPGetOperatorsSet - Determines if the matrix associated with the linear system and
   possibly a different one associated with the preconditioner have been set in the `KSP`.
 

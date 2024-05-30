@@ -904,7 +904,7 @@ static PetscErrorCode PCASMSetSubMatType_ASM(PC pc, MatType sub_mat_type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCASMSetLocalSubdomains - Sets the local subdomains (for this processor only) for the additive Schwarz preconditioner `PCASM`.
 
   Collective
@@ -947,7 +947,7 @@ PetscErrorCode PCASMSetLocalSubdomains(PC pc, PetscInt n, IS is[], IS is_local[]
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCASMSetTotalSubdomains - Sets the subdomains for all processors for the
   additive Schwarz preconditioner, `PCASM`.
 
@@ -957,7 +957,9 @@ PetscErrorCode PCASMSetLocalSubdomains(PC pc, PetscInt n, IS is[], IS is_local[]
 + pc       - the preconditioner context
 . N        - the number of subdomains for all processors
 . is       - the index sets that define the subdomains for all processors (or `NULL` to ask PETSc to determine the subdomains)
+             the values of the `is` array are copied so you can free the array (not the `IS` in the array) after this call
 - is_local - the index sets that define the local part of the subdomains for this processor (or `NULL` to not provide this information)
+             The values of the `is_local` array are copied so you can free the array (not the `IS` in the array) after this call
 
   Options Database Key:
 . -pc_asm_blocks <blks> - Sets total blocks
@@ -1331,7 +1333,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
   from these if you use `PCASMSetLocalSubdomains()`
 
   Fortran Notes:
-  You must provide the array outis[] already allocated of length n.
+  You must provide the array `outis` already allocated of length `n`.
 
 .seealso: [](ch_ksp), `PCASM`, `PCASMSetLocalSubdomains()`, `PCASMDestroySubdomains()`
 @*/
@@ -1543,7 +1545,7 @@ PetscErrorCode PCASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
   `PCASMSetTotalSubdomains()` and `PCASMSetLocalSubdomains()`.
 
   Fortran Notes:
-  The `IS` must be declared as an array of length long enough to hold `Nsub` entries
+  `is` must be declared as an array of length long enough to hold `Nsub` entries
 
 .seealso: [](ch_ksp), `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetLocalSubdomains()`, `PCASMGetSubKSP()`,
           `PCASMSetOverlap()`
@@ -1623,6 +1625,9 @@ PetscErrorCode PCASMCreateSubdomains2D(PetscInt m, PetscInt n, PetscInt M, Petsc
   Note:
   The `IS` numbering is in the parallel, global numbering of the vector.
 
+  Fortran Note:
+  Pass in for `is` and `is_local` arrays long enough to hold all the subdomains
+
 .seealso: [](ch_ksp), `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
           `PCASMCreateSubdomains2D()`, `PCASMSetLocalSubdomains()`, `PCASMGetLocalSubmatrices()`
 @*/
@@ -1663,6 +1668,9 @@ PetscErrorCode PCASMGetLocalSubdomains(PC pc, PetscInt *n, IS *is[], IS *is_loca
   Call after `PCSetUp()` (or `KSPSetUp()`) but before `PCApply()` and before `PCSetUpOnBlocks()`)
 
   Usually one would use `PCSetModifySubMatrices()` to change the submatrices in building the preconditioner.
+
+  Fortran Note:
+  Pass in for `mat` an array long enough to hold all the matrices
 
 .seealso: [](ch_ksp), `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
           `PCASMCreateSubdomains2D()`, `PCASMSetLocalSubdomains()`, `PCASMGetLocalSubdomains()`, `PCSetModifySubMatrices()`
@@ -1760,7 +1768,7 @@ PetscErrorCode PCASMGetDMSubdomains(PC pc, PetscBool *flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCASMGetSubMatType - Gets the matrix type used for `PCASM` subsolves, as a string.
 
   Not Collective
@@ -1783,7 +1791,7 @@ PetscErrorCode PCASMGetSubMatType(PC pc, MatType *sub_mat_type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCASMSetSubMatType - Set the type of matrix used for `PCASM` subsolves
 
   Collective

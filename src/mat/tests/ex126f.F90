@@ -35,8 +35,8 @@
       PetscCallA(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, m*m, m*m, ierr))
       PetscCallA(MatSetType(A, MATAIJ, ierr))
       PetscCallA(MatSetFromOptions(A, ierr))
-      PetscCallA(MatSeqAIJSetPreallocation(A,ifive, PETSC_NULL_INTEGER, ierr))
-      PetscCallA(MatMPIAIJSetPreallocation(A,ifive,PETSC_NULL_INTEGER,ifive,PETSC_NULL_INTEGER,ierr))
+      PetscCallA(MatSeqAIJSetPreallocation(A,ifive, PETSC_NULL_INTEGER_ARRAY, ierr))
+      PetscCallA(MatMPIAIJSetPreallocation(A,ifive,PETSC_NULL_INTEGER_ARRAY,ifive,PETSC_NULL_INTEGER_ARRAY,ierr))
 
       PetscCallA(MatGetOwnershipRange(A,Istart,Iend,ierr))
 
@@ -46,22 +46,22 @@
         j = II - i*m
         if (i.gt.0) then
           JJ = II - m
-          PetscCallA(MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr))
+          PetscCallA(MatSetValues(A,ione,[II],ione,[JJ],[v],INSERT_VALUES,ierr))
         endif
         if (i.lt.m-1) then
           JJ = II + m
-          PetscCallA(MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr))
+          PetscCallA(MatSetValues(A,ione,[II],ione,[JJ],[v],INSERT_VALUES,ierr))
         endif
         if (j.gt.0) then
           JJ = II - 1
-          PetscCallA(MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr))
+          PetscCallA(MatSetValues(A,ione,[II],ione,[JJ],[v],INSERT_VALUES,ierr))
         endif
         if (j.lt.m-1) then
           JJ = II + 1
-          PetscCallA(MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr))
+          PetscCallA(MatSetValues(A,ione,[II],ione,[JJ],[v],INSERT_VALUES,ierr))
         endif
         v = 4.0
-        PetscCallA( MatSetValues(A,ione,II,ione,II,v,INSERT_VALUES,ierr))
+        PetscCallA( MatSetValues(A,ione,[II],ione,[II],[v],INSERT_VALUES,ierr))
  10   continue
 
       PetscCallA(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))

@@ -1224,7 +1224,7 @@ PetscErrorCode PetscViewerBinaryReadStringArray(PetscViewer viewer, char ***data
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerFileSetMode - Sets the open mode of file
 
   Logically Collective
@@ -1263,7 +1263,7 @@ static PetscErrorCode PetscViewerFileSetMode_Binary(PetscViewer viewer, PetscFil
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerFileGetMode - Gets the open mode of a file associated with a `PetscViewer`
 
   Not Collective

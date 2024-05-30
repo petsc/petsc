@@ -371,12 +371,8 @@ PETSC_EXTERN PetscErrorCode VecSetPreallocationCOO(Vec, PetscCount, const PetscI
 PETSC_EXTERN PetscErrorCode VecSetPreallocationCOOLocal(Vec, PetscCount, PetscInt[]);
 PETSC_EXTERN PetscErrorCode VecSetValuesCOO(Vec, const PetscScalar[], InsertMode);
 
-/*MC
+/*@C
    VecSetValue - Set a single entry into a vector.
-
-   Synopsis:
-   #include <petscvec.h>
-   PetscErrorCode VecSetValue(Vec v,PetscInt row,PetscScalar value, InsertMode mode);
 
    Not Collective
 
@@ -398,7 +394,7 @@ PETSC_EXTERN PetscErrorCode VecSetValuesCOO(Vec, const PetscScalar[], InsertMode
    `VecSetValue()` uses 0-based indices in Fortran as well as in C.
 
 .seealso: [](ch_vectors), `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`, `VecSetValueLocal()`
-M*/
+@*/
 static inline PetscErrorCode VecSetValue(Vec v, PetscInt i, PetscScalar va, InsertMode mode)
 {
   return VecSetValues(v, 1, &i, &va, mode);
@@ -481,12 +477,8 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMemWrite(Vec);
 PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMem(Vec, PETSC_UINTPTR_T *);
 PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec);
 
-/*MC
+/*@C
    VecSetValueLocal - Set a single entry into a vector using the local numbering, see `VecSetValuesLocal()`
-
-   Synopsis:
-   #include <petscvec.h>
-   PetscErrorCode VecSetValueLocal(Vec v,PetscInt row,PetscScalar value, InsertMode mode);
 
    Not Collective
 
@@ -508,7 +500,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec);
    `VecSetValues()` uses 0-based indices in Fortran as well as in C.
 
 .seealso: [](ch_vectors), `VecSetValuesLocal()`, `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`, `VecSetValue()`
-M*/
+@*/
 static inline PetscErrorCode VecSetValueLocal(Vec v, PetscInt i, PetscScalar va, InsertMode mode)
 {
   return VecSetValuesLocal(v, 1, &i, &va, mode);

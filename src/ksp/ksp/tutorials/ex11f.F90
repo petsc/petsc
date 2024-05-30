@@ -111,23 +111,23 @@
         j = II - i*n
         if (i.gt.0) then
           JJ = II - n
-          PetscCallA(MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr))
+          PetscCallA(MatSetValues(A,one,[II],one,[JJ],[v],ADD_VALUES,ierr))
         endif
         if (i.lt.n-1) then
           JJ = II + n
-          PetscCallA(MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr))
+          PetscCallA(MatSetValues(A,one,[II],one,[JJ],[v],ADD_VALUES,ierr))
         endif
         if (j.gt.0) then
           JJ = II - 1
-          PetscCallA(MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr))
+          PetscCallA(MatSetValues(A,one,[II],one,[JJ],[v],ADD_VALUES,ierr))
         endif
         if (j.lt.n-1) then
           JJ = II + 1
-          PetscCallA(MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr))
+          PetscCallA(MatSetValues(A,one,[II],one,[JJ],[v],ADD_VALUES,ierr))
         endif
         if (use_random) PetscCallA(PetscRandomGetValue(rctx,sigma2,ierr))
         v = 4.0 - sigma1*h2 + sigma2*h2
-        PetscCallA( MatSetValues(A,one,II,one,II,v,ADD_VALUES,ierr))
+        PetscCallA( MatSetValues(A,one,[II],one,[II],[v],ADD_VALUES,ierr))
  10   continue
       if (use_random) PetscCallA(PetscRandomDestroy(rctx,ierr))
 

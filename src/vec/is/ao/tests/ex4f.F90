@@ -30,11 +30,11 @@
       endif
 
 !     Test AOCreateBasic()
-      PetscCallA(AOCreateBasic(PETSC_COMM_WORLD, nlocal, localvert,PETSC_NULL_INTEGER,ao,ierr))
+      PetscCallA(AOCreateBasic(PETSC_COMM_WORLD, nlocal, localvert,PETSC_NULL_INTEGER_ARRAY,ao,ierr))
       PetscCallA(AODestroy(ao,ierr))
 
 !     Test AOCreateMemoryScalable()
-      PetscCallA(AOCreateMemoryScalable(PETSC_COMM_WORLD, nlocal, localvert,PETSC_NULL_INTEGER,ao,ierr))
+      PetscCallA(AOCreateMemoryScalable(PETSC_COMM_WORLD, nlocal, localvert,PETSC_NULL_INTEGER_ARRAY,ao,ierr))
       PetscCallA(AODestroy(ao,ierr))
 
       PetscCallA(AOCreate(PETSC_COMM_WORLD,ao,ierr))

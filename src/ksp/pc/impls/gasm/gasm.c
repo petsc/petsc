@@ -1042,9 +1042,9 @@ static PetscErrorCode PCGASMGetSubKSP_GASM(PC pc, PetscInt *n, PetscInt *first, 
   PetscFunctionReturn(PETSC_SUCCESS);
 } /* PCGASMGetSubKSP_GASM() */
 
-/*@C
-  PCGASMSetSubdomains - Sets the subdomains for this MPI rank
-  for the additive Schwarz preconditioner with multiple MPI ranks per subdomain, `PCGASM`
+/*@
+  PCGASMSetSubdomains - Sets the subdomains for this MPI process
+  for the additive Schwarz preconditioner with multiple MPI processes per subdomain, `PCGASM`
 
   Collective
 
@@ -1522,6 +1522,9 @@ PetscErrorCode PCGASMCreateSubdomains(Mat A, PetscInt N, PetscInt *n, IS *iis[])
   This is a convenience subroutine that walks each list,
   destroys each `IS` on the list, and then frees the list. At the end the
   list pointers are set to `NULL`.
+
+  Fortran Note:
+  The arrays are not freed, only the `IS` within the arrays are destroyed
 
 .seealso: [](ch_ksp), `PCGASM`, `PCGASMCreateSubdomains()`, `PCGASMSetSubdomains()`
 @*/
