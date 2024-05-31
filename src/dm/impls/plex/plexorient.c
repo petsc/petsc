@@ -244,7 +244,7 @@ static PetscErrorCode DMPlexCheckFace_Old_Internal(DM dm, PetscInt *faceFIFO, Pe
 
   Level: developer
 
-.seealso: `DMPlexOrient()``
+.seealso: `DMPlexOrient()`
 */
 static PetscErrorCode DMPlexOrient_Serial(DM dm, IS cellIS, IS faceIS, PetscInt *Ncomp, PetscInt cellComp[], PetscInt faceComp[], PetscBT flippedCells)
 {
