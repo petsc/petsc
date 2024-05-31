@@ -122,7 +122,7 @@ checkbadSource:
 	-@echo "----- .seealso with leading white spaces ---------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -E '^[ ]+.seealso:' -- ${GITSRC} ':!src/sys/tests/linter/*' >> checkbadSource.out;true
 	-@echo "----- .seealso with double backticks -------------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P -E '^.seealso:.*\`\`' -- ${GITSRC} >> checkbadSource.out;true
+	-@git --no-pager grep -n -P -E '^.seealso:.*``' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- Defining a returning macro without PetscMacroReturns() -------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'define .*\w+;\s+do' -- ${GITSRC} | grep -E -v '(PetscMacroReturns|PetscDrawCollectiveBegin|MatPreallocateBegin|PetscOptionsBegin|PetscObjectOptionsBegin|PetscOptionsHeadEnd)' >> checkbadSource.out;true
 	-@echo "----- Defining an error checking macro using CHKERR style ----------" >> checkbadSource.out
