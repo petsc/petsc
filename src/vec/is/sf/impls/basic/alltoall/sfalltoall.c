@@ -20,7 +20,7 @@ static PetscErrorCode PetscSFLinkStartCommunication_Alltoall(PetscSF sf, PetscSF
   }
   PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
   PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, direction, &rootbuf, &leafbuf, &req, NULL));
-  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, direction));
+  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link));
 
   if (direction == PETSCSF_ROOT2LEAF) {
     PetscCallMPI(MPIU_Ialltoall(rootbuf, 1, unit, leafbuf, 1, unit, comm, req));
