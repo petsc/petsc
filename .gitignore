@@ -181,7 +181,6 @@ src/benchmarks/streams/CUDAVersion
 src/benchmarks/streams/OpenMPVersion
 src/benchmarks/streams/PthreadVersion
 src/benchmarks/streams/scaling.png
-horse.ply
 /docs/
 **/f90module*.f90
 compile_commands.json
