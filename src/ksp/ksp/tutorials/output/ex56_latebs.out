@@ -28,7 +28,7 @@
  27 KSP Residual norm 0.0370298
  28 KSP Residual norm 0.0115801
  29 KSP Residual norm 0.00441017
-Linear solve converged due to CONVERGED_RTOL iterations 29
+  Linear solve converged due to CONVERGED_RTOL iterations 29
 KSP Object: 8 MPI processes
   type: cg
   maximum iterations=10000, initial guess is zero
@@ -49,7 +49,9 @@ PC Object: 8 MPI processes
           Number of levels of aggressive coarsening 1
           MIS-k aggressive coarsening
           MIS-2 coarsening on aggressive levels
-          Number smoothing steps 1
+          MatCoarsen Object: (pc_gamg_) 8 MPI processes
+            type: misk
+          Number smoothing steps to construct prolongation 1
         Complexity:    grid = 1.748    operator = 1.52855
   Coarse grid solver -- level 0 -------------------------------
     KSP Object: (mg_coarse_) 8 MPI processes
@@ -205,7 +207,9 @@ PC Object: 8 MPI processes
           Number of levels of aggressive coarsening 1
           MIS-k aggressive coarsening
           MIS-2 coarsening on aggressive levels
-          Number smoothing steps 1
+          MatCoarsen Object: (pc_gamg_) 8 MPI processes
+            type: misk
+          Number smoothing steps to construct prolongation 1
         Complexity:    grid = 1.748    operator = 1.52855
   Coarse grid solver -- level 0 -------------------------------
     KSP Object: (mg_coarse_) 8 MPI processes
@@ -362,7 +366,9 @@ PC Object: 8 MPI processes
           Number of levels of aggressive coarsening 1
           MIS-k aggressive coarsening
           MIS-2 coarsening on aggressive levels
-          Number smoothing steps 1
+          MatCoarsen Object: (pc_gamg_) 8 MPI processes
+            type: misk
+          Number smoothing steps to construct prolongation 1
         Complexity:    grid = 1.748    operator = 1.52855
   Coarse grid solver -- level 0 -------------------------------
     KSP Object: (mg_coarse_) 8 MPI processes

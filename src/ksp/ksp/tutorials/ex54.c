@@ -229,7 +229,7 @@ int main(int argc, char **args)
 
    test:
       suffix: Classical
-      args: -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -mg_levels_ksp_max_it 2 -pc_gamg_type classical -ksp_monitor -ksp_converged_reason -mg_levels_esteig_ksp_type cg -mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.1 -mat_coarsen_type mis
+      args: -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -mg_levels_ksp_max_it 2 -pc_gamg_type classical -ksp_monitor -ksp_converged_reason -mg_levels_esteig_ksp_type cg -mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.1 -pc_gamg_mat_coarsen_type mis
       output_file: output/ex54_classical.out
 
    test:
@@ -244,5 +244,5 @@ int main(int argc, char **args)
       nsize: 4
       filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 8/Linear solve converged due to CONVERGED_RTOL iterations 7/g"
       suffix: hem
-      args: -ne 39 -ksp_type cg -pc_type gamg -pc_gamg_type agg -ksp_rtol 1e-4 -ksp_norm_type unpreconditioned -mat_coarsen_type hem -ksp_converged_reason -ksp_norm_type unpreconditioned
+      args: -ne 39 -ksp_type cg -pc_type gamg -pc_gamg_type agg -ksp_rtol 1e-4 -ksp_norm_type unpreconditioned -pc_gamg_mat_coarsen_type hem -ksp_converged_reason -ksp_norm_type unpreconditioned
 TEST*/
