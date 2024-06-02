@@ -1607,7 +1607,6 @@ PetscErrorCode MatSetValues_SeqSELL(Mat A, PetscInt m, const PetscInt im[], Pets
       *(cp + a->sliceheight * i) = col;
       *(vp + a->sliceheight * i) = value;
       a->nz++;
-      A->nonzerostate++;
 #if defined(PETSC_HAVE_CUPM)
       inserted = PETSC_TRUE;
 #endif

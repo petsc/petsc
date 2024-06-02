@@ -2549,7 +2549,6 @@ PetscErrorCode MatSetValues_SeqBAIJ(Mat A, PetscInt m, const PetscInt im[], Pets
         ap[bs2 * i + bs * cidx + ridx] = value;
       }
       a->nz++;
-      A->nonzerostate++;
     noinsert1:;
       low = i;
     }
