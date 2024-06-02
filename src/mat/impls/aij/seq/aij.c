@@ -468,7 +468,6 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A, PetscInt m, const PetscInt im[], Petsc
         ap[i] = value;
       }
       low = i + 1;
-      A->nonzerostate++;
     noinsert:;
     }
     ailen[row] = nrow;
@@ -5688,7 +5687,6 @@ PETSC_EXTERN void matsetvaluesseqaij_(Mat *AA, PetscInt *mm, const PetscInt im[]
       }
       rp[i] = col;
       ap[i] = value;
-      A->nonzerostate++;
     noinsert:;
       low = i + 1;
     }

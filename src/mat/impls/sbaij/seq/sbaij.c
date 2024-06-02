@@ -888,7 +888,6 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A, PetscInt m, const PetscInt im[], Pet
         ap[bs2 * i + bs * cidx + ridx] = value;
         /* for diag block, add/insert its symmetric element a(cidx,ridx) */
         if (brow == bcol && ridx < cidx) ap[bs2 * i + bs * ridx + cidx] = value;
-        A->nonzerostate++;
       noinsert1:;
         low = i;
       }

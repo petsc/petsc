@@ -99,7 +99,6 @@ PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat)
     vp1[sliceheight * _i] = value; \
     a->nz++; \
     nrow1++; \
-    A->nonzerostate++; \
   a_noinsert:; \
     a->rlen[row] = nrow1; \
   }
@@ -144,7 +143,6 @@ PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat)
     vp2[sliceheight * _i] = value; \
     b->nz++; \
     nrow2++; \
-    B->nonzerostate++; \
   b_noinsert:; \
     b->rlen[row] = nrow2; \
   }

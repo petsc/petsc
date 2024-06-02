@@ -7169,8 +7169,7 @@ PetscErrorCode MatICCFactorSymbolic(Mat fact, Mat mat, IS perm, const MatFactorI
   column 0.
 
   Fortran Note:
-  The Fortran interface is slightly different from that given below; it
-  requires one to pass in as `submat` a `Mat` (integer) array of size at least n+1.
+  One must pass in as `submat` a `Mat` array of size at least `n`+1.
 
 .seealso: [](ch_matrices), `Mat`, `MatDestroySubMatrices()`, `MatCreateSubMatrix()`, `MatGetRow()`, `MatGetDiagonal()`, `MatReuse`
 @*/
@@ -7283,7 +7282,7 @@ PetscErrorCode MatCreateSubMatricesMPI(Mat mat, PetscInt n, const IS irow[], con
   Frees not only the matrices, but also the array that contains the matrices
 
   Fortran Note:
-  This does not free the array.
+  Does not free the `mat` array.
 
 .seealso: [](ch_matrices), `Mat`, `MatCreateSubMatrices()` `MatDestroySubMatrices()`
 @*/
@@ -7319,7 +7318,7 @@ PetscErrorCode MatDestroyMatrices(PetscInt n, Mat *mat[])
   Frees not only the matrices, but also the array that contains the matrices
 
   Fortran Note:
-  This does not free the array.
+  Does not free the `mat` array.
 
 .seealso: [](ch_matrices), `Mat`, `MatCreateSubMatrices()`, `MatDestroyMatrices()`
 @*/

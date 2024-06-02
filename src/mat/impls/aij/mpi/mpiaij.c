@@ -418,7 +418,6 @@ PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
     PetscCall(PetscArraymove(ap1 + _i + 1, ap1 + _i, N - _i + 1)); \
     rp1[_i] = col; \
     ap1[_i] = value; \
-    A->nonzerostate++; \
   a_noinsert:; \
     ailen[row] = nrow1; \
   } while (0)
@@ -463,7 +462,6 @@ PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
     PetscCall(PetscArraymove(ap2 + _i + 1, ap2 + _i, N - _i + 1)); \
     rp2[_i] = col; \
     ap2[_i] = value; \
-    B->nonzerostate++; \
   b_noinsert:; \
     bilen[row] = nrow2; \
   } while (0)

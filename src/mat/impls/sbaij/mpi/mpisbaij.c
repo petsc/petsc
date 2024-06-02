@@ -234,7 +234,6 @@ static PetscErrorCode MatRetrieveValues_MPISBAIJ(Mat mat)
     PetscCall(PetscArrayzero(ap + bs2 * _i, bs2)); \
     rp[_i]                          = bcol; \
     ap[bs2 * _i + bs * cidx + ridx] = value; \
-    A->nonzerostate++; \
   a_noinsert:; \
     ailen[brow] = nrow; \
   } while (0)
@@ -275,7 +274,6 @@ static PetscErrorCode MatRetrieveValues_MPISBAIJ(Mat mat)
     PetscCall(PetscArrayzero(ap + bs2 * _i, bs2)); \
     rp[_i]                          = bcol; \
     ap[bs2 * _i + bs * cidx + ridx] = value; \
-    B->nonzerostate++; \
   b_noinsert:; \
     bilen[brow] = nrow; \
   } while (0)
@@ -622,22 +620,11 @@ static PetscErrorCode MatSetValuesBlocked_MPISBAIJ(Mat mat, PetscInt m, const Pe
           if (mat->was_assembled) {
             if (!baij->colmap) PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
 
-#if defined(PETSC_USE_DEBUG)
-  #if defined(PETSC_USE_CTABLE)
-            {
-              PetscInt data;
-              PetscCall(PetscHMapIGetWithDefault(baij->colmap, in[j] + 1, 0, &data));
-              PetscCheck((data - 1) % bs == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect colmap");
-            }
-  #else
-            PetscCheck((baij->colmap[in[j]] - 1) % bs == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect colmap");
-  #endif
-#endif
 #if defined(PETSC_USE_CTABLE)
             PetscCall(PetscHMapIGetWithDefault(baij->colmap, in[j] + 1, 0, &col));
-            col = (col - 1) / bs;
+            col = col < 1 ? -1 : (col - 1) / bs;
 #else
-            col = (baij->colmap[in[j]] - 1) / bs;
+            col = baij->colmap[in[j]] < 1 ? -1 : (baij->colmap[in[j]] - 1) / bs;
 #endif
             if (col < 0 && !((Mat_SeqBAIJ *)baij->A->data)->nonew) {
               PetscCall(MatDisAssemble_MPISBAIJ(mat));

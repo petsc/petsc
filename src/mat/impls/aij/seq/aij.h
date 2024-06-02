@@ -247,6 +247,7 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt *
       RMAX = AIMAX[ROW] = AIMAX[ROW] + CHUNKSIZE; \
       Ain->maxnz += BS2 * CHUNKSIZE; \
       Ain->reallocs++; \
+      Amat->nonzerostate++; \
     } \
   } while (0)
 
@@ -281,6 +282,7 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt *
       RMAX = AIMAX[ROW] = AIMAX[ROW] + CHUNKSIZE; \
       Ain->maxnz += BS2 * CHUNKSIZE; \
       Ain->reallocs++; \
+      Amat->nonzerostate++; \
     } \
   } while (0)
 
