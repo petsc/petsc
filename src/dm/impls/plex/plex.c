@@ -8835,6 +8835,37 @@ PetscErrorCode DMPlexCreatePointNumbering(DM dm, IS *globalPointNumbers)
 }
 
 /*@
+  DMPlexCreateEdgeNumbering - Create a global numbering for edges.
+
+  Collective
+
+  Input Parameter:
+. dm - The `DMPLEX` object
+
+  Output Parameter:
+. globalEdgeNumbers - Global numbers for all edges on this process
+
+  Level: developer
+
+  Notes:
+  The point numbering `IS` is parallel, with local portion indexed by local points (see `DMGetLocalSection()`). In the IS, owned edges will have their non-negative value while edges owned by different ranks will be involuted -(idx+1).
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetCellNumbering()`, `DMPlexGetVertexNumbering()`, `DMPlexCreatePointNumbering()`
+@*/
+PetscErrorCode DMPlexCreateEdgeNumbering(DM dm, IS *globalEdgeNumbers)
+{
+  PetscSF  sf;
+  PetscInt eStart, eEnd;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetPointSF(dm, &sf));
+  PetscCall(DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd));
+  PetscCall(DMPlexCreateNumbering_Plex(dm, eStart, eEnd, 0, NULL, sf, globalEdgeNumbers));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   DMPlexCreateRankField - Create a cell field whose value is the rank of the owner
 
   Input Parameter:
