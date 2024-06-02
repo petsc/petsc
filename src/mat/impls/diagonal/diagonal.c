@@ -307,6 +307,21 @@ static PetscErrorCode MatDiagonalRestoreInverseDiagonal_Diagonal(Mat A, Vec *inv
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatPermute_Diagonal(Mat A, IS rowp, IS colp, Mat *B)
+{
+  Mat_Diagonal *ctx = (Mat_Diagonal *)A->data;
+  Vec           v;
+
+  PetscFunctionBegin;
+  PetscCheck(rowp == colp, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_INCOMP, "Row permutation and column permutation must be the same");
+  PetscCall(VecDuplicate(ctx->diag, &v));
+  PetscCall(VecCopy(ctx->diag, v));
+  PetscCall(VecPermute(v, rowp, PETSC_FALSE));
+  PetscCall(MatCreateDiagonal(v, B));
+  PetscCall(VecDestroy(&v));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatDestroy_Diagonal(Mat mat)
 {
   Mat_Diagonal *ctx = (Mat_Diagonal *)mat->data;
@@ -654,6 +669,7 @@ PETSC_INTERN PetscErrorCode MatCreate_Diagonal(Mat A)
   A->ops->getinfo          = MatGetInfo_Diagonal;
   A->ops->axpy             = MatAXPY_Diagonal;
   A->ops->setup            = MatSetUp_Diagonal;
+  A->ops->permute          = MatPermute_Diagonal;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatDiagonalGetDiagonal_C", MatDiagonalGetDiagonal_Diagonal));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatDiagonalRestoreDiagonal_C", MatDiagonalRestoreDiagonal_Diagonal));
