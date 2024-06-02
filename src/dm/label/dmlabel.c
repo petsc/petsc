@@ -942,15 +942,11 @@ PetscErrorCode DMLabelStratumHasPoint(DMLabel label, PetscInt value, PetscInt po
     PetscCall(DMLabelLookupStratum(label, value, &v));
     if (v >= 0) {
       if (label->validIS[v] || label->readonly) {
-        IS              is;
-        const PetscInt *indices;
-        PetscInt        i;
+        IS       is;
+        PetscInt i;
 
         PetscUseTypeMethod(label, getstratumis, v, &is);
-        // For some reason, ISLocate() is insanely slow here
-        PetscCall(ISGetIndices(is, &indices));
-        PetscCall(PetscFindInt(point, label->stratumSizes[v], indices, &i));
-        PetscCall(ISRestoreIndices(is, &indices));
+        PetscCall(ISLocate(is, point, &i));
         PetscCall(ISDestroy(&is));
         *contains = (PetscBool)(i >= 0);
       } else {
@@ -1042,15 +1038,11 @@ PetscErrorCode DMLabelGetValue(DMLabel label, PetscInt point, PetscInt *value)
   *value = label->defaultValue;
   for (v = 0; v < label->numStrata; ++v) {
     if (label->validIS[v] || label->readonly) {
-      IS              is;
-      const PetscInt *indices;
-      PetscInt        i;
+      IS       is;
+      PetscInt i;
 
       PetscUseTypeMethod(label, getstratumis, v, &is);
-      // For some reason, ISLocate() is insanely slow here
-      PetscCall(ISGetIndices(is, &indices));
-      PetscCall(PetscFindInt(point, label->stratumSizes[v], indices, &i));
-      PetscCall(ISRestoreIndices(is, &indices));
+      PetscCall(ISLocate(label->points[v], point, &i));
       PetscCall(ISDestroy(&is));
       if (i >= 0) {
         *value = label->stratumValues[v];
@@ -2797,13 +2789,9 @@ static PetscErrorCode PetscSectionSymGetPoints_Label(PetscSectionSym sym, PetscS
 
     for (j = 0; j < numStrata; j++) {
       if (label->validIS[j]) {
-        const PetscInt *indices;
-        PetscInt        k;
+        PetscInt k;
 
-        // For some reason, ISLocate() is insanely slow here
-        PetscCall(ISGetIndices(label->points[j], &indices));
-        PetscCall(PetscFindInt(point, label->stratumSizes[j], indices, &k));
-        PetscCall(ISRestoreIndices(label->points[j], &indices));
+        PetscCall(ISLocate(label->points[j], point, &k));
         if (k >= 0) break;
       } else {
         PetscBool has;
