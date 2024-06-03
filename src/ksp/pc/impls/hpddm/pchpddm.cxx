@@ -2305,10 +2305,20 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         PC_HPDDM              *data_00 = (PC_HPDDM *)std::get<0>(*ctx)[0]->data;
         PC                     s;
         Mat                    A00, P00, A01 = nullptr, A10, A11, N, b[4];
-        IS                     sorted, is[2];
+        IS                     sorted, is[2], *is_00;
         MatSolverType          type;
         std::pair<PC, Vec[2]> *p;
 
+        n = -1;
+        PetscTryMethod(data_00->levels[0]->pc, "PCASMGetSubKSP_C", (PC, PetscInt *, PetscInt *, KSP **), (data_00->levels[0]->pc, &n, nullptr, &ksp));
+        PetscCheck(n == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of subdomain solver %" PetscInt_FMT " != 1", n);
+        PetscCall(KSPGetOperators(ksp[0], subA, subA + 1));
+        PetscCall(ISGetLocalSize(data_00->is, &n));
+        if (n != subA[0]->rmap->n || n != subA[0]->cmap->n) {
+          PetscCall(PCASMGetLocalSubdomains(data_00->levels[0]->pc, &n, &is_00, nullptr));
+          PetscCall(ISGetLocalSize(*is_00, &n));
+          PetscCheck(n == subA[0]->rmap->n && n == subA[0]->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-%spc_hpddm_schur_precondition geneo and -%spc_hpddm_define_subdomains false", pcpre ? pcpre : "", ((PetscObject)pc)->prefix);
+        } else is_00 = &data_00->is;
         PetscCall(PCHPDDMPermute_Private(unsorted, data->is, &uis, data->aux, &C, nullptr)); /* permute since PCASM works with a sorted IS */
         std::swap(C, data->aux);
         std::swap(uis, data->is);
@@ -2326,8 +2336,8 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           PetscCall(PetscObjectTypeCompare((PetscObject)A10, MATHERMITIANTRANSPOSEVIRTUAL, &flg));
           if (flg) PetscCall(MatHermitianTransposeGetMat(A10, &A01));
         }
-        PetscCall(ISDuplicate(data_00->is, &sorted)); /* during setup of the PC associated to the A00 block, this IS has already been sorted, but it's put back to its original state at the end of PCSetUp_HPDDM(), which may be unsorted */
-        PetscCall(ISSort(sorted));                    /* this is to avoid changing users inputs, but it requires a new call to ISSort() here                                                                                               */
+        PetscCall(ISDuplicate(*is_00, &sorted)); /* during setup of the PC associated to the A00 block, this IS has already been sorted, but it's put back to its original state at the end of PCSetUp_HPDDM(), which may be unsorted */
+        PetscCall(ISSort(sorted));               /* this is to avoid changing users inputs, but it requires a new call to ISSort() here                                                                                               */
         if (!A01) {
           PetscCall(MatSetOption(A10, MAT_SUBMAT_SINGLEIS, PETSC_TRUE));
           PetscCall(MatCreateSubMatrices(A10, 1, &data->is, &sorted, MAT_INITIAL_MATRIX, &sub));
@@ -2356,12 +2366,6 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         }
         PetscCall(MatDestroySubMatrices(1, &sub));
         PetscCall(ISDestroy(&sorted));
-        n = -1;
-        PetscTryMethod(data_00->levels[0]->pc, "PCASMGetSubKSP_C", (PC, PetscInt *, PetscInt *, KSP **), (data_00->levels[0]->pc, &n, nullptr, &ksp));
-        PetscCheck(n == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of subdomain solver %" PetscInt_FMT " != 1", n);
-        PetscCall(KSPGetOperators(ksp[0], subA, subA + 1));
-        PetscCall(ISGetLocalSize(data_00->is, &n));
-        PetscCheck(n == subA[0]->rmap->n && n == subA[0]->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-%spc_hpddm_schur_precondition geneo and -%spc_hpddm_define_subdomains false", pcpre ? pcpre : "", ((PetscObject)pc)->prefix);
         if (A01 || A10) {
           if (flg) PetscCall(MatTranspose(b[2], MAT_INITIAL_MATRIX, b + 1));
           else PetscCall(MatHermitianTranspose(b[2], MAT_INITIAL_MATRIX, b + 1));

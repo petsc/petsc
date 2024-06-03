@@ -222,12 +222,17 @@ PetscErrorCode MatAndISLoad(const char *prefix, const char *identifier, Mat A, I
         suffix: threshold
         output_file: output/ex87_1_petsc_system-elasticity.out
         args: -fieldsplit_1_pc_hpddm_ksp_pc_side left -fieldsplit_1_pc_hpddm_levels_1_eps_threshold 0.2 -fieldsplit_1_pc_hpddm_coarse_mat_type {{baij sbaij}shared output} -successive_solves
-   test:
+   testset:
       requires: datafilespath
       nsize: 4
-      suffix: diagonal
-      output_file: output/ex87_1_petsc_system-stokes.out
-      args: -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -ksp_monitor -ksp_rtol 1e-4 -fieldsplit_ksp_max_it 100 -fieldsplit_pc_hpddm_levels_1_eps_nev 10 -fieldsplit_pc_hpddm_levels_1_st_share_sub_ksp -fieldsplit_0_pc_hpddm_has_neumann -fieldsplit_pc_hpddm_define_subdomains -fieldsplit_1_pc_hpddm_schur_precondition geneo -fieldsplit_pc_hpddm_coarse_pc_type redundant -fieldsplit_pc_hpddm_coarse_redundant_pc_type cholesky -fieldsplit_pc_hpddm_levels_1_sub_pc_type lu -fieldsplit_ksp_type fgmres -ksp_type fgmres -ksp_max_it 10 -fieldsplit_1_pc_hpddm_coarse_correction balanced -fieldsplit_1_pc_hpddm_levels_1_eps_gen_non_hermitian -fieldsplit_1_pc_hpddm_coarse_p 2
-      args: -system stokes -fieldsplit_1_pc_hpddm_ksp_pc_side left -fieldsplit_1_pc_hpddm_levels_1_sub_pc_factor_mat_solver_type petsc -fieldsplit_1_pc_hpddm_levels_1_eps_threshold 0.3 -diagonal_A11 {{false true}shared output}
+      args: -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -ksp_monitor -ksp_rtol 1e-4 -fieldsplit_ksp_max_it 100 -fieldsplit_pc_hpddm_levels_1_st_share_sub_ksp -fieldsplit_pc_hpddm_define_subdomains -fieldsplit_1_pc_hpddm_schur_precondition geneo -fieldsplit_pc_hpddm_coarse_pc_type redundant -fieldsplit_pc_hpddm_coarse_redundant_pc_type cholesky -fieldsplit_pc_hpddm_levels_1_sub_pc_type lu -fieldsplit_ksp_type fgmres -ksp_type fgmres -ksp_max_it 10 -fieldsplit_1_pc_hpddm_coarse_correction balanced -fieldsplit_1_pc_hpddm_levels_1_eps_gen_non_hermitian -fieldsplit_1_pc_hpddm_coarse_p 2 -system stokes -fieldsplit_1_pc_hpddm_ksp_pc_side left -fieldsplit_1_pc_hpddm_levels_1_sub_pc_factor_mat_solver_type petsc -fieldsplit_1_pc_hpddm_levels_1_eps_threshold 0.3
+      test:
+        suffix: diagonal
+        output_file: output/ex87_1_petsc_system-stokes.out
+        args: -fieldsplit_pc_hpddm_levels_1_eps_nev 10 -fieldsplit_0_pc_hpddm_has_neumann -diagonal_A11 {{false true}shared output}
+      test:
+        suffix: harmonic_overlap_2
+        output_file: output/ex87_1_petsc_system-stokes.out
+        args: -fieldsplit_0_pc_hpddm_harmonic_overlap 2 -fieldsplit_0_pc_hpddm_levels_1_svd_nsv 20 -diagonal_A11
 
 TEST*/
