@@ -602,7 +602,8 @@ static PetscErrorCode PCView_GAMG_AGG(PC pc, PetscViewer viewer)
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(PetscViewerASCIIPushTab(viewer));
-  PetscCall(MatCoarsenView(pc_gamg_agg->crs, viewer));
+  if (pc_gamg_agg->crs) PetscCall(MatCoarsenView(pc_gamg_agg->crs, viewer));
+  else PetscCall(PetscViewerASCIIPrintf(viewer, "Coarsening algorithm not yet selected\n"));
   PetscCall(PetscViewerASCIIPopTab(viewer));
   PetscCall(PetscViewerASCIIPopTab(viewer));
   PetscCall(PetscViewerASCIIPopTab(viewer));
