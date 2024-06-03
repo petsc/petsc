@@ -78,6 +78,7 @@ Changes: Development
 - Remove ``DMPlexSnapToGeomModel()``
 - Add refinement argument to ``DMPlexCreateHexCylinderMesh()``
 - Now ``DMPlexComputeBdIntegral()`` takes one function per field
+- Add ``DMPlexCreateEdgeNumbering()``
 
 .. rubric:: FE/FV:
 

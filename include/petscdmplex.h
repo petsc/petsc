@@ -117,6 +117,7 @@ PETSC_EXTERN PetscErrorCode DMPlexFilter(DM, DMLabel, PetscInt, PetscBool, Petsc
 PETSC_EXTERN PetscErrorCode DMPlexGetCellNumbering(DM, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexGetVertexNumbering(DM, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexCreatePointNumbering(DM, IS *);
+PETSC_EXTERN PetscErrorCode DMPlexCreateEdgeNumbering(DM, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateRankField(DM, Vec *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateLabelField(DM, DMLabel, Vec *);
 
