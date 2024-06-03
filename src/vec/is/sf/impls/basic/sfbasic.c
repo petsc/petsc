@@ -56,38 +56,38 @@ static PetscErrorCode PetscSFLinkInitMPIRequests_Persistent_Basic(PetscSF sf, Pe
 // Start MPI requests. If use non-GPU aware MPI, we might need to copy data from device buf to host buf
 static PetscErrorCode PetscSFLinkStartCommunication_Persistent_Basic(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
 {
-  PetscMPIInt    nreqs;
-  MPI_Request   *reqs = NULL;
-  PetscSF_Basic *bas  = (PetscSF_Basic *)sf->data;
-  PetscInt       buflen;
+  PetscMPIInt    nsreqs = 0, nrreqs = 0;
+  MPI_Request   *sreqs = NULL, *rreqs = NULL;
+  PetscSF_Basic *bas = (PetscSF_Basic *)sf->data;
+  PetscInt       sbuflen, rbuflen;
 
   PetscFunctionBegin;
-  buflen = (direction == PETSCSF_ROOT2LEAF) ? sf->leafbuflen[PETSCSF_REMOTE] : bas->rootbuflen[PETSCSF_REMOTE];
-  if (buflen) {
+  rbuflen = (direction == PETSCSF_ROOT2LEAF) ? sf->leafbuflen[PETSCSF_REMOTE] : bas->rootbuflen[PETSCSF_REMOTE];
+  if (rbuflen) {
     if (direction == PETSCSF_ROOT2LEAF) {
-      nreqs = sf->nleafreqs;
-      PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, direction, NULL, NULL, NULL, &reqs));
+      nrreqs = sf->nleafreqs;
+      PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, direction, NULL, NULL, NULL, &rreqs));
     } else { /* leaf to root */
-      nreqs = bas->nrootreqs;
-      PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, direction, NULL, NULL, &reqs, NULL));
+      nrreqs = bas->nrootreqs;
+      PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, direction, NULL, NULL, &rreqs, NULL));
     }
-    PetscCallMPI(MPI_Startall_irecv(buflen, link->unit, nreqs, reqs));
   }
 
-  buflen = (direction == PETSCSF_ROOT2LEAF) ? bas->rootbuflen[PETSCSF_REMOTE] : sf->leafbuflen[PETSCSF_REMOTE];
-  if (buflen) {
+  sbuflen = (direction == PETSCSF_ROOT2LEAF) ? bas->rootbuflen[PETSCSF_REMOTE] : sf->leafbuflen[PETSCSF_REMOTE];
+  if (sbuflen) {
     if (direction == PETSCSF_ROOT2LEAF) {
-      nreqs = bas->nrootreqs;
+      nsreqs = bas->nrootreqs;
       PetscCall(PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(sf, link, PETSC_TRUE /*device2host before sending */));
-      PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, direction, NULL, NULL, &reqs, NULL));
+      PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, direction, NULL, NULL, &sreqs, NULL));
     } else { /* leaf to root */
-      nreqs = sf->nleafreqs;
+      nsreqs = sf->nleafreqs;
       PetscCall(PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(sf, link, PETSC_TRUE));
-      PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, direction, NULL, NULL, NULL, &reqs));
+      PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, direction, NULL, NULL, NULL, &sreqs));
     }
-    PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, direction));
-    PetscCallMPI(MPI_Startall_isend(buflen, link->unit, nreqs, reqs));
   }
+  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link)); // need to sync the stream to make BOTH sendbuf and recvbuf ready
+  if (rbuflen) PetscCallMPI(MPI_Startall_irecv(rbuflen, link->unit, nrreqs, rreqs));
+  if (sbuflen) PetscCallMPI(MPI_Startall_isend(sbuflen, link->unit, nsreqs, sreqs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
