@@ -43,7 +43,7 @@ static PetscErrorCode PetscSFBcastBegin_Allgather(PetscSF sf, MPI_Datatype unit,
   PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
   PetscCall(PetscMPIIntCast(sf->nroots, &sendcount));
   PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, PETSCSF_ROOT2LEAF, &rootbuf, &leafbuf, &req, NULL));
-  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, PETSCSF_ROOT2LEAF));
+  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link));
   PetscCallMPI(MPIU_Iallgather(rootbuf, sendcount, unit, leafbuf, sendcount, unit, comm, req));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -77,7 +77,7 @@ static PetscErrorCode PetscSFReduceBegin_Allgather(PetscSF sf, MPI_Datatype unit
     }
     if (rank == 0 && link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi] == leafbuf) leafbuf = MPI_IN_PLACE;
     PetscCall(PetscMPIIntCast(sf->nleaves * link->bs, &count));
-    PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, PETSCSF_LEAF2ROOT));
+    PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link));
     PetscCallMPI(MPI_Reduce(leafbuf, link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi], count, link->basicunit, op, 0, comm)); /* Must do reduce with MPI builtin datatype basicunit */
     PetscCallMPI(MPIU_Iscatter(link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi], recvcount, unit, rootbuf, recvcount, unit, 0 /*rank 0*/, comm, req));
   }
@@ -100,7 +100,7 @@ static PetscErrorCode PetscSFBcastToZero_Allgather(PetscSF sf, MPI_Datatype unit
   PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
   PetscCall(PetscMPIIntCast(sf->nroots, &sendcount));
   PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, PETSCSF_ROOT2LEAF, &rootbuf, &leafbuf, &req, NULL));
-  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, PETSCSF_ROOT2LEAF));
+  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link));
   PetscCallMPI(MPIU_Igather(rootbuf == leafbuf ? MPI_IN_PLACE : rootbuf, sendcount, unit, leafbuf, sendcount, unit, 0 /*rank 0*/, comm, req));
   PetscCall(PetscSFLinkGetInUse(sf, unit, rootdata, leafdata, PETSC_OWN_POINTER, &link));
   PetscCall(PetscSFLinkFinishCommunication(sf, link, PETSCSF_ROOT2LEAF));

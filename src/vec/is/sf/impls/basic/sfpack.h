@@ -337,29 +337,19 @@ static inline PetscErrorCode PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(Pe
 }
 
 /* Make sure root/leafbuf for the remote is ready for MPI */
-static inline PetscErrorCode PetscSFLinkSyncStreamBeforeCallMPI(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
+static inline PetscErrorCode PetscSFLinkSyncStreamBeforeCallMPI(PetscSF sf, PetscSFLink link)
 {
-  PetscSF_Basic *bas;
-  PetscInt       buflen;
-  PetscMemType   mtype;
+  PetscSF_Basic *bas = (PetscSF_Basic *)sf->data;
 
   PetscFunctionBegin;
-  if (direction == PETSCSF_ROOT2LEAF) {
-    bas    = (PetscSF_Basic *)sf->data;
-    mtype  = link->rootmtype;
-    buflen = bas->rootbuflen[PETSCSF_REMOTE];
-  } else {
-    mtype  = link->leafmtype;
-    buflen = sf->leafbuflen[PETSCSF_REMOTE];
-  }
-
-  if (PetscMemTypeDevice(mtype) && buflen) PetscCall((*link->SyncStream)(link));
+  // Make sendbuf ready to read, recvbuf ready to write (other previous operations on recvbuf might finish after MPI_Waitall() if they use different streams)
+  if ((PetscMemTypeDevice(link->rootmtype) && bas->rootbuflen[PETSCSF_REMOTE]) || (PetscMemTypeDevice(link->leafmtype) && sf->leafbuflen[PETSCSF_REMOTE])) PetscCall((*link->SyncStream)(link));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 #else /* Host only */
   #define PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(a, b, c) PETSC_SUCCESS
   #define PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(a, b, c) PETSC_SUCCESS
-  #define PetscSFLinkSyncStreamBeforeCallMPI(a, b, c)               PETSC_SUCCESS
+  #define PetscSFLinkSyncStreamBeforeCallMPI(a, b)                  PETSC_SUCCESS
 #endif
 
 /* Get root indices used for pack/unpack

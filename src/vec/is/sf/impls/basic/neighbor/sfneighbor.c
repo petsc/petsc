@@ -93,7 +93,7 @@ static PetscErrorCode PetscSFLinkStartCommunication_Neighbor(PetscSF sf, PetscSF
 
   PetscCall(PetscSFGetDistComm_Neighbor(sf, direction, &distcomm));
   PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, direction, &rootbuf, &leafbuf, &req, NULL));
-  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, direction));
+  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link));
 
   if (dat->rootdegree || dat->leafdegree) { // OpenMPI-3.0 ran into error with rootdegree = leafdegree = 0, so we skip the call in this case
     if (direction == PETSCSF_ROOT2LEAF) {
@@ -149,7 +149,7 @@ static PetscErrorCode PetscSFLinkStartCommunication_Persistent_Neighbor(PetscSF 
   }
 
   PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, direction, NULL, NULL, &req, NULL));
-  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, direction));
+  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link));
   if (dat->rootdegree || dat->leafdegree) {
     PetscCallMPI(MPI_Start(req));
     if (direction == PETSCSF_ROOT2LEAF) {
