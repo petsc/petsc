@@ -945,4 +945,9 @@ int main(int argc, char **argv)
      suffix: complex
      args: -snes_mf_operator -mat_mffd_complex -snes_monitor
 
+   test:
+     requires: !single
+     suffix: 7_ksp_view_pre
+     args: -pc_type gamg -ksp_view_pre
+
 TEST*/
