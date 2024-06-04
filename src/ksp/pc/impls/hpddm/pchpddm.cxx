@@ -1204,6 +1204,21 @@ static PetscErrorCode PCHPDDMCheckSymmetry_Private(PC pc, Mat A01, Mat A10)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode PCHPDDMCheckInclusion_Private(PC pc, IS is, IS is_local, PetscBool check)
+{
+  IS          intersect;
+  const char *str = "IS of the auxiliary Mat does not include all local rows of A";
+  PetscBool   equal;
+
+  PetscFunctionBegin;
+  PetscCall(ISIntersect(is, is_local, &intersect));
+  PetscCall(ISEqualUnsorted(is_local, intersect, &equal));
+  PetscCall(ISDestroy(&intersect));
+  if (check) PetscCheck(equal, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "%s", str);
+  else if (!equal) PetscCall(PetscInfo(pc, "%s\n", str));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode PCHPDDMDestroySubMatrices_Private(PetscBool flg, PetscBool algebraic, Mat *sub)
 {
   IS is;
@@ -1650,6 +1665,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
             PetscCall(PetscObjectTypeCompare((PetscObject)data_00->levels[0]->pc, PCASM, &flg));
             PetscCheck(flg, PetscObjectComm((PetscObject)P), PETSC_ERR_ARG_INCOMP, "-%spc_hpddm_schur_precondition %s and -%spc_type %s (!= %s)", pcpre ? pcpre : "", PCHPDDMSchurPreTypes[type], ((PetscObject)data_00->levels[0]->pc)->prefix,
                        ((PetscObject)data_00->levels[0]->pc)->type_name, PCASM);
+            PetscCall(MatSchurComplementGetSubMatrices(P, nullptr, nullptr, nullptr, nullptr, &A11));
             if (PetscDefined(USE_DEBUG) || !data->is) {
               Mat A01, A10, B = nullptr, C = nullptr, *sub;
 
@@ -1687,6 +1703,13 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
                 PetscCall(MatFindNonzeroRows(C, &data->is));
                 PetscCall(MatDestroy(&C));
                 PetscCall(ISDestroy(is));
+                PetscCall(ISCreateStride(PetscObjectComm((PetscObject)data->is), A11->rmap->n, A11->rmap->rstart, 1, &loc));
+                if (PetscDefined(USE_DEBUG)) PetscCall(PCHPDDMCheckInclusion_Private(pc, data->is, loc, PETSC_FALSE));
+                PetscCall(ISExpand(data->is, loc, is));
+                PetscCall(ISDestroy(&loc));
+                PetscCall(ISDestroy(&data->is));
+                data->is = is[0];
+                is[0]    = nullptr;
               }
               if (PetscDefined(USE_DEBUG)) {
                 PetscCall(PCHPDDMCheckSymmetry_Private(pc, A01, A10));
@@ -1706,7 +1729,6 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               PetscCall(ISDestroy(&uis));
               PetscCall(MatDestroy(&B));
             }
-            PetscCall(MatSchurComplementGetSubMatrices(P, nullptr, nullptr, nullptr, nullptr, &A11));
             flg = PETSC_FALSE;
             if (!data->aux) {
               Mat D;
@@ -1994,15 +2016,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         PetscCall(ISDestroy(&data->is));
         data->is = is[0];
       } else {
-        if (PetscDefined(USE_DEBUG)) {
-          PetscBool equal;
-          IS        intersect;
-
-          PetscCall(ISIntersect(data->is, loc, &intersect));
-          PetscCall(ISEqualUnsorted(loc, intersect, &equal));
-          PetscCall(ISDestroy(&intersect));
-          PetscCheck(equal, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "IS of the auxiliary Mat does not include all local rows of A");
-        }
+        if (PetscDefined(USE_DEBUG)) PetscCall(PCHPDDMCheckInclusion_Private(pc, data->is, loc, PETSC_TRUE));
         if (overlap == -1) PetscCall(PetscObjectComposeFunction((PetscObject)pc->pmat, "PCHPDDMAlgebraicAuxiliaryMat_Private_C", PCHPDDMAlgebraicAuxiliaryMat_Private));
         if (!PetscBool3ToBool(data->Neumann) && (!algebraic || overlap != -1)) {
           PetscCall(PetscObjectTypeCompare((PetscObject)P, MATMPISBAIJ, &flg));
