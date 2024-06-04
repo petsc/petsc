@@ -309,9 +309,9 @@ PetscErrorCode SNESMonitorDefault(SNES snes, PetscInt its, PetscReal fgnorm, Pet
   if (isascii) {
     PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)snes)->tablevel));
     if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-      Vec       dx;
-      PetscReal upnorm;
-      PetscErrorCode (*objective)(SNES, Vec, PetscReal *, void *);
+      Vec              dx;
+      PetscReal        upnorm;
+      SNESObjectiveFn *objective;
 
       PetscCall(SNESGetSolutionUpdate(snes, &dx));
       PetscCall(VecNorm(dx, NORM_2, &upnorm));

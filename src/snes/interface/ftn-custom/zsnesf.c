@@ -269,7 +269,7 @@ PETSC_EXTERN void snessetpicard_(SNES *snes, Vec *r, void (*func)(SNES *, Vec *,
    to transparently set these monitors from .F code
 */
 
-PETSC_EXTERN void snessetfunction_(SNES *snes, Vec *r, void (*func)(SNES *, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptr))
+PETSC_EXTERN void snessetfunction_(SNES *snes, Vec *r, SNESFunctionFn func, void *ctx, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptr))
 {
   *ierr = PetscObjectSetFortranCallback((PetscObject)*snes, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.function, (PetscVoidFn *)func, ctx);
   if (*ierr) return;
@@ -305,7 +305,7 @@ PETSC_EXTERN void snessetupdate_(SNES *snes, void (*func)(SNES *, PetscInt *, Pe
 }
 
 /* the func argument is ignored */
-PETSC_EXTERN void snesgetfunction_(SNES *snes, Vec *r, void (*func)(SNES, Vec, Vec, void *), void **ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void snesgetfunction_(SNES *snes, Vec *r, SNESFunctionFn func, void **ctx, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(r);
   *ierr = SNESGetFunction(*snes, r, NULL, NULL);
