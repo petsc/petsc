@@ -74,6 +74,8 @@ check-ci-settings:
     - if [ ! -z ${INIT_SCRIPT+x} ]; then echo "sourcing ${INIT_SCRIPT}"; if [ -f ${HOME}/${INIT_SCRIPT} ]; then source ${HOME}/${INIT_SCRIPT}; else source ${INIT_SCRIPT}; fi; fi
     - printf "PATH:$PATH\n"
     - printf "PYTHONPATH:$PYTHONPATH\n"
+    - printf "python:${PYTHON}\n"
+    - ${PYTHON} -m pip list --user
     - printf "CONFIG_OPTS:${CONFIG_OPTS}\n"
     - printf "PETSC_OPTIONS:$PETSC_OPTIONS\n"
     - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
