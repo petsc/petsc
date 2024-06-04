@@ -86,7 +86,8 @@ follows:
 
    SNESCreate(MPI_Comm comm,SNES *snes);
 
-The user must then set routines for evaluating the residual function :math:numref:`fx0` and its associated Jacobian matrix, as
+The user must then set routines for evaluating the residual function :math:numref:`fx0`
+and, *possibly*, its associated Jacobian matrix, as
 discussed in the following sections.
 
 To choose a nonlinear solution method, the user can either call
@@ -172,7 +173,11 @@ The arguments of the routine ``FormJacobian()`` are the current iterate,
 ``x``; the (approximate) Jacobian matrix, ``Amat``; the matrix from
 which the preconditioner is constructed, ``Pmat`` (which is usually the
 same as ``Amat``); and an optional user-defined Jacobian context,
-``ctx``, for application-specific data. Note that the ``SNES`` solvers
+``ctx``, for application-specific data. The ``FormJacobian()``
+callback is only invoked if the solver requires it, always
+*after* ``FormFunction()`` has been called at the current iterate.
+
+Note that the ``SNES`` solvers
 are all data-structure neutral, so the full range of PETSc matrix
 formats (including “matrix-free” methods) can be used.
 :any:`ch_matrices` discusses information regarding

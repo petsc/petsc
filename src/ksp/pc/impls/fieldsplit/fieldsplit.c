@@ -449,13 +449,6 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
           PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dms[i], prefix));
           PetscCall(KSPSetDM(ilink->ksp, dms[i]));
           PetscCall(KSPSetDMActive(ilink->ksp, PETSC_FALSE));
-          {
-            PetscErrorCode (*func)(KSP, Mat, Mat, void *);
-            void *ctx;
-
-            PetscCall(DMKSPGetComputeOperators(pc->dm, &func, &ctx));
-            PetscCall(DMKSPSetComputeOperators(dms[i], func, ctx));
-          }
           PetscCall(PetscObjectIncrementTabLevel((PetscObject)dms[i], (PetscObject)ilink->ksp, 0));
           PetscCall(DMDestroy(&dms[i]));
         }

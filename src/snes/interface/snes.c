@@ -681,6 +681,7 @@ static PetscErrorCode DMCoarsenHook_SNESVecSol(DM dm, DM dmc, void *ctx)
 static PetscErrorCode KSPComputeOperators_SNES(KSP ksp, Mat A, Mat B, void *ctx)
 {
   SNES            snes = (SNES)ctx;
+  DMSNES          sdm;
   Vec             X, Xnamed = NULL;
   DM              dmsave;
   void           *ctxsave;
@@ -690,21 +691,37 @@ static PetscErrorCode KSPComputeOperators_SNES(KSP ksp, Mat A, Mat B, void *ctx)
   dmsave = snes->dm;
   PetscCall(KSPGetDM(ksp, &snes->dm));
   if (dmsave == snes->dm) X = snes->vec_sol; /* We are on the finest level */
-  else { /* We are on a coarser level, this vec was initialized using a DM restrict hook */ PetscCall(DMGetNamedGlobalVector(snes->dm, "SNESVecSol", &Xnamed));
+  else {
+    PetscBool has;
+
+    /* We are on a coarser level, this vec was initialized using a DM restrict hook */
+    PetscCall(DMHasNamedGlobalVector(snes->dm, "SNESVecSol", &has));
+    PetscCheck(has, PetscObjectComm((PetscObject)snes->dm), PETSC_ERR_PLIB, "Missing SNESVecSol");
+    PetscCall(DMGetNamedGlobalVector(snes->dm, "SNESVecSol", &Xnamed));
     X = Xnamed;
     PetscCall(SNESGetJacobian(snes, NULL, NULL, &jac, &ctxsave));
     /* If the DM's don't match up, the MatFDColoring context needed for the jacobian won't match up either -- fixit. */
     if (jac == SNESComputeJacobianDefaultColor) PetscCall(SNESSetJacobian(snes, NULL, NULL, SNESComputeJacobianDefaultColor, NULL));
   }
-  /* Make sure KSP DM has the Jacobian computation routine */
-  {
-    DMSNES sdm;
 
-    PetscCall(DMGetDMSNES(snes->dm, &sdm));
-    if (!sdm->ops->computejacobian) PetscCall(DMCopyDMSNES(dmsave, snes->dm));
-  }
   /* Compute the operators */
+  PetscCall(DMGetDMSNES(snes->dm, &sdm));
+  if (Xnamed && sdm->ops->computefunction) {
+    /* The SNES contract with the user is that ComputeFunction is always called before ComputeJacobian.
+       We make sure of this here. Disable affine shift since it is for the finest level */
+    Vec F, saverhs = snes->vec_rhs;
+
+    snes->vec_rhs = NULL;
+    PetscCall(DMGetGlobalVector(snes->dm, &F));
+    PetscCall(SNESComputeFunction(snes, X, F));
+    PetscCall(DMRestoreGlobalVector(snes->dm, &F));
+    snes->vec_rhs = saverhs;
+    snes->nfuncs--; /* Do not log coarser level evaluations */
+  }
+  /* Make sure KSP DM has the Jacobian computation routine */
+  if (!sdm->ops->computejacobian) PetscCall(DMCopyDMSNES(dmsave, snes->dm));
   PetscCall(SNESComputeJacobian(snes, X, A, B));
+
   /* Put the previous context back */
   if (snes->dm != dmsave && jac == SNESComputeJacobianDefaultColor) PetscCall(SNESSetJacobian(snes, NULL, NULL, jac, ctxsave));
 

@@ -52,6 +52,7 @@ typedef struct {
   Vec          Ydot0;        /* Holds the slope from the previous step in FSAL case */
   Vec          Ydot;         /* Work vector holding Ydot during residual evaluation */
   Vec          Z;            /* Ydot = shift(Y-Z) */
+  IS           alg_is;       /* Index set for algebraic variables, needed when restarting with DIRK */
   PetscScalar *work;         /* Scalar work */
   PetscReal    scoeff;       /* shift = scoeff/dt */
   PetscReal    stage_time;
@@ -1370,6 +1371,8 @@ static PetscErrorCode TSARKIMEXTestMassIdentity(TS ts, PetscBool *id)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode TSARKIMEXComputeAlgebraicIS(TS, PetscReal, Vec, IS *);
+
 static PetscErrorCode TSStep_ARKIMEX(TS ts)
 {
   TS_ARKIMEX      *ark = (TS_ARKIMEX *)ts->data;
@@ -1421,8 +1424,14 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
   if (dirk && tab->explicit_first_stage && ts->steprestart) {
     ark->scoeff = PETSC_MAX_REAL;
     PetscCall(VecCopy(ts->vec_sol, Z));
+    if (!ark->alg_is) {
+      PetscCall(TSARKIMEXComputeAlgebraicIS(ts, ts->ptime, Z, &ark->alg_is));
+      PetscCall(ISViewFromOptions(ark->alg_is, (PetscObject)ts, "-ts_arkimex_algebraic_is_view"));
+    }
     PetscCall(TSGetSNES(ts, &snes));
+    PetscCall(PetscObjectIncrementTabLevel((PetscObject)snes, (PetscObject)snes, 1));
     PetscCall(SNESSolve(snes, NULL, Ydot0));
+    PetscCall(PetscObjectIncrementTabLevel((PetscObject)snes, (PetscObject)snes, -1));
   }
 
   /* For IMEX we compute a step */
@@ -1799,6 +1808,7 @@ static PetscErrorCode TSReset_ARKIMEX(TS ts)
   PetscCall(VecDestroy(&ark->Ydot));
   PetscCall(VecDestroy(&ark->Ydot0));
   PetscCall(VecDestroy(&ark->Z));
+  PetscCall(ISDestroy(&ark->alg_is));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1844,7 +1854,60 @@ static PetscErrorCode TSARKIMEXRestoreVecs(TS ts, DM dm, Vec *Z, Vec *Ydot)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatFindNonzeroRowsOrCols_Basic(Mat, PetscBool, PetscReal, IS *);
+/*
+  DAEs need special handling for algebraic variables when restarting DIRK methods with explicit
+  first stage. In particular, we need:
+     - to zero the nonlinear function (in case the dual variables are not consistent in the first step)
+     - to modify the preconditioning matrix by calling MatZeroRows with identity on these variables.
+*/
+static PetscErrorCode TSARKIMEXComputeAlgebraicIS(TS ts, PetscReal time, Vec X, IS *alg_is)
+{
+  TS_ARKIMEX        *ark = (TS_ARKIMEX *)ts->data;
+  DM                 dm;
+  Vec                F, W, Xdot;
+  const PetscScalar *w;
+  PetscInt           nz = 0, n, st;
+  PetscInt          *nzr;
+
+  PetscFunctionBegin;
+  PetscCall(TSGetDM(ts, &dm)); /* may be already from SNES */
+  PetscCall(DMGetGlobalVector(dm, &Xdot));
+  PetscCall(DMGetGlobalVector(dm, &F));
+  PetscCall(DMGetGlobalVector(dm, &W));
+  PetscCall(VecSet(Xdot, 0.0));
+  PetscCall(TSComputeIFunction(ts, time, X, Xdot, F, ark->imex));
+  PetscCall(VecSetRandom(Xdot, NULL));
+  PetscCall(TSComputeIFunction(ts, time, X, Xdot, W, ark->imex));
+  PetscCall(VecAXPY(W, -1.0, F));
+  PetscCall(VecGetOwnershipRange(W, &st, NULL));
+  PetscCall(VecGetLocalSize(W, &n));
+  PetscCall(VecGetArrayRead(W, &w));
+  for (PetscInt i = 0; i < n; i++)
+    if (w[i] == 0.0) nz++;
+  PetscCall(PetscMalloc1(nz, &nzr));
+  nz = 0;
+  for (PetscInt i = 0; i < n; i++)
+    if (w[i] == 0.0) nzr[nz++] = i + st;
+  PetscCall(VecRestoreArrayRead(W, &w));
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm), nz, nzr, PETSC_OWN_POINTER, alg_is));
+  PetscCall(DMRestoreGlobalVector(dm, &Xdot));
+  PetscCall(DMRestoreGlobalVector(dm, &F));
+  PetscCall(DMRestoreGlobalVector(dm, &W));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* As for the method specific Z and Ydot, we store the algebraic IS in the ARKIMEX data structure
+   at the finest level, in the DM for coarser solves. */
+static PetscErrorCode TSARKIMEXGetAlgebraicIS(TS ts, DM dm, IS *alg_is)
+{
+  TS_ARKIMEX *ax = (TS_ARKIMEX *)ts->data;
+
+  PetscFunctionBegin;
+  if (dm && dm != ts->dm) {
+    PetscCall(PetscObjectQuery((PetscObject)dm, "TSARKIMEX_ALG_IS", (PetscObject *)alg_is));
+  } else *alg_is = ax->alg_is;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 /* This defines the nonlinear equation that is to be solved with SNES */
 static PetscErrorCode SNESTSFormFunction_ARKIMEX(SNES snes, Vec X, Vec F, TS ts)
@@ -1852,16 +1915,27 @@ static PetscErrorCode SNESTSFormFunction_ARKIMEX(SNES snes, Vec X, Vec F, TS ts)
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
   DM          dm, dmsave;
   Vec         Z, Ydot;
+  IS          alg_is;
 
   PetscFunctionBegin;
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(TSARKIMEXGetVecs(ts, dm, &Z, &Ydot));
+  if (ark->scoeff == PETSC_MAX_REAL) PetscCall(TSARKIMEXGetAlgebraicIS(ts, dm, &alg_is));
+
   dmsave = ts->dm;
   ts->dm = dm;
 
   if (ark->scoeff == PETSC_MAX_REAL) {
     /* We are solving F(t_n,x_n,xdot) = 0 to start the method */
+    if (!alg_is) {
+      PetscCheck(dmsave != ts->dm, PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Missing algebraic IS");
+      PetscCall(TSARKIMEXComputeAlgebraicIS(ts, ark->stage_time, Z, &alg_is));
+      PetscCall(PetscObjectCompose((PetscObject)dm, "TSARKIMEX_ALG_IS", (PetscObject)alg_is));
+      PetscCall(PetscObjectDereference((PetscObject)alg_is));
+      PetscCall(ISViewFromOptions(alg_is, (PetscObject)snes, "-ts_arkimex_algebraic_is_view"));
+    }
     PetscCall(TSComputeIFunction(ts, ark->stage_time, Z, X, F, ark->imex));
+    PetscCall(VecISSet(F, alg_is, 0.0));
   } else {
     PetscReal shift = ark->scoeff / ts->time_step;
     PetscCall(VecAXPBYPCZ(Ydot, -shift, shift, 0, Z, X)); /* Ydot = shift*(X-Z) */
@@ -1879,47 +1953,29 @@ static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes, Vec X, Mat A, Mat B,
   DM          dm, dmsave;
   Vec         Ydot, Z;
   PetscReal   shift;
+  IS          alg_is;
 
   PetscFunctionBegin;
   PetscCall(SNESGetDM(snes, &dm));
-  PetscCall(TSARKIMEXGetVecs(ts, dm, &Z, &Ydot));
   /* ark->Ydot has already been computed in SNESTSFormFunction_ARKIMEX (SNES guarantees this) */
+  PetscCall(TSARKIMEXGetVecs(ts, dm, &Z, &Ydot));
+  /* alg_is has been computed in SNESTSFormFunction_ARKIMEX */
+  if (ark->scoeff == PETSC_MAX_REAL) PetscCall(TSARKIMEXGetAlgebraicIS(ts, dm, &alg_is));
+
   dmsave = ts->dm;
   ts->dm = dm;
 
   if (ark->scoeff == PETSC_MAX_REAL) {
     PetscBool hasZeroRows;
-    IS        alg_is;
 
     /* We are solving F(t_n,x_n,xdot) = 0 to start the method
-       Jed's proposal is to compute with a very large shift and then scale back the matrix */
+       We compute with a very large shift and then scale back the matrix */
     shift = 1.0 / PETSC_MACHINE_EPSILON;
     PetscCall(TSComputeIJacobian(ts, ark->stage_time, Z, X, shift, A, B, ark->imex));
     PetscCall(MatScale(B, PETSC_MACHINE_EPSILON));
-    /* DAEs need special handling for preconditioning purposes only.
-       We need to locate the algebraic variables and modify the preconditioning matrix by
-       calling MatZeroRows with identity on these variables.
-       We must store the IS in the DM since this function can be called by multilevel solvers.
-    */
-    PetscCall(PetscObjectQuery((PetscObject)dm, "TSARKIMEX_ALG_IS", (PetscObject *)&alg_is));
-    if (!alg_is) {
-      PetscInt m, n;
-      IS       nonzeroRows;
-
-      PetscCall(MatViewFromOptions(B, (PetscObject)snes, "-ts_arkimex_alg_mat_view_pre"));
-      PetscCall(MatFindNonzeroRowsOrCols_Basic(B, PETSC_FALSE, 100 * PETSC_MACHINE_EPSILON, &nonzeroRows));
-      if (nonzeroRows) PetscCall(ISViewFromOptions(nonzeroRows, (PetscObject)snes, "-ts_arkimex_alg_is_view_pre"));
-      PetscCall(MatGetOwnershipRange(B, &m, &n));
-      if (nonzeroRows) PetscCall(ISComplement(nonzeroRows, m, n, &alg_is));
-      else PetscCall(ISCreateStride(PetscObjectComm((PetscObject)snes), 0, m, 1, &alg_is));
-      PetscCall(ISDestroy(&nonzeroRows));
-      PetscCall(PetscObjectCompose((PetscObject)dm, "TSARKIMEX_ALG_IS", (PetscObject)alg_is));
-      PetscCall(ISDestroy(&alg_is));
-    }
-    PetscCall(PetscObjectQuery((PetscObject)dm, "TSARKIMEX_ALG_IS", (PetscObject *)&alg_is));
-    PetscCall(ISViewFromOptions(alg_is, (PetscObject)snes, "-ts_arkimex_alg_is_view"));
     PetscCall(MatHasOperation(B, MATOP_ZERO_ROWS, &hasZeroRows));
     if (hasZeroRows) {
+      PetscCheck(alg_is, PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Missing algebraic IS");
       /* the default of AIJ is to not keep the pattern! We should probably change it someday */
       PetscCall(MatSetOption(B, MAT_KEEP_NONZERO_PATTERN, PETSC_TRUE));
       PetscCall(MatZeroRowsIS(B, alg_is, 1.0, NULL, NULL));
