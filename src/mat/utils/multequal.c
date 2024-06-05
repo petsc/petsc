@@ -1,5 +1,11 @@
 #include <petsc/private/matimpl.h> /*I   "petscmat.h"  I*/
 
+/*
+  n; try the MatMult varient n times
+  flg: return the boolean result, equal or not
+  t: 0 => no transpose; 1 => transpose; 2 => Hermitian transpose
+  add:  0 => no add (e.g., y = Ax);  1 => add third vector (e.g., z = Ax + y); 2 => add update (e.g., y = Ax + y)
+*/
 static PetscErrorCode MatMultEqual_Private(Mat A, Mat B, PetscInt n, PetscBool *flg, PetscInt t, PetscInt add)
 {
   Vec         Ax = NULL, Bx = NULL, s1 = NULL, s2 = NULL, Ay = NULL, By = NULL;
@@ -24,7 +30,7 @@ static PetscErrorCode MatMultEqual_Private(Mat A, Mat B, PetscInt n, PetscBool *
   PetscCall(MatGetLocalSize(B, &bm, &bn));
   PetscCheck(am == bm && an == bn, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Mat A,Mat B: local dim %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT, am, bm, an, bn);
 #if defined(PETSC_USE_INFO)
-  sop = sops[add + 3 * t]; /* add = 0 => no add, add = 1 => add third vector, add = 2 => add update, t = 0 => no transpose, t = 1 => transpose, t = 2 => Hermitian transpose */
+  sop = sops[add + 3 * t];
 #endif
   PetscCall(PetscRandomCreate(PetscObjectComm((PetscObject)A), &rctx));
   PetscCall(PetscRandomSetFromOptions(rctx));
