@@ -295,24 +295,28 @@ static PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   PetscCall(PetscViewerGetFormat(viewer, &format));
   if (iascii && format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-    PetscCall(PetscViewerASCIIPushSynchronized(viewer));
-    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  [%d] MIS aggregator\n", rank));
-    if (!rank) {
-      PetscCDIntNd *pos, *pos2;
-      for (PetscInt kk = 0; kk < coarse->agg_lists->size; kk++) {
-        PetscCall(PetscCDGetHeadPos(coarse->agg_lists, kk, &pos));
-        if ((pos2 = pos)) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "selected %d: ", (int)kk));
-        while (pos) {
-          PetscInt gid1;
-          PetscCall(PetscCDIntNdGetID(pos, &gid1));
-          PetscCall(PetscCDGetNextPos(coarse->agg_lists, kk, &pos));
-          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %d ", (int)gid1));
+    if (coarse->agg_lists) {
+      PetscCall(PetscViewerASCIIPushSynchronized(viewer));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  [%d] MIS aggregator\n", rank));
+      if (!rank) {
+        PetscCDIntNd *pos, *pos2;
+        for (PetscInt kk = 0; kk < coarse->agg_lists->size; kk++) {
+          PetscCall(PetscCDGetHeadPos(coarse->agg_lists, kk, &pos));
+          if ((pos2 = pos)) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "selected %d: ", (int)kk));
+          while (pos) {
+            PetscInt gid1;
+            PetscCall(PetscCDIntNdGetID(pos, &gid1));
+            PetscCall(PetscCDGetNextPos(coarse->agg_lists, kk, &pos));
+            PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %d ", (int)gid1));
+          }
+          if (pos2) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
         }
-        if (pos2) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
       }
+      PetscCall(PetscViewerFlush(viewer));
+      PetscCall(PetscViewerASCIIPopSynchronized(viewer));
+    } else {
+      PetscCall(PetscViewerASCIIPrintf(viewer, "  MIS aggregator lists are not available\n"));
     }
-    PetscCall(PetscViewerFlush(viewer));
-    PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
