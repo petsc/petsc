@@ -953,11 +953,11 @@ int main(int argc, char **argv)
    test:
      requires: !single
      suffix: hem_view_detailed
-     args: -dm_refine 2 -pc_type gamg -ksp_view ::ascii_info_detail -pc_gamg_mat_coarsen_type hem
+     args: -pc_type gamg -ksp_view ::ascii_info_detail -pc_gamg_mat_coarsen_type hem
 
    test:
      requires: !single
      suffix: mis_view_detailed
-     args: -dm_refine 2 -pc_type gamg -ksp_view ::ascii_info_detail -pc_gamg_mat_coarsen_type mis
+     args: -pc_type gamg -ksp_view ::ascii_info_detail -pc_gamg_mat_coarsen_type mis
 
 TEST*/
