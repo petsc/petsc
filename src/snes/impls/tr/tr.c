@@ -559,8 +559,6 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
         }
         // XXX
         PetscCall(SNESGetNPCFunction(snes, F, &fnorm));
-      } else if (snes->ops->update) { /* if update is present, recompute objective function and function norm */
-        PetscCall(SNESComputeFunction(snes, X, F));
       }
 
       /* Jacobian */

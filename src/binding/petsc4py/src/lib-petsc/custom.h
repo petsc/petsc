@@ -569,6 +569,15 @@ PetscErrorCode SNESSetUseFDColoring(SNES snes,PetscBool flag)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static
+PetscErrorCode SNESComputeUpdate(SNES snes)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscTryTypeMethod(snes, update, snes->iter);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /* ---------------------------------------------------------------- */
 
 static

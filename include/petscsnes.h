@@ -79,8 +79,6 @@ PETSC_EXTERN PetscErrorCode SNESSetWorkVecs(SNES, PetscInt);
 
 PETSC_EXTERN PetscErrorCode SNESAddOptionsChecker(PetscErrorCode (*)(SNES));
 
-PETSC_EXTERN PetscErrorCode SNESSetUpdate(SNES, PetscErrorCode (*)(SNES, PetscInt));
-
 PETSC_EXTERN PetscErrorCode SNESRegister(const char[], PetscErrorCode (*)(SNES));
 
 PETSC_EXTERN PetscErrorCode SNESGetKSP(SNES, KSP *);
@@ -504,6 +502,19 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESJacobianFn)(SNES snes, Vec u, Ma
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESNGSFn)(SNES snes, Vec u, Vec b, void *ctx);
 
+/*S
+  SNESUpdateFn - A prototype of a `SNES` update function that would be passed to `SNESSetUpdate()`
+
+  Calling Sequence:
++ snes - `SNES` context
+- step - the current iteration index
+
+  Level: advanced
+
+.seealso: [](ch_snes), `SNES`, `SNESSetUpdate()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESUpdateFn)(SNES snes, PetscInt step);
+
 /* --------- Solving systems of nonlinear equations --------------- */
 PETSC_EXTERN PetscErrorCode SNESSetFunction(SNES, Vec, SNESFunctionFn *, void *);
 PETSC_EXTERN PetscErrorCode SNESGetFunction(SNES, Vec *, SNESFunctionFn **, void **);
@@ -527,6 +538,8 @@ PETSC_EXTERN SNESJacobianFn SNESPicardComputeJacobian;
 PETSC_EXTERN PetscErrorCode SNESSetObjective(SNES, SNESObjectiveFn *, void *);
 PETSC_EXTERN PetscErrorCode SNESGetObjective(SNES, SNESObjectiveFn **, void **);
 PETSC_EXTERN PetscErrorCode SNESComputeObjective(SNES, Vec, PetscReal *);
+
+PETSC_EXTERN PetscErrorCode SNESSetUpdate(SNES, SNESUpdateFn *);
 
 /*E
    SNESNormSchedule - Frequency with which the norm is computed during a nonliner solve

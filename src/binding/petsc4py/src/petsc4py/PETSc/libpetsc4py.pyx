@@ -1830,6 +1830,7 @@ cdef extern from * nogil:
 
 cdef extern from * nogil: # custom.h
     PetscErrorCode SNESLogHistory(PetscSNES, PetscReal, PetscInt)
+    PetscErrorCode SNESComputeUpdate(PetscSNES)
 
 
 @cython.internal
@@ -2034,16 +2035,10 @@ cdef PetscErrorCode SNESSolve_Python_default(
     if snes.reason:
         return FunctionEnd()
 
-    cdef PetscObjectState ostate = -1
-    cdef PetscObjectState nstate = -1
     for its from 0 <= its < snes.max_its:
         <void> its # unused
-        CHKERR(PetscObjectStateGet(<PetscObject>X, &ostate))
+        SNESComputeUpdate(snes)
         SNESPreStep_Python(snes)
-        CHKERR(PetscObjectStateGet(<PetscObject>X, &nstate))
-        if ostate != nstate:
-            CHKERR(SNESComputeFunction(snes, X, F))
-            CHKERR(VecNorm(F, PETSC_NORM_2, &snes.norm))
         #
         lits = -snes.linear_its
         SNESStep_Python(snes, X, F, Y)
