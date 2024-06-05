@@ -265,6 +265,9 @@ PetscErrorCode MatFindNonzeroRowsOrCols_Basic(Mat mat, PetscBool cols, PetscReal
   Note:
   `keptrows` is set to `NULL` if all rows are nonzero.
 
+  Developer Note:
+  If `keptrows` is not `NULL`, it must be sorted.
+
 .seealso: [](ch_matrices), `Mat`, `MatFindZeroRows()`
  @*/
 PetscErrorCode MatFindNonzeroRows(Mat mat, IS *keptrows)
@@ -277,6 +280,7 @@ PetscErrorCode MatFindNonzeroRows(Mat mat, IS *keptrows)
   PetscCheck(!mat->factortype, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
   if (mat->ops->findnonzerorows) PetscUseTypeMethod(mat, findnonzerorows, keptrows);
   else PetscCall(MatFindNonzeroRowsOrCols_Basic(mat, PETSC_FALSE, 0.0, keptrows));
+  if (keptrows && *keptrows) PetscCall(ISSetInfo(*keptrows, IS_SORTED, IS_GLOBAL, PETSC_FALSE, PETSC_TRUE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

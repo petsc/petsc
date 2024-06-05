@@ -326,6 +326,17 @@ static PetscErrorCode ISSetInfo_Internal(IS is, ISInfo info, ISInfoType type, IS
   /* set implications */
   switch (info) {
   case IS_SORTED:
+    if (PetscDefined(USE_DEBUG) && flg) {
+      PetscInt        n;
+      const PetscInt *indices;
+
+      PetscCall(ISGetLocalSize(is, &n));
+      PetscCall(ISGetIndices(is, &indices));
+      PetscCall(PetscSortedInt(n, indices, &flg));
+      if (type == IS_GLOBAL) PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &flg, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)is)));
+      PetscCheck(flg, type == IS_GLOBAL ? PetscObjectComm((PetscObject)is) : PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "IS is not sorted");
+      PetscCall(ISRestoreIndices(is, &indices));
+    }
     if (flg && type == IS_GLOBAL) { /* an array that is globally sorted is also locally sorted */
       is->info[IS_LOCAL][(int)info] = IS_INFO_TRUE;
       /* global permanence implies local permanence */
@@ -463,7 +474,7 @@ PetscErrorCode ISSetInfo(IS is, ISInfo info, ISInfoType type, PetscBool permanen
     errcomm = PETSC_COMM_SELF;
   }
 
-  PetscCheck(((int)info) > IS_INFO_MIN && ((int)info) < IS_INFO_MAX, errcomm, PETSC_ERR_ARG_OUTOFRANGE, "Options %d is out of range", (int)info);
+  PetscCheck((int)info > IS_INFO_MIN && (int)info < IS_INFO_MAX, errcomm, PETSC_ERR_ARG_OUTOFRANGE, "Option %d is out of range", (int)info);
 
   PetscCallMPI(MPI_Comm_size(comm, &size));
   /* do not use global values if size == 1: it makes it easier to keep the implications straight */
@@ -789,7 +800,7 @@ PetscErrorCode ISGetInfo(IS is, ISInfo info, ISInfoType type, PetscBool compute,
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
-  PetscCheck(((int)info) > IS_INFO_MIN && ((int)info) < IS_INFO_MAX, errcomm, PETSC_ERR_ARG_OUTOFRANGE, "Options %d is out of range", (int)info);
+  PetscCheck((int)info > IS_INFO_MIN && (int)info < IS_INFO_MAX, errcomm, PETSC_ERR_ARG_OUTOFRANGE, "Option %d is out of range", (int)info);
   if (size == 1) type = IS_LOCAL;
   itype   = (type == IS_LOCAL) ? 0 : 1;
   hasprop = PETSC_FALSE;
