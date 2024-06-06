@@ -238,16 +238,17 @@ static PetscErrorCode PCDestroy_Composite(PC pc)
 
 static PetscErrorCode PCSetFromOptions_Composite(PC pc, PetscOptionItems *PetscOptionsObject)
 {
-  PC_Composite    *jac  = (PC_Composite *)pc->data;
-  PetscInt         nmax = 8, i;
+  PC_Composite    *jac = (PC_Composite *)pc->data;
+  PetscInt         nmax, i;
   PC_CompositeLink next;
-  char            *pcs[8];
+  char            *pcs[1024];
   PetscBool        flg;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "Composite preconditioner options");
   PetscCall(PetscOptionsEnum("-pc_composite_type", "Type of composition", "PCCompositeSetType", PCCompositeTypes, (PetscEnum)jac->type, (PetscEnum *)&jac->type, &flg));
   if (flg) PetscCall(PCCompositeSetType(pc, jac->type));
+  nmax = (PetscInt)PETSC_STATIC_ARRAY_LENGTH(pcs);
   PetscCall(PetscOptionsStringArray("-pc_composite_pcs", "List of composite solvers", "PCCompositeAddPCType", pcs, &nmax, &flg));
   if (flg) {
     for (i = 0; i < nmax; i++) {

@@ -20,11 +20,12 @@ int main(int argc, char **argv)
 {
   TS        ts;
   Vec       x;
-  PetscBool dae = PETSC_TRUE;
+  PetscBool dae = PETSC_TRUE, random = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-dae", &dae, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-random", &random, NULL));
 
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
   PetscCall(TSSetIFunction(ts, NULL, IFunction, &dae));
@@ -34,7 +35,10 @@ int main(int argc, char **argv)
   PetscCall(VecSetSizes(x, 2, PETSC_DECIDE));
   PetscCall(VecSetFromOptions(x));
   PetscCall(VecSetUp(x));
-  PetscCall(VecSet(x, 0.5));
+  if (random) {
+    PetscCall(VecSetRandom(x, NULL));
+    PetscCall(VecRealPart(x));
+  } else PetscCall(VecSet(x, 0.5));
   PetscCall(TSSetSolution(ts, x));
   PetscCall(VecDestroy(&x));
 
@@ -102,7 +106,7 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal shift, M
 /*TEST
 
   testset:
-    args: -ts_view_solution -ts_max_steps 10 -ts_dt 0.1 -ts_view_solution -ts_adapt_type {{none basic}} -ts_exact_final_time matchstep
+    args: -ts_view_solution -ts_max_steps 10 -ts_dt 0.1 -ts_view_solution -ts_adapt_type {{none basic}} -ts_exact_final_time matchstep -snes_error_if_not_converged
 
     test:
       output_file: output/ex18_1.out
@@ -113,5 +117,10 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal shift, M
       output_file: output/ex18_1.out
       suffix: dirk
       args: -dae {{0 1}} -ts_type dirk -ts_dirk_type {{s212 es122sal es213sal es324sal es325sal 657a es648sa 658a s659a 7510sal es7510sa 759a s7511sal 8614a 8616sal es8516sal}}
+
+    test:
+      output_file: output/ex18_1.out
+      suffix: dirk_explicit_first_random_dae
+      args: -dae -ts_type dirk -ts_dirk_type es122sal -random 1 -ts_max_reject -1
 
 TEST*/

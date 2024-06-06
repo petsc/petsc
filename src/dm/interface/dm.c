@@ -3712,8 +3712,10 @@ PetscErrorCode DMSetApplicationContextDestroy(DM dm, PetscErrorCode (*destroy)(v
 
   Level: intermediate
 
-  Note:
+  Notes:
   A user context is a way to pass problem specific information that is accessible whenever the `DM` is available
+  In a multilevel solver, the user context is shared by all the `DM` in the hierarchy; it is thus not advisable
+  to store objects that represent discretized quantities inside the context.
 
 .seealso: [](ch_dmbase), `DM`, `DMGetApplicationContext()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`
 @*/
