@@ -2805,16 +2805,28 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
   PetscCall(PetscStrcmp(mtype, MATMPISBAIJ, &isSymMPIBlock));
   PetscCall(PetscStrcmp(mtype, MATIS, &isMatIS));
   if (!isShell) {
-    PetscBool fillMatrix = (PetscBool)(!dm->prealloc_only && !isMatIS);
-    PetscInt *dnz, *onz, *dnzu, *onzu, bsLocal[2], bsMinMax[2], *pblocks;
-    PetscInt  pStart, pEnd, p, dof, cdof, num_fields;
+    // There are three states with pblocks, since block starts can have no dofs:
+    // UNKNOWN) New Block:   An open block has been signalled by pblocks[p] == 1
+    // TRUE)    Block Start: The first entry in a block has been added
+    // FALSE)   Block Add:   An additional block entry has been added, since pblocks[p] == 0
+    PetscBT         blst;
+    PetscBool3      bstate     = PETSC_BOOL3_UNKNOWN;
+    PetscBool       fillMatrix = (PetscBool)(!dm->prealloc_only && !isMatIS);
+    const PetscInt *perm       = NULL;
+    PetscInt       *dnz, *onz, *dnzu, *onzu, bsLocal[2], bsMinMax[2], *pblocks;
+    PetscInt        pStart, pEnd, dof, cdof, num_fields;
 
     PetscCall(DMGetLocalToGlobalMapping(dm, &ltog));
+    PetscCall(PetscSectionGetBlockStarts(sectionLocal, &blst));
+    if (sectionLocal->perm) PetscCall(ISGetIndices(sectionLocal->perm, &perm));
 
     PetscCall(PetscCalloc1(localSize, &pblocks));
     PetscCall(PetscSectionGetChart(sectionGlobal, &pStart, &pEnd));
     PetscCall(PetscSectionGetNumFields(sectionGlobal, &num_fields));
-    for (p = pStart; p < pEnd; ++p) {
+    // We need to process in the permuted order to get block sizes right
+    for (PetscInt point = pStart; point < pEnd; ++point) {
+      const PetscInt p = perm ? perm[point] : point;
+
       switch (dm->blocking_type) {
       case DM_BLOCKING_TOPOLOGICAL_POINT: { // One block per topological point
         PetscInt bdof, offset;
@@ -2822,10 +2834,15 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
         PetscCall(PetscSectionGetDof(sectionGlobal, p, &dof));
         PetscCall(PetscSectionGetOffset(sectionGlobal, p, &offset));
         PetscCall(PetscSectionGetConstraintDof(sectionGlobal, p, &cdof));
+        if (blst && PetscBTLookup(blst, p)) bstate = PETSC_BOOL3_UNKNOWN;
         if (dof > 0) {
+          // State change
+          if (bstate == PETSC_BOOL3_UNKNOWN) bstate = PETSC_BOOL3_TRUE;
+          else if (bstate == PETSC_BOOL3_TRUE && blst && !PetscBTLookup(blst, p)) bstate = PETSC_BOOL3_FALSE;
+
           for (PetscInt i = 0; i < dof - cdof; ++i) pblocks[offset - localStart + i] = dof - cdof;
           // Signal block concatenation
-          if (dof - cdof && sectionLocal->blockStarts && !PetscBTLookup(sectionLocal->blockStarts, p)) pblocks[offset - localStart] = -(dof - cdof);
+          if (bstate == PETSC_BOOL3_FALSE && dof - cdof) pblocks[offset - localStart] = -(dof - cdof);
         }
         dof  = dof < 0 ? -(dof + 1) : dof;
         bdof = cdof && (dof - cdof) ? 1 : dof;
@@ -2861,6 +2878,7 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
       } break;
       }
     }
+    if (sectionLocal->perm) PetscCall(ISRestoreIndices(sectionLocal->perm, &perm));
     /* Must have same blocksize on all procs (some might have no points) */
     bsLocal[0] = bs < 0 ? PETSC_MAX_INT : bs;
     bsLocal[1] = bs;
@@ -2889,7 +2907,8 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
         } else {
           pblocks[nblocks++] = pblocks[i]; // nblocks always <= i
         }
-        for (PetscInt j = 1; j < pblocks[i]; j++) PetscCheck(pblocks[i + j] == pblocks[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Block of size %" PetscInt_FMT " mismatches entry %" PetscInt_FMT, pblocks[i], pblocks[i + j]);
+        for (PetscInt j = 1; j < pblocks[i]; j++)
+          PetscCheck(pblocks[i + j] == pblocks[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Block of size %" PetscInt_FMT " at %" PetscInt_FMT " mismatches entry %" PetscInt_FMT " at %" PetscInt_FMT, pblocks[i], i, pblocks[i + j], i + j);
       }
       PetscCall(MatSetVariableBlockSizes(*J, nblocks, pblocks));
     }
