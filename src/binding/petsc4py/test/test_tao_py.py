@@ -96,6 +96,11 @@ class TestTaoPython(unittest.TestCase):
         tao.setMonitor(ctx.monitor)
         tao.setFromOptions()
         tao.setMaximumIterations(3)
+
+        def _update(tao, it, cnt):
+             cnt += 1
+        cnt_up = numpy.array(0)
+        tao.setUpdate(_update, (cnt_up,) )
         tao.setSolution(x)
 
         # Call the solve method of MyTAO
@@ -128,6 +133,7 @@ class TestTaoPython(unittest.TestCase):
         self.assertTrue(ctx.log['setUp'] == 1)
         self.assertTrue(ctx.log['setFromOptions'] == 1)
         self.assertTrue(ctx.log['step'] == n)
+        self.assertEqual(cnt_up, 2 * n)
         tao.cancelMonitor()
 
 
