@@ -578,8 +578,8 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat, PetscInt m, const PetscInt im[], Pet
               bilen = b->ilen;
               bj    = b->j;
               ba    = b->a;
-              rp2   = bj + bi[row];
-              ap2   = ba + bi[row];
+              rp2   = PetscSafePointerPlusOffset(bj, bi[row]);
+              ap2   = PetscSafePointerPlusOffset(ba, bi[row]);
               rmax2 = bimax[row];
               nrow2 = bilen[row];
               low2  = 0;
@@ -3008,7 +3008,10 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin, MatDuplicateOption cpvalues, Mat *
       In fact, MatDuplicate only requires the matrix to be preallocated
       This may happen inside a DMCreateMatrix_Shell */
     if (oldmat->lvec) PetscCall(VecDuplicate(oldmat->lvec, &a->lvec));
-    if (oldmat->Mvctx) PetscCall(VecScatterCopy(oldmat->Mvctx, &a->Mvctx));
+    if (oldmat->Mvctx) {
+      a->Mvctx = oldmat->Mvctx;
+      PetscCall(PetscObjectReference((PetscObject)oldmat->Mvctx));
+    }
     PetscCall(MatDuplicate(oldmat->A, cpvalues, &a->A));
     PetscCall(MatDuplicate(oldmat->B, cpvalues, &a->B));
   }
