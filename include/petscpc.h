@@ -249,6 +249,7 @@ PETSC_EXTERN PetscErrorCode PCCompositeAddPC(PC, PC);
 PETSC_EXTERN PetscErrorCode PCCompositeGetNumberPC(PC, PetscInt *);
 PETSC_EXTERN PetscErrorCode PCCompositeGetPC(PC, PetscInt, PC *);
 PETSC_EXTERN PetscErrorCode PCCompositeSpecialSetAlpha(PC, PetscScalar);
+PETSC_EXTERN PetscErrorCode PCCompositeSpecialSetAlphaMat(PC, Mat);
 
 PETSC_EXTERN PetscErrorCode PCRedundantSetNumber(PC, PetscInt);
 PETSC_EXTERN PetscErrorCode PCRedundantSetScatter(PC, VecScatter, VecScatter);
