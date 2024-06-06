@@ -208,13 +208,19 @@ static PetscErrorCode TSStep_BasicSymplectic(TS ts)
   IS                    is_q = bsymp->is_q, is_p = bsymp->is_p;
   TS                    subts_q = bsymp->subts_q, subts_p = bsymp->subts_p;
   PetscBool             stageok = PETSC_TRUE;
-  PetscReal             ptime = ts->ptime, next_time_step = ts->time_step;
-  PetscInt              iter;
+  PetscReal             ptime, next_time_step = ts->time_step;
+  PetscInt              n;
 
   PetscFunctionBegin;
+  PetscCall(TSGetStepNumber(ts, &n));
+  PetscCall(TSSetStepNumber(subts_p, n));
+  PetscCall(TSSetStepNumber(subts_q, n));
+  PetscCall(TSGetTime(ts, &ptime));
+  PetscCall(TSSetTime(subts_p, ptime));
+  PetscCall(TSSetTime(subts_q, ptime));
   PetscCall(VecGetSubVector(update, is_q, &q_update));
   PetscCall(VecGetSubVector(update, is_p, &p_update));
-  for (iter = 0; iter < scheme->s; iter++) {
+  for (PetscInt iter = 0; iter < scheme->s; iter++) {
     PetscCall(TSPreStage(ts, ptime));
     PetscCall(VecGetSubVector(solution, is_q, &q));
     PetscCall(VecGetSubVector(solution, is_p, &p));
