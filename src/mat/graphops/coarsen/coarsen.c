@@ -321,7 +321,10 @@ PetscErrorCode MatCoarsenSetGreedyOrdering(MatCoarsen coarser, const IS perm)
 
   Level: advanced
 
-.seealso: `MatCoarsen`, `MatCoarsenApply()`, `MatCoarsenCreate()`, `MatCoarsenSetType()`
+  Note:
+  This passes ownership to the caller and nullifies the value of weights (`PetscCoarsenData`) within the `MatCoarsen`
+
+.seealso: `MatCoarsen`, `MatCoarsenApply()`, `MatCoarsenCreate()`, `MatCoarsenSetType()`, `PetscCoarsenData`
 @*/
 PetscErrorCode MatCoarsenGetData(MatCoarsen coarser, PetscCoarsenData **llist)
 {
