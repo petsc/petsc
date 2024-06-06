@@ -2549,7 +2549,7 @@ cdef extern from * nogil: # custom.h
 cdef extern from * nogil: # custom.h
     PetscErrorCode TaoGetVecs(PetscTAO, PetscVec*, PetscVec*, PetscVec*)
     PetscErrorCode TaoCheckReals(PetscTAO, PetscReal, PetscReal)
-    PetscErrorCode TaoComputeUpdate(PetscTAO)
+    PetscErrorCode TaoComputeUpdate(PetscTAO, PetscReal*)
     PetscErrorCode TaoCreateDefaultLineSearch(PetscTAO)
     PetscErrorCode TaoCreateDefaultKSP(PetscTAO)
     PetscErrorCode TaoApplyLineSearch(PetscTAO, PetscReal*, PetscReal*, PetscTAOLineSearchConvergedReason*)
@@ -2735,23 +2735,13 @@ cdef PetscErrorCode TaoSolve_Python_default(
     CHKERR(TaoMonitor(tao, tao.niter, f, gnorm, 0.0, step))
     CHKERR(TaoConverged(tao, &tao.reason))
 
-    cdef PetscObjectState ostate = -1
-    cdef PetscObjectState nstate = -1
     cdef PetscTAOLineSearchConvergedReason lsr = TAOLINESEARCH_SUCCESS
     for its from 0 <= its < tao.max_it:
         <void> its # unused
         if tao.reason: break
-        CHKERR(PetscObjectStateGet(<PetscObject>X, &ostate))
-        CHKERR(TaoComputeUpdate(tao))
+        CHKERR(TaoComputeUpdate(tao, &f))
 
         TaoPreStep_Python(tao)
-        CHKERR(PetscObjectStateGet(<PetscObject>X, &nstate))
-        if ostate != nstate:
-            if G != NULL:
-                CHKERR(TaoComputeObjectiveAndGradient(tao, X, &f, G))
-                CHKERR(VecNorm(G, PETSC_NORM_2, &gnorm))
-            else:
-                CHKERR(TaoComputeObjective(tao, X, &f))
         #
         tao.ksp_its = 0
         TaoStep_Python(tao, X, G, S)

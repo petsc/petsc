@@ -652,11 +652,14 @@ PetscErrorCode TaoHasHessianRoutine(Tao tao, PetscBool* flg)
 #endif
 
 static
-PetscErrorCode TaoComputeUpdate(Tao tao)
+PetscErrorCode TaoComputeUpdate(Tao tao, PetscReal *f)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  PetscTryTypeMethod(tao,update,tao->niter,tao->user_update);
+  if (tao->ops->update) {
+    PetscUseTypeMethod(tao,update,tao->niter,tao->user_update);
+    PetscCall(TaoComputeObjective(tao,tao->solution,f));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

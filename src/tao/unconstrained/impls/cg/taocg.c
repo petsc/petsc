@@ -52,8 +52,10 @@ static PetscErrorCode TaoSolve_CG(Tao tao)
 
   while (1) {
     /* Call general purpose update function */
-    PetscTryTypeMethod(tao, update, tao->niter, tao->user_update);
-
+    if (tao->ops->update) {
+      PetscUseTypeMethod(tao, update, tao->niter, tao->user_update);
+      PetscCall(TaoComputeObjective(tao, tao->solution, &f));
+    }
     /*  Save the current gradient information */
     f_old      = f;
     gnorm2_old = gnorm2;
