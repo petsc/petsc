@@ -98,8 +98,6 @@ PetscErrorCode MatCreate(MPI_Comm comm, Mat *A)
 
   PetscFunctionBegin;
   PetscAssertPointer(A, 2);
-
-  *A = NULL;
   PetscCall(MatInitializePackage());
 
   PetscCall(PetscHeaderCreate(B, MAT_CLASSID, "Mat", "Matrix", "Mat", comm, MatDestroy, MatView));

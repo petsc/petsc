@@ -57,19 +57,16 @@ PetscErrorCode DMCreate(MPI_Comm comm, DM *dm)
 
   PetscFunctionBegin;
   PetscAssertPointer(dm, 2);
-  *dm = NULL;
+
   PetscCall(DMInitializePackage());
-
   PetscCall(PetscHeaderCreate(v, DM_CLASSID, "DM", "Distribution Manager", "DM", comm, DMDestroy, DMView));
-
   ((PetscObject)v)->non_cyclic_references = &DMCountNonCyclicReferences;
-
-  v->setupcalled          = PETSC_FALSE;
-  v->setfromoptionscalled = PETSC_FALSE;
-  v->ltogmap              = NULL;
-  v->bind_below           = 0;
-  v->bs                   = 1;
-  v->coloringtype         = IS_COLORING_GLOBAL;
+  v->setupcalled                          = PETSC_FALSE;
+  v->setfromoptionscalled                 = PETSC_FALSE;
+  v->ltogmap                              = NULL;
+  v->bind_below                           = 0;
+  v->bs                                   = 1;
+  v->coloringtype                         = IS_COLORING_GLOBAL;
   PetscCall(PetscSFCreate(comm, &v->sf));
   PetscCall(PetscSFCreate(comm, &v->sectionSF));
   v->labels                    = NULL;

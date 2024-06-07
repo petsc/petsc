@@ -681,11 +681,9 @@ PetscErrorCode PetscDSCreate(MPI_Comm comm, PetscDS *ds)
 
   PetscFunctionBegin;
   PetscAssertPointer(ds, 2);
-  *ds = NULL;
   PetscCall(PetscDSInitializePackage());
 
   PetscCall(PetscHeaderCreate(p, PETSCDS_CLASSID, "PetscDS", "Discrete System", "PetscDS", comm, PetscDSDestroy, PetscDSView));
-
   p->Nf           = 0;
   p->setup        = PETSC_FALSE;
   p->numConstants = 0;

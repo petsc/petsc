@@ -496,7 +496,6 @@ PetscErrorCode AOCreate(MPI_Comm comm, AO *ao)
 
   PetscFunctionBegin;
   PetscAssertPointer(ao, 2);
-  *ao = NULL;
   PetscCall(AOInitializePackage());
 
   PetscCall(PetscHeaderCreate(aonew, AO_CLASSID, "AO", "Application Ordering", "AO", comm, AODestroy, AOView));

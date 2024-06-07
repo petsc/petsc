@@ -262,8 +262,8 @@ PetscErrorCode PetscBenchCreate(MPI_Comm comm, PetscBench *bm)
 {
   PetscFunctionBegin;
   PetscAssertPointer(bm, 2);
-  *bm = NULL;
   PetscCall(PetscBenchInitializePackage());
+
   PetscCall(PetscHeaderCreate(*bm, BM_CLASSID, "BM", "PetscBench", "BM", comm, PetscBenchDestroy, PetscBenchView));
   (*bm)->size = PETSC_DECIDE;
   PetscFunctionReturn(PETSC_SUCCESS);

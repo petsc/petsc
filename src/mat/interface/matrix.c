@@ -11004,13 +11004,13 @@ PetscErrorCode MatTransposeColoringCreate(Mat mat, ISColoring iscoloring, MatTra
   MPI_Comm             comm;
 
   PetscFunctionBegin;
+  PetscAssertPointer(color, 3);
+
   PetscCall(PetscLogEventBegin(MAT_TransposeColoringCreate, mat, 0, 0, 0));
   PetscCall(PetscObjectGetComm((PetscObject)mat, &comm));
   PetscCall(PetscHeaderCreate(c, MAT_TRANSPOSECOLORING_CLASSID, "MatTransposeColoring", "Matrix product C=A*B^T via coloring", "Mat", comm, MatTransposeColoringDestroy, NULL));
-
   c->ctype = iscoloring->ctype;
   PetscUseTypeMethod(mat, transposecoloringcreate, iscoloring, c);
-
   *color = c;
   PetscCall(PetscLogEventEnd(MAT_TransposeColoringCreate, mat, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);

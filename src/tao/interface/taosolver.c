@@ -94,14 +94,14 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   PetscFunctionBegin;
   PetscAssertPointer(newtao, 2);
   PetscCall(TaoInitializePackage());
+
   PetscCall(TaoLineSearchInitializePackage());
   PetscCall(PetscHeaderCreate(tao, TAO_CLASSID, "Tao", "Optimization solver", "Tao", comm, TaoDestroy, TaoView));
 
   /* Set non-NULL defaults */
   tao->ops->convergencetest = TaoDefaultConvergenceTest;
-
-  tao->max_it    = 10000;
-  tao->max_funcs = -1;
+  tao->max_it               = 10000;
+  tao->max_funcs            = -1;
 #if defined(PETSC_USE_REAL_SINGLE)
   tao->gatol = 1e-5;
   tao->grtol = 1e-5;
@@ -113,13 +113,11 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   tao->crtol = 1e-8;
   tao->catol = 1e-8;
 #endif
-  tao->gttol   = 0.0;
-  tao->steptol = 0.0;
-  tao->trust0  = PETSC_INFINITY;
-  tao->fmin    = PETSC_NINFINITY;
-
+  tao->gttol      = 0.0;
+  tao->steptol    = 0.0;
+  tao->trust0     = PETSC_INFINITY;
+  tao->fmin       = PETSC_NINFINITY;
   tao->hist_reset = PETSC_TRUE;
-
   PetscCall(TaoResetStatistics(tao));
   *newtao = tao;
   PetscFunctionReturn(PETSC_SUCCESS);

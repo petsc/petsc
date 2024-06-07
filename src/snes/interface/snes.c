@@ -1759,11 +1759,9 @@ PetscErrorCode SNESCreate(MPI_Comm comm, SNES *outsnes)
 
   PetscFunctionBegin;
   PetscAssertPointer(outsnes, 2);
-  *outsnes = NULL;
   PetscCall(SNESInitializePackage());
 
   PetscCall(PetscHeaderCreate(snes, SNES_CLASSID, "SNES", "Nonlinear solver", "SNES", comm, SNESDestroy, SNESView));
-
   snes->ops->converged       = SNESConvergedDefault;
   snes->usesksp              = PETSC_TRUE;
   snes->tolerancesset        = PETSC_FALSE;

@@ -712,6 +712,7 @@ PetscErrorCode PetscViewerASCIIGetStdout(MPI_Comm comm, PetscViewer *viewer)
   MPI_Comm  ncomm;
 
   PetscFunctionBegin;
+  PetscAssertPointer(viewer, 2);
   PetscCall(PetscSpinlockLock(&PetscViewerASCIISpinLockStdout));
   PetscCall(PetscCommDuplicate(comm, &ncomm, NULL));
   if (Petsc_Viewer_Stdout_keyval == MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_Stdout_keyval, NULL));

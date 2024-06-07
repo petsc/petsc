@@ -64,10 +64,8 @@ PetscErrorCode PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist)
   PetscAssertPointer(hist, 3);
 
   PetscCall(PetscHeaderCreate(h, PETSC_DRAWHG_CLASSID, "DrawHG", "Histogram", "Draw", PetscObjectComm((PetscObject)draw), PetscDrawHGDestroy, NULL));
-
   PetscCall(PetscObjectReference((PetscObject)draw));
-  h->win = draw;
-
+  h->win     = draw;
   h->view    = NULL;
   h->destroy = NULL;
   h->color   = PETSC_DRAW_GREEN;
@@ -77,17 +75,13 @@ PetscErrorCode PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist)
   h->ymax    = 1.;
   h->numBins = bins;
   h->maxBins = bins;
-
   PetscCall(PetscMalloc1(h->maxBins, &h->bins));
-
   h->numValues   = 0;
   h->maxValues   = CHUNKSIZE;
   h->calcStats   = PETSC_FALSE;
   h->integerBins = PETSC_FALSE;
-
   PetscCall(PetscMalloc1(h->maxValues, &h->values));
   PetscCall(PetscDrawAxisCreate(draw, &h->axis));
-
   *hist = h;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

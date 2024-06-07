@@ -399,13 +399,11 @@ PetscErrorCode TSTrajectoryCreate(MPI_Comm comm, TSTrajectory *tj)
 
   PetscFunctionBegin;
   PetscAssertPointer(tj, 2);
-  *tj = NULL;
   PetscCall(TSInitializePackage());
 
   PetscCall(PetscHeaderCreate(t, TSTRAJECTORY_CLASSID, "TSTrajectory", "Time stepping", "TS", comm, TSTrajectoryDestroy, TSTrajectoryView));
   t->setupcalled = PETSC_FALSE;
   PetscCall(TSHistoryCreate(comm, &t->tsh));
-
   t->lag.order            = 1;
   t->lag.L                = NULL;
   t->lag.T                = NULL;

@@ -451,6 +451,7 @@ PetscErrorCode MatFDColoringCreate(Mat mat, ISColoring iscoloring, MatFDColoring
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
+  PetscAssertPointer(color, 3);
   PetscCheck(mat->assembled, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Matrix must be assembled by calls to MatAssemblyBegin/End();");
   PetscCall(PetscLogEventBegin(MAT_FDColoringCreate, mat, 0, 0, 0));
   PetscCall(MatGetSize(mat, &M, &N));

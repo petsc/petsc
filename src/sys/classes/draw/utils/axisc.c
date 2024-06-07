@@ -33,10 +33,8 @@ PetscErrorCode PetscDrawAxisCreate(PetscDraw draw, PetscDrawAxis *axis)
   PetscAssertPointer(axis, 2);
 
   PetscCall(PetscHeaderCreate(ad, PETSC_DRAWAXIS_CLASSID, "DrawAxis", "Draw Axis", "Draw", PetscObjectComm((PetscObject)draw), PetscDrawAxisDestroy, NULL));
-
   PetscCall(PetscObjectReference((PetscObject)draw));
-  ad->win = draw;
-
+  ad->win       = draw;
   ad->xticks    = PetscADefTicks;
   ad->yticks    = PetscADefTicks;
   ad->xlabelstr = PetscADefLabel;
@@ -47,8 +45,7 @@ PetscErrorCode PetscDrawAxisCreate(PetscDraw draw, PetscDrawAxis *axis)
   ad->xlabel    = NULL;
   ad->ylabel    = NULL;
   ad->toplabel  = NULL;
-
-  *axis = ad;
+  *axis         = ad;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

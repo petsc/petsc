@@ -348,7 +348,6 @@ PetscErrorCode PetscFECreate(MPI_Comm comm, PetscFE *fem)
   PetscFunctionBegin;
   PetscAssertPointer(fem, 2);
   PetscCall(PetscCitationsRegister(FECitation, &FEcite));
-  *fem = NULL;
   PetscCall(PetscFEInitializePackage());
 
   PetscCall(PetscHeaderCreate(f, PETSCFE_CLASSID, "PetscFE", "Finite Element", "PetscFE", comm, PetscFEDestroy, PetscFEView));

@@ -332,13 +332,10 @@ PetscErrorCode PetscRandomCreate(MPI_Comm comm, PetscRandom *r)
 
   PetscFunctionBegin;
   PetscAssertPointer(r, 2);
-  *r = NULL;
   PetscCall(PetscRandomInitializePackage());
 
   PetscCall(PetscHeaderCreate(rr, PETSC_RANDOM_CLASSID, "PetscRandom", "Random number generator", "Sys", comm, PetscRandomDestroy, PetscRandomView));
-
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-
   rr->data  = NULL;
   rr->low   = 0.0;
   rr->width = 1.0;

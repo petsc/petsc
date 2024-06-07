@@ -447,11 +447,9 @@ PetscErrorCode PetscDualSpaceCreate(MPI_Comm comm, PetscDualSpace *sp)
   PetscFunctionBegin;
   PetscAssertPointer(sp, 2);
   PetscCall(PetscCitationsRegister(FECitation, &FEcite));
-  *sp = NULL;
   PetscCall(PetscFEInitializePackage());
 
   PetscCall(PetscHeaderCreate(s, PETSCDUALSPACE_CLASSID, "PetscDualSpace", "Dual Space", "PetscDualSpace", comm, PetscDualSpaceDestroy, PetscDualSpaceView));
-
   s->order       = 0;
   s->Nc          = 1;
   s->k           = 0;
@@ -459,8 +457,7 @@ PetscErrorCode PetscDualSpaceCreate(MPI_Comm comm, PetscDualSpace *sp)
   s->spintdim    = -1;
   s->uniform     = PETSC_TRUE;
   s->setupcalled = PETSC_FALSE;
-
-  *sp = s;
+  *sp            = s;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
