@@ -2178,16 +2178,18 @@ static PetscErrorCode DMPlexCreateHexCylinderMesh_Internal(DM dm, DMBoundaryType
   PetscCall(DMPlexMarkBoundaryFaces(dm, PETSC_DETERMINE, bdlabel));
   // Remove faces on top and bottom
   PetscCall(DMLabelGetStratumIS(bdlabel, 1, &faceIS));
-  PetscCall(ISGetLocalSize(faceIS, &Nf));
-  PetscCall(ISGetIndices(faceIS, &faces));
-  for (PetscInt f = 0; f < Nf; ++f) {
-    PetscReal vol, normal[3];
+  if (faceIS) {
+    PetscCall(ISGetLocalSize(faceIS, &Nf));
+    PetscCall(ISGetIndices(faceIS, &faces));
+    for (PetscInt f = 0; f < Nf; ++f) {
+      PetscReal vol, normal[3];
 
-    PetscCall(DMPlexComputeCellGeometryFVM(dm, faces[f], &vol, NULL, normal));
-    if (PetscAbsReal(normal[2]) < PETSC_SMALL) PetscCall(DMLabelSetValue(edgelabel, faces[f], 1));
+      PetscCall(DMPlexComputeCellGeometryFVM(dm, faces[f], &vol, NULL, normal));
+      if (PetscAbsReal(normal[2]) < PETSC_SMALL) PetscCall(DMLabelSetValue(edgelabel, faces[f], 1));
+    }
+    PetscCall(ISRestoreIndices(faceIS, &faces));
+    PetscCall(ISDestroy(&faceIS));
   }
-  PetscCall(ISRestoreIndices(faceIS, &faces));
-  PetscCall(ISDestroy(&faceIS));
   PetscCall(DMPlexLabelComplete(dm, bdlabel));
   PetscCall(DMPlexLabelComplete(dm, edgelabel));
   PetscFunctionReturn(PETSC_SUCCESS);
