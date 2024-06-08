@@ -20,6 +20,158 @@ static PetscErrorCode MatMultTranspose_Transpose(Mat N, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatSolve_Transpose_LU(Mat N, Vec b, Vec x)
+{
+  Mat A;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(N, &A));
+  PetscCall(MatSolveTranspose(A, b, x));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatSolveAdd_Transpose_LU(Mat N, Vec b, Vec y, Vec x)
+{
+  Mat A;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(N, &A));
+  PetscCall(MatSolveTransposeAdd(A, b, y, x));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatSolveTranspose_Transpose_LU(Mat N, Vec b, Vec x)
+{
+  Mat A;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(N, &A));
+  PetscCall(MatSolve(A, b, x));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatSolveTransposeAdd_Transpose_LU(Mat N, Vec b, Vec y, Vec x)
+{
+  Mat A;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(N, &A));
+  PetscCall(MatSolveAdd(A, b, y, x));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatMatSolve_Transpose_LU(Mat N, Mat B, Mat X)
+{
+  Mat A;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(N, &A));
+  PetscCall(MatMatSolveTranspose(A, B, X));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatMatSolveTranspose_Transpose_LU(Mat N, Mat B, Mat X)
+{
+  Mat A;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(N, &A));
+  PetscCall(MatMatSolve(A, B, X));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatLUFactor_Transpose(Mat N, IS row, IS col, const MatFactorInfo *minfo)
+{
+  Mat A;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(N, &A));
+  PetscCall(MatLUFactor(A, col, row, minfo));
+  PetscCall(MatShellSetOperation(N, MATOP_SOLVE, (void (*)(void))MatSolve_Transpose_LU));
+  PetscCall(MatShellSetOperation(N, MATOP_SOLVE_ADD, (void (*)(void))MatSolveAdd_Transpose_LU));
+  PetscCall(MatShellSetOperation(N, MATOP_SOLVE_TRANSPOSE, (void (*)(void))MatSolveTranspose_Transpose_LU));
+  PetscCall(MatShellSetOperation(N, MATOP_SOLVE_TRANSPOSE_ADD, (void (*)(void))MatSolveTransposeAdd_Transpose_LU));
+  PetscCall(MatShellSetOperation(N, MATOP_MAT_SOLVE, (void (*)(void))MatMatSolve_Transpose_LU));
+  PetscCall(MatShellSetOperation(N, MATOP_MAT_SOLVE_TRANSPOSE, (void (*)(void))MatMatSolveTranspose_Transpose_LU));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatSolve_Transpose_Cholesky(Mat N, Vec b, Vec x)
+{
+  Mat A;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(N, &A));
+  PetscCall(MatSolveTranspose(A, b, x));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatSolveAdd_Transpose_Cholesky(Mat N, Vec b, Vec y, Vec x)
+{
+  Mat A;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(N, &A));
+  PetscCall(MatSolveTransposeAdd(A, b, y, x));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatSolveTranspose_Transpose_Cholesky(Mat N, Vec b, Vec x)
+{
+  Mat A;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(N, &A));
+  PetscCall(MatSolve(A, b, x));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatSolveTransposeAdd_Transpose_Cholesky(Mat N, Vec b, Vec y, Vec x)
+{
+  Mat A;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(N, &A));
+  PetscCall(MatSolveAdd(A, b, y, x));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatMatSolve_Transpose_Cholesky(Mat N, Mat B, Mat X)
+{
+  Mat A;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(N, &A));
+  PetscCall(MatMatSolveTranspose(A, B, X));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatMatSolveTranspose_Transpose_Cholesky(Mat N, Mat B, Mat X)
+{
+  Mat A;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(N, &A));
+  PetscCall(MatMatSolve(A, B, X));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatCholeskyFactor_Transpose(Mat N, IS perm, const MatFactorInfo *minfo)
+{
+  Mat A;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(N, &A));
+  PetscCall(MatCholeskyFactor(A, perm, minfo));
+  PetscCall(MatShellSetOperation(N, MATOP_SOLVE, (void (*)(void))MatSolve_Transpose_Cholesky));
+  PetscCall(MatShellSetOperation(N, MATOP_SOLVE_ADD, (void (*)(void))MatSolveAdd_Transpose_Cholesky));
+  PetscCall(MatShellSetOperation(N, MATOP_SOLVE_TRANSPOSE, (void (*)(void))MatSolveTranspose_Transpose_Cholesky));
+  PetscCall(MatShellSetOperation(N, MATOP_SOLVE_TRANSPOSE_ADD, (void (*)(void))MatSolveTransposeAdd_Transpose_Cholesky));
+  PetscCall(MatShellSetOperation(N, MATOP_MAT_SOLVE, (void (*)(void))MatMatSolve_Transpose_Cholesky));
+  PetscCall(MatShellSetOperation(N, MATOP_MAT_SOLVE_TRANSPOSE, (void (*)(void))MatMatSolveTranspose_Transpose_Cholesky));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatDestroy_Transpose(Mat N)
 {
   Mat A;
@@ -41,8 +193,11 @@ static PetscErrorCode MatDuplicate_Transpose(Mat N, MatDuplicateOption op, Mat *
   PetscCall(MatShellGetContext(N, &A));
   PetscCall(MatDuplicate(A, op, &C));
   PetscCall(MatCreateTranspose(C, m));
+  if (op == MAT_COPY_VALUES) {
+    PetscCall(MatCopy(N, *m, SAME_NONZERO_PATTERN));
+    PetscCall(MatPropagateSymmetryOptions(A, C));
+  }
   PetscCall(MatDestroy(&C));
-  if (op == MAT_COPY_VALUES) PetscCall(MatCopy(N, *m, SAME_NONZERO_PATTERN));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -313,6 +468,8 @@ PetscErrorCode MatCreateTranspose(Mat A, Mat *N)
   PetscCall(MatShellSetOperation(*N, MATOP_DESTROY, (void (*)(void))MatDestroy_Transpose));
   PetscCall(MatShellSetOperation(*N, MATOP_MULT, (void (*)(void))MatMult_Transpose));
   PetscCall(MatShellSetOperation(*N, MATOP_MULT_TRANSPOSE, (void (*)(void))MatMultTranspose_Transpose));
+  PetscCall(MatShellSetOperation(*N, MATOP_LUFACTOR, (void (*)(void))MatLUFactor_Transpose));
+  PetscCall(MatShellSetOperation(*N, MATOP_CHOLESKYFACTOR, (void (*)(void))MatCholeskyFactor_Transpose));
   PetscCall(MatShellSetOperation(*N, MATOP_DUPLICATE, (void (*)(void))MatDuplicate_Transpose));
   PetscCall(MatShellSetOperation(*N, MATOP_HAS_OPERATION, (void (*)(void))MatHasOperation_Transpose));
   PetscCall(MatShellSetOperation(*N, MATOP_GET_DIAGONAL, (void (*)(void))MatGetDiagonal_Transpose));
