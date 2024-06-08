@@ -1785,6 +1785,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
             PetscCall(VecDuplicate(std::get<3>(*ctx)[0], std::get<3>(*ctx) + 2));
             PetscCall(PetscObjectDereference((PetscObject)inner_ksp));
             PetscCall(PetscObjectDereference((PetscObject)S));
+            for (std::vector<Vec>::iterator it = initial.begin(); it != initial.end(); ++it) PetscCall(VecDestroy(&*it));
             PetscFunctionReturn(PETSC_SUCCESS);
           } else { /* second call to PCSetUp() on the PC associated to the Schur complement, retrieve previously set context */
             PetscCall(PetscContainerGetPointer(container, (void **)&ctx));
@@ -1861,6 +1862,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
             PetscCall(MatDestroy(&B));
           } else
             PetscCheck(type != PC_HPDDM_SCHUR_PRE_GENEO, PetscObjectComm((PetscObject)P), PETSC_ERR_ARG_INCOMP, "-%spc_hpddm_schur_precondition %s without a prior call to PCHPDDMSetAuxiliaryMat() on the A11 block%s%s", pcpre ? pcpre : "", PCHPDDMSchurPreTypes[type], pcpre ? " -" : "", pcpre ? pcpre : "");
+          for (std::vector<Vec>::iterator it = initial.begin(); it != initial.end(); ++it) PetscCall(VecDestroy(&*it));
           PetscFunctionReturn(PETSC_SUCCESS);
         } else {
           PetscCall(PetscOptionsGetString(nullptr, pcpre, "-pc_hpddm_levels_1_st_pc_type", type, sizeof(type), nullptr));
@@ -2225,6 +2227,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
             const char *matpre;
             PetscBool   cmp[4];
             PetscCall(KSPGetOperators(ksp[0], subA, subA + 1));
+            PetscCall(PetscObjectReference((PetscObject)subA[0]));
             PetscCall(MatDuplicate(subA[1], MAT_SHARE_NONZERO_PATTERN, &D));
             PetscCall(MatGetOptionsPrefix(subA[1], &matpre));
             PetscCall(MatSetOptionsPrefix(D, matpre));
@@ -2413,6 +2416,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         PetscCall(KSPGetOperators(ksp[0], st, st + 1));
         PetscCall(MatCopy(subA[0], st[0], structure));
         if (subA[1] != subA[0] || st[1] != st[0]) PetscCall(MatCopy(subA[1], st[1], SAME_NONZERO_PATTERN));
+        PetscCall(PetscObjectDereference((PetscObject)subA[0]));
       }
       if (data->log_separate) PetscCall(PetscLogEventEnd(PC_HPDDM_SetUp[0], data->levels[0]->ksp, nullptr, nullptr, nullptr));
       if (ismatis) PetscCall(MatISGetLocalMat(C, &N));
