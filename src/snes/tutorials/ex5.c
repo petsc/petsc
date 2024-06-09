@@ -950,4 +950,14 @@ int main(int argc, char **argv)
      suffix: 7_ksp_view_pre
      args: -pc_type gamg -ksp_view_pre
 
+   test:
+     requires: !single
+     suffix: hem_view_detailed
+     args: -pc_type gamg -ksp_view ::ascii_info_detail -pc_gamg_mat_coarsen_type hem
+
+   test:
+     requires: !single
+     suffix: mis_view_detailed
+     args: -pc_type gamg -ksp_view ::ascii_info_detail -pc_gamg_mat_coarsen_type mis
+
 TEST*/

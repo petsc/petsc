@@ -84,18 +84,19 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
       PetscCall(MatCheckCompressedRow(mpimat->B, matB->nonzerorowcnt, &matB->compressedrow, matB->i, cMat->rmap->n, -1.0));
     } else {
       PetscBool isAIJ;
+
+      matA = (Mat_SeqAIJ *)cMat->data;
       PetscCall(PetscObjectBaseTypeCompare((PetscObject)cMat, MATSEQAIJ, &isAIJ));
       PetscCheck(isAIJ, PETSC_COMM_SELF, PETSC_ERR_USER, "Require AIJ matrix.");
-      matA = (Mat_SeqAIJ *)cMat->data;
     }
     PetscCall(MatGetOwnershipRange(cMat, &my0, &Iend));
-    if (mpimat) {
+    if (isMPI) {
       PetscInt *lid_gid;
+
       PetscCall(PetscMalloc1(nloc_inner, &lid_gid)); /* explicit array needed */
       for (kk = 0, gid = my0; kk < nloc_inner; kk++, gid++) lid_gid[kk] = gid;
       PetscCall(VecGetLocalSize(mpimat->lvec, &num_fine_ghosts));
-      PetscCall(PetscMalloc1(num_fine_ghosts, &cpcol_gid));
-      PetscCall(PetscMalloc1(num_fine_ghosts, &cpcol_state));
+      PetscCall(PetscMalloc2(num_fine_ghosts, &cpcol_gid, num_fine_ghosts, &cpcol_state));
       PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)cMat), &sf));
       PetscCall(MatGetLayouts(cMat, &layout, NULL));
       PetscCall(PetscSFSetGraphLayout(sf, layout, num_fine_ghosts, NULL, PETSC_COPY_VALUES, mpimat->garray));
@@ -105,12 +106,7 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
       PetscCall(PetscFree(lid_gid));
     } else num_fine_ghosts = 0;
 
-    PetscCall(PetscMalloc1(nloc_inner, &lid_cprowID));
-    PetscCall(PetscMalloc1(nloc_inner, &lid_removed)); /* explicit array needed */
-    PetscCall(PetscMalloc1(nloc_inner, &lid_parent_gid));
-    PetscCall(PetscMalloc1(nloc_inner, &lid_state));
-
-    /* the data structure */
+    PetscCall(PetscMalloc4(nloc_inner, &lid_cprowID, nloc_inner, &lid_removed, nloc_inner, &lid_parent_gid, nloc_inner, &lid_state));
     PetscCall(PetscCDCreate(nloc_inner, &agg_lists));
     /* need an inverse map - locals */
     for (kk = 0; kk < nloc_inner; kk++) {
@@ -191,7 +187,7 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
       } /* vertex loop */
 
       /* update ghost states and count todos */
-      if (mpimat) {
+      if (isMPI) {
         /* scatter states, check for done */
         PetscCall(PetscSFBcastBegin(sf, MPIU_INT, lid_state, cpcol_state, MPI_REPLACE));
         PetscCall(PetscSFBcastEnd(sf, MPIU_INT, lid_state, cpcol_state, MPI_REPLACE));
@@ -227,9 +223,9 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
     /* tell adj who my lid_parent_gid vertices belong to - fill in agg_lists selected ghost lists */
     if (matB) {
       PetscInt *cpcol_sel_gid, *icpcol_gid;
+
       /* need to copy this to free buffer -- should do this globally */
-      PetscCall(PetscMalloc1(num_fine_ghosts, &cpcol_sel_gid));
-      PetscCall(PetscMalloc1(num_fine_ghosts, &icpcol_gid));
+      PetscCall(PetscMalloc2(num_fine_ghosts, &icpcol_gid, num_fine_ghosts, &cpcol_sel_gid));
       for (cpid = 0; cpid < num_fine_ghosts; cpid++) icpcol_gid[cpid] = cpcol_gid[cpid];
       /* get proc of deleted ghost */
       PetscCall(PetscSFBcastBegin(sf, MPIU_INT, lid_parent_gid, cpcol_sel_gid, MPI_REPLACE));
@@ -243,16 +239,11 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
         }
       }
       // done - cleanup
-      PetscCall(PetscFree(icpcol_gid));
-      PetscCall(PetscFree(cpcol_sel_gid));
+      PetscCall(PetscFree2(icpcol_gid, cpcol_sel_gid));
       PetscCall(PetscSFDestroy(&sf));
-      PetscCall(PetscFree(cpcol_gid));
-      PetscCall(PetscFree(cpcol_state));
+      PetscCall(PetscFree2(cpcol_gid, cpcol_state));
     }
-    PetscCall(PetscFree(lid_cprowID));
-    PetscCall(PetscFree(lid_removed));
-    PetscCall(PetscFree(lid_parent_gid));
-    PetscCall(PetscFree(lid_state));
+    PetscCall(PetscFree4(lid_cprowID, lid_removed, lid_parent_gid, lid_state));
 
     /* MIS done - make projection matrix - P */
     MatType jtype;
@@ -265,6 +256,7 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
     {
       PetscCDIntNd *pos, *pos2;
       PetscInt      colIndex, Iend, fgid;
+
       PetscCall(MatGetOwnershipRangeColumn(Prols[iterIdx], &colIndex, &Iend));
       // TODO - order with permutation in lid_selected (reversed)
       for (PetscInt lid = 0; lid < agg_lists->size; lid++) {
@@ -295,6 +287,7 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
   Rtot = Prols[misk - 1]; // compose P then transpose to get R
   for (PetscInt iterIdx = misk - 1; iterIdx > 0; iterIdx--) {
     Mat P;
+
     PetscCall(MatMatMult(Prols[iterIdx - 1], Rtot, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &P));
     PetscCall(MatDestroy(&Prols[iterIdx - 1]));
     PetscCall(MatDestroy(&Rtot));
@@ -308,14 +301,17 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
     const PetscInt    nloc = Gmat->rmap->n;
     PetscCoarsenData *agg_lists;
     Mat               mat;
+
     PetscCall(PetscCDCreate(nloc, &agg_lists));
     *a_locals_llist = agg_lists; // return
     PetscCall(MatGetOwnershipRange(Rtot, &Istart, &Iend));
-    for (int grow = Istart, lid = 0; grow < Iend; grow++, lid++) {
+    for (PetscInt grow = Istart, lid = 0; grow < Iend; grow++, lid++) {
       const PetscInt *idx;
+
       PetscCall(MatGetRow(Rtot, grow, &ncols, &idx, NULL));
-      for (int jj = 0; jj < ncols; jj++) {
+      for (PetscInt jj = 0; jj < ncols; jj++) {
         PetscInt gcol = idx[jj];
+
         PetscCall(PetscCDAppendID(agg_lists, lid, gcol)); // local row, global column
       }
       PetscCall(MatRestoreRow(Rtot, grow, &ncols, &idx, NULL));
@@ -323,7 +319,7 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
     PetscCall(MatDestroy(&Rtot));
 
     /* make fake matrix, get largest nnz */
-    for (int lid = 0; lid < nloc; lid++) {
+    for (PetscInt lid = 0; lid < nloc; lid++) {
       PetscCall(PetscCDCountAt(agg_lists, lid, &jj));
       if (jj > max_osz) max_osz = jj;
     }
@@ -334,9 +330,11 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
     PetscCall(MatCreateAIJ(comm, nloc, nloc, PETSC_DETERMINE, PETSC_DETERMINE, 0, NULL, max_osz, NULL, &mat));
     for (PetscInt lid = 0, gidi = Istart; lid < nloc; lid++, gidi++) {
       PetscCDIntNd *pos;
+
       PetscCall(PetscCDGetHeadPos(agg_lists, lid, &pos));
       while (pos) {
         PetscInt gidj;
+
         PetscCall(PetscCDIntNdGetID(pos, &gidj));
         PetscCall(PetscCDGetNextPos(agg_lists, lid, &pos));
         if (gidj < Istart || gidj >= Istart + nloc) PetscCall(MatSetValues(mat, 1, &gidi, 1, &gidj, &one, ADD_VALUES));
@@ -418,7 +416,7 @@ static PetscErrorCode MatCoarsenSetFromOptions_MISK(MatCoarsen coarse, PetscOpti
    Note:
    When the coarsening is used inside `PCGAMG` then the options database key is `-pc_gamg_mat_coarsen_misk_distance`
 
-.seealso: `MatCoarsen`, `MatCoarsenMISKSetDistance()`, `MatCoarsenApply()`, `MatCoarsenSetType()`, `MatCoarsenType`, `MatCoarsenCreate()`
+.seealso: `MatCoarsen`, `MatCoarsenMISKSetDistance()`, `MatCoarsenApply()`, `MatCoarsenSetType()`, `MatCoarsenType`, `MatCoarsenCreate()`, `MATCOARSENHEM`, `MATCOARSENMIS`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MISK(MatCoarsen coarse)

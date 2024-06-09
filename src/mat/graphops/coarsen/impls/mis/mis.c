@@ -49,17 +49,17 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
     /* force compressed storage of B */
     PetscCall(MatCheckCompressedRow(mpimat->B, matB->nonzerorowcnt, &matB->compressedrow, matB->i, Gmat->rmap->n, -1.0));
   } else {
+    matA = (Mat_SeqAIJ *)Gmat->data;
     PetscCall(PetscObjectBaseTypeCompare((PetscObject)Gmat, MATSEQAIJ, &isAIJ));
     PetscCheck(isAIJ, comm, PETSC_ERR_PLIB, "Require AIJ matrix.");
-    matA = (Mat_SeqAIJ *)Gmat->data;
   }
   PetscCall(MatGetOwnershipRange(Gmat, &my0, &Iend));
-  PetscCall(PetscMalloc1(nloc, &lid_gid)); /* explicit array needed */
-  if (mpimat) {
+  PetscCall(PetscMalloc4(nloc, &lid_gid, nloc, &lid_cprowID, nloc, &lid_removed, nloc, &lid_state));
+  if (strict_aggs) PetscCall(PetscMalloc1(nloc, &lid_parent_gid));
+  if (isMPI) {
     for (kk = 0, gid = my0; kk < nloc; kk++, gid++) lid_gid[kk] = gid;
     PetscCall(VecGetLocalSize(mpimat->lvec, &num_fine_ghosts));
-    PetscCall(PetscMalloc1(num_fine_ghosts, &cpcol_gid));
-    PetscCall(PetscMalloc1(num_fine_ghosts, &cpcol_state));
+    PetscCall(PetscMalloc2(num_fine_ghosts, &cpcol_gid, num_fine_ghosts, &cpcol_state));
     PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)Gmat), &sf));
     PetscCall(MatGetLayouts(Gmat, &layout, NULL));
     PetscCall(PetscSFSetGraphLayout(sf, layout, num_fine_ghosts, NULL, PETSC_COPY_VALUES, mpimat->garray));
@@ -67,11 +67,6 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
     PetscCall(PetscSFBcastEnd(sf, MPIU_INT, lid_gid, cpcol_gid, MPI_REPLACE));
     for (kk = 0; kk < num_fine_ghosts; kk++) cpcol_state[kk] = MIS_NOT_DONE;
   } else num_fine_ghosts = 0;
-
-  PetscCall(PetscMalloc1(nloc, &lid_cprowID));
-  PetscCall(PetscMalloc1(nloc, &lid_removed)); /* explicit array needed */
-  if (strict_aggs) PetscCall(PetscMalloc1(nloc, &lid_parent_gid));
-  PetscCall(PetscMalloc1(nloc, &lid_state));
 
   /* has ghost nodes for !strict and uses local indexing (yuck) */
   PetscCall(PetscCDCreate(strict_aggs ? nloc : num_fine_ghosts + nloc, &agg_lists));
@@ -176,7 +171,7 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
     } /* vertex loop */
 
     /* update ghost states and count todos */
-    if (mpimat) {
+    if (isMPI) {
       /* scatter states, check for done */
       PetscCall(PetscSFBcastBegin(sf, MPIU_INT, lid_state, cpcol_state, MPI_REPLACE));
       PetscCall(PetscSFBcastEnd(sf, MPIU_INT, lid_state, cpcol_state, MPI_REPLACE));
@@ -218,8 +213,7 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
   /* tell adj who my lid_parent_gid vertices belong to - fill in agg_lists selected ghost lists */
   if (strict_aggs && matB) {
     /* need to copy this to free buffer -- should do this globally */
-    PetscCall(PetscMalloc1(num_fine_ghosts, &cpcol_sel_gid));
-    PetscCall(PetscMalloc1(num_fine_ghosts, &icpcol_gid));
+    PetscCall(PetscMalloc2(num_fine_ghosts, &cpcol_sel_gid, num_fine_ghosts, &icpcol_gid));
     for (cpid = 0; cpid < num_fine_ghosts; cpid++) icpcol_gid[cpid] = cpcol_gid[cpid];
 
     /* get proc of deleted ghost */
@@ -233,28 +227,24 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
         PetscCall(PetscCDAppendID(agg_lists, slid, gid));
       }
     }
-    PetscCall(PetscFree(icpcol_gid));
-    PetscCall(PetscFree(cpcol_sel_gid));
+    PetscCall(PetscFree2(cpcol_sel_gid, icpcol_gid));
   }
-  if (mpimat) {
+  if (isMPI) {
     PetscCall(PetscSFDestroy(&sf));
-    PetscCall(PetscFree(cpcol_gid));
-    PetscCall(PetscFree(cpcol_state));
+    PetscCall(PetscFree2(cpcol_gid, cpcol_state));
   }
-  PetscCall(PetscFree(lid_cprowID));
-  PetscCall(PetscFree(lid_gid));
-  PetscCall(PetscFree(lid_removed));
-  if (strict_aggs) PetscCall(PetscFree(lid_parent_gid));
-  PetscCall(PetscFree(lid_state));
+  PetscCall(PetscFree4(lid_gid, lid_cprowID, lid_removed, lid_state));
   if (strict_aggs) {
     // check sizes -- all vertices must get in graph
     PetscInt aa[2] = {0, nrm_tot}, bb[2], MM;
+
+    PetscCall(PetscFree(lid_parent_gid));
     PetscCall(MatGetSize(Gmat, &MM, NULL));
     // check sizes -- all vertices must get in graph
     PetscCall(PetscCDCount(agg_lists, &aa[0]));
     PetscCall(MPIU_Allreduce(aa, bb, 2, MPIU_INT, MPI_SUM, comm));
     if (MM != bb[0]) PetscCall(PetscInfo(info_is, "Warning: N = %" PetscInt_FMT ", sum of aggregates %" PetscInt_FMT ", %" PetscInt_FMT " removed total\n", MM, bb[0], bb[1]));
-    PetscCheck(MM >= bb[0], comm, PETSC_ERR_PLIB, "Sum of aggs too big");
+    PetscCheck(MM >= bb[0], comm, PETSC_ERR_PLIB, "Sum of aggs is too large");
   }
   PetscCall(ISDestroy(&info_is));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -295,30 +285,34 @@ static PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   PetscCall(PetscViewerGetFormat(viewer, &format));
   if (iascii && format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-    PetscCall(PetscViewerASCIIPushSynchronized(viewer));
-    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  [%d] MIS aggregator\n", rank));
-    if (!rank) {
-      PetscCDIntNd *pos, *pos2;
-      for (PetscInt kk = 0; kk < coarse->agg_lists->size; kk++) {
-        PetscCall(PetscCDGetHeadPos(coarse->agg_lists, kk, &pos));
-        if ((pos2 = pos)) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "selected %d: ", (int)kk));
-        while (pos) {
-          PetscInt gid1;
-          PetscCall(PetscCDIntNdGetID(pos, &gid1));
-          PetscCall(PetscCDGetNextPos(coarse->agg_lists, kk, &pos));
-          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %d ", (int)gid1));
+    if (coarse->agg_lists) {
+      PetscCall(PetscViewerASCIIPushSynchronized(viewer));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  [%d] MIS aggregator\n", rank));
+      if (!rank) {
+        PetscCDIntNd *pos, *pos2;
+        for (PetscInt kk = 0; kk < coarse->agg_lists->size; kk++) {
+          PetscCall(PetscCDGetHeadPos(coarse->agg_lists, kk, &pos));
+          if ((pos2 = pos)) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "selected %d: ", (int)kk));
+          while (pos) {
+            PetscInt gid1;
+            PetscCall(PetscCDIntNdGetID(pos, &gid1));
+            PetscCall(PetscCDGetNextPos(coarse->agg_lists, kk, &pos));
+            PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %d ", (int)gid1));
+          }
+          if (pos2) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
         }
-        if (pos2) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
       }
+      PetscCall(PetscViewerFlush(viewer));
+      PetscCall(PetscViewerASCIIPopSynchronized(viewer));
+    } else {
+      PetscCall(PetscViewerASCIIPrintf(viewer, "  MIS aggregator lists are not available\n"));
     }
-    PetscCall(PetscViewerFlush(viewer));
-    PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
-   MATCOARSENMIS - Creates a coarsening with a maximal independent set (MIS) algorithm
+   MATCOARSENMIS - Creates a coarsening object that uses a maximal independent set (MIS) algorithm
 
    Collective
 
