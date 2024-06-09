@@ -4815,7 +4815,7 @@ PetscErrorCode MatFactorGetPreferredOrdering(Mat mat, MatFactorType ftype, MatOr
 @*/
 PetscErrorCode MatGetFactor(Mat mat, MatSolverType type, MatFactorType ftype, Mat *f)
 {
-  PetscBool foundtype, foundmtype;
+  PetscBool foundtype, foundmtype, shell, hasop = PETSC_FALSE;
   PetscErrorCode (*conv)(Mat, MatFactorType, Mat *);
 
   PetscFunctionBegin;
@@ -4824,6 +4824,13 @@ PetscErrorCode MatGetFactor(Mat mat, MatSolverType type, MatFactorType ftype, Ma
 
   PetscCheck(!mat->factortype, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
   MatCheckPreallocated(mat, 1);
+
+  PetscCall(MatIsShell(mat, &shell));
+  if (shell) PetscCall(MatHasOperation(mat, MATOP_GET_FACTOR, &hasop));
+  if (hasop) {
+    PetscUseTypeMethod(mat, getfactor, type, ftype, f);
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
 
   PetscCall(MatSolverTypeGet(type, ((PetscObject)mat)->type_name, ftype, &foundtype, &foundmtype, &conv));
   if (!foundtype) {

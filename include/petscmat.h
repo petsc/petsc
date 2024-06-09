@@ -2029,7 +2029,8 @@ typedef enum {
   /* MATOP_PLACEHOLDER_149=149, */
   MATOP_TRANSPOSE_SYMBOLIC = 150,
   MATOP_ELIMINATE_ZEROS    = 151,
-  MATOP_GET_ROW_SUM_ABS    = 152
+  MATOP_GET_ROW_SUM_ABS    = 152,
+  MATOP_GET_FACTOR         = 153
 } MatOperation;
 PETSC_EXTERN PetscErrorCode MatSetOperation(Mat, MatOperation, void (*)(void));
 PETSC_EXTERN PetscErrorCode MatGetOperation(Mat, MatOperation, void (**)(void));
