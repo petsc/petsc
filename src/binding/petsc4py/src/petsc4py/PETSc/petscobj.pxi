@@ -3,7 +3,8 @@
 cdef extern from * nogil:
 
     ctypedef int PetscClassId
-    ctypedef int PetscObjectState
+    ctypedef long PetscObjectState
+    ctypedef long PetscObjectId
     PetscErrorCode PetscObjectView(PetscObject, PetscViewer)
     PetscErrorCode PetscObjectDestroy(PetscObject*)
     PetscErrorCode PetscObjectGetReference(PetscObject, PetscInt*)
@@ -22,6 +23,7 @@ cdef extern from * nogil:
     PetscErrorCode PetscObjectGetClassName(PetscObject, char*[])
     PetscErrorCode PetscObjectSetName(PetscObject, char[])
     PetscErrorCode PetscObjectGetName(PetscObject, char*[])
+    PetscErrorCode PetscObjectGetId(PetscObject, PetscObjectId*)
 
     PetscErrorCode PetscObjectStateIncrease(PetscObject)
     PetscErrorCode PetscObjectStateSet(PetscObject, PetscObjectState)
