@@ -3828,12 +3828,15 @@ PetscErrorCode SNESSetTolerances(SNES snes, PetscReal abstol, PetscReal rtol, Pe
 
   Input Parameters:
 + snes   - the `SNES` context
-- divtol - the divergence tolerance. Use -1 to deactivate the test, default is 1e4
+- divtol - the divergence tolerance.
 
   Options Database Key:
 . -snes_divergence_tolerance <divtol> - Sets `divtol`
 
   Level: intermediate
+
+  Note:
+  Non-positive values of `divtol` different from `PETSC_DEFAULT` will deactivate the test.
 
 .seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESSetTolerances()`, `SNESGetDivergenceTolerance`
 @*/
@@ -3842,12 +3845,7 @@ PetscErrorCode SNESSetDivergenceTolerance(SNES snes, PetscReal divtol)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidLogicalCollectiveReal(snes, divtol, 2);
-
-  if (divtol != (PetscReal)PETSC_DEFAULT) {
-    snes->divtol = divtol;
-  } else {
-    snes->divtol = 1.0e4;
-  }
+  if (divtol != (PetscReal)PETSC_DEFAULT) snes->divtol = divtol;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

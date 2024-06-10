@@ -1040,7 +1040,7 @@ cdef class SNES(Object):
     def setTolerances(self, rtol: float = None, atol: float = None, stol: float = None, max_it: int = None) -> None:
         """Set the tolerance parameters used in the solver convergence tests.
 
-        Collective.
+        Logically collective.
 
         Parameters
         ----------
@@ -1071,7 +1071,7 @@ cdef class SNES(Object):
     def getTolerances(self) -> tuple[float, float, float, int]:
         """Return the tolerance parameters used in the solver convergence tests.
 
-        Collective.
+        Not collective.
 
         Returns
         -------
@@ -1094,6 +1094,38 @@ cdef class SNES(Object):
         CHKERR(SNESGetTolerances(self.snes, &catol, &crtol, &cstol,
                                  &cmaxit, NULL))
         return (toReal(crtol), toReal(catol), toReal(cstol), toInt(cmaxit))
+
+    def setDivergenceTolerance(self, dtol: float) -> None:
+        """Set the divergence tolerance parameter used in the convergence tests.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        dtol
+            The divergence tolerance. Non-positive values different from `DEFAULT`
+            deactivate the test.
+
+        See Also
+        --------
+        getDivergenceTolerance, setTolerances, petsc.SNESSetDivergenceTolerance
+
+        """
+        CHKERR(SNESSetDivergenceTolerance(self.snes, asReal(dtol)))
+
+    def getDivergenceTolerance(self) -> float:
+        """Get the divergence tolerance parameter used in the convergence tests.
+
+        Not collective.
+
+        See Also
+        --------
+        setDivergenceTolerance, getTolerances, petsc.SNESGetDivergenceTolerance
+
+        """
+        cdef PetscReal cdtol=0
+        CHKERR(SNESGetDivergenceTolerance(self.snes, &cdtol))
+        return toReal(cdtol)
 
     def setNormSchedule(self, normsched: NormSchedule) -> None:
         """Set the norm schedule.
