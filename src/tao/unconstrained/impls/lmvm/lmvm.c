@@ -37,7 +37,10 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
   /*  Have not converged; continue with Newton method */
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
-    PetscTryTypeMethod(tao, update, tao->niter, tao->user_update);
+    if (tao->ops->update) {
+      PetscUseTypeMethod(tao, update, tao->niter, tao->user_update);
+      PetscCall(TaoComputeObjective(tao, tao->solution, &f));
+    }
 
     /*  Compute direction */
     if (lmP->H0) {

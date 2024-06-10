@@ -1391,18 +1391,24 @@ PetscErrorCode TaoResetStatistics(Tao tao)
   Logically Collective
 
   Input Parameters:
-+ tao  - The `Tao` solver context
-- func - The function
++ tao  - The `Tao` solver
+. func - The function
+- ctx  - The update function context
 
   Calling sequence of `func`:
-+ tao - the optimizer context
-- ctx - The current step of the iteration
++ tao - The optimizer context
+. it  - The current iteration index
+- ctx - The update context
 
   Level: advanced
 
+  Notes:
+  Users can modify the gradient direction or any other vector associated to the specific solver used.
+  The objective function value is always recomputed after a call to the update hook.
+
 .seealso: [](ch_tao), `Tao`, `TaoSolve()`
 @*/
-PetscErrorCode TaoSetUpdate(Tao tao, PetscErrorCode (*func)(Tao, PetscInt, void *), void *ctx)
+PetscErrorCode TaoSetUpdate(Tao tao, PetscErrorCode (*func)(Tao tao, PetscInt it, void *ctx), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);

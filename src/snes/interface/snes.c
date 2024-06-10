@@ -4410,31 +4410,33 @@ PetscErrorCode SNESGetConvergenceHistory(SNES snes, PetscReal *a[], PetscInt *it
 /*@C
   SNESSetUpdate - Sets the general-purpose update function called
   at the beginning of every iteration of the nonlinear solve. Specifically
-  it is called just before the Jacobian is "evaluated".
+  it is called just before the Jacobian is "evaluated" and after the function
+  evaluation.
 
   Logically Collective
 
   Input Parameters:
 + snes - The nonlinear solver context
-- func - The function
-
-  Calling sequence of `func`:
-+ snes - the nonlinear solver context
-- step - The current step of the iteration
+- func - The update function; for calling sequence see `SNESUpdateFn`
 
   Level: advanced
 
   Notes:
   This is NOT what one uses to update the ghost points before a function evaluation, that should be done at the beginning of your function provided
   to `SNESSetFunction()`, or `SNESSetPicard()`
-  This is not used by most users.
+  This is not used by most users, and it is intended to provide a general hook that is run
+  right before the direction step is computed.
+  Users are free to modify the current residual vector,
+  the current linearization point, or any other vector associated to the specific solver used.
+  If such modifications take place, it is the user responsibility to update all the relevant
+  vectors.
 
   There are a variety of function hooks one many set that are called at different stages of the nonlinear solution process, see the functions listed below.
 
 .seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESSetJacobian()`, `SNESLineSearchSetPreCheck()`, `SNESLineSearchSetPostCheck()`, `SNESNewtonTRSetPreCheck()`, `SNESNewtonTRSetPostCheck()`,
-         `SNESMonitorSet()`, `SNESSetDivergenceTest()`
+         `SNESMonitorSet()`
 @*/
-PetscErrorCode SNESSetUpdate(SNES snes, PetscErrorCode (*func)(SNES snes, PetscInt step))
+PetscErrorCode SNESSetUpdate(SNES snes, SNESUpdateFn *func)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);

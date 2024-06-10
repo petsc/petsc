@@ -111,7 +111,7 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
     /* Call general purpose update function */
     if (tao->ops->update) {
       PetscUseTypeMethod(tao, update, tao->niter, tao->user_update);
-      PetscCall(TaoComputeObjectiveAndGradient(tao, tao->solution, &cg->f, cg->unprojected_gradient));
+      PetscCall(TaoComputeObjective(tao, tao->solution, &cg->f));
     }
     PetscCall(TaoBNCGConductIteration(tao, gnorm));
     if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(PETSC_SUCCESS);
