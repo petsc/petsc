@@ -68,8 +68,11 @@ class Configure(config.package.GNUPackage):
       mpich_device = 'ch3:nemesis'
     if self.cuda.found:
       args.append('--with-cuda='+self.cuda.cudaDir)
-      if hasattr(self.cuda,'cudaArch'):
-        args.append('--with-cuda-sm='+self.cuda.cudaArch) # MPICH's default to --with-cuda-sm=XX is 'all'
+      if hasattr(self.cuda,'cudaArch'): # MPICH's default to --with-cuda-sm=XX is 'auto', to auto-detect the arch of the visible GPUs (similar to our `native`).
+        if self.cuda.cudaArch == 'all':
+          args.append('--with-cuda-sm=all-major') # MPICH stopped supporting 'all' thus we do it with 'all-major'
+        else:
+          args.append('--with-cuda-sm='+self.cuda.cudaArch)
       mpich_device = 'ch4:ucx'
     elif self.hip.found:
       args.append('--with-hip='+self.hip.hipDir)
