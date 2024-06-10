@@ -243,6 +243,7 @@ static PetscErrorCode MatGetFactor_Transpose(Mat N, MatSolverType type, MatFacto
     PetscCall(MatShellSetOperation(*F, MATOP_CHOLESKY_FACTOR_SYMBOLIC, (void (*)(void))MatCholeskyFactorSymbolic_Transpose));
     PetscCall(MatPropagateSymmetryOptions(A, FA));
   } else SETERRQ(PetscObjectComm((PetscObject)N), PETSC_ERR_SUP, "Support for factor type %s not implemented in MATTRANSPOSEVIRTUAL", MatFactorTypes[ftype]);
+  (*F)->factortype = ftype;
   PetscCall(MatDestroy(&FA));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -257,6 +258,27 @@ static PetscErrorCode MatDestroy_Transpose(Mat N)
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatTransposeGetMat_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatProductSetFromOptions_anytype_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatShellSetContext_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatFactorGetSolverType_C", NULL));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatGetInfo_Transpose(Mat N, MatInfoType flag, MatInfo *info)
+{
+  Mat A;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(N, &A));
+  PetscCall(MatGetInfo(A, flag, info));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatFactorGetSolverType_Transpose(Mat N, MatSolverType *type)
+{
+  Mat A;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(N, &A));
+  PetscCall(MatFactorGetSolverType(A, type));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -546,6 +568,7 @@ PetscErrorCode MatCreateTranspose(Mat A, Mat *N)
   PetscCall(MatShellSetOperation(*N, MATOP_LUFACTOR, (void (*)(void))MatLUFactor_Transpose));
   PetscCall(MatShellSetOperation(*N, MATOP_CHOLESKYFACTOR, (void (*)(void))MatCholeskyFactor_Transpose));
   PetscCall(MatShellSetOperation(*N, MATOP_GET_FACTOR, (void (*)(void))MatGetFactor_Transpose));
+  PetscCall(MatShellSetOperation(*N, MATOP_GETINFO, (void (*)(void))MatGetInfo_Transpose));
   PetscCall(MatShellSetOperation(*N, MATOP_DUPLICATE, (void (*)(void))MatDuplicate_Transpose));
   PetscCall(MatShellSetOperation(*N, MATOP_HAS_OPERATION, (void (*)(void))MatHasOperation_Transpose));
   PetscCall(MatShellSetOperation(*N, MATOP_GET_DIAGONAL, (void (*)(void))MatGetDiagonal_Transpose));
@@ -554,6 +577,7 @@ PetscErrorCode MatCreateTranspose(Mat A, Mat *N)
 
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatTransposeGetMat_C", MatTransposeGetMat_Transpose));
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatProductSetFromOptions_anytype_C", MatProductSetFromOptions_Transpose));
+  PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatFactorGetSolverType_C", MatFactorGetSolverType_Transpose));
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatShellSetContext_C", MatShellSetContext_Immutable));
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatShellSetContextDestroy_C", MatShellSetContextDestroy_Immutable));
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatShellSetManageScalingShifts_C", MatShellSetManageScalingShifts_Immutable));
