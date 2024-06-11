@@ -362,7 +362,7 @@ PetscErrorCode DMDAGetElementType(DM da, DMDAElementType *etype)
 + nel - number of local elements
 . nen - number of nodes in each element (for example in one dimension it is 2, in two dimensions it is 3 (for `DMDA_ELEMENT_P1`) and 4
         (for `DMDA_ELEMENT_Q1`)
-- e   - the local indices of the elements' vertices
+- e   - the local indices of the elements' vertices, of length `nel` * `nen`
 
   Level: intermediate
 

@@ -221,10 +221,10 @@ PetscErrorCode DMCompositeGetAccess(DM dm, Vec gvec, ...)
 + dm      - the `DMCOMPOSITE`
 . pvec    - packed vector
 . nwanted - number of vectors wanted
-- wanted  - sorted array of vectors wanted, or `NULL` to get all vectors
+- wanted  - sorted array of vectors wanted, or `NULL` to get all vectors, length `nwanted`
 
   Output Parameter:
-. vecs - array of requested global vectors (must be allocated)
+. vecs - array of requested global vectors (must be previously allocated and of length `nwanted`)
 
   Level: advanced
 
@@ -281,10 +281,10 @@ PetscErrorCode DMCompositeGetAccessArray(DM dm, Vec pvec, PetscInt nwanted, cons
 + dm      - the `DMCOMPOSITE`
 . pvec    - packed vector
 . nwanted - number of vectors wanted
-- wanted  - sorted array of vectors wanted, or NULL to get all vectors
+- wanted  - sorted array of vectors wanted, or `NULL` to get all vectors, length `nwanted`
 
   Output Parameter:
-. vecs - array of requested local vectors (must be allocated)
+. vecs - array of requested local vectors (must be allocated and of length `nwanted`)
 
   Level: advanced
 
@@ -396,8 +396,8 @@ PetscErrorCode DMCompositeRestoreAccess(DM dm, Vec gvec, ...)
 + dm      - the `DMCOMPOSITE` object
 . pvec    - packed vector
 . nwanted - number of vectors wanted
-. wanted  - sorted array of vectors wanted, or NULL to get all vectors
-- vecs    - array of global vectors to return
+. wanted  - sorted array of vectors wanted, or `NULL` to restore all vectors
+- vecs    - array of global vectors
 
   Level: advanced
 
@@ -439,13 +439,13 @@ PetscErrorCode DMCompositeRestoreAccessArray(DM dm, Vec pvec, PetscInt nwanted, 
 + dm      - the `DMCOMPOSITE` object
 . pvec    - packed vector
 . nwanted - number of vectors wanted
-. wanted  - sorted array of vectors wanted, or NULL to restore all vectors
-- vecs    - array of local vectors to return
+. wanted  - sorted array of vectors wanted, or `NULL` to restore all vectors
+- vecs    - array of local vectors
 
   Level: advanced
 
   Note:
-  nwanted and wanted must match the values given to `DMCompositeGetLocalAccessArray()`
+  `nwanted` and `wanted` must match the values given to `DMCompositeGetLocalAccessArray()`
   otherwise the call will fail.
 
 .seealso: `DMCOMPOSITE`, `DM`, `DMCompositeGetLocalAccessArray()`, `DMCompositeRestoreAccessArray()`,
@@ -854,7 +854,7 @@ static PetscErrorCode DMCreateLocalVector_Composite(DM dm, Vec *lvec)
   Level: advanced
 
   Note:
-  Each entry of ltogs should be destroyed with `ISLocalToGlobalMappingDestroy()`, the ltogs array should be freed with `PetscFree()`.
+  Each entry of `ltogs` should be destroyed with `ISLocalToGlobalMappingDestroy()`, `ltogs` should be freed with `PetscFree()`.
 
 .seealso: `DMCOMPOSITE`, `DM`, `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
          `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetAccess()`, `DMCompositeScatter()`,
@@ -946,7 +946,11 @@ PetscErrorCode DMCompositeGetISLocalToGlobalMappings(DM dm, ISLocalToGlobalMappi
 
   Each returned `IS` should be destroyed with `ISDestroy()`, the array should be freed with `PetscFree()`.
 
-.seealso: `DMCOMPOSITE`, `DM`, `DMCompositeGetGlobalISs()`, `DMCompositeGetISLocalToGlobalMappings()`, `MatGetLocalSubMatrix()`, `MatCreateLocalRef()`
+  Fortran Note:
+  Pass in an array long enough to hold all the `IS`, see `DMCompositeGetNumberDM()`
+
+.seealso: `DMCOMPOSITE`, `DM`, `DMCompositeGetGlobalISs()`, `DMCompositeGetISLocalToGlobalMappings()`, `MatGetLocalSubMatrix()`,
+          `MatCreateLocalRef()`, `DMCompositeGetNumberDM()`
 @*/
 PetscErrorCode DMCompositeGetLocalISs(DM dm, IS **is)
 {
@@ -984,7 +988,7 @@ PetscErrorCode DMCompositeGetLocalISs(DM dm, IS **is)
   Level: advanced
 
   Notes:
-  The is entries should be destroyed with `ISDestroy()`, the is array should be freed with `PetscFree()`
+  The `is` entries should be destroyed with `ISDestroy()`, `is` should be freed with `PetscFree()`
 
   These could be used to extract a subset of vector entries for a "multi-physics" preconditioner
 

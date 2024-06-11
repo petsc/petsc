@@ -891,7 +891,7 @@ static PetscErrorCode VecNestGetSubVecs_Nest(Vec X, PetscInt *N, Vec **sx)
   The user should not free the array `sx`.
 
   Fortran Notes:
-  The caller must allocate the array to hold the subvectors.
+  The caller must allocate the array to hold the subvectors and pass it in.
 
 .seealso: `VECNEST`,  [](ch_vectors), `Vec`, `VecType`, `VecNestGetSize()`, `VecNestGetSubVec()`
 @*/

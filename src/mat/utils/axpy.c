@@ -390,7 +390,7 @@ PetscErrorCode MatAYPX(Mat Y, PetscScalar a, Mat X, MatStructure str)
   Level: advanced
 
   Note:
-  This computation is done by applying the operators to columns of the identity matrix.
+  This computation is done by applying the operator to columns of the identity matrix.
   This routine is costly in general, and is recommended for use only with relatively small systems.
   Currently, this routine uses a dense matrix format if `mattype` == `NULL`.
 

@@ -1,12 +1,12 @@
 /*
   This file defines an "generalized" additive Schwarz preconditioner for any Mat implementation.
-  In this version each MPI rank may intersect multiple subdomains and any subdomain may
-  intersect multiple MPI ranks.  Intersections of subdomains with MPI ranks are called *local
+  In this version, each MPI process may intersect multiple subdomains and any subdomain may
+  intersect multiple MPI processes.  Intersections of subdomains with MPI processes are called *local
   subdomains*.
 
        N    - total number of distinct global subdomains  (set explicitly in PCGASMSetTotalSubdomains() or implicitly PCGASMSetSubdomains() and then calculated in PCSetUp_GASM())
-       n    - actual number of local subdomains on this rank (set in PCGASMSetSubdomains() or calculated in PCGASMSetTotalSubdomains())
-       nmax - maximum number of local subdomains per rank    (calculated in PCSetUp_GASM())
+       n    - actual number of local subdomains on this process (set in `PCGASMSetSubdomains()` or calculated in `PCGASMSetTotalSubdomains()`)
+       nmax - maximum number of local subdomains per process (calculated in PCSetUp_GASM())
 */
 #include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/
 #include <petscdm.h>
@@ -968,7 +968,7 @@ static PetscErrorCode PCGASMSetSubdomains_GASM(PC pc, PetscInt n, IS iis[], IS o
     /* check if the inner indices cover and only cover the local portion of the preconditioning matrix */
     PetscCall(MatGetOwnershipRange(pc->pmat, &rstart, &rend));
     PetscCall(PetscCalloc1(rend - rstart, &covered));
-    /* check if the current MPI rank owns indices from others */
+    /* check if the current MPI process owns indices from others */
     for (i = 0; i < n; i++) {
       PetscCall(ISGetIndices(osm->iis[i], &indices));
       PetscCall(ISGetLocalSize(osm->iis[i], &lsize));
@@ -1018,7 +1018,7 @@ static PetscErrorCode PCGASMSetSortIndices_GASM(PC pc, PetscBool doSort)
 }
 
 /*
-   FIXME: This routine might need to be modified now that multiple ranks per subdomain are allowed.
+   FIXME: This routine might need to be modified now that multiple processes per subdomain are allowed.
         In particular, it would upset the global subdomain number calculation.
 */
 static PetscErrorCode PCGASMGetSubKSP_GASM(PC pc, PetscInt *n, PetscInt *first, KSP **ksp)
@@ -1050,10 +1050,11 @@ static PetscErrorCode PCGASMGetSubKSP_GASM(PC pc, PetscInt *n, PetscInt *first, 
 
   Input Parameters:
 + pc  - the preconditioner object
-. n   - the number of subdomains for this MPI rank
-. iis - the index sets that define the inner subdomains (or `NULL` for PETSc to determine subdomains)
+. n   - the number of subdomains for this MPI process
+. iis - the index sets that define the inner subdomains (or `NULL` for PETSc to determine subdomains), the `iis` array is
+        copied so may be freed after this call.
 - ois - the index sets that define the outer subdomains (or `NULL` to use the same as `iis`, or to construct by expanding `iis` by
-        the requested overlap)
+        the requested overlap), the `ois` array is copied so may be freed after this call.
 
   Level: advanced
 
@@ -1065,15 +1066,15 @@ static PetscErrorCode PCGASMGetSubKSP_GASM(PC pc, PetscInt *n, PetscInt *first, 
   Outer subdomains are those where the residual necessary to obtain the
   corrections is obtained (see `PCGASMType` for the use of inner/outer subdomains).
 
-  Both inner and outer subdomains can extend over several MPI ranks.
-  This rank's portion of a subdomain is known as a local subdomain.
+  Both inner and outer subdomains can extend over several MPI processes.
+  This process' portion of a subdomain is known as a local subdomain.
 
-  Inner subdomains can not overlap with each other, do not have any entities from remote ranks,
-  and  have to cover the entire local subdomain owned by the current rank. The index sets on each
-  rank should be ordered such that the ith local subdomain is connected to the ith remote subdomain
-  on another MPI rank.
+  Inner subdomains can not overlap with each other, do not have any entities from remote processes,
+  and  have to cover the entire local subdomain owned by the current process. The index sets on each
+  process should be ordered such that the ith local subdomain is connected to the ith remote subdomain
+  on another MPI process.
 
-  By default the `PGASM` preconditioner uses 1 (local) subdomain per MPI rank.
+  By default the `PGASM` preconditioner uses 1 (local) subdomain per MPI process.
 
   The `iis` and `ois` arrays may be freed after this call using `PCGASMDestroySubdomains()`
 
@@ -1093,7 +1094,7 @@ PetscErrorCode PCGASMSetSubdomains(PC pc, PetscInt n, IS iis[], IS ois[])
 
 /*@
   PCGASMSetOverlap - Sets the overlap between a pair of subdomains for the
-  additive Schwarz preconditioner `PCGASM`.  Either all or no MPI ranks in the
+  additive Schwarz preconditioner `PCGASM`.  Either all or no MPI processes in the
   pc communicator must call this routine.
 
   Logically Collective
@@ -1108,9 +1109,9 @@ PetscErrorCode PCGASMSetSubdomains(PC pc, PetscInt n, IS iis[], IS ois[])
   Level: intermediate
 
   Notes:
-  By default the `PCGASM` preconditioner uses 1 subdomain per rank.  To use
+  By default the `PCGASM` preconditioner uses 1 subdomain per process.  To use
   multiple subdomain per perocessor or "straddling" subdomains that intersect
-  multiple ranks use `PCGASMSetSubdomains()` (or option `-pc_gasm_total_subdomains` <n>).
+  multiple processes use `PCGASMSetSubdomains()` (or option `-pc_gasm_total_subdomains` <n>).
 
   The overlap defaults to 0, so if one desires that no additional
   overlap be computed beyond what may have been set with a call to
@@ -1149,9 +1150,9 @@ PetscErrorCode PCGASMSetOverlap(PC pc, PetscInt ovl)
 - type - variant of `PCGASM`, one of
 .vb
       `PC_GASM_BASIC`       - full interpolation and restriction
-      `PC_GASM_RESTRICT`    - full restriction, local MPI rank interpolation
-      `PC_GASM_INTERPOLATE` - full interpolation, local MPI rank restriction
-      `PC_GASM_NONE`        - local MPI rank restriction and interpolation
+      `PC_GASM_RESTRICT`    - full restriction, local MPI process interpolation
+      `PC_GASM_INTERPOLATE` - full interpolation, local MPI process restriction
+      `PC_GASM_NONE`        - local MPI process restriction and interpolation
 .ve
 
   Options Database Key:
@@ -1195,8 +1196,7 @@ PetscErrorCode PCGASMSetSortIndices(PC pc, PetscBool doSort)
 }
 
 /*@C
-  PCGASMGetSubKSP - Gets the local `KSP` contexts for all subdomains on
-  this MPI rank.
+  PCGASMGetSubKSP - Gets the local `KSP` contexts for all subdomains on this MPI process.
 
   Collective iff first_local is requested
 
@@ -1204,9 +1204,8 @@ PetscErrorCode PCGASMSetSortIndices(PC pc, PetscBool doSort)
 . pc - the preconditioner context
 
   Output Parameters:
-+ n_local     - the number of blocks on this MPI rank or `NULL`
-. first_local - the global number of the first block on this rank or `NULL`,
-                 all ranks must request or all must pass `NULL`
++ n_local     - the number of blocks on this MPI process or `NULL`
+. first_local - the global number of the first block on this process or `NULL`, all processes must request or all must pass `NULL`
 - ksp         - the array of `KSP` contexts
 
   Level: advanced
@@ -1470,14 +1469,14 @@ PETSC_INTERN PetscErrorCode PCGASMCreateStraddlingSubdomains(Mat A, PetscInt N, 
 - N - the number of global subdomains requested
 
   Output Parameters:
-+ n   - the number of subdomains created on this MPI rank
++ n   - the number of subdomains created on this MPI process
 - iis - the array of index sets defining the local inner subdomains (on which the correction is applied)
 
   Level: advanced
 
   Notes:
   When `N` >= A's communicator size, each subdomain is local -- contained within a single MPI process.
-  When `N` < size, the subdomains are 'straddling' (rank boundaries) and are no longer local.
+  When `N` < size, the subdomains are 'straddling' (process boundaries) and are no longer local.
   The resulting subdomains can be use in `PCGASMSetSubdomains`(pc,n,iss,`NULL`).  The overlapping
   outer subdomains will be automatically generated from these according to the requested amount of
   overlap; this is currently supported only with local subdomains.
@@ -1763,7 +1762,7 @@ PetscErrorCode PCGASMCreateSubdomains2D(PC pc, PetscInt M, PetscInt N, PetscInt 
 }
 
 /*@C
-  PCGASMGetSubdomains - Gets the subdomains supported on this MPI rank
+  PCGASMGetSubdomains - Gets the subdomains supported on this MPI process
   for the `PCGASM` additive Schwarz preconditioner.
 
   Not Collective
@@ -1772,9 +1771,9 @@ PetscErrorCode PCGASMCreateSubdomains2D(PC pc, PetscInt M, PetscInt N, PetscInt 
 . pc - the preconditioner context
 
   Output Parameters:
-+ n   - the number of subdomains for this MPI rank (default value = 1)
-. iis - the index sets that define the inner subdomains (without overlap) supported on this rank (can be `NULL`)
-- ois - the index sets that define the outer subdomains (with overlap) supported on this rank (can be `NULL`)
++ n   - the number of subdomains for this MPI process (default value = 1)
+. iis - the index sets that define the inner subdomains (without overlap) supported on this process (can be `NULL`)
+- ois - the index sets that define the outer subdomains (with overlap) supported on this process (can be `NULL`)
 
   Level: advanced
 
@@ -1811,7 +1810,7 @@ PetscErrorCode PCGASMGetSubdomains(PC pc, PetscInt *n, IS *iis[], IS *ois[])
 }
 
 /*@C
-  PCGASMGetSubmatrices - Gets the local submatrices (for this MPI rank
+  PCGASMGetSubmatrices - Gets the local submatrices (for this MPI process
   only) for the `PCGASM` additive Schwarz preconditioner.
 
   Not Collective
@@ -1820,7 +1819,7 @@ PetscErrorCode PCGASMGetSubdomains(PC pc, PetscInt *n, IS *iis[], IS *ois[])
 . pc - the preconditioner context
 
   Output Parameters:
-+ n   - the number of matrices for this MPI rank (default value = 1)
++ n   - the number of matrices for this MPI process (default value = 1)
 - mat - the matrices
 
   Level: advanced
