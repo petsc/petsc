@@ -119,11 +119,14 @@ PetscErrorCode DMPlexRefineRegularGetAffineFaceTransforms(DMPlexTransform tr, DM
 
   Output Parameters:
 + Nc   - The number of subcells produced from this cell type
-. v0   - The translation of the first vertex for each subcell
-. J    - The Jacobian for each subcell (map from reference cell to subcell)
-- invJ - The inverse Jacobian for each subcell
+. v0   - The translation of the first vertex for each subcell, an array of length $dim * Nc$. Pass `NULL` to ignore.
+. J    - The Jacobian for each subcell (map from reference cell to subcell), an array of length $dim^2 * Nc$. Pass `NULL` to ignore.
+- invJ - The inverse Jacobian for each subcell, an array of length $dim^2 * Nc$. Pass `NULL` to ignore.
 
   Level: developer
+
+  Note:
+  Do not free these output arrays
 
 .seealso: `DMPLEX`, `DM`, `DMPlexTransform`, `DMPolytopeType`, `DMPlexRefineRegularGetAffineFaceTransforms()`, `DMPLEXREFINEREGULAR`
 @*/

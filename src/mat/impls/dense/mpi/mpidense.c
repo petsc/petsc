@@ -1793,7 +1793,7 @@ M*/
   Input Parameters:
 + B    - the matrix
 - data - optional location of matrix data.  Set to `NULL` for PETSc
-   to control all matrix memory allocation.
+         to control all matrix memory allocation.
 
   Level: intermediate
 

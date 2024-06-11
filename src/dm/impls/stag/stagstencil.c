@@ -18,7 +18,7 @@ const char *const DMStagStencilLocations[] = {"NONE", "BACK_DOWN_LEFT", "BACK_DO
 - stencils  - an array of `DMStagStencil` objects (`i`, `j`, and `k` are ignored)
 
   Output Parameter:
-. is - the global IS
+. is - the global `IS`
 
   Note:
   Redundant entries in the stencils argument are ignored
