@@ -913,8 +913,10 @@ static PetscErrorCode PCASMSetSubMatType_ASM(PC pc, MatType sub_mat_type)
 + pc       - the preconditioner context
 . n        - the number of subdomains for this processor (default value = 1)
 . is       - the index set that defines the subdomains for this processor (or `NULL` for PETSc to determine subdomains)
-- is_local - the index sets that define the local part of the subdomains for this processor, not used unless PCASMType is PC_ASM_RESTRICT
-             (or `NULL` to not provide these)
+             the values of the `is` array are copied so you can free the array (not the `IS` in the array) after this call
+- is_local - the index sets that define the local part of the subdomains for this processor, not used unless `PCASMType` is `PC_ASM_RESTRICT`
+             (or `NULL` to not provide these). The values of the `is_local` array are copied so you can free the array
+             (not the `IS` in the array) after this call
 
   Options Database Key:
 . -pc_asm_local_blocks <blks> - Sets number of local blocks

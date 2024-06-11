@@ -3536,8 +3536,8 @@ PetscErrorCode PetscSectionGetFieldSym(PetscSection section, PetscInt field, Pet
 + section   - the section
 . numPoints - the number of points
 - points    - an array of size 2 * `numPoints`, containing a list of (point, orientation) pairs. (An orientation is an
-    arbitrary integer: its interpretation is up to sym.  Orientations are used by `DM`: for their interpretation in that
-    context, see `DMPlexGetConeOrientation()`).
+              arbitrary integer: its interpretation is up to sym.  Orientations are used by `DM`: for their interpretation in that
+              context, see `DMPlexGetConeOrientation()`).
 
   Output Parameters:
 + perms - The permutations for the given orientations (or `NULL` if there is no symmetry or the permutation is the identity).

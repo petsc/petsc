@@ -67,7 +67,7 @@ PetscErrorCode PetscViewerMatlabPutVariable(PetscViewer viewer, const char *name
 + mfile - the MATLAB file viewer
 . m     - the first dimensions of `array`
 . n     - the second dimensions of `array`
-. array - the array (represented in one dimension)
+. array - the array (represented in one dimension), must of be length `m` * `n`
 - name  - the MATLAB name of `array`
 
   Level: advanced

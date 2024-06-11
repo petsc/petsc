@@ -475,6 +475,9 @@ PetscErrorCode MatPartitioningDestroy(MatPartitioning *part)
 
   The weights may not be used by some partitioners
 
+  Fortran Note:
+  The array `weights` is copied during this function call.
+
 .seealso: [](ch_matrices), `Mat`, `MatPartitioning`, `MatPartitioningCreate()`, `MatPartitioningSetType()`, `MatPartitioningSetPartitionWeights()`, `MatPartitioningSetNumberVertexWeights()`
 @*/
 PetscErrorCode MatPartitioningSetVertexWeights(MatPartitioning part, const PetscInt weights[])
@@ -494,17 +497,20 @@ PetscErrorCode MatPartitioningSetVertexWeights(MatPartitioning part, const Petsc
   Input Parameters:
 + part    - the partitioning context
 - weights - An array of size nparts that is used to specify the fraction of
-             vertex weight that should be distributed to each sub-domain for
-             the balance constraint. If all of the sub-domains are to be of
-             the same size, then each of the nparts elements should be set
-             to a value of 1/nparts. Note that the sum of all of the weights
-             should be one.
+            vertex weight that should be distributed to each sub-domain for
+            the balance constraint. If all of the sub-domains are to be of
+            the same size, then each of the nparts elements should be set
+            to a value of 1/nparts. Note that the sum of all of the weights
+            should be one.
 
   Level: beginner
 
   Note:
   The array weights is freed by PETSc so the user should not free the array. In C/C++
   the array must be obtained with a call to `PetscMalloc()`, not malloc().
+
+  Fortran Note:
+  The array `weights` is copied during this function call.
 
 .seealso: [](ch_matrices), `Mat`, `MatPartitioning`, `MatPartitioningSetVertexWeights()`, `MatPartitioningCreate()`, `MatPartitioningSetType()`
 @*/

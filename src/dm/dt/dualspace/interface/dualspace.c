@@ -780,9 +780,12 @@ PetscErrorCode PetscDualSpaceGetUniform(PetscDualSpace sp, PetscBool *uniform)
 
   Level: intermediate
 
+  Note:
+  Do not free `numDof`
+
 .seealso: `PetscDualSpace`, `PetscDualSpaceGetFunctional()`, `PetscDualSpaceCreate()`
 @*/
-PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace sp, const PetscInt **numDof)
+PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace sp, const PetscInt *numDof[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);

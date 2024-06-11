@@ -751,13 +751,13 @@ PetscErrorCode PetscFECopyQuadrature(PetscFE sfe, PetscFE tfe)
 . fem - The `PetscFE` object
 
   Output Parameter:
-. numDof - Array with the number of dofs per dimension
+. numDof - Array of length `dim` with the number of dofs in each dimension
 
   Level: intermediate
 
 .seealso: `PetscFE`, `PetscSpace`, `PetscDualSpace`, `PetscFECreate()`
 @*/
-PetscErrorCode PetscFEGetNumDof(PetscFE fem, const PetscInt **numDof)
+PetscErrorCode PetscFEGetNumDof(PetscFE fem, const PetscInt *numDof[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);

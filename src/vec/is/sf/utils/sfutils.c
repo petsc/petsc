@@ -68,15 +68,15 @@ PetscErrorCode PetscSFSetGraphLayout(PetscSF sf, PetscLayout layout, PetscInt nl
   Output Parameters:
 + layout  - `PetscLayout` defining the global space for roots
 . nleaves - number of leaf vertices on the current process, each of these references a root on any process
-. ilocal  - locations of leaves in leafdata buffers, or NULL for contiguous storage
+. ilocal  - locations of leaves in leafdata buffers, or `NULL` for contiguous storage
 - gremote - root vertices in global numbering corresponding to leaves in ilocal
 
   Level: intermediate
 
   Notes:
   The outputs are such that passing them as inputs to `PetscSFSetGraphLayout()` would lead to the same star forest.
-  The outputs layout and gremote are freshly created each time this function is called,
-  so they need to be freed by user and cannot be qualified as const.
+  The outputs `layout` and `gremote` are freshly created each time this function is called,
+  so they need to be freed (with `PetscLayoutDestroy()` and `PetscFree()`) by the user.
 
 .seealso: `PetscSF`, `PetscSFSetGraphLayout()`, `PetscSFCreate()`, `PetscSFView()`, `PetscSFSetGraph()`, `PetscSFGetGraph()`
 @*/
