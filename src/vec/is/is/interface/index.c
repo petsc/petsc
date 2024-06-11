@@ -1685,10 +1685,15 @@ PetscErrorCode ISLoad(IS is, PetscViewer viewer)
 @*/
 PetscErrorCode ISSort(IS is)
 {
+  PetscBool flg;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
-  PetscUseTypeMethod(is, sort);
-  PetscCall(ISSetInfo(is, IS_SORTED, IS_LOCAL, is->info_permanent[IS_LOCAL][IS_SORTED], PETSC_TRUE));
+  PetscCall(ISGetInfo(is, IS_SORTED, IS_LOCAL, PETSC_FALSE, &flg));
+  if (!flg) {
+    PetscUseTypeMethod(is, sort);
+    PetscCall(ISSetInfo(is, IS_SORTED, IS_LOCAL, is->info_permanent[IS_LOCAL][IS_SORTED], PETSC_TRUE));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
