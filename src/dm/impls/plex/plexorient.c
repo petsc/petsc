@@ -702,7 +702,10 @@ static PetscErrorCode CreateCellAndFaceIS_Private(DM dm, DMLabel label, IS *cell
   PetscCall(ISGetIndices(valueIS, &values));
   for (PetscInt v = 0; v < Nv; ++v) {
     const PetscInt val = values[v] < 0 || values[v] >= 100 ? 0 : values[v];
+    PetscInt       n;
 
+    PetscCall(DMLabelGetStratumSize(label, val, &n));
+    if (!n) continue;
     depth = PetscMax(val, depth);
   }
   PetscCall(ISDestroy(&valueIS));
