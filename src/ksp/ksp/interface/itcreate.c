@@ -546,7 +546,7 @@ PetscErrorCode KSPGetOperators(KSP ksp, Mat *Amat, Mat *Pmat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPGetOperatorsSet - Determines if the matrix associated with the linear system and
   possibly a different one associated with the preconditioner have been set in the `KSP`.
 
@@ -705,11 +705,9 @@ PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
 
   PetscFunctionBegin;
   PetscAssertPointer(inksp, 2);
-  *inksp = NULL;
   PetscCall(KSPInitializePackage());
 
   PetscCall(PetscHeaderCreate(ksp, KSP_CLASSID, "KSP", "Krylov Method", "KSP", comm, KSPDestroy, KSPView));
-
   ksp->max_it  = 10000;
   ksp->pc_side = ksp->pc_side_set = PC_SIDE_DEFAULT;
   ksp->rtol                       = 1.e-5;

@@ -17,24 +17,45 @@
         PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tPetscObject
       PetscObject, parameter :: PETSC_NULL_OBJECT = tPetscObject(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_OBJECT
+#endif
 
       type, extends(tPetscObject) :: tPetscOptions
       end type tPetscOptions
       PetscOptions, parameter :: PETSC_NULL_OPTIONS = tPetscOptions(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_OPTIONS
+#endif
 
       type, extends(tPetscObject) :: tPetscBench
       end type tPetscBench
-      PetscBench, parameter :: PETSC_NULL_BM = tPetscBench(0)
+      PetscBench, parameter :: PETSC_NULL_BENCH = tPetscBench(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_BENCH
+#endif
 
       type :: tPetscDevice
         PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tPetscDevice
       PetscDevice, parameter :: PETSC_NULL_DEVICE = tPetscDevice(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_DEVICE
+#endif
 
       type, extends(tPetscObject) :: tPetscDeviceContext
       end type tPetscDeviceContext
       PetscDeviceContext, parameter :: PETSC_NULL_DEVICE_CONTEXT = tPetscDeviceContext(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL__DEVICE_CONTEXT
+#endif
 
+      type, extends(tPetscObject) :: tPetscMatlabEngine
+      end type tPetscMatlabEngine
+      PetscMatlabEngine, parameter :: PETSC_NULL_MATLAB_ENGINE = tPetscMatlabEngine(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_MATLAB_ENGINE
+#endif
 ! ------------------------------------------------------------------------
 !     Non Common block Stuff declared first
 !
@@ -135,8 +156,10 @@
 !
       type, extends(tPetscObject) :: tPetscRandom
       end type tPetscRandom
-
       PetscRandom, parameter :: PETSC_NULL_RANDOM = tPetscRandom(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_RANDOM
+#endif
 !
 #define PETSCRAND 'rand'
 #define PETSCRAND48 'rand48'
@@ -167,9 +190,10 @@
       type tPetscSubcomm
         PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tPetscSubcomm
-
       PetscSubcomm, parameter :: PETSC_NULL_SUBCOMM = tPetscSubcomm(0)
-
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_SUBCOMM
+#endif
 !
 !     PetscSubcommType
 !
@@ -180,7 +204,6 @@
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::PetscReal_Private
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_REAL_KIND
-!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_OPTIONS
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_TRUE
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_FALSE
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_DECIDE
@@ -210,7 +233,6 @@
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_OWN_POINTER
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_USE_POINTER
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_i
-!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_RANDOM
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_BINARY_INT_SIZE
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_BINARY_FLOAT_SIZE
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_BINARY_CHAR_SIZE

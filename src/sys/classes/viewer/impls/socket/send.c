@@ -397,7 +397,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Socket(PetscViewer v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerSocketSetConnection - Sets the machine and port that a PETSc socket
   viewer is to use
 

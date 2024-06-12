@@ -596,9 +596,9 @@ PetscErrorCode MatPartitioningCreate(MPI_Comm comm, MatPartitioning *newp)
   PetscMPIInt     size;
 
   PetscFunctionBegin;
-  *newp = NULL;
-
+  PetscAssertPointer(newp, 2);
   PetscCall(MatInitializePackage());
+
   PetscCall(PetscHeaderCreate(part, MAT_PARTITIONING_CLASSID, "MatPartitioning", "Matrix/graph partitioning", "MatGraphOperations", comm, MatPartitioningDestroy, MatPartitioningView));
   part->vertex_weights   = NULL;
   part->part_weights     = NULL;

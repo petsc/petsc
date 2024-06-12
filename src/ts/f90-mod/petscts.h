@@ -5,17 +5,31 @@
 
       type, extends(tPetscObject) :: tTS
       end type tTS
+      TS, parameter :: PETSC_NULL_TS = tTS(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_TS
+#endif
+
       type, extends(tPetscObject) :: tTSAdapt
       end type tTSAdapt
+      TSAdapt, parameter :: PETSC_NULL_TS_ADAPT = tTSAdapt(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_TS_ADAPT
+#endif
+
       type, extends(tPetscObject) :: tTSTrajectory
       end type tTSTrajectory
+      TSTrajectory, parameter :: PETSC_NULL_TS_TRAJECTORY = tTSTrajectory(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_TS_TRAJECTORY
+#endif
+
       type, extends(tPetscObject) :: tTSGLLEAdapt
       end type tTSGLLEAdapt
-
-      TS, parameter :: PETSC_NULL_TS = tTS(0)
-      TSAdapt, parameter :: PETSC_NULL_TSADAPT = tTSAdapt(0)
-      TSTrajectory, parameter :: PETSC_NULL_TSTRAJECTORY = tTSTrajectory(0)
-      TSGLLEAdapt, parameter :: PETSC_NULL_TSGLLEAdapt = tTSGLLEAdapt(0)
+      TSGLLEAdapt, parameter :: PETSC_NULL_TS_GLLE_ADAPT = tTSGLLEAdapt(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_TS_GLLE_ADAPT
+#endif
 
 !
 !  Convergence flags

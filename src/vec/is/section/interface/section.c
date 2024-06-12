@@ -41,7 +41,6 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
   PetscCall(ISInitializePackage());
 
   PetscCall(PetscHeaderCreate(*s, PETSC_SECTION_CLASSID, "PetscSection", "Section", "IS", comm, PetscSectionDestroy, PetscSectionView));
-
   (*s)->pStart              = -1;
   (*s)->pEnd                = -1;
   (*s)->perm                = NULL;
@@ -3282,6 +3281,7 @@ PetscErrorCode PetscSectionSymCreate(MPI_Comm comm, PetscSectionSym *sym)
   PetscFunctionBegin;
   PetscAssertPointer(sym, 2);
   PetscCall(ISInitializePackage());
+
   PetscCall(PetscHeaderCreate(*sym, PETSC_SECTION_SYM_CLASSID, "PetscSectionSym", "Section Symmetry", "IS", comm, PetscSectionSymDestroy, PetscSectionSymView));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

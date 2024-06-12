@@ -31,6 +31,9 @@ typedef struct _p_PetscWeakForm *PetscWeakForm;
 
   Level: intermediate
 
+  Note:
+  This is a struct, not a `PetscObject`
+
 .seealso: `DMPlexSNESComputeResidualFEM()`, `DMPlexSNESComputeJacobianFEM()`, `DMPlexSNESComputeBoundaryFEM()`
 S*/
 typedef struct _PetscFormKey {

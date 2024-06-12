@@ -248,7 +248,7 @@ PetscErrorCode DMGetDMSNESWrite(DM dm, DMSNES *snesdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCopyDMSNES - copies a `DMSNES` context to a new `DM`
 
   Logically Collective

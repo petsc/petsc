@@ -19,16 +19,20 @@ PETSC_EXTERN void petscinitializefortran_(int *ierr)
   *ierr = PetscInitializeFortran();
 }
 
-PETSC_EXTERN void petscsetfortranbasepointers_(char *fnull_character, void *fnull_integer, void *fnull_scalar, void *fnull_double, void *fnull_real, void *fnull_truth, void (*fnull_function)(void), void *fnull_mpi_comm, PETSC_FORTRAN_CHARLEN_T len)
+PETSC_EXTERN void petscsetfortranbasepointers_(char *fnull_character, void *fnull_integer, void *fnull_scalar, void *fnull_double, void *fnull_real, void *fnull_bool, void *fnull_enum, void (*fnull_function)(void), void *fnull_mpi_comm, void *fnull_integer_array, void *fnull_scalar_array, void *fnull_real_array, PETSC_FORTRAN_CHARLEN_T len)
 {
-  PETSC_NULL_CHARACTER_Fortran = fnull_character;
-  PETSC_NULL_INTEGER_Fortran   = fnull_integer;
-  PETSC_NULL_SCALAR_Fortran    = fnull_scalar;
-  PETSC_NULL_DOUBLE_Fortran    = fnull_double;
-  PETSC_NULL_REAL_Fortran      = fnull_real;
-  PETSC_NULL_BOOL_Fortran      = fnull_truth;
-  PETSC_NULL_FUNCTION_Fortran  = fnull_function;
-  PETSC_NULL_MPI_COMM_Fortran  = fnull_mpi_comm;
+  PETSC_NULL_CHARACTER_Fortran     = fnull_character;
+  PETSC_NULL_INTEGER_Fortran       = fnull_integer;
+  PETSC_NULL_SCALAR_Fortran        = fnull_scalar;
+  PETSC_NULL_DOUBLE_Fortran        = fnull_double;
+  PETSC_NULL_REAL_Fortran          = fnull_real;
+  PETSC_NULL_BOOL_Fortran          = fnull_bool;
+  PETSC_NULL_ENUM_Fortran          = fnull_enum;
+  PETSC_NULL_FUNCTION_Fortran      = fnull_function;
+  PETSC_NULL_MPI_COMM_Fortran      = fnull_mpi_comm;
+  PETSC_NULL_INTEGER_ARRAY_Fortran = fnull_integer_array;
+  PETSC_NULL_SCALAR_ARRAY_Fortran  = fnull_scalar_array;
+  PETSC_NULL_REAL_ARRAY_Fortran    = fnull_real_array;
 }
 
 /*

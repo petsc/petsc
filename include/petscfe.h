@@ -16,6 +16,9 @@
 
     Level: intermediate
 
+    Note:
+    This is a struct, not a `PetscObject`
+
 .seealso: `PetscFE`, `PetscFEGeomCreate()`, `PetscFEGeomDestroy()`, `PetscFEGeomGetChunk()`, `PetscFEGeomRestoreChunk()`, `PetscFEGeomGetPoint()`, `PetscFEGeomGetCellPoint()`,
           `PetscFEGeomComplete()`, `PetscSpace`, `PetscDualSpace`
 M*/

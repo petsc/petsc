@@ -135,7 +135,7 @@ PetscErrorCode DMGenerateRegisterDestroy(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMAdaptLabel - Adapt a `DM` based on a `DMLabel` with values interpreted as coarsening and refining flags.  Specific implementations of `DM` maybe have
   specialized flags, but all implementations should accept flag values `DM_ADAPT_DETERMINE`, `DM_ADAPT_KEEP`, `DM_ADAPT_REFINE`, and,
   `DM_ADAPT_COARSEN`.
@@ -192,7 +192,7 @@ PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMAdaptMetric - Generates a mesh adapted to the specified metric field.
 
   Input Parameters:

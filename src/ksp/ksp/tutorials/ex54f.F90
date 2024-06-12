@@ -92,7 +92,7 @@
       else
          PetscCallA(MatSetType( Amat, MATMPIAIJ, ierr))
       endif
-      PetscCallA(MatMPIAIJSetPreallocation(Amat,f9,PETSC_NULL_INTEGER,f6,PETSC_NULL_INTEGER, ierr))
+      PetscCallA(MatMPIAIJSetPreallocation(Amat,f9,PETSC_NULL_INTEGER_ARRAY,f6,PETSC_NULL_INTEGER_ARRAY, ierr))
       PetscCallA(MatSetFromOptions( Amat, ierr))
       PetscCallA(MatSetUp( Amat, ierr))
       PetscCallA(MatGetOwnershipRange( Amat, Istart, Iend, ierr))
@@ -160,7 +160,7 @@
          endif                  ! add element
          if (qj > 0) then      ! set rhs
             val = h*h*exp(-100*((x+h/2)-blb(1))**2)*exp(-100*((y+h/2)-blb(2))**2)
-            PetscCallA(VecSetValues(bvec,one,geq,val,INSERT_VALUES,ierr))
+            PetscCallA(VecSetValues(bvec,one,[geq],[val],INSERT_VALUES,ierr))
          endif
       enddo
       PetscCallA(MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY,ierr))

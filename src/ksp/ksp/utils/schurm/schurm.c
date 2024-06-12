@@ -405,7 +405,7 @@ PetscErrorCode MatSchurComplementUpdateSubMatrices(Mat S, Mat A00, Mat Ap00, Mat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSchurComplementGetSubMatrices - Get the individual submatrices in the Schur complement
 
   Collective

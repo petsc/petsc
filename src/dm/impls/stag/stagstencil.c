@@ -27,7 +27,7 @@ const char *const DMStagStencilLocations[] = {"NONE", "BACK_DOWN_LEFT", "BACK_DO
 
 .seealso: [](ch_stag), `DMSTAG`, `IS`, `DMStagStencil`, `DMCreateGlobalVector`
 @*/
-PetscErrorCode DMStagCreateISFromStencils(DM dm, PetscInt n_stencil, DMStagStencil *stencils, IS *is)
+PetscErrorCode DMStagCreateISFromStencils(DM dm, PetscInt n_stencil, DMStagStencil stencils[], IS *is)
 {
   PetscInt              *stencil_active;
   DMStagStencil         *stencils_ordered_unique;

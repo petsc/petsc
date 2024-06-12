@@ -53,7 +53,7 @@ PetscErrorCode PetscObjectSAWsGrantAccess(PetscObject obj)
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscSAWsBlock - Blocks on SAWs until a client (person using the web browser) unblocks it
 
   Not Collective

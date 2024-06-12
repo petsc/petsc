@@ -486,7 +486,7 @@ PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm, PetscInt napp, const PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   AOCreateMemoryScalableIS - Creates a memory scalable application ordering using two index sets.
 
   Collective

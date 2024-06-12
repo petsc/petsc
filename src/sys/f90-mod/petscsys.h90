@@ -44,13 +44,6 @@
           PetscBool s
           PetscErrorCode ierr
         End Subroutine
-        Subroutine PetscOptionsHasName(o,p,n,s,ierr)
-          import tPetscOptions
-          PetscOptions o
-          character(*) p,n
-          PetscBool s
-          PetscErrorCode ierr
-        End Subroutine
         Subroutine PetscOptionsGetIntArray(o,p,n,v,c,s,ierr)
           import tPetscOptions
           PetscOptions o
@@ -77,35 +70,6 @@
           PetscBool s
           PetscErrorCode ierr
         End Subroutine
-        Subroutine PetscOptionsSetValue(o,n,v,ierr)
-          import tPetscOptions
-          PetscOptions o
-          character(*) n,v
-          PetscErrorCode ierr
-        End Subroutine
-        Subroutine PetscOptionsClearValue(o,n,ierr)
-          import tPetscOptions
-          PetscOptions o
-          character(*) n
-          PetscErrorCode ierr
-        End Subroutine
-        Subroutine PetscOptionsClear(o,ierr)
-          import tPetscOptions
-          PetscOptions o
-          PetscErrorCode ierr
-        End Subroutine
-        Subroutine PetscOptionsInsertString(o,n,ierr)
-          import tPetscOptions
-          PetscOptions o
-          character(*) n
-          PetscErrorCode ierr
-        End Subroutine
-        Subroutine PetscOptionsView(o,v,ierr)
-          import tPetscOptions,tPetscViewer
-          PetscOptions, intent(in) :: o
-          PetscViewer,  intent(in) :: v
-          PetscErrorCode, intent(out) :: ierr
-        End Subroutine PetscOptionsView
 
 #if defined(PETSC_HAVE_FORTRAN_FREE_LINE_LENGTH_NONE)
       subroutine PetscErrorf(ierr,line,file)

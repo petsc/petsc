@@ -271,7 +271,6 @@ PetscErrorCode PetscLimiterCreate(MPI_Comm comm, PetscLimiter *lim)
   PetscFunctionBegin;
   PetscAssertPointer(lim, 2);
   PetscCall(PetscCitationsRegister(LimiterCitation, &Limitercite));
-  *lim = NULL;
   PetscCall(PetscFVInitializePackage());
 
   PetscCall(PetscHeaderCreate(l, PETSCLIMITER_CLASSID, "PetscLimiter", "Finite Volume Slope Limiter", "PetscLimiter", comm, PetscLimiterDestroy, PetscLimiterView));
@@ -1160,12 +1159,10 @@ PetscErrorCode PetscFVCreate(MPI_Comm comm, PetscFV *fvm)
 
   PetscFunctionBegin;
   PetscAssertPointer(fvm, 2);
-  *fvm = NULL;
   PetscCall(PetscFVInitializePackage());
 
   PetscCall(PetscHeaderCreate(f, PETSCFV_CLASSID, "PetscFV", "Finite Volume", "PetscFV", comm, PetscFVDestroy, PetscFVView));
   PetscCall(PetscMemzero(f->ops, sizeof(struct _PetscFVOps)));
-
   PetscCall(PetscLimiterCreate(comm, &f->limiter));
   f->numComponents    = 1;
   f->dim              = 0;
@@ -1279,7 +1276,7 @@ PetscErrorCode PetscFVGetNumComponents(PetscFV fvm, PetscInt *comp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFVSetComponentName - Set the name of a component (used in output and viewing) in a `PetscFV`
 
   Logically Collective

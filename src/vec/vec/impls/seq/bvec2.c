@@ -946,7 +946,7 @@ PetscErrorCode VecCreate_Seq_Private(Vec v, const PetscScalar array[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecCreateSeqWithArray - Creates a standard,sequential array-style vector,
   where the user provides the array space to store the vector values.
 

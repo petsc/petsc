@@ -587,7 +587,7 @@ PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xi
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   ISPairToList - Convert an `IS` pair encoding an integer map to a list of `IS`.
 
   Collective

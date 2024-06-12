@@ -50,6 +50,14 @@ For example,
 
 PETSc types like ``PetscInt`` and ``PetscReal`` are simply aliases for basic Fortran types and cannot be written as ``type(tPetscInt)``
 
+PETSc objects are always automatically initialized when declared so you do not need to (and should not) do
+
+.. code-block:: fortran
+
+    type(tXXX) x = PETSC_NULL_XXX
+    XXX x = PETSC_NULL_XXX
+ 
+
 Calling Sequences
 ^^^^^^^^^^^^^^^^^
 
@@ -94,6 +102,56 @@ For proper error handling one should not use the above syntax instead one should
    PetscCallA(KSPSolve(ksp, b, x, ierr))  ! Fortran main program
    PetscCall(KSPSolve(ksp, b, x))         // C
 
+Passing Arrays
+^^^^^^^^^^^^^^
+
+Many PETSc functions take arrays as arguments; in Fortran they must be passed as arrays even if the "array"
+is of length one (unlike Fortran 77 where one can pass scalars to functions expecting arrays). When passing
+a single value one can use the Fortran [] notation to pass the scalar as an array, for example
+
+.. code-block:: fortran
+
+   PetscCall(VecSetValues(v, one, [i], [val], ierr))
+
+This trick can only be used for arrays used to pass data into a PETSc routine, it cannot be used
+for arrays used to receive data from a PETSc routine. For example,
+
+.. code-block:: fortran
+
+   PetscCall(VecGetValues(v, one, idx, [val], ierr))
+
+is invalid and will not set ``val`` with the correct value.
+
+For PETSc routine arguments that return a character string, you should pass a string long enough to hold the
+result. For example,
+
+.. code-block:: fortran
+
+   character(80)  str
+   PetscCall(KSPGetType(ksp,str,ierr))
+
+The result is copied into ``str``.
+
+For PETSc routine arguments that return an array of ``PetscInt``, ``PetscScalar``, ``PetscReal`` or of PETSc objects,
+there are two possibilities. In the first, the Fortran routine must pass in an array of sufficient size to hold the result. For example,
+
+
+.. code-block:: fortran
+
+   PetscInt lx(64)
+   DMDAGetOwnershipRanges(a, lx, PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY);
+
+In the second form one passes in a pointer to an array and the PETSc routine returns an array containing the values.
+
+.. code-block:: fortran
+
+   PetscScalar, pointer :: array(:)
+   PetscCall(VecGetArrayF90(v, array, ierr))
+
+In this second form the PETSc routine often has a name that ends with ``F90``.
+
+The information for which form to use is documented in the manual page of the routine.
+
 Passing Null Pointers
 ^^^^^^^^^^^^^^^^^^^^^
 
@@ -109,6 +167,35 @@ command in Fortran:
 .. code-block:: fortran
 
    PetscCall(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, PETSC_NULL_CHARACTER, '-name', N, flg, ierr))
+
+Where the code expects an array, then use ``PETSC_NULL_XXX_ARRAY``. For example:
+
+.. code-block:: fortran
+
+   PetscCall(MatCreateSeqDense(comm, m, n, PETSC_NULL_SCALAR_ARRAY, A))
+
+Finally when a subroutine returns a ``PetscObject`` through an argument to check if it is `NULL` you must use:
+
+.. code-block:: fortran
+
+   if (PetscObjectIsNull(dm)) then
+   if (.not. PetscObjectIsNull(dm)) then
+
+you cannot use
+
+.. code-block:: fortran
+
+   if (dm .eq. PETSC_NULL_DM) then
+
+Note that
+
+.. code-block:: fortran
+
+   if (PetscObjectIsNull(PETSC_NULL_VEC)) then
+
+will always return true, for any PETSc object.
+
+These specializations are required because of Fortran's strict type checking system and lack of a concept of ``NULL``.
 
 Matrix, Vector and IS Indices
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

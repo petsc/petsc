@@ -62,7 +62,6 @@ PetscErrorCode PetscSFCreate(MPI_Comm comm, PetscSF *sf)
   PetscCall(PetscSFInitializePackage());
 
   PetscCall(PetscHeaderCreate(b, PETSCSF_CLASSID, "PetscSF", "Star Forest", "PetscSF", comm, PetscSFDestroy, PetscSFView));
-
   b->nroots    = -1;
   b->nleaves   = -1;
   b->minleaf   = PETSC_MAX_INT;
@@ -418,7 +417,7 @@ PetscErrorCode PetscSFSetRankOrder(PetscSF sf, PetscBool flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFSetGraph - Set a parallel star forest
 
   Collective

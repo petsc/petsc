@@ -41,7 +41,7 @@ static const char citation[] = "@inproceedings{ZhangELLPACK2018,\n"
   #endif
 #endif /* PETSC_HAVE_IMMINTRIN_H */
 
-/*@C
+/*@
   MatSeqSELLSetPreallocation - For good matrix assembly performance
   the user should preallocate the matrix storage by setting the parameter `nz`
   (or the array `nnz`).
@@ -2379,7 +2379,7 @@ M*/
 .seealso: `Mat`, `MatCreateSeqSELL()`, `MatCreateSeqAIJ()`, `MatCreateSell()`, `MATSEQSELL`, `MATMPISELL`, `MATSEQAIJ`, `MATMPIAIJ`, `MATAIJ`
 M*/
 
-/*@C
+/*@
   MatCreateSeqSELL - Creates a sparse matrix in `MATSEQSELL` format.
 
   Collective

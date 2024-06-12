@@ -4707,7 +4707,7 @@ PetscErrorCode DMPlexComputeCellTypes(DM dm)
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexRestoreJoin()`, `DMPlexGetMeet()`
 @*/
-PetscErrorCode DMPlexGetJoin(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
+PetscErrorCode DMPlexGetJoin(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt *coveredPoints[])
 {
   DM_Plex  *mesh = (DM_Plex *)dm->data;
   PetscInt *join[2];
@@ -4806,7 +4806,7 @@ PetscErrorCode DMPlexRestoreJoin(DM dm, PetscInt numPoints, const PetscInt point
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetJoin()`, `DMPlexRestoreJoin()`, `DMPlexGetMeet()`
 @*/
-PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
+PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt *coveredPoints[])
 {
   PetscInt *offsets, **closures;
   PetscInt *join[2];
@@ -4906,7 +4906,7 @@ PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt point
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexRestoreMeet()`, `DMPlexGetJoin()`
 @*/
-PetscErrorCode DMPlexGetMeet(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveringPoints, const PetscInt **coveringPoints)
+PetscErrorCode DMPlexGetMeet(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveringPoints, const PetscInt *coveringPoints[])
 {
   DM_Plex  *mesh = (DM_Plex *)dm->data;
   PetscInt *meet[2];
@@ -4972,7 +4972,7 @@ PetscErrorCode DMPlexGetMeet(DM dm, PetscInt numPoints, const PetscInt points[],
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetMeet()`, `DMPlexGetFullMeet()`, `DMPlexGetJoin()`
 @*/
-PetscErrorCode DMPlexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
+PetscErrorCode DMPlexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt *coveredPoints[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -5005,7 +5005,7 @@ PetscErrorCode DMPlexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt point
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetMeet()`, `DMPlexRestoreMeet()`, `DMPlexGetJoin()`
 @*/
-PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
+PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt *coveredPoints[])
 {
   PetscInt *offsets, **closures;
   PetscInt *meet[2];
@@ -5805,7 +5805,6 @@ static PetscErrorCode GetFieldSize_Private(PetscInt dim, PetscInt k, PetscBool t
 }
 
 /*@
-
   DMPlexSetClosurePermutationTensor - Create a permutation from the default (BFS) point ordering in the closure, to a
   lexicographic ordering over the tensor product cell (i.e., line, quad, hex, etc.), and set this permutation in the
   section provided (or the section of the `DM`).

@@ -1,7 +1,7 @@
 #include <../src/mat/impls/sell/mpi/mpisell.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <../src/mat/impls/baij/mpi/mpibaij.h>
-#include <petsc/private/isimpl.h>
+#include <petsc/private/isimpl.h> /*I  "petscmat.h"  I*/
 
 static PetscErrorCode MatFDColoringMarkHost_AIJ(Mat J)
 {
@@ -722,7 +722,7 @@ PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFD
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatFDColoringSetValues - takes a matrix in compressed color format and enters the matrix into a PETSc `Mat`
 
   Collective

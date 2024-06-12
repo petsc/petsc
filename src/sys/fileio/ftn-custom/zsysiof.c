@@ -1,7 +1,6 @@
 #include <petsc/private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-  #define petsctestfile_              PETSCTESTFILE
   #define petscbinaryreadint_         PETSCBINARYREADINT
   #define petscbinaryreadreal_        PETSCBINARYREADREAL
   #define petscbinaryreadcomplex_     PETSCBINARYREADCOMPLEX
@@ -21,7 +20,6 @@
   #define petscbinarywritereal1_      PETSCBINARYWRITEREAL1
   #define petscbinarywritecomplex1_   PETSCBINARYWRITECOMPLEX1
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define petsctestfile_              petsctestfile
   #define petscbinaryreadint_         petscbinaryreadint
   #define petscbinaryreadreal_        petscbinaryreadreal
   #define petscbinaryreadcomplex_     petscbinaryreadcomplex
@@ -159,16 +157,6 @@ PETSC_EXTERN void petscbinaryreadcomplex1cnt_(int *fd, void *data, PetscInt *num
   CHKFORTRANNULLINTEGER(count);
   *ierr = PetscBinaryRead(*fd, data, *num, count, *type);
   if (*ierr) return;
-}
-
-PETSC_EXTERN void petsctestfile_(char *name, char *mode, PetscBool *flg, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len, PETSC_FORTRAN_CHARLEN_T len1)
-{
-  char *c1;
-
-  FIXCHAR(name, len, c1);
-  *ierr = PetscTestFile(c1, *mode, flg);
-  if (*ierr) return;
-  FREECHAR(name, c1);
 }
 
 #if defined(__cplusplus)

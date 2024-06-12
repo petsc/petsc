@@ -4011,7 +4011,7 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR(Mat B, const PetscInt i[], const Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatMPIAIJSetPreallocation - Preallocates memory for a sparse parallel matrix in `MATMPIAIJ` format
   (the default parallel PETSc format).  For good matrix assembly performance
   the user should preallocate the matrix storage by setting the parameters
@@ -4356,7 +4356,7 @@ PetscErrorCode MatUpdateMPIAIJWithArray(Mat mat, const PetscScalar v[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateAIJ - Creates a sparse parallel matrix in `MATAIJ` format
   (the default parallel PETSc format).  For good matrix assembly performance
   the user should preallocate the matrix storage by setting the parameters
@@ -6931,7 +6931,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateMPIAIJWithSplitArrays - creates a `MATMPIAIJ` matrix using arrays that contain the "diagonal"
   and "off-diagonal" part of the matrix in CSR format.
 

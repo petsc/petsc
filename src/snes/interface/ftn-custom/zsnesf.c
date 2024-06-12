@@ -5,7 +5,6 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define snessetpicard_                   SNESSETPICARD
-  #define matmffdcomputejacobian_          MATMFFDCOMPUTEJACOBIAN
   #define snessolve_                       SNESSOLVE
   #define snescomputejacobiandefault_      SNESCOMPUTEJACOBIANDEFAULT
   #define snescomputejacobiandefaultcolor_ SNESCOMPUTEJACOBIANDEFAULTCOLOR
@@ -31,9 +30,9 @@
   #define snesnewtontrsetpostcheck_        SNESNEWTONTRSETPOSTCHECK
   #define snesnewtontrdcsetprecheck_       SNESNEWTONTRDCSETPRECHECK
   #define snesnewtontrdcsetpostcheck_      SNESNEWTONTRDCSETPOSTCHECK
+  #define matmffdcomputejacobian_          MATMFFDCOMPUTEJACOBIAN
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define snessetpicard_                   snessetpicard
-  #define matmffdcomputejacobian_          matmffdcomputejacobian
   #define snessolve_                       snessolve
   #define snescomputejacobiandefault_      snescomputejacobiandefault
   #define snescomputejacobiandefaultcolor_ snescomputejacobiandefaultcolor
@@ -59,6 +58,7 @@
   #define snesnewtontrsetpostcheck_        snesnewtontrsetpostcheck
   #define snesnewtontrdcsetprecheck_       snesnewtontrdcsetprecheck
   #define snesnewtontrdcsetpostcheck_      snesnewtontrdcsetpostcheck
+  #define matmffdcomputejacobian_          matmffdcomputejacobian
 #endif
 
 static struct {
@@ -194,23 +194,10 @@ static PetscErrorCode ourmondestroy(void **ctx)
   PetscObjectUseFortranCallback(snes, _cb.mondestroy, (void *, PetscErrorCode *), (_ctx, &ierr));
 }
 
-/*
-     snescomputejacobiandefault() and snescomputejacobiandefaultcolor()
-  These can be used directly from Fortran but are mostly so that
-  Fortran SNESSetJacobian() will properly handle the defaults being passed in.
-*/
-PETSC_EXTERN void matmffdcomputejacobian_(SNES *snes, Vec *x, Mat *m, Mat *p, void *ctx, PetscErrorCode *ierr)
-{
-  *ierr = MatMFFDComputeJacobian(*snes, *x, *m, *p, ctx);
-}
-PETSC_EXTERN void snescomputejacobiandefault_(SNES *snes, Vec *x, Mat *m, Mat *p, void *ctx, PetscErrorCode *ierr)
-{
-  *ierr = SNESComputeJacobianDefault(*snes, *x, *m, *p, ctx);
-}
-PETSC_EXTERN void snescomputejacobiandefaultcolor_(SNES *snes, Vec *x, Mat *m, Mat *p, void *ctx, PetscErrorCode *ierr)
-{
-  *ierr = SNESComputeJacobianDefaultColor(*snes, *x, *m, *p, *(MatFDColoring *)ctx);
-}
+/* these are generated automatically by bfort */
+PETSC_EXTERN void snescomputejacobiandefault_(SNES *, Vec *, Mat *, Mat *, void *, PetscErrorCode *);
+PETSC_EXTERN void snescomputejacobiandefaultcolor_(SNES *, Vec *, Mat *, Mat *, void *, PetscErrorCode *);
+PETSC_EXTERN void matmffdcomputejacobian_(SNES *, Vec *, Mat *, Mat *, void *, PetscErrorCode *);
 
 PETSC_EXTERN void snessetjacobian_(SNES *snes, Mat *A, Mat *B, void (*func)(SNES *, Vec *, Mat *, Mat *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {

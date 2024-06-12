@@ -29,7 +29,7 @@
            km(1,1) = i + j
            idxm(1) = i - 1 + 3*rank
            idxmj(1) = j - 1 + 3*rank
-           PetscCallA(MatSetValues(B, one, idxm, one, idxmj, km, ADD_VALUES, ierr))
+           PetscCallA(MatSetValues(B, one, idxm, one, idxmj, reshape(km, [three*three]), ADD_VALUES, ierr))
         enddo
       enddo
 

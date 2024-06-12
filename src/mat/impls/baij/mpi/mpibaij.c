@@ -2968,7 +2968,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJ(Mat B)
 .seealso: `Mat`, `MatCreateBAIJ()`, `MATSEQBAIJ`, `MATMPIBAIJ`, `MatMPIBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocationCSR()`
 M*/
 
-/*@C
+/*@
   MatMPIBAIJSetPreallocation - Allocates memory for a sparse parallel matrix in `MATMPIBAIJ` format
   (block compressed row).
 
@@ -3059,7 +3059,7 @@ PetscErrorCode MatMPIBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, con
 }
 
 // PetscClangLinter pragma disable: -fdoc-section-header-unknown
-/*@C
+/*@
   MatCreateBAIJ - Creates a sparse parallel matrix in `MATBAIJ` format
   (block compressed row).
 

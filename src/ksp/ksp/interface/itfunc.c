@@ -2729,7 +2729,7 @@ PetscErrorCode KSPGetConvergenceContext(KSP ksp, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPBuildSolution - Builds the approximate solution in a vector provided.
 
   Collective
@@ -2777,7 +2777,7 @@ PetscErrorCode KSPBuildSolution(KSP ksp, Vec v, Vec *V)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPBuildResidual - Builds the residual in a vector provided.
 
   Collective

@@ -41,21 +41,17 @@ PetscErrorCode PetscDrawBarCreate(PetscDraw draw, PetscDrawBar *bar)
   PetscAssertPointer(bar, 2);
 
   PetscCall(PetscHeaderCreate(h, PETSC_DRAWBAR_CLASSID, "DrawBar", "Bar Graph", "Draw", PetscObjectComm((PetscObject)draw), PetscDrawBarDestroy, NULL));
-
   PetscCall(PetscObjectReference((PetscObject)draw));
-  h->win = draw;
-
+  h->win     = draw;
   h->view    = NULL;
   h->destroy = NULL;
   h->color   = PETSC_DRAW_GREEN;
   h->ymin    = 0.; /* if user has not set these then they are determined from the data */
   h->ymax    = 0.;
   h->numBins = 0;
-
   PetscCall(PetscDrawAxisCreate(draw, &h->axis));
   h->axis->xticks = NULL;
-
-  *bar = h;
+  *bar            = h;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -79,7 +75,7 @@ PetscErrorCode PetscDrawBarCreate(PetscDraw draw, PetscDrawBar *bar)
 
 .seealso: `PetscDrawBar`, `PetscDrawBarCreate()`, `PetscDrawBarDraw()`
 @*/
-PetscErrorCode PetscDrawBarSetData(PetscDrawBar bar, PetscInt bins, const PetscReal data[], const char *const *labels)
+PetscErrorCode PetscDrawBarSetData(PetscDrawBar bar, PetscInt bins, const PetscReal data[], const char *const labels[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bar, PETSC_DRAWBAR_CLASSID, 1);
@@ -95,7 +91,7 @@ PetscErrorCode PetscDrawBarSetData(PetscDrawBar bar, PetscInt bins, const PetscR
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawBarDestroy - Frees all space taken up by bar graph data structure.
 
   Collective

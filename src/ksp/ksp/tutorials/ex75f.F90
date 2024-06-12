@@ -54,7 +54,7 @@
           PetscCallA(KSPSetOperators(ksp,A,A,ierr))
           PetscCallA(KSPSetFromOptions(ksp,ierr))
           PetscCallA(KSPSetUp(ksp,ierr))
-          if (U .ne. PETSC_NULL_MAT) then
+          if (.not. PetscObjectIsNull(U)) then
             PetscCallA(KSPHPDDMSetDeflationMat(ksp,U,ierr))
             PetscCallA(MatDestroy(U,ierr))
           endif

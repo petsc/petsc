@@ -1094,7 +1094,7 @@ functionend:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecScatterCreateToAll - Creates a vector and a scatter context that copies all
   vector values to each processor
 
@@ -1166,7 +1166,7 @@ PetscErrorCode VecScatterCreateToAll(Vec vin, VecScatter *ctx, Vec *vout)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecScatterCreateToZero - Creates an output vector and a scatter context used to
   copy all vector values into the output vector on the zeroth processor
 

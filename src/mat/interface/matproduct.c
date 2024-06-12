@@ -853,7 +853,7 @@ PetscErrorCode MatProductSetFill(Mat mat, PetscReal fill)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatProductSetAlgorithm - Requests a particular algorithm for a matrix-matrix product operation that will perform to compute the given matrix
 
   Collective
@@ -879,7 +879,7 @@ PetscErrorCode MatProductSetAlgorithm(Mat mat, MatProductAlgorithm alg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatProductGetAlgorithm - Returns the selected algorithm for a matrix-matrix product operation
 
   Not Collective

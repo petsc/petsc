@@ -156,17 +156,17 @@ PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm comm, PetscMPIInt keyval, void *attr
 - name - the file name
 
   Output Parameter:
-. lab - the `PetscViewer` to use with the specified file
+. viewer - the `PetscViewer` to use with the specified file
 
   Level: beginner
 
   Notes:
   To open a ASCII file as a viewer for reading one must use the sequence
 .vb
-   PetscViewerCreate(comm,&lab);
-   PetscViewerSetType(lab,PETSCVIEWERASCII);
-   PetscViewerFileSetMode(lab,FILE_MODE_READ);
-   PetscViewerFileSetName(lab,name);
+   PetscViewerCreate(comm,&viewer);
+   PetscViewerSetType(viewer,PETSCVIEWERASCII);
+   PetscViewerFileSetMode(viewer,FILE_MODE_READ);
+   PetscViewerFileSetName(viewer,name);
 .ve
 
   This `PetscViewer` can be destroyed with `PetscViewerDestroy()`.
@@ -185,17 +185,18 @@ PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm comm, PetscMPIInt keyval, void *attr
           `PetscViewerASCIIGetPointer()`, `PetscViewerPushFormat()`, `PETSC_VIEWER_STDOUT_`, `PETSC_VIEWER_STDERR_`,
           `PETSC_VIEWER_STDOUT_WORLD`, `PETSC_VIEWER_STDOUT_SELF`,
 @*/
-PetscErrorCode PetscViewerASCIIOpen(MPI_Comm comm, const char name[], PetscViewer *lab)
+PetscErrorCode PetscViewerASCIIOpen(MPI_Comm comm, const char name[], PetscViewer *viewer)
 {
   PetscViewerLink *vlink, *nv;
   PetscBool        flg, eq;
   size_t           len;
 
   PetscFunctionBegin;
+  PetscAssertPointer(viewer, 3);
   PetscCall(PetscStrlen(name, &len));
   if (!len) {
-    PetscCall(PetscViewerASCIIGetStdout(comm, lab));
-    PetscCall(PetscObjectReference((PetscObject)*lab));
+    PetscCall(PetscViewerASCIIGetStdout(comm, viewer));
+    PetscCall(PetscObjectReference((PetscObject)*viewer));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscSpinlockLock(&PetscViewerASCIISpinLockOpen));
@@ -216,7 +217,7 @@ PetscErrorCode PetscViewerASCIIOpen(MPI_Comm comm, const char name[], PetscViewe
       PetscCall(PetscStrcmp(name, ((PetscViewer_ASCII *)vlink->viewer->data)->filename, &eq));
       if (eq) {
         PetscCall(PetscObjectReference((PetscObject)vlink->viewer));
-        *lab = vlink->viewer;
+        *viewer = vlink->viewer;
         PetscCall(PetscCommDestroy(&comm));
         PetscCall(PetscSpinlockUnlock(&PetscViewerASCIISpinLockOpen));
         PetscFunctionReturn(PETSC_SUCCESS);
@@ -224,12 +225,12 @@ PetscErrorCode PetscViewerASCIIOpen(MPI_Comm comm, const char name[], PetscViewe
       vlink = vlink->next;
     }
   }
-  PetscCall(PetscViewerCreate(comm, lab));
-  PetscCall(PetscViewerSetType(*lab, PETSCVIEWERASCII));
-  if (name) PetscCall(PetscViewerFileSetName(*lab, name));
+  PetscCall(PetscViewerCreate(comm, viewer));
+  PetscCall(PetscViewerSetType(*viewer, PETSCVIEWERASCII));
+  if (name) PetscCall(PetscViewerFileSetName(*viewer, name));
   /* save viewer into communicator if needed later */
   PetscCall(PetscNew(&nv));
-  nv->viewer = *lab;
+  nv->viewer = *viewer;
   if (!flg) {
     PetscCallMPI(MPI_Comm_set_attr(comm, Petsc_Viewer_keyval, nv));
   } else {
@@ -256,7 +257,7 @@ PetscErrorCode PetscViewerASCIIOpen(MPI_Comm comm, const char name[], PetscViewe
 - fd   - the `FILE` pointer
 
   Output Parameter:
-. lab - the `PetscViewer` to use with the specified file
+. viewer - the `PetscViewer` to use with the specified file
 
   Level: beginner
 
@@ -274,12 +275,12 @@ PetscErrorCode PetscViewerASCIIOpen(MPI_Comm comm, const char name[], PetscViewe
           `PetscViewerASCIIGetPointer()`, `PetscViewerPushFormat()`, `PETSC_VIEWER_STDOUT_`, `PETSC_VIEWER_STDERR_`,
           `PETSC_VIEWER_STDOUT_WORLD`, `PETSC_VIEWER_STDOUT_SELF`, `PetscViewerASCIIOpen()`, `PetscViewerASCIISetFILE()`, `PETSCVIEWERASCII`
 @*/
-PetscErrorCode PetscViewerASCIIOpenWithFILE(MPI_Comm comm, FILE *fd, PetscViewer *lab)
+PetscErrorCode PetscViewerASCIIOpenWithFILE(MPI_Comm comm, FILE *fd, PetscViewer *viewer)
 {
   PetscFunctionBegin;
-  PetscCall(PetscViewerCreate(comm, lab));
-  PetscCall(PetscViewerSetType(*lab, PETSCVIEWERASCII));
-  PetscCall(PetscViewerASCIISetFILE(*lab, fd));
+  PetscCall(PetscViewerCreate(comm, viewer));
+  PetscCall(PetscViewerSetType(*viewer, PETSCVIEWERASCII));
+  PetscCall(PetscViewerASCIISetFILE(*viewer, fd));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

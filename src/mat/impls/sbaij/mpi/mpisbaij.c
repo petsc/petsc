@@ -2242,7 +2242,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
 .seealso: [](ch_matrices), `Mat`, `MATSEQSBAIJ`, `MATMPISBAIJ`, `MatCreateSBAIJ()`, `MATSEQSBAIJ`, `MATMPISBAIJ`
 M*/
 
-/*@C
+/*@
   MatMPISBAIJSetPreallocation - For good matrix assembly performance
   the user should preallocate the matrix storage by setting the parameters
   d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
@@ -2334,7 +2334,7 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, co
 }
 
 // PetscClangLinter pragma disable: -fdoc-section-header-unknown
-/*@C
+/*@
   MatCreateSBAIJ - Creates a sparse parallel matrix in symmetric block AIJ format, `MATSBAIJ`,
   (block compressed row).  For good matrix assembly performance
   the user should preallocate the matrix storage by setting the parameters
@@ -2824,7 +2824,7 @@ PetscErrorCode MatCreateMPISBAIJWithArrays(MPI_Comm comm, PetscInt bs, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatMPISBAIJSetPreallocationCSR - Creates a sparse parallel matrix in `MATMPISBAIJ` format using the given nonzero structure and (optional) numerical values
 
   Collective

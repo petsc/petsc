@@ -45,7 +45,7 @@ PetscErrorCode DMDAGetNatural_Private(DM da, PetscInt *outNlocal, IS *isnatural)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDASetAOType - Sets the type of application ordering to create with `DMDAGetAO()`, for a distributed array.
 
   Collective

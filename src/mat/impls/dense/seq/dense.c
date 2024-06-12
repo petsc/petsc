@@ -2191,7 +2191,7 @@ PetscErrorCode MatDenseSetLDA(Mat A, PetscInt lda)
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
-PetscErrorCode MatDenseGetArray(Mat A, PetscScalar **array)
+PetscErrorCode MatDenseGetArray(Mat A, PetscScalar *array[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -2216,7 +2216,7 @@ PetscErrorCode MatDenseGetArray(Mat A, PetscScalar **array)
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
-PetscErrorCode MatDenseRestoreArray(Mat A, PetscScalar **array)
+PetscErrorCode MatDenseRestoreArray(Mat A, PetscScalar *array[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -2244,7 +2244,7 @@ PetscErrorCode MatDenseRestoreArray(Mat A, PetscScalar **array)
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArrayRead()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
-PetscErrorCode MatDenseGetArrayRead(Mat A, const PetscScalar **array)
+PetscErrorCode MatDenseGetArrayRead(Mat A, const PetscScalar *array[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -2266,7 +2266,7 @@ PetscErrorCode MatDenseGetArrayRead(Mat A, const PetscScalar **array)
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArrayRead()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
-PetscErrorCode MatDenseRestoreArrayRead(Mat A, const PetscScalar **array)
+PetscErrorCode MatDenseRestoreArrayRead(Mat A, const PetscScalar *array[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -2290,7 +2290,7 @@ PetscErrorCode MatDenseRestoreArrayRead(Mat A, const PetscScalar **array)
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArrayWrite()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`
 @*/
-PetscErrorCode MatDenseGetArrayWrite(Mat A, PetscScalar **array)
+PetscErrorCode MatDenseGetArrayWrite(Mat A, PetscScalar *array[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -2312,7 +2312,7 @@ PetscErrorCode MatDenseGetArrayWrite(Mat A, PetscScalar **array)
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArrayWrite()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`
 @*/
-PetscErrorCode MatDenseRestoreArrayWrite(Mat A, PetscScalar **array)
+PetscErrorCode MatDenseRestoreArrayWrite(Mat A, PetscScalar *array[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -2346,7 +2346,7 @@ PetscErrorCode MatDenseRestoreArrayWrite(Mat A, PetscScalar **array)
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArrayAndMemType()`, `MatDenseGetArrayReadAndMemType()`, `MatDenseGetArrayWriteAndMemType()`, `MatDenseGetArrayRead()`,
    `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`, `MatSeqAIJGetCSRAndMemType()`
 @*/
-PetscErrorCode MatDenseGetArrayAndMemType(Mat A, PetscScalar **array, PetscMemType *mtype)
+PetscErrorCode MatDenseGetArrayAndMemType(Mat A, PetscScalar *array[], PetscMemType *mtype)
 {
   PetscBool isMPI;
 
@@ -2385,7 +2385,7 @@ PetscErrorCode MatDenseGetArrayAndMemType(Mat A, PetscScalar **array, PetscMemTy
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArrayAndMemType()`, `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
-PetscErrorCode MatDenseRestoreArrayAndMemType(Mat A, PetscScalar **array)
+PetscErrorCode MatDenseRestoreArrayAndMemType(Mat A, PetscScalar *array[])
 {
   PetscBool isMPI;
 
@@ -2431,7 +2431,7 @@ PetscErrorCode MatDenseRestoreArrayAndMemType(Mat A, PetscScalar **array)
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArrayReadAndMemType()`, `MatDenseGetArrayWriteAndMemType()`,
    `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`, `MatSeqAIJGetCSRAndMemType()`
 @*/
-PetscErrorCode MatDenseGetArrayReadAndMemType(Mat A, const PetscScalar **array, PetscMemType *mtype)
+PetscErrorCode MatDenseGetArrayReadAndMemType(Mat A, const PetscScalar *array[], PetscMemType *mtype)
 {
   PetscBool isMPI;
 
@@ -2469,7 +2469,7 @@ PetscErrorCode MatDenseGetArrayReadAndMemType(Mat A, const PetscScalar **array, 
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArrayReadAndMemType()`, `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
-PetscErrorCode MatDenseRestoreArrayReadAndMemType(Mat A, const PetscScalar **array)
+PetscErrorCode MatDenseRestoreArrayReadAndMemType(Mat A, const PetscScalar *array[])
 {
   PetscBool isMPI;
 
@@ -2514,7 +2514,7 @@ PetscErrorCode MatDenseRestoreArrayReadAndMemType(Mat A, const PetscScalar **arr
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArrayWriteAndMemType()`, `MatDenseGetArrayReadAndMemType()`, `MatDenseGetArrayRead()`,
   `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`, `MatSeqAIJGetCSRAndMemType()`
 @*/
-PetscErrorCode MatDenseGetArrayWriteAndMemType(Mat A, PetscScalar **array, PetscMemType *mtype)
+PetscErrorCode MatDenseGetArrayWriteAndMemType(Mat A, PetscScalar *array[], PetscMemType *mtype)
 {
   PetscBool isMPI;
 
@@ -2552,7 +2552,7 @@ PetscErrorCode MatDenseGetArrayWriteAndMemType(Mat A, PetscScalar **array, Petsc
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArrayWriteAndMemType()`, `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
-PetscErrorCode MatDenseRestoreArrayWriteAndMemType(Mat A, PetscScalar **array)
+PetscErrorCode MatDenseRestoreArrayWriteAndMemType(Mat A, PetscScalar *array[])
 {
   PetscBool isMPI;
 
@@ -3270,7 +3270,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
                                        NULL,
                                        NULL};
 
-/*@C
+/*@
   MatCreateSeqDense - Creates a `MATSEQDENSE` that
   is stored in column major order (the usual Fortran format).
 
@@ -3281,7 +3281,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
 . m    - number of rows
 . n    - number of columns
 - data - optional location of matrix data in column major order.  Use `NULL` for PETSc
-   to control all matrix memory allocation.
+         to control all matrix memory allocation.
 
   Output Parameter:
 . A - the matrix
@@ -3298,7 +3298,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
 
 .seealso: [](ch_matrices), `Mat`, `MATSEQDENSE`, `MatCreate()`, `MatCreateDense()`, `MatSetValues()`
 @*/
-PetscErrorCode MatCreateSeqDense(MPI_Comm comm, PetscInt m, PetscInt n, PetscScalar *data, Mat *A)
+PetscErrorCode MatCreateSeqDense(MPI_Comm comm, PetscInt m, PetscInt n, PetscScalar data[], Mat *A)
 {
   PetscFunctionBegin;
   PetscCall(MatCreate(comm, A));
@@ -3308,7 +3308,7 @@ PetscErrorCode MatCreateSeqDense(MPI_Comm comm, PetscInt m, PetscInt n, PetscSca
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqDenseSetPreallocation - Sets the array used for storing the matrix elements of a `MATSEQDENSE` matrix
 
   Collective
@@ -3691,7 +3691,7 @@ PetscErrorCode MatCreate_SeqDense(Mat B)
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreColumn()`, `MatDenseGetColumnVec()`
 @*/
-PetscErrorCode MatDenseGetColumn(Mat A, PetscInt col, PetscScalar **vals)
+PetscErrorCode MatDenseGetColumn(Mat A, PetscInt col, PetscScalar *vals[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -3714,7 +3714,7 @@ PetscErrorCode MatDenseGetColumn(Mat A, PetscInt col, PetscScalar **vals)
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetColumn()`
 @*/
-PetscErrorCode MatDenseRestoreColumn(Mat A, PetscScalar **vals)
+PetscErrorCode MatDenseRestoreColumn(Mat A, PetscScalar *vals[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);

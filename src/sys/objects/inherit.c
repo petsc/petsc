@@ -383,7 +383,7 @@ PetscErrorCode PetscObjectsDump(FILE *fd, PetscBool all)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectsView - Prints the currently existing objects.
 
   Logically Collective
@@ -409,7 +409,7 @@ PetscErrorCode PetscObjectsView(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectsGetObject - Get a pointer to a named object
 
   Not Collective
@@ -425,7 +425,7 @@ PetscErrorCode PetscObjectsView(PetscViewer viewer)
 
 .seealso: `PetscObject`
 @*/
-PetscErrorCode PetscObjectsGetObject(const char name[], PetscObject *obj, char **classname)
+PetscErrorCode PetscObjectsGetObject(const char name[], PetscObject *obj, const char *classname[])
 {
   PetscInt    i;
   PetscObject h;
@@ -445,6 +445,16 @@ PetscErrorCode PetscObjectsGetObject(const char name[], PetscObject *obj, char *
       }
     }
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+#else
+PetscErrorCode PetscObjectsView(PetscViewer viewer)
+{
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode PetscObjectsGetObject(const char name[], PetscObject *obj, const char *classname[])
+{
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
@@ -1029,3 +1039,35 @@ PetscErrorCode PetscObjectSetUp(PetscObject obj)
   PetscValidHeader(obj, 1);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+/*MC
+  PetscObjectIsNull - returns true if the given PETSc object is a null object
+
+  Fortran only
+
+  Synopsis:
+  #include <petsc/finclude/petscsys.h>
+  PetscBool PetscObjectIsNull(PetscObject obj)
+
+  Logically Collective
+
+  Input Parameters:
+. obj  - the PETSc object
+
+  Level: beginner
+
+  Example Usage:
+.vb
+  if (PetscObjectIsNull(dm)) then
+  if (.not. PetscObjectIsNull(dm)) then
+.ve
+
+  Note:
+  Code such as
+.vb
+  if (dm == PETSC_NULL_DM) then
+.ve
+  is not allowed.
+
+.seealso: `PetscObject`, `PETSC_NULL_OBJECT`, `PETSC_NULL_VEC`, `PETSC_NULL_VEC_ARRAY`
+M*/

@@ -1024,7 +1024,7 @@ PetscErrorCode MatMPIAdjToSeqRankZero(Mat A, Mat *B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatMPIAdjSetPreallocation - Sets the array used for storing the matrix elements
 
   Logically Collective
@@ -1097,7 +1097,7 @@ PetscErrorCode MatMPIAdjSetPreallocation(Mat B, PetscInt *i, PetscInt *j, PetscI
   Possible values for `MatSetOption()` - `MAT_STRUCTURALLY_SYMMETRIC`
 
   Fortran Note:
-  From Fortran the indices and values are copied so the array space need not be provided with `PetscMalloc()`.
+  From Fortran the arrays `indices` and `values` must be retained by the user until `A` is destroyed
 
 .seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatConvert()`, `MatGetOrdering()`, `MATMPIADJ`, `MatMPIAdjSetPreallocation()`
 @*/

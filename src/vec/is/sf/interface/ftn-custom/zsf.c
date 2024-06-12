@@ -8,7 +8,6 @@
   #define petscsfreducebegin_   PETSCSFREDUCEBEGIN
   #define petscsfreduceend_     PETSCSFREDUCEEND
   #define f90arraysfnodecreate_ F90ARRAYSFNODECREATE
-  #define petscsfsetgraph_      PETSCSFSETGRAPH
   #define petscsfgetleafranks_  PETSCSFGETLEAFRANKS
   #define petscsfgetrootranks_  PETSCSFGETROOTRANKS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
@@ -18,18 +17,11 @@
   #define petscsfreducebegin_   petscsfreducebegin
   #define petscsfreduceend_     petscsfreduceend
   #define f90arraysfnodecreate_ f90arraysfnodecreate
-  #define petscsfsetgraph_      petscsfsetgraph
   #define petscsfgetleafranks_  petscsfgetleafranks
   #define petscsfgetrootranks_  petscsfgetrootranks
 #endif
 
 PETSC_EXTERN void f90arraysfnodecreate_(const PetscInt *, PetscInt *, void *PETSC_F90_2PTR_PROTO_NOVAR);
-
-PETSC_EXTERN void petscsfsetgraph_(PetscSF *sf, PetscInt *nroots, PetscInt *nleaves, PetscInt *ilocal, PetscCopyMode *localmode, PetscSFNode *iremote, PetscCopyMode *remotemode, int *ierr)
-{
-  if (ilocal == PETSC_NULL_INTEGER_Fortran) ilocal = NULL;
-  *ierr = PetscSFSetGraph(*sf, *nroots, *nleaves, ilocal, *localmode, iremote, *remotemode);
-}
 
 PETSC_EXTERN void petscsfgetgraph_(PetscSF *sf, PetscInt *nroots, PetscInt *nleaves, F90Array1d *ailocal, F90Array1d *airemote, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(pilocal) PETSC_F90_2PTR_PROTO(piremote))
 {

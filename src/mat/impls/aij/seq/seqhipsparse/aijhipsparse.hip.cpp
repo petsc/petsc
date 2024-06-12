@@ -3849,7 +3849,7 @@ static PetscErrorCode MatSetValuesCOO_SeqAIJHIPSPARSE(Mat A, const PetscScalar v
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJHIPSPARSERestoreIJ()`, `MatSeqAIJHIPSPARSEGetArrayRead()`
 @*/
-PetscErrorCode MatSeqAIJHIPSPARSEGetIJ(Mat A, PetscBool compressed, const int **i, const int **j)
+PetscErrorCode MatSeqAIJHIPSPARSEGetIJ(Mat A, PetscBool compressed, const int *i[], const int *j[])
 {
   Mat_SeqAIJHIPSPARSE *cusp = (Mat_SeqAIJHIPSPARSE *)A->spptr;
   Mat_SeqAIJ          *a    = (Mat_SeqAIJ *)A->data;
@@ -3892,7 +3892,7 @@ PetscErrorCode MatSeqAIJHIPSPARSEGetIJ(Mat A, PetscBool compressed, const int **
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJHIPSPARSEGetIJ()`
 @*/
-PetscErrorCode MatSeqAIJHIPSPARSERestoreIJ(Mat A, PetscBool compressed, const int **i, const int **j)
+PetscErrorCode MatSeqAIJHIPSPARSERestoreIJ(Mat A, PetscBool compressed, const int *i[], const int *j[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -3920,7 +3920,7 @@ PetscErrorCode MatSeqAIJHIPSPARSERestoreIJ(Mat A, PetscBool compressed, const in
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJHIPSPARSEGetArray()`, `MatSeqAIJHIPSPARSEGetArrayWrite()`, `MatSeqAIJHIPSPARSERestoreArrayRead()`
 @*/
-PetscErrorCode MatSeqAIJHIPSPARSEGetArrayRead(Mat A, const PetscScalar **a)
+PetscErrorCode MatSeqAIJHIPSPARSEGetArrayRead(Mat A, const PetscScalar *a[])
 {
   Mat_SeqAIJHIPSPARSE *cusp = (Mat_SeqAIJHIPSPARSE *)A->spptr;
   CsrMatrix           *csr;
@@ -3951,7 +3951,7 @@ PetscErrorCode MatSeqAIJHIPSPARSEGetArrayRead(Mat A, const PetscScalar **a)
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJHIPSPARSEGetArrayRead()`
 @*/
-PetscErrorCode MatSeqAIJHIPSPARSERestoreArrayRead(Mat A, const PetscScalar **a)
+PetscErrorCode MatSeqAIJHIPSPARSERestoreArrayRead(Mat A, const PetscScalar *a[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -3979,7 +3979,7 @@ PetscErrorCode MatSeqAIJHIPSPARSERestoreArrayRead(Mat A, const PetscScalar **a)
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJHIPSPARSEGetArrayRead()`, `MatSeqAIJHIPSPARSEGetArrayWrite()`, `MatSeqAIJHIPSPARSERestoreArray()`
 @*/
-PetscErrorCode MatSeqAIJHIPSPARSEGetArray(Mat A, PetscScalar **a)
+PetscErrorCode MatSeqAIJHIPSPARSEGetArray(Mat A, PetscScalar *a[])
 {
   Mat_SeqAIJHIPSPARSE *cusp = (Mat_SeqAIJHIPSPARSE *)A->spptr;
   CsrMatrix           *csr;
@@ -4011,7 +4011,7 @@ PetscErrorCode MatSeqAIJHIPSPARSEGetArray(Mat A, PetscScalar **a)
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJHIPSPARSEGetArray()`
 @*/
-PetscErrorCode MatSeqAIJHIPSPARSERestoreArray(Mat A, PetscScalar **a)
+PetscErrorCode MatSeqAIJHIPSPARSERestoreArray(Mat A, PetscScalar *a[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -4041,7 +4041,7 @@ PetscErrorCode MatSeqAIJHIPSPARSERestoreArray(Mat A, PetscScalar **a)
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJHIPSPARSEGetArray()`, `MatSeqAIJHIPSPARSEGetArrayRead()`, `MatSeqAIJHIPSPARSERestoreArrayWrite()`
 @*/
-PetscErrorCode MatSeqAIJHIPSPARSEGetArrayWrite(Mat A, PetscScalar **a)
+PetscErrorCode MatSeqAIJHIPSPARSEGetArrayWrite(Mat A, PetscScalar *a[])
 {
   Mat_SeqAIJHIPSPARSE *cusp = (Mat_SeqAIJHIPSPARSE *)A->spptr;
   CsrMatrix           *csr;
@@ -4073,7 +4073,7 @@ PetscErrorCode MatSeqAIJHIPSPARSEGetArrayWrite(Mat A, PetscScalar **a)
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJHIPSPARSEGetArrayWrite()`
 @*/
-PetscErrorCode MatSeqAIJHIPSPARSERestoreArrayWrite(Mat A, PetscScalar **a)
+PetscErrorCode MatSeqAIJHIPSPARSERestoreArrayWrite(Mat A, PetscScalar *a[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);

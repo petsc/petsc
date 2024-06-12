@@ -31,7 +31,7 @@ PetscErrorCode PetscViewerSetFormat(PetscViewer viewer, PetscViewerFormat format
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerPushFormat - Sets the format for a `PetscViewer`.
 
   Logically Collective
@@ -60,7 +60,7 @@ PetscErrorCode PetscViewerPushFormat(PetscViewer viewer, PetscViewerFormat forma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerPopFormat - Resets the format for a `PetscViewer` to the value it had before the previous call to `PetscViewerPushFormat()`
 
   Logically Collective
@@ -83,7 +83,7 @@ PetscErrorCode PetscViewerPopFormat(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerGetFormat - Gets the current format for `PetscViewer`.
 
   Not Collective

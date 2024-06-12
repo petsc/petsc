@@ -82,7 +82,7 @@ PetscErrorCode PetscSetDebugger(const char debugger[], PetscBool usedebugtermina
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSetDefaultDebugger - Causes PETSc to use its default debugger and output terminal
 
   Not Collective, No Fortran Support
@@ -524,7 +524,7 @@ PetscErrorCode PetscAttachDebuggerErrorHandler(MPI_Comm comm, int line, const ch
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscStopForDebugger - Prints a message to the screen indicating how to
   attach to the process with the debugger and then waits for the
   debugger to attach.

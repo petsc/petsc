@@ -1302,7 +1302,7 @@ PETSC_EXTERN PetscErrorCode PetscMallocGetStack(void *, PetscStack **);
 
 PETSC_EXTERN PetscErrorCode PetscObjectsDump(FILE *, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscObjectsView(PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscObjectsGetObject(const char *, PetscObject *, char **);
+PETSC_EXTERN PetscErrorCode PetscObjectsGetObject(const char *, PetscObject *, const char **);
 PETSC_EXTERN PetscErrorCode PetscObjectListDestroy(PetscObjectList *);
 PETSC_EXTERN PetscErrorCode PetscObjectListFind(PetscObjectList, const char[], PetscObject *);
 PETSC_EXTERN PetscErrorCode PetscObjectListReverseFind(PetscObjectList, PetscObject, char **, PetscBool *);
@@ -1622,10 +1622,9 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_at_all(MPI_File, MPI_Offset, void *, 
 static inline PetscErrorCode PetscIntCast(PetscInt64 a, PetscInt *b)
 {
   PetscFunctionBegin;
-  *b = 0;
   // if using 64-bit indices already then this comparison is tautologically true
   PetscCheck(a < PETSC_MAX_INT, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt64_FMT " is too big for PetscInt, you may need to ./configure using --with-64-bit-indices", a);
-  *b = (PetscInt)a;
+  if (b) *b = (PetscInt)a;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2281,7 +2280,7 @@ PETSC_EXTERN                PetscErrorCode (*PetscVFPrintf)(FILE *, const char[]
 
 PETSC_EXTERN PetscSegBuffer PetscCitationsList;
 
-/*@C
+/*@
      PetscCitationsRegister - Register a bibtex item to obtain credit for an implemented algorithm used in the code.
 
      Not Collective; No Fortran Support

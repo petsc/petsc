@@ -1785,7 +1785,7 @@ PetscErrorCode MatCreate_MPIDense(Mat mat)
 .seealso: [](ch_matrices), `Mat`, `MATSEQDENSE`, `MATMPIDENSE`, `MATDENSECUDA`, `MATDENSEHIP`
 M*/
 
-/*@C
+/*@
   MatMPIDenseSetPreallocation - Sets the array used to store the matrix entries
 
   Collective
@@ -1902,7 +1902,7 @@ PetscErrorCode MatDenseReplaceArray(Mat mat, const PetscScalar *array)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateDense - Creates a matrix in `MATDENSE` format.
 
   Collective

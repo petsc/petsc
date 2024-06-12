@@ -47,12 +47,12 @@ implicit none
   PetscCallA(MatCreate(PETSC_COMM_WORLD,A,ierr))
   PetscCallA(MatSetsizes(A,m,m,PETSC_DECIDE,PETSC_DECIDE,ierr))
   PetscCallA(MatSetFromOptions(A,ierr))
-  PetscCallA(MatSeqAIJSetPreallocation(A,three,PETSC_NULL_INTEGER,ierr))
-  PetscCallA(MatMPIAIJSetPreallocation(A,three,PETSC_NULL_INTEGER,two,PETSC_NULL_INTEGER,ierr))
-  PetscCallA(MatSeqBAIJSetPreallocation(A,one,three,PETSC_NULL_INTEGER,ierr))
-  PetscCallA(MatMPIBAIJSetPreallocation(A,one,three,PETSC_NULL_INTEGER,2,PETSC_NULL_INTEGER,ierr))
-  PetscCallA(MatSeqSBAIJSetPreallocation(A,one,two,PETSC_NULL_INTEGER,ierr))
-  PetscCallA(MatMPISBAIJSetPreallocation(A,one,two,PETSC_NULL_INTEGER,1,PETSC_NULL_INTEGER,ierr))
+  PetscCallA(MatSeqAIJSetPreallocation(A,three,PETSC_NULL_INTEGER_ARRAY,ierr))
+  PetscCallA(MatMPIAIJSetPreallocation(A,three,PETSC_NULL_INTEGER_ARRAY,two,PETSC_NULL_INTEGER_ARRAY,ierr))
+  PetscCallA(MatSeqBAIJSetPreallocation(A,one,three,PETSC_NULL_INTEGER_ARRAY,ierr))
+  PetscCallA(MatMPIBAIJSetPreallocation(A,one,three,PETSC_NULL_INTEGER_ARRAY,two,PETSC_NULL_INTEGER_ARRAY,ierr))
+  PetscCallA(MatSeqSBAIJSetPreallocation(A,one,two,PETSC_NULL_INTEGER_ARRAY,ierr))
+  PetscCallA(MatMPISBAIJSetPreallocation(A,one,two,PETSC_NULL_INTEGER_ARRAY,one,PETSC_NULL_INTEGER_ARRAY,ierr))
 
   PetscCallA(MatGetSize(A,PETSC_NULL_INTEGER,N,ierr))
   PetscCallA(MatGetOwnershipRange(A,rstart,rend,ierr))
@@ -63,7 +63,7 @@ implicit none
 
     cols = (/mod((i+N-1),N),i,mod((i+1),N)/)
     vals = [1.0,1.0,1.0]
-    PetscCallA(MatSetValues(A,one,i,three,cols,vals,INSERT_VALUES,ierr))
+    PetscCallA(MatSetValues(A,one,[i],three,cols,vals,INSERT_VALUES,ierr))
   end do
   deallocate(cols)
   deallocate(vals)

@@ -41,7 +41,7 @@ PetscErrorCode MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(Ma
   Output Parameters:
 + has_const - `PETSC_TRUE` if the null space contains the constant vector, otherwise `PETSC_FALSE`
 . n         - number of vectors (excluding constant vector) in the null space
-- vecs      - orthonormal vectors that span the null space (excluding the constant vector), `NULL` if `n` is 0
+- vecs      - returns array of length `n` containing the orthonormal vectors that span the null space (excluding the constant vector), `NULL` if `n` is 0
 
   Level: developer
 
@@ -200,7 +200,7 @@ PetscErrorCode MatNullSpaceView(MatNullSpace sp, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatNullSpaceCreate - Creates a `MatNullSpace` data structure used to project vectors out of null spaces.
 
   Collective
@@ -210,9 +210,9 @@ PetscErrorCode MatNullSpaceView(MatNullSpace sp, PetscViewer viewer)
 . has_cnst - `PETSC_TRUE` if the null space contains the constant vector; otherwise `PETSC_FALSE`
 . n        - number of vectors (excluding constant vector) in null space
 - vecs     - the vectors that span the null space (excluding the constant vector);
-          these vectors must be orthonormal. These vectors are NOT copied, so do not change them
-          after this call. You should free the array that you pass in and destroy the vectors (this will reduce the reference count
-          for them by one).
+             these vectors must be orthonormal. These vectors are NOT copied, so do not change them
+             after this call. You should free the array that you pass in and destroy the vectors (this will reduce the reference count
+             for them by one).
 
   Output Parameter:
 . SP - the null space context
@@ -325,7 +325,7 @@ PetscErrorCode MatNullSpaceDestroy(MatNullSpace *sp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatNullSpaceRemove - Removes all the components of a null space from a vector.
 
   Collective

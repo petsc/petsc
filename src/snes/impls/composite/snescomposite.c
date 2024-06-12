@@ -571,7 +571,7 @@ PetscErrorCode SNESCompositeSetType(SNES snes, SNESCompositeType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESCompositeAddSNES - Adds another `SNES` to the `SNESCOMPOSITE`
 
   Collective

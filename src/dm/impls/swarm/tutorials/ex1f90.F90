@@ -96,7 +96,6 @@
       print *, 'Total number density = ', norm
 !     Cleanup
       PetscCallA(DMSwarmDestroyGlobalVectorFromField(sw, 'w_q', f, ierr))
-      PetscCallA(MatDestroy(M_p, ierr))
       PetscCallA(VecDestroy(rho, ierr))
       PetscCallA(DMDestroy(sw, ierr))
       PetscCallA(DMDestroy(dm, ierr))

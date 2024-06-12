@@ -1,4 +1,4 @@
-#include <petsc/private/snesimpl.h>
+#include <petsc/private/snesimpl.h> /*I    "petscsnes.h"   I*/
 
 /*@C
   SNESSetObjective - Sets the objective function minimized by some of the `SNES` linesearch methods, used instead of the 2-norm of the residual in the line search
@@ -60,7 +60,7 @@ PetscErrorCode SNESGetObjective(SNES snes, SNESObjectiveFn **obj, void **ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESComputeObjective - Computes the objective function that has been provided by `SNESSetObjective()`
 
   Collective

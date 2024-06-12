@@ -288,76 +288,9 @@ struct _n_PetscLayout {
   PetscInt               oldbs;        /* And again */
 };
 
-/*@
-   PetscLayoutFindOwner - Find the owning MPI process for a global index
-
-   Not Collective; No Fortran Support
-
-   Input Parameters:
-+  map - the layout
--  idx - global index to find the owner of
-
-   Output Parameter:
-.  owner - the owning rank
-
-   Level: developer
-
-.seealso: `PetscLayout`, `PetscLayoutFindOwnerIndex()`
-@*/
-static inline PetscErrorCode PetscLayoutFindOwner(PetscLayout map, PetscInt idx, PetscMPIInt *owner)
-{
-  PetscMPIInt lo = 0, hi, t;
-
-  PetscFunctionBegin;
-  *owner = -1; /* GCC erroneously issues warning about possibly uninitialized use when error condition */
-  PetscAssert((map->n >= 0) && (map->N >= 0) && (map->range), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "PetscLayoutSetUp() must be called first");
-  PetscAssert(idx >= 0 && idx <= map->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index %" PetscInt_FMT " is out of range", idx);
-  hi = map->size;
-  while (hi - lo > 1) {
-    t = lo + (hi - lo) / 2;
-    if (idx < map->range[t]) hi = t;
-    else lo = t;
-  }
-  *owner = lo;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@
-    PetscLayoutFindOwnerIndex - Find the owning MPI process and the local index on that process for a global index
-
-    Not Collective; No Fortran Support
-
-   Input Parameters:
-+  map   - the layout
--  idx   - global index to find the owner of
-
-   Output Parameters:
-+  owner - the owning rank
--  lidx  - local index used by the owner for `idx`
-
-   Level: developer
-
-.seealso: `PetscLayout`, `PetscLayoutFindOwner()`
-@*/
-static inline PetscErrorCode PetscLayoutFindOwnerIndex(PetscLayout map, PetscInt idx, PetscMPIInt *owner, PetscInt *lidx)
-{
-  PetscMPIInt lo = 0, hi, t;
-
-  PetscFunctionBegin;
-  PetscAssert((map->n >= 0) && (map->N >= 0) && (map->range), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "PetscLayoutSetUp() must be called first");
-  PetscAssert(idx >= 0 && idx <= map->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index %" PetscInt_FMT " is out of range", idx);
-  hi = map->size;
-  while (hi - lo > 1) {
-    t = lo + (hi - lo) / 2;
-    if (idx < map->range[t]) hi = t;
-    else lo = t;
-  }
-  if (owner) *owner = lo;
-  if (lidx) *lidx = idx - map->range[lo];
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PETSC_EXTERN PetscErrorCode PetscLayoutCreate(MPI_Comm, PetscLayout *);
+PETSC_EXTERN PetscErrorCode PetscLayoutFindOwner(PetscLayout, PetscInt, PetscMPIInt *);
+PETSC_EXTERN PetscErrorCode PetscLayoutFindOwnerIndex(PetscLayout, PetscInt, PetscMPIInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscLayoutCreateFromSizes(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscLayout *);
 PETSC_EXTERN PetscErrorCode PetscLayoutCreateFromRanges(MPI_Comm, const PetscInt[], PetscCopyMode, PetscInt, PetscLayout *);
 PETSC_EXTERN PetscErrorCode PetscLayoutSetUp(PetscLayout);

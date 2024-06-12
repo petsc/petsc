@@ -9,7 +9,7 @@ PetscStack petscstack;
 
 static PetscBool amsmemstack = PETSC_FALSE;
 
-/*@C
+/*@
   PetscStackSAWsGrantAccess - Grants access of the PETSc stack frames to the SAWs publisher
 
   Collective on `PETSC_COMM_WORLD`?
@@ -30,7 +30,7 @@ void PetscStackSAWsGrantAccess(void)
   }
 }
 
-/*@C
+/*@
   PetscStackSAWsTakeAccess - Takes access of the PETSc stack frames from the SAWs publisher
 
   Collective on `PETSC_COMM_WORLD`?

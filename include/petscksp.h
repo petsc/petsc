@@ -1130,3 +1130,5 @@ PETSC_EXTERN PetscErrorCode DMCheckInterpolator(DM, Mat, Mat, Mat, PetscReal);
 
 PETSC_EXTERN PetscErrorCode PCBJKOKKOSSetKSP(PC, KSP);
 PETSC_EXTERN PetscErrorCode PCBJKOKKOSGetKSP(PC, KSP *);
+
+PETSC_EXTERN PetscErrorCode DMCopyDMKSP(DM, DM);

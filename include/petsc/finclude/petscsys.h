@@ -170,6 +170,8 @@
 #define PetscObject type(tPetscObject)
 #define PetscLogDouble PetscFortranDouble
 !
+#define PetscObjectIsNull(obj) (obj%v == 0 .or. obj%v == -2 .or. obj%v == -3)
+!
 !     Macros for error checking
 !
 #define SETERRQ(c, ierr, s)  call PetscError(c, ierr, 0, s); return
@@ -193,7 +195,7 @@
 #define PetscCheckA(err, c, ierr, s) if (.not.(err)) then; SETERRA(c, ierr, s); endif
 #define PetscCheck(err, c, ierr, s) if (.not.(err)) then; SETERRQ(c, ierr, s); endif
 
-#define PetscMatlabEngine PetscFortranAddr
+#define PetscMatlabEngine type(tPetscMatlabEngine)
 
 #if !defined(PetscFlush)
 #if defined(PETSC_HAVE_FORTRAN_FLUSH)

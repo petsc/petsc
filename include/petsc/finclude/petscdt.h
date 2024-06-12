@@ -5,5 +5,6 @@
 #define PETSCDTDEF_H
 
 #define PetscDTNodeType PetscEnum
+#define PetscGaussLobattoLegendreCreateType PetscEnum
 
 #endif

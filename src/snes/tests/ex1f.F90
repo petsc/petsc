@@ -182,7 +182,7 @@
 
       PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,ierr))
       if (.not. matrix_free) then
-        PetscCallA(MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,i5,PETSC_NULL_INTEGER,J,ierr))
+        PetscCallA(MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,i5,PETSC_NULL_INTEGER_ARRAY,J,ierr))
       endif
 
 !
@@ -644,7 +644,7 @@
             row(1) = row(1) + 1
 !           boundary points
             if (i .eq. 1 .or. j .eq. 1 .or. i .eq. mx .or. j .eq. my) then
-               PetscCallA(MatSetValues(jac_prec,i1,row,i1,row,one,INSERT_VALUES,ierr))
+               PetscCallA(MatSetValues(jac_prec,i1,row,i1,row,[one],INSERT_VALUES,ierr))
 !           interior grid points
             else
                v(1) = -hxdhy

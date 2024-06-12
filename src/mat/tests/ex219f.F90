@@ -6,7 +6,7 @@ program newnonzero
 
  Mat :: A
  PetscInt :: n,m,idxm(1),idxn(1),nl1,nl2,zero,one,i
- PetscScalar :: v(1),value,values(2)
+ PetscScalar :: v(1),value(1),values(2)
  PetscErrorCode :: ierr
  IS :: is
  ISLocalToGlobalMapping :: ismap
@@ -16,7 +16,7 @@ program newnonzero
  one = 1
  n=3
  m=n
- PetscCallA(MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,m,one,PETSC_NULL_INTEGER,zero,PETSC_NULL_INTEGER,A,ierr))
+ PetscCallA(MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,m,one,PETSC_NULL_INTEGER_ARRAY,zero,PETSC_NULL_INTEGER_ARRAY,A,ierr))
 
  PetscCallA(MatGetOwnershipRange(A,nl1,nl2,ierr))
  do i=nl1,nl2-1
@@ -50,10 +50,10 @@ program newnonzero
  PetscCallA(MatSetLocalToGlobalMapping(A,ismap,ismap,ierr))
  PetscCallA(ISLocalToGlobalMappingDestroy(ismap,ierr))
  PetscCallA(ISDestroy(is,ierr))
- PetscCallA(MatGetValuesLocal(A,one,zero,one,zero,value,ierr))
- PetscCallA(MatGetValuesLocal(A,one,zero,one,zero,values,ierr))
+ PetscCallA(MatGetValuesLocal(A,one,[zero],one,[zero],value,ierr))
+ PetscCallA(MatGetValuesLocal(A,one,[zero],one,[zero],values,ierr))
  idxn(1) = 0
- PetscCallA(MatGetValuesLocal(A,one,idxn,one,zero,values,ierr))
+ PetscCallA(MatGetValuesLocal(A,one,idxn,one,[zero],values,ierr))
  PetscCallA(MatGetValuesLocal(A,one,idxn,one,idxn,values,ierr))
 
  PetscCallA(MatDestroy(A,ierr))

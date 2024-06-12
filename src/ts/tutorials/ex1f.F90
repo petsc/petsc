@@ -89,7 +89,7 @@
 !    preallocating memory in sparse matrices.
 !
       i5 = 5
-      PetscCallA(MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,i5,PETSC_NULL_INTEGER,J,ierr))
+      PetscCallA(MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,i5,PETSC_NULL_INTEGER_ARRAY,J,ierr))
 
 !
 !     Create timestepper context
@@ -326,7 +326,7 @@
 !
           row(1) = i - 1 + (j-1)*mx
           if (i .eq. 1 .or. j .eq. 1 .or. i .eq. mx .or. j .eq. my) then
-            PetscCall(MatSetValues(jac,i1,row,i1,row,one,INSERT_VALUES,ierr))
+            PetscCall(MatSetValues(jac,i1,[row],i1,[row],[one],INSERT_VALUES,ierr))
           else
             v(1)   = hxdhy
             col(1) = row(1) - mx
@@ -338,7 +338,7 @@
             col(4) = row(1) + 1
             v(5)   = hxdhy
             col(5) = row(1) + mx
-            PetscCall(MatSetValues(jac,i1,row,i5,col,v,INSERT_VALUES,ierr))
+            PetscCall(MatSetValues(jac,i1,[row],i5,col,v,INSERT_VALUES,ierr))
           endif
  20     continue
  10   continue

@@ -115,8 +115,8 @@
          col_f_vecx => Mcol_f_vecx(ith)
          col_f_ksp => Mcol_f_ksp(ith)
 
-         PetscCallA(MatCreateSeqAIJ( PETSC_COMM_SELF, nrow,ncol, nz_per_row,PETSC_NULL_INTEGER, col_f_mat, ierr))
-         PetscCallA(VecCreateSeqWithArray(PETSC_COMM_SELF,1,nrow,PETSC_NULL_SCALAR, col_f_vecb, ierr))
+         PetscCallA(MatCreateSeqAIJ( PETSC_COMM_SELF, nrow,ncol, nz_per_row,PETSC_NULL_INTEGER_ARRAY, col_f_mat, ierr))
+         PetscCallA(VecCreateSeqWithArray(PETSC_COMM_SELF,1,nrow,PETSC_NULL_SCALAR_ARRAY, col_f_vecb, ierr))
          PetscCallA(VecDuplicate(col_f_vecb, col_f_vecx,ierr))
          PetscCallA(KSPCreate(PETSC_COMM_SELF, col_f_ksp,ierr))
        enddo

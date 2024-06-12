@@ -1,6 +1,6 @@
-#include <petscmat.h>
+#include <petscmat.h> /*I    "petscmat.h"   I*/
 
-/*@C
+/*@
   MatCreateDenseFromVecType - Create a matrix that matches the type of a Vec.
 
   Collective

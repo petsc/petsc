@@ -873,7 +873,7 @@ PetscErrorCode VecWAXPY(Vec w, PetscScalar alpha, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecSetValues - Inserts or adds values into certain locations of a vector.
 
   Not Collective
@@ -907,6 +907,12 @@ PetscErrorCode VecWAXPY(Vec w, PetscScalar alpha, Vec x, Vec y)
   with homogeneous Dirichlet boundary conditions that you don't want represented
   in the vector.
 
+  Fortran Note:
+  If any of `ix` and `y` are scalars pass them using, for example,
+.vb
+  VecSetValues(mat, one, [ix], [y], INSERT_VALUES)
+.ve
+
 .seealso: [](ch_vectors), `Vec`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesLocal()`,
           `VecSetValue()`, `VecSetValuesBlocked()`, `InsertMode`, `INSERT_VALUES`, `ADD_VALUES`, `VecGetValues()`
 @*/
@@ -926,7 +932,7 @@ PetscErrorCode VecSetValues(Vec x, PetscInt ni, const PetscInt ix[], const Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetValues - Gets values from certain locations of a vector. Currently
   can only get values on the same processor on which they are owned
 
@@ -938,7 +944,7 @@ PetscErrorCode VecSetValues(Vec x, PetscInt ni, const PetscInt ix[], const Petsc
 - ix - indices where to get them from (in global 1d numbering)
 
   Output Parameter:
-. y - array of values
+. y - array of values, must be passed in with a length of `ni`
 
   Level: beginner
 
@@ -970,7 +976,7 @@ PetscErrorCode VecGetValues(Vec x, PetscInt ni, const PetscInt ix[], PetscScalar
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecSetValuesBlocked - Inserts or adds blocks of values into certain locations of a vector.
 
   Not Collective
@@ -1002,6 +1008,12 @@ PetscErrorCode VecGetValues(Vec x, PetscInt ni, const PetscInt ix[], PetscScalar
   with homogeneous Dirichlet boundary conditions that you don't want represented
   in the vector.
 
+  Fortran Note:
+  If any of `ix` and `y` are scalars pass them using, for example,
+.vb
+  VecSetValuesBlocked(mat, one, [ix], [y], INSERT_VALUES)
+.ve
+
 .seealso: [](ch_vectors), `Vec`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`,
           `VecSetValues()`
 @*/
@@ -1021,7 +1033,7 @@ PetscErrorCode VecSetValuesBlocked(Vec x, PetscInt ni, const PetscInt ix[], cons
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecSetValuesLocal - Inserts or adds values into certain locations of a vector,
   using a local ordering of the nodes.
 
@@ -1047,6 +1059,12 @@ PetscErrorCode VecSetValuesBlocked(Vec x, PetscInt ni, const PetscInt ix[], cons
   MUST be called after all calls to `VecSetValuesLocal()` have been completed.
 
   `VecSetValuesLocal()` uses 0-based indices in Fortran as well as in C.
+
+  Fortran Note:
+  If any of `ix` and `y` are scalars pass them using, for example,
+.vb
+  VecSetValuesLocal(mat, one, [ix], [y], INSERT_VALUES)
+.ve
 
 .seealso: [](ch_vectors), `Vec`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValues()`, `VecSetLocalToGlobalMapping()`,
           `VecSetValuesBlockedLocal()`
@@ -1103,6 +1121,12 @@ PetscErrorCode VecSetValuesLocal(Vec x, PetscInt ni, const PetscInt ix[], const 
   MUST be called after all calls to `VecSetValuesBlockedLocal()` have been completed.
 
   `VecSetValuesBlockedLocal()` uses 0-based indices in Fortran as well as in C.
+
+  Fortran Note:
+  If any of `ix` and `y` are scalars pass them using, for example,
+.vb
+  VecSetValuesBlockedLocal(mat, one, [ix], [y], INSERT_VALUES)
+.ve
 
 .seealso: [](ch_vectors), `Vec`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValues()`, `VecSetValuesBlocked()`,
           `VecSetLocalToGlobalMapping()`

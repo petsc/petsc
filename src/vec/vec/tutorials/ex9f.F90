@@ -88,7 +88,7 @@
        ione = 1
        do 10, i=rstart,rend-1
          value = real(i)
-         PetscCallA(VecSetValues(gx,ione,i,value,INSERT_VALUES,ierr))
+         PetscCallA(VecSetValues(gx,ione,[i],[value],INSERT_VALUES,ierr))
  10    continue
 
        PetscCallA(VecAssemblyBegin(gx,ierr))
