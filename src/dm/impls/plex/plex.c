@@ -426,11 +426,13 @@ static PetscErrorCode VecView_Plex_Local_Draw_2D(Vec v, PetscViewer viewer)
       PetscCall(PetscDrawSetCoordinates(draw, lbound[0], lbound[1], ubound[0], ubound[1]));
       PetscCall(VecGetArrayRead(fv, &array));
       for (c = cStart; c < cEnd; ++c) {
+        DMPolytopeType     ct;
         PetscScalar       *coords = NULL, *a = NULL;
         const PetscScalar *coords_arr;
         PetscBool          isDG;
         PetscInt           numCoords, color[4] = {-1, -1, -1, -1};
 
+        PetscCall(DMPlexGetCellType(dm, c, &ct));
         PetscCall(DMPlexPointLocalRead(fdm, c, array, &a));
         if (a) {
           color[0] = PetscDrawRealToColor(PetscRealPart(a[comp]), vbound[0], vbound[1]);
@@ -440,14 +442,25 @@ static PetscErrorCode VecView_Plex_Local_Draw_2D(Vec v, PetscViewer viewer)
           PetscInt     numVals, va;
 
           PetscCall(DMPlexVecGetClosure(fdm, NULL, fv, c, &numVals, &vals));
+          if (!numVals) {
+            PetscCall(DMPlexVecRestoreClosure(fdm, NULL, fv, c, &numVals, &vals));
+            continue;
+          }
           PetscCheck(numVals % Nc == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of components %" PetscInt_FMT " does not divide the number of values in the closure %" PetscInt_FMT, Nc, numVals);
           switch (numVals / Nc) {
+          case 1: /* P1 Clamped Segment Prism */
+          case 2: /* P1 Segment Prism, P2 Clamped Segment Prism */
+            PetscCheck(ct == DM_POLYTOPE_SEG_PRISM_TENSOR, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell should be a tensor segment, but it is a %s", DMPolytopeTypes[ct]);
+            for (va = 0; va < numVals / Nc; ++va) color[va] = PetscDrawRealToColor(PetscRealPart(vals[va * Nc + comp]), vbound[0], vbound[1]);
+            break;
           case 3: /* P1 Triangle */
           case 4: /* P1 Quadrangle */
+            PetscCheck(ct == DM_POLYTOPE_TRIANGLE || ct == DM_POLYTOPE_QUADRILATERAL || ct == DM_POLYTOPE_SEG_PRISM_TENSOR, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell should be a triangle or quad, but it is a %s", DMPolytopeTypes[ct]);
             for (va = 0; va < numVals / Nc; ++va) color[va] = PetscDrawRealToColor(PetscRealPart(vals[va * Nc + comp]), vbound[0], vbound[1]);
             break;
           case 6: /* P2 Triangle */
           case 8: /* P2 Quadrangle */
+            PetscCheck(ct == DM_POLYTOPE_TRIANGLE || ct == DM_POLYTOPE_QUADRILATERAL || ct == DM_POLYTOPE_SEG_PRISM_TENSOR, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell should be a triangle or quad, but it is a %s", DMPolytopeTypes[ct]);
             for (va = 0; va < numVals / (Nc * 2); ++va) color[va] = PetscDrawRealToColor(PetscRealPart(vals[va * Nc + comp + numVals / (Nc * 2)]), vbound[0], vbound[1]);
             break;
           default:
@@ -463,8 +476,12 @@ static PetscErrorCode VecView_Plex_Local_Draw_2D(Vec v, PetscViewer viewer)
           break;
         case 8:
         case 16: /* Localized quadrilateral */
-          PetscCall(PetscDrawTriangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), color[0], color[1], color[2]));
-          PetscCall(PetscDrawTriangle(draw, PetscRealPart(coords[4]), PetscRealPart(coords[5]), PetscRealPart(coords[6]), PetscRealPart(coords[7]), PetscRealPart(coords[0]), PetscRealPart(coords[1]), color[2], color[3], color[0]));
+          if (ct == DM_POLYTOPE_SEG_PRISM_TENSOR) {
+            PetscCall(PetscDrawLine(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscMax(color[0], color[1])));
+          } else {
+            PetscCall(PetscDrawTriangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), color[0], color[1], color[2]));
+            PetscCall(PetscDrawTriangle(draw, PetscRealPart(coords[4]), PetscRealPart(coords[5]), PetscRealPart(coords[6]), PetscRealPart(coords[7]), PetscRealPart(coords[0]), PetscRealPart(coords[1]), color[2], color[3], color[0]));
+          }
           break;
         default:
           SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot draw cells with %" PetscInt_FMT " coordinates", numCoords);
