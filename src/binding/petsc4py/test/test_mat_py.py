@@ -20,6 +20,7 @@ class Matrix:
     def setUp(self, mat):
         self.setupcalled += 1
 
+
 class ScaledIdentity(Matrix):
     s = 2.0
 
