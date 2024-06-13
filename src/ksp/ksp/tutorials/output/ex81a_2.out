@@ -76,6 +76,8 @@ PC Object: 3 MPI processes
     Mat Object: (fieldsplit_3_) 3 MPI processes
       type: transpose
       rows=24, cols=24, bs=2
+      total: nonzeros=48, allocated nonzeros=48
+      total number of mallocs used during MatSetValues calls=0
   Split number 4 Fields  4
   KSP Object: (fieldsplit_4_) 3 MPI processes
     type: preonly
