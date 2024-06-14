@@ -85,7 +85,7 @@ check-ci-settings:
     - make CFLAGS="${MAKE_TEST_CFLAGS}" CXXFLAGS="${MAKE_TEST_CXXFLAGS}" FFLAGS="${MAKE_TEST_FFLAGS}" CUDAFLAGS="${MAKE_CUDAFLAGS}" allgtests-tap gmakesearch="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
   variables:
     PYTHON: python3
-    MAKE_CFLAGS: -Werror
+    MAKE_CFLAGS: -Werror -Wmissing-field-initializers
     MAKE_CXXFLAGS: -Werror -Wzero-as-null-pointer-constant
     MAKE_FFLAGS: -Werror
     MAKE_TEST_CFLAGS: -Werror
