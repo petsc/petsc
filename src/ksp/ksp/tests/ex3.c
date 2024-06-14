@@ -229,6 +229,6 @@ int main(int argc, char **args)
       suffix: build_solution
       requires: !complex
       filter: grep -v Norm
-      args: -ksp_type {{chebyshev cg groppcg pipecg pipecgrr pipelcg pipeprcg cgne nash stcg gltr fcg pipefcg gmres fgmres lgmres dgmres pgmres tcqmr bcgs ibcgs qmrcgs fbcgs fbcgsr bcgsl pipebcgs cgs tfqmr cr pipecr bicg minres lcd gcr cgls richardson}}
+      args: -ksp_type {{chebyshev cg groppcg pipecg pipecgrr pipelcg pipeprcg cgne nash stcg gltr fcg pipefcg gmres fgmres lgmres dgmres pgmres tcqmr bcgs ibcgs qmrcgs fbcgs fbcgsr bcgsl pipebcgs cgs tfqmr cr pipecr bicg minres lcd gcr cgls richardson}} -test_build_solution
 
 TEST*/
