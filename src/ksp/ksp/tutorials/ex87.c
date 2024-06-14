@@ -84,6 +84,14 @@ int main(int argc, char **args)
       PetscCall(MatCreateConstantDiagonal(PETSC_COMM_WORLD, m, m, M, M, PETSC_SMALL, A + 3));
     }
   }
+  flg[1] = PETSC_FALSE;
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-all_transpose", flg + 1, NULL));
+  if (flg[1] && flg[2]) {
+    PetscCall(MatTranspose(A[1], MAT_INITIAL_MATRIX, &S));
+    PetscCall(MatDestroy(A + 1));
+    PetscCall(MatCreateHermitianTranspose(S, A + 1));
+    PetscCall(MatDestroy(&S));
+  }
   /* global coefficient matrix */
   PetscCall(MatCreateNest(PETSC_COMM_WORLD, 2, NULL, 2, NULL, A, &S));
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
@@ -239,7 +247,7 @@ PetscErrorCode MatAndISLoad(const char *prefix, const char *identifier, Mat A, I
       test:
         suffix: harmonic_overlap_2
         output_file: output/ex87_1_petsc_system-stokes.out
-        args: -fieldsplit_0_pc_hpddm_harmonic_overlap 2 -fieldsplit_0_pc_hpddm_levels_1_svd_nsv 20 -diagonal_A11
+        args: -fieldsplit_0_pc_hpddm_harmonic_overlap 2 -fieldsplit_0_pc_hpddm_levels_1_svd_nsv 20 -diagonal_A11 -permute {{false true}shared output} -all_transpose
 
    test:
       requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) !hpddm !memkind
