@@ -276,6 +276,6 @@ int main(int argc, char **argv)
       suffix: window_shared
       args: -user_sf_type window -sf_type window -sf_window_flavor shared -sf_window_sync {{fence active lock}}
       nsize: {{1 2 3}separate output}
-      requires: defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY) !defined(PETSC_HAVE_MPICH_NUMVERSION) defined(PETSC_HAVE_MPI_ONE_SIDED) defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
+      requires: defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY) !defined(PETSC_HAVE_MPICH) defined(PETSC_HAVE_MPI_ONE_SIDED) defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
 
 TEST*/

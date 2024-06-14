@@ -88,10 +88,10 @@
   #elif MVAPICH2_NUMVERSION != PETSC_HAVE_MVAPICH2_NUMVERSION
     #error "PETSc was configured with one MVAPICH2 mpi.h version but now appears to be compiling using a different MVAPICH2 mpi.h version"
   #endif
-#elif defined(PETSC_HAVE_MPICH_NUMVERSION)
+#elif defined(PETSC_HAVE_MPICH)
   #if !defined(MPICH_NUMVERSION) || defined(MVAPICH2_NUMVERSION) || defined(I_MPI_NUMVERSION)
     #error "PETSc was configured with MPICH but now appears to be compiling using a non-MPICH mpi.h"
-  #elif (MPICH_NUMVERSION / 100000000 != PETSC_HAVE_MPICH_NUMVERSION / 100000000) || (MPICH_NUMVERSION / 100000 < PETSC_HAVE_MPICH_NUMVERSION / 100000) || (MPICH_NUMVERSION / 100000 == PETSC_HAVE_MPICH_NUMVERSION / 100000 && MPICH_NUMVERSION % 100000 / 1000 < PETSC_HAVE_MPICH_NUMVERSION % 100000 / 1000)
+  #elif !PETSC_PKG_MPICH_VERSION_EQ(MPICH_NUMVERSION / 10000000, MPICH_NUMVERSION / 100000 % 100, MPICH_NUMVERSION / 1000 % 100)
     #error "PETSc was configured with one MPICH mpi.h version but now appears to be compiling using a different MPICH mpi.h version"
   #endif
 #elif defined(PETSC_HAVE_OPENMPI)

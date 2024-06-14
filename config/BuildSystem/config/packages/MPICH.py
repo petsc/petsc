@@ -9,6 +9,8 @@ class Configure(config.package.GNUPackage):
                              'https://www.mpich.org/static/downloads/'+self.version+'/mpich-'+self.version+'.tar.gz', # does not always work from Python? So add in web.cels URL below
                              'https://web.cels.anl.gov/projects/petsc/download/externalpackages'+'/mpich-'+self.version+'.tar.gz']
     self.download_git     = ['git://https://github.com/pmodels/mpich.git']
+    self.versionname      = 'MPICH_NUMVERSION'
+    self.includes         = ['mpi.h']
     self.gitsubmodules    = ['.']
     self.downloaddirnames = ['mpich']
     self.skippackagewithoptions = 1
@@ -24,6 +26,12 @@ class Configure(config.package.GNUPackage):
     self.python          = framework.require('config.packages.python',self)
     self.odeps           = [self.cuda, self.hip, self.hwloc]
     return
+
+  def versionToStandardForm(self,ver):
+    '''Converts from MPICH 10007201 notation to standard notation 1.0.7'''
+    # See the format at https://github.com/pmodels/mpich/blob/main/src/include/mpi.h.in#L78
+    # 1 digit for MAJ, 2 digits for MIN, 2 digits for REV, 1 digit for EXT and 2 digits for EXT_NUMBER
+    return ".".join(map(str,[int(ver)//10000000, int(ver)//100000%100, int(ver)//1000%100]))
 
   def setupHelp(self, help):
     config.package.GNUPackage.setupHelp(self,help)

@@ -739,17 +739,21 @@ Unable to run hostname to check the network')
         MPI_VER  = '  '+MPICHPKG+'_VERSION: '+mpich_numversion
       except:
         self.logPrint('Unable to parse '+MPICHPKG+' version from header. Probably a buggy preprocessor')
-    for mpichpkg in ['i_mpi','mvapich2','mpich']:
-      MPICHPKG = mpichpkg.upper()
+    for MPICHPKG in ['MPICH', 'I_MPI', 'MVAPICH2']:
       mpich_test = '#include <mpi.h>\nint mpich_ver = '+MPICHPKG+'_NUMVERSION;\n'
       if self.checkCompile(mpich_test):
         buf = self.outputPreprocess(mpich_test)
         try:
           mpich_numversion = re.compile('\nint mpich_ver ='+HASHLINESPACE+'([0-9]+)'+HASHLINESPACE+';').search(buf).group(1)
-          self.addDefine('HAVE_'+MPICHPKG+'_NUMVERSION',mpich_numversion)
           MPI_VER += '  '+MPICHPKG+'_NUMVERSION: '+mpich_numversion
-          if mpichpkg == 'mpich': self.mpich_numversion = mpich_numversion
-          if mpichpkg == 'i_mpi': self.isIntelMPI = 1
+          if MPICHPKG == 'MPICH':
+            self.mpich_numversion = mpich_numversion
+            MAJ = int(mpich_numversion)//10000000  # See comments in MPICH.py
+            MIN = int(mpich_numversion)//100000%100
+            REV = int(mpich_numversion)//1000%100
+            self.mpich.version_tuple = (MAJ, MIN, REV) # version_tuple makes mpich included in petscpkg_version.h
+            self.addDefine('HAVE_MPICH', 1)
+          elif MPICHPKG == 'I_MPI': self.isIntelMPI = 1
         except:
           self.logPrint('Unable to parse '+MPICHPKG+' version from header. Probably a buggy preprocessor')
     if MPI_VER:
