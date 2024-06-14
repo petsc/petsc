@@ -382,7 +382,7 @@ static PetscErrorCode MatCoarsenView_MISK(MatCoarsen coarse, PetscViewer viewer)
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)coarse), &rank));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   PetscCall(PetscViewerGetFormat(viewer, &format));
-  if (iascii && format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+  if (iascii && format == PETSC_VIEWER_ASCII_INFO_DETAIL && coarse->agg_lists) {
     PetscCall(PetscViewerASCIIPushSynchronized(viewer));
     PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  [%d] MISK aggregator\n", rank));
     if (!rank) PetscCall(PetscCoarsenDataView_private(coarse->agg_lists, viewer));
