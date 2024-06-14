@@ -746,13 +746,16 @@ Unable to run hostname to check the network')
         try:
           mpich_numversion = re.compile('\nint mpich_ver ='+HASHLINESPACE+'([0-9]+)'+HASHLINESPACE+';').search(buf).group(1)
           MPI_VER += '  '+MPICHPKG+'_NUMVERSION: '+mpich_numversion
+          self.addDefine('HAVE_'+MPICHPKG, 1)
+          # for I_MPI and MVAPICH2, we can not use petscpkg_version.h since they are not a petsc package yet.
+          # Anyway, we use PETSC_PKG_'MPICHPKG'_NUMVERSION to record the config time version for later compile time checking.
+          self.addDefine('PKG_'+MPICHPKG+'_NUMVERSION',mpich_numversion)
           if MPICHPKG == 'MPICH':
             self.mpich_numversion = mpich_numversion
             MAJ = int(mpich_numversion)//10000000  # See comments in MPICH.py
             MIN = int(mpich_numversion)//100000%100
             REV = int(mpich_numversion)//1000%100
             self.mpich.version_tuple = (MAJ, MIN, REV) # version_tuple makes mpich included in petscpkg_version.h
-            self.addDefine('HAVE_MPICH', 1)
           elif MPICHPKG == 'I_MPI': self.isIntelMPI = 1
         except:
           self.logPrint('Unable to parse '+MPICHPKG+' version from header. Probably a buggy preprocessor')
