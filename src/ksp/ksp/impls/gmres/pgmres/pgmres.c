@@ -74,11 +74,11 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount, KSP ksp)
       else ksp->rnorm = 0;
 
       PetscCall((*ksp->converged)(ksp, ksp->its, ksp->rnorm, &ksp->reason, ksp->cnvP));
-      if (it < pgmres->max_k + 1 || ksp->reason || ksp->its == ksp->max_it) { /* Monitor if we are done or still iterating, but not before a restart. */
+      if (ksp->reason) break;
+      if (it < pgmres->max_k + 1) { /* Monitor if we are not done or still iterating, but not before a restart. */
         PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm));
         PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm));
       }
-      if (ksp->reason) break;
       /* Catch error in happy breakdown and signal convergence and break from loop */
       if (hapend) {
         PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "Reached happy break down, but convergence was not indicated. Residual norm = %g", (double)res);
@@ -152,6 +152,11 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount, KSP ksp)
    */
   /* Form the solution (or the solution so far) */
   PetscCall(KSPPGMRESBuildSoln(RS(0), ksp->vec_sol, ksp->vec_sol, ksp, it - 2));
+
+  if (ksp->reason || ksp->its == ksp->max_it) {
+    PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm));
+    PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

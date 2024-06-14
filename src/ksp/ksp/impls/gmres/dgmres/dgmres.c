@@ -193,11 +193,6 @@ static PetscErrorCode KSPDGMRESCycle(PetscInt *itcount, KSP ksp)
     }
   }
 
-  /* Monitor if we know that we will not return for a restart */
-  if (it && (ksp->reason || ksp->its >= ksp->max_it)) {
-    PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm));
-    PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm));
-  }
   if (itcount) *itcount = it;
 
   /*
@@ -207,6 +202,12 @@ static PetscErrorCode KSPDGMRESCycle(PetscInt *itcount, KSP ksp)
    */
   /* Form the solution (or the solution so far) */
   PetscCall(KSPDGMRESBuildSoln(GRS(0), ksp->vec_sol, ksp->vec_sol, ksp, it - 1));
+
+  /* Monitor if we know that we will not return for a restart */
+  if (it && (ksp->reason || ksp->its >= ksp->max_it)) {
+    PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm));
+    PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm));
+  }
 
   /* Compute data for the deflation to be used during the next restart */
   if (!ksp->reason && ksp->its < ksp->max_it) {
