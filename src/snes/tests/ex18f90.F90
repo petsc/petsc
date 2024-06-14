@@ -67,9 +67,13 @@ program ex18f90
   use ex18f90function_module
   implicit none
 
-! ifort on windows requires this interface definition
-interface
-  subroutine SNESSetFunction(snes_base,x,TestFunction,base,ierr)
+!
+! Since class(base_type) has a bound function (method), Print, one must
+! provide an interface definition as below and use SNESSetFunctionNoInterface()
+! instead of SNESSetFunction()
+!
+  interface
+  subroutine SNESSetFunctionNoInterface(snes_base,x,TestFunction,base,ierr)
     use ex18f90base_module
     use petscsnes
     SNES snes_base
@@ -78,7 +82,7 @@ interface
     class(base_type) :: base
     PetscErrorCode ierr
   end subroutine
-end interface
+  end interface
 
   PetscMPIInt :: size
   PetscMPIInt :: rank
@@ -105,14 +109,14 @@ end interface
   print *
   print *, 'the base class will succeed by printing out Base printout below'
   PetscCallA(SNESCreate(PETSC_COMM_WORLD,snes_base,ierr))
-  PetscCallA(SNESSetFunction(snes_base,x,TestFunction,base,ierr))
+  PetscCallA(SNESSetFunctionNoInterface(snes_base,x,TestFunction,base,ierr))
   PetscCallA(SNESComputeFunction(snes_base,x,x,ierr))
   PetscCallA(SNESDestroy(snes_base,ierr))
 
   ! use the extended class as the context
   print *, 'the extended class will succeed by printing out Extended printout below'
   PetscCallA(SNESCreate(PETSC_COMM_WORLD,snes_extended,ierr))
-  PetscCallA(SNESSetFunction(snes_extended,x,TestFunction,extended,ierr))
+  PetscCallA(SNESSetFunctionNoInterface(snes_extended,x,TestFunction,extended,ierr))
   PetscCallA(SNESComputeFunction(snes_extended,x,x,ierr))
   PetscCallA(VecDestroy(x,ierr))
   PetscCallA(SNESDestroy(snes_extended,ierr))

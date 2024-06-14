@@ -91,6 +91,11 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(PetscBool, const char *, Pe
     values at the location.
 */
 
+#define CHKFORTRANNULL(a) \
+  do { \
+    if (FORTRANNULLINTEGER(a) || FORTRANNULLENUM(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLSCALAR(a) || FORTRANNULLREAL(a) || FORTRANNULLBOOL(a) || FORTRANNULLFUNCTION(a) || FORTRANNULLCHARACTER(a) || FORTRANNULLMPICOMM(a)) { a = PETSC_NULLPTR; } \
+  } while (0)
+
 #define CHKFORTRANNULLINTEGER(a) \
   do { \
     if (FORTRANNULLINTEGER(a) || FORTRANNULLENUM(a)) { \
