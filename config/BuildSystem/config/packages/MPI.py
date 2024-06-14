@@ -774,11 +774,10 @@ Unable to run hostname to check the network')
         ompi_major_version = re.compile('\nint ompi_major ='+HASHLINESPACE+'([0-9]+)'+HASHLINESPACE+';').search(buf).group(1)
         ompi_minor_version = re.compile('\nint ompi_minor ='+HASHLINESPACE+'([0-9]+)'+HASHLINESPACE+';').search(buf).group(1)
         ompi_release_version = re.compile('\nint ompi_release ='+HASHLINESPACE+'([0-9]+)'+HASHLINESPACE+';').search(buf).group(1)
-        self.addDefine('HAVE_OMPI_MAJOR_VERSION',ompi_major_version)
-        self.addDefine('HAVE_OMPI_MINOR_VERSION',ompi_minor_version)
-        self.addDefine('HAVE_OMPI_RELEASE_VERSION',ompi_release_version)
         self.ompi_major_version = ompi_major_version
         self.ompi_version = tuple([int(i) for i in [ompi_major_version,ompi_minor_version,ompi_release_version]])
+        self.openmpi.version_tuple = self.ompi_version # version_tuple makes openmpi included by petscpkg_version.h, so one can uses macros defined there
+        self.addDefine('HAVE_OPENMPI', 1) # we have openmpi, though it is not necessarily installed by --download-openmpi
         self.mpi_pkg_version = '  OMPI_VERSION: '+ompi_major_version+'.'+ompi_minor_version+'.'+ompi_release_version+'\n'
         MPI_VER = '  OMPI_VERSION: '+ompi_major_version+'.'+ompi_minor_version+'.'+ompi_release_version
       except:
