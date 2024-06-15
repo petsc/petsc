@@ -65,6 +65,9 @@ Changes: Development
 
 .. rubric:: KSP:
 
+- Add support for ``PETSC_DETERMINE`` as an argument to ``KSPSetTolerances()`` to set the parameter back to its initial value when the object's type was set
+- Deprecate ``PETSC_DEFAULT`` in favor of ``PETSC_CURRENT`` for  ``KSPSetTolerances()``
+
 .. rubric:: SNES:
 
 - Add ``DMAdaptorMonitor()``, ``DMAdaptorMonitorSet()``,  ``DMAdaptorMonitorCancel()``, ``DMAdaptorMonitorSetFromOptions()``

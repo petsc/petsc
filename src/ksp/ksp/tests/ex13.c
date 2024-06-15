@@ -170,7 +170,7 @@ int main(int argc, char **args)
   /* Create linear solver context */
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
   PetscCall(KSPSetOperators(ksp, A, P));
-  PetscCall(KSPSetTolerances(ksp, rtol, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
+  PetscCall(KSPSetTolerances(ksp, rtol, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT));
   PetscCall(KSPSetType(ksp, KSPMINRES));
   PetscCall(KSPMINRESSetUseQLP(ksp, PETSC_TRUE));
   if (radius > 0.0) PetscCall(KSPMINRESSetRadius(ksp, radius));

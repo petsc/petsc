@@ -49,7 +49,7 @@ int main(int argc, char **argv)
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
   PetscCall(KSPSetOperators(ksp, A, A));
   PetscCall(KSPSetType(ksp, KSPGMRES));
-  PetscCall(KSPSetTolerances(ksp, 1.0e-12, PETSC_DEFAULT, PETSC_DEFAULT, 100));
+  PetscCall(KSPSetTolerances(ksp, 1.0e-12, PETSC_CURRENT, PETSC_CURRENT, 100));
   PetscCall(KSPSetFromOptions(ksp));
 
   /* Solve */

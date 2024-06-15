@@ -92,7 +92,7 @@ static PetscErrorCode KSPChebyshevEstEigSet_Chebyshev(KSP ksp, PetscReal a, Pets
       PetscCall(KSPSetComputeEigenvalues(cheb->kspest, PETSC_TRUE));
 
       /* We cannot turn off convergence testing because GMRES will break down if you attempt to keep iterating after a zero norm is obtained */
-      PetscCall(KSPSetTolerances(cheb->kspest, 1.e-12, PETSC_DEFAULT, PETSC_DEFAULT, cheb->eststeps));
+      PetscCall(KSPSetTolerances(cheb->kspest, 1.e-12, PETSC_CURRENT, PETSC_CURRENT, cheb->eststeps));
       PetscCall(PetscInfo(ksp, "Created eigen estimator KSP\n"));
     }
     if (a >= 0) cheb->tform[0] = a;

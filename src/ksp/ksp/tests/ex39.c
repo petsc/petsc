@@ -112,7 +112,7 @@ int main(int argc, char **args)
   /* Create linear solver context */
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
   PetscCall(KSPSetOperators(ksp, A, A));
-  PetscCall(KSPSetTolerances(ksp, 1.e-6, PETSC_DEFAULT, PETSC_DEFAULT, 200));
+  PetscCall(KSPSetTolerances(ksp, 1.e-6, PETSC_CURRENT, PETSC_CURRENT, 200));
   PetscCall(KSPSetFromOptions(ksp));
 
   /* Solve the linear system */

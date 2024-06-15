@@ -1209,7 +1209,7 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp, PetscInt its, PetscReal fnorm
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCDEFLATION, &flg));
   if (flg) {
     PetscCall(PCDeflationGetCoarseKSP(pc, &kspinner));
-    PetscCall(KSPSetTolerances(kspinner, inner_rtol, outer_abstol, outer_dtol, PETSC_DEFAULT));
+    PetscCall(KSPSetTolerances(kspinner, inner_rtol, outer_abstol, outer_dtol, PETSC_CURRENT));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
