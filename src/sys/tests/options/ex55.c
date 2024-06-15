@@ -34,6 +34,7 @@ int main(int argc, char **argv)
     PetscCall(PetscOptionsRestoreViewer(&viewer));
   }
   PetscCall(PetscOptionsInsertString(NULL, "-option4 value4 -option5"));
+  PetscCall(PetscOptionsClearValue(NULL, "-option5"));
   PetscCall(PetscFinalize());
   return 0;
 }
