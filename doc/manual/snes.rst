@@ -645,9 +645,10 @@ corresponding options database commands for setting these parameters are:
 * ``-snes_rtol <rtol>``
 * ``-snes_stol <stol>``
 * ``-snes_max_it <its>``
-* ``-snes_max_funcs <fcts>``
+* ``-snes_max_funcs <fcts>`` (use ``unlimited`` for no maximum)
 
-A related routine is ``SNESGetTolerances()``.
+A related routine is ``SNESGetTolerances()``. ``PETSC_CURRENT`` may be used
+for any parameter to indicate the current value should be retained; use ``PETSC_DETERMINE`` to restore to the default value from when the object was created.
 
 Convergence tests for trust regions methods often use an additional
 parameter that indicates the minimum allowable trust region radius. The

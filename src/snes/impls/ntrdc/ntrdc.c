@@ -661,6 +661,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTRDC(SNES snes)
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
+  PetscCall(SNESParametersInitialize(snes));
+  PetscObjectParameterSetDefault(snes, deltatol, 1.e-12);
+
   PetscCall(PetscNew(&neP));
   snes->data                 = (void *)neP;
   neP->delta                 = 0.0;
@@ -679,7 +682,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTRDC(SNES snes)
   neP->auto_scale_multiphase = PETSC_FALSE;
   neP->auto_scale_max        = -1.0;
   neP->rho_satisfied         = PETSC_FALSE;
-  snes->deltatol             = 1.e-12;
 
   /* for multiphase (multivariable) scaling */
   /* may be used for dynamic allocation of inorms, but it fails snes_tutorials-ex3_13

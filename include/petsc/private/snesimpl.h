@@ -95,29 +95,27 @@ struct _p_SNES {
 
   /* --------------------------  Parameters -------------------------------------- */
 
-  PetscInt  max_its;           /* max number of iterations */
-  PetscInt  max_funcs;         /* max number of function evals */
-  PetscInt  nfuncs;            /* number of function evaluations */
-  PetscInt  iter;              /* global iteration number */
-  PetscInt  linear_its;        /* total number of linear solver iterations */
-  PetscReal norm;              /* residual norm of current iterate */
-  PetscReal ynorm;             /* update norm of current iterate */
-  PetscReal xnorm;             /* solution norm of current iterate */
-  PetscReal rtol;              /* relative tolerance */
-  PetscReal divtol;            /* relative divergence tolerance */
-  PetscReal abstol;            /* absolute tolerance */
-  PetscReal stol;              /* step length tolerance*/
-  PetscReal deltatol;          /* trust region convergence tolerance */
-  PetscBool forceiteration;    /* Force SNES to take at least one iteration regardless of the initial residual norm */
-  PetscInt  lagpreconditioner; /* SNESSetLagPreconditioner() */
-  PetscInt  lagjacobian;       /* SNESSetLagJacobian() */
-  PetscInt  jac_iter;          /* The present iteration of the Jacobian lagging */
-  PetscBool lagjac_persist;    /* The jac_iter persists until reset */
-  PetscInt  pre_iter;          /* The present iteration of the Preconditioner lagging */
-  PetscBool lagpre_persist;    /* The pre_iter persists until reset */
-  PetscInt  gridsequence;      /* number of grid sequence steps to take; defaults to zero */
-
-  PetscBool tolerancesset; /* SNESSetTolerances() called and tolerances should persist through SNESCreate_XXX()*/
+  PetscInt  nfuncs;                                 /* number of function evaluations */
+  PetscInt  iter;                                   /* global iteration number */
+  PetscInt  linear_its;                             /* total number of linear solver iterations */
+  PetscReal norm;                                   /* residual norm of current iterate */
+  PetscReal ynorm;                                  /* update norm of current iterate */
+  PetscReal xnorm;                                  /* solution norm of current iterate */
+  PetscBool forceiteration;                         /* Force SNES to take at least one iteration regardless of the initial residual norm */
+  PetscInt  lagpreconditioner;                      /* SNESSetLagPreconditioner() */
+  PetscInt  lagjacobian;                            /* SNESSetLagJacobian() */
+  PetscInt  jac_iter;                               /* The present iteration of the Jacobian lagging */
+  PetscBool lagjac_persist;                         /* The jac_iter persists until reset */
+  PetscInt  pre_iter;                               /* The present iteration of the Preconditioner lagging */
+  PetscBool lagpre_persist;                         /* The pre_iter persists until reset */
+  PetscInt  gridsequence;                           /* number of grid sequence steps to take; defaults to zero */
+  PetscObjectParameterDeclare(PetscInt, max_its);   /* max number of iterations */
+  PetscObjectParameterDeclare(PetscInt, max_funcs); /* max number of function evals */
+  PetscObjectParameterDeclare(PetscReal, rtol);     /* relative tolerance */
+  PetscObjectParameterDeclare(PetscReal, divtol);   /* relative divergence tolerance */
+  PetscObjectParameterDeclare(PetscReal, abstol);   /* absolute tolerance */
+  PetscObjectParameterDeclare(PetscReal, stol);     /* step length tolerance*/
+  PetscObjectParameterDeclare(PetscReal, deltatol); /* trust region convergence tolerance */
 
   PetscBool vec_func_init_set; /* the initial function has been set */
 

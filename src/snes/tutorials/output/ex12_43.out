@@ -88,7 +88,7 @@ SNES Object: 2 MPI processes
     Down solver (pre-smoother) on level 1 -------------------------------
     SNES Object: (fas_levels_1_) 2 MPI processes
       type: newtonls
-      maximum iterations=1, maximum function evaluations=30000
+      maximum iterations=1, maximum function evaluations=10000
       tolerances: relative=0., absolute=0., solution=0.
       total number of linear solver iterations=1
       total number of function evaluations=2

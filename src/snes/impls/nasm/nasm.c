@@ -875,10 +875,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES snes)
   nasm->eventrestrictinterp = 0;
   nasm->eventsubsolve       = 0;
 
-  if (!snes->tolerancesset) {
-    snes->max_its   = 10000;
-    snes->max_funcs = 10000;
-  }
+  PetscCall(SNESParametersInitialize(snes));
+  PetscObjectParameterSetDefault(snes, max_funcs, 10000);
+  PetscObjectParameterSetDefault(snes, max_its, 10000);
 
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNASMSetType_C", SNESNASMSetType_NASM));
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNASMGetType_C", SNESNASMGetType_NASM));

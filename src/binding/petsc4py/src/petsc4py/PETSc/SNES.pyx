@@ -1045,13 +1045,21 @@ cdef class SNES(Object):
         Parameters
         ----------
         rtol
-            The relative norm of the residual. Defaults to `DEFAULT`.
+            The relative norm of the residual, or `DETERMINE` to
+            use the value when the object's type was set. Defaults to
+            `CURRENT`.
         atol
-            The absolute norm of the residual. Defaults to `DEFAULT`.
+            The absolute norm of the residual, or `DETERMINE` to
+            use the value when the object's type was set. Defaults to
+            `CURRENT`.
         stol
-            The absolute norm of the step. Defaults to `DEFAULT`.
+            The absolute norm of the step, or `DETERMINE` to use
+            the value when the object's type was set. Defaults to
+            `CURRENT`.
         max_it
-            The maximum allowed number of iterations. Defaults to `DEFAULT`
+            The maximum allowed number of iterations, or `DETERMINE`
+            to use the value when the object's type was set. Defaults
+            to `CURRENT`. Use `UNLIMITED` to have no maximum.
 
         See Also
         --------
@@ -1059,14 +1067,14 @@ cdef class SNES(Object):
 
         """
         cdef PetscReal crtol, catol, cstol
-        crtol = catol = cstol = PETSC_DEFAULT
-        cdef PetscInt cmaxit = PETSC_DEFAULT
+        crtol = catol = cstol = PETSC_CURRENT
+        cdef PetscInt cmaxit = PETSC_CURRENT
         if rtol   is not None: crtol  = asReal(rtol)
         if atol   is not None: catol  = asReal(atol)
         if stol   is not None: cstol  = asReal(stol)
         if max_it is not None: cmaxit = asInt(max_it)
         CHKERR(SNESSetTolerances(self.snes, catol, crtol, cstol,
-                                 cmaxit, PETSC_DEFAULT))
+                                 cmaxit, PETSC_CURRENT))
 
     def getTolerances(self) -> tuple[float, float, float, int]:
         """Return the tolerance parameters used in the solver convergence tests.
@@ -1413,8 +1421,8 @@ cdef class SNES(Object):
         getMaxFunctionEvaluations, petsc.SNESSetTolerances
 
         """
-        cdef PetscReal r = PETSC_DEFAULT
-        cdef PetscInt  i = PETSC_DEFAULT
+        cdef PetscReal r = PETSC_CURRENT
+        cdef PetscInt  i = PETSC_CURRENT
         cdef PetscInt ival = asInt(max_funcs)
         CHKERR(SNESSetTolerances(self.snes, r, r, r, i, ival))
 

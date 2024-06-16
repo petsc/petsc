@@ -945,10 +945,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_FAS(SNES snes)
   snes->usesksp = PETSC_FALSE;
   snes->usesnpc = PETSC_FALSE;
 
-  if (!snes->tolerancesset) {
-    snes->max_funcs = 30000;
-    snes->max_its   = 10000;
-  }
+  PetscCall(SNESParametersInitialize(snes));
+  PetscObjectParameterSetDefault(snes, max_funcs, 30000);
+  PetscObjectParameterSetDefault(snes, max_its, 10000);
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 

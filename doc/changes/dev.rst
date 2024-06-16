@@ -70,6 +70,8 @@ Changes: Development
 
 .. rubric:: SNES:
 
+- Add support for ``PETSC_DETERMINE`` as an argument to ``SNESSetTolerances()`` to set the parameter back to its initial value when the object's type was set
+- Deprecate ``PETSC_DEFAULT`` in favor of ``PETSC_CURRENT`` for  ``SNESSetTolerances()``
 - Add ``DMAdaptorMonitor()``, ``DMAdaptorMonitorSet()``,  ``DMAdaptorMonitorCancel()``, ``DMAdaptorMonitorSetFromOptions()``
 - Add ``DMAdaptorMonitorSize()``, ``DMAdaptorMonitorError()``, ``DMAdaptorMonitorErrorDraw()``, ``DMAdaptorMonitorErrorDrawLGCreate()``, ``DMAdaptorMonitorErrorDrawLG()``
 - Add ``DMAdaptorMonitorRegister()``, ``DMAdaptorMonitorRegisterAll()``, ``DMAdaptorMonitorRegisterDestroy()``

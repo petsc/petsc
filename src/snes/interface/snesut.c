@@ -720,7 +720,7 @@ PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm
 . -snes_atol <abstol>                 - absolute tolerance of residual norm
 . -snes_rtol <rtol>                   - relative decrease in tolerance norm from the initial 2-norm of the solution
 . -snes_divergence_tolerance <divtol> - if the residual goes above divtol*rnorm0, exit with divergence
-. -snes_max_funcs <max_funcs>         - maximum number of function evaluations
+. -snes_max_funcs <max_funcs>         - maximum number of function evaluations, use `unlimited` for no maximum
 . -snes_max_fail <max_fail>           - maximum number of line search failures allowed before stopping, default is none
 - -snes_max_linear_solve_fail         - number of linear solver failures before `SNESSolve()` stops
 
@@ -764,7 +764,7 @@ PetscErrorCode SNESConvergedDefault(SNES snes, PetscInt it, PetscReal xnorm, Pet
     } else if (snorm < snes->stol * xnorm) {
       PetscCall(PetscInfo(snes, "Converged due to small update length: %14.12e < %14.12e * %14.12e\n", (double)snorm, (double)snes->stol, (double)xnorm));
       *reason = SNES_CONVERGED_SNORM_RELATIVE;
-    } else if (snes->divtol > 0 && (fnorm > snes->divtol * snes->rnorm0)) {
+    } else if (snes->divtol != PETSC_UNLIMITED && (fnorm > snes->divtol * snes->rnorm0)) {
       PetscCall(PetscInfo(snes, "Diverged due to increase in function norm: %14.12e > %14.12e * %14.12e\n", (double)fnorm, (double)snes->divtol, (double)snes->rnorm0));
       *reason = SNES_DIVERGED_DTOL;
     }

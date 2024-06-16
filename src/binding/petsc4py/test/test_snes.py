@@ -57,11 +57,11 @@ class BaseTestSNES:
         self.assertEqual(tuple(tols), tuple(tolvals))
         dtol = self.snes.getDivergenceTolerance()
         self.assertTrue(dtol > 0)
-        self.snes.setDivergenceTolerance(-1)
+        self.snes.setDivergenceTolerance(PETSc.UNLIMITED)
         dtol = self.snes.getDivergenceTolerance()
-        self.assertEqual(dtol, -1)
-        self.snes.setDivergenceTolerance(PETSc.DEFAULT)
-        self.assertEqual(dtol, -1)
+        self.assertEqual(dtol, PETSc.UNLIMITED)
+        self.snes.setDivergenceTolerance(PETSc.CURRENT)
+        self.assertEqual(dtol, PETSc.UNLIMITED)
 
     def testProperties(self):
         snes = self.snes

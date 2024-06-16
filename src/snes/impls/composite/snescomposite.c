@@ -830,6 +830,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Composite(SNES snes)
 
   snes->alwayscomputesfinalresidual = PETSC_FALSE;
 
+  PetscCall(SNESParametersInitialize(snes));
+
   snes->data  = (void *)jac;
   jac->type   = SNES_COMPOSITE_ADDITIVEOPTIMAL;
   jac->Fes    = NULL;
