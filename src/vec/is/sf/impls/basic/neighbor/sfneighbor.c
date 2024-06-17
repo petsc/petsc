@@ -199,9 +199,10 @@ static PetscErrorCode PetscSFSetUp_Neighbor(PetscSF sf)
   dat->nrootreqs      = 1; // collectives only need one MPI_Request. We just put it in rootreqs[]
 
   /* Only setup MPI displs/counts for non-distinguished ranks. Distinguished ranks use shared memory */
-#if !PetscDefined(HAVE_OPENMPI) || (PetscDefined(HAVE_OMPI_MAJOR_VERSION) && PetscDefined(HAVE_OMPI_MINOR_VERSION) && PetscDefined(HAVE_OMPI_RELEASE_VERSION) && !(PETSC_HAVE_OMPI_MAJOR_VERSION == 5 && PETSC_HAVE_OMPI_MINOR_VERSION == 0 && PETSC_HAVE_OMPI_RELEASE_VERSION == 0))
+#if !defined(PETSC_HAVE_OMPI_MAJOR_VERSION)
   PetscCall(PetscMalloc6(m, &dat->rootdispls, m, &dat->rootcounts, m, &dat->rootweights, n, &dat->leafdispls, n, &dat->leafcounts, n, &dat->leafweights));
-#else // workaround for an OpenMPI 5.0.0 bug, https://github.com/open-mpi/ompi/issues/12037
+#else // workaround for an OpenMPI 5.0.x bug, https://github.com/open-mpi/ompi/issues/12037
+  // TODO: finer control on the OpenMPI versions having the bug
   PetscMPIInt m2 = m ? m : 1, n2 = n ? n : 1;
   PetscCall(PetscMalloc6(m2, &dat->rootdispls, m2, &dat->rootcounts, m2, &dat->rootweights, n2, &dat->leafdispls, n2, &dat->leafcounts, n2, &dat->leafweights));
 #endif
