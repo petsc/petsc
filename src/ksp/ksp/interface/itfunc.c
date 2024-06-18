@@ -2185,9 +2185,12 @@ PetscErrorCode KSPGetPC(KSP ksp, PC *pc)
 
   Level: developer
 
-  Note:
+  Notes:
   This routine is called by the `KSP` implementations.
   It does not typically need to be called by the user.
+
+  For Krylov methods that do not keep a running value of the current solution (such as `KSPGMRES`) this
+  cannot be called after the `KSPConvergedReason` has been set but before the final solution has been computed.
 
 .seealso: [](ch_ksp), `KSPMonitorSet()`
 @*/
