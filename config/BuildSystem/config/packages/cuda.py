@@ -392,7 +392,7 @@ class Configure(config.package.Package):
               self.cudaArch = str(gen)
     # Store min cuda arch at configure time for later error diagnosis
     if self.cudaArchIsVersionList():
-      self.addDefine('HAVE_CUDA_MIN_ARCH', min(self.cudaArchList()))
+      self.addDefine('PKG_CUDA_MIN_ARCH', min(self.cudaArchList()))
 
     # Check flags validity
     if hasattr(self,'cudaArch'):

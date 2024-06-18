@@ -15,6 +15,7 @@
    directory as the other PETSc include files.
 */
 #include <petscconf.h>
+#include <petscpkg_version.h>
 #include <petscconf_poison.h>
 #include <petscfix.h>
 #include <petscmacros.h>
@@ -75,28 +76,28 @@
   #ifndef MPIUNI_H
     #error "PETSc was configured with --with-mpi=0 but now appears to be compiling using a different mpi.h"
   #endif
-#elif defined(PETSC_HAVE_I_MPI_NUMVERSION)
+#elif defined(PETSC_HAVE_I_MPI)
   #if !defined(I_MPI_NUMVERSION)
     #error "PETSc was configured with I_MPI but now appears to be compiling using a non-I_MPI mpi.h"
-  #elif I_MPI_NUMVERSION != PETSC_HAVE_I_MPI_NUMVERSION
+  #elif I_MPI_NUMVERSION != PETSC_PKG_I_MPI_NUMVERSION
     #error "PETSc was configured with one I_MPI mpi.h version but now appears to be compiling using a different I_MPI mpi.h version"
   #endif
-#elif defined(PETSC_HAVE_MVAPICH2_NUMVERSION)
+#elif defined(PETSC_HAVE_MVAPICH2)
   #if !defined(MVAPICH2_NUMVERSION)
     #error "PETSc was configured with MVAPICH2 but now appears to be compiling using a non-MVAPICH2 mpi.h"
-  #elif MVAPICH2_NUMVERSION != PETSC_HAVE_MVAPICH2_NUMVERSION
+  #elif MVAPICH2_NUMVERSION != PETSC_PKG_MVAPICH2_NUMVERSION
     #error "PETSc was configured with one MVAPICH2 mpi.h version but now appears to be compiling using a different MVAPICH2 mpi.h version"
   #endif
-#elif defined(PETSC_HAVE_MPICH_NUMVERSION)
+#elif defined(PETSC_HAVE_MPICH)
   #if !defined(MPICH_NUMVERSION) || defined(MVAPICH2_NUMVERSION) || defined(I_MPI_NUMVERSION)
     #error "PETSc was configured with MPICH but now appears to be compiling using a non-MPICH mpi.h"
-  #elif (MPICH_NUMVERSION / 100000000 != PETSC_HAVE_MPICH_NUMVERSION / 100000000) || (MPICH_NUMVERSION / 100000 < PETSC_HAVE_MPICH_NUMVERSION / 100000) || (MPICH_NUMVERSION / 100000 == PETSC_HAVE_MPICH_NUMVERSION / 100000 && MPICH_NUMVERSION % 100000 / 1000 < PETSC_HAVE_MPICH_NUMVERSION % 100000 / 1000)
+  #elif !PETSC_PKG_MPICH_VERSION_EQ(MPICH_NUMVERSION / 10000000, MPICH_NUMVERSION / 100000 % 100, MPICH_NUMVERSION / 1000 % 100)
     #error "PETSc was configured with one MPICH mpi.h version but now appears to be compiling using a different MPICH mpi.h version"
   #endif
-#elif defined(PETSC_HAVE_OMPI_MAJOR_VERSION)
+#elif defined(PETSC_HAVE_OPENMPI)
   #if !defined(OMPI_MAJOR_VERSION)
     #error "PETSc was configured with Open MPI but now appears to be compiling using a non-Open MPI mpi.h"
-  #elif (OMPI_MAJOR_VERSION != PETSC_HAVE_OMPI_MAJOR_VERSION) || (OMPI_MINOR_VERSION < PETSC_HAVE_OMPI_MINOR_VERSION) || (OMPI_MINOR_VERSION == PETSC_HAVE_OMPI_MINOR_VERSION && OMPI_RELEASE_VERSION < PETSC_HAVE_OMPI_RELEASE_VERSION)
+  #elif !PETSC_PKG_OPENMPI_VERSION_EQ(OMPI_MAJOR_VERSION, OMPI_MINOR_VERSION, OMPI_RELEASE_VERSION)
     #error "PETSc was configured with one Open MPI mpi.h version but now appears to be compiling using a different Open MPI mpi.h version"
   #endif
 #elif defined(PETSC_HAVE_MSMPI_VERSION)

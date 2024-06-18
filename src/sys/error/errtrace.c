@@ -223,8 +223,8 @@ PetscErrorCode PetscTraceBackErrorHandler(MPI_Comm comm, int line, const char *f
         if (text) ierr = (*PetscErrorPrintf)("%s\n", text);
       }
       if (mess) ierr = (*PetscErrorPrintf)("%s\n", mess);
-#if defined(PETSC_HAVE_CUDA_MIN_ARCH)
-      int confCudaArch = PETSC_HAVE_CUDA_MIN_ARCH;   // if PETSc was configured with numbered CUDA arches, get the min arch.
+#if defined(PETSC_PKG_CUDA_MIN_ARCH)
+      int confCudaArch = PETSC_PKG_CUDA_MIN_ARCH;    // if PETSc was configured with numbered CUDA arches, get the min arch.
       int runCudaArch  = PetscDeviceCUPMRuntimeArch; // 0 indicates the code has never initialized a cuda device.
       if (runCudaArch && confCudaArch > runCudaArch) {
         ierr = (*PetscErrorPrintf)("WARNING! Run on a CUDA device with GPU architecture %d, but PETSc was configured with a minimal GPU architecture %d.\n", runCudaArch, confCudaArch);

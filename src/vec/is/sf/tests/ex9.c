@@ -459,7 +459,7 @@ int main(int argc, char **argv)
        suffix: 2
        args: -sub2sub
        # deadlocks with NECMPI and INTELMPI (20210400300)
-       requires: !defined(PETSC_HAVE_NECMPI) !defined(PETSC_HAVE_I_MPI_NUMVERSION)
+       requires: !defined(PETSC_HAVE_NECMPI) !defined(PETSC_HAVE_I_MPI)
 
      test:
        suffix: 3

@@ -2225,7 +2225,7 @@ static PetscErrorCode MatSetFromOptions_MUMPS(Mat F, Mat A)
    */
 #if PETSC_PKG_MUMPS_VERSION_GE(5, 6, 2) && defined(PETSC_HAVE_MUMPS_AVOID_MPI_IN_PLACE)
   mumps->ICNTL20 = 10;
-#elif PETSC_PKG_MUMPS_VERSION_LT(5, 3, 0) || (defined(PETSC_HAVE_MPICH_NUMVERSION) && (PETSC_HAVE_MPICH_NUMVERSION < 40000101))
+#elif PETSC_PKG_MUMPS_VERSION_LT(5, 3, 0) || (defined(PETSC_HAVE_MPICH) && (MPICH_NUMVERSION < 40000101))
   mumps->ICNTL20 = 0; /* Centralized dense RHS*/
 #else
   mumps->ICNTL20 = 10; /* Distributed dense RHS*/
