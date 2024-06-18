@@ -28,6 +28,10 @@ cdef ScatterModeSpec
 cdef LayoutSizeSpec
 cdef NormTypeSpec
 
+# --- PetscObject ---
+
+cdef PetscOptionsHandlerFunction
+
 # --- Mat ---
 
 cdef MatAssemblySpec
