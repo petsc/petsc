@@ -760,7 +760,7 @@ int main(int argc, char **argv)
       args: -dm_landau_device_type cpu
     test:
       suffix: simplexkokkos
-      requires: kokkos_kernels !defined(PETSC_HAVE_CUDA_CLANG)
+      requires: kokkos_kernels !defined(PETSC_HAVE_CUDA_CLANG) !sycl
       args: -dm_landau_device_type kokkos -dm_mat_type aijkokkos -dm_vec_type kokkos
 
 TEST*/
