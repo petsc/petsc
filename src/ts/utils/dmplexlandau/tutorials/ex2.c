@@ -733,7 +733,7 @@ int main(int argc, char **argv)
       args: -dm_landau_device_type cpu -ksp_type bicg -pc_type jacobi
     test:
       suffix: kokkos
-      requires: kokkos_kernels !defined(PETSC_HAVE_CUDA_CLANG) !defined(PETSC_HAVE_SYCL)
+      requires: kokkos_kernels !defined(PETSC_HAVE_CUDA_CLANG)
       args: -dm_landau_device_type kokkos -dm_mat_type aijkokkos -dm_vec_type kokkos -ksp_type bicg -pc_type jacobi
     test:
       suffix: kokkos_batch
@@ -741,7 +741,7 @@ int main(int argc, char **argv)
       args: -dm_landau_device_type kokkos -dm_mat_type aijkokkos -dm_vec_type kokkos -ksp_type preonly -pc_type bjkokkos -pc_bjkokkos_ksp_type bicg -pc_bjkokkos_pc_type jacobi
     test:
       suffix: kokkos_batch_tfqmr
-      requires: kokkos_kernels !defined(PETSC_HAVE_CUDA_CLANG) !defined(PETSC_HAVE_SYCL)
+      requires: kokkos_kernels !defined(PETSC_HAVE_CUDA_CLANG)
       args: -dm_landau_device_type kokkos -dm_mat_type aijkokkos -dm_vec_type kokkos -ksp_type preonly -pc_type bjkokkos -pc_bjkokkos_ksp_type tfqmr -pc_bjkokkos_pc_type jacobi
 
   test:
@@ -760,7 +760,7 @@ int main(int argc, char **argv)
       args: -dm_landau_device_type cpu
     test:
       suffix: simplexkokkos
-      requires: kokkos_kernels !defined(PETSC_HAVE_CUDA_CLANG) !defined(PETSC_HAVE_SYCL)
+      requires: kokkos_kernels !defined(PETSC_HAVE_CUDA_CLANG)
       args: -dm_landau_device_type kokkos -dm_mat_type aijkokkos -dm_vec_type kokkos
 
 TEST*/
