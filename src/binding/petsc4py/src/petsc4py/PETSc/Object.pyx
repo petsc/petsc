@@ -271,6 +271,20 @@ cdef class Object:
         CHKERR(PetscObjectGetReference(self.obj[0], &refcnt))
         return toInt(refcnt)
 
+    def getId(self) -> int:
+        """Return the unique identifier of the object.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.PetscObjectGetId
+
+        """
+        cdef PetscObjectId cid = 0
+        CHKERR(PetscObjectGetId(self.obj[0], &cid))
+        return <long>cid
+
     # --- general support ---
 
     def compose(self, name : str | None, Object obj or None) -> None:
@@ -393,6 +407,7 @@ cdef class Object:
         return self.get_dict()
 
     # --- state manipulation ---
+
     def stateIncrease(self) -> None:
         """Increment the PETSc object state.
 
@@ -510,6 +525,11 @@ cdef class Object:
         """The class identifier."""
         def __get__(self) -> int:
             return self.getClassId()
+
+    property id:
+        """The object identifier."""
+        def __get__(self) -> int:
+            return self.getId()
 
     property klass:
         """The class name."""

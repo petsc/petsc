@@ -41,6 +41,11 @@ class BaseTestObject:
         self.assertTrue(isinstance(self.obj, self.CLASS))
         self.assertTrue(type(self.obj) is self.CLASS)
 
+    def testId(self):
+        oid = self.obj.getId()
+        self.assertTrue(oid > 0)
+        self.assertEqual(self.obj.id, oid)
+
     def testNonZero(self):
         self.assertTrue(bool(self.obj))
 
