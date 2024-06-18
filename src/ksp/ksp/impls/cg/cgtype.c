@@ -92,7 +92,7 @@ PetscErrorCode KSPCGSetRadius(KSP ksp, PetscReal radius)
 }
 
 /*@
-  KSPCGSetObjectiveTarget - Sets the target value for the quadratic model reduction when the solver is used inside `SNESNEWTONTR`
+  KSPCGSetObjectiveTarget - Sets the target value for the CG quadratic model
 
   Logically Collective
 
@@ -102,10 +102,10 @@ PetscErrorCode KSPCGSetRadius(KSP ksp, PetscReal radius)
 
   Level: advanced
 
-  Note:
-  The `KSPSolve()` will stop when the current objective function
-  $ 1/2 x_k * A * x_k - b * x_k $ is smaller than `obj` if `obj` is negative.
-  Otherwise the test is ignored.
+  Notes:
+  The `KSPSolve()` will stop when the current value of the objective function $\frac{1}{2} x^H_k A x_k - b^H x_k$
+  is smaller than `obj` if `obj` is negative. Otherwise the test is ignored.
+  This is used for example inside `SNESNEWTONTR`.
 
 .seealso: [](ch_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`, `SNESNEWTONTR`
 @*/
@@ -119,9 +119,9 @@ PetscErrorCode KSPCGSetObjectiveTarget(KSP ksp, PetscReal obj)
 }
 
 /*@
-  KSPCGGetNormD - Got norm of the direction when the solver is used inside `SNESNEWTONTR`
+  KSPCGGetNormD - Get norm of the direction when the solver is used inside `SNESNEWTONTR`
 
-  Collective
+  Not collective
 
   Input Parameters:
 + ksp    - the iterative context
@@ -135,14 +135,15 @@ PetscErrorCode KSPCGGetNormD(KSP ksp, PetscReal *norm_d)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  PetscAssertPointer(norm_d, 2);
   PetscUseMethod(ksp, "KSPCGGetNormD_C", (KSP, PetscReal *), (ksp, norm_d));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-  KSPCGGetObjFcn - Get objective function value when the solver is used inside `SNESNEWTONTR`
+  KSPCGGetObjFcn - Get the conjugate gradient objective function value
 
-  Collective
+  Not collective
 
   Input Parameters:
 + ksp   - the iterative context
@@ -150,12 +151,18 @@ PetscErrorCode KSPCGGetNormD(KSP ksp, PetscReal *norm_d)
 
   Level: advanced
 
-.seealso: [](ch_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`, `SNESNEWTONTR`
+  Note:
+  This function will return the current objective function value $\frac{1}{2} x^H_k A x_k - b^H x_k$.
+  if called during `KSPSolve()` (e.g. during a monitor call).
+  When called outside of a `KSPSolve()`, it will return the last computed value inside the solver.
+
+.seealso: [](ch_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`, `KSPMonitorSet`
 @*/
 PetscErrorCode KSPCGGetObjFcn(KSP ksp, PetscReal *o_fcn)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  PetscAssertPointer(o_fcn, 2);
   PetscUseMethod(ksp, "KSPCGGetObjFcn_C", (KSP, PetscReal *), (ksp, o_fcn));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
