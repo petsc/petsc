@@ -8,3 +8,4 @@ Setting option: option2 (no value) (source: code)
 Setting option: option3 = value3 (source: code)
 Setting option: option4 = value4 (source: code)
 Setting option: option5 (no value) (source: code)
+Removing option: option5
