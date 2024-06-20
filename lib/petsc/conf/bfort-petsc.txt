@@ -3,8 +3,11 @@
 # petscao.h
 nativeptr AO
 
-# petscbag.h
+# petscbag.h  This is not a PETSc object
 nativeptr PetscBag
+
+# this is not a PETSc object
+native PetscSFNode
 
 # petscdt.h
 native    PetscDTNodeType
@@ -45,8 +48,6 @@ native    DMDALocalInfo
 
 native    DMDAInterpolationType
 native    DMDAElementType
-
-nativeptr PetscGLL
 
 # dmlabel.h
 nativeptr DMLabel
@@ -144,7 +145,6 @@ native    MatSTRUMPACKCompressionType
 
 # petscpc.h
 nativeptr PC
-nativeptr PCType
 
 native    PCSide
 native    PCJacobiType
@@ -176,7 +176,7 @@ nativeptr PetscConvEst
 native    SNESConvergedReason
 native    SNESLineSearchReason
 nativeptr MatMFFD
-nativeptr MatMFFDType
+native    MatMFFDType
 nativeptr SNESLineSearch
 native    SNESLineSearchOrder
 native    SNESNormSchedule
@@ -208,6 +208,9 @@ native    PetscBool3
 native    PetscOffset
 native    PetscFortranAddr
 native    PetscCount
+
+nativeptr PetscDevice
+nativeptr PetscDeviceContext
 
 native    PetscInt
 native    PetscInt64
@@ -241,7 +244,7 @@ native    PetscReal
 
 
 native    MatScalar
-native    PetscObject
+nativeptr PetscObject
 native    PetscLogDouble
 
 nativeptr PetscMatlabEngine

@@ -2023,8 +2023,14 @@ typedef enum {
   MATOP_FIND_OFFBLOCK_ENTRIES = 143,
   MATOP_MPICONCATENATESEQ     = 144,
   MATOP_DESTROYSUBMATRICES    = 145,
-  MATOP_TRANSPOSE_SOLVE       = 146,
-  MATOP_GET_VALUES_LOCAL      = 147
+  MATOP_MAT_TRANSPOSE_SOLVE   = 146,
+  MATOP_GET_VALUES_LOCAL      = 147,
+  MATOP_CREATE_GRAPH          = 148,
+  /* MATOP_PLACEHOLDER_149=149, */
+  MATOP_TRANSPOSE_SYMBOLIC = 150,
+  MATOP_ELIMINATE_ZEROS    = 151,
+  MATOP_GET_ROW_SUM_ABS    = 152,
+  MATOP_GET_FACTOR         = 153
 } MatOperation;
 PETSC_EXTERN PetscErrorCode MatSetOperation(Mat, MatOperation, void (*)(void));
 PETSC_EXTERN PetscErrorCode MatGetOperation(Mat, MatOperation, void (**)(void));

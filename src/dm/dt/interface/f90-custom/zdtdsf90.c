@@ -3,15 +3,11 @@
 #include <petsc/private/f90impl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-  #define petscdsgettabulation_       PETSCDSGETTABULATION
-  #define petscdsrestoretabulation_   PETSCDSRESTORETABULATION
-  #define petscdsgetbdtabulation_     PETSCDSGETBDTABULATION
-  #define petscdsrestorebdtabulation_ PETSCDSRESTOREBDTABULATION
+  #define petscdsgettabulation_     PETSCDSGETTABULATION
+  #define petscdsrestoretabulation_ PETSCDSRESTORETABULATION
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define petscdsgettabulation_       petscdsgettabulation
-  #define petscdsrestoretabulation_   petscdsrestoretabulation
-  #define petscdsgetbdtabulation_     petscdsgetbdtabulation
-  #define petscdsrestorebdtabulation_ petscdsrestorebdtabulation
+  #define petscdsgettabulation_     petscdsgettabulation
+  #define petscdsrestoretabulation_ petscdsrestoretabulation
 #endif
 
 PETSC_EXTERN void petscdsgettabulation_(PetscDS *prob, PetscInt *f, F90Array1d *ptrB, F90Array1d *ptrD, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrb) PETSC_F90_2PTR_PROTO(ptrd))

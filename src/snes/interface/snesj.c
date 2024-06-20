@@ -2,7 +2,7 @@
 #include <petsc/private/vecimpl.h>  /* for Vec->ops->setvalues */
 #include <petscdm.h>
 
-/*@C
+/*@
   SNESComputeJacobianDefault - Computes the Jacobian using finite differences.
 
   Collective

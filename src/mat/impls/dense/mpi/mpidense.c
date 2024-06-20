@@ -1356,6 +1356,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
                                        NULL,
                                        /*150*/ NULL,
                                        NULL,
+                                       NULL,
                                        NULL};
 
 static PetscErrorCode MatMPIDenseSetPreallocation_MPIDense(Mat mat, PetscScalar *data)
@@ -1785,7 +1786,7 @@ PetscErrorCode MatCreate_MPIDense(Mat mat)
 .seealso: [](ch_matrices), `Mat`, `MATSEQDENSE`, `MATMPIDENSE`, `MATDENSECUDA`, `MATDENSEHIP`
 M*/
 
-/*@C
+/*@
   MatMPIDenseSetPreallocation - Sets the array used to store the matrix entries
 
   Collective
@@ -1793,7 +1794,7 @@ M*/
   Input Parameters:
 + B    - the matrix
 - data - optional location of matrix data.  Set to `NULL` for PETSc
-   to control all matrix memory allocation.
+         to control all matrix memory allocation.
 
   Level: intermediate
 
@@ -1902,7 +1903,7 @@ PetscErrorCode MatDenseReplaceArray(Mat mat, const PetscScalar *array)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateDense - Creates a matrix in `MATDENSE` format.
 
   Collective

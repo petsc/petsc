@@ -3,163 +3,36 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-  #define vecsetrandom_            VECSETRANDOM
-  #define vecsetvalueslocal0_      VECSETVALUESLOCAL0
-  #define vecsetvalueslocal11_     VECSETVALUESLOCAL11
-  #define vecsetvalueslocal1_      VECSETVALUESLOCAL1
-  #define vecgetvalues_            VECGETVALUES
-  #define vecgetvalues0_           VECGETVALUES0
-  #define vecgetvalues1_           VECGETVALUES1
-  #define vecgetvalues11_          VECGETVALUES11
-  #define vecsetvalues_            VECSETVALUES
-  #define vecsetvalues0_           VECSETVALUES0
-  #define vecsetvalues1_           VECSETVALUES1
-  #define vecsetvalues11_          VECSETVALUES11
-  #define vecsetvaluesblocked      VECSETVALUESBLOCKED
-  #define vecsetvaluesblocked0_    VECSETVALUESBLOCKED0
-  #define vecsetvaluesblocked1_    VECSETVALUESBLOCKED1
-  #define vecsetvaluesblocked11_   VECSETVALUESBLOCKED11
-  #define vecsetvalue_             VECSETVALUE
-  #define vecsetvaluelocal_        VECSETVALUELOCAL
-  #define vecload_                 VECLOAD
-  #define vecview_                 VECVIEW
-  #define vecgetarray_             VECGETARRAY
-  #define vecgetarrayread_         VECGETARRAYREAD
-  #define vecgetarrayaligned_      VECGETARRAYALIGNED
-  #define vecrestorearray_         VECRESTOREARRAY
-  #define vecrestorearrayread_     VECRESTOREARRAYREAD
-  #define vecduplicatevecs_        VECDUPLICATEVECS
-  #define vecdestroyvecs_          VECDESTROYVECS
-  #define vecmin1_                 VECMIN1
-  #define vecmin2_                 VECMIN2
-  #define vecmax1_                 VECMAX1
-  #define vecmax2_                 VECMAX2
-  #define vecgetownershiprange1_   VECGETOWNERSHIPRANGE1
-  #define vecgetownershiprange2_   VECGETOWNERSHIPRANGE2
-  #define vecgetownershiprange3_   VECGETOWNERSHIPRANGE3
-  #define vecgetownershipranges_   VECGETOWNERSHIPRANGES
-  #define vecviewfromoptions_      VECVIEWFROMOPTIONS
-  #define vecstashviewfromoptions_ VECSTASHVIEWFROMOPTIONS
+  #define vecsetvalue_         VECSETVALUE
+  #define vecsetvaluelocal_    VECSETVALUELOCAL
+  #define vecgetarray_         VECGETARRAY
+  #define vecgetarrayread_     VECGETARRAYREAD
+  #define vecgetarrayaligned_  VECGETARRAYALIGNED
+  #define vecrestorearray_     VECRESTOREARRAY
+  #define vecrestorearrayread_ VECRESTOREARRAYREAD
+  #define vecduplicatevecs_    VECDUPLICATEVECS
+  #define vecdestroyvecs_      VECDESTROYVECS
+  #define vecmin1_             VECMIN1
+  #define vecmin2_             VECMIN2
+  #define vecmax1_             VECMAX1
+  #define vecmax2_             VECMAX2
+
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define vecsetrandom_            vecsetrandom
-  #define vecsetvalueslocal0_      vecsetvalueslocal0
-  #define vecsetvalueslocal1_      vecsetvalueslocal1
-  #define vecsetvalueslocal11_     vecsetvalueslocal11
-  #define vecgetvalues_            vecgetvalues
-  #define vecgetvalues0_           vecgetvalues0
-  #define vecgetvalues1_           vecgetvalues1
-  #define vecgetvalues11_          vecgetvalues11
-  #define vecsetvalues_            vecsetvalues
-  #define vecsetvalues0_           vecsetvalues0
-  #define vecsetvalues1_           vecsetvalues1
-  #define vecsetvalues11_          vecsetvalues11
-  #define vecsetvaluesblocked_     vecsetvaluesblocked
-  #define vecsetvaluesblocked0_    vecsetvaluesblocked0
-  #define vecsetvaluesblocked1_    vecsetvaluesblocked1
-  #define vecsetvaluesblocked11_   vecsetvaluesblocked11
-  #define vecgetarrayaligned_      vecgetarrayaligned
-  #define vecsetvalue_             vecsetvalue
-  #define vecsetvaluelocal_        vecsetvaluelocal
-  #define vecload_                 vecload
-  #define vecview_                 vecview
-  #define vecgetarray_             vecgetarray
-  #define vecrestorearray_         vecrestorearray
-  #define vecgetarrayaligned_      vecgetarrayaligned
-  #define vecgetarrayread_         vecgetarrayread
-  #define vecrestorearrayread_     vecrestorearrayread
-  #define vecduplicatevecs_        vecduplicatevecs
-  #define vecdestroyvecs_          vecdestroyvecs
-  #define vecmin1_                 vecmin1
-  #define vecmin2_                 vecmin2
-  #define vecmax1_                 vecmax1
-  #define vecmax2_                 vecmax2
-  #define vecgetownershiprange1_   vecgetownershiprange1
-  #define vecgetownershiprange2_   vecgetownershiprange2
-  #define vecgetownershiprange3_   vecgetownershiprange3
-  #define vecgetownershipranges_   vecgetownershipranges
-  #define vecviewfromoptions_      vecviewfromoptions
-  #define vecstashviewfromoptions_ vecstashviewfromoptions
+  #define vecgetarrayaligned_  vecgetarrayaligned
+  #define vecsetvalue_         vecsetvalue
+  #define vecsetvaluelocal_    vecsetvaluelocal
+  #define vecgetarray_         vecgetarray
+  #define vecrestorearray_     vecrestorearray
+  #define vecgetarrayaligned_  vecgetarrayaligned
+  #define vecgetarrayread_     vecgetarrayread
+  #define vecrestorearrayread_ vecrestorearrayread
+  #define vecduplicatevecs_    vecduplicatevecs
+  #define vecdestroyvecs_      vecdestroyvecs
+  #define vecmin1_             vecmin1
+  #define vecmin2_             vecmin2
+  #define vecmax1_             vecmax1
+  #define vecmax2_             vecmax2
 #endif
-
-PETSC_EXTERN void vecsetvalueslocal_(Vec *x, PetscInt *ni, PetscInt ix[], PetscScalar y[], InsertMode *iora, int *ierr)
-{
-  *ierr = VecSetValuesLocal(*x, *ni, ix, y, *iora);
-}
-
-PETSC_EXTERN void vecsetvalueslocal0_(Vec *x, PetscInt *ni, PetscInt ix[], PetscScalar y[], InsertMode *iora, int *ierr)
-{
-  vecsetvalueslocal_(x, ni, ix, y, iora, ierr);
-}
-
-PETSC_EXTERN void vecsetvalueslocal1_(Vec *x, PetscInt *ni, PetscInt ix[], PetscScalar y[], InsertMode *iora, int *ierr)
-{
-  vecsetvalueslocal_(x, ni, ix, y, iora, ierr);
-}
-
-PETSC_EXTERN void vecsetvalueslocal11_(Vec *x, PetscInt *ni, PetscInt ix[], PetscScalar y[], InsertMode *iora, int *ierr)
-{
-  vecsetvalueslocal_(x, ni, ix, y, iora, ierr);
-}
-
-PETSC_EXTERN void vecgetvalues_(Vec *x, PetscInt *ni, PetscInt ix[], PetscScalar y[], int *ierr)
-{
-  *ierr = VecGetValues(*x, *ni, ix, y);
-}
-
-PETSC_EXTERN void vecgetvalues0_(Vec *x, PetscInt *ni, PetscInt ix[], PetscScalar y[], int *ierr)
-{
-  vecgetvalues_(x, ni, ix, y, ierr);
-}
-
-PETSC_EXTERN void vecgetvalues1_(Vec *x, PetscInt *ni, PetscInt ix[], PetscScalar y[], int *ierr)
-{
-  vecgetvalues_(x, ni, ix, y, ierr);
-}
-
-PETSC_EXTERN void vecgetvalues11_(Vec *x, PetscInt *ni, PetscInt ix[], PetscScalar y[], int *ierr)
-{
-  vecgetvalues_(x, ni, ix, y, ierr);
-}
-
-PETSC_EXTERN void vecsetvalues_(Vec *x, PetscInt *ni, PetscInt ix[], PetscScalar y[], InsertMode *iora, int *ierr)
-{
-  *ierr = VecSetValues(*x, *ni, ix, y, *iora);
-}
-
-PETSC_EXTERN void vecsetvalues0_(Vec *x, PetscInt *ni, PetscInt ix[], PetscScalar y[], InsertMode *iora, int *ierr)
-{
-  vecsetvalues_(x, ni, ix, y, iora, ierr);
-}
-
-PETSC_EXTERN void vecsetvalues1_(Vec *x, PetscInt *ni, PetscInt ix[], PetscScalar y[], InsertMode *iora, int *ierr)
-{
-  vecsetvalues_(x, ni, ix, y, iora, ierr);
-}
-
-PETSC_EXTERN void vecsetvalues11_(Vec *x, PetscInt *ni, PetscInt ix[], PetscScalar y[], InsertMode *iora, int *ierr)
-{
-  vecsetvalues_(x, ni, ix, y, iora, ierr);
-}
-
-PETSC_EXTERN void vecsetvaluesblocked_(Vec *x, PetscInt *ni, PetscInt ix[], PetscScalar y[], InsertMode *iora, int *ierr)
-{
-  *ierr = VecSetValuesBlocked(*x, *ni, ix, y, *iora);
-}
-
-PETSC_EXTERN void vecsetvaluesblocked0_(Vec *x, PetscInt *ni, PetscInt ix[], PetscScalar y[], InsertMode *iora, int *ierr)
-{
-  vecsetvaluesblocked_(x, ni, ix, y, iora, ierr);
-}
-
-PETSC_EXTERN void vecsetvaluesblocked1_(Vec *x, PetscInt *ni, PetscInt ix[], PetscScalar y[], InsertMode *iora, int *ierr)
-{
-  vecsetvaluesblocked_(x, ni, ix, y, iora, ierr);
-}
-
-PETSC_EXTERN void vecsetvaluesblocked11_(Vec *x, PetscInt *ni, PetscInt ix[], PetscScalar y[], InsertMode *iora, int *ierr)
-{
-  vecsetvaluesblocked_(x, ni, ix, y, iora, ierr);
-}
 
 PETSC_EXTERN void vecsetvalue_(Vec *v, PetscInt *i, PetscScalar *va, InsertMode *mode, PetscErrorCode *ierr)
 {
@@ -170,25 +43,6 @@ PETSC_EXTERN void vecsetvaluelocal_(Vec *v, PetscInt *i, PetscScalar *va, Insert
 {
   /* cannot use VecSetValue() here since that uses PetscCall() which has a return in it */
   *ierr = VecSetValuesLocal(*v, 1, i, va, *mode);
-}
-
-PETSC_EXTERN void vecload_(Vec *vec, PetscViewer *viewer, PetscErrorCode *ierr)
-{
-  PetscViewer v;
-  PetscPatchDefaultViewers_Fortran(viewer, v);
-  *ierr = VecLoad(*vec, v);
-}
-
-PETSC_EXTERN void vecview_(Vec *x, PetscViewer *vin, PetscErrorCode *ierr)
-{
-  PetscViewer v;
-
-  PetscPatchDefaultViewers_Fortran(vin, v);
-  if (!v) {
-    *ierr = PETSC_ERR_SYS;
-    return;
-  }
-  *ierr = VecView(*x, v);
 }
 
 /*MC
@@ -345,27 +199,6 @@ PETSC_EXTERN void vecmax2_(Vec *x, PetscInt *p, PetscReal *val, PetscErrorCode *
   *ierr = VecMax(*x, p, val);
 }
 
-PETSC_EXTERN void vecgetownershiprange1_(Vec *x, PetscInt *low, PetscInt *high, PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLINTEGER(low);
-  CHKFORTRANNULLINTEGER(high);
-  *ierr = VecGetOwnershipRange(*x, low, high);
-}
-
-PETSC_EXTERN void vecgetownershiprange2_(Vec *x, PetscInt *low, PetscInt *high, PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLINTEGER(low);
-  CHKFORTRANNULLINTEGER(high);
-  *ierr = VecGetOwnershipRange(*x, low, high);
-}
-
-PETSC_EXTERN void vecgetownershiprange3_(Vec *x, PetscInt *low, PetscInt *high, PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLINTEGER(low);
-  CHKFORTRANNULLINTEGER(high);
-  *ierr = VecGetOwnershipRange(*x, low, high);
-}
-
 PETSC_EXTERN void vecgetownershipranges_(Vec *x, PetscInt *range, PetscErrorCode *ierr)
 {
   PetscMPIInt     size, mpi_ierr;
@@ -379,25 +212,4 @@ PETSC_EXTERN void vecgetownershipranges_(Vec *x, PetscInt *range, PetscErrorCode
   *ierr = VecGetOwnershipRanges(*x, &r);
   if (*ierr) return;
   *ierr = PetscArraycpy(range, r, size + 1);
-}
-
-PETSC_EXTERN void vecviewfromoptions_(Vec *ao, PetscObject obj, char *type, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-
-  FIXCHAR(type, len, t);
-  CHKFORTRANNULLOBJECT(obj);
-  *ierr = VecViewFromOptions(*ao, obj, t);
-  if (*ierr) return;
-  FREECHAR(type, t);
-}
-PETSC_EXTERN void vecstashviewfromoptions_(Vec *ao, PetscObject obj, char *type, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-
-  FIXCHAR(type, len, t);
-  CHKFORTRANNULLOBJECT(obj);
-  *ierr = VecStashViewFromOptions(*ao, obj, t);
-  if (*ierr) return;
-  FREECHAR(type, t);
 }

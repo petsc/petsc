@@ -2,48 +2,26 @@
 #include <petsc/private/sfimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-  #define petscsfview_            PETSCSFVIEW
-  #define petscsfgetgraph_        PETSCSFGETGRAPH
-  #define petscsfbcastbegin_      PETSCSFBCASTBEGIN
-  #define petscsfbcastend_        PETSCSFBCASTEND
-  #define petscsfreducebegin_     PETSCSFREDUCEBEGIN
-  #define petscsfreduceend_       PETSCSFREDUCEEND
-  #define f90arraysfnodecreate_   F90ARRAYSFNODECREATE
-  #define petscsfviewfromoptions_ PETSCSFVIEWFROMOPTIONS
-  #define petscsfdestroy_         PETSCSFDESTROY
-  #define petscsfsetgraph_        PETSCSFSETGRAPH
-  #define petscsfgetleafranks_    PETSCSFGETLEAFRANKS
-  #define petscsfgetrootranks_    PETSCSFGETROOTRANKS
+  #define petscsfgetgraph_      PETSCSFGETGRAPH
+  #define petscsfbcastbegin_    PETSCSFBCASTBEGIN
+  #define petscsfbcastend_      PETSCSFBCASTEND
+  #define petscsfreducebegin_   PETSCSFREDUCEBEGIN
+  #define petscsfreduceend_     PETSCSFREDUCEEND
+  #define f90arraysfnodecreate_ F90ARRAYSFNODECREATE
+  #define petscsfgetleafranks_  PETSCSFGETLEAFRANKS
+  #define petscsfgetrootranks_  PETSCSFGETROOTRANKS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define petscsfgetgraph_        petscsfgetgraph
-  #define petscsfview_            petscsfview
-  #define petscsfbcastbegin_      petscsfbcastbegin
-  #define petscsfbcastend_        petscsfbcastend
-  #define petscsfreducebegin_     petscsfreducebegin
-  #define petscsfreduceend_       petscsfreduceend
-  #define f90arraysfnodecreate_   f90arraysfnodecreate
-  #define petscsfviewfromoptions_ petscsfviewfromoptions
-  #define petscsfdestroy_         petscsfdestroy
-  #define petscsfsetgraph_        petscsfsetgraph
-  #define petscsfgetleafranks_    petscsfgetleafranks
-  #define petscsfgetrootranks_    petscsfgetrootranks
+  #define petscsfgetgraph_      petscsfgetgraph
+  #define petscsfbcastbegin_    petscsfbcastbegin
+  #define petscsfbcastend_      petscsfbcastend
+  #define petscsfreducebegin_   petscsfreducebegin
+  #define petscsfreduceend_     petscsfreduceend
+  #define f90arraysfnodecreate_ f90arraysfnodecreate
+  #define petscsfgetleafranks_  petscsfgetleafranks
+  #define petscsfgetrootranks_  petscsfgetrootranks
 #endif
 
 PETSC_EXTERN void f90arraysfnodecreate_(const PetscInt *, PetscInt *, void *PETSC_F90_2PTR_PROTO_NOVAR);
-
-PETSC_EXTERN void petscsfsetgraph_(PetscSF *sf, PetscInt *nroots, PetscInt *nleaves, PetscInt *ilocal, PetscCopyMode *localmode, PetscSFNode *iremote, PetscCopyMode *remotemode, int *ierr)
-{
-  if (ilocal == PETSC_NULL_INTEGER_Fortran) ilocal = NULL;
-  *ierr = PetscSFSetGraph(*sf, *nroots, *nleaves, ilocal, *localmode, iremote, *remotemode);
-}
-
-PETSC_EXTERN void petscsfview_(PetscSF *sf, PetscViewer *vin, PetscErrorCode *ierr)
-{
-  PetscViewer v;
-
-  PetscPatchDefaultViewers_Fortran(vin, v);
-  *ierr = PetscSFView(*sf, v);
-}
 
 PETSC_EXTERN void petscsfgetgraph_(PetscSF *sf, PetscInt *nroots, PetscInt *nleaves, F90Array1d *ailocal, F90Array1d *airemote, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(pilocal) PETSC_F90_2PTR_PROTO(piremote))
 {
@@ -201,24 +179,4 @@ PETSC_EXTERN void petscsfreduceend_(PetscSF *sf, MPI_Fint *unit, F90Array1d *lpt
   if (*ierr) return;
   *ierr = PetscSFReduceEnd(*sf, dtype, leafdata, rootdata, cop);
 }
-
-PETSC_EXTERN void petscsfviewfromoptions_(PetscSF *ao, PetscObject obj, char *type, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-
-  FIXCHAR(type, len, t);
-  CHKFORTRANNULLOBJECT(obj);
-  *ierr = PetscSFViewFromOptions(*ao, obj, t);
-  if (*ierr) return;
-  FREECHAR(type, t);
-}
-
-PETSC_EXTERN void petscsfdestroy_(PetscSF *x, int *ierr)
-{
-  PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL(x);
-  *ierr = PetscSFDestroy(x);
-  if (*ierr) return;
-  PETSC_FORTRAN_OBJECT_C_NULL_TO_F_DESTROYED(x);
-}
-
 #endif

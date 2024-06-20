@@ -25,8 +25,8 @@ program main
   PetscCallA(MatCreate(PETSC_COMM_WORLD, A,ierr))
   PetscCallA(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, N, N,ierr))
   PetscCallA(MatSetFromOptions(A,ierr))
-  PetscCallA(MatSeqAIJSetPreallocation(A, three, PETSC_NULL_INTEGER,ierr))
-  PetscCallA(MatMPIAIJSetPreallocation(A, three, PETSC_NULL_INTEGER, two, PETSC_NULL_INTEGER,ierr))
+  PetscCallA(MatSeqAIJSetPreallocation(A, three, PETSC_NULL_INTEGER_ARRAY,ierr))
+  PetscCallA(MatMPIAIJSetPreallocation(A, three, PETSC_NULL_INTEGER_ARRAY, two, PETSC_NULL_INTEGER_ARRAY,ierr))
 
   !/* Create a linear mesh */
   PetscCallA(MatGetOwnershipRange(A, myStart, myEnd,ierr))
@@ -36,21 +36,21 @@ program main
      allocate(vals(2))
      vals = 1.0
      allocate(cols(2),source=[r,r+1])
-     PetscCallA(MatSetValues(A, one, r, two, cols, vals, INSERT_VALUES,ierr))
+     PetscCallA(MatSetValues(A, one, [r], two, cols, vals, INSERT_VALUES,ierr))
      deallocate(cols)
      deallocate(vals)
     else if (r == N-1) then
      allocate(vals(2))
      vals = 1.0
      allocate(cols(2),source=[r-1,r])
-     PetscCallA(MatSetValues(A, one, r, two, cols, vals, INSERT_VALUES,ierr))
+     PetscCallA(MatSetValues(A, one, [r], two, cols, vals, INSERT_VALUES,ierr))
      deallocate(cols)
      deallocate(vals)
     else
      allocate(vals(3))
      vals = 1.0
      allocate(cols(3),source=[r-1,r,r+1])
-     PetscCallA(MatSetValues(A, one, r, three, cols, vals, INSERT_VALUES,ierr))
+     PetscCallA(MatSetValues(A, one, [r], three, cols, vals, INSERT_VALUES,ierr))
      deallocate(cols)
      deallocate(vals)
     end if

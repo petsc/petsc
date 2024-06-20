@@ -229,11 +229,10 @@ typedef enum {
     Values:
 +  `PC_FIELDSPLIT_SCHUR_PRE_SELF`  - the preconditioner for the Schur complement is generated from the symbolic representation of the Schur complement matrix.
                                      The only preconditioners that currently work with this symbolic representation matrix object are `PCLSC` and `PCHPDDM`
-.  `PC_FIELDSPLIT_SCHUR_PRE_SELFP` - the preconditioning for the Schur complement is generated from an explicitly-assembled approximation Sp = A11 - A10 inv(diag(A00)) A01.
-                                     This is only a good preconditioner when diag(A00) is a good preconditioner for A00. Optionally, A00 can be
+.  `PC_FIELDSPLIT_SCHUR_PRE_SELFP` - the preconditioning for the Schur complement is generated from an explicitly-assembled approximation $Sp = A11 - A10 diag(A00)^{-1} A01$.
+                                     This is only a good preconditioner when $diag(A00)$ is a good preconditioner for $A00$. Optionally, $A00$ can be
                                      lumped before extracting the diagonal using the additional option `-fieldsplit_1_mat_schur_complement_ainv_type lump`
-.  `PC_FIELDSPLIT_SCHUR_PRE_A11`   - the preconditioner for the Schur complement is generated from the block diagonal part of the matrix used to define the preconditioner,
-                                     associated with the Schur complement (i.e. A11), not the Schur complement matrix
+.  `PC_FIELDSPLIT_SCHUR_PRE_A11`   - the preconditioner for the Schur complement is generated from $A11$, not the Schur complement matrix
 .  `PC_FIELDSPLIT_SCHUR_PRE_USER`  - the preconditioner for the Schur complement is generated from the user provided matrix (pre argument
                                      to this function).
 -  `PC_FIELDSPLIT_SCHUR_PRE_FULL`  - the preconditioner for the Schur complement is generated from the exact Schur complement matrix representation

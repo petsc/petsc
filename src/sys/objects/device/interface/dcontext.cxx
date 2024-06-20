@@ -986,7 +986,7 @@ PetscErrorCode PetscDeviceContextSetFromOptions(MPI_Comm comm, PetscDeviceContex
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDeviceContextView - View a `PetscDeviceContext`
 
   Collective on `viewer`
@@ -1041,7 +1041,7 @@ PetscErrorCode PetscDeviceContextView(PetscDeviceContext dctx, PetscViewer viewe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDeviceContextViewFromOptions - View a `PetscDeviceContext` from options
 
   Input Parameters:

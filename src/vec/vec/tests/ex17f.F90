@@ -39,7 +39,7 @@
       do 10, i=0,n-1
          iglobal = i + low
          value   = i + 10*rank
-         PetscCallA(VecSetValues(y,ione,iglobal,value,INSERT_VALUES,ierr))
+         PetscCallA(VecSetValues(y,ione,[iglobal],[value],INSERT_VALUES,ierr))
  10   continue
 
       PetscCallA(VecAssemblyBegin(y,ierr))

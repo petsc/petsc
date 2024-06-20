@@ -267,6 +267,6 @@ int main(int argc, char **argv)
      filter: grep -v "type" | grep -v "sort"
      output_file: output/ex5_2.out
      args: -view -nl 5 -explicit_inverse {{0 1}} -sf_type window -sf_window_sync {{fence lock active}} -sf_window_flavor shared
-     requires: defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY) !defined(PETSC_HAVE_MPICH_NUMVERSION) defined(PETSC_HAVE_MPI_ONE_SIDED)
+     requires: defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY) !defined(PETSC_HAVE_MPICH) defined(PETSC_HAVE_MPI_ONE_SIDED)
 
 TEST*/

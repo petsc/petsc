@@ -29,7 +29,7 @@ static PetscErrorCode MatMult_KSP(Mat A, Vec X, Vec Y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPComputeOperator - Computes the explicit preconditioned operator, including diagonal scaling and null
   space removal if applicable.
 

@@ -230,7 +230,7 @@
 
       Interface
         Subroutine DMPlexComputeCellGeometryFEM(m,c,fe,v0,J,iJ,dJ,er)
-          import tDM
+          import tDM, tPetscFE
           PetscInt   c
           PetscReal, pointer :: v0(:)
           PetscReal, pointer :: J(:)
@@ -325,17 +325,6 @@
           PetscScalar, pointer :: v(:)
           PetscErrorCode ierr
           DM m
-        End Subroutine
-      End Interface
-
-      Interface
-        Subroutine DMPlexDistribute(m,o,sf,mp,ierr)
-          import tDM,tPetscSF
-          DM, intent(in) :: m
-          PetscInt, intent(in) :: o
-          PetscSF :: sf
-          DM, intent(out) :: mp
-          PetscErrorCode, intent(out):: ierr
         End Subroutine
       End Interface
 

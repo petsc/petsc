@@ -6,7 +6,7 @@
 */
 
 #include <../src/mat/impls/baij/seq/baij.h>
-#include <../src/mat/impls/baij/seq/baijmkl/baijmkl.h>
+#include <../src/mat/impls/baij/seq/baijmkl/baijmkl.h> /*I   "petscmat.h"   I*/
 #if defined(PETSC_HAVE_MKL_INTEL_ILP64)
   #define MKL_ILP64
 #endif
@@ -431,7 +431,7 @@ static PetscErrorCode MatAssemblyEnd_SeqBAIJMKL(Mat A, MatAssemblyType mode)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateSeqBAIJMKL - Creates a sparse matrix of type `MATSEQBAIJMKL`.
   This type inherits from `MATSEQBAIJ` and is largely identical, but uses sparse BLAS
   routines from Intel MKL whenever possible.

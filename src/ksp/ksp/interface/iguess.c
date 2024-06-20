@@ -144,7 +144,7 @@ PetscErrorCode KSPGuessDestroy(KSPGuess *guess)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPGuessView - View the `KSPGuess` object
 
   Logically Collective
@@ -216,8 +216,8 @@ PetscErrorCode KSPGuessCreate(MPI_Comm comm, KSPGuess *guess)
 
   PetscFunctionBegin;
   PetscAssertPointer(guess, 2);
-  *guess = NULL;
   PetscCall(KSPInitializePackage());
+
   PetscCall(PetscHeaderCreate(tguess, KSPGUESS_CLASSID, "KSPGuess", "Initial guess for Krylov Method", "KSPGuess", comm, KSPGuessDestroy, KSPGuessView));
   tguess->omatstate = -1;
   *guess            = tguess;

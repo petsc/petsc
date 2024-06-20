@@ -521,7 +521,7 @@ PetscErrorCode PetscViewerCreate(MPI_Comm comm, PetscViewer *inviewer)
   PetscViewer viewer;
 
   PetscFunctionBegin;
-  *inviewer = NULL;
+  PetscAssertPointer(inviewer, 2);
   PetscCall(PetscViewerInitializePackage());
   PetscCall(PetscHeaderCreate(viewer, PETSC_VIEWER_CLASSID, "PetscViewer", "PetscViewer", "Viewer", comm, PetscViewerDestroy, PetscViewerView));
   *inviewer    = viewer;

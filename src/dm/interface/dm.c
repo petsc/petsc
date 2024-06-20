@@ -57,19 +57,16 @@ PetscErrorCode DMCreate(MPI_Comm comm, DM *dm)
 
   PetscFunctionBegin;
   PetscAssertPointer(dm, 2);
-  *dm = NULL;
+
   PetscCall(DMInitializePackage());
-
   PetscCall(PetscHeaderCreate(v, DM_CLASSID, "DM", "Distribution Manager", "DM", comm, DMDestroy, DMView));
-
   ((PetscObject)v)->non_cyclic_references = &DMCountNonCyclicReferences;
-
-  v->setupcalled          = PETSC_FALSE;
-  v->setfromoptionscalled = PETSC_FALSE;
-  v->ltogmap              = NULL;
-  v->bind_below           = 0;
-  v->bs                   = 1;
-  v->coloringtype         = IS_COLORING_GLOBAL;
+  v->setupcalled                          = PETSC_FALSE;
+  v->setfromoptionscalled                 = PETSC_FALSE;
+  v->ltogmap                              = NULL;
+  v->bind_below                           = 0;
+  v->bs                                   = 1;
+  v->coloringtype                         = IS_COLORING_GLOBAL;
   PetscCall(PetscSFCreate(comm, &v->sf));
   PetscCall(PetscSFCreate(comm, &v->sectionSF));
   v->labels                    = NULL;
@@ -220,8 +217,8 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
-  DMSetVecType - Sets the type of vector created with `DMCreateLocalVector()` and `DMCreateGlobalVector()`
+/*@
+  DMSetVecType - Sets the type of vector to be created with `DMCreateLocalVector()` and `DMCreateGlobalVector()`
 
   Logically Collective
 
@@ -250,7 +247,7 @@ PetscErrorCode DMSetVecType(DM dm, VecType ctype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMGetVecType - Gets the type of vector created with `DMCreateLocalVector()` and `DMCreateGlobalVector()`
 
   Logically Collective
@@ -638,7 +635,7 @@ static PetscErrorCode DMDestroyCoordinates_Private(DMCoordinates *c)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDestroy - Destroys a `DM`.
 
   Collective
@@ -918,7 +915,7 @@ PetscErrorCode DMSetFromOptions(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMViewFromOptions - View a `DM` in a particular way based on a request in the options database
 
   Collective
@@ -943,7 +940,7 @@ PetscErrorCode DMViewFromOptions(DM dm, PetscObject obj, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMView - Views a `DM`. Depending on the `PetscViewer` and its `PetscViewerFormat` it may print some ASCII information about the `DM` to the screen or a file or
   save the `DM` in a binary file to be loaded later or create a visualization of the `DM`
 
@@ -1186,7 +1183,7 @@ PetscErrorCode DMGetBlockSize(DM dm, PetscInt *bs)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCreateInterpolation - Gets the interpolation matrix between two `DM` objects. The resulting matrix map degrees of freedom in the vector obtained by
   `DMCreateGlobalVector()` on the coarse `DM` to similar vectors on the fine grid `DM`.
 
@@ -2085,7 +2082,7 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCreateSubDM - Returns an `IS` and `DM` encapsulating a subproblem defined by the fields passed in.
   The fields are defined by `DMCreateFieldIS()`.
 
@@ -2138,7 +2135,7 @@ PetscErrorCode DMCreateSubDM(DM dm, PetscInt numFields, const PetscInt fields[],
 
 .seealso: [](ch_dmbase), `DM`, `DMCreateSubDM()`, `DMPlexSetMigrationSF()`, `DMDestroy()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMCreateFieldIS()`, `DMCreateDomainDecomposition()`
 @*/
-PetscErrorCode DMCreateSuperDM(DM dms[], PetscInt n, IS **is, DM *superdm)
+PetscErrorCode DMCreateSuperDM(DM dms[], PetscInt n, IS *is[], DM *superdm)
 {
   PetscInt i;
 
@@ -2272,7 +2269,7 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *n, char ***namelist,
 
 .seealso: [](ch_dmbase), `DM`, `DMCreateDomainDecomposition()`, `DMDestroy()`, `DMView()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMCreateFieldIS()`
 @*/
-PetscErrorCode DMCreateDomainDecompositionScatters(DM dm, PetscInt n, DM *subdms, VecScatter **iscat, VecScatter **oscat, VecScatter **gscat)
+PetscErrorCode DMCreateDomainDecompositionScatters(DM dm, PetscInt n, DM *subdms, VecScatter *iscat[], VecScatter *oscat[], VecScatter *gscat[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -3712,8 +3709,10 @@ PetscErrorCode DMSetApplicationContextDestroy(DM dm, PetscErrorCode (*destroy)(v
 
   Level: intermediate
 
-  Note:
+  Notes:
   A user context is a way to pass problem specific information that is accessible whenever the `DM` is available
+  In a multilevel solver, the user context is shared by all the `DM` in the hierarchy; it is thus not advisable
+  to store objects that represent discretized quantities inside the context.
 
 .seealso: [](ch_dmbase), `DM`, `DMGetApplicationContext()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`
 @*/
@@ -3967,7 +3966,7 @@ PetscErrorCode DMGetType(DM dm, DMType *type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMConvert - Converts a `DM` to another `DM`, either of the same or different type.
 
   Collective
@@ -4117,7 +4116,7 @@ PetscErrorCode DMRegister(const char sname[], PetscErrorCode (*function)(DM))
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMLoad - Loads a DM that has been stored in binary  with `DMView()`.
 
   Collective
@@ -5024,7 +5023,7 @@ PetscErrorCode DMSetField_Internal(DM dm, PetscInt f, DMLabel label, PetscObject
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSetField - Set the discretization object for a given `DM` field. Usually one would call `DMAddField()` which automatically handles
   the field numbering.
 
@@ -5053,7 +5052,7 @@ PetscErrorCode DMSetField(DM dm, PetscInt f, DMLabel label, PetscObject disc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMAddField - Add a field to a `DM` object. A field is a function space defined by of a set of discretization points (geometric entities)
   and a discretization object that defines the function space associated with those points.
 
@@ -6547,7 +6546,7 @@ PetscErrorCode DMSetOutputSequenceNumber(DM dm, PetscInt num, PetscReal val)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMOutputSequenceLoad - Retrieve the sequence value from a `PetscViewer`
 
   Input Parameters:

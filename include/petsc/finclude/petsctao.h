@@ -4,7 +4,7 @@
 #include "petsc/finclude/petscts.h"
 
 #define Tao type(tTao)
-#define TaoLineSearch PetscFortranAddr
+#define TaoLineSearch type(tTaoLineSearch)
 #define TaoConvergedReason PetscEnum
 #define TaoType character*(80)
 #define TaoLineSearchType character*(80)

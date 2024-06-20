@@ -90,5 +90,7 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformExtrudeSetThicknesses(DMPlexTransform
 
 PETSC_EXTERN PetscErrorCode DMPlexTransformCohesiveExtrudeGetTensor(DMPlexTransform, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexTransformCohesiveExtrudeSetTensor(DMPlexTransform, PetscBool);
+PETSC_EXTERN PetscErrorCode DMPlexTransformCohesiveExtrudeGetWidth(DMPlexTransform, PetscReal *);
+PETSC_EXTERN PetscErrorCode DMPlexTransformCohesiveExtrudeSetWidth(DMPlexTransform, PetscReal);
 
 PETSC_EXTERN PetscErrorCode DMPlexCreateEphemeral(DMPlexTransform, const char[], DM *);

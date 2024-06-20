@@ -1,5 +1,6 @@
 #include <../src/vec/is/sf/impls/basic/sfpack.h>
 #include <../src/vec/is/sf/impls/basic/sfbasic.h>
+#include <petscpkg_version.h>
 
 /* Convenience local types */
 #if defined(PETSC_HAVE_MPI_LARGE_COUNT) && defined(PETSC_USE_64BIT_INDICES)
@@ -93,7 +94,7 @@ static PetscErrorCode PetscSFLinkStartCommunication_Neighbor(PetscSF sf, PetscSF
 
   PetscCall(PetscSFGetDistComm_Neighbor(sf, direction, &distcomm));
   PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, direction, &rootbuf, &leafbuf, &req, NULL));
-  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, direction));
+  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link));
 
   if (dat->rootdegree || dat->leafdegree) { // OpenMPI-3.0 ran into error with rootdegree = leafdegree = 0, so we skip the call in this case
     if (direction == PETSCSF_ROOT2LEAF) {
@@ -149,7 +150,7 @@ static PetscErrorCode PetscSFLinkStartCommunication_Persistent_Neighbor(PetscSF 
   }
 
   PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, direction, NULL, NULL, &req, NULL));
-  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, direction));
+  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link));
   if (dat->rootdegree || dat->leafdegree) {
     PetscCallMPI(MPI_Start(req));
     if (direction == PETSCSF_ROOT2LEAF) {
@@ -185,7 +186,7 @@ static PetscErrorCode PetscSFSetUp_Neighbor(PetscSF sf)
   PetscSF_Neighbor *dat = (PetscSF_Neighbor *)sf->data;
   PetscInt          i, j, nrootranks, ndrootranks, nleafranks, ndleafranks;
   const PetscInt   *rootoffset, *leafoffset;
-  PetscMPIInt       m, n;
+  PetscMPIInt       m, n, m2, n2;
 
   PetscFunctionBegin;
   /* SFNeighbor inherits from Basic */
@@ -198,13 +199,16 @@ static PetscErrorCode PetscSFSetUp_Neighbor(PetscSF sf)
   sf->nleafreqs       = 0;
   dat->nrootreqs      = 1; // collectives only need one MPI_Request. We just put it in rootreqs[]
 
-  /* Only setup MPI displs/counts for non-distinguished ranks. Distinguished ranks use shared memory */
-#if !PetscDefined(HAVE_OPENMPI) || (PetscDefined(HAVE_OMPI_MAJOR_VERSION) && PetscDefined(HAVE_OMPI_MINOR_VERSION) && PetscDefined(HAVE_OMPI_RELEASE_VERSION) && !(PETSC_HAVE_OMPI_MAJOR_VERSION == 5 && PETSC_HAVE_OMPI_MINOR_VERSION == 0 && PETSC_HAVE_OMPI_RELEASE_VERSION == 0))
-  PetscCall(PetscMalloc6(m, &dat->rootdispls, m, &dat->rootcounts, m, &dat->rootweights, n, &dat->leafdispls, n, &dat->leafcounts, n, &dat->leafweights));
-#else // workaround for an OpenMPI 5.0.0 bug, https://github.com/open-mpi/ompi/issues/12037
-  PetscMPIInt m2 = m ? m : 1, n2 = n ? n : 1;
-  PetscCall(PetscMalloc6(m2, &dat->rootdispls, m2, &dat->rootcounts, m2, &dat->rootweights, n2, &dat->leafdispls, n2, &dat->leafcounts, n2, &dat->leafweights));
+  m2 = m;
+  n2 = n;
+#if defined(PETSC_HAVE_OPENMPI) // workaround for an OpenMPI 5.0.x bug, https://github.com/open-mpi/ompi/pull/12614
+  #if PETSC_PKG_OPENMPI_VERSION_LE(5, 0, 3)
+  m2 = m ? m : 1;
+  n2 = n ? n : 1;
+  #endif
 #endif
+  // Only setup MPI displs/counts for non-distinguished ranks. Distinguished ranks use shared memory
+  PetscCall(PetscMalloc6(m2, &dat->rootdispls, m2, &dat->rootcounts, m2, &dat->rootweights, n2, &dat->leafdispls, n2, &dat->leafcounts, n2, &dat->leafweights));
 
 #if defined(PETSC_HAVE_MPI_LARGE_COUNT) && defined(PETSC_USE_64BIT_INDICES)
   for (i = ndrootranks, j = 0; i < nrootranks; i++, j++) {

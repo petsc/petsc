@@ -173,7 +173,7 @@ PetscErrorCode TSAdaptSetOptionsPrefix(TSAdapt adapt, const char prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSAdaptLoad - Loads a TSAdapt that has been stored in binary with `TSAdaptView()`.
 
   Collective
@@ -1093,11 +1093,9 @@ PetscErrorCode TSAdaptCreate(MPI_Comm comm, TSAdapt *inadapt)
 
   PetscFunctionBegin;
   PetscAssertPointer(inadapt, 2);
-  *inadapt = NULL;
   PetscCall(TSAdaptInitializePackage());
 
   PetscCall(PetscHeaderCreate(adapt, TSADAPT_CLASSID, "TSAdapt", "Time stepping adaptivity", "TS", comm, TSAdaptDestroy, TSAdaptView));
-
   adapt->always_accept      = PETSC_FALSE;
   adapt->safety             = 0.9;
   adapt->reject_safety      = 0.5;
@@ -1114,7 +1112,6 @@ PetscErrorCode TSAdaptCreate(MPI_Comm comm, TSAdapt *inadapt)
   adapt->matchstepfac[1]             = 2.0;  /* halve last step if it is greater than what remains divided this factor */
   adapt->wnormtype                   = NORM_2;
   adapt->timestepjustdecreased_delay = 0;
-
-  *inadapt = adapt;
+  *inadapt                           = adapt;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

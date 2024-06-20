@@ -203,7 +203,7 @@ static PetscErrorCode PetscDualSpaceView_ASCII(PetscDualSpace sp, PetscViewer v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDualSpaceViewFromOptions - View a `PetscDualSpace` based on values in the options database
 
   Collective
@@ -447,11 +447,9 @@ PetscErrorCode PetscDualSpaceCreate(MPI_Comm comm, PetscDualSpace *sp)
   PetscFunctionBegin;
   PetscAssertPointer(sp, 2);
   PetscCall(PetscCitationsRegister(FECitation, &FEcite));
-  *sp = NULL;
   PetscCall(PetscFEInitializePackage());
 
   PetscCall(PetscHeaderCreate(s, PETSCDUALSPACE_CLASSID, "PetscDualSpace", "Dual Space", "PetscDualSpace", comm, PetscDualSpaceDestroy, PetscDualSpaceView));
-
   s->order       = 0;
   s->Nc          = 1;
   s->k           = 0;
@@ -459,8 +457,7 @@ PetscErrorCode PetscDualSpaceCreate(MPI_Comm comm, PetscDualSpace *sp)
   s->spintdim    = -1;
   s->uniform     = PETSC_TRUE;
   s->setupcalled = PETSC_FALSE;
-
-  *sp = s;
+  *sp            = s;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -780,9 +777,12 @@ PetscErrorCode PetscDualSpaceGetUniform(PetscDualSpace sp, PetscBool *uniform)
 
   Level: intermediate
 
+  Note:
+  Do not free `numDof`
+
 .seealso: `PetscDualSpace`, `PetscDualSpaceGetFunctional()`, `PetscDualSpaceCreate()`
 @*/
-PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace sp, const PetscInt **numDof)
+PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace sp, const PetscInt *numDof[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);

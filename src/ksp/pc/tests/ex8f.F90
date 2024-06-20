@@ -76,22 +76,22 @@
         j = II - i*n
         if (i.gt.0) then
           JJ = II - n
-          PetscCallA(MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr))
+          PetscCallA(MatSetValues(A,one,[II],one,[JJ],[v],ADD_VALUES,ierr))
         endif
         if (i.lt.n-1) then
           JJ = II + n
-          PetscCallA(MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr))
+          PetscCallA(MatSetValues(A,one,[II],one,[JJ],[v],ADD_VALUES,ierr))
         endif
         if (j.gt.0) then
           JJ = II - 1
-          PetscCallA(MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr))
+          PetscCallA(MatSetValues(A,one,[II],one,[JJ],[v],ADD_VALUES,ierr))
         endif
         if (j.lt.n-1) then
           JJ = II + 1
-          PetscCallA(MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr))
+          PetscCallA(MatSetValues(A,one,[II],one,[JJ],[v],ADD_VALUES,ierr))
         endif
         v = 4.0
-        PetscCallA( MatSetValues(A,one,II,one,II,v,ADD_VALUES,ierr))
+        PetscCallA( MatSetValues(A,one,[II],one,[II],[v],ADD_VALUES,ierr))
  10   continue
 
 !  Assemble matrix, using the 2-step process:

@@ -200,10 +200,10 @@ PetscErrorCode PetscHeaderReset_Internal(PetscObject obj)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectCopyFortranFunctionPointers - Copy function pointers to another object
 
-  Logically Collective, No Fortran Support
+  Logically Collective
 
   Input Parameters:
 + src  - source object
@@ -383,7 +383,7 @@ PetscErrorCode PetscObjectsDump(FILE *fd, PetscBool all)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectsView - Prints the currently existing objects.
 
   Logically Collective
@@ -409,7 +409,7 @@ PetscErrorCode PetscObjectsView(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectsGetObject - Get a pointer to a named object
 
   Not Collective
@@ -425,7 +425,7 @@ PetscErrorCode PetscObjectsView(PetscViewer viewer)
 
 .seealso: `PetscObject`
 @*/
-PetscErrorCode PetscObjectsGetObject(const char name[], PetscObject *obj, char **classname)
+PetscErrorCode PetscObjectsGetObject(const char name[], PetscObject *obj, const char *classname[])
 {
   PetscInt    i;
   PetscObject h;
@@ -445,6 +445,16 @@ PetscErrorCode PetscObjectsGetObject(const char name[], PetscObject *obj, char *
       }
     }
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+#else
+PetscErrorCode PetscObjectsView(PetscViewer viewer)
+{
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode PetscObjectsGetObject(const char name[], PetscObject *obj, const char *classname[])
+{
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
@@ -559,7 +569,7 @@ PetscErrorCode PetscObjectProcessOptionsHandlers(PetscObject obj, PetscOptionIte
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectDestroyOptionsHandlers - Destroys all the option handlers attached to an object
 
   Not Collective
@@ -583,7 +593,7 @@ PetscErrorCode PetscObjectDestroyOptionsHandlers(PetscObject obj)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectReference - Indicates to a `PetscObject` that it is being
   referenced by another `PetscObject`. This increases the reference
   count for that object by one.
@@ -609,7 +619,7 @@ PetscErrorCode PetscObjectReference(PetscObject obj)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectGetReference - Gets the current reference count for a PETSc object.
 
   Not Collective
@@ -634,7 +644,7 @@ PetscErrorCode PetscObjectGetReference(PetscObject obj, PetscInt *cnt)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectDereference - Indicates to any `PetscObject` that it is being
   referenced by one less `PetscObject`. This decreases the reference
   count for that object by one.
@@ -676,7 +686,7 @@ PetscErrorCode PetscObjectRemoveReference(PetscObject obj, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectCompose - Associates another PETSc object with a given PETSc object.
 
   Not Collective
@@ -726,7 +736,7 @@ PetscErrorCode PetscObjectCompose(PetscObject obj, const char name[], PetscObjec
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectQuery  - Gets a PETSc object associated with a given object that was composed with `PetscObjectCompose()`
 
   Not Collective
@@ -1029,3 +1039,35 @@ PetscErrorCode PetscObjectSetUp(PetscObject obj)
   PetscValidHeader(obj, 1);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+/*MC
+  PetscObjectIsNull - returns true if the given PETSc object is a null object
+
+  Fortran only
+
+  Synopsis:
+  #include <petsc/finclude/petscsys.h>
+  PetscBool PetscObjectIsNull(PetscObject obj)
+
+  Logically Collective
+
+  Input Parameters:
+. obj  - the PETSc object
+
+  Level: beginner
+
+  Example Usage:
+.vb
+  if (PetscObjectIsNull(dm)) then
+  if (.not. PetscObjectIsNull(dm)) then
+.ve
+
+  Note:
+  Code such as
+.vb
+  if (dm == PETSC_NULL_DM) then
+.ve
+  is not allowed.
+
+.seealso: `PetscObject`, `PETSC_NULL_OBJECT`, `PETSC_NULL_VEC`, `PETSC_NULL_VEC_ARRAY`
+M*/

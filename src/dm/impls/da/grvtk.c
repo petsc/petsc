@@ -1,4 +1,4 @@
-#include <petsc/private/dmdaimpl.h>
+#include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"    I*/
 /*
    Note that the API for using PETSCVIEWERVTK is totally wrong since its use requires
    including the private vtkvimpl.h file. The code should be refactored.
@@ -482,7 +482,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDAVTKWriteAll - Write a file containing all the fields that have been provided to the viewer
 
   Collective

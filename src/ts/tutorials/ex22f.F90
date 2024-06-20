@@ -139,7 +139,7 @@
       PetscInt mx,xs,xe,gxs,gxe
       PetscErrorCode ierr
       PetscInt xm,gxm
-      PetscCall(DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr))
+      PetscCall(DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_ENUM,PETSC_NULL_ENUM,PETSC_NULL_ENUM,PETSC_NULL_ENUM,ierr))
       PetscCall(DMDAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr))
       PetscCall(DMDAGetGhostCorners(da,gxs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,gxm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr))
       xs = xs + 1
@@ -318,7 +318,7 @@
          val(2) = -k2
          val(3) = -k1
          val(4) = shift + k2
-         PetscCall(MatSetValuesBlockedLocal(Jpre,i1,row,i1,col,val,INSERT_VALUES,ierr))
+         PetscCall(MatSetValuesBlockedLocal(Jpre,i1,[row],i1,[col],val,INSERT_VALUES,ierr))
  10   continue
       PetscCall(MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY,ierr))
       PetscCall(MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY,ierr))

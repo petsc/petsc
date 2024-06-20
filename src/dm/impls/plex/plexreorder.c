@@ -446,7 +446,7 @@ static PetscErrorCode DMCreateSectionPermutation_Plex_Reverse(DM dm, IS *permuta
 }
 
 // Reorder to group split nodes
-static PetscErrorCode DMCreateSectionPermutation_Plex_Cohesive(DM dm, IS *permutation, PetscBT *blockStarts)
+static PetscErrorCode DMCreateSectionPermutation_Plex_Cohesive_Old(DM dm, IS *permutation, PetscBT *blockStarts)
 {
   IS        permIS;
   PetscBT   bt, blst;
@@ -541,21 +541,93 @@ static PetscErrorCode DMCreateSectionPermutation_Plex_Cohesive(DM dm, IS *permut
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// Mark the block associated with a cohesive cell p
+static PetscErrorCode InsertCohesiveBlock_Private(DM dm, PetscBT bt, PetscBT blst, PetscInt p, PetscInt *idx, PetscInt perm[])
+{
+  const PetscInt *cone;
+  PetscInt        cS;
+
+  PetscFunctionBegin;
+  if (PetscBTLookupSet(bt, p)) PetscFunctionReturn(PETSC_SUCCESS);
+  // Order the endcaps
+  PetscCall(DMPlexGetCone(dm, p, &cone));
+  PetscCall(DMPlexGetConeSize(dm, p, &cS));
+  if (blst) PetscCall(PetscBTSet(blst, cone[0]));
+  if (!PetscBTLookupSet(bt, cone[0])) perm[(*idx)++] = cone[0];
+  if (!PetscBTLookupSet(bt, cone[1])) perm[(*idx)++] = cone[1];
+  // Order sides
+  for (PetscInt c = 2; c < cS; ++c) PetscCall(InsertCohesiveBlock_Private(dm, bt, NULL, cone[c], idx, perm));
+  // Order cell
+  perm[(*idx)++] = p;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// Reorder to group split nodes
+static PetscErrorCode DMCreateSectionPermutation_Plex_Cohesive(DM dm, IS *permutation, PetscBT *blockStarts)
+{
+  IS        permIS;
+  PetscBT   bt, blst;
+  PetscInt *perm;
+  PetscInt  dim, pStart, pEnd, i = 0;
+
+  PetscFunctionBegin;
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+  PetscCall(PetscMalloc1(pEnd - pStart, &perm));
+  PetscCall(PetscBTCreate(pEnd - pStart, &bt));
+  PetscCall(PetscBTCreate(pEnd - pStart, &blst));
+  // Add cohesive blocks
+  for (PetscInt p = pStart; p < pEnd; ++p) {
+    DMPolytopeType ct;
+
+    PetscCall(DMPlexGetCellType(dm, p, &ct));
+    switch (dim) {
+    case 2:
+      if (ct == DM_POLYTOPE_SEG_PRISM_TENSOR) PetscCall(InsertCohesiveBlock_Private(dm, bt, blst, p, &i, perm));
+      break;
+    case 3:
+      if (ct == DM_POLYTOPE_TRI_PRISM_TENSOR || ct == DM_POLYTOPE_QUAD_PRISM_TENSOR) PetscCall(InsertCohesiveBlock_Private(dm, bt, blst, p, &i, perm));
+      break;
+    default:
+      break;
+    }
+  }
+  // Add normal blocks
+  for (PetscInt p = pStart; p < pEnd; ++p) {
+    if (PetscBTLookupSet(bt, p)) continue;
+    PetscCall(PetscBTSet(blst, p));
+    perm[i++] = p;
+  }
+  if (PetscDefined(USE_DEBUG)) {
+    for (PetscInt p = pStart; p < pEnd; ++p) PetscCheck(PetscBTLookup(bt, p), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Index %" PetscInt_FMT " missed in permutation of [%" PetscInt_FMT ", %" PetscInt_FMT ")", p, pStart, pEnd);
+  }
+  PetscCall(PetscBTDestroy(&bt));
+  PetscCheck(i == pEnd - pStart, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Number of points in permutation %" PetscInt_FMT " does not match chart size %" PetscInt_FMT, i, pEnd - pStart);
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, pEnd - pStart, perm, PETSC_OWN_POINTER, &permIS));
+  PetscCall(ISSetPermutation(permIS));
+  *permutation = permIS;
+  *blockStarts = blst;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode DMCreateSectionPermutation_Plex(DM dm, IS *perm, PetscBT *blockStarts)
 {
   DMReorderDefaultFlag reorder;
   MatOrderingType      otype;
-  PetscBool            iscohesive, isreverse;
+  PetscBool            iscohesive, iscohesiveOld, isreverse;
 
   PetscFunctionBegin;
   PetscCall(DMReorderSectionGetDefault(dm, &reorder));
   if (reorder != DM_REORDER_DEFAULT_TRUE) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMReorderSectionGetType(dm, &otype));
   if (!otype) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscStrncmp(otype, "cohesive_old", 1024, &iscohesiveOld));
   PetscCall(PetscStrncmp(otype, "cohesive", 1024, &iscohesive));
   PetscCall(PetscStrncmp(otype, "reverse", 1024, &isreverse));
   if (iscohesive) {
     PetscCall(DMCreateSectionPermutation_Plex_Cohesive(dm, perm, blockStarts));
+  } else if (iscohesiveOld) {
+    PetscCall(DMCreateSectionPermutation_Plex_Cohesive_Old(dm, perm, blockStarts));
   } else if (isreverse) {
     PetscCall(DMCreateSectionPermutation_Plex_Reverse(dm, perm, blockStarts));
   }

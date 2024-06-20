@@ -213,7 +213,7 @@ PetscErrorCode PetscViewerStringSetString(PetscViewer viewer, char string[], siz
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerStringSetOwnString - tells the viewer that it now owns the string and is responsible for freeing it
 
   Logically Collective

@@ -7,7 +7,7 @@
 PetscClassId  AO_CLASSID;
 PetscLogEvent AO_PetscToApplication, AO_ApplicationToPetsc;
 
-/*@C
+/*@
   AOView - Displays an application ordering.
 
   Collective
@@ -46,7 +46,7 @@ PetscErrorCode AOView(AO ao, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   AOViewFromOptions - View an `AO` based on values in the options database
 
   Collective
@@ -496,7 +496,6 @@ PetscErrorCode AOCreate(MPI_Comm comm, AO *ao)
 
   PetscFunctionBegin;
   PetscAssertPointer(ao, 2);
-  *ao = NULL;
   PetscCall(AOInitializePackage());
 
   PetscCall(PetscHeaderCreate(aonew, AO_CLASSID, "AO", "Application Ordering", "AO", comm, AODestroy, AOView));

@@ -3,6 +3,7 @@
 from petsc4py import PETSc
 import unittest
 from sys import getrefcount
+import numpy as np
 
 # --------------------------------------------------------------------
 
@@ -23,6 +24,7 @@ class Jacobian:
         P.assemble()
         if J != P:
             J.assemble()
+
 
 
 # --------------------------------------------------------------------
@@ -205,11 +207,18 @@ class BaseTestSNES:
         b = PETSc.Vec().createSeq(2)
         self.snes.setFunction(Function(), r)
         self.snes.setJacobian(Jacobian(), J)
+
+        def _update(snes, it, cnt):
+             cnt += 1
+        cnt_up = np.array(0)
+        self.snes.setUpdate(_update, (cnt_up,) )
+
         x.setArray([2, 3])
         b.set(0)
         self.snes.setConvergenceHistory()
         self.snes.setFromOptions()
         self.snes.solve(b, x)
+        self.snes.setUpdate(None)
         rh, ih = self.snes.getConvergenceHistory()
         self.snes.setConvergenceHistory(0, reset=True)
         rh, ih = self.snes.getConvergenceHistory()
@@ -217,6 +226,7 @@ class BaseTestSNES:
         self.assertEqual(len(ih), 0)
         self.assertAlmostEqual(abs(x[0]), 1.0, places=5)
         self.assertAlmostEqual(abs(x[1]), 2.0, places=5)
+        self.assertEqual(self.snes.getIterationNumber(), cnt_up)
         # XXX this test should not be here !
         reason = self.snes.callConvergenceTest(1, 0, 0, 0)
         self.assertTrue(reason > 0)

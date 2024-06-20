@@ -207,7 +207,7 @@ PetscErrorCode DMDAGetCoordinateName(DM dm, PetscInt nf, const char *name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDAGetCorners - Returns the global (`x`,`y`,`z`) indices of the lower left
   corner and size of the local region, excluding ghost points.
 
@@ -226,12 +226,13 @@ PetscErrorCode DMDAGetCoordinateName(DM dm, PetscInt nf, const char *name[])
 
   Level: beginner
 
-  Note:
+  Notes:
+  Any of `y`, `z`, `n`, and `p` can be passed in as `NULL` if not needed.
+
   The corner information is independent of the number of degrees of
   freedom per node set with the `DMDACreateXX()` routine.  Thus the `x`, `y`, and `z`
   can be thought of as the lower left coordinates of the patch of values on process on a logical grid and `m`, `n`, and `p` as the
   extent of the patch, where each grid point has (potentially) several degrees of freedom.
-  Any of `y`, `z`, `n`, and `p` can be passed in as `NULL` if not needed.
 
 .seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetOwnershipRanges()`, `DMStagGetCorners()`, `DMSTAG`
 @*/

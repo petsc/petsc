@@ -1032,7 +1032,7 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexConstructGhostCells - Construct ghost cells which connect to every boundary face
 
   Collective
@@ -2537,7 +2537,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel, PetscInt value, PetscBool markedFaces, DMLabel subpointMap, DM subdm)
+PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel, PetscInt value, PetscBool markedFaces, PetscBool addCells, DMLabel subpointMap, DM subdm)
 {
   IS              subvertexIS = NULL;
   const PetscInt *subvertices;
@@ -2609,7 +2609,8 @@ static PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel,
         }
         PetscCall(DMPlexGetSupportSize(dm, face, &supportSize));
         PetscCall(DMPlexGetSupport(dm, face, &support));
-        for (s = 0; s < supportSize; ++s) PetscCall(DMLabelSetValue(subpointMap, support[s], dim));
+        if (addCells)
+          for (s = 0; s < supportSize; ++s) PetscCall(DMLabelSetValue(subpointMap, support[s], dim));
       }
       PetscCall(DMPlexRestoreTransitiveClosure(dm, face, PETSC_TRUE, &closureSize, &closure));
     }
@@ -3388,7 +3389,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
   PetscCall(DMPlexSetSubpointMap(subdm, subpointMap));
   if (cellHeight) {
     if (isCohesive) PetscCall(DMPlexMarkCohesiveSubmesh_Interpolated(dm, label, value, subpointMap, subdm));
-    else PetscCall(DMPlexMarkSubmesh_Interpolated(dm, label, value, markedFaces, subpointMap, subdm));
+    else PetscCall(DMPlexMarkSubmesh_Interpolated(dm, label, value, markedFaces, PETSC_TRUE, subpointMap, subdm));
   } else {
     DMLabel         depth;
     IS              pointIS;

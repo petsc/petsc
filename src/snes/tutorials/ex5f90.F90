@@ -198,11 +198,11 @@
 
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
-      PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,ione,ione,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr))
+      PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,ione,ione,PETSC_NULL_INTEGER_ARRAY,PETSC_NULL_INTEGER_ARRAY,da,ierr))
       PetscCallA(DMSetFromOptions(da,ierr))
       PetscCallA(DMSetUp(da,ierr))
 
-      PetscCallA(DMDAGetInfo(da,PETSC_NULL_INTEGER,user%mx,user%my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr))
+      PetscCallA(DMDAGetInfo(da,PETSC_NULL_INTEGER,user%mx,user%my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_ENUM,PETSC_NULL_ENUM,PETSC_NULL_ENUM,PETSC_NULL_ENUM,ierr))
 
 !
 !   Visualize the distribution of the array across the processors
@@ -643,7 +643,7 @@
             if (i .eq. 1 .or. j .eq. 1 .or. i .eq. user%mx .or. j .eq. user%my) then
                col(1) = row
                v(1)   = one
-               PetscCallA(MatSetValuesLocal(jac_prec,ione,row,ione,col,v,INSERT_VALUES,ierr))
+               PetscCallA(MatSetValuesLocal(jac_prec,ione,[row],ione,col,v,INSERT_VALUES,ierr))
 !           interior grid points
             else
                v(1) = -hxdhy
@@ -656,7 +656,7 @@
                col(3) = row
                col(4) = row + 1
                col(5) = row + user%gxm
-               PetscCallA(MatSetValuesLocal(jac_prec,ione,row,ifive,col,v,INSERT_VALUES,ierr))
+               PetscCallA(MatSetValuesLocal(jac_prec,ione,[row],ifive,col,v,INSERT_VALUES,ierr))
             endif
  10      continue
  20   continue

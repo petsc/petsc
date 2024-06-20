@@ -109,7 +109,7 @@ PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSpaceViewFromOptions - View a `PetscSpace` based on values in the options database
 
   Collective
@@ -131,7 +131,7 @@ PetscErrorCode PetscSpaceViewFromOptions(PetscSpace A, PetscObject obj, const ch
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSpaceView - Views a `PetscSpace`
 
   Collective
@@ -288,11 +288,9 @@ PetscErrorCode PetscSpaceCreate(MPI_Comm comm, PetscSpace *sp)
   PetscFunctionBegin;
   PetscAssertPointer(sp, 2);
   PetscCall(PetscCitationsRegister(FECitation, &FEcite));
-  *sp = NULL;
   PetscCall(PetscFEInitializePackage());
 
   PetscCall(PetscHeaderCreate(s, PETSCSPACE_CLASSID, "PetscSpace", "Linear Space", "PetscSpace", comm, PetscSpaceDestroy, PetscSpaceView));
-
   s->degree    = 0;
   s->maxDegree = PETSC_DETERMINE;
   s->Nc        = 1;

@@ -438,7 +438,6 @@ PetscErrorCode VecScatterRegister(const char sname[], PetscErrorCode (*function)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------------*/
 /*@
   VecScatterGetMerged - Returns true if the scatter is completed in the `VecScatterBegin()`
   and the `VecScatterEnd()` does nothing
@@ -462,7 +461,7 @@ PetscErrorCode VecScatterGetMerged(VecScatter sf, PetscBool *flg)
   if (flg) *flg = sf->vscat.beginandendtogether;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/*@C
+/*@
   VecScatterDestroy - Destroys a scatter context created by `VecScatterCreate()`
 
   Collective
@@ -505,7 +504,7 @@ PetscErrorCode VecScatterCopy(VecScatter sf, VecScatter *newsf)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecScatterViewFromOptions - View a `VecScatter` object based on values in the options database
 
   Collective
@@ -530,8 +529,7 @@ PetscErrorCode VecScatterViewFromOptions(VecScatter sf, PetscObject obj, const c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------------*/
-/*@C
+/*@
   VecScatterView - Views a vector scatter context.
 
   Collective
@@ -1096,7 +1094,7 @@ functionend:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecScatterCreateToAll - Creates a vector and a scatter context that copies all
   vector values to each processor
 
@@ -1168,7 +1166,7 @@ PetscErrorCode VecScatterCreateToAll(Vec vin, VecScatter *ctx, Vec *vout)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecScatterCreateToZero - Creates an output vector and a scatter context used to
   copy all vector values into the output vector on the zeroth processor
 

@@ -484,7 +484,11 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vfull, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(is, IS_CLASSID, 2);
+  PetscCheckSameComm(vfull, 1, is, 2);
+  PetscValidLogicalCollectiveScalar(vfull, alpha, 3);
   PetscValidHeaderSpecific(vreduced, VEC_CLASSID, 4);
+  PetscCall(ISGetSize(is, &nfull));
+  if (!nfull) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecGetSize(vfull, &nfull));
   PetscCall(VecGetSize(vreduced, &nreduced));
   if (nfull == nreduced) PetscCall(ISGetInfo(is, IS_SORTED, IS_GLOBAL, PETSC_TRUE, &sorted));
@@ -550,8 +554,11 @@ PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vfull, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(is, IS_CLASSID, 2);
+  PetscCheckSameComm(vfull, 1, is, 2);
   PetscValidLogicalCollectiveEnum(vfull, mode, 3);
   PetscValidHeaderSpecific(vreduced, VEC_CLASSID, 4);
+  PetscCall(ISGetSize(is, &nfull));
+  if (!nfull) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecGetSize(vfull, &nfull));
   PetscCall(VecGetSize(vreduced, &nreduced));
   if (nfull == nreduced) PetscCall(ISGetInfo(is, IS_SORTED, IS_GLOBAL, PETSC_TRUE, &sorted));
@@ -656,19 +663,22 @@ PetscErrorCode VecISSet(Vec V, IS S, PetscScalar c)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(V, VEC_CLASSID, 1);
-  PetscValidType(V, 1);
   PetscValidHeaderSpecific(S, IS_CLASSID, 2);
-  PetscCall(VecGetOwnershipRange(V, &low, &high));
-  PetscCall(ISGetLocalSize(S, &nloc));
-  PetscCall(ISGetIndices(S, &s));
-  PetscCall(VecGetArray(V, &v));
-  for (i = 0; i < nloc; ++i) {
-    if (s[i] < 0) continue;
-    PetscCheck(s[i] >= low && s[i] < high, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
-    v[s[i] - low] = c;
+  PetscCheckSameComm(V, 1, S, 2);
+  PetscCall(ISGetSize(S, &nloc));
+  if (nloc) {
+    PetscCall(VecGetOwnershipRange(V, &low, &high));
+    PetscCall(ISGetLocalSize(S, &nloc));
+    PetscCall(ISGetIndices(S, &s));
+    PetscCall(VecGetArray(V, &v));
+    for (i = 0; i < nloc; ++i) {
+      if (s[i] < 0) continue;
+      PetscCheck(s[i] >= low && s[i] < high, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
+      v[s[i] - low] = c;
+    }
+    PetscCall(ISRestoreIndices(S, &s));
+    PetscCall(VecRestoreArray(V, &v));
   }
-  PetscCall(ISRestoreIndices(S, &s));
-  PetscCall(VecRestoreArray(V, &v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -698,19 +708,22 @@ PetscErrorCode VecISShift(Vec V, IS S, PetscScalar c)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(V, VEC_CLASSID, 1);
-  PetscValidType(V, 1);
   PetscValidHeaderSpecific(S, IS_CLASSID, 2);
-  PetscCall(VecGetOwnershipRange(V, &low, &high));
-  PetscCall(ISGetLocalSize(S, &nloc));
-  PetscCall(ISGetIndices(S, &s));
-  PetscCall(VecGetArray(V, &v));
-  for (i = 0; i < nloc; ++i) {
-    if (s[i] < 0) continue;
-    PetscCheck(s[i] >= low && s[i] < high, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
-    v[s[i] - low] += c;
+  PetscCheckSameComm(V, 1, S, 2);
+  PetscCall(ISGetSize(S, &nloc));
+  if (nloc) {
+    PetscCall(VecGetOwnershipRange(V, &low, &high));
+    PetscCall(ISGetLocalSize(S, &nloc));
+    PetscCall(ISGetIndices(S, &s));
+    PetscCall(VecGetArray(V, &v));
+    for (i = 0; i < nloc; ++i) {
+      if (s[i] < 0) continue;
+      PetscCheck(s[i] >= low && s[i] < high, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
+      v[s[i] - low] += c;
+    }
+    PetscCall(ISRestoreIndices(S, &s));
+    PetscCall(VecRestoreArray(V, &v));
   }
-  PetscCall(ISRestoreIndices(S, &s));
-  PetscCall(VecRestoreArray(V, &v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

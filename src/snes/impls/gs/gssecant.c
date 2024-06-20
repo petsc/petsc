@@ -2,22 +2,22 @@
 
 PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES snes, Vec X, Vec B, void *ctx)
 {
-  SNES_NGS       *gs = (SNES_NGS *)snes->data;
-  PetscInt        i, j, k, ncolors;
-  DM              dm;
-  PetscBool       flg;
-  ISColoring      coloring = gs->coloring;
-  MatColoring     mc;
-  Vec             W, G, F;
-  PetscScalar     h = gs->h;
-  IS             *coloris;
-  PetscScalar     f, g, x, w, d;
-  PetscReal       dxt, xt, ft, ft1 = 0;
-  const PetscInt *idx;
-  PetscInt        size, s;
-  PetscReal       atol, rtol, stol;
-  PetscInt        its;
-  PetscErrorCode (*func)(SNES, Vec, Vec, void *);
+  SNES_NGS          *gs = (SNES_NGS *)snes->data;
+  PetscInt           i, j, k, ncolors;
+  DM                 dm;
+  PetscBool          flg;
+  ISColoring         coloring = gs->coloring;
+  MatColoring        mc;
+  Vec                W, G, F;
+  PetscScalar        h = gs->h;
+  IS                *coloris;
+  PetscScalar        f, g, x, w, d;
+  PetscReal          dxt, xt, ft, ft1 = 0;
+  const PetscInt    *idx;
+  PetscInt           size, s;
+  PetscReal          atol, rtol, stol;
+  PetscInt           its;
+  SNESFunctionFn    *func;
   void              *fctx;
   PetscBool          mat = gs->secant_mat, equal, isdone, alldone;
   PetscScalar       *xa, *wa;

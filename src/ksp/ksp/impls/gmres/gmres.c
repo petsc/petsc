@@ -120,7 +120,6 @@ static PetscErrorCode KSPGMRESCycle(PetscInt *itcount, KSP ksp)
   }
   *GRS(0) = gmres->rnorm0 = res;
 
-  /* check for the convergence */
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   ksp->rnorm = res;
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
@@ -134,6 +133,7 @@ static PetscErrorCode KSPGMRESCycle(PetscInt *itcount, KSP ksp)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
+  /* check for the convergence */
   PetscCall((*ksp->converged)(ksp, ksp->its, res, &ksp->reason, ksp->cnvP));
   while (!ksp->reason && it < max_k && ksp->its < ksp->max_it) {
     if (it) {
@@ -186,13 +186,6 @@ static PetscErrorCode KSPGMRESCycle(PetscInt *itcount, KSP ksp)
     }
   }
 
-  /* Monitor if we know that we will not return for a restart */
-  if (it && (ksp->reason || ksp->its >= ksp->max_it)) {
-    PetscCall(KSPLogResidualHistory(ksp, res));
-    PetscCall(KSPLogErrorHistory(ksp));
-    PetscCall(KSPMonitor(ksp, ksp->its, res));
-  }
-
   if (itcount) *itcount = it;
 
   /*
@@ -202,6 +195,13 @@ static PetscErrorCode KSPGMRESCycle(PetscInt *itcount, KSP ksp)
    */
   /* Form the solution (or the solution so far) */
   PetscCall(KSPGMRESBuildSoln(GRS(0), ksp->vec_sol, ksp->vec_sol, ksp, it - 1));
+
+  /* Monitor if we know that we will not return for a restart */
+  if (it && (ksp->reason || ksp->its >= ksp->max_it)) {
+    PetscCall(KSPLogResidualHistory(ksp, res));
+    PetscCall(KSPLogErrorHistory(ksp));
+    PetscCall(KSPMonitor(ksp, ksp->its, res));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

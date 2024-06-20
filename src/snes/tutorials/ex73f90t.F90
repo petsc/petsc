@@ -82,6 +82,24 @@
       End Interface SNESGetApplicationContext
       end module ex73f90tmodule_interfaces
 
+      subroutine MyObjective(snes, x, result, ctx, ierr )
+#include <petsc/finclude/petsc.h>
+        use petsc
+        implicit none
+        PetscInt ctx
+        Vec            x, f
+        SNES           snes
+        PetscErrorCode ierr
+        PetscScalar    result
+        PetscReal      fnorm
+
+        PetscCall(VecDuplicate(x,f,ierr))
+        PetscCall(SNESComputeFunction(snes,x,f,ierr))
+        PetscCall(VecNorm(f,NORM_2,fnorm,ierr))
+        result = .5*fnorm*fnorm
+        PetscCall(VecDestroy(f,ierr))
+      end subroutine MyObjective
+
       program main
 #include <petsc/finclude/petscdm.h>
 #include <petsc/finclude/petscsnes.h>
@@ -116,10 +134,11 @@
       PetscReal lambda_max,lambda_min
       type(ex73f90tmodule_type)  solver
       PetscScalar      bval(1),cval(1),one
+      PetscBool        useobjective
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
-      external FormInitialGuess,FormJacobian,FormFunction
+      external FormInitialGuess,FormJacobian,FormFunction,MyObjective
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Initialize program
@@ -134,18 +153,20 @@
       ione = 1
       nfour = 4
       itwo = 2
+      useobjective = PETSC_FALSE
       PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par', solver%lambda,flg,ierr))
       PetscCheckA(solver%lambda .le. lambda_max .and. solver%lambda .ge. lambda_min,PETSC_COMM_SELF,PETSC_ERR_USER,'Lambda provided with -par is out of range')
+      PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-objective', useobjective,flg,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create vector data structures; set function evaluation routine
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !     just get size
-      PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,ione,ione,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,daphi,ierr))
+      PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,ione,ione,PETSC_NULL_INTEGER_ARRAY,PETSC_NULL_INTEGER_ARRAY,daphi,ierr))
       PetscCallA(DMSetFromOptions(daphi,ierr))
       PetscCallA(DMSetUp(daphi,ierr))
-      PetscCallA(DMDAGetInfo(daphi,PETSC_NULL_INTEGER,solver%mx,solver%my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr))
+      PetscCallA(DMDAGetInfo(daphi,PETSC_NULL_INTEGER,solver%mx,solver%my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_ENUM,PETSC_NULL_ENUM,PETSC_NULL_ENUM,PETSC_NULL_ENUM,ierr))
       N1 = solver%my*solver%mx
       N2 = solver%my
       flg = .false.
@@ -304,8 +325,10 @@
       PetscCallA(SNESSetDM(mysnes,solver%da,ierr))
 
 !  Set function evaluation routine and vector
-      PetscCallA(SNESSetFunction(mysnes,r,FormFunction,solver,ierr))
-
+      PetscCallA(SNESSetFunction(mysnes, r, FormFunction, solver,ierr))
+      if (useobjective .eqv. PETSC_TRUE) then
+         PetscCallA(SNESSetObjective(mysnes, MyObjective, solver, ierr))
+      endif
       PetscCallA(SNESSetJacobian(mysnes,KKTmat,KKTmat,FormJacobian,solver,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -395,7 +418,7 @@
       itwo = 2
       ierr = 0
       PetscCall(SNESGetApplicationContext(mysnes,solver,ierr))
-      PetscCall(DMCompositeGetAccessArray(solver%da,Xnest,itwo,PETSC_NULL_INTEGER,Xsub,ierr))
+      PetscCall(DMCompositeGetAccessArray(solver%da,Xnest,itwo,PETSC_NULL_INTEGER_ARRAY,Xsub,ierr))
 
       PetscCall(InitialGuessLocal(solver,Xsub(1),ierr))
       PetscCall(VecAssemblyBegin(Xsub(1),ierr))
@@ -403,7 +426,7 @@
 
 !     zero out lambda
       PetscCall(VecZeroEntries(Xsub(2),ierr))
-      PetscCall(DMCompositeRestoreAccessArray(solver%da,Xnest,itwo,PETSC_NULL_INTEGER,Xsub,ierr))
+      PetscCall(DMCompositeRestoreAccessArray(solver%da,Xnest,itwo,PETSC_NULL_INTEGER_ARRAY,Xsub,ierr))
 
       end subroutine FormInitialGuess
 
@@ -456,7 +479,7 @@
          else
             v = temp1 * sqrt(min(min(i,solver%mx-i+1)*hx,temp))
          endif
-         PetscCall(VecSetValues(X1,ione,row,v,INSERT_VALUES,ierr))
+         PetscCall(VecSetValues(X1,ione,[row],[v],INSERT_VALUES,ierr))
  20   continue
 
       end subroutine InitialGuessLocal
@@ -494,14 +517,14 @@
 
       ione = 1
 
-      PetscCall(DMCompositeGetAccessArray(solver%da,X,ione,PETSC_NULL_INTEGER,Xsub,ierr))
+      PetscCall(DMCompositeGetAccessArray(solver%da,X,ione,PETSC_NULL_INTEGER_ARRAY,Xsub,ierr))
 
 !     Compute entries for the locally owned part of the Jacobian preconditioner.
       PetscCall(MatCreateSubMatrix(jac_prec,solver%isPhi,solver%isPhi,MAT_INITIAL_MATRIX,Amat,ierr))
 
       PetscCall(FormJacobianLocal(Xsub(1),Amat,solver,.true.,ierr))
       PetscCall(MatDestroy(Amat,ierr)) ! discard our reference
-      PetscCall(DMCompositeRestoreAccessArray(solver%da,X,ione,PETSC_NULL_INTEGER,Xsub,ierr))
+      PetscCall(DMCompositeRestoreAccessArray(solver%da,X,ione,PETSC_NULL_INTEGER_ARRAY,Xsub,ierr))
 
       ! the rest of the matrix is not touched
       PetscCall(MatAssemblyBegin(jac_prec,MAT_FINAL_ASSEMBLY,ierr))
@@ -636,8 +659,8 @@
 !  be done while messages are in transition.
 
       itwo = 2
-      PetscCall(DMCompositeGetAccessArray(solver%da,X,itwo,PETSC_NULL_INTEGER,Xsub,ierr))
-      PetscCall(DMCompositeGetAccessArray(solver%da,F,itwo,PETSC_NULL_INTEGER,Fsub,ierr))
+      PetscCall(DMCompositeGetAccessArray(solver%da,X,itwo,PETSC_NULL_INTEGER_ARRAY,Xsub,ierr))
+      PetscCall(DMCompositeGetAccessArray(solver%da,F,itwo,PETSC_NULL_INTEGER_ARRAY,Fsub,ierr))
 
       PetscCall(FormFunctionNLTerm( Xsub(1), Fsub(1), solver, ierr))
       PetscCall(MatMultAdd( solver%AmatLin, Xsub(1), Fsub(1), Fsub(1), ierr))
@@ -647,8 +670,8 @@
       PetscCall(MatMultAdd( solver%Bmat, Xsub(2), Fsub(1), Fsub(1), ierr))
       PetscCall(MatMultAdd( solver%Dmat, Xsub(2), Fsub(2), Fsub(2), ierr))
 
-      PetscCall(DMCompositeRestoreAccessArray(solver%da,X,itwo,PETSC_NULL_INTEGER,Xsub,ierr))
-      PetscCall(DMCompositeRestoreAccessArray(solver%da,F,itwo,PETSC_NULL_INTEGER,Fsub,ierr))
+      PetscCall(DMCompositeRestoreAccessArray(solver%da,X,itwo,PETSC_NULL_INTEGER_ARRAY,Xsub,ierr))
+      PetscCall(DMCompositeRestoreAccessArray(solver%da,F,itwo,PETSC_NULL_INTEGER_ARRAY,Fsub,ierr))
       end subroutine formfunction
 
 ! ---------------------------------------------------------------------
@@ -719,5 +742,11 @@
 !   test:
 !      nsize: 4
 !      args: -par 5.0 -da_grid_x 10 -da_grid_y 10 -snes_monitor_short -snes_linesearch_type basic -snes_converged_reason -ksp_type fgmres -ksp_norm_type unpreconditioned -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type upper -ksp_monitor_short -fieldsplit_lambda_ksp_type preonly -fieldsplit_lambda_pc_type jacobi -fieldsplit_phi_pc_type gamg -fieldsplit_phi_pc_gamg_esteig_ksp_type cg -fieldsplit_phi_pc_gamg_esteig_ksp_max_it 10 -fieldsplit_phi_pc_gamg_agg_nsmooths 1 -fieldsplit_phi_pc_gamg_threshold 0.
+!
+!   test:
+!      args: -snes_linesearch_type {{l2 cp}separate output} -objective {{false true}shared output}
+!
+!   test:
+!      args: -snes_linesearch_type bt -objective {{false true}separate output}
 !
 !TEST*/

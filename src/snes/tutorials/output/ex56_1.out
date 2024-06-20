@@ -1,4 +1,4 @@
-  Linear solve converged due to CONVERGED_RTOL iterations 5
+    Linear solve converged due to CONVERGED_RTOL iterations 5
 SNES Object: 4 MPI processes
   type: ksponly
   maximum iterations=1, maximum function evaluations=10000
@@ -22,10 +22,15 @@ SNES Object: 4 MPI processes
           Threshold for dropping small values in graph on each level =     0.001     0.001    
           Threshold scaling factor for each level not specified = 1.
           Using aggregates made with 3 applications of heavy edge matching (HEM) to define subdomains for PCASM
+          MatCoarsen Object: 4 MPI processes
+            type: hem
+            3 matching steps with threshold = 0.
           AGG specific options
             Number of levels of aggressive coarsening 1
             Square graph aggressive coarsening
-            Number smoothing steps 1
+            MatCoarsen Object: (pc_gamg_) 4 MPI processes
+              type: mis
+            Number smoothing steps to construct prolongation 1
           Complexity:    grid = 1.11111    operator = 1.02041
     Coarse grid solver -- level 0 -------------------------------
       KSP Object: (mg_coarse_) 4 MPI processes
@@ -131,7 +136,7 @@ Labels:
   boundary: 1 strata with value/size (1 (77))
 Field deformation:
   adjacency FEM
-  Linear solve converged due to CONVERGED_RTOL iterations 8
+    Linear solve converged due to CONVERGED_RTOL iterations 8
 SNES Object: 4 MPI processes
   type: ksponly
   maximum iterations=1, maximum function evaluations=10000
@@ -155,10 +160,15 @@ SNES Object: 4 MPI processes
           Threshold for dropping small values in graph on each level =     0.001     0.001    
           Threshold scaling factor for each level not specified = 1.
           Using aggregates made with 3 applications of heavy edge matching (HEM) to define subdomains for PCASM
+          MatCoarsen Object: 4 MPI processes
+            type: hem
+            3 matching steps with threshold = 0.
           AGG specific options
             Number of levels of aggressive coarsening 1
             Square graph aggressive coarsening
-            Number smoothing steps 1
+            MatCoarsen Object: (pc_gamg_) 4 MPI processes
+              type: mis
+            Number smoothing steps to construct prolongation 1
           Complexity:    grid = 1.02721    operator = 1.00432
     Coarse grid solver -- level 0 -------------------------------
       KSP Object: (mg_coarse_) 4 MPI processes

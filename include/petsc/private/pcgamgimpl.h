@@ -28,6 +28,7 @@ typedef struct gamg_TAG {
   PetscBool        cpu_pin_coarse_grids;
   PetscInt         min_eq_proc;
   PetscInt         asm_hem_aggs;
+  MatCoarsen       asm_crs; /* used to generate ASM aggregates */
   PetscInt         coarse_eq_limit;
   PetscReal        threshold_scale;
   PetscReal        threshold[PETSC_MG_MAXLEVELS]; /* common quantity to many AMG methods so keep it up here */

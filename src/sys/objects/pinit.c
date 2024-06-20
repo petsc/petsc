@@ -814,7 +814,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
     }
     #endif
       /* check for Open MPI version, it is not part of the MPI ABI initiative (is it part of another initiative that needs to be handled?) */
-  #elif defined(OMPI_MAJOR_VERSION)
+  #elif defined(PETSC_HAVE_OPENMPI)
     {
       char     *ver, bs[MPI_MAX_LIBRARY_VERSION_STRING], *bsf;
       PetscBool flg                                              = PETSC_FALSE;
@@ -825,14 +825,14 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
       for (i = 0; i < PSTRSZ; i++) {
         PetscCall(PetscStrstr(mpilibraryversion, ompistr1[i], &ver));
         if (ver) {
-          PetscCall(PetscSNPrintf(bs, MPI_MAX_LIBRARY_VERSION_STRING, "%s%d.%d", ompistr2[i], OMPI_MAJOR_VERSION, OMPI_MINOR_VERSION));
+          PetscCall(PetscSNPrintf(bs, MPI_MAX_LIBRARY_VERSION_STRING, "%s%d.%d", ompistr2[i], PETSC_PKG_OPENMPI_VERSION_MAJOR, PETSC_PKG_OPENMPI_VERSION_MINOR));
           PetscCall(PetscStrstr(ver, bs, &bsf));
           if (bsf) flg = PETSC_TRUE;
           break;
         }
       }
       if (!flg) {
-        PetscCall(PetscInfo(NULL, "PETSc warning --- Open MPI library version \n%s does not match what PETSc was compiled with %d.%d.\n", mpilibraryversion, OMPI_MAJOR_VERSION, OMPI_MINOR_VERSION));
+        PetscCall(PetscInfo(NULL, "PETSc warning --- Open MPI library version \n%s does not match what PETSc was compiled with %d.%d.\n", mpilibraryversion, PETSC_PKG_OPENMPI_VERSION_MAJOR, PETSC_PKG_OPENMPI_VERSION_MINOR));
         flg = PETSC_TRUE;
       }
     }
@@ -1479,6 +1479,14 @@ PetscErrorCode PetscFinalize(void)
     if (flg1) PetscCall(PetscLogMPEDump(mname[0] ? mname : NULL));
   }
 
+#if defined(PETSC_HAVE_KOKKOS)
+  // Free petsc/kokkos stuff before the potentially non-null petsc default gpu stream is destroyed by PetscObjectRegisterDestroyAll
+  if (PetscKokkosInitialized) {
+    PetscCall(PetscKokkosFinalize_Private());
+    PetscKokkosInitialized = PETSC_FALSE;
+  }
+#endif
+
   // Free all objects registered with PetscObjectRegisterDestroy() such as PETSC_VIEWER_XXX_().
   PetscCall(PetscObjectRegisterDestroyAll());
 
@@ -1647,13 +1655,6 @@ PetscErrorCode PetscFinalize(void)
 
   PetscGlobalArgc = 0;
   PetscGlobalArgs = NULL;
-
-#if defined(PETSC_HAVE_KOKKOS)
-  if (PetscKokkosInitialized) {
-    PetscCall(PetscKokkosFinalize_Private());
-    PetscKokkosInitialized = PETSC_FALSE;
-  }
-#endif
 
 #if defined(PETSC_HAVE_NVSHMEM)
   if (PetscBeganNvshmem) {

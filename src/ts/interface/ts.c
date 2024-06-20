@@ -1786,7 +1786,7 @@ PetscErrorCode TS2GetSolution(TS ts, Vec *u, Vec *v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSLoad - Loads a `TS` that has been stored in binary  with `TSView()`.
 
   Collective
@@ -1837,7 +1837,7 @@ PetscErrorCode TSLoad(TS ts, PetscViewer viewer)
   #include <petscviewersaws.h>
 #endif
 
-/*@C
+/*@
   TSViewFromOptions - View a `TS` based on values in the options database
 
   Collective
@@ -1859,7 +1859,7 @@ PetscErrorCode TSViewFromOptions(TS ts, PetscObject obj, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSView - Prints the `TS` data structure.
 
   Collective
@@ -2613,7 +2613,7 @@ PetscErrorCode TSReset(TS ts)
 
 static PetscErrorCode TSResizeReset(TS);
 
-/*@C
+/*@
   TSDestroy - Destroys the timestepper context that was created
   with `TSCreate()`.
 
@@ -4106,7 +4106,7 @@ PetscErrorCode TSSolve(TS ts, Vec u)
   When called during time step evaluation (e.g. during residual evaluation or via hooks set using `TSSetPreStep()`,
   `TSSetPreStage()`, `TSSetPostStage()`, or `TSSetPostStep()`), the time is the time at the start of the step being evaluated.
 
-.seealso: [](ch_ts), `TS`, ``TSGetSolveTime()`, `TSSetTime()`, `TSGetTimeStep()`, `TSGetStepNumber()`
+.seealso: [](ch_ts), `TS`, `TSGetSolveTime()`, `TSSetTime()`, `TSGetTimeStep()`, `TSGetStepNumber()`
 @*/
 PetscErrorCode TSGetTime(TS ts, PetscReal *t)
 {
@@ -4130,7 +4130,7 @@ PetscErrorCode TSGetTime(TS ts, PetscReal *t)
 
   Level: beginner
 
-.seealso: [](ch_ts), `TS`, ``TSGetTime()`, `TSGetSolveTime()`, `TSGetTimeStep()`
+.seealso: [](ch_ts), `TS`, `TSGetTime()`, `TSGetSolveTime()`, `TSGetTimeStep()`
 @*/
 PetscErrorCode TSGetPrevTime(TS ts, PetscReal *t)
 {

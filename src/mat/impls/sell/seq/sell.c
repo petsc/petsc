@@ -41,7 +41,7 @@ static const char citation[] = "@inproceedings{ZhangELLPACK2018,\n"
   #endif
 #endif /* PETSC_HAVE_IMMINTRIN_H */
 
-/*@C
+/*@
   MatSeqSELLSetPreallocation - For good matrix assembly performance
   the user should preallocate the matrix storage by setting the parameter `nz`
   (or the array `nnz`).
@@ -1607,7 +1607,6 @@ PetscErrorCode MatSetValues_SeqSELL(Mat A, PetscInt m, const PetscInt im[], Pets
       *(cp + a->sliceheight * i) = col;
       *(vp + a->sliceheight * i) = value;
       a->nz++;
-      A->nonzerostate++;
 #if defined(PETSC_HAVE_CUPM)
       inserted = PETSC_TRUE;
 #endif
@@ -1943,6 +1942,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSELL,
                                        NULL,
                                        NULL,
                                        /*150*/ NULL,
+                                       NULL,
                                        NULL,
                                        NULL};
 
@@ -2380,7 +2380,7 @@ M*/
 .seealso: `Mat`, `MatCreateSeqSELL()`, `MatCreateSeqAIJ()`, `MatCreateSell()`, `MATSEQSELL`, `MATMPISELL`, `MATSEQAIJ`, `MATMPIAIJ`, `MATAIJ`
 M*/
 
-/*@C
+/*@
   MatCreateSeqSELL - Creates a sparse matrix in `MATSEQSELL` format.
 
   Collective

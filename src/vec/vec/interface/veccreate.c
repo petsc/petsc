@@ -45,8 +45,8 @@ PetscErrorCode VecCreate(MPI_Comm comm, Vec *vec)
 
   PetscFunctionBegin;
   PetscAssertPointer(vec, 2);
-  *vec = NULL;
   PetscCall(VecInitializePackage());
+
   PetscCall(PetscHeaderCreate(v, VEC_CLASSID, "Vec", "Vector", "Vec", comm, VecDestroy, VecView));
   PetscCall(PetscLayoutCreate(comm, &v->map));
   PetscCall(VecCreate_Common_Private(v));

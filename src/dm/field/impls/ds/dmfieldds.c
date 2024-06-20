@@ -57,6 +57,7 @@ static PetscErrorCode DMFieldView_DS(DMField field, PetscViewer viewer)
 static PetscErrorCode DMFieldDSGetHeightDisc(DMField field, PetscInt height, PetscObject discList[], PetscObject *disc)
 {
   PetscFunctionBegin;
+  PetscCheck(height >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Height %" PetscInt_FMT " must be non-negative", height);
   if (!discList[height]) {
     PetscClassId id;
 
@@ -794,10 +795,32 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     }
   }
   if (maxDegree <= 1) {
-    PetscInt     numCells, offset, *cells;
-    PetscFEGeom *cellGeom;
-    IS           suppIS;
+    PetscQuadrature cellQuad = NULL;
+    PetscInt        numCells, offset, *cells;
+    PetscFEGeom    *cellGeom;
+    IS              suppIS;
 
+    if (quad) {
+      DM         dm;
+      PetscReal *points, *weights;
+      PetscInt   tdim, Nc, Np;
+
+      PetscCall(DMFieldGetDM(field, &dm));
+      PetscCall(DMGetDimension(dm, &tdim));
+      if (tdim > dim) {
+        // Make a compatible cell quadrature (points don't matter since its affine)
+        PetscCall(PetscQuadratureCreate(PETSC_COMM_SELF, &cellQuad));
+        PetscCall(PetscQuadratureGetData(quad, NULL, &Nc, &Np, NULL, NULL));
+        PetscCall(PetscCalloc1((dim + 1) * Np, &points));
+        PetscCall(PetscCalloc1(Nc * Np, &weights));
+        PetscCall(PetscQuadratureSetData(cellQuad, dim + 1, Nc, Np, points, weights));
+      } else {
+        // TODO J will be wrong here, but other things need to be fixed
+        //   This path comes from calling DMProjectBdFieldLabelLocal() in Plex ex5
+        PetscCall(PetscObjectReference((PetscObject)quad));
+        cellQuad = quad;
+      }
+    }
     for (p = 0, numCells = 0; p < numFaces; p++) {
       PetscInt point = points[p];
       PetscInt numSupp, numChildren;
@@ -819,7 +842,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
       for (s = 0; s < numSupp; s++, offset++) cells[offset] = supp[s];
     }
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, numCells, cells, PETSC_USE_POINTER, &suppIS));
-    PetscCall(DMFieldCreateFEGeom(field, suppIS, quad, PETSC_FALSE, &cellGeom));
+    PetscCall(DMFieldCreateFEGeom(field, suppIS, cellQuad, PETSC_FALSE, &cellGeom));
     for (p = 0, offset = 0; p < numFaces; p++) {
       PetscInt        point = points[p];
       PetscInt        numSupp, s, q;
@@ -836,6 +859,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
       }
     }
     PetscCall(PetscFEGeomDestroy(&cellGeom));
+    PetscCall(PetscQuadratureDestroy(&cellQuad));
     PetscCall(ISDestroy(&suppIS));
     PetscCall(PetscFree(cells));
   } else {

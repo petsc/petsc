@@ -81,7 +81,7 @@ PetscErrorCode PCReset(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCDestroy - Destroys `PC` context that was created with `PCCreate()`.
 
   Collective
@@ -435,11 +435,9 @@ PetscErrorCode PCCreate(MPI_Comm comm, PC *newpc)
 
   PetscFunctionBegin;
   PetscAssertPointer(newpc, 2);
-  *newpc = NULL;
   PetscCall(PCInitializePackage());
 
   PetscCall(PetscHeaderCreate(pc, PC_CLASSID, "PC", "Preconditioner", "PC", comm, PCDestroy, PCView));
-
   pc->mat                  = NULL;
   pc->pmat                 = NULL;
   pc->setupcalled          = 0;
@@ -945,7 +943,7 @@ PetscErrorCode PCSetFailedReason(PC pc, PCFailedReason reason)
   a call `KSPCheckDot()` or  `KSPCheckNorm()` inside a `KSPSolve()` or `PCReduceFailedReason()`.
   It is not valid immediately after a `PCSetUp()` or `PCApply()`, then use `PCGetFailedReasonRank()`
 
-.seealso: [](ch_ksp), `PC`, ``PCCreate()`, `PCApply()`, `PCDestroy()`, `PCGetFailedReasonRank()`, `PCSetFailedReason()`
+.seealso: [](ch_ksp), `PC`, `PCCreate()`, `PCApply()`, `PCDestroy()`, `PCGetFailedReasonRank()`, `PCSetFailedReason()`
 @*/
 PetscErrorCode PCGetFailedReason(PC pc, PCFailedReason *reason)
 {
@@ -1412,7 +1410,7 @@ PetscErrorCode PCGetOperators(PC pc, Mat *Amat, Mat *Pmat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCGetOperatorsSet - Determines if the matrix associated with the linear system and
   possibly a different one associated with the preconditioner have been set in the `PC`.
 
@@ -1676,7 +1674,7 @@ PetscErrorCode PCPostSolve(PC pc, KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCLoad - Loads a `PC` that has been stored in binary  with `PCView()`.
 
   Collective
@@ -1718,7 +1716,7 @@ PetscErrorCode PCLoad(PC newdm, PetscViewer viewer)
   #include <petscviewersaws.h>
 #endif
 
-/*@C
+/*@
   PCViewFromOptions - View from the `PC` based on options in the options database
 
   Collective
@@ -1740,7 +1738,7 @@ PetscErrorCode PCViewFromOptions(PC A, PetscObject obj, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCView - Prints information about the `PC`
 
   Collective
@@ -1914,7 +1912,7 @@ static PetscErrorCode MatMult_PC(Mat A, Vec X, Vec Y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCComputeOperator - Computes the explicit preconditioned operator.
 
   Collective

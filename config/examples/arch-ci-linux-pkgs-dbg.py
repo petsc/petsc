@@ -21,7 +21,7 @@ configure_options = [
   '--download-mumps',
   # '--download-elemental', # disabled since its maxCxxVersion is c++14, but Kokkos-4.0's minCxxVersion is c++17
   '--download-spai',
-  # '--download-moab', # disabled since its maxCxxVersion is c++14, but Kokkos-4.0's minCxxVersion is c++17
+  '--download-moab',
   '--download-parms',
   '--download-chaco',
   '--download-fftw',

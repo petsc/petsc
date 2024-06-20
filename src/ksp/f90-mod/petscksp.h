@@ -3,17 +3,19 @@
 !
 #include "petsc/finclude/petscksp.h"
 
-      type tKSP
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      type, extends(tPetscObject) :: tKSP
       end type tKSP
-
       KSP, parameter :: PETSC_NULL_KSP = tKSP(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_KSP
+#endif
 
-      type tKSPGuess
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      type, extends(tPetscObject) :: tKSPGuess
       end type tKSPGuess
-
-      KSPGuess, parameter :: PETSC_NULL_KSPGuess = tKSPGuess(0)
+      KSPGuess, parameter :: PETSC_NULL_KSP_GUESS = tKSPGuess(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_KSP_GUESS
+#endif
 
       PetscEnum, parameter :: KSP_CG_SYMMETRIC=0
       PetscEnum, parameter :: KSP_CG_HERMITIAN=1
@@ -80,6 +82,3 @@
       PetscEnum, parameter :: KSP_GMRES_CGS_REFINE_IFNEEDED = 1
       PetscEnum, parameter :: KSP_GMRES_CGS_REFINE_ALWAYS = 2
 
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
-!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_KSP
-#endif

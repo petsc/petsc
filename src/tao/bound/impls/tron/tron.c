@@ -109,7 +109,10 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
   PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
-    PetscTryTypeMethod(tao, update, tao->niter, tao->user_update);
+    if (tao->ops->update) {
+      PetscUseTypeMethod(tao, update, tao->niter, tao->user_update);
+      PetscCall(TaoComputeObjective(tao, tao->solution, &tron->f));
+    }
 
     /* Perform projected gradient iterations */
     PetscCall(TronGradientProjections(tao, tron));

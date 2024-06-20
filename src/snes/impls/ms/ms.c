@@ -534,7 +534,7 @@ static PetscErrorCode SNESMSSetDamping_MS(SNES snes, PetscReal damping)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESMSGetDamping - Get the damping parameter of `SNESMS` multistage scheme
 
   Not Collective
@@ -558,7 +558,7 @@ PetscErrorCode SNESMSGetDamping(SNES snes, PetscReal *damping)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESMSSetDamping - Set the damping parameter for a `SNESMS` multistage scheme
 
   Logically Collective

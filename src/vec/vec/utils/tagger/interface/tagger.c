@@ -41,12 +41,10 @@ PetscErrorCode VecTaggerCreate(MPI_Comm comm, VecTagger *tagger)
   PetscCall(VecTaggerInitializePackage());
 
   PetscCall(PetscHeaderCreate(b, VEC_TAGGER_CLASSID, "VecTagger", "Vec Tagger", "Vec", comm, VecTaggerDestroy, VecTaggerView));
-
   b->blocksize   = 1;
   b->invert      = PETSC_FALSE;
   b->setupcalled = PETSC_FALSE;
-
-  *tagger = b;
+  *tagger        = b;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -312,7 +310,7 @@ PetscErrorCode VecTaggerGetInvert(VecTagger tagger, PetscBool *invert)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecTaggerView - view a `VecTagger` context
 
   Collective

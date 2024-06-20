@@ -131,35 +131,24 @@ PetscErrorCode SNESView_NGMRES(SNES snes, PetscViewer viewer)
 
 static PetscErrorCode SNESSolve_NGMRES(SNES snes)
 {
-  SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
-  /* present solution, residual, and preconditioned residual */
-  Vec X, F, B, D, Y;
-
-  /* candidate linear combination answers */
-  Vec XA, FA, XM, FM;
-
-  /* coefficients and RHS to the minimization problem */
-  PetscReal fnorm, fMnorm, fAnorm;
-  PetscReal xnorm, xMnorm, xAnorm;
-  PetscReal ynorm, yMnorm, yAnorm;
-  PetscInt  k, k_restart, l, ivec, restart_count = 0;
-
-  /* support for objective functions minimization */
-  PetscReal objmin, objM, objA, obj;
-
-  /* solution selection data */
-  PetscBool selectRestart;
+  SNES_NGMRES         *ngmres = (SNES_NGMRES *)snes->data;
+  Vec                  X, F, B, D, Y;         /* present solution, residual, and preconditioned residual */
+  Vec                  XA, FA, XM, FM;        /* candidate linear combination answers */
+  PetscReal            fnorm, fMnorm, fAnorm; /* coefficients and RHS to the minimization problem */
+  PetscReal            xnorm, xMnorm, xAnorm;
+  PetscReal            ynorm, yMnorm, yAnorm;
+  PetscInt             k, k_restart, l, ivec, restart_count = 0;
+  PetscReal            objmin, objM, objA, obj; /* support for objective functions minimization */
+  PetscBool            selectRestart;           /* solution selection data */
+  SNESConvergedReason  reason;
+  SNESLineSearchReason lssucceed;
+  SNESObjectiveFn     *objective;
   /*
       These two variables are initialized to prevent compilers/analyzers from producing false warnings about these variables being passed
       to SNESNGMRESSelect_Private() without being set when SNES_NGMRES_RESTART_DIFFERENCE, the values are not used in the subroutines in that case
       so the code is correct as written.
   */
   PetscReal dnorm = 0.0, dminnorm = 0.0;
-
-  SNESConvergedReason  reason;
-  SNESLineSearchReason lssucceed;
-
-  PetscErrorCode (*objective)(SNES, Vec, PetscReal *, void *);
 
   PetscFunctionBegin;
   PetscCheck(!snes->xl && !snes->xu && !snes->ops->computevariablebounds, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);

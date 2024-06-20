@@ -86,7 +86,7 @@ PetscErrorCode PetscBenchReset(PetscBench bm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBenchDestroy - Destroys a `PetscBench`
 
   Collective
@@ -196,7 +196,7 @@ PetscErrorCode PetscBenchSetFromOptions(PetscBench bm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBenchView - Views a PETSc benchmark `PetscBench`
 
   Collective
@@ -219,7 +219,7 @@ PetscErrorCode PetscBenchView(PetscBench bm, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBenchViewFromOptions - Processes command line options to determine if/how a `PetscBench` is to be viewed.
 
   Collective
@@ -262,8 +262,8 @@ PetscErrorCode PetscBenchCreate(MPI_Comm comm, PetscBench *bm)
 {
   PetscFunctionBegin;
   PetscAssertPointer(bm, 2);
-  *bm = NULL;
   PetscCall(PetscBenchInitializePackage());
+
   PetscCall(PetscHeaderCreate(*bm, BM_CLASSID, "BM", "PetscBench", "BM", comm, PetscBenchDestroy, PetscBenchView));
   (*bm)->size = PETSC_DECIDE;
   PetscFunctionReturn(PETSC_SUCCESS);

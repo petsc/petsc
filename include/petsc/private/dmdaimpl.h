@@ -93,7 +93,6 @@ PETSC_INTERN PetscErrorCode DMView_DA_Matlab(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode DMView_DA_Binary(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode DMView_DA_VTK(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode DMView_DA_GLVis(DM, PetscViewer);
-PETSC_EXTERN PetscErrorCode DMDAVTKWriteAll(PetscObject, PetscViewer);
 PETSC_INTERN PetscErrorCode DMDASelectFields(DM, PetscInt *, PetscInt **);
 
 PETSC_INTERN PetscErrorCode DMCreateGlobalVector_DA(DM, Vec *);

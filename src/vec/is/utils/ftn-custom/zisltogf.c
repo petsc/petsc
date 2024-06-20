@@ -3,21 +3,12 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-  #define islocaltoglobalmappingview_     ISLOCALTOGLOBALMAPPINGVIEW
   #define islocaltoglobalmpnggetinfosize_ ISLOCALTOGLOBALMPNGGETINFOSIZE
   #define islocaltoglobalmappinggetinfo_  ISLOCALTOGLOBALMAPPINGGETINFO
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define islocaltoglobalmappingview_     islocaltoglobalmappingview
   #define islocaltoglobalmpnggetinfosize_ islocaltoglobalmpnggetinfosize
   #define islocaltoglobalmappinggetinfo_  islocaltoglobalmappinggetinfo
 #endif
-
-PETSC_EXTERN void islocaltoglobalmappingview_(ISLocalToGlobalMapping *mapping, PetscViewer *viewer, PetscErrorCode *ierr)
-{
-  PetscViewer v;
-  PetscPatchDefaultViewers_Fortran(viewer, v);
-  *ierr = ISLocalToGlobalMappingView(*mapping, v);
-}
 
 static PetscInt  *sprocs, *snumprocs, **sindices;
 static PetscBool  called;
@@ -52,15 +43,4 @@ PETSC_EXTERN void islocaltoglobalmappinggetinfo_(ISLocalToGlobalMapping *mapping
   *ierr = ISLocalToGlobalMappingRestoreInfo(*mapping, size, &sprocs, &snumprocs, &sindices);
   if (*ierr) return;
   called = PETSC_FALSE;
-}
-
-PETSC_EXTERN void islocaltoglobalmappingviewfromoptions_(ISLocalToGlobalMapping *ao, PetscObject obj, char *type, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-
-  FIXCHAR(type, len, t);
-  CHKFORTRANNULLOBJECT(obj);
-  *ierr = ISLocalToGlobalMappingViewFromOptions(*ao, obj, t);
-  if (*ierr) return;
-  FREECHAR(type, t);
 }

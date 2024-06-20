@@ -12,7 +12,7 @@
 */
 PetscFunctionList PetscDrawList = NULL;
 
-/*@C
+/*@
   PetscDrawView - Prints the `PetscDraw` data structure.
 
   Collective
@@ -80,7 +80,7 @@ PetscErrorCode PetscDrawView(PetscDraw indraw, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawViewFromOptions - View a `PetscDraw` from the option database
 
   Collective
@@ -139,10 +139,10 @@ PetscErrorCode PetscDrawCreate(MPI_Comm comm, const char display[], const char t
   PetscBool flag;
 
   PetscFunctionBegin;
+  PetscAssertPointer(indraw, 8);
   PetscCall(PetscDrawInitializePackage());
-  *indraw = NULL;
-  PetscCall(PetscHeaderCreate(draw, PETSC_DRAW_CLASSID, "Draw", "Graphics", "Draw", comm, PetscDrawDestroy, PetscDrawView));
 
+  PetscCall(PetscHeaderCreate(draw, PETSC_DRAW_CLASSID, "Draw", "Graphics", "Draw", comm, PetscDrawDestroy, PetscDrawView));
   draw->data = NULL;
   PetscCall(PetscStrallocpy(display, &draw->display));
   PetscCall(PetscStrallocpy(title, &draw->title));

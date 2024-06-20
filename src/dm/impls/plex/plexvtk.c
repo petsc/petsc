@@ -630,7 +630,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexVTKWriteAll - Write a file containing all the fields that have been provided to the viewer
 
   Collective

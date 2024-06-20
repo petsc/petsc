@@ -277,7 +277,7 @@ PetscErrorCode PetscPythonPrintError(void)
 PETSC_EXTERN PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject, const char[]);
 PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject, const char[]) = NULL;
 
-/*@C
+/*@
   PetscPythonMonitorSet - Set a Python monitor for a `PetscObject`
 
   Level: developer

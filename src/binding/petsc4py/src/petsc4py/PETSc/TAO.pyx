@@ -324,7 +324,7 @@ cdef class TAO(Object):
         self.set_attr("__objective__", context)
         CHKERR(TaoSetObjective(self.tao, TAO_Objective, <void*>context))
 
-    def setResidual(self, residual: TAOResidualFunction, Vec R=None, args: tuple[Any, ...] | None = None, kargs: dict[str, Any] | None = None) -> None:
+    def setResidual(self, residual: TAOResidualFunction, Vec R, args: tuple[Any, ...] | None = None, kargs: dict[str, Any] | None = None) -> None:
         """Set the residual evaluation callback for least-squares applications.
 
         Logically collective.
@@ -345,13 +345,11 @@ cdef class TAO(Object):
         setJacobianResidual, petsc.TaoSetResidualRoutine
 
         """
-        cdef PetscVec Rvec = NULL
-        if R is not None: Rvec = R.vec
         if args is None: args = ()
         if kargs is None: kargs = {}
         context = (residual, args, kargs)
         self.set_attr("__residual__", context)
-        CHKERR(TaoSetResidualRoutine(self.tao, Rvec, TAO_Residual, <void*>context))
+        CHKERR(TaoSetResidualRoutine(self.tao, R.vec, TAO_Residual, <void*>context))
 
     def setJacobianResidual(self, jacobian: TAOJacobianResidualFunction, Mat J=None, Mat P=None, args: tuple[Any, ...] | None = None, kargs: dict[str, Any] | None = None) -> None:
         """Set the callback to compute the least-squares residual Jacobian.

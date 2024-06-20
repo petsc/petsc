@@ -708,7 +708,7 @@ static inline void DMPlex_Transpose3D_Internal(PetscScalar A[])
 static inline void DMPlex_Invert2D_Internal(PetscReal invJ[], PetscReal J[], PetscReal detJ)
 {
   // Allow zero volume cells
-  const PetscReal invDet = detJ == 0 ? 1.0 : 1.0 / detJ;
+  const PetscReal invDet = detJ == 0 ? 1.0 : (PetscReal)1.0 / detJ;
 
   invJ[0] = invDet * J[3];
   invJ[1] = -invDet * J[1];
@@ -720,7 +720,7 @@ static inline void DMPlex_Invert2D_Internal(PetscReal invJ[], PetscReal J[], Pet
 static inline void DMPlex_Invert3D_Internal(PetscReal invJ[], PetscReal J[], PetscReal detJ)
 {
   // Allow zero volume cells
-  const PetscReal invDet = detJ == 0 ? 1.0 : 1.0 / detJ;
+  const PetscReal invDet = detJ == 0 ? 1.0 : (PetscReal)1.0 / detJ;
 
   invJ[0 * 3 + 0] = invDet * (J[1 * 3 + 1] * J[2 * 3 + 2] - J[1 * 3 + 2] * J[2 * 3 + 1]);
   invJ[0 * 3 + 1] = invDet * (J[0 * 3 + 2] * J[2 * 3 + 1] - J[0 * 3 + 1] * J[2 * 3 + 2]);
@@ -817,6 +817,8 @@ PETSC_INTERN PetscErrorCode DMPlexBasisTransformApply_Internal(DM, const PetscRe
 PETSC_INTERN PetscErrorCode DMCreateNeumannOverlap_Plex(DM, IS *, Mat *, PetscErrorCode (**)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void *), void **);
 PETSC_INTERN PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM, PetscInt, PetscInt, DMLabel, PetscBool);
 PETSC_INTERN PetscErrorCode DMPlexDistributeOverlap_Internal(DM, PetscInt, MPI_Comm, const char *, PetscSF *, DM *);
+
+PETSC_INTERN PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM, DMLabel, PetscInt, PetscBool, PetscBool, DMLabel, DM);
 
 PETSC_INTERN PetscErrorCode DMPeriodicCoordinateSetUp_Internal(DM);
 

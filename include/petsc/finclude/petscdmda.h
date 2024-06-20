@@ -45,6 +45,4 @@
 #define DMDAInterpolationType PetscEnum
 #define DMDAElementType PetscEnum
 
-#define PetscGLL   PetscFortranAddr
-
 #endif

@@ -230,9 +230,6 @@ static PetscErrorCode KSPLGMRESCycle(PetscInt *itcount, KSP ksp)
   /* END OF ITERATION LOOP */
   PetscCall(KSPLogResidualHistory(ksp, res));
 
-  /* Monitor if we know that we will not return for a restart */
-  if (ksp->reason || ksp->its >= max_it) PetscCall(KSPMonitor(ksp, ksp->its, res));
-
   if (itcount) *itcount = loc_it;
 
   /*
@@ -245,6 +242,9 @@ static PetscErrorCode KSPLGMRESCycle(PetscInt *itcount, KSP ksp)
   /* Note: must pass in (loc_it-1) for iteration count so that KSPLGMRESBuildSoln properly navigates */
 
   PetscCall(KSPLGMRESBuildSoln(GRS(0), ksp->vec_sol, ksp->vec_sol, ksp, loc_it - 1));
+
+  /* Monitor if we know that we will not return for a restart */
+  if (ksp->reason || ksp->its >= max_it) PetscCall(KSPMonitor(ksp, ksp->its, res));
 
   /* LGMRES_MOD collect aug vector and A*augvector for future restarts -
      only if we will be restarting (i.e. this cycle performed it_total iterations)  */

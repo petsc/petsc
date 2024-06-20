@@ -50,16 +50,16 @@ PetscErrorCode PetscMatlabEngineCreate(MPI_Comm comm, const char host[], PetscMa
   char              lhost[64];
 
   PetscFunctionBegin;
+  PetscAssertPointer(mengine, 3);
   if (MATLABENGINE_CLASSID == -1) PetscCall(PetscClassIdRegister("MATLAB Engine", &MATLABENGINE_CLASSID));
-  PetscCall(PetscHeaderCreate(e, MATLABENGINE_CLASSID, "MatlabEngine", "MATLAB Engine", "Sys", comm, PetscMatlabEngineDestroy, NULL));
 
+  PetscCall(PetscHeaderCreate(e, MATLABENGINE_CLASSID, "MatlabEngine", "MATLAB Engine", "Sys", comm, PetscMatlabEngineDestroy, NULL));
   if (!host) {
     PetscCall(PetscOptionsGetString(NULL, NULL, "-matlab_engine_host", lhost, sizeof(lhost), &flg));
     if (flg) host = lhost;
   }
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-matlab_engine_graphics", &flg, NULL));
-
   if (host) {
     PetscCall(PetscInfo(0, "Starting MATLAB engine on %s\n", host));
     PetscCall(PetscStrncpy(buffer, "ssh ", sizeof(buffer)));
@@ -80,7 +80,6 @@ PetscErrorCode PetscMatlabEngineCreate(MPI_Comm comm, const char host[], PetscMa
   engOutputBuffer(e->ep, e->buffer, sizeof(e->buffer));
   if (host) PetscCall(PetscInfo(0, "Started MATLAB engine on %s\n", host));
   else PetscCall(PetscInfo(0, "Started MATLAB engine\n"));
-
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(PetscMatlabEngineEvaluate(e, "MPI_Comm_rank = %d; MPI_Comm_size = %d;\n", rank, size));

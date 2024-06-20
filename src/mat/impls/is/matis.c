@@ -3185,7 +3185,7 @@ static PetscErrorCode MatISSetLocalMatType_IS(Mat mat, MatType mtype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatISSetLocalMatType - Specifies the type of local matrix inside the `MATIS`
 
   Logically Collective.

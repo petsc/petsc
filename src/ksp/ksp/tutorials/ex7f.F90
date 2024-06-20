@@ -52,34 +52,34 @@ program main
       PetscCallA( MatCreate(PETSC_COMM_WORLD,A,ierr))
       PetscCallA( MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr))
       PetscCallA( MatSetFromOptions(A,ierr))
-      PetscCallA( MatMPIAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,five,PETSC_NULL_INTEGER,ierr))
-      PetscCallA( MatSeqAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,ierr))
+      PetscCallA( MatMPIAIJSetPreallocation(A,five,PETSC_NULL_INTEGER_ARRAY,five,PETSC_NULL_INTEGER_ARRAY,ierr))
+      PetscCallA( MatSeqAIJSetPreallocation(A,five,PETSC_NULL_INTEGER_ARRAY,ierr))
       PetscCallA( MatGetOwnershipRange(A,Istart,Iend,ierr))
 
       do Ii=Istart,Iend-1
           v =-1.0; i = Ii/n; j = Ii - i*n
           if (i>0) then
             JJ = Ii - n
-            PetscCallA(MatSetValues(A,one,Ii,one,JJ,v,ADD_VALUES,ierr))
+            PetscCallA(MatSetValues(A,one,[Ii],one,[JJ],[v],ADD_VALUES,ierr))
           endif
 
           if (i<m-1) then
             JJ = Ii + n
-            PetscCallA(MatSetValues(A,one,Ii,one,JJ,v,ADD_VALUES,ierr))
+            PetscCallA(MatSetValues(A,one,[Ii],one,[JJ],[v],ADD_VALUES,ierr))
           endif
 
           if (j>0) then
             JJ = Ii - 1
-            PetscCallA(MatSetValues(A,one,Ii,one,JJ,v,ADD_VALUES,ierr))
+            PetscCallA(MatSetValues(A,one,[Ii],one,[JJ],[v],ADD_VALUES,ierr))
           endif
 
           if (j<n-1) then
             JJ = Ii + 1
-            PetscCallA(MatSetValues(A,one,Ii,one,JJ,v,ADD_VALUES,ierr))
+            PetscCallA(MatSetValues(A,one,[Ii],one,[JJ],[v],ADD_VALUES,ierr))
           endif
 
           v=4.0
-          PetscCallA(MatSetValues(A,one,Ii,one,Ii,v,ADD_VALUES,ierr))
+          PetscCallA(MatSetValues(A,one,[Ii],one,[Ii],[v],ADD_VALUES,ierr))
 
         enddo
 

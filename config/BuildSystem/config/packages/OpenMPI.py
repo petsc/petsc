@@ -8,6 +8,8 @@ class Configure(config.package.GNUPackage):
     self.download               = ['https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-'+self.version+'.tar.gz',
                                    'https://web.cels.anl.gov/projects/petsc/download/externalpackages/openmpi-'+self.version+'.tar.gz']
     self.download_git           = ['git://https://github.com/open-mpi/ompi.git']
+    self.versionname            = 'OMPI_MAJOR_VERSION.OMPI_MINOR_VERSION.OMPI_RELEASE_VERSION'
+    self.includes               = ['mpi.h']
     self.gitsubmodules          = ['.']
     self.downloaddirnames       = ['openmpi','ompi']
     self.skippackagewithoptions = 1
@@ -57,7 +59,7 @@ class Configure(config.package.GNUPackage):
 
   def preInstall(self):
     if not self.getExecutable('perl'):
-      raise RuntimeError('Cannot find perl required by --download-openmpi, install perl (possibly with a package manager) and run ./configure again') 
+      raise RuntimeError('Cannot find perl required by --download-openmpi, install perl (possibly with a package manager) and run ./configure again')
     self.Bootstrap('AUTOMAKE_JOBS=%d ./autogen.pl' % self.make.make_np)
 
   def checkDownload(self):

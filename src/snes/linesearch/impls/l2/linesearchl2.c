@@ -3,22 +3,22 @@
 
 static PetscErrorCode SNESLineSearchApply_L2(SNESLineSearch linesearch)
 {
-  PetscBool   changed_y, changed_w;
-  Vec         X;
-  Vec         F;
-  Vec         Y;
-  Vec         W;
-  SNES        snes;
-  PetscReal   gnorm;
-  PetscReal   ynorm;
-  PetscReal   xnorm;
-  PetscReal   steptol, maxstep, rtol, atol, ltol;
-  PetscViewer monitor;
-  PetscReal   lambda, lambda_old, lambda_mid, lambda_update, delLambda;
-  PetscReal   fnrm, fnrm_old, fnrm_mid;
-  PetscReal   delFnrm, delFnrm_old, del2Fnrm;
-  PetscInt    i, max_its;
-  PetscErrorCode (*objective)(SNES, Vec, PetscReal *, void *);
+  PetscBool        changed_y, changed_w;
+  Vec              X;
+  Vec              F;
+  Vec              Y;
+  Vec              W;
+  SNES             snes;
+  PetscReal        gnorm;
+  PetscReal        ynorm;
+  PetscReal        xnorm;
+  PetscReal        steptol, maxstep, rtol, atol, ltol;
+  PetscViewer      monitor;
+  PetscReal        lambda, lambda_old, lambda_mid, lambda_update, delLambda;
+  PetscReal        fnrm, fnrm_old, fnrm_mid;
+  PetscReal        delFnrm, delFnrm_old, del2Fnrm;
+  PetscInt         i, max_its;
+  SNESObjectiveFn *objective;
 
   PetscFunctionBegin;
   PetscCall(SNESLineSearchGetVecs(linesearch, &X, &F, &Y, &W, NULL));
@@ -153,23 +153,25 @@ static PetscErrorCode SNESLineSearchApply_L2(SNESLineSearch linesearch)
 /*MC
    SNESLINESEARCHL2 - Secant search in the L2 norm of the function or the objective function, if it is provided with `SNESSetObjective()`.
 
-   Attempts to solve min_lambda f(x + lambda y) using the secant method with the initial bracketing of lambda between [0,damping]. Differences of f()
-   are used to approximate the first and second derivative of f() with respect to lambda, f'() and f''(). The secant method is run for maxit iterations.
+   Attempts to solve $ \min_{\lambda} f(x + \lambda y) $ using the secant method with the initial bracketing of $ \lambda $ between [0,damping].
+   Differences of $f()$ are used to approximate the first and second derivative of $f()$ with respect to
+   $\lambda$, $f'()$ and $f''()$. The secant method is run for `maxit` iterations.
 
-   When an objective function is provided f(w) is the objective function otherwise f(w) = ||F(w)||^2. x is the current step and y is the search direction.
+   When an objective function is provided $f(w)$ is the objective function otherwise $f(w) = ||F(w)||^2$.
+   $x$ is the current step and $y$ is the search direction.
 
    This has no checks on whether the secant method is actually converging.
 
    Options Database Keys:
-+  -snes_linesearch_max_it <maxit> - maximum number of iterations, default is 1
-.  -snes_linesearch_maxstep <length> - the algorithm insures that a step length is never longer than this value
-.  -snes_linesearch_damping <damping> - initial step is scaled back by this factor, default is 1.0
++  -snes_linesearch_max_it <maxit>        - maximum number of iterations, default is 1
+.  -snes_linesearch_maxstep <length>      - the algorithm insures that a step length is never longer than this value
+.  -snes_linesearch_damping <damping>     - initial step is scaled back by this factor, default is 1.0
 -  -snes_linesearch_minlambda <minlambda> - minimum allowable lambda
 
    Level: advanced
 
    Developer Note:
-    A better name for this method might be `SNESLINESEARCHSECANT`, L2 is not descriptive
+   A better name for this method might be `SNESLINESEARCHSECANT`, L2 is not descriptive
 
 .seealso: [](ch_snes), `SNESLINESEARCHBT`, `SNESLINESEARCHCP`, `SNESLineSearch`, `SNESLineSearchType`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
 M*/

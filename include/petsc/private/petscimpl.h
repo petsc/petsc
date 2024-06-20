@@ -1477,15 +1477,16 @@ static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *ck_spinlock)
 }
   #elif (defined(__cplusplus) && defined(PETSC_HAVE_CXX_ATOMIC)) || (!defined(__cplusplus) && defined(PETSC_HAVE_STDATOMIC_H))
     #if defined(__cplusplus)
+      // See the example at https://en.cppreference.com/w/cpp/atomic/atomic_flag
       #include <atomic>
       #define petsc_atomic_flag                 std::atomic_flag
-      #define petsc_atomic_flag_test_and_set(p) std::atomic_flag_test_and_set_explicit(p, std::memory_order_relaxed)
-      #define petsc_atomic_flag_clear(p)        std::atomic_flag_clear_explicit(p, std::memory_order_relaxed)
+      #define petsc_atomic_flag_test_and_set(p) std::atomic_flag_test_and_set_explicit(p, std::memory_order_acquire)
+      #define petsc_atomic_flag_clear(p)        std::atomic_flag_clear_explicit(p, std::memory_order_release)
     #else
       #include <stdatomic.h>
       #define petsc_atomic_flag                 atomic_flag
-      #define petsc_atomic_flag_test_and_set(p) atomic_flag_test_and_set_explicit(p, memory_order_relaxed)
-      #define petsc_atomic_flag_clear(p)        atomic_flag_clear_explicit(p, memory_order_relaxed)
+      #define petsc_atomic_flag_test_and_set(p) atomic_flag_test_and_set_explicit(p, memory_order_acquire)
+      #define petsc_atomic_flag_clear(p)        atomic_flag_clear_explicit(p, memory_order_release)
     #endif
 
 typedef petsc_atomic_flag PetscSpinlock;

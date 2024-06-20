@@ -552,7 +552,7 @@ PetscErrorCode VecDuplicate(Vec v, Vec *newv)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecDestroy - Destroys a vector.
 
   Collective
@@ -667,7 +667,7 @@ PetscErrorCode VecDestroyVecs(PetscInt m, Vec *vv[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecViewFromOptions - View a vector based on values in the options database
 
   Collective
@@ -692,7 +692,7 @@ PetscErrorCode VecViewFromOptions(Vec A, PetscObject obj, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecView - Views a vector object.
 
   Collective
@@ -910,7 +910,7 @@ PetscErrorCode VecGetLocalSize(Vec x, PetscInt *size)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetOwnershipRange - Returns the range of indices owned by
   this process. The vector is laid out with the
   first `n1` elements on the first processor, next `n2` elements on the
@@ -1089,7 +1089,7 @@ PetscErrorCode VecResetArray(Vec vec)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecLoad - Loads a vector that has been stored in binary or HDF5 format
   with `VecView()`.
 
@@ -1853,7 +1853,7 @@ PetscErrorCode VecSwap(Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecStashViewFromOptions - Processes command line options to determine if/how a `VecStash` object is to be viewed.
 
   Collective
@@ -2381,7 +2381,7 @@ static PetscErrorCode VecErrorWeightedNorms_Basic(Vec U, Vec Y, Vec E, NormType 
   Notes:
   This is primarily used for computing weighted local truncation errors in ``TS``.
 
-.seealso: [](ch_vectors), `Vec`, `NormType`, ``TSErrorWeightedNorm()``, ``TSErrorWeightedENorm()``
+.seealso: [](ch_vectors), `Vec`, `NormType`, `TSErrorWeightedNorm()`, `TSErrorWeightedENorm()`
 @*/
 PetscErrorCode VecErrorWeightedNorms(Vec U, Vec Y, Vec E, NormType wnormtype, PetscReal atol, Vec vatol, PetscReal rtol, Vec vrtol, PetscReal ignore_max, PetscReal *norm, PetscInt *norm_loc, PetscReal *norma, PetscInt *norma_loc, PetscReal *normr, PetscInt *normr_loc)
 {

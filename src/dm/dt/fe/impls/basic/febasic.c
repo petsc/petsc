@@ -290,6 +290,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field,
   }
   PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights));
   PetscCheck(qNc == 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %" PetscInt_FMT " components", qNc);
+  if (debug > 1) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Field: %" PetscInt_FMT " Nface: %" PetscInt_FMT " Nq: %" PetscInt_FMT "\n", field, Ne, Nq));
   Np       = fgeom->numPoints;
   dE       = fgeom->dimEmbed;
   isAffine = fgeom->isAffine;
@@ -318,7 +319,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field,
       cgeom.detJ = &fgeom->suppDetJ[0][e * Np];
     }
     for (q = 0; q < Nq; ++q) {
-      PetscScalar integrand;
+      PetscScalar integrand = 0.;
       PetscReal   w;
 
       if (isAffine) {
@@ -342,12 +343,34 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field,
 #endif
       }
       if (debug > 1) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  quad point %" PetscInt_FMT "\n", q));
+      if (debug > 3) {
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "    x_q ("));
+        for (PetscInt d = 0; d < dE; ++d) {
+          if (d) PetscCall(PetscPrintf(PETSC_COMM_SELF, ", "));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "%g", (double)fegeom.v[d]));
+        }
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, ")\n"));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "    n_q ("));
+        for (PetscInt d = 0; d < dE; ++d) {
+          if (d) PetscCall(PetscPrintf(PETSC_COMM_SELF, ", "));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "%g", (double)fegeom.n[d]));
+        }
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, ")\n"));
+        for (PetscInt f = 0; f < Nf; ++f) {
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "    u_%" PetscInt_FMT " (", f));
+          for (PetscInt c = 0; c < uOff[f + 1] - uOff[f]; ++c) {
+            if (c) PetscCall(PetscPrintf(PETSC_COMM_SELF, ", "));
+            PetscCall(PetscPrintf(PETSC_COMM_SELF, "%g", (double)PetscRealPart(u[uOff[f] + c])));
+          }
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, ")\n"));
+        }
+      }
       PetscCall(PetscFEEvaluateFieldJets_Internal(ds, Nf, face, q, Tf, &cgeom, &coefficients[cOffset], NULL, u, u_x, NULL));
       if (dsAux) PetscCall(PetscFEEvaluateFieldJets_Internal(dsAux, NfAux, face, q, TfAux, &cgeom, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL));
       obj_func(dim, Nf, NfAux, uOff, uOff_x, u, NULL, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, fegeom.v, fegeom.n, numConstants, constants, &integrand);
       integrand *= w;
       integral[e * Nf + field] += integrand;
-      if (debug > 1) PetscCall(PetscPrintf(PETSC_COMM_SELF, "    int: %g %g\n", (double)PetscRealPart(integrand), (double)PetscRealPart(integral[e * Nf + field])));
+      if (debug > 1) PetscCall(PetscPrintf(PETSC_COMM_SELF, "    int: %g tot: %g\n", (double)PetscRealPart(integrand), (double)PetscRealPart(integral[e * Nf + field])));
     }
     cOffset += totDim;
     cOffsetAux += totDimAux;

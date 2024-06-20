@@ -34,7 +34,6 @@ PetscErrorCode DMLabelCreate(MPI_Comm comm, const char name[], DMLabel *label)
   PetscCall(DMInitializePackage());
 
   PetscCall(PetscHeaderCreate(*label, DMLABEL_CLASSID, "DMLabel", "DMLabel", "DM", comm, DMLabelDestroy, DMLabelView));
-
   (*label)->numStrata     = 0;
   (*label)->defaultValue  = -1;
   (*label)->stratumValues = NULL;
@@ -454,7 +453,7 @@ static PetscErrorCode DMLabelView_Concrete(DMLabel label, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMLabelView - View the label
 
   Collective

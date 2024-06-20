@@ -29,7 +29,7 @@
       dof = 1
       sw = 1
       PetscCallA(PetscInitialize(ierr))
-      PetscCallA(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,dof,sw,PETSC_NULL_INTEGER,ada,ierr))
+      PetscCallA(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,dof,sw,PETSC_NULL_INTEGER_ARRAY,ada,ierr))
       PetscCallA(DMSetUp(ada,ierr))
       PetscCallA(DMGetGlobalVector(ada,g,ierr))
       PetscCallA(DMDAGetCorners(ada,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xl,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr))
@@ -44,7 +44,7 @@
       PetscCallA(DMRestoreGlobalVector(ada,g,ierr))
       PetscCallA(DMDestroy(ada,ierr))
 
-      PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr))
+      PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL_INTEGER_ARRAY,PETSC_NULL_INTEGER_ARRAY,ada,ierr))
       PetscCallA(DMSetUp(ada,ierr))
       PetscCallA(DMGetGlobalVector(ada,g,ierr))
       PetscCallA(DMDAGetCorners(ada,xs,ys,PETSC_NULL_INTEGER,xl,yl,PETSC_NULL_INTEGER,ierr))
@@ -67,7 +67,7 @@
       PetscCallA(DMDARestoreElements(ada,nen,nel,elements,ierr))
       PetscCallA(DMDestroy(ada,ierr))
 
-      PetscCallA(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX, m,n,p,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr))
+      PetscCallA(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX, m,n,p,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL_INTEGER_ARRAY,PETSC_NULL_INTEGER_ARRAY,PETSC_NULL_INTEGER_ARRAY,ada,ierr))
       PetscCallA(DMSetUp(ada,ierr))
       PetscCallA(DMGetGlobalVector(ada,g,ierr))
       PetscCallA(DMDAGetCorners(ada,xs,ys,zs,xl,yl,zl,ierr))
@@ -90,7 +90,7 @@
 !  Same tests but now with DOF > 1, so dimensions of array are one higher
 !
       dof = 2
-      PetscCallA(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,dof,sw,PETSC_NULL_INTEGER,ada,ierr))
+      PetscCallA(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,dof,sw,PETSC_NULL_INTEGER_ARRAY,ada,ierr))
       PetscCallA(DMSetUp(ada,ierr))
       PetscCallA(DMGetGlobalVector(ada,g,ierr))
       PetscCallA(DMDAGetCorners(ada,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xl,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr))
@@ -107,7 +107,7 @@
       PetscCallA(DMDestroy(ada,ierr))
 
       dof = 2
-      PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr))
+      PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL_INTEGER_ARRAY,PETSC_NULL_INTEGER_ARRAY,ada,ierr))
       PetscCallA(DMSetUp(ada,ierr))
       PetscCallA(DMGetGlobalVector(ada,g,ierr))
       PetscCallA(DMDAGetCorners(ada,xs,ys,PETSC_NULL_INTEGER,xl,yl,PETSC_NULL_INTEGER,ierr))
@@ -126,7 +126,7 @@
       PetscCallA(DMDestroy(ada,ierr))
 
       dof = 3
-      PetscCallA(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,p,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr))
+      PetscCallA(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,p,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL_INTEGER_ARRAY,PETSC_NULL_INTEGER_ARRAY,PETSC_NULL_INTEGER_ARRAY,ada,ierr))
       PetscCallA(DMSetUp(ada,ierr))
       PetscCallA(DMGetGlobalVector(ada,g,ierr))
       PetscCallA(DMDAGetCorners(ada,xs,ys,zs,xl,yl,zl,ierr))

@@ -1,6 +1,6 @@
 #include <petsc/private/petscimpl.h> /*I    "petscsys.h"   I*/
 
-/*@C
+/*@
   PetscObjectGetName - Gets a string name associated with a PETSc object.
 
   Not Collective unless `obj` has not yet been named

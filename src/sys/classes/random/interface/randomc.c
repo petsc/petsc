@@ -17,7 +17,7 @@
 /* Logging support */
 PetscClassId PETSC_RANDOM_CLASSID;
 
-/*@C
+/*@
   PetscRandomDestroy - Destroys a `PetscRandom` object that was created by `PetscRandomCreate()`.
 
   Collective
@@ -198,7 +198,7 @@ PetscErrorCode PetscRandomSetFromOptions(PetscRandom rnd)
   #include <petscviewersaws.h>
 #endif
 
-/*@C
+/*@
   PetscRandomViewFromOptions - View a `PetscRandom` object based on the options database
 
   Collective
@@ -220,7 +220,7 @@ PetscErrorCode PetscRandomViewFromOptions(PetscRandom A, PetscObject obj, const 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscRandomView - Views a random number generator object.
 
   Collective
@@ -332,13 +332,10 @@ PetscErrorCode PetscRandomCreate(MPI_Comm comm, PetscRandom *r)
 
   PetscFunctionBegin;
   PetscAssertPointer(r, 2);
-  *r = NULL;
   PetscCall(PetscRandomInitializePackage());
 
   PetscCall(PetscHeaderCreate(rr, PETSC_RANDOM_CLASSID, "PetscRandom", "Random number generator", "Sys", comm, PetscRandomDestroy, PetscRandomView));
-
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-
   rr->data  = NULL;
   rr->low   = 0.0;
   rr->width = 1.0;

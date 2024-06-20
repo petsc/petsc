@@ -73,9 +73,8 @@ PetscErrorCode MatColoringCreate(Mat m, MatColoring *mcptr)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m, MAT_CLASSID, 1);
   PetscAssertPointer(mcptr, 2);
-  *mcptr = NULL;
-
   PetscCall(MatInitializePackage());
+
   PetscCall(PetscHeaderCreate(mc, MAT_COLORING_CLASSID, "MatColoring", "Matrix coloring", "MatColoring", PetscObjectComm((PetscObject)m), MatColoringDestroy, MatColoringView));
   PetscCall(PetscObjectReference((PetscObject)m));
   mc->mat          = m;

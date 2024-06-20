@@ -114,7 +114,7 @@
       Ny = PETSC_DECIDE
       PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr))
       PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr))
-      PetscCallA(DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,mx,my,Nx,Ny,one,one,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr))
+      PetscCallA(DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,mx,my,Nx,Ny,one,one,PETSC_NULL_INTEGER_ARRAY,PETSC_NULL_INTEGER_ARRAY,da,ierr))
       PetscCallA(DMSetFromOptions(da,ierr))
       PetscCallA(DMSetUp(da,ierr))
 !
@@ -496,7 +496,7 @@
           row = row + 1
           grow(1) = ltog(row)
           if (i .eq. 0 .or. j .eq. 0 .or. i .eq. (mx-1) .or. j .eq. (my-1)) then
-             PetscCall(MatSetValues(jac,ione,grow,ione,grow,one,INSERT_VALUES,ierr))
+             PetscCall(MatSetValues(jac,ione,grow,ione,grow,[one],INSERT_VALUES,ierr))
              go to 20
           endif
           v(1)   = -hxdhy

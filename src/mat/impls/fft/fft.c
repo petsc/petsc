@@ -16,7 +16,7 @@ static PetscErrorCode MatDestroy_FFT(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateFFT - Creates a matrix object that provides FFT via an external package
 
   Collective

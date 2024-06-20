@@ -37,7 +37,8 @@ PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm, Vec *vec)
     }
   }
 
-  in[0] = blockSize < 0 ? PETSC_MIN_INT : -blockSize;
+  // You cannot negate PETSC_MIN_INT
+  in[0] = blockSize < 0 ? -PETSC_MAX_INT : -blockSize;
   in[1] = blockSize;
   PetscCall(MPIU_Allreduce(in, out, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
   /* -out[0] = min(blockSize), out[1] = max(blockSize) */
@@ -376,7 +377,7 @@ static PetscErrorCode DMSelectFields_Private(DM dm, PetscSection section, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCreateSectionSubDM - Returns an `IS` and `subDM` containing a `PetscSection` that encapsulates a subproblem defined by a subset of the fields in a `PetscSection` in the `DM`.
 
   Not Collective
@@ -435,7 +436,7 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
 
 .seealso: `DMCreateSuperDM()`, `DMGetLocalSection()`, `DMPlexSetMigrationSF()`, `DMView()`
 @*/
-PetscErrorCode DMCreateSectionSuperDM(DM dms[], PetscInt len, IS **is, DM *superdm)
+PetscErrorCode DMCreateSectionSuperDM(DM dms[], PetscInt len, IS *is[], DM *superdm)
 {
   MPI_Comm     comm;
   PetscSection supersection, *sections, *sectionGlobals;

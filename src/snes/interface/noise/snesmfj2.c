@@ -147,7 +147,7 @@ static PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat, Vec a, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateSNESMFMore - Creates a matrix-free matrix
   context for use with a `SNES` solver that uses the More method to compute an optimal h based on the noise of the function.  This matrix can be used as
   the Jacobian argument for the routine `SNESSetJacobian()`.

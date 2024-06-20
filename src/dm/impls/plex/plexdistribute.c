@@ -1720,7 +1720,7 @@ PetscErrorCode DMPlexRemapMigrationSF(PetscSF sfOverlap, PetscSF sfMigration, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexDistribute - Distributes the mesh and any associated sections.
 
   Collective
@@ -2008,7 +2008,7 @@ PetscErrorCode DMPlexDistributeOverlap_Internal(DM dm, PetscInt overlap, MPI_Com
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexDistributeOverlap - Add partition overlap to a distributed non-overlapping `DM`.
 
   Collective
@@ -2018,8 +2018,8 @@ PetscErrorCode DMPlexDistributeOverlap_Internal(DM dm, PetscInt overlap, MPI_Com
 - overlap - The overlap of partitions (the same on all ranks)
 
   Output Parameters:
-+ sf        - The `PetscSF` used for point distribution
-- dmOverlap - The overlapping distributed `DMPLEX` object, or `NULL`
++ sf        - The `PetscSF` used for point distribution, or pass `NULL` if not needed
+- dmOverlap - The overlapping distributed `DMPLEX` object
 
   Options Database Keys:
 + -dm_plex_overlap_labels <name1,name2,...> - List of overlap label names

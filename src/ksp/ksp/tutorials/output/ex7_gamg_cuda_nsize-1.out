@@ -23,7 +23,9 @@ PC Object: 1 MPI process
         AGG specific options
           Number of levels of aggressive coarsening 1
           Square graph aggressive coarsening
-          Number smoothing steps 1
+          MatCoarsen Object: (pc_gamg_) 1 MPI process
+            type: mis
+          Number smoothing steps to construct prolongation 1
         Complexity:    grid = 1.25    operator = 1.3
   Coarse grid solver -- level 0 -------------------------------
     KSP Object: (mg_coarse_) 1 MPI process

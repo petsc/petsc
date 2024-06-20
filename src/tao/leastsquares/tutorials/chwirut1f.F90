@@ -30,7 +30,7 @@
       PetscErrorCode   ierr    ! used to check for functions returning nonzeros
       Vec              x       ! solution vector
       Vec              f       ! vector of functions
-      Tao        tao     ! Tao context
+      Tao              tao     ! Tao context
       PetscInt         nhist
       PetscMPIInt  size,rank    ! number of processes running
       PetscReal      hist(100) ! objective value history

@@ -891,7 +891,7 @@ static PetscErrorCode VecNestGetSubVecs_Nest(Vec X, PetscInt *N, Vec **sx)
   The user should not free the array `sx`.
 
   Fortran Notes:
-  The caller must allocate the array to hold the subvectors.
+  The caller must allocate the array to hold the subvectors and pass it in.
 
 .seealso: `VECNEST`,  [](ch_vectors), `Vec`, `VecType`, `VecNestGetSize()`, `VecNestGetSubVec()`
 @*/
@@ -914,9 +914,9 @@ static PetscErrorCode VecNestSetSubVec_Private(Vec X, PetscInt idxm, Vec x)
   /* check if idxm < bx->nb */
   PetscCheck(idxm < bx->nb, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " maximum %" PetscInt_FMT, idxm, bx->nb);
 
-  PetscCall(VecDestroy(&bx->v[idxm]));      /* destroy the existing vector */
-  PetscCall(VecDuplicate(x, &bx->v[idxm])); /* duplicate the layout of given vector */
-  PetscCall(VecCopy(x, bx->v[idxm]));       /* copy the contents of the given vector */
+  PetscCall(PetscObjectReference((PetscObject)x));
+  PetscCall(VecDestroy(&bx->v[idxm]));
+  bx->v[idxm] = x;
 
   /* check if we need to update the IS for the block */
   offset = X->map->rstart;
@@ -990,8 +990,10 @@ static PetscErrorCode VecNestSetSubVec_Nest(Vec X, PetscInt idxm, Vec sx)
 
   Level: developer
 
-  Note:
+  Notes:
   The new vector `sx` does not have to be of same size as X[idxm]. Arbitrary vector layouts are allowed.
+
+  The nest vector `X` keeps a reference to `sx` rather than creating a duplicate.
 
 .seealso: `VECNEST`,  [](ch_vectors), `Vec`, `VecType`, `VecNestSetSubVecs()`, `VecNestGetSubVec()`
 @*/
@@ -1025,9 +1027,11 @@ static PetscErrorCode VecNestSetSubVecs_Nest(Vec X, PetscInt N, PetscInt *idxm, 
 
   Level: developer
 
-  Note:
+  Notes:
   The components in the vector array `sx` do not have to be of the same size as corresponding
   components in `X`. The user can also free the array `sx` after the call.
+
+  The nest vector `X` keeps references to `sx` vectors rather than creating duplicates.
 
 .seealso: `VECNEST`,  [](ch_vectors), `Vec`, `VecType`, `VecNestGetSize()`, `VecNestGetSubVec()`
 @*/

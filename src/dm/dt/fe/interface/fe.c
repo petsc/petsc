@@ -156,7 +156,7 @@ PetscErrorCode PetscFEGetType(PetscFE fem, PetscFEType *name)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFEViewFromOptions - View from a `PetscFE` based on values in the options database
 
   Collective
@@ -178,7 +178,7 @@ PetscErrorCode PetscFEViewFromOptions(PetscFE A, PetscObject obj, const char nam
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFEView - Views a `PetscFE`
 
   Collective
@@ -348,7 +348,6 @@ PetscErrorCode PetscFECreate(MPI_Comm comm, PetscFE *fem)
   PetscFunctionBegin;
   PetscAssertPointer(fem, 2);
   PetscCall(PetscCitationsRegister(FECitation, &FEcite));
-  *fem = NULL;
   PetscCall(PetscFEInitializePackage());
 
   PetscCall(PetscHeaderCreate(f, PETSCFE_CLASSID, "PetscFE", "Finite Element", "PetscFE", comm, PetscFEDestroy, PetscFEView));
@@ -751,13 +750,13 @@ PetscErrorCode PetscFECopyQuadrature(PetscFE sfe, PetscFE tfe)
 . fem - The `PetscFE` object
 
   Output Parameter:
-. numDof - Array with the number of dofs per dimension
+. numDof - Array of length `dim` with the number of dofs in each dimension
 
   Level: intermediate
 
 .seealso: `PetscFE`, `PetscSpace`, `PetscDualSpace`, `PetscFECreate()`
 @*/
-PetscErrorCode PetscFEGetNumDof(PetscFE fem, const PetscInt **numDof)
+PetscErrorCode PetscFEGetNumDof(PetscFE fem, const PetscInt *numDof[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);

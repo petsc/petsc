@@ -117,7 +117,7 @@ PetscErrorCode PetscLimiterGetType(PetscLimiter lim, PetscLimiterType *name)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLimiterViewFromOptions - View a `PetscLimiter` based on values in the options database
 
   Collective
@@ -139,7 +139,7 @@ PetscErrorCode PetscLimiterViewFromOptions(PetscLimiter A, PetscObject obj, cons
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLimiterView - Views a `PetscLimiter`
 
   Collective
@@ -171,7 +171,7 @@ PetscErrorCode PetscLimiterView(PetscLimiter lim, PetscViewer v)
 
   Level: intermediate
 
-.seealso: `PetscLimiter`, ``PetscLimiterView()`
+.seealso: `PetscLimiter`, `PetscLimiterView()`
 @*/
 PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter lim)
 {
@@ -210,7 +210,7 @@ PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter lim)
 
   Level: intermediate
 
-.seealso: `PetscLimiter`, ``PetscLimiterView()`, `PetscLimiterDestroy()`
+.seealso: `PetscLimiter`, `PetscLimiterView()`, `PetscLimiterDestroy()`
 @*/
 PetscErrorCode PetscLimiterSetUp(PetscLimiter lim)
 {
@@ -271,7 +271,6 @@ PetscErrorCode PetscLimiterCreate(MPI_Comm comm, PetscLimiter *lim)
   PetscFunctionBegin;
   PetscAssertPointer(lim, 2);
   PetscCall(PetscCitationsRegister(LimiterCitation, &Limitercite));
-  *lim = NULL;
   PetscCall(PetscFVInitializePackage());
 
   PetscCall(PetscHeaderCreate(l, PETSCLIMITER_CLASSID, "PetscLimiter", "Finite Volume Slope Limiter", "PetscLimiter", comm, PetscLimiterDestroy, PetscLimiterView));
@@ -991,7 +990,7 @@ PetscErrorCode PetscFVGetType(PetscFV fvm, PetscFVType *name)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFVViewFromOptions - View a `PetscFV` based on values in the options database
 
   Collective
@@ -1013,7 +1012,7 @@ PetscErrorCode PetscFVViewFromOptions(PetscFV A, PetscObject obj, const char nam
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFVView - Views a `PetscFV`
 
   Collective
@@ -1160,12 +1159,10 @@ PetscErrorCode PetscFVCreate(MPI_Comm comm, PetscFV *fvm)
 
   PetscFunctionBegin;
   PetscAssertPointer(fvm, 2);
-  *fvm = NULL;
   PetscCall(PetscFVInitializePackage());
 
   PetscCall(PetscHeaderCreate(f, PETSCFV_CLASSID, "PetscFV", "Finite Volume", "PetscFV", comm, PetscFVDestroy, PetscFVView));
   PetscCall(PetscMemzero(f->ops, sizeof(struct _PetscFVOps)));
-
   PetscCall(PetscLimiterCreate(comm, &f->limiter));
   f->numComponents    = 1;
   f->dim              = 0;
@@ -1279,7 +1276,7 @@ PetscErrorCode PetscFVGetNumComponents(PetscFV fvm, PetscInt *comp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFVSetComponentName - Set the name of a component (used in output and viewing) in a `PetscFV`
 
   Logically Collective
@@ -1335,7 +1332,7 @@ PetscErrorCode PetscFVGetComponentName(PetscFV fvm, PetscInt comp, const char *n
 
   Level: intermediate
 
-.seealso: `PetscFV`, ``PetscFVGetSpatialDimension()`
+.seealso: `PetscFV`, `PetscFVGetSpatialDimension()`
 @*/
 PetscErrorCode PetscFVSetSpatialDimension(PetscFV fvm, PetscInt dim)
 {

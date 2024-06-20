@@ -65,7 +65,7 @@ program main
 
   ! Get the BCs and create the DMDA
   call get_boundary_cond(b_x,b_y,b_z)
-  PetscCallA(DMDACreate3d(comm,b_x,b_y,b_z,DMDA_STENCIL_STAR,igmax,jgmax,kgmax,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stw,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,SolScal,ierr))
+  PetscCallA(DMDACreate3d(comm,b_x,b_y,b_z,DMDA_STENCIL_STAR,igmax,jgmax,kgmax,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stw,PETSC_NULL_INTEGER_ARRAY,PETSC_NULL_INTEGER_ARRAY,PETSC_NULL_INTEGER_ARRAY,SolScal,ierr))
   PetscCallA(DMSetFromOptions(SolScal,ierr))
   PetscCallA(DMSetUp(SolScal,ierr))
 

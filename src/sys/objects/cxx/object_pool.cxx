@@ -592,11 +592,12 @@ void PoolAllocated::operator delete(void *ptr) noexcept
 {
   PetscFunctionBegin;
   if (PetscLikely(ptr)) {
-    size_type  size{};
-    align_type align{};
+    size_type       size{};
+    align_type      align{};
+    allocator_type &allocated = pool();
 
-    PetscCallAbort(PETSC_COMM_SELF, pool().get_attributes(ptr, &size, &align));
-    PetscCallAbort(PETSC_COMM_SELF, pool().deallocate(&ptr, size, align));
+    PetscCallAbort(PETSC_COMM_SELF, allocated.get_attributes(ptr, &size, &align));
+    PetscCallAbort(PETSC_COMM_SELF, allocated.deallocate(&ptr, size, align));
   }
   PetscFunctionReturnVoid();
 }

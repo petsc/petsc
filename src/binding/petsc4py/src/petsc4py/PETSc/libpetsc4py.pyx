@@ -1822,7 +1822,7 @@ cdef extern from * nogil:
         void *data
         SNESOps ops
         PetscInt  iter, max_its, linear_its
-        PetscReal norm, rtol, ttol
+        PetscReal norm, xnorm, ynorm, rtol, ttol
         PetscSNESConvergedReason reason
         PetscVec vec_sol, vec_sol_update, vec_func
         PetscMat jacobian, jacobian_pre
@@ -1830,6 +1830,7 @@ cdef extern from * nogil:
 
 cdef extern from * nogil: # custom.h
     PetscErrorCode SNESLogHistory(PetscSNES, PetscReal, PetscInt)
+    PetscErrorCode SNESComputeUpdate(PetscSNES)
 
 
 @cython.internal
@@ -2020,44 +2021,36 @@ cdef PetscErrorCode SNESSolve_Python_default(
     CHKERR(SNESGetFunction(snes, &F, NULL, NULL))
     CHKERR(SNESGetSolutionUpdate(snes, &Y))
     CHKERR(SNESGetLineSearch(snes, &ls))
-    cdef PetscInt  lits=0
-    cdef PetscReal xnorm = 0.0
-    cdef PetscReal fnorm = 0.0
-    cdef PetscReal ynorm = 0.0
     #
     CHKERR(VecSet(Y, 0.0))
+    snes.ynorm = 0.0
     CHKERR(SNESComputeFunction(snes, X, F))
-    CHKERR(VecNorm(X, PETSC_NORM_2, &xnorm))
-    CHKERR(VecNorm(F, PETSC_NORM_2, &fnorm))
+    CHKERR(VecNorm(X, PETSC_NORM_2, &snes.xnorm))
+    CHKERR(VecNorm(F, PETSC_NORM_2, &snes.norm))
     #
+    cdef PetscInt lits=0
     CHKERR(SNESLogHistory(snes, snes.norm, lits))
-    CHKERR(SNESConverged(snes, snes.iter, xnorm, ynorm, fnorm))
+    CHKERR(SNESConverged(snes, snes.iter, snes.xnorm, snes.ynorm, snes.norm))
     CHKERR(SNESMonitor(snes, snes.iter, snes.norm))
     if snes.reason:
         return FunctionEnd()
 
-    cdef PetscObjectState ostate = -1
-    cdef PetscObjectState nstate = -1
     for its from 0 <= its < snes.max_its:
         <void> its # unused
-        CHKERR(PetscObjectStateGet(<PetscObject>X, &ostate))
+        SNESComputeUpdate(snes)
         SNESPreStep_Python(snes)
-        CHKERR(PetscObjectStateGet(<PetscObject>X, &nstate))
-        if ostate != nstate:
-            CHKERR(SNESComputeFunction(snes, X, F))
-            CHKERR(VecNorm(F, PETSC_NORM_2, &fnorm))
         #
         lits = -snes.linear_its
         SNESStep_Python(snes, X, F, Y)
         lits += snes.linear_its
         #
         CHKERR(SNESLineSearchApply(ls, X, F, NULL, Y))
-        CHKERR(SNESLineSearchGetNorms(ls, &xnorm, &fnorm, &ynorm))
+        CHKERR(SNESLineSearchGetNorms(ls, &snes.xnorm, &snes.norm, &snes.ynorm))
         snes.iter += 1
         #
         SNESPostStep_Python(snes)
         CHKERR(SNESLogHistory(snes, snes.norm, lits))
-        CHKERR(SNESConverged(snes, snes.iter, xnorm, ynorm, fnorm))
+        CHKERR(SNESConverged(snes, snes.iter, snes.xnorm, snes.ynorm, snes.norm))
         CHKERR(SNESMonitor(snes, snes.iter, snes.norm))
         if snes.reason: break
     #
@@ -2556,7 +2549,7 @@ cdef extern from * nogil: # custom.h
 cdef extern from * nogil: # custom.h
     PetscErrorCode TaoGetVecs(PetscTAO, PetscVec*, PetscVec*, PetscVec*)
     PetscErrorCode TaoCheckReals(PetscTAO, PetscReal, PetscReal)
-    PetscErrorCode TaoComputeUpdate(PetscTAO)
+    PetscErrorCode TaoComputeUpdate(PetscTAO, PetscReal*)
     PetscErrorCode TaoCreateDefaultLineSearch(PetscTAO)
     PetscErrorCode TaoCreateDefaultKSP(PetscTAO)
     PetscErrorCode TaoApplyLineSearch(PetscTAO, PetscReal*, PetscReal*, PetscTAOLineSearchConvergedReason*)
@@ -2742,23 +2735,13 @@ cdef PetscErrorCode TaoSolve_Python_default(
     CHKERR(TaoMonitor(tao, tao.niter, f, gnorm, 0.0, step))
     CHKERR(TaoConverged(tao, &tao.reason))
 
-    cdef PetscObjectState ostate = -1
-    cdef PetscObjectState nstate = -1
     cdef PetscTAOLineSearchConvergedReason lsr = TAOLINESEARCH_SUCCESS
     for its from 0 <= its < tao.max_it:
         <void> its # unused
         if tao.reason: break
-        CHKERR(PetscObjectStateGet(<PetscObject>X, &ostate))
-        CHKERR(TaoComputeUpdate(tao))
+        CHKERR(TaoComputeUpdate(tao, &f))
 
         TaoPreStep_Python(tao)
-        CHKERR(PetscObjectStateGet(<PetscObject>X, &nstate))
-        if ostate != nstate:
-            if G != NULL:
-                CHKERR(TaoComputeObjectiveAndGradient(tao, X, &f, G))
-                CHKERR(VecNorm(G, PETSC_NORM_2, &gnorm))
-            else:
-                CHKERR(TaoComputeObjective(tao, X, &f))
         #
         tao.ksp_its = 0
         TaoStep_Python(tao, X, G, S)
@@ -2799,9 +2782,8 @@ cdef PetscErrorCode TaoStep_Python(
         step(TAO_(tao), Vec_(X), Vec_(G) if G != NULL else None, Vec_(S) if S != NULL else None)
     else:
         # TaoStep_Python_default(tao, X, G, S)
-        CHKERR(TaoComputeGradient(tao, X, S))
-        CHKERR(VecCopy(G, S))
-        CHKERR(VecScale(S, -1.0))
+        CHKERR(TaoComputeGradient(tao, X, G))
+        CHKERR(VecAXPBY(S, -1.0, 0.0, G))
     return FunctionEnd()
 
 cdef PetscErrorCode TaoPreStep_Python(

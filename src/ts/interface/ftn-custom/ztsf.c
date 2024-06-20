@@ -13,7 +13,6 @@
   #define tsgetifunction_               TSGETIFUNCTION
   #define tssetijacobian_               TSSETIJACOBIAN
   #define tsgetijacobian_               TSGETIJACOBIAN
-  #define tsview_                       TSVIEW
   #define tsmonitorset_                 TSMONITORSET
   #define tscomputerhsfunctionlinear_   TSCOMPUTERHSFUNCTIONLINEAR
   #define tscomputerhsjacobianconstant_ TSCOMPUTERHSJACOBIANCONSTANT
@@ -22,7 +21,6 @@
   #define tsmonitordefault_             TSMONITORDEFAULT
   #define tssetprestep_                 TSSETPRESTEP
   #define tssetpoststep_                TSSETPOSTSTEP
-  #define tsviewfromoptions_            TSVIEWFROMOPTIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define tsmonitorlgsettransform_      tsmonitorlgsettransform
   #define tssetrhsfunction_             tssetrhsfunction
@@ -33,7 +31,6 @@
   #define tsgetifunction_               tsgetifunction
   #define tssetijacobian_               tssetijacobian
   #define tsgetijacobian_               tsgetijacobian
-  #define tsview_                       tsview
   #define tsmonitorset_                 tsmonitorset
   #define tscomputerhsfunctionlinear_   tscomputerhsfunctionlinear
   #define tscomputerhsjacobianconstant_ tscomputerhsjacobianconstant
@@ -42,7 +39,6 @@
   #define tsmonitordefault_             tsmonitordefault
   #define tssetprestep_                 tssetprestep
   #define tssetpoststep_                tssetpoststep
-  #define tsviewfromoptions_            tsviewfromoptions
 #endif
 
 static struct {
@@ -264,22 +260,4 @@ PETSC_EXTERN void tsmonitorset_(TS *ts, void (*func)(TS *, PetscInt *, PetscReal
 PETSC_EXTERN void tsgetrhsjacobian_(TS *ts, Mat *J, Mat *M, int *func, void **ctx, PetscErrorCode *ierr)
 {
   *ierr = TSGetRHSJacobian(*ts, J, M, NULL, ctx);
-}
-
-PETSC_EXTERN void tsview_(TS *ts, PetscViewer *viewer, PetscErrorCode *ierr)
-{
-  PetscViewer v;
-  PetscPatchDefaultViewers_Fortran(viewer, v);
-  *ierr = TSView(*ts, v);
-}
-
-PETSC_EXTERN void tsviewfromoptions_(TS *ao, PetscObject obj, char *type, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-
-  FIXCHAR(type, len, t);
-  CHKFORTRANNULLOBJECT(obj);
-  *ierr = TSViewFromOptions(*ao, obj, t);
-  if (*ierr) return;
-  FREECHAR(type, t);
 }

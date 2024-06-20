@@ -204,8 +204,8 @@ PetscErrorCode SNESNGMRESSelect_Private(SNES snes, PetscInt k_restart, Vec XM, V
       }
     }
     if (ngmres->monitor) {
-      PetscReal objT = *fnorm;
-      PetscErrorCode (*objective)(SNES, Vec, PetscReal *, void *);
+      PetscReal        objT = *fnorm;
+      SNESObjectiveFn *objective;
 
       PetscCall(SNESGetObjective(snes, &objective, NULL));
       if (objective) PetscCall(SNESComputeObjective(snes, X, &objT));

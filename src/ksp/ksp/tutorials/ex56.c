@@ -14,7 +14,7 @@ static PetscErrorCode MaybeLogStagePush(PetscLogStage stage)
   return log_stages ? PetscLogStagePush(stage) : PETSC_SUCCESS;
 }
 
-static PetscErrorCode MaybeLogStagePop()
+static PetscErrorCode MaybeLogStagePop(void)
 {
   return log_stages ? PetscLogStagePop() : PETSC_SUCCESS;
 }
@@ -464,7 +464,7 @@ PetscErrorCode elem_3d_elast_v_25(PetscScalar *dd)
 
    testset:
      requires: !complex
-     args: -ne 11 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_agg_nsmooths 1 -two_solves -ksp_converged_reason -use_mat_nearnullspace -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.05 -mg_levels_sub_pc_type lu -pc_gamg_asm_use_agg -mg_levels_pc_asm_overlap 0 -pc_gamg_parallel_coarse_grid_solver -mg_coarse_pc_type jacobi -mg_coarse_ksp_type cg -mat_coarsen_type hem -mat_coarsen_max_it 5 -ksp_rtol 1e-4 -ksp_norm_type unpreconditioned -pc_gamg_threshold .001 -mat_coarsen_strength_index 1,2
+     args: -ne 11 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_agg_nsmooths 1 -two_solves -ksp_converged_reason -use_mat_nearnullspace -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.05 -mg_levels_sub_pc_type lu -pc_gamg_asm_use_agg -mg_levels_pc_asm_overlap 0 -pc_gamg_parallel_coarse_grid_solver -mg_coarse_pc_type jacobi -mg_coarse_ksp_type cg -pc_gamg_mat_coarsen_type hem -pc_gamg_mat_coarsen_max_it 5 -ksp_rtol 1e-4 -ksp_norm_type unpreconditioned -pc_gamg_threshold .001 -pc_gamg_mat_coarsen_strength_index 1,2
      test:
        suffix: 1
        nsize: 1

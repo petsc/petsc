@@ -231,7 +231,7 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSViewFromOptions - View a `PetscDS` based on values in the options database
 
   Collective
@@ -253,7 +253,7 @@ PetscErrorCode PetscDSViewFromOptions(PetscDS A, PetscObject obj, const char nam
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSView - Views a `PetscDS`
 
   Collective
@@ -681,11 +681,9 @@ PetscErrorCode PetscDSCreate(MPI_Comm comm, PetscDS *ds)
 
   PetscFunctionBegin;
   PetscAssertPointer(ds, 2);
-  *ds = NULL;
   PetscCall(PetscDSInitializePackage());
 
   PetscCall(PetscHeaderCreate(p, PETSCDS_CLASSID, "PetscDS", "Discrete System", "PetscDS", comm, PetscDSDestroy, PetscDSView));
-
   p->Nf           = 0;
   p->setup        = PETSC_FALSE;
   p->numConstants = 0;
@@ -1257,7 +1255,7 @@ PetscErrorCode PetscDSGetJetDegree(PetscDS ds, PetscInt f, PetscInt *k)
 
   Level: developer
 
-.seealso: ``PetscDS`, `PetscDSGetJetDegree()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSGetJetDegree()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSSetJetDegree(PetscDS ds, PetscInt f, PetscInt k)
 {

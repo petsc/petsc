@@ -1,5 +1,7 @@
 #include <petsc/private/dmplextransformimpl.h> /*I "petscdmplextransform.h" I*/
 
+#include <petsc/private/dmlabelimpl.h> // For DMLabelMakeAllInvalid_Internal()
+
 /*
   The cohesive transformation extrudes cells into a mesh from faces along an internal boundary.
 
@@ -49,12 +51,15 @@ static PetscErrorCode DMPlexTransformView_Cohesive(DMPlexTransform tr, PetscView
 static PetscErrorCode DMPlexTransformSetFromOptions_Cohesive(DMPlexTransform tr, PetscOptionItems *PetscOptionsObject)
 {
   DMPlexTransform_Cohesive *ex = (DMPlexTransform_Cohesive *)tr->data;
+  PetscReal                 width;
   PetscBool                 tensor, flg;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "DMPlexTransform Cohesive Extrusion Options");
   PetscCall(PetscOptionsBool("-dm_plex_transform_extrude_use_tensor", "Create tensor cells", "", ex->useTensor, &tensor, &flg));
   if (flg) PetscCall(DMPlexTransformCohesiveExtrudeSetTensor(tr, tensor));
+  PetscCall(PetscOptionsReal("-dm_plex_transform_cohesive_width", "Width of a cohesive cell", "", ex->width, &width, &flg));
+  if (flg) PetscCall(DMPlexTransformCohesiveExtrudeSetWidth(tr, width));
   PetscCall(PetscOptionsInt("-dm_plex_transform_cohesive_debug", "Det debugging level", "", ex->debug, &ex->debug, NULL));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -769,6 +774,7 @@ static PetscErrorCode DMPlexTransformSetUp_Cohesive(DMPlexTransform tr)
   PetscCall(DMPlexGetCellTypeLabel(dm, &celltype));
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, "Refine Type", &tr->trType));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+  PetscCall(DMLabelMakeAllInvalid_Internal(active));
   for (PetscInt p = pStart; p < pEnd; ++p) {
     PetscInt ct, val;
 
@@ -926,12 +932,55 @@ static PetscErrorCode DMPlexTransformCellTransform_Cohesive(DMPlexTransform tr, 
 /* New vertices have the same coordinates */
 static PetscErrorCode DMPlexTransformMapCoordinates_Cohesive(DMPlexTransform tr, DMPolytopeType pct, DMPolytopeType ct, PetscInt p, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[])
 {
+  PetscReal width;
+  PetscInt  pval;
+
   PetscFunctionBeginHot;
   PetscCheck(pct == DM_POLYTOPE_POINT, PETSC_COMM_SELF, PETSC_ERR_SUP, "Not for parent point type %s", DMPolytopeTypes[pct]);
   PetscCheck(ct == DM_POLYTOPE_POINT, PETSC_COMM_SELF, PETSC_ERR_SUP, "Not for refined point type %s", DMPolytopeTypes[ct]);
   PetscCheck(Nv == 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Vertices should be produced from a single vertex, not %" PetscInt_FMT, Nv);
+  PetscCheck(r < 2, PETSC_COMM_SELF, PETSC_ERR_SUP, "Vertices should only have two replicas, not %" PetscInt_FMT, r);
 
-  for (PetscInt d = 0; d < dE; ++d) out[d] = in[d];
+  PetscCall(DMPlexTransformCohesiveExtrudeGetWidth(tr, &width));
+  PetscCall(DMLabelGetValue(tr->trType, p, &pval));
+  if (width == 0. || pval < 100) {
+    for (PetscInt d = 0; d < dE; ++d) out[d] = in[d];
+  } else {
+    DM        dm;
+    PetscReal avgNormal[3] = {0., 0., 0.}, norm = 0.;
+    PetscInt *star = NULL;
+    PetscInt  Nst, fStart, fEnd, Nf = 0;
+
+    PetscCall(DMPlexTransformGetDM(tr, &dm));
+    PetscCall(DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd));
+    PetscCall(DMPlexGetTransitiveClosure(dm, p, PETSC_FALSE, &Nst, &star));
+    // Get support faces that are split, refine type (ct * 2 + 1) * 100 + fsplit
+    for (PetscInt st = 0; st < Nst * 2; st += 2) {
+      DMPolytopeType ct;
+      PetscInt       val;
+
+      if (star[st] < fStart || star[st] >= fEnd) continue;
+      PetscCall(DMPlexGetCellType(dm, star[st], &ct));
+      PetscCall(DMLabelGetValue(tr->trType, star[st], &val));
+      if (val < (PetscInt)(ct * 2 + 1) * 100) continue;
+      star[Nf++] = star[st];
+    }
+    PetscCheck(Nf, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Split vertex %" PetscInt_FMT " must be connected to at least one split face", p);
+    // Average normals
+    for (PetscInt f = 0; f < Nf; ++f) {
+      PetscReal normal[3], vol;
+
+      PetscCall(DMPlexComputeCellGeometryFVM(dm, star[f], &vol, NULL, normal));
+      for (PetscInt d = 0; d < dE; ++d) avgNormal[d] += normal[d];
+    }
+    PetscCall(DMPlexRestoreTransitiveClosure(dm, p, PETSC_FALSE, &Nst, &star));
+    // Normalize normal
+    for (PetscInt d = 0; d < dE; ++d) norm += PetscSqr(avgNormal[d]);
+    norm = PetscSqrtReal(norm);
+    for (PetscInt d = 0; d < dE; ++d) avgNormal[d] /= norm;
+    // Symmetrically push vertices along normal
+    for (PetscInt d = 0; d < dE; ++d) out[d] = in[d] + width * avgNormal[d] * (r ? -0.5 : 0.5);
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1029,5 +1078,54 @@ PetscErrorCode DMPlexTransformCohesiveExtrudeSetTensor(DMPlexTransform tr, Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   ex->useTensor = useTensor;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexTransformCohesiveExtrudeGetWidth - Get the width of extruded cells
+
+  Not Collective
+
+  Input Parameter:
+. tr - The `DMPlexTransform`
+
+  Output Parameter:
+. width - The width of extruded cells, or 0.
+
+  Level: intermediate
+
+.seealso: `DMPlexTransform`, `DMPlexTransformCohesiveExtrudeSetWidth()`
+@*/
+PetscErrorCode DMPlexTransformCohesiveExtrudeGetWidth(DMPlexTransform tr, PetscReal *width)
+{
+  DMPlexTransform_Cohesive *ex = (DMPlexTransform_Cohesive *)tr->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
+  PetscAssertPointer(width, 2);
+  *width = ex->width;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexTransformCohesiveExtrudeSetWidth - Set the width of extruded cells
+
+  Not Collective
+
+  Input Parameters:
++ tr    - The `DMPlexTransform`
+- width - The width of the extruded cells, or 0.
+
+  Level: intermediate
+
+.seealso: `DMPlexTransform`, `DMPlexTransformCohesiveExtrudeGetWidth()`
+@*/
+PetscErrorCode DMPlexTransformCohesiveExtrudeSetWidth(DMPlexTransform tr, PetscReal width)
+{
+  DMPlexTransform_Cohesive *ex = (DMPlexTransform_Cohesive *)tr->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
+  ex->width = width;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

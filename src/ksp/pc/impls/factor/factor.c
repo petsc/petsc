@@ -172,7 +172,7 @@ PetscErrorCode PCFactorSetShiftType(PC pc, MatFactorShiftType shifttype)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `PCCHOLESKY`, `PCLU`, ``PCFactorSetZeroPivot()`, `PCFactorSetShiftType()`
+.seealso: [](ch_ksp), `PCCHOLESKY`, `PCLU`, `PCFactorSetZeroPivot()`, `PCFactorSetShiftType()`
 @*/
 PetscErrorCode PCFactorSetShiftAmount(PC pc, PetscReal shiftamount)
 {
@@ -571,7 +571,7 @@ PetscErrorCode PCFactorGetUseInPlace(PC pc, PetscBool *flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCFactorSetMatOrderingType - Sets the ordering routine (to reduce fill) to
   be used in the `PCLU`, `PCCHOLESKY`, `PCILU`,  or `PCICC` preconditioners
 

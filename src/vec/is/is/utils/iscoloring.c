@@ -92,7 +92,7 @@ PetscErrorCode ISColoringDestroy(ISColoring *iscoloring)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISColoringViewFromOptions - Processes command line options to determine if/how an `ISColoring` object is to be viewed.
 
   Collective
@@ -128,7 +128,7 @@ PetscErrorCode ISColoringViewFromOptions(ISColoring obj, PetscObject bobj, const
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISColoringView - Views an `ISColoring` coloring context.
 
   Collective
@@ -817,6 +817,7 @@ PetscErrorCode ISComplement(IS is, PetscInt nmin, PetscInt nmax, IS *isout)
   }
   PetscCheck(cnt == nmax - nmin - unique, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of entries found in complement %" PetscInt_FMT " does not match expected %" PetscInt_FMT, cnt, nmax - nmin - unique);
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)is), cnt, nindices, PETSC_OWN_POINTER, isout));
+  PetscCall(ISSetInfo(*isout, IS_SORTED, IS_GLOBAL, PETSC_FALSE, PETSC_TRUE));
   PetscCall(ISRestoreIndices(is, &indices));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

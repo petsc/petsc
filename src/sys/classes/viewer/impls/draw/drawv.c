@@ -34,7 +34,7 @@ static PetscErrorCode PetscViewerFlush_Draw(PetscViewer v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerDrawGetDraw - Returns `PetscDraw` object from `PETSCVIEWERDRAW` `PetscViewer` object.
   This `PetscDraw` object may then be used to perform graphics using `PetscDraw` commands.
 
@@ -99,7 +99,7 @@ PetscErrorCode PetscViewerDrawGetDraw(PetscViewer viewer, PetscInt windownumber,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerDrawBaseAdd - add to the base integer that is added to the `windownumber` passed to `PetscViewerDrawGetDraw()`
 
   Logically Collective
@@ -132,7 +132,7 @@ PetscErrorCode PetscViewerDrawBaseAdd(PetscViewer viewer, PetscInt windownumber)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerDrawBaseSet - sets the base integer that is added to the `windownumber` passed to `PetscViewerDrawGetDraw()`
 
   Logically Collective
@@ -165,7 +165,7 @@ PetscErrorCode PetscViewerDrawBaseSet(PetscViewer viewer, PetscInt windownumber)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerDrawGetDrawLG - Returns a `PetscDrawLG` object from `PetscViewer` object of type `PETSCVIEWERDRAW`.
   This `PetscDrawLG` object may then be used to perform graphics using `PetscDrawLG` commands.
 
@@ -208,7 +208,7 @@ PetscErrorCode PetscViewerDrawGetDrawLG(PetscViewer viewer, PetscInt windownumbe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerDrawGetDrawAxis - Returns a `PetscDrawAxis` object from a `PetscViewer` object of type `PETSCVIEWERDRAW`.
   This `PetscDrawAxis` object may then be used to perform graphics using `PetscDrawAxis` commands.
 

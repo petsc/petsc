@@ -1,4 +1,4 @@
-#include <../src/mat/impls/baij/mpi/mpibaij.h>
+#include <../src/mat/impls/baij/mpi/mpibaij.h> /*I   "petscmat.h"   I*/
 
 PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat, MatType, MatReuse, Mat *);
 
@@ -27,7 +27,7 @@ static PetscErrorCode MatConvert_MPIBAIJ_MPIBAIJMKL(Mat A, MatType type, MatReus
 }
 
 // PetscClangLinter pragma disable: -fdoc-section-header-unknown
-/*@C
+/*@
   MatCreateBAIJMKL - Creates a sparse parallel matrix in `MATBAIJMKL` format (block compressed row).
 
   Collective

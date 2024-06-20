@@ -19,10 +19,11 @@
 #define ISType character*(80)
 #define ISInfo PetscEnum
 #define ISInfoType PetscEnum
-#define ISLocalToGlobalMapping PetscFortranAddr
 #define ISGlobalToLocalType character*(80)
 #define ISGlobalToLocalMappingMode PetscEnum
 #define ISColoringType PetscEnum
+
+#define ISLocalToGlobalMapping type(tISLocalToGlobalMapping)
 
 #define ISColoringValue PETSC_IS_COLORING_VALUE_TYPE_F
 

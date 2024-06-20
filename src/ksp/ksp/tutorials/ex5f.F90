@@ -82,26 +82,26 @@ program main
           v =-1.0; i = Ii/n; j = Ii - i*n
           if (i>0) then
             JJ = Ii - n
-            PetscCallA(MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr))
+            PetscCallA(MatSetValues(C,one,[Ii],one,[JJ],[v],ADD_VALUES,ierr))
           endif
 
           if (i<m-1) then
             JJ = Ii + n
-            PetscCallA(MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr))
+            PetscCallA(MatSetValues(C,one,[Ii],one,[JJ],[v],ADD_VALUES,ierr))
           endif
 
           if (j>0) then
             JJ = Ii - 1
-            PetscCallA(MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr))
+            PetscCallA(MatSetValues(C,one,[Ii],one,[JJ],[v],ADD_VALUES,ierr))
           endif
 
           if (j<n-1) then
             JJ = Ii + 1
-            PetscCallA(MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr))
+            PetscCallA(MatSetValues(C,one,[Ii],one,[JJ],[v],ADD_VALUES,ierr))
           endif
 
           v=4.0
-          PetscCallA(MatSetValues(C,one,Ii,one,Ii,v,ADD_VALUES,ierr))
+          PetscCallA(MatSetValues(C,one,[Ii],one,[Ii],[v],ADD_VALUES,ierr))
       enddo intitializeC
 
       ! Make the matrix nonsymmetric if desired
@@ -110,7 +110,7 @@ program main
           v=-1.5; i=Ii/n
           if (i>1) then
             JJ=Ii-n-1
-            PetscCallA(MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr))
+            PetscCallA(MatSetValues(C,one,[Ii],one,[JJ],[v],ADD_VALUES,ierr))
           endif
         enddo
       else
@@ -153,7 +153,7 @@ program main
       do i=0,ldim-1
         iglobal = i + low
         v = real(i + 100*rank)
-        PetscCallA(VecSetValues(u,one,iglobal,v,INSERT_VALUES,ierr))
+        PetscCallA(VecSetValues(u,one,[iglobal],[v],INSERT_VALUES,ierr))
       enddo
 
       ! Assemble vector, using the 2-step process:
@@ -235,26 +235,26 @@ program main
           v =-1.0; Ii=j + n*i
           if (i>0) then
             JJ = Ii - n
-            PetscCallA(MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr))
+            PetscCallA(MatSetValues(C,one,[Ii],one,[JJ],[v],ADD_VALUES,ierr))
           endif
 
           if (i<m-1) then
             JJ = Ii + n
-            PetscCallA(MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr))
+            PetscCallA(MatSetValues(C,one,[Ii],one,[JJ],[v],ADD_VALUES,ierr))
           endif
 
           if (j>0) then
             JJ = Ii - 1
-            PetscCallA(MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr))
+            PetscCallA(MatSetValues(C,one,[Ii],one,[JJ],[v],ADD_VALUES,ierr))
           endif
 
           if (j<n-1) then
             JJ = Ii + 1
-            PetscCallA(MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr))
+            PetscCallA(MatSetValues(C,one,[Ii],one,[JJ],[v],ADD_VALUES,ierr))
           endif
 
           v=6.0
-          PetscCallA(MatSetValues(C,one,Ii,one,Ii,v,ADD_VALUES,ierr))
+          PetscCallA(MatSetValues(C,one,[Ii],one,[Ii],[v],ADD_VALUES,ierr))
         enddo
       enddo
 
@@ -265,7 +265,7 @@ program main
           v=-1.5;  i=Ii/n
           if (i>1) then
             JJ=Ii-n-1
-            PetscCallA(MatSetValues(C,one,Ii,one,JJ,v,ADD_VALUES,ierr))
+            PetscCallA(MatSetValues(C,one,[Ii],one,[JJ],[v],ADD_VALUES,ierr))
           endif
         enddo
       endif
@@ -283,10 +283,10 @@ program main
 
         if (rank /= 0) then
           v = 6.0*0.00001; Ii = 0; JJ = 0
-          PetscCallA(MatSetValues(C,one,Ii,one,JJ,v,INSERT_VALUES,ierr))
+          PetscCallA(MatSetValues(C,one,[Ii],one,[JJ],[v],INSERT_VALUES,ierr))
         elseif (rank == size -1) then
           v = 6.0*0.00001; Ii = m*n-1; JJ = m*n-1
-          PetscCallA(MatSetValues(C,one,Ii,one,JJ,v,INSERT_VALUES,ierr))
+          PetscCallA(MatSetValues(C,one,[Ii],one,[JJ],[v],INSERT_VALUES,ierr))
 
         endif
 

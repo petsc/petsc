@@ -1055,7 +1055,7 @@ static PetscErrorCode PetscWeakFormView_Ascii(PetscWeakForm wf, PetscViewer view
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormView - Views a `PetscWeakForm`
 
   Collective
@@ -1104,11 +1104,9 @@ PetscErrorCode PetscWeakFormCreate(MPI_Comm comm, PetscWeakForm *wf)
 
   PetscFunctionBegin;
   PetscAssertPointer(wf, 2);
-  *wf = NULL;
   PetscCall(PetscDSInitializePackage());
 
   PetscCall(PetscHeaderCreate(p, PETSCWEAKFORM_CLASSID, "PetscWeakForm", "Weak Form System", "PetscWeakForm", comm, PetscWeakFormDestroy, PetscWeakFormView));
-
   p->Nf = 0;
   PetscCall(PetscChunkBufferCreate(sizeof(&PetscWeakFormCreate), 2, &p->funcs));
   PetscCall(PetscMalloc1(PETSC_NUM_WF, &p->form));

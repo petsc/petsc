@@ -25,7 +25,7 @@
 !
       if (rank .eq. 0) then
          ten = 10
-         PetscCallA(MatCreateSeqDense(PETSC_COMM_SELF,ten,ten,PETSC_NULL_SCALAR,A,ierr))
+         PetscCallA(MatCreateSeqDense(PETSC_COMM_SELF,ten,ten,PETSC_NULL_SCALAR_ARRAY,A,ierr))
          v = 1.0
          do row=0,9
             do col=0,9

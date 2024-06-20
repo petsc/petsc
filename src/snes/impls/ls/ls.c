@@ -45,10 +45,10 @@
 */
 static PetscErrorCode SNESNEWTONLSCheckLocalMin_Private(SNES snes, Mat A, Vec F, PetscReal fnorm, PetscBool *ismin)
 {
-  PetscReal a1;
-  PetscBool hastranspose;
-  Vec       W;
-  PetscErrorCode (*objective)(SNES, Vec, PetscReal *, void *);
+  PetscReal        a1;
+  PetscBool        hastranspose;
+  Vec              W;
+  SNESObjectiveFn *objective;
 
   PetscFunctionBegin;
   *ismin = PETSC_FALSE;
@@ -87,9 +87,9 @@ static PetscErrorCode SNESNEWTONLSCheckLocalMin_Private(SNES snes, Mat A, Vec F,
 */
 static PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes, Mat A, Vec F, Vec X)
 {
-  PetscReal a1, a2;
-  PetscBool hastranspose;
-  PetscErrorCode (*objective)(SNES, Vec, PetscReal *, void *);
+  PetscReal        a1, a2;
+  PetscBool        hastranspose;
+  SNESObjectiveFn *objective;
 
   PetscFunctionBegin;
   PetscCall(MatHasOperation(A, MATOP_MULT_TRANSPOSE, &hastranspose));

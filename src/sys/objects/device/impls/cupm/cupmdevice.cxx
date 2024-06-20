@@ -70,7 +70,7 @@ PetscErrorCode Device<T>::DeviceInternal::initialize() noexcept
 
     PetscCall(CUPMAwareMPI_(&aware));
     // For Open MPI, we could do a compile time check with
-    // "defined(PETSC_HAVE_OMPI_MAJOR_VERSION) && defined(MPIX_CUDA_AWARE_SUPPORT) &&
+    // "defined(PETSC_HAVE_OPENMPI) && defined(MPIX_CUDA_AWARE_SUPPORT) &&
     // MPIX_CUDA_AWARE_SUPPORT" to see if it is CUDA-aware. However, recent versions of IBM
     // Spectrum MPI (e.g., 10.3.1) on Summit meet above conditions, but one has to use jsrun
     // --smpiargs=-gpu to really enable GPU-aware MPI. So we do the check at runtime with a

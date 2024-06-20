@@ -130,25 +130,28 @@ PetscErrorCode MatDestroy_SeqUSFFT(Mat A)
 }
 
 /*@C
-      MatCreateSeqUSFFT - Creates a matrix object that provides sequential USFFT
+  MatCreateSeqUSFFT - Creates a matrix object that provides sequential USFFT
   via the external package FFTW
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  da - geometry of the domain encoded by a `DMDA`
+  Input Parameter:
+. da - geometry of the domain encoded by a `DMDA`
 
-   Output Parameter:
-.  A  - the matrix
+  Output Parameter:
+. A  - the matrix
 
   Options Database Key:
 . -mat_usfft_plannerflags - set the FFTW planner flags
 
-   Level: intermediate
+  Level: intermediate
+
+  Note:
+  This does not currently exist. There is some code in place but apparently unfinished and commented out with #ifdef 0
 
 .seealso: `Mat`, `Vec`, `DMDA`, `DM`
 @*/
-PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat *A)
+PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DM freqDA, Mat *A)
 {
   Mat_USFFT      *usfft;
   PetscInt       m,n,M,N,i;

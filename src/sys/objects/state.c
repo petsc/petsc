@@ -3,7 +3,7 @@
 */
 #include <petsc/private/petscimpl.h> /*I   "petscsys.h"    I*/
 
-/*@C
+/*@
   PetscObjectStateGet - Gets the state of any `PetscObject`,
   regardless of the type.
 
@@ -36,7 +36,7 @@ PetscErrorCode PetscObjectStateGet(PetscObject obj, PetscObjectState *state)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectStateSet - Sets the state of any `PetscObject`,
   regardless of the type.
 

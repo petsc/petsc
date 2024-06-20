@@ -107,6 +107,7 @@ PetscErrorCode PetscDeviceCreate(PetscDeviceType type, PetscInt devid, PetscDevi
   PetscValidDeviceType(type, 1);
   PetscAssertPointer(device, 3);
   PetscCall(PetscDeviceInitializePackage());
+
   PetscCall(PetscNew(device));
   (*device)->id     = PetscDeviceCounter++;
   (*device)->type   = type;
@@ -201,7 +202,7 @@ PetscErrorCode PetscDeviceConfigure(PetscDevice device)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDeviceView - View a `PetscDevice`
 
   Collective on viewer

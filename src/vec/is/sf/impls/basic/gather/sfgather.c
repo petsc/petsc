@@ -21,7 +21,7 @@ static PetscErrorCode PetscSFLinkStartCommunication_Gather(PetscSF sf, PetscSFLi
   PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
   PetscCall(PetscMPIIntCast(sf->nroots, &count));
   PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, direction, &rootbuf, &leafbuf, &req, NULL));
-  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, direction));
+  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link));
 
   if (direction == PETSCSF_ROOT2LEAF) {
     PetscCallMPI(MPIU_Igather(rootbuf == leafbuf ? MPI_IN_PLACE : rootbuf, count, unit, leafbuf, count, unit, 0 /*rank 0*/, comm, req));

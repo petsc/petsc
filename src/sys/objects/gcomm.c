@@ -6,7 +6,7 @@
 /*@C
   PetscObjectComm - Gets the MPI communicator for any `PetscObject` regardless of the type.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`. It must be

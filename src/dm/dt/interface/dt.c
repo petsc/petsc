@@ -609,7 +609,7 @@ static PetscErrorCode PetscQuadratureView_Ascii(PetscQuadrature quad, PetscViewe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscQuadratureView - View a `PetscQuadrature` object
 
   Collective
@@ -1852,7 +1852,7 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints, PetscReal a, PetscReal b
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDTGaussLobattoLegendreQuadrature - creates a set of the locations and weights of the Gauss-Lobatto-Legendre
   nodes of a given size on the domain $[-1,1]$
 
@@ -1863,8 +1863,8 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints, PetscReal a, PetscReal b
 - type    - `PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA` or `PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON`
 
   Output Parameters:
-+ x - quadrature points
-- w - quadrature weights
++ x - quadrature points, pass in an array of length `npoints`
+- w - quadrature weights, pass in an array of length `npoints`
 
   Level: intermediate
 
@@ -2591,6 +2591,7 @@ PetscErrorCode PetscDTTensorQuadratureCreate(PetscQuadrature q1, PetscQuadrature
   PetscValidHeaderSpecific(q1, PETSCQUADRATURE_CLASSID, 1);
   PetscValidHeaderSpecific(q2, PETSCQUADRATURE_CLASSID, 2);
   PetscAssertPointer(q, 3);
+
   PetscCall(PetscQuadratureGetOrder(q1, &order1));
   PetscCall(PetscQuadratureGetOrder(q2, &order2));
   PetscCheck(order1 == order2, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Order1 %" PetscInt_FMT " != %" PetscInt_FMT " Order2", order1, order2);
@@ -2924,11 +2925,11 @@ PetscErrorCode PetscGaussLobattoLegendreIntegrate(PetscInt n, PetscReal nodes[],
 
   Input Parameters:
 + n       - the number of GLL nodes
-. nodes   - the GLL nodes
-- weights - the GLL weights
+. nodes   - the GLL nodes, of length `n`
+- weights - the GLL weights, of length `n`
 
   Output Parameter:
-. AA - the stiffness element
+. AA - the stiffness element, of size `n` by `n`
 
   Level: beginner
 
@@ -3019,9 +3020,9 @@ PetscErrorCode PetscGaussLobattoLegendreElementLaplacianCreate(PetscInt n, Petsc
 
   Input Parameters:
 + n       - the number of GLL nodes
-. nodes   - the GLL nodes
-. weights - the GLL weightss
-- AA      - the stiffness element
+. nodes   - the GLL nodes, ignored
+. weights - the GLL weightss, ignored
+- AA      - the stiffness element from `PetscGaussLobattoLegendreElementLaplacianCreate()`
 
   Level: beginner
 
@@ -3043,12 +3044,12 @@ PetscErrorCode PetscGaussLobattoLegendreElementLaplacianDestroy(PetscInt n, Pets
 
   Input Parameters:
 + n       - the number of GLL nodes
-. nodes   - the GLL nodes
-- weights - the GLL weights
+. nodes   - the GLL nodes, of length `n`
+- weights - the GLL weights, of length `n`
 
   Output Parameters:
-+ AA  - the stiffness element
-- AAT - the transpose of AA (pass in `NULL` if you do not need this array)
++ AA  - the stiffness element, of dimension `n` by `n`
+- AAT - the transpose of AA (pass in `NULL` if you do not need this array), of dimension `n` by `n`
 
   Level: beginner
 
@@ -3103,16 +3104,16 @@ PetscErrorCode PetscGaussLobattoLegendreElementGradientCreate(PetscInt n, PetscR
 
   Input Parameters:
 + n       - the number of GLL nodes
-. nodes   - the GLL nodes
-. weights - the GLL weights
-. AA      - the stiffness element
-- AAT     - the transpose of the element
+. nodes   - the GLL nodes, ignored
+. weights - the GLL weights, ignored
+. AA      - the stiffness element obtained with `PetscGaussLobattoLegendreElementGradientCreate()`
+- AAT     - the transpose of the element obtained with `PetscGaussLobattoLegendreElementGradientCreate()`
 
   Level: beginner
 
 .seealso: `PetscDTGaussLobattoLegendreQuadrature()`, `PetscGaussLobattoLegendreElementLaplacianCreate()`, `PetscGaussLobattoLegendreElementAdvectionCreate()`
 @*/
-PetscErrorCode PetscGaussLobattoLegendreElementGradientDestroy(PetscInt n, PetscReal *nodes, PetscReal *weights, PetscReal ***AA, PetscReal ***AAT)
+PetscErrorCode PetscGaussLobattoLegendreElementGradientDestroy(PetscInt n, PetscReal nodes[], PetscReal weights[], PetscReal ***AA, PetscReal ***AAT)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree((*AA)[0]));
@@ -3133,11 +3134,11 @@ PetscErrorCode PetscGaussLobattoLegendreElementGradientDestroy(PetscInt n, Petsc
 
   Input Parameters:
 + n       - the number of GLL nodes
-. nodes   - the GLL nodes
-- weights - the GLL weightss
+. nodes   - the GLL nodes, of length `n`
+- weights - the GLL weights, of length `n`
 
   Output Parameter:
-. AA - the stiffness element
+. AA - the stiffness element, of dimension `n` by `n`
 
   Level: beginner
 
@@ -3173,15 +3174,15 @@ PetscErrorCode PetscGaussLobattoLegendreElementAdvectionCreate(PetscInt n, Petsc
 
   Input Parameters:
 + n       - the number of GLL nodes
-. nodes   - the GLL nodes
-. weights - the GLL weights
-- AA      - advection
+. nodes   - the GLL nodes, ignored
+. weights - the GLL weights, ignored
+- AA      - advection obtained with `PetscGaussLobattoLegendreElementAdvectionCreate()`
 
   Level: beginner
 
 .seealso: `PetscDTGaussLobattoLegendreQuadrature()`, `PetscGaussLobattoLegendreElementAdvectionCreate()`
 @*/
-PetscErrorCode PetscGaussLobattoLegendreElementAdvectionDestroy(PetscInt n, PetscReal *nodes, PetscReal *weights, PetscReal ***AA)
+PetscErrorCode PetscGaussLobattoLegendreElementAdvectionDestroy(PetscInt n, PetscReal nodes[], PetscReal weights[], PetscReal ***AA)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree((*AA)[0]));
@@ -3230,7 +3231,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementMassDestroy(PetscInt n, PetscReal
 - index - the index to convert: should be >= 0 and < Binomial(len - 1 + sum, sum)
 
   Output Parameter:
-. coord - will be filled with the barycentric coordinate
+. coord - will be filled with the barycentric coordinate, of length `n`
 
   Level: beginner
 
@@ -3284,7 +3285,7 @@ PetscErrorCode PetscDTIndexToBary(PetscInt len, PetscInt sum, PetscInt index, Pe
   Input Parameters:
 + len   - the desired length of the barycentric tuple (usually 1 more than the dimension it represents, so a barycentric coordinate in a triangle has length 3)
 . sum   - the value that the sum of the barycentric coordinates (which will be non-negative integers) should sum to
-- coord - a barycentric coordinate with the given length and sum
+- coord - a barycentric coordinate with the given length `len` and `sum`
 
   Output Parameter:
 . index - the unique index for the coordinate, >= 0 and < Binomial(len - 1 + sum, sum)

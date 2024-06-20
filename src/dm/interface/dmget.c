@@ -353,7 +353,7 @@ PetscErrorCode DMClearNamedLocalVectors(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMHasNamedGlobalVector - check for a named, persistent global vector created with `DMGetNamedGlobalVector()`
 
   Not Collective
@@ -389,7 +389,7 @@ PetscErrorCode DMHasNamedGlobalVector(DM dm, const char *name, PetscBool *exists
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMGetNamedGlobalVector - get access to a named, persistent global vector
 
   Collective
@@ -444,7 +444,7 @@ found:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMRestoreNamedGlobalVector - restore access to a named, persistent global vector
 
   Collective
@@ -488,7 +488,7 @@ PetscErrorCode DMRestoreNamedGlobalVector(DM dm, const char *name, Vec *X)
   SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_INCOMP, "Could not find Vec name '%s' to restore", name);
 }
 
-/*@C
+/*@
   DMHasNamedLocalVector - check for a named, persistent local vector created with `DMGetNamedLocalVector()`
 
   Not Collective
@@ -527,7 +527,7 @@ PetscErrorCode DMHasNamedLocalVector(DM dm, const char *name, PetscBool *exists)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMGetNamedLocalVector - get access to a named, persistent local vector
 
   Not Collective
@@ -582,7 +582,7 @@ found:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMRestoreNamedLocalVector - restore access to a named, persistent local vector obtained with `DMGetNamedLocalVector()`
 
   Not Collective

@@ -234,7 +234,6 @@ static PetscErrorCode MatRetrieveValues_MPISBAIJ(Mat mat)
     PetscCall(PetscArrayzero(ap + bs2 * _i, bs2)); \
     rp[_i]                          = bcol; \
     ap[bs2 * _i + bs * cidx + ridx] = value; \
-    A->nonzerostate++; \
   a_noinsert:; \
     ailen[brow] = nrow; \
   } while (0)
@@ -275,7 +274,6 @@ static PetscErrorCode MatRetrieveValues_MPISBAIJ(Mat mat)
     PetscCall(PetscArrayzero(ap + bs2 * _i, bs2)); \
     rp[_i]                          = bcol; \
     ap[bs2 * _i + bs * cidx + ridx] = value; \
-    B->nonzerostate++; \
   b_noinsert:; \
     bilen[brow] = nrow; \
   } while (0)
@@ -622,22 +620,11 @@ static PetscErrorCode MatSetValuesBlocked_MPISBAIJ(Mat mat, PetscInt m, const Pe
           if (mat->was_assembled) {
             if (!baij->colmap) PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
 
-#if defined(PETSC_USE_DEBUG)
-  #if defined(PETSC_USE_CTABLE)
-            {
-              PetscInt data;
-              PetscCall(PetscHMapIGetWithDefault(baij->colmap, in[j] + 1, 0, &data));
-              PetscCheck((data - 1) % bs == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect colmap");
-            }
-  #else
-            PetscCheck((baij->colmap[in[j]] - 1) % bs == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect colmap");
-  #endif
-#endif
 #if defined(PETSC_USE_CTABLE)
             PetscCall(PetscHMapIGetWithDefault(baij->colmap, in[j] + 1, 0, &col));
-            col = (col - 1) / bs;
+            col = col < 1 ? -1 : (col - 1) / bs;
 #else
-            col = (baij->colmap[in[j]] - 1) / bs;
+            col = baij->colmap[in[j]] < 1 ? -1 : (baij->colmap[in[j]] - 1) / bs;
 #endif
             if (col < 0 && !((Mat_SeqBAIJ *)baij->A->data)->nonew) {
               PetscCall(MatDisAssemble_MPISBAIJ(mat));
@@ -1964,6 +1951,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
                                        NULL,
                                        /*150*/ NULL,
                                        MatEliminateZeros_MPISBAIJ,
+                                       NULL,
                                        NULL};
 
 static PetscErrorCode MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B, PetscInt bs, PetscInt d_nz, const PetscInt *d_nnz, PetscInt o_nz, const PetscInt *o_nnz)
@@ -2255,7 +2243,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
 .seealso: [](ch_matrices), `Mat`, `MATSEQSBAIJ`, `MATMPISBAIJ`, `MatCreateSBAIJ()`, `MATSEQSBAIJ`, `MATMPISBAIJ`
 M*/
 
-/*@C
+/*@
   MatMPISBAIJSetPreallocation - For good matrix assembly performance
   the user should preallocate the matrix storage by setting the parameters
   d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
@@ -2347,7 +2335,7 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, co
 }
 
 // PetscClangLinter pragma disable: -fdoc-section-header-unknown
-/*@C
+/*@
   MatCreateSBAIJ - Creates a sparse parallel matrix in symmetric block AIJ format, `MATSBAIJ`,
   (block compressed row).  For good matrix assembly performance
   the user should preallocate the matrix storage by setting the parameters
@@ -2837,7 +2825,7 @@ PetscErrorCode MatCreateMPISBAIJWithArrays(MPI_Comm comm, PetscInt bs, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatMPISBAIJSetPreallocationCSR - Creates a sparse parallel matrix in `MATMPISBAIJ` format using the given nonzero structure and (optional) numerical values
 
   Collective
