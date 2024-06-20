@@ -391,6 +391,8 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
     PetscCall(KSPSetReusePreconditioner(ksp, reuse));
     PetscCall(PetscOptionsBool("-ksp_error_if_not_converged", "Generate error if solver does not converge", "KSPSetErrorIfNotConverged", ksp->errorifnotconverged, &ksp->errorifnotconverged, NULL));
     PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view", &ksp->viewer, &ksp->format, &ksp->view));
+    PetscCall(PetscOptionsRestoreViewer(&ksp->convergedreasonviewer));
+    PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, ((PetscObject)ksp)->prefix, "-ksp_converged_reason", &ksp->convergedreasonviewer, &ksp->convergedreasonformat, NULL));
     flg = PETSC_FALSE;
     PetscCall(PetscOptionsBool("-ksp_converged_reason_view_cancel", "Cancel all the converged reason view functions set using KSPConvergedReasonViewSet", "KSPConvergedReasonViewCancel", PETSC_FALSE, &flg, &set));
     if (set && flg) PetscCall(KSPConvergedReasonViewCancel(ksp));
@@ -545,6 +547,8 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
   PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view", &ksp->viewer, &ksp->format, &ksp->view));
   PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_pre", &ksp->viewerPre, &ksp->formatPre, &ksp->viewPre));
 
+  PetscCall(PetscOptionsRestoreViewer(&ksp->convergedreasonviewer));
+  PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, ((PetscObject)ksp)->prefix, "-ksp_converged_reason", &ksp->convergedreasonviewer, &ksp->convergedreasonformat, NULL));
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-ksp_converged_reason_view_cancel", "Cancel all the converged reason view functions set using KSPConvergedReasonViewSet", "KSPConvergedReasonViewCancel", PETSC_FALSE, &flg, &set));
   if (set && flg) PetscCall(KSPConvergedReasonViewCancel(ksp));

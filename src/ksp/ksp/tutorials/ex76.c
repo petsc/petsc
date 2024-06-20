@@ -91,6 +91,7 @@ int main(int argc, char **args)
   if (flg) {          /* user-provided RHS for concurrent generalized eigenvalue problems                          */
     Mat      a, c, P; /* usually assembled automatically in PCHPDDM, this is solely for testing PCHPDDMSetRHSMat() */
     PetscInt rstart, rend, location;
+
     PetscCall(MatDuplicate(aux, MAT_DO_NOT_COPY_VALUES, &B)); /* duplicate so that MatStructure is SAME_NONZERO_PATTERN */
     PetscCall(MatGetDiagonalBlock(A, &a));
     PetscCall(MatGetOwnershipRange(A, &rstart, &rend));
@@ -127,6 +128,7 @@ int main(int argc, char **args)
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-pc_hpddm_define_subdomains", &flg, NULL));
     if (flg) {
       IS rows;
+
       PetscCall(MatGetOwnershipIS(A, &rows, NULL));
       PetscCall(PCASMSetLocalSubdomains(pc, 1, &is, &rows));
       PetscCall(ISDestroy(&rows));
@@ -140,6 +142,7 @@ int main(int argc, char **args)
   PetscCall(VecDestroy(&b));
   if (N > 1) {
     KSPType type;
+
     PetscCall(PetscOptionsClearValue(NULL, "-ksp_converged_reason"));
     PetscCall(KSPSetFromOptions(ksp));
     PetscCall(MatCreateDense(PETSC_COMM_WORLD, m, PETSC_DECIDE, PETSC_DECIDE, N, NULL, &B));
@@ -154,9 +157,11 @@ int main(int argc, char **args)
     if (flg) {
       PetscReal    norm;
       KSPHPDDMType type;
+
       PetscCall(KSPHPDDMGetType(ksp, &type));
       if (type == KSP_HPDDM_TYPE_PREONLY || type == KSP_HPDDM_TYPE_CG || type == KSP_HPDDM_TYPE_GMRES || type == KSP_HPDDM_TYPE_GCRODR) {
         Mat C;
+
         PetscCall(MatDuplicate(X, MAT_DO_NOT_COPY_VALUES, &C));
         PetscCall(KSPSetMatSolveBatchSize(ksp, 1));
         PetscCall(KSPMatSolve(ksp, B, C));
@@ -200,9 +205,11 @@ int main(int argc, char **args)
     if (flg) {
       KSPConvergedReason reason[2];
       PetscInt           iterations[3];
+
       PetscCall(KSPGetConvergedReason(ksp, reason));
       PetscCall(KSPGetTotalIterations(ksp, iterations));
       PetscCall(PetscOptionsClearValue(NULL, "-ksp_converged_reason"));
+      PetscCall(KSPSetFromOptions(ksp));
       flg = PETSC_FALSE;
       PetscCall(PetscOptionsGetBool(NULL, NULL, "-pc_hpddm_block_splitting", &flg, NULL));
       if (!flg) {

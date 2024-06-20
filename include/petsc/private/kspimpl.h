@@ -130,6 +130,8 @@ struct _p_KSP {
   PetscInt  numbermonitors;                                                    /* to, for instance, print residual norm, etc. */
   PetscBool pauseFinal;                                                        /* Pause all drawing monitor at the final iterate */
 
+  PetscViewer       convergedreasonviewer;
+  PetscViewerFormat convergedreasonformat;
   PetscErrorCode (*reasonview[MAXKSPREASONVIEWS])(KSP, void *);    /* KSP converged reason view */
   PetscErrorCode (*reasonviewdestroy[MAXKSPREASONVIEWS])(void **); /* Optional destroy routine */
   void    *reasonviewcontext[MAXKSPREASONVIEWS];                   /* User context */

@@ -533,7 +533,8 @@ PetscErrorCode KSPConvergedReasonViewSet(KSP ksp, PetscErrorCode (*f)(KSP, void 
 }
 
 /*@
-  KSPConvergedReasonViewCancel - Clears all the reasonview functions for a `KSP` object set with `KSPConvergedReasonViewSet()`.
+  KSPConvergedReasonViewCancel - Clears all the reasonview functions for a `KSP` object set with `KSPConvergedReasonViewSet()`
+  as well as the default viewer.
 
   Collective
 
@@ -554,6 +555,7 @@ PetscErrorCode KSPConvergedReasonViewCancel(KSP ksp)
     if (ksp->reasonviewdestroy[i]) PetscCall((*ksp->reasonviewdestroy[i])(&ksp->reasonviewcontext[i]));
   }
   ksp->numberreasonviews = 0;
+  PetscCall(PetscOptionsRestoreViewer(&ksp->convergedreasonviewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -571,22 +573,15 @@ PetscErrorCode KSPConvergedReasonViewCancel(KSP ksp)
 @*/
 PetscErrorCode KSPConvergedReasonViewFromOptions(KSP ksp)
 {
-  PetscViewer       viewer;
-  PetscBool         flg;
-  PetscViewerFormat format;
-  PetscInt          i;
-
   PetscFunctionBegin;
   /* Call all user-provided reason review routines */
-  for (i = 0; i < ksp->numberreasonviews; i++) PetscCall((*ksp->reasonview[i])(ksp, ksp->reasonviewcontext[i]));
+  for (PetscInt i = 0; i < ksp->numberreasonviews; i++) PetscCall((*ksp->reasonview[i])(ksp, ksp->reasonviewcontext[i]));
 
   /* Call the default PETSc routine */
-  PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp), ((PetscObject)ksp)->options, ((PetscObject)ksp)->prefix, "-ksp_converged_reason", &viewer, &format, &flg));
-  if (flg) {
-    PetscCall(PetscViewerPushFormat(viewer, format));
-    PetscCall(KSPConvergedReasonView(ksp, viewer));
-    PetscCall(PetscViewerPopFormat(viewer));
-    PetscCall(PetscOptionsRestoreViewer(&viewer));
+  if (ksp->convergedreasonviewer) {
+    PetscCall(PetscViewerPushFormat(ksp->convergedreasonviewer, ksp->convergedreasonformat));
+    PetscCall(KSPConvergedReasonView(ksp, ksp->convergedreasonviewer));
+    PetscCall(PetscViewerPopFormat(ksp->convergedreasonviewer));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
