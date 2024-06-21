@@ -24,7 +24,7 @@ class Configure(config.package.CMakePackage):
     self.hastests         = 1
     self.requiresrpath    = 1
     self.precisions       = ['single','double']
-    self.devicePackage    = 1
+    self.devicePackage    = 1 # we treat Kokkos as a device package, though it might run without GPUs.
     self.minCmakeVersion  = (3,16,0)
     self.macros           = ['KOKKOS_ENABLE_CUDA', 'KOKKOS_ENABLE_HIP', 'KOKKOS_ENABLE_SYCL']
     return
@@ -223,6 +223,8 @@ class Configure(config.package.CMakePackage):
       self.setCompilers.SYCLPPFLAGS        += " -Wno-deprecated-declarations "
       self.setCompilers.SYCLFLAGS          += ' -fno-sycl-id-queries-fit-in-int -fsycl-unnamed-lambda '
       self.addMakeMacro('KOKKOS_USE_SYCL_COMPILER',1)
+    else:
+      self.addDefine('HAVE_KOKKOS_WITHOUT_GPU', 1) # Kokkos is used without GPUs (i.e., host only)
 
     config.package.CMakePackage.configureLibrary(self)
 
