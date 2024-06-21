@@ -665,6 +665,8 @@ PetscErrorCode VecDot_SeqKokkos(Vec xin, Vec yin, PetscScalar *z)
 /* y = x, where x is VECKOKKOS, but y may be not */
 PetscErrorCode VecCopy_SeqKokkos(Vec xin, Vec yin)
 {
+  auto &exec = PetscGetKokkosExecutionSpace();
+
   PetscFunctionBegin;
   PetscCall(PetscLogGpuTimeBegin());
   if (xin != yin) {
@@ -677,15 +679,16 @@ PetscErrorCode VecCopy_SeqKokkos(Vec xin, Vec yin)
         clear y's sync state.
        */
       ykok->v_dual.clear_sync_state();
-      PetscCallCXX(Kokkos::deep_copy(ykok->v_dual, xkok->v_dual));
+      PetscCallCXX(Kokkos::deep_copy(exec, ykok->v_dual, xkok->v_dual));
     } else {
       PetscScalar *yarray;
       PetscCall(VecGetArrayWrite(yin, &yarray));
       PetscScalarKokkosViewHost yv(yarray, yin->map->n);
       if (xkok->v_dual.need_sync_host()) { /* x's device has newer data */
-        PetscCallCXX(Kokkos::deep_copy(yv, xkok->v_dual.view_device()));
+        PetscCallCXX(Kokkos::deep_copy(exec, yv, xkok->v_dual.view_device()));
+        exec.fence(); // finish the deep copy
       } else {
-        PetscCallCXX(Kokkos::deep_copy(yv, xkok->v_dual.view_host()));
+        PetscCallCXX(Kokkos::deep_copy(exec, yv, xkok->v_dual.view_host()));
       }
       PetscCall(VecRestoreArrayWrite(yin, &yarray));
     }

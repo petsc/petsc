@@ -1,5 +1,5 @@
 #pragma once
-
+#include <petsc_kokkos.hpp>
 #include <petsc/private/kokkosimpl.hpp>
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <KokkosSparse_CrsMatrix.hpp>
@@ -96,23 +96,24 @@ struct Mat_SeqAIJKokkos {
   /* Construct a nrows by ncols matrix with given aseq on host. Caller also specifies a nonzero state */
   Mat_SeqAIJKokkos(PetscInt nrows, PetscInt ncols, Mat_SeqAIJ *aseq, PetscObjectState nzstate, PetscBool copyValues = PETSC_TRUE)
   {
+    auto &exec = PetscGetKokkosExecutionSpace();
+
     MatScalarKokkosViewHost a_h(aseq->a, aseq->nz);
     MatRowMapKokkosViewHost i_h(const_cast<MatRowMapType *>(aseq->i), nrows + 1);
     MatColIdxKokkosViewHost j_h(aseq->j, aseq->nz);
     MatRowMapKokkosViewHost diag_h(aseq->diag, nrows);
 
-    auto a_d    = Kokkos::create_mirror_view(Kokkos::WithoutInitializing, DefaultMemorySpace(), a_h);
-    auto i_d    = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), i_h);
-    auto j_d    = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), j_h);
-    auto diag_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), diag_h);
-
-    a_dual    = MatScalarKokkosDualView(a_d, a_h);
-    i_dual    = MatRowMapKokkosDualView(i_d, i_h);
-    j_dual    = MatColIdxKokkosDualView(j_d, j_h);
-    diag_dual = MatColIdxKokkosDualView(diag_d, diag_h);
+    auto a_d    = Kokkos::create_mirror_view(Kokkos::WithoutInitializing, exec, a_h);
+    auto i_d    = Kokkos::create_mirror_view_and_copy(exec, i_h);
+    auto j_d    = Kokkos::create_mirror_view_and_copy(exec, j_h);
+    auto diag_d = Kokkos::create_mirror_view_and_copy(exec, diag_h);
+    a_dual      = MatScalarKokkosDualView(a_d, a_h);
+    i_dual      = MatRowMapKokkosDualView(i_d, i_h);
+    j_dual      = MatColIdxKokkosDualView(j_d, j_h);
+    diag_dual   = MatColIdxKokkosDualView(diag_d, diag_h);
 
     a_dual.modify_host(); /* Since caller provided values on host */
-    if (copyValues) a_dual.sync_device();
+    if (copyValues) a_dual.sync_device(exec);
 
     csrmat            = KokkosCsrMatrix("csrmat", ncols, a_d, KokkosCsrGraph(j_d, i_d));
     nonzerostate      = nzstate;
