@@ -224,6 +224,10 @@ whether an option has been activated for a particular PETSc object (such
 as a solver or matrix format), or whether an option name may have been
 accidentally misspelled.
 
+The option ``-options_monitor`` ``<viewer>`` turns on the default monitoring of options.
+``PetscOptionsMonitorSet()`` can be used to provide custom monitors.
+The option ``-options_monitor_cancel`` prevents any monitoring by monitors set with ``PetscOptionsMonitorSet()`` (but not that set with ``-options_monitor``).
+
 .. _sec_viewers:
 
 Viewers: Looking at PETSc Objects

@@ -147,6 +147,34 @@ class BaseTestDA:
         finally:
             self.da.restoreGlobalVec(vg)
             self.da.restoreLocalVec(vl)
+            self.assertFalse(vg)
+            self.assertFalse(vl)
+
+        name = 'abcd'
+
+        vg = self.da.getGlobalVec(name)
+        vg.set(4.0)
+        self.da.restoreGlobalVec(vg, name)
+        self.assertFalse(vg)
+        vg = self.da.getGlobalVec()
+        vg.setRandom()
+        self.da.restoreGlobalVec(vg)
+        vg = self.da.getGlobalVec(name)
+        vg.shift(-4.0)
+        self.assertEqual(vg.max()[1], 0.0)
+        self.da.restoreGlobalVec(vg, name)
+
+        vl = self.da.getLocalVec(name)
+        vl.set(4.0)
+        self.da.restoreLocalVec(vl, name)
+        self.assertFalse(vl)
+        vl = self.da.getLocalVec()
+        vl.setRandom()
+        self.da.restoreLocalVec(vl)
+        vl = self.da.getLocalVec(name)
+        vl.shift(-4.0)
+        self.assertEqual(vl.max()[1], 0.0)
+        self.da.restoreLocalVec(vl, name)
 
     def testGetOther(self):
         _ = self.da.getAO()

@@ -791,56 +791,91 @@ cdef class DM(Object):
         CHKERR(DMCreateLocalVector(self.dm, &vl.vec))
         return vl
 
-    def getGlobalVec(self) -> Vec:
+    def getGlobalVec(self, name : str | None = None) -> Vec:
         """Return a global vector.
 
         Collective.
 
+        Parameters
+        ----------
+        name
+            The optional name to retrieve a persistent vector.
+
+        Notes
+        -----
+        When done with the vector, it must be restored using `restoreGlobalVec`.
+
         See Also
         --------
-        petsc.DMGetGlobalVector
+        restoreGlobalVec, petsc.DMGetGlobalVector, petsc.DMGetNamedGlobalVector
 
         """
         cdef Vec vg = Vec()
-        CHKERR(DMGetGlobalVector(self.dm, &vg.vec))
+        cdef const char *cname = NULL
+        str2bytes(name, &cname)
+        if cname != NULL:
+            CHKERR(DMGetNamedGlobalVector(self.dm, cname, &vg.vec))
+        else:
+            CHKERR(DMGetGlobalVector(self.dm, &vg.vec))
         CHKERR(PetscINCREF(vg.obj))
         return vg
 
-    def restoreGlobalVec(self, Vec vg) -> None:
-        """Restore a global vector.
+    def restoreGlobalVec(self, Vec vg, name : str | None = None) -> None:
+        """Restore a global vector obtained with `getGlobalVec`.
 
-        Not collective.
+        Logically collective.
 
         Parameters
         ----------
         vg
             The global vector.
+        name
+            The name used to retrieve the persistent vector, if any.
 
         See Also
         --------
-        petsc.DMRestoreGlobalVector
+        getGlobalVec, petsc.DMRestoreGlobalVector, petsc.DMRestoreNamedGlobalVector
 
         """
+        cdef const char *cname = NULL
+        str2bytes(name, &cname)
         CHKERR(PetscObjectDereference(<PetscObject>vg.vec))
-        CHKERR(DMRestoreGlobalVector(self.dm, &vg.vec))
+        if cname != NULL:
+            CHKERR(DMRestoreNamedGlobalVector(self.dm, cname, &vg.vec))
+        else:
+            CHKERR(DMRestoreGlobalVector(self.dm, &vg.vec))
 
-    def getLocalVec(self) -> Vec:
+    def getLocalVec(self, name : str | None = None) -> Vec:
         """Return a local vector.
 
         Not collective.
 
+        Parameters
+        ----------
+        name
+            The optional name to retrieve a persistent vector.
+
+        Notes
+        -----
+        When done with the vector, it must be restored using `restoreLocalVec`.
+
         See Also
         --------
-        petsc.DMGetLocalVector
+        restoreLocalVec, petsc.DMGetLocalVector, petsc.DMGetNamedLocalVector
 
         """
         cdef Vec vl = Vec()
-        CHKERR(DMGetLocalVector(self.dm, &vl.vec))
+        cdef const char *cname = NULL
+        str2bytes(name, &cname)
+        if cname != NULL:
+            CHKERR(DMGetNamedLocalVector(self.dm, cname, &vl.vec))
+        else:
+            CHKERR(DMGetLocalVector(self.dm, &vl.vec))
         CHKERR(PetscINCREF(vl.obj))
         return vl
 
-    def restoreLocalVec(self, Vec vl) -> None:
-        """Restore a local vector.
+    def restoreLocalVec(self, Vec vl, name : str | None = None) -> None:
+        """Restore a local vector obtained with `getLocalVec`.
 
         Not collective.
 
@@ -848,14 +883,21 @@ cdef class DM(Object):
         ----------
         vl
             The local vector.
+        name
+            The name used to retrieve the persistent vector, if any.
 
         See Also
         --------
-        petsc.DMRestoreLocalVector
+        getLocalVec, petsc.DMRestoreLocalVector, petsc.DMRestoreNamedLocalVector
 
         """
+        cdef const char *cname = NULL
+        str2bytes(name, &cname)
         CHKERR(PetscObjectDereference(<PetscObject>vl.vec))
-        CHKERR(DMRestoreLocalVector(self.dm, &vl.vec))
+        if cname != NULL:
+            CHKERR(DMRestoreNamedLocalVector(self.dm, cname, &vl.vec))
+        else:
+            CHKERR(DMRestoreLocalVector(self.dm, &vl.vec))
 
     def globalToLocal(self, Vec vg, Vec vl, addv: InsertModeSpec | None = None) -> None:
         """Update local vectors from global vector.

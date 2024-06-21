@@ -94,12 +94,10 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes, PetscInt ivec, 
   alph_total = 0.;
   for (i = 0; i < l; i++) alph_total += beta[i];
 
-  PetscCall(VecCopy(XM, XA));
-  PetscCall(VecScale(XA, 1. - alph_total));
+  PetscCall(VecAXPBY(XA, 1.0 - alph_total, 0.0, XM));
   PetscCall(VecMAXPY(XA, l, beta, Xdot));
   /* check the validity of the step */
-  PetscCall(VecCopy(XA, Y));
-  PetscCall(VecAXPY(Y, -1.0, X));
+  PetscCall(VecWAXPY(Y, -1.0, X, XA));
   PetscCall(SNESLineSearchPostCheck(snes->linesearch, X, Y, XA, &changed_y, &changed_w));
   if (!ngmres->approxfunc) {
     if (snes->npc && snes->npcside == PC_LEFT) {
@@ -108,8 +106,7 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes, PetscInt ivec, 
       PetscCall(SNESComputeFunction(snes, XA, FA));
     }
   } else {
-    PetscCall(VecCopy(FM, FA));
-    PetscCall(VecScale(FA, 1. - alph_total));
+    PetscCall(VecAXPBY(FA, 1.0 - alph_total, 0.0, FM));
     PetscCall(VecMAXPY(FA, l, beta, Fdot));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -126,26 +123,22 @@ PetscErrorCode SNESNGMRESNorms_Private(SNES snes, PetscInt l, Vec X, Vec F, Vec 
   if (xMnorm) PetscCall(VecNormBegin(XM, NORM_2, xMnorm));
   if (fMnorm) PetscCall(VecNormBegin(FM, NORM_2, fMnorm));
   if (yMnorm) {
-    PetscCall(VecCopy(X, D));
-    PetscCall(VecAXPY(D, -1.0, XM));
+    PetscCall(VecWAXPY(D, -1.0, XM, X));
     PetscCall(VecNormBegin(D, NORM_2, yMnorm));
   }
   if (xAnorm) PetscCall(VecNormBegin(XA, NORM_2, xAnorm));
   if (fAnorm) PetscCall(VecNormBegin(FA, NORM_2, fAnorm));
   if (yAnorm) {
-    PetscCall(VecCopy(X, D));
-    PetscCall(VecAXPY(D, -1.0, XA));
+    PetscCall(VecWAXPY(D, -1.0, XA, X));
     PetscCall(VecNormBegin(D, NORM_2, yAnorm));
   }
   if (dnorm) {
-    PetscCall(VecCopy(XA, D));
-    PetscCall(VecAXPY(D, -1.0, XM));
+    PetscCall(VecWAXPY(D, -1.0, XM, XA));
     PetscCall(VecNormBegin(D, NORM_2, dnorm));
   }
   if (dminnorm) {
     for (i = 0; i < l; i++) {
-      PetscCall(VecCopy(Xdot[i], D));
-      PetscCall(VecAXPY(D, -1.0, XA));
+      PetscCall(VecWAXPY(D, -1.0, XA, Xdot[i]));
       PetscCall(VecNormBegin(D, NORM_2, &ngmres->xnorms[i]));
     }
   }
