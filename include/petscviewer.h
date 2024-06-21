@@ -73,7 +73,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerDrawGetDrawLG(PetscViewer, PetscInt, Pets
 PETSC_EXTERN PetscErrorCode PetscViewerDrawGetDrawAxis(PetscViewer, PetscInt, PetscDrawAxis *);
 
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaOpen(MPI_Comm, int, const char[], const char[], PetscViewer *);
-PETSC_EXTERN PetscErrorCode PetscViewerSiloOpen(MPI_Comm, const char[], PetscViewer *);
 PETSC_EXTERN PetscErrorCode PetscViewerMatlabOpen(MPI_Comm, const char[], PetscFileMode, PetscViewer *);
 
 /*E

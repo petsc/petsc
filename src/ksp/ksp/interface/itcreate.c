@@ -23,7 +23,7 @@ PetscFunctionList KSPMonitorCreateList        = NULL;
 PetscFunctionList KSPMonitorDestroyList       = NULL;
 PetscBool         KSPMonitorRegisterAllCalled = PETSC_FALSE;
 
-/*@C
+/*@
   KSPLoad - Loads a `KSP` that has been stored in a `PETSCVIEWERBINARY`  with `KSPView()`.
 
   Collective
@@ -67,7 +67,7 @@ PetscErrorCode KSPLoad(KSP newdm, PetscViewer viewer)
 #if defined(PETSC_HAVE_SAWS)
   #include <petscviewersaws.h>
 #endif
-/*@C
+/*@
   KSPView - Prints the `KSP` data structure.
 
   Collective
@@ -212,7 +212,7 @@ PetscErrorCode KSPView(KSP ksp, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPViewFromOptions - View a `KSP` object based on values in the options database
 
   Collective
@@ -546,7 +546,7 @@ PetscErrorCode KSPGetOperators(KSP ksp, Mat *Amat, Mat *Pmat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPGetOperatorsSet - Determines if the matrix associated with the linear system and
   possibly a different one associated with the preconditioner have been set in the `KSP`.
 
@@ -705,11 +705,9 @@ PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
 
   PetscFunctionBegin;
   PetscAssertPointer(inksp, 2);
-  *inksp = NULL;
   PetscCall(KSPInitializePackage());
 
   PetscCall(PetscHeaderCreate(ksp, KSP_CLASSID, "KSP", "Krylov Method", "KSP", comm, KSPDestroy, KSPView));
-
   ksp->max_it  = 10000;
   ksp->pc_side = ksp->pc_side_set = PC_SIDE_DEFAULT;
   ksp->rtol                       = 1.e-5;
@@ -761,7 +759,7 @@ PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPSetType - Builds the `KSP` data structure for a particular `KSPType`
 
   Logically Collective
@@ -828,7 +826,7 @@ PetscErrorCode KSPSetType(KSP ksp, KSPType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPGetType - Gets the `KSP` type as a string from the `KSP` object.
 
   Not Collective
@@ -855,7 +853,7 @@ PetscErrorCode KSPGetType(KSP ksp, KSPType *type)
 /*@C
   KSPRegister -  Adds a method, `KSPType`, to the Krylov subspace solver package.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of a new user-defined solver

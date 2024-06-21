@@ -40,7 +40,7 @@ static PetscBool PetscSegvJumpBuf_set;
 /*@C
   PetscSignalSegvCheckPointerOrMpi - To be called from a signal handler for SIGSEGV.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Level: developer
 
@@ -59,7 +59,7 @@ void PetscSignalSegvCheckPointerOrMpi(void)
 /*@C
   PetscCheckPointer - Returns `PETSC_TRUE` if a pointer points to accessible data
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + ptr   - the pointer

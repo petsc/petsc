@@ -3,3 +3,4 @@ leak:hwloc__add_info
 # when MPI_Abort() is called, some MPI implementations do not free
 # all that has been allocated during the initialization (but in general, there is no leak in PetscInitialize_Common)
 leak:PetscInitialize_Common
+leak:libpython

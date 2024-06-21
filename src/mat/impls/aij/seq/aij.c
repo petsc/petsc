@@ -468,7 +468,6 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A, PetscInt m, const PetscInt im[], Petsc
         ap[i] = value;
       }
       low = i + 1;
-      A->nonzerostate++;
     noinsert:;
     }
     ailen[row] = nrow;
@@ -1873,7 +1872,7 @@ static PetscErrorCode MatInvertVariableBlockDiagonal_SeqAIJ(Mat A, PetscInt nblo
     }
     ncnt += bsizes[i];
     diag += bsizes[i] * bsizes[i];
-    flops += 2 * PetscPowInt(bsizes[i], 3) / 3;
+    flops += 2 * PetscPowInt64(bsizes[i], 3) / 3;
   }
   PetscCall(PetscLogFlops(flops));
   if (bsizemax > 7) PetscCall(PetscFree2(v_work, v_pivots));
@@ -3637,7 +3636,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
                                        NULL,
                                        /*150*/ MatTransposeSymbolic_SeqAIJ,
                                        MatEliminateZeros_SeqAIJ,
-                                       MatGetRowSumAbs_SeqAIJ};
+                                       MatGetRowSumAbs_SeqAIJ,
+                                       NULL};
 
 static PetscErrorCode MatSeqAIJSetColumnIndices_SeqAIJ(Mat mat, PetscInt *indices)
 {
@@ -3850,7 +3850,7 @@ PetscErrorCode MatRetrieveValues(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateSeqAIJ - Creates a sparse matrix in `MATSEQAIJ` (compressed row) format
   (the default parallel PETSc format).  For good matrix assembly performance
   the user should preallocate the matrix storage by setting the parameter `nz`
@@ -3906,7 +3906,7 @@ PetscErrorCode MatCreateSeqAIJ(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt n
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqAIJSetPreallocation - For good matrix assembly performance
   the user should preallocate the matrix storage by setting the parameter nz
   (or the array nnz).  By setting these parameters accurately, performance
@@ -4412,7 +4412,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_IS_XAIJ(Mat);
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJRestoreArray()`, `MatSeqAIJGetArrayF90()`
 @*/
-PetscErrorCode MatSeqAIJGetArray(Mat A, PetscScalar **array)
+PetscErrorCode MatSeqAIJGetArray(Mat A, PetscScalar *array[])
 {
   Mat_SeqAIJ *aij = (Mat_SeqAIJ *)A->data;
 
@@ -4441,7 +4441,7 @@ PetscErrorCode MatSeqAIJGetArray(Mat A, PetscScalar **array)
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArrayF90()`
 @*/
-PetscErrorCode MatSeqAIJRestoreArray(Mat A, PetscScalar **array)
+PetscErrorCode MatSeqAIJRestoreArray(Mat A, PetscScalar *array[])
 {
   Mat_SeqAIJ *aij = (Mat_SeqAIJ *)A->data;
 
@@ -4471,7 +4471,7 @@ PetscErrorCode MatSeqAIJRestoreArray(Mat A, PetscScalar **array)
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArrayRead()`
 @*/
-PetscErrorCode MatSeqAIJGetArrayRead(Mat A, const PetscScalar **array)
+PetscErrorCode MatSeqAIJGetArrayRead(Mat A, const PetscScalar *array[])
 {
   Mat_SeqAIJ *aij = (Mat_SeqAIJ *)A->data;
 
@@ -4499,7 +4499,7 @@ PetscErrorCode MatSeqAIJGetArrayRead(Mat A, const PetscScalar **array)
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJGetArray()`, `MatSeqAIJGetArrayRead()`
 @*/
-PetscErrorCode MatSeqAIJRestoreArrayRead(Mat A, const PetscScalar **array)
+PetscErrorCode MatSeqAIJRestoreArrayRead(Mat A, const PetscScalar *array[])
 {
   Mat_SeqAIJ *aij = (Mat_SeqAIJ *)A->data;
 
@@ -4527,7 +4527,7 @@ PetscErrorCode MatSeqAIJRestoreArrayRead(Mat A, const PetscScalar **array)
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArrayRead()`
 @*/
-PetscErrorCode MatSeqAIJGetArrayWrite(Mat A, PetscScalar **array)
+PetscErrorCode MatSeqAIJGetArrayWrite(Mat A, PetscScalar *array[])
 {
   Mat_SeqAIJ *aij = (Mat_SeqAIJ *)A->data;
 
@@ -4557,7 +4557,7 @@ PetscErrorCode MatSeqAIJGetArrayWrite(Mat A, PetscScalar **array)
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJGetArray()`, `MatSeqAIJGetArrayRead()`
 @*/
-PetscErrorCode MatSeqAIJRestoreArrayWrite(Mat A, PetscScalar **array)
+PetscErrorCode MatSeqAIJRestoreArrayWrite(Mat A, PetscScalar *array[])
 {
   Mat_SeqAIJ *aij = (Mat_SeqAIJ *)A->data;
 
@@ -4595,7 +4595,7 @@ PetscErrorCode MatSeqAIJRestoreArrayWrite(Mat A, PetscScalar **array)
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJGetArray()`, `MatSeqAIJGetArrayRead()`
 @*/
-PetscErrorCode MatSeqAIJGetCSRAndMemType(Mat mat, const PetscInt **i, const PetscInt **j, PetscScalar **a, PetscMemType *mtype)
+PetscErrorCode MatSeqAIJGetCSRAndMemType(Mat mat, const PetscInt *i[], const PetscInt *j[], PetscScalar *a[], PetscMemType *mtype)
 {
   Mat_SeqAIJ *aij = (Mat_SeqAIJ *)mat->data;
 
@@ -4612,7 +4612,7 @@ PetscErrorCode MatSeqAIJGetCSRAndMemType(Mat mat, const PetscInt **i, const Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqAIJGetMaxRowNonzeros - returns the maximum number of nonzeros in any row
 
   Not Collective
@@ -5488,7 +5488,7 @@ PetscErrorCode MatEliminateZeros_SeqAIJ(Mat A, PetscBool keep)
 
 PetscFunctionList MatSeqAIJList = NULL;
 
-/*@C
+/*@
   MatSeqAIJSetType - Converts a `MATSEQAIJ` matrix to a subtype
 
   Collective
@@ -5523,7 +5523,7 @@ PetscErrorCode MatSeqAIJSetType(Mat mat, MatType matype)
 /*@C
   MatSeqAIJRegister -  - Adds a new sub-matrix type for sequential `MATSEQAIJ` matrices
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of a new user-defined matrix type, for example `MATSEQAIJCRL`
@@ -5591,7 +5591,6 @@ PetscErrorCode MatSeqAIJRegisterAll(void)
 /*
     Special version for direct calls from Fortran
 */
-#include <petsc/private/fortranimpl.h>
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define matsetvaluesseqaij_ MATSETVALUESSEQAIJ
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
@@ -5689,7 +5688,6 @@ PETSC_EXTERN void matsetvaluesseqaij_(Mat *AA, PetscInt *mm, const PetscInt im[]
       }
       rp[i] = col;
       ap[i] = value;
-      A->nonzerostate++;
     noinsert:;
       low = i + 1;
     }

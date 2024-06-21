@@ -24,7 +24,6 @@
         value = i/max
         PetscCall(PetscDrawLine(draw,zero,value,one,value,i,ierr))
  10   continue
-      return
       end
 
       program main

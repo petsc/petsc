@@ -712,10 +712,11 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
       PetscInt quadrature_order = field_order;
       PetscCall(DMClone(dm, &colloc_dm));
       { // Inform the new colloc_dm that it is a coordinate DM so isoperiodic affine corrections can be applied
-        PetscSF face_sf;
-        PetscCall(DMPlexGetIsoperiodicFaceSF(dm, &face_sf));
-        PetscCall(DMPlexSetIsoperiodicFaceSF(colloc_dm, face_sf));
-        if (face_sf) colloc_dm->periodic.setup = DMPeriodicCoordinateSetUp_Internal;
+        const PetscSF *face_sfs;
+        PetscInt       num_face_sfs;
+        PetscCall(DMPlexGetIsoperiodicFaceSF(dm, &num_face_sfs, &face_sfs));
+        PetscCall(DMPlexSetIsoperiodicFaceSF(colloc_dm, num_face_sfs, (PetscSF *)face_sfs));
+        if (face_sfs) colloc_dm->periodic.setup = DMPeriodicCoordinateSetUp_Internal;
       }
       PetscCall(DMPlexIsSimplex(dm, &is_simplex));
       PetscCall(PetscFECreateLagrange(PetscObjectComm((PetscObject)dm), topo_dim, coord_dim, is_simplex, field_order, quadrature_order, &fe));
@@ -784,10 +785,10 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
       PetscCall(DMPlexRestoreClosureIndices(cdm, cdm->localSection, cdm->localSection, i, PETSC_FALSE, &closure_dof, &closure_indices, NULL, NULL));
     }
     e_owned = cEnd - cStart;
-    PetscCall(MPIU_Allreduce(&e_owned, &e_global, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)dm)));
-    PetscCheck(e_global == num_global_elems, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unexpected number of elements %" PetscInt64_FMT "vs %" PetscInt_FMT, e_global, num_global_elems);
+    PetscCall(MPIU_Allreduce(&e_owned, &e_global, 1, MPIU_CGSIZE, MPI_SUM, PetscObjectComm((PetscObject)dm)));
+    PetscCheck(e_global == num_global_elems, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unexpected number of elements %" PRIdCGSIZE " vs %" PetscInt_FMT, e_global, num_global_elems);
     e_start = 0;
-    PetscCallMPI(MPI_Exscan(&e_owned, &e_start, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPI_Exscan(&e_owned, &e_start, 1, MPIU_CGSIZE, MPI_SUM, PetscObjectComm((PetscObject)dm)));
     PetscCallCGNS(cgp_section_write(cgv->file_num, base, zone, "Elem", element_type, 1, e_global, 0, &section));
     PetscCallCGNS(cgp_elements_write_data(cgv->file_num, base, zone, section, e_start + 1, e_start + e_owned, conn));
     PetscCall(PetscFree(conn));

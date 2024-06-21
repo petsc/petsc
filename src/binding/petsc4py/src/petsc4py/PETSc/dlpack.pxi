@@ -25,15 +25,15 @@ cdef enum PetscDLDeviceType:
     kDLCPU = <unsigned int>1
     kDLCUDA = <unsigned int>2
     kDLCUDAHost = <unsigned int>3
-    #kDLOpenCL = <unsigned int>4
-    #kDLVulkan = <unsigned int>7
-    #kDLMetal = <unsigned int>8
-    #kDLVPI = <unsigned int>9
+    # kDLOpenCL = <unsigned int>4
+    # kDLVulkan = <unsigned int>7
+    # kDLMetal = <unsigned int>8
+    # kDLVPI = <unsigned int>9
     kDLROCM = <unsigned int>10
     kDLROCMHost = <unsigned int>11
-    #kDLExtDev = <unsigned int>12
+    # kDLExtDev = <unsigned int>12
     kDLCUDAManaged = <unsigned int>13
-    #kDLOneAPI = <unsigned int>14
+    # kDLOneAPI = <unsigned int>14
 
 ctypedef struct DLContext:
     PetscDLDeviceType device_type

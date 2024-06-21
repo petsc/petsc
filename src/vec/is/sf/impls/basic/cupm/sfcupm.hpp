@@ -17,7 +17,7 @@ namespace impl
 {
 
 template <device::cupm::DeviceType T>
-struct SfInterface : device::cupm::impl::Interface<T> {
+struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL SfInterface : device::cupm::impl::Interface<T> {
   PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(T);
 
 private:

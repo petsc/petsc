@@ -43,7 +43,7 @@ implicit none
   do i=0,ldim-1
    iglobal = i + low
    v       = real(i + 100*rank)
-   PetscCallA(VecSetValues(u,one,iglobal,v,INSERT_VALUES,ierr))
+   PetscCallA(VecSetValues(u,one,[iglobal],[v],INSERT_VALUES,ierr))
   end do
   PetscCallA(VecAssemblyBegin(u,ierr))
   PetscCallA(VecAssemblyEnd(u,ierr))

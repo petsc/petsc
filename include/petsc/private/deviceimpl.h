@@ -3,6 +3,10 @@
 #include <petscdevice.h>
 #include <petsc/private/petscimpl.h>
 
+#if defined(PETSC_HAVE_CUPM)
+PETSC_INTERN int PetscDeviceCUPMRuntimeArch; // The real CUDA/HIP arch the code is run with. For log view and error diagnosis
+#endif
+
 /* logging support */
 PETSC_INTERN PetscLogEvent CUBLAS_HANDLE_CREATE;
 PETSC_INTERN PetscLogEvent CUSOLVER_HANDLE_CREATE;

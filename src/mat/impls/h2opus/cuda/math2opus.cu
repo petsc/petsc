@@ -12,7 +12,7 @@
   #include <h2opus/util/boxentrygen.h>
   #include <petsc/private/matimpl.h>
   #include <petsc/private/vecimpl.h>
-  #include <petsc/private/deviceimpl.h>
+  #include <petsc/private/deviceimpl.h> /*I "petscmat.h"   I*/
   #include <petscsf.h>
 
 /* math2opusutils */
@@ -1337,7 +1337,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_H2OPUS(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatH2OpusOrthogonalize - Orthogonalize the basis tree of a hierarchical matrix.
 
   Input Parameter:
@@ -1420,7 +1420,7 @@ PetscErrorCode MatH2OpusOrthogonalize(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatH2OpusCompress - Compress a hierarchical matrix.
 
   Input Parameters:
@@ -1527,7 +1527,7 @@ PetscErrorCode MatH2OpusCompress(Mat A, PetscReal tol)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatH2OpusSetSamplingMat - Set a matrix to be sampled from matrix-vector products on another matrix to construct a hierarchical matrix.
 
   Input Parameters:
@@ -1625,7 +1625,7 @@ PetscErrorCode MatCreateH2OpusFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateH2OpusFromMat - Creates a `MATH2OPUS` sampling from a user-supplied operator.
 
   Input Parameters:
@@ -1713,7 +1713,7 @@ PetscErrorCode MatCreateH2OpusFromMat(Mat B, PetscInt spacedim, const PetscReal 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatH2OpusGetIndexMap - Access reordering index set.
 
   Input Parameter:
@@ -1742,7 +1742,7 @@ PetscErrorCode MatH2OpusGetIndexMap(Mat A, IS *indexmap)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatH2OpusMapVec - Maps a vector between PETSc and H2Opus ordering
 
   Input Parameters:
@@ -1795,7 +1795,7 @@ PetscErrorCode MatH2OpusMapVec(Mat A, PetscBool nativetopetsc, Vec in, Vec *out)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatH2OpusLowRankUpdate - Perform a low-rank update of the form $ A = A + s * U * V^T $
 
   Input Parameters:

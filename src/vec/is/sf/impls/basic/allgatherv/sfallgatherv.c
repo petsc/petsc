@@ -119,7 +119,7 @@ static PetscErrorCode PetscSFBcastBegin_Allgatherv(PetscSF sf, MPI_Datatype unit
 
   if (dat->bcast_pattern && rank == dat->bcast_root) PetscCall((*link->Memcpy)(link, link->leafmtype_mpi, leafbuf, link->rootmtype_mpi, rootbuf, (size_t)sendcount * link->unitbytes));
   /* Ready the buffers for MPI */
-  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, PETSCSF_ROOT2LEAF));
+  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link));
   if (dat->bcast_pattern) PetscCallMPI(MPIU_Ibcast(leafbuf, sf->nleaves, unit, dat->bcast_root, comm, req));
   else PetscCallMPI(MPIU_Iallgatherv(rootbuf, sendcount, unit, leafbuf, dat->recvcounts, dat->displs, unit, comm, req));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -147,10 +147,10 @@ static PetscErrorCode PetscSFReduceBegin_Allgatherv(PetscSF sf, MPI_Datatype uni
     PetscCall(PetscSFLinkPackLeafData(sf, link, PETSCSF_REMOTE, leafdata));
     PetscCall(PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(sf, link, PETSC_TRUE /* device2host before sending */));
     PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, PETSCSF_LEAF2ROOT, &rootbuf, &leafbuf, &req, NULL));
-    PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, PETSCSF_LEAF2ROOT));
+    PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link));
     if (dat->bcast_pattern) {
-#if defined(PETSC_HAVE_OMPI_MAJOR_VERSION) /* Workaround: cuda-aware Open MPI 4.1.3 does not support MPI_Ireduce() with device buffers */
-      *req = MPI_REQUEST_NULL;             /* Set NULL so that we can safely MPI_Wait(req) */
+#if defined(PETSC_HAVE_OPENMPI) /* Workaround: cuda-aware Open MPI 4.1.3 does not support MPI_Ireduce() with device buffers */
+      *req = MPI_REQUEST_NULL;  /* Set NULL so that we can safely MPI_Wait(req) */
       PetscCallMPI(MPI_Reduce(leafbuf, rootbuf, sf->nleaves, unit, op, dat->bcast_root, comm));
 #else
       PetscCallMPI(MPIU_Ireduce(leafbuf, rootbuf, sf->nleaves, unit, op, dat->bcast_root, comm, req));
@@ -209,7 +209,7 @@ static PetscErrorCode PetscSFBcastToZero_Allgatherv(PetscSF sf, MPI_Datatype uni
   PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
   PetscCall(PetscMPIIntCast(sf->nroots, &sendcount));
   PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, PETSCSF_ROOT2LEAF, &rootbuf, &leafbuf, &req, NULL));
-  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, PETSCSF_ROOT2LEAF));
+  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link));
   PetscCallMPI(MPIU_Igatherv(rootbuf, sendcount, unit, leafbuf, dat->recvcounts, dat->displs, unit, 0 /*rank 0*/, comm, req));
 
   PetscCall(PetscSFLinkGetInUse(sf, unit, rootdata, leafdata, PETSC_OWN_POINTER, &link));

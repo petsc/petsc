@@ -1,4 +1,4 @@
-static char help[] = "Loosing nullspaces in PCFIELDSPLIT after zeroing rows.\n";
+static char help[] = "Losing nullspaces in PCFIELDSPLIT after zeroing rows.\n";
 
 // Contributed by Jeremy Theler
 

@@ -1,0 +1,9 @@
+[tool.cython-lint]
+ignore = [
+  "E125", # continuation line with same indent as next logical line
+  "E221", # multiple spaces before operator
+  "E261", # at least two spaces before inline comment
+  "E501", # line too long
+  "E701", # multiple statements on one line (colon)
+  "E702", # multiple statements on one line (semicolon)
+]

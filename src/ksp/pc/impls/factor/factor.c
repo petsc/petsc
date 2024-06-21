@@ -172,7 +172,7 @@ PetscErrorCode PCFactorSetShiftType(PC pc, MatFactorShiftType shifttype)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `PCCHOLESKY`, `PCLU`, ``PCFactorSetZeroPivot()`, `PCFactorSetShiftType()`
+.seealso: [](ch_ksp), `PCCHOLESKY`, `PCLU`, `PCFactorSetZeroPivot()`, `PCFactorSetShiftType()`
 @*/
 PetscErrorCode PCFactorSetShiftAmount(PC pc, PetscReal shiftamount)
 {
@@ -415,7 +415,7 @@ PetscErrorCode PCFactorReorderForNonzeroDiagonal(PC pc, PetscReal rtol)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCFactorSetMatSolverType - sets the solver package that is used to perform the factorization
 
   Logically Collective
@@ -445,7 +445,7 @@ PetscErrorCode PCFactorSetMatSolverType(PC pc, MatSolverType stype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCFactorGetMatSolverType - gets the solver package that is used to perform the factorization
 
   Not Collective
@@ -571,7 +571,7 @@ PetscErrorCode PCFactorGetUseInPlace(PC pc, PetscBool *flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCFactorSetMatOrderingType - Sets the ordering routine (to reduce fill) to
   be used in the `PCLU`, `PCCHOLESKY`, `PCILU`,  or `PCICC` preconditioners
 

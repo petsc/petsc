@@ -4,8 +4,8 @@
    implementations of DM API functions, and other files here contain additional
    DMStag-specific API functions, as well as internal functions.
 */
-#include <petsc/private/dmstagimpl.h>
-#include <petscsf.h>
+#include <petsc/private/dmstagimpl.h> /*I  "petscdmstag.h"   I*/
+#include <petscsf.h>                  /*I  "petscdsf.h"   I*/
 
 static PetscErrorCode DMCreateFieldDecomposition_Stag(DM dm, PetscInt *len, char ***namelist, IS **islist, DM **dmlist)
 {

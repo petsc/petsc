@@ -214,7 +214,7 @@ static PetscErrorCode DMDestroy_Forest(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMForestSetTopology - Set the topology of a `DMFOREST` during the pre-setup phase.  The topology is a string (e.g.
   "cube", "shell") and can be interpreted by subtypes of `DMFOREST`) to construct the base DM of a forest during
   `DMSetUp()`.
@@ -241,7 +241,7 @@ PetscErrorCode DMForestSetTopology(DM dm, DMForestTopology topology)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMForestGetTopology - Get a string describing the topology of a `DMFOREST`.
 
   Not Collective
@@ -874,7 +874,7 @@ PetscErrorCode DMForestGetMaximumRefinement(DM dm, PetscInt *maxRefinement)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMForestSetAdaptivityStrategy - During the pre-setup phase, set the strategy for combining adaptivity labels from multiple processes.
 
   Logically Collective
@@ -903,7 +903,7 @@ PetscErrorCode DMForestSetAdaptivityStrategy(DM dm, DMForestAdaptivityStrategy a
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMForestGetAdaptivityStrategy - Get the strategy for combining adaptivity labels from multiple processes.
 
   Not Collective
@@ -1271,7 +1271,7 @@ PetscErrorCode DMForestGetCellSF(DM dm, PetscSF *cellSF)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMForestSetAdaptivityLabel - During the pre-setup phase, set the label of the pre-adaptation forest (see
   `DMForestGetAdaptivityForest()`) that holds the adaptation flags (refinement, coarsening, or some combination).
 
@@ -1303,7 +1303,7 @@ PetscErrorCode DMForestSetAdaptivityLabel(DM dm, DMLabel adaptLabel)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMForestGetAdaptivityLabel - Get the label of the pre-adaptation forest (see `DMForestGetAdaptivityForest()`) that
   holds the adaptation flags (refinement, coarsening, or some combination).
 

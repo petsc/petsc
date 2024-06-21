@@ -3,17 +3,17 @@ import unittest
 
 # --------------------------------------------------------------------
 
-class BaseTestLGMap(object):
 
+class BaseTestLGMap:
     def _mk_idx(self, comm):
         comm_size = comm.getSize()
         comm_rank = comm.getRank()
         lsize = 10
         first = lsize * comm_rank
-        last  = first + lsize
+        last = first + lsize
         if comm_rank > 0:
             first -= 1
-        if comm_rank < (comm_size-1):
+        if comm_rank < (comm_size - 1):
             last += 1
         return list(range(first, last))
 
@@ -27,7 +27,7 @@ class BaseTestLGMap(object):
 
     def testGetIndices(self):
         size = self.lgmap.getSize()
-        idx  = self.lgmap.getIndices()
+        idx = self.lgmap.getIndices()
         self.assertEqual(len(idx), size)
         for i, val in enumerate(self.idx):
             self.assertEqual(idx[i], val)
@@ -36,43 +36,43 @@ class BaseTestLGMap(object):
         info = self.lgmap.getInfo()
         self.assertEqual(type(info), dict)
         if self.lgmap.getComm().getSize() == 1:
-            self.assertEqual(info, {})
+            self.assertTrue(len(info) == 1)
         else:
             self.assertTrue(len(info) > 1)
             self.assertTrue(len(info) < 4)
 
     def testApply(self):
-        idxin  = list(range(self.lgmap.getSize()))
+        idxin = list(range(self.lgmap.getSize()))
         idxout = self.lgmap.apply(idxin)
         self.lgmap.apply(idxin, idxout)
-        invmap = self.lgmap.applyInverse(idxout)
-
+        _ = self.lgmap.applyInverse(idxout)
 
     def testApplyIS(self):
-        is_in  = PETSc.IS().createStride(self.lgmap.getSize())
-        is_out = self.lgmap.apply(is_in)
+        is_in = PETSc.IS().createStride(self.lgmap.getSize())
+        _ = self.lgmap.apply(is_in)
 
     def testProperties(self):
         for prop in ('size', 'indices', 'info'):
             self.assertTrue(hasattr(self.lgmap, prop))
 
+
 # --------------------------------------------------------------------
 
-class TestLGMap(BaseTestLGMap, unittest.TestCase):
 
+class TestLGMap(BaseTestLGMap, unittest.TestCase):
     def setUp(self):
-        self.idx   = self._mk_idx(PETSc.COMM_WORLD)
+        self.idx = self._mk_idx(PETSc.COMM_WORLD)
         self.lgmap = PETSc.LGMap().create(self.idx, comm=PETSc.COMM_WORLD)
 
-class TestLGMapIS(BaseTestLGMap, unittest.TestCase):
 
+class TestLGMapIS(BaseTestLGMap, unittest.TestCase):
     def setUp(self):
-        self.idx   = self._mk_idx(PETSc.COMM_WORLD)
-        self.iset  = PETSc.IS().createGeneral(self.idx, comm=PETSc.COMM_WORLD)
+        self.idx = self._mk_idx(PETSc.COMM_WORLD)
+        self.iset = PETSc.IS().createGeneral(self.idx, comm=PETSc.COMM_WORLD)
         self.lgmap = PETSc.LGMap().create(self.iset)
 
     def tearDown(self):
-        self.iset  = None
+        self.iset = None
         self.lgmap = None
 
     def testSameComm(self):
@@ -80,10 +80,11 @@ class TestLGMapIS(BaseTestLGMap, unittest.TestCase):
         comm2 = self.iset.getComm()
         self.assertEqual(comm1, comm2)
 
+
 # --------------------------------------------------------------------
 
-class TestLGMapBlock(unittest.TestCase):
 
+class TestLGMapBlock(unittest.TestCase):
     BS = 3
 
     def setUp(self):
@@ -92,10 +93,10 @@ class TestLGMapBlock(unittest.TestCase):
         comm_rank = comm.getRank()
         lsize = 10
         first = lsize * comm_rank
-        last  = first + lsize
+        last = first + lsize
         if comm_rank > 0:
             first -= 1
-        if comm_rank < (comm_size-1):
+        if comm_rank < (comm_size - 1):
             last += 1
         self.idx = list(range(first, last))
         bs = self.BS
@@ -116,7 +117,7 @@ class TestLGMapBlock(unittest.TestCase):
         size = self.lgmap.getSize()
         bs = self.lgmap.getBlockSize()
         idx = self.lgmap.getBlockIndices()
-        self.assertEqual(len(idx), size//bs)
+        self.assertEqual(len(idx), size // bs)
         for i, val in enumerate(self.idx):
             self.assertEqual(idx[i], val)
 
@@ -127,13 +128,13 @@ class TestLGMapBlock(unittest.TestCase):
         self.assertEqual(len(idx), size)
         for i, val in enumerate(self.idx):
             for j in range(bs):
-                self.assertEqual(idx[i*bs+j], val*bs+j)
+                self.assertEqual(idx[i * bs + j], val * bs + j)
 
     def testGetBlockInfo(self):
         info = self.lgmap.getBlockInfo()
         self.assertEqual(type(info), dict)
         if self.lgmap.getComm().getSize() == 1:
-            self.assertEqual(info, {})
+            self.assertTrue(len(info) == 1)
         else:
             self.assertTrue(len(info) > 1)
             self.assertTrue(len(info) < 4)
@@ -142,10 +143,11 @@ class TestLGMapBlock(unittest.TestCase):
         info = self.lgmap.getInfo()
         self.assertEqual(type(info), dict)
         if self.lgmap.getComm().getSize() == 1:
-            self.assertEqual(info, {})
+            self.assertTrue(len(info) == 1)
         else:
             self.assertTrue(len(info) > 1)
             self.assertTrue(len(info) < 4)
+
 
 # --------------------------------------------------------------------
 

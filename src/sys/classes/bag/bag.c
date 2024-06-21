@@ -517,7 +517,7 @@ PetscErrorCode PetscBagRegisterBool(PetscBag bag, void *addr, PetscBool mdefault
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagDestroy - Destroys a `PetscBag`
 
   Collective
@@ -626,7 +626,7 @@ PetscErrorCode PetscBagSetFromOptions(PetscBag bag)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagView - Views a bag of values as either ASCII text or a binary file
 
   Collective
@@ -747,7 +747,7 @@ PetscErrorCode PetscBagView(PetscBag bag, PetscViewer view)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagViewFromOptions - Processes command line options to determine if/how a `PetscBag` is to be viewed.
 
   Collective
@@ -787,7 +787,7 @@ PetscErrorCode PetscBagViewFromOptions(PetscBag bag, PetscObject bobj, const cha
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagLoad - Loads a bag of values from a binary file
 
   Collective
@@ -879,9 +879,9 @@ PetscErrorCode PetscBagLoad(PetscViewer view, PetscBag bag)
   Notes:
   After creating the bag, for each entry in the C struct call the appropriate `PetscBagRegisterInt()` etc to define the C structs layout
 
-  The size of the A struct must be small enough to fit in a `PetscInt`; by default
+  The size of the struct must be small enough to fit in a `PetscInt`; by default
   `PetscInt` is 4 bytes; this means a bag cannot be larger than 2 gigabytes in length.
-  The warning about casting to a shorter length can be ignored below unless your A struct is too large
+  The warning about casting to a shorter length can be ignored below unless your struct is too large
 
 .seealso: `PetscBag`, `PetscBagGetName()`, `PetscBagView()`, `PetscBagLoad()`, `PetscBagGetData()`
           `PetscBagRegisterReal()`, `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
@@ -893,9 +893,10 @@ PetscErrorCode PetscBagCreate(MPI_Comm comm, size_t bagsize, PetscBag *bag)
 
   PetscFunctionBegin;
   PetscAssertPointer(bag, 3);
+  PetscCall(PetscIntCast((PetscInt64)totalsize, NULL));
+
   PetscCall(PetscInfo(NULL, "Creating Bag with total size %d\n", (int)totalsize));
   PetscCall(PetscCalloc(totalsize, bag));
-
   (*bag)->bagsize        = totalsize;
   (*bag)->bagcomm        = comm;
   (*bag)->bagprefix      = NULL;
@@ -903,7 +904,7 @@ PetscErrorCode PetscBagCreate(MPI_Comm comm, size_t bagsize, PetscBag *bag)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagSetName - Sets the name of a bag of values
 
   Not Collective
@@ -947,7 +948,7 @@ PetscErrorCode PetscBagSetName(PetscBag bag, const char *name, const char *help)
           `PetscBagRegisterReal()`, `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
           `PetscBagSetFromOptions()`, `PetscBagCreate()`, `PetscBagDestroy()`, `PetscBagRegisterEnum()`
 @*/
-PetscErrorCode PetscBagGetName(PetscBag bag, char **name)
+PetscErrorCode PetscBagGetName(PetscBag bag, const char **name)
 {
   PetscFunctionBegin;
   PetscAssertPointer(bag, 1);
@@ -984,7 +985,7 @@ PetscErrorCode PetscBagGetData(PetscBag bag, void **data)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagSetOptionsPrefix - Sets the prefix used for searching for all
   `PetscBag` items in the options database.
 

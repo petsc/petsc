@@ -144,9 +144,12 @@ PetscErrorCode PetscDrawSplitViewPort(PetscDraw draw)
 
   Level: advanced
 
+  Fortran Note:
+  No Fortran support since `PetscDrawViewPorts` is a C struct
+
 .seealso: `PetscDrawSplitViewPort()`, `PetscDrawSetViewPort()`, `PetscDrawViewPortsSet()`, `PetscDrawViewPortsDestroy()`
 @*/
-PetscErrorCode PetscDrawViewPortsCreate(PetscDraw draw, PetscInt nports, PetscDrawViewPorts **newports)
+PetscErrorCode PetscDrawViewPortsCreate(PetscDraw draw, PetscInt nports, PetscDrawViewPorts *newports[])
 {
   PetscDrawViewPorts *ports;
   PetscInt            i, n;
@@ -225,9 +228,12 @@ PetscErrorCode PetscDrawViewPortsCreate(PetscDraw draw, PetscInt nports, PetscDr
 
   Level: advanced
 
+  Fortran Note:
+  No Fortran support since `PetscDrawViewPorts` is a C struct
+
 .seealso: `PetscDrawSplitViewPort()`, `PetscDrawSetViewPort()`, `PetscDrawViewPortsSet()`, `PetscDrawViewPortsDestroy()`, `PetscDrawViewPorts`
 @*/
-PetscErrorCode PetscDrawViewPortsCreateRect(PetscDraw draw, PetscInt nx, PetscInt ny, PetscDrawViewPorts **newports)
+PetscErrorCode PetscDrawViewPortsCreateRect(PetscDraw draw, PetscInt nx, PetscInt ny, PetscDrawViewPorts *newports[])
 {
   PetscDrawViewPorts *ports;
   PetscReal          *xl, *xr, *yl, *yr, hx, hy;
@@ -302,6 +308,9 @@ PetscErrorCode PetscDrawViewPortsCreateRect(PetscDraw draw, PetscInt nx, PetscIn
 
   Level: advanced
 
+  Fortran Note:
+  No Fortran support since `PetscDrawViewPorts` is a C struct
+
 .seealso: `PetscDrawViewPorts`, `PetscDrawSplitViewPort()`, `PetscDrawSetViewPort()`, `PetscDrawViewPortsSet()`, `PetscDrawViewPortsCreate()`
 @*/
 PetscErrorCode PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
@@ -327,6 +336,9 @@ PetscErrorCode PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
 - port  - the port number, from 0 to nports-1
 
   Level: advanced
+
+  Fortran Note:
+  No Fortran support since `PetscDrawViewPorts` is a C struct
 
 .seealso: `PetscDrawViewPorts`, `PetscDrawSplitViewPort()`, `PetscDrawSetViewPort()`, `PetscDrawViewPortsDestroy()`, `PetscDrawViewPortsCreate()`
 @*/

@@ -318,7 +318,7 @@ PetscErrorCode SNESFASSetCycles(SNES snes, PetscInt cycles)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   SNESFASSetMonitor - Sets the method-specific cycle monitoring
 
   Logically Collective

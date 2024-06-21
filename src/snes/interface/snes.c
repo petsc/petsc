@@ -271,7 +271,7 @@ PetscErrorCode SNESGetJacobianDomainError(SNES snes, PetscBool *domainerror)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESLoad - Loads a `SNES` that has been stored in `PETSCVIEWERBINARY` with `SNESView()`.
 
   Collective
@@ -321,7 +321,7 @@ PetscErrorCode SNESLoad(SNES snes, PetscViewer viewer)
   #include <petscviewersaws.h>
 #endif
 
-/*@C
+/*@
   SNESViewFromOptions - View a `SNES` based on values in the options database
 
   Collective
@@ -345,7 +345,7 @@ PetscErrorCode SNESViewFromOptions(SNES A, PetscObject obj, const char name[])
 
 PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES, Vec, Mat, Mat, void *);
 
-/*@C
+/*@
   SNESView - Prints or visualizes the `SNES` data structure.
 
   Collective
@@ -681,6 +681,7 @@ static PetscErrorCode DMCoarsenHook_SNESVecSol(DM dm, DM dmc, void *ctx)
 static PetscErrorCode KSPComputeOperators_SNES(KSP ksp, Mat A, Mat B, void *ctx)
 {
   SNES            snes = (SNES)ctx;
+  DMSNES          sdm;
   Vec             X, Xnamed = NULL;
   DM              dmsave;
   void           *ctxsave;
@@ -690,21 +691,37 @@ static PetscErrorCode KSPComputeOperators_SNES(KSP ksp, Mat A, Mat B, void *ctx)
   dmsave = snes->dm;
   PetscCall(KSPGetDM(ksp, &snes->dm));
   if (dmsave == snes->dm) X = snes->vec_sol; /* We are on the finest level */
-  else { /* We are on a coarser level, this vec was initialized using a DM restrict hook */ PetscCall(DMGetNamedGlobalVector(snes->dm, "SNESVecSol", &Xnamed));
+  else {
+    PetscBool has;
+
+    /* We are on a coarser level, this vec was initialized using a DM restrict hook */
+    PetscCall(DMHasNamedGlobalVector(snes->dm, "SNESVecSol", &has));
+    PetscCheck(has, PetscObjectComm((PetscObject)snes->dm), PETSC_ERR_PLIB, "Missing SNESVecSol");
+    PetscCall(DMGetNamedGlobalVector(snes->dm, "SNESVecSol", &Xnamed));
     X = Xnamed;
     PetscCall(SNESGetJacobian(snes, NULL, NULL, &jac, &ctxsave));
     /* If the DM's don't match up, the MatFDColoring context needed for the jacobian won't match up either -- fixit. */
     if (jac == SNESComputeJacobianDefaultColor) PetscCall(SNESSetJacobian(snes, NULL, NULL, SNESComputeJacobianDefaultColor, NULL));
   }
-  /* Make sure KSP DM has the Jacobian computation routine */
-  {
-    DMSNES sdm;
 
-    PetscCall(DMGetDMSNES(snes->dm, &sdm));
-    if (!sdm->ops->computejacobian) PetscCall(DMCopyDMSNES(dmsave, snes->dm));
-  }
   /* Compute the operators */
+  PetscCall(DMGetDMSNES(snes->dm, &sdm));
+  if (Xnamed && sdm->ops->computefunction) {
+    /* The SNES contract with the user is that ComputeFunction is always called before ComputeJacobian.
+       We make sure of this here. Disable affine shift since it is for the finest level */
+    Vec F, saverhs = snes->vec_rhs;
+
+    snes->vec_rhs = NULL;
+    PetscCall(DMGetGlobalVector(snes->dm, &F));
+    PetscCall(SNESComputeFunction(snes, X, F));
+    PetscCall(DMRestoreGlobalVector(snes->dm, &F));
+    snes->vec_rhs = saverhs;
+    snes->nfuncs--; /* Do not log coarser level evaluations */
+  }
+  /* Make sure KSP DM has the Jacobian computation routine */
+  if (!sdm->ops->computejacobian) PetscCall(DMCopyDMSNES(dmsave, snes->dm));
   PetscCall(SNESComputeJacobian(snes, X, A, B));
+
   /* Put the previous context back */
   if (snes->dm != dmsave && jac == SNESComputeJacobianDefaultColor) PetscCall(SNESSetJacobian(snes, NULL, NULL, jac, ctxsave));
 
@@ -1742,11 +1759,9 @@ PetscErrorCode SNESCreate(MPI_Comm comm, SNES *outsnes)
 
   PetscFunctionBegin;
   PetscAssertPointer(outsnes, 2);
-  *outsnes = NULL;
   PetscCall(SNESInitializePackage());
 
   PetscCall(PetscHeaderCreate(snes, SNES_CLASSID, "SNES", "Nonlinear solver", "SNES", comm, SNESDestroy, SNESView));
-
   snes->ops->converged       = SNESConvergedDefault;
   snes->usesksp              = PETSC_TRUE;
   snes->tolerancesset        = PETSC_FALSE;
@@ -2064,7 +2079,7 @@ PetscErrorCode SNESGetSolutionNorm(SNES snes, PetscReal *xnorm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESSetFunctionType - Sets the `SNESFunctionType`
   of the `SNES` method.
 
@@ -2094,7 +2109,7 @@ PetscErrorCode SNESSetFunctionType(SNES snes, SNESFunctionType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESGetFunctionType - Gets the `SNESFunctionType` used in convergence and monitoring set with `SNESSetFunctionType()`
   of the SNES method.
 
@@ -3390,7 +3405,7 @@ PetscErrorCode SNESConvergedReasonViewCancel(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESDestroy - Destroys the nonlinear solver context that was created
   with `SNESCreate()`.
 
@@ -4393,31 +4408,33 @@ PetscErrorCode SNESGetConvergenceHistory(SNES snes, PetscReal *a[], PetscInt *it
 /*@C
   SNESSetUpdate - Sets the general-purpose update function called
   at the beginning of every iteration of the nonlinear solve. Specifically
-  it is called just before the Jacobian is "evaluated".
+  it is called just before the Jacobian is "evaluated" and after the function
+  evaluation.
 
   Logically Collective
 
   Input Parameters:
 + snes - The nonlinear solver context
-- func - The function
-
-  Calling sequence of `func`:
-+ snes - the nonlinear solver context
-- step - The current step of the iteration
+- func - The update function; for calling sequence see `SNESUpdateFn`
 
   Level: advanced
 
   Notes:
   This is NOT what one uses to update the ghost points before a function evaluation, that should be done at the beginning of your function provided
   to `SNESSetFunction()`, or `SNESSetPicard()`
-  This is not used by most users.
+  This is not used by most users, and it is intended to provide a general hook that is run
+  right before the direction step is computed.
+  Users are free to modify the current residual vector,
+  the current linearization point, or any other vector associated to the specific solver used.
+  If such modifications take place, it is the user responsibility to update all the relevant
+  vectors.
 
   There are a variety of function hooks one many set that are called at different stages of the nonlinear solution process, see the functions listed below.
 
 .seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESSetJacobian()`, `SNESLineSearchSetPreCheck()`, `SNESLineSearchSetPostCheck()`, `SNESNewtonTRSetPreCheck()`, `SNESNewtonTRSetPostCheck()`,
-         `SNESMonitorSet()`, `SNESSetDivergenceTest()`
+         `SNESMonitorSet()`
 @*/
-PetscErrorCode SNESSetUpdate(SNES snes, PetscErrorCode (*func)(SNES snes, PetscInt step))
+PetscErrorCode SNESSetUpdate(SNES snes, SNESUpdateFn *func)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
@@ -4425,7 +4442,7 @@ PetscErrorCode SNESSetUpdate(SNES snes, PetscErrorCode (*func)(SNES snes, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESConvergedReasonView - Displays the reason a `SNES` solve converged or diverged to a viewer
 
   Collective
@@ -4459,7 +4476,7 @@ PetscErrorCode SNESConvergedReasonView(SNES snes, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isAscii));
   if (isAscii) {
     PetscCall(PetscViewerGetFormat(viewer, &format));
-    PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)snes)->tablevel));
+    PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)snes)->tablevel + 1));
     if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       DM       dm;
       Vec      u;
@@ -4493,7 +4510,7 @@ PetscErrorCode SNESConvergedReasonView(SNES snes, PetscViewer viewer)
         PetscCall(PetscViewerASCIIPrintf(viewer, "Nonlinear solve did not converge due to %s iterations %" PetscInt_FMT "\n", SNESConvergedReasons[snes->reason], snes->iter));
       }
     }
-    PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)snes)->tablevel));
+    PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)snes)->tablevel + 1));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4783,7 +4800,7 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x)
 
 /* --------- Internal routines for SNES Package --------- */
 
-/*@C
+/*@
   SNESSetType - Sets the method for the nonlinear solver.
 
   Collective
@@ -4856,7 +4873,7 @@ PetscErrorCode SNESSetType(SNES snes, SNESType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESGetType - Gets the `SNES` method type and name (as a string).
 
   Not Collective
@@ -5028,7 +5045,7 @@ PetscErrorCode SNESGetNGS(SNES snes, SNESNGSFn **f, void **ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESSetOptionsPrefix - Sets the prefix used for searching for all
   `SNES` options in the database.
 
@@ -5060,7 +5077,7 @@ PetscErrorCode SNESSetOptionsPrefix(SNES snes, const char prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESAppendOptionsPrefix - Appends to the prefix used for searching for all
   `SNES` options in the database.
 
@@ -5092,7 +5109,7 @@ PetscErrorCode SNESAppendOptionsPrefix(SNES snes, const char prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESGetOptionsPrefix - Gets the prefix used for searching for all
   `SNES` options in the database.
 

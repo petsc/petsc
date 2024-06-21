@@ -470,6 +470,18 @@ process, while ``end`` specifies *one more than* the last owned by the
 local process. This command is useful, for instance, in assembling
 parallel vectors.
 
+If the `Vec` was obtained from a `DM` with `DMCreateGlobalVector()`, then the range values are determined by the specific `DM`.
+If the `Vec` was created directly, the range values are determined by the local size passed to `VecSetSizes()` or `VecCreateMPI()`.
+If `PETSC_DECIDE` was passed as the local size, then the vector uses default values for the range using `PetscSplitOwnership()`.
+For certain `DM`, such as `DMDA`, it is better to use `DM` specific routines, such as `DMDAGetGhostCorners()`, to determine
+the local values in the vector.
+
+Very occasionally, all MPI processes need to know all the range values, these can be obtained with
+
+.. code-block::
+
+   VecGetOwnershipRanges(Vec vec,PetscInt range[]);
+
 The number of elements stored locally can be accessed with
 
 .. code-block::

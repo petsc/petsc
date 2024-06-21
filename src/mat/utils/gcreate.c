@@ -3,7 +3,7 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 
-PETSC_INTERN PetscErrorCode MatSetBlockSizes_Default(Mat mat, PetscInt rbs, PetscInt cbs)
+PetscErrorCode MatSetBlockSizes_Default(Mat mat, PetscInt rbs, PetscInt cbs)
 {
   PetscFunctionBegin;
   if (!mat->preallocated) PetscFunctionReturn(PETSC_SUCCESS);
@@ -12,7 +12,7 @@ PETSC_INTERN PetscErrorCode MatSetBlockSizes_Default(Mat mat, PetscInt rbs, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y, PetscScalar a)
+PetscErrorCode MatShift_Basic(Mat Y, PetscScalar a)
 {
   PetscInt    i, start, end, oldValA = 0, oldValB = 0;
   PetscScalar alpha = a;
@@ -98,8 +98,6 @@ PetscErrorCode MatCreate(MPI_Comm comm, Mat *A)
 
   PetscFunctionBegin;
   PetscAssertPointer(A, 2);
-
-  *A = NULL;
   PetscCall(MatInitializePackage());
 
   PetscCall(PetscHeaderCreate(B, MAT_CLASSID, "Mat", "Matrix", "Mat", comm, MatDestroy, MatView));
@@ -124,7 +122,7 @@ PetscErrorCode MatCreate(MPI_Comm comm, Mat *A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateFromOptions - Creates a matrix whose type is set from the options database
 
   Collective
@@ -216,11 +214,15 @@ PetscErrorCode MatSetErrorIfFailure(Mat mat, PetscBool flg)
   Likewise, the `n` used must match that used as the local size in
   `VecCreateMPI()` for 'x'.
 
+  If `m` and `n` are not `PETSC_DECIDE`, then the values determine the `PetscLayout` of the matrix and the ranges returned by
+  `MatGetOwnershipRange()`,  `MatGetOwnershipRanges()`, `MatGetOwnershipRangeColumn()`, and `MatGetOwnershipRangesColumn()`.
+
   You cannot change the sizes once they have been set.
 
   The sizes must be set before `MatSetUp()` or MatXXXSetPreallocation() is called.
 
-.seealso: [](ch_matrices), `Mat`, `MatGetSize()`, `PetscSplitOwnership()`
+.seealso: [](ch_matrices), `Mat`, `MatGetSize()`, `PetscSplitOwnership()`, `MatGetOwnershipRange()`, `MatGetOwnershipRanges()`,
+          `MatGetOwnershipRangeColumn()`, `MatGetOwnershipRangesColumn()`, `PetscLayout`, `VecSetSizes()`
 @*/
 PetscErrorCode MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt N)
 {
@@ -335,7 +337,7 @@ PetscErrorCode MatSetFromOptions(Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatXAIJSetPreallocation - set preallocation for serial and parallel `MATAIJ`, `MATBAIJ`, and `MATSBAIJ` matrices and their unassembled versions.
 
   Collective
@@ -422,6 +424,11 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A, PetscInt bs, const PetscInt dnnz[]
 
   Level: developer
 
+  Notes:
+  `A` and `C` must be of the same type.
+  The object list and query function list in `A` are retained, as well as the object name, and prefix.
+  The object state of `A` is increased by 1.
+
   Developer Note:
   This is somewhat different from `MatHeaderReplace()`, it would be nice to merge the code
 
@@ -429,19 +436,21 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A, PetscInt bs, const PetscInt dnnz[]
  @*/
 PetscErrorCode MatHeaderMerge(Mat A, Mat *C)
 {
-  PetscInt         refct;
-  PetscOps         Abops;
-  struct _MatOps   Aops;
-  char            *mtype, *mname, *mprefix;
-  Mat_Product     *product;
-  Mat_Redundant   *redundant;
-  PetscObjectState state;
+  PetscInt          refct;
+  PetscOps          Abops;
+  struct _MatOps    Aops;
+  char             *mtype, *mname, *mprefix;
+  Mat_Product      *product;
+  Mat_Redundant    *redundant;
+  PetscObjectState  state;
+  PetscObjectList   olist;
+  PetscFunctionList qlist;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidHeaderSpecific(*C, MAT_CLASSID, 2);
   if (A == *C) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCheckSameComm(A, 1, *C, 2);
+  PetscCheckSameTypeAndComm(A, 1, *C, 2);
   /* save the parts of A we need */
   Abops     = ((PetscObject)A)->bops[0];
   Aops      = A->ops[0];
@@ -452,10 +461,14 @@ PetscErrorCode MatHeaderMerge(Mat A, Mat *C)
   mprefix   = ((PetscObject)A)->prefix;
   product   = A->product;
   redundant = A->redundant;
+  qlist     = ((PetscObject)A)->qlist;
+  olist     = ((PetscObject)A)->olist;
 
   /* zero these so the destroy below does not free them */
   ((PetscObject)A)->type_name = NULL;
   ((PetscObject)A)->name      = NULL;
+  ((PetscObject)A)->qlist     = NULL;
+  ((PetscObject)A)->olist     = NULL;
 
   /*
      free all the interior data structures from mat
@@ -468,8 +481,6 @@ PetscErrorCode MatHeaderMerge(Mat A, Mat *C)
   PetscCall(PetscFree(A->defaultrandtype));
   PetscCall(PetscLayoutDestroy(&A->rmap));
   PetscCall(PetscLayoutDestroy(&A->cmap));
-  PetscCall(PetscFunctionListDestroy(&((PetscObject)A)->qlist));
-  PetscCall(PetscObjectListDestroy(&((PetscObject)A)->olist));
   PetscCall(PetscComposedQuantitiesDestroy((PetscObject)A));
 
   /* copy C over to A */
@@ -487,10 +498,15 @@ PetscErrorCode MatHeaderMerge(Mat A, Mat *C)
   A->product                  = product;
   A->redundant                = redundant;
 
+  /* Append the saved lists */
+  PetscCall(PetscFunctionListDuplicate(qlist, &((PetscObject)A)->qlist));
+  PetscCall(PetscObjectListDuplicate(olist, &((PetscObject)A)->olist));
+  PetscCall(PetscFunctionListDestroy(&qlist));
+  PetscCall(PetscObjectListDestroy(&olist));
+
   /* since these two are copied into A we do not want them destroyed in C */
   ((PetscObject)*C)->qlist = NULL;
   ((PetscObject)*C)->olist = NULL;
-
   PetscCall(PetscHeaderDestroy(C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -670,7 +686,7 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A, PetscCount ncoo, PetscInt coo
   Level: beginner
 
   Notes:
-  The indices `coo_i` and `coo_j` may be modified within this function. The caller should not rely on them
+  The indices within `coo_i` and `coo_j` may be modified within this function. The caller should not rely on them
   having any specific value after this function returns. The arrays can be freed or reused immediately
   after this function returns.
 

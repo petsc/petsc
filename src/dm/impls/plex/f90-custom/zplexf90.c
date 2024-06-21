@@ -42,8 +42,6 @@
   #define dmplexrestoremeet_              dmplexrestoremeet
 #endif
 
-/* Definitions of Fortran Wrapper routines */
-
 PETSC_EXTERN void dmplexgetcone_(DM *dm, PetscInt *p, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscInt *v;

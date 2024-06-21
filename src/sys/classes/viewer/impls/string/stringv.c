@@ -139,7 +139,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v)
 }
 
 /*@C
-
   PetscViewerStringGetStringRead - Returns the string that a `PETSCVIEWERSTRING` uses
 
   Logically Collective
@@ -174,7 +173,6 @@ PetscErrorCode PetscViewerStringGetStringRead(PetscViewer viewer, const char *st
 }
 
 /*@C
-
   PetscViewerStringSetString - sets the string that a string viewer will print to
 
   Logically Collective
@@ -215,8 +213,7 @@ PetscErrorCode PetscViewerStringSetString(PetscViewer viewer, char string[], siz
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
-
+/*@
   PetscViewerStringSetOwnString - tells the viewer that it now owns the string and is responsible for freeing it
 
   Logically Collective

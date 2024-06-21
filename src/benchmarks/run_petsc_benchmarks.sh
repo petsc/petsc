@@ -72,7 +72,7 @@ fi
 # taken as the final result.
 run_spmv_benchmarks() {
     [ "${DRY_RUN}" == "true" ] && return
-    if [ "${EXECUTOR}" == "cuda" ]; then
+    if [ "${EXECUTOR}" == "cuda" ] || [ "${EXECUTOR}" == "hip" ]; then
         ${LAUNCHER} ../mat/tests/bench_spmv -formats "${FORMATS}" -repetitions 5 -use_gpu -AJSON "$1"
     else
         ${LAUNCHER} ../mat/tests/bench_spmv -formats "${FORMATS}" -repetitions 5 -AJSON "$1"
@@ -174,8 +174,8 @@ for (( p=${LOOP_START}; p < ${LOOP_END}; ++p )); do
         generate_suite_sparse_input "$i" >"${RESULT_FILE}"
         echo -e "${PREFIX}Running SpMV for ${GROUP}/${NAME}" 1>&2
         run_spmv_benchmarks "${RESULT_FILE}"
-        echo -e "${PREFIX}Cleaning up problem ${GROUP}/${NAME}" 1>&2
-        [ "${DRY_RUN}" != "true" ] && ${SSGET} -i "$i" -c >/dev/null
+        # echo -e "${PREFIX}Cleaning up problem ${GROUP}/${NAME}" 1>&2
+        # [ "${DRY_RUN}" != "true" ] && ${SSGET} -i "$i" -c >/dev/null
     else
         append_suite_sparse_input "$i" >>"${RESULT_FILE}"
     fi

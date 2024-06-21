@@ -80,7 +80,8 @@ struct _p_ISLocalToGlobalMapping {
   PetscInt **info_indices;
   PetscInt  *info_nodec;
   PetscInt **info_nodei;
-  void      *data; /* type specific data is stored here */
+  PetscSF    multileaves_sf; /* SF to communicate from local block indices to multi-leaves */
+  void      *data;           /* type specific data is stored here */
 };
 
 struct _n_ISColoring {

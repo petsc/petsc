@@ -2549,7 +2549,6 @@ PetscErrorCode MatSetValues_SeqBAIJ(Mat A, PetscInt m, const PetscInt im[], Pets
         ap[bs2 * i + bs * cidx + ridx] = value;
       }
       a->nz++;
-      A->nonzerostate++;
     noinsert1:;
       low = i;
     }
@@ -2645,7 +2644,6 @@ static PetscErrorCode MatGetRowMaxAbs_SeqBAIJ(Mat A, Vec v, PetscInt idx[])
   PetscInt     ncols, brow, krow, kcol;
 
   PetscFunctionBegin;
-  /* why is this not a macro???????????????????????????????????????????????????????????????? */
   PetscCheck(!A->factortype, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
   bs  = A->rmap->bs;
   aa  = a->a;
@@ -3162,7 +3160,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
                                        NULL,
                                        /*150*/ NULL,
                                        MatEliminateZeros_SeqBAIJ,
-                                       MatGetRowSumAbs_SeqBAIJ};
+                                       MatGetRowSumAbs_SeqBAIJ,
+                                       NULL};
 
 static PetscErrorCode MatStoreValues_SeqBAIJ(Mat mat)
 {
@@ -3494,7 +3493,7 @@ static PetscErrorCode MatSeqBAIJSetPreallocationCSR_SeqBAIJ(Mat B, PetscInt bs, 
 
 .seealso: [](ch_matrices), `Mat`, `MATSEQBAIJ`, `MatSeqBAIJRestoreArray()`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArray()`
 @*/
-PetscErrorCode MatSeqBAIJGetArray(Mat A, PetscScalar **array)
+PetscErrorCode MatSeqBAIJGetArray(Mat A, PetscScalar *array[])
 {
   PetscFunctionBegin;
   PetscUseMethod(A, "MatSeqBAIJGetArray_C", (Mat, PetscScalar **), (A, array));
@@ -3514,7 +3513,7 @@ PetscErrorCode MatSeqBAIJGetArray(Mat A, PetscScalar **array)
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqBAIJGetArray()`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArray()`
 @*/
-PetscErrorCode MatSeqBAIJRestoreArray(Mat A, PetscScalar **array)
+PetscErrorCode MatSeqBAIJRestoreArray(Mat A, PetscScalar *array[])
 {
   PetscFunctionBegin;
   PetscUseMethod(A, "MatSeqBAIJRestoreArray_C", (Mat, PetscScalar **), (A, array));
@@ -3803,7 +3802,7 @@ PetscErrorCode MatLoad_SeqBAIJ(Mat mat, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateSeqBAIJ - Creates a sparse matrix in `MATSEQAIJ` (block
   compressed row) format.  For good matrix assembly performance the
   user should preallocate the matrix storage by setting the parameter `nz`
@@ -3862,7 +3861,7 @@ PetscErrorCode MatCreateSeqBAIJ(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqBAIJSetPreallocation - Sets the block size and expected nonzeros
   per row in the matrix. For good matrix assembly performance the
   user should preallocate the matrix storage by setting the parameter `nz`

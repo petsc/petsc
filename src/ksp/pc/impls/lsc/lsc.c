@@ -203,7 +203,7 @@ static PetscErrorCode PCView_LSC(PC pc, PetscViewer viewer)
 
    Options Database Key:
 +    -pc_lsc_commute    - Whether to commute the LSC preconditioner in the style of Olshanskii
--    -pc_lsc_scale_diag - Whether to scale $BB^T$ products. Will use the inverse of the diagonal of Qscale or A if the former is not provided
+-    -pc_lsc_scale_diag - Whether to scale $BB^T$ products. Will use the inverse of the diagonal of $Qscale$ or $A$ if the former is not provided
 
    Level: intermediate
 
@@ -215,18 +215,18 @@ static PetscErrorCode PCView_LSC(PC pc, PetscViewer viewer)
    S = A11 - A10 A00^{-1} A01
    $$
 
-   `PCLSC` currently doesn't do anything with A11, so let's assume it is 0.  The idea is that a good approximation to
-   inv(S) is given by
+   `PCLSC` currently doesn't do anything with $A11$, so let's assume it is 0.  The idea is that a good approximation to
+   $S^{-1}$ is given by
 
    $$
    (A10 A01)^{-1} A10 A00 A01 (A10 A01)^{-1}
    $$
 
-   The product A10 A01 can be computed for you, but you can provide it (this is
-   usually more efficient anyway).  In the case of incompressible flow, A10 A01 is a Laplacian; call it L.  The current
-   interface is to compose L and a preconditioning matrix Lp on the preconditioning matrix.
+   The product $A10 A01$ can be computed for you, but you can provide it (this is
+   usually more efficient anyway).  In the case of incompressible flow, $A10 A01$ is a Laplacian; call it $L$.  The current
+   interface is to compose $L$ and a matrix from which to construct its preconditioning  $Lp$ on the preconditioning matrix.
 
-   If you had called `KSPSetOperators`(ksp,S,Sp), S should have type `MATSCHURCOMPLEMENT` and Sp can be any type you
+   If you had called `KSPSetOperators`(ksp,S,Sp), $S$ should have type `MATSCHURCOMPLEMENT` and $Sp$ can be any type you
    like (`PCLSC` doesn't use it directly) but should have matrices composed with it, under the names "LSC_L" and "LSC_Lp".
    For example, you might have setup code like this
 

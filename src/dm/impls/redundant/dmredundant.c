@@ -378,7 +378,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMRedundantCreate - Creates a `DM` object, used to manage data for dense globally coupled variables
 
   Collective

@@ -9,7 +9,7 @@
 #
 #           u = 0  for  x = 0, x = 1, y = 0, y = 1
 #
-#  A finite difference approximation with the usual 7-point stencil
+#  A finite difference approximation with the usual 5-point stencil
 #  is used to discretize the boundary value problem to obtain a
 #  nonlinear system of equations. The problem is solved in a 2D
 #  rectangular domain, using distributed arrays (DAs) to partition
@@ -18,20 +18,21 @@
 # ------------------------------------------------------------------------
 
 # We first import petsc4py and sys to initialize PETSc
-import sys, petsc4py
+import sys
+import petsc4py
+
 petsc4py.init(sys.argv)
 
 # Import the PETSc module
 from petsc4py import PETSc
 
+
 # Here we define a class representing the discretized operator
 # This allows us to apply the operator "matrix-free"
 class Poisson2D:
-
     def __init__(self, da):
-        assert da.getDim() == 2
         self.da = da
-        self.localX  = da.createLocalVec()
+        self.localX = da.createLocalVec()
 
     # This is the method that PETSc will look for when applying
     # the operator. `X` is the PETSc input vector, `Y` the output vector,
@@ -39,7 +40,7 @@ class Poisson2D:
     def mult(self, mat, X, Y):
         # Grid sizes
         mx, my = self.da.getSizes()
-        hx, hy = [1.0/m for m in [mx, my]]
+        hx, hy = (1.0 / m for m in [mx, my])
 
         # Bounds for the local part of the grid this process owns
         (xs, xe), (ys, ye) = self.da.getRanges()
@@ -54,20 +55,24 @@ class Poisson2D:
         # Loop on the local grid and compute the local action of the operator
         for j in range(ys, ye):
             for i in range(xs, xe):
-                u = x[i, j] # center
+                u = x[i, j]  # center
                 u_e = u_w = u_n = u_s = 0
-                if i > 0:    u_w = x[i-1, j] # west
-                if i < mx-1: u_e = x[i+1, j] # east
-                if j > 0:    u_s = x[i, j-1] # south
-                if j < ny-1: u_n = x[i, j+1] # north
-                u_xx = (-u_e + 2*u - u_w)*hy/hx
-                u_yy = (-u_n + 2*u - u_s)*hx/hy
+                if i > 0:
+                    u_w = x[i - 1, j]  # west
+                if i < mx - 1:
+                    u_e = x[i + 1, j]  # east
+                if j > 0:
+                    u_s = x[i, j - 1]  # south
+                if j < ny - 1:
+                    u_n = x[i, j + 1]  # north
+                u_xx = (-u_e + 2 * u - u_w) * hy / hx
+                u_yy = (-u_n + 2 * u - u_s) * hx / hy
                 y[i, j] = u_xx + u_yy
 
     # This is the method that PETSc will look for when the diagonal of the matrix is needed.
     def getDiagonal(self, mat, D):
         mx, my = self.da.getSizes()
-        hx, hy = [1.0/m for m in [mx, my]]
+        hx, hy = (1.0 / m for m in [mx, my])
         (xs, xe), (ys, ye) = self.da.getRanges()
 
         d = self.da.getVecArray(D)
@@ -75,22 +80,24 @@ class Poisson2D:
         # Loop on the local grid and compute the diagonal
         for j in range(ys, ye):
             for i in range(xs, xe):
-                d[i, j] = 2*hy/hx + 2*hx/hy
+                d[i, j] = 2 * hy / hx + 2 * hx / hy
 
     # The class can contain other methods that PETSc won't use
     def formRHS(self, B):
         b = self.da.getVecArray(B)
         mx, my = self.da.getSizes()
-        hx, hy = [1.0/m for m in [mx, my]]
+        hx, hy = (1.0 / m for m in [mx, my])
         (xs, xe), (ys, ye) = self.da.getRanges()
         for j in range(ys, ye):
             for i in range(xs, xe):
-                b[i, j] = 1*hx*hy
+                b[i, j] = 1 * hx * hy
 
 
 # Access the option database and read options from the command line
 OptDB = PETSc.Options()
-nx, ny = OptDB.getIntArray('grid', (16, 16)) # Read `-grid <int,int>`, defaults to 16,16
+nx, ny = OptDB.getIntArray(
+    'grid', (16, 16)
+)  # Read `-grid <int,int>`, defaults to 16,16
 
 # Create the distributed memory implementation for structured grid
 da = PETSc.DMDA().create([nx, ny], stencil_width=1)

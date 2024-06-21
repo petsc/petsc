@@ -11,7 +11,7 @@ PetscErrorCode ISColoringReference(ISColoring coloring)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISColoringSetType - indicates if the coloring is for the local representation (including ghost points) or the global representation of a `Mat`
 
   Collective
@@ -36,8 +36,7 @@ PetscErrorCode ISColoringSetType(ISColoring coloring, ISColoringType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
-
+/*@
   ISColoringGetType - gets if the coloring is for the local representation (including ghost points) or the global representation
 
   Collective
@@ -93,7 +92,7 @@ PetscErrorCode ISColoringDestroy(ISColoring *iscoloring)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISColoringViewFromOptions - Processes command line options to determine if/how an `ISColoring` object is to be viewed.
 
   Collective
@@ -129,7 +128,7 @@ PetscErrorCode ISColoringViewFromOptions(ISColoring obj, PetscObject bobj, const
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISColoringView - Views an `ISColoring` coloring context.
 
   Collective
@@ -731,7 +730,7 @@ PetscErrorCode ISAllGather(IS is, IS *isout)
 
 .seealso: `ISCOloringValue`, `ISColoring()`, `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlock()`, `ISAllGather()`
 @*/
-PetscErrorCode ISAllGatherColors(MPI_Comm comm, PetscInt n, ISColoringValue *lindices, PetscInt *outN, ISColoringValue *outindices[])
+PetscErrorCode ISAllGatherColors(MPI_Comm comm, PetscInt n, ISColoringValue lindices[], PetscInt *outN, ISColoringValue *outindices[])
 {
   ISColoringValue *indices;
   PetscInt         i, N;
@@ -818,6 +817,7 @@ PetscErrorCode ISComplement(IS is, PetscInt nmin, PetscInt nmax, IS *isout)
   }
   PetscCheck(cnt == nmax - nmin - unique, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of entries found in complement %" PetscInt_FMT " does not match expected %" PetscInt_FMT, cnt, nmax - nmin - unique);
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)is), cnt, nindices, PETSC_OWN_POINTER, isout));
+  PetscCall(ISSetInfo(*isout, IS_SORTED, IS_GLOBAL, PETSC_FALSE, PETSC_TRUE));
   PetscCall(ISRestoreIndices(is, &indices));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

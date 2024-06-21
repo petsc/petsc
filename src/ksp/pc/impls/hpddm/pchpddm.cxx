@@ -1,12 +1,10 @@
+#include <petscsf.h>
 #include <petsc/private/vecimpl.h>
 #include <petsc/private/matimpl.h>
 #include <petsc/private/petschpddm.h> /*I "petscpc.h" I*/
 #include <petsc/private/pcimpl.h>
 #include <petsc/private/dmimpl.h> /* this must be included after petschpddm.h so that DM_MAX_WORK_VECTORS is not defined  */
                                   /* otherwise, it is assumed that one is compiling libhpddm_petsc => circular dependency */
-#if PetscDefined(USE_FORTRAN_BINDINGS)
-  #include <petsc/private/fortranimpl.h>
-#endif
 
 static PetscErrorCode (*loadedSym)(HPDDM::Schwarz<PetscScalar> *const, IS, Mat, Mat, Mat, std::vector<Vec>, PC_HPDDM_Level **const) = nullptr;
 
@@ -138,14 +136,14 @@ static inline PetscErrorCode PCHPDDMSetAuxiliaryMatNormal_Private(PC pc, Mat A, 
     if (diagonal) {
       PetscCall(VecNorm(*diagonal, NORM_INFINITY, &norm));
       if (norm > PETSC_SMALL) {
-        VecScatter scatter;
-        PetscInt   n;
+        PetscSF  scatter;
+        PetscInt n;
         PetscCall(ISGetLocalSize(*cols, &n));
         PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)pc), n, PETSC_DECIDE, &d));
         PetscCall(VecScatterCreate(*diagonal, *cols, d, nullptr, &scatter));
         PetscCall(VecScatterBegin(scatter, *diagonal, d, INSERT_VALUES, SCATTER_FORWARD));
         PetscCall(VecScatterEnd(scatter, *diagonal, d, INSERT_VALUES, SCATTER_FORWARD));
-        PetscCall(VecScatterDestroy(&scatter));
+        PetscCall(PetscSFDestroy(&scatter));
         PetscCall(MatScale(aux, -1.0));
         PetscCall(MatDiagonalSet(aux, d, ADD_VALUES));
         PetscCall(VecDestroy(&d));
@@ -454,22 +452,21 @@ static PetscErrorCode PCMatApply_HPDDM(PC pc, Mat X, Mat Y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
-     PCHPDDMGetComplexities - Computes the grid and operator complexities.
+/*@
+  PCHPDDMGetComplexities - Computes the grid and operator complexities.
 
-   Input Parameter:
-.     pc - preconditioner context
+  Input Parameter:
+. pc - preconditioner context
 
-   Output Parameters:
-+     gc - grid complexity = sum_i(m_i) / m_1
--     oc - operator complexity = sum_i(nnz_i) / nnz_1
+  Output Parameters:
++ gc - grid complexity $ \sum_i m_i / m_1 $
+- oc - operator complexity $ \sum_i nnz_i / nnz_1 $
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](ch_ksp), `PCMGGetGridComplexity()`, `PCHPDDM`, `PCHYPRE`, `PCGAMG`
 @*/
-static PetscErrorCode PCHPDDMGetComplexities(PC pc, PetscReal *gc, PetscReal *oc)
+PetscErrorCode PCHPDDMGetComplexities(PC pc, PetscReal *gc, PetscReal *oc)
 {
   PC_HPDDM      *data = (PC_HPDDM *)pc->data;
   MatInfo        info;
@@ -923,7 +920,7 @@ static PetscErrorCode PCDestroy_HPDDMShell(PC pc)
   PetscCall(MatDestroy(ctx->V + 1));
   PetscCall(MatDestroy(ctx->V + 2));
   PetscCall(VecDestroy(&ctx->D));
-  PetscCall(VecScatterDestroy(&ctx->scatter));
+  PetscCall(PetscSFDestroy(&ctx->scatter));
   PetscCall(PCDestroy(&ctx->pc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1124,6 +1121,8 @@ static PetscErrorCode PCHPDDMPermute_Private(IS is, IS in_is, IS *out_is, Mat in
   PetscBool                    sorted;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(is, IS_CLASSID, 1);
+  PetscValidHeaderSpecific(in_C, MAT_CLASSID, 4);
   PetscCall(ISSorted(is, &sorted));
   if (!sorted) {
     PetscCall(ISGetLocalSize(is, &size));
@@ -1202,6 +1201,21 @@ static PetscErrorCode PCHPDDMCheckSymmetry_Private(PC pc, Mat A01, Mat A10)
   }
   PetscCall(MatDestroy(&B));
   PetscCall(MatDestroy(&T));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PCHPDDMCheckInclusion_Private(PC pc, IS is, IS is_local, PetscBool check)
+{
+  IS          intersect;
+  const char *str = "IS of the auxiliary Mat does not include all local rows of A";
+  PetscBool   equal;
+
+  PetscFunctionBegin;
+  PetscCall(ISIntersect(is, is_local, &intersect));
+  PetscCall(ISEqualUnsorted(is_local, intersect, &equal));
+  PetscCall(ISDestroy(&intersect));
+  if (check) PetscCheck(equal, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "%s", str);
+  else if (!equal) PetscCall(PetscInfo(pc, "%s\n", str));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1386,7 +1400,7 @@ static PetscErrorCode PCDestroy_Nest(PC pc)
 template <bool T = false>
 static PetscErrorCode MatMult_Schur(Mat A, Vec x, Vec y)
 {
-  std::tuple<Mat, VecScatter, Vec[2]> *ctx;
+  std::tuple<Mat, PetscSF, Vec[2]> *ctx;
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &ctx));
@@ -1402,7 +1416,7 @@ static PetscErrorCode MatMult_Schur(Mat A, Vec x, Vec y)
 
 static PetscErrorCode MatDestroy_Schur(Mat A)
 {
-  std::tuple<Mat, VecScatter, Vec[2]> *ctx;
+  std::tuple<Mat, PetscSF, Vec[2]> *ctx;
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &ctx));
@@ -1636,8 +1650,9 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
             PC_HPDDM *data_00;
             KSP       ksp, inner_ksp;
             PC        pc_00;
+            Mat       A11 = nullptr;
+            Vec       d   = nullptr;
             char     *prefix;
-            PetscReal norm;
 
             PetscCall(MatSchurComplementGetKSP(P, &ksp));
             PetscCall(KSPGetPC(ksp, &pc_00));
@@ -1650,7 +1665,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
             PetscCall(PetscObjectTypeCompare((PetscObject)data_00->levels[0]->pc, PCASM, &flg));
             PetscCheck(flg, PetscObjectComm((PetscObject)P), PETSC_ERR_ARG_INCOMP, "-%spc_hpddm_schur_precondition %s and -%spc_type %s (!= %s)", pcpre ? pcpre : "", PCHPDDMSchurPreTypes[type], ((PetscObject)data_00->levels[0]->pc)->prefix,
                        ((PetscObject)data_00->levels[0]->pc)->type_name, PCASM);
-            PetscCheck(data->Neumann == PETSC_BOOL3_TRUE, PetscObjectComm((PetscObject)P), PETSC_ERR_ARG_INCOMP, "-%spc_hpddm_schur_precondition %s and -%spc_hpddm_has_neumann != true", pcpre ? pcpre : "", PCHPDDMSchurPreTypes[type], pcpre ? pcpre : "");
+            PetscCall(MatSchurComplementGetSubMatrices(P, nullptr, nullptr, nullptr, nullptr, &A11));
             if (PetscDefined(USE_DEBUG) || !data->is) {
               Mat A01, A10, B = nullptr, C = nullptr, *sub;
 
@@ -1688,6 +1703,13 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
                 PetscCall(MatFindNonzeroRows(C, &data->is));
                 PetscCall(MatDestroy(&C));
                 PetscCall(ISDestroy(is));
+                PetscCall(ISCreateStride(PetscObjectComm((PetscObject)data->is), A11->rmap->n, A11->rmap->rstart, 1, &loc));
+                if (PetscDefined(USE_DEBUG)) PetscCall(PCHPDDMCheckInclusion_Private(pc, data->is, loc, PETSC_FALSE));
+                PetscCall(ISExpand(data->is, loc, is));
+                PetscCall(ISDestroy(&loc));
+                PetscCall(ISDestroy(&data->is));
+                data->is = is[0];
+                is[0]    = nullptr;
               }
               if (PetscDefined(USE_DEBUG)) {
                 PetscCall(PCHPDDMCheckSymmetry_Private(pc, A01, A10));
@@ -1707,33 +1729,64 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               PetscCall(ISDestroy(&uis));
               PetscCall(MatDestroy(&B));
             }
-            if (data->aux) PetscCall(MatNorm(data->aux, NORM_FROBENIUS, &norm));
-            else norm = 0.0;
-            PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &norm, 1, MPIU_REAL, MPI_MAX, PetscObjectComm((PetscObject)P)));
-            if (norm < PETSC_MACHINE_EPSILON * static_cast<PetscReal>(10.0)) { /* if A11 is near zero, e.g., Stokes equation, build a diagonal auxiliary (Neumann) Mat which is just a small diagonal weighted by the inverse of the multiplicity */
-              VecScatter         scatter;
-              Vec                x;
+            flg = PETSC_FALSE;
+            if (!data->aux) {
+              Mat D;
+
+              PetscCall(MatCreateVecs(A11, &d, nullptr));
+              PetscCall(MatGetDiagonal(A11, d));
+              PetscCall(PetscObjectTypeCompareAny((PetscObject)A11, &flg, MATDIAGONAL, MATCONSTANTDIAGONAL, ""));
+              if (!flg) {
+                PetscCall(MatCreateDiagonal(d, &D));
+                PetscCall(MatMultEqual(A11, D, 20, &flg));
+                PetscCall(MatDestroy(&D));
+              }
+              if (flg) PetscCall(PetscInfo(pc, "A11 block is likely diagonal so the PC will build an auxiliary Mat (which was not initially provided by the user)\n"));
+            }
+            if (data->Neumann != PETSC_BOOL3_TRUE && !flg && A11) {
+              PetscReal norm;
+
+              PetscCall(MatNorm(A11, NORM_INFINITY, &norm));
+              PetscCheck(norm < PETSC_MACHINE_EPSILON * static_cast<PetscReal>(10.0), PetscObjectComm((PetscObject)P), PETSC_ERR_ARG_INCOMP, "-%spc_hpddm_schur_precondition geneo and -%spc_hpddm_has_neumann != true with a nonzero or non-diagonal A11 block", pcpre ? pcpre : "", pcpre ? pcpre : "");
+              PetscCall(PetscInfo(pc, "A11 block is likely zero so the PC will build an auxiliary Mat (which was%s initially provided by the user)\n", data->aux ? "" : " not"));
+              PetscCall(MatDestroy(&data->aux));
+              flg = PETSC_TRUE;
+            }
+            if (!data->aux) { /* if A11 is near zero, e.g., Stokes equation, or diagonal, build an auxiliary (Neumann) Mat which is a (possibly slightly shifted) diagonal weighted by the inverse of the multiplicity */
+              PetscSF            scatter;
               const PetscScalar *read;
-              PetscScalar       *write;
+              PetscScalar       *write, *diagonal = nullptr;
 
               PetscCall(MatDestroy(&data->aux));
               PetscCall(ISGetLocalSize(data->is, &n));
-              PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)P), n, PETSC_DECIDE, &x));
-              PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)P), n, PETSC_DECIDE, &v));
-              PetscCall(VecScatterCreate(x, data->is, v, nullptr, &scatter));
+              PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)P), n, PETSC_DECIDE, &xin));
+              PetscCall(VecDuplicate(xin, &v));
+              PetscCall(VecScatterCreate(xin, data->is, v, nullptr, &scatter));
               PetscCall(VecSet(v, 1.0));
-              PetscCall(VecSet(x, 1.0));
-              PetscCall(VecScatterBegin(scatter, v, x, ADD_VALUES, SCATTER_REVERSE));
-              PetscCall(VecScatterEnd(scatter, v, x, ADD_VALUES, SCATTER_REVERSE)); /* v has the multiplicity of all unknowns on the overlap */
-              PetscCall(VecScatterDestroy(&scatter));
+              PetscCall(VecSet(xin, 1.0));
+              PetscCall(VecScatterBegin(scatter, v, xin, ADD_VALUES, SCATTER_REVERSE));
+              PetscCall(VecScatterEnd(scatter, v, xin, ADD_VALUES, SCATTER_REVERSE)); /* v has the multiplicity of all unknowns on the overlap */
+              PetscCall(PetscSFDestroy(&scatter));
+              if (d) {
+                PetscCall(VecScatterCreate(d, data->is, v, nullptr, &scatter));
+                PetscCall(VecScatterBegin(scatter, d, v, INSERT_VALUES, SCATTER_FORWARD));
+                PetscCall(VecScatterEnd(scatter, d, v, INSERT_VALUES, SCATTER_FORWARD));
+                PetscCall(PetscSFDestroy(&scatter));
+                PetscCall(VecDestroy(&d));
+                PetscCall(PetscMalloc1(n, &diagonal));
+                PetscCall(VecGetArrayRead(v, &read));
+                PetscCallCXX(std::copy_n(read, n, diagonal));
+                PetscCall(VecRestoreArrayRead(v, &read));
+              }
               PetscCall(VecDestroy(&v));
               PetscCall(VecCreateSeq(PETSC_COMM_SELF, n, &v));
-              PetscCall(VecGetArrayRead(x, &read));
+              PetscCall(VecGetArrayRead(xin, &read));
               PetscCall(VecGetArrayWrite(v, &write));
-              PetscCallCXX(std::transform(read, read + n, write, [](const PetscScalar &m) { return PETSC_SMALL / (static_cast<PetscReal>(1000.0) * m); }));
-              PetscCall(VecRestoreArrayRead(x, &read));
+              for (PetscInt i = 0; i < n; ++i) write[i] = (!diagonal || std::abs(diagonal[i]) < PETSC_MACHINE_EPSILON) ? PETSC_SMALL / (static_cast<PetscReal>(1000.0) * read[i]) : diagonal[i] / read[i];
+              PetscCall(PetscFree(diagonal));
+              PetscCall(VecRestoreArrayRead(xin, &read));
               PetscCall(VecRestoreArrayWrite(v, &write));
-              PetscCall(VecDestroy(&x));
+              PetscCall(VecDestroy(&xin));
               PetscCall(MatCreateDiagonal(v, &data->aux));
               PetscCall(VecDestroy(&v));
             }
@@ -1766,6 +1819,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
             PetscCall(PCSetOperators(std::get<0>(*ctx)[1], pc->mat, pc->pmat));
             PetscCall(PCSetType(std::get<0>(*ctx)[1], PCHPDDM));
             PetscCall(PCHPDDMSetAuxiliaryMat(std::get<0>(*ctx)[1], uis, uaux, nullptr, nullptr)); /* transfer ownership of the auxiliary inputs from the inner (PCKSP) to the inner-most (PCHPDDM) PC */
+            if (flg) static_cast<PC_HPDDM *>(std::get<0>(*ctx)[1]->data)->Neumann = PETSC_BOOL3_TRUE;
             PetscCall(PCSetFromOptions(std::get<0>(*ctx)[1]));
             PetscCall(PetscObjectDereference((PetscObject)uis));
             PetscCall(PetscObjectDereference((PetscObject)uaux));
@@ -1788,6 +1842,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
             PetscCall(VecDuplicate(std::get<3>(*ctx)[0], std::get<3>(*ctx) + 2));
             PetscCall(PetscObjectDereference((PetscObject)inner_ksp));
             PetscCall(PetscObjectDereference((PetscObject)S));
+            for (std::vector<Vec>::iterator it = initial.begin(); it != initial.end(); ++it) PetscCall(VecDestroy(&*it));
             PetscFunctionReturn(PETSC_SUCCESS);
           } else { /* second call to PCSetUp() on the PC associated to the Schur complement, retrieve previously set context */
             PetscCall(PetscContainerGetPointer(container, (void **)&ctx));
@@ -1864,6 +1919,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
             PetscCall(MatDestroy(&B));
           } else
             PetscCheck(type != PC_HPDDM_SCHUR_PRE_GENEO, PetscObjectComm((PetscObject)P), PETSC_ERR_ARG_INCOMP, "-%spc_hpddm_schur_precondition %s without a prior call to PCHPDDMSetAuxiliaryMat() on the A11 block%s%s", pcpre ? pcpre : "", PCHPDDMSchurPreTypes[type], pcpre ? " -" : "", pcpre ? pcpre : "");
+          for (std::vector<Vec>::iterator it = initial.begin(); it != initial.end(); ++it) PetscCall(VecDestroy(&*it));
           PetscFunctionReturn(PETSC_SUCCESS);
         } else {
           PetscCall(PetscOptionsGetString(nullptr, pcpre, "-pc_hpddm_levels_1_st_pc_type", type, sizeof(type), nullptr));
@@ -1960,15 +2016,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         PetscCall(ISDestroy(&data->is));
         data->is = is[0];
       } else {
-        if (PetscDefined(USE_DEBUG)) {
-          PetscBool equal;
-          IS        intersect;
-
-          PetscCall(ISIntersect(data->is, loc, &intersect));
-          PetscCall(ISEqualUnsorted(loc, intersect, &equal));
-          PetscCall(ISDestroy(&intersect));
-          PetscCheck(equal, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "IS of the auxiliary Mat does not include all local rows of A");
-        }
+        if (PetscDefined(USE_DEBUG)) PetscCall(PCHPDDMCheckInclusion_Private(pc, data->is, loc, PETSC_TRUE));
         if (overlap == -1) PetscCall(PetscObjectComposeFunction((PetscObject)pc->pmat, "PCHPDDMAlgebraicAuxiliaryMat_Private_C", PCHPDDMAlgebraicAuxiliaryMat_Private));
         if (!PetscBool3ToBool(data->Neumann) && (!algebraic || overlap != -1)) {
           PetscCall(PetscObjectTypeCompare((PetscObject)P, MATMPISBAIJ, &flg));
@@ -2228,6 +2276,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
             const char *matpre;
             PetscBool   cmp[4];
             PetscCall(KSPGetOperators(ksp[0], subA, subA + 1));
+            PetscCall(PetscObjectReference((PetscObject)subA[0]));
             PetscCall(MatDuplicate(subA[1], MAT_SHARE_NONZERO_PATTERN, &D));
             PetscCall(MatGetOptionsPrefix(subA[1], &matpre));
             PetscCall(MatSetOptionsPrefix(D, matpre));
@@ -2270,10 +2319,20 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         PC_HPDDM              *data_00 = (PC_HPDDM *)std::get<0>(*ctx)[0]->data;
         PC                     s;
         Mat                    A00, P00, A01 = nullptr, A10, A11, N, b[4];
-        IS                     sorted, is[2];
+        IS                     sorted, is[2], *is_00;
         MatSolverType          type;
         std::pair<PC, Vec[2]> *p;
 
+        n = -1;
+        PetscTryMethod(data_00->levels[0]->pc, "PCASMGetSubKSP_C", (PC, PetscInt *, PetscInt *, KSP **), (data_00->levels[0]->pc, &n, nullptr, &ksp));
+        PetscCheck(n == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of subdomain solver %" PetscInt_FMT " != 1", n);
+        PetscCall(KSPGetOperators(ksp[0], subA, subA + 1));
+        PetscCall(ISGetLocalSize(data_00->is, &n));
+        if (n != subA[0]->rmap->n || n != subA[0]->cmap->n) {
+          PetscCall(PCASMGetLocalSubdomains(data_00->levels[0]->pc, &n, &is_00, nullptr));
+          PetscCall(ISGetLocalSize(*is_00, &n));
+          PetscCheck(n == subA[0]->rmap->n && n == subA[0]->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-%spc_hpddm_schur_precondition geneo and -%spc_hpddm_define_subdomains false", pcpre ? pcpre : "", ((PetscObject)pc)->prefix);
+        } else is_00 = &data_00->is;
         PetscCall(PCHPDDMPermute_Private(unsorted, data->is, &uis, data->aux, &C, nullptr)); /* permute since PCASM works with a sorted IS */
         std::swap(C, data->aux);
         std::swap(uis, data->is);
@@ -2291,8 +2350,8 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           PetscCall(PetscObjectTypeCompare((PetscObject)A10, MATHERMITIANTRANSPOSEVIRTUAL, &flg));
           if (flg) PetscCall(MatHermitianTransposeGetMat(A10, &A01));
         }
-        PetscCall(ISDuplicate(data_00->is, &sorted)); /* during setup of the PC associated to the A00 block, this IS has already been sorted, but it's put back to its original state at the end of PCSetUp_HPDDM(), which may be unsorted */
-        PetscCall(ISSort(sorted));                    /* this is to avoid changing users inputs, but it requires a new call to ISSort() here                                                                                               */
+        PetscCall(ISDuplicate(*is_00, &sorted)); /* during setup of the PC associated to the A00 block, this IS has already been sorted, but it's put back to its original state at the end of PCSetUp_HPDDM(), which may be unsorted */
+        PetscCall(ISSort(sorted));               /* this is to avoid changing users inputs, but it requires a new call to ISSort() here                                                                                               */
         if (!A01) {
           PetscCall(MatSetOption(A10, MAT_SUBMAT_SINGLEIS, PETSC_TRUE));
           PetscCall(MatCreateSubMatrices(A10, 1, &data->is, &sorted, MAT_INITIAL_MATRIX, &sub));
@@ -2321,12 +2380,6 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         }
         PetscCall(MatDestroySubMatrices(1, &sub));
         PetscCall(ISDestroy(&sorted));
-        n = -1;
-        PetscTryMethod(data_00->levels[0]->pc, "PCASMGetSubKSP_C", (PC, PetscInt *, PetscInt *, KSP **), (data_00->levels[0]->pc, &n, nullptr, &ksp));
-        PetscCheck(n == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of subdomain solver %" PetscInt_FMT " != 1", n);
-        PetscCall(KSPGetOperators(ksp[0], subA, subA + 1));
-        PetscCall(ISGetLocalSize(data_00->is, &n));
-        PetscCheck(n == subA[0]->rmap->n && n == subA[0]->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-%spc_hpddm_schur_precondition geneo and -%spc_hpddm_define_subdomains false", pcpre ? pcpre : "", ((PetscObject)pc)->prefix);
         if (A01 || A10) {
           if (flg) PetscCall(MatTranspose(b[2], MAT_INITIAL_MATRIX, b + 1));
           else PetscCall(MatHermitianTranspose(b[2], MAT_INITIAL_MATRIX, b + 1));
@@ -2416,6 +2469,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         PetscCall(KSPGetOperators(ksp[0], st, st + 1));
         PetscCall(MatCopy(subA[0], st[0], structure));
         if (subA[1] != subA[0] || st[1] != st[0]) PetscCall(MatCopy(subA[1], st[1], SAME_NONZERO_PATTERN));
+        PetscCall(PetscObjectDereference((PetscObject)subA[0]));
       }
       if (data->log_separate) PetscCall(PetscLogEventEnd(PC_HPDDM_SetUp[0], data->levels[0]->ksp, nullptr, nullptr, nullptr));
       if (ismatis) PetscCall(MatISGetLocalMat(C, &N));
@@ -2454,9 +2508,9 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           PetscCall(PCShellSetApply(spc, PCApply_HPDDMShell));
           PetscCall(PCShellSetMatApply(spc, PCMatApply_HPDDMShell));
           if (ctx && n == 0) {
-            Mat                                  Amat, Pmat;
-            PetscInt                             m, M;
-            std::tuple<Mat, VecScatter, Vec[2]> *ctx;
+            Mat                               Amat, Pmat;
+            PetscInt                          m, M;
+            std::tuple<Mat, PetscSF, Vec[2]> *ctx;
 
             PetscCall(KSPGetOperators(data->levels[n]->ksp, nullptr, &Pmat));
             PetscCall(MatGetLocalSize(Pmat, &m, nullptr));
@@ -2526,7 +2580,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         PetscCall(MatDestroy(data->levels[n]->V + 1));
         PetscCall(MatDestroy(data->levels[n]->V + 2));
         PetscCall(VecDestroy(&data->levels[n]->D));
-        PetscCall(VecScatterDestroy(&data->levels[n]->scatter));
+        PetscCall(PetscSFDestroy(&data->levels[n]->scatter));
       }
     }
     if (reused) {
@@ -2782,7 +2836,7 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
    It may be viewed as an alternative to spectral
    AMGe or `PCBDDC` with adaptive selection of constraints. The interface is explained in details in {cite}`jolivetromanzampini2020`
 
-   The matrix to be preconditioned (Pmat) may be unassembled (`MATIS`), assembled (`MATAIJ`, `MATBAIJ`, or `MATSBAIJ`), hierarchical (`MATHTOOL`), or `MATNORMAL`.
+   The matrix used for building the preconditioner (Pmat) may be unassembled (`MATIS`), assembled (`MATAIJ`, `MATBAIJ`, or `MATSBAIJ`), hierarchical (`MATHTOOL`), `MATNORMAL`, `MATNORMALHERMITIAN`, or `MATSCHURCOMPLEMENT` (when `PCHPDDM` is used as part of an outer `PCFIELDSPLIT`).
 
    For multilevel preconditioning, when using an assembled or hierarchical Pmat, one must provide an auxiliary local `Mat` (unassembled local operator for GenEO) using
    `PCHPDDMSetAuxiliaryMat()`. Calling this routine is not needed when using a `MATIS` Pmat, assembly is done internally using `MatConvert()`.

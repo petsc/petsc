@@ -10,7 +10,7 @@ typedef struct {
   PetscInt  nsmooths; /* number of jacobi smoothings on the prolongator */
 } PC_GAMG_Classical;
 
-/*@C
+/*@
   PCGAMGClassicalSetType - Sets the type of classical interpolation to use with `PCGAMG`
 
   Collective
@@ -34,7 +34,7 @@ PetscErrorCode PCGAMGClassicalSetType(PC pc, PCGAMGClassicalType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCGAMGClassicalGetType - Gets the type of classical interpolation to use with `PCGAMG`
 
   Collective
@@ -162,13 +162,17 @@ static PetscErrorCode PCGAMGCreateGraph_Classical(PC pc, Mat A, Mat *G)
 
 static PetscErrorCode PCGAMGCoarsen_Classical(PC pc, Mat *G, PetscCoarsenData **agg_lists)
 {
-  MatCoarsen crs;
-  MPI_Comm   fcomm = ((PetscObject)pc)->comm;
+  MatCoarsen  crs;
+  MPI_Comm    fcomm = ((PetscObject)pc)->comm;
+  const char *prefix;
 
   PetscFunctionBegin;
   PetscCheck(G, fcomm, PETSC_ERR_ARG_WRONGSTATE, "Must set Graph in PC in PCGAMG before coarsening");
 
   PetscCall(MatCoarsenCreate(fcomm, &crs));
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)pc, &prefix));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)crs, prefix));
+  PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)crs, "pc_gamg_"));
   PetscCall(MatCoarsenSetFromOptions(crs));
   PetscCall(MatCoarsenSetAdjacency(crs, *G));
   PetscCall(MatCoarsenSetStrictAggs(crs, PETSC_TRUE));

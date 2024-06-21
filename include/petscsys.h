@@ -15,6 +15,7 @@
    directory as the other PETSc include files.
 */
 #include <petscconf.h>
+#include <petscpkg_version.h>
 #include <petscconf_poison.h>
 #include <petscfix.h>
 #include <petscmacros.h>
@@ -75,28 +76,28 @@
   #ifndef MPIUNI_H
     #error "PETSc was configured with --with-mpi=0 but now appears to be compiling using a different mpi.h"
   #endif
-#elif defined(PETSC_HAVE_I_MPI_NUMVERSION)
+#elif defined(PETSC_HAVE_I_MPI)
   #if !defined(I_MPI_NUMVERSION)
     #error "PETSc was configured with I_MPI but now appears to be compiling using a non-I_MPI mpi.h"
-  #elif I_MPI_NUMVERSION != PETSC_HAVE_I_MPI_NUMVERSION
+  #elif I_MPI_NUMVERSION != PETSC_PKG_I_MPI_NUMVERSION
     #error "PETSc was configured with one I_MPI mpi.h version but now appears to be compiling using a different I_MPI mpi.h version"
   #endif
-#elif defined(PETSC_HAVE_MVAPICH2_NUMVERSION)
+#elif defined(PETSC_HAVE_MVAPICH2)
   #if !defined(MVAPICH2_NUMVERSION)
     #error "PETSc was configured with MVAPICH2 but now appears to be compiling using a non-MVAPICH2 mpi.h"
-  #elif MVAPICH2_NUMVERSION != PETSC_HAVE_MVAPICH2_NUMVERSION
+  #elif MVAPICH2_NUMVERSION != PETSC_PKG_MVAPICH2_NUMVERSION
     #error "PETSc was configured with one MVAPICH2 mpi.h version but now appears to be compiling using a different MVAPICH2 mpi.h version"
   #endif
-#elif defined(PETSC_HAVE_MPICH_NUMVERSION)
+#elif defined(PETSC_HAVE_MPICH)
   #if !defined(MPICH_NUMVERSION) || defined(MVAPICH2_NUMVERSION) || defined(I_MPI_NUMVERSION)
     #error "PETSc was configured with MPICH but now appears to be compiling using a non-MPICH mpi.h"
-  #elif (MPICH_NUMVERSION / 100000000 != PETSC_HAVE_MPICH_NUMVERSION / 100000000) || (MPICH_NUMVERSION / 100000 < PETSC_HAVE_MPICH_NUMVERSION / 100000) || (MPICH_NUMVERSION / 100000 == PETSC_HAVE_MPICH_NUMVERSION / 100000 && MPICH_NUMVERSION % 100000 / 1000 < PETSC_HAVE_MPICH_NUMVERSION % 100000 / 1000)
+  #elif !PETSC_PKG_MPICH_VERSION_EQ(MPICH_NUMVERSION / 10000000, MPICH_NUMVERSION / 100000 % 100, MPICH_NUMVERSION / 1000 % 100)
     #error "PETSc was configured with one MPICH mpi.h version but now appears to be compiling using a different MPICH mpi.h version"
   #endif
-#elif defined(PETSC_HAVE_OMPI_MAJOR_VERSION)
+#elif defined(PETSC_HAVE_OPENMPI)
   #if !defined(OMPI_MAJOR_VERSION)
     #error "PETSc was configured with Open MPI but now appears to be compiling using a non-Open MPI mpi.h"
-  #elif (OMPI_MAJOR_VERSION != PETSC_HAVE_OMPI_MAJOR_VERSION) || (OMPI_MINOR_VERSION < PETSC_HAVE_OMPI_MINOR_VERSION) || (OMPI_MINOR_VERSION == PETSC_HAVE_OMPI_MINOR_VERSION && OMPI_RELEASE_VERSION < PETSC_HAVE_OMPI_RELEASE_VERSION)
+  #elif !PETSC_PKG_OPENMPI_VERSION_EQ(OMPI_MAJOR_VERSION, OMPI_MINOR_VERSION, OMPI_RELEASE_VERSION)
     #error "PETSc was configured with one Open MPI mpi.h version but now appears to be compiling using a different Open MPI mpi.h version"
   #endif
 #elif defined(PETSC_HAVE_MSMPI_VERSION)
@@ -278,16 +279,32 @@ M*/
 /*MC
    PETSC_MPI_THREAD_REQUIRED - the required threading support used if PETSc initializes MPI with `MPI_Init_thread()`.
 
+   No Fortran Support
+
    Level: beginner
 
    Note:
-   By default `PETSC_MPI_THREAD_REQUIRED` equals `MPI_THREAD_FUNNELED` when the MPI implementation provides MPI_Init_thread(), otherwise it equals `MPI_THREAD_SINGLE`
+   By default `PETSC_MPI_THREAD_REQUIRED` equals `MPI_THREAD_FUNNELED` when the MPI implementation provides `MPI_Init_thread()`, otherwise it equals `MPI_THREAD_SINGLE`
 
 .seealso: `PetscInitialize()`
 M*/
 PETSC_EXTERN PetscMPIInt PETSC_MPI_THREAD_REQUIRED;
 
+/*MC
+   PetscBeganMPI - indicates if PETSc initialized MPI during `PetscInitialize()` or if MPI was already initialized.
+
+   Synopsis:
+   #include <petscsys.h>
+   PetscBool PetscBeganMPI;
+
+   No Fortran Support
+
+   Level: developer
+
+.seealso: `PetscInitialize()`, `PetscInitializeCalled()`
+M*/
 PETSC_EXTERN PetscBool PetscBeganMPI;
+
 PETSC_EXTERN PetscBool PetscErrorHandlingInitialized;
 PETSC_EXTERN PetscBool PetscInitializeCalled;
 PETSC_EXTERN PetscBool PetscFinalizeCalled;
@@ -1286,7 +1303,7 @@ PETSC_EXTERN PetscErrorCode PetscMallocGetStack(void *, PetscStack **);
 
 PETSC_EXTERN PetscErrorCode PetscObjectsDump(FILE *, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscObjectsView(PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscObjectsGetObject(const char *, PetscObject *, char **);
+PETSC_EXTERN PetscErrorCode PetscObjectsGetObject(const char *, PetscObject *, const char **);
 PETSC_EXTERN PetscErrorCode PetscObjectListDestroy(PetscObjectList *);
 PETSC_EXTERN PetscErrorCode PetscObjectListFind(PetscObjectList, const char[], PetscObject *);
 PETSC_EXTERN PetscErrorCode PetscObjectListReverseFind(PetscObjectList, PetscObject, char **, PetscBool *);
@@ -1415,11 +1432,9 @@ PETSC_EXTERN PetscErrorCode PetscHelpPrintfDefault(MPI_Comm, const char[], ...) 
 PETSC_EXTERN PetscErrorCode PetscFormatConvertGetSize(const char *, size_t *);
 PETSC_EXTERN PetscErrorCode PetscFormatConvert(const char *, char *);
 
-#if defined(PETSC_HAVE_POPEN)
 PETSC_EXTERN PetscErrorCode PetscPOpen(MPI_Comm, const char[], const char[], const char[], FILE **);
 PETSC_EXTERN PetscErrorCode PetscPClose(MPI_Comm, FILE *);
 PETSC_EXTERN PetscErrorCode PetscPOpenSetMachine(const char[]);
-#endif
 
 PETSC_EXTERN PetscErrorCode PetscSynchronizedPrintf(MPI_Comm, const char[], ...) PETSC_ATTRIBUTE_FORMAT(2, 3);
 PETSC_EXTERN PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm, FILE *, const char[], ...) PETSC_ATTRIBUTE_FORMAT(3, 4);
@@ -1608,10 +1623,9 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_at_all(MPI_File, MPI_Offset, void *, 
 static inline PetscErrorCode PetscIntCast(PetscInt64 a, PetscInt *b)
 {
   PetscFunctionBegin;
-  *b = 0;
   // if using 64-bit indices already then this comparison is tautologically true
   PetscCheck(a < PETSC_MAX_INT, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt64_FMT " is too big for PetscInt, you may need to ./configure using --with-64-bit-indices", a);
-  *b = (PetscInt)a;
+  if (b) *b = (PetscInt)a;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2096,6 +2110,19 @@ PETSC_EXTERN PetscErrorCode PetscMkdir(const char[]);
 PETSC_EXTERN PetscErrorCode PetscMkdtemp(char[]);
 PETSC_EXTERN PetscErrorCode PetscRMTree(const char[]);
 
+/*MC
+   PetscBinaryBigEndian - indicates if values in memory are stored with big endian format
+
+   Synopsis:
+   #include <petscsys.h>
+   PetscBool PetscBinaryBigEndian(void);
+
+   No Fortran Support
+
+   Level: developer
+
+.seealso: `PetscInitialize()`, `PetscFinalize()`, `PetscInitializeCalled`
+M*/
 static inline PetscBool PetscBinaryBigEndian(void)
 {
   long _petsc_v = 1;
@@ -2212,9 +2239,32 @@ PETSC_EXTERN PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer, void *)
 PETSC_EXTERN PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer, size_t *);
 PETSC_EXTERN PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer, size_t);
 
-/* Type-safe wrapper to encourage use of PETSC_RESTRICT. Does not use PetscFunctionBegin because the error handling
- * prevents the compiler from completely erasing the stub. This is called in inner loops so it has to be as fast as
- * possible. */
+/*MC
+  PetscSegBufferGetInts - access an array of `PetscInt` from a `PetscSegBuffer`
+
+  Synopsis:
+  #include <petscsys.h>
+  PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg, size_t count, PetscInt *PETSC_RESTRICT *slot);
+
+  No Fortran Support
+
+  Input Parameters:
++ seg   - `PetscSegBuffer` buffer
+- count - number of entries needed
+
+  Output Parameter:
+. buf - address of new buffer for contiguous data
+
+  Level: intermediate
+
+  Developer Note:
+  Type-safe wrapper to encourage use of PETSC_RESTRICT. Does not use PetscFunctionBegin because the error handling
+  prevents the compiler from completely erasing the stub. This is called in inner loops so it has to be as fast as
+  possible.
+
+.seealso: `PetscSegBuffer`, `PetscSegBufferGet()`, `PetscInitialize()`, `PetscFinalize()`, `PetscInitializeCalled`
+M*/
+/* */
 static inline PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg, size_t count, PetscInt *PETSC_RESTRICT *slot)
 {
   return PetscSegBufferGet(seg, count, (void **)slot);
@@ -2231,7 +2281,7 @@ PETSC_EXTERN                PetscErrorCode (*PetscVFPrintf)(FILE *, const char[]
 
 PETSC_EXTERN PetscSegBuffer PetscCitationsList;
 
-/*@C
+/*@
      PetscCitationsRegister - Register a bibtex item to obtain credit for an implemented algorithm used in the code.
 
      Not Collective; No Fortran Support

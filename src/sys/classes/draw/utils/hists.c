@@ -28,7 +28,7 @@ struct _p_PetscDrawHG {
 
 #define CHUNKSIZE 100
 
-/*@C
+/*@
   PetscDrawHGCreate - Creates a histogram data structure.
 
   Collective
@@ -64,10 +64,8 @@ PetscErrorCode PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist)
   PetscAssertPointer(hist, 3);
 
   PetscCall(PetscHeaderCreate(h, PETSC_DRAWHG_CLASSID, "DrawHG", "Histogram", "Draw", PetscObjectComm((PetscObject)draw), PetscDrawHGDestroy, NULL));
-
   PetscCall(PetscObjectReference((PetscObject)draw));
-  h->win = draw;
-
+  h->win     = draw;
   h->view    = NULL;
   h->destroy = NULL;
   h->color   = PETSC_DRAW_GREEN;
@@ -77,17 +75,13 @@ PetscErrorCode PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist)
   h->ymax    = 1.;
   h->numBins = bins;
   h->maxBins = bins;
-
   PetscCall(PetscMalloc1(h->maxBins, &h->bins));
-
   h->numValues   = 0;
   h->maxValues   = CHUNKSIZE;
   h->calcStats   = PETSC_FALSE;
   h->integerBins = PETSC_FALSE;
-
   PetscCall(PetscMalloc1(h->maxValues, &h->values));
   PetscCall(PetscDrawAxisCreate(draw, &h->axis));
-
   *hist = h;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -145,7 +139,7 @@ PetscErrorCode PetscDrawHGReset(PetscDrawHG hist)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawHGDestroy - Frees all space taken up by histogram data structure.
 
   Collective
@@ -585,7 +579,7 @@ PetscErrorCode PetscDrawHGIntegerBins(PetscDrawHG hist, PetscBool ints)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawHGGetAxis - Gets the axis context associated with a histogram.
   This is useful if one wants to change some axis property, such as
   labels, color, etc. The axis context should not be destroyed by the
@@ -612,7 +606,7 @@ PetscErrorCode PetscDrawHGGetAxis(PetscDrawHG hist, PetscDrawAxis *axis)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawHGGetDraw - Gets the draw context associated with a histogram.
 
   Not Collective, draw is parallel if hist is parallel

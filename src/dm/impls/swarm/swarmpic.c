@@ -9,7 +9,7 @@
 #include <petsc/private/petscfeimpl.h> /* For CoordinatesRefToReal() */
 
 /* Coordinate insertition/addition API */
-/*@C
+/*@
   DMSwarmSetPointsUniformCoordinates - Set point coordinates in a `DMSWARM` on a regular (ijk) grid
 
   Collective
@@ -25,12 +25,12 @@
 
   Notes:
   When using mode = `INSERT_VALUES`, this method will reset the number of particles in the `DMSWARM`
-  to be npoints[0]*npoints[1] (2D) or npoints[0]*npoints[1]*npoints[2] (3D). When using mode = `ADD_VALUES`,
+  to be `npoints[0]` x `npoints[1]` (2D) or `npoints[0]` x `npoints[1]` x `npoints[2]` (3D). When using mode = `ADD_VALUES`,
   new points will be appended to any already existing in the `DMSWARM`
 
 .seealso: `DM`, `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal min[], PetscReal max[], PetscInt npoints[], InsertMode mode)
+PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal min[], PetscReal max[], PetscInt npoints[], InsertMode mode)
 {
   PetscReal          lmin[] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MAX_REAL};
   PetscReal          lmax[] = {PETSC_MIN_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
@@ -156,7 +156,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmSetPointCoordinates - Set point coordinates in a `DMSWARM` from a user defined list
 
   Collective
@@ -177,7 +177,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal 
 
 .seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`, `DMSwarmSetPointsUniformCoordinates()`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM dm, PetscInt npoints, PetscReal coor[], PetscBool redundant, InsertMode mode)
+PetscErrorCode DMSwarmSetPointCoordinates(DM dm, PetscInt npoints, PetscReal coor[], PetscBool redundant, InsertMode mode)
 {
   PetscReal          gmin[] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MAX_REAL};
   PetscReal          gmax[] = {PETSC_MIN_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
@@ -313,7 +313,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM dm, PetscInt npoints, 
 extern PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA(DM, DM, DMSwarmPICLayoutType, PetscInt);
 extern PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM, DM, DMSwarmPICLayoutType, PetscInt);
 
-/*@C
+/*@
   DMSwarmInsertPointsUsingCellDM - Insert point coordinates within each cell
 
   Not Collective
@@ -339,7 +339,7 @@ extern PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM, DM, DMSwar
 
 .seealso: `DMSWARM`, `DMSwarmPICLayoutType`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmInsertPointsUsingCellDM(DM dm, DMSwarmPICLayoutType layout_type, PetscInt fill_param)
+PetscErrorCode DMSwarmInsertPointsUsingCellDM(DM dm, DMSwarmPICLayoutType layout_type, PetscInt fill_param)
 {
   DM        celldm;
   PetscBool isDA, isPLEX;
@@ -384,7 +384,7 @@ extern PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM, DM, Pe
 
 .seealso: `DMSWARM`, `DMSwarmSetCellDM()`, `DMSwarmInsertPointsUsingCellDM()`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinatesCellwise(DM dm, PetscInt npoints, PetscReal xi[])
+PetscErrorCode DMSwarmSetPointCoordinatesCellwise(DM dm, PetscInt npoints, PetscReal xi[])
 {
   DM        celldm;
   PetscBool isDA, isPLEX;
@@ -401,7 +401,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinatesCellwise(DM dm, PetscInt n
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmCreatePointPerCellCount - Count the number of points within all cells in the cell DM
 
   Not Collective
@@ -420,7 +420,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinatesCellwise(DM dm, PetscInt n
 
 .seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmCreatePointPerCellCount(DM dm, PetscInt *ncells, PetscInt **count)
+PetscErrorCode DMSwarmCreatePointPerCellCount(DM dm, PetscInt *ncells, PetscInt **count)
 {
   PetscBool isvalid;
   PetscInt  nel;
@@ -675,7 +675,7 @@ PetscErrorCode DMSwarmComputeLocalSize(DM sw, PetscInt N, PetscProbFunc density)
     const PetscInt cell = c + cStart;
     PetscReal      v0[3], J[9], invJ[9], detJ, detJp = 2. / (gmax[0] - gmin[0]), xr[3], den;
 
-    /*Have to transform quadrature points/weights to cell domain*/
+    /* Have to transform quadrature points/weights to cell domain */
     PetscCall(DMPlexComputeCellGeometryFEM(dm, cell, NULL, v0, J, invJ, &detJ));
     PetscCall(PetscArrayzero(n_int, Ns));
     for (q = 0; q < Nq; ++q) {

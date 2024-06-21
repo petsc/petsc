@@ -677,7 +677,6 @@ PetscErrorCode PCPatchSetComputeOperator(PC pc, PetscErrorCode (*func)(PC pc, Pe
 }
 
 /*@C
-
   PCPatchSetComputeOperatorInteriorFacets - Set the callback function used to compute facet integrals for patch matrices
 
   Logically Collective
@@ -1426,7 +1425,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
         }
       }
     }
-    /*How many local dofs in this patch? */
+    /* How many local dofs in this patch? */
     if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
       PetscCall(PetscHMapIGetSize(htWithArtificial, &dof));
       PetscCall(PetscSectionSetDof(gtolCountsWithArtificial, v, dof));

@@ -2,7 +2,6 @@
 #include <petscksp.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-  #define pcgasmsetsubdomains_      PCGASMSETSUBDOMAINS
   #define pcgasmdestroysubdomains_  PCGASMDESTROYSUBDOMAINS
   #define pcgasmgetsubksp1_         PCGASMGETSUBKSP1
   #define pcgasmgetsubksp2_         PCGASMGETSUBKSP2
@@ -14,7 +13,6 @@
   #define pcgasmgetsubksp8_         PCGASMGETSUBKSP8
   #define pcgasmcreatesubdomains2d_ PCGASMCREATESUBDOMAINS2D
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define pcgasmsetsubdomains_      pcgasmsetsubdomains
   #define pcgasmdestroysubdomains_  pcgasmdestroysubdomains
   #define pcgasmgetsubksp2_         pcgasmgetsubksp2
   #define pcgasmgetsubksp3_         pcgasmgetsubksp3
@@ -25,11 +23,6 @@
   #define pcgasmgetsubksp8_         pcgasmgetsubksp8
   #define pcgasmcreatesubdomains2d_ pcgasmcreatesubdomains2d
 #endif
-
-PETSC_EXTERN void pcgasmsetsubdomains_(PC *pc, PetscInt *n, IS *is, IS *isl, int *ierr)
-{
-  *ierr = PCGASMSetSubdomains(*pc, *n, is, isl);
-}
 
 PETSC_EXTERN void pcgasmdestroysubdomains_(PetscInt *n, IS *is, IS *isl, int *ierr)
 {

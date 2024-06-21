@@ -27,7 +27,7 @@ typedef struct {
 
 /* ------------------------------------------------------------------------------*/
 
-/*@C
+/*@
   TSPseudoComputeTimeStep - Computes the next timestep for a currently running
   pseudo-timestepping process.
 
@@ -62,7 +62,7 @@ PetscErrorCode TSPseudoComputeTimeStep(TS ts, PetscReal *dt)
 /*@C
   TSPseudoVerifyTimeStepDefault - Default code to verify the quality of the last timestep.
 
-  Collective
+  Collective, No Fortran Support
 
   Input Parameters:
 + ts     - the timestep context
@@ -345,7 +345,6 @@ static PetscErrorCode TSView_Pseudo(TS ts, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ----------------------------------------------------------------------------- */
 /*@C
   TSPseudoSetVerifyTimeStep - Sets a user-defined routine to verify the quality of the
   last timestep.
@@ -642,7 +641,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS ts)
 /*@C
   TSPseudoTimeStepDefault - Default code to compute pseudo-timestepping.  Use with `TSPseudoSetTimeStep()`.
 
-  Collective
+  Collective, No Fortran Support
 
   Input Parameters:
 + ts    - the timestep context

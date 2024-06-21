@@ -47,7 +47,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerReset(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerViewFromOptions(PetscPartitioner, PetscObject, const char[]);
 PETSC_EXTERN PetscErrorCode PetscPartitionerView(PetscPartitioner, PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscPartitionerPartition(PetscPartitioner, PetscInt, PetscInt, PetscInt[], PetscInt[], PetscSection, PetscSection, PetscSection, IS *);
+PETSC_EXTERN PetscErrorCode PetscPartitionerPartition(PetscPartitioner, PetscInt, PetscInt, PetscInt[], PetscInt[], PetscSection, PetscSection, PetscSection, PetscSection, IS *);
 
 PETSC_EXTERN PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner, PetscInt, const PetscInt[], const PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscPartitionerShellSetRandom(PetscPartitioner, PetscBool);

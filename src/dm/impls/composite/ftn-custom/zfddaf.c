@@ -2,43 +2,31 @@
 #include <petscdmcomposite.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-  #define dmcompositegetentries1_             DMCOMPOSITEGETENTRIES1
-  #define dmcompositegetentries2_             DMCOMPOSITEGETENTRIES2
-  #define dmcompositegetentries3_             DMCOMPOSITEGETENTRIES3
-  #define dmcompositegetentries4_             DMCOMPOSITEGETENTRIES4
-  #define dmcompositegetentries5_             DMCOMPOSITEGETENTRIES5
-  #define dmcompositeadddm_                   DMCOMPOSITEADDDM
-  #define dmcompositedestroy_                 DMCOMPOSITEDESTROY
-  #define dmcompositegetaccess4_              DMCOMPOSITEGETACCESS4
-  #define dmcompositescatter4_                DMCOMPOSITESCATTER4
-  #define dmcompositerestoreaccess4_          DMCOMPOSITERESTOREACCESS4
-  #define dmcompositegetlocalvectors4_        DMCOMPOSITEGETLOCALVECTORS4
-  #define dmcompositerestorelocalvectors4_    DMCOMPOSITERESTORELOCALVECTORS4
-  #define dmcompositegetglobaliss_            DMCOMPOSITEGETGLOBALISS
-  #define dmcompositegetlocaliss_             DMCOMPOSITEGETLOCALISS
-  #define dmcompositegetaccessarray_          DMCOMPOSITEGETACCESSARRAY
-  #define dmcompositerestoreaccessarray_      DMCOMPOSITERESTOREACCESSARRAY
-  #define dmcompositegetlocalaccessarray_     DMCOMPOSITEGETLOCALACCESSARRAY
-  #define dmcompositerestorelocalaccessarray_ DMCOMPOSITERESTORELOCALACCESSARRAY
+  #define dmcompositegetentries1_          DMCOMPOSITEGETENTRIES1
+  #define dmcompositegetentries2_          DMCOMPOSITEGETENTRIES2
+  #define dmcompositegetentries3_          DMCOMPOSITEGETENTRIES3
+  #define dmcompositegetentries4_          DMCOMPOSITEGETENTRIES4
+  #define dmcompositegetentries5_          DMCOMPOSITEGETENTRIES5
+  #define dmcompositegetaccess4_           DMCOMPOSITEGETACCESS4
+  #define dmcompositescatter4_             DMCOMPOSITESCATTER4
+  #define dmcompositerestoreaccess4_       DMCOMPOSITERESTOREACCESS4
+  #define dmcompositegetlocalvectors4_     DMCOMPOSITEGETLOCALVECTORS4
+  #define dmcompositerestorelocalvectors4_ DMCOMPOSITERESTORELOCALVECTORS4
+  #define dmcompositegetglobaliss_         DMCOMPOSITEGETGLOBALISS
+  #define dmcompositegetlocaliss_          DMCOMPOSITEGETLOCALISS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define dmcompositegetentries1_             dmcompositegetentries1
-  #define dmcompositegetentries2_             dmcompositegetentries2
-  #define dmcompositegetentries3_             dmcompositegetentries3
-  #define dmcompositegetentries4_             dmcompositegetentries4
-  #define dmcompositegetentries5_             dmcompositegetentries5
-  #define dmcompositeadddm_                   dmcompositeadddm
-  #define dmcompositedestroy_                 dmcompositedestroy
-  #define dmcompositegetaccess4_              dmcompositegetaccess4
-  #define dmcompositescatter4_                dmcompositescatter4
-  #define dmcompositerestoreaccess4_          dmcompositerestoreaccess4
-  #define dmcompositegetlocalvectors4_        dmcompositegetlocalvectors4
-  #define dmcompositerestorelocalvectors4_    dmcompositerestorelocalvectors4
-  #define dmcompositegetglobaliss_            dmcompositegetglobaliss
-  #define dmcompositegetlocaliss_             dmcompositegetlocaliss
-  #define dmcompositegetaccessarray_          dmcompositegetaccessarray
-  #define dmcompositerestoreaccessarray_      dmcompositerestoreaccessarray
-  #define dmcompositegetlocalaccessarray_     dmcompositegetlocalaccessarray
-  #define dmcompositerestorelocalaccessarray_ dmcompositerestorelocalaccessarray
+  #define dmcompositegetentries1_          dmcompositegetentries1
+  #define dmcompositegetentries2_          dmcompositegetentries2
+  #define dmcompositegetentries3_          dmcompositegetentries3
+  #define dmcompositegetentries4_          dmcompositegetentries4
+  #define dmcompositegetentries5_          dmcompositegetentries5
+  #define dmcompositegetaccess4_           dmcompositegetaccess4
+  #define dmcompositescatter4_             dmcompositescatter4
+  #define dmcompositerestoreaccess4_       dmcompositerestoreaccess4
+  #define dmcompositegetlocalvectors4_     dmcompositegetlocalvectors4
+  #define dmcompositerestorelocalvectors4_ dmcompositerestorelocalvectors4
+  #define dmcompositegetglobaliss_         dmcompositegetglobaliss
+  #define dmcompositegetlocaliss_          dmcompositegetlocaliss
 #endif
 
 PETSC_EXTERN void dmcompositegetentries1_(DM *dm, DM *da1, PetscErrorCode *ierr)
@@ -117,28 +105,4 @@ PETSC_EXTERN void dmcompositegetlocaliss_(DM *dm, IS *iss, PetscErrorCode *ierr)
   if (*ierr) return;
   for (i = 0; i < ndm; i++) iss[i] = ais[i];
   *ierr = PetscFree(ais);
-}
-
-PETSC_EXTERN void dmcompositegetaccessarray_(DM *dm, Vec *gvec, PetscInt *n, const PetscInt *wanted, Vec *vecs, PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLINTEGER(wanted);
-  *ierr = DMCompositeGetAccessArray(*dm, *gvec, *n, wanted, vecs);
-}
-
-PETSC_EXTERN void dmcompositerestoreaccessarray_(DM *dm, Vec *gvec, PetscInt *n, const PetscInt *wanted, Vec *vecs, PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLINTEGER(wanted);
-  *ierr = DMCompositeRestoreAccessArray(*dm, *gvec, *n, wanted, vecs);
-}
-
-PETSC_EXTERN void dmcompositegetlocalaccessarray_(DM *dm, Vec *lvec, PetscInt *n, const PetscInt *wanted, Vec *vecs, PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLINTEGER(wanted);
-  *ierr = DMCompositeGetLocalAccessArray(*dm, *lvec, *n, wanted, vecs);
-}
-
-PETSC_EXTERN void dmcompositerestorelocalaccessarray_(DM *dm, Vec *lvec, PetscInt *n, const PetscInt *wanted, Vec *vecs, PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLINTEGER(wanted);
-  *ierr = DMCompositeRestoreLocalAccessArray(*dm, *lvec, *n, wanted, vecs);
 }

@@ -21,7 +21,7 @@ program main
   PetscCallA(mpi_comm_rank(PETSC_COMM_WORLD, myid, ierr))
   PetscCallA(mpi_comm_size(PETSC_COMM_WORLD, commsize, ierr))
 
-  PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,Nx, Ny, PETSC_DECIDE, PETSC_DECIDE, Ndof, stencil_size,PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, da, ierr))
+  PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,Nx, Ny, PETSC_DECIDE, PETSC_DECIDE, Ndof, stencil_size,PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY, da, ierr))
   PetscCallA(DMSetup(da, ierr))
   PetscCallA(DMSetFromOptions(da, ierr))
 

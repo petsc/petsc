@@ -9,7 +9,7 @@ PetscStack petscstack;
 
 static PetscBool amsmemstack = PETSC_FALSE;
 
-/*@C
+/*@
   PetscStackSAWsGrantAccess - Grants access of the PETSc stack frames to the SAWs publisher
 
   Collective on `PETSC_COMM_WORLD`?
@@ -30,7 +30,7 @@ void PetscStackSAWsGrantAccess(void)
   }
 }
 
-/*@C
+/*@
   PetscStackSAWsTakeAccess - Takes access of the PETSc stack frames from the SAWs publisher
 
   Collective on `PETSC_COMM_WORLD`?
@@ -88,6 +88,7 @@ PetscErrorCode PetscStackReset(void)
   return PETSC_SUCCESS;
 }
 
+// PetscClangLinter pragma disable: -fdoc-sowing-chars
 /*
   PetscStackView - Print the current (default) PETSc stack to an ASCII file
 
@@ -185,6 +186,7 @@ PetscErrorCode PetscStackCopy(PetscStack *sint, PetscStack *sout)
   return PETSC_SUCCESS;
 }
 
+// PetscClangLinter pragma disable: -fdoc-sowing-chars
 /*
   PetscStackPrint - Prints a given PETSc stack to an ASCII file
 
@@ -192,7 +194,7 @@ PetscErrorCode PetscStackCopy(PetscStack *sint, PetscStack *sout)
 
   Input Parameters:
 + sint - the PETSc stack to print
-- file - the file pointer
+- fp   - the file pointer
 
   Level: developer
 

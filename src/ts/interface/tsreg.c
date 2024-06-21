@@ -3,7 +3,7 @@
 PetscFunctionList TSList              = NULL;
 PetscBool         TSRegisterAllCalled = PETSC_FALSE;
 
-/*@C
+/*@
   TSSetType - Sets the method to be used as the timestepping solver.
 
   Collective
@@ -63,7 +63,7 @@ PetscErrorCode TSSetType(TS ts, TSType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGetType - Gets the `TS` method type (as a string).
 
   Not Collective
@@ -92,7 +92,7 @@ PetscErrorCode TSGetType(TS ts, TSType *type)
 /*@C
   TSRegister - Adds a creation method to the `TS` package.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - The name of a new user-defined creation routine

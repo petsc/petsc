@@ -3,6 +3,55 @@
 !
 #include "petsc/finclude/petscdraw.h"
 !
+      type, extends(tPetscObject) :: tPetscDraw
+      end type tPetscDraw
+      PetscDraw, parameter :: PETSC_NULL_DRAW = tPetscDraw(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_SNES_DRAW
+#endif
+
+      type, extends(tPetscObject) :: tPetscDrawLG
+      end type tPetscDrawLG
+      PetscDrawLG, parameter :: PETSC_NULL_DRAW_LG = tPetscDrawLG(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_SNES_DRAW_LG
+#endif
+
+      type, extends(tPetscObject) :: tPetscDrawBar
+      end type tPetscDrawBar
+      PetscDrawBar, parameter :: PETSC_NULL_DRAW_BAR = tPetscDrawBar(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_SNES_DRAW_BAR
+#endif
+
+      type, extends(tPetscObject) :: tPetscDrawAxis
+      end type tPetscDrawAxis
+      PetscDrawAxis, parameter :: PETSC_NULL_DRAW_AXIS = tPetscDrawAxis(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_SNES_DRAW_AXIS
+#endif
+
+      type, extends(tPetscObject) :: tPetscDrawHG
+      end type tPetscDrawHG
+      PetscDrawHG, parameter :: PETSC_NULL_DRAW_HG = tPetscDrawHG(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_SNES_DRAW_HG
+#endif
+
+      type, extends(tPetscObject) :: tPetscDrawSP
+      end type tPetscDrawSP
+      PetscDrawSP, parameter :: PETSC_NULL_DRAW_SP = tPetscDrawSP(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_SNES_DRAW_SP
+#endif
+
+      type, extends(tPetscObject) :: tPetscDrawMesh
+      end type tPetscDrawMesh
+      PetscDrawMesh, parameter :: PETSC_NULL_DRAW_MESH = tPetscDrawMesh(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_SNES_DRAW_MESH
+#endif
+
 !  Flags for draw
 !
       PetscEnum, parameter :: PETSC_DRAW_BASIC_COLORS = 33

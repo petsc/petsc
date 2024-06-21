@@ -2,12 +2,12 @@
 
 from petsc4py import PETSc
 import unittest
-from sys import getrefcount
+from test_ksp import BaseTestKSP
 
 # --------------------------------------------------------------------
 
-class MyKSP(object):
 
+class MyKSP:
     def __init__(self):
         pass
 
@@ -34,13 +34,13 @@ class MyKSP(object):
         ksp.monitor(its, rnorm)
         reason = ksp.callConvergenceTest(its, rnorm)
         if not reason:
-            ksp.setIterationNumber(its+1)
+            ksp.setIterationNumber(its + 1)
         else:
             ksp.setConvergedReason(reason)
         return reason
 
-class MyRichardson(MyKSP):
 
+class MyRichardson(MyKSP):
     def solve(self, ksp, b, x):
         A, B = ksp.getOperators()
         P = ksp.getPC()
@@ -56,17 +56,17 @@ class MyRichardson(MyKSP):
             P.apply(r, z)
             x.axpy(1, z)
 
-class MyCG(MyKSP):
 
+class MyCG(MyKSP):
     def setUp(self, ksp):
-        super(MyCG, self).setUp(ksp)
+        super().setUp(ksp)
         d = self.work[0].duplicate()
         q = d.duplicate()
         self.work += [d, q]
 
     def solve(self, ksp, b, x):
         A, B = ksp.getOperators()
-        P = ksp.getPC()
+        # P = ksp.getPC()
         r, z, d, q = self.work
         #
         A.mult(x, r)
@@ -84,36 +84,38 @@ class MyCG(MyKSP):
             beta = delta / delta_old
             d.aypx(beta, r)
 
+
 # --------------------------------------------------------------------
 
-from test_ksp import BaseTestKSP
 
 class BaseTestKSPPYTHON(BaseTestKSP):
-
     KSP_TYPE = PETSc.KSP.Type.PYTHON
     ContextClass = None
 
     def setUp(self):
-        super(BaseTestKSPPYTHON, self).setUp()
+        super().setUp()
         ctx = self.ContextClass()
         self.ksp.setPythonContext(ctx)
 
     def testGetType(self):
         ctx = self.ksp.getPythonContext()
-        pytype = "{0}.{1}".format(ctx.__module__, type(ctx).__name__)
+        pytype = f'{ctx.__module__}.{type(ctx).__name__}'
         self.assertTrue(self.ksp.getPythonType() == pytype)
 
     def tearDown(self):
         self.ksp.destroy()
         PETSc.garbage_cleanup()
 
+
 class TestKSPPYTHON_RICH(BaseTestKSPPYTHON, unittest.TestCase):
-    PC_TYPE  = PETSc.PC.Type.JACOBI
+    PC_TYPE = PETSc.PC.Type.JACOBI
     ContextClass = MyRichardson
 
+
 class TestKSPPYTHON_CG(BaseTestKSPPYTHON, unittest.TestCase):
-    PC_TYPE  = PETSc.PC.Type.NONE
+    PC_TYPE = PETSc.PC.Type.NONE
     ContextClass = MyCG
+
 
 # --------------------------------------------------------------------
 

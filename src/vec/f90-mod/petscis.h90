@@ -4,25 +4,6 @@
 !
 
       Interface
-        Subroutine PetscLayoutFindOwner(a,b,c,z)
-          PetscLayout a
-          PetscInt    b
-          PetscMPIInt c
-          PetscErrorCode  z
-        End Subroutine
-      End Interface
-
-      Interface
-        Subroutine PetscLayoutFindOwnerIndex(a,b,c,d,z)
-          PetscLayout a
-          PetscMPIInt b
-          PetscInt c
-          PetscInt d
-          PetscErrorCode  z
-        End Subroutine
-      End Interface
-
-      Interface
         Subroutine PetscLayoutGetRangesF90(a,b,z)
           PetscLayout a
           PetscInt, pointer :: b(:)
@@ -50,6 +31,7 @@
 
       Interface
         Subroutine ISLocalToGlobalMappingGetIndicesF90(i,array,ierr)
+          import tISLocalToGlobalMapping
           PetscInt, pointer :: array(:)
           PetscErrorCode  ierr
          ISLocalToGlobalMapping       i
@@ -58,6 +40,7 @@
 
       Interface
         Subroutine ISLocalToGlobalMappingRestoreIndicesF90(i,array,ierr)
+          import tISLocalToGlobalMapping
           PetscInt, pointer :: array(:)
           PetscErrorCode  ierr
          ISLocalToGlobalMapping       i
@@ -167,32 +150,6 @@
           PetscErrorCode    :: ierr
         End Subroutine
       End Interface
-
-      Interface
-      subroutine ISSetType(a,b,z)
-       import tIS
-       IS a
-       character(*) b
-       integer z
-       end subroutine
-      end Interface
-
-      Interface
-      subroutine ISView(a,b,z)
-       import tIS,tPetscViewer
-       IS a
-       PetscViewer b
-       PetscErrorCode z
-       end subroutine
-      end Interface
-
-      Interface
-        subroutine ISDestroy(a,z)
-          import tIS
-          IS a
-          PetscErrorCode z
-        end subroutine
-      end Interface
 
       Interface
         Subroutine PetscSFDistributeSectionF90(sf,rootsection,array,leafsection,ierr)

@@ -5,6 +5,16 @@
 
 PETSC_EXTERN PetscClassId DMPLEXTRANSFORM_CLASSID;
 
+/*J
+   DMPlexTransformType - String with the name of a PETSc DMPlexTransform type
+
+   Level: beginner
+
+   Note:
+   [](plex_transform_table) for a table of available matrix types
+
+.seealso: [](plex_transform_table), [](ch_unstructured), `DMPlexTransformCreate()`, `DMPlexTransform`, `DMPlexTransformRegister()`
+J*/
 typedef const char *DMPlexTransformType;
 #define DMPLEXREFINEREGULAR       "refine_regular"
 #define DMPLEXREFINEALFELD        "refine_alfeld"
@@ -15,6 +25,7 @@ typedef const char *DMPlexTransformType;
 #define DMPLEXREFINETOSIMPLEX     "refine_tosimplex"
 #define DMPLEXREFINE1D            "refine_1d"
 #define DMPLEXEXTRUDE             "extrude"
+#define DMPLEXCOHESIVEEXTRUDE     "cohesive_extrude"
 #define DMPLEXTRANSFORMFILTER     "transform_filter"
 
 PETSC_EXTERN PetscFunctionList DMPlexTransformList;
@@ -76,5 +87,10 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformExtrudeGetNormal(DMPlexTransform, Pet
 PETSC_EXTERN PetscErrorCode DMPlexTransformExtrudeSetNormal(DMPlexTransform, const PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMPlexTransformExtrudeSetNormalFunction(DMPlexTransform, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *));
 PETSC_EXTERN PetscErrorCode DMPlexTransformExtrudeSetThicknesses(DMPlexTransform, PetscInt, const PetscReal[]);
+
+PETSC_EXTERN PetscErrorCode DMPlexTransformCohesiveExtrudeGetTensor(DMPlexTransform, PetscBool *);
+PETSC_EXTERN PetscErrorCode DMPlexTransformCohesiveExtrudeSetTensor(DMPlexTransform, PetscBool);
+PETSC_EXTERN PetscErrorCode DMPlexTransformCohesiveExtrudeGetWidth(DMPlexTransform, PetscReal *);
+PETSC_EXTERN PetscErrorCode DMPlexTransformCohesiveExtrudeSetWidth(DMPlexTransform, PetscReal);
 
 PETSC_EXTERN PetscErrorCode DMPlexCreateEphemeral(DMPlexTransform, const char[], DM *);

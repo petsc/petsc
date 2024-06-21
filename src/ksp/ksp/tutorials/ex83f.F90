@@ -11,7 +11,7 @@
       use petscksp
       implicit none
 
-      PetscInt i,n,nz
+      PetscInt i,n,nz,one
       PetscBool flg,equal
       PetscErrorCode ierr
       PetscInt,ALLOCATABLE :: ia(:)
@@ -29,7 +29,7 @@
       PC pc
 
       PetscCallA(PetscInitialize(ierr))
-
+      one = 1
       n = 3
       PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr))
       nz = 3*n - 4;
@@ -83,8 +83,8 @@
       PetscCallA(MatEqual(J,Jr,equal,ierr))
       PetscCheckA(equal .eqv. PETSC_TRUE,PETSC_COMM_SELF,PETSC_ERR_PLIB,'Matrices J and Jr must be equal')
 
-      PetscCallA(VecCreateSeqWithArray(PETSC_COMM_SELF,1,n,b,rhs,ierr))
-      PetscCallA(VecCreateSeqWithArray(PETSC_COMM_SELF,1,n,x,solution,ierr))
+      PetscCallA(VecCreateSeqWithArray(PETSC_COMM_SELF,one,n,b,rhs,ierr))
+      PetscCallA(VecCreateSeqWithArray(PETSC_COMM_SELF,one,n,x,solution,ierr))
 
       PetscCallA(KSPCreate(PETSC_COMM_SELF,ksp,ierr))
       PetscCallA(KSPSetErrorIfNotConverged(ksp,PETSC_TRUE,ierr))

@@ -11,8 +11,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version                = '0.3.21'
-    self.gitcommit              = 'v'+self.version
+    self.gitcommit              = '9af2a9dc3b506f696137c2fe0b28d3d6c218b0ac'            # develop Mar-25-2024 (0.3.26+)
     self.versionname            = 'OPENBLAS_VERSION'
     self.download               = ['git://https://github.com/xianyi/OpenBLAS.git','https://github.com/xianyi/OpenBLAS/archive/'+self.gitcommit+'.tar.gz']
     self.versioninclude         = 'openblas_config.h'
@@ -81,6 +80,8 @@ class Configure(config.package.Package):
       cmdline+=" "+self.argDB['download-openblas-make-options']
     if not self.argDB['with-shared-libraries']:
       cmdline += " NO_SHARED=1 "
+    else:
+      cmdline += " NO_STATIC=1 "
     cmdline += " MAKE_NB_JOBS="+str(self.make.make_np)+" "
     usespthreads = False
     if 'download-openblas-use-pthreads' in self.argDB and self.argDB['download-openblas-use-pthreads']:
@@ -100,7 +101,7 @@ class Configure(config.package.Package):
       else:
         cmdline += " USE_THREAD=0 "
     cmdline += " NO_EXPRECISION=1 "
-    cmdline += " libs netlib re_lapack shared "
+    cmdline += " shared "
 
     self.include = [os.path.join(self.installDir,'include')]
     libdir = self.libDir
@@ -113,13 +114,13 @@ class Configure(config.package.Package):
 
     try:
       self.logPrintBox('Compiling OpenBLAS; this may take several minutes')
-      output1,err1,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && make '+cmdline, timeout=2500, log = self.log)
+      output1,err1,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && '+self.make.make+' '+cmdline, timeout=2500, log = self.log)
     except RuntimeError as e:
       self.logPrint('Error running make on '+blasDir+': '+str(e))
       raise RuntimeError('Error running make on '+blasDir)
     try:
       self.logPrintBox('Installing OpenBLAS')
-      output2,err2,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && make PREFIX='+self.installDir+' '+cmdline+' install', timeout=60, log = self.log)
+      output2,err2,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && '+self.make.make+' PREFIX='+self.installDir+' '+cmdline+' install', timeout=60, log = self.log)
     except RuntimeError as e:
       self.logPrint('Error moving '+blasDir+' libraries: '+str(e))
       raise RuntimeError('Error moving '+blasDir+' libraries')

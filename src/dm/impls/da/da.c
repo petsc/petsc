@@ -689,7 +689,7 @@ PetscErrorCode DMDAGetInterpolationType(DM da, DMDAInterpolationType *ctype)
   Level: intermediate
 
   Notes:
-  In 2d the array is of length 9, in 3d of length 27
+  In 2d the `ranks` is of length 9, in 3d of length 27
 
   Not supported in 1d
 
@@ -791,7 +791,7 @@ PetscErrorCode DMDASetRefinementFactor(DM da, PetscInt refine_x, PetscInt refine
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDAGetRefinementFactor - Gets the ratios that the `DMDA` grid is refined
 
   Not Collective

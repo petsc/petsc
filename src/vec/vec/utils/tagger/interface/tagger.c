@@ -1,6 +1,6 @@
 #include <petsc/private/vecimpl.h> /*I "petscvec.h" I*/
 
-/*@C
+/*@
   VecTaggerCreate - create a `VecTagger` context.
 
   Collective
@@ -41,16 +41,14 @@ PetscErrorCode VecTaggerCreate(MPI_Comm comm, VecTagger *tagger)
   PetscCall(VecTaggerInitializePackage());
 
   PetscCall(PetscHeaderCreate(b, VEC_TAGGER_CLASSID, "VecTagger", "Vec Tagger", "Vec", comm, VecTaggerDestroy, VecTaggerView));
-
   b->blocksize   = 1;
   b->invert      = PETSC_FALSE;
   b->setupcalled = PETSC_FALSE;
-
-  *tagger = b;
+  *tagger        = b;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecTaggerSetType - set the Vec tagger implementation
 
   Collective
@@ -98,7 +96,7 @@ PetscErrorCode VecTaggerSetType(VecTagger tagger, VecTaggerType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecTaggerGetType - Gets the `VecTaggerType` name (as a string) from the `VecTagger`.
 
   Not Collective
@@ -208,7 +206,7 @@ PetscErrorCode VecTaggerSetFromOptions(VecTagger tagger)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecTaggerSetBlockSize - set the block size of the set of indices returned by `VecTaggerComputeIS()`.
 
   Logically Collective
@@ -240,7 +238,7 @@ PetscErrorCode VecTaggerSetBlockSize(VecTagger tagger, PetscInt blocksize)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecTaggerGetBlockSize - get the block size of the indices created by `VecTaggerComputeIS()`.
 
   Logically Collective
@@ -264,7 +262,7 @@ PetscErrorCode VecTaggerGetBlockSize(VecTagger tagger, PetscInt *blocksize)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecTaggerSetInvert - If the tagged index sets are based on boxes that can be returned by `VecTaggerComputeBoxes()`,
   then this option inverts values used to compute the IS, i.e., from being in the union of the boxes to being in the
   intersection of their exteriors.
@@ -288,7 +286,7 @@ PetscErrorCode VecTaggerSetInvert(VecTagger tagger, PetscBool invert)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecTaggerGetInvert - get whether the set of indices returned by `VecTaggerComputeIS()` are inverted
 
   Logically Collective
@@ -312,7 +310,7 @@ PetscErrorCode VecTaggerGetInvert(VecTagger tagger, PetscBool *invert)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecTaggerView - view a `VecTagger` context
 
   Collective
@@ -368,7 +366,7 @@ PetscErrorCode VecTaggerView(VecTagger tagger, PetscViewer viewer)
 
 .seealso: `VecTaggerComputeIS()`, `VecTagger`, `VecTaggerCreate()`
 @*/
-PetscErrorCode VecTaggerComputeBoxes(VecTagger tagger, Vec vec, PetscInt *numBoxes, VecTaggerBox **boxes, PetscBool *listed)
+PetscErrorCode VecTaggerComputeBoxes(VecTagger tagger, Vec vec, PetscInt *numBoxes, VecTaggerBox *boxes[], PetscBool *listed)
 {
   PetscInt vls, tbs;
 
@@ -404,7 +402,7 @@ PetscErrorCode VecTaggerComputeBoxes(VecTagger tagger, Vec vec, PetscInt *numBox
 
 .seealso: `VecTaggerComputeBoxes()`, `VecTagger`, `VecTaggerCreate()`
 @*/
-PetscErrorCode VecTaggerComputeIS(VecTagger tagger, Vec vec, IS *is, PetscBool *listed)
+PetscErrorCode VecTaggerComputeIS(VecTagger tagger, Vec vec, IS is[], PetscBool *listed)
 {
   PetscInt vls, tbs;
 

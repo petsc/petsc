@@ -28,7 +28,7 @@ PetscErrorCode PetscObjectGetClassId(PetscObject obj, PetscClassId *classid)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectGetClassName - Gets the class name for any `PetscObject`
 
   Not Collective

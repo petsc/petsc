@@ -383,7 +383,7 @@ static PetscErrorCode PetscSpaceInitialize_Ptrimmed(PetscSpace sp)
     [P_{r-1}(\mathbb{R}^n)]^n \oplus \bf{x} H_{r-1}(\mathbb{R}^n).
   $
 
-  In $L_2$, ($\sim k=n$), trimmed polynomial spaces are identical to the standar polynomial spaces of one degree less, $\mathcal{P}_r^- \sim P_{r-1}$.
+  In $L_2$, ($\sim k=n$), trimmed polynomial spaces are identical to the standard polynomial spaces of one degree less, $\mathcal{P}_r^- \sim P_{r-1}$.
 
 .seealso: `PetscSpace`, `PetscSpaceType`, `PetscSpaceCreate()`, `PetscSpaceSetType()`, `PetscDTPTrimmedEvalJet()`
 M*/

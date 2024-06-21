@@ -118,7 +118,7 @@ static PetscErrorCode PetscSFWindowGetDataTypes(PetscSF sf, MPI_Datatype unit, c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFWindowSetFlavorType - Set flavor type for `MPI_Win` creation
 
   Logically Collective
@@ -176,7 +176,7 @@ static PetscErrorCode PetscSFWindowSetFlavorType_Window(PetscSF sf, PetscSFWindo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFWindowGetFlavorType - Get  `PETSCSFWINDOW` flavor type for `PetscSF` communication
 
   Logically Collective
@@ -209,7 +209,7 @@ static PetscErrorCode PetscSFWindowGetFlavorType_Window(PetscSF sf, PetscSFWindo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFWindowSetSyncType - Set synchronization type for `PetscSF` communication of type  `PETSCSFWINDOW`
 
   Logically Collective
@@ -243,7 +243,7 @@ static PetscErrorCode PetscSFWindowSetSyncType_Window(PetscSF sf, PetscSFWindowS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFWindowGetSyncType - Get synchronization type for `PetscSF` communication of type `PETSCSFWINDOW`
 
   Logically Collective
@@ -455,7 +455,7 @@ static PetscErrorCode PetscSFGetWindow(PetscSF sf, MPI_Datatype unit, void *arra
 #if defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
   case PETSCSF_WINDOW_FLAVOR_DYNAMIC:
     PetscCallMPI(MPI_Win_create_dynamic(w->info, PetscObjectComm((PetscObject)sf), &link->win));
-  #if defined(PETSC_HAVE_OMPI_MAJOR_VERSION) /* some Open MPI versions do not support MPI_Win_attach(win,NULL,0); */
+  #if defined(PETSC_HAVE_OPENMPI) /* some Open MPI versions do not support MPI_Win_attach(win,NULL,0); */
     PetscCallMPI(MPI_Win_attach(link->win, wsize ? array : (void *)dummy, wsize));
   #else
     PetscCallMPI(MPI_Win_attach(link->win, array, wsize));
@@ -993,7 +993,8 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Window(PetscSF sf)
   PetscCall(PetscObjectComposeFunction((PetscObject)sf, "PetscSFWindowSetInfo_C", PetscSFWindowSetInfo_Window));
   PetscCall(PetscObjectComposeFunction((PetscObject)sf, "PetscSFWindowGetInfo_C", PetscSFWindowGetInfo_Window));
 
-#if defined(OMPI_MAJOR_VERSION) && (OMPI_MAJOR_VERSION < 1 || (OMPI_MAJOR_VERSION == 1 && OMPI_MINOR_VERSION <= 6))
+#if defined(PETSC_HAVE_OPENMPI)
+  #if PETSC_PKG_OPENMPI_VERSION_LE(1, 6, 0)
   {
     PetscBool ackbug = PETSC_FALSE;
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-acknowledge_ompi_onesided_bug", &ackbug, NULL));
@@ -1001,6 +1002,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Window(PetscSF sf)
       PetscCall(PetscInfo(sf, "Acknowledged Open MPI bug, proceeding anyway. Expect memory corruption.\n"));
     } else SETERRQ(PetscObjectComm((PetscObject)sf), PETSC_ERR_LIB, "Open MPI is known to be buggy (https://svn.open-mpi.org/trac/ompi/ticket/1905 and 2656), use -acknowledge_ompi_onesided_bug to proceed");
   }
+  #endif
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }

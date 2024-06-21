@@ -48,6 +48,7 @@
       Mat             A
       KSP             ksp
       PetscRandom     rctx
+      character*80    ksptype
 
 !  These variables are not currently used.
 !      PC          pc
@@ -115,22 +116,22 @@
         j = II - i*n
         if (i.gt.0) then
           JJ = II - n
-          PetscCallA(MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr))
+          PetscCallA(MatSetValues(A,ione,[II],ione,[JJ],[v],INSERT_VALUES,ierr))
         endif
         if (i.lt.m-1) then
           JJ = II + n
-          PetscCallA(MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr))
+          PetscCallA(MatSetValues(A,ione,[II],ione,[JJ],[v],INSERT_VALUES,ierr))
         endif
         if (j.gt.0) then
           JJ = II - 1
-          PetscCallA(MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr))
+          PetscCallA(MatSetValues(A,ione,[II],ione,[JJ],[v],INSERT_VALUES,ierr))
         endif
         if (j.lt.n-1) then
           JJ = II + 1
-          PetscCallA(MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr))
+          PetscCallA(MatSetValues(A,ione,[II],ione,[JJ],[v],INSERT_VALUES,ierr))
         endif
         v = 4.0
-        PetscCallA( MatSetValues(A,ione,II,ione,II,v,INSERT_VALUES,ierr))
+        PetscCallA( MatSetValues(A,ione,[II],ione,[II],[v],INSERT_VALUES,ierr))
  10   continue
       PetscCallA(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr))
       PetscCallA(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr))
@@ -195,6 +196,8 @@
       PetscCallA(KSPSetOperators(ksp,A,A,ierr))
 
       PetscCallA(KSPSetType(ksp,KSPPREONLY,ierr))
+      PetscCallA(KSPGetType(ksp,ksptype,ierr))
+      PetscCheckA(ksptype == KSPPREONLY,PETSC_COMM_WORLD,PETSC_ERR_PLIB,'Error')
       PetscCallA(KSPGetPC(ksp,pc,ierr))
       PetscCallA(PCSetType(pc,PCCHOLESKY,ierr))
 #ifdef PETSC_HAVE_MUMPS

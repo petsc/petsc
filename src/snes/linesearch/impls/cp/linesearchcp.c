@@ -120,14 +120,14 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
 
 /*MC
    SNESLINESEARCHCP - Critical point line search. This line search assumes that there exists some
-   artificial G(x) for which the `SNESFunction` F(x) = grad G(x).  Therefore, this line search seeks
-   to find roots of dot(F, Y) via a secant method.
+   artificial $G(x)$ for which the `SNESFunction` $ F(x) = grad G(x)$.  Therefore, this line search seeks
+   to find roots of $ F^T Y$ via a secant method.
 
    Options Database Keys:
 +  -snes_linesearch_minlambda <minlambda> - the minimum acceptable lambda
-.  -snes_linesearch_maxstep <length> - the algorithm insures that a step length is never longer than this value
-.  -snes_linesearch_damping <damping> - initial trial step length is scaled by this factor, default is 1.0
--  -snes_linesearch_max_it <max_it> - the maximum number of secant steps performed.
+.  -snes_linesearch_maxstep <length>      - the algorithm insures that a step length is never longer than this value
+.  -snes_linesearch_damping <damping>     - initial trial step length is scaled by this factor on entry to the line search, default is 1.0
+-  -snes_linesearch_max_it <max_it>       - the maximum number of secant steps performed.
 
    Level: advanced
 

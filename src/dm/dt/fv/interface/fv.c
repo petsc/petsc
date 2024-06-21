@@ -19,7 +19,7 @@ const char LimiterCitation[] = "@article{BergerAftosmisMurman2005,\n"
 /*@C
   PetscLimiterRegister - Adds a new `PetscLimiter` implementation
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - The name of a new user-defined creation routine
@@ -54,7 +54,7 @@ PetscErrorCode PetscLimiterRegister(const char sname[], PetscErrorCode (*functio
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLimiterSetType - Builds a `PetscLimiter` for a given `PetscLimiterType`
 
   Collective
@@ -92,7 +92,7 @@ PetscErrorCode PetscLimiterSetType(PetscLimiter lim, PetscLimiterType name)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLimiterGetType - Gets the `PetscLimiterType` name (as a string) from the `PetscLimiter`.
 
   Not Collective
@@ -117,7 +117,7 @@ PetscErrorCode PetscLimiterGetType(PetscLimiter lim, PetscLimiterType *name)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLimiterViewFromOptions - View a `PetscLimiter` based on values in the options database
 
   Collective
@@ -139,7 +139,7 @@ PetscErrorCode PetscLimiterViewFromOptions(PetscLimiter A, PetscObject obj, cons
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLimiterView - Views a `PetscLimiter`
 
   Collective
@@ -171,7 +171,7 @@ PetscErrorCode PetscLimiterView(PetscLimiter lim, PetscViewer v)
 
   Level: intermediate
 
-.seealso: `PetscLimiter`, ``PetscLimiterView()`
+.seealso: `PetscLimiter`, `PetscLimiterView()`
 @*/
 PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter lim)
 {
@@ -200,7 +200,7 @@ PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter lim)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLimiterSetUp - Construct data structures for the `PetscLimiter`
 
   Collective
@@ -210,7 +210,7 @@ PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter lim)
 
   Level: intermediate
 
-.seealso: `PetscLimiter`, ``PetscLimiterView()`, `PetscLimiterDestroy()`
+.seealso: `PetscLimiter`, `PetscLimiterView()`, `PetscLimiterDestroy()`
 @*/
 PetscErrorCode PetscLimiterSetUp(PetscLimiter lim)
 {
@@ -271,7 +271,6 @@ PetscErrorCode PetscLimiterCreate(MPI_Comm comm, PetscLimiter *lim)
   PetscFunctionBegin;
   PetscAssertPointer(lim, 2);
   PetscCall(PetscCitationsRegister(LimiterCitation, &Limitercite));
-  *lim = NULL;
   PetscCall(PetscFVInitializePackage());
 
   PetscCall(PetscHeaderCreate(l, PETSCLIMITER_CLASSID, "PetscLimiter", "Finite Volume Slope Limiter", "PetscLimiter", comm, PetscLimiterDestroy, PetscLimiterView));
@@ -893,7 +892,7 @@ PetscBool         PetscFVRegisterAllCalled = PETSC_FALSE;
 /*@C
   PetscFVRegister - Adds a new `PetscFV` implementation
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - The name of a new user-defined creation routine
@@ -928,7 +927,7 @@ PetscErrorCode PetscFVRegister(const char sname[], PetscErrorCode (*function)(Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFVSetType - Builds a particular `PetscFV`
 
   Collective
@@ -966,7 +965,7 @@ PetscErrorCode PetscFVSetType(PetscFV fvm, PetscFVType name)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFVGetType - Gets the `PetscFVType` (as a string) from a `PetscFV`.
 
   Not Collective
@@ -991,7 +990,7 @@ PetscErrorCode PetscFVGetType(PetscFV fvm, PetscFVType *name)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFVViewFromOptions - View a `PetscFV` based on values in the options database
 
   Collective
@@ -1013,7 +1012,7 @@ PetscErrorCode PetscFVViewFromOptions(PetscFV A, PetscObject obj, const char nam
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFVView - Views a `PetscFV`
 
   Collective
@@ -1160,12 +1159,10 @@ PetscErrorCode PetscFVCreate(MPI_Comm comm, PetscFV *fvm)
 
   PetscFunctionBegin;
   PetscAssertPointer(fvm, 2);
-  *fvm = NULL;
   PetscCall(PetscFVInitializePackage());
 
   PetscCall(PetscHeaderCreate(f, PETSCFV_CLASSID, "PetscFV", "Finite Volume", "PetscFV", comm, PetscFVDestroy, PetscFVView));
   PetscCall(PetscMemzero(f->ops, sizeof(struct _PetscFVOps)));
-
   PetscCall(PetscLimiterCreate(comm, &f->limiter));
   f->numComponents    = 1;
   f->dim              = 0;
@@ -1279,7 +1276,7 @@ PetscErrorCode PetscFVGetNumComponents(PetscFV fvm, PetscInt *comp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFVSetComponentName - Set the name of a component (used in output and viewing) in a `PetscFV`
 
   Logically Collective
@@ -1301,7 +1298,7 @@ PetscErrorCode PetscFVSetComponentName(PetscFV fvm, PetscInt comp, const char *n
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFVGetComponentName - Get the name of a component (used in output and viewing) in a `PetscFV`
 
   Logically Collective
@@ -1317,7 +1314,7 @@ PetscErrorCode PetscFVSetComponentName(PetscFV fvm, PetscInt comp, const char *n
 
 .seealso: `PetscFV`, `PetscFVSetComponentName()`
 @*/
-PetscErrorCode PetscFVGetComponentName(PetscFV fvm, PetscInt comp, const char **name)
+PetscErrorCode PetscFVGetComponentName(PetscFV fvm, PetscInt comp, const char *name[])
 {
   PetscFunctionBegin;
   *name = fvm->componentNames[comp];
@@ -1335,7 +1332,7 @@ PetscErrorCode PetscFVGetComponentName(PetscFV fvm, PetscInt comp, const char **
 
   Level: intermediate
 
-.seealso: `PetscFV`, ``PetscFVGetSpatialDimension()`
+.seealso: `PetscFV`, `PetscFVGetSpatialDimension()`
 @*/
 PetscErrorCode PetscFVSetSpatialDimension(PetscFV fvm, PetscInt dim)
 {
@@ -1476,7 +1473,7 @@ PetscErrorCode PetscFVGetQuadrature(PetscFV fvm, PetscQuadrature *q)
 
   Not Collective
 
-  Input Parameter:
+  Input Parameters:
 + fvm - The `PetscFV` object
 - ct  - The `DMPolytopeType` for the cell
 
@@ -1685,7 +1682,7 @@ PetscErrorCode PetscFVCreateTabulation(PetscFV fvm, PetscInt nrepl, PetscInt npo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFVComputeGradient - Compute the gradient reconstruction matrix for a given cell
 
   Input Parameters:
@@ -1740,7 +1737,7 @@ PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV fvm, PetscDS prob, PetscInt f
 }
 
 /*@
-  PetscFVClone - Create a shallow copy of a `PetscFV` object that jsut references the internal objects.
+  PetscFVClone - Create a shallow copy of a `PetscFV` object that just references the internal objects.
 
   Input Parameter:
 . fv - The initial `PetscFV`

@@ -82,6 +82,10 @@
 #define PetscLogStage PetscFortranInt
 #define PetscVoid PetscFortranAddr
 !
+#define PetscDeviceType PetscEnum
+#define PetscDevice type(tPetscDevice)
+#define PetscDeviceContext type(tPetscDeviceContext)
+!
 #define PetscCopyMode PetscEnum
 !
 #define PetscDataType PetscEnum
@@ -163,8 +167,10 @@
 !     that are not used in the numerical computations, but rather in logging,
 !     timing etc.
 !
-#define PetscObject PetscFortranAddr
+#define PetscObject type(tPetscObject)
 #define PetscLogDouble PetscFortranDouble
+!
+#define PetscObjectIsNull(obj) (obj%v == 0 .or. obj%v == -2 .or. obj%v == -3)
 !
 !     Macros for error checking
 !
@@ -189,7 +195,7 @@
 #define PetscCheckA(err, c, ierr, s) if (.not.(err)) then; SETERRA(c, ierr, s); endif
 #define PetscCheck(err, c, ierr, s) if (.not.(err)) then; SETERRQ(c, ierr, s); endif
 
-#define PetscMatlabEngine PetscFortranAddr
+#define PetscMatlabEngine type(tPetscMatlabEngine)
 
 #if !defined(PetscFlush)
 #if defined(PETSC_HAVE_FORTRAN_FLUSH)
@@ -217,4 +223,5 @@
 #define PetscFunctionList PetscFortranAddr
 
 #define PetscInfoCommFlag PetscEnum
+
 #endif

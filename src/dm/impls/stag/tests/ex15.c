@@ -647,7 +647,7 @@ PetscErrorCode CreateSystem(DM dm, Mat *A, Vec *b)
    test:
       suffix: 1d_fssmooth_par
       nsize: 1
-      requires: mumps
+      requires: mumps !single
       args: -dim 1 -stag_grid_x 256 -ksp_converged_reason -ksp_type fgmres -pc_type mg -pc_mg_levels 2 -pc_mg_galerkin -mg_coarse_pc_type lu -mg_coarse_pc_factor_mat_solver_type mumps -mg_levels_pc_type fieldsplit -mg_levels_pc_fieldsplit_detect_saddle_point
 
    test:

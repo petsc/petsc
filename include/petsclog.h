@@ -414,7 +414,7 @@ static inline PETSC_UNUSED PetscErrorCode PetscLogObjectDestroy(PetscObject o)
     #define PETSC_FLOPS_PER_OP 1.0
   #endif
 
-/*@C
+/*@
    PetscLogFlops - Log how many flops are performed in a calculation
 
    Input Parameter:
@@ -722,7 +722,7 @@ PETSC_EXTERN PetscErrorCode PetscLogGpuTime(void);
 PETSC_EXTERN PetscErrorCode PetscLogGpuTimeBegin(void);
 PETSC_EXTERN PetscErrorCode PetscLogGpuTimeEnd(void);
 
-/*@C
+/*@
    PetscLogGpuFlops - Log how many flops are performed in a calculation on the device
 
    Input Parameter:
@@ -736,6 +736,9 @@ PETSC_EXTERN PetscErrorCode PetscLogGpuTimeEnd(void);
 
    The values are also added to the total flop count for the MPI rank that is set with `PetscLogFlops()`; hence the number of flops
    just on the CPU would be the value from set from `PetscLogFlops()` minus the value set from `PetscLogGpuFlops()`
+
+   Developer Note:
+   Currently Fortran stub generator cannot run through files in include
 
 .seealso: [](ch_profiling), `PetscLogView()`, `PetscLogFlops()`, `PetscLogGpuTimeBegin()`, `PetscLogGpuTimeEnd()`
 @*/

@@ -166,7 +166,7 @@ PetscErrorCode PetscDataTypeGetSize(PetscDataType ptype, size_t *size)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDataTypeFromString - Gets the enum value of a PETSc datatype represented as a string
 
   Not Collective
@@ -182,7 +182,7 @@ PetscErrorCode PetscDataTypeGetSize(PetscDataType ptype, size_t *size)
 
 .seealso: `PetscDataType`, `PetscDataTypeToMPIDataType()`, `PetscDataTypeGetSize()`
 @*/
-PetscErrorCode PetscDataTypeFromString(const char *name, PetscDataType *ptype, PetscBool *found)
+PetscErrorCode PetscDataTypeFromString(const char name[], PetscDataType *ptype, PetscBool *found)
 {
   PetscFunctionBegin;
   PetscCall(PetscEnumFind(PetscDataTypes, name, (PetscEnum *)ptype, found));

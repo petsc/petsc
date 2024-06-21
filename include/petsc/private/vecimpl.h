@@ -159,9 +159,9 @@ struct _p_Vec {
   PetscBool   array_gotten;
   VecStash    stash, bstash; /* used for storing off-proc values during assembly */
   PetscBool   petscnative;   /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
+  PetscInt    lock;          /* lock state. vector can be free (=0), locked for read (>0) or locked for write(<0) */
 #if PetscDefined(USE_DEBUG)
   PetscStack lockstack; /* the file,func,line of where locks are added */
-  PetscInt   lock;      /* lock state. vector can be free (=0), locked for read (>0) or locked for write(<0) */
 #endif
   PetscOffloadMask offloadmask; /* a mask which indicates where the valid vector data is (GPU, CPU or both) */
 #if defined(PETSC_HAVE_DEVICE)
@@ -468,4 +468,12 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecWAXPYAsync_Private(Vec, PetscScala
     } else { \
       PetscUseTypeMethod(v, name, __VA_ARGS__); \
     } \
+  } while (0)
+
+// return in lda the vector's local size aligned to <alignment> bytes, where lda is an integer pointer
+#define VecGetLocalSizeAligned(v, alignment, lda) \
+  do { \
+    PetscInt     n = (v)->map->n; \
+    const size_t s = (alignment) / sizeof(PetscScalar); \
+    *(lda)         = ((n + s - 1) / s) * s; \
   } while (0)

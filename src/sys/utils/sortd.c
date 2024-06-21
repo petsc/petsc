@@ -209,9 +209,9 @@ PetscErrorCode PetscFindReal(PetscReal key, PetscInt n, const PetscReal t[], Pet
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscAssertPointer(t, 3);
-  PetscCheckSorted(n, t);
   while (hi - lo > 1) {
     PetscInt mid = lo + (hi - lo) / 2;
+    PetscAssert(t[lo] <= t[mid] && t[mid] <= t[hi - 1], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input array was not sorted: (%g, %g, %g)", (double)t[lo], (double)t[mid], (double)t[hi - 1]);
     if (key < t[mid]) hi = mid;
     else lo = mid;
   }

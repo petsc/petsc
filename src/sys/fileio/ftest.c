@@ -139,7 +139,7 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscTestFile - checks for the existence of a file
 
   Not Collective
@@ -182,7 +182,7 @@ PetscErrorCode PetscTestFile(const char fname[], char mode, PetscBool *flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscTestDirectory - checks for the existence of a directory
 
   Not Collective

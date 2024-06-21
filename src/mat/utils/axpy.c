@@ -375,7 +375,7 @@ PetscErrorCode MatAYPX(Mat Y, PetscScalar a, Mat X, MatStructure str)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatComputeOperator - Computes the explicit matrix
 
   Collective
@@ -390,7 +390,7 @@ PetscErrorCode MatAYPX(Mat Y, PetscScalar a, Mat X, MatStructure str)
   Level: advanced
 
   Note:
-  This computation is done by applying the operators to columns of the identity matrix.
+  This computation is done by applying the operator to columns of the identity matrix.
   This routine is costly in general, and is recommended for use only with relatively small systems.
   Currently, this routine uses a dense matrix format if `mattype` == `NULL`.
 
@@ -405,7 +405,7 @@ PetscErrorCode MatComputeOperator(Mat inmat, MatType mattype, Mat *mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatComputeOperatorTranspose - Computes the explicit matrix representation of
   a give matrix that can apply `MatMultTranspose()`
 

@@ -182,7 +182,7 @@
 
       PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,ierr))
       if (.not. matrix_free) then
-        PetscCallA(MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,i5,PETSC_NULL_INTEGER,J,ierr))
+        PetscCallA(MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,i5,PETSC_NULL_INTEGER_ARRAY,J,ierr))
       endif
 
 !
@@ -336,7 +336,6 @@
 
       PetscCallA(VecRestoreArrayF90(X,lx_v,ierr))
 
-      return
       end
 
 !  ApplicationInitialGuess - Computes initial approximation, called by
@@ -389,7 +388,6 @@
  10      continue
  20   continue
 
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -462,7 +460,6 @@
  1000    format(50i4)
          PetscCallA(MatFDColoringRestorePerturbedColumnsF90(fdcoloring,indices,ierr))
       endif
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -524,7 +521,6 @@
  10      continue
  20   continue
 
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -587,7 +583,6 @@
       PetscCallA(MatAssemblyBegin(jac_prec,MAT_FINAL_ASSEMBLY,ierr))
       PetscCallA(MatAssemblyEnd(jac_prec,MAT_FINAL_ASSEMBLY,ierr))
 
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -649,7 +644,7 @@
             row(1) = row(1) + 1
 !           boundary points
             if (i .eq. 1 .or. j .eq. 1 .or. i .eq. mx .or. j .eq. my) then
-               PetscCallA(MatSetValues(jac_prec,i1,row,i1,row,one,INSERT_VALUES,ierr))
+               PetscCallA(MatSetValues(jac_prec,i1,row,i1,row,[one],INSERT_VALUES,ierr))
 !           interior grid points
             else
                v(1) = -hxdhy
@@ -667,7 +662,6 @@
  10      continue
  20   continue
 
-      return
       end
 
 !

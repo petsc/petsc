@@ -94,6 +94,7 @@ typedef struct {
 
   /* Some defaults on selecting vertices and constraints*/
   PetscBool use_local_adj;
+  PetscInt  local_adj_square;
   PetscBool use_vertices;
   PetscBool use_faces;
   PetscBool use_edges;

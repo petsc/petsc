@@ -19,17 +19,9 @@
   #define taosetvariableboundsroutine_        TAOSETVARIABLEBOUNDSROUTINE
   #define taosetconstraintsroutine_           TAOSETCONSTRAINTSROUTINE
   #define taomonitorset_                      TAOMONITORSET
-  #define taosettype_                         TAOSETTYPE
-  #define taoview_                            TAOVIEW
   #define taogetconvergencehistory_           TAOGETCONVERGENCEHISTORY
   #define taosetconvergencetest_              TAOSETCONVERGENCETEST
-  #define taogetoptionsprefix_                TAOGETOPTIONSPREFIX
-  #define taosetoptionsprefix_                TAOSETOPTIONSPREFIX
-  #define taoappendoptionsprefix_             TAOAPPENDOPTIONSPREFIX
-  #define taogettype_                         TAOGETTYPE
   #define taosetupdate_                       TAOSETUPDATE
-  #define taoviewfromoptions_                 TAOVIEWFROMOPTIONS
-  #define taodestroy_                         TAODESTROY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define taosetobjective_                    taosetobjective
   #define taosetgradient_                     taosetgradient
@@ -47,17 +39,9 @@
   #define taosetvariableboundsroutine_        taosetvariableboundsroutine
   #define taosetconstraintsroutine_           taosetconstraintsroutine
   #define taomonitorset_                      taomonitorset
-  #define taosettype_                         taosettype
-  #define taoview_                            taoview
   #define taogetconvergencehistory_           taogetconvergencehistory
   #define taosetconvergencetest_              taosetconvergencetest
-  #define taogetoptionsprefix_                taogetoptionsprefix
-  #define taosetoptionsprefix_                taosetoptionsprefix
-  #define taoappendoptionsprefix_             taoappendoptionsprefix
-  #define taogettype_                         taogettype
   #define taosetupdate_                       taosetupdate
-  #define taoviewfromoptions_                 taoviewfromoptions
-  #define taodestroy_                         taodestroy
 #endif
 
 static struct {
@@ -180,8 +164,6 @@ static PetscErrorCode ourtaoupdateroutine(Tao tao, PetscInt iter, void *ctx)
   PetscObjectUseFortranCallback(tao, _cb.update, (Tao *, PetscInt *, void *), (&tao, &iter, _ctx));
 }
 
-EXTERN_C_BEGIN
-
 PETSC_EXTERN void taosetobjective_(Tao *tao, void (*func)(Tao *, Vec *, PetscReal *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLFUNCTION(func);
@@ -276,62 +258,9 @@ PETSC_EXTERN void taosetconstraintsroutine_(Tao *tao, Vec *C, void (*func)(Tao *
   if (!*ierr) *ierr = TaoSetConstraintsRoutine(*tao, *C, ourtaoconstraintsroutine, ctx);
 }
 
-PETSC_EXTERN void taosettype_(Tao *tao, char *type_name, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-
-  FIXCHAR(type_name, len, t);
-  *ierr = TaoSetType(*tao, t);
-  if (*ierr) return;
-  FREECHAR(type_name, t);
-}
-
-PETSC_EXTERN void taoview_(Tao *tao, PetscViewer *viewer, PetscErrorCode *ierr)
-{
-  PetscViewer v;
-  PetscPatchDefaultViewers_Fortran(viewer, v);
-  *ierr = TaoView(*tao, v);
-}
-
 PETSC_EXTERN void taogetconvergencehistory_(Tao *tao, PetscInt *nhist, PetscErrorCode *ierr)
 {
   *ierr = TaoGetConvergenceHistory(*tao, NULL, NULL, NULL, NULL, nhist);
-}
-
-PETSC_EXTERN void taogetoptionsprefix_(Tao *tao, char *prefix, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  const char *name;
-  *ierr = TaoGetOptionsPrefix(*tao, &name);
-  *ierr = PetscStrncpy(prefix, name, len);
-  if (*ierr) return;
-  FIXRETURNCHAR(PETSC_TRUE, prefix, len);
-}
-
-PETSC_EXTERN void taoappendoptionsprefix_(Tao *tao, char *prefix, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *name;
-  FIXCHAR(prefix, len, name);
-  *ierr = TaoAppendOptionsPrefix(*tao, name);
-  if (*ierr) return;
-  FREECHAR(prefix, name);
-}
-
-PETSC_EXTERN void taosetoptionsprefix_(Tao *tao, char *prefix, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-  FIXCHAR(prefix, len, t);
-  *ierr = TaoSetOptionsPrefix(*tao, t);
-  if (*ierr) return;
-  FREECHAR(prefix, t);
-}
-
-PETSC_EXTERN void taogettype_(Tao *tao, char *name, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  const char *tname;
-  *ierr = TaoGetType(*tao, &tname);
-  *ierr = PetscStrncpy(name, tname, len);
-  if (*ierr) return;
-  FIXRETURNCHAR(PETSC_TRUE, name, len);
 }
 
 PETSC_EXTERN void taosetjacobianinequalityroutine_(Tao *tao, Mat *J, Mat *Jp, void (*func)(Tao *, Vec *, Mat *, Mat *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
@@ -368,24 +297,3 @@ PETSC_EXTERN void taosetupdate_(Tao *tao, void (*func)(Tao *, PetscInt *, PetscE
   *ierr = PetscObjectSetFortranCallback((PetscObject)*tao, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.update, (PetscVoidFn *)func, ctx);
   if (!*ierr) *ierr = TaoSetUpdate(*tao, ourtaoupdateroutine, ctx);
 }
-
-PETSC_EXTERN void taoviewfromoptions_(Tao *ao, PetscObject obj, char *type, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-
-  FIXCHAR(type, len, t);
-  CHKFORTRANNULLOBJECT(obj);
-  *ierr = TaoViewFromOptions(*ao, obj, t);
-  if (*ierr) return;
-  FREECHAR(type, t);
-}
-
-PETSC_EXTERN void taodestroy_(Tao *x, int *ierr)
-{
-  PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL(x);
-  *ierr = TaoDestroy(x);
-  if (*ierr) return;
-  PETSC_FORTRAN_OBJECT_C_NULL_TO_F_DESTROYED(x);
-}
-
-EXTERN_C_END

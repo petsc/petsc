@@ -9,11 +9,14 @@
       subroutine MPIU_Abort(comm,ierr)
       implicit none
       MPI_Comm comm
-      PetscMPIInt ierr,nierr
-
-      call MPI_Abort(comm,ierr,nierr)
-
-      return
+      PetscMPIInt ierr, nierr, ciportable
+      call PetscCIEnabledPortableErrorOutput(ciportable)
+      if (ciportable == 1) then
+        call MPI_Finalize(nierr)
+        stop 0
+      else
+        call MPI_Abort(comm,ierr,nierr)
+      endif
       end
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::MPIU_Abort
@@ -26,25 +29,20 @@
       PetscErrorCode ierr
       write(unit=unit, fmt="(A)", advance='no') str
       ierr = 0
-      return
       end
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::PetscFortranPrintToUnit
 #endif
 
 !  This uses F2003 feature - and is the preferred mode for accessing command line arguments
-#if defined(PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT)
       integer function PetscCommandArgumentCount()
       implicit none
       PetscCommandArgumentCount= command_argument_count()
-      return
       end
 
       subroutine PetscGetCommandArgument(n,val)
       implicit none
-      integer n
+      integer, intent(in) :: n
       character(*) val
       call get_command_argument(n,val)
-      return
       end
-#endif

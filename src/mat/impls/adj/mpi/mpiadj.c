@@ -725,6 +725,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAdj,
                                        NULL,
                                        /*150*/ NULL,
                                        NULL,
+                                       NULL,
                                        NULL};
 
 static PetscErrorCode MatMPIAdjSetPreallocation_MPIAdj(Mat B, PetscInt *i, PetscInt *j, PetscInt *values)
@@ -975,7 +976,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatMPIAdjToSeq - Converts an parallel `MATMPIADJ` matrix to complete `MATMPIADJ` on each process (needed by sequential partitioners)
 
   Logically Collective
@@ -997,7 +998,7 @@ PetscErrorCode MatMPIAdjToSeq(Mat A, Mat *B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatMPIAdjToSeqRankZero - Converts an parallel `MATMPIADJ` matrix to complete `MATMPIADJ` on rank zero (needed by sequential partitioners)
 
   Logically Collective
@@ -1024,7 +1025,7 @@ PetscErrorCode MatMPIAdjToSeqRankZero(Mat A, Mat *B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatMPIAdjSetPreallocation - Sets the array used for storing the matrix elements
 
   Logically Collective
@@ -1097,7 +1098,7 @@ PetscErrorCode MatMPIAdjSetPreallocation(Mat B, PetscInt *i, PetscInt *j, PetscI
   Possible values for `MatSetOption()` - `MAT_STRUCTURALLY_SYMMETRIC`
 
   Fortran Note:
-  From Fortran the indices and values are copied so the array space need not be provided with `PetscMalloc()`.
+  From Fortran the arrays `indices` and `values` must be retained by the user until `A` is destroyed
 
 .seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatConvert()`, `MatGetOrdering()`, `MATMPIADJ`, `MatMPIAdjSetPreallocation()`
 @*/

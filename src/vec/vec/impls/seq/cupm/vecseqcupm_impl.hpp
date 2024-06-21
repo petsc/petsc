@@ -1156,12 +1156,9 @@ inline PetscErrorCode VecSeq_CUPM<T>::MDot_(std::false_type, Vec xin, PetscInt n
   // how many sub streams to create, if nv <= batchsize we can do this without looping, so we
   // do not create substreams. Note we don't create more than 8 streams, in practice we could
   // not get more parallelism with higher numbers.
-  const auto num_sub_streams = nv > batchsize ? std::min((nv + batchsize) / batchsize, batchsize) : 0;
-  const auto n               = xin->map->n;
-  // number of vectors that we handle via the batches. note any singletons are handled by
-  // cublas, hence the nv-1.
-  const auto   nvbatch = ((nv % batchsize) == 1) ? nv - 1 : nv;
-  const auto   nwork   = nvbatch * MDOT_WORKGROUP_NUM;
+  const auto   num_sub_streams = nv > batchsize ? std::min((nv + batchsize) / batchsize, batchsize) : 0;
+  const auto   n               = xin->map->n;
+  const auto   nwork           = nv * MDOT_WORKGROUP_NUM;
   PetscScalar *d_results;
   cupmStream_t stream;
 
@@ -1213,13 +1210,9 @@ inline PetscErrorCode VecSeq_CUPM<T>::MDot_(std::false_type, Vec xin, PetscInt n
       case 2:
         PetscCall(MDot_kernel_dispatch_<2>(cur_ctx, cur_stream, xptr.data(), yin, n, d_results, yidx));
         break;
-      case 1: {
-        cupmBlasHandle_t cupmBlasHandle;
-
-        PetscCall(GetHandlesFrom_(cur_ctx, &cupmBlasHandle));
-        PetscCallCUPMBLAS(cupmBlasXdot(cupmBlasHandle, static_cast<cupmBlasInt_t>(n), DeviceArrayRead(cur_ctx, yin[yidx]).cupmdata(), 1, xptr.cupmdata(), 1, cupmScalarPtrCast(z + yidx)));
-        ++yidx;
-      } break;
+      case 1:
+        PetscCall(MDot_kernel_dispatch_<1>(cur_ctx, cur_stream, xptr.data(), yin, n, d_results, yidx));
+        break;
       default: // 8 or more
         PetscCall(MDot_kernel_dispatch_<8>(cur_ctx, cur_stream, xptr.data(), yin, n, d_results, yidx));
         break;
@@ -1229,9 +1222,9 @@ inline PetscErrorCode VecSeq_CUPM<T>::MDot_(std::false_type, Vec xin, PetscInt n
     PetscCall(PetscDeviceContextJoin(dctx, num_sub_streams, PETSC_DEVICE_CONTEXT_JOIN_DESTROY, &sub));
   }
 
-  PetscCall(PetscCUPMLaunchKernel1D(nvbatch, 0, stream, kernels::sum_kernel, nvbatch, d_results));
+  PetscCall(PetscCUPMLaunchKernel1D(nv, 0, stream, kernels::sum_kernel, nv, d_results));
   // copy result of device reduction to host
-  PetscCall(PetscCUPMMemcpyAsync(z, d_results, nvbatch, cupmMemcpyDeviceToHost, stream));
+  PetscCall(PetscCUPMMemcpyAsync(z, d_results, nv, cupmMemcpyDeviceToHost, stream));
   // do these now while final reduction is in flight
   PetscCall(PetscLogGpuFlops(nwork));
   PetscCall(PetscDeviceFree(dctx, d_results));

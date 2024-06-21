@@ -10,7 +10,7 @@ PetscLogEvent     TSTrajectory_Set, TSTrajectory_Get, TSTrajectory_GetVecs, TSTr
 /*@C
   TSTrajectoryRegister - Adds a way of storing trajectories to the `TS` package
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - the name of a new user-defined creation routine
@@ -252,7 +252,7 @@ PetscErrorCode TSTrajectoryGetVecs(TSTrajectory tj, TS ts, PetscInt stepnum, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSTrajectoryViewFromOptions - View a `TSTrajectory` based on values in the options database
 
   Collective
@@ -274,7 +274,7 @@ PetscErrorCode TSTrajectoryViewFromOptions(TSTrajectory A, PetscObject obj, cons
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSTrajectoryView - Prints information about the trajectory object
 
   Collective
@@ -399,13 +399,11 @@ PetscErrorCode TSTrajectoryCreate(MPI_Comm comm, TSTrajectory *tj)
 
   PetscFunctionBegin;
   PetscAssertPointer(tj, 2);
-  *tj = NULL;
   PetscCall(TSInitializePackage());
 
   PetscCall(PetscHeaderCreate(t, TSTRAJECTORY_CLASSID, "TSTrajectory", "Time stepping", "TS", comm, TSTrajectoryDestroy, TSTrajectoryView));
   t->setupcalled = PETSC_FALSE;
   PetscCall(TSHistoryCreate(comm, &t->tsh));
-
   t->lag.order            = 1;
   t->lag.L                = NULL;
   t->lag.T                = NULL;
@@ -431,7 +429,7 @@ PetscErrorCode TSTrajectoryCreate(MPI_Comm comm, TSTrajectory *tj)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSTrajectorySetType - Sets the storage method to be used as in a trajectory
 
   Collective
@@ -472,7 +470,7 @@ PetscErrorCode TSTrajectorySetType(TSTrajectory tj, TS ts, TSTrajectoryType type
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSTrajectoryGetType - Gets the trajectory type
 
   Collective
@@ -711,7 +709,7 @@ PetscErrorCode TSTrajectorySetKeepFiles(TSTrajectory tj, PetscBool flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSTrajectorySetDirname - Specify the name of the directory where `TSTrajectory` disk checkpoints are stored.
 
   Collective
@@ -745,7 +743,7 @@ PetscErrorCode TSTrajectorySetDirname(TSTrajectory tj, const char dirname[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSTrajectorySetFiletemplate - Specify the name template for the files storing `TSTrajectory` checkpoints.
 
   Collective

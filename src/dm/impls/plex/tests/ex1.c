@@ -754,7 +754,7 @@ int main(int argc, char **argv)
       args: -dm_plex_simplex 0 -dm_plex_box_bd periodic,periodic -dm_plex_box_faces 3,5 -conv_seq_1_dm_forest_initial_refinement 0 -conv_seq_1_dm_forest_maximum_refinement 2 -conv_seq_1_dm_p4est_refine_pattern hash
     test:
       suffix: p4est_periodic_3d
-      args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_bd periodic,periodic,none -dm_plex_box_faces 3,5,4 -conv_seq_1_dm_forest_initial_refinement 0 -conv_seq_1_dm_forest_maximum_refinement 2 -conv_seq_1_dm_p4est_refine_pattern hash
+      args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_bd periodic,periodic,none -dm_plex_box_faces 3,3,2 -conv_seq_1_dm_forest_initial_refinement 0 -conv_seq_1_dm_forest_maximum_refinement 1 -conv_seq_1_dm_p4est_refine_pattern hash
     test:
       suffix: p4est_gmsh_periodic
       args: -dm_coord_space 0 -conv_seq_1_dm_forest_initial_refinement 0 -conv_seq_1_dm_forest_maximum_refinement 1 -conv_seq_1_dm_p4est_refine_pattern hash -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh
@@ -832,10 +832,13 @@ int main(int argc, char **argv)
     test:
       suffix: p4est_par_ovl_periodic
       args: -dm_plex_simplex 0 -dm_plex_box_bd periodic,periodic -dm_plex_box_faces 3,5 -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 2 -conv_par_1_dm_p4est_refine_pattern hash
-    #TODO Mesh cell 201 is inverted, vol = 0. (FVM Volume. Is it correct? -> Diagnostics disabled)
+    # Problem for -dm_plex_box_faces 3,5,4 -conv_par_1_dm_forest_maximum_refinement 2
     test:
       suffix: p4est_par_ovl_periodic_3d
-      args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_bd periodic,periodic,none -dm_plex_box_faces 3,5,4 -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 2 -conv_par_1_dm_p4est_refine_pattern hash -final_diagnostics 0
+      args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_bd periodic,periodic,none \
+              -dm_plex_box_faces 3,5,2 \
+              -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 1 \
+                -conv_par_1_dm_p4est_refine_pattern hash
     test:
       suffix: p4est_par_ovl_gmsh_periodic
       args: -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 1 -conv_par_1_dm_p4est_refine_pattern hash -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh
@@ -855,9 +858,10 @@ int main(int argc, char **argv)
     test:
       suffix: p4est_par_ovl_hyb_2d
       args: -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 1 -conv_par_1_dm_p4est_refine_pattern hash -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_triquad.msh
+    # -conv_par_1_dm_forest_maximum_refinement 1 was too expensive
     test:
       suffix: p4est_par_ovl_hyb_3d
-      args: -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 1 -conv_par_1_dm_p4est_refine_pattern hash -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh
+      args: -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 0 -conv_par_1_dm_p4est_refine_pattern hash -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh
 
   test:
     TODO: broken

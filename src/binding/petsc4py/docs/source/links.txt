@@ -1,19 +1,13 @@
-.. _MPI:          http://www.mpi-forum.org
-
-.. _MPICH:        http://www.mpich.org/
-
-.. _Open MPI:     http://www.open-mpi.org
+.. _MPI:          https://www.mpi-forum.org
 
 .. _PETSc:        https://petsc.org
 
-.. _SLEPc:        http://slepc.upv.es
+.. _SLEPc:        https://slepc.upv.es
 
-.. _Python:       http://www.python.org
+.. _Python:       https://www.python.org
 
-.. _NumPy:        http://www.numpy.org
+.. _NumPy:        https://numpy.org
 
-.. _mpi4py:       http://github.com/mpi4py/mpi4py
+.. _mpi4py:       https://github.com/mpi4py/mpi4py
 
-.. _petsc4py:     http://gitlab.com/petsc/petsc4py
-
-.. _slepc4py:     http://gitlab.com/slepc/slepc4py
+.. _slepc4py:     https://gitlab.com/slepc/slepc

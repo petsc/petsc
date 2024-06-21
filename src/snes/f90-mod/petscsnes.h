@@ -3,16 +3,19 @@
 !
 #include "petsc/finclude/petscsnes.h"
 
-      type tSNES
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      type, extends(tPetscObject) :: tSNES
       end type tSNES
-
-      type tPetscConvEst
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
-      end type tPetscConvEst
-
       SNES, parameter :: PETSC_NULL_SNES = tSNES(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_SNES
+#endif
+
+      type, extends(tPetscObject) :: tPetscConvEst
+      end type tPetscConvEst
       PetscConvEst, parameter :: PETSC_NULL_CONVEST = tPetscConvEst(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_CONVEST
+#endif
 !
 !  Convergence flags
 !
@@ -34,15 +37,6 @@
       PetscEnum, parameter :: SNES_DIVERGED_TR_DELTA           = -11
       PetscEnum, parameter :: SNES_CONVERGED_ITERATING         =  0
 !
-!     SNESLineSearchReason
-!
-      PetscEnum, parameter :: SNES_LINESEARCH_SUCCEEDED       = 0
-      PetscEnum, parameter :: SNES_LINESEARCH_FAILED_NANORINF = 1
-      PetscEnum, parameter :: SNES_LINESEARCH_FAILED_DOMAIN   = 2
-      PetscEnum, parameter :: SNES_LINESEARCH_FAILED_REDUCT   = 3
-      PetscEnum, parameter :: SNES_LINESEARCH_FAILED_USER     = 4
-      PetscEnum, parameter :: SNES_LINESEARCH_FAILED_FUNCTION = 5
-!
 !  SNESNormSchedule
 !
       PetscEnum, parameter :: SNES_NORM_DEFAULT                = -1
@@ -51,6 +45,12 @@
       PetscEnum, parameter :: SNES_NORM_INITIAL_ONLY           =  2
       PetscEnum, parameter :: SNES_NORM_FINAL_ONLY             =  3
       PetscEnum, parameter :: SNES_NORM_INITIAL_FINAL_ONLY     =  4
+!
+!  SNESFunctionType
+!
+      PetscEnum, parameter :: SNES_FUNCTION_DEFAULT          = -1
+      PetscEnum, parameter :: SNES_FUNCTION_UNPRECONDITIONED = 0
+      PetscEnum, parameter :: SNES_FUNCTION_PRECONDITIONED   = 1
 !
 !  Some PETSc Fortran functions that the user might pass as arguments
 !

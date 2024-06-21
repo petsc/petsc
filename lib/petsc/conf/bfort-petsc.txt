@@ -3,8 +3,14 @@
 # petscao.h
 nativeptr AO
 
-# petscbag.h
+# petscbag.h  This is not a PETSc object
 nativeptr PetscBag
+
+# this is not a PETSc object
+native PetscSFNode
+
+# petscdt.h
+native    PetscDTNodeType
 
 # petscdm.h
 native    DMBoundaryType
@@ -42,8 +48,6 @@ native    DMDALocalInfo
 
 native    DMDAInterpolationType
 native    DMDAElementType
-
-nativeptr PetscGLL
 
 # dmlabel.h
 nativeptr DMLabel
@@ -159,6 +163,7 @@ native    PCHPDDMCoarseCorrectionType
 native    PCMGType
 native    PCMGCycleType
 native    PCMGGalerkinType
+native    PCMGCoarseSpaceType
 native    PCExoticType
 native    PCDeflationSpaceType
 native    PCBDDCInterfaceExtType
@@ -171,7 +176,7 @@ nativeptr PetscConvEst
 native    SNESConvergedReason
 native    SNESLineSearchReason
 nativeptr MatMFFD
-nativeptr MatMFFDType
+native    MatMFFDType
 nativeptr SNESLineSearch
 native    SNESLineSearchOrder
 native    SNESNormSchedule
@@ -186,6 +191,7 @@ native    SNESNewtonTRFallbackType
 
 # petscsnesfas.h
 native    SNESFASType
+native    SNESFunctionType
 
 # petsctao.h
 nativeptr Tao
@@ -194,6 +200,7 @@ native    TaoConvergedReason
 native    TaoADMMUpdateType
 native    TaoADMMRegularizerType
 native    TaoALMMType
+native    TaoSubsetType
 
 # petscsys.h
 native    PetscBool
@@ -201,6 +208,9 @@ native    PetscBool3
 native    PetscOffset
 native    PetscFortranAddr
 native    PetscCount
+
+nativeptr PetscDevice
+nativeptr PetscDeviceContext
 
 native    PetscInt
 native    PetscInt64
@@ -234,7 +244,7 @@ native    PetscReal
 
 
 native    MatScalar
-native    PetscObject
+nativeptr PetscObject
 native    PetscLogDouble
 
 nativeptr PetscMatlabEngine
@@ -289,3 +299,66 @@ nativeptr PetscViewerAndFormat
 nativeptr PetscViewers
 native    PetscFileMode
 native    PetscViewerFormat
+
+char AOType
+char PetscBenchType
+char CharacteristicType
+char DMType
+char DMFieldType
+char DMForestTopology
+char DMForestAdaptivityStrategy
+char DMLabelType
+char DMPlexTransformType
+char PetscDrawType
+char PetscDSType
+char PetscDualSpaceType
+char PetscFEType
+char PetscLimiterType
+char PetscFVType
+char ISType
+char ISLocalToGlobalMappingType
+char KSPType
+char KSPGuessType
+char PetscLogHandlerType
+char MatType
+char MatSolverType
+char MatProductAlgorithm
+char MatOrderingType
+char MatColoringType
+char MatPartitioningType
+char MatMFFDType
+char MatCoarsenType
+char PetscPartitionerType
+char PCType
+char PCGAMGType
+char PCGAMGClassicalType
+char PFType
+char PetscSectionSymType
+char PetscSFType
+char SNESType
+char SNESLineSearchType
+char SNESMSType
+char PetscSpaceType
+char PetscRandomType
+char TaoType
+char TaoLineSearchType
+char TSType
+char TSTrajectoryType
+char TSSSPType
+char TSAdaptType
+char TSGLLEAdaptType
+char TSGLLEAcceptType
+char TSGLLEType
+char TSRKType
+char TSMPRKType
+char TSIRKType
+char TSGLEEType
+char TSARKIMEXType
+char TSDIRKType
+char TSRosWType
+char TSBasicSymplecticType
+char VecType
+char VecTaggerType
+char PetscViewerType
+char DMForestTopology
+char DMForestAdaptivityStrategy

@@ -1,6 +1,6 @@
 #include <petsc/private/taoimpl.h> /*I "petsctao.h" I*/
 
-/*@C
+/*@
    TaoPythonSetType - Initialize a `Tao` object implemented in Python.
 
    Collective
@@ -25,7 +25,7 @@ PetscErrorCode TaoPythonSetType(Tao tao, const char pyname[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
    TaoPythonGetType - Get the type of a `Tao` object implemented in Python.
 
    Not Collective

@@ -3,6 +3,7 @@ Graph Partitioner: 2 MPI Processes
   edge cut: 0
   balance: 0
   use vertex weights: 1
+  use edge weights: 0
 PetscSection Object: NULL SECTION 2 MPI processes
   type not yet set
 Process 0:
@@ -18,6 +19,7 @@ Graph Partitioner: 2 MPI Processes
   edge cut: 0
   balance: 0
   use vertex weights: 1
+  use edge weights: 0
 PetscSection Object: SEQ SECTION 2 MPI processes
   type not yet set
 Process 0:
@@ -37,6 +39,7 @@ Graph Partitioner: 2 MPI Processes
   edge cut: 0
   balance: 0
   use vertex weights: 1
+  use edge weights: 0
 PetscSection Object: PARVOID SECTION 2 MPI processes
   type not yet set
 Process 0:

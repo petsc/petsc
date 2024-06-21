@@ -28,7 +28,10 @@
 !
 !/*TEST
 !
+!   build:
+!     requires: defined(PETSC_HAVE_FORTRAN_TYPE_STAR)
+!
 !   test:
-!      suffix: 0
+!     suffix: 0
 !
 !TEST*/

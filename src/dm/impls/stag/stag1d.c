@@ -1,9 +1,9 @@
 /*
    Functions specific to the 1-dimensional implementation of DMStag
 */
-#include <petsc/private/dmstagimpl.h>
+#include <petsc/private/dmstagimpl.h> /*I  "petscdmstag.h"   I*/
 
-/*@C
+/*@
   DMStagCreate1d - Create an object to manage data living on the elements and vertices of a parallelized regular 1D grid.
 
   Collective
@@ -16,10 +16,10 @@
 . dof1         - number of degrees of freedom per element/1-cell
 . stencilType  - ghost/halo region type: `DMSTAG_STENCIL_BOX` or `DMSTAG_STENCIL_NONE`
 . stencilWidth - width, in elements, of halo/ghost region
-- lx           - array of local sizes, of length equal to the comm size, summing to M
+- lx           - array of local sizes, of length equal to the comm size, summing to `M` or `NULL`
 
   Output Parameter:
-. dm - the new DMStag object
+. dm - the new `DMSTAG` object
 
   Options Database Keys:
 + -dm_view                                      - calls `DMViewFromOptions()` at the conclusion of `DMSetUp()`
@@ -36,7 +36,7 @@
 
 .seealso: [](ch_stag), `DMSTAG`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMLocalToGlobalBegin()`, `DMDACreate1d()`
 @*/
-PETSC_EXTERN PetscErrorCode DMStagCreate1d(MPI_Comm comm, DMBoundaryType bndx, PetscInt M, PetscInt dof0, PetscInt dof1, DMStagStencilType stencilType, PetscInt stencilWidth, const PetscInt lx[], DM *dm)
+PetscErrorCode DMStagCreate1d(MPI_Comm comm, DMBoundaryType bndx, PetscInt M, PetscInt dof0, PetscInt dof1, DMStagStencilType stencilType, PetscInt stencilWidth, const PetscInt lx[], DM *dm)
 {
   PetscMPIInt size;
 

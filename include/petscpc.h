@@ -133,6 +133,7 @@ PETSC_EXTERN PetscErrorCode PCJacobiSetUseAbs(PC, PetscBool);
 PETSC_EXTERN PetscErrorCode PCJacobiGetUseAbs(PC, PetscBool *);
 PETSC_EXTERN PetscErrorCode PCJacobiSetFixDiagonal(PC, PetscBool);
 PETSC_EXTERN PetscErrorCode PCJacobiGetFixDiagonal(PC, PetscBool *);
+PETSC_EXTERN PetscErrorCode PCJacobiGetDiagonal(PC pc, Vec, Vec);
 PETSC_EXTERN PetscErrorCode PCJacobiSetRowl1Scale(PC, PetscReal);
 PETSC_EXTERN PetscErrorCode PCJacobiGetRowl1Scale(PC, PetscReal *);
 PETSC_EXTERN PetscErrorCode PCSORSetSymmetric(PC, MatSORType);
@@ -248,6 +249,7 @@ PETSC_EXTERN PetscErrorCode PCCompositeAddPC(PC, PC);
 PETSC_EXTERN PetscErrorCode PCCompositeGetNumberPC(PC, PetscInt *);
 PETSC_EXTERN PetscErrorCode PCCompositeGetPC(PC, PetscInt, PC *);
 PETSC_EXTERN PetscErrorCode PCCompositeSpecialSetAlpha(PC, PetscScalar);
+PETSC_EXTERN PetscErrorCode PCCompositeSpecialSetAlphaMat(PC, Mat);
 
 PETSC_EXTERN PetscErrorCode PCRedundantSetNumber(PC, PetscInt);
 PETSC_EXTERN PetscErrorCode PCRedundantSetScatter(PC, VecScatter, VecScatter);
@@ -499,6 +501,7 @@ PETSC_EXTERN PetscErrorCode PCHPDDMGetSTShareSubKSP(PC, PetscBool *);
 PETSC_EXTERN PetscErrorCode PCHPDDMSetDeflationMat(PC, IS, Mat);
 PETSC_EXTERN PetscErrorCode PCHPDDMFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PCHPDDMInitializePackage(void);
+PETSC_EXTERN PetscErrorCode PCHPDDMGetComplexities(PC, PetscReal *, PetscReal *);
 
 PETSC_EXTERN PetscErrorCode PCAmgXGetResources(PC, void *);
 

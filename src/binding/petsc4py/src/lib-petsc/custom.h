@@ -10,6 +10,7 @@
 #include <petsc/private/snesimpl.h>
 #include <petsc/private/tsimpl.h>
 #include <petsc/private/taoimpl.h>
+#include <petsc/private/deviceimpl.h>
 
 /* ---------------------------------------------------------------- */
 
@@ -568,6 +569,15 @@ PetscErrorCode SNESSetUseFDColoring(SNES snes,PetscBool flag)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static
+PetscErrorCode SNESComputeUpdate(SNES snes)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscTryTypeMethod(snes, update, snes->iter);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /* ---------------------------------------------------------------- */
 
 static
@@ -642,11 +652,14 @@ PetscErrorCode TaoHasHessianRoutine(Tao tao, PetscBool* flg)
 #endif
 
 static
-PetscErrorCode TaoComputeUpdate(Tao tao)
+PetscErrorCode TaoComputeUpdate(Tao tao, PetscReal *f)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  PetscTryTypeMethod(tao,update,tao->niter,tao->user_update);
+  if (tao->ops->update) {
+    PetscUseTypeMethod(tao,update,tao->niter,tao->user_update);
+    PetscCall(TaoComputeObjective(tao,tao->solution,f));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -708,6 +721,14 @@ PetscErrorCode DMDACreateND(MPI_Comm comm,
   PetscCall(DMDASetStencilType(da,stencil_type));
   PetscCall(DMDASetStencilWidth(da,stencil_width));
   *dm = (DM)da;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static
+PetscErrorCode PetscDeviceReference(PetscDevice device)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscDeviceReference_Internal(device));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

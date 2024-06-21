@@ -18,7 +18,7 @@ Solver loop to update \tau:
   TauCoarse = Rcoarse - Rcoarse_restricted
 */
 
-/*@C
+/*@
   DMPatchZoom - Create patches of a `DMDA` on subsets of processes, indicated by `commz`
 
   Collective

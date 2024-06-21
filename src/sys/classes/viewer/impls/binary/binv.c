@@ -831,7 +831,7 @@ static PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerBinaryOpen - Opens a file for binary input/output.
 
   Collective
@@ -1162,7 +1162,7 @@ PetscErrorCode PetscViewerBinaryWriteAll(PetscViewer viewer, const void *data, P
           `VecView()`, `MatView()`, `VecLoad()`, `MatLoad()`, `PetscViewerBinaryGetDescriptor()`,
           `PetscViewerBinaryGetInfoPointer()`, `PetscFileMode`, `PetscViewer`, `PetscViewerBinaryRead()`
 @*/
-PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer viewer, const char *const *data)
+PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer viewer, const char *const data[])
 {
   PetscInt i, n = 0, *sizes;
   size_t   len;
@@ -1224,7 +1224,7 @@ PetscErrorCode PetscViewerBinaryReadStringArray(PetscViewer viewer, char ***data
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerFileSetMode - Sets the open mode of file
 
   Logically Collective
@@ -1263,7 +1263,7 @@ static PetscErrorCode PetscViewerFileSetMode_Binary(PetscViewer viewer, PetscFil
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerFileGetMode - Gets the open mode of a file associated with a `PetscViewer`
 
   Not Collective

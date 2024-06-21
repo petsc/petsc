@@ -262,7 +262,6 @@ static PetscErrorCode MatSetValues_BlockMat(Mat A, PetscInt m, const PetscInt im
       if (N >= i) ap[i] = NULL;
       rp[i] = bcol;
       a->nz++;
-      A->nonzerostate++;
     noinsert1:;
       if (!*(ap + i)) PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, bs, bs, 0, NULL, ap + i));
       PetscCall(MatSetValues(ap[i], 1, &ridx, 1, &cidx, &value, is));
@@ -820,6 +819,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
                                        NULL,
                                        NULL,
                                        /*150*/ NULL,
+                                       NULL,
                                        NULL,
                                        NULL};
 

@@ -8,7 +8,7 @@ PetscBool         PetscPartitionerRegisterAllCalled = PETSC_FALSE;
 /*@C
   PetscPartitionerRegister - Adds a new PetscPartitioner implementation
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - The name of a new user-defined creation routine

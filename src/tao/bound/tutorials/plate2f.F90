@@ -90,7 +90,7 @@
 ! derives from an elliptic PDE on a two-dimensional domain.  From the
 ! distributed array, create the vectors
 
-      PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX,mx,my,Nx,Ny,i1,i1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,dm,ierr))
+      PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX,mx,my,Nx,Ny,i1,i1,PETSC_NULL_INTEGER_ARRAY,PETSC_NULL_INTEGER_ARRAY,dm,ierr))
       PetscCallA(DMSetFromOptions(dm,ierr))
       PetscCallA(DMSetUp(dm,ierr))
 
@@ -109,7 +109,7 @@
 ! assembly
 
       PetscCallA(VecGetLocalSize(x,m,ierr))
-      PetscCallA(MatCreateAIJ(PETSC_COMM_WORLD,m,m,N,N,i7,PETSC_NULL_INTEGER,i3,PETSC_NULL_INTEGER,H,ierr))
+      PetscCallA(MatCreateAIJ(PETSC_COMM_WORLD,m,m,N,N,i7,PETSC_NULL_INTEGER_ARRAY,i3,PETSC_NULL_INTEGER_ARRAY,H,ierr))
 
       PetscCallA(MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE,ierr))
       PetscCallA(DMGetLocalToGlobalMapping(dm,isltog,ierr))
@@ -392,7 +392,6 @@
 
       PetscCall(PetscLogFlops(70.0d0*xm*ym,ierr))
 
-      return
       end  !FormFunctionGradient
 
 ! ----------------------------------------------------------------------------
@@ -610,7 +609,7 @@
             endif
 
 ! Set matrix values using local numbering, defined earlier in main routine
-            PetscCall(MatSetValuesLocal(Hessian,i1,row,k,col,v,INSERT_VALUES,ierr))
+            PetscCall(MatSetValuesLocal(Hessian,i1,[row],k,col,v,INSERT_VALUES,ierr))
 
          enddo
       enddo
@@ -628,7 +627,6 @@
 
       PetscCall(PetscLogFlops(199.0d0*xm*ym,ierr))
 
-      return
       end
 
 ! Top,Left,Right,Bottom,bheight,mx,my,bmx,bmy,H, defined in plate2f.h
@@ -784,7 +782,6 @@
          PetscCall(VecScale(Left,scl,ierr))
       endif
 
-      return
       end
 
 ! ----------------------------------------------------------------------------
@@ -843,7 +840,6 @@
 
       PetscCall(VecRestoreArrayF90(xl,xl_v,ierr))
 
-      return
       end
 
 ! ----------------------------------------------------------------------------
@@ -927,7 +923,6 @@
 
       endif
 
-      return
       end
 
 !

@@ -179,10 +179,8 @@ PetscErrorCode SNESLineSearchCreate(MPI_Comm comm, SNESLineSearch *outlinesearch
   PetscFunctionBegin;
   PetscAssertPointer(outlinesearch, 2);
   PetscCall(SNESInitializePackage());
-  *outlinesearch = NULL;
 
   PetscCall(PetscHeaderCreate(linesearch, SNESLINESEARCH_CLASSID, "SNESLineSearch", "Linesearch", "SNESLineSearch", comm, SNESLineSearchDestroy, SNESLineSearchView));
-
   linesearch->vec_sol_new  = NULL;
   linesearch->vec_func_new = NULL;
   linesearch->vec_sol      = NULL;
@@ -920,7 +918,7 @@ PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESLineSearchGetType - Gets the `SNESLinesearchType` of a `SNESLineSearch`
 
   Logically Collective
@@ -944,7 +942,7 @@ PetscErrorCode SNESLineSearchGetType(SNESLineSearch linesearch, SNESLineSearchTy
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESLineSearchSetType - Sets the `SNESLinesearchType` of a `SNESLineSearch`
 
   Logically Collective
@@ -1547,7 +1545,7 @@ PetscErrorCode SNESLineSearchSetVecs(SNESLineSearch linesearch, Vec X, Vec F, Ve
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESLineSearchAppendOptionsPrefix - Appends to the prefix used for searching for all
   `SNESLineSearch` options in the database.
 
@@ -1573,7 +1571,7 @@ PetscErrorCode SNESLineSearchAppendOptionsPrefix(SNESLineSearch linesearch, cons
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESLineSearchGetOptionsPrefix - Gets the prefix used for searching for all
   SNESLineSearch options in the database.
 
@@ -1651,6 +1649,8 @@ PetscErrorCode SNESLineSearchGetReason(SNESLineSearch linesearch, SNESLineSearch
 
 /*@
   SNESLineSearchSetReason - Sets the success/failure status of the line search application
+
+  Logically Collective; No Fortran Support
 
   Input Parameters:
 + linesearch - the line search context
@@ -1730,6 +1730,8 @@ PetscErrorCode SNESLineSearchGetVIFunctions(SNESLineSearch linesearch, SNESLineS
 
 /*@C
   SNESLineSearchRegister - register a line search type `SNESLineSearchType`
+
+  Logically Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of the `SNESLineSearchType()`

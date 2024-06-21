@@ -1,6 +1,6 @@
 #include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/
 
-/*@C
+/*@
    PCPythonSetType - Initialize a `PC` object implemented in Python, a `PCPYTHON`.
 
    Collective
@@ -25,7 +25,7 @@ PetscErrorCode PCPythonSetType(PC pc, const char pyname[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
    PCPythonGetType - Get the type of a `PC` object implemented in Python, a `PCPYTHON`.
 
    Not Collective

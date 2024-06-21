@@ -7,7 +7,7 @@
 
 PetscClassId PETSC_DRAWBAR_CLASSID = 0;
 
-/*@C
+/*@
   PetscDrawBarCreate - Creates a bar graph data structure.
 
   Collective
@@ -41,21 +41,17 @@ PetscErrorCode PetscDrawBarCreate(PetscDraw draw, PetscDrawBar *bar)
   PetscAssertPointer(bar, 2);
 
   PetscCall(PetscHeaderCreate(h, PETSC_DRAWBAR_CLASSID, "DrawBar", "Bar Graph", "Draw", PetscObjectComm((PetscObject)draw), PetscDrawBarDestroy, NULL));
-
   PetscCall(PetscObjectReference((PetscObject)draw));
-  h->win = draw;
-
+  h->win     = draw;
   h->view    = NULL;
   h->destroy = NULL;
   h->color   = PETSC_DRAW_GREEN;
   h->ymin    = 0.; /* if user has not set these then they are determined from the data */
   h->ymax    = 0.;
   h->numBins = 0;
-
   PetscCall(PetscDrawAxisCreate(draw, &h->axis));
   h->axis->xticks = NULL;
-
-  *bar = h;
+  *bar            = h;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -68,18 +64,18 @@ PetscErrorCode PetscDrawBarCreate(PetscDraw draw, PetscDrawBar *bar)
 + bar    - The bar graph context.
 . bins   - number of items
 . data   - values of each item
-- labels - optional label for each bar, NULL terminated array of strings
+- labels - optional label for each bar, `NULL` terminated array of strings
 
   Level: intermediate
 
   Notes:
   Call `PetscDrawBarDraw()` after this call to display the new plot
 
-  The data is ignored on all ranks except zero
+  The data is ignored on all MPI processes except rank zero
 
 .seealso: `PetscDrawBar`, `PetscDrawBarCreate()`, `PetscDrawBarDraw()`
 @*/
-PetscErrorCode PetscDrawBarSetData(PetscDrawBar bar, PetscInt bins, const PetscReal data[], const char *const *labels)
+PetscErrorCode PetscDrawBarSetData(PetscDrawBar bar, PetscInt bins, const PetscReal data[], const char *const labels[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bar, PETSC_DRAWBAR_CLASSID, 1);
@@ -95,7 +91,7 @@ PetscErrorCode PetscDrawBarSetData(PetscDrawBar bar, PetscInt bins, const PetscR
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawBarDestroy - Frees all space taken up by bar graph data structure.
 
   Collective
@@ -312,7 +308,7 @@ PetscErrorCode PetscDrawBarSetLimits(PetscDrawBar bar, PetscReal y_min, PetscRea
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawBarGetAxis - Gets the axis context associated with a bar graph.
   This is useful if one wants to change some axis property, such as
   labels, color, etc. The axis context should not be destroyed by the
@@ -339,7 +335,7 @@ PetscErrorCode PetscDrawBarGetAxis(PetscDrawBar bar, PetscDrawAxis *axis)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawBarGetDraw - Gets the draw context associated with a bar graph.
 
   Not Collective, draw is parallel if bar is parallel

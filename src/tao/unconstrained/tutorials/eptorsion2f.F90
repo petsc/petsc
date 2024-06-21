@@ -76,7 +76,7 @@
       PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par',param,flg,ierr))
 
 !     Set up distributed array and vectors
-      PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,mx,my,Nx,Ny,i1,i1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,dm,ierr))
+      PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,mx,my,Nx,Ny,i1,i1,PETSC_NULL_INTEGER_ARRAY,PETSC_NULL_INTEGER_ARRAY,dm,ierr))
       PetscCallA(DMSetFromOptions(dm,ierr))
       PetscCallA(DMSetUp(dm,ierr))
 
@@ -174,12 +174,11 @@
          do i=xs,xe-1
             k   = (j-gys)*gxm + i-gxs
             val = min((min(i+1,mx-i))*hx,temp)
-            PetscCall(VecSetValuesLocal(X,i1,k,val,ADD_VALUES,ierr))
+            PetscCall(VecSetValuesLocal(X,i1,[k],[val],ADD_VALUES,ierr))
          end do
       end do
       PetscCall(VecAssemblyBegin(X,ierr))
       PetscCall(VecAssemblyEnd(X,ierr))
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -292,17 +291,17 @@
             if (i .ne. -1 .and. j .ne. -1) then
                ind = k
                val = - dvdx/hx - dvdy/hy - cdiv3
-               PetscCall(VecSetValuesLocal(G,i1,k,val,ADD_VALUES,ierr))
+               PetscCall(VecSetValuesLocal(G,i1,[k],[val],ADD_VALUES,ierr))
             endif
             if (i .ne. mx-1 .and. j .ne. -1) then
                ind = k+1
                val =  dvdx/hx - cdiv3
-               PetscCall(VecSetValuesLocal(G,i1,ind,val,ADD_VALUES,ierr))
+               PetscCall(VecSetValuesLocal(G,i1,[ind],[val],ADD_VALUES,ierr))
             endif
             if (i .ne. -1 .and. j .ne. my-1) then
               ind = k+gxm
               val = dvdy/hy - cdiv3
-              PetscCall(VecSetValuesLocal(G,i1,ind,val,ADD_VALUES,ierr))
+              PetscCall(VecSetValuesLocal(G,i1,[ind],[val],ADD_VALUES,ierr))
             endif
             fquad = fquad + dvdx*dvdx + dvdy*dvdy
             flin = flin - cdiv3 * (v+vr+vt)
@@ -325,17 +324,17 @@
             if (i .ne. mx .and. j .ne. 0) then
                ind = k-gxm
                val = - dvdy/hy - cdiv3
-               PetscCall(VecSetValuesLocal(G,i1,ind,val,ADD_VALUES,ierr))
+               PetscCall(VecSetValuesLocal(G,i1,[ind],[val],ADD_VALUES,ierr))
             endif
             if (i .ne. 0 .and. j .ne. my) then
                ind = k-1
                val =  - dvdx/hx - cdiv3
-               PetscCall(VecSetValuesLocal(G,i1,ind,val,ADD_VALUES,ierr))
+               PetscCall(VecSetValuesLocal(G,i1,[ind],[val],ADD_VALUES,ierr))
             endif
             if (i .ne. mx .and. j .ne. my) then
                ind = k
                val =  dvdx/hx + dvdy/hy - cdiv3
-               PetscCall(VecSetValuesLocal(G,i1,ind,val,ADD_VALUES,ierr))
+               PetscCall(VecSetValuesLocal(G,i1,[ind],[val],ADD_VALUES,ierr))
             endif
             fquad = fquad + dvdx*dvdx + dvdy*dvdy
             flin = flin - cdiv3*(vb + vl + v)
@@ -357,7 +356,6 @@
 !  Sum function contributions from all processes
       PetscCallMPI(MPI_Allreduce(floc,f,1,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD,ierr))
       PetscCall(PetscLogFlops(20.0d0*(ye-ysm)*(xe-xsm)+16.0d0*(xep-xs)*(yep-ys),ierr))
-      return
       end
 
       subroutine ComputeHessian(tao, X, H, Hpre, dummy, ierr)
@@ -416,7 +414,7 @@
                k = k + 1
             endif
 
-            PetscCall(MatSetValuesLocal(H,i1,row,k,col,v,INSERT_VALUES,ierr))
+            PetscCall(MatSetValuesLocal(H,i1,[row],k,col,v,INSERT_VALUES,ierr))
          enddo
       enddo
 
@@ -433,7 +431,6 @@
       PetscCall(PetscLogFlops(9.0d0*xm*ym + 49.0d0*xm,ierr))
 
       ierr = 0
-      return
       end
 
       subroutine Monitor(tao, dummy, ierr)
@@ -455,7 +452,6 @@
 
       ierr = 0
 
-      return
       end
 
       subroutine ConvergenceTest(tao, dummy, ierr)
@@ -477,7 +473,6 @@
 
       ierr = 0
 
-      return
       end
 
 !/*TEST

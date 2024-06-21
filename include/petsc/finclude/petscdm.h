@@ -7,6 +7,7 @@
 #include "petsc/finclude/petscis.h"
 #include "petsc/finclude/petscvec.h"
 #include "petsc/finclude/petscmat.h"
+#include "petsc/finclude/petscdt.h"
 
 #define DMType character*(80)
 #define DMBoundaryType               PetscEnum
@@ -24,18 +25,17 @@
 #define DMReorderDefaultFlag         PetscEnum
 
 #define DM               type(tDM)
-
-#define DMAdaptor        PetscFortranAddr
-#define PetscQuadrature  PetscFortranAddr
-#define PetscWeakForm    PetscFortranAddr
-#define PetscDS          PetscFortranAddr
-#define PetscFE          PetscFortranAddr
-#define PetscSpace       PetscFortranAddr
-#define PetscDualSpace   PetscFortranAddr
-#define PetscFV          PetscFortranAddr
-#define PetscLimiter     PetscFortranAddr
-#define PetscPartitioner PetscFortranAddr
-#define DMField          PetscFortranAddr
+#define DMAdaptor        type(tDMAdaptor)
+#define PetscQuadrature  type(tPetscQuadrature)
+#define PetscWeakForm    type(tPetscWeakForm)
+#define PetscDS          type(tPetscDS)
+#define PetscFE          type(tPetscFE)
+#define PetscSpace       type(tPetscSpace)
+#define PetscDualSpace   type(tPetscDualSpace)
+#define PetscFV          type(tPetscFV)
+#define PetscLimiter     type(tPetscLimiter)
+#define PetscPartitioner type(tPetscPartitioner)
+#define DMField          type(tDMField)
 
 #define DMDA        'da'
 #define DMCOMPOSITE 'composite'

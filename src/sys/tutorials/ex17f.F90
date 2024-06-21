@@ -6,13 +6,13 @@ program main
 
       implicit none
       PetscErrorCode                    :: ierr
-      PetscInt                          :: major,minor,subminor
+      PetscInt                          :: major,minor,subminor,release
       character(len=PETSC_MAX_PATH_LEN) :: outputString
 
       ! Every PETSc routine should begin with the PetscInitialize() routine.
 
       PetscCallA(PetscInitialize(ierr))
-      PetscCallA(PetscGetVersionNumber(major,minor,subminor,PETSC_NULL_INTEGER,ierr))
+      PetscCallA(PetscGetVersionNumber(major,minor,subminor,release,ierr))
 
       if (major /= PETSC_VERSION_MAJOR) then
         write(outputString,*)'Library major',major,'does not equal include',PETSC_VERSION_MAJOR

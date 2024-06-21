@@ -88,7 +88,7 @@ PetscErrorCode TaoGetVariableBounds(Tao tao, Vec *XL, Vec *XU)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoComputeVariableBounds - Compute the variable bounds using the
   routine set by `TaoSetVariableBoundsRoutine()`.
 
@@ -174,7 +174,7 @@ PetscErrorCode TaoGetInequalityBounds(Tao tao, Vec *IL, Vec *IU)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoComputeConstraints - Compute the variable bounds using the
   routine set by `TaoSetConstraintsRoutine()`.
 
@@ -375,7 +375,7 @@ PetscErrorCode TaoSetInequalityConstraintsRoutine(Tao tao, Vec ci, PetscErrorCod
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoComputeEqualityConstraints - Compute the variable bounds using the
   routine set by `TaoSetEqualityConstraintsRoutine()`.
 
@@ -407,7 +407,7 @@ PetscErrorCode TaoComputeEqualityConstraints(Tao tao, Vec X, Vec CE)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoComputeInequalityConstraints - Compute the variable bounds using the
   routine set by `TaoSetInequalityConstraintsRoutine()`.
 

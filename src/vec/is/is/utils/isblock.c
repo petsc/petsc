@@ -106,7 +106,7 @@ PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISExpandIndicesGeneral - convert the indices of an array `IS` into non-block indices in an array of `ISGENERAL`
 
   Input Parameters:
@@ -114,10 +114,10 @@ PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs,
 . nkeys - expected number of keys when `PETSC_USE_CTABLE` is used
 . bs    - the size of block
 . imax  - the number of index sets
-- is_in - the blocked array of index sets
+- is_in - the blocked array of index sets, must be as large as `imax`
 
   Output Parameter:
-. is_out - the non-blocked new index set, as `ISGENERAL`
+. is_out - the non-blocked new index set, as `ISGENERAL`, must be as large as `imax`
 
   Level: intermediate
 

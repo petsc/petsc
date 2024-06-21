@@ -68,6 +68,7 @@ PETSC_EXTERN PetscErrorCode DMLabelDestroyIndex(DMLabel);
 PETSC_EXTERN PetscErrorCode DMLabelHasValue(DMLabel, PetscInt, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMLabelHasPoint(DMLabel, PetscInt, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMLabelGetBounds(DMLabel, PetscInt *, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMLabelGetValueBounds(DMLabel, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMLabelFilter(DMLabel, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelPermute(DMLabel, IS, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMLabelDistribute(DMLabel, PetscSF, DMLabel *);

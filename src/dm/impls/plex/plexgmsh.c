@@ -117,10 +117,9 @@ typedef struct {
   int *(*lexorder)(void);
 } GmshCellInfo;
 
-#define GmshCellEntry(cellType, polytope, dim, order) \
-  { \
-    cellType, GMSH_##polytope, dim, order, GmshNumNodes_##polytope(1), GmshNumNodes_##polytope(order), GmshLexOrder_##polytope##_##order \
-  }
+// clang-format off
+#define GmshCellEntry(cellType, polytope, dim, order) {cellType, GMSH_##polytope, dim, order, GmshNumNodes_##polytope(1), GmshNumNodes_##polytope(order), GmshLexOrder_##polytope##_##order}
+// clang-format on
 
 static const GmshCellInfo GmshCellTable[] = {
   GmshCellEntry(15, VTX, 0, 0),
@@ -928,13 +927,14 @@ static PetscErrorCode GmshReadNodes_v41(GmshFile *gmsh, GmshMesh *mesh)
   PetscCall(GmshNodesCreate(numNodes, &nodes));
   mesh->numNodes = numNodes;
   mesh->nodelist = nodes;
+  if (numEntityBlocks && !mesh->entities) PetscCall(PetscInfo(NULL, "File specifies %" PetscInt_FMT " entity blocks, but was missing the $Entities section\n", numEntityBlocks));
   for (block = 0, node = 0; block < numEntityBlocks; ++block, node += numNodesBlock) {
     PetscCall(GmshReadInt(gmsh, info, 3));
     dim        = info[0];
     eid        = info[1];
     parametric = info[2];
-    PetscCall(GmshEntitiesGet(mesh->entities, dim, eid, &entity));
-    numTags = entity->numTags;
+    if (mesh->entities) PetscCall(GmshEntitiesGet(mesh->entities, dim, eid, &entity));
+    numTags = entity ? entity->numTags : 0;
     PetscCheck(!parametric, PETSC_COMM_SELF, PETSC_ERR_SUP, "Parametric coordinates not supported");
     PetscCall(GmshReadSize(gmsh, &numNodesBlock, 1));
     PetscCall(GmshReadSize(gmsh, nodes->id + node, numNodesBlock));
@@ -976,16 +976,17 @@ static PetscErrorCode GmshReadElements_v41(GmshFile *gmsh, GmshMesh *mesh)
   PetscCall(GmshElementsCreate(numElements, &elements));
   mesh->numElems = numElements;
   mesh->elements = elements;
+  if (numEntityBlocks && !mesh->entities) PetscCall(PetscInfo(NULL, "File specifies %" PetscInt_FMT " entity blocks, but was missing the $Entities section\n", numEntityBlocks));
   for (c = 0, block = 0; block < numEntityBlocks; ++block) {
     PetscCall(GmshReadInt(gmsh, info, 3));
     dim      = info[0];
     eid      = info[1];
     cellType = info[2];
-    PetscCall(GmshEntitiesGet(mesh->entities, dim, eid, &entity));
+    if (mesh->entities) PetscCall(GmshEntitiesGet(mesh->entities, dim, eid, &entity));
     PetscCall(GmshCellTypeCheck(cellType));
     numVerts = GmshCellMap[cellType].numVerts;
     numNodes = GmshCellMap[cellType].numNodes;
-    numTags  = entity->numTags;
+    numTags  = entity ? entity->numTags : 0;
     PetscCall(GmshReadSize(gmsh, &numBlockElements, 1));
     PetscCall(GmshBufferGet(gmsh, (1 + numNodes) * numBlockElements, sizeof(PetscInt), &ibuf));
     PetscCall(GmshReadSize(gmsh, ibuf, (1 + numNodes) * numBlockElements));
@@ -1408,7 +1409,7 @@ static PetscErrorCode GmshCreateFE(MPI_Comm comm, const char prefix[], PetscBool
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexCreateGmshFromFile - Create a `DMPLEX` mesh from a Gmsh file
 
   Input Parameters:
@@ -1603,13 +1604,16 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
       PetscCall(GmshReadSection(gmsh, line));
     }
 
-    /* Read entities */
+    /* OPTIONAL Read entities */
     if (gmsh->fileFormat >= 40) {
-      PetscCall(GmshExpect(gmsh, "$Entities", line));
-      PetscCall(GmshReadEntities(gmsh, mesh));
-      PetscCall(GmshReadEndSection(gmsh, "$EndEntities", line));
-      /* Initial read for nodes section */
-      PetscCall(GmshReadSection(gmsh, line));
+      PetscCall(GmshMatch(gmsh, "$Entities", line, &match));
+      if (match) {
+        PetscCall(GmshExpect(gmsh, "$Entities", line));
+        PetscCall(GmshReadEntities(gmsh, mesh));
+        PetscCall(GmshReadEndSection(gmsh, "$EndEntities", line));
+        /* Initial read for nodes section */
+        PetscCall(GmshReadSection(gmsh, line));
+      }
     }
 
     /* Read nodes */

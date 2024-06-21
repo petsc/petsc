@@ -69,7 +69,7 @@ PetscErrorCode DMGenerateRegisterAll(void)
 /*@C
   DMGenerateRegister -  Adds a grid generator to `DM`
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname - name of a new user-defined grid generator
@@ -135,7 +135,7 @@ PetscErrorCode DMGenerateRegisterDestroy(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMAdaptLabel - Adapt a `DM` based on a `DMLabel` with values interpreted as coarsening and refining flags.  Specific implementations of `DM` maybe have
   specialized flags, but all implementations should accept flag values `DM_ADAPT_DETERMINE`, `DM_ADAPT_KEEP`, `DM_ADAPT_REFINE`, and,
   `DM_ADAPT_COARSEN`.
@@ -192,7 +192,7 @@ PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMAdaptMetric - Generates a mesh adapted to the specified metric field.
 
   Input Parameters:
@@ -202,7 +202,7 @@ PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
 - rgLabel - Label for cell tags, which will be preserved in the output mesh. `rgLabel` should be `NULL` if there is no such label, and should be different from "_regions_".
 
   Output Parameter:
-. dmAdapt - Pointer to the DM object containing the adapted mesh
+. dmAdapt - Pointer to the `DM` object containing the adapted mesh
 
   Note:
   The label in the adapted mesh will be registered under the name of the input `DMLabel` object

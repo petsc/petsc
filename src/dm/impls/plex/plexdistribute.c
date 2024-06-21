@@ -732,7 +732,7 @@ PetscErrorCode DMPlexCreateOverlapLabelFromLabels(DM dm, PetscInt numLabels, con
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexCreateOverlapMigrationSF - Create a `PetscSF` describing the new mesh distribution to make the overlap described by the input `PetscSF`
 
   Collective
@@ -1470,7 +1470,7 @@ static void MPIAPI MaxLocCarry(void *in_, void *inout_, PetscMPIInt *len_, MPI_D
   }
 }
 
-/*@C
+/*@
   DMPlexCreatePointSF - Build a point `PetscSF` from an `PetscSF` describing a point migration
 
   Input Parameters:
@@ -1602,7 +1602,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexMigrate  - Migrates internal `DM` data over the supplied star forest
 
   Collective
@@ -1720,7 +1720,7 @@ PetscErrorCode DMPlexRemapMigrationSF(PetscSF sfOverlap, PetscSF sfMigration, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexDistribute - Distributes the mesh and any associated sections.
 
   Collective
@@ -2008,7 +2008,7 @@ PetscErrorCode DMPlexDistributeOverlap_Internal(DM dm, PetscInt overlap, MPI_Com
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexDistributeOverlap - Add partition overlap to a distributed non-overlapping `DM`.
 
   Collective
@@ -2018,8 +2018,8 @@ PetscErrorCode DMPlexDistributeOverlap_Internal(DM dm, PetscInt overlap, MPI_Com
 - overlap - The overlap of partitions (the same on all ranks)
 
   Output Parameters:
-+ sf        - The `PetscSF` used for point distribution
-- dmOverlap - The overlapping distributed `DMPLEX` object, or `NULL`
++ sf        - The `PetscSF` used for point distribution, or pass `NULL` if not needed
+- dmOverlap - The overlapping distributed `DMPLEX` object
 
   Options Database Keys:
 + -dm_plex_overlap_labels <name1,name2,...> - List of overlap label names
@@ -2352,7 +2352,7 @@ PetscErrorCode DMPlexIsDistributed(DM dm, PetscBool *distributed)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexDistributionSetName - Set the name of the specific parallel distribution
 
   Input Parameters:
@@ -2381,7 +2381,7 @@ PetscErrorCode DMPlexDistributionSetName(DM dm, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexDistributionGetName - Retrieve the name of the specific parallel distribution
 
   Input Parameter:

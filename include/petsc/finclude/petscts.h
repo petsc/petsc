@@ -9,6 +9,7 @@
 #define TS type(tTS)
 #define TSAdapt type(tTSAdapt)
 #define TSTrajectory type(tTSTrajectory)
+#define TSGLLEAdapt type(tTSGLLEAdapt)
 
 #define TSType character*(80)
 #define TSAdaptType character*(80)
@@ -20,6 +21,7 @@
 #define TSProblemType PetscEnum
 #define TSSundialsGramSchmidtType PetscEnum
 #define TSSundialsLmmType PetscEnum
+#define TSTrajectoryMemoryType PetscEnum
 
 #define TSEULER           'euler'
 #define TSBEULER          'beuler'

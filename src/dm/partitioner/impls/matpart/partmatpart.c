@@ -14,16 +14,16 @@ static PetscErrorCode PetscPartitionerMatPartitioningGetMatPartitioning_MatParti
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
-  PetscPartitionerMatPartitioningGetMatPartitioning - Get a MatPartitioning instance wrapped by this PetscPartitioner.
+/*@
+  PetscPartitionerMatPartitioningGetMatPartitioning - Get a `MatPartitioning` instance wrapped by this `PetscPartitioner`.
 
   Not Collective
 
   Input Parameter:
-. part - The PetscPartitioner
+. part - The `PetscPartitioner`
 
   Output Parameter:
-. mp - The MatPartitioning
+. mp - The `MatPartitioning`
 
   Level: developer
 
@@ -85,7 +85,7 @@ static PetscErrorCode PetscPartitionerSetFromOptions_MatPartitioning(PetscPartit
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *is)
+static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection edgeSection, PetscSection targetSection, PetscSection partSection, IS *is)
 {
   PetscPartitioner_MatPartitioning *p = (PetscPartitioner_MatPartitioning *)part->data;
   Mat                               matadj;

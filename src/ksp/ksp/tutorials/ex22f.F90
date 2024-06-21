@@ -29,7 +29,7 @@
       i3 = 3
       i1 = 1
       PetscCallA(KSPCreate(PETSC_COMM_WORLD,ksp,ierr))
-      PetscCallA(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,i3,i3,i3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,i1,i1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr))
+      PetscCallA(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,i3,i3,i3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,i1,i1,PETSC_NULL_INTEGER_ARRAY,PETSC_NULL_INTEGER_ARRAY,PETSC_NULL_INTEGER_ARRAY,da,ierr))
       PetscCallA(DMSetFromOptions(da,ierr))
       PetscCallA(DMSetUp(da,ierr))
       PetscCallA(KSPSetDM(ksp,da,ierr))
@@ -62,7 +62,6 @@
       h    = 1.0/real((mx-1)*(my-1)*(mz-1))
 
       PetscCall(VecSet(b,h,ierr))
-      return
       end
 
       subroutine ComputeMatrix(ksp,JJ,jac,ctx,ierr)
@@ -139,7 +138,6 @@
 
       PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr))
       PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr))
-      return
       end
 
 !/*TEST

@@ -3,22 +3,55 @@
 !
 #include "petsc/finclude/petscmat.h"
 
-      type tMat
-        sequence
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      type, extends(tPetscObject) :: tMat
       end type tMat
-      type tMatNullSpace
-        sequence
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
-      end type tMatNullSpace
-      type tMatFDColoring
-        sequence
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
-      end type tMatFDColoring
-
       Mat, parameter :: PETSC_NULL_MAT = tMat(0)
-      MatFDColoring, parameter :: PETSC_NULL_MATFDCOLORING = tMatFDColoring(0)
-      MatNullSpace, parameter :: PETSC_NULL_MATNULLSPACE = tMatNullSpace(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_MAT
+#endif
+
+      type, extends(tPetscObject) :: tMatNullSpace
+      end type tMatNullSpace
+      MatNullSpace, parameter :: PETSC_NULL_MAT_NULLSPACE = tMatNullSpace(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_MAT_NULLSPACE
+#endif
+
+      type, extends(tPetscObject) :: tMatFDColoring
+      end type tMatFDColoring
+      MatFDColoring, parameter :: PETSC_NULL_MAT_FDCOLORING = tMatFDColoring(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_MAT_FDCOLORING
+#endif
+
+      type, extends(tPetscObject) :: tMatColoring
+      end type tMatColoring
+      MatColoring, parameter :: PETSC_NULL_MAT_COLORING = tMatColoring(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_MAT_COLORING
+#endif
+
+      type, extends(tPetscObject) :: tMatTransposeColoring
+      end type tMatTransposeColoring
+      MatTransposeColoring, parameter :: PETSC_NULL_MAT_TRANSPOSE_COLORING = tMatTransposeColoring(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_MAT_TRANSPOSE_COLORING
+#endif
+
+      type, extends(tPetscObject) :: tMatPartitioning
+      end type tMatPartitioning
+      MatPartitioning, parameter :: PETSC_NULL_MAT_PARTITIONING = tMatPartitioning(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_MAT_PARTITIONING
+#endif
+
+      type, extends(tPetscObject) :: tMatCoarsen
+      end type tMatCoarsen
+      MatCoarsen, parameter :: PETSC_NULL_MAT_COARSEN = tMatCoarsen(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_MAT_COARSEN
+#endif
+!
 !
 !  Flag for matrix assembly
 !
@@ -390,9 +423,6 @@
 #endif
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
-!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_MAT
-!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_MATFDCOLORING
-!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_MATNULLSPACE
 !DEC$ ATTRIBUTES DLLEXPORT::MAT_FLUSH_ASSEMBLY
 !DEC$ ATTRIBUTES DLLEXPORT::MAT_FINAL_ASSEMBLY
 !DEC$ ATTRIBUTES DLLEXPORT::MAT_FACTOR_NONE

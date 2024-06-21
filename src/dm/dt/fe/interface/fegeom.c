@@ -10,7 +10,7 @@
 - faceData - Flag to construct geometry data for the faces
 
   Output Parameter:
-. geom - The `PetscFEGeom` object
+. geom - The `PetscFEGeom` object, which is a struct not a `PetscObject`
 
   Level: beginner
 
@@ -73,7 +73,7 @@ PetscErrorCode PetscFEGeomDestroy(PetscFEGeom **geom)
 - cEnd   - The first cell not in the chunk
 
   Output Parameter:
-. chunkGeom - The chunk of cells
+. chunkGeom - an array of cells of length `cEnd` - `cStart`
 
   Level: intermediate
 
@@ -82,7 +82,7 @@ PetscErrorCode PetscFEGeomDestroy(PetscFEGeom **geom)
 
 .seealso: `PetscFEGeom`, `PetscFEGeomRestoreChunk()`, `PetscFEGeomCreate()`
 @*/
-PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt cEnd, PetscFEGeom **chunkGeom)
+PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt cEnd, PetscFEGeom *chunkGeom[])
 {
   PetscInt Nq;
   PetscInt dE;
@@ -135,24 +135,24 @@ PetscErrorCode PetscFEGeomRestoreChunk(PetscFEGeom *geom, PetscInt cStart, Petsc
 }
 
 /*@C
-  PetscFEGeomGetPoint - Get the geometry for cell c at point p as a `PetscFEGeom`
+  PetscFEGeomGetPoint - Get the geometry for cell `c` at point `p` as a `PetscFEGeom`
 
   Input Parameters:
 + geom    - `PetscFEGeom` object
 . c       - The cell
 . p       - The point
-- pcoords - The reference coordinates of point p, or NULL
+- pcoords - The reference coordinates of point `p`, or `NULL`
 
   Output Parameter:
-. pgeom - The geometry of cell c at point p
+. pgeom - The geometry of cell `c` at point `p`
 
   Level: intermediate
 
   Notes:
-  For affine geometries, this only copies to pgeom at point 0. Since we copy pointers into pgeom,
+  For affine geometries, this only copies to `pgeom` at point 0. Since we copy pointers into `pgeom`,
   nothing needs to be done with it afterwards.
 
-  In the affine case, pgeom must have storage for the integration point coordinates in pgeom->v if pcoords is passed in.
+  In the affine case, `pgeom` must have storage for the integration point coordinates in pgeom->v if `pcoords` is passed in.
 
 .seealso: `PetscFEGeom`, `PetscFEGeomRestoreChunk()`, `PetscFEGeomCreate()`
 @*/
@@ -186,7 +186,7 @@ PetscErrorCode PetscFEGeomGetPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, co
 }
 
 /*@C
-  PetscFEGeomGetCellPoint - Get the cell geometry for face f at point p as a `PetscFEGeom`
+  PetscFEGeomGetCellPoint - Get the cell geometry for face `c` at point `p` as a `PetscFEGeom`
 
   Input Parameters:
 + geom - `PetscFEGeom` object
@@ -194,12 +194,12 @@ PetscErrorCode PetscFEGeomGetPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, co
 - p    - The point
 
   Output Parameter:
-. pgeom - The cell geometry of face f at point p
+. pgeom - The cell geometry of face `c` at point `p`
 
   Level: intermediate
 
   Note:
-  For affine geometries, this only copies to pgeom at point 0. Since we copy pointers into pgeom,
+  For affine geometries, this only copies to pgeom at point 0. Since we copy pointers into `pgeom`,
   nothing needs to be done with it afterwards.
 
 .seealso: `PetscFEGeom()`, `PetscFEGeomRestoreChunk()`, `PetscFEGeomCreate()`
@@ -241,8 +241,8 @@ PetscErrorCode PetscFEGeomGetCellPoint(PetscFEGeom *geom, PetscInt c, PetscInt p
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
-  PetscFEGeomComplete - Calculate derived quantities from base geometry specification
+/*@C
+  PetscFEGeomComplete - Calculate derived quantities from a base geometry specification
 
   Input Parameter:
 . geom - `PetscFEGeom` object

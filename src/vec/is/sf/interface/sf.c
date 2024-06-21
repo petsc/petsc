@@ -62,7 +62,6 @@ PetscErrorCode PetscSFCreate(MPI_Comm comm, PetscSF *sf)
   PetscCall(PetscSFInitializePackage());
 
   PetscCall(PetscHeaderCreate(b, PETSCSF_CLASSID, "PetscSF", "Star Forest", "PetscSF", comm, PetscSFDestroy, PetscSFView));
-
   b->nroots    = -1;
   b->nleaves   = -1;
   b->minleaf   = PETSC_MAX_INT;
@@ -146,7 +145,7 @@ PetscErrorCode PetscSFReset(PetscSF sf)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFSetType - Set the `PetscSF` communication implementation
 
   Collective
@@ -191,7 +190,7 @@ PetscErrorCode PetscSFSetType(PetscSF sf, PetscSFType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFGetType - Get the `PetscSF` communication implementation
 
   Not Collective
@@ -215,7 +214,7 @@ PetscErrorCode PetscSFGetType(PetscSF sf, PetscSFType *type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFDestroy - destroy a star forest
 
   Collective
@@ -418,7 +417,7 @@ PetscErrorCode PetscSFSetRankOrder(PetscSF sf, PetscBool flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFSetGraph - Set a parallel star forest
 
   Collective
@@ -835,7 +834,7 @@ PetscErrorCode PetscSFGetLeafRange(PetscSF sf, PetscInt *minleaf, PetscInt *maxl
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFViewFromOptions - View a `PetscSF` based on arguments in the options database
 
   Collective
@@ -860,7 +859,7 @@ PetscErrorCode PetscSFViewFromOptions(PetscSF A, PetscObject obj, const char nam
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFView - view a star forest
 
   Collective

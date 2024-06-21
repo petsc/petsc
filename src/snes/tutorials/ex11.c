@@ -442,13 +442,13 @@ int main(int argc, char **argv)
     nsize: 2
     suffix: hpddm
     requires: hpddm slepc !single defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
-    args: -pc_type hpddm -pc_hpddm_coarse_correction balanced -pc_hpddm_coarse_mat_type aij -pc_hpddm_coarse_pc_type lu -pc_hpddm_levels_eps_nev 1 -pc_hpddm_levels_sub_pc_type lu -ksp_monitor -initial_dm_plex_simplex 0 -petscpartitioner_type simple
+    args: -pc_type hpddm -pc_hpddm_coarse_correction balanced -pc_hpddm_coarse_mat_type aij -pc_hpddm_levels_eps_nev 1 -pc_hpddm_levels_sub_pc_type lu -ksp_monitor -initial_dm_plex_simplex 0 -petscpartitioner_type simple
 
   test:
     nsize: 2
     suffix: hpddm_p4est
     requires: p4est hpddm slepc !single defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
-    args: -pc_type hpddm -pc_hpddm_coarse_correction balanced -pc_hpddm_coarse_mat_type aij -pc_hpddm_coarse_pc_type lu -pc_hpddm_levels_eps_nev 1 -pc_hpddm_levels_sub_pc_type lu -ksp_monitor -initial_dm_plex_simplex 0 -p4est -petscpartitioner_type simple
+    args: -pc_type hpddm -pc_hpddm_coarse_correction balanced -pc_hpddm_coarse_mat_type aij -pc_hpddm_levels_eps_nev 1 -pc_hpddm_levels_sub_pc_type lu -ksp_monitor -initial_dm_plex_simplex 0 -p4est -petscpartitioner_type simple
 
   test:
     nsize: 4

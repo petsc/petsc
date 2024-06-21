@@ -3,11 +3,9 @@
 #include <petscmat.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-  #define matcreatempiadj_           MATCREATEMPIADJ
-  #define matmpiadjsetpreallocation_ MATMPIADJSETPREALLOCATION
+  #define matcreatempiadj_ MATCREATEMPIADJ
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define matcreatempiadj_           matcreatempiadj
-  #define matmpiadjsetpreallocation_ matmpiadjsetpreallocation
+  #define matcreatempiadj_ matcreatempiadj
 #endif
 
 PETSC_EXTERN void matcreatempiadj_(MPI_Comm *comm, PetscInt *m, PetscInt *n, PetscInt *i, PetscInt *j, PetscInt *values, Mat *A, PetscErrorCode *ierr)
@@ -18,10 +16,4 @@ PETSC_EXTERN void matcreatempiadj_(MPI_Comm *comm, PetscInt *m, PetscInt *n, Pet
   *ierr        = MatCreateMPIAdj(MPI_Comm_f2c(*(MPI_Fint *)&*comm), *m, *n, i, j, values, A);
   adj          = (Mat_MPIAdj *)(*A)->data;
   adj->freeaij = PETSC_FALSE;
-}
-
-PETSC_EXTERN void matmpiadjsetpreallocation_(Mat *mat, PetscInt *i, PetscInt *j, PetscInt *values, PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLINTEGER(values);
-  *ierr = MatMPIAdjSetPreallocation(*mat, i, j, values);
 }

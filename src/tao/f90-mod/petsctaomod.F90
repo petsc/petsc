@@ -1,6 +1,11 @@
-        module petsctaodef
+        module petsctaodefdummy
         use petsckspdef
 #include <../src/tao/f90-mod/petsctao.h>
+        end module petsctaodefdummy
+
+        module petsctaodef
+        use petsctaodefdummy
+        use petscksp
         end module petsctaodef
 
         module petsctao

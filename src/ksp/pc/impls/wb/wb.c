@@ -13,7 +13,6 @@ const char *const PCExoticTypes[] = {"face", "wirebasket", "PCExoticType", "PC_E
 
 /*
       DMDAGetWireBasketInterpolation - Gets the interpolation for a wirebasket based coarse space
-
 */
 static PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *exotic, Mat Aglobal, MatReuse reuse, Mat *P)
 {
@@ -43,14 +42,14 @@ static PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *ex
   kstart = kstart ? -1 : 0;
 
   /*
-    the columns of P are the interpolation of each coarse grid point (one for each vertex and edge)
+    the columns of P are the interpolation of each coarse (wirebasket) grid point (one for each face, vertex and edge)
     to all the local degrees of freedom (this includes the vertices, edges and faces).
 
     Xint are the subset of the interpolation into the interior
 
     Xface are the interpolation onto faces but not into the interior
 
-    Xsurf are the interpolation onto the vertices and edges (the surfbasket)
+    Xsurf are the interpolation onto the vertices and edges (the wirebasket)
                                       Xint
     Symbolically one could write P = (Xface) after interchanging the rows to match the natural ordering on the domain
                                       Xsurf
@@ -362,7 +361,6 @@ static PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *ex
 
 /*
       DMDAGetFaceInterpolation - Gets the interpolation for a face based coarse space
-
 */
 static PetscErrorCode DMDAGetFaceInterpolation(PC pc, DM da, PC_Exotic *exotic, Mat Aglobal, MatReuse reuse, Mat *P)
 {
@@ -392,14 +390,14 @@ static PetscErrorCode DMDAGetFaceInterpolation(PC pc, DM da, PC_Exotic *exotic, 
   kstart = kstart ? -1 : 0;
 
   /*
-    the columns of P are the interpolation of each coarse grid point (one for each vertex and edge)
+    the columns of P are the interpolation of each coarse (face) grid point (one for each face)
     to all the local degrees of freedom (this includes the vertices, edges and faces).
 
     Xint are the subset of the interpolation into the interior
 
     Xface are the interpolation onto faces but not into the interior
 
-    Xsurf are the interpolation onto the vertices and edges (the surfbasket)
+    Xsurf are the interpolation onto the vertices and edges (the wirebasket)
                                       Xint
     Symbolically one could write P = (Xface) after interchanging the rows to match the natural ordering on the domain
                                       Xsurf
@@ -657,7 +655,10 @@ static PetscErrorCode DMDAGetFaceInterpolation(PC pc, DM da, PC_Exotic *exotic, 
 
   Input Parameters:
 + pc   - the preconditioner context
-- type - either PC_EXOTIC_FACE or PC_EXOTIC_WIREBASKET (defaults to face)
+- type - either `PC_EXOTIC_FACE` or `PC_EXOTIC_WIREBASKET` (defaults to face)
+
+  Options Database Keys:
+. -pc_exotic_type <face,wirebasket> - use a coarse grid point for each face, or edge and vertex
 
   Notes:
   The face based interpolation has 1 degree of freedom per face and ignores the
@@ -668,8 +669,8 @@ static PetscErrorCode DMDAGetFaceInterpolation(PC pc, DM da, PC_Exotic *exotic, 
   per face. A constant on the subdomain boundary is interpolated as that constant
   in the interior of the domain.
 
-  The coarse grid matrix is obtained via the Galerkin computation A_c = R A R^T, hence
-  if A is nonsingular A_c is also nonsingular.
+  The coarse grid matrix is obtained via the Galerkin computation $A_c = R A R^T$, hence
+  if $A$ is nonsingular $A_c$ is also nonsingular.
 
   Both interpolations are suitable for only scalar problems.
 
@@ -794,15 +795,19 @@ static PetscErrorCode PCSetFromOptions_Exotic(PC pc, PetscOptionItems *PetscOpti
 }
 
 /*MC
-     PCEXOTIC - Two level overlapping Schwarz preconditioner with exotic (non-standard) coarse grid spaces
+   PCEXOTIC - Two level overlapping Schwarz preconditioner with exotic (non-standard) coarse grid spaces
 
-     This uses the `PCMG` infrastructure restricted to two levels and the face and wirebasket based coarse
+   This uses the `PCMG` infrastructure restricted to two levels and the face and wirebasket based coarse
    grid spaces.
+
+   Options Database Keys:
++  -pc_exotic_type <face,wirebasket> - use a coarse grid point for each face, or edge and vertex
+-  -pc_exotic_direct_solver          - use a direct solver to construct interpolation instead of an iterative solver
 
    Level: advanced
 
    Notes:
-   Must be used with `DMDA`
+   Must be used with `DMDA` in three dimensions
 
    By default this uses `KSPGMRES` on the fine grid smoother so this should be used with `KSPFGMRES` or the smoother changed to not use `KSPGMRES`
 
@@ -814,7 +819,10 @@ static PetscErrorCode PCSetFromOptions_Exotic(PC pc, PetscOptionItems *PetscOpti
    They refer to them as GDSW (generalized Dryja, Smith, Widlund preconditioners). See, for example, {cite}`dohrmann2008extending`, {cite}`dohrmann2008family`,
    {cite}`dohrmann2008domain`, {cite}`dohrmann2009overlapping`.
 
-   The usual `PCMG` options are supported, such as -mg_levels_pc_type <type> -mg_coarse_pc_type <type> -mg_fine_pc_type <type> and -pc_mg_type <type>
+   In this code the wirebasket includes a constant for each face, as well as the true "wirebasket". Other wirebasket algorithms exist that
+   only have constants for edges and vertices.
+
+   The usual `PCMG` options are supported, such as `-mg_levels_pc_type` <type> `-mg_coarse_pc_type` <type> `-mg_fine_pc_type` <type> and `-pc_mg_type` <type>
 
 .seealso: [](ch_ksp), `PCMG`, `PCSetDM()`, `PCExoticType`, `PCExoticSetType()`
 M*/

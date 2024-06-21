@@ -12,7 +12,6 @@
       PetscErrorCode ierr
 
       print*, 'Called MatMult'
-      return
       end
 
       subroutine mymatmultadd(A, x, y, z, ierr)
@@ -23,7 +22,6 @@
       PetscErrorCode ierr
 
       print*, 'Called MatMultAdd'
-      return
       end
 
       subroutine mymatmulttranspose(A, x, y, ierr)
@@ -34,7 +32,6 @@
       PetscErrorCode ierr
 
       print*, 'Called MatMultTranspose'
-      return
       end
 
       subroutine mymatmulthermitiantranspose(A, x, y, ierr)
@@ -45,7 +42,6 @@
       PetscErrorCode ierr
 
       print*, 'Called MatMultHermitianTranspose'
-      return
       end
 
       subroutine mymatmulttransposeadd(A, x, y, z, ierr)
@@ -56,7 +52,6 @@
       PetscErrorCode ierr
 
       print*, 'Called MatMultTransposeAdd'
-      return
       end
 
       subroutine mymatmulthermitiantransposeadd(A, x, y, z, ierr)
@@ -67,7 +62,6 @@
       PetscErrorCode ierr
 
       print*, 'Called MatMultHermitianTransposeAdd'
-      return
       end
 
       subroutine mymattranspose(A, reuse, B, ierr)
@@ -85,7 +79,6 @@
       PetscCallA(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY, ierr))
 
       print*, 'Called MatTranspose'
-      return
       end
 
       subroutine mymatgetdiagonal(A, x, ierr)
@@ -96,7 +89,6 @@
       PetscErrorCode ierr
 
       print*, 'Called MatGetDiagonal'
-      return
       end
 
       subroutine mymatdiagonalscale(A, x, y, ierr)
@@ -107,7 +99,6 @@
       PetscErrorCode ierr
 
       print*, 'Called MatDiagonalScale'
-      return
       end
 
       subroutine mymatzeroentries(A, ierr)
@@ -117,7 +108,6 @@
       PetscErrorCode ierr
 
       print*, 'Called MatZeroEntries'
-      return
       end
 
       subroutine mymataxpy(A, alpha, B, str, ierr)
@@ -129,7 +119,6 @@
       PetscErrorCode ierr
 
       print*, 'Called MatAXPY'
-      return
       end
 
       subroutine mymatshift(A, alpha, ierr)
@@ -140,7 +129,6 @@
       PetscErrorCode ierr
 
       print*, 'Called MatShift'
-      return
       end
 
       subroutine mymatdiagonalset(A, x, ins, ierr)
@@ -152,7 +140,6 @@
       PetscErrorCode ierr
 
       print*, 'Called MatDiagonalSet'
-      return
       end
 
       subroutine mymatdestroy(A, ierr)
@@ -162,7 +149,6 @@
       PetscErrorCode ierr
 
       print*, 'Called MatDestroy'
-      return
       end
 
       subroutine mymatview(A, viewer, ierr)
@@ -173,7 +159,6 @@
       PetscErrorCode ierr
 
       print*, 'Called MatView'
-      return
       end
 
       subroutine mymatgetvecs(A, x, y, ierr)
@@ -184,7 +169,6 @@
       PetscErrorCode ierr
 
       print*, 'Called MatCreateVecs'
-      return
       end
 
       program main

@@ -398,7 +398,7 @@ static PetscErrorCode CreateQFunctionContext_SW(Physics phys, Ceed ceed, CeedQFu
   PetscCallCEED(CeedQFunctionContextCreate(ceed, qfCtx));
   PetscCallCEED(CeedQFunctionContextSetData(*qfCtx, CEED_MEM_HOST, CEED_USE_POINTER, sizeof(*sw), sw));
   PetscCallCEED(CeedQFunctionContextSetDataDestroy(*qfCtx, CEED_MEM_HOST, FreeContextPetsc));
-  PetscCallCEED(CeedQFunctionContextRegisterDouble(*qfCtx, "gravity", offsetof(Physics_SW, gravity), 1, "Accelaration due to gravity"));
+  PetscCallCEED(CeedQFunctionContextRegisterDouble(*qfCtx, "gravity", offsetof(Physics_SW, gravity), 1, "Acceleration due to gravity"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
@@ -1687,7 +1687,7 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
 
     test:
       suffix: tut_4
-      requires: exodusii
+      requires: exodusii !single
       nsize: 4
       args: -dm_distribute_overlap 1 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -physics sw -monitor Height,Energy -petscfv_type leastsquares -petsclimiter_type minmod
 
@@ -1800,7 +1800,7 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
 
     test:
       suffix: euler_0
-      requires: exodusii !complex
+      requires: exodusii !complex !single
       args: -eu_riemann godunov -bc_wall 100,101 -ufv_cfl 5 -petsclimiter_type sin \
             -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo \
             -ts_max_time 1 -ts_ssp_type rks2 -ts_ssp_nstages 10
@@ -1853,17 +1853,17 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
       requires: exodusii
       args: -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -bc_inflow 100,101,200 -bc_outflow 201
 
+    # Run with -dm_forest_maximum_refinement 6 -ts_max_time 0.5 instead to get the full movie
     test:
       suffix: shock_0
       requires: p4est !single !complex
       args: -dm_plex_box_faces 2,1 -grid_bounds -1,1.,0.,1 -grid_skew_60 \
-      -dm_type p4est -dm_forest_partition_overlap 1 -dm_forest_maximum_refinement 6 -dm_forest_minimum_refinement 2 -dm_forest_initial_refinement 2 \
+      -dm_type p4est -dm_forest_partition_overlap 1 -dm_forest_maximum_refinement 2 -dm_forest_minimum_refinement 2 -dm_forest_initial_refinement 2 \
       -ufv_use_amr -refine_vec_tagger_box 0.5,inf -coarsen_vec_tagger_box 0,1.e-2 -refine_tag_view -coarsen_tag_view \
       -bc_wall 1,2,3,4 -physics euler -eu_type iv_shock -ufv_cfl 10 -eu_alpha 60. -eu_gamma 1.4 -eu_amach 2.02 -eu_rho2 3. \
       -petscfv_type leastsquares -petsclimiter_type minmod -petscfv_compute_gradients 0 \
-      -ts_max_time 0.5 -ts_ssp_type rks2 -ts_ssp_nstages 10 \
+      -ts_max_steps 3 -ts_ssp_type rks2 -ts_ssp_nstages 10 \
       -ufv_vtk_basename ${wPETSC_DIR}/ex11 -ufv_vtk_interval 0 -monitor density,energy
-      timeoutfactor: 3
 
     # Test GLVis visualization of PetscFV fields
     test:

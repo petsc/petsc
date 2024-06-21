@@ -1,6 +1,6 @@
 #include <petsc/private/tsimpl.h> /*I "petscts.h" I*/
 
-/*@C
+/*@
    TSPythonSetType - Initialize a `TS` object implemented in Python.
 
    Collective
@@ -25,7 +25,7 @@ PetscErrorCode TSPythonSetType(TS ts, const char pyname[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
    TSPythonGetType - Get the type of a `TS` object implemented in Python.
 
    Not Collective

@@ -217,13 +217,13 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
 
       PetscCall(PetscSNPrintf(fname, PETSC_STATIC_ARRAY_LENGTH(fname), "C%d_%d.poly", level, rank));
       file = fopen(fname, "w");
-      /*First line: <# of vertices> <dimension (must be 2)> <# of attributes> <# of boundary markers (0 or 1)>*/
+      /* First line: <# of vertices> <dimension (must be 2)> <# of attributes> <# of boundary markers (0 or 1)> */
       fprintf(file, "%d  %d  %d  %d\n", in.numberofpoints, 2, 0, 0);
-      /*Following lines: <vertex #> <x> <y> */
+      /* Following lines: <vertex #> <x> <y> */
       for (kk = 0, sid = 0; kk < in.numberofpoints; kk++, sid += 2) fprintf(file, "%d %e %e\n", kk, in.pointlist[sid], in.pointlist[sid + 1]);
-      /*One line: <# of segments> <# of boundary markers (0 or 1)> */
+      /* One line: <# of segments> <# of boundary markers (0 or 1)> */
       fprintf(file, "%d  %d\n", 0, 0);
-      /*Following lines: <segment #> <endpoint> <endpoint> [boundary marker] */
+      /* Following lines: <segment #> <endpoint> <endpoint> [boundary marker] */
       /* One line: <# of holes> */
       fprintf(file, "%d\n", 0);
       /* Following lines: <hole #> <x> <y> */
@@ -245,7 +245,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
       /* First line: <# of vertices> <dimension (must be 2)> <# of attributes> <# of boundary markers (0 or 1)> */
       /* fprintf(file, "%d  %d  %d  %d\n",in.numberofpoints,2,0,0); */
       fprintf(file, "%d  %d  %d  %d\n", nPlotPts, 2, 0, 0);
-      /*Following lines: <vertex #> <x> <y> */
+      /* Following lines: <vertex #> <x> <y> */
       for (kk = 0, sid = 0; kk < in.numberofpoints; kk++, sid += 2) fprintf(file, "%d %e %e\n", kk, in.pointlist[sid], in.pointlist[sid + 1]);
 
       sid /= 2;
@@ -624,7 +624,7 @@ static PetscErrorCode PCGAMGProlongator_GEO(PC pc, Mat Amat, PetscCoarsenData *a
   PetscCheck((Iend - Istart) % bs == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "(Iend %" PetscInt_FMT " - Istart %" PetscInt_FMT ") %% bs %" PetscInt_FMT, Iend, Istart, bs);
 
   /* get 'nLocalSelected' */
-  PetscCall(PetscCDGetMat(agg_lists, &Gmat)); // get auxilary matrix for ghost edges
+  PetscCall(PetscCDGetMat(agg_lists, &Gmat)); // get auxiliary matrix for ghost edges
   PetscCall(PetscCDGetNonemptyIS(agg_lists, &selected_1));
   PetscCall(ISGetSize(selected_1, &jj));
   PetscCall(PetscMalloc1(jj, &clid_flid));

@@ -377,6 +377,56 @@ static PetscErrorCode PCApply_Redistribute(PC pc, Vec b, Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode PCApplyTranspose_Redistribute(PC pc, Vec b, Vec x)
+{
+  PC_Redistribute   *red   = (PC_Redistribute *)pc->data;
+  PetscInt           dcnt  = red->dcnt, i;
+  const PetscInt    *drows = red->drows;
+  PetscScalar       *xwork;
+  const PetscScalar *bwork, *diag = red->diag;
+  PetscBool          set, flg     = PETSC_FALSE, nonzero_guess;
+
+  PetscFunctionBegin;
+  PetscCall(MatIsStructurallySymmetricKnown(pc->pmat, &set, &flg));
+  PetscCheck(set || flg, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "PCApplyTranspose() not implemented for structurally unsymmetric Mat");
+  if (!red->work) PetscCall(VecDuplicate(b, &red->work));
+  PetscCall(KSPGetInitialGuessNonzero(red->ksp, &nonzero_guess));
+  if (nonzero_guess) {
+    PetscCall(VecScatterBegin(red->scatter, x, red->x, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(red->scatter, x, red->x, INSERT_VALUES, SCATTER_FORWARD));
+  }
+
+  /* compute the rows of solution that have diagonal entries only */
+  PetscCall(VecSet(x, 0.0)); /* x = diag(A)^{-1} b */
+  PetscCall(VecGetArray(x, &xwork));
+  PetscCall(VecGetArrayRead(b, &bwork));
+  if (red->zerodiag) {
+    for (i = 0; i < dcnt; i++) {
+      if (diag[i] == 0.0 && bwork[drows[i]] != 0.0) {
+        PetscCheck(!pc->erroriffailure, PETSC_COMM_SELF, PETSC_ERR_CONV_FAILED, "Linear system is inconsistent, zero matrix row but nonzero right-hand side");
+        PetscCall(PetscInfo(pc, "Linear system is inconsistent, zero matrix row but nonzero right-hand side\n"));
+        PetscCall(VecSetInf(x));
+        pc->failedreasonrank = PC_INCONSISTENT_RHS;
+      }
+    }
+  }
+  for (i = 0; i < dcnt; i++) xwork[drows[i]] = diag[i] * bwork[drows[i]];
+  PetscCall(PetscLogFlops(dcnt));
+  PetscCall(VecRestoreArray(red->work, &xwork));
+  PetscCall(VecRestoreArrayRead(b, &bwork));
+  /* update the right-hand side for the reduced system with diagonal rows (and corresponding columns) removed */
+  PetscCall(MatMultTranspose(pc->pmat, x, red->work));
+  PetscCall(VecAYPX(red->work, -1.0, b)); /* red->work = b - A^T x */
+
+  PetscCall(VecScatterBegin(red->scatter, red->work, red->b, INSERT_VALUES, SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(red->scatter, red->work, red->b, INSERT_VALUES, SCATTER_FORWARD));
+  PetscCall(KSPSolveTranspose(red->ksp, red->b, red->x));
+  PetscCall(KSPCheckSolve(red->ksp, pc, red->x));
+  PetscCall(VecScatterBegin(red->scatter, red->x, x, INSERT_VALUES, SCATTER_REVERSE));
+  PetscCall(VecScatterEnd(red->scatter, red->x, x, INSERT_VALUES, SCATTER_REVERSE));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode PCDestroy_Redistribute(PC pc)
 {
   PC_Redistribute  *red  = (PC_Redistribute *)pc->data;
@@ -479,7 +529,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC pc)
   pc->data = (void *)red;
 
   pc->ops->apply          = PCApply_Redistribute;
-  pc->ops->applytranspose = NULL;
+  pc->ops->applytranspose = PCApplyTranspose_Redistribute;
   pc->ops->setup          = PCSetUp_Redistribute;
   pc->ops->destroy        = PCDestroy_Redistribute;
   pc->ops->setfromoptions = PCSetFromOptions_Redistribute;

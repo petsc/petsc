@@ -3,22 +3,28 @@
 !
 #include "petsc/finclude/petscvec.h"
 
-      type tVec
-        sequence
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      type, extends(tPetscObject) :: tVec
       end type tVec
-      type tVecScatter
-        sequence
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
-      end type tVecScatter
-      type tVecTagger
-        sequence
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
-      end type tVecTagger
-
       Vec, parameter :: PETSC_NULL_VEC = tVec(0)
-      VecScatter, parameter :: PETSC_NULL_VECSCATTER = tVecScatter(0)
-      VecTagger, parameter :: PETSC_NULL_VECTAGGER = tVecTagger(0)
+      Vec, parameter :: PETSC_NULL_VEC_ARRAY(1) = tVec(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_VEC
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_VEC_ARRAY
+#endif
+
+      type, extends(tPetscObject) :: tVecScatter
+      end type tVecScatter
+      VecScatter, parameter :: PETSC_NULL_VEC_SCATTER = tVecScatter(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_VEC_SCATTER
+#endif
+
+      type, extends(tPetscObject) :: tVecTagger
+      end type tVecTagger
+      VecTagger, parameter :: PETSC_NULL_VEC_TAGGER = tVecTagger(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_VEC_TAGGER
+#endif
 !
 !
 !  Types of vector and matrix norms
@@ -64,9 +70,6 @@
       PetscEnum, parameter :: VECOP_LOADNATIVE = 69
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
-!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_VEC
-!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_VECSCATTER
-!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_VECTAGGER
 !DEC$ ATTRIBUTES DLLEXPORT::NORM_1
 !DEC$ ATTRIBUTES DLLEXPORT::NORM_2
 !DEC$ ATTRIBUTES DLLEXPORT::NORM_FROBENIUS

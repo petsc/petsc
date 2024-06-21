@@ -9,7 +9,7 @@
 #
 #           u = 0  for  x = 0, x = 1, y = 0, y = 1
 #
-#  A finite difference approximation with the usual 7-point stencil
+#  A finite difference approximation with the usual 5-point stencil
 #  is used to discretize the boundary value problem to obtain a
 #  nonlinear system of equations. The problem is solved in a 2D
 #  rectangular domain, using distributed arrays (DAs) to partition

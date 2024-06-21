@@ -2,7 +2,7 @@
 #include <petscviewersaws.h>
 #include <petscsys.h>
 
-/*@C
+/*@
   PetscObjectSAWsTakeAccess - Take access of the data fields that have been published to SAWs
   by a `PetscObject` so their values may  be changed in the computation
 
@@ -28,7 +28,7 @@ PetscErrorCode PetscObjectSAWsTakeAccess(PetscObject obj)
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscObjectSAWsGrantAccess - Grants access of the data fields that have been published to
   SAWs called when the changes made during `PetscObjectSAWsTakeAccess()` are complete.
 
@@ -53,7 +53,7 @@ PetscErrorCode PetscObjectSAWsGrantAccess(PetscObject obj)
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscSAWsBlock - Blocks on SAWs until a client (person using the web browser) unblocks it
 
   Not Collective
@@ -81,7 +81,7 @@ PetscErrorCode PetscSAWsBlock(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectSAWsBlock - Blocks the object if `PetscObjectSAWsSetBlock()` has been called
 
   Collective
@@ -103,7 +103,7 @@ PetscErrorCode PetscObjectSAWsBlock(PetscObject obj)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectSAWsSetBlock - Sets whether an object will block at `PetscObjectSAWsBlock()`
 
   Collective

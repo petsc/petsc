@@ -1,7 +1,7 @@
 /* Functions specific to the 2-dimensional implementation of DMStag */
-#include <petsc/private/dmstagimpl.h>
+#include <petsc/private/dmstagimpl.h> /*I  "petscdmstag.h"   I*/
 
-/*@C
+/*@
   DMStagCreate2d - Create an object to manage data living on the elements, faces, and vertices of a parallelized regular 2D grid.
 
   Collective
@@ -20,8 +20,8 @@
 . dof2         - number of degrees of freedom per element/2-cell
 . stencilType  - ghost/halo region type: `DMSTAG_STENCIL_NONE`, `DMSTAG_STENCIL_BOX`, or `DMSTAG_STENCIL_STAR`
 . stencilWidth - width, in elements, of halo/ghost region
-. lx           - array of local x element counts, of length equal to `m`, summing to `M`
-- ly           - array of local y element counts, of length equal to `n`, summing to `N`
+. lx           - array of local x element counts, of length equal to `m`, summing to `M`, or `NULL`
+- ly           - array of local y element counts, of length equal to `n`, summing to `N`, or `NULL`
 
   Output Parameter:
 . dm - the new `DMSTAG` object
@@ -45,7 +45,7 @@
 
 .seealso: [](ch_stag), `DMSTAG`, `DMStagCreate1d()`, `DMStagCreate3d()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`
 @*/
-PETSC_EXTERN PetscErrorCode DMStagCreate2d(MPI_Comm comm, DMBoundaryType bndx, DMBoundaryType bndy, PetscInt M, PetscInt N, PetscInt m, PetscInt n, PetscInt dof0, PetscInt dof1, PetscInt dof2, DMStagStencilType stencilType, PetscInt stencilWidth, const PetscInt lx[], const PetscInt ly[], DM *dm)
+PetscErrorCode DMStagCreate2d(MPI_Comm comm, DMBoundaryType bndx, DMBoundaryType bndy, PetscInt M, PetscInt N, PetscInt m, PetscInt n, PetscInt dof0, PetscInt dof1, PetscInt dof2, DMStagStencilType stencilType, PetscInt stencilWidth, const PetscInt lx[], const PetscInt ly[], DM *dm)
 {
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, dm));

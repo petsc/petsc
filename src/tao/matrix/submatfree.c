@@ -1,7 +1,7 @@
 #include <petsctao.h> /*I "petsctao.h" I*/
 #include <../src/tao/matrix/submatfree.h>
 
-/*@C
+/*@
   MatCreateSubMatrixFree - Creates a reduced matrix by masking a
   full matrix.
 
@@ -19,6 +19,9 @@
 
   Note:
   The caller is responsible for destroying the input objects after matrix J has been destroyed.
+
+  Developer Note:
+  This should be moved/supported in `Mat`
 
 .seealso: `MatCreate()`
 @*/

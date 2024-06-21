@@ -23,7 +23,6 @@ contains
     else
        res = 1
     end if
-    return
   end subroutine CompareIntegers
 end module ex49fmodule
 

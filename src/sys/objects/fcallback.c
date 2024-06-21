@@ -37,7 +37,7 @@ static PetscErrorCode PetscFortranCallbackFinalize(void)
   PetscFortranCallbackRegister - register a type+subtype callback. This is used by the PETSc Fortran stubs to allow the use of user Fortran functions
   as arguments to PETSc functions that take function pointers
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + classid - ID of class on which to register callback
@@ -100,7 +100,7 @@ PetscErrorCode PetscFortranCallbackRegister(PetscClassId classid, const char *su
 /*@C
   PetscFortranCallbackGetSizes - get sizes of class and subtype pointer arrays
 
-  Collective
+  Collective, No Fortran Support
 
   Input Parameter:
 . classid - class Id

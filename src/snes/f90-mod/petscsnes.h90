@@ -41,47 +41,4 @@
       end subroutine
       end Interface
 #endif
-      Interface
-      subroutine SNESSetType(a,b,ierr)
-      import tSNES
-       SNES, intent(in) :: a
-       character(*), intent(in) :: b
-       PetscErrorCode, intent(out) :: ierr
-      end subroutine
-      end Interface
-
-      Interface
-      subroutine SNESGetType(a,b,ierr)
-      import tSNES
-       SNES, intent(in) :: a
-       character(*), intent(out) :: b
-       PetscErrorCode, intent(out) :: ierr
-      end subroutine
-      end Interface
-
-      Interface
-      subroutine SNESView(a,b,z)
-      import tSNES,tPetscViewer
-       SNES a
-       PetscViewer b
-       PetscErrorCode z
-      end subroutine
-      end Interface
-
-      Interface
-      subroutine SNESSetOptionsPrefix(snes,prefix,ierr)
-       import tSNES
-       SNES, intent(in) :: snes
-       character(*), intent(in) :: prefix
-       PetscErrorCode, intent(out) :: ierr
-      end subroutine SNESSetOptionsPrefix
-      end Interface
-
-      interface
-        subroutine SNESDestroy(a,z)
-          import tSNES
-          SNES a
-          PetscErrorCode z
-        end subroutine
-      end interface
 

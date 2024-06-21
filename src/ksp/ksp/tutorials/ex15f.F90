@@ -76,8 +76,8 @@
       PetscCallA(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr))
       PetscCallA(MatSetType(A, MATAIJ,ierr))
       PetscCallA(MatSetFromOptions(A,ierr))
-      PetscCallA(MatMPIAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,five,PETSC_NULL_INTEGER,ierr))
-      PetscCallA(MatSeqAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,ierr))
+      PetscCallA(MatMPIAIJSetPreallocation(A,five,PETSC_NULL_INTEGER_ARRAY,five,PETSC_NULL_INTEGER_ARRAY,ierr))
+      PetscCallA(MatSeqAIJSetPreallocation(A,five,PETSC_NULL_INTEGER_ARRAY,ierr))
 
 !  Currently, all PETSc parallel matrix formats are partitioned by
 !  contiguous chunks of rows across the processors.  Determine which
@@ -99,22 +99,22 @@
         j = II - i*n
         if (i.gt.0) then
           JJ = II - n
-          PetscCallA(MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr))
+          PetscCallA(MatSetValues(A,i1,[II],i1,[JJ],[v],ADD_VALUES,ierr))
         endif
         if (i.lt.m-1) then
           JJ = II + n
-          PetscCallA(MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr))
+          PetscCallA(MatSetValues(A,i1,[II],i1,[JJ],[v],ADD_VALUES,ierr))
         endif
         if (j.gt.0) then
           JJ = II - 1
-          PetscCallA(MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr))
+          PetscCallA(MatSetValues(A,i1,[II],i1,[JJ],[v],ADD_VALUES,ierr))
         endif
         if (j.lt.n-1) then
           JJ = II + 1
-          PetscCallA(MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr))
+          PetscCallA(MatSetValues(A,i1,[II],i1,[JJ],[v],ADD_VALUES,ierr))
         endif
         v = 4.0
-        PetscCallA( MatSetValues(A,i1,II,i1,II,v,ADD_VALUES,ierr))
+        PetscCallA( MatSetValues(A,i1,[II],i1,[II],[v],ADD_VALUES,ierr))
  10   continue
 
 !  Assemble matrix, using the 2-step process:
@@ -259,7 +259,6 @@
 !
       subroutine SampleShellPCSetUp(pc,ierr)
       use ex15fmodule
-      use petscksp
       implicit none
 
       PC      pc

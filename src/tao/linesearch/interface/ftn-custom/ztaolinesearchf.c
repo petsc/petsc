@@ -6,18 +6,12 @@
   #define taolinesearchsetgradientroutine_             TAOLINESEARCHSETGRADIENTROUTINE
   #define taolinesearchsetobjectiveandgradientroutine_ TAOLINESEARCHSETOBJECTIVEANDGRADIENTROUTINE
   #define taolinesearchsetobjectiveandgtsroutine_      TAOLINESEARCHSETOBJECTIVEANDGTSROUTINE
-  #define taolinesearchview_                           TAOLINESEARCHVIEW
-  #define taolinesearchsettype_                        TAOLINESEARCHSETTYPE
-  #define taolinesearchviewfromoptions_                TAOLINESEARCHVIEWFROMOPTIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 
   #define taolinesearchsetobjectiveroutine_            taolinesearchsetobjectiveroutine
   #define taolinesearchsetgradientroutine_             taolinesearchsetgradientroutine
   #define taolinesearchsetobjectiveandgradientroutine_ taolinesearchsetobjectiveandgradientroutine
   #define taolinesearchsetobjectiveandgtsroutine_      taolinesearchsetobjectiveandgtsroutine
-  #define taolinesearchview_                           taolinesearchview
-  #define taolinesearchsettype_                        taolinesearchsettype
-  #define taolinesearchviewfromoptions_                taolinesearchviewfromoptions
 #endif
 
 static int    OBJ     = 0;
@@ -92,68 +86,4 @@ PETSC_EXTERN void taolinesearchsetobjectiveandgtsroutine_(TaoLineSearch *ls, voi
     ((PetscObject)*ls)->fortran_func_pointers[OBJGTS] = (PetscVoidFn *)func;
     *ierr                                             = TaoLineSearchSetObjectiveAndGTSRoutine(*ls, ourtaolinesearchobjectiveandgtsroutine, ctx);
   }
-}
-
-PETSC_EXTERN void taolinesearchsettype_(TaoLineSearch *ls, char *type_name, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-
-{
-  char *t;
-
-  FIXCHAR(type_name, len, t);
-  *ierr = TaoLineSearchSetType(*ls, t);
-  if (*ierr) return;
-  FREECHAR(type_name, t);
-}
-
-PETSC_EXTERN void taolinesearchview_(TaoLineSearch *ls, PetscViewer *viewer, PetscErrorCode *ierr)
-{
-  PetscViewer v;
-  PetscPatchDefaultViewers_Fortran(viewer, v);
-  *ierr = TaoLineSearchView(*ls, v);
-}
-
-PETSC_EXTERN void taolinesearchgetoptionsprefix_(TaoLineSearch *ls, char *prefix, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  const char *name;
-  *ierr = TaoLineSearchGetOptionsPrefix(*ls, &name);
-  *ierr = PetscStrncpy(prefix, name, len);
-  if (*ierr) return;
-  FIXRETURNCHAR(PETSC_TRUE, prefix, len);
-}
-
-PETSC_EXTERN void taolinesearchappendoptionsprefix_(TaoLineSearch *ls, char *prefix, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *name;
-  FIXCHAR(prefix, len, name);
-  *ierr = TaoLineSearchAppendOptionsPrefix(*ls, name);
-  if (*ierr) return;
-  FREECHAR(prefix, name);
-}
-
-PETSC_EXTERN void taolinesearchsetoptionsprefix_(TaoLineSearch *ls, char *prefix, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-  FIXCHAR(prefix, len, t);
-  *ierr = TaoLineSearchSetOptionsPrefix(*ls, t);
-  if (*ierr) return;
-  FREECHAR(prefix, t);
-}
-
-PETSC_EXTERN void taolinesearchgettype_(TaoLineSearch *ls, char *name, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  const char *tname;
-  *ierr = TaoLineSearchGetType(*ls, &tname);
-  *ierr = PetscStrncpy(name, tname, len);
-  if (*ierr) return;
-  FIXRETURNCHAR(PETSC_TRUE, name, len);
-}
-PETSC_EXTERN void taolinesearchviewfromoptions_(TaoLineSearch *ao, PetscObject obj, char *type, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-
-  FIXCHAR(type, len, t);
-  CHKFORTRANNULLOBJECT(obj);
-  *ierr = TaoLineSearchViewFromOptions(*ao, obj, t);
-  if (*ierr) return;
-  FREECHAR(type, t);
 }

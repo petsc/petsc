@@ -140,14 +140,14 @@ PetscErrorCode MyComputeFunction(SNES snes, Vec x, Vec F, void *ctx)
 
   PetscFunctionBeginUser;
   PetscCall(SNESGetDM(snes, &dm));
-  PetscCall(DMGetApplicationContext(dm, &J));
+  PetscCall(PetscObjectQuery((PetscObject)dm, "_ex35_J", (PetscObject *)&J));
   if (!J) {
     PetscCall(DMSetMatType(dm, MATAIJ));
     PetscCall(DMCreateMatrix(dm, &J));
     PetscCall(MatSetDM(J, NULL));
     PetscCall(FormMatrix(dm, J));
-    PetscCall(DMSetApplicationContext(dm, J));
-    PetscCall(DMSetApplicationContextDestroy(dm, (PetscErrorCode(*)(void **))MatDestroy));
+    PetscCall(PetscObjectCompose((PetscObject)dm, "_ex35_J", (PetscObject)J));
+    PetscCall(PetscObjectDereference((PetscObject)J));
   }
   PetscCall(MatMult(J, x, F));
   PetscFunctionReturn(PETSC_SUCCESS);

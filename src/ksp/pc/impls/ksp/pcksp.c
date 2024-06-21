@@ -230,30 +230,29 @@ static PetscErrorCode PCSetFromOptions_KSP(PC pc, PetscOptionItems *PetscOptions
 }
 
 /*MC
-     PCKSP -    Defines a preconditioner as any `KSP` solver.
-                 This allows, for example, embedding a Krylov method inside a preconditioner.
+   PCKSP - Defines a preconditioner as any `KSP` solver. This allows, for example, embedding a Krylov method inside a preconditioner.
 
    Options Database Key:
-.   -pc_use_amat - use the matrix that defines the linear system, Amat as the matrix for the
-                    inner solver, otherwise by default it uses the matrix used to construct
-                    the preconditioner, Pmat (see `PCSetOperators()`)
+.  -pc_use_amat - use the matrix that defines the linear system, Amat as the matrix for the
+                  inner solver, otherwise by default it uses the matrix used to construct
+                  the preconditioner, Pmat (see `PCSetOperators()`)
 
    Level: intermediate
 
    Note:
-    The application of an inexact Krylov solve is a nonlinear operation. Thus, performing a solve with `KSP` is,
-    in general, a nonlinear operation, so `PCKSP` is in general a nonlinear preconditioner.
-    Thus, one can see divergence or an incorrect answer unless using a flexible Krylov method (e.g. `KSPFGMRES`, `KSPGCR`, or `KSPFCG`) for the outer Krylov solve.
+   The application of an inexact Krylov solve is a nonlinear operation. Thus, performing a solve with `KSP` is,
+   in general, a nonlinear operation, so `PCKSP` is in general a nonlinear preconditioner.
+   Thus, one can see divergence or an incorrect answer unless using a flexible Krylov method (e.g. `KSPFGMRES`, `KSPGCR`, or `KSPFCG`) for the outer Krylov solve.
 
    Developer Note:
-    If the outer Krylov method has a nonzero initial guess it will compute a new residual based on that initial guess
-    and pass that as the right-hand side into this `KSP` (and hence this `KSP` will always have a zero initial guess). For all outer Krylov methods
-    except Richardson this is necessary since Krylov methods, even the flexible ones, need to "see" the result of the action of the preconditioner on the
-    input (current residual) vector, the action of the preconditioner cannot depend also on some other vector (the "initial guess"). For
-    `KSPRICHARDSON` it is possible to provide a `PCApplyRichardson_PCKSP()` that short circuits returning to the `KSP` object at each iteration to compute the
-    residual, see for example `PCApplyRichardson_SOR()`. We do not implement a `PCApplyRichardson_PCKSP()`  because (1) using a `KSP` directly inside a Richardson
-    is not an efficient algorithm anyways and (2) implementing it for its > 1 would essentially require that we implement Richardson (reimplementing the
-    Richardson code) inside the `PCApplyRichardson_PCKSP()` leading to duplicate code.
+   If the outer Krylov method has a nonzero initial guess it will compute a new residual based on that initial guess
+   and pass that as the right-hand side into this `KSP` (and hence this `KSP` will always have a zero initial guess). For all outer Krylov methods
+   except Richardson this is necessary since Krylov methods, even the flexible ones, need to "see" the result of the action of the preconditioner on the
+   input (current residual) vector, the action of the preconditioner cannot depend also on some other vector (the "initial guess"). For
+   `KSPRICHARDSON` it is possible to provide a `PCApplyRichardson_PCKSP()` that short circuits returning to the `KSP` object at each iteration to compute the
+   residual, see for example `PCApplyRichardson_SOR()`. We do not implement a `PCApplyRichardson_PCKSP()`  because (1) using a `KSP` directly inside a Richardson
+   is not an efficient algorithm anyways and (2) implementing it for its > 1 would essentially require that we implement Richardson (reimplementing the
+   Richardson code) inside the `PCApplyRichardson_PCKSP()` leading to duplicate code.
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
           `PCSHELL`, `PCCOMPOSITE`, `PCSetUseAmat()`, `PCKSPGetKSP()`, `KSPFGMRES`, `KSPGCR`, `KSPFCG`

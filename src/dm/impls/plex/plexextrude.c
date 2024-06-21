@@ -1,7 +1,7 @@
 #include <petsc/private/dmpleximpl.h> /*I      "petscdmplex.h"   I*/
 #include <petscdmplextransform.h>
 
-/*@C
+/*@
   DMPlexExtrude - Extrude a volumetric mesh from the input surface mesh
 
   Input Parameters:
@@ -11,8 +11,8 @@
 . tensor      - Flag to create tensor produt cells
 . symmetric   - Flag to extrude symmetrically about the surface
 . periodic    - Flag to extrude periodically
-. normal      - Surface normal vector, or NULL
-- thicknesses - Thickness of each layer, or NULL
+. normal      - Surface normal vector, or `NULL`
+- thicknesses - Thickness of each layer, or `NULL`
 
   Output Parameter:
 . edm - The volumetric mesh

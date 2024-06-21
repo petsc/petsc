@@ -29,7 +29,7 @@ PetscErrorCode PetscGetVersion(char version[], size_t len)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGetVersionNumber - Gets the PETSc version information from the library
 
   Not Collective

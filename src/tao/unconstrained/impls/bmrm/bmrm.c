@@ -18,6 +18,7 @@ static PetscErrorCode solve(TAO_DF *df)
   PetscReal **Q = df->Q, *f = df->f, *t = df->t;
   PetscInt    dim = df->dim, *ipt = df->ipt, *ipt2 = df->ipt2, *uv = df->uv;
 
+  PetscCheck(dim >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected dim %" PetscInt_FMT " >= 0", dim);
   /* variables for the adaptive nonmonotone linesearch */
   PetscInt  L, llast;
   PetscReal fr, fbest, fv, fc, fv0;

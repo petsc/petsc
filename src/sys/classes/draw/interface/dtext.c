@@ -1,6 +1,6 @@
 #include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 
-/*@C
+/*@
   PetscDrawString - draws text onto a drawable.
 
   Not Collective
@@ -27,7 +27,7 @@ PetscErrorCode PetscDrawString(PetscDraw draw, PetscReal xl, PetscReal yl, int c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawStringVertical - draws text onto a drawable.
 
   Not Collective
@@ -62,7 +62,7 @@ PetscErrorCode PetscDrawStringVertical(PetscDraw draw, PetscReal xl, PetscReal y
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawStringCentered - draws text onto a drawable centered at a point
 
   Not Collective
@@ -95,7 +95,7 @@ PetscErrorCode PetscDrawStringCentered(PetscDraw draw, PetscReal xc, PetscReal y
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawStringBoxed - Draws a string with a box around it
 
   Not Collective

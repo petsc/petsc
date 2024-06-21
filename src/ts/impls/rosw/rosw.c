@@ -128,6 +128,33 @@ M*/
 M*/
 
 /*MC
+     TSROSWR34PRW - Four stage third order L-stable Rosenbrock-W scheme for PDAE of index 1 {cite}`rang2015improved`.
+
+     Only an approximate Jacobian is needed. By default, it is only recomputed once per step.
+
+     This is strongly A-stable with R(infty) = 0. The embedded method of order 2 is strongly A-stable with R(infty) = 0.25.
+     This method is B_{PR} consistent of order 3.
+     This method is spelled "ROS34PRw" in the paper, an improvement to an earlier "ROS34PRW" method from the same author with B_{PR} order 2.
+
+     Level: intermediate
+
+.seealso: [](ch_ts), `TSROSW`
+M*/
+
+/*MC
+     TSROSWR3PRL2 - Four stage third order L-stable Rosenbrock-W scheme for PDAE of index 1 {cite}`rang2015improved`.
+
+     Only an approximate Jacobian is needed. By default, it is only recomputed once per step.
+
+     This is strongly A-stable with R(infty) = 0. The embedded method of order 2 is strongly A-stable with R(infty) = 0.25.
+     This method is B_{PR} consistent of order 3.
+
+     Level: intermediate
+
+.seealso: [](ch_ts), `TSROSW`
+M*/
+
+/*MC
      TSROSWRODAS3 - Four stage third order L-stable Rosenbrock scheme {cite}`sandu_1997`
 
      By default, the Jacobian is only recomputed once per step.
@@ -137,6 +164,39 @@ M*/
      Level: intermediate
 
 .seealso: [](ch_ts), `TSROSW`, `TSROSWSANDU3`
+M*/
+
+/*MC
+     TSROSWRODASPR - Six stage fourth order L-stable Rosenbrock scheme {cite}`rang2015improved`
+
+     By default, the Jacobian is only recomputed once per step.
+
+     Both the fourth order and embedded third order methods are stiffly accurate and L-stable.
+     The method is B_{PR} consistent of order 3, which ensures convergence order for non-stiff, medium stiff, and stiff problems.
+
+     Level: intermediate
+
+.seealso: [](ch_ts), `TSROSW`, `TSROSWR34PRW`, `TSROSWR3PRL2`
+M*/
+
+/*MC
+     TSROSWRODASPR2 - Six stage fourth order L-stable Rosenbrock scheme {cite}`rang2015improved`
+
+     By default, the Jacobian is only recomputed once per step.
+
+     Both the fourth order and embedded third order methods are stiffly accurate and L-stable.
+     The method is B_{PR} consistent of order 3, which ensures convergence order for non-stiff, medium stiff, and stiff problems.
+     This method is similar to `TSROSWRODASPR`, but satisfies one extra B_{PR} order condition.
+
+     Developer Note:
+     In numerical experiments with ts/tutorials/ex22.c, I (Jed) find this to produce surprisingly poor results.
+     Although the coefficients pass basic smoke tests, I'm not confident it was tabulated correctly in the paper.
+     It would be informative if someone could reproduce tests from the paper and/or reach out to the author to understand why it fails on this test problem.
+     If the method is implemented correctly, doing so might shed light on an additional analysis lens (or further conditions) for robustness on such problems.
+
+     Level: intermediate
+
+.seealso: [](ch_ts), `TSROSW`, `TSROSWRODASPR`
 M*/
 
 /*MC
@@ -390,6 +450,44 @@ PetscErrorCode TSRosWRegisterAll(void)
     PetscCall(TSRosWRegister(TSROSWRA34PW2, 3, 4, &A[0][0], &Gamma[0][0], b, b2, 3, &binterpt[0][0]));
   }
   {
+    /* const PetscReal g = 4.3586652150845900e-01;       Directly written in-place below */
+    const PetscReal A[4][4] = {
+      {0,                      0,                       0,                       0},
+      {8.7173304301691801e-01, 0,                       0,                       0},
+      {1.4722022879435914e+00, -3.1840250568090289e-01, 0,                       0},
+      {8.1505192016694938e-01, 5.0000000000000000e-01,  -3.1505192016694938e-01, 0}
+    };
+    const PetscReal Gamma[4][4] = {
+      {4.3586652150845900e-01,  0,                      0,                       0                     },
+      {-8.7173304301691801e-01, 4.3586652150845900e-01, 0,                       0                     },
+      {-1.2855347382089872e+00, 5.0507005541550687e-01, 4.3586652150845900e-01,  0                     },
+      {-4.8201449182864348e-01, 2.1793326075422950e-01, -1.7178529043404503e-01, 4.3586652150845900e-01}
+    };
+    const PetscReal b[4]  = {3.3303742833830591e-01, 7.1793326075422947e-01, -4.8683721060099439e-01, 4.3586652150845900e-01};
+    const PetscReal b2[4] = {2.5000000000000000e-01, 7.4276119608319180e-01, -3.1472922970066219e-01, 3.2196803361747034e-01};
+
+    PetscCall(TSRosWRegister(TSROSWR34PRW, 3, 4, &A[0][0], &Gamma[0][0], b, b2, 0, NULL));
+  }
+  {
+    /* const PetscReal g = 4.3586652150845900e-01;       Directly written in-place below */
+    const PetscReal A[4][4] = {
+      {0,                      0,   0, 0},
+      {1.3075995645253771e+00, 0,   0, 0},
+      {0.5,                    0.5, 0, 0},
+      {0.5,                    0.5, 0, 0}
+    };
+    const PetscReal Gamma[4][4] = {
+      {4.3586652150845900e-01,  0,                       0,                      0                     },
+      {-1.3075995645253771e+00, 4.3586652150845900e-01,  0,                      0                     },
+      {-7.0988575860972170e-01, -5.5996735960277766e-01, 4.3586652150845900e-01, 0                     },
+      {-1.5550856807552085e-01, -9.5388516575112225e-01, 6.7352721231818413e-01, 4.3586652150845900e-01}
+    };
+    const PetscReal b[4]  = {3.4449143192447917e-01, -4.5388516575112231e-01, 6.7352721231818413e-01, 4.3586652150845900e-01};
+    const PetscReal b2[4] = {5.0000000000000000e-01, -2.5738812086522078e-01, 4.3542008724775044e-01, 3.2196803361747034e-01};
+
+    PetscCall(TSRosWRegister(TSROSWR3PRL2, 3, 4, &A[0][0], &Gamma[0][0], b, b2, 0, NULL));
+  }
+  {
     /* const PetscReal g = 0.5;       Directly written in-place below */
     const PetscReal A[4][4] = {
       {0,    0,     0,   0},
@@ -407,6 +505,52 @@ PetscErrorCode TSRosWRegisterAll(void)
     const PetscReal b2[4] = {0.75, -0.25, 0.5, 0};
 
     PetscCall(TSRosWRegister(TSROSWRODAS3, 3, 4, &A[0][0], &Gamma[0][0], b, b2, 0, NULL));
+  }
+  {
+    /* const PetscReal g = 0.25;       Directly written in-place below */
+    const PetscReal A[6][6] = {
+      {0,                       0,                       0,                       0,                       0,    0},
+      {0.75,                    0,                       0,                       0,                       0,    0},
+      {7.5162877593868457e-02,  2.4837122406131545e-02,  0,                       0,                       0,    0},
+      {1.6532708886396510e+00,  2.1545706385445562e-01,  -1.3157488872766792e+00, 0,                       0,    0},
+      {1.9385003738039885e+01,  1.2007117225835324e+00,  -1.9337924059522791e+01, -2.4779140110062559e-01, 0,    0},
+      {-7.3844531665375115e+00, -3.0593419030174646e-01, 7.8622074209377981e+00,  5.7817993590145966e-01,  0.25, 0}
+    };
+    const PetscReal Gamma[6][6] = {
+      {0.25,                    0,                       0,                       0,                       0,                       0   },
+      {-7.5000000000000000e-01, 0.25,                    0,                       0,                       0,                       0   },
+      {-8.8644359075349941e-02, -2.8688974257983398e-02, 0.25,                    0,                       0,                       0   },
+      {-4.8470034585330284e+00, -3.1583244269672095e-01, 4.9536568360123221e+00,  0.25,                    0,                       0   },
+      {-2.6769456904577400e+01, -1.5066459128852787e+00, 2.7200131480460591e+01,  8.2597133700208525e-01,  0.25,                    0   },
+      {6.5876206496361416e+00,  3.6807059172993878e-01,  -6.7423520694658121e+00, -1.0619631475741095e-01, -3.5714285714285715e-01, 0.25}
+    };
+    const PetscReal b[6]  = {-7.9683251690137014e-01, 6.2136401428192344e-02, 1.1198553514719862e+00, 4.7198362114404874e-01, -1.0714285714285714e-01, 0.25};
+    const PetscReal b2[6] = {-7.3844531665375115e+00, -3.0593419030174646e-01, 7.8622074209377981e+00, 5.7817993590145966e-01, 0.25, 0.0};
+
+    PetscCall(TSRosWRegister(TSROSWRODASPR, 4, 6, &A[0][0], &Gamma[0][0], b, b2, 0, NULL));
+  }
+  {
+    /* const PetscReal g = 0.3125;       Directly written in-place below */
+    const PetscReal A[6][6] = {
+      {0,                       0,                       0,                       0,                      0,                      0},
+      {9.3750000000000000e-01,  0,                       0,                       0,                      0,                      0},
+      {-4.7145892646261345e-02, 5.4531286650471122e-01,  0,                       0,                      0,                      0},
+      {4.6915543899742240e-01,  4.4490537602383673e-01,  -2.2498239334061121e-01, 0,                      0,                      0},
+      {1.0950372887345903e+00,  6.3223023457294381e-01,  -8.9232966090485821e-01, 1.6506213759732410e-01, 0,                      0},
+      {-1.7746585073632790e-01, -5.8241418952602364e-01, 6.8180612588238165e-01,  7.6557391437996980e-01, 3.1250000000000000e-01, 0}
+    };
+    const PetscReal Gamma[6][6] = {
+      {0.3125,                  0,                       0,                       0,                      0,                       0     },
+      {-9.3750000000000000e-01, 0.3125,                  0,                       0,                      0,                       0     },
+      {-9.7580572085994507e-02, -5.8666328499964138e-01, 0.3125,                  0,                      0,                       0     },
+      {-4.9407065013256957e-01, -5.6819726428975503e-01, 5.0318949274167679e-01,  0.3125,                 0,                       0     },
+      {-1.2725031394709183e+00, -1.2146444240989676e+00, 1.5741357867872399e+00,  6.0051177678264578e-01, 0.3125,                  0     },
+      {6.9690744901421153e-01,  6.2237005730756434e-01,  -1.1553701989197045e+00, 1.8350029013386296e-01, -6.5990759753593431e-01, 0.3125}
+    };
+    const PetscReal b[6]  = {5.1944159827788361e-01, 3.9955867781540699e-02, -4.7356407303732290e-01, 9.4907420451383284e-01, -3.4740759753593431e-01, 0.3125};
+    const PetscReal b2[6] = {-1.7746585073632790e-01, -5.8241418952602364e-01, 6.8180612588238165e-01, 7.6557391437996980e-01, 0.3125, 0};
+
+    PetscCall(TSRosWRegister(TSROSWRODASPR2, 4, 6, &A[0][0], &Gamma[0][0], b, b2, 0, NULL));
   }
   {
     /*const PetscReal g = 0.43586652150845899941601945119356;       Directly written in-place below */
@@ -1444,7 +1588,7 @@ static PetscErrorCode TSLoad_RosW(TS ts, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRosWSetType - Set the type of Rosenbrock-W, `TSROSW`, scheme
 
   Logically Collective
@@ -1466,7 +1610,7 @@ PetscErrorCode TSRosWSetType(TS ts, TSRosWType roswtype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRosWGetType - Get the type of Rosenbrock-W scheme
 
   Logically Collective
@@ -1489,7 +1633,7 @@ PetscErrorCode TSRosWGetType(TS ts, TSRosWType *rostype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRosWSetRecomputeJacobian - Set whether to recompute the Jacobian at each stage. The default is to update the Jacobian once per step.
 
   Logically Collective

@@ -8,7 +8,7 @@
 #include <petsc/private/kspimpl.h>
 
 typedef struct {
-  PetscInt   nsmooths;
+  PetscInt   nsmooths;                     // number of smoothing steps to construct prolongation
   PetscInt   aggressive_coarsening_levels; // number of aggressive coarsening levels (square or MISk)
   PetscInt   aggressive_mis_k;             // the k in MIS-k
   PetscBool  use_aggressive_square_graph;
@@ -18,7 +18,7 @@ typedef struct {
 } PC_GAMG_AGG;
 
 /*@
-  PCGAMGSetNSmooths - Set number of smoothing steps (1 is typical) used for multigrid on all the levels
+  PCGAMGSetNSmooths - Set number of smoothing steps (1 is typical) used to construct the prolongation operator
 
   Logically Collective
 
@@ -27,11 +27,18 @@ typedef struct {
 - n  - the number of smooths
 
   Options Database Key:
-. -pc_gamg_agg_nsmooths <nsmooth, default=1> - number of smoothing steps to use with smooth aggregation
+. -pc_gamg_agg_nsmooths <nsmooth, default=1> - number of smoothing steps to use
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `PCMG`, `PCGAMG`
+  Note:
+  This is a different concept from the number smoothing steps used during the linear solution process which
+  can be set with `-mg_levels_ksp_max_it`
+
+  Developer Note:
+  This should be named `PCGAMGAGGSetNSmooths()`.
+
+.seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCMG`, `PCGAMG`
 @*/
 PetscErrorCode PCGAMGSetNSmooths(PC pc, PetscInt n)
 {
@@ -63,11 +70,11 @@ static PetscErrorCode PCGAMGSetNSmooths_AGG(PC pc, PetscInt n)
 - n  - 0, 1 or more
 
   Options Database Key:
-. -pc_gamg_aggressive_coarsening <n,default = 1> - Number of levels to square the graph on before aggregating it
+. -pc_gamg_aggressive_coarsening <n,default = 1> - Number of levels on which to square the graph on before aggregating it
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGMISkSetAggressive()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGMISkSetMinDegreeOrdering()`, `PCGAMGSetLowMemoryFilter()`
+.seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGMISkSetAggressive()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGMISkSetMinDegreeOrdering()`, `PCGAMGSetLowMemoryFilter()`
 @*/
 PetscErrorCode PCGAMGSetAggressiveLevels(PC pc, PetscInt n)
 {
@@ -92,7 +99,7 @@ PetscErrorCode PCGAMGSetAggressiveLevels(PC pc, PetscInt n)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGMISkSetMinDegreeOrdering()`, `PCGAMGSetLowMemoryFilter()`
+.seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGMISkSetMinDegreeOrdering()`, `PCGAMGSetLowMemoryFilter()`
 @*/
 PetscErrorCode PCGAMGMISkSetAggressive(PC pc, PetscInt n)
 {
@@ -117,7 +124,7 @@ PetscErrorCode PCGAMGMISkSetAggressive(PC pc, PetscInt n)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGMISkSetAggressive()`, `PCGAMGMISkSetMinDegreeOrdering()`, `PCGAMGSetLowMemoryFilter()`
+.seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGMISkSetAggressive()`, `PCGAMGMISkSetMinDegreeOrdering()`, `PCGAMGSetLowMemoryFilter()`
 @*/
 PetscErrorCode PCGAMGSetAggressiveSquareGraph(PC pc, PetscBool b)
 {
@@ -142,7 +149,7 @@ PetscErrorCode PCGAMGSetAggressiveSquareGraph(PC pc, PetscBool b)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGMISkSetAggressive()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGSetLowMemoryFilter()`
+.seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGMISkSetAggressive()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGSetLowMemoryFilter()`
 @*/
 PetscErrorCode PCGAMGMISkSetMinDegreeOrdering(PC pc, PetscBool b)
 {
@@ -167,7 +174,8 @@ PetscErrorCode PCGAMGMISkSetMinDegreeOrdering(PC pc, PetscBool b)
 
   Level: intermediate
 
-.seealso: `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGMISkSetAggressive()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGMISkSetMinDegreeOrdering()`
+.seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`,
+  `PCGAMGMISkSetAggressive()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGMISkSetMinDegreeOrdering()`
 @*/
 PetscErrorCode PCGAMGSetLowMemoryFilter(PC pc, PetscBool b)
 {
@@ -243,7 +251,7 @@ static PetscErrorCode PCSetFromOptions_GAMG_AGG(PC pc, PetscOptionItems *PetscOp
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "GAMG-AGG options");
-  PetscCall(PetscOptionsInt("-pc_gamg_agg_nsmooths", "smoothing steps for smoothed aggregation, usually 1", "PCGAMGSetNSmooths", pc_gamg_agg->nsmooths, &pc_gamg_agg->nsmooths, NULL));
+  PetscCall(PetscOptionsInt("-pc_gamg_agg_nsmooths", "number of smoothing steps to construct prolongation, usually 1", "PCGAMGSetNSmooths", pc_gamg_agg->nsmooths, &pc_gamg_agg->nsmooths, NULL));
   // aggressive coarsening logic with deprecated -pc_gamg_square_graph
   PetscCall(PetscOptionsInt("-pc_gamg_aggressive_coarsening", "Number of aggressive coarsening (MIS-2) levels from finest", "PCGAMGSetAggressiveLevels", pc_gamg_agg->aggressive_coarsening_levels, &pc_gamg_agg->aggressive_coarsening_levels, &n_aggressive_flg));
   if (!n_aggressive_flg)
@@ -264,10 +272,12 @@ static PetscErrorCode PCSetFromOptions_GAMG_AGG(PC pc, PetscOptionItems *PetscOp
 
 static PetscErrorCode PCDestroy_GAMG_AGG(PC pc)
 {
-  PC_MG   *mg      = (PC_MG *)pc->data;
-  PC_GAMG *pc_gamg = (PC_GAMG *)mg->innerctx;
+  PC_MG       *mg          = (PC_MG *)pc->data;
+  PC_GAMG     *pc_gamg     = (PC_GAMG *)mg->innerctx;
+  PC_GAMG_AGG *pc_gamg_agg = (PC_GAMG_AGG *)pc_gamg->subctx;
 
   PetscFunctionBegin;
+  PetscCall(MatCoarsenDestroy(&pc_gamg_agg->crs));
   PetscCall(PetscFree(pc_gamg->subctx));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetNSmooths_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetAggressiveLevels_C", NULL));
@@ -323,6 +333,7 @@ static PetscErrorCode PCSetCoordinates_AGG(PC pc, PetscInt ndm, PetscInt a_nloc,
   for (kk = 0; kk < nloc; kk++) {
     const PetscInt M    = nloc * pc_gamg->data_cell_rows; /* stride into data */
     PetscReal     *data = &pc_gamg->data[kk * ndatarows]; /* start of cell */
+
     if (pc_gamg->data_cell_cols == 1) *data = 1.0;
     else {
       /* translational modes */
@@ -377,6 +388,7 @@ static PetscErrorCode PCSetData_AGG(PC pc, Mat a_A)
   PetscCall(MatGetNearNullSpace(a_A, &mnull));
   if (!mnull) {
     DM dm;
+
     PetscCall(PCGetDM(pc, &dm));
     if (!dm) PetscCall(MatGetDM(a_A, &dm));
     if (dm) {
@@ -394,6 +406,7 @@ static PetscErrorCode PCSetData_AGG(PC pc, Mat a_A)
 
   if (!mnull) {
     PetscInt bs, NN, MM;
+
     PetscCall(MatGetBlockSize(a_A, &bs));
     PetscCall(MatGetLocalSize(a_A, &MM, &NN));
     PetscCheck(MM % bs == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "MM %" PetscInt_FMT " must be divisible by bs %" PetscInt_FMT, MM, bs);
@@ -467,6 +480,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
   /* count selected -- same as number of cols of P */
   for (nSelected = mm = 0; mm < nloc; mm++) {
     PetscBool ise;
+
     PetscCall(PetscCDIsEmptyAt(agg_llists, mm, &ise));
     if (!ise) nSelected++;
   }
@@ -504,6 +518,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
       PetscCall(PetscCDGetHeadPos(agg_llists, lid, &pos));
       while (pos) {
         PetscInt gid1;
+
         PetscCall(PetscCDIntNdGetID(pos, &gid1));
         PetscCall(PetscCDGetNextPos(agg_llists, lid, &pos));
 
@@ -516,7 +531,8 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
         data = &data_in[flid * bs];
         for (ii = 0; ii < bs; ii++) {
           for (jj = 0; jj < N; jj++) {
-            PetscReal d                       = data[jj * data_stride + ii];
+            PetscReal d = data[jj * data_stride + ii];
+
             qqc[jj * Mdata + aggID * bs + ii] = d;
           }
         }
@@ -538,6 +554,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
       /* get R - column-oriented - output B_{i+1} */
       {
         PetscReal *data = &out_data[clid * nSAvec];
+
         for (jj = 0; jj < nSAvec; jj++) {
           for (ii = 0; ii < nSAvec; ii++) {
             PetscCheck(data[jj * out_data_stride + ii] == PETSC_MAX_REAL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "data[jj*out_data_stride + ii] != %e", (double)PETSC_MAX_REAL);
@@ -581,7 +598,17 @@ static PetscErrorCode PCView_GAMG_AGG(PC pc, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "        %s aggressive coarsening\n", !pc_gamg_agg->use_aggressive_square_graph ? "MIS-k" : "Square graph"));
     if (!pc_gamg_agg->use_aggressive_square_graph) PetscCall(PetscViewerASCIIPrintf(viewer, "        MIS-%d coarsening on aggressive levels\n", (int)pc_gamg_agg->aggressive_mis_k));
   }
-  PetscCall(PetscViewerASCIIPrintf(viewer, "        Number smoothing steps %d\n", (int)pc_gamg_agg->nsmooths));
+  PetscCall(PetscViewerASCIIPushTab(viewer));
+  PetscCall(PetscViewerASCIIPushTab(viewer));
+  PetscCall(PetscViewerASCIIPushTab(viewer));
+  PetscCall(PetscViewerASCIIPushTab(viewer));
+  if (pc_gamg_agg->crs) PetscCall(MatCoarsenView(pc_gamg_agg->crs, viewer));
+  else PetscCall(PetscViewerASCIIPrintf(viewer, "Coarsening algorithm not yet selected\n"));
+  PetscCall(PetscViewerASCIIPopTab(viewer));
+  PetscCall(PetscViewerASCIIPopTab(viewer));
+  PetscCall(PetscViewerASCIIPopTab(viewer));
+  PetscCall(PetscViewerASCIIPopTab(viewer));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "        Number smoothing steps to construct prolongation %d\n", (int)pc_gamg_agg->nsmooths));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -600,9 +627,11 @@ static PetscErrorCode PCGAMGCreateGraph_AGG(PC pc, Mat Amat, Mat *a_Gmat)
   PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_COARSEN], 0, 0, 0, 0));
   /* Note: depending on the algorithm that will be used for computing the coarse grid points this should pass PETSC_TRUE or PETSC_FALSE as the first argument */
   /* MATCOARSENHEM requires numerical weights for edges so ensure they are computed */
+  PetscCall(MatCoarsenDestroy(&pc_gamg_agg->crs));
   PetscCall(MatCoarsenCreate(PetscObjectComm((PetscObject)pc), &pc_gamg_agg->crs));
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)pc, &prefix));
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)pc_gamg_agg->crs, prefix));
+  PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)pc_gamg_agg->crs, "pc_gamg_"));
   PetscCall(MatCoarsenSetFromOptions(pc_gamg_agg->crs));
   PetscCall(MatGetBlockSize(Amat, &bs));
   // check for valid indices wrt bs
@@ -630,7 +659,7 @@ static PetscErrorCode PCGAMGCreateGraph_AGG(PC pc, Mat Amat, Mat *a_Gmat)
   if (ishem || pc_gamg_agg->use_low_mem_filter) {
     PetscCall(MatCreateGraph(Amat, PETSC_TRUE, (vfilter >= 0 || ishem) ? PETSC_TRUE : PETSC_FALSE, vfilter, pc_gamg_agg->crs->strength_index_size, pc_gamg_agg->crs->strength_index, a_Gmat));
   } else {
-    // make scalar graph, symetrize if not know to be symetric, scale, but do not filter (expensive)
+    // make scalar graph, symetrize if not know to be symmetric, scale, but do not filter (expensive)
     PetscCall(MatCreateGraph(Amat, PETSC_TRUE, PETSC_TRUE, -1, pc_gamg_agg->crs->strength_index_size, pc_gamg_agg->crs->strength_index, a_Gmat));
     if (vfilter >= 0) {
       PetscInt           Istart, Iend, ncols, nnz0, nnz1, NN, MM, nloc;
@@ -664,9 +693,10 @@ static PetscErrorCode PCGAMGCreateGraph_AGG(PC pc, Mat Amat, Mat *a_Gmat)
         b = NULL;
       } else {
         Mat_MPIAIJ *d = (Mat_MPIAIJ *)Gmat->data;
-        a             = d->A;
-        b             = d->B;
-        garray        = d->garray;
+
+        a      = d->A;
+        b      = d->B;
+        garray = d->garray;
       }
       /* Determine upper bound on non-zeros needed in new filtered matrix */
       for (PetscInt row = 0; row < nloc; row++) {
@@ -698,6 +728,7 @@ static PetscErrorCode PCGAMGCreateGraph_AGG(PC pc, Mat Amat, Mat *a_Gmat)
             PetscScalar sv = PetscAbs(PetscRealPart(vals[jj]));
             if (PetscRealPart(sv) > vfilter) {
               PetscInt cid = idx[jj] + Istart; //diag
+
               nnz1++;
               if (c != a) cid = garray[idx[jj]];
               AA[ncol_row] = vals[jj];
@@ -777,11 +808,13 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
     PetscCall(MatCheckCompressedRow(mpimat_1->B, matB_1->nonzerorowcnt, &matB_1->compressedrow, matB_1->i, Gmat_1->rmap->n, -1.0));
     for (ix = 0; ix < matB_1->compressedrow.nrows; ix++) {
       PetscInt lid = matB_1->compressedrow.rindex[ix];
+
       PetscCheck(lid <= nloc && lid >= -1, PETSC_COMM_SELF, PETSC_ERR_USER, "lid %d out of range. nloc = %d", (int)lid, (int)nloc);
       if (lid != -1) lid_cprowID_1[lid] = ix;
     }
   } else {
     PetscBool isAIJ;
+
     PetscCall(PetscStrbeginswith(((PetscObject)Gmat_1)->type_name, MATSEQAIJ, &isAIJ));
     PetscCheck(isAIJ, PETSC_COMM_SELF, PETSC_ERR_USER, "Require AIJ matrix.");
     matA_1 = (Mat_SeqAIJ *)Gmat_1->data;
@@ -796,6 +829,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
   /* set lid_state */
   for (lid = 0; lid < nloc; lid++) {
     PetscCDIntNd *pos;
+
     PetscCall(PetscCDGetHeadPos(aggs_2, lid, &pos));
     if (pos) {
       PetscInt gid1;
@@ -811,9 +845,11 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
     NState state = lid_state[lid];
     if (IS_SELECTED(state)) {
       PetscCDIntNd *pos;
+
       PetscCall(PetscCDGetHeadPos(aggs_2, lid, &pos));
       while (pos) {
         PetscInt gid1;
+
         PetscCall(PetscCDIntNdGetID(pos, &gid1));
         PetscCall(PetscCDGetNextPos(aggs_2, lid, &pos));
         if (gid1 >= my0 && gid1 < Iend) lid_parent_gid[gid1 - my0] = (PetscScalar)(lid + my0);
@@ -827,6 +863,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
     PetscCall(MatCreateVecs(Gmat_1, &tempVec, NULL));
     for (kk = 0, j = my0; kk < nloc; kk++, j++) {
       PetscScalar v = (PetscScalar)lid_state[kk];
+
       PetscCall(VecSetValues(tempVec, 1, &j, &v, INSERT_VALUES));
     }
     PetscCall(VecAssemblyBegin(tempVec));
@@ -841,6 +878,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
     /* get 'cpcol_2_par_orig' */
     for (kk = 0, j = my0; kk < nloc; kk++, j++) {
       PetscScalar v = (PetscScalar)lid_parent_gid[kk];
+
       PetscCall(VecSetValues(tempVec, 1, &j, &v, INSERT_VALUES));
     }
     PetscCall(VecAssemblyBegin(tempVec));
@@ -854,6 +892,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
   } /* ismpi */
   for (lid = 0; lid < nloc; lid++) {
     NState state = lid_state[lid];
+
     if (IS_SELECTED(state)) {
       /* steal locals */
       ii  = matA_1->i;
@@ -862,11 +901,13 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
       for (j = 0; j < n; j++) {
         PetscInt lidj   = idx[j], sgid;
         NState   statej = lid_state[lidj];
+
         if (statej == DELETED && (sgid = (PetscInt)PetscRealPart(lid_parent_gid[lidj])) != lid + my0) { /* steal local */
           lid_parent_gid[lidj] = (PetscScalar)(lid + my0);                                              /* send this if sgid is not local */
           if (sgid >= my0 && sgid < Iend) {                                                             /* I'm stealing this local from a local sgid */
             PetscInt      hav = 0, slid = sgid - my0, gidj = lidj + my0;
             PetscCDIntNd *pos, *last = NULL;
+
             /* looking for local from local so id_llist_2 works */
             PetscCall(PetscCDGetHeadPos(aggs_2, slid, &pos));
             while (pos) {
@@ -894,6 +935,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
       } /* local neighbors */
     } else if (state == DELETED /* && lid_cprowID_1 */) {
       PetscInt sgidold = (PetscInt)PetscRealPart(lid_parent_gid[lid]);
+
       /* see if I have a selected ghost neighbor that will steal me */
       if ((ix = lid_cprowID_1[lid]) != -1) {
         ii  = matB_1->compressedrow.i;
@@ -902,15 +944,18 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
         for (j = 0; j < n; j++) {
           PetscInt cpid   = idx[j];
           NState   statej = (NState)PetscRealPart(cpcol_1_state[cpid]);
+
           if (IS_SELECTED(statej) && sgidold != (PetscInt)statej) { /* ghost will steal this, remove from my list */
             lid_parent_gid[lid] = (PetscScalar)statej;              /* send who selected */
             if (sgidold >= my0 && sgidold < Iend) {                 /* this was mine */
               PetscInt      hav = 0, oldslidj = sgidold - my0;
               PetscCDIntNd *pos, *last        = NULL;
+
               /* remove from 'oldslidj' list */
               PetscCall(PetscCDGetHeadPos(aggs_2, oldslidj, &pos));
               while (pos) {
                 PetscInt gid;
+
                 PetscCall(PetscCDIntNdGetID(pos, &gid));
                 if (lid + my0 == gid) {
                   /* id_llist_2[lastid] = id_llist_2[flid];   /\* remove lid from oldslidj list *\/ */
@@ -956,6 +1001,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
     /* get 'cpcol_2_gid' */
     for (kk = 0, j = my0; kk < nloc; kk++, j++) {
       PetscScalar v = (PetscScalar)j;
+
       PetscCall(VecSetValues(tempVec, 1, &j, &v, INSERT_VALUES));
     }
     PetscCall(VecAssemblyBegin(tempVec));
@@ -970,11 +1016,14 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
     PetscCall(PCGAMGHashTableCreate(2 * nghost_2 + 1, &gid_cpid));
     for (cpid = 0; cpid < nghost_2; cpid++) {
       NState state = (NState)PetscRealPart(cpcol_2_state[cpid]);
+
       if (state == DELETED) {
         PetscInt sgid_new = (PetscInt)PetscRealPart(cpcol_2_parent[cpid]);
         PetscInt sgid_old = (PetscInt)PetscRealPart(cpcol_2_par_orig[cpid]);
+
         if (sgid_old == -1 && sgid_new != -1) {
           PetscInt gid = (PetscInt)PetscRealPart(cpcol_2_gid[cpid]);
+
           PetscCall(PCGAMGHashTableAdd(&gid_cpid, gid, cpid));
         }
       }
@@ -1009,6 +1058,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
     /* look at ghosts, see if they changed - and it */
     for (cpid = 0; cpid < nghost_2; cpid++) {
       PetscInt sgid_new = (PetscInt)PetscRealPart(cpcol_2_parent[cpid]);
+
       if (sgid_new >= my0 && sgid_new < Iend) { /* this is mine */
         PetscInt      gid      = (PetscInt)PetscRealPart(cpcol_2_gid[cpid]);
         PetscInt      slid_new = sgid_new - my0, hav = 0;
@@ -1018,6 +1068,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
         PetscCall(PetscCDGetHeadPos(aggs_2, slid_new, &pos));
         while (pos) {
           PetscInt gidj;
+
           PetscCall(PetscCDIntNdGetID(pos, &gidj));
           PetscCall(PetscCDGetNextPos(aggs_2, slid_new, &pos));
 
@@ -1088,6 +1139,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc, Mat *a_Gmat1, PetscCoarsenData 
   PetscCall(MatGetOwnershipRange(Gmat1, &Istart, &Iend));
   for (Ii = 0; Ii < nloc; Ii++) {
     PetscInt nc;
+
     PetscCall(MatGetRow(Gmat1, Istart + Ii, &nc, NULL, NULL));
     degree[Ii] = nc;
     PetscCall(MatRestoreRow(Gmat1, Istart + Ii, &nc, NULL, NULL));
@@ -1096,7 +1148,8 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc, Mat *a_Gmat1, PetscCoarsenData 
     PetscCall(PetscRandomGetValueReal(random, &hashfact));
     iSwapIndex = (PetscInt)(hashfact * nloc) % nloc;
     if (!bIndexSet[iSwapIndex] && iSwapIndex != Ii) {
-      PetscInt iTemp        = permute[iSwapIndex];
+      PetscInt iTemp = permute[iSwapIndex];
+
       permute[iSwapIndex]   = permute[Ii];
       permute[Ii]           = iTemp;
       iTemp                 = degree[iSwapIndex];
@@ -1121,6 +1174,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc, Mat *a_Gmat1, PetscCoarsenData 
     else PetscCall(MatCoarsenSetType(pc_gamg_agg->crs, MATCOARSENMIS));                                                                   // old MIS -- side effect
   } else if (pc_gamg_agg->use_aggressive_square_graph && pc_gamg_agg->aggressive_coarsening_levels > 0) {                                 // we reset the MIS
     const char *prefix;
+
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject)a_pc, &prefix));
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject)pc_gamg_agg->crs, prefix));
     PetscCall(MatCoarsenSetFromOptions(pc_gamg_agg->crs)); // get the default back on non-aggressive levels when square graph switched to old MIS
@@ -1129,9 +1183,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc, Mat *a_Gmat1, PetscCoarsenData 
   PetscCall(MatCoarsenSetStrictAggs(pc_gamg_agg->crs, PETSC_TRUE));
   PetscCall(MatCoarsenSetGreedyOrdering(pc_gamg_agg->crs, perm));
   PetscCall(MatCoarsenApply(pc_gamg_agg->crs));
-  PetscCall(MatCoarsenViewFromOptions(pc_gamg_agg->crs, NULL, "-mat_coarsen_view"));
   PetscCall(MatCoarsenGetData(pc_gamg_agg->crs, agg_lists)); /* output */
-  PetscCall(MatCoarsenDestroy(&pc_gamg_agg->crs));
 
   PetscCall(ISDestroy(&perm));
   PetscCall(PetscFree2(permute, degree));
@@ -1139,6 +1191,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc, Mat *a_Gmat1, PetscCoarsenData 
 
   if (Gmat2 != Gmat1) { // square graph, we need ghosts for selected
     PetscCoarsenData *llist = *agg_lists;
+
     PetscCall(fixAggregatesWithSquare(a_pc, Gmat2, Gmat1, *agg_lists));
     PetscCall(MatDestroy(&Gmat1));
     *a_Gmat1 = Gmat2;                          /* output */
@@ -1149,7 +1202,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc, Mat *a_Gmat1, PetscCoarsenData 
 }
 
 /*
- PCGAMGProlongator_AGG
+ PCGAMGConstructProlongator_AGG
 
  Input Parameter:
  . pc - this
@@ -1159,7 +1212,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc, Mat *a_Gmat1, PetscCoarsenData 
  Output Parameter:
  . a_P_out - prolongation operator to the next level
  */
-static PetscErrorCode PCGAMGProlongator_AGG(PC pc, Mat Amat, PetscCoarsenData *agg_lists, Mat *a_P_out)
+static PetscErrorCode PCGAMGConstructProlongator_AGG(PC pc, Mat Amat, PetscCoarsenData *agg_lists, Mat *a_P_out)
 {
   PC_MG         *mg      = (PC_MG *)pc->data;
   PC_GAMG       *pc_gamg = (PC_GAMG *)mg->innerctx;
@@ -1182,11 +1235,12 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc, Mat Amat, PetscCoarsenData *a
   nloc = (Iend - Istart) / bs;
   my0  = Istart / bs;
   PetscCheck((Iend - Istart) % bs == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "(Iend %" PetscInt_FMT " - Istart %" PetscInt_FMT ") not divisible by bs %" PetscInt_FMT, Iend, Istart, bs);
-  PetscCall(PetscCDGetMat(agg_lists, &Gmat)); // get auxilary matrix for ghost edges for size > 1
+  PetscCall(PetscCDGetMat(agg_lists, &Gmat)); // get auxiliary matrix for ghost edges for size > 1
 
   /* get 'nLocalSelected' */
   for (ii = 0, nLocalSelected = 0; ii < nloc; ii++) {
     PetscBool ise;
+
     /* filter out singletons 0 or 1? */
     PetscCall(PetscCDIsEmptyAt(agg_lists, ii, &ise));
     if (!ise) nLocalSelected++;
@@ -1227,11 +1281,13 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc, Mat Amat, PetscCoarsenData *a
   PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_PROLA], 0, 0, 0, 0));
   if (size > 1) { /* get ghost null space data */
     PetscReal *tmp_gdata, *tmp_ldata, *tp2;
+
     PetscCall(PetscMalloc1(nloc, &tmp_ldata));
     for (jj = 0; jj < col_bs; jj++) {
       for (kk = 0; kk < bs; kk++) {
         PetscInt         ii, stride;
         const PetscReal *tp = PetscSafePointerPlusOffset(pc_gamg->data, jj * bs * nloc + kk);
+
         for (ii = 0; ii < nloc; ii++, tp += bs) tmp_ldata[ii] = *tp;
 
         PetscCall(PCGAMGGetDataWithGhosts(Gmat, 1, tmp_ldata, &stride, &tmp_gdata));
@@ -1274,6 +1330,7 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc, Mat Amat, PetscCoarsenData *a
   PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_PROLB], 0, 0, 0, 0));
   {
     PetscReal *data_out = NULL;
+
     PetscCall(formProl0(agg_lists, bs, col_bs, myCrs0, nbnodes, data_w_ghost, flid_fgid, &data_out, Prol));
     PetscCall(PetscFree(pc_gamg->data));
 
@@ -1286,14 +1343,14 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc, Mat Amat, PetscCoarsenData *a
   PetscCall(PetscFree(flid_fgid));
 
   *a_P_out = Prol; /* out */
-  PetscCall(MatViewFromOptions(Prol, NULL, "-view_P"));
+  PetscCall(MatViewFromOptions(Prol, NULL, "-pc_gamg_agg_view_initial_prolongation"));
 
   PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_PROL], 0, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
-   PCGAMGOptProlongator_AGG
+   PCGAMGOptimizeProlongator_AGG - given the initial prolongator optimizes it by smoothed aggregation pc_gamg_agg->nsmooths times
 
   Input Parameter:
    . pc - this
@@ -1301,7 +1358,7 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc, Mat Amat, PetscCoarsenData *a
  In/Output Parameter:
    . a_P - prolongation operator to the next level
 */
-static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc, Mat Amat, Mat *a_P)
+static PetscErrorCode PCGAMGOptimizeProlongator_AGG(PC pc, Mat Amat, Mat *a_P)
 {
   PC_MG       *mg          = (PC_MG *)pc->data;
   PC_GAMG     *pc_gamg     = (PC_GAMG *)mg->innerctx;
@@ -1338,6 +1395,7 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc, Mat Amat, Mat *a_P)
       PetscCall(KSPAppendOptionsPrefix(eksp, "pc_gamg_esteig_"));
       {
         PetscBool isset, sflg;
+
         PetscCall(MatIsSPDKnown(Amat, &isset, &sflg));
         if (isset && sflg) PetscCall(KSPSetType(eksp, KSPCG));
       }
@@ -1377,44 +1435,72 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc, Mat Amat, Mat *a_P)
   }
 
   /* smooth P0 */
-  for (jj = 0; jj < pc_gamg_agg->nsmooths; jj++) {
-    Mat tMat;
+  if (pc_gamg_agg->nsmooths > 0) {
     Vec diag;
-
-    PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_OPTSM], 0, 0, 0, 0));
-
-    /* smooth P1 := (I - omega/lam D^{-1}A)P0 */
-    PetscCall(PetscLogEventBegin(petsc_gamg_setup_matmat_events[pc_gamg->current_level][2], 0, 0, 0, 0));
-    PetscCall(MatMatMult(Amat, Prol, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &tMat));
-    PetscCall(PetscLogEventEnd(petsc_gamg_setup_matmat_events[pc_gamg->current_level][2], 0, 0, 0, 0));
-    PetscCall(MatProductClear(tMat));
-    PetscCall(MatCreateVecs(Amat, &diag, NULL));
-    PetscCall(MatGetDiagonal(Amat, diag)); /* effectively PCJACOBI */
-    PetscCall(VecReciprocal(diag));
-    PetscCall(MatDiagonalScale(tMat, diag, NULL));
-    PetscCall(VecDestroy(&diag));
 
     /* TODO: Set a PCFailedReason and exit the building of the AMG preconditioner */
     PetscCheck(emax != 0.0, PetscObjectComm((PetscObject)pc), PETSC_ERR_PLIB, "Computed maximum singular value as zero");
-    /* TODO: Document the 1.4 and don't hardwire it in this routine */
-    alpha = -1.4 / emax;
 
-    PetscCall(MatAYPX(tMat, alpha, Prol, SUBSET_NONZERO_PATTERN));
-    PetscCall(MatDestroy(&Prol));
-    Prol = tMat;
-    PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_OPTSM], 0, 0, 0, 0));
+    PetscCall(MatCreateVecs(Amat, &diag, NULL));
+    PetscCall(MatGetDiagonal(Amat, diag)); /* effectively PCJACOBI */
+    PetscCall(VecReciprocal(diag));
+
+    for (jj = 0; jj < pc_gamg_agg->nsmooths; jj++) {
+      Mat tMat;
+
+      PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_OPTSM], 0, 0, 0, 0));
+      /*
+        Smooth aggregation on the prolongator
+
+        P_{i} := (I - 1.4/emax D^{-1}A) P_i\{i-1}
+      */
+      PetscCall(PetscLogEventBegin(petsc_gamg_setup_matmat_events[pc_gamg->current_level][2], 0, 0, 0, 0));
+      PetscCall(MatMatMult(Amat, Prol, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &tMat));
+      PetscCall(PetscLogEventEnd(petsc_gamg_setup_matmat_events[pc_gamg->current_level][2], 0, 0, 0, 0));
+      PetscCall(MatProductClear(tMat));
+      PetscCall(MatDiagonalScale(tMat, diag, NULL));
+
+      /* TODO: Document the 1.4 and don't hardwire it in this routine */
+      alpha = -1.4 / emax;
+      PetscCall(MatAYPX(tMat, alpha, Prol, SUBSET_NONZERO_PATTERN));
+      PetscCall(MatDestroy(&Prol));
+      Prol = tMat;
+      PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_OPTSM], 0, 0, 0, 0));
+    }
+    PetscCall(VecDestroy(&diag));
   }
   PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_OPT], 0, 0, 0, 0));
+  PetscCall(MatViewFromOptions(Prol, NULL, "-pc_gamg_agg_view_prolongation"));
   *a_P = Prol;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   PCCreateGAMG_AGG
+/*MC
+  PCGAMGAGG - Smooth aggregation, {cite}`vanek1996algebraic`, {cite}`vanek2001convergence`, variant of PETSc's algebraic multigrid (`PCGAMG`) preconditioner
 
-  Input Parameter:
-   . pc -
-*/
+  Options Database Keys:
++ -pc_gamg_agg_nsmooths <nsmooth, default=1> - number of smoothing steps to use with smooth aggregation to construct prolongation
+. -pc_gamg_aggressive_coarsening <n,default=1> - number of aggressive coarsening (MIS-2) levels from finest.
+. -pc_gamg_aggressive_square_graph <bool,default=false> - Use square graph (A'A) or MIS-k (k=2) for aggressive coarsening
+. -pc_gamg_mis_k_minimum_degree_ordering <bool,default=true> - Use minimum degree ordering in greedy MIS algorithm
+. -pc_gamg_pc_gamg_asm_hem_aggs <n,default=0> - Number of HEM aggregation steps for ASM smoother
+- -pc_gamg_aggressive_mis_k <n,default=2> - Number (k) distance in MIS coarsening (>2 is 'aggressive')
+
+  Level: intermediate
+
+  Notes:
+  To obtain good performance for `PCGAMG` for vector valued problems you must
+  call `MatSetBlockSize()` to indicate the number of degrees of freedom per grid point.
+  Call `MatSetNearNullSpace()` (or `PCSetCoordinates()` if solving the equations of elasticity) to indicate the near null space of the operator
+
+  The many options for `PCMG` and `PCGAMG` such as controlling the smoothers on each level etc. also work for `PCGAMGAGG`
+
+.seealso: `PCGAMG`, [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCCreate()`, `PCSetType()`,
+          `MatSetBlockSize()`, `PCMGType`, `PCSetCoordinates()`, `MatSetNearNullSpace()`, `PCGAMGSetType()`,
+          `PCGAMGAGG`, `PCGAMGGEO`, `PCGAMGCLASSICAL`, `PCGAMGSetProcEqLim()`, `PCGAMGSetCoarseEqLim()`, `PCGAMGSetRepartition()`, `PCGAMGRegister()`,
+          `PCGAMGSetReuseInterpolation()`, `PCGAMGASMSetUseAggs()`, `PCGAMGSetParallelCoarseGridSolve()`, `PCGAMGSetNlevels()`, `PCGAMGSetThreshold()`,
+          `PCGAMGGetType()`, `PCGAMGSetUseSAEstEig()`
+M*/
 PetscErrorCode PCCreateGAMG_AGG(PC pc)
 {
   PC_MG       *mg      = (PC_MG *)pc->data;
@@ -1433,8 +1519,8 @@ PetscErrorCode PCCreateGAMG_AGG(PC pc)
   /* set internal function pointers */
   pc_gamg->ops->creategraph       = PCGAMGCreateGraph_AGG;
   pc_gamg->ops->coarsen           = PCGAMGCoarsen_AGG;
-  pc_gamg->ops->prolongator       = PCGAMGProlongator_AGG;
-  pc_gamg->ops->optprolongator    = PCGAMGOptProlongator_AGG;
+  pc_gamg->ops->prolongator       = PCGAMGConstructProlongator_AGG;
+  pc_gamg->ops->optprolongator    = PCGAMGOptimizeProlongator_AGG;
   pc_gamg->ops->createdefaultdata = PCSetData_AGG;
   pc_gamg->ops->view              = PCView_GAMG_AGG;
 

@@ -658,7 +658,6 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A, PetscInt m, const PetscInt im
   PetscFunctionBegin;
   if (roworiented) stepval = (n - 1) * bs;
   else stepval = (m - 1) * bs;
-
   for (k = 0; k < m; k++) { /* loop over added rows */
     row = im[k];
     if (row < 0) continue;
@@ -889,7 +888,6 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A, PetscInt m, const PetscInt im[], Pet
         ap[bs2 * i + bs * cidx + ridx] = value;
         /* for diag block, add/insert its symmetric element a(cidx,ridx) */
         if (brow == bcol && ridx < cidx) ap[bs2 * i + bs * ridx + cidx] = value;
-        A->nonzerostate++;
       noinsert1:;
         low = i;
       }
@@ -1418,6 +1416,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
                                        NULL,
                                        /*150*/ NULL,
                                        MatEliminateZeros_SeqSBAIJ,
+                                       NULL,
                                        NULL};
 
 static PetscErrorCode MatStoreValues_SeqSBAIJ(Mat mat)
@@ -1612,9 +1611,11 @@ static PetscErrorCode MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B, PetscInt bs, P
 
 static PetscErrorCode MatSeqSBAIJSetPreallocationCSR_SeqSBAIJ(Mat B, PetscInt bs, const PetscInt ii[], const PetscInt jj[], const PetscScalar V[])
 {
-  PetscInt     i, j, m, nz, anz, nz_max = 0, *nnz;
-  PetscScalar *values      = NULL;
-  PetscBool    roworiented = ((Mat_SeqSBAIJ *)B->data)->roworiented;
+  PetscInt      i, j, m, nz, anz, nz_max = 0, *nnz;
+  PetscScalar  *values      = NULL;
+  Mat_SeqSBAIJ *b           = (Mat_SeqSBAIJ *)B->data;
+  PetscBool     roworiented = b->roworiented;
+  PetscBool     ilw         = b->ignore_ltriangular;
 
   PetscFunctionBegin;
   PetscCheck(bs >= 1, PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "Invalid block size specified, must be positive but it is %" PetscInt_FMT, bs);
@@ -1630,6 +1631,7 @@ static PetscErrorCode MatSeqSBAIJSetPreallocationCSR_SeqSBAIJ(Mat B, PetscInt bs
   for (i = 0; i < m; i++) {
     nz = ii[i + 1] - ii[i];
     PetscCheck(nz >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row %" PetscInt_FMT " has a negative number of columns %" PetscInt_FMT, i, nz);
+    PetscCheckSorted(nz, jj + ii[i]);
     anz = 0;
     for (j = 0; j < nz; j++) {
       /* count only values on the diagonal or above */
@@ -1638,7 +1640,7 @@ static PetscErrorCode MatSeqSBAIJSetPreallocationCSR_SeqSBAIJ(Mat B, PetscInt bs
         break;
       }
     }
-    nz_max = PetscMax(nz_max, anz);
+    nz_max = PetscMax(nz_max, nz);
     nnz[i] = anz;
   }
   PetscCall(MatSeqSBAIJSetPreallocation(B, bs, 0, nnz));
@@ -1646,9 +1648,11 @@ static PetscErrorCode MatSeqSBAIJSetPreallocationCSR_SeqSBAIJ(Mat B, PetscInt bs
 
   values = (PetscScalar *)V;
   if (!values) PetscCall(PetscCalloc1(bs * bs * nz_max, &values));
+  b->ignore_ltriangular = PETSC_TRUE;
   for (i = 0; i < m; i++) {
     PetscInt        ncols = ii[i + 1] - ii[i];
     const PetscInt *icols = jj + ii[i];
+
     if (!roworiented || bs == 1) {
       const PetscScalar *svals = values + (V ? (bs * bs * ii[i]) : 0);
       PetscCall(MatSetValuesBlocked_SeqSBAIJ(B, 1, &i, ncols, icols, svals, INSERT_VALUES));
@@ -1663,6 +1667,7 @@ static PetscErrorCode MatSeqSBAIJSetPreallocationCSR_SeqSBAIJ(Mat B, PetscInt bs
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatSetOption(B, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
+  b->ignore_ltriangular = ilw;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1793,7 +1798,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_petsc(Mat A, MatFactorType fty
 
 .seealso: [](ch_matrices), `Mat`, `MATSEQSBAIJ`, `MatSeqSBAIJRestoreArray()`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArray()`
 @*/
-PetscErrorCode MatSeqSBAIJGetArray(Mat A, PetscScalar **array)
+PetscErrorCode MatSeqSBAIJGetArray(Mat A, PetscScalar *array[])
 {
   PetscFunctionBegin;
   PetscUseMethod(A, "MatSeqSBAIJGetArray_C", (Mat, PetscScalar **), (A, array));
@@ -1813,7 +1818,7 @@ PetscErrorCode MatSeqSBAIJGetArray(Mat A, PetscScalar **array)
 
 .seealso: [](ch_matrices), `Mat`, `MATSEQSBAIJ`, `MatSeqSBAIJGetArray()`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArray()`
 @*/
-PetscErrorCode MatSeqSBAIJRestoreArray(Mat A, PetscScalar **array)
+PetscErrorCode MatSeqSBAIJRestoreArray(Mat A, PetscScalar *array[])
 {
   PetscFunctionBegin;
   PetscUseMethod(A, "MatSeqSBAIJRestoreArray_C", (Mat, PetscScalar **), (A, array));
@@ -1927,7 +1932,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqSBAIJSetPreallocation - Creates a sparse symmetric matrix in block AIJ (block
   compressed row) `MATSEQSBAIJ` format.  For good matrix assembly performance the
   user should preallocate the matrix storage by setting the parameter `nz`
@@ -2011,7 +2016,7 @@ PetscErrorCode MatSeqSBAIJSetPreallocationCSR(Mat B, PetscInt bs, const PetscInt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateSeqSBAIJ - Creates a sparse symmetric matrix in (block
   compressed row) `MATSEQSBAIJ` format.  For good matrix assembly performance the
   user should preallocate the matrix storage by setting the parameter `nz`

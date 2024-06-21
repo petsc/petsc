@@ -131,7 +131,7 @@ PetscErrorCode DMNetworkSetNumSubNetworks(DM dm, PetscInt nsubnet, PetscInt Nsub
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMNetworkAddSubnetwork - Add a subnetwork
 
   Collective
@@ -150,12 +150,12 @@ $            [first vertex of first edge, second vertex of first edge, first ver
   Level: beginner
 
   Notes:
-  There is no copy involved in this operation, only the pointer is referenced. The edgelist should
+  There is no copy involved in this operation, only the pointer is referenced. The `edgelist` should
   not be destroyed before the call to `DMNetworkLayoutSetUp()`
 
   A network can comprise of a single subnetwork OR multiple subnetworks. For a single subnetwork, the subnetwork can be read either in serial or parallel.
   For a multiple subnetworks,
-  each subnetwork topology needs to be set on a unique rank and the communicator size needs to be at least equal to the number of subnetworks.
+  each subnetwork topology needs to be set on a unique MPI process and the communicator size needs to be at least equal to the number of subnetworks.
 
   Example usage:
   Consider the following networks\:
@@ -302,7 +302,7 @@ PetscErrorCode DMNetworkAddSubnetwork(DM dm, const char *name, PetscInt ne, Pets
 
 .seealso: `DM`, `DMNETWORK`, `DMNetworkGetSharedVertices()`
 @*/
-PetscErrorCode DMNetworkSharedVertexGetInfo(DM dm, PetscInt v, PetscInt *gidx, PetscInt *n, const PetscInt **sv)
+PetscErrorCode DMNetworkSharedVertexGetInfo(DM dm, PetscInt v, PetscInt *gidx, PetscInt *n, const PetscInt *sv[])
 {
   DM_Network *network = (DM_Network *)dm->data;
   SVtx       *svtx    = network->cloneshared->svtx;
@@ -813,7 +813,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
 
 .seealso: `DM`, `DMNETWORK`, `DMNetworkCreate()`, `DMNetworkAddSubnetwork()`, `DMNetworkLayoutSetUp()`
 @*/
-PetscErrorCode DMNetworkGetSubnetwork(DM dm, PetscInt netnum, PetscInt *nv, PetscInt *ne, const PetscInt **vtx, const PetscInt **edge)
+PetscErrorCode DMNetworkGetSubnetwork(DM dm, PetscInt netnum, PetscInt *nv, PetscInt *ne, const PetscInt *vtx[], const PetscInt *edge[])
 {
   DM_Network *network = (DM_Network *)dm->data;
 
@@ -888,7 +888,7 @@ PetscErrorCode DMNetworkAddSharedVertices(DM dm, PetscInt anetnum, PetscInt bnet
 
 .seealso: `DM`, `DMNETWORK`, `DMNetworkGetSubnetwork()`, `DMNetworkLayoutSetUp()`, `DMNetworkAddSharedVertices()`
 @*/
-PetscErrorCode DMNetworkGetSharedVertices(DM dm, PetscInt *nsv, const PetscInt **svtx)
+PetscErrorCode DMNetworkGetSharedVertices(DM dm, PetscInt *nsv, const PetscInt *svtx[])
 {
   DM_Network *net = (DM_Network *)dm->data;
 
@@ -1957,7 +1957,7 @@ PetscErrorCode DMNetworkDistribute(DM *dm, PetscInt overlap)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFGetSubSF - Returns an `PetscSF` for a specific subset of points. Leaves are re-numbered to reflect the new ordering
 
   Collective

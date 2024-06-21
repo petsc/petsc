@@ -20,5 +20,4 @@
         w(i) = a*x(i) + y(i)
  10   continue
 
-      return
       end

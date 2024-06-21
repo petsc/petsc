@@ -145,6 +145,7 @@ static PetscErrorCode MatHYPRE_IJMatrixCopyIJ(Mat A, HYPRE_IJMatrix ij)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(PETSC_FALSE, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "No support for matrix type %s", ((PetscObject)A)->type_name);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatHYPRE_IJMatrixCopyIJ_SeqAIJ(Mat A, HYPRE_IJMatrix ij)
@@ -1849,7 +1850,7 @@ static PetscErrorCode MatHYPREGetParCSR_HYPRE(Mat A, hypre_ParCSRMatrix **parcsr
 /*@C
   MatHYPREGetParCSR - Gets the pointer to the ParCSR matrix
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . A - the `MATHYPRE` object

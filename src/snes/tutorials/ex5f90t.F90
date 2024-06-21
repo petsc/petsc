@@ -108,7 +108,6 @@
 
 !      PetscCall(VecView(X,PETSC_VIEWER_STDOUT_WORLD,ierr))
 !      PetscCall(VecView(F,PETSC_VIEWER_STDOUT_WORLD,ierr))
-      return
       end subroutine formfunction
       end module ex5f90tmodule
 
@@ -204,10 +203,10 @@
 
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
-      PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,ione,ione,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,user%da,ierr))
+      PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,ione,ione,PETSC_NULL_INTEGER_ARRAY,PETSC_NULL_INTEGER_ARRAY,user%da,ierr))
       PetscCallA(DMSetFromOptions(user%da,ierr))
       PetscCallA(DMSetUp(user%da,ierr))
-      PetscCallA(DMDAGetInfo(user%da,PETSC_NULL_INTEGER,user%mx,user%my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr))
+      PetscCallA(DMDAGetInfo(user%da,PETSC_NULL_INTEGER,user%mx,user%my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_ENUM,PETSC_NULL_ENUM,PETSC_NULL_ENUM,PETSC_NULL_ENUM,ierr))
 
 !
 !   Visualize the distribution of the array across the processors
@@ -361,7 +360,6 @@
 
 !  Insert values into global vector
 
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -412,7 +410,6 @@
  10      continue
  20   continue
 
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -468,7 +465,6 @@
  10      continue
  20   continue
       ierr = 0
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -567,7 +563,6 @@
 
       PetscCallA(MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE,ierr))
 
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -651,7 +646,7 @@
             if (i .eq. 1 .or. j .eq. 1 .or. i .eq. user%mx .or. j .eq. user%my) then
                col(1) = row
                v(1)   = one
-               PetscCallA(MatSetValuesLocal(jac_prec,ione,row,ione,col,v,INSERT_VALUES,ierr))
+               PetscCallA(MatSetValuesLocal(jac_prec,ione,[row],ione,col,v,INSERT_VALUES,ierr))
 !           interior grid points
             else
                v(1) = -hxdhy
@@ -664,11 +659,10 @@
                col(3) = row
                col(4) = row + 1
                col(5) = row + user%gxm
-               PetscCallA(MatSetValuesLocal(jac_prec,ione,row,ifive,col,v,INSERT_VALUES,ierr))
+               PetscCallA(MatSetValuesLocal(jac_prec,ione,[row],ifive,col,v,INSERT_VALUES,ierr))
             endif
  10      continue
  20   continue
-      return
       end
 
 !/*TEST

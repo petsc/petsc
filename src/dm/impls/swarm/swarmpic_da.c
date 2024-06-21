@@ -1,7 +1,6 @@
 #include <petscdm.h>
-#include <petscdmda.h>
-#include <petscdmswarm.h>
-#include <petsc/private/dmswarmimpl.h>
+#include <petscdmda.h>                 /*I  "petscdmda.h"  I*/
+#include <petsc/private/dmswarmimpl.h> /*I  "petscdmswarm.h"  I*/
 #include "../src/dm/impls/swarm/data_bucket.h"
 
 static PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(PetscInt dim, PetscInt np[], PetscInt *_npoints, PetscReal **_xi)

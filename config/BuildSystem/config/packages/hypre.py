@@ -16,10 +16,7 @@ class Configure(config.package.GNUPackage):
     self.includes        = ['HYPRE.h']
     self.liblist         = [['libHYPRE.a']]
     self.buildLanguages  = ['C','Cxx']
-    # Per hypre users guide section 7.5 - install manually on windows for MS compilers.
-    self.precisions        = ['double']
-    # HYPRE is supposed to work with complex number
-    #self.complex           = 0
+    self.precisions        = ['single', 'double', '__float128']
     self.hastests          = 1
     self.hastestsdatafiles = 1
 
@@ -75,6 +72,12 @@ class Configure(config.package.GNUPackage):
     args.append('--with-blas=no')
     args.append('--with-lapack=no')
 
+    # floating point precisions
+    if self.scalar.precision == 'single':
+      args.append('--enable-single')
+    elif self.scalar.precision == '__float128':
+      args.append('--enable-longdouble')
+
     # HYPRE automatically detects essl symbols and includes essl.h!
     # There are no configure options to disable it programmatically
     if hasattr(self.blasLapack,'essl'):
@@ -90,6 +93,7 @@ class Configure(config.package.GNUPackage):
     if self.hip.found:
       stdflag  = '-std=c++14'
       hipbuild = True
+      args.append('ROCM_PATH="{0}"'.format(self.hip.hipDir))
       args.append('--with-hip')
       if not hasharch:
         if not 'with-hypre-gpu-arch' in self.framework.clArgDB:

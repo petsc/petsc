@@ -2485,13 +2485,13 @@ PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
           mat->num_rows    = m;
           mat->num_cols    = A->cmap->n;
           mat->num_entries = nnz;
-          mat->row_offsets = new THRUSTINTARRAY32(m + 1);
+          PetscCallCXX(mat->row_offsets = new THRUSTINTARRAY32(m + 1));
           mat->row_offsets->assign(ii, ii + m + 1);
 
-          mat->column_indices = new THRUSTINTARRAY32(nnz);
+          PetscCallCXX(mat->column_indices = new THRUSTINTARRAY32(nnz));
           mat->column_indices->assign(a->j, a->j + nnz);
 
-          mat->values = new THRUSTARRAY(nnz);
+          PetscCallCXX(mat->values = new THRUSTARRAY(nnz));
           if (a->a) mat->values->assign(a->a, a->a + nnz);
 
           /* assign the pointer */
@@ -2511,13 +2511,13 @@ PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
           mat->num_rows    = m;
           mat->num_cols    = A->cmap->n;
           mat->num_entries = nnz;
-          mat->row_offsets = new THRUSTINTARRAY32(m + 1);
+          PetscCallCXX(mat->row_offsets = new THRUSTINTARRAY32(m + 1));
           mat->row_offsets->assign(ii, ii + m + 1);
 
-          mat->column_indices = new THRUSTINTARRAY32(nnz);
+          PetscCallCXX(mat->column_indices = new THRUSTINTARRAY32(nnz));
           mat->column_indices->assign(a->j, a->j + nnz);
 
-          mat->values = new THRUSTARRAY(nnz);
+          PetscCallCXX(mat->values = new THRUSTARRAY(nnz));
           if (a->a) mat->values->assign(a->a, a->a + nnz);
 
           cusparseHybMat_t hybMat;
@@ -2539,8 +2539,8 @@ PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
 
         /* assign the compressed row indices */
         if (a->compressedrow.use) {
-          cusparsestruct->workVector = new THRUSTARRAY(m);
-          matstruct->cprowIndices    = new THRUSTINTARRAY(m);
+          PetscCallCXX(cusparsestruct->workVector = new THRUSTARRAY(m));
+          PetscCallCXX(matstruct->cprowIndices = new THRUSTINTARRAY(m));
           matstruct->cprowIndices->assign(ridx, ridx + m);
           tmp = m;
         } else {
@@ -4070,7 +4070,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat B)
 .seealso: [](ch_matrices), `Mat`, `MatCreateSeqAIJCUSPARSE()`, `MatCUSPARSESetUseCPUSolve()`, `MATAIJCUSPARSE`, `MatCreateAIJCUSPARSE()`, `MatCUSPARSESetFormat()`, `MatCUSPARSEStorageFormat`, `MatCUSPARSEFormatOperation`
 M*/
 
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_CUSPARSE(void)
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_CUSPARSE(void)
 {
   PetscFunctionBegin;
   PetscCall(MatSolverTypeRegister(MATSOLVERCUSPARSE, MATSEQAIJCUSPARSE, MAT_FACTOR_LU, MatGetFactor_seqaijcusparse_cusparse));

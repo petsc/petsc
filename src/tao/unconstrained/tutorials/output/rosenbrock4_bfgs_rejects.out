@@ -1,0 +1,68 @@
+iter =   0, Function value 9., Residual: 6. 
+iter =   1, Function value 7.21816, Residual: 5.95088 
+iter =   2, Function value 5.65482, Residual: 5.01816 
+iter =   3, Function value 4.75704, Residual: 10.5299 
+iter =   4, Function value 4.06716, Residual: 21.3356 
+iter =   5, Function value 2.0834, Residual: 11.9903 
+iter =   6, Function value 1.17095, Residual: 9.73895 
+iter =   7, Function value 0.870077, Residual: 8.74691 
+iter =   8, Function value 0.383667, Residual: 2.42654 
+iter =   9, Function value 0.351094, Residual: 1.4684 
+iter =  10, Function value 0.332918, Residual: 1.87654 
+iter =  11, Function value 0.312951, Residual: 1.25957 
+iter =  12, Function value 0.245345, Residual: 1.06067 
+iter =  13, Function value 0.160065, Residual: 2.84589 
+iter =  14, Function value 0.0916562, Residual: 1.87019 
+iter =  15, Function value 0.0496723, Residual: 1.07232 
+iter =  16, Function value 0.0158149, Residual: 0.775471 
+iter =  17, Function value 0.00579069, Residual: 1.06559 
+iter =  18, Function value 0.000547221, Residual: 0.26713 
+iter =  19, Function value 0.000179375, Residual: 0.169825 
+iter =  20, Function value 9.32084e-05, Residual: 0.132614 
+iter =  21, Function value 2.38703e-05, Residual: 0.0537998 
+iter =  22, Function value 1.24628e-05, Residual: 0.0295418 
+iter =  23, Function value 8.83612e-06, Residual: 0.0164191 
+iter =  24, Function value 5.05478e-06, Residual: 0.0102872 
+iter =  25, Function value 3.63146e-06, Residual: 0.00527079 
+iter =  26, Function value 3.46106e-06, Residual: 0.00557845 
+iter =  27, Function value 3.30711e-06, Residual: 0.00230313 
+iter =  28, Function value 3.23715e-06, Residual: 0.00244554 
+iter =  29, Function value 2.80746e-06, Residual: 0.00559006 
+iter =  30, Function value 2.18681e-06, Residual: 0.00839101 
+iter =  31, Function value 1.05877e-06, Residual: 0.010349 
+iter =  32, Function value 8.6079e-07, Residual: 0.0104813 
+iter =  33, Function value 2.20004e-07, Residual: 0.00564676 
+iter =  34, Function value 2.18779e-08, Residual: 0.0010248 
+iter =  35, Function value 6.78175e-09, Residual: 0.000612843 
+iter =  36, Function value 1.22801e-09, Residual: 0.00039596 
+iter =  37, Function value 2.07093e-10, Residual: 0.000118131 
+iter =  38, Function value 5.2308e-11, Residual: 5.15664e-05 
+Tao Object: 1 MPI process
+  type: blmvm
+  Gradient steps: 0
+  Mat Object: (tao_blmvm_) 1 MPI process
+    type: lmvmbfgs
+    rows=10, cols=10
+      Scale type: SCALAR
+      Scale history: 1
+      Scale params: alpha=1., beta=0.5, rho=1.
+      Convex factors: phi=0., theta=0.125
+      Max. storage: 5
+      Used storage: 5
+      Number of updates: 31
+      Number of rejects: 6
+      Number of resets: 2
+  TaoLineSearch Object: 1 MPI process
+    type: more-thuente
+    maximum function evaluations=30
+    tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+    total number of function evaluations=0
+    total number of gradient evaluations=0
+    total number of function/gradient evaluations=1
+    Termination reason: 1
+  convergence tolerances: gatol=0.0001,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=5.15664e-05
+  Objective value=5.2308e-11
+  total number of iterations=38,                          (max: 2000)
+  total number of function/gradient evaluations=48,      (max: 4000)
+  Solution converged:    ||g(X)|| <= gatol

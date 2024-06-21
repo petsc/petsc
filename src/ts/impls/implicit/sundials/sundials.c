@@ -479,7 +479,6 @@ static PetscErrorCode TSView_Sundials(TS ts, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* --------------------------------------------------------------------------*/
 static PetscErrorCode TSSundialsSetType_Sundials(TS ts, TSSundialsLmmType type)
 {
   TS_Sundials *cvode = (TS_Sundials *)ts->data;
@@ -581,9 +580,8 @@ static PetscErrorCode TSSundialsMonitorInternalSteps_Sundials(TS ts, PetscBool s
   cvode->monitorstep = s;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/* -------------------------------------------------------------------------------------------*/
 
-/*@C
+/*@
   TSSundialsGetIterations - Gets the number of nonlinear and linear iterations used so far by `TSSUNDIALS`.
 
   Not Collective
@@ -861,7 +859,6 @@ PetscErrorCode TSSundialsSetUseDense(TS ts, PetscBool use_dense)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* -------------------------------------------------------------------------------------------*/
 /*MC
       TSSUNDIALS - ODE solver using a very old version of the LLNL CVODE/SUNDIALS package, version 2.5 (now called SUNDIALS). Requires ./configure --download-sundials
 

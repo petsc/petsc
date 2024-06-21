@@ -3,12 +3,89 @@
 !
 #include "petsc/finclude/petscdm.h"
 
-      type tDM
-        sequence
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      type, extends(tPetscObject) :: tDM
       end type tDM
-
       DM, parameter :: PETSC_NULL_DM = tDM(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_DM
+#endif
+
+      type, extends(tPetscObject) :: tDMAdaptor
+      end type tDMAdaptor
+      DMAdaptor, parameter :: PETSC_NULL_DM_ADAPTOR = tDMAdaptor(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_DM_ADAPTOR
+#endif
+
+      type, extends(tPetscObject) :: tDMField
+      end type tDMField
+      DMField, parameter :: PETSC_NULL_DM_FIELD = tDMField(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_DM_FIELD
+#endif
+
+      type, extends(tPetscObject) :: tPetscQuadrature
+      end type tPetscQuadrature
+      PetscQuadrature, parameter :: PETSC_NULL_QUADRATURE = tPetscQuadrature(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_QUADRATURE
+#endif
+
+      type, extends(tPetscObject) :: tPetscWeakForm
+      end type tPetscWeakForm
+      PetscWeakForm, parameter :: PETSC_NULL_WEAKFORM = tPetscWeakForm(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_WEAKFORM
+#endif
+
+      type, extends(tPetscObject) :: tPetscDS
+      end type tPetscDS
+      PetscDS, parameter :: PETSC_NULL_DS = tPetscDS(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_DS
+#endif
+
+      type, extends(tPetscObject) :: tPetscFE
+      end type tPetscFE
+      PetscFE, parameter :: PETSC_NULL_FE = tPetscFE(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_FE
+#endif
+
+      type, extends(tPetscObject) :: tPetscSpace
+      end type tPetscSpace
+      PetscSpace, parameter :: PETSC_NULL_SPACE = tPetscSpace(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_SPACE
+#endif
+
+      type, extends(tPetscObject) :: tPetscDualSpace
+      end type tPetscDualSpace
+      PetscDualSpace, parameter :: PETSC_NULL_DUAL_SPACE = tPetscDualSpace(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_DUAL_SPACE
+#endif
+
+      type, extends(tPetscObject) :: tPetscFV
+      end type tPetscFV
+      PetscFV, parameter :: PETSC_NULL_FV = tPetscFV(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_FV
+#endif
+
+      type, extends(tPetscObject) :: tPetscLimiter
+      end type tPetscLimiter
+      PetscLimiter, parameter :: PETSC_NULL_LIMITER = tPetscLimiter(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_LIMITER
+#endif
+
+      type, extends(tPetscObject) :: tPetscPartitioner
+      end type tPetscPartitioner
+      PetscPartitioner, parameter :: PETSC_NULL_PARTITIONER = tPetscPartitioner(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_PARTITIONER
+#endif
 !
 !  Types of periodicity
 !
@@ -69,7 +146,15 @@
       PetscEnum, parameter :: DM_REORDER_DEFAULT_NOTSET = -1
       PetscEnum, parameter :: DM_REORDER_DEFAULT_FALSE = 0
       PetscEnum, parameter :: DM_REORDER_DEFAULT_TRUE = 1
-
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
-!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_DM
-#endif
+!
+!  PetscDTNodeType
+!
+      PetscEnum, parameter :: PETSCDTNODES_DEFAULT     = -1
+      PetscEnum, parameter :: PETSCDTNODES_GAUSSJACOBI = 0
+      PetscEnum, parameter :: PETSCDTNODES_EQUISPACED  = 1
+      PetscEnum, parameter :: PETSCDTNODES_TANHSINH    = 2
+!
+!  PetscGaussLobattoLegendreCreateType
+!
+      PetscEnum, parameter :: PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBR = 0
+      PetscEnum, parameter :: PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON = 1

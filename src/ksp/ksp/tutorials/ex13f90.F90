@@ -173,13 +173,13 @@
 
 !  Create the sparse matrix. Preallocate 5 nonzeros per row.
 
-      PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF,Ntot,Ntot,five,PETSC_NULL_INTEGER,A,ierr))
+      PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF,Ntot,Ntot,five,PETSC_NULL_INTEGER_ARRAY,A,ierr))
 !
 !  Create vectors. Here we create vectors with no memory allocated.
 !  This way, we can use the data structures already in the program
 !  by using VecPlaceArray() subroutine at a later stage.
 !
-      PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,one,Ntot,PETSC_NULL_SCALAR,b,ierr))
+      PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,one,Ntot,PETSC_NULL_SCALAR_ARRAY,b,ierr))
       PetscCall(VecDuplicate(b,x,ierr))
 
 !  Create linear solver context. This will be used repeatedly for all
@@ -194,7 +194,6 @@
       userctx%m = m
       userctx%n = n
 
-      return
       end
 ! -----------------------------------------------------------------------
 
@@ -247,25 +246,25 @@
             if (j .gt. 1) then
                JJ = II - m
                v = -0.5*(rho(II+1) + rho(JJ+1))*hy2
-               PetscCall(MatSetValues(A,one,II,one,JJ,v,INSERT_VALUES,ierr))
+               PetscCall(MatSetValues(A,one,[II],one,[JJ],[v],INSERT_VALUES,ierr))
             endif
             if (j .lt. n) then
                JJ = II + m
                v = -0.5*(rho(II+1) + rho(JJ+1))*hy2
-               PetscCall(MatSetValues(A,one,II,one,JJ,v,INSERT_VALUES,ierr))
+               PetscCall(MatSetValues(A,one,[II],one,[JJ],[v],INSERT_VALUES,ierr))
             endif
             if (i .gt. 1) then
                JJ = II - 1
                v = -0.5*(rho(II+1) + rho(JJ+1))*hx2
-               PetscCall(MatSetValues(A,one,II,one,JJ,v,INSERT_VALUES,ierr))
+               PetscCall(MatSetValues(A,one,[II],one,[JJ],[v],INSERT_VALUES,ierr))
             endif
             if (i .lt. m) then
                JJ = II + 1
                v = -0.5*(rho(II+1) + rho(JJ+1))*hx2
-               PetscCall(MatSetValues(A,one,II,one,JJ,v,INSERT_VALUES,ierr))
+               PetscCall(MatSetValues(A,one,[II],one,[JJ],[v],INSERT_VALUES,ierr))
             endif
             v = 2*rho(II+1)*(hx2+hy2)
-            PetscCall(MatSetValues(A,one,II,one,II,v,INSERT_VALUES,ierr))
+            PetscCall(MatSetValues(A,one,[II],one,[II],[v],INSERT_VALUES,ierr))
             II = II+1
  100     continue
  110  continue
@@ -322,7 +321,6 @@
 
       PetscCall(VecResetArray(x,ierr))
       PetscCall(VecResetArray(b,ierr))
-      return
       end
 
 ! ------------------------------------------------------------------------
@@ -343,7 +341,6 @@
       PetscCall(VecDestroy(userctx%b,ierr))
       PetscCall(MatDestroy(userctx%A,ierr))
       PetscCall(KSPDestroy(userctx%ksp,ierr))
-      return
       end
 
 !

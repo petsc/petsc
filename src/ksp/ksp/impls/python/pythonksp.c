@@ -1,6 +1,6 @@
 #include <petsc/private/kspimpl.h> /*I "petscksp.h" I*/
 
-/*@C
+/*@
    KSPPythonSetType - Initialize a `KSP` object to a type implemented in Python.
 
    Collective
@@ -25,7 +25,7 @@ PetscErrorCode KSPPythonSetType(KSP ksp, const char pyname[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
    KSPPythonGetType - Get the type of a `KSP` object implemented in Python.
 
    Not Collective

@@ -552,7 +552,7 @@ PetscErrorCode VecDuplicate(Vec v, Vec *newv)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecDestroy - Destroys a vector.
 
   Collective
@@ -667,7 +667,7 @@ PetscErrorCode VecDestroyVecs(PetscInt m, Vec *vv[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecViewFromOptions - View a vector based on values in the options database
 
   Collective
@@ -692,7 +692,7 @@ PetscErrorCode VecViewFromOptions(Vec A, PetscObject obj, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecView - Views a vector object.
 
   Collective
@@ -910,10 +910,10 @@ PetscErrorCode VecGetLocalSize(Vec x, PetscInt *size)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetOwnershipRange - Returns the range of indices owned by
   this process. The vector is laid out with the
-  first n1 elements on the first processor, next n2 elements on the
+  first `n1` elements on the first processor, next `n2` elements on the
   second, etc.  For certain parallel layouts this range may not be
   well defined.
 
@@ -928,13 +928,19 @@ PetscErrorCode VecGetLocalSize(Vec x, PetscInt *size)
 
   Level: beginner
 
-  Note:
+  Notes:
+  If the `Vec` was obtained from a `DM` with `DMCreateGlobalVector()`, then the range values are determined by the specific `DM`.
+
+  If the `Vec` was created directly the range values are determined by the local size passed to `VecSetSizes()` or `VecCreateMPI()`.
+  If `PETSC_DECIDE` was passed as the local size, then the vector uses default values for the range using `PetscSplitOwnership()`.
+
   The high argument is one more than the last element stored locally.
 
-  Fortran Notes:
-  `PETSC_NULL_INTEGER` should be used instead of NULL
+  For certain `DM`, such as `DMDA`, it is better to use `DM` specific routines, such as `DMDAGetGhostCorners()`, to determine
+  the local values in the vector.
 
-.seealso: [](ch_vectors), `Vec`, `MatGetOwnershipRange()`, `MatGetOwnershipRanges()`, `VecGetOwnershipRanges()`
+.seealso: [](ch_vectors), `Vec`, `MatGetOwnershipRange()`, `MatGetOwnershipRanges()`, `VecGetOwnershipRanges()`, `PetscSplitOwnership()`,
+          `VecSetSizes()`, `VecCreateMPI()`, `PetscLayout`, `DMDAGetGhostCorners()`, `DM`
 @*/
 PetscErrorCode VecGetOwnershipRange(Vec x, PetscInt *low, PetscInt *high)
 {
@@ -951,7 +957,7 @@ PetscErrorCode VecGetOwnershipRange(Vec x, PetscInt *low, PetscInt *high)
 /*@C
   VecGetOwnershipRanges - Returns the range of indices owned by EACH processor,
   The vector is laid out with the
-  first n1 elements on the first processor, next n2 elements on the
+  first `n1` elements on the first processor, next `n2` elements on the
   second, etc.  For certain parallel layouts this range may not be
   well defined.
 
@@ -961,19 +967,30 @@ PetscErrorCode VecGetOwnershipRange(Vec x, PetscInt *low, PetscInt *high)
 . x - the vector
 
   Output Parameter:
-. ranges - array of length size+1 with the start and end+1 for each process
+. ranges - array of length `size` + 1 with the start and end+1 for each process
 
   Level: beginner
 
   Notes:
+  If the `Vec` was obtained from a `DM` with `DMCreateGlobalVector()`, then the range values are determined by the specific `DM`.
+
+  If the `Vec` was created directly the range values are determined by the local size passed to `VecSetSizes()` or `VecCreateMPI()`.
+  If `PETSC_DECIDE` was passed as the local size, then the vector uses default values for the range using `PetscSplitOwnership()`.
+
   The high argument is one more than the last element stored locally.
 
-  If the ranges are used after all vectors that share the ranges has been destroyed then the program will crash accessing ranges[].
+  For certain `DM`, such as `DMDA`, it is better to use `DM` specific routines, such as `DMDAGetGhostCorners()`, to determine
+  the local values in the vector.
+
+  The high argument is one more than the last element stored locally.
+
+  If `ranges` are used after all vectors that share the ranges has been destroyed, then the program will crash accessing `ranges`.
 
   Fortran Notes:
-  You must PASS in an array of length size+1
+  You must PASS in an array of length `size` + 1, where `size` is the size of the communicator owning the vector
 
-.seealso: [](ch_vectors), `Vec`, `MatGetOwnershipRange()`, `MatGetOwnershipRanges()`, `VecGetOwnershipRange()`
+.seealso: [](ch_vectors), `Vec`, `MatGetOwnershipRange()`, `MatGetOwnershipRanges()`, `VecGetOwnershipRange()`, `PetscSplitOwnership()`,
+          `VecSetSizes()`, `VecCreateMPI()`, `PetscLayout`, `DMDAGetGhostCorners()`, `DM`
 @*/
 PetscErrorCode VecGetOwnershipRanges(Vec x, const PetscInt *ranges[])
 {
@@ -1072,7 +1089,7 @@ PetscErrorCode VecResetArray(Vec vec)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecLoad - Loads a vector that has been stored in binary or HDF5 format
   with `VecView()`.
 
@@ -1457,7 +1474,11 @@ PetscErrorCode VecSetFromOptions(Vec vec)
 
   If one processor calls this with `N` of `PETSC_DETERMINE` then all processors must, otherwise the program will hang.
 
-.seealso: [](ch_vectors), `Vec`, `VecGetSize()`, `PetscSplitOwnership()`
+  If `n` is not `PETSC_DECIDE`, then the value determines the `PetscLayout` of the vector and the ranges returned by
+  `VecGetOwnershipRange()` and `VecGetOwnershipRanges()`
+
+.seealso: [](ch_vectors), `Vec`, `VecCreate()`, `VecCreateSeq()`, `VecCreateMPI()`, `VecGetSize()`, `PetscSplitOwnership()`, `PetscLayout`,
+          `VecGetOwnershipRange()`, `VecGetOwnershipRanges()`, `MatSetSizes()`
 @*/
 PetscErrorCode VecSetSizes(Vec v, PetscInt n, PetscInt N)
 {
@@ -1533,7 +1554,7 @@ PetscErrorCode VecGetBlockSize(Vec v, PetscInt *bs)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecSetOptionsPrefix - Sets the prefix used for searching for all
   `Vec` options in the database.
 
@@ -1559,7 +1580,7 @@ PetscErrorCode VecSetOptionsPrefix(Vec v, const char prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecAppendOptionsPrefix - Appends to the prefix used for searching for all
   `Vec` options in the database.
 
@@ -1585,7 +1606,7 @@ PetscErrorCode VecAppendOptionsPrefix(Vec v, const char prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetOptionsPrefix - Sets the prefix used for searching for all
   Vec options in the database.
 
@@ -1610,6 +1631,35 @@ PetscErrorCode VecGetOptionsPrefix(Vec v, const char *prefix[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)v, prefix));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  VecGetState - Gets the state of a `Vec`.
+
+  Not Collective
+
+  Input Parameter:
+. v - the `Vec` context
+
+  Output Parameter:
+. state - the object state
+
+  Level: advanced
+
+  Note:
+  Object state is an integer which gets increased every time
+  the object is changed. By saving and later querying the object state
+  one can determine whether information about the object is still current.
+
+.seealso: [](ch_vectors), `Vec`, `VecCreate()`, `PetscObjectStateGet()`
+@*/
+PetscErrorCode VecGetState(Vec v, PetscObjectState *state)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
+  PetscAssertPointer(state, 2);
+  PetscCall(PetscObjectStateGet((PetscObject)v, state));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1803,7 +1853,7 @@ PetscErrorCode VecSwap(Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecStashViewFromOptions - Processes command line options to determine if/how a `VecStash` object is to be viewed.
 
   Collective
@@ -2331,7 +2381,7 @@ static PetscErrorCode VecErrorWeightedNorms_Basic(Vec U, Vec Y, Vec E, NormType 
   Notes:
   This is primarily used for computing weighted local truncation errors in ``TS``.
 
-.seealso: [](ch_vectors), `Vec`, `NormType`, ``TSErrorWeightedNorm()``, ``TSErrorWeightedENorm()``
+.seealso: [](ch_vectors), `Vec`, `NormType`, `TSErrorWeightedNorm()`, `TSErrorWeightedENorm()`
 @*/
 PetscErrorCode VecErrorWeightedNorms(Vec U, Vec Y, Vec E, NormType wnormtype, PetscReal atol, Vec vatol, PetscReal rtol, Vec vrtol, PetscReal ignore_max, PetscReal *norm, PetscInt *norm_loc, PetscReal *norma, PetscInt *norma_loc, PetscReal *normr, PetscInt *normr_loc)
 {

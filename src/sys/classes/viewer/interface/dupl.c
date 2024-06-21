@@ -1,6 +1,6 @@
 #include <petsc/private/viewerimpl.h> /*I "petscviewer.h" I*/
 
-/*@C
+/*@
   PetscViewerGetSubViewer - Creates a new `PetscViewer` (same type as the old)
   that lives on a subcommunicator of the original viewer's communicator
 
@@ -26,7 +26,7 @@
   parallel object. For example `PCView()` on a `PCBJACOBI` could use this to obtain a
   `PetscViewer` that is used with the sequential `KSP` on one block of the preconditioner.
 
-  `PetscViewerFlush()` is run automatically at the begining of `PetscViewerGetSubViewer()` and with `PetscViewerRestoreSubViewer()`
+  `PetscViewerFlush()` is run automatically at the beginning of `PetscViewerGetSubViewer()` and with `PetscViewerRestoreSubViewer()`
   for `PETSCVIEWERASCII`
 
   `PETSCVIEWERDRAW` and `PETSCVIEWERBINARY` only support returning a singleton viewer on MPI rank 0,
@@ -64,7 +64,7 @@ PetscErrorCode PetscViewerGetSubViewer(PetscViewer viewer, MPI_Comm comm, PetscV
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerRestoreSubViewer - Restores a  `PetscViewer` obtained with `PetscViewerGetSubViewer()`.
 
   Collective

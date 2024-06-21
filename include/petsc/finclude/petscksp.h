@@ -19,6 +19,7 @@
 #define KSPGMRESCGSRefinementType PetscEnum
 #define MatSchurComplementAinvType PetscEnum
 #define MatLMVMSymBroydenScaleType PetscEnum
+#define MatLMVMDenseType PetscEnum
 #define KSPHPDDMType PetscEnum
 #define KSPChebyshevKind PetscEnum
 

@@ -152,7 +152,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_essl(Mat A, MatFactorType ftype,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Essl(void)
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_Essl(void)
 {
   PetscFunctionBegin;
   PetscCall(MatSolverTypeRegister(MATSOLVERESSL, MATSEQAIJ, MAT_FACTOR_LU, MatGetFactor_seqaij_essl));

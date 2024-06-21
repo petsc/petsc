@@ -76,12 +76,6 @@ static PetscErrorCode DMCreate_Dummy(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatOrderingCreate_Dummy(Mat mat, MatOrderingType mtype, IS *isr, IS *isc)
-{
-  PetscFunctionBeginUser;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatPartitioningCreate_Dummy(MatPartitioning mat)
 {
   PetscFunctionBeginUser;
@@ -156,7 +150,7 @@ static PetscErrorCode PetscRandomCreate_Dummy(PetscRandom arand)
 
 int main(int argc, char **argv)
 {
-  PetscReal A[1], Gamma[1] = {1.0}, b[1], c[1], d[1];
+  PetscReal A[1] = {0.0}, Gamma[1] = {1.0}, b[1] = {1.0}, c[1] = {1.0}, d[1] = {1.0};
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
@@ -166,7 +160,7 @@ int main(int argc, char **argv)
   PetscCall(TSGLLERegister("dummy", TSGLLECreate_Dummy));
   PetscCall(TSRKRegister("dummy", 0, 0, A, 0, 0, 0, 0, 0));
   PetscCall(TSGLEERegister("dummy", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
-  PetscCall(TSARKIMEXRegister("dummy", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(TSARKIMEXRegister("dummy", 0, 1, A, b, c, A, b, c, 0, 0, 0, 0, 0));
   PetscCall(TSRosWRegister("dummy", 0, 1, A, Gamma, b, 0, 0, 0));
   PetscCall(TSBasicSymplecticRegister("dummy", 0, 0, c, d));
   PetscCall(TSAdaptRegister("dummy", TSAdaptCreate_Dummy));
@@ -180,7 +174,6 @@ int main(int argc, char **argv)
   PetscCall(KSPRegister("dummy", KSPCreate_Dummy));
   PetscCall(PCRegister("dummy", PCCreate_Dummy));
   PetscCall(DMRegister("dummy", DMCreate_Dummy));
-  PetscCall(MatOrderingRegister("dummy", MatOrderingCreate_Dummy));
   PetscCall(MatPartitioningRegister("dummy", MatPartitioningCreate_Dummy));
   PetscCall(MatRegister("dummy", MatCreate_Dummy));
   PetscCall(PFRegister("dummy", PFCreate_Dummy));

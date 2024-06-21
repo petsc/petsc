@@ -1,6 +1,6 @@
 #include <petsc/private/petscimpl.h> /*I    "petscsys.h"   I*/
 
-/*@C
+/*@
   PetscObjectGetName - Gets a string name associated with a PETSc object.
 
   Not Collective unless `obj` has not yet been named
@@ -8,7 +8,7 @@
   Input Parameters:
 + obj  - the PETSc variable. It must be cast with a (`PetscObject`), for example,
          `PetscObjectGetName`((`PetscObject`)mat,&name);
-- name - the name associated with `obj`
+- name - the name associated with `obj`, do not free
 
   Level: intermediate
 

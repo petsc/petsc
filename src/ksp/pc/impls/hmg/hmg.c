@@ -342,7 +342,7 @@ static PetscErrorCode PCHMGSetInnerPCType_HMG(PC pc, PCType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCHMGSetInnerPCType - Set an inner `PC` type
 
   Logically Collective

@@ -5,37 +5,37 @@ cdef extern from * nogil:
 
     PetscErrorCode PetscOptionsCreate(PetscOptions*)
     PetscErrorCode PetscOptionsDestroy(PetscOptions*)
-    PetscErrorCode PetscOptionsView(PetscOptions,PetscViewer)
+    PetscErrorCode PetscOptionsView(PetscOptions, PetscViewer)
     PetscErrorCode PetscOptionsClear(PetscOptions)
 
-    PetscErrorCode PetscOptionsPrefixPush(PetscOptions,char[])
+    PetscErrorCode PetscOptionsPrefixPush(PetscOptions, char[])
     PetscErrorCode PetscOptionsPrefixPop(PetscOptions)
 
-    PetscErrorCode PetscOptionsHasName(PetscOptions,char[],char[],PetscBool*)
-    PetscErrorCode PetscOptionsSetAlias(PetscOptions,char[],char[])
-    PetscErrorCode PetscOptionsSetValue(PetscOptions,char[],char[])
-    PetscErrorCode PetscOptionsClearValue(PetscOptions,char[])
+    PetscErrorCode PetscOptionsHasName(PetscOptions, char[], char[], PetscBool*)
+    PetscErrorCode PetscOptionsSetAlias(PetscOptions, char[], char[])
+    PetscErrorCode PetscOptionsSetValue(PetscOptions, char[], char[])
+    PetscErrorCode PetscOptionsClearValue(PetscOptions, char[])
 
-    PetscErrorCode PetscOptionsInsertString(PetscOptions,char[])
-    PetscErrorCode PetscOptionsInsertFile(PetscOptions,char[])
-    PetscErrorCode PetscOptionsGetAll(PetscOptions,char*[])
+    PetscErrorCode PetscOptionsInsertString(PetscOptions, char[])
+    PetscErrorCode PetscOptionsInsertFile(PetscOptions, char[])
+    PetscErrorCode PetscOptionsGetAll(PetscOptions, char*[])
 
-    PetscErrorCode PetscOptionsGetBool(PetscOptions,char[],char[],PetscBool*,PetscBool*)
-    PetscErrorCode PetscOptionsGetBoolArray(PetscOptions,char[],char[],PetscBool[],PetscInt*,PetscBool*)
-    PetscErrorCode PetscOptionsGetInt(PetscOptions,char[],char[],PetscInt*,PetscBool*)
-    PetscErrorCode PetscOptionsGetIntArray(PetscOptions,char[],char[],PetscInt[],PetscInt*,PetscBool*)
-    PetscErrorCode PetscOptionsGetReal(PetscOptions,char[],char[],PetscReal*,PetscBool*)
-    PetscErrorCode PetscOptionsGetRealArray(PetscOptions,char[],char[],PetscReal[],PetscInt*,PetscBool*)
-    PetscErrorCode PetscOptionsGetScalar(PetscOptions,char[],char[],PetscScalar*,PetscBool*)
-    PetscErrorCode PetscOptionsGetScalarArray(PetscOptions,char[],char[],PetscScalar[],PetscInt*,PetscBool*)
-    PetscErrorCode PetscOptionsGetString(PetscOptions,char[],char[],char[],size_t,PetscBool*)
+    PetscErrorCode PetscOptionsGetBool(PetscOptions, char[], char[], PetscBool*, PetscBool*)
+    PetscErrorCode PetscOptionsGetBoolArray(PetscOptions, char[], char[], PetscBool[], PetscInt*, PetscBool*)
+    PetscErrorCode PetscOptionsGetInt(PetscOptions, char[], char[], PetscInt*, PetscBool*)
+    PetscErrorCode PetscOptionsGetIntArray(PetscOptions, char[], char[], PetscInt[], PetscInt*, PetscBool*)
+    PetscErrorCode PetscOptionsGetReal(PetscOptions, char[], char[], PetscReal*, PetscBool*)
+    PetscErrorCode PetscOptionsGetRealArray(PetscOptions, char[], char[], PetscReal[], PetscInt*, PetscBool*)
+    PetscErrorCode PetscOptionsGetScalar(PetscOptions, char[], char[], PetscScalar*, PetscBool*)
+    PetscErrorCode PetscOptionsGetScalarArray(PetscOptions, char[], char[], PetscScalar[], PetscInt*, PetscBool*)
+    PetscErrorCode PetscOptionsGetString(PetscOptions, char[], char[], char[], size_t, PetscBool*)
 
     ctypedef struct _p_PetscToken
     ctypedef _p_PetscToken* PetscToken
-    PetscErrorCode PetscTokenCreate(char[],char,PetscToken*)
+    PetscErrorCode PetscTokenCreate(char[], char, PetscToken*)
     PetscErrorCode PetscTokenDestroy(PetscToken*)
-    PetscErrorCode PetscTokenFind(PetscToken,char*[])
-    PetscErrorCode PetscOptionsValidKey(char[],PetscBool*)
+    PetscErrorCode PetscTokenFind(PetscToken, char*[])
+    PetscErrorCode PetscOptionsValidKey(char[], PetscBool*)
 
 #
 
@@ -66,45 +66,46 @@ cdef opt2str(const char *pre, const char *name):
 cdef getopt_Bool(PetscOptions opt, const char *pre, const char *name, object deft):
     cdef PetscBool value = PETSC_FALSE
     cdef PetscBool flag  = PETSC_FALSE
-    CHKERR( PetscOptionsGetBool(opt, pre, name, &value, &flag) )
+    CHKERR(PetscOptionsGetBool(opt, pre, name, &value, &flag))
     if flag==PETSC_TRUE: return toBool(value)
-    if deft is not None: return deft
+    if deft is not None: return toBool(asBool(deft))
     raise KeyError(opt2str(pre, name))
 
 cdef getopt_BoolArray(PetscOptions opt, const char *pre, const char *name, object deft):
     cdef PetscBool value[1024], *ivalue = value, *ivaluedeft = NULL
     cdef PetscInt nmax = 1024, ndeft = 0
     cdef PetscBool flag = PETSC_FALSE
-    cdef object dummy
+    cdef object unused
     if deft is not None:
+        deft = [toBool(asBool(d)) for d in deft]
         deft = iarray_b(deft, &ndeft, &ivaluedeft)
         if ndeft > nmax:
-            dummy = oarray_b(empty_b(ndeft), &nmax, &ivalue)
+            unused = oarray_b(empty_b(ndeft), &nmax, &ivalue)
         memcpy(ivalue, ivaluedeft, <size_t>ndeft*sizeof(PetscBool))
-    CHKERR( PetscOptionsGetBoolArray(opt, pre, name, ivalue, &nmax, &flag) )
-    if flag==PETSC_TRUE: return array_b(nmax, ivalue)
-    if deft is not None: return deft
+    CHKERR(PetscOptionsGetBoolArray(opt, pre, name, ivalue, &nmax, &flag))
+    if flag==PETSC_TRUE: return array_b(nmax, ivalue).astype('bool')
+    if deft is not None: return deft.astype('bool')
     raise KeyError(opt2str(pre, name))
 
 cdef getopt_Int(PetscOptions opt, const char *pre, const char *name, object deft):
     cdef PetscInt value = 0
     cdef PetscBool flag = PETSC_FALSE
-    CHKERR( PetscOptionsGetInt(opt, pre, name, &value, &flag) )
+    CHKERR(PetscOptionsGetInt(opt, pre, name, &value, &flag))
     if flag==PETSC_TRUE: return toInt(value)
-    if deft is not None: return deft
+    if deft is not None: return toInt(asInt(deft))
     raise KeyError(opt2str(pre, name))
 
 cdef getopt_IntArray(PetscOptions opt, const char *pre, const char *name, object deft):
     cdef PetscInt value[1024], *ivalue = value, *ivaluedeft = NULL
     cdef PetscInt nmax = 1024, ndeft = 0
     cdef PetscBool flag = PETSC_FALSE
-    cdef object dummy
+    cdef object unused
     if deft is not None:
         deft = iarray_i(deft, &ndeft, &ivaluedeft)
         if ndeft > nmax:
-            dummy = oarray_i(empty_i(ndeft), &nmax, &ivalue)
+            unused = oarray_i(empty_i(ndeft), &nmax, &ivalue)
         memcpy(ivalue, ivaluedeft, <size_t>ndeft*sizeof(PetscInt))
-    CHKERR( PetscOptionsGetIntArray(opt, pre, name, ivalue, &nmax, &flag) )
+    CHKERR(PetscOptionsGetIntArray(opt, pre, name, ivalue, &nmax, &flag))
     if flag==PETSC_TRUE: return array_i(nmax, ivalue)
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
@@ -112,22 +113,22 @@ cdef getopt_IntArray(PetscOptions opt, const char *pre, const char *name, object
 cdef getopt_Real(PetscOptions opt, const char *pre, const char *name, object deft):
     cdef PetscReal value = 0
     cdef PetscBool flag = PETSC_FALSE
-    CHKERR( PetscOptionsGetReal(opt, pre, name, &value, &flag) )
+    CHKERR(PetscOptionsGetReal(opt, pre, name, &value, &flag))
     if flag==PETSC_TRUE: return toReal(value)
-    if deft is not None: return deft
+    if deft is not None: return toReal(asReal(deft))
     raise KeyError(opt2str(pre, name))
 
 cdef getopt_RealArray(PetscOptions opt, const char *pre, const char *name, object deft):
     cdef PetscReal value[1024], *ivalue = value, *ivaluedeft = NULL
     cdef PetscInt nmax = 1024, ndeft = 0
     cdef PetscBool flag = PETSC_FALSE
-    cdef object dummy
+    cdef object unused
     if deft is not None:
         deft = iarray_r(deft, &ndeft, &ivaluedeft)
         if ndeft > nmax:
-            dummy = oarray_r(empty_r(ndeft), &nmax, &ivalue)
+            unused = oarray_r(empty_r(ndeft), &nmax, &ivalue)
         memcpy(ivalue, ivaluedeft, <size_t>ndeft*sizeof(PetscReal))
-    CHKERR( PetscOptionsGetRealArray(opt, pre, name, ivalue, &nmax, &flag) )
+    CHKERR(PetscOptionsGetRealArray(opt, pre, name, ivalue, &nmax, &flag))
     if flag==PETSC_TRUE: return array_r(nmax, ivalue)
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
@@ -135,22 +136,22 @@ cdef getopt_RealArray(PetscOptions opt, const char *pre, const char *name, objec
 cdef getopt_Scalar(PetscOptions opt, const char *pre, const char *name, object deft):
     cdef PetscScalar value = 0
     cdef PetscBool flag = PETSC_FALSE
-    CHKERR( PetscOptionsGetScalar(opt, pre, name, &value, &flag) )
+    CHKERR(PetscOptionsGetScalar(opt, pre, name, &value, &flag))
     if flag==PETSC_TRUE: return toScalar(value)
-    if deft is not None: return deft
+    if deft is not None: return toScalar(asScalar(deft))
     raise KeyError(opt2str(pre, name))
 
 cdef getopt_ScalarArray(PetscOptions opt, const char *pre, const char *name, object deft):
     cdef PetscScalar value[1024], *ivalue = value, *ivaluedeft = NULL
     cdef PetscInt nmax = 1024, ndeft = 0
     cdef PetscBool flag = PETSC_FALSE
-    cdef object dummy
+    cdef object unused
     if deft is not None:
         deft = iarray_s(deft, &ndeft, &ivaluedeft)
         if ndeft > nmax:
-            dummy = oarray_s(empty_s(ndeft), &nmax, &ivalue)
+            unused = oarray_s(empty_s(ndeft), &nmax, &ivalue)
         memcpy(ivalue, ivaluedeft, <size_t>ndeft*sizeof(PetscScalar))
-    CHKERR( PetscOptionsGetScalarArray(opt, pre, name, ivalue, &nmax, &flag) )
+    CHKERR(PetscOptionsGetScalarArray(opt, pre, name, ivalue, &nmax, &flag))
     if flag==PETSC_TRUE: return array_s(nmax, ivalue)
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
@@ -158,9 +159,9 @@ cdef getopt_ScalarArray(PetscOptions opt, const char *pre, const char *name, obj
 cdef getopt_String(PetscOptions opt, const char *pre, const char *name, object deft):
     cdef char value[1024+1]
     cdef PetscBool flag = PETSC_FALSE
-    CHKERR( PetscOptionsGetString(opt, pre, name, value, 1024, &flag) )
+    CHKERR(PetscOptionsGetString(opt, pre, name, value, 1024, &flag))
     if flag==PETSC_TRUE: return bytes2str(value)
-    if deft is not None: return deft
+    if deft is not None: return str(deft)
     raise KeyError(opt2str(pre, name))
 
 cdef enum PetscOptType:
@@ -194,7 +195,7 @@ cdef getpair(prefix, name, const char **pr, const char **nm):
 cdef getopt(PetscOptions opt, PetscOptType otype, prefix, name, deft):
     cdef const char *pr = NULL
     cdef const char *nm = NULL
-    tmp = getpair(prefix, name, &pr, &nm)
+    cdef object unused = getpair(prefix, name, &pr, &nm)
     if otype == OPT_BOOL        : return getopt_Bool        (opt, pr, nm, deft)
     if otype == OPT_BOOLARRAY   : return getopt_BoolArray   (opt, pr, nm, deft)
     if otype == OPT_INT         : return getopt_Int         (opt, pr, nm, deft)
@@ -209,27 +210,27 @@ cdef getopt(PetscOptions opt, PetscOptType otype, prefix, name, deft):
 # simple minded options parser
 
 cdef tokenize(options):
-  cdef PetscToken t = NULL
-  cdef const char *s = NULL
-  cdef const char *p = NULL
-  options = str2bytes(options, &s)
-  cdef list tokens = []
-  CHKERR( PetscTokenCreate(s, c' ', &t) )
-  try:
-      CHKERR( PetscTokenFind(t, <char**>&p) )
-      while p != NULL:
-          tokens.append(bytes2str(p))
-          CHKERR( PetscTokenFind(t, <char**>&p) )
-  finally:
-      CHKERR( PetscTokenDestroy(&t) )
-  return tokens
+    cdef PetscToken t = NULL
+    cdef const char *s = NULL
+    cdef const char *p = NULL
+    options = str2bytes(options, &s)
+    cdef list tokens = []
+    CHKERR(PetscTokenCreate(s, c' ', &t))
+    try:
+        CHKERR(PetscTokenFind(t, <char**>&p))
+        while p != NULL:
+            tokens.append(bytes2str(p))
+            CHKERR(PetscTokenFind(t, <char**>&p))
+    finally:
+        CHKERR(PetscTokenDestroy(&t))
+    return tokens
 
 cdef bint iskey(key):
     cdef const char *k = NULL
     cdef PetscBool b = PETSC_FALSE
     if key:
         key = str2bytes(key, &k)
-        CHKERR( PetscOptionsValidKey(k, &b) )
+        CHKERR(PetscOptionsValidKey(k, &b))
         if b == PETSC_TRUE:
             return True
     return False
@@ -274,5 +275,3 @@ cdef parseopt(options, prefix):
             opts[key] = value
     # we are done
     return opts
-
-#

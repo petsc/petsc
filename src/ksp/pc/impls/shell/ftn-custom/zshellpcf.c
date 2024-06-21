@@ -14,8 +14,6 @@
   #define pcshellsetpresolve_            PCSHELLSETPRESOLVE
   #define pcshellsetpostsolve_           PCSHELLSETPOSTSOLVE
   #define pcshellsetview_                PCSHELLSETVIEW
-  #define pcshellsetname_                PCSHELLSETNAME
-  #define pcshellgetname_                PCSHELLGETNAME
   #define pcshellsetcontext_             PCSHELLSETCONTEXT
   #define pcshellgetcontext_             PCSHELLGETCONTEXT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
@@ -28,8 +26,6 @@
   #define pcshellsetpresolve_        pcshellsetpresolve
   #define pcshellsetpostsolve_       pcshellsetpostsolve
   #define pcshellsetview_            pcshellsetview
-  #define pcshellsetname_            pcshellsetname
-  #define pcshellgetname_            pcshellgetname
   #define pcshellsetcontext_         pcshellsetcontext
   #define pcshellgetcontext_         pcshellgetcontext
 #endif
@@ -223,24 +219,4 @@ PETSC_EXTERN void pcshellsetview_(PC *pc, void (*view)(void *, PetscViewer *, Pe
   ((PetscObject)*pc)->fortran_func_pointers[8] = (PetscVoidFn *)view;
 
   *ierr = PCShellSetView(*pc, ourshellview);
-}
-
-PETSC_EXTERN void pcshellsetname_(PC *pc, char *name, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *c;
-  FIXCHAR(name, len, c);
-  *ierr = PCShellSetName(*pc, c);
-  if (*ierr) return;
-  FREECHAR(name, c);
-}
-
-PETSC_EXTERN void pcshellgetname_(PC *pc, char *name, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  const char *c;
-
-  *ierr = PCShellGetName(*pc, &c);
-  if (*ierr) return;
-  *ierr = PetscStrncpy(name, c, len);
-  if (*ierr) return;
-  FIXRETURNCHAR(PETSC_TRUE, name, len);
 }

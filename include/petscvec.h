@@ -145,6 +145,7 @@ PETSC_EXTERN PetscErrorCode VecZeroEntries(Vec);
 PETSC_EXTERN PetscErrorCode VecSetOptionsPrefix(Vec, const char[]);
 PETSC_EXTERN PetscErrorCode VecAppendOptionsPrefix(Vec, const char[]);
 PETSC_EXTERN PetscErrorCode VecGetOptionsPrefix(Vec, const char *[]);
+PETSC_EXTERN PetscErrorCode VecGetState(Vec, PetscObjectState *);
 
 PETSC_EXTERN PetscErrorCode VecSetSizes(Vec, PetscInt, PetscInt);
 
@@ -370,12 +371,8 @@ PETSC_EXTERN PetscErrorCode VecSetPreallocationCOO(Vec, PetscCount, const PetscI
 PETSC_EXTERN PetscErrorCode VecSetPreallocationCOOLocal(Vec, PetscCount, PetscInt[]);
 PETSC_EXTERN PetscErrorCode VecSetValuesCOO(Vec, const PetscScalar[], InsertMode);
 
-/*MC
+/*@C
    VecSetValue - Set a single entry into a vector.
-
-   Synopsis:
-   #include <petscvec.h>
-   PetscErrorCode VecSetValue(Vec v,PetscInt row,PetscScalar value, InsertMode mode);
 
    Not Collective
 
@@ -397,7 +394,7 @@ PETSC_EXTERN PetscErrorCode VecSetValuesCOO(Vec, const PetscScalar[], InsertMode
    `VecSetValue()` uses 0-based indices in Fortran as well as in C.
 
 .seealso: [](ch_vectors), `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`, `VecSetValueLocal()`
-M*/
+@*/
 static inline PetscErrorCode VecSetValue(Vec v, PetscInt i, PetscScalar va, InsertMode mode)
 {
   return VecSetValues(v, 1, &i, &va, mode);
@@ -480,12 +477,8 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMemWrite(Vec);
 PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMem(Vec, PETSC_UINTPTR_T *);
 PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec);
 
-/*MC
+/*@C
    VecSetValueLocal - Set a single entry into a vector using the local numbering, see `VecSetValuesLocal()`
-
-   Synopsis:
-   #include <petscvec.h>
-   PetscErrorCode VecSetValueLocal(Vec v,PetscInt row,PetscScalar value, InsertMode mode);
 
    Not Collective
 
@@ -507,7 +500,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec);
    `VecSetValues()` uses 0-based indices in Fortran as well as in C.
 
 .seealso: [](ch_vectors), `VecSetValuesLocal()`, `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`, `VecSetValue()`
-M*/
+@*/
 static inline PetscErrorCode VecSetValueLocal(Vec v, PetscInt i, PetscScalar va, InsertMode mode)
 {
   return VecSetValuesLocal(v, 1, &i, &va, mode);
@@ -638,12 +631,12 @@ static inline PetscErrorCode VecRestoreArrayPair(Vec x, Vec y, PetscScalar **xv,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if PetscDefined(USE_DEBUG)
-PETSC_EXTERN PetscErrorCode  VecLockReadPush(Vec);
-PETSC_EXTERN PetscErrorCode  VecLockReadPop(Vec);
-PETSC_EXTERN PetscErrorCode  VecLockWriteSet(Vec, PetscBool);
-PETSC_EXTERN PetscErrorCode  VecLockGet(Vec, PetscInt *);
-PETSC_EXTERN PetscErrorCode  VecLockGetLocation(Vec, const char *[], const char *[], int *);
+PETSC_EXTERN PetscErrorCode VecLockReadPush(Vec);
+PETSC_EXTERN PetscErrorCode VecLockReadPop(Vec);
+PETSC_EXTERN PetscErrorCode VecLockWriteSet(Vec, PetscBool);
+PETSC_EXTERN PetscErrorCode VecLockGet(Vec, PetscInt *);
+PETSC_EXTERN PetscErrorCode VecLockGetLocation(Vec, const char *[], const char *[], int *);
+
 static inline PetscErrorCode VecSetErrorIfLocked(Vec x, PetscInt arg)
 {
   PetscInt state;
@@ -660,21 +653,19 @@ static inline PetscErrorCode VecSetErrorIfLocked(Vec x, PetscInt arg)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
 /* The three are deprecated */
-PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 11, 0, "VecLockReadPush()", ) PetscErrorCode VecLockPush(Vec);
-PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 11, 0, "VecLockReadPop()", ) PetscErrorCode VecLockPop(Vec);
-  #define VecLocked(x, arg) VecSetErrorIfLocked(x, arg) PETSC_DEPRECATED_MACRO(3, 11, 0, "VecSetErrorIfLocked()", )
-#else
-  #define VecLockReadPush(x)          PETSC_SUCCESS
-  #define VecLockReadPop(x)           PETSC_SUCCESS
-  #define VecLockGet(x, s)            (*(s) = 0, PETSC_SUCCESS)
-  #define VecSetErrorIfLocked(x, arg) PETSC_SUCCESS
-  #define VecLockWriteSet(x, flg)     PETSC_SUCCESS
-  /* The three are deprecated */
-  #define VecLockPush(x)              PETSC_SUCCESS
-  #define VecLockPop(x)               PETSC_SUCCESS
-  #define VecLocked(x, arg)           PETSC_SUCCESS
-#endif
+PETSC_DEPRECATED_FUNCTION(3, 11, 0, "VecLockReadPush()", ) static inline PetscErrorCode VecLockPush(Vec v)
+{
+  return VecLockReadPush(v);
+}
+
+PETSC_DEPRECATED_FUNCTION(3, 11, 0, "VecLockReadPop()", ) static inline PetscErrorCode VecLockPop(Vec v)
+{
+  return VecLockReadPop(v);
+}
+
+#define VecLocked(x, arg) VecSetErrorIfLocked(x, arg) PETSC_DEPRECATED_MACRO(3, 11, 0, "VecSetErrorIfLocked()", )
 
 /*E
   VecOperation - Enumeration of overide-able methods in the `Vec` implementation function-table.

@@ -495,27 +495,26 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
   DMLabel       ctLabel;
   PetscHMapIJKL faceTable;
   PetscInt      faceTypeNum[DM_NUM_POLYTOPES];
-  PetscInt      depth, d, pStart, Np, cStart, cEnd, c, fStart, fEnd;
+  PetscInt      depth, pStart, Np, cStart, cEnd, fStart, fEnd, vStart, vEnd;
   PetscInt      cntFaces, *facesId, minCone;
 
   PetscFunctionBegin;
   PetscCall(DMPlexGetDepth(dm, &depth));
   PetscCall(PetscHMapIJKLCreate(&faceTable));
   PetscCall(PetscArrayzero(faceTypeNum, DM_NUM_POLYTOPES));
+  PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   PetscCall(DMPlexGetDepthStratum(dm, cellDepth, &cStart, &cEnd));
-  /* Number new faces and save face vertices in hash table */
+  // If the range incorporates the vertices, it means we have a non-manifold topology, so choose just cells
+  if (cStart <= vStart && cEnd >= vEnd) cEnd = vStart;
+  // Number new faces and save face vertices in hash table
+  //   If depth > cellDepth, meaning we are interpolating faces, put the new (d-1)-faces after them
+  //   otherwise, we are interpolating cells, so put the faces after the vertices
   PetscCall(DMPlexGetDepthStratum(dm, depth > cellDepth ? cellDepth : 0, NULL, &fStart));
-  {
-    PetscInt opEnd;
-
-    // We need to account for existing faces in non-manifold meshes
-    PetscCall(DMPlexGetChart(dm, NULL, &opEnd));
-    fStart = PetscMax(opEnd, fStart);
-  }
   fEnd = fStart;
 
-  minCone = PETSC_MAX_INT;
-  for (c = cStart, cntFaces = 0; c < cEnd; ++c) {
+  minCone  = PETSC_MAX_INT;
+  cntFaces = 0;
+  for (PetscInt c = cStart; c < cEnd; ++c) {
     const PetscInt *cone;
     DMPolytopeType  ct;
     PetscInt        numFaces = 0, coneSize;
@@ -533,11 +532,12 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
 
   PetscCall(PetscMalloc1(cntFaces, &facesId));
 
-  for (c = cStart, cntFaces = 0; c < cEnd; ++c) {
+  cntFaces = 0;
+  for (PetscInt c = cStart; c < cEnd; ++c) {
     const PetscInt       *cone, *faceSizes, *faces;
     const DMPolytopeType *faceTypes;
     DMPolytopeType        ct;
-    PetscInt              numFaces, cf, foff = 0;
+    PetscInt              numFaces, foff = 0;
 
     PetscCall(DMPlexGetCellType(dm, c, &ct));
     PetscCall(DMPlexGetCone(dm, c, &cone));
@@ -547,7 +547,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
     } else {
       numFaces = 0;
     }
-    for (cf = 0; cf < numFaces; foff += faceSizes[cf], ++cf) {
+    for (PetscInt cf = 0; cf < numFaces; foff += faceSizes[cf], ++cf) {
       const PetscInt       faceSize = faceSizes[cf];
       const DMPolytopeType faceType = faceTypes[cf];
       const PetscInt      *face     = &faces[foff];
@@ -583,11 +583,12 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
       PetscCall(PetscHMapIJKLClear(faceTable));
       faceTypeStart[0] = fStart;
       for (ct = 1; ct < DM_NUM_POLYTOPES; ++ct) faceTypeStart[ct] = faceTypeStart[ct - 1] + faceTypeNum[ct - 1];
-      for (c = cStart, cntFaces = 0; c < cEnd; ++c) {
+      cntFaces = 0;
+      for (PetscInt c = cStart; c < cEnd; ++c) {
         const PetscInt       *cone, *faceSizes, *faces;
         const DMPolytopeType *faceTypes;
         DMPolytopeType        ct;
-        PetscInt              numFaces, cf, foff = 0;
+        PetscInt              numFaces, foff = 0;
 
         PetscCall(DMPlexGetCellType(dm, c, &ct));
         PetscCall(DMPlexGetCone(dm, c, &cone));
@@ -596,7 +597,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
         } else {
           numFaces = 0;
         }
-        for (cf = 0; cf < numFaces; foff += faceSizes[cf], ++cf) {
+        for (PetscInt cf = 0; cf < numFaces; foff += faceSizes[cf], ++cf) {
           const PetscInt       faceSize = faceSizes[cf];
           const DMPolytopeType faceType = faceTypes[cf];
           const PetscInt      *face     = &faces[foff];
@@ -625,43 +626,51 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
   }
   PetscCall(PetscHMapIJKLDestroy(&faceTable));
 
-  /* Add new points, always at the end of the numbering */
+  // Add new points, perhaps inserting into the numbering
   PetscCall(DMPlexGetChart(dm, &pStart, &Np));
   PetscCall(DMPlexSetChart(idm, pStart, Np + (fEnd - fStart)));
-  /* Set cone sizes */
-  /*   Must create the celltype label here so that we do not automatically try to compute the types */
+  // Set cone sizes
+  //   Must create the celltype label here so that we do not automatically try to compute the types
   PetscCall(DMCreateLabel(idm, "celltype"));
   PetscCall(DMPlexGetCellTypeLabel(idm, &ctLabel));
-  for (d = 0; d <= depth; ++d) {
+  for (PetscInt d = 0; d <= depth; ++d) {
     DMPolytopeType ct;
-    PetscInt       coneSize, pStart, pEnd, p;
+    PetscInt       coneSize, pStart, pEnd, poff = 0;
 
-    if (d == cellDepth) continue;
     PetscCall(DMPlexGetDepthStratum(dm, d, &pStart, &pEnd));
-    for (p = pStart; p < pEnd; ++p) {
+    // Check for non-manifold condition
+    if (d == cellDepth) {
+      if (pEnd == cEnd) continue;
+      else pStart = vEnd;
+    }
+    // Account for insertion
+    if (pStart >= fStart) poff = fEnd - fStart;
+    for (PetscInt p = pStart; p < pEnd; ++p) {
       PetscCall(DMPlexGetConeSize(dm, p, &coneSize));
-      PetscCall(DMPlexSetConeSize(idm, p, coneSize));
+      PetscCall(DMPlexSetConeSize(idm, p + poff, coneSize));
       PetscCall(DMPlexGetCellType(dm, p, &ct));
-      PetscCall(DMPlexSetCellType(idm, p, ct));
+      PetscCall(DMPlexSetCellType(idm, p + poff, ct));
     }
   }
-  for (c = cStart, cntFaces = 0; c < cEnd; ++c) {
+  cntFaces = 0;
+  for (PetscInt c = cStart; c < cEnd; ++c) {
     const PetscInt       *cone, *faceSizes;
     const DMPolytopeType *faceTypes;
     DMPolytopeType        ct;
-    PetscInt              numFaces, cf;
+    PetscInt              numFaces, poff = 0;
 
     PetscCall(DMPlexGetCellType(dm, c, &ct));
     PetscCall(DMPlexGetCone(dm, c, &cone));
+    if (c >= fStart) poff = fEnd - fStart;
     if (ct == DM_POLYTOPE_SEGMENT || ct == DM_POLYTOPE_POINT_PRISM_TENSOR) {
-      PetscCall(DMPlexSetCellType(idm, c, ct));
-      PetscCall(DMPlexSetConeSize(idm, c, 2));
+      PetscCall(DMPlexSetCellType(idm, c + poff, ct));
+      PetscCall(DMPlexSetConeSize(idm, c + poff, 2));
       continue;
     }
     PetscCall(DMPlexGetRawFaces_Internal(dm, ct, cone, &numFaces, &faceTypes, &faceSizes, NULL));
-    PetscCall(DMPlexSetCellType(idm, c, ct));
-    PetscCall(DMPlexSetConeSize(idm, c, numFaces));
-    for (cf = 0; cf < numFaces; ++cf) {
+    PetscCall(DMPlexSetCellType(idm, c + poff, ct));
+    PetscCall(DMPlexSetConeSize(idm, c + poff, numFaces));
+    for (PetscInt cf = 0; cf < numFaces; ++cf) {
       const PetscInt f        = facesId[cntFaces];
       DMPolytopeType faceType = faceTypes[cf];
       const PetscInt faceSize = faceSizes[cf];
@@ -672,7 +681,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
     PetscCall(DMPlexRestoreRawFaces_Internal(dm, ct, cone, &numFaces, &faceTypes, &faceSizes, NULL));
   }
   PetscCall(DMSetUp(idm));
-  /* Initialize cones so we do not need the bash table to tell us that a cone has been set */
+  // Initialize cones so we do not need the bash table to tell us that a cone has been set
   {
     PetscSection cs;
     PetscInt    *cones, csize;
@@ -680,61 +689,81 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
     PetscCall(DMPlexGetConeSection(idm, &cs));
     PetscCall(DMPlexGetCones(idm, &cones));
     PetscCall(PetscSectionGetStorageSize(cs, &csize));
-    for (c = 0; c < csize; ++c) cones[c] = -1;
+    for (PetscInt c = 0; c < csize; ++c) cones[c] = -1;
   }
-  /* Set cones */
-  for (d = 0; d <= depth; ++d) {
-    const PetscInt *cone;
-    PetscInt        pStart, pEnd, p;
+  // Set cones
+  {
+    PetscInt *icone;
+    PetscInt  maxConeSize;
 
-    if (d == cellDepth) continue;
-    PetscCall(DMPlexGetDepthStratum(dm, d, &pStart, &pEnd));
-    for (p = pStart; p < pEnd; ++p) {
-      PetscCall(DMPlexGetCone(dm, p, &cone));
-      PetscCall(DMPlexSetCone(idm, p, cone));
-      PetscCall(DMPlexGetConeOrientation(dm, p, &cone));
-      PetscCall(DMPlexSetConeOrientation(idm, p, cone));
-    }
-  }
-  for (c = cStart, cntFaces = 0; c < cEnd; ++c) {
-    const PetscInt       *cone, *faceSizes, *faces;
-    const DMPolytopeType *faceTypes;
-    DMPolytopeType        ct;
-    PetscInt              numFaces, cf, foff = 0;
+    PetscCall(DMPlexGetMaxSizes(dm, &maxConeSize, NULL));
+    PetscCall(PetscMalloc1(maxConeSize, &icone));
+    for (PetscInt d = 0; d <= depth; ++d) {
+      const PetscInt *cone;
+      PetscInt        pStart, pEnd, poff = 0, coneSize;
 
-    PetscCall(DMPlexGetCellType(dm, c, &ct));
-    PetscCall(DMPlexGetCone(dm, c, &cone));
-    if (ct == DM_POLYTOPE_SEGMENT || ct == DM_POLYTOPE_POINT_PRISM_TENSOR) {
-      PetscCall(DMPlexSetCone(idm, c, cone));
-      PetscCall(DMPlexGetConeOrientation(dm, c, &cone));
-      PetscCall(DMPlexSetConeOrientation(idm, c, cone));
-      continue;
-    }
-    PetscCall(DMPlexGetRawFaces_Internal(dm, ct, cone, &numFaces, &faceTypes, &faceSizes, &faces));
-    for (cf = 0; cf < numFaces; foff += faceSizes[cf], ++cf) {
-      DMPolytopeType  faceType = faceTypes[cf];
-      const PetscInt  faceSize = faceSizes[cf];
-      const PetscInt  f        = facesId[cntFaces];
-      const PetscInt *face     = &faces[foff];
-      const PetscInt *fcone;
-
-      PetscCall(DMPlexInsertCone(idm, c, cf, f));
-      PetscCall(DMPlexGetCone(idm, f, &fcone));
-      if (fcone[0] < 0) PetscCall(DMPlexSetCone(idm, f, face));
-      {
-        const PetscInt *cone;
-        PetscInt        coneSize, ornt;
-
-        PetscCall(DMPlexGetConeSize(idm, f, &coneSize));
-        PetscCall(DMPlexGetCone(idm, f, &cone));
-        PetscCheck(coneSize == faceSize, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of face vertices %" PetscInt_FMT " for face %" PetscInt_FMT " should be %" PetscInt_FMT, coneSize, f, faceSize);
-        /* Notice that we have to use vertices here because the lower dimensional faces have not been created yet */
-        PetscCall(DMPolytopeGetVertexOrientation(faceType, cone, face, &ornt));
-        PetscCall(DMPlexInsertConeOrientation(idm, c, cf, ornt));
+      PetscCall(DMPlexGetDepthStratum(dm, d, &pStart, &pEnd));
+      // Check for non-manifold condition
+      if (d == cellDepth) {
+        if (pEnd == cEnd) continue;
+        else pStart = vEnd;
       }
-      cntFaces++;
+      // Account for insertion
+      if (pStart >= fStart) poff = fEnd - fStart;
+      for (PetscInt p = pStart; p < pEnd; ++p) {
+        PetscCall(DMPlexGetCone(dm, p, &cone));
+        PetscCall(DMPlexGetConeSize(dm, p, &coneSize));
+        for (PetscInt cp = 0; cp < coneSize; ++cp) icone[cp] = cone[cp] + (cone[cp] >= fStart ? fEnd - fStart : 0);
+        PetscCall(DMPlexSetCone(idm, p + poff, icone));
+        PetscCall(DMPlexGetConeOrientation(dm, p, &cone));
+        PetscCall(DMPlexSetConeOrientation(idm, p + poff, cone));
+      }
     }
-    PetscCall(DMPlexRestoreRawFaces_Internal(dm, ct, cone, &numFaces, &faceTypes, &faceSizes, &faces));
+    cntFaces = 0;
+    for (PetscInt c = cStart; c < cEnd; ++c) {
+      const PetscInt       *cone, *faceSizes, *faces;
+      const DMPolytopeType *faceTypes;
+      DMPolytopeType        ct;
+      PetscInt              coneSize, numFaces, foff = 0, poff = 0;
+
+      PetscCall(DMPlexGetCellType(dm, c, &ct));
+      PetscCall(DMPlexGetCone(dm, c, &cone));
+      PetscCall(DMPlexGetConeSize(dm, c, &coneSize));
+      if (c >= fStart) poff = fEnd - fStart;
+      if (ct == DM_POLYTOPE_SEGMENT || ct == DM_POLYTOPE_POINT_PRISM_TENSOR) {
+        for (PetscInt cp = 0; cp < coneSize; ++cp) icone[cp] = cone[cp] + (cone[cp] >= fStart ? fEnd - fStart : 0);
+        PetscCall(DMPlexSetCone(idm, c + poff, icone));
+        PetscCall(DMPlexGetConeOrientation(dm, c, &cone));
+        PetscCall(DMPlexSetConeOrientation(idm, c + poff, cone));
+        continue;
+      }
+      PetscCall(DMPlexGetRawFaces_Internal(dm, ct, cone, &numFaces, &faceTypes, &faceSizes, &faces));
+      for (PetscInt cf = 0; cf < numFaces; foff += faceSizes[cf], ++cf) {
+        DMPolytopeType  faceType = faceTypes[cf];
+        const PetscInt  faceSize = faceSizes[cf];
+        const PetscInt  f        = facesId[cntFaces];
+        const PetscInt *face     = &faces[foff];
+        const PetscInt *fcone;
+
+        PetscCall(DMPlexInsertCone(idm, c, cf, f));
+        PetscCall(DMPlexGetCone(idm, f, &fcone));
+        if (fcone[0] < 0) PetscCall(DMPlexSetCone(idm, f, face));
+        {
+          const PetscInt *fcone2;
+          PetscInt        ornt;
+
+          PetscCall(DMPlexGetConeSize(idm, f, &coneSize));
+          PetscCall(DMPlexGetCone(idm, f, &fcone2));
+          PetscCheck(coneSize == faceSize, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of face vertices %" PetscInt_FMT " for face %" PetscInt_FMT " should be %" PetscInt_FMT, coneSize, f, faceSize);
+          /* Notice that we have to use vertices here because the lower dimensional faces have not been created yet */
+          PetscCall(DMPolytopeGetVertexOrientation(faceType, fcone2, face, &ornt));
+          PetscCall(DMPlexInsertConeOrientation(idm, c + poff, cf, ornt));
+        }
+        cntFaces++;
+      }
+      PetscCall(DMPlexRestoreRawFaces_Internal(dm, ct, cone, &numFaces, &faceTypes, &faceSizes, &faces));
+    }
+    PetscCall(PetscFree(icone));
   }
   PetscCall(PetscFree(facesId));
   PetscCall(DMPlexSymmetrize(idm));
@@ -1520,28 +1549,86 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
     PetscCall(PetscObjectReference((PetscObject)dm));
     idm = dm;
   } else {
-    for (d = 1; d < dim; ++d) {
-      const char *prefix;
+    PetscBool nonmanifold = PETSC_FALSE;
 
-      /* Create interpolated mesh */
-      PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), &idm));
-      PetscCall(DMSetType(idm, DMPLEX));
-      PetscCall(DMSetDimension(idm, dim));
-      PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm, &prefix));
-      PetscCall(PetscObjectSetOptionsPrefix((PetscObject)idm, prefix));
-      if (depth > 0) {
-        PetscCall(DMPlexInterpolateFaces_Internal(odm, 1, idm));
-        PetscCall(DMGetPointSF(odm, &sfPoint));
-        if (PetscDefined(USE_DEBUG)) PetscCall(DMPlexCheckPointSF(odm, sfPoint, PETSC_FALSE));
-        {
-          /* TODO: We need to systematically fix cases of distributed Plexes with no graph set */
-          PetscInt nroots;
-          PetscCall(PetscSFGetGraph(sfPoint, &nroots, NULL, NULL, NULL));
-          if (nroots >= 0) PetscCall(DMPlexInterpolatePointSF(idm, sfPoint));
+    PetscCall(PetscOptionsGetBool(NULL, dm->hdr.prefix, "-dm_plex_stratify_celltype", &nonmanifold, NULL));
+    if (nonmanifold) {
+      do {
+        const char *prefix;
+        PetscInt    pStart, pEnd, pdepth;
+        PetscBool   done = PETSC_TRUE;
+
+        // Find a point which is not correctly interpolated
+        PetscCall(DMPlexGetChart(odm, &pStart, &pEnd));
+        for (PetscInt p = pStart; p < pEnd; ++p) {
+          DMPolytopeType  ct;
+          const PetscInt *cone;
+          PetscInt        coneSize, cdepth;
+
+          PetscCall(DMPlexGetPointDepth(odm, p, &pdepth));
+          PetscCall(DMPlexGetCellType(odm, p, &ct));
+          // Check against celltype
+          if (pdepth != DMPolytopeTypeGetDim(ct)) {
+            done = PETSC_FALSE;
+            break;
+          }
+          // Check against boundary
+          PetscCall(DMPlexGetCone(odm, p, &cone));
+          PetscCall(DMPlexGetConeSize(odm, p, &coneSize));
+          for (PetscInt c = 0; c < coneSize; ++c) {
+            PetscCall(DMPlexGetPointDepth(odm, cone[c], &cdepth));
+            if (cdepth != pdepth - 1) {
+              done = PETSC_FALSE;
+              p    = pEnd;
+              break;
+            }
+          }
         }
+        if (done) break;
+        /* Create interpolated mesh */
+        PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), &idm));
+        PetscCall(DMSetType(idm, DMPLEX));
+        PetscCall(DMSetDimension(idm, dim));
+        PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm, &prefix));
+        PetscCall(PetscObjectSetOptionsPrefix((PetscObject)idm, prefix));
+        if (depth > 0) {
+          PetscCall(DMPlexInterpolateFaces_Internal(odm, pdepth, idm));
+          PetscCall(DMGetPointSF(odm, &sfPoint));
+          if (PetscDefined(USE_DEBUG)) PetscCall(DMPlexCheckPointSF(odm, sfPoint, PETSC_FALSE));
+          {
+            /* TODO: We need to systematically fix cases of distributed Plexes with no graph set */
+            PetscInt nroots;
+            PetscCall(PetscSFGetGraph(sfPoint, &nroots, NULL, NULL, NULL));
+            if (nroots >= 0) PetscCall(DMPlexInterpolatePointSF(idm, sfPoint));
+          }
+        }
+        if (odm != dm) PetscCall(DMDestroy(&odm));
+        odm = idm;
+      } while (1);
+    } else {
+      for (d = 1; d < dim; ++d) {
+        const char *prefix;
+
+        /* Create interpolated mesh */
+        PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), &idm));
+        PetscCall(DMSetType(idm, DMPLEX));
+        PetscCall(DMSetDimension(idm, dim));
+        PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm, &prefix));
+        PetscCall(PetscObjectSetOptionsPrefix((PetscObject)idm, prefix));
+        if (depth > 0) {
+          PetscCall(DMPlexInterpolateFaces_Internal(odm, 1, idm));
+          PetscCall(DMGetPointSF(odm, &sfPoint));
+          if (PetscDefined(USE_DEBUG)) PetscCall(DMPlexCheckPointSF(odm, sfPoint, PETSC_FALSE));
+          {
+            /* TODO: We need to systematically fix cases of distributed Plexes with no graph set */
+            PetscInt nroots;
+            PetscCall(PetscSFGetGraph(sfPoint, &nroots, NULL, NULL, NULL));
+            if (nroots >= 0) PetscCall(DMPlexInterpolatePointSF(idm, sfPoint));
+          }
+        }
+        if (odm != dm) PetscCall(DMDestroy(&odm));
+        odm = idm;
       }
-      if (odm != dm) PetscCall(DMDestroy(&odm));
-      odm = idm;
     }
     PetscCall(PetscObjectGetName((PetscObject)dm, &name));
     PetscCall(PetscObjectSetName((PetscObject)idm, name));

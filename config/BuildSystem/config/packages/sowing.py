@@ -8,8 +8,8 @@ def noCheck(command, status, output, error):
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.minversion        = '1.1.26.8'
-    self.gitcommit         = 'v1.1.26-p8'
+    self.minversion        = '1.1.26.12'
+    self.gitcommit         = 'v1.1.26.12'
     self.download          = ['git://https://bitbucket.org/petsc/pkg-sowing.git','https://bitbucket.org/petsc/pkg-sowing/get/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['petsc-pkg-sowing']
     self.downloadonWindows = 1
@@ -54,10 +54,11 @@ class Configure(config.package.GNUPackage):
 
   def checkBfortVersion(self):
     '''Check if the bfort version is recent enough'''
+    self.logPrint("Checking bfort version\n")
     try:
       import re
       (output, error, status) = config.base.Configure.executeShellCommand(self.bfort+' -version', checkCommand=noCheck, log = self.log)
-      ver = re.compile(r'bfort \(sowing\) release ([0-9]+).([0-9]+).([0-9]+)').match(output)
+      ver = re.compile(r'bfort \(sowing\) release ([0-9]+).([0-9]+).([0-9]+).([0-9]+)').match(output)
       foundversion = tuple(map(int,ver.groups()))
       self.foundversion = ".".join(map(str,foundversion))
     except (RuntimeError,AttributeError) as e:
@@ -154,7 +155,7 @@ and run configure again\n')
             arch = ''
           else:
             arch = self.arch
-          generatefortranstubs.main(self.petscdir.dir, arch,self.bfort, os.path.join(self.petscdir.dir,'src'),0)
+          generatefortranstubs.main(self.petscdir.dir, arch,self.bfort, self.petscdir.dir,0)
           if self.fortran.fortranIsF90:
             generatefortranstubs.processf90interfaces(self.petscdir.dir,arch,0)
           self.framework.actions.addArgument('PETSc', 'File creation', 'Generated Fortran stubs')

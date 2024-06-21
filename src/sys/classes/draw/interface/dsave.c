@@ -9,7 +9,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawMovieCheckFormat(const char *[]);
 static PetscErrorCode PetscDrawSave_SAWs(PetscDraw);
 #endif
 
-/*@C
+/*@
   PetscDrawSetSave - Saves images produced in a `PetscDraw` into a file
 
   Collective
@@ -76,7 +76,7 @@ PetscErrorCode PetscDrawSetSave(PetscDraw draw, const char filename[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawSetSaveMovie - Saves a movie produced from a `PetscDraw` into a file
 
   Collective
@@ -111,7 +111,7 @@ PetscErrorCode PetscDrawSetSaveMovie(PetscDraw draw, const char movieext[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawSetSaveFinalImage - Saves the final image produced in a `PetscDraw` into a file
 
   Collective

@@ -1,4 +1,6 @@
+#include <petscdevice.h>
 #include <../src/ksp/ksp/utils/lmvm/lmvm.h> /*I "petscksp.h" I*/
+#include <petsc/private/deviceimpl.h>
 
 /*@
   MatLMVMUpdate - Adds (X-Xprev) and (F-Fprev) updates to an `MATLMVM` matrix.
@@ -362,7 +364,7 @@ PetscErrorCode MatLMVMGetJ0KSP(Mat B, KSP *J0ksp)
 @*/
 PetscErrorCode MatLMVMApplyJ0Fwd(Mat B, Vec X, Vec Y)
 {
-  Mat_LMVM *lmvm;
+  Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same, hasMult;
   Mat       Amat, Pmat;
 
@@ -372,7 +374,6 @@ PetscErrorCode MatLMVMApplyJ0Fwd(Mat B, Vec X, Vec Y)
   PetscValidHeaderSpecific(Y, VEC_CLASSID, 3);
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same));
   PetscCheck(same, PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
-  lmvm = (Mat_LMVM *)B->data;
   PetscCheck(lmvm->allocated, PetscObjectComm((PetscObject)B), PETSC_ERR_ORDER, "LMVM matrix must be allocated first");
   VecCheckMatCompatible(B, X, 2, Y, 3);
   if (lmvm->user_pc || lmvm->user_ksp || lmvm->J0) {
@@ -432,7 +433,7 @@ PetscErrorCode MatLMVMApplyJ0Fwd(Mat B, Vec X, Vec Y)
 @*/
 PetscErrorCode MatLMVMApplyJ0Inv(Mat B, Vec X, Vec Y)
 {
-  Mat_LMVM *lmvm;
+  Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same, hasSolve;
 
   PetscFunctionBegin;
@@ -618,26 +619,44 @@ PetscErrorCode MatLMVMReset(Mat B, PetscBool destructive)
 @*/
 PetscErrorCode MatLMVMSetHistorySize(Mat B, PetscInt hist_size)
 {
-  Mat_LMVM *lmvm;
+  Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same;
-  Vec       X, F;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same));
   if (!same) PetscFunctionReturn(PETSC_SUCCESS);
-  lmvm = (Mat_LMVM *)B->data;
-  if (hist_size > 0) {
-    lmvm->m = hist_size;
-    if (lmvm->allocated && lmvm->m != lmvm->m_old) {
+  PetscCheck(hist_size >= 0, PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "QN history size must be a non-negative integer.");
+  {
+    PetscBool reallocate = PETSC_FALSE;
+    Vec       X = NULL, F = NULL;
+    //lmvm->m = hist_size;
+    if (lmvm->allocated && hist_size != lmvm->m) {
       PetscCall(VecDuplicate(lmvm->Xprev, &X));
       PetscCall(VecDuplicate(lmvm->Fprev, &F));
       PetscCall(MatLMVMReset(B, PETSC_TRUE));
+      reallocate = PETSC_TRUE;
+    }
+    lmvm->m = hist_size;
+    if (reallocate) {
       PetscCall(MatLMVMAllocate(B, X, F));
       PetscCall(VecDestroy(&X));
       PetscCall(VecDestroy(&F));
     }
-  } else PetscCheck(hist_size >= 0, PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "QN history size must be a non-negative integer.");
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode MatLMVMGetHistorySize(Mat B, PetscInt *hist_size)
+{
+  Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
+  PetscBool same;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same));
+  if (!same) PetscFunctionReturn(PETSC_SUCCESS);
+  *hist_size = lmvm->m;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

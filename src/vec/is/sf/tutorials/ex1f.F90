@@ -123,7 +123,7 @@
 !  Create a star forest with continuous leaves and hence no buffer
       PetscCallA(PetscSFCreate(PETSC_COMM_WORLD,sf,ierr))
       PetscCallA(PetscSFSetFromOptions(sf,ierr))
-      PetscCallA(PetscSFSetGraph(sf,nrootsalloc,nleaves,PETSC_NULL_INTEGER,PETSC_COPY_VALUES,remote,PETSC_COPY_VALUES,ierr))
+      PetscCallA(PetscSFSetGraph(sf,nrootsalloc,nleaves,PETSC_NULL_INTEGER_ARRAY,PETSC_COPY_VALUES,remote,PETSC_COPY_VALUES,ierr))
       PetscCallA(PetscSFSetUp(sf,ierr))
 
 !   View graph, mostly useful for debugging purposes.

@@ -6,10 +6,10 @@ from sys import getrefcount
 
 # --------------------------------------------------------------------
 
-class BaseTestKSP(object):
 
+class BaseTestKSP:
     KSP_TYPE = None
-    PC_TYPE  = None
+    PC_TYPE = None
 
     def setUp(self):
         ksp = PETSc.KSP()
@@ -34,14 +34,14 @@ class BaseTestKSP(object):
         tols = self.ksp.getTolerances()
         self.ksp.setTolerances(*tols)
         tnames = ('rtol', 'atol', 'divtol', 'max_it')
-        tolvals = [getattr(self.ksp, t) for t in  tnames]
+        tolvals = [getattr(self.ksp, t) for t in tnames]
         self.assertEqual(tuple(tols), tuple(tolvals))
 
     def testProperties(self):
         ksp = self.ksp
         #
-        ksp.appctx = (1,2,3)
-        self.assertEqual(ksp.appctx, (1,2,3))
+        ksp.appctx = (1, 2, 3)
+        self.assertEqual(ksp.appctx, (1, 2, 3))
         ksp.appctx = None
         self.assertEqual(ksp.appctx, None)
         #
@@ -64,7 +64,7 @@ class BaseTestKSP(object):
         self.assertEqual(ksp.norm, 0)
         #
         rh = ksp.history
-        self.assertTrue(len(rh)==0)
+        self.assertTrue(len(rh) == 0)
         #
         reason = PETSc.KSP.ConvergedReason.CONVERGED_ITS
         ksp.reason = reason
@@ -106,11 +106,11 @@ class BaseTestKSP(object):
 
     def testSolve(self):
         A = PETSc.Mat().create(PETSc.COMM_SELF)
-        A.setSizes([3,3])
+        A.setSizes([3, 3])
         A.setType(PETSc.Mat.Type.SEQAIJ)
         A.setPreallocationNNZ(1)
         for i in range(3):
-            A.setValue(i, i, 0.9/(i+1))
+            A.setValue(i, i, 0.9 / (i + 1))
         A.assemble()
         A.shift(1)
         x, b = A.createVecs()
@@ -119,7 +119,6 @@ class BaseTestKSP(object):
         self.ksp.setOperators(A)
         self.ksp.setConvergenceHistory()
         self.ksp.solve(b, x)
-        r = b.duplicate()
         u = x.duplicate()
         self.ksp.buildSolution(u)
         self.ksp.buildResidual(u)
@@ -138,8 +137,10 @@ class BaseTestKSP(object):
 
     def testSetMonitor(self):
         reshist = {}
+
         def monitor(ksp, its, rnorm):
             reshist[its] = rnorm
+
         refcnt = getrefcount(monitor)
         self.ksp.setMonitor(monitor)
         self.assertEqual(getrefcount(monitor), refcnt + 1)
@@ -157,8 +158,10 @@ class BaseTestKSP(object):
 
     def testSetConvergenceTest(self):
         def converged(ksp, its, rnorm):
-            if its > 10: return True
+            if its > 10:
+                return True
             return False
+
         refcnt = getrefcount(converged)
         self.ksp.setConvergenceTest(converged)
         self.assertEqual(getrefcount(converged), refcnt + 1)
@@ -168,27 +171,60 @@ class BaseTestKSP(object):
     def testAddConvergenceTest(self):
         def converged(ksp, its, rnorm):
             return True
+
         refcnt = getrefcount(converged)
-        self.ksp.addConvergenceTest(converged,prepend=True)
+        self.ksp.addConvergenceTest(converged, prepend=True)
         self.assertEqual(getrefcount(converged), refcnt + 1)
         self.testSolve()
         self.ksp.setConvergenceTest(None)
         self.assertEqual(getrefcount(converged), refcnt)
         self.testSolve()
-        self.ksp.addConvergenceTest(converged,prepend=False)
+        self.ksp.addConvergenceTest(converged, prepend=False)
         self.assertEqual(getrefcount(converged), refcnt + 1)
         self.testSolve()
         self.ksp.setConvergenceTest(None)
         self.assertEqual(getrefcount(converged), refcnt)
 
+    def testSetPreSolveTest(self):
+        check = {'val': 0}
+
+        def presolve(ksp, rhs, x):
+            check['val'] = 1
+
+        refcnt = getrefcount(presolve)
+        self.ksp.setPreSolve(presolve)
+        self.assertEqual(getrefcount(presolve), refcnt + 1)
+        self.testSolve()
+        self.assertEqual(check['val'], 1)
+        self.ksp.setPreSolve(None)
+        self.assertEqual(getrefcount(presolve), refcnt)
+
+    def testSetPostSolveTest(self):
+        check = {'val': 0}
+
+        def postsolve(ksp, rhs, x):
+            check['val'] = 1
+
+        refcnt = getrefcount(postsolve)
+        self.ksp.setPostSolve(postsolve)
+        self.assertEqual(getrefcount(postsolve), refcnt + 1)
+        self.testSolve()
+        self.assertEqual(check['val'], 1)
+        self.ksp.setPostSolve(None)
+        self.assertEqual(getrefcount(postsolve), refcnt)
+
+
 # --------------------------------------------------------------------
+
 
 class TestKSPPREONLY(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.PREONLY
     PC_TYPE = PETSc.PC.Type.LU
 
+
 class TestKSPRICHARDSON(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.RICHARDSON
+
 
 class TestKSPCHEBYCHEV(BaseTestKSP, unittest.TestCase):
     try:
@@ -196,39 +232,51 @@ class TestKSPCHEBYCHEV(BaseTestKSP, unittest.TestCase):
     except AttributeError:
         KSP_TYPE = PETSc.KSP.Type.CHEBYCHEV
 
+
 class TestKSPCG(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.CG
+
 
 class TestKSPCGNE(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.CGNE
 
+
 class TestKSPSTCG(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.STCG
+
 
 class TestKSPBCGS(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.BCGS
 
+
 class TestKSPBCGSL(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.BCGSL
+
 
 class TestKSPCGS(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.CGS
 
+
 class TestKSPQCG(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.QCG
-    PC_TYPE  = PETSc.PC.Type.JACOBI
+    PC_TYPE = PETSc.PC.Type.JACOBI
+
 
 class TestKSPBICG(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.BICG
 
+
 class TestKSPGMRES(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.GMRES
+
 
 class TestKSPFGMRES(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.FGMRES
 
+
 class TestKSPLSQR(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.LSQR
+
 
 # --------------------------------------------------------------------
 

@@ -1,6 +1,6 @@
 #include <petsc/private/dmpleximpl.h> /*I      "petscdmplex.h"   I*/
 
-/*@C
+/*@
   DMPlexInvertCell - Flips cell orientations since `DMPLEX` stores some of them internally with outward normals.
 
   Input Parameters:
@@ -62,7 +62,7 @@ PetscErrorCode DMPlexInvertCell(DMPolytopeType cellType, PetscInt cone[])
 #undef SWAPCONE
 }
 
-/*@C
+/*@
   DMPlexReorderCell - Flips cell orientations since `DMPLEX` stores some of them internally with outward normals.
 
   Input Parameters:
@@ -137,7 +137,7 @@ PetscErrorCode DMPlexTetgenSetOptions(DM dm, const char *opts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGenerate - Generates a mesh.
 
   Not Collective

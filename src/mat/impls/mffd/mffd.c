@@ -91,7 +91,7 @@ static PetscErrorCode MatMFFDSetType_MFFD(Mat mat, MatMFFDType ftype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatMFFDSetType - Sets the method that is used to compute the
   differencing parameter for finite difference matrix-free formulations.
 
@@ -171,7 +171,7 @@ static PetscErrorCode MatMFFDResetHHistory_MFFD(Mat J)
 /*@C
   MatMFFDRegister - Adds a method to the `MATMFFD` registry.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of a new user-defined compute-h module
@@ -187,10 +187,8 @@ static PetscErrorCode MatMFFDResetHHistory_MFFD(Mat J)
    MatMFFDRegister("my_h", MyHCreate);
 .ve
 
-  Then, your solver can be chosen with the procedural interface via
-$     `MatMFFDSetType`(mfctx, "my_h")
-  or at runtime via the option
-$     -mat_mffd_type my_h
+  Then, your solver can be chosen with the procedural interface via `MatMFFDSetType`(mfctx, "my_h")` or at runtime via the option
+  `-mat_mffd_type my_h`
 
 .seealso: [](ch_matrices), `Mat`, `MATMFFD`, `MatMFFDRegisterAll()`, `MatMFFDRegisterDestroy()`
  @*/
@@ -465,7 +463,7 @@ static PetscErrorCode MatMFFDSetCheckh_MFFD(Mat J, FCN3 fun, void *ectx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatMFFDSetOptionsPrefix - Sets the prefix used for searching for all
   MATMFFD` options in the database.
 

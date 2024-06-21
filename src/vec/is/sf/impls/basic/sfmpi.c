@@ -1,6 +1,6 @@
 #include <../src/vec/is/sf/impls/basic/sfpack.h>
 
-// Though there is no default machanism to start a communication, we have a
+// Though there is no default mechanism to start a communication, we have a
 // default to finish communication, which is just waiting on the requests.
 // It should work for both non-blocking or persistent send/recvs or collectivwes.
 static PetscErrorCode PetscSFLinkFinishCommunication_Default(PetscSF sf, PetscSFLink link, PetscSFDirection direction)

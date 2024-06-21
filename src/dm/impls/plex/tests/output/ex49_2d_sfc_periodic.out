@@ -370,7 +370,7 @@ PetscSF Object: 2 MPI processes
   [0]    33 <- 32
   [1] Roots referenced by my leaves, by rank
   MultiSF sort=rank-order
-PetscSF Object: Z-order Isoperiodic Faces 2 MPI processes
+PetscSF Object: Z-order Isoperiodic Faces #0 2 MPI processes
   type: basic
   [0] Number of roots=35, leaves=0, remote ranks=0
   [1] Number of roots=35, leaves=3, remote ranks=1

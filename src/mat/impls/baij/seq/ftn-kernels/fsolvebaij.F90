@@ -94,7 +94,6 @@
             x(idx+3) = a(ax+3)*s1+a(ax+7)*s2+a(ax+11)*s3+a(ax+15)*s4
             idx      = idx - 4
  40      continue
-      return
       end
 
 !   version that does not call BLAS 2 operation for each row block
@@ -210,5 +209,4 @@
          idx     = idx - 4
  40   continue
 
-      return
       end

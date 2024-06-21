@@ -149,7 +149,7 @@ static PetscErrorCode MatPartitioningView_Party(MatPartitioning part, PetscViewe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatPartitioningPartySetGlobal - Set global method for Party partitioner.
 
   Collective
@@ -168,6 +168,9 @@ static PetscErrorCode MatPartitioningView_Party(MatPartitioning part, PetscViewe
   `MP_PARTY_RAN`, `MP_PARTY_GBF`, `MP_PARTY_GCF`, `MP_PARTY_BUB` or `MP_PARTY_DEF`, or
   alternatively a string describing the method. Two or more methods can be
   combined like "gbf,gcf". Check the Party Library Users Manual for details.
+
+  Developer Note:
+  Should be `MatPartitioningPartySetGlobalType()` and all uses of method should be changed to type
 
 .seealso: `MATPARTITIONINGPARTY`, `MatPartitioningPartySetLocal()`
 @*/
@@ -188,7 +191,7 @@ static PetscErrorCode MatPartitioningPartySetGlobal_Party(MatPartitioning part, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatPartitioningPartySetLocal - Set local method used by the Party partitioner.
 
   Collective
@@ -205,6 +208,9 @@ static PetscErrorCode MatPartitioningPartySetGlobal_Party(MatPartitioning part, 
   Note:
   The method may be one of `MP_PARTY_HELPFUL_SETS`, `MP_PARTY_KERNIGHAN_LIN`, or
   `MP_PARTY_NONE`. Check the Party Library Users Manual for details.
+
+  Developer Note:
+  Should be `MatPartitioningPartySetLocalType()` and all uses of method should be changed to type
 
 .seealso: `MATPARTITIONINGPARTY`, `MatPartitioningPartySetGlobal()`
 @*/

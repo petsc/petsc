@@ -122,7 +122,7 @@ PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
 
 .seealso: `PetscSection`, `PetscSectionCreate()`, `VecSetValuesSection()`
 @*/
-PetscErrorCode VecGetValuesSection(Vec v, PetscSection s, PetscInt point, PetscScalar **values)
+PetscErrorCode VecGetValuesSection(Vec v, PetscSection s, PetscInt point, PetscScalar *values[])
 {
   PetscScalar   *baseArray;
   const PetscInt p = point - s->pStart;
@@ -295,8 +295,8 @@ PetscErrorCode PetscSectionRestoreField_Internal(PetscSection section, PetscSect
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
-  PetscSectionVecNorm - Computes the vector norm, separated into field components.
+/*@
+  PetscSectionVecNorm - Computes the vector norm of each field
 
   Input Parameters:
 + s    - the local Section

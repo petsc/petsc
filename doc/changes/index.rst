@@ -24,6 +24,7 @@ editor.
   :maxdepth: 1
 
    main - PETSc development version <dev>
+   3.21 - Public Release, Mar 29, 2024 <321>
    3.20 - Public Release, Sep 28, 2023 <320>
    3.19 - Public Release, Mar 30, 2023 <319>
    3.18 - Public Release, Sep 30, 2022 <318>

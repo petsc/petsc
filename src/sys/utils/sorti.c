@@ -510,9 +510,9 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt X[], PetscI
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscAssertPointer(X, 3);
-  PetscCheckSorted(n, X);
   while (hi - lo > 1) {
     PetscInt mid = lo + (hi - lo) / 2;
+    PetscAssert(X[lo] <= X[mid] && X[mid] <= X[hi - 1], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input array was not sorted: (%" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT ")", X[lo], X[mid], X[hi - 1]);
     if (key < X[mid]) hi = mid;
     else lo = mid;
   }
@@ -589,9 +589,9 @@ PetscErrorCode PetscFindMPIInt(PetscMPIInt key, PetscInt n, const PetscMPIInt X[
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscAssertPointer(X, 3);
-  PetscCheckSorted(n, X);
   while (hi - lo > 1) {
     PetscInt mid = lo + (hi - lo) / 2;
+    PetscAssert(X[lo] <= X[mid] && X[mid] <= X[hi - 1], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input array was not sorted: (%d, %d, %d)", X[lo], X[mid], X[hi - 1]);
     if (key < X[mid]) hi = mid;
     else lo = mid;
   }
@@ -866,7 +866,7 @@ PetscErrorCode PetscSortIntWithScalarArray(PetscInt n, PetscInt X[], PetscScalar
   changes a second array to match the sorted first INTEGER array.  Unlike other sort routines, the user must
   provide workspace (the size of an element in the data array) to use when sorting.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + n    - number of values
@@ -1079,7 +1079,7 @@ PetscErrorCode PetscMergeMPIIntArray(PetscInt an, const PetscMPIInt aI[], PetscI
 /*@C
   PetscProcessTree - Prepares tree data to be displayed graphically
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + n        - number of values

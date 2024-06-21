@@ -428,7 +428,7 @@ PetscErrorCode KSPSetUp(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPConvergedReasonView - Displays the reason a `KSP` solve converged or diverged to a viewer
 
   Collective
@@ -460,7 +460,7 @@ PetscErrorCode KSPConvergedReasonView(KSP ksp, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isAscii));
   if (isAscii) {
     PetscCall(PetscViewerGetFormat(viewer, &format));
-    PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)ksp)->tablevel));
+    PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)ksp)->tablevel + 1));
     if (ksp->reason > 0 && format != PETSC_VIEWER_FAILED) {
       if (((PetscObject)ksp)->prefix) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "Linear %s solve converged due to %s iterations %" PetscInt_FMT "\n", ((PetscObject)ksp)->prefix, KSPConvergedReasons[ksp->reason], ksp->its));
@@ -479,7 +479,7 @@ PetscErrorCode KSPConvergedReasonView(KSP ksp, PetscViewer viewer)
         PetscCall(PetscViewerASCIIPrintf(viewer, "               PC failed due to %s \n", PCFailedReasons[reason]));
       }
     }
-    PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)ksp)->tablevel));
+    PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)ksp)->tablevel + 1));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -591,7 +591,7 @@ PetscErrorCode KSPConvergedReasonViewFromOptions(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPConvergedRateView - Displays the convergence rate <https://en.wikipedia.org/wiki/Coefficient_of_determination> of `KSPSolve()` to a viewer
 
   Collective
@@ -1430,7 +1430,7 @@ PetscErrorCode KSPReset(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPDestroy - Destroys a `KSP` context.
 
   Collective
@@ -2048,8 +2048,7 @@ PetscErrorCode KSPGetRhs(KSP ksp, Vec *r)
 
 /*@
   KSPGetSolution - Gets the location of the solution for the
-  linear system to be solved.  Note that this may not be where the solution
-  is stored during the iterative process; see `KSPBuildSolution()`.
+  linear system to be solved.
 
   Not Collective
 
@@ -2060,6 +2059,10 @@ PetscErrorCode KSPGetRhs(KSP ksp, Vec *r)
 . v - solution vector
 
   Level: developer
+
+  Note:
+  If this is called during a `KSPSolve()` the vector's values may not represent the solution
+  to the linear system.
 
 .seealso: [](ch_ksp), `KSPGetRhs()`, `KSPBuildSolution()`, `KSPSolve()`, `KSP`
 @*/
@@ -2110,7 +2113,7 @@ PETSC_INTERN PetscErrorCode PCCreate_MPI(PC);
 /*@C
    KSPCheckPCMPI - Checks if `-mpi_linear_solver_server` is active and the `PC` should be changed to `PCMPI`
 
-   Collective
+   Collective, No Fortran Support
 
    Input Parameter:
 .  ksp - iterative context obtained from `KSPCreate()`
@@ -2182,9 +2185,12 @@ PetscErrorCode KSPGetPC(KSP ksp, PC *pc)
 
   Level: developer
 
-  Note:
+  Notes:
   This routine is called by the `KSP` implementations.
   It does not typically need to be called by the user.
+
+  For Krylov methods that do not keep a running value of the current solution (such as `KSPGMRES`) this
+  cannot be called after the `KSPConvergedReason` has been set but before the final solution has been computed.
 
 .seealso: [](ch_ksp), `KSPMonitorSet()`
 @*/
@@ -2726,7 +2732,7 @@ PetscErrorCode KSPGetConvergenceContext(KSP ksp, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPBuildSolution - Builds the approximate solution in a vector provided.
 
   Collective
@@ -2736,7 +2742,7 @@ PetscErrorCode KSPGetConvergenceContext(KSP ksp, void *ctx)
 
   Output Parameter:
    Provide exactly one of
-+ v - location to stash solution.
++ v - location to stash solution, optional, otherwise pass `NULL`
 - V - the solution is returned in this location. This vector is created internally. This vector should NOT be destroyed by the user with `VecDestroy()`.
 
   Level: developer
@@ -2754,8 +2760,8 @@ PetscErrorCode KSPGetConvergenceContext(KSP ksp, void *ctx)
   methods, such as `KSPCG`, the second case requires a copy of the solution,
   while in the first case the call is essentially free since it simply
   returns the vector where the solution already is stored. For some methods
-  like `KSPGMRES` this is a reasonably expensive operation and should only be
-  used in truly needed.
+  like `KSPGMRES` during the solve this is a reasonably expensive operation and should only be
+  used if truly needed.
 
 .seealso: [](ch_ksp), `KSPGetSolution()`, `KSPBuildResidual()`, `KSP`
 @*/
@@ -2765,11 +2771,16 @@ PetscErrorCode KSPBuildSolution(KSP ksp, Vec v, Vec *V)
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscCheck(V || v, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_WRONG, "Must provide either v or V");
   if (!V) V = &v;
-  PetscUseTypeMethod(ksp, buildsolution, v, V);
+  if (ksp->reason != KSP_CONVERGED_ITERATING) {
+    if (!v) PetscCall(KSPGetSolution(ksp, V));
+    else PetscCall(VecCopy(ksp->vec_sol, v));
+  } else {
+    PetscUseTypeMethod(ksp, buildsolution, v, V);
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPBuildResidual - Builds the residual in a vector provided.
 
   Collective
@@ -2778,8 +2789,7 @@ PetscErrorCode KSPBuildSolution(KSP ksp, Vec v, Vec *V)
 . ksp - iterative context obtained from `KSPCreate()`
 
   Output Parameters:
-+ v - optional location to stash residual.  If `v` is not provided,
-      then a location is generated.
++ v - optional location to stash residual.  If `v` is not provided, then a location is generated.
 . t - work vector.  If not provided then one is generated.
 - V - the residual
 
@@ -2974,7 +2984,7 @@ PetscErrorCode KSPSetComputeOperators(KSP ksp, KSPComputeOperatorsFn *func, void
 
   Input Parameters:
 + ksp  - the `KSP` context
-. func - function to compute the right-hand side, see `KSPComputeRHSFn` for the calling squence
+. func - function to compute the right-hand side, see `KSPComputeRHSFn` for the calling sequence
 - ctx  - optional context
 
   Level: beginner

@@ -111,6 +111,7 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
       Ain->singlemalloc = PETSC_TRUE; \
       Ain->maxallocmat  = new_size; \
       Ain->reallocs++; \
+      A->nonzerostate++; \
       if (WIDTH >= Ain->maxallocrow) Ain->maxallocrow += MUL; \
       if (WIDTH >= Ain->rlenmax) Ain->rlenmax++; \
     } \

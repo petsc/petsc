@@ -405,7 +405,7 @@ PetscErrorCode MatSchurComplementUpdateSubMatrices(Mat S, Mat A00, Mat Ap00, Mat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSchurComplementGetSubMatrices - Get the individual submatrices in the Schur complement
 
   Collective
@@ -423,7 +423,7 @@ PetscErrorCode MatSchurComplementUpdateSubMatrices(Mat S, Mat A00, Mat Ap00, Mat
   Level: intermediate
 
   Note:
-  `A11` is optional, and thus can be `NULL`.
+  Use `NULL` for any unneeded output argument.
 
   The reference counts of the submatrices are not increased before they are returned and the matrices should not be modified or destroyed.
 

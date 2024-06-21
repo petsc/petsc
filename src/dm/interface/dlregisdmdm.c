@@ -175,6 +175,8 @@ PetscErrorCode DMInitializePackage(void)
 
   PetscCall(DMGenerateRegisterAll());
   PetscCall(PetscRegisterFinalize(DMGenerateRegisterDestroy));
+  PetscCall(DMGeomModelRegisterAll());
+  PetscCall(PetscRegisterFinalize(DMGeomModelRegisterDestroy));
   PetscCall(DMPlexTransformRegisterAll());
   PetscCall(PetscRegisterFinalize(DMPlexTransformRegisterDestroy));
   PetscCall(DMLabelRegisterAll());
@@ -330,8 +332,8 @@ PetscErrorCode PetscFVInitializePackage(void)
 static PetscBool PetscDSPackageInitialized = PETSC_FALSE;
 
 /*@C
-  PetscDSFinalizePackage - This function finalizes everything in the PetscDS package. It is called
-  from PetscFinalize().
+  PetscDSFinalizePackage - This function finalizes everything in the `PetscDS` package. It is called
+  from `PetscFinalize()`.
 
   Level: developer
 
@@ -405,6 +407,7 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscdm(void)
   PetscCall(PetscFEInitializePackage());
   PetscCall(PetscFVInitializePackage());
   PetscCall(DMFieldInitializePackage());
+  PetscCall(PetscDSInitializePackage());
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -34,22 +34,22 @@ Begin cycle 1
 DM Object: DMPlex Object (loaded_) 3 MPI processes
   type: plex
 DMPlex Object in 3 dimensions:
-  Number of 0-cells per rank: 65 70 58
+  Number of 0-cells per rank: 69 71 54
   Number of 3-cells per rank: 19 19 18
 Labels:
-  depth: 2 strata with value/size (0 (65), 1 (19))
-  celltype: 2 strata with value/size (7 (19), 0 (65))
+  depth: 2 strata with value/size (0 (69), 1 (19))
+  celltype: 2 strata with value/size (7 (19), 0 (69))
 Loaded mesh distributed? TRUE
 DM Object: DMPlex Object (interpolated_) 3 MPI processes
   type: plex
 DMPlex Object in 3 dimensions:
-  Number of 0-cells per rank: 65 70 58
-  Number of 1-cells per rank: 130 139 120
-  Number of 2-cells per rank: 86 90 81
+  Number of 0-cells per rank: 69 71 54
+  Number of 1-cells per rank: 134 141 114
+  Number of 2-cells per rank: 87 91 79
   Number of 3-cells per rank: 19 19 18
 Labels:
-  celltype: 4 strata with value/size (0 (65), 7 (19), 4 (86), 1 (130))
-  depth: 4 strata with value/size (0 (65), 1 (130), 2 (86), 3 (19))
+  celltype: 4 strata with value/size (0 (69), 7 (19), 4 (87), 1 (134))
+  depth: 4 strata with value/size (0 (69), 1 (134), 2 (87), 3 (19))
 DM Object: DMPlex Object (redistributed_) 3 MPI processes
   type: plex
 DMPlex Object in 3 dimensions:

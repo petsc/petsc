@@ -12,6 +12,7 @@ class Configure(config.package.Package):
     self.requires32bitint = 1
     self.complex          = 0
     self.hastests         = 1
+    self.requirekandr     = 1
     return
 
   def setupDependencies(self, framework):

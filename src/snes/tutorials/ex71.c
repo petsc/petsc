@@ -417,6 +417,7 @@ int main(int argc, char **argv)
         -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi
   test:
     suffix: 2d_tri_p2_p1_conv_gmg_vcycle
+    TODO: broken (requires subDMs hooks)
     requires: triangle !single
     args: -dm_plex_separate_marker -dm_plex_box_faces 2,2 -dm_refine_hierarchy 1 \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 \

@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = '4.2.01'
+    self.gitcommit        = '4.3.01'
     self.minversion       = '3.7.01'
     self.versionname      = 'KOKKOSKERNELS_VERSION'
     self.download         = ['git://https://github.com/kokkos/kokkos-kernels.git','https://github.com/kokkos/kokkos-kernels/archive/'+self.gitcommit+'.tar.gz']
@@ -80,6 +80,10 @@ class Configure(config.package.CMakePackage):
         args.append('-DKokkosKernels_ENABLE_TPL_CUBLAS=OFF')  # These are turned ON by KK by default when CUDA is enabled
         args.append('-DKokkosKernels_ENABLE_TPL_CUSPARSE=OFF')
         args.append('-DKokkosKernels_ENABLE_TPL_CUSOLVER=OFF')
+      elif hasattr(self.cuda, 'math_libs_dir'): # KK-4.3+ failed to locate nvhpc math_libs on Perlmutter@NERSC, so we set them explicitly
+        args.append('-DCUBLAS_ROOT='+self.cuda.math_libs_dir)
+        args.append('-DCUSPARSE_ROOT='+self.cuda.math_libs_dir)
+        args.append('-DCUSOLVER_ROOT='+self.cuda.math_libs_dir)
     elif self.hip.found:
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
       args.append('-DCMAKE_CXX_COMPILER='+self.getCompiler('HIP'))
@@ -117,5 +121,13 @@ class Configure(config.package.CMakePackage):
     return args
 
   def configureLibrary(self):
+    needRestore = False
     self.buildLanguages= self.kokkos.buildLanguages
+    if self.cuda.found and not self.cuda.cudaclang:
+        oldFlags = self.setCompilers.CUDAPPFLAGS
+        self.setCompilers.CUDAPPFLAGS += " -ccbin " + self.getCompiler('Cxx')
+        needRestore = True
+
     config.package.CMakePackage.configureLibrary(self)
+
+    if needRestore: self.setCompilers.CUDAPPFLAGS = oldFlags

@@ -17,6 +17,7 @@ typedef struct {
   Vec              work1;
   Vec              work2;
   PetscScalar      alpha;
+  Mat              alpha_mat;
 } PC_Composite;
 
 static PetscErrorCode PCApply_Composite_Multiplicative(PC pc, Vec x, Vec y)
@@ -113,7 +114,11 @@ static PetscErrorCode PCApply_Composite_Special(PC pc, Vec x, Vec y)
   PetscCall(PCSetReusePreconditioner(next->next->pc, pc->reusepreconditioner));
 
   PetscCall(PCApply(next->pc, x, jac->work1));
-  PetscCall(PCApply(next->next->pc, jac->work1, y));
+  if (jac->alpha_mat) {
+    if (!jac->work2) PetscCall(VecDuplicate(jac->work1, &jac->work2));
+    PetscCall(MatMult(jac->alpha_mat, jac->work1, jac->work2));
+    PetscCall(PCApply(next->next->pc, jac->work2, y));
+  } else PetscCall(PCApply(next->next->pc, jac->work1, y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -202,6 +207,7 @@ static PetscErrorCode PCReset_Composite(PC pc)
   }
   PetscCall(VecDestroy(&jac->work1));
   PetscCall(VecDestroy(&jac->work2));
+  PetscCall(MatDestroy(&jac->alpha_mat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -225,22 +231,24 @@ static PetscErrorCode PCDestroy_Composite(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCCompositeGetNumberPC_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCCompositeGetPC_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCCompositeSpecialSetAlpha_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCCompositeSpecialSetAlphaMat_C", NULL));
   PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetFromOptions_Composite(PC pc, PetscOptionItems *PetscOptionsObject)
 {
-  PC_Composite    *jac  = (PC_Composite *)pc->data;
-  PetscInt         nmax = 8, i;
+  PC_Composite    *jac = (PC_Composite *)pc->data;
+  PetscInt         nmax, i;
   PC_CompositeLink next;
-  char            *pcs[8];
+  char            *pcs[1024];
   PetscBool        flg;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "Composite preconditioner options");
   PetscCall(PetscOptionsEnum("-pc_composite_type", "Type of composition", "PCCompositeSetType", PCCompositeTypes, (PetscEnum)jac->type, (PetscEnum *)&jac->type, &flg));
   if (flg) PetscCall(PCCompositeSetType(pc, jac->type));
+  nmax = (PetscInt)PETSC_STATIC_ARRAY_LENGTH(pcs);
   PetscCall(PetscOptionsStringArray("-pc_composite_pcs", "List of composite solvers", "PCCompositeAddPCType", pcs, &nmax, &flg));
   if (flg) {
     for (i = 0; i < nmax; i++) {
@@ -289,6 +297,20 @@ static PetscErrorCode PCCompositeSpecialSetAlpha_Composite(PC pc, PetscScalar al
 
   PetscFunctionBegin;
   jac->alpha = alpha;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PCCompositeSpecialSetAlphaMat_Composite(PC pc, Mat alpha_mat)
+{
+  PC_Composite *jac = (PC_Composite *)pc->data;
+
+  PetscFunctionBegin;
+  if (alpha_mat) {
+    PetscValidHeaderSpecific(alpha_mat, MAT_CLASSID, 2);
+    PetscCall(PetscObjectReference((PetscObject)alpha_mat));
+  }
+  PetscCall(MatDestroy(&jac->alpha_mat));
+  jac->alpha_mat = alpha_mat;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -476,6 +498,14 @@ PetscErrorCode PCCompositeSpecialSetAlpha(PC pc, PetscScalar alpha)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode PCCompositeSpecialSetAlphaMat(PC pc, Mat alpha_mat)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  PetscTryMethod(pc, "PCCompositeSpecialSetAlphaMat_C", (PC, Mat), (pc, alpha_mat));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@C
   PCCompositeAddPCType - Adds another `PC` of the given type to the composite `PC`.
 
@@ -612,11 +642,12 @@ PETSC_EXTERN PetscErrorCode PCCreate_Composite(PC pc)
   pc->ops->view            = PCView_Composite;
   pc->ops->applyrichardson = NULL;
 
-  pc->data   = (void *)jac;
-  jac->type  = PC_COMPOSITE_ADDITIVE;
-  jac->work1 = NULL;
-  jac->work2 = NULL;
-  jac->head  = NULL;
+  pc->data       = (void *)jac;
+  jac->type      = PC_COMPOSITE_ADDITIVE;
+  jac->work1     = NULL;
+  jac->work2     = NULL;
+  jac->head      = NULL;
+  jac->alpha_mat = NULL;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCCompositeSetType_C", PCCompositeSetType_Composite));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCCompositeGetType_C", PCCompositeGetType_Composite));
@@ -625,5 +656,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_Composite(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCCompositeGetNumberPC_C", PCCompositeGetNumberPC_Composite));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCCompositeGetPC_C", PCCompositeGetPC_Composite));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCCompositeSpecialSetAlpha_C", PCCompositeSpecialSetAlpha_Composite));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCCompositeSpecialSetAlphaMat_C", PCCompositeSpecialSetAlphaMat_Composite));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

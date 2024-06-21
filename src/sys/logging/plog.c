@@ -103,10 +103,9 @@ PetscBool PetscLogGpuTimeFlag = PETSC_FALSE;
 
 PetscLogState petsc_log_state = NULL;
 
-#define PETSC_LOG_HANDLER_HOT_BLANK \
-  { \
-    NULL, NULL, NULL, NULL, NULL, NULL \
-  }
+// clang-format off
+#define PETSC_LOG_HANDLER_HOT_BLANK {NULL, NULL, NULL, NULL, NULL, NULL}
+// clang-format on
 
 PetscLogHandlerHot PetscLogHandlers[PETSC_LOG_HANDLER_MAX] = {
   PETSC_LOG_HANDLER_HOT_BLANK,
@@ -358,7 +357,7 @@ PetscErrorCode PetscLogHandlerStop(PetscLogHandler h)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogIsActive - Check if logging is currently in progress.
 
   Not Collective
@@ -429,7 +428,7 @@ PETSC_INTERN PetscErrorCode PetscLogTypeBegin(PetscLogHandlerType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogDefaultBegin - Turns on logging of objects and events using the default log handler. This logs flop
   rates and object creation and should not slow programs down too much.
   This routine may be called more than once.
@@ -438,7 +437,7 @@ PETSC_INTERN PetscErrorCode PetscLogTypeBegin(PetscLogHandlerType type)
 
   Options Database Key:
 . -log_view [viewertype:filename:viewerformat] - Prints summary of flop and timing information to the
-                  screen (for code configured with --with-log=1 (which is the default))
+                                                 screen (for code configured with --with-log=1 (which is the default))
 
   Example Usage:
 .vb
@@ -468,7 +467,7 @@ PetscErrorCode PetscLogDefaultBegin(void)
   PetscLogTraceBegin - Begins trace logging.  Every time a PETSc event
   begins or ends, the event name is printed.
 
-  Logically Collective on `PETSC_COMM_WORLD`
+  Logically Collective on `PETSC_COMM_WORLD`, No Fortran Support
 
   Input Parameter:
 . file - The file to print trace in (e.g. stdout)
@@ -503,11 +502,11 @@ PetscErrorCode PetscLogTraceBegin(FILE *file)
 
 PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_Nested(MPI_Comm, PetscLogHandler *);
 
-/*@C
+/*@
   PetscLogNestedBegin - Turns on nested logging of objects and events. This logs flop
   rates and object creation and should not slow programs down too much.
 
-  Logically Collective on `PETSC_COMM_WORLD`
+  Logically Collective on `PETSC_COMM_WORLD`, No Fortran Support
 
   Options Database Keys:
 . -log_view :filename.xml:ascii_xml - Prints an XML summary of flop and timing information to the file
@@ -598,7 +597,7 @@ static PetscBool PetscBeganMPE = PETSC_FALSE;
   PetscLogMPEBegin - Turns on MPE logging of events. This creates large log files and slows the
   program down.
 
-  Collective on `PETSC_COMM_WORLD`
+  Collective on `PETSC_COMM_WORLD`, No Fortran Support
 
   Options Database Key:
 . -log_mpe - Prints extensive log information
@@ -640,7 +639,7 @@ PetscErrorCode PetscLogMPEBegin(void)
 /*@C
   PetscLogPerfstubsBegin - Turns on logging of events using the perfstubs interface.
 
-  Collective on `PETSC_COMM_WORLD`
+  Collective on `PETSC_COMM_WORLD`, No Fortran Support
 
   Options Database Key:
 . -log_perfstubs - use an external log handler through the perfstubs interface
@@ -723,7 +722,7 @@ PetscErrorCode PetscLogObjects(PetscBool flag)
 }
 
 /*------------------------------------------------ Stage Functions --------------------------------------------------*/
-/*@C
+/*@
   PetscLogStageRegister - Attaches a character string name to a logging stage.
 
   Not Collective
@@ -749,7 +748,7 @@ PetscErrorCode PetscLogStageRegister(const char sname[], PetscLogStage *stage)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogStagePush - This function pushes a stage on the logging stack. Events started and stopped until `PetscLogStagePop()` will be associated with the stage
 
   Not Collective
@@ -794,7 +793,7 @@ PetscErrorCode PetscLogStagePush(PetscLogStage stage)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogStagePop - This function pops a stage from the logging stack that was pushed with `PetscLogStagePush()`
 
   Not Collective
@@ -942,7 +941,7 @@ PetscErrorCode PetscLogStageGetVisible(PetscLogStage stage, PetscBool *isVisible
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogStageGetId - Returns the stage id when given the stage name.
 
   Not Collective
@@ -968,7 +967,7 @@ PetscErrorCode PetscLogStageGetId(const char name[], PetscLogStage *stage)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogStageGetName - Returns the stage name when given the stage id.
 
   Not Collective
@@ -983,7 +982,7 @@ PetscErrorCode PetscLogStageGetId(const char name[], PetscLogStage *stage)
 
 .seealso: [](ch_profiling), `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscPreLoadBegin()`, `PetscPreLoadEnd()`, `PetscPreLoadStage()`
 @*/
-PetscErrorCode PetscLogStageGetName(PetscLogStage stage, const char **name)
+PetscErrorCode PetscLogStageGetName(PetscLogStage stage, const char *name[])
 {
   PetscLogStageInfo stage_info;
   PetscLogState     state;
@@ -999,7 +998,7 @@ PetscErrorCode PetscLogStageGetName(PetscLogStage stage, const char **name)
 
 /*------------------------------------------------ Event Functions --------------------------------------------------*/
 
-/*@C
+/*@
   PetscLogEventRegister - Registers an event name for logging operations
 
   Not Collective
@@ -1527,6 +1526,8 @@ M*/
 /*@C
   PetscLogStageGetPerfInfo - Return the performance information about the given stage
 
+  No Fortran Support
+
   Input Parameters:
 . stage - The stage number or `PETSC_DETERMINE` for the current stage
 
@@ -1565,6 +1566,8 @@ PetscErrorCode PetscLogStageGetPerfInfo(PetscLogStage stage, PetscEventPerfInfo 
 /*@C
   PetscLogEventGetPerfInfo - Return the performance information about the given event in the given stage
 
+  No Fortran Support
+
   Input Parameters:
 + stage - The stage number or `PETSC_DETERMINE` for the current stage
 - event - The event number
@@ -1601,7 +1604,7 @@ PetscErrorCode PetscLogEventGetPerfInfo(PetscLogStage stage, PetscLogEvent event
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogEventSetDof - Set the nth number of degrees of freedom of a numerical problem associated with this event
 
   Not Collective
@@ -1638,7 +1641,7 @@ PetscErrorCode PetscLogEventSetDof(PetscLogEvent event, PetscInt n, PetscLogDoub
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogEventSetError - Set the nth error associated with a numerical problem associated with this event
 
   Not Collective
@@ -1678,7 +1681,7 @@ PetscErrorCode PetscLogEventSetError(PetscLogEvent event, PetscInt n, PetscLogDo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogEventGetId - Returns the event id when given the event name.
 
   Not Collective
@@ -1704,7 +1707,7 @@ PetscErrorCode PetscLogEventGetId(const char name[], PetscLogEvent *event)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogEventGetName - Returns the event name when given the event id.
 
   Not Collective
@@ -1719,7 +1722,7 @@ PetscErrorCode PetscLogEventGetId(const char name[], PetscLogEvent *event)
 
 .seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadEnd()`, `PetscPreLoadStage()`
 @*/
-PetscErrorCode PetscLogEventGetName(PetscLogEvent event, const char **name)
+PetscErrorCode PetscLogEventGetName(PetscLogEvent event, const char *name[])
 {
   PetscLogEventInfo event_info;
   PetscLogState     state;
@@ -1822,7 +1825,7 @@ M*/
 .seealso: [](ch_profiling), `PetscLogHandler`, `PetscLogObjectCreate()`
 M*/
 
-/*@C
+/*@
   PetscLogClassGetClassId - Returns the `PetscClassId` when given the class name.
 
   Not Collective
@@ -1887,7 +1890,7 @@ PetscErrorCode PetscLogClassIdGetName(PetscClassId classid, const char **name)
 }
 
 /*------------------------------------------------ Output Functions -------------------------------------------------*/
-/*@C
+/*@
   PetscLogDump - Dumps logs of objects to a file. This file is intended to
   be read by bin/petscview. This program no longer exists.
 
@@ -1923,7 +1926,7 @@ PetscErrorCode PetscLogDump(const char sname[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogMPEDump - Dumps the MPE logging info to file for later use with Jumpshot.
 
   Collective on `PETSC_COMM_WORLD`
@@ -1958,7 +1961,7 @@ PetscErrorCode PetscLogMPEDump(const char sname[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogView - Prints a summary of the logging.
 
   Collective
@@ -2119,7 +2122,7 @@ PetscErrorCode PetscLogSetThreshold(PetscLogDouble newThresh, PetscLogDouble *ol
 }
 
 /*----------------------------------------------- Counter Functions -------------------------------------------------*/
-/*@C
+/*@
   PetscGetFlops - Returns the number of flops used on this processor
   since the program began.
 
@@ -2307,7 +2310,7 @@ M*/
   #if PetscDefined(HAVE_DEVICE)
     #include <petsc/private/deviceimpl.h>
 
-/*@C
+/*@
   PetscLogGpuTime - turn on the logging of GPU time for GPU kernels
 
   Options Database Key:
@@ -2335,7 +2338,7 @@ PetscErrorCode PetscLogGpuTime(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogGpuTimeBegin - Start timer for device
 
   Level: intermediate
@@ -2387,7 +2390,7 @@ PetscErrorCode PetscLogGpuTimeBegin(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogGpuTimeEnd - Stop timer for device
 
   Level: intermediate
@@ -2551,7 +2554,7 @@ PETSC_INTERN PetscErrorCode PetscLogFinalize(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscClassIdRegister - Registers a new class name for objects and logging operations in an application code.
 
   Not Collective

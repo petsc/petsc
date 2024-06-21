@@ -297,7 +297,11 @@ $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),F F90)) : $(libpetscall)
 # Testing convenience targets
 .PHONY: test pre-clean
 
-test: report_tests
+# The Fortran compiler may use out-dated module files in the tutorial and test directories so delete them all
+remove-test-mod-files:
+	-@find src -name "*.mod" -not -path "src/binding/*" -delete
+
+test: remove-test-mod-files report_tests
 
 pre-clean:
 	@$(RM) -rf $(TESTDIR)/counts $(TESTLOGTAPFILE) $(TESTLOGERRFILE)

@@ -66,14 +66,11 @@ static PetscErrorCode VecDuplicateVecs_MPI_GEMV(Vec w, PetscInt m, Vec *V[])
     w->ops->duplicatevecs = VecDuplicateVecs_Default;
     PetscCall(VecDuplicateVecs(w, m, V));
   } else {
-    PetscInt     nlocal;
     PetscScalar *array;
     PetscInt64   lda; // use 64-bit as we will do "m * lda"
 
     PetscCall(PetscMalloc1(m, V));
-    PetscCall(VecGetLocalSize(w, &nlocal));
-    lda = nlocal;
-    lda = ((lda + 31) / 32) * 32; // make every vector 32-elements aligned
+    VecGetLocalSizeAligned(w, 64, &lda); // get in lda the 64-bytes aligned local size
 
     PetscCall(PetscCalloc1(m * lda, &array));
     for (PetscInt i = 0; i < m; i++) {
@@ -552,11 +549,10 @@ PetscErrorCode VecCreate_MPI_Private(Vec v, PetscBool alloc, PetscInt nghost, co
   if (mdot_use_gemv || maxpy_use_gemv) v->ops[0].duplicatevecs = VecDuplicateVecs_MPI_GEMV;
 
   if (mdot_use_gemv) {
-    v->ops[0].duplicatevecs = VecDuplicateVecs_MPI_GEMV;
-    v->ops[0].mdot          = VecMDot_MPI_GEMV;
-    v->ops[0].mdot_local    = VecMDot_Seq_GEMV;
-    v->ops[0].mtdot         = VecMTDot_MPI_GEMV;
-    v->ops[0].mtdot_local   = VecMTDot_Seq_GEMV;
+    v->ops[0].mdot        = VecMDot_MPI_GEMV;
+    v->ops[0].mdot_local  = VecMDot_Seq_GEMV;
+    v->ops[0].mtdot       = VecMTDot_MPI_GEMV;
+    v->ops[0].mtdot_local = VecMTDot_Seq_GEMV;
   }
   if (maxpy_use_gemv) v->ops[0].maxpy = VecMAXPY_Seq_GEMV;
 
@@ -661,7 +657,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecCreateMPIWithArray - Creates a parallel, array-style vector,
   where the user provides the array space to store the vector values.
 
@@ -705,7 +701,7 @@ PetscErrorCode VecCreateMPIWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecCreateGhostWithArray - Creates a parallel vector with ghost padding on each processor;
   the caller allocates the array space.
 
@@ -902,8 +898,7 @@ PetscErrorCode VecMPISetGhost(Vec vv, PetscInt nghost, const PetscInt ghosts[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------------------------------------*/
-/*@C
+/*@
   VecCreateGhostBlockWithArray - Creates a parallel vector with ghost padding on each processor;
   the caller allocates the array space. Indices in the ghost region are based on blocks.
 

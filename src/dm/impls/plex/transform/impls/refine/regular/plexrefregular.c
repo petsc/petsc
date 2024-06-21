@@ -119,11 +119,14 @@ PetscErrorCode DMPlexRefineRegularGetAffineFaceTransforms(DMPlexTransform tr, DM
 
   Output Parameters:
 + Nc   - The number of subcells produced from this cell type
-. v0   - The translation of the first vertex for each subcell
-. J    - The Jacobian for each subcell (map from reference cell to subcell)
-- invJ - The inverse Jacobian for each subcell
+. v0   - The translation of the first vertex for each subcell, an array of length $dim * Nc$. Pass `NULL` to ignore.
+. J    - The Jacobian for each subcell (map from reference cell to subcell), an array of length $dim^2 * Nc$. Pass `NULL` to ignore.
+- invJ - The inverse Jacobian for each subcell, an array of length $dim^2 * Nc$. Pass `NULL` to ignore.
 
   Level: developer
+
+  Note:
+  Do not free these output arrays
 
 .seealso: `DMPLEX`, `DM`, `DMPlexTransform`, `DMPolytopeType`, `DMPlexRefineRegularGetAffineFaceTransforms()`, `DMPLEXREFINEREGULAR`
 @*/
@@ -159,6 +162,37 @@ PetscErrorCode DMPlexRefineRegularGetAffineTransforms(DMPlexTransform tr, DMPoly
                                  2.0, 0.0, 0.0,  2.0,
 
                                  2.0, 2.0, -2.0, 0.0};
+  static PetscReal tet_v0[]   = {-1.0, -1.0, -1.0, -1.0, 0.0, -1.0, 0.0, -1.0, -1.0, -1.0, -1.0, 0.0, 0.0, -1.0, -1.0, -1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0};
+  static PetscReal tet_J[]    = {0.5,  0.0,  0.0,  0.0, 0.5, 0.0,  0.0,  0.0,  0.5,
+
+                                 0.5,  0.0,  0.0,  0.0, 0.5, 0.0,  0.0,  0.0,  0.5,
+
+                                 0.5,  0.0,  0.0,  0.0, 0.5, 0.0,  0.0,  0.0,  0.5,
+
+                                 0.5,  0.0,  0.0,  0.0, 0.5, 0.0,  0.0,  0.0,  0.5,
+
+                                 -0.5, -0.5, 0.0,  0.5, 0.0, 0.0,  0.0,  0.5,  0.5,
+
+                                 0.0,  0.5,  0.5,  0.0, 0.0, -0.5, -0.5, -0.5, 0.0,
+
+                                 -0.5, 0.0,  0.0,  0.5, 0.0, 0.5,  -0.5, -0.5, -0.5,
+
+                                 -0.5, -0.5, -0.5, 0.5, 0.5, 0.0,  0.0,  -0.5, 0.0};
+  static PetscReal tet_invJ[] = {2.0,  0.0,  0.0,  0.0,  2.0,  0.0,  0.0,  0.0,  2.0,
+
+                                 2.0,  0.0,  0.0,  0.0,  2.0,  0.0,  0.0,  0.0,  2.0,
+
+                                 2.0,  0.0,  0.0,  0.0,  2.0,  0.0,  0.0,  0.0,  2.0,
+
+                                 2.0,  0.0,  0.0,  0.0,  2.0,  0.0,  0.0,  0.0,  2.0,
+
+                                 0.0,  2.0,  0.0,  -2.0, -2.0, 0.0,  2.0,  2.0,  2.0,
+
+                                 -2.0, -2.0, -2.0, 2.0,  2.0,  0.0,  0.0,  -2.0, 0.0,
+
+                                 -2.0, 0.0,  0.0,  0.0,  -2.0, -2.0, 2.0,  2.0,  0.0,
+
+                                 0.0,  2.0,  2.0,  0.0,  0.0,  -2.0, -2.0, -2.0, 0.0};
   /*
      3---------2---------2
      |         |         |
@@ -242,6 +276,12 @@ PetscErrorCode DMPlexRefineRegularGetAffineTransforms(DMPlexTransform tr, DMPoly
     if (v0) *v0 = quad_v0;
     if (J) *J = quad_J;
     if (invJ) *invJ = quad_invJ;
+    break;
+  case DM_POLYTOPE_TETRAHEDRON:
+    if (Nc) *Nc = 8;
+    if (v0) *v0 = tet_v0;
+    if (J) *J = tet_J;
+    if (invJ) *invJ = tet_invJ;
     break;
   case DM_POLYTOPE_HEXAHEDRON:
     if (Nc) *Nc = 8;

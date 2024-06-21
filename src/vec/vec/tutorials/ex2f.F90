@@ -19,7 +19,7 @@
       PetscInt N,i,ione
       PetscErrorCode ierr
       PetscMPIInt rank
-      PetscScalar  one
+      PetscScalar  one, value(1)
 
       PetscCallA(PetscInitialize(ierr))
       one   = 1.0
@@ -51,7 +51,7 @@
 
       ione = 1
       do 100 i=0,N-rank-1
-         PetscCallA(VecSetValues(x,ione,i,one,ADD_VALUES,ierr))
+         PetscCallA(VecSetValues(x,ione,[i],[one],ADD_VALUES,ierr))
  100  continue
 
 !  Assemble vector, using the 2-step process:
@@ -65,7 +65,7 @@
 !     Test VecGetValues() with scalar entries
       if (rank .eq. 0) then
         ione = 0
-        PetscCallA(VecGetValues(x,ione,i,one,ierr))
+        PetscCallA(VecGetValues(x,ione,[i],value,ierr))
       endif
 
 !  View the vector; then destroy it.

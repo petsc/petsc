@@ -30,11 +30,11 @@
       col = 0
       two = 2.0
       one = 1
-      PetscCallA(MatSetValues(A,one,row,one,col,two,INSERT_VALUES,ierr))
+      PetscCallA(MatSetValues(A,one,[row],one,[col],[two],INSERT_VALUES,ierr))
       row = 1
       col = 1
       zero = 0.0
-      PetscCallA(MatSetValues(A,one,row,one,col,zero,INSERT_VALUES,ierr))
+      PetscCallA(MatSetValues(A,one,[row],one,[col],[zero],INSERT_VALUES,ierr))
       PetscCallA(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr))
       PetscCallA(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr))
 

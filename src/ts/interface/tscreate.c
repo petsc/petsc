@@ -3,7 +3,7 @@
 const char *const TSConvergedReasons_Shifted[] = {"ADJOINT_DIVERGED_LINEAR_SOLVE", "FORWARD_DIVERGED_LINEAR_SOLVE", "DIVERGED_STEP_REJECTED", "DIVERGED_NONLINEAR_SOLVE", "CONVERGED_ITERATING", "CONVERGED_TIME", "CONVERGED_ITS", "CONVERGED_USER", "CONVERGED_EVENT", "CONVERGED_PSEUDO_FATOL", "CONVERGED_PSEUDO_FATOL", "TSConvergedReason", "TS_", NULL};
 const char *const *TSConvergedReasons = TSConvergedReasons_Shifted + 4;
 
-/*@C
+/*@
   TSCreate - This function creates an empty timestepper. The problem type can then be set with `TSSetProblemType()` and the
   type of solver can then be set with `TSSetType()`.
 
@@ -32,7 +32,6 @@ PetscErrorCode TSCreate(MPI_Comm comm, TS *ts)
 
   PetscFunctionBegin;
   PetscAssertPointer(ts, 2);
-  *ts = NULL;
   PetscCall(TSInitializePackage());
 
   PetscCall(PetscHeaderCreate(t, TS_CLASSID, "TS", "Time stepping", "TS", comm, TSDestroy, TSView));

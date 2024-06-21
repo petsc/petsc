@@ -148,7 +148,7 @@ PetscErrorCode PetscDrawCheckResizedWindow(PetscDraw draw)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawGetTitle - Gets pointer to title of a `PetscDraw` context.
 
   Not Collective
@@ -172,7 +172,7 @@ PetscErrorCode PetscDrawGetTitle(PetscDraw draw, const char *title[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawSetTitle - Sets the title of a `PetscDraw` context.
 
   Collective
@@ -205,7 +205,7 @@ PetscErrorCode PetscDrawSetTitle(PetscDraw draw, const char title[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawAppendTitle - Appends to the title of a `PetscDraw` context.
 
   Collective
@@ -331,7 +331,7 @@ PetscErrorCode PetscDrawGetPopup(PetscDraw draw, PetscDraw *popup)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawSetDisplay - Sets the display where a `PetscDraw` object will be displayed
 
   Input Parameters:
@@ -370,7 +370,7 @@ PetscErrorCode PetscDrawSetDoubleBuffer(PetscDraw draw)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawGetSingleton - Gain access to a `PetscDraw` object as if it were owned
   by the one process.
 
@@ -406,7 +406,7 @@ PetscErrorCode PetscDrawGetSingleton(PetscDraw draw, PetscDraw *sdraw)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawRestoreSingleton - Remove access to a `PetscDraw` object obtained with `PetscDrawGetSingleton()`
   by the one process.
 
@@ -439,7 +439,7 @@ PetscErrorCode PetscDrawRestoreSingleton(PetscDraw draw, PetscDraw *sdraw)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawSetVisible - Sets if the drawing surface (the 'window') is visible on its display.
 
   Input Parameters:

@@ -27,7 +27,7 @@
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode SETERRQ(MPI_Comm comm,PetscErrorCode ierr,char *message,...)
+   PetscErrorCode SETERRQ(MPI_Comm comm, PetscErrorCode ierr, char *message, ...)
 
    Collective
 
@@ -72,7 +72,7 @@ PETSC_EXTERN PetscMPIInt PETSC_MPI_ERROR_CODE;
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode SETERRMPI(MPI_Comm comm,PetscErrorCode ierr,char *message,...)
+   PetscErrorCode SETERRMPI(MPI_Comm comm, PetscErrorCode ierr, char *message, ...)
 
    Collective
 
@@ -96,7 +96,7 @@ M*/
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode SETERRA(MPI_Comm comm,PetscErrorCode ierr,char *message)
+   PetscErrorCode SETERRA(MPI_Comm comm, PetscErrorCode ierr, char *message)
 
    Collective
 
@@ -121,7 +121,7 @@ M*/
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode SETERRABORT(MPI_Comm comm,PetscErrorCode ierr,char *message,...)
+   PetscErrorCode SETERRABORT(MPI_Comm comm, PetscErrorCode ierr, char *message, ...)
 
    Collective
 
@@ -152,7 +152,7 @@ M*/
   } while (0)
 
 /*MC
-  PetscCheck - Check that a particular condition is true
+  PetscCheck - Checks that a particular condition is true; if not true, then returns the provided error code
 
   Synopsis:
   #include <petscerror.h>
@@ -327,10 +327,10 @@ M*/
   `PetscUseTypeMethod()` or `PetscTryTypeMethod()` should be used when calling functions pointers contained in a PETSc object's `ops` array
 
   Fortran Notes:
-    The Fortran function from which this is used must declare a variable PetscErrorCode ierr and ierr must be
+    The Fortran function in which this is used must declare a `PetscErrorCode` variable necessarily named `ierr`, and `ierr` must be
     the final argument to the PETSc function being called.
 
-    In the main program and in Fortran subroutines that do not have ierr as the final return parameter one
+    In the main program and in Fortran subroutines that do not have `ierr` as the final return parameter, one
     should use `PetscCallA()`
 
   Example Fortran Usage:
@@ -339,8 +339,8 @@ M*/
   Vec v
 
   ...
-  PetscCall(VecShift(v,1.0,ierr))
-  PetscCallA(VecShift(v,1.0,ierr))
+  PetscCall(VecShift(v, 1.0, ierr))
+  PetscCallA(VecShift(v, 1.0, ierr))
 .ve
 
 .seealso: `SETERRQ()`, `PetscCheck()`, `PetscAssert()`, `PetscTraceBackErrorHandler()`, `PetscCallMPI()`,
@@ -349,12 +349,12 @@ M*/
 M*/
 
 /*MC
-   PetscCallA - Fortran-only macro that should be used in the main program to call PETSc functions instead of using
-   PetscCall() which should be used in other Fortran subroutines
+   PetscCallA - Fortran-only macro that should be used in the main program and subroutines that do not have `ierr` as the final return parameter, to call PETSc functions instead of using
+   `PetscCall()` which should be used in other Fortran subroutines
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode PetscCallA(PetscFunction(arguments,ierr))
+   PetscErrorCode PetscCallA(PetscFunction(arguments, ierr))
 
    Collective
 
@@ -366,6 +366,7 @@ M*/
    Notes:
    This should only be used with Fortran. With C/C++, use `PetscCall()` always.
 
+   The Fortran function in which this is used must declare a `PetscErrorCode` variable necessarily named `ierr`
    Use `SETERRA()` to set an error in a Fortran main program and `SETERRQ()` in Fortran subroutines
 
 .seealso: `SETERRQ()`, `SETERRA()`, `SETERRABORT()`, `PetscCall()`, `CHKERRA()`, `PetscCallAbort()`
@@ -377,7 +378,7 @@ M*/
 
   Synopsis:
   #include <petscerror.h>
-  void PetscCallBack(const char *functionname,PetscFunction(args))
+  void PetscCallBack(const char *functionname, PetscFunction(args))
 
   Not Collective; No Fortran Support
 
@@ -387,7 +388,7 @@ M*/
 
   Example Usage:
 .vb
-  PetscCallBack("XXX callback to do something",a->callback(...));
+  PetscCallBack("XXX callback to do something", a->callback(...));
 .ve
 
   Level: developer
@@ -1152,7 +1153,7 @@ PETSC_DEPRECATED_FUNCTION(3, 13, 0, "PetscSignalSegvCheckPointerOrMpi()", ) stat
 
    Synopsis:
     #include <petscsys.h>
-     PetscErrorCode (*PetscErrorPrintf)(const char format[],...);
+     PetscErrorCode (*PetscErrorPrintf)(const char format[], ...);
 
     Not Collective; No Fortran Support
 

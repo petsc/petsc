@@ -24,12 +24,17 @@ M*/
     This is code for translating PETSc memory addresses to integer offsets
     for Fortran.
 */
-char *PETSC_NULL_CHARACTER_Fortran = NULL;
-void *PETSC_NULL_INTEGER_Fortran   = NULL;
-void *PETSC_NULL_SCALAR_Fortran    = NULL;
-void *PETSC_NULL_DOUBLE_Fortran    = NULL;
-void *PETSC_NULL_REAL_Fortran      = NULL;
-void *PETSC_NULL_BOOL_Fortran      = NULL;
+char *PETSC_NULL_CHARACTER_Fortran     = NULL;
+void *PETSC_NULL_INTEGER_Fortran       = NULL;
+void *PETSC_NULL_SCALAR_Fortran        = NULL;
+void *PETSC_NULL_DOUBLE_Fortran        = NULL;
+void *PETSC_NULL_REAL_Fortran          = NULL;
+void *PETSC_NULL_BOOL_Fortran          = NULL;
+void *PETSC_NULL_ENUM_Fortran          = NULL;
+void *PETSC_NULL_INTEGER_ARRAY_Fortran = NULL;
+void *PETSC_NULL_SCALAR_ARRAY_Fortran  = NULL;
+void *PETSC_NULL_REAL_ARRAY_Fortran    = NULL;
+
 EXTERN_C_BEGIN
 void (*PETSC_NULL_FUNCTION_Fortran)(void) = NULL;
 EXTERN_C_END

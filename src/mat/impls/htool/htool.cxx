@@ -547,6 +547,8 @@ static PetscErrorCode MatHtoolGetHierarchicalMat_Htool(Mat A, const htool::Virtu
 /*@C
   MatHtoolGetHierarchicalMat - Retrieves the opaque pointer to a Htool virtual matrix stored in a `MATHTOOL`.
 
+  No Fortran Support, No C Support
+
   Input Parameter:
 . A - hierarchical matrix
 
@@ -581,6 +583,8 @@ static PetscErrorCode MatHtoolSetKernel_Htool(Mat A, MatHtoolKernelFn *kernel, v
 /*@C
   MatHtoolSetKernel - Sets the kernel and context used for the assembly of a `MATHTOOL`.
 
+  Collective, No Fortran Support
+
   Input Parameters:
 + A         - hierarchical matrix
 . kernel    - computational kernel (or `NULL`)
@@ -590,7 +594,7 @@ static PetscErrorCode MatHtoolSetKernel_Htool(Mat A, MatHtoolKernelFn *kernel, v
 
 .seealso: [](ch_matrices), `Mat`, `MATHTOOL`, `MatCreateHtoolFromKernel()`
 @*/
-PETSC_EXTERN PetscErrorCode MatHtoolSetKernel(Mat A, MatHtoolKernelFn *kernel, void *kernelctx)
+PetscErrorCode MatHtoolSetKernel(Mat A, MatHtoolKernelFn *kernel, void *kernelctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -612,7 +616,7 @@ static PetscErrorCode MatHtoolGetPermutationSource_Htool(Mat A, IS *is)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatHtoolGetPermutationSource - Gets the permutation associated to the source cluster for a `MATHTOOL` matrix.
 
   Input Parameter:
@@ -625,7 +629,7 @@ static PetscErrorCode MatHtoolGetPermutationSource_Htool(Mat A, IS *is)
 
 .seealso: [](ch_matrices), `Mat`, `MATHTOOL`, `MatHtoolGetPermutationTarget()`, `MatHtoolUsePermutation()`
 @*/
-PETSC_EXTERN PetscErrorCode MatHtoolGetPermutationSource(Mat A, IS *is)
+PetscErrorCode MatHtoolGetPermutationSource(Mat A, IS *is)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -646,7 +650,7 @@ static PetscErrorCode MatHtoolGetPermutationTarget_Htool(Mat A, IS *is)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatHtoolGetPermutationTarget - Gets the permutation associated to the target cluster for a `MATHTOOL` matrix.
 
   Input Parameter:
@@ -659,7 +663,7 @@ static PetscErrorCode MatHtoolGetPermutationTarget_Htool(Mat A, IS *is)
 
 .seealso: [](ch_matrices), `Mat`, `MATHTOOL`, `MatHtoolGetPermutationSource()`, `MatHtoolUsePermutation()`
 @*/
-PETSC_EXTERN PetscErrorCode MatHtoolGetPermutationTarget(Mat A, IS *is)
+PetscErrorCode MatHtoolGetPermutationTarget(Mat A, IS *is)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -677,7 +681,7 @@ static PetscErrorCode MatHtoolUsePermutation_Htool(Mat A, PetscBool use)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatHtoolUsePermutation - Sets whether a `MATHTOOL` matrix should permute input (resp. output) vectors following its internal source (resp. target) permutation.
 
   Input Parameters:
@@ -688,7 +692,7 @@ static PetscErrorCode MatHtoolUsePermutation_Htool(Mat A, PetscBool use)
 
 .seealso: [](ch_matrices), `Mat`, `MATHTOOL`, `MatHtoolGetPermutationSource()`, `MatHtoolGetPermutationTarget()`
 @*/
-PETSC_EXTERN PetscErrorCode MatHtoolUsePermutation(Mat A, PetscBool use)
+PetscErrorCode MatHtoolUsePermutation(Mat A, PetscBool use)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -801,6 +805,8 @@ static PetscErrorCode MatTranspose_Htool(Mat A, MatReuse reuse, Mat *B)
 
 /*@C
   MatCreateHtoolFromKernel - Creates a `MATHTOOL` from a user-supplied kernel.
+
+  Collective, No Fortran Support
 
   Input Parameters:
 + comm          - MPI communicator

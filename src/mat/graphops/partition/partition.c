@@ -163,7 +163,7 @@ PetscBool         MatPartitioningRegisterAllCalled = PETSC_FALSE;
 /*@C
   MatPartitioningRegister - Adds a new sparse matrix partitioning to the  matrix package.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - name of partitioning (for example `MATPARTITIONINGCURRENT`) or `MATPARTITIONINGPARMETIS`
@@ -176,10 +176,8 @@ PetscBool         MatPartitioningRegisterAllCalled = PETSC_FALSE;
    MatPartitioningRegister("my_part", MyPartCreate);
 .ve
 
-  Then, your partitioner can be chosen with the procedural interface via
-$     MatPartitioningSetType(part, "my_part")
-  or at runtime via the option
-$     -mat_partitioning_type my_part
+  Then, your partitioner can be chosen with the procedural interface via `MatPartitioningSetType(part, "my_part")` or at runtime via the option
+  `-mat_partitioning_type my_part`
 
 .seealso: [](ch_matrices), `Mat`, `MatPartitioning`, `MatPartitioningType`, `MatPartitioningCreate()`, `MatPartitioningRegisterDestroy()`, `MatPartitioningRegisterAll()`
 @*/
@@ -191,7 +189,7 @@ PetscErrorCode MatPartitioningRegister(const char sname[], PetscErrorCode (*func
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatPartitioningGetType - Gets the Partitioning method type and name (as a string)
   from the partitioning context.
 
@@ -216,7 +214,7 @@ PetscErrorCode MatPartitioningGetType(MatPartitioning partitioning, MatPartition
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatPartitioningSetNParts - Set how many partitions need to be created;
   by default this is one per processor. Certain partitioning schemes may
   in fact only support that option.
@@ -467,7 +465,7 @@ PetscErrorCode MatPartitioningDestroy(MatPartitioning *part)
   Input Parameters:
 + part    - the partitioning context
 - weights - the weights, on each process this array must have the same size as the number of local rows times the value passed with `MatPartitioningSetNumberVertexWeights()` or
-             1 if that is not provided
+            1 if that is not provided
 
   Level: beginner
 
@@ -476,6 +474,9 @@ PetscErrorCode MatPartitioningDestroy(MatPartitioning *part)
   the array must be obtained with a call to `PetscMalloc()`, not malloc().
 
   The weights may not be used by some partitioners
+
+  Fortran Note:
+  The array `weights` is copied during this function call.
 
 .seealso: [](ch_matrices), `Mat`, `MatPartitioning`, `MatPartitioningCreate()`, `MatPartitioningSetType()`, `MatPartitioningSetPartitionWeights()`, `MatPartitioningSetNumberVertexWeights()`
 @*/
@@ -496,17 +497,20 @@ PetscErrorCode MatPartitioningSetVertexWeights(MatPartitioning part, const Petsc
   Input Parameters:
 + part    - the partitioning context
 - weights - An array of size nparts that is used to specify the fraction of
-             vertex weight that should be distributed to each sub-domain for
-             the balance constraint. If all of the sub-domains are to be of
-             the same size, then each of the nparts elements should be set
-             to a value of 1/nparts. Note that the sum of all of the weights
-             should be one.
+            vertex weight that should be distributed to each sub-domain for
+            the balance constraint. If all of the sub-domains are to be of
+            the same size, then each of the nparts elements should be set
+            to a value of 1/nparts. Note that the sum of all of the weights
+            should be one.
 
   Level: beginner
 
   Note:
   The array weights is freed by PETSc so the user should not free the array. In C/C++
   the array must be obtained with a call to `PetscMalloc()`, not malloc().
+
+  Fortran Note:
+  The array `weights` is copied during this function call.
 
 .seealso: [](ch_matrices), `Mat`, `MatPartitioning`, `MatPartitioningSetVertexWeights()`, `MatPartitioningCreate()`, `MatPartitioningSetType()`
 @*/
@@ -527,8 +531,8 @@ PetscErrorCode MatPartitioningSetPartitionWeights(MatPartitioning part, const Pe
   Input Parameters:
 + part             - the partitioning context
 - use_edge_weights - the flag indicateing whether or not to use edge weights. By default no edge weights will be used,
-                      that is, use_edge_weights is set to FALSE. If set use_edge_weights to TRUE, users need to make sure legal
-                      edge weights are stored in an ADJ matrix.
+                     that is, use_edge_weights is set to FALSE. If set use_edge_weights to TRUE, users need to make sure legal
+                     edge weights are stored in an ADJ matrix.
 
   Options Database Key:
 . -mat_partitioning_use_edge_weights - (true or false)
@@ -592,9 +596,9 @@ PetscErrorCode MatPartitioningCreate(MPI_Comm comm, MatPartitioning *newp)
   PetscMPIInt     size;
 
   PetscFunctionBegin;
-  *newp = NULL;
-
+  PetscAssertPointer(newp, 2);
   PetscCall(MatInitializePackage());
+
   PetscCall(PetscHeaderCreate(part, MAT_PARTITIONING_CLASSID, "MatPartitioning", "Matrix/graph partitioning", "MatGraphOperations", comm, MatPartitioningDestroy, MatPartitioningView));
   part->vertex_weights   = NULL;
   part->part_weights     = NULL;
@@ -608,7 +612,7 @@ PetscErrorCode MatPartitioningCreate(MPI_Comm comm, MatPartitioning *newp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatPartitioningViewFromOptions - View a partitioning context from the options database
 
   Collective
@@ -645,7 +649,7 @@ PetscErrorCode MatPartitioningViewFromOptions(MatPartitioning A, PetscObject obj
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatPartitioningView - Prints the partitioning data structure.
 
   Collective
@@ -690,7 +694,7 @@ PetscErrorCode MatPartitioningView(MatPartitioning part, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatPartitioningSetType - Sets the type of partitioner to use
 
   Collective
@@ -796,7 +800,7 @@ PetscErrorCode MatPartitioningSetFromOptions(MatPartitioning part)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatPartitioningSetNumberVertexWeights - Sets the number of weights per vertex
 
   Not Collective

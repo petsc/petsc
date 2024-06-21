@@ -94,14 +94,14 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   PetscFunctionBegin;
   PetscAssertPointer(newtao, 2);
   PetscCall(TaoInitializePackage());
+
   PetscCall(TaoLineSearchInitializePackage());
   PetscCall(PetscHeaderCreate(tao, TAO_CLASSID, "Tao", "Optimization solver", "Tao", comm, TaoDestroy, TaoView));
 
   /* Set non-NULL defaults */
   tao->ops->convergencetest = TaoDefaultConvergenceTest;
-
-  tao->max_it    = 10000;
-  tao->max_funcs = -1;
+  tao->max_it               = 10000;
+  tao->max_funcs            = -1;
 #if defined(PETSC_USE_REAL_SINGLE)
   tao->gatol = 1e-5;
   tao->grtol = 1e-5;
@@ -113,13 +113,11 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   tao->crtol = 1e-8;
   tao->catol = 1e-8;
 #endif
-  tao->gttol   = 0.0;
-  tao->steptol = 0.0;
-  tao->trust0  = PETSC_INFINITY;
-  tao->fmin    = PETSC_NINFINITY;
-
+  tao->gttol      = 0.0;
+  tao->steptol    = 0.0;
+  tao->trust0     = PETSC_INFINITY;
+  tao->fmin       = PETSC_NINFINITY;
   tao->hist_reset = PETSC_TRUE;
-
   PetscCall(TaoResetStatistics(tao));
   *newtao = tao;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -215,7 +213,7 @@ PetscErrorCode TaoSetUp(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoDestroy - Destroys the `Tao` context that was created with `TaoCreate()`
 
   Collective
@@ -542,7 +540,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoViewFromOptions - View a `Tao` object based on values in the options database
 
   Collective
@@ -564,7 +562,7 @@ PetscErrorCode TaoViewFromOptions(Tao A, PetscObject obj, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoView - Prints information about the `Tao` object
 
   Collective
@@ -1391,18 +1389,24 @@ PetscErrorCode TaoResetStatistics(Tao tao)
   Logically Collective
 
   Input Parameters:
-+ tao  - The `Tao` solver context
-- func - The function
++ tao  - The `Tao` solver
+. func - The function
+- ctx  - The update function context
 
   Calling sequence of `func`:
-+ tao - the optimizer context
-- ctx - The current step of the iteration
++ tao - The optimizer context
+. it  - The current iteration index
+- ctx - The update context
 
   Level: advanced
 
+  Notes:
+  Users can modify the gradient direction or any other vector associated to the specific solver used.
+  The objective function value is always recomputed after a call to the update hook.
+
 .seealso: [](ch_tao), `Tao`, `TaoSolve()`
 @*/
-PetscErrorCode TaoSetUpdate(Tao tao, PetscErrorCode (*func)(Tao, PetscInt, void *), void *ctx)
+PetscErrorCode TaoSetUpdate(Tao tao, PetscErrorCode (*func)(Tao tao, PetscInt it, void *ctx), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
@@ -1982,7 +1986,7 @@ PetscErrorCode TaoDefaultConvergenceTest(Tao tao, void *dummy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoSetOptionsPrefix - Sets the prefix used for searching for all
   Tao options in the database.
 
@@ -2023,7 +2027,7 @@ PetscErrorCode TaoSetOptionsPrefix(Tao tao, const char p[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoAppendOptionsPrefix - Appends to the prefix used for searching for all Tao options in the database.
 
   Logically Collective
@@ -2050,7 +2054,7 @@ PetscErrorCode TaoAppendOptionsPrefix(Tao tao, const char p[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoGetOptionsPrefix - Gets the prefix used for searching for all
   Tao options in the database
 
@@ -2077,7 +2081,7 @@ PetscErrorCode TaoGetOptionsPrefix(Tao tao, const char *p[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoSetType - Sets the `TaoType` for the minimization solver.
 
   Collective
@@ -2128,7 +2132,7 @@ PetscErrorCode TaoSetType(Tao tao, TaoType type)
 /*@C
   TaoRegister - Adds a method to the Tao package for minimization.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname - name of a new user-defined solver
@@ -2397,7 +2401,7 @@ PetscErrorCode TaoGetSolutionStatus(Tao tao, PetscInt *its, PetscReal *f, PetscR
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoGetType - Gets the current `TaoType` being used in the `Tao` object
 
   Not Collective
@@ -2550,6 +2554,7 @@ PetscErrorCode TaoSetConvergenceHistory(Tao tao, PetscReal obj[], PetscReal resi
 .vb
    call TaoGetConvergenceHistory(Tao tao, PetscInt nhist, PetscErrorCode ierr)
 .ve
+  In other words this gets the current number of entries in the history. Access the history through the array you passed to `TaoSetConvergenceHistory()`
 
 .seealso: [](ch_tao), `Tao`, `TaoSolve()`, `TaoSetConvergenceHistory()`
 @*/
@@ -2660,7 +2665,7 @@ PetscErrorCode TaoGetGradientNorm(Tao tao, Mat *M)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoGradientNorm - Compute the norm using the `NormType`, the user has selected
 
   Collective

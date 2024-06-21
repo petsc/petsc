@@ -1,0 +1,6 @@
+[0]PETSC ERROR: --------------------- Error Message --------------------------------------------------------------
+[0]PETSC ERROR: Invalid argument
+[0]PETSC ERROR: Cannot create PETSC_NULL_XXX object
+[0]PETSC ERROR: See https://petsc.org/release/faq/ for trouble shooting.
+[0]PETSC ERROR: #1 kspcreate_() at itcreatef.c:0
+[0]PETSC ERROR: #2 ex86f.F90:0

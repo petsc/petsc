@@ -484,7 +484,11 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vfull, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(is, IS_CLASSID, 2);
+  PetscCheckSameComm(vfull, 1, is, 2);
+  PetscValidLogicalCollectiveScalar(vfull, alpha, 3);
   PetscValidHeaderSpecific(vreduced, VEC_CLASSID, 4);
+  PetscCall(ISGetSize(is, &nfull));
+  if (!nfull) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecGetSize(vfull, &nfull));
   PetscCall(VecGetSize(vreduced, &nreduced));
   if (nfull == nreduced) PetscCall(ISGetInfo(is, IS_SORTED, IS_GLOBAL, PETSC_TRUE, &sorted));
@@ -550,8 +554,11 @@ PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vfull, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(is, IS_CLASSID, 2);
+  PetscCheckSameComm(vfull, 1, is, 2);
   PetscValidLogicalCollectiveEnum(vfull, mode, 3);
   PetscValidHeaderSpecific(vreduced, VEC_CLASSID, 4);
+  PetscCall(ISGetSize(is, &nfull));
+  if (!nfull) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecGetSize(vfull, &nfull));
   PetscCall(VecGetSize(vreduced, &nreduced));
   if (nfull == nreduced) PetscCall(ISGetInfo(is, IS_SORTED, IS_GLOBAL, PETSC_TRUE, &sorted));
@@ -656,19 +663,22 @@ PetscErrorCode VecISSet(Vec V, IS S, PetscScalar c)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(V, VEC_CLASSID, 1);
-  PetscValidType(V, 1);
   PetscValidHeaderSpecific(S, IS_CLASSID, 2);
-  PetscCall(VecGetOwnershipRange(V, &low, &high));
-  PetscCall(ISGetLocalSize(S, &nloc));
-  PetscCall(ISGetIndices(S, &s));
-  PetscCall(VecGetArray(V, &v));
-  for (i = 0; i < nloc; ++i) {
-    if (s[i] < 0) continue;
-    PetscCheck(s[i] >= low && s[i] < high, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
-    v[s[i] - low] = c;
+  PetscCheckSameComm(V, 1, S, 2);
+  PetscCall(ISGetSize(S, &nloc));
+  if (nloc) {
+    PetscCall(VecGetOwnershipRange(V, &low, &high));
+    PetscCall(ISGetLocalSize(S, &nloc));
+    PetscCall(ISGetIndices(S, &s));
+    PetscCall(VecGetArray(V, &v));
+    for (i = 0; i < nloc; ++i) {
+      if (s[i] < 0) continue;
+      PetscCheck(s[i] >= low && s[i] < high, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
+      v[s[i] - low] = c;
+    }
+    PetscCall(ISRestoreIndices(S, &s));
+    PetscCall(VecRestoreArray(V, &v));
   }
-  PetscCall(ISRestoreIndices(S, &s));
-  PetscCall(VecRestoreArray(V, &v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -698,25 +708,27 @@ PetscErrorCode VecISShift(Vec V, IS S, PetscScalar c)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(V, VEC_CLASSID, 1);
-  PetscValidType(V, 1);
   PetscValidHeaderSpecific(S, IS_CLASSID, 2);
-  PetscCall(VecGetOwnershipRange(V, &low, &high));
-  PetscCall(ISGetLocalSize(S, &nloc));
-  PetscCall(ISGetIndices(S, &s));
-  PetscCall(VecGetArray(V, &v));
-  for (i = 0; i < nloc; ++i) {
-    if (s[i] < 0) continue;
-    PetscCheck(s[i] >= low && s[i] < high, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
-    v[s[i] - low] += c;
+  PetscCheckSameComm(V, 1, S, 2);
+  PetscCall(ISGetSize(S, &nloc));
+  if (nloc) {
+    PetscCall(VecGetOwnershipRange(V, &low, &high));
+    PetscCall(ISGetLocalSize(S, &nloc));
+    PetscCall(ISGetIndices(S, &s));
+    PetscCall(VecGetArray(V, &v));
+    for (i = 0; i < nloc; ++i) {
+      if (s[i] < 0) continue;
+      PetscCheck(s[i] >= low && s[i] < high, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
+      v[s[i] - low] += c;
+    }
+    PetscCall(ISRestoreIndices(S, &s));
+    PetscCall(VecRestoreArray(V, &v));
   }
-  PetscCall(ISRestoreIndices(S, &s));
-  PetscCall(VecRestoreArray(V, &v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if !defined(PETSC_USE_COMPLEX)
-/*@C
-  VecBoundGradientProjection - Projects  vector according to this definition.
+/*@
+  VecBoundGradientProjection - Projects vector according to this definition.
   If XL[i] < X[i] < XU[i], then GP[i] = G[i];
   If X[i] <= XL[i], then GP[i] = min(G[i],0);
   If X[i] >= XU[i], then GP[i] = max(G[i],0);
@@ -735,14 +747,16 @@ PetscErrorCode VecISShift(Vec V, IS S, PetscScalar c)
   Note:
   `GP` may be the same vector as `G`
 
+  For complex numbers only the real part is used in the bounds.
+
 .seealso: `Vec`
 @*/
 PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
 {
-  PetscInt         n, i;
-  const PetscReal *xptr, *xlptr, *xuptr;
-  PetscReal       *gptr, *gpptr;
-  PetscReal        xval, gpval;
+  PetscInt           n, i;
+  const PetscScalar *xptr, *xlptr, *xuptr;
+  PetscScalar       *gptr, *gpptr;
+  PetscScalar        xval, gpval;
 
   /* Project variables at the lower and upper bound */
   PetscFunctionBegin;
@@ -766,9 +780,9 @@ PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
   for (i = 0; i < n; ++i) {
     gpval = gptr[i];
     xval  = xptr[i];
-    if (gpval > 0.0 && xval <= xlptr[i]) {
+    if (PetscRealPart(gpval) > 0.0 && PetscRealPart(xval) <= PetscRealPart(xlptr[i])) {
       gpval = 0.0;
-    } else if (gpval < 0.0 && xval >= xuptr[i]) {
+    } else if (PetscRealPart(gpval) < 0.0 && PetscRealPart(xval) >= PetscRealPart(xuptr[i])) {
       gpval = 0.0;
     }
     gpptr[i] = gpval;
@@ -780,7 +794,6 @@ PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
   PetscCall(VecRestoreArrayPair(G, GP, &gptr, &gpptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-#endif
 
 /*@
   VecStepMaxBounded - See below

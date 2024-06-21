@@ -1,4 +1,6 @@
+#include <petscdevice.h>
 #include <../src/ksp/ksp/utils/lmvm/lmvm.h> /*I "petscksp.h" I*/
+#include <petsc/private/deviceimpl.h>
 
 PetscErrorCode MatReset_LMVM(Mat B, PetscBool destructive)
 {
@@ -128,7 +130,20 @@ static PetscErrorCode MatMult_LMVM(Mat B, Vec X, Vec Y)
   VecCheckMatCompatible(B, X, 2, Y, 3);
   PetscCheck(lmvm->allocated, PetscObjectComm((PetscObject)B), PETSC_ERR_ORDER, "LMVM matrix must be allocated first");
   PetscCall((*lmvm->ops->mult)(B, X, Y));
-  PetscCall(VecAXPY(Y, lmvm->shift, X));
+  if (lmvm->shift) PetscCall(VecAXPY(Y, lmvm->shift, X));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatSolve_LMVM(Mat B, Vec F, Vec dX)
+{
+  Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
+
+  PetscFunctionBegin;
+  VecCheckSameSize(F, 2, dX, 3);
+  VecCheckMatCompatible(B, F, 2, dX, 3);
+  PetscCheck(lmvm->allocated, PetscObjectComm((PetscObject)B), PETSC_ERR_ORDER, "LMVM matrix must be allocated first");
+  PetscCheck(*lmvm->ops->solve, PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_INCOMP, "LMVM matrix does not have a solution or inversion implementation");
+  PetscCall((*lmvm->ops->solve)(B, F, dX));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -167,8 +182,8 @@ static PetscErrorCode MatCopy_LMVM(Mat B, Mat M, MatStructure str)
   mctx->nrejects = bctx->nrejects;
   mctx->k        = bctx->k;
   for (i = 0; i <= bctx->k; ++i) {
-    PetscCall(VecCopy(bctx->S[i], mctx->S[i]));
-    PetscCall(VecCopy(bctx->Y[i], mctx->Y[i]));
+    if (bctx->S) PetscCall(VecCopy(bctx->S[i], mctx->S[i]));
+    if (bctx->Y) PetscCall(VecCopy(bctx->Y[i], mctx->Y[i]));
     PetscCall(VecCopy(bctx->Xprev, mctx->Xprev));
     PetscCall(VecCopy(bctx->Fprev, mctx->Fprev));
   }
@@ -239,19 +254,16 @@ PetscErrorCode MatView_LMVM(Mat B, PetscViewer pv)
 
 PetscErrorCode MatSetFromOptions_LMVM(Mat B, PetscOptionItems *PetscOptionsObject)
 {
-  Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
-  PetscInt  m    = lmvm->m;
-  PetscBool allocated;
+  Mat_LMVM *lmvm  = (Mat_LMVM *)B->data;
+  PetscInt  m_new = lmvm->m;
 
   PetscFunctionBegin;
-  PetscCall(MatLMVMIsAllocated(B, &allocated));
   PetscOptionsHeadBegin(PetscOptionsObject, "Limited-memory Variable Metric matrix for approximating Jacobians");
-  PetscCall(PetscOptionsInt("-mat_lmvm_hist_size", "number of past updates kept in memory for the approximation", "", lmvm->m, &m, NULL));
-  if (m != lmvm->m && allocated) PetscCall(MatLMVMReset(B, PETSC_TRUE));
-  lmvm->m = m;
+  PetscCall(PetscOptionsInt("-mat_lmvm_hist_size", "number of past updates kept in memory for the approximation", "", m_new, &m_new, NULL));
   PetscCall(PetscOptionsInt("-mat_lmvm_ksp_its", "(developer) fixed number of KSP iterations to take when inverting J0", "", lmvm->ksp_max_it, &lmvm->ksp_max_it, NULL));
   PetscCall(PetscOptionsReal("-mat_lmvm_eps", "(developer) machine zero definition", "", lmvm->eps, &lmvm->eps, NULL));
   PetscOptionsHeadEnd();
+  if (m_new != lmvm->m) PetscCall(MatLMVMSetHistorySize(B, m_new));
   PetscCall(KSPSetFromOptions(lmvm->J0ksp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -341,6 +353,7 @@ PetscErrorCode MatCreate_LMVM(Mat B)
   B->ops->duplicate      = MatDuplicate_LMVM;
   B->ops->mult           = MatMult_LMVM;
   B->ops->multadd        = MatMultAdd_LMVM;
+  B->ops->solve          = MatSolve_LMVM;
   B->ops->copy           = MatCopy_LMVM;
 
   lmvm->ops->update   = MatUpdate_LMVM;

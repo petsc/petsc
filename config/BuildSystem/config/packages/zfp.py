@@ -39,7 +39,7 @@ class Configure(config.package.CMakePackage):
 
     # if self.cuda.found:
     #   args.append('-DZFP_WITH_CUDA=ON')
-    #   args.append('-DCMAKE_CUDA_ARCHITECTURES:STRING="{}"'.format(self.cuda.cmakeArch()))
+    #   args.extend(self.cuda.getCmakeCUDAArchFlag())
     # else:
     #   args.append('-DZFP_WITH_CUDA=OFF')
 

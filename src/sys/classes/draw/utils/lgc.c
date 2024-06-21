@@ -220,7 +220,7 @@ PetscErrorCode PetscDrawLGSetColors(PetscDrawLG lg, const int colors[])
 
 .seealso: `PetscDrawLGGetAxis()`, `PetscDrawAxis`, `PetscDrawAxisSetColors()`, `PetscDrawAxisSetLabels()`, `PetscDrawAxisSetHoldLimits()`
 @*/
-PetscErrorCode PetscDrawLGSetLegend(PetscDrawLG lg, const char *const *names)
+PetscErrorCode PetscDrawLGSetLegend(PetscDrawLG lg, const char *const names[])
 {
   PetscInt i;
 
@@ -549,7 +549,7 @@ PetscErrorCode PetscDrawLGView(PetscDrawLG lg, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawLGSetOptionsPrefix - Sets the prefix used for searching for all
   `PetscDrawLG` options in the database.
 

@@ -205,7 +205,7 @@ static PetscErrorCode MatGetFactor_seqaij_matlab(Mat A, MatFactorType ftype, Mat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Matlab(void)
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_Matlab(void)
 {
   PetscFunctionBegin;
   PetscCall(MatSolverTypeRegister(MATSOLVERMATLAB, MATSEQAIJ, MAT_FACTOR_LU, MatGetFactor_seqaij_matlab));

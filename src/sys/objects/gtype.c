@@ -3,7 +3,7 @@
 */
 #include <petsc/private/petscimpl.h> /*I   "petscsys.h"    I*/
 
-/*@C
+/*@
   PetscObjectGetType - Gets the object type of any `PetscObject`.
 
   Not Collective

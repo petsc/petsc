@@ -118,6 +118,10 @@ The full list of contributors can be found `on GitLab <https://gitlab.com/petsc/
        :link: https://gitlab.com/BarrySmith
        :img-top: https://gitlab.com/uploads/-/system/user/avatar/3972971/avatar.png
 
+    .. grid-item-card:: Hansol Suh
+       :link: https://gitlab.com/hsuh
+       :img-top: https://gitlab.com/uploads/-/system/user/avatar/4555934/avatar.png
+
     .. grid-item-card:: Stefano Zampini
        :link: https://gitlab.com/stefanozampini
        :img-top: https://gitlab.com/uploads/-/system/user/avatar/3718257/avatar.png

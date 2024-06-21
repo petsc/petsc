@@ -119,18 +119,14 @@ PetscErrorCode ISDifference(IS is1, IS is2, IS *isout)
 @*/
 PetscErrorCode ISSum(IS is1, IS is2, IS *is3)
 {
-  MPI_Comm        comm;
   PetscBool       f;
-  PetscMPIInt     size;
   const PetscInt *i1, *i2;
   PetscInt        n1, n2, n3, p1, p2, *iout;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is1, IS_CLASSID, 1);
   PetscValidHeaderSpecific(is2, IS_CLASSID, 2);
-  PetscCall(PetscObjectGetComm((PetscObject)(is1), &comm));
-  PetscCallMPI(MPI_Comm_size(comm, &size));
-  PetscCheck(size <= 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Currently only for uni-processor IS");
+  PetscCheckSameComm(is1, 1, is2, 2);
 
   PetscCall(ISSorted(is1, &f));
   PetscCheck(f, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Arg 1 is not sorted");
@@ -239,7 +235,7 @@ PetscErrorCode ISSum(IS is1, IS is2, IS *is3)
 
   PetscCall(ISRestoreIndices(is1, &i1));
   PetscCall(ISRestoreIndices(is2, &i2));
-  PetscCall(ISCreateGeneral(comm, n3, iout, PETSC_OWN_POINTER, is3));
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)is1), n3, iout, PETSC_OWN_POINTER, is3));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -273,6 +269,7 @@ PetscErrorCode ISExpand(IS is1, IS is2, IS *isout)
 {
   PetscInt        i, n1, n2, imin, imax, nout, *iout;
   const PetscInt *i1, *i2;
+  PetscBool       sorted1 = PETSC_TRUE, sorted2 = PETSC_TRUE;
   PetscBT         mask;
   MPI_Comm        comm;
 
@@ -299,15 +296,25 @@ PetscErrorCode ISExpand(IS is1, IS is2, IS *isout)
   if (n1 || n2) {
     imin = PETSC_MAX_INT;
     imax = 0;
-    for (i = 0; i < n1; i++) {
-      if (i1[i] < 0) continue;
-      imin = PetscMin(imin, i1[i]);
-      imax = PetscMax(imax, i1[i]);
+    if (n1) {
+      PetscCall(ISSorted(is1, &sorted1));
+      if (sorted1 && i1[0] >= 0) imin = i1[0], imax = i1[n1 - 1];
+      else
+        for (i = 0; i < n1; i++) {
+          if (i1[i] < 0) continue;
+          imin = PetscMin(imin, i1[i]);
+          imax = PetscMax(imax, i1[i]);
+        }
     }
-    for (i = 0; i < n2; i++) {
-      if (i2[i] < 0) continue;
-      imin = PetscMin(imin, i2[i]);
-      imax = PetscMax(imax, i2[i]);
+    if (n2) {
+      PetscCall(ISSorted(is2, &sorted2));
+      if (sorted2 && i2[0] >= 0) imin = PetscMin(imin, i2[0]), imax = PetscMax(imax, i2[n2 - 1]);
+      else
+        for (i = 0; i < n2; i++) {
+          if (i2[i] < 0) continue;
+          imin = PetscMin(imin, i2[i]);
+          imax = PetscMax(imax, i2[i]);
+        }
     }
   } else imin = imax = 0;
 
@@ -319,6 +326,7 @@ PetscErrorCode ISExpand(IS is1, IS is2, IS *isout)
     if (i1[i] < 0) continue;
     if (!PetscBTLookupSet(mask, i1[i] - imin)) iout[nout++] = i1[i];
   }
+  n1 = -nout;
   PetscCall(ISRestoreIndices(is1, &i1));
   /* Put the values from is2 */
   for (i = 0; i < n2; i++) {
@@ -330,7 +338,8 @@ PetscErrorCode ISExpand(IS is1, IS is2, IS *isout)
   /* create the new IS containing the sum */
   PetscCall(PetscObjectGetComm((PetscObject)is1, &comm));
   PetscCall(ISCreateGeneral(comm, nout, iout, PETSC_OWN_POINTER, isout));
-
+  /* no entries of is2 (resp. is1) was inserted, so if is1 (resp. is2) is sorted, then so is isout */
+  if ((-n1 == nout && sorted1) || (n1 == 0 && sorted2)) PetscCall(ISSetInfo(*isout, IS_SORTED, IS_LOCAL, PETSC_FALSE, PETSC_TRUE));
   PetscCall(PetscBTDestroy(&mask));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -423,7 +432,7 @@ PetscErrorCode ISIntersect(IS is1, IS is2, IS *isout)
 
   /* create the new IS containing the sum */
   PetscCall(ISCreateGeneral(comm, nout, iout, PETSC_OWN_POINTER, isout));
-
+  PetscCall(ISSetInfo(*isout, IS_SORTED, IS_GLOBAL, PETSC_FALSE, PETSC_TRUE));
   PetscCall(ISRestoreIndices(is2sorted, &i2));
   PetscCall(ISDestroy(&is2sorted));
   PetscCall(ISRestoreIndices(is1sorted, &i1));
@@ -578,7 +587,7 @@ PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xi
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   ISPairToList - Convert an `IS` pair encoding an integer map to a list of `IS`.
 
   Collective

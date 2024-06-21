@@ -41,7 +41,6 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
   PetscCall(ISInitializePackage());
 
   PetscCall(PetscHeaderCreate(*s, PETSC_SECTION_CLASSID, "PetscSection", "Section", "IS", comm, PetscSectionDestroy, PetscSectionView));
-
   (*s)->pStart              = -1;
   (*s)->pEnd                = -1;
   (*s)->perm                = NULL;
@@ -404,7 +403,7 @@ PetscErrorCode PetscSectionSetNumFields(PetscSection s, PetscInt numFields)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionGetFieldName - Returns the name of a field in the `PetscSection`
 
   Not Collective
@@ -433,7 +432,7 @@ PetscErrorCode PetscSectionGetFieldName(PetscSection s, PetscInt field, const ch
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionSetFieldName - Sets the name of a field in the `PetscSection`
 
   Not Collective
@@ -461,7 +460,7 @@ PetscErrorCode PetscSectionSetFieldName(PetscSection s, PetscInt field, const ch
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionGetComponentName - Gets the name of a field component in the `PetscSection`
 
   Not Collective
@@ -496,7 +495,7 @@ PetscErrorCode PetscSectionGetComponentName(PetscSection s, PetscInt field, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionSetComponentName - Sets the name of a field component in the `PetscSection`
 
   Not Collective
@@ -744,7 +743,7 @@ PetscErrorCode PetscSectionSetPermutation(PetscSection s, IS perm)
 /*@C
   PetscSectionGetBlockStarts - Returns a table indicating which points start new blocks
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . s - the `PetscSection`
@@ -775,7 +774,7 @@ PetscErrorCode PetscSectionGetBlockStarts(PetscSection s, PetscBT *blockStarts)
 /*@C
   PetscSectionSetBlockStarts - Sets a table indicating which points start new blocks
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + s           - the `PetscSection`
@@ -2456,7 +2455,7 @@ static PetscErrorCode PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionViewFromOptions - View the `PetscSection` based on values in the options database
 
   Collective
@@ -2481,7 +2480,7 @@ PetscErrorCode PetscSectionViewFromOptions(PetscSection A, PetscObject obj, cons
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionView - Views a `PetscSection`
 
   Collective
@@ -2534,7 +2533,7 @@ PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionLoad - Loads a `PetscSection`
 
   Collective
@@ -2767,7 +2766,7 @@ static PetscErrorCode VecIntSetValuesSection_Private(PetscInt *baseArray, PetscS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionHasConstraints - Determine whether a `PetscSection` has constrained dofs
 
   Not Collective
@@ -2810,7 +2809,7 @@ PetscErrorCode PetscSectionHasConstraints(PetscSection s, PetscBool *hasConstrai
 
 .seealso: [PetscSection](sec_petscsection), `PetscSectionSetConstraintIndices()`, `PetscSectionGetConstraintDof()`, `PetscSection`
 @*/
-PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, const PetscInt **indices)
+PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, const PetscInt *indices[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
@@ -2820,7 +2819,7 @@ PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionSetConstraintIndices - Set the point dof numbers, in [0, dof), which are constrained
 
   Not Collective
@@ -3282,11 +3281,12 @@ PetscErrorCode PetscSectionSymCreate(MPI_Comm comm, PetscSectionSym *sym)
   PetscFunctionBegin;
   PetscAssertPointer(sym, 2);
   PetscCall(ISInitializePackage());
+
   PetscCall(PetscHeaderCreate(*sym, PETSC_SECTION_SYM_CLASSID, "PetscSectionSym", "Section Symmetry", "IS", comm, PetscSectionSymDestroy, PetscSectionSymView));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionSymSetType - Builds a `PetscSectionSym`, for a particular implementation.
 
   Collective
@@ -3319,7 +3319,7 @@ PetscErrorCode PetscSectionSymSetType(PetscSectionSym sym, PetscSectionSymType m
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionSymGetType - Gets the section symmetry type name (as a string) from the `PetscSectionSym`.
 
   Not Collective
@@ -3346,7 +3346,7 @@ PetscErrorCode PetscSectionSymGetType(PetscSectionSym sym, PetscSectionSymType *
 /*@C
   PetscSectionSymRegister - Registers a new section symmetry implementation
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - The name of a new user-defined creation routine
@@ -3404,7 +3404,7 @@ PetscErrorCode PetscSectionSymDestroy(PetscSectionSym *sym)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionSymView - Displays a section symmetry
 
   Collective
@@ -3536,8 +3536,8 @@ PetscErrorCode PetscSectionGetFieldSym(PetscSection section, PetscInt field, Pet
 + section   - the section
 . numPoints - the number of points
 - points    - an array of size 2 * `numPoints`, containing a list of (point, orientation) pairs. (An orientation is an
-    arbitrary integer: its interpretation is up to sym.  Orientations are used by `DM`: for their interpretation in that
-    context, see `DMPlexGetConeOrientation()`).
+              arbitrary integer: its interpretation is up to sym.  Orientations are used by `DM`: for their interpretation in that
+              context, see `DMPlexGetConeOrientation()`).
 
   Output Parameters:
 + perms - The permutations for the given orientations (or `NULL` if there is no symmetry or the permutation is the identity).
@@ -3644,8 +3644,8 @@ PetscErrorCode PetscSectionGetPointSyms(PetscSection section, PetscInt numPoints
 + section   - the section
 . numPoints - the number of points
 . points    - an array of size 2 * `numPoints`, containing a list of (point, orientation) pairs. (An orientation is an
-    arbitrary integer: its interpretation is up to sym.  Orientations are used by `DM`: for their interpretation in that
-    context, see `DMPlexGetConeOrientation()`).
+              arbitrary integer: its interpretation is up to sym.  Orientations are used by `DM`: for their interpretation in that
+              context, see `DMPlexGetConeOrientation()`).
 . perms     - The permutations for the given orientations: set to `NULL` at conclusion
 - rots      - The field rotations symmetries for the given orientations: set to `NULL` at conclusion
 

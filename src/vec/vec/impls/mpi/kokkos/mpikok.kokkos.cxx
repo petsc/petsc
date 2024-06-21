@@ -279,6 +279,7 @@ static PetscErrorCode VecDuplicateVecs_MPIKokkos_GEMV(Vec w, PetscInt m, Vec *V[
   PetscScalar *array_h, *array_d;
   PetscLayout  map;
   Vec_MPI     *wmpi = (Vec_MPI *)w->data;
+  PetscBool    mdot_use_gemv, maxpy_use_gemv;
 
   PetscFunctionBegin;
   PetscCall(PetscKokkosInitializeCheck()); // as we'll call kokkos_malloc()
@@ -288,8 +289,7 @@ static PetscErrorCode VecDuplicateVecs_MPIKokkos_GEMV(Vec w, PetscInt m, Vec *V[
   } else {
     PetscCall(PetscMalloc1(m, V));
     PetscCall(VecGetLayout(w, &map));
-    lda = map->n;
-    lda = ((lda + 31) / 32) * 32; // make every vector 32-elements aligned
+    VecGetLocalSizeAligned(w, 64, &lda); // get in lda the 64-bytes aligned local size
 
     // allocate raw arrays on host and device for the whole m vectors
     PetscCall(PetscCalloc1(m * lda, &array_h));
@@ -298,7 +298,8 @@ static PetscErrorCode VecDuplicateVecs_MPIKokkos_GEMV(Vec w, PetscInt m, Vec *V[
 #else
     PetscCallCXX(array_d = static_cast<PetscScalar *>(Kokkos::kokkos_malloc("VecDuplicateVecs", sizeof(PetscScalar) * (m * lda))));
 #endif
-
+    mdot_use_gemv  = (w->ops->mdot == VecMDot_MPIKokkos_GEMV) ? PETSC_TRUE : PETSC_FALSE;
+    maxpy_use_gemv = (w->ops->maxpy == VecMAXPY_SeqKokkos_GEMV) ? PETSC_TRUE : PETSC_FALSE;
     // create the m vectors with raw arrays
     for (PetscInt i = 0; i < m; i++) {
       Vec v;
@@ -306,6 +307,13 @@ static PetscErrorCode VecDuplicateVecs_MPIKokkos_GEMV(Vec w, PetscInt m, Vec *V[
       PetscCallCXX(static_cast<Vec_Kokkos *>(v->spptr)->v_dual.modify_host()); // as we only init'ed array_h
       PetscCall(PetscObjectListDuplicate(((PetscObject)w)->olist, &((PetscObject)v)->olist));
       PetscCall(PetscFunctionListDuplicate(((PetscObject)w)->qlist, &((PetscObject)v)->qlist));
+      if (mdot_use_gemv) { // inherit w's mdot/maxpy optimization setting
+        v->ops->mdot        = VecMDot_MPIKokkos_GEMV;
+        v->ops->mtdot       = VecMTDot_MPIKokkos_GEMV;
+        v->ops->mdot_local  = VecMDot_SeqKokkos_GEMV;
+        v->ops->mtdot_local = VecMTDot_SeqKokkos_GEMV;
+      }
+      if (maxpy_use_gemv) v->ops->maxpy = VecMAXPY_SeqKokkos_GEMV;
       v->ops->view          = w->ops->view;
       v->stash.donotstash   = w->stash.donotstash;
       v->stash.ignorenegidx = w->stash.ignorenegidx;

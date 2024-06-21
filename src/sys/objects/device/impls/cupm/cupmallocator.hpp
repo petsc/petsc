@@ -28,7 +28,7 @@ class HostAllocator;
 
 // Allocator class to allocate pinned host memory for use with device
 template <DeviceType T, typename PetscType>
-class HostAllocator : public memory::impl::SegmentedMemoryPoolAllocatorBase<PetscType>, impl::Interface<T> {
+class PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL HostAllocator : public memory::impl::SegmentedMemoryPoolAllocatorBase<PetscType>, impl::Interface<T> {
 public:
   PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(T);
   using base_type       = memory::impl::SegmentedMemoryPoolAllocatorBase<PetscType>;
@@ -79,7 +79,7 @@ template <DeviceType T, typename PetscType = char>
 class DeviceAllocator;
 
 template <DeviceType T, typename PetscType>
-class DeviceAllocator : public memory::impl::SegmentedMemoryPoolAllocatorBase<PetscType>, impl::Interface<T> {
+class PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL DeviceAllocator : public memory::impl::SegmentedMemoryPoolAllocatorBase<PetscType>, impl::Interface<T> {
 public:
   PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(T);
   using base_type       = memory::impl::SegmentedMemoryPoolAllocatorBase<PetscType>;

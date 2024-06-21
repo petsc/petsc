@@ -124,7 +124,7 @@
 !     This really needs only the star-type stencil, but we use the box stencil
 
       call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,i4,i4,PETSC_DECIDE,PETSC_DECIDE, &
-                        i1,i1, PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
+                        i1,i1, PETSC_NULL_INTEGER_ARRAY,PETSC_NULL_INTEGER_ARRAY,da,ierr)
       CHKERRA(ierr)
       call DMSetFromOptions(da,ierr)
       CHKERRA(ierr)
@@ -142,8 +142,8 @@
 !  Get local grid boundaries (for 2-dimensional DMDA)
 
       call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
-                       PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
-                       PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
+                       PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_ENUM,PETSC_NULL_ENUM, &
+                       PETSC_NULL_ENUM,PETSC_NULL_ENUM,ierr)
       CHKERRA(ierr)
       call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,PETSC_NULL_INTEGER,ierr)
       CHKERRA(ierr)
@@ -268,7 +268,6 @@
       call VecRestoreArrayF90(X,lx_v,ierr)
       CHKERRQ(ierr)
 
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -317,7 +316,6 @@
  10      continue
  20   continue
 
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -387,7 +385,6 @@
       call PetscLogFlops(11.0d0*ym*xm,ierr)
       CHKERRQ(ierr)
 
-      return
       end
 
 ! ---------------------------------------------------------------------
@@ -476,7 +473,7 @@
 !       Some f90 compilers need 4th arg to be of same type in both calls
                col(1) = row
                v(1)   = one
-               call MatSetValuesLocal(jac,i1,row,i1,col,v,INSERT_VALUES,ierr)
+               call MatSetValuesLocal(jac,i1,[row],i1,[col],[v],INSERT_VALUES,ierr)
                CHKERRQ(ierr)
 !           interior grid points
             else
@@ -490,7 +487,7 @@
                col(3) = row
                col(4) = row + 1
                col(5) = row + gxm
-               call MatSetValuesLocal(jac,i1,row,i5,col,v, INSERT_VALUES,ierr)
+               call MatSetValuesLocal(jac,i1,[row],i5,[col],[v], INSERT_VALUES,ierr)
                CHKERRQ(ierr)
             endif
  10      continue
@@ -505,7 +502,6 @@
          call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
          CHKERRQ(ierr)
       endif
-      return
       end
 
 !

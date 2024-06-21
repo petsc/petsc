@@ -309,12 +309,6 @@
   124:   testCustomFortranInterfaceDocString - Lorem ipsum dolor sit amet, consectetur adipiscing elit
   125: 
 
-./src/sys/tests/linter/testValidFunctionDocStrings.c:134:52 Note: due to char pointer 'string' of type 'char *******'
-  133: @*/
-> 134: PetscErrorCode testCustomFortranInterfaceDocString([33m[1mchar *******string[0m, PetscErrorCode (*function_ptr)(PetscInt))
-                                                          [33m[1m^^^^^^^^^^^^^^^^^^[0m
-  135: {
-
 ./src/sys/tests/linter/testValidFunctionDocStrings.c:134:72 Note: due to function pointer 'function_ptr' of type 'PetscErrorCode (*)(PetscInt)' (a.k.a. 'int (*)(int)')
   133: @*/
 > 134: PetscErrorCode testCustomFortranInterfaceDocString(char *******string, [33m[1mPetscErrorCode (*function_ptr)(PetscInt)[0m)

@@ -9,8 +9,7 @@ cdef class Sys:
         cls,
         devel: bool = False,
         date: bool = False,
-        author: bool = False,
-    ) -> tuple[int, int, int]:
+        author: bool = False) -> tuple[int, int, int]:
         """Return PETSc version information.
 
         Not collective.
@@ -40,8 +39,8 @@ cdef class Sys:
         """
         cdef char cversion[256]
         cdef PetscInt major=0, minor=0, micro=0, release=0
-        CHKERR( PetscGetVersion(cversion, sizeof(cversion)) )
-        CHKERR( PetscGetVersionNumber(&major, &minor, &micro, &release) )
+        CHKERR(PetscGetVersion(cversion, sizeof(cversion)))
+        CHKERR(PetscGetVersionNumber(&major, &minor, &micro, &release))
         out = version = (toInt(major), toInt(minor), toInt(micro))
         if devel or date or author:
             out = [version]
@@ -160,8 +159,7 @@ cdef class Sys:
         sep: str = ' ',
         end: str = '\n',
         comm: Comm | None = None,
-        **kwargs: Any,
-    ) -> None:
+        **kwargs: Any) -> None: # noqa: E129
         """Print output from the first processor of a communicator.
 
         Collective.
@@ -194,7 +192,7 @@ cdef class Sys:
             message = ''
         cdef const char *m = NULL
         message = str2bytes(message, &m)
-        CHKERR( PetscPrintf(ccomm, '%s', m) )
+        CHKERR(PetscPrintf(ccomm, '%s', m))
 
     @classmethod
     def syncPrint(
@@ -204,8 +202,7 @@ cdef class Sys:
         end: str = '\n',
         flush: bool = False,
         comm: Comm | None = None,
-        **kwargs: Any,
-    ) -> None:
+        **kwargs: Any) -> None: # noqa: E129
         """Print synchronized output from several processors of a communicator.
 
         Not collective.
@@ -237,8 +234,8 @@ cdef class Sys:
         message = ''.join(format) % args
         cdef const char *m = NULL
         message = str2bytes(message, &m)
-        CHKERR( PetscSynchronizedPrintf(ccomm, '%s', m) )
-        if flush: CHKERR( PetscSynchronizedFlush(ccomm, PETSC_STDOUT) )
+        CHKERR(PetscSynchronizedPrintf(ccomm, '%s', m))
+        if flush: CHKERR(PetscSynchronizedFlush(ccomm, PETSC_STDOUT))
 
     @classmethod
     def syncFlush(cls, comm: Comm | None = None) -> None:
@@ -257,7 +254,7 @@ cdef class Sys:
 
         """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        CHKERR( PetscSynchronizedFlush(ccomm, PETSC_STDOUT) )
+        CHKERR(PetscSynchronizedFlush(ccomm, PETSC_STDOUT))
 
     # --- xxx ---
 
@@ -266,8 +263,7 @@ cdef class Sys:
         cls,
         size: int | tuple[int, int],
         bsize: int | None = None,
-        comm: Comm | None = None
-    ) -> tuple[int, int]:
+        comm: Comm | None = None) -> tuple[int, int]:
         """Given a global (or local) size determines a local (or global) size.
 
         Collective.
@@ -306,7 +302,7 @@ cdef class Sys:
         if bs == PETSC_DECIDE: bs = 1
         if n > 0: n = n // bs
         if N > 0: N = N // bs
-        CHKERR( PetscSplitOwnership(ccomm, &n, &N) )
+        CHKERR(PetscSplitOwnership(ccomm, &n, &N))
         n = n * bs
         N = N * bs
         return (toInt(n), toInt(N))
@@ -328,7 +324,7 @@ cdef class Sys:
 
         """
         cdef PetscReal s = asReal(seconds)
-        CHKERR( PetscSleep(s) )
+        CHKERR(PetscSleep(s))
 
     # --- xxx ---
 
@@ -365,8 +361,7 @@ cdef class Sys:
             handler = PetscAbortErrorHandler
         else:
             raise ValueError(f"unknown error handler: {errhandler!r}")
-        CHKERR( PetscPushErrorHandler(handler, NULL) )
-
+        CHKERR(PetscPushErrorHandler(handler, NULL))
 
     @classmethod
     def popErrorHandler(cls) -> None:
@@ -379,7 +374,7 @@ cdef class Sys:
         petsc.PetscPopErrorHandler
 
         """
-        CHKERR( PetscPopErrorHandler() )
+        CHKERR(PetscPopErrorHandler())
 
     @classmethod
     def popSignalHandler(cls) -> None:
@@ -392,15 +387,14 @@ cdef class Sys:
         petsc.PetscPopSignalHandler
 
         """
-        CHKERR( PetscPopSignalHandler() )
+        CHKERR(PetscPopSignalHandler())
 
     @classmethod
     def infoAllow(
         cls,
         flag: bool,
         filename: str | None = None,
-        mode: str = "w",
-    ) -> None:
+        mode: str = "w") -> None:
         """Enables or disables PETSc info messages.
 
         Not collective.
@@ -423,11 +417,11 @@ cdef class Sys:
         cdef const char *cfilename = NULL
         cdef const char *cmode = NULL
         if flag: tval = PETSC_TRUE
-        CHKERR( PetscInfoAllow(tval) )
+        CHKERR(PetscInfoAllow(tval))
         if filename is not None:
             filename = str2bytes(filename, &cfilename)
             mode = str2bytes(mode, &cmode)
-            CHKERR( PetscInfoSetFile(cfilename, cmode) )
+            CHKERR(PetscInfoSetFile(cfilename, cmode))
 
     @classmethod
     def registerCitation(cls, citation: str) -> None:
@@ -449,7 +443,7 @@ cdef class Sys:
         cdef const char *cit = NULL
         citation = str2bytes(citation, &cit)
         cdef PetscBool flag = get_citation(citation)
-        CHKERR( PetscCitationsRegister(cit, &flag) )
+        CHKERR(PetscCitationsRegister(cit, &flag))
         set_citation(citation, toBool(flag))
 
     @classmethod
@@ -471,11 +465,11 @@ cdef class Sys:
         cdef const char *cpackage = NULL
         package = str2bytes(package, &cpackage)
         cdef PetscBool has = PETSC_FALSE
-        CHKERR( PetscHasExternalPackage(cpackage, &has) )
+        CHKERR(PetscHasExternalPackage(cpackage, &has))
         return toBool(has)
 
 
-cdef dict citations_registry = { }
+cdef dict citations_registry = {}
 
 cdef PetscBool get_citation(object citation):
     cdef bint is_set = citations_registry.get(citation)

@@ -262,7 +262,7 @@ static PetscErrorCode MatZeroRowsColumns_Local_Shell(Mat mat, PetscInt nr, Petsc
   /* Expand/create index set of zeroed rows */
   PetscCall(PetscMalloc1(nr, &idxs));
   for (i = 0; i < nr; i++) idxs[i] = rows[i] + rst;
-  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, nr, idxs, PETSC_OWN_POINTER, &is1));
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)mat), nr, idxs, PETSC_OWN_POINTER, &is1));
   PetscCall(ISSort(is1));
   PetscCall(VecISSet(shell->zvals, is1, diag));
   if (shell->zrows) {
@@ -299,7 +299,7 @@ static PetscErrorCode MatZeroRowsColumns_Local_Shell(Mat mat, PetscInt nr, Petsc
   if (rc) {
     PetscCall(PetscMalloc1(nc, &idxs));
     for (i = 0; i < nc; i++) idxs[i] = cols[i] + cst;
-    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, nc, idxs, PETSC_OWN_POINTER, &is1));
+    PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)mat), nc, idxs, PETSC_OWN_POINTER, &is1));
     PetscCall(ISSort(is1));
     if (shell->zcols) {
       PetscCall(ISSum(shell->zcols, is1, &is2));
@@ -1485,6 +1485,7 @@ static struct _MatOps MatOps_Values = {NULL,
                                        NULL,
                                        NULL,
                                        /*150*/ NULL,
+                                       NULL,
                                        NULL,
                                        NULL};
 

@@ -39,7 +39,7 @@ implicit none
   PetscCallA(VecGetOwnershipRange(v,start,endd,ierr))
   do i=start,endd-1
      myValue = real(i)
-     PetscCallA(VecSetValues(v,one,i,myValue,INSERT_VALUES,ierr))
+     PetscCallA(VecSetValues(v,one,[i],[myValue],INSERT_VALUES,ierr))
   end do
   PetscCallA(VecAssemblyBegin(v,ierr));
   PetscCallA(VecAssemblyEnd(v,ierr));

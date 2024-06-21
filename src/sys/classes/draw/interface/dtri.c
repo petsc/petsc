@@ -106,7 +106,7 @@ static PetscErrorCode PetscDrawTensorContour_Zoom(PetscDraw win, void *dctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawTensorContour - draws a contour plot for a two-dimensional array
 
   Collective, but `draw` must be sequential

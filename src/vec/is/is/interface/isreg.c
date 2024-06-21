@@ -35,7 +35,7 @@ PetscErrorCode ISCreate(MPI_Comm comm, IS *is)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISSetType - Builds a index set, for a particular `ISType`
 
   Collective
@@ -79,7 +79,7 @@ PetscErrorCode ISSetType(IS is, ISType method)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISGetType - Gets the index set type name, `ISType`, (as a string) from the `IS`.
 
   Not Collective
@@ -109,7 +109,7 @@ PetscErrorCode ISGetType(IS is, ISType *type)
 /*@C
   ISRegister - Adds a new index set implementation
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + sname    - The name of a new user-defined creation routine

@@ -34,6 +34,7 @@ def main(stage,outdir):
                  '--with-mkl_sparse_optimize=0',
                  '--with-mkl_sparse=0',
                  '--with-debugging=0',
+                 '--download-sowing=1',
                  'COPTFLAS=-O0',
                  '--with-petsc4py',
                  'PETSC_ARCH=' + petsc_arch,

@@ -51,7 +51,7 @@ int main(int argc, char **argv)
   PetscCall(MatNorm(mat, NORM_FROBENIUS, &normf));
   PetscCall(MatNorm(mat, NORM_1, &norm1));
   PetscCall(MatNorm(mat, NORM_INFINITY, &normi));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "original: Frobenious norm = %g, one norm = %g, infinity norm = %g\n", (double)normf, (double)norm1, (double)normi));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "original: Frobenius norm = %g, one norm = %g, infinity norm = %g\n", (double)normf, (double)norm1, (double)normi));
   PetscCall(MatView(mat, PETSC_VIEWER_STDOUT_WORLD));
 
   /* Form matrix transpose */
@@ -70,7 +70,7 @@ int main(int argc, char **argv)
   PetscCall(MatNorm(tmat, NORM_FROBENIUS, &normf));
   PetscCall(MatNorm(tmat, NORM_1, &norm1));
   PetscCall(MatNorm(tmat, NORM_INFINITY, &normi));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "transpose: Frobenious norm = %g, one norm = %g, infinity norm = %g\n", (double)normf, (double)norm1, (double)normi));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "transpose: Frobenius norm = %g, one norm = %g, infinity norm = %g\n", (double)normf, (double)norm1, (double)normi));
   PetscCall(MatView(tmat, PETSC_VIEWER_STDOUT_WORLD));
 
   /* Test MatAXPY */

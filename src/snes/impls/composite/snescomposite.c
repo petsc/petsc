@@ -545,7 +545,7 @@ static PetscErrorCode SNESCompositeGetSNES_Composite(SNES snes, PetscInt n, SNES
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESCompositeSetType - Sets the type of composite preconditioner.
 
   Logically Collective
@@ -571,7 +571,7 @@ PetscErrorCode SNESCompositeSetType(SNES snes, SNESCompositeType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESCompositeAddSNES - Adds another `SNES` to the `SNESCOMPOSITE`
 
   Collective

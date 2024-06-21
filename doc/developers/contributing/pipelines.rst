@@ -62,6 +62,14 @@ Search for ``not ok`` in the jobs output to find the exact failure
 
    A test that failed because of unfreed memory.
 
+After you have fixed a problem that appeared in a particular (set of) job(s) you may want to test your fix only on those jobs. To do this use
+
+.. code-block:: console
+
+   $ ./lib/petsc/bin/maint/runjobs.py [job_1 job_2 ... job_N]
+
+where ``job_1`` is, for example, ``linux-intel``. The script will then prompt you to push the branch of the MR, once pushed the listed jobs will automatically be run
+without you needing to access the GitLab website to un-pause the pipeline.
 
 .. _more_test_failures:
 
@@ -111,8 +119,6 @@ same Git commit that was previously tried. The job "Retry" should only be used t
 when you suspect the testing system has some intermittent error unrelated to your branch.
 
 Please report all "odd" errors in the testing that don’t seem related
-to your branch in `this tracking issue <https://gitlab.com/petsc/petsc/issues/951>`__.
+to your branch in the PETSc Discord channel ``testing-ci-forum``.
 
-1. Check the issue's threads to see if the error is listed and add it there, with a link to your MR (e.g. ``!1234``). Otherwise, create a new thread.
-2. Click the three dots in the top right of the thread and select "Copy link".
-3. Add this link in your MR description.
+Check the forum's threads to see if the error is listed and add it there, with a link to your MR (e.g. ``!1234``). Otherwise, create a new thread.

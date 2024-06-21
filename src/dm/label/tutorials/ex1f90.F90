@@ -18,7 +18,7 @@ program  ex1f90
 
   PetscCallA(DMPlexCreateFromFile(PETSC_COMM_WORLD,filename,'ex1f90_plex',interpolate,dm,ierr))
   PetscCallA(DMPlexDistribute(dm,izero,PETSC_NULL_SF,dmDist,ierr))
-  if (dmDist /= PETSC_NULL_DM) then
+  if (.not. PetscObjectIsNull(dmDist)) then
     PetscCallA(DMDestroy(dm,ierr))
     dm = dmDist
   end if

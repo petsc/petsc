@@ -590,7 +590,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawOpenImage - Opens an image for use with the `PetscDraw` routines.
 
   Collective

@@ -1737,7 +1737,7 @@ PetscErrorCode KSPBuildResidualDefault(KSP ksp, Vec t, Vec v, Vec *V)
 
   Input Parameters:
 + ksp    - iterative context
-. rightn - number of right work vectors
+. rightn - number of right work vectors to allocate
 - leftn  - number of left work vectors to allocate
 
   Output Parameters:
@@ -1758,7 +1758,7 @@ PetscErrorCode KSPBuildResidualDefault(KSP ksp, Vec t, Vec v, Vec *V)
 
 .seealso: [](ch_ksp), `MatCreateVecs()`, `VecDestroyVecs()`, `KSPSetWorkVecs()`
 @*/
-PetscErrorCode KSPCreateVecs(KSP ksp, PetscInt rightn, Vec **right, PetscInt leftn, Vec **left)
+PetscErrorCode KSPCreateVecs(KSP ksp, PetscInt rightn, Vec *right[], PetscInt leftn, Vec *left[])
 {
   Vec       vecr = NULL, vecl = NULL;
   PetscBool matset, pmatset, isshell, preferdm = PETSC_FALSE;
@@ -1834,7 +1834,7 @@ PetscErrorCode KSPCreateVecs(KSP ksp, PetscInt rightn, Vec **right, PetscInt lef
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPSetWorkVecs - Sets a number of work vectors into a `KSP` object
 
   Collective
@@ -1927,7 +1927,7 @@ PetscErrorCode KSPGetConvergedReason(KSP ksp, KSPConvergedReason *reason)
 
 .seealso: [](ch_ksp), `KSP`, `KSPGetConvergedReason()`
 @*/
-PetscErrorCode KSPGetConvergedReasonString(KSP ksp, const char **strreason)
+PetscErrorCode KSPGetConvergedReasonString(KSP ksp, const char *strreason[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);

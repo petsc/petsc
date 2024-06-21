@@ -154,6 +154,12 @@ informs the user that all rows from ``first_row`` to ``last_row-1``
 (since the value returned in ``last_row`` is one more than the global
 index of the last local row) will be stored on the local process.
 
+If the `Mat` was obtained from a `DM` with `DMCreateMatrix()`, then the range values are determined by the specific `DM`.
+If the `Mat` was created directly, the range values are determined by the local sizes passed to `MatSetSizes()` or `MatCreateAIJ()` (and such low-level functions for other `MatType`).
+If `PETSC_DECIDE` was passed as the local size, then the vector uses default values for the range using `PetscSplitOwnership()`.
+For certain `DM`, such as `DMDA`, it is better to use `DM` specific routines, such as `DMDAGetGhostCorners()`, to determine
+the local values in the matrix. See :any:`sec_matlayout` for full details on row and column layouts.
+
 In the sparse matrix implementations, once the assembly routines have
 been called, the matrices are compressed and can be used for
 matrix-vector multiplication, etc. Any space for preallocated nonzeros
@@ -569,9 +575,21 @@ applications based on a fixed number of stored update vectors.
     - ``MATLMVMDFP``
     - ``lmvmdfp``
     - SPD
+  * - Dense Davidon-Fletcher-Powell (DFP) :cite:`keyprefix-ErwayMarcia2017`
+    - ``MATLMVMDDFP``
+    - ``lmvmddfp``
+    - SPD
   * - Broyden-Fletcher-Goldfarb-Shanno (BFGS) :cite:`keyprefix-nocedal2006numerical`
     - ``MATLMVMBFGS``
     - ``lmvmbfgs``
+    - SPD
+  * - Dense Broyden-Fletcher-Goldfarb-Shanno (BFGS) :cite:`keyprefix-ErwayMarcia2017`
+    - ``MATLMVMDBFGS``
+    - ``lmvmdbfgs``
+    - SPD
+  * - Dense Quasi-Newton
+    - ``MATLMVMDQN``
+    - ``lmvmdqn``
     - SPD
   * - Restricted Broyden Family :cite:`keyprefix-erway2017solving`
     - ``MATLMVMSymBrdn``
@@ -614,8 +632,9 @@ LMVM matrices can be applied to vectors in forward mode via
 ``MatSolve()``. They also support ``MatCreateVecs()``, ``MatDuplicate()``
 and ``MatCopy()`` operations.
 
-Restricted Broyden Family, DFP and BFGS methods additionally implement
-special Jacobian initialization and scaling options available via
+Restricted Broyden Family, DFP and BFGS methods, including their dense
+versions, additionally implement special Jacobian initialization and
+scaling options available via
 ``-mat_lmvm_scale_type <none,scalar,diagonal>``. We describe these
 choices below:
 
@@ -653,6 +672,24 @@ choices below:
    the most computational effort of the available choices but typically
    results in a significant reduction in the number of function
    evaluations taken to compute a solution.
+
+The dense implementations are numerically equivalent to DFP and BFGS,
+but they try to minimize memory transfer at the cost of storage
+:cite:`keyprefix-ErwayMarcia2017`. Generally, dense formulations of DFP
+and BFGS, ``MATLMVMDDFP`` and ``MATLMVMDBFGS``, should be faster than
+classical recursive versions - on both CPU and GPU. It should be noted
+that ``MatMult`` of dense BFGS, and ``MatSolve`` of dense DFP requires
+Cholesky factorization, which may be numerically unstable, if a Jacobian
+option other than ``none`` is used. Therefore, the default
+implementation is to enable classical recursive algorithms to avoid
+the Cholesky factorization. This option can be toggled via
+``-mat_lbfgs_recursive`` and ``-mat_ldfp_recursive``.
+
+Dense Quasi-Newton, ``MATLMVMDQN`` is an implementation that uses
+``MatSolve`` of ``MATLMVMDBFGS`` for its ``MatSolve``, and uses
+``MatMult`` of ``MATLMVMDDFP`` for its ``MatMult``. It can be
+seen as a hybrid implementation to avoid both recursive implementation
+and Cholesky factorization, trading numerical accuracy for performances.
 
 Note that the user-provided initial Jacobian via ``MatLMVMSetJ0()``
 overrides and disables all built-in initialization methods.

@@ -1,35 +1,3 @@
-#if defined(PETSC_HAVE_FORTRAN_TYPE_STAR)
-      Interface
-       subroutine PetscObjectReference(obj,ierr)
-          type(*) :: obj
-          PetscErrorCode :: ierr
-       end Subroutine PetscObjectReference
-       subroutine PetscObjectDereference(obj,ierr)
-          type(*) :: obj
-          PetscErrorCode :: ierr
-        end Subroutine PetscObjectDereference
-       subroutine PetscObjectGetReference(obj,c,ierr)
-          type(*) :: obj
-          PetscInt c
-          PetscErrorCode :: ierr
-        end Subroutine PetscObjectGetReference
-       subroutine PetscObjectCompose(obj,str,obj2,ierr)
-          type(*) :: obj,obj2
-          character(*) :: str
-          PetscErrorCode :: ierr
-        end Subroutine PetscObjectCompose
-       subroutine PetscObjectQuery(obj,str,obj2,ierr)
-          type(*) :: obj,obj2
-          character(*) :: str
-          PetscErrorCode :: ierr
-        end Subroutine PetscObjectQuery
-      subroutine PetscBarrier(a,z)
-       type(*) :: a
-       PetscErrorCode :: z
-       end subroutine
-      end Interface
-#endif
-
       Interface
        Subroutine PetscPrintf(m,c,ierr)
           MPI_Comm :: m
@@ -76,13 +44,6 @@
           PetscBool s
           PetscErrorCode ierr
         End Subroutine
-        Subroutine PetscOptionsHasName(o,p,n,s,ierr)
-          import tPetscOptions
-          PetscOptions o
-          character(*) p,n
-          PetscBool s
-          PetscErrorCode ierr
-        End Subroutine
         Subroutine PetscOptionsGetIntArray(o,p,n,v,c,s,ierr)
           import tPetscOptions
           PetscOptions o
@@ -109,42 +70,6 @@
           PetscBool s
           PetscErrorCode ierr
         End Subroutine
-        Subroutine PetscOptionsSetValue(o,n,v,ierr)
-          import tPetscOptions
-          PetscOptions o
-          character(*) n,v
-          PetscErrorCode ierr
-        End Subroutine
-        Subroutine PetscOptionsClearValue(o,n,ierr)
-          import tPetscOptions
-          PetscOptions o
-          character(*) n
-          PetscErrorCode ierr
-        End Subroutine
-        Subroutine PetscOptionsClear(o,ierr)
-          import tPetscOptions
-          PetscOptions o
-          PetscErrorCode ierr
-        End Subroutine
-        Subroutine PetscOptionsInsertString(o,n,ierr)
-          import tPetscOptions
-          PetscOptions o
-          character(*) n
-          PetscErrorCode ierr
-        End Subroutine
-        Subroutine PetscOptionsView(o,v,ierr)
-          import tPetscOptions,tPetscViewer
-          PetscOptions, intent(in) :: o
-          PetscViewer,  intent(in) :: v
-          PetscErrorCode, intent(out) :: ierr
-        End Subroutine PetscOptionsView
-
-      subroutine PetscRandomSetType(a,b,ierr)
-       import tPetscRandom
-       PetscRandom a
-       character(*) b
-       PetscErrorCode ierr
-       end subroutine
 
 #if defined(PETSC_HAVE_FORTRAN_FREE_LINE_LENGTH_NONE)
       subroutine PetscErrorf(ierr,line,file)
@@ -172,25 +97,6 @@
        PetscErrorCode, intent(out) :: ierr
       end Subroutine PetscFinalize
 
-      subroutine PetscRandomView(a,b,ierr)
-       import tPetscRandom,tPetscViewer
-       PetscRandom a
-       PetscViewer b
-       PetscErrorCode ierr
-       end subroutine
-
-      subroutine PetscRandomDestroy(a,z)
-       import tPetscRandom
-       PetscRandom a
-       PetscErrorCode z
-      end subroutine
-
-      subroutine PetscSubcommView(a,b,z)
-       import tPetscSubcomm,tPetscViewer
-       PetscSubcomm a ! PetscSubcomm
-       PetscViewer b ! PetscViewer
-       PetscErrorCode z
-      end subroutine
       subroutine PetscSubcommGetParent(a,b,z)
        import tPetscSubcomm
        PetscSubcomm a ! PetscSubcomm
@@ -215,19 +121,6 @@
       PetscErrorCode,intent(in) ::  ierr
       end subroutine
 
-      subroutine PetscLogEventRegister(name,classid,event,ierr)
-       character(len=*), intent(in) :: name
-       PetscClassId, intent(in) :: classid
-       PetscLogEvent, intent(in) :: event
-       PetscErrorCode, intent(out) :: ierr
-      end subroutine PetscLogEventRegister
-
-      subroutine PetscLogStageRegister(name,stage,ierr)
-       character(len=*), intent(in) :: name
-       PetscLogStage, intent(out) :: stage
-       PetscErrorCode, intent(out) :: ierr
-      end subroutine PetscLogStageRegister
-
       subroutine PetscLogEventBegin(event,ierr)
         PetscLogEvent, intent(in) :: event
         PetscErrorCode, intent(out) :: ierr
@@ -237,15 +130,6 @@
         PetscLogEvent, intent(in) :: event
         PetscErrorCode, intent(out) :: ierr
       end subroutine PetscLogEventEnd
-
-      subroutine PetscLogStagePop(ierr)
-        PetscErrorCode, intent(out) :: ierr
-      end subroutine PetscLogStagePop
-
-      subroutine PetscLogStagePush(s,ierr)
-       PetscLogStage, intent(in) :: s
-       PetscErrorCode, intent(out) :: ierr
-      end subroutine PetscLogStagePush
       end Interface
 
       Interface

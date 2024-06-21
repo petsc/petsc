@@ -1437,7 +1437,7 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDACreate3d - Creates an object that will manage the communication of three-dimensional
   regular array data that is distributed across one or more MPI processes.
 

@@ -200,7 +200,7 @@ PetscErrorCode PFApply(PF pf, PetscInt n, const PetscScalar *x, PetscScalar *y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PFViewFromOptions - View a `PF` based on options set in the options database
 
   Collective
@@ -307,7 +307,7 @@ PetscErrorCode PFRegister(const char sname[], PetscErrorCode (*function)(PF, voi
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PFGetType - Gets the `PFType` name (as a string) from the `PF`
   context.
 
@@ -332,7 +332,7 @@ PetscErrorCode PFGetType(PF pf, PFType *type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PFSetType - Builds `PF` for a particular function
 
   Collective

@@ -20,7 +20,6 @@
       do i=1,n
           x(i)  = x(i) + (a0*y0(i) + a1*y1(i) + a2*y2(i) + a3*y3(i))
       enddo
-      return
       end
 
       subroutine FortranMAXPY3(x,a0,a1,a2,y0,y1,y2,n)
@@ -36,7 +35,6 @@
       do 10,i=1,n
          x(i) = x(i) + (a0*y0(i) + a1*y1(i) + a2*y2(i))
   10  continue
-      return
       end
 
       Subroutine FortranMAXPY2(x, a0, a1, y0, y1, n)
@@ -50,5 +48,4 @@
       do i=1,n
           x(i)  = x(i) + (a0*y0(i) + a1*y1(i))
       enddo
-      return
       end

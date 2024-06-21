@@ -181,7 +181,7 @@ PetscErrorCode PetscSignalHandlerDefault(int sig, void *ptr)
   PetscPushSignalHandler - Catches the usual fatal errors and
   calls a user-provided routine.
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameters:
 + routine - routine to call when a signal is received
@@ -248,7 +248,7 @@ PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int, void *), vo
     signal(SIGSYS, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
 #if !defined(PETSC_MISSING_SIGTERM)
-  #if !defined(OMPI_MAJOR_VERSION)
+  #if !defined(PETSC_HAVE_OPENMPI)
     /* Open MPI may use SIGTERM to close down all its ranks; we don't want to generate many confusing PETSc error messages in that case */
     signal(SIGTERM, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
   #endif

@@ -4,15 +4,9 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define pcfieldsplitgetsubksp_      PCFIELDSPLITGETSUBKSP
   #define pcfieldsplitschurgetsubksp_ PCFIELDSPLITSCHURGETSUBKSP
-  #define pcfieldsplitsetis_          PCFIELDSPLITSETIS
-  #define pcfieldsplitgetis_          PCFIELDSPLITGETIS
-  #define pcfieldsplitsetfields_      PCFIELDSPLITSETFIELDS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define pcfieldsplitgetsubksp_      pcfieldsplitgetsubksp
   #define pcfieldsplitschurgetsubksp_ pcfieldsplitschurgetsubksp
-  #define pcfieldsplitsetis_          pcfieldsplitsetis
-  #define pcfieldsplitgetis_          pcfieldsplitgetis
-  #define pcfieldsplitsetfields_      pcfieldsplitsetfields
 #endif
 
 PETSC_EXTERN void pcfieldsplitschurgetsubksp_(PC *pc, PetscInt *n_local, KSP *ksp, PetscErrorCode *ierr)
@@ -43,31 +37,4 @@ PETSC_EXTERN void pcfieldsplitgetsubksp_(PC *pc, PetscInt *n_local, KSP *ksp, Pe
     for (i = 0; i < nloc; i++) ksp[i] = tksp[i];
   }
   *ierr = PetscFree(tksp);
-}
-
-PETSC_EXTERN void pcfieldsplitsetis_(PC *pc, char *splitname, IS *is, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-  FIXCHAR(splitname, len, t);
-  *ierr = PCFieldSplitSetIS(*pc, t, *is);
-  if (*ierr) return;
-  FREECHAR(splitname, t);
-}
-
-PETSC_EXTERN void pcfieldsplitgetis_(PC *pc, char *splitname, IS *is, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-  FIXCHAR(splitname, len, t);
-  *ierr = PCFieldSplitGetIS(*pc, t, is);
-  if (*ierr) return;
-  FREECHAR(splitname, t);
-}
-
-PETSC_EXTERN void pcfieldsplitsetfields_(PC *pc, char *splitname, PetscInt *n, const PetscInt *fields, const PetscInt *fields_col, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-  FIXCHAR(splitname, len, t);
-  *ierr = PCFieldSplitSetFields(*pc, t, *n, fields, fields_col);
-  if (*ierr) return;
-  FREECHAR(splitname, t);
 }

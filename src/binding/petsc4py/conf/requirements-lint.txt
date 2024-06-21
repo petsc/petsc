@@ -1,0 +1,3 @@
+cython >= 3
+cython-lint >= 0.16.2
+ruff == 0.4.1

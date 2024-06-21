@@ -496,7 +496,7 @@ int main(int argc, char **args)
       suffix: mumps_omp_3
       nsize: 4
       requires: mumps hwloc openmp pthread defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
-      args: -use_mumps_ch -mat_mumps_use_omp_threads 3
+      args: -use_mumps_ch -mat_mumps_use_omp_threads 3 -mat_mumps_icntl_48 0
       # Ignore the warning since we are intentionally testing the imbalanced case
       filter: grep -v "Warning: number of OpenMP threads"
       output_file: output/ex52_1.out

@@ -478,7 +478,7 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(int32_t, PETSC_INT32);
 PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(uint32_t, PETSC_INT32);
 PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(int64_t, PETSC_INT64);
 PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(uint64_t, PETSC_INT64);
-      #if !defined(PETSC_SKIP_COMPLEX)
+      #if defined(PETSC_HAVE_COMPLEX)
 PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
       #endif
 
@@ -494,7 +494,7 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
     #elif PETSC_C_VERSION >= 11
       #define PETSC_GENERIC_CV(type, result) type * : result, const type * : result, volatile type * : result, const volatile type * : result
 
-      #if !PetscDefined(SKIP_COMPLEX)
+      #if PetscDefined(HAVE_COMPLEX)
         #define PETSC_GENERIC_CV_COMPLEX(result) PETSC_GENERIC_CV(PetscComplex, result)
       #else
         #define PETSC_GENERIC_CV_COMPLEX(result)
@@ -518,7 +518,7 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
 
       #define PETSC_GENERIC_CV_STRINGIZE(type) PETSC_GENERIC_CV(type, PetscStringize(type))
 
-      #if !PetscDefined(SKIP_COMPLEX)
+      #if PetscDefined(HAVE_COMPLEX)
         #define PETSC_GENERIC_CV_STRINGIZE_COMPLEX PETSC_GENERIC_CV_STRINGIZE(PetscComplex)
       #else
         #define PETSC_GENERIC_CV_STRINGIZE_COMPLEX
@@ -1477,15 +1477,16 @@ static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *ck_spinlock)
 }
   #elif (defined(__cplusplus) && defined(PETSC_HAVE_CXX_ATOMIC)) || (!defined(__cplusplus) && defined(PETSC_HAVE_STDATOMIC_H))
     #if defined(__cplusplus)
+      // See the example at https://en.cppreference.com/w/cpp/atomic/atomic_flag
       #include <atomic>
       #define petsc_atomic_flag                 std::atomic_flag
-      #define petsc_atomic_flag_test_and_set(p) std::atomic_flag_test_and_set_explicit(p, std::memory_order_relaxed)
-      #define petsc_atomic_flag_clear(p)        std::atomic_flag_clear_explicit(p, std::memory_order_relaxed)
+      #define petsc_atomic_flag_test_and_set(p) std::atomic_flag_test_and_set_explicit(p, std::memory_order_acquire)
+      #define petsc_atomic_flag_clear(p)        std::atomic_flag_clear_explicit(p, std::memory_order_release)
     #else
       #include <stdatomic.h>
       #define petsc_atomic_flag                 atomic_flag
-      #define petsc_atomic_flag_test_and_set(p) atomic_flag_test_and_set_explicit(p, memory_order_relaxed)
-      #define petsc_atomic_flag_clear(p)        atomic_flag_clear_explicit(p, memory_order_relaxed)
+      #define petsc_atomic_flag_test_and_set(p) atomic_flag_test_and_set_explicit(p, memory_order_acquire)
+      #define petsc_atomic_flag_clear(p)        atomic_flag_clear_explicit(p, memory_order_release)
     #endif
 
 typedef petsc_atomic_flag PetscSpinlock;

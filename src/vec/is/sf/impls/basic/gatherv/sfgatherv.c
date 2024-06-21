@@ -23,7 +23,7 @@ static PetscErrorCode PetscSFLinkStartCommunication_Gatherv(PetscSF sf, PetscSFL
   PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
   PetscCall(PetscMPIIntCast(sf->nroots, &count));
   PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, direction, &rootbuf, &leafbuf, &req, NULL));
-  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, direction));
+  PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link));
 
   if (direction == PETSCSF_ROOT2LEAF) {
     PetscCallMPI(MPIU_Igatherv(rootbuf, count, unit, leafbuf, dat->recvcounts, dat->displs, unit, 0 /*rank 0*/, comm, req));
