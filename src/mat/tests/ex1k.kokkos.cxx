@@ -138,7 +138,7 @@ int main(int argc, char **args)
     nsize: 1
     filter: grep "DOES_NOT_EXIST"
     output_file: output/empty.out
-    requires: datafilespath !complex double !single kokkos_kernels
+    requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES) kokkos_kernels
 
     test:
       suffix: 1
