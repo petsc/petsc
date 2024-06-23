@@ -3732,7 +3732,7 @@ static PetscErrorCode MatGetFactor_nest_mumps(Mat A, MatFactorType ftype, Mat *F
           flg = PETSC_FALSE;
         }
       } else if (!isSeqAIJ && !isMPIAIJ && !isSeqBAIJ && !isMPIBAIJ && !isDiag && !isDense) {
-        PetscCall(PetscInfo(sub, "MAT_LU_FACTOR not supported for block of type %s.\n", ((PetscObject)sub)->type_name));
+        PetscCall(PetscInfo(sub, "MAT_FACTOR_LU not supported for block of type %s.\n", ((PetscObject)sub)->type_name));
         flg = PETSC_FALSE;
       }
     }
