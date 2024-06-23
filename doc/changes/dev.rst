@@ -59,6 +59,7 @@ Changes: Development
 - Add ``PCCompositeSpecialSetAlphaMat()`` API to use a matrix other than the identity in
   preconditioners based on an alternating direction iteration, e.g., setting :math:`M` for
   :math:`P = (A + alpha M) M^{-1} (alpha M + B)`
+- Reuse the result of :math:`T = A_{00}^-1 A_{01}` in ``PCApply_FieldSplit_Schur`` with ``-pc_fieldsplit_schur_fact_type full``
 
 - Change the option database keys for coarsening for ``PCGAMG`` to use the prefix ``-pc_gamg_``, for example ``-pc_gamg_mat_coarsen_type``
 
