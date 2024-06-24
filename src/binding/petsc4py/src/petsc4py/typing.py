@@ -15,6 +15,7 @@ from .PETSc import (
     InsertMode,
     ScatterMode,
     NormType,
+    Object,
     Vec,
     Mat,
     NullSpace,
@@ -39,6 +40,7 @@ __all__ = [
     'ScatterModeSpec',
     'LayoutSizeSpec',
     'NormTypeSpec',
+    'PetscOptionsHandlerFunction',
     'MatAssemblySpec',
     'MatSizeSpec',
     'MatBlockSizeSpec',
@@ -52,6 +54,8 @@ __all__ = [
     'KSPOperatorsFunction',
     'KSPConvergenceTestFunction',
     'KSPMonitorFunction',
+    'KSPPreSolveFunction',
+    'KSPPostSolveFunction',
     'TSRHSFunction',
     'TSRHSJacobian',
     'TSRHSJacobianP',
@@ -191,6 +195,11 @@ NormTypeSpec = NormType | None
     PETSc.NormType, petsc.NormType
 
 """
+
+# --- PetscObject ---
+
+PetscOptionsHandlerFunction = Callable[[Object], None]
+"""Callback for processing extra options."""
 
 # --- Mat ---
 
