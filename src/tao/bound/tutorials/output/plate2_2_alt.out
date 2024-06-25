@@ -60,9 +60,9 @@ Tao Object: 2 MPI processes
     using variable bounds
     Termination reason: 1
   Active Set subset type: subvec
-  convergence tolerances: gatol=0.0001,   steptol=0.,   gttol=0.
+  convergence tolerances: gatol=0.0001,   grtol=1e-08,  steptol=0.,   gttol=0.
   Residual in Function/Gradient:=3.27967e-05
   Objective value=1.60115
   total number of iterations=22,                          (max: 2000)
-  total number of function/gradient evaluations=27,      (max: 4000)
+  total number of function/gradient evaluations=27,      (max: unlimited)
   Solution converged:    ||g(X)|| <= gatol

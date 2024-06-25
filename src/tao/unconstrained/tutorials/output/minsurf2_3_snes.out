@@ -30,10 +30,10 @@ Tao Object: 3 MPI processes
       maxstep=1.000000e+08, minlambda=1.000000e-12
       tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
       maximum iterations=1
-  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
+  convergence tolerances: gatol=1e-08,   grtol=1e-05,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=9.49423e-05
   Objective value=1.41847
-  total number of iterations=13,                          (max: 2000)
-  total number of function evaluations=14,                  max: 4000
-  total number of function/gradient evaluations=27,      (max: 4000)
+  total number of iterations=13,                          (max: 10000)
+  total number of function evaluations=14,                  (max: unlimited)
+  total number of function/gradient evaluations=27,      (max: unlimited)
   Solution converged:    User Terminated

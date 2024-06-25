@@ -319,8 +319,9 @@ PETSC_EXTERN PetscErrorCode TaoCreate_OWLQN(Tao tao)
 
   tao->data = (void *)lmP;
   /* Override default settings (unless already changed) */
-  if (!tao->max_it_changed) tao->max_it = 2000;
-  if (!tao->max_funcs_changed) tao->max_funcs = 4000;
+  PetscCall(TaoParametersInitialize(tao));
+  PetscObjectParameterSetDefault(tao, max_it, 2000);
+  PetscObjectParameterSetDefault(tao, max_funcs, 4000);
 
   PetscCall(TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1));

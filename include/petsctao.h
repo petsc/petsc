@@ -310,6 +310,7 @@ PETSC_EXTERN PetscErrorCode TaoGetType(Tao, TaoType *);
 PETSC_EXTERN PetscErrorCode TaoSetApplicationContext(Tao, void *);
 PETSC_EXTERN PetscErrorCode TaoGetApplicationContext(Tao, void *);
 PETSC_EXTERN PetscErrorCode TaoDestroy(Tao *);
+PETSC_EXTERN PetscErrorCode TaoParametersInitialize(Tao);
 
 PETSC_EXTERN PetscErrorCode TaoSetOptionsPrefix(Tao, const char[]);
 PETSC_EXTERN PetscErrorCode TaoView(Tao, PetscViewer);

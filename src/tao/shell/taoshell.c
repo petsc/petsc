@@ -146,6 +146,8 @@ PETSC_EXTERN PetscErrorCode TaoCreate_Shell(Tao tao)
   tao->ops->view           = TaoView_Shell;
   tao->ops->solve          = TaoSolve_Shell;
 
+  PetscCall(TaoParametersInitialize(tao));
+
   PetscCall(PetscNew(&shell));
   tao->data = (void *)shell;
   PetscFunctionReturn(PETSC_SUCCESS);

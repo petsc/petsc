@@ -172,7 +172,6 @@ PetscErrorCode TaoSolve_BNLS(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*------------------------------------------------------------*/
 /*MC
   TAOBNLS - Bounded Newton Line Search for nonlinear minimization with bound constraints.
 

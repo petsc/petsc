@@ -100,7 +100,7 @@ int main(int argc, char **argv)
     PetscCall(TaoSetResidualWeights(tao, NULL, NOBSERVATIONS, w_row, w_col, w_vals));
   }
   PetscCall(TaoSetJacobianResidualRoutine(tao, J, J, EvaluateJacobian, (void *)&user));
-  PetscCall(TaoSetTolerances(tao, 1e-5, 0.0, PETSC_DEFAULT));
+  PetscCall(TaoSetTolerances(tao, 1e-5, 0.0, PETSC_CURRENT));
 
   /* Check for any TAO command line arguments */
   PetscCall(TaoSetFromOptions(tao));

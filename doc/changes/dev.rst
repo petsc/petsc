@@ -82,8 +82,17 @@ Changes: Development
 .. rubric:: TS:
 
 - Add Rosenbrock-W methods from :cite:`rang2015improved` with :math:`B_{PR}` stability: ``TSROSWR34PRW``, ``TSROSWR3PRL2``, ``TSROSWRODASPR``, and ``TSROSWRODASPR2``
+- Add support for ``PETSC_DETERMINE`` as an argument to ``TSSetTolerances()`` to set the parameter back to its initial value when the object's type was set
+- Deprecate ``PETSC_DEFAULT`` in favor of ``PETSC_CURRENT`` for  ``TSSetTolerances()``
+- Add support for ``PETSC_DETERMINE`` as an argument to ``TSSetMaxSteps()`` and ``TSSetMaxTime()``
+- Deprecate ``PETSC_DEFAULT`` in favor of ``PETSC_CURRENT`` for ``TSAdaptSetSafety()``
+- Deprecate ``PETSC_DEFAULT`` in favor of ``PETSC_CURRENT`` for ``TSAdaptSetClip()``
+- Deprecate ``PETSC_DEFAULT`` in favor of ``PETSC_CURRENT`` for ``TSAdaptSetStepLimits()``
 
 .. rubric:: TAO:
+
+- Add support for ``PETSC_DETERMINE`` as an argument to ``TaoSetTolerances()`` and ``TaoSetConstraintTolerances()`` to set the parameter back to its initial value when the object's type was set
+- Deprecate ``PETSC_DEFAULT`` in favor of ``PETSC_CURRENT`` for  ``TaoSetTolerances()`` and ``TaoSetConstraintTolerances()``
 
 .. rubric:: DM/DA:
 

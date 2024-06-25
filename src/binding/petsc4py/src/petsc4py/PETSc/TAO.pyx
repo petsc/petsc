@@ -959,20 +959,26 @@ cdef class TAO(Object):
         Parameters
         ----------
         gatol
-            The absolute norm of the gradient. Defaults to `DEFAULT`.
+            The absolute norm of the gradient, or `DETERMINE`
+            to use the value when the object's type was set.
+            Defaults to `CURRENT`.
         grtol
-            The relative norm of the gradient with respect
-            to the initial norm of the objective. Defaults to `DEFAULT`.
+            The relative norm of the gradient with respect to the
+            initial norm of the objective, or `DETERMINE` to
+            use the value when the object's type was set. Defaults
+            to `CURRENT`.
         gttol
-            The relative norm of the gradient with respect
-            to the initial norm of the gradient. Defaults to `DEFAULT`.
+            The relative norm of the gradient with respect to the
+            initial norm of the gradient, or `DETERMINE` to
+            use the value when the object's type was set. Defaults
+            to `CURRENT`.
 
         See Also
         --------
         getTolerances, petsc.TaoSetTolerances
 
         """
-        cdef PetscReal _gatol=PETSC_DEFAULT, _grtol=PETSC_DEFAULT, _gttol=PETSC_DEFAULT
+        cdef PetscReal _gatol=PETSC_CURRENT, _grtol=PETSC_CURRENT, _gttol=PETSC_CURRENT
         if gatol is not None: _gatol = asReal(gatol)
         if grtol is not None: _grtol = asReal(grtol)
         if gttol is not None: _gttol = asReal(gttol)
@@ -988,18 +994,17 @@ cdef class TAO(Object):
         gatol : float
             The absolute norm of the gradient.
         grtol : float
-            The relative norm of the gradient with respect to
-            the initial norm of the objective.
+            The relative norm of the gradient.
         gttol : float
-            The relative norm of the gradient with respect to
-            the initial norm of the gradient.
+            The relative norm of the gradient with respect to the
+            initial norm of the gradient.
 
         See Also
         --------
         setTolerances, petsc.TaoGetTolerances
 
         """
-        cdef PetscReal _gatol=PETSC_DEFAULT, _grtol=PETSC_DEFAULT, _gttol=PETSC_DEFAULT
+        cdef PetscReal _gatol=PETSC_CURRENT, _grtol=PETSC_CURRENT, _gttol=PETSC_CURRENT
         CHKERR(TaoGetTolerances(self.tao, &_gatol, &_grtol, &_gttol))
         return (toReal(_gatol), toReal(_grtol), toReal(_gttol))
 
@@ -1065,16 +1070,20 @@ cdef class TAO(Object):
         Parameters
         ----------
         catol
-            The absolute norm of the constraints. Defaults to `DEFAULT`.
+            The absolute norm of the constraints, or `DETERMINE`
+            to use the value when the object's type was set. Defaults
+            to `CURRENT`.
         crtol
-            The relative norm of the constraints. Defaults to `DEFAULT`.
+            The relative norm of the constraints, or `DETERMINE`
+            to use the value when the object's type was set. Defaults
+            to `CURRENT`.
 
         See Also
         --------
         getConstraintTolerances, petsc.TaoSetConstraintTolerances
 
         """
-        cdef PetscReal _catol=PETSC_DEFAULT, _crtol=PETSC_DEFAULT
+        cdef PetscReal _catol=PETSC_CURRENT, _crtol=PETSC_CURRENT
         if catol is not None: _catol = asReal(catol)
         if crtol is not None: _crtol = asReal(crtol)
         CHKERR(TaoSetConstraintTolerances(self.tao, _catol, _crtol))

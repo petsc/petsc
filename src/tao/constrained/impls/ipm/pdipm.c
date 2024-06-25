@@ -1478,8 +1478,9 @@ PETSC_EXTERN PetscErrorCode TaoCreate_PDIPM(Tao tao)
   pdipm->solve_symmetric_kkt = PETSC_TRUE;
 
   /* Override default settings (unless already changed) */
-  if (!tao->max_it_changed) tao->max_it = 200;
-  if (!tao->max_funcs_changed) tao->max_funcs = 500;
+  PetscCall(TaoParametersInitialize(tao));
+  PetscObjectParameterSetDefault(tao, max_it, 200);
+  PetscObjectParameterSetDefault(tao, max_funcs, 500);
 
   PetscCall(SNESCreate(((PetscObject)tao)->comm, &pdipm->snes));
   PetscCall(SNESSetOptionsPrefix(pdipm->snes, tao->hdr.prefix));
