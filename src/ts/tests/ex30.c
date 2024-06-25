@@ -883,7 +883,7 @@ int main(int argc, char **argv)
           -ksp_type preonly -pc_type lu -dm_landau_verbose 4 -print_entropy \
           -ptof_ksp_type cg -ptof_pc_type jacobi -ptof_ksp_rtol 1e-12\
           -snes_converged_reason -snes_monitor -snes_rtol 1e-14 -snes_stol 1e-14 \
-          -ts_dt 0.01 -ts_rtol 1e-1 -ts_exact_final_time stepover -ts_max_snes_failures -1 -ts_max_steps 1 -ts_monitor -ts_type beuler
+          -ts_dt 0.01 -ts_rtol 1e-1 -ts_exact_final_time stepover -ts_max_snes_failures unlimited -ts_max_steps 1 -ts_monitor -ts_type beuler
 
     test:
       suffix: cpu
@@ -903,7 +903,7 @@ int main(int argc, char **argv)
           -ftop_ksp_rtol 1e-12 -ksp_type preonly -pc_type lu \
           -ptof_ksp_type cg -ptof_pc_type jacobi -ptof_ksp_rtol 1e-12\
           -snes_converged_reason -snes_monitor -snes_rtol 1e-12 -snes_stol 1e-12\
-          -ts_dt 0.1 -ts_exact_final_time stepover -ts_max_snes_failures -1 -ts_max_steps 1 -ts_monitor -ts_type beuler -print_entropy
+          -ts_dt 0.1 -ts_exact_final_time stepover -ts_max_snes_failures unlimited -ts_max_steps 1 -ts_monitor -ts_type beuler -print_entropy
 
     test:
       suffix: cpu_3d

@@ -117,11 +117,13 @@ PetscErrorCode TSSetFromOptions(TS ts)
   if (flg) PetscCall(TSSetTimeStep(ts, time_step));
   PetscCall(PetscOptionsEnum("-ts_exact_final_time", "Option for handling of final time step", "TSSetExactFinalTime", TSExactFinalTimeOptions, (PetscEnum)ts->exact_final_time, (PetscEnum *)&eftopt, &flg));
   if (flg) PetscCall(TSSetExactFinalTime(ts, eftopt));
-  PetscCall(PetscOptionsInt("-ts_max_snes_failures", "Maximum number of nonlinear solve failures", "TSSetMaxSNESFailures", ts->max_snes_failures, &ts->max_snes_failures, NULL));
-  PetscCall(PetscOptionsInt("-ts_max_reject", "Maximum number of step rejections before step fails", "TSSetMaxStepRejections", ts->max_reject, &ts->max_reject, NULL));
+  PetscCall(PetscOptionsInt("-ts_max_snes_failures", "Maximum number of nonlinear solve failures", "TSSetMaxSNESFailures", ts->max_snes_failures, &ts->max_snes_failures, &flg));
+  if (flg) PetscCall(TSSetMaxSNESFailures(ts, ts->max_snes_failures));
+  PetscCall(PetscOptionsInt("-ts_max_reject", "Maximum number of step rejections before step fails", "TSSetMaxStepRejections", ts->max_reject, &ts->max_reject, &flg));
+  if (flg) PetscCall(TSSetMaxStepRejections(ts, ts->max_reject));
   PetscCall(PetscOptionsBool("-ts_error_if_step_fails", "Error if no step succeeds", "TSSetErrorIfStepFails", ts->errorifstepfailed, &ts->errorifstepfailed, NULL));
-  PetscCall(PetscOptionsReal("-ts_rtol", "Relative tolerance for local truncation error", "TSSetTolerances", ts->rtol, &ts->rtol, NULL));
-  PetscCall(PetscOptionsReal("-ts_atol", "Absolute tolerance for local truncation error", "TSSetTolerances", ts->atol, &ts->atol, NULL));
+  PetscCall(PetscOptionsBoundedReal("-ts_rtol", "Relative tolerance for local truncation error", "TSSetTolerances", ts->rtol, &ts->rtol, NULL, 0));
+  PetscCall(PetscOptionsBoundedReal("-ts_atol", "Absolute tolerance for local truncation error", "TSSetTolerances", ts->atol, &ts->atol, NULL, 0));
 
   PetscCall(PetscOptionsBool("-ts_rhs_jacobian_test_mult", "Test the RHS Jacobian for consistency with RHS at each solve ", "None", ts->testjacobian, &ts->testjacobian, NULL));
   PetscCall(PetscOptionsBool("-ts_rhs_jacobian_test_mult_transpose", "Test the RHS Jacobian transpose for consistency with RHS at each solve ", "None", ts->testjacobiantranspose, &ts->testjacobiantranspose, NULL));
@@ -2785,7 +2787,12 @@ PetscErrorCode TSGetKSP(TS ts, KSP *ksp)
   Level: intermediate
 
   Note:
-  The default maximum number of steps is 5000
+  Use `PETSC_DETERMINE` to reset the maximum number of steps to the default from when the object's type was set
+
+  The default maximum number of steps is 5,000
+
+  Fortran Note:
+  Use `PETSC_DETERMINE_INTEGER`
 
 .seealso: [](ch_ts), `TS`, `TSGetMaxSteps()`, `TSSetMaxTime()`, `TSSetExactFinalTime()`
 @*/
@@ -2794,8 +2801,12 @@ PetscErrorCode TSSetMaxSteps(TS ts, PetscInt maxsteps)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidLogicalCollectiveInt(ts, maxsteps, 2);
-  PetscCheck(maxsteps >= 0, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_OUTOFRANGE, "Maximum number of steps must be non-negative");
-  ts->max_steps = maxsteps;
+  if (maxsteps == PETSC_DETERMINE) {
+    ts->max_steps = ts->default_max_steps;
+  } else {
+    PetscCheck(maxsteps >= 0, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_OUTOFRANGE, "Maximum number of steps must be non-negative");
+    ts->max_steps = maxsteps;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2838,7 +2849,12 @@ PetscErrorCode TSGetMaxSteps(TS ts, PetscInt *maxsteps)
   Level: intermediate
 
   Notes:
+  Use `PETSC_DETERMINE` to reset the maximum time to the default from when the object's type was set
+
   The default maximum time is 5.0
+
+  Fortran Note:
+  Use `PETSC_DETERMINE_REAL`
 
 .seealso: [](ch_ts), `TS`, `TSGetMaxTime()`, `TSSetMaxSteps()`, `TSSetExactFinalTime()`
 @*/
@@ -2847,7 +2863,11 @@ PetscErrorCode TSSetMaxTime(TS ts, PetscReal maxtime)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidLogicalCollectiveReal(ts, maxtime, 2);
-  ts->max_time = maxtime;
+  if (maxtime == PETSC_DETERMINE) {
+    ts->max_time = ts->default_max_time;
+  } else {
+    ts->max_time = maxtime;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2923,11 +2943,8 @@ PetscErrorCode TSGetDuration(TS ts, PetscInt *maxsteps, PetscReal *maxtime)
 PetscErrorCode TSSetDuration(TS ts, PetscInt maxsteps, PetscReal maxtime)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscValidLogicalCollectiveInt(ts, maxsteps, 2);
-  PetscValidLogicalCollectiveReal(ts, maxtime, 3);
-  if (maxsteps >= 0) ts->max_steps = maxsteps;
-  if (maxtime != (PetscReal)PETSC_DEFAULT) ts->max_time = maxtime;
+  if (maxsteps != (PetscInt)PETSC_CURRENT) PetscCall(TSSetMaxSteps(ts, maxsteps));
+  if (maxtime != (PetscReal)PETSC_CURRENT) PetscCall(TSSetMaxTime(ts, maxtime));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3395,7 +3412,7 @@ PetscErrorCode TSStep(TS ts)
 
   if (ts->reason < 0 && ts->errorifstepfailed) {
     PetscCall(TSMonitorCancel(ts));
-    PetscCheck(ts->reason != TS_DIVERGED_NONLINEAR_SOLVE, PetscObjectComm((PetscObject)ts), PETSC_ERR_NOT_CONVERGED, "TSStep has failed due to %s, increase -ts_max_snes_failures or make negative to attempt recovery", TSConvergedReasons[ts->reason]);
+    PetscCheck(ts->reason != TS_DIVERGED_NONLINEAR_SOLVE, PetscObjectComm((PetscObject)ts), PETSC_ERR_NOT_CONVERGED, "TSStep has failed due to %s, increase -ts_max_snes_failures or use unlimited to attempt recovery", TSConvergedReasons[ts->reason]);
     SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_NOT_CONVERGED, "TSStep has failed due to %s", TSConvergedReasons[ts->reason]);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -4858,12 +4875,15 @@ PetscErrorCode TSGetSNESFailures(TS ts, PetscInt *fails)
 
   Input Parameters:
 + ts      - `TS` context
-- rejects - maximum number of rejected steps, pass -1 for unlimited
+- rejects - maximum number of rejected steps, pass `PETSC_UNLIMITED` for unlimited
 
   Options Database Key:
 . -ts_max_reject - Maximum number of step rejections before a step fails
 
   Level: intermediate
+
+  Developer Note:
+  The options database name is incorrect.
 
 .seealso: [](ch_ts), `TS`, `SNES`, `TSGetSNESIterations()`, `TSGetKSPIterations()`, `TSSetMaxSNESFailures()`, `TSGetStepRejections()`, `TSGetSNESFailures()`, `TSSetErrorIfStepFails()`, `TSGetConvergedReason()`
 @*/
@@ -4871,7 +4891,12 @@ PetscErrorCode TSSetMaxStepRejections(TS ts, PetscInt rejects)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  ts->max_reject = rejects;
+  if (rejects == PETSC_UNLIMITED || rejects == -1) {
+    ts->max_reject = PETSC_UNLIMITED;
+  } else {
+    PetscCheck(rejects >= 0, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_OUTOFRANGE, "Cannot have a negative maximum number of rejections");
+    ts->max_reject = rejects;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -4882,7 +4907,7 @@ PetscErrorCode TSSetMaxStepRejections(TS ts, PetscInt rejects)
 
   Input Parameters:
 + ts    - `TS` context
-- fails - maximum number of failed nonlinear solves, pass -1 for unlimited
+- fails - maximum number of failed nonlinear solves, pass `PETSC_UNLIMITED` to allow any number of failures.
 
   Options Database Key:
 . -ts_max_snes_failures - Maximum number of nonlinear solve failures
@@ -4895,7 +4920,12 @@ PetscErrorCode TSSetMaxSNESFailures(TS ts, PetscInt fails)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  ts->max_snes_failures = fails;
+  if (fails == PETSC_UNLIMITED || fails == -1) {
+    ts->max_snes_failures = PETSC_UNLIMITED;
+  } else {
+    PetscCheck(fails >= 0, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_OUTOFRANGE, "Cannot have a negative maximum number of failures");
+    ts->max_snes_failures = fails;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -4958,10 +4988,10 @@ PetscErrorCode TSGetAdapt(TS ts, TSAdapt *adapt)
 
   Input Parameters:
 + ts    - time integration context
-. atol  - scalar absolute tolerances, `PETSC_DECIDE` to leave current value
-. vatol - vector of absolute tolerances or `NULL`, used in preference to atol if present
-. rtol  - scalar relative tolerances, `PETSC_DECIDE` to leave current value
-- vrtol - vector of relative tolerances or `NULL`, used in preference to atol if present
+. atol  - scalar absolute tolerances
+. vatol - vector of absolute tolerances or `NULL`, used in preference to `atol` if present
+. rtol  - scalar relative tolerances
+- vrtol - vector of relative tolerances or `NULL`, used in preference to `rtol` if present
 
   Options Database Keys:
 + -ts_rtol <rtol> - relative tolerance for local truncation error
@@ -4970,6 +5000,9 @@ PetscErrorCode TSGetAdapt(TS ts, TSAdapt *adapt)
   Level: beginner
 
   Notes:
+  `PETSC_CURRENT` or `PETSC_DETERMINE` may be used for `atol` or `rtol` to indicate the current value
+  or the default value from when the object's type was set.
+
   With PETSc's implicit schemes for DAE problems, the calculation of the local truncation error
   (LTE) includes both the differential and the algebraic variables. If one wants the LTE to be
   computed only for the differential or the algebraic part then this can be done using the vector of
@@ -4977,18 +5010,34 @@ PetscErrorCode TSGetAdapt(TS ts, TSAdapt *adapt)
   differential part and infinity for the algebraic part, the LTE calculation will include only the
   differential variables.
 
+  Fortran Note:
+  Use `PETSC_CURRENT_INTEGER` or `PETSC_DETERMINE_INTEGER`.
+
 .seealso: [](ch_ts), `TS`, `TSAdapt`, `TSErrorWeightedNorm()`, `TSGetTolerances()`
 @*/
 PetscErrorCode TSSetTolerances(TS ts, PetscReal atol, Vec vatol, PetscReal rtol, Vec vrtol)
 {
   PetscFunctionBegin;
-  if (atol != (PetscReal)PETSC_DECIDE && atol != (PetscReal)PETSC_DEFAULT) ts->atol = atol;
+  if (atol == (PetscReal)PETSC_DETERMINE) {
+    ts->atol = atol = ts->default_atol;
+  } else if (atol != (PetscReal)PETSC_CURRENT) {
+    PetscCheck(atol >= 0.0, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_OUTOFRANGE, "Absolute tolerance %g must be non-negative", (double)atol);
+    ts->atol = atol;
+  }
+
   if (vatol) {
     PetscCall(PetscObjectReference((PetscObject)vatol));
     PetscCall(VecDestroy(&ts->vatol));
     ts->vatol = vatol;
   }
-  if (rtol != (PetscReal)PETSC_DECIDE && rtol != (PetscReal)PETSC_DEFAULT) ts->rtol = rtol;
+
+  if (rtol == (PetscReal)PETSC_DETERMINE) {
+    ts->rtol = atol = ts->default_rtol;
+  } else if (rtol != (PetscReal)PETSC_CURRENT) {
+    PetscCheck(rtol >= 0.0, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_OUTOFRANGE, "Relative tolerance %g must be non-negative", (double)rtol);
+    ts->rtol = rtol;
+  }
+
   if (vrtol) {
     PetscCall(PetscObjectReference((PetscObject)vrtol));
     PetscCall(VecDestroy(&ts->vrtol));

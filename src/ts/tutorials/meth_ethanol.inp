@@ -15,7 +15,7 @@
 
 
 -ts_arkimex_fully_implicit
--ts_max_snes_failures -1
+-ts_max_snes_failures unlimited
 -ts_adapt_monitor
 -ts_arkimex_type 4
 -ts_max_time 2.0e-3

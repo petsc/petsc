@@ -249,7 +249,7 @@ static PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscRe
       requires: !single
 
     test:
-      args: -pc_type lu -ts_dt 1e-5 -ts_max_time 1e5 -n 50 -monitor_short -snes_max_it 5 -snes_type newtonls -ts_max_snes_failures -1
+      args: -pc_type lu -ts_dt 1e-5 -ts_max_time 1e5 -n 50 -monitor_short -snes_max_it 5 -snes_type newtonls -ts_max_snes_failures unlimited
       requires: !single
       suffix: 2
 

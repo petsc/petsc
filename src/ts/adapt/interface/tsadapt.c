@@ -390,6 +390,12 @@ PetscErrorCode TSAdaptSetAlwaysAccept(TSAdapt adapt, PetscBool flag)
 
   Level: intermediate
 
+  Note:
+  Use `PETSC_CURRENT` to keep the current value for either parameter
+
+  Fortran Note:
+  Use `PETSC_CURRENT_REAL`
+
 .seealso: [](ch_ts), `TSAdapt`, `TSAdaptGetSafety()`, `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptSetSafety(TSAdapt adapt, PetscReal safety, PetscReal reject_safety)
@@ -398,12 +404,12 @@ PetscErrorCode TSAdaptSetSafety(TSAdapt adapt, PetscReal safety, PetscReal rejec
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidLogicalCollectiveReal(adapt, safety, 2);
   PetscValidLogicalCollectiveReal(adapt, reject_safety, 3);
-  PetscCheck(safety == (PetscReal)PETSC_DEFAULT || safety >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Safety factor %g must be non negative", (double)safety);
-  PetscCheck(safety == (PetscReal)PETSC_DEFAULT || safety <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Safety factor %g must be less than one", (double)safety);
-  PetscCheck(reject_safety == (PetscReal)PETSC_DEFAULT || reject_safety >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Reject safety factor %g must be non negative", (double)reject_safety);
-  PetscCheck(reject_safety == (PetscReal)PETSC_DEFAULT || reject_safety <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Reject safety factor %g must be less than one", (double)reject_safety);
-  if (safety != (PetscReal)PETSC_DEFAULT) adapt->safety = safety;
-  if (reject_safety != (PetscReal)PETSC_DEFAULT) adapt->reject_safety = reject_safety;
+  PetscCheck(safety == (PetscReal)PETSC_CURRENT || safety >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Safety factor %g must be non negative", (double)safety);
+  PetscCheck(safety == (PetscReal)PETSC_CURRENT || safety <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Safety factor %g must be less than one", (double)safety);
+  PetscCheck(reject_safety == (PetscReal)PETSC_CURRENT || reject_safety >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Reject safety factor %g must be non negative", (double)reject_safety);
+  PetscCheck(reject_safety == (PetscReal)PETSC_CURRENT || reject_safety <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Reject safety factor %g must be less than one", (double)reject_safety);
+  if (safety != (PetscReal)PETSC_CURRENT) adapt->safety = safety;
+  if (reject_safety != (PetscReal)PETSC_CURRENT) adapt->reject_safety = reject_safety;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -500,6 +506,12 @@ PetscErrorCode TSAdaptGetMaxIgnore(TSAdapt adapt, PetscReal *max_ignore)
 
   Level: intermediate
 
+  Note:
+  Use `PETSC_CURRENT` to keep the current value for either parameter
+
+  Fortran Note:
+  Use `PETSC_CURRENT_REAL`
+
 .seealso: [](ch_ts), `TSAdapt`, `TSAdaptChoose()`, `TSAdaptGetClip()`, `TSAdaptSetScaleSolveFailed()`
 @*/
 PetscErrorCode TSAdaptSetClip(TSAdapt adapt, PetscReal low, PetscReal high)
@@ -508,11 +520,11 @@ PetscErrorCode TSAdaptSetClip(TSAdapt adapt, PetscReal low, PetscReal high)
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidLogicalCollectiveReal(adapt, low, 2);
   PetscValidLogicalCollectiveReal(adapt, high, 3);
-  PetscCheck(low == (PetscReal)PETSC_DEFAULT || low >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Decrease factor %g must be non negative", (double)low);
-  PetscCheck(low == (PetscReal)PETSC_DEFAULT || low <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Decrease factor %g must be less than one", (double)low);
-  PetscCheck(high == (PetscReal)PETSC_DEFAULT || high >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Increase factor %g must be greater than one", (double)high);
-  if (low != (PetscReal)PETSC_DEFAULT) adapt->clip[0] = low;
-  if (high != (PetscReal)PETSC_DEFAULT) adapt->clip[1] = high;
+  PetscCheck(low == (PetscReal)PETSC_CURRENT || low >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Decrease factor %g must be non negative", (double)low);
+  PetscCheck(low == (PetscReal)PETSC_CURRENT || low <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Decrease factor %g must be less than one", (double)low);
+  PetscCheck(high == (PetscReal)PETSC_CURRENT || high >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Increase factor %g must be greater than one", (double)high);
+  if (low != (PetscReal)PETSC_CURRENT) adapt->clip[0] = low;
+  if (high != (PetscReal)PETSC_CURRENT) adapt->clip[1] = high;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -564,9 +576,9 @@ PetscErrorCode TSAdaptSetScaleSolveFailed(TSAdapt adapt, PetscReal scale)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidLogicalCollectiveReal(adapt, scale, 2);
-  PetscCheck(scale == (PetscReal)PETSC_DEFAULT || scale > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Scale factor %g must be positive", (double)scale);
-  PetscCheck(scale == (PetscReal)PETSC_DEFAULT || scale <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Scale factor %g must be less than one", (double)scale);
-  if (scale != (PetscReal)PETSC_DEFAULT) adapt->scale_solve_failed = scale;
+  PetscCheck(scale > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Scale factor %g must be positive", (double)scale);
+  PetscCheck(scale <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Scale factor %g must be less than one", (double)scale);
+  adapt->scale_solve_failed = scale;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -610,6 +622,12 @@ PetscErrorCode TSAdaptGetScaleSolveFailed(TSAdapt adapt, PetscReal *scale)
 
   Level: intermediate
 
+  Note:
+  Use `PETSC_CURRENT` to keep the current value for either parameter
+
+  Fortran Note:
+  Use `PETSC_CURRENT_REAL`
+
 .seealso: [](ch_ts), `TSAdapt`, `TSAdaptGetStepLimits()`, `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt, PetscReal hmin, PetscReal hmax)
@@ -618,10 +636,10 @@ PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt, PetscReal hmin, PetscReal hma
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidLogicalCollectiveReal(adapt, hmin, 2);
   PetscValidLogicalCollectiveReal(adapt, hmax, 3);
-  PetscCheck(hmin == (PetscReal)PETSC_DEFAULT || hmin >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Minimum time step %g must be non negative", (double)hmin);
-  PetscCheck(hmax == (PetscReal)PETSC_DEFAULT || hmax >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Minimum time step %g must be non negative", (double)hmax);
-  if (hmin != (PetscReal)PETSC_DEFAULT) adapt->dt_min = hmin;
-  if (hmax != (PetscReal)PETSC_DEFAULT) adapt->dt_max = hmax;
+  PetscCheck(hmin == (PetscReal)PETSC_CURRENT || hmin >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Minimum time step %g must be non negative", (double)hmin);
+  PetscCheck(hmax == (PetscReal)PETSC_CURRENT || hmax >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Minimum time step %g must be non negative", (double)hmax);
+  if (hmin != (PetscReal)PETSC_CURRENT) adapt->dt_min = hmin;
+  if (hmax != (PetscReal)PETSC_CURRENT) adapt->dt_max = hmax;
   hmin = adapt->dt_min;
   hmax = adapt->dt_max;
   PetscCheck(hmax > hmin, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Maximum time step %g must greater than minimum time step %g", (double)hmax, (double)hmin);
@@ -1027,7 +1045,7 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt, TS ts, PetscReal t, Vec Y, Petsc
   if (func_accept && snesreason < 0 && !snes_div_func) {
     *accept = PETSC_FALSE;
     PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", nonlinear solve failure: %s\n", ts->steps, SNESConvergedReasons[snesreason]));
-    if (++ts->num_snes_failures >= ts->max_snes_failures && ts->max_snes_failures > 0) {
+    if (++ts->num_snes_failures >= ts->max_snes_failures && ts->max_snes_failures != PETSC_UNLIMITED) {
       ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
       PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", nonlinear solve failures %" PetscInt_FMT " greater than current TS allowed, stopping solve\n", ts->steps, ts->num_snes_failures));
       if (adapt->monitor) {

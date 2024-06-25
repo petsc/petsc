@@ -290,12 +290,6 @@ struct _p_TS {
   void    *data;        /* implementationspecific data */
   void    *user;        /* user context */
 
-  /* ------------------  Parameters -------------------------------------- */
-  PetscInt  max_steps; /* max number of steps */
-  PetscReal max_time;  /* max time allowed */
-
-  /* --------------------------------------------------------------------- */
-
   PetscBool steprollback;        /* flag to indicate that the step was rolled back */
   PetscBool steprestart;         /* flag to indicate that the timestepper has to discard any history and restart */
   PetscInt  steps;               /* steps taken so far in all successive calls to TSSolve() */
@@ -312,8 +306,11 @@ struct _p_TS {
   PetscInt               reject, max_reject;
   TSExactFinalTimeOption exact_final_time;
 
-  PetscReal atol, rtol;   /* Relative and absolute tolerance for local truncation error */
-  Vec       vatol, vrtol; /* Relative and absolute tolerance in vector form */
+  PetscObjectParameterDeclare(PetscReal, rtol); /* Relative and absolute tolerance for local truncation error */
+  PetscObjectParameterDeclare(PetscReal, atol);
+  PetscObjectParameterDeclare(PetscReal, max_time); /* max time allowed */
+  PetscObjectParameterDeclare(PetscInt, max_steps); /* max number of steps */
+  Vec       vatol, vrtol;                           /* Relative and absolute tolerance in vector form */
   PetscReal cfltime, cfltime_local;
 
   PetscBool testjacobian;

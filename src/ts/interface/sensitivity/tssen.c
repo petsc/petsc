@@ -1768,6 +1768,8 @@ PetscErrorCode TSForwardStep(TS ts)
   Level: beginner
 
   Notes:
+  Use `PETSC_DETERMINE` to use the number of columns of `Smat` for `nump`
+
   Forward sensitivity is also called 'trajectory sensitivity' in some fields such as power systems.
   This function turns on a flag to trigger `TSSolve()` to compute forward sensitivities automatically.
   You must call this function before `TSSolve()`.
@@ -1781,7 +1783,7 @@ PetscErrorCode TSForwardSetSensitivities(TS ts, PetscInt nump, Mat Smat)
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(Smat, MAT_CLASSID, 3);
   ts->forward_solve = PETSC_TRUE;
-  if (nump == PETSC_DEFAULT) {
+  if (nump == PETSC_DEFAULT || nump == PETSC_DETERMINE) {
     PetscCall(MatGetSize(Smat, NULL, &ts->num_parameters));
   } else ts->num_parameters = nump;
   PetscCall(PetscObjectReference((PetscObject)Smat));
@@ -1858,7 +1860,7 @@ PetscErrorCode TSForwardSetInitialSensitivities(TS ts, Mat didp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(didp, MAT_CLASSID, 2);
-  if (!ts->mat_sensip) PetscCall(TSForwardSetSensitivities(ts, PETSC_DEFAULT, didp));
+  if (!ts->mat_sensip) PetscCall(TSForwardSetSensitivities(ts, PETSC_DETERMINE, didp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

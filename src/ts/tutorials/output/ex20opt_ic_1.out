@@ -43,7 +43,7 @@ Tao Object: 1 MPI process
     total number of gradient evaluations=0
     total number of function/gradient evaluations=1
     Termination reason: 1
-  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
+  convergence tolerances: gatol=1e-08,   grtol=1e-08, steptol=0.,   gttol=0.
   Residual in Function/Gradient:=2.84042e-09
   Objective value=1.75752e-18
   total number of iterations=10,                          (max: 2000)

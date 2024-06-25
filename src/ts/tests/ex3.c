@@ -278,7 +278,7 @@ PetscErrorCode Petsc_KSPSolve(AppCtx *obj)
   /*get the preconditioner context, set its type and the tolerances*/
   PetscCall(KSPGetPC(ksp, &pc));
   PetscCall(PCSetType(pc, PCLU));
-  PetscCall(KSPSetTolerances(ksp, 1.e-7, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
+  PetscCall(KSPSetTolerances(ksp, 1.e-7, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT));
 
   /*get the command line options if there are any and set them*/
   PetscCall(KSPSetFromOptions(ksp));

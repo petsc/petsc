@@ -24,11 +24,11 @@ Tao Object: 1 MPI process
         total number of gradient evaluations=0
         total number of function/gradient evaluations=0
         Termination reason: 0
-      convergence tolerances: gatol=1e-08,       steptol=0.,       gttol=0.
+      convergence tolerances: gatol=1e-08,       grtol=1e-08, steptol=0.,       gttol=0.
       Residual in Function/Gradient:=0.
       Objective value=0.
       total number of iterations=0,                              (max: 2000)
-      Solver terminated: 0      
+      Solver never run
     CG steps: 0
     Newton steps: 5
     Scaled gradient steps: 0
@@ -62,10 +62,10 @@ Tao Object: 1 MPI process
       type: shell
       rows=2, cols=2
   total KSP iterations: 8
-  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
+  convergence tolerances: gatol=1e-08,   grtol=1e-08, steptol=0.,   gttol=0.
   Residual in Function/Gradient:=3.72296e-10
   Objective value=4.93222e-21
   total number of iterations=5,                          (max: 50)
-  total number of function/gradient evaluations=17,      (max: 4000)
+  total number of function/gradient evaluations=17,      (max: unlimited)
   total number of Hessian evaluations=6
   Solution converged:    ||g(X)|| <= gatol
