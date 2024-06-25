@@ -104,7 +104,7 @@ class BaseTestKSP:
         self.assertFalse(bool(newpc))
         self.assertEqual(pc.getRefCount(), 2)
 
-    def testSolve(self):
+    def testSolve(self, solve_only=False):
         A = PETSc.Mat().create(PETSc.COMM_SELF)
         A.setSizes([3, 3])
         A.setType(PETSc.Mat.Type.SEQAIJ)
@@ -117,15 +117,18 @@ class BaseTestKSP:
         b.set(10)
         x.setRandom()
         self.ksp.setOperators(A)
-        self.ksp.setConvergenceHistory()
+        if not solve_only:
+            self.ksp.setConvergenceHistory()
         self.ksp.solve(b, x)
-        u = x.duplicate()
-        self.ksp.buildSolution(u)
-        self.ksp.buildResidual(u)
-        rh = self.ksp.getConvergenceHistory()
-        self.ksp.setConvergenceHistory(0)
-        rh = self.ksp.getConvergenceHistory()
-        self.assertEqual(len(rh), 0)
+        if not solve_only:
+            u = x.duplicate()
+            self.ksp.buildSolution(u)
+            self.ksp.buildResidual(u)
+            rh = self.ksp.getConvergenceHistory()
+            self.ksp.setConvergenceHistory(0)
+            rh = self.ksp.getConvergenceHistory()
+            self.assertEqual(len(rh), 0)
+            u.destroy()
         del A, x, b
 
     def testResetAndSolve(self):
@@ -139,16 +142,18 @@ class BaseTestKSP:
         reshist = {}
 
         def monitor(ksp, its, rnorm):
-            reshist[its] = rnorm
-
+            if ksp.type in ['cg', 'stcg']:
+                reshist[its] = {'r': rnorm, 'o': ksp.getCGObjectiveValue()}
+            else:
+                reshist[its] = rnorm
         refcnt = getrefcount(monitor)
         self.ksp.setMonitor(monitor)
         self.assertEqual(getrefcount(monitor), refcnt + 1)
-        ## self.testSolve()
+        self.testSolve(solve_only=True)
         reshist = {}
         self.ksp.monitorCancel()
         self.assertEqual(getrefcount(monitor), refcnt)
-        self.testSolve()
+        self.testSolve(solve_only=True)
         self.assertEqual(len(reshist), 0)
         ## Monitor = PETSc.KSP.Monitor
         ## self.ksp.setMonitor(Monitor())

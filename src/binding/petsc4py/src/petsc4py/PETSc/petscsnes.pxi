@@ -232,6 +232,9 @@ cdef extern from * nogil: # custom.h
     PetscErrorCode SNESSetUseFDColoring(PetscSNES, PetscBool)
     PetscErrorCode SNESGetUseFDColoring(PetscSNES, PetscBool*)
 
+    PetscErrorCode SNESSetUseKSP(PetscSNES, PetscBool)
+    PetscErrorCode SNESGetUseKSP(PetscSNES, PetscBool*)
+
     PetscErrorCode SNESConvergenceTestCall(PetscSNES, PetscInt,
                                            PetscReal, PetscReal, PetscReal,
                                            PetscSNESConvergedReason*)

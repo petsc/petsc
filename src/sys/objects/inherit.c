@@ -540,7 +540,11 @@ PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj, PetscErrorCode (*ha
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
-  PetscCheck(obj->noptionhandler < PETSC_MAX_OPTIONS_HANDLER, obj->comm, PETSC_ERR_ARG_OUTOFRANGE, "To many options handlers added");
+  for (PetscInt i = 0; i < obj->noptionhandler; i++) {
+    PetscBool identical = (PetscBool)(obj->optionhandler[i] == handle && obj->optiondestroy[i] == destroy && obj->optionctx[i] == ctx);
+    if (identical) PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  PetscCheck(obj->noptionhandler < PETSC_MAX_OPTIONS_HANDLER, obj->comm, PETSC_ERR_ARG_OUTOFRANGE, "Too many options handlers added");
   obj->optionhandler[obj->noptionhandler] = handle;
   obj->optiondestroy[obj->noptionhandler] = destroy;
   obj->optionctx[obj->noptionhandler++]   = ctx;

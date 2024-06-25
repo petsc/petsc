@@ -1871,6 +1871,20 @@ cdef class KSP(Object):
         CHKERR(KSPGetConvergedReason(self.ksp, &reason))
         return reason
 
+    def getCGObjectiveValue(self) -> float:
+        """Return the CG objective function value.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.KSPCGGetObjFcn
+
+        """
+        cdef PetscReal cval = 0
+        CHKERR(KSPCGGetObjFcn(self.ksp, &cval))
+        return cval
+
     def setHPDDMType(self, hpddm_type: HPDDMType) -> None:
         """Set the Krylov solver type.
 

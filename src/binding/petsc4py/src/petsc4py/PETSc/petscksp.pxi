@@ -217,6 +217,8 @@ cdef extern from * nogil:
 
     PetscErrorCode KSPGMRESSetRestart(PetscKSP, PetscInt)
 
+    PetscErrorCode KSPCGGetObjFcn(PetscKSP, PetscReal*)
+
     PetscErrorCode KSPPythonSetType(PetscKSP, char[])
     PetscErrorCode KSPPythonGetType(PetscKSP, char*[])
 

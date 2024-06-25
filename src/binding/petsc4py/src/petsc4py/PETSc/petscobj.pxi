@@ -41,6 +41,19 @@ cdef extern from * nogil:
     PetscErrorCode PetscObjectGetTabLevel(PetscObject, PetscInt*)
     PetscErrorCode PetscObjectSetTabLevel(PetscObject, PetscInt)
 
+    ctypedef struct _p_PetscOptionItems
+    ctypedef _p_PetscOptionItems* PetscOptionItems
+
+    ctypedef PetscErrorCode (*PetscObjectOptionsHandler)(PetscObject,
+                                                         PetscOptionItems*,
+                                                         void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode (*PetscObjectOptionsCtxDel)(PetscObject, void*)
+    PetscErrorCode PetscObjectAddOptionsHandler(PetscObject,
+                                                PetscObjectOptionsHandler,
+                                                PetscObjectOptionsCtxDel,
+                                                void*)
+    PetscErrorCode PetscObjectDestroyOptionsHandlers(PetscObject)
+
 cdef extern from * nogil: # custom.h
     PetscErrorCode PetscObjectGetDeviceId(PetscObject, PetscInt*)
 
@@ -179,3 +192,14 @@ cdef inline type subtype_Object(PetscObject obj):
     return klass
 
 # --------------------------------------------------------------------
+
+cdef PetscErrorCode PetscObjectOptionsHandler_PYTHON(
+    PetscObject obj,
+    PetscOptionItems *unused_PetscOptionsObject,
+    void *unused_ctx,
+   ) except PETSC_ERR_PYTHON with gil:
+    cdef Object pobj = PyPetscObject_New(obj)
+    cdef object handler = pobj.get_attr('__optshandler__')
+    if handler is None: return PETSC_SUCCESS
+    handler(pobj)
+    return PETSC_SUCCESS

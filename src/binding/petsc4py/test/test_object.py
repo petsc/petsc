@@ -70,6 +70,41 @@ class BaseTestObject:
         self.assertEqual(self.obj.getOptionsPrefix(), None)
         self.obj.setFromOptions()
 
+        def opts_handler(obj):
+            n = obj.getAttr('opts_handler_called')
+            obj.setAttr('opts_handler_called', n + 1)
+            self.assertEqual(type(self.obj), type(obj))
+            self.assertEqual(self.obj.klass, obj.klass)
+            self.assertEqual(self.obj.type, obj.type)
+            self.assertEqual(self.obj.id, obj.id)
+
+        for _ in range(2):
+            self.obj.setAttr('opts_handler_called', 0)
+            self.obj.setOptionsHandler(opts_handler)
+            self.obj.setFromOptions()
+            missing = [
+                'AO',
+                'DMLabel',
+                'PetscDualSpace',
+                'IS',
+                'ISLocalToGlobalMapping',
+                'MatPartitioning',
+                'MatNullSpace',
+                'PetscRandom',
+                'PetscViewer',
+            ]
+            if self.obj.klass not in missing:
+                self.assertTrue(self.obj.getAttr('opts_handler_called') == 1)
+
+        self.obj.setAttr('opts_handler_called', 0)
+        self.obj.setOptionsHandler(None)
+        self.obj.setFromOptions()
+        self.assertFalse(self.obj.getAttr('opts_handler_called'))
+
+        self.obj.destroyOptionsHandlers()
+        self.obj.setFromOptions()
+        self.assertFalse(self.obj.getAttr('opts_handler_called'))
+
     def testName(self):
         oldname = self.obj.getName()
         newname = f'{oldname}-{oldname}'

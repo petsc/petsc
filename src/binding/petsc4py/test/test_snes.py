@@ -107,6 +107,12 @@ class BaseTestSNES:
         self.assertFalse(snes.use_ew)
         self.assertFalse(snes.use_mf)
         self.assertFalse(snes.use_fd)
+        ouse = snes.use_ksp
+        self.assertEqual(ouse, snes.getUseKSP())
+        snes.use_ksp = not ouse
+        self.assertEqual(not ouse, snes.getUseKSP())
+        snes.setUseKSP(ouse)
+        self.assertEqual(ouse, snes.use_ksp)
 
     def testGetSetFunc(self):
         r, func = self.snes.getFunction()

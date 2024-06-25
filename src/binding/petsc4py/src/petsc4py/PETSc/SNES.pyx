@@ -1939,6 +1939,33 @@ cdef class SNES(Object):
                 'alpha2'    : toReal(alpha2),
                 'threshold' : toReal(threshold), }
 
+    def setUseKSP(self, flag=True) -> None:
+        """Set the boolean flag indicating to use a linear solver.
+
+        Logically collective.
+
+        See Also
+        --------
+        getUseKSP
+
+        """
+        cdef PetscBool bval = flag
+        CHKERR(SNESSetUseKSP(self.snes, bval))
+
+    def getUseKSP(self) -> bool:
+        """Return the flag indicating if the solver uses a linear solver.
+
+        Not collective.
+
+        See Also
+        --------
+        setUseKSP
+
+        """
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR(SNESGetUseKSP(self.snes, &flag))
+        return toBool(flag)
+
     # --- matrix-free / finite differences ---
 
     def setUseMF(self, flag=True) -> None:
@@ -2306,6 +2333,14 @@ cdef class SNES(Object):
 
         def __set__(self, value):
             self.setKSP(value)
+
+    property use_ksp:
+        """Boolean indicating if the solver uses a linear solver."""
+        def __get__(self) -> bool:
+            return self.getUseKSP()
+
+        def __set__(self, value):
+            self.setUseKSP(value)
 
     property use_ew:
         """Use the Eisenstat-Walker trick."""

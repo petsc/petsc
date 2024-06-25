@@ -1099,7 +1099,7 @@ can use ``MATAIJ`` instead of ``MATBAIJ`` without changing any code other than t
 constructor (or the ``-mat_type`` from the command line). For instance,
 ``MatSetValuesBlocked`` works with ``MATAIJ`` matrices.
 
-**Important parameters for ``PCGAMGAGG``**
+**Important parameters for PCGAMGAGG**
 
 * Control the generation of the coarse grid
 
@@ -2014,7 +2014,7 @@ Finally, the option ``-pc_fieldsplit_detect_saddle_point`` causes two
 diagonal blocks to be found, one associated with all rows/columns that
 have zeros on the diagonals and the rest.
 
-**Important parameters for ``PCFIELDSPLIT``**
+**Important parameters for PCFIELDSPLIT**
 
 - Control the fields used
 
@@ -2279,7 +2279,7 @@ Schur complements. The inverse of the Schur complement factorization is
    0 & I \\
    \end{array} \right)
    \left( \begin{array}{cc}
-   A_{00}  & 0 \\
+   A_{00}^{-1}  & 0 \\
    0 & S^{-1} \\
    \end{array} \right)
    \left( \begin{array}{cc}
