@@ -201,6 +201,12 @@ Viewer (-ksp_view_pre) options:
   -ksp_view_pre draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
   -ksp_view_pre socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
   -ksp_view_pre saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
+Viewer (-ksp_converged_reason) options:
+  -ksp_converged_reason ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
+  -ksp_converged_reason binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
+  -ksp_converged_reason draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
+  -ksp_converged_reason socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
+  -ksp_converged_reason saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
   -ksp_converged_reason_view_cancel: <now FALSE : formerly FALSE> Cancel all the converged reason view functions set using KSPConvergedReasonViewSet (KSPConvergedReasonViewCancel)
 Viewer (-ksp_converged_rate) options:
   -ksp_converged_rate ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
@@ -309,10 +315,4 @@ Viewer (-mat_factor_view) options:
   4 KSP Residual norm 9.502667693381e-03
   5 KSP Residual norm 7.905767061099e-04
   6 KSP Residual norm 1.108383257088e-04
-Viewer (-ksp_converged_reason) options:
-  -ksp_converged_reason ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsGetViewer)
-  -ksp_converged_reason binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsGetViewer)
-  -ksp_converged_reason draw[:[drawtype][:filename|format]] Draws object (PetscOptionsGetViewer)
-  -ksp_converged_reason socket[:port]: Pushes object to a Unix socket (PetscOptionsGetViewer)
-  -ksp_converged_reason saws[:communicatorname]: Publishes object to SAWs (PetscOptionsGetViewer)
 Norm of error 0.000156044 iterations 6
