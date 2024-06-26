@@ -10091,9 +10091,9 @@ PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, Mat *mat)
 
 static void g0_identity_private(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
 {
-  const PetscInt Nc = uOff[1] - uOff[0];
-  PetscInt       c;
-  for (c = 0; c < Nc; ++c) g0[c * Nc + c] = 1.0;
+  const PetscInt f  = (PetscInt)PetscRealPart(constants[numConstants]);
+  const PetscInt Nc = uOff[f + 1] - uOff[f];
+  for (PetscInt c = 0; c < Nc; ++c) g0[c * Nc + c] = 1.0;
 }
 
 PetscErrorCode DMCreateMassMatrixLumped_Plex(DM dm, Vec *mass)
@@ -10109,7 +10109,7 @@ PetscErrorCode DMCreateMassMatrixLumped_Plex(DM dm, Vec *mass)
   PetscCall(DMClone(dm, &dmc));
   PetscCall(DMCopyDisc(dm, dmc));
   PetscCall(DMGetDS(dmc, &ds));
-  PetscCall(PetscDSSetJacobian(ds, 0, 0, g0_identity_private, NULL, NULL, NULL));
+  for (PetscInt f = 0; f < dmc->Nf; ++f) PetscCall(PetscDSSetJacobian(ds, f, f, g0_identity_private, NULL, NULL, NULL));
   PetscCall(DMCreateGlobalVector(dmc, mass));
   PetscCall(DMGetLocalVector(dmc, &ones));
   PetscCall(DMGetLocalVector(dmc, &locmass));
@@ -10155,7 +10155,7 @@ PetscErrorCode DMCreateMassMatrix_Plex(DM dmCoarse, DM dmFine, Mat *mass)
     PetscCall(DMGetDS(dmc, &ds));
     PetscCall(PetscDSGetWeakForm(ds, &wf));
     PetscCall(PetscWeakFormClear(wf));
-    PetscCall(PetscDSSetJacobian(ds, 0, 0, g0_identity_private, NULL, NULL, NULL));
+    for (PetscInt f = 0; f < dmc->Nf; ++f) PetscCall(PetscDSSetJacobian(ds, f, f, g0_identity_private, NULL, NULL, NULL));
     PetscCall(DMCreateMatrix(dmc, mass));
     PetscCall(DMGetLocalVector(dmc, &u));
     PetscCall(DMPlexGetDepth(dmc, &depth));

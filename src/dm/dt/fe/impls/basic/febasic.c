@@ -758,6 +758,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscDS ds, PetscFEJacobianType jt
   PetscCall(PetscDSGetTabulation(ds, &T));
   PetscCall(PetscDSGetFieldOffset(ds, fieldI, &offsetI));
   PetscCall(PetscDSGetFieldOffset(ds, fieldJ, &offsetJ));
+  PetscCall(PetscDSSetIntegrationParameters(ds, fieldI, fieldJ));
   PetscCall(PetscDSGetConstants(ds, &numConstants, &constants));
   if (dsAux) {
     PetscCall(PetscDSGetNumFields(dsAux, &NfAux));
