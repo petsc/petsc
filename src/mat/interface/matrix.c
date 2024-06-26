@@ -10367,13 +10367,13 @@ PetscErrorCode MatTransposeMatMult(Mat A, Mat B, MatReuse scall, PetscReal fill,
   Level: intermediate
 
   Notes:
-  Unless `scall` is `MAT_REUSE_MATRIX` D will be created.
+  Unless `scall` is `MAT_REUSE_MATRIX` `D` will be created.
 
   `MAT_REUSE_MATRIX` can only be used if the matrices `A`, `B`, and `C` have the same nonzero pattern as in the previous call
 
   This routine is shorthand for using `MatProductCreate()` with the `MatProductType` of `MATPRODUCT_ABC`
 
-  To determine the correct fill value, run with -info and search for the string "Fill ratio" to see the value
+  To determine the correct fill value, run with `-info` and search for the string "Fill ratio" to see the value
   actually needed.
 
   If you have many matrices with the same non-zero structure to multiply, you

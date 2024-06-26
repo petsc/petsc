@@ -1125,6 +1125,9 @@ PetscErrorCode PetscOptionsPrefixPop(PetscOptions options)
   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
   on different ranks.
 
+  Developer Note:
+  Uses `free()` directly because the current option values were set with `malloc()`
+
 .seealso: `PetscOptionsInsert()`
 @*/
 PetscErrorCode PetscOptionsClear(PetscOptions options)
@@ -1188,6 +1191,9 @@ PetscErrorCode PetscOptionsClear(PetscOptions options)
   have the affect of these options. If some processes that create objects call this routine and others do
   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
   on different ranks.
+
+  Developer Note:
+  Uses `malloc()` directly because PETSc may not be initialized yet.
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`, `OptionsHasName()`,
           `PetscOptionsGetString()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -1258,8 +1264,8 @@ PetscErrorCode PetscOptionsSetAlias(PetscOptions options, const char newname[], 
   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
   on different ranks.
 
-  Developer Notes:
-  Uses malloc() directly because PETSc may not be initialized yet.
+  Developer Note:
+  Uses `malloc()` directly because PETSc may not be initialized yet.
 
 .seealso: `PetscOptionsInsert()`, `PetscOptionsClearValue()`
 @*/
@@ -1412,6 +1418,9 @@ setvalue:
   have the affect of these options. If some processes that create objects call this routine and others do
   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
   on different ranks.
+
+  Developer Note:
+  Uses `free()` directly because the options have been set with `malloc()`
 
 .seealso: `PetscOptionsInsert()`
 @*/
