@@ -271,6 +271,7 @@ PetscErrorCode ISColoringGetIS(ISColoring iscoloring, PetscCopyMode mode, PetscI
       PetscCall(PetscFree(mcolors));
     } else {
       *isis = iscoloring->is;
+      if (mode == PETSC_OWN_POINTER) iscoloring->is = NULL;
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
