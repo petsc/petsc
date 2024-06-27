@@ -176,7 +176,7 @@ class Configure(config.package.Package):
       elif hasattr(self.mpi, 'mpich_numversion') and int(self.mpi.mpich_numversion) < 40000101:
         self.avoid_mpi_in_place = 1
       if self.avoid_mpi_in_place:
-        g.write('CDEFS += -DAVOID_MPI_IN_PLACE') # only take effect since mumps-5.6.2
+        g.write('OPTF += -DAVOID_MPI_IN_PLACE\n') # only take effect since mumps-5.6.2
         self.addDefine('HAVE_MUMPS_AVOID_MPI_IN_PLACE', 1)
     g.close()
     if self.installNeeded('Makefile.inc'):
