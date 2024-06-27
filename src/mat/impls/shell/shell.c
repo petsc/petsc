@@ -1168,6 +1168,40 @@ static PetscErrorCode MatGetDiagonal_Shell(Mat A, Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatGetDiagonalBlock_Shell(Mat A, Mat *b)
+{
+  Mat_Shell *shell = (Mat_Shell *)A->data;
+  Vec        left = NULL, right = NULL;
+
+  PetscFunctionBegin;
+  PetscCheck(!shell->zrows && !shell->zcols, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatGetDiagonalBlock() if MatZeroRows() or MatZeroRowsColumns() has been called on the input Mat"); // TODO FIXME
+  PetscCheck(!shell->axpy, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatGetDiagonalBlock() if MatAXPY() has been called on the input Mat");                                               // TODO FIXME
+  PetscCheck(!shell->dshift, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatGetDiagonalBlock() if MatDiagonalSet() has been called on the input Mat");                                      // TODO FIXME
+  if (shell->ops->getdiagonalblock) {
+    PetscCall((*shell->ops->getdiagonalblock)(A, b));
+  } else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Must provide shell matrix with routine to return diagonal block using\nMatShellSetOperation(S,MATOP_GET_DIAGONAL_BLOCK,...)");
+  PetscCall(MatScale(*b, shell->vscale));
+  PetscCall(MatShift(*b, shell->vshift));
+  if (shell->left) {
+    PetscCall(VecCreateLocalVector(shell->left, &left));
+    PetscCall(VecGetLocalVectorRead(shell->left, left));
+  }
+  if (shell->right) {
+    PetscCall(VecCreateLocalVector(shell->right, &right));
+    PetscCall(VecGetLocalVectorRead(shell->right, right));
+  }
+  PetscCall(MatDiagonalScale(*b, left, right));
+  if (shell->left) {
+    PetscCall(VecRestoreLocalVectorRead(shell->left, left));
+    PetscCall(VecDestroy(&left));
+  }
+  if (shell->right) {
+    PetscCall(VecRestoreLocalVectorRead(shell->right, right));
+    PetscCall(VecDestroy(&right));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatShift_Shell(Mat Y, PetscScalar a)
 {
   Mat_Shell *shell = (Mat_Shell *)Y->data;
@@ -1366,7 +1400,7 @@ static struct _MatOps MatOps_Values = {NULL,
                                        /*29*/ NULL,
                                        NULL,
                                        NULL,
-                                       NULL,
+                                       /*32*/ NULL,
                                        NULL,
                                        /*34*/ MatDuplicate_Shell,
                                        NULL,
@@ -1595,6 +1629,15 @@ static PetscErrorCode MatShellSetOperation_Shell(Mat mat, MatOperation op, void 
       mat->ops->getdiagonal   = (PetscErrorCode(*)(Mat, Vec))f;
     }
     break;
+  case MATOP_GET_DIAGONAL_BLOCK:
+    if (shell->managescalingshifts) {
+      shell->ops->getdiagonalblock = (PetscErrorCode(*)(Mat, Mat *))f;
+      mat->ops->getdiagonalblock   = MatGetDiagonalBlock_Shell;
+    } else {
+      shell->ops->getdiagonalblock = NULL;
+      mat->ops->getdiagonalblock   = (PetscErrorCode(*)(Mat, Mat *))f;
+    }
+    break;
   case MATOP_MULT:
     if (shell->managescalingshifts) {
       shell->ops->mult = (PetscErrorCode(*)(Mat, Vec, Vec))f;
@@ -1655,6 +1698,10 @@ static PetscErrorCode MatShellGetOperation_Shell(Mat mat, MatOperation op, void 
     break;
   case MATOP_GET_DIAGONAL:
     if (shell->ops->getdiagonal) *f = (void (*)(void))shell->ops->getdiagonal;
+    else *f = (((void (**)(void))mat->ops)[op]);
+    break;
+  case MATOP_GET_DIAGONAL_BLOCK:
+    if (shell->ops->getdiagonalblock) *f = (void (*)(void))shell->ops->getdiagonalblock;
     else *f = (((void (**)(void))mat->ops)[op]);
     break;
   case MATOP_MULT:

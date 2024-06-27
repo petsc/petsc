@@ -178,10 +178,6 @@ static PetscErrorCode MatGetDiagonalBlock_Normal(Mat N, Mat *D)
   Mat         M, A;
 
   PetscFunctionBegin;
-  PetscCheck(!((Mat_Shell *)N->data)->zrows && !((Mat_Shell *)N->data)->zcols, PetscObjectComm((PetscObject)N), PETSC_ERR_SUP, "Cannot call MatGetDiagonalBlock() if MatZeroRows() or MatZeroRowsColumns() has been called on the input Mat"); // TODO FIXME
-  PetscCheck(!((Mat_Shell *)N->data)->axpy, PetscObjectComm((PetscObject)N), PETSC_ERR_SUP, "Cannot call MatGetDiagonalBlock() if MatAXPY() has been called on the input Mat");                                            // TODO FIXME
-  PetscCheck(!((Mat_Shell *)N->data)->left && !((Mat_Shell *)N->data)->right, PetscObjectComm((PetscObject)N), PETSC_ERR_SUP, "Cannot call MatGetDiagonalBlock() if MatDiagonalScale() has been called on the input Mat"); // TODO FIXME
-  PetscCheck(!((Mat_Shell *)N->data)->dshift, PetscObjectComm((PetscObject)N), PETSC_ERR_SUP, "Cannot call MatGetDiagonalBlock() if MatDiagonalSet() has been called on the input Mat");                                   // TODO FIXME
   PetscCall(MatShellGetContext(N, &Na));
   A = Na->A;
   PetscCall(MatGetDiagonalBlock(A, &M));
@@ -434,8 +430,8 @@ PetscErrorCode MatCreateNormal(Mat A, Mat *N)
   PetscCall(MatShellSetOperation(*N, MATOP_MULT_TRANSPOSE, (void (*)(void))MatMult_Normal));
   PetscCall(MatShellSetOperation(*N, MATOP_DUPLICATE, (void (*)(void))MatDuplicate_Normal));
   PetscCall(MatShellSetOperation(*N, MATOP_GET_DIAGONAL, (void (*)(void))MatGetDiagonal_Normal));
+  PetscCall(MatShellSetOperation(*N, MATOP_GET_DIAGONAL_BLOCK, (void (*)(void))MatGetDiagonalBlock_Normal));
   PetscCall(MatShellSetOperation(*N, MATOP_COPY, (void (*)(void))MatCopy_Normal));
-  (*N)->ops->getdiagonalblock  = MatGetDiagonalBlock_Normal;
   (*N)->ops->increaseoverlap   = MatIncreaseOverlap_Normal;
   (*N)->ops->createsubmatrices = MatCreateSubMatrices_Normal;
   (*N)->ops->permute           = MatPermute_Normal;
