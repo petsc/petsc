@@ -16,9 +16,8 @@ Simulation parameters:
   Testing hand-coded Jacobian, if (for double precision runs) ||J - Jfd||_F/||J||_F is
     O(1.e-8), the hand-coded Jacobian is probably correct.
   ||J - Jfd||_F/||J||_F = 3.97023e-14, ||J - Jfd||_F = 7.41148e-13
-   0 TS: time 0., energy 1.29684, intp -1.19114e-22, ell 0.
-         nonlinear its 0, linear its 0
+   0 TS: time 0., energy 1.29684, intp 5.29396e-23, ell 0.
     ---------- Testing Jacobian -------------
-    ||J - Jfd||_F/||J||_F = 3.27714e-07, ||J - Jfd||_F = 6.13701e-06
-   1 TS: time 0.1, energy 1.24867, intp 5.82335e-22, ell 0.208333
-         nonlinear its 1, linear its 1
+    ||J - Jfd||_F/||J||_F = 3.27716e-07, ||J - Jfd||_F = 6.13706e-06
+         step 0 stage 0 nonlinear its 1, linear its 1
+   1 TS: time 0.1, energy 1.24867, intp 2.64698e-23, ell 0.
