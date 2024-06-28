@@ -394,13 +394,19 @@ M*/
   Level: developer
 
   Notes:
+  `PetscUseTypeMethod()` and ` PetscTryTypeMethod()` are the preferred API for this functionality. But when the callback functions are associated with a
+  `DMSNES` or `DMTS` this API must be used.
+
   Once the error handler is called the calling function is then returned from with the given
   error code. Experienced users can set the error handler with `PetscPushErrorHandler()`.
 
   `PetscCallBack()` should only be called in PETSc when a call is being made to a user provided call-back routine.
 
+  Developer Note:
+  It would be good to provide a new API for when the callbacks are associated with `DMSNES` or `DMTS` so this routine could be used less
+
 .seealso: `SETERRQ()`, `PetscCheck()`, `PetscCall()`, `PetscAssert()`, `PetscTraceBackErrorHandler()`, `PetscCallMPI()`
-          `PetscPushErrorHandler()`, `PetscError()`, `CHKMEMQ`, `CHKERRA()`, `CHKERRMPI()`, `PetscCall()`
+          `PetscPushErrorHandler()`, `PetscError()`, `CHKMEMQ`, `CHKERRA()`, `CHKERRMPI()`, `PetscCall()`,  `PetscUseTypeMethod()`, `PetscTryTypeMethod()`
 M*/
 
 /*MC
