@@ -105,7 +105,7 @@ static PetscErrorCode TSComputeIJacobian_DMDA(TS ts, PetscReal ptime, Vec X, Vec
   DM            dm;
   DMTS_DA      *dmdats = (DMTS_DA *)ctx;
   DMDALocalInfo info;
-  Vec           Xloc;
+  Vec           Xloc, Xdotloc;
   void         *x, *xdot;
 
   PetscFunctionBegin;
@@ -116,15 +116,19 @@ static PetscErrorCode TSComputeIJacobian_DMDA(TS ts, PetscReal ptime, Vec X, Vec
     PetscCall(DMGetLocalVector(dm, &Xloc));
     PetscCall(DMGlobalToLocalBegin(dm, X, INSERT_VALUES, Xloc));
     PetscCall(DMGlobalToLocalEnd(dm, X, INSERT_VALUES, Xloc));
+    PetscCall(DMGetLocalVector(dm, &Xdotloc));
+    PetscCall(DMGlobalToLocalBegin(dm, Xdot, INSERT_VALUES, Xdotloc));
+    PetscCall(DMGlobalToLocalEnd(dm, Xdot, INSERT_VALUES, Xdotloc));
     PetscCall(DMDAGetLocalInfo(dm, &info));
     PetscCall(DMDAVecGetArray(dm, Xloc, &x));
-    PetscCall(DMDAVecGetArray(dm, Xdot, &xdot));
+    PetscCall(DMDAVecGetArray(dm, Xdotloc, &xdot));
     CHKMEMQ;
     PetscCall((*dmdats->ijacobianlocal)(&info, ptime, x, xdot, shift, A, B, dmdats->ijacobianlocalctx));
     CHKMEMQ;
     PetscCall(DMDAVecRestoreArray(dm, Xloc, &x));
-    PetscCall(DMDAVecRestoreArray(dm, Xdot, &xdot));
+    PetscCall(DMDAVecRestoreArray(dm, Xdotloc, &xdot));
     PetscCall(DMRestoreLocalVector(dm, &Xloc));
+    PetscCall(DMRestoreLocalVector(dm, &Xdotloc));
   } else SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "TSComputeIJacobian_DMDA() called without calling DMDATSSetIJacobian()");
   /* This will be redundant if the user called both, but it's too common to forget. */
   if (A != B) {
