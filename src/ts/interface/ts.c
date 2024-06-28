@@ -710,18 +710,6 @@ PetscErrorCode TSComputeForcingFunction(TS ts, PetscReal t, Vec U)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TSGetRHSVec_Private(TS ts, Vec *Frhs)
-{
-  Vec F;
-
-  PetscFunctionBegin;
-  *Frhs = NULL;
-  PetscCall(TSGetIFunction(ts, &F, NULL, NULL));
-  if (!ts->Frhs) PetscCall(VecDuplicate(F, &ts->Frhs));
-  *Frhs = ts->Frhs;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PetscErrorCode TSGetRHSMats_Private(TS ts, Mat *Arhs, Mat *Brhs)
 {
   Mat            A, B;
@@ -826,9 +814,11 @@ PetscErrorCode TSComputeIFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec Y, Pe
   } else if (rhsfunction) {
     if (ifunction) {
       Vec Frhs;
-      PetscCall(TSGetRHSVec_Private(ts, &Frhs));
+
+      PetscCall(DMGetGlobalVector(dm, &Frhs));
       PetscCall(TSComputeRHSFunction(ts, t, U, Frhs));
       PetscCall(VecAXPY(Y, -1, Frhs));
+      PetscCall(DMRestoreGlobalVector(dm, &Frhs));
     } else {
       PetscCall(TSComputeRHSFunction(ts, t, U, Y));
       PetscCall(VecAYPX(Y, -1, Udot));
@@ -1547,9 +1537,11 @@ PetscErrorCode TSComputeI2Function(TS ts, PetscReal t, Vec U, Vec V, Vec A, Vec 
 
   if (rhsfunction) {
     Vec Frhs;
-    PetscCall(TSGetRHSVec_Private(ts, &Frhs));
+
+    PetscCall(DMGetGlobalVector(dm, &Frhs));
     PetscCall(TSComputeRHSFunction(ts, t, U, Frhs));
     PetscCall(VecAXPY(F, -1, Frhs));
+    PetscCall(DMRestoreGlobalVector(dm, &Frhs));
   }
 
   PetscCall(PetscLogEventEnd(TS_FunctionEval, U, ts, V, F));
