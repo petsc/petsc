@@ -1122,7 +1122,7 @@ static PetscErrorCode DMPlexMetricModify_Private(PetscInt dim, PetscReal h_min, 
   /* Enforce maximum anisotropy and compute determinant */
   *detMp = 1.0;
   for (i = 0; i < dim; ++i) {
-    if (a_max > 1.0) eigs[i] = PetscMax(eigs[i], max_eig * la_min);
+    if (a_max >= 1.0) eigs[i] = PetscMax(eigs[i], max_eig * la_min);
     *detMp *= eigs[i];
   }
 
