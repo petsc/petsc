@@ -56,26 +56,6 @@
 #include <petsc/finclude/petscdraw.h>
       use petscsnes
       implicit none
-      interface SNESSetJacobian
-      subroutine SNESSetJacobian1(a,b,c,d,e,z)
-       use petscsnes
-       SNES a
-       Mat b
-       Mat c
-       external d
-       MatFDColoring e
-       PetscErrorCode z
-      end subroutine
-      subroutine SNESSetJacobian2(a,b,c,d,e,z)
-       use petscsnes
-       SNES a
-       Mat b
-       Mat c
-       external d
-       integer e
-       PetscErrorCode z
-      end subroutine
-      end interface
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -221,6 +201,8 @@
 !      to compute Jacobians.
 !
         PetscCallA(SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,fdcoloring,ierr))
+        PetscCallA(SNESGetJacobian(snes,J,PETSC_NULL_MAT,PETSC_NULL_FUNCTION,PETSC_NULL_INTEGER,ierr))
+        PetscCallA(SNESGetJacobian(snes,J,PETSC_NULL_MAT,PETSC_NULL_FUNCTION,fdcoloring,ierr))
         PetscCallA(ISColoringDestroy(iscoloring,ierr))
 
       else if (.not. matrix_free) then

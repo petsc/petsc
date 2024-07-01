@@ -72,6 +72,7 @@ program ex62f90
 
     type(tPetscSF)                      :: migrationSF
     PetscPartitioner                    :: part
+    PetscLayout                         :: layout
 
     type(tVec)                          :: tmpVec
     PetscReal                           :: norm
@@ -274,6 +275,8 @@ program ex62f90
     PetscCallA(PetscSectionSetUp(section,ierr))
     PetscCallA(DMSetLocalSection(dm, section,ierr))
     PetscCallA(PetscObjectViewFromOptions(section, PETSC_NULL_SECTION, '-dm_section_view',ierr))
+    PetscCallA(PetscSectionGetValueLayout(PETSC_COMM_WORLD, section, layout, ierr))
+    PetscCallA(PetscLayoutDestroy(layout,ierr))
     PetscCallA(PetscSectionDestroy(section,ierr))
 
     PetscCallA(DMSetUseNatural(dm,PETSC_TRUE,ierr))
