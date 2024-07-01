@@ -2297,6 +2297,7 @@ static PetscErrorCode MatFactorSymbolic_MUMPS_ReportIfError(Mat F, Mat A, PETSC_
       F->factorerrortype = MAT_FACTOR_OTHER;
     }
   }
+  if (!mumps->id.n) F->factorerrortype = MAT_FACTOR_NOERROR;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
