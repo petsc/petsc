@@ -221,11 +221,7 @@ PetscErrorCode DMCreateColoring_DA(DM da, ISColoringType ctype, ISColoring *colo
   PetscCall(PetscObjectGetComm((PetscObject)da, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   if (ctype == IS_COLORING_LOCAL) {
-    if (size == 1) {
-      ctype = IS_COLORING_GLOBAL;
-    } else {
-      PetscCheck((dim == 1) || !((m == 1 && bx == DM_BOUNDARY_PERIODIC) || (n == 1 && by == DM_BOUNDARY_PERIODIC) || (p == 1 && bz == DM_BOUNDARY_PERIODIC)), PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "IS_COLORING_LOCAL cannot be used for periodic boundary condition having both ends of the domain on the same process");
-    }
+    PetscCheck(!((m == 1 && bx == DM_BOUNDARY_PERIODIC) || (n == 1 && by == DM_BOUNDARY_PERIODIC) || (p == 1 && bz == DM_BOUNDARY_PERIODIC)), PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "IS_COLORING_LOCAL cannot be used for periodic boundary condition having both sides of the domain on the same process");
   }
 
   /* Tell the DMDA it has 1 degree of freedom per grid point so that the coloring for BAIJ
@@ -405,6 +401,7 @@ PetscErrorCode DMCreateColoring_DA_1d_MPIAIJ(DM da, ISColoringType ctype, ISColo
   */
   PetscCall(DMDAGetInfo(da, &dim, &m, NULL, NULL, &M, NULL, NULL, &nc, &s, &bx, NULL, NULL, NULL));
   col = 2 * s + 1;
+  PetscCheck(bx != DM_BOUNDARY_PERIODIC || !(m % col), PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "IS_COLORING_GLOBAL can only be used for periodic boundary conditions if the number of grid points %" PetscInt_FMT " is divisible by the number of colors %" PetscInt_FMT, m, col);
   PetscCall(DMDAGetCorners(da, &xs, NULL, NULL, &nx, NULL, NULL));
   PetscCall(DMDAGetGhostCorners(da, &gxs, NULL, NULL, &gnx, NULL, NULL));
   PetscCall(PetscObjectGetComm((PetscObject)da, &comm));
