@@ -932,8 +932,8 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
 
       /* Stage values of mu */
       if (ts->vecs_sensip) {
+        PetscCall(MatMultTranspose(ts->Jacprhs, VecsSensiTemp[nadj], VecDeltaMu));
         if (b[i]) {
-          PetscCall(MatMultTranspose(ts->Jacprhs, VecsSensiTemp[nadj], VecDeltaMu));
           PetscCall(VecScale(VecDeltaMu, -h * b[i]));
           if (quadts) {
             PetscCall(MatDenseGetColumn(quadts->Jacprhs, nadj, &xarr));
