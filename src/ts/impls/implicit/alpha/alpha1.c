@@ -272,12 +272,17 @@ static PetscErrorCode TSEvaluateWLTE_Alpha(TS ts, NormType wnormtype, PetscInt *
 
 static PetscErrorCode TSInterpolate_Alpha(TS ts, PetscReal t, Vec X)
 {
-  TS_Alpha *th = (TS_Alpha *)ts->data;
-  PetscReal dt = t - ts->ptime;
+  TS_Alpha *th    = (TS_Alpha *)ts->data;
+  PetscReal dt    = t - ts->ptime;
+  PetscReal Gamma = th->Gamma;
 
   PetscFunctionBegin;
+  PetscCall(VecWAXPY(th->V1, -1.0, th->X0, ts->vec_sol));
+  PetscCall(VecAXPBY(th->V1, 1 - 1 / Gamma, 1 / (Gamma * ts->time_step), th->V0));
   PetscCall(VecCopy(ts->vec_sol, X));
+  /* X = X + Gamma*dT*V1 */
   PetscCall(VecAXPY(X, th->Gamma * dt, th->V1));
+  /* X = X + (1-Gamma)*dT*V0 */
   PetscCall(VecAXPY(X, (1 - th->Gamma) * dt, th->V0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

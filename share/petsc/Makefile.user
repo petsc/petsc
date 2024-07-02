@@ -1,8 +1,9 @@
 # -*- mode: makefile -*-
 
-#  This sample GNU Makefile can be used to compile PETSc applications
+#  This SAMPLE GNU Makefile can be used to compile PETSc applications
 #  It relies on pkg_config tool (see $PETSC_DIR/share/petsc/Makefile.basic.user if you cannot use pkg_config)
-#  Copy this file to your source directory as "Makefile" and modify as needed.
+#  Copy this file to your source directory as "Makefile" and MODIFY AS NEEDED (see the comment above CFLAGS below).
+#
 #  You must set the environmental variable(s) PETSC_DIR (and PETSC_ARCH if PETSc was not configured with the --prefix option)
 #  See also share/petsc/Makefile.basic.user for a makefile that does not require pkg_config
 #
@@ -37,14 +38,18 @@ petsc.pc := $(PETSC_DIR)/$(PETSC_ARCH)/lib/pkgconfig/petsc.pc
 # Additional libraries that support pkg-config can be added to the list of PACKAGES below.
 PACKAGES := $(petsc.pc)
 
-CC := $(shell pkg-config --variable=ccompiler $(PACKAGES))
-CXX := $(shell pkg-config --variable=cxxcompiler $(PACKAGES))
-FC := $(shell pkg-config --variable=fcompiler $(PACKAGES))
+# The following variables may be removed if desired
+# They pass all the flags that were used to compile PETSc to compile your code, they are generally not needed
+
 CFLAGS_OTHER := $(shell pkg-config --cflags-only-other $(PACKAGES))
 CFLAGS := $(shell pkg-config --variable=cflags_extra $(PACKAGES)) $(CFLAGS_OTHER)
 CXXFLAGS := $(shell pkg-config --variable=cxxflags_extra $(PACKAGES)) $(CFLAGS_OTHER)
 FFLAGS := $(shell pkg-config --variable=fflags_extra $(PACKAGES))
 CPPFLAGS := $(shell pkg-config --cflags-only-I $(PACKAGES))
+
+CC := $(shell pkg-config --variable=ccompiler $(PACKAGES))
+CXX := $(shell pkg-config --variable=cxxcompiler $(PACKAGES))
+FC := $(shell pkg-config --variable=fcompiler $(PACKAGES))
 LDFLAGS := $(shell pkg-config --libs-only-L --libs-only-other $(PACKAGES))
 LDFLAGS += $(patsubst -L%, $(shell pkg-config --variable=ldflag_rpath $(PACKAGES))%, $(shell pkg-config --libs-only-L $(PACKAGES)))
 LDLIBS := $(shell pkg-config --libs-only-l $(PACKAGES)) -lm
