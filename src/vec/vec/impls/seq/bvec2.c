@@ -744,7 +744,13 @@ PetscErrorCode VecDuplicate_Seq(Vec win, Vec *V)
   PetscCall(PetscFunctionListDuplicate(((PetscObject)win)->qlist, &((PetscObject)*V)->qlist));
 
   (*V)->ops->view          = win->ops->view;
+  (*V)->ops->load          = win->ops->load;
   (*V)->stash.ignorenegidx = win->stash.ignorenegidx;
+  (*V)->bstash.bs          = win->bstash.bs;
+#if defined(PETSC_HAVE_DEVICE)
+  (*V)->boundtocpu        = win->boundtocpu;
+  (*V)->bindingpropagates = win->bindingpropagates;
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
