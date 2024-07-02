@@ -51,6 +51,7 @@ PetscErrorCode VecDuplicate_MPI(Vec win, Vec *v)
   PetscCall(PetscObjectListDuplicate(((PetscObject)win)->olist, &((PetscObject)*v)->olist));
   PetscCall(PetscFunctionListDuplicate(((PetscObject)win)->qlist, &((PetscObject)*v)->qlist));
 
+  (*v)->stash.bs  = win->stash.bs;
   (*v)->bstash.bs = win->bstash.bs;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -76,12 +77,14 @@ static PetscErrorCode VecDuplicateVecs_MPI_GEMV(Vec w, PetscInt m, Vec *V[])
     for (PetscInt i = 0; i < m; i++) {
       Vec v;
       PetscCall(VecCreateMPIWithLayoutAndArray_Private(w->map, PetscSafePointerPlusOffset(array, i * lda), &v));
+      PetscCall(VecSetType(v, ((PetscObject)w)->type_name));
       PetscCall(PetscObjectListDuplicate(((PetscObject)w)->olist, &((PetscObject)v)->olist));
       PetscCall(PetscFunctionListDuplicate(((PetscObject)w)->qlist, &((PetscObject)v)->qlist));
-      v->ops->view          = w->ops->view;
+      v->ops[0]             = w->ops[0];
       v->stash.donotstash   = w->stash.donotstash;
       v->stash.ignorenegidx = w->stash.ignorenegidx;
       v->stash.bs           = w->stash.bs;
+      v->bstash.bs          = w->bstash.bs;
       (*V)[i]               = v;
     }
     // So when the first vector is destroyed it will destroy the array
