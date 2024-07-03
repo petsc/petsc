@@ -653,7 +653,7 @@ class FunctionParameterList(ParameterList):
         for sub in sub_args:
           idx = visitor.mark_as_seen(sub)
           if idx == -1 and sub == '...' and docstring.cursor.is_variadic_function():
-            idx = 0 # variadic paramaters don't get a cursor, so can't be picked up
+            idx = 0 # variadic parameters don't get a cursor, so can't be picked up
           if idx == -1:
             # argument was not found at all
             not_found.append((sub, docstring.make_source_range(sub, descr_item.text, loc.start.line)))
@@ -1225,7 +1225,7 @@ class SeeAlso(InlineList):
   def __make_deletion_patch(loc: SourceRange, text: str, look_behind: bool) -> Patch:
     """Make a cohesive deletion patch
 
-    Paramaters
+    Parameters
     ----------
     loc :
       the source range for the item to delete

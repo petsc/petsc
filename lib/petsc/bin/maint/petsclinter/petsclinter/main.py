@@ -117,7 +117,7 @@ def main(
 ) -> int:
   r"""Entry point for linter
 
-  Paramaters
+  Parameters
   ----------
   petsc_dir :
     $PETSC_DIR
