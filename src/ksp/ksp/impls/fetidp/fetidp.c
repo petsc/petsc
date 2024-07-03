@@ -1141,6 +1141,7 @@ static PetscErrorCode KSPSolve_FETIDP(KSP ksp)
   PC                 pc;
   PCFailedReason     pcreason;
   PetscInt           hist_len;
+  int                flg;
 
   PetscFunctionBegin;
   PetscCall(PetscCitationsRegister(citation, &cited));
@@ -1160,11 +1161,13 @@ static PetscErrorCode KSPSolve_FETIDP(KSP ksp)
   PetscCall(KSPGetConvergedReason(fetidp->innerksp, &reason));
   PetscCall(KSPGetPC(fetidp->innerksp, &pc));
   PetscCall(PCGetFailedReason(pc, &pcreason));
-  if ((reason < 0 && reason != KSP_DIVERGED_ITS) || pcreason) {
+  flg = (reason < 0 && reason != KSP_DIVERGED_ITS) || pcreason;
+  PetscCall(VecFlag(Xl, flg));
+  if (flg) {
     PetscInt its;
+
     PetscCall(KSPGetIterationNumber(fetidp->innerksp, &its));
     ksp->reason = KSP_DIVERGED_PC_FAILED;
-    PetscCall(VecSetInf(Xl));
     PetscCall(PetscInfo(ksp, "Inner KSP solve failed: %s %s at iteration %" PetscInt_FMT "\n", KSPConvergedReasons[reason], PCFailedReasons[pcreason], its));
   }
   PetscCall(PCBDDCMatFETIDPGetSolution(F, Xl, X));

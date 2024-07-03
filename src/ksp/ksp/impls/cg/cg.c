@@ -163,7 +163,7 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
     norm_d = 0.0;
   }
   /* This may be true only on a subset of MPI ranks; setting it here so it will be detected by the first norm computation below */
-  if (ksp->reason == KSP_DIVERGED_PC_FAILED) PetscCall(VecSetInf(R));
+  PetscCall(VecFlag(R, ksp->reason == KSP_DIVERGED_PC_FAILED));
 
   switch (ksp->normtype) {
   case KSP_NORM_PRECONDITIONED:

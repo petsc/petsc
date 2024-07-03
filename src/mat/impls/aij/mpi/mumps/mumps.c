@@ -1446,9 +1446,9 @@ static PetscErrorCode MatSolve_MUMPS(Mat A, Vec b, Vec x)
                                    "Computing},\n  volume = {32},\n  number = {2},\n  pages = {136--156},\n  year = {2006}\n}\n",
                                    &cite2));
 
+  PetscCall(VecFlag(x, A->factorerrortype));
   if (A->factorerrortype) {
     PetscCall(PetscInfo(A, "MatSolve is called with singular matrix factor, INFOG(1)=%d, INFO(2)=%d\n", mumps->id.INFOG(1), mumps->id.INFO(2)));
-    PetscCall(VecSetInf(x));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 

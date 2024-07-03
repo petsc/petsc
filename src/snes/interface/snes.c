@@ -2423,7 +2423,7 @@ PetscErrorCode SNESComputeFunction(SNES snes, Vec x, Vec y)
      domainerror might not be set on all processes; so we tag vector locally with Inf and the next inner product or norm will
      propagate the value to all processes
   */
-  if (snes->domainerror) PetscCall(VecSetInf(y));
+  PetscCall(VecFlag(y, snes->domainerror));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2478,7 +2478,7 @@ PetscErrorCode SNESComputeMFFunction(SNES snes, Vec x, Vec y)
      domainerror might not be set on all processes; so we tag vector locally with Inf and the next inner product or norm will
      propagate the value to all processes
   */
-  if (snes->domainerror) PetscCall(VecSetInf(y));
+  PetscCall(VecFlag(y, snes->domainerror));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

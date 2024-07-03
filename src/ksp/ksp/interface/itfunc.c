@@ -222,7 +222,7 @@ PetscErrorCode KSPSetUpOnBlocks(KSP ksp)
   level--;
   /*
      This is tricky since only a subset of MPI ranks may set this; each KSPSolve_*() is responsible for checking
-     this flag and initializing an appropriate vector with VecSetInf() so that the first norm computation can
+     this flag and initializing an appropriate vector with VecFlag() so that the first norm computation can
      produce a result at KSPCheckNorm() thus communicating the known problem to all MPI ranks so they may
      terminate the Krylov solve. For many KSP implementations this is handled within KSPInitialResidual()
   */
