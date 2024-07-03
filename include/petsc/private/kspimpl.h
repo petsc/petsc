@@ -530,9 +530,9 @@ M*/
         PCFailedReason pcreason; \
         PetscCall(PCReduceFailedReason(ksp->pc)); \
         PetscCall(PCGetFailedReasonRank(ksp->pc, &pcreason)); \
+        PetscCall(VecFlag(ksp->vec_sol, pcreason)); \
         if (pcreason) { \
           ksp->reason = KSP_DIVERGED_PC_FAILED; \
-          PetscCall(VecSetInf(ksp->vec_sol)); \
         } else { \
           ksp->reason = KSP_DIVERGED_NANORINF; \
         } \
@@ -571,14 +571,13 @@ M*/
         PCFailedReason pcreason; \
         PetscCall(PCReduceFailedReason(ksp->pc)); \
         PetscCall(PCGetFailedReasonRank(ksp->pc, &pcreason)); \
+        PetscCall(VecFlag(ksp->vec_sol, pcreason)); \
         if (pcreason) { \
           ksp->reason = KSP_DIVERGED_PC_FAILED; \
-          PetscCall(VecSetInf(ksp->vec_sol)); \
-          ksp->rnorm = beta; \
         } else { \
           ksp->reason = KSP_DIVERGED_NANORINF; \
-          ksp->rnorm  = beta; \
         } \
+        ksp->rnorm = beta; \
         PetscFunctionReturn(PETSC_SUCCESS); \
       } \
     } \

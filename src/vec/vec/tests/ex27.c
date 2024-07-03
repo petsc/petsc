@@ -14,7 +14,7 @@ static PetscErrorCode TestSetInf(Vec v)
   PetscCall(PetscArrayzero(array, n));
   PetscCall(VecRestoreArrayWrite(v, &array));
 
-  PetscCall(VecSetInf(v));
+  PetscCall(VecFlag(v, 1));
   // Check that it works to begin with
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetArrayRead(v, (const PetscScalar **)&array));

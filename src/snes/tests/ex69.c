@@ -347,14 +347,14 @@ PetscErrorCode MatMult_MyShell(Mat A, Vec x, Vec y)
 {
   MatShellCtx    *matshellctx;
   static PetscInt fail = 0;
+  PetscMPIInt     rank;
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &matshellctx));
   PetscCall(MatMult(matshellctx->Jmf, x, y));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank));
   if (fail++ > 5) {
-    PetscMPIInt rank;
-    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank));
-    if (rank == 0) PetscCall(VecSetInf(y));
+    PetscCall(VecFlag(y, rank == 0));
     PetscCall(VecAssemblyBegin(y));
     PetscCall(VecAssemblyEnd(y));
   }
@@ -374,13 +374,13 @@ PetscErrorCode MatAssemblyEnd_MyShell(Mat A, MatAssemblyType tp)
 PetscErrorCode PCApply_MyShell(PC pc, Vec x, Vec y)
 {
   static PetscInt fail = 0;
+  PetscMPIInt     rank;
 
   PetscFunctionBegin;
   PetscCall(VecCopy(x, y));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));
   if (fail++ > 3) {
-    PetscMPIInt rank;
-    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));
-    if (rank == 0) PetscCall(VecSetInf(y));
+    PetscCall(VecFlag(y, rank == 0));
     PetscCall(VecAssemblyBegin(y));
     PetscCall(VecAssemblyEnd(y));
   }

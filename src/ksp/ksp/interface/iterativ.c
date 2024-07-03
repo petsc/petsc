@@ -2132,11 +2132,11 @@ PetscErrorCode KSPCheckSolve(KSP ksp, PC pc, Vec vec)
   PetscFunctionBegin;
   PetscCall(KSPGetPC(ksp, &subpc));
   PetscCall(PCGetFailedReason(subpc, &pcreason));
+  PetscCall(VecFlag(vec, pcreason || (ksp->reason < 0 && ksp->reason != KSP_DIVERGED_ITS)));
   if (pcreason || (ksp->reason < 0 && ksp->reason != KSP_DIVERGED_ITS)) {
     PetscCheck(!pc->erroriffailure, PETSC_COMM_SELF, PETSC_ERR_NOT_CONVERGED, "Detected not converged in KSP inner solve: KSP reason %s PC reason %s", KSPConvergedReasons[ksp->reason], PCFailedReasons[pcreason]);
     PetscCall(PetscInfo(ksp, "Detected not converged in KSP inner solve: KSP reason %s PC reason %s\n", KSPConvergedReasons[ksp->reason], PCFailedReasons[pcreason]));
     pc->failedreason = PC_SUBPC_ERROR;
-    if (vec) PetscCall(VecSetInf(vec));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
