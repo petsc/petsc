@@ -176,6 +176,49 @@ class BaseTestDA:
         self.assertEqual(vl.max()[1], 0.0)
         self.da.restoreLocalVec(vl, name)
 
+    def testGetArray(self):
+        for r in [True, False]:
+            vg = self.da.getGlobalVec()
+            vl = self.da.getLocalVec()
+
+            ag = self.da.getVecArray(vg, readonly=r)
+            al = self.da.getVecArray(vl, readonly=r)
+
+            # test reading lower-left and upper-right corners
+            ranges = self.da.getRanges()
+            ranges = list(zip(*ranges))
+            dim = len(ranges[0])
+            if dim == 1:
+                _ = ag[ranges[0][0] : ranges[1][0]]
+                _ = al[ranges[0][0] : ranges[1][0]]
+            elif dim == 2:
+                _ = ag[ranges[0][0] : ranges[1][0], ranges[0][1] : ranges[1][1]]
+                _ = al[ranges[0][0] : ranges[1][0], ranges[0][1] : ranges[1][1]]
+            elif dim == 3:
+                _ = ag[
+                    ranges[0][0] : ranges[1][0],
+                    ranges[0][1] : ranges[1][1],
+                    ranges[0][2] : ranges[1][2],
+                ]
+                _ = al[
+                    ranges[0][0] : ranges[1][0],
+                    ranges[0][1] : ranges[1][1],
+                    ranges[0][2] : ranges[1][2],
+                ]
+
+            # test writing
+            if not r:
+                ag[:] = 1.0
+                al[:] = 1.0
+            else:
+                with self.assertRaises(ValueError):
+                    ag[:] = 1.0
+                with self.assertRaises(ValueError):
+                    al[:] = 1.0
+
+            self.da.restoreGlobalVec(vg)
+            self.da.restoreLocalVec(vl)
+
     def testGetOther(self):
         _ = self.da.getAO()
         _ = self.da.getLGMap()

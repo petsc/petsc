@@ -270,7 +270,7 @@ int main(int argc, char **args)
       suffix: Classical
       nsize: 4
       requires: !complex
-      args: -ne 29 -alpha 1.e-3 -ksp_type gmres -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_max_it 5 -ksp_converged_reason -ksp_rtol 1e-3 -pc_gamg_mat_coarsen_misk_distance 2 -pc_gamg_threshold 0 -pc_mg_levels 3
+      args: -ne 29 -alpha 1.e-3 -ksp_type gmres -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_max_it 5 -ksp_converged_reason -ksp_rtol 1e-3 -pc_gamg_mat_coarsen_misk_distance 2 -pc_gamg_threshold 0
       output_file: output/ex55_classical.out
       filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 17/Linear solve converged due to CONVERGED_RTOL iterations 18/g"
 
