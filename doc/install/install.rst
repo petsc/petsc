@@ -69,6 +69,13 @@ Common Example Usages
 .. admonition:: Note
    :class: yellow
 
+   The configure options ``CFLAGS``, ``CXXFLAGS``, and ``FFLAGS`` overwrite most of the flags that PETSc would use by default. This is generally undesirable. To
+   add to the default flags instead use ``COPTFLAGS``, ``CXXOPTFLAGS``, and ``FOPTFLAGS`` (these work for all uses of ./configure). The same holds for
+   ``CUDAFLAGS``, ``HIPFLAGS``, and ``SYCLFLAGS``.
+
+.. admonition:: Note
+   :class: yellow
+
    Do not specify ``--with-cc``, ``--with-fc`` etc for the above when using
    ``--with-mpi-dir`` - so that ``mpicc``/ ``mpif90`` will be picked up from mpi-dir!
 

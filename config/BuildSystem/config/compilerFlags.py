@@ -82,7 +82,7 @@ class Configure(config.base.Configure):
   def configureCompilerFlags(self):
     '''Get the default compiler flags'''
     self.debugging = self.argDB['with-debugging']
-    bopts = ['']
+    bopts = ['', '+']
     if self.debugging:
       bopts.append('g')
     else:
@@ -106,6 +106,7 @@ class Configure(config.base.Configure):
       self.rejected[language] = []
       for bopt in bopts:
         userflags = 0
+        userlangflags = 0
         if bopt in ['g','O'] and self.getOptionalFlagsName(language) in self.argDB: # check --COPTFLAGS etc
           # treat user supplied options as single option - as it could include options separated by spaces '-tp k8-64'
           flags = [self.argDB[self.getOptionalFlagsName(language)]]
@@ -116,7 +117,10 @@ class Configure(config.base.Configure):
         elif bopt == '' and flagsName in self.argDB:
           self.logPrint('Ignoring default options which were overridden using --'+flagsName+ ' ' + self.argDB[flagsName])
           flags = []
-        else:
+        elif bopt == '+' and flagsName+'+' in self.argDB:
+          flags = [self.argDB[flagsName+'+']]
+          userlangflags = 1
+        elif not bopt == '+':
           flags = options.getCompilerFlags(language, self.setCompilers.getCompiler(), bopt)
 
         for testFlag in flags:
@@ -128,6 +132,8 @@ class Configure(config.base.Configure):
           except RuntimeError:
             if userflags:
               raise RuntimeError('User provided flags for language '+language+' with '+self.getOptionalFlagsName(language)+': '+self.argDB[self.getOptionalFlagsName(language)]+' are not correct for the compiler')
+            if userlangflags:
+              raise RuntimeError('User provided flags for language '+language+' with '+flagsName+'+: '+self.argDB[flagsName+'+']+' are not correct for the compiler')
             self.logPrint('Rejected '+language+' compiler flag '+testFlag)
             self.rejected[language].append(testFlag)
       self.setCompilers.popLanguage()
