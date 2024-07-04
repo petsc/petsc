@@ -551,7 +551,7 @@ static PetscErrorCode PetscLogHandlerEventBegin_Default(PetscLogHandler h, Petsc
       b1[0] = -o1->cidx;
       b1[1] = o1->cidx;
       PetscCall(MPIU_Allreduce(b1, b2, 2, MPIU_INT64, MPI_MAX, PetscObjectComm(o1)));
-      PetscCheck(-b2[0] == b2[1], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Collective event %s not called collectively %" PetscInt64_FMT " != %" PetscInt64_FMT, event_info.name, b1[1], b2[1]);
+      PetscCheck(-b2[0] == b2[1], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Collective event %s not called collectively %" PetscInt64_FMT " != %" PetscInt64_FMT, event_info.name, -b2[0], b2[1]);
     }
   }
   /* Synchronization */
@@ -616,7 +616,7 @@ static PetscErrorCode PetscLogHandlerEventEnd_Default(PetscLogHandler h, PetscLo
       b1[0] = -o1->cidx;
       b1[1] = o1->cidx;
       PetscCall(MPIU_Allreduce(b1, b2, 2, MPIU_INT64, MPI_MAX, PetscObjectComm(o1)));
-      PetscCheck(-b2[0] == b2[1], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Collective event %s not called collectively %" PetscInt64_FMT " != %" PetscInt64_FMT, event_info.name, b1[1], b2[1]);
+      PetscCheck(-b2[0] == b2[1], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Collective event %s not called collectively %" PetscInt64_FMT " != %" PetscInt64_FMT, event_info.name, -b2[0], b2[1]);
     }
   }
   if (def->petsc_logActions) {
