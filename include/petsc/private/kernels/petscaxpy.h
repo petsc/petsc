@@ -200,8 +200,9 @@ PETSC_EXTERN void fortranmaxpy2_(void *, const void *, const void *, const void 
       const PetscScalar                 _a1 = a1; \
       const PetscScalar *PETSC_RESTRICT _p1 = p1; \
       PetscScalar *PETSC_RESTRICT       _U  = U; \
-      PetscInt                          __i = 0; \
-      for (; __i < _n - 1; __i += 2) { \
+      PetscInt                          __i; \
+      PetscPragmaUseOMPKernels(parallel for) \
+      for (__i = 0; __i < _n - 1; __i += 2) { \
         PetscScalar __s1 = _a1 * _p1[__i]; \
         PetscScalar __s2 = _a1 * _p1[__i + 1]; \
         __s1 += _U[__i]; \
@@ -219,6 +220,7 @@ PETSC_EXTERN void fortranmaxpy2_(void *, const void *, const void *, const void 
       const PetscScalar *PETSC_RESTRICT _p1 = p1; \
       const PetscScalar *PETSC_RESTRICT _p2 = p2; \
       PetscScalar *PETSC_RESTRICT       _U  = U; \
+      PetscPragmaUseOMPKernels(parallel for) \
       for (PetscInt __i = 0; __i < _n; __i++) _U[__i] += _a1 * _p1[__i] + _a2 * _p2[__i]; \
     } while (0)
   #define PetscKernelAXPY3(U, a1, a2, a3, p1, p2, p3, n) \
@@ -231,6 +233,7 @@ PETSC_EXTERN void fortranmaxpy2_(void *, const void *, const void *, const void 
       const PetscScalar *PETSC_RESTRICT _p2 = p2; \
       const PetscScalar *PETSC_RESTRICT _p3 = p3; \
       PetscScalar *PETSC_RESTRICT       _U  = U; \
+      PetscPragmaUseOMPKernels(parallel for) \
       for (PetscInt __i = 0; __i < _n; __i++) _U[__i] += _a1 * _p1[__i] + _a2 * _p2[__i] + _a3 * _p3[__i]; \
     } while (0)
   #define PetscKernelAXPY4(U, a1, a2, a3, a4, p1, p2, p3, p4, n) \
@@ -245,6 +248,7 @@ PETSC_EXTERN void fortranmaxpy2_(void *, const void *, const void *, const void 
       const PetscScalar *PETSC_RESTRICT _p3 = p3; \
       const PetscScalar *PETSC_RESTRICT _p4 = p4; \
       PetscScalar *PETSC_RESTRICT       _U  = U; \
+      PetscPragmaUseOMPKernels(parallel for) \
       for (PetscInt __i = 0; __i < _n; __i++) _U[__i] += _a1 * _p1[__i] + _a2 * _p2[__i] + _a3 * _p3[__i] + _a4 * _p4[__i]; \
     } while (0)
 

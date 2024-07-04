@@ -97,7 +97,7 @@ programmers can use all of the functionality of PETSc from Fortran,
 with only minor differences in the user interface.
 :any:`ch_fortran` provides a discussion of the differences between
 using PETSc from Fortran and C, as well as several complete Fortran
-examples. 
+examples.
 
 **Note to Python Programmers**: To program with PETSc in Python, you need to enable Python bindings
 (i.e. petsc4py) with the configure option ``--with-petsc4py=1``. See the
@@ -226,7 +226,7 @@ MPI provides routines for generating new communicators consisting of
 subsets of processors, though most users rarely need to use these. The
 book *Using MPI*, by Lusk, Gropp, and Skjellum
 :cite:`using-mpi` provides an excellent introduction to the
-concepts in MPI. See also the `MPI homepage <https://www.mcs.anl.gov/research/projects/mpi/>`__. 
+concepts in MPI. See also the `MPI homepage <https://www.mcs.anl.gov/research/projects/mpi/>`__.
 Note that PETSc users
 need not program much message passing directly with MPI, but they must
 be familiar with the basic concepts of message passing and distributed
@@ -519,7 +519,7 @@ PETSc has a small number of C/C++-only macros that do not explicitly return erro
    other code
    XXXEnd();
 
-and include ``PetscOptionsBegin()``, ``PetscOptionsEnd()``, ``PetscObjectOptionsBegin()``, 
+and include ``PetscOptionsBegin()``, ``PetscOptionsEnd()``, ``PetscObjectOptionsBegin()``,
 ``PetscOptionsHeadBegin()``, ``PetscOptionsHeadEnd()``, ``PetscDrawCollectiveBegin()``, ``PetscDrawCollectiveEnd()``,
 ``MatPreallocateEnd()``, and ``MatPreallocateBegin()``. These should not be checked for error codes.
 Another class of functions with the ``Begin()`` and ``End()`` paradigm
@@ -627,7 +627,7 @@ OpenMP parallelism is thread parallelism. Multiple threads (independent streams 
 parts of memory that is
 shared (accessible) to all of the threads. The OpenMP model is based on inserting pragmas into code, indicating that a series of instructions
 (often within a loop) can be run in parallel. This is also called a fork-join model of parallelism since much of the code remains sequential and only the
-computationally expensive parts in the 'parallel region' are parallel. Thus, OpenMP makes it relatively easy to add some 
+computationally expensive parts in the 'parallel region' are parallel. Thus, OpenMP makes it relatively easy to add some
 parallelism to a conventional sequential code in a shared memory environment.
 
 POSIX threads (pthreads) is a library that may be called from C/C++. The library contains routines to create, join, and remove threads, plus manage communications and
@@ -652,6 +652,10 @@ how this may be used with OpenMP. In this mode, one may have individual OpenMP t
 (sequential) PETSc objects (each thread can interact only with its own objects). This
 is useful when one has many small systems (or sets of ODEs) that must be integrated in an
 "embarrassingly parallel" fashion on multicore systems.
+
+The ./configure option ``--with-openmp-kernels`` causes some PETSc numerical kernels to be compiled using OpenMP pragmas to take advantage of multiple cores.
+One must be careful to ensure the number of threads used by each MPI process **times** the number of MPI processes is less than the number of
+cores on the system; otherwise the code will slow down dramatically.
 
 PETSc's MPI-based linear solvers may be accessed from a sequential or non-MPI OpenMP program, see :any:`sec_pcmpi`.
 
@@ -734,7 +738,7 @@ The option
 ``-log_view`` activates printing of a performance summary, including
 times, floating point operation (flop) rates, and message-passing
 activity. :any:`ch_profiling` provides details about
-profiling, including the interpretation of the output data below. 
+profiling, including the interpretation of the output data below.
 This particular example involves
 the solution of a linear system on one processor using GMRES and ILU.
 The low floating point operation (flop) rates in this example are because the code solved a tiny system. We include this example
