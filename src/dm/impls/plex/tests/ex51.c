@@ -43,7 +43,7 @@ int main(int argc, char **argv)
       PetscSF          sf;
       PetscInt         overlap = 1;
 
-      PetscCall(DMPlexCreateBoxMesh(PETSC_COMM_WORLD, 2, PETSC_FALSE, faces, NULL, NULL, NULL, PETSC_TRUE, &dm));
+      PetscCall(DMPlexCreateBoxMesh(PETSC_COMM_WORLD, 2, PETSC_FALSE, faces, NULL, NULL, NULL, PETSC_TRUE, 0, PETSC_TRUE, &dm));
       PetscCall(DMPlexGetPartitioner(dm, &part));
       PetscCall(PetscPartitionerSetFromOptions(part));
       PetscCall(DMPlexDistribute(dm, overlap, &sf, &pdm));

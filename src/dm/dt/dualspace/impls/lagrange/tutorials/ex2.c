@@ -25,7 +25,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsRangeInt("-dim", "The spatial dimension", "ex1.c", dim, &dim, NULL, 0, 3));
   PetscOptionsEnd();
 
-  PetscCall(DMPlexCreateBoxMesh(PETSC_COMM_SELF, dim, PETSC_FALSE, cells, lo, hi, periodicity, PETSC_TRUE, &K));
+  PetscCall(DMPlexCreateBoxMesh(PETSC_COMM_SELF, dim, PETSC_FALSE, cells, lo, hi, periodicity, PETSC_TRUE, 0, PETSC_TRUE, &K));
   PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, PETSC_FALSE, NULL, PETSC_DECIDE, &fe));
   PetscCall(DMSetField(K, 0, NULL, (PetscObject)fe));
   PetscCall(PetscFEDestroy(&fe));

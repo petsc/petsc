@@ -72,7 +72,7 @@ cdef extern from * nogil:
     PetscErrorCode DMPlexGenerate(PetscDM, const char[], PetscBool , PetscDM*)
     PetscErrorCode DMPlexTriangleSetOptions(PetscDM, const char*)
     PetscErrorCode DMPlexTetgenSetOptions(PetscDM, const char*)
-    PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm, PetscInt, PetscBool, PetscInt[], PetscReal[], PetscReal[], PetscDMBoundaryType[], PetscBool, PetscDM*)
+    PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm, PetscInt, PetscBool, PetscInt[], PetscReal[], PetscReal[], PetscDMBoundaryType[], PetscBool, PetscInt, PetscBool, PetscDM*)
     PetscErrorCode DMPlexCreateBoxSurfaceMesh(MPI_Comm, PetscInt, PetscInt[], PetscReal[], PetscReal[], PetscBool, PetscDM*)
     PetscErrorCode DMPlexCreateFromFile(MPI_Comm, const char[], const char[], PetscBool, PetscDM*)
     PetscErrorCode DMPlexCreateCGNS(MPI_Comm, PetscInt, PetscBool, PetscDM*)

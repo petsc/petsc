@@ -630,8 +630,8 @@ static PetscErrorCode LandauDMCreateVMeshes(MPI_Comm comm_self, const PetscInt d
           lo[1] = -perp_radius;
           hi[1] = perp_radius; // 3D y is a perp
         }
-        PetscCall(DMPlexCreateBoxMesh(comm_self, dim, PETSC_FALSE, ctx->cells0, lo, hi, periodicity, PETSC_TRUE, &ctx->plex[grid])); // todo: make composite and create dm[grid] here
-        PetscCall(DMLocalizeCoordinates(ctx->plex[grid]));                                                                           /* needed for periodic */
+        PetscCall(DMPlexCreateBoxMesh(comm_self, dim, PETSC_FALSE, ctx->cells0, lo, hi, periodicity, PETSC_TRUE, 0, PETSC_TRUE, &ctx->plex[grid])); // todo: make composite and create dm[grid] here
+        PetscCall(DMLocalizeCoordinates(ctx->plex[grid]));                                                                                          /* needed for periodic */
         if (dim == 3) PetscCall(PetscObjectSetName((PetscObject)ctx->plex[grid], "cube"));
         else PetscCall(PetscObjectSetName((PetscObject)ctx->plex[grid], "half-plane"));
       } else if (dim == 2) {

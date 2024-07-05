@@ -1471,14 +1471,16 @@ static PetscErrorCode DMPlexCreateBoxMesh_Internal(DM dm, DMPlexShape shape, Pet
   Collective
 
   Input Parameters:
-+ comm        - The communicator for the `DM` object
-. dim         - The spatial dimension
-. simplex     - `PETSC_TRUE` for simplices, `PETSC_FALSE` for tensor cells
-. faces       - Number of faces per dimension, or `NULL` for (1,) in 1D and (2, 2) in 2D and (1, 1, 1) in 3D
-. lower       - The lower left corner, or `NULL` for (0, 0, 0)
-. upper       - The upper right corner, or `NULL` for (1, 1, 1)
-. periodicity - The boundary type for the X,Y,Z direction, or `NULL` for `DM_BOUNDARY_NONE`
-- interpolate - Flag to create intermediate mesh pieces (edges, faces)
++ comm               - The communicator for the `DM` object
+. dim                - The spatial dimension
+. simplex            - `PETSC_TRUE` for simplices, `PETSC_FALSE` for tensor cells
+. faces              - Number of faces per dimension, or `NULL` for (1,) in 1D and (2, 2) in 2D and (1, 1, 1) in 3D
+. lower              - The lower left corner, or `NULL` for (0, 0, 0)
+. upper              - The upper right corner, or `NULL` for (1, 1, 1)
+. periodicity        - The boundary type for the X,Y,Z direction, or `NULL` for `DM_BOUNDARY_NONE`
+. interpolate        - Flag to create intermediate mesh pieces (edges, faces)
+. localizationHeight - Flag to localize edges and faces in addition to cells; only significant for periodic meshes
+- sparseLocalize     - Flag to localize coordinates only for cells near the periodic boundary; only significant for periodic meshes
 
   Output Parameter:
 . dm - The `DM` object
@@ -1529,7 +1531,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Internal(DM dm, DMPlexShape shape, Pet
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMSetFromOptions()`, `DMPlexCreateFromFile()`, `DMPlexCreateHexCylinderMesh()`, `DMSetType()`, `DMCreate()`
 @*/
-PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool simplex, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool interpolate, DM *dm)
+PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool simplex, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool interpolate, PetscInt localizationHeight, PetscBool sparseLocalize, DM *dm)
 {
   PetscInt       fac[3] = {1, 1, 1};
   PetscReal      low[3] = {0, 0, 0};
@@ -1540,7 +1542,14 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool simple
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMPlexCreateBoxMesh_Internal(*dm, DM_SHAPE_BOX, dim, simplex, faces ? faces : fac, lower ? lower : low, upper ? upper : upp, periodicity ? periodicity : bdt, interpolate));
-  if (periodicity) PetscCall(DMLocalizeCoordinates(*dm));
+  if (periodicity) {
+    DM cdm;
+
+    PetscCall(DMGetCoordinateDM(*dm, &cdm));
+    PetscCall(DMPlexSetMaxProjectionHeight(cdm, localizationHeight));
+    PetscCall(DMSetSparseLocalize(*dm, sparseLocalize));
+    PetscCall(DMLocalizeCoordinates(*dm));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

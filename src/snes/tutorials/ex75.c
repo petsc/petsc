@@ -551,7 +551,7 @@ PetscErrorCode FEMTest(MPI_Comm comm, AppCtx *ctx)
   PetscFunctionBegin;
   if (!ctx->fem) PetscFunctionReturn(PETSC_SUCCESS);
   /* Create DM */
-  PetscCall(DMPlexCreateBoxMesh(comm, 2, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_FALSE, &dm));
+  PetscCall(DMPlexCreateBoxMesh(comm, 2, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_FALSE, 0, PETSC_TRUE, &dm));
   PetscCall(DMSetFromOptions(dm));
   /* Project solution into FE space */
   PetscCall(DMGetGlobalVector(dm, &u));

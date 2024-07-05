@@ -146,6 +146,7 @@ Changes: Development
 - Add ``PetscViewerExodusIISetNodalVariablesNames()``, ``PetscViewerExodusIISetZonalVariablesNames()``, ``PetscViewerExodusIIGetNodalVariablesNames()``, and ``PetscViewerExodusIIGetZonalVariablesNames()`` to set or get all variable names at the same time (not available in Fortran)
 - Add degree bounds to ``DMCopyFields()``, ``DMCopyDS()``, ``PetscDSCopy()``, and ``PetscDSSelectDiscretizations()``
 - Add ``PetscFELimitDegree()``
+- Add localizationHeight and sparseLocalize arguments to ``DMPlexCreateBoxMesh()`` for coordinate localization on periodic meshes
 
 .. rubric:: FE/FV:
 
