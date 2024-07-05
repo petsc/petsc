@@ -599,6 +599,7 @@ class Configure(config.package.Package):
     '''Check for Intel MKL library'''
     self.libraries.saveLog()
     self.include = []
+    self.defaultincludepath = False
     if self.libraries.check(self.dlib, 'mkl_set_num_threads') and not self.libraries.check(self.dlib, 'flexiblas_avail'):
       self.mkl = 1
       self.addDefine('HAVE_MKL_LIBS',1)
@@ -612,6 +613,7 @@ class Configure(config.package.Package):
       if self.checkCompile('#include "mkl_spblas.h"',''):
         self.mkl_spblas_h = 1
         self.logPrint('MKL mkl_spblas.h found in default include path.')
+        self.defaultincludepath = True
       else:
         self.logPrint('MKL include path not automatically picked up by compiler. Trying to find mkl_spblas.h...')
         if 'with-blaslapack-dir' in self.argDB:
@@ -642,7 +644,7 @@ class Configure(config.package.Package):
       else:
         self.dinclude = self.include
       self.checkVersion()
-      if self.include:
+      if self.include or self.defaultincludepath:
         self.addDefine('HAVE_MKL_INCLUDES',1)
         self.addDefine('HAVE_MKL_SET_NUM_THREADS',1)
     self.logWrite(self.libraries.restoreLog())

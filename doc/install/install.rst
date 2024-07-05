@@ -375,7 +375,7 @@ the following options to let PETSc's ``configure`` download and install MPI.
 
      $ ./configure --with-cc=mpigcc --with-cxx=mpigxx --with-fc=mpif90
 
-  "Old" Intel compilers: ``icc``, ``icpc``, and ``ifort``: 
+  "Old" Intel compilers: ``icc``, ``icpc``, and ``ifort``:
 
   .. code-block:: console
 
@@ -663,6 +663,16 @@ Installing PETSc To Use GPUs And Accelerators
 PETSc is able to take adavantage of GPU's and certain accelerator libraries, however some require additional ``configure`` options.
 
 .. _doc_config_accel_cuda:
+
+`OpenMP`
+^^^^^^^^
+
+Use ``--with-openmp`` to allow PETSc to be used within an OpenMP application; this also turns on OpenMP for all the packages that
+PETSc builds using ``--download-xxx``. If your application calls PETSc from within OpenMP threads then also use ``--with-threadsafety``.
+
+Use ``--with-openmp-kernels`` to have some PETSc numerical routines use OpenMP to speed up their computations. This requires ``--with-openmp``.
+
+Note that using OpenMP within MPI code must be done carefully to prevent too many OpenMP threads that overload the number of cores.
 
 `CUDA`_
 ^^^^^^^

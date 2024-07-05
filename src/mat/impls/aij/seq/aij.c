@@ -1504,6 +1504,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A, Vec xx, Vec yy)
     aa = a_a;
     fortranmultaij_(&m, x, ii, aj, aa, y);
 #else
+    PetscPragmaUseOMPKernels(parallel for private(n, aj, aa, sum))
     for (i = 0; i < m; i++) {
       n   = ii[i + 1] - ii[i];
       aj  = a->j + ii[i];
@@ -1662,6 +1663,7 @@ PetscErrorCode MatMultAdd_SeqAIJ(Mat A, Vec xx, Vec yy, Vec zz)
     aa = a_a;
     fortranmultaddaij_(&m, x, ii, aj, aa, y, z);
 #else
+    PetscPragmaUseOMPKernels(parallel for private(n, aj, aa, sum))
     for (i = 0; i < m; i++) {
       n   = ii[i + 1] - ii[i];
       aj  = a->j + ii[i];
