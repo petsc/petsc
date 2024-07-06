@@ -521,6 +521,8 @@ help-test:
 	-@echo "    ${OMAKE} test s='sys*ex2*'"
 	-@echo "  You can also use the full path to a file directory"
 	-@echo "    ${OMAKE} test s='src/sys/tests/'"
+	-@echo "   or a file"
+	-@echo "    ${OMAKE} test s='src/sys/tests/ex1.c'"
 	-@echo
 	-@echo "  To search for fields from the original test definitions:"
 	-@echo "    ${OMAKE} test query='requires' queryval='*MPI_PROCESS_SHARED_MEMORY*'"
