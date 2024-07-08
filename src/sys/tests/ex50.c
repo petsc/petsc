@@ -26,7 +26,7 @@ int main(int argc, char **argv)
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCheck(size >= 4, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Must run with at least 4 MPI ranks");
-  PetscCall(PetscOptionsGetViewer(comm, NULL, NULL, "-viewer", &viewer, &format, &flg));
+  PetscCall(PetscOptionsCreateViewer(comm, NULL, NULL, "-viewer", &viewer, &format, &flg));
   PetscCheck(viewer, PETSC_COMM_WORLD, PETSC_ERR_SUP, "Must use -viewer option");
 
   PetscCall(PetscViewerASCIIPrintf(viewer, "Print called on original full viewer %d\n", PetscGlobalRank));
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
 
   PetscCall(PetscSubcommDestroy(&psubsubcomm));
   PetscCall(PetscSubcommDestroy(&psubcomm));
-  PetscCall(PetscOptionsRestoreViewer(&viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
   PetscCall(PetscFinalize());
   return 0;
 }

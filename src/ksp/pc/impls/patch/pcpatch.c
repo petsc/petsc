@@ -2772,7 +2772,7 @@ static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(PC_Patch_Apply, pc, 0, 0, 0));
-  PetscCall(PetscOptionsPushGetViewerOff(PETSC_TRUE));
+  PetscCall(PetscOptionsPushCreateViewerOff(PETSC_TRUE));
   /* start, end, inc have 2 entries to manage a second backward sweep if we symmetrize */
   end[0]   = patch->npatch;
   start[1] = patch->npatch - 1;
@@ -2834,7 +2834,7 @@ static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
   PetscCall(VecRestoreArrayRead(x, &globalRHS));
   PetscCall(VecRestoreArray(y, &globalUpdate));
 
-  PetscCall(PetscOptionsPopGetViewerOff());
+  PetscCall(PetscOptionsPopCreateViewerOff());
   PetscCall(PetscLogEventEnd(PC_Patch_Apply, pc, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2940,11 +2940,11 @@ static PetscErrorCode PCReset_PATCH(PC pc)
   patch->nsubspaces  = 0;
   PetscCall(ISDestroy(&patch->iterationSet));
 
-  PetscCall(PetscOptionsRestoreViewer(&patch->viewerCells));
-  PetscCall(PetscOptionsRestoreViewer(&patch->viewerIntFacets));
-  PetscCall(PetscOptionsRestoreViewer(&patch->viewerPoints));
-  PetscCall(PetscOptionsRestoreViewer(&patch->viewerSection));
-  PetscCall(PetscOptionsRestoreViewer(&patch->viewerMatrix));
+  PetscCall(PetscViewerDestroy(&patch->viewerCells));
+  PetscCall(PetscViewerDestroy(&patch->viewerIntFacets));
+  PetscCall(PetscViewerDestroy(&patch->viewerPoints));
+  PetscCall(PetscViewerDestroy(&patch->viewerSection));
+  PetscCall(PetscViewerDestroy(&patch->viewerMatrix));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3048,17 +3048,17 @@ static PetscErrorCode PCSetFromOptions_PATCH(PC pc, PetscOptionItems *PetscOptio
   PetscCall(PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_patches_view", patch->classname));
   PetscCall(PetscOptionsBool(option, "Print out information during patch construction", "PCPATCH", patch->viewPatches, &patch->viewPatches, &flg));
   PetscCall(PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_cells_view", patch->classname));
-  PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)pc)->options, prefix, option, &patch->viewerCells, &patch->formatCells, &patch->viewCells));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)pc)->options, prefix, option, &patch->viewerCells, &patch->formatCells, &patch->viewCells));
   PetscCall(PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_interior_facets_view", patch->classname));
-  PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)pc)->options, prefix, option, &patch->viewerIntFacets, &patch->formatIntFacets, &patch->viewIntFacets));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)pc)->options, prefix, option, &patch->viewerIntFacets, &patch->formatIntFacets, &patch->viewIntFacets));
   PetscCall(PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_exterior_facets_view", patch->classname));
-  PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)pc)->options, prefix, option, &patch->viewerExtFacets, &patch->formatExtFacets, &patch->viewExtFacets));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)pc)->options, prefix, option, &patch->viewerExtFacets, &patch->formatExtFacets, &patch->viewExtFacets));
   PetscCall(PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_points_view", patch->classname));
-  PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)pc)->options, prefix, option, &patch->viewerPoints, &patch->formatPoints, &patch->viewPoints));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)pc)->options, prefix, option, &patch->viewerPoints, &patch->formatPoints, &patch->viewPoints));
   PetscCall(PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_section_view", patch->classname));
-  PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)pc)->options, prefix, option, &patch->viewerSection, &patch->formatSection, &patch->viewSection));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)pc)->options, prefix, option, &patch->viewerSection, &patch->formatSection, &patch->viewSection));
   PetscCall(PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_mat_view", patch->classname));
-  PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)pc)->options, prefix, option, &patch->viewerMatrix, &patch->formatMatrix, &patch->viewMatrix));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)pc)->options, prefix, option, &patch->viewerMatrix, &patch->formatMatrix, &patch->viewMatrix));
   PetscOptionsHeadEnd();
   patch->optionsSet = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -1721,7 +1721,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   PetscCall(PetscLogEventBegin(DMPLEX_RebalanceSharedPoints, dm, 0, 0, 0));
 
   PetscCall(DMGetOptionsPrefix(dm, &prefix));
-  PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)dm)->options, prefix, "-dm_rebalance_partition_view", &viewer, &format, NULL));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)dm)->options, prefix, "-dm_rebalance_partition_view", &viewer, &format, NULL));
   if (viewer) PetscCall(PetscViewerPushFormat(viewer, format));
 
   /* Figure out all points in the plex that we are interested in balancing. */
@@ -1980,7 +1980,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
     } else PetscCall(PetscFree(part));
     if (viewer) {
       PetscCall(PetscViewerPopFormat(viewer));
-      PetscCall(PetscOptionsRestoreViewer(&viewer));
+      PetscCall(PetscViewerDestroy(&viewer));
     }
     PetscCall(PetscLogEventEnd(DMPLEX_RebalanceSharedPoints, dm, 0, 0, 0));
     PetscFunctionReturn(PETSC_SUCCESS);

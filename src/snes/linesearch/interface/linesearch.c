@@ -675,7 +675,7 @@ PetscErrorCode SNESLineSearchDestroy(SNESLineSearch *linesearch)
   PetscCall(PetscObjectSAWsViewOff((PetscObject)*linesearch));
   PetscCall(SNESLineSearchReset(*linesearch));
   PetscTryTypeMethod(*linesearch, destroy);
-  PetscCall(PetscOptionsRestoreViewer(&(*linesearch)->monitor));
+  PetscCall(PetscViewerDestroy(&(*linesearch)->monitor));
   PetscCall(SNESLineSearchMonitorCancel(*linesearch));
   PetscCall(PetscHeaderDestroy(linesearch));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -706,7 +706,7 @@ PetscErrorCode SNESLineSearchDestroy(SNESLineSearch *linesearch)
 PetscErrorCode SNESLineSearchSetDefaultMonitor(SNESLineSearch linesearch, PetscViewer viewer)
 {
   PetscFunctionBegin;
-  PetscCall(PetscOptionsRestoreViewer(&linesearch->monitor));
+  PetscCall(PetscViewerDestroy(&linesearch->monitor));
   linesearch->monitor = viewer;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -757,7 +757,7 @@ PetscErrorCode SNESLineSearchGetDefaultMonitor(SNESLineSearch linesearch, PetscV
 
   Level: advanced
 
-.seealso: [](ch_snes), `SNES`, `SNESLineSearch`, `SNESLineSearchSetMonitor()`, `PetscOptionsGetViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
+.seealso: [](ch_snes), `SNES`, `SNESLineSearch`, `SNESLineSearchSetMonitor()`, `PetscOptionsCreateViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
           `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`,
           `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
@@ -772,11 +772,11 @@ PetscErrorCode SNESLineSearchMonitorSetFromOptions(SNESLineSearch ls, const char
   PetscBool         flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)ls), ((PetscObject)ls)->options, ((PetscObject)ls)->prefix, name, &viewer, &format, &flg));
+  PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)ls), ((PetscObject)ls)->options, ((PetscObject)ls)->prefix, name, &viewer, &format, &flg));
   if (flg) {
     PetscViewerAndFormat *vf;
     PetscCall(PetscViewerAndFormatCreate(viewer, format, &vf));
-    PetscCall(PetscOptionsRestoreViewer(&viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
     if (monitorsetup) PetscCall((*monitorsetup)(ls, vf));
     PetscCall(SNESLineSearchMonitorSet(ls, (PetscErrorCode(*)(SNESLineSearch, void *))monitor, vf, (PetscErrorCode(*)(void **))PetscViewerAndFormatDestroy));
   }
@@ -832,11 +832,8 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
     PetscCall(SNESLineSearchSetType(linesearch, deft));
   }
 
-  PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)linesearch), ((PetscObject)linesearch)->options, ((PetscObject)linesearch)->prefix, "-snes_linesearch_monitor", &viewer, NULL, &set));
-  if (set) {
-    PetscCall(SNESLineSearchSetDefaultMonitor(linesearch, viewer));
-    PetscCall(PetscOptionsRestoreViewer(&viewer));
-  }
+  PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)linesearch), ((PetscObject)linesearch)->options, ((PetscObject)linesearch)->prefix, "-snes_linesearch_monitor", &viewer, NULL, &set));
+  if (set) PetscCall(SNESLineSearchSetDefaultMonitor(linesearch, viewer));
   PetscCall(SNESLineSearchMonitorSetFromOptions(linesearch, "-snes_linesearch_monitor_solution_update", "View correction at each iteration", "SNESLineSearchMonitorSolutionUpdate", SNESLineSearchMonitorSolutionUpdate, NULL));
 
   /* tolerances */

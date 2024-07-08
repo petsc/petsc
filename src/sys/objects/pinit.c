@@ -1119,17 +1119,17 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 #if defined(PETSC_HAVE_HWLOC)
   {
     PetscViewer viewer;
-    PetscCall(PetscOptionsGetViewer(PETSC_COMM_WORLD, NULL, NULL, "-process_view", &viewer, NULL, &flg));
+    PetscCall(PetscOptionsCreateViewer(PETSC_COMM_WORLD, NULL, NULL, "-process_view", &viewer, NULL, &flg));
     if (flg) {
       PetscCall(PetscProcessPlacementView(viewer));
-      PetscCall(PetscOptionsRestoreViewer(&viewer));
+      PetscCall(PetscViewerDestroy(&viewer));
     }
   }
 #endif
 
   flg = PETSC_TRUE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-viewfromoptions", &flg, NULL));
-  if (!flg) PetscCall(PetscOptionsPushGetViewerOff(PETSC_TRUE));
+  if (!flg) PetscCall(PetscOptionsPushCreateViewerOff(PETSC_TRUE));
 
 #if defined(PETSC_HAVE_ADIOS)
   PetscCallExternal(adios_init_noxml, PETSC_COMM_WORLD);
@@ -1498,9 +1498,9 @@ PetscErrorCode PetscFinalize(void)
   PetscCall(PetscObjectRegisterDestroyAll());
 
   if (PetscDefined(USE_LOG)) {
-    PetscCall(PetscOptionsPushGetViewerOff(PETSC_FALSE));
+    PetscCall(PetscOptionsPushCreateViewerOff(PETSC_FALSE));
     PetscCall(PetscLogViewFromOptions());
-    PetscCall(PetscOptionsPopGetViewerOff());
+    PetscCall(PetscOptionsPopCreateViewerOff());
     //  It should be turned on with PetscLogGpuTime() and never turned off except in this place
     PetscLogGpuTimeFlag = PETSC_FALSE;
 

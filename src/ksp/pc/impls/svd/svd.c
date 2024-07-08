@@ -294,7 +294,7 @@ static PetscErrorCode PCDestroy_SVD(PC pc)
 
   PetscFunctionBegin;
   PetscCall(PCReset_SVD(pc));
-  PetscCall(PetscOptionsRestoreViewer(&jac->monitor));
+  PetscCall(PetscViewerDestroy(&jac->monitor));
   PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -9888,12 +9888,12 @@ PetscErrorCode DMPlexComputeOrthogonalQuality(DM dm, PetscFV fv, PetscReal atol,
   PetscCall(VecAssemblyEnd(*OrthQual));
   PetscCall(VecRestoreArrayRead(cellgeom, &cellGeomArr));
   PetscCall(VecRestoreArrayRead(facegeom, &faceGeomArr));
-  PetscCall(PetscOptionsGetViewer(comm, NULL, NULL, "-dm_plex_orthogonal_quality_label_view", &vwr, NULL, NULL));
+  PetscCall(PetscOptionsCreateViewer(comm, NULL, NULL, "-dm_plex_orthogonal_quality_label_view", &vwr, NULL, NULL));
   if (OrthQualLabel) {
     if (vwr) PetscCall(DMLabelView(*OrthQualLabel, vwr));
   }
   PetscCall(PetscFree5(idx, oqVals, ci, fi, Ai));
-  PetscCall(PetscOptionsRestoreViewer(&vwr));
+  PetscCall(PetscViewerDestroy(&vwr));
   PetscCall(VecViewFromOptions(*OrthQual, NULL, "-dm_plex_orthogonal_quality_vec_view"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -611,6 +611,11 @@ prepend-path PATH "%s"
     if self.checkLink('#define _POSIX_C_SOURCE 200112L\n#include <stdlib.h>','long v = atoll("25");\n(void)v') or self.checkLink ('#include <stdlib.h>','long v = atoll("25");\n(void)v'):
        self.addDefine('HAVE_ATOLL', '1')
 
+  def configureSanitize(self):
+    '''Checks if fsanitize is supported'''
+    if self.checkLink('#if defined(__has_feature)\n#if !__has_feature(address_sanitizer)\nGarbage\n#endif\n#else\nGarbage\n#endif\n'):
+      self.addDefine('HAVE_SANITIZER', '1')
+
   def configureUnused(self):
     '''Sees if __attribute((unused)) is supported'''
     if self.framework.argDB['with-ios']:
@@ -1398,6 +1403,7 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     self.executeTest(self.configureCoverage)
     self.executeTest(self.configureCoverageExecutable)
     self.executeTest(self.configureStrictPetscErrorCode)
+    self.executeTest(self.configureSanitize)
 
     self.Dump()
     self.dumpConfigInfo()

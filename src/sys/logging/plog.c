@@ -2066,12 +2066,12 @@ PetscErrorCode PetscLogViewFromOptions(void)
   PetscBool         flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsGetViewers(PETSC_COMM_WORLD, NULL, NULL, "-log_view", &n_max, viewers, formats, &flg));
+  PetscCall(PetscOptionsCreateViewers(PETSC_COMM_WORLD, NULL, NULL, "-log_view", &n_max, viewers, formats, &flg));
   for (PetscInt i = 0; i < n_max; i++) {
     PetscCall(PetscViewerPushFormat(viewers[i], formats[i]));
     PetscCall(PetscLogView(viewers[i]));
     PetscCall(PetscViewerPopFormat(viewers[i]));
-    PetscCall(PetscOptionsRestoreViewer(&viewers[i]));
+    PetscCall(PetscViewerDestroy(&viewers[i]));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

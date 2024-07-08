@@ -4302,7 +4302,7 @@ PetscErrorCode DMGetLocalSection(DM dm, PetscSection *section)
       PetscViewerFormat format;
       PetscBool         flg;
 
-      PetscCall(PetscOptionsGetViewer(PetscObjectComm(obj), obj->options, obj->prefix, "-dm_petscds_view", &viewer, &format, &flg));
+      PetscCall(PetscOptionsCreateViewer(PetscObjectComm(obj), obj->options, obj->prefix, "-dm_petscds_view", &viewer, &format, &flg));
       if (flg) PetscCall(PetscViewerPushFormat(viewer, format));
       for (d = 0; d < dm->Nds; ++d) {
         PetscCall(PetscDSSetFromOptions(dm->probs[d].ds));
@@ -4311,7 +4311,7 @@ PetscErrorCode DMGetLocalSection(DM dm, PetscSection *section)
       if (flg) {
         PetscCall(PetscViewerFlush(viewer));
         PetscCall(PetscViewerPopFormat(viewer));
-        PetscCall(PetscOptionsRestoreViewer(&viewer));
+        PetscCall(PetscViewerDestroy(&viewer));
       }
     }
     PetscUseTypeMethod(dm, createlocalsection);
@@ -8950,7 +8950,7 @@ PetscErrorCode DMMonitorCancel(DM dm)
 
   Level: developer
 
-.seealso: [](ch_dmbase), `DM`, `PetscOptionsGetViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
+.seealso: [](ch_dmbase), `DM`, `PetscOptionsCreateViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
           `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`,
           `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
@@ -8965,12 +8965,12 @@ PetscErrorCode DMMonitorSetFromOptions(DM dm, const char name[], const char help
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)dm), ((PetscObject)dm)->options, ((PetscObject)dm)->prefix, name, &viewer, &format, flg));
+  PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)dm), ((PetscObject)dm)->options, ((PetscObject)dm)->prefix, name, &viewer, &format, flg));
   if (*flg) {
     PetscViewerAndFormat *vf;
 
     PetscCall(PetscViewerAndFormatCreate(viewer, format, &vf));
-    PetscCall(PetscOptionsRestoreViewer(&viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
     if (monitorsetup) PetscCall((*monitorsetup)(dm, vf));
     PetscCall(DMMonitorSet(dm, (PetscErrorCode(*)(DM, void *))monitor, vf, (PetscErrorCode(*)(void **))PetscViewerAndFormatDestroy));
   }

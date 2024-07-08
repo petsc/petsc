@@ -555,7 +555,7 @@ PetscErrorCode KSPConvergedReasonViewCancel(KSP ksp)
     if (ksp->reasonviewdestroy[i]) PetscCall((*ksp->reasonviewdestroy[i])(&ksp->reasonviewcontext[i]));
   }
   ksp->numberreasonviews = 0;
-  PetscCall(PetscOptionsRestoreViewer(&ksp->convergedreasonviewer));
+  PetscCall(PetscViewerDestroy(&ksp->convergedreasonviewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1361,20 +1361,20 @@ PetscErrorCode KSPResetViewers(KSP ksp)
   PetscFunctionBegin;
   if (ksp) PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (!ksp) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCall(PetscOptionsRestoreViewer(&ksp->viewer));
-  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerPre));
-  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerRate));
-  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerMat));
-  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerPMat));
-  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerRhs));
-  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerSol));
-  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerMatExp));
-  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerEV));
-  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerSV));
-  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerEVExp));
-  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerFinalRes));
-  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerPOpExp));
-  PetscCall(PetscOptionsRestoreViewer(&ksp->viewerDScale));
+  PetscCall(PetscViewerDestroy(&ksp->viewer));
+  PetscCall(PetscViewerDestroy(&ksp->viewerPre));
+  PetscCall(PetscViewerDestroy(&ksp->viewerRate));
+  PetscCall(PetscViewerDestroy(&ksp->viewerMat));
+  PetscCall(PetscViewerDestroy(&ksp->viewerPMat));
+  PetscCall(PetscViewerDestroy(&ksp->viewerRhs));
+  PetscCall(PetscViewerDestroy(&ksp->viewerSol));
+  PetscCall(PetscViewerDestroy(&ksp->viewerMatExp));
+  PetscCall(PetscViewerDestroy(&ksp->viewerEV));
+  PetscCall(PetscViewerDestroy(&ksp->viewerSV));
+  PetscCall(PetscViewerDestroy(&ksp->viewerEVExp));
+  PetscCall(PetscViewerDestroy(&ksp->viewerFinalRes));
+  PetscCall(PetscViewerDestroy(&ksp->viewerPOpExp));
+  PetscCall(PetscViewerDestroy(&ksp->viewerDScale));
   ksp->view         = PETSC_FALSE;
   ksp->viewPre      = PETSC_FALSE;
   ksp->viewMat      = PETSC_FALSE;

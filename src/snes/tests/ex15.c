@@ -378,13 +378,13 @@ static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
     PetscViewerFormat format;
     PetscBool         flg;
 
-    PetscCall(PetscOptionsGetViewer(comm, NULL, NULL, "-param_view", &viewer, &format, &flg));
+    PetscCall(PetscOptionsCreateViewer(comm, NULL, NULL, "-param_view", &viewer, &format, &flg));
     if (flg) {
       PetscCall(PetscViewerPushFormat(viewer, format));
       PetscCall(PetscBagView(bag, viewer));
       PetscCall(PetscViewerFlush(viewer));
       PetscCall(PetscViewerPopFormat(viewer));
-      PetscCall(PetscOptionsRestoreViewer(&viewer));
+      PetscCall(PetscViewerDestroy(&viewer));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);

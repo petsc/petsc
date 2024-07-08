@@ -89,7 +89,7 @@ int main(int argc, char **argv)
   if (listed) {
     PetscViewer viewer = NULL;
 
-    PetscCall(PetscOptionsGetViewer(comm, NULL, NULL, "-vec_tagger_boxes_view", &viewer, NULL, NULL));
+    PetscCall(PetscOptionsCreateViewer(comm, NULL, NULL, "-vec_tagger_boxes_view", &viewer, NULL, NULL));
     if (viewer) {
       PetscBool iascii;
 
@@ -112,7 +112,7 @@ int main(int argc, char **argv)
         PetscCall(PetscViewerASCIIPopTab(viewer));
       }
     }
-    PetscCall(PetscOptionsRestoreViewer(&viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
     PetscCall(PetscFree(boxes));
   }
 
