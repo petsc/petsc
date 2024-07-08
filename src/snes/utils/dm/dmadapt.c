@@ -3,17 +3,93 @@
 #include <petscdmforest.h>
 #include <petscds.h>
 #include <petscblaslapack.h>
+#include <petscsnes.h>
 
 #include <petsc/private/dmadaptorimpl.h>
 #include <petsc/private/dmpleximpl.h>
 #include <petsc/private/petscfeimpl.h>
 
-static PetscErrorCode DMAdaptorSimpleErrorIndicator_Private(DMAdaptor, PetscInt, PetscInt, const PetscScalar *, const PetscScalar *, const PetscFVCellGeom *, PetscReal *, void *);
+PetscClassId DMADAPTOR_CLASSID;
 
-static PetscErrorCode DMAdaptorTransferSolution_Exact_Private(DMAdaptor adaptor, DM dm, Vec u, DM adm, Vec au, void *ctx)
+PetscFunctionList DMAdaptorList              = NULL;
+PetscBool         DMAdaptorRegisterAllCalled = PETSC_FALSE;
+
+/*@C
+  DMAdaptorRegister - Adds a new adaptor component implementation
+
+  Not Collective
+
+  Input Parameters:
++ name        - The name of a new user-defined creation routine
+- create_func - The creation routine
+
+  Example Usage:
+.vb
+  DMAdaptorRegister("my_adaptor", MyAdaptorCreate);
+.ve
+
+  Then, your adaptor type can be chosen with the procedural interface via
+.vb
+  DMAdaptorCreate(MPI_Comm, DMAdaptor *);
+  DMAdaptorSetType(DMAdaptor, "my_adaptor");
+.ve
+  or at runtime via the option
+.vb
+  -adaptor_type my_adaptor
+.ve
+
+  Level: advanced
+
+  Note:
+  `DMAdaptorRegister()` may be called multiple times to add several user-defined adaptors
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMAdaptor`, `DMAdaptorRegisterAll()`, `DMAdaptorRegisterDestroy()`
+@*/
+PetscErrorCode DMAdaptorRegister(const char name[], PetscErrorCode (*create_func)(DMAdaptor))
 {
-  PetscFunctionBeginUser;
-  PetscCall(DMProjectFunction(adm, 0.0, adaptor->exactSol, adaptor->exactCtx, INSERT_ALL_VALUES, au));
+  PetscFunctionBegin;
+  PetscCall(DMInitializePackage());
+  PetscCall(PetscFunctionListAdd(&DMAdaptorList, name, create_func));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PETSC_EXTERN PetscErrorCode DMAdaptorCreate_Gradient(DMAdaptor);
+PETSC_EXTERN PetscErrorCode DMAdaptorCreate_Flux(DMAdaptor);
+
+/*@C
+  DMAdaptorRegisterAll - Registers all of the adaptor components in the `DM` package.
+
+  Not Collective
+
+  Level: advanced
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMAdaptorType`, `DMRegisterAll()`, `DMAdaptorRegisterDestroy()`
+@*/
+PetscErrorCode DMAdaptorRegisterAll(void)
+{
+  PetscFunctionBegin;
+  if (DMAdaptorRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
+  DMAdaptorRegisterAllCalled = PETSC_TRUE;
+
+  PetscCall(DMAdaptorRegister(DMADAPTORGRADIENT, DMAdaptorCreate_Gradient));
+  PetscCall(DMAdaptorRegister(DMADAPTORFLUX, DMAdaptorCreate_Flux));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  DMAdaptorRegisterDestroy - This function destroys the registered `DMAdaptorType`. It is called from `PetscFinalize()`.
+
+  Not collective
+
+  Level: developer
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMRegisterAll()`, `DMAdaptorType`, `PetscInitialize()`
+@*/
+PetscErrorCode DMAdaptorRegisterDestroy(void)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscFunctionListDestroy(&DMAdaptorList));
+  DMAdaptorRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -40,13 +116,12 @@ PetscErrorCode DMAdaptorCreate(MPI_Comm comm, DMAdaptor *adaptor)
   PetscAssertPointer(adaptor, 2);
   PetscCall(PetscSysInitializePackage());
 
-  PetscCall(PetscHeaderCreate(*adaptor, DM_CLASSID, "DMAdaptor", "DM Adaptor", "SNES", comm, DMAdaptorDestroy, DMAdaptorView));
-  (*adaptor)->monitor                    = PETSC_FALSE;
-  (*adaptor)->adaptCriterion             = DM_ADAPTATION_NONE;
-  (*adaptor)->numSeq                     = 1;
-  (*adaptor)->Nadapt                     = -1;
-  (*adaptor)->refinementFactor           = 2.0;
-  (*adaptor)->ops->computeerrorindicator = DMAdaptorSimpleErrorIndicator_Private;
+  PetscCall(PetscHeaderCreate(*adaptor, DMADAPTOR_CLASSID, "DMAdaptor", "DM Adaptor", "DMAdaptor", comm, DMAdaptorDestroy, DMAdaptorView));
+  (*adaptor)->monitor          = PETSC_FALSE;
+  (*adaptor)->adaptCriterion   = DM_ADAPTATION_NONE;
+  (*adaptor)->numSeq           = 1;
+  (*adaptor)->Nadapt           = -1;
+  (*adaptor)->refinementFactor = 2.0;
   refineBox.min = refineBox.max = PETSC_MAX_REAL;
   PetscCall(VecTaggerCreate(PetscObjectComm((PetscObject)*adaptor), &(*adaptor)->refineTag));
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)(*adaptor)->refineTag, "refine_"));
@@ -76,7 +151,7 @@ PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
 {
   PetscFunctionBegin;
   if (!*adaptor) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific(*adaptor, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(*adaptor, DMADAPTOR_CLASSID, 1);
   if (--((PetscObject)*adaptor)->refct > 0) {
     *adaptor = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -89,6 +164,68 @@ PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
 }
 
 /*@
+  DMAdaptorSetType - Sets the particular implementation for a adaptor.
+
+  Collective
+
+  Input Parameters:
++ adaptor - The `DMAdaptor`
+- method  - The name of the adaptor type
+
+  Options Database Key:
+. -adaptor_type <type> - Sets the adaptor type; see `DMAdaptorType`
+
+  Level: intermediate
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMAdaptor`, `DMAdaptorType`, `DMAdaptorGetType()`, `DMAdaptorCreate()`
+@*/
+PetscErrorCode DMAdaptorSetType(DMAdaptor adaptor, DMAdaptorType method)
+{
+  PetscErrorCode (*r)(DMAdaptor);
+  PetscBool match;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adaptor, DMADAPTOR_CLASSID, 1);
+  PetscCall(PetscObjectTypeCompare((PetscObject)adaptor, method, &match));
+  if (match) PetscFunctionReturn(PETSC_SUCCESS);
+
+  PetscCall(DMAdaptorRegisterAll());
+  PetscCall(PetscFunctionListFind(DMAdaptorList, method, &r));
+  PetscCheck(r, PetscObjectComm((PetscObject)adaptor), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown DMAdaptor type: %s", method);
+
+  PetscTryTypeMethod(adaptor, destroy);
+  PetscCall(PetscMemzero(adaptor->ops, sizeof(*adaptor->ops)));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)adaptor, method));
+  PetscCall((*r)(adaptor));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMAdaptorGetType - Gets the type name (as a string) from the adaptor.
+
+  Not Collective
+
+  Input Parameter:
+. adaptor - The `DMAdaptor`
+
+  Output Parameter:
+. type - The `DMAdaptorType` name
+
+  Level: intermediate
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMAdaptor`, `DMAdaptorType`, `DMAdaptorSetType()`, `DMAdaptorCreate()`
+@*/
+PetscErrorCode DMAdaptorGetType(DMAdaptor adaptor, DMAdaptorType *type)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adaptor, DMADAPTOR_CLASSID, 1);
+  PetscAssertPointer(type, 2);
+  PetscCall(DMAdaptorRegisterAll());
+  *type = ((PetscObject)adaptor)->type_name;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   DMAdaptorSetFromOptions - Sets properties of a `DMAdaptor` object from values in the options database
 
   Collective
@@ -97,10 +234,11 @@ PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
 . adaptor - The `DMAdaptor` object
 
   Options Database Keys:
-+ -adaptor_monitor <bool>        - Monitor the adaptation process
-. -adaptor_sequence_num <num>    - Number of adaptations to generate an optimal grid
-. -adaptor_target_num <num>      - Set the target number of vertices N_adapt, -1 for automatic determination
-- -adaptor_refinement_factor <r> - Set r such that N_adapt = r^dim N_orig
++ -adaptor_monitor <bool>              - Monitor the adaptation process
+. -adaptor_sequence_num <num>          - Number of adaptations to generate an optimal grid
+. -adaptor_target_num <num>            - Set the target number of vertices N_adapt, -1 for automatic determination
+. -adaptor_refinement_factor <r>       - Set r such that N_adapt = r^dim N_orig
+- -adaptor_mixed_setup_function <func> - Set the fnction func that sets up the mixed problem
 
   Level: beginner
 
@@ -108,12 +246,28 @@ PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
 @*/
 PetscErrorCode DMAdaptorSetFromOptions(DMAdaptor adaptor)
 {
+  char        typeName[PETSC_MAX_PATH_LEN];
+  const char *defName = DMADAPTORGRADIENT;
+  char        funcname[PETSC_MAX_PATH_LEN];
+  PetscBool   flg;
+
   PetscFunctionBegin;
-  PetscOptionsBegin(PetscObjectComm((PetscObject)adaptor), "", "DM Adaptor Options", "DMAdaptor");
+  PetscObjectOptionsBegin((PetscObject)adaptor);
+  PetscCall(PetscOptionsFList("-adaptor_type", "DMAdaptor", "DMAdaptorSetType", DMAdaptorList, defName, typeName, 1024, &flg));
+  if (flg) PetscCall(DMAdaptorSetType(adaptor, typeName));
+  else if (!((PetscObject)adaptor)->type_name) PetscCall(DMAdaptorSetType(adaptor, defName));
   PetscCall(PetscOptionsBool("-adaptor_monitor", "Monitor the adaptation process", "DMAdaptorMonitor", adaptor->monitor, &adaptor->monitor, NULL));
   PetscCall(PetscOptionsInt("-adaptor_sequence_num", "Number of adaptations to generate an optimal grid", "DMAdaptorSetSequenceLength", adaptor->numSeq, &adaptor->numSeq, NULL));
   PetscCall(PetscOptionsInt("-adaptor_target_num", "Set the target number of vertices N_adapt, -1 for automatic determination", "DMAdaptor", adaptor->Nadapt, &adaptor->Nadapt, NULL));
   PetscCall(PetscOptionsReal("-adaptor_refinement_factor", "Set r such that N_adapt = r^dim N_orig", "DMAdaptor", adaptor->refinementFactor, &adaptor->refinementFactor, NULL));
+  PetscCall(PetscOptionsString("-adaptor_mixed_setup_function", "Function to setup the mixed problem", "DMAdaptorSetMixedSetupFunction", funcname, funcname, sizeof(funcname), &flg));
+  if (flg) {
+    PetscErrorCode (*setupFunc)(DMAdaptor, DM);
+
+    PetscCall(PetscDLSym(NULL, funcname, (void **)&setupFunc));
+    PetscCheck(setupFunc, PetscObjectComm((PetscObject)adaptor), PETSC_ERR_ARG_WRONG, "Could not locate function %s", funcname);
+    PetscCall(DMAdaptorSetMixedSetupFunction(adaptor, setupFunc));
+  }
   PetscOptionsEnd();
   PetscCall(VecTaggerSetFromOptions(adaptor->refineTag));
   PetscCall(VecTaggerSetFromOptions(adaptor->coarsenTag));
@@ -162,7 +316,7 @@ PetscErrorCode DMAdaptorView(DMAdaptor adaptor, PetscViewer viewer)
 PetscErrorCode DMAdaptorGetSolver(DMAdaptor adaptor, SNES *snes)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adaptor, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(adaptor, DMADAPTOR_CLASSID, 1);
   PetscAssertPointer(snes, 2);
   *snes = adaptor->snes;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -184,7 +338,7 @@ PetscErrorCode DMAdaptorGetSolver(DMAdaptor adaptor, SNES *snes)
 PetscErrorCode DMAdaptorSetSolver(DMAdaptor adaptor, SNES snes)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adaptor, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(adaptor, DMADAPTOR_CLASSID, 1);
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 2);
   adaptor->snes = snes;
   PetscCall(SNESGetDM(adaptor->snes, &adaptor->idm));
@@ -209,7 +363,7 @@ PetscErrorCode DMAdaptorSetSolver(DMAdaptor adaptor, SNES snes)
 PetscErrorCode DMAdaptorGetSequenceLength(DMAdaptor adaptor, PetscInt *num)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adaptor, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(adaptor, DMADAPTOR_CLASSID, 1);
   PetscAssertPointer(num, 2);
   *num = adaptor->numSeq;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -231,8 +385,15 @@ PetscErrorCode DMAdaptorGetSequenceLength(DMAdaptor adaptor, PetscInt *num)
 PetscErrorCode DMAdaptorSetSequenceLength(DMAdaptor adaptor, PetscInt num)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adaptor, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(adaptor, DMADAPTOR_CLASSID, 1);
   adaptor->numSeq = num;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMAdaptorTransferSolution_Exact_Private(DMAdaptor adaptor, DM dm, Vec u, DM adm, Vec au, void *ctx)
+{
+  PetscFunctionBeginUser;
+  PetscCall(DMProjectFunction(adm, 0.0, adaptor->exactSol, adaptor->exactCtx, INSERT_ALL_VALUES, au));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -264,6 +425,7 @@ PetscErrorCode DMAdaptorSetUp(DMAdaptor adaptor)
     /* TODO Have a flag that forces projection rather than using the exact solution */
     if (adaptor->exactSol[0]) PetscCall(DMAdaptorSetTransferFunction(adaptor, DMAdaptorTransferSolution_Exact_Private));
   }
+  PetscTryTypeMethod(adaptor, setup);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -313,7 +475,7 @@ static PetscErrorCode DMAdaptorPreAdapt(DMAdaptor adaptor, Vec locX)
     }
 #else
     else {
-      adaptor->adaptCriterion = DM_ADAPTATION_REFINE;
+      adaptor->adaptCriterion = DM_ADAPTATION_LABEL;
     }
 #endif
   }
@@ -410,7 +572,7 @@ static PetscErrorCode DMAdaptorPostAdapt(DMAdaptor adaptor)
 }
 
 /*
-  DMAdaptorSimpleErrorIndicator - Use the integrated gradient as an error indicator in the `DMAdaptor`
+  DMAdaptorComputeCellErrorIndicator_Gradient - Use the integrated gradient as an error indicator in the `DMAdaptor`
 
   Input Parameters:
 + adaptor  - The `DMAdaptor` object
@@ -427,9 +589,9 @@ static PetscErrorCode DMAdaptorPostAdapt(DMAdaptor adaptor)
   Developer Note:
   Some of the input arguments are absurdly specialized to special situations, it is not clear this is a good general API
 
-.seealso: [](ch_dmbase), `DMAdaptor`, `DMAdaptorComputeErrorIndicator()`
+.seealso: [](ch_dmbase), `DMAdaptor`
 */
-static PetscErrorCode DMAdaptorSimpleErrorIndicator_Private(DMAdaptor adaptor, PetscInt dim, PetscInt Nc, const PetscScalar *field, const PetscScalar *gradient, const PetscFVCellGeom *cg, PetscReal *errInd, void *ctx)
+static PetscErrorCode DMAdaptorComputeCellErrorIndicator_Gradient(DMAdaptor adaptor, PetscInt dim, PetscInt Nc, const PetscScalar *field, const PetscScalar *gradient, const PetscFVCellGeom *cg, PetscReal *errInd, void *ctx)
 {
   PetscReal err = 0.;
   PetscInt  c, d;
@@ -442,84 +604,146 @@ static PetscErrorCode DMAdaptorSimpleErrorIndicator_Private(DMAdaptor adaptor, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMAdaptorComputeErrorIndicator_Private(DMAdaptor adaptor, DM plex, PetscInt cell, Vec locX, PetscReal *errInd)
+static PetscErrorCode DMAdaptorComputeErrorIndicator_Gradient(DMAdaptor adaptor, Vec locX, Vec errVec)
 {
-  PetscDS         prob;
+  DM              dm, plex, edm, eplex;
+  PetscDS         ds;
   PetscObject     obj;
   PetscClassId    id;
   void           *ctx;
   PetscQuadrature quad;
-  PetscInt        dim, d, cdim, Nc;
+  PetscScalar    *earray;
+  PetscReal       minMaxInd[2] = {PETSC_MAX_REAL, PETSC_MIN_REAL}, minMaxIndGlobal[2];
+  PetscInt        dim, cdim, cStart, cEnd, Nf, Nc;
 
   PetscFunctionBegin;
-  *errInd = 0.;
+  PetscCall(VecGetDM(locX, &dm));
+  PetscCall(DMConvert(dm, DMPLEX, &plex));
+  PetscCall(VecGetDM(errVec, &edm));
+  PetscCall(DMConvert(edm, DMPLEX, &eplex));
   PetscCall(DMGetDimension(plex, &dim));
   PetscCall(DMGetCoordinateDim(plex, &cdim));
   PetscCall(DMGetApplicationContext(plex, &ctx));
-  PetscCall(DMGetDS(plex, &prob));
-  PetscCall(PetscDSGetDiscretization(prob, 0, &obj));
+  PetscCall(DMGetDS(plex, &ds));
+  PetscCall(PetscDSGetNumFields(ds, &Nf));
+  PetscCall(PetscDSGetDiscretization(ds, 0, &obj));
   PetscCall(PetscObjectGetClassId(obj, &id));
-  if (id == PETSCFV_CLASSID) {
-    const PetscScalar *pointSols;
-    const PetscScalar *pointSol;
-    const PetscScalar *pointGrad;
-    PetscFVCellGeom   *cg;
 
-    PetscCall(PetscFVGetNumComponents((PetscFV)obj, &Nc));
-    PetscCall(VecGetArrayRead(locX, &pointSols));
-    PetscCall(DMPlexPointLocalRead(plex, cell, pointSols, (void *)&pointSol));
-    PetscCall(DMPlexPointLocalRead(adaptor->gradDM, cell, adaptor->cellGradArray, (void *)&pointGrad));
-    PetscCall(DMPlexPointLocalRead(adaptor->cellDM, cell, adaptor->cellGeomArray, &cg));
-    PetscUseTypeMethod(adaptor, computeerrorindicator, dim, Nc, pointSol, pointGrad, cg, errInd, ctx);
-    PetscCall(VecRestoreArrayRead(locX, &pointSols));
-  } else {
-    PetscScalar     *x = NULL, *field, *gradient, *interpolant, *interpolantGrad;
-    PetscFVCellGeom  cg;
-    PetscFEGeom      fegeom;
-    const PetscReal *quadWeights;
-    PetscReal       *coords;
-    PetscInt         Nb, fc, Nq, qNc, Nf, f, fieldOffset;
+  PetscCall(VecGetArray(errVec, &earray));
+  PetscCall(DMPlexGetSimplexOrBoxCells(plex, 0, &cStart, &cEnd));
+  for (PetscInt cell = cStart; cell < cEnd; ++cell) {
+    PetscScalar *eval;
+    PetscReal    errInd = 0.;
 
-    fegeom.dim      = dim;
-    fegeom.dimEmbed = cdim;
-    PetscCall(PetscDSGetNumFields(prob, &Nf));
-    PetscCall(PetscFEGetQuadrature((PetscFE)obj, &quad));
-    PetscCall(DMPlexVecGetClosure(plex, NULL, locX, cell, NULL, &x));
-    PetscCall(PetscFEGetDimension((PetscFE)obj, &Nb));
-    PetscCall(PetscFEGetNumComponents((PetscFE)obj, &Nc));
-    PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, NULL, &quadWeights));
-    PetscCall(PetscCalloc6(Nc, &field, cdim * Nc, &gradient, cdim * Nq, &coords, Nq, &fegeom.detJ, cdim * cdim * Nq, &fegeom.J, cdim * cdim * Nq, &fegeom.invJ));
-    PetscCall(PetscMalloc2(Nc, &interpolant, cdim * Nc, &interpolantGrad));
-    PetscCall(DMPlexComputeCellGeometryFEM(plex, cell, quad, coords, fegeom.J, fegeom.invJ, fegeom.detJ));
-    PetscCall(DMPlexComputeCellGeometryFVM(plex, cell, &cg.volume, NULL, NULL));
-    PetscCall(PetscArrayzero(gradient, cdim * Nc));
-    for (f = 0, fieldOffset = 0; f < Nf; ++f) {
-      PetscInt qc = 0, q;
+    if (id == PETSCFV_CLASSID) {
+      PetscFV            fv = (PetscFV)obj;
+      const PetscScalar *pointSols;
+      const PetscScalar *pointSol;
+      const PetscScalar *pointGrad;
+      PetscFVCellGeom   *cg;
 
-      PetscCall(PetscDSGetDiscretization(prob, f, &obj));
-      PetscCall(PetscArrayzero(interpolant, Nc));
-      PetscCall(PetscArrayzero(interpolantGrad, cdim * Nc));
-      for (q = 0; q < Nq; ++q) {
-        PetscCall(PetscFEInterpolateFieldAndGradient_Static((PetscFE)obj, 1, x, &fegeom, q, interpolant, interpolantGrad));
-        for (fc = 0; fc < Nc; ++fc) {
-          const PetscReal wt = quadWeights[q * qNc + qc + fc];
+      PetscCall(PetscFVGetNumComponents(fv, &Nc));
+      PetscCall(VecGetArrayRead(locX, &pointSols));
+      PetscCall(DMPlexPointLocalRead(plex, cell, pointSols, (void *)&pointSol));
+      PetscCall(DMPlexPointLocalRead(adaptor->gradDM, cell, adaptor->cellGradArray, (void *)&pointGrad));
+      PetscCall(DMPlexPointLocalRead(adaptor->cellDM, cell, adaptor->cellGeomArray, &cg));
+      PetscUseTypeMethod(adaptor, computecellerrorindicator, dim, Nc, pointSol, pointGrad, cg, &errInd, ctx);
+      PetscCall(VecRestoreArrayRead(locX, &pointSols));
+    } else {
+      PetscFE          fe = (PetscFE)obj;
+      PetscScalar     *x  = NULL, *field, *gradient, *interpolant, *interpolantGrad;
+      PetscFVCellGeom  cg;
+      PetscFEGeom      fegeom;
+      const PetscReal *quadWeights;
+      PetscReal       *coords;
+      PetscInt         Nb, Nq, qNc;
 
-          field[fc] += interpolant[fc] * wt * fegeom.detJ[q];
-          for (d = 0; d < cdim; ++d) gradient[fc * cdim + d] += interpolantGrad[fc * dim + d] * wt * fegeom.detJ[q];
+      fegeom.dim      = dim;
+      fegeom.dimEmbed = cdim;
+      PetscCall(PetscFEGetNumComponents(fe, &Nc));
+      PetscCall(PetscFEGetQuadrature(fe, &quad));
+      PetscCall(PetscFEGetDimension(fe, &Nb));
+      PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, NULL, &quadWeights));
+      PetscCall(PetscCalloc6(Nc, &field, cdim * Nc, &gradient, cdim * Nq, &coords, Nq, &fegeom.detJ, cdim * cdim * Nq, &fegeom.J, cdim * cdim * Nq, &fegeom.invJ));
+      PetscCall(PetscMalloc2(Nc, &interpolant, cdim * Nc, &interpolantGrad));
+      PetscCall(DMPlexComputeCellGeometryFEM(plex, cell, quad, coords, fegeom.J, fegeom.invJ, fegeom.detJ));
+      PetscCall(DMPlexComputeCellGeometryFVM(plex, cell, &cg.volume, NULL, NULL));
+      PetscCall(PetscArrayzero(gradient, cdim * Nc));
+      PetscCall(DMPlexVecGetClosure(plex, NULL, locX, cell, NULL, &x));
+      for (PetscInt f = 0; f < Nf; ++f) {
+        PetscInt qc = 0;
+
+        PetscCall(PetscDSGetDiscretization(ds, f, &obj));
+        PetscCall(PetscArrayzero(interpolant, Nc));
+        PetscCall(PetscArrayzero(interpolantGrad, cdim * Nc));
+        for (PetscInt q = 0; q < Nq; ++q) {
+          PetscCall(PetscFEInterpolateFieldAndGradient_Static((PetscFE)obj, 1, x, &fegeom, q, interpolant, interpolantGrad));
+          for (PetscInt fc = 0; fc < Nc; ++fc) {
+            const PetscReal wt = quadWeights[q * qNc + qc + fc];
+
+            field[fc] += interpolant[fc] * wt * fegeom.detJ[q];
+            for (PetscInt d = 0; d < cdim; ++d) gradient[fc * cdim + d] += interpolantGrad[fc * dim + d] * wt * fegeom.detJ[q];
+          }
         }
+        qc += Nc;
       }
-      fieldOffset += Nb;
-      qc += Nc;
+      PetscCall(PetscFree2(interpolant, interpolantGrad));
+      PetscCall(DMPlexVecRestoreClosure(plex, NULL, locX, cell, NULL, &x));
+      for (PetscInt fc = 0; fc < Nc; ++fc) {
+        field[fc] /= cg.volume;
+        for (PetscInt d = 0; d < cdim; ++d) gradient[fc * cdim + d] /= cg.volume;
+      }
+      PetscUseTypeMethod(adaptor, computecellerrorindicator, dim, Nc, field, gradient, &cg, &errInd, ctx);
+      PetscCall(PetscFree6(field, gradient, coords, fegeom.detJ, fegeom.J, fegeom.invJ));
     }
-    PetscCall(PetscFree2(interpolant, interpolantGrad));
-    PetscCall(DMPlexVecRestoreClosure(plex, NULL, locX, cell, NULL, &x));
-    for (fc = 0; fc < Nc; ++fc) {
-      field[fc] /= cg.volume;
-      for (d = 0; d < cdim; ++d) gradient[fc * cdim + d] /= cg.volume;
-    }
-    PetscUseTypeMethod(adaptor, computeerrorindicator, dim, Nc, field, gradient, &cg, errInd, ctx);
-    PetscCall(PetscFree6(field, gradient, coords, fegeom.detJ, fegeom.J, fegeom.invJ));
+    PetscCall(DMPlexPointGlobalRef(eplex, cell, earray, (void *)&eval));
+    eval[0]      = errInd;
+    minMaxInd[0] = PetscMin(minMaxInd[0], errInd);
+    minMaxInd[1] = PetscMax(minMaxInd[1], errInd);
   }
+  PetscCall(VecRestoreArray(errVec, &earray));
+  PetscCall(DMDestroy(&plex));
+  PetscCall(DMDestroy(&eplex));
+  PetscCall(PetscGlobalMinMaxReal(PetscObjectComm((PetscObject)adaptor), minMaxInd, minMaxIndGlobal));
+  PetscCall(PetscInfo(adaptor, "DMAdaptor: error indicator range (%g, %g)\n", (double)minMaxIndGlobal[0], (double)minMaxIndGlobal[1]));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMAdaptorComputeErrorIndicator_Flux(DMAdaptor adaptor, Vec lu, Vec errVec)
+{
+  DM    dm, mdm;
+  SNES  msnes;
+  Vec   mu, lmu;
+  void *ctx;
+
+  PetscFunctionBegin;
+  PetscCall(VecGetDM(lu, &dm));
+
+  // Set up and solve mixed problem
+  PetscCall(DMClone(dm, &mdm));
+  PetscCall(SNESCreate(PetscObjectComm((PetscObject)mdm), &msnes));
+  PetscCall(SNESSetDM(msnes, mdm));
+  PetscCall(SNESAppendOptionsPrefix(msnes, "mixed_"));
+
+  PetscTryTypeMethod(adaptor, mixedsetup, mdm);
+  PetscCall(DMGetApplicationContext(dm, &ctx));
+  PetscCall(DMPlexSetSNESLocalFEM(mdm, PETSC_FALSE, ctx));
+  PetscCall(SNESSetFromOptions(msnes));
+
+  PetscCall(DMCreateGlobalVector(mdm, &mu));
+  PetscCall(PetscObjectSetName((PetscObject)mu, "Mixed Solution"));
+  PetscCall(VecSet(mu, 0.0));
+  PetscCall(SNESSolve(msnes, NULL, mu));
+  PetscCall(VecViewFromOptions(mu, (PetscObject)adaptor, "-adapt_mixed_sol_vec_view"));
+
+  PetscCall(DMGetLocalVector(mdm, &lmu));
+  PetscCall(DMGlobalToLocal(mdm, mu, INSERT_VALUES, lmu));
+  PetscCall(DMPlexInsertBoundaryValues(mdm, PETSC_TRUE, lmu, 0.0, NULL, NULL, NULL));
+  PetscCall(DMPlexComputeL2FluxDiffVecLocal(lu, 0, lmu, 0, errVec));
+  PetscCall(DMRestoreLocalVector(mdm, &lmu));
+  PetscCall(VecDestroy(&mu));
+  PetscCall(SNESDestroy(&msnes));
+  PetscCall(DMDestroy(&mdm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -534,11 +758,11 @@ static void identityFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscI
 
 static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx, PetscBool doSolve, DM *adm, Vec *ax)
 {
-  PetscDS  prob;
+  PetscDS  ds;
   void    *ctx;
   MPI_Comm comm;
   PetscInt numAdapt = adaptor->numSeq, adaptIter;
-  PetscInt dim, coordDim, numFields, cStart, cEnd, c;
+  PetscInt dim, coordDim, Nf;
 
   PetscFunctionBegin;
   PetscCall(DMViewFromOptions(adaptor->idm, NULL, "-dm_adapt_pre_view"));
@@ -547,9 +771,9 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
   PetscCall(DMGetDimension(adaptor->idm, &dim));
   PetscCall(DMGetCoordinateDim(adaptor->idm, &coordDim));
   PetscCall(DMGetApplicationContext(adaptor->idm, &ctx));
-  PetscCall(DMGetDS(adaptor->idm, &prob));
-  PetscCall(PetscDSGetNumFields(prob, &numFields));
-  PetscCheck(numFields != 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of fields is zero!");
+  PetscCall(DMGetDS(adaptor->idm, &ds));
+  PetscCall(PetscDSGetNumFields(ds, &Nf));
+  PetscCheck(Nf != 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot refine with no fields present!");
 
   /* Adapt until nothing changes */
   /* Adapt for a specified number of iterates */
@@ -560,8 +784,6 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
     Vec       x       = adaptIter ? *ax : inx, locX, ox;
 
     PetscCall(DMGetLocalVector(dm, &locX));
-    PetscCall(DMGlobalToLocalBegin(dm, adaptIter ? *ax : x, INSERT_VALUES, locX));
-    PetscCall(DMGlobalToLocalEnd(dm, adaptIter ? *ax : x, INSERT_VALUES, locX));
     PetscCall(DMAdaptorPreAdapt(adaptor, locX));
     if (doSolve) {
       SNES snes;
@@ -569,6 +791,9 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
       PetscCall(DMAdaptorGetSolver(adaptor, &snes));
       PetscCall(SNESSolve(snes, NULL, adaptIter ? *ax : x));
     }
+    PetscCall(DMGlobalToLocalBegin(dm, adaptIter ? *ax : x, INSERT_VALUES, locX));
+    PetscCall(DMGlobalToLocalEnd(dm, adaptIter ? *ax : x, INSERT_VALUES, locX));
+    PetscCall(VecViewFromOptions(adaptIter ? *ax : x, (PetscObject)adaptor, "-adapt_primal_sol_vec_view"));
     /* PetscCall(DMAdaptorMonitor(adaptor));
        Print iterate, memory used, DM, solution */
     switch (adaptor->adaptCriterion) {
@@ -582,38 +807,38 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
            Create local solution
            Reconstruct gradients (FVM) or solve adjoint equation (FEM)
            Produce cellwise error indicator */
-      DM                 plex;
-      DMLabel            adaptLabel;
-      IS                 refineIS, coarsenIS;
-      Vec                errVec;
-      PetscScalar       *errArray;
-      const PetscScalar *pointSols;
-      PetscReal          minMaxInd[2] = {PETSC_MAX_REAL, PETSC_MIN_REAL}, minMaxIndGlobal[2];
-      PetscInt           nRefine, nCoarsen;
+      DM             edm, plex;
+      PetscFE        efe;
+      DMLabel        adaptLabel;
+      IS             refineIS, coarsenIS;
+      Vec            errVec;
+      DMPolytopeType ct;
+      PetscInt       nRefine, nCoarsen, cStart;
 
-      PetscCall(DMConvert(dm, DMPLEX, &plex));
       PetscCall(DMLabelCreate(PETSC_COMM_SELF, "adapt", &adaptLabel));
-      PetscCall(DMPlexGetSimplexOrBoxCells(plex, 0, &cStart, &cEnd));
 
-      PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)adaptor), cEnd - cStart, PETSC_DETERMINE, &errVec));
-      PetscCall(VecSetUp(errVec));
-      PetscCall(VecGetArray(errVec, &errArray));
-      PetscCall(VecGetArrayRead(locX, &pointSols));
-      for (c = cStart; c < cEnd; ++c) {
-        PetscReal errInd;
+      // TODO Move this creation to PreAdapt
+      PetscCall(DMClone(dm, &edm));
+      PetscCall(DMConvert(edm, DMPLEX, &plex));
+      PetscCall(DMPlexGetHeightStratum(plex, 0, &cStart, NULL));
+      PetscCall(DMPlexGetCellType(plex, cStart, &ct));
+      PetscCall(DMDestroy(&plex));
+      PetscCall(PetscFECreateLagrangeByCell(PETSC_COMM_SELF, dim, 1, ct, 0, PETSC_DEFAULT, &efe));
+      PetscCall(PetscObjectSetName((PetscObject)efe, "Error"));
+      PetscCall(DMSetField(edm, 0, NULL, (PetscObject)efe));
+      PetscCall(PetscFEDestroy(&efe));
+      PetscCall(DMCreateDS(edm));
+      PetscCall(DMGetGlobalVector(edm, &errVec));
+      PetscCall(PetscObjectSetName((PetscObject)errVec, "Error Estimator"));
 
-        PetscCall(DMAdaptorComputeErrorIndicator_Private(adaptor, plex, c, locX, &errInd));
-        errArray[c - cStart] = errInd;
-        minMaxInd[0]         = PetscMin(minMaxInd[0], errInd);
-        minMaxInd[1]         = PetscMax(minMaxInd[1], errInd);
-      }
-      PetscCall(VecRestoreArrayRead(locX, &pointSols));
-      PetscCall(VecRestoreArray(errVec, &errArray));
-      PetscCall(PetscGlobalMinMaxReal(PetscObjectComm((PetscObject)adaptor), minMaxInd, minMaxIndGlobal));
-      PetscCall(PetscInfo(adaptor, "DMAdaptor: error indicator range (%g, %g)\n", (double)minMaxIndGlobal[0], (double)minMaxIndGlobal[1]));
-      /*     Compute IS from VecTagger */
+      PetscUseTypeMethod(adaptor, computeerrorindicator, locX, errVec);
+      PetscCall(VecViewFromOptions(errVec, (PetscObject)adaptor, "-adapt_error_vec_view"));
+
+      // Compute IS from VecTagger
       PetscCall(VecTaggerComputeIS(adaptor->refineTag, errVec, &refineIS, NULL));
       PetscCall(VecTaggerComputeIS(adaptor->coarsenTag, errVec, &coarsenIS, NULL));
+      PetscCall(ISViewFromOptions(refineIS, (PetscObject)adaptor->refineTag, "-is_view"));
+      PetscCall(ISViewFromOptions(coarsenIS, (PetscObject)adaptor->coarsenTag, "-is_view"));
       PetscCall(ISGetSize(refineIS, &nRefine));
       PetscCall(ISGetSize(coarsenIS, &nCoarsen));
       PetscCall(PetscInfo(adaptor, "DMAdaptor: numRefine %" PetscInt_FMT ", numCoarsen %" PetscInt_FMT "\n", nRefine, nCoarsen));
@@ -621,14 +846,32 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
       if (nCoarsen) PetscCall(DMLabelSetStratumIS(adaptLabel, DM_ADAPT_COARSEN, coarsenIS));
       PetscCall(ISDestroy(&coarsenIS));
       PetscCall(ISDestroy(&refineIS));
-      PetscCall(VecDestroy(&errVec));
-      /*     Adapt DM from label */
+      PetscCall(DMRestoreGlobalVector(edm, &errVec));
+      PetscCall(DMDestroy(&edm));
+      // Adapt DM from label
       if (nRefine || nCoarsen) {
+        char        oprefix[PETSC_MAX_PATH_LEN];
+        const char *p;
+        PetscBool   flg;
+
+        PetscCall(PetscOptionsHasName(NULL, adaptor->hdr.prefix, "-adapt_vec_view", &flg));
+        if (flg) {
+          Vec ref;
+
+          PetscCall(DMPlexCreateLabelField(dm, adaptLabel, &ref));
+          PetscCall(VecViewFromOptions(ref, (PetscObject)adaptor, "-adapt_vec_view"));
+          PetscCall(VecDestroy(&ref));
+        }
+
+        PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm, &p));
+        PetscCall(PetscStrncpy(oprefix, p, PETSC_MAX_PATH_LEN));
+        PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)dm, "adapt_"));
         PetscCall(DMAdaptLabel(dm, adaptLabel, &odm));
+        PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dm, oprefix));
+        PetscCall(PetscObjectSetOptionsPrefix((PetscObject)odm, oprefix));
         adapted = PETSC_TRUE;
       }
       PetscCall(DMLabelDestroy(&adaptLabel));
-      PetscCall(DMDestroy(&plex));
     } break;
     case DM_ADAPTATION_METRIC: {
       DM        dmGrad, dmHess, dmMetric, dmDet;
@@ -645,8 +888,8 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
       /*     Setup finite element spaces */
       PetscCall(DMClone(dm, &dmGrad));
       PetscCall(DMClone(dm, &dmHess));
-      PetscCheck(numFields <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Adaptation with multiple fields not yet considered"); // TODO
-      for (f = 0; f < numFields; ++f) {
+      PetscCheck(Nf <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Adaptation with multiple fields not yet considered"); // TODO
+      for (f = 0; f < Nf; ++f) {
         PetscFE         fe, feGrad, feHess;
         PetscDualSpace  Q;
         PetscSpace      space;
@@ -655,7 +898,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
         PetscInt        Nc, qorder, p;
         const char     *prefix;
 
-        PetscCall(PetscDSGetDiscretization(prob, f, (PetscObject *)&fe));
+        PetscCall(PetscDSGetDiscretization(ds, f, (PetscObject *)&fe));
         PetscCall(PetscFEGetNumComponents(fe, &Nc));
         PetscCheck(Nc <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Adaptation with multiple components not yet considered"); // TODO
         PetscCall(PetscFEGetBasisSpace(fe, &space));
@@ -803,5 +1046,86 @@ PetscErrorCode DMAdaptorAdapt(DMAdaptor adaptor, Vec x, DMAdaptationStrategy str
   default:
     SETERRQ(PetscObjectComm((PetscObject)adaptor), PETSC_ERR_ARG_WRONG, "Unrecognized adaptation strategy %d", strategy);
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  DMAdaptorGetMixedSetupFunction - Get the function setting up the mixed problem, if it exists
+
+  Not Collective
+
+  Input Parameter:
+. adaptor - the `DMAdaptor`
+
+  Output Parameter:
+. setupFunc - the function setting up the mixed problem, or `NULL`
+
+  Level: advanced
+
+.seealso: `DMAdaptor`, `DMAdaptorSetMixedSetupFunction()`, `DMAdaptorAdapt()`
+@*/
+PetscErrorCode DMAdaptorGetMixedSetupFunction(DMAdaptor adaptor, PetscErrorCode (**setupFunc)(DMAdaptor, DM))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adaptor, DMADAPTOR_CLASSID, 1);
+  PetscAssertPointer(setupFunc, 2);
+  *setupFunc = adaptor->ops->mixedsetup;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  DMAdaptorSetMixedSetupFunction - Set the function setting up the mixed problem
+
+  Not Collective
+
+  Input Parameters:
++ adaptor   - the `DMAdaptor`
+- setupFunc - the function setting up the mixed problem
+
+  Level: advanced
+
+.seealso: `DMAdaptor`, `DMAdaptorGetMixedSetupFunction()`, `DMAdaptorAdapt()`
+@*/
+PetscErrorCode DMAdaptorSetMixedSetupFunction(DMAdaptor adaptor, PetscErrorCode (*setupFunc)(DMAdaptor, DM))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adaptor, DMADAPTOR_CLASSID, 1);
+  PetscValidFunction(setupFunc, 2);
+  adaptor->ops->mixedsetup = setupFunc;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMAdaptorInitialize_Gradient(DMAdaptor adaptor)
+{
+  PetscFunctionBegin;
+  adaptor->ops->computeerrorindicator     = DMAdaptorComputeErrorIndicator_Gradient;
+  adaptor->ops->computecellerrorindicator = DMAdaptorComputeCellErrorIndicator_Gradient;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PETSC_EXTERN PetscErrorCode DMAdaptorCreate_Gradient(DMAdaptor adaptor)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adaptor, DMADAPTOR_CLASSID, 1);
+  adaptor->data = NULL;
+
+  PetscCall(DMAdaptorInitialize_Gradient(adaptor));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMAdaptorInitialize_Flux(DMAdaptor adaptor)
+{
+  PetscFunctionBegin;
+  adaptor->ops->computeerrorindicator = DMAdaptorComputeErrorIndicator_Flux;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PETSC_EXTERN PetscErrorCode DMAdaptorCreate_Flux(DMAdaptor adaptor)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adaptor, DMADAPTOR_CLASSID, 1);
+  adaptor->data = NULL;
+
+  PetscCall(DMAdaptorInitialize_Flux(adaptor));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

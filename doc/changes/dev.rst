@@ -92,6 +92,8 @@ Changes: Development
 - Now ``DMPlexComputeBdIntegral()`` takes one function per field
 - Add ``DMPlexCreateEdgeNumbering()``
 - Add ``DMPlexComputeL2FluxDiffVec()`` and ``DMPlexComputeL2FluxDiffVecLocal()``
+- Add ``DMAdaptorSetType()``, ``DMAdaptorGetType()``, ``DMAdaptorRegister()``, ``DMAdaptorRegisterAll()``, ``DMAdaptorRegisterDestroy()``
+- Add ``DMAdaptorGetMixedSetupFunction()`` and ``DMAdaptorSetMixedSetupFunction()``
 
 .. rubric:: FE/FV:
 

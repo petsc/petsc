@@ -10,11 +10,15 @@ struct _DMAdaptorOps {
   PetscErrorCode (*view)(DMAdaptor, PetscViewer);
   PetscErrorCode (*destroy)(DMAdaptor);
   PetscErrorCode (*transfersolution)(DMAdaptor, DM, Vec, DM, Vec, void *);
-  PetscErrorCode (*computeerrorindicator)(DMAdaptor, PetscInt, PetscInt, const PetscScalar *, const PetscScalar *, const PetscFVCellGeom *, PetscReal *, void *);
+  PetscErrorCode (*mixedsetup)(DMAdaptor, DM);
+  PetscErrorCode (*computeerrorindicator)(DMAdaptor, Vec, Vec);
+  PetscErrorCode (*computecellerrorindicator)(DMAdaptor, PetscInt, PetscInt, const PetscScalar *, const PetscScalar *, const PetscFVCellGeom *, PetscReal *, void *);
 };
 
 struct _p_DMAdaptor {
   PETSCHEADER(struct _DMAdaptorOps);
+  void *data;
+
   /* Inputs */
   DM        idm;                   /* Initial grid */
   SNES      snes;                  /* Solver */

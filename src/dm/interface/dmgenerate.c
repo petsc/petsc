@@ -183,11 +183,15 @@ PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
   }
   PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Grid adaptor %s not registered; you may need to add --download-%s to your ./configure options", name, name);
   if (*dmAdapt) {
+    void *ctx;
+
     (*dmAdapt)->prealloc_only = dm->prealloc_only; /* maybe this should go .... */
     PetscCall(PetscFree((*dmAdapt)->vectype));
     PetscCall(PetscStrallocpy(dm->vectype, (char **)&(*dmAdapt)->vectype));
     PetscCall(PetscFree((*dmAdapt)->mattype));
     PetscCall(PetscStrallocpy(dm->mattype, (char **)&(*dmAdapt)->mattype));
+    PetscCall(DMGetApplicationContext(dm, &ctx));
+    PetscCall(DMSetApplicationContext(*dmAdapt, ctx));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
