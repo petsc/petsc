@@ -33,45 +33,23 @@ PetscViewer PETSC_VIEWER_SAWS_(MPI_Comm comm)
   MPI_Comm       ncomm;
 
   PetscFunctionBegin;
-  ierr = PetscCommDuplicate(comm, &ncomm, NULL);
-  if (ierr) {
-    ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_SAWS_", __FILE__, ierr, PETSC_ERROR_INITIAL, " ");
-    PetscFunctionReturn(NULL);
-  }
-  if (Petsc_Viewer_SAWs_keyval == MPI_KEYVAL_INVALID) {
-    ierr = (PetscErrorCode)MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_SAWs_keyval, 0);
-    if (ierr) {
-      ierr = PetscError(ncomm, __LINE__, "PETSC_VIEWER_SAWS_", __FILE__, PETSC_ERR_MPI, PETSC_ERROR_INITIAL, " ");
-      PetscFunctionReturn(NULL);
-    }
-  }
+  PetscCallNull(PetscCommDuplicate(comm, &ncomm, NULL));
+  if (Petsc_Viewer_SAWs_keyval == MPI_KEYVAL_INVALID) { PetscCallMPINull(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_SAWs_keyval, 0)); }
   ierr = (PetscErrorCode)MPI_Comm_get_attr(ncomm, Petsc_Viewer_SAWs_keyval, (void **)&viewer, &flag);
   if (ierr) {
     ierr = PetscError(ncomm, __LINE__, "PETSC_VIEWER_SAWS_", __FILE__, PETSC_ERR_MPI, PETSC_ERROR_INITIAL, " ");
     PetscFunctionReturn(NULL);
   }
   if (!flag) { /* PetscViewer not yet created */
-    ierr = PetscViewerSAWsOpen(comm, &viewer);
-    if (ierr) {
-      ierr = PetscError(ncomm, __LINE__, "PETSC_VIEWER_SAWS_", __FILE__, ierr, PETSC_ERROR_REPEAT, " ");
-      PetscFunctionReturn(NULL);
-    }
-    ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
-    if (ierr) {
-      ierr = PetscError(ncomm, __LINE__, "PETSC_VIEWER_SAWS_", __FILE__, ierr, PETSC_ERROR_REPEAT, " ");
-      PetscFunctionReturn(NULL);
-    }
+    PetscCallNull(PetscViewerSAWsOpen(comm, &viewer));
+    PetscCallNull(PetscObjectRegisterDestroy((PetscObject)viewer));
     ierr = (PetscErrorCode)MPI_Comm_set_attr(ncomm, Petsc_Viewer_SAWs_keyval, (void *)viewer);
     if (ierr) {
       ierr = PetscError(ncomm, __LINE__, "PETSC_VIEWER_SAWS_", __FILE__, PETSC_ERR_MPI, PETSC_ERROR_INITIAL, " ");
       PetscFunctionReturn(NULL);
     }
   }
-  ierr = PetscCommDestroy(&ncomm);
-  if (ierr) {
-    ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_SAWS_", __FILE__, ierr, PETSC_ERROR_REPEAT, " ");
-    PetscFunctionReturn(NULL);
-  }
+  PetscCallNull(PetscCommDestroy(&ncomm));
   PetscFunctionReturn(viewer);
 }
 

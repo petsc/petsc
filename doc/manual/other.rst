@@ -342,7 +342,7 @@ For example, to quickly export a binary file containing a matrix, one
 may use ``-mat_view binary:matrix.out``, or to output to a
 MATLAB-compatible ASCII file, one may use
 ``-mat_view ascii:matrix.m:ascii_matlab``. See the
-``PetscOptionsGetViewer()`` man page for full details, as well as the
+``PetscOptionsCreateViewer()`` man page for full details, as well as the
 ``XXXViewFromOptions()`` man pages (for instance,
 ``PetscDrawSetFromOptions()``) for many other convenient command-line
 options.

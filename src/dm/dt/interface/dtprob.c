@@ -678,7 +678,7 @@ PetscErrorCode PetscProbComputeKSStatistic(Vec v, PetscProbFunc cdf, PetscReal *
   PetscCall(PetscObjectGetComm((PetscObject)v, &comm));
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)v, &prefix));
   PetscCall(PetscObjectGetOptions((PetscObject)v, &options));
-  PetscCall(PetscOptionsGetViewer(comm, options, prefix, "-ks_monitor", &viewer, &format, &flg));
+  PetscCall(PetscOptionsCreateViewer(comm, options, prefix, "-ks_monitor", &viewer, &format, &flg));
   if (flg) {
     PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
     PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
@@ -749,7 +749,7 @@ PetscErrorCode PetscProbComputeKSStatistic(Vec v, PetscProbFunc cdf, PetscReal *
   if (viewer) {
     PetscCall(PetscViewerFlush(viewer));
     PetscCall(PetscViewerPopFormat(viewer));
-    PetscCall(PetscOptionsRestoreViewer(&viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
   *alpha = KSfbar((int)n, (double)Dn);
   PetscFunctionReturn(PETSC_SUCCESS);

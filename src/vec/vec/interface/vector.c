@@ -1879,12 +1879,12 @@ PetscErrorCode VecStashViewFromOptions(Vec obj, PetscObject bobj, const char opt
 
   PetscFunctionBegin;
   prefix = bobj ? bobj->prefix : ((PetscObject)obj)->prefix;
-  PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj), ((PetscObject)obj)->options, prefix, optionname, &viewer, &format, &flg));
+  PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)obj), ((PetscObject)obj)->options, prefix, optionname, &viewer, &format, &flg));
   if (flg) {
     PetscCall(PetscViewerPushFormat(viewer, format));
     PetscCall(VecStashView(obj, viewer));
     PetscCall(PetscViewerPopFormat(viewer));
-    PetscCall(PetscOptionsRestoreViewer(&viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

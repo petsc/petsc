@@ -866,7 +866,7 @@ static PetscErrorCode SNESMonitorPauseFinal_Internal(SNES snes)
 
   Level: advanced
 
-.seealso: [](ch_snes), `PetscOptionsGetViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
+.seealso: [](ch_snes), `PetscOptionsCreateViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
           `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`,
           `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
@@ -881,11 +881,11 @@ PetscErrorCode SNESMonitorSetFromOptions(SNES snes, const char name[], const cha
   PetscBool         flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, name, &viewer, &format, &flg));
+  PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, name, &viewer, &format, &flg));
   if (flg) {
     PetscViewerAndFormat *vf;
     PetscCall(PetscViewerAndFormatCreate(viewer, format, &vf));
-    PetscCall(PetscOptionsRestoreViewer(&viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
     if (monitorsetup) PetscCall((*monitorsetup)(snes, vf));
     PetscCall(SNESMonitorSet(snes, (PetscErrorCode(*)(SNES, PetscInt, PetscReal, void *))monitor, vf, (PetscErrorCode(*)(void **))PetscViewerAndFormatDestroy));
   }
@@ -1089,8 +1089,8 @@ PetscErrorCode SNESSetFromOptions(SNES snes)
     PetscCall(SNESMonitorSet(snes, SNESMonitorLGRange, ctx, (PetscErrorCode(*)(void **))PetscViewerDestroy));
   }
 
-  PetscCall(PetscOptionsRestoreViewer(&snes->convergedreasonviewer));
-  PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_converged_reason", &snes->convergedreasonviewer, &snes->convergedreasonformat, NULL));
+  PetscCall(PetscViewerDestroy(&snes->convergedreasonviewer));
+  PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_converged_reason", &snes->convergedreasonviewer, &snes->convergedreasonformat, NULL));
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-snes_converged_reason_view_cancel", "Remove all converged reason viewers", "SNESConvergedReasonViewCancel", flg, &flg, &set));
   if (set && flg) PetscCall(SNESConvergedReasonViewCancel(snes));
@@ -2791,7 +2791,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   }
   PetscCall(VecDestroy(&x));
   if (complete_print) PetscCall(PetscViewerPopFormat(mviewer));
-  if (mviewer) PetscCall(PetscOptionsRestoreViewer(&mviewer));
+  if (mviewer) PetscCall(PetscViewerDestroy(&mviewer));
   PetscCall(PetscViewerASCIISetTab(viewer, tabs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2932,10 +2932,10 @@ PetscErrorCode SNESComputeJacobian(SNES snes, Vec X, Mat A, Mat B)
 
   {
     PetscBool flag = PETSC_FALSE, flag_draw = PETSC_FALSE, flag_contour = PETSC_FALSE, flag_operator = PETSC_FALSE;
-    PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_compare_explicit", NULL, NULL, &flag));
-    PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_compare_explicit_draw", NULL, NULL, &flag_draw));
-    PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_compare_explicit_draw_contour", NULL, NULL, &flag_contour));
-    PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_compare_operator", NULL, NULL, &flag_operator));
+    PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_compare_explicit", NULL, NULL, &flag));
+    PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_compare_explicit_draw", NULL, NULL, &flag_draw));
+    PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_compare_explicit_draw_contour", NULL, NULL, &flag_contour));
+    PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_compare_operator", NULL, NULL, &flag_operator));
     if (flag || flag_draw || flag_contour) {
       Mat         Bexp_mine = NULL, Bexp, FDexp;
       PetscViewer vdraw, vstdout;
@@ -2983,11 +2983,11 @@ PetscErrorCode SNESComputeJacobian(SNES snes, Vec X, Mat A, Mat B)
   {
     PetscBool flag = PETSC_FALSE, flag_display = PETSC_FALSE, flag_draw = PETSC_FALSE, flag_contour = PETSC_FALSE, flag_threshold = PETSC_FALSE;
     PetscReal threshold_atol = PETSC_SQRT_MACHINE_EPSILON, threshold_rtol = 10 * PETSC_SQRT_MACHINE_EPSILON;
-    PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_compare_coloring", NULL, NULL, &flag));
-    PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_compare_coloring_display", NULL, NULL, &flag_display));
-    PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_compare_coloring_draw", NULL, NULL, &flag_draw));
-    PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_compare_coloring_draw_contour", NULL, NULL, &flag_contour));
-    PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_compare_coloring_threshold", NULL, NULL, &flag_threshold));
+    PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_compare_coloring", NULL, NULL, &flag));
+    PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_compare_coloring_display", NULL, NULL, &flag_display));
+    PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_compare_coloring_draw", NULL, NULL, &flag_draw));
+    PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_compare_coloring_draw_contour", NULL, NULL, &flag_contour));
+    PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_compare_coloring_threshold", NULL, NULL, &flag_threshold));
     if (flag_threshold) {
       PetscCall(PetscOptionsGetReal(((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_compare_coloring_threshold_rtol", &threshold_rtol, NULL));
       PetscCall(PetscOptionsGetReal(((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_compare_coloring_threshold_atol", &threshold_atol, NULL));
@@ -3405,7 +3405,7 @@ PetscErrorCode SNESConvergedReasonViewCancel(SNES snes)
     if (snes->reasonviewdestroy[i]) PetscCall((*snes->reasonviewdestroy[i])(&snes->reasonviewcontext[i]));
   }
   snes->numberreasonviews = 0;
-  PetscCall(PetscOptionsRestoreViewer(&snes->convergedreasonviewer));
+  PetscCall(PetscViewerDestroy(&snes->convergedreasonviewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -4649,7 +4649,7 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x)
 
     if (!incall) {
       /* Estimate the convergence rate of the discretization */
-      PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_convergence_estimate", &viewer, &format, &flg));
+      PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_convergence_estimate", &viewer, &format, &flg));
       if (flg) {
         PetscConvEst conv;
         DM           dm;
@@ -4668,7 +4668,7 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x)
         PetscCall(PetscViewerPushFormat(viewer, format));
         PetscCall(PetscConvEstRateView(conv, alpha, viewer));
         PetscCall(PetscViewerPopFormat(viewer));
-        PetscCall(PetscOptionsRestoreViewer(&viewer));
+        PetscCall(PetscViewerDestroy(&viewer));
         PetscCall(PetscConvEstDestroy(&conv));
         PetscCall(PetscFree(alpha));
         incall = PETSC_FALSE;
@@ -4756,7 +4756,7 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x)
     if (snes->lagjac_persist) snes->jac_iter += snes->iter;
     if (snes->lagpre_persist) snes->pre_iter += snes->iter;
 
-    PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_test_local_min", NULL, NULL, &flg));
+    PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)snes), ((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_test_local_min", NULL, NULL, &flg));
     if (flg && !PetscPreLoadingOn) PetscCall(SNESTestLocalMin(snes));
     /* Call converged reason views. This may involve user-provided viewers as well */
     PetscCall(SNESConvergedReasonViewFromOptions(snes));

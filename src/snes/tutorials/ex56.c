@@ -405,14 +405,14 @@ int main(int argc, char **args)
     {
       PetscViewer       viewer = NULL;
       PetscViewerFormat fmt;
-      PetscCall(PetscOptionsGetViewer(comm, NULL, "", "-vec_view", &viewer, &fmt, &flg));
+      PetscCall(PetscOptionsCreateViewer(comm, NULL, "", "-vec_view", &viewer, &fmt, &flg));
       if (flg) {
         PetscCall(PetscViewerPushFormat(viewer, fmt));
         PetscCall(VecView(xx, viewer));
         PetscCall(VecView(bb, viewer));
         PetscCall(PetscViewerPopFormat(viewer));
       }
-      PetscCall(PetscOptionsRestoreViewer(&viewer));
+      PetscCall(PetscViewerDestroy(&viewer));
     }
     /* Free work space */
     PetscCall(SNESDestroy(&snes));

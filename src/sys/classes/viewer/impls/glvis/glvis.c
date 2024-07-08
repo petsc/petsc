@@ -649,13 +649,17 @@ PetscErrorCode PetscViewerGLVisOpen(MPI_Comm comm, PetscViewerGLVisType type, co
   Note:
   Unlike almost all other PETSc routines, `PETSC_VIEWER_GLVIS_()` does not return
   an error code.  It is usually used in the form
-$       XXXView(XXX object, PETSC_VIEWER_GLVIS_(comm));
+.vb
+       XXXView(XXX object, PETSC_VIEWER_GLVIS_(comm));
+.ve
+
+  Developer Note:
+  How come this viewer is not stashed as an attribute in the MPI communicator?
 
 .seealso: [](sec_viewers), `PETSCVIEWERGLVIS`, `PetscViewer`, `PetscViewerGLVISOpen()`, `PetscViewerGLVisType`, `PetscViewerCreate()`, `PetscViewerDestroy()`
 @*/
 PetscViewer PETSC_VIEWER_GLVIS_(MPI_Comm comm)
 {
-  PetscErrorCode       ierr;
   PetscBool            flg;
   PetscViewer          viewer;
   PetscViewerGLVisType type;
@@ -663,53 +667,18 @@ PetscViewer PETSC_VIEWER_GLVIS_(MPI_Comm comm)
   PetscInt             port = 19916; /* default for GLVis */
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetenv(comm, "PETSC_VIEWER_GLVIS_FILENAME", fname, PETSC_MAX_PATH_LEN, &flg);
-  if (ierr) {
-    ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_GLVIS_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
-    PetscFunctionReturn(NULL);
-  }
+  PetscCallNull(PetscOptionsGetenv(comm, "PETSC_VIEWER_GLVIS_FILENAME", fname, PETSC_MAX_PATH_LEN, &flg));
   if (!flg) {
     type = PETSC_VIEWER_GLVIS_SOCKET;
-    ierr = PetscOptionsGetenv(comm, "PETSC_VIEWER_GLVIS_HOSTNAME", fname, PETSC_MAX_PATH_LEN, &flg);
-    if (ierr) {
-      ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_GLVIS_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
-      PetscFunctionReturn(NULL);
-    }
-    if (!flg) {
-      ierr = PetscStrncpy(fname, "localhost", sizeof(fname));
-      if (ierr) {
-        ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_GLVIS_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
-        PetscFunctionReturn(NULL);
-      }
-    }
-    ierr = PetscOptionsGetenv(comm, "PETSC_VIEWER_GLVIS_PORT", sport, 16, &flg);
-    if (ierr) {
-      ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_GLVIS_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
-      PetscFunctionReturn(NULL);
-    }
-    if (flg) {
-      ierr = PetscOptionsStringToInt(sport, &port);
-      if (ierr) {
-        ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_GLVIS_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
-        PetscFunctionReturn(NULL);
-      }
-    }
+    PetscCallNull(PetscOptionsGetenv(comm, "PETSC_VIEWER_GLVIS_HOSTNAME", fname, PETSC_MAX_PATH_LEN, &flg));
+    if (!flg) { PetscCallNull(PetscStrncpy(fname, "localhost", sizeof(fname))); }
+    PetscCallNull(PetscOptionsGetenv(comm, "PETSC_VIEWER_GLVIS_PORT", sport, 16, &flg));
+    if (flg) { PetscCallNull(PetscOptionsStringToInt(sport, &port)); }
   } else {
     type = PETSC_VIEWER_GLVIS_DUMP;
   }
-  ierr = PetscViewerGLVisOpen(comm, type, fname, port, &viewer);
-  if (ierr) {
-    ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_GLVIS_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
-    PetscFunctionReturn(NULL);
-  }
-
-  ((PetscObject)viewer)->persistent = PETSC_TRUE;
-
-  ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
-  if (ierr) {
-    ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_GLVIS_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
-    PetscFunctionReturn(NULL);
-  }
+  PetscCallNull(PetscViewerGLVisOpen(comm, type, fname, port, &viewer));
+  PetscCallNull(PetscObjectRegisterDestroy((PetscObject)viewer));
   PetscFunctionReturn(viewer);
 }
 

@@ -1681,13 +1681,13 @@ static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
     default:
       SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid solution type: %s (%d)", solutionTypes[PetscMin(ctx->solType, NUM_SOLUTION_TYPES)], ctx->solType);
     }
-    PetscCall(PetscOptionsGetViewer(comm, NULL, NULL, "-param_view", &viewer, &format, &flg));
+    PetscCall(PetscOptionsCreateViewer(comm, NULL, NULL, "-param_view", &viewer, &format, &flg));
     if (flg) {
       PetscCall(PetscViewerPushFormat(viewer, format));
       PetscCall(PetscBagView(bag, viewer));
       PetscCall(PetscViewerFlush(viewer));
       PetscCall(PetscViewerPopFormat(viewer));
-      PetscCall(PetscOptionsRestoreViewer(&viewer));
+      PetscCall(PetscViewerDestroy(&viewer));
       PetscCall(PetscPrintf(comm, "  Max displacement: %g %g\n", (double)PetscRealPart(p->P_0 * (ctx->xmax[1] - ctx->xmin[1]) * (1. - 2. * nu_u) / (2. * p->mu * (1. - nu_u))), (double)PetscRealPart(p->P_0 * (ctx->xmax[1] - ctx->xmin[1]) * (1. - 2. * nu) / (2. * p->mu * (1. - nu)))));
       PetscCall(PetscPrintf(comm, "  Relaxation time: %g\n", (double)ctx->t_r));
     }
@@ -2016,7 +2016,7 @@ static PetscErrorCode SolutionMonitor(TS ts, PetscInt steps, PetscReal time, Vec
   PetscCall(TSGetDM(ts, &dm));
   PetscCall(PetscObjectGetOptions((PetscObject)ts, &options));
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)ts, &prefix));
-  PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)ts), options, prefix, "-monitor_solution", &viewer, &format, NULL));
+  PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)ts), options, prefix, "-monitor_solution", &viewer, &format, NULL));
   PetscCall(DMGetGlobalVector(dm, &exact));
   PetscCall(DMComputeExactSolution(dm, time, exact, NULL));
   PetscCall(DMSetOutputSequenceNumber(dm, steps, time));
@@ -2061,7 +2061,7 @@ static PetscErrorCode SolutionMonitor(TS ts, PetscInt steps, PetscReal time, Vec
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts), "]\n"));
     PetscCall(PetscFree3(exacts, ectxs, err));
   }
-  PetscCall(PetscOptionsRestoreViewer(&viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2076,9 +2076,9 @@ static PetscErrorCode SetupMonitor(TS ts, AppCtx *ctx)
   PetscFunctionBeginUser;
   PetscCall(PetscObjectGetOptions((PetscObject)ts, &options));
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)ts, &prefix));
-  PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)ts), options, prefix, "-monitor_solution", &viewer, &format, &flg));
+  PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)ts), options, prefix, "-monitor_solution", &viewer, &format, &flg));
   if (flg) PetscCall(TSMonitorSet(ts, SolutionMonitor, ctx, NULL));
-  PetscCall(PetscOptionsRestoreViewer(&viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

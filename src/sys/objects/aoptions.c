@@ -1115,7 +1115,7 @@ PetscErrorCode PetscOptionsBoolArray_Private(PetscOptionItems *PetscOptionsObjec
 }
 
 /*MC
-  PetscOptionsViewer - Gets a viewer appropriate for the type indicated by the user
+  PetscOptionsViewer - Creates a viewer appropriate for the type indicated by the user
 
   Synopsis:
   #include <petscviewer.h>
@@ -1138,9 +1138,9 @@ PetscErrorCode PetscOptionsBoolArray_Private(PetscOptionItems *PetscOptionsObjec
   Notes:
   Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 
-  See `PetscOptionsGetViewer()` for the format of the supplied viewer and its options
+  See `PetscOptionsCreateViewer()` for the format of the supplied viewer and its options
 
-.seealso: `PetscOptionsGetViewer()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
+.seealso: `PetscOptionsCreateViewer()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
           `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`,
           `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
@@ -1165,7 +1165,7 @@ PetscErrorCode PetscOptionsViewer_Private(PetscOptionItems *PetscOptionsObject, 
     /* must use system malloc since SAWs may free this */
     PetscCall(PetscStrdup("", (char **)&amsopt->data));
   }
-  PetscCall(PetscOptionsGetViewer(comm, PetscOptionsObject->options, prefix, opt, viewer, format, set));
+  PetscCall(PetscOptionsCreateViewer(comm, PetscOptionsObject->options, prefix, opt, viewer, format, set));
   if (ShouldPrintHelp(PetscOptionsObject)) PetscCall((*PetscHelpPrintf)(comm, "  -%s%s: <%s>: %s (%s)\n", Prefix(prefix), opt + 1, "", text, ManSection(man)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

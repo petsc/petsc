@@ -745,52 +745,20 @@ $       XXXView(XXX object, PETSC_VIEWER_DRAW_(comm));
 @*/
 PetscViewer PETSC_VIEWER_DRAW_(MPI_Comm comm)
 {
-  PetscErrorCode ierr;
-  PetscMPIInt    flag, mpi_ierr;
-  PetscViewer    viewer;
-  MPI_Comm       ncomm;
+  PetscMPIInt flag;
+  PetscViewer viewer;
+  MPI_Comm    ncomm;
 
   PetscFunctionBegin;
-  ierr = PetscCommDuplicate(comm, &ncomm, NULL);
-  if (ierr) {
-    ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_DRAW_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
-    PetscFunctionReturn(NULL);
-  }
-  if (Petsc_Viewer_Draw_keyval == MPI_KEYVAL_INVALID) {
-    mpi_ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_Draw_keyval, NULL);
-    if (mpi_ierr) {
-      ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_DRAW_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
-      PetscFunctionReturn(NULL);
-    }
-  }
-  mpi_ierr = MPI_Comm_get_attr(ncomm, Petsc_Viewer_Draw_keyval, (void **)&viewer, &flag);
-  if (mpi_ierr) {
-    ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_DRAW_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
-    PetscFunctionReturn(NULL);
-  }
+  PetscCallNull(PetscCommDuplicate(comm, &ncomm, NULL));
+  if (Petsc_Viewer_Draw_keyval == MPI_KEYVAL_INVALID) { PetscCallMPINull(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_Draw_keyval, NULL)); }
+  PetscCallMPINull(MPI_Comm_get_attr(ncomm, Petsc_Viewer_Draw_keyval, (void **)&viewer, &flag));
   if (!flag) { /* PetscViewer not yet created */
-    ierr                              = PetscViewerDrawOpen(ncomm, NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 300, 300, &viewer);
-    ((PetscObject)viewer)->persistent = PETSC_TRUE;
-    if (ierr) {
-      ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_DRAW_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_REPEAT, " ");
-      PetscFunctionReturn(NULL);
-    }
-    ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
-    if (ierr) {
-      ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_DRAW_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_REPEAT, " ");
-      PetscFunctionReturn(NULL);
-    }
-    mpi_ierr = MPI_Comm_set_attr(ncomm, Petsc_Viewer_Draw_keyval, (void *)viewer);
-    if (mpi_ierr) {
-      ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_DRAW_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
-      PetscFunctionReturn(NULL);
-    }
+    PetscCallNull(PetscViewerDrawOpen(ncomm, NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 300, 300, &viewer));
+    PetscCallNull(PetscObjectRegisterDestroy((PetscObject)viewer));
+    PetscCallMPINull(MPI_Comm_set_attr(ncomm, Petsc_Viewer_Draw_keyval, (void *)viewer));
   }
-  ierr = PetscCommDestroy(&ncomm);
-  if (ierr) {
-    ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_DRAW_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_REPEAT, " ");
-    PetscFunctionReturn(NULL);
-  }
+  PetscCallNull(PetscCommDestroy(&ncomm));
   PetscFunctionReturn(viewer);
 }
 

@@ -34,7 +34,6 @@ static PetscErrorCode PetscViewerFileClose_ASCII(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ----------------------------------------------------------------------*/
 static PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
@@ -685,7 +684,7 @@ static PetscErrorCode PetscFPrintfFortran(PetscInt unit, const char str[])
 
 /*@
   PetscViewerASCIIGetStdout - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all processes
-  in a communicator. Error returning version of `PETSC_VIEWER_STDOUT_()`
+  in a communicator that prints to `stdout`. Error returning version of `PETSC_VIEWER_STDOUT_()`
 
   Collective
 
@@ -698,12 +697,12 @@ static PetscErrorCode PetscFPrintfFortran(PetscInt unit, const char str[])
   Level: beginner
 
   Note:
-  This object is destroyed in `PetscFinalize()`, `PetscViewerDestroy()` should never be called on it
+  Use `PetscViewerDestroy()` to destroy it
 
   Developer Note:
   This should be used in all PETSc source code instead of `PETSC_VIEWER_STDOUT_()` since it allows error checking
 
-.seealso: [](sec_viewers), `PETSC_VIEWER_DRAW_()`, `PetscViewerASCIIOpen()`, `PETSC_VIEWER_STDERR_`, `PETSC_VIEWER_STDOUT_WORLD`,
+.seealso: [](sec_viewers), `PetscViewerASCIIGetStderr()`, `PETSC_VIEWER_DRAW_()`, `PetscViewerASCIIOpen()`, `PETSC_VIEWER_STDERR_`, `PETSC_VIEWER_STDOUT_WORLD`,
           `PETSC_VIEWER_STDOUT_SELF`
 @*/
 PetscErrorCode PetscViewerASCIIGetStdout(MPI_Comm comm, PetscViewer *viewer)
@@ -730,8 +729,11 @@ PetscErrorCode PetscViewerASCIIGetStdout(MPI_Comm comm, PetscViewer *viewer)
       petscviewerasciiopenwithfileunit_(&ncomm, &PETSC_VIEWER_ASCII_WORLD_fileunit, viewer, &ierr);
     } else
 #endif
-      PetscCall(PetscViewerASCIIOpen(ncomm, "stdout", viewer));
-    ((PetscObject)*viewer)->persistent = PETSC_TRUE;
+    {
+      PetscCall(PetscViewerCreate(ncomm, viewer));
+      PetscCall(PetscViewerSetType(*viewer, PETSCVIEWERASCII));
+      PetscCall(PetscViewerFileSetName(*viewer, "stdout"));
+    }
     PetscCall(PetscObjectRegisterDestroy((PetscObject)*viewer));
     PetscCallMPI(MPI_Comm_set_attr(ncomm, Petsc_Viewer_Stdout_keyval, (void *)*viewer));
   }
@@ -1002,7 +1004,7 @@ static PetscErrorCode PetscViewerView_ASCII(PetscViewer v, PetscViewer viewer)
 }
 
 /*MC
-   PETSCVIEWERASCII - A viewer that prints to stdout or an ASCII file
+   PETSCVIEWERASCII - A viewer that prints to `stdout`, `stderr`, or an ASCII file
 
   Level: beginner
 

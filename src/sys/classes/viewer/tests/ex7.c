@@ -1,4 +1,4 @@
-const char help[] = "Test PetscOptionsGetViewers()";
+const char help[] = "Test PetscOptionsCreateViewers()";
 
 #include <petscviewer.h>
 
@@ -11,12 +11,12 @@ int main(int argc, char **argv)
   PetscViewerFormat formats[N_MAX];
 
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-  PetscCall(PetscOptionsGetViewers(PETSC_COMM_WORLD, NULL, NULL, "-test_view", &n_max, viewers, formats, NULL));
+  PetscCall(PetscOptionsCreateViewers(PETSC_COMM_WORLD, NULL, NULL, "-test_view", &n_max, viewers, formats, NULL));
   for (PetscInt i = 0; i < n_max; i++) {
     PetscCall(PetscViewerPushFormat(viewers[i], formats[i]));
     PetscCall(PetscViewerASCIIPrintf(viewers[i], "This is viewer %d\n", (int)i));
     PetscCall(PetscViewerPopFormat(viewers[i]));
-    PetscCall(PetscOptionsRestoreViewer(&viewers[i]));
+    PetscCall(PetscViewerDestroy(&viewers[i]));
   }
   PetscCall(PetscFinalize());
   return 0;

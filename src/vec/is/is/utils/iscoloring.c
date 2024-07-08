@@ -118,12 +118,12 @@ PetscErrorCode ISColoringViewFromOptions(ISColoring obj, PetscObject bobj, const
 
   PetscFunctionBegin;
   prefix = bobj ? bobj->prefix : NULL;
-  PetscCall(PetscOptionsGetViewer(obj->comm, NULL, prefix, optionname, &viewer, &format, &flg));
+  PetscCall(PetscOptionsCreateViewer(obj->comm, NULL, prefix, optionname, &viewer, &format, &flg));
   if (flg) {
     PetscCall(PetscViewerPushFormat(viewer, format));
     PetscCall(ISColoringView(obj, viewer));
     PetscCall(PetscViewerPopFormat(viewer));
-    PetscCall(PetscOptionsRestoreViewer(&viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

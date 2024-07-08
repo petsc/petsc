@@ -996,7 +996,7 @@ static PetscErrorCode KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
 .   -ksp_dgmres_max_eigen <max_neig>             - maximum number of eigenvalues that can be extracted during the iterative process
 .   -ksp_dgmres_force                            - use the deflation at each restart; switch off the adaptive strategy.
 -   -ksp_dgmres_view_deflation_vecs <viewerspec> - View the deflation vectors, where viewerspec is a key that can be
-                                                   parsed by `PetscOptionsGetViewer()`.  If neig > 1, viewerspec should
+                                                   parsed by `PetscOptionsCreateViewer()`.  If neig > 1, viewerspec should
                                                    end with ":append".  No vectors will be viewed if the adaptive
                                                    strategy chooses not to deflate, so -ksp_dgmres_force should also
                                                    be given.
