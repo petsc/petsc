@@ -91,6 +91,7 @@ Changes: Development
 - Add refinement argument to ``DMPlexCreateHexCylinderMesh()``
 - Now ``DMPlexComputeBdIntegral()`` takes one function per field
 - Add ``DMPlexCreateEdgeNumbering()``
+- Add ``DMPlexComputeL2FluxDiffVec()`` and ``DMPlexComputeL2FluxDiffVecLocal()``
 
 .. rubric:: FE/FV:
 
