@@ -94,7 +94,7 @@ def main(petsc_dir,loc,c2html,mapnames):
     fd.write('\n')
     fd.write('\n')
     fd.write(os.path.join(loc,'%.html')+' : %\n')
-    fd.write('	@' + os.path.join(petsc_dir,'doc','build_c2html_file.py') + ' ' + petsc_dir + ' ' + loc + ' '+ git_sha + ' ' + c2html + ' ' + mapnames + ' $< $@\n')
+    fd.write('	@' + str(os.path.join(str(petsc_dir),'doc','build_c2html_file.py')) + ' ' + str(petsc_dir) + ' ' + str(loc) + ' '+ git_sha + ' ' + c2html + ' ' + mapnames + ' $< $@\n')
     fd.write('\n')
     fd.write('all: $(files)\n')
 
