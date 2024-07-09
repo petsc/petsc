@@ -176,6 +176,8 @@ cdef extern from * nogil:
     PetscErrorCode VecNestGetSubVecs(PetscVec, PetscInt*, PetscVec**)
     PetscErrorCode VecNestSetSubVecs(PetscVec, PetscInt, PetscInt*, PetscVec*)
 
+    PetscErrorCode VecConcatenate(PetscInt nx, PetscVec[], PetscVec*, PetscIS*[])
+
     PetscErrorCode VecISAXPY(PetscVec, PetscIS, PetscScalar, PetscVec)
     PetscErrorCode VecISSet(PetscVec, PetscIS, PetscScalar)
 
