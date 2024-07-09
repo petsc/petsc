@@ -1,5 +1,6 @@
 from petsc4py import PETSc
 import unittest
+import numpy as np
 
 # --------------------------------------------------------------------
 
@@ -261,6 +262,18 @@ class BaseTestVec:
         for i in range(rs, re):
             self.assertEqual(z[i], b * N * (N - 1) / 2 + a * i * N)
 
+    def testConcatenate(self):
+        x = self.vec
+        y = x.duplicate()
+        x.set(1)
+        y.set(2)
+        z, index_ises = PETSc.Vec.concatenate([x, y])
+        self.assertEqual(z.getLocalSize(), x.getLocalSize() + y.getLocalSize())
+        self.assertEqual(z.min()[1], x.min()[1])
+        self.assertEqual(z.max()[1], y.max()[1])
+        np.allclose(z.getArray(), np.concatenate([x.getArray(), y.getArray()]))
+        np.allclose(z.getArray()[0:x.getLocalSize()], x.getArray())
+        np.allclose(z.getArray()[x.getLocalSize():], y.getArray())
 
 # --------------------------------------------------------------------
 

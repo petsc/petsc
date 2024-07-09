@@ -2362,7 +2362,8 @@ PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer)
 - viewer - The `PetscViewer` for the saved topology
 
   Output Parameter:
-. globalToLocalPointSF - The `PetscSF` that pushes points in [0, N) to the associated points in the loaded `DMPLEX`, where N is the global number of points; `NULL` if unneeded
+. globalToLocalPointSF - The `PetscSF` that pushes points in [0, N) to the associated points in the loaded `DMPLEX`, where N is the global number of points;
+  `NULL` if unneeded
 
   Level: advanced
 
@@ -3048,7 +3049,7 @@ PetscErrorCode DMPlexGetConeSize(DM dm, PetscInt p, PetscInt *size)
   Note:
   This should be called after `DMPlexSetChart()`.
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreate()`, `DMPlexGetConeSize()`, `DMPlexSetChart()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexSetCone()`, `DMPlexCreate()`, `DMPlexGetConeSize()`, `DMPlexSetChart()`
 @*/
 PetscErrorCode DMPlexSetConeSize(DM dm, PetscInt p, PetscInt size)
 {
@@ -3071,12 +3072,17 @@ PetscErrorCode DMPlexSetConeSize(DM dm, PetscInt p, PetscInt size)
 - p  - The point, which must lie in the chart set with `DMPlexSetChart()`
 
   Output Parameter:
-. cone - An array of points which are on the in-edges for point `p`
+. cone - An array of points which are on the in-edges for point `p`, the length of `cone` is the result of `DMPlexGetConeSize()`
 
   Level: beginner
 
   Fortran Notes:
-  You must also call `DMPlexRestoreCone()` after you finish using the returned array.
+  `cone` must be declared with
+.vb
+  PetscInt, pointer :: cone(:)
+.ve
+
+  You must also call `DMPlexRestoreCone()` after you finish using the array.
   `DMPlexRestoreCone()` is not needed/available in C.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetConeSize()`, `DMPlexSetCone()`, `DMPlexGetConeTuple()`, `DMPlexSetChart()`, `DMPlexRestoreCone()`
@@ -3105,7 +3111,7 @@ PetscErrorCode DMPlexGetCone(DM dm, PetscInt p, const PetscInt *cone[])
 
   Output Parameters:
 + pConesSection - `PetscSection` describing the layout of `pCones`
-- pCones        - An array of points which are on the in-edges for the point set `p`
+- pCones        - An `IS` containing the points which are on the in-edges for the point set `p`
 
   Level: intermediate
 
@@ -3140,7 +3146,7 @@ PetscErrorCode DMPlexGetConeTuple(DM dm, IS p, PetscSection *pConesSection, IS *
 - points - The `IS` of points, which must lie in the chart set with `DMPlexSetChart()`
 
   Output Parameter:
-. expandedPoints - An array of vertices recursively expanded from input points
+. expandedPoints - An `IS` containing the of vertices recursively expanded from input points
 
   Level: advanced
 
@@ -3169,7 +3175,8 @@ PetscErrorCode DMPlexGetConeRecursiveVertices(DM dm, IS points, IS *expandedPoin
 }
 
 /*@
-  DMPlexGetConeRecursive - Expand each given point into its cone points and do that recursively until we end up just with vertices (DAG points of depth 0, i.e. without cones).
+  DMPlexGetConeRecursive - Expand each given point into its cone points and do that recursively until we end up just with vertices
+  (DAG points of depth 0, i.e., without cones).
 
   Not Collective
 
@@ -3310,7 +3317,7 @@ PetscErrorCode DMPlexRestoreConeRecursive(DM dm, IS points, PetscInt *depth, IS 
   Input Parameters:
 + dm   - The `DMPLEX`
 . p    - The point, which must lie in the chart set with `DMPlexSetChart()`
-- cone - An array of points which are on the in-edges for point `p`
+- cone - An array of points which are on the in-edges for point `p`, its length must have been previously provided with `DMPlexSetConeSize()`
 
   Level: beginner
 
@@ -3354,7 +3361,7 @@ PetscErrorCode DMPlexSetCone(DM dm, PetscInt p, const PetscInt cone[])
 
   Output Parameter:
 . coneOrientation - An array of orientations which are on the in-edges for point `p`. An orientation is an
-                    integer giving the prescription for cone traversal.
+                    integer giving the prescription for cone traversal. Its length is given by the result of `DMPlexSetConeSize()`
 
   Level: beginner
 
@@ -3365,10 +3372,11 @@ PetscErrorCode DMPlexSetCone(DM dm, PetscInt p, const PetscInt cone[])
   with the identity.
 
   Fortran Notes:
-  You must also call `DMPlexRestoreConeOrientation()` after you finish using the returned array.
+  You must call `DMPlexRestoreConeOrientation()` after you finish using the returned array.
   `DMPlexRestoreConeOrientation()` is not needed/available in C.
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPolytopeTypeComposeOrientation()`, `DMPolytopeTypeComposeOrientationInv()`, `DMPlexCreate()`, `DMPlexGetCone()`, `DMPlexSetCone()`, `DMPlexSetChart()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexSetConeSize()`, `DMPolytopeTypeComposeOrientation()`, `DMPolytopeTypeComposeOrientationInv()`,
+          `DMPlexCreate()`, `DMPlexGetCone()`, `DMPlexSetCone()`, `DMPlexSetChart()`
 @*/
 PetscErrorCode DMPlexGetConeOrientation(DM dm, PetscInt p, const PetscInt *coneOrientation[])
 {
@@ -3396,7 +3404,7 @@ PetscErrorCode DMPlexGetConeOrientation(DM dm, PetscInt p, const PetscInt *coneO
   Input Parameters:
 + dm              - The `DMPLEX`
 . p               - The point, which must lie in the chart set with `DMPlexSetChart()`
-- coneOrientation - An array of orientations
+- coneOrientation - An array of orientations. Its length is given by the result of `DMPlexSetConeSize()`
 
   Level: beginner
 
@@ -3518,7 +3526,7 @@ PetscErrorCode DMPlexInsertConeOrientation(DM dm, PetscInt p, PetscInt conePos, 
   Output Parameters:
 + cone - An array of points which are on the in-edges for point `p`
 - ornt - An array of orientations which are on the in-edges for point `p`. An orientation is an
-        integer giving the prescription for cone traversal.
+         integer giving the prescription for cone traversal.
 
   Level: beginner
 
@@ -3528,9 +3536,14 @@ PetscErrorCode DMPlexInsertConeOrientation(DM dm, PetscInt p, PetscInt conePos, 
   of o, however it is not necessarily the inverse. To get the inverse, use `DMPolytopeTypeComposeOrientationInv()`
   with the identity.
 
+  You must also call `DMPlexRestoreOrientedCone()` after you finish using the returned array.
+
   Fortran Notes:
-  You must also call `DMPlexRestoreCone()` after you finish using the returned array.
-  `DMPlexRestoreCone()` is not needed/available in C.
+  `cone` and `ornt` must be declared with
+.vb
+  PetscInt, pointer :: cone(:)
+  PetscInt, pointer :: ornt(:)
+.ve
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexRestoreOrientedCone()`, `DMPlexGetConeSize()`, `DMPlexGetCone()`, `DMPlexGetChart()`
 @*/
@@ -3560,7 +3573,7 @@ PetscErrorCode DMPlexGetOrientedCone(DM dm, PetscInt p, const PetscInt *cone[], 
 }
 
 /*@C
-  DMPlexRestoreOrientedCone - Restore the points and orientations on the in-edges for this point in the DAG
+  DMPlexRestoreOrientedCone - Restore the points and orientations on the in-edges for this point in the DAG obtained with `DMPlexGetOrientedCone()`
 
   Not Collective
 
@@ -3569,19 +3582,9 @@ PetscErrorCode DMPlexGetOrientedCone(DM dm, PetscInt p, const PetscInt *cone[], 
 . p    - The point, which must lie in the chart set with `DMPlexSetChart()`
 . cone - An array of points which are on the in-edges for point p
 - ornt - An array of orientations which are on the in-edges for point `p`. An orientation is an
-        integer giving the prescription for cone traversal.
+         integer giving the prescription for cone traversal.
 
   Level: beginner
-
-  Notes:
-  The number indexes the symmetry transformations for the cell type (see manual). Orientation 0 is always
-  the identity transformation. Negative orientation indicates reflection so that -(o+1) is the reflection
-  of o, however it is not necessarily the inverse. To get the inverse, use `DMPolytopeTypeComposeOrientationInv()`
-  with the identity.
-
-  Fortran Notes:
-  You must also call `DMPlexRestoreCone()` after you finish using the returned array.
-  `DMPlexRestoreCone()` is not needed/available in C.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetOrientedCone()`, `DMPlexGetConeSize()`, `DMPlexGetCone()`, `DMPlexGetChart()`
 @*/
@@ -3659,11 +3662,16 @@ PetscErrorCode DMPlexSetSupportSize(DM dm, PetscInt p, PetscInt size)
 - p  - The point, which must lie in the chart set with `DMPlexSetChart()`
 
   Output Parameter:
-. support - An array of points which are on the out-edges for point `p`
+. support - An array of points which are on the out-edges for point `p`, its length is that obtained from `DMPlexGetSupportSize()`
 
   Level: beginner
 
   Fortran Notes:
+  `support` must be declared with
+.vb
+  PetscInt, pointer :: support(:)
+.ve
+
   You must also call `DMPlexRestoreSupport()` after you finish using the returned array.
   `DMPlexRestoreSupport()` is not needed/available in C.
 
@@ -3690,7 +3698,7 @@ PetscErrorCode DMPlexGetSupport(DM dm, PetscInt p, const PetscInt *support[])
   Input Parameters:
 + dm      - The `DMPLEX`
 . p       - The point, which must lie in the chart set with `DMPlexSetChart()`
-- support - An array of points which are on the out-edges for point `p`
+- support - An array of points which are on the out-edges for point `p`, its length is that obtained from `DMPlexGetSupportSize()`
 
   Level: beginner
 
@@ -4093,10 +4101,11 @@ PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt o
 
   Input/Output Parameter:
 . points - The points and point orientations, interleaved as pairs [p0, o0, p1, o1, ...];
-           if `NULL` on input, internal storage will be returned, otherwise the provided array is used
+           if *points is `NULL` on input, internal storage will be returned, use `DMPlexRestoreTransitiveClosure()`,
+           otherwise the provided array is used to hold the values
 
   Output Parameter:
-. numPoints - The number of points in the closure, so points[] is of size 2*`numPoints`
+. numPoints - The number of points in the closure, so `points` is of size 2*`numPoints`
 
   Level: beginner
 
@@ -4104,7 +4113,13 @@ PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt o
   If using internal storage (points is `NULL` on input), each call overwrites the last output.
 
   Fortran Notes:
-  The `numPoints` argument is not present in the Fortran binding since it is internal to the array.
+  `points` must be declared with
+.vb
+  PetscInt, pointer :: points(:)
+.ve
+  and is always allocated by the function.
+
+  The `numPoints` argument is not present in the Fortran binding.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexRestoreTransitiveClosure()`, `DMPlexCreate()`, `DMPlexSetCone()`, `DMPlexSetChart()`, `DMPlexGetCone()`
 @*/
@@ -4703,7 +4718,12 @@ PetscErrorCode DMPlexComputeCellTypes(DM dm)
   Currently, this is restricted to a single level join
 
   Fortran Notes:
-  The `numCoveredPoints` argument is not present in the Fortran binding since it is internal to the array.
+  `converedPoints` must be declared with
+.vb
+  PetscInt, pointer :: coveredPints(:)
+.ve
+
+  The `numCoveredPoints` argument is not present in the Fortran binding.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexRestoreJoin()`, `DMPlexGetMeet()`
 @*/
@@ -4753,7 +4773,7 @@ PetscErrorCode DMPlexGetJoin(DM dm, PetscInt numPoints, const PetscInt points[],
 }
 
 /*@C
-  DMPlexRestoreJoin - Restore an array for the join of the set of points
+  DMPlexRestoreJoin - Restore an array for the join of the set of points obtained with `DMPlexGetJoin()`
 
   Not Collective
 
@@ -4773,7 +4793,7 @@ PetscErrorCode DMPlexGetJoin(DM dm, PetscInt numPoints, const PetscInt points[],
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetJoin()`, `DMPlexGetFullJoin()`, `DMPlexGetMeet()`
 @*/
-PetscErrorCode DMPlexRestoreJoin(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
+PetscErrorCode DMPlexRestoreJoin(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt *coveredPoints[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -4793,16 +4813,22 @@ PetscErrorCode DMPlexRestoreJoin(DM dm, PetscInt numPoints, const PetscInt point
   Input Parameters:
 + dm        - The `DMPLEX` object
 . numPoints - The number of input points for the join
-- points    - The input points
+- points    - The input points, its length is `numPoints`
 
   Output Parameters:
 + numCoveredPoints - The number of points in the join
-- coveredPoints    - The points in the join
+- coveredPoints    - The points in the join, its length is `numCoveredPoints`
 
   Level: intermediate
 
   Fortran Notes:
-  The `numCoveredPoints` argument is not present in the Fortran binding since it is internal to the array.
+  `points` and `converedPoints` must be declared with
+.vb
+  PetscInt, pointer :: points(:)
+  PetscInt, pointer :: coveredPints(:)
+.ve
+
+  The `numCoveredPoints` argument is not present in the Fortran binding.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetJoin()`, `DMPlexRestoreJoin()`, `DMPlexGetMeet()`
 @*/
@@ -4890,11 +4916,11 @@ PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt point
   Input Parameters:
 + dm        - The `DMPLEX` object
 . numPoints - The number of input points for the meet
-- points    - The input points
+- points    - The input points, of length `numPoints`
 
   Output Parameters:
 + numCoveringPoints - The number of points in the meet
-- coveringPoints    - The points in the meet
+- coveringPoints    - The points in the meet, of length `numCoveringPoints`
 
   Level: intermediate
 
@@ -4902,6 +4928,11 @@ PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt point
   Currently, this is restricted to a single level meet
 
   Fortran Notes:
+  `coveringPoints` must be declared with
+.vb
+  PetscInt, pointer :: coveringPoints(:)
+.ve
+
   The `numCoveredPoints` argument is not present in the Fortran binding since it is internal to the array.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexRestoreMeet()`, `DMPlexGetJoin()`
@@ -4952,7 +4983,7 @@ PetscErrorCode DMPlexGetMeet(DM dm, PetscInt numPoints, const PetscInt points[],
 }
 
 /*@C
-  DMPlexRestoreMeet - Restore an array for the meet of the set of points
+  DMPlexRestoreMeet - Restore an array for the meet of the set of points obtained with `DMPlexGetMeet()`
 
   Not Collective
 
@@ -4992,15 +5023,21 @@ PetscErrorCode DMPlexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt point
   Input Parameters:
 + dm        - The `DMPLEX` object
 . numPoints - The number of input points for the meet
-- points    - The input points
+- points    - The input points, of length  `numPoints`
 
   Output Parameters:
 + numCoveredPoints - The number of points in the meet
-- coveredPoints    - The points in the meet
+- coveredPoints    - The points in the meet, of length  `numCoveredPoints`
 
   Level: intermediate
 
   Fortran Notes:
+  `points` and `coveredPoints` must be declared with
+.vb
+  PetscInt, pointer :: points(:)
+  PetscInt, pointer :: coveredPoints(:)
+.ve
+
   The `numCoveredPoints` argument is not present in the Fortran binding since it is internal to the array.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetMeet()`, `DMPlexRestoreMeet()`, `DMPlexGetJoin()`
@@ -5706,7 +5743,8 @@ PetscErrorCode DMPlexGetCones(DM dm, PetscInt *cones[])
   Level: developer
 
   Notes:
-  The `PetscSection` returned by `DMPlexGetConeSection()` partitions coneOrientations into cone orientations of particular points as returned by `DMPlexGetConeOrientation()`.
+  The `PetscSection` returned by `DMPlexGetConeSection()` partitions coneOrientations into cone orientations of particular points
+  as returned by `DMPlexGetConeOrientation()`.
 
   The meaning of coneOrientations values is detailed in `DMPlexGetConeOrientation()`.
 
@@ -6463,8 +6501,8 @@ PetscErrorCode DMPlexVecGetOrientedClosure_Internal(DM dm, PetscSection section,
 
   Input/Output Parameters:
 + csize  - The size of the input values array, or `NULL`; on output the number of values in the closure
-- values - An array to use for the values, or `NULL` to have it allocated automatically;
-           if the user provided `NULL`, it is a borrowed array and should not be freed
+- values - An array to use for the values, or *values = `NULL` to have it allocated automatically;
+           if the user provided `NULL`, it is a borrowed array and should not be freed, use  `DMPlexVecRestoreClosure()` to return it
 
   Level: intermediate
 
@@ -6496,7 +6534,7 @@ PetscErrorCode DMPlexVecGetOrientedClosure_Internal(DM dm, PetscSection section,
 .ve
 
   Fortran Notes:
-  The `csize` argument is not present in the Fortran binding since it is internal to the array.
+  The `csize` argument is not present in the Fortran binding.
 
   `values` must be declared with
 .vb
@@ -8081,7 +8119,7 @@ static PetscErrorCode DMPlexGetClosureIndices_Internal(DM dm, PetscSection secti
   Level: advanced
 
   Notes:
-  Must call `DMPlexRestoreClosureIndices()` to free allocated memory
+  Call `DMPlexRestoreClosureIndices()` to free allocated memory
 
   If `idxSection` is global, any constrained dofs (see `DMAddBoundary()`, for example) will get negative indices.  The value
   of those indices is not significant.  If `idxSection` is local, the constrained dofs will yield the involution -(idx+1)

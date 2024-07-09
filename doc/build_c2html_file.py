@@ -15,7 +15,7 @@ def main(petsc_dir,loc,git_sha,c2html,mapnames,rel_dir,file):
   cmd = 'sed -E "s/PETSC[A-Z]*_DLLEXPORT//g"  | '+ \
          c2html + ' -n | \
          awk \'{ sub(/<pre width="80">/,"<pre width=\"80\">\\n"); print }\' | \
-         grep -E -v "(PetscValid|#if !defined\(__|#define __|#undef __|EXTERN_C )" | ' + \
+         grep -v "#if !defined(__" | grep -E -v "(PetscValid|#define __|#undef __|EXTERN_C )" | ' + \
          mapnames + ' -map htmlmap.tmp -inhtml'
   txt = subprocess.check_output(cmd, text=True, input=txt, shell = True)
 
