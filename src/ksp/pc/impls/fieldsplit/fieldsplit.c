@@ -851,6 +851,9 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELFP) {
         PetscCall(MatDestroy(&jac->schurp));
         PetscCall(MatSchurComplementGetPmat(jac->schur, MAT_INITIAL_MATRIX, &jac->schurp));
+      } else if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_FULL) {
+        PetscCall(MatDestroy(&jac->schur_user));
+        PetscCall(MatSchurComplementComputeExplicitOperator(jac->schur, &jac->schur_user));
       }
       if (kspA != kspInner) PetscCall(KSPSetOperators(kspA, jac->mat[0], jac->pmat[0]));
       if (kspUpper != kspA) PetscCall(KSPSetOperators(kspUpper, jac->mat[0], jac->pmat[0]));
