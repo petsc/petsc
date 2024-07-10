@@ -1507,7 +1507,7 @@ static PetscErrorCode DMPlexTransformCreateCellVertices_Internal(DMPlexTransform
     const PetscScalar   *coords;
     DMPolytopeType      *rct;
     PetscInt            *rsize, *rcone, *rornt;
-    PetscInt             Nct, n, r, pNew;
+    PetscInt             Nct, n, r, pNew = 0;
     PetscInt             trdim, vStart, vEnd, Nc;
     const PetscInt       debug = 0;
     const char          *typeName;
