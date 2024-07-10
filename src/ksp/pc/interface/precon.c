@@ -217,7 +217,7 @@ PetscErrorCode PCSetDiagonalScale(PC pc, Vec s)
 
   If diagonal scaling is turned off and `in` is not `out` then `in` is copied to `out`
 
-.seealso: [](ch_ksp), `PCCreate()`, `PCSetUp()`, `PCSetDiagonalScale()`, `PCDiagonalScaleRight()`, `PCDiagonalScale()`
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetUp()`, `PCSetDiagonalScale()`, `PCDiagonalScaleRight()`, `MatDiagonalScale()`
 @*/
 PetscErrorCode PCDiagonalScaleLeft(PC pc, Vec in, Vec out)
 {
@@ -259,7 +259,7 @@ PetscErrorCode PCDiagonalScaleLeft(PC pc, Vec in, Vec out)
 
   If diagonal scaling is turned off and `in` is not `out` then `in` is copied to `out`
 
-.seealso: [](ch_ksp), `PCCreate()`, `PCSetUp()`, `PCDiagonalScaleLeft()`, `PCSetDiagonalScale()`, `PCDiagonalScale()`
+.seealso: [](ch_ksp), `PCCreate()`, `PCSetUp()`, `PCDiagonalScaleLeft()`, `PCSetDiagonalScale()`, `MatDiagonalScale()`
 @*/
 PetscErrorCode PCDiagonalScaleRight(PC pc, Vec in, Vec out)
 {
@@ -295,7 +295,7 @@ PetscErrorCode PCDiagonalScaleRight(PC pc, Vec in, Vec out)
   For the common case in which the linear system matrix and the matrix used to construct the
   preconditioner are identical, this routine has no affect.
 
-.seealso: [](ch_ksp), `PC`, `PCGetUseAmat()`, `PCBJACOBI`, `PGMG`, `PCFIELDSPLIT`, `PCCOMPOSITE`,
+.seealso: [](ch_ksp), `PC`, `PCGetUseAmat()`, `PCBJACOBI`, `PCMG`, `PCFIELDSPLIT`, `PCCOMPOSITE`,
           `KSPSetOperators()`, `PCSetOperators()`
 @*/
 PetscErrorCode PCSetUseAmat(PC pc, PetscBool flg)
@@ -354,7 +354,7 @@ PetscErrorCode PCSetErrorIfFailure(PC pc, PetscBool flg)
   For the common case in which the linear system matrix and the matrix used to construct the
   preconditioner are identical, this routine is does nothing.
 
-.seealso: [](ch_ksp), `PC`, `PCSetUseAmat()`, `PCBJACOBI`, `PGMG`, `PCFIELDSPLIT`, `PCCOMPOSITE`
+.seealso: [](ch_ksp), `PC`, `PCSetUseAmat()`, `PCBJACOBI`, `PCMG`, `PCFIELDSPLIT`, `PCCOMPOSITE`
 @*/
 PetscErrorCode PCGetUseAmat(PC pc, PetscBool *flg)
 {

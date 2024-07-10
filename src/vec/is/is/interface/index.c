@@ -1022,7 +1022,7 @@ PetscErrorCode ISSetPermutation(IS is)
 
   Level: beginner
 
-.seealso: `IS`, `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlocked()`
+.seealso: `IS`, `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlock()`
 @*/
 PetscErrorCode ISDestroy(IS *is)
 {

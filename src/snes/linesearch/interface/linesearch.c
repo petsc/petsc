@@ -1343,7 +1343,7 @@ PetscErrorCode SNESLineSearchSetOrder(SNESLineSearch linesearch, PetscInt order)
   This, in combination with `SNESLineSearchSetNorms()`, allow the line search and the `SNESSolve_XXX()` to share
   computed values.
 
-.seealso: [](ch_snes), `SNES`, `SNESLineSearch`, `SNESLineSearchSetNorms()` `SNESLineSearchGetVecs()`
+.seealso: [](ch_snes), `SNES`, `SNESLineSearch`, `SNESLineSearchSetNorms()`, `SNESLineSearchGetVecs()`
 @*/
 PetscErrorCode SNESLineSearchGetNorms(SNESLineSearch linesearch, PetscReal *xnorm, PetscReal *fnorm, PetscReal *ynorm)
 {
