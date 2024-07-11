@@ -84,8 +84,8 @@ PetscErrorCode PetscKokkosInitializeCheck(void)
     PetscDeviceContext dctx;
     PetscDeviceType    dtype;
 
-    PetscDeviceContextGetCurrentContext(&dctx); // it internally sets PetscDefaultCuda/HipStream
-    PetscDeviceContextGetDeviceType(dctx, &dtype);
+    PetscCall(PetscDeviceContextGetCurrentContext(&dctx)); // it internally sets PetscDefaultCuda/HipStream
+    PetscCall(PetscDeviceContextGetDeviceType(dctx, &dtype));
 
   #if defined(PETSC_HAVE_CUDA)
     if (dtype == PETSC_DEVICE_CUDA) PetscCallCXX(PetscKokkosExecutionSpacePtr = new Kokkos::DefaultExecutionSpace(PetscDefaultCudaStream));
