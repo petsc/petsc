@@ -168,7 +168,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrate_Basic(PetscDS ds, PetscInt field, P
   PetscTabulation   *T, *TAux = NULL;
   PetscScalar       *u, *u_x, *a, *a_x;
   const PetscScalar *constants;
-  PetscReal         *x;
+  PetscReal         *x, cellScale;
   PetscInt          *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
   PetscInt           dim, dE, Np, numConstants, Nf, NfAux = 0, totDim, totDimAux = 0, cOffset = 0, cOffsetAux = 0, e;
   PetscBool          isAffine;
@@ -180,6 +180,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrate_Basic(PetscDS ds, PetscInt field, P
   if (!obj_func) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscDSGetDiscretization(ds, field, (PetscObject *)&fe));
   PetscCall(PetscFEGetSpatialDimension(fe, &dim));
+  cellScale = (PetscReal)PetscPowInt(2, dim);
   PetscCall(PetscFEGetQuadrature(fe, &quad));
   PetscCall(PetscDSGetNumFields(ds, &Nf));
   PetscCall(PetscDSGetTotalDimension(ds, &totDim));
@@ -188,6 +189,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrate_Basic(PetscDS ds, PetscInt field, P
   PetscCall(PetscDSGetTabulation(ds, &T));
   PetscCall(PetscDSGetEvaluationArrays(ds, &u, NULL, &u_x));
   PetscCall(PetscDSGetWorkspace(ds, &x, NULL, NULL, NULL, NULL));
+  PetscCall(PetscDSSetIntegrationParameters(ds, field, PETSC_DETERMINE));
   PetscCall(PetscDSGetConstants(ds, &numConstants, &constants));
   if (dsAux) {
     PetscCall(PetscDSGetNumFields(dsAux, &NfAux));
@@ -227,6 +229,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrate_Basic(PetscDS ds, PetscInt field, P
         fegeom.invJ = &cgeom->invJ[(e * Np + q) * dE * dE];
         fegeom.detJ = &cgeom->detJ[e * Np + q];
       }
+      PetscCall(PetscDSSetCellParameters(ds, fegeom.detJ[0] * cellScale));
       w = fegeom.detJ[0] * quadWeights[q];
       if (debug > 1 && q < Np) {
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", (double)fegeom.detJ[0]));
@@ -256,7 +259,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field,
   PetscTabulation   *Tf, *TfAux = NULL;
   PetscScalar       *u, *u_x, *a, *a_x, *basisReal, *basisDerReal;
   const PetscScalar *constants;
-  PetscReal         *x;
+  PetscReal         *x, cellScale;
   PetscInt          *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
   PetscBool          isAffine, auxOnBd;
   const PetscReal   *quadPoints, *quadWeights;
@@ -267,6 +270,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field,
   if (!obj_func) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscDSGetDiscretization(ds, field, (PetscObject *)&fe));
   PetscCall(PetscFEGetSpatialDimension(fe, &dim));
+  cellScale = (PetscReal)PetscPowInt(2, dim);
   PetscCall(PetscFEGetFaceQuadrature(fe, &quad));
   PetscCall(PetscDSGetNumFields(ds, &Nf));
   PetscCall(PetscDSGetTotalDimension(ds, &totDim));
@@ -275,6 +279,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field,
   PetscCall(PetscDSGetEvaluationArrays(ds, &u, NULL, &u_x));
   PetscCall(PetscDSGetWorkspace(ds, &x, &basisReal, &basisDerReal, NULL, NULL));
   PetscCall(PetscDSGetFaceTabulation(ds, &Tf));
+  PetscCall(PetscDSSetIntegrationParameters(ds, field, PETSC_DETERMINE));
   PetscCall(PetscDSGetConstants(ds, &numConstants, &constants));
   if (dsAux) {
     PetscCall(PetscDSGetSpatialDimension(dsAux, &dimAux));
@@ -335,6 +340,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field,
         cgeom.invJ = &fgeom->suppInvJ[0][(e * Np + q) * dE * dE];
         cgeom.detJ = &fgeom->suppDetJ[0][e * Np + q];
       }
+      PetscCall(PetscDSSetCellParameters(ds, fegeom.detJ[0] * cellScale));
       w = fegeom.detJ[0] * quadWeights[q];
       if (debug > 1 && q < Np) {
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", (double)fegeom.detJ[0]));
@@ -390,7 +396,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscDS ds, PetscFormKey key, Pets
   PetscTabulation   *T, *TAux = NULL;
   PetscScalar       *f0, *f1, *u, *u_t = NULL, *u_x, *a, *a_x, *basisReal, *basisDerReal;
   const PetscScalar *constants;
-  PetscReal         *x;
+  PetscReal         *x, cellScale;
   PetscInt          *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
   PetscInt           dim, numConstants, Nf, NfAux = 0, totDim, totDimAux = 0, cOffset = 0, cOffsetAux = 0, fOffset, e;
   const PetscReal   *quadPoints, *quadWeights;
@@ -399,6 +405,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscDS ds, PetscFormKey key, Pets
   PetscFunctionBegin;
   PetscCall(PetscDSGetDiscretization(ds, field, (PetscObject *)&fe));
   PetscCall(PetscFEGetSpatialDimension(fe, &dim));
+  cellScale = (PetscReal)PetscPowInt(2, dim);
   PetscCall(PetscFEGetQuadrature(fe, &quad));
   PetscCall(PetscDSGetNumFields(ds, &Nf));
   PetscCall(PetscDSGetTotalDimension(ds, &totDim));
@@ -412,6 +419,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscDS ds, PetscFormKey key, Pets
   PetscCall(PetscDSGetWorkspace(ds, &x, &basisReal, &basisDerReal, NULL, NULL));
   PetscCall(PetscDSGetWeakFormArrays(ds, &f0, &f1, NULL, NULL, NULL, NULL));
   PetscCall(PetscDSGetTabulation(ds, &T));
+  PetscCall(PetscDSSetIntegrationParameters(ds, field, PETSC_DETERMINE));
   PetscCall(PetscDSGetConstants(ds, &numConstants, &constants));
   if (dsAux) {
     PetscCall(PetscDSGetNumFields(dsAux, &NfAux));
@@ -437,6 +445,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscDS ds, PetscFormKey key, Pets
       PetscInt  c, d;
 
       PetscCall(PetscFEGeomGetPoint(cgeom, e, q, &quadPoints[q * cgeom->dim], &fegeom));
+      PetscCall(PetscDSSetCellParameters(ds, fegeom.detJ[0] * cellScale));
       w = fegeom.detJ[0] * quadWeights[q];
       if (debug > 1 && q < cgeom->numPoints) {
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", (double)fegeom.detJ[0]));
@@ -493,7 +502,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscWeakForm wf, Pe
   PetscTabulation   *Tf, *TfAux = NULL;
   PetscScalar       *f0, *f1, *u, *u_t = NULL, *u_x, *a, *a_x, *basisReal, *basisDerReal;
   const PetscScalar *constants;
-  PetscReal         *x;
+  PetscReal         *x, cellScale;
   PetscInt          *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
   PetscInt           dim, dimAux, numConstants, Nf, NfAux = 0, totDim, totDimAux = 0, cOffset = 0, cOffsetAux = 0, fOffset, e, NcI;
   PetscBool          auxOnBd = PETSC_FALSE;
@@ -503,6 +512,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscWeakForm wf, Pe
   PetscFunctionBegin;
   PetscCall(PetscDSGetDiscretization(ds, field, (PetscObject *)&fe));
   PetscCall(PetscFEGetSpatialDimension(fe, &dim));
+  cellScale = (PetscReal)PetscPowInt(2, dim);
   PetscCall(PetscFEGetFaceQuadrature(fe, &quad));
   PetscCall(PetscDSGetNumFields(ds, &Nf));
   PetscCall(PetscDSGetTotalDimension(ds, &totDim));
@@ -515,6 +525,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscWeakForm wf, Pe
   PetscCall(PetscDSGetWorkspace(ds, &x, &basisReal, &basisDerReal, NULL, NULL));
   PetscCall(PetscDSGetWeakFormArrays(ds, &f0, &f1, NULL, NULL, NULL, NULL));
   PetscCall(PetscDSGetFaceTabulation(ds, &Tf));
+  PetscCall(PetscDSSetIntegrationParameters(ds, field, PETSC_DETERMINE));
   PetscCall(PetscDSGetConstants(ds, &numConstants, &constants));
   if (dsAux) {
     PetscCall(PetscDSGetSpatialDimension(dsAux, &dimAux));
@@ -548,6 +559,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscWeakForm wf, Pe
 
       PetscCall(PetscFEGeomGetPoint(fgeom, e, q, &quadPoints[q * fgeom->dim], &fegeom));
       PetscCall(PetscFEGeomGetCellPoint(fgeom, e, q, &cgeom));
+      PetscCall(PetscDSSetCellParameters(ds, fegeom.detJ[0] * cellScale));
       w = fegeom.detJ[0] * quadWeights[q];
       if (debug > 1) {
         if ((fgeom->isAffine && q == 0) || (!fgeom->isAffine)) {
@@ -632,6 +644,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateHybridResidual_Basic(PetscDS ds, Pet
   /* NOTE This is a bulk tabulation because the DS is a face discretization */
   PetscCall(PetscDSGetTabulation(ds, &Tf));
   PetscCall(PetscDSGetFaceTabulation(dsIn, &TfIn));
+  PetscCall(PetscDSSetIntegrationParameters(ds, field, PETSC_DETERMINE));
   PetscCall(PetscDSGetConstants(ds, &numConstants, &constants));
   if (dsAux) {
     PetscCall(PetscDSGetSpatialDimension(dsAux, &dimAux));
@@ -719,7 +732,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscDS ds, PetscFEJacobianType jt
   PetscTabulation   *T, *TAux = NULL;
   PetscScalar       *g0, *g1, *g2, *g3, *u, *u_t = NULL, *u_x, *a, *a_x, *basisReal, *basisDerReal, *testReal, *testDerReal;
   const PetscScalar *constants;
-  PetscReal         *x;
+  PetscReal         *x, cellScale;
   PetscInt          *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
   PetscInt           NcI = 0, NcJ = 0;
   PetscInt           dim, numConstants, Nf, fieldI, fieldJ, NfAux = 0, totDim, totDimAux = 0, e;
@@ -735,6 +748,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscDS ds, PetscFEJacobianType jt
   PetscCall(PetscDSGetDiscretization(ds, fieldI, (PetscObject *)&feI));
   PetscCall(PetscDSGetDiscretization(ds, fieldJ, (PetscObject *)&feJ));
   PetscCall(PetscFEGetSpatialDimension(feI, &dim));
+  cellScale = (PetscReal)PetscPowInt(2, dim);
   PetscCall(PetscFEGetQuadrature(feI, &quad));
   PetscCall(PetscDSGetTotalDimension(ds, &totDim));
   PetscCall(PetscDSGetComponentOffsets(ds, &uOff));
@@ -805,6 +819,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscDS ds, PetscFEJacobianType jt
         fegeom.invJ = &cgeom->invJ[(e * Np + q) * dE * dE];
         fegeom.detJ = &cgeom->detJ[e * Np + q];
       }
+      PetscCall(PetscDSSetCellParameters(ds, fegeom.detJ[0] * cellScale));
       if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  quad point %" PetscInt_FMT " weight %g detJ %g\n", q, (double)quadWeights[q], (double)fegeom.detJ[0]));
       w = fegeom.detJ[0] * quadWeights[q];
       if (coefficients) PetscCall(PetscFEEvaluateFieldJets_Internal(ds, Nf, 0, q, T, &fegeom, &coefficients[cOffset], PetscSafePointerPlusOffset(coefficients_t, cOffset), u, u_x, u_t));
@@ -871,7 +886,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWe
   PetscTabulation   *T, *TAux = NULL;
   PetscScalar       *g0, *g1, *g2, *g3, *u, *u_t = NULL, *u_x, *a, *a_x, *basisReal, *basisDerReal, *testReal, *testDerReal;
   const PetscScalar *constants;
-  PetscReal         *x;
+  PetscReal         *x, cellScale;
   PetscInt          *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
   PetscInt           NcI = 0, NcJ = 0;
   PetscInt           dim, numConstants, Nf, fieldI, fieldJ, NfAux = 0, totDim, totDimAux = 0, e;
@@ -886,6 +901,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWe
   PetscCall(PetscDSGetDiscretization(ds, fieldI, (PetscObject *)&feI));
   PetscCall(PetscDSGetDiscretization(ds, fieldJ, (PetscObject *)&feJ));
   PetscCall(PetscFEGetSpatialDimension(feI, &dim));
+  cellScale = (PetscReal)PetscPowInt(2, dim);
   PetscCall(PetscFEGetFaceQuadrature(feI, &quad));
   PetscCall(PetscDSGetTotalDimension(ds, &totDim));
   PetscCall(PetscDSGetComponentOffsets(ds, &uOff));
@@ -907,6 +923,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWe
   PetscCall(PetscDSGetWorkspace(ds, &x, &basisReal, &basisDerReal, &testReal, &testDerReal));
   PetscCall(PetscDSGetWeakFormArrays(ds, NULL, NULL, &g0, &g1, &g2, &g3));
   PetscCall(PetscDSGetFaceTabulation(ds, &T));
+  PetscCall(PetscDSSetIntegrationParameters(ds, fieldI, fieldJ));
   PetscCall(PetscDSGetConstants(ds, &numConstants, &constants));
   if (dsAux) {
     PetscCall(PetscDSGetNumFields(dsAux, &NfAux));
@@ -968,6 +985,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWe
         cgeom.invJ = &fgeom->suppInvJ[0][(e * Np + q) * dE * dE];
         cgeom.detJ = &fgeom->suppDetJ[0][e * Np + q];
       }
+      PetscCall(PetscDSSetCellParameters(ds, fegeom.detJ[0] * cellScale));
       w = fegeom.detJ[0] * quadWeights[q];
       if (coefficients) PetscCall(PetscFEEvaluateFieldJets_Internal(ds, Nf, face, q, T, &cgeom, &coefficients[cOffset], &coefficients_t[cOffset], u, u_x, u_t));
       if (dsAux) PetscCall(PetscFEEvaluateFieldJets_Internal(dsAux, NfAux, face, q, TAux, &cgeom, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL));
@@ -1074,6 +1092,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateHybridJacobian_Basic(PetscDS ds, Pet
   PetscCall(PetscDSGetFaceTabulation(dsIn, &TfIn));
   PetscCall(PetscDSGetFieldOffsetCohesive(ds, fieldI, &offsetI));
   PetscCall(PetscDSGetFieldOffsetCohesive(ds, fieldJ, &offsetJ));
+  PetscCall(PetscDSSetIntegrationParameters(ds, fieldI, fieldJ));
   PetscCall(PetscDSGetConstants(ds, &numConstants, &constants));
   if (dsAux) {
     PetscCall(PetscDSGetSpatialDimension(dsAux, &dimAux));

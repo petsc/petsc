@@ -100,6 +100,8 @@ Changes: Development
 
 .. rubric:: DT:
 
+- Add ``PetscDSSetIntegrationParameters()`` and ``PetscDSSetCellParameters()``
+
 .. rubric:: Fortran:
 
 - Add ``PETSC_NULL_ENUM`` to be used instead of ``PETSC_NULL_INTEGER`` when a pointer to an ``enum`` is expected in a PETSc function call
