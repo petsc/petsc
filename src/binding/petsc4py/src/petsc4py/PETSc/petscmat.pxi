@@ -360,6 +360,8 @@ cdef extern from * nogil:
     PetscErrorCode MatGetLocalSubMatrix(PetscMat, PetscIS, PetscIS, PetscMat*)
     PetscErrorCode MatRestoreLocalSubMatrix(PetscMat, PetscIS, PetscIS, PetscMat*)
     PetscErrorCode MatDestroyMatrices(PetscInt, PetscMat*[])
+    PetscErrorCode MatSchurComplementGetSubMatrices(PetscMat, PetscMat*, PetscMat*, PetscMat*, PetscMat*, PetscMat*)
+    PetscErrorCode MatCreateSchurComplement(PetscMat, PetscMat, PetscMat, PetscMat, PetscMat, PetscMat*)
 
     PetscErrorCode MatConjugate(PetscMat)
     PetscErrorCode MatRealPart(PetscMat)

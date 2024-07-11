@@ -3945,6 +3945,61 @@ cdef class Mat(Object):
 
     #
 
+    def createSchurComplement(self, Mat A00, Mat Ap00, Mat A01, Mat A10, Mat A11=None) -> Self:
+        """Create a `Type.SCHURCOMPLEMENT` matrix.
+
+        Collective.
+
+        Parameters
+        ----------
+        A00
+            the upper-left block of the original matrix A = [A00 A01; A10 A11].
+        Ap00
+            preconditioning matrix for use in ksp(A00,Ap00) to approximate the
+            action of A00^{-1}.
+        A01
+            the upper-right block of the original matrix A = [A00 A01; A10 A11].
+        A10
+            the lower-left block of the original matrix A = [A00 A01; A10 A11].
+        A11
+            Optional lower-right block of the original matrix
+            A = [A00 A01; A10 A11].
+
+        See Also
+        --------
+        petsc.MatCreateSchurComplement
+
+        """
+        cdef PetscMat newmat = NULL, A11_mat = NULL
+        if A11 is not None:
+            A11_mat = A11.mat
+        CHKERR(MatCreateSchurComplement(A00.mat, Ap00.mat, A01.mat, A10.mat, A11_mat, &newmat))
+        CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
+        return self
+
+    #
+
+    def getSchurComplementSubMatrices(self) -> tuple[Mat, Mat, Mat, Mat, Mat]:
+        """Return Schur complement sub-matrices.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.MatSchurComplementGetSubMatrices
+
+        """
+        cdef Mat A00 = Mat(), Ap00 = Mat(), A01 = Mat(), A10 = Mat(), A11 = Mat()
+        CHKERR(MatSchurComplementGetSubMatrices(self.mat, &A00.mat, &Ap00.mat, &A01.mat, &A10.mat, &A11.mat))
+        CHKERR(PetscINCREF(A00.obj))
+        CHKERR(PetscINCREF(Ap00.obj))
+        CHKERR(PetscINCREF(A01.obj))
+        CHKERR(PetscINCREF(A10.obj))
+        CHKERR(PetscINCREF(A11.obj))
+        return A00, Ap00, A01, A10, A11
+
+    #
+
     def getLocalSubMatrix(self, IS isrow, IS iscol, Mat submat=None) -> Mat:
         """Return a reference to a submatrix specified in local numbering.
 
