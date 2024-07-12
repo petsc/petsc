@@ -10,6 +10,31 @@ typedef struct {
 const char *const SNESNewtonTRFallbackTypes[] = {"NEWTON", "CAUCHY", "DOGLEG", "SNESNewtonTRFallbackType", "SNES_TR_FALLBACK_", NULL};
 const char *const SNESNewtonTRQNTypes[]       = {"NONE", "SAME", "DIFFERENT", "SNESNewtonTRQNType", "SNES_TR_QN_", NULL};
 
+static PetscErrorCode SNESNewtonTRSetTolerances_TR(SNES snes, PetscReal delta_min, PetscReal delta_max, PetscReal delta_0)
+{
+  SNES_NEWTONTR *tr = (SNES_NEWTONTR *)snes->data;
+
+  PetscFunctionBegin;
+  if (delta_min == PETSC_DETERMINE) delta_min = tr->default_deltam;
+  if (delta_max == PETSC_DETERMINE) delta_max = tr->default_deltaM;
+  if (delta_0 == PETSC_DETERMINE) delta_0 = tr->default_delta0;
+  if (delta_min != PETSC_CURRENT) tr->deltam = delta_min;
+  if (delta_max != PETSC_CURRENT) tr->deltaM = delta_max;
+  if (delta_0 != PETSC_CURRENT) tr->delta0 = delta_0;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode SNESNewtonTRGetTolerances_TR(SNES snes, PetscReal *delta_min, PetscReal *delta_max, PetscReal *delta_0)
+{
+  SNES_NEWTONTR *tr = (SNES_NEWTONTR *)snes->data;
+
+  PetscFunctionBegin;
+  if (delta_min) *delta_min = tr->deltam;
+  if (delta_max) *delta_max = tr->deltaM;
+  if (delta_0) *delta_0 = tr->delta0;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode SNESComputeJacobian_MATLMVM(SNES snes, Vec X, Mat J, Mat B, void *dummy)
 {
   PetscFunctionBegin;
@@ -64,8 +89,8 @@ static PetscErrorCode SNESTR_Converged_Private(SNES snes, PetscInt it, PetscReal
 
   PetscFunctionBegin;
   *reason = SNES_CONVERGED_ITERATING;
-  if (neP->delta < snes->deltatol) {
-    PetscCall(PetscInfo(snes, "Diverged due to too small a trust region %g<%g\n", (double)neP->delta, (double)snes->deltatol));
+  if (neP->delta < neP->deltam) {
+    PetscCall(PetscInfo(snes, "Diverged due to too small a trust region %g<%g\n", (double)neP->delta, (double)neP->deltam));
     *reason = SNES_DIVERGED_TR_DELTA;
   } else if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
     PetscCall(PetscInfo(snes, "Exceeded maximum number of function evaluations: %" PetscInt_FMT "\n", snes->max_funcs));
@@ -792,6 +817,8 @@ static PetscErrorCode SNESDestroy_NEWTONTR(SNES snes)
 {
   PetscFunctionBegin;
   PetscCall(SNESReset_NEWTONTR(snes));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNewtonTRSetTolerances_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNewtonTRGetTolerances_C", NULL));
   PetscCall(PetscFree(snes->data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -802,23 +829,20 @@ static PetscErrorCode SNESSetFromOptions_NEWTONTR(SNES snes, PetscOptionItems *P
   SNESNewtonTRQNType       qn;
   SNESNewtonTRFallbackType fallback;
   NormType                 norm;
-  PetscReal                deltatol;
   PetscBool                flg;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "SNES trust region options for nonlinear equations");
-  PetscCall(PetscOptionsReal("-snes_tr_eta1", "eta1", "None", ctx->eta1, &ctx->eta1, NULL));
-  PetscCall(PetscOptionsReal("-snes_tr_eta2", "eta2", "None", ctx->eta2, &ctx->eta2, NULL));
-  PetscCall(PetscOptionsReal("-snes_tr_eta3", "eta3", "None", ctx->eta3, &ctx->eta3, NULL));
-  PetscCall(PetscOptionsReal("-snes_tr_t1", "t1", "None", ctx->t1, &ctx->t1, NULL));
-  PetscCall(PetscOptionsReal("-snes_tr_t2", "t2", "None", ctx->t2, &ctx->t2, NULL));
-  PetscCall(PetscOptionsReal("-snes_tr_deltaM", "deltaM", "None", ctx->deltaM, &ctx->deltaM, NULL));
-  PetscCall(PetscOptionsReal("-snes_tr_delta0", "delta0", "None", ctx->delta0, &ctx->delta0, NULL));
+  PetscCall(PetscOptionsDeprecated("-snes_tr_deltaM", "-snes_tr_deltamax", "3.22", NULL));
+  PetscCall(PetscOptionsReal("-snes_tr_eta1", "eta1", "SNESNewtonTRSetUpdateParameters", ctx->eta1, &ctx->eta1, NULL));
+  PetscCall(PetscOptionsReal("-snes_tr_eta2", "eta2", "SNESNewtonTRSetUpdateParameters", ctx->eta2, &ctx->eta2, NULL));
+  PetscCall(PetscOptionsReal("-snes_tr_eta3", "eta3", "SNESNewtonTRSetUpdateParameters", ctx->eta3, &ctx->eta3, NULL));
+  PetscCall(PetscOptionsReal("-snes_tr_t1", "t1", "SNESNewtonTRSetUpdateParameters", ctx->t1, &ctx->t1, NULL));
+  PetscCall(PetscOptionsReal("-snes_tr_t2", "t2", "SNESNewtonTRSetUpdateParameters", ctx->t2, &ctx->t2, NULL));
+  PetscCall(PetscOptionsReal("-snes_tr_delta0", "Initial trust region size", "SNESNewtonTRSetTolerances", ctx->delta0, &ctx->delta0, NULL));
+  PetscCall(PetscOptionsReal("-snes_tr_deltamin", "Minimum allowed trust region size", "SNESNewtonTRSetTolerances", ctx->deltam, &ctx->deltam, NULL));
+  PetscCall(PetscOptionsReal("-snes_tr_deltamax", "Maximum allowed trust region size", "SNESNewtonTRSetTolerances", ctx->deltaM, &ctx->deltaM, NULL));
   PetscCall(PetscOptionsReal("-snes_tr_kmdc", "sufficient decrease parameter", "None", ctx->kmdc, &ctx->kmdc, NULL));
-
-  deltatol = snes->deltatol;
-  PetscCall(PetscOptionsReal("-snes_tr_tol", "Trust region tolerance", "SNESSetTrustRegionTolerance", deltatol, &deltatol, &flg));
-  if (flg) PetscCall(SNESSetTrustRegionTolerance(snes, deltatol));
 
   fallback = ctx->fallback;
   PetscCall(PetscOptionsEnum("-snes_tr_fallback_type", "Type of fallback if subproblem solution is outside of the trust region", "SNESNewtonTRSetFallbackType", SNESNewtonTRFallbackTypes, (PetscEnum)fallback, (PetscEnum *)&fallback, &flg));
@@ -844,36 +868,243 @@ static PetscErrorCode SNESView_NEWTONTR(SNES snes, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  Trust region tolerance %g\n", (double)snes->deltatol));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  eta1=%g, eta2=%g, eta3=%g\n", (double)tr->eta1, (double)tr->eta2, (double)tr->eta3));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  delta0=%g, t1=%g, t2=%g, deltaM=%g\n", (double)tr->delta0, (double)tr->t1, (double)tr->t2, (double)tr->deltaM));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  kmdc=%g\n", (double)tr->kmdc));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  fallback=%s\n", SNESNewtonTRFallbackTypes[tr->fallback]));
-    if (tr->qn) PetscCall(PetscViewerASCIIPrintf(viewer, "  qn=%s\n", SNESNewtonTRQNTypes[tr->qn]));
-    if (tr->norm != NORM_2) PetscCall(PetscViewerASCIIPrintf(viewer, "  norm=%s\n", NormTypes[tr->norm]));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Trust region parameters:\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "    eta1=%g, eta2=%g, eta3=%g\n", (double)tr->eta1, (double)tr->eta2, (double)tr->eta3));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "    t1=%g, t2=%g\n", (double)tr->t1, (double)tr->t2));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "    delta_min=%g, delta_0=%g, delta_max=%g\n", (double)tr->deltam, (double)tr->delta0, (double)tr->deltaM));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "    kmdc=%g\n", (double)tr->kmdc));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "    fallback=%s\n", SNESNewtonTRFallbackTypes[tr->fallback]));
+    if (tr->qn) PetscCall(PetscViewerASCIIPrintf(viewer, "    qn=%s\n", SNESNewtonTRQNTypes[tr->qn]));
+    if (tr->norm != NORM_2) PetscCall(PetscViewerASCIIPrintf(viewer, "    norm=%s\n", NormTypes[tr->norm]));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  SNESSetTrustRegionTolerance - Sets the trust region parameter tolerance.
+
+  Logically Collective
+
+  Input Parameters:
++ snes - the `SNES` context
+- tol  - tolerance
+
+  Level: deprecated
+
+.seealso: [](ch_snes), `SNES`, `SNESNEWTONTR`, `SNESSetTolerances()`
+@*/
+PetscErrorCode SNESSetTrustRegionTolerance(SNES snes, PetscReal tol)
+{
+  return SNESNewtonTRSetTolerances(snes, tol, PETSC_CURRENT, PETSC_CURRENT);
+}
+
+/*@
+  SNESNewtonTRSetTolerances - Sets the trust region parameter tolerances.
+
+  Logically Collective
+
+  Input Parameters:
++ snes      - the `SNES` context
+. delta_min - minimum allowed trust region size
+. delta_max - maximum allowed trust region size
+- delta_0   - initial trust region size
+
+  Options Database Key:
++ -snes_tr_deltamin <tol> - Set minimum size
+. -snes_tr_deltamax <tol> - Set maximum size
+- -snes_tr_delta0   <tol> - Set initial size
+
+  Note:
+  Use `PETSC_DETERMINE` to use the default value for the given `SNES`.
+  Use `PETSC_CURRENT` to retain a value.
+
+  Fortran Note:
+  Use `PETSC_DETERMINE_REAL`, `PETSC_CURRENT_REAL`
+
+  Level: intermediate
+
+.seealso: [](ch_snes), `SNES`, `SNESNEWTONTR`, `SNESNewtonTRGetTolerances()`
+@*/
+PetscErrorCode SNESNewtonTRSetTolerances(SNES snes, PetscReal delta_min, PetscReal delta_max, PetscReal delta_0)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
+  PetscValidLogicalCollectiveReal(snes, delta_min, 2);
+  PetscValidLogicalCollectiveReal(snes, delta_max, 3);
+  PetscValidLogicalCollectiveReal(snes, delta_0, 4);
+  PetscTryMethod(snes, "SNESNewtonTRSetTolerances_C", (SNES, PetscReal, PetscReal, PetscReal), (snes, delta_min, delta_max, delta_0));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  SNESNewtonTRGetTolerances - Gets the trust region parameter tolerances.
+
+  Not Collective
+
+  Input Parameter:
+. snes - the `SNES` context
+
+  Output Parameters:
++ delta_min - minimum allowed trust region size or `NULL`
+. delta_max - maximum allowed trust region size or `NULL`
+- delta_0   - initial trust region size or `NULL`
+
+  Level: intermediate
+
+.seealso: [](ch_snes), `SNES`, `SNESNEWTONTR`, `SNESNewtonTRSetTolerances()`
+@*/
+PetscErrorCode SNESNewtonTRGetTolerances(SNES snes, PetscReal *delta_min, PetscReal *delta_max, PetscReal *delta_0)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
+  if (delta_min) PetscAssertPointer(delta_min, 2);
+  if (delta_max) PetscAssertPointer(delta_max, 3);
+  if (delta_0) PetscAssertPointer(delta_0, 4);
+  PetscUseMethod(snes, "SNESNewtonTRGetTolerances_C", (SNES, PetscReal *, PetscReal *, PetscReal *), (snes, delta_min, delta_max, delta_0));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  SNESNewtonTRSetUpdateParameters - Sets the trust region update parameters.
+
+  Logically Collective
+
+  Input Parameters:
++ snes - the `SNES` context
+. eta1 - acceptance tolerance
+. eta2 - shrinking tolerance
+. eta3 - enlarging tolerance
+. t1   - shrink factor
+- t2   - enlarge factor
+
+  Options Database Key:
++ -snes_tr_eta1 <tol> - Set eta1
+. -snes_tr_eta2 <tol> - Set eta2
+. -snes_tr_eta3 <tol> - Set eta3
+. -snes_tr_t1   <tol> - Set t1
+- -snes_tr_t2   <tol> - Set t2
+
+  Notes:
+  Given the ratio $\rho = \frac{f(x_k) - f(x_k+s_k)}{m(0) - m(s_k)}$, with $x_k$ the current iterate,
+  $s_k$ the computed step, $f$ the objective function, and $m$ the quadratic model, the trust region
+  radius is modified as follows
+  $$
+  \delta =
+  \begin{cases}
+  \delta * t_1 ,& \rho < \eta_2 \\
+  \delta * t_2 ,& \rho > \eta_3 \\
+  \end{cases}
+  $$
+  The step is accepted if $\rho > \eta_1$.
+  Use `PETSC_DETERMINE` to use the default value for the given `SNES`.
+  Use `PETSC_CURRENT` to retain a value.
+
+  Fortran Note:
+  Use `PETSC_DETERMINE_REAL`, `PETSC_CURRENT_REAL`
+
+  Level: intermediate
+
+.seealso: [](ch_snes), `SNES`, `SNESNEWTONTR`, `SNESSetObjective()`, `SNESNewtonTRGetUpdateParameters()`
+@*/
+PetscErrorCode SNESNewtonTRSetUpdateParameters(SNES snes, PetscReal eta1, PetscReal eta2, PetscReal eta3, PetscReal t1, PetscReal t2)
+{
+  PetscBool flg;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
+  PetscValidLogicalCollectiveReal(snes, eta1, 2);
+  PetscValidLogicalCollectiveReal(snes, eta2, 3);
+  PetscValidLogicalCollectiveReal(snes, eta3, 4);
+  PetscValidLogicalCollectiveReal(snes, t1, 5);
+  PetscValidLogicalCollectiveReal(snes, t2, 6);
+  PetscCall(PetscObjectTypeCompare((PetscObject)snes, SNESNEWTONTR, &flg));
+  if (flg) {
+    SNES_NEWTONTR *tr = (SNES_NEWTONTR *)snes->data;
+
+    if (eta1 == PETSC_DETERMINE) eta1 = tr->default_eta1;
+    if (eta2 == PETSC_DETERMINE) eta2 = tr->default_eta2;
+    if (eta3 == PETSC_DETERMINE) eta3 = tr->default_eta3;
+    if (t1 == PETSC_DETERMINE) t1 = tr->default_t1;
+    if (t2 == PETSC_DETERMINE) t2 = tr->default_t2;
+    if (eta1 != PETSC_CURRENT) tr->eta1 = eta1;
+    if (eta2 != PETSC_CURRENT) tr->eta2 = eta2;
+    if (eta3 != PETSC_CURRENT) tr->eta3 = eta3;
+    if (t1 != PETSC_CURRENT) tr->t1 = t1;
+    if (t2 != PETSC_CURRENT) tr->t2 = t2;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  SNESNewtonTRGetUpdateParameters - Gets the trust region update parameters.
+
+  Not Collective
+
+  Input Parameter:
+. snes - the `SNES` context
+
+  Output Parameters:
++ eta1 - acceptance tolerance
+. eta2 - shrinking tolerance
+. eta3 - enlarging tolerance
+. t1   - shrink factor
+- t2   - enlarge factor
+
+  Level: intermediate
+
+.seealso: [](ch_snes), `SNES`, `SNESNEWTONTR`, `SNESNewtonTRSetUpdateParameters()`
+@*/
+PetscErrorCode SNESNewtonTRGetUpdateParameters(SNES snes, PetscReal *eta1, PetscReal *eta2, PetscReal *eta3, PetscReal *t1, PetscReal *t2)
+{
+  SNES_NEWTONTR *tr;
+  PetscBool      flg;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
+  if (eta1) PetscAssertPointer(eta1, 2);
+  if (eta2) PetscAssertPointer(eta2, 3);
+  if (eta3) PetscAssertPointer(eta3, 4);
+  if (t1) PetscAssertPointer(t1, 5);
+  if (t2) PetscAssertPointer(t2, 6);
+  PetscCall(PetscObjectTypeCompare((PetscObject)snes, SNESNEWTONTR, &flg));
+  PetscAssert(flg, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONG, "Not for type %s", ((PetscObject)snes)->type_name);
+  tr = (SNES_NEWTONTR *)snes->data;
+  if (eta1) *eta1 = tr->eta1;
+  if (eta2) *eta2 = tr->eta2;
+  if (eta3) *eta3 = tr->eta3;
+  if (t1) *t1 = tr->t1;
+  if (t2) *t2 = tr->t2;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*MC
-   SNESNEWTONTR - Newton based nonlinear solver that uses trust-region dogleg method with Cauchy direction {cite}`nocedal2006numerical`
+   SNESNEWTONTR - Newton based nonlinear solver that uses a trust-region strategy
 
    Options Database Keys:
-+  -snes_tr_tol <tol>                            - trust region tolerance
-.  -snes_tr_eta1 <eta1>                          - trust region parameter eta1 <= eta2, rho > eta1 breaks out of the inner iteration (default: eta1=0.001)
-.  -snes_tr_eta2 <eta2>                          - trust region parameter, rho <= eta2 shrinks the trust region (default: eta2=0.25)
-.  -snes_tr_eta3 <eta3>                          - trust region parameter eta3 > eta2, rho >= eta3 expands the trust region (default: eta3=0.75)
++  -snes_tr_deltamin <deltamin>                  - trust region parameter, minimum size of trust region
+.  -snes_tr_deltamax <deltamax>                  - trust region parameter, max size of trust region (default: 1e10)
+.  -snes_tr_delta0 <delta0>                      - trust region parameter, initial size of trust region (default: 0.2)
+.  -snes_tr_eta1 <eta1>                          - trust region parameter eta1 <= eta2, rho > eta1 breaks out of the inner iteration (default: 0.001)
+.  -snes_tr_eta2 <eta2>                          - trust region parameter, rho <= eta2 shrinks the trust region (default: 0.25)
+.  -snes_tr_eta3 <eta3>                          - trust region parameter eta3 > eta2, rho >= eta3 expands the trust region (default: 0.75)
 .  -snes_tr_t1 <t1>                              - trust region parameter, shrinking factor of trust region (default: 0.25)
 .  -snes_tr_t2 <t2>                              - trust region parameter, expanding factor of trust region (default: 2.0)
-.  -snes_tr_deltaM <deltaM>                      - trust region parameter, max size of trust region (default: MAX_REAL)
-.  -snes_tr_delta0 <delta0>                      - trust region parameter, initial size of trust region (default: 0.2)
+.  -snes_tr_norm_type <1,2,infinity>             - Type of norm for trust region bounds (default: "2")
 -  -snes_tr_fallback_type <newton,cauchy,dogleg> - Solution strategy to test reduction when step is outside of trust region. Can use scaled Newton direction, Cauchy point (Steepest Descent direction) or dogleg method.
 
    Level: beginner
 
-.seealso: [](ch_snes), `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESSetTrustRegionTolerance()`,
-          `SNESNewtonTRPreCheck()`, `SNESNewtonTRGetPreCheck()`, `SNESNewtonTRSetPostCheck()`, `SNESNewtonTRGetPostCheck()`,
-          `SNESNewtonTRSetPreCheck()`, `SNESNewtonTRSetFallbackType()`, `SNESNewtonTRSetQNType()`
+   Notes:
+   The code is largely based on the book {cite}`nocedal2006numerical` and supports minimizing objective functions using a quadratic model.
+   Quasi-Newton models are also supported.
+
+   Default step computation uses the Newton direction, but a dogleg type update is also supported.
+   The 1- and infinity-norms are also supported when computing the trust region bounds.
+
+.seealso: [](ch_snes), `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESSetObjective()`,
+          `SNESNewtonTRSetTolerances()`, `SNESNewtonTRSetUpdateParameters()`
+          `SNESNewtonTRSetNormType()`, `SNESNewtonTRSetFallbackType()`, `SNESNewtonTRSetQNType()`
+          `SNESNewtonTRSetPostCheck()`, `SNESNewtonTRSetPreCheck()`,
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTR(SNES snes)
 {
@@ -888,7 +1119,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTR(SNES snes)
   snes->ops->view           = SNESView_NEWTONTR;
 
   PetscCall(SNESParametersInitialize(snes));
-  PetscObjectParameterSetDefault(snes, stol, 0.0);
   snes->usesksp = PETSC_TRUE;
   snes->npcside = PC_RIGHT;
   snes->usesnpc = PETSC_TRUE;
@@ -896,17 +1126,22 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTR(SNES snes)
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
   PetscCall(PetscNew(&neP));
-  snes->data    = (void *)neP;
-  neP->delta    = 0.0;
-  neP->delta0   = 0.2;
-  neP->eta1     = 0.001;
-  neP->eta2     = 0.25;
-  neP->eta3     = 0.75;
-  neP->t1       = 0.25;
-  neP->t2       = 2.0;
-  neP->deltaM   = 1.e10;
+  snes->data = (void *)neP;
+
+  PetscObjectParameterSetDefault(neP, eta1, 0.001);
+  PetscObjectParameterSetDefault(neP, eta2, 0.25);
+  PetscObjectParameterSetDefault(neP, eta3, 0.75);
+  PetscObjectParameterSetDefault(neP, t1, 0.25);
+  PetscObjectParameterSetDefault(neP, t2, 2.0);
+  PetscObjectParameterSetDefault(neP, deltam, PetscDefined(USE_REAL_SINGLE) ? 1.e-6 : 1.e-12);
+  PetscObjectParameterSetDefault(neP, delta0, 0.2);
+  PetscObjectParameterSetDefault(neP, deltaM, 1.e10);
+
   neP->norm     = NORM_2;
   neP->fallback = SNES_TR_FALLBACK_NEWTON;
   neP->kmdc     = 0.0; /* by default do not use sufficient decrease */
+
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNewtonTRSetTolerances_C", SNESNewtonTRSetTolerances_TR));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNewtonTRGetTolerances_C", SNESNewtonTRGetTolerances_TR));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -12,6 +12,20 @@ typedef struct {
   void *convctx;
 } SNES_TRDC_KSPConverged_Ctx;
 
+static PetscErrorCode SNESNewtonTRSetTolerances_TRDC(SNES snes, PetscReal delta_min, PetscReal delta_max, PetscReal delta_0)
+{
+  SNES_NEWTONTRDC *tr = (SNES_NEWTONTRDC *)snes->data;
+
+  PetscFunctionBegin;
+  if (delta_min == PETSC_DETERMINE) delta_min = 1.e-12;
+  if (delta_max == PETSC_DETERMINE) delta_max = 0.5;
+  if (delta_0 == PETSC_DETERMINE) delta_0 = 0.1;
+  if (delta_min != PETSC_CURRENT) tr->deltatol = delta_min;
+  if (delta_max != PETSC_CURRENT) tr->deltaM = delta_max;
+  if (delta_0 != PETSC_CURRENT) tr->delta0 = delta_0;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode SNESTRDC_KSPConverged_Private(KSP ksp, PetscInt n, PetscReal rnorm, KSPConvergedReason *reason, void *cctx)
 {
   SNES_TRDC_KSPConverged_Ctx *ctx  = (SNES_TRDC_KSPConverged_Ctx *)cctx;
@@ -54,8 +68,8 @@ static PetscErrorCode SNESTRDC_Converged_Private(SNES snes, PetscInt it, PetscRe
 
   PetscFunctionBegin;
   *reason = SNES_CONVERGED_ITERATING;
-  if (neP->delta < xnorm * snes->deltatol) {
-    PetscCall(PetscInfo(snes, "Diverged due to too small a trust region %g<%g*%g\n", (double)neP->delta, (double)xnorm, (double)snes->deltatol));
+  if (neP->delta < xnorm * neP->deltatol) {
+    PetscCall(PetscInfo(snes, "Diverged due to too small a trust region %g<%g*%g\n", (double)neP->delta, (double)xnorm, (double)neP->deltatol));
     *reason = SNES_DIVERGED_TR_DELTA;
   } else if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
     PetscCall(PetscInfo(snes, "Exceeded maximum number of function evaluations: %" PetscInt_FMT "\n", snes->max_funcs));
@@ -579,6 +593,7 @@ static PetscErrorCode SNESDestroy_NEWTONTRDC(SNES snes)
 {
   PetscFunctionBegin;
   PetscCall(SNESReset_NEWTONTRDC(snes));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNewtonTRSetTolerances_C", NULL));
   PetscCall(PetscFree(snes->data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -589,7 +604,7 @@ static PetscErrorCode SNESSetFromOptions_NEWTONTRDC(SNES snes, PetscOptionItems 
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "SNES trust region options for nonlinear equations");
-  PetscCall(PetscOptionsReal("-snes_trdc_tol", "Trust region tolerance", "SNESSetTrustRegionTolerance", snes->deltatol, &snes->deltatol, NULL));
+  PetscCall(PetscOptionsReal("-snes_trdc_tol", "Trust region tolerance", "SNESNewtonTRSetTolerances", ctx->deltatol, &ctx->deltatol, NULL));
   PetscCall(PetscOptionsReal("-snes_trdc_eta1", "eta1", "None", ctx->eta1, &ctx->eta1, NULL));
   PetscCall(PetscOptionsReal("-snes_trdc_eta2", "eta2", "None", ctx->eta2, &ctx->eta2, NULL));
   PetscCall(PetscOptionsReal("-snes_trdc_eta3", "eta3", "None", ctx->eta3, &ctx->eta3, NULL));
@@ -612,7 +627,7 @@ static PetscErrorCode SNESView_NEWTONTRDC(SNES snes, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  Trust region tolerance %g (-snes_trtol)\n", (double)snes->deltatol));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Trust region tolerance %g\n", (double)tr->deltatol));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  eta1=%g, eta2=%g, eta3=%g\n", (double)tr->eta1, (double)tr->eta2, (double)tr->eta3));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  delta0=%g, t1=%g, t2=%g, deltaM=%g\n", (double)tr->delta0, (double)tr->t1, (double)tr->t2, (double)tr->deltaM));
   }
@@ -635,12 +650,16 @@ static PetscErrorCode SNESView_NEWTONTRDC(SNES snes, PetscViewer viewer)
 .   -snes_trdc_use_cauchy <use_cauchy>                       - True uses dogleg Cauchy (Steepest Descent direction) step & direction in the trust region algorithm
 -   -snes_trdc_auto_scale_multiphase <auto_scale_multiphase> - True turns on auto-scaling for multivariable block matrix for Cauchy and trust region
 
-   Level: intermediate
+   Level: advanced
 
-   Note:
-   See {cite}`park2021linear`
+   Notes:
+   `SNESNEWTONTRDC` only works for root-finding problems and does not support objective functions.
+   The main difference with respect to `SNESNEWTONTR` is that `SNESNEWTONTRDC` scales the trust region by the norm of the current linearization point.
+   Future version may extend the `SNESNEWTONTR` code and deprecate `SNESNEWTONTRDC`.
 
-.seealso: [](ch_snes), `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESSetTrustRegionTolerance()`,
+   For details, see {cite}`park2021linear`
+
+.seealso: [](ch_snes), `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNewtonTRSetTolerances()`,
           `SNESNewtonTRDCPreCheck()`, `SNESNewtonTRDCGetPreCheck()`, `SNESNewtonTRDCSetPostCheck()`, `SNESNewtonTRDCGetPostCheck()`,
           `SNESNewtonTRDCGetRhoFlag()`, `SNESNewtonTRDCSetPreCheck()`
 M*/
@@ -662,18 +681,14 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTRDC(SNES snes)
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
   PetscCall(SNESParametersInitialize(snes));
-  PetscObjectParameterSetDefault(snes, deltatol, 1.e-12);
 
   PetscCall(PetscNew(&neP));
   snes->data                 = (void *)neP;
-  neP->delta                 = 0.0;
-  neP->delta0                = 0.1;
   neP->eta1                  = 0.001;
   neP->eta2                  = 0.25;
   neP->eta3                  = 0.75;
   neP->t1                    = 0.25;
   neP->t2                    = 2.0;
-  neP->deltaM                = 0.5;
   neP->sigma                 = 0.0001;
   neP->itflag                = PETSC_FALSE;
   neP->rnorm0                = 0.0;
@@ -682,6 +697,10 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTRDC(SNES snes)
   neP->auto_scale_multiphase = PETSC_FALSE;
   neP->auto_scale_max        = -1.0;
   neP->rho_satisfied         = PETSC_FALSE;
+  neP->delta                 = 0.0;
+  neP->deltaM                = 0.5;
+  neP->delta0                = 0.1;
+  neP->deltatol              = 1.e-12;
 
   /* for multiphase (multivariable) scaling */
   /* may be used for dynamic allocation of inorms, but it fails snes_tutorials-ex3_13
@@ -689,5 +708,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTRDC(SNES snes)
   PetscCall(VecGetBlockSize(snes->work[0],&neP->bs));
   PetscCall(PetscCalloc1(neP->bs,&neP->inorms));
   */
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNewtonTRSetTolerances_C", SNESNewtonTRSetTolerances_TRDC));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

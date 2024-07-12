@@ -7,10 +7,13 @@
 #include <petsc/private/snesimpl.h>
 
 typedef struct {
-  PetscReal delta;  /* trust region parameter */
-  PetscReal delta0; /* initial radius for trust region */
-  PetscReal deltaM; /* maximum radius for trust region */
-  PetscReal kmdc;   /* sufficient decrease parameter */
+  PetscReal delta; /* trust region radius */
+
+  PetscObjectParameterDeclare(PetscReal, delta0); /* initial radius for trust region */
+  PetscObjectParameterDeclare(PetscReal, deltaM); /* maximum radius for trust region */
+  PetscObjectParameterDeclare(PetscReal, deltam); /* minimum radius for trust region */
+
+  PetscReal kmdc; /* sufficient decrease parameter */
 
   /*
     Given rho = (fk - fkp1) / (m(0) - m(pk))
@@ -21,12 +24,13 @@ typedef struct {
       delta = min(delta,deltaM)
 
     The step is accepted if rho > eta1
+    The iterative process is halted if delta < deltam
   */
-  PetscReal eta1;
-  PetscReal eta2;
-  PetscReal eta3;
-  PetscReal t1;
-  PetscReal t2;
+  PetscObjectParameterDeclare(PetscReal, eta1);
+  PetscObjectParameterDeclare(PetscReal, eta2);
+  PetscObjectParameterDeclare(PetscReal, eta3);
+  PetscObjectParameterDeclare(PetscReal, t1);
+  PetscObjectParameterDeclare(PetscReal, t2);
 
   /* Use quasi-Newton models for J and (possibly different) Jp */
   SNESNewtonTRQNType qn;

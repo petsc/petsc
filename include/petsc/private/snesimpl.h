@@ -115,7 +115,6 @@ struct _p_SNES {
   PetscObjectParameterDeclare(PetscReal, divtol);   /* relative divergence tolerance */
   PetscObjectParameterDeclare(PetscReal, abstol);   /* absolute tolerance */
   PetscObjectParameterDeclare(PetscReal, stol);     /* step length tolerance*/
-  PetscObjectParameterDeclare(PetscReal, deltatol); /* trust region convergence tolerance */
 
   PetscBool vec_func_init_set; /* the initial function has been set */
 

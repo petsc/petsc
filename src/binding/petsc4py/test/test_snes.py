@@ -322,7 +322,7 @@ class BaseTestSNES:
         self.snes.setParamsEW(**params)
         params = self.snes.getParamsEW()
         self.assertEqual(params['version'], 1)
-        params['version'] = PETSc.DEFAULT
+        params['version'] = PETSc.CURRENT
         self.snes.setParamsEW(**params)
         params = self.snes.getParamsEW()
         self.assertEqual(params['version'], 1)
@@ -388,6 +388,27 @@ class BaseTestSNES:
         npc = self.snes.getNPC()
         self.assertEqual(npc.appctx, (1, 2, 3))
 
+    def testTRAPI(self):
+        newreg = (1,2,3)
+        newup = (1,2,3,4,5)
+        if self.snes.getType() == PETSc.SNES.Type.NEWTONTR:
+            defreg = self.snes.getTRTolerances()
+            defup = self.snes.getTRUpdateParameters()
+        self.snes.setTRTolerances(*newreg)
+        self.snes.setTRUpdateParameters(*newup)
+        if self.snes.getType() == PETSc.SNES.Type.NEWTONTR:
+            self.assertEqual(newreg, self.snes.getTRTolerances())
+            self.assertEqual(newup, self.snes.getTRUpdateParameters())
+        self.snes.setTRTolerances()
+        self.snes.setTRUpdateParameters()
+        if self.snes.getType() == PETSc.SNES.Type.NEWTONTR:
+            self.assertEqual(newreg, self.snes.getTRTolerances())
+            self.assertEqual(newup, self.snes.getTRUpdateParameters())
+        self.snes.setTRTolerances(*(PETSc.DETERMINE,)*3)
+        self.snes.setTRUpdateParameters(*(PETSc.DETERMINE,)*5)
+        if self.snes.getType() == PETSc.SNES.Type.NEWTONTR:
+            self.assertEqual(defreg, self.snes.getTRTolerances())
+            self.assertEqual(defup, self.snes.getTRUpdateParameters())
 
 # --------------------------------------------------------------------
 

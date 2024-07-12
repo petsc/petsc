@@ -28,7 +28,7 @@
   Developer Note:
   Why can't the values set with `SNESSetTolerances()` be used?
 
-.seealso: [](ch_snes), `SNES`, `SNESNCG`, `SNESSetTolerances()`, `SNESSetTrustRegionTolerance()`
+.seealso: [](ch_snes), `SNES`, `SNESNCG`
 @*/
 PetscErrorCode SNESNGSSetTolerances(SNES snes, PetscReal abstol, PetscReal rtol, PetscReal stol, PetscInt maxit)
 {

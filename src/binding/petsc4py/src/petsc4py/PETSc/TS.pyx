@@ -2099,7 +2099,7 @@ cdef class TS(Object):
 
         """
         cdef PetscInt  nevents = 0
-        cdef PetscReal tolr = PETSC_DEFAULT
+        cdef PetscReal tolr = PETSC_CURRENT
         cdef PetscInt  ntolr = 0
         cdef PetscReal *vtolr = NULL
         if tol is not None:

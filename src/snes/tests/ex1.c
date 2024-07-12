@@ -263,6 +263,25 @@ int main(int argc, char **argv)
     for (i = 0; i < its + 1; i++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "iteration %" PetscInt_FMT ": Linear iterations %" PetscInt_FMT " Function norm = %g\n", i, hist_its[i], (double)history[i]));
   }
 
+  /* Test NewtonTR API */
+  PetscCall(SNESNewtonTRSetTolerances(snes, 1.0, 2.0, 3.0));
+  PetscCall(SNESNewtonTRSetUpdateParameters(snes, 4.0, 5.0, 6.0, 7.0, 8.0));
+  PetscCall(PetscObjectTypeCompare((PetscObject)snes, SNESNEWTONTR, &flg));
+  if (flg) {
+    PetscReal tmp[5];
+
+    PetscCall(SNESNewtonTRGetTolerances(snes, &tmp[0], &tmp[1], &tmp[2]));
+    PetscCheck(tmp[0] == 1.0, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Wrong value");
+    PetscCheck(tmp[1] == 2.0, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Wrong value");
+    PetscCheck(tmp[2] == 3.0, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Wrong value");
+    PetscCall(SNESNewtonTRGetUpdateParameters(snes, &tmp[0], &tmp[1], &tmp[2], &tmp[3], &tmp[4]));
+    PetscCheck(tmp[0] == 4.0, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Wrong value");
+    PetscCheck(tmp[1] == 5.0, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Wrong value");
+    PetscCheck(tmp[2] == 6.0, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Wrong value");
+    PetscCheck(tmp[3] == 7.0, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Wrong value");
+    PetscCheck(tmp[4] == 8.0, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Wrong value");
+  }
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
