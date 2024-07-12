@@ -50,7 +50,7 @@
   #define petscoptionsend_                 petscoptionsend
   #define petscoptionsbool_                petscoptionsbool
   #define petscoptionsboolarray_           petscoptionsboolarray
-  #define petscoptionsenumprivate_         petscoptionsenumprivate_
+  #define petscoptionsenumprivate_         petscoptionsenumprivate
   #define petscoptionsint_                 petscoptionsint
   #define petscoptionsintarray_            petscoptionsintarray
   #define petscoptionsreal_                petscoptionsreal

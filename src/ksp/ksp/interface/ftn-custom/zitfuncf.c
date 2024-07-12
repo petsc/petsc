@@ -34,7 +34,7 @@
   #define kspconvergedskip_            kspconvergedskip
   #define kspmonitorsingularvalue_     kspmonitorsingularvalue
   #define kspgmresmonitorkrylov_       kspgmresmonitorkrylov
-  #define kspmonitoresidual_           kspmonitorresidual
+  #define kspmonitorresidual_          kspmonitorresidual
   #define kspmonitortrueresidual_      kspmonitortrueresidual
   #define kspmonitorsolution_          kspmonitorsolution
   #define kspsetcomputerhs_            kspsetcomputerhs
