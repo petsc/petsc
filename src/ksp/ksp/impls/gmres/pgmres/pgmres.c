@@ -153,7 +153,8 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount, KSP ksp)
   /* Form the solution (or the solution so far) */
   PetscCall(KSPPGMRESBuildSoln(RS(0), ksp->vec_sol, ksp->vec_sol, ksp, it - 2));
 
-  if (ksp->reason || ksp->its == ksp->max_it) {
+  if (ksp->reason == KSP_CONVERGED_ITERATING && ksp->its == ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
+  if (ksp->reason) {
     PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm));
     PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm));
   }
