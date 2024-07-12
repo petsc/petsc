@@ -254,7 +254,7 @@ M*/
    and the constants defined in both `NormType` and `ReductionType` are used to designate the desired operation.
 
 .seealso: [](ch_vectors), `MatGetColumnReductions()`, `MatGetColumnNorms()`, `NormType`, `REDUCTION_SUM_REALPART`,
-          `REDUCTION_SUM_IMAGINARYPART`, `REDUCTION_MEAN_REALPART`, `REDUCTION_NORM_1`, `REDUCTION_NORM_2`, `REDUCTION_NORM_FROBENIUS`, `REDUCTION_NORM_INFINITY`
+          `REDUCTION_SUM_IMAGINARYPART`, `REDUCTION_MEAN_REALPART`
 E*/
 typedef enum {
   REDUCTION_SUM_REALPART       = 10,
@@ -268,8 +268,7 @@ typedef enum {
 
    Level: beginner
 
-.seealso: [](ch_vectors), `ReductionType`, `MatGetColumnReductions()`, `REDUCTION_SUM_IMAGINARYPART`, `REDUCTION_MEAN_REALPART`, `REDUCTION_NORM_1`,
-          `REDUCTION_NORM_2`, `REDUCTION_NORM_FROBENIUS`, `REDUCTION_NORM_INFINITY`
+.seealso: [](ch_vectors), `ReductionType`, `MatGetColumnReductions()`, `REDUCTION_SUM_IMAGINARYPART`, `REDUCTION_MEAN_REALPART`
 M*/
 
 /*MC
@@ -277,8 +276,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](ch_vectors), `ReductionType`, `MatGetColumnReductions()`, `REDUCTION_SUM_REALPART`, `REDUCTION_MEAN_IMAGINARYPART`, `REDUCTION_NORM_1`,
-          `REDUCTION_NORM_2`, `REDUCTION_NORM_FROBENIUS`, `REDUCTION_NORM_INFINITY`
+.seealso: [](ch_vectors), `ReductionType`, `MatGetColumnReductions()`, `REDUCTION_SUM_REALPART`, `REDUCTION_MEAN_IMAGINARYPART`
 M*/
 
 /*MC
@@ -286,8 +284,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](ch_vectors), `ReductionType`, `MatGetColumnReductions()`, `REDUCTION_MEAN_IMAGINARYPART`, `REDUCTION_SUM_REALPART`, `REDUCTION_NORM_1`,
-          `REDUCTION_NORM_2`, `REDUCTION_NORM_FROBENIUS`, `REDUCTION_NORM_INFINITY`
+.seealso: [](ch_vectors), `ReductionType`, `MatGetColumnReductions()`, `REDUCTION_MEAN_IMAGINARYPART`, `REDUCTION_SUM_REALPART`
 M*/
 
 /*MC
@@ -295,8 +292,7 @@ M*/
 
    Level: beginner
 
-.seealso: [](ch_vectors), `ReductionType`, `MatGetColumnReductions()`, `REDUCTION_MEAN_REALPART`, `REDUCTION_SUM_IMAGINARYPART`, `REDUCTION_NORM_1`,
-          `REDUCTION_NORM_2`, `REDUCTION_NORM_FROBENIUS`, `REDUCTION_NORM_INFINITY`
+.seealso: [](ch_vectors), `ReductionType`, `MatGetColumnReductions()`, `REDUCTION_MEAN_REALPART`, `REDUCTION_SUM_IMAGINARYPART`
 M*/
 
 PETSC_EXTERN PetscErrorCode VecNorm(Vec, NormType, PetscReal *);

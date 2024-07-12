@@ -1155,7 +1155,7 @@ PetscErrorCode PCASMSetLocalType(PC pc, PCCompositeType type)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `PCASM`, `PCASMSetType()`, `PCASMGetType()`, `PCASMSetLocalType()`, `PCASMCreate()`, `PCASMType`, `PCCompositeType`
+.seealso: [](ch_ksp), `PCASM`, `PCASMSetType()`, `PCASMGetType()`, `PCASMSetLocalType()`, `PCASMType`, `PCCompositeType`
 @*/
 PetscErrorCode PCASMGetLocalType(PC pc, PCCompositeType *type)
 {

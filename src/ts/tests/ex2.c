@@ -230,7 +230,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void
   PetscCall(VecScatterBegin(scatter, tmp_out, globalout, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterEnd(scatter, tmp_out, globalout, INSERT_VALUES, SCATTER_FORWARD));
 
-  /* Destroy idx aand scatter */
+  /* Destroy idx and scatter */
   PetscCall(ISDestroy(&from));
   PetscCall(ISDestroy(&to));
   PetscCall(VecScatterDestroy(&scatter));

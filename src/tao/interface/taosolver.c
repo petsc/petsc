@@ -85,7 +85,7 @@ static PetscErrorCode TaoSetUpEW_Private(Tao tao)
 
   Level: beginner
 
-.seealso: [](ch_tao), `Tao`, `TaoSolve()`, `TaoDestroy()`, `TAOSetFromOptions()`, `TAOSetType()`
+.seealso: [](ch_tao), `Tao`, `TaoSolve()`, `TaoDestroy()`, `TaoSetFromOptions()`, `TaoSetType()`
 @*/
 PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
 {

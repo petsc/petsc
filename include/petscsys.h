@@ -300,7 +300,7 @@ PETSC_EXTERN PetscMPIInt PETSC_MPI_THREAD_REQUIRED;
 
    Level: developer
 
-.seealso: `PetscInitialize()`, `PetscInitializeCalled()`
+.seealso: `PetscInitialize()`, `PetscInitializeCalled`
 M*/
 PETSC_EXTERN PetscBool PetscBeganMPI;
 

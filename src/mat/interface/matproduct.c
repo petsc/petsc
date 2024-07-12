@@ -215,7 +215,7 @@ static PetscErrorCode MatProductSymbolic_Unsafe(Mat mat)
   the symbolic phase took advantage of their symmetry, the product is cleared and `MatProductSetFromOptions()`
   and `MatProductSymbolic()` are invoked again.
 
-.seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductCreate()`, `MatProductSetFromOptions()`, `MatProductSymbolic().` `MatProductClear()`
+.seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductCreate()`, `MatProductSetFromOptions()`, `MatProductSymbolic()`, `MatProductClear()`
 @*/
 PetscErrorCode MatProductReplaceMats(Mat A, Mat B, Mat C, Mat D)
 {
