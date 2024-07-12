@@ -127,7 +127,7 @@ docsclean:
 	-${RM} docs/source/*.inv
 
 website:
-	env CFLAGS=-O0 python -m pip install .
+	CFLAGS=-O0 python -m pip install .
 	${MAKE} sphinx-html SPHINXOPTS=-Wj2
 	mkdir -p ${LOC}/petsc4py
 	mv docs/html/* ${LOC}/petsc4py

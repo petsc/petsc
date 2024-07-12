@@ -114,7 +114,7 @@ html_theme_options = {
         },
     ],
     "use_edit_page_button": True,
-    "footer_end": ["copyright", "sphinx-version", "last-updated"],
+    "footer_end": ["theme-version", "last-updated"],
 #    "secondary_sidebar_items" : ["edit-this-page"],
      "header_links_before_dropdown": 10,
     "logo": {
@@ -279,7 +279,7 @@ def build_petsc4py_docs(app):
     petsc_arch = 'arch-classic-docs'
 
     # petsc4py needs to be built to build petsc4py docs via introspection
-    command = ['make', 'all',
+    command = ['make', '-f', 'makefile', 'libs',
                'PETSC_DIR=%s' % petsc_dir,
                'PETSC_ARCH=%s' % petsc_arch]
     import time
