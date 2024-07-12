@@ -25,13 +25,14 @@ int main(int argc, char **argv)
   DM        da;
   Mat       A, Atrans;
   PetscInt  dof = 1, M = 8;
-  PetscBool flg, trans = PETSC_FALSE;
+  PetscBool flg, trans = PETSC_FALSE, sbaij = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-dof", &dof, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-M", &M, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-trans", &trans, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-sbaij", &sbaij, NULL));
 
   PetscCall(DMDACreate(PETSC_COMM_WORLD, &da));
   PetscCall(DMSetDimension(da, 3));
@@ -49,7 +50,7 @@ int main(int argc, char **argv)
   PetscCall(DMCreateGlobalVector(da, &b));
   PetscCall(ComputeRHS(da, b));
   PetscCall(DMSetMatType(da, MATBAIJ));
-  PetscCall(DMSetFromOptions(da));
+  if (sbaij) PetscCall(DMSetMatType(da, MATSBAIJ));
   PetscCall(DMCreateMatrix(da, &A));
   PetscCall(ComputeMatrix(da, A));
 
@@ -215,6 +216,6 @@ PetscErrorCode ComputeMatrix(DM da, Mat B)
 /*TEST
 
    test:
-      args: -ksp_monitor_short -dm_mat_type sbaij -ksp_monitor_short -pc_type cholesky -ksp_view
+      args: -ksp_monitor_short -sbaij -ksp_monitor_short -pc_type cholesky -ksp_view
 
 TEST*/
