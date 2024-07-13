@@ -878,6 +878,17 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELFP) {
         PetscCall(MatDestroy(&jac->schurp));
         PetscCall(MatSchurComplementGetPmat(jac->schur, MAT_INITIAL_MATRIX, &jac->schurp));
+      } else if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_FULL) {
+        PetscCall(MatDestroy(&jac->schur_user));
+        if (jac->kspupper == jac->head->ksp) {
+          Mat AinvB;
+
+          PetscCall(PetscObjectQuery((PetscObject)jac->schur, "AinvB", (PetscObject *)&AinvB));
+          PetscCall(MatDestroy(&AinvB));
+          PetscCall(MatCreate(PetscObjectComm((PetscObject)jac->schur), &AinvB));
+          PetscCall(PetscObjectCompose((PetscObject)jac->schur, "AinvB", (PetscObject)AinvB));
+        }
+        PetscCall(MatSchurComplementComputeExplicitOperator(jac->schur, &jac->schur_user));
       }
       if (kspA != kspInner) PetscCall(KSPSetOperators(kspA, jac->mat[0], jac->pmat[0]));
       if (kspUpper != kspA) PetscCall(KSPSetOperators(kspUpper, jac->mat[0], jac->pmat[0]));
@@ -1013,6 +1024,12 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         PetscCall(PCSetType(pcschur, PCNONE));
         /* Note: This is bad if there exist preconditioners for MATSCHURCOMPLEMENT */
       } else if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_FULL) {
+        if (jac->schurfactorization == PC_FIELDSPLIT_SCHUR_FACT_FULL && jac->kspupper == jac->head->ksp) {
+          Mat AinvB;
+
+          PetscCall(MatCreate(PetscObjectComm((PetscObject)jac->schur), &AinvB));
+          PetscCall(PetscObjectCompose((PetscObject)jac->schur, "AinvB", (PetscObject)AinvB));
+        }
         PetscCall(MatSchurComplementComputeExplicitOperator(jac->schur, &jac->schur_user));
       }
       PetscCall(KSPSetOperators(jac->kspschur, jac->schur, FieldSplitSchurPre(jac)));
@@ -1141,6 +1158,8 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc, Vec x, Vec y)
   PC_FieldSplit    *jac    = (PC_FieldSplit *)pc->data;
   PC_FieldSplitLink ilinkA = jac->head, ilinkD = ilinkA->next;
   KSP               kspA = ilinkA->ksp, kspLower = kspA, kspUpper = jac->kspupper;
+  Mat               AinvB = NULL;
+  PetscInt          N     = -1;
 
   PetscFunctionBegin;
   switch (jac->schurfactorization) {
@@ -1217,7 +1236,33 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc, Vec x, Vec y)
     PetscCall(VecScatterBegin(ilinkA->sctx, x, ilinkA->x, INSERT_VALUES, SCATTER_FORWARD));
     PetscCall(VecScatterEnd(ilinkA->sctx, x, ilinkA->x, INSERT_VALUES, SCATTER_FORWARD));
     PetscCall(PetscLogEventBegin(KSP_Solve_FS_L, kspLower, ilinkA->x, ilinkA->y, NULL));
-    PetscCall(KSPSolve(kspLower, ilinkA->x, ilinkA->y));
+    if (kspUpper == kspA) {
+      PetscCall(PetscObjectQuery((PetscObject)jac->schur, "AinvB", (PetscObject *)&AinvB));
+      if (AinvB) {
+        PetscCall(MatGetSize(AinvB, NULL, &N));
+        if (N == -1) { // first time PCApply_FieldSplit_Schur() is called
+          Mat                A;
+          PetscInt           m, M, N;
+          PetscScalar       *v, *write;
+          const PetscScalar *read;
+
+          PetscCall(MatGetSize(jac->B, &M, &N));
+          PetscCall(MatGetLocalSize(jac->B, &m, NULL));
+          PetscCall(VecGetArrayRead(ilinkA->x, &read));
+          PetscCall(PetscMalloc1(m * (N + 1), &v));
+          PetscCall(PetscArraycpy(v + m * N, read, m)); // copy the input Vec in the last column of the composed Mat
+          PetscCall(VecRestoreArrayRead(ilinkA->x, &read));
+          PetscCall(MatCreateDense(PetscObjectComm((PetscObject)jac->schur), m, PETSC_DECIDE, M, N + 1, v, &A)); // number of columns of the Schur complement plus one
+          PetscCall(MatHeaderReplace(AinvB, &A));
+          PetscCall(MatSchurComplementComputeExplicitOperator(jac->schur, &jac->schur_user));
+          PetscCall(KSPSetOperators(jac->kspschur, jac->schur, jac->schur_user));
+          PetscCall(VecGetArrayWrite(ilinkA->y, &write));
+          PetscCall(PetscArraycpy(write, v + m * N, m)); // retrieve the solution as the last column of the composed Mat
+          PetscCall(VecRestoreArrayWrite(ilinkA->y, &write));
+        }
+      }
+    }
+    if (!AinvB || N != -1) PetscCall(KSPSolve(kspLower, ilinkA->x, ilinkA->y));
     PetscCall(KSPCheckSolve(kspLower, pc, ilinkA->y));
     PetscCall(PetscLogEventEnd(KSP_Solve_FS_L, kspLower, ilinkA->x, ilinkA->y, NULL));
     PetscCall(MatMult(jac->C, ilinkA->y, ilinkD->x));
@@ -1234,12 +1279,14 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc, Vec x, Vec y)
     PetscCall(VecScatterBegin(ilinkD->sctx, ilinkD->y, y, INSERT_VALUES, SCATTER_REVERSE));
 
     if (kspUpper == kspA) {
-      PetscCall(MatMult(jac->B, ilinkD->y, ilinkA->y));
-      PetscCall(VecAXPY(ilinkA->x, -1.0, ilinkA->y));
-      PetscCall(PetscLogEventBegin(ilinkA->event, kspA, ilinkA->x, ilinkA->y, NULL));
-      PetscCall(KSPSolve(kspA, ilinkA->x, ilinkA->y));
-      PetscCall(KSPCheckSolve(kspA, pc, ilinkA->y));
-      PetscCall(PetscLogEventEnd(ilinkA->event, kspA, ilinkA->x, ilinkA->y, NULL));
+      if (!AinvB) {
+        PetscCall(MatMult(jac->B, ilinkD->y, ilinkA->y));
+        PetscCall(VecAXPY(ilinkA->x, -1.0, ilinkA->y));
+        PetscCall(PetscLogEventBegin(ilinkA->event, kspA, ilinkA->x, ilinkA->y, NULL));
+        PetscCall(KSPSolve(kspA, ilinkA->x, ilinkA->y));
+        PetscCall(KSPCheckSolve(kspA, pc, ilinkA->y));
+        PetscCall(PetscLogEventEnd(ilinkA->event, kspA, ilinkA->x, ilinkA->y, NULL));
+      } else PetscCall(MatMultAdd(AinvB, ilinkD->y, ilinkA->y, ilinkA->y));
     } else {
       PetscCall(PetscLogEventBegin(ilinkA->event, kspA, ilinkA->x, ilinkA->y, NULL));
       PetscCall(KSPSolve(kspA, ilinkA->x, ilinkA->y));
@@ -1678,6 +1725,7 @@ static PetscErrorCode PCReset_FieldSplit(PC pc)
 {
   PC_FieldSplit    *jac   = (PC_FieldSplit *)pc->data;
   PC_FieldSplitLink ilink = jac->head, next;
+  Mat               AinvB;
 
   PetscFunctionBegin;
   while (ilink) {
@@ -1707,6 +1755,11 @@ static PetscErrorCode PCReset_FieldSplit(PC pc)
   jac->nsplits = 0;
   PetscCall(VecDestroy(&jac->w1));
   PetscCall(VecDestroy(&jac->w2));
+  if (jac->schur) {
+    PetscCall(PetscObjectQuery((PetscObject)jac->schur, "AinvB", (PetscObject *)&AinvB));
+    PetscCall(MatDestroy(&AinvB));
+    PetscCall(PetscObjectCompose((PetscObject)jac->schur, "AinvB", NULL));
+  }
   PetscCall(MatDestroy(&jac->schur));
   PetscCall(MatDestroy(&jac->schurp));
   PetscCall(MatDestroy(&jac->schur_user));
