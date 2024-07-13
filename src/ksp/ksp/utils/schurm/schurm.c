@@ -947,20 +947,13 @@ static PetscErrorCode MatProductSymbolic_SchurComplement_Dense(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatProductSetFromOptions_Dense_AB(Mat C)
-{
-  PetscFunctionBegin;
-  C->ops->productsymbolic = MatProductSymbolic_SchurComplement_Dense;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatProductSetFromOptions_SchurComplement_Dense(Mat C)
 {
   Mat_Product *product = C->product;
 
   PetscFunctionBegin;
   PetscCheck(product->type == MATPRODUCT_AB, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Not for product type %s", MatProductTypes[product->type]);
-  PetscCall(MatProductSetFromOptions_Dense_AB(C));
+  C->ops->productsymbolic = MatProductSymbolic_SchurComplement_Dense;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
