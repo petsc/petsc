@@ -24,6 +24,9 @@ typedef const char *DMAdaptorType;
 #define DMADAPTORFLUX     "flux"
 
 PETSC_EXTERN PetscFunctionList DMAdaptorList;
+PETSC_EXTERN PetscFunctionList DMAdaptorMonitorList;
+PETSC_EXTERN PetscFunctionList DMAdaptorMonitorCreateList;
+PETSC_EXTERN PetscFunctionList DMAdaptorMonitorDestroyList;
 
 PETSC_EXTERN PetscErrorCode DMAdaptorCreate(MPI_Comm, DMAdaptor *);
 PETSC_EXTERN PetscErrorCode DMAdaptorSetType(DMAdaptor, DMAdaptorType);
@@ -44,3 +47,18 @@ PETSC_EXTERN PetscErrorCode DMAdaptorSetTransferFunction(DMAdaptor, PetscErrorCo
 PETSC_EXTERN PetscErrorCode DMAdaptorGetMixedSetupFunction(DMAdaptor, PetscErrorCode (**)(DMAdaptor, DM));
 PETSC_EXTERN PetscErrorCode DMAdaptorSetMixedSetupFunction(DMAdaptor, PetscErrorCode (*)(DMAdaptor, DM));
 PETSC_EXTERN PetscErrorCode DMAdaptorAdapt(DMAdaptor, Vec, DMAdaptationStrategy, DM *, Vec *);
+PETSC_EXTERN PetscErrorCode DMAdaptorGetCriterion(DMAdaptor, DMAdaptationCriterion *);
+PETSC_EXTERN PetscErrorCode DMAdaptorSetCriterion(DMAdaptor, DMAdaptationCriterion);
+
+PETSC_EXTERN PetscErrorCode DMAdaptorMonitorRegister(const char[], PetscViewerType, PetscViewerFormat, PetscErrorCode (*)(DMAdaptor, PetscInt, DM, DM, PetscInt, PetscReal[], Vec, PetscViewerAndFormat *), PetscErrorCode (*)(PetscViewer, PetscViewerFormat, void *, PetscViewerAndFormat **), PetscErrorCode (*)(PetscViewerAndFormat **));
+PETSC_EXTERN PetscErrorCode DMAdaptorMonitorRegisterAll(void);
+PETSC_EXTERN PetscErrorCode DMAdaptorMonitorRegisterDestroy(void);
+PETSC_EXTERN PetscErrorCode DMAdaptorMonitor(DMAdaptor, PetscInt, DM, DM, PetscInt, PetscReal[], Vec);
+PETSC_EXTERN PetscErrorCode DMAdaptorMonitorSet(DMAdaptor, PetscErrorCode (*)(DMAdaptor, PetscInt, DM, DM, PetscInt, PetscReal[], Vec, void *), void *, PetscErrorCode (*)(void **));
+PETSC_EXTERN PetscErrorCode DMAdaptorMonitorSetFromOptions(DMAdaptor, const char[], const char[], void *);
+PETSC_EXTERN PetscErrorCode DMAdaptorMonitorCancel(DMAdaptor);
+PETSC_EXTERN PetscErrorCode DMAdaptorMonitorSize(DMAdaptor, PetscInt, DM, DM, PetscInt, PetscReal[], Vec, PetscViewerAndFormat *);
+PETSC_EXTERN PetscErrorCode DMAdaptorMonitorError(DMAdaptor, PetscInt, DM, DM, PetscInt, PetscReal[], Vec, PetscViewerAndFormat *);
+PETSC_EXTERN PetscErrorCode DMAdaptorMonitorErrorDraw(DMAdaptor, PetscInt, DM, DM, PetscInt, PetscReal[], Vec, PetscViewerAndFormat *);
+PETSC_EXTERN PetscErrorCode DMAdaptorMonitorErrorDrawLGCreate(PetscViewer, PetscViewerFormat, void *, PetscViewerAndFormat **);
+PETSC_EXTERN PetscErrorCode DMAdaptorMonitorErrorDrawLG(DMAdaptor, PetscInt, DM, DM, PetscInt, PetscReal[], Vec, PetscViewerAndFormat *);

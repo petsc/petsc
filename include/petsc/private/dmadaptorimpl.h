@@ -3,6 +3,8 @@
 #include <petscdmadaptor.h>
 #include <petsc/private/petscimpl.h>
 
+#define MAXDMADAPTORMONITORS 16
+
 typedef struct _DMAdaptorOps *DMAdaptorOps;
 struct _DMAdaptorOps {
   PetscErrorCode (*setfromoptions)(DMAdaptor);
@@ -34,8 +36,11 @@ struct _p_DMAdaptor {
   DM                 cellDM, gradDM;
   Vec                cellGeom, faceGeom, cellGrad; /* Local vectors */
   const PetscScalar *cellGeomArray, *cellGradArray;
-  /* Outputs */
-  PetscBool monitor;
+  // Monitors
+  PetscErrorCode (*monitor[MAXDMADAPTORMONITORS])(DMAdaptor, PetscInt, DM, DM, PetscInt, PetscReal[], Vec, void *);
+  PetscErrorCode (*monitordestroy[MAXDMADAPTORMONITORS])(void **);
+  void    *monitorcontext[MAXDMADAPTORMONITORS];
+  PetscInt numbermonitors;
   /* Auxiliary objects */
   PetscLimiter limiter;
   PetscErrorCode (**exactSol)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);

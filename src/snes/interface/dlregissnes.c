@@ -52,6 +52,8 @@ PetscErrorCode SNESInitializePackage(void)
   PetscCall(SNESLineSearchRegisterAll());
   PetscCall(DMAdaptorRegisterAll());
   PetscCall(PetscRegisterFinalize(DMAdaptorRegisterDestroy));
+  PetscCall(DMAdaptorMonitorRegisterAll());
+  PetscCall(PetscRegisterFinalize(DMAdaptorMonitorRegisterDestroy));
   /* Register Events */
   PetscCall(PetscLogEventRegister("SNESSolve", SNES_CLASSID, &SNES_Solve));
   PetscCall(PetscLogEventRegister("SNESSetUp", SNES_CLASSID, &SNES_SetUp));
