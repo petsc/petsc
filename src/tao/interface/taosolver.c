@@ -85,7 +85,7 @@ static PetscErrorCode TaoSetUpEW_Private(Tao tao)
 
   Level: beginner
 
-.seealso: [](ch_tao), `Tao`, `TaoSolve()`, `TaoDestroy()`, `TAOSetFromOptions()`, `TAOSetType()`
+.seealso: [](ch_tao), `Tao`, `TaoSolve()`, `TaoDestroy()`, `TaoSetFromOptions()`, `TaoSetType()`
 @*/
 PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
 {
@@ -1823,7 +1823,12 @@ PetscErrorCode TaoMonitorStep(Tao tao, void *ctx)
 
   Level: advanced
 
-.seealso: [](ch_tao), `Tao`, `TaoMonitorSolution()`, `TaoMonitorSet()`, `TaoMonitorGradientDraw()`
+  Note:
+  The context created by `TaoMonitorDrawCtxCreate()`, along with `TaoMonitorSolutionDraw()`, and `TaoMonitorDrawCtxDestroy()`
+  are passed to `TaoMonitorSet()` to monitor the solution graphically.
+
+.seealso: [](ch_tao), `Tao`, `TaoMonitorSolution()`, `TaoMonitorSet()`, `TaoMonitorGradientDraw()`, `TaoMonitorDrawCtxCreate()`,
+          `TaoMonitorDrawCtxDestroy()`
 @*/
 PetscErrorCode TaoMonitorSolutionDraw(Tao tao, void *ctx)
 {
@@ -2616,7 +2621,7 @@ PetscErrorCode TaoGetApplicationContext(Tao tao, void *usrP)
 }
 
 /*@
-  TaoSetGradientNorm - Sets the matrix used to define the norm that measures the size of the gradient.
+  TaoSetGradientNorm - Sets the matrix used to define the norm that measures the size of the gradient in some of the `Tao` algorithms
 
   Collective
 
@@ -2642,7 +2647,7 @@ PetscErrorCode TaoSetGradientNorm(Tao tao, Mat M)
 }
 
 /*@
-  TaoGetGradientNorm - Returns the matrix used to define the norm used for measuring the size of the gradient.
+  TaoGetGradientNorm - Returns the matrix used to define the norm used for measuring the size of the gradient in some of the `Tao` algorithms
 
   Not Collective
 
@@ -2672,13 +2677,22 @@ PetscErrorCode TaoGetGradientNorm(Tao tao, Mat *M)
 
   Input Parameters:
 + tao      - the `Tao` context
-. gradient - the gradient to be computed
+. gradient - the gradient
 - type     - the norm type
 
   Output Parameter:
 . gnorm - the gradient norm
 
   Level: advanced
+
+  Note:
+  If `TaoSetGradientNorm()` has been set and `type` is `NORM_2` then the norm provided with `TaoSetGradientNorm()` is used.
+
+  Developer Notes:
+  Should be named `TaoComputeGradientNorm()`.
+
+  The usage is a bit confusing, with `TaoSetGradientNorm()` plus `NORM_2` resulting in the computation of the user provided
+  norm, perhaps a refactorization is in order.
 
 .seealso: [](ch_tao), `Tao`, `TaoSetGradientNorm()`, `TaoGetGradientNorm()`
 @*/
@@ -2703,7 +2717,7 @@ PetscErrorCode TaoGradientNorm(Tao tao, Vec gradient, NormType type, PetscReal *
 }
 
 /*@C
-  TaoMonitorDrawCtxCreate - Creates the monitor context for `TaoMonitorDrawSolution()`
+  TaoMonitorDrawCtxCreate - Creates the monitor context for `TaoMonitorSolutionDraw()`
 
   Collective
 
@@ -2720,10 +2734,15 @@ PetscErrorCode TaoGradientNorm(Tao tao, Vec gradient, NormType type, PetscReal *
   Output Parameter:
 . ctx - the monitor context
 
-  Options Database Key:
-. -tao_draw_solution_initial - show initial guess as well as current solution
+  Options Database Keys:
++ -tao_monitor_solution_draw - use `TaoMonitorSolutionDraw()` to monitor the solution
+- -tao_draw_solution_initial - show initial guess as well as current solution
 
   Level: intermediate
+
+  Note:
+  The context this creates, along with `TaoMonitorSolutionDraw()`, and `TaoMonitorDrawCtxDestroy()`
+  are passed to `TaoMonitorSet()`.
 
 .seealso: [](ch_tao), `Tao`, `TaoMonitorSet()`, `TaoMonitorDefault()`, `VecView()`, `TaoMonitorDrawCtx()`
 @*/
@@ -2738,7 +2757,7 @@ PetscErrorCode TaoMonitorDrawCtxCreate(MPI_Comm comm, const char host[], const c
 }
 
 /*@C
-  TaoMonitorDrawCtxDestroy - Destroys the monitor context for `TaoMonitorDrawSolution()`
+  TaoMonitorDrawCtxDestroy - Destroys the monitor context for `TaoMonitorSolutionDraw()`
 
   Collective
 
@@ -2747,7 +2766,11 @@ PetscErrorCode TaoMonitorDrawCtxCreate(MPI_Comm comm, const char host[], const c
 
   Level: intermediate
 
-.seealso: [](ch_tao), `Tao`, `TaoMonitorSet()`, `TaoMonitorDefault()`, `VecView()`, `TaoMonitorDrawSolution()`
+  Note:
+  This is passed to `TaoMonitorSet()` as the final argument, along with `TaoMonitorSolutionDraw()`, and the context
+  obtained with `TaoMonitorDrawCtxCreate()`.
+
+.seealso: [](ch_tao), `Tao`, `TaoMonitorSet()`, `TaoMonitorDefault()`, `VecView()`, `TaoMonitorSolutionDraw()`
 @*/
 PetscErrorCode TaoMonitorDrawCtxDestroy(TaoMonitorDrawCtx *ictx)
 {

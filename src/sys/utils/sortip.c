@@ -1,10 +1,7 @@
 /*
    This file contains routines for sorting integers and doubles with a permutation array.
-
-   The word "register"  in this code is used to identify data that is not
-   aliased.  For some compilers, this can cause the compiler to fail to
-   place inner-loop variables into registers.
  */
+#include <petsc/private/petscimpl.h>
 #include <petscsys.h> /*I  "petscsys.h"  I*/
 
 #define SWAP(a, b, t) \
@@ -13,6 +10,15 @@
     a = b; \
     b = t; \
   } while (0)
+
+#if PetscDefined(USE_DEBUG)
+  #define PetscCheckIdentity(n, idx) \
+    do { \
+      for (PetscInt i = 0; i < n; ++i) PetscCheck(idx[i] == i, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input array needs to be initialized to 0:%" PetscInt_FMT, n - 1); \
+    } while (0)
+#else
+  #define PetscCheckIdentity(n, idx) (void)0
+#endif
 
 static PetscErrorCode PetscSortIntWithPermutation_Private(const PetscInt v[], PetscInt vdx[], PetscInt right)
 {
@@ -49,12 +55,12 @@ static PetscErrorCode PetscSortIntWithPermutation_Private(const PetscInt v[], Pe
   Input Parameters:
 + n   - number of values to sort
 . i   - values to sort
-- idx - permutation array.  Must be initialized to 0:n-1 on input.
+- idx - permutation array. Must be initialized to 0:`n`-1 on input.
 
   Level: intermediate
 
   Note:
-  On output i is unchanged and idx[i] is the position of the i-th smallest index in i.
+  On output, `i` is unchanged and `idx[j]` is the position of the `j`th smallest `PetscInt` in `i`.
 
 .seealso: `PetscSortInt()`, `PetscSortRealWithPermutation()`, `PetscSortIntWithArray()`
  @*/
@@ -63,6 +69,11 @@ PetscErrorCode PetscSortIntWithPermutation(PetscInt n, const PetscInt i[], Petsc
   PetscInt j, k, tmp, ik;
 
   PetscFunctionBegin;
+  if (n > 0) {
+    PetscAssertPointer(i, 2);
+    PetscAssertPointer(idx, 3);
+    PetscCheckIdentity(n, idx);
+  }
   if (n < 8) {
     for (k = 0; k < n; k++) {
       ik = i[idx[k]];
@@ -78,8 +89,6 @@ PetscErrorCode PetscSortIntWithPermutation(PetscInt n, const PetscInt i[], Petsc
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/* ---------------------------------------------------------------------- */
 
 static PetscErrorCode PetscSortRealWithPermutation_Private(const PetscReal v[], PetscInt vdx[], PetscInt right)
 {
@@ -117,12 +126,12 @@ static PetscErrorCode PetscSortRealWithPermutation_Private(const PetscReal v[], 
   Input Parameters:
 + n   - number of values to sort
 . i   - values to sort
-- idx - permutation array.  Must be initialized to 0:n-1 on input.
+- idx - permutation array. Must be initialized to 0:`n`-1 on input.
 
   Level: intermediate
 
   Note:
-  i is unchanged on output.
+  On output, `i` is unchanged and `idx[j]` is the position of the `j`th smallest `PetscReal` in `i`.
 
 .seealso: `PetscSortReal()`, `PetscSortIntWithPermutation()`
  @*/
@@ -132,6 +141,11 @@ PetscErrorCode PetscSortRealWithPermutation(PetscInt n, const PetscReal i[], Pet
   PetscReal ik;
 
   PetscFunctionBegin;
+  if (n > 0) {
+    PetscAssertPointer(i, 2);
+    PetscAssertPointer(idx, 3);
+    PetscCheckIdentity(n, idx);
+  }
   if (n < 8) {
     for (k = 0; k < n; k++) {
       ik = i[idx[k]];
@@ -187,12 +201,12 @@ static PetscErrorCode PetscSortStrWithPermutation_Private(const char *v[], Petsc
   Input Parameters:
 + n   - number of values to sort
 . i   - values to sort
-- idx - permutation array.  Must be initialized to `0:n-1` on input.
+- idx - permutation array. Must be initialized to 0:`n`-1 on input.
 
   Level: intermediate
 
   Note:
-  `i` is unchanged on output.
+  On output, `i` is unchanged and `idx[j]` is the position of the `j`th smallest `char *` in `i`.
 
 .seealso: `PetscSortInt()`, `PetscSortRealWithPermutation()`
  @*/
@@ -203,6 +217,11 @@ PetscErrorCode PetscSortStrWithPermutation(PetscInt n, const char *i[], PetscInt
   PetscBool   gt;
 
   PetscFunctionBegin;
+  if (n > 0) {
+    PetscAssertPointer(i, 2);
+    PetscAssertPointer(idx, 3);
+    PetscCheckIdentity(n, idx);
+  }
   if (n < 8) {
     for (k = 0; k < n; k++) {
       ik = i[idx[k]];
