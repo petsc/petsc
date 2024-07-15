@@ -126,7 +126,7 @@ BLAS_EXTERN void BLASREALgemm_(const char *, const char *, const PetscBLASInt *,
 BLAS_EXTERN void BLASsymm_(const char *, const char *, const PetscBLASInt *, const PetscBLASInt *, const PetscScalar *, const PetscScalar *, const PetscBLASInt *, const PetscScalar *, const PetscBLASInt *, const PetscScalar *, PetscScalar *, const PetscBLASInt *);
 BLAS_EXTERN void BLAStrsm_(const char *, const char *, const char *, const char *, const PetscBLASInt *, const PetscBLASInt *, const PetscScalar *, const PetscScalar *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *);
 #if !defined(PETSC_MISSING_LAPACK_ORMQR)
-BLAS_EXTERN void LAPACKormqr_(const char *, const char *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscBLASInt *);
+BLAS_EXTERN void LAPACKormqr_(const char *, const char *, const PetscBLASInt *, const PetscBLASInt *, const PetscBLASInt *, const PetscScalar *, const PetscBLASInt *, const PetscScalar *, PetscScalar *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscBLASInt *);
 #else
   #define LAPACKormqr_(a, b, c, d, e, f, g, h, i, j, k, l, m) PetscMissingLapack("ORMQR", a, b, c, d, e, f, g, h, i, j, k, l, m)
 #endif
