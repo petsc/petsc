@@ -34,6 +34,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptorGetType(DMAdaptor, DMAdaptorType *);
 PETSC_EXTERN PetscErrorCode DMAdaptorRegister(const char[], PetscErrorCode (*)(DMAdaptor));
 PETSC_EXTERN PetscErrorCode DMAdaptorRegisterAll(void);
 PETSC_EXTERN PetscErrorCode DMAdaptorRegisterDestroy(void);
+PETSC_EXTERN PetscErrorCode DMAdaptorSetOptionsPrefix(DMAdaptor, const char[]);
 PETSC_EXTERN PetscErrorCode DMAdaptorSetFromOptions(DMAdaptor);
 PETSC_EXTERN PetscErrorCode DMAdaptorSetUp(DMAdaptor);
 PETSC_EXTERN PetscErrorCode DMAdaptorView(DMAdaptor, PetscViewer);

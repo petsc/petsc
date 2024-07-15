@@ -71,6 +71,7 @@ Changes: Development
 - Add ``DMAdaptorMonitorSize()``, ``DMAdaptorMonitorError()``, ``DMAdaptorMonitorErrorDraw()``, ``DMAdaptorMonitorErrorDrawLGCreate()``, ``DMAdaptorMonitorErrorDrawLG()``
 - Add ``DMAdaptorMonitorRegister()``, ``DMAdaptorMonitorRegisterAll()``, ``DMAdaptorMonitorRegisterDestroy()``
 - Add ``DMAdaptorGetCriterion()`` and ``DMAdaptorSetCriterion()``
+- Add ``DMAdaptorSetOptionsPrefix()``
 
 .. rubric:: SNESLineSearch:
 
