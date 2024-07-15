@@ -33,7 +33,7 @@ def processfile(petsc_dir,dir,file,implsClassAll,subimplsClassAll,implsFuncAll):
       f.write('\n## Implementations\n')
       if func:
         for str in func:
-          f.write(re.sub(r'(.*\.[ch]x*u*).*('+itemName+'.*)(\(.*\))','<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/\\1.html#\\2\">\\2() in \\1</A><BR>',str,count=1)+'\n')
+          f.write(re.sub(r'(.*\.[ch]x*u*).*('+itemName+r'.*)(\(.*\))','<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/\\1.html#\\2\">\\2() in \\1</A><BR>',str,count=1)+'\n')
       if iclass:
         for str in iclass:
           f.write(re.sub(r'(.*\.[ch]x*u*):.*struct.*(_p_'+itemName+').*{','<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/\\1.html#\\2\">\\2 in \\1</A><BR>',str,count=1)+'\n')

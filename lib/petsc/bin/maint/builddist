@@ -53,7 +53,7 @@ if [ ! -d $petscrepo/.git ]; then
 fi
 
 # Initialize vars
-PETSC_ARCH=arch-classic-docs; export PETSC_ARCH
+PETSC_ARCH=arch-docs; export PETSC_ARCH
 PETSC_DIR=`cd $petscrepo;pwd -P`; export PETSC_DIR
 
 # Clean and Update the git repository and check for branch

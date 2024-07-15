@@ -9,11 +9,11 @@ import argparse
 import re
 
 rawhtml = ['include', 'src']
-petsc_arch = 'arch-classic-docs'
+petsc_arch = 'arch-docs'
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def main(stage,outdir):
-    """ Operations to provide data from the 'classic' PETSc docs system. """
+    """ Operations to provide data for PETSc manual pages and c2html files. """
     import time
     petsc_dir = os.path.abspath(os.path.join(THIS_DIR, ".."))  # abspath essential since classic 'html' target uses sed to modify paths from the source to target tree
     if stage == "pre":
