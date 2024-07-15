@@ -4701,6 +4701,7 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x)
         PetscCall(DMAdaptorSetSequenceLength(adaptor, num));
         PetscCall(DMAdaptorSetFromOptions(adaptor));
         PetscCall(DMAdaptorSetUp(adaptor));
+        PetscCall(PetscObjectViewFromOptions((PetscObject)adaptor, NULL, "-snes_adapt_view"));
         PetscCall(DMAdaptorAdapt(adaptor, x, DM_ADAPTATION_SEQUENTIAL, &dm, &x));
         PetscCall(DMAdaptorDestroy(&adaptor));
         incall = PETSC_FALSE;

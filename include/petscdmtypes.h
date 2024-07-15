@@ -155,6 +155,7 @@ typedef enum {
   DM_ADAPTATION_LABEL,
   DM_ADAPTATION_METRIC
 } DMAdaptationCriterion;
+PETSC_EXTERN const char *const DMAdaptationCriteria[];
 
 /*E
   DMAdaptFlag - Marker in the label prescribing what adaptation to perform
