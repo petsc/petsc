@@ -204,7 +204,8 @@ static PetscErrorCode KSPDGMRESCycle(PetscInt *itcount, KSP ksp)
   PetscCall(KSPDGMRESBuildSoln(GRS(0), ksp->vec_sol, ksp->vec_sol, ksp, it - 1));
 
   /* Monitor if we know that we will not return for a restart */
-  if (it && (ksp->reason || ksp->its >= ksp->max_it)) {
+  if (ksp->reason == KSP_CONVERGED_ITERATING && ksp->its >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
+  if (it && ksp->reason) {
     PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm));
     PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm));
   }
