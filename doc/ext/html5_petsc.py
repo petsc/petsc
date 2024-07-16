@@ -80,7 +80,7 @@ class PETScHTMLTranslatorMixin:
 
     def __init__(self, *args: Any) -> None:
         self._manpage_map = None
-        self._word_pattern = re.compile('\w+')
+        self._word_pattern = re.compile(r'\w+')
         super().__init__(*args)
 
 

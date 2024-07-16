@@ -7,6 +7,7 @@ struct _MatShellOps {
   /*   3 */ PetscErrorCode (*mult)(Mat, Vec, Vec);
   /*   5 */ PetscErrorCode (*multtranspose)(Mat, Vec, Vec);
   /*  17 */ PetscErrorCode (*getdiagonal)(Mat, Vec);
+  /*  32 */ PetscErrorCode (*getdiagonalblock)(Mat, Mat *);
   /*  43 */ PetscErrorCode (*copy)(Mat, Mat, MatStructure);
   /*  60 */ PetscErrorCode (*destroy)(Mat);
   /* 121 */ PetscErrorCode (*multhermitiantranspose)(Mat, Vec, Vec);

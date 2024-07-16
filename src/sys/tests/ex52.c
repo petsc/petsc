@@ -32,7 +32,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-d", &d, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-vsize", &vsize, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-order", NULL, &order));
-  PetscCall(PetscOptionsGetViewer(PETSC_COMM_WORLD, NULL, NULL, "-array_view", &vwr, NULL, NULL));
+  PetscCall(PetscOptionsCreateViewer(PETSC_COMM_WORLD, NULL, NULL, "-array_view", &vwr, NULL, NULL));
   PetscCheck(n >= 1 && r >= 1 && d >= 1 && d <= n, PETSC_COMM_WORLD, PETSC_ERR_SUP, "Wrong input n=%" PetscInt_FMT ",r=%" PetscInt_FMT ",d=%" PetscInt_FMT ". They must be >=1 and n>=d", n, r, d);
 
   PetscCall(PetscCalloc6(n, &X, n, &X1, n, &XR, n, &XSO, n, &Y, n, &Z));
@@ -63,7 +63,7 @@ int main(int argc, char **argv)
   PetscCall(PetscRandomDestroy(&rdm2));
 
   if (vwr) PetscCall(PetscIntView(n, order ? XSO : XR, vwr));
-  PetscCall(PetscOptionsRestoreViewer(&vwr));
+  PetscCall(PetscViewerDestroy(&vwr));
   PetscCall(VecCreate(PETSC_COMM_WORLD, &x));
   PetscCall(VecSetSizes(x, PETSC_DECIDE, vsize));
   PetscCall(VecSetFromOptions(x));

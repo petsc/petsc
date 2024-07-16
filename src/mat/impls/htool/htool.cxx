@@ -1,4 +1,5 @@
 #include <../src/mat/impls/htool/htool.hpp> /*I "petscmat.h" I*/
+#include <../src/mat/impls/shell/shell.h>
 #include <petscblaslapack.h>
 #include <set>
 
@@ -18,23 +19,23 @@ static PetscBool  HtoolCite                 = PETSC_FALSE;
 
 static PetscErrorCode MatGetDiagonal_Htool(Mat A, Vec v)
 {
-  Mat_Htool   *a = (Mat_Htool *)A->data;
+  Mat_Htool   *a;
   PetscScalar *x;
   PetscBool    flg;
 
   PetscFunctionBegin;
   PetscCall(MatHasCongruentLayouts(A, &flg));
   PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Only congruent layouts supported");
+  PetscCall(MatShellGetContext(A, &a));
   PetscCall(VecGetArrayWrite(v, &x));
   a->hmatrix->copy_local_diagonal(x);
   PetscCall(VecRestoreArrayWrite(v, &x));
-  PetscCall(VecScale(v, a->s));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatGetDiagonalBlock_Htool(Mat A, Mat *b)
 {
-  Mat_Htool   *a = (Mat_Htool *)A->data;
+  Mat_Htool   *a;
   Mat          B;
   PetscScalar *ptr;
   PetscBool    flg;
@@ -42,6 +43,7 @@ static PetscErrorCode MatGetDiagonalBlock_Htool(Mat A, Mat *b)
   PetscFunctionBegin;
   PetscCall(MatHasCongruentLayouts(A, &flg));
   PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Only congruent layouts supported");
+  PetscCall(MatShellGetContext(A, &a));
   PetscCall(PetscObjectQuery((PetscObject)A, "DiagonalBlock", (PetscObject *)&B)); /* same logic as in MatGetDiagonalBlock_MPIDense() */
   if (!B) {
     PetscCall(MatCreateDense(PETSC_COMM_SELF, A->rmap->n, A->rmap->n, A->rmap->n, A->rmap->n, nullptr, &B));
@@ -49,61 +51,45 @@ static PetscErrorCode MatGetDiagonalBlock_Htool(Mat A, Mat *b)
     a->hmatrix->copy_local_diagonal_block(ptr);
     PetscCall(MatDenseRestoreArrayWrite(B, &ptr));
     PetscCall(MatPropagateSymmetryOptions(A, B));
-    PetscCall(MatScale(B, a->s));
     PetscCall(PetscObjectCompose((PetscObject)A, "DiagonalBlock", (PetscObject)B));
     *b = B;
     PetscCall(MatDestroy(&B));
-  } else *b = B;
+  } else {
+    PetscCheck(PetscAbsScalar(((Mat_Shell *)A->data)->vscale - 1.0) <= PETSC_MACHINE_EPSILON && PetscAbsScalar(((Mat_Shell *)A->data)->vshift) <= PETSC_MACHINE_EPSILON, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot reuse DiagonalBlock with non-trivial shift and scaling"); // TODO FIXME
+    *b = B;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMult_Htool(Mat A, Vec x, Vec y)
 {
-  Mat_Htool         *a = (Mat_Htool *)A->data;
+  Mat_Htool         *a;
   const PetscScalar *in;
   PetscScalar       *out;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(A, &a));
   PetscCall(VecGetArrayRead(x, &in));
   PetscCall(VecGetArrayWrite(y, &out));
   a->hmatrix->mvprod_local_to_local(in, out);
   PetscCall(VecRestoreArrayRead(x, &in));
   PetscCall(VecRestoreArrayWrite(y, &out));
-  PetscCall(VecScale(y, a->s));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/* naive implementation of MatMultAdd() needed for FEM-BEM coupling via MATNEST */
-static PetscErrorCode MatMultAdd_Htool(Mat A, Vec v1, Vec v2, Vec v3)
-{
-  Mat_Htool        *a = (Mat_Htool *)A->data;
-  Vec               tmp;
-  const PetscScalar scale = a->s;
-
-  PetscFunctionBegin;
-  PetscCall(VecDuplicate(v2, &tmp));
-  PetscCall(VecCopy(v2, v3)); /* no-op in MatMultAdd(bA->m[i][j],bx[j],by[i],by[i]) since VecCopy() checks for x == y */
-  a->s = 1.0;                 /* set s to 1.0 since VecAXPY() may be used to scale the MatMult() output Vec */
-  PetscCall(MatMult_Htool(A, v1, tmp));
-  PetscCall(VecAXPY(v3, scale, tmp));
-  PetscCall(VecDestroy(&tmp));
-  a->s = scale; /* set s back to its original value */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultTranspose_Htool(Mat A, Vec x, Vec y)
 {
-  Mat_Htool         *a = (Mat_Htool *)A->data;
+  Mat_Htool         *a;
   const PetscScalar *in;
   PetscScalar       *out;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(A, &a));
   PetscCall(VecGetArrayRead(x, &in));
   PetscCall(VecGetArrayWrite(y, &out));
   a->hmatrix->mvprod_transp_local_to_local(in, out);
   PetscCall(VecRestoreArrayRead(x, &in));
   PetscCall(VecRestoreArrayWrite(y, &out));
-  PetscCall(VecScale(y, a->s));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -151,7 +137,7 @@ static PetscErrorCode MatIncreaseOverlap_Htool(Mat A, PetscInt is_max, IS is[], 
 
 static PetscErrorCode MatCreateSubMatrices_Htool(Mat A, PetscInt n, const IS irow[], const IS icol[], MatReuse scall, Mat *submat[])
 {
-  Mat_Htool         *a = (Mat_Htool *)A->data;
+  Mat_Htool         *a;
   Mat                D, B, BT;
   const PetscScalar *copy;
   PetscScalar       *ptr;
@@ -160,6 +146,10 @@ static PetscErrorCode MatCreateSubMatrices_Htool(Mat A, PetscInt n, const IS iro
   PetscBool          flg;
 
   PetscFunctionBegin;
+  PetscCheck(!((Mat_Shell *)A->data)->zrows && !((Mat_Shell *)A->data)->zcols, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatCreateSubMatrices() if MatZeroRows() or MatZeroRowsColumns() has been called on the input Mat"); // TODO FIXME
+  PetscCheck(!((Mat_Shell *)A->data)->axpy, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatCreateSubMatrices() if MatAXPY() has been called on the input Mat");          // TODO FIXME
+  PetscCheck(!((Mat_Shell *)A->data)->dshift, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatCreateSubMatrices() if MatDiagonalSet() has been called on the input Mat"); // TODO FIXME
+  PetscCall(MatShellGetContext(A, &a));
   if (scall != MAT_REUSE_MATRIX) PetscCall(PetscCalloc1(n, submat));
   for (i = 0; i < n; ++i) {
     PetscCall(ISGetLocalSize(irow[i], &nrow));
@@ -185,7 +175,7 @@ static PetscErrorCode MatCreateSubMatrices_Htool(Mat A, PetscInt n, const IS iro
                  *      [   B   F   E   ]
                  */
                 m = std::distance(idxr, it); /* shift of the coefficient (0,0) of block D from above */
-                PetscCall(MatGetDiagonalBlock_Htool(A, &D));
+                PetscCall(MatGetDiagonalBlock(A, &D));
                 PetscCall(MatDenseGetArrayRead(D, &copy));
                 for (PetscInt k = 0; k < A->rmap->n; ++k) { PetscCall(PetscArraycpy(ptr + (m + k) * nrow + m, copy + k * A->rmap->n, A->rmap->n)); /* block D from above */ }
                 PetscCall(MatDenseRestoreArrayRead(D, &copy));
@@ -243,19 +233,20 @@ static PetscErrorCode MatCreateSubMatrices_Htool(Mat A, PetscInt n, const IS iro
     PetscCall(ISRestoreIndices(irow[i], &idxr));
     PetscCall(ISRestoreIndices(icol[i], &idxc));
     PetscCall(MatDenseRestoreArrayWrite((*submat)[i], &ptr));
-    PetscCall(MatScale((*submat)[i], a->s));
+    PetscCall(MatScale((*submat)[i], ((Mat_Shell *)A->data)->vscale));
+    PetscCall(MatShift((*submat)[i], ((Mat_Shell *)A->data)->vshift));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDestroy_Htool(Mat A)
 {
-  Mat_Htool               *a = (Mat_Htool *)A->data;
+  Mat_Htool               *a;
   PetscContainer           container;
   MatHtoolKernelTranspose *kernelt;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectChangeTypeName((PetscObject)A, nullptr));
+  PetscCall(MatShellGetContext(A, &a));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_htool_seqdense_C", nullptr));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_htool_mpidense_C", nullptr));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_htool_seqdense_C", nullptr));
@@ -278,24 +269,33 @@ static PetscErrorCode MatDestroy_Htool(Mat A)
   PetscCall(PetscFree2(a->work_source, a->work_target));
   delete a->wrapper;
   delete a->hmatrix;
-  PetscCall(PetscFree(A->data));
+  PetscCall(PetscFree(a));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetContext_C", nullptr)); // needed to avoid a call to MatShellSetContext_Immutable()
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatView_Htool(Mat A, PetscViewer pv)
 {
-  Mat_Htool *a = (Mat_Htool *)A->data;
+  Mat_Htool *a;
   PetscBool  flg;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(A, &a));
   PetscCall(PetscObjectTypeCompare((PetscObject)pv, PETSCVIEWERASCII, &flg));
   if (flg) {
     PetscCall(PetscViewerASCIIPrintf(pv, "symmetry: %c\n", a->hmatrix->get_symmetry_type()));
-    if (PetscAbsScalar(a->s - 1.0) > PETSC_MACHINE_EPSILON) {
+    if (PetscAbsScalar(((Mat_Shell *)A->data)->vscale - 1.0) > PETSC_MACHINE_EPSILON) {
 #if defined(PETSC_USE_COMPLEX)
-      PetscCall(PetscViewerASCIIPrintf(pv, "scaling: %g+%gi\n", (double)PetscRealPart(a->s), (double)PetscImaginaryPart(a->s)));
+      PetscCall(PetscViewerASCIIPrintf(pv, "scaling: %g+%gi\n", (double)PetscRealPart(((Mat_Shell *)A->data)->vscale), (double)PetscImaginaryPart(((Mat_Shell *)A->data)->vscale)));
 #else
-      PetscCall(PetscViewerASCIIPrintf(pv, "scaling: %g\n", (double)a->s));
+      PetscCall(PetscViewerASCIIPrintf(pv, "scaling: %g\n", (double)((Mat_Shell *)A->data)->vscale));
+#endif
+    }
+    if (PetscAbsScalar(((Mat_Shell *)A->data)->vshift) > PETSC_MACHINE_EPSILON) {
+#if defined(PETSC_USE_COMPLEX)
+      PetscCall(PetscViewerASCIIPrintf(pv, "shift: %g+%gi\n", (double)PetscRealPart(((Mat_Shell *)A->data)->vshift), (double)PetscImaginaryPart(((Mat_Shell *)A->data)->vshift)));
+#else
+      PetscCall(PetscViewerASCIIPrintf(pv, "shift: %g\n", (double)((Mat_Shell *)A->data)->vshift));
 #endif
     }
     PetscCall(PetscViewerASCIIPrintf(pv, "minimum cluster size: %" PetscInt_FMT "\n", a->bs[0]));
@@ -318,23 +318,17 @@ static PetscErrorCode MatView_Htool(Mat A, PetscViewer pv)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatScale_Htool(Mat A, PetscScalar s)
-{
-  Mat_Htool *a = (Mat_Htool *)A->data;
-
-  PetscFunctionBegin;
-  a->s *= s;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /* naive implementation of MatGetRow() needed for MatConvert_Nest_AIJ() */
 static PetscErrorCode MatGetRow_Htool(Mat A, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v)
 {
-  Mat_Htool   *a = (Mat_Htool *)A->data;
+  Mat_Htool   *a;
   PetscInt    *idxc;
   PetscBLASInt one = 1, bn;
 
   PetscFunctionBegin;
+  PetscCheck(!((Mat_Shell *)A->data)->zrows && !((Mat_Shell *)A->data)->zcols, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatGetRow() if MatZeroRows() or MatZeroRowsColumns() has been called on the input Mat"); // TODO FIXME
+  PetscCheck(!((Mat_Shell *)A->data)->axpy, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatGetRow() if MatAXPY() has been called on the input Mat");                                                                // TODO FIXME
+  PetscCall(MatShellGetContext(A, &a));
   if (nz) *nz = A->cmap->N;
   if (idx || v) { /* even if !idx, need to set idxc for htool::copy_submatrix() */
     PetscCall(PetscMalloc1(A->cmap->N, &idxc));
@@ -346,7 +340,8 @@ static PetscErrorCode MatGetRow_Htool(Mat A, PetscInt row, PetscInt *nz, PetscIn
     if (a->wrapper) a->wrapper->copy_submatrix(1, A->cmap->N, &row, idxc, *v);
     else reinterpret_cast<htool::VirtualGenerator<PetscScalar> *>(a->kernelctx)->copy_submatrix(1, A->cmap->N, &row, idxc, *v);
     PetscCall(PetscBLASIntCast(A->cmap->N, &bn));
-    PetscCallBLAS("BLASscal", BLASscal_(&bn, &a->s, *v, &one));
+    PetscCallBLAS("BLASscal", BLASscal_(&bn, &(((Mat_Shell *)A->data)->vscale), *v, &one));
+    if (row < A->cmap->N) (*v)[row] += ((Mat_Shell *)A->data)->vshift;
   }
   if (!idx) PetscCall(PetscFree(idxc));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -362,11 +357,12 @@ static PetscErrorCode MatRestoreRow_Htool(Mat, PetscInt, PetscInt *, PetscInt **
 
 static PetscErrorCode MatSetFromOptions_Htool(Mat A, PetscOptionItems *PetscOptionsObject)
 {
-  Mat_Htool *a = (Mat_Htool *)A->data;
+  Mat_Htool *a;
   PetscInt   n;
   PetscBool  flg;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(A, &a));
   PetscOptionsHeadBegin(PetscOptionsObject, "Htool options");
   PetscCall(PetscOptionsInt("-mat_htool_min_cluster_size", "Minimal leaf size in cluster tree", nullptr, a->bs[0], a->bs, nullptr));
   PetscCall(PetscOptionsInt("-mat_htool_max_block_size", "Maximal number of coefficients in a dense block", nullptr, a->bs[1], a->bs + 1, nullptr));
@@ -386,7 +382,7 @@ static PetscErrorCode MatSetFromOptions_Htool(Mat A, PetscOptionItems *PetscOpti
 
 static PetscErrorCode MatAssemblyEnd_Htool(Mat A, MatAssemblyType)
 {
-  Mat_Htool                                                   *a = (Mat_Htool *)A->data;
+  Mat_Htool                                                   *a;
   const PetscInt                                              *ranges;
   PetscInt                                                    *offset;
   PetscMPIInt                                                  size;
@@ -397,6 +393,7 @@ static PetscErrorCode MatAssemblyEnd_Htool(Mat A, MatAssemblyType)
 
   PetscFunctionBegin;
   PetscCall(PetscCitationsRegister(HtoolCitation, &HtoolCite));
+  PetscCall(MatShellGetContext(A, &a));
   delete a->wrapper;
   delete a->hmatrix;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size));
@@ -473,7 +470,7 @@ static PetscErrorCode MatAssemblyEnd_Htool(Mat A, MatAssemblyType)
 static PetscErrorCode MatProductNumeric_Htool(Mat C)
 {
   Mat_Product       *product = C->product;
-  Mat_Htool         *a       = (Mat_Htool *)product->A->data;
+  Mat_Htool         *a;
   const PetscScalar *in;
   PetscScalar       *out;
   PetscInt           N, lda;
@@ -485,6 +482,7 @@ static PetscErrorCode MatProductNumeric_Htool(Mat C)
   PetscCheck(lda == C->rmap->n, PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported leading dimension (%" PetscInt_FMT " != %" PetscInt_FMT ")", lda, C->rmap->n);
   PetscCall(MatDenseGetArrayRead(product->B, &in));
   PetscCall(MatDenseGetArrayWrite(C, &out));
+  PetscCall(MatShellGetContext(product->A, &a));
   switch (product->type) {
   case MATPRODUCT_AB:
     a->hmatrix->mvprod_local_to_local(in, out, N);
@@ -497,7 +495,6 @@ static PetscErrorCode MatProductNumeric_Htool(Mat C)
   }
   PetscCall(MatDenseRestoreArrayWrite(C, &out));
   PetscCall(MatDenseRestoreArrayRead(product->B, &in));
-  PetscCall(MatScale(C, a->s));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -537,9 +534,10 @@ static PetscErrorCode MatProductSetFromOptions_Htool(Mat C)
 
 static PetscErrorCode MatHtoolGetHierarchicalMat_Htool(Mat A, const htool::VirtualHMatrix<PetscScalar> **hmatrix)
 {
-  Mat_Htool *a = (Mat_Htool *)A->data;
+  Mat_Htool *a;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(A, &a));
   *hmatrix = a->hmatrix;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -570,9 +568,10 @@ PETSC_EXTERN PetscErrorCode MatHtoolGetHierarchicalMat(Mat A, const htool::Virtu
 
 static PetscErrorCode MatHtoolSetKernel_Htool(Mat A, MatHtoolKernelFn *kernel, void *kernelctx)
 {
-  Mat_Htool *a = (Mat_Htool *)A->data;
+  Mat_Htool *a;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(A, &a));
   a->kernel    = kernel;
   a->kernelctx = kernelctx;
   delete a->wrapper;
@@ -606,10 +605,11 @@ PetscErrorCode MatHtoolSetKernel(Mat A, MatHtoolKernelFn *kernel, void *kernelct
 
 static PetscErrorCode MatHtoolGetPermutationSource_Htool(Mat A, IS *is)
 {
-  Mat_Htool            *a = (Mat_Htool *)A->data;
+  Mat_Htool            *a;
   std::vector<PetscInt> source;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(A, &a));
   source = a->hmatrix->get_source_cluster()->get_local_perm();
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)A), source.size(), source.data(), PETSC_COPY_VALUES, is));
   PetscCall(ISSetPermutation(*is));
@@ -640,10 +640,11 @@ PetscErrorCode MatHtoolGetPermutationSource(Mat A, IS *is)
 
 static PetscErrorCode MatHtoolGetPermutationTarget_Htool(Mat A, IS *is)
 {
-  Mat_Htool            *a = (Mat_Htool *)A->data;
+  Mat_Htool            *a;
   std::vector<PetscInt> target;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(A, &a));
   target = a->hmatrix->get_target_cluster()->get_local_perm();
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)A), target.size(), target.data(), PETSC_COPY_VALUES, is));
   PetscCall(ISSetPermutation(*is));
@@ -674,9 +675,10 @@ PetscErrorCode MatHtoolGetPermutationTarget(Mat A, IS *is)
 
 static PetscErrorCode MatHtoolUsePermutation_Htool(Mat A, PetscBool use)
 {
-  Mat_Htool *a = (Mat_Htool *)A->data;
+  Mat_Htool *a;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(A, &a));
   a->hmatrix->set_use_permutation(use);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -704,11 +706,12 @@ PetscErrorCode MatHtoolUsePermutation(Mat A, PetscBool use)
 static PetscErrorCode MatConvert_Htool_Dense(Mat A, MatType, MatReuse reuse, Mat *B)
 {
   Mat          C;
-  Mat_Htool   *a = (Mat_Htool *)A->data;
+  Mat_Htool   *a;
   PetscInt     lda;
   PetscScalar *array;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(A, &a));
   if (reuse == MAT_REUSE_MATRIX) {
     C = *B;
     PetscCheck(C->rmap->n == A->rmap->n && C->cmap->N == A->cmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible dimensions");
@@ -726,7 +729,10 @@ static PetscErrorCode MatConvert_Htool_Dense(Mat A, MatType, MatReuse reuse, Mat
   PetscCall(MatDenseGetArrayWrite(C, &array));
   a->hmatrix->copy_local_dense_perm(array);
   PetscCall(MatDenseRestoreArrayWrite(C, &array));
-  PetscCall(MatScale(C, a->s));
+  PetscCheck(!((Mat_Shell *)A->data)->zrows && !((Mat_Shell *)A->data)->zcols, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatConvert() if MatZeroRows() or MatZeroRowsColumns() has been called on the input Mat"); // TODO FIXME
+  PetscCheck(!((Mat_Shell *)A->data)->axpy, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatConvert() if MatAXPY() has been called on the input Mat");                                                                // TODO FIXME
+  PetscCall(MatScale(C, ((Mat_Shell *)A->data)->vscale));
+  PetscCall(MatShift(C, ((Mat_Shell *)A->data)->vshift));
   if (reuse == MAT_INPLACE_MATRIX) {
     PetscCall(MatHeaderReplace(A, &C));
   } else *B = C;
@@ -753,12 +759,13 @@ static PetscErrorCode GenEntriesTranspose(PetscInt sdim, PetscInt M, PetscInt N,
 static PetscErrorCode MatTranspose_Htool(Mat A, MatReuse reuse, Mat *B)
 {
   Mat                      C;
-  Mat_Htool               *a = (Mat_Htool *)A->data, *c;
+  Mat_Htool               *a, *c;
   PetscInt                 M = A->rmap->N, N = A->cmap->N, m = A->rmap->n, n = A->cmap->n;
   PetscContainer           container;
   MatHtoolKernelTranspose *kernelt;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetContext(A, &a));
   if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(A, *B));
   PetscCheck(reuse != MAT_INPLACE_MATRIX, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "MatTranspose() with MAT_INPLACE_MATRIX not supported");
   if (reuse == MAT_INITIAL_MATRIX) {
@@ -776,10 +783,13 @@ static PetscErrorCode MatTranspose_Htool(Mat A, MatReuse reuse, Mat *B)
     PetscCheck(container, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call MatTranspose() with MAT_INITIAL_MATRIX first");
     PetscCall(PetscContainerGetPointer(container, (void **)&kernelt));
   }
-  c         = (Mat_Htool *)C->data;
-  c->dim    = a->dim;
-  c->s      = a->s;
-  c->kernel = GenEntriesTranspose;
+  PetscCall(MatShellGetContext(C, &c));
+  c->dim = a->dim;
+  PetscCheck(!((Mat_Shell *)A->data)->zrows && !((Mat_Shell *)A->data)->zcols, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatTranspose() if MatZeroRows() or MatZeroRowsColumns() has been called on the input Mat"); // TODO FIXME
+  PetscCheck(!((Mat_Shell *)A->data)->axpy, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatTranspose() if MatAXPY() has been called on the input Mat");                                                                // TODO FIXME
+  ((Mat_Shell *)C->data)->vscale = ((Mat_Shell *)A->data)->vscale;
+  ((Mat_Shell *)C->data)->vshift = ((Mat_Shell *)A->data)->vshift;
+  c->kernel                      = GenEntriesTranspose;
   if (kernelt->A != A) {
     PetscCall(MatDestroy(&kernelt->A));
     kernelt->A = A;
@@ -852,9 +862,8 @@ PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, P
   PetscCall(MatSetSizes(A, m, n, M, N));
   PetscCall(MatSetType(A, MATHTOOL));
   PetscCall(MatSetUp(A));
-  a            = (Mat_Htool *)A->data;
+  PetscCall(MatShellGetContext(A, &a));
   a->dim       = spacedim;
-  a->s         = 1.0;
   a->kernel    = kernel;
   a->kernelctx = kernelctx;
   PetscCall(PetscCalloc1(A->rmap->N * spacedim, &a->gcoords_target));
@@ -887,37 +896,33 @@ PETSC_EXTERN PetscErrorCode MatCreate_Htool(Mat A)
   Mat_Htool *a;
 
   PetscFunctionBegin;
+  PetscCall(MatSetType(A, MATSHELL));
   PetscCall(PetscNew(&a));
-  A->data = (void *)a;
-  PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATHTOOL));
-  PetscCall(PetscMemzero(A->ops, sizeof(struct _MatOps)));
-  A->ops->getdiagonal      = MatGetDiagonal_Htool;
-  A->ops->getdiagonalblock = MatGetDiagonalBlock_Htool;
-  A->ops->mult             = MatMult_Htool;
-  A->ops->multadd          = MatMultAdd_Htool;
-  A->ops->multtranspose    = MatMultTranspose_Htool;
-  if (!PetscDefined(USE_COMPLEX)) A->ops->multhermitiantranspose = MatMultTranspose_Htool;
+  PetscCall(MatShellSetContext(A, a));
+  PetscCall(MatShellSetOperation(A, MATOP_GET_DIAGONAL, (void (*)(void))MatGetDiagonal_Htool));
+  PetscCall(MatShellSetOperation(A, MATOP_GET_DIAGONAL_BLOCK, (void (*)(void))MatGetDiagonalBlock_Htool));
+  PetscCall(MatShellSetOperation(A, MATOP_MULT, (void (*)(void))MatMult_Htool));
+  PetscCall(MatShellSetOperation(A, MATOP_MULT_TRANSPOSE, (void (*)(void))MatMultTranspose_Htool));
+  if (!PetscDefined(USE_COMPLEX)) PetscCall(MatShellSetOperation(A, MATOP_MULT_HERMITIAN_TRANSPOSE, (void (*)(void))MatMultTranspose_Htool));
   A->ops->increaseoverlap   = MatIncreaseOverlap_Htool;
   A->ops->createsubmatrices = MatCreateSubMatrices_Htool;
-  A->ops->transpose         = MatTranspose_Htool;
-  A->ops->destroy           = MatDestroy_Htool;
-  A->ops->view              = MatView_Htool;
-  A->ops->setfromoptions    = MatSetFromOptions_Htool;
-  A->ops->scale             = MatScale_Htool;
-  A->ops->getrow            = MatGetRow_Htool;
-  A->ops->restorerow        = MatRestoreRow_Htool;
-  A->ops->assemblyend       = MatAssemblyEnd_Htool;
-  a->dim                    = 0;
-  a->gcoords_target         = nullptr;
-  a->gcoords_source         = nullptr;
-  a->s                      = 1.0;
-  a->bs[0]                  = 10;
-  a->bs[1]                  = 1000000;
-  a->epsilon                = PetscSqrtReal(PETSC_SMALL);
-  a->eta                    = 10.0;
-  a->depth[0]               = 0;
-  a->depth[1]               = 0;
-  a->compressor             = MAT_HTOOL_COMPRESSOR_SYMPARTIAL_ACA;
+  PetscCall(MatShellSetOperation(A, MATOP_VIEW, (void (*)(void))MatView_Htool));
+  PetscCall(MatShellSetOperation(A, MATOP_SET_FROM_OPTIONS, (void (*)(void))MatSetFromOptions_Htool));
+  PetscCall(MatShellSetOperation(A, MATOP_GET_ROW, (void (*)(void))MatGetRow_Htool));
+  PetscCall(MatShellSetOperation(A, MATOP_RESTORE_ROW, (void (*)(void))MatRestoreRow_Htool));
+  PetscCall(MatShellSetOperation(A, MATOP_ASSEMBLY_END, (void (*)(void))MatAssemblyEnd_Htool));
+  PetscCall(MatShellSetOperation(A, MATOP_TRANSPOSE, (void (*)(void))MatTranspose_Htool));
+  PetscCall(MatShellSetOperation(A, MATOP_DESTROY, (void (*)(void))MatDestroy_Htool));
+  a->dim            = 0;
+  a->gcoords_target = nullptr;
+  a->gcoords_source = nullptr;
+  a->bs[0]          = 10;
+  a->bs[1]          = 1000000;
+  a->epsilon        = PetscSqrtReal(PETSC_SMALL);
+  a->eta            = 10.0;
+  a->depth[0]       = 0;
+  a->depth[1]       = 0;
+  a->compressor     = MAT_HTOOL_COMPRESSOR_SYMPARTIAL_ACA;
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_htool_seqdense_C", MatProductSetFromOptions_Htool));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_htool_mpidense_C", MatProductSetFromOptions_Htool));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_htool_seqdense_C", MatConvert_Htool_Dense));
@@ -927,5 +932,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_Htool(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetPermutationSource_C", MatHtoolGetPermutationSource_Htool));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolGetPermutationTarget_C", MatHtoolGetPermutationTarget_Htool));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatHtoolUsePermutation_C", MatHtoolUsePermutation_Htool));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetContext_C", MatShellSetContext_Immutable));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetContextDestroy_C", MatShellSetContextDestroy_Immutable));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetManageScalingShifts_C", MatShellSetManageScalingShifts_Immutable));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATHTOOL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

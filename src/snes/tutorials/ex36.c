@@ -233,7 +233,7 @@ static PetscErrorCode CompareView(Vec u)
   PetscCall(VecGetDM(u, &dm));
   PetscCall(PetscObjectGetOptions((PetscObject)dm, &options));
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm, &prefix));
-  PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)dm), options, prefix, "-compare_view", &viewer, &format, &flg));
+  PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)dm), options, prefix, "-compare_view", &viewer, &format, &flg));
   if (flg) {
     PetscCall(DMGetGlobalVector(dm, &exact));
     PetscCall(DMComputeExactSolution(dm, 0.0, exact, NULL));
@@ -250,7 +250,7 @@ static PetscErrorCode CompareView(Vec u)
     PetscCall(DMPlexVecView1D(dm, 2, lv, viewer));
     for (i = 0; i < 2; ++i) PetscCall(DMRestoreLocalVector(dm, &lv[i]));
     PetscCall(DMRestoreGlobalVector(dm, &exact));
-    PetscCall(PetscOptionsRestoreViewer(&viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

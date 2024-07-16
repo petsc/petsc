@@ -1897,6 +1897,154 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
 }
 
 /*@
+  DMPlexComputeL2FluxDiffVecLocal - This function computes the integral of the difference between the gradient of field `f`in `u` and field `mf` in `mu`
+
+  Collective
+
+  Input Parameters:
++ lu  - The local `Vec` containing the primal solution
+. f   - The field number for the potential
+. lmu - The local `Vec` containing the mixed solution
+- mf  - The field number for the flux
+
+  Output Parameter:
+. eFlux - A global `Vec` which holds $||\nabla u_f - \mu_{mf}||$
+
+  Level: advanced
+
+  Notes:
+  We assume that the `DM` for each solution has the same topology, geometry, and quadrature.
+
+  This is usually used to get an error estimate for the primal solution, using the flux from a mixed solution.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexComputeL2FluxDiffVec()`, `DMProjectFunction()`, `DMComputeL2Diff()`, `DMPlexComputeL2FieldDiff()`, `DMComputeL2GradientDiff()`
+@*/
+PetscErrorCode DMPlexComputeL2FluxDiffVecLocal(Vec lu, PetscInt f, Vec lmu, PetscInt mf, Vec eFlux)
+{
+  DM               dm, mdm, edm;
+  PetscFE          fe, mfe;
+  PetscFEGeom      fegeom;
+  PetscQuadrature  quad;
+  const PetscReal *quadWeights;
+  PetscReal       *coords;
+  PetscScalar     *interpolant, *minterpolant, *earray;
+  PetscInt         cdim, mcdim, cStart, cEnd, Nc, mNc, qNc, Nq;
+  MPI_Comm         comm;
+
+  PetscFunctionBegin;
+  PetscCall(VecGetDM(lu, &dm));
+  PetscCall(VecGetDM(lmu, &mdm));
+  PetscCall(VecGetDM(eFlux, &edm));
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+  PetscCall(VecSet(eFlux, 0.0));
+
+  // Check if the both problems are on the same mesh
+  PetscCall(DMGetCoordinateDim(dm, &cdim));
+  PetscCall(DMGetCoordinateDim(mdm, &mcdim));
+  PetscCheck(cdim == mcdim, comm, PETSC_ERR_ARG_SIZ, "primal coordinate Dim %" PetscInt_FMT " != %" PetscInt_FMT " mixed coordinate Dim", cdim, mcdim);
+  fegeom.dimEmbed = cdim;
+
+  PetscCall(DMGetField(dm, f, NULL, (PetscObject *)&fe));
+  PetscCall(DMGetField(mdm, mf, NULL, (PetscObject *)&mfe));
+  PetscCall(PetscFEGetNumComponents(fe, &Nc));
+  PetscCall(PetscFEGetNumComponents(mfe, &mNc));
+  PetscCall(PetscFEGetQuadrature(fe, &quad));
+  PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, NULL, &quadWeights));
+  PetscCheck(qNc == 1 || qNc == mNc, comm, PETSC_ERR_ARG_SIZ, "Quadrature components %" PetscInt_FMT " != %" PetscInt_FMT " field components", qNc, mNc);
+
+  PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
+  PetscCall(VecGetArrayWrite(eFlux, &earray));
+  PetscCall(PetscMalloc6(Nc * cdim, &interpolant, mNc * cdim, &minterpolant, cdim * (Nq + 1), &coords, cdim * cdim * Nq, &fegeom.J, cdim * cdim * Nq, &fegeom.invJ, Nq, &fegeom.detJ));
+  for (PetscInt c = cStart; c < cEnd; ++c) {
+    PetscScalar *x            = NULL;
+    PetscScalar *mx           = NULL;
+    PetscScalar *eval         = NULL;
+    PetscReal    fluxElemDiff = 0.0;
+
+    PetscCall(DMPlexComputeCellGeometryFEM(dm, c, quad, coords, fegeom.J, fegeom.invJ, fegeom.detJ));
+    PetscCall(DMPlexVecGetClosure(dm, NULL, lu, c, NULL, &x));
+    PetscCall(DMPlexVecGetClosure(mdm, NULL, lmu, c, NULL, &mx));
+
+    for (PetscInt q = 0; q < Nq; ++q) {
+      PetscFEGeom qgeom;
+
+      qgeom.dimEmbed = fegeom.dimEmbed;
+      qgeom.J        = &fegeom.J[q * cdim * cdim];
+      qgeom.invJ     = &fegeom.invJ[q * cdim * cdim];
+      qgeom.detJ     = &fegeom.detJ[q];
+
+      PetscCheck(fegeom.detJ[q] > 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %" PetscInt_FMT ", quadrature points %" PetscInt_FMT, (double)fegeom.detJ[q], c, q);
+
+      PetscCall(PetscFEInterpolate_Static(mfe, &mx[0], &qgeom, q, minterpolant));
+      PetscCall(PetscFEInterpolateGradient_Static(fe, 1, &x[0], &qgeom, q, interpolant));
+
+      /* Now take the elementwise difference and store that in a vector. */
+      for (PetscInt fc = 0; fc < mNc; ++fc) {
+        const PetscReal wt = quadWeights[q * qNc + (qNc == 1 ? 0 : fc)];
+        fluxElemDiff += PetscSqr(PetscRealPart(interpolant[fc] - minterpolant[fc])) * wt * fegeom.detJ[q];
+      }
+    }
+    PetscCall(DMPlexVecRestoreClosure(dm, NULL, lu, c, NULL, &x));
+    PetscCall(DMPlexVecRestoreClosure(mdm, NULL, lmu, c, NULL, &mx));
+    PetscCall(DMPlexPointGlobalRef(edm, c, earray, (void *)&eval));
+    if (eval) eval[0] = fluxElemDiff;
+  }
+  PetscCall(PetscFree6(interpolant, minterpolant, coords, fegeom.detJ, fegeom.J, fegeom.invJ));
+  PetscCall(VecRestoreArrayWrite(eFlux, &earray));
+
+  PetscCall(VecAssemblyBegin(eFlux));
+  PetscCall(VecAssemblyEnd(eFlux));
+  PetscCall(VecSqrtAbs(eFlux));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexComputeL2FluxDiffVec - This function computes the integral of the difference between the gradient of field `f`in `u` and field `mf` in `mu`
+
+  Collective
+
+  Input Parameters:
++ u  - The global `Vec` containing the primal solution
+. f  - The field number for the potential
+. mu - The global `Vec` containing the mixed solution
+- mf - The field number for the flux
+
+  Output Parameter:
+. eFlux - A global `Vec` which holds $||\nabla u_f - \mu_{mf}||$
+
+  Level: advanced
+
+  Notes:
+  We assume that the `DM` for each solution has the same topology, geometry, and quadrature.
+
+  This is usually used to get an error estimate for the primal solution, using the flux from a mixed solution.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexComputeL2FluxDiffVecLocal()`, `DMProjectFunction()`, `DMComputeL2Diff()`, `DMPlexComputeL2FieldDiff()`, `DMComputeL2GradientDiff()`
+@*/
+PetscErrorCode DMPlexComputeL2FluxDiffVec(Vec u, PetscInt f, Vec mu, PetscInt mf, Vec eFlux)
+{
+  DM  dm, mdm;
+  Vec lu, lmu;
+
+  PetscFunctionBegin;
+  PetscCall(VecGetDM(u, &dm));
+  PetscCall(DMGetLocalVector(dm, &lu));
+  PetscCall(DMGlobalToLocal(dm, u, INSERT_VALUES, lu));
+  PetscCall(DMPlexInsertBoundaryValues(dm, PETSC_TRUE, lu, 0.0, NULL, NULL, NULL));
+
+  PetscCall(VecGetDM(mu, &mdm));
+  PetscCall(DMGetLocalVector(mdm, &lmu));
+  PetscCall(DMGlobalToLocal(mdm, mu, INSERT_VALUES, lmu));
+  PetscCall(DMPlexInsertBoundaryValues(mdm, PETSC_TRUE, lmu, 0.0, NULL, NULL, NULL));
+
+  PetscCall(DMPlexComputeL2FluxDiffVecLocal(lu, f, lmu, mf, eFlux));
+
+  PetscCall(DMRestoreLocalVector(dm, &lu));
+  PetscCall(DMRestoreLocalVector(mdm, &lmu));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   DMPlexComputeClementInterpolant - This function computes the L2 projection of the cellwise values of a function u onto P1
 
   Collective

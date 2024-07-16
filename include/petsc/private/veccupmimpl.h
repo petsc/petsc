@@ -816,6 +816,7 @@ inline PetscErrorCode Vec_CUPMBase<T, D>::ResetArray(Vec v) noexcept
 
       PetscCall(CheckPointerMatchesMemType_(host_array, PETSC_MEMTYPE_DEVICE));
       PetscCall(CopyToDevice_(dctx, v));
+      PetscCall(PetscDeviceContextSynchronize(dctx)); // Above H2D might be async, so we must sync dctx, otherwise if later user writes v's host array, it could ruin the H2D
       PetscCall(PetscObjectStateIncrease(PetscObjectCast(v)));
       // Need to reset the offloadmask. If we had a stashed pointer we are on the GPU,
       // otherwise check if the host has a valid pointer. If neither, then we are not

@@ -635,7 +635,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
     PetscCall(VecNorm(Y, neP->norm, &ynorm));
 
     /* decide what to do when the update is outside of trust region */
-    if (ynorm > delta || ynorm == 0.0) {
+    if (tauk != 1.0 && (ynorm > delta || ynorm == 0.0)) {
       SNESNewtonTRFallbackType fallback = ynorm > 0.0 ? neP->fallback : SNES_TR_FALLBACK_CAUCHY;
 
       PetscCheck(neP->norm == NORM_2 || fallback != SNES_TR_FALLBACK_DOGLEG, PetscObjectComm((PetscObject)snes), PETSC_ERR_SUP, "DOGLEG without l2 norm not implemented");

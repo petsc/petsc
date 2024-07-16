@@ -3,7 +3,8 @@
 cdef extern from * nogil:
 
     ctypedef int PetscClassId
-    ctypedef int PetscObjectState
+    ctypedef long PetscObjectState
+    ctypedef long PetscObjectId
     PetscErrorCode PetscObjectView(PetscObject, PetscViewer)
     PetscErrorCode PetscObjectDestroy(PetscObject*)
     PetscErrorCode PetscObjectGetReference(PetscObject, PetscInt*)
@@ -22,6 +23,7 @@ cdef extern from * nogil:
     PetscErrorCode PetscObjectGetClassName(PetscObject, char*[])
     PetscErrorCode PetscObjectSetName(PetscObject, char[])
     PetscErrorCode PetscObjectGetName(PetscObject, char*[])
+    PetscErrorCode PetscObjectGetId(PetscObject, PetscObjectId*)
 
     PetscErrorCode PetscObjectStateIncrease(PetscObject)
     PetscErrorCode PetscObjectStateSet(PetscObject, PetscObjectState)
@@ -38,6 +40,19 @@ cdef extern from * nogil:
     PetscErrorCode PetscObjectIncrementTabLevel(PetscObject, PetscObject, PetscInt)
     PetscErrorCode PetscObjectGetTabLevel(PetscObject, PetscInt*)
     PetscErrorCode PetscObjectSetTabLevel(PetscObject, PetscInt)
+
+    ctypedef struct _p_PetscOptionItems
+    ctypedef _p_PetscOptionItems* PetscOptionItems
+
+    ctypedef PetscErrorCode (*PetscObjectOptionsHandler)(PetscObject,
+                                                         PetscOptionItems*,
+                                                         void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode (*PetscObjectOptionsCtxDel)(PetscObject, void*)
+    PetscErrorCode PetscObjectAddOptionsHandler(PetscObject,
+                                                PetscObjectOptionsHandler,
+                                                PetscObjectOptionsCtxDel,
+                                                void*)
+    PetscErrorCode PetscObjectDestroyOptionsHandlers(PetscObject)
 
 cdef extern from * nogil: # custom.h
     PetscErrorCode PetscObjectGetDeviceId(PetscObject, PetscInt*)
@@ -177,3 +192,14 @@ cdef inline type subtype_Object(PetscObject obj):
     return klass
 
 # --------------------------------------------------------------------
+
+cdef PetscErrorCode PetscObjectOptionsHandler_PYTHON(
+    PetscObject obj,
+    PetscOptionItems *unused_PetscOptionsObject,
+    void *unused_ctx,
+   ) except PETSC_ERR_PYTHON with gil:
+    cdef Object pobj = PyPetscObject_New(obj)
+    cdef object handler = pobj.get_attr('__optshandler__')
+    if handler is None: return PETSC_SUCCESS
+    handler(pobj)
+    return PETSC_SUCCESS

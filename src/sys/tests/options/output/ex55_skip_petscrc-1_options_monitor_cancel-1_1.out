@@ -4,7 +4,6 @@
 -option2 # (source: code)
 -option3 value3 # (source: code)
 -option4 value4 # (source: code)
--option5 # (source: code)
 -option_in_file_1 # (source: file)
 -options_monitor_cancel 1 # (source: command line)
 -options_monitor_viewer ascii # (source: command line)

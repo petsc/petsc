@@ -295,7 +295,7 @@ PetscErrorCode KSPChebyshevEstEigGetKSP(KSP ksp, KSP *kspest)
   fourth kind) avoid the ad-hoc choice of lower bound and extend smoothing to smaller eigenvalues while preferentially
   smoothing higher modes faster as needed to minimize the energy norm of the error. {cite}`phillips2022optimal`, {cite}`lottes2023optimal`
 
-.seealso: [](ch_ksp), `KSPCHEBYSHEV` `KSPChebyshevKind`, `KSPChebyshevGetKind()`, `KSP_CHEBYSHEV_FIRST`, `KSP_CHEBYSHEV_FOURTH`, `KSP_CHEBYSHEV_OPT_FOURTH`
+.seealso: [](ch_ksp), `KSPCHEBYSHEV`, `KSPChebyshevKind`, `KSPChebyshevGetKind()`, `KSP_CHEBYSHEV_FIRST`, `KSP_CHEBYSHEV_FOURTH`, `KSP_CHEBYSHEV_OPT_FOURTH`
 @*/
 PetscErrorCode KSPChebyshevSetKind(KSP ksp, KSPChebyshevKind kind)
 {
@@ -317,7 +317,7 @@ PetscErrorCode KSPChebyshevSetKind(KSP ksp, KSPChebyshevKind kind)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `KSPCHEBYSHEV` `KSPChebyshevKind`, `KSPChebyshevSetKind()`, `KSP_CHEBYSHEV_FIRST`, `KSP_CHEBYSHEV_FOURTH`, `KSP_CHEBYSHEV_OPT_FOURTH`
+.seealso: [](ch_ksp), `KSPCHEBYSHEV`, `KSPChebyshevKind`, `KSPChebyshevSetKind()`, `KSP_CHEBYSHEV_FIRST`, `KSP_CHEBYSHEV_FOURTH`, `KSP_CHEBYSHEV_OPT_FOURTH`
 @*/
 PetscErrorCode KSPChebyshevGetKind(KSP ksp, KSPChebyshevKind *kind)
 {

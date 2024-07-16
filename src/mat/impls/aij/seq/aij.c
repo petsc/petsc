@@ -1464,11 +1464,9 @@ PetscErrorCode MatMult_SeqAIJ(Mat A, Vec xx, Vec yy)
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;
   PetscScalar       *y;
   const PetscScalar *x;
-  const MatScalar   *aa, *a_a;
+  const MatScalar   *a_a;
   PetscInt           m = A->rmap->n;
-  const PetscInt    *aj, *ii, *ridx = NULL;
-  PetscInt           n, i;
-  PetscScalar        sum;
+  const PetscInt    *ii, *ridx = NULL;
   PetscBool          usecprow = a->compressedrow.use;
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
@@ -1489,26 +1487,26 @@ PetscErrorCode MatMult_SeqAIJ(Mat A, Vec xx, Vec yy)
     m    = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
     ridx = a->compressedrow.rindex;
-    for (i = 0; i < m; i++) {
-      n   = ii[i + 1] - ii[i];
-      aj  = a->j + ii[i];
-      aa  = a_a + ii[i];
-      sum = 0.0;
+    PetscPragmaUseOMPKernels(parallel for)
+    for (PetscInt i = 0; i < m; i++) {
+      PetscInt           n   = ii[i + 1] - ii[i];
+      const PetscInt    *aj  = a->j + ii[i];
+      const PetscScalar *aa  = a_a + ii[i];
+      PetscScalar        sum = 0.0;
       PetscSparseDensePlusDot(sum, x, aa, aj, n);
       /* for (j=0; j<n; j++) sum += (*aa++)*x[*aj++]; */
       y[*ridx++] = sum;
     }
   } else { /* do not use compressed row format */
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
-    aj = a->j;
-    aa = a_a;
-    fortranmultaij_(&m, x, ii, aj, aa, y);
+    fortranmultaij_(&m, x, ii, a->j, a_a, y);
 #else
-    for (i = 0; i < m; i++) {
-      n   = ii[i + 1] - ii[i];
-      aj  = a->j + ii[i];
-      aa  = a_a + ii[i];
-      sum = 0.0;
+    PetscPragmaUseOMPKernels(parallel for)
+    for (PetscInt i = 0; i < m; i++) {
+      PetscInt           n   = ii[i + 1] - ii[i];
+      const PetscInt    *aj  = a->j + ii[i];
+      const PetscScalar *aa  = a_a + ii[i];
+      PetscScalar        sum = 0.0;
       PetscSparseDensePlusDot(sum, x, aa, aj, n);
       y[i] = sum;
     }
@@ -1628,10 +1626,9 @@ PetscErrorCode MatMultAdd_SeqAIJ(Mat A, Vec xx, Vec yy, Vec zz)
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;
   PetscScalar       *y, *z;
   const PetscScalar *x;
-  const MatScalar   *aa, *a_a;
-  const PetscInt    *aj, *ii, *ridx = NULL;
-  PetscInt           m = A->rmap->n, n, i;
-  PetscScalar        sum;
+  const MatScalar   *a_a;
+  const PetscInt    *ii, *ridx = NULL;
+  PetscInt           m        = A->rmap->n;
   PetscBool          usecprow = a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -1647,26 +1644,25 @@ PetscErrorCode MatMultAdd_SeqAIJ(Mat A, Vec xx, Vec yy, Vec zz)
     m    = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
     ridx = a->compressedrow.rindex;
-    for (i = 0; i < m; i++) {
-      n   = ii[i + 1] - ii[i];
-      aj  = a->j + ii[i];
-      aa  = a_a + ii[i];
-      sum = y[*ridx];
+    for (PetscInt i = 0; i < m; i++) {
+      PetscInt           n   = ii[i + 1] - ii[i];
+      const PetscInt    *aj  = a->j + ii[i];
+      const PetscScalar *aa  = a_a + ii[i];
+      PetscScalar        sum = y[*ridx];
       PetscSparseDensePlusDot(sum, x, aa, aj, n);
       z[*ridx++] = sum;
     }
   } else { /* do not use compressed row format */
     ii = a->i;
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ)
-    aj = a->j;
-    aa = a_a;
-    fortranmultaddaij_(&m, x, ii, aj, aa, y, z);
+    fortranmultaddaij_(&m, x, ii, a->j, a_a, y, z);
 #else
-    for (i = 0; i < m; i++) {
-      n   = ii[i + 1] - ii[i];
-      aj  = a->j + ii[i];
-      aa  = a_a + ii[i];
-      sum = y[i];
+    PetscPragmaUseOMPKernels(parallel for)
+    for (PetscInt i = 0; i < m; i++) {
+      PetscInt           n   = ii[i + 1] - ii[i];
+      const PetscInt    *aj  = a->j + ii[i];
+      const PetscScalar *aa  = a_a + ii[i];
+      PetscScalar        sum = y[i];
       PetscSparseDensePlusDot(sum, x, aa, aj, n);
       z[i] = sum;
     }

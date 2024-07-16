@@ -411,15 +411,15 @@ static PetscErrorCode MatFDColoringViewFromOptions(MatFDColoring fd, const char 
 
   PetscFunctionBegin;
   if (prefix) {
-    PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)fd), ((PetscObject)fd)->options, prefix, optionname, &viewer, &format, &flg));
+    PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)fd), ((PetscObject)fd)->options, prefix, optionname, &viewer, &format, &flg));
   } else {
-    PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)fd), ((PetscObject)fd)->options, ((PetscObject)fd)->prefix, optionname, &viewer, &format, &flg));
+    PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)fd), ((PetscObject)fd)->options, ((PetscObject)fd)->prefix, optionname, &viewer, &format, &flg));
   }
   if (flg) {
     PetscCall(PetscViewerPushFormat(viewer, format));
     PetscCall(MatFDColoringView(fd, viewer));
     PetscCall(PetscViewerPopFormat(viewer));
-    PetscCall(PetscOptionsRestoreViewer(&viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

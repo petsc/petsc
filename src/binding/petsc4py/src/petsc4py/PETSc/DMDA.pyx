@@ -720,20 +720,24 @@ cdef class DMDA(DM):
 
     #
 
-    def getVecArray(self, Vec vec) -> Any:
-        """Get access to the vector.
+    def getVecArray(self, Vec vec, readonly: bool = False) -> Any:
+        """Get access to the vector as laid out on a N-d grid.
 
-        Not collective.
-
-        Use via `with` context manager (PEP 343).
+        Logically collective.
 
         Parameters
         ----------
         vec
             The vector to which access is being requested.
+        readonly
+            Request read-only access.
+
+        See Also
+        --------
+        Vec.getArray, petsc.DMDAVecGetArray, petsc.DMDAVecGetArrayDOF
 
         """
-        return _DMDA_Vec_array(self, vec)
+        return _DMDA_Vec_array(self, vec, readonly)
 
     #
 

@@ -1752,6 +1752,8 @@ static PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems *PetscOption
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)pc, &comm));
   PetscOptionsHeadBegin(PetscOptionsObject, "GAMG options");
+  PetscCall(PetscOptionsInt("-pc_mg_levels", "Number of Levels", "PCMGSetLevels", -1, &n, &flag));
+  PetscCheck(!flag, comm, PETSC_ERR_ARG_WRONG, "Invalid flag -pc_mg_levels. GAMG does not allow the number of levels to be set.");
   PetscCall(PetscOptionsFList("-pc_gamg_type", "Type of AMG method (only 'agg' supported and useful)", "PCGAMGSetType", GAMGList, pc_gamg->gamg_type_name, tname, sizeof(tname), &flag));
   if (flag) PetscCall(PCGAMGSetType(pc, tname));
   PetscCall(PetscOptionsBool("-pc_gamg_repartition", "Repartion coarse grids", "PCGAMGSetRepartition", pc_gamg->repart, &pc_gamg->repart, NULL));

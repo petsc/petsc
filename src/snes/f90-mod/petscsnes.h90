@@ -20,6 +20,41 @@
       end subroutine DMSNESSetFunctionLocal
       end Interface
 
+      interface SNESSetFunction
+      subroutine SNESSetFunction(a,b,c,d,z)
+       import tSNES, tVec
+       SNES a
+       Vec b
+       external c
+       type(*) d
+       PetscErrorCode z
+      end subroutine
+      end Interface
+
+      interface SNESSetJacobian
+      subroutine SNESSetJacobian(a,b,c,d,e,z)
+       import tSNES, tMat
+       SNES a
+       Mat b
+       Mat c
+       external d
+       type(*) e
+       PetscErrorCode z
+      end subroutine
+      end Interface
+
+      interface SNESGetJacobian
+      subroutine SNESGetJacobian(a,b,c,d,e,z)
+       import tSNES, tMat
+       SNES a
+       Mat b
+       Mat c
+       external d
+       type(*) e
+       PetscErrorCode z
+      end subroutine
+      end Interface
+
       Interface
       subroutine DMSNESSetJacobianLocal(dm,func,ctx,ierr)
       import tSNES,tDM

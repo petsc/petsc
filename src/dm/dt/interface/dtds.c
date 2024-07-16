@@ -684,16 +684,16 @@ PetscErrorCode PetscDSCreate(MPI_Comm comm, PetscDS *ds)
   PetscCall(PetscDSInitializePackage());
 
   PetscCall(PetscHeaderCreate(p, PETSCDS_CLASSID, "PetscDS", "Discrete System", "PetscDS", comm, PetscDSDestroy, PetscDSView));
-  p->Nf           = 0;
-  p->setup        = PETSC_FALSE;
-  p->numConstants = 0;
-  p->constants    = NULL;
-  p->dimEmbed     = -1;
-  p->useJacPre    = PETSC_TRUE;
-  p->forceQuad    = PETSC_TRUE;
+  p->Nf               = 0;
+  p->setup            = PETSC_FALSE;
+  p->numConstants     = 0;
+  p->numFuncConstants = 3; // Row and col fields, cell size
+  p->dimEmbed         = -1;
+  p->useJacPre        = PETSC_TRUE;
+  p->forceQuad        = PETSC_TRUE;
+  PetscCall(PetscMalloc1(p->numConstants + p->numFuncConstants, &p->constants));
   PetscCall(PetscWeakFormCreate(comm, &p->wf));
   PetscCall(PetscArrayzero(p->quadPerm, DM_NUM_POLYTOPES));
-
   *ds = p;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2814,7 +2814,7 @@ PetscErrorCode PetscDSSetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, P
   Not Collective
 
   Input Parameter:
-. prob - The `PetscDS` object
+. ds - The `PetscDS` object
 
   Output Parameters:
 + numConstants - The number of constants
@@ -2824,17 +2824,17 @@ PetscErrorCode PetscDSSetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, P
 
 .seealso: `PetscDS`, `PetscDSSetConstants()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetConstants(PetscDS prob, PetscInt *numConstants, const PetscScalar *constants[])
+PetscErrorCode PetscDSGetConstants(PetscDS ds, PetscInt *numConstants, const PetscScalar *constants[])
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   if (numConstants) {
     PetscAssertPointer(numConstants, 2);
-    *numConstants = prob->numConstants;
+    *numConstants = ds->numConstants;
   }
   if (constants) {
     PetscAssertPointer(constants, 3);
-    *constants = prob->constants;
+    *constants = ds->constants;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2845,7 +2845,7 @@ PetscErrorCode PetscDSGetConstants(PetscDS prob, PetscInt *numConstants, const P
   Not Collective
 
   Input Parameters:
-+ prob         - The `PetscDS` object
++ ds           - The `PetscDS` object
 . numConstants - The number of constants
 - constants    - The array of constants, `NULL` if there are none
 
@@ -2853,23 +2853,63 @@ PetscErrorCode PetscDSGetConstants(PetscDS prob, PetscInt *numConstants, const P
 
 .seealso: `PetscDS`, `PetscDSGetConstants()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSSetConstants(PetscDS prob, PetscInt numConstants, PetscScalar constants[])
+PetscErrorCode PetscDSSetConstants(PetscDS ds, PetscInt numConstants, PetscScalar constants[])
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  if (numConstants != prob->numConstants) {
-    PetscCall(PetscFree(prob->constants));
-    prob->numConstants = numConstants;
-    if (prob->numConstants) {
-      PetscCall(PetscMalloc1(prob->numConstants, &prob->constants));
-    } else {
-      prob->constants = NULL;
-    }
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  if (numConstants != ds->numConstants) {
+    PetscCall(PetscFree(ds->constants));
+    ds->numConstants = numConstants;
+    PetscCall(PetscMalloc1(ds->numConstants + ds->numFuncConstants, &ds->constants));
   }
-  if (prob->numConstants) {
+  if (ds->numConstants) {
     PetscAssertPointer(constants, 3);
-    PetscCall(PetscArraycpy(prob->constants, constants, prob->numConstants));
+    PetscCall(PetscArraycpy(ds->constants, constants, ds->numConstants));
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  PetscDSSetIntegrationParameters - Set the parameters for a particular integration
+
+  Not Collective
+
+  Input Parameters:
++ ds     - The `PetscDS` object
+. fieldI - The test field for a given point function, or PETSC_DETERMINE
+- fieldJ - The basis field for a given point function, or PETSC_DETERMINE
+
+  Level: intermediate
+
+.seealso: `PetscDS`, `PetscDSSetConstants()`, `PetscDSGetConstants()`, `PetscDSCreate()`
+@*/
+PetscErrorCode PetscDSSetIntegrationParameters(PetscDS ds, PetscInt fieldI, PetscInt fieldJ)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  ds->constants[ds->numConstants]     = fieldI;
+  ds->constants[ds->numConstants + 1] = fieldJ;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  PetscDSSetCellParameters - Set the parameters for a particular cell
+
+  Not Collective
+
+  Input Parameters:
++ ds     - The `PetscDS` object
+- volume - The cell volume
+
+  Level: intermediate
+
+.seealso: `PetscDS`, `PetscDSSetConstants()`, `PetscDSGetConstants()`, `PetscDSCreate()`
+@*/
+PetscErrorCode PetscDSSetCellParameters(PetscDS ds, PetscReal volume)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  ds->constants[ds->numConstants + 2] = volume;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

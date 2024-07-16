@@ -16,7 +16,7 @@ communications.
 """
 
 __author__ = 'Lisandro Dalcin'
-__version__ = '3.21.2'
+__version__ = '3.21.3'
 __credits__ = 'PETSc Team <petsc-maint@mcs.anl.gov>'
 
 

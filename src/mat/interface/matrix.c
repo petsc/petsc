@@ -3679,9 +3679,9 @@ PetscErrorCode MatSolve(Mat mat, Vec b, Vec x)
   MatCheckPreallocated(mat, 1);
 
   PetscCall(PetscLogEventBegin(MAT_Solve, mat, b, x, 0));
+  PetscCall(VecFlag(x, mat->factorerrortype));
   if (mat->factorerrortype) {
     PetscCall(PetscInfo(mat, "MatFactorError %d\n", mat->factorerrortype));
-    PetscCall(VecSetInf(x));
   } else PetscUseTypeMethod(mat, solve, b, x);
   PetscCall(PetscLogEventEnd(MAT_Solve, mat, b, x, 0));
   PetscCall(PetscObjectStateIncrease((PetscObject)x));
@@ -4016,9 +4016,9 @@ PetscErrorCode MatSolveAdd(Mat mat, Vec b, Vec y, Vec x)
   MatCheckPreallocated(mat, 1);
 
   PetscCall(PetscLogEventBegin(MAT_SolveAdd, mat, b, x, y));
+  PetscCall(VecFlag(x, mat->factorerrortype));
   if (mat->factorerrortype) {
     PetscCall(PetscInfo(mat, "MatFactorError %d\n", mat->factorerrortype));
-    PetscCall(VecSetInf(x));
   } else if (mat->ops->solveadd) {
     PetscUseTypeMethod(mat, solveadd, b, y, x);
   } else {
@@ -4080,9 +4080,9 @@ PetscErrorCode MatSolveTranspose(Mat mat, Vec b, Vec x)
   if (!mat->rmap->N && !mat->cmap->N) PetscFunctionReturn(PETSC_SUCCESS);
   MatCheckPreallocated(mat, 1);
   PetscCall(PetscLogEventBegin(MAT_SolveTranspose, mat, b, x, 0));
+  PetscCall(VecFlag(x, mat->factorerrortype));
   if (mat->factorerrortype) {
     PetscCall(PetscInfo(mat, "MatFactorError %d\n", mat->factorerrortype));
-    PetscCall(VecSetInf(x));
   } else {
     PetscCheck(f, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Matrix type %s", ((PetscObject)mat)->type_name);
     PetscCall((*f)(mat, b, x));
@@ -4138,9 +4138,9 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat, Vec b, Vec y, Vec x)
   MatCheckPreallocated(mat, 1);
 
   PetscCall(PetscLogEventBegin(MAT_SolveTransposeAdd, mat, b, x, y));
+  PetscCall(VecFlag(x, mat->factorerrortype));
   if (mat->factorerrortype) {
     PetscCall(PetscInfo(mat, "MatFactorError %d\n", mat->factorerrortype));
-    PetscCall(VecSetInf(x));
   } else if (f) {
     PetscCall((*f)(mat, b, y, x));
   } else {
@@ -6463,7 +6463,7 @@ $     MatStencil idxm(4, m)
    etc
 .ve
 
-.seealso: [](ch_matrices), `Mat`, `MatZeroRowsIS()`, `MatZeroRowsColumns()`, `MatZeroRowsLocalIS()`, `MatZeroRowsl()`, `MatZeroEntries()`, `MatZeroRowsLocal()`, `MatSetOption()`,
+.seealso: [](ch_matrices), `Mat`, `MatZeroRowsIS()`, `MatZeroRowsColumns()`, `MatZeroRowsLocalIS()`, `MatZeroRows()`, `MatZeroEntries()`, `MatZeroRowsLocal()`, `MatSetOption()`,
           `MatZeroRowsColumnsLocal()`, `MatZeroRowsColumnsLocalIS()`, `MatZeroRowsColumnsIS()`, `MatZeroRowsColumnsStencil()`
 @*/
 PetscErrorCode MatZeroRowsStencil(Mat mat, PetscInt numRows, const MatStencil rows[], PetscScalar diag, Vec x, Vec b)
@@ -10431,13 +10431,13 @@ PetscErrorCode MatTransposeMatMult(Mat A, Mat B, MatReuse scall, PetscReal fill,
   Level: intermediate
 
   Notes:
-  Unless `scall` is `MAT_REUSE_MATRIX` D will be created.
+  Unless `scall` is `MAT_REUSE_MATRIX` `D` will be created.
 
   `MAT_REUSE_MATRIX` can only be used if the matrices `A`, `B`, and `C` have the same nonzero pattern as in the previous call
 
   This routine is shorthand for using `MatProductCreate()` with the `MatProductType` of `MATPRODUCT_ABC`
 
-  To determine the correct fill value, run with -info and search for the string "Fill ratio" to see the value
+  To determine the correct fill value, run with `-info` and search for the string "Fill ratio" to see the value
   actually needed.
 
   If you have many matrices with the same non-zero structure to multiply, you

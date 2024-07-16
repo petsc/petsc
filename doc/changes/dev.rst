@@ -13,7 +13,15 @@ Changes: Development
 
 .. rubric:: Configure/Build:
 
+- Add ``--with-openmp-kernels``
+
 .. rubric:: Sys:
+
+- Add ``PetscPragmaUseOMPKernels``
+- Deprecate ``PetscOptionsRestoreViewer()`` in favor of ``PetscViewerDestroy()``
+- Deprecate ``PetscOptionsGetViewer()``, and ``PetscOptionsGetViewers()`` in favor of ``PetscOptionsCreateViewer()`` and ``PetscOptionsCreateViewers()``
+- Deprecate ``PetscOptionsPushGetViewerOff()``, ``PetscOptionsPopGetViewerOff()``, and ``PetscOptionsGetViewerOff()`` in favor of
+  ``PetscOptionsPushCreateViewerOff()``, ``PetscOptionsPopCreateViewerOff()``, and ``PetscOptionsGetCreateViewerOff()``
 
 .. rubric:: Event Logging:
 
@@ -34,6 +42,7 @@ Changes: Development
 - The ``IS`` passed to ``VecISAXPY()``, ``VecISCopy()``. ``VecISSet()``, and ``VecISShift()`` must have the same communicator of the vectors used
 - Make ``VecLock`` API active in optimized mode
 - ``VecNestSetSubVec()`` and ``VecNestSetSubVecs()`` now take references to input vectors rather than creating duplicates
+- Deprecate ``VecSetInf()`` with ``VecFlag()``
 
 .. rubric:: PetscSection:
 
@@ -50,12 +59,18 @@ Changes: Development
 - Add ``PCCompositeSpecialSetAlphaMat()`` API to use a matrix other than the identity in
   preconditioners based on an alternating direction iteration, e.g., setting :math:`M` for
   :math:`P = (A + alpha M) M^{-1} (alpha M + B)`
+- Reuse the result of :math:`T = A_{00}^-1 A_{01}` in ``PCApply_FieldSplit_Schur`` with ``-pc_fieldsplit_schur_fact_type full``
 
 - Change the option database keys for coarsening for ``PCGAMG`` to use the prefix ``-pc_gamg_``, for example ``-pc_gamg_mat_coarsen_type``
 
 .. rubric:: KSP:
 
 .. rubric:: SNES:
+
+- Add ``DMAdaptorMonitor()``, ``DMAdaptorMonitorSet()``,  ``DMAdaptorMonitorCancel()``, ``DMAdaptorMonitorSetFromOptions()``
+- Add ``DMAdaptorMonitorSize()``, ``DMAdaptorMonitorError()``, ``DMAdaptorMonitorErrorDraw()``, ``DMAdaptorMonitorErrorDrawLGCreate()``, ``DMAdaptorMonitorErrorDrawLG()``
+- Add ``DMAdaptorMonitorRegister()``, ``DMAdaptorMonitorRegisterAll()``, ``DMAdaptorMonitorRegisterDestroy()``
+- Add ``DMAdaptorGetCriterion()`` and ``DMAdaptorSetCriterion()``
 
 .. rubric:: SNESLineSearch:
 
@@ -82,6 +97,9 @@ Changes: Development
 - Add refinement argument to ``DMPlexCreateHexCylinderMesh()``
 - Now ``DMPlexComputeBdIntegral()`` takes one function per field
 - Add ``DMPlexCreateEdgeNumbering()``
+- Add ``DMPlexComputeL2FluxDiffVec()`` and ``DMPlexComputeL2FluxDiffVecLocal()``
+- Add ``DMAdaptorSetType()``, ``DMAdaptorGetType()``, ``DMAdaptorRegister()``, ``DMAdaptorRegisterAll()``, ``DMAdaptorRegisterDestroy()``
+- Add ``DMAdaptorGetMixedSetupFunction()`` and ``DMAdaptorSetMixedSetupFunction()``
 
 .. rubric:: FE/FV:
 
@@ -90,6 +108,8 @@ Changes: Development
 .. rubric:: DMStag:
 
 .. rubric:: DT:
+
+- Add ``PetscDSSetIntegrationParameters()`` and ``PetscDSSetCellParameters()``
 
 .. rubric:: Fortran:
 

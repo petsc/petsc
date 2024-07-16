@@ -5,14 +5,16 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define snessetpicard_                   SNESSETPICARD
+  #define snessetpicardnointerface_        SNESSETPICARDNOINTERFACE
   #define snessolve_                       SNESSOLVE
   #define snescomputejacobiandefault_      SNESCOMPUTEJACOBIANDEFAULT
   #define snescomputejacobiandefaultcolor_ SNESCOMPUTEJACOBIANDEFAULTCOLOR
   #define snessetjacobian_                 SNESSETJACOBIAN
-  #define snessetjacobian1_                SNESSETJACOBIAN1
-  #define snessetjacobian2_                SNESSETJACOBIAN2
+  #define snessetjacobiannointerface_      SNESSETJACOBIANNOINTERFACE
   #define snessetfunction_                 SNESSETFUNCTION
+  #define snessetfunctionnointerface_      SNESSETFUNCTIONNOINTERFACE
   #define snessetobjective_                SNESSETOBJECTIVE
+  #define snessetobjectivenointerface_     SNESSETOBJECTIVENOINTERFACE
   #define snessetngs_                      SNESSETNGS
   #define snessetupdate_                   SNESSETUPDATE
   #define snesgetfunction_                 SNESGETFUNCTION
@@ -33,14 +35,16 @@
   #define matmffdcomputejacobian_          MATMFFDCOMPUTEJACOBIAN
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define snessetpicard_                   snessetpicard
+  #define snessetpicardnointerface_        snessetpicardnointerface
   #define snessolve_                       snessolve
   #define snescomputejacobiandefault_      snescomputejacobiandefault
   #define snescomputejacobiandefaultcolor_ snescomputejacobiandefaultcolor
   #define snessetjacobian_                 snessetjacobian
-  #define snessetjacobian1_                snessetjacobian1
-  #define snessetjacobian2_                snessetjacobian2
+  #define snessetjacobiannointerface_      snessetjacobiannointerface
   #define snessetfunction_                 snessetfunction
+  #define snessetfunctionnointerface_      snessetfunctionnointerface
   #define snessetobjective_                snessetobjective
+  #define snessetobjectivenointerface_     snessetobjectivenointerface
   #define snessetngs_                      snessetngs
   #define snessetupdate_                   snessetupdate
   #define snesgetfunction_                 snesgetfunction
@@ -199,7 +203,7 @@ PETSC_EXTERN void snescomputejacobiandefault_(SNES *, Vec *, Mat *, Mat *, void 
 PETSC_EXTERN void snescomputejacobiandefaultcolor_(SNES *, Vec *, Mat *, Mat *, void *, PetscErrorCode *);
 PETSC_EXTERN void matmffdcomputejacobian_(SNES *, Vec *, Mat *, Mat *, void *, PetscErrorCode *);
 
-PETSC_EXTERN void snessetjacobian_(SNES *snes, Mat *A, Mat *B, void (*func)(SNES *, Vec *, Mat *, Mat *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void snessetjacobian_(SNES *snes, Mat *A, Mat *B, SNESJacobianFn func, void *ctx, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptr))
 {
   CHKFORTRANNULLFUNCTION(func);
   if ((PetscVoidFn *)func == (PetscVoidFn *)snescomputejacobiandefault_) {
@@ -217,13 +221,28 @@ PETSC_EXTERN void snessetjacobian_(SNES *snes, Mat *A, Mat *B, void (*func)(SNES
     if (!*ierr) *ierr = SNESSetJacobian(*snes, *A, *B, oursnesjacobian, NULL);
   }
 }
-PETSC_EXTERN void snessetjacobian1_(SNES *snes, Mat *A, Mat *B, void (*func)(SNES *, Vec *, Mat *, Mat *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+
+PETSC_EXTERN void snessetjacobiannointerface_(SNES *snes, Mat *A, Mat *B, SNESJacobianFn J, void *ctx, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptr))
 {
-  snessetjacobian_(snes, A, B, func, ctx, ierr);
+  snessetjacobian_(snes, A, B, J, ctx, ierr PETSC_F90_2PTR_PARAM(ptr));
 }
-PETSC_EXTERN void snessetjacobian2_(SNES *snes, Mat *A, Mat *B, void (*func)(SNES *, Vec *, Mat *, Mat *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+
+/*  func is currently ignored from Fortran */
+PETSC_EXTERN void snesgetjacobian_(SNES *snes, Mat *A, Mat *B, int *func, void **ctx, PetscErrorCode *ierr)
 {
-  snessetjacobian_(snes, A, B, func, ctx, ierr);
+  SNESJacobianFn *jfunc;
+  void           *jctx;
+
+  CHKFORTRANNULL(ctx);
+  CHKFORTRANNULLOBJECT(A);
+  CHKFORTRANNULLOBJECT(B);
+  *ierr = SNESGetJacobian(*snes, A, B, &jfunc, &jctx);
+  if (*ierr) return;
+  if (jfunc == SNESComputeJacobianDefault || jfunc == SNESComputeJacobianDefaultColor || jfunc == MatMFFDComputeJacobian) {
+    if (ctx) *ctx = jctx;
+  } else {
+    *ierr = PetscObjectGetFortranCallback((PetscObject)*snes, PETSC_FORTRAN_CALLBACK_CLASS, _cb.jacobian, NULL, ctx);
+  }
 }
 
 static PetscErrorCode oursnespicardfunction(SNES snes, Vec x, Vec f, void *ctx)
@@ -240,7 +259,7 @@ static PetscErrorCode oursnespicardjacobian(SNES snes, Vec x, Mat m, Mat p, void
   PetscObjectUseFortranCallback(snes, _cb.jacobian, (SNES *, Vec *, Mat *, Mat *, void *, PetscErrorCode *), (&snes, &x, &m, &p, _ctx, &ierr));
 }
 
-PETSC_EXTERN void snessetpicard_(SNES *snes, Vec *r, void (*func)(SNES *, Vec *, Vec *, void *, PetscErrorCode *), Mat *A, Mat *B, PetscErrorCode (*J)(SNES, Vec, Mat, Mat, void *), void *ctx, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptr))
+PETSC_EXTERN void snessetpicard_(SNES *snes, Vec *r, SNESFunctionFn func, Mat *A, Mat *B, SNESJacobianFn J, void *ctx, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptr))
 {
   *ierr = PetscObjectSetFortranCallback((PetscObject)*snes, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.function, (PetscVoidFn *)func, ctx);
 #if defined(PETSC_HAVE_F90_2PTR_ARG)
@@ -249,6 +268,11 @@ PETSC_EXTERN void snessetpicard_(SNES *snes, Vec *r, void (*func)(SNES *, Vec *,
 #endif
   *ierr = PetscObjectSetFortranCallback((PetscObject)*snes, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.jacobian, (PetscVoidFn *)J, ctx);
   if (!*ierr) *ierr = SNESSetPicard(*snes, *r, oursnespicardfunction, *A, *B, oursnespicardjacobian, NULL);
+}
+
+PETSC_EXTERN void snessetpicardnointerface_(SNES *snes, Vec *r, SNESFunctionFn func, Mat *A, Mat *B, SNESJacobianFn J, void *ctx, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptr))
+{
+  snessetpicard_(snes, r, func, A, B, J, ctx, ierr PETSC_F90_2PTR_PARAM(ptr));
 }
 
 /*
@@ -267,7 +291,12 @@ PETSC_EXTERN void snessetfunction_(SNES *snes, Vec *r, SNESFunctionFn func, void
   *ierr = SNESSetFunction(*snes, *r, oursnesfunction, NULL);
 }
 
-PETSC_EXTERN void snessetobjective_(SNES *snes, void (*func)(SNES *, Vec *, PetscReal *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptr))
+PETSC_EXTERN void snessetfunctionnointerface_(SNES *snes, Vec *r, SNESFunctionFn func, void *ctx, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptr))
+{
+  snessetfunction_(snes, r, func, ctx, ierr PETSC_F90_2PTR_PARAM(ptr));
+}
+
+PETSC_EXTERN void snessetobjective_(SNES *snes, SNESObjectiveFn func, void *ctx, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptr))
 {
   *ierr = PetscObjectSetFortranCallback((PetscObject)*snes, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.objective, (PetscVoidFn *)func, ctx);
   if (*ierr) return;
@@ -276,6 +305,11 @@ PETSC_EXTERN void snessetobjective_(SNES *snes, void (*func)(SNES *, Vec *, Pets
   if (*ierr) return;
 #endif
   *ierr = SNESSetObjective(*snes, oursnesobjective, NULL);
+}
+
+PETSC_EXTERN void snessetobjectivenointerface_(SNES *snes, SNESObjectiveFn func, void *ctx, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptr))
+{
+  snessetobjective_(snes, func, ctx, ierr PETSC_F90_2PTR_PARAM(ptr));
 }
 
 PETSC_EXTERN void snessetngs_(SNES *snes, void (*func)(SNES *, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
@@ -331,17 +365,6 @@ PETSC_EXTERN void snessetconvergencetest_(SNES *snes, void (*func)(SNES *, Petsc
     if (*ierr) return;
     *ierr = SNESSetConvergenceTest(*snes, oursnestest, *snes, ourdestroy);
   }
-}
-
-/*  func is currently ignored from Fortran */
-PETSC_EXTERN void snesgetjacobian_(SNES *snes, Mat *A, Mat *B, int *func, void **ctx, PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLINTEGER(ctx);
-  CHKFORTRANNULLOBJECT(A);
-  CHKFORTRANNULLOBJECT(B);
-  *ierr = SNESGetJacobian(*snes, A, B, NULL, NULL);
-  if (*ierr) return;
-  *ierr = PetscObjectGetFortranCallback((PetscObject)*snes, PETSC_FORTRAN_CALLBACK_CLASS, _cb.jacobian, NULL, ctx);
 }
 
 PETSC_EXTERN void snesgetconvergencehistory_(SNES *snes, PetscInt *na, PetscErrorCode *ierr)

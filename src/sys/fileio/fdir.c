@@ -38,7 +38,7 @@ static PetscErrorCode PetscPathJoin(const char dname[], const char fname[], size
 
   Level: advanced
 
-.seealso: `PetscMktemp()`, `PetscRMTree()`
+.seealso: `PetscMkdtemp()`, `PetscRMTree()`
 @*/
 PetscErrorCode PetscMkdir(const char dir[])
 {

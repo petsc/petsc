@@ -1261,7 +1261,7 @@ static PetscErrorCode MatNestGetISs_Nest(Mat A, IS rows[], IS cols[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatNestGetISs - Returns the index sets partitioning the row and column spaces of a `MATNEST`
 
   Not Collective

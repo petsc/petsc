@@ -18,8 +18,6 @@ cdef extern from "Python.h":
 # --------------------------------------------------------------------
 
 cdef extern from * nogil:
-    ctypedef struct _p_PetscOptionItems
-    ctypedef _p_PetscOptionItems* PetscOptionItems
     PetscErrorCode PetscOptionsString(char[], char[], char[], char[], char[], size_t, PetscBool*)
 
 cdef extern from * nogil: # custom.h

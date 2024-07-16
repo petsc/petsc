@@ -1945,7 +1945,7 @@ boundary:
 
       /* debug coordinates */
       PetscCall(PCGetOptionsPrefix(pc, &prefix));
-      PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)vcoords), ((PetscObject)vcoords)->options, prefix, "-pc_bddc_coords_vec_view", &viewer, &format, &flg));
+      PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)vcoords), ((PetscObject)vcoords)->options, prefix, "-pc_bddc_coords_vec_view", &viewer, &format, &flg));
       if (flg) PetscCall(PetscViewerPushFormat(viewer, format));
       for (d = 0; d < cdim; d++) {
         PetscInt           i;
@@ -1968,7 +1968,7 @@ boundary:
       PetscCall(PetscFree2(funcs, ctxs));
       if (flg) {
         PetscCall(PetscViewerPopFormat(viewer));
-        PetscCall(PetscOptionsRestoreViewer(&viewer));
+        PetscCall(PetscViewerDestroy(&viewer));
       }
     }
   }
@@ -5328,7 +5328,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, Mat *coarse_submat)
     PetscCall(ISView(pcis->is_B_local,viewer));
     PetscCall(PetscObjectSetName((PetscObject)pcbddc->is_R_local,"R"));
     PetscCall(ISView(pcbddc->is_R_local,viewer));
-    PetscCall(PetscOptionsRestoreViewer(&viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
 #endif
 

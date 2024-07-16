@@ -1234,17 +1234,66 @@ static inline constexpr std::size_t PETSC_STATIC_ARRAY_LENGTH(const T &) noexcep
   #undef PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END_
 #endif
 
-/* OpenMP support */
+/*MC
+  PetscPragmaOMP - Sets an OpenMP pragma to affect the next block of code
+
+  Synopsis:
+  #include <petscmacros.h>
+  int PetscPragmaOMP(name)
+
+  No Fortran Support
+
+  Input Parameter:
+. name - the OpenMP pragma, for example, `critical` or `parallel for`
+
+  Level: intermediate
+
+  Note:
+  The pragma takes effect when PETSc was configured with `--with-openmp`. See `PetscPragmaUseOMPKernels()`
+  for when PETSc was configured to use OpenMP in some of its numerical kernals.
+
+.seealso: `PetscPragmaUseOMPKernels()`, `PetscHasBuiltin()`, `PetscDefined()`, `PetscLikely()`, `PetscUnlikely()`,
+`PETSC_ATTRIBUTE_FORMAT`, `PETSC_ATTRIBUTE_MAY_ALIAS`
+M*/
 #if defined(_OPENMP)
   #if defined(_MSC_VER)
     #define PetscPragmaOMP(...) __pragma(__VA_ARGS__)
   #else
     #define PetscPragmaOMP(...) _Pragma(PetscStringize(omp __VA_ARGS__))
   #endif
+#else
+  #define PetscPragmaOMP(...)
 #endif
 
-#ifndef PetscPragmaOMP
-  #define PetscPragmaOMP(...)
+/*MC
+  PetscPragmaUseOMPKernels - Sets an OpenMP pragma to affect the next block of code
+
+  Synopsis:
+  #include <petscmacros.h>
+  int PetscPragmaUseOMPKernels(name)
+
+  No Fortran Support
+
+  Input Parameter:
+. name - the OpenMP pragma, for example, `critical` or `parallel for`
+
+  Level: intermediate
+
+  Note:
+  The pragma takes effect when PETSc was configured with `--with-openmp-kernels`. See `PetscPragmaOMP()`
+  for when PETSc was configured with OpenMP but not to use it in its numerical kernels
+
+.seealso: `PetscPragmaOMP()`, `PetscHasBuiltin()`, `PetscDefined()`, `PetscLikely()`, `PetscUnlikely()`,
+`PETSC_ATTRIBUTE_FORMAT`, `PETSC_ATTRIBUTE_MAY_ALIAS`
+M*/
+#if defined(PETSC_USE_OPENMP_KERNELS)
+  #if defined(_MSC_VER)
+    #define PetscPragmaUseOMPKernels(...) __pragma(__VA_ARGS__)
+  #else
+    #define PetscPragmaUseOMPKernels(...) _Pragma(PetscStringize(omp __VA_ARGS__))
+  #endif
+#else
+  #define PetscPragmaUseOMPKernels(...)
 #endif
 
 /* PetscPragmaSIMD - from CeedPragmaSIMD */

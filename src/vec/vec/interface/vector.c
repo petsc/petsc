@@ -1879,12 +1879,12 @@ PetscErrorCode VecStashViewFromOptions(Vec obj, PetscObject bobj, const char opt
 
   PetscFunctionBegin;
   prefix = bobj ? bobj->prefix : ((PetscObject)obj)->prefix;
-  PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj), ((PetscObject)obj)->options, prefix, optionname, &viewer, &format, &flg));
+  PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)obj), ((PetscObject)obj)->options, prefix, optionname, &viewer, &format, &flg));
   if (flg) {
     PetscCall(PetscViewerPushFormat(viewer, format));
     PetscCall(VecStashView(obj, viewer));
     PetscCall(PetscViewerPopFormat(viewer));
-    PetscCall(PetscOptionsRestoreViewer(&viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2029,7 +2029,27 @@ PetscErrorCode VecSetLayout(Vec x, PetscLayout map)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecSetInf(Vec xin)
+/*@
+  VecFlag - set infinity into the local part of the vector on any subset of MPI processes
+
+  Logically Collective
+
+  Input Parameters:
++ xin - the vector, can be `NULL` but only if on all processes
+- flg - indicates if this processes portion of the vector should be set to infinity
+
+  Level: developer
+
+  Note:
+  This removes the values from the vector norm cache for all processes by calling `PetscObjectIncrease()`.
+
+  This is used for any subset of MPI processes to indicate an failure in a solver, after the next use of `VecNorm()` if
+  `KSPCheckNorm()` detects an infinity and at least one of the MPI processes has a not converged reason then the `KSP`
+  object collectively is labeled as not converged.
+
+.seealso: [](ch_vectors), `Vec`, `PetscLayout`, `VecGetLayout()`, `VecGetSizes()`, `VecGetOwnershipRange()`, `VecGetOwnershipRanges()`
+@*/
+PetscErrorCode VecFlag(Vec xin, PetscInt flg)
 {
   // use of variables one and zero over just doing 1.0/0.0 is deliberate. MSVC complains that
   // we are dividing by zero in the latter case (ostensibly because dividing by 0 is UB, but
@@ -2038,6 +2058,60 @@ PetscErrorCode VecSetInf(Vec xin)
   PetscScalar       inf;
 
   PetscFunctionBegin;
+  if (!xin) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscValidHeaderSpecific(xin, VEC_CLASSID, 1);
+  PetscCall(PetscObjectStateIncrease((PetscObject)xin));
+  if (flg) {
+    PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
+    inf = one / zero;
+    PetscCall(PetscFPTrapPop());
+    if (xin->ops->set) {
+      PetscUseTypeMethod(xin, set, inf);
+    } else {
+      PetscInt     n;
+      PetscScalar *xx;
+
+      PetscCall(VecGetLocalSize(xin, &n));
+      PetscCall(VecGetArrayWrite(xin, &xx));
+      for (PetscInt i = 0; i < n; ++i) xx[i] = inf;
+      PetscCall(VecRestoreArrayWrite(xin, &xx));
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  VecSetInf - set infinity into the local part of the vector
+
+  Not Collective
+
+  Input Parameters:
+. xin - the vector
+
+  Level: developer
+
+  Note:
+  Deprecated, see  `VecFlag()`
+  This is used for any subset of MPI processes to indicate an failure in a solver, after the next use of `VecNorm()` if
+  `KSPCheckNorm()` detects an infinity and at least one of the MPI processes has a not converged reason then the `KSP`
+  object collectively is labeled as not converged.
+
+  This cannot be called if `xin` has a cached norm available
+
+.seealso: [](ch_vectors), `VecFlag()`, `Vec`, `PetscLayout`, `VecGetLayout()`, `VecGetSizes()`, `VecGetOwnershipRange()`, `VecGetOwnershipRanges()`
+@*/
+PetscErrorCode VecSetInf(Vec xin)
+{
+  // use of variables one and zero over just doing 1.0/0.0 is deliberate. MSVC complains that
+  // we are dividing by zero in the latter case (ostensibly because dividing by 0 is UB, but
+  // only for *integers* not floats).
+  const PetscScalar one = 1.0, zero = 0.0;
+  PetscScalar       inf;
+  PetscBool         flg;
+
+  PetscFunctionBegin;
+  PetscCall(VecNormAvailable(xin, NORM_2, &flg, NULL));
+  PetscCheck(!flg, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot call VecSetInf() if the vector has a cached norm");
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
   inf = one / zero;
   PetscCall(PetscFPTrapPop());

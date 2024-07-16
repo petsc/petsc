@@ -1,5 +1,6 @@
 * Setting option: option4 = value4
 * Setting option: option5 (no value)
+* Removing option: option5
 #PETSc Option Table entries:
 -alias_opt alias_val # (source: file)
 -dot_petscrc_option1 dot_petscrc_option1_val # (source: file)
@@ -8,7 +9,6 @@
 -option2 # (source: code)
 -option3 value3 # (source: code)
 -option4 value4 # (source: code)
--option5 # (source: code)
 -option_in_file_1 # (source: file)
 -options_monitor_cancel 0 # (source: command line)
 -options_monitor_viewer ascii # (source: command line)

@@ -2,13 +2,9 @@
   Implements the Kokkos kernel
 */
 #include <petscconf.h>
-// On Sunspot, as of 05/04/2023, the default SYCL compiler oneapi/eng-compiler/2022.12.30.003
-// failed to link this file, so we add "defined(PETSC_HAVE_SYCL)" to disable landau with SYCL
-// to facilitate petsc users' experiments on Sunspot.
-// TODO: remove it when Intel fixed the bug. See MR !6412
-#if defined(PETSC_HAVE_CUDA_CLANG) || defined(PETSC_HAVE_SYCL)
+#if defined(PETSC_HAVE_CUDA_CLANG)
   #include <petsclandau.h>
-  #define LANDAU_NOT_IMPLEMENTED SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not supported with CLANG or SYCL")
+  #define LANDAU_NOT_IMPLEMENTED SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not supported with CLANG")
 PetscErrorCode LandauKokkosJacobian(DM[], const PetscInt, const PetscInt, const PetscInt, const PetscInt, const PetscInt[], PetscReal[], PetscScalar[], const PetscScalar[], const LandauStaticData *, const PetscReal, const PetscLogEvent[], const PetscInt[], const PetscInt[], Mat[], Mat)
 {
   LANDAU_NOT_IMPLEMENTED;
@@ -391,7 +387,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
   using g2_scr_t    = Kokkos::View<PetscReal ***, Kokkos::LayoutRight, scr_mem_t>;
   using g3_scr_t    = Kokkos::View<PetscReal ****, Kokkos::LayoutRight, scr_mem_t>;
   PetscInt         dim, num_cells_max, Nf_max, num_cells_batch;
-  int              nfaces = 0, vector_size = 512 / Nq;
+  int              nfaces = 0, vector_size = 256 / Nq;
   LandauCtx       *ctx;
   PetscReal       *d_Eq_m     = NULL;
   PetscScalar     *d_vertex_f = NULL;
@@ -521,7 +517,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
     const int scr_bytes_fdf = real2_scr_t::shmem_size(Nf_max, Nb);
     PetscCall(PetscInfo(plex[0], "df & f shared memory size: %d bytes in level, %d num cells total=%d, team size=%d, vector size=%d, #face=%d, Nf_max=%d\n", scr_bytes_fdf, KOKKOS_SHARED_LEVEL, (int)(num_cells_batch * batch_sz), team_size, vector_size, nfaces, (int)Nf_max));
     Kokkos::parallel_for(
-      "f, df", Kokkos::TeamPolicy<>(num_cells_batch * batch_sz, team_size, /* Kokkos::AUTO */ vector_size).set_scratch_size(KOKKOS_SHARED_LEVEL, Kokkos::PerTeam(scr_bytes_fdf)), KOKKOS_LAMBDA(const team_member team) {
+      "f, df", Kokkos::TeamPolicy<>(num_cells_batch * batch_sz, team_size, vector_size).set_scratch_size(KOKKOS_SHARED_LEVEL, Kokkos::PerTeam(scr_bytes_fdf)), KOKKOS_LAMBDA(const team_member team) {
         const PetscInt b_Nelem = d_elem_offset[num_grids], b_elem_idx = team.league_rank() % b_Nelem, b_id = team.league_rank() / b_Nelem, IPf_sz_glb = d_ipf_offset[num_grids];
         // find my grid
         PetscInt grid = 0;
@@ -735,7 +731,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
     PetscCall(PetscLogEventBegin(events[4], 0, 0, 0, 0));
     PetscCall(PetscLogGpuTimeBegin());
     PetscCall(PetscInfo(plex[0], "Jacobian shared memory size: %zu bytes in level %s (max shared=%zu), num cells total=%d, team size=%d, vector size=%d, #face=%d, Nf_max=%d\n", jac_scr_bytes, jac_shared_level == 0 ? "local" : "global", maximum_shared_mem_size, (int)(num_cells_batch * batch_sz), team_size, vector_size, nfaces, (int)Nf_max));
-    Kokkos::parallel_for("Jacobian", Kokkos::TeamPolicy<Kokkos::LaunchBounds<256, lbound2>>(num_cells_batch * batch_sz, team_size, vector_size).set_scratch_size(jac_shared_level, Kokkos::PerTeam(jac_scr_bytes)), jac_lambda); // Kokkos::LaunchBounds<512,2>
+    Kokkos::parallel_for("Jacobian", Kokkos::TeamPolicy<Kokkos::LaunchBounds<256, lbound2>>(num_cells_batch * batch_sz, team_size, vector_size).set_scratch_size(jac_shared_level, Kokkos::PerTeam(jac_scr_bytes)), jac_lambda);
     Kokkos::fence();
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(PetscLogEventEnd(events[4], 0, 0, 0, 0));
@@ -745,7 +741,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
     PetscCall(PetscLogGpuTimeBegin());
     PetscCall(PetscInfo(plex[0], "Mass team size=%d vector size=%d #face=%d Nb=%" PetscInt_FMT ", %s assembly\n", team_size, vector_size, nfaces, Nb, d_coo_vals ? "COO" : "CSR"));
     Kokkos::parallel_for(
-      "Mass", Kokkos::TeamPolicy<>(num_cells_batch * batch_sz, team_size, vector_size), KOKKOS_LAMBDA(const team_member team) { // Kokkos::LaunchBounds<512,4>
+      "Mass", Kokkos::TeamPolicy<>(num_cells_batch * batch_sz, team_size, vector_size), KOKKOS_LAMBDA(const team_member team) {
         const PetscInt b_Nelem = d_elem_offset[num_grids], b_elem_idx = team.league_rank() % b_Nelem, b_id = team.league_rank() / b_Nelem;
         // find my grid
         PetscInt grid = 0;

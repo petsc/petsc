@@ -13,7 +13,7 @@ def findlmansec(file):
       #print(file)
       submansecl = [line for line in mklines if (line.find('SUBMANSEC') > -1 and line.find('BFORT') == -1)]
       if submansecl:
-        submansec = re.sub('[ ]*/\* [ ]*SUBMANSEC[ ]*=[ ]*','',submansecl[0]).strip('\n').strip('*/').strip()
+        submansec = re.sub(r'[ ]*/\* [ ]*SUBMANSEC[ ]*=[ ]*','',submansecl[0]).strip('\n').strip('*/').strip()
         if submansec == submansecl[0].strip('\n'):
           submansec = re.sub('SUBMANSEC[ ]*=[ ]*','',submansecl[0]).strip('\n').strip()
         #print(':SUBMANSEC:'+submansec)
@@ -102,7 +102,7 @@ def main(petsc_dir, doctext):
   # generate list of all manual pages
   with open(os.path.join(petsc_dir,'doc','manualpages','htmlmap'),mode='w') as map:
     with open(os.path.join(petsc_dir,'doc','manualpages','manualpages.cit')) as cit:
-      map.write(re.sub('man\+../','man+manualpages/',cit.read()))
+      map.write(re.sub(r'man\+../','man+manualpages/',cit.read()))
     with open(os.path.join(petsc_dir,'doc','manualpages','mpi.www.index')) as mpi:
       map.write(mpi.read())
 

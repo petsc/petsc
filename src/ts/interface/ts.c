@@ -710,18 +710,6 @@ PetscErrorCode TSComputeForcingFunction(TS ts, PetscReal t, Vec U)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TSGetRHSVec_Private(TS ts, Vec *Frhs)
-{
-  Vec F;
-
-  PetscFunctionBegin;
-  *Frhs = NULL;
-  PetscCall(TSGetIFunction(ts, &F, NULL, NULL));
-  if (!ts->Frhs) PetscCall(VecDuplicate(F, &ts->Frhs));
-  *Frhs = ts->Frhs;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PetscErrorCode TSGetRHSMats_Private(TS ts, Mat *Arhs, Mat *Brhs)
 {
   Mat            A, B;
@@ -826,9 +814,11 @@ PetscErrorCode TSComputeIFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec Y, Pe
   } else if (rhsfunction) {
     if (ifunction) {
       Vec Frhs;
-      PetscCall(TSGetRHSVec_Private(ts, &Frhs));
+
+      PetscCall(DMGetGlobalVector(dm, &Frhs));
       PetscCall(TSComputeRHSFunction(ts, t, U, Frhs));
       PetscCall(VecAXPY(Y, -1, Frhs));
+      PetscCall(DMRestoreGlobalVector(dm, &Frhs));
     } else {
       PetscCall(TSComputeRHSFunction(ts, t, U, Y));
       PetscCall(VecAYPX(Y, -1, Udot));
@@ -1312,6 +1302,9 @@ PetscErrorCode TSGetRHSFunction(TS ts, Vec *r, TSRHSFunctionFn **func, void **ct
   The TS solver may modify the nonzero structure and the entries of the matrices `Amat` and `Pmat` between the calls to `f`
   You should not assume the values are the same in the next call to `f` as you set them in the previous call.
 
+  In case `TSSetRHSJacobian()` is also used in conjuction with a fully-implicit solver,
+  multilevel linear solvers, e.g. `PCMG`, will likely not work due to the way `TS` handles rhs matrices.
+
 .seealso: [](ch_ts), `TS`, `TSIJacobianFn`, `TSSetIFunction()`, `TSSetRHSJacobian()`,
 `SNESComputeJacobianDefaultColor()`, `SNESComputeJacobianDefault()`, `TSSetRHSFunction()`
 @*/
@@ -1547,9 +1540,11 @@ PetscErrorCode TSComputeI2Function(TS ts, PetscReal t, Vec U, Vec V, Vec A, Vec 
 
   if (rhsfunction) {
     Vec Frhs;
-    PetscCall(TSGetRHSVec_Private(ts, &Frhs));
+
+    PetscCall(DMGetGlobalVector(dm, &Frhs));
     PetscCall(TSComputeRHSFunction(ts, t, U, Frhs));
     PetscCall(VecAXPY(F, -1, Frhs));
+    PetscCall(DMRestoreGlobalVector(dm, &Frhs));
   }
 
   PetscCall(PetscLogEventEnd(TS_FunctionEval, U, ts, V, F));
@@ -3985,7 +3980,7 @@ PetscErrorCode TSSolve(TS ts, Vec u)
 
     if (!incall) {
       /* Estimate the convergence rate of the time discretization */
-      PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)ts), ((PetscObject)ts)->options, ((PetscObject)ts)->prefix, "-ts_convergence_estimate", &viewer, &format, &flg));
+      PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)ts), ((PetscObject)ts)->options, ((PetscObject)ts)->prefix, "-ts_convergence_estimate", &viewer, &format, &flg));
       if (flg) {
         PetscConvEst conv;
         DM           dm;
@@ -4007,7 +4002,7 @@ PetscErrorCode TSSolve(TS ts, Vec u)
         PetscCall(PetscViewerPushFormat(viewer, format));
         PetscCall(PetscConvEstRateView(conv, alpha, viewer));
         PetscCall(PetscViewerPopFormat(viewer));
-        PetscCall(PetscOptionsRestoreViewer(&viewer));
+        PetscCall(PetscViewerDestroy(&viewer));
         PetscCall(PetscConvEstDestroy(&conv));
         PetscCall(PetscFree(alpha));
         incall = PETSC_FALSE;

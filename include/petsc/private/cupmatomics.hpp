@@ -688,7 +688,7 @@ __device__ static float atomicMax(float *address, float val)
   #endif
 
   #if PETSC_PKG_HIP_VERSION_LT(5, 7, 0)
-__device__ static llint atomicMin(llint *address, llint val)
+__device__ static inline llint atomicMin(llint *address, llint val)
 {
   ullint *address_as_ull = (ullint *)(address);
   ullint  old            = *address_as_ull, assumed;
@@ -699,7 +699,7 @@ __device__ static llint atomicMin(llint *address, llint val)
   return (llint)old;
 }
 
-__device__ static llint atomicMax(llint *address, llint val)
+__device__ static inline llint atomicMax(llint *address, llint val)
 {
   ullint *address_as_ull = (ullint *)(address);
   ullint  old            = *address_as_ull, assumed;

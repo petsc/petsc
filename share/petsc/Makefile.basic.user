@@ -1,11 +1,14 @@
 # -*- mode: makefile -*-
 
-#  This sample Makefile can be used to compile PETSc applications
-#  Copy this file to your source directory as "Makefile" and modify as needed.
+#  This SAMPLE Makefile can be used to compile PETSc applications
+#  Copy this file to your source directory as "Makefile" and MODIFY AS NEEDED.
 #  See also $PETSC_DIR/share/petsc/Makefile.user for the preferred approach
 #  You must set the environmental variable(s) PETSC_DIR (and PETSC_ARCH if PETSc was not configured with the --prefix option)
 #
-#   You can set specific values below but that should be rarely needed
+#  This will use all the compiler flags that PETSc was compiled with, if you do not want the flags use $PETSC_DIR/share/petsc/Makefile.user
+#  and modify it as noted in the comments
+#
+#  You can set specific values below but that should be rarely needed
 CFLAGS   =
 FFLAGS   =
 CPPFLAGS =

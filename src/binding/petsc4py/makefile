@@ -127,11 +127,8 @@ docsclean:
 	-${RM} docs/source/*.inv
 
 website:
-	${RM} -r petsc-doc-env
-	${PYTHON} -m venv petsc-doc-env
-	. petsc-doc-env/bin/activate && env CFLAGS=-O0 python -m pip install .
-	. petsc-doc-env/bin/activate && python -m pip install -r conf/requirements-docs.txt
-	. petsc-doc-env/bin/activate && ${MAKE} sphinx-html SPHINXOPTS=-Wj2
+	env CFLAGS=-O0 python -m pip install .
+	${MAKE} sphinx-html SPHINXOPTS=-Wj2
 	mkdir -p ${LOC}/petsc4py
 	mv docs/html/* ${LOC}/petsc4py
 

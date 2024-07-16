@@ -55,6 +55,13 @@ class BaseTestSNES:
         tnames = ('rtol', 'atol', 'stol', 'max_it')
         tolvals = [getattr(self.snes, t) for t in tnames]
         self.assertEqual(tuple(tols), tuple(tolvals))
+        dtol = self.snes.getDivergenceTolerance()
+        self.assertTrue(dtol > 0)
+        self.snes.setDivergenceTolerance(-1)
+        dtol = self.snes.getDivergenceTolerance()
+        self.assertEqual(dtol, -1)
+        self.snes.setDivergenceTolerance(PETSc.DEFAULT)
+        self.assertEqual(dtol, -1)
 
     def testProperties(self):
         snes = self.snes
@@ -100,6 +107,12 @@ class BaseTestSNES:
         self.assertFalse(snes.use_ew)
         self.assertFalse(snes.use_mf)
         self.assertFalse(snes.use_fd)
+        ouse = snes.use_ksp
+        self.assertEqual(ouse, snes.getUseKSP())
+        snes.use_ksp = not ouse
+        self.assertEqual(not ouse, snes.getUseKSP())
+        snes.setUseKSP(ouse)
+        self.assertEqual(ouse, snes.use_ksp)
 
     def testGetSetFunc(self):
         r, func = self.snes.getFunction()

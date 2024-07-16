@@ -1371,7 +1371,7 @@ static const struct _MatOps MatOps_Values = {MatSetValues_MPISELL,
   You can also run with the option -info and look for messages with the string
   malloc in them to see if additional memory allocation was needed.
 
-.seealso: `Mat`, `MatCreate()`, `MatCreateSeqSELL()`, `MatSetValues()`, `MatCreatesell()`,
+.seealso: `Mat`, `MatCreate()`, `MatCreateSeqSELL()`, `MatSetValues()`, `MatCreateSell()`,
           `MATMPISELL`, `MatGetInfo()`, `PetscSplitOwnership()`, `MATSELL`
 @*/
 PetscErrorCode MatMPISELLSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[])

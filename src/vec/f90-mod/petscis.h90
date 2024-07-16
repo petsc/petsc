@@ -5,6 +5,7 @@
 
       Interface
         Subroutine PetscLayoutGetRangesF90(a,b,z)
+          import tPetscLayout
           PetscLayout a
           PetscInt, pointer :: b(:)
           PetscErrorCode  z

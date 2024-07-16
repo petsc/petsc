@@ -178,7 +178,7 @@ PetscErrorCode MatDisAssemble_MPIBAIJ(Mat A)
         PetscCall(MatSetValuesBlocked_SeqBAIJ(Bnew, 1, &i, 1, &col, atmp, B->insertmode));
       }
     }
-    PetscCall(MatSetOption(Bnew, MAT_ROW_ORIENTED, PETSC_TRUE));
+    PetscCall(MatSetOption(Bnew, MAT_ROW_ORIENTED, Bbaij->roworiented));
 
     PetscCall(PetscFree(nz));
     PetscCall(MatDestroy(&B));

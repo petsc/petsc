@@ -355,10 +355,10 @@ static PetscErrorCode PCApply_Redistribute(PC pc, Vec b, Vec x)
       if (diag[i] == 0.0 && bwork[drows[i]] != 0.0) {
         PetscCheck(!pc->erroriffailure, PETSC_COMM_SELF, PETSC_ERR_CONV_FAILED, "Linear system is inconsistent, zero matrix row but nonzero right-hand side");
         PetscCall(PetscInfo(pc, "Linear system is inconsistent, zero matrix row but nonzero right-hand side\n"));
-        PetscCall(VecSetInf(x));
         pc->failedreasonrank = PC_INCONSISTENT_RHS;
       }
     }
+    PetscCall(VecFlag(x, pc->failedreasonrank == PC_INCONSISTENT_RHS));
   }
   for (i = 0; i < dcnt; i++) xwork[drows[i]] = diag[i] * bwork[drows[i]];
   PetscCall(PetscLogFlops(dcnt));
@@ -405,10 +405,10 @@ static PetscErrorCode PCApplyTranspose_Redistribute(PC pc, Vec b, Vec x)
       if (diag[i] == 0.0 && bwork[drows[i]] != 0.0) {
         PetscCheck(!pc->erroriffailure, PETSC_COMM_SELF, PETSC_ERR_CONV_FAILED, "Linear system is inconsistent, zero matrix row but nonzero right-hand side");
         PetscCall(PetscInfo(pc, "Linear system is inconsistent, zero matrix row but nonzero right-hand side\n"));
-        PetscCall(VecSetInf(x));
         pc->failedreasonrank = PC_INCONSISTENT_RHS;
       }
     }
+    PetscCall(VecFlag(x, pc->failedreasonrank == PC_INCONSISTENT_RHS));
   }
   for (i = 0; i < dcnt; i++) xwork[drows[i]] = diag[i] * bwork[drows[i]];
   PetscCall(PetscLogFlops(dcnt));

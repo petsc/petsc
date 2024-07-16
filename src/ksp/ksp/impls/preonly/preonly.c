@@ -24,9 +24,9 @@ static PetscErrorCode KSPSolve_PREONLY(KSP ksp)
 
   PetscCall(PCReduceFailedReason(ksp->pc));
   PetscCall(PCGetFailedReason(ksp->pc, &pcreason));
+  PetscCall(VecFlag(ksp->vec_sol, pcreason));
   if (pcreason) {
     PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPSolve has not converged with PCFailedReason %s", PCFailedReasons[pcreason]);
-    PetscCall(VecSetInf(ksp->vec_sol));
     ksp->reason = KSP_DIVERGED_PC_FAILED;
   } else {
     ksp->its    = 1;

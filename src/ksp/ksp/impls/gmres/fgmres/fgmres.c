@@ -197,9 +197,9 @@ static PetscErrorCode KSPFGMRESCycle(PetscInt *itcount, KSP ksp)
 
   PetscCall(KSPFGMRESBuildSoln(RS(0), ksp->vec_sol, ksp->vec_sol, ksp, loc_it - 1));
 
-  /*
-     Monitor if we know that we will not return for a restart */
-  if (loc_it && (ksp->reason || ksp->its >= ksp->max_it)) {
+  /*  Monitor if we know that we will not return for a restart */
+  if (ksp->reason == KSP_CONVERGED_ITERATING && ksp->its >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
+  if (loc_it && ksp->reason) {
     PetscCall(KSPMonitor(ksp, ksp->its, res_norm));
     PetscCall(KSPLogResidualHistory(ksp, res_norm));
   }
@@ -227,7 +227,7 @@ static PetscErrorCode KSPSolve_FGMRES(KSP ksp)
     PetscCall(VecCopy(ksp->vec_rhs, VEC_VV(0)));
   }
   /* This may be true only on a subset of MPI ranks; setting it here so it will be detected by the first norm computation in the Krylov method */
-  if (ksp->reason == KSP_DIVERGED_PC_FAILED) PetscCall(VecSetInf(VEC_VV(0)));
+  PetscCall(VecFlag(VEC_VV(0), ksp->reason == KSP_DIVERGED_PC_FAILED));
 
   /* now the residual is in VEC_VV(0) - which is what
      KSPFGMRESCycle expects... */

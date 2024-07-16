@@ -466,11 +466,11 @@ PetscErrorCode MatSchurComplementGetSubMatrices(Mat S, Mat *A00, Mat *Ap00, Mat 
 
   Level: advanced
 
-.seealso: [](ch_ksp), `MatCreateSchurComplement()`, `MatSchurComplementUpdate()`, `MatSchurComplementGetPmat()`
+.seealso: [](ch_ksp), `MatCreateSchurComplement()`, `MatSchurComplementUpdateSubMatrices()`, `MatSchurComplementGetPmat()`
 @*/
 PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat A, Mat *S)
 {
-  Mat       B, C, D, E = NULL, Bd, AinvBd;
+  Mat       B, C, D, E = NULL, Bd, AinvBd, sub = NULL;
   KSP       ksp;
   PetscInt  n, N, m, M;
   PetscBool flg = PETSC_FALSE, set, symm;
@@ -479,18 +479,55 @@ PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat A, Mat *S)
   PetscCall(MatSchurComplementGetSubMatrices(A, NULL, NULL, &B, &C, &D));
   PetscCall(MatSchurComplementGetKSP(A, &ksp));
   PetscCall(KSPSetUp(ksp));
-  PetscCall(MatConvert(B, MATDENSE, MAT_INITIAL_MATRIX, &Bd));
-  PetscCall(MatDuplicate(Bd, MAT_DO_NOT_COPY_VALUES, &AinvBd));
+  PetscCall(PetscObjectQuery((PetscObject)A, "AinvB", (PetscObject *)&AinvBd));
+  set = (PetscBool)(AinvBd != NULL);
+  if (set) {
+    if (AinvBd->cmap->N == -1) PetscFunctionReturn(PETSC_SUCCESS); // early bail out if composed Mat is uninitialized
+    else {
+      PetscCheck(AinvBd->cmap->N >= A->cmap->N, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_SIZ, "Composed Mat should have at least as many columns as the Schur complement (%" PetscInt_FMT " >= %" PetscInt_FMT ")", AinvBd->cmap->N, A->cmap->N);
+      if (AinvBd->cmap->N > A->cmap->N) {
+        Mat s[2];
+
+        PetscCall(MatDuplicate(AinvBd, MAT_DO_NOT_COPY_VALUES, &Bd));
+        PetscCall(MatDenseGetSubMatrix(Bd, PETSC_DECIDE, PETSC_DECIDE, A->cmap->N, AinvBd->cmap->N, s));
+        PetscCall(MatDenseGetSubMatrix(AinvBd, PETSC_DECIDE, PETSC_DECIDE, A->cmap->N, AinvBd->cmap->N, s + 1));
+        PetscCall(MatCopy(s[1], s[0], SAME_NONZERO_PATTERN)); // copy the last columns of the composed Mat, which are likely the input columns of PCApply_FieldSplit_Schur()
+        PetscCall(MatDenseRestoreSubMatrix(AinvBd, s + 1));
+        PetscCall(MatDenseRestoreSubMatrix(Bd, s));
+        PetscCall(MatDenseGetSubMatrix(Bd, PETSC_DECIDE, PETSC_DECIDE, 0, A->cmap->N, &sub));
+        PetscCall(MatConvert(B, MATDENSE, MAT_REUSE_MATRIX, &sub)); // copy A01 into the first columns of the block of RHS of KSPMatSolve()
+        PetscCall(MatDenseRestoreSubMatrix(Bd, &sub));
+      } else PetscCall(MatConvert(B, MATDENSE, MAT_INITIAL_MATRIX, &Bd));
+    }
+  } else {
+    PetscCall(MatConvert(B, MATDENSE, MAT_INITIAL_MATRIX, &Bd));
+    PetscCall(MatDuplicate(Bd, MAT_DO_NOT_COPY_VALUES, &AinvBd));
+  }
   PetscCall(KSPMatSolve(ksp, Bd, AinvBd));
+  if (set && AinvBd->cmap->N > A->cmap->N) {
+    Mat          AinvB;
+    PetscScalar *v;
+
+    PetscCall(MatDenseGetArrayWrite(AinvBd, &v)); // no easy way to resize a Mat, so create a new one with the same data pointer
+    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)A), AinvBd->rmap->n, A->cmap->n, AinvBd->rmap->N, A->cmap->N, v, &AinvB));
+    PetscCall(MatDenseReplaceArray(AinvB, v)); // let MatDestroy() free the data pointer
+    PetscCall(MatDenseRestoreArrayWrite(AinvBd, &v));
+    PetscCall(MatHeaderReplace(AinvBd, &AinvB)); // replace the input composed Mat with just A00^-1 A01 (trailing columns are removed)
+  }
   PetscCall(MatDestroy(&Bd));
-  PetscCall(MatFilter(AinvBd, PETSC_SMALL, PETSC_FALSE, PETSC_FALSE));
+  if (!set) PetscCall(MatFilter(AinvBd, PETSC_SMALL, PETSC_FALSE, PETSC_FALSE));
   if (D) {
     PetscCall(MatGetLocalSize(D, &m, &n));
     PetscCall(MatGetSize(D, &M, &N));
     PetscCall(MatCreateDense(PetscObjectComm((PetscObject)A), m, n, M, N, NULL, S));
   }
   PetscCall(MatMatMult(C, AinvBd, D ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX, PETSC_DEFAULT, S));
-  PetscCall(MatDestroy(&AinvBd));
+  if (!set) PetscCall(MatDestroy(&AinvBd));
+  else {
+    PetscCall(MatScale(AinvBd, -1.0));
+    PetscCall(MatFilter(AinvBd, PETSC_MACHINE_EPSILON, PETSC_FALSE, PETSC_FALSE));
+    PetscCall(MatFilter(*S, PETSC_MACHINE_EPSILON, PETSC_FALSE, PETSC_FALSE));
+  }
   if (D) {
     PetscCall(PetscObjectTypeCompareAny((PetscObject)D, &flg, MATSEQSBAIJ, MATMPISBAIJ, ""));
     if (flg) {

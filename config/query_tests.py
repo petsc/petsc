@@ -9,15 +9,19 @@ import re
 import sys
 
 thisfile = os.path.abspath(inspect.getfile(inspect.currentframe()))
-pdir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(thisfile)))))
-sys.path.insert(0, os.path.join(pdir, 'config'))
+petscdir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(thisfile)))))
+sys.path.insert(0, os.path.join(petscdir, 'config'))
 
 import testparse
 from gmakegentest import nameSpace
 
 
 """
-  Tool for querying the tests.
+   This is used by gmakefile.test for the following searches
+
+  - make test search=X (or s=X)
+  - make test query=X (or q=X) queryval=Y (or qv=Y)
+
 
   Which tests to query?  Two options:
       1. Query only the tests that are run for a given configuration.
@@ -51,7 +55,7 @@ def pathToLabel(path):
   needs to convey the srcdir and srcfile.  There are two ways of doing this.
   """
   # Strip off any top-level directories or spaces
-  path=path.strip().replace(pdir,'')
+  path=path.strip().replace(petscdir,'')
   path=path.replace('src/','')
   if isFile(path):
     prefix=os.path.dirname(path).replace("/","_")
@@ -90,7 +94,7 @@ def get_value(varset):
 def query(invDict,fields,labels):
     """
     Search the keys using fnmatch to find matching names and return list with
-    the results 
+    the results
     """
     setlist=[]  # setlist is a list of lists that set operations will operate on
     llist=labels.replace('|',',').split(',')
@@ -99,7 +103,7 @@ def query(invDict,fields,labels):
         i+=1
         label=llist[i]
         if field == 'name':
-            if '/' in label: 
+            if '/' in label:
               label=pathToLabel(label)
             elif label.startswith('src'):
                   label=label.lstrip('src').lstrip('*')
@@ -173,7 +177,7 @@ def get_inverse_dictionary(dataDict,fields,srcdir):
                     else:
                         invDict[field][val] = [fname]
               else:
-                # Args are funky.  
+                # Args are funky.
                 for varset in re.split(r'(^|\W)-(?=[a-zA-Z])',values):
                   val=get_value(varset)
                   if not val: continue
@@ -286,6 +290,7 @@ def expand_path_like(petscdir,petscarch,pathlike):
         if petscarch == '':
             pathlike = pathlike.replace(os.path.sep.join(('share','petsc','examples'))+'/','')
         pathlike += suffix
+    pathlike = pathlike.replace('diff-','')
     return pathlike
 
 def main():
@@ -302,7 +307,7 @@ def main():
     parser.add_option('--srcdir', dest='srcdir',
                       help='Set location of sources different from PETSC_DIR/src.  Must be full path.',
                       default='src')
-    parser.add_option('-t', '--testdir', dest='testdir',  
+    parser.add_option('-t', '--testdir', dest='testdir',
                       help='Test directory if not PETSC_ARCH/tests.  Must be full path',
                       default='tests')
     parser.add_option('-u', '--use-source', action="store_false",
@@ -366,7 +371,7 @@ def main():
 
     # Process arguments and options -- mostly just paths here
     field=alternate_command_preprocess(shell_unquote(args[0]))
-    match=alternate_command_preprocess(shell_unquote(args[1]))
+    labels=alternate_command_preprocess(shell_unquote(args[1]))
     searchin=opts.searchin
 
     petsc_dir = opts.petsc_dir
@@ -406,14 +411,13 @@ def main():
             print("Source directory must be a directory"+petsc_full_src)
             return
 
-    match = expand_path_like(petsc_dir,petsc_arch,match)
+    labels = expand_path_like(petsc_dir,petsc_arch,labels)
 
     # Do the actual query
     do_query(opts.use_source, startdir, petsc_full_src, petsc_full_test,
-             petsc_dir, petsc_arch, field, match, searchin)
+             petsc_dir, petsc_arch, field, labels, searchin)
 
     return
-
 
 if __name__ == "__main__":
         main()
