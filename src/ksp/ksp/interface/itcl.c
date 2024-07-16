@@ -236,7 +236,7 @@ static PetscErrorCode PetscViewerAndFormatCreate_Internal(PetscViewer viewer, Pe
 
   Level: developer
 
-.seealso: [](ch_ksp), `KSPMonitorRegister()`, `KSPMonitorSet()`, `PetscOptionsGetViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
+.seealso: [](ch_ksp), `KSPMonitorRegister()`, `KSPMonitorSet()`, `PetscOptionsCreateViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
           `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`,
           `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
@@ -260,7 +260,7 @@ PetscErrorCode KSPMonitorSetFromOptions(KSP ksp, const char opt[], const char na
   PetscFunctionBegin;
   PetscCall(PetscStrcmp(opt, "-all_ksp_monitor", &all));
   if (!all) PetscCall(PetscObjectGetOptionsPrefix((PetscObject)ksp, &prefix));
-  PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp), ((PetscObject)ksp)->options, prefix, opt, &viewer, &format, &flg));
+  PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)ksp), ((PetscObject)ksp)->options, prefix, opt, &viewer, &format, &flg));
   if (!flg) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscViewerGetType(viewer, &vtype));
@@ -272,7 +272,7 @@ PetscErrorCode KSPMonitorSetFromOptions(KSP ksp, const char opt[], const char na
   if (!dfunc) dfunc = PetscViewerAndFormatDestroy;
 
   PetscCall((*cfunc)(viewer, format, ctx, &vf));
-  PetscCall(PetscOptionsRestoreViewer(&viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
   PetscCall(KSPMonitorSet(ksp, mfunc, vf, (PetscErrorCode(*)(void **))dfunc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -390,18 +390,20 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
     PetscCall(PetscOptionsBool("-ksp_reuse_preconditioner", "Use initial preconditioner and don't ever compute a new one", "KSPReusePreconditioner", reuse, &reuse, NULL));
     PetscCall(KSPSetReusePreconditioner(ksp, reuse));
     PetscCall(PetscOptionsBool("-ksp_error_if_not_converged", "Generate error if solver does not converge", "KSPSetErrorIfNotConverged", ksp->errorifnotconverged, &ksp->errorifnotconverged, NULL));
-    PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view", &ksp->viewer, &ksp->format, &ksp->view));
+    PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view", &ksp->viewer, &ksp->format, &ksp->view));
+    PetscCall(PetscViewerDestroy(&ksp->convergedreasonviewer));
+    PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, ((PetscObject)ksp)->prefix, "-ksp_converged_reason", &ksp->convergedreasonviewer, &ksp->convergedreasonformat, NULL));
     flg = PETSC_FALSE;
     PetscCall(PetscOptionsBool("-ksp_converged_reason_view_cancel", "Cancel all the converged reason view functions set using KSPConvergedReasonViewSet", "KSPConvergedReasonViewCancel", PETSC_FALSE, &flg, &set));
     if (set && flg) PetscCall(KSPConvergedReasonViewCancel(ksp));
-    PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_mat", &ksp->viewerMat, &ksp->formatMat, &ksp->viewMat));
-    PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_pmat", &ksp->viewerPMat, &ksp->formatPMat, &ksp->viewPMat));
-    PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_rhs", &ksp->viewerRhs, &ksp->formatRhs, &ksp->viewRhs));
-    PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_solution", &ksp->viewerSol, &ksp->formatSol, &ksp->viewSol));
-    PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_mat_explicit", &ksp->viewerMatExp, &ksp->formatMatExp, &ksp->viewMatExp));
-    PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_final_residual", &ksp->viewerFinalRes, &ksp->formatFinalRes, &ksp->viewFinalRes));
-    PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_preconditioned_operator_explicit", &ksp->viewerPOpExp, &ksp->formatPOpExp, &ksp->viewPOpExp));
-    PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_diagonal_scale", &ksp->viewerDScale, &ksp->formatDScale, &ksp->viewDScale));
+    PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_mat", &ksp->viewerMat, &ksp->formatMat, &ksp->viewMat));
+    PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_pmat", &ksp->viewerPMat, &ksp->formatPMat, &ksp->viewPMat));
+    PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_rhs", &ksp->viewerRhs, &ksp->formatRhs, &ksp->viewRhs));
+    PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_solution", &ksp->viewerSol, &ksp->formatSol, &ksp->viewSol));
+    PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_mat_explicit", &ksp->viewerMatExp, &ksp->formatMatExp, &ksp->viewMatExp));
+    PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_final_residual", &ksp->viewerFinalRes, &ksp->formatFinalRes, &ksp->viewFinalRes));
+    PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_preconditioned_operator_explicit", &ksp->viewerPOpExp, &ksp->formatPOpExp, &ksp->viewPOpExp));
+    PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_diagonal_scale", &ksp->viewerDScale, &ksp->formatDScale, &ksp->viewDScale));
 
     PetscCall(KSPGetDiagonalScale(ksp, &flag));
     PetscCall(PetscOptionsBool("-ksp_diagonal_scale", "Diagonal scale matrix before building preconditioner", "KSPSetDiagonalScale", flag, &flag, &flg));
@@ -542,28 +544,30 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
     if (rtype == (PetscEnum)0 || rtype == (PetscEnum)1) PetscCall(KSPSetResidualHistory(ksp, NULL, PETSC_DETERMINE, PETSC_TRUE));
     if (rtype == (PetscEnum)0 || rtype == (PetscEnum)2) PetscCall(KSPSetErrorHistory(ksp, NULL, PETSC_DETERMINE, PETSC_TRUE));
   }
-  PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view", &ksp->viewer, &ksp->format, &ksp->view));
-  PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_pre", &ksp->viewerPre, &ksp->formatPre, &ksp->viewPre));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view", &ksp->viewer, &ksp->format, &ksp->view));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_pre", &ksp->viewerPre, &ksp->formatPre, &ksp->viewPre));
 
+  PetscCall(PetscViewerDestroy(&ksp->convergedreasonviewer));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, ((PetscObject)ksp)->prefix, "-ksp_converged_reason", &ksp->convergedreasonviewer, &ksp->convergedreasonformat, NULL));
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-ksp_converged_reason_view_cancel", "Cancel all the converged reason view functions set using KSPConvergedReasonViewSet", "KSPConvergedReasonViewCancel", PETSC_FALSE, &flg, &set));
   if (set && flg) PetscCall(KSPConvergedReasonViewCancel(ksp));
-  PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_converged_rate", &ksp->viewerRate, &ksp->formatRate, &ksp->viewRate));
-  PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_mat", &ksp->viewerMat, &ksp->formatMat, &ksp->viewMat));
-  PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_pmat", &ksp->viewerPMat, &ksp->formatPMat, &ksp->viewPMat));
-  PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_rhs", &ksp->viewerRhs, &ksp->formatRhs, &ksp->viewRhs));
-  PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_solution", &ksp->viewerSol, &ksp->formatSol, &ksp->viewSol));
-  PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_mat_explicit", &ksp->viewerMatExp, &ksp->formatMatExp, &ksp->viewMatExp));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_converged_rate", &ksp->viewerRate, &ksp->formatRate, &ksp->viewRate));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_mat", &ksp->viewerMat, &ksp->formatMat, &ksp->viewMat));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_pmat", &ksp->viewerPMat, &ksp->formatPMat, &ksp->viewPMat));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_rhs", &ksp->viewerRhs, &ksp->formatRhs, &ksp->viewRhs));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_solution", &ksp->viewerSol, &ksp->formatSol, &ksp->viewSol));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_mat_explicit", &ksp->viewerMatExp, &ksp->formatMatExp, &ksp->viewMatExp));
   PetscCall(PetscOptionsDeprecated("-ksp_compute_eigenvalues", "-ksp_view_eigenvalues", "3.9", NULL));
-  PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_eigenvalues", &ksp->viewerEV, &ksp->formatEV, &ksp->viewEV));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_eigenvalues", &ksp->viewerEV, &ksp->formatEV, &ksp->viewEV));
   PetscCall(PetscOptionsDeprecated("-ksp_compute_singularvalues", "-ksp_view_singularvalues", "3.9", NULL));
-  PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_singularvalues", &ksp->viewerSV, &ksp->formatSV, &ksp->viewSV));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_singularvalues", &ksp->viewerSV, &ksp->formatSV, &ksp->viewSV));
   PetscCall(PetscOptionsDeprecated("-ksp_compute_eigenvalues_explicitly", "-ksp_view_eigenvalues_explicit", "3.9", NULL));
-  PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_eigenvalues_explicit", &ksp->viewerEVExp, &ksp->formatEVExp, &ksp->viewEVExp));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_eigenvalues_explicit", &ksp->viewerEVExp, &ksp->formatEVExp, &ksp->viewEVExp));
   PetscCall(PetscOptionsDeprecated("-ksp_final_residual", "-ksp_view_final_residual", "3.9", NULL));
-  PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_final_residual", &ksp->viewerFinalRes, &ksp->formatFinalRes, &ksp->viewFinalRes));
-  PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_preconditioned_operator_explicit", &ksp->viewerPOpExp, &ksp->formatPOpExp, &ksp->viewPOpExp));
-  PetscCall(PetscOptionsGetViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_diagonal_scale", &ksp->viewerDScale, &ksp->formatDScale, &ksp->viewDScale));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_final_residual", &ksp->viewerFinalRes, &ksp->formatFinalRes, &ksp->viewFinalRes));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_preconditioned_operator_explicit", &ksp->viewerPOpExp, &ksp->formatPOpExp, &ksp->viewPOpExp));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_diagonal_scale", &ksp->viewerDScale, &ksp->formatDScale, &ksp->viewDScale));
 
   /* Deprecated options */
   if (!ksp->viewEV) {

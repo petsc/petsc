@@ -1446,9 +1446,9 @@ static PetscErrorCode MatSolve_MUMPS(Mat A, Vec b, Vec x)
                                    "Computing},\n  volume = {32},\n  number = {2},\n  pages = {136--156},\n  year = {2006}\n}\n",
                                    &cite2));
 
+  PetscCall(VecFlag(x, A->factorerrortype));
   if (A->factorerrortype) {
     PetscCall(PetscInfo(A, "MatSolve is called with singular matrix factor, INFOG(1)=%d, INFO(2)=%d\n", mumps->id.INFOG(1), mumps->id.INFO(2)));
-    PetscCall(VecSetInf(x));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -2298,6 +2298,7 @@ static PetscErrorCode MatFactorSymbolic_MUMPS_ReportIfError(Mat F, Mat A, PETSC_
       F->factorerrortype = MAT_FACTOR_OTHER;
     }
   }
+  if (!mumps->id.n) F->factorerrortype = MAT_FACTOR_NOERROR;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3735,7 +3736,7 @@ static PetscErrorCode MatGetFactor_nest_mumps(Mat A, MatFactorType ftype, Mat *F
           flg = PETSC_FALSE;
         }
       } else if (!isSeqAIJ && !isMPIAIJ && !isSeqBAIJ && !isMPIBAIJ && !isDiag && !isDense) {
-        PetscCall(PetscInfo(sub, "MAT_LU_FACTOR not supported for block of type %s.\n", ((PetscObject)sub)->type_name));
+        PetscCall(PetscInfo(sub, "MAT_FACTOR_LU not supported for block of type %s.\n", ((PetscObject)sub)->type_name));
         flg = PETSC_FALSE;
       }
     }

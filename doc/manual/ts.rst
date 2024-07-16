@@ -338,6 +338,9 @@ identity matrix:
 -  a DAE is being solved.
 
 An IMEX problem representation can be made implicit by setting ``TSARKIMEXSetFullyImplicit()``.
+Note that multilevel preconditioners (e.g. ``PCMG``), won't work in the fully implicit case; the
+same holds true for any other ``TS`` type requiring a fully implicit formulation in case both
+Jacobians are specified.
 
 In PETSc, DAEs and ODEs are formulated as :math:`F(t,u,\dot{u})=G(t,u)`, where :math:`F()` is meant to be integrated implicitly and :math:`G()` explicitly. An IMEX formulation such as :math:`M\dot{u}=f(t,u)+g(t,u)` requires the user to provide :math:`M^{-1} g(t,u)` or solve :math:`g(t,u) - M x=0` in place of :math:`G(t,u)`. General cases such as :math:`F(t,u,\dot{u})=G(t,u)` are not amenable to IMEX Runge-Kutta, but can be solved by using fully implicit methods. Some use-case examples for ``TSARKIMEX`` are listed in :numref:`tab_DE_forms` and a list of methods with a summary of their properties is given in :any:`tab_IMEX_RK_PETSc`.
 

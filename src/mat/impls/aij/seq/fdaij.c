@@ -175,7 +175,7 @@ PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat mat, MatFDColoring c, P
 
 PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat, ISColoring iscoloring, MatFDColoring c)
 {
-  PetscInt           i, n, nrows, mbs = c->m, j, k, m, ncols, col, nis = iscoloring->n, *rowhit, bs, bs2, *spidx, nz, tmp;
+  PetscInt           i, n, nrows, mbs = c->m, j, k, m, ncols, col, nis = iscoloring->n, *rowhit, bs, bs2, *spidx, nz, tmp, nnz;
   const PetscInt    *is, *row, *ci, *cj;
   PetscBool          isBAIJ, isSELL;
   const PetscScalar *A_val;
@@ -207,7 +207,6 @@ PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat, ISColoring iscoloring, MatFDC
     nz    = spA->nz;
     bs    = 1; /* only bs=1 is supported for SeqAIJ matrix */
   }
-
   PetscCall(PetscMalloc2(nis, &c->ncolumns, nis, &c->columns));
   PetscCall(PetscMalloc1(nis, &c->nrows)); /* nrows is freed separately from ncolumns and columns */
 
@@ -230,7 +229,7 @@ PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat, ISColoring iscoloring, MatFDC
   PetscCall(PetscCalloc1(c->m, &rowhit));
   PetscCall(PetscMalloc1(c->m, &valaddrhit));
 
-  nz = 0;
+  nnz = 0;
   for (i = 0; i < nis; i++) { /* loop over colors */
     PetscCall(ISGetLocalSize(c->isa[i], &n));
     PetscCall(ISGetIndices(c->isa[i], &is));
@@ -250,6 +249,7 @@ PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat, ISColoring iscoloring, MatFDC
       m   = ci[col + 1] - tmp;
       nrows += m;
       for (k = 0; k < m; k++) { /* loop over columns marking them in rowhit */
+        PetscAssert(!rowhit[*row], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect coloring, row %" PetscInt_FMT " shared by multiple columns including column %" PetscInt_FMT " of color %" PetscInt_FMT, col, *row, i);
         rowhit[*row]       = col + 1;
         valaddrhit[*row++] = (PetscScalar *)&A_val[bs2 * spidx[tmp + k]];
       }
@@ -259,25 +259,25 @@ PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat, ISColoring iscoloring, MatFDC
     if (c->htype[0] == 'd') {
       for (j = 0; j < mbs; j++) { /* loop over rows */
         if (rowhit[j]) {
-          Jentry[nz].row     = j;             /* local row index */
-          Jentry[nz].col     = rowhit[j] - 1; /* local column index */
-          Jentry[nz].valaddr = valaddrhit[j]; /* address of mat value for this entry */
-          nz++;
+          Jentry[nnz].row     = j;             /* local row index */
+          Jentry[nnz].col     = rowhit[j] - 1; /* local column index */
+          Jentry[nnz].valaddr = valaddrhit[j]; /* address of mat value for this entry */
+          nnz++;
           rowhit[j] = 0.0; /* zero rowhit for reuse */
         }
       }
     } else {                      /* c->htype == 'wp' */
       for (j = 0; j < mbs; j++) { /* loop over rows */
         if (rowhit[j]) {
-          Jentry2[nz].row     = j;             /* local row index */
-          Jentry2[nz].valaddr = valaddrhit[j]; /* address of mat value for this entry */
-          nz++;
+          Jentry2[nnz].row     = j;             /* local row index */
+          Jentry2[nnz].valaddr = valaddrhit[j]; /* address of mat value for this entry */
+          nnz++;
           rowhit[j] = 0.0; /* zero rowhit for reuse */
         }
       }
     }
   }
-
+  PetscCheck(nnz == nz, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect coloring of matrix");
   if (c->bcols > 1) { /* reorder Jentry for faster MatFDColoringApply() */
     PetscCall(MatFDColoringSetUpBlocked_AIJ_Private(mat, c, nz));
   }

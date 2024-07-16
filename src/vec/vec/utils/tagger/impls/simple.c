@@ -66,7 +66,12 @@ PetscErrorCode VecTaggerView_Simple(VecTagger tagger, PetscViewer viewer)
 #if !defined(PETSC_USE_COMPLEX)
       PetscCall(PetscViewerASCIIPrintf(viewer, "%g,%g", (double)smpl->box[i].min, (double)smpl->box[i].max));
 #else
-      PetscCall(PetscViewerASCIIPrintf(viewer, "%g+%gi,%g+%gi", (double)PetscRealPart(smpl->box[i].min), (double)PetscImaginaryPart(smpl->box[i].min), (double)PetscRealPart(smpl->box[i].max), (double)PetscImaginaryPart(smpl->box[i].max)));
+      // If the imaginary parts coincide, this is intended to be a real interval
+      if (PetscImaginaryPart(smpl->box[i].min) == PetscImaginaryPart(smpl->box[i].max)) {
+        PetscCall(PetscViewerASCIIPrintf(viewer, "%g,%g", (double)PetscRealPart(smpl->box[i].min), (double)PetscRealPart(smpl->box[i].max)));
+      } else {
+        PetscCall(PetscViewerASCIIPrintf(viewer, "%g+%gi,%g+%gi", (double)PetscRealPart(smpl->box[i].min), (double)PetscImaginaryPart(smpl->box[i].min), (double)PetscRealPart(smpl->box[i].max), (double)PetscImaginaryPart(smpl->box[i].max)));
+      }
 #endif
     }
     PetscCall(PetscViewerASCIIPrintf(viewer, "]\n"));

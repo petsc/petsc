@@ -158,10 +158,10 @@ PetscErrorCode VecCopy_Seq(Vec xin, Vec yin)
     PetscScalar       *ya;
 
     PetscCall(VecGetArrayRead(xin, &xa));
-    PetscCall(VecGetArray(yin, &ya));
+    PetscCall(VecGetArrayWrite(yin, &ya));
     PetscCall(PetscArraycpy(ya, xa, xin->map->n));
     PetscCall(VecRestoreArrayRead(xin, &xa));
-    PetscCall(VecRestoreArray(yin, &ya));
+    PetscCall(VecRestoreArrayWrite(yin, &ya));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

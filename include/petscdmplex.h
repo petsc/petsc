@@ -393,6 +393,8 @@ PETSC_EXTERN PetscErrorCode DMPlexSetActivePoint(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexComputeL2DiffLocal(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **, Vec, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeL2FieldDiff(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **, Vec, PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMPlexComputeL2DiffVec(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **, Vec, Vec);
+PETSC_EXTERN PetscErrorCode DMPlexComputeL2FluxDiffVecLocal(Vec, PetscInt, Vec, PetscInt, Vec);
+PETSC_EXTERN PetscErrorCode DMPlexComputeL2FluxDiffVec(Vec, PetscInt, Vec, PetscInt, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexComputeCellwiseIntegralFEM(DM, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeIntegralFEM(DM, Vec, PetscScalar *, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeBdIntegral(DM, Vec, DMLabel, PetscInt, const PetscInt[], void (**)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscScalar *, void *);

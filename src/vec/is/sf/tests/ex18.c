@@ -33,7 +33,7 @@ static PetscErrorCode GetOptions(MPI_Comm comm, AppCtx *ctx)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-irregular", &ctx->irregular, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-compare_to_reference", &ctx->compare, NULL));
   PetscCall(PetscOptionsGetEnum(NULL, NULL, "-root_mode", PetscSFConcatenateRootModes, (PetscEnum *)&ctx->rootMode, NULL));
-  PetscCall(PetscOptionsGetViewer(comm, NULL, NULL, "-sf_view", &ctx->viewer, &format, NULL));
+  PetscCall(PetscOptionsCreateViewer(comm, NULL, NULL, "-sf_view", &ctx->viewer, &format, NULL));
   if (ctx->viewer) PetscCall(PetscViewerPushFormat(ctx->viewer, format));
   ctx->sparseLeaves = (PetscBool)(ctx->leaveStep != 1);
   PetscCallMPI(MPI_Comm_size(comm, &ctx->size));
@@ -343,7 +343,7 @@ int main(int argc, char **argv)
   PetscCall(PetscSFDestroy(&sf));
   if (ctx->viewer) {
     PetscCall(PetscViewerPopFormat(ctx->viewer));
-    PetscCall(PetscOptionsRestoreViewer(&ctx->viewer));
+    PetscCall(PetscViewerDestroy(&ctx->viewer));
   }
   PetscCall(PetscFinalize());
   return 0;

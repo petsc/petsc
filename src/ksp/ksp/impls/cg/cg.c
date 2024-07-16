@@ -62,6 +62,15 @@ static PetscErrorCode KSPCGSetRadius_CG(KSP ksp, PetscReal radius)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode KSPCGGetObjFcn_CG(KSP ksp, PetscReal *obj)
+{
+  KSP_CG *cg = (KSP_CG *)ksp->data;
+
+  PetscFunctionBegin;
+  *obj = cg->obj;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
      KSPSetUp_CG - Sets up the workspace needed by the CG method.
 
@@ -154,7 +163,7 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
     norm_d = 0.0;
   }
   /* This may be true only on a subset of MPI ranks; setting it here so it will be detected by the first norm computation below */
-  if (ksp->reason == KSP_DIVERGED_PC_FAILED) PetscCall(VecSetInf(R));
+  PetscCall(VecFlag(R, ksp->reason == KSP_DIVERGED_PC_FAILED));
 
   switch (ksp->normtype) {
   case KSP_NORM_PRECONDITIONED:
@@ -541,6 +550,7 @@ PetscErrorCode KSPDestroy_CG(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetRadius_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGUseSingleReduction_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetObjFcn_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -614,8 +624,10 @@ static PetscErrorCode KSPCGUseSingleReduction_CG(KSP ksp, PetscBool flg)
   cg->singlereduction = flg;
   if (cg->singlereduction) {
     ksp->ops->solve = KSPSolve_CG_SingleReduction;
+    PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetObjFcn_C", NULL));
   } else {
     ksp->ops->solve = KSPSolve_CG;
+    PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetObjFcn_C", KSPCGGetObjFcn_CG));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -710,5 +722,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CG(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGUseSingleReduction_C", KSPCGUseSingleReduction_CG));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetRadius_C", KSPCGSetRadius_CG));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetObjectiveTarget_C", KSPCGSetObjectiveTarget_CG));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetObjFcn_C", KSPCGGetObjFcn_CG));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

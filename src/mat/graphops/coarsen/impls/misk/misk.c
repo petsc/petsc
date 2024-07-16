@@ -382,7 +382,7 @@ static PetscErrorCode MatCoarsenView_MISK(MatCoarsen coarse, PetscViewer viewer)
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)coarse), &rank));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   PetscCall(PetscViewerGetFormat(viewer, &format));
-  if (iascii && format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+  if (iascii && format == PETSC_VIEWER_ASCII_INFO_DETAIL && coarse->agg_lists) {
     PetscCall(PetscViewerASCIIPushSynchronized(viewer));
     PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  [%d] MISK aggregator\n", rank));
     if (!rank) PetscCall(PetscCoarsenDataView_private(coarse->agg_lists, viewer));
@@ -446,7 +446,7 @@ PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MISK(MatCoarsen coarse)
   Note:
   When the coarsening is used inside `PCGAMG` then the options database key is `-pc_gamg_mat_coarsen_misk_distance`
 
-.seealso: `MATCOARSENMISK`, `MatCoarsen`, `MatCoarseSetFromOptions()`, `MatCoarsenSetType()`, `MatCoarsenRegister()`, `MatCoarsenCreate()`,
+.seealso: `MATCOARSENMISK`, `MatCoarsen`, `MatCoarsenSetFromOptions()`, `MatCoarsenSetType()`, `MatCoarsenRegister()`, `MatCoarsenCreate()`,
           `MatCoarsenDestroy()`, `MatCoarsenSetAdjacency()`, `MatCoarsenMISKGetDistance()`
           `MatCoarsenGetData()`
 @*/
@@ -470,7 +470,7 @@ PetscErrorCode MatCoarsenMISKSetDistance(MatCoarsen crs, PetscInt k)
 
   Level: advanced
 
-.seealso: `MATCOARSENMISK`, `MatCoarsen`, `MatCoarseSetFromOptions()`, `MatCoarsenSetType()`,
+.seealso: `MATCOARSENMISK`, `MatCoarsen`, `MatCoarsenSetFromOptions()`, `MatCoarsenSetType()`,
 `MatCoarsenRegister()`, `MatCoarsenCreate()`, `MatCoarsenDestroy()`,
 `MatCoarsenSetAdjacency()`, `MatCoarsenGetData()`
 @*/

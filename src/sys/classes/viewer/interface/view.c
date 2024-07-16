@@ -133,7 +133,7 @@ PetscErrorCode PetscViewerDestroy(PetscViewer *viewer)
 PetscErrorCode PetscViewerAndFormatCreate(PetscViewer viewer, PetscViewerFormat format, PetscViewerAndFormat **vf)
 {
   PetscFunctionBegin;
-  if (!((PetscObject)viewer)->persistent) PetscCall(PetscObjectReference((PetscObject)viewer));
+  PetscCall(PetscObjectReference((PetscObject)viewer));
   PetscCall(PetscNew(vf));
   (*vf)->viewer = viewer;
   (*vf)->format = format;
@@ -158,7 +158,7 @@ PetscErrorCode PetscViewerAndFormatCreate(PetscViewer viewer, PetscViewerFormat 
 PetscErrorCode PetscViewerAndFormatDestroy(PetscViewerAndFormat **vf)
 {
   PetscFunctionBegin;
-  if (!((PetscObject)((*vf)->viewer))->persistent) PetscCall(PetscViewerDestroy(&(*vf)->viewer));
+  PetscCall(PetscViewerDestroy(&(*vf)->viewer));
   PetscCall(PetscDrawLGDestroy(&(*vf)->lg));
   PetscCall(PetscFree(*vf));
   PetscFunctionReturn(PETSC_SUCCESS);

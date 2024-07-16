@@ -559,7 +559,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
       PetscCall(PetscLogTraceBegin(file));
     }
 
-    PetscCall(PetscOptionsGetViewers(comm, NULL, NULL, "-log_view", &n_max, NULL, format, NULL));
+    PetscCall(PetscOptionsCreateViewers(comm, NULL, NULL, "-log_view", &n_max, NULL, format, NULL));
     if (n_max > 0) {
       PetscBool any_nested  = PETSC_FALSE;
       PetscBool any_default = PETSC_FALSE;

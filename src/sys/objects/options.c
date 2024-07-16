@@ -124,7 +124,6 @@ PETSC_INTERN PetscErrorCode PetscOptionsInsertStringYAML_Private(PetscOptions, c
 static PetscErrorCode PetscOptionsMonitor(PetscOptions options, const char name[], const char value[], PetscOptionSource source)
 {
   PetscFunctionBegin;
-  if (!value) value = "";
   if (options->monitorFromOptions) PetscCall(PetscOptionsMonitorDefault(name, value, source, NULL));
   for (PetscInt i = 0; i < options->numbermonitors; i++) PetscCall((*options->monitor[i])(name, value, source, options->monitorcontext[i]));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1126,6 +1125,9 @@ PetscErrorCode PetscOptionsPrefixPop(PetscOptions options)
   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
   on different ranks.
 
+  Developer Note:
+  Uses `free()` directly because the current option values were set with `malloc()`
+
 .seealso: `PetscOptionsInsert()`
 @*/
 PetscErrorCode PetscOptionsClear(PetscOptions options)
@@ -1190,7 +1192,10 @@ PetscErrorCode PetscOptionsClear(PetscOptions options)
   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
   on different ranks.
 
-.seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`, `OptionsHasName()`,
+  Developer Note:
+  Uses `malloc()` directly because PETSc may not be initialized yet.
+
+.seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`,
           `PetscOptionsGetString()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
           `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
           `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
@@ -1259,8 +1264,8 @@ PetscErrorCode PetscOptionsSetAlias(PetscOptions options, const char newname[], 
   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
   on different ranks.
 
-  Developer Notes:
-  Uses malloc() directly because PETSc may not be initialized yet.
+  Developer Note:
+  Uses `malloc()` directly because PETSc may not be initialized yet.
 
 .seealso: `PetscOptionsInsert()`, `PetscOptionsClearValue()`
 @*/
@@ -1378,6 +1383,7 @@ setvalue:
     options->values[n] = (char *)malloc((len + 1) * sizeof(char));
     if (!options->values[n]) return PETSC_ERR_MEM;
     strcpy(options->values[n], value);
+    options->values[n][len] = '\0';
   } else {
     options->values[n] = NULL;
   }
@@ -1390,7 +1396,7 @@ setvalue:
     options->used[n]    = PETSC_TRUE;
   }
 
-  PetscCall(PetscOptionsMonitor(options, name, value, source));
+  PetscCall(PetscOptionsMonitor(options, name, value ? value : "", source));
   if (pos) *pos = n;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1412,6 +1418,9 @@ setvalue:
   have the affect of these options. If some processes that create objects call this routine and others do
   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
   on different ranks.
+
+  Developer Note:
+  Uses `free()` directly because the options have been set with `malloc()`
 
 .seealso: `PetscOptionsInsert()`
 @*/
@@ -1690,7 +1699,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions opti
 
   Level: advanced
 
-.seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`, `OptionsHasName()`,
+.seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`,
           `PetscOptionsGetString()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
           `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
           `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
@@ -2109,21 +2118,26 @@ PetscErrorCode PetscOptionsMonitorDefault(const char name[], const char value[],
 
   Calling sequence of `monitor`:
 + name   - option name string
-. value  - option value string
+. value  - option value string, a value of `NULL` indicates the option is being removed from the database. A value
+           of "" indicates the option is in the database but has no value.
 . source - option source
 - mctx   - optional monitoring context, as set by `PetscOptionsMonitorSet()`
 
   Calling sequence of `monitordestroy`:
 . mctx - [optional] pointer to context to destroy with
 
+  Options Database Keys:
++ -options_monitor <viewer> - turn on default monitoring
+- -options_monitor_cancel   - turn off any option monitors except the default monitor obtained with `-options_monitor`
+
   Level: intermediate
 
   Notes:
   See `PetscInitialize()` for options related to option database monitoring.
 
-  The default is to do nothing.  To print the name and value of options
+  The default is to do no monitoring.  To print the name and value of options
   being inserted into the database, use `PetscOptionsMonitorDefault()` as the monitoring routine,
-  with a null monitoring context.
+  with a `NULL` monitoring context. Or use the option `-options_monitor` <viewer>.
 
   Several different monitoring routines may be set by calling
   `PetscOptionsMonitorSet()` multiple times; all will be called in the

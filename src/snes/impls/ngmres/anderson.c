@@ -113,8 +113,7 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
       PetscCall(VecAXPBY(XM, 1.0 - ngmres->andersonBeta, ngmres->andersonBeta, X));
     } else {
       PetscCall(VecCopy(F, FM));
-      PetscCall(VecCopy(X, XM));
-      PetscCall(VecAXPY(XM, -ngmres->andersonBeta, FM));
+      PetscCall(VecWAXPY(XM, -ngmres->andersonBeta, FM, X));
       fMnorm = fnorm;
     }
 

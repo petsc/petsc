@@ -14,7 +14,7 @@
 #define PetscSectionSym type(tPetscSectionSym)
 
 #define PetscSF type(tPetscSF)
-#define PetscLayout PetscFortranAddr
+#define PetscLayout type(tPetscLayout)
 
 #define ISType character*(80)
 #define ISInfo PetscEnum

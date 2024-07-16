@@ -204,7 +204,8 @@ static PetscErrorCode KSPDGMRESCycle(PetscInt *itcount, KSP ksp)
   PetscCall(KSPDGMRESBuildSoln(GRS(0), ksp->vec_sol, ksp->vec_sol, ksp, it - 1));
 
   /* Monitor if we know that we will not return for a restart */
-  if (it && (ksp->reason || ksp->its >= ksp->max_it)) {
+  if (ksp->reason == KSP_CONVERGED_ITERATING && ksp->its >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
+  if (it && ksp->reason) {
     PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm));
     PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm));
   }
@@ -996,7 +997,7 @@ static PetscErrorCode KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
 .   -ksp_dgmres_max_eigen <max_neig>             - maximum number of eigenvalues that can be extracted during the iterative process
 .   -ksp_dgmres_force                            - use the deflation at each restart; switch off the adaptive strategy.
 -   -ksp_dgmres_view_deflation_vecs <viewerspec> - View the deflation vectors, where viewerspec is a key that can be
-                                                   parsed by `PetscOptionsGetViewer()`.  If neig > 1, viewerspec should
+                                                   parsed by `PetscOptionsCreateViewer()`.  If neig > 1, viewerspec should
                                                    end with ":append".  No vectors will be viewed if the adaptive
                                                    strategy chooses not to deflate, so -ksp_dgmres_force should also
                                                    be given.

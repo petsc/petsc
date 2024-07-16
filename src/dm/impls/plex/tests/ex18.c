@@ -989,12 +989,12 @@ static PetscErrorCode DMLabelViewFromOptionsOnComm_Private(DMLabel label, const 
   PetscFunctionBegin;
   if (incall) PetscFunctionReturn(PETSC_SUCCESS);
   incall = PETSC_TRUE;
-  CHKERRQI(incall, PetscOptionsGetViewer(comm, ((PetscObject)label)->options, ((PetscObject)label)->prefix, optionname, &viewer, &format, &flg));
+  CHKERRQI(incall, PetscOptionsCreateViewer(comm, ((PetscObject)label)->options, ((PetscObject)label)->prefix, optionname, &viewer, &format, &flg));
   if (flg) {
     CHKERRQI(incall, PetscViewerPushFormat(viewer, format));
     CHKERRQI(incall, DMLabelView(label, viewer));
     CHKERRQI(incall, PetscViewerPopFormat(viewer));
-    CHKERRQI(incall, PetscOptionsRestoreViewer(&viewer));
+    CHKERRQI(incall, PetscViewerDestroy(&viewer));
   }
   incall = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -2066,12 +2066,12 @@ PetscErrorCode PetscLogViewFromOptions(void)
   PetscBool         flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsGetViewers(PETSC_COMM_WORLD, NULL, NULL, "-log_view", &n_max, viewers, formats, &flg));
+  PetscCall(PetscOptionsCreateViewers(PETSC_COMM_WORLD, NULL, NULL, "-log_view", &n_max, viewers, formats, &flg));
   for (PetscInt i = 0; i < n_max; i++) {
     PetscCall(PetscViewerPushFormat(viewers[i], formats[i]));
     PetscCall(PetscLogView(viewers[i]));
     PetscCall(PetscViewerPopFormat(viewers[i]));
-    PetscCall(PetscOptionsRestoreViewer(&viewers[i]));
+    PetscCall(PetscViewerDestroy(&viewers[i]));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2344,10 +2344,10 @@ PetscErrorCode PetscLogGpuTime(void)
   Level: intermediate
 
   Notes:
-  When CUDA or HIP is enabled, the timer is run on the GPU, it is a separate logging of time
+  When GPU is enabled, the timer is run on the GPU, it is a separate logging of time
   devoted to GPU computations (excluding kernel launch times).
 
-  When CUDA or HIP is not available, the timer is run on the CPU, it is a separate logging of
+  When GPU is not available, the timer is run on the CPU, it is a separate logging of
   time devoted to GPU computations (including kernel launch times).
 
   There is no need to call WaitForCUDA() or WaitForHIP() between `PetscLogGpuTimeBegin()` and
@@ -2379,14 +2379,16 @@ PetscErrorCode PetscLogGpuTimeBegin(void)
   PetscFunctionBegin;
   PetscCall(PetscLogEventBeginIsActive(&isActive));
   if (!isActive || !PetscLogGpuTimeFlag) PetscFunctionReturn(PETSC_SUCCESS);
-  if (PetscDefined(HAVE_DEVICE)) {
+    #if defined(PETSC_HAVE_DEVICE) && !defined(PETSC_HAVE_KOKKOS_WITHOUT_GPU)
+  {
     PetscDeviceContext dctx;
 
     PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
     PetscCall(PetscDeviceContextBeginTimer_Internal(dctx));
-  } else {
-    PetscCall(PetscTimeSubtract(&petsc_gtime));
   }
+    #else
+  PetscCall(PetscTimeSubtract(&petsc_gtime));
+    #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2404,16 +2406,18 @@ PetscErrorCode PetscLogGpuTimeEnd(void)
   PetscFunctionBegin;
   PetscCall(PetscLogEventEndIsActive(&isActive));
   if (!isActive || !PetscLogGpuTimeFlag) PetscFunctionReturn(PETSC_SUCCESS);
-  if (PetscDefined(HAVE_DEVICE)) {
+    #if defined(PETSC_HAVE_DEVICE) && !defined(PETSC_HAVE_KOKKOS_WITHOUT_GPU)
+  {
     PetscDeviceContext dctx;
     PetscLogDouble     elapsed;
 
     PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
     PetscCall(PetscDeviceContextEndTimer_Internal(dctx, &elapsed));
     petsc_gtime += (elapsed / 1000.0);
-  } else {
-    PetscCall(PetscTimeAdd(&petsc_gtime));
   }
+    #else
+  PetscCall(PetscTimeAdd(&petsc_gtime));
+    #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

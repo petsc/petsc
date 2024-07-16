@@ -1221,7 +1221,7 @@ static PetscErrorCode TSAdjointMonitorSensi(TS ts, PetscInt step, PetscReal ptim
 
   Level: developer
 
-.seealso: [](ch_ts), `PetscOptionsGetViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
+.seealso: [](ch_ts), `PetscOptionsCreateViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
           `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`,
           `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
@@ -1236,11 +1236,11 @@ PetscErrorCode TSAdjointMonitorSetFromOptions(TS ts, const char name[], const ch
   PetscBool         flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)ts), ((PetscObject)ts)->options, ((PetscObject)ts)->prefix, name, &viewer, &format, &flg));
+  PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)ts), ((PetscObject)ts)->options, ((PetscObject)ts)->prefix, name, &viewer, &format, &flg));
   if (flg) {
     PetscViewerAndFormat *vf;
     PetscCall(PetscViewerAndFormatCreate(viewer, format, &vf));
-    PetscCall(PetscOptionsRestoreViewer(&viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
     if (monitorsetup) PetscCall((*monitorsetup)(ts, vf));
     PetscCall(TSAdjointMonitorSet(ts, (PetscErrorCode(*)(TS, PetscInt, PetscReal, Vec, PetscInt, Vec *, Vec *, void *))monitor, vf, (PetscErrorCode(*)(void **))PetscViewerAndFormatDestroy));
   }

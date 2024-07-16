@@ -202,7 +202,7 @@ cdef class _DMDA_Vec_array(object):
     cdef readonly tuple shape, strides
     cdef readonly ndarray array
 
-    def __cinit__(self, DMDA da, Vec vec, bint DOF=False):
+    def __cinit__(self, DMDA da, Vec vec, bint readonly, bint DOF=False):
         #
         cdef PetscInt dim=0, dof=0
         CHKERR(DMDAGetInfo(da.dm,
@@ -244,7 +244,7 @@ cdef class _DMDA_Vec_array(object):
         if DOF or f > 1: shape   += (f,)
         if DOF or f > 1: strides += (k,)
         #
-        self.vecbuf = _Vec_buffer(vec)
+        self.vecbuf = _Vec_buffer(vec, readonly)
         self.starts = starts
         self.sizes = sizes
         self.shape = shape

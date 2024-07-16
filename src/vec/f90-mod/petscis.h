@@ -38,6 +38,14 @@
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_SF
 #endif
 
+      type :: tPetscLayout
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
+      end type tPetscLayout
+      PetscLayout, parameter :: PETSC_NULL_LAYOUT = tPetscLayout(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_LAYOUT
+#endif
+
       type PetscSFNode
         PetscInt    rank
         PetscInt    index

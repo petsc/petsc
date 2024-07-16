@@ -203,7 +203,6 @@ int main(int argc, char **args)
     requires: parmetis
     args: -ksp_converged_reason -ksp_norm_type unpreconditioned -ksp_rtol 1e-4 -m 37 -n 23 -num_local_blocks 4
     nsize: 4
-    output_file: output/ex19_0.out
     test:
       suffix: batch
       args: -ksp_type cg -pc_type bjkokkos -pc_bjkokkos_ksp_max_it 60 -pc_bjkokkos_ksp_type tfqmr -pc_bjkokkos_pc_type jacobi -pc_bjkokkos_ksp_rtol 1e-3 -mat_type aijkokkos

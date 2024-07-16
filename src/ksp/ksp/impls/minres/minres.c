@@ -668,7 +668,7 @@ static PetscErrorCode KSPDestroy_MINRES(KSP ksp)
 
   PetscFunctionBegin;
   PetscCall(PetscFree4(minres->e, minres->d, minres->ee, minres->dd));
-  PetscCall(PetscOptionsRestoreViewer(&minres->viewer));
+  PetscCall(PetscViewerDestroy(&minres->viewer));
   PetscCall(PetscFree(ksp->data));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPMINRESSetRadius_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPMINRESSetUseQLP_C", NULL));
@@ -718,7 +718,7 @@ static PetscErrorCode KSPSetFromOptions_MINRES(KSP ksp, PetscOptionItems *PetscO
   PetscCall(PetscOptionsBool("-ksp_minres_qlp", "Solve with QLP variant", "KSPMINRESSetUseQLP", minres->qlp, &minres->qlp, NULL));
   PetscCall(PetscOptionsReal("-ksp_minres_radius", "Maximum allowed norm of solution", "KSPMINRESSetRadius", minres->maxxnorm, &minres->maxxnorm, NULL));
   PetscCall(PetscOptionsReal("-ksp_minres_trancond", "Threshold on condition number to dynamically switch to QLP", "None", minres->TranCond, &minres->TranCond, NULL));
-  PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp), PetscOptionsObject->options, PetscOptionsObject->prefix, "-ksp_minres_monitor", &minres->viewer, &minres->viewer_fmt, &minres->monitor));
+  PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)ksp), PetscOptionsObject->options, PetscOptionsObject->prefix, "-ksp_minres_monitor", &minres->viewer, &minres->viewer_fmt, &minres->monitor));
   PetscCall(PetscOptionsReal("-ksp_minres_nutol", "Inexactness tolerance", NULL, minres->nutol, &minres->nutol, NULL));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);

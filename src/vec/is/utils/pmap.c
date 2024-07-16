@@ -545,7 +545,8 @@ PetscErrorCode PetscLayoutGetRange(PetscLayout map, PetscInt *rstart, PetscInt *
 
   Output Parameter:
 . range - start of each processors range of indices (the final entry is one more than the
-             last index on the last process)
+          last index on the last process). The length of the array is one more than the number of processes in the MPI
+          communicator owned by `map`
 
   Level: developer
 

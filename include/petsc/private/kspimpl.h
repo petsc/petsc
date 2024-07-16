@@ -130,6 +130,8 @@ struct _p_KSP {
   PetscInt  numbermonitors;                                                    /* to, for instance, print residual norm, etc. */
   PetscBool pauseFinal;                                                        /* Pause all drawing monitor at the final iterate */
 
+  PetscViewer       convergedreasonviewer;
+  PetscViewerFormat convergedreasonformat;
   PetscErrorCode (*reasonview[MAXKSPREASONVIEWS])(KSP, void *);    /* KSP converged reason view */
   PetscErrorCode (*reasonviewdestroy[MAXKSPREASONVIEWS])(void **); /* Optional destroy routine */
   void    *reasonviewcontext[MAXKSPREASONVIEWS];                   /* User context */
@@ -528,9 +530,9 @@ M*/
         PCFailedReason pcreason; \
         PetscCall(PCReduceFailedReason(ksp->pc)); \
         PetscCall(PCGetFailedReasonRank(ksp->pc, &pcreason)); \
+        PetscCall(VecFlag(ksp->vec_sol, pcreason)); \
         if (pcreason) { \
           ksp->reason = KSP_DIVERGED_PC_FAILED; \
-          PetscCall(VecSetInf(ksp->vec_sol)); \
         } else { \
           ksp->reason = KSP_DIVERGED_NANORINF; \
         } \
@@ -569,14 +571,13 @@ M*/
         PCFailedReason pcreason; \
         PetscCall(PCReduceFailedReason(ksp->pc)); \
         PetscCall(PCGetFailedReasonRank(ksp->pc, &pcreason)); \
+        PetscCall(VecFlag(ksp->vec_sol, pcreason)); \
         if (pcreason) { \
           ksp->reason = KSP_DIVERGED_PC_FAILED; \
-          PetscCall(VecSetInf(ksp->vec_sol)); \
-          ksp->rnorm = beta; \
         } else { \
           ksp->reason = KSP_DIVERGED_NANORINF; \
-          ksp->rnorm  = beta; \
         } \
+        ksp->rnorm = beta; \
         PetscFunctionReturn(PETSC_SUCCESS); \
       } \
     } \

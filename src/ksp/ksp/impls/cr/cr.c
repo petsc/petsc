@@ -35,7 +35,7 @@ static PetscErrorCode KSPSolve_CR(KSP ksp)
     PetscCall(VecCopy(B, R)); /*   R <- B (X is 0)    */
   }
   /* This may be true only on a subset of MPI ranks; setting it here so it will be detected by the first norm computation below */
-  if (ksp->reason == KSP_DIVERGED_PC_FAILED) PetscCall(VecSetInf(R));
+  PetscCall(VecFlag(R, ksp->reason == KSP_DIVERGED_PC_FAILED));
   PetscCall(KSP_PCApply(ksp, R, P));        /*   P   <- B*R         */
   PetscCall(KSP_MatMult(ksp, Amat, P, AP)); /*   AP  <- A*P         */
   PetscCall(VecCopy(P, RT));                /*   RT  <- P           */

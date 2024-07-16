@@ -26,14 +26,15 @@ int main(int argc, char **argv)
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, "ex55options", help));
   PetscCall(PetscOptionsInsertString(NULL, "-option1 1 -option2 -option3 value3"));
-  PetscCall(PetscOptionsGetViewer(PETSC_COMM_WORLD, NULL, NULL, "-options_monitor_viewer", &viewer, &format, NULL));
+  PetscCall(PetscOptionsCreateViewer(PETSC_COMM_WORLD, NULL, NULL, "-options_monitor_viewer", &viewer, &format, NULL));
   if (viewer) {
     PetscCall(PetscViewerPushFormat(viewer, format));
     PetscCall(PetscOptionsMonitorSet(PetscOptionsMonitorCustom, viewer, NULL));
     PetscCall(PetscViewerPopFormat(viewer));
-    PetscCall(PetscOptionsRestoreViewer(&viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
   PetscCall(PetscOptionsInsertString(NULL, "-option4 value4 -option5"));
+  PetscCall(PetscOptionsClearValue(NULL, "-option5"));
   PetscCall(PetscFinalize());
   return 0;
 }

@@ -578,6 +578,26 @@ PetscErrorCode SNESComputeUpdate(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static
+PetscErrorCode SNESGetUseKSP(SNES snes,PetscBool *flag)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscAssertPointer(flag,2);
+  *flag = snes->usesksp;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static
+PetscErrorCode SNESSetUseKSP(SNES snes,PetscBool flag)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidLogicalCollectiveBool(snes,flag,2);
+  snes->usesksp = flag;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /* ---------------------------------------------------------------- */
 
 static

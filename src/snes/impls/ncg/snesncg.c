@@ -74,7 +74,7 @@ static PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch)
 
    This is a "odd-ball" line search, we don't know if it is in the literature or used in practice by anyone.
 
-.seealso: [](ch_snes), `SNES`, `SNESNCG` `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
+.seealso: [](ch_snes), `SNES`, `SNESNCG`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch linesearch)

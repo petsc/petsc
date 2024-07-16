@@ -237,7 +237,7 @@ PetscErrorCode PetscTraceBackErrorHandler(MPI_Comm comm, int line, const char *f
         size_t clen;
 
         ierr = (*PetscErrorPrintf)("%s\n", version);
-        if (PetscErrorPrintfInitializeCalled) ierr = (*PetscErrorPrintf)("%s with PETSC_ARCH %s on %s by %s %s\n", pname, arch, hostname, username, date);
+        if (PetscErrorPrintfInitializeCalled) ierr = (*PetscErrorPrintf)("%s with %d MPI process(es) and PETSC_ARCH %s on %s by %s %s\n", pname, PetscGlobalSize, arch, hostname, username, date);
         ierr = PetscStrlen(petscconfigureoptions, &clen);
         ierr = (*PetscErrorPrintf)("Configure options: %s\n", clen ? petscconfigureoptions : "none used");
       }

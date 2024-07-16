@@ -775,13 +775,13 @@ PetscErrorCode PetscBagViewFromOptions(PetscBag bag, PetscObject bobj, const cha
   PetscAssertPointer(bag, 1);
   if (bobj) PetscCall(PetscObjectGetOptionsPrefix(bobj, &bprefix));
   prefix = bobj ? bprefix : bag->bagprefix;
-  PetscCall(PetscOptionsGetViewer(bag->bagcomm, NULL, prefix, optionname, &viewer, &format, &flg));
+  PetscCall(PetscOptionsCreateViewer(bag->bagcomm, NULL, prefix, optionname, &viewer, &format, &flg));
   if (flg) {
     PetscCall(PetscViewerPushFormat(viewer, format));
     PetscCall(PetscBagView(bag, viewer));
     PetscCall(PetscViewerFlush(viewer));
     PetscCall(PetscViewerPopFormat(viewer));
-    PetscCall(PetscOptionsRestoreViewer(&viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
   incall = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);

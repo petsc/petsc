@@ -100,7 +100,7 @@ def modifylevel(filename,secname,edit_branch):
       with open(filename, "r") as fd:
           buf = fd.read()
 
-      re_name = re.compile('\*\*Location:\*\*(.*)')  # As defined in myst.def
+      re_name = re.compile(r'\*\*Location:\*\*(.*)')  # As defined in myst.def
       m = re_name.search(buf)
       if m:
         loc_html = m.group(1)
@@ -127,7 +127,7 @@ def modifylevel(filename,secname,edit_branch):
 
       # Reformat level and location
       tmpbuf = re_level.sub('',buf)
-      re_loc = re.compile('(\*\*Location:\*\*)')
+      re_loc = re.compile(r'(\*\*Location:\*\*)')
       tmpbuf = re_loc.sub('\n## Level\n' + level + '\n\n## Location\n',tmpbuf)
 
       # Modify .c#,.h#,.cu#,.cxx# to .c.html#,.h.html#,.cu.html#,.cxx.html#

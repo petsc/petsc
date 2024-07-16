@@ -115,7 +115,7 @@ PetscErrorCode PetscObjectView(PetscObject obj, PetscViewer viewer)
 
   This is not called directly but is called by, for example, `MatViewFromOptions()`
 
-.seealso: `PetscObject`, `PetscObjectView()`, `PetscOptionsGetViewer()`
+.seealso: `PetscObject`, `PetscObjectView()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode PetscObjectViewFromOptions(PetscObject obj, PetscObject bobj, const char optionname[])
 {
@@ -131,13 +131,13 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj, PetscObject bobj, con
   if (incall) PetscFunctionReturn(PETSC_SUCCESS);
   incall = PETSC_TRUE;
   prefix = bobj ? bobj->prefix : obj->prefix;
-  PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj), obj->options, prefix, optionname, &viewer, &format, &flg));
+  PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)obj), obj->options, prefix, optionname, &viewer, &format, &flg));
   if (flg) {
     PetscCall(PetscViewerPushFormat(viewer, format));
     PetscCall(PetscObjectView(obj, viewer));
     PetscCall(PetscViewerFlush(viewer));
     PetscCall(PetscViewerPopFormat(viewer));
-    PetscCall(PetscOptionsRestoreViewer(&viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
   incall = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -354,7 +354,6 @@ static PetscErrorCode PetscRunRegisteredFinalizers(void)
     PetscCall(PetscArrayzero(&regfin[reg_count].thunk, 1));
     switch (top.type) {
     case PETSC_FINALIZE_OBJECT:
-      top.thunk.obj->persistent = PETSC_FALSE;
       PetscCall(PetscObjectDestroy(&top.thunk.obj));
       break;
     case PETSC_FINALIZE_FUNC:
