@@ -61,7 +61,7 @@ static PetscErrorCode MatHasOperation_Transpose(Mat mat, MatOperation op, PetscB
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose(Mat D)
+static PetscErrorCode MatProductSetFromOptions_Transpose(Mat D)
 {
   Mat            A, B, C, Ain, Bin, Cin;
   PetscBool      Aistrans, Bistrans, Cistrans;
