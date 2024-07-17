@@ -58,7 +58,7 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   PetscCall(PetscObjectQuery((PetscObject)dm, "_glvis_plex_gnum", (PetscObject *)&globalNum));
   if (!globalNum) {
-    PetscCall(DMPlexCreateCellNumbering_Internal(dm, PETSC_TRUE, &globalNum));
+    PetscCall(DMPlexCreateCellNumbering(dm, PETSC_TRUE, &globalNum));
     PetscCall(PetscObjectCompose((PetscObject)dm, "_glvis_plex_gnum", (PetscObject)globalNum));
     PetscCall(PetscObjectDereference((PetscObject)globalNum));
   }
@@ -582,7 +582,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
       if (view_ovl) {
         PetscCall(ISCreateStride(PetscObjectComm((PetscObject)dm), cEnd - cStart, 0, 1, &globalNum));
       } else {
-        PetscCall(DMPlexCreateCellNumbering_Internal(dm, PETSC_TRUE, &globalNum));
+        PetscCall(DMPlexCreateCellNumbering(dm, PETSC_TRUE, &globalNum));
       }
       PetscCall(PetscObjectCompose((PetscObject)dm, "_glvis_plex_gnum", (PetscObject)globalNum));
       PetscCall(PetscObjectDereference((PetscObject)globalNum));
