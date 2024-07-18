@@ -3554,6 +3554,7 @@ cdef class Vec(Object):
             temp = IS()
             temp.iset = cisets[i]
             vec_index_ises.append(temp)
+        CHKERR(PetscFree(cisets))
         return self, vec_index_ises
 
     property sizes:
