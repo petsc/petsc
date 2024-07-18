@@ -1,6 +1,6 @@
 #include <../src/mat/impls/shell/shell.h> /*I "petscmat.h" I*/
 
-PETSC_INTERN PetscErrorCode MatProductSetFromOptions_HT(Mat D)
+static PetscErrorCode MatProductSetFromOptions_HT(Mat D)
 {
   Mat            A, B, C, Ain, Bin, Cin;
   PetscBool      Aistrans, Bistrans, Cistrans;
