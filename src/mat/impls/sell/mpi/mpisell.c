@@ -1371,7 +1371,7 @@ static const struct _MatOps MatOps_Values = {MatSetValues_MPISELL,
   You can also run with the option -info and look for messages with the string
   malloc in them to see if additional memory allocation was needed.
 
-.seealso: `Mat`, `MatCreate()`, `MatCreateSeqSELL()`, `MatSetValues()`, `MatCreateSell()`,
+.seealso: `Mat`, `MatCreate()`, `MatCreateSeqSELL()`, `MatSetValues()`, `MatCreateSELL()`,
           `MATMPISELL`, `MatGetInfo()`, `PetscSplitOwnership()`, `MATSELL`
 @*/
 PetscErrorCode MatMPISELLSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[])
@@ -1392,7 +1392,7 @@ PetscErrorCode MatMPISELLSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d
 
    Level: beginner
 
-.seealso: `Mat`, `MatCreateSell()`, `MATSEQSELL`, `MATSELL`, `MATSEQAIJ`, `MATAIJ`, `MATMPIAIJ`
+.seealso: `Mat`, `MatCreateSELL()`, `MATSEQSELL`, `MATSELL`, `MATSEQAIJ`, `MATAIJ`, `MATMPIAIJ`
 M*/
 
 /*@C
@@ -1554,8 +1554,7 @@ M*/
    MatMPISELLSetPreallocation(A,...);
 .ve
 
-.seealso: `Mat`, `MATSELL`, `MatCreate()`, `MatCreateSeqSELL()`, `MatSetValues()`, `MatMPISELLSetPreallocation()`, `MatMPISELLSetPreallocationSELL()`,
-          `MATMPISELL`, `MatCreateMPISELLWithArrays()`
+.seealso: `Mat`, `MATSELL`, `MatCreate()`, `MatCreateSeqSELL()`, `MatSetValues()`, `MatMPISELLSetPreallocation()`, `MATMPISELL`
 @*/
 PetscErrorCode MatCreateSELL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_rlenmax, const PetscInt d_rlen[], PetscInt o_rlenmax, const PetscInt o_rlen[], Mat *A)
 {

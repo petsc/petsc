@@ -239,12 +239,12 @@ If the size of the image repository grows too large,
 * Set ``main-X`` as the "default" branch on GitLab.
 * Update both ``release`` and ``main`` in the primary PETSc repository to clone this new branch
 
-.. _classic_docs_build:
+.. _manpages_c2html_build:
 
-Building Classic Documentation
-==============================
+Building Manual Pages and C2HTML Files
+======================================
 
-Some of the documentation is built by a "classic" process as described below using the documentation tools listed below, which are
+The manual pages and C2HTML-generated file as built in a process described below using the documentation tools listed below, which are
 automatically downloaded and installed if needed while building the PETSc documentation./
 
 * `Sowing <https://bitbucket.org/petsc/pkg-sowing>`__: Developed by Bill Gropp, this produces the PETSc manual pages; see the `Sowing documentation <http://wgropp.cs.illinois.edu/projects/software/sowing/doctext/doctext.htm>`__ and :ref:`manual_page_format`.
@@ -257,7 +257,7 @@ etc., from Cygwin in order to be able to build the documentation.
 
 .. rubric:: Footnotes
 
-.. [#bibtex_footnote] The extensions's `development branch <https://github.com/mcmtroffaes/sphinxcontrib-bibtex>`__ `supports our use case better <https://github.com/mcmtroffaes/sphinxcontrib-bibtex/pull/185>`__ (``:footcite:``), which can be investigated if a release is ever made. This stuff is now in the main repository but does not work as advertised from .md files. 
+.. [#bibtex_footnote] The extensions's `development branch <https://github.com/mcmtroffaes/sphinxcontrib-bibtex>`__ `supports our use case better <https://github.com/mcmtroffaes/sphinxcontrib-bibtex/pull/185>`__ (``:footcite:``), which can be investigated if a release is ever made. This stuff is now in the main repository but does not work as advertised from .md files.
 
 .. [#svg_footnote] ``rsvg-convert`` is installable with your package manager, e.g., ``librsvg2-bin`` on Debian/Ubuntu systems).
 

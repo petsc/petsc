@@ -42,7 +42,7 @@ petsc-dist/venv-petsc-docs
 petsc-dist/arch-build
 petsc-dist/arch-pydoc
 petsc-dist/arch-fvpf
-petsc-dist/arch-classic-docs
+petsc-dist/arch-docs
 petsc-dist/make.log
 petsc-dist/configure.log
 petsc-dist/configure.log.bkp
