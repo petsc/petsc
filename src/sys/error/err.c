@@ -941,11 +941,12 @@ PETSC_EXTERN const char *PetscHIPSolverGetErrorName(hipsolverStatus_t status)
 
   Not Collective, No Fortran Support
 
-  Input Parameter:
-. err - the MPI error code
+  Input Parameters:
++ err  - the MPI error code
+- slen - length of `string`, should be at least as large as `MPI_MAX_ERROR_STRING`
 
   Output Parameter:
-. string - the MPI error message, should declare its length to be larger than `MPI_MAX_ERROR_STRING`
+. string - the MPI error message
 
   Level: developer
 
@@ -954,16 +955,17 @@ PETSC_EXTERN const char *PetscHIPSolverGetErrorName(hipsolverStatus_t status)
 
 .seealso: `PetscErrorCode` `PetscErrorMessage()`
 @*/
-void PetscMPIErrorString(PetscMPIInt err, char *string)
+void PetscMPIErrorString(PetscMPIInt err, size_t slen, char *string)
 {
   char        errorstring[MPI_MAX_ERROR_STRING];
-  PetscMPIInt len, j = 0;
+  PetscMPIInt len;
+  size_t      j = 0;
 
   MPI_Error_string(err, (char *)errorstring, &len);
-  for (PetscMPIInt i = 0; i < len; i++) {
+  for (PetscMPIInt i = 0; i < len && j < slen - 2; i++) {
     string[j++] = errorstring[i];
     if (errorstring[i] == '\n') {
-      for (PetscMPIInt k = 0; k < 16; k++) string[j++] = ' ';
+      for (PetscMPIInt k = 0; k < 16 && j < slen - 2; k++) string[j++] = ' ';
     }
   }
   string[j] = 0;
