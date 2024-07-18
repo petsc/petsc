@@ -4985,6 +4985,7 @@ PetscErrorCode MatDuplicate(Mat mat, MatDuplicateOption op, Mat *M)
   if (container_h) PetscCall(PetscObjectCompose((PetscObject)B, "__PETSc_MatCOOStruct_Host", container_h));
   PetscCall(PetscObjectQuery((PetscObject)mat, "__PETSc_MatCOOStruct_Device", &container_d));
   if (container_d) PetscCall(PetscObjectCompose((PetscObject)B, "__PETSc_MatCOOStruct_Device", container_d));
+  if (op == MAT_COPY_VALUES) PetscCall(MatPropagateSymmetryOptions(mat, B));
   PetscCall(PetscObjectStateIncrease((PetscObject)B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -8644,8 +8645,10 @@ PetscErrorCode MatCreateSubMatrix(Mat mat, IS isrow, IS iscol, MatReuse cll, Mat
   PetscCall(PetscLogEventEnd(MAT_CreateSubMat, mat, 0, 0, 0));
 
 setproperties:
-  PetscCall(ISEqualUnsorted(isrow, iscoltmp, &flg));
-  if (flg) PetscCall(MatPropagateSymmetryOptions(mat, *newmat));
+  if ((*newmat)->symmetric == PETSC_BOOL3_UNKNOWN && (*newmat)->structurally_symmetric == PETSC_BOOL3_UNKNOWN && (*newmat)->spd == PETSC_BOOL3_UNKNOWN && (*newmat)->hermitian == PETSC_BOOL3_UNKNOWN) {
+    PetscCall(ISEqualUnsorted(isrow, iscoltmp, &flg));
+    if (flg) PetscCall(MatPropagateSymmetryOptions(mat, *newmat));
+  }
   if (!iscol) PetscCall(ISDestroy(&iscoltmp));
   if (*newmat && cll == MAT_INITIAL_MATRIX) PetscCall(PetscObjectStateIncrease((PetscObject)*newmat));
   PetscFunctionReturn(PETSC_SUCCESS);

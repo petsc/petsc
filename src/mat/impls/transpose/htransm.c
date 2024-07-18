@@ -360,10 +360,7 @@ static PetscErrorCode MatDuplicate_HT(Mat N, MatDuplicateOption op, Mat *m)
   PetscCall(MatShellGetContext(N, &A));
   PetscCall(MatDuplicate(A, op, &C));
   PetscCall(MatCreateHermitianTranspose(C, m));
-  if (op == MAT_COPY_VALUES) {
-    PetscCall(MatCopy(N, *m, SAME_NONZERO_PATTERN));
-    PetscCall(MatPropagateSymmetryOptions(A, C));
-  }
+  if (op == MAT_COPY_VALUES) PetscCall(MatCopy(N, *m, SAME_NONZERO_PATTERN));
   PetscCall(MatDestroy(&C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -384,6 +384,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqDense(Mat newi, Mat A, MatDuplicateOption
     }
     PetscCall(MatDenseRestoreArrayWrite(newi, &v));
     PetscCall(MatDenseRestoreArrayRead(A, &av));
+    PetscCall(MatPropagateSymmetryOptions(A, newi));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
