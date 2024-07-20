@@ -3,6 +3,8 @@ cdef extern from * nogil:
     enum: PETSC_DECIDE
     enum: PETSC_DEFAULT
     enum: PETSC_DETERMINE
+    enum: PETSC_CURRENT
+    enum: PETSC_UNLIMITED
 
     PetscReal PETSC_INFINITY
     PetscReal PETSC_NINFINITY

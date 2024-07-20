@@ -708,15 +708,12 @@ PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
   PetscCall(KSPInitializePackage());
 
   PetscCall(PetscHeaderCreate(ksp, KSP_CLASSID, "KSP", "Krylov Method", "KSP", comm, KSPDestroy, KSPView));
-  ksp->max_it  = 10000;
+  ksp->default_max_it = ksp->max_it = 10000;
   ksp->pc_side = ksp->pc_side_set = PC_SIDE_DEFAULT;
-  ksp->rtol                       = 1.e-5;
-#if defined(PETSC_USE_REAL_SINGLE)
-  ksp->abstol = 1.e-25;
-#else
-  ksp->abstol = 1.e-50;
-#endif
-  ksp->divtol = 1.e4;
+
+  ksp->default_rtol = ksp->rtol = 1.e-5;
+  ksp->default_abstol = ksp->abstol = PetscDefined(USE_REAL_SINGLE) ? 1.e-25 : 1.e-50;
+  ksp->default_divtol = ksp->divtol = 1.e4;
 
   ksp->chknorm  = -1;
   ksp->normtype = ksp->normtype_set = KSP_NORM_DEFAULT;

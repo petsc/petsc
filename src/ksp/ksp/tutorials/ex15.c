@@ -153,7 +153,7 @@ int main(int argc, char **args)
        to set various options.
   */
   PetscCall(KSPGetPC(ksp, &pc));
-  PetscCall(KSPSetTolerances(ksp, 1.e-7, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
+  PetscCall(KSPSetTolerances(ksp, 1.e-7, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT));
 
   /*
      Set a user-defined "shell" preconditioner if desired

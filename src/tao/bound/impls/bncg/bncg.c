@@ -341,11 +341,12 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BNCG(Tao tao)
   tao->ops->destroy        = TaoDestroy_BNCG;
 
   /* Override default settings (unless already changed) */
-  if (!tao->max_it_changed) tao->max_it = 2000;
-  if (!tao->max_funcs_changed) tao->max_funcs = 4000;
+  PetscCall(TaoParametersInitialize(tao));
+  PetscObjectParameterSetDefault(tao, max_it, 2000);
+  PetscObjectParameterSetDefault(tao, max_funcs, 4000);
 
   /*  Note: nondefault values should be used for nonlinear conjugate gradient  */
-  /*  method.  In particular, gtol should be less that 0.5; the value used in  */
+  /*  method.  In particular, gtol should be less than 0.5; the value used in  */
   /*  Nocedal and Wright is 0.10.  We use the default values for the  */
   /*  linesearch because it seems to work better. */
   PetscCall(TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch));

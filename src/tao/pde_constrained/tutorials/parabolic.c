@@ -513,9 +513,9 @@ PetscErrorCode StateMatInvMult(Mat J_shell, Vec X, Vec Y)
 
   if (Y == user->ytrue) {
     /* First solve is done with true solution to set up problem */
-    PetscCall(KSPSetTolerances(user->solver, 1e-8, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
+    PetscCall(KSPSetTolerances(user->solver, 1e-8, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT));
   } else {
-    PetscCall(KSPSetTolerances(user->solver, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
+    PetscCall(KSPSetTolerances(user->solver, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT));
   }
 
   PetscCall(Scatter_i(X, user->yi, user->yi_scatter, user->nt));

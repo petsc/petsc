@@ -83,22 +83,22 @@ struct _p_KSP {
   PetscBool dmAuto;   /* DM was created automatically by KSP */
   PetscBool dmActive; /* KSP should use DM for computing operators */
   /*------------------------- User parameters--------------------------*/
-  PetscInt  max_it; /* maximum number of iterations */
-  PetscInt  min_it; /* minimum number of iterations */
+  PetscObjectParameterDeclare(PetscInt, max_it); /* maximum number of iterations */
+  PetscInt  min_it;                              /* minimum number of iterations */
   KSPGuess  guess;
-  PetscBool guess_zero,                                  /* flag for whether initial guess is 0 */
-    guess_not_read,                                      /* guess is not read, does not need to be zeroed */
-    calc_sings,                                          /* calculate extreme Singular Values */
-    calc_ritz,                                           /* calculate (harmonic) Ritz pairs */
-    guess_knoll;                                         /* use initial guess of PCApply(ksp->B,b */
-  PCSide    pc_side;                                     /* flag for left, right, or symmetric preconditioning */
-  PetscInt  normsupporttable[KSP_NORM_MAX][PC_SIDE_MAX]; /* Table of supported norms and pc_side, see KSPSetSupportedNorm() */
-  PetscReal rtol,                                        /* relative tolerance */
-    abstol,                                              /* absolute tolerance */
-    ttol,                                                /* (not set by user)  */
-    divtol;                                              /* divergence tolerance */
-  PetscReal          rnorm0;                             /* initial residual norm (used for divergence testing) */
-  PetscReal          rnorm;                              /* current residual norm */
+  PetscBool guess_zero,                                 /* flag for whether initial guess is 0 */
+    guess_not_read,                                     /* guess is not read, does not need to be zeroed */
+    calc_sings,                                         /* calculate extreme Singular Values */
+    calc_ritz,                                          /* calculate (harmonic) Ritz pairs */
+    guess_knoll;                                        /* use initial guess of PCApply(ksp->B,b */
+  PCSide   pc_side;                                     /* flag for left, right, or symmetric preconditioning */
+  PetscInt normsupporttable[KSP_NORM_MAX][PC_SIDE_MAX]; /* Table of supported norms and pc_side, see KSPSetSupportedNorm() */
+  PetscObjectParameterDeclare(PetscReal, rtol);         /* relative tolerance */
+  PetscObjectParameterDeclare(PetscReal, abstol);       /* absolute tolerance */
+  PetscObjectParameterDeclare(PetscReal, ttol);         /* (not set by user)  */
+  PetscObjectParameterDeclare(PetscReal, divtol);       /* divergence tolerance */
+  PetscReal          rnorm0;                            /* initial residual norm (used for divergence testing) */
+  PetscReal          rnorm;                             /* current residual norm */
   KSPConvergedReason reason;
   PetscBool          errorifnotconverged; /* create an error if the KSPSolve() does not converge */
 

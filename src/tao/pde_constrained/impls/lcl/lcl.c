@@ -582,11 +582,13 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LCL(Tao tao)
   tao->data = (void *)lclP;
 
   /* Override default settings (unless already changed) */
-  if (!tao->max_it_changed) tao->max_it = 200;
-  if (!tao->catol_changed) tao->catol = 1.0e-4;
-  if (!tao->gatol_changed) tao->gttol = 1.0e-4;
-  if (!tao->grtol_changed) tao->gttol = 1.0e-4;
-  if (!tao->gttol_changed) tao->gttol = 1.0e-4;
+  PetscCall(TaoParametersInitialize(tao));
+  PetscObjectParameterSetDefault(tao, max_it, 200);
+  PetscObjectParameterSetDefault(tao, catol, 1.0e-4);
+  PetscObjectParameterSetDefault(tao, gttol, 1.0e-4);
+  PetscObjectParameterSetDefault(tao, gttol, 1.0e-4);
+  PetscObjectParameterSetDefault(tao, gttol, 1.0e-4);
+
   lclP->rho0       = 1.0e-4;
   lclP->rhomax     = 1e5;
   lclP->eps1       = 1.0e-8;

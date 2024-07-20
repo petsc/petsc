@@ -31,7 +31,7 @@ int main(int argc, char **argv)
 
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
   PetscCall(KSPSetType(ksp, KSPGMRES));
-  PetscCall(KSPSetTolerances(ksp, 10000 * PETSC_MACHINE_EPSILON, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
+  PetscCall(KSPSetTolerances(ksp, 10000 * PETSC_MACHINE_EPSILON, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT));
   PetscCall(KSPGetPC(ksp, &pc));
   PetscCall(PCSetType(pc, PCNONE));
   PetscCall(KSPSetComputeRitz(ksp, PETSC_TRUE));

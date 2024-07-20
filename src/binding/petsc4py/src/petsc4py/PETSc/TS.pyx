@@ -1799,9 +1799,13 @@ cdef class TS(Object):
         Parameters
         ----------
         rtol
-            The relative tolerance or `None` to leave the current value.
+            The relative tolerance, `DETERMINE` to use the value
+            when the object's type was set, or `None` to leave the
+            current value.
         atol
-            The absolute tolerance or `None` to leave the current value.
+            The absolute tolerance, `DETERMINE` to use the
+            value when the object's type was set, or `None` to
+            leave the current value.
 
         Notes
         -----
@@ -1812,8 +1816,8 @@ cdef class TS(Object):
         petsc.TSSetTolerances
 
         """
-        cdef PetscReal rrtol = PETSC_DEFAULT
-        cdef PetscReal ratol = PETSC_DEFAULT
+        cdef PetscReal rrtol = PETSC_CURRENT
+        cdef PetscReal ratol = PETSC_CURRENT
         cdef PetscVec  vrtol = NULL
         cdef PetscVec  vatol = NULL
         if rtol is None:
@@ -1847,8 +1851,8 @@ cdef class TS(Object):
         petsc.TSGetTolerances
 
         """
-        cdef PetscReal rrtol = PETSC_DEFAULT
-        cdef PetscReal ratol = PETSC_DEFAULT
+        cdef PetscReal rrtol = PETSC_DETERMINE
+        cdef PetscReal ratol = PETSC_DETERMINE
         cdef PetscVec  vrtol = NULL
         cdef PetscVec  vatol = NULL
         CHKERR(TSGetTolerances(self.ts, &ratol, &vatol, &rrtol, &vrtol))

@@ -222,7 +222,7 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao)
     auglag->yi_min = 0.0;
     auglag->ytol0  = 0.5;
     auglag->gtol0  = tao->gatol;
-    if (tao->gatol_changed && tao->catol_changed) {
+    if (tao->gatol != tao->default_gatol && tao->catol != tao->default_catol) {
       PetscCall(PetscInfo(tao, "TAOALMM with PHR: different gradient and constraint tolerances are not supported, setting catol = gatol\n"));
       tao->catol = tao->gatol;
     }
@@ -433,11 +433,12 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ALMM(Tao tao)
   tao->ops->view           = TaoView_ALMM;
   tao->ops->solve          = TaoSolve_ALMM;
 
-  tao->gatol = 1.e-5;
-  tao->grtol = 0.0;
-  tao->gttol = 0.0;
-  tao->catol = 1.e-5;
-  tao->crtol = 0.0;
+  PetscCall(TaoParametersInitialize(tao));
+  PetscObjectParameterSetDefault(tao, gatol, 1.e-5);
+  PetscObjectParameterSetDefault(tao, grtol, 0.0);
+  PetscObjectParameterSetDefault(tao, gttol, 0.0);
+  PetscObjectParameterSetDefault(tao, catol, 1.e-5);
+  PetscObjectParameterSetDefault(tao, crtol, 0.0);
 
   tao->data           = (void *)auglag;
   auglag->parent      = tao;

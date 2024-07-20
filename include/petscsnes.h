@@ -49,6 +49,7 @@ PETSC_EXTERN PetscErrorCode SNESInitializePackage(void);
 PETSC_EXTERN PetscErrorCode SNESFinalizePackage(void);
 
 PETSC_EXTERN PetscErrorCode SNESCreate(MPI_Comm, SNES *);
+PETSC_EXTERN PetscErrorCode SNESParametersInitialize(SNES);
 PETSC_EXTERN PetscErrorCode SNESReset(SNES);
 PETSC_EXTERN PetscErrorCode SNESDestroy(SNES *);
 PETSC_EXTERN PetscErrorCode SNESSetType(SNES, SNESType);

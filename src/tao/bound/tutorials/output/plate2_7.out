@@ -44,7 +44,7 @@ Tao Object: 3 MPI processes
           total number of mallocs used during MatSetValues calls=0
   total KSP iterations: 65
   Active Set subset type: matrixfree
-  convergence tolerances: gatol=1e-05,   steptol=0.,   gttol=0.
+  convergence tolerances: gatol=1e-05,   grtol=1e-08,  steptol=0.,   gttol=0.
   Residual in Function/Gradient:=2.40518e-07
   Objective value=1.46694
   total number of iterations=2,                          (max: 500)

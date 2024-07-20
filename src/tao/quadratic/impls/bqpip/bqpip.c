@@ -537,13 +537,10 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BQPIP(Tao tao)
   tao->ops->computedual    = TaoComputeDual_BQPIP;
 
   /* Override default settings (unless already changed) */
-  if (!tao->max_it_changed) tao->max_it = 100;
-  if (!tao->max_funcs_changed) tao->max_funcs = 500;
-#if defined(PETSC_USE_REAL_SINGLE)
-  if (!tao->catol_changed) tao->catol = 1e-6;
-#else
-  if (!tao->catol_changed) tao->catol = 1e-12;
-#endif
+  PetscCall(TaoParametersInitialize(tao));
+  PetscObjectParameterSetDefault(tao, max_it, 100);
+  PetscObjectParameterSetDefault(tao, max_funcs, 500);
+  PetscObjectParameterSetDefault(tao, catol, PetscDefined(USE_REAL_SINGLE) ? 1e-6 : 1e-12);
 
   /* Initialize pointers and variables */
   qp->n = 0;

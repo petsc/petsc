@@ -12,7 +12,7 @@ iter =   6, Function value 1.52771, Residual: 0.00143288
 iter =   7, Function value 1.52729, Residual: 0.000716629 
 Tao Object: 2 MPI processes
   type: bmrm
-  convergence tolerances: gatol=0.001,   steptol=0.,   gttol=0.
+  convergence tolerances: gatol=0.001,  grtol=1e-05,    steptol=0.,   gttol=0.
   Residual in Function/Gradient:=0.000716629
   Objective value=1.52729
   total number of iterations=7,                          (max: 2000)

@@ -475,7 +475,8 @@ static PetscErrorCode KSPSolve_AGMRES(KSP ksp)
     if (!ksp->reason && agmres->neig > 0) {
       test = agmres->max_k * PetscLogReal(ksp->rtol / res) / PetscLogReal(res / res_old); /* estimate the remaining number of steps */
       if ((test > agmres->smv * (ksp->max_it - ksp->its)) || agmres->force) {
-        if (!agmres->force && ((test > agmres->bgv * (ksp->max_it - ksp->its)) && ((agmres->r + 1) < agmres->max_neig))) { agmres->neig += 1; /* Augment the number of eigenvalues to deflate if the convergence is too slow */ }
+        /* Augment the number of eigenvalues to deflate if the convergence is too slow */
+        if (!agmres->force && ((test > agmres->bgv * (ksp->max_it - ksp->its)) && ((agmres->r + 1) < agmres->max_neig))) agmres->neig += 1;
         PetscCall(KSPDGMRESComputeDeflationData_DGMRES(ksp, &agmres->neig));
       }
     }

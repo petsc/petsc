@@ -840,18 +840,18 @@ int main(int argc, char **argv)
 
    test:
      suffix: 2
-     args: -pc_type mg -ksp_converged_reason -snes_view -pc_mg_galerkin pmat -snes_grid_sequence 3 -mg_levels_ksp_norm_type unpreconditioned -snes_monitor_short -mg_levels_ksp_chebyshev_esteig 0.5,1.1 -mg_levels_pc_type sor -pc_mg_type full -ksp_atol -1.
+     args: -pc_type mg -ksp_converged_reason -snes_view -pc_mg_galerkin pmat -snes_grid_sequence 3 -mg_levels_ksp_norm_type unpreconditioned -snes_monitor_short -mg_levels_ksp_chebyshev_esteig 0.5,1.1 -mg_levels_pc_type sor -pc_mg_type full -ksp_atol 0
 
    test:
      suffix: 3
      nsize: 2
-     args: -snes_grid_sequence 2 -snes_mf_operator -snes_converged_reason -snes_view -pc_type mg -snes_atol -1 -snes_rtol 1.e-2
+     args: -snes_grid_sequence 2 -snes_mf_operator -snes_converged_reason -snes_view -pc_type mg -snes_atol 0 -snes_rtol 1.e-2
      filter: grep -v "otal number of function evaluations"
 
    test:
      suffix: 4
      nsize: 2
-     args: -snes_grid_sequence 2 -snes_monitor_short -ksp_converged_reason -snes_converged_reason -snes_view -pc_type mg -snes_atol -1 -ksp_atol -1
+     args: -snes_grid_sequence 2 -snes_monitor_short -ksp_converged_reason -snes_converged_reason -snes_view -pc_type mg -snes_atol 0 -ksp_atol 0
 
    test:
      suffix: 5_anderson

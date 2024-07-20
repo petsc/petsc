@@ -99,7 +99,7 @@ TS Object: 1 MPI process
         SNES Object: (npc_fas_levels_1_) 1 MPI process
           type: ms
             multi-stage method type: m62
-          maximum iterations=5, maximum function evaluations=30000
+          maximum iterations=5, maximum function evaluations=10000
           tolerances: relative=0., absolute=0., solution=0.
           norm schedule FINALONLY
           KSP Object: (npc_fas_levels_1_) 1 MPI process
@@ -133,7 +133,7 @@ TS Object: 1 MPI process
         SNES Object: (npc_fas_levels_2_) 1 MPI process
           type: ms
             multi-stage method type: m62
-          maximum iterations=5, maximum function evaluations=30000
+          maximum iterations=5, maximum function evaluations=10000
           tolerances: relative=0., absolute=0., solution=0.
           norm schedule FINALONLY
           KSP Object: (npc_fas_levels_2_) 1 MPI process

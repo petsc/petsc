@@ -256,7 +256,7 @@ int main(int argc, char **argv)
   /* Set routine for function and gradient evaluation  */
   PetscCall(TaoSetObjectiveAndGradient(tao, NULL, FormFunctionGradient, (void *)&appctx));
   /* Check for any TAO command line options  */
-  PetscCall(TaoSetTolerances(tao, 1e-8, PETSC_DEFAULT, PETSC_DEFAULT));
+  PetscCall(TaoSetTolerances(tao, 1e-8, PETSC_CURRENT, PETSC_CURRENT));
   PetscCall(TaoSetFromOptions(tao));
   PetscCall(TaoSolve(tao));
 

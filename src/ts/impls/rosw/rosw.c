@@ -735,10 +735,10 @@ PetscErrorCode TSRosWRegisterAll(void)
 
     PetscCall(TSRosWRegister(TSROSWARK3, 3, 4, &A[0][0], &Gamma[0][0], b, b2, 3, &binterpt[0][0]));
   }
-  PetscCall(TSRosWRegisterRos4(TSROSWGRK4T, 0.231, PETSC_DEFAULT, PETSC_DEFAULT, 0, -0.1282612945269037e+01));
-  PetscCall(TSRosWRegisterRos4(TSROSWSHAMP4, 0.5, PETSC_DEFAULT, PETSC_DEFAULT, 0, 125. / 108.));
-  PetscCall(TSRosWRegisterRos4(TSROSWVELDD4, 0.22570811482256823492, PETSC_DEFAULT, PETSC_DEFAULT, 0, -1.355958941201148));
-  PetscCall(TSRosWRegisterRos4(TSROSW4L, 0.57282, PETSC_DEFAULT, PETSC_DEFAULT, 0, -1.093502252409163));
+  PetscCall(TSRosWRegisterRos4(TSROSWGRK4T, 0.231, PETSC_CURRENT, PETSC_CURRENT, 0, -0.1282612945269037e+01));
+  PetscCall(TSRosWRegisterRos4(TSROSWSHAMP4, 0.5, PETSC_CURRENT, PETSC_CURRENT, 0, 125. / 108.));
+  PetscCall(TSRosWRegisterRos4(TSROSWVELDD4, 0.22570811482256823492, PETSC_CURRENT, PETSC_CURRENT, 0, -1.355958941201148));
+  PetscCall(TSRosWRegisterRos4(TSROSW4L, 0.57282, PETSC_CURRENT, PETSC_CURRENT, 0, -1.093502252409163));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -944,15 +944,15 @@ PetscErrorCode TSRosWRegister(TSRosWType name, PetscInt order, PetscInt s, const
   Input Parameters:
 + name  - identifier for method
 . gamma - leading coefficient (diagonal entry)
-. a2    - design parameter, see Table 7.2 of Hairer&Wanner
-. a3    - design parameter or PETSC_DEFAULT to satisfy one of the order five conditions (Eq 7.22)
-. b3    - design parameter, see Table 7.2 of Hairer&Wanner
+. a2    - design parameter, see Table 7.2 of {cite}`wanner1996solving`
+. a3    - design parameter or `PETSC_DETERMINE` to satisfy one of the order five conditions (Eq 7.22)
+. b3    - design parameter, see Table 7.2 of {cite}`wanner1996solving`
 - e4    - design parameter for embedded method, see coefficient E4 in ros4.f code from Hairer
 
   Level: developer
 
   Notes:
-  This routine encodes the design of fourth order Rosenbrock methods as described in Hairer and Wanner volume 2.
+  This routine encodes the design of fourth order Rosenbrock methods as described in {cite}`wanner1996solving`
   It is used here to implement several methods from the book and can be used to experiment with new methods.
   It was written this way instead of by copying coefficients in order to provide better than double precision satisfaction of the order conditions.
 
@@ -969,8 +969,8 @@ PetscErrorCode TSRosWRegisterRos4(TSRosWType name, PetscReal gamma, PetscReal a2
   PetscFunctionBegin;
   /* Step 1: choose Gamma (input) */
   /* Step 2: choose a2,a3,a4; b1,b2,b3,b4 to satisfy order conditions */
-  if (a3 == (PetscReal)PETSC_DEFAULT) a3 = (one / five - a2 / four) / (one / four - a2 / three); /* Eq 7.22 */
-  a4 = a3;                                                                                       /* consequence of 7.20 */
+  if (a3 == (PetscReal)PETSC_DEFAULT || a3 == (PetscReal)PETSC_DETERMINE) a3 = (one / five - a2 / four) / (one / four - a2 / three); /* Eq 7.22 */
+  a4 = a3;                                                                                                                           /* consequence of 7.20 */
 
   /* Solve order conditions 7.15a, 7.15c, 7.15e */
   M[0][0] = one;

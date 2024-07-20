@@ -103,7 +103,7 @@ static PetscErrorCode KSPSolve_TSIRM(KSP ksp)
         PetscCall(KSPSetType(ksp_min, KSPLSQR));
       }
       PetscCall(KSPSetOperators(ksp_min, AS, AS));
-      PetscCall(KSPSetTolerances(ksp_min, tsirm->tol_ls, PETSC_DEFAULT, PETSC_DEFAULT, tsirm->maxiter_ls));
+      PetscCall(KSPSetTolerances(ksp_min, tsirm->tol_ls, PETSC_CURRENT, PETSC_CURRENT, tsirm->maxiter_ls));
       PetscCall(KSPGetPC(ksp_min, &pc_min));
       PetscCall(PCSetType(pc_min, PCNONE));
       PetscCall(KSPSolve(ksp_min, b, tsirm->Alpha)); /* Find Alpha such that ||AS Alpha = b|| */
@@ -209,7 +209,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_TSIRM(KSP ksp)
   PetscCall(KSPGetPC(ksp, &pc));
   PetscCall(PCSetType(pc, PCKSP));
   PetscCall(PCKSPGetKSP(pc, &sub_ksp));
-  PetscCall(KSPSetTolerances(sub_ksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 30));
+  PetscCall(KSPSetTolerances(sub_ksp, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT, 30));
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "This is not supported for complex numbers");
 #else

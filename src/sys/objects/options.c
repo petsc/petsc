@@ -2223,7 +2223,7 @@ PetscErrorCode PetscOptionsStringToBool(const char value[], PetscBool *a)
 PetscErrorCode PetscOptionsStringToInt(const char name[], PetscInt *a)
 {
   size_t    len;
-  PetscBool decide, tdefault, mouse;
+  PetscBool decide, tdefault, mouse, unlimited;
 
   PetscFunctionBegin;
   PetscCall(PetscStrlen(name, &len));
@@ -2233,10 +2233,15 @@ PetscErrorCode PetscOptionsStringToInt(const char name[], PetscInt *a)
   if (!tdefault) PetscCall(PetscStrcasecmp(name, "DEFAULT", &tdefault));
   PetscCall(PetscStrcasecmp(name, "PETSC_DECIDE", &decide));
   if (!decide) PetscCall(PetscStrcasecmp(name, "DECIDE", &decide));
+  if (!decide) PetscCall(PetscStrcasecmp(name, "PETSC_DETERMINE", &decide));
+  if (!decide) PetscCall(PetscStrcasecmp(name, "DETERMINE", &decide));
+  PetscCall(PetscStrcasecmp(name, "PETSC_UNLIMITED", &unlimited));
+  if (!unlimited) PetscCall(PetscStrcasecmp(name, "UNLIMITED", &unlimited));
   PetscCall(PetscStrcasecmp(name, "mouse", &mouse));
 
   if (tdefault) *a = PETSC_DEFAULT;
   else if (decide) *a = PETSC_DECIDE;
+  else if (unlimited) *a = PETSC_UNLIMITED;
   else if (mouse) *a = -1;
   else {
     char *endptr;
@@ -2334,6 +2339,20 @@ PetscErrorCode PetscOptionsStringToReal(const char name[], PetscReal *a)
   if (!match) PetscCall(PetscStrcasecmp(name, "DECIDE", &match));
   if (match) {
     *a = PETSC_DECIDE;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+
+  PetscCall(PetscStrcasecmp(name, "PETSC_DETERMINE", &match));
+  if (!match) PetscCall(PetscStrcasecmp(name, "DETERMINE", &match));
+  if (match) {
+    *a = PETSC_DETERMINE;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+
+  PetscCall(PetscStrcasecmp(name, "PETSC_UNLIMITED", &match));
+  if (!match) PetscCall(PetscStrcasecmp(name, "UNLIMITED", &match));
+  if (match) {
+    *a = PETSC_UNLIMITED;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -2557,6 +2576,10 @@ PetscErrorCode PetscOptionsGetEnum(PetscOptions options, const char pre[], const
   If the user does not supply the option `ivalue` is NOT changed. Thus
   you should ALWAYS initialize the `ivalue` if you access it without first checking that the `set` flag is true.
 
+  Accepts the special values `determine`, `decide` and `unlimited`.
+
+  Accepts the deprecated value `default`.
+
 .seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
           `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`,
@@ -2604,7 +2627,11 @@ PetscErrorCode PetscOptionsGetInt(PetscOptions options, const char pre[], const 
 
   Level: beginner
 
-  Note:
+  Notes:
+  Accepts the special values `determine`, `decide` and `unlimited`.
+
+  Accepts the deprecated value `default`
+
   If the user does not supply the option `dvalue` is NOT changed. Thus
   you should ALWAYS initialize `dvalue` if you access it without first checking that the `set` flag is true.
 

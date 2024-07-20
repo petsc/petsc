@@ -20,7 +20,15 @@
 
   Level: intermediate
 
-.seealso: [](ch_snes), `SNES`, `SNESNCG`, `SNESSetTrustRegionTolerance()`
+  Notes:
+  Use `PETSC_CURRENT` to retain the value for any parameter
+
+  All parameters must be non-negative
+
+  Developer Note:
+  Why can't the values set with `SNESSetTolerances()` be used?
+
+.seealso: [](ch_snes), `SNES`, `SNESNCG`, `SNESSetTolerances()`, `SNESSetTrustRegionTolerance()`
 @*/
 PetscErrorCode SNESNGSSetTolerances(SNES snes, PetscReal abstol, PetscReal rtol, PetscReal stol, PetscInt maxit)
 {
@@ -29,19 +37,19 @@ PetscErrorCode SNESNGSSetTolerances(SNES snes, PetscReal abstol, PetscReal rtol,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
 
-  if (abstol != (PetscReal)PETSC_DEFAULT) {
+  if (abstol != (PetscReal)PETSC_CURRENT) {
     PetscCheck(abstol >= 0.0, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Absolute tolerance %g must be non-negative", (double)abstol);
     gs->abstol = abstol;
   }
-  if (rtol != (PetscReal)PETSC_DEFAULT) {
+  if (rtol != (PetscReal)PETSC_CURRENT) {
     PetscCheck(rtol >= 0.0 && rtol < 1.0, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Relative tolerance %g must be non-negative and less than 1.0", (double)rtol);
     gs->rtol = rtol;
   }
-  if (stol != (PetscReal)PETSC_DEFAULT) {
+  if (stol != (PetscReal)PETSC_CURRENT) {
     PetscCheck(stol >= 0.0, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Step tolerance %g must be non-negative", (double)stol);
     gs->stol = stol;
   }
-  if (maxit != PETSC_DEFAULT) {
+  if (maxit != PETSC_CURRENT) {
     PetscCheck(maxit >= 0, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Maximum number of iterations %" PetscInt_FMT " must be non-negative", maxit);
     gs->max_its = maxit;
   }
@@ -160,8 +168,8 @@ static PetscErrorCode SNESSetUp_NGS(SNES snes)
 static PetscErrorCode SNESSetFromOptions_NGS(SNES snes, PetscOptionItems *PetscOptionsObject)
 {
   SNES_NGS *gs = (SNES_NGS *)snes->data;
-  PetscInt  sweeps, max_its = PETSC_DEFAULT;
-  PetscReal rtol = PETSC_DEFAULT, atol = PETSC_DEFAULT, stol = PETSC_DEFAULT;
+  PetscInt  sweeps, max_its = PETSC_CURRENT;
+  PetscReal rtol = PETSC_CURRENT, atol = PETSC_CURRENT, stol = PETSC_CURRENT;
   PetscBool flg, flg1, flg2, flg3;
 
   PetscFunctionBegin;
@@ -301,7 +309,7 @@ static PetscErrorCode SNESSolve_NGS(SNES snes)
   its parent's Gauss-Seidel routine associated with it.
 
   By default this routine computes the solution norm at each iteration, this can be time consuming, you can turn this off with `SNESSetNormSchedule()`
-  or -snes_norm_schedule none
+  or `-snes_norm_schedule none`
 
 .seealso: [](ch_snes), `SNESNCG`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESSetNGS()`, `SNESType`, `SNESNGSSetSweeps()`, `SNESNGSSetTolerances()`,
           `SNESSetNormSchedule()`, `SNESNGSGetTolerances()`, `SNESNGSSetSweeps()`
@@ -319,25 +327,21 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NGS(SNES snes)
   snes->ops->solve          = SNESSolve_NGS;
   snes->ops->reset          = SNESReset_NGS;
 
-  snes->usesksp = PETSC_FALSE;
-  snes->usesnpc = PETSC_FALSE;
-
+  snes->usesksp                     = PETSC_FALSE;
+  snes->usesnpc                     = PETSC_FALSE;
   snes->alwayscomputesfinalresidual = PETSC_FALSE;
 
-  if (!snes->tolerancesset) {
-    snes->max_its   = 10000;
-    snes->max_funcs = 10000;
-  }
+  PetscCall(SNESParametersInitialize(snes));
+  PetscObjectParameterSetDefault(snes, max_funcs, 10000);
+  PetscObjectParameterSetDefault(snes, max_its, 10000);
 
   PetscCall(PetscNew(&gs));
-
   gs->sweeps  = 1;
   gs->rtol    = 1e-5;
   gs->abstol  = PETSC_MACHINE_EPSILON;
   gs->stol    = 1000 * PETSC_MACHINE_EPSILON;
   gs->max_its = 50;
   gs->h       = PETSC_SQRT_MACHINE_EPSILON;
-
-  snes->data = (void *)gs;
+  snes->data  = (void *)gs;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

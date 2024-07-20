@@ -103,6 +103,7 @@ cdef extern from * nogil:
     PetscErrorCode TaoSolve(PetscTAO)
 
     PetscErrorCode TaoSetTolerances(PetscTAO, PetscReal, PetscReal, PetscReal)
+    PetscErrorCode TaoParametersInitialize(PetscTAO)
     PetscErrorCode TaoGetTolerances(PetscTAO, PetscReal*, PetscReal*, PetscReal*)
     PetscErrorCode TaoSetConstraintTolerances(PetscTAO, PetscReal, PetscReal)
     PetscErrorCode TaoGetConstraintTolerances(PetscTAO, PetscReal*, PetscReal*)

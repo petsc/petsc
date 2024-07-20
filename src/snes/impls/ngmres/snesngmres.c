@@ -503,10 +503,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES snes)
   snes->data    = (void *)ngmres;
   ngmres->msize = 30;
 
-  if (!snes->tolerancesset) {
-    snes->max_funcs = 30000;
-    snes->max_its   = 10000;
-  }
+  PetscCall(SNESParametersInitialize(snes));
+  PetscObjectParameterSetDefault(snes, max_funcs, 30000);
+  PetscObjectParameterSetDefault(snes, max_its, 10000);
 
   ngmres->candidate = PETSC_FALSE;
 

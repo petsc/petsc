@@ -53,8 +53,8 @@ static PetscErrorCode TaoADMMToleranceUpdate(Tao tao)
    * Set gatol to be gatol_admm *  ||A^Ty|| *
    * while cnorm is ||r_k||_2, and gnorm is ||d_k||_2 */
   temp = am->catol_admm * PetscMax(Axnorm, (!am->const_norm) ? Bznorm : PetscMax(Bznorm, am->const_norm));
-  PetscCall(TaoSetConstraintTolerances(tao, temp, PETSC_DEFAULT));
-  PetscCall(TaoSetTolerances(tao, am->gatol_admm * ATynorm, PETSC_DEFAULT, PETSC_DEFAULT));
+  PetscCall(TaoSetConstraintTolerances(tao, temp, PETSC_CURRENT));
+  PetscCall(TaoSetTolerances(tao, am->gatol_admm * ATynorm, PETSC_CURRENT, PETSC_CURRENT));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -604,8 +604,8 @@ static PetscErrorCode TaoSetUp_ADMM(Tao tao)
   }
 
   /* Save changed tao tolerance for adaptive tolerance */
-  if (tao->gatol_changed) am->gatol_admm = tao->gatol;
-  if (tao->catol_changed) am->catol_admm = tao->catol;
+  if (tao->gatol != tao->default_gatol) am->gatol_admm = tao->gatol;
+  if (tao->catol != tao->default_catol) am->catol_admm = tao->catol;
 
   /*Update spectral and dual elements to X subsolver */
   PetscCall(TaoSetObjectiveAndGradient(am->subsolverX, NULL, SubObjGradUpdate, tao));
@@ -708,6 +708,8 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ADMM(Tao tao)
   tao->ops->setfromoptions = TaoSetFromOptions_ADMM;
   tao->ops->view           = TaoView_ADMM;
   tao->ops->solve          = TaoSolve_ADMM;
+
+  PetscCall(TaoParametersInitialize(tao));
 
   tao->data           = (void *)am;
   am->l1epsilon       = 1e-6;

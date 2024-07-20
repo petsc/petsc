@@ -173,7 +173,7 @@ int main(int argc, char **args)
        we can then directly call any KSP and PC routines to set
        various options.
   */
-  PetscCall(KSPSetTolerances(ksp, 1.e-6, PETSC_DEFAULT, PETSC_DEFAULT, 200));
+  PetscCall(KSPSetTolerances(ksp, 1.e-6, PETSC_CURRENT, PETSC_CURRENT, 200));
 
   /*
     Set runtime options, e.g.,

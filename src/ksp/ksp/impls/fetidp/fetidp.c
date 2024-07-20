@@ -1082,11 +1082,11 @@ static PetscErrorCode KSPSetUp_FETIDP(KSP ksp)
   PetscCall(PCSetUp(fetidp->innerbddc));
   /* FETI-DP as it is implemented needs an exact coarse solver */
   if (pcbddc->coarse_ksp) {
-    PetscCall(KSPSetTolerances(pcbddc->coarse_ksp, PETSC_SMALL, PETSC_SMALL, PETSC_DEFAULT, 1000));
+    PetscCall(KSPSetTolerances(pcbddc->coarse_ksp, PETSC_SMALL, PETSC_SMALL, PETSC_CURRENT, 1000));
     PetscCall(KSPSetNormType(pcbddc->coarse_ksp, KSP_NORM_DEFAULT));
   }
   /* FETI-DP as it is implemented needs exact local Neumann solvers */
-  PetscCall(KSPSetTolerances(pcbddc->ksp_R, PETSC_SMALL, PETSC_SMALL, PETSC_DEFAULT, 1000));
+  PetscCall(KSPSetTolerances(pcbddc->ksp_R, PETSC_SMALL, PETSC_SMALL, PETSC_CURRENT, 1000));
   PetscCall(KSPSetNormType(pcbddc->ksp_R, KSP_NORM_DEFAULT));
 
   /* setup FETI-DP operators

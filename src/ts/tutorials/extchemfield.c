@@ -26,7 +26,7 @@ static const char help[] = "Integrate chemistry using TChem.\n";
        cp $PETSC_DIR/$PETSC_ARCH/externalpackages/tchem/data/periodictable.dat .
 
     Run with
-     ./extchemfield  -ts_arkimex_fully_implicit -ts_max_snes_failures -1 -ts_adapt_monitor -ts_adapt_dt_max 1e-4 -ts_arkimex_type 4 -ts_max_time .005
+     ./extchemfield  -ts_arkimex_fully_implicit -ts_max_snes_failures unlimited -ts_adapt_monitor -ts_adapt_dt_max 1e-4 -ts_arkimex_type 4 -ts_max_time .005
 
      Options for visualizing the solution:
         Watch certain variables in each cell evolve with time

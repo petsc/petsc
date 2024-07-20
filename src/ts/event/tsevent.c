@@ -212,7 +212,7 @@ PetscErrorCode TSSetPostEventSecondStep(TS ts, PetscReal dt2)
 
   Input Parameters:
 + ts   - time integration context
-. tol  - tolerance, `PETSC_DECIDE` or `PETSC_DEFAULT` to leave the current value
+. tol  - tolerance, `PETSC_CURRENT` to leave the current value
 - vtol - array of tolerances or `NULL`, used in preference to `tol` if present
 
   Options Database Key:
@@ -243,7 +243,7 @@ PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[])
   if (vtol) {
     for (PetscInt i = 0; i < event->nevents; i++) event->vtol[i] = vtol[i];
   } else {
-    if (tol != (PetscReal)PETSC_DECIDE && tol != (PetscReal)PETSC_DEFAULT) {
+    if (tol != (PetscReal)PETSC_CURRENT) {
       for (PetscInt i = 0; i < event->nevents; i++) event->vtol[i] = tol;
     }
   }

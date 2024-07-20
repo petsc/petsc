@@ -862,6 +862,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Multiblock(SNES snes)
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
+  PetscCall(SNESParametersInitialize(snes));
+
   PetscCall(PetscNew(&mb));
   snes->data    = (void *)mb;
   mb->defined   = PETSC_FALSE;

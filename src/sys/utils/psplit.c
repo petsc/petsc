@@ -46,23 +46,23 @@ PetscErrorCode PetscSplitOwnershipBlock(MPI_Comm comm, PetscInt bs, PetscInt *n,
   PetscSplitOwnership - Given a global (or local) length determines a local
   (or global) length via a simple formula
 
-  Collective (if `n` or `N` is `PETSC_DECIDE`)
+  Collective (if `n` or `N` is `PETSC_DECIDE` or `PETSC_DETERMINE`)
 
   Input Parameters:
 + comm - MPI communicator that shares the object being divided
 . n    - local length (or `PETSC_DECIDE` to have it set)
-- N    - global length (or `PETSC_DECIDE`)
+- N    - global length (or `PETSC_DETERMINE` to have it set)
 
   Level: developer
 
   Notes:
-  `n` and `N` cannot be both `PETSC_DECIDE`
+  `n` and `N` cannot be both `PETSC_DECIDE` and `PETSC_DETERMINE`
 
-  If one processor calls this with `n` or `N` of `PETSC_DECIDE` then all processors
+  If one processor calls this with `n` of `PETSC_DECIDE` (or with `N` `PETSC_DETERMINE`) then all processors
   must. Otherwise, an error is thrown in debug mode while the program will hang
   in optimized (i.e. configured --with-debugging=0) mode.
 
-.seealso: `PetscSplitOwnershipBlock()`, `PetscSplitOwnershipEqual()`
+.seealso: `PetscSplitOwnershipBlock()`, `PetscSplitOwnershipEqual()`, `PETSC_DECIDE`, `PETSC_DETERMINE`
 @*/
 PetscErrorCode PetscSplitOwnership(MPI_Comm comm, PetscInt *n, PetscInt *N)
 {

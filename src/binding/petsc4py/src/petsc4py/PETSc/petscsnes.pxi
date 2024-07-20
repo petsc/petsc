@@ -89,6 +89,7 @@ cdef extern from * nogil:
                                                         void*) except PETSC_ERR_PYTHON
 
     PetscErrorCode SNESCreate(MPI_Comm, PetscSNES*)
+    PetscErrorCode SNESParametersInitialize(PetscSNES)
     PetscErrorCode SNESDestroy(PetscSNES*)
     PetscErrorCode SNESView(PetscSNES, PetscViewer)
 

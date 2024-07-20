@@ -303,3 +303,10 @@ PetscErrorCode FormJacobianLocalVec(DMDALocalInfo *info, Vec x, Mat jac, Mat jac
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
+
+/*TEST
+
+    build:
+      requires: TODO
+
+TEST*/
