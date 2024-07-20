@@ -126,8 +126,8 @@ int main(int argc, char **argv)
   if (inplace) {
     Mat RHS2;
 
+    if (!ldl) PetscCall(MatSetOption(mat, MAT_SPD, PETSC_TRUE));
     PetscCall(MatDuplicate(mat, MAT_COPY_VALUES, &F));
-    if (!ldl) PetscCall(MatSetOption(F, MAT_SPD, PETSC_TRUE));
     PetscCall(MatCholeskyFactor(F, perm, 0));
     PetscCall(MatSolve(F, b, y));
     PetscCall(VecAXPY(y, -1.0, x));
@@ -144,8 +144,8 @@ int main(int argc, char **argv)
   }
 
   /* out-of-place Cholesky */
+  if (!ldl) PetscCall(MatSetOption(mat, MAT_SPD, PETSC_TRUE));
   PetscCall(MatGetFactor(mat, solver, MAT_FACTOR_CHOLESKY, &F));
-  if (!ldl) PetscCall(MatSetOption(F, MAT_SPD, PETSC_TRUE));
   PetscCall(MatCholeskyFactorSymbolic(F, mat, perm, 0));
   PetscCall(MatCholeskyFactorNumeric(F, mat, 0));
   PetscCall(MatSolve(F, b, y));
