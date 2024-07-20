@@ -32,7 +32,7 @@ PetscLogEvent AO_PetscToApplication, AO_ApplicationToPetsc;
   The user can open an alternative visualization context with
   `PetscViewerASCIIOpen()` - output to a specified file.
 
-.seealso: [](sec_ao), `AO`, `PetscViewerASCIIOpen()`
+.seealso: [](sec_ao), `AO`, `PetscViewerASCIIOpen()`, `AOViewFromOptions()`
 @*/
 PetscErrorCode AOView(AO ao, PetscViewer viewer)
 {
@@ -53,12 +53,12 @@ PetscErrorCode AOView(AO ao, PetscViewer viewer)
 
   Input Parameters:
 + ao   - the application ordering context
-. obj  - Optional object
+. obj  - optional object that provides the prefix used to search the options database
 - name - command line option
 
   Level: intermediate
 
-.seealso: [](sec_ao), `AO`, `AOView`, `PetscObjectViewFromOptions()`, `AOCreate()`
+.seealso: [](sec_ao), `AO`, `AOView()`, `PetscObjectViewFromOptions()`, `AOCreate()`
 @*/
 PetscErrorCode AOViewFromOptions(AO ao, PetscObject obj, const char name[])
 {
@@ -100,7 +100,6 @@ PetscErrorCode AODestroy(AO *ao)
 }
 
 #include <../src/vec/is/is/impls/general/general.h>
-/* ---------------------------------------------------------------------*/
 
 PETSC_INTERN PetscErrorCode ISSetUp_General(IS);
 
@@ -120,14 +119,14 @@ PETSC_INTERN PetscErrorCode ISSetUp_General(IS);
   Level: intermediate
 
   Notes:
-  The index set cannot be of type stride or block
+  The index set cannot be of `ISType` `ISSTRIDE` or `ISBLOCK`.
 
   Any integers in is that are negative are left unchanged. This
   allows one to convert, for example, neighbor lists that use negative
   entries to indicate nonexistent neighbors due to boundary conditions etc.
 
 .seealso: [](sec_ao), `AO`, `AOCreateBasic()`, `AOView()`, `AOApplicationToPetsc()`,
-          `AOApplicationToPetscIS()`, `AOPetscToApplication()`
+          `AOApplicationToPetscIS()`, `AOPetscToApplication()`, `ISSTRIDE`, `ISBLOCK`
 @*/
 PetscErrorCode AOPetscToApplicationIS(AO ao, IS is)
 {
@@ -164,14 +163,14 @@ PetscErrorCode AOPetscToApplicationIS(AO ao, IS is)
   Level: beginner
 
   Notes:
-  The index set cannot be of type stride or block
+  The index set cannot be of `ISType` `ISSTRIDE` or `ISBLOCK`
 
   Any integers in is that are negative are left unchanged. This
   allows one to convert, for example, neighbor lists that use negative
   entries to indicate nonexistent neighbors due to boundary conditions, etc.
 
 .seealso: [](sec_ao), `AO`, `AOCreateBasic()`, `AOView()`, `AOPetscToApplication()`,
-          `AOPetscToApplicationIS()`, `AOApplicationToPetsc()`
+          `AOPetscToApplicationIS()`, `AOApplicationToPetsc()`, `ISSTRIDE`, `ISBLOCK`
 @*/
 PetscErrorCode AOApplicationToPetscIS(AO ao, IS is)
 {
@@ -208,7 +207,7 @@ PetscErrorCode AOApplicationToPetscIS(AO ao, IS is)
   Level: beginner
 
   Note:
-  Any integers in ia[] that are negative are left unchanged. This
+  Any integers in `ia` that are negative are left unchanged. This
   allows one to convert, for example, neighbor lists that use negative
   entries to indicate nonexistent neighbors due to boundary conditions, etc.
 
@@ -243,7 +242,7 @@ PetscErrorCode AOPetscToApplication(AO ao, PetscInt n, PetscInt ia[])
   Level: beginner
 
   Notes:
-  Any integers in ia[] that are negative are left unchanged. This
+  Any integers in `ia` that are negative are left unchanged. This
   allows one to convert, for example, neighbor lists that use negative
   entries to indicate nonexistent neighbors due to boundary conditions, etc.
 
@@ -278,12 +277,12 @@ PetscErrorCode AOApplicationToPetsc(AO ao, PetscInt n, PetscInt ia[])
   Level: beginner
 
   Notes:
-  The length of the array should be block*N, where N is length
-  provided to the AOCreate*() method that created the AO.
+  The length of the array should be $block*N$, where `N` is length
+  provided to the AOCreate*() method that created the `AO`.
 
-  The permutation takes array[i_pet] --> array[i_app], where i_app is
-  the index of 'i' in the application ordering and i_pet is the index
-  of 'i' in the petsc ordering.
+  The permutation takes `array[i_pet] --> array[i_app]`, where `i_app` is
+  the index of `i` in the application ordering and `i_pet` is the index
+  of `i` in the PETSc ordering.
 
 .seealso: [](sec_ao), `AO`, `AOCreateBasic()`, `AOView()`, `AOApplicationToPetsc()`, `AOPetscToApplicationIS()`
 @*/
@@ -313,12 +312,12 @@ PetscErrorCode AOPetscToApplicationPermuteInt(AO ao, PetscInt block, PetscInt ar
   Level: beginner
 
   Notes:
-  The length of the array should be block*N, where N is length
-  provided to the AOCreate*() method that created the AO.
+  The length of the array should be $ block*N $, where `N` is length
+  provided to the AOCreate*() method that created the `AO`.
 
-  The permutation takes array[i_app] --> array[i_pet], where i_app is
-  the index of 'i' in the application ordering and i_pet is the index
-  of 'i' in the petsc ordering.
+  The permutation takes `array[i_app] --> array[i_pet]`, where `i_app` is
+  the index of `i` in the application ordering and `i_pet` is the index
+  of `i` in the PETSc ordering.
 
 .seealso: [](sec_ao), `AO`, `AOCreateBasic()`, `AOView()`, `AOPetscToApplicationIS()`, `AOApplicationToPetsc()`
 @*/
@@ -348,12 +347,12 @@ PetscErrorCode AOApplicationToPetscPermuteInt(AO ao, PetscInt block, PetscInt ar
   Level: beginner
 
   Notes:
-  The length of the array should be block*N, where N is length
-  provided to the AOCreate*() method that created the AO.
+  The length of the array should be $block*N$, where `N` is length
+  provided to the AOCreate*() method that created the `AO`.
 
-  The permutation takes array[i_pet] --> array[i_app], where i_app is
-  the index of 'i' in the application ordering and i_pet is the index
-  of 'i' in the petsc ordering.
+  The permutation takes `array[i_pet] --> array[i_app]`, where `i_app` is
+  the index of `i` in the application ordering and `i_pet` is the index
+  of `i` in the PETSc ordering.
 
 .seealso: [](sec_ao), `AO`, `AOCreateBasic()`, `AOView()`, `AOApplicationToPetsc()`, `AOPetscToApplicationIS()`
 @*/
@@ -383,12 +382,12 @@ PetscErrorCode AOPetscToApplicationPermuteReal(AO ao, PetscInt block, PetscReal 
   Level: beginner
 
   Notes:
-  The length of the array should be block*N, where N is length
-  provided to the AOCreate*() method that created the AO.
+  The length of the array should be $block*N$, where `N` is length
+  provided to the AOCreate*() method that created the `AO`.
 
-  The permutation takes array[i_app] --> array[i_pet], where i_app is
-  the index of 'i' in the application ordering and i_pet is the index
-  of 'i' in the petsc ordering.
+  The permutation takes `array[i_app] --> array[i_pet]`, where `i_app` is
+  the index of `i` in the application ordering and `i_pet` is the index
+  of `i` in the PETSc ordering.
 
 .seealso: [](sec_ao), `AO`, `AOCreateBasic()`, `AOView()`, `AOApplicationToPetsc()`, `AOPetscToApplicationIS()`
 @*/
@@ -408,6 +407,9 @@ PetscErrorCode AOApplicationToPetscPermuteReal(AO ao, PetscInt block, PetscReal 
 
   Input Parameter:
 . ao - the application ordering
+
+  Options Database Key:
+. -ao_type <basic, memoryscalable> - sets the type of the `AO`
 
   Level: beginner
 
@@ -441,15 +443,13 @@ PetscErrorCode AOSetFromOptions(AO ao)
   Input Parameters:
 + ao      - the application ordering
 . isapp   - index set that defines an ordering
-- ispetsc - index set that defines another ordering (may be `NULL` to use the
-             natural ordering)
+- ispetsc - index set that defines another ordering (may be `NULL` to use the natural ordering)
 
   Level: beginner
 
-  Notes:
-  The index sets isapp and ispetsc are used only for creation of ao.
-
-  This routine increases the reference count of isapp and ispetsc so you may/should destroy these arguments after this call if you no longer need them
+  Note:
+  This routine increases the reference count of `isapp` and `ispetsc` so you may/should destroy these arguments after this call
+  if you no longer need them
 
 .seealso: [](sec_ao), [](sec_scatter), `AO`, `AOCreate()`, `AODestroy()`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
 @*/
@@ -483,12 +483,12 @@ PetscErrorCode AOSetIS(AO ao, IS isapp, IS ispetsc)
 . ao - the new application ordering
 
   Options Database Key:
-+ -ao_type <aotype> - create ao with particular format
-- -ao_view          - call AOView() at the conclusion of AOCreate()
++ -ao_type <aotype> - create `AO` with particular format
+- -ao_view          - call `AOView()` at the conclusion of `AOCreate()`
 
   Level: beginner
 
-.seealso: [](sec_ao), `AO`, `AOSetIS()`, `AODestroy()`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
+.seealso: [](sec_ao), `AO`, `AOView()`, `AOSetIS()`, `AODestroy()`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
 @*/
 PetscErrorCode AOCreate(MPI_Comm comm, AO *ao)
 {

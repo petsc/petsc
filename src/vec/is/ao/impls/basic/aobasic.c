@@ -1,6 +1,6 @@
 /*
     The most basic AO application ordering routines. These store the
-  entire orderings on each processor.
+  entire orderings on each processor to be efficient but can require excessive memory
 */
 
 #include <../src/vec/is/ao/aoimpl.h> /*I  "petscao.h"   I*/
@@ -256,7 +256,7 @@ PETSC_INTERN PetscErrorCode AOCreate_Basic(AO ao)
 
   Input Parameters:
 + comm    - MPI communicator that is to share `AO`
-. napp    - size of integer arrays
+. napp    - size of `myapp` and `mypetsc`
 . myapp   - integer array that defines an ordering
 - mypetsc - integer array that defines another ordering (may be `NULL` to
             indicate the natural ordering, that is 0,1,2,3,...)
