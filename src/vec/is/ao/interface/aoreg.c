@@ -128,8 +128,6 @@ PetscErrorCode AOGetType(AO ao, AOType *type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*--------------------------------------------------------------------------------------------------------------------*/
-
 PetscFunctionList AOList = NULL;
 
 /*@C
