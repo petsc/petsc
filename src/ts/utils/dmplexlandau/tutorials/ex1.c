@@ -309,10 +309,10 @@ PetscErrorCode Monitor(TS ts, PetscInt stepi, PetscReal time, Vec X, void *actx)
     PetscCall(TSGetSolution(ts_nrl, &U));
     if (printing) {
       PetscCall(VecGetArrayRead(U, &x));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "NRL_i_par= %9.4e NRL_i_perp= %9.4e ", (double)PetscRealPart(x[I_PAR_IDX]), (double)PetscRealPart(x[I_PERP_IDX])));
-      if (n_cm3[0] > 0) {
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "NRL_e_par= %9.4e NRL_e_perp= %9.4e\n", (double)PetscRealPart(x[E_PAR_IDX]), (double)PetscRealPart(x[E_PERP_IDX])));
-      } else PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "NRL_e_par= %9.4e NRL_e_perp= %9.4e ", (double)PetscRealPart(x[E_PAR_IDX]), (double)PetscRealPart(x[E_PERP_IDX])));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "NRL_i_par= %9.4e NRL_i_perp= %9.4e\n", (double)PetscRealPart(x[I_PAR_IDX]), (double)PetscRealPart(x[I_PERP_IDX])));
+      /* if (n_cm3[0] > 0) { */
+      /* } else PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n")); */
       PetscCall(VecRestoreArrayRead(U, &x));
     }
     // we have the next time step, so need to advance now

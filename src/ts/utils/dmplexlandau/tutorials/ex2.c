@@ -763,4 +763,10 @@ int main(int argc, char **argv)
       requires: kokkos_kernels !defined(PETSC_HAVE_CUDA_CLANG) !sycl
       args: -dm_landau_device_type kokkos -dm_mat_type aijkokkos -dm_vec_type kokkos
 
+  test:
+    requires: double !defined(PETSC_USE_DMLANDAU_2D)
+    suffix: sphere_3d
+    nsize: 1
+    args: -dim 3 -dm_landau_thermal_temps 2 -petscspace_degree 2 -ts_type beuler -ts_dt .1 -ts_max_steps 1 -dm_landau_verbose 2 -ksp_type preonly -pc_type lu -dm_landau_device_type cpu -snes_rtol 1.e-14 -snes_stol 1.e-14 -snes_converged_reason -dm_landau_sphere -dm_landau_sphere_inner_radius_90degree_scale .55 -dm_landau_sphere_inner_radius_45degree_scale .5
+
 TEST*/
