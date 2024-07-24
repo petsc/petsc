@@ -68,13 +68,13 @@ Domain radius (AMR levels) grid 0: par= 5.000e+00 perp= 5.000e+00 (0) , 1: par= 
 [0] <vec:seq> adaptToleranceFEM(): 			1) Found another inner r=1.838196e-03, cell 11, qp 1/9, d=0.000000e+00
 [0] <vec:seq> adaptToleranceFEM(): 			1) Refined 2 origin cells 6,11 r=0.0018382
 [0] <vec:seq> adaptToleranceFEM(): 				1) 28 cells, 252 total quadrature points
-0) FormLandau 720 IPs, 80 cells total, Nb=9, Nq=9, dim=2, Tab: Nb=9 Nf=2 Np=9 cdim=2 N=354 nnz=5090
-step    0) time= 5.000000e-02 temperature (eV): electron: T= 2.3470e+03 T_par= 1.8264e+03 T_perp= 2.6073e+03 ;ion: T= 1.2155e+03 T_par= 1.0861e+03 T_perp= 1.2801e+03 NRL_i_par= 2.0000e+02 NRL_i_perp= 2.6000e+02 NRL_e_par= 3.0000e+02 NRL_e_perp= 3.9000e+02
+0) FormLandau 720 IPs, 80 cells total, Nb=9, Nq=9, dim=2, Tab: Nb=9 Nf=2 Np=9 cdim=2 N=354 nnz= 5090
+step    0) time= 5.000000e-02 temperature (eV): electron: T= 2.3470e+03 T_par= 1.8264e+03 T_perp= 2.6073e+03 ;ion: T= 1.2155e+03 T_par= 1.0861e+03 T_perp= 1.2801e+03 NRL_e_par= 3.0000e+02 NRL_e_perp= 3.9000e+02 NRL_i_par= 2.0000e+02 NRL_i_perp= 2.6000e+02
   0) species-0: charge density= -1.6277448139963e+01 z-momentum=  2.1688411091105e-03 energy=  8.2717617826195e+04
   0) species-1: charge density=  1.5753533982210e+01 z-momentum= -2.3345008083890e-03 energy=  2.8729397851682e+04
 	  0) Total: charge density= -5.2391415775312e-01, momentum= -1.6565969927851e-04, energy=  1.1144701567788e+05 (m_i[0]/m_e = 3670.94, 52 cells on electron grid)
     Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 10
-step    1) time= 1.500000e-01 temperature (eV): electron: T= 2.3972e+03 T_par= 1.9303e+03 T_perp= 2.6307e+03 ;ion: T= 1.2155e+03 T_par= 1.0863e+03 T_perp= 1.2801e+03 NRL_i_par= 2.0043e+02 NRL_i_perp= 2.5986e+02 NRL_e_par= 3.2557e+02 NRL_e_perp= 3.7714e+02
+step    1) time= 1.500000e-01 temperature (eV): electron: T= 2.3972e+03 T_par= 1.9303e+03 T_perp= 2.6307e+03 ;ion: T= 1.2155e+03 T_par= 1.0863e+03 T_perp= 1.2801e+03 NRL_e_par= 3.2557e+02 NRL_e_perp= 3.7714e+02 NRL_i_par= 2.0043e+02 NRL_i_perp= 2.5986e+02
   1) species-0: charge density= -1.6277448139963e+01 z-momentum=  2.1158725343143e-03 energy=  8.2717270288358e+04
   1) species-1: charge density=  1.5753533982210e+01 z-momentum= -2.2815322335928e-03 energy=  2.8729745389519e+04
 	  1) Total: charge density= -5.2391415775313e-01, momentum= -1.6565969927850e-04, energy=  1.1144701567788e+05 (m_i[0]/m_e = 3670.94, 52 cells on electron grid)
