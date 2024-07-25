@@ -472,6 +472,8 @@ PetscErrorCode MatSchurComplementGetSubMatrices(Mat S, Mat *A00, Mat *Ap00, Mat 
 PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat A, Mat *S)
 {
   Mat       B, C, D, E = NULL, Bd, AinvBd;
+  MatType   mtype;
+  VecType   vtype;
   KSP       ksp;
   PetscInt  n, N, m, M;
   PetscBool flg = PETSC_FALSE, set, symm;
@@ -480,8 +482,12 @@ PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat A, Mat *S)
   PetscCall(MatSchurComplementGetSubMatrices(A, NULL, NULL, &B, &C, &D));
   PetscCall(MatSchurComplementGetKSP(A, &ksp));
   PetscCall(KSPSetUp(ksp));
-  PetscCall(MatConvert(B, MATDENSE, MAT_INITIAL_MATRIX, &Bd));
-  PetscCall(MatDuplicate(Bd, MAT_DO_NOT_COPY_VALUES, &AinvBd));
+  PetscCall(MatGetVecType(B, &vtype));
+  PetscCall(MatGetLocalSize(B, &m, &n));
+  PetscCall(MatGetSize(B, &M, &N));
+  PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)A), vtype, m, n, M, N, -1, NULL, &AinvBd));
+  PetscCall(MatGetType(AinvBd, &mtype));
+  PetscCall(MatConvert(B, mtype, MAT_INITIAL_MATRIX, &Bd));
   PetscCall(KSPMatSolve(ksp, Bd, AinvBd));
   PetscCall(MatDestroy(&Bd));
   PetscCall(MatFilter(AinvBd, PETSC_SMALL, PETSC_FALSE, PETSC_FALSE));
