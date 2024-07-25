@@ -273,6 +273,11 @@ def processf90interfaces(petscdir,petscarch,verbose):
   return
 
 def main(petscdir,petscarch,bfort,dir,verbose):
+  import os,sys
+  sys.path.insert(0, os.path.abspath(os.path.join('lib','petsc','bin','maint')))
+  import getinterfaces
+
+  getinterfaces.main(os.path.join('lib','petsc','conf','bfort-petsc.txt'),'include')
   for p in [ os.path.join(dir,'include'), os.path.join(dir,'src') ]:
     for dirpath, dirnames, filenames in os.walk(p, topdown=True):
       filenames = [i for i in filenames if not i.find('#') > -1 and os.path.splitext(i)[1] in ['.c','.h','.cxx','.cu']]
