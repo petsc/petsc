@@ -19,6 +19,7 @@ import pickle
 # list of classes found
 classes = {}
 enums = {}
+typedefs = {}
 aliases = {}
 senums = {} # like enums except strings instead of integer values
 structs = {}
@@ -30,7 +31,7 @@ def getenums(filename):
   regcomment  = re.compile(r'/\* [A-Za-z _(),<>|^\*]* \*/')
   reg         = re.compile(r'}')
   regblank    = re.compile(r' [ ]*')
-  regname     = re.compile(r'}[ A-Za-z]*')
+  regname     = re.compile(r'}[ A-Za-z0-9]*')
   f = open(filename)
   line = f.readline()
   while line:
@@ -60,8 +61,9 @@ def getenums(filename):
 
           ivalues = []
           for i in values:
-            if i[0] == " ": i = i[1:]
-            ivalues.append(i)
+            if i:
+              if i[0] == " ": i = i[1:]
+              ivalues.append(i)
 
           enums[name] = ivalues
           break
@@ -72,20 +74,33 @@ def getenums(filename):
 
 def getsenums(filename):
   import re
-  regdefine   = re.compile(r'#define [A-Za-z]*Type ')
+  regdefine   = re.compile(r'typedef const char \*[A-Za-z]*;')
   regblank    = re.compile(r' [ ]*')
   f = open(filename)
   line = f.readline()
   while line:
     fl = regdefine.search(line)
     if fl:
-      senum = fl.group(0)[8:-1]
+      senum = fl.group(0)[20:-1]
       senums[senum] = {}
       line = regblank.sub(" ",f.readline().strip())
       while line:
         values = line.split(" ")
         senums[senum][values[1]] = values[2]
         line = regblank.sub(" ",f.readline().strip())
+    line = f.readline()
+  f.close()
+
+def gettypedefs(filename):
+  import re
+  regdefine   = re.compile(r'typedef [A-Za-z]* [A-Za-z]*;')
+  f = open(filename)
+  line = f.readline()
+  while line:
+    fl = regdefine.search(line)
+    if fl:
+      typedef = fl.group(0).split()[2][0:-1];
+      typedefs[typedef] = {}
     line = f.readline()
   f.close()
 
@@ -149,7 +164,6 @@ def getclasses(filename):
       struct = struct.replace("\n","")
       classes[struct] = {}
     line = f.readline()
-
   f.close()
 
 def getfunctions(filename):
@@ -165,7 +179,7 @@ def getfunctions(filename):
   # search through list BACKWARDS to get the longest match
   #
   classlist   = classes.keys()
-  classlist.sort()
+  classlist = sorted(classlist)
   classlist.reverse()
   f = open(filename)
   line = f.readline()
@@ -198,10 +212,7 @@ def getfunctions(filename):
             if name.startswith(i):
               classes[i][name[len(i):]] = args
               break
-
-
     line = f.readline()
-
   f.close()
 #
 #  For now, hardwire aliases
@@ -217,7 +228,7 @@ def getaliases():
   aliases['MPI_Request']        = 'int'
   aliases['FILE']               = 'int'
   aliases['PetscMPIInt']        = 'int'
-  aliases['PetscClassId']        = 'int'
+  aliases['PetscClassId']       = 'int'
   aliases['PetscLogDouble']     = 'double'
   aliases['PetscTablePosition'] = 'int*'
   aliases['ISColoringValue']    = 'ushort'
@@ -225,7 +236,8 @@ def getaliases():
   # for HDF5
   aliases['hid_t']              = 'int'
 
-def main(args):
+def main(filename,dir):
+  args = [os.path.join('include',i) for i in os.listdir('include') if i.endswith('.h')]
   for i in args:
     getenums(i)
   for i in args:
@@ -233,7 +245,7 @@ def main(args):
   getaliases()
   for i in args:
     getstructs(i)
-  # this classes ONLY have static methods
+  # these classes ONLY have static methods
   classes['Petsc'] = {}
   classes['PetscLog'] = {}
   classes['PetscSort'] = {}
@@ -246,18 +258,35 @@ def main(args):
     getclasses(i)
   for i in args:
     getfunctions(i)
-  file = open('classes.data','w')
-  pickle.dump(enums,file)
-  pickle.dump(senums,file)
-  pickle.dump(structs,file)
-  pickle.dump(aliases,file)
-  pickle.dump(classes,file)
+  for i in args:
+    gettypedefs(i)
+  #file = open('classes.data','wb')
+  #pickle.dump(enums,file)
+  #pickle.dump(senums,file)
+  #pickle.dump(structs,file)
+  #pickle.dump(aliases,file)
+  #pickle.dump(classes,file)
+  #pickle.dump(typedefs,file)
 
+  with open(filename,"w") as fd:
+    for i in enums.keys():
+      fd.write("native "+i+'\n')
 
+    for i in typedefs.keys():
+      fd.write("native "+i+'\n')
+
+    for i in structs.keys():
+      fd.write("native "+i+'\n')
+
+    for i in classes.keys():
+      fd.write("nativeptr "+i+'\n')
+
+    for i in senums.keys():
+      fd.write("char "+i+'\n')
 
 #
 # The classes in this file can also be used in other python-programs by using 'import'
 #
 if __name__ ==  '__main__':
-  main(sys.argv[1:])
+  main(sys.argv[1],sys.argv[2])
 

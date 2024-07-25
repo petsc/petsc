@@ -284,9 +284,7 @@ typedef const char *MatProductAlgorithm;
 #define MATPRODUCTALGORITHMALLATONCEMERGED "allatonce_merged"
 #define MATPRODUCTALGORITHMALLGATHERV      "allgatherv"
 #define MATPRODUCTALGORITHMCYCLIC          "cyclic"
-#if defined(PETSC_HAVE_HYPRE)
-  #define MATPRODUCTALGORITHMHYPRE "hypre"
-#endif
+#define MATPRODUCTALGORITHMHYPRE           "hypre"
 
 PETSC_EXTERN PetscErrorCode MatProductCreate(Mat, Mat, Mat, Mat *);
 PETSC_EXTERN PetscErrorCode MatProductCreateWithMat(Mat, Mat, Mat, Mat);
