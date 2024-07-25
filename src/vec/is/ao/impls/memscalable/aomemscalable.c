@@ -1,6 +1,6 @@
 /*
     The memory scalable AO application ordering routines. These store the
-  orderings on each processor for that processor's range of values
+  orderings on each process for that process' range of values, this is more memory-efficient than `AOBASIC`
 */
 
 #include <../src/vec/is/ao/aoimpl.h> /*I  "petscao.h"   I*/
@@ -452,7 +452,7 @@ PETSC_INTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
 
   Input Parameters:
 + comm    - MPI communicator that is to share the `AO`
-. napp    - size of integer arrays
+. napp    - size of `myapp` and `mypetsc`
 . myapp   - integer array that defines an ordering
 - mypetsc - integer array that defines another ordering (may be `NULL` to indicate the natural ordering, that is 0,1,2,3,...)
 

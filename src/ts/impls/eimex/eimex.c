@@ -12,8 +12,8 @@ typedef struct {
   Vec          Y;          /* States computed during the step, used to complete the step */
   Vec          Z;          /* For shift*(Y-Z) */
   Vec         *T;          /* Working table, size determined by nstages */
-  Vec          YdotRHS;    /* f(x) Work vector holding YdotRHS during residual evaluation */
-  Vec          YdotI;      /* xdot-g(x) Work vector holding YdotI = G(t,x,xdot) when xdot =0 */
+  Vec          YdotRHS;    /* g(x) Work vector holding YdotRHS during residual evaluation */
+  Vec          YdotI;      /* xdot-f(x) Work vector holding YdotI = F(t,x,xdot) when xdot =0 */
   Vec          Ydot;       /* f(x)+g(x) Work vector */
   Vec          VecSolPrev; /* Work vector holding the solution from the previous step (used for interpolation) */
   PetscReal    shift;
@@ -484,7 +484,7 @@ static PetscErrorCode TSEIMEXSetOrdAdapt_EIMEX(TS ts, PetscBool flg)
 }
 
 /*MC
-   TSEIMEX - Time stepping with Extrapolated IMEX methods {cite}`constantinescu_a2010a`.
+   TSEIMEX - Time stepping with Extrapolated W-IMEX methods {cite}`constantinescu_a2010a`.
 
    These methods are intended for problems with well-separated time scales, especially when a slow scale is strongly nonlinear such that it
    is expensive to solve with a fully implicit method. The user should provide the stiff part of the equation using `TSSetIFunction()` and the
@@ -495,15 +495,15 @@ static PetscErrorCode TSEIMEXSetOrdAdapt_EIMEX(TS ts, PetscBool flg)
   Notes:
   The default is a 3-stage scheme, it can be changed with `TSEIMEXSetMaxRows()` or -ts_eimex_max_rows
 
-  This method currently only works with ODE, for which the stiff part $ G(t,X,Xdot) $  has the form $ Xdot + Ghat(t,X)$.
+  This method currently only works with ODEs, for which the stiff part $ F(t,X,Xdot) $  has the form $ Xdot + Fhat(t,X)$.
 
   The general system is written as
 
   $$
-  G(t,X,Xdot) = F(t,X)
+  F(t,X,Xdot) = G(t,X)
   $$
 
-  where G represents the stiff part and F represents the non-stiff part. The user should provide the stiff part
+  where F represents the stiff part and G represents the non-stiff part. The user should provide the stiff part
   of the equation using TSSetIFunction() and the non-stiff part with `TSSetRHSFunction()`.
   This method is designed to be linearly implicit on G and can use an approximate and lagged Jacobian.
 
@@ -516,7 +516,7 @@ static PetscErrorCode TSEIMEXSetOrdAdapt_EIMEX(TS ts, PetscBool flg)
   The relationship between F,G and f,g is
 
   $$
-  G = y'-g(x), F = f(x)
+  F = y'-f(x), G = g(x)
   $$
 
 .seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSEIMEXSetMaxRows()`, `TSEIMEXSetRowCol()`, `TSEIMEXSetOrdAdapt()`, `TSType`

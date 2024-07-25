@@ -8,6 +8,7 @@ static PetscErrorCode DMSetFromOptions_DA(DM da, PetscOptionItems *PetscOptionsO
   PetscBool      flg;
 
   PetscFunctionBegin;
+  PetscCheck(!da->setupcalled, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONGSTATE, "Cannot call DMSetFromOptions() after DMSetUp() for DMDA");
   PetscCheck(dd->M >= 0, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_OUTOFRANGE, "Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
   PetscCheck(dd->N >= 0, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_OUTOFRANGE, "Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
   PetscCheck(dd->P >= 0, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_OUTOFRANGE, "Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");

@@ -93,17 +93,22 @@ int main(int argc, char **args)
   PetscCall(PCSetType(pc, PCFIELDSPLIT));
   PetscCall(PCFieldSplitSetType(pc, PC_COMPOSITE_SCHUR));
   PetscCall(PCFieldSplitSetSchurPre(pc, PC_FIELDSPLIT_SCHUR_PRE_SELF, NULL));
+  PetscCall(PCSetFromOptions(pc));
   PetscCall(PCSetUp(pc));
   PetscCall(PCFieldSplitGetSubKSP(pc, &n, &subksp));
   PetscCall(KSPGetPC(subksp[0], &pc));
   /* inner preconditioner associated to top-left block */
+#if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
   PetscCall(PCSetType(pc, PCHPDDM));
   PetscCall(PCHPDDMSetAuxiliaryMat(pc, is[0], aux[0], NULL, NULL));
+#endif
   PetscCall(PCSetFromOptions(pc));
   PetscCall(KSPGetPC(subksp[1], &pc));
   /* inner preconditioner associated to Schur complement, which will be set internally to a PCKSP */
+#if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
   PetscCall(PCSetType(pc, PCHPDDM));
   if (!flg[0]) PetscCall(PCHPDDMSetAuxiliaryMat(pc, is[1], aux[1], NULL, NULL));
+#endif
   PetscCall(PCSetFromOptions(pc));
   PetscCall(PetscFree(subksp));
   PetscCall(KSPSetFromOptions(ksp));
@@ -130,10 +135,14 @@ int main(int argc, char **args)
     PetscCall(KSPGetPC(ksp, &pc));
     PetscCall(PCFieldSplitGetSubKSP(pc, &n, &subksp));
     PetscCall(KSPGetPC(subksp[0], &pc));
+#if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
     PetscCall(PCHPDDMSetAuxiliaryMat(pc, is[0], aux[0], NULL, NULL));
+#endif
     PetscCall(PCSetFromOptions(pc));
     PetscCall(KSPGetPC(subksp[1], &pc));
+#if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
     if (!flg[0]) PetscCall(PCHPDDMSetAuxiliaryMat(pc, is[1], aux[1], NULL, NULL));
+#endif
     PetscCall(PCSetFromOptions(pc));
     PetscCall(PetscFree(subksp));
     PetscCall(KSPSolve(ksp, b, x));
@@ -192,11 +201,8 @@ PetscErrorCode MatAndISLoad(const char *prefix, const char *identifier, Mat A, I
 
 /*TEST
 
-   build:
-      requires: hpddm slepc double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
-
    testset:
-      requires: datafilespath
+      requires: datafilespath hpddm slepc double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
       nsize: 4
       args: -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -ksp_monitor -ksp_rtol 1e-4 -fieldsplit_ksp_max_it 100 -fieldsplit_pc_hpddm_levels_1_eps_nev 10 -fieldsplit_pc_hpddm_levels_1_st_share_sub_ksp -fieldsplit_pc_hpddm_has_neumann -fieldsplit_pc_hpddm_define_subdomains -fieldsplit_1_pc_hpddm_schur_precondition geneo -fieldsplit_pc_hpddm_coarse_pc_type redundant -fieldsplit_pc_hpddm_coarse_redundant_pc_type cholesky -fieldsplit_pc_hpddm_levels_1_sub_pc_type lu -fieldsplit_ksp_type fgmres -ksp_type fgmres -ksp_max_it 10 -fieldsplit_1_pc_hpddm_coarse_correction balanced -fieldsplit_1_pc_hpddm_levels_1_eps_gen_non_hermitian -fieldsplit_1_pc_hpddm_coarse_p 2
       test:
@@ -234,5 +240,13 @@ PetscErrorCode MatAndISLoad(const char *prefix, const char *identifier, Mat A, I
         suffix: harmonic_overlap_2
         output_file: output/ex87_1_petsc_system-stokes.out
         args: -fieldsplit_0_pc_hpddm_harmonic_overlap 2 -fieldsplit_0_pc_hpddm_levels_1_svd_nsv 20 -diagonal_A11
+
+   test:
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) !hpddm !memkind
+      nsize: 4
+      suffix: selfp
+      output_file: output/ex41_1.out
+      filter: grep -v "CONVERGED_RTOL iterations"
+      args: -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -system stokes -ksp_rtol 1e-4 -ksp_converged_reason -ksp_max_it 30 -pc_type fieldsplit -pc_fieldsplit_type schur -fieldsplit_ksp_type preonly -pc_fieldsplit_schur_precondition selfp -fieldsplit_pc_type bjacobi -fieldsplit_sub_pc_type lu -transpose {{false true}shared output} -fieldsplit_1_mat_schur_complement_ainv_type lump
 
 TEST*/

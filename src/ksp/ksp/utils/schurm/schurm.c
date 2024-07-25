@@ -1,4 +1,5 @@
 #include <../src/ksp/ksp/utils/schurm/schurm.h> /*I "petscksp.h" I*/
+#include <../src/mat/impls/shell/shell.h>
 
 const char *const MatSchurComplementAinvTypes[] = {"DIAG", "LUMP", "BLOCKDIAG", "FULL", "MatSchurComplementAinvType", "MAT_SCHUR_COMPLEMENT_AINV_", NULL};
 
@@ -768,11 +769,31 @@ PetscErrorCode MatCreateSchurComplementPmat(Mat A00, Mat A01, Mat A10, Mat A11, 
       PetscCall(MatCopy(A11, *Sp, DIFFERENT_NONZERO_PATTERN));
     }
   } else {
-    Mat AdB;
-    Vec diag;
+    Mat       AdB, T;
+    Vec       diag;
+    PetscBool flg;
 
     if (ainvtype == MAT_SCHUR_COMPLEMENT_AINV_LUMP || ainvtype == MAT_SCHUR_COMPLEMENT_AINV_DIAG) {
-      PetscCall(MatDuplicate(A01, MAT_COPY_VALUES, &AdB));
+      PetscCall(PetscObjectTypeCompare((PetscObject)A01, MATTRANSPOSEVIRTUAL, &flg));
+      if (flg) {
+        PetscCall(MatTransposeGetMat(A01, &T));
+        PetscCall(MatTranspose(T, MAT_INITIAL_MATRIX, &AdB));
+      } else {
+        PetscCall(PetscObjectTypeCompare((PetscObject)A01, MATHERMITIANTRANSPOSEVIRTUAL, &flg));
+        if (flg) {
+          PetscCall(MatHermitianTransposeGetMat(A01, &T));
+          PetscCall(MatHermitianTranspose(T, MAT_INITIAL_MATRIX, &AdB));
+        }
+      }
+      if (!flg) PetscCall(MatDuplicate(A01, MAT_COPY_VALUES, &AdB));
+      else {
+        PetscCheck(!((Mat_Shell *)A01->data)->zrows && !((Mat_Shell *)A01->data)->zcols, PetscObjectComm((PetscObject)A01), PETSC_ERR_SUP, "Cannot call MatCreateSchurComplementPmat() if MatZeroRows() or MatZeroRowsColumns() has been called on the input Mat");
+        PetscCheck(!((Mat_Shell *)A01->data)->axpy, PetscObjectComm((PetscObject)A01), PETSC_ERR_SUP, "Cannot call MatCreateSchurComplementPmat() if MatAXPY() has been called on the input Mat");
+        PetscCheck(!((Mat_Shell *)A01->data)->left && !((Mat_Shell *)A01->data)->right, PetscObjectComm((PetscObject)A01), PETSC_ERR_SUP, "Cannot call MatCreateSchurComplementPmat() if MatDiagonalScale() has been called on the input Mat");
+        PetscCheck(!((Mat_Shell *)A01->data)->dshift, PetscObjectComm((PetscObject)A01), PETSC_ERR_SUP, "Cannot call MatCreateSchurComplementPmat() if MatDiagonalSet() has been called on the input Mat");
+        PetscCall(MatScale(AdB, ((Mat_Shell *)A01->data)->vscale));
+        PetscCall(MatShift(AdB, ((Mat_Shell *)A01->data)->vshift));
+      }
       PetscCall(MatCreateVecs(A00, &diag, NULL));
       if (ainvtype == MAT_SCHUR_COMPLEMENT_AINV_LUMP) {
         PetscCall(MatGetRowSum(A00, diag));

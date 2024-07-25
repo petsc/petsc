@@ -68,7 +68,8 @@ class BaseTestObject:
         self.assertEqual(self.obj.getOptionsPrefix(), prefix2 + prefix1)
         self.obj.setOptionsPrefix(None)
         self.assertEqual(self.obj.getOptionsPrefix(), None)
-        self.obj.setFromOptions()
+        if not self.obj.getType() or not 'da' == str(self.obj.getType()):
+            self.obj.setFromOptions()
 
         def opts_handler(obj):
             n = obj.getAttr('opts_handler_called')
@@ -81,29 +82,31 @@ class BaseTestObject:
         for _ in range(2):
             self.obj.setAttr('opts_handler_called', 0)
             self.obj.setOptionsHandler(opts_handler)
+            if not self.obj.getType() or not 'da' == str(self.obj.getType()):
+                self.obj.setFromOptions()
+                missing = [
+                           'AO',
+                           'DMLabel',
+                           'PetscDualSpace',
+                           'IS',
+                           'ISLocalToGlobalMapping',
+                           'MatPartitioning',
+                           'MatNullSpace',
+                           'PetscRandom',
+                           'PetscViewer',
+                          ]
+                if self.obj.klass not in missing:
+                    self.assertTrue(self.obj.getAttr('opts_handler_called') == 1)
+
+        if not self.obj.getType() or not 'da' == str(self.obj.getType()):
+            self.obj.setAttr('opts_handler_called', 0)
+            self.obj.setOptionsHandler(None)
             self.obj.setFromOptions()
-            missing = [
-                'AO',
-                'DMLabel',
-                'PetscDualSpace',
-                'IS',
-                'ISLocalToGlobalMapping',
-                'MatPartitioning',
-                'MatNullSpace',
-                'PetscRandom',
-                'PetscViewer',
-            ]
-            if self.obj.klass not in missing:
-                self.assertTrue(self.obj.getAttr('opts_handler_called') == 1)
+            self.assertFalse(self.obj.getAttr('opts_handler_called'))
 
-        self.obj.setAttr('opts_handler_called', 0)
-        self.obj.setOptionsHandler(None)
-        self.obj.setFromOptions()
-        self.assertFalse(self.obj.getAttr('opts_handler_called'))
-
-        self.obj.destroyOptionsHandlers()
-        self.obj.setFromOptions()
-        self.assertFalse(self.obj.getAttr('opts_handler_called'))
+            self.obj.destroyOptionsHandlers()
+            self.obj.setFromOptions()
+            self.assertFalse(self.obj.getAttr('opts_handler_called'))
 
     def testName(self):
         oldname = self.obj.getName()

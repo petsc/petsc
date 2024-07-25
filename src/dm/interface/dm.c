@@ -883,9 +883,12 @@ PetscErrorCode DMSetUp(DM dm)
 
   Level: intermediate
 
+  Note:
+  For some `DMType` such as `DMDA` this cannot be called after `DMSetUp()` has been called.
+
 .seealso: [](ch_dmbase), `DM`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`,
          `DMPlexCheckSymmetry()`, `DMPlexCheckSkeleton()`, `DMPlexCheckFaces()`, `DMPlexCheckGeometry()`, `DMPlexCheckPointSF()`, `DMPlexCheckInterfaceCones()`,
-         `DMSetOptionsPrefix()`, `DMType`, `DMPLEX`, `DMDA`
+         `DMSetOptionsPrefix()`, `DMType`, `DMPLEX`, `DMDA`, `DMSetUp()`
 @*/
 PetscErrorCode DMSetFromOptions(DM dm)
 {
