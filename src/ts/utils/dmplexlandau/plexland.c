@@ -1353,7 +1353,7 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
             } else {
               ctx->sphere_inner_radius_45degree[grid] = 0.25;
             }
-          };
+          }
         }
       }
     } else {
