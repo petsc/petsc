@@ -2206,13 +2206,9 @@ PetscErrorCode MatShellGetOperation(Mat mat, MatOperation op, void (**g)(void))
 . mat - the matrix
 
   Output Parameter:
-. flg - the boolean value
+. flg - the Boolean value
 
   Level: developer
-
-  Developer Notes:
-  In the future, we should allow the object type name to be changed still using the `MATSHELL` data structure for other matrices
-  (i.e. `MATTRANSPOSEVIRTUAL`, `MATSCHURCOMPLEMENT` etc)
 
 .seealso: [](ch_matrices), `Mat`, `MATSHELL`, `MATMFFD`, `MatCreateShell()`, `MATTRANSPOSEVIRTUAL`, `MATSCHURCOMPLEMENT`
 @*/
