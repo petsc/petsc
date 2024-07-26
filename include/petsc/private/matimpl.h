@@ -245,6 +245,9 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatFindNonzeroRowsOrCols_Basic(Mat, P
 PETSC_INTERN PetscErrorCode MatConvert_Basic(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatConvert_Shell(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatConvertFrom_Shell(Mat, MatType, MatReuse, Mat *);
+PETSC_INTERN PetscErrorCode MatShellSetContext_Immutable(Mat X, void *ctx);
+PETSC_INTERN PetscErrorCode MatShellSetContextDestroy_Immutable(Mat X, PetscErrorCode (*f)(void *));
+PETSC_INTERN PetscErrorCode MatShellSetManageScalingShifts_Immutable(Mat X);
 PETSC_INTERN PetscErrorCode MatCopy_Basic(Mat, Mat, MatStructure);
 PETSC_INTERN PetscErrorCode MatDiagonalSet_Default(Mat, Vec, InsertMode);
 #if defined(PETSC_HAVE_SCALAPACK)
