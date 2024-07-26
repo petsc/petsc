@@ -387,6 +387,21 @@ static PetscErrorCode PCPatchSetLocalComposition(PC pc, PCCompositeType type)
 }
 
 /* TODO: Docs */
+PetscErrorCode PCPatchGetSubKSP(PC pc, PetscInt *npatch, KSP **ksp)
+{
+  PC_PATCH *patch = (PC_PATCH *)pc->data;
+  PetscInt  i;
+
+  PetscFunctionBegin;
+  PetscCheck(pc->setupcalled, PetscObjectComm((PetscObject)pc), PETSC_ERR_ORDER, "Need to call PCSetUp() on PC (or KSPSetUp() on the outer KSP object) before calling here");
+
+  PetscCall(PetscMalloc1(patch->npatch, ksp));
+  for (i = 0; i < patch->npatch; ++i) (*ksp)[i] = (KSP)patch->solver[i];
+  if (npatch) *npatch = patch->npatch;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* TODO: Docs */
 PetscErrorCode PCPatchSetSubMatType(PC pc, MatType sub_mat_type)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;

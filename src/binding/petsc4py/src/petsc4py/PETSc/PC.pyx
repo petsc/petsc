@@ -2365,6 +2365,17 @@ cdef class PC(Object):
         CHKERR(PCBDDCSetDofsSplittingLocal(self.pc, <PetscInt>n, cisfields))
 
     # --- Patch ---
+    def getPatchSubKSP(self) -> list[KSP]:
+        """Return the local `KSP` object for all blocks on this process.
+
+        Not collective.
+
+        """
+        cdef PetscInt n = 0
+        cdef PetscKSP *p = NULL
+        CHKERR(PCPatchGetSubKSP(self.pc, &n, &p))
+        return [ref_KSP(p[i]) for i from 0 <= i <n]
+
     def setPatchCellNumbering(self, Section sec) -> None:
         """Set the cell numbering."""
         CHKERR(PCPatchSetCellNumbering(self.pc, sec.sec))
