@@ -8755,7 +8755,7 @@ PetscErrorCode DMPlexCreateNumbering_Plex(DM dm, PetscInt pStart, PetscInt pEnd,
 /*@
   DMPlexCreateCellNumbering - Get a global cell numbering for all cells on this process
 
-  Input Parameter:
+  Input Parameters:
 + dm         - The `DMPLEX` object
 - includeAll - Whether to include all cells, or just the simplex and box cells
 
