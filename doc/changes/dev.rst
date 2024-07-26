@@ -23,6 +23,7 @@ Changes: Development
 - Deprecate ``PetscOptionsPushGetViewerOff()``, ``PetscOptionsPopGetViewerOff()``, and ``PetscOptionsGetViewerOff()`` in favor of
   ``PetscOptionsPushCreateViewerOff()``, ``PetscOptionsPopCreateViewerOff()``, and ``PetscOptionsGetCreateViewerOff()``
 - Add ``PetscObjectContainerCompose()``, and ``PetscObjectContainerQuery()``
+- Add ``size_t`` argument to ``PetscMPIErrorString()``
 
 .. rubric:: Event Logging:
 

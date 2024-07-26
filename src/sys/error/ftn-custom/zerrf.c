@@ -106,7 +106,7 @@ PETSC_EXTERN void petscerrormpi_(PetscErrorCode *err, int *line, char *file, PET
   PetscErrorCode ierr[] = {PETSC_SUCCESS}; /* needed by FIXCHAR */
 
   FIXCHAR(file, len, tfile);
-  PetscMPIErrorString(*err, errorstring);
+  PetscMPIErrorString(*err, 2 * MPI_MAX_ERROR_STRING, errorstring);
   *err = PetscError(PETSC_COMM_SELF, *line, NULL, file, PETSC_ERR_MPI, PETSC_ERROR_INITIAL, "MPI error %d %s", *err, errorstring);
   FREECHAR(file, tfile);
   *err = PETSC_ERR_MPI;
@@ -121,7 +121,7 @@ PETSC_EXTERN void petscerrormpi_(PetscErrorCode *err)
 {
   char errorstring[2 * MPI_MAX_ERROR_STRING];
 
-  PetscMPIErrorString(*err, errorstring);
+  PetscMPIErrorString(*err, 2 * MPI_MAX_ERROR_STRING, errorstring);
   *err = PetscError(PETSC_COMM_SELF, 0, NULL, NULL, PETSC_ERR_MPI, PETSC_ERROR_INITIAL, "MPI error %d %s", *err, errorstring);
   *err = PETSC_ERR_MPI;
 }

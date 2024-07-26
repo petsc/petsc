@@ -553,7 +553,7 @@ M*/
 #define CHKERRQ(...) PetscCall(__VA_ARGS__)
 #define CHKERRV(...) PetscCallVoid(__VA_ARGS__)
 
-PETSC_EXTERN void PetscMPIErrorString(PetscMPIInt, char *);
+PETSC_EXTERN void PetscMPIErrorString(PetscMPIInt, size_t, char *);
 
 /*MC
   PetscCallMPI - Checks error code returned from MPI calls, if non-zero it calls the error
@@ -689,8 +689,8 @@ void PetscCallMPINull(PetscMPIInt);
       __PETSC_STACK_POP_FUNC__; \
       if (PetscUnlikely(ierr_petsc_call_mpi_ != MPI_SUCCESS)) { \
         char petsc_mpi_7_errorstring[2 * MPI_MAX_ERROR_STRING]; \
-        PetscMPIErrorString(ierr_petsc_call_mpi_, (char *)petsc_mpi_7_errorstring); \
-        __SETERR_FUNC__(__COMM__, PETSC_ERR_MPI, "MPI error %d %s", (int)ierr_petsc_call_mpi_, petsc_mpi_7_errorstring); \
+        PetscMPIErrorString(ierr_petsc_call_mpi_, 2 * MPI_MAX_ERROR_STRING, (char *)petsc_mpi_7_errorstring); \
+        __SETERR_FUNC__(__COMM__, PETSC_ERR_MPI, "MPI error %d %s", ierr_petsc_call_mpi_, petsc_mpi_7_errorstring); \
       } \
     } while (0)
 
