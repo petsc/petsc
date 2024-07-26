@@ -21,6 +21,8 @@ static char help[] = "Solves 3D Laplacian using multigrid.\n\n";
 #include <petscdm.h>
 #include <petscdmda.h>
 
+PetscLogEvent setvalues, usertime;
+
 extern PetscErrorCode ComputeMatrix(KSP, Mat, Mat, void *);
 extern PetscErrorCode ComputeRHS(KSP, Vec, void *);
 extern PetscErrorCode ComputeInitialGuess(KSP, Vec, void *);
@@ -35,6 +37,10 @@ int main(int argc, char **argv)
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscLogEventRegister("Set values", MAT_CLASSID, &setvalues));
+  PetscCall(PetscLogEventRegister("User time", MAT_CLASSID, &usertime));
+  PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
+  PetscCall(PetscLogEventBegin(usertime, NULL, NULL, NULL, NULL));
 
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
   PetscCall(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 7, 7, 7, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 0, 0, 0, &da));
@@ -60,6 +66,7 @@ int main(int argc, char **argv)
 
   PetscCall(VecDestroy(&r));
   PetscCall(KSPDestroy(&ksp));
+  PetscCall(PetscLogEventEnd(usertime, NULL, NULL, NULL, NULL));
   PetscCall(PetscFinalize());
   return 0;
 }
@@ -72,6 +79,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
   PetscScalar ***barray;
 
   PetscFunctionBeginUser;
+  PetscCall(PetscLogEventBegin(setvalues, NULL, NULL, NULL, NULL));
   PetscCall(KSPGetDM(ksp, &dm));
   PetscCall(DMDAGetInfo(dm, 0, &mx, &my, &mz, 0, 0, 0, 0, 0, 0, 0, 0, 0));
   Hx      = 1.0 / (PetscReal)(mx - 1);
@@ -95,6 +103,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
     }
   }
   PetscCall(DMDAVecRestoreArray(dm, b, &barray));
+  PetscCall(PetscLogEventEnd(setvalues, NULL, NULL, NULL, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -113,6 +122,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat jac, Mat B, void *ctx)
   MatStencil  row, col[7];
 
   PetscFunctionBeginUser;
+  PetscCall(PetscLogEventBegin(setvalues, NULL, NULL, NULL, NULL));
   PetscCall(KSPGetDM(ksp, &da));
   PetscCall(DMDAGetInfo(da, 0, &mx, &my, &mz, 0, 0, 0, 0, 0, 0, 0, 0, 0));
   Hx      = 1.0 / (PetscReal)(mx - 1);
@@ -168,6 +178,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat jac, Mat B, void *ctx)
   }
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
+  PetscCall(PetscLogEventEnd(setvalues, NULL, NULL, NULL, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

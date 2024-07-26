@@ -36,6 +36,7 @@ static PetscErrorCode MatAssemblyEnd_Seq_Hash(Mat A, MatAssemblyType type)
 #endif
   PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
   PetscCall(PetscHMapIJVGetSize(a->ht, &n));
+  /* do not need PetscShmgetAllocateArray() since arrays are temporary */
   PetscCall(PetscMalloc3(n, &cols, m + 1, &rowstarts, n, &values));
   rowstarts[0] = 0;
   for (PetscInt i = 0; i < m; i++) rowstarts[i + 1] = rowstarts[i] + a->dnz[i];

@@ -434,6 +434,19 @@ int MPI_Finalized(int *flag)
   return MPI_SUCCESS;
 }
 
+int MPI_Win_free(MPI_Win *win)
+{
+  free(*win);
+  *win = NULL;
+  return MPI_SUCCESS;
+}
+
+int MPI_Win_allocate_shared(size_t sz, size_t asz, MPI_Info info, MPI_Comm comm, void **addr, MPI_Win *win)
+{
+  *win = *addr = malloc(sz);
+  return MPI_SUCCESS;
+}
+
 /* -------------------     Fortran versions of several routines ------------------ */
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)

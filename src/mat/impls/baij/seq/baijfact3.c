@@ -287,11 +287,9 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B, Mat A, IS isrow, IS iscol, con
   PetscCall(MatSeqBAIJSetPreallocation(B, bs, MAT_SKIP_ALLOCATION, NULL));
   b = (Mat_SeqBAIJ *)(B)->data;
 
-  b->free_a       = PETSC_TRUE;
-  b->free_ij      = PETSC_TRUE;
-  b->singlemalloc = PETSC_FALSE;
-
-  PetscCall(PetscMalloc1((bdiag[0] + 1) * bs2, &b->a));
+  b->free_ij = PETSC_TRUE;
+  PetscCall(PetscShmgetAllocateArray((bdiag[0] + 1) * bs2, sizeof(PetscScalar), (void **)&b->a));
+  b->free_a        = PETSC_TRUE;
   b->j             = bj;
   b->i             = bi;
   b->diag          = bdiag;
@@ -452,12 +450,9 @@ static PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B, Mat A, IS isrow
   /* put together the new matrix */
   PetscCall(MatSeqBAIJSetPreallocation(B, bs, MAT_SKIP_ALLOCATION, NULL));
   b = (Mat_SeqBAIJ *)(B)->data;
-
-  b->free_a       = PETSC_TRUE;
   b->free_ij      = PETSC_TRUE;
-  b->singlemalloc = PETSC_FALSE;
-
-  PetscCall(PetscMalloc1((bi[n] + 1) * bs2, &b->a));
+  PetscCall(PetscShmgetAllocateArray((bi[n] + 1) * bs2,,sizeof(PetscScalar),(void **)&b->a));
+  b->free_a       = PETSC_TRUE;
   b->j             = bj;
   b->i             = bi;
   b->diag          = bdiag;

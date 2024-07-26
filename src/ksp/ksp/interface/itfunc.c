@@ -1065,12 +1065,22 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
 @*/
 PetscErrorCode KSPSolve(KSP ksp, Vec b, Vec x)
 {
+  PetscBool isPCMPI;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (b) PetscValidHeaderSpecific(b, VEC_CLASSID, 2);
   if (x) PetscValidHeaderSpecific(x, VEC_CLASSID, 3);
   ksp->transpose_solve = PETSC_FALSE;
   PetscCall(KSPSolve_Private(ksp, b, x));
+  PetscCall(PetscObjectTypeCompare((PetscObject)ksp->pc, PCMPI, &isPCMPI));
+  if (PCMPIServerActive && isPCMPI) {
+    KSP subksp;
+
+    PetscCall(PCMPIGetKSP(ksp->pc, &subksp));
+    ksp->its    = subksp->its;
+    ksp->reason = subksp->reason;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2152,14 +2162,14 @@ PETSC_INTERN PetscErrorCode KSPCheckPCMPI(KSP ksp)
     PetscCall(KSPGetOptionsPrefix(ksp, &prefix));
     if (prefix) PetscCall(PetscStrstr(prefix, "mpi_linear_solver_server_", &found));
     if (!found) PetscCall(KSPAppendOptionsPrefix(ksp, "mpi_linear_solver_server_"));
+    PetscCall(PetscInfo(NULL, "In MPI Linear Solver Server and detected (root) PC that must be changed to PCMPI\n"));
     PetscCall(PCSetType(ksp->pc, PCMPI));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-  KSPGetPC - Returns a pointer to the preconditioner context
-  set with `KSPSetPC()`.
+  KSPGetPC - Returns a pointer to the preconditioner context with the `KSP`
 
   Not Collective
 
@@ -2170,6 +2180,12 @@ PETSC_INTERN PetscErrorCode KSPCheckPCMPI(KSP ksp)
 . pc - preconditioner context
 
   Level: developer
+
+  Note:
+  The `PC` is created if it does not already exist.
+
+  Developer Note:
+  Calls `KSPCheckPCMPI()` to check if the `KSP` is effected by `-mpi_linear_solver_server`
 
 .seealso: [](ch_ksp), `KSPSetPC()`, `KSP`, `PC`
 @*/

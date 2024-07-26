@@ -224,7 +224,8 @@ static PetscErrorCode PCSetFromOptions_KSP(PC pc, PetscOptionItems *PetscOptions
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "PC KSP options");
-  if (jac->ksp) PetscCall(KSPSetFromOptions(jac->ksp));
+  if (!jac->ksp) PetscCall(PCKSPCreateKSP_KSP(pc));
+  PetscCall(KSPSetFromOptions(jac->ksp));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }

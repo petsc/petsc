@@ -454,6 +454,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     lines = [s for s in lines if s.find("icc: command line remark #10148: option '-i-dynamic' not supported") < 0]
     lines = [s for s in lines if s.find("[: unexpected operator") < 0]  # Deals with error in mpiicc and mpiicpc wrappers from some versions of Intel MPI.
     lines = [s for s in lines if s.find(': remark #10441:') < 0]
+    lines = [s for s in lines if s.find("'linker' input unused") < 0]
     # IBM:
     lines = [s for s in lines if not s.startswith('cc_r:')]
     # PGI: Ignore warning about temporary license
@@ -517,6 +518,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       # Intel
       lines = [s for s in lines if s.find("icc: command line remark #10148: option '-i-dynamic' not supported") < 0]
       lines = [s for s in lines if s.find(': remark #10441:') < 0]
+      lines = [s for s in lines if s.find("'linker' input unused") < 0]
       # PGI: Ignore warning about temporary license
       lines = [s for s in lines if s.find('license.dat') < 0]
       # Cray XT3
@@ -531,7 +533,6 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if s.find('The -gpu option has no effect unless a language-specific option to enable GPU code generation is used') < 0]
       # pgi dumps filename on stderr - but returns 0 errorcode'
       lines = [s for s in lines if lines != 'conftest.c:']
-
       lines = [s for s in lines if len(s)]
       if lines: output = '\n'.join(lines)
       else: output = ''

@@ -627,6 +627,24 @@ extern PETSC_DLLEXPORT int foo() {
         self._isBGL = 0
     return self._isBGL
 
+  def checkPthreadMutex(self):
+    '''Check for pthread mutex support'''
+    funcs = ['pthread_mutex_unlock']
+    prototypes = ['#include <pthread.h>']
+    self.pthreadmutex = []
+    calls = ['pthread_mutex_t m; pthread_mutex_unlock(&m);']
+    if self.check('', funcs, prototype=prototypes, call=calls):
+      self.logPrint('pthread mutex are linked in by default')
+      self.pthreadmutex = []
+      self.addDefine('HAVE_PTHREAD_MUTEX',1)
+    elif self.check('pthread', funcs, prototype=prototypes, call=calls):
+      self.logPrint('Using libpthread for the mutex')
+      self.pthreadmutex = ['libpthread.a']
+      self.addDefine('HAVE_PTHREAD_MUTEX',1)
+    else:
+      self.logPrint('No pthread mutex support found')
+    return
+
   def checkExecutableExportFlag(self):
     '''Checks for the flag that allows executables to export symbols to dlsym()'''
     # Right now, we just check some compilers, but we should make a test trying to load a symbol from the executable
@@ -648,6 +666,7 @@ extern PETSC_DLLEXPORT int foo() {
     self.executeTest(self.checkMathLog2)
     self.executeTest(self.checkRealtime)
     self.executeTest(self.checkDynamic)
+    self.executeTest(self.checkPthreadMutex)
     if not self.argDB['with-batch']:
       self.executeTest(self.checkExecutableExportFlag)
     return

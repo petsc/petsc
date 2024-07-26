@@ -189,7 +189,8 @@ typedef int MPI_Comm;
 #define MPI_COMM_WORLD       2
 #define MPI_COMM_TYPE_SHARED 1
 
-typedef int MPI_Info;
+typedef void *MPI_Win;
+typedef int   MPI_Info;
 #define MPI_INFO_NULL 0
 
 typedef struct {
@@ -321,29 +322,31 @@ typedef int(MPI_Delete_function)(MPI_Comm, int, void *, void *);
   With Fortran we use a similar mapping - thus requiring the use of the
   Fortran preprocessor with mpif.h
 */
-#define MPI_Abort             Petsc_MPI_Abort
-#define MPIUni_Abort          Petsc_MPIUni_Abort
-#define MPI_Attr_get          Petsc_MPI_Attr_get
-#define MPI_Keyval_free       Petsc_MPI_Keyval_free
-#define MPI_Attr_put          Petsc_MPI_Attr_put
-#define MPI_Attr_delete       Petsc_MPI_Attr_delete
-#define MPI_Keyval_create     Petsc_MPI_Keyval_create
-#define MPI_Comm_free         Petsc_MPI_Comm_free
-#define MPI_Comm_dup          Petsc_MPI_Comm_dup
-#define MPI_Comm_create       Petsc_MPI_Comm_create
-#define MPI_Init              Petsc_MPI_Init
-#define MPI_Init_thread       Petsc_MPI_Init_thread
-#define MPI_Query_thread      Petsc_MPI_Query_thread
-#define MPI_Finalize          Petsc_MPI_Finalize
-#define MPI_Initialized       Petsc_MPI_Initialized
-#define MPI_Finalized         Petsc_MPI_Finalized
-#define MPI_Comm_size         Petsc_MPI_Comm_size
-#define MPI_Comm_rank         Petsc_MPI_Comm_rank
-#define MPI_Wtime             Petsc_MPI_Wtime
-#define MPI_Type_get_envelope Petsc_MPI_Type_get_envelope
-#define MPI_Type_get_contents Petsc_MPI_Type_get_contents
-#define MPI_Add_error_class   Petsc_MPI_Add_error_class
-#define MPI_Add_error_code    Petsc_MPI_Add_error_code
+#define MPI_Abort               Petsc_MPI_Abort
+#define MPIUni_Abort            Petsc_MPIUni_Abort
+#define MPI_Attr_get            Petsc_MPI_Attr_get
+#define MPI_Keyval_free         Petsc_MPI_Keyval_free
+#define MPI_Attr_put            Petsc_MPI_Attr_put
+#define MPI_Attr_delete         Petsc_MPI_Attr_delete
+#define MPI_Keyval_create       Petsc_MPI_Keyval_create
+#define MPI_Comm_free           Petsc_MPI_Comm_free
+#define MPI_Comm_dup            Petsc_MPI_Comm_dup
+#define MPI_Comm_create         Petsc_MPI_Comm_create
+#define MPI_Init                Petsc_MPI_Init
+#define MPI_Init_thread         Petsc_MPI_Init_thread
+#define MPI_Query_thread        Petsc_MPI_Query_thread
+#define MPI_Finalize            Petsc_MPI_Finalize
+#define MPI_Initialized         Petsc_MPI_Initialized
+#define MPI_Finalized           Petsc_MPI_Finalized
+#define MPI_Comm_size           Petsc_MPI_Comm_size
+#define MPI_Comm_rank           Petsc_MPI_Comm_rank
+#define MPI_Wtime               Petsc_MPI_Wtime
+#define MPI_Type_get_envelope   Petsc_MPI_Type_get_envelope
+#define MPI_Type_get_contents   Petsc_MPI_Type_get_contents
+#define MPI_Add_error_class     Petsc_MPI_Add_error_class
+#define MPI_Add_error_code      Petsc_MPI_Add_error_code
+#define MPI_Win_free            Petsc_MPI_Win_free
+#define MPI_Win_allocate_shared Petsc_MPI_Win_allocate_shared
 
 /* identical C bindings */
 #define MPI_Comm_copy_attr_function   MPI_Copy_function
@@ -377,6 +380,13 @@ MPIUni_PETSC_EXTERN int    MPI_Finalized(int *);
 MPIUni_PETSC_EXTERN int    MPI_Comm_size(MPI_Comm, int *);
 MPIUni_PETSC_EXTERN int    MPI_Comm_rank(MPI_Comm, int *);
 MPIUni_PETSC_EXTERN double MPI_Wtime(void);
+
+MPIUni_PETSC_EXTERN int MPI_Win_free(MPI_Win *);
+MPIUni_PETSC_EXTERN int MPI_Win_allocate_shared(size_t sz, size_t asz, MPI_Info, MPI_Comm, void **addr, MPI_Win *);
+
+#define MPI_Info_create(info)    (MPIUNI_ARG(info), MPI_SUCCESS)
+#define MPI_Info_set(info, a, b) (MPIUNI_ARG(info), MPIUNI_ARG(a), MPIUNI_ARG(b), MPI_SUCCESS)
+#define MPI_Info_free(info)      (MPIUNI_ARG(info), MPI_SUCCESS)
 
 MPIUni_PETSC_EXTERN int MPI_Type_get_envelope(MPI_Datatype, int *, int *, int *, int *);
 MPIUni_PETSC_EXTERN int MPI_Type_get_contents(MPI_Datatype, int, int, int, int *, MPI_Aint *, MPI_Datatype *);

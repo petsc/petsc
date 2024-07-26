@@ -19,23 +19,23 @@ interface
     PetscViewer, intent(out) :: vn
     PetscErrorCode, intent(out):: ierr
   End Subroutine
-  Subroutine PetscFortranPrintToUnit(unit,str,ierr)
+  Subroutine PetscFortranPrintToFileUnit(unit,str,ierr)
     import tPetscViewer
-    PetscInt unit
+    integer unit
     character(len=*), intent(in) :: str
     PetscErrorCode, intent(out):: ierr
   End Subroutine
   Subroutine PetscViewerASCIIOpenWithFileUnit(comm,unit,lab,ierr)
     import tPetscViewer
     MPI_Comm, intent(in) :: comm
-    PetscInt, intent(in) :: unit
+    integer, intent(in) :: unit
     PetscViewer, intent(out) :: lab
     PetscErrorCode, intent(out):: ierr
   End Subroutine
   Subroutine PetscViewerASCIISetFileUnit(lab,unit,ierr)
     import tPetscViewer
     PetscViewer, intent(in) :: lab
-    PetscInt, intent(in) :: unit
+    integer, intent(in) :: unit
     PetscErrorCode, intent(out):: ierr
   End Subroutine
 end interface

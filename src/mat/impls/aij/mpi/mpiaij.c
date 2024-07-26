@@ -3520,14 +3520,12 @@ PetscErrorCode MatCreateMPIAIJWithSeqAIJ(MPI_Comm comm, Mat A, Mat B, const Pets
 
   PetscCheck(B->rmap->N == Bnew->rmap->N, PETSC_COMM_SELF, PETSC_ERR_PLIB, "BN %" PetscInt_FMT " != BnewN %" PetscInt_FMT, B->rmap->N, Bnew->rmap->N);
 
-  b->singlemalloc = PETSC_FALSE; /* B arrays are shared by Bnew */
-  b->free_a       = PETSC_FALSE;
-  b->free_ij      = PETSC_FALSE;
+  b->free_a  = PETSC_FALSE;
+  b->free_ij = PETSC_FALSE;
   PetscCall(MatDestroy(&B));
 
-  bnew->singlemalloc = PETSC_TRUE; /* arrays will be freed by MatDestroy(&Bnew) */
-  bnew->free_a       = PETSC_TRUE;
-  bnew->free_ij      = PETSC_TRUE;
+  bnew->free_a  = PETSC_TRUE;
+  bnew->free_ij = PETSC_TRUE;
 
   /* condense columns of maij->B */
   PetscCall(MatSetOption(*mat, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
@@ -3887,27 +3885,26 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_nonscalable(Mat mat, IS isrow, IS iscol
 static PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B, const PetscInt Ii[], const PetscInt J[], const PetscScalar v[])
 {
   PetscInt        m, cstart, cend, j, nnz, i, d, *ld;
-  PetscInt       *d_nnz, *o_nnz, nnz_max = 0, rstart, ii;
+  PetscInt       *d_nnz, *o_nnz, nnz_max = 0, rstart, ii, irstart;
   const PetscInt *JJ;
   PetscBool       nooffprocentries;
   Mat_MPIAIJ     *Aij = (Mat_MPIAIJ *)B->data;
 
   PetscFunctionBegin;
-  PetscCheck(Ii[0] == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Ii[0] must be 0 it is %" PetscInt_FMT, Ii[0]);
-
   PetscCall(PetscLayoutSetUp(B->rmap));
   PetscCall(PetscLayoutSetUp(B->cmap));
-  m      = B->rmap->n;
-  cstart = B->cmap->rstart;
-  cend   = B->cmap->rend;
-  rstart = B->rmap->rstart;
+  m       = B->rmap->n;
+  cstart  = B->cmap->rstart;
+  cend    = B->cmap->rend;
+  rstart  = B->rmap->rstart;
+  irstart = Ii[0];
 
   PetscCall(PetscCalloc2(m, &d_nnz, m, &o_nnz));
 
   if (PetscDefined(USE_DEBUG)) {
     for (i = 0; i < m; i++) {
       nnz = Ii[i + 1] - Ii[i];
-      JJ  = PetscSafePointerPlusOffset(J, Ii[i]);
+      JJ  = PetscSafePointerPlusOffset(J, Ii[i] - irstart);
       PetscCheck(nnz >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local row %" PetscInt_FMT " has a negative %" PetscInt_FMT " number of columns", i, nnz);
       PetscCheck(!nnz || !(JJ[0] < 0), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Row %" PetscInt_FMT " starts with negative column index %" PetscInt_FMT, i, JJ[0]);
       PetscCheck(!nnz || !(JJ[nnz - 1] >= B->cmap->N), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Row %" PetscInt_FMT " ends with too large a column index %" PetscInt_FMT " (max allowed %" PetscInt_FMT ")", i, JJ[nnz - 1], B->cmap->N);
@@ -3916,7 +3913,7 @@ static PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B, const PetscInt 
 
   for (i = 0; i < m; i++) {
     nnz     = Ii[i + 1] - Ii[i];
-    JJ      = PetscSafePointerPlusOffset(J, Ii[i]);
+    JJ      = PetscSafePointerPlusOffset(J, Ii[i] - irstart);
     nnz_max = PetscMax(nnz_max, nnz);
     d       = 0;
     for (j = 0; j < nnz; j++) {
@@ -3930,7 +3927,7 @@ static PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B, const PetscInt 
 
   for (i = 0; i < m; i++) {
     ii = i + rstart;
-    PetscCall(MatSetValues_MPIAIJ(B, 1, &ii, Ii[i + 1] - Ii[i], PetscSafePointerPlusOffset(J, Ii[i]), PetscSafePointerPlusOffset(v, Ii[i]), INSERT_VALUES));
+    PetscCall(MatSetValues_MPIAIJ(B, 1, &ii, Ii[i + 1] - Ii[i], PetscSafePointerPlusOffset(J, Ii[i] - irstart), PetscSafePointerPlusOffset(v, Ii[i] - irstart), INSERT_VALUES));
   }
   nooffprocentries    = B->nooffprocentries;
   B->nooffprocentries = PETSC_TRUE;
@@ -6720,11 +6717,12 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   state              = mpiaij->A->nonzerostate + mpiaij->B->nonzerostate;
   PetscCall(MPIU_Allreduce(&state, &mat->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)mat)));
 
-  a               = (Mat_SeqAIJ *)mpiaij->A->data;
-  b               = (Mat_SeqAIJ *)mpiaij->B->data;
-  a->singlemalloc = b->singlemalloc = PETSC_FALSE; /* Let newmat own Ai,Aj,Aa,Bi,Bj,Ba */
-  a->free_a = b->free_a = PETSC_TRUE;
-  a->free_ij = b->free_ij = PETSC_TRUE;
+  a          = (Mat_SeqAIJ *)mpiaij->A->data;
+  b          = (Mat_SeqAIJ *)mpiaij->B->data;
+  a->free_a  = PETSC_TRUE;
+  a->free_ij = PETSC_TRUE;
+  b->free_a  = PETSC_TRUE;
+  b->free_ij = PETSC_TRUE;
 
   /* conversion must happen AFTER multiply setup */
   PetscCall(MatConvert(mpiaij->A, rtype, MAT_INPLACE_MATRIX, &mpiaij->A));

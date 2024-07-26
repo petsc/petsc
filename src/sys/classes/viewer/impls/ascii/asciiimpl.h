@@ -19,7 +19,7 @@ typedef struct {
   PrintfQueue petsc_printfqueue, petsc_printfqueuebase;
   int         petsc_printfqueuelength;
 
-  PetscInt fileunit; /* indicates the output is printed with Fortran IO */
+  int fileunit; /* indicates the output is printed with Fortran IO */
 } PetscViewer_ASCII;
 
 typedef struct PetscViewerLink_t PetscViewerLink;

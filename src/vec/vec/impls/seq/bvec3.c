@@ -30,7 +30,8 @@ PetscErrorCode VecCreate_Seq(Vec V)
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)V), &size));
   PetscCheck(size <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot create VECSEQ on more than one process");
 #if !defined(PETSC_USE_MIXED_PRECISION)
-  PetscCall(PetscCalloc1(n, &array));
+  PetscCall(PetscShmgetAllocateArray(n, sizeof(PetscScalar), (void **)&array));
+  PetscCall(PetscMemzero(array, n * sizeof(PetscScalar)));
   PetscCall(VecCreate_Seq_Private(V, array));
 
   s                  = (Vec_Seq *)V->data;

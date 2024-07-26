@@ -349,10 +349,11 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscCall(KSPCheckPCMPI(ksp));
 
   PetscCall(PetscObjectGetComm((PetscObject)ksp, &comm));
+  if (!ksp->pc) PetscCall(KSPGetPC(ksp, &ksp->pc));
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)ksp, &prefix));
+  if (!ksp->skippcsetfromoptions) PetscCall(PCSetFromOptions(ksp->pc));
 
   PetscCall(KSPRegisterAll());
   PetscObjectOptionsBegin((PetscObject)ksp);
@@ -362,11 +363,6 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
     Set the type if it was never set.
   */
   if (!((PetscObject)ksp)->type_name) PetscCall(KSPSetType(ksp, KSPGMRES));
-
-  if (!ksp->skippcsetfromoptions) {
-    if (!ksp->pc) PetscCall(KSPGetPC(ksp, &ksp->pc));
-    PetscCall(PCSetFromOptions(ksp->pc));
-  }
 
   PetscCall(KSPResetViewers(ksp));
 

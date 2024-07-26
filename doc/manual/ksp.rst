@@ -2670,6 +2670,8 @@ in the computation time; thus it is crucial to understand what phases of a compu
 to ensure a useful increase in performance. One of the crucial phases is likely the generation of the matrix entries; the
 use of ``MatSetPreallocationCOO()`` and ``MatSetValuesCOO()`` in an OpenMP code allows parallelizing the generation of the matrix.
 
+See :any:`sec_pcmpi_study` for a study of the use of ``PCMPI`` on a specific PETSc application.
+
 
 
 .. rubric:: Footnotes

@@ -715,11 +715,11 @@ PetscErrorCode PetscObjectRemoveReference(PetscObject obj, const char name[])
   `PetscObjectCompose()` can be used with any PETSc object (such as
   `Mat`, `Vec`, `KSP`, `SNES`, etc.) or any user-provided object.
 
-  `PetscContainerCreate()` can be used to create an object from a
+  `PetscContainerCreate()` or `PetscObjectContainerCompose()` can be used to create an object from a
   user-provided pointer that may then be composed with PETSc objects using `PetscObjectCompose()`
 
 .seealso: `PetscObjectQuery()`, `PetscContainerCreate()`, `PetscObjectComposeFunction()`, `PetscObjectQueryFunction()`, `PetscContainer`,
-          `PetscContainerSetPointer()`, `PetscObject`
+          `PetscContainerSetPointer()`, `PetscObject`, `PetscObjectContainerCompose()`
 @*/
 PetscErrorCode PetscObjectCompose(PetscObject obj, const char name[], PetscObject ptr)
 {
@@ -856,7 +856,7 @@ struct _p_PetscContainer {
 
   Level: advanced
 
-.seealso: `PetscContainerDestroy()`, `PetscContainerSetUserDestroy()`, `PetscObject`
+.seealso: `PetscContainerDestroy()`, `PetscContainerSetUserDestroy()`, `PetscObject`, `PetscObjectContainerCompose()`, `PetscObjectContainerQuery()`
 @*/
 PetscErrorCode PetscContainerUserDestroyDefault(void *ctx)
 {
@@ -879,7 +879,7 @@ PetscErrorCode PetscContainerUserDestroyDefault(void *ctx)
   Level: advanced
 
 .seealso: `PetscContainerCreate()`, `PetscContainerDestroy()`, `PetscObject`,
-          `PetscContainerSetPointer()`
+          `PetscContainerSetPointer()`, `PetscObjectContainerCompose()`, `PetscObjectContainerQuery()`
 @*/
 PetscErrorCode PetscContainerGetPointer(PetscContainer obj, void **ptr)
 {
@@ -902,7 +902,7 @@ PetscErrorCode PetscContainerGetPointer(PetscContainer obj, void **ptr)
   Level: advanced
 
 .seealso: `PetscContainerCreate()`, `PetscContainerDestroy()`, `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObject`,
-          `PetscContainerGetPointer()`
+          `PetscContainerGetPointer()`, `PetscObjectContainerCompose()`, `PetscObjectContainerQuery()`
 @*/
 PetscErrorCode PetscContainerSetPointer(PetscContainer obj, void *ptr)
 {
@@ -927,7 +927,7 @@ PetscErrorCode PetscContainerSetPointer(PetscContainer obj, void *ptr)
   If `PetscContainerSetUserDestroy()` was used to provide a user destroy object for the data provided with `PetscContainerSetPointer()`
   then that function is called to destroy the data.
 
-.seealso: `PetscContainerCreate()`, `PetscContainerSetUserDestroy()`, `PetscObject`
+.seealso: `PetscContainerCreate()`, `PetscContainerSetUserDestroy()`, `PetscObject`, `PetscObjectContainerCompose()`, `PetscObjectContainerQuery()`
 @*/
 PetscErrorCode PetscContainerDestroy(PetscContainer *obj)
 {
@@ -957,7 +957,8 @@ PetscErrorCode PetscContainerDestroy(PetscContainer *obj)
   Note:
   Use `PetscContainerUserDestroyDefault()` if the memory was obtained by calling `PetscMalloc()` or one of its variants for single memory allocation.
 
-.seealso: `PetscContainerDestroy()`, `PetscContainerUserDestroyDefault()`, `PetscMalloc()`, `PetscMalloc1()`, `PetscCalloc()`, `PetscCalloc1()`, `PetscObject`
+.seealso: `PetscContainerDestroy()`, `PetscContainerUserDestroyDefault()`, `PetscMalloc()`, `PetscMalloc1()`, `PetscCalloc()`, `PetscCalloc1()`, `PetscObject`,
+          `PetscObjectContainerCompose()`, `PetscObjectContainerQuery()`
 @*/
 PetscErrorCode PetscContainerSetUserDestroy(PetscContainer obj, PetscErrorCode (*des)(void *))
 {
@@ -988,7 +989,7 @@ PetscClassId PETSC_CONTAINER_CLASSID;
   call to `PetscContainerSetPointer()`.
 
 .seealso: `PetscContainerDestroy()`, `PetscContainerSetPointer()`, `PetscContainerGetPointer()`, `PetscObjectCompose()`, `PetscObjectQuery()`,
-          `PetscContainerSetUserDestroy()`, `PetscObject`
+          `PetscContainerSetUserDestroy()`, `PetscObject`, `PetscObjectContainerCompose()`, `PetscObjectContainerQuery()`
 @*/
 PetscErrorCode PetscContainerCreate(MPI_Comm comm, PetscContainer *container)
 {
@@ -996,6 +997,68 @@ PetscErrorCode PetscContainerCreate(MPI_Comm comm, PetscContainer *container)
   PetscAssertPointer(container, 2);
   PetscCall(PetscSysInitializePackage());
   PetscCall(PetscHeaderCreate(*container, PETSC_CONTAINER_CLASSID, "PetscContainer", "Container", "Sys", comm, PetscContainerDestroy, NULL));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  PetscObjectContainerCompose - Creates a `PetscContainer`, provides all of its values and composes it with a `PetscObject'
+
+  Collective
+
+  Input Parameters:
++ obj     - the `PetscObject`
+. name    - the name for the composed container
+. pointer - the pointer to the data
+- destroy - the routine to destroy the container's data; use `PetscContainerSetUserDestroy()` if a `PetscFree()` frees the data
+
+  Level: advanced
+
+  Notes:
+  This allows one to attach any type of data (accessible through a pointer) with the
+  `PetscObjectCompose()` function to a `PetscObject`. The data item itself is attached by a
+  call to `PetscContainerSetPointer()`.
+
+.seealso: `PetscContainerCreate()`, `PetscContainerDestroy()`, `PetscContainerSetPointer()`, `PetscContainerGetPointer()`, `PetscObjectCompose()`, `PetscObjectQuery()`,
+          `PetscContainerSetUserDestroy()`, `PetscObject`, `PetscObjectContainerQuery()`
+@*/
+PetscErrorCode PetscObjectContainerCompose(PetscObject obj, const char *name, void *pointer, PetscErrorCode (*destroy)(void *))
+{
+  PetscContainer container;
+
+  PetscFunctionBegin;
+  PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)obj), &container));
+  PetscCall(PetscContainerSetPointer(container, pointer));
+  if (destroy) PetscCall(PetscContainerSetUserDestroy(container, destroy));
+  PetscCall(PetscObjectCompose(obj, name, (PetscObject)container));
+  PetscCall(PetscContainerDestroy(&container));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  PetscObjectContainerQuery - Accesses the pointer in a container composed to a `PetscObject` with `PetscObjectContainerCompose()`
+
+  Collective
+
+  Input Parameters:
++ obj  - the `PetscObject`
+- name - the name for the composed container
+
+  Output Parameter:
+. pointer - the pointer to the data
+
+  Level: advanced
+
+.seealso: `PetscContainerCreate()`, `PetscContainerDestroy()`, `PetscContainerSetPointer()`, `PetscContainerGetPointer()`, `PetscObjectCompose()`, `PetscObjectQuery()`,
+          `PetscContainerSetUserDestroy()`, `PetscObject`, `PetscObjectContainerCompose()`
+@*/
+PetscErrorCode PetscObjectContainerQuery(PetscObject obj, const char *name, void **pointer)
+{
+  PetscContainer container;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectQuery((PetscObject)obj, name, (PetscObject *)&container));
+  if (container) PetscCall(PetscContainerGetPointer(container, pointer));
+  else *pointer = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

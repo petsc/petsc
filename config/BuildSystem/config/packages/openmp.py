@@ -27,7 +27,6 @@ class Configure(config.package.Package):
     ''' Checks for OpenMP compiler flags'''
     ''' Note it may be different for the C, C++, and FC compilers'''
     ''' Needs to check if OpenMP actually exists and works '''
-    self.found = 0
     oflags = ["-qopenmp", # Intel (must come before -fopenmp for icx)
               "-fopenmp", # Gnu
               "-qsmp=omp",# IBM XL C/C++
