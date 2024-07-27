@@ -459,24 +459,32 @@ PetscErrorCode MatSchurComplementGetSubMatrices(Mat S, Mat *A00, Mat *Ap00, Mat 
   Output Parameter:
 . S - the Schur complement matrix
 
+  Level: advanced
+
   Notes:
-  This can be expensive, so it is mainly for testing
+  This can be expensive when `S` is large, so it is mainly for testing
 
   Use `MatSchurComplementGetPmat()` to get a sparse approximation for the Schur complement suitable for use in building a preconditioner
 
-  Level: advanced
+  `S` will automatically have the same prefix as `A` appended by `explicit_operator_`,
+  there are three options available: `-fieldsplit_1_explicit_operator_mat_type`,
+  `-fieldsplit_1_explicit_operator_mat_symmetric`, and `-fieldsplit_1_explicit_operator_mat_hermitian`
+
+  Developer Note:
+  The three aforementioned should not be parsed and used in this routine, but rather in `MatSetFromOptions()`
 
 .seealso: [](ch_ksp), `MatCreateSchurComplement()`, `MatSchurComplementUpdateSubMatrices()`, `MatSchurComplementGetPmat()`
 @*/
 PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat A, Mat *S)
 {
-  Mat       B, C, D, E = NULL, Bd, AinvBd, sub = NULL;
+  Mat       P, B, C, D, E = NULL, Bd, AinvBd, sub = NULL;
   KSP       ksp;
   PetscInt  n, N, m, M;
   PetscBool flg = PETSC_FALSE, set, symm;
+  char      prefix[256], type[256];
 
   PetscFunctionBegin;
-  PetscCall(MatSchurComplementGetSubMatrices(A, NULL, NULL, &B, &C, &D));
+  PetscCall(MatSchurComplementGetSubMatrices(A, &P, NULL, &B, &C, &D));
   PetscCall(MatSchurComplementGetKSP(A, &ksp));
   PetscCall(KSPSetUp(ksp));
   PetscCall(PetscObjectQuery((PetscObject)A, "AinvB", (PetscObject *)&AinvBd));
@@ -534,11 +542,25 @@ PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat A, Mat *S)
       PetscCall(MatIsSymmetricKnown(A, &set, &symm));
       if (!set || !symm) PetscCall(MatConvert(D, MATBAIJ, MAT_INITIAL_MATRIX, &E)); /* convert the (1,1) block to nonsymmetric storage for MatAXPY() */
     }
-    PetscCall(MatAXPY(*S, -1.0, E ? E : D, DIFFERENT_NONZERO_PATTERN)); /* calls Mat[Get|Restore]RowUpperTriangular(), so only the upper triangular part is valid with symmetric storage */
+    PetscCall(MatAXPY(*S, -1.0, E ? E : D, DIFFERENT_NONZERO_PATTERN));        /* calls Mat[Get|Restore]RowUpperTriangular(), so only the upper triangular part is valid with symmetric storage */
+    if (!E && flg) PetscCall(MatConvert(*S, MATSBAIJ, MAT_INPLACE_MATRIX, S)); /* if A is symmetric and the (1,1) block is a MatSBAIJ, return S as a MatSBAIJ since the lower triangular part is invalid */
   }
-  PetscCall(MatConvert(*S, !E && flg ? MATSBAIJ : MATAIJ, MAT_INPLACE_MATRIX, S)); /* if A is symmetric and the (1,1) block is a MatSBAIJ, return S as a MatSBAIJ */
-  PetscCall(MatScale(*S, -1.0));
   PetscCall(MatDestroy(&E));
+  PetscCall(MatScale(*S, -1.0));
+  PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%sexplicit_operator_", ((PetscObject)A)->prefix ? ((PetscObject)A)->prefix : ""));
+  PetscCall(MatSetOptionsPrefix(*S, prefix));
+  PetscObjectOptionsBegin((PetscObject)*S);
+  PetscCall(PetscOptionsFList("-mat_type", "Matrix type", "MatSetType", MatList, !E && flg ? MATSBAIJ : MATDENSE, type, 256, &set));
+  if (set) PetscCall(MatConvert(*S, type, MAT_INPLACE_MATRIX, S));
+  flg = PETSC_FALSE;
+  PetscCall(PetscOptionsBool("-mat_symmetric", "Sets the MAT_SYMMETRIC option", "MatSetOption", flg, &flg, &set));
+  if (set) PetscCall(MatSetOption(*S, MAT_SYMMETRIC, flg));
+  if (PetscDefined(USE_COMPLEX)) {
+    flg = PETSC_FALSE;
+    PetscCall(PetscOptionsBool("-mat_hermitian", "Sets the MAT_HERMITIAN option", "MatSetOption", flg, &flg, &set));
+    if (set) PetscCall(MatSetOption(*S, MAT_HERMITIAN, flg));
+  }
+  PetscOptionsEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
