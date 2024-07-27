@@ -805,8 +805,8 @@ PetscErrorCode DMPlexOrientInterface_Internal(DM dm)
   PetscInt          *rmine1, *rremote1; /* rmine and rremote copies simultaneously sorted by rank and rremote */
   PetscInt           nroots, p, nleaves, maxConeSize = 0;
   PetscMPIInt        nranks, r;
-  PetscInt(*roots)[4], (*leaves)[4], mainCone[4];
-  PetscMPIInt(*rootsRanks)[4], (*leavesRanks)[4];
+  PetscInt (*roots)[4], (*leaves)[4], mainCone[4];
+  PetscMPIInt (*rootsRanks)[4], (*leavesRanks)[4];
   MPI_Comm    comm;
   PetscMPIInt rank, size;
   PetscInt    debug = 0;

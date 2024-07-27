@@ -874,7 +874,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     PetscDualSpace dsp;
     DM             K;
     DMPolytopeType ct;
-    PetscInt(*co)[2][3];
+    PetscInt (*co)[2][3];
     PetscInt        coneSize;
     PetscInt      **counts;
     PetscInt        f, i, o, q, s;

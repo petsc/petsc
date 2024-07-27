@@ -3208,7 +3208,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
   PetscScalar *dx, *grad, **gref;
   PetscInt     dim, cStart, cEnd, c, cEndInterior, fStart, fEnd, f, nStart, nEnd, maxNumFaces = 0;
   PetscSection neighSec;
-  PetscInt(*neighbors)[2];
+  PetscInt (*neighbors)[2];
   PetscInt *counter;
 
   PetscFunctionBegin;

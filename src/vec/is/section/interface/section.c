@@ -3857,7 +3857,7 @@ PetscErrorCode PetscSectionSetUseFieldOffsets(PetscSection s, PetscBool flg)
       PetscCall(PetscSectionGetOffset(origSection, points_[i], &o0)); \
       PetscCall(PetscSectionGetOffset(s, i, &o1)); \
       PetscCall(PetscSectionGetDof(s, i, &n)); \
-      PetscCall(PetscMemcpy(&a1[o1], &a0[o0], n *unitsize)); \
+      PetscCall(PetscMemcpy(&a1[o1], &a0[o0], n * unitsize)); \
     } \
     *newArray = (void *)a1; \
   } while (0)

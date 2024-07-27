@@ -222,7 +222,7 @@ PetscErrorCode PetscDrawUtilitySetCmap(const char colormap[], int mapsize, unsig
   if (PetscDrawCmapTable[id].cmap) {
     PetscCall(PetscDrawCmapTable[id].cmap(mapsize, R, G, B));
   } else {
-    const unsigned char(*rgb)[3] = PetscDrawCmapTable[id].data;
+    const unsigned char (*rgb)[3] = PetscDrawCmapTable[id].data;
     PetscCheck(mapsize == 256 - PETSC_DRAW_BASIC_COLORS, PETSC_COMM_SELF, PETSC_ERR_SUP, "Colormap '%s' with size %d not supported", cmap_name_list[id], mapsize);
     for (i = 0; i < mapsize; i++) {
       R[i] = rgb[i][0];

@@ -120,7 +120,7 @@ static PetscErrorCode FillMatrixCPUCOO(FEStruct *fe, Mat A)
 */
 static PetscErrorCode FillMatrixCPUCOO3d(FEStruct *fe, Mat A)
 {
-  PetscScalar(*s)[3][3];
+  PetscScalar (*s)[3][3];
 
   PetscFunctionBeginUser;
   /* simulation of CPU based finite assembly process with COO */

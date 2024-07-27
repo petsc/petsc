@@ -1302,7 +1302,7 @@ static PetscErrorCode PetscDTPTrimmedEvalJet_Internal(PetscInt dim, PetscInt npo
   PetscInt *form_atoms;
   PetscCall(PetscMalloc1(formDegree + 1, &form_atoms));
   // construct the interior product pattern
-  PetscInt(*pattern)[3];
+  PetscInt (*pattern)[3];
   PetscInt Nf1; // number of formDegree + 1 forms
   PetscCall(PetscDTBinomialInt(dim, formDegree + 1, &Nf1));
   PetscInt nnz = Nf1 * (formDegree + 1);

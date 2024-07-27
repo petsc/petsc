@@ -103,7 +103,7 @@
     PetscFunctionBegin; \
     if (!idx) { \
       u += start * MBS; \
-      if (u != p) PetscCall(PetscArraycpy(u, p, count *MBS)); \
+      if (u != p) PetscCall(PetscArraycpy(u, p, count * MBS)); \
     } else if (opt) { /* has optimizations available */ \
       for (r = 0; r < opt->n; r++) { \
         u2 = u + opt->start[r] * MBS; \

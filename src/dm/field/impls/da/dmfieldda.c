@@ -183,7 +183,7 @@ static PetscErrorCode DMFieldEvaluate_DA(DMField field, Vec points, PetscDataTyp
   PetscInt           dim;
   PetscInt           N, n, nc;
   const PetscScalar *array;
-  PetscReal(*coordRange)[2];
+  PetscReal (*coordRange)[2];
 
   PetscFunctionBegin;
   dm      = field->dm;

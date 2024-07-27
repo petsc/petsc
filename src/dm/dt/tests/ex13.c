@@ -154,7 +154,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
     PetscInt     Nf1, Nbpt1, Nk1;
     PetscReal   *p_trimmed1;
     PetscScalar *M_trimmed1;
-    PetscInt(*pattern)[3];
+    PetscInt (*pattern)[3];
     PetscReal   *p_koszul;
     PetscScalar *M_koszul;
     PetscScalar *M_k_moment;
