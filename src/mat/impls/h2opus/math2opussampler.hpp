@@ -167,7 +167,7 @@ void PetscMatrixSampler::sample(H2Opus_Real *x, H2Opus_Real *y, int samples)
     PetscCallVoid(MatSetVecType(Y, vtype));
 #endif
   }
-  PetscCallVoid(MatMatMult(this->A, X, MAT_REUSE_MATRIX, PETSC_DEFAULT, &Y));
+  PetscCallVoid(MatMatMult(this->A, X, MAT_REUSE_MATRIX, PETSC_DETERMINE, &Y));
 #if defined(PETSC_HAVE_CUDA)
   if (this->gpusampling) {
     const PetscScalar *dummy;

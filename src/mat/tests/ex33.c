@@ -118,7 +118,7 @@ int main(int argc, char **args)
     PetscCall(Print_memory(mem));
   }
 
-  PetscCall(MatMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Y));
+  PetscCall(MatMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &Y));
   PetscCall(PetscMemoryGetCurrentUsage(&mem));
   if (flg) {
     PetscCall(PetscPrintf(MPI_COMM_WORLD, "After MatMatMult,"));
@@ -126,7 +126,7 @@ int main(int argc, char **args)
   }
 
   /* Test reuse */
-  PetscCall(MatMatMult(A, X, MAT_REUSE_MATRIX, PETSC_DEFAULT, &Y));
+  PetscCall(MatMatMult(A, X, MAT_REUSE_MATRIX, PETSC_DETERMINE, &Y));
   PetscCall(PetscMemoryGetCurrentUsage(&mem));
   if (flg) {
     PetscCall(PetscPrintf(MPI_COMM_WORLD, "After reuse MatMatMult,"));

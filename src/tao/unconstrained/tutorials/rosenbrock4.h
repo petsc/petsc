@@ -232,7 +232,7 @@ static PetscErrorCode CreateHessian(AppCtx user, Mat *Hessian)
       PetscCall(VecSetRandom(x, NULL));
 
       PetscCall(MatMult(A, x, b));
-      PetscCall(MatTransposeMatMult(A, A, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &AtA));
+      PetscCall(MatTransposeMatMult(A, A, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &AtA));
       PetscCall(MatShift(AtA, (PetscScalar)warmup_size));
       PetscCall(MatSetOption(AtA, MAT_SPD, PETSC_TRUE));
       PetscCall(MatCholeskyFactor(AtA, NULL, NULL));

@@ -200,12 +200,12 @@ int main(int argc, char **args)
         } else {
           PetscCall(PCSetType(subpc, PCNONE));
           PetscCall(KSPSetType(subksp[i], KSPBCGS));
-          PetscCall(KSPSetTolerances(subksp[i], 1.e-6, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
+          PetscCall(KSPSetTolerances(subksp[i], 1.e-6, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT));
         }
       } else {
         PetscCall(PCSetType(subpc, PCJACOBI));
         PetscCall(KSPSetType(subksp[i], KSPGMRES));
-        PetscCall(KSPSetTolerances(subksp[i], 1.e-6, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
+        PetscCall(KSPSetTolerances(subksp[i], 1.e-6, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT));
       }
     }
   }

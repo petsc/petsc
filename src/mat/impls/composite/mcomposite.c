@@ -687,14 +687,14 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
     if (shell->mergetype == MAT_COMPOSITE_MERGE_RIGHT) {
       PetscCall(MatDuplicate(next->mat, MAT_COPY_VALUES, &tmat));
       while ((next = next->next)) {
-        PetscCall(MatMatMult(next->mat, tmat, MAT_INITIAL_MATRIX, PETSC_DECIDE, &newmat));
+        PetscCall(MatMatMult(next->mat, tmat, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &newmat));
         PetscCall(MatDestroy(&tmat));
         tmat = newmat;
       }
     } else {
       PetscCall(MatDuplicate(prev->mat, MAT_COPY_VALUES, &tmat));
       while ((prev = prev->prev)) {
-        PetscCall(MatMatMult(tmat, prev->mat, MAT_INITIAL_MATRIX, PETSC_DECIDE, &newmat));
+        PetscCall(MatMatMult(tmat, prev->mat, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &newmat));
         PetscCall(MatDestroy(&tmat));
         tmat = newmat;
       }

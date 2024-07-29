@@ -276,7 +276,7 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
     /* project to make new graph for next MIS, skip if last */
     if (iterIdx < misk - 1) {
       Mat new_mat;
-      PetscCall(MatPtAP(cMat, Prols[iterIdx], MAT_INITIAL_MATRIX, PETSC_DEFAULT, &new_mat));
+      PetscCall(MatPtAP(cMat, Prols[iterIdx], MAT_INITIAL_MATRIX, PETSC_DETERMINE, &new_mat));
       PetscCall(MatDestroy(&cMat));
       cMat = new_mat; // next iter
     } else if (cMat != Gmat) PetscCall(MatDestroy(&cMat));
@@ -288,7 +288,7 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
   for (PetscInt iterIdx = misk - 1; iterIdx > 0; iterIdx--) {
     Mat P;
 
-    PetscCall(MatMatMult(Prols[iterIdx - 1], Rtot, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &P));
+    PetscCall(MatMatMult(Prols[iterIdx - 1], Rtot, MAT_INITIAL_MATRIX, PETSC_CURRENT, &P));
     PetscCall(MatDestroy(&Prols[iterIdx - 1]));
     PetscCall(MatDestroy(&Rtot));
     Rtot = P;

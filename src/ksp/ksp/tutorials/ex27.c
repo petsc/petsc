@@ -143,7 +143,7 @@ int main(int argc, char **args)
     PetscCall(MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(P, MAT_FINAL_ASSEMBLY));
     PetscCall(MatShift(P, 1.0));
-    PetscCall(MatMatMult(A, P, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &B));
+    PetscCall(MatMatMult(A, P, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &B));
     PetscCall(MatDestroy(&P));
     PetscCall(MatDestroy(&A));
     A = B;

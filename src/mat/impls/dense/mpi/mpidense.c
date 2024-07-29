@@ -2064,7 +2064,7 @@ static PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A, Mat B,
   PetscCallMPI(MPI_Comm_size(comm, &size));
 
   /* compute atbarray = aseq^T * bseq */
-  PetscCall(MatTransposeMatMult(a->A, b->A, atb->atb ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX, PETSC_DEFAULT, &atb->atb));
+  PetscCall(MatTransposeMatMult(a->A, b->A, atb->atb ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX, PETSC_DETERMINE, &atb->atb));
 
   PetscCall(MatGetOwnershipRanges(C, &ranges));
 

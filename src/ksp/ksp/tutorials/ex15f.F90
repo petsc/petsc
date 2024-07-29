@@ -164,7 +164,7 @@
 
       PetscCallA(KSPGetPC(ksp,pc,ierr))
       tol = 1.e-7
-      PetscCallA(KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr))
+      PetscCallA(KSPSetTolerances(ksp,tol,PETSC_CURRENT_REAL,PETSC_CURRENT_REAL,PETSC_CURRENT_INTEGER,ierr))
 
 !
 !  Set a user-defined shell preconditioner if desired

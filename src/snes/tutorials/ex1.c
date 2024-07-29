@@ -98,7 +98,7 @@ int main(int argc, char **argv)
   PetscCall(SNESGetKSP(snes, &ksp));
   PetscCall(KSPGetPC(ksp, &pc));
   PetscCall(PCSetType(pc, PCNONE));
-  PetscCall(KSPSetTolerances(ksp, 1.e-4, PETSC_DEFAULT, PETSC_DEFAULT, 20));
+  PetscCall(KSPSetTolerances(ksp, 1.e-4, PETSC_CURRENT, PETSC_CURRENT, 20));
 
   /*
      Set SNES/KSP/KSP/PC runtime options, e.g.,

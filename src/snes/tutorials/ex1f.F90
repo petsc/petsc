@@ -1,5 +1,4 @@
 !
-!
 !  Description: Uses the Newton method to solve a two-variable system.
 !
 
@@ -99,7 +98,7 @@
       PetscCallA(KSPGetPC(ksp,pc,ierr))
       PetscCallA(PCSetType(pc,PCNONE,ierr))
       tol = 1.e-4
-      PetscCallA(KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,i20,ierr))
+      PetscCallA(KSPSetTolerances(ksp,tol,PETSC_CURRENT_REAL,PETSC_CURRENT_REAL,i20,ierr))
 
 !  Set SNES/KSP/KSP/PC runtime options, e.g.,
 !      -snes_view -snes_monitor -ksp_type <ksp> -pc_type <pc>

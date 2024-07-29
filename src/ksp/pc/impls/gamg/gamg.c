@@ -555,7 +555,7 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
             PetscCall(PetscInfo(pc, "%s: RAP after initial setup, with repartitioning (new matrix) level %" PetscInt_FMT "\n", ((PetscObject)pc)->prefix, level));
           }
           PetscCall(PetscLogEventBegin(petsc_gamg_setup_matmat_events[gl][1], 0, 0, 0, 0));
-          PetscCall(MatPtAP(dB, mglevels[level + 1]->interpolate, reuse, PETSC_DEFAULT, &B));
+          PetscCall(MatPtAP(dB, mglevels[level + 1]->interpolate, reuse, PETSC_DETERMINE, &B));
           PetscCall(PetscLogEventEnd(petsc_gamg_setup_matmat_events[gl][1], 0, 0, 0, 0));
           if (reuse == MAT_INITIAL_MATRIX) mglevels[level]->A = B;
           PetscCall(KSPSetOperators(mglevels[level]->smoothd, B, B));
@@ -867,7 +867,7 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
         PetscCall(KSPGetPC(k2[0], &pc2));
         PetscCall(PCSetType(pc2, PCLU));
         PetscCall(PCFactorSetShiftType(pc2, MAT_SHIFT_INBLOCKS));
-        PetscCall(KSPSetTolerances(k2[0], PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 1));
+        PetscCall(KSPSetTolerances(k2[0], PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT, 1));
         PetscCall(KSPSetType(k2[0], KSPPREONLY));
       }
     }

@@ -530,8 +530,8 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc)
         Mat C, CY;
         PetscCheck(deluxe_ctx->change_with_qr, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only QR based change of basis");
         PetscCall(KSPGetOperators(deluxe_ctx->change[i], &C, NULL));
-        PetscCall(MatMatMult(C, Y, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &CY));
-        PetscCall(MatMatTransposeMult(CY, C, MAT_REUSE_MATRIX, PETSC_DEFAULT, &Y));
+        PetscCall(MatMatMult(C, Y, MAT_INITIAL_MATRIX, PETSC_CURRENT, &CY));
+        PetscCall(MatMatTransposeMult(CY, C, MAT_REUSE_MATRIX, PETSC_CURRENT, &Y));
         PetscCall(MatDestroy(&CY));
         PetscCall(MatProductClear(Y)); /* clear internal matproduct structure of Y since CY is destroyed */
       }

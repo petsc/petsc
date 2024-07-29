@@ -6069,7 +6069,7 @@ static PetscErrorCode MatMatMultNumeric_MPIDense_MPIAIJ(Mat A, Mat B, Mat C)
   PetscFunctionBegin;
   PetscCall(MatTranspose(A, MAT_INITIAL_MATRIX, &At));
   PetscCall(MatTranspose(B, MAT_INITIAL_MATRIX, &Bt));
-  PetscCall(MatMatMult(Bt, At, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Ct));
+  PetscCall(MatMatMult(Bt, At, MAT_INITIAL_MATRIX, PETSC_CURRENT, &Ct));
   PetscCall(MatDestroy(&At));
   PetscCall(MatDestroy(&Bt));
   PetscCall(MatTransposeSetPrecursor(Ct, C));

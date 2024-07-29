@@ -93,7 +93,7 @@ int main(int argc, char **args)
     PetscCall(MatSetOptionsPrefix(C, "AB_"));
     PetscCall(MatProductSetType(C, MATPRODUCT_AB));
     PetscCall(MatProductSetAlgorithm(C, MATPRODUCTALGORITHMDEFAULT));
-    PetscCall(MatProductSetFill(C, PETSC_DEFAULT));
+    PetscCall(MatProductSetFill(C, PETSC_DETERMINE));
     PetscCall(MatProductSetFromOptions(C));
     /* we can inquire about MATOP_PRODUCTSYMBOLIC even if the destination matrix type has not been set yet */
     PetscCall(MatHasOperation(C, MATOP_PRODUCTSYMBOLIC, &flg));
@@ -112,14 +112,14 @@ int main(int argc, char **args)
     PetscCall(MatDestroy(&C));
 
     /* (1.2) Test user driver */
-    PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
+    PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
 
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     alpha = 1.0;
     for (i = 0; i < 2; i++) {
       alpha -= 0.1;
       PetscCall(MatScale(A, alpha));
-      PetscCall(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C));
+      PetscCall(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C));
     }
     PetscCall(MatMatMultEqual(A, B, C, mcheck, &flg));
     PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Error: MatMatMult()");
@@ -133,7 +133,7 @@ int main(int argc, char **args)
     PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &flg, MATSEQAIJ, MATMPIAIJ, ""));
     if (flg) {
       PetscCall(MatConvert(A_save, MATDENSE, MAT_INITIAL_MATRIX, &A));
-      PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
+      PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
       PetscCall(MatDestroy(&C));
       PetscCall(MatDestroy(&A));
     }
@@ -174,7 +174,7 @@ int main(int argc, char **args)
     PetscCall(MatSetOptionsPrefix(C, "AtB_"));
     PetscCall(MatProductSetType(C, MATPRODUCT_AtB));
     PetscCall(MatProductSetAlgorithm(C, MATPRODUCTALGORITHMDEFAULT));
-    PetscCall(MatProductSetFill(C, PETSC_DEFAULT));
+    PetscCall(MatProductSetFill(C, PETSC_DETERMINE));
     PetscCall(MatProductSetFromOptions(C));
     PetscCall(MatHasOperation(C, MATOP_PRODUCTSYMBOLIC, &flg));
     if (flg) {                                                 /* run tests if supported */
@@ -188,13 +188,13 @@ int main(int argc, char **args)
       PetscCall(MatDestroy(&C));
 
       /* (2.2) Test user driver C = P^T*B */
-      PetscCall(MatTransposeMatMult(P, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
-      PetscCall(MatTransposeMatMult(P, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C));
+      PetscCall(MatTransposeMatMult(P, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
+      PetscCall(MatTransposeMatMult(P, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C));
       PetscCall(MatGetInfo(C, MAT_GLOBAL_SUM, &info));
       PetscCall(MatProductClear(C));
 
       /* Compare P^T*B and R*B */
-      PetscCall(MatMatMult(R, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C1));
+      PetscCall(MatMatMult(R, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C1));
       PetscCall(MatNormDifference(C, C1, &norm));
       PetscCheck(norm <= PETSC_SMALL, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Error in MatTransposeMatMult(): %g", (double)norm);
       PetscCall(MatDestroy(&C1));
@@ -214,15 +214,15 @@ int main(int argc, char **args)
     /* C = B*R^T */
     PetscCall(PetscObjectBaseTypeCompare((PetscObject)B, MATSEQAIJ, &seqaij));
     if (seqaij) {
-      PetscCall(MatMatTransposeMult(B, R, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
+      PetscCall(MatMatTransposeMult(B, R, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
       PetscCall(MatSetOptionsPrefix(C, "ABt_")); /* enable '-ABt_' for matrix C */
       PetscCall(MatGetInfo(C, MAT_GLOBAL_SUM, &info));
 
       /* Test MAT_REUSE_MATRIX - reuse symbolic C */
-      PetscCall(MatMatTransposeMult(B, R, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C));
+      PetscCall(MatMatTransposeMult(B, R, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C));
 
       /* Check */
-      PetscCall(MatMatMult(B, P, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C1));
+      PetscCall(MatMatMult(B, P, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C1));
       PetscCall(MatNormDifference(C, C1, &norm));
       PetscCheck(norm <= PETSC_SMALL, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Error in MatMatTransposeMult() %g", (double)norm);
       PetscCall(MatDestroy(&C1));
@@ -240,7 +240,7 @@ int main(int argc, char **args)
     PetscCall(MatSetOptionsPrefix(C, "PtAP_"));
     PetscCall(MatProductSetType(C, MATPRODUCT_PtAP));
     PetscCall(MatProductSetAlgorithm(C, MATPRODUCTALGORITHMDEFAULT));
-    PetscCall(MatProductSetFill(C, PETSC_DEFAULT));
+    PetscCall(MatProductSetFill(C, PETSC_DETERMINE));
     PetscCall(MatProductSetFromOptions(C));
     PetscCall(MatProductSymbolic(C));
     PetscCall(MatProductNumeric(C));
@@ -253,14 +253,14 @@ int main(int argc, char **args)
     PetscCall(MatDestroy(&C));
 
     /* (4.2) Test user driver */
-    PetscCall(MatPtAP(A, P, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
+    PetscCall(MatPtAP(A, P, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
 
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     alpha = 1.0;
     for (i = 0; i < 2; i++) {
       alpha -= 0.1;
       PetscCall(MatScale(A, alpha));
-      PetscCall(MatPtAP(A, P, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C));
+      PetscCall(MatPtAP(A, P, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C));
     }
     PetscCall(MatPtAPMultEqual(A, P, C, mcheck, &flg));
     PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Error in MatPtAP");
@@ -275,7 +275,7 @@ int main(int argc, char **args)
       PetscCall(MatSetOptionsPrefix(RARt, "RARt_"));
       PetscCall(MatProductSetType(RARt, MATPRODUCT_RARt));
       PetscCall(MatProductSetAlgorithm(RARt, MATPRODUCTALGORITHMDEFAULT));
-      PetscCall(MatProductSetFill(RARt, PETSC_DEFAULT));
+      PetscCall(MatProductSetFill(RARt, PETSC_DETERMINE));
       PetscCall(MatProductSetFromOptions(RARt));
       PetscCall(MatHasOperation(RARt, MATOP_PRODUCTSYMBOLIC, &flg));
       if (flg) {

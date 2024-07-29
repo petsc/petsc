@@ -229,7 +229,7 @@ PetscErrorCode InitializeUserData(AppCtx *user)
   PetscCall(MatAssemblyBegin(user->D, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(user->D, MAT_FINAL_ASSEMBLY));
 
-  PetscCall(MatTransposeMatMult(user->D, user->D, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &user->DTD));
+  PetscCall(MatTransposeMatMult(user->D, user->D, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &user->DTD));
 
   PetscCall(MatCreate(PETSC_COMM_WORLD, &user->Hz));
   PetscCall(MatSetSizes(user->Hz, PETSC_DECIDE, PETSC_DECIDE, user->N, user->N));
@@ -259,9 +259,9 @@ PetscErrorCode InitializeUserData(AppCtx *user)
   PetscCall(VecSet(user->c, 0.0));
   PetscCall(VecSet(user->xub, PETSC_INFINITY));
 
-  PetscCall(MatTransposeMatMult(user->A, user->A, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &user->ATA));
-  PetscCall(MatTransposeMatMult(user->A, user->A, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &user->Hx));
-  PetscCall(MatTransposeMatMult(user->A, user->A, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &user->HF));
+  PetscCall(MatTransposeMatMult(user->A, user->A, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &user->ATA));
+  PetscCall(MatTransposeMatMult(user->A, user->A, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &user->Hx));
+  PetscCall(MatTransposeMatMult(user->A, user->A, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &user->HF));
 
   PetscCall(MatAssemblyBegin(user->ATA, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(user->ATA, MAT_FINAL_ASSEMBLY));

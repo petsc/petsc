@@ -340,7 +340,7 @@ PetscErrorCode FormJacobianState(Tao tao, Vec X, Mat J, Mat JPre, Mat JInv, void
   if (user->dsg_formed) {
     PetscCall(MatProductNumeric(user->DSG));
   } else {
-    PetscCall(MatMatMult(user->Divwork, user->Grad, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &user->DSG));
+    PetscCall(MatMatMult(user->Divwork, user->Grad, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &user->DSG));
     user->dsg_formed = PETSC_TRUE;
   }
 
@@ -1023,7 +1023,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   PetscCall(MatProductCreate(user->Div, user->Grad, NULL, &user->DSG));
   PetscCall(MatProductSetType(user->DSG, MATPRODUCT_AB));
   PetscCall(MatProductSetAlgorithm(user->DSG, "default"));
-  PetscCall(MatProductSetFill(user->DSG, PETSC_DEFAULT));
+  PetscCall(MatProductSetFill(user->DSG, PETSC_DETERMINE));
   PetscCall(MatProductSetFromOptions(user->DSG));
   PetscCall(MatProductSymbolic(user->DSG));
 
@@ -1035,7 +1035,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   if (user->dsg_formed) {
     PetscCall(MatProductNumeric(user->DSG));
   } else {
-    PetscCall(MatMatMult(user->Div, user->Grad, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &user->DSG));
+    PetscCall(MatMatMult(user->Div, user->Grad, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &user->DSG));
     user->dsg_formed = PETSC_TRUE;
   }
   /* B = speye(nx^3) + ht*DSG; */
@@ -1059,7 +1059,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   if (user->dsg_formed) {
     PetscCall(MatProductNumeric(user->DSG));
   } else {
-    PetscCall(MatMatMult(user->Div, user->Grad, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &user->DSG));
+    PetscCall(MatMatMult(user->Div, user->Grad, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &user->DSG));
 
     user->dsg_formed = PETSC_TRUE;
   }

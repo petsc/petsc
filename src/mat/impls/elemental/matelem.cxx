@@ -394,7 +394,7 @@ static PetscErrorCode MatMatMultNumeric_Elemental_MPIDense(Mat A, Mat B, Mat C)
 
   PetscFunctionBegin;
   PetscCall(MatConvert(B, MATELEMENTAL, MAT_INITIAL_MATRIX, &Be));
-  PetscCall(MatMatMult(A, Be, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Ce));
+  PetscCall(MatMatMult(A, Be, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &Ce));
   PetscCall(MatConvert(Ce, MATMPIDENSE, MAT_REUSE_MATRIX, &C));
   PetscCall(MatDestroy(&Be));
   PetscCall(MatDestroy(&Ce));

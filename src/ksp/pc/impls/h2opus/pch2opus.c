@@ -215,8 +215,8 @@ static PetscErrorCode PCApplyMatKernel_H2OPUS(PC pc, Mat X, Mat Y, PetscBool t)
   PC_H2OPUS *pch2opus = (PC_H2OPUS *)pc->data;
 
   PetscFunctionBegin;
-  if (t) PetscCall(MatTransposeMatMult(pch2opus->M, X, MAT_REUSE_MATRIX, PETSC_DEFAULT, &Y));
-  else PetscCall(MatMatMult(pch2opus->M, X, MAT_REUSE_MATRIX, PETSC_DEFAULT, &Y));
+  if (t) PetscCall(MatTransposeMatMult(pch2opus->M, X, MAT_REUSE_MATRIX, PETSC_DETERMINE, &Y));
+  else PetscCall(MatMatMult(pch2opus->M, X, MAT_REUSE_MATRIX, PETSC_CURRENT, &Y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -388,7 +388,7 @@ static PetscErrorCode MatMatMultKernel_Hyper(Mat M, Mat X, Mat Y, PetscBool t)
   PetscCall(MatCopy(X, pch2opus->wnsmat[3], SAME_NONZERO_PATTERN));
   if (t) {
     for (i = 0; i < pch2opus->hyperorder - 1; i++) {
-      PetscCall(MatTransposeMatMult(A, pch2opus->wnsmat[0], MAT_REUSE_MATRIX, PETSC_DEFAULT, &pch2opus->wnsmat[1]));
+      PetscCall(MatTransposeMatMult(A, pch2opus->wnsmat[0], MAT_REUSE_MATRIX, PETSC_CURRENT, &pch2opus->wnsmat[1]));
       PetscCall(PCApplyTransposeMat_H2OPUS(pc, pch2opus->wnsmat[1], pch2opus->wnsmat[2]));
       PetscCall(MatAXPY(pch2opus->wnsmat[0], -1., pch2opus->wnsmat[2], SAME_NONZERO_PATTERN));
       PetscCall(MatAXPY(pch2opus->wnsmat[3], 1., pch2opus->wnsmat[0], SAME_NONZERO_PATTERN));
@@ -397,7 +397,7 @@ static PetscErrorCode MatMatMultKernel_Hyper(Mat M, Mat X, Mat Y, PetscBool t)
   } else {
     for (i = 0; i < pch2opus->hyperorder - 1; i++) {
       PetscCall(PCApplyMat_H2OPUS(pc, pch2opus->wnsmat[0], pch2opus->wnsmat[1]));
-      PetscCall(MatMatMult(A, pch2opus->wnsmat[1], MAT_REUSE_MATRIX, PETSC_DEFAULT, &pch2opus->wnsmat[2]));
+      PetscCall(MatMatMult(A, pch2opus->wnsmat[1], MAT_REUSE_MATRIX, PETSC_CURRENT, &pch2opus->wnsmat[2]));
       PetscCall(MatAXPY(pch2opus->wnsmat[0], -1., pch2opus->wnsmat[2], SAME_NONZERO_PATTERN));
       PetscCall(MatAXPY(pch2opus->wnsmat[3], 1., pch2opus->wnsmat[0], SAME_NONZERO_PATTERN));
     }
@@ -476,13 +476,13 @@ static PetscErrorCode MatMatMultKernel_NS(Mat M, Mat X, Mat Y, PetscBool t)
   }
   if (t) {
     PetscCall(PCApplyTransposeMat_H2OPUS(pc, X, Y));
-    PetscCall(MatTransposeMatMult(A, Y, MAT_REUSE_MATRIX, PETSC_DEFAULT, &pch2opus->wnsmat[1]));
+    PetscCall(MatTransposeMatMult(A, Y, MAT_REUSE_MATRIX, PETSC_CURRENT, &pch2opus->wnsmat[1]));
     PetscCall(PCApplyTransposeMat_H2OPUS(pc, pch2opus->wnsmat[1], pch2opus->wnsmat[0]));
     PetscCall(MatScale(Y, 2.));
     PetscCall(MatAXPY(Y, -1., pch2opus->wnsmat[0], SAME_NONZERO_PATTERN));
   } else {
     PetscCall(PCApplyMat_H2OPUS(pc, X, Y));
-    PetscCall(MatMatMult(A, Y, MAT_REUSE_MATRIX, PETSC_DEFAULT, &pch2opus->wnsmat[0]));
+    PetscCall(MatMatMult(A, Y, MAT_REUSE_MATRIX, PETSC_CURRENT, &pch2opus->wnsmat[0]));
     PetscCall(PCApplyMat_H2OPUS(pc, pch2opus->wnsmat[0], pch2opus->wnsmat[1]));
     PetscCall(MatScale(Y, 2.));
     PetscCall(MatAXPY(Y, -1., pch2opus->wnsmat[1], SAME_NONZERO_PATTERN));

@@ -239,7 +239,7 @@ int main(int argc, char **argv)
   PetscCall(MatSetRandom(C, NULL));
   if (cgpu) PetscCall(MatConvert(C, MATDENSECUDA, MAT_INPLACE_MATRIX, &C));
   for (nt = 0; nt < ntrials; nt++) {
-    PetscCall(MatMatMult(B, C, nt ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX, PETSC_DEFAULT, &D));
+    PetscCall(MatMatMult(B, C, nt ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX, PETSC_DETERMINE, &D));
     PetscCall(MatViewFromOptions(D, NULL, "-bc_view"));
     PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)D, &flg, MATSEQDENSE, MATMPIDENSE, ""));
     if (flg) {
@@ -263,7 +263,7 @@ int main(int argc, char **argv)
   /* Test MatTransposeMatMult */
   if (testtrans) { /* MatMultTranspose for nonsymmetric matrices not implemented */
     for (nt = 0; nt < ntrials; nt++) {
-      PetscCall(MatTransposeMatMult(B, C, nt ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX, PETSC_DEFAULT, &D));
+      PetscCall(MatTransposeMatMult(B, C, nt ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX, PETSC_DETERMINE, &D));
       PetscCall(MatViewFromOptions(D, NULL, "-btc_view"));
       PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)D, &flg, MATSEQDENSE, MATMPIDENSE, ""));
       if (flg) {

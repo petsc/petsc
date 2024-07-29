@@ -75,7 +75,7 @@ int main(int argc, char **args)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(MatHermitianTranspose(V, MAT_INITIAL_MATRIX, &X));
   PetscCall(MatDiagonalScale(X, c, NULL));
-  PetscCall(MatMatMult(U, X, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &LRe));
+  PetscCall(MatMatMult(U, X, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &LRe));
   PetscCall(MatDestroy(&X));
   if (A) PetscCall(MatAYPX(LRe, 1.0, A, DIFFERENT_NONZERO_PATTERN));
 

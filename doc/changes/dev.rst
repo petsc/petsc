@@ -55,6 +55,9 @@ Changes: Development
 
 .. rubric:: Mat:
 
+-  Change ``MatProductSetFill()`` to support ``PETSC_DETERMINE`` and ``PETSC_CURRENT``. ``MatMatMult()`` and its friends and relations now accept
+   ``PETSC_DETERMINE`` and ``PETSC_CURRENT`` in the ``fill`` argument. ``PETSC_DEFAULT`` is deprecated for those functions
+
 .. rubric:: MatCoarsen:
 
 .. rubric:: PC:

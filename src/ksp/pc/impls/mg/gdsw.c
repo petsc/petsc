@@ -305,7 +305,7 @@ PetscErrorCode PCMGGDSWCreateCoarseSpace_Private(PC pc, PetscInt l, DM dm, KSP s
     const PetscInt    *ri, *rg;
     PetscInt           nri, nrg, ncg;
 
-    PetscCall(MatMatMult(sA_IG[i], sGf[i], MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Y));
+    PetscCall(MatMatMult(sA_IG[i], sGf[i], MAT_INITIAL_MATRIX, PETSC_CURRENT, &Y));
     PetscCall(MatScale(Y, -1.0));
     PetscCall(MatDuplicate(Y, MAT_DO_NOT_COPY_VALUES, &X));
     PetscCall(KSPMatSolve(sksp[i], Y, X));

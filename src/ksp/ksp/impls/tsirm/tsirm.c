@@ -89,10 +89,10 @@ static PetscErrorCode KSPSolve_TSIRM(KSP ksp)
       PetscCall(MatAssemblyBegin(tsirm->S, MAT_FINAL_ASSEMBLY));
       PetscCall(MatAssemblyEnd(tsirm->S, MAT_FINAL_ASSEMBLY));
       if (first_iteration) {
-        PetscCall(MatMatMult(tsirm->A, tsirm->S, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &AS));
+        PetscCall(MatMatMult(tsirm->A, tsirm->S, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &AS));
         first_iteration = 0;
       } else {
-        PetscCall(MatMatMult(tsirm->A, tsirm->S, MAT_REUSE_MATRIX, PETSC_DEFAULT, &AS));
+        PetscCall(MatMatMult(tsirm->A, tsirm->S, MAT_REUSE_MATRIX, PETSC_DETERMINE, &AS));
       }
 
       /* CGLS or LSQR method to minimize the residuals*/

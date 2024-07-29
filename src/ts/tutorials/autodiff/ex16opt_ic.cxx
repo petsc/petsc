@@ -246,7 +246,7 @@ int main(int argc, char **argv)
     PetscCall(PCSetType(pc, PCNONE));
   }
 
-  PetscCall(TaoSetTolerances(tao, 1e-10, PETSC_DEFAULT, PETSC_DEFAULT));
+  PetscCall(TaoSetTolerances(tao, 1e-10, PETSC_CURRENT, PETSC_CURRENT));
 
   /* SOLVE THE APPLICATION */
   PetscCall(TaoSolve(tao));

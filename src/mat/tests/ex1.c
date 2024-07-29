@@ -63,7 +63,7 @@ static PetscErrorCode createMatsAndVecs(PetscInt m, PetscInt n, PetscInt nrhs, P
     if (m == n) {
       Mat T;
 
-      PetscCall(MatMatTransposeMult(mat, mat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &T));
+      PetscCall(MatMatTransposeMult(mat, mat, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &T));
       PetscCall(MatDestroy(&mat));
       mat = T;
     }
@@ -135,7 +135,7 @@ int main(int argc, char **argv)
     if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: Norm of error for in-place Cholesky %g\n", (double)norm));
 
     PetscCall(MatMatSolve(F, RHS, SOLU));
-    PetscCall(MatMatMult(mat, SOLU, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &RHS2));
+    PetscCall(MatMatMult(mat, SOLU, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &RHS2));
     PetscCall(MatAXPY(RHS, -1.0, RHS2, SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(RHS, NORM_FROBENIUS, &norm));
     if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error: Norm of residual for in-place Cholesky (MatMatSolve) %g\n", (double)norm));
@@ -170,7 +170,7 @@ int main(int argc, char **argv)
     PetscCall(VecNorm(y, NORM_2, &norm));
     if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: Norm of error for in-place LU %g\n", (double)norm));
     PetscCall(MatMatSolve(F, RHS, SOLU));
-    PetscCall(MatMatMult(mat, SOLU, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &RHS2));
+    PetscCall(MatMatMult(mat, SOLU, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &RHS2));
     PetscCall(MatAXPY(RHS, -1.0, RHS2, SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(RHS, NORM_FROBENIUS, &norm));
     if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error: Norm of residual for in-place LU (MatMatSolve) %g\n", (double)norm));
@@ -216,7 +216,7 @@ int main(int argc, char **argv)
       PetscCall(VecAXPY(y, -1.0, x));
       PetscCall(VecNorm(y, NORM_2, &norm));
       if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: Norm of error for in-place QR %g\n", (double)norm));
-      PetscCall(MatMatMult(mat, SOLU, MAT_REUSE_MATRIX, PETSC_DEFAULT, &RHS));
+      PetscCall(MatMatMult(mat, SOLU, MAT_REUSE_MATRIX, PETSC_DETERMINE, &RHS));
       PetscCall(MatDuplicate(SOLU, MAT_DO_NOT_COPY_VALUES, &SOLU2));
       PetscCall(MatMatSolve(F, RHS, SOLU2));
       PetscCall(MatAXPY(SOLU2, -1.0, SOLU, SAME_NONZERO_PATTERN));

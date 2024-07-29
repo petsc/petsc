@@ -129,7 +129,7 @@ static inline PetscErrorCode PCHPDDMSetAuxiliaryMatNormal_Private(PC pc, Mat A, 
       PetscCall(MatDuplicate(*splitting, MAT_COPY_VALUES, &conjugate));
       PetscCall(MatConjugate(conjugate));
     }
-    PetscCall(MatTransposeMatMult(conjugate, *splitting, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &aux));
+    PetscCall(MatTransposeMatMult(conjugate, *splitting, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &aux));
     if (PetscDefined(USE_COMPLEX)) PetscCall(MatDestroy(&conjugate));
     PetscCall(MatNorm(aux, NORM_FROBENIUS, &norm));
     PetscCall(MatSetOption(aux, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
@@ -1312,11 +1312,11 @@ static PetscErrorCode PCHPDDMAlgebraicAuxiliaryMat_Private(Mat P, IS *is, Mat *s
       for (n = 0; n < M[0]->cmap->n; n += bs) {
         for (p = 0; p < bs; ++p) ptr[n + p * (M[0]->cmap->n + 1)] = 1.0;
       }
-      PetscCall(MatMatMult(M[0], ones, MAT_INITIAL_MATRIX, PETSC_DEFAULT, sum));
+      PetscCall(MatMatMult(M[0], ones, MAT_INITIAL_MATRIX, PETSC_CURRENT, sum));
       PetscCall(MatDestroy(&ones));
       PetscCall(MatCreateDense(PETSC_COMM_SELF, aux->cmap->n, bs, aux->cmap->n, bs, ptr, &ones));
       PetscCall(MatDenseSetLDA(ones, M[0]->cmap->n));
-      PetscCall(MatMatMult(aux, ones, MAT_INITIAL_MATRIX, PETSC_DEFAULT, sum + 1));
+      PetscCall(MatMatMult(aux, ones, MAT_INITIAL_MATRIX, PETSC_CURRENT, sum + 1));
       PetscCall(MatDestroy(&ones));
       PetscCall(PetscFree(ptr));
       /* off-diagonal block row sum (full rows - diagonal block rows) */
@@ -3029,7 +3029,7 @@ static PetscErrorCode MatProduct_AB_Harmonic(Mat S, Mat X, Mat Y, void *)
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(S, &h));
-  PetscCall(MatMatMult(h->A[0], X, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &A));
+  PetscCall(MatMatMult(h->A[0], X, MAT_INITIAL_MATRIX, PETSC_CURRENT, &A));
   PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, h->ksp->pc->mat->rmap->n, A->cmap->n, nullptr, &B));
   for (PetscInt i = 0; i < A->cmap->n; ++i) {
     PetscCall(MatDenseGetColumnVecRead(A, i, &a));

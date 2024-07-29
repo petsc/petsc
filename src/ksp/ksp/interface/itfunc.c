@@ -1145,8 +1145,8 @@ static PetscErrorCode KSPViewFinalMatResidual_Internal(KSP ksp, Mat B, Mat X, Pe
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &flg));
   if (flg) {
     PetscCall(PCGetOperators(ksp->pc, &A, NULL));
-    if (!ksp->transpose_solve) PetscCall(MatMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &R));
-    else PetscCall(MatTransposeMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &R));
+    if (!ksp->transpose_solve) PetscCall(MatMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &R));
+    else PetscCall(MatTransposeMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &R));
     PetscCall(MatAYPX(R, -1.0, B, SAME_NONZERO_PATTERN));
     PetscCall(MatGetSize(R, NULL, &N));
     PetscCall(PetscMalloc1(N, &norms));

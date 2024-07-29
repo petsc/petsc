@@ -88,7 +88,7 @@ int main(int argc, char **args)
 
   /* test matrix product error messages */
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_nest*nest", &test, NULL));
-  if (test) PetscCall(MatMatMult(nest, nest, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
+  if (test) PetscCall(MatMatMult(nest, nest, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_matproductsetfromoptions", &test, NULL));
   if (test) {
@@ -115,8 +115,8 @@ int main(int argc, char **args)
   PetscCall(MatSetRandom(B, NULL));
 
   /* C = nest*B_dense */
-  PetscCall(MatMatMult(nest, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
-  PetscCall(MatMatMult(nest, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C));
+  PetscCall(MatMatMult(nest, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
+  PetscCall(MatMatMult(nest, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C));
   PetscCall(MatMatMultEqual(nest, B, C, 10, &equal));
   PetscCheck(equal, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Error in C != nest*B_dense");
 
@@ -137,8 +137,8 @@ int main(int argc, char **args)
   /* Test with virtual block */
   PetscCall(MatCreateTranspose(A1, &A5)); /* A1 is symmetric */
   PetscCall(MatNestSetSubMat(nest, 0, 0, A5));
-  PetscCall(MatMatMult(nest, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C1));
-  PetscCall(MatMatMult(nest, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C1));
+  PetscCall(MatMatMult(nest, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C1));
+  PetscCall(MatMatMult(nest, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C1));
   PetscCall(MatMatMultEqual(nest, B, C1, 10, &equal));
   PetscCheck(equal, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Error in C1 != C");
   PetscCall(MatDestroy(&C1));

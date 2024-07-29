@@ -57,18 +57,18 @@ int main(int argc, char **argv)
 
     PetscCall(MatCopy(AC, B, SAME_NONZERO_PATTERN));
     /* full CUDA PtAP */
-    PetscCall(MatPtAP(B, AC, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &B1));
+    PetscCall(MatPtAP(B, AC, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &B1));
 
     /* CPU PtAP since A is on the CPU only */
-    PetscCall(MatPtAP(B, A, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &B2));
+    PetscCall(MatPtAP(B, A, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &B2));
 
     PetscCall(MatAXPY(B2, -1.0, B1, SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(B2, NORM_INFINITY, &r));
     PetscCheck(r <= tol, PetscObjectComm((PetscObject)B), PETSC_ERR_PLIB, "Error MatPtAP %g", (double)r);
 
     /* test reuse */
-    PetscCall(MatPtAP(B, AC, MAT_REUSE_MATRIX, PETSC_DEFAULT, &B1));
-    PetscCall(MatPtAP(B, A, MAT_REUSE_MATRIX, PETSC_DEFAULT, &B2));
+    PetscCall(MatPtAP(B, AC, MAT_REUSE_MATRIX, PETSC_DETERMINE, &B1));
+    PetscCall(MatPtAP(B, A, MAT_REUSE_MATRIX, PETSC_DETERMINE, &B2));
     PetscCall(MatAXPY(B2, -1.0, B1, SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(B2, NORM_INFINITY, &r));
     PetscCheck(r <= tol, PetscObjectComm((PetscObject)B), PETSC_ERR_PLIB, "Error MatPtAP %g", (double)r);

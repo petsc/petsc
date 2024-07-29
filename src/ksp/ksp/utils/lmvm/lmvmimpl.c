@@ -210,7 +210,7 @@ static PetscErrorCode MatDuplicate_LMVM(Mat B, MatDuplicateOption op, Mat *mat)
   mctx->ksp_rtol   = bctx->ksp_rtol;
   mctx->ksp_atol   = bctx->ksp_atol;
   mctx->shift      = bctx->shift;
-  PetscCall(KSPSetTolerances(mctx->J0ksp, mctx->ksp_rtol, mctx->ksp_atol, PETSC_DEFAULT, mctx->ksp_max_it));
+  PetscCall(KSPSetTolerances(mctx->J0ksp, mctx->ksp_rtol, mctx->ksp_atol, PETSC_CURRENT, mctx->ksp_max_it));
 
   PetscCall(MatLMVMAllocate(*mat, bctx->Xprev, bctx->Fprev));
   if (op == MAT_COPY_VALUES) PetscCall(MatCopy(B, *mat, SAME_NONZERO_PATTERN));
@@ -364,6 +364,6 @@ PetscErrorCode MatCreate_LMVM(Mat B)
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)lmvm->J0ksp, (PetscObject)B, 1));
   PetscCall(KSPSetOptionsPrefix(lmvm->J0ksp, "mat_lmvm_"));
   PetscCall(KSPSetType(lmvm->J0ksp, KSPGMRES));
-  PetscCall(KSPSetTolerances(lmvm->J0ksp, lmvm->ksp_rtol, lmvm->ksp_atol, PETSC_DEFAULT, lmvm->ksp_max_it));
+  PetscCall(KSPSetTolerances(lmvm->J0ksp, lmvm->ksp_rtol, lmvm->ksp_atol, PETSC_CURRENT, lmvm->ksp_max_it));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -123,11 +123,11 @@ int main(int argc, char **argv)
     PetscCall(PCSetType(pc, PCCHOLESKY));
     PetscCall(MatDestroy(&C));
     if (!PetscDefined(USE_COMPLEX)) {
-      PetscCall(MatTransposeMatMult(Q, Q, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
+      PetscCall(MatTransposeMatMult(Q, Q, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
     } else {
       Mat Qc;
       PetscCall(MatHermitianTranspose(Q, MAT_INITIAL_MATRIX, &Qc));
-      PetscCall(MatMatMult(Qc, Q, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
+      PetscCall(MatMatMult(Qc, Q, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
       PetscCall(MatDestroy(&Qc));
     }
     PetscCall(KSPSetOperators(QRsolver, Q, C));

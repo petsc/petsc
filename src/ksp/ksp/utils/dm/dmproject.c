@@ -293,7 +293,7 @@ PetscErrorCode DMAdaptInterpolator(DM dmc, DM dmf, Mat In, KSP smoother, Mat MF,
   /* w_k = \frac{\HC{v_k} B_l v_k}{\HC{v_k} A_l v_k} or the inverse Rayleigh quotient, which we calculate using \frac{\HC{v_k} v_k}{\HC{v_k} B^{-1}_l A_l v_k} */
   PetscCall(KSPGetOperators(smoother, &globalA, NULL));
 
-  PetscCall(MatMatMult(globalA, MF, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &AF));
+  PetscCall(MatMatMult(globalA, MF, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &AF));
   for (k = 0; k < Nc; ++k) {
     PetscScalar vnorm, vAnorm;
     Vec         vf;
@@ -317,7 +317,7 @@ PetscErrorCode DMAdaptInterpolator(DM dmc, DM dmf, Mat In, KSP smoother, Mat MF,
   PetscCall(MatDestroy(&AF));
   if (!MC) {
     allocVc = PETSC_TRUE;
-    PetscCall(MatTransposeMatMult(In, MF, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &MC));
+    PetscCall(MatTransposeMatMult(In, MF, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &MC));
   }
   /* Solve a LS system for each fine row
      MATT: Can we generalize to the case where Nc for the fine space
