@@ -2,10 +2,16 @@
 
 static PetscErrorCode MatTransposeAXPY_Private(Mat Y, PetscScalar a, Mat X, MatStructure str, Mat T)
 {
-  Mat A, F;
+  Mat         A, F;
+  PetscScalar vshift, vscale;
   PetscErrorCode (*f)(Mat, Mat *);
 
   PetscFunctionBegin;
+  if (T == X) PetscCall(MatShellGetScalingShifts(T, &vshift, &vscale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
+  else {
+    vshift = 0.0;
+    vscale = 1.0;
+  }
   PetscCall(PetscObjectQueryFunction((PetscObject)T, "MatTransposeGetMat_C", &f));
   if (f) {
     PetscCall(MatTransposeGetMat(T, &A));
@@ -28,7 +34,8 @@ static PetscErrorCode MatTransposeAXPY_Private(Mat Y, PetscScalar a, Mat X, MatS
       PetscCall(MatHermitianTranspose(X, MAT_INITIAL_MATRIX, &F));
     }
   }
-  PetscCall(MatAXPY(A, a, F, str));
+  PetscCall(MatAXPY(A, a * vscale, F, str));
+  PetscCall(MatShift(A, a * vshift));
   PetscCall(MatDestroy(&F));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

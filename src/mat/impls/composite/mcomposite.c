@@ -667,10 +667,7 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
   next = shell->head;
   prev = shell->tail;
   PetscCheck(next, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must provide at least one matrix with MatCompositeAddMat()");
-  PetscCheck(!((Mat_Shell *)mat->data)->zrows && !((Mat_Shell *)mat->data)->zcols, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot call MatCompositeMerge() if MatZeroRows() or MatZeroRowsColumns() has been called on the input Mat"); // TODO FIXME: lift this limitation by calling MatZeroRows()/MatZeroRowsColumns() after the merge
-  PetscCheck(!((Mat_Shell *)mat->data)->axpy, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot call MatCompositeMerge() if MatAXPY() has been called on the input Mat"); // TODO FIXME: lift this limitation by calling MatAXPY() after the merge
-  scale = ((Mat_Shell *)mat->data)->vscale;
-  shift = ((Mat_Shell *)mat->data)->vshift;
+  PetscCall(MatShellGetScalingShifts(mat, &shift, &scale, &dshift, &left, &right, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
   if (shell->type == MAT_COMPOSITE_ADDITIVE) {
     if (shell->mergetype == MAT_COMPOSITE_MERGE_RIGHT) {
       i = 0;
@@ -704,9 +701,9 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
     }
   }
 
-  if ((left = ((Mat_Shell *)mat->data)->left)) PetscCall(PetscObjectReference((PetscObject)left));
-  if ((right = ((Mat_Shell *)mat->data)->right)) PetscCall(PetscObjectReference((PetscObject)right));
-  if ((dshift = ((Mat_Shell *)mat->data)->dshift)) PetscCall(PetscObjectReference((PetscObject)dshift));
+  if (left) PetscCall(PetscObjectReference((PetscObject)left));
+  if (right) PetscCall(PetscObjectReference((PetscObject)right));
+  if (dshift) PetscCall(PetscObjectReference((PetscObject)dshift));
 
   PetscCall(MatHeaderReplace(mat, &tmat));
 

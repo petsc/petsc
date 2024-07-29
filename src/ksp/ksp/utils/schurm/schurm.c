@@ -1,5 +1,4 @@
 #include <../src/ksp/ksp/utils/schurm/schurm.h> /*I "petscksp.h" I*/
-#include <../src/mat/impls/shell/shell.h>
 
 const char *const MatSchurComplementAinvTypes[] = {"DIAG", "LUMP", "BLOCKDIAG", "FULL", "MatSchurComplementAinvType", "MAT_SCHUR_COMPLEMENT_AINV_", NULL};
 
@@ -756,12 +755,11 @@ PetscErrorCode MatCreateSchurComplementPmat(Mat A00, Mat A01, Mat A10, Mat A11, 
       }
       if (!flg) PetscCall(MatDuplicate(A01, MAT_COPY_VALUES, &AdB));
       else {
-        PetscCheck(!((Mat_Shell *)A01->data)->zrows && !((Mat_Shell *)A01->data)->zcols, PetscObjectComm((PetscObject)A01), PETSC_ERR_SUP, "Cannot call MatCreateSchurComplementPmat() if MatZeroRows() or MatZeroRowsColumns() has been called on the input Mat");
-        PetscCheck(!((Mat_Shell *)A01->data)->axpy, PetscObjectComm((PetscObject)A01), PETSC_ERR_SUP, "Cannot call MatCreateSchurComplementPmat() if MatAXPY() has been called on the input Mat");
-        PetscCheck(!((Mat_Shell *)A01->data)->left && !((Mat_Shell *)A01->data)->right, PetscObjectComm((PetscObject)A01), PETSC_ERR_SUP, "Cannot call MatCreateSchurComplementPmat() if MatDiagonalScale() has been called on the input Mat");
-        PetscCheck(!((Mat_Shell *)A01->data)->dshift, PetscObjectComm((PetscObject)A01), PETSC_ERR_SUP, "Cannot call MatCreateSchurComplementPmat() if MatDiagonalSet() has been called on the input Mat");
-        PetscCall(MatScale(AdB, ((Mat_Shell *)A01->data)->vscale));
-        PetscCall(MatShift(AdB, ((Mat_Shell *)A01->data)->vshift));
+        PetscScalar shift, scale;
+
+        PetscCall(MatShellGetScalingShifts(A01, &shift, &scale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
+        PetscCall(MatShift(AdB, shift));
+        PetscCall(MatScale(AdB, scale));
       }
       PetscCall(MatCreateVecs(A00, &diag, NULL));
       if (ainvtype == MAT_SCHUR_COMPLEMENT_AINV_LUMP) {
