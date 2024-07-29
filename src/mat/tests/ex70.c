@@ -175,7 +175,7 @@ PetscErrorCode MyMatShellMatMultNumeric(Mat S, Mat B, Mat C, void *ctx)
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(S, &A));
-  PetscCall(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C));
+  PetscCall(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -185,7 +185,7 @@ PetscErrorCode MyMatTransposeShellMatMultNumeric(Mat S, Mat B, Mat C, void *ctx)
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(S, &A));
-  PetscCall(MatTransposeMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C));
+  PetscCall(MatTransposeMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -195,7 +195,7 @@ PetscErrorCode MyMatShellMatTransposeMultNumeric(Mat S, Mat B, Mat C, void *ctx)
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(S, &A));
-  PetscCall(MatMatTransposeMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C));
+  PetscCall(MatMatTransposeMult(A, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -403,12 +403,12 @@ int main(int argc, char **args)
   }
 
   /* Test reusing a previously allocated dense buffer */
-  PetscCall(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &X));
+  PetscCall(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &X));
   PetscCall(CheckLocal(B, X, aB, aX));
   PetscCall(MatMatMultEqual(A, B, X, 10, &flg));
   if (!flg) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with reusage\n"));
-    PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &T));
+    PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &T));
     PetscCall(MatAXPY(T, -1.0, X, SAME_NONZERO_PATTERN));
     PetscCall(MatView(T, NULL));
     PetscCall(MatDestroy(&T));
@@ -416,24 +416,24 @@ int main(int argc, char **args)
 
   /* Test MatTransposeMat and MatMatTranspose */
   if (testmattmat) {
-    PetscCall(MatTransposeMatMult(A, X, MAT_REUSE_MATRIX, PETSC_DEFAULT, &B));
+    PetscCall(MatTransposeMatMult(A, X, MAT_REUSE_MATRIX, PETSC_DETERMINE, &B));
     PetscCall(CheckLocal(B, X, aB, aX));
     PetscCall(MatTransposeMatMultEqual(A, X, B, 10, &flg));
     if (!flg) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with reusage (MatTransposeMat)\n"));
-      PetscCall(MatTransposeMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &B));
+      PetscCall(MatTransposeMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &B));
       PetscCall(MatAXPY(T, -1.0, B, SAME_NONZERO_PATTERN));
       PetscCall(MatView(T, NULL));
       PetscCall(MatDestroy(&T));
     }
   }
   if (testmatmatt) {
-    PetscCall(MatMatTransposeMult(A, Bt, MAT_REUSE_MATRIX, PETSC_DEFAULT, &X));
+    PetscCall(MatMatTransposeMult(A, Bt, MAT_REUSE_MATRIX, PETSC_DETERMINE, &X));
     PetscCall(CheckLocal(Bt, X, aBt, aX));
     PetscCall(MatMatTransposeMultEqual(A, Bt, X, 10, &flg));
     if (!flg) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with reusage (MatMatTranspose)\n"));
-      PetscCall(MatMatTransposeMult(A, Bt, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &T));
+      PetscCall(MatMatTransposeMult(A, Bt, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &T));
       PetscCall(MatAXPY(T, -1.0, X, SAME_NONZERO_PATTERN));
       PetscCall(MatView(T, NULL));
       PetscCall(MatDestroy(&T));
@@ -442,12 +442,12 @@ int main(int argc, char **args)
 
   /* Test projection operations (PtAP and RARt) */
   if (testproj) {
-    PetscCall(MatPtAP(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &PtAP));
+    PetscCall(MatPtAP(A, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &PtAP));
     PetscCall(MatPtAPMultEqual(A, B, PtAP, 10, &flg));
     if (!flg) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with PtAP\n"));
-      PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &T));
-      PetscCall(MatTransposeMatMult(B, T, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &T2));
+      PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &T));
+      PetscCall(MatTransposeMatMult(B, T, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &T2));
       PetscCall(MatAXPY(T2, -1.0, PtAP, SAME_NONZERO_PATTERN));
       PetscCall(MatView(T2, NULL));
       PetscCall(MatDestroy(&T2));
@@ -458,12 +458,12 @@ int main(int argc, char **args)
     PetscCall(MatDenseSetLDA(R, k + ldr));
     PetscCall(MatSetRandom(R, NULL));
     if (testrart) { /* fails for AIJCUSPARSE because RA operation is not defined */
-      PetscCall(MatRARt(A, R, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &RARt));
+      PetscCall(MatRARt(A, R, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &RARt));
       PetscCall(MatRARtMultEqual(A, R, RARt, 10, &flg));
       if (!flg) {
         PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with RARt\n"));
-        PetscCall(MatMatTransposeMult(A, R, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &T));
-        PetscCall(MatMatMult(R, T, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &T2));
+        PetscCall(MatMatTransposeMult(A, R, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &T));
+        PetscCall(MatMatMult(R, T, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &T2));
         PetscCall(MatAXPY(T2, -1.0, RARt, SAME_NONZERO_PATTERN));
         PetscCall(MatView(T2, NULL));
         PetscCall(MatDestroy(&T2));
@@ -473,8 +473,8 @@ int main(int argc, char **args)
   }
 
   /* Test MatDenseGetColumnVec and friends */
-  PetscCall(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &X));
-  PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &T));
+  PetscCall(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &X));
+  PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &T));
   PetscCall(MatDuplicate(T, MAT_DO_NOT_COPY_VALUES, &T2));
   for (k = 0; k < K; k++) {
     Vec Xv, Tv, T2v;
@@ -537,8 +537,8 @@ int main(int argc, char **args)
   PetscCall(VecDestroy(&r));
 
   /* recompute projections, test reusage */
-  if (PtAP) PetscCall(MatPtAP(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &PtAP));
-  if (RARt) PetscCall(MatRARt(A, R, MAT_REUSE_MATRIX, PETSC_DEFAULT, &RARt));
+  if (PtAP) PetscCall(MatPtAP(A, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &PtAP));
+  if (RARt) PetscCall(MatRARt(A, R, MAT_REUSE_MATRIX, PETSC_DETERMINE, &RARt));
   if (testshellops) { /* test callbacks for user defined MatProducts */
     PetscCall(MatShellSetMatProductOperation(T2, MATPRODUCT_AB, NULL, MyMatShellMatMultNumeric, NULL, MATDENSE, MATDENSE));
     PetscCall(MatShellSetMatProductOperation(T2, MATPRODUCT_AB, NULL, MyMatShellMatMultNumeric, NULL, MATDENSECUDA, MATDENSECUDA));
@@ -555,12 +555,12 @@ int main(int argc, char **args)
   }
   PetscCall(CheckLocal(B, X, aB, aX));
   /* we either use the shell operations or the loop over columns code, applying the operator */
-  PetscCall(MatMatMult(T2, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &X));
+  PetscCall(MatMatMult(T2, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &X));
   PetscCall(CheckLocal(B, X, aB, aX));
   PetscCall(MatMatMultEqual(T2, B, X, 10, &flg));
   if (!flg) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with reusage (MATSHELL)\n"));
-    PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &T));
+    PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &T));
     PetscCall(MatAXPY(T, -1.0, X, SAME_NONZERO_PATTERN));
     PetscCall(MatView(T, NULL));
     PetscCall(MatDestroy(&T));
@@ -569,8 +569,8 @@ int main(int argc, char **args)
     PetscCall(MatPtAPMultEqual(T2, B, PtAP, 10, &flg));
     if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with PtAP (MATSHELL)\n"));
     if (testshellops) { /* projections fail if the product operations are not specified */
-      PetscCall(MatPtAP(T2, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &T));
-      PetscCall(MatPtAP(T2, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &T));
+      PetscCall(MatPtAP(T2, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &T));
+      PetscCall(MatPtAP(T2, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &T));
       PetscCall(MatPtAPMultEqual(T2, B, T, 10, &flg));
       if (!flg) {
         Mat TE;
@@ -590,8 +590,8 @@ int main(int argc, char **args)
       if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with RARt (MATSHELL)\n"));
     }
     if (testshellops) {
-      PetscCall(MatRARt(T2, R, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &T));
-      PetscCall(MatRARt(T2, R, MAT_REUSE_MATRIX, PETSC_DEFAULT, &T));
+      PetscCall(MatRARt(T2, R, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &T));
+      PetscCall(MatRARt(T2, R, MAT_REUSE_MATRIX, PETSC_DETERMINE, &T));
       PetscCall(MatRARtMultEqual(T2, R, T, 10, &flg));
       if (!flg) {
         Mat TE;
@@ -611,24 +611,24 @@ int main(int argc, char **args)
   }
 
   if (testmattmat) { /* we either use the shell operations or the loop over columns code applying the transposed operator */
-    PetscCall(MatTransposeMatMult(T2, X, MAT_REUSE_MATRIX, PETSC_DEFAULT, &B));
+    PetscCall(MatTransposeMatMult(T2, X, MAT_REUSE_MATRIX, PETSC_DETERMINE, &B));
     PetscCall(CheckLocal(B, X, aB, aX));
     PetscCall(MatTransposeMatMultEqual(T2, X, B, 10, &flg));
     if (!flg) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with reusage (MatTranspose, MATSHELL)\n"));
-      PetscCall(MatTransposeMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &T));
+      PetscCall(MatTransposeMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &T));
       PetscCall(MatAXPY(T, -1.0, B, SAME_NONZERO_PATTERN));
       PetscCall(MatView(T, NULL));
       PetscCall(MatDestroy(&T));
     }
   }
   if (testmatmatt && testshellops) { /* only when shell operations are set */
-    PetscCall(MatMatTransposeMult(T2, Bt, MAT_REUSE_MATRIX, PETSC_DEFAULT, &X));
+    PetscCall(MatMatTransposeMult(T2, Bt, MAT_REUSE_MATRIX, PETSC_DETERMINE, &X));
     PetscCall(CheckLocal(Bt, X, aBt, aX));
     PetscCall(MatMatTransposeMultEqual(T2, Bt, X, 10, &flg));
     if (!flg) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with reusage (MatMatTranspose, MATSHELL)\n"));
-      PetscCall(MatMatTransposeMult(A, Bt, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &T));
+      PetscCall(MatMatTransposeMult(A, Bt, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &T));
       PetscCall(MatAXPY(T, -1.0, X, SAME_NONZERO_PATTERN));
       PetscCall(MatView(T, NULL));
       PetscCall(MatDestroy(&T));
@@ -641,12 +641,12 @@ int main(int argc, char **args)
 
     PetscCall(MatCreateNest(PETSC_COMM_WORLD, 1, NULL, 1, NULL, &A, &NA));
     PetscCall(MatViewFromOptions(NA, NULL, "-NA_view"));
-    PetscCall(MatMatMult(NA, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &X));
+    PetscCall(MatMatMult(NA, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &X));
     PetscCall(CheckLocal(B, X, aB, aX));
     PetscCall(MatMatMultEqual(NA, B, X, 10, &flg));
     if (!flg) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with Nest\n"));
-      PetscCall(MatMatMult(NA, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &T));
+      PetscCall(MatMatMult(NA, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &T));
       PetscCall(MatAXPY(T, -1.0, X, SAME_NONZERO_PATTERN));
       PetscCall(MatView(T, NULL));
       PetscCall(MatDestroy(&T));
@@ -658,12 +658,12 @@ int main(int argc, char **args)
     Mat TA;
 
     PetscCall(MatCreateTranspose(A, &TA));
-    PetscCall(MatMatMult(TA, X, MAT_REUSE_MATRIX, PETSC_DEFAULT, &B));
+    PetscCall(MatMatMult(TA, X, MAT_REUSE_MATRIX, PETSC_DETERMINE, &B));
     PetscCall(CheckLocal(B, X, aB, aX));
     PetscCall(MatMatMultEqual(TA, X, B, 10, &flg));
     if (!flg) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with Transpose\n"));
-      PetscCall(MatMatMult(TA, X, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &T));
+      PetscCall(MatMatMult(TA, X, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &T));
       PetscCall(MatAXPY(T, -1.0, B, SAME_NONZERO_PATTERN));
       PetscCall(MatView(T, NULL));
       PetscCall(MatDestroy(&T));
@@ -675,12 +675,12 @@ int main(int argc, char **args)
     Mat TA;
 
     PetscCall(MatCreateHermitianTranspose(A, &TA));
-    PetscCall(MatMatMult(TA, X, MAT_REUSE_MATRIX, PETSC_DEFAULT, &B));
+    PetscCall(MatMatMult(TA, X, MAT_REUSE_MATRIX, PETSC_DETERMINE, &B));
     PetscCall(CheckLocal(B, X, aB, aX));
     PetscCall(MatMatMultEqual(TA, X, B, 10, &flg));
     if (!flg) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with Transpose\n"));
-      PetscCall(MatMatMult(TA, X, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &T));
+      PetscCall(MatMatMult(TA, X, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &T));
       PetscCall(MatAXPY(T, -1.0, B, SAME_NONZERO_PATTERN));
       PetscCall(MatView(T, NULL));
       PetscCall(MatDestroy(&T));
@@ -693,12 +693,12 @@ int main(int argc, char **args)
 
     PetscCall(MatCreateTranspose(A, &TA));
     PetscCall(MatCreateTranspose(TA, &TTA));
-    PetscCall(MatMatMult(TTA, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &X));
+    PetscCall(MatMatMult(TTA, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &X));
     PetscCall(CheckLocal(B, X, aB, aX));
     PetscCall(MatMatMultEqual(TTA, B, X, 10, &flg));
     if (!flg) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with Transpose(Transpose)\n"));
-      PetscCall(MatMatMult(TTA, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &T));
+      PetscCall(MatMatMult(TTA, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &T));
       PetscCall(MatAXPY(T, -1.0, X, SAME_NONZERO_PATTERN));
       PetscCall(MatView(T, NULL));
       PetscCall(MatDestroy(&T));
@@ -710,13 +710,13 @@ int main(int argc, char **args)
   if (testcircular) { /* test circular */
     Mat AB;
 
-    PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &AB));
-    PetscCall(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &X));
+    PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &AB));
+    PetscCall(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &X));
     PetscCall(CheckLocal(B, X, aB, aX));
     if (M == N && N == K) {
-      PetscCall(MatMatMult(A, X, MAT_REUSE_MATRIX, PETSC_DEFAULT, &B));
+      PetscCall(MatMatMult(A, X, MAT_REUSE_MATRIX, PETSC_DETERMINE, &B));
     } else {
-      PetscCall(MatTransposeMatMult(A, X, MAT_REUSE_MATRIX, PETSC_DEFAULT, &B));
+      PetscCall(MatTransposeMatMult(A, X, MAT_REUSE_MATRIX, PETSC_DETERMINE, &B));
     }
     PetscCall(CheckLocal(B, X, aB, aX));
     PetscCall(MatDestroy(&AB));
@@ -753,7 +753,7 @@ int main(int argc, char **args)
     PetscCall(MatMatMultEqual(AtA, B, D, 10, &flg));
     if (!flg) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with Normal (2)\n"));
-      PetscCall(MatMatMult(AtA, C, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &T));
+      PetscCall(MatMatMult(AtA, C, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &T));
       PetscCall(MatView(D, NULL));
       PetscCall(MatView(T, NULL));
       PetscCall(MatAXPY(T, -1.0, D, SAME_NONZERO_PATTERN));

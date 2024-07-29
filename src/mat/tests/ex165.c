@@ -31,7 +31,7 @@ int main(int argc, char **args)
   PetscCall(PetscViewerDestroy(&viewer));
 
   PetscCall(MatTranspose(A, MAT_INITIAL_MATRIX, &AT));
-  PetscCall(MatMatMult(AT, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
+  PetscCall(MatMatMult(AT, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
 
   PetscCall(PetscOptionsHasName(NULL, NULL, "-view_C", &flg));
   if (flg) {

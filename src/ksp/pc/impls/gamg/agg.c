@@ -1408,7 +1408,7 @@ static PetscErrorCode PCGAMGOptimizeProlongator_AGG(PC pc, Mat Amat, Mat *a_P)
       PetscCall(KSPGetPC(eksp, &epc));
       PetscCall(PCSetType(epc, PCJACOBI)); /* smoother in smoothed agg. */
 
-      PetscCall(KSPSetTolerances(eksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 10)); // 10 is safer, but 5 is often fine, can override with -pc_gamg_esteig_ksp_max_it -mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.2
+      PetscCall(KSPSetTolerances(eksp, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT, 10)); // 10 is safer, but 5 is often fine, can override with -pc_gamg_esteig_ksp_max_it -mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.2
 
       PetscCall(KSPSetFromOptions(eksp));
       PetscCall(KSPSetComputeSingularValues(eksp, PETSC_TRUE));
@@ -1455,7 +1455,7 @@ static PetscErrorCode PCGAMGOptimizeProlongator_AGG(PC pc, Mat Amat, Mat *a_P)
         P_{i} := (I - 1.4/emax D^{-1}A) P_i\{i-1}
       */
       PetscCall(PetscLogEventBegin(petsc_gamg_setup_matmat_events[pc_gamg->current_level][2], 0, 0, 0, 0));
-      PetscCall(MatMatMult(Amat, Prol, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &tMat));
+      PetscCall(MatMatMult(Amat, Prol, MAT_INITIAL_MATRIX, PETSC_CURRENT, &tMat));
       PetscCall(PetscLogEventEnd(petsc_gamg_setup_matmat_events[pc_gamg->current_level][2], 0, 0, 0, 0));
       PetscCall(MatProductClear(tMat));
       PetscCall(MatDiagonalScale(tMat, diag, NULL));

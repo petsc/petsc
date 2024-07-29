@@ -64,10 +64,10 @@ static PetscErrorCode PCMatApply_Mat(PC pc, Mat X, Mat Y)
   PetscFunctionBegin;
   switch (pcmat->apply) {
   case PCMATOP_MULT:
-    PetscCall(MatMatMult(pc->pmat, X, MAT_REUSE_MATRIX, PETSC_DEFAULT, &Y));
+    PetscCall(MatMatMult(pc->pmat, X, MAT_REUSE_MATRIX, PETSC_CURRENT, &Y));
     break;
   case PCMATOP_MULT_TRANSPOSE:
-    PetscCall(MatTransposeMatMult(pc->pmat, X, MAT_REUSE_MATRIX, PETSC_DEFAULT, &Y));
+    PetscCall(MatTransposeMatMult(pc->pmat, X, MAT_REUSE_MATRIX, PETSC_CURRENT, &Y));
     break;
   case PCMATOP_SOLVE:
     PetscCall(MatMatSolve(pc->pmat, X, Y));
@@ -78,7 +78,7 @@ static PetscErrorCode PCMatApply_Mat(PC pc, Mat X, Mat Y)
   case PCMATOP_MULT_HERMITIAN_TRANSPOSE:
     PetscCall(MatDuplicate(X, MAT_COPY_VALUES, &W));
     PetscCall(MatConjugate(W));
-    PetscCall(MatTransposeMatMult(pc->pmat, W, MAT_REUSE_MATRIX, PETSC_DEFAULT, &Y));
+    PetscCall(MatTransposeMatMult(pc->pmat, W, MAT_REUSE_MATRIX, PETSC_CURRENT, &Y));
     PetscCall(MatConjugate(Y));
     PetscCall(MatDestroy(&W));
     break;

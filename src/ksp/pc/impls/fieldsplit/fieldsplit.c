@@ -557,7 +557,7 @@ static PetscErrorCode MatGolubKahanComputeExplicitOperator(Mat A, Mat B, Mat C, 
   /* Compute augmented Lagrangian matrix H = A00 + nu*A01*A01'. This corresponds to */
   /* setting N := 1/nu*I in [Ar13].                                                 */
   PetscCall(MatHermitianTranspose(B, MAT_INITIAL_MATRIX, &BT));
-  PetscCall(MatMatMult(B, BT, MAT_INITIAL_MATRIX, PETSC_DEFAULT, H)); /* H = A01*A01'          */
+  PetscCall(MatMatMult(B, BT, MAT_INITIAL_MATRIX, PETSC_CURRENT, H)); /* H = A01*A01'          */
   PetscCall(MatAYPX(*H, gkbnu, A, DIFFERENT_NONZERO_PATTERN));        /* H = A00 + nu*A01*A01' */
 
   PetscCall(MatDestroy(&BT));

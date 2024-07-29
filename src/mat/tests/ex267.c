@@ -89,14 +89,14 @@ PetscErrorCode TestMatrix(const char *test, Mat A, PetscInt nrhs, PetscBool inpl
 
   if (!ht) {
     PetscCall(MatMatSolve(F, RHS, X));
-    PetscCall(MatMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C1));
+    PetscCall(MatMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C1));
     PetscCall(MatAXPY(C1, -1.0, RHS, SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(C1, NORM_FROBENIUS, &norm));
     if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%12s MatMatSolve           : Error of norm %g\n", test, (double)norm));
     PetscCall(MatDestroy(&C1));
 
     PetscCall(MatMatSolveTranspose(F, RHS, X));
-    PetscCall(MatTransposeMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C1));
+    PetscCall(MatTransposeMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C1));
     PetscCall(MatAXPY(C1, -1.0, RHS, SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(C1, NORM_FROBENIUS, &norm));
     if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%12s MatMatSolveTranspose  : Error of norm %g\n", test, (double)norm));

@@ -57,7 +57,7 @@ int main(int argc, char **args)
 
   if (test_matmatmult) {
     PetscCall(MatDestroy(&C));
-    PetscCall(MatMatMult(A, A, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
+    PetscCall(MatMatMult(A, A, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
     PetscCall(MatView(C, PETSC_VIEWER_STDOUT_WORLD));
   }
 

@@ -661,7 +661,7 @@ PetscErrorCode PostSetSubKSP(SNESLineSearch linesearch, Vec xcurrent, Vec y, Vec
     ksp_ratio = ((PetscReal)(its)) / check->its0;
     maxit     = (PetscInt)(ksp_ratio * sub_its + 0.5);
     if (maxit < 2) maxit = 2;
-    PetscCall(KSPSetTolerances(sub_ksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, maxit));
+    PetscCall(KSPSetTolerances(sub_ksp, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT, maxit));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "    ...ksp_ratio %g, new maxit %" PetscInt_FMT "\n\n", (double)ksp_ratio, maxit));
   }
   check->its0 = its; /* save current outer KSP iteration number */

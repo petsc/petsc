@@ -151,7 +151,7 @@ int main(int argc, char **argv)
     PetscCheck(PetscAbsReal(norm) <= PETSC_SMALL, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "||A-D|| = %g (> %g)", (double)norm, (double)PETSC_SMALL);
     PetscCall(MatDestroy(&AT));
     PetscCall(MatDestroy(&D));
-    PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &P));
+    PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &P));
     PetscCall(MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(P, MAT_FINAL_ASSEMBLY));
     PetscCall(MatMatMultEqual(A, B, P, 10, &flg));
@@ -194,7 +194,7 @@ int main(int argc, char **argv)
       PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
       PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
       PetscCall(MatSetRandom(B, rdm));
-      PetscCall(MatMatMult(R, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &P));
+      PetscCall(MatMatMult(R, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &P));
       PetscCall(MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY));
       PetscCall(MatAssemblyEnd(P, MAT_FINAL_ASSEMBLY));
       PetscCall(MatMatMultEqual(R, B, P, 10, &flg));

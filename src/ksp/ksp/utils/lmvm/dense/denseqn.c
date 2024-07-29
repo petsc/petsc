@@ -813,7 +813,7 @@ static PetscErrorCode MatGetLDLT(Mat B, Mat result)
     PetscCall(MatDenseGetLocalMatrix(lbfgs->YtS_triu_strict, &YtS_local));
     PetscCall(MatDenseGetLocalMatrix(lbfgs->temp_mat, &temp_local));
     PetscCall(MatDenseGetLocalMatrix(result, &result_local));
-    PetscCall(MatTransposeMatMult(YtS_local, temp_local, MAT_REUSE_MATRIX, PETSC_DEFAULT, &result_local));
+    PetscCall(MatTransposeMatMult(YtS_local, temp_local, MAT_REUSE_MATRIX, PETSC_DETERMINE, &result_local));
   }
   PetscCall(MatConjugate(result));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1230,7 +1230,7 @@ static PetscErrorCode MatGetRTDR(Mat B, Mat result)
     PetscCall(MatDenseGetLocalMatrix(ldfp->StY_triu_strict, &StY_local));
     PetscCall(MatDenseGetLocalMatrix(ldfp->temp_mat, &temp_local));
     PetscCall(MatDenseGetLocalMatrix(result, &result_local));
-    PetscCall(MatTransposeMatMult(StY_local, temp_local, MAT_REUSE_MATRIX, PETSC_DEFAULT, &result_local));
+    PetscCall(MatTransposeMatMult(StY_local, temp_local, MAT_REUSE_MATRIX, PETSC_DETERMINE, &result_local));
   }
   PetscCall(MatConjugate(result));
   PetscFunctionReturn(PETSC_SUCCESS);

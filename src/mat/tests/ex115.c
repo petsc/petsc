@@ -194,15 +194,15 @@ int main(int argc, char **args)
 
     /* PETSc MatPtAP -> output is a MatAIJ
        It uses HYPRE functions when -matptap_via hypre is specified at command line */
-    PetscCall(MatPtAP(A, A, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &pP));
-    PetscCall(MatPtAP(A, A, MAT_REUSE_MATRIX, PETSC_DEFAULT, &pP));
+    PetscCall(MatPtAP(A, A, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &pP));
+    PetscCall(MatPtAP(A, A, MAT_REUSE_MATRIX, PETSC_DETERMINE, &pP));
     PetscCall(MatNorm(pP, NORM_INFINITY, &norm));
     PetscCall(MatPtAPMultEqual(A, A, pP, 10, &flg));
     PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Error in MatPtAP_MatAIJ");
 
     /* MatPtAP_HYPRE_HYPRE -> output is a MatHYPRE */
-    PetscCall(MatPtAP(C, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &hP));
-    PetscCall(MatPtAP(C, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &hP));
+    PetscCall(MatPtAP(C, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &hP));
+    PetscCall(MatPtAP(C, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &hP));
     PetscCall(MatPtAPMultEqual(C, B, hP, 10, &flg));
     PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Error in MatPtAP_HYPRE_HYPRE");
 
@@ -221,8 +221,8 @@ int main(int argc, char **args)
 
     /* MatPtAP_AIJ_HYPRE -> output can be decided at runtime with -matptap_hypre_outtype */
 #if !PetscDefined(HAVE_HYPRE_DEVICE)
-    PetscCall(MatPtAP(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &hP));
-    PetscCall(MatPtAP(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &hP));
+    PetscCall(MatPtAP(A, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &hP));
+    PetscCall(MatPtAP(A, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &hP));
     PetscCall(MatPtAPMultEqual(A, B, hP, 10, &flg));
     PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Error in MatPtAP_AIJ_HYPRE");
     PetscCall(MatDestroy(&hP));
@@ -239,15 +239,15 @@ int main(int argc, char **args)
 
     /* PETSc MatMatMult -> output is a MatAIJ
        It uses HYPRE functions when -matmatmult_via hypre is specified at command line */
-    PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &pAB));
-    PetscCall(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &pAB));
+    PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &pAB));
+    PetscCall(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &pAB));
     PetscCall(MatNorm(pAB, NORM_INFINITY, &norm));
     PetscCall(MatMatMultEqual(A, B, pAB, 10, &flg));
     PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Error in MatMatMult_AIJ_AIJ");
 
     /* MatMatMult_HYPRE_HYPRE -> output is a MatHYPRE */
-    PetscCall(MatMatMult(C, D, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &CD));
-    PetscCall(MatMatMult(C, D, MAT_REUSE_MATRIX, PETSC_DEFAULT, &CD));
+    PetscCall(MatMatMult(C, D, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &CD));
+    PetscCall(MatMatMult(C, D, MAT_REUSE_MATRIX, PETSC_DETERMINE, &CD));
     PetscCall(MatMatMultEqual(C, D, CD, 10, &flg));
     PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Error in MatMatMult_HYPRE_HYPRE");
 
@@ -272,12 +272,12 @@ int main(int argc, char **args)
 #if !PetscDefined(HAVE_HYPRE_DEVICE)
     Mat CAB;
     PetscCall(MatCreateTranspose(A, &C));
-    PetscCall(MatMatMatMult(C, A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &CAB));
+    PetscCall(MatMatMatMult(C, A, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &CAB));
     PetscCall(MatDestroy(&C));
     PetscCall(MatTranspose(A, MAT_INITIAL_MATRIX, &C));
-    PetscCall(MatMatMult(C, A, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &D));
+    PetscCall(MatMatMult(C, A, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &D));
     PetscCall(MatDestroy(&C));
-    PetscCall(MatMatMult(D, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
+    PetscCall(MatMatMult(D, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
     PetscCall(MatNorm(C, NORM_INFINITY, &norm));
     PetscCall(MatAXPY(C, -1., CAB, DIFFERENT_NONZERO_PATTERN));
     PetscCall(MatNorm(C, NORM_INFINITY, &err));

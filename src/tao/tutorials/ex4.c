@@ -91,7 +91,7 @@ static PetscErrorCode CreateMatrix(UserCtx ctx)
   PetscCall(PetscLogStagePop());
   /* Stencil matrix is symmetric. Setting symmetric flag for ICC/Cholesky preconditioner */
   if (!ctx->matops) PetscCall(MatSetOption(ctx->F, MAT_SYMMETRIC, PETSC_TRUE));
-  PetscCall(MatTransposeMatMult(ctx->F, ctx->F, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &ctx->W));
+  PetscCall(MatTransposeMatMult(ctx->F, ctx->F, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &ctx->W));
   /* Setup Hessian Workspace in same shape as W */
   PetscCall(MatDuplicate(ctx->W, MAT_DO_NOT_COPY_VALUES, &ctx->Hm));
   PetscCall(MatDuplicate(ctx->W, MAT_DO_NOT_COPY_VALUES, &ctx->Hr));

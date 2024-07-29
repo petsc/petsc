@@ -3771,7 +3771,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
       }
       PetscCall(KSPGetOperators(sub_schurs->change[i], &change, NULL));
       PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, subset_size, B_neigs, eigv + eigs_start * subset_size, &phit));
-      PetscCall(MatMatMult(change, phit, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &phi));
+      PetscCall(MatMatMult(change, phit, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &phi));
       PetscCall(MatCopy(phi, phit, SAME_NONZERO_PATTERN));
       PetscCall(MatDestroy(&phit));
       PetscCall(MatDestroy(&phi));
@@ -4524,7 +4524,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, Mat *coarse_submat)
         PetscCall(MatDestroy(&pcbddc->local_auxmat2));
         pcbddc->local_auxmat2 = T;
       }
-      PetscCall(MatMatMult(C_B, pcbddc->local_auxmat2, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &S_CC));
+      PetscCall(MatMatMult(C_B, pcbddc->local_auxmat2, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &S_CC));
     } else {
       if (multi_element) {
         Mat T;
@@ -4539,7 +4539,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, Mat *coarse_submat)
         PetscCall(PetscObjectReference((PetscObject)local_auxmat2_R));
         pcbddc->local_auxmat2 = local_auxmat2_R;
       }
-      PetscCall(MatMatMult(C_CR, pcbddc->local_auxmat2, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &S_CC));
+      PetscCall(MatMatMult(C_CR, pcbddc->local_auxmat2, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &S_CC));
     }
     PetscCall(MatScale(S_CC, m_one));
     if (multi_element) {
@@ -4565,7 +4565,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, Mat *coarse_submat)
       PetscCall(MatSeqDenseInvertFactors_Private(S_CC));
     }
     /* Assemble local_auxmat1 = S_CC*C_{CB} needed by BDDC application in KSP and in preproc */
-    PetscCall(MatMatMult(S_CC, C_B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &pcbddc->local_auxmat1));
+    PetscCall(MatMatMult(S_CC, C_B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &pcbddc->local_auxmat1));
     PetscCall(MatDestroy(&C_B));
     PetscCall(MatSetValuesSubMat(*coarse_submat, S_CC, n_constraints, idx_C, n_constraints, idx_C, INSERT_VALUES));
   }
@@ -4904,7 +4904,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, Mat *coarse_submat)
         PetscCall(MatDenseRestoreArrayRead(A_RRmA_RV, &marr));
       }
 
-      PetscCall(MatMatMult(A_VR, A_RRmA_RV, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &S_VV));
+      PetscCall(MatMatMult(A_VR, A_RRmA_RV, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &S_VV));
       PetscCall(MatSetValuesSubMat(*coarse_submat, S_VV, n_vertices, idx_V, n_vertices, idx_V, ADD_VALUES));
       PetscCall(MatDestroy(&S_VV));
     }
@@ -4958,7 +4958,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, Mat *coarse_submat)
           PetscCall(MatDestroy(&B));
           B = tB;
         }
-        PetscCall(MatMatMult(A_VR, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &S_VC));
+        PetscCall(MatMatMult(A_VR, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &S_VC));
       }
       PetscCall(MatSetValuesSubMat(*coarse_submat, S_VC, n_vertices, idx_V, n_constraints, idx_C, INSERT_VALUES));
     }
@@ -5032,14 +5032,14 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, Mat *coarse_submat)
       PetscCall(MatScale(S_CC, m_one));
       PetscCall(MatTranspose(C_CR, MAT_INITIAL_MATRIX, &C_CRT));
       PetscCall(MatTranspose(S_CC, MAT_INITIAL_MATRIX, &S_CCT));
-      PetscCall(MatMatMult(C_CRT, S_CCT, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &B_C));
+      PetscCall(MatMatMult(C_CRT, S_CCT, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &B_C));
       PetscCall(MatConvert(B_C, MATDENSE, MAT_INPLACE_MATRIX, &B_C));
       PetscCall(MatDestroy(&S_CCT));
       if (n_vertices) {
         Mat S_VCT;
 
         PetscCall(MatTranspose(S_VC, MAT_INITIAL_MATRIX, &S_VCT));
-        PetscCall(MatMatMult(C_CRT, S_VCT, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &B_V));
+        PetscCall(MatMatMult(C_CRT, S_VCT, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &B_V));
         PetscCall(MatDestroy(&S_VCT));
         PetscCall(MatConvert(B_V, MATDENSE, MAT_INPLACE_MATRIX, &B_V));
       }
@@ -7373,7 +7373,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         PetscCall(MatAssemblyEnd(benign_global, MAT_FINAL_ASSEMBLY));
       }
       if (pcbddc->user_ChangeOfBasisMatrix) {
-        PetscCall(MatMatMult(pcbddc->user_ChangeOfBasisMatrix, benign_global, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &pcbddc->ChangeOfBasisMatrix));
+        PetscCall(MatMatMult(pcbddc->user_ChangeOfBasisMatrix, benign_global, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &pcbddc->ChangeOfBasisMatrix));
         PetscCall(MatDestroy(&benign_global));
       } else if (pcbddc->benign_have_null) {
         pcbddc->ChangeOfBasisMatrix = benign_global;
@@ -8769,7 +8769,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc, Mat coarse_submat)
       PetscCall(KSPSetNestLevel(pcbddc->coarse_ksp, pc->kspnestlevel));
       PetscCall(KSPSetErrorIfNotConverged(pcbddc->coarse_ksp, pc->erroriffailure));
       PetscCall(PetscObjectIncrementTabLevel((PetscObject)pcbddc->coarse_ksp, (PetscObject)pc, 1));
-      PetscCall(KSPSetTolerances(pcbddc->coarse_ksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 1));
+      PetscCall(KSPSetTolerances(pcbddc->coarse_ksp, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT, 1));
       PetscCall(KSPSetOperators(pcbddc->coarse_ksp, coarse_mat, coarse_mat));
       PetscCall(KSPSetType(pcbddc->coarse_ksp, coarse_ksp_type));
       PetscCall(KSPSetNormType(pcbddc->coarse_ksp, KSP_NORM_NONE));
@@ -9064,7 +9064,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc, Mat coarse_submat)
       PetscCall(PetscObjectIncrementTabLevel((PetscObject)check_ksp, (PetscObject)pcbddc->coarse_ksp, 0));
       PetscCall(KSPSetErrorIfNotConverged(pcbddc->coarse_ksp, PETSC_FALSE));
       PetscCall(KSPSetOperators(check_ksp, coarse_mat, coarse_mat));
-      PetscCall(KSPSetTolerances(check_ksp, 1.e-12, 1.e-12, PETSC_DEFAULT, pcbddc->coarse_size));
+      PetscCall(KSPSetTolerances(check_ksp, 1.e-12, 1.e-12, PETSC_CURRENT, pcbddc->coarse_size));
       /* prevent from setup unneeded object */
       PetscCall(KSPGetPC(check_ksp, &check_pc));
       PetscCall(PCSetType(check_pc, PCNONE));

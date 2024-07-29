@@ -101,7 +101,7 @@ int main(int argc, char **args)
   */
   PetscCall(KSPGetPC(ksp, &pc));
   PetscCall(PCSetType(pc, PCBJACOBI));
-  PetscCall(KSPSetTolerances(ksp, 1.e-8, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
+  PetscCall(KSPSetTolerances(ksp, 1.e-8, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT));
 
   /*
     Set runtime options, e.g.,

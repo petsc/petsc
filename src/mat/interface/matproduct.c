@@ -836,20 +836,25 @@ PetscErrorCode MatProductSymbolic(Mat mat)
 
   Input Parameters:
 + mat  - the matrix whose values are to be computed via a matrix-matrix product operation
-- fill - expected fill as ratio of nnz(mat)/(nnz(A) + nnz(B) + nnz(C)); use `PETSC_DEFAULT` if you do not have a good estimate.
-          If the product is a dense matrix, this value is not used.
+- fill - expected fill as ratio of nnz(mat)/(nnz(A) + nnz(B) + nnz(C)); use `PETSC_DETERMINE` or `PETSC_CURRENT` if you do not have a good estimate.
+         If the product is a dense matrix, this value is not used.
 
   Level: intermediate
 
-.seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductSetFromOptions()`, `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductCreate()`
+  Notes:
+  Use `fill` of `PETSC_DETERMINE` to use the default value.
+
+  The deprecated `PETSC_DEFAULT` is also supported to mean use the current value.
+
+.seealso: [](ch_matrices), `MatProduct`, `PETSC_DETERMINE`, `Mat`, `MatProductSetFromOptions()`, `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductCreate()`
 @*/
 PetscErrorCode MatProductSetFill(Mat mat, PetscReal fill)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   MatCheckProduct(mat, 1);
-  if (fill == (PetscReal)PETSC_DEFAULT || fill == (PetscReal)PETSC_DECIDE) mat->product->fill = 2.0;
-  else mat->product->fill = fill;
+  if (fill == (PetscReal)PETSC_DETERMINE) mat->product->fill = mat->product->default_fill;
+  else if (fill != (PetscReal)PETSC_CURRENT) mat->product->fill = fill;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -996,7 +1001,8 @@ PetscErrorCode MatProductCreate_Private(Mat A, Mat B, Mat C, Mat D)
   product->api_user             = PETSC_FALSE;
   product->clear                = PETSC_FALSE;
   product->setfromoptionscalled = PETSC_FALSE;
-  D->product                    = product;
+  PetscObjectParameterSetDefault(product, fill, 2);
+  D->product = product;
 
   PetscCall(MatProductSetAlgorithm(D, MATPRODUCTALGORITHMDEFAULT));
   PetscCall(MatProductSetFill(D, PETSC_DEFAULT));

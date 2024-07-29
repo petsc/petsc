@@ -355,7 +355,7 @@ PetscErrorCode StokesSetupApproxSchur(Stokes *s)
 
   /* compute: - A10 inv(DIAGFORM(A00)) A01 */
   PetscCall(MatDiagonalScale(s->subA[1], diag, NULL)); /* (*warning* overwrites subA[1]) */
-  PetscCall(MatMatMult(s->subA[2], s->subA[1], MAT_INITIAL_MATRIX, PETSC_DEFAULT, &s->myS));
+  PetscCall(MatMatMult(s->subA[2], s->subA[1], MAT_INITIAL_MATRIX, PETSC_DETERMINE, &s->myS));
   PetscCall(MatScale(s->myS, -1.0));
 
   /* restore A10 */

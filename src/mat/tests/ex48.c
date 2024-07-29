@@ -134,12 +134,12 @@ int main(int argc, char **args)
   /* Test MatMatMult() */
   PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, M, 40, NULL, &C));
   PetscCall(MatSetRandom(C, rdm));
-  PetscCall(MatMatMult(A, C, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &D));
+  PetscCall(MatMatMult(A, C, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &D));
   PetscCall(MatMatMultEqual(A, C, D, 40, &flg));
   if (!flg) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatMatMult()\n"));
   PetscCall(MatDestroy(&D));
   PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, M, 40, NULL, &D));
-  PetscCall(MatMatMult(A, C, MAT_REUSE_MATRIX, PETSC_DEFAULT, &D));
+  PetscCall(MatMatMult(A, C, MAT_REUSE_MATRIX, PETSC_DETERMINE, &D));
   PetscCall(MatMatMultEqual(A, C, D, 40, &flg));
   if (!flg) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: MatMatMult()\n"));
 

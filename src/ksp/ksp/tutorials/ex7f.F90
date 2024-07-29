@@ -184,13 +184,13 @@ program main
             else
               PetscCallA(PCSetType(subpc,PCNONE,ierr))
               PetscCallA(KSPSetType(subksp(i+1),KSPBCGS,ierr))
-              PetscCallA(KSPSetTolerances(subksp(i+1),tol,PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr))
+              PetscCallA(KSPSetTolerances(subksp(i+1),tol,PETSC_CURRENT_REAL,PETSC_CURRENT_REAL,PETSC_CURRENT_INTEGER,ierr))
             endif
 
           else
             PetscCallA(PCSetType(subpc,PCJACOBI,ierr))
             PetscCallA(KSPSetType(subksp(i+1),KSPGMRES,ierr))
-            PetscCallA(KSPSetTolerances(subksp(i+1),tol,PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr))
+            PetscCallA(KSPSetTolerances(subksp(i+1),tol,PETSC_CURRENT_REAL,PETSC_CURRENT_REAL,PETSC_CURRENT_INTEGER,ierr))
           endif
 
         end do

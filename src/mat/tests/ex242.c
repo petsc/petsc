@@ -134,9 +134,9 @@ int main(int argc, char **args)
   PetscCall(MatDestroy(&B));
 
   /* Test MatMatTransposeMult(): B = C*C^T */
-  PetscCall(MatMatTransposeMult(C, C, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &B));
+  PetscCall(MatMatTransposeMult(C, C, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &B));
   PetscCall(MatScale(C, 2.0));
-  PetscCall(MatMatTransposeMult(C, C, MAT_REUSE_MATRIX, PETSC_DEFAULT, &B));
+  PetscCall(MatMatTransposeMult(C, C, MAT_REUSE_MATRIX, PETSC_DETERMINE, &B));
   PetscCall(MatMatTransposeMultEqual(C, C, B, 10, &flg));
   PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Check fails: B != C*C^T");
 
@@ -147,9 +147,9 @@ int main(int argc, char **args)
   PetscCall(MatDestroy(&B));
 
   /* Test MatTransposeMatMult(): B = C^T*C */
-  PetscCall(MatTransposeMatMult(C, C, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &B));
+  PetscCall(MatTransposeMatMult(C, C, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &B));
   PetscCall(MatScale(C, 2.0));
-  PetscCall(MatTransposeMatMult(C, C, MAT_REUSE_MATRIX, PETSC_DEFAULT, &B));
+  PetscCall(MatTransposeMatMult(C, C, MAT_REUSE_MATRIX, PETSC_DETERMINE, &B));
   PetscCall(MatTransposeMatMultEqual(C, C, B, 10, &flg));
   PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Check fails: B != C^T*C");
 
@@ -175,8 +175,8 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsHasName(NULL, NULL, "-test_matmatmult", &flg));
   if (flg) {
     Mat CC, CCaij;
-    PetscCall(MatMatMult(C, C, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &CC));
-    PetscCall(MatMatMult(Caij, Caij, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &CCaij));
+    PetscCall(MatMatMult(C, C, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &CC));
+    PetscCall(MatMatMult(Caij, Caij, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &CCaij));
     PetscCall(MatMultEqual(CC, CCaij, 5, &flg));
     PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_ARG_NOTSAMETYPE, "CC != CCaij. MatMatMult() fails");
     PetscCall(MatDestroy(&CCaij));

@@ -547,12 +547,12 @@ int main(int argc, char **argv)
 
   /* Test C = A*B */
   PetscCall(PetscLogStagePush(fullMatMatMultStage));
-  PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
+  PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
 
   /* Test PtAP_squared = PtAP(C,C)*PtAP(C,C)  */
-  PetscCall(MatPtAP(C, C, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &PtAP));
+  PetscCall(MatPtAP(C, C, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &PtAP));
   PetscCall(MatDuplicate(PtAP, MAT_COPY_VALUES, &PtAP_copy));
-  PetscCall(MatMatMult(PtAP, PtAP_copy, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &PtAP_squared));
+  PetscCall(MatMatMult(PtAP, PtAP_copy, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &PtAP_squared));
 
   PetscCall(MatView(C, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(MatView(PtAP_squared, PETSC_VIEWER_STDOUT_WORLD));

@@ -107,10 +107,10 @@ int main(int argc, char **args)
   if (ishypre) PetscCall(MatConvert(A, MATAIJ, MAT_INITIAL_MATRIX, &T));
   PetscCall(MatTranspose(T, MAT_INITIAL_MATRIX, &At));
   if (!ismatis) {
-    PetscCall(MatMatMult(T, At, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &AAt));
+    PetscCall(MatMatMult(T, At, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &AAt));
     PetscCall(MatView(AAt, NULL));
     PetscCall(MatDestroy(&AAt));
-    PetscCall(MatMatMult(At, T, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &AAt));
+    PetscCall(MatMatMult(At, T, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &AAt));
     PetscCall(MatView(AAt, NULL));
     PetscCall(MatDestroy(&AAt));
   }
@@ -157,10 +157,10 @@ int main(int argc, char **args)
   if (ishypre) PetscCall(MatConvert(A, MATAIJ, MAT_INITIAL_MATRIX, &T));
   PetscCall(MatTranspose(T, MAT_INITIAL_MATRIX, &At));
   if (!ismatis) {
-    PetscCall(MatMatMult(T, At, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &AAt));
+    PetscCall(MatMatMult(T, At, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &AAt));
     PetscCall(MatView(AAt, NULL));
     PetscCall(MatDestroy(&AAt));
-    PetscCall(MatMatMult(At, T, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &AAt));
+    PetscCall(MatMatMult(At, T, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &AAt));
     PetscCall(MatView(AAt, NULL));
     PetscCall(MatDestroy(&AAt));
   }
@@ -222,10 +222,10 @@ int main(int argc, char **args)
     T = A;
     if (ishypre) PetscCall(MatConvert(A, MATAIJ, MAT_INITIAL_MATRIX, &T));
     PetscCall(MatTranspose(T, MAT_INITIAL_MATRIX, &At));
-    PetscCall(MatMatMult(T, At, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &AAt));
+    PetscCall(MatMatMult(T, At, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &AAt));
     PetscCall(MatView(AAt, NULL));
     PetscCall(MatDestroy(&AAt));
-    PetscCall(MatMatMult(At, T, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &AAt));
+    PetscCall(MatMatMult(At, T, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &AAt));
     PetscCall(MatView(AAt, NULL));
     PetscCall(MatDestroy(&AAt));
     PetscCall(MatDestroy(&At));

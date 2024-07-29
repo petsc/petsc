@@ -30,15 +30,15 @@ int main(int argc, char **argv)
   PetscCall(MatDenseSetLDA(B, lda));
 
   /* Test MatMatMult() */
-  PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
-  PetscCall(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C));
+  PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
+  PetscCall(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C));
 
   PetscCall(MatMatMultEqual(A, B, C, 10, &flg));
   PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_ARG_NOTSAMETYPE, "Error in MatMatMult() for C");
 
   /* Test user-provided mpidense matrix product */
   PetscCall(MatDuplicate(C, MAT_COPY_VALUES, &C1));
-  PetscCall(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C1));
+  PetscCall(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C1));
   PetscCall(MatMatMultEqual(A, B, C1, 10, &flg));
   PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_ARG_NOTSAMETYPE, "Error in MatMatMult() for C1");
 
@@ -46,8 +46,8 @@ int main(int argc, char **argv)
   PetscCall(MatDestroy(&C));
 
   /* Test MatTransposeMatMult() */
-  PetscCall(MatTransposeMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
-  PetscCall(MatTransposeMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C));
+  PetscCall(MatTransposeMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
+  PetscCall(MatTransposeMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C));
 
   PetscCall(MatTransposeMatMultEqual(A, B, C, 10, &flg));
   PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_ARG_NOTSAMETYPE, "Error in MatTransposeMatMult()");

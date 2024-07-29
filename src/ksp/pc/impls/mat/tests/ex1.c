@@ -64,7 +64,7 @@ static PetscErrorCode TestPCMatVersusMat(PC pc, Mat A, PetscRandom rand, MatOper
   PetscCall(PCApplyTranspose(pc, b, x2));
   PetscCall(TestVecEquality(x, x2));
 
-  PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &X));
+  PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_CURRENT, &X));
   PetscCall(PCMatApply(pc, B, X2));
   PetscCall(TestMatEquality(X, X2));
 

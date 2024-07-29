@@ -86,7 +86,7 @@ static PetscErrorCode gqtwrap(Tao tao, PetscReal *gnorm, PetscReal *qmin)
     PetscCall(MatAssemblyEnd(mfqP->subH, MAT_FINAL_ASSEMBLY));
 
     PetscCall(TaoResetStatistics(mfqP->subtao));
-    /* PetscCall(TaoSetTolerances(mfqP->subtao,*gnorm,*gnorm,PETSC_DEFAULT)); */
+    /* PetscCall(TaoSetTolerances(mfqP->subtao,*gnorm,*gnorm,PETSC_CURRENT)); */
     /* enforce bound constraints -- experimental */
     if (tao->XU && tao->XL) {
       PetscCall(VecCopy(tao->XU, mfqP->subxu));

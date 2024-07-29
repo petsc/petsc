@@ -107,7 +107,7 @@ PetscErrorCode SmwSetup(PC pc)
   PetscCall(MatTranspose(ctx->U, MAT_INITIAL_MATRIX, &ctx->UT));
 
   // Create sum Mat
-  PetscCall(MatMatMatMult(ctx->UT, ctx->aDinv, ctx->U, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &ctx->I_plus_gammaUTaDinvU));
+  PetscCall(MatMatMatMult(ctx->UT, ctx->aDinv, ctx->U, MAT_INITIAL_MATRIX, PETSC_CURRENT, &ctx->I_plus_gammaUTaDinvU));
   PetscCall(MatScale(ctx->I_plus_gammaUTaDinvU, ctx->gamma));
   PetscCall(MatShift(ctx->I_plus_gammaUTaDinvU, 1.));
 
@@ -247,7 +247,7 @@ int main(int argc, char **args)
 
   // Create J
   PetscCall(MatTranspose(Bcondensed, MAT_INITIAL_MATRIX, &BT));
-  PetscCall(MatMatMatMult(Bcondensed, QInv, BT, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &J));
+  PetscCall(MatMatMatMult(Bcondensed, QInv, BT, MAT_INITIAL_MATRIX, PETSC_CURRENT, &J));
   PetscCall(MatScale(J, gamma));
 
   // Create sum of A + J
@@ -264,7 +264,7 @@ int main(int argc, char **args)
   PetscCall(MatAssemblyBegin(QInv, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(QInv, MAT_FINAL_ASSEMBLY));
   // Create U
-  PetscCall(MatMatMult(Bcondensed, QInv, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &U));
+  PetscCall(MatMatMult(Bcondensed, QInv, MAT_INITIAL_MATRIX, PETSC_CURRENT, &U));
 
   // Create x and b
   PetscCall(MatCreateVecs(AplusJ, &x, &b));

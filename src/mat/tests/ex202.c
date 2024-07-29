@@ -62,8 +62,8 @@ PetscErrorCode TestInitialMatrix(void)
 
   PetscCall(MatCreateSeqDense(PETSC_COMM_WORLD, acol[0] + acol[nr] + acol[2 * nr], nk, NULL, &B));
   PetscCall(MatSetRandom(B, rctx));
-  PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
-  PetscCall(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C));
+  PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
+  PetscCall(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C));
   PetscCall(MatMatMultEqual(A, B, C, 10, &equal));
   PetscCheck(equal, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Error in C != A*B");
 

@@ -140,7 +140,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   PetscCall(MatDuplicate(mat_moments_T, MAT_DO_NOT_COPY_VALUES, &AinvB));
   PetscCall(MatLUFactor(mat_trimmed, NULL, NULL, NULL));
   PetscCall(MatMatSolve(mat_trimmed, mat_moments_T, AinvB));
-  PetscCall(MatTransposeMatMult(mat_moments_T, AinvB, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Mm1));
+  PetscCall(MatTransposeMatMult(mat_moments_T, AinvB, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &Mm1));
   PetscCall(MatShift(Mm1, -1.));
   PetscCall(MatNorm(Mm1, NORM_FROBENIUS, &frob_err));
   PetscCheck(frob_err <= PETSC_SMALL, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": trimmed reverse projection error %g", dim, deg, form, (double)frob_err);
@@ -227,7 +227,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
     PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, Nbpt, Nbpt1, M_k_moment, &mat_k_moment_T));
     PetscCall(MatDuplicate(mat_k_moment_T, MAT_DO_NOT_COPY_VALUES, &AinvB));
     PetscCall(MatMatSolve(mat_trimmed, mat_k_moment_T, AinvB));
-    PetscCall(MatTransposeMatMult(mat_k_moment_T, AinvB, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &prod));
+    PetscCall(MatTransposeMatMult(mat_k_moment_T, AinvB, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &prod));
     PetscCall(MatAXPY(prod, -1., mat_koszul, SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(prod, NORM_FROBENIUS, &frob_err));
     if (frob_err > PETSC_SMALL) {

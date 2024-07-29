@@ -239,9 +239,9 @@ static PetscErrorCode PCMatApply_SVD(PC pc, Mat X, Mat Y)
   Mat     W;
 
   PetscFunctionBegin;
-  PetscCall(MatTransposeMatMult(jac->U, X, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &W));
+  PetscCall(MatTransposeMatMult(jac->U, X, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &W));
   PetscCall(MatDiagonalScale(W, jac->diag, NULL));
-  PetscCall(MatTransposeMatMult(jac->Vt, W, MAT_REUSE_MATRIX, PETSC_DEFAULT, &Y));
+  PetscCall(MatTransposeMatMult(jac->Vt, W, MAT_REUSE_MATRIX, PETSC_DETERMINE, &Y));
   PetscCall(MatDestroy(&W));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

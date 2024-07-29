@@ -584,7 +584,7 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, Mat C)
   contents = (MPIAIJ_MPIDense *)C->product->data;
   /* diagonal block of A times all local rows of B */
   /* TODO: this calls a symbolic multiplication every time, which could be avoided */
-  PetscCall(MatMatMult(aij->A, bdense->A, MAT_REUSE_MATRIX, PETSC_DEFAULT, &cdense->A));
+  PetscCall(MatMatMult(aij->A, bdense->A, MAT_REUSE_MATRIX, PETSC_CURRENT, &cdense->A));
   if (contents->workB->cmap->n == B->cmap->N) {
     /* get off processor parts of B needed to complete C=A*B */
     PetscCall(MatMPIDenseScatter(A, B, 0, C, &workB));

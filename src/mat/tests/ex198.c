@@ -41,11 +41,11 @@ int main(int argc, char **args)
   PetscCall(PetscViewerDestroy(&fd));
 
   /* Test MatMatMult() */
-  PetscCall(MatMatMult(B, C, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &BC));
-  PetscCall(MatMatMult(A, BC, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &ABC));
+  PetscCall(MatMatMult(B, C, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &BC));
+  PetscCall(MatMatMult(A, BC, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &ABC));
 
-  PetscCall(MatMatMatMult(A, B, C, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &D));
-  PetscCall(MatMatMatMult(A, B, C, MAT_REUSE_MATRIX, PETSC_DEFAULT, &D));
+  PetscCall(MatMatMatMult(A, B, C, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &D));
+  PetscCall(MatMatMatMult(A, B, C, MAT_REUSE_MATRIX, PETSC_DETERMINE, &D));
   /* PetscCall(MatView(D,PETSC_VIEWER_STDOUT_WORLD)); */
 
   PetscCall(MatEqual(ABC, D, &flg));

@@ -50,17 +50,17 @@ int main(int argc, char **args)
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
 
-  PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
+  PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
   PetscCall(MatView(C, PETSC_VIEWER_STDOUT_WORLD));
 
   /* B, A have the same nonzero pattern, so it is legitimate to do so */
-  PetscCall(MatMatMult(B, A, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C));
+  PetscCall(MatMatMult(B, A, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C));
   PetscCall(MatView(C, PETSC_VIEWER_STDOUT_WORLD));
 
-  PetscCall(MatTransposeMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &D));
+  PetscCall(MatTransposeMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &D));
   PetscCall(MatView(D, PETSC_VIEWER_STDOUT_WORLD));
 
-  PetscCall(MatPtAP(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &E));
+  PetscCall(MatPtAP(A, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &E));
   PetscCall(MatView(E, PETSC_VIEWER_STDOUT_WORLD));
 
   PetscCall(MatDestroy(&A));

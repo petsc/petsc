@@ -1612,7 +1612,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
             PetscCall(KSPMatSolve(pS_II, S_IE, tX));
             PetscCall(KSPDestroy(&pS_II));
 
-            PetscCall(MatTransposeMatMult(S_IE, tX, MAT_REUSE_MATRIX, PETSC_DEFAULT, &SEj));
+            PetscCall(MatTransposeMatMult(S_IE, tX, MAT_REUSE_MATRIX, PETSC_DETERMINE, &SEj));
             PetscCall(MatDestroy(&S_IE));
             PetscCall(MatDestroy(&tX));
             PetscCall(MatAYPX(SEj, -1, S_EE, SAME_NONZERO_PATTERN));

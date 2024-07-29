@@ -434,7 +434,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
   PetscCall(MatAssemblyEnd(conn, MAT_FINAL_ASSEMBLY));
 
   /* Get parallel CSR by doing conn^T * conn */
-  PetscCall(MatTransposeMatMult(conn, conn, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &CSR));
+  PetscCall(MatTransposeMatMult(conn, conn, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &CSR));
   PetscCall(MatDestroy(&conn));
 
   /* extract local part of the CSR */

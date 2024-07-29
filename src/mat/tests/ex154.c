@@ -85,7 +85,7 @@ int main(int argc, char **args)
 
   PetscCall(MatMatSolve(F, B, X));
   PetscCall(MatViewFromOptions(X, NULL, "-X_view"));
-  PetscCall(MatMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Y));
+  PetscCall(MatMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &Y));
   PetscCall(MatViewFromOptions(Y, NULL, "-Y_view"));
   PetscCall(MatAXPY(Y, -1.0, B, SAME_NONZERO_PATTERN));
   PetscCall(MatViewFromOptions(Y, NULL, "-err_view"));

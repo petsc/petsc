@@ -384,10 +384,10 @@ int main(int argc, char **args)
     /* There's a bug in MatCreateSubMatrices_MPIAIJ I cannot figure out */
     if (!allow_repeated || !repmap || size == 1) {
       PetscCall(MatISStoreL2L(A, PETSC_TRUE));
-      PetscCall(MatPtAP(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &A2));
-      PetscCall(MatPtAP(B, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &B2));
+      PetscCall(MatPtAP(A, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &A2));
+      PetscCall(MatPtAP(B, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &B2));
       PetscCall(CheckMat(A2, B2, PETSC_FALSE, "MatPtAP MAT_INITIAL_MATRIX"));
-      PetscCall(MatPtAP(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &A2));
+      PetscCall(MatPtAP(A, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &A2));
       PetscCall(CheckMat(A2, B2, PETSC_FALSE, "MatPtAP MAT_REUSE_MATRIX"));
       PetscCall(MatDestroy(&A2));
       PetscCall(MatDestroy(&B2));

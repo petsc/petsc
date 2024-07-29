@@ -194,7 +194,7 @@ int main(int argc, char **argv)
   if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: |Aher*x - b| for Cholesky %g\n", (double)norm));
 
   /* Check norm(Aher*X - B) */
-  PetscCall(MatMatMult(Aher, X, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
+  PetscCall(MatMatMult(Aher, X, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
   PetscCall(MatAXPY(C, -1.0, B, SAME_NONZERO_PATTERN));
   PetscCall(MatNorm(C, NORM_1, &norm));
   if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: |Aher*X - B| for Cholesky %g\n", (double)norm));
@@ -238,7 +238,7 @@ int main(int argc, char **argv)
   if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: |A*x - b| for LU %g\n", (double)norm));
   /* Reuse product C; replace Aher with A */
   PetscCall(MatProductReplaceMats(A, NULL, NULL, C));
-  PetscCall(MatMatMult(A, X, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C));
+  PetscCall(MatMatMult(A, X, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C));
   PetscCall(MatAXPY(C, -1.0, B, SAME_NONZERO_PATTERN));
   PetscCall(MatNorm(C, NORM_1, &norm));
   if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: |A*X - B| for LU %g\n", (double)norm));

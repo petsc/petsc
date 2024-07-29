@@ -464,7 +464,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
     for (i = 0; i < n_local_lambda; i++) PetscCall(MatSetValue(ScalingMat, i, i, scaling_factors[i], INSERT_VALUES));
     PetscCall(MatAssemblyBegin(ScalingMat, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(ScalingMat, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatMatMult(ScalingMat, fetidpmat_ctx->B_delta, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &fetidpmat_ctx->B_Ddelta));
+    PetscCall(MatMatMult(ScalingMat, fetidpmat_ctx->B_delta, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &fetidpmat_ctx->B_Ddelta));
     PetscCall(MatDestroy(&ScalingMat));
   } else {
     PetscCall(MatCreate(PETSC_COMM_SELF, &fetidpmat_ctx->B_Ddelta));
@@ -542,8 +542,8 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
       }
       PetscCall(MatAssemblyBegin(T, MAT_FINAL_ASSEMBLY));
       PetscCall(MatAssemblyEnd(T, MAT_FINAL_ASSEMBLY));
-      PetscCall(MatMatTransposeMult(T, fetidpmat_ctx->B_delta, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &BD1));
-      PetscCall(MatMatMult(fetidpmat_ctx->B_delta, BD1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &BD2));
+      PetscCall(MatMatTransposeMult(T, fetidpmat_ctx->B_delta, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &BD1));
+      PetscCall(MatMatMult(fetidpmat_ctx->B_delta, BD1, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &BD2));
       PetscCall(MatDestroy(&T));
       PetscCall(PetscFree3(W, pivots, Bwork));
       if (sub_schurs->is_Ej_all) PetscCall(ISRestoreIndices(sub_schurs->is_Ej_all, &idxs));

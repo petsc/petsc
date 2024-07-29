@@ -23,7 +23,7 @@ static PetscErrorCode MatLoadComputeNorms(Mat data_mat, PetscViewer inp_viewer, 
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Data matrix norms: %g %g %g\n", (double)norms[0], (double)norms[1], (double)norms[2]));
 
   /* compute autocorrelation matrix */
-  PetscCall(MatMatTransposeMult(data_mat, data_mat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &corr_mat));
+  PetscCall(MatMatTransposeMult(data_mat, data_mat, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &corr_mat));
 
   /* compute autocorrelation matrix norms */
   PetscCall(MatNorm(corr_mat, NORM_1, &norms[3]));

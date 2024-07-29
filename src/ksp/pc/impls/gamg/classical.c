@@ -837,7 +837,7 @@ static PetscErrorCode PCGAMGOptProlongator_Classical_Jacobi(PC pc, Mat A, Mat *P
   PetscCall(MatGetDiagonal(A, diag));
   PetscCall(VecReciprocal(diag));
   for (i = 0; i < cls->nsmooths; i++) {
-    PetscCall(MatMatMult(A, *P, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Pnew));
+    PetscCall(MatMatMult(A, *P, MAT_INITIAL_MATRIX, PETSC_CURRENT, &Pnew));
     PetscCall(MatZeroRows(Pnew, idx, coarserows, 0., NULL, NULL));
     PetscCall(MatDiagonalScale(Pnew, diag, NULL));
     PetscCall(MatAYPX(Pnew, -1.0, *P, DIFFERENT_NONZERO_PATTERN));
