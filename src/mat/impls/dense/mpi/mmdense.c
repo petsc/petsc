@@ -229,8 +229,11 @@ static PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C, PetscInt ismax,
   PetscCall(PetscMalloc1(nrqr + 1, &sbuf2));
 
   {
-    PetscScalar *sbuf2_i, *v_start;
-    PetscInt     s_proc;
+    PetscScalar       *sbuf2_i;
+    const PetscScalar *v_start, *v;
+    PetscInt           s_proc;
+
+    PetscCall(MatDenseGetArrayRead(A, &v));
     for (i = 0; i < nrqr; ++i) {
       PetscCallMPI(MPI_Waitany(nrqr, r_waits1, &idex, r_status1 + i));
       s_proc  = r_status1[i].MPI_SOURCE; /* send processor */
@@ -245,7 +248,7 @@ static PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C, PetscInt ismax,
       /* Now pack the data */
       for (j = start; j < end; j++) {
         row     = rbuf1_i[j] - rstart;
-        v_start = a->v + row;
+        v_start = v + row;
         for (k = 0; k < N; k++) {
           sbuf2_i[0] = v_start[0];
           sbuf2_i++;
@@ -255,6 +258,7 @@ static PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C, PetscInt ismax,
       /* Now send off the data */
       PetscCallMPI(MPI_Isend(sbuf2[idex], (end - start) * N, MPIU_SCALAR, s_proc, tag1, comm, s_waits2 + i));
     }
+    PetscCall(MatDenseRestoreArrayRead(A, &v));
   }
   /* End Send-Recv of IS + row_numbers */
   PetscCall(PetscFree(r_status1));
