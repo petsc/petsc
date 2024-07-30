@@ -11,14 +11,12 @@ static PetscErrorCode MatCreateSubMatrices_NormalHermitian(Mat mat, PetscInt n, 
   Mat_NormalHermitian *a;
   Mat                  B, *suba;
   IS                  *row;
+  PetscScalar          shift, scale;
   PetscInt             M;
 
   PetscFunctionBegin;
-  PetscCheck(!((Mat_Shell *)mat->data)->zrows && !((Mat_Shell *)mat->data)->zcols, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot call MatCreateSubMatrices() if MatZeroRows() or MatZeroRowsColumns() has been called on the input Mat"); // TODO FIXME: lift this limitation by calling MatZeroRows()/MatZeroRowsColumns() after the SubMatrices creation
-  PetscCheck(!((Mat_Shell *)mat->data)->axpy, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot call MatCreateSubMatrices() if MatAXPY() has been called on the input Mat"); // TODO FIXME: lift this limitation by calling MatAXPY() after the SubMatrices creation
-  PetscCheck(!((Mat_Shell *)mat->data)->left && !((Mat_Shell *)mat->data)->right, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot call MatCreateSubMatrices() if MatDiagonalScale() has been called on the input Mat"); // TODO FIXME: lift this limitation by calling MatDiagonalScale() after the SubMatrices creation with a SubVector
-  PetscCheck(!((Mat_Shell *)mat->data)->dshift, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot call MatCreateSubMatrices() if MatDiagonalSet() has been called on the input Mat"); // TODO FIXME: lift this limitation by calling MatDiagonalSet() after the SubMatrices creation with a SubVector
   PetscCheck(irow == icol, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Not implemented");
+  PetscCall(MatShellGetScalingShifts(mat, &shift, &scale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
   PetscCall(MatShellGetContext(mat, &a));
   B = a->A;
   if (scall != MAT_REUSE_MATRIX) PetscCall(PetscCalloc1(n, submat));
@@ -30,8 +28,8 @@ static PetscErrorCode MatCreateSubMatrices_NormalHermitian(Mat mat, PetscInt n, 
   PetscCall(MatCreateSubMatrices(B, n, row, icol, MAT_INITIAL_MATRIX, &suba));
   for (M = 0; M < n; ++M) {
     PetscCall(MatCreateNormalHermitian(suba[M], *submat + M));
-    ((Mat_Shell *)(*submat)[M]->data)->vscale = ((Mat_Shell *)mat->data)->vscale;
-    ((Mat_Shell *)(*submat)[M]->data)->vshift = ((Mat_Shell *)mat->data)->vshift;
+    PetscCall(MatShift((*submat)[M], shift));
+    PetscCall(MatScale((*submat)[M], scale));
   }
   PetscCall(ISDestroy(&row[0]));
   PetscCall(PetscFree(row));
@@ -44,13 +42,11 @@ static PetscErrorCode MatPermute_NormalHermitian(Mat A, IS rowp, IS colp, Mat *B
   Mat_NormalHermitian *a;
   Mat                  C, Aa;
   IS                   row;
+  PetscScalar          shift, scale;
 
   PetscFunctionBegin;
-  PetscCheck(!((Mat_Shell *)A->data)->zrows && !((Mat_Shell *)A->data)->zcols, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatCreateSubMatrices() if MatZeroRows() or MatZeroRowsColumns() has been called on the input Mat"); // TODO FIXME: lift this limitation by calling MatZeroRows()/MatZeroRowsColumns() after the permutation with a permuted zrows and zcols
-  PetscCheck(!((Mat_Shell *)A->data)->axpy, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatCreateSubMatrices() if MatAXPY() has been called on the input Mat"); // TODO FIXME: lift this limitation by calling MatAXPY() after the permutation with a permuted axpy
-  PetscCheck(!((Mat_Shell *)A->data)->left && !((Mat_Shell *)A->data)->right, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatCreateSubMatrices() if MatDiagonalScale() has been called on the input Mat"); // TODO FIXME: lift this limitation by calling MatDiagonalScale() after the permutation with a permuted left and right
-  PetscCheck(!((Mat_Shell *)A->data)->dshift, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatCreateSubMatrices() if MatDiagonalSet() has been called on the input Mat"); // TODO FIXME: lift this limitation by calling MatDiagonalSet() after the permutation with a permuted dshift
   PetscCheck(rowp == colp, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_INCOMP, "Row permutation and column permutation must be the same");
+  PetscCall(MatShellGetScalingShifts(A, &shift, &scale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
   PetscCall(MatShellGetContext(A, &a));
   Aa = a->A;
   PetscCall(ISCreateStride(PetscObjectComm((PetscObject)Aa), Aa->rmap->n, Aa->rmap->rstart, 1, &row));
@@ -59,8 +55,8 @@ static PetscErrorCode MatPermute_NormalHermitian(Mat A, IS rowp, IS colp, Mat *B
   PetscCall(ISDestroy(&row));
   PetscCall(MatCreateNormalHermitian(C, B));
   PetscCall(MatDestroy(&C));
-  ((Mat_Shell *)(*B)->data)->vscale = ((Mat_Shell *)A->data)->vscale;
-  ((Mat_Shell *)(*B)->data)->vshift = ((Mat_Shell *)A->data)->vshift;
+  PetscCall(MatShift(*B, shift));
+  PetscCall(MatScale(*B, scale));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

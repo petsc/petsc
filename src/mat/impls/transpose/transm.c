@@ -443,12 +443,7 @@ static PetscErrorCode MatConvert_Transpose(Mat N, MatType newtype, MatReuse reus
   PetscCall(MatShellGetContext(N, &A));
   PetscCall(MatHasOperation(A, MATOP_TRANSPOSE, &flg));
   if (flg || N->ops->getrow) { /* if this condition is false, MatConvert_Shell() will be called in MatConvert_Basic(), so the following checks are not needed */
-    PetscCheck(!((Mat_Shell *)N->data)->zrows && !((Mat_Shell *)N->data)->zcols, PetscObjectComm((PetscObject)N), PETSC_ERR_SUP, "Cannot call MatConvert() if MatZeroRows() or MatZeroRowsColumns() has been called on the input Mat");
-    PetscCheck(!((Mat_Shell *)N->data)->axpy, PetscObjectComm((PetscObject)N), PETSC_ERR_SUP, "Cannot call MatConvert() if MatAXPY() has been called on the input Mat");
-    PetscCheck(!((Mat_Shell *)N->data)->left && !((Mat_Shell *)N->data)->right, PetscObjectComm((PetscObject)N), PETSC_ERR_SUP, "Cannot call MatConvert() if MatDiagonalScale() has been called on the input Mat");
-    PetscCheck(!((Mat_Shell *)N->data)->dshift, PetscObjectComm((PetscObject)N), PETSC_ERR_SUP, "Cannot call MatConvert() if MatDiagonalSet() has been called on the input Mat");
-    vscale = ((Mat_Shell *)N->data)->vscale;
-    vshift = ((Mat_Shell *)N->data)->vshift;
+    PetscCall(MatShellGetScalingShifts(N, &vshift, &vscale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
   }
   if (flg) {
     Mat B;

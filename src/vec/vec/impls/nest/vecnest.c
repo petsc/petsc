@@ -912,7 +912,7 @@ static PetscErrorCode VecNestSetSubVec_Private(Vec X, PetscInt idxm, Vec x)
 
   PetscFunctionBegin;
   /* check if idxm < bx->nb */
-  PetscCheck(idxm < bx->nb, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " maximum %" PetscInt_FMT, idxm, bx->nb);
+  PetscCheck(idxm < bx->nb, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT ", should be less than %" PetscInt_FMT, idxm, bx->nb);
 
   PetscCall(PetscObjectReference((PetscObject)x));
   PetscCall(VecDestroy(&bx->v[idxm]));

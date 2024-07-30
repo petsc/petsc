@@ -60,6 +60,3 @@ typedef struct {
 } Mat_Shell;
 
 PETSC_INTERN PetscErrorCode MatAssemblyEnd_Shell(Mat X, MatAssemblyType assembly);
-PETSC_INTERN PetscErrorCode MatShellSetContext_Immutable(Mat X, void *ctx);
-PETSC_INTERN PetscErrorCode MatShellSetContextDestroy_Immutable(Mat X, PetscErrorCode (*f)(void *));
-PETSC_INTERN PetscErrorCode MatShellSetManageScalingShifts_Immutable(Mat X);

@@ -1,7 +1,6 @@
 #include <petscsys.h>
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/sbaij/seq/cholmod/cholmodimpl.h>
-#include <../src/mat/impls/shell/shell.h>
 
 EXTERN_C_BEGIN
 #include <SuiteSparseQR_C.h>
@@ -10,9 +9,10 @@ EXTERN_C_END
 static PetscErrorCode MatWrapCholmod_SPQR_seqaij(Mat A, PetscBool values, cholmod_sparse *C, PetscBool *aijalloc, PetscBool *valloc)
 {
   Mat_SeqAIJ        *aij;
-  Mat                AT, B  = NULL;
+  Mat                AT, B = NULL;
+  Vec                left, right;
   const PetscScalar *aa, *L = NULL;
-  PetscScalar       *ca;
+  PetscScalar       *ca, scale;
   const PetscInt    *ai, *aj;
   PetscInt           n = A->cmap->n, i, j, k, nz;
   SuiteSparse_long  *ci, *cj; /* SuiteSparse_long is the only choice for SPQR */
@@ -29,18 +29,15 @@ static PetscErrorCode MatWrapCholmod_SPQR_seqaij(Mat A, PetscBool values, cholmo
   if (flg) {
     B = A;
     A = AT;
-    PetscCheck(!((Mat_Shell *)B->data)->zrows && !((Mat_Shell *)B->data)->zcols, PetscObjectComm((PetscObject)B), PETSC_ERR_SUP, "Cannot call SuiteSparseQR if MatZeroRows() or MatZeroRowsColumns() has been called on the input Mat"); // TODO FIXME
-    PetscCheck(!((Mat_Shell *)B->data)->axpy, PetscObjectComm((PetscObject)B), PETSC_ERR_SUP, "Cannot call SuiteSparseQR if MatAXPY() has been called on the input Mat");                                                                // TODO FIXME
-    PetscCheck(((Mat_Shell *)B->data)->left == ((Mat_Shell *)B->data)->right, PetscObjectComm((PetscObject)B), PETSC_ERR_SUP, "Cannot call SuiteSparseQR if MatDiagonalScale() has been called on the input Mat with L != R");           // TODO FIXME
-    if (values && ((Mat_Shell *)B->data)->left) {
-      PetscCall(VecGetArrayRead(((Mat_Shell *)B->data)->left, &L));
+    PetscCall(MatShellGetScalingShifts(B, (PetscScalar *)MAT_SHELL_NOT_ALLOWED, &scale, (Vec *)MAT_SHELL_NOT_ALLOWED, &left, &right, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
+    PetscCheck(left == right, PetscObjectComm((PetscObject)B), PETSC_ERR_SUP, "Cannot call SuiteSparseQR if MatDiagonalScale() has been called on the input Mat with L != R");
+    if (values && left) {
+      PetscCall(VecGetArrayRead(left, &L));
 #if PetscDefined(USE_COMPLEX)
       for (j = 0; j < n; j++)
         PetscCheck(PetscAbsReal(PetscImaginaryPart(L[j])) < PETSC_MACHINE_EPSILON, PetscObjectComm((PetscObject)B), PETSC_ERR_SUP, "Cannot call SuiteSparseQR if MatDiagonalScale() has been called on the input Mat with a complex Vec");
 #endif
     }
-    PetscCheck(!((Mat_Shell *)B->data)->dshift, PetscObjectComm((PetscObject)B), PETSC_ERR_SUP, "Cannot call SuiteSparseQR if MatDiagonalSet() has been called on the input Mat");                                  // TODO FIXME
-    PetscCheck(PetscAbsScalar(((Mat_Shell *)B->data)->vshift) < PETSC_MACHINE_EPSILON, PetscObjectComm((PetscObject)B), PETSC_ERR_SUP, "Cannot call SuiteSparseQR if MatShift() has been called on the input Mat"); // TODO FIXME
   }
   /* cholmod_sparse is compressed sparse column */
   PetscCall(MatIsSymmetric(A, 0.0, &flg));
@@ -75,7 +72,7 @@ static PetscErrorCode MatWrapCholmod_SPQR_seqaij(Mat A, PetscBool values, cholmo
   *valloc   = vain;
   if (values) {
     PetscCall(MatSeqAIJRestoreArrayRead(AT, &aa));
-    if (L) PetscCall(VecRestoreArrayRead(((Mat_Shell *)B->data)->left, &L));
+    if (L) PetscCall(VecRestoreArrayRead(left, &L));
   }
 
   PetscCall(PetscMemzero(C, sizeof(*C)));
@@ -251,9 +248,12 @@ static PetscErrorCode MatQRFactorNumeric_SPQR(Mat F, Mat A, const MatFactorInfo 
   F->ops->solve    = MatSolve_SPQR;
   F->ops->matsolve = MatMatSolve_SPQR;
   if (chol->normal) {
+    PetscScalar scale;
+
+    PetscCall(MatShellGetScalingShifts(A, (PetscScalar *)MAT_SHELL_NOT_ALLOWED, &scale, (Vec *)MAT_SHELL_NOT_ALLOWED, NULL, NULL, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
     F->ops->solvetranspose    = MatSolve_SPQR;
     F->ops->matsolvetranspose = MatMatSolve_SPQR;
-    chol->scale               = 1.0 / ((Mat_Shell *)A->data)->vscale;
+    chol->scale               = 1.0 / scale;
   } else if (A->cmap->n == A->rmap->n) {
     F->ops->solvetranspose    = MatSolveTranspose_SPQR;
     F->ops->matsolvetranspose = MatMatSolveTranspose_SPQR;

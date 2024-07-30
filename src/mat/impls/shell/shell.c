@@ -471,6 +471,7 @@ static PetscErrorCode MatDestroy_Shell(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatShellSetContextDestroy_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatShellSetVecType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatShellSetManageScalingShifts_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatShellGetScalingShifts_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatShellSetOperation_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatShellGetOperation_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatShellSetMatProductOperation_C", NULL));
@@ -1594,6 +1595,31 @@ static PetscErrorCode MatShellSetManageScalingShifts_Shell(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatShellGetScalingShifts_Shell(Mat A, PetscScalar *vshift, PetscScalar *vscale, Vec *dshift, Vec *left, Vec *right, Mat *axpy, IS *zrows, IS *zcols)
+{
+  Mat_Shell *shell = (Mat_Shell *)A->data;
+
+  PetscFunctionBegin;
+  PetscCheck(shell->managescalingshifts, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot get scaling and shifts if MatShellSetManageScalingShifts() has been called");
+  if (vshift == MAT_SHELL_NOT_ALLOWED) PetscCheck(shell->vshift == 0.0, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Non-trivial member in parent MatShell: vshift != 0.0, set via MatShift()");
+  else if (vshift) *vshift = shell->vshift;
+  if (vscale == MAT_SHELL_NOT_ALLOWED) PetscCheck(shell->vscale == 1.0, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Non-trivial member in parent MatShell: vscale != 1.0, set via MatScale()");
+  else if (vscale) *vscale = shell->vscale;
+  if (dshift == MAT_SHELL_NOT_ALLOWED) PetscCheck(!shell->dshift, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Non-trivial member in parent MatShell: dshift, set via MatDiagonalSet()");
+  else if (dshift) *dshift = shell->dshift;
+  if (left == MAT_SHELL_NOT_ALLOWED) PetscCheck(!shell->left, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Non-trivial member in parent MatShell: left, set via MatDiagonalScale()");
+  else if (left) *left = shell->left;
+  if (right == MAT_SHELL_NOT_ALLOWED) PetscCheck(!shell->right, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Non-trivial member in parent MatShell: right, set via MatDiagonalScale()");
+  else if (right) *right = shell->right;
+  if (axpy == MAT_SHELL_NOT_ALLOWED) PetscCheck(!shell->axpy, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Non-trivial member in parent MatShell: axpy, set via MatAXPY()");
+  else if (axpy) *axpy = shell->axpy;
+  if (zrows == MAT_SHELL_NOT_ALLOWED) PetscCheck(!shell->zrows, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Non-trivial member in parent MatShell: zrows, set via MatZeroRows()");
+  else if (zrows) *zrows = shell->zrows;
+  if (zcols == MAT_SHELL_NOT_ALLOWED) PetscCheck(!shell->zcols, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Non-trivial member in parent MatShell: zcols, set via MatZeroRowsColumns()");
+  else if (zcols) *zcols = shell->zcols;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatShellSetOperation_Shell(Mat mat, MatOperation op, void (*f)(void))
 {
   Mat_Shell *shell = (Mat_Shell *)mat->data;
@@ -1751,6 +1777,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetContextDestroy_C", MatShellSetContextDestroy_Shell));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetVecType_C", MatShellSetVecType_Shell));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetManageScalingShifts_C", MatShellSetManageScalingShifts_Shell));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellGetScalingShifts_C", MatShellGetScalingShifts_Shell));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetOperation_C", MatShellSetOperation_Shell));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellGetOperation_C", MatShellGetOperation_Shell));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetMatProductOperation_C", MatShellSetMatProductOperation_Shell));
@@ -1953,6 +1980,43 @@ PetscErrorCode MatShellSetManageScalingShifts(Mat A)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscTryMethod(A, "MatShellSetManageScalingShifts_C", (Mat), (A));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// PetscClangLinter pragma disable: -fdoc-internal-linkage
+/*@C
+  MatShellGetScalingShifts - Gets members of a `MATSHELL` used internally for scaling and
+  shifting the `Mat` or calling `MatAXPY()`, `MatZeroRows()`, or `MatZeroRowsColumns()` with it
+
+  Logically Collective
+
+  Input Parameter:
+. A - the `MATSHELL` shell matrix
+
+  Output Parameters:
++ vshift - `PetscScalar` pointer (can be `NULL`), see `MatShift()`, or `MAT_SHELL_NOT_ALLOWED` if the internal shift should be 0
+. vscale - `PetscScalar` pointer (can be `NULL`), see `MatScale()`, or `MAT_SHELL_NOT_ALLOWED` if the internal scaling should be 1
+. dshift - `Vec` pointer (can be `NULL`), see `MatDiagonalSet()`, or `MAT_SHELL_NOT_ALLOWED` if the internal shift should be `NULL`
+. left   - `Vec` pointer (can be `NULL`), see `MatDiagonalScale()`, or `MAT_SHELL_NOT_ALLOWED` if the internal scaling should be `NULL`
+. right  - `Vec` pointer (can be `NULL`), see `MatDiagonalScale()`, or `MAT_SHELL_NOT_ALLOWED` if the internal scaling should be `NULL`
+. axpy   - `Mat` pointer (can be `NULL`), or `MAT_SHELL_NOT_ALLOWED` if `MatAXPY()` should have not been called on `A`
+. zrows  - `Vec` pointer (can be `NULL`), or `MAT_SHELL_NOT_ALLOWED` if `MatZeroRows()` should have not been called on `A`
+- zcols  - `Vec` pointer (can be `NULL`), or `MAT_SHELL_NOT_ALLOWED` if `MatZeroRowsColumns()` should have not been called on `A`
+
+  Level: advanced
+
+  Developer Notes:
+  This is mostly useful to check for corner-cases in `MatType` deriving from
+  `MATSHELL`, e.g, `MATCOMPOSITE` or `MATVIRTUALTRANSPOSE`, since scaling and
+  shifts often require extra work which is not always implemented.
+
+.seealso: [](ch_matrices), `Mat`, `MATSHELL`, `MatCreateShell()`, `MatShift()`, `MatScale()`, `MatDiagonalSet()`, `MatDiagonalScale()`, `MatAXPY()`, `MatZeroRows()`, `MatZeroRowsColumns()`, `MatShellSetManageScalingShifts()`
+@*/
+PetscErrorCode MatShellGetScalingShifts(Mat A, PetscScalar *vshift, PetscScalar *vscale, Vec *dshift, Vec *left, Vec *right, Mat *axpy, IS *zrows, IS *zcols)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscTryMethod(A, "MatShellGetScalingShifts_C", (Mat, PetscScalar *, PetscScalar *, Vec *, Vec *, Vec *, Mat *, IS *, IS *), (A, vshift, vscale, dshift, left, right, axpy, zrows, zcols));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2190,13 +2254,9 @@ PetscErrorCode MatShellGetOperation(Mat mat, MatOperation op, void (**g)(void))
 . mat - the matrix
 
   Output Parameter:
-. flg - the boolean value
+. flg - the Boolean value
 
   Level: developer
-
-  Developer Notes:
-  In the future, we should allow the object type name to be changed still using the `MATSHELL` data structure for other matrices
-  (i.e. `MATTRANSPOSEVIRTUAL`, `MATSCHURCOMPLEMENT` etc)
 
 .seealso: [](ch_matrices), `Mat`, `MATSHELL`, `MATMFFD`, `MatCreateShell()`, `MATTRANSPOSEVIRTUAL`, `MATSCHURCOMPLEMENT`
 @*/

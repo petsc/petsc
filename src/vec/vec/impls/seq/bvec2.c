@@ -579,7 +579,7 @@ PetscErrorCode VecGetValues_Seq(Vec xin, PetscInt ni, const PetscInt ix[], Petsc
     if (ignorenegidx && (ix[i] < 0)) continue;
     if (PetscDefined(USE_DEBUG)) {
       PetscCheck(ix[i] >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " cannot be negative", ix[i]);
-      PetscCheck(ix[i] < xin->map->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " to large maximum allowed %" PetscInt_FMT, ix[i], xin->map->n);
+      PetscCheck(ix[i] < xin->map->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT ", should be less than %" PetscInt_FMT, ix[i], xin->map->n);
     }
     y[i] = xx[ix[i]];
   }
@@ -601,7 +601,7 @@ PetscErrorCode VecSetValues_Seq(Vec xin, PetscInt ni, const PetscInt ix[], const
     if (ignorenegidx && (ix[i] < 0)) continue;
     if (PetscDefined(USE_DEBUG)) {
       PetscCheck(ix[i] >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " cannot be negative", ix[i]);
-      PetscCheck(ix[i] < xin->map->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " maximum %" PetscInt_FMT, ix[i], xin->map->n);
+      PetscCheck(ix[i] < xin->map->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT ", should be less than %" PetscInt_FMT, ix[i], xin->map->n);
     }
     if (m == INSERT_VALUES) {
       xx[ix[i]] = y[i];
@@ -626,7 +626,7 @@ PetscErrorCode VecSetValuesBlocked_Seq(Vec xin, PetscInt ni, const PetscInt ix[]
     const PetscInt start = bs * ix[i];
 
     if (start < 0) continue;
-    PetscCheck(start < xin->map->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " maximum %" PetscInt_FMT, start, xin->map->n);
+    PetscCheck(start < xin->map->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT ", should be less than %" PetscInt_FMT, start, xin->map->n);
     for (PetscInt j = 0; j < bs; j++) {
       if (m == INSERT_VALUES) {
         xx[start + j] = yin[j];

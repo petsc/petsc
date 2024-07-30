@@ -856,7 +856,7 @@ PetscErrorCode VecSetValues_MPI(Vec xin, PetscInt ni, const PetscInt ix[], const
         xx[row - start] += y[i];
       }
     } else if (!donotstash) {
-      PetscCheck(ix[i] < xin->map->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " maximum %" PetscInt_FMT, ix[i], xin->map->N);
+      PetscCheck(ix[i] < xin->map->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT ", should be less than %" PetscInt_FMT, ix[i], xin->map->N);
       PetscCall(VecStashValue_Private(&xin->stash, row, y[i]));
     }
   }
@@ -888,7 +888,7 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin, PetscInt ni, const PetscInt ix[]
           y += bs;
           continue;
         }
-        PetscCheck(ix[i] < xin->map->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " max %" PetscInt_FMT, ix[i], xin->map->N);
+        PetscCheck(ix[i] < xin->map->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT ", should be less than %" PetscInt_FMT, ix[i], xin->map->N);
         PetscCall(VecStashValuesBlocked_Private(&xin->bstash, ix[i], y));
       }
       y += bs;
@@ -902,7 +902,7 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin, PetscInt ni, const PetscInt ix[]
           y += bs;
           continue;
         }
-        PetscCheck(ix[i] <= xin->map->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " max %" PetscInt_FMT, ix[i], xin->map->N);
+        PetscCheck(ix[i] <= xin->map->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT ", should be less than %" PetscInt_FMT, ix[i], xin->map->N);
         PetscCall(VecStashValuesBlocked_Private(&xin->bstash, ix[i], y));
       }
       y += bs;
