@@ -1,6 +1,13 @@
 #include <petsc/private/pcimpl.h>  /*I "petscpc.h" I*/
 #include <petsc/private/kspimpl.h> /*  This is needed to provide the appropriate PETSC_EXTERN for KSP_Solve_FS ....*/
 #include <petscdm.h>
+#include <petscdevice.h>
+#if PetscDefined(HAVE_CUDA)
+  #include <petscdevice_cuda.h>
+#endif
+#if PetscDefined(HAVE_HIP)
+  #include <petscdevice_hip.h>
+#endif
 
 const char *const PCFieldSplitSchurPreTypes[]  = {"SELF", "SELFP", "A11", "USER", "FULL", "PCFieldSplitSchurPreType", "PC_FIELDSPLIT_SCHUR_PRE_", NULL};
 const char *const PCFieldSplitSchurFactTypes[] = {"DIAG", "LOWER", "UPPER", "FULL", "PCFieldSplitSchurFactType", "PC_FIELDSPLIT_SCHUR_FACT_", NULL};
@@ -1242,23 +1249,43 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc, Vec x, Vec y)
         PetscCall(MatGetSize(AinvB, NULL, &N));
         if (N == -1) { // first time PCApply_FieldSplit_Schur() is called
           Mat                A;
-          PetscInt           m, M, N;
-          PetscScalar       *v, *write;
+          VecType            vtype;
+          PetscMemType       mtype;
+          Vec                column, c;
           const PetscScalar *read;
+          PetscScalar       *array;
+          PetscInt           m, M, N;
 
           PetscCall(MatGetSize(jac->B, &M, &N));
           PetscCall(MatGetLocalSize(jac->B, &m, NULL));
-          PetscCall(VecGetArrayRead(ilinkA->x, &read));
-          PetscCall(PetscMalloc1(m * (N + 1), &v));
-          PetscCall(PetscArraycpy(v + m * N, read, m)); // copy the input Vec in the last column of the composed Mat
-          PetscCall(VecRestoreArrayRead(ilinkA->x, &read));
-          PetscCall(MatCreateDense(PetscObjectComm((PetscObject)jac->schur), m, PETSC_DECIDE, M, N + 1, v, &A)); // number of columns of the Schur complement plus one
+          PetscCall(MatGetVecType(jac->B, &vtype));
+          PetscCall(VecGetArrayReadAndMemType(ilinkA->x, &read, &mtype));
+          if (PetscMemTypeHost(mtype) || (!PetscDefined(HAVE_CUDA) && !PetscDefined(HAVE_HIP))) {
+            PetscCall(PetscMalloc1(m * (N + 1), &array));
+            PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)jac->schur), 1, m, M, array + m * N, &c));
+          }
+#if PetscDefined(HAVE_CUDA)
+          else if (PetscMemTypeCUDA(mtype)) {
+            PetscCallCUDA(cudaMalloc((void **)&array, sizeof(PetscScalar) * m * (N + 1)));
+            PetscCall(VecCreateMPICUDAWithArray(PetscObjectComm((PetscObject)jac->schur), 1, m, M, array + m * N, &c));
+          }
+#endif
+#if PetscDefined(HAVE_HIP)
+          else if (PetscMemTypeHIP(mtype)) {
+            PetscCallHIP(hipMalloc((void **)&array, sizeof(PetscScalar) * m * (N + 1)));
+            PetscCall(VecCreateMPIHIPWithArray(PetscObjectComm((PetscObject)jac->schur), 1, m, M, array + m * N, &c));
+          }
+#endif
+          PetscCall(VecRestoreArrayReadAndMemType(ilinkA->x, &read));
+          PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)jac->schur), vtype, m, PETSC_DECIDE, M, N + 1, -1, array, &A)); // number of columns of the Schur complement plus one
+          PetscCall(MatDenseGetColumnVecWrite(A, N, &column));
+          PetscCall(VecCopy(ilinkA->x, column));
+          PetscCall(MatDenseRestoreColumnVecWrite(A, N, &column));
           PetscCall(MatHeaderReplace(AinvB, &A));
           PetscCall(MatSchurComplementComputeExplicitOperator(jac->schur, &jac->schur_user));
           PetscCall(KSPSetOperators(jac->kspschur, jac->schur, jac->schur_user));
-          PetscCall(VecGetArrayWrite(ilinkA->y, &write));
-          PetscCall(PetscArraycpy(write, v + m * N, m)); // retrieve the solution as the last column of the composed Mat
-          PetscCall(VecRestoreArrayWrite(ilinkA->y, &write));
+          PetscCall(VecCopy(c, ilinkA->y)); // retrieve the solution as the last column of the composed Mat
+          PetscCall(VecDestroy(&c));
         }
       }
     }

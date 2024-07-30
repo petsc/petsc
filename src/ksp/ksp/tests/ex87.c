@@ -24,9 +24,12 @@ int main(int argc, char **argv)
   Mat         H, R, C, block[4];
   Vec         rhs, x, r;
   KSP         ksp;
+  PC          pc;
+  PCType      type;
   PetscReal   norm[2], tol = 100.0 * PETSC_MACHINE_EPSILON;
   PetscScalar a, b, c, d;
   PetscInt    n = 24, Istart, Iend, i;
+  PetscBool   flg;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -114,6 +117,31 @@ int main(int argc, char **argv)
   PetscCall(VecNorm(rhs, NORM_2, norm + 1));
   PetscCheck(norm[0] / norm[1] < 10.0 * PETSC_SMALL, PetscObjectComm((PetscObject)H), PETSC_ERR_PLIB, "Error ||H x-rhs||_2 / ||rhs||_2: %1.6e", (double)(norm[0] / norm[1]));
 
+  /* check PetscMemType */
+  PetscCall(KSPGetPC(ksp, &pc));
+  PetscCall(PCGetType(pc, &type));
+  PetscCall(PetscStrcmp(type, PCFIELDSPLIT, &flg));
+  if (flg) {
+    KSP               *subksp;
+    Mat                pmat;
+    const PetscScalar *array;
+    PetscInt           n;
+    PetscMemType       type[2];
+
+    PetscCall(PCFieldSplitGetSubKSP(pc, &n, &subksp));
+    PetscCheck(n == 2, PetscObjectComm((PetscObject)pc), PETSC_ERR_PLIB, "Wrong number of fields");
+    PetscCall(KSPGetOperators(subksp[1], NULL, &pmat));
+    PetscCall(PetscFree(subksp));
+    PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)pmat, &flg, MATSEQDENSE, MATMPIDENSE, ""));
+    if (flg) {
+      PetscCall(VecGetArrayReadAndMemType(x, &array, type));
+      PetscCall(VecRestoreArrayReadAndMemType(x, &array));
+      PetscCall(MatDenseGetArrayReadAndMemType(pmat, &array, type + 1));
+      PetscCall(MatDenseRestoreArrayReadAndMemType(pmat, &array));
+      PetscCheck(type[0] == type[1], PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Failed PetscMemType comparison");
+    }
+  }
+
   PetscCall(KSPDestroy(&ksp));
   PetscCall(MatDestroy(&R));
   PetscCall(MatDestroy(&C));
@@ -135,7 +163,17 @@ int main(int argc, char **argv)
          args: -ksp_pc_side right
       test:
          suffix: real_fieldsplit
-         args: -ksp_type preonly -pc_type fieldsplit -fieldsplit_0_ksp_type preonly -fieldsplit_0_pc_type lu -fieldsplit_1_ksp_type preonly -fieldsplit_1_pc_type cholesky -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full
+         args: -ksp_type preonly -pc_type fieldsplit -fieldsplit_ksp_type preonly -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type cholesky -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full
+      test:
+         requires: cuda
+         nsize: {{1 4}}
+         suffix: real_fieldsplit_cuda
+         args: -ksp_type preonly -pc_type fieldsplit -fieldsplit_ksp_type preonly -fieldsplit_pc_type redundant -fieldsplit_redundant_ksp_type preonly -fieldsplit_redundant_pc_type lu -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full -mat_type aijcusparse
+      test:
+         requires: hip
+         nsize: 4 # this is broken with a single process, see https://gitlab.com/petsc/petsc/-/issues/1529
+         suffix: real_fieldsplit_hip
+         args: -ksp_type preonly -pc_type fieldsplit -fieldsplit_ksp_type preonly -fieldsplit_pc_type redundant -fieldsplit_redundant_ksp_type preonly -fieldsplit_redundant_pc_type lu -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full -mat_type aijhipsparse
 
    testset:
       requires: complex
@@ -147,9 +185,9 @@ int main(int argc, char **argv)
          requires: elemental
          nsize: 4
          suffix: complex_fieldsplit_elemental
-         args: -ksp_type preonly -pc_type fieldsplit -fieldsplit_0_ksp_type preonly -fieldsplit_0_pc_type lu -fieldsplit_1_ksp_type preonly -fieldsplit_1_pc_type lu -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full -fieldsplit_1_explicit_operator_mat_type elemental
+         args: -ksp_type preonly -pc_type fieldsplit -fieldsplit_ksp_type preonly -fieldsplit_pc_type lu -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full -fieldsplit_1_explicit_operator_mat_type elemental
       test:
          suffix: complex_fieldsplit
-         args: -ksp_type preonly -pc_type fieldsplit -fieldsplit_0_ksp_type preonly -fieldsplit_0_pc_type lu -fieldsplit_1_ksp_type preonly -fieldsplit_1_pc_type cholesky -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full -fieldsplit_1_explicit_operator_mat_hermitian
+         args: -ksp_type preonly -pc_type fieldsplit -fieldsplit_ksp_type preonly -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type cholesky -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full -fieldsplit_1_explicit_operator_mat_hermitian
 
 TEST*/
