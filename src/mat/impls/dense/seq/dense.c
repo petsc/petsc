@@ -1667,7 +1667,7 @@ static PetscErrorCode MatDensePlaceArray_SeqDense(Mat A, const PetscScalar *arra
   PetscFunctionBegin;
   PetscCheck(!a->vecinuse, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Need to call MatDenseRestoreColumnVec() first");
   PetscCheck(!a->matinuse, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
-  PetscCheck(!a->unplacedarray, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Need to call MatDenseRestoreArray() first");
+  PetscCheck(!a->unplacedarray, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Need to call MatDenseResetArray() first");
   a->unplacedarray       = a->v;
   a->unplaced_user_alloc = a->user_alloc;
   a->v                   = (PetscScalar *)array;
