@@ -352,19 +352,12 @@ static PetscErrorCode MatProductSymbolic_Normal_Dense(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatProductSetFromOptions_Normal_Dense_AB(Mat C)
-{
-  PetscFunctionBegin;
-  C->ops->productsymbolic = MatProductSymbolic_Normal_Dense;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatProductSetFromOptions_Normal_Dense(Mat C)
 {
   Mat_Product *product = C->product;
 
   PetscFunctionBegin;
-  if (product->type == MATPRODUCT_AB) PetscCall(MatProductSetFromOptions_Normal_Dense_AB(C));
+  if (product->type == MATPRODUCT_AB) C->ops->productsymbolic = MatProductSymbolic_Normal_Dense;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
