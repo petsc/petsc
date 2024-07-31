@@ -1,5 +1,4 @@
 #include <../src/mat/impls/htool/htool.hpp> /*I "petscmat.h" I*/
-#include <../src/mat/impls/shell/shell.h>
 #include <petscblaslapack.h>
 #include <set>
 
@@ -37,7 +36,7 @@ static PetscErrorCode MatGetDiagonalBlock_Htool(Mat A, Mat *b)
 {
   Mat_Htool   *a;
   Mat          B;
-  PetscScalar *ptr;
+  PetscScalar *ptr, scale, shift;
   PetscBool    flg;
 
   PetscFunctionBegin;
@@ -46,6 +45,7 @@ static PetscErrorCode MatGetDiagonalBlock_Htool(Mat A, Mat *b)
   PetscCall(MatShellGetContext(A, &a));
   PetscCall(PetscObjectQuery((PetscObject)A, "DiagonalBlock", (PetscObject *)&B)); /* same logic as in MatGetDiagonalBlock_MPIDense() */
   if (!B) {
+    PetscCall(MatShellGetScalingShifts(A, &shift, &scale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
     PetscCall(MatCreateDense(PETSC_COMM_SELF, A->rmap->n, A->rmap->n, A->rmap->n, A->rmap->n, nullptr, &B));
     PetscCall(MatDenseGetArrayWrite(B, &ptr));
     a->hmatrix->copy_local_diagonal_block(ptr);
@@ -54,8 +54,10 @@ static PetscErrorCode MatGetDiagonalBlock_Htool(Mat A, Mat *b)
     PetscCall(PetscObjectCompose((PetscObject)A, "DiagonalBlock", (PetscObject)B));
     *b = B;
     PetscCall(MatDestroy(&B));
+    PetscCall(MatShift(*b, shift));
+    PetscCall(MatScale(*b, scale));
   } else {
-    PetscCheck(PetscAbsScalar(((Mat_Shell *)A->data)->vscale - 1.0) <= PETSC_MACHINE_EPSILON && PetscAbsScalar(((Mat_Shell *)A->data)->vshift) <= PETSC_MACHINE_EPSILON, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot reuse DiagonalBlock with non-trivial shift and scaling"); // TODO FIXME
+    PetscCall(MatShellGetScalingShifts(A, (PetscScalar *)MAT_SHELL_NOT_ALLOWED, (PetscScalar *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
     *b = B;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -140,15 +142,13 @@ static PetscErrorCode MatCreateSubMatrices_Htool(Mat A, PetscInt n, const IS iro
   Mat_Htool         *a;
   Mat                D, B, BT;
   const PetscScalar *copy;
-  PetscScalar       *ptr;
+  PetscScalar       *ptr, shift, scale;
   const PetscInt    *idxr, *idxc, *it;
   PetscInt           nrow, m, i;
   PetscBool          flg;
 
   PetscFunctionBegin;
-  PetscCheck(!((Mat_Shell *)A->data)->zrows && !((Mat_Shell *)A->data)->zcols, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatCreateSubMatrices() if MatZeroRows() or MatZeroRowsColumns() has been called on the input Mat"); // TODO FIXME
-  PetscCheck(!((Mat_Shell *)A->data)->axpy, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatCreateSubMatrices() if MatAXPY() has been called on the input Mat");          // TODO FIXME
-  PetscCheck(!((Mat_Shell *)A->data)->dshift, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatCreateSubMatrices() if MatDiagonalSet() has been called on the input Mat"); // TODO FIXME
+  PetscCall(MatShellGetScalingShifts(A, &shift, &scale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
   PetscCall(MatShellGetContext(A, &a));
   if (scall != MAT_REUSE_MATRIX) PetscCall(PetscCalloc1(n, submat));
   for (i = 0; i < n; ++i) {
@@ -233,8 +233,8 @@ static PetscErrorCode MatCreateSubMatrices_Htool(Mat A, PetscInt n, const IS iro
     PetscCall(ISRestoreIndices(irow[i], &idxr));
     PetscCall(ISRestoreIndices(icol[i], &idxc));
     PetscCall(MatDenseRestoreArrayWrite((*submat)[i], &ptr));
-    PetscCall(MatScale((*submat)[i], ((Mat_Shell *)A->data)->vscale));
-    PetscCall(MatShift((*submat)[i], ((Mat_Shell *)A->data)->vshift));
+    PetscCall(MatShift((*submat)[i], shift));
+    PetscCall(MatScale((*submat)[i], scale));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -276,26 +276,28 @@ static PetscErrorCode MatDestroy_Htool(Mat A)
 
 static PetscErrorCode MatView_Htool(Mat A, PetscViewer pv)
 {
-  Mat_Htool *a;
-  PetscBool  flg;
+  Mat_Htool  *a;
+  PetscScalar shift, scale;
+  PetscBool   flg;
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &a));
   PetscCall(PetscObjectTypeCompare((PetscObject)pv, PETSCVIEWERASCII, &flg));
   if (flg) {
+    PetscCall(MatShellGetScalingShifts(A, &shift, &scale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
     PetscCall(PetscViewerASCIIPrintf(pv, "symmetry: %c\n", a->hmatrix->get_symmetry_type()));
-    if (PetscAbsScalar(((Mat_Shell *)A->data)->vscale - 1.0) > PETSC_MACHINE_EPSILON) {
+    if (PetscAbsScalar(scale - 1.0) > PETSC_MACHINE_EPSILON) {
 #if defined(PETSC_USE_COMPLEX)
-      PetscCall(PetscViewerASCIIPrintf(pv, "scaling: %g+%gi\n", (double)PetscRealPart(((Mat_Shell *)A->data)->vscale), (double)PetscImaginaryPart(((Mat_Shell *)A->data)->vscale)));
+      PetscCall(PetscViewerASCIIPrintf(pv, "scaling: %g+%gi\n", (double)PetscRealPart(scale), (double)PetscImaginaryPart(scale)));
 #else
-      PetscCall(PetscViewerASCIIPrintf(pv, "scaling: %g\n", (double)((Mat_Shell *)A->data)->vscale));
+      PetscCall(PetscViewerASCIIPrintf(pv, "scaling: %g\n", (double)scale));
 #endif
     }
-    if (PetscAbsScalar(((Mat_Shell *)A->data)->vshift) > PETSC_MACHINE_EPSILON) {
+    if (PetscAbsScalar(shift) > PETSC_MACHINE_EPSILON) {
 #if defined(PETSC_USE_COMPLEX)
-      PetscCall(PetscViewerASCIIPrintf(pv, "shift: %g+%gi\n", (double)PetscRealPart(((Mat_Shell *)A->data)->vshift), (double)PetscImaginaryPart(((Mat_Shell *)A->data)->vshift)));
+      PetscCall(PetscViewerASCIIPrintf(pv, "shift: %g+%gi\n", (double)PetscRealPart(shift), (double)PetscImaginaryPart(shift)));
 #else
-      PetscCall(PetscViewerASCIIPrintf(pv, "shift: %g\n", (double)((Mat_Shell *)A->data)->vshift));
+      PetscCall(PetscViewerASCIIPrintf(pv, "shift: %g\n", (double)shift));
 #endif
     }
     PetscCall(PetscViewerASCIIPrintf(pv, "minimum cluster size: %" PetscInt_FMT "\n", a->bs[0]));
@@ -322,12 +324,12 @@ static PetscErrorCode MatView_Htool(Mat A, PetscViewer pv)
 static PetscErrorCode MatGetRow_Htool(Mat A, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v)
 {
   Mat_Htool   *a;
+  PetscScalar  shift, scale;
   PetscInt    *idxc;
   PetscBLASInt one = 1, bn;
 
   PetscFunctionBegin;
-  PetscCheck(!((Mat_Shell *)A->data)->zrows && !((Mat_Shell *)A->data)->zcols, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatGetRow() if MatZeroRows() or MatZeroRowsColumns() has been called on the input Mat"); // TODO FIXME
-  PetscCheck(!((Mat_Shell *)A->data)->axpy, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatGetRow() if MatAXPY() has been called on the input Mat");                                                                // TODO FIXME
+  PetscCall(MatShellGetScalingShifts(A, &shift, &scale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
   PetscCall(MatShellGetContext(A, &a));
   if (nz) *nz = A->cmap->N;
   if (idx || v) { /* even if !idx, need to set idxc for htool::copy_submatrix() */
@@ -340,8 +342,8 @@ static PetscErrorCode MatGetRow_Htool(Mat A, PetscInt row, PetscInt *nz, PetscIn
     if (a->wrapper) a->wrapper->copy_submatrix(1, A->cmap->N, &row, idxc, *v);
     else reinterpret_cast<htool::VirtualGenerator<PetscScalar> *>(a->kernelctx)->copy_submatrix(1, A->cmap->N, &row, idxc, *v);
     PetscCall(PetscBLASIntCast(A->cmap->N, &bn));
-    PetscCallBLAS("BLASscal", BLASscal_(&bn, &(((Mat_Shell *)A->data)->vscale), *v, &one));
-    if (row < A->cmap->N) (*v)[row] += ((Mat_Shell *)A->data)->vshift;
+    PetscCallBLAS("BLASscal", BLASscal_(&bn, &scale, *v, &one));
+    if (row < A->cmap->N) (*v)[row] += shift;
   }
   if (!idx) PetscCall(PetscFree(idxc));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -707,10 +709,11 @@ static PetscErrorCode MatConvert_Htool_Dense(Mat A, MatType, MatReuse reuse, Mat
 {
   Mat          C;
   Mat_Htool   *a;
+  PetscScalar *array, shift, scale;
   PetscInt     lda;
-  PetscScalar *array;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetScalingShifts(A, &shift, &scale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
   PetscCall(MatShellGetContext(A, &a));
   if (reuse == MAT_REUSE_MATRIX) {
     C = *B;
@@ -729,10 +732,8 @@ static PetscErrorCode MatConvert_Htool_Dense(Mat A, MatType, MatReuse reuse, Mat
   PetscCall(MatDenseGetArrayWrite(C, &array));
   a->hmatrix->copy_local_dense_perm(array);
   PetscCall(MatDenseRestoreArrayWrite(C, &array));
-  PetscCheck(!((Mat_Shell *)A->data)->zrows && !((Mat_Shell *)A->data)->zcols, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatConvert() if MatZeroRows() or MatZeroRowsColumns() has been called on the input Mat"); // TODO FIXME
-  PetscCheck(!((Mat_Shell *)A->data)->axpy, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatConvert() if MatAXPY() has been called on the input Mat");                                                                // TODO FIXME
-  PetscCall(MatScale(C, ((Mat_Shell *)A->data)->vscale));
-  PetscCall(MatShift(C, ((Mat_Shell *)A->data)->vshift));
+  PetscCall(MatShift(C, shift));
+  PetscCall(MatScale(C, scale));
   if (reuse == MAT_INPLACE_MATRIX) {
     PetscCall(MatHeaderReplace(A, &C));
   } else *B = C;
@@ -760,11 +761,13 @@ static PetscErrorCode MatTranspose_Htool(Mat A, MatReuse reuse, Mat *B)
 {
   Mat                      C;
   Mat_Htool               *a, *c;
+  PetscScalar              shift, scale;
   PetscInt                 M = A->rmap->N, N = A->cmap->N, m = A->rmap->n, n = A->cmap->n;
   PetscContainer           container;
   MatHtoolKernelTranspose *kernelt;
 
   PetscFunctionBegin;
+  PetscCall(MatShellGetScalingShifts(A, &shift, &scale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
   PetscCall(MatShellGetContext(A, &a));
   if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(A, *B));
   PetscCheck(reuse != MAT_INPLACE_MATRIX, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "MatTranspose() with MAT_INPLACE_MATRIX not supported");
@@ -785,11 +788,9 @@ static PetscErrorCode MatTranspose_Htool(Mat A, MatReuse reuse, Mat *B)
   }
   PetscCall(MatShellGetContext(C, &c));
   c->dim = a->dim;
-  PetscCheck(!((Mat_Shell *)A->data)->zrows && !((Mat_Shell *)A->data)->zcols, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatTranspose() if MatZeroRows() or MatZeroRowsColumns() has been called on the input Mat"); // TODO FIXME
-  PetscCheck(!((Mat_Shell *)A->data)->axpy, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatTranspose() if MatAXPY() has been called on the input Mat");                                                                // TODO FIXME
-  ((Mat_Shell *)C->data)->vscale = ((Mat_Shell *)A->data)->vscale;
-  ((Mat_Shell *)C->data)->vshift = ((Mat_Shell *)A->data)->vshift;
-  c->kernel                      = GenEntriesTranspose;
+  PetscCall(MatShift(C, shift));
+  PetscCall(MatScale(C, scale));
+  c->kernel = GenEntriesTranspose;
   if (kernelt->A != A) {
     PetscCall(MatDestroy(&kernelt->A));
     kernelt->A = A;
