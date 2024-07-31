@@ -595,7 +595,9 @@ PetscErrorCode PCMPIServerBegin(void)
 
   while (PETSC_TRUE) {
     PCMPICommand request = PCMPI_CREATE;
-    PetscMPIInt  dummy1  = 1, dummy2;
+#if defined(PETSC_HAVE_PTHREAD_MUTEX)
+    PetscMPIInt dummy1 = 1, dummy2;
+#endif
 
     // TODO: can we broadcast the number of active ranks here so only the correct subset of proccesses waits on the later scatters?
 #if defined(PETSC_HAVE_PTHREAD_MUTEX)
