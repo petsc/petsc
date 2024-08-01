@@ -59,7 +59,7 @@ PetscErrorCode MatAXPY(Mat Y, PetscScalar a, Mat X, MatStructure str)
 {
   PetscInt  M1, M2, N1, N2;
   PetscInt  m1, m2, n1, n2;
-  PetscBool sametype, transpose;
+  PetscBool sametype, transpose, nogetrow;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Y, MAT_CLASSID, 1);
@@ -92,7 +92,18 @@ PetscErrorCode MatAXPY(Mat Y, PetscScalar a, Mat X, MatStructure str)
       if (transpose) {
         PetscCall(MatTransposeAXPY_Private(Y, a, X, str, Y));
       } else {
-        PetscCall(MatAXPY_Basic(Y, a, X, str));
+        PetscCall(PetscObjectTypeCompareAny((PetscObject)X, &nogetrow, MATSCALAPACK, MATELEMENTAL, ""));
+        if (nogetrow) { /* Avoid MatAXPY_Basic() due to missing MatGetRow() */
+          Mat     C;
+          MatType type;
+
+          PetscCall(MatGetType(Y, &type));
+          PetscCall(MatConvert(X, type, MAT_INITIAL_MATRIX, &C));
+          PetscCall(MatAXPY(Y, a, C, str));
+          PetscCall(MatDestroy(&C));
+        } else {
+          PetscCall(MatAXPY_Basic(Y, a, X, str));
+        }
       }
     }
   }

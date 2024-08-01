@@ -185,7 +185,12 @@ int main(int argc, char **argv)
          requires: elemental
          nsize: 4
          suffix: complex_fieldsplit_elemental
-         args: -ksp_type preonly -pc_type fieldsplit -fieldsplit_ksp_type preonly -fieldsplit_pc_type lu -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full -fieldsplit_1_explicit_operator_mat_type elemental
+         args: -ksp_type preonly -pc_type fieldsplit -fieldsplit_ksp_type preonly -fieldsplit_0_pc_type redundant -fieldsplit_0_redundant_pc_type lu -fieldsplit_1_pc_type lu -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full -fieldsplit_1_explicit_operator_mat_type elemental
+      test:
+         requires: scalapack
+         nsize: 4
+         suffix: complex_fieldsplit_scalapack
+         args: -ksp_type preonly -pc_type fieldsplit -fieldsplit_ksp_type preonly -fieldsplit_pc_type lu -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full -mat_type scalapack -fieldsplit_1_explicit_operator_mat_type scalapack
       test:
          suffix: complex_fieldsplit
          args: -ksp_type preonly -pc_type fieldsplit -fieldsplit_ksp_type preonly -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type cholesky -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full -fieldsplit_1_explicit_operator_mat_hermitian
