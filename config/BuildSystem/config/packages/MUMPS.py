@@ -135,7 +135,6 @@ class Configure(config.package.Package):
     if self.usesopenmp == 'yes':
       g.write('OPTF    = '+self.updatePackageFFlags(self.getCompilerFlags())+'\n')
     else:
-      print(' '.join(self.removeOpenMPFlag(self.getCompilerFlags().split())))
       g.write('OPTF    = '+self.updatePackageFFlags(' '.join(self.removeOpenMPFlag(self.getCompilerFlags().split())))+'\n')
     if self.blasLapack.checkForRoutine('dgemmt'):
       g.write('OPTF   += -DGEMMT_AVAILABLE\n')
