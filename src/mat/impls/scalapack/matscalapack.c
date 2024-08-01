@@ -774,18 +774,24 @@ static PetscErrorCode MatSolveAdd_ScaLAPACK(Mat A, Vec B, Vec Y, Vec X)
 
 static PetscErrorCode MatMatSolve_ScaLAPACK(Mat A, Mat B, Mat X)
 {
-  Mat_ScaLAPACK *a = (Mat_ScaLAPACK *)A->data, *b, *x;
+  Mat_ScaLAPACK *a = (Mat_ScaLAPACK *)A->data, *x;
   PetscBool      flg1, flg2;
   PetscBLASInt   one = 1, info;
+  Mat            C;
+  MatType        type;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)B, MATSCALAPACK, &flg1));
   PetscCall(PetscObjectTypeCompare((PetscObject)X, MATSCALAPACK, &flg2));
-  PetscCheck((flg1 && flg2), PETSC_COMM_SELF, PETSC_ERR_SUP, "Both B and X must be of type MATSCALAPACK");
-  MatScaLAPACKCheckDistribution(B, 1, X, 2);
-  b = (Mat_ScaLAPACK *)B->data;
-  x = (Mat_ScaLAPACK *)X->data;
-  PetscCall(PetscArraycpy(x->loc, b->loc, b->lld * b->locc));
+  if (flg1 && flg2) MatScaLAPACKCheckDistribution(B, 2, X, 3);
+  if (flg2) {
+    if (flg1) PetscCall(MatCopy(B, X, SAME_NONZERO_PATTERN));
+    else PetscCall(MatConvert(B, MATSCALAPACK, MAT_REUSE_MATRIX, &X));
+    C = X;
+  } else {
+    PetscCall(MatConvert(B, MATSCALAPACK, MAT_INITIAL_MATRIX, &C));
+  }
+  x = (Mat_ScaLAPACK *)C->data;
 
   switch (A->factortype) {
   case MAT_FACTOR_LU:
@@ -798,6 +804,11 @@ static PetscErrorCode MatMatSolve_ScaLAPACK(Mat A, Mat B, Mat X)
     break;
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unfactored Matrix or Unsupported MatFactorType");
+  }
+  if (!flg2) {
+    PetscCall(MatGetType(X, &type));
+    PetscCall(MatConvert(C, type, MAT_REUSE_MATRIX, &X));
+    PetscCall(MatDestroy(&C));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
