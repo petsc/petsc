@@ -48,6 +48,34 @@ const PetscInt sInitialPartition2x5Mesh[2][5] = {
 const PetscInt sNLoclCells2x5Mesh = 5;
 const PetscInt sNGlobVerts2x5Mesh = 18;
 
+/* Mixed mesh : quads and triangles  (4 first quads above divided into triangles*/
+/* Connectivity of a 2x5 rectangular mesh of quads : */
+const PetscInt sConnectivityMixedTQMesh[14][4] = {
+  {0,  4,  6,  -1},
+  {4,  14, 6,  -1},
+  {6,  14, 7,  -1},
+  {14, 15, 7,  -1},
+  {7,  15, 8,  -1},
+  {15, 16, 8,  -1},
+  {8,  16, 9,  -1},
+  {16, 17, 9,  -1},
+  {9,  17, 5,  2 },
+  {4,  1,  10, 14},
+  {14, 10, 11, 15},
+  {15, 11, 12, 16},
+  {16, 12, 13, 17},
+  {17, 13, 3,  5 }
+};
+
+/* Partitions for the rectangular mesh of quads and triangles: */
+const PetscInt sInitialPartitionMixedTQMesh[2][7] = {
+  {0, 1, 4, 5, 8, 10, 12},
+  {2, 3, 6, 7, 9, 11, 13}
+};
+
+const PetscInt sNLoclCellsMixedTQMesh = 7;
+const PetscInt sNGlobVertsMixedTQMesh = 18;
+
 /* Prisms mesh */
 PetscReal sCoordsPrismsMesh[125][3] = {
   {2.24250931694056355e-01, 0.00000000000000000e+00, 0.00000000000000000e+00},
@@ -330,7 +358,7 @@ int main(int argc, char **argv)
   PetscSection     s;
   PetscInt        *cells, c;
   PetscMPIInt      size, rank;
-  PetscBool        box = PETSC_FALSE, field = PETSC_FALSE, quadsmesh = PETSC_FALSE, prismsmesh = PETSC_FALSE;
+  PetscBool        box = PETSC_FALSE, field = PETSC_FALSE, quadsmesh = PETSC_FALSE, trisquadsmesh = PETSC_FALSE, prismsmesh = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -340,8 +368,9 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-field", &field, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-box", &box, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-quadsmesh", &quadsmesh, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-trisquadsmesh", &trisquadsmesh, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-prismsmesh", &prismsmesh, NULL));
-  PetscCheck(1 == (box ? 1 : 0) + (quadsmesh ? 1 : 0) + (prismsmesh ? 1 : 0), PETSC_COMM_WORLD, PETSC_ERR_SUP, "Specify one and only one of -box, -quadsmesh or -prismsmesh");
+  PetscCheck(1 == (box ? 1 : 0) + (quadsmesh ? 1 : 0) + (trisquadsmesh ? 1 : 0) + (prismsmesh ? 1 : 0), PETSC_COMM_WORLD, PETSC_ERR_SUP, "Specify one and only one of -box, -quadsmesh or -prismsmesh");
 
   PetscCall(DMPlexCreate(PETSC_COMM_WORLD, &dm));
   if (box) {
@@ -366,6 +395,40 @@ int main(int argc, char **argv)
       }
       PetscCall(DMSetDimension(dm, dim));
       PetscCall(DMPlexBuildFromCellListParallel(dm, Nc, PETSC_DECIDE, Nv, Ncor, cells, &sfVert, NULL));
+    } else if (trisquadsmesh) {
+      Nc                       = sNLoclCellsMixedTQMesh; //Same on each rank for this example...
+      PetscInt Nv              = sNGlobVertsMixedTQMesh;
+      InitPartForRank[0]       = &sInitialPartitionMixedTQMesh[0][0];
+      InitPartForRank[1]       = &sInitialPartitionMixedTQMesh[1][0];
+      const PetscInt(*Conn)[4] = sConnectivityMixedTQMesh;
+
+      const PetscInt NcorMax = 4;
+      const PetscInt dim     = 2;
+
+      /* Create a PetscSection and taking care to exlude nodes with "-1" into element connectivity: */
+      PetscSection s;
+      PetscInt     vStart = 0, vEnd = Nc;
+      PetscCall(PetscSectionCreate(PETSC_COMM_WORLD, &s));
+      PetscCall(PetscSectionSetNumFields(s, 1));
+      PetscCall(PetscSectionSetFieldComponents(s, 0, 1));
+      PetscCall(PetscSectionSetChart(s, vStart, vEnd));
+
+      PetscCall(PetscMalloc1(Nc * NcorMax, &cells));
+      PetscInt count = 0;
+      for (c = 0; c < Nc; ++c) {
+        PetscInt cell         = (InitPartForRank[rank])[c], cor;
+        PetscInt nbElemVertex = ((-1 == Conn[cell][NcorMax - 1]) ? 3 : 4);
+        for (cor = 0; cor < nbElemVertex; ++cor) {
+          cells[count] = Conn[cell][cor];
+          ++count;
+        }
+        PetscCall(PetscSectionSetDof(s, c, nbElemVertex));
+        PetscCall(PetscSectionSetFieldDof(s, c, 0, nbElemVertex));
+      }
+      PetscCall(PetscSectionSetUp(s));
+      PetscCall(DMSetDimension(dm, dim));
+      PetscCall(DMPlexBuildFromCellSectionParallel(dm, Nc, PETSC_DECIDE, Nv, s, cells, &sfVert, NULL));
+      PetscCall(PetscSectionDestroy(&s));
     } else if (prismsmesh) {
       Nc                       = sNLoclCellsPrismsMesh; //Same on each rank for this example...
       PetscInt Nv              = sNGlobVertsPrismsMesh;
@@ -535,5 +598,10 @@ int main(int argc, char **argv)
       suffix: 2
       args: -prismsmesh
       output_file: output/ex47_2.out
+
+    test:
+      suffix: 3
+      args: -trisquadsmesh
+      output_file: output/ex47_3.out
 
 TEST*/
